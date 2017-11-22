@@ -1,21 +1,26 @@
 function Invoke(name)
 {
+  this.name = name;
   this.path = "";
-  this.requirements = {style:["reset","fonts","main"],script:["corpse"]};
-  this.includes = {script:[]};
+  this.requirements = {style:["reset","fonts","main"],core:["vessel","corpse"],main:[name]};
+  this.includes = {core:[],main:[]};
   this.is_owner = false;
+  this.vessel = null;
 
   this.install = function()
   {
-    for(var id in this.requirements.script){
-      var name = this.requirements.script[id];
-      this.install_script(name);
-    }
     for(var id in this.requirements.style){
       var name = this.requirements.style[id];
       this.install_style(name);
     }
-    this.install_style("custom", true);
+    for(var id in this.requirements.core){
+      var name = this.requirements.core[id];
+      this.install_script("core/"+name);
+    }
+    for(var id in this.requirements.main){
+      var name = this.requirements.main[id];
+      this.install_script("main/"+name);
+    }
   }
 
   this.install_style = function(name, is_user_side)
@@ -36,9 +41,9 @@ function Invoke(name)
     document.getElementsByTagName('head')[0].appendChild(s);
   }
 
-  this.confirm = function(type,name)
+  this.seal = function(type,name)
   {
-    console.log("Included:",type,name)
+    console.log("Seal:"+type,name)
     this.includes[type].push(name);
     this.verify();
   }
@@ -47,14 +52,26 @@ function Invoke(name)
   {
     var remaining = [];
 
-    for(id in this.requirements.script){
-      var name = this.requirements.script[id];
-      if(this.includes.script.indexOf(name) < 0){ remaining.push(name); }
+    for(id in this.requirements.core){
+      var name = this.requirements.core[id];
+      if(this.includes.core.indexOf(name) < 0){ remaining.push(name); }
+    }
+    for(id in this.requirements.main){
+      var name = this.requirements.main[id];
+      if(this.includes.main.indexOf(name) < 0){ remaining.push(name); }
     }
 
     if(remaining.length == 0){
       this.start();
     }
+  }
+
+  this.start = function()
+  {
+    console.info("Start")
+    var vessel_name = this.name.capitalize();
+    this.vessel = new window[vessel_name]();
+    this.vessel.start();
   }
 }
 
