@@ -7,7 +7,7 @@ function Term(name,memory)
 
   this.start = function()
   {
-    this.logs = invoke.vessel.horaire.find("term",this.name);
+    this.logs = invoke.vessel.horaire.find("term",this.name.toLowerCase() == "home" ? "*" : this.name);
     this.diaries = this.find_diaries();
 
     this.parent = this.memory ? invoke.vessel.lexicon.find(this.memory.unde) : null;

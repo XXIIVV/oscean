@@ -43,7 +43,7 @@ function List(raw)
     var a = [];
     for(id in this.array){
       var entry = this.array[id];
-      if(entry[key].toLowerCase() == value.toLowerCase()){
+      if(entry[key].toLowerCase() == value.toLowerCase() || value == "*"){
         a.push(entry);
       }
     }
