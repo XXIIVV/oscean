@@ -49,6 +49,17 @@ function Memory(raw)
     return this.hash[key.toLowerCase()]
   }
 
+  this.find_any = function(key,value)
+  {
+    var h = {};
+    for(name in this.hash){
+      var entry = this.hash[name];
+      if(!entry[key] || entry[key].toLowerCase() != value.toLowerCase()){ continue; }
+      h[name] = entry
+    }
+    return h;
+  }
+
   this.parse(this.raw);
 }
 
