@@ -2,7 +2,7 @@ function Invoke(name)
 {
   this.name = name;
   this.path = "";
-  this.requirements = {style:["reset","fonts","main"],core:["vessel","corpse"],main:[name]};
+  this.requirements = {core:["corpse"],main:[name]};
   this.includes = {};
   this.is_owner = false;
   this.vessel = null;
@@ -13,28 +13,14 @@ function Invoke(name)
       this.includes[cat] = [];
     }
     // Install
-    for(var id in this.requirements.style){
-      var name = this.requirements.style[id];
-      this.install_style(name);
-    }
-    for(var id in this.requirements.core){
-      var name = this.requirements.core[id];
-      this.install_script("core/"+name);
-    }
-    for(var id in this.requirements.main){
-      var name = this.requirements.main[id];
-      this.install_script("main/"+name);
-    }
-  }
 
-  this.install_style = function(name, is_user_side)
-  {
-    var href = "links/"+name+'.css';
-    var s = document.createElement('link');
-    s.rel = 'stylesheet';
-    s.type = 'text/css';
-    s.href = href;
-    document.getElementsByTagName('head')[0].appendChild(s);
+    for(var cat in this.requirements){
+      this.includes[cat] = [];
+      for(var id in this.requirements[cat]){
+        var name = this.requirements[cat][id]
+        invoke.install_script(cat+"/"+name);
+      }
+    }
   }
 
   this.install_script = function(name)
@@ -56,13 +42,11 @@ function Invoke(name)
   {
     var remaining = [];
 
-    for(id in this.requirements.core){
-      var name = this.requirements.core[id];
-      if(this.includes.core.indexOf(name) < 0){ remaining.push(name); }
-    }
-    for(id in this.requirements.main){
-      var name = this.requirements.main[id];
-      if(this.includes.main.indexOf(name) < 0){ remaining.push(name); }
+    for(var cat in this.requirements){
+      for(var id in this.requirements[cat]){
+        var name = this.requirements[cat][id]
+        if(this.includes[cat].indexOf(name) < 0){ remaining.push(name); }
+      }
     }
 
     if(remaining.length == 0){
@@ -73,7 +57,7 @@ function Invoke(name)
   this.start = function()
   {
     this.vessel = new window[this.name.capitalize()]();
-    this.vessel.install();
+    this.vessel.summon();
   }
 }
 

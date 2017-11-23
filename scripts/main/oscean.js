@@ -1,6 +1,6 @@
 function Oscean()
 {
-  Vessel.call(this);
+  Invoke.call(this);
   
   this.requirements = {corpse:["header","footer"]};
 
@@ -9,7 +9,6 @@ function Oscean()
 
   this.start = function()
   {
-    console.log("Start")
     this.corpse = new Corpse(this);
     this.corpse.install();
   }
