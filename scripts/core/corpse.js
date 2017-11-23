@@ -3,9 +3,10 @@ function Corpse(host)
   this.host = host;
   this.styles = ["reset","fonts","main"];
   this.el = document.createElement('yu'); this.el.id = this.host.name;
-  this.header = document.createElement('yu'); this.header.id = "hd";
-  this.md_el = document.createElement('yu'); this.md_el.id = "md";
   this.footer = document.createElement('yu'); this.footer.id = "fd";
+
+  this.el.appendChild(this.hd = document.createElement('yu')); this.hd.id = "hd";
+  this.el.appendChild(this.md = document.createElement('yu')); this.md.id = "md";
 
   this.install = function()
   {

@@ -690,7 +690,7 @@ OQUONIE
   UNDE : Desktop
   BREF : {{Oquonie}} is a textless isometric puzzle game.
   LONG
-    & You will not be alone, your incarnations will have the help of {_bizaroid_} characters speaking {{an obscure language|Camilare}}. Oquonie features an original {{soundtrack|Oquonie Soundtrack}} and was best described as {_{{Animal Crossing in a K-Hole|http://killscreendaily.com/articles/oquonie-maze-worth-entering/}}_}.
+    & You will not be alone, your incarnations will have the help of {*bizaroid*} characters speaking {{an obscure language|Camilare}}. Oquonie features an original {{soundtrack|Oquonie Soundtrack}} and was best described as {_{{Animal Crossing in a K-Hole|http://killscreendaily.com/articles/oquonie-maze-worth-entering/}}_}.
     ? Find help in the {{Oquonie Guide}}.
   LINK
     ITCH : https://hundredrabbits.itch.io/oquonie
