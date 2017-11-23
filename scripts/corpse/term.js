@@ -34,6 +34,7 @@ function Term(name,memory)
 
   this.view = function()
   {
+    if(!this.type){ return ""; }
     if(this["_"+this.type.toLowerCase()]){
       return this["_"+this.type.toLowerCase()]();
     }
@@ -88,7 +89,7 @@ function Term(name,memory)
   {
     var html = "";
 
-    html += "<photo style='background-image:"+this.photo()+"'></photo>"
+    html += "<a href='"+this.name+"'><photo style='background-image:"+this.photo()+"'></photo></a>"
     html += "<p>"+this.bref+"</p>";
     return "<yu class='term'>"+html+"</yu>";
   }
