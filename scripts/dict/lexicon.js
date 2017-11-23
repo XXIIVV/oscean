@@ -1,4 +1,4 @@
-var __LEXICON = new Memory(`
+var $LEXICON = new Memory(`
 HOME
   UNDE : Home
   BREF : Welcome to the {{Nataniev}} playground and ecosystem.
@@ -111,8 +111,8 @@ DONSOL
     & The game was created in collaboration with {{John Eternal|https://twitter.com/johneternal}}, released for {{Mobile}} back in 2016, and re-released for {{Desktop}} in 2017 as {{Hundred Rabbits}}.
     & While the game was designed on a train, without internet connection, it seemed like Donsol's gameplay accidentally ended up being a twist to Zach Gage and Kurt Bieg's {{Scoundrel|http://stfj.net/index2.php?project=art/2011/Scoundrel.pdf}}, designed in 2011.
   LINK
-   GITH : https://github.com/hundredrabbits/Donsol
-   ITCH : https://hundredrabbits.itch.io/donsol
+    https://github.com/hundredrabbits/Donsol
+    https://hundredrabbits.itch.io/donsol
 
 DILUVIUM
   UNDE : Collegiennes
@@ -2067,3 +2067,5 @@ IDYLLIC MINERS
   LINK
     BAND : https://aliceffekt.bandcamp.com/album/genesis-iii-20-ov-idyllic-miners
 `);
+
+invoke.vessel.seal("dict","lexicon");

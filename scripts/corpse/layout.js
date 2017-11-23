@@ -4,7 +4,7 @@ function Layout(host)
 
   this.start = function()
   {
-    this.el.innerHTML = "Hello"
+    console.log(this.host.lexicon.find("Home"));
   }
 }
 
