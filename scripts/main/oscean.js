@@ -2,12 +2,14 @@ function Oscean()
 {
   Vessel.call(this);
   
-  this.name = "Oscean";
-  this.requirements = ["corpse"];
+  this.requirements = {corpse:["header","footer"]};
+
+  this.name = "oscean";
   this.corpse = null;
 
   this.start = function()
   {
+    console.log("Start")
     this.corpse = new Corpse(this);
     this.corpse.install();
   }

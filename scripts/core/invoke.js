@@ -3,12 +3,16 @@ function Invoke(name)
   this.name = name;
   this.path = "";
   this.requirements = {style:["reset","fonts","main"],core:["vessel","corpse"],main:[name]};
-  this.includes = {core:[],main:[]};
+  this.includes = {};
   this.is_owner = false;
   this.vessel = null;
 
-  this.install = function()
+  this.summon = function()
   {
+    for(var cat in this.requirements){
+      this.includes[cat] = [];
+    }
+    // Install
     for(var id in this.requirements.style){
       var name = this.requirements.style[id];
       this.install_style(name);
@@ -43,7 +47,7 @@ function Invoke(name)
 
   this.seal = function(type,name)
   {
-    console.log("Seal:"+type,name)
+    console.log("seal."+type,name)
     this.includes[type].push(name);
     this.verify();
   }
@@ -68,10 +72,8 @@ function Invoke(name)
 
   this.start = function()
   {
-    console.info("Start")
-    var vessel_name = this.name.capitalize();
-    this.vessel = new window[vessel_name]();
-    this.vessel.start();
+    this.vessel = new window[this.name.capitalize()]();
+    this.vessel.install();
   }
 }
 
