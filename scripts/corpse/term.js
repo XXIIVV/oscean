@@ -2,6 +2,7 @@ function Term(name,memory)
 {
   this.name = name;
   this.memory = memory;
+  this.type = memory.type;
   this.diaries = [];
   this.diary = null;
   this.children = [];
@@ -29,15 +30,20 @@ function Term(name,memory)
     return a;
   }
 
+  // Elements
+
   this.view = function()
   {
-    return "Hello"
+    if(this["_"+this.type.toLowerCase()]){
+      return this["_"+this.type.toLowerCase()]();
+    }
+    console.warn("Missing view:",this.type)
+    return "";
   }
 
   this.sidebar = function()
   {
     var html = "";
-
 
     if(this.parent && this.parent.name != this.name){
       this.parent.start();
@@ -48,7 +54,7 @@ function Term(name,memory)
         if(term.name.toLowerCase() == this.name.toLowerCase()){
           for(id in this.children){
             var term = this.children[id];
-            html += "<ln><a href='"+term.name+"'>"+term.name.capitalize()+"</a></ln>"
+            html += "<ln><a class='children' href='"+term.name+"'>"+term.name.capitalize()+"</a></ln>"
           }
         }
       }
@@ -76,6 +82,28 @@ function Term(name,memory)
   {
     if(this.diaries.length < 1){ return ""; }
     return "url(media/diary/"+this.diaries[0].photo+".jpg)";
+  }
+
+  this.preview = function()
+  {
+    var html = "";
+
+    html += "<photo style='background-image:"+this.photo()+"'></photo>"
+    html += "<p>"+this.bref+"</p>";
+    return "<yu class='term'>"+html+"</yu>";
+  }
+
+  // Views
+
+  this._portal = function()
+  {
+    var html = ""
+    for(id in this.children){
+      var term = this.children[id];
+      term.start();
+      html += term.preview();
+    }
+    return html;
   }
 }
 
