@@ -4,7 +4,13 @@ function Layout(host)
 
   this.start = function()
   {
-    console.log(this.host.lexicon.find("Home"));
+    this.load("Oquonie")
+  }
+
+  this.load = function(key)
+  {
+    var term = this.host.lexicon.find(key)
+    console.log(term)
   }
 }
 

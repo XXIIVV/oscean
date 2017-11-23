@@ -4,7 +4,7 @@ function Lexicon(memory)
 
   this.find = function(key)
   {
-    return new Term(this.memory.find(key));
+    return new Term(key,this.memory.find(key));
   }
 }
 

@@ -1,4 +1,4 @@
-var $LEXICON = new Memory(`
+let $LEXICON = new Memory(`
 HOME
   UNDE : Home
   BREF : Welcome to the {{Nataniev}} playground and ecosystem.
