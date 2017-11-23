@@ -2,14 +2,14 @@ function Oscean()
 {
   Invoke.call(this);
   
-  this.requirements = {corpse:["header","footer"]};
+  this.requirements = {corpse:["layout"],dict:["lexicon"]};
 
   this.name = "oscean";
   this.corpse = null;
 
   this.start = function()
   {
-    this.corpse = new Corpse(this);
+    this.corpse = new Layout(this);
     this.corpse.install();
   }
 }
