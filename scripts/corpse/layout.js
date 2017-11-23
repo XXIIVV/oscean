@@ -21,13 +21,20 @@ function Layout(host)
   this.start = function()
   {
     this.load(invoke.vessel.query());
+    this.fd_wr.innerHTML = "<a href='' class='icon twitter'></a><a href='https://github.com/neauoire' class='icon github'></a><a href='Rotonde' class='icon rotonde'></a><a href='Nataniev' class='icon nataniev'></a><a href='Devine+lu+linvega'>Devine Lu Linvega</a> © 2006—2017<br/>BY-NC-SA 4.0<hr />";
   }
 
   this.load = function(key)
   {
-    var term = this.host.lexicon.find(key) ; term.start();
+    var term = this.host.lexicon.find(key.replace(/\+/g," ")) ; term.start();
 
-    this.search.setAttribute("placeholder",term.parent.name+"/"+term.name)
+    window.scrollTo(0,0);
+    window.location = "#"+key;
+
+    document.title = term.name;
+
+    this.search.setAttribute("placeholder",term.parent ? (term.parent.name+"/")+term.name : term.name)
+    this.logo.setAttribute("href",term.parent ? term.parent.name : "Home")
     this.h1.innerHTML = term.bref;
     if(term.diaries[0]){
       this.hd.className = 'si'
@@ -37,22 +44,27 @@ function Layout(host)
       this.hd.className = 'no';
     }
     this.md_wr.innerHTML = term.long;
-    this.fd_wr.innerHTML = "<a href='' class='icon twitter'></a><a href='' class='icon github'></a><a href='' class='icon rotonde'></a><a href='' class='icon nataniev'></a><a href=''>Devine Lu Linvega</a> © 2006—2017<br/>BY-NC-SA 4.0<hr />";
   }
 
   this.link = function(target)
   {
     var name = target.replace("/","").trim();
-    window.location = "#"+name;
-    this.load(name)
+
+    // External
+    if(target.indexOf("http") > -1){
+      window.open(target,'_blank');
+    }
+    else{
+      this.load(name)
+    }
   }
 
   this.validate = function()
   {
     var name = this.search.value.replace("/","").trim();
-    window.location = "#"+name;
     this.load(name);
-    this.search.select();
+    this.search.value = "";
+    this.search.blur();
   }
 
   window.onclick = function(e){ if(e.target.localName == "a"){ e.preventDefault(); invoke.vessel.corpse.link(e.target.getAttribute("href"));} };

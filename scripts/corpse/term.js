@@ -11,8 +11,8 @@ function Term(name,memory)
     this.diaries = this.find_diaries();
 
     this.parent = this.memory ? invoke.vessel.lexicon.find(this.memory.unde) : null;
-    this.bref = new Runic().markup(this.memory.bref);
-    this.long = new Runic(this.memory.long).html;
+    this.bref = this.memory && this.memory.bref ? new Runic().markup(this.memory.bref) : "Missing";
+    this.long = this.memory && this.memory.long ? new Runic(this.memory.long).html : "Missing";
   }
 
   this.find_diaries = function()

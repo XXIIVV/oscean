@@ -2,8 +2,9 @@ function Lexicon(memory)
 {
   this.memory = memory;
 
-  this.find = function(key)
+  this.find = function(key = "Home")
   {
+    key = !key ? "Home" : key
     return new Term(key,this.memory.find(key));
   }
 }
