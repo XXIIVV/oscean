@@ -26,11 +26,24 @@ function Layout(host)
     this.search.setAttribute("placeholder",term.parent.name+"/"+term.name)
     this.h1.innerHTML = term.bref;
     if(term.diaries[0]){
+      this.hd.className = 'si'
       this.photo.style.backgroundImage = "url(media/diary/"+term.diaries[0].photo+".jpg)";
+    }
+    else{
+      this.hd.className = 'no';
     }
     this.md_wr.innerHTML = term.long;
     this.fd_wr.innerHTML = "<a href='' class='icon twitter'></a><a href='' class='icon github'></a><a href='' class='icon rotonde'></a><a href='' class='icon nataniev'></a><a href=''>Devine Lu Linvega</a> © 2006—2017<br/>BY-NC-SA 4.0<hr />";
   }
+
+  this.link = function(target)
+  {
+    var name = target.replace("/","").trim();
+    window.location = "#"+name;
+    this.load(name)
+  }
+
+  window.onclick = function(e){ if(e.target.localName == "a"){ e.preventDefault(); invoke.vessel.corpse.link(e.target.getAttribute("href"));} };
 }
 
 invoke.vessel.seal("corpse","layout");

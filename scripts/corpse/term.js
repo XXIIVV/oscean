@@ -10,7 +10,7 @@ function Term(name,memory)
     this.logs = invoke.vessel.horaire.find("term",this.name);
     this.diaries = this.find_diaries();
 
-    this.parent = invoke.vessel.lexicon.find(this.memory.unde);
+    this.parent = this.memory ? invoke.vessel.lexicon.find(this.memory.unde) : null;
     this.bref = new Runic().markup(this.memory.bref);
     this.long = new Runic(this.memory.long).html;
   }
