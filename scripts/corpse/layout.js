@@ -28,10 +28,8 @@ function Layout(host)
     if(term.diaries[0]){
       this.photo.style.backgroundImage = "url(media/diary/"+term.diaries[0].photo+".jpg)";
     }
-    this.m1.innerHTML = term.long;
-    this.m2.innerHTML = "<br />"+term.logs.length+" logs "+term.diaries.length+" diaries";
-
-    this.fd_wr.innerHTML = "Footer";
+    this.md_wr.innerHTML = term.long;
+    this.fd_wr.innerHTML = "<a href='' class='icon twitter'></a><a href='' class='icon github'></a><a href='' class='icon rotonde'></a><a href='' class='icon nataniev'></a><a href=''>Devine Lu Linvega</a> © 2006—2017<br/>BY-NC-SA 4.0<hr />";
   }
 }
 
