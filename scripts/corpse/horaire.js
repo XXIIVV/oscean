@@ -6,7 +6,6 @@ function Horaire(list)
   {
     var a = this.list.find(key,value);
     var array = [];
-
     for(id in a){
       array.push(new Log(a[id]))
     }
