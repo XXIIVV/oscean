@@ -14,6 +14,10 @@ function Layout(host)
   // Footer
   this.fd.appendChild(this.fd_wr = document.createElement('wr'));
 
+  this.search.addEventListener('keydown', function(event) {
+    if(event.key === "Enter"){ invoke.vessel.corpse.validate(); }
+  });
+
   this.start = function()
   {
     this.load(invoke.vessel.query());
@@ -41,6 +45,14 @@ function Layout(host)
     var name = target.replace("/","").trim();
     window.location = "#"+name;
     this.load(name)
+  }
+
+  this.validate = function()
+  {
+    var name = this.search.value.replace("/","").trim();
+    window.location = "#"+name;
+    this.load(name);
+    this.search.select();
   }
 
   window.onclick = function(e){ if(e.target.localName == "a"){ e.preventDefault(); invoke.vessel.corpse.link(e.target.getAttribute("href"));} };
