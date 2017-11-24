@@ -2,14 +2,14 @@ function Layout(host)
 {
   Corpse.call(this,host);
 
-  this.term = this.host.lexicon.find("Home") ; this.term.start();
-
+  this.monitor = new Monitor();
   // Header
   this.hd.appendChild(this.h1 = document.createElement('h1'));
   this.hd.appendChild(this.icon = document.createElement('icon'));
   this.hd.appendChild(this.photo = document.createElement('photo'));
   this.hd.appendChild(this.logo = document.createElement('a'));
   this.hd.appendChild(this.search = document.createElement('input'));
+  this.hd.appendChild(this.monitor.el);
   // Body
   this.md.appendChild(this.md_wr = document.createElement('wr'));
   this.md_wr.appendChild(this.sb = document.createElement('sb'));
@@ -31,7 +31,7 @@ function Layout(host)
 
   this.load = function(key)
   {
-    if(key.toLowerCase() == this.term.name.toLowerCase()){ return; }
+    if(this.term && key.toLowerCase() == this.term.name.toLowerCase()){ console.log("Already here",key); return; }
     
     this.term = this.host.lexicon.find(key.replace(/\+/g," "));
     this.term.start();
@@ -47,10 +47,11 @@ function Layout(host)
     this.hd.className = this.term.theme();
     this.icon.style.backgroundImage = "url('media/badge/nataniev.svg')";
     this.photo.style.backgroundImage = this.term.photo();
+    this.monitor.update(this.term.logs);
     this.m1.innerHTML = this.term.long;
     this.m2.innerHTML = this.term.view();
     this.sb.innerHTML = this.term.sidebar();
-    
+
     var icon_name = this.term.name.toLowerCase().replace(/\ /g,".");
     var img = new Image();
     img.src = "media/badge/"+icon_name+".svg";
@@ -77,7 +78,6 @@ function Layout(host)
   {
     var name = this.search.value.replace("/","").trim();
     this.load(name);
-    this.search.value = "";
     this.search.blur();
   }
 

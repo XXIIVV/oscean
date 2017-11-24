@@ -2,7 +2,7 @@ function Invoke(name)
 {
   this.name = name;
   this.path = "";
-  this.requirements = {core:["corpse","memory","list","runic"],main:[name]};
+  this.requirements = {core:["corpse","memory","list","runic","desamber"],main:[name]};
   this.includes = {};
   this.is_owner = false;
   this.vessel = null;
