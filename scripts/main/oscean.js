@@ -9,8 +9,10 @@ function Oscean()
 
   this.start = function()
   {
-    this.lexicon = new Lexicon($LEXICON);
     this.horaire = new Horaire($HORAIRE);
+    this.lexicon = new Lexicon($LEXICON);
+
+    this.lexicon.start();
 
     this.corpse = new Layout(this);
     this.corpse.install();

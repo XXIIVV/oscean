@@ -6,15 +6,14 @@ function Term(name,memory)
   this.diaries = [];
   this.diary = null;
   this.children = [];
+  this.parent = null;
 
   this.start = function()
   {
     this.links = this.memory.link ? this.memory.link : [];
     this.logs = invoke.vessel.horaire.find("term",this.name.toLowerCase() == "home" ? "*" : this.name);
     this.diaries = this.find_diaries();
-    this.children = this.memory ? invoke.vessel.lexicon.find_any("unde",this.name) : [];
 
-    this.parent = this.memory ? invoke.vessel.lexicon.find(this.memory.unde) : null; 
     this.bref = this.memory && this.memory.bref ? new Runic().markup(this.memory.bref) : "Missing";
     this.long = this.memory && this.memory.long ? new Runic(this.memory.long).html : "Missing";
   }

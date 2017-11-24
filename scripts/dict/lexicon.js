@@ -1901,9 +1901,7 @@ DEVINE LU LINVEGA
   BREF : {{Devine lu linvega}} is a nomad, developer and designer.
   LONG
     & Operating under the {*Neauoire*} moniker, Devine is a {{polymath|https://monochromatic.co/writing/interview-with-devine}} working on a series of {{experimental tools|Gamme}} and {{applications|Interactive}}. Populating {{Nataniev}} with notes on {{Language|Lietal}}, {{Illustrations|Illustration}} and {{Sounds|Audio}}, Devine hopes to inspire visitors to learn and to {{travel}}. 
-    ? To {{flee|Obliques}} is life,<br /> To linger, {{Death}}.
-    # <comment># Satellite Phone</comment>
-    # Currently located in <b>{{$ hundredrabbits get_location}}</b>({{$ hundredrabbits get_position}}).
+    * To {{flee|Obliques}} is life,<br /> To linger, {{Death}}.
   LINK
     https://twitter.com/neauoire/media
     https://github.com/neauoire
