@@ -9,7 +9,7 @@ var payload = new Runic(`
 * Genitive
 & The genitive is used to express a relationship between two nouns.
 # Это портофель {*профессора*} <comment>This is the professor's briefcase.</comment>
-Prepositional
+* Prepositional
 & The prepositional is used when the noun is affected by a preposition.
 * Dative
 & The dative is used when the noun is the recipient of an action.
@@ -17,8 +17,7 @@ Prepositional
 * Instrumental
 & The instrumental is used when the noun is the instrument or mean by which an action is performed.
 # Ученик пишет {*карандашом*} <comment>The student writes with a pencil.</comment>
-
-GENDER
+* GENDER
 * On Pronouns
 & The gender of the noun determines the gender of the pronoun.
 > <table>
@@ -40,7 +39,6 @@ GENDER
 | Окно было там   | The window was there
 | Лампа была там | The lamp was there
 > </table>
-
 * EXPRESSIONS
 * Basics
 & It's amazing how many sentences can be made with knowing these simple 3 words: нет, был & будет.
@@ -69,7 +67,6 @@ GENDER
 | тебе будет холодно   | You shall be cold   | вам быдет холодно | Yous shall be cold
 | ему/ей будет холодно | He/She shall be cold | им быдет холодно  | They shall be cold
 > </table>
-
 * VERBS
 * Table
 & This is the basic conjugation table for a few simple Russian verbs. I always kept this nearby, for reference.

@@ -13,6 +13,7 @@ function Oscean()
     this.lexicon = new Lexicon($LEXICON);
 
     this.lexicon.start();
+    this.horaire.start();
 
     this.corpse = new Layout(this);
     this.corpse.install();

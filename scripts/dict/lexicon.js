@@ -7,8 +7,6 @@ HOME
   LINK
     https://twitter.com/neauoire
 
-~ Sectors
-
 AUDIO
   UNDE : Home
   BREF : The {{Audio}} sector hosts all projects focusing on sound and live shows.
@@ -23,8 +21,6 @@ RESEARCH
   UNDE : Home
   BREF : The {{Research}} sector hosts all projects focusing on philosophy and linguistics.
   TYPE : Archive
-
-~ Automatons
 
 AUTOMATONS
   UNDE : Research
@@ -667,8 +663,6 @@ POLYGORE
   BREF : A study of the base elements of this {{world|Nereid}}.
   TYPE : Diary
   
-~
-
 OCCULTER
   UNDE : Physical
   BREF : {{Occulter}} is a 3d printed shape inspired by the logo of a boutique I admire and that sells {{black things|http://occulter.org}}.
@@ -869,8 +863,6 @@ SERVENTINES
   BREF : {{Serventines}} is a travel diary documenting travels across {{Nereid}}'s various regions, the small planet's skies and {_gravitating objects_}.
   TYPE : Diary
 
-~ Interactive
-
 INTERACTIVE
   UNDE : Visual
   BREF : The {{Interactive}} Portal contains all the released interactive applications.
@@ -1007,8 +999,6 @@ DOMINE GUIDE
   TYPE : Docs
   TAGS : Guide
 
-~ Collegiennes
-
 COLLEGIENNES
   UNDE : Interactive
   BREF : {{Collegiennes}} is a game jam collective initiated with {{Renaud Bedard|http://theinstructionlimit.com}}.
@@ -1063,8 +1053,6 @@ PICO BATTLE
     - Escape key now quits the game if pressed in the lobby
   LINK
     https://github.com/Collegiennes/picoBattle
-
-~ Physical
 
 SPAGETTINI SCALE
   UNDE : Physical
@@ -1301,8 +1289,6 @@ WALLPAPER
   BREF : Collection of {{Wallpapers|Wallpaper}} related to {{Nataniev}} and {{Horaire}}.
   TYPE : Diary
 
-~ Neauismetica
-
 NEAUISMETICA
   UNDE : Research
   TYPE : Archive
@@ -1355,8 +1341,6 @@ SOIES
     & The Soies model makes available the first values to exist beyond the limits of the current possible space, making computeable the location of the occuring, machines can then position themselves to execute the occuring and position themselves along the {{Soies}}. 
     & This line of research is tied to the discovery of the {{Ehrivevnv}}.
 
-~ DINAISTH
-
 DINAISTH
   UNDE : Neauismetica
   TYPE : Archive
@@ -1394,8 +1378,6 @@ DUOMO
 DILITRIELTH
   UNDE : Dinaisth
   BREF : Todo.
-
-~ CHARACTERS
 
 CHARACTERS
   UNDE : Neauismetica
@@ -1435,8 +1417,6 @@ PARADICHLORISSE
   LONG
     & Upon reaching its location, pilgrims collapse as they begin experiencing {_every life and every death_} through the {{speech|Nohlxeserre}} of the infinite being. {_When Paradichlorisse spoke of silence, silence fell._}
 
-~ Photography
-
 PHOTOGRAPHY
   UNDE : Visual
   BREF : The {{Photography}} Portal collects various albums over multiple mediums.
@@ -1465,8 +1445,6 @@ INFRARED
   UNDE : Photography
   BREF : The {{Infrared}} album contains photographs taken with an old modified Nikon D3000 camera.
   TYPE : Diary
-
-~ Travel
 
 TRAVEL
   UNDE : Photography
@@ -1519,8 +1497,6 @@ NIUE
   LONG
     & {{Niue}} is a small but incredibly beautiful island in the {{South Pacific}} to which we sailed in July of 2017. Here are some of its sights.
 
-~ Drownspire
-
 DROWNSPIRE
   UNDE : Hundred rabbits
   BREF : {{Drownspire}} was the name of an online store founded with {{Rekka Bellum|Rekka}}, back in 2009. 
@@ -1541,8 +1517,6 @@ VAMBITS
   TYPE : Diary
   LINK
     https://github.com/hundredrabbits/Vambits
-
-~ Shorts
 
 NOTES
   UNDE : Research
@@ -1619,8 +1593,6 @@ TALK
   LINK
     https://github.com/neauoire/Talk-Amaze
 
-~ Gamme
-
 GAMME
   UNDE : Research
   TYPE : Archive
@@ -1640,8 +1612,6 @@ NATANIEV
     & This website, and many others, are served by a web platform named {{Nataniev}}. Their design and much of their visual and audio content is also created with {{software}} built within the platform, following its ecosystem's ideologies.
   LINK
     https://github.com/XXIIVV/Nataniev
-
-~ 412 417 411
 
 LOBBY
   UNDE : Suite
@@ -1844,8 +1814,6 @@ DIRECTORY
   LINK
     https://github.com/XXIIVV/vessel.oscean/blob/master/memory/directory.mh
 
-~ Language
-
 LANGUAGE
   UNDE : Obliques
   TYPE : Archive false
@@ -1906,8 +1874,6 @@ DEVINE LU LINVEGA
     https://twitter.com/neauoire/media
     https://github.com/neauoire
 
-~ Equipment
-
 DEATH
   UNDE : Devine lu linvega
   BREF : The {{Death}} loading.
@@ -1919,8 +1885,6 @@ DEATH
   BREF : Are we there yet? Nope.
   LONG
     & This is probably meant as a joke, but in some grim ways, it paints a harsher truth than {{Death}}.
-
-~ Redirects
 
 TRAUMAE
   UNDE : Null
@@ -2003,8 +1967,6 @@ YEARLY
   BREF : Sailing across the {{South Pacific}} Ocean.
   TYPE : calendar
 
-~ Archives
-
 RUBY RIDING HOOD
   UNDE : Archives
   BREF : Inspired by a talk with a friend about Steven Pinker's The Language Instincs, I decided to try and translate Leanne Guenther's {{Little Red Riding Hood|http://www.dltk-teach.com/rhymes/littlered/story.htm}} into Ruby.
@@ -2014,7 +1976,6 @@ RUBY RIDING HOOD
   LINK
     https://gist.github.com/neauoire/9beee5e555615e0003d194548c158979
     http://en.wikipedia.org/wiki/The_Language_Instinct
-
 
 FIRST WAVE
   UNDE : Archives

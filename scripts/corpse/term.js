@@ -7,15 +7,14 @@ function Term(name,memory)
   this.diary = null;
   this.children = [];
   this.parent = null;
+  this.logs = [];
+  this.bref = this.memory && this.memory.bref ? new Runic().markup(this.memory.bref) : "Missing";
+  this.long = this.memory && this.memory.long ? new Runic(this.memory.long).html : "Missing";
 
   this.start = function()
   {
     this.links = this.memory.link ? this.memory.link : [];
-    this.logs = invoke.vessel.horaire.find("term",this.name.toLowerCase() == "home" ? "*" : this.name);
     this.diaries = this.find_diaries();
-
-    this.bref = this.memory && this.memory.bref ? new Runic().markup(this.memory.bref) : "Missing";
-    this.long = this.memory && this.memory.long ? new Runic(this.memory.long).html : "Missing";
   }
 
   this.find_diaries = function()

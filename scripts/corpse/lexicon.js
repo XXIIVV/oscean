@@ -5,13 +5,21 @@ function Lexicon(memory)
 
   this.start = function()
   {
-    // Create terms
+    this.add_terms();
+    this.connect_terms();
+  }
+
+  this.add_terms = function()
+  {
     for(name in this.memory.hash){
       var entry = new Term(name,this.memory.hash[name]);
       this.terms[name.toLowerCase()] = entry;
     }
-    console.log("Added "+Object.keys(this.terms).length+" terms.")
-    
+    console.info("Added "+Object.keys(this.terms).length+" terms.")
+  }
+
+  this.connect_terms = function()
+  {
     for(name in this.terms){
       var term = this.terms[name];
       var parent = term.memory.unde ? this.terms[term.memory.unde.toLowerCase()] : null;
@@ -24,6 +32,13 @@ function Lexicon(memory)
         console.warn("Missing parent:("+term.memory.unde+" for "+term.name+")")
       }
     }
+  }
+
+  this.inject_log = function(log)
+  {
+    if(!log.term){ return; }
+    if(!this.terms[log.term.toLowerCase()]){ console.warn("Missing term",log.term); return; }
+    this.terms[log.term.toLowerCase()].logs.push(log)
   }
   
   this.find = function(key = "Home")
