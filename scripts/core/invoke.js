@@ -6,6 +6,7 @@ function Invoke(name)
   this.includes = {};
   this.is_owner = false;
   this.vessel = null;
+  this.storage = {};
 
   this.summon = function()
   {
@@ -31,9 +32,10 @@ function Invoke(name)
     document.getElementsByTagName('head')[0].appendChild(s);
   }
 
-  this.seal = function(type,name)
+  this.seal = function(type,name,payload = null)
   {
     console.log("seal."+type,name)
+    if(payload){ this.storage[name] = payload; }
     this.includes[type].push(name);
     this.verify();
   }

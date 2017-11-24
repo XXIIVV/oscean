@@ -9,6 +9,7 @@ function Term(name,memory)
 
   this.start = function()
   {
+    this.links = this.memory.link ? this.memory.link : [];
     this.logs = invoke.vessel.horaire.find("term",this.name.toLowerCase() == "home" ? "*" : this.name);
     this.diaries = this.find_diaries();
     this.children = this.memory ? invoke.vessel.lexicon.find_any("unde",this.name) : [];
@@ -46,21 +47,32 @@ function Term(name,memory)
   {
     var html = "";
 
+    if(this.links){
+      var link_html = ""
+      for(id in this.links){
+        var link = this.links[id]
+        link_html += "<ln><a href='"+link+"'>"+this.format_link(link)+"</a></ln>"
+      }
+      html += "<list>"+link_html+"</list>"
+    }
+
     if(this.parent && this.parent.name != this.name){
+      var tree_html = ""
       this.parent.start();
-      html += "<ln><a class='parent' href='"+this.parent.name+"'>"+this.parent.name.capitalize()+"</a></ln>"
+      tree_html += "<ln><a class='parent' href='"+this.parent.name+"'>"+this.parent.name.capitalize()+"</a></ln>"
       for(id in this.parent.children){
         var term = this.parent.children[id]
-        html += "<ln><a class='sibling "+(term.name.toLowerCase() == this.name.toLowerCase() ? 'active' : '')+"' href='"+term.name+"'>"+term.name.capitalize()+"</a></ln>"
+        tree_html += "<ln><a class='sibling "+(term.name.toLowerCase() == this.name.toLowerCase() ? 'active' : '')+"' href='"+term.name+"'>"+term.name.capitalize()+"</a></ln>"
         if(term.name.toLowerCase() == this.name.toLowerCase()){
           for(id in this.children){
             var term = this.children[id];
-            html += "<ln><a class='children' href='"+term.name+"'>"+term.name.capitalize()+"</a></ln>"
+            tree_html += "<ln><a class='children' href='"+term.name+"'>"+term.name.capitalize()+"</a></ln>"
           }
         }
       }
+      html += "<list>"+tree_html+"</list>"
     }
-    return "<list>"+html+"</list>";
+    return html;
   }
 
   this.location = function()
@@ -89,9 +101,21 @@ function Term(name,memory)
   {
     var html = "";
 
-    html += "<a href='"+this.name+"'><photo style='background-image:"+this.photo()+"'></photo></a>"
+    html += "<a href='"+this.name+"' style='background-image:"+this.photo()+"' class='photo'></a>"
     html += "<p>"+this.bref+"</p>";
     return "<yu class='term'>"+html+"</yu>";
+  }
+
+  this.format_link = function(path)
+  {
+    if(path.indexOf("itch.io") > -1){ return "Itch.io"}
+    if(path.indexOf("github") > -1){ return "Github"}
+    if(path.indexOf("itunes") > -1){ return "iTunes"}
+    if(path.indexOf("youtu") > -1){ return "Youtube"}
+    if(path.indexOf("bandcamp") > -1){ return "Bandcamp"}
+    if(path.indexOf("drive.google") > -1){ return "Google Drive"}
+
+    return "Website"
   }
 
   // Views
@@ -105,6 +129,13 @@ function Term(name,memory)
       html += term.preview();
     }
     return html;
+  }
+
+  this._docs = function()
+  {
+    var content = invoke.vessel.storage[this.name];
+    if(!content){ return "Missing:"+this.name; }
+    return content.html;
   }
 }
 

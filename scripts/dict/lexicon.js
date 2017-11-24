@@ -5,7 +5,7 @@ HOME
   LONG
     & This wiki provides documentation and narrative context for the various {{Audio}}, {{Visual}} and {{Research}} projects of multimedia developer {{Devine Lu Linvega}}. If this is your first time around, a good place to begin your exploration is the {{Diary}}.
   LINK
-    TWIT : https://twitter.com/neauoire
+    https://twitter.com/neauoire
 
 ~ Sectors
 
@@ -57,8 +57,8 @@ DICTIONARISM
     - Librarism
     - Helplessism
   LINK
-    TWTR : https://twitter.com/dictionarism
-    GITH : https://github.com/XXIIVV/vessel.dictionarism
+    https://twitter.com/dictionarism
+    https://github.com/XXIIVV/vessel.dictionarism
 
 GLOSSOLALIARIUM
   UNDE : Automatons
@@ -70,8 +70,8 @@ GLOSSOLALIARIUM
     - Centblastbileian: Relating to one who loves the hundred primitives.
     - Ferdynletoid: Resembling version of bear energy.
   LINK
-    TWTR : https://twitter.com/Glossolaliarium
-    GITH : https://github.com/XXIIVV/vessel.glossolaliarium
+    https://twitter.com/Glossolaliarium
+    https://github.com/XXIIVV/vessel.glossolaliarium
 
 ADVENT V
   UNDE : Automatons
@@ -80,8 +80,8 @@ ADVENT V
     & Players are invited to tell Advent where to go in a choice of locations from a previous tweet.
     ? The project is currently under development.
   LINK
-    TWTR : https://twitter.com/adventvrecall
-    GITH : https://github.com/XXIIVV/vessel.adventv
+    https://twitter.com/adventvrecall
+    https://github.com/XXIIVV/vessel.adventv
 
 DESKTOP
   UNDE : Interactive
@@ -98,8 +98,8 @@ PURGATEUS
     - Replace the {*/resources*} folder with the downloaded package.
     - On OS X, right-click on Proteus, {*Show Package Content*}.
   LINK
-    BAND : https://aliceffekt.bandcamp.com/album/purgateus
-    DRIV : https://drive.google.com/open?id=0B24klRuG3GLNMnVuVWUzY3NxT2c
+    https://aliceffekt.bandcamp.com/album/purgateus
+    https://drive.google.com/open?id=0B24klRuG3GLNMnVuVWUzY3NxT2c
   TYPE : Diary
 
 DONSOL
@@ -145,8 +145,8 @@ DILUVIUM
     - Options better presented, no more accidental enter key press
     - Escape key quits to splash
   LINK
-    YOUT : http://youtu.be/z7NNBzNXncw
-    GITH : https://github.com/Collegiennes/diluvium
+    http://youtu.be/z7NNBzNXncw
+    https://github.com/Collegiennes/diluvium
 
 DODECAE
   UNDE : Supervisitor
@@ -154,14 +154,14 @@ DODECAE
   LONG
     & {{XXIIVV|http://xxiivv.com}} will present live experimental music performances from {{Adversary|http://tympanikaudio.com/releases/ta025}}, {{Ilkae|https://ilkae.bandcamp.com}}, {{Dualryan|https://dualryan.bandcamp.com}} and {{Aliceffekt|https://aliceffekt.bandcamp.com}} alongside the visualists {{Nonante|http://theinstructionlimit.com}} and {{Melesul3|http://www.pocaille.com}}, following the yearly <a href=‘https://bentomiso.com/bit-bazaar-winter-market-2014/’>Bit Bazzar</a> market on {_December 6th, 2014_}.
   LINK
-    FCBK : Event|https://www.facebook.com/events/558238014277230/?fref=ts
+    Event|https://www.facebook.com/events/558238014277230/?fref=ts
 
 DOMESTIC MOIRE
   UNDE : Ar moire
   BREF : Look into it as it gaze back into you.
   LINK
-    GITH : https://github.com/neauoire/DomesticMoire
-    ITCH : http://aliceffekt.itch.io/domestic-moire
+    https://github.com/neauoire/DomesticMoire
+    http://aliceffekt.itch.io/domestic-moire
 
 EFLI
   UNDE : Eschatolor
@@ -173,11 +173,11 @@ ES GULF SUNFLOWERS
   UNDE : Neauismetic
   BREF : {{Es Gulf Sunflowers}} tale remembers the gorgeous sunken fields of {{Es|Dinaisth}} - the underwater jump gate to {{Dinaisth}}, for its vast ocean terrace and display of sunflowers.
   LINK
-    BAND : https://aliceffekt.bandcamp.com/album/es-gulfssunflowers
+    https://aliceffekt.bandcamp.com/album/es-gulfssunflowers
 
 DISCOGRAPHY
   UNDE : Audio
-  TYPE : Memory
+  TYPE : Docs
   BREF : The collected {{Discography}} from 2006 to now.
 
 ALICEFFEKT
@@ -197,13 +197,13 @@ DAMOISEAU CANALX
     & The album was composed as side project while working on {{Ten Axitecture}} and includes bits and pieces from {{Blam}}.
     @ discography damoiseau canalx
   LINK
-    BAND : https://aliceffekt.bandcamp.com/album/damoiseau-canalx
+    https://aliceffekt.bandcamp.com/album/damoiseau-canalx
 
 HEX HIVE NECKLACE
   UNDE : Physical
   BREF : A small design necklace, looks great in black.
   LINK
-    SITE : http://www.thingiverse.com/thing:18853
+    http://www.thingiverse.com/thing:18853
 
 REKKA
   UNDE : Hundred rabbits
@@ -211,7 +211,7 @@ REKKA
   LONG
     & Rekka is also the illustrator of {{Oquonie}}, manager of {{Grimgrains}} and was founder of {{Drownspire}}.
   LINK
-    OFFI : http://kokorobot.ca/
+    http://kokorobot.ca/
 
 WIKTOPHER
   UNDE : Hundred rabbits
@@ -221,7 +221,7 @@ WIKTOPHER
     & Together, they learn the inumerable ways of the world, traversing deserts and villages, meeting their inhabitants and discovering their customs.
     & The novel is written {_entirely without genders_}, and will be released as audiobooks, ebooks and paperbacks.
   LINK
-    TWIT : https://twitter.com/RekkaBell
+    https://twitter.com/RekkaBell
 
 HUNDRED RABBITS
   UNDE : Devine lu linvega
@@ -231,8 +231,8 @@ HUNDRED RABBITS
   LONG
     & This partnership is host to interactive projects like {{Oquonie}}, {{Grimgrains|http://grimgrains.com}} and travel diaries. A {{Patreon page|https://www.patreon.com/100}} is available to help fund the production of monthly videos and liveaboard documentation.
   LINK
-    PATR : https://patreon.com/100
-    TWTR : https://twitter.com/hundredrabbits
+    https://patreon.com/100
+    https://twitter.com/hundredrabbits
 
 PINO
   UNDE : Hundred rabbits
@@ -241,8 +241,8 @@ PINO
   LONG
     & Purchased in 2016, on Vancouver Island, Pino has since sailed across the {{Pacific Ocean|South Pacific}}. You can learn more about the boat {{here|http://github.com/hundredrabbits/pino}}.
   LINK
-    GITH : http://github.com/hundredrabbits/pino
-    PATR : https://patreon.com/100
+    http://github.com/hundredrabbits/pino
+    https://patreon.com/100
 
 INSTRUMENT
   UNDE : Pino
@@ -252,7 +252,7 @@ INSTRUMENT
     & The application displays various data about the course, speed, location and time. Its original purpose was to help with night sailing where the compass and some of our sailing instruments were hard to see.
     & Touching the screen toggles {_night mode_}, in which the displays becomes red.
   LINK
-    GITH : http://github.com/hundredrabbits/Instrument
+    http://github.com/hundredrabbits/Instrument
 
 GRIMGRAINS
   UNDE : Hundred rabbits
@@ -260,13 +260,13 @@ GRIMGRAINS
   LONG
     & Started in the fall of 2014, the goal of the site is to document interesting food and lifestyle experiments.
   LINK
-    MAIN : http://grimgrains.com/
-    TWTR : https://twitter.com/grimgrains
+    http://grimgrains.com/
+    https://twitter.com/grimgrains
 
 BRANDING
   UNDE : Visual
   BREF : The {{Branding}} base is a collection of major icons of the {{Nataniev}} ecosystem.
-  TYPE : Memory
+  TYPE : Docs
 
 ILLUSTRATION
   UNDE : Visual
@@ -301,12 +301,12 @@ MALICE
 COLLECTED WORKS
   UNDE : Malice
   BREF : {{Collected Works}} between 2008 and 2015, written as {{Malice}}.
+  TAGS : Discography
   LONG
     & This release includes the complete {*Storm Transit record*}, hidden {{Malice}} tracks from {{Aliceffekt}} releases and the {{Merveilles Portable}} soundtrack.
     @ discography collected works
   LINK
-    BAND : https://gaii.bandcamp.com/
-  TAGS : Discography
+    https://gaii.bandcamp.com/
 
 UNRELEASED
   UNDE : Interactive
@@ -329,7 +329,7 @@ BLINDFOLK
     & It was first created in the span of 48 hours for {{Global Game Jam 2016|http://globalgamejam.org}}. The game was very active but soon became too time-consuming to maintain and keep alive. 
     & This design has been revisited in {{Markl}}.
   LINK
-    GITH : https://github.com/XXIIVV/vessel.blindfolk
+    https://github.com/XXIIVV/vessel.blindfolk
 
 TRIMETRIQUE
   UNDE : Unreleased
@@ -362,8 +362,8 @@ BELDAM RECORDS
   TYPE : Portal
   TAGS : Portal
   LINK
-    BAND : https://beldamrecords.bandcamp.com
-    TWTR : https://twitter.com/beldamrecords
+    https://beldamrecords.bandcamp.com
+    https://twitter.com/beldamrecords
 
 TEN AXITECTURE
   UNDE : Beldam records
@@ -373,7 +373,7 @@ TEN AXITECTURE
     * Tracklist
     @ discography ten axitecture
   LINK
-    BAND : https://aliceffekt.bandcamp.com/album/ten-axitecture
+    https://aliceffekt.bandcamp.com/album/ten-axitecture
 
 MINISCOPIE
   UNDE : Beldam records
@@ -382,8 +382,8 @@ MINISCOPIE
     & Written by {{Reine|http://noirmirroir.com}}, this album combines ambient and deep IDM flavoured sounds. The album is the first music release from Elodie, who also created the {{Vast}} book.
     @ discography miniscopie
   LINK
-    BAND : https://beldamrecords.bandcamp.com/album/miniscopie
-    ITUN : https://itunes.apple.com/us/album/miniscopie-ep/id956624857
+    https://beldamrecords.bandcamp.com/album/miniscopie
+    https://itunes.apple.com/us/album/miniscopie-ep/id956624857
 
 RAMIEL
   UNDE : Beldam records
@@ -392,8 +392,8 @@ RAMIEL
     & Written by {{Villa Moirai|https://beldamrecords.bandcamp.com}}, this album is an even mixture and techno and idm. The album name and cover are a tribute to the geometric angel of the Evangelion anime series.
     @ discography ramiel
   LINK
-    BAND : https://beldamrecords.bandcamp.com/album/ramiel
-    ITUN : https://itunes.apple.com/us/album/ramiel-ep/id958562173
+    https://beldamrecords.bandcamp.com/album/ramiel
+    https://itunes.apple.com/us/album/ramiel-ep/id958562173
 
 ESCHATOLOR
   UNDE : Beldam records
@@ -402,8 +402,8 @@ ESCHATOLOR
     & Written by Катя Тевелизион, this album was inspired from russian number stations.
     & It was recorded playing through the FM band, from the {{EFLI}} 103.0Mhz pirate radio station in Montreal, giving it its texture and warmth.
   LINK
-    BAND : https://tevelision.bandcamp.com/album/eschatolor
-    ITUN : iTunes|https://itunes.apple.com/ca/album/eschatolor/id1000241341
+    https://tevelision.bandcamp.com/album/eschatolor
+    iTunes|https://itunes.apple.com/ca/album/eschatolor/id1000241341
 
 LOOKING GLACE
   UNDE : Beldam records
@@ -412,8 +412,8 @@ LOOKING GLACE
     & Painting a harsher, and more complete picture of her acoustic universe where the liquid sounds and suffocating vocoder are incessantly present.
     @ discography looking glace
   LINK
-    BAND : https://beldamrecords.bandcamp.com/album/looking-glace
-    ITUN : https://itunes.apple.com/ca/album/looking-glace-ep/id1034127266
+    https://beldamrecords.bandcamp.com/album/looking-glace
+    https://itunes.apple.com/ca/album/looking-glace-ep/id1034127266
    
 VERRECIEL SOUNDTRACK
   UNDE : Beldam records
@@ -421,7 +421,7 @@ VERRECIEL SOUNDTRACK
   LONG
     @ discography verreciel soundtrack
   LINK
-    BAND : https://aliceffekt.bandcamp.com/album/verreciel
+    https://aliceffekt.bandcamp.com/album/verreciel
 
 GETAPAN 728K
   UNDE : Beldam records
@@ -430,7 +430,7 @@ GETAPAN 728K
     & This new release explores a region of frigid dubs yet uncharted by {{Beldam Records}}. Not much is known about 死サイコロ, their name is {_Shi Seikoro_}, or {*Death Dice*}.
     @ discography GETAPAN 728K
   LINK
-    BAND : https://beldamrecords.bandcamp.com/album/728k
+    https://beldamrecords.bandcamp.com/album/728k
 
 MIXTAPE
   UNDE : Audio
@@ -439,7 +439,7 @@ MIXTAPE
   LONG
     & Some of the tracklists were lost, feel free to contact me if you need to find the name of a specific track. The entire collection is available {{here|https://drive.google.com/folderview?id=0B24klRuG3GLNam56My1Va1RfSU0&usp=sharing}} while the individual tracklists can be seen bellow.
   LINK
-    DRIV : https://drive.google.com/folderview?id=0B24klRuG3GLNam56My1Va1RfSU0&usp=sharing
+    https://drive.google.com/folderview?id=0B24klRuG3GLNam56My1Va1RfSU0&usp=sharing
 
 GROT
   UNDE : Mixtape
@@ -461,7 +461,7 @@ GROT
     - HTRK - Body Double
     - Sexy Sushi - Je ne suis pas satisfaite du tout
   LINK
-    DRIV : https://drive.google.com/open?id=0B24klRuG3GLNaW1LUFJfWEpzMGs
+    https://drive.google.com/open?id=0B24klRuG3GLNaW1LUFJfWEpzMGs
 
 QUERY
   UNDE : Mixtape
@@ -481,7 +481,7 @@ QUERY
     - Akkord - Channel Drift
     - Aliceffekt - A Thousand Times Parix
   LINK
-    DRIV : https://drive.google.com/open?id=0B24klRuG3GLNdms0UkR1ZUdQNlk
+    https://drive.google.com/open?id=0B24klRuG3GLNdms0UkR1ZUdQNlk
 
 SOMBRE
   UNDE : Mixtape
@@ -504,7 +504,7 @@ SOMBRE
     - Jóhann Jóhannsson - Part II
     - J.A.シーザー - 慈悲心鳥
   LINK
-    DRIV : https://drive.google.com/open?id=0B24klRuG3GLNU0RLUGZWaWxON3c
+    https://drive.google.com/open?id=0B24klRuG3GLNU0RLUGZWaWxON3c
 
 MOBILE
   UNDE : Interactive
@@ -520,9 +520,9 @@ BIFURCAN
     & If you have a {{Pebble Watch|https://getpebble.com}}, you can download it as a {{watchface|http://www.mypebblefaces.com/apps/10183/7055/}}, the Pebble C script was written by Chase Colburn and is also available on {{Github|https://github.com/chasecolburn/line-maze}}. The screensaver version was done by {{Tekgo|http://tekgo.org}} and was also added to the source code.
     & Named after a {{Borges short||http://en.wikipedia.org/wiki/The_Garden_of_Forking_Paths}}.
   LINK
-    ITUN : https://itunes.apple.com/ca/app/bifurcan/id737264896
-    GITH : https://github.com/Echorridoors/Bifurcan
-    PEBL : Pebble|http://www.mypebblefaces.com/apps/10183/7055/
+    https://itunes.apple.com/ca/app/bifurcan/id737264896
+    https://github.com/Echorridoors/Bifurcan
+    Pebble|http://www.mypebblefaces.com/apps/10183/7055/
 
 LEDOLIEL
   UNDE : Mobile
@@ -531,8 +531,8 @@ LEDOLIEL
   LONG
     & Procedural creatures and their bizarre customs, where you must try and figure out what topics they might want to discuss, gift they might want to receive and places they may like to be touched - based on their cryptic attributes.
   LINK
-    ITUN : https://itunes.apple.com/us/app/ledoliel/id891693763
-    GITH : https://github.com/Echorridoors/Ledoliel
+    https://itunes.apple.com/us/app/ledoliel/id891693763
+    https://github.com/Echorridoors/Ledoliel
 
 KEYBOARD 468
   UNDE : Mobile
@@ -543,8 +543,8 @@ KEYBOARD 468
     * Privacy Policy
     & This policy exists to inform you that the keyboard does not record, save, harvest or send any data of any type. The application, and its keyboard extension is self contained and does not keep any data. The active {{source code|https://github.com/Echorridoors/Keyboard468}} is also available to demonstrate that the keyboard does not hold onto your content.
   LINK
-    ITUN : https://itunes.apple.com/ca/app/468-keyboard/id954698999
-    GITH : https://github.com/Echorridoors/Keyboard468
+    https://itunes.apple.com/ca/app/468-keyboard/id954698999
+    https://github.com/Echorridoors/Keyboard468
 
 HIVERSAIRES
   UNDE : Mobile
@@ -554,8 +554,8 @@ HIVERSAIRES
     & Hiversaires is the first part of a series of textless games, that also includes the isometric adventure {{Oquonie}}.
     & The dark world of Hiversaires features an original {{Aliceffekt|https://aliceffekt.bandcamp.com/album/hiversaires-soundtrack}} soundtrack to lure you through its entangled corridors.
   LINK
-    ITUN : https://itunes.apple.com/au/app/hiversaires/id630992348
-    GITH : https://github.com/Echorridoors/hiversaires
+    https://itunes.apple.com/au/app/hiversaires/id630992348
+    https://github.com/Echorridoors/hiversaires
 
 ENTALONERALIE
   UNDE : Mobile
@@ -564,8 +564,8 @@ ENTALONERALIE
   LONG
     & The {{Entaloneralie}} watchface displays the Nataniev's {{Clock|Desamber}}. Where the {_needles_} are ratios of each other. They animate horizontaly and vertically to draw each digit of the current time.
   LINK
-    ITUN : https://itunes.apple.com/us/app/entaloneralie/id657224738
-    GITH : https://github.com/Echorridoors/Entaloneralie
+    https://itunes.apple.com/us/app/entaloneralie/id657224738
+    https://github.com/Echorridoors/Entaloneralie
 
 DEW
   UNDE : Mobile
@@ -574,8 +574,8 @@ DEW
   LONG
     & The application will then  wake you with a soft white noise tone that will gradually bring you back to reality.
   LINK
-    ITUN : https://itunes.apple.com/ca/app/dew/id954020907
-    GITH : https://github.com/Echorridoors/dew
+    https://itunes.apple.com/ca/app/dew/id954020907
+    https://github.com/Echorridoors/dew
 
 ALPHAVETIST
   UNDE : Mobile
@@ -584,8 +584,8 @@ ALPHAVETIST
   LONG
     & Currently included are the Hebrew, Cyrillic, Korean, Inuktitut, Greek, Morse and Japanese alphabets.
   LINK
-    ITUN : https://itunes.apple.com/ca/app/hahapapa/id689193147
-    GITH : https://github.com/Echorridoors/alphavetist
+    https://itunes.apple.com/ca/app/hahapapa/id689193147
+    https://github.com/Echorridoors/alphavetist
 
 VOCAVULARIST
   UNDE : Mobile
@@ -594,8 +594,8 @@ VOCAVULARIST
   LONG
     & It contains the 600 first kanji, 600 simple Russian words and 800 simple korean expressions.
   LINK
-    ITUN : https://itunes.apple.com/us/app/nijuniju/id686266543
-    GITH : https://github.com/Echorridoors/Vocavularist
+    https://itunes.apple.com/us/app/nijuniju/id686266543
+    https://github.com/Echorridoors/Vocavularist
 
 NOIRCA
   UNDE : Mobile
@@ -604,15 +604,15 @@ NOIRCA
   LONG
     & The app has one purpose, to launch quickly and render the photos with a softly washed out B&W film quality.
   LINK
-    ITUN : https://itunes.apple.com/us/app/noirca/id893715212
-    GITH : https://github.com/Echorridoors/noirca
+    https://itunes.apple.com/us/app/noirca/id893715212
+    https://github.com/Echorridoors/noirca
 
 RAFINOGRADE
   UNDE : Mobile
   BREF : {{Rafinograde}} is a minimalist sketching application, a distraction.
   LINK
-    ITUN : https://itunes.apple.com/us/app/rafinograde/id951781579
-    GITH : https://github.com/Echorridoors/Rafinograde
+    https://itunes.apple.com/us/app/rafinograde/id951781579
+    https://github.com/Echorridoors/Rafinograde
 
 VERRECIEL
   UNDE : Desktop
@@ -622,8 +622,8 @@ VERRECIEL
     & The game joins the sequence of linguistically involved projects like {{Paradise}}, {{Hiversaires}} and {{Oquonie}}. 
     & An {{original soundtrack|Verreciel Soundtrack}} was created for the game and released on {{Beldam Records}}.
   LINK
-    ITCH : https://hundredrabbits.itch.io/verreciel
-    GITH : https://github.com/Echorridoors/Verreciel
+    https://hundredrabbits.itch.io/verreciel
+    https://github.com/Echorridoors/Verreciel
 
 COLOUR
   UNDE : Artwork
@@ -641,7 +641,7 @@ ABLETON
     & To Install it on OS X, simply right click on the Live Icon and select {*Show Package Content*} and paste the skin file {_XXIIVV.ask_} in the skin folder.
     & I was disapointed to the see the hugly Ableton Live 9 Standard blue icon, so I designed a new one and packaged it along with the theme.
   LINK
-    DRIV : https://drive.google.com/open?id=0B24klRuG3GLNMFdKNEFDd01LZTQ
+    https://drive.google.com/open?id=0B24klRuG3GLNMFdKNEFDd01LZTQ
 
 NEREID
   UNDE : Illustration
@@ -672,8 +672,6 @@ POLYGORE
 OCCULTER
   UNDE : Physical
   BREF : {{Occulter}} is a 3d printed shape inspired by the logo of a boutique I admire and that sells {{black things|http://occulter.org}}.
-  LONG
-    & 
 
 MARKL
   UNDE : Desktop
@@ -684,7 +682,7 @@ MARKL
     % markl.characters
     & The game will be released as {{Hundred Rabbits}} late 2017, or early 2018, for all desktop platforms.
   LINK
-    GITH : https://github.com/hundredrabbits/Markl
+    https://github.com/hundredrabbits/Markl
 
 OQUONIE
   UNDE : Desktop
@@ -693,10 +691,10 @@ OQUONIE
     & You will not be alone, your incarnations will have the help of {*bizaroid*} characters speaking {{an obscure language|Camilare}}. Oquonie features an original {{soundtrack|Oquonie Soundtrack}} and was best described as {_{{Animal Crossing in a K-Hole|http://killscreendaily.com/articles/oquonie-maze-worth-entering/}}_}.
     ? Find help in the {{Oquonie Guide}}.
   LINK
-    ITCH : https://hundredrabbits.itch.io/oquonie
-    ITUN : https://itunes.apple.com/us/app/oquonie/id819777958
-    GITH : https://github.com/hundredrabbits/Oquonie
-    YOUT : https://youtu.be/mepnp69qI64
+    https://hundredrabbits.itch.io/oquonie
+    https://itunes.apple.com/us/app/oquonie/id819777958
+    https://github.com/hundredrabbits/Oquonie
+    https://youtu.be/mepnp69qI64
 
 OQUONIE GUIDE
   UNDE : Oquonie
@@ -736,8 +734,8 @@ BABELIUM
     & Begin by finding the {_guide_}({*g*}), in every second hexagon, the guide will tell you things to look for. If you find yourself to be walking rather slowly, find the closet in which you can sleep standing up.
     ? The game is currently in open beta, if you find any issue, add it to the github repository below.
   LINK
-    SITE : http://100r.co/projects/babelium/index.html
-    GITH : https://github.com/Echorridoors/Babelium
+    http://100r.co/projects/babelium/index.html
+    https://github.com/Echorridoors/Babelium
 
 THE SIXTH SEASON
   UNDE : Neauismetic
@@ -747,7 +745,7 @@ THE SIXTH SEASON
     & This album established the sound that {{Aliceffekt}} decided to persue for the {{Neauismetic}} releases.
     @ discography the sixth season
   LINK
-    BAND : http://aliceffekt.bandcamp.com/album/orchestrate-the-sixth-season
+    http://aliceffekt.bandcamp.com/album/orchestrate-the-sixth-season
 
 PHYSICAL
   UNDE : Visual
@@ -812,7 +810,7 @@ RING OF SCALES
   UNDE : Physical
   BREF : A large ring I made to learn about 3d printing.
   LINK
-    SITE : http://www.thingiverse.com/thing:19152
+    http://www.thingiverse.com/thing:19152
 
 NEAUISMETIC
   UNDE : Aliceffekt
@@ -829,7 +827,7 @@ VETETRANDES LETTRES
     & The album is part of {{Aliceffekt}}'s {{Neauismetic}} albums.
     @ discography Vetetrandes Lettres    
   LINK
-    BAND : http://aliceffekt.bandcamp.com/album/vetetrandes-lettres-perdues
+    http://aliceffekt.bandcamp.com/album/vetetrandes-lettres-perdues
 
 FROM SAHARAPHOREST
   UNDE : Neauismetic
@@ -838,7 +836,7 @@ FROM SAHARAPHOREST
     & The album was recorded as it played through cassette tapes. The first 3 tracks are ripped from cassette tapes, and the last one is a single clean mastered version. Five tapes were made and given to fans at shows as artworks.
     & This release is related to {{Vert Kirlian Theatre}} album, released in 2008.
   LINK
-    BAND : http://aliceffekt.bandcamp.com/album/19th-month-from-saharaphorest-to-duomo
+    http://aliceffekt.bandcamp.com/album/19th-month-from-saharaphorest-to-duomo
 
 EHRIVEVNV STUDIES
   UNDE : Neauismetic
@@ -849,7 +847,7 @@ EHRIVEVNV STUDIES
     # ami -> vloks  -> Ihom  -> ykim -> w
     & Following are the resulting transformations using the previous encryption.
   LINK
-    BAND : https://aliceffekt.bandcamp.com/album/the-ehrivevnv-studies-reissue
+    https://aliceffekt.bandcamp.com/album/the-ehrivevnv-studies-reissue
 
 TELEKINETIC
   UNDE : Neauismetic
@@ -858,7 +856,7 @@ TELEKINETIC
     & The event was recorded and can still be watched online on <a href="http://www.ustream.tv/recorded/39105185">UStream</a>. There was a <a href="http://www.cnet.com.au/dj-turns-leap-motion-into-a-theremin-sort-of-339345563.htm">short article on CNET</a> about the event as well. The album cover features an alternate door to {{Nataniev}}'s Library of Sand ornated of the number 210 in <a href='Needle+numbers'>Needle Numbers</a> as well as the {{Lietal}} letters BI, TI, TA, SI, PO.
     & You can watch a a demo of the <a href='https://www.facebook.com/photo.php?v=10153250341045274'>prototype</a>.
   LINK
-    BAND : https://aliceffekt.bandcamp.com/album/telekinetic
+    https://aliceffekt.bandcamp.com/album/telekinetic
 
 TELEKINESIS
   UNDE : Telekinetic
@@ -888,34 +886,34 @@ SOFTWARE
     & Released under {{Hundred Rabbits}}, these applications were created to be used offline, and to be easy to repair and improve while living {{Off the grid|Offline}}.
     & {{Marabu}} and {{Left}} builds are currently available on {{Itch.io|http://hundredrabbits.itch.io/}}. 
   LINK
-    ITCH : http://hundredrabbits.itch.io/
-    GITH : http://github.com/hundredrabbits
+    http://hundredrabbits.itch.io/
+    http://github.com/hundredrabbits
 
 MARABU
   UNDE : Software
   BREF : {{Marabu}} is a programmable music tracker.
+  TAGS : Guide
   LONG
     & {*Marabu*} is built as a fork to the opensource {_Soundbox_}, and is meant to be an improvement on functionalities and design.
     & You can view the complete {{Marabu Manual|https://github.com/hundredrabbits/Marabu}} on Github.
   LINK
-    GITH : https://github.com/neauoire/Marabu
-    ITCH : http://hundredrabbits.itch.io/Marabu
-  TAGS : Guide
+    https://github.com/neauoire/Marabu
+    http://hundredrabbits.itch.io/Marabu
 
 RONIN
   UNDE : Software
   BREF : {{Ronin}} is a graphic design terminal.
   LONG
     & The application is a cross-over between Vim and Photoshop, meant for simple export tasks, basic illustration jobs and resizing.
-    : The typical Ronin syntax is {*module*}, followed with {*method:params*}. In this example, the {*crop*} method is part of the frame module. While one might choose to manually input or edit the crop method parameters, Ronin makes accessible the $ helper that accesses the cursor position. With a query including the $ character, clicking on the canvas will replace the $ with a position - and holding shift while clicking and dragging will replace the $ with a rect. 
+    & The typical Ronin syntax is {*module*}, followed with {*method:params*}. In this example, the {*crop*} method is part of the frame module. While one might choose to manually input or edit the crop method parameters, Ronin makes accessible the $ helper that accesses the cursor position. With a query including the $ character, clicking on the canvas will replace the $ with a position - and holding shift while clicking and dragging will replace the $ with a rect. 
     # frame resize:640x480
     # io load:
     # io draw:20,20|100x100
     & It is  and the creation of grid based designs. Most of the iconography of {{Nataniev}} has been created with {_Ronin_}.
     & You can view the complete {{Ronin Manual|https://github.com/hundredrabbits/Ronin}} on Github.
   LINK
-    GITH : https://github.com/hundredrabbits/Ronin
-    YOUT : https://youtu.be/gifzjhyBwOc
+    https://github.com/hundredrabbits/Ronin
+    https://youtu.be/gifzjhyBwOc
 
 LEFT
   UNDE : Software
@@ -924,8 +922,8 @@ LEFT
     & {*Left*} was created to help {{Rekka}} with the writing of her upcoming novel {_Wiktopher_}.
     & You can view the complete {{Left Manual|https://github.com/hundredrabbits/Left}} on Github.
   LINK
-    GITH : https://github.com/hundredrabbits/Left
-    ITCH : http://hundredrabbits.itch.io/Left
+    https://github.com/hundredrabbits/Left
+    http://hundredrabbits.itch.io/Left
 
 DOTGRID
   UNDE : Software
@@ -935,8 +933,8 @@ DOTGRID
     & Choose between 3 types of strokes, lines, arc and 3-points beziers. The application can be entirely operated with the keyboard and can render as both PNG and SVG files. Additional effects like horizontal, vertical and radial mirror are also available - as well as the stroke width and linecap can also be changed. The application menu can be hidden by pressing the tab key.
     & You can view the complete {{Dotgrid Manual|https://github.com/hundredrabbits/Dotgrid}} on Github.
   LINK
-    GITH : https://github.com/hundredrabbits/Dotgrid
-    ITCH : http://hundredrabbits.itch.io/Dotgrid
+    https://github.com/hundredrabbits/Dotgrid
+    http://hundredrabbits.itch.io/Dotgrid
 
 UNITY
   UNDE : Interactive
@@ -949,7 +947,7 @@ SISEON
   UNDE : Unity
   BREF : {{Siseon}} is an exploration game set within a life-infested megastructure.
   LINK
-    YOUT : http://www.youtube.com/embed/es6YXGlsgxw
+    http://www.youtube.com/embed/es6YXGlsgxw
 
 ZJEVENI
   UNDE : Unity
@@ -996,17 +994,17 @@ TABLE
 DONSOL GUIDE
   UNDE : Table
   BREF : {{Donsol}}, created in collaboration with {{John Eternal|https://twitter.com/johneternal}}, is a card game about exploring a dungeon made of a standard 54 poker card set.
-  TYPE : Memory    
+  TYPE : Docs    
   LINK
-    ITUN : https://itunes.apple.com/us/app/donsol/id976367718
-    ITCH : https://hundredrabbits.itch.io/donsol/community
-    SITE : /Donsol
+    https://itunes.apple.com/us/app/donsol/id976367718
+    https://hundredrabbits.itch.io/donsol/community
+    /Donsol
   TAGS : Guide
 
 DOMINE GUIDE
   UNDE : Table
   BREF : This {{Domine Guide}} will show you how to play a simple game two player game, with dominoes.
-  TYPE : Memory
+  TYPE : Docs
   TAGS : Guide
 
 ~ Collegiennes
@@ -1028,8 +1026,8 @@ VOLKENESSEN
     & You need two gamepads (so far the Xbox wired, wireless and a Logitech generic gamepad have been tested and work) to play, there are no keyboard control fallback (yet). The controls are pretty exotic. To move around you can press either the D-Pad (or left analog stick) or the face buttons (A/B/X/Y), and the direction of the button does the same input as if you pressed that D-Pad direction. As you move, your player will throw a punch, kick or flail his ears to make you move as a result.
     & To hit the other player, you need to get close to him by hitting away from him, then hit him by moving away from him. Ramming into the opponent just doesn't do it, you need to throw punches, and depending on the impact velocity, even that might not be enough. You can throw double-punches to make sure you land a solid hit and take off an item.
   LINK
-    GITH : https://github.com/Collegiennes/volkenessen
-    YOUT : http://www.youtube.com/watch?feature=player_embedded&v=VheiqV4AuRE
+    https://github.com/Collegiennes/volkenessen
+    http://www.youtube.com/watch?feature=player_embedded&v=VheiqV4AuRE
 
 WAITING FOR HORUS
   UNDE : Unreleased
@@ -1044,8 +1042,8 @@ PICO
     - This simple game can quickly become complex based on your take on the puzzles.
     - This game requires a mouse to play.
   LINK
-    GITH : https://github.com/Collegiennes/pico
-    YOUT : http://youtu.be/kN7dUqMtIWU
+    https://github.com/Collegiennes/pico
+    http://youtu.be/kN7dUqMtIWU
 
 PICO BATTLE
   UNDE : Collegiennes
@@ -1064,7 +1062,7 @@ PICO BATTLE
     - Fixed graphical issue on arc-link shadows
     - Escape key now quits the game if pressed in the lobby
   LINK
-    GITH : https://github.com/Collegiennes/picoBattle
+    https://github.com/Collegiennes/picoBattle
 
 ~ Physical
 
@@ -1076,7 +1074,7 @@ SPOOL HOLDER
   UNDE : Physical
   BREF : This spool holder works with the <a href='http://www.pp3dp.com'>PP3DP Printer</a> and should allow you to fit a larger spool on your printer.
   LINK
-    SITE : http://www.thingiverse.com/thing:18833
+    http://www.thingiverse.com/thing:18833
 
 TARPOPHOBIA
   UNDE : Polygonoscopy
@@ -1091,12 +1089,12 @@ LAEISTHIC
 CHILDREN OF BRAMBLE
   UNDE : Laeisthic
   BREF : {{Children of Bramble}} is a {{Laeisthic}} album that contains four tracks that sings of the Oasis of {{Rlionn}} and her Children. 
+  TAGS : Discography
   LONG
     & This album begins by the Oasis of {{Laeisth}} to finally reach the castle of {{Andes}} and its sandsunken structure. This single is part of the {{Neauismetica}}, and shares some narrative concepts with {{Telekinetic}}.
     @ discography children of bramble    
   LINK
-    BAND : https://aliceffekt.bandcamp.com/album/children-of-bramble
-  TAGS : Discography
+    https://aliceffekt.bandcamp.com/album/children-of-bramble
 
 KNOWN MAGYE
   UNDE : Laeisthic
@@ -1106,18 +1104,18 @@ KNOWN MAGYE
     & The album was recorded live from {{San Fransisco|travel}}'s {*POW POW POW*} which was controlled entirely with the {{Leap Motion|https://www.leapmotion.com}}.
     @ discography known magye
   LINK
-    BAND : https://aliceffekt.bandcamp.com/album/known-magye
+    https://aliceffekt.bandcamp.com/album/known-magye
   TAGS : Discography
 
 EXTENDED SLEEP
   UNDE : Laeisthic
   BREF : {{Extended sleep}} is the {{Laeisthic}} sequel to {{Known Magye}}, a deeper exploration of its universes, its stories. 
+  TAGS : Discography
   LONG
     & The album will be first performed at the A Maze Festival in Berlin, on April 23rd 2015.
     @ discography extended sleep
   LINK
-    BAND : https://aliceffekt.bandcamp.com/album/extended-sleep
-  TAGS : Discography
+    https://aliceffekt.bandcamp.com/album/extended-sleep
 
 DUOMIC
   UNDE : Aliceffekt
@@ -1127,12 +1125,12 @@ DUOMIC
 THE OPAL INQUISITORS
   UNDE : Duomic
   BREF : {{The Opal Inquisitors}} is the first {{Duomic}} album, where {{Neonev}} departs from central {{Dinaisth}} and head through the {_{{Dei Dain}} Canals_}.
+  TAGS : Discography
   LONG
     & These recordings are photographs taken aboard the {{Vermillionth}} tunneler, traveling up the spires of {{Duomo}}.
     @ discography the opal inquisitors
   LINK
-    BAND : https://aliceffekt.bandcamp.com/album/the-opal-inquisitors
-  TAGS : Discography
+    https://aliceffekt.bandcamp.com/album/the-opal-inquisitors
 
 PORTALION
   UNDE : Duomic
@@ -1141,17 +1139,17 @@ PORTALION
     & On a foggy night of the {_Sixth Season_}, embarking on one of the vessels of the {_Septechoes_} in the desert of {_Clionn_}, {{Neonev}} sails toward {_Whiinders_} to see its {_Immortal Birds_} once more.
     @ discography portalion
   LINK
-    BAND : https://aliceffekt.bandcamp.com/album/portalion
+    https://aliceffekt.bandcamp.com/album/portalion
   TAGS : Discography
 
 DEI DAIN
   UNDE : Duomic
   BREF : {{Dei Dain}} is the third {{Duomic}} album, where {{Neonev}} travels from the desert of {{Laeisth}} to the nightly scapes of {{Dilitrielth}}.
+  TAGS : Discography
   LONG
     @ discography dei dain
   LINK
-    BAND : https://aliceffekt.bandcamp.com/album/dei-dain
-  TAGS : Discography
+    https://aliceffekt.bandcamp.com/album/dei-dain
 
 LIVES
   UNDE : Aliceffekt
@@ -1170,19 +1168,19 @@ NOR LET THE FOOLS
   UNDE : Lives
   BREF : {{Nor let the fools}} was recorded live, in Tokyo at a mashup/chiptune evening, created from unreleased materials.
   LINK
-    BAND : http://aliceffekt.bandcamp.com/album/nor-let-the-fools-mistake-love
+    http://aliceffekt.bandcamp.com/album/nor-let-the-fools-mistake-love
 
 TO THE AEONS HELL
   UNDE : Lives
   BREF : {{To the aeons hell}} was created in the spirit of {{Nor let the fools}}, being a mixture of unreleased remixes.
   LINK
-    BAND : http://aliceffekt.bandcamp.com/album/accursed-be-it-to-the-aeons-hell
+    http://aliceffekt.bandcamp.com/album/accursed-be-it-to-the-aeons-hell
 
 VERMILLIONTH
   UNDE : Lives
   BREF : {{Vermillionth}} was the recording of the live performance at the Kinetik Festival, in Montreal.
   LINK
-    BAND : https://aliceffekt.bandcamp.com/album/vermillionth
+    https://aliceffekt.bandcamp.com/album/vermillionth
 
 TIME ALLOY
   UNDE : Polygonoscopy
@@ -1198,13 +1196,13 @@ SUPERWORKER
   UNDE : Demo
   TYPE : Diary
   BREF : {{Superworker}} is an album created with the {{PO-24|https://www.teenageengineering.com/products/po}}.
+  TAGS : Discography
   LONG
     & The album contains 3 tracks created from {_over 80 sessions_}, arranged into chiptune experiments.
     @ discography superworker
     & Due to the lack of power during the 4 weeks long ocean crossing, the pocket battery powered synth proved to be the perfect composition tool. The tracks also include spoken words from Alan Watts.
   LINK
-    BAND : https://aliceffekt.bandcamp.com/album/superworker
-  TAGS : Discography
+    https://aliceffekt.bandcamp.com/album/superworker
 
 SUPERVISITOR
   UNDE : Demo
@@ -1213,9 +1211,8 @@ SUPERVISITOR
   LONG
     @ discography supervisitor
   LINK
-    BAND : https://aliceffekt.bandcamp.com/album/supervisitor
-    ITUN : iTunes|https://itunes.apple.com/ca/album/supervisitor-ep/id951144870
-  TAGS : Discography
+    https://aliceffekt.bandcamp.com/album/supervisitor
+    https://itunes.apple.com/ca/album/supervisitor-ep/id951144870
 
 SOUNDTRACK
   UNDE : Aliceffekt
@@ -1237,7 +1234,7 @@ RABBITS SOUNDTRACK
     @ discography rabbits soundtrack
   TAGS : Discography
   LINK
-    BAND : https://aliceffekt.bandcamp.com/album/hundred-rabbits
+    https://aliceffekt.bandcamp.com/album/hundred-rabbits
 
 PURGATEUS SOUNDTRACK
   UNDE : Soundtrack
@@ -1268,7 +1265,7 @@ TYPOGRAPHY
   BREF : Some of the {{typographies|Typography}} I have created over time, feel free to use them as you wish.
   TYPE : Diary
   LINK
-    GITH : https://github.com/neauoire/Font-Collection
+    https://github.com/neauoire/Font-Collection
 
 VAST
   UNDE : Physical
@@ -1278,14 +1275,14 @@ VAST
     & I recently found myself illustrating {{Elodie|http://noirmirroir.com}}'s abstract book "{{Vast - the perfect, the circular, the subjugated|http://noirmirroir.com/vast}}". A strangely perfect nonsensical coffee table curiosity that grabbed me from the moment I heard of its ties with some of the same Borgesian concepts that have also been exploring lately.
     & I have created a series of ink fractals to ornate the book’s preface, table of content and cover. 
   LINK
-    SITE : http://noirmirroir.com/vast
+    http://noirmirroir.com/vast
 
 DEFRACTION OPTICS
   UNDE : Physical
   BREF : {{Defraction Optics}} is the second book of {{Elodie Lareine|http://noirmirroir.com/}}, a manual of procedural imagery, in the fashion of {{Vast}}.
   TYPE : Diary
   LINK
-    SITE : http://noirmirroir.com/defract
+    http://noirmirroir.com/defract
 
 THOUSAND ROOMS
   UNDE : Physical
@@ -1296,8 +1293,8 @@ THOUSAND ROOMS
     & The book also encourages to try and understand the rules, and plan unsuggested avenues. We are releasing the book in English, French, Russian, Japanese & {{Lietal}}.
     & For the Lietal side-by-side translation, see {{Lae Doi}}.
   LINK
-    ITCH : https://hundredrabbits.itch.io/thousand-rooms
-    GITH : http://github.com/hundredrabbits/Thousand-Rooms/graphs/contributors
+    https://hundredrabbits.itch.io/thousand-rooms
+    http://github.com/hundredrabbits/Thousand-Rooms/graphs/contributors
 
 WALLPAPER
   UNDE : Visual
@@ -1543,7 +1540,7 @@ VAMBITS
     & The design was eventually ripped and sold by various resellers on Esty and in stores in Australia. The design templates are now available on Github for anyone to download and customize.
   TYPE : Diary
   LINK
-    GITH : https://github.com/hundredrabbits/Vambits
+    https://github.com/hundredrabbits/Vambits
 
 ~ Shorts
 
@@ -1576,7 +1573,7 @@ THE BOOKS OF BABEL
 PHILIPP TRAUM
   UNDE : Notes
   BREF : The {{Philipp Traum}} notes are a collection of quotes on objectivity and realism.
-  TYPE : Memory
+  TYPE : Docs
 
 NEEDLES
   UNDE : Notes
@@ -1604,7 +1601,7 @@ NUMBERS
     - One Senonagintamilligillion 40191 zeros
     - One Quinsexagintamilligillion 49998 zeros
   LINK
-    GITH : https://github.com/XXIIVV/toys.numerals
+    https://github.com/XXIIVV/toys.numerals
 
 SHORTHAND
   UNDE : Notes
@@ -1620,7 +1617,7 @@ TALK
   BREF : These talks were created as periodical research dumps, often gravitating around the topics of the {{hexagrammaton|Nataniev}} and {{Horaire}}.
   TYPE : Diary
   LINK
-    GITH : https://github.com/neauoire/Talk-Amaze
+    https://github.com/neauoire/Talk-Amaze
 
 ~ Gamme
 
@@ -1641,15 +1638,14 @@ NATANIEV
   LONG
     & As of June 2017, a {*graphical interface*} was built onto the server tools, allowing for the co-existence of tools such as {{Marabu}}, {{Ronin}} and {{Left}}.
     & This website, and many others, are served by a web platform named {{Nataniev}}. Their design and much of their visual and audio content is also created with {{software}} built within the platform, following its ecosystem's ideologies.
-    & 
   LINK
-    GITH : https://github.com/XXIIVV/Nataniev
+    https://github.com/XXIIVV/Nataniev
 
 ~ 412 417 411
 
 LOBBY
   UNDE : Suite
-  TYPE : Memory
+  TYPE : Docs
   BREF : The {{Lobby}} is the {{Nataniev}} graphical interface which host native applications like {{Marabu}}, {{Ronin}} and {{Left}}.
 
 OSCEAN
@@ -1659,7 +1655,7 @@ OSCEAN
     & {{Oscean}} was initiated on {{2008-08-10}}, and was meant to be a repository of the sum of {{Devine|Devine lu linvega}}'s projects and notes. 
     & It has since expanded into a network of tools, also known as {{Nataniev}}, which now hosts a series of Nataniev Native applications such as {{Ronin}}, {{Marabu}} and its social feed protocole {{Rotonde}}.
   LINK
-    GITH : https://github.com/XXIIVV/vessel.oscean
+    https://github.com/XXIIVV/vessel.oscean
 
 HORAIRE
   UNDE : Nataniev
@@ -1667,7 +1663,7 @@ HORAIRE
   FLAG : no_photo
   BREF : {{Horaire}} is a time tracking tool.
   LINK
-    GITH : https://github.com/XXIIVV/vessel.oscean/blob/master/memory/horaire.ma
+    https://github.com/XXIIVV/vessel.oscean/blob/master/memory/horaire.ma
 
 DESAMBER
   UNDE : Nataniev
@@ -1678,7 +1674,7 @@ DESAMBER
     & The clock has 6 digits, where their overall value is a ratio over the completion of the day. For example, Noon is 500, 6AM is 250 and 6PM is 750. 
     & In the 000:000 format, the shortest pulse equals to 8.64 milliseconds, the second shortest 86.4 and so on.
   LINK
-    GITH : http://github.com/hundredrabbits/Clock
+    http://github.com/hundredrabbits/Clock
 
 ROTONDE
   UNDE : Nataniev
@@ -1688,8 +1684,8 @@ ROTONDE
     & The feed is not attached to any particular client, language or server. The goal of this project is to share decentralized editable, protected, and version-controlled entries.
     & You can see the setup guide {{here|https://louis.center/p2p-social-networking/}}, and follow daily decentralized internet news on {{The Daily Descent}}.
   LINK
-    GITH : https://github.com/Rotonde
-    ROTO : dat://2f21e3c122ef0f2555d3a99497710cd875c7b0383f998a2d37c02c042d598485/
+    https://github.com/Rotonde
+    dat://2f21e3c122ef0f2555d3a99497710cd875c7b0383f998a2d37c02c042d598485/
 
 THE DAILY DESCENT
   UNDE : Rotonde
@@ -1698,19 +1694,19 @@ THE DAILY DESCENT
     & The blog features recent decentralized internet developments, broadcasted as a P2P {{Rotonde}} feed. The simpliest way to access the blog is to download the {{Beaker Browser|https://beakerbrowser.com}} and to navigate to {{its portal|dat://daily-descent.hashbase.io/}}.
     * A P2P blog, in a P2P way.
   LINK
-    ROTO : dat://daily-descent.hashbase.io/
+    dat://daily-descent.hashbase.io/
 
 PARADISE
   UNDE : Interactive
-  TYPE : Memory
+  TYPE : Docs
   BREF : {{Paradise}} is a multiplayer interactive-fiction.
   LONG
     & {{Paradise}} plays like an interactive fiction novel, in an ever-changing world where players are not avatars, but places, and objects, and puns, words - moving around and into each other, threading chaos.
     & In this anonymous world you can create anything, traverse the various player-created universes and explore {_conceptspace_}. 
     & See you {{there|http://paradise.xxiivv.com}}.
   LINK
-    SITE : http://paradise.xxiivv.com
-    GITH : https://github.com/XXIIVV/vessel.paradise
+    http://paradise.xxiivv.com
+    https://github.com/XXIIVV/vessel.paradise
 
 MAEVE
   UNDE : Paradise
@@ -1731,13 +1727,13 @@ LAE DOI
     & To see the translation of individual words, see the {{Dictionaery}}. To see the construction, see the {{source|https://github.com/XXIIVV/vessel.lietal/blob/master/memory/thousand_rooms.mh}}
     $ lietal print side_by_side thousand_rooms.mh
   LINK
-    ITCH : https://hundredrabbits.itch.io/thousand-rooms
-    GITH : https://github.com/XXIIVV/vessel.lietal/blob/master/memory/thousand_rooms.mh
+    https://hundredrabbits.itch.io/thousand-rooms
+    https://github.com/XXIIVV/vessel.lietal/blob/master/memory/thousand_rooms.mh
 
 OBLIQUES
   UNDE : Gamme
   TYPE : Archive false
-  BREF : The {{Obliques}} are longform answers to questions regarding travel, {{lifestyle}} and optimisation. 
+  BREF : {{Obliques}} are short essays on travel, {{lifestyle}} and optimisation. 
   TAGS : Portal
 
 LIFESTYLE
@@ -1747,37 +1743,37 @@ LIFESTYLE
 
 NUTRITION
   UNDE : Lifestyle
-  BREF : The {{Nutrition}} guide is a collection of notes on proteins and meal plan basics.
+  BREF : The {{Nutrition}} guide covers the basics of proteins.
   LONG 
     & There are a few things in life that are as transformative and transhumanistic as {{nutrition}}, not eating meat, eggs and dairy aligns with my pragmatic views of life-prolonging aspirations. 
-  TYPE : Memory
+  TYPE : Docs
   TAGS : guide
   LINK
-    WIKI : https://en.wikiversity.org/wiki/Should_we_go_vegan%3F
+    https://en.wikiversity.org/wiki/Should_we_go_vegan%3F
 
 AESTHETICS
   UNDE : Lifestyle
-  BREF : The {{Aesthetics}} notes are meant to answers to recurring questions on productivity, advised from daily logs recorded over many years.
-  TYPE : Memory
+  BREF : {{Aesthetics}} are notes on output, advised from daily logs.
+  TYPE : Docs
 
 NOMAD
   UNDE : Lifestyle
   BREF : The {{Nomad}} notes are reflexions on travel, and on my dreams of a nomadic life.
-  TYPE : Memory
+  TYPE : Docs
 
 OFF THE GRID
   UNDE : Lifestyle
   BREF : The {{Off The Grid}} notes are a collection of lessons on living away from cities.
   LONG
     & This page is an ever growing collection of notes on technical {{off-the-grid|#off_the_grid}} and {{liveaboard|#liveaboard}} topics. If you have unawnsered questions, please leave us a message on {{Twitter|https://twitter.com/hundredrabbits}}.
-  TYPE : Memory
+  TYPE : Docs
 
 OCEANISM
   UNDE : Lifestyle
   BREF : This {{Oceanism Manual|Oceanism}} is a collection of liveaboard notes on living on a sailboat, advised from sailing across the Pacific.
   LONG
     & This page is an ever growing collection of notes on technical {{|#off_the_grid}} and {{liveaboard|#liveaboard}} topics. If you have unawnsered questions, please leave us a message on {{Twitter|https://twitter.com/hundredrabbits}}.
-  TYPE : Memory
+  TYPE : Docs
 
 INVENTORY
   UNDE : Obliques
@@ -1823,30 +1819,30 @@ MIRRORS
 GLOSSARY
   UNDE : Mirrors
   BREF : The {{Glossary}} is a collection of keywords related to epistemology.
-  TYPE : Memory
+  TYPE : Docs
 
 BIASES
   UNDE : Mirrors
   BREF : The {{Biases}} cheatsheet is a list of compiled fallacies, effects, and biases.
   LONG
     & The list was compiled from {{LessWrong|https://wiki.lesswrong.com/wiki/Less_Wrong_Canon_on_Rationality}} as well as personal notes, collected from the Philosopher's Toolkit and other sources. Rationality is characteristic of thinking and acting optimally.
-  TYPE : Memory
+  TYPE : Docs
 
 TIERS
   UNDE : Mirrors
   BREF : The {{Tiers}} cheatsheet displays a spectrum of decision-making and mindsets.
   LONG
     & Below is an abbreviated and edited list from PTFQ's original essay {{Three Tiers Of Mind|https://www.pftq.com/blabberbox/?page=Three_Tiers_of_Mind}}.
-  TYPE : Memory
+  TYPE : Docs
   LINK
-    GITH : https://github.com/XXIIVV/vessel.oscean/blob/master/memory/tiers.mh
+    https://github.com/XXIIVV/vessel.oscean/blob/master/memory/tiers.mh
 
 DIRECTORY
   UNDE : Obliques
   BREF : The {{Directory}} is a curated list of timeless art that I often refer to.
-  TYPE : Memory
+  TYPE : Docs
   LINK
-    GITH : https://github.com/XXIIVV/vessel.oscean/blob/master/memory/directory.mh
+    https://github.com/XXIIVV/vessel.oscean/blob/master/memory/directory.mh
 
 ~ Language
 
@@ -1869,12 +1865,16 @@ LANGUAGE
 JAPANESE
   UNDE : Language
   BREF : The {{Japanese}} page is an edited version of Tad Perry's 1992 {_Quick and Dirty Guide to Japanese_}.
-  TYPE : Memory
+  LONG
+    & This is an edited version on Tad Perry's 1992 {_ Quick and Dirty Guide to Japanese_} with improved templating for readability, as well as some rephrasing and editing. The romaji phonetics have been replaced with kanji and hiraganas.
+  TYPE : Docs
 
 RUSSIAN
   UNDE : Language
-  BREF : The {{Russian}} page is a series of notes on the language inspired from Tad Perry's 1992 {_Quick and Dirty Guide to Japanese_}.
-  TYPE : Memory
+  BREF : The {{Russian}} page is a guide to basic Russian.
+  LONG
+    & Below are the organized and templated notes from my Russian studies. They might serve you as a good basis to get into the language. This series of notes is inspired from Tad Perry's 1992 {_Quick and Dirty Guide to Japanese_}.
+  TYPE : Docs
   TAGS : guide
 
 LIETAL
@@ -1884,7 +1884,7 @@ LIETAL
   LONG
     $ lietal print documentation
   LINK
-    GITH : https://github.com/XXIIVV/vessel.lietal
+    https://github.com/XXIIVV/vessel.lietal
 
 DIARY
   UNDE : Home
@@ -1905,8 +1905,8 @@ DEVINE LU LINVEGA
     # <comment># Satellite Phone</comment>
     # Currently located in <b>{{$ hundredrabbits get_location}}</b>({{$ hundredrabbits get_position}}).
   LINK
-    TWIT : https://twitter.com/neauoire/media
-    GITH : https://github.com/neauoire
+    https://twitter.com/neauoire/media
+    https://github.com/neauoire
 
 ~ Equipment
 
@@ -2014,8 +2014,8 @@ RUBY RIDING HOOD
     & The idea was simple, how much meaning can I extrude from the original text and parse into a computer language, as it turns out, a lot of it can.
     & The full text is on Github. Feel free to contact me with pull requests and optimisations.
   LINK
-    GITH : https://gist.github.com/neauoire/9beee5e555615e0003d194548c158979
-    YOUT : http://en.wikipedia.org/wiki/The_Language_Instinct
+    https://gist.github.com/neauoire/9beee5e555615e0003d194548c158979
+    http://en.wikipedia.org/wiki/The_Language_Instinct
 
 
 FIRST WAVE
@@ -2037,7 +2037,7 @@ BLAM
   UNDE : First wave
   BREF : {{Blam}} is an improvisational album created as a live performance, that ultimately fell through.
   LINK
-    BAND : https://aliceffekt.bandcamp.com/album/blam-le-passage-sacrilege
+    https://aliceffekt.bandcamp.com/album/blam-le-passage-sacrilege
 
 VERT KIRLIAN THEATRE
   UNDE : First wave
@@ -2049,7 +2049,7 @@ ANN YOZORA SAINT
   UNDE : First wave
   BREF : {{Ann Yozora Saint}} was originally released as two albums, {_Ann Yozora Saint_} and {_Lu's Floral Funeralis_}, they were consolidated into a single release in 2017.
   LINK
-    BAND : https://aliceffekt.bandcamp.com/album/ann-yozora-saint
+    https://aliceffekt.bandcamp.com/album/ann-yozora-saint
   
 NETHER ESPER INSERTS
   UNDE : First wave
@@ -2065,7 +2065,7 @@ IDYLLIC MINERS
   UNDE : First wave
   BREF : {{Idyllic Miners}} was created for the {_Kinetik Festival_}.
   LINK
-    BAND : https://aliceffekt.bandcamp.com/album/genesis-iii-20-ov-idyllic-miners
+    https://aliceffekt.bandcamp.com/album/genesis-iii-20-ov-idyllic-miners
 `);
 
 invoke.vessel.seal("dict","lexicon");

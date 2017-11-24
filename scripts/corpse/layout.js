@@ -13,7 +13,6 @@ function Layout(host)
   this.md.appendChild(this.md_wr = document.createElement('wr'));
   this.md_wr.appendChild(this.sb = document.createElement('sb'));
   this.md_wr.appendChild(this.m1 = document.createElement('m1'));
-  this.md_wr.appendChild(this.hr = document.createElement('hr'));
   this.md_wr.appendChild(this.m2 = document.createElement('m2'));
   // Footer
   this.fd.appendChild(this.fd_wr = document.createElement('wr'));

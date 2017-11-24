@@ -18,9 +18,10 @@ function Runic(raw)
 
   this.format = function(r,html)
   {
-    if(!this.runes[r]){ return; }
+    if(!this.runes[r]){ return "Unknown rune:("+r+")"; }
     var rune = this.runes[r];
-    return "<"+rune.tag+">"+html+"</"+rune.tag+">"
+    var result = "<"+rune.tag+">"+html+"</"+rune.tag+">";
+    return result
   }
 
   this.markup = function(html)
@@ -43,17 +44,18 @@ function Runic(raw)
   {
     var html = "";
     var lines = raw;
+    if(!raw){ return "";}
+    var lines = !Array.isArray(raw) ? raw.split("\n") : raw;
+
     for(id in lines){
       var rune = lines[id].substr(0,1);
+      var trail = lines[id].substr(1,1);
       var line = this.markup(lines[id].substr(2));
+      if(!line || line.trim() == ""){ continue; }
+      if(trail != " "){ console.warn("Runic","Non-rune["+trail+"] at:"+id+"("+line+")"); continue; }
       html += this.format(rune,line);
     }
     return html;
-  }
-
-  this.to_html = function()
-  {
-    return this.raw;
   }
 
   this.html = this.parse(raw);
