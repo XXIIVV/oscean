@@ -1,19 +1,22 @@
 function Term(name,memory)
 {
   this.name = name;
-  this.memory = memory;
-  this.type = memory.type;
   this.diaries = [];
   this.diary = null;
   this.children = [];
   this.parent = null;
   this.logs = [];
-  this.bref = this.memory && this.memory.bref ? new Runic().markup(this.memory.bref) : "Missing";
-  this.long = this.memory && this.memory.long ? new Runic(this.memory.long).html : "Missing";
 
+  if(memory){
+    this.memory = memory;
+    this.type = memory.type;
+    this.bref = this.memory.bref ? new Runic().markup(this.memory.bref) : "Missing";
+    this.long = this.memory.long ? new Runic(this.memory.long).html : "";
+    this.links = this.memory.link ? this.memory.link : [];
+  }
+  
   this.start = function()
   {
-    this.links = this.memory.link ? this.memory.link : [];
     this.diaries = this.find_diaries();
   }
 
@@ -73,16 +76,6 @@ function Term(name,memory)
     return html;
   }
 
-  this.location = function()
-  {
-    if(this.parent){
-      if(this.parent.name != this.name){
-        return (this.parent.name+"/")+this.name;
-      }
-    }
-    return this.name
-  }
-
   this.theme = function()
   {
     if(this.diaries.length < 1){ return "no"; }    
@@ -135,6 +128,32 @@ function Term(name,memory)
     if(!content){ return "Missing:"+this.name; }
     return content.html;
   }
+
+  this._archive = function()
+  {
+    var html = "";
+    for(id in this.children){
+      var c1 = this.children[id];
+      html += "<h2>"+c1.name+"</h2>"
+      html += "<p>"+c1.bref+"</p>"
+      if(c1.children.length < 1){ continue; }
+      html += "<list>"
+      for(i in c1.children){
+        var c2 = c1.children[i];
+        html += "<ln>"+c2.bref+"</ln>"
+      }
+      html += "</list>"
+    }
+    return html
+  }
+}
+
+function MissingTerm(name)
+{
+  Term.call(this,name)
+
+  this.bref = "Sorry! There are no pages found for "+this.name+" in this Lexicon."
+  this.long = "<p>If you think that this is an error, contact <a href='https://twitter.com/neauoire'>@aliceffekt</a>.</p>";
 }
 
 invoke.vessel.seal("corpse","term");

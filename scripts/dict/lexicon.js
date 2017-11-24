@@ -4,8 +4,6 @@ HOME
   BREF : Welcome to the {{Nataniev}} playground and ecosystem.
   LONG
     & This wiki provides documentation and narrative context for the various {{Audio}}, {{Visual}} and {{Research}} projects of multimedia developer {{Devine Lu Linvega}}. If this is your first time around, a good place to begin your exploration is the {{Diary}}.
-  LINK
-    https://twitter.com/neauoire
 
 AUDIO
   UNDE : Home
@@ -1293,7 +1291,7 @@ NEAUISMETICA
   UNDE : Research
   TYPE : Archive
   TAGS : Portal
-  BREF : The {{Neauismetica}} is a collection of notes on the fictional world of {{Dinaisth}}.
+  BREF : The {{Neauismetica}} is a series of notes on the fiction of {{Dinaisth}}.
   LONG
     & Referenced in almost all of the {{Nataniev}} projects, tales of this small planet are told through {{Aliceffekt}}'s music, Devine's {{illustrations|illustration}} and are the culture behind the {{Lietal}} Language. 
     ? Immortals speak not with words<br /> but wait for things to happen,<br />and merely points at them.
@@ -1597,7 +1595,7 @@ GAMME
   UNDE : Research
   TYPE : Archive
   TAGS : Portal
-  BREF : The {{Gamme}} is a series of concepts and tools created toward the acceleration of the {_Grand Oeuvre_}.
+  BREF : The {{Gamme}} is a series of concepts and tools.
   LONG
     & A recurring topic throughout the {{Nataniev}} ecosystems is the trinity of {{Audio}}, {{Visual}} and {{Research}}. Of which the truer names, as per {{Lietal}}, should be physicality, Phisiognomy, and Psychology - Or even the subject itself, its shape & its concept. 
     & Trisight is a name given to the pursuit of the {_Grand Oeuvre_}, the trinity of its members. The {*Grand Oeuvre*}, as per Trisight vocabulary, is meant to equal the sum of one's output goals.
@@ -1702,7 +1700,7 @@ LAE DOI
 
 OBLIQUES
   UNDE : Gamme
-  TYPE : Archive false
+  TYPE : Archive
   BREF : {{Obliques}} are short essays on travel, {{lifestyle}} and optimisation. 
   TAGS : Portal
 
@@ -1816,7 +1814,7 @@ DIRECTORY
 
 LANGUAGE
   UNDE : Obliques
-  TYPE : Archive false
+  TYPE : Archive
   BREF : This {{Language}} portal is a collection of notes on natural and syntetic languages.
   LONG
     & Welcome to the Language Portal.

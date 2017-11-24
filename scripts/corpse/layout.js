@@ -33,14 +33,15 @@ function Layout(host)
   {
     if(key.toLowerCase() == this.term.name.toLowerCase()){ return; }
     
-    this.term = this.host.lexicon.find(key.replace(/\+/g," ")) ; this.term.start();
+    this.term = this.host.lexicon.find(key.replace(/\+/g," "));
+    this.term.start();
 
     window.scrollTo(0,0);
     window.location = "#"+key;
 
     document.title = this.term.name;
 
-    this.search.setAttribute("placeholder",this.term.location())
+    this.search.setAttribute("value",this.term.name)
     this.logo.setAttribute("href",this.term.parent ? this.term.parent.name : "Home")
     this.h1.innerHTML = this.term.bref;
     this.hd.className = this.term.theme();
@@ -49,7 +50,7 @@ function Layout(host)
     this.m1.innerHTML = this.term.long;
     this.m2.innerHTML = this.term.view();
     this.sb.innerHTML = this.term.sidebar();
-
+    
     var icon_name = this.term.name.toLowerCase().replace(/\ /g,".");
     var img = new Image();
     img.src = "media/badge/"+icon_name+".svg";

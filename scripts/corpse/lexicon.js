@@ -43,8 +43,8 @@ function Lexicon(memory)
   
   this.find = function(key = "Home")
   {
-    key = !key ? "Home" : key
-    return this.terms[key.toLowerCase()]
+    key = !key ? "Home" : key;
+    return this.terms[key.toLowerCase()] ? this.terms[key.toLowerCase()] : new MissingTerm(key);
   }
 
   this.find_any = function(key,value)
