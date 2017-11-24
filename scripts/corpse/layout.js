@@ -6,6 +6,7 @@ function Layout(host)
 
   // Header
   this.hd.appendChild(this.h1 = document.createElement('h1'));
+  this.hd.appendChild(this.icon = document.createElement('icon'));
   this.hd.appendChild(this.photo = document.createElement('photo'));
   this.hd.appendChild(this.logo = document.createElement('a'));
   this.hd.appendChild(this.search = document.createElement('input'));
@@ -14,6 +15,7 @@ function Layout(host)
   this.md_wr.appendChild(this.sb = document.createElement('sb'));
   this.md_wr.appendChild(this.m1 = document.createElement('m1'));
   this.md_wr.appendChild(this.m2 = document.createElement('m2'));
+  this.md_wr.appendChild(this.hr = document.createElement('hr'));
   // Footer
   this.fd.appendChild(this.fd_wr = document.createElement('wr'));
 
@@ -42,10 +44,19 @@ function Layout(host)
     this.logo.setAttribute("href",this.term.parent ? this.term.parent.name : "Home")
     this.h1.innerHTML = this.term.bref;
     this.hd.className = this.term.theme();
+    this.icon.style.backgroundImage = "url('media/badge/nataniev.svg')";
     this.photo.style.backgroundImage = this.term.photo();
     this.m1.innerHTML = this.term.long;
     this.m2.innerHTML = this.term.view();
     this.sb.innerHTML = this.term.sidebar();
+
+    var icon_name = this.term.name.toLowerCase().replace(/\ /g,".");
+    var img = new Image();
+    img.src = "media/badge/"+icon_name+".svg";
+    img.onload = function(){
+      if(img.naturalHeight == 0){ return; }
+      invoke.vessel.corpse.icon.style.backgroundImage = "url('media/badge/"+icon_name+".svg')";
+    }
   }
 
   this.link = function(target)

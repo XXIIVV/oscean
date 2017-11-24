@@ -22,18 +22,6 @@ function Oscean()
     var hash = window.location.hash.replace("#","");
     return hash;
   }
-
-  this.exists = function(url)
-  {
-    if(url){
-        var req = new XMLHttpRequest();
-        req.open('GET', url, false);
-        req.send();
-        return req.status==200;
-    } else {
-        return false;
-    }
-  }
 }
 
 invoke.seal("main","oscean");
