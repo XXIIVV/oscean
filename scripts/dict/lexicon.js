@@ -639,7 +639,7 @@ ABLETON
 
 NEREID
   UNDE : Illustration
-  BREF : {{Nereid}} is one of Neptune's {{moon|http://en.wikipedia.org/wiki/Nereid_(moon)}}. It has but one weather "cold", terribly slow internet reception and idyllic valleys.
+  BREF : {{Nereid}} has but one weather, idyllic valleys.
   LONG
     & The soil is mostly diamonds, {_carbonado_} and the lack of atmosphere leaves the surface of the moon, mostly quiet. Pigments, illegal. Learn more through the {{Serventines}} travel diaries.
     &
@@ -858,7 +858,7 @@ TELEKINESIS
 
 SERVENTINES
   UNDE : Nereid
-  BREF : {{Serventines}} is a travel diary documenting travels across {{Nereid}}'s various regions, the small planet's skies and {_gravitating objects_}.
+  BREF : {{Serventines}} is a travel diary from travels across {{Nereid}}.
   TYPE : Diary
 
 INTERACTIVE

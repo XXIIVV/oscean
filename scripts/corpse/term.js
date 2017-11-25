@@ -146,6 +146,17 @@ function Term(name,memory)
     }
     return new Runic().markup(html)
   }
+
+  this._diary = function()
+  {
+    var html = "";
+
+    for(id in this.diaries){
+      var diary = this.diaries[id];
+      html += "<img src='media/diary/"+diary.photo+".jpg'/>"
+    }
+    return html;
+  }
 }
 
 function MissingTerm(name)
