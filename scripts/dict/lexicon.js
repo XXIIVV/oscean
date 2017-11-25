@@ -1544,7 +1544,7 @@ THE BOOKS OF BABEL
 
 PHILIPP TRAUM
   UNDE : Notes
-  BREF : The {{Philipp Traum}} notes are a collection of quotes on objectivity and realism.
+  BREF : {{Philipp Traum}} notes on objectivity and realism.
   TYPE : Docs
 
 NEEDLES

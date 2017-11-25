@@ -13,5 +13,5 @@ redirect += "document.location.href='/#'+(target)\n"
 redirect += "</script>"
 
 Handler.error_message_format = redirect
-httpd = SocketServer.TCPServer(("", 8080), Handler)
+httpd = SocketServer.TCPServer(("", 8888), Handler)
 httpd.serve_forever()
