@@ -83,7 +83,7 @@ function Layout(host)
 
   this.on_scroll = function()
   {
-    var offset = document.body.scrollTop * 0.75;
+    var offset = window.scrollY * 0.75;
     this.logo.style.top = parseInt(30 - offset)+"px";
     this.search.style.top = parseInt(60 - offset)+"px";
   }

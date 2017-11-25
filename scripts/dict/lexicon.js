@@ -84,7 +84,7 @@ DESKTOP
 
 PURGATEUS
   UNDE : Desktop
-  BREF : {{Purgateus}} is a video game remix of {{Proteus|http://www.visitproteus.com}}. 
+  BREF : {{Purgateus}} is a video game remix of {{Proteus|http://www.visitproteus.com}}.
   LONG
     & This world behave just like Proteus, but looks and sounds different. Read more on {{Venus Patrol|http://venuspatrol.com/purgateus/}}. The project was inspired from a tweet by {{Ian Snyder|https://twitter.com/whatisian/status/468819959859007488}}
     * Instructions
@@ -159,7 +159,7 @@ DOMESTIC MOIRE
 
 EFLI
   UNDE : Eschatolor
-  BREF : {{EFLI}}, 103.0FM, was a pirate radio broadcast, available from Montreal's Plateau area, between 22:00 and 6:00. 
+  BREF : {{EFLI}}, 103.0FM, was a pirate radio broadcast, available from Montreal's Plateau area, between 22:00 and 6:00.
   LONG
     & The radio started broadcasting on May 20th, 2015 and stopped transmitting on December 20th. It played various permutations of the {{Eschatolor}} album.
 
@@ -211,7 +211,7 @@ WIKTOPHER
   UNDE : Hundred rabbits
   BREF : {{Wiktopher}} is {{Rekka}}'s upcoming travel novel.
   LONG
-    & {*Wiktopher*} tells the travel stories of Lupin, who fell from one of the three great cities erected on the backs of desert walkers; and Eka, a creature of wonder and of seemingly, infinite kindness and curiosity. 
+    & {*Wiktopher*} tells the travel stories of Lupin, who fell from one of the three great cities erected on the backs of desert walkers; and Eka, a creature of wonder and of seemingly, infinite kindness and curiosity.
     & Together, they learn the inumerable ways of the world, traversing deserts and villages, meeting their inhabitants and discovering their customs.
     & The novel is written {_entirely without genders_}, and will be released as audiobooks, ebooks and paperbacks.
   LINK
@@ -230,7 +230,7 @@ HUNDRED RABBITS
 
 PINO
   UNDE : Hundred rabbits
-  BREF : {{PINO}} is a 33 feet long Yamaha sailboat built in 1982. 
+  BREF : {{PINO}} is a 33 feet long Yamaha sailboat built in 1982.
   TYPE : Diary
   LONG
     & Purchased in 2016, on Vancouver Island, Pino has since sailed across the {{Pacific Ocean|South Pacific}}. You can learn more about the boat {{here|http://github.com/hundredrabbits/pino}}.
@@ -269,7 +269,7 @@ ILLUSTRATION
 
 ARTWORK
   UNDE : Illustration
-  BREF : The {{Artwork}} collection is various illustrations drawn over the years, unrelated to other XXIIVV projects.
+  BREF : {{Artwork}} collection of unrelated concepts and characters.
   TYPE : Diary
 
 SKETCHBOOK
@@ -287,7 +287,7 @@ FLACTALS
 
 MALICE
   UNDE : Audio
-  BREF : {{Malice}}, GAII or 害意, tells the {{earlier tales|Neauismetica}} of {{Neonev}} as she crossed the {{Kanikule}} ocean. 
+  BREF : {{Malice}}, GAII or 害意, tells the {{earlier tales|Neauismetica}} of {{Neonev}} as she crossed the {{Kanikule}} ocean.
   LONG
     & The tracks are singing of the daily discoveries, and it's darker distances. The Malice logo was designed by {{Jan Vranovský|http://visualscream.net}}.
   TYPE : Portal
@@ -313,14 +313,14 @@ BLINDFOLK
   LONG
     & Each player program a short script, or fighting style, for their character that will run automatically every 5 minutes, against all other players. The scripts contained a series of attacks, moves and blocks, as well as responses to collisions against other players.
     * Example Fighting Style
-    # case attack.backward  
-    # - step.leftcase 
-    # default  
-    # - attack.forward  
-    # - turn.right  
-    # - attack.backward  
+    # case attack.backward
+    # - step.leftcase
+    # default
+    # - attack.forward
+    # - turn.right
+    # - attack.backward
     # - say yatta!
-    & It was first created in the span of 48 hours for {{Global Game Jam 2016|http://globalgamejam.org}}. The game was very active but soon became too time-consuming to maintain and keep alive. 
+    & It was first created in the span of 48 hours for {{Global Game Jam 2016|http://globalgamejam.org}}. The game was very active but soon became too time-consuming to maintain and keep alive.
     & This design has been revisited in {{Markl}}.
   LINK
     https://github.com/XXIIVV/vessel.blindfolk
@@ -339,7 +339,7 @@ MERVEILLES PORTABLE
   UNDE : Unreleased
   BREF : {{Merveilles Portable}} was a small MMORPG builts in JS and PHP.
   LONG
-    & {*Merveilles*} was set in a tiny brown world where players could interact with eachothers using a glyph language. 
+    & {*Merveilles*} was set in a tiny brown world where players could interact with eachothers using a glyph language.
     & The game ran around 2009-2011, and was eventually shut down due to a complicated migration.
 
 MILAVREGA
@@ -350,7 +350,7 @@ MILAVREGA
 
 BELDAM RECORDS
   UNDE : Audio
-  BREF : {{Beldam Records}} is a netlabel releasing 4 tracks mini-albums. 
+  BREF : {{Beldam Records}} is a netlabel releasing 4 tracks mini-albums.
   LONG
     * Catalog
   TYPE : Portal
@@ -583,7 +583,7 @@ ALPHAVETIST
 
 VOCAVULARIST
   UNDE : Mobile
-  BREF : {{Vocavularist}}, is a vocabulary review application. 
+  BREF : {{Vocavularist}}, is a vocabulary review application.
   TYPE : Diary
   LONG
     & It contains the 600 first kanji, 600 simple Russian words and 800 simple korean expressions.
@@ -613,7 +613,7 @@ VERRECIEL
   BREF : {{Verreciel}} is an abstract space exploration game.
   TYPE : Diary
   LONG
-    & The game joins the sequence of linguistically involved projects like {{Paradise}}, {{Hiversaires}} and {{Oquonie}}. 
+    & The game joins the sequence of linguistically involved projects like {{Paradise}}, {{Hiversaires}} and {{Oquonie}}.
     & An {{original soundtrack|Verreciel Soundtrack}} was created for the game and released on {{Beldam Records}}.
   LINK
     https://hundredrabbits.itch.io/verreciel
@@ -695,7 +695,7 @@ OQUONIE GUIDE
     & This guide is meant to be a spoiler-free list of tips to help you proceed through {{Oquonie}}. So if you have not yet found the first pillar, this is {*not*} for you, so keep playing, for your only task at the moment is to find sequences of three matching tokens.
     % oquonie.first.pillar
     & A {*red pillar*} appeared next to one of the town's gates. What do? In your travels, you have met a small spiky ramen-eating character, speaking to him as each character will have him spawn in town and give you a {*token*} based on which character that you are. You need his help, so make sure that you have found him in each of the worlds.
-    & Things get a bit trickier here, you will need to find your first token as you leave one world, your second from the ramen guy, and the last in yet another world. 
+    & Things get a bit trickier here, you will need to find your first token as you leave one world, your second from the ramen guy, and the last in yet another world.
     & The town's shark will remove your tokens, speak to him if you ever find yourself with tokens that you do not need. Good luck!
     * Cheat Codes
     & To input the cheat codes, just type while the game window is in focus. Their purpose is resolve mirror bugs whenever your save game glitches.
@@ -731,7 +731,7 @@ BABELIUM
 
 THE SIXTH SEASON
   UNDE : Neauismetic
-  BREF : {{The Sixth Season}} sings the {{Neauismetic}} tales of the sixth season, or the {_establishment of the Oasis_}. 
+  BREF : {{The Sixth Season}} sings the {{Neauismetic}} tales of the sixth season, or the {_establishment of the Oasis_}.
   LONG
     & {_Whiinders_} and the likes, raising tents hoping for a glorious end in memory of {{Rlionn}}.
     & This album established the sound that {{Aliceffekt}} decided to persue for the {{Neauismetic}} releases.
@@ -811,13 +811,13 @@ NEAUISMETIC
 
 VETETRANDES LETTRES
   UNDE : Neauismetic
-  BREF : {{Vetetrandes Lettres}}'s songs sings of the {{first ages|Neauismetica}} of {{Dinaisth}} on the island of {{Vetetrandes}}. 
+  BREF : {{Vetetrandes Lettres}}'s songs sings of the {{first ages|Neauismetica}} of {{Dinaisth}} on the island of {{Vetetrandes}}.
   LONG
     & While the album begins in Vetetrandes, it moves to the shores of {_Dilitrielth_} and turns its attention across {{Kanikule}} and toward the {_Es_}'Gulf of {_Eaurison_}.
     & The album includes 4 edited tracks from the {{Es Gulf Sunflowers}} release. The {_Ver'Tale_} extension is a hint to a location of {_Whiinders_}, close to the visited {_Vert Kirlian Theatre_}.
     & The album begins with a track about {{Yajnev}}, the composition is based on his trip near the white trees of the {_Oasis_} and the {_Children of Brambles_}.
     & The album is part of {{Aliceffekt}}'s {{Neauismetic}} albums.
-    @ discography Vetetrandes Lettres    
+    @ discography Vetetrandes Lettres
   LINK
     http://aliceffekt.bandcamp.com/album/vetetrandes-lettres-perdues
 
@@ -834,7 +834,7 @@ EHRIVEVNV STUDIES
   UNDE : Neauismetic
   BREF : The {{Ehrivevnv Studies}} is a {{Laeisthic}} album exploring {{Andes}}' offices in {{Dinaisth}}.
   LONG
-    & This album was composed for and performed at {_Blip Festival Tokyo_} on October 21st 2012 and reissued on april 15th 2013, including some changes from the {_Melbourne Squaresound Show_}.  
+    & This album was composed for and performed at {_Blip Festival Tokyo_} on October 21st 2012 and reissued on april 15th 2013, including some changes from the {_Melbourne Squaresound Show_}.
     & The track names contains encrypted Lietal</a>. The first track is decrypted into "<a href='Simkin'>Simkin</a> <a href='Kamsi'>Kamsi</a>" and can be translated to {_Time Structure_}, refering to The Library of Sand. The second track, "<a href='Xomsinsom'>Xomsinsom</a> <a href='kim'>Kim</a> <a href='Yajnev'>Yajnev</a>", can be translated to {_Yajnev's Curse_} and refers to the short <a href='082'>Yajnev's Thoughts</a>. The third track is titled "<a href='Ko'>Ko</a> <a href='sokamxi'>Sokamxi</a>" which simply means {_The Impossible Exploration_}.
     # ami -> vloks  -> Ihom  -> ykim -> w
     & Following are the resulting transformations using the previous encryption.
@@ -852,7 +852,7 @@ TELEKINETIC
 
 TELEKINESIS
   UNDE : Telekinetic
-  BREF : {{Telekinesis}} is a Leap Motion based controller that allows, through Pure Data, to control multiple midi instruments at once. 
+  BREF : {{Telekinesis}} is a Leap Motion based controller that allows, through Pure Data, to control multiple midi instruments at once.
   LONG
     & The tool was used for both, the live performance of {{Telekinetic}} and {{Ten Axitecture}}. The picture was taken at 8Static, by {{Marjorie Becker|https://www.flickr.com/photos/m_becker/}}.
 
@@ -874,7 +874,7 @@ SOFTWARE
   BREF : A collection of open-source and free {{software}}.
   LONG
     & Released under {{Hundred Rabbits}}, these applications were created to be used offline, and to be easy to repair and improve while living {{Off the grid|Offline}}.
-    & {{Marabu}} and {{Left}} builds are currently available on {{Itch.io|http://hundredrabbits.itch.io/}}. 
+    & {{Marabu}} and {{Left}} builds are currently available on {{Itch.io|http://hundredrabbits.itch.io/}}.
   LINK
     http://hundredrabbits.itch.io/
     http://github.com/hundredrabbits
@@ -895,7 +895,7 @@ RONIN
   BREF : {{Ronin}} is a graphic design terminal.
   LONG
     & The application is a cross-over between Vim and Photoshop, meant for simple export tasks, basic illustration jobs and resizing.
-    & The typical Ronin syntax is {*module*}, followed with {*method:params*}. In this example, the {*crop*} method is part of the frame module. While one might choose to manually input or edit the crop method parameters, Ronin makes accessible the $ helper that accesses the cursor position. With a query including the $ character, clicking on the canvas will replace the $ with a position - and holding shift while clicking and dragging will replace the $ with a rect. 
+    & The typical Ronin syntax is {*module*}, followed with {*method:params*}. In this example, the {*crop*} method is part of the frame module. While one might choose to manually input or edit the crop method parameters, Ronin makes accessible the $ helper that accesses the cursor position. With a query including the $ character, clicking on the canvas will replace the $ with a position - and holding shift while clicking and dragging will replace the $ with a rect.
     # frame resize:640x480
     # io load:
     # io draw:20,20|100x100
@@ -945,13 +945,13 @@ ZJEVENI
 
 DRYPOINT
   UNDE : Unity
-  BREF : {{Drypoint}} is a very hard platformer game for keyboard cowboys. 
+  BREF : {{Drypoint}} is a very hard platformer game for keyboard cowboys.
   LONG
     & See if you can get to the blue door. Read about Drypoint on the {{TIGSource forum tread|http://forums.tigsource.com/index.php?topic=8241}}.
 
 VALENTINEL HOPES
   UNDE : Unity
-  BREF : {{Valentinel Hopes}} is a platformer inspired from parkour and trance music. 
+  BREF : {{Valentinel Hopes}} is a platformer inspired from parkour and trance music.
   LONG
     & The game has no music, you are invited to listen to your own.
     - Typical FPS control except for the mouse direction.
@@ -960,7 +960,7 @@ VALENTINEL HOPES
 
 CENOTE
   UNDE : Unity
-  BREF : {{Cenote}} is an experimental platformer inspired by {{Underwater Base Jumping|http://www.youtube.com/watch?v=uQITWbAaDx0}}. 
+  BREF : {{Cenote}} is an experimental platformer inspired by {{Underwater Base Jumping|http://www.youtube.com/watch?v=uQITWbAaDx0}}.
   LONG
     & The goal is to reach a small red planet with the highest amount of points left. Cenote is the spiritual prequel of {{Zjeveni}}.
     - The air is only depleting when you are sinking.
@@ -984,7 +984,7 @@ TABLE
 DONSOL GUIDE
   UNDE : Table
   BREF : {{Donsol}}, created in collaboration with {{John Eternal|https://twitter.com/johneternal}}, is a card game about exploring a dungeon made of a standard 54 poker card set.
-  TYPE : Docs    
+  TYPE : Docs
   LINK
     https://itunes.apple.com/us/app/donsol/id976367718
     https://hundredrabbits.itch.io/donsol/community
@@ -1023,7 +1023,7 @@ WAITING FOR HORUS
 
 PICO
   UNDE : Collegiennes
-  BREF : {{Pico}} is an experimental color based puzzle game where the player needs to combine primary colours to create the pattern wanted by each level. 
+  BREF : {{Pico}} is an experimental color based puzzle game where the player needs to combine primary colours to create the pattern wanted by each level.
   LONG
     & Read the {{forum tread|http://forums.tigsource.com/index.php?topic=15392.0}}. It was created in a few days with {{Renaud Bedard|http://theinstructionlimit.com/}} and showcased at {*Prince of the Arcade*}.
     - Create the right colours and patterns with the given tools.
@@ -1074,11 +1074,11 @@ LAEISTHIC
 
 CHILDREN OF BRAMBLE
   UNDE : Laeisthic
-  BREF : {{Children of Bramble}} is a {{Laeisthic}} album that contains four tracks that sings of the Oasis of {{Rlionn}} and her Children. 
+  BREF : {{Children of Bramble}} is a {{Laeisthic}} album that contains four tracks that sings of the Oasis of {{Rlionn}} and her Children.
   TAGS : Discography
   LONG
     & This album begins by the Oasis of {{Laeisth}} to finally reach the castle of {{Andes}} and its sandsunken structure. This single is part of the {{Neauismetica}}, and shares some narrative concepts with {{Telekinetic}}.
-    @ discography children of bramble    
+    @ discography children of bramble
   LINK
     https://aliceffekt.bandcamp.com/album/children-of-bramble
 
@@ -1095,7 +1095,7 @@ KNOWN MAGYE
 
 EXTENDED SLEEP
   UNDE : Laeisthic
-  BREF : {{Extended sleep}} is the {{Laeisthic}} sequel to {{Known Magye}}, a deeper exploration of its universes, its stories. 
+  BREF : {{Extended sleep}} is the {{Laeisthic}} sequel to {{Known Magye}}, a deeper exploration of its universes, its stories.
   TAGS : Discography
   LONG
     & The album will be first performed at the A Maze Festival in Berlin, on April 23rd 2015.
@@ -1248,7 +1248,7 @@ REMIX
 
 TYPOGRAPHY
   UNDE : Illustration
-  BREF : Some of the {{typographies|Typography}} I have created over time, feel free to use them as you wish.
+  BREF : {{typographies|Typography}} created for {{Nataniev}} and {{Lietal}} projects.
   TYPE : Diary
   LINK
     https://github.com/neauoire/Font-Collection
@@ -1259,7 +1259,7 @@ VAST
   TYPE : Diary
   LONG
     & I recently found myself illustrating {{Elodie|http://noirmirroir.com}}'s abstract book "{{Vast - the perfect, the circular, the subjugated|http://noirmirroir.com/vast}}". A strangely perfect nonsensical coffee table curiosity that grabbed me from the moment I heard of its ties with some of the same Borgesian concepts that have also been exploring lately.
-    & I have created a series of ink fractals to ornate the book’s preface, table of content and cover. 
+    & I have created a series of ink fractals to ornate the book’s preface, table of content and cover.
   LINK
     http://noirmirroir.com/vast
 
@@ -1275,7 +1275,7 @@ THOUSAND ROOMS
   BREF : {{Thousand Rooms}} is a visual novel.
   LONG
     & {{Thousand Rooms}} was created in collaboration with illustrator {{Rekka Bellum|Rekka}}, following the behaviours of four characters and a room
-    & I have written this book with the hopes of creating a sort of {_Borges for children_}, in which the reader follows a bat, a cat, an owl and a fox who try and make sense of this simple system. 
+    & I have written this book with the hopes of creating a sort of {_Borges for children_}, in which the reader follows a bat, a cat, an owl and a fox who try and make sense of this simple system.
     & The book also encourages to try and understand the rules, and plan unsuggested avenues. We are releasing the book in English, French, Russian, Japanese & {{Lietal}}.
     & For the Lietal side-by-side translation, see {{Lae Doi}}.
   LINK
@@ -1293,14 +1293,14 @@ NEAUISMETICA
   TAGS : Portal
   BREF : The {{Neauismetica}} is a series of notes on the fiction of {{Dinaisth}}.
   LONG
-    & Referenced in almost all of the {{Nataniev}} projects, tales of this small planet are told through {{Aliceffekt}}'s music, Devine's {{illustrations|illustration}} and are the culture behind the {{Lietal}} Language. 
+    & Referenced in almost all of the {{Nataniev}} projects, tales of this small planet are told through {{Aliceffekt}}'s music, Devine's {{illustrations|illustration}} and are the culture behind the {{Lietal}} Language.
     ? Immortals speak not with words<br /> but wait for things to happen,<br />and merely points at them.
 
 NEON HERMETISM
   UNDE : Neauismetica
   BREF : Founded by {{Yajnev}}, the {{Neon Hermetists|Neon Hermetism}} are a collective of scientists involved in the creation of machines to study time.
   LONG
-    & The initiative was launched upon the discovery of an impossible structure and dimensional object floating in space, the {{Ehrivevnv}}. 
+    & The initiative was launched upon the discovery of an impossible structure and dimensional object floating in space, the {{Ehrivevnv}}.
     & From its early days forth, the object was believed to be a gathering place for more advanced beings.
     & {_Beyond the computing beautiful, <br />sleeps languages of impossible meanings._}
 
@@ -1336,7 +1336,7 @@ SOIES
   UNDE : Neon hermetism
   BREF : {{Soies}}, is a mean by which one can traverse the occuring, possible and impossible spaces.
   LONG
-    & The Soies model makes available the first values to exist beyond the limits of the current possible space, making computeable the location of the occuring, machines can then position themselves to execute the occuring and position themselves along the {{Soies}}. 
+    & The Soies model makes available the first values to exist beyond the limits of the current possible space, making computeable the location of the occuring, machines can then position themselves to execute the occuring and position themselves along the {{Soies}}.
     & This line of research is tied to the discovery of the {{Ehrivevnv}}.
 
 DINAISTH
@@ -1350,13 +1350,13 @@ KANIKULE
   UNDE : Dinaisth
   BREF : {{Kanikule}} is an infinite ocean that an immortal will spend an infitite amount of time crossing, effectively reaching the outer-shores mortal.
   LONG
-    & While one can sail away from the point that is {{Neau}}, one cannot return to it. 
+    & While one can sail away from the point that is {{Neau}}, one cannot return to it.
 
 NEAU
   UNDE : Kanikule
   BREF : {{Neau}} is a circular city, notable for its blue rooftops, displaying a tall spire at its center. It is also the place from which the {{Neauismetica}} derives its name.
   LONG
-    & The city exists at the center of the vast ocean of {_Kanikule_} and was the birthplace of {{Lietal}}. 
+    & The city exists at the center of the vast ocean of {_Kanikule_} and was the birthplace of {{Lietal}}.
 
 LAEISTH
   UNDE : Dinaisth
@@ -1370,7 +1370,7 @@ VETETRANDES
 
 DUOMO
   UNDE : Dinaisth
-  BREF : The {{Duomo}} plateau rises just above the lightest atmosphere of {{Dinaisth}}. 
+  BREF : The {{Duomo}} plateau rises just above the lightest atmosphere of {{Dinaisth}}.
   TAGS : Stub
 
 DILITRIELTH
@@ -1497,7 +1497,7 @@ NIUE
 
 DROWNSPIRE
   UNDE : Hundred rabbits
-  BREF : {{Drownspire}} was the name of an online store founded with {{Rekka Bellum|Rekka}}, back in 2009. 
+  BREF : {{Drownspire}} was the name of an online store founded with {{Rekka Bellum|Rekka}}, back in 2009.
   TYPE : Portal
   LONG
     & Our goals then, fueled what is now {{Hundred rabbits}}. We distributed the {{Vambits}} designer toys and published the {{Merure}} books.
@@ -1536,7 +1536,7 @@ THE BOOKS OF BABEL
   UNDE : Notes
   BREF : After ages of searching the endless isles of the {_Library Of Babel_}, here are a few interesting books that I have collected over the years.
   LONG
-    & The {*Narration*} books, the narrated thoughts of the reader in the vein of "I sit down, pick up the thick volume and begin reading, I notice the words to be- Oh, I can read my own thoughts on the page". 
+    & The {*Narration*} books, the narrated thoughts of the reader in the vein of "I sit down, pick up the thick volume and begin reading, I notice the words to be- Oh, I can read my own thoughts on the page".
     & Skipping lines to look ahead appears to already be acounted for and so, wherever one chooses to continue reading resumes the narration where it was left off. In this way, the book cannot be used to predict future thoughts, despite its content being already fully present and unchanging.
     & Some variances of these volumes read as dialogs between the reader's mental voice and that of other claimed interlocutor, possibly the book itself. Reading a line a second time hold but the account of past thoughts.
     & The {*Divination*} books are books that when to open to a previously unseen page, are said to answer a tought or another. Some of the books are used to regular purposes like to give a written out numerical answer to a mathematical question, or the location of a book or hexagon.
@@ -1597,7 +1597,7 @@ GAMME
   TAGS : Portal
   BREF : The {{Gamme}} is a series of concepts and tools.
   LONG
-    & A recurring topic throughout the {{Nataniev}} ecosystems is the trinity of {{Audio}}, {{Visual}} and {{Research}}. Of which the truer names, as per {{Lietal}}, should be physicality, Phisiognomy, and Psychology - Or even the subject itself, its shape & its concept. 
+    & A recurring topic throughout the {{Nataniev}} ecosystems is the trinity of {{Audio}}, {{Visual}} and {{Research}}. Of which the truer names, as per {{Lietal}}, should be physicality, Phisiognomy, and Psychology - Or even the subject itself, its shape & its concept.
     & Trisight is a name given to the pursuit of the {_Grand Oeuvre_}, the trinity of its members. The {*Grand Oeuvre*}, as per Trisight vocabulary, is meant to equal the sum of one's output goals.
 
 NATANIEV
@@ -1620,7 +1620,7 @@ OSCEAN
   UNDE : Nataniev
   BREF : {{Oscean}} is a custom wiki engine built within {{Nataniev}}.
   LONG
-    & {{Oscean}} was initiated on {{2008-08-10}}, and was meant to be a repository of the sum of {{Devine|Devine lu linvega}}'s projects and notes. 
+    & {{Oscean}} was initiated on {{2008-08-10}}, and was meant to be a repository of the sum of {{Devine|Devine lu linvega}}'s projects and notes.
     & It has since expanded into a network of tools, also known as {{Nataniev}}, which now hosts a series of Nataniev Native applications such as {{Ronin}}, {{Marabu}} and its social feed protocole {{Rotonde}}.
   LINK
     https://github.com/XXIIVV/vessel.oscean
@@ -1637,9 +1637,9 @@ DESAMBER
   UNDE : Nataniev
   BREF : {{Desamber}} is the time-format of the {{Nataniev}} ecosystems.
   LONG
-    & The {_Equal Month calendar_} has {*13 months*} of {*28 days*} each and the 365th day of the year is the {_Year Day_}, preceeded by the {_Leap Day_} on leap years. 
+    & The {_Equal Month calendar_} has {*13 months*} of {*28 days*} each and the 365th day of the year is the {_Year Day_}, preceeded by the {_Leap Day_} on leap years.
     = Today is {{!desamber}}.<br />The time is {{!clock}}.
-    & The clock has 6 digits, where their overall value is a ratio over the completion of the day. For example, Noon is 500, 6AM is 250 and 6PM is 750. 
+    & The clock has 6 digits, where their overall value is a ratio over the completion of the day. For example, Noon is 500, 6AM is 250 and 6PM is 750.
     & In the 000:000 format, the shortest pulse equals to 8.64 milliseconds, the second shortest 86.4 and so on.
   LINK
     http://github.com/hundredrabbits/Clock
@@ -1670,7 +1670,7 @@ PARADISE
   BREF : {{Paradise}} is a multiplayer interactive-fiction.
   LONG
     & {{Paradise}} plays like an interactive fiction novel, in an ever-changing world where players are not avatars, but places, and objects, and puns, words - moving around and into each other, threading chaos.
-    & In this anonymous world you can create anything, traverse the various player-created universes and explore {_conceptspace_}. 
+    & In this anonymous world you can create anything, traverse the various player-created universes and explore {_conceptspace_}.
     & See you {{there|http://paradise.xxiivv.com}}.
   LINK
     http://paradise.xxiivv.com
@@ -1701,7 +1701,7 @@ LAE DOI
 OBLIQUES
   UNDE : Gamme
   TYPE : Archive
-  BREF : {{Obliques}} are short essays on travel, {{lifestyle}} and optimisation. 
+  BREF : {{Obliques}} are short essays on travel, {{lifestyle}} and optimisation.
   TAGS : Portal
 
 LIFESTYLE
@@ -1712,8 +1712,8 @@ LIFESTYLE
 NUTRITION
   UNDE : Lifestyle
   BREF : The {{Nutrition}} guide covers the basics of proteins.
-  LONG 
-    & There are a few things in life that are as transformative and transhumanistic as {{nutrition}}, not eating meat, eggs and dairy aligns with my pragmatic views of life-prolonging aspirations. 
+  LONG
+    & There are a few things in life that are as transformative and transhumanistic as {{nutrition}}, not eating meat, eggs and dairy aligns with my pragmatic views of life-prolonging aspirations.
   TYPE : Docs
   TAGS : guide
   LINK
@@ -1775,7 +1775,7 @@ CAMERA
 
 KEYBOARD
   UNDE : Inventory
-  BREF : This {{mechanical keyboard|Keyboard}} is the {{Vortex Poker II PBT Mechanical Keyboard|https://mechanicalkeyboards.com/shop/index.php?l=product_detail&p=458}} with {{Blank Mint PBT caps|https://www.massdrop.com/buy/npkc-blank-pbt-keycaps}}. 
+  BREF : This {{mechanical keyboard|Keyboard}} is the {{Vortex Poker II PBT Mechanical Keyboard|https://mechanicalkeyboards.com/shop/index.php?l=product_detail&p=458}} with {{Blank Mint PBT caps|https://www.massdrop.com/buy/npkc-blank-pbt-keycaps}}.
   LONG
     & The color choice is inspired from the {{Verreciel}} interface colors. I have red Cherry MX switches installed, with {{sound dampening o-rings|http://www.amazon.ca/gp/product/B00VHXHP6Q?psc=1&redirect=true&ref_=oh_aui_detailpage_o00_s00}}. It's also connected, with a braided {{90 degrees angle USB wire|http://www.amazon.ca/gp/product/B004YD6LW0?psc=1&redirect=true&ref_=oh_aui_detailpage_o00_s00}}.
 
@@ -1866,7 +1866,7 @@ DEVINE LU LINVEGA
   TAGS : Portal
   BREF : {{Devine lu linvega}} is a nomad, developer and designer.
   LONG
-    & Operating under the {*Neauoire*} moniker, Devine is a {{polymath|https://monochromatic.co/writing/interview-with-devine}} working on a series of {{experimental tools|Gamme}} and {{applications|Interactive}}. Populating {{Nataniev}} with notes on {{Language|Lietal}}, {{Illustrations|Illustration}} and {{Sounds|Audio}}, Devine hopes to inspire visitors to learn and to {{travel}}. 
+    & Operating under the {*Neauoire*} moniker, Devine is a {{polymath|https://monochromatic.co/writing/interview-with-devine}} working on a series of {{experimental tools|Gamme}} and {{applications|Interactive}}. Populating {{Nataniev}} with notes on {{Language|Lietal}}, {{Illustrations|Illustration}} and {{Sounds|Audio}}, Devine hopes to inspire visitors to learn and to {{travel}}.
     * To {{flee|Obliques}} is life,<br /> To linger, {{Death}}.
   LINK
     https://twitter.com/neauoire/media
@@ -1917,7 +1917,7 @@ YEARLY
   BREF : The {{Plan|Aesthetics}}.
   TYPE : calendar
   LONG
-    & It's important to note that by that time I already stumbled on the idea of daily logs, and while I was mostly logging inactivity, I had been doing the routine for nearly 2 years already. 
+    & It's important to note that by that time I already stumbled on the idea of daily logs, and while I was mostly logging inactivity, I had been doing the routine for nearly 2 years already.
     & Programing and design logs were hardly present in the logs. Music was to become a reason to design, and an introduction to world-building.
 
 2009
@@ -1986,7 +1986,7 @@ REGIONSTEAM SNOWDAYS
 
 DOWNTEMPERATURE
   UNDE : First wave
-  BREF : {{Downtemperature}} is the first {{Aliceffekt}} EP, released originally as three albums {_First Air & Last Aid_}, {_Goneplains_} and {_Downtemperature_}. 
+  BREF : {{Downtemperature}} is the first {{Aliceffekt}} EP, released originally as three albums {_First Air & Last Aid_}, {_Goneplains_} and {_Downtemperature_}.
   LONG
     & The three albums were consolidated into a single release in 2017, this album was also never performed live.
 
