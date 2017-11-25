@@ -142,18 +142,18 @@ function Term(name,memory)
   this._archive = function()
   {
     var html = "";
+    html += "<list>"
     for(id in this.children){
       var c1 = this.children[id];
-      html += "<h2>{{"+c1.name+"}}</h2>"
-      html += "<p>"+c1.bref+"</p>"
+      html += c1.children.length < 1 ? "<ln class='parent end'>{{"+c1.name+"}}</ln>" : "<ln class='parent'>{{"+c1.name+"}}</ln>"
+      // html += "<p>"+c1.bref+"</p>"
       if(c1.children.length < 1){ continue; }
-      html += "<list>"
       for(i in c1.children){
         var c2 = c1.children[i];
         html += "<ln>"+c2.bref+"</ln>"
       }
-      html += "</list>"
     }
+    html += "</list>"
     return new Runic().markup(html)
   }
 

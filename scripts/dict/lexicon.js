@@ -1820,6 +1820,7 @@ LANGUAGE
     & Welcome to the Language Portal.
     & The goal of these pages is to host a few resources, summaries and notes from my own language studies.
     & Some of the future projects might have to do with {{English Prime|http://en.wikipedia.org/wiki/E-Prime}}(E′) or the {{Tractatus Logico-Philosophicus|https://en.wikipedia.org/wiki/Tractatus_Logico-Philosophicus}}, maybe even an analysis of the {{Logopandecteision|http://en.wikipedia.org/wiki/Logopandecteision}} or the {{Neaudethaumata|http://penelope.uchicago.edu/urquhart/index.html}}. To give you a sense of my interest in linguistics, here are some of my favourite words:
+    ~ Favourite Words
     - {{Февраль|https://ru.wikipedia.org/wiki/Февраль}}, February in Russian
     - {{Roÿnes|https://fr.wiktionary.org/wiki/roÿne}}, queen in Middle French
     - {*Pleurir*}, crying-laugh in French

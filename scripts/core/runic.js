@@ -4,6 +4,7 @@ function Runic(raw)
 
   this.runes = {
     "&":{tag:"p"},
+    "~":{tag:"list",sub:"ln",class:"parent",stash:true},
     "-":{tag:"list",sub:"ln",stash:true},
     "#":{tag:"code",sub:"ln",stash:true},
     "?":{tag:"note"},
@@ -74,16 +75,16 @@ function Runic(raw)
       this.stash.push({line:line,rune:rune}); return "";
     }
     // Default
-    return rune ? "<"+rune.tag+">"+line+"</"+rune.tag+">" : "";
+    return rune ? "<"+rune.tag+" class='"+rune.class+"'>"+line+"</"+rune.tag+">" : "";
   }
 
   this.pop_stash = function(stash = this.stash)
   {
     var html = ""
     for(id in stash){
-      html += "<"+stash[0].rune.sub+">"+stash[id].line+"</"+stash[0].rune.sub+">\n";
+      html += "<"+stash[0].rune.sub+" class='"+stash[id].rune.class+"'>"+stash[id].line+"</"+stash[0].rune.sub+">\n";
     }
-    return "<"+stash[0].rune.tag+">"+html+"</"+stash[0].rune.tag+">";
+    return "<"+stash[0].rune.tag+" class='"+stash[0].rune.class+"'>"+html+"</"+stash[0].rune.tag+">";
   }
 
   this.html = this.parse(raw);
