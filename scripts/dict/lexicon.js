@@ -87,7 +87,7 @@ PURGATEUS
   BREF : {{Purgateus}} is a video game remix of {{Proteus|http://www.visitproteus.com}}.
   LONG
     & This world behave just like Proteus, but looks and sounds different. Read more on {{Venus Patrol|http://venuspatrol.com/purgateus/}}. The project was inspired from a tweet by {{Ian Snyder|https://twitter.com/whatisian/status/468819959859007488}}
-    * Instructions
+    ~ Instructions
     - Make a copy of your {*/resources*} folder.
     - Replace the {*/resources*} folder with the downloaded package.
     - On OS X, right-click on Proteus, {*Show Package Content*}.
@@ -168,11 +168,6 @@ ES GULF SUNFLOWERS
   BREF : {{Es Gulf Sunflowers}} tale remembers the gorgeous sunken fields of {{Es|Dinaisth}} - the underwater jump gate to {{Dinaisth}}, for its vast ocean terrace and display of sunflowers.
   LINK
     https://aliceffekt.bandcamp.com/album/es-gulfssunflowers
-
-DISCOGRAPHY
-  UNDE : Audio
-  TYPE : Docs
-  BREF : The collected {{Discography}} from 2006 to now.
 
 ALICEFFEKT
   UNDE : Audio
@@ -439,6 +434,7 @@ GROT
   UNDE : Mixtape
   BREF : For {{Secret Thirteen|http://secretthirteen.org}}
   LONG
+    ~ Tracklist
     - Эдуард Артемьев - Философская тема
     - Decades/Failures - Everything in Black
     - The Twilight Sad - In Nowheres
@@ -461,6 +457,7 @@ QUERY
   UNDE : Mixtape
   BREF : For {{MusicForProgramming()|http://musicforprogramming.net}}
   LONG
+    ~ Tracklist
     - Kangding ray - La Belle
     - Nonima & theAudiologist - Shard
     - HTRK - Love Triangle
@@ -481,6 +478,7 @@ SOMBRE
   UNDE : Mixtape
   BREF : For {{Depthcore Radio|http://depthcore.com}}
   LONG
+    ~ Tracklist
     - Access To Arasaka - xt10.20zp9
     - Clubroot - Embryo
     - Dahlia's Tear - 2nd Sky Between Lights, Unreleased Colours and Earth
@@ -1232,7 +1230,7 @@ REMIX
   UNDE : Aliceffekt
   BREF : The {{Remix}} collection contains a list of the {{Aliceffekt}} remixes and unique tracks made for compilations.
   LONG
-    * Remixes
+    ~ Remixes
     - Comaduster - {{Winter Eyes|http://www.adnoiseam.net/store/comaduster-winter-eyes_p4083.html}}, Tympanik Audio 2013
     - Veroníque - {{Fisherman II|http://www.youtube.com/watch?v=lQItP8L8N2k}} 2013
     - iVardensphere - {{Ghostnote|http://www.youtube.com/watch?v=3kALWsZPJi8}} Metropolis Records 2012
@@ -1240,7 +1238,7 @@ REMIX
     - Doomer - Weltenzerstorer 2010
     - Stray - Does it really matter 2009
     - Perfection Plastic - Bad Girls 2009
-    * Rare Tracks
+    ~ Rare Tracks
     - Iszoloscope - {{Dumachus Junction Feat. Aliceffekt|http://ant-zen.bandcamp.com/track/dumachus-junction-feat-aliceffekt}}[Beyond Within], Ant-zen 2010
     - VA - {* Laeis 7th Passage E.th *}[Kinetik Festival Volume 3], Artoffact 2010
     - VA - {{Thievery of the Jade Books|http://www.youtube.com/watch?v=TtgUpM5HxhY}}[Kinetik Festival Volume 4], Artoffact 2011
