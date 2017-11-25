@@ -7,10 +7,10 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20171118 - 
 20171117 - 37      Dotgrid              Development
 20171116 - 37      Rotonde              Development
-20171115 ! 24  401 Ronin                Release
+20171115 - 24  401 Ronin                Release
 20171114 - 26      Rotonde              Branding
 20171113 - 37      Dotgrid              Update
-20171112 @ 35  385 Dotgrid              Maintenance          General improvements  {{Dotgrid}} is looking and feeling more mature. With its option to export PNG and SVG, there are no more need for me to be using heavy-weight tools like Illustrator.
+20171112 ! 35  385 Dotgrid              Maintenance          General improvements  {{Dotgrid}} is looking and feeling more mature. With its option to export PNG and SVG, there are no more need for me to be using heavy-weight tools like Illustrator.
 20171111 N 34  405 Markl                Maintenance
 20171110 - 27      Desamber             Tools
 20171109 - 26  383 Rotonde              Design

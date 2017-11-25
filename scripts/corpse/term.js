@@ -2,7 +2,6 @@ function Term(name,memory)
 {
   this.name = name;
   this.diaries = [];
-  this.diary = null;
   this.children = [];
   this.parent = null;
   this.logs = [];
@@ -82,10 +81,21 @@ function Term(name,memory)
     return "si";
   }
 
+  this.diary = function()
+  {
+    if(this.diaries.length < 1){ return null; }
+    
+    for(id in this.diaries){
+      if(this.diaries[id].is_featured){ return this.diaries[id]; }
+    }
+    return this.diaries[0];
+  }
+
   this.photo = function()
   {
     if(this.diaries.length < 1){ return ""; }
-    return "url(media/diary/"+this.diaries[0].photo+".jpg)";
+
+    return "url(media/diary/"+this.diary().photo+".jpg)";
   }
 
   this.preview = function()

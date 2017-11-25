@@ -7,17 +7,17 @@ HOME
 
 AUDIO
   UNDE : Home
-  BREF : The {{Audio}} sector hosts all projects focusing on sound and live shows.
+  BREF : The {{Audio}} hosts sound and live projects.
   TYPE : Archive
 
 VISUAL
   UNDE : Home
-  BREF : The {{Visual}} sector hosts all projects focusing on to design and interaction.
+  BREF : The {{Visual}} hosts design and interaction projects.
   TYPE : Archive
 
 RESEARCH
   UNDE : Home
-  BREF : The {{Research}} sector hosts all projects focusing on philosophy and linguistics.
+  BREF : The {{Research}} hosts philosophy and linguistics projects.
   TYPE : Archive
 
 AUTOMATONS
