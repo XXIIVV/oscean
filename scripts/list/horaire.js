@@ -3248,7 +3248,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20090105
 20090104
 20090103
-20090102
+20090102 N 36    1 Devine lu linvega    Photography          Nakano Tempers
 20090101
 20081231
 20081230
@@ -4230,7 +4230,6 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20060429
 20060428
 20060427
-20060426 - 36      Horaire              Development          Started Horaire
-20060426 N 36    1 Devine lu linvega    Photography          Nakano Tempers`);
+20060426 - 36      Horaire              Development          Started Horaire`);
 
 invoke.vessel.seal("list","horaire");

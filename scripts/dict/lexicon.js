@@ -201,9 +201,9 @@ HEX HIVE NECKLACE
 
 REKKA
   UNDE : Hundred rabbits
-  BREF : {{Rekka Bellum|Rekka}} is an illustrator and writter who narrates the {{Hundred Rabbits}} videos.
+  BREF : {{Rekka Bellum|Rekka}} is an illustrator and writter.
   LONG
-    & Rekka is also the illustrator of {{Oquonie}}, manager of {{Grimgrains}} and was founder of {{Drownspire}}.
+    & Rekka is also the illustrator of {{Oquonie}}, manager of {{Grimgrains}} and was cd-founder of {{Drownspire}} and {{Hundred Rabbits}}.
   LINK
     http://kokorobot.ca/
 

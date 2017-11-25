@@ -22,6 +22,7 @@ function Horaire(list)
     for(id in this.logs){
       var log = this.logs[id];
       invoke.vessel.lexicon.inject_log(log);
+      invoke.vessel.lexicon.terms.home.logs.push(log);
     }
   }
 
