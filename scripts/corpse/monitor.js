@@ -2,7 +2,7 @@ function Monitor(logs)
 {
   this.el = document.createElement('yu'); this.el.id = "monitor"
   this.lod = 75.0;
-  this.height = 50;
+  this.height = 15;
   this.seg = [];
 
   var i = 0;

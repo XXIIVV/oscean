@@ -9,13 +9,14 @@ function Layout(host)
   this.hd.appendChild(this.logo = document.createElement('a'));
   this.hd.appendChild(this.search = document.createElement('input'));
   this.hd.appendChild(this.h1 = document.createElement('h1'));
+  this.hd.appendChild(this.h2 = document.createElement('h2'));
   // Body
   this.md.appendChild(this.md_wr = document.createElement('wr'));
-  this.md_wr.appendChild(this.sb = document.createElement('sb'));
   this.md_wr.appendChild(this.m1 = document.createElement('m1'));
   this.md_wr.appendChild(this.m2 = document.createElement('m2'));
+  this.md_wr.appendChild(this.m3 = document.createElement('m3'));
+  this.md_wr.appendChild(this.monitor.el);
   this.md_wr.appendChild(this.hr = document.createElement('hr'));
-  this.sb.appendChild(this.monitor.el);
   // Footer
   this.fd.appendChild(this.fd_wr = document.createElement('wr'));
 
@@ -46,13 +47,14 @@ function Layout(host)
     this.search.setAttribute("value",this.term.name)
     this.logo.setAttribute("href",this.term.parent ? this.term.parent.name : "Home")
     this.h1.innerHTML = this.term.bref;
+    this.h2.innerHTML = this.term.h2();
     this.hd.className = this.term.theme();
     this.icon.style.backgroundImage = "url('media/badge/nataniev.svg')";
     this.photo.style.backgroundImage = this.term.photo();
     this.monitor.update(this.term.logs);
     this.m1.innerHTML = this.term.long;
     this.m2.innerHTML = this.term.view();
-    this.sb.innerHTML = this.term.sidebar();
+    this.m3.innerHTML = this.term.tree();
 
     var icon_name = this.term.name.toLowerCase().replace(/\ /g,".");
     var img = new Image();

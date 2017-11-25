@@ -1749,7 +1749,7 @@ INVENTORY
   TYPE : Portal full
   LONG
     & Here are some of my favourite items of {_Everyday Carry_}.
-    * EDC
+    ~ EDC
     - Staedtler's Pigment Liner 0.3-2.0mm
     - MUJI's A5 Dotgrid
     - Gerber's Tactical + Shard
@@ -1763,14 +1763,14 @@ CAMERA
   BREF : The {{camera}}, presently used for the {{Nataniev}} projects, is the Sony a6000 and the Voightlander 28mm lens.
   LONG
     & A few other cameras are used, below is a list of the principal camera equipment.
-    - {*Film*}
+    ~ Film
     - {{Voigtländer Bessa R3M 250 Jahre|https://www.cameraquest.com/voigt_250.htm}}, Voigtlander
     - {{Super wide heliar 15mm f4.5|http://www.kenrockwell.com/voigtlander/15mm.htm}}, Voigtlander
     - {{Ultron 28mm f2|http://www.kenrockwell.com/voigtlander/28mm-f2.htm}}, Voigtlander
-    - {*Digital*}
+    ~ Digital
     - Alpha a6000 24.3 MP Interchangeable Lens Camera, Sony
     - NEX/LEM Adapter, Novoflex
-    - {*Infrared*}
+    ~ Infrared
     - {{50mm Nikkor f1.2|https://commons.wikimedia.org/wiki/File:Auto_nikkor_50mm.jpg}}, Nikon
 
 KEYBOARD
