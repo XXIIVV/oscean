@@ -1781,7 +1781,7 @@ KEYBOARD
 
 MIRRORS
   UNDE : Obliques
-  BREF : The {{Mirrors}} are a collection of notes and articles mirrored on here for safekeeping and offline access.
+  BREF : {{Mirrors}} of notes and articles for safekeeping and offline access.
   TYPE : Archive
 
 GLOSSARY
@@ -1791,7 +1791,7 @@ GLOSSARY
 
 BIASES
   UNDE : Mirrors
-  BREF : The {{Biases}} cheatsheet is a list of compiled fallacies, effects, and biases.
+  BREF : A {{Biases}} cheatsheet of compiled fallacies, effects, and biases.
   LONG
     & The list was compiled from {{LessWrong|https://wiki.lesswrong.com/wiki/Less_Wrong_Canon_on_Rationality}} as well as personal notes, collected from the Philosopher's Toolkit and other sources. Rationality is characteristic of thinking and acting optimally.
   TYPE : Docs
