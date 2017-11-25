@@ -59,14 +59,14 @@ function Term(name,memory)
     if(this.parent && this.parent.name != this.name){
       var tree_html = ""
       this.parent.start();
-      tree_html += "<ln><a class='parent' href='"+this.parent.name+"'>"+this.parent.name.capitalize()+"</a></ln>"
+      tree_html += "<ln class='parent'><a href='"+this.parent.name+"'>"+this.parent.name.capitalize()+"</a></ln>"
       for(id in this.parent.children){
         var term = this.parent.children[id]
-        tree_html += "<ln><a class='sibling "+(term.name.toLowerCase() == this.name.toLowerCase() ? 'active' : '')+"' href='"+term.name+"'>"+term.name.capitalize()+"</a></ln>"
+        tree_html += "<ln class='sibling'><a class='"+(term.name.toLowerCase() == this.name.toLowerCase() ? 'active' : '')+"' href='"+term.name+"'>"+term.name.capitalize()+"</a></ln>"
         if(term.name.toLowerCase() == this.name.toLowerCase()){
           for(id in this.children){
             var term = this.children[id];
-            tree_html += "<ln><a class='children' href='"+term.name+"'>"+term.name.capitalize()+"</a></ln>"
+            tree_html += "<ln class='children'><a href='"+term.name+"'>"+term.name.capitalize()+"</a></ln>"
           }
         }
       }

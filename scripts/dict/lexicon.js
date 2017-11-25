@@ -80,7 +80,7 @@ ADVENT V
 DESKTOP
   UNDE : Interactive
   BREF : This list shows all of the {{desktop}} projects built of the last few years.
-  TYPE : Portal false
+  TYPE : Portal
 
 PURGATEUS
   UNDE : Desktop
@@ -503,7 +503,7 @@ SOMBRE
 MOBILE
   UNDE : Interactive
   BREF : This collection of {{mobile}} apps constitutes a series of games, tools and experiments on UX and linguistics.
-  TYPE : Portal false
+  TYPE : Portal
 
 BIFURCAN
   UNDE : Mobile
@@ -931,7 +931,7 @@ UNITY
   BREF : The {{Unity}} Portal contains various unity-built desktop games.
   LONG
     & Sadly, a lot of these games were lost in a computer death, and are only listed here for memory's sake. Some additional Unity games are available under {{Collegiennes}}.
-  TYPE : Portal false
+  TYPE : Portal
 
 SISEON
   UNDE : Unity
@@ -979,7 +979,7 @@ TABLE
   BREF : The {{Table}} Portal contains various board game guides.
   LONG
     & The interactive project list contains various completed and unreleased experiments and games for iOS, desktop and browser.
-  TYPE : Portal false
+  TYPE : Portal
 
 DONSOL GUIDE
   UNDE : Table
@@ -999,8 +999,8 @@ DOMINE GUIDE
 
 COLLEGIENNES
   UNDE : Interactive
-  BREF : {{Collegiennes}} is a game jam collective initiated with {{Renaud Bedard|http://theinstructionlimit.com}}.
-  TYPE : Portal false
+  BREF : {{Collegiennes}} is a game jam collective.
+  TYPE : Portal
 
 VOLKENESSEN
   UNDE : Collegiennes
@@ -1069,7 +1069,7 @@ TARPOPHOBIA
 
 LAEISTHIC
   UNDE : Aliceffekt
-  TYPE : Portal false
+  TYPE : Portal
   BREF : The {{Laeisthic}} albums are {{Neauismetic}} albums occuring only within the {{Laeisth}} continent of {{Dinaisth}}.
 
 CHILDREN OF BRAMBLE
@@ -1105,7 +1105,7 @@ EXTENDED SLEEP
 
 DUOMIC
   UNDE : Aliceffekt
-  TYPE : Portal false
+  TYPE : Portal
   BREF : The {{Duomic}} albums are {{Neauismetic}} records of {{Neonev}}'s travel from {{Duomo}} to {{Dilitrielth}}.
 
 THE OPAL INQUISITORS
