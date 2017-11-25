@@ -1,17 +1,17 @@
 var payload = new Runic(`
-* THE SELF
+~ The Self
 - Defined by intentions | Defined by association | Defined by the past
 - Self-Actualization | Social Validation | Comfort and Basic Needs
 - Made | Shaped | Molded
 - Defines a label | Picks a label | Is given a label
 
-* THE ASPIRATIONS
+~ The Aspirations
 - Wants to do | Wants to be | Wants to have
 - Wants to live forever | Wants to be remembered | Wants to die happy
 - Fears the lack of time | Fears being wrong | Fears not having enough
 - Thinks of the future | Thinks of what others will think | Thinks of the money
 
-* THE ACTIONS
+~ The Actions
 - Talks about ideas | Talks about people | Talks about things
 - Thinks in pictures | Thinks in words | Thinks in feelings
 - Likes the story | Likes the artist | Likes the effects
@@ -22,7 +22,7 @@ var payload = new Runic(`
 - Make it happen | Fake it till you make it | Wait until it happens
 - Praises what you did | Praises who you are | Praises what you have
 
-* THE AUTHORITY
+~ The Authority
 - Logic, Power, Authenticity | Authority, Purpose, Conformity | Experience, Freedom, Complacency
 - Create | Resell | Consume
 - Imagination | Rearrangement | Trial and error
@@ -36,7 +36,7 @@ var payload = new Runic(`
 - Kantian | Utilitarian | Hedonistic
 - Can't stand boredom | Can't stand uncertainty | Can’t stand pain
 
-* THE TRUTH
+~ The Truth
 - Understands | Memorizes | Improvises
 - From experiments | From memorization | From conditioning
 - Rather be unhappy with truth | Rather be happy with a lie | Rather not know

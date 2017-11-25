@@ -671,7 +671,6 @@ MARKL
   LONG
     & {*Markl*} is a game in which players must {{program|https://twitter.com/hundredrabbits/status/916842882677358592}} their character's fighting style, to face various opponents in a battle happening too fast for humans to compete.
     & There are 4 characters to choose from, with unique attributes and stats, allowing for varied loadouts and combat styles.
-    % markl.characters
     & The game will be released as {{Hundred Rabbits}} late 2017, or early 2018, for all desktop platforms.
   LINK
     https://github.com/hundredrabbits/Markl
@@ -1343,8 +1342,6 @@ DINAISTH
   UNDE : Neauismetica
   TYPE : Archive
   BREF : {{Dinaisth}} is both the name of the planet and of a continent which harbors {{Andes}}' offices.
-  LONG
-    % dinaisth
 
 KANIKULE
   UNDE : Dinaisth

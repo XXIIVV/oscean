@@ -1,5 +1,5 @@
 var payload = new Runic(`
-* BIASES
+~ Biases
 - Actor–observer bias : {*Tendency*} to overemphasize the influence of their personality and underemphasize the influence of their situation.
 - Attentional bias : {*Tendency*} to neglect relevant data when making judgments of a correlation or association.
 - Choice-supportive bias : {*Tendency*} to retroactively ascribing to one's choices to be more informed than they were when they were made.
@@ -33,7 +33,7 @@ var payload = new Runic(`
 - Positive bias : {*Tendency*} to test hypotheses with positive rather than negative examples, thus risking to miss obvious disconfirming tests.
 - Positive outcome bias : {*Tendency*} to overestimate the probability of good things happening to them.
 
-* GROUPTHINK BIAS
+~ Groupthink BIAS
 - Groupthink : Tendency of humans to tend to agree with each other, and hold back objections or dissent even when the group is wrong.
 - Conformity bias : {*Tendency*} to behave similarly to others in a group, even if doing so goes against your own judgment.
 - Ingroup bias : {*Tendency*} to give preferential treatment to others they perceive to be members of their own groups.
@@ -41,7 +41,7 @@ var payload = new Runic(`
 - Shared information bias : {*Tendency*} for group members to spend more time and energy discussing information that all members are already familiar with (i.e., shared information), and less time and energy discussing information that only some members are aware of.
 - Bandwagon fallacy : Assuming that an idea has merit simply because many people believe it or practice it.
 
-* EFFECTS
+~ Effects
 - Ambiguity effect : {*Tendency*} to avoid options for which missing information makes the probability seem "unknown".
 - Bizarreness effect : {*Tendency*} to remember bizarre material better than common material.
 - Bystander effect : {*Tendency*} for individuals to less likely offer help in an emergency situation when other people are present.
@@ -85,7 +85,7 @@ var payload = new Runic(`
 - Endowment effect : {*Tendency*} to demand much more to give up an object than they would be willing to pay to acquire it.
 - Next-in-line effect : That a person in a group has diminished recall for the words of others who spoke immediately before himself, if they take turns speaking.
 
-* FALLACIES
+~ Fallacies
 - Conjunction fallacy : {*Assumption*} that specific conditions are more probable than general ones.
 - Detached lever fallacy : {*Assumption*} that something simple for one system will be simple for others.
 - Gambler's fallacy : {*Assumption*} that individual random events are influenced by previous random events. {*Ex*}: I've flipped heads with this coin five times consecutively, so the chance of tails coming out on the sixth flip is much greater than heads.
@@ -100,7 +100,7 @@ var payload = new Runic(`
 - Top 1% fallacy : Related to not taking into account the idea that a small sample size is not always reflective of a whole population and that sample populations with certain characteristics, e.g. made up of repeat job seekers, are not reflective of the whole population.
 - Fallacy of relative privation : Error of thinking that if something is worse than the problem currently being discussed, then the problem currently being discussed isn't that important at all. In other words: nothing matters if it's not literally the worst thing happening
   
-* ILLUSIONS
+~ Illusions
 - Asymmetric insight : {*Tendency*} to perceive the knowledge of their peers to surpass their peers' knowledge of them.
 - Control : {*Tendency*} to believe they can control or at least influence outcomes that they clearly cannot.
 - External agency : {*Tendency*} to perceive self-generated preferences as instead being caused by insightful, effective and benevolent agents.
@@ -109,7 +109,7 @@ var payload = new Runic(`
 - Frequency : {*Tendency*} to notice something everywhere after having learnt about it. Also known as the Baader-Meinhof Phenomenon.
 - Transparency : {*Tendency*} to overestimate others' ability to know them, and they also overestimate their ability to know others. Misleading impression that your words convey more to others than they really do.
 
-* HEURISTICS
+~ Heuristics
 - Absurdity : {*Mental shortcut*} where highly untypical situations are classified as absurd or impossible. 
 - Affect : {*Mental shortcut*} basing a decision on an emotional reaction rather than a calculation.
 - Availability : {*Mental shortcut*} that treats easily recalled information as important or more important than alternative solutions which are not as readily recalled.

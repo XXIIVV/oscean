@@ -3,17 +3,17 @@ function Runic(raw)
   this.raw = raw;
 
   this.runes = {
-    "&":{tag:"p"},
+    "&":{tag:"p",class:""},
     "~":{tag:"list",sub:"ln",class:"parent",stash:true},
-    "-":{tag:"list",sub:"ln",stash:true},
-    "#":{tag:"code",sub:"ln",stash:true},
-    "?":{tag:"note"},
-    ":":{tag:"info"},
-    "*":{tag:"h2"},
-    "=":{tag:"h3"},
-    "+":{tag:"hs"},
-    "|":{tag:"tr",sub:"td",rep:true},
-    "»":{tag:"tr",sub:"th",rep:true},
+    "-":{tag:"list",sub:"ln",class:"",stash:true},
+    "#":{tag:"code",sub:"ln",class:"",stash:true},
+    "?":{tag:"note",class:""},
+    ":":{tag:"info",class:""},
+    "*":{tag:"h2",class:""},
+    "=":{tag:"h3",class:""},
+    "+":{tag:"hs",class:""},
+    "|":{tag:"tr",sub:"td",class:"",rep:true},
+    "»":{tag:"tr",sub:"th",class:"",rep:true},
     ">":{tag:""}
   }    
 
