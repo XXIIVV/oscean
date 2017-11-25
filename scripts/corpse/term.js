@@ -134,7 +134,7 @@ function Term(name,memory)
     var html = "";
     for(id in this.children){
       var c1 = this.children[id];
-      html += "<h2>"+c1.name+"</h2>"
+      html += "<h2>{{"+c1.name+"}}</h2>"
       html += "<p>"+c1.bref+"</p>"
       if(c1.children.length < 1){ continue; }
       html += "<list>"
@@ -144,7 +144,7 @@ function Term(name,memory)
       }
       html += "</list>"
     }
-    return html
+    return new Runic().markup(html)
   }
 }
 

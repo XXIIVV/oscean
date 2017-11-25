@@ -1706,7 +1706,7 @@ OBLIQUES
 
 LIFESTYLE
   UNDE : Obliques
-  BREF : The {{Lifestyle}} notes are explanations for some of my lifestyle choices.
+  BREF : {{Lifestyle}} notes are on some of my choices.
   TYPE : Archive
 
 NUTRITION
@@ -1726,7 +1726,7 @@ AESTHETICS
 
 NOMAD
   UNDE : Lifestyle
-  BREF : The {{Nomad}} notes are reflexions on travel, and on my dreams of a nomadic life.
+  BREF : The {{Nomad}} notes are reflexions on the dreams of a nomadic life.
   TYPE : Docs
 
 OFF THE GRID
@@ -1745,7 +1745,7 @@ OCEANISM
 
 INVENTORY
   UNDE : Obliques
-  BREF : The {{Inventory}} is a detailed collection of various pieces of equipment used in the creation of {{XXIIVV|Nataniev}}.
+  BREF : Detailed {{Inventory}} of equipment used in the creation of {{XXIIVV|Nataniev}}.
   TYPE : Portal full
   LONG
     & Here are some of my favourite items of {_Everyday Carry_}.
