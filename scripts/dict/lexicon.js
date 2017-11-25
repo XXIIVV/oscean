@@ -1904,9 +1904,6 @@ OFFLINE
   UNDE : Null
   TYPE : Redirect Obliques
 
-DEBUG
-  BREF : {{Debug}} messages and tools.
-
 YEARLY
   BREF : {{Yearly}} rating of output values.
   LONG
