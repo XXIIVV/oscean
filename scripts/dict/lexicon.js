@@ -79,7 +79,7 @@ ADVENT V
 
 DESKTOP
   UNDE : Interactive
-  BREF : This list shows all of the {{desktop}} projects built of the last few years.
+  BREF : A collection of {{desktop}} applicatios and games.
   TYPE : Portal
 
 PURGATEUS
@@ -1815,7 +1815,7 @@ DIRECTORY
 LANGUAGE
   UNDE : Obliques
   TYPE : Archive
-  BREF : This {{Language}} portal is a collection of notes on natural and syntetic languages.
+  BREF : Various {{Language}} notes on natural and syntetic languages.
   LONG
     & Welcome to the Language Portal.
     & The goal of these pages is to host a few resources, summaries and notes from my own language studies.
@@ -1830,7 +1830,7 @@ LANGUAGE
 
 JAPANESE
   UNDE : Language
-  BREF : The {{Japanese}} page is an edited version of Tad Perry's 1992 {_Quick and Dirty Guide to Japanese_}.
+  BREF : The {{Japanese}} page is a guide to basic Japanese.
   LONG
     & This is an edited version on Tad Perry's 1992 {_ Quick and Dirty Guide to Japanese_} with improved templating for readability, as well as some rephrasing and editing. The romaji phonetics have been replaced with kanji and hiraganas.
   TYPE : Docs

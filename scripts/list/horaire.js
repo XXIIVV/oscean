@@ -11,7 +11,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20171114 - 26      Rotonde              Branding
 20171113 - 37      Dotgrid              Update
 20171112 ! 35  385 Dotgrid              Maintenance          General improvements  {{Dotgrid}} is looking and feeling more mature. With its option to export PNG and SVG, there are no more need for me to be using heavy-weight tools like Illustrator.
-20171111 N 34  405 Markl                Maintenance
+20171111 ! 34  405 Markl                Maintenance
 20171110 - 27      Desamber             Tools
 20171109 - 26  383 Rotonde              Design
 20171108 ! 27  380 Wiktopher            Tools
@@ -206,7 +206,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20170504 + 39      Thousand rooms       Release              Released 1000 Rooms
 20170503 - 39      Thousand rooms       Linguistics
 20170502 - 29      Thousand rooms       Branding
-20170501 N 39    9 Thousand rooms       Writing              Cat has a visitor.    Today we completed the first draft of our upcoming book {{Thousand Rooms}}.
+20170501 ! 39    9 Thousand rooms       Writing              Cat has a visitor.    Today we completed the first draft of our upcoming book {{Thousand Rooms}}.
 20170430 - 39      Nataniev             Development
 20170429 - 39      Nataniev             Tools
 20170428 - 39      Nataniev             Tools
@@ -279,7 +279,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20170220 - 35      Oquonie              Tools
 20170219 - 35      Oquonie              Tools
 20170218 - 37      Oquonie              Tools
-20170216 N 25  191 Extended sleep       Illustration
+20170216 ! 25  191 Extended sleep       Illustration
 20170217 - 35      Oquonie              Maintenance
 20160216 - 33      The will the wisp    Writing
 20170215 - 35      Oquonie              Tools
@@ -1044,7 +1044,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20150118 - 35      Hiversaires          Maintenance          3.2
 20150117 - 35      Noirca               Maintenance          4.0
 20150116 - 35      Dew                  Maintenance          1.1
-20150115 N 18  199 Ramiel               Release              Villa Moirai
+20150115 ! 18  199 Ramiel               Release              Villa Moirai
 20150114 - 18      Ramiel               Composition
 20150113 - 18      Ramiel               Composition
 20150112 - 18      Ramiel               Composition
@@ -1758,7 +1758,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20130203 - 35      Hiversaires          Prototype
 20130202 - 35      Hiversaires          Prototype
 20130201 - 27  173 Macro                Photography          Building a telescope
-20130131 N 25  243 Devine lu Linvega    Photography          Osaka Tempers
+20130131 ! 25  243 Devine lu Linvega    Photography          Osaka Tempers
 20130130 - 29      Wallpaper            Illustration
 20130129 - 27      Wallpaper            Illustration
 20130128 - 35      Oscean               Maintenance
@@ -1935,7 +1935,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20120810 - 32      Oscean               Development
 20120809 - 35      Oscean               Development
 20120808 - 29   39 Infrared             Writing              Wereda
-20120807 N 25  257 Devine lu Linvega    Photography          Tokyo Tempers
+20120807 ! 25  257 Devine lu Linvega    Photography          Tokyo Tempers
 20120806
 20120805 - 32      Oscean               Development
 20120804
@@ -3248,7 +3248,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20090105
 20090104
 20090103
-20090102 N 36    1 Devine lu linvega    Photography          Nakano Tempers
+20090102 ! 36    1 Devine lu linvega    Photography          Nakano Tempers
 20090101
 20081231
 20081230
@@ -3900,7 +3900,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20070325
 20070324
 20070323
-20070322 N 35   76 Lietal               Release              Composing Words
+20070322 ! 35   76 Lietal               Release              Composing Words
 20070321
 20070320
 20070319

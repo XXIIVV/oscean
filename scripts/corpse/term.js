@@ -47,7 +47,7 @@ function Term(name,memory)
   {
     var html = "";
 
-    if(this.links){
+    if(this.links.length > 0){
       var link_html = ""
       for(id in this.links){
         var link = this.links[id]
