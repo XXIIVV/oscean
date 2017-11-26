@@ -1,6 +1,7 @@
-function Invoke(name)
+function Invoke(name,version = "100")
 {
   this.name = name;
+  this.version = version;
   this.path = "";
   this.requirements = {core:["corpse","memory","list","runic","desamber","clock"],main:[name]};
   this.includes = {};
@@ -28,7 +29,7 @@ function Invoke(name)
   {
     var s = document.createElement('script');
     s.type = 'text/javascript';
-    s.src = "scripts/"+name+'.js';
+    s.src = "scripts/"+name+'.js?version='+this.version;
     document.getElementsByTagName('head')[0].appendChild(s);
   }
 

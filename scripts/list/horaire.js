@@ -11,7 +11,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20171114 - 26      Rotonde              Branding
 20171113 - 37      Dotgrid              Update
 20171112 ! 35  385 Dotgrid              Maintenance          General improvements  {{Dotgrid}} is looking and feeling more mature. With its option to export PNG and SVG, there are no more need for me to be using heavy-weight tools like Illustrator.
-20171111 ! 34  405 Markl                Maintenance
+20171111 ~ 34  405 Markl                Maintenance
 20171110 - 27      Desamber             Tools
 20171109 - 26  383 Rotonde              Design
 20171108 ! 27  380 Wiktopher            Tools

@@ -79,8 +79,8 @@ function Term(name,memory)
 
   this.theme = function()
   {
-    if(this.diaries.length < 1){ return "no"; }    
-    return "si";
+    if(this.diaries.length < 1){ return "no_photo"; }    
+    return this.diary().theme;
   }
 
   this.diary = function()

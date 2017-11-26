@@ -9,10 +9,10 @@ function Log(list)
   this.sector = ["misc","audio","visual","research"][parseInt(this.code.substr(2,1))]
   this.value = parseInt(this.code.substr(3,1))
   
-
   this.photo = this.list.pict ? parseInt(this.list.pict) : null;
 
-  this.is_featured = this.rune == "!";
+  this.is_featured = this.rune == "!" || this.rune == "~";
+  this.theme = this.rune == "!" ? "blanc" : (this.rune == "~" ? "noir" : "no_photo")
 }
 
 invoke.vessel.seal("corpse","log");
