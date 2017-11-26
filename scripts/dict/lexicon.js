@@ -29,14 +29,7 @@ THE WILL THE WISP
   UNDE : Automatons
   BREF : {{The will the wisp}} is a twitter bot that generates short rhymes.
   LONG
-    > <h4>
-    $ thewillthewisp generate
-    > </h4>
-    # Somewhen future, and secondly obscure.
-    # Thus traveled, nor inwardly transient.
-    # Upon devices, hopefully devils.
-    # Someplace cute, and terribly brute.
-    # But thy nautilus is actually nauseous.
+    & Somewhen future, and secondly obscure.<br />Thus traveled, nor inwardly transient.<br />Upon devices, hopefully devils.<br />Someplace cute, and terribly brute.<br />But thy nautilus is actually nauseous.
   LINK
     https://twitter.com/thewillthewisp
     https://github.com/XXIIVV/vessel.thewillthewisp
