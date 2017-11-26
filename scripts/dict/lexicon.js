@@ -899,7 +899,7 @@ LEFT
   UNDE : Software
   BREF : {{Left}} is a distractionless writing application.
   LONG
-    & {*Left*} was created to help {{Rekka}} with the writing of her upcoming novel {_Wiktopher_}.
+    & {*Left*} was created to help {{Rekka}} with the writing of her upcoming novel {_Wiktopher_}. It includes writing statistics, basic text operations and a speed reader.
     & You can view the complete {{Left Manual|https://github.com/hundredrabbits/Left}} on Github.
   LINK
     https://github.com/hundredrabbits/Left
