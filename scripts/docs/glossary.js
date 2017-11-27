@@ -62,10 +62,10 @@ var payload = new Runic(`~ Arguments
 - Anti-inductiveness : The idea that the market would stop being efficient if everyone acted like it already was efficient. For example, a vote in a democracy, the more people that believe their vote counts towards the outcome of an election, the less their votes count.  Also known as the Reverse Tinkerbell effect. 
 - Anti-epistemology : Bad explicit beliefs about rules of reasoning, usually developed in the course of protecting an existing false belief
 
-* MISC
+~ MISC
 - Dutch Book : A person who has set prices on an array of wagers in such a way that he or she will make a net gain regardless of the outcome, is said to have made a Dutch book. When one has a Dutch book, his or her opponent always loses.
 
-* TYPES
+~ TYPES
 - Altruism : Actions undertaken for the benefit of other people.  : {*Example*}: If you do something to feel good about helping people, or even to be a better person in some spiritual sense, it isn't truly altruism.
 - Hedonism : A set of philosophies which hold that the highest goal is to maximize pleasure, or more precisely pleasure minus pain.
 - Reductionism : Disbelief that the higher levels of simplified multilevel models are out there in the territory, that concepts constructed by mind in themselves play a role in the behavior of reality.
