@@ -12,7 +12,7 @@ function Log(list)
   this.photo = this.list.pict ? parseInt(this.list.pict) : null;
 
   this.is_featured = this.rune == "!" || this.rune == "~";
-  this.theme = this.rune == "!" ? "blanc" : (this.rune == "~" ? "noir" : "no_photo")
+  this.theme = this.rune == "!" ? "blanc" : (this.rune == "~" || this.photo > 0 ? "noir" : "no_photo")
 }
 
 invoke.vessel.seal("corpse","log");

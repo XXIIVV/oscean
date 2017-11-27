@@ -3,7 +3,7 @@ HOME
   UNDE : Home
   BREF : Welcome to the {{Nataniev}} playground and ecosystem.
   LONG
-    & This wiki provides documentation and narrative context for the various {{Audio}}, {{Visual}} and {{Research}} projects of multimedia developer {{Devine Lu Linvega}}. If this is your first time around, a good place to begin your exploration is the {{Diary}}.
+    & This wiki provides documentation and narrative context for the various {{Audio}}, {{Visual}} and {{Research}} projects of multimedia developer {{Devine Lu Linvega}}. 
 
 AUDIO
   UNDE : Home
