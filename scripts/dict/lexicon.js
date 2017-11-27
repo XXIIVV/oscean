@@ -754,9 +754,9 @@ KALEIDOSCOPE
 
 HYPERVOID
   UNDE : Polygonoscopy
-  BREF : Navigating the nullplane of Dischromatic Nullcolour Anti-pigments.
+  BREF : The {{Hypervoid}} is navigating the nullplane of dischromatic Anti-pigments.
   LONG
-    & The {{Hypervoid}} pieces were selected to be on the cover of the second volume of the {{Amaze Newspaper|http://issuu.com/independenceamazing/docs/amaze_screen}}.
+    & The  pieces were selected to be on the cover of the second volume of the {{Amaze Newspaper|http://issuu.com/independenceamazing/docs/amaze_screen}}.
   TYPE : Diary
 
 BRANE
@@ -871,10 +871,10 @@ SOFTWARE
 
 MARABU
   UNDE : Software
-  BREF : {{Marabu}} is a programmable music tracker.
+  BREF : {{Marabu}} is a music software.
   TAGS : Guide
   LONG
-    & {*Marabu*} is built as a fork to the opensource {_Soundbox_}, and is meant to be an improvement on functionalities and design.
+    & {*Marabu*} is tracker-type composition tool and synthetiser, built as a fork to the opensource {_Soundbox_}, and is meant to be an improvement on functionalities and design.
     & You can view the complete {{Marabu Manual|https://github.com/hundredrabbits/Marabu}} on Github.
   LINK
     https://github.com/neauoire/Marabu
@@ -882,24 +882,20 @@ MARABU
 
 RONIN
   UNDE : Software
-  BREF : {{Ronin}} is a graphic design terminal.
+  BREF : {{Ronin}} is a design tool.
   LONG
-    & The application is a cross-over between Vim and Photoshop, meant for simple export tasks, basic illustration jobs and resizing.
-    & The typical Ronin syntax is {*module*}, followed with {*method:params*}. In this example, the {*crop*} method is part of the frame module. While one might choose to manually input or edit the crop method parameters, Ronin makes accessible the $ helper that accesses the cursor position. With a query including the $ character, clicking on the canvas will replace the $ with a position - and holding shift while clicking and dragging will replace the $ with a rect.
-    # frame resize:640x480
-    # io load:
-    # io draw:20,20|100x100
-    & It is  and the creation of grid based designs. Most of the iconography of {{Nataniev}} has been created with {_Ronin_}.
+    & The application is a cross-over between Vim and Photoshop, meant to quickly render simple graphic tasks, such as exports, resize and colouring. It also includes basic digital painting functionalities. 
+    & It is  and the creation of grid based designs. Most of the iconography of {{Nataniev}} has been created with {_Ronin_} and {{Dotgrid}}.
     & You can view the complete {{Ronin Manual|https://github.com/hundredrabbits/Ronin}} on Github.
   LINK
     https://github.com/hundredrabbits/Ronin
-    https://youtu.be/gifzjhyBwOc
+    https://hundredrabbits.itch.io/ronin
 
 LEFT
   UNDE : Software
-  BREF : {{Left}} is a distractionless writing application.
+  BREF : {{Left}} is a writing application.
   LONG
-    & {*Left*} was created to help {{Rekka}} with the writing of her upcoming novel {_Wiktopher_}. It includes writing statistics, basic text operations and a speed reader.
+    & {*Left*} was created to help {{Rekka}} with the writing of the upcoming novel {_Wiktopher_}. It includes auto-complete, a synonyms dictionary, writing statistics, basic text operations and a speed reader.
     & You can view the complete {{Left Manual|https://github.com/hundredrabbits/Left}} on Github.
   LINK
     https://github.com/hundredrabbits/Left
@@ -907,7 +903,7 @@ LEFT
 
 DOTGRID
   UNDE : Software
-  BREF : {{Dotgrid}} is a minimalist vector drawing tool.
+  BREF : {{Dotgrid}} is a vector tool.
   LONG
     & {*Dotgrid*} works by adding control points and drawing different line-types between them. The tool was created to design logos and glyphs for various {{Nataniev}} projects, and made available as a free and open source application.
     & Choose between 3 types of strokes, lines, arc and 3-points beziers. The application can be entirely operated with the keyboard and can render as both PNG and SVG files. Additional effects like horizontal, vertical and radial mirror are also available - as well as the stroke width and linecap can also be changed. The application menu can be hidden by pressing the tab key.
@@ -1238,7 +1234,7 @@ REMIX
 
 TYPOGRAPHY
   UNDE : Illustration
-  BREF : {{typographies|Typography}} created for {{Nataniev}} and {{Lietal}} projects.
+  BREF : {{Typographies|Typography}} created for {{Nataniev}} and {{Lietal}} projects.
   TYPE : Diary
   LINK
     https://github.com/neauoire/Font-Collection

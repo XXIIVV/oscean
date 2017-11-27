@@ -39,7 +39,7 @@ function Layout(host)
     this.term = this.host.lexicon.find(key.replace(/\+/g," "));
     this.term.start();
 
-    // window.scrollTo(0,0);
+    window.scrollTo(0,0);
     window.location = "#"+key;
 
     document.title = this.term.name;

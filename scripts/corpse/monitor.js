@@ -2,13 +2,13 @@ function Monitor(logs)
 {
   this.el = document.createElement('yu'); this.el.id = "monitor"
   this.lod = 75.0;
-  this.height = 15;
+  this.height = 30;
   this.seg = [];
 
   var i = 0;
   while(i <= this.lod){
     this.el.appendChild(this.seg[i] = document.createElement('bar'))
-    this.seg[i].style.right = (i*2)+"px";
+    this.seg[i].style.right = (i*4)+"px";
     i += 1;
   }
 
@@ -30,7 +30,7 @@ function Monitor(logs)
     while(i < this.lod){
       var s = (segments[i]/max);
       var soft_s = ((segments[i-1] ? (segments[i-1]/max) : 0) + (segments[i+1] ? (segments[i+1]/max) : 0) + s)/3
-      this.seg[i].style.height = soft_s > 0 ? parseInt(soft_s * this.height)+"px" : "1px";
+      this.seg[i].style.height = soft_s > 0 ? parseInt(soft_s * this.height)+"px" : "3px";
       i += 1
     }
   }
