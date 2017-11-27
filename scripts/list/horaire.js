@@ -89,7 +89,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20170829 - 37      Rotonde              Migration
 20170828 - 27      Horaire              Design                                     Each project page now has an Horaire widget with Fh and Dhf.
 20170827 - 28      Ronin                Documentation                              
-20170826 @ 29  238 Getapan 728k         Illustration         Album cover           Created a series of mountain renders for the release of {{Getapan 728k}}.
+20170826 ! 29  238 Getapan 728k         Illustration         Album cover           Created a series of mountain renders for the release of {{Getapan 728k}}.
 20170825 - 18      Getapan 728k         Composition
 20170824 ! 29  215 Marabu               Design               Removed everything    My favourite design is the one that you cannot tell is there.
 20170823 - 31      Marabu               Maintenance
@@ -105,7 +105,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20170813 ! 28  212 Marabu               Interface            Version 2             Built a {{Nataniev}} native version of {{Marabu}} tracker music sequencer.
 20170812 - 28      Marabu               Design
 20170811 - 37  211 Philipp traum        Writing              The Beldam            Wrote a few notes on objectivity and realism, under the {{Philipp Traum}} page.
-20170810 @ 38  209 Nutrition            Documentation        Meal Plan Basics      Wrote a simple {{nutritional|Nutrition}} guide with basic information on proteins and essential amino acids.
+20170810 ! 38  209 Nutrition            Documentation        Meal Plan Basics      Wrote a simple {{nutritional|Nutrition}} guide with basic information on proteins and essential amino acids.
 20170809 - 26  208 Left                 Design               Tooling               The missing link to the {{Nataniev Suite|Suite}} was a proper native IDE.
 20170808 - 36      Marabu               Update
 20170807 - 37      Ronin                Update            
@@ -129,10 +129,10 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20170720 - 37      Nataniev             Tools
 20170719 - 36      Nataniev             Tools
 20170718 - 26      Nataniev             Interface
-20170718 @ 26  196 Desamber             Design               Entaloneralie Native  Implemented {{Entaloneralie}} into {{Nataniev}} as the native {{Clock}} application.
+20170718 ! 26  196 Desamber             Design               Entaloneralie Native  Implemented {{Entaloneralie}} into {{Nataniev}} as the native {{Clock}} application.
 20170717 - 28      Hundred rabbits      Video  
 20170716 - 18      Hundred rabbits      Composition
-20170715 @ 38  178 Japanese             Documentation        Sidonia               Pages from {_Knights Of Sidonia_}, to be held at the top of the {{Japanese}} notes as it was one of the first Japanese books that I attempted to translate.
+20170715 ~ 38  178 Japanese             Documentation        Sidonia               Pages from {_Knights Of Sidonia_}, to be held at the top of the {{Japanese}} notes as it was one of the first Japanese books that I attempted to translate.
 20170714 - 33  169 Japanese             Writing              Nakano
 20170713 - 25      Russian              Linguistics
 20170712 - 37      Grimgrains           Development
@@ -177,7 +177,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20170603 - 37      Horaire              Design
 20170602 - 27      Known magye          Illustration
 20170601 - 24      Aliceffekt           Branding
-20170531 @ 28   10 Collected works      Illustration         Cyan
+20170531 ! 28   10 Collected works      Illustration         Cyan
 20170530 ! 28  179 Children of bramble  Illustration         Immortal Bird
 20170529 - 28      Dinaisth             Illustration
 20170528 - 29      Dei dain             Illustration
@@ -186,13 +186,13 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20170525 - 28      Ronin                Design
 20170524 - 38      Ronin                Tools
 20170523 - 38      Ronin                Tools
-20170522 @ 29  168 Ronin                Design               Build 09              Updated {{Ronin}} with a major design overhaul and various functionality improvements. It includes the ability to save & load .rin files. I have also updated the logo to fit within the {{Gamme}} ecosystem.
-20170521 @ 29  177 Lae doi              Linguistics          Translation           Translated {{Thousand Rooms}}, {{Lae Doi}}, into {{Lietal}} - making it the first Lietal literature.
+20170522 ! 29  168 Ronin                Design               Build 09              Updated {{Ronin}} with a major design overhaul and various functionality improvements. It includes the ability to save & load .rin files. I have also updated the logo to fit within the {{Gamme}} ecosystem.
+20170521 ! 29  177 Lae doi              Linguistics          Translation           Translated {{Thousand Rooms}}, {{Lae Doi}}, into {{Lietal}} - making it the first Lietal literature.
 20170520 - 38      Lietal               Linguistics
 20170519 - 39      Lietal               Linguistics
 20170518 - 37      Pino                 Maintenance
 20170517 - 34  175 Instrument           Photography          Waterproof            This case shields the {{Instrument}} from salty sprays and moisture.
-20170516 @ 28  174 Instrument           Design
+20170516 ! 28  174 Instrument           Design
 20170515 - 28      Horaire              Design
 20170514 - 29      Horaire              Design
 20170513 - 28      Nataniev             Prototype
@@ -234,7 +234,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20170407 - 31      Nataniev             Maintenance
 20170406 - 29      Hundred rabbits      Video
 20170405 + 18  498 Superworker          Release              Released Superworker
-20170404 @ 15  350 Superworker          Composition          Pocket Operator       The album was recorded and mastered while crossing the Pacific Ocean onboard {{Pino}}.
+20170404 ! 15  350 Superworker          Composition          Pocket Operator       The album was recorded and mastered while crossing the Pacific Ocean onboard {{Pino}}.
 20170403 - 18      Superworker          Composition
 20170402 - 31      Dotgrid              Tools
 20170401 - 14      Superworker          Composition
@@ -263,7 +263,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20170309 - 24      Hundred rabbits      Photography
 20170308 - 34      Ronin                Tools
 20170307 - 34      Neauismetica         Writing
-20170306 @ 28   49 South pacific        Photography          Nuku-Hiva
+20170306 ! 28   49 South pacific        Photography          Nuku-Hiva
 20170305 - 12      Superworker          Composition
 20170304 + 29  404 South pacific        Event                Move to the Marquesas
 20170303 - 15      Hundred rabbits      Composition
@@ -444,7 +444,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20160910 - 15      Hundred rabbits      Composition
 20160909 - 38      Pino                 Maintenance
 20160908 - 37      Pino                 Maintenance
-20160907 @ 25  258 Black                Photography
+20160907 ! 25  258 Black                Photography
 20160906 - 37      Pino                 Maintenance
 20160905 - 15      Portalion            Composition
 20160904 - 24   96 Markl                Design               First draft           Here's a screenshot for {{Hundred Rabbits}}' upcoming game.
@@ -459,7 +459,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20160826 - 25  485 Black                Photography   
 20160825 - 39      Nataniev             Tools
 20160824 - 39      Nataniev             Tools
-20160823 @ 26   77 America              Photography          San Francisco         First picture taken upon sailing to San Francisco from Vancouver.
+20160823 ! 26   77 America              Photography          San Francisco         First picture taken upon sailing to San Francisco from Vancouver.
 20160822 - 35      Nataniev             Development
 20160821 - 25   75 Nervous              Modeling             Exhibit C
 20160820 - 35      Blindfolk            Linguistics
@@ -684,7 +684,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20160114 - 16      Portalion            Composition
 20160113 + 23      Hundred rabbits      Branding             Move to Vancouver
 20160112 - 28  490 Beauty               Illustration         02                    A special tribute to {{Jesse Kanda|http://www.jessekanda.com}}'s works.
-20160111 @ 28  487 Beauty               Illustration         01
+20160111 ! 28  487 Beauty               Illustration         01
 20160110 - 25  488 Beauty               Illustration
 20160109 - 37      Verreciel            Tools
 20160108 - 37      Verreciel            Tools
@@ -756,7 +756,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20151103 - 39      The will the wisp    Maintenance
 20151102 - 26  472 Dictionarism         Design               Diarism
 20151101 - 25      Oscean               Design
-20151031 @ 34  166 Mobile               Photography
+20151031 ! 34  166 Mobile               Photography
 20151030 - 36      Verreciel            Tools
 20151029 - 38      Verreciel            Tools
 20151028 - 39      Verreciel            Development
@@ -1083,7 +1083,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20141211 - 35      Noirca               Maintenance          3.4
 20141210 - 17  288 Supervisitor         Performance          Dodecae               It was performed live at the {{Dodecae}} event in Toronto on December 6th.
 20141209 - 17  287 Supervisitor         Live
-20141208 @ 17  286 Supervisitor         Release              Release
+20141208 ! 17  286 Supervisitor         Release              Release
 20141207 - 26  285 Oquonie              Performance          Bit Bazaar
 20141206 - 29  281 Dodecae              Illustration         Flyer
 20141205 - 17      Supervisitor         Composition
@@ -1215,7 +1215,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20140801 - 38      Advent v             Development
 20140731
 20140730
-20140729 @ 16  129 Ledoliel             Maintenance          1.2
+20140729 ! 16  129 Ledoliel             Maintenance          1.2
 20140728 - 35  128 Bifurcan             Maintenance          Screensaver
 20140727 - 38      Oscean               Maintenance          Ten Axis
 20140726 - 31      Oscean               Maintenance          Inner Haven
@@ -1282,7 +1282,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20140526 - 25      Brane                Illustration
 20140525 - 35  127 Paradise             Development          Update
 20140524 - 35      Paradise             Development
-20140523 @ 19   11 Purgateus Soundtrack Composition          Autumn Leaves
+20140523 ! 19   11 Purgateus Soundtrack Composition          Autumn Leaves
 20140522 + 35  116 Purgateus            Release              Purgateus Release
 20140521 - 19   36 Purgateus Soundtrack Composition          
 20140520 - 29   35 Purgateus            Design               
@@ -1640,7 +1640,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20130602 - 29      Entaloneralie        Release              
 20130601 - 38      Entaloneralie        Development
 20130531
-20130530 @ 29  235 Paradise             Illustration         The Endless Shores
+20130530 ! 29  235 Paradise             Illustration         The Endless Shores
 20130529 - 29      Oscean               Design
 20130528 - 29      Oscean               Branding
 20130527 - 29      Oscean               Branding
@@ -1708,7 +1708,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20130326 - 29      Hiversaires          Design
 20130325 - 37      Dictionaery          Tools
 20130324 - 37      Oscean               Design
-20130323 @ 19      Hiversaires          Composition
+20130323 ! 19      Hiversaires          Composition
 20130322 - 17      Hiversaires          Composition
 20130321 - 38      Hiversaires          Testing
 20130320 - 35      Hiversaires          Testing
@@ -2095,7 +2095,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20120304 - 35  100 Paradise             Illustration         Lost in Paradise
 20120303 - 35      Paradise             Release
 20120302 - 35      Paradise             Tools
-20120301 @ 25   29 Waiting for horus    Design               Waiting for Horus
+20120301 ! 25   29 Waiting for horus    Design               Waiting for Horus
 20120229 - 35      Oscean               Design
 20120228
 20120227 - 25      Waiting for horus    Design
@@ -2283,7 +2283,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20110829
 20110828 - 35      Horaire              Development
 20110827 - 35      Oscean               Tools
-20110826 @ 25   17 Aliceffekt           Illustration         Aliceffekt Shirt I
+20110826 ! 25   17 Aliceffekt           Illustration         Aliceffekt Shirt I
 20110825 - 35      Oscean               Development
 20110824 - 35      Neauismetica         Writing
 20110823 ! 35   14 Typography           Typography           Septambres Lith
@@ -2532,7 +2532,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20101223 - 39      Horaire              Development
 20101222 - 39      Oscean               Development
 20101221
-20101220 @ 15  315 To The Aeons Hell    Release              To The Aeons Hell
+20101220 ! 15  315 To The Aeons Hell    Release              To The Aeons Hell
 20101219
 20101218 - 19      To The Aeons Hell    Performance          Toy Company - Montre
 20101217 - 19      To The Aeons Hell    Rehearsal
@@ -2633,7 +2633,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20100913
 20100912 - 39   99 Vambits              Design               Vambits, DIY
 20100911
-20100910 @ 25   80 Vambits              Design               Vambits, Gen Hallowe
+20100910 ! 25   80 Vambits              Design               Vambits, Gen Hallowe
 20100909 - 15      To The Aeons Hell    Composition
 20100908
 20100907 - 25      Pico                 Design
@@ -2933,7 +2933,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20091117
 20091116
 20091115 + 29      Merure               Release              Release Merure 2
-20091114 @ 29   43 Merure               Release              Merure 2
+20091114 ! 29   43 Merure               Release              Merure 2
 20091113 - 29  303 Cyanosis fever       Design               Cyanosis Fever
 20091112
 20091111
@@ -2961,7 +2961,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20091020
 20091019
 20091018
-20091017 @ 29  323 Maeve                Illustration         First Ludivine
+20091017 ! 29  323 Maeve                Illustration         First Ludivine
 20091016
 20091015
 20091014
@@ -4157,7 +4157,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20060712
 20060711
 20060710
-20060709 @ 25  137 Rekka                Photography          New Challenger
+20060709 ! 25  137 Rekka                Photography          New Challenger
 20060708
 20060707
 20060706
