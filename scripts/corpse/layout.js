@@ -35,34 +35,38 @@ function Layout(host)
   this.load = function(key)
   {
     if(this.term && key.toLowerCase() == this.term.name.toLowerCase()){ console.log("Already here",key); return; }
-    
-    this.term = this.host.lexicon.find(key.replace(/\+/g," "));
-    this.term.start();
 
-    window.scrollTo(0,0);
+    this.el.style.opacity = 0;
     window.location = "#"+key;
+    
+    var c = invoke.vessel.corpse;
+    c.term = c.host.lexicon.find(key.replace(/\+/g," "));
+    c.term.start();
+    c.photo.style.backgroundImage = c.term.photo();
+    c.monitor.update(c.term.logs);
+    document.title = c.term.name;
 
-    document.title = this.term.name;
+    setTimeout(function(){ 
+      c.el.style.opacity = 1;
+      window.scrollTo(0,0);
+      c.search.setAttribute("value",c.term.name)
+      c.logo.setAttribute("href",c.term.parent ? c.term.parent.name : "Home")
+      c.h1.innerHTML = c.term.bref;
+      c.h2.innerHTML = c.term.h2();
+      c.hd.className = c.term.theme();
+      c.icon.style.backgroundImage = "url('media/badge/nataniev.svg')";
+      c.m1.innerHTML = c.term.long;
+      c.m2.innerHTML = c.term.view();
+      c.m3.innerHTML = c.term.tree();
 
-    this.search.setAttribute("value",this.term.name)
-    this.logo.setAttribute("href",this.term.parent ? this.term.parent.name : "Home")
-    this.h1.innerHTML = this.term.bref;
-    this.h2.innerHTML = this.term.h2();
-    this.hd.className = this.term.theme();
-    this.icon.style.backgroundImage = "url('media/badge/nataniev.svg')";
-    this.photo.style.backgroundImage = this.term.photo();
-    this.monitor.update(this.term.logs);
-    this.m1.innerHTML = this.term.long;
-    this.m2.innerHTML = this.term.view();
-    this.m3.innerHTML = this.term.tree();
-
-    var icon_name = this.term.name.toLowerCase().replace(/\ /g,".");
-    var img = new Image();
-    img.src = "media/badge/"+icon_name+".svg";
-    img.onload = function(){
-      if(img.naturalHeight == 0){ return; }
-      invoke.vessel.corpse.icon.style.backgroundImage = "url('media/badge/"+icon_name+".svg')";
-    }
+      var icon_name = c.term.name.toLowerCase().replace(/\ /g,".");
+      var img = new Image();
+      img.src = "media/badge/"+icon_name+".svg";
+      img.onload = function(){
+        if(img.naturalHeight == 0){ return; }
+        invoke.vessel.corpse.icon.style.backgroundImage = "url('media/badge/"+icon_name+".svg')";
+      }
+    },250)
   }
 
   this.link = function(target)

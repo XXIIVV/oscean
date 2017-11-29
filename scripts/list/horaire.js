@@ -1,6 +1,12 @@
 let $HORAIRE = new List(`
 DATE     CODE PICT TERM                 TASK                 NAME                  TEXT                                                                                                                                                                    END
 20171231 - 00
+20171129 - 36      Left                 Tools
+20171128 - 34      Nataniev             Research
+20171127 - 25      Oscean               Design
+20171126
+20171125
+20171124
 20171123 ! 34  499 Left                 Maintenance
 20171122 - 28      Dotgrid              Design
 20171121 - 
