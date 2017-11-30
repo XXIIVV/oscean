@@ -34,6 +34,8 @@ function Layout(host)
 
   this.load = function(key)
   {
+    this.prev = this.term;
+    
     if(this.term && key.toLowerCase() == this.term.name.toLowerCase()){ console.log("Already here",key); return; }
 
     this.el.style.opacity = 0;

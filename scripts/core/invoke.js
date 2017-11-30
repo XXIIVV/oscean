@@ -3,7 +3,7 @@ function Invoke(name,version = "100")
   this.name = name;
   this.version = version;
   this.path = "";
-  this.requirements = {core:["corpse","memory","list","runic","desamber","clock"],main:[name]};
+  this.requirements = {core:["corpse","memory","list","runic","desamber","clock","keyboard"],main:[name]};
   this.includes = {};
   this.is_owner = false;
   this.vessel = null;
@@ -60,6 +60,7 @@ function Invoke(name,version = "100")
   this.start = function()
   {
     this.vessel = new window[this.name.capitalize()]();
+    this.keyboard = new Keyboard();
     this.vessel.summon();
   }
 }
