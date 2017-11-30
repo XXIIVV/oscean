@@ -912,6 +912,15 @@ DOTGRID
     https://github.com/hundredrabbits/Dotgrid
     http://hundredrabbits.itch.io/Dotgrid
 
+BYT
+  UNDE : Software
+  BREF : {{Byt}} is a ByteBeat IDE.
+  LONG
+    & {*Byt*} is a little program to write {{ByteBeat|http://canonical.org/~kragen/bytebeat/}} compositions, procedural noise.
+    ? "A formula that defines a waveform as a function of time, measured in 1/8000th of a second."
+  LINK
+    https://github.com/neauoire/byt
+
 UNITY
   UNDE : Interactive
   BREF : The {{Unity}} Portal contains various unity-built desktop games.
