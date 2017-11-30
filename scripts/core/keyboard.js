@@ -18,6 +18,7 @@ function Keyboard()
     e.preventDefault();
 
     invoke.vessel.corpse.load(last_page.name)
+
   }
 
   document.onkeyup = this.key_up;

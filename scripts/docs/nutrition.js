@@ -14,14 +14,14 @@ var payload = new Runic(`
 * MEAL PLAN
 * Cooking Basics
 & The high-quality protein foods can be made whole by combining with other ingredients, but the basic optimal combinations is {*Beans with grains, nuts or seeds*}.
-* Vitamins
+~ Vitamins
 - {*A*}: Dark green vegetables, yellow root vegetables and some yellow fruits.
 - {*B*}: Whole grains, potatoes, nutritional yeast, many fresh vegetables.
 - {*C*}: Dark leafy greens, citrus, potatoes, cauliflowers, sweet potatoes and brocoli.
 - {*Iron*}: Legumes and greens.
 - {*Calcium*}: Grains, greens and soybeans.
 - {*B12*}: cannot be found naturally in the vegetable kingdom, and a lack of it can cause nervous system damage. The body stores extra B12 in the liver. There is a negligible amount of B12 in miso.
-* Essential Amino Acids
+~ Essential Amino Acids
 - {*Tryptophan*}: Limiting Amino Acids in some grains and beans.
 - {*Lysine*}: Limiting Amino Acids in plant, grains, seeds, nuts and beans.
 - {*Methionine*}: Limiting Amino Acids in plant.

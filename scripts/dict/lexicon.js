@@ -1722,9 +1722,9 @@ NOMAD
   BREF : The {{Nomad}} notes are reflexions on the dreams of a nomadic life.
   TYPE : Docs
 
-OFF THE GRID
+OFFLINE
   UNDE : Lifestyle
-  BREF : The {{Off The Grid}} notes are a collection of lessons on living away from cities.
+  BREF : The {{Offline}} notes are a collection of lessons on living away from cities.
   LONG
     & This page is an ever growing collection of notes on technical {{off-the-grid|#off_the_grid}} and {{liveaboard|#liveaboard}} topics. If you have unawnsered questions, please leave us a message on {{Twitter|https://twitter.com/hundredrabbits}}.
   TYPE : Docs
@@ -1893,10 +1893,6 @@ GAMES
 ABOUT
   UNDE : Null
   TYPE : Redirect Nataniev
-
-OFFLINE
-  UNDE : Null
-  TYPE : Redirect Obliques
 
 YEARLY
   BREF : {{Yearly}} rating of output values.
