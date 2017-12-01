@@ -1837,6 +1837,12 @@ RUSSIAN
   TYPE : Docs
   TAGS : guide
 
+FRANSSET
+  UNDE : Language
+  BREF : {{Fransset}} are collected notes on suggested French reforms.
+  TYPE : Docs
+  TAGS : guide
+
 LIETAL
   UNDE : Language
   BREF : {{Lietal}} is an experimental {{synthetic language|http://en.wikipedia.org/wiki/Constructed_language}}.

@@ -64,11 +64,11 @@ function Runic(raw)
   {
     // Append to Stash
     if(this.stash.length > 0){
-      if(rune && this.stash[0].rune.tag == rune.tag){
-        this.stash.push({line:line,rune:rune});return "";
+      if(rune && this.stash[0].rune.tag == rune.tag && rune.stash){
+        this.stash.push({line:line,rune:rune}); return "";
       }
       else{
-        var print = this.pop_stash(); this.stash = []; return print;
+        var print = this.pop_stash(); this.stash = []; return print+(rune ? "<"+rune.tag+" class='"+rune.class+"'>"+line+"</"+rune.tag+">" : "");
       }
     }
     // New Stash
