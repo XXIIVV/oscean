@@ -2,7 +2,12 @@ function Oscean()
 {
   Invoke.call(this);
   
-  this.requirements = {corpse:["layout","lexicon","term","horaire","log","monitor"],dict:["lexicon"],docs:["directory","nutrition","aesthetics","russian","japanese","nomad","oceanism","glossary","tiers","biases","offline","fransset"],list:["horaire"]};
+  this.requirements = {
+    corpse:["layout","lexicon","term","horaire","log","monitor"],
+    dict:["lexicon"],
+    docs:["directory","nutrition","aesthetics","russian","japanese","nomad","oceanism","glossary","tiers","biases","offline","fransset","home"],
+    list:["horaire"]
+  };
 
   this.name = "oscean";
   this.corpse = null;

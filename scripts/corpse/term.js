@@ -138,7 +138,7 @@ function Term(name,memory)
   {
     var content = invoke.vessel.storage[this.name];
     if(!content){ return "Missing:"+this.name; }
-    return content.html;
+    return content.html();
   }
 
   this._archive = function()

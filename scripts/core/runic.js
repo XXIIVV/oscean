@@ -88,6 +88,11 @@ function Runic(raw)
     return "<"+stash[0].rune.tag+" class='"+stash[0].rune.class+"'>"+html+"</"+stash[0].rune.tag+">";
   }
 
+  this.html = function()
+  {
+    return html;
+  }
+
   this.html = this.parse(raw);
 }
 

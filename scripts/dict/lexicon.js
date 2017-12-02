@@ -2,7 +2,8 @@ let $LEXICON = new Memory(`
 HOME
   UNDE : Home
   BREF : Welcome to the {{Nataniev}} playground and ecosystem.
-  LONG
+  TYPE : Docs
+  ETCS
     & This wiki provides documentation and narrative context for the various {{Audio}}, {{Visual}} and {{Research}} projects of multimedia developer {{Devine Lu Linvega}}. 
 
 AUDIO
@@ -1820,7 +1821,7 @@ LANGUAGE
     - {{Dodecahedron|https://en.wikipedia.org/wiki/Dodecahedron}}, in English
     - {{Oyasumi|https://en.wiktionary.org/wiki/お休み}}, in Japanese
     - {{Betwixt|https://en.wikipedia.org/wiki/Betwixt}}, in English
-    > <mini>The header is a word from the Voynich.</mini>
+    ? The header is a {_word_} from the Voynich.
 
 JAPANESE
   UNDE : Language
