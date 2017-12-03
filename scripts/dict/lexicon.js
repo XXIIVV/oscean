@@ -1624,6 +1624,8 @@ HORAIRE
   TAGS : Portal
   FLAG : no_photo
   BREF : {{Horaire}} is a time tracking tool.
+  LONG
+    & I am currently porting this to Javascript, give me a few more days.
   LINK
     https://github.com/XXIIVV/vessel.oscean/blob/master/memory/horaire.ma
 
@@ -1875,15 +1877,9 @@ DEVINE LU LINVEGA
 
 DEATH
   UNDE : Devine lu linvega
-  BREF : The {{Death}} loading.
+  BREF : {{Death}} in progress.
   LONG
     & Inspired from {{Chris Crawford|https://en.wikipedia.org/wiki/Chris_Crawford_(game_designer)}}'s Jars.
-
-10000
-  UNDE : Devine lu linvega
-  BREF : Are we there yet? Nope.
-  LONG
-    & This is probably meant as a joke, but in some grim ways, it paints a harsher truth than {{Death}}.
 
 TRAUMAE
   UNDE : Null
