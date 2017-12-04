@@ -90,10 +90,8 @@ function Runic(raw)
 
   this.html = function()
   {
-    return html;
+    return this.parse(raw);
   }
-
-  this.html = this.parse(raw);
 }
 
 invoke.seal("core","runic");

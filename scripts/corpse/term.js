@@ -10,7 +10,7 @@ function Term(name,memory)
     this.memory = memory;
     this.type = memory.type;
     this.bref = this.memory.bref ? new Runic().markup(this.memory.bref) : "Missing";
-    this.long = this.memory.long ? new Runic(this.memory.long).html : "";
+    this.long = this.memory.long ? new Runic(this.memory.long).html() : "";
     this.links = this.memory.link ? this.memory.link : [];
   }
   

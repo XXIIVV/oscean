@@ -1849,9 +1849,7 @@ FRANSSET
 LIETAL
   UNDE : Language
   BREF : {{Lietal}} is an experimental {{synthetic language|http://en.wikipedia.org/wiki/Constructed_language}}.
-  TAGS : Portal guide
-  LONG
-    $ lietal print documentation
+  TYPE : Docs
   LINK
     https://github.com/XXIIVV/vessel.lietal
 
