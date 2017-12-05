@@ -1260,7 +1260,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20140629 - 39  123 Noirca               Maintenance          1.1
 20140628 - 39      Noirca               Release              Release
 20140627 ! 39  124 Noirca               Prototype
-20140626 - 29  122 Shorthand            Writing              Cover
+20140626 ! 29  122 Shorthand            Writing              Cover
 20140625 - 32      Mute                 Update
 20140624 - 35  121 Alphavetist          Release              Release
 20140623 - 28  120 Vocavularist         Maintenance          2.0
