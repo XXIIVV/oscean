@@ -1625,7 +1625,8 @@ ROTONDE
   LONG
     & {{Rotonde}} is a commonly agreed upon specifications of a JSON object shared between {{members of the network|https://github.com/Rotonde}}. It currently operates on the decentralized {{dat|https://datproject.org}} protocole.
     * Trust the Portal
-    & Anyone can join {*Rotonde*} by going to {{this url|dat://2714774d6c464dd12d5f8533e28ffafd79eec23ab20990b5ac14de940680a6fe/}} with the {{Beaker Browser|https://beakerbrowser.com}} and follow the single-step process. You can add anyone by pasting their {#dat://#} url into the input bar. 
+    & Anyone can join {*Rotonde*} by going to {{this url|dat://2714774d6c464dd12d5f8533e28ffafd79eec23ab20990b5ac14de940680a6fe/}} with the {{Beaker Browser|https://beakerbrowser.com}}. You can add anyone by pasting their {#dat://#} url into the input bar. 
+    & Nobody owns the network, it never goes offline, there are no servers and no central authority. All content is hosted on your own computer.
   LINK
     https://github.com/Rotonde
     dat://2f21e3c122ef0f2555d3a99497710cd875c7b0383f998a2d37c02c042d598485/
