@@ -1621,11 +1621,11 @@ DESAMBER
 
 ROTONDE
   UNDE : Nataniev
-  BREF : {{Rotonde}} is a decentralized social network.
+  BREF : {{Rotonde}} is a P2P social network.
   LONG
     & {{Rotonde}} is a commonly agreed upon specifications of a JSON object shared between {{members of the network|https://github.com/Rotonde}}. It currently operates on the decentralized {{dat|https://datproject.org}} protocole.
-    & The feed is not attached to any particular client, language or server. The goal of this project is to share decentralized editable, protected, and version-controlled entries.
-    & You can see the setup guide {{here|https://louis.center/p2p-social-networking/}}, and follow daily decentralized internet news on {{The Daily Descent}}.
+    * Trust the Portal
+    & Anyone can join {*Rotonde*} by going to {{this url|dat://2714774d6c464dd12d5f8533e28ffafd79eec23ab20990b5ac14de940680a6fe/}} with the {{Beaker Browser|https://beakerbrowser.com}} and follow the single-step process. You can add anyone by pasting their {#dat://#} url into the input bar. 
   LINK
     https://github.com/Rotonde
     dat://2f21e3c122ef0f2555d3a99497710cd875c7b0383f998a2d37c02c042d598485/
