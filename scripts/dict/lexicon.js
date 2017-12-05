@@ -1546,28 +1546,7 @@ NEEDLES
   BREF : {{Needles}} are glyphs of which the intersection count is equal to the value of the character.
   LONG
     & The glyphs are not used into any specific project, but are available here as a reference of a meaningful numeric glyph system.
-    % needles fit
-
-NUMBERS
-  UNDE : Notes
-  BREF : {{Numbers}}, is a script that generates the name of numbers with 50'000 characters and beyond.
-  LONG
-    & It uses various extensions of the short word form, and ISQ inspired names, to create the names of numbers which have never previously been catalogued.
-    - One Million 6 zeros
-    - One Quindecillion 48 zeros
-    - One Quattuortrigintallion 105 zeros
-    - One Unnonagintallion 276 zeros
-    - One Quattuortrecentillion 915 zeros
-    - One Unseptuagintasescentillion 2016 zeros
-    - One Duotrigintatrillinillion 9999 zeros
-    - One Quattuorquadragintaoctillinillion 24135 zeros
-    - One Octillinillion 25203 zeros
-    - One Treoctogintaquadringentimilligillion 31452 zeros
-    - One Novennonagintaseptingentimilligillion 32400 zeros
-    - One Senonagintamilligillion 40191 zeros
-    - One Quinsexagintamilligillion 49998 zeros
-  LINK
-    https://github.com/XXIIVV/toys.numerals
+    > <img src='media/generic/needles.svg'/>
 
 SHORTHAND
   UNDE : Notes
