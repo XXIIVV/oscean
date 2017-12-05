@@ -1575,7 +1575,7 @@ SHORTHAND
   LONG
     * The idea is simple, writing faster.
     & I played with different ideas and this is the system that worked best for me, it’s an inspiration and a mixture of already existing shorthand systems that fits my writing style.
-    % shorthand.alphabet fit
+    > <img src='media/generic/shorthand.svg'/>
     & Simple enough, now most letters are transformed into a single stroke shape that flows and combines to form shorter words, that can be written faster.
 
 TALK

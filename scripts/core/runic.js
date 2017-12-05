@@ -77,7 +77,7 @@ function Runic(raw)
       this.stash.push({line:line,rune:rune}); return "";
     }
     // Default
-    return rune ? "<"+rune.tag+" class='"+rune.class+"'>"+line+"</"+rune.tag+">" : "";
+    return rune ? (rune.tag ? "<"+rune.tag+" class='"+rune.class+"'>"+line+"</"+rune.tag+">" : line) : "";
   }
 
   this.pop_stash = function(stash = this.stash)
