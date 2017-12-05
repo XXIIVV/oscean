@@ -14,13 +14,14 @@ function Runic(raw)
     "+":{tag:"hs",class:""},
     "|":{tag:"tr",sub:"td",class:"",rep:true},
     "»":{tag:"tr",sub:"th",class:"",rep:true},
-    ">":{tag:""}
+    ">":{tag:"",class:""}
   }    
 
   this.markup = function(html)
   {
     html = html.replace(/{_/g,"<i>").replace(/_}/g,"</i>")
     html = html.replace(/{\*/g,"<b>").replace(/\*}/g,"</b>")
+    html = html.replace(/{\#/g,"<code class='inline'>").replace(/\#}/g,"</code>")
 
     var parts = html.split("{{")
     for(id in parts){
