@@ -16,7 +16,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20171124
 20171123 ! 34  499 Left                 Maintenance
 20171122 - 28      Dotgrid              Design
-20171121 - 
+20171121 - 26  501 Blue                 Research
 20171119 - 24      Oscean               Design
 20171118 - 
 20171117 - 37      Dotgrid              Development

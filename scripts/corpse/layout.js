@@ -46,6 +46,9 @@ function Layout(host)
     c.term.start();
     c.photo.style.backgroundImage = c.term.photo();
     c.monitor.update(c.term.logs);
+    c.m1.innerHTML = "";
+    c.m2.innerHTML = "";
+    c.m3.innerHTML = "";
     document.title = c.term.name;
 
     setTimeout(function(){ 

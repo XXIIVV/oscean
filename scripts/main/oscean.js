@@ -5,7 +5,7 @@ function Oscean()
   this.requirements = {
     corpse:["layout","lexicon","term","horaire","log","monitor"],
     dict:["lexicon"],
-    docs:["directory","nutrition","aesthetics","russian","japanese","nomad","oceanism","glossary","tiers","biases","offline","fransset","home","lietal"],
+    docs:["directory","nutrition","aesthetics","russian","japanese","nomad","oceanism","glossary","tiers","biases","offline","fransset","home","lietal","blue"],
     list:["horaire"]
   };
 
