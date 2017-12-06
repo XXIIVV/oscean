@@ -1,9 +1,15 @@
 var payload = new Runic(`
-& This guide is an adaptation of Ed. Robertson's 1998 guide to Léon Bollack's {_Bolak_} Language, based on the standard work 'La Langue Bleue', Paris 1899 — Bolak means both 'blue language' and 'ingenious creation' in the language itself.
+& This guide is an adaptation of Ed. Robertson's 1998 guide to Léon Bollack's {{Bolak Language|https://en.wikipedia.org/wiki/Bolak_language}}, based on the standard work {*La Langue Bleue*}, Paris 1899 — Bolak means both 'blue language' and 'ingenious creation' in the language itself.
+
+? Ac ra poni an fren al tsorm ade vevu, se savi soc stopi plotu ade <span title='celui qui met un frein à la fureur des flots sait aussi des méchants arrêter les complots' href='https://fr.wikipedia.org/wiki/Athalie_(Racine)'>vikoru</a>.
 
 * The Daisy Rule
 
-& These 5 vowels are used as prefixes on nouns, verbs, adjectives, and adverbs, to modify their meaning by adding the emotion involved in the corresponding interjection. If we take the Bolak root {#lov#}(to love), the 5 vowel affixes can be used to form other words as follows: 
+& Bolak uses only {*19 letters*}. The 5 vowels are used as prefixes on nouns, verbs, adjectives, and adverbs, to modify their meaning by adding the emotion involved in the corresponding interjection. C is sounded as Ch.
+
+# A, B, C, D, E, F, G, I, K, L, M, N, O, P, R, S, T, U, V.
+
+&  If we take the Bolak root {#lov#}(to love), the affixes can be used to form other words as follows: 
 
 ~ {#alov#}
 - indifference — {*lack of love*}
@@ -20,7 +26,7 @@ var payload = new Runic(`
 
 * Motules
 
-& The small words, or motules, of Bolak are composed of a maximum of 3 letters. If composed of 3 letters, they must not end in a consonant. They perform 4 functions in the language: interjections, 'framework words', connectors and designators. 
+& The small words, or {_motules_}, of Bolak are composed of a {*maximum of 3 letters*}. If composed of 3 letters, they must not end in a consonant. They perform 4 functions in the language: {*Interjections*}, {*Framework*}, {*Connectors*} and {*Designators*}. 
 
 + Interjections
 
@@ -50,23 +56,20 @@ Interjections are composed of one vowel, or the same vowel doubled:
 ~ {#uu#}
 - repulsion, annoyance, fear
 
-+ Framework words
++ Framework
 
-& The second category of motules comprises the 'framework words'. They are so called because they form a framework around the word or framework which follows. Again in Bolak this category of words can be distinguished phonotactically in a similar way to the interjections, this time one or other of the following two combinations of letters: i) two different vowels, or ii) one or two consonants followed by a -u.
+& The Framework words are so called because they wrap around the word which follows. They are either built from {*two different vowels*}, or {*one or two consonants followed by a -u*}.
 
-& There is one group of framework words about which Bollack says: "At first sight their meaning could appear bizarre. Nevertheless, in my opinion they are necessary in an artificial language." These 4 words are used to circumvent long phrases necessary in the context of two speakers of different languages who try to communicate using an auxiliary language. This is of course the point of creating an auxiliary, so the suggestion is not without merit. Let us take the sentence 'give me bread', and its Bolak translation {#et givo pan#}, in the context of a speaker of French conversing with a speaker of English, using Bolak. Suppose the French speaker forgets that the Bolak for bread is pan. In this unlikely example, he or she could say:
+& Let us take the sentence 'give me bread', and its Bolak translation {#et givo pan#}, in the context of a speaker of French conversing with a speaker of English, using Bolak. Suppose the French speaker forgets that the Bolak for bread is pan. In this unlikely example, he or she could say:
 
-~ Et givo ou 'pain'
-- give me what I call 'pain'
+~ Et givo au 'bread'       
+- used to mark a proper name 'Pain'
+~ Et givo eu 'bread'  
+- used to mark a technical term
 ~ Et givo iu 'bread'
 - give me what you call 'bread'
-
-& The other two words in this group are:
-
-~ au          
-- used to mark a proper name
-~ eu     
-- used to mark a technical term or a word from the language of neither participant
+~ Et givo ou 'pain'
+- give me what I call 'pain'
 
 & This leaves 12 other possible combinations of two different vowels. Four are used as general purpose substitution words, a bit like 'je' in Esperanto.
 
@@ -98,38 +101,22 @@ Interjections are composed of one vowel, or the same vowel doubled:
 ~ ao          
 - to do rarely or intermittently
 
-& Here Bollack makes an interesting error in one place in his book and lists oi instead of ai at this point, clearly having forgotten that oi has already been used. This brings out Bolak's most obvious design fault: that it is over-designed and that this leads to some things being difficult to remember.
-
 & There are 45 permitted combinations of the other form of framework words (Cu or CCu). Of these the most useful are:
 
 ~ nu
-- negative          
-~ me nu lovi          
-- I do not love
+- negative — {*me nu lovi*} I do not love
 ~ du
-- interrogative          
-~ me du lovi?          
-- Do I love?
+- interrogative — {*me du lovi?*} Do I love?
 ~ tnu
-- int. neg.          
-~ me tnu lovi?          
-- Do I not love?
+- int. neg. — {*me tnu lovi?*} Do I not love?
 ~ ku
-- subordinate          
-~ � ku me lovi          
-- � that I love
+- subordinate {*X ku me lovi*} X that I love          
 ~ knu
-- sub. neg.          
-~ � knu me lovi     
-- � that I do not love
+- sub. neg. {*X knu me lovi*} X that I do not love
 ~ su
-- reflexive          
-~ me su lovi          
-- I love myself
+- reflexive {*me su lovi*} I love myself        
 ~ snu
-- refl. neg.          
-~ me snu lovi          
-- I do not love myself
+- refl. neg. {*me snu lovi*} I do not love myself
 
 & The others are indispensible words which can be used free-standing or as prefixes in word-formation.
 
@@ -137,7 +124,7 @@ Interjections are composed of one vowel, or the same vowel doubled:
 - again, re-
 ~ pu
 - arch-, chief-
-~ Ru
+~ cu
 - vice-, sub-
 ~ fku
 - anti-, contra-
@@ -154,19 +141,50 @@ Interjections are composed of one vowel, or the same vowel doubled:
 ~ mu
 - mal-, caco-
 
-& The symbol R is taken from the Cyrillic alphabet and is same sound as English/Spanish ch. The letters C, H, J, Q, W, X, Y, and Z are not used in Bolak.
+? Me du snu oa ru lovo?
 
-& At this point Bolak gives the example: {#me du snu oa ru lovo?#} (do I not begin to love myself again?) as an illustration of how to combine these motules.
+& At this point Bolak gives the example: {_Do I not begin to love myself again?_} as an illustration of how to combine these motules.
 
 + Connectors
 
-& The third part of speech in Bolak is the 'connectors'. This includes things such as prepositions and conjunctions. The form of this group of words comprises two or three letters including one consonant and one or both of the vowels I and O. The basic prepositions include ib above, oR below, og behind, ik in front of, ot outside of, in in, il around, ol beside. These can be modified to express motion towards or from by the addition of -i or -o respectively: ogo from behind, ini into etc. Other prepositions which do on begin with i- or o- do not relate to position in time or place, e.g. ki with, spi towards, pi for etc. There are many other prepositions which could only be listed in a much fuller description of the language. The indefinite preposition io has already been mentioned. With many verbs a preposition is unnecessary, e.g.: govo Paris to go to Paris.
+& The connectors includes things such as {*prepositions and conjunctions*}. The form of this group of words comprises two or three letters including one consonant and one or both of the vowels I and O. 
 
-& Some important conjunctions are it and and or or. Two other words which have the same phonotactic shape as this group are si yes and no no.
+~ ib
+- Above
+~ oc
+- Below
+~ og
+- Behind
+~ ik
+- In front
+~ ot
+- Outsite
+~ in
+- In
+~ il
+- Around
+~ ol
+- Beside
+~ it
+- And
+~ or
+- Or
+~ ki
+- With
+
+& The basic prepositions can be modified to express motion towards or from by the addition of -i or -o respectively: 
+
+~ ogo
+- From behind
+~ ini
+- Into
+~ spi
+- Toward
 
 + Designators
 
-& The fourth class of words are the 'designators'. These are motules of  two or three letters which have a form like that of the 'connectors', but are composed of a consonant and one or both of A or E, instead of I or O. There are six kinds of designators: relative, interrogative/exclamatory, personal, possessive and personal. In some of  these groups the final vowel, if any, indicates whether the word is singular or plural, e.g.
+& Designators are motules of two or three letters which have a form like that of the 'connectors', but are composed of a consonant and one or both of A or E, instead of I or O. 
+& There are six kinds of designators: relative, interrogative/exclamatory, personal, possessive and personal. In some of  these groups the final vowel, if any, indicates whether the word is singular or plural.
 
 ~ ra/re
 - who (relative)
@@ -190,7 +208,7 @@ Interjections are composed of one vowel, or the same vowel doubled:
 & The personal designators, however, do not change according to whether singular or plural, and there are different consonants at the beginning for all of the personal pronouns:
 
 ~ me I, te you (familiar singular), 
-- ve (respectful sing.), se he, le she, Re it
+- ve (respectful sing.), se he, le she, ce it
 ~ ne we, pe you (fam. plural), 
 - ge you (resp. plur.), be they (masc.), fe they (fem.), de they (neuter).
 
@@ -260,16 +278,14 @@ Interjections are composed of one vowel, or the same vowel doubled:
 ~ kva/kve
 - whatever/whatever things
 
-& One example of the use of the indefinites that is given is: Et nu maki sfa, ska te nu vili ku sta maki ad ete (Do not do to another what you would not want someone to do to you).
+? Et nu maki sfa, ska te nu vili ku sta maki ad ete.
+& One example of the use of the indefinites that is given is: {_Do not do to another what you would not want someone to do to you_}.
 
-* Numbers and other Granmots
+* Numbers
 
-& The large words of Bolak convey the bulk of the semantic content. The form of these words is 3 letters or greater. If composed of only 3 letters, the last of these must be a consonant, each class of words having its own look in Bolak. Noun roots must end in some consonant other than R and d.
-
-& There are 4 types of granmots: a) nouns (including numbers), b) verbs, c) attributives (adjectives) and d) modifiers (adverbs). Normally, for all of these, the root word is the noun, except for certain basic adverbs ending in R. Noun roots can be transformed into other parts of speech by the addition of various endings.
 
 & Numbers are a special kind of noun. The numbers 1 to 10 are:
-# Ven, dov, ter, far, kel, gab, Rep, lok, nif, dis.
+# Ven, dov, ter, far, kel, gab, cep, lok, nif, dis.
 
 & 11 to 19 are: diven, didov, diter, difar etc.
 
@@ -279,7 +295,7 @@ Interjections are composed of one vowel, or the same vowel doubled:
 # 31: teris ven               125: son dovis kel          100000: sonmel
 # 40: faris               200: dovson               1000000: mlon
 
-& Endings can then be added on to each of these cardinal numbers:
+& Numerals are placed before the noun they relate to. Endings can then be added on to each of these cardinal numbers: 
 
 ~ -am (collective)
 - venam — unity
@@ -311,11 +327,14 @@ Interjections are composed of one vowel, or the same vowel doubled:
 - dovolt — twice
 - terolt — thrice
 
-& Numerals are placed before the noun they relate to.
+* Granmots
+
+& The large words of Bolak convey the bulk of the semantic content. The form of these words is 3 letters or greater. If composed of only 3 letters, the last of these must be a consonant, each class of words having its own look in Bolak. Noun roots must end in some consonant other than c and d.
+& There are 4 types of granmots: a) nouns (including numbers), b) verbs, c) attributives (adjectives) and d) modifiers (adverbs). Normally, for all of these, the root word is the noun, except for certain basic adverbs ending in c. Noun roots can be transformed into other parts of speech by the addition of various endings.
 
 * Nouns
 
-& Nouns in Bolak must in their root forms begin and end with one or two consonants and end with one or two consonants. They cannot end in R or d. Normally these roots are one syllable in length. There are also a number of nouns which have more than one syllable, but these must not contain any affixes which are used in word formation. Bollack regarded the number of affixes used in agglutinative conlangs as confusing. For this reason the two syllable word sigar (cigar) is allowed because there is no suffix -ar in Bolak.
+& Nouns in Bolak must in their root forms begin and end with one or two consonants and end with one or two consonants. They cannot end in c or d. Normally these roots are one syllable in length. There are also a number of nouns which have more than one syllable, but these must not contain any affixes which are used in word formation. Bollack regarded the number of affixes used in agglutinative conlangs as confusing. For this reason the two syllable word sigar (cigar) is allowed because there is no suffix -ar in Bolak.
 
 & However a two syllable root ending in a suffix that was used, e.g. -or or -ort would not be permitted. The ending -or is used to indicate the agent associated with the root, e.g.:
 
@@ -408,7 +427,8 @@ Interjections are composed of one vowel, or the same vowel doubled:
 ~ Bolak ditort
 - Bolak publishing house
 
-& The subject noun always goes before the verb. A vocative noun always goes at the beginning of a sentence, as a separate clause, then followed by a vocative pronoun. Object nouns follow the verb. Any indirect object complement follows the direct object, and if there is more than one indirect object, these follow in decreasing order of interest.
+& The subject noun always goes before the verb. A vocative noun always goes at the beginning of a sentence, as a separate clause, then followed by a vocative pronoun. 
+& Object nouns follow the verb. Any indirect object complement follows the direct object, and if there is more than one indirect object, these follow in decreasing order of interest.
 
 * Verbs
 
@@ -507,15 +527,32 @@ Interjections are composed of one vowel, or the same vowel doubled:
 ~ apraved (of)
 - the least brave (of)
 
-& The words pliR (more) and leR (less) can also be used.
+& The words plic (more) and lec (less) can also be used.
 
 & Modifiers always end in -R, and are the adverbial equivalent of the attributives:
 
-~ loviR
+~ lovic
 - lovingly (in general) etc.
 
-& There are also a number of basic modifiers, e.g. moR (very), paR (not very) and many more.
+& There are also a number of basic modifiers, e.g. moc (very), pac (not very) and many more.
 
 & If modifiers are used with a verb, they are placed after the verb, but if they are modifying an attributive or another modifier, they are placed before the word they modify.
+
+~ Examples
+- Se venko om sit (il arrive de la ville).
+- Spa lanta oe sarfi sea lant (tout citoyen doit servir son pays).
+- Me upreko mea leg (je me suis cassé la jambe).
+- Ay per lovo moc sea fant lalged (ce père aime beaucoup son enfant malade).
+- Me givo ac vads asa (je lui donne cette montre).
+- Ak vop sfermed pro spes maned, if om pobl to pobl, ne ei mnoka pfo an am lane. (What an immense advantage for mankind, if from people to people we could communicate through the same language.)
+
+~ The Lord's Prayer
+- Nea per ev seri in sil!(Our Father who art in heaven)
+- Vea nom ec santigui! Vea regu ec komi!(Hallowed be thy name. Thy kingdom come.)
+- Vea vil ec makui in sil, so ib gev!(Thy will be done, on earth as it is in heaven.)
+- Ev givi nea pan taged ana!(Give us this day our daily bread)
+- Ev solvi nae fansu so ne solvo ace re ufanso na!
+- Ec seri sic!
+
 
 `); invoke.vessel.seal("docs","blue",payload);
