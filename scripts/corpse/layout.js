@@ -76,10 +76,10 @@ function Layout(host)
 
   this.link = function(target)
   {
-    var name = target.replace("/","").trim();
+    var name = target.replace(/^\//,"").trim();
 
     // External
-    if(target.indexOf("http") > -1){
+    if(target.match(/^http|^dat/)){
       window.open(target,'_blank');
     }
     else{
