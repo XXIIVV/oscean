@@ -1,29 +1,70 @@
+function Lietal_Dict()
+{
+  this.adultspeak = function(childspeak)
+  {
+    childspeak = childspeak.toLowerCase();
+
+    if(childspeak.length == 2){
+      var c = childspeak.substr(0,1);
+      var v = childspeak.substr(1,1);
+      return v+c;
+    }
+    if(childspeak.length == 4){
+      var c1 = childspeak.substr(0,1);
+      var v1 = childspeak.substr(1,1);
+      var c2 = childspeak.substr(2,1);
+      var v2 = childspeak.substr(3,1);
+      if(c1 == c2){
+        return c1+v1+v2;
+      }
+      if(v1 == v2){
+        if(v1 == "a"){ return c1+"ä"+c2; }
+        if(v1 == "e"){ return c1+"ë"+c2; }
+        if(v1 == "i"){ return c1+"ï"+c2; }
+        if(v1 == "o"){ return c1+"ö"+c2; }
+        if(v1 == "u"){ return c1+"ü"+c2; }
+        if(v1 == "y"){ return c1+"ÿ"+c2; }
+      }
+      return v+c;
+    }
+    if(childspeak.length == 6){
+      return childspeak.substr(0,2)+this.adultspeak(childspeak.substr(2,4));
+    }
+    if(childspeak.length == 8){
+      return this.adultspeak(childspeak.substr(0,4))+this.adultspeak(childspeak.substr(4,4));
+    }
+    return childspeak
+  }
+}
+
+var lietal_dict = new Lietal_Dict();
+
 var payload = new Runic(`
 * PHONOLOGY
 ? VIRO KÄR'OF LIETÄL'TAKÏT.
 & Lietal is written from left to right with implicit neutrality, singularity and under the present tense. For the most part, its 6 vowels and 9 consonants are voiced similarly to their english equivalents.
-
+# A E I O U Y K T D R S L J V F <comment>The Lietal Alphabet</comment>
 & The vowels are sounded as hex{*a*}gram, n{*e*}ver, l{*ea*}ves, {*au*}tomobile, n{*ew*}, journ{*ey*} — And consonants as {*k*}iss, ti{*t*}le, {*d*}evice, retu{*r*}n, {*s*}ymphony, {*l*}igature, {*ge*}nesis, {*v*}ideo, & {*f*}estival.
 
 * MORPHOLOGY
 
-& Building words from Lietal's phonemes is called childspeak. It makes for rythmical and syllabic words, but take quite a long time to speak. This documentation uses the phonetically denser {_Adultspeak_}.
-& Single syllable words are reversed, so vo becomes ov. Vowel sequences, like lara, are condensed into lär. Consonant sequences, like lyfasa, are condensed into lyfäs. Here are a gew examples:
+& Building words from Lietal's phonemes is called childspeak. It makes for rythmical and syllabic words, but take quite a long time to actually speak it. This documentation uses the phonetically denser {_Adultspeak_}.
+& Single syllable words are reversed, so {#vo#} becomes {#${lietal_dict.adultspeak("vo")}#}. Vowel sequences, like {#lara#}, are condensed into {#${lietal_dict.adultspeak("lara")}#}. Consonant sequences, like {#lyfasa#}, are condensed into {#${lietal_dict.adultspeak("lyfasa")}#}. Here are a few examples:
 
 ~ Yes 
-- vi — iv
+- vi — ${lietal_dict.adultspeak("vi")}
 ~ Who 
-- jada — jäd
+- jada — ${lietal_dict.adultspeak("jada")}
 ~ Outside 
-- kika — kia
+- kika — ${lietal_dict.adultspeak("kika")}
 ~ To Read
-- fatati — fatai
+- fatati — ${lietal_dict.adultspeak("fatati")}
 ~ Whenever  
-- salidi — salïd
+- salidi — ${lietal_dict.adultspeak("salidi")}
 
 * ALPHABET
 
-& The Alphabet, or {_Deoto_}, is a collection of 9 elementary particles, each is made of a key(consonant) and one of the 6 values(vowels). Knowing this table show help you guess the meaning of any word construction.
+& The Alphabet, or {_Deoto_}, is a collection of 9 elementary particles, each is made of a key(consonant) and one of the 6 values(vowels). Knowing this table should allow you guess the meaning of {*any word construction*}.
 
 * TABLE
 
