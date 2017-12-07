@@ -3,30 +3,35 @@ function Lietal_Dict()
   this.aebeth = {};
   this.aebeth = {
     "fo" : {en:"to_be",children:{
-      "ri" : {en:"to_become",children:{
-        "ko" : {en:"to_enter"}
-      }},
-      "ra" : {en:"to_be_there"},
-      "ro" : {en:"to_come"},
-      "re" : {en:"to_become"},
-      "ru" : {en:"to_solidify"},
-    }}
+        "ri" : {en:"to_become",children:{"ko" : {en:"to_enter"} }},
+        "ra" : {en:"to_be_there"},
+        "ro" : {en:"to_come"},
+        "re" : {en:"to_become"},
+        "ru" : {en:"to_solidify"},
+      }
+    },
+    "li" : {en:"multiple",children:{
+      "ri" : {en:"you(plural)"},
+      "ra" : {en:"they(plural)"},
+      "ro" : {en:"we"},
+    }},
+    "la" : {en:"single",children:{
+      "ri" : {en:"you(singular)"},
+      "ra" : {en:"they(singular)"},
+      "ro" : {en:"I"},
+    }},
+    "lo" : {en:"none",children:{
+      "ri" : {en:"none_of_those(far)"},
+      "ra" : {en:"none_of_those(nearby)"},
+      "ro" : {en:"none_of_those(close)"},
+    }},
+    "lo" : {en:"none"},
   }
   this.aebeth["ri"] = {en:"outward",children:{}}
   this.aebeth["ra"] = {en:"between",children:{}}
   this.aebeth["ro"] = {en:"inward",children:{}}
   this.aebeth["re"] = {en:"mobile",children:{}}
   this.aebeth["ru"] = {en:"immobile",children:{}}
-  this.aebeth["li"] = {en:"multiple",children:{
-    "ri" : {en:"you(plural)"},
-    "ra" : {en:"they(plural)"},
-    "ro" : {en:"We"},
-  }}
-  this.aebeth["la"] = {en:"single",children:{
-    "ri" : {en:"you(singular)"},
-    "ra" : {en:"they(singular)"},
-    "ro" : {en:"I"},
-  }}
   this.aebeth["ko"] = {en:"children",children:{}}
 
   this.adultspeak = function(childspeak)
@@ -67,11 +72,15 @@ function Lietal_Dict()
   this.convert = function(childspeak)
   {
     childspeak = childspeak.toLowerCase();
+    console.log(childspeak)
 
     if(childspeak.length == 2){ 
       return this.aebeth[childspeak] ? this.aebeth[childspeak].en : "("+childspeak+")";
     }
     if(childspeak.length == 4){ 
+      if(!this.aebeth[childspeak.substr(0,2)] || !this.aebeth[childspeak.substr(0,2)].children[childspeak.substr(2,2)]){
+        return "(!MISSING:"+childspeak+")"
+      }
       return this.aebeth[childspeak.substr(0,2)].children[childspeak.substr(2,2)].en;
     }
     if(childspeak.length == 6){ 
@@ -130,9 +139,9 @@ var payload = new Runic(`
 
 * ALPHABET
 
-& The Alphabet, or {_Deoto_}, is a collection of 9 elementary particles, each is made of a key(consonant) and one of the 6 values(vowels). Knowing this table should allow you guess the meaning of {*any word construction*}.
+& The Alphabet is a collection of 9 elementary particles, each is made of a key(consonant) and one of the 6 values(vowels). Knowing this table should allow you guess the meaning of {*any word construction*}.
 
-* TABLE
++ Table
 
 ~ {*Ky*} Hierarchy
 - {*Ki*} Parent — {*Ka*} Location — {*Ko*} Children
@@ -164,7 +173,7 @@ var payload = new Runic(`
 
 + Construction
 
-& Words are not created, but found among the permutations of the 9 elementary particles. Here are a few examples of the resulting translations of {*fo*}(${lietal_dict.convert("fo")}) declensions:
+& Words are not created, but found among the permutations of the 9 elementary particles. Here are a few examples of the resulting translations of {*fo*} declensions:
 
 # ${lietal_dict.deconstruct("fo")}
 # ${lietal_dict.deconstruct("fori")}
@@ -172,9 +181,15 @@ var payload = new Runic(`
 
 * VOCABULARY
 
-+ PRONOUNS
++ Pronouns
 
 & A sentence is expected to be at the first person if a pronoun has not already been declared, pronouns are often ommited when possible. 
+# ${lietal_dict.deconstruct("lari")}
+# ${lietal_dict.deconstruct("lara")}
+# ${lietal_dict.deconstruct("laro")}
+# ${lietal_dict.deconstruct("liri")}
+# ${lietal_dict.deconstruct("lira")}
+# ${lietal_dict.deconstruct("liro")}
 & The sentence "I give you a book" is translated to {*Lari'ar todoti fïr*}, following the {#you.to book to_give#} structure.
 
 * VERBS
