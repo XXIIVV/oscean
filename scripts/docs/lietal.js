@@ -1,5 +1,34 @@
 function Lietal_Dict()
 {
+  this.aebeth = {};
+  this.aebeth = {
+    "fo" : {en:"to_be",children:{
+      "ri" : {en:"to_become",children:{
+        "ko" : {en:"to_enter"}
+      }},
+      "ra" : {en:"to_be_there"},
+      "ro" : {en:"to_come"},
+      "re" : {en:"to_become"},
+      "ru" : {en:"to_solidify"},
+    }}
+  }
+  this.aebeth["ri"] = {en:"outward",children:{}}
+  this.aebeth["ra"] = {en:"between",children:{}}
+  this.aebeth["ro"] = {en:"inward",children:{}}
+  this.aebeth["re"] = {en:"mobile",children:{}}
+  this.aebeth["ru"] = {en:"immobile",children:{}}
+  this.aebeth["li"] = {en:"multiple",children:{
+    "ri" : {en:"you(plural)"},
+    "ra" : {en:"they(plural)"},
+    "ro" : {en:"We"},
+  }}
+  this.aebeth["la"] = {en:"single",children:{
+    "ri" : {en:"you(singular)"},
+    "ra" : {en:"they(singular)"},
+    "ro" : {en:"I"},
+  }}
+  this.aebeth["ko"] = {en:"children",children:{}}
+
   this.adultspeak = function(childspeak)
   {
     childspeak = childspeak.toLowerCase();
@@ -25,15 +54,52 @@ function Lietal_Dict()
         if(v1 == "u"){ return c1+"ü"+c2; }
         if(v1 == "y"){ return c1+"ÿ"+c2; }
       }
-      return v+c;
     }
     if(childspeak.length == 6){
-      return childspeak.substr(0,2)+this.adultspeak(childspeak.substr(2,4));
+      return this.adultspeak(childspeak.substr(0,2))+this.adultspeak(childspeak.substr(2,4));
     }
     if(childspeak.length == 8){
       return this.adultspeak(childspeak.substr(0,4))+this.adultspeak(childspeak.substr(4,4));
     }
     return childspeak
+  }
+
+  this.convert = function(childspeak)
+  {
+    childspeak = childspeak.toLowerCase();
+
+    if(childspeak.length == 2){ 
+      return this.aebeth[childspeak] ? this.aebeth[childspeak].en : "("+childspeak+")";
+    }
+    if(childspeak.length == 4){ 
+      return this.aebeth[childspeak.substr(0,2)].children[childspeak.substr(2,2)].en;
+    }
+    if(childspeak.length == 6){ 
+      return this.aebeth[childspeak.substr(0,2)].children[childspeak.substr(2,2)].children[childspeak.substr(4,2)].en;
+    }
+    return childspeak
+  }
+
+  this.deconstruct = function(childspeak)
+  {
+    childspeak = childspeak.toLowerCase();
+
+    if(childspeak.length == 2){ 
+      var p1 = childspeak.substr(0,2);
+      return `${this.adultspeak(childspeak)} <comment>&lt;${this.convert(p1)}&gt;</comment> {*${this.convert(childspeak)}*}`;
+    }
+    if(childspeak.length == 4){ 
+      var p1 = childspeak.substr(0,2);
+      var p2 = childspeak.substr(2,2);
+      return `${this.adultspeak(childspeak)} <comment>&lt;${this.convert(p1)}(${this.convert(p2)})&gt;</comment> {*${this.convert(childspeak)}*}`;
+    }
+    if(childspeak.length == 6){ 
+      var p1 = childspeak.substr(0,2);
+      var p2 = childspeak.substr(2,2);
+      var p3 = childspeak.substr(4,2);
+      return `${this.adultspeak(childspeak)} <comment>&lt;${this.convert(p1+p2)}(${this.convert(p3)})&gt;</comment> {*${this.convert(childspeak)}*}`;
+    }
+    return "??"
   }
 }
 
@@ -95,6 +161,14 @@ var payload = new Runic(`
 ~ {*Fy*} Interaction
 - {*Fi*} To_make — {*Fa*} To_see — {*Fo*} To_be
 - {*Fe*} Active — {*Fu*} Inactive
+
++ Construction
+
+& Words are not created, but found among the permutations of the 9 elementary particles. Here are a few examples of the resulting translations of {*fo*}(${lietal_dict.convert("fo")}) declensions:
+
+# ${lietal_dict.deconstruct("fo")}
+# ${lietal_dict.deconstruct("fori")}
+# ${lietal_dict.deconstruct("foriko")}
 
 * VOCABULARY
 
