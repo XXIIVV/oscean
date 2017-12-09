@@ -660,7 +660,7 @@ TYFI
 TYFO   
 TYFU   
 TYFY   
-DA     
+DA     ORGANIC
 DAKA   
 DAKE   
 DAKI   PARENT
@@ -1673,6 +1673,7 @@ LARA   HE_SHE
 LARE   
 LARI   YOU
 LARO   I
+LAROKO MY
 LARU   
 LARY   
 LASA   
@@ -1980,13 +1981,13 @@ LYFI
 LYFO   
 LYFU   
 LYFY   
-JA     CAN
+JA     POSSIBLE
 JAKA   
 JAKE   
 JAKI   
-JAKO   
+JAKO   WHERE
 JAKU   
-JAKY   WHERE
+JAKY   
 JATA   
 JATE   
 JATI   
@@ -3128,6 +3129,11 @@ var payload = new Runic(`
 
 & Question words are used at the beginning of a sentence.The sentence "Where am I? Who are you?" is translated to {*Jaky laro of es jäd lari of*}, following the {#where I to_be & who you to_be#} structure.
 
+# ${lietal_dict.deconstruct("jadi")}
+# ${lietal_dict.deconstruct("jada")}
+# ${lietal_dict.deconstruct("jado")}
+# ${lietal_dict.deconstruct("jako")}
+
 + Location
 
 & Locations are the environment of the sentence, it preceeds a sentence.The sentence "I am at my house" is translated to {*Laro'tokafo'ak of*}, following the {#I.house.at to_be#} structure.
@@ -3143,7 +3149,6 @@ var payload = new Runic(`
 & Below is another example with a different sentence structure. The sentence "Is the house blue or red?" is translated to {*Tokafo el lyfalo us lyfaloki ul'of*}, following the {#house [ red | blue ].to_be#} structure.
 
 & Numbers are also using collections The sentence "The address is two hundred twenty three" is translated to {*Tokafo'tady el loe'il lira'lio lia ul*}, following the {#house.name [ 100.2 10.3 4 ]#} structure.
-
 
 * VOCABULARY
 
