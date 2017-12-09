@@ -498,7 +498,7 @@ TIFY
 TO     
 TOKA   
 TOKE   
-TOKI   
+TOKI   HOME
 TOKO   
 TOKU   
 TOKY   
@@ -770,7 +770,7 @@ DEFI
 DEFO   
 DEFU   
 DEFY   
-DI     
+DI     COMPLEX
 DIKA   
 DIKE   
 DIKI   
@@ -825,7 +825,7 @@ DIFI
 DIFO   
 DIFU   
 DIFY   
-DO     
+DO     SYNTHETIC
 DOKA   PLACE
 DOKE   
 DOKI   ROOM
@@ -2032,7 +2032,7 @@ JAVU
 JAVY   
 JAFA   AWARE
 JAFE   
-JAFI   
+JAFI   HOW
 JAFO   
 JAFU   
 JAFY   HOW
@@ -3019,11 +3019,12 @@ function Lietal_Dict(dict)
     return childspeak
   }
 
-  this.convert = function(childspeak,direction = "li_en")
+  this.convert = function(word,direction = "li_en")
   {
+    if(word.length < 2){ return word; }
     dict = direction == "li_en" ? this.dict.li_en : this.dict.en_li;
-    childspeak = childspeak.toUpperCase();
-    return dict[childspeak] ? dict[childspeak] : "("+childspeak+")";
+    word = word.toUpperCase();
+    return dict[word] ? (direction == "en_li" ? this.adultspeak(dict[word]) : dict[word]) : "("+word+")";
   }
 
   this.deconstruct = function(childspeak)
@@ -3046,6 +3047,17 @@ function Lietal_Dict(dict)
       return `${this.adultspeak(childspeak)} <comment>&lt;${this.convert(p1+p2)}(${this.convert(p3)})&gt;</comment> {*${this.convert(childspeak)}*}`;
     }
     return "??"
+  }
+
+  this.construction = function(q)
+  {
+    var parts = q.replace(/\./g," ' ").split(" ");
+    var s = "";
+    for(id in parts){
+      var part = parts[id];
+      s += this.convert(part,"en_li")+" ";
+    }
+    return "<b>\""+s.replace(/ \' /g,"\'").trim()+"\"</b>";
   }
 }
 
@@ -3105,7 +3117,7 @@ var payload = new Runic(`
 - {*Vi*} Positive — {*Va*} Neutral — {*Vo*} Negative
 - {*Ve*} True — {*Vu*}  False
 ~ {*Fy*} Interaction
-- {*Fi*} To_make — {*Fa*} To_see — {*Fo*} To_be
+- {*Fi*} ${lietal_dict.convert("fi").toLowerCase()} — {*Fa*} ${lietal_dict.convert("fa").toLowerCase()} — {*Fo*} ${lietal_dict.convert("fo").toLowerCase()}
 - {*Fe*} Active — {*Fu*} Inactive
 
 + Construction
@@ -3127,20 +3139,21 @@ var payload = new Runic(`
 
 + Question
 
-& Question words are used at the beginning of a sentence.The sentence "Where am I? Who are you?" is translated to {*Jaky laro of es jäd lari of*}, following the {#where I to_be & who you to_be#} structure.
+& Question words are used at the beginning of a sentence. For instance, "Where am I?" is translated to ${lietal_dict.construction("where I to_be")}, following the {#where I to_be#} construction — and "Who are you?", or {#who you to_be#}, ${lietal_dict.construction("who you to_be")}.
 
 # ${lietal_dict.deconstruct("jadi")}
 # ${lietal_dict.deconstruct("jada")}
 # ${lietal_dict.deconstruct("jado")}
 # ${lietal_dict.deconstruct("jako")}
+# ${lietal_dict.deconstruct("jafi")}
 
 + Location
 
-& Locations are the environment of the sentence, it preceeds a sentence.The sentence "I am at my house" is translated to {*Laro'tokafo'ak of*}, following the {#I.house.at to_be#} structure.
+& Locations are the environment of the sentence, it preceeds a sentence.The sentence "I am at my house" is translated to ${lietal_dict.construction("home.child to_be")}, following the {#home.child to_be#} structure.
 
 + Time
 
-& Time is also part of the environment of the sentence, it preceeds a sentence.The sentence "I will see you in the morning" is translated to {*Rïd'ak lari af'dïr*}, following the {#morning.at you to_see.future#} structure.
+& Time is also part of the environment of the sentence, it preceeds a sentence.The sentence "I will see you in the morning" is translated to ${lietal_dict.construction("future you to_see")}, following the {#future you to_see#} structure.
 
 + Collections
 
