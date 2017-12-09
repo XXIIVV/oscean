@@ -514,7 +514,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20160718 - 32      Horaire              AI
 20160717 - 34      Horaire              AI
 20160716 - 38      Nataniev             Tools
-20160715 - 24   18 Camera               Event                Learn Film Photo      Aquired Voigtländer Bessa
+20160715 ! 24   18 Camera               Event                Learn Film Photo      Aquired Voigtländer Bessa
 20160714 - 19      Collected works      Release              Cyan
 20160713 - 34      The will the wisp    Development
 20160712 ! 29    8 Pino                 Photography          Becalmed              Becalmed under a suffocating moonless sky, we drag deeper into the numbing gloom. Shapeless forms slither nearer and across the oily swells, cutting through flakes of luminescence, laughing at us. Attracted to the steaming light, a flock of bats circle our limp sail and the mind wanders. <br /><br />Intermittent gurgles, a pod of whales surfaces all around us. The sun didn't rise that day, the fog only turned into a lighter shade of black.

@@ -1736,16 +1736,15 @@ INVENTORY
 
 CAMERA
   UNDE : Inventory
-  BREF : The {{camera}}, presently used for the {{Nataniev}} projects, is the Sony a6000 and the Voightlander 28mm lens.
+  BREF : {{Camera}} equipment used in the various {{Nataniev}} projects.
   LONG
-    & A few other cameras are used, below is a list of the principal camera equipment.
     ~ Film
     - {{Voigtländer Bessa R3M 250 Jahre|https://www.cameraquest.com/voigt_250.htm}}, Voigtlander
     - {{Super wide heliar 15mm f4.5|http://www.kenrockwell.com/voigtlander/15mm.htm}}, Voigtlander
     - {{Ultron 28mm f2|http://www.kenrockwell.com/voigtlander/28mm-f2.htm}}, Voigtlander
     ~ Digital
-    - Alpha a6000 24.3 MP Interchangeable Lens Camera, Sony
-    - NEX/LEM Adapter, Novoflex
+    - {{Alpha a6000 24.3 MP|http://www.sony.co.nz/electronics/interchangeable-lens-cameras/ilce-6000-body-kit}}, Sony
+    - {{NEX/LEM Adapter|https://www.novoflexus.com/products/lens-adapters/for-leica-lenses/novoflex-nex-lem.htm}}, Novoflex
     ~ Infrared
     - {{50mm Nikkor f1.2|https://commons.wikimedia.org/wiki/File:Auto_nikkor_50mm.jpg}}, Nikon
 
