@@ -1320,7 +1320,7 @@ RYFI
 RYFO   
 RYFU   
 RYFY   
-SA     
+SA     TOGETHER
 SAKA   PATH
 SAKE   
 SAKI   
@@ -1430,7 +1430,7 @@ SEFI
 SEFO   
 SEFU   
 SEFY   
-SI     WITH
+SI     AS_ONE
 SIKA   NEAR
 SIKE   
 SIKI   
@@ -1485,7 +1485,7 @@ SIFI
 SIFO   
 SIFU   
 SIFY   
-SO     
+SO     SEPARATE
 SOKA   
 SOKE   
 SOKI   
@@ -1706,7 +1706,7 @@ LAFI
 LAFO   
 LAFU   
 LAFY   
-LE     COLLECTION_PUSH
+LE     PUSH
 LEKA   
 LEKE   
 LEKI   
@@ -1871,7 +1871,7 @@ LOFI
 LOFO   
 LOFU   
 LOFY   
-LU     COLLECTION_POP
+LU     POP
 LUKA   
 LUKE   
 LUKI   
@@ -3021,7 +3021,8 @@ function Lietal_Dict(dict)
 
   this.convert = function(word,direction = "li_en")
   {
-    if(word.length < 2){ return word; }
+    if(word == '\''){ return word; }
+
     dict = direction == "li_en" ? this.dict.li_en : this.dict.en_li;
     word = word.toUpperCase();
     return dict[word] ? (direction == "en_li" ? this.adultspeak(dict[word]) : dict[word]) : "("+word+")";
@@ -3057,7 +3058,7 @@ function Lietal_Dict(dict)
       var part = parts[id];
       s += this.convert(part,"en_li")+" ";
     }
-    return "<b>\""+s.replace(/ \' /g,"\'").trim()+"\"</b>";
+    return "<b>"+s.replace(/ \' /g,"\'").trim()+"</b>";
   }
 }
 
@@ -3105,8 +3106,8 @@ var payload = new Runic(`
 - {*Ri*} Outward — {*Ra*} Position — {*Ro*} Inward
 - {*Re*} Mobile — {*Ru*} Immobile
 ~ {*Sy*} Relation
-- {*Si*} With — {*Sa*} United — {*So*} Without
-- {*Se*} Related — {*Su*}  Unrelated
+- {*Si*} ${lietal_dict.convert("si").toLowerCase()} — {*Sa*} ${lietal_dict.convert("sa").toLowerCase()} — {*So*} ${lietal_dict.convert("so").toLowerCase()}
+- {*Se*} ${lietal_dict.convert("se").toLowerCase()} — {*Su*}  ${lietal_dict.convert("su").toLowerCase()}
 ~ {*Ly*} Counter
 - {*Li*} Multiple — {*La*} Single — {*Lo*} None
 - {*Le*} Push — {*Lu*} Pop
@@ -3149,15 +3150,13 @@ var payload = new Runic(`
 
 + Location
 
-& Locations are the environment of the sentence, it preceeds a sentence.The sentence "I am at my house" is translated to ${lietal_dict.construction("home.child to_be")}, following the {#home.child to_be#} structure.
+& Locations are the environment of the sentence, it preceeds a sentence. The sentence "I am home" is translated to ${lietal_dict.construction("home.child to_be")}, following the {#home.child to_be#} structure. In written Lietal, the particles follow the word they affect.
 
-+ Time
-
-& Time is also part of the environment of the sentence, it preceeds a sentence.The sentence "I will see you in the morning" is translated to ${lietal_dict.construction("future you to_see")}, following the {#future you to_see#} structure.
+& Time is also part of the environment of the sentence, it preceeds a sentence.The sentence "I will see you later" is translated to ${lietal_dict.construction("future you to_see")}, following the {#future you to_see#} structure.
 
 + Collections
 
-& Sequences of things, or topics, can be grouped together into collections and used as a single entity. The sentence "Between you and I" is translated to {*El lari es laro ul'käs*}, following the {#[ you & I ].between#} structure.
+& Sequences of things, or topics, can be grouped together into collections and used as a single entity. The sentence "Between you and I" is translated to ${lietal_dict.construction("push you together I pop.between")}, following the {#[you & I].between#} structure.
 
 & Below is another example with a different sentence structure. The sentence "Is the house blue or red?" is translated to {*Tokafo el lyfalo us lyfaloki ul'of*}, following the {#house [ red | blue ].to_be#} structure.
 
@@ -3177,27 +3176,27 @@ var payload = new Runic(`
 
 & The sentence "I give you a book" is translated to {*Lari'ar todoti fïr*}, following the {#you.to book to_give#} structure.
 
-* VERBS
++ Verbs
 
 & Verbs are used at the end of a sentence and are generally built from the fy family.The sentence "I take the book home" is translated to {*Tokafo'ar todoti firo*}, following the {#house.to book to_take#} structure.
 
-* TENSES
++ Tenses
 
 & Sentences are, by default, at the present tense, a tenses marker is used to contrast against an already defined tense. Tenses markers are used at the end of the sentence.The sentence "I did not go to school" is translated to {*Radoti'ar fori'dijör*}, following the {#school.to to_go.negative_past#} structure.
  
-* PREPOSITIONS
++ Prepositions
 
 & Lietal prepositions are aeths used as particles, placed after the word that they affect.The sentence "I will go to the city with you" is translated to {*Doradali'ar lari'is fori'dïr*}, following the {#city.to you.with to_go.future#} structure.
 
-* COLORS
++ Colors
 
 & Colors are built by combining lyra(speed) and lyfa(color).The sentence "Yellow is between red and green" is translated to {*Lyfalök el lyfalo es lyfäl ul'käs of*}, following the {#yellow [ red & green ].between to_be#} structure.
 
-* NUMBERS
++ Numbers
 
 & Numbers are built by combining yl(counter) and ys(relation). When base10 is used, eleven is not used.The sentence "1, 2, 3 and 123" is translated to {*Al il lio es loe lira'il lio*}, following the {#1 2 3 & 100 10.2 3#} structure.
 
-+ Summary
+* Summary
 
 & Here is an example including all of the previous lessons.
 & The sentence "Tomorrow, I might go to either the school, or to the library" is translated to {*Dilai el radoti us kadoti ul fori'dijari*}, following the {#tomorrow [ school | library ] to_go.potential_future#} structure.
