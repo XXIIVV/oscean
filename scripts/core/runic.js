@@ -93,6 +93,11 @@ function Runic(raw)
   {
     return this.parse(raw);
   }
+
+  this.toString = function()
+  {
+    return this.html();
+  }
 }
 
 invoke.seal("core","runic");
