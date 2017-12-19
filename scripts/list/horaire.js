@@ -1,6 +1,8 @@
 let $HORAIRE = new List(`
 DATE     CODE PICT TERM                 TASK                 NAME                  TEXT                                                                                                                                                                    END
 20171231 - 00
+20171220 - 27      Horaire              Design
+20171219 - 36      Horaire              Tools
 20171218 - 29      Hundred rabbits      Video
 20171217 - 14      Hundred rabbits      Composition
 20171216 - 
@@ -674,7 +676,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20160218 - 26      Hundred rabbits      Video
 20160217 - 26      Hundred rabbits      Video
 20160216 - 15      Hundred rabbits      Composition
-20160215 - 36  493 Hundred rabbits      Photography          Our Workstations      This is a picture of my workstation on {{Pino}}, next to the breaker panel and below the rardar.
+20160215 ! 36  493 Hundred rabbits      Photography          Our Workstations      This is a picture of my workstation on {{Pino}}, next to the breaker panel and below the rardar.
 20160214 + 39      Pino                 Event                Aquired sailboat      Bought a 33 foot Yamaha sailboat
 20160213 - 15      Verreciel            Composition
 20160212 - 15      Verreciel            Composition

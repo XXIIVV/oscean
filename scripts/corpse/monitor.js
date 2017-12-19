@@ -1,6 +1,6 @@
 function Monitor(logs)
 {
-  this.el = document.createElement('yu'); this.el.className = "monitor"
+  this.el = document.createElement('a'); this.el.className = "monitor"; this.el.setAttribute("href","horaire")
   this.lod = 75.0;
   this.height = 30;
   this.seg = [];

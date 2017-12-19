@@ -1,5 +1,7 @@
 function horaire_view()
 {
+  // Only 8 recent years
+
   this.parse = function(logs)
   {
     var h = {fh:0,by_date:{},by_day:{},by_sector:{},by_year:{},by_month:{},by_term:{sum:0},by_task:{sum:0}};
@@ -22,54 +24,34 @@ function horaire_view()
       h.by_date[log.time.gregorian.y+log.time.gregorian.m][log.sector] += log.value;
 
       // By Sector
-      if(!h.by_sector[log.sector]){
-        h.by_sector[log.sector] = 0
-      }
+      if(!h.by_sector[log.sector]){ h.by_sector[log.sector] = 0 }
       h.by_sector[log.sector] += log.value;
 
       // By Year
-      if(!h.by_year[log.time.gregorian.y]){
-        h.by_year[log.time.gregorian.y] = 0
-      }
+      if(!h.by_year[log.time.gregorian.y]){ h.by_year[log.time.gregorian.y] = 0}
       h.by_year[log.time.gregorian.y] += log.value;
 
       // By Month
-      if(!h.by_month[log.time.gregorian.m]){
-        h.by_month[log.time.gregorian.m] = {sum:0}
-      }
-      if(!h.by_month[log.time.gregorian.m][log.sector]){
-        h.by_month[log.time.gregorian.m][log.sector] = 0
-      }
+      if(!h.by_month[log.time.gregorian.m]){h.by_month[log.time.gregorian.m] = {sum:0}}
+      if(!h.by_month[log.time.gregorian.m][log.sector]){h.by_month[log.time.gregorian.m][log.sector] = 0}
       h.by_month[log.time.gregorian.m].sum += log.value;
       h.by_month[log.time.gregorian.m][log.sector] += log.value;
 
       // By Day
-      if(!h.by_day[log.time.date.getDay()]){
-        h.by_day[log.time.date.getDay()] = {sum:0}
-      }
-      if(!h.by_day[log.time.date.getDay()][log.sector]){
-        h.by_day[log.time.date.getDay()][log.sector] = 0
-      }
+      if(!h.by_day[log.time.date.getDay()]){h.by_day[log.time.date.getDay()] = {sum:0}}
+      if(!h.by_day[log.time.date.getDay()][log.sector]){h.by_day[log.time.date.getDay()][log.sector] = 0}
       h.by_day[log.time.date.getDay()].sum += log.value;
       h.by_day[log.time.date.getDay()][log.sector] += log.value;
 
       // By Term
-      if(!h.by_term[log.term]){
-        h.by_term[log.term] = {sum:0}
-      }
-      if(!h.by_term[log.term][log.sector]){
-        h.by_term[log.term][log.sector] = 0
-      }
+      if(!h.by_term[log.term]){h.by_term[log.term] = {sum:0}}
+      if(!h.by_term[log.term][log.sector]){h.by_term[log.term][log.sector] = 0}
       h.by_term[log.term].sum += log.value;
       h.by_term[log.term][log.sector] += log.value;
 
       // By Task
-      if(!h.by_task[log.task]){
-        h.by_task[log.task] = {sum:0}
-      }
-      if(!h.by_task[log.task][log.sector]){
-        h.by_task[log.task][log.sector] = 0
-      }
+      if(!h.by_task[log.task]){h.by_task[log.task] = {sum:0}}
+      if(!h.by_task[log.task][log.sector]){h.by_task[log.task][log.sector] = 0}
       h.by_task[log.task].sum += log.value;
       h.by_task[log.task][log.sector] += log.value;
 
@@ -110,7 +92,7 @@ function horaire_view()
     .general_graph span.year i.gain { color:#fff; }
     .general_graph span.year i.gain:before { content:"+"}
 
-    .value_graph { display:inline-block; font-family:'input_mono_regular'; margin-bottom:30px; margin-right:30px}
+    .value_graph { display:inline-block; font-family:'input_mono_regular'; margin-bottom:30px; width:110px}
     .value_graph span.value { font-family: 'input_mono_thin';font-size:40px;display: block;line-height: 35px; }
     .value_graph span.name { font-size:11px; text-transform:uppercase; padding-left:5px}
     .value_graph.right { float:right}
@@ -120,7 +102,6 @@ function horaire_view()
     .value_graph.audio .name { color:#72dec2}
     .value_graph.visual .name { color:#ffbf05}
     .value_graph.research .name { color:#fff}
-    .value_graph.tasks { margin-left:460px}
     .value_graph.htof { color:#999}
     .value_graph.htaf { color:#999}
 
@@ -135,6 +116,15 @@ function horaire_view()
 
     .any_graph.terms { max-width: 630px;overflow: hidden;float: left}
     .any_graph.tasks { max-width: 215px;float: right;overflow: hidden;margin-right:30px}
+
+    .table_graph { font-family:'input_mono_regular'; font-size:11px; margin-bottom:60px}
+    .table_graph tr { border-top:1px solid #333}
+    .table_graph tr th,.table_graph td { text-align:left; line-height:30px; width:110px}
+    .table_graph tr th { font-family:'input_mono_medium'; text-transform:uppercase}
+    .table_graph tr.legend { border-top:0px; color:#999}
+    .table_graph i.loss { font-style: normal;display: inline-block;color:#999}
+
+    note.end { max-width:900px !important; color:#999}
     </style>`;
   }
 
@@ -221,12 +211,30 @@ function horaire_view()
     return "<div class='any_graph "+special+"'>"+html+"</div>";
   }
 
+  this.table_graph = function(parsed)
+  {
+    var html = "";
+
+    var parsed_recent = this.parse(invoke.vessel.horaire.logs.splice(0,365));
+
+    html += "<tr class='legend'><th>Index</th><th>Average</th><th>Recent</th><th>Offset</th><th>Sector</th><th>Average</th><th>Recent</th><th>Offset</th></tr>"
+    html += "<tr><th>HDF</th><td>"+parsed.hdf.toString().substr(0,5)+"</td><td>"+parsed_recent.hdf.toString().substr(0,5)+"</td><td>"+this.display_offset(parsed.hdf,parsed_recent.hdf)+"</td><th>Audio</th><td>"+(parsed.by_sector.audio/parsed.d).toString().substr(0,6)+"</td><td>"+(parsed_recent.by_sector.audio/parsed_recent.d).toString().substr(0,6)+"</td><td>"+this.display_offset((parsed.by_sector.audio/parsed.d),(parsed_recent.by_sector.audio/parsed_recent.d))+"</td></tr>"
+    html += "<tr><th>HToF</th><td>"+parsed.htof.toString().substr(0,5)+"</td><td>"+parsed_recent.htof.toString().substr(0,5)+"</td><td>"+this.display_offset(parsed.htof,parsed_recent.htof)+"</td><th>Visual</th><td>"+(parsed.by_sector.visual/parsed.d).toString().substr(0,6)+"</td><td>"+(parsed_recent.by_sector.visual/parsed_recent.d).toString().substr(0,6)+"</td><td>"+this.display_offset((parsed.by_sector.visual/parsed.d),(parsed_recent.by_sector.visual/parsed_recent.d))+"</td></tr>"
+    html += "<tr><th>HTaF</th><td>"+parsed.htaf.toString().substr(0,5)+"</td><td>"+parsed_recent.htaf.toString().substr(0,5)+"</td><td>"+this.display_offset(parsed.htaf,parsed_recent.htaf)+"</td><th>Research</th><td>"+(parsed.by_sector.research/parsed.d).toString().substr(0,6)+"</td><td>"+(parsed_recent.by_sector.research/parsed_recent.d).toString().substr(0,6)+"</td><td>"+this.display_offset((parsed.by_sector.research/parsed.d),(parsed_recent.by_sector.research/parsed_recent.d))+"</td></tr>"
+    return "<table class='table_graph'>"+html+"</table>"
+  }
+
+  this.display_offset = function(a,b)
+  {
+    return b > a ? "+"+((b-a).toString().substr(0,5)) : "<i class='loss'>"+(b-a).toString().substr(0,6)+"</i>";
+  }
+
   this.html = function()
   {
     var html = "";
 
     var logs = invoke.vessel.horaire.logs;
-    var parsed = this.parse(invoke.vessel.horaire.logs)
+    var parsed = this.parse(logs)
 
     html += this.general_graph(parsed);
     html += this.value_graph(parsed.d,"Logs");
@@ -240,12 +248,14 @@ function horaire_view()
     html += this.any_graph(parsed,parsed.by_task,"tasks");
     html += "<hr />";
     html += this.value_graph(parsed.t,"Topics");
-    html += this.value_graph(parsed.htof,"Avg/Topic","htof",true);
+    html += this.value_graph(parsed.htof,"Avg/Topic","htof right",true);
     html += this.value_graph(parsed.tasks,"Tasks","tasks");
-    html += this.value_graph(parsed.htaf,"Avg/Task","htaf",true);
+    html += this.value_graph(parsed.htaf,"Avg/Task","htaf right",true);
 
     html += "<hr />";
-    console.log(parsed);
+    html += this.table_graph(parsed);
+    
+    html += "<note class='end'><b>Effectiveness</b>, is doing the right thing. <br> <b>Efficiency</b>, is doing it the right way.</note>"
 
     html += this.styles();
     return html;

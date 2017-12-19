@@ -711,7 +711,7 @@ CAMILARE
     > </table>
 
 BABELIUM
-  UNDE : Desktop
+  UNDE : Unreleased
   BREF : {{Babelium}} is a roguelike set in the Borges' Library of Babel and played within the limitation of its books.
   LONG
     & Begin by finding the {_guide_}({*g*}), in every second hexagon, the guide will tell you things to look for. If you find yourself to be walking rather slowly, find the closet in which you can sleep standing up.
@@ -914,7 +914,7 @@ DOTGRID
     http://hundredrabbits.itch.io/Dotgrid
 
 BYT
-  UNDE : Software
+  UNDE : Unreleased
   BREF : {{Byt}} is a ByteBeat IDE.
   LONG
     & {*Byt*} is a little program to write {{ByteBeat|http://canonical.org/~kragen/bytebeat/}} compositions, procedural noise.
@@ -1614,7 +1614,6 @@ DESAMBER
   BREF : {{Desamber}} is the time-format of the {{Nataniev}} ecosystems.
   LONG
     & The {_Equal Month calendar_} has {*13 months*} of {*28 days*} each and the 365th day of the year is the {_Year Day_}, preceeded by the {_Leap Day_} on leap years.
-    = Today is {{!desamber}}.<br />The time is {{!clock}}.
     & The clock has 6 digits, where their overall value is a ratio over the completion of the day. For example, Noon is 500, 6AM is 250 and 6PM is 750.
     & In the 000:000 format, the shortest pulse equals to 8.64 milliseconds, the second shortest 86.4 and so on.
   LINK
