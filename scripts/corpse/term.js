@@ -12,6 +12,7 @@ function Term(name,memory)
     this.bref = this.memory.bref ? new Runic().markup(this.memory.bref) : "Missing";
     this.long = this.memory.long ? new Runic(this.memory.long).html() : "";
     this.links = this.memory.link ? this.memory.link : [];
+    this.flag = this.memory.flag ? this.memory.flag : [];
   }
   
   this.start = function()
@@ -79,7 +80,7 @@ function Term(name,memory)
 
   this.theme = function()
   {
-    if(this.diaries.length < 1){ return "no_photo"; }    
+    if(this.diaries.length < 1 || this.flag.indexOf("no_photo") > -1){ return "no_photo"; }    
     return this.diary().theme;
   }
 

@@ -1601,6 +1601,7 @@ OSCEAN
 HORAIRE
   UNDE : Nataniev
   TAGS : Portal
+  TYPE : Docs
   FLAG : no_photo
   BREF : {{Horaire}} is a time tracking tool.
   LONG

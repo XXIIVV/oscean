@@ -1,6 +1,6 @@
 function Monitor(logs)
 {
-  this.el = document.createElement('yu'); this.el.id = "monitor"
+  this.el = document.createElement('yu'); this.el.className = "monitor"
   this.lod = 75.0;
   this.height = 30;
   this.seg = [];
@@ -14,9 +14,9 @@ function Monitor(logs)
 
   this.update = function(logs)
   {
-    if(logs.length < 1){ this.el.className = "inactive"; return; }
+    if(logs.length < 1){ this.el.className = "monitor inactive"; return; }
 
-    this.el.className = "active";
+    this.el.className = "monitor active";
 
     var segments = this.parse(logs);
 

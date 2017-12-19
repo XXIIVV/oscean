@@ -20,7 +20,8 @@ function Layout(host)
   // Footer
   this.fd.appendChild(this.fd_wr = document.createElement('wr'));
 
-  this.search.addEventListener('keydown', function(event) {
+  this.search.addEventListener('keydown', function(event)
+  {
     if(event.key === "Enter"){ invoke.vessel.corpse.validate(); }
   });
 
