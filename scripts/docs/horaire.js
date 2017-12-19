@@ -214,8 +214,9 @@ function horaire_view()
   this.table_graph = function(parsed)
   {
     var html = "";
-
-    var parsed_recent = this.parse(invoke.vessel.horaire.logs.splice(0,365));
+    
+    var logs = invoke.vessel.horaire.logs.slice()
+    var parsed_recent = this.parse(logs.splice(0,365));
 
     html += "<tr class='legend'><th>Index</th><th>Average</th><th>Recent</th><th>Offset</th><th>Sector</th><th>Average</th><th>Recent</th><th>Offset</th></tr>"
     html += "<tr><th>HDF</th><td>"+parsed.hdf.toString().substr(0,5)+"</td><td>"+parsed_recent.hdf.toString().substr(0,5)+"</td><td>"+this.display_offset(parsed.hdf,parsed_recent.hdf)+"</td><th>Audio</th><td>"+(parsed.by_sector.audio/parsed.d).toString().substr(0,6)+"</td><td>"+(parsed_recent.by_sector.audio/parsed_recent.d).toString().substr(0,6)+"</td><td>"+this.display_offset((parsed.by_sector.audio/parsed.d),(parsed_recent.by_sector.audio/parsed_recent.d))+"</td></tr>"

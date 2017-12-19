@@ -5,8 +5,8 @@ function Oscean()
   this.requirements = {
     corpse:["layout","lexicon","term","horaire","log","monitor"],
     dict:["lexicon"],
-    docs:["directory","nutrition","aesthetics","russian","japanese","nomad","oceanism","glossary","tiers","biases","offline","fransset","home","lietal","blue","horaire"],
-    list:["horaire"]
+    list:["horaire"],
+    docs:["directory","nutrition","aesthetics","russian","japanese","nomad","oceanism","glossary","tiers","biases","offline","fransset","home","lietal","blue","horaire","calendar"]
   };
 
   this.name = "oscean";

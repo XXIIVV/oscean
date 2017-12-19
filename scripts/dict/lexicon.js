@@ -1609,6 +1609,12 @@ HORAIRE
   LINK
     https://github.com/XXIIVV/vessel.oscean/blob/master/memory/horaire.ma
 
+CALENDAR
+  UNDE : Horaire
+  TYPE : Docs
+  FLAG : no_photo
+  BREF : {{Horaire}} is a time tracking tool.
+
 DESAMBER
   UNDE : Nataniev
   BREF : {{Desamber}} is the time-format of the {{Nataniev}} ecosystems.
