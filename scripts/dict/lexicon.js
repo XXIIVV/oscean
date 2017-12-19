@@ -1820,7 +1820,7 @@ RUSSIAN
   TAGS : guide
 
 FRANSSET
-  UNDE : Language
+  UNDE : Unreleased
   BREF : {{Fransset}} are collected notes on suggested French reforms.
   TYPE : Docs
   TAGS : guide
