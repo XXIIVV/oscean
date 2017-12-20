@@ -6,7 +6,7 @@ function Layout(host)
   // Header
   this.hd.appendChild(this.photo = document.createElement('photo'));
   this.hd.appendChild(this.icon = document.createElement('icon'));
-  this.hd.appendChild(this.logo = document.createElement('a'));
+  this.hd.appendChild(this.logo = document.createElement('a')); 
   this.hd.appendChild(this.search = document.createElement('input'));
   this.hd.appendChild(this.h1 = document.createElement('h1'));
   this.hd.appendChild(this.h2 = document.createElement('h2'));
@@ -19,6 +19,8 @@ function Layout(host)
   this.md_wr.appendChild(this.hr = document.createElement('hr'));
   // Footer
   this.fd.appendChild(this.fd_wr = document.createElement('wr'));
+
+  this.logo.setAttribute("href", "Home")
 
   this.search.addEventListener('keydown', function(event)
   {
@@ -56,7 +58,7 @@ function Layout(host)
       c.el.style.opacity = 1;
       window.scrollTo(0,0);
       c.search.setAttribute("value",c.term.name)
-      c.logo.setAttribute("href",c.term.parent ? c.term.parent.name : "Home")
+      
       c.h1.innerHTML = c.term.bref;
       c.h2.innerHTML = c.term.h2();
       c.hd.className = c.term.theme();
