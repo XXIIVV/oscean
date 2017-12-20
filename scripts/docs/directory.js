@@ -10,6 +10,7 @@ var payload = new Runic(`
 - {{Consolations in Travel|https://en.wikipedia.org/wiki/Humphry_Davy}}, Sir Humphry Davy. 1830
 - {{Blumroch l'admirable|https://en.wikipedia.org/wiki/Louis_Pauwels}}, Louis Pauwels. 1976
 - {{The Book Of Tea|https://en.wikipedia.org/wiki/The_Book_of_Tea}}, Okakura Kakuzō. 1906
+- {{The Glass Bead Game|https://en.wikipedia.org/wiki/The_Glass_Bead_Game}}, Hermann Hesse. 1943
 ~ Movies
 - {{Last Life In The Universe|https://en.wikipedia.org/wiki/Last_Life_in_the_Universe}}, Pen-Ek Ratanaruang. 2003
 - {{Solaris|https://en.wikipedia.org/wiki/Solaris_(2002_film)}}, Steven Soderbergh. 2002
