@@ -1,6 +1,6 @@
 let $HORAIRE = new List(`
 DATE     CODE PICT TERM                 TASK                 NAME                  TEXT                                                                                                                                                                    END
-20171220 - 27      Horaire              Design
+20171220 ! 29  505 Horaire              Design               Odessa
 20171219 - 36      Horaire              Tools
 20171218 - 29      Hundred rabbits      Video
 20171217 - 14      Hundred rabbits      Composition
