@@ -30,7 +30,7 @@ function Layout(host)
   this.start = function()
   {
     this.load(invoke.vessel.query());
-    this.fd_wr.innerHTML = "<a href='' class='icon twitter'></a><a href='https://github.com/neauoire' class='icon github'></a><a href='Rotonde' class='icon rotonde'></a><yu id='clock'></yu><a href='Devine+lu+linvega'>Devine Lu Linvega</a> © 2006—2017<br/>BY-NC-SA 4.0<hr />";
+    this.fd_wr.innerHTML = "<a href='https://twitter.com/neauoire' class='icon twitter'></a><a href='https://github.com/neauoire' class='icon github'></a><a href='Rotonde' class='icon rotonde'></a><yu id='clock'></yu><a href='Devine+lu+linvega'>Devine Lu Linvega</a> © 2006—2017<br/>BY-NC-SA 4.0<hr />";
     this.clock = new Clock();
     this.clock.start()
   }
