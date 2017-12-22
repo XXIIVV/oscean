@@ -25,7 +25,7 @@ var payload = new Runic(`
 - {{Na srebrnym globie|https://en.wikipedia.org/wiki/On_the_Silver_Globe_(film)}}, Andrzej Żuławski. 1988
 - {{茶の味|https://en.wikipedia.org/wiki/The_Taste_of_Tea}}, Katsuhito Ishii. 2004
 - {{Cat Soup|https://en.wikipedia.org/wiki/Cat_Soup}}, Tatsuo Satō. 2001
-~ ALBUMS
+~ Albums
 - {{Weighing Souls With Sand|https://www.youtube.com/watch?v=G9ZiU7ahZso}}, by Angelic Process
 - {{HoneySuckle Æons|https://www.youtube.com/watch?v=TKWpxsmNe6k}}, by Current 93
 - {{顕信の一撃}}, by 友川カズキ

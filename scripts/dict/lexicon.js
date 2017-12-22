@@ -2,24 +2,21 @@ let $LEXICON = new Memory(`
 HOME
   UNDE : Home
   BREF : Welcome to the {{Nataniev}} playground and ecosystem.
-  TYPE : Docs
+  TYPE : Special
   ETCS
     & This wiki provides documentation and narrative context for the various {{Audio}}, {{Visual}} and {{Research}} projects of multimedia developer {{Devine Lu Linvega}}. 
 
 AUDIO
   UNDE : Home
   BREF : The {{Audio}} hosts sound and live projects.
-  TYPE : Archive
 
 VISUAL
   UNDE : Home
   BREF : The {{Visual}} hosts design and interaction projects.
-  TYPE : Archive
 
 RESEARCH
   UNDE : Home
   BREF : The {{Research}} hosts philosophy and linguistics projects.
-  TYPE : Archive
 
 AUTOMATONS
   UNDE : Research
@@ -104,7 +101,7 @@ DONSOL
 
 DILUVIUM
   UNDE : Collegiennes
-  BREF : {{Diluvium}} is a jam game made by {{Henk Boom|http://henk.ca}}(FRACT), {{Dominique Ferland|http://dom2d.com}}(Playpeep), {{Renaud Bedard|http://theinstructionlimit.com/}}(FEZ) and Devine Lu Linvega, made in 3 days at the Toronto Game Jam of 2012
+  BREF : {{Diluvium}} is a jam game made by {{Henk Boom|http://henk.ca}}(FRACT), {{Dominique Ferland|http://dom2d.com}}(Playpeep), {{Renaud Bedard|http://theinstructionlimit.com/}}(FEZ) and Devine Lu Linvega, made in 3 days at the Toronto Game Jam of 2012.
   LONG
     & The game was first showcased at the <a href='https://www.facebook.com/events/447362851940595/'>Indies Meetup</a> on june 6th 2012.
     & Thank you for your support on the <a href='http://forums.tigsource.com/index.php?topic=26064.15'>TIGsource</a> tread.
@@ -119,7 +116,7 @@ DILUVIUM
     & To join a game over the internet, you can type {*JOIN RABBIT*} to connect to the game named "rabbit" or leave simply type {*JOIN*} to connect to a random game. If you wish to play local, you can simply type the host's IP.
     * Splash Commands</h2>
     & You can enter a few commands and cheat codes into the splash field.
-    # Local  > <comment>{empty}</comment>    : Play against an AI summonerJoin   > <comment>{empty}</comment>    : Battle a random internet summoner       > Game Name  : Challenge a specific internet summoner       > IP Address : Challenge a local(LAN) summonerHost   > <comment>{empty}</comment>    : Create a LAN/Internet game       > Game Name  : Create a LAN/Internet game with a specific nameMute   > <comment>{empty}</comment>    : Turn the music OFF
+    # Local  > <comment>{empty}</comment>    :Play against an AI summonerJoin   > <comment>{empty}</comment>    :Battle a random internet summoner       > Game Name  :Challenge a specific internet summoner       > IP Address :Challenge a local(LAN) summonerHost   > <comment>{empty}</comment>    :Create a LAN/Internet game       > Game Name  :Create a LAN/Internet game with a specific nameMute   > <comment>{empty}</comment>    :Turn the music OFF
     & The game also has a few cheat codes that can be entered in the splash field, ask your friends for these codes maybe someone has found one.
     * Soundtrack
     & The sounds and sountrack of the game were composed by {{Aliceffekt}}. There is 4 versions of the BGM available in the game, some of them are secret tracks.
@@ -165,7 +162,6 @@ ES GULF SUNFLOWERS
 
 ALICEFFEKT
   UNDE : Audio
-  TYPE : Archive
   BREF : {{Aliceffekt}}, is an audio project following the adventures of {{Neonev}} across {{Dinaisth}}.
   LONG
     &  A travel across the fictional worlds of the {{Neauismetica}} where every album is a sort of travel diary across the {{Dinaisth}} landscape.
@@ -254,7 +250,7 @@ BRANDING
 ILLUSTRATION
   UNDE : Visual
   TYPE : Portal
-  BREF : A collection of illustrated projects.
+  BREF : A collection of {{illustrated|Illustration}} projects.
 
 ARTWORK
   UNDE : Illustration
@@ -732,8 +728,10 @@ THE SIXTH SEASON
 
 PHYSICAL
   UNDE : Visual
-  BREF : These are a couple object I designed that can be 3d printed. You can see additional designs on <a href='http://www.thingiverse.com/Aliceffekt/designs'>Thingiverse</a>.
+  BREF : These {{Physical}} objects are designed to be 3d printed. 
   TYPE : Portal
+  LINK
+    http://www.thingiverse.com/Aliceffekt/designs
 
 POLYGONOSCOPY
   UNDE : Illustration
@@ -857,7 +855,6 @@ INTERACTIVE
   BREF : The {{Interactive}} Portal contains all the released interactive applications.
   LONG
     & The interactive project list contains various completed and unreleased experiments and games for iOS, desktop and browser.
-  TYPE : Archive
 
 SOFTWARE
   UNDE : Interactive
@@ -865,7 +862,6 @@ SOFTWARE
   BREF : A collection of open-source and free {{software}}.
   LONG
     & Released under {{Hundred Rabbits}}, these applications were created to be used offline, and to be easy to repair and improve while living {{Off the grid|Offline}}.
-    & {{Marabu}} and {{Left}} builds are currently available on {{Itch.io|http://hundredrabbits.itch.io/}}.
   LINK
     http://hundredrabbits.itch.io/
     http://github.com/hundredrabbits
@@ -1285,7 +1281,6 @@ WALLPAPER
 
 NEAUISMETICA
   UNDE : Research
-  TYPE : Archive
   TAGS : Portal
   BREF : The {{Neauismetica}} is a series of notes on the fiction of {{Dinaisth}}.
   LONG
@@ -1337,7 +1332,6 @@ SOIES
 
 DINAISTH
   UNDE : Neauismetica
-  TYPE : Archive
   BREF : {{Dinaisth}} is both the name of the planet and of a continent which harbors {{Andes}}' offices.
 
 KANIKULE
@@ -1373,7 +1367,6 @@ DILITRIELTH
 
 CHARACTERS
   UNDE : Neauismetica
-  TYPE : Archive
   BREF : A branch of {{Neon Hermetists|Neon hermetism}} aspiring to solve the {{Ehrivevnv}} puzzle, often called {_The Courtship Of The Immortal Birds_}.
 
 YAJNEV
@@ -1445,7 +1438,7 @@ TRAVEL
 
 AUSTRIA
   UNDE : Travel
-  BREF : Travel diary for our trip to Ars Electronica in Linz, followed with Vienna, in September of 2015.
+  BREF : Trip to {{Austria}}, in September of 2015, for Ars Electronica.
   TYPE : Diary
 
 AMERICA
@@ -1474,7 +1467,7 @@ FUJI
 
 CZECH
   UNDE : Travel
-  BREF : Trip to Czech Republic in 2011.
+  BREF : Trip to {{Czech}} Republic in 2011.
   TYPE : Diary
 
 SOUTH PACIFIC
@@ -1512,7 +1505,6 @@ VAMBITS
 
 NOTES
   UNDE : Research
-  TYPE : Archive
   BREF : Various notes written as stories.
 
 THE SARTRE MECHANISM
@@ -1566,7 +1558,6 @@ TALK
 
 GAMME
   UNDE : Research
-  TYPE : Archive
   TAGS : Portal
   BREF : The {{Gamme}} is a series of concepts and tools.
   LONG
@@ -1584,11 +1575,6 @@ NATANIEV
   LINK
     https://github.com/XXIIVV/Nataniev
 
-LOBBY
-  UNDE : Suite
-  TYPE : Docs
-  BREF : The {{Lobby}} is the {{Nataniev}} graphical interface which host native applications like {{Marabu}}, {{Ronin}} and {{Left}}.
-
 OSCEAN
   UNDE : Nataniev
   BREF : {{Oscean}} is a custom wiki engine built within {{Nataniev}}.
@@ -1601,8 +1587,7 @@ OSCEAN
 HORAIRE
   UNDE : Nataniev
   TAGS : Portal
-  TYPE : Docs
-  FLAG : no_photo
+  TYPE : Special
   BREF : {{Horaire}} is a time tracking tool.
   LONG
     & I am currently porting this to Javascript, give me a few more days.
@@ -1611,7 +1596,7 @@ HORAIRE
 
 CALENDAR
   UNDE : Horaire
-  TYPE : Docs
+  TYPE : Special
   FLAG : no_photo
   BREF : {{Horaire}} is a time tracking tool.
 
@@ -1682,14 +1667,12 @@ LAE DOI
 
 OBLIQUES
   UNDE : Gamme
-  TYPE : Archive
   BREF : {{Obliques}} are short essays on travel, {{lifestyle}} and optimisation.
   TAGS : Portal
 
 LIFESTYLE
   UNDE : Obliques
   BREF : {{Lifestyle}} notes are on some of my choices.
-  TYPE : Archive
 
 NUTRITION
   UNDE : Lifestyle
@@ -1711,20 +1694,6 @@ NOMAD
   BREF : The {{Nomad}} notes are reflexions on the dreams of a nomadic life.
   TYPE : Docs
 
-OFFLINE
-  UNDE : Lifestyle
-  BREF : The {{Offline}} notes are a collection of lessons on living away from cities.
-  LONG
-    & This page is an ever growing collection of notes on technical {{off-the-grid|#off_the_grid}} and {{liveaboard|#liveaboard}} topics. If you have unawnsered questions, please leave us a message on {{Twitter|https://twitter.com/hundredrabbits}}.
-  TYPE : Docs
-
-OCEANISM
-  UNDE : Lifestyle
-  BREF : This {{Oceanism Manual|Oceanism}} is a collection of liveaboard notes on living on a sailboat, advised from sailing across the Pacific.
-  LONG
-    & This page is an ever growing collection of notes on technical {{|#off_the_grid}} and {{liveaboard|#liveaboard}} topics. If you have unawnsered questions, please leave us a message on {{Twitter|https://twitter.com/hundredrabbits}}.
-  TYPE : Docs
-
 INVENTORY
   UNDE : Obliques
   BREF : Detailed {{Inventory}} of equipment used in the creation of {{XXIIVV|Nataniev}}.
@@ -1736,9 +1705,10 @@ INVENTORY
     - MUJI's A5 Dotgrid
     - Gerber's Tactical + Shard
     - J. L. Lawson & Co's MII Key holder
-    - Voigtländer's {{Bessa R3M 250 Jahre|Camera}}
     - Army Field Survival FM21-76  Manual
     - Amazon's Kindle Paperwhite
+    ~ Camera
+    - Voigtländer's {{Bessa R3M 250 Jahre|Camera}}
 
 CAMERA
   UNDE : Inventory
@@ -1763,7 +1733,6 @@ KEYBOARD
 MIRRORS
   UNDE : Obliques
   BREF : {{Mirrors}} of notes and articles for safekeeping and offline access.
-  TYPE : Archive
 
 GLOSSARY
   UNDE : Mirrors
@@ -1795,20 +1764,18 @@ DIRECTORY
 
 LANGUAGE
   UNDE : Obliques
-  TYPE : Archive
   BREF : Various {{Language}} notes on natural and syntetic languages.
   LONG
     & Welcome to the Language Portal.
     & The goal of these pages is to host a few resources, summaries and notes from my own language studies.
     & Some of the future projects might have to do with {{English Prime|http://en.wikipedia.org/wiki/E-Prime}}(E′) or the {{Tractatus Logico-Philosophicus|https://en.wikipedia.org/wiki/Tractatus_Logico-Philosophicus}}, maybe even an analysis of the {{Logopandecteision|http://en.wikipedia.org/wiki/Logopandecteision}} or the {{Neaudethaumata|http://penelope.uchicago.edu/urquhart/index.html}}. To give you a sense of my interest in linguistics, here are some of my favourite words:
     ~ Favourite Words
-    - {{Февраль|https://ru.wikipedia.org/wiki/Февраль}}, February in Russian
     - {{Roÿnes|https://fr.wiktionary.org/wiki/roÿne}}, queen in Middle French
     - {*Pleurir*}, crying-laugh in French
     - {{Dodecahedron|https://en.wikipedia.org/wiki/Dodecahedron}}, in English
     - {{Oyasumi|https://en.wiktionary.org/wiki/お休み}}, in Japanese
     - {{Betwixt|https://en.wikipedia.org/wiki/Betwixt}}, in English
-    ? The header is a {_word_} from the Voynich.
+    - {{Февраль|https://ru.wikipedia.org/wiki/Февраль}}, February in Russian
 
 JAPANESE
   UNDE : Language
@@ -1867,92 +1834,8 @@ DEATH
   LONG
     & Inspired from {{Chris Crawford|https://en.wikipedia.org/wiki/Chris_Crawford_(game_designer)}}'s Jars.
 
-TRAUMAE
-  UNDE : Null
-  TYPE : Redirect Lietal
-
-RANDOM
-  UNDE : Null
-  TYPE : Redirect Random
-
-GAMES
-  UNDE : Null
-  TYPE : Redirect Interactive
-
-ABOUT
-  UNDE : Null
-  TYPE : Redirect Nataniev
-
-YEARLY
-  BREF : {{Yearly}} rating of output values.
-  LONG
-    & This graph shows yearly {{Horaire}} output values.
-
-2008
-  UNDE : Yearly
-  BREF : The {{Plan|Aesthetics}}.
-  TYPE : calendar
-  LONG
-    & It's important to note that by that time I already stumbled on the idea of daily logs, and while I was mostly logging inactivity, I had been doing the routine for nearly 2 years already.
-    & Programing and design logs were hardly present in the logs. Music was to become a reason to design, and an introduction to world-building.
-
-2009
-  UNDE : Yearly
-  BREF : {{Aliceffekt}} rising.
-  TYPE : calendar
-
-2010
-  UNDE : Yearly
-  BREF : Meeting with {{Renaud|Collegiennes}}.
-  TYPE : calendar
-
-2011
-  UNDE : Yearly
-  BREF : Enter the {{Neauismetica}}.
-  TYPE : calendar
-
-2012
-  UNDE : Yearly
-  BREF : Moving to {{Tokyo|Japan}}.
-  TYPE : calendar
-
-2013
-  UNDE : Yearly
-  BREF : A new life in {{Tokyo|Japan}}.
-  TYPE : calendar
-
-2014
-  UNDE : Yearly
-  BREF : Cycling, Food & Coffee.
-  TYPE : calendar
-
-2015
-  UNDE : Yearly
-  BREF : Talks in {{Europe|Travel}}.
-  TYPE : calendar
-
-2016
-  UNDE : Yearly
-  BREF : Moving on a {{sailboat|Pino}}.
-  TYPE : calendar
-
-2017
-  UNDE : Yearly
-  BREF : Sailing across the {{South Pacific}} Ocean.
-  TYPE : calendar
-
-RUBY RIDING HOOD
-  UNDE : Archives
-  BREF : Inspired by a talk with a friend about Steven Pinker's The Language Instincs, I decided to try and translate Leanne Guenther's {{Little Red Riding Hood|http://www.dltk-teach.com/rhymes/littlered/story.htm}} into Ruby.
-  LONG
-    & The idea was simple, how much meaning can I extrude from the original text and parse into a computer language, as it turns out, a lot of it can.
-    & The full text is on Github. Feel free to contact me with pull requests and optimisations.
-  LINK
-    https://gist.github.com/neauoire/9beee5e555615e0003d194548c158979
-    http://en.wikipedia.org/wiki/The_Language_Instinct
-
 FIRST WAVE
-  UNDE : Archives
+  UNDE : Aliceffekt
   TYPE : Portal
   BREF : The {{First Wave}} contains material mostly unrelated to the {{Neauismetica}} and proto-{{Aliceffekt}}.
 

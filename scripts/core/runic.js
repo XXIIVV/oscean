@@ -44,11 +44,12 @@ function Runic(raw)
     var lines = !Array.isArray(raw) ? raw.split("\n") : raw;
 
     for(id in lines){
-      var rune = this.runes[lines[id].substr(0,1)];
+      var char = lines[id].substr(0,1).trim().toString()
+      var rune = this.runes[char];
       var trail = lines[id].substr(1,1);
       var line = this.markup(lines[id].substr(2));
       if(!line || line.trim() == ""){ continue; }
-      if(!rune){ console.log("Unknown rune",rune); }
+      if(!rune){ console.log("Unknown rune",this.runes["&"],lines[id].substr(0,1),lines[id]); }
       if(trail != " "){ console.warn("Runic","Non-rune["+trail+"] at:"+id+"("+line+")"); continue; }
       html += this.render(line,rune);
     }

@@ -3,7 +3,7 @@ function Invoke(name,version = "100")
   this.name = name;
   this.version = version;
   this.path = "";
-  this.requirements = {core:["corpse","memory","list","runic","desamber","clock","keyboard"],main:[name]};
+  this.requirements = {core:["corpse","memory","list","runic","desamber","clock","keyboard","console"],main:[name]};
   this.includes = {};
   this.is_owner = false;
   this.vessel = null;
@@ -11,6 +11,8 @@ function Invoke(name,version = "100")
 
   this.summon = function()
   {
+    if(invoke.console){ invoke.console.log("invk","summoning",invoke.name+" v"+invoke.version,true); }
+
     for(var cat in this.requirements){
       this.includes[cat] = [];
     }
@@ -35,13 +37,25 @@ function Invoke(name,version = "100")
 
   this.seal = function(type,name,payload = null)
   {
-    console.log("seal."+type,name)
+    if(invoke.console){ invoke.console.log("seal",type+"/",name+" "+this.remaining().length); }
+
     if(payload){ this.storage[name] = payload; }
     this.includes[type].push(name);
     this.verify();
   }
 
   this.verify = function()
+  {
+    if(this.remaining().length == 0){
+      if(invoke.console){
+        invoke.console.log("core","ready",this.name,true)
+        invoke.console.hide();
+      }
+      this.start();
+    }
+  }
+
+  this.remaining = function()
   {
     var remaining = [];
 
@@ -51,16 +65,15 @@ function Invoke(name,version = "100")
         if(this.includes[cat].indexOf(name) < 0){ remaining.push(name); }
       }
     }
-
-    if(remaining.length == 0){
-      this.start();
-    }
+    return remaining;
   }
 
   this.start = function()
   {
     this.vessel = new window[this.name.capitalize()]();
     this.keyboard = new Keyboard();
+    this.clock = new Clock();
+    this.console = new Console();
     this.vessel.summon();
   }
 }

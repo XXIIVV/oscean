@@ -22,10 +22,6 @@ function Layout(host)
 
   this.logo.setAttribute("href", "Home")
 
-  this.search.addEventListener('keydown', function(event)
-  {
-    if(event.key === "Enter"){ invoke.vessel.corpse.validate(); }
-  });
 
   this.start = function()
   {
@@ -79,7 +75,7 @@ function Layout(host)
 
   this.link = function(target)
   {
-    var name = target.replace(/^\//,"").trim();
+    var name = target.replace(/^\//g,"").trim();
 
     // External
     if(target.match(/^http|^dat/)){
@@ -92,9 +88,9 @@ function Layout(host)
 
   this.validate = function()
   {
-    var name = this.search.value.replace("/","").trim();
-    this.load(name);
-    this.search.blur();
+    var name = invoke.vessel.corpse.search.value.replace("/","").trim();
+    invoke.vessel.corpse.load(name);
+    invoke.vessel.corpse.search.blur();
   }
 
   this.on_scroll = function()
@@ -104,8 +100,21 @@ function Layout(host)
     this.search.style.top = parseInt(60 - offset)+"px";
   }
 
-  window.onclick = function(e){ if(e.target.localName == "a"){ e.preventDefault(); invoke.vessel.corpse.link(e.target.getAttribute("href"));} };
+  this.search_focus = function(event)
+  {
+    event.preventDefault();
+    invoke.vessel.corpse.search.focus();
+    window.scrollTop = 0;
+  }
+
+  window.onclick = function(e){ 
+    if(e.target.localName == "a"){ e.preventDefault(); invoke.vessel.corpse.link(e.target.getAttribute("href"));} 
+    if(e.target.offsetParent.localName == "a"){ e.preventDefault(); invoke.vessel.corpse.link(e.target.offsetParent.getAttribute("href"));}
+  };
   window.onscroll = function(){ invoke.vessel.corpse.on_scroll(); };
+
+  invoke.keyboard.add_event("Enter",this.validate,this.search);
+  invoke.keyboard.add_event("Tab",this.search_focus);
 }
 
 invoke.vessel.seal("corpse","layout");

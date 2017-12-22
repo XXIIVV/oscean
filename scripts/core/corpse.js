@@ -21,6 +21,8 @@ function Corpse(host)
 
   this.install_style = function(name, is_user_side)
   {
+    invoke.console.log("crps","style/",name);
+
     var href = "links/"+name+'.css';
     var s = document.createElement('link');
     s.rel = 'stylesheet';

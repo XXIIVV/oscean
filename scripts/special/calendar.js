@@ -77,4 +77,5 @@ function calendar_view()
 
 var payload = new calendar_view();
 
-invoke.vessel.seal("docs","calendar",payload);
+invoke.vessel.seal("special","calendar",payload);
+

@@ -27,6 +27,12 @@ function Clock()
     setTimeout(function(){ clock.update(); }, 864.0);
   }
 
+  this.formatted = function()
+  {
+    var t = this.time().toString();
+    return t.substr(0,3)+":"+t.substr(3,3);
+  }
+
   this.redraw_app = function()
   {
     var t        = this.time();

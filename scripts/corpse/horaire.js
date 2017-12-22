@@ -14,7 +14,6 @@ function Horaire(list)
     for(id in this.list.array){
       this.logs.push(new Log(this.list.array[id]))
     }
-    console.info("Added "+this.logs.length+" logs.")
   }
 
   this.connect_logs = function()

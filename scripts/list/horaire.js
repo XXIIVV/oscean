@@ -289,7 +289,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20170309 - 24      Hundred rabbits      Photography
 20170308 - 34      Ronin                Tools
 20170307 - 34      Neauismetica         Writing
-20170306 ! 28   49 South pacific        Photography          Nuku-Hiva
+20170306 ~ 28   49 South pacific        Photography          Nuku-Hiva
 20170305 - 12      Superworker          Composition
 20170304 + 29  404 South pacific        Event                Move to the Marquesas
 20170303 - 15      Hundred rabbits      Composition
@@ -352,7 +352,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20170106 + 38      Donsol               Release              Released Donsol
 20170105 - 36      Donsol               Development
 20170104 - 26      Donsol               Design
-20170103 - 23  230 Directory            Photography
+20170103 ! 23  230 Directory            Photography
 20170102 - 26      Donsol               Design
 20170101 - 27      Nataniev             Branding
 20161231 - 24      Ronin                Design
@@ -380,7 +380,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20161209 - 39      Dotgrid              Prototype
 20161208 - 34      Obliques             Writing
 20161207 - 34      Lietal               Tools
-20161206 - 34  194 Russian              Tools
+20161206 ! 34  194 Russian              Tools
 20161205 - 34      Russian              Tools
 20161204 - 34      Nataniev             Tools
 20161203 - 24  232 Nataniev             Design
@@ -531,7 +531,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20160711 - 39      Pino                 Writing
 20160710
 20160709 - 29      Pino                 Event                Sail to America       1250nm sail to San Diego
-20160708 ! 25  113 Language             Illustration
+20160708 ~ 25  113 Language             Illustration
 20160707 - 25  143 Pearls               Modeling
 20160706 - 15      Portalion            Composition
 20160705 - 25  144 Pearls               Modeling
@@ -904,7 +904,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20150704 - 35      Verreciel            Prototype
 20150703 - 31      Hiversaires          Maintenance          3.4
 20150702 - 19      Supervisitor         Composition
-20150701 - 35      Ruby Riding Hood     Maintenance          0.1
+20150701 - 35      Lietal               Linguistics
 20150630
 20150629 -24   110 Infrared             Photography          
 20150628
@@ -925,7 +925,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20150613 - 35      The will the wisp    Development
 20150612 ! 35  170 The will the wisp    Tools                Twitter Bot Birth
 20150611 - 26      Rafinograde          Maintenance          1.3
-20150610 - 36  142 Ruby Riding Hood     Writing              Graphic
+20150610 - 36      Lietal               Writing    
 20150609 - 36      Russian              Linguistics
 20150608 - 36      Russian              Linguistics
 20150607 - 31      Rafinograde          Maintenance          1.4
@@ -950,7 +950,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20150519 - 32      Alphavetist          Maintenance          3.6
 20150518 - 32      Ledoliel             Maintenance          2.3
 20150517 - 25  480 Netherlands          Photography          Amsterdam
-20150516 ! 25  429 Netherlands          Photography          Utrecht
+20150516 ~ 25  429 Netherlands          Photography          Utrecht
 20150515 ! 25  428 Netherlands          Photography          Amsterdam
 20150514 + 25  427 Netherlands          Photography          Travel to Utrecht
 20150513 - 27  425 Astratas             Illustration         Lines B
@@ -977,7 +977,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20150422 - 25  111 Flactals             Illustration         Nestorine
 20150421 - 25  107 Flactals             Illustration         Coraline
 20150420 - 28      Time alloy           Illustration
-20150419 + 00      Germany              Travel               Travel to Berlin
+20150419 + 00      Travel               Event                Travel to Berlin
 20150418 - 35      Horaire              Development
 20150417 - 35      Horaire              AI
 20150416 - 17      Extended sleep       Composition
@@ -1194,7 +1194,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20140917 ! 25      Polygonoscopy        Illustration
 20140916 ! 25  250 Serventines          Modeling             Jenen
 20140915 - 35      Oscean               Maintenance          Inner Haven
-20140914 - 25  203 Gamme                Photography          
+20140914 ! 25  203 Gamme                Photography          
 20140913 + 25      Grimgrains           Branding             Created Grimgrains
 20140912
 20140911 + 00      Japan                Travel               Travel to Tokyo
@@ -2477,7 +2477,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20110314
 20110313
 20110312 - 25   47 Czech                Photography
-20110311 - 25   66 Czech                Photography
+20110311 - 25      Czech                Photography
 20110310 - 25   65 Czech                Photography
 20110309 ! 25   64 Czech                Photography
 20110308 - 25   63 Czech                Photography
@@ -2549,7 +2549,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20110101
 20101231 - 35      Oscean               Development
 20101230
-20101229 - 25  482 Death                Photography          Milk
+20101229 ! 25  482 Death                Photography          Milk
 20101228
 20101227 - 35   50 Obliques             Development
 20101226 - 25      Artwork              Illustration

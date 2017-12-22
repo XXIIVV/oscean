@@ -25,4 +25,4 @@ function project_list()
 
 var payload = new project_list();
 
-invoke.vessel.seal("docs","home",payload);
+invoke.vessel.seal("special","home",payload);

@@ -6,7 +6,8 @@ function Oscean()
     corpse:["layout","lexicon","term","horaire","log","monitor"],
     dict:["lexicon"],
     list:["horaire"],
-    docs:["directory","nutrition","aesthetics","russian","japanese","nomad","oceanism","glossary","tiers","biases","offline","fransset","home","lietal","blue","horaire","calendar"]
+    docs:["directory","nutrition","aesthetics","russian","japanese","nomad","glossary","tiers","biases","fransset","lietal","blue"],
+    special:["horaire","calendar","home"]
   };
 
   this.name = "oscean";

@@ -15,7 +15,6 @@ function Lexicon(memory)
       var entry = new Term(name,this.memory.hash[name]);
       this.terms[name.toLowerCase()] = entry;
     }
-    console.info("Added "+Object.keys(this.terms).length+" terms.")
   }
 
   this.connect_terms = function()
@@ -29,7 +28,7 @@ function Lexicon(memory)
         parent.children.push(term);
       }
       else{
-        console.warn("Missing parent:("+term.memory.unde+" for "+term.name+")")
+        invoke.console.warn("lexicon","Missing parent <b>"+term.memory.unde+"</b> for "+term.name)
       }
     }
   }
@@ -37,7 +36,7 @@ function Lexicon(memory)
   this.inject_log = function(log)
   {
     if(!log.term){ return; }
-    if(!this.terms[log.term.toLowerCase()]){ console.warn("Missing term",log.term); return; }
+    if(!this.terms[log.term.toLowerCase()]){ invoke.console.warn("horaire","Missing term for log <b>"+log.term+"</b> on "+log.time.gregorian.format); return; }
     this.terms[log.term.toLowerCase()].logs.push(log)
   }
   

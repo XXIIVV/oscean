@@ -18,6 +18,7 @@ function List(raw)
       }
       this.array.push(entry);
     }
+    invoke.console.log("list","parsed",this.array.length+" entries")
   }
 
   this.parse_key = function(raw)

@@ -42,6 +42,7 @@ function Memory(raw)
         console.warn("Indent:"+indent, line)
       }
     }
+    invoke.console.log("hash","parsed",Object.keys(this.hash).length+" entries")
   }
 
   this.find = function(key)

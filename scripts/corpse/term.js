@@ -46,7 +46,7 @@ function Term(name,memory)
 
   this.h2 = function()
   {
-    if(this.links.length < 1){ return ""; }
+    if(!this.links || this.links.length < 1){ return ""; }
     var html = ""
     for(id in this.links){
       var link = this.links[id]
@@ -72,7 +72,7 @@ function Term(name,memory)
           }
         }
       }
-      html += "<list>"+tree_html+"</list>"
+      html += "<list class='navi'>"+tree_html+"</list>"
     }
     
     return "<info>"+html+"</info>";
@@ -142,22 +142,11 @@ function Term(name,memory)
     return content.html();
   }
 
-  this._archive = function()
+  this._special = function()
   {
-    var html = "";
-    html += "<list>"
-    for(id in this.children){
-      var c1 = this.children[id];
-      html += c1.children.length < 1 ? "<ln class='parent end'>{{"+c1.name+"}}</ln>" : "<ln class='parent'>{{"+c1.name+"}}</ln>"
-      // html += "<p>"+c1.bref+"</p>"
-      if(c1.children.length < 1){ continue; }
-      for(i in c1.children){
-        var c2 = c1.children[i];
-        html += "<ln>"+c2.bref+"</ln>"
-      }
-    }
-    html += "</list>"
-    return new Runic().markup(html)
+    var content = invoke.vessel.storage[this.name];
+    if(!content){ return "Missing:"+this.name; }
+    return content.html();
   }
 
   this._diary = function()

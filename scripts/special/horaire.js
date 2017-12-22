@@ -1,5 +1,7 @@
 function horaire_view()
 {
+  var bar_width = 6;
+
   // Only 8 recent years
 
   this.parse = function(logs)
@@ -72,25 +74,31 @@ function horaire_view()
   this.styles = function()
   {
     return `<style>
+    #hd { padding-bottom:0px !important}
     #hd > h1 { display:none}
+    #hd > icon { display:none}
     #hd > h2 { display:none}
     #hd { background: #fff;color: white;padding-bottom: 40px }
     #md { background:#000; color:white }
     #md > wr > m1 { display:none}
+    #md > wr > m2 { display:block; width:680px; margin:0px auto}
     #md > wr > m3 { display:none}
     #md > wr > .monitor { display:none}
 
-    .general_graph { width:900px; margin:0px auto; height:150px; position:relative; font-family:'input_mono_regular'; font-size:11px; padding-top:50px; padding-bottom:30px}
-    .general_graph bar { display:block; position:absolute; bottom:30px; overflow:hidden}
-    .general_graph subbar { display:block; width:100%; min-height:0px; margin-bottom:1px}
+    .general_graph { width:680px; margin:0px auto; height:150px; position:relative; font-family:'input_mono_regular'; font-size:11px; padding-top:50px; padding-bottom:30px}
+    .general_graph bar { display:block; position:absolute; bottom:30px; overflow:hidden; width:${bar_width}px}
+    .general_graph subbar { display:block; width:100%; min-height:${bar_width}px; margin-bottom:1px; border-radius:10px}
     .general_graph subbar.audio { background:#72dec2}
     .general_graph subbar.visual { background:#ffbf05}
     .general_graph subbar.research { background:#fff}
-    .general_graph span.year { position:absolute; top:0px; color:#555; margin-left:10px}
-    .general_graph span.year:before { display: block;height: 200px;content: "";position: absolute;margin-left: -10px;border-left: 1px dashed #333}
-    .general_graph span.year i { font-style: normal;display: inline-block;margin-left:10px;font-family: 'input_mono_medium'; color:#999}
-    .general_graph span.year i.gain { color:#fff; }
-    .general_graph span.year i.gain:before { content:"+"}
+    .general_graph span.marker { position:absolute; top:0px; color:#555; margin-left:10px}
+    .general_graph span.marker:before { display: block;height: 200px;content: "";position: absolute;margin-left: -10px;border-left: 1px dashed #333}
+    .general_graph span.marker i { font-style: normal;display: inline-block;margin-left:10px;font-family: 'input_mono_medium'; color:#999}
+    .general_graph span.marker i.gain { color:#fff; }
+    .general_graph span.marker i.gain:before { content:"+"}
+
+    .general_graph.terms { float: left;width: 440px;}
+    .general_graph.tasks { display: inline-block;width: 240px;}
 
     .value_graph { display:inline-block; font-family:'input_mono_regular'; margin-bottom:30px; width:110px}
     .value_graph span.value { font-family: 'input_mono_thin';font-size:40px;display: block;line-height: 35px; }
@@ -105,18 +113,6 @@ function horaire_view()
     .value_graph.htof { color:#999}
     .value_graph.htaf { color:#999}
 
-    .any_graph { width:900px; margin:0px auto; height:150px; position:relative; font-family:'input_mono_regular'; font-size:11px; padding-top:50px; padding-bottom:30px}
-    .any_graph span.project { position:absolute; top:0px; color:#555; margin-left:10px}
-    .any_graph span.project:before { display: block;height: 200px;content: "";position: absolute;margin-left: -10px;border-left: 1px dashed #333}
-    .any_graph bar { display:block; position:absolute; bottom:30px; overflow:hidden;}
-    .any_graph subbar { display:block; width:100%; min-height:0px; margin-bottom:1px}
-    .any_graph subbar.audio { background:#72dec2}
-    .any_graph subbar.visual { background:#ffbf05}
-    .any_graph subbar.research { background:#fff}
-
-    .any_graph.terms { max-width: 630px;overflow: hidden;float: left}
-    .any_graph.tasks { max-width: 215px;float: right;overflow: hidden;margin-right:30px}
-
     .table_graph { font-family:'input_mono_regular'; font-size:11px; margin-bottom:60px}
     .table_graph tr { border-top:1px solid #333}
     .table_graph tr th,.table_graph td { text-align:left; line-height:30px; width:110px}
@@ -124,7 +120,7 @@ function horaire_view()
     .table_graph tr.legend { border-top:0px; color:#999}
     .table_graph i.loss { font-style: normal;display: inline-block;color:#999}
 
-    note.end { max-width:900px !important; color:#999}
+    note.end { max-width:680px !important; color:#999}
     </style>`;
   }
 
@@ -144,7 +140,6 @@ function horaire_view()
 
     var highest_val = 0.0;
     var height = 150.0;
-    var bar_width = 8;
     var year_average = parseInt(parsed.fh/8);
 
     for(date in parsed.by_date){
@@ -159,13 +154,14 @@ function horaire_view()
       var year = date.substr(0,4);
       var offset_val = parsed.by_year[year] - year_average;
       var offset = "<i class='"+(offset_val > 0 ? "gain" : "loss")+"'>"+offset_val+"</i>";
-      if(year != prev_year){ html += "<span class='year' style='left:"+(count * (bar_width+1))+"px;'>"+year+offset+"</span>"}
+      var bar_height = parseInt((val/highest_val) * height);
+      if(year != prev_year){ html += "<span class='marker year' style='left:"+(count * (bar_width+1))+"px;'>"+year+offset+"</span>"}
 
-      var sector_html = "<subbar class='audio' style='height:"+((parsed.by_date[date].audio/val)*100)+"%'></subbar>"
-      sector_html += "<subbar class='visual' style='height:"+((parsed.by_date[date].visual/val)*100)+"%'></subbar>"
-      sector_html += "<subbar class='research' style='height:"+((parsed.by_date[date].research/val)*100)+"%'></subbar>"
+      var sector_html = "<subbar class='audio' style='height:"+((parsed.by_date[date].audio/val)*bar_height)+"px'></subbar>"
+      sector_html += "<subbar class='visual' style='height:"+((parsed.by_date[date].visual/val)*bar_height)+"px'></subbar>"
+      sector_html += "<subbar class='research' style='height:"+((parsed.by_date[date].research/val)*bar_height)+"px'></subbar>"
       
-      html += "<bar style='height:"+parseInt((val/highest_val) * height)+"px; left:"+(count * (bar_width+1))+"px; width:"+bar_width+"px'>"+sector_html+"</bar>"
+      html += "<bar style='left:"+(count * (bar_width+1))+"px'>"+sector_html+"</bar>"
       count += 1;
       prev_year = year;
     }
@@ -177,7 +173,6 @@ function horaire_view()
     var html = "";
 
     var height = 150.0;
-    var bar_width = 8;
     var highest_val = 0.0;
     var sorted_terms = [];
     for(var name in sample) {
@@ -194,21 +189,22 @@ function horaire_view()
 
     var count = 0;
     for(name in sorted_terms){
-      if(count > 95){ break; }
+      if(count > 59){ break; }
       var term = sorted_terms[name][0];
       var val = sorted_terms[name][1];
+      var bar_height = parseInt((val/highest_val) * height);
 
-      if(count % 12 == 0){ html += "<span class='project' style='left:"+(count * (bar_width+1))+"px;'>"+term+"</span>"}
+      if(count % 12 == 0){ html += "<span class='marker project' style='left:"+(count * (bar_width+1))+"px;'>"+term+"</span>"}
 
-      var sector_html = "<subbar class='audio' style='height:"+((sample[term].audio/val)*100)+"%'></subbar>"
-      sector_html += "<subbar class='visual' style='height:"+((sample[term].visual/val)*100)+"%'></subbar>"
-      sector_html += "<subbar class='research' style='height:"+((sample[term].research/val)*100)+"%'></subbar>"
+      var sector_html = "<subbar class='audio' style='height:"+clamp((sample[term].audio/val)*bar_height)+"px'></subbar>"
+      sector_html += "<subbar class='visual' style='height:"+clamp((sample[term].visual/val)*bar_height)+"px'></subbar>"
+      sector_html += "<subbar class='research' style='height:"+clamp((sample[term].research/val)*bar_height)+"px'></subbar>"
       
-      html += "<bar style='height:"+parseInt((val/highest_val) * height)+"px; left:"+(count * (bar_width+1))+"px; width:"+bar_width+"px'>"+sector_html+"</bar>"
+      html += "<bar style='left:"+(count * (bar_width+1))+"px; width:"+bar_width+"px'>"+sector_html+"</bar>"
       count += 1;
     }
 
-    return "<div class='any_graph "+special+"'>"+html+"</div>";
+    return "<div class='general_graph "+special+"'>"+html+"</div>";
   }
 
   this.table_graph = function(parsed)
@@ -261,8 +257,11 @@ function horaire_view()
     html += this.styles();
     return html;
   }
+
+  function clamp(v, min, max) { return v < min ? min : v > max ? max : v; }
 }; 
 
 var payload = new horaire_view();
 
-invoke.vessel.seal("docs","horaire",payload);
+invoke.vessel.seal("special","horaire",payload);
+
