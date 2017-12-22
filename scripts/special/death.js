@@ -13,7 +13,7 @@ function death_view()
   this.html = function()
   {
     var html = "";
-    var birth = birth = new Date("1986-03-22");;
+    var birth = new Date("1986-03-22");
     var now = Date.now();
     var offset = (now - birth)/1000/86400; 
     var end = new Date((1986+52)+"-03-22")
@@ -29,7 +29,9 @@ function death_view()
       html += "<hr />"
       y += 1;
     }
-    return `<yu class='death'>${html}<hr /><h1>${((now/end)*100).toString().substr(0,4)}</h1></yu>${this.styles()}`;
+
+    var progress = (now - birth.getTime())/(end.getTime() - birth.getTime());
+    return `<yu class='death'>${html}<hr /><h1>${(progress*100).toString().substr(0,4)}</h1></yu>${this.styles()}`;
   }
 }; 
 
