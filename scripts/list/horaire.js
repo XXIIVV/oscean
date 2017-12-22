@@ -316,7 +316,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20170213 - 36  497 Pino                 Maintenance          The Yamaha 33
 20170212 - 36      Pino                 Maintenance
 20170211 - 33      Oquonie              Maintenance
-20170210 ! 25  357 Black                Photography
+20170210 ~ 25  357 Black                Photography
 20170209 - 23      Nataniev             Design
 20170208 - 37      Oquonie              Maintenance
 20170207 - 35      Oquonie              Maintenance
@@ -892,7 +892,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20150718 - 38      Verreciel            Development
 20150717 - 36      Verreciel            Development
 20150716 - 36      Verreciel            Tools
-20150715 - 25  433 Inventory            Photography          Everyday Carry
+20150715 ! 25  433 Inventory            Photography          Everyday Carry
 20150714 - 34      Verreciel            Tools
 20150713 - 32  432 Unifit               Design               Jam day 3
 20150712 - 39  431 Unifit               Design               Jam day 2
