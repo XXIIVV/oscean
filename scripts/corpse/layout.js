@@ -108,8 +108,10 @@ function Layout(host)
   }
 
   window.onclick = function(e){ 
-    if(e.target.localName == "a"){ e.preventDefault(); invoke.vessel.corpse.link(e.target.getAttribute("href"));} 
-    if(e.target.offsetParent.localName == "a"){ e.preventDefault(); invoke.vessel.corpse.link(e.target.offsetParent.getAttribute("href"));}
+    if(e.target){
+      if(e.target.localName == "a"){ e.preventDefault(); invoke.vessel.corpse.link(e.target.getAttribute("href"));} 
+      if(e.target.offsetParent && e.target.offsetParent.localName == "a"){ e.preventDefault(); invoke.vessel.corpse.link(e.target.offsetParent.getAttribute("href"));}  
+    }
   };
   window.onscroll = function(){ invoke.vessel.corpse.on_scroll(); };
 
