@@ -218,7 +218,7 @@ function horaire_view()
       var val = sorted_terms[name][1];
       var bar_height = parseInt((val/highest_val) * height);
 
-      if(count % 12 == 0){ html += "<span class='marker project' style='left:"+(count * (bar_width+1))+"px;'>"+term+"</span>"}
+      if(count % 12 == 0){ html += "<span class='marker project' style='left:"+(count * (bar_width+1))+"px;'>"+term.substr(0,9)+"</span>"}
 
       var sector_html = "<subbar class='audio' style='height:"+clamp((sample[term].audio/val)*bar_height)+"px'></subbar>"
       sector_html += "<subbar class='visual' style='height:"+clamp((sample[term].visual/val)*bar_height)+"px'></subbar>"

@@ -12,6 +12,12 @@ function Desamber(time_str)
   this.date = new Date(this.gregorian.format)
   this.time = this.date.getTime()
   this.ago = (new Date().getTime() - this.time)/1000/86400
+  this.year = (new Date(this.gregorian.y+"-01-01").getTime() - new Date().getTime())/1000/86400;
+
+  this.offset = function(d2)
+  {
+    return (this.time - d2.getTime())/1000/86400;
+  }
 }
 
 invoke.seal("core","desamber");

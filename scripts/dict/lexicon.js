@@ -1639,6 +1639,8 @@ PARADISE
     & {{Paradise}} plays like an interactive fiction novel, in an ever-changing world where players are not avatars, but places, and objects, and puns, words - moving around and into each other, threading chaos.
     & In this anonymous world you can create anything, traverse the various player-created universes and explore {_conceptspace_}.
     & See you {{there|http://paradise.xxiivv.com}}.
+    - “I have always imagined that Paradise will be a kind of library.” 
+    ― Jorge Luis Borges
   LINK
     http://paradise.xxiivv.com
     https://github.com/XXIIVV/vessel.paradise
@@ -1831,8 +1833,10 @@ DEVINE LU LINVEGA
 DEATH
   UNDE : Devine lu linvega
   BREF : {{Death}} in progress.
+  TYPE : Special
   LONG
-    & Inspired from {{Chris Crawford|https://en.wikipedia.org/wiki/Chris_Crawford_(game_designer)}}'s Jars.
+    & This grid represents 52 years of my life, in which each blackened cell is a week of my life gone. Tic Tac..
+    ? "For in that sleep of death what dreams may come,<br />When we have shuffled off this mortal coil,<br />Must give us pause."
 
 FIRST WAVE
   UNDE : Aliceffekt
