@@ -46,15 +46,17 @@ function horaire_view()
       h.by_day[log.time.date.getDay()][log.sector] += log.value;
 
       // By Term
-      if(!h.by_term[log.term]){h.by_term[log.term] = {sum:0}}
+      if(!h.by_term[log.term]){h.by_term[log.term] = {sum:0,count:0}}
       if(!h.by_term[log.term][log.sector]){h.by_term[log.term][log.sector] = 0}
       h.by_term[log.term].sum += log.value;
+      h.by_term[log.term].count += 1;
       h.by_term[log.term][log.sector] += log.value;
 
       // By Task
-      if(!h.by_task[log.task]){h.by_task[log.task] = {sum:0}}
+      if(!h.by_task[log.task]){h.by_task[log.task] = {sum:0,count:0}}
       if(!h.by_task[log.task][log.sector]){h.by_task[log.task][log.sector] = 0}
       h.by_task[log.task].sum += log.value;
+      h.by_task[log.task].count += 1;
       h.by_task[log.task][log.sector] += log.value;
 
       topics[log.term] = topics[log.term] ? topics[log.term]+log.value : log.value;
@@ -67,6 +69,26 @@ function horaire_view()
     h.hdf = h.fh/parseFloat(h.d);
     h.htof = h.fh/parseFloat(h.t);
     h.htaf = h.fh/parseFloat(h.tasks);
+
+    // effectiveness
+    var sum = 0;
+    for(id in h.by_term){
+      var term = h.by_term[id]; 
+      if(!term.sum || !term.count){ continue; }
+      var avrg = term.sum/term.count;
+      sum += avrg;
+    }
+    h.effectiveness = sum/Object.keys(h.by_term).length;
+
+    // efficiency
+    var sum = 0;
+    for(id in h.by_task){
+      var task = h.by_task[id]; 
+      if(!task.sum || !task.count){ continue; }
+      var avrg = task.sum/task.count;
+      sum += avrg;
+    }
+    h.efficiency = sum/Object.keys(h.by_task).length;
 
     return h;
   }
@@ -119,6 +141,8 @@ function horaire_view()
     .table_graph tr th { font-family:'input_mono_medium'; text-transform:uppercase}
     .table_graph tr.legend { border-top:0px; color:#999}
     .table_graph i.loss { font-style: normal;display: inline-block;color:#999}
+
+    div.legend { font-family:'input_mono_regular'; font-size:11px; color:#555; margin-bottom:30px; line-height:15px}
 
     note.end { max-width:680px !important; color:#999}
     </style>`;
@@ -218,7 +242,10 @@ function horaire_view()
     html += "<tr><th>HDF</th><td>"+parsed.hdf.toString().substr(0,5)+"</td><td>"+parsed_recent.hdf.toString().substr(0,5)+"</td><td>"+this.display_offset(parsed.hdf,parsed_recent.hdf)+"</td><th>Audio</th><td>"+(parsed.by_sector.audio/parsed.d).toString().substr(0,6)+"</td><td>"+(parsed_recent.by_sector.audio/parsed_recent.d).toString().substr(0,6)+"</td><td>"+this.display_offset((parsed.by_sector.audio/parsed.d),(parsed_recent.by_sector.audio/parsed_recent.d))+"</td></tr>"
     html += "<tr><th>HToF</th><td>"+parsed.htof.toString().substr(0,5)+"</td><td>"+parsed_recent.htof.toString().substr(0,5)+"</td><td>"+this.display_offset(parsed.htof,parsed_recent.htof)+"</td><th>Visual</th><td>"+(parsed.by_sector.visual/parsed.d).toString().substr(0,6)+"</td><td>"+(parsed_recent.by_sector.visual/parsed_recent.d).toString().substr(0,6)+"</td><td>"+this.display_offset((parsed.by_sector.visual/parsed.d),(parsed_recent.by_sector.visual/parsed_recent.d))+"</td></tr>"
     html += "<tr><th>HTaF</th><td>"+parsed.htaf.toString().substr(0,5)+"</td><td>"+parsed_recent.htaf.toString().substr(0,5)+"</td><td>"+this.display_offset(parsed.htaf,parsed_recent.htaf)+"</td><th>Research</th><td>"+(parsed.by_sector.research/parsed.d).toString().substr(0,6)+"</td><td>"+(parsed_recent.by_sector.research/parsed_recent.d).toString().substr(0,6)+"</td><td>"+this.display_offset((parsed.by_sector.research/parsed.d),(parsed_recent.by_sector.research/parsed_recent.d))+"</td></tr>"
-    return "<table class='table_graph'>"+html+"</table>"
+
+    html += "<tr><th>EFEC</th><td>"+parsed.effectiveness.toString().substr(0,5)+"</td><td>"+parsed_recent.effectiveness.toString().substr(0,5)+"</td><td>"+this.display_offset(parsed.effectiveness,parsed_recent.effectiveness)+"</td></tr>"
+    html += "<tr><th>EFIC</th><td>"+parsed.efficiency.toString().substr(0,5)+"</td><td>"+parsed_recent.efficiency.toString().substr(0,5)+"</td><td>"+this.display_offset(parsed.efficiency,parsed_recent.efficiency)+"</td></tr>"
+    return "<table class='table_graph'>"+html+"</table>";
   }
 
   this.display_offset = function(a,b)
@@ -253,6 +280,7 @@ function horaire_view()
     html += this.table_graph(parsed);
     
     html += "<note class='end'><b>Effectiveness</b>, is doing the right thing. <br> <b>Efficiency</b>, is doing it the right way.</note>"
+    html += `<div class='legend'>HDF, or Hour Day Focus, is Fh/Days.<br />HToF, or Hour Topic Focus, is Fh/Topics.<br />HTaF, or Hour Task Focus, is Fh/Tasks.<br />EFEC, or Effectiveness, is AVRG(Fh)/Topics<br />EFIC, or Efficiency, is AVRG(Fh)/Tasks</div>`;
 
     html += this.styles();
     return html;
