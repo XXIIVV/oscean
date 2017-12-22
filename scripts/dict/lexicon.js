@@ -1835,7 +1835,7 @@ DEATH
   BREF : {{Death}} in progress.
   TYPE : Special
   LONG
-    & This grid represents 52 years of my life, in which each blackened cell is a week of my life gone. Tic Tac..
+    & This grid represents 52 years of my life, in which each blackened cell is a week of my life gone.
     ? "For in that sleep of death what dreams may come,<br />When we have shuffled off this mortal coil,<br />Must give us pause."
 
 FIRST WAVE
