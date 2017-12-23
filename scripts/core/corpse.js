@@ -42,4 +42,4 @@ function Corpse(host)
   }
 }
 
-invoke.seal("invoke","corpse");
+invoke.seal("core","corpse");

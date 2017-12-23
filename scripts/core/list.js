@@ -54,4 +54,4 @@ function List(raw)
   this.parse(this.raw);
 }
 
-invoke.seal("invoke","list");
+invoke.seal("core","list");

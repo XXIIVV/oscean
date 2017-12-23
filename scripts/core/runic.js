@@ -101,4 +101,4 @@ function Runic(raw)
   }
 }
 
-invoke.seal("invoke","runic");
+invoke.seal("core","runic");

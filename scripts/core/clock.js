@@ -65,4 +65,4 @@ function Clock()
   }
 }
 
-invoke.seal("invoke","clock");
+invoke.seal("core","clock");

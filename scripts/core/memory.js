@@ -64,4 +64,4 @@ function Memory(raw)
   this.parse(this.raw);
 }
 
-invoke.seal("invoke","memory");
+invoke.seal("core","memory");

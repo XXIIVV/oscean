@@ -20,4 +20,4 @@ function Desamber(time_str)
   }
 }
 
-invoke.seal("invoke","desamber");
+invoke.seal("core","desamber");

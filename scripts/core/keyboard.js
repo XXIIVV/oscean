@@ -35,4 +35,4 @@ function Keyboard()
   document.onkeydown = this.key_down;
 }
 
-invoke.seal("invoke","keyboard");
+invoke.seal("core","keyboard");
