@@ -5,7 +5,6 @@ function Invoke(name,version = "100")
   this.path = "";
   this.requirements = {core:["corpse","memory","list","runic","desamber","clock","keyboard"],main:[name]};
   this.includes = {};
-  this.is_owner = false;
   this.vessel = null;
   this.storage = {};
 
