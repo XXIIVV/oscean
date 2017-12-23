@@ -10,7 +10,7 @@ function Invoke(name,version = "100")
 
   this.summon = function()
   {
-    console.log("invk","summoning",invoke.name+" v"+invoke.version,true); 
+    console.log("invk","summoning "+invoke.name+" v"+invoke.version); 
 
     for(var cat in this.requirements){
       this.includes[cat] = [];
@@ -36,7 +36,7 @@ function Invoke(name,version = "100")
 
   this.seal = function(type,name,payload = null)
   {
-    console.log("seal",type+"/",name+" "+this.remaining().length);
+    console.log("seal",type+"/"+name+" "+this.remaining().length);
 
     if(payload){ this.storage[name] = payload; }
     this.includes[type].push(name);
@@ -46,7 +46,7 @@ function Invoke(name,version = "100")
   this.verify = function()
   {
     if(this.remaining().length == 0){
-      console.log("core","ready",this.name,true)
+      console.log("core","ready "+this.name)
       this.start();
     }
   }

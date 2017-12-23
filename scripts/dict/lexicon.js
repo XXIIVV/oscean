@@ -1651,18 +1651,11 @@ MAEVE
   LONG
     & Rating each vessel with an index, it deletes redundant vessels and move vessels outside of the void.
 
-DICTIONAERY
-  UNDE : Lietal
-  BREF : The {{Dictionaery}} is a list of all the known {{Lietal}} words.
-  LONG
-    $ lietal print dictionaery
-
 LAE DOI
   UNDE : Lietal
   BREF : {{Lae Doi}} is the {{Lietal}} translation of {{Thousand Rooms}}.
   LONG
     & To see the translation of individual words, see the {{Dictionaery}}. To see the construction, see the {{source|https://github.com/XXIIVV/vessel.lietal/blob/master/memory/thousand_rooms.mh}}
-    $ lietal print side_by_side thousand_rooms.mh
   LINK
     https://hundredrabbits.itch.io/thousand-rooms
     https://github.com/XXIIVV/vessel.lietal/blob/master/memory/thousand_rooms.mh

@@ -18,7 +18,7 @@ function List(raw)
       }
       this.array.push(entry);
     }
-    console.log("list","parsed",this.array.length+" entries")
+    console.log("list","parsed "+this.array.length+" entries")
   }
 
   this.parse_key = function(raw)

@@ -21,7 +21,7 @@ function Corpse(host)
 
   this.install_style = function(name, is_user_side)
   {
-    console.log("crps","style/",name);
+    console.log("crps","style/"+name);
 
     var href = "links/"+name+'.css';
     var s = document.createElement('link');
