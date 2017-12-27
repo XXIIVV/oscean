@@ -1,5 +1,11 @@
 let $HORAIRE = new List(`
 DATE     CODE PICT TERM                 TASK                 NAME                  TEXT                                                                                                                                                                    END
+20171228 - 27      Ronin                Tools
+20171227 - 35      Dotgrid              Tools
+20171226 - 24      Marabu               Interface
+20171225
+20171224
+20171223
 20171222 - 37      Death                Development
 20171221 - 39      Oscean               Tools
 20171220 ! 29  505 Horaire              Design               Odessa
