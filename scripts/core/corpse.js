@@ -5,6 +5,7 @@ function Corpse(host)
   this.el = document.createElement('yu'); this.el.id = this.host.name;
 
   this.el.appendChild(this.hd = document.createElement('yu')); this.hd.id = "hd";
+  this.el.appendChild(this.sd = document.createElement('yu')); this.sd.id = "sd";
   this.el.appendChild(this.md = document.createElement('yu')); this.md.id = "md";
   this.el.appendChild(this.fd = document.createElement('yu')); this.fd.id = "fd";
 

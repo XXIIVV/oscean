@@ -1,8 +1,8 @@
 function Monitor(logs)
 {
   this.el = document.createElement('a'); this.el.className = "monitor"; this.el.setAttribute("href","/horaire")
-  this.lod = 75.0;
-  this.height = 30;
+  this.lod = 50.0;
+  this.height = 20;
   this.seg = [];
 
   var i = 0;

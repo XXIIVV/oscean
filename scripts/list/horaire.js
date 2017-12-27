@@ -1038,7 +1038,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20150228 - 00      America              Travel               Travel San Francisco
 20150227 - 25  367 America              Photography          
 20150226 ! 25  364 America              Photography          
-20150225 - 25  363 America              Photography          
+20150225 - 25      America              Photography          
 20150224 - 25  316 America              Photography          
 20150223 ! 25  311 Hypervoid            Illustration         Dischromatic
 20150222 - 29      Nereid               Modeling

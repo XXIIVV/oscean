@@ -5,17 +5,19 @@ function Layout(host)
   this.monitor = new Monitor();
   // Header
   this.hd.appendChild(this.photo = document.createElement('photo'));
-  this.hd.appendChild(this.icon = document.createElement('icon'));
   this.hd.appendChild(this.logo = document.createElement('a')); 
   this.hd.appendChild(this.search = document.createElement('input'));
-  this.hd.appendChild(this.h1 = document.createElement('h1'));
-  this.hd.appendChild(this.h2 = document.createElement('h2'));
+
+  this.sd.appendChild(this.h1 = document.createElement('h1'));
+  this.sd.appendChild(this.h2 = document.createElement('h2'));
+  this.sd.appendChild(this.icon = document.createElement('icon'));
+  this.sd.appendChild(this.h3 = document.createElement('h3'));
+  this.sd.appendChild(this.monitor.el);
   // Body
   this.md.appendChild(this.md_wr = document.createElement('wr'));
   this.md_wr.appendChild(this.m1 = document.createElement('m1'));
   this.md_wr.appendChild(this.m2 = document.createElement('m2'));
   this.md_wr.appendChild(this.m3 = document.createElement('m3'));
-  this.md_wr.appendChild(this.monitor.el);
   this.md_wr.appendChild(this.hr = document.createElement('hr'));
   // Footer
   this.fd.appendChild(this.fd_wr = document.createElement('wr'));
@@ -57,11 +59,11 @@ function Layout(host)
       
       c.h1.innerHTML = c.term.bref;
       c.h2.innerHTML = c.term.h2();
+      c.h3.innerHTML = c.term.h3();
       c.hd.className = c.term.theme();
       c.icon.style.backgroundImage = "url('media/badge/nataniev.svg')";
       c.m1.innerHTML = c.term.long;
       c.m2.innerHTML = c.term.view();
-      c.m3.innerHTML = c.term.tree();
 
       var icon_name = c.term.name.toLowerCase().replace(/\ /g,".");
       var img = new Image();

@@ -44,38 +44,64 @@ function Term(name,memory)
     return "";
   }
 
-  this.h2 = function()
+  this.activity = function()
+  {
+    if(this.logs.length < 2){ return ""; }
+
+    var html = "";
+    var from = this.logs[this.logs.length-1];
+    var to = this.logs[0];
+
+    html += from.time.gregorian.y != to.time.gregorian.y ? `${from.time.gregorian.y}—${to.time.gregorian.y}` : to.time.gregorian.y;
+
+    return `<yu class='activity'>${html}</yu>`;
+  }
+
+  this.outgoing = function()
   {
     if(!this.links || this.links.length < 1){ return ""; }
     var html = ""
     for(id in this.links){
       var link = this.links[id]
-      html += "<a href='"+link+"'>"+this.format_link(link)+"</a>"
+      html += "<ln><a href='"+link+"'>"+this.format_link(link)+"</a></ln>"
     }
-    return html
+    return `<list class='outgoing'>${html}</list>`;
   }
 
-  this.tree = function()
+  this.navi = function()
   {
     var html = "";
     if(this.parent && this.parent.name != this.name){
-      var tree_html = ""
       this.parent.start();
-      tree_html += "<ln class='parent'><a href='"+this.parent.name+"'>"+this.parent.name.capitalize()+"</a></ln>"
+      html += "<ln class='parent'><a href='"+this.parent.name+"'>"+this.parent.name.capitalize()+"</a></ln>"
       for(id in this.parent.children){
         var term = this.parent.children[id]
-        tree_html += "<ln class='sibling "+(term.name.toLowerCase() == this.name.toLowerCase() ? 'active' : '')+"'>"+term.bref+"</ln>"
+        html += "<ln class='sibling "+(term.name.toLowerCase() == this.name.toLowerCase() ? 'active' : '')+"'>"+term.bref+"</ln>"
         if(term.name.toLowerCase() == this.name.toLowerCase()){
           for(id in this.children){
             var term = this.children[id];
-            tree_html += "<ln class='children'>"+term.bref+"</ln>"
+            html += "<ln class='children'>"+term.bref+"</ln>"
           }
         }
       }
-      html += "<list class='navi'>"+tree_html+"</list>"
     }
-    
-    return "<info>"+html+"</info>";
+    return `<list class='navi'>${html}</list>`;
+  }
+
+  this.h2 = function()
+  {
+    var html = "";
+
+    html += this.activity();
+    html += `<a href='${this.parent.name}'>${this.parent.name}</a>`;
+    html += this.outgoing();
+
+    return html;
+  }
+
+  this.h3 = function()
+  {
+    return this.navi();
   }
 
   this.theme = function()
