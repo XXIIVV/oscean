@@ -1663,7 +1663,7 @@ LAE DOI
 OBLIQUES
   UNDE : Gamme
   BREF : {{Obliques}} are short essays on travel, {{lifestyle}} and optimisation.
-  TAGS : Portal
+  TYPE : Portal
 
 LIFESTYLE
   UNDE : Obliques
@@ -1727,6 +1727,7 @@ KEYBOARD
 
 MIRRORS
   UNDE : Obliques
+  TYPE : Portal
   BREF : {{Mirrors}} of notes and articles for safekeeping and offline access.
 
 GLOSSARY

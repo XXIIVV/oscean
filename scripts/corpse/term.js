@@ -131,7 +131,7 @@ function Term(name,memory)
   {
     var html = "";
 
-    html += "<a href='"+this.name+"' style='background-image:"+this.photo()+"' class='photo'></a>"
+    html += this.photo() ? "<a href='"+this.name+"' style='background-image:"+this.photo()+"' class='photo'></a>" : ""
     html += "<p>"+this.bref+"</p>";
     return "<yu class='term'>"+html+"</yu>";
   }
