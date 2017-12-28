@@ -8,14 +8,17 @@ HOME
 
 AUDIO
   UNDE : Home
+  TYPE : Portal
   BREF : The {{Audio}} hosts sound and live projects.
 
 VISUAL
   UNDE : Home
+  TYPE : Portal
   BREF : The {{Visual}} hosts design and interaction projects.
 
 RESEARCH
   UNDE : Home
+  TYPE : Portal
   BREF : The {{Research}} hosts philosophy and linguistics projects.
 
 AUTOMATONS
@@ -1804,15 +1807,6 @@ BLUE
   UNDE : Language
   BREF : {{Blue Language|Blue}}, or {_Bolak_}, is a {{constructed language|http://en.wikipedia.org/wiki/Constructed_language}}.
   TYPE : Docs
-
-DIARY
-  UNDE : Home
-  FLAG : no_photo
-  BREF : The {{Diary}} contains photographic logs within {{Horaire}}.
-
-PORTAL
-  UNDE : Home
-  BREF : The {{Portal}} lists {{Nataniev}}'s major categories of topics.
 
 DEVINE LU LINVEGA
   UNDE : Home
