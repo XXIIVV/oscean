@@ -163,6 +163,7 @@ ES GULF SUNFLOWERS
 ALICEFFEKT
   UNDE : Audio
   BREF : {{Aliceffekt}}, is an audio project following the adventures of {{Neonev}} across {{Dinaisth}}.
+  TYPE : Portal
   LONG
     &  A travel across the fictional worlds of the {{Neauismetica}} where every album is a sort of travel diary across the {{Dinaisth}} landscape.
   LINK :

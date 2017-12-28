@@ -759,7 +759,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20151204 ! 25  478 Keyboard 468         Maintenance          1.4
 20151203 - 21      Oquonie              Branding
 20151202 - 28      Hundred rabbits      Design
-20151201 - 28      Hundred rabbits      Design
+20151201 ! 28  506 Rabbits soundtrack   Design
 20151130 - 28      Oquonie              Testing
 20151129 - 28      Oquonie              Testing
 20151128 - 26      Oscean               Analytics
