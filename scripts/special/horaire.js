@@ -96,6 +96,7 @@ function horaire_view()
   this.styles = function()
   {
     return `<style>
+    #oscean { background:#000}
     #hd { padding-bottom:0px !important}
     #hd > h1 { display:none}
     #hd > icon { display:none}

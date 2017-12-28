@@ -18,6 +18,21 @@ function Desamber(time_str)
   {
     return (this.time - d2.getTime())/1000/86400;
   }
+
+  this.of_the_year = function()
+  {
+    var now = this.date;
+    var start = new Date(now.getFullYear(), 0, 0);
+    var diff = now - start;
+    var oneDay = 1000 * 60 * 60 * 24;
+    return Math.floor(diff / oneDay)
+  }
+
+  this.is_leap_year = function()
+  {
+    var year = this.gregorian.y;
+    return (year & 3) == 0 && ((year % 25) != 0 || (year & 15) == 0);
+  }
 }
 
 invoke.seal("core","desamber");
