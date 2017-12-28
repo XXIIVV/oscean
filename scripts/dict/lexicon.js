@@ -1602,7 +1602,7 @@ CALENDAR
   UNDE : Horaire
   TYPE : Special
   FLAG : no_photo
-  BREF : {{Horaire}} is a time tracking tool.
+  BREF : The {{Calendar}} shows the last 365 days.
 
 DESAMBER
   UNDE : Nataniev
@@ -1671,6 +1671,7 @@ OBLIQUES
 
 LIFESTYLE
   UNDE : Obliques
+  TYPE : Portal
   BREF : {{Lifestyle}} notes are on some of my choices.
 
 NUTRITION
@@ -1764,6 +1765,7 @@ DIRECTORY
 
 LANGUAGE
   UNDE : Obliques
+  TYPE : Portal
   BREF : Various {{Language}} notes on natural and syntetic languages.
   LONG
     & Welcome to the Language Portal.

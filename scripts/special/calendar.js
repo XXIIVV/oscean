@@ -3,11 +3,19 @@ function calendar_view()
   this.styles = function()
   {
     return `<style>
+    #hd { padding-bottom:0px !important}
     #hd > h1 { display:none}
+    #hd > icon { display:none}
     #hd > h2 { display:none}
     #hd { background: #fff;color: white;padding-bottom: 40px }
+    #sd { color:white}
+    #sd icon { display:none}
+    #sd > h3 { background:none; padding:0px}
+    #sd > h3 list.navi ln.active { color:white}
+    #sd > h3 list.navi ln:hover { color:white }
     #md { background:#000; color:white }
     #md > wr > m1 { display:none}
+    #md > wr > m2 { display:block; width:680px; margin:0px auto}
     #md > wr > m3 { display:none}
     #md > wr > .monitor { display:none}
 
