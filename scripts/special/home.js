@@ -4,6 +4,8 @@ function project_list()
   {
     var html = "";
 
+    html += "<style>#sd icon { display:none } #sd h3 { display:none}</style>"
+
     var projects = {};
 
     for(id in invoke.vessel.horaire.logs){

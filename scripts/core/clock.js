@@ -61,7 +61,7 @@ function Clock()
     path += "L"+(w-0.5)+","+(h-0.5)+" L0.5,"+(h-0.5)+" ";
     path += "L"+(w-1)+","+(h-0.5)+" L"+(w-1)+",0.5 Z";
 
-    this.el.innerHTML = '<svg width="'+w+'" height="'+h+'" style="fill:none; stroke-width:1; stroke-linecap:butt; stroke:white"><path class="fh" d="'+path+'"></path></svg>';
+    this.el.innerHTML = '<svg width="'+w+'" height="'+h+'"><path class="fh" d="'+path+'"></path></svg>';
   }
 }
 

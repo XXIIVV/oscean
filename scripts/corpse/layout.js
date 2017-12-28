@@ -18,7 +18,7 @@ function Layout(host)
   this.md_wr.appendChild(this.m1 = document.createElement('m1'));
   this.md_wr.appendChild(this.m2 = document.createElement('m2'));
   this.md_wr.appendChild(this.m3 = document.createElement('m3'));
-  this.md_wr.appendChild(this.hr = document.createElement('hr'));
+  this.md.appendChild(this.hr = document.createElement('hr'));
   // Footer
   this.fd.appendChild(this.fd_wr = document.createElement('wr'));
 
