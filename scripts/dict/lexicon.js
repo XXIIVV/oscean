@@ -1551,8 +1551,6 @@ PHILIPP TRAUM
     & Every block of stone has a statue inside it and it is the task of the sculptor to discover it. I saw the angel in the marble and carved until I set him free.
     > <mini>Michelangelo {{Lettera a messer Benedetto Varchi|https://it.wikisource.org/wiki/Lettera_a_messer_Benedetto_Varchi}}</mini>
 
-  TYPE : Docs
-
 NEEDLES
   UNDE : Notes
   BREF : {{Needles}} are glyphs of which the intersection count is equal to the value of the character.
