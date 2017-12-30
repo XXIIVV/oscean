@@ -1,5 +1,7 @@
 let $HORAIRE = new List(`
 DATE     CODE PICT TERM                 TASK                 NAME                  TEXT                                                                                                                                                                    END
+20171231 - 24      Hundred rabbits      Branding
+20171230 - 27      Hundred rabbits      Branding 
 20171229 - 25      Horaire              Tools
 20171228 - 27      Ronin                Tools
 20171227 - 35      Dotgrid              Tools
@@ -125,7 +127,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20170829 - 37      Rotonde              Migration
 20170828 - 27      Horaire              Design                                     Each project page now has an Horaire widget with Fh and Dhf.
 20170827 - 28      Ronin                Documentation                              
-20170826 ! 29  238 Getapan 728k         Illustration         Album cover           Created a series of mountain renders for the release of {{Getapan 728k}}.
+20170826 ~ 29  238 Getapan 728k         Illustration         Album cover           Created a series of mountain renders for the release of {{Getapan 728k}}.
 20170825 - 18      Getapan 728k         Composition
 20170824 ! 29  215 Marabu               Design               Removed everything    My favourite design is the one that you cannot tell is there.
 20170823 - 31      Marabu               Maintenance
@@ -600,7 +602,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20160513 - 37      Verreciel            Development
 20160512 - 37      Verreciel            Development
 20160511 - 37      Verreciel            Analytics
-20160510 + 19  171 Verreciel soundtrack Release              Release Verreciel OST
+20160510 ! 19  171 Verreciel soundtrack Release              Release Verreciel OST
 20160509 - 16      Portalion            Composition
 20160508 - 14      Verreciel soundtrack Composition
 20160507 - 19      Verreciel soundtrack Composition

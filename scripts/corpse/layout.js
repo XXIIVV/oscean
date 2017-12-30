@@ -105,6 +105,7 @@ function Layout(host)
   this.search_focus = function(event)
   {
     event.preventDefault();
+    invoke.vessel.corpse.search.value = "";
     invoke.vessel.corpse.search.focus();
     window.scrollTop = 0;
   }

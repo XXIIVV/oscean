@@ -95,6 +95,7 @@ DONSOL
   BREF : {{Donsol}} is a dongeon crawler card game.
   LONG
     & The Donsol rules to play with a standard deck of cards can be found {{here|Donsol guide}}, and a gameplay video tutorial {{here|https://youtu.be/GNoZrr56GqA}}.
+    > <iframe frameborder="0" src="https://itch.io/embed/109936?linkback=true&amp;link_color=000000" width="600" height="167"></iframe>
     * Release
     & The game was created in collaboration with {{John Eternal|https://twitter.com/johneternal}}, released for {{Mobile}} back in 2016, and re-released for {{Desktop}} in 2017 as {{Hundred Rabbits}}.
     & While the game was designed on a train, without internet connection, it seemed like Donsol's gameplay accidentally ended up being a twist to Zach Gage and Kurt Bieg's {{Scoundrel|http://stfj.net/index2.php?project=art/2011/Scoundrel.pdf}}, designed in 2011.
@@ -353,8 +354,7 @@ TEN AXITECTURE
   BREF : {{Ten Axitecture}} is a {{Beldam Records}} release by {{Aliceffekt}}.
   LONG
     & The 4 tracks are interpretations of different fictional worlds that have played a role in the {{Aliceffekt}} narrative: Eudoxie from Calvino's Invisible Cities, Borges' Tlon and Schuiten's Citees Obscures.
-    * Tracklist
-    @ discography ten axitecture
+    > <iframe style="border: 0; width: 600px; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=202709164/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/ten-axitecture">Ten Axitecture by Aliceffekt</a></iframe>
   LINK
     https://aliceffekt.bandcamp.com/album/ten-axitecture
 
@@ -363,7 +363,7 @@ MINISCOPIE
   BREF : {{Miniscopie}} is a {{Beldam Records}} release, by {{Reine}}.
   LONG
     & Written by {{Reine|http://noirmirroir.com}}, this album combines ambient and deep IDM flavoured sounds. The album is the first music release from Elodie, who also created the {{Vast}} book.
-    @ discography miniscopie
+    > <iframe style="border: 0; width: 600px; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=2603579101/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://beldamrecords.bandcamp.com/album/miniscopie">Miniscopie by Reine</a></iframe>
   LINK
     https://beldamrecords.bandcamp.com/album/miniscopie
     https://itunes.apple.com/us/album/miniscopie-ep/id956624857
@@ -373,7 +373,7 @@ RAMIEL
   BREF : {{Ramiel}} is a {{Beldam Records}} release, by {_Villa Moirai_}.
   LONG
     & Written by {{Villa Moirai|https://beldamrecords.bandcamp.com}}, this album is an even mixture and techno and idm. The album name and cover are a tribute to the geometric angel of the Evangelion anime series.
-    @ discography ramiel
+    > <iframe style="border: 0; width: 600px; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=2641389031/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://beldamrecords.bandcamp.com/album/ramiel">Ramiel by Villa Moirai</a></iframe>
   LINK
     https://beldamrecords.bandcamp.com/album/ramiel
     https://itunes.apple.com/us/album/ramiel-ep/id958562173
@@ -383,6 +383,7 @@ ESCHATOLOR
   BREF : {{Eschatolor}} is a {{Beldam Records}} release, by {_Катя Тевелизион_}.
   LONG
     & Written by Катя Тевелизион, this album was inspired from russian number stations.
+    > <iframe style="border: 0; width: 600px; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=4198794205/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://tevelision.bandcamp.com/album/eschatolor">Eschatolor by Tevelision</a></iframe>
     & It was recorded playing through the FM band, from the {{EFLI}} 103.0Mhz pirate radio station in Montreal, giving it its texture and warmth.
   LINK
     https://tevelision.bandcamp.com/album/eschatolor
@@ -393,7 +394,7 @@ LOOKING GLACE
   BREF :  {{Looking Glace}} is a {{Beldam Records}} release, by {{Reine}}.
   LONG
     & Painting a harsher, and more complete picture of her acoustic universe where the liquid sounds and suffocating vocoder are incessantly present.
-    @ discography looking glace
+    > <iframe style="border: 0; width: 600px; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=3852327660/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://beldamrecords.bandcamp.com/album/looking-glace">Looking Glace by Reine</a></iframe>
   LINK
     https://beldamrecords.bandcamp.com/album/looking-glace
     https://itunes.apple.com/ca/album/looking-glace-ep/id1034127266
@@ -402,7 +403,7 @@ VERRECIEL SOUNDTRACK
   UNDE : Beldam records
   BREF : The {{Verreciel OST|Verreciel Soundtrack}} is a {{Beldam Records}} release, by {{Aliceffekt}}.
   LONG
-    @ discography verreciel soundtrack
+    > <iframe style="border: 0; width: 600px; height: 406px;" src="https://bandcamp.com/EmbeddedPlayer/album=453554387/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/verreciel">Verreciel by Aliceffekt</a></iframe>
   LINK
     https://aliceffekt.bandcamp.com/album/verreciel
 
@@ -411,7 +412,7 @@ GETAPAN 728K
   BREF : {{Getapan 728k}} is a {{Beldam Records}} release, by {{死サイコロ}}.
   LONG
     & This new release explores a region of frigid dubs yet uncharted by {{Beldam Records}}. Not much is known about 死サイコロ, their name is {_Shi Seikoro_}, or {*Death Dice*}.
-    @ discography GETAPAN 728K
+    > <iframe style="border: 0; width: 600px; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=1677022414/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://beldamrecords.bandcamp.com/album/728k">ГЕТАПАН 728K by 死サイコロ</a></iframe>
   LINK
     https://beldamrecords.bandcamp.com/album/728k
 
@@ -606,6 +607,7 @@ VERRECIEL
   TYPE : Diary
   LONG
     & The game joins the sequence of linguistically involved projects like {{Paradise}}, {{Hiversaires}} and {{Oquonie}}.
+    > <iframe frameborder="0" src="https://itch.io/embed/173320?linkback=true&amp;link_color=000000" width="600" height="167"></iframe>
     & An {{original soundtrack|Verreciel Soundtrack}} was created for the game and released on {{Beldam Records}}.
   LINK
     https://hundredrabbits.itch.io/verreciel
@@ -672,6 +674,7 @@ OQUONIE
   BREF : {{Oquonie}} is a textless isometric puzzle game.
   LONG
     & You will not be alone, your incarnations will have the help of {*bizaroid*} characters speaking {{an obscure language|Camilare}}. Oquonie features an original {{soundtrack|Oquonie Soundtrack}} and was best described as {_{{Animal Crossing in a K-Hole|http://killscreendaily.com/articles/oquonie-maze-worth-entering/}}_}.
+    > <iframe frameborder="0" src="https://itch.io/embed/23183?linkback=true&amp;link_color=000000" width="600" height="167"></iframe>
     ? Find help in the {{Oquonie Guide}}.
   LINK
     https://hundredrabbits.itch.io/oquonie
@@ -876,6 +879,7 @@ MARABU
   TAGS : Guide
   LONG
     & {*Marabu*} is tracker-type composition tool and synthetiser, built as a fork to the opensource {_Soundbox_}, and is meant to be an improvement on functionalities and design.
+    > <iframe frameborder="0" src="https://itch.io/embed/173813?linkback=true&amp;link_color=000000" width="600" height="167"></iframe>
     & You can view the complete {{Marabu Manual|https://github.com/hundredrabbits/Marabu}} on Github.
   LINK
     https://github.com/neauoire/Marabu
@@ -886,6 +890,7 @@ RONIN
   BREF : {{Ronin}} is a design tool.
   LONG
     & The application is a cross-over between Vim and Photoshop, meant to quickly render simple graphic tasks, such as exports, resize and colouring. It also includes basic digital painting functionalities. 
+    > <iframe frameborder="0" src="https://itch.io/embed/194632?linkback=true&amp;link_color=000000" width="600" height="167"></iframe>
     & It is  and the creation of grid based designs. Most of the iconography of {{Nataniev}} has been created with {_Ronin_} and {{Dotgrid}}.
     & You can view the complete {{Ronin Manual|https://github.com/hundredrabbits/Ronin}} on Github.
   LINK
@@ -897,6 +902,7 @@ LEFT
   BREF : {{Left}} is a writing application.
   LONG
     & {*Left*} was created to help {{Rekka}} with the writing of the upcoming novel {_Wiktopher_}. It includes auto-complete, a synonyms dictionary, writing statistics, basic text operations and a speed reader.
+    > <iframe frameborder="0" src="https://itch.io/embed/173127?linkback=true&amp;link_color=000000" width="600" height="167"></iframe>
     & You can view the complete {{Left Manual|https://github.com/hundredrabbits/Left}} on Github.
   LINK
     https://github.com/hundredrabbits/Left
@@ -907,6 +913,7 @@ DOTGRID
   BREF : {{Dotgrid}} is a vector tool.
   LONG
     & {*Dotgrid*} works by adding control points and drawing different line-types between them. The tool was created to design logos and glyphs for various {{Nataniev}} projects, and made available as a free and open source application.
+    > <iframe frameborder="0" src="https://itch.io/embed/190851?linkback=true&amp;link_color=000000" width="600" height="167"></iframe>
     & Choose between 3 types of strokes, lines, arc and 3-points beziers. The application can be entirely operated with the keyboard and can render as both PNG and SVG files. Additional effects like horizontal, vertical and radial mirror are also available - as well as the stroke width and linecap can also be changed. The application menu can be hidden by pressing the tab key.
     & You can view the complete {{Dotgrid Manual|https://github.com/hundredrabbits/Dotgrid}} on Github.
   LINK
@@ -1271,6 +1278,7 @@ THOUSAND ROOMS
   BREF : {{Thousand Rooms}} is a visual novel.
   LONG
     & {{Thousand Rooms}} was created in collaboration with illustrator {{Rekka Bellum|Rekka}}, following the behaviours of four characters and a room
+    > <iframe frameborder="0" src="https://itch.io/embed/146658?linkback=true&amp;link_color=000000" width="600" height="167"></iframe>
     & I have written this book with the hopes of creating a sort of {_Borges for children_}, in which the reader follows a bat, a cat, an owl and a fox who try and make sense of this simple system.
     & The book also encourages to try and understand the rules, and plan unsuggested avenues. We are releasing the book in English, French, Russian, Japanese & {{Lietal}}.
     & For the Lietal side-by-side translation, see {{Lae Doi}}.
