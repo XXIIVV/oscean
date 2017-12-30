@@ -709,16 +709,15 @@ CAMILARE
   UNDE : Oquonie
   BREF : {{Camilare}} is the language of {{Oquonie}}.
   LONG
-    * Dictionary
-    & This is a list of the most commonly used characters in {{Oquonie}}.
+    & This list contains some of the most commonly used characters in {{Oquonie}}, mouse-hover the character to see their meaning.
     > <table id='camilare'>
-    > <tr><td><img src='media/generic/camilare.nemedique.png'/></td><td>Nestorine</td>                              <td><img src='media/generic/camilare.nephtaline.png'/></td><td>Nephtaline<br/></td>                           <td><img src='media/generic/camilare.necomedre.png'/></td><td>Necomedre</td></tr>
-    > <tr><td><img src='media/generic/camilare.neomine.png'/></td><td>Neomine</td>                                  <td><img src='media/generic/camilare.door.png'/></td><td>Dialocie<br/><small>Door</small></td>                <td></td><td>Paradiacie<br/><small>Door Special</small></td></tr>
-    > <tr><td><img src='media/generic/camilare.teleport.png'/></td><td>Zolenie<br/><small>Teleport</small></td>     <td><img src='media/generic/camilare.correct.png'/></td><td>Hoathiste<br/><small>Correct/Yes</small></td>     <td><img src='media/generic/camilare.incorrect.png'/></td><td>Gemaniste<br/><small>Incorrect/No</small></td></tr>
-    > <tr><td><img src='media/generic/camilare.unlocked.png'/></td><td>Ecrine<br/><small>Unlocked</small></td>      <td><img src='media/generic/camilare.locked.png'/></td><td>Ednasene<br/><small>Locked</small></td>            <td><img src='media/generic/camilare.help.png'/></td><td>Celpadmale<br/><small>Help</small></td></tr>
-    > <tr><td><img src='media/generic/camilare.sound.png'/></td><td>Aohzaille<br/><small>Sound</small></td>         <td><img src='media/generic/camilare.guide.png'/></td><td>Mikethale<br/><small>Guide</small></td>             <td><img src='media/generic/camilare.inside.png'/></td><td>Casarmate<br/><small>Inside</small></td></tr>
-    > <tr><td><img src='media/generic/camilare.outside.png'/></td><td>Carmate<br/><small>Outside</small></td>       <td><img src='media/generic/camilare.key.png'/></td><td>Emetegisenete<br/><small>Key</small></td>             <td><img src='media/generic/camilare.friend.png'/></td><td>Zorgiene<br/><small>Friend</small></td></tr>
-    > <tr><td><img src='media/generic/camilare.foe.png'/></td><td>Oquonie<br/><small>Foe</small></td>               <td><img src='media/generic/camilare.pillar.png'/></td><td>Den<br/><small>Pillar</small></td>                 <td><img src='media/generic/camilare.nemedique.png'/></td><td>Nemedique<br/><small>Nemedique</small></td></tr>
+    > <tr><td><img title='Nestorine'         src='media/generic/camilare.nemedique.png'/></td>  <td><img title='Nephtaline'         src='media/generic/camilare.nephtaline.png'/></td> <td><img title='Nemedique(Nemedique)' src='media/generic/camilare.nemedique.png'/></td></tr>
+    > <tr><td><img title='Neomine'           src='media/generic/camilare.neomine.png'/></td>    <td><img title='Dialocie(Door)'     src='media/generic/camilare.door.png'/></td>       <td><img title='Necomedre' src='media/generic/camilare.necomedre.png'/></td></tr>
+    > <tr><td><img title='Zolenie(Teleport)' src='media/generic/camilare.teleport.png'/></td>   <td><img title='Hoathiste(Correct)' src='media/generic/camilare.correct.png'/></td>    <td><img title='Gemaniste(Incorrect)' src='media/generic/camilare.incorrect.png'/></td></tr>
+    > <tr><td><img title='Ecrine(Unlocked)'  src='media/generic/camilare.unlocked.png'/></td>   <td><img title='Ednasene(Locked)'   src='media/generic/camilare.locked.png'/></td>     <td><img title='Celpadmale(Help)' src='media/generic/camilare.help.png'/></td></tr>
+    > <tr><td><img title='Aohzaille(Sound)'  src='media/generic/camilare.sound.png'/></td>      <td><img title='Mikethale(Guide)'   src='media/generic/camilare.guide.png'/></td>      <td><img title='Casarmate(Inside)' src='media/generic/camilare.inside.png'/></td></tr>
+    > <tr><td><img title='Carmate(Outside)'  src='media/generic/camilare.outside.png'/></td>    <td><img title='Emetegisenete(Key)' src='media/generic/camilare.key.png'/></td>        <td><img title='Zorgiene(Friend)' src='media/generic/camilare.friend.png'/></td></tr>
+    > <tr><td><img title='Oquonie(For)'      src='media/generic/camilare.foe.png'/></td>        <td><img title='Den(Pillar)'        src='media/generic/camilare.pillar.png'/></td>     <td></td></tr>
     > </table>
 
 BABELIUM
