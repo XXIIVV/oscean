@@ -1541,8 +1541,7 @@ PHILIPP TRAUM
   UNDE : Notes
   BREF : {{Philipp Traum}} notes on objectivity and realism.
   LONG
-    & Ontological realism holds that physical objects exit independantly of our own minds, while epistemological realism is the view that statements are true, or false, independantly of wether we believe them to be true, or false.
-    & Aesthetic realism holds beauty to be a real property of works of art, there to be discovered by the discerning viewer.
+    & {*Ontological realism*} holds that physical objects exit independantly of our own minds, while {*epistemological realism*} is the view that statements are true, or false, independantly of wether we believe them to be true, or false. {*Aesthetic realism*} holds beauty to be a real property of works of art, there to be discovered by the discerning viewer.
     > <mini>Adapted from Baggini & Fosl</mini>
     * NO.44
     & In a little while you will be alone in shoreless space, to wander its limitless solitudes without friend or comrade forever - for you will remain a thought, the only existent thought, and by your nature inextinguishable, indestructible.
