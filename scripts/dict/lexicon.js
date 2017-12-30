@@ -94,7 +94,14 @@ DONSOL
   UNDE : Desktop
   BREF : {{Donsol}} is a dongeon crawler card game.
   LONG
-    & The Donsol rules to play with a standard deck of cards can be found {{here|Donsol guide}}, and a gameplay video tutorial {{here|https://youtu.be/GNoZrr56GqA}}.
+    & {{Donsol}}, designed by {{John Eternal|https://twitter.com/johneternal}}, is a card game about exploring a dungeon made of a standard 54 poker card set.
+    ? A standard deck, jokers included, is a dungeon. Shuffle the deck and draw 4 cards, display them before you, this is a room. A room ends when all the cards are folded.
+    * ♥︎ Heats are Potions
+    & Potion give you health points equal to their value, up to a maximum of 21 health points. Drinking multiple potions in a row will make you sick and result in no extra healing, only the first potion's value will be gained in HP. Potions are equal to their value and face cards (J,Q,K,A) each are equal to 11.
+    * ♦ Diamonds are Shield
+    & Shields absorb the damage difference from a monster's value. Shields can only defend against monsters in descending value and if you use a shield on a monster with higher or equal value to the previous, it will break. Broken shields leave you unarmored, and taking full damage. A shield card will replace a previously folded shield card. Shields are equal to their value and face cards (J,Q,K,A) each are equal to 11.
+    * ♣♠ Clubs and Spades Monster Cards
+    & Monster cards are equal to their value, and face cards are as follows J is 11, Q is 13, K is 15, A is 17; Jokers are both equal to 21. You may escape a room, if you have not escaped the previous one or have handled all the monsters in the current room. When escaping, the remaining cards are shuffled back into the deck.
     > <iframe frameborder="0" src="https://itch.io/embed/109936?linkback=true&amp;link_color=000000" width="600" height="167"></iframe>
     * Release
     & The game was created in collaboration with {{John Eternal|https://twitter.com/johneternal}}, released for {{Mobile}} back in 2016, and re-released for {{Desktop}} in 2017 as {{Hundred Rabbits}}.
@@ -102,6 +109,7 @@ DONSOL
   LINK
     https://github.com/hundredrabbits/Donsol
     https://hundredrabbits.itch.io/donsol
+    https://www.youtube.com/watch?v=GNoZrr56GqA
 
 DILUVIUM
   UNDE : Collegiennes
@@ -983,16 +991,6 @@ TABLE
   LONG
     & The interactive project list contains various completed and unreleased experiments and games for iOS, desktop and browser.
   TYPE : Portal
-
-DONSOL GUIDE
-  UNDE : Table
-  BREF : {{Donsol}}, created in collaboration with {{John Eternal|https://twitter.com/johneternal}}, is a card game about exploring a dungeon made of a standard 54 poker card set.
-  TYPE : Docs
-  LINK
-    https://itunes.apple.com/us/app/donsol/id976367718
-    https://hundredrabbits.itch.io/donsol/community
-    /Donsol
-  TAGS : Guide
 
 DOMINE GUIDE
   UNDE : Table
