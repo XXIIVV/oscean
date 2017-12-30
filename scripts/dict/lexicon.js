@@ -95,6 +95,7 @@ DONSOL
   BREF : {{Donsol}} is a dongeon crawler card game.
   LONG
     & {{Donsol}}, designed by {{John Eternal|https://twitter.com/johneternal}}, is a card game about exploring a dungeon made of a standard 54 poker card set.
+    > <iframe frameborder="0" src="https://itch.io/embed/109936?linkback=true&amp;link_color=000000" width="600" height="167"></iframe>
     ? A standard deck, jokers included, is a dungeon. Shuffle the deck and draw 4 cards, display them before you, this is a room. A room ends when all the cards are folded.
     * ♥︎ Heats are Potions
     & Potion give you health points equal to their value, up to a maximum of 21 health points. Drinking multiple potions in a row will make you sick and result in no extra healing, only the first potion's value will be gained in HP. Potions are equal to their value and face cards (J,Q,K,A) each are equal to 11.
@@ -102,7 +103,6 @@ DONSOL
     & Shields absorb the damage difference from a monster's value. Shields can only defend against monsters in descending value and if you use a shield on a monster with higher or equal value to the previous, it will break. Broken shields leave you unarmored, and taking full damage. A shield card will replace a previously folded shield card. Shields are equal to their value and face cards (J,Q,K,A) each are equal to 11.
     * ♣♠ Clubs and Spades Monster Cards
     & Monster cards are equal to their value, and face cards are as follows J is 11, Q is 13, K is 15, A is 17; Jokers are both equal to 21. You may escape a room, if you have not escaped the previous one or have handled all the monsters in the current room. When escaping, the remaining cards are shuffled back into the deck.
-    > <iframe frameborder="0" src="https://itch.io/embed/109936?linkback=true&amp;link_color=000000" width="600" height="167"></iframe>
     * Release
     & The game was created in collaboration with {{John Eternal|https://twitter.com/johneternal}}, released for {{Mobile}} back in 2016, and re-released for {{Desktop}} in 2017 as {{Hundred Rabbits}}.
     & While the game was designed on a train, without internet connection, it seemed like Donsol's gameplay accidentally ended up being a twist to Zach Gage and Kurt Bieg's {{Scoundrel|http://stfj.net/index2.php?project=art/2011/Scoundrel.pdf}}, designed in 2011.
@@ -712,13 +712,13 @@ CAMILARE
     * Dictionary
     & This is a list of the most commonly used characters in {{Oquonie}}.
     > <table id='camilare'>
-    > <tr><td><img src='public.oscean/media/generic/camilare.nemedique.png'/></td><td>Nestorine</td>                              <td><img src='public.oscean/media/generic/camilare.nephtaline.png'/></td><td>Nephtaline<br/></td>                           <td><img src='public.oscean/media/generic/camilare.necomedre.png'/></td><td>Necomedre</td></tr>
-    > <tr><td><img src='public.oscean/media/generic/camilare.neomine.png'/></td><td>Neomine</td>                                  <td><img src='public.oscean/media/generic/camilare.door.png'/></td><td>Dialocie<br/><small>Door</small></td>                <td></td><td>Paradiacie<br/><small>Door Special</small></td></tr>
-    > <tr><td><img src='public.oscean/media/generic/camilare.teleport.png'/></td><td>Zolenie<br/><small>Teleport</small></td>     <td><img src='public.oscean/media/generic/camilare.correct.png'/></td><td>Hoathiste<br/><small>Correct/Yes</small></td>     <td><img src='public.oscean/media/generic/camilare.incorrect.png'/></td><td>Gemaniste<br/><small>Incorrect/No</small></td></tr>
-    > <tr><td><img src='public.oscean/media/generic/camilare.unlocked.png'/></td><td>Ecrine<br/><small>Unlocked</small></td>      <td><img src='public.oscean/media/generic/camilare.locked.png'/></td><td>Ednasene<br/><small>Locked</small></td>            <td><img src='public.oscean/media/generic/camilare.help.png'/></td><td>Celpadmale<br/><small>Help</small></td></tr>
-    > <tr><td><img src='public.oscean/media/generic/camilare.sound.png'/></td><td>Aohzaille<br/><small>Sound</small></td>         <td><img src='public.oscean/media/generic/camilare.guide.png'/></td><td>Mikethale<br/><small>Guide</small></td>             <td><img src='public.oscean/media/generic/camilare.inside.png'/></td><td>Casarmate<br/><small>Inside</small></td></tr>
-    > <tr><td><img src='public.oscean/media/generic/camilare.outside.png'/></td><td>Carmate<br/><small>Outside</small></td>       <td><img src='public.oscean/media/generic/camilare.key.png'/></td><td>Emetegisenete<br/><small>Key</small></td>             <td><img src='public.oscean/media/generic/camilare.friend.png'/></td><td>Zorgiene<br/><small>Friend</small></td></tr>
-    > <tr><td><img src='public.oscean/media/generic/camilare.foe.png'/></td><td>Oquonie<br/><small>Foe</small></td>               <td><img src='public.oscean/media/generic/camilare.pillar.png'/></td><td>Den<br/><small>Pillar</small></td>                 <td><img src='public.oscean/media/generic/camilare.nemedique.png'/></td><td>Nemedique<br/><small>Nemedique</small></td></tr>
+    > <tr><td><img src='media/generic/camilare.nemedique.png'/></td><td>Nestorine</td>                              <td><img src='media/generic/camilare.nephtaline.png'/></td><td>Nephtaline<br/></td>                           <td><img src='media/generic/camilare.necomedre.png'/></td><td>Necomedre</td></tr>
+    > <tr><td><img src='media/generic/camilare.neomine.png'/></td><td>Neomine</td>                                  <td><img src='media/generic/camilare.door.png'/></td><td>Dialocie<br/><small>Door</small></td>                <td></td><td>Paradiacie<br/><small>Door Special</small></td></tr>
+    > <tr><td><img src='media/generic/camilare.teleport.png'/></td><td>Zolenie<br/><small>Teleport</small></td>     <td><img src='media/generic/camilare.correct.png'/></td><td>Hoathiste<br/><small>Correct/Yes</small></td>     <td><img src='media/generic/camilare.incorrect.png'/></td><td>Gemaniste<br/><small>Incorrect/No</small></td></tr>
+    > <tr><td><img src='media/generic/camilare.unlocked.png'/></td><td>Ecrine<br/><small>Unlocked</small></td>      <td><img src='media/generic/camilare.locked.png'/></td><td>Ednasene<br/><small>Locked</small></td>            <td><img src='media/generic/camilare.help.png'/></td><td>Celpadmale<br/><small>Help</small></td></tr>
+    > <tr><td><img src='media/generic/camilare.sound.png'/></td><td>Aohzaille<br/><small>Sound</small></td>         <td><img src='media/generic/camilare.guide.png'/></td><td>Mikethale<br/><small>Guide</small></td>             <td><img src='media/generic/camilare.inside.png'/></td><td>Casarmate<br/><small>Inside</small></td></tr>
+    > <tr><td><img src='media/generic/camilare.outside.png'/></td><td>Carmate<br/><small>Outside</small></td>       <td><img src='media/generic/camilare.key.png'/></td><td>Emetegisenete<br/><small>Key</small></td>             <td><img src='media/generic/camilare.friend.png'/></td><td>Zorgiene<br/><small>Friend</small></td></tr>
+    > <tr><td><img src='media/generic/camilare.foe.png'/></td><td>Oquonie<br/><small>Foe</small></td>               <td><img src='media/generic/camilare.pillar.png'/></td><td>Den<br/><small>Pillar</small></td>                 <td><img src='media/generic/camilare.nemedique.png'/></td><td>Nemedique<br/><small>Nemedique</small></td></tr>
     > </table>
 
 BABELIUM
