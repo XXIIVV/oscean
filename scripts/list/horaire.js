@@ -142,7 +142,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20170814 - 39      Marabu               Update 
 20170813 ! 28  212 Marabu               Interface            Version 2             Built a {{Nataniev}} native version of {{Marabu}} tracker music sequencer.
 20170812 - 28      Marabu               Design
-20170811 - 37  211 Philipp traum        Writing              The Beldam            Wrote a few notes on objectivity and realism, under the {{Philipp Traum}} page.
+20170811 ! 37  211 Philipp traum        Writing              The Beldam            Wrote a few notes on objectivity and realism, under the {{Philipp Traum}} page.
 20170810 ! 38  209 Nutrition            Documentation        Meal Plan Basics      Wrote a simple {{nutritional|Nutrition}} guide with basic information on proteins and essential amino acids.
 20170809 - 26  208 Left                 Design               Tooling               The missing link to the {{Nataniev Suite|Suite}} was a proper native IDE.
 20170808 - 36      Marabu               Update
