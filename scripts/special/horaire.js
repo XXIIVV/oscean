@@ -13,7 +13,7 @@ function horaire_view()
 
     for(id in logs){
       var log = logs[id];
-      if(log.time.gregorian.y < 2010){ continue; }
+      if(log.time.gregorian.y < 2011){ continue; }
       h.fh += log.value;
       // By Date
       if(!h.by_date[log.time.gregorian.y+log.time.gregorian.m]){
