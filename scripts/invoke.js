@@ -8,15 +8,30 @@ function Invoke(name,version = "100")
   this.vessel = null;
   this.storage = {};
 
+  this.el = document.createElement('div'); 
+
+  this.setup = function()
+  {
+    this.el.id = "invoke_status"; 
+    this.el.style.position = "fixed"; 
+    this.el.style.height = "2px";  
+    this.el.style.backgroundColor = "#72dec2"; 
+    this.el.style.width = "0vw"; 
+    this.el.style.zIndex = "9000"; 
+    this.el.style.left = "0px"; 
+    this.el.style.top = "0px"; 
+    this.el.style.transition = "width 500ms; opacity 150md";
+
+    document.body.appendChild(this.el);
+    this.summon();
+  }
+
   this.summon = function()
   {
-    console.log("invk","summoning "+invoke.name+" v"+invoke.version); 
-
     for(var cat in this.requirements){
       this.includes[cat] = [];
     }
     // Install
-
     for(var cat in this.requirements){
       this.includes[cat] = [];
       for(var id in this.requirements[cat]){
@@ -36,9 +51,10 @@ function Invoke(name,version = "100")
 
   this.seal = function(type,name,payload = null)
   {
-    console.log("seal",type+"/"+name+" "+this.remaining().length);
+    console.log("seal",`${type}/${name} -> ${parseInt(this.progress() * 100)}%`);
 
     if(payload){ this.storage[name] = payload; }
+
     this.includes[type].push(name);
     this.verify();
   }
@@ -46,7 +62,6 @@ function Invoke(name,version = "100")
   this.verify = function()
   {
     if(this.remaining().length == 0){
-      console.log("core","ready "+this.name)
       this.start();
     }
   }
@@ -64,12 +79,37 @@ function Invoke(name,version = "100")
     return remaining;
   }
 
+  this.progress = function()
+  {
+    var sum = 0;
+    for(var cat in this.requirements){
+      sum += this.requirements[cat].length;
+    }
+    var ratio = 1 - ((this.remaining().length-1)/sum)
+    var perc  = parseInt(ratio * 100);
+    var el = document.getElementById("invoke_status");
+
+    el.style.width = `${perc}vw`;
+    document.title = `Loading.. ${perc}%`;
+
+    el.style.opacity = ratio == 1 ? 0 : 1;
+
+    return ratio;
+  }
+
   this.start = function()
   {
+    this.progress();
     this.vessel = new window[this.name.capitalize()]();
     this.keyboard = new Keyboard();
     this.clock = new Clock();
     this.vessel.summon();
+  }
+
+  this.log = function(cat,msg)
+  {
+    var el = document.getElementById("invoke_status");
+    el.textContent += `${cat} : ${msg}\n`;
   }
 }
 

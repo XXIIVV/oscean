@@ -141,7 +141,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20170819 - 39      Ronin                Tools                
 20170818 - 39      Nataniev             Tools                
 20170817 ! 37  216 Ronin                Prototype                
-20170816 ! 35  213 Off the grid         Writing              V Berth Library       Started a little document with notes on {{offline}} life.
+20170816 - 35  213 Obliques             Writing              V Berth Library       Started a little document with notes on {{offline}} life.
 20170815 - 34      Oquonie              Update
 20170814 - 39      Marabu               Update 
 20170813 ! 28  212 Marabu               Interface            Version 2             Built a {{Nataniev}} native version of {{Marabu}} tracker music sequencer.
@@ -1029,7 +1029,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20150317 - 36      Neon hermetism       Writing
 20150316 - 25      Alphavetist          Maintenance          3.4
 20150315 - 36      Neon hermetism       Writing
-20150314 - 29  378 Donsol guide         Design               Guide
+20150314 - 29      Donsol               Design               Guide
 20150313 - 25  362 Lard shader          Illustration         Study B
 20150312 - 25  318 Lard shader          Illustration         Study A
 20150311 - 25      Lard shader          Illustration

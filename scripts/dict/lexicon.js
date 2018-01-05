@@ -1645,7 +1645,7 @@ PARADISE
     & In this anonymous world you can create anything, traverse the various player-created universes and explore {_conceptspace_}.
     & See you {{there|http://paradise.xxiivv.com}}.
     - “I have always imagined that Paradise will be a kind of library.” 
-    ― Jorge Luis Borges
+    - Jorge Luis Borges
   LINK
     http://paradise.xxiivv.com
     https://github.com/XXIIVV/vessel.paradise
@@ -1805,6 +1805,10 @@ LIETAL
   UNDE : Language
   BREF : {{Lietal}} is an experimental {{synthetic language|http://en.wikipedia.org/wiki/Constructed_language}}.
   TYPE : Docs
+
+DICTIONAERY
+  UNDE : Lietal
+  BREF : Coming shortly.
 
 BLUE
   UNDE : Language
