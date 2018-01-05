@@ -1,14 +1,15 @@
 let $HORAIRE = new List(`
 DATE     CODE PICT TERM                 TASK                 NAME                  TEXT                                                                                                                                                                    END
+20180104 - 17      Supergrid            Composition
 20180103 - 27      Left                 Design
-20180102 - 17      Marabu               Tools
+20180102 ~ 17  507 Marabu               Tools
 20180101 - 18      Marabu               Composition
 20171231 - 24      Hundred rabbits      Branding
 20171230 - 27      Hundred rabbits      Branding 
 20171229 - 25      Horaire              Tools
 20171228 - 27      Ronin                Tools
 20171227 - 35      Dotgrid              Tools
-20171226 - 24      Marabu               Interface
+20171226 - 24      Supergrid            Interface
 20171225
 20171224
 20171223

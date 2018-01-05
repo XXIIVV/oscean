@@ -187,7 +187,6 @@ DAMOISEAU CANALX
   LONG
     & The album was recorded live, at Passport in Montreal during the last AMP event and is being released as-is.
     & The album was composed as side project while working on {{Ten Axitecture}} and includes bits and pieces from {{Blam}}.
-    @ discography damoiseau canalx
   LINK
     https://aliceffekt.bandcamp.com/album/damoiseau-canalx
 
@@ -296,7 +295,6 @@ COLLECTED WORKS
   TAGS : Discography
   LONG
     & This release includes the complete {*Storm Transit record*}, hidden {{Malice}} tracks from {{Aliceffekt}} releases and the {{Merveilles Portable}} soundtrack.
-    @ discography collected works
   LINK
     https://gaii.bandcamp.com/
 
@@ -736,7 +734,6 @@ THE SIXTH SEASON
   LONG
     & {_Whiinders_} and the likes, raising tents hoping for a glorious end in memory of {{Rlionn}}.
     & This album established the sound that {{Aliceffekt}} decided to persue for the {{Neauismetic}} releases.
-    @ discography the sixth season
   LINK
     http://aliceffekt.bandcamp.com/album/orchestrate-the-sixth-season
 
@@ -820,7 +817,6 @@ VETETRANDES LETTRES
     & The album includes 4 edited tracks from the {{Es Gulf Sunflowers}} release. The {_Ver'Tale_} extension is a hint to a location of {_Whiinders_}, close to the visited {_Vert Kirlian Theatre_}.
     & The album begins with a track about {{Yajnev}}, the composition is based on his trip near the white trees of the {_Oasis_} and the {_Children of Brambles_}.
     & The album is part of {{Aliceffekt}}'s {{Neauismetic}} albums.
-    @ discography Vetetrandes Lettres
   LINK
     http://aliceffekt.bandcamp.com/album/vetetrandes-lettres-perdues
 
@@ -1078,7 +1074,6 @@ CHILDREN OF BRAMBLE
   TAGS : Discography
   LONG
     & This album begins by the Oasis of {{Laeisth}} to finally reach the castle of {{Andes}} and its sandsunken structure. This single is part of the {{Neauismetica}}, and shares some narrative concepts with {{Telekinetic}}.
-    @ discography children of bramble
   LINK
     https://aliceffekt.bandcamp.com/album/children-of-bramble
 
@@ -1088,7 +1083,6 @@ KNOWN MAGYE
   LONG
     & Sometimes reminiscent of the compositions of {{Children of bramble}}, sometimes of the drowned sounds of {{Telekinetic}}, this single is a fair mix of ambient and breaks.
     & The album was recorded live from {{San Fransisco|travel}}'s {*POW POW POW*} which was controlled entirely with the {{Leap Motion|https://www.leapmotion.com}}.
-    @ discography known magye
   LINK
     https://aliceffekt.bandcamp.com/album/known-magye
   TAGS : Discography
@@ -1099,7 +1093,6 @@ EXTENDED SLEEP
   TAGS : Discography
   LONG
     & The album will be first performed at the A Maze Festival in Berlin, on April 23rd 2015.
-    @ discography extended sleep
   LINK
     https://aliceffekt.bandcamp.com/album/extended-sleep
 
@@ -1114,7 +1107,6 @@ THE OPAL INQUISITORS
   TAGS : Discography
   LONG
     & These recordings are photographs taken aboard the {{Vermillionth}} tunneler, traveling up the spires of {{Duomo}}.
-    @ discography the opal inquisitors
   LINK
     https://aliceffekt.bandcamp.com/album/the-opal-inquisitors
 
@@ -1123,7 +1115,6 @@ PORTALION
   BREF : {{Portalion}} is the second {{Duomic}} album, where {{Neonev}} leaves {{Duomo}} to explore the of the northernest shores of {{Laeisth}}.
   LONG
     & On a foggy night of the {_Sixth Season_}, embarking on one of the vessels of the {_Septechoes_} in the desert of {_Clionn_}, {{Neonev}} sails toward {_Whiinders_} to see its {_Immortal Birds_} once more.
-    @ discography portalion
   LINK
     https://aliceffekt.bandcamp.com/album/portalion
   TAGS : Discography
@@ -1132,8 +1123,6 @@ DEI DAIN
   UNDE : Duomic
   BREF : {{Dei Dain}} is the third {{Duomic}} album, where {{Neonev}} travels from the desert of {{Laeisth}} to the nightly scapes of {{Dilitrielth}}.
   TAGS : Discography
-  LONG
-    @ discography dei dain
   LINK
     https://aliceffekt.bandcamp.com/album/dei-dain
 
@@ -1185,7 +1174,6 @@ SUPERWORKER
   TAGS : Discography
   LONG
     & The album contains 3 tracks created from {_over 80 sessions_}, arranged into chiptune experiments.
-    @ discography superworker
     & Due to the lack of power during the 4 weeks long ocean crossing, the pocket battery powered synth proved to be the perfect composition tool. The tracks also include spoken words from Alan Watts.
   LINK
     https://aliceffekt.bandcamp.com/album/superworker
@@ -1194,11 +1182,16 @@ SUPERVISITOR
   UNDE : Demo
   TYPE : Diary
   BREF : {{Supervisitor}} is a concept album created with {{Arturia|http://arturia.com}}'s analog and monophonic {{Microbrute|http://www.arturia.com/microbrute-se/overview}} synthetiser.
-  LONG
-    @ discography supervisitor
   LINK
     https://aliceffekt.bandcamp.com/album/supervisitor
     https://itunes.apple.com/ca/album/supervisitor-ep/id951144870
+
+SUPERGRID
+  UNDE : Demo
+  TYPE : Diary
+  BREF : {{Supergrid}} is a concept album created with {{Marabu}}, where each track is created during a single week, and the full album's planned release is at the end of year.
+  LINK
+    https://weeklybeats.com/aliceffekt
 
 SOUNDTRACK
   UNDE : Aliceffekt
@@ -1208,8 +1201,6 @@ SOUNDTRACK
 OQUONIE SOUNDTRACK
   UNDE : Soundtrack
   BREF : The {{Oquonie Soundtrack}}, {_Impossible Spaces_}, is the ambient score of the game {{Oquonie}}.
-  LONG
-    @ discography oquonie soundtrack
   TAGS : Discography
 
 RABBITS SOUNDTRACK
@@ -1217,7 +1208,6 @@ RABBITS SOUNDTRACK
   BREF : The {{Rabbits Soundtrack}} is the drone audio tracks of the {{Hundred Rabbits}} video diaries.
   LONG
     & This soundtrack contains 2 recorded podcasts and a selection of tracks from the videos.
-    @ discography rabbits soundtrack
   TAGS : Discography
   LINK
     https://aliceffekt.bandcamp.com/album/hundred-rabbits
@@ -1225,8 +1215,6 @@ RABBITS SOUNDTRACK
 PURGATEUS SOUNDTRACK
   UNDE : Soundtrack
   BREF : The {{Purgateus Soundtrack}} is the score for the {{Purgateus}} remix of the game Proteus.
-  LONG
-    @ discography purgateus soundtrack
   TAGS : Discography
 
 REMIX
@@ -1878,8 +1866,6 @@ ANN YOZORA SAINT
 NETHER ESPER INSERTS
   UNDE : First wave
   BREF : {{Nether Esper Inserts}} was originally released as two albums, {_Nether Esper Inserts_} and {_Howls Virgil Systems_}, they were consolidated into a single release in 2017.
-  LONG
-    @ discography nether esper inserts
 
 OTOROUTES MINIATURES
   UNDE : First wave
