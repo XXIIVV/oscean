@@ -1,5 +1,8 @@
 let $HORAIRE = new List(`
 DATE     CODE PICT TERM                 TASK                 NAME                  TEXT                                                                                                                                                                    END
+20180107 - 35      Markl                Tools
+20180106 - 38      Mute                 Research
+20180105 - 15      Supergrid            Composition
 20180104 - 17      Supergrid            Composition
 20180103 - 27      Left                 Design
 20180102 ~ 17  507 Marabu               Tools

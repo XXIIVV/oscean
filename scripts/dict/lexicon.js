@@ -172,6 +172,11 @@ ES GULF SUNFLOWERS
   LINK
     https://aliceffekt.bandcamp.com/album/es-gulfssunflowers
 
+DISCOGRAPHY
+  UNDE : Audio
+  BREF : The Official {{Discography}} and tracklist.
+  TYPE : Docs
+
 ALICEFFEKT
   UNDE : Audio
   BREF : {{Aliceffekt}}, is an audio project following the adventures of {{Neonev}} across {{Dinaisth}}.
@@ -424,7 +429,7 @@ GETAPAN 728K
 
 MIXTAPE
   UNDE : Audio
-  BREF : A collection of dj sets recorded over the years, ranging from industrial, to classical to idm.
+  BREF : A collection of {{Mixtapes|Mixtape}} recorded over the years, ranging from industrial, to classical to idm.
   TYPE : Portal
   LONG
     & Some of the tracklists were lost, feel free to contact me if you need to find the name of a specific track. The entire collection is available {{here|https://drive.google.com/folderview?id=0B24klRuG3GLNam56My1Va1RfSU0&usp=sharing}} while the individual tracklists can be seen bellow.
