@@ -192,6 +192,7 @@ DAMOISEAU CANALX
   LONG
     & The album was recorded live, at Passport in Montreal during the last AMP event and is being released as-is.
     & The album was composed as side project while working on {{Ten Axitecture}} and includes bits and pieces from {{Blam}}.
+    > <iframe style="border: 0; width: 100%; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=743341250/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/damoiseau-canalx">Damoiseau + Canalx by aliceffekt</a></iframe>
   LINK
     https://aliceffekt.bandcamp.com/album/damoiseau-canalx
 
@@ -226,6 +227,7 @@ HUNDRED RABBITS
   TAGS : Portal
   LONG
     & This partnership is host to interactive projects like {{Oquonie}}, {{Grimgrains|http://grimgrains.com}} and travel diaries. A {{Patreon page|https://www.patreon.com/100}} is available to help fund the production of monthly videos and liveaboard documentation.
+    > <iframe style="border: 0; width: 100%; height: 241px;" src="https://bandcamp.com/EmbeddedPlayer/album=1969793667/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/hundred-rabbits">Hundred Rabbits by aliceffekt</a></iframe>
   LINK
     https://patreon.com/100
     https://twitter.com/hundredrabbits
@@ -414,7 +416,7 @@ VERRECIEL SOUNDTRACK
   UNDE : Beldam records
   BREF : The {{Verreciel OST|Verreciel Soundtrack}} is a {{Beldam Records}} release, by {{Aliceffekt}}.
   LONG
-    > <iframe style="border: 0; width: 600px; height: 406px;" src="https://bandcamp.com/EmbeddedPlayer/album=453554387/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/verreciel">Verreciel by Aliceffekt</a></iframe>
+    > <iframe style="border: 0; width: 100%; height: 406px;" src="https://bandcamp.com/EmbeddedPlayer/album=453554387/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/verreciel">Verreciel by Aliceffekt</a></iframe>
   LINK
     https://aliceffekt.bandcamp.com/album/verreciel
 
@@ -1079,6 +1081,7 @@ CHILDREN OF BRAMBLE
   TAGS : Discography
   LONG
     & This album begins by the Oasis of {{Laeisth}} to finally reach the castle of {{Andes}} and its sandsunken structure. This single is part of the {{Neauismetica}}, and shares some narrative concepts with {{Telekinetic}}.
+    > <iframe style="border: 0; width: 100%; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=163410848/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/children-of-bramble">Children of Bramble by aliceffekt</a></iframe>
   LINK
     https://aliceffekt.bandcamp.com/album/children-of-bramble
 
@@ -1088,6 +1091,7 @@ KNOWN MAGYE
   LONG
     & Sometimes reminiscent of the compositions of {{Children of bramble}}, sometimes of the drowned sounds of {{Telekinetic}}, this single is a fair mix of ambient and breaks.
     & The album was recorded live from {{San Fransisco|travel}}'s {*POW POW POW*} which was controlled entirely with the {{Leap Motion|https://www.leapmotion.com}}.
+    > <iframe style="border: 0; width: 100%; height: 340px;" src="https://bandcamp.com/EmbeddedPlayer/album=1531404629/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/known-magye">Known Magye by aliceffekt</a></iframe>
   LINK
     https://aliceffekt.bandcamp.com/album/known-magye
   TAGS : Discography
@@ -1098,6 +1102,7 @@ EXTENDED SLEEP
   TAGS : Discography
   LONG
     & The album will be first performed at the A Maze Festival in Berlin, on April 23rd 2015.
+    > <iframe style="border: 0; width: 100%; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=2987872258/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/extended-sleep">Extended Sleep by aliceffekt</a></iframe>
   LINK
     https://aliceffekt.bandcamp.com/album/extended-sleep
 
@@ -1112,6 +1117,7 @@ THE OPAL INQUISITORS
   TAGS : Discography
   LONG
     & These recordings are photographs taken aboard the {{Vermillionth}} tunneler, traveling up the spires of {{Duomo}}.
+    > <iframe style="border: 0; width: 100%; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=1049304423/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/the-opal-inquisitors">The Opal Inquisitors by Aliceffekt</a></iframe>
   LINK
     https://aliceffekt.bandcamp.com/album/the-opal-inquisitors
 
@@ -1120,6 +1126,7 @@ PORTALION
   BREF : {{Portalion}} is the second {{Duomic}} album, where {{Neonev}} leaves {{Duomo}} to explore the of the northernest shores of {{Laeisth}}.
   LONG
     & On a foggy night of the {_Sixth Season_}, embarking on one of the vessels of the {_Septechoes_} in the desert of {_Clionn_}, {{Neonev}} sails toward {_Whiinders_} to see its {_Immortal Birds_} once more.
+    > <iframe style="border: 0; width: 100%; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=1367389203/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/portalion">Portalion by Aliceffekt</a></iframe>
   LINK
     https://aliceffekt.bandcamp.com/album/portalion
   TAGS : Discography
@@ -1128,6 +1135,8 @@ DEI DAIN
   UNDE : Duomic
   BREF : {{Dei Dain}} is the third {{Duomic}} album, where {{Neonev}} travels from the desert of {{Laeisth}} to the nightly scapes of {{Dilitrielth}}.
   TAGS : Discography
+  LONG
+    > <iframe style="border: 0; width: 100%; height: 472px;" src="https://bandcamp.com/EmbeddedPlayer/album=4246216793/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/dei-dain">Dei Dain by aliceffekt</a></iframe>
   LINK
     https://aliceffekt.bandcamp.com/album/dei-dain
 
@@ -1206,6 +1215,8 @@ SOUNDTRACK
 OQUONIE SOUNDTRACK
   UNDE : Soundtrack
   BREF : The {{Oquonie Soundtrack}}, {_Impossible Spaces_}, is the ambient score of the game {{Oquonie}}.
+  LONG
+    > <iframe style="border: 0; width: 100%; height: 472px;" src="https://bandcamp.com/EmbeddedPlayer/album=2065824251/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/short-stories-in-impossible-spaces">Short Stories In Impossible Spaces by aliceffekt</a></iframe>
   TAGS : Discography
 
 RABBITS SOUNDTRACK
@@ -1221,6 +1232,8 @@ PURGATEUS SOUNDTRACK
   UNDE : Soundtrack
   BREF : The {{Purgateus Soundtrack}} is the score for the {{Purgateus}} remix of the game Proteus.
   TAGS : Discography
+  LONG
+    > <iframe style="border: 0; width: 100%; height: 340px;" src="https://bandcamp.com/EmbeddedPlayer/album=3667464517/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/purgateus">Purgateus by aliceffekt</a></iframe>
 
 REMIX
   UNDE : Aliceffekt
