@@ -921,6 +921,7 @@ LEFT
 DOTGRID
   UNDE : Software
   BREF : {{Dotgrid}} is a vector tool.
+  TYPE : Diary
   LONG
     & {*Dotgrid*} works by adding control points and drawing different line-types between them. The tool was created to design logos and glyphs for various {{Nataniev}} projects, and made available as a free and open source application.
     > <iframe frameborder="0" src="https://itch.io/embed/190851?linkback=true&amp;link_color=000000" width="600" height="167"></iframe>

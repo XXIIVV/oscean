@@ -1,5 +1,6 @@
 let $HORAIRE = new List(`
 DATE     CODE PICT TERM                 TASK                 NAME                  TEXT                                                                                                                                                                    END
+20180108 - 28      Hundred rabbits      Branding
 20180107 - 35      Markl                Tools
 20180106 - 38      Mute                 Research
 20180105 - 15      Supergrid            Composition
@@ -11,7 +12,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20171230 - 27      Hundred rabbits      Branding 
 20171229 - 25      Horaire              Tools
 20171228 - 27      Ronin                Tools
-20171227 - 35      Dotgrid              Tools
+20171227 - 35  508 Dotgrid              Tools
 20171226 - 24      Supergrid            Interface
 20171225
 20171224
