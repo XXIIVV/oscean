@@ -7,6 +7,7 @@ function Horaire(list)
   {
     this.add_logs();
     this.connect_logs();
+    this.find_available();
   }
 
   this.add_logs = function()
@@ -33,6 +34,23 @@ function Horaire(list)
       array.push(new Log(a[id]))
     }
     return array;
+  }
+
+  this.find_available = function()
+  {
+    var photos = {};
+    for(id in this.logs){
+      var log = this.logs[id];
+      photos[log.photo] = log.time.gregorian.format;
+    }
+    var i = 1;
+    while(i < 999){
+      if(!photos[i]){
+        console.log("Available Id:",i);
+        return;
+      }
+      i += 1;
+    }
   }
 }
 

@@ -93,6 +93,7 @@ PURGATEUS
 DONSOL
   UNDE : Desktop
   BREF : {{Donsol}} is a dongeon crawler card game.
+  TYPE : Diary
   LONG
     & {{Donsol}}, designed by {{John Eternal|https://twitter.com/johneternal}}, is a card game about exploring a dungeon made of a standard 54 poker card set.
     > <iframe frameborder="0" src="https://itch.io/embed/109936?linkback=true&amp;link_color=000000" width="600" height="167"></iframe>

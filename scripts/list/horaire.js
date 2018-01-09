@@ -1,5 +1,6 @@
 let $HORAIRE = new List(`
 DATE     CODE PICT TERM                 TASK                 NAME                  TEXT                                                                                                                                                                    END
+20180109 - 28      Donsol               Tools
 20180108 - 38      Markl                Design
 20180107 - 35      Markl                Tools
 20180106 - 38      Mute                 Research
@@ -368,9 +369,9 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20170110 - 38      Lietal               Linguistics
 20170109 - 38      Lietal               Linguistics
 20170108 - 27      Lietal               Typography
-20170107 - 32      Donsol               Development
-20170106 + 38      Donsol               Release              Released Donsol
-20170105 - 36      Donsol               Development
+20170107 - 32   66 Donsol               Development
+20170106 + 38  142 Donsol               Release              Released Donsol
+20170105 - 36  363 Donsol               Development
 20170104 - 26      Donsol               Design
 20170103 ! 23  230 Directory            Photography
 20170102 - 26      Donsol               Design
