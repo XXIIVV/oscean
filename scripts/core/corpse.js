@@ -39,8 +39,32 @@ function Corpse(host)
 
   this.to_html = function()
   {
-    return "hello"
+    return "--"
   }
+
+  this.query = function()
+  {
+    var parts = window.location.pathname.split("/"); console.log(parts[parts.length-1])
+    var hash = window.location.hash.replace("#","");
+    return hash;
+  }
+
+  this.load = function()
+  {
+    // replace
+  }
+
+  this.history = [];
+
+  this.on_change = function()
+  {
+    if(this.query() == this.history[this.history.length-2]){
+      this.load(this.query());
+    }
+    this.history.push(this.query());
+  }
+
+  window.addEventListener("hashchange", () => { this.on_change(); });
 }
 
 invoke.seal("core","corpse");

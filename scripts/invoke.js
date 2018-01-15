@@ -20,7 +20,7 @@ function Invoke(name,version = "100")
     this.el.style.zIndex = "9000"; 
     this.el.style.left = "0px"; 
     this.el.style.top = "0px"; 
-    this.el.style.transition = "width 500ms; opacity 150md";
+    this.el.style.transition = "width 500ms";
 
     document.body.appendChild(this.el);
     this.summon();

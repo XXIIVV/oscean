@@ -24,13 +24,6 @@ function Oscean()
     this.corpse = new Layout(this);
     this.corpse.install();
   }
-
-  this.query = function()
-  {
-    var parts = window.location.pathname.split("/"); console.log(parts[parts.length-1])
-    var hash = window.location.hash.replace("#","");
-    return hash;
-  }
 }
 
 invoke.seal("main","oscean");
