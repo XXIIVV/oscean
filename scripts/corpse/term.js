@@ -52,7 +52,7 @@ function Term(name,memory)
     var from = this.logs[this.logs.length-1];
     var to = this.logs[0];
 
-    html += from.time.gregorian.y != to.time.gregorian.y ? `${from.time.gregorian.y}—${to.time.gregorian.y}` : to.time.gregorian.y;
+    html += from.time.toString() != to.time.toString() ? `${from.time.toString()}—${to.time.toString()}` : to.time.toString();
 
     return `<yu class='activity'>${html}</yu>`;
   }
@@ -125,6 +125,15 @@ function Term(name,memory)
     if(this.diaries.length < 1){ return ""; }
 
     return "url(media/diary/"+this.diary().photo+".jpg)";
+  }
+
+  this.photo_info = function()
+  {
+    if(this.diaries.length < 1){ return ""; }
+
+    var log = this.diary();
+
+    return `<b>${log.name}</b> — <a href='Desamber' class='local'>${log.time}</a>`
   }
 
   this.preview = function()

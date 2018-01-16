@@ -4,7 +4,9 @@ function Layout(host)
 
   this.monitor = new Monitor();
   // Header
+  this.hd.appendChild(this.links = document.createElement('div'));
   this.hd.appendChild(this.photo = document.createElement('photo'));
+  this.hd.appendChild(this.photo_info = document.createElement('info'));
   this.hd.appendChild(this.logo = document.createElement('a')); 
   this.hd.appendChild(this.search = document.createElement('input'));
 
@@ -22,12 +24,18 @@ function Layout(host)
   // Footer
   this.fd.appendChild(this.fd_wr = document.createElement('wr'));
 
+  this.search.setAttribute("autocomplete","off");
+  this.search.setAttribute("autocorrect","off");
+  this.search.setAttribute("autocapitalize","off");
+  this.search.setAttribute("spellcheck","off");
+
   this.logo.setAttribute("href", "Home")
 
   this.start = function()
   {
     this.load(this.query());
-    this.fd_wr.innerHTML = "<a href='https://twitter.com/neauoire' class='icon twitter'></a><a href='https://github.com/neauoire' class='icon github'></a><a href='Rotonde' class='icon rotonde'></a><yu id='clock'></yu><a href='Devine+lu+linvega'>Devine Lu Linvega</a> © 2006—2017<br/>BY-NC-SA 4.0<hr />";
+    this.links.innerHTML = "<a href='https://twitter.com/neauoire' class='icon twitter'></a><a href='https://github.com/neauoire' class='icon github'></a><a href='Rotonde' class='icon rotonde'></a>";
+    this.fd_wr.innerHTML = "<yu id='clock'></yu><a href='Devine+lu+linvega'>Devine Lu Linvega</a> © 2006—2017<br/>BY-NC-SA 4.0<hr />";
     this.clock = new Clock();
     this.clock.start()
   }
@@ -45,6 +53,7 @@ function Layout(host)
     c.term = c.host.lexicon.find(key.replace(/\+/g," "));
     c.term.start();
     c.photo.style.backgroundImage = c.term.photo();
+    c.photo_info.innerHTML = c.term.photo_info();
     c.monitor.update(c.term.logs);
     c.m1.innerHTML = "";
     c.m2.innerHTML = "";
@@ -99,6 +108,7 @@ function Layout(host)
     var offset = window.scrollY * 0.75;
     this.logo.style.top = parseInt(30 - offset)+"px";
     this.search.style.top = parseInt(60 - offset)+"px";
+    this.links.style.top = parseInt(60 - offset)+"px";
   }
 
   this.search_focus = function(event)

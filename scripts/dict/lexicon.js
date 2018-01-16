@@ -1629,9 +1629,12 @@ DESAMBER
   UNDE : Nataniev
   BREF : {{Desamber}} is the time-format of the {{Nataniev}} ecosystems.
   LONG
-    & The {_Equal Month calendar_} has {*13 months*} of {*28 days*} each and the 365th day of the year is the {_Year Day_}, preceeded by the {_Leap Day_} on leap years.
+    & The {_Desamber Calendar_} has {*26 months*} of {*14 days*} each and the 365th day of the year is the {_Year Day_}, preceeded by the {_Leap Day_} on leap years.
+    & Each month has 2 weeks of 7 days, and each month's name is one of the 26 letters of the alphabet.
+    # 17H3 483:090 <comment>= 2017-07-18 11:35:24AM</comment>
+    * The Clock
     & The clock has 6 digits, where their overall value is a ratio over the completion of the day. For example, Noon is 500, 6AM is 250 and 6PM is 750.
-    & In the 000:000 format, the shortest pulse equals to 8.64 milliseconds, the second shortest 86.4 and so on.
+    ? In the 000:000 format, the shortest pulse is equal to 8.64 milliseconds, the second shortest to 86.4 and so on.
   LINK
     http://github.com/hundredrabbits/Clock
 
@@ -1840,7 +1843,8 @@ DEVINE LU LINVEGA
   TAGS : Portal
   BREF : {{Devine lu linvega}} is a nomad, developer and designer.
   LONG
-    & Operating under the {*Neauoire*} moniker, Devine is a {{polymath|https://monochromatic.co/writing/interview-with-devine}} working on a series of {{experimental tools|Gamme}} and {{applications|Interactive}}. Populating {{Nataniev}} with notes on {{Language|Lietal}}, {{Illustrations|Illustration}} and {{Sounds|Audio}}, Devine hopes to inspire visitors to learn and to {{travel}}.
+    & Operating under the {*Neauoire*} moniker, Devine is a {{polymath|https://monochromatic.co/writing/interview-with-devine}} working on a series of {{experimental tools|Gamme}} and {{applications|Interactive}}.
+    & Populating {{Nataniev}} with notes on {{Language|Lietal}}, {{Illustrations|Illustration}} and {{Sounds|Audio}}, Devine hopes to inspire visitors to learn and to {{travel}}.
     * To {{flee|Obliques}} is life,<br /> To linger, {{Death}}.
   LINK
     https://twitter.com/neauoire/media

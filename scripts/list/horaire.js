@@ -14,7 +14,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20180105 - 15      Supergrid            Composition
 20180104 - 17      Supergrid            Composition
 20180103 - 27      Left                 Design
-20180102 ~ 17  507 Marabu               Tools
+20180102 ~ 17  507 Marabu               Tools                Weeklybeats Tracking
 20180101 - 18      Marabu               Composition
 20171231 - 24      Hundred rabbits      Branding
 20171230 - 27      Hundred rabbits      Branding 
@@ -2892,7 +2892,7 @@ DATE     CODE PICT TERM                 TASK                 NAME               
 20100220 ! 25  411 Japan                Photography          Green Roofs
 20100219
 20100218
-20100217 ! 34  114 Lifestyle            Photography          The Diary
+20100217 ! 34  114 Lifestyle            Photography          72DEC2 Converses
 20100216 - 29  330 Maeve                Illustration         Pcellar II
 20100215 - 29  329 Maeve                Illustration         Pcellar
 20100214 - 29  332 Dinaisth             Illustration         Andes Piano
