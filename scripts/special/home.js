@@ -11,8 +11,8 @@ function project_list()
     for(id in invoke.vessel.horaire.logs){
       var log = invoke.vessel.horaire.logs[id];
       if(!log.term){ continue; }
-      if(!projects[log.term]){ projects[log.term] = {name:log.term,from:log.time.gregorian.y,to:log.time.gregorian.y,count:0}}
-      projects[log.term].from = log.time.gregorian.y;
+      if(!projects[log.term]){ projects[log.term] = {name:log.term,to:log.time.toString(),count:0}}
+      projects[log.term].from = log.time.toString();
       projects[log.term].count += 1;
     }
 

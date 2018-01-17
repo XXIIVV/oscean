@@ -5,34 +5,29 @@ function calendar_view()
   this.styles = function()
   {
     return `<style>
-    #oscean { background:#000}
-    #hd { padding-bottom:0px !important}
-    #hd > h1 { display:none}
-    #hd > icon { display:none}
-    #hd > h2 { display:none}
-    #hd { background: #fff;color: white;padding-bottom: 40px }
-    #sd { color:white}
-    #sd icon { display:none}
+    #oscean { background:#72dec2}
+    #hd photo { display:none}
+    #sd { color:white; display:none}
     #sd > h3 { background:none; padding:0px}
     #sd > h3 list.navi ln.active { color:white}
     #sd > h3 list.navi ln:hover { color:white }
-    #md { background:transparent; color:white }
+    #md { background:transparent; color:white; padding-left:0px }
+    #md > wr { float:none; margin:0px; max-width: 100%; }
     #md > wr > m1 { display:none}
-    #md > wr > m2 { display:block; width:680px; margin:0px auto}
+    #md > wr > m2 { display:block; width:100%; margin:0px auto}
     #md > wr > m3 { display:none}
     #md > wr > .monitor { display:none}
 
     table.year { margin-bottom:30px; width:100%}
     table.year tr {  }
-    table.year tr td { height:23px;vertical-align: bottom; position:relative}
+    table.year tr td { vertical-align: bottom; position:relative; border:1px solid black}
     table.year tr td.special { colspan:14}
-    table.year tr td.missing:before { content: "×";position: absolute;top:2px;left:0px;width:24px;text-align: center;color:#555}
-    table.year tr td log { background:white; margin-right:1px; display:block; border-radius:2px }
-    table.year tr td log.audio { background:#72dec2}
-    table.year tr td log.visual { background:#ffbf05}
-    table.year tr td log.research { background:#fff}
-    list.tidy ln { color:#999}
-    list.tidy ln a { color:#fff}
+    table.year tr td.has_photo { background:white}
+    table.year tr td.today { background:black; color:white}
+    table.year tr td.today log { color:white}
+    table.year tr td log {display: block;font-size: 11px;line-height: 23px;margin: 0px 10px;color: black;font-family: 'input_mono_medium'}
+    list.tidy ln { color:#000}
+    list.tidy ln a { color:#000}
     </style>`;
   }
 
@@ -41,13 +36,13 @@ function calendar_view()
     var months = "";
     var m = 0;
     var prev = null;
-    while(m < 13){
+    while(m < 26){
       var days = "";
       var d = 0;
-      while(d < 28){
-        var id = (m * 28) + d
+      while(d < 14){
+        var id = (m * 14) + d
         var log = logs[id+1];
-        days += `<td title='${log ? log.time.gregorian.format : id}' class='${!log ? "missing" : ""}'><log class='${log ? log.sector : ''}' style='height:${log ? log.value*10 : "0"}%'></log></td>`
+        days += `<td title='${log ? log.time.gregorian.format : id}' class='${!log ? "missing" : ""} ${log && log.photo ? "has_photo" : ""} ${log && log.time.is_today() ? "today" : ""}'><log>${log && log.value > 0 ? log.time.toString()+" "+log.value+""+log.sector.substr(0,1).toUpperCase() : "×"}</log></td>`
         d += 1;
         prev = log ? log : prev;
       }
@@ -93,7 +88,7 @@ function calendar_view()
     for(id in logs){
       var log = logs[id];
       if(log.time.gregorian.y != current_year){ continue; }
-      each_day[log.time.of_the_year()] = log;
+      each_day[log.time.doty] = log;
     }
 
     html += this.calendar_graph(current_year,each_day);

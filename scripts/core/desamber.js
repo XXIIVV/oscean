@@ -6,7 +6,7 @@ function Desamber(time_str)
   this.days_in_month = 14;
 
   this.gregorian = {
-    y : parseInt(time_str.substr(0,4)),
+    y : time_str.substr(0,4),
     m : time_str.substr(4,2),
     d : time_str.substr(6,2),
     format : time_str.substr(0,4)+"-"+time_str.substr(4,2)+"-"+time_str.substr(6,2)
@@ -19,7 +19,15 @@ function Desamber(time_str)
 
   this.doty = Math.floor(diff/86400000); // day of the year
   this.month = Math.floor(this.doty / this.months_in_year);
-  this.day = this.doty % this.days_in_month;
+  this.day = (this.doty % this.days_in_month); this.day = this.day == 0 ? 14 : this.day;
+
+  this.is_today = function()
+  {
+    if(new Date().getDate() != this.date.getDate()){ return false; }
+    if(new Date().getMonth() != this.date.getMonth()){ return false; }
+    if(new Date().getFullYear() != this.date.getFullYear()){ return false; }
+    return true;
+  }
 
   this.offset = function(d2)
   {
