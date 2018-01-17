@@ -71,7 +71,7 @@ function calendar_view()
     for(id in logs){
       var log = logs[id];
       if(!log.is_event){ continue; }
-      html += "<ln>"+log.time.gregorian.y+" <a href='"+log.term+"'>"+log.name+"</a></ln>"
+      html += "<ln><span style='display:inline-block; width:45px'>"+log.time+"</span> <a href='"+log.term+"'>"+log.name+"</a></ln>"
     }
 
     return "<list class='tidy'>"+html+"</list>";
