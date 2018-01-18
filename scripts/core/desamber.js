@@ -15,8 +15,8 @@ Date.prototype.desamber = function()
   var diff = (this - start) + ((start.getTimezoneOffset() - this.getTimezoneOffset()) * 60 * 1000);
   var doty = Math.floor(diff/86400000);
   var y = this.getFullYear().toString().substr(2,2);
-  var m = String.fromCharCode(97 + Math.floor(((doty-1)/364) * 26)).toUpperCase();
-  var d = (doty % 14); d = d < 10 ? `0${d}` : d; d = d == "00" ? "14" : d;
+  var m = String.fromCharCode(97 + Math.floor(((doty-1)/364) * 26)).toUpperCase(); m = doty == 365 || doty == 366 ? "+" : m;
+  var d = (doty % 14); d = d < 10 ? `0${d}` : d; d = d == "00" ? "14" : d; d = doty == 365 ? "01" : (doty == 366 ? "02" : d);
   return new Desamber(`${y}${m}${d}`);
 }
 

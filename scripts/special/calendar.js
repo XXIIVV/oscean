@@ -1,7 +1,5 @@
 function calendar_view()
 {
-  var width = 600;
-
   this.styles = function()
   {
     return `<style>
@@ -23,8 +21,12 @@ function calendar_view()
     table.year tr td { vertical-align: bottom; position:relative; border:1px solid black}
     table.year tr td a {display: block;font-size: 11px;line-height: 23px;padding: 0px 5px;color: black;font-family: 'input_mono_medium'; text-transform:uppercase}
     table.year tr td a.today { background:white}
-    table.year tr td a:hover { background:#000; color:white}
+    table.year tr td a.event { background:#000; color:white}
+    table.year tr td a:hover { text-decoration:underline; background:white}
     table.year tr td span.date { font-family:'input_mono_regular'}
+    a.year { display:inline-block; margin-right:10px; font-size:11px; margin-bottom:15px; color:black; font-family:'input_mono_medium'}
+    a.year.selected { text-decoration:underline}
+    a.year:hover { text-decoration:underline}
     list.tidy ln { color:#000}
     list.tidy ln a { color:#000}
     </style>`;
@@ -33,7 +35,7 @@ function calendar_view()
   this.calendar_graph = function(year,logs)
   {
     var today = new Date().desamber();
-    var y = new Date().getFullYear().toString().substr(2,2);
+    var y = year.toString().substr(2,2);
     var m = 1;
     var d = 1;
     var html = "";
@@ -43,26 +45,12 @@ function calendar_view()
       while(d <= 14){
         var desamber = `${y}${String.fromCharCode(96 + m).toUpperCase()}${prepend(d,2,"0")}`
         var log = logs[desamber];
-        html_days += `<td><a ${log ? "href='"+log.term+"'": ""} class='${today == desamber ? "today" : ""}'><span class='date'>${desamber}</span> ${log ? log.sector.substr(0,1)+""+log.value+""+log.vector : ""}</a></td>`
+        html_days += `<td><a ${log ? "href='"+log.term+"'": ""} class='${today == desamber ? "today" : ""} ${log && log.is_event ? "event" : ""}'><span class='date'>${desamber}</span> ${log ? (log.sector ? log.sector.substr(0,1) : "")+""+log.value+""+log.vector : ""}</a></td>`
         d += 1;
       }
       html += `<tr>${html_days}</tr>`
       m += 1
     }
-
-    console.log(new Date("2018-01-28").desamber())
-    console.log(new Date("2018-01-27").desamber())
-
-    console.log(new Date("2018-01-18").desamber())
-    console.log(new Date("2018-01-17").desamber())
-    console.log(new Date("2018-01-16").desamber())
-    console.log(new Date("2018-01-15").desamber())
-    console.log("Error:")
-    console.log(new Date("2018-01-14").desamber())
-    console.log(new Date("2018-01-13").desamber())
-    console.log(new Date("2018-01-12").desamber())
-    console.log(new Date("2018-01-11").desamber())
-    console.log(new Date("2018-01-05").desamber())
     
     return `<table class='year'>${html}</table>`;
   }
@@ -83,18 +71,23 @@ function calendar_view()
   this.html = function()
   {
     var html = "";
-
+    var target_year = parseInt(invoke.vessel.corpse.query());
     var logs = invoke.vessel.horaire.logs.slice()
-    var current_year = new Date().getFullYear();
-
+    var current_year = target_year > 2000 ? new Date(target_year,0,1).getFullYear() : new Date().getFullYear();
     var each_day = {};
+
     for(id in logs){
       var log = logs[id];
       if(current_year != log.time.year){ continue; }
       each_day[log.time.toString()] = log;
     }
 
-    console.log(each_day)
+    var years = invoke.vessel.lexicon.find("calendar").children
+    
+    for(id in years){
+      var year = years[id];
+      html += `<a href='${year.name}' class='year ${year.name == current_year ? "selected" : ""}'>${year.name}</a>`
+    }
 
     html += this.calendar_graph(current_year,each_day);
     html += this.event_graph(invoke.vessel.horaire.logs);

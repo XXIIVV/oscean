@@ -1629,9 +1629,9 @@ DESAMBER
   UNDE : Nataniev
   BREF : {{Desamber}} is the time-format of the {{Nataniev}} ecosystems.
   LONG
-    & The {_Desamber Calendar_} has {*26 months*} of {*14 days*} each and the 365th day of the year is the {_Year Day_}, preceeded by the {_Leap Day_} on leap years.
+    & The {{Desamber Calendar|Calendar}} has {*26 months*} of {*14 days*} each and the 365th day of the year is the {_Year Day_}, preceeded by the {_Leap Day_} on leap years.
     & Each month has 2 weeks of 7 days, and each month's name is one of the 26 letters of the alphabet.
-    # 18B3 502:320 <comment>= Jan 17 2018 12:03:20</comment>
+    # 18B03 502:320 <comment>= Jan 17 2018 12:03:20</comment>
     * The Clock
     & The clock has 6 digits, where their overall value is a ratio over the completion of the day. For example, Noon is 500, 6AM is 250 and 6PM is 750.
     ? In the 000:000 format, the shortest pulse is equal to 8.64 milliseconds, the second shortest to 86.4 and so on.
@@ -1904,6 +1904,38 @@ IDYLLIC MINERS
   BREF : {{Idyllic Miners}} was created for the {_Kinetik Festival_}.
   LINK
     https://aliceffekt.bandcamp.com/album/genesis-iii-20-ov-idyllic-miners
+
+2018
+  UNDE : Calendar
+  TYPE : Calendar
+
+2017
+  UNDE : Calendar
+  TYPE : Calendar
+
+2016
+  UNDE : Calendar
+  TYPE : Calendar
+
+2015
+  UNDE : Calendar
+  TYPE : Calendar
+
+2014
+  UNDE : Calendar
+  TYPE : Calendar
+
+2013
+  UNDE : Calendar
+  TYPE : Calendar
+
+2012
+  UNDE : Calendar
+  TYPE : Calendar
+
+2011
+  UNDE : Calendar
+  TYPE : Calendar
 `);
 
 invoke.vessel.seal("dict","lexicon");

@@ -194,6 +194,13 @@ function Term(name,memory)
     }
     return html;
   }
+
+  this._calendar = function()
+  {
+    var content = invoke.vessel.storage.calendar;
+    if(!content){ return "Missing:"+this.name; }
+    return content.html();
+  }
 }
 
 function MissingTerm(name)

@@ -44,7 +44,7 @@ function Corpse(host)
 
   this.query = function()
   {
-    var parts = window.location.pathname.split("/"); console.log(parts[parts.length-1])
+    var parts = window.location.pathname.split("/");
     var hash = window.location.hash.replace("#","");
     return hash;
   }
