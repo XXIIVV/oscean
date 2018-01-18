@@ -33,6 +33,11 @@ function calendar_view()
     </style>`;
   }
 
+  this.cell = function(log,desamber,today,full_width = false)
+  {
+    return `<td ${full_width ? "colspan='26'" : ""}><a ${log ? "href='#"+log.term.to_url()+"'": ""} class='${today == desamber ? "today" : ""} ${log && log.is_event ? "event" : ""} ${!log ? "missing" : ""}'><span class='date'>${desamber}</span> ${log ? (log.sector ? log.sector.substr(0,1) : "")+""+log.value+""+log.vector : ""}</a></td>`
+  }
+
   this.calendar_graph = function(year,logs)
   {
     var today = new Date().desamber();
@@ -46,13 +51,17 @@ function calendar_view()
       while(d <= 14){
         var desamber = `${y}${String.fromCharCode(96 + m).toUpperCase()}${prepend(d,2,"0")}`
         var log = logs[desamber];
-        html_days += `<td><a ${log ? "href='#"+log.term.to_url()+"'": ""} class='${today == desamber ? "today" : ""} ${log && log.is_event ? "event" : ""} ${!log ? "missing" : ""}'><span class='date'>${desamber}</span> ${log ? (log.sector ? log.sector.substr(0,1) : "")+""+log.value+""+log.vector : ""}</a></td>`
+        html_days += this.cell(log,desamber,today);
         d += 1;
       }
       html += `<tr>${html_days}</tr>`
       m += 1
     }
-    
+
+    var year_day = `${y}+01`
+    var log = logs[desamber];
+    html += `<tr>${this.cell(log,year_day,today,"year_day")}</tr>`;
+
     return `<table class='year'>${html}</table>`;
   }
 
