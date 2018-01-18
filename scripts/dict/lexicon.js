@@ -1629,12 +1629,12 @@ DESAMBER
   UNDE : Nataniev
   BREF : {{Desamber}} is the time-format of the {{Nataniev}} ecosystems.
   LONG
-    & The {{Desamber Calendar|Calendar}} has {*26 months*} of {*14 days*} each and the 365th day of the year is the {_Year Day_}, preceeded by the {_Leap Day_} on leap years.
-    & Each month has 2 weeks of 7 days, and each month's name is one of the 26 letters of the alphabet.
+    & The {{Desamber Calendar|Calendar}} has {*26 months*} of {*14 days*} each.
+    & The 365th day of the year is the {_Year Day_}, preceeded by the {_Leap Day_} on leap years. Each month has 2 weeks of 7 days, and each month's name is one of the 26 letters of the alphabet.
     # 18B03 502:320 <comment>= Jan 17 2018 12:03:20</comment>
-    * The Clock
-    & The clock has 6 digits, where their overall value is a ratio over the completion of the day. For example, Noon is 500, 6AM is 250 and 6PM is 750.
-    ? In the 000:000 format, the shortest pulse is equal to 8.64 milliseconds, the second shortest to 86.4 and so on.
+    & The clock has two groups of 3 digits, called the {_beat_} and the {_pulse_}. For example, {*Noon*} is {_500:000_}, {*6AM*} is {_250:000_} and {*6PM*} is {_750:000_}. In the decimal format, the shortest pulse equals to {*8.64 milliseconds*}, the second shortest {*86.4*} and so on. {_1 beat, or 1000 pulses_} is equivalent to {*86.4 seconds*}, or about 1m44s. 
+    # 1 beat = 86.4 seconds
+    # 1 second = 1.157 beats
   LINK
     http://github.com/hundredrabbits/Clock
 
