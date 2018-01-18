@@ -36,7 +36,7 @@ function Lexicon(memory)
   this.inject_log = function(log)
   {
     if(!log.term){ return; }
-    if(!this.terms[log.term.toLowerCase()]){ console.warn("horaire","Missing term for log "+log.term+" on "+log.time.gregorian.format); return; }
+    if(!this.terms[log.term.toLowerCase()]){ console.warn("horaire","Missing term for log "+log.term+" on "+log.time); return; }
     this.terms[log.term.toLowerCase()].logs.push(log)
   }
   

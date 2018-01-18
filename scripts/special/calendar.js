@@ -21,11 +21,10 @@ function calendar_view()
     table.year { margin-bottom:30px; width:100%}
     table.year tr {  }
     table.year tr td { vertical-align: bottom; position:relative; border:1px solid black}
-    table.year tr td.special { colspan:14}
-    table.year tr td.has_photo { background:white}
-    table.year tr td.today { background:black; color:white}
-    table.year tr td.today log { color:white}
-    table.year tr td log {display: block;font-size: 11px;line-height: 23px;margin: 0px 10px;color: black;font-family: 'input_mono_medium'}
+    table.year tr td a {display: block;font-size: 11px;line-height: 23px;padding: 0px 5px;color: black;font-family: 'input_mono_medium'; text-transform:uppercase}
+    table.year tr td a.today { background:white}
+    table.year tr td a:hover { background:#000; color:white}
+    table.year tr td span.date { font-family:'input_mono_regular'}
     list.tidy ln { color:#000}
     list.tidy ln a { color:#000}
     </style>`;
@@ -33,35 +32,39 @@ function calendar_view()
 
   this.calendar_graph = function(year,logs)
   {
-    var months = "";
-    var m = 0;
-    var prev = null;
-    while(m < 26){
-      var days = "";
-      var d = 0;
-      while(d < 14){
-        var id = (m * 14) + d
-        var log = logs[id+1];
-        days += `<td title='${log ? log.time.gregorian.format : id}' class='${!log ? "missing" : ""} ${log && log.photo ? "has_photo" : ""} ${log && log.time.is_today() ? "today" : ""}'><log>${log && log.value > 0 ? log.time.toString()+" "+log.value+""+log.sector.substr(0,1).toUpperCase() : "×"}</log></td>`
+    var today = new Date().desamber();
+    var y = new Date().getFullYear().toString().substr(2,2);
+    var m = 1;
+    var d = 1;
+    var html = "";
+    while(m <= 26){
+    var html_days = "";
+      d = 1
+      while(d <= 14){
+        var desamber = `${y}${String.fromCharCode(96 + m).toUpperCase()}${prepend(d,2,"0")}`
+        var log = logs[desamber];
+        html_days += `<td><a ${log ? "href='"+log.term+"'": ""} class='${today == desamber ? "today" : ""}'><span class='date'>${desamber}</span> ${log ? log.sector.substr(0,1)+""+log.value+""+log.vector : ""}</a></td>`
         d += 1;
-        prev = log ? log : prev;
       }
-      months += `<tr>${days}</tr>`
+      html += `<tr>${html_days}</tr>`
       m += 1
     }
-    if(logs[1].time.is_leap_year()){
-      console.log("Is leap year")
-      var log1 = logs[365];
-      var log2 = logs[366];
-      months += `<tr><td class='${!log1 ? "missing" : ""}'></td><td class='${!log2 ? "missing" : ""}' colspan='14'></td></tr>`
-    }
-    else{
-      console.log("Is not leap year")
-      var log = logs[365];
-      months += `<tr><td class='${!log1 ? "missing" : ""}'></td></tr>`
-    }
+
+    console.log(new Date("2018-01-28").desamber())
+    console.log(new Date("2018-01-27").desamber())
+
+    console.log(new Date("2018-01-18").desamber())
+    console.log(new Date("2018-01-17").desamber())
+    console.log(new Date("2018-01-16").desamber())
+    console.log(new Date("2018-01-15").desamber())
+    console.log("Error:")
+    console.log(new Date("2018-01-14").desamber())
+    console.log(new Date("2018-01-13").desamber())
+    console.log(new Date("2018-01-12").desamber())
+    console.log(new Date("2018-01-11").desamber())
+    console.log(new Date("2018-01-05").desamber())
     
-    return `<table class='year'>${months}</table>`;
+    return `<table class='year'>${html}</table>`;
   }
 
   this.event_graph = function(logs)
@@ -82,20 +85,31 @@ function calendar_view()
     var html = "";
 
     var logs = invoke.vessel.horaire.logs.slice()
-    var current_year = logs[0].time.gregorian.y;
+    var current_year = new Date().getFullYear();
 
     var each_day = {};
     for(id in logs){
       var log = logs[id];
-      if(log.time.gregorian.y != current_year){ continue; }
-      each_day[log.time.doty] = log;
+      if(current_year != log.time.year){ continue; }
+      each_day[log.time.toString()] = log;
     }
+
+    console.log(each_day)
 
     html += this.calendar_graph(current_year,each_day);
     html += this.event_graph(invoke.vessel.horaire.logs);
     html += this.styles();
 
     return html;
+  }
+
+  function prepend(s,length,char = "0")
+  {
+    var p = "";
+    while((p+s).length < length){
+      p += char;
+    }
+    return p+s;
   }
 }; 
 

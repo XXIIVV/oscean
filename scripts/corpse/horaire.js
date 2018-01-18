@@ -41,7 +41,7 @@ function Horaire(list)
     var photos = {};
     for(id in this.logs){
       var log = this.logs[id];
-      photos[log.photo] = log.time.gregorian.format;
+      photos[log.photo] = log.time;
     }
     var i = 1;
     while(i < 999){
