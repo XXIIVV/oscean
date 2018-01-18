@@ -1,7 +1,7 @@
 let $HORAIRE = new List(`
 DATE  CODE  PICT TERM                 NAME                          END
 18B04 - 356      Wiktopher
-18B03 - 394      Desamber
+18B03 + 394      Desamber             Initiated Desamber Calendar
 18B02 - 342      Desamber
 18B01 - 156      Supergrid
 18A14 - 253      Donsol
@@ -667,7 +667,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 16G03 - 176      Portalion
 16G02
 16G01 ! 263  495 Verreciel            Eminence
-16G14 - 186      Verreciel soundtrack
+16F14 - 186      Verreciel soundtrack
 16F13
 16F12 - 186      Verreciel soundtrack
 16F11 - 298      Hundred rabbits
@@ -737,7 +737,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 16B03 - 298      Hundred rabbits
 16B02 - 243      Verreciel
 16B01 - 166      Hundred rabbits
-16A14- 166      Portalion
+16A14 - 166      Portalion
 16A13 + 236      Hundred rabbits      Move to Vancouver
 16A12 - 288  490 Beauty               02
 16A11 ! 288  487 Beauty               01
@@ -766,7 +766,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 15Z03 - 375      Verreciel
 15Z02 - 372      Verreciel
 15Z01 - 335      Verreciel
-15Z14 - 315      Verreciel
+15Y14 - 315      Verreciel
 15Y13 - 325      Verreciel
 15Y12 - 355      Verreciel
 15Y11 - 283      Hundred rabbits
@@ -906,7 +906,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 15P03 ! 267  436 Infrared             Graveyard
 15P02 - 364      Oscean               4.0
 15P01 - 254      Donsol               1.5
-15N14 - 144      Supervisitor         Reissue
+15O14 - 144      Supervisitor         Reissue
 15O13 - 199  434 Supervisitor         Release
 15O12 - 395      Oscean
 15O11 - 392      Oscean
@@ -1032,7 +1032,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 15G03 - 353      Oscean
 15G02 - 354      Oscean
 15G01 - 176      Eschatolor
-15E14- 176      Eschatolor
+15F14 - 176      Eschatolor
 15F13 - 355      Oscean
 15F12 - 365      Mobile
 15F11 - 365      Donsol
@@ -1102,7 +1102,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 15B03 - 354      Noirca               4.0
 15B02 - 354      Dew                  1.1
 15B01 ! 189  199 Ramiel               Villa Moirai
-15A14- 186      Ramiel
+15A14 - 186      Ramiel
 15A13 - 186      Ramiel
 15A12 - 186      Ramiel
 15A11 - 354      Keyboard 468         1.2
@@ -1131,7 +1131,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 14Z03 - 345      Oscean
 14Z02 - 374      Oscean               Automate
 14Z01 - 379  259 Dew                  Release
-14Z14 - 375      Dew
+14Y14 - 375      Dew
 14Y13 - 259  291 Rafinograde          Release
 14Y12 - 375  290 Trimetrique          Release
 14Y11 - 375      Rafinograde
@@ -1271,7 +1271,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 14P03 - 385      Advent v
 14P02
 14P01
-14N14 ! 164  129 Ledoliel             1.2
+14O14 ! 164  129 Ledoliel             1.2
 14O13 - 354  128 Bifurcan             Screensaver
 14O12 - 384      Oscean               Ten Axis
 14O11 - 314      Oscean               Inner Haven
@@ -1397,7 +1397,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 14G03 - 353      Vast
 14G02 - 353      Vast
 14G01 - 353      Vast
-14G14
+14F14
 14F13 - 353      Rafinograde
 14F12 - 257  389 America
 14F11 - 257  390 America
@@ -1467,7 +1467,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 14B03 - 283      Oquonie
 14B02
 14B01
-14B14
+14A14
 14A13
 14A12
 14A11
@@ -1496,7 +1496,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 13Z03 - 345      Oquonie
 13Z02 - 343      Lietal
 13Z01 - 343      Lietal
-13Z14 - 343      Lietal
+13Y14 - 343      Lietal
 13Y13 - 345      Oquonie
 13Y12 - 346      Oscean
 13Y11
@@ -1636,7 +1636,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 13P03 - 373      Lietal
 13P02
 13P01 - 353      Milavrega
-13N14 - 253      Milavrega
+13O14 - 253      Milavrega
 13O13 - 276  351 Typography           Mirai Seu
 13O12 - 296  352 Typography           Milavregarian
 13O11 - 253      Milavrega
@@ -1762,7 +1762,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 13G03 - 355      Hiversaires
 13G02 - 382      Hiversaires          Devlog 25
 13G01 - 293      Hiversaires
-13E14- 372      Dictionaery
+13F14 - 372      Dictionaery
 13F13 - 373      Oscean
 13F12 ! 196      Hiversaires
 13F11 - 176      Hiversaires
@@ -2002,7 +2002,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 12P03 - 352      Oscean
 12P02 - 352      Oscean
 12P01 - 265      Oscean
-12N14 - 198      Mixtape              Alife
+12O14 - 198      Mixtape              Alife
 12O13
 12O12
 12O11
@@ -2128,7 +2128,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 12G03 - 257  136 Germany              Berlin Day 3
 12G02 - 257  135 Germany              Berlin Day 2
 12G01 - 257  134 Germany              Berlin Day 1
-12E14- 199  133 Vetetrandes lettres  Noise Complex - Pari
+12F14 - 199  133 Vetetrandes lettres  Noise Complex - Pari
 12F13 - 257  132 France               Paris Day 3
 12F12 - 257  131 France               Paris Day 2
 12F11 ! 257  130 France               Paris
@@ -2198,7 +2198,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 12B03 - 156      Es gulf sunflowers
 12B02
 12B01 - 255   20 Mobile               Character Builder
-12A14! 355   50 Horaire              The Pillars
+12A14 ! 355   50 Horaire              The Pillars
 12A13 - 352      Obliques             Extra
 12A12
 12A11
@@ -2227,7 +2227,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 11Z03 - 353      Lietal
 11Z02 + 159    3 From Saharaphorest   From Saharaphorest
 11Z01 - 199      Es gulf sunflowers   8Bit Noel - Montreal
-11Z14
+11Y14
 11Y13 - 356      Lietal
 11Y12 - 353      Lietal
 11Y11 - 196      Collected works
@@ -2367,7 +2367,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 11P03 - 356      Neauismetica
 11P02
 11P01 - 353      Merveilles portable
-11N14 - 353      Merveilles portable
+11O14 - 353      Merveilles portable
 11O13 - 353      Merveilles portable
 11O12 - 353      Merveilles portable
 11O11 - 353      Merveilles portable
@@ -2493,7 +2493,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 11G03 - 353      Oscean
 11G02 - 353      Oscean
 11G01 - 393      Oscean
-11E14- 253      Drownspire
+11F14 - 253      Drownspire
 11F13 - 354      Lietal
 11F12
 11F11 - 177  370 To The Aeons Hell
@@ -2592,7 +2592,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 10Z03
 10Z02 - 199      To The Aeons Hell    Toy Company - Montre
 10Z01 - 195      To The Aeons Hell
-10Z14 - 392      Horaire
+10Y14 - 392      Horaire
 10Y13 - 392      Horaire
 10Y12 - 392      Horaire
 10Y11 - 263      Oscean
@@ -2732,7 +2732,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 10P03 - 258  450 Hypervoid            Infraviolet
 10P02 - 258  449 Hypervoid            Dilesion
 10P01
-10N14 - 253      Pico
+10O14 - 253      Pico
 10O13 - 253      Drownspire
 10O12
 10O11 - 355      Oscean
@@ -2858,7 +2858,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 10G03
 10G02
 10G01
-10G14
+10F14
 10F13 + 159  313 Ann yozora saint     Ann Yozora Saint
 10F12
 10F11
@@ -2928,7 +2928,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 10B03
 10B02
 10B01
-10B14
+10A14
 10A13
 10A12
 10A11
@@ -2957,7 +2957,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 09Z03
 09Z02
 09Z01
-09Z14
+09Y14
 09Y13
 09Y12
 09Y11
@@ -3097,7 +3097,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 09P03
 09P02
 09P01
-09N14
+09O14
 09O13
 09O12
 09O11
@@ -3223,7 +3223,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 09G03
 09G02
 09G01
-09G14
+09F14
 09F13
 09F12
 09F11 + 199      Otoroutes Miniatures Birthdeffekt, Mtl
@@ -3293,7 +3293,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 09B03
 09B02
 09B01
-09B14
+09A14
 09A13
 09A12
 09A11
@@ -3323,7 +3323,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 08Z03
 08Z02
 08Z01
-08Z14
+08Y14
 08Y13
 08Y12
 08Y11
@@ -3463,7 +3463,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 08P03 - 159      Nether esper inserts Nether Esper Inserts
 08P02 - 176      Nether esper inserts
 08P01
-08N14 - 166      Nether esper inserts
+08O14 - 166      Nether esper inserts
 08O13
 08O12
 08O11 - 156      Nether esper inserts
@@ -3589,7 +3589,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 08G03
 08G02
 08G01
-08G14
+08F14
 08F13
 08F12
 08F11
@@ -3659,7 +3659,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 08B03
 08B02
 08B01
-08B14
+08A14
 08A13
 08A12
 08A11
@@ -3688,7 +3688,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 07Z03
 07Z02
 07Z01
-07Z14
+07Y14
 07Y13
 07Y12
 07Y11
@@ -3828,7 +3828,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 07P03
 07P02
 07P01
-07N14
+07O14
 07O13
 07O12
 07O11
@@ -3954,7 +3954,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 07G03
 07G02
 07G01
-07G14
+07F14
 07F13
 07F12
 07F11 ! 359   76 Lietal               Composing Words
@@ -4024,7 +4024,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 07B03
 07B02
 07B01
-07B14
+07A14
 07A13
 07A12
 07A11
@@ -4053,7 +4053,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 06Z03
 06Z02
 06Z01
-06Z14
+06Y14
 06Y13
 06Y12
 06Y11
@@ -4193,7 +4193,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 06P03
 06P02
 06P01
-06N14
+06O14
 06O13
 06O12
 06O11
@@ -4287,6 +4287,6 @@ DATE  CODE  PICT TERM                 NAME                          END
 06I07
 06I06
 06I05
-06I04 - 365      Horaire              Started Horaire`);
+06I04 + 365      Horaire              Initiated Horaire`);
 
 invoke.vessel.seal("list","horaire");

@@ -22,7 +22,8 @@ function calendar_view()
     table.year tr td a {display: block;font-size: 11px;line-height: 23px;padding: 0px 5px;color: black;font-family: 'input_mono_medium'; text-transform:uppercase}
     table.year tr td a.today { background:white}
     table.year tr td a.event { background:#000; color:white}
-    table.year tr td a:hover { text-decoration:underline; background:white}
+    table.year tr td a.missing:after { content:"---"}
+    table.year tr td a:hover { text-decoration:underline; background:white; color:black}
     table.year tr td span.date { font-family:'input_mono_regular'}
     a.year { display:inline-block; margin-right:10px; font-size:11px; margin-bottom:15px; color:black; font-family:'input_mono_medium'}
     a.year.selected { text-decoration:underline}
@@ -45,7 +46,7 @@ function calendar_view()
       while(d <= 14){
         var desamber = `${y}${String.fromCharCode(96 + m).toUpperCase()}${prepend(d,2,"0")}`
         var log = logs[desamber];
-        html_days += `<td><a ${log ? "href='"+log.term+"'": ""} class='${today == desamber ? "today" : ""} ${log && log.is_event ? "event" : ""}'><span class='date'>${desamber}</span> ${log ? (log.sector ? log.sector.substr(0,1) : "")+""+log.value+""+log.vector : ""}</a></td>`
+        html_days += `<td><a ${log ? "href='"+log.term+"'": ""} class='${today == desamber ? "today" : ""} ${log && log.is_event ? "event" : ""} ${!log ? "missing" : ""}'><span class='date'>${desamber}</span> ${log ? (log.sector ? log.sector.substr(0,1) : "")+""+log.value+""+log.vector : ""}</a></td>`
         d += 1;
       }
       html += `<tr>${html_days}</tr>`

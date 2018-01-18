@@ -1936,6 +1936,34 @@ IDYLLIC MINERS
 2011
   UNDE : Calendar
   TYPE : Calendar
+
+2010
+  UNDE : Calendar
+  TYPE : Calendar
+
+2009
+  UNDE : Calendar
+  TYPE : Calendar
+
+2008
+  UNDE : Calendar
+  TYPE : Calendar
+
+2007
+  UNDE : Calendar
+  TYPE : Calendar
+
+2008
+  UNDE : Calendar
+  TYPE : Calendar
+
+2007
+  UNDE : Calendar
+  TYPE : Calendar
+
+2006
+  UNDE : Calendar
+  TYPE : Calendar
 `);
 
 invoke.vessel.seal("dict","lexicon");

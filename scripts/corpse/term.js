@@ -52,7 +52,7 @@ function Term(name,memory)
     var from = this.logs[this.logs.length-1];
     var to = this.logs[0];
 
-    html += from.time.toString() != to.time.toString() ? `${from.time.toString()}—${to.time.toString()}` : to.time.toString();
+    html += from.time.toString() != to.time.toString() ? `${from.time.toString()}—<a href='/${to.time.year}'>${to.time.toString()}</a>` : `<a href='/${to.time.year}'>${to.time.toString()}</a>`;
 
     return `<yu class='activity'>${html}</yu>`;
   }
