@@ -29,7 +29,7 @@ function Runic(raw)
       var target = part.indexOf("|") > -1 ? part.split("|")[1] : "/"+part;
       var name = part.indexOf("|") > -1 ? part.split("|")[0] : part;
 
-      html = html.replace("{{"+part+"}}","<a href='"+target.replace(" ","+")+"' class='"+((target.indexOf("https:") > -1 || target.indexOf("http:") > -1 || target.indexOf("dat:") > -1) ? "external" : "local")+"'>"+name+"</a>")
+      html = html.replace("{{"+part+"}}","<a href='"+target.to_url()+"' class='"+((target.indexOf("https:") > -1 || target.indexOf("http:") > -1 || target.indexOf("dat:") > -1) ? "external" : "local")+"'>"+name+"</a>")
     }
 
     return html;

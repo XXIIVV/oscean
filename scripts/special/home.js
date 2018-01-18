@@ -19,7 +19,7 @@ function project_list()
     for(id in projects){
       var project = projects[id];
       if(project.count < 10){ continue; }
-      html += "<ln><a href='/"+project.name+"'>"+project.name+"</a> "+(project.from != project.to ? project.from+"—"+project.to : project.from)+"</ln>";
+      html += "<ln><a href='/"+project.name.to_url()+"'>"+project.name+"</a> "+(project.from != project.to ? project.from+"—"+project.to : project.from)+"</ln>";
     }
     return "<list class='tidy'>"+html+"</list>";
   }

@@ -46,7 +46,7 @@ function calendar_view()
       while(d <= 14){
         var desamber = `${y}${String.fromCharCode(96 + m).toUpperCase()}${prepend(d,2,"0")}`
         var log = logs[desamber];
-        html_days += `<td><a ${log ? "href='#"+log.term+"'": ""} class='${today == desamber ? "today" : ""} ${log && log.is_event ? "event" : ""} ${!log ? "missing" : ""}'><span class='date'>${desamber}</span> ${log ? (log.sector ? log.sector.substr(0,1) : "")+""+log.value+""+log.vector : ""}</a></td>`
+        html_days += `<td><a ${log ? "href='#"+log.term.to_url()+"'": ""} class='${today == desamber ? "today" : ""} ${log && log.is_event ? "event" : ""} ${!log ? "missing" : ""}'><span class='date'>${desamber}</span> ${log ? (log.sector ? log.sector.substr(0,1) : "")+""+log.value+""+log.vector : ""}</a></td>`
         d += 1;
       }
       html += `<tr>${html_days}</tr>`
@@ -63,7 +63,7 @@ function calendar_view()
     for(id in logs){
       var log = logs[id];
       if(!log.is_event){ continue; }
-      html += "<ln><span style='display:inline-block; width:45px'>"+log.time+"</span> <a href='"+log.term+"'>"+log.name+"</a></ln>"
+      html += "<ln><span style='display:inline-block; width:45px'>"+log.time+"</span> <a href='"+log.term.to_url()+"'>"+log.name+"</a></ln>"
     }
 
     return "<list class='tidy'>"+html+"</list>";

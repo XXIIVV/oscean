@@ -73,7 +73,7 @@ function Term(name,memory)
     var html = "";
     if(this.parent && this.parent.name != this.name){
       this.parent.start();
-      html += "<ln class='parent'><a href='"+this.parent.name+"'>"+this.parent.name.capitalize()+"</a></ln>"
+      html += "<ln class='parent'><a href='"+this.parent.name.to_url()+"'>"+this.parent.name.capitalize()+"</a></ln>"
       for(id in this.parent.children){
         var term = this.parent.children[id]
         html += "<ln class='sibling "+(term.name.toLowerCase() == this.name.toLowerCase() ? 'active' : '')+"'>"+term.bref+"</ln>"
@@ -93,7 +93,7 @@ function Term(name,memory)
     var html = "";
 
     html += this.activity();
-    html += this.parent ? `<a href='${this.parent.name}'>${this.parent.name}</a>` : "";
+    html += this.parent ? `<a href='${this.parent.name.to_url()}'>${this.parent.name}</a>` : "";
     html += this.outgoing();
 
     return html;
@@ -140,7 +140,7 @@ function Term(name,memory)
   {
     var html = "";
 
-    html += this.photo() ? "<a href='"+this.name+"' style='background-image:"+this.photo()+"' class='photo'></a>" : ""
+    html += this.photo() ? "<a href='"+this.name.to_url()+"' style='background-image:"+this.photo()+"' class='photo'></a>" : ""
     html += "<p>"+this.bref+"</p>";
     return "<yu class='term'>"+html+"</yu>";
   }

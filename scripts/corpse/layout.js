@@ -47,7 +47,7 @@ function Layout(host)
     if(this.term && key.toLowerCase() == this.term.name.toLowerCase()){ console.log("Already here",key); return; }
 
     this.el.style.opacity = 0;
-    this.search.value = key;
+    this.search.value = key.replace(/\+/g," ");
     window.location = "#"+key;
     
     var c = invoke.vessel.corpse;

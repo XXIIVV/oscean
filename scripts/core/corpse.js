@@ -1,6 +1,6 @@
 String.prototype.to_url = function()
 {
-  return this.replace(/\W/g, '').toLowerCase();
+  return this.toLowerCase().replace(/ /g,"+").replace(/[^0-9a-z\+]/gi,"").trim();
 }
 
 function Corpse(host)
@@ -71,7 +71,7 @@ function Corpse(host)
 
   window.onclick = function(e){ 
     if(e.target){
-      if(e.target.localName == "a"){ e.preventDefault(); invoke.vessel.corpse.link(e.target.getAttribute("href").to_url()); } 
+      if(e.target.localName == "a"){ invoke.vessel.corpse.link(e.target.getAttribute("href").to_url()); e.preventDefault();  } 
       if(e.target.offsetParent && e.target.offsetParent.localName == "a"){ e.preventDefault(); invoke.vessel.corpse.link(e.target.offsetParent.getAttribute("href"));}  
     }
   };
