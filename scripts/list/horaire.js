@@ -1,5 +1,6 @@
 let $HORAIRE = new List(`
 DATE  CODE  PICT TERM                 NAME                          END
+18B05 - 383      Horaire
 18B04 - 356      Wiktopher
 18B03 + 394      Desamber             Initiated Desamber Calendar
 18B02 - 342      Desamber

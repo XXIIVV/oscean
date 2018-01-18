@@ -106,7 +106,7 @@ function Term(name,memory)
 
   this.theme = function()
   {
-    if(this.diaries.length < 1 || this.flag.indexOf("no_photo") > -1){ return "no_photo"; }    
+    if(this.diaries.length < 1 || this.flag.indexOf("no_photo") > -1){ return "no_photo"; }
     return this.diary().theme;
   }
 
@@ -207,8 +207,8 @@ function MissingTerm(name)
 {
   Term.call(this,name)
 
-  this.bref = "404 "
-  this.long = "<p>There are no pages found for "+this.name+" in this Lexicon.</p><p>If you think that this is an error, contact <a href='https://twitter.com/neauoire'>@aliceffekt</a>.</p>";
+  this.bref = ""
+  this.long = "<p>There are no pages found for \"<i>"+this.name+"</i>\" in this Lexicon.</p><p>If you think that this is an error, contact <a href='https://twitter.com/neauoire'>@neauoire</a>.</p>";
 }
 
 invoke.vessel.seal("corpse","term");

@@ -30,6 +30,7 @@ function calendar_view()
     a.year:hover { text-decoration:underline}
     list.tidy ln { color:#000}
     list.tidy ln a { color:#000}
+    list.tidy ln a.time { display:inline-block; width:45px; font-family:'archivo_regular' !important}
     </style>`;
   }
 
@@ -50,17 +51,14 @@ function calendar_view()
       d = 1
       while(d <= 14){
         var desamber = `${y}${String.fromCharCode(96 + m).toUpperCase()}${prepend(d,2,"0")}`
-        var log = logs[desamber];
-        html_days += this.cell(log,desamber,today);
+        html_days += this.cell(logs[desamber],desamber,today);
         d += 1;
       }
       html += `<tr>${html_days}</tr>`
       m += 1
     }
 
-    var year_day = `${y}+01`
-    var log = logs[desamber];
-    html += `<tr>${this.cell(log,year_day,today,"year_day")}</tr>`;
+    html += `<tr>${this.cell(logs[`${y}+01`],`${y}+01`,today,"year_day")}</tr>`;
 
     return `<table class='year'>${html}</table>`;
   }
@@ -69,10 +67,10 @@ function calendar_view()
   {
     var html = "";
 
-    for(id in logs){
+    for(var id in logs){
       var log = logs[id];
       if(!log.is_event){ continue; }
-      html += "<ln><span style='display:inline-block; width:45px'>"+log.time+"</span> <a href='"+log.term.to_url()+"'>"+log.name+"</a></ln>"
+      html += `<ln><a class='time' href='/#${log.time.year}'>${log.time}</a> <a href='${log.term.to_url()}'>${log.name}</a></ln>`
     }
 
     return "<list class='tidy'>"+html+"</list>";
@@ -114,7 +112,7 @@ function calendar_view()
     }
     return p+s;
   }
-}; 
+};
 
 var payload = new calendar_view();
 
