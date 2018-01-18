@@ -1832,7 +1832,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 13B03 - 156      Nor let the fools
 13B02 - 156      Nor let the fools
 13B01 - 156      Nor let the fools
-13A14- 156      Nor let the fools
+13A14 - 156      Nor let the fools
 13A13 - 354      Lietal
 13A12
 13A11 - 156      Nor let the fools
@@ -2563,7 +2563,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 11B03 - 253      Oscean
 11B02 - 256      Lietal
 11B01 - 156      To The Aeons Hell
-11A14- 355      Oscean
+11A14 - 355      Oscean
 11A13 - 355      Horaire
 11A12 - 156      To The Aeons Hell
 11A11 - 198      Mixtape              visual
