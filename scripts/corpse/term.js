@@ -93,7 +93,7 @@ function Term(name,memory)
     var html = "";
 
     html += this.activity();
-    html += `<a href='${this.parent.name}'>${this.parent.name}</a>`;
+    html += this.parent ? `<a href='${this.parent.name}'>${this.parent.name}</a>` : "";
     html += this.outgoing();
 
     return html;
@@ -207,8 +207,8 @@ function MissingTerm(name)
 {
   Term.call(this,name)
 
-  this.bref = "Sorry! There are no pages found for "+this.name+" in this Lexicon."
-  this.long = "<p>If you think that this is an error, contact <a href='https://twitter.com/neauoire'>@aliceffekt</a>.</p>";
+  this.bref = "404 "
+  this.long = "<p>There are no pages found for "+this.name+" in this Lexicon.</p><p>If you think that this is an error, contact <a href='https://twitter.com/neauoire'>@aliceffekt</a>.</p>";
 }
 
 invoke.vessel.seal("corpse","term");

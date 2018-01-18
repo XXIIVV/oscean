@@ -1197,7 +1197,7 @@ SUPERWORKER
 SUPERVISITOR
   UNDE : Demo
   TYPE : Diary
-  BREF : {{Supervisitor}} is a concept album created with {{Arturia|http://arturia.com}}'s analog and monophonic {{Microbrute|http://www.arturia.com/microbrute-se/overview}} synthetiser.
+  BREF : {{Supervisitor}} is a concept album created with {{Arturia|http://arturia.com}}'s {{Microbrute|http://www.arturia.com/microbrute-se/overview}} synthetiser.
   LONG
     > <iframe style="border: 0; width: 100%; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=3564075825/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/supervisitor">Supervisitor by aliceffekt</a></iframe>
   LINK

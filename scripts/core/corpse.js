@@ -1,3 +1,8 @@
+String.prototype.to_url = function()
+{
+  return this.replace(/\W/g, '').toLowerCase();
+}
+
 function Corpse(host)
 {
   this.host = host;
@@ -63,6 +68,13 @@ function Corpse(host)
     }
     this.history.push(this.query());
   }
+
+  window.onclick = function(e){ 
+    if(e.target){
+      if(e.target.localName == "a"){ e.preventDefault(); invoke.vessel.corpse.link(e.target.getAttribute("href").to_url()); } 
+      if(e.target.offsetParent && e.target.offsetParent.localName == "a"){ e.preventDefault(); invoke.vessel.corpse.link(e.target.offsetParent.getAttribute("href"));}  
+    }
+  };
 
   window.addEventListener("hashchange", () => { this.on_change(); });
 }

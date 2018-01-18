@@ -119,13 +119,7 @@ function Layout(host)
     invoke.vessel.corpse.search.focus();
     window.scrollTop = 0;
   }
-
-  window.onclick = function(e){ 
-    if(e.target){
-      if(e.target.localName == "a"){ e.preventDefault(); invoke.vessel.corpse.link(e.target.getAttribute("href"));} 
-      if(e.target.offsetParent && e.target.offsetParent.localName == "a"){ e.preventDefault(); invoke.vessel.corpse.link(e.target.offsetParent.getAttribute("href"));}  
-    }
-  };
+  
   window.onscroll = function(){ invoke.vessel.corpse.on_scroll(); };
 
   invoke.keyboard.add_event("Enter",this.validate,this.search);
