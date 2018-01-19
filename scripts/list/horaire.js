@@ -339,7 +339,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 17D07 - 372      Oquonie
 17D05 ! 258  191 Extended sleep
 17D06 - 354      Oquonie
-16D05 - 336      The will the wisp
+17D05 - 336      The will the wisp
 17D04 - 352      Oquonie
 17D03 - 253      Nataniev
 17D02 - 364  497 Pino                 The Yamaha 33

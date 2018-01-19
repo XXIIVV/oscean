@@ -17,7 +17,7 @@ function horaire_view()
     #md > wr > .monitor { display:none}
 
     yu.monitor { display:block; position:relative; height:100px; margin-bottom:45px;margin-left:1%; max-width:900px; font-family:'archivo_bold'; font-size:12px; margin-bottom:200px}
-    yu.monitor bar { display:block; width:calc(1% - 1px); background:black; position:absolute; bottom:0px; min-height:3px; border-radius:2px; transition:height 250ms}
+    yu.monitor bar { display:block; width:calc(1% - 1px); background:black; position:absolute; bottom:0px; min-height:3px; border-radius:2px; transition:all 250ms}
     yu.monitor span.from,yu.monitor span.to { color:black;  position:absolute; top:110px;}
     yu.monitor span.from { left:-1% }
     yu.monitor span.to { right:0px}
@@ -33,15 +33,15 @@ function horaire_view()
     </style>`;
   }
   
-  this.el = document.createElement('yu'); 
-  this.el.className = "monitor"; 
-  this.from_el = document.createElement('span'); 
+  this.el = document.createElement('yu');
+  this.el.className = "monitor";
+  this.from_el = document.createElement('span');
   this.from_el.className = "from";
-  this.to_el = document.createElement('span'); 
+  this.to_el = document.createElement('span');
   this.to_el.className = "to";
-  this.timeline_el = document.createElement('yu'); 
+  this.timeline_el = document.createElement('yu');
   this.timeline_el.className = "timeline";
-  this.summary_el = document.createElement('yu'); 
+  this.summary_el = document.createElement('yu');
   this.summary_el.className = "summary";
 
   this.el.appendChild(this.from_el);
@@ -171,10 +171,10 @@ function horaire_view()
     // Years
     var y = 2006;
     while(y <= 2018){
-      var link = document.createElement('span'); 
+      var link = document.createElement('span');
       link.textContent = y;
       link.onclick = (e) => { this.update(this.filter(e.target.textContent)) };
-      this.timeline_el.appendChild(link)  
+      this.timeline_el.appendChild(link)
       y += 1;
     }
     html += this.styles();
