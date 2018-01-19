@@ -16,7 +16,7 @@ function horaire_view()
     #md > wr > m3 { display:none}
     #md > wr > .monitor { display:none}
 
-    yu.monitor { display:block; position:relative; height:100px; margin-bottom:45px;margin-left:1%; max-width:900px; font-family:'archivo_bold'; font-size:12px; }
+    yu.monitor { display:block; position:relative; height:100px; margin-bottom:45px;margin-left:1%; max-width:900px; font-family:'archivo_bold'; font-size:12px; margin-bottom:200px}
     yu.monitor bar { display:block; width:calc(1% - 1px); background:black; position:absolute; bottom:0px; min-height:3px; border-radius:2px; transition:height 250ms}
     yu.monitor span.from,yu.monitor span.to { color:black;  position:absolute; top:110px;}
     yu.monitor span.from { left:-1% }
@@ -24,6 +24,12 @@ function horaire_view()
     yu.monitor .timeline { position: relative;top: 95px;left: -1%;border-bottom: 1px solid black;color: black;line-height: 45px;width: 101%;text-align: center}
     yu.monitor .timeline span { display:inline-block; margin-right:10px}
     yu.monitor .timeline span:hover { text-decoration:underline; cursor:pointer}
+    yu.monitor .summary { position:absolute; top:180px; width:100%; margin-left:-1% }
+    yu.monitor .summary yu { line-height:30px; width:calc(20% - 30px); margin-right:30px; float:left}
+    yu.monitor .summary yu h2 { border-bottom: 1px solid black; font-family:'archivo_light' !important; color:black; font-size:46px !important; letter-spacing:-4px; line-height:60px !important}
+    yu.monitor .summary yu h2 value { display:inline-block; font-family:'input_mono_medium'; font-size:12px; letter-spacing:0px; text-transform:uppercase; margin-left:10px}
+
+    .legend { color:white; font-family:'input_mono_regular'; font-size:11px; line-height:16px}
     </style>`;
   }
   
@@ -35,10 +41,13 @@ function horaire_view()
   this.to_el.className = "to";
   this.timeline_el = document.createElement('yu'); 
   this.timeline_el.className = "timeline";
+  this.summary_el = document.createElement('yu'); 
+  this.summary_el.className = "summary";
 
   this.el.appendChild(this.from_el);
   this.el.appendChild(this.to_el);
   this.el.appendChild(this.timeline_el);
+  this.el.appendChild(this.summary_el);
 
   this.lod = 100.0;
   this.height = 100;
@@ -53,7 +62,6 @@ function horaire_view()
 
   this.update = function(logs)
   {
-    console.log("Update")
     if(logs.length < 1){ this.el.className = "monitor inactive"; return; }
 
     this.el.className = "monitor active";
@@ -77,6 +85,55 @@ function horaire_view()
       this.seg[i].style.borderTop = parseInt(vec * this.height)+"px solid white";
       i += 1
     }
+
+    this.update_summary(logs);
+  }
+
+  this.update_summary = function(logs)
+  {
+    var html = "";
+
+    var h = {fh:0,ch:0,topics:{}};
+
+    for(id in logs){
+      var log = logs[id];
+      h.fh += log.value;
+      h.ch += log.vector;
+      if(log.term != ""){
+        if(!h.topics[log.term]){ h.topics[log.term] = {fh:0,ch:0,count:0}; }
+        h.topics[log.term].fh += log.value;
+        h.topics[log.term].ch += log.vector;
+        h.topics[log.term].count += 1;
+      }
+    }
+
+    // Calculate EFEC/EFIC
+
+    var efec_sum = 0
+    var efic_sum = 0
+    for(id in h.topics){
+      h.topics[id].hdf = h.topics[id].fh/h.topics[id].count;
+      h.topics[id].hdc = h.topics[id].ch/h.topics[id].count;
+      efec_sum += h.topics[id].hdf
+      efic_sum += h.topics[id].hdc
+    }
+
+    var summary = {
+      fh:(h.fh/logs.length),
+      ch:(h.ch/logs.length),
+      efec:(efec_sum/Object.keys(h.topics).length),
+      efic:(efic_sum/Object.keys(h.topics).length)
+    }
+
+    html += `
+    <yu><h2>${summary.fh.toFixed(2)}<value>hdf</value></h2></yu>
+    <yu><h2>${summary.ch.toFixed(2)}<value>hdc</value></h2></yu>
+    <yu><h2>${summary.efec.toFixed(2)}<value>efec</value></h2></yu>
+    <yu><h2>${summary.efic.toFixed(2)}<value>efic</value></h2></yu>
+    <yu><h2>${((summary.fh + summary.ch + summary.efec + summary.efic)/4).toFixed(2)}<value>Output</value></h2></yu>
+    `
+
+    this.summary_el.innerHTML = html;
   }
 
   this.parse = function(logs,type = "value")
@@ -107,11 +164,12 @@ function horaire_view()
     invoke.vessel.corpse.m1.appendChild(this.el);
     this.update(invoke.vessel.horaire.logs);
 
-    this.timeline_el.innerHTML = "";
+    html += "<h2 class='end'><b>Effectiveness</b>, is doing the right thing. <br> <b>Efficiency</b>, is doing it the right way.</h2>"
+    html += `<div class='legend'>HDF, or Hour Day Focus, is Fh/Days.<br />HDC, or Hour Day Concrete, is Ch/Days.<br />EFEC, or Effectiveness, is AVRG(Fh)/Topics<br />EFIC, or Efficiency, is AVRG(Ch)/Topics<br />OUTPUT, is an Average Focus Index.</div>`;
 
+    this.timeline_el.innerHTML = "";
     // Years
     var y = 2006;
-
     while(y <= 2018){
       var link = document.createElement('span'); 
       link.textContent = y;
@@ -119,7 +177,6 @@ function horaire_view()
       this.timeline_el.appendChild(link)  
       y += 1;
     }
-    
     html += this.styles();
 
     return html;
@@ -127,7 +184,6 @@ function horaire_view()
 
   this.filter = function(f)
   {
-    console.log(f)
     var a = [];
     for(id in invoke.vessel.horaire.logs){
       var log = invoke.vessel.horaire.logs[id];
