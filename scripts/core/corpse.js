@@ -70,7 +70,7 @@ function Corpse(host)
   }
 
   window.onclick = function(e){ 
-    if(e.target){
+    if(e.target && e.target.className.indexOf("external") == -1){
       if(e.target.localName == "a"){ invoke.vessel.corpse.link(e.target.getAttribute("href").to_url()); e.preventDefault();  } 
       if(e.target.offsetParent && e.target.offsetParent.localName == "a"){ e.preventDefault(); invoke.vessel.corpse.link(e.target.offsetParent.getAttribute("href"));}  
     }

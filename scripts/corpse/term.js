@@ -153,6 +153,7 @@ function Term(name,memory)
     if(path.indexOf("youtu") > -1){ return "Youtube"}
     if(path.indexOf("bandcamp") > -1){ return "Bandcamp"}
     if(path.indexOf("drive.google") > -1){ return "Google Drive"}
+    if(path.indexOf("producthunt") > -1){ return "ProductHunt"}
 
     return "Website"
   }

@@ -25,7 +25,7 @@ function horaire_view()
     yu.monitor .timeline span { display:inline-block; margin-right:10px}
     yu.monitor .timeline span:hover { text-decoration:underline; cursor:pointer}
     yu.monitor .summary { position:absolute; top:180px; width:100%; margin-left:-1% }
-    yu.monitor .summary yu { line-height:30px; width:calc(20% - 30px); margin-right:30px; float:left}
+    yu.monitor .summary yu { line-height:30px; width:calc(20% - 30px); margin-right:30px; float:left; min-width:150px;}
     yu.monitor .summary yu h2 { border-bottom: 1px solid black; font-family:'archivo_light' !important; color:black; font-size:46px !important; letter-spacing:-4px; line-height:60px !important}
     yu.monitor .summary yu h2 value { display:inline-block; font-family:'input_mono_medium'; font-size:12px; letter-spacing:0px; text-transform:uppercase; margin-left:10px}
 

@@ -34,8 +34,8 @@ function Layout(host)
   this.start = function()
   {
     this.load(this.query());
-    this.links.innerHTML = "<a href='https://twitter.com/neauoire' class='icon twitter'></a><a href='https://github.com/neauoire' class='icon github'></a><a href='Rotonde' class='icon rotonde'></a>";
-    this.fd_wr.innerHTML = `<yu id='clock'></yu><a href='Devine+lu+linvega'>Devine Lu Linvega</a> © ${invoke.vessel.horaire.logs[invoke.vessel.horaire.logs.length-1].time}—${invoke.vessel.horaire.logs[0].time}<br/>BY-NC-SA 4.0<hr />`;
+    this.links.innerHTML = "<a href='https://twitter.com/neauoire' class='icon twitter external'></a><a href='https://github.com/neauoire' class='icon github external'></a><a href='Rotonde' class='icon rotonde'></a>";
+    this.fd_wr.innerHTML = `<yu id='clock'></yu><a href='Devine+lu+linvega'>Devine Lu Linvega</a> © ${invoke.vessel.horaire.logs[invoke.vessel.horaire.logs.length-1].time}—${invoke.vessel.horaire.logs[0].time}<br/>BY-NC-SA 4.0 <span style='color:#ccc'>v${invoke.version}</span><hr />`;
     this.clock = new Clock();
     this.clock.start()
   }
@@ -117,7 +117,7 @@ function Layout(host)
     event.preventDefault();
     invoke.vessel.corpse.search.value = "";
     invoke.vessel.corpse.search.focus();
-    window.scrollTop = 0;
+    window.scrollTo(0,0)
   }
   
   window.onscroll = function(){ invoke.vessel.corpse.on_scroll(); };

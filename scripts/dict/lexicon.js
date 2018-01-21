@@ -889,7 +889,8 @@ MARABU
   BREF : {{Marabu}} is a music software.
   TAGS : Guide
   LONG
-    & {*Marabu*} is tracker-type composition tool and synthetiser, built as a fork to the opensource {_Soundbox_}, and is meant to be an improvement on functionalities and design.
+    & {*Marabu*} is cross-platform tracker-type composition tool and synthetiser.
+    & Marabu was original built as a fork to the opensource {_Soundbox_}, and is meant to be an improvement on functionalities and design.
     > <iframe frameborder="0" src="https://itch.io/embed/173813?linkback=true&amp;link_color=000000" width="600" height="167"></iframe>
     & You can view the complete {{Marabu Manual|https://github.com/hundredrabbits/Marabu}} on Github.
   LINK
@@ -900,10 +901,10 @@ RONIN
   UNDE : Software
   BREF : {{Ronin}} is a design tool.
   LONG
-    & The application is a cross-over between Vim and Photoshop, meant to quickly render simple graphic tasks, such as exports, resize and colouring. It also includes basic digital painting functionalities. 
+    & The application is a cross-over between Vim and Photoshop, meant to quickly render simple graphic tasks.
+    & Ronin is currently under development, it now includes basic digital painting functionalities. 
     > <iframe frameborder="0" src="https://itch.io/embed/194632?linkback=true&amp;link_color=000000" width="600" height="167"></iframe>
-    & It is  and the creation of grid based designs. Most of the iconography of {{Nataniev}} has been created with {_Ronin_} and {{Dotgrid}}.
-    & You can view the complete {{Ronin Manual|https://github.com/hundredrabbits/Ronin}} on Github.
+    & Most of the iconography of {{Nataniev}} has been created with {_Ronin_} and {{Dotgrid}}. You can view the complete {{Ronin Manual|https://github.com/hundredrabbits/Ronin}} on Github.
   LINK
     https://github.com/hundredrabbits/Ronin
     https://hundredrabbits.itch.io/ronin
@@ -912,7 +913,8 @@ LEFT
   UNDE : Software
   BREF : {{Left}} is a writing application.
   LONG
-    & {*Left*} was created to help {{Rekka}} with the writing of the upcoming novel {_Wiktopher_}. It includes auto-complete, a synonyms dictionary, writing statistics, basic text operations and a speed reader.
+    & {*Left*} includes auto-complete, a synonyms dictionary, writing statistics, basic text operations and a speed reader.
+    & The application was created to help {{Rekka}} with the writing of the upcoming novel {_Wiktopher_}. 
     > <iframe frameborder="0" src="https://itch.io/embed/173127?linkback=true&amp;link_color=000000" width="600" height="167"></iframe>
     & You can view the complete {{Left Manual|https://github.com/hundredrabbits/Left}} on Github.
   LINK
@@ -924,13 +926,15 @@ DOTGRID
   BREF : {{Dotgrid}} is a vector tool.
   TYPE : Diary
   LONG
-    & {*Dotgrid*} works by adding control points and drawing different line-types between them. The tool was created to design logos and glyphs for various {{Nataniev}} projects, and made available as a free and open source application.
+    & Dotgrid is a simple vector glyph illustration tool, that works by adding control points and drawing different line-types between them. 
+    & The tool was created to design logos and glyphs for various personal projects, and made available as a free and open source application.
     > <iframe frameborder="0" src="https://itch.io/embed/190851?linkback=true&amp;link_color=000000" width="600" height="167"></iframe>
     & Choose between 3 types of strokes, lines, arc and 3-points beziers. The application can be entirely operated with the keyboard and can render as both PNG and SVG files. Additional effects like horizontal, vertical and radial mirror are also available - as well as the stroke width and linecap can also be changed. The application menu can be hidden by pressing the tab key.
     & You can view the complete {{Dotgrid Manual|https://github.com/hundredrabbits/Dotgrid}} on Github.
   LINK
     https://github.com/hundredrabbits/Dotgrid
     http://hundredrabbits.itch.io/Dotgrid
+    https://producthunt.com/posts/dotgrid
 
 BYT
   UNDE : Unreleased
