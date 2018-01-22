@@ -3,7 +3,7 @@ function Oscean()
   Invoke.call(this);
   
   this.requirements = {
-    corpse:["layout","lexicon","term","horaire","log","monitor"],
+    corpse:["layout","lexicon","term","horaire","log"],
     dict:["lexicon"],
     list:["horaire"],
     docs:["directory","nutrition","aesthetics","russian","japanese","nomad","glossary","tiers","biases","discography","lietal","blue"],

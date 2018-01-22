@@ -16,7 +16,7 @@ function horaire_view()
     #md > wr > m3 { display:none}
     #md > wr > .monitor { display:none}
 
-    yu.monitor { display:block; position:relative; height:100px; margin-bottom:45px;margin-left:1%; max-width:900px; font-family:'archivo_bold'; font-size:12px; margin-bottom:200px}
+    yu.monitor { display:block; position:relative; height:100px; margin-bottom:45px;margin-left:1%; max-width:900px; font-family:'archivo_bold'; font-size:12px; margin-bottom:200px; min-width:915px}
     yu.monitor bar { display:block; width:calc(1% - 1px); background:black; position:absolute; bottom:0px; min-height:3px; border-radius:2px; transition:all 250ms}
     yu.monitor span.from,yu.monitor span.to { color:black;  position:absolute; top:110px;}
     yu.monitor span.from { left:-1% }
@@ -26,8 +26,9 @@ function horaire_view()
     yu.monitor .timeline span:hover { text-decoration:underline; cursor:pointer}
     yu.monitor .summary { position:absolute; top:180px; width:100%; margin-left:-1% }
     yu.monitor .summary yu { line-height:30px; width:calc(20% - 30px); margin-right:30px; float:left; min-width:150px;}
-    yu.monitor .summary yu h2 { border-bottom: 1px solid black; font-family:'archivo_light' !important; color:black; font-size:46px !important; letter-spacing:-4px; line-height:60px !important}
+    yu.monitor .summary yu h2 { border-bottom: 1px solid black; font-family:'archivo_light' !important; color:black; font-size:46px !important; letter-spacing:-4px; line-height:60px !important; position:relative}
     yu.monitor .summary yu h2 value { display:inline-block; font-family:'input_mono_medium'; font-size:12px; letter-spacing:0px; text-transform:uppercase; margin-left:10px}
+    yu.monitor .summary yu h2 offset { display: inline-block;font-family: 'input_mono_medium';font-size: 12px;letter-spacing: 0px;text-transform: uppercase;margin-left: 10px;position: absolute;left: 80px;bottom:15px;color:white}
 
     .legend { color:white; font-family:'input_mono_regular'; font-size:11px; line-height:16px}
     </style>`;
@@ -93,47 +94,29 @@ function horaire_view()
   {
     var html = "";
 
-    var h = {fh:0,ch:0,topics:{}};
-
-    for(id in logs){
-      var log = logs[id];
-      h.fh += log.value;
-      h.ch += log.vector;
-      if(log.term != ""){
-        if(!h.topics[log.term]){ h.topics[log.term] = {fh:0,ch:0,count:0}; }
-        h.topics[log.term].fh += log.value;
-        h.topics[log.term].ch += log.vector;
-        h.topics[log.term].count += 1;
-      }
-    }
-
-    // Calculate EFEC/EFIC
-
-    var efec_sum = 0
-    var efic_sum = 0
-    for(id in h.topics){
-      h.topics[id].hdf = h.topics[id].fh/h.topics[id].count;
-      h.topics[id].hdc = h.topics[id].ch/h.topics[id].count;
-      efec_sum += h.topics[id].hdf
-      efic_sum += h.topics[id].hdc
-    }
-
-    var summary = {
-      fh:(h.fh/logs.length),
-      ch:(h.ch/logs.length),
-      efec:(efec_sum/Object.keys(h.topics).length),
-      efic:(efic_sum/Object.keys(h.topics).length)
-    }
+    var summary = invoke.vessel.horaire.parse(logs);
+    var all_time = invoke.vessel.horaire.parse();
+    var offset = this.make_offset(all_time,summary);
 
     html += `
-    <yu><h2>${summary.fh.toFixed(2)}<value>hdf</value></h2></yu>
-    <yu><h2>${summary.ch.toFixed(2)}<value>hdc</value></h2></yu>
-    <yu><h2>${summary.efec.toFixed(2)}<value>efec</value></h2></yu>
-    <yu><h2>${summary.efic.toFixed(2)}<value>efic</value></h2></yu>
+    <yu><h2>${summary.fh.toFixed(2)}<value>hdf</value><offset>${offset.fh>0?"+":""}${offset.fh != 0? offset.fh.toFixed(2) : ""}</offset></h2></yu>
+    <yu><h2>${summary.ch.toFixed(2)}<value>hdc</value><offset>${offset.ch>0?"+":""}${offset.ch != 0 ? offset.ch.toFixed(2) : ""}</offset></h2></yu>
+    <yu><h2>${summary.efec.toFixed(2)}<value>efec</value><offset>${offset.efec>0?"+":""}${offset.efec != 0 ? offset.efec.toFixed(2) : ""}</offset></h2></yu>
+    <yu><h2>${summary.efic.toFixed(2)}<value>efic</value><offset>${offset.efic>0?"+":""}${offset.efic != 0 ? offset.efic.toFixed(2) : ""}</offset></h2></yu>
     <yu><h2>${((summary.fh + summary.ch + summary.efec + summary.efic)/4).toFixed(2)}<value>Output</value></h2></yu>
     `
 
     this.summary_el.innerHTML = html;
+  }
+
+  this.make_offset = function(a,b)
+  {
+    return {
+      fh: b.fh-a.fh,
+      ch: b.ch-a.ch,
+      efec: b.efec-a.efec,
+      efic: b.efic-a.efic
+    }
   }
 
   this.parse = function(logs,type = "value")

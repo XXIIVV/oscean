@@ -2,7 +2,6 @@ function Layout(host)
 {
   Corpse.call(this,host);
 
-  this.monitor = new Monitor();
   // Header
   this.hd.appendChild(this.links = document.createElement('div'));
   this.hd.appendChild(this.photo = document.createElement('photo'));
@@ -14,7 +13,6 @@ function Layout(host)
   this.sd.appendChild(this.h2 = document.createElement('h2'));
   this.sd.appendChild(this.icon = document.createElement('icon'));
   this.sd.appendChild(this.h3 = document.createElement('h3'));
-  this.sd.appendChild(this.monitor.el);
   // Body
   this.md.appendChild(this.md_wr = document.createElement('wr'));
   this.md_wr.appendChild(this.m1 = document.createElement('m1'));
@@ -55,7 +53,6 @@ function Layout(host)
     c.term.start();
     c.photo.style.backgroundImage = c.term.photo();
     c.photo_info.innerHTML = c.term.photo_info();
-    c.monitor.update(c.term.logs);
     c.m1.innerHTML = "";
     c.m2.innerHTML = "";
     c.m3.innerHTML = "";
