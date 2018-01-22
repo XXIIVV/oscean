@@ -36,7 +36,7 @@ function calendar_view()
 
   this.cell = function(log,desamber,today,full_width = false)
   {
-    return `<td ${full_width ? "colspan='26'" : ""}><a ${log ? "href='#"+log.term.to_url()+"'": ""} class='${today == desamber ? "today" : ""} ${log && log.is_event ? "event" : ""} ${!log ? "missing" : ""}'><span class='date'>${desamber}</span> ${log ? (log.sector ? log.sector.substr(0,1) : "")+""+log.value+""+log.vector : ""}</a></td>`
+    return `<td ${full_width ? "colspan='26'" : ""}><a ${log ? "href='#"+log.term.to_url()+"'": ""} title='${new Desamber(desamber).to_gregorian()}' class='${today == desamber ? "today" : ""} ${log && log.is_event ? "event" : ""} ${!log ? "missing" : ""}'><span class='date'>${desamber}</span> ${log ? (log.sector ? log.sector.substr(0,1) : "")+""+log.value+""+log.vector : ""}</a></td>`
   }
 
   this.calendar_graph = function(year,logs)

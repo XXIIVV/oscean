@@ -1,11 +1,39 @@
 function Desamber(str)
 {
   this.str = str;
+
+  this.y = str.substr(0,2);
+  this.m = str.substr(2,1); 
+  this.d = str.substr(3,2);
+
   this.year = parseInt(`20${str.substr(0,2)}`);
+  this.month = this.m == "+" ? 26 : this.m.charCodeAt(0) - 65;
+  this.doty = (parseInt(this.month) * 14) + parseInt(this.d);
+
+  this.to_gregorian = function()
+  {
+    var date = this.to_date();
+    return `${date.getFullYear()}-${prepend(date.getMonth()+1,2)}-${prepend(date.getDate(),2)}`;
+  }
+
+  this.to_date = function()
+  {
+    var year = new Date(this.year, 0);
+    return new Date(year.setDate(this.doty)); 
+  }
 
   this.toString = function()
   {
     return this.str;
+  }
+
+  function prepend(s,length,char = "0")
+  {
+    var p = "";
+    while((p+s).length < length){
+      p += char;
+    }
+    return p+s;
   }
 }
 

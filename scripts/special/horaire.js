@@ -81,8 +81,8 @@ function horaire_view()
     while(i < this.lod){
       var val = (value_segments[i]/max);
       var vec = (vector_segments[i]/max);
-      this.seg[i].style.height = parseInt(val * this.height)+"px";
-      this.seg[i].style.borderTop = parseInt(vec * this.height)+"px solid white";
+      this.seg[i].style.height = val ? parseInt(val * this.height)+"px" : "0px";
+      this.seg[i].style.borderTop = vec ? parseInt(vec * this.height)+"px solid white" : "0px solid white";
       i += 1
     }
 
