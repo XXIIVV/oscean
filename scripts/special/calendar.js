@@ -70,7 +70,7 @@ function calendar_view()
     for(var id in logs){
       var log = logs[id];
       if(!log.is_event){ continue; }
-      html += `<ln><a class='time' href='/#${log.time.year}'>${log.time}</a> <a href='${log.term.to_url()}'>${log.name}</a></ln>`
+      html += `<ln><a class='time' href='/#${log.time.year}'>${log.time}</a> <a href='${log.term.to_url()}'>${log.name}</a> ${log.time.offset() > 0 ? log.time.offset_format() : ""}</ln>`
     }
 
     return "<list class='tidy'>"+html+"</list>";

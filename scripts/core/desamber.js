@@ -16,6 +16,21 @@ function Desamber(str)
     return `${date.getFullYear()}-${prepend(date.getMonth()+1,2)}-${prepend(date.getDate(),2)}`;
   }
 
+  this.offset = function(b = new Date().desamber())
+  {
+    return parseInt((this.to_date() - b.to_date())/86400000);
+  }
+
+  this.offset_format = function(b = new Date().desamber())
+  {
+    var days = this.offset();
+
+    if(days == 1){ return "tomorrow"; }
+    if(days == 0){ return "today"; }
+
+    return `in ${days} days`;
+  }
+
   this.to_date = function()
   {
     var year = new Date(this.year, 0);
