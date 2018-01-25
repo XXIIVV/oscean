@@ -1378,6 +1378,12 @@ SOIES
     & The Soies model makes available the first values to exist beyond the limits of the current possible space, making computeable the location of the occuring, allowing the {{Actors}} to position themselves and execute the occuring and position themselves along the {{Soies}}.
     & This line of research is tied to the discovery of the {{Ehrivevnv}}.
 
+ACTORS
+  UNDE : Neon hermetism
+  BREF : {{Actors}} are able to traverse the {{Soies}}, carrying freewill, unaffected by determinism.
+  LONG
+    & Natural Actors, or anomalies, were found to have existed before the {{Feu}}, but the True Age of Actors came about with the synthesis of the first Actor by {{Neonev}} and the immigrants.
+
 DINAISTH
   UNDE : Neauismetica
   BREF : {{Dinaisth}} is both the name of the artificial moon orbiting the {{Ehrivevnv}} and of one of its continents — which harbors {{Andes}}' offices.
@@ -1435,12 +1441,6 @@ PARADICHLORISSE
     & Its purpose is unknown, but it was observed reciting stories in a fashion that ressembled the navigation of the {{Soies}}.
     & Upon reaching its location, pilgrims collapse as they begin experiencing {_every life and every death_} through the {{speech|Nohlxeserre}} of the infinite being. 
     & {_When Paradichlorisse spoke of silence, silence fell._}
-
-ACTORS
-  UNDE : Characters
-  BREF : {{Actors}} are intelligences able to cross between the {{Soies}}, carrying freewill.
-  LONG
-    & Natural Actors were found to have existed before the {{Feu}}, anomalies. The creation of the first Synthetic Actor initiated the End Of Science.
 
 PHOTOGRAPHY
   UNDE : Visual
