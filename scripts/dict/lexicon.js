@@ -1614,11 +1614,11 @@ TALK
 
 GAMME
   UNDE : Research
-  TAGS : Portal
+  TYPE : Index
   BREF : The {{Gamme}} is a series of concepts and tools.
   LONG
-    & A recurring topic throughout the {{Nataniev}} ecosystems is the trinity of {{Audio}}, {{Visual}} and {{Research}}. Of which the truer names, as per {{Lietal}}, should be physicality, Phisiognomy, and Psychology - Or even the subject itself, its shape & its concept.
-    & Trisight is a name given to the pursuit of the {_Grand Oeuvre_}, the trinity of its members. The {*Grand Oeuvre*}, as per Trisight vocabulary, is meant to equal the sum of one's output goals.
+    & A recurring topic throughout the {{Nataniev}} ecosystems is the trinity of {{Audio}}, {{Visual}} and {{Research}}. 
+    & Of which the truer names, as per {{Lietal}}, should be physicality, Phisiognomy, and Psychology - Or even the subject itself, its shape & its concept. Trisight is a name given to the pursuit of the {_Grand Oeuvre_}, the trinity of its members. The {*Grand Oeuvre*}, as per Trisight vocabulary, is meant to equal the sum of one's output goals.
 
 NATANIEV
   UNDE : Gamme
@@ -1635,8 +1635,7 @@ OSCEAN
   UNDE : Nataniev
   BREF : {{Oscean}} is a custom wiki engine built within {{Nataniev}}.
   LONG
-    & {{Oscean}} was initiated on {{2008-08-10}}, and was meant to be a repository of the sum of {{Devine|Devine lu linvega}}'s projects and notes.
-    & It has since expanded into a network of tools, also known as {{Nataniev}}, which now hosts a series of Nataniev Native applications such as {{Ronin}}, {{Marabu}} and its social feed protocole {{Rotonde}}.
+    & {{Oscean}} was initiated on {{08P13|2008}}, and was meant to be a repository of the sum of {{Devine|Devine lu linvega}}'s projects and notes. It has since expanded into a network of tools, also known as {{Nataniev}}, which now hosts a series of Nataniev Native applications such as {{Ronin}}, {{Marabu}} and its social feed protocole {{Rotonde}}.
   LINK
     https://github.com/XXIIVV/vessel.oscean
 
@@ -1646,9 +1645,9 @@ HORAIRE
   TYPE : Special
   BREF : {{Horaire}} is a time tracking tool.
   LONG
-    & I am currently porting this to Javascript, give me a few more days.
+    & The Horaire logs' code format contains 3 values, looking as follow: {*326*}. The 3 values position the log in the shape of a cube where the 3 dimensions, or axis, are {*Sector*}[Audio, Visual & Research], {*Focus*}[Distracted/Attentive] and {*Meta*}[Abstract/Concrete].
   LINK
-    https://github.com/XXIIVV/vessel.oscean/blob/master/memory/horaire.ma
+    https://github.com/XXIIVV/oscean/blob/master/scripts/list/horaire.js
 
 CALENDAR
   UNDE : Horaire
@@ -1660,12 +1659,9 @@ DESAMBER
   UNDE : Nataniev
   BREF : {{Desamber}} is the time-format of the {{Nataniev}} ecosystems.
   LONG
-    & The {{Desamber Calendar|Calendar}} has {*26 months*} of {*14 days*} each.
-    & The 365th day of the year is the {_Year Day_}, preceeded by the {_Leap Day_} on leap years. Each month has 2 weeks of 7 days, and each month's name is one of the 26 letters of the alphabet.
+    & The {{Desamber Calendar|Calendar}} has {*26 months*} of {*14 days*} each. The 365th day of the year is the {_Year Day_}, preceeded by the {_Leap Day_} on leap years. Each month has 2 weeks of 7 days, and each month's name is one of the 26 letters of the alphabet.
     # 18B03 502:320 <comment>= Jan 17 2018 12:03:20</comment>
-    & The clock has two groups of 3 digits, called the {_beat_} and the {_pulse_}. For example, {*Noon*} is {_500:000_}, {*6AM*} is {_250:000_} and {*6PM*} is {_750:000_}. In the decimal format, the shortest pulse equals to {*8.64 milliseconds*}, the second shortest {*86.4*} and so on. {_1 beat, or 1000 pulses_} is equivalent to {*86.4 seconds*}, or about 1m44s. 
-    # 1 beat = 86.4 seconds
-    # 1 second = 1.157 beats
+    & The clock has two groups of 3 digits, called the {_beat_} and the {_pulse_}. For example, {*Noon*} is {_500:000_}, {*6AM*} is {_250:000_} and {*6PM*} is {_750:000_}. In the decimal format, the shortest pulse equals to {*8.64 milliseconds*}, the second shortest {*86.4*} and so on. {_1 beat, or 1000 pulses_} is equivalent to {*86.4 seconds*}, or about 1m44s. A second is equivalent to {_1.157 beats_}.
   LINK
     http://github.com/hundredrabbits/Clock
 
@@ -1673,10 +1669,8 @@ ROTONDE
   UNDE : Nataniev
   BREF : {{Rotonde}} is a P2P social network.
   LONG
-    & {{Rotonde}} is a commonly agreed upon specifications of a JSON object shared between {{members of the network|https://github.com/Rotonde}}. It currently operates on the decentralized {{dat|https://datproject.org}} protocole.
-    * Trust the Portal
+    & It is a commonly agreed upon specifications of a JSON object shared between {{members of the network|https://github.com/Rotonde}}. It currently operates on the decentralized {{dat|https://datproject.org}} protocole. Nobody owns the network, it never goes offline, there are no servers and no central authority. All content is editable, versionable, hosted on your own computer and seeded by anyone who wish to follow your portal.
     & Anyone can join {*Rotonde*} by going to {{this url|dat://2714774d6c464dd12d5f8533e28ffafd79eec23ab20990b5ac14de940680a6fe/}} with the {{Beaker Browser|https://beakerbrowser.com}}. You can add {{anyone|dat://2f21e3c122ef0f2555d3a99497710cd875c7b0383f998a2d37c02c042d598485/}} by pasting their {#dat://#} url into the input bar. 
-    & Nobody owns the network, it never goes offline, there are no servers and no central authority. All content is editable, versionable, hosted on your own computer and seeded by anyone who wish to follow your portal.
   LINK
     https://github.com/Rotonde
     dat://2f21e3c122ef0f2555d3a99497710cd875c7b0383f998a2d37c02c042d598485/
