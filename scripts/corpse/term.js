@@ -176,7 +176,7 @@ function Term(name,memory)
     var html = ""
     for(id in this.children){
       var term = this.children[id];
-      html += `<p>${term.bref}</p>${term.long}`
+      html += `<h2>${term.name}</h2><p>${term.bref}</p>${term.long}`
       if(term.children.length > 0){
         html += "<quote>"
         for(id2 in term.children){

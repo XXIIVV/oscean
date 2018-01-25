@@ -1307,123 +1307,134 @@ NEAUISMETICA
   TYPE : Index
   BREF : The {{Neauismetica}} is a series of notes on the fiction of {{Dinaisth}}.
   LONG
-    & Referenced in almost all of the {{Nataniev}} projects, tales of this small planet are told through {{Aliceffekt}}'s music, Devine's {{illustrations|illustration}} and are the culture behind the {{Lietal}} Language.
+    & Referenced in almost all of the {{Nataniev}} projects, the {{Dinaisth}} are told through {{Aliceffekt}}'s music, Devine's {{illustrations|illustration}} and are the culture behind the {{Lietal}} Language.
+    & The Neauismetica was originally written in French around 2001, and translated throughout the following years, to be collected here as a series of disjointed entries on various characters and places.
+    > <img src='media/badge/seal.png' style='margin:0px auto 45px; display:block; width:200px'/>
+    & The events recorded here unfold on a small artifical planet orbiting a larger structure known as the {{Ehrivevnv}}. At the moment of the earliest tale, {{science has just ended|Feu}}, and was to be replaced by the art of operating permutation machines, or {{Actors}}, builders capable of invoking the optimal realization to any solution asked of them.
+    # In the end, there are birds.
+    # They reveal to us how to build <i>planes</i>.
+    # We fly too far for {{too long|kanikule}}.
+    # .
+    # We are searching for an Actor, or a being with freewill.
+    # But the actor is dead, and unreachable.
+    # Locked deep within {{impenetrable time|Yajnev}}.
+    & The {{Actors}} soon granted the immigrants access into the collapse, a spherical region of Dinaisth locked in perpetual statis. {{Dinaisth}} is the name of the moon habouring the {{Actors}}. 
+    # Our scientists complete the first module, of the last machine.
+    # It will build us anything we wish.
+    # Bringing about the end of science.
+    # .
+    # The machine tunnels through the immobile sector.
+    # A small city, and at its center, the corpse of the Actor.
+    # Its head empty, it is hypothesized that the city is its thought and mind.
+    & This expedition will from now on be refered to as the {{Yajnev Expedition|Yajnev}}, named after the name of the Actor found at its center. Of the explorers, only one exited the collapse, {{Neonev}}.
+    # The machine complete the second module, of the last invention.
+    # It will build what must.
+    # Bringing about the end that will.
+    # .
+    # The universe is complete and the whole of space organized.
+    # But one celestian object, unmoving.
+    # The {{Ehrivevnv}}.
+    & The {{Neauismetica}} focuses on a handful of characters and events that begun when everything else has ended. On the surface of this machine-built sphere in a world that is pre-close, when most has died or left, and the remaining few are looking at a large mass in the sky setting in the horizon.
     ? Immortals speak not with words<br /> but wait for things to happen,<br />and merely point at them.
 
 NEON HERMETISM
   UNDE : Neauismetica
-  BREF : Founded by {{Yajnev}}, the {{Neon Hermetists|Neon Hermetism}} are a collective of scientists involved in the creation of machines to study time.
+  BREF : The {{Neon Hermetists|Neon Hermetism}} are a collective of immigrants studying the {{Ehrivevnv}}.
   LONG
-    & The initiative was launched upon the discovery of an impossible structure and dimensional object floating in space, the {{Ehrivevnv}}.
-    & From its early days forth, the object was believed to be a gathering place for more advanced beings.
+    & The initiative included {{Neoneve}}, who emerged from the {{collapse|Yajnev}}, {{Andes}}, who immigrated from the {{Soies}}, {{Ludivine}} and {{Rlionn}}. From its early days forth, the group believed the {{Ehrivevnv}} to be a gathering place for more advanced beings, or a trap to catch them.
     & {_Beyond the computing beautiful, <br />sleeps languages of impossible meanings._}
 
 EHRIVEVNV
   UNDE : Neon hermetism
-  BREF : The {{Ehrivevnv}} is a dimensional puzzle presenting itself as a large cube, found immobile on the surface of a nearby sun.
+  BREF : The {{Ehrivevnv}} is a dimensional puzzle presenting itself as a large celestial structure, located further than the last stars.
   LONG
-    & The prism's surface is porous and allows to be looked through. The inside of the puzzle displays a universe, where at its center, lies another Ehrivevnv, which in turn, seemingly holds another universe.
-    & Its discovery in space, fueled space-discovery research programs, and the precipited the creation of tools to study it - triggering the {{End Of Science|Feu}}.
+    & Its discovery sparked a new age of thought, and ultimately, the {{completion of Science|Feu}}. It is also believed by the {{Neon Hermetism}} that, based on the design of the structure, it might be also be a creation of {{Actors}} operating through the {{Soies}}.
     & {_Et haec revelantur in virtute et veritate<br /> non Vi._}
 
 NEAUSEA
   UNDE : Neon hermetism
-  BREF : {{Neausea}} is the symptoms of knowing its position amongst all possibilities, a sort of {_conceptspace_} awareness.
+  BREF : {{Neausea}} is a symptoms of knowing one's position amongst all possibilities.
   LONG
-    & Beings such as {{Paradichlorisse}} or certain machines can carry it, or a weaker form of it can be induced when one is in contact with forms of {{Nohlxeserre}} languages.
+    & Beings such as {{Paradichlorisse}}, or {{Actors}} can carry it. A weaker form of it can be induced when one is in contact with forms of {{Nohlxeserre}} languages.
     & {_In debt are are my impossible selves, <br />for all horrible days._}
 
 NOHLXESERRE
   UNDE : Neon hermetism
   BREF : {{Nohlxeserre}} is a language that, when heard or read, delivers a richer and more precise rendition of its meaning than actual experience.
   LONG
-    & The richness and detail of experiencing an event, pales in comparison to having it recited – Effictively inducing the symptoms of {{Neausea}}, see {{Paradichlorisse}}.
+    & The richness and detail of experiencing an event, pales in comparison to having it recited – Effictively inducing the symptoms of {{Neausea}} and ultimately death.
+    & Andes, as opposted to {{Neonev}}, did not found itself on {{Dinaisth}} looking for {{Actors}}, but for {{Paradichlorisse}}. Whom Andes says "{_Speaks the language of the birds_}".
 
 FEU
   UNDE : Neon hermetism
-  BREF : {{Feu}}, or {_The End Of Science_}, is the era dominated by oracle machines, where sentience and existance are irrelevant.
+  BREF : {{Feu}}, or {_The End Of Science_}, is the era which began with the creation of the original permutation machine when sentience and existance became irrelevant.
   LONG
-    & The creation of machines able to predict the future, has helped the {{Neon Hermetists|Neon Hermetism}} steer the occuring into the correct position.
-    & Once the machine were able to search for and execute the longest lasting occuring, the world of {{Dinaisth}} fell on a sort of Auto-Pilot where no thought had not previously been weighted against all other and acted upon or dismissed.
+    & Once the {{Actors}} were able to seek and execute the longest lasting {{occuring|Soies}}, no thought had not previously been weighted against all other and acted upon or dismissed.
 
 SOIES
   UNDE : Neon hermetism
-  BREF : {{Soies}}, is a mean by which one can traverse the occuring, possible and impossible spaces.
+  BREF : {{Soies}}, is the study and traversing occuring, possible and impossible timelines.
   LONG
-    & The Soies model makes available the first values to exist beyond the limits of the current possible space, making computeable the location of the occuring, machines can then position themselves to execute the occuring and position themselves along the {{Soies}}.
+    & The Soies model makes available the first values to exist beyond the limits of the current possible space, making computeable the location of the occuring, allowing the {{Actors}} to position themselves and execute the occuring and position themselves along the {{Soies}}.
     & This line of research is tied to the discovery of the {{Ehrivevnv}}.
 
 DINAISTH
   UNDE : Neauismetica
-  BREF : {{Dinaisth}} is both the name of the planet and of a continent which harbors {{Andes}}' offices.
+  BREF : {{Dinaisth}} is both the name of the artificial moon orbiting the {{Ehrivevnv}} and of one of its continents — which harbors {{Andes}}' offices.
 
 KANIKULE
   UNDE : Dinaisth
-  BREF : {{Kanikule}} is an infinite ocean that an immortal will spend an infitite amount of time crossing, effectively reaching the outer-shores mortal.
+  BREF : {{Kanikule}} is an infinite ocean that an immortal would spend an infitite amount of time crossing, effectively reaching the outer-shores mortal.
   LONG
-    & While one can sail away from the point that is {{Neau}}, one cannot return to it.
-
-NEAU
-  UNDE : Kanikule
-  BREF : {{Neau}} is a circular city, notable for its blue rooftops, displaying a tall spire at its center. It is also the place from which the {{Neauismetica}} derives its name.
-  LONG
-    & The city exists at the center of the vast ocean of {_Kanikule_} and was the birthplace of {{Lietal}}.
+    & While one can sail away from its center, {*Neau*}, one cannot return to it, for it occupies no space in the ocean.
+    & Neau is a circular city at the center of {{Kanikule}}, the birthplace of {{Lietal}}, and is also the place from which the {{Neauismetica}} derives its name.
 
 LAEISTH
   UNDE : Dinaisth
-  BREF : {{Laeisth}} is a desert surrounding the {{Rlionn}} Oasis, a blackened chasm where creeps the clones of its violent host.
+  BREF : {{Laeisth}} is a desert surrounding an Oasis, a blackened chasm where creeps the clones of its violent host {{Rlionn}}.
 
 VETETRANDES
   UNDE : Dinaisth
-  BREF : {{Vetetrandes}} once was the largest city of Dinaisth, before {{Yajnev}} caused it to become unreachable.
+  BREF : {{Vetetrandes}} is the remains of a city that surrounds {{Yajnev}}.
   LONG
-    & As you would approach the epicenter of the bound city, time is increasingly unmoving. It is said that, at its center, one can find the corpse of {{Yajnev}}, who's head is believed to have been empty with void, and that what lied outside was actually within.
-
-DUOMO
-  UNDE : Dinaisth
-  BREF : The {{Duomo}} plateau rises just above the lightest atmosphere of {{Dinaisth}}.
-  TAGS : Stub
-
-DILITRIELTH
-  UNDE : Dinaisth
-  BREF : Todo.
+    & As you would approach the epicenter of the bound city, time is increasingly unmoving. At its center, one can find the corpse of {{Yajnev}}, who's head's insides are believed to be the only true space that can be said to be "outside".
 
 CHARACTERS
   UNDE : Neauismetica
-  BREF : A branch of {{Neon Hermetists|Neon hermetism}} aspiring to solve the {{Ehrivevnv}} puzzle, often called {_The Courtship Of The Immortal Birds_}.
+  BREF : A selection of {{Neon Hermetists|Neon hermetism}} aspiring to enter the {{Ehrivevnv}} puzzle, or {_The Courtship Of The Birds_}.
 
 YAJNEV
   UNDE : Characters
-  BREF : {{Yajnev}}, who's {_death_} engulfed {{Vetetrandes}} in an opaque and impenetrable {{lock|Ehrivevnv}}, was the {{Neon Hermetism}} founder.
+  BREF : {{Yajnev}}, who's {_death_} engulfed {{Vetetrandes}} in an opaque and impenetrable {{lock|Ehrivevnv}}.
   LONG
-    & In his life, Yajnev worked with {{Andes}} in what came to be the {{Neon Hermetism}} and wrote the original papers on {{Neausea}}.
+    & In his life, Yajnev wrote the original papers on {{Paradichlorisse}} and {{Neausea}}.
 
 RLIONN
   UNDE : Characters
-  BREF : {{Rlionn}}, {_Ehrleeon_}, is an important and recurring Immortal intelligence from the {{Neauismetica}} for she is the mother of {{Neonev}} and regent of {{Laeisth}}.
+  BREF : {{Rlionn}} is recurring Immortal intelligence from the {{Neauismetica}}, mother of {{Neonev}} and regent of {{Laeisth}}.
   LONG
-    & Not many have successfully crossed the {{Rlionn Oasis|Dinaisth}}, for it is swarming with a lifeform called her "Children". Rlionn is not a single individual but an intelligent trait that manifests itself as a collective state of mind for the inhabitant of the Oasis.
-    * Rlionn's Children
-    & With fingers sharp as needles, her children feast on stray travelers and onto eachother - undyingly. Travelers who sent out letters from the oasis, will often speak of the dark plagued-like sands, tarnished with dried rotten blood surrounding the oasis of Rlionn. The letters will speak of a glare, seen in the dilated eyes of the Children, and a unique pitch audible in moments of lucidity.
+    & Rlionn is not a single individual but a trait that manifests itself as a collective state of mind for the inhabitant of the Oasis.
     & Spoken-of in tales and songs, the story of her children are sung in the album {{Children of bramble}} and illustrated in the {{The Rlionn Oasis|Laeisth}} short.
 
 ANDES
   UNDE : Characters
-  BREF : {{Andes}} traversed into {{Dinaisth}}'s {{timeline|Soies}} shortly before the {{first season|Feu}} and brought along tools to study the {{Ehrivevnv}}.
+  BREF : {{Andes}} traversed into {{Dinaisth}} through a primitive exploit in the {{Soies}} shortly before the {{first season|Feu}} and brought along tools to study the {{Ehrivevnv}}.
   LONG
-    & The role of Andes in the {{Yajnev Collapse|Yajnev}} is unknown, but his arrival coincides with the destruction of Vetetrandes.
+    & Andes was already present on {{Dinaisth}} when {{Neonev}} and the other immigrants arrived, the role of Andes in the {{Yajnev Collapse|Yajnev}} is unknown, but his arrival coincides with the destruction of {{Vetetrandes}}.
     
 NEONEV
   UNDE : Characters
-  BREF : {{Neonev}}, daughter of {{Rlionn}}, has traveled {{Dinaisth}} after she had appeared on a raft from {{Kanikule}} during the {{first season|feu}}.
+  BREF : {{Neonev}}, daughter of {{Rlionn}}, has traveled {{Dinaisth}} after she landing on the shores of {{Kanikule}} during the {{first season|feu}}.
   LONG
-    & Neonev met with {{Andes}} at their arrival in the northern part of {{Dinaisth}} and again before their visit at {{Paradichlorisse}} in the last season. While they lived apart, they corresponded as {{Neon Hermetism}} collaborators.
+    & Neoneve is the protagonist to {{Aliceffekt}}.
 
 PARADICHLORISSE
   UNDE : Characters
-  BREF : {{Paradichlorisse}} has appeared around the {{Yajnev Collapse|Yajnev}}, known to speak a dialect of {{Nohlxeserre}}.
+  BREF : {{Paradichlorisse}} is located near the {{Yajnev Collapse|Yajnev}}, and is known to speak a dialect of {{Nohlxeserre}}.
   LONG
-    & Upon reaching its location, pilgrims collapse as they begin experiencing {_every life and every death_} through the {{speech|Nohlxeserre}} of the infinite being. {_When Paradichlorisse spoke of silence, silence fell._}
+    & Its purpose is unknown, but it was observed reciting stories in a fashion that ressembled the navigation of the {{Soies}}.
+    & Upon reaching its location, pilgrims collapse as they begin experiencing {_every life and every death_} through the {{speech|Nohlxeserre}} of the infinite being. 
+    & {_When Paradichlorisse spoke of silence, silence fell._}
 
 PHOTOGRAPHY
   UNDE : Visual
