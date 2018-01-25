@@ -19,7 +19,7 @@ function calendar_view()
     table.year { margin-bottom:30px; width:100%}
     table.year tr {  }
     table.year tr td { vertical-align: bottom; position:relative; border:1px solid black}
-    table.year tr td a {display: block;font-size: 11px;line-height: 23px;padding: 0px 5px;color: black;font-family: 'input_mono_medium'; text-transform:uppercase}
+    table.year tr td a {display: block;font-size: 11px;line-height: 25px;padding: 0px 5px;color: black;font-family: 'input_mono_medium'; text-transform:uppercase}
     table.year tr td a.today { background:white}
     table.year tr td a.event { background:#000; color:white}
     table.year tr td a.missing:after { content:"---"}

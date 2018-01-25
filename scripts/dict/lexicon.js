@@ -1555,6 +1555,7 @@ VAMBITS
 NOTES
   UNDE : Research
   BREF : Various notes written as stories.
+  TYPE : Index
 
 THE SARTRE MECHANISM
   UNDE : Notes
@@ -1563,9 +1564,8 @@ THE SARTRE MECHANISM
     & Crouched over a small heap of cogs, he did not look over as I hung my snow-covered coat on something that, by the look of it, might very well be a time machine. His gaze turned for a moment, perhaps to make sure that I did not break anything as I navigated the hoarded studio.
     & What I first perceived as a pile of junk turned out to be a beautiful clock; where the needles would have been, a small hand rested at the tip of a short metallic arm.
     & My friend held a minuscule weight above the tiny hand, before carefully laying it onto the opened palm. Whirring and clicking, a second arm emerged and plucked a gear out of its entrails and laid it back into the toolbox at its side. In controlled gestures, activated by the weight, tiny arms dismantled bolts and screws, while carefully putting them in that toolbox, gradually taking the casing of the mechanism apart, leaving its core exposed.
-    ? Perfect, in every way.
     & I stared in silent awe, at the busy mechanical concerto playing its own requiem. The arms eventually began to reach inside the mechanism, unbuilding its core, growing weaker as it dismantled the heavier components and moved them back into the toolbox. This obscene ritual of disembowelment and exposé on pointlessness ended as the tiny arms and the weight had fallen back into the toolbox.
-    & {_Written with {{Voidshaper|https://twitter.com/voidshaper}}.
+    & {_Written with {{Voidshaper|https://twitter.com/voidshaper}}_}.
 
 THE BOOKS OF BABEL
   UNDE : Notes
@@ -1601,13 +1601,12 @@ SHORTHAND
   UNDE : Notes
   BREF : {{Shorthand}} is a calligraphy style developed to take faster notes.
   LONG
-    * The idea is simple, writing faster.
     & I played with different ideas and this is the system that worked best for me, it’s an inspiration and a mixture of already existing shorthand systems that fits my writing style.
-    > <img src='media/generic/shorthand.svg'/>
+    > <img src='media/generic/shorthand.svg' style='width:400px; margin:0px auto 45px'/>
     & Simple enough, now most letters are transformed into a single stroke shape that flows and combines to form shorter words, that can be written faster.
 
 TALK
-  UNDE : Notes
+  UNDE : Research
   BREF : These talks were created as periodical research dumps, often gravitating around the topics of the {{hexagrammaton|Nataniev}} and {{Horaire}}.
   TYPE : Diary
   LINK
