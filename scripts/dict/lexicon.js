@@ -181,7 +181,7 @@ DISCOGRAPHY
 ALICEFFEKT
   UNDE : Audio
   BREF : {{Aliceffekt}}, is an audio project following the adventures of {{Neonev}} across {{Dinaisth}}.
-  TYPE : Portal
+  TYPE : Index
   LONG
     &  A travel across the fictional worlds of the {{Neauismetica}} where every album is a sort of travel diary across the {{Dinaisth}} landscape.
   LINK :
@@ -742,6 +742,7 @@ THE SIXTH SEASON
   LONG
     & {_Whiinders_} and the likes, raising tents hoping for a glorious end in memory of {{Rlionn}}.
     & This album established the sound that {{Aliceffekt}} decided to persue for the {{Neauismetic}} releases.
+    > <iframe style="border: 0; width: 100%; height: 373px;" src="https://bandcamp.com/EmbeddedPlayer/album=3917529375/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/orchestrate-the-sixth-season">Orchestrate the sixth season by aliceffekt</a></iframe>
   LINK
     http://aliceffekt.bandcamp.com/album/orchestrate-the-sixth-season
 
@@ -834,6 +835,7 @@ FROM SAHARAPHOREST
   LONG
     & The album was recorded as it played through cassette tapes. The first 3 tracks are ripped from cassette tapes, and the last one is a single clean mastered version. Five tapes were made and given to fans at shows as artworks.
     & This release is related to {{Vert Kirlian Theatre}} album, released in 2008.
+    > <iframe style="border: 0; width: 100%; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=1013227503/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/19th-month-from-saharaphorest-to-duomo">19th month, from Saharaphorest to Duomo by aliceffekt</a></iframe>
   LINK
     http://aliceffekt.bandcamp.com/album/19th-month-from-saharaphorest-to-duomo
 
@@ -842,9 +844,8 @@ EHRIVEVNV STUDIES
   BREF : The {{Ehrivevnv Studies}} is a {{Laeisthic}} album exploring {{Andes}}' offices in {{Dinaisth}}.
   LONG
     & This album was composed for and performed at {_Blip Festival Tokyo_} on October 21st 2012 and reissued on april 15th 2013, including some changes from the {_Melbourne Squaresound Show_}.
-    & The track names contains encrypted Lietal</a>. The first track is decrypted into "<a href='Simkin'>Simkin</a> <a href='Kamsi'>Kamsi</a>" and can be translated to {_Time Structure_}, refering to The Library of Sand. The second track, "<a href='Xomsinsom'>Xomsinsom</a> <a href='kim'>Kim</a> <a href='Yajnev'>Yajnev</a>", can be translated to {_Yajnev's Curse_} and refers to the short <a href='082'>Yajnev's Thoughts</a>. The third track is titled "<a href='Ko'>Ko</a> <a href='sokamxi'>Sokamxi</a>" which simply means {_The Impossible Exploration_}.
-    # ami -> vloks  -> Ihom  -> ykim -> w
-    & Following are the resulting transformations using the previous encryption.
+    & The track names contains encrypted {{Traumae|Lietal}}. The first track is decrypted into "Simkin Kamsi" and can be translated to {_Time Structure_}, refering to {{The Library of Sand|Paradise}}. The second track, "Xomsinsom Kim {{Yajnev}}", can be translated to {_Yajnev's Curse_} and refers to the short {*Yajnev's Thoughts*}. The third track is titled "Ko Sokamxi" which simply means {_The Impossible Exploration_}.
+    > <iframe style="border: 0; width: 100%; height: 340px;" src="https://bandcamp.com/EmbeddedPlayer/album=2576083659/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/the-ehrivevnv-studies-reissue">The Ehrivevnv Studies (Reissue) by aliceffekt</a></iframe>
   LINK
     https://aliceffekt.bandcamp.com/album/the-ehrivevnv-studies-reissue
 
@@ -854,6 +855,7 @@ TELEKINETIC
   LONG
     & The event was recorded and can still be watched online on <a href="http://www.ustream.tv/recorded/39105185">UStream</a>. There was a <a href="http://www.cnet.com.au/dj-turns-leap-motion-into-a-theremin-sort-of-339345563.htm">short article on CNET</a> about the event as well. The album cover features an alternate door to {{Nataniev}}'s Library of Sand ornated of the number 210 in <a href='Needle+numbers'>Needle Numbers</a> as well as the {{Lietal}} letters BI, TI, TA, SI, PO.
     & You can watch a a demo of the <a href='https://www.facebook.com/photo.php?v=10153250341045274'>prototype</a>.
+    > <iframe style="border: 0; width: 100%; height: 208px;" src="https://bandcamp.com/EmbeddedPlayer/album=2904772795/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/telekinetic">Telekinetic by aliceffekt</a></iframe>
   LINK
     https://aliceffekt.bandcamp.com/album/telekinetic
 
@@ -1162,12 +1164,16 @@ PEDESTRIAN PARADISE
 NOR LET THE FOOLS
   UNDE : Lives
   BREF : {{Nor let the fools}} was recorded live, in Tokyo at a mashup/chiptune evening, created from unreleased materials.
+  LONG
+    > <iframe style="border: 0; width: 100%; height: 208px;" src="https://bandcamp.com/EmbeddedPlayer/album=1838099761/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/nor-let-the-fools-mistake-love">Nor let the fools mistake love by aliceffekt</a></iframe>
   LINK
     http://aliceffekt.bandcamp.com/album/nor-let-the-fools-mistake-love
 
 TO THE AEONS HELL
   UNDE : Lives
   BREF : {{To the aeons hell}} was created in the spirit of {{Nor let the fools}}, being a mixture of unreleased remixes.
+  LONG
+    > <iframe style="border: 0; width: 100%; height: 241px;" src="https://bandcamp.com/EmbeddedPlayer/album=3333907614/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/accursed-be-it-to-the-aeons-hell">Accursed be it to the aeons Hell by aliceffekt</a></iframe>
   LINK
     http://aliceffekt.bandcamp.com/album/accursed-be-it-to-the-aeons-hell
 
@@ -1195,6 +1201,7 @@ SUPERWORKER
   LONG
     & The album contains 3 tracks created from {_over 80 sessions_}, arranged into chiptune experiments.
     & Due to the lack of power during the 4 weeks long ocean crossing, the pocket battery powered synth proved to be the perfect composition tool. The tracks also include spoken words from Alan Watts.
+    > <iframe style="border: 0; width: 100%; height: 241px;" src="https://bandcamp.com/EmbeddedPlayer/album=610742154/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/superworker">Superworker by aliceffekt</a></iframe>
   LINK
     https://aliceffekt.bandcamp.com/album/superworker
 
@@ -1232,6 +1239,7 @@ RABBITS SOUNDTRACK
   BREF : The {{Rabbits Soundtrack}} is the drone audio tracks of the {{Hundred Rabbits}} video diaries.
   LONG
     & This soundtrack contains 2 recorded podcasts and a selection of tracks from the videos.
+    > <iframe style="border: 0; width: 100%; height: 241px;" src="https://bandcamp.com/EmbeddedPlayer/album=1969793667/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/hundred-rabbits">Hundred Rabbits by aliceffekt</a></iframe>
   TAGS : Discography
   LINK
     https://aliceffekt.bandcamp.com/album/hundred-rabbits
@@ -1377,6 +1385,7 @@ SOIES
   LONG
     & The Soies model makes available the first values to exist beyond the limits of the current possible space, making computeable the location of the occuring, allowing the {{Actors}} to position themselves and execute the occuring and position themselves along the {{Soies}}.
     & This line of research is tied to the discovery of the {{Ehrivevnv}}.
+    > <img src='media/badge/soies.png' style='margin:0px auto 45px; display:block; width:200px'/>
 
 ACTORS
   UNDE : Neon hermetism
@@ -1719,43 +1728,346 @@ OBLIQUES
 LIFESTYLE
   UNDE : Obliques
   TYPE : Portal
-  BREF : {{Lifestyle}} notes are on some of my choices.
+  BREF : The {{Lifestyle}} notes are a sort of diary, or blog, on the reasons behind some of my life choices.
 
 NUTRITION
   UNDE : Lifestyle
   BREF : The {{Nutrition}} guide covers the basics of proteins.
   LONG
     & There are a few things in life that are as transformative and transhumanistic as {{nutrition}}, not eating meat, eggs and dairy aligns with my pragmatic views of life-prolonging aspirations.
-  TYPE : Docs
+    & The function of proteins is to be used for tissue growth and repair, but when carbohydrates and calories are lacking, proteins can be consumed for fuel.
+    & The human body's own proteins are constantly being broken down into {*amino acids*} and used throughout its systems. 
+    & The human body is mostly made of proteins, and proteins are made of amino acids - permutations of carbon, oxygen, hydrogen, nitrogen and sometimes sulfur. There are 22 amino acids in total and all but 9 can be synthesized, the {*Essential Amino Acids*}. 
+    & To be used for growth and repair, a protein needs to be a {*complete protein*}, or have access the full sequence of required essential amino acids. If an essential amino acid is missing, the unsuable remaining amino acids are broken down into fats or sugars.
+    & Examples of foods with essential amino acid content of at least 70% of a complete protein(see {_Limiting Amino Acids_} in {{REF|#ref}}) are oats, garbanzo beans, sunflower seeds, buckwheat, red/white/black beans, rice, peanuts and pumpkin seeds.
+    & There are also high-quality proteins in green beans, swiss chard, broccoli, mustard greens, asparagus and potatoes but in lesser quantity.
+    & Soy products have within them 100% of a complete protein, or the correct ratio of essential amino acids for the body to use in tissue growth and repair.
+    & The high-quality protein foods can be made whole by combining with other ingredients, but the basic optimal combinations is {*Beans with grains, nuts or seeds*}.
   TAGS : guide
   LINK
     https://en.wikiversity.org/wiki/Should_we_go_vegan%3F
 
 AESTHETICS
   UNDE : Lifestyle
-  BREF : {{Aesthetics}} are notes on output, advised from daily logs.
-  TYPE : Docs
+  BREF : {{Aesthetics}} are notes on output, advised from {{daily logs|Horaire}}.
+  LONG
+    & This is less a personal guideline than the results of side-effects. It is {*not*} about achieving happiness, as I could not find correlations between happiness and productivity; productivity occured equally during low happiness and high happiness.
+    & I have based my life toward two aspirations, {_Arts & Sciences_}. I have thus devised th my life to be aimed their sole acceleration. Analysis of {{personal statistics|Horaire}} revealed {{travel}} to be an important enabler for inspiration, and so I have steered my work toward facilitating opportunities to travel. A step away from {_Arts & Sciences_} was then, a step backward.
+    ? Optimizing toward more income yielded more progress than optimizing toward the need for less revenue.
+    & School was forcing me into multi-tasking, which revealed itself to have a negative impact to the creation of {_Arts & Sciences_}. Working within the confines of a single medium, would invoke long periods of lesser creativity and intermittent productivity. Living at any one place over a period exceeding multiple years showed a decay in inspiration. Leaving school, learning to play music, moving abroad - showed an improvement in the realization of {_Arts & Sciences_}.
+    & Automating work always returned higher reward than any attempt at brute force. Over a period of 6 months, building {{specific tools|Software}} mostly returned higher performance than learning general purpose tools.
+    > <img src='media/badge/lifestyle.png' style='margin:0px auto 45px; display:block; width:100px'/>
+    & Remaining immobile in moments of doubts and planning, always gave a positive outcome, against acting impulsively making possible accidental steps away from the acceleration of {_Arts & Sciences_}.
+    & I have kept {{daily logs|Calendar}} on personal {_productivity output_}, and used this data to steer productivity across flux in focus. Each day has a singular task assigned, connected to a specific medium. The output portion of the day(programming, designing, composing), ends with the completion of the one task, whereas the remaining time is spent on input(reading, watching, listening).
+    * The purpose of this discipline is to limit multi-tasking.
+    & When a day ends before its assigned task was complete, the day was a planning failure; the task is then divided into smaller tasks, each assigned to one day. When the day ends too early after the completion of the one task, the day was also a planning failure.
+    & I do not get out of bed until I have chosen a {_task to complete_} & and a {_lesson to learn_}, and I do not go to sleep until I have logged the results.
+    & I select my tasks in the following order, I first address the problems that slow me down, the questions that occupy the idle mind, and the things I find lacking in life.
 
 NOMAD
   UNDE : Lifestyle
   BREF : The {{Nomad}} notes are reflexions on the dreams of a nomadic life.
+  LONG
+    & My first encounter with a nomad was during my stay in Prague, as Santiago, I had just met my {*Fulcanelli*}. There was a time in life when I may have felt homesick. But from then on, {_home_} was anywhere but here, a vague concept that existed out there, {_forever fleeting_}.
+    & The office is no place for multi-disciplinarists, and Japan was where I last fought this loosing battle. My desk, not the medium onto which I would acquire the array of skills I longed for.
+    * PART A
+    & Living on a sailboat was not picked amongst other equally enticing ideas. It was, at the time, the only {{pragmatic solution|https://www.youtube.com/watch?v=sF9TNM9R-iw}}. It would at once, align with everything that I believed in and wanted in life. In that, it might not correspond to your meaning of {_travel_}, or even be replicable.
+    & The monthly rent of our beachside Tokyo housing was nearly 1.5K$USD, and this thus implicated some serious downsizing. Within 3 years, our 20K$USD sailboat would be paid at the rate of 600$ per month.
+    ? Will you trade the proximity to friends and family in exchange for your independence?
+    & To think that, at the time, the most heart-breaking things to let go were instruments, old consoles, books and some camera equipment — when the truly hard things to let go would be my habitual bath, tap water and reliable internet connection.
+    * PART B
+    & Everything costs more than expected, takes longer than expected and Amazon doesn't deliver to your desert island. Surely you did not do all this travel for the travel alone, you had passions, habits and goals when you left.
+    ? You've made it, you live a nomadic life. <br />Well done. Now what?
+    & The wind rocks the habitat sideways, keeping you up at night. In the morning, you get to spend your day writing, anchored in the most beautiful bay, you go for a swim.
+    & You forget about tap water, don't mind the warm water from the plastic jugs, you wonder why people take showers every day and time away from Twitter really does make you feel better.
+    & Suddenly, it's business as usual. You get back to building things, only now, when you look outside, the upmost gorgeous sunset precedes the darkest of night.
+    * PART C
+    & Over a year, we managed to sail 3000nm from Victoria to La Paz, while creating games, music and art. 
+    & We learnt how to fix sails, repair a toilet, create electronic systems, maintain an engine, live without a fridge and power.
+    & We have seen every sunset and almost every sunrise, we have sailed with dolphins, we have climbed mountains on desert islands, and we have met the most amazing people.
+    ? Being nomad is trading the things<br />you think you care about, <br />for things you didn't know existed.
+
+DIRECTORY
+  UNDE : Obliques
+  BREF : The {{Directory}} is a curated list of timeless art that I often refer to.
   TYPE : Docs
+  LINK
+    https://github.com/XXIIVV/vessel.oscean/blob/master/memory/directory.mh
+
+MIRRORS
+  UNDE : Obliques
+  TYPE : Index
+  BREF : {{Mirrors}} of notes and articles for safekeeping and offline access.
+
+GLOSSARY
+  UNDE : Mirrors
+  BREF : The {{Glossary}} is a collection of keywords related to epistemology.
+  LONG
+    ~ Arguments
+    - {*Ad baculum*}: Argument relying on an appeal to fear or a threat. 
+    - {*Ad ignorantiam*}: Argument relying on people's ignorance.
+    - {*Ad populum*}: Argument relying on sentimental weakness.
+    - {*Ad verecundiam*}: Argument relying on the the words of an "expert" or authority.
+    - {*Ad consequentiam*}: Argument that concludes a premise as either true or false based on whether the premise leads to desirable or undesirable consequences.
+    - {*Ad hominem*}: Attacking the person instead of the argument. 
+    - {*Ex silentio*}: Argument relying on ignorance. 
+    ~ Argumentation
+    - {*By analogy*}: Arguing that since things are alike in some ways, they will probably be alike in others.
+    - {*By definition*}: Arguing that something is part of a class because it fits the definition of that class.
+    - {*From omniscience*}: An arguer would need omniscience to know about everyone's beliefs or disbeliefs or about their knowledge.  {_Example_} All people believe in something. Everyone knows that.
+    - {*Inferential distance*}: Gap between the background knowledge and epistemology of a person trying to explain an idea, and the background knowledge and epistemology of the person trying to understand it.
+    - {*Inferential Empathy*}: It's an inference made about other person's mental states using your own brain as reference, by making your brain feel or think in the same way as the other person you can emulate their mental state and predict their reactions.
+    - {*Non sequitur*}: An inference that does not follow from established premises or evidence; "It does not follow". {_Example_} There occured an increase of births during the full moon. Conclusion, full moons cause birth rates to rise. But does a full moon actually cause more births, or did it occur for other reasons, perhaps from expected statistical variations?
+    ~ Tools
+    - {*Occam's razor*}: When several theories are able to explain the same observations, Occam's razor suggests the simpler one is preferable. Principle commonly stated as "Entities must not be multiplied beyond necessity". 
+    - {*Kolmogorov complexity*}: Given a string, the length of the shortest possible program that prints it.
+    - {*Solomonoff induction*}: Formalized version of Occam's razor based on Kolmogorov complexity. The prior probability of an observation(extra prior, prior to any other observation or measurement) is the inverse kolmogoroff complexity of the binary string encoding the world in which it occurs.
+    ~ Beliefs
+    - {*Belief*}: The mental state in which an individual holds a proposition to be true.
+    - {*Priors*}: The beliefs an agent holds regarding a fact, hypothesis or consequence, before being presented with evidence.
+    - {*Alief*}: An independent source of emotional reaction which can coexist with a contradictory belief. {_Example_} The fear felt when a monster jumps out of the darkness in a scary movie is based on the alief that the monster is about to attack you, even though you believe that it cannot.
+    - {*Proper belief*}: Requires observations, gets updated upon encountering new evidence, and provides practical benefit in anticipated experience.
+    - {*Improper belief*}: Is a belief that isn't concerned with describing the territory. Note that the fact that a belief just happens to be true doesn't mean you're right to have it. If you buy a lottery ticket, certain that it's a winning ticket (for no reason), and it happens to be, believing that was still a mistake. 
+    - {*Belief in belief*}: Where it is difficult to believe a thing, it is often much easier to believe that you ought to believe it. Were you to really believe and not just believe in belief, the consequences of error would be much more severe. When someone makes up excuses in advance, it would seem to require that belief, and belief in belief, have become unsynchronized.
+    ~ Types
+    - {*Straw man*}: Creating a false or made up scenario and then attacking it. Painting your opponent with false colors only deflects the purpose of the argument. {_Example_}: Evolutionists think that everything came about by random chance.
+    - {*Steel man*}: Opposite of strawman. To steelman is to address the strongest possible variant or the most charitable interpretation of an idea, rather than the most available phrasings. Steelmanning can be especially important when the network by which phrasings are brought to your attention has a preference for propagating uncharitable/controversial phrasings.
+    - {*Red herring*}: A diversion from the active topic.
+    - {*Fully general counterargument*}: An argument which can be used to discount any conclusion the arguer does not like. Being in possession of such an argument leads to irrationality because it allows the arguer to avoid updating their beliefs. {_Example_} You're just saying that because you're exhibiting X bias.
+    ~ Dictionary
+    - {*Anthropomorphism*}: Attributing distinctly human characteristics to nonhuman processes.
+    - {*Akrasia*}: State of acting against one's better judgment.
+    - {*Causality*}: Relationship between a cause and an effect, where the effect is a direct consequence of the cause.
+    - {*Defensibility*}: Arguing that a policy is defensible rather than optimal or that it has some benefit compared to the null action rather than the best benefit of any action.
+    - {*Incredulity*}: Spending emotional energy on incredulity wastes time you could be using to update. It repeatedly throws you back into the frame of the old, wrong viewpoint. It feeds your sense of righteous indignation at reality daring to contradict you.
+    - {*Suggestibility*}: A form of misattribution where ideas suggested by a questioner are mistaken for memory.
+    - {*Priming*}: Psychological phenomenon that consists in early stimulus influencing later thoughts and behavior.
+    - {*Rationalization*}: Starts from a conclusion, and then works backward to arrive at arguments apparently favouring that conclusion. Rationalization argues for a side already selected.
+    - {*Compartmentalization*}: Tendency to restrict application of a generally-applicable skill, such as scientific method, only to select few contexts.
+    - {*Prediction*}: Statement or claim that a particular event will occur in the future in more certain terms than a forecast.
+    - {*Connotation*}: Emotional association with a word.
+    - {*Confabulation*}: Remembering something that never actually happened.
+    - {*Intrinsic*}: Ontologically basic entities, thoughts, beliefs, ideas, for which no justification is needed. For instance, belief that the self exists, or that anything exists. The ability to identify "things". Fundamental directives (EG, pursuit of survival, reproduction). Much of the mind is, and aught be, fluid, self-organizing, built from a small set of axioms, an elegant core, but it's impossible to build a working agent without implanting it with a few assumptions, a few mechanisms that will just work straight away. These assumptions are the intrinsics.
+    - {*Intransigence*}: Refusal to change one's views or to agree about something.
+    - {*Beneffectance*}: Tendency to perceive oneself as responsible for desirable outcomes but not responsible for undesirable ones.
+    - {*Reactance*}: Tendency to do the opposite of what someone wants you to do out of a need to resist a perceived attempt to constrain your freedom of choice.
+    - {*Teleology*}: The study of things that happen for the sake of their future consequences. The fallacious meaning of it is that events are the result of future events.
+    - {*Lateralus*}: The affliction of illusion of inescapable cyclicality. {_Example_} The failure to recognize one's growth, inability to dream of unprecedented things, ceding to self-reinforcing systems, being jaded to hope, waiting for nonexistent chickens to hatch from nonexistent eggs.
+    - {*Anti-inductiveness*}: The idea that the market would stop being efficient if everyone acted like it already was efficient. For example, a vote in a democracy, the more people that believe their vote counts towards the outcome of an election, the less their votes count.  Also known as the Reverse Tinkerbell effect. 
+    - {*Anti-epistemology*}: Bad explicit beliefs about rules of reasoning, usually developed in the course of protecting an existing false belief
+    - {*Dutch Book*}: A person who has set prices on an array of wagers in such a way that he or she will make a net gain regardless of the outcome, is said to have made a Dutch book. When one has a Dutch book, his or her opponent always loses.
+    - {*Pascal's mugging*} is a thought-experiment demonstrating a problem in expected utility maximization. A rational agent should choose actions whose outcomes, when weighed by their probability, have higher utility. But some very unlikely outcomes may have very great utilities, and these utilities can grow faster than the probability diminishes. Hence the agent should focus more on vastly improbable cases with implausibly high rewards.
+    - {*Dunbar's Number*}: A suggested cognitive limit(150) to the number of people with whom one can maintain stable social relationships. 
+    - {*Matthew Effect*}: Whoever has will be given more; whoever does not have, even what they have will be taken from them.
+    ~ Types
+    - {*Altruism*}: Actions undertaken for the benefit of other people. {_Example_}: If you do something to feel good about helping people, or even to be a better person in some spiritual sense, it isn't truly altruism.
+    - {*Hedonism*}: A set of philosophies which hold that the highest goal is to maximize pleasure, or more precisely pleasure minus pain.
+    - {*Reductionism*}: Disbelief that the higher levels of simplified multilevel models are out there in the territory, that concepts constructed by mind in themselves play a role in the behavior of reality.
+    - {*Egalitarianism*}: The idea that everyone should be considered equal. Equal in merit, equal in opportunity, equal in morality, and equal in achievement.
+    - {*Consequentialism*}: Ethical theory that people should choose the action that will result in the best outcome.
+    - {*Utilitarianism*}: A moral philosophy that says that what matters is the sum of everyone's welfare, or the "greatest good for the greatest number".
+    
+BIASES
+  UNDE : Mirrors
+  BREF : A {{Biases}} cheatsheet of fallacies, effects, and biases — Compiled from the {{Philosopher's Toolkit|http://amzn.to/2E8weTt}}, {{LessWrong|https://wiki.lesswrong.com/wiki/Less_Wrong_Canon_on_Rationality}} and other sources.
+  LONG
+    ? Rationality is characteristic of thinking and acting optimally.
+    ~ General
+    - {*Actor–observer bias*}: Tendency to overemphasize the influence of their personality and underemphasize the influence of their situation.
+    - {*Attentional bias*}: Tendency to neglect relevant data when making judgments of a correlation or association.
+    - {*Choice-supportive bias*}: Tendency to retroactively ascribing to one's choices to be more informed than they were when they were made.
+    - {*Confirmation bias*}: Tendency to interpret information in a way that confirms one's preconceptions.
+    - {*Congruence bias*}: Tendency to test hypotheses exclusively through direct testing, in contrast to tests of possible alternative hypotheses.
+    - {*Regressive bias*}: Tendency to remember high values and high likelihoods/probabilities/frequencies as lower than they actually were and low ones as higher than they actually were. Based on the evidence, memories are not extreme enough.
+    - {*Egocentric bias*}: Tendency to claim more responsibility for themselves for the results of a joint action than an outside observer would. Recalling the past in a self-serving manner. Like remembering one's exam grades as being better than they were.
+    - {*Impact bias*}: Tendency to overestimate the length or the intensity of the impact of future feeling states.
+    - {*Information bias*}: Tendency to seek information even when it cannot affect action.
+    - {*Modesty bias*}: Tendency to blame failures on oneself while attributing successes to situational factors; opposite of self-serving bias.
+    - {*Mood-congruent bias*}: Tendency to recall information congruent with one's current mood.
+    - {*Omission bias*}: Tendency to judge harmful actions as worse, or less moral, than equally harmful omissions.
+    - {*Self-serving bias*}: Tendency to attribute successes to internal characteristics while blaming failures on outside forces. It may also manifest itself as a tendency for people to evaluate ambiguous information in a way beneficial to their interests.
+    - {*Status quo bias*}: Tendency to like things to stay relatively the same.
+    - {*Superiority bias*}: Tendency to overestimating one's desirable qualities, and underestimating undesirable qualities, relative to other people. Also known as the Lake Wobegon effect.
+    - {*Survivorship bias*}: Tendency of focusing on what has survived to the present and ignoring what must have been lost.
+    - {*Trait ascription bias*}: Tendency for people to view themselves as relatively variable in terms of personality, behavior and mood while viewing others as much more predictable.
+    - {*Unit bias*}: Tendency to want to finish a given unit of a task or an item with strong effects on the consumption of food in particular.
+    - {*Exposure-suspicion bias*}: Tendency to steer the search for causes based on the knowledge of a subject's disease in a medical study.
+    - {*Stereotypical bias*}: Tendency to distort memories towards stereotypes. "Black-sounding" names being misremembered as names of criminals.
+    - {*Zero-risk bias*}: Preference for reducing a small risk to zero over a greater reduction in a larger risk.
+    - {*Authority bias*}: Tendency to attribute greater accuracy to the opinion of an authority figure and be more influenced by that opinion.
+    - {*Correspondence bias*}: Tendency to overestimate the contribution of lasting traits and dispositions, as opposed to situational effects, in determining people's behavior.
+    - {*Obsequiousness bias*}: Tendency to alter responses in the direction they perceive desired by the investigator.
+    - {*Unacceptability bias*}: Tendency of evading questions that may embarrass or invade privacy.
+    - {*Projection bias*}: Tendency to assume that others share the same or similar thoughts, beliefs, values, or positions.
+    - {*Consistency bias*}: Tendency to incorrectly remember one's past attitudes and behaviour as resembling present attitudes and behaviour.
+    - {*Hindsight bias*}: Tendency to see past events as predictable, based on knowledge of later events. Also known as the "I-knew-it-all-along" effect.
+    - {*Optimism bias*}: Tendency to be over-optimistic about the outcome of planned actions.
+    - {*Outcome bias*}: Tendency to judge a decision by its eventual outcome instead of based on the quality of the decision at the time it was made.
+    - {*Positive bias*}: Tendency to test hypotheses with positive rather than negative examples, thus risking to miss obvious disconfirming tests.
+    - {*Positive outcome bias*}: Tendency to overestimate the probability of good things happening to them.
+    ~ Groupthink
+    - {*Groupthink*}: Tendency of humans to tend to agree with each other, and hold back objections or dissent even when the group is wrong.
+    - {*Conformity bias*}: Tendency to behave similarly to others in a group, even if doing so goes against your own judgment.
+    - {*Ingroup bias*}: Tendency to give preferential treatment to others they perceive to be members of their own groups.
+    - {*Homogeneity bias*}: Tendency of people to see members of their own group as being relatively more varied than members of other groups.
+    - {*Shared information bias*}: Tendency for group members to spend more time and energy discussing information that all members are already familiar with (i.e., shared information), and less time and energy discussing information that only some members are aware of.
+    - {*Bandwagon fallacy*}: Assuming that an idea has merit simply because many people believe it or practice it.
+    ~ Effects
+    - {*Ambiguity effect*}: Tendency to avoid options for which missing information makes the probability seem "unknown".
+    - {*Bizarreness effect*}: Tendency to remember bizarre material better than common material.
+    - {*Bystander effect*}: Tendency for individuals to less likely offer help in an emergency situation when other people are present.
+    - {*Context effect*}: That cognition and memory are dependent on context, such that out-of-context memories are more difficult to retrieve than in-context memories. 
+    - {*Example*}: Recall time and accuracy for a work-related memory will be lower at home, and vice versa.
+    - {*Contrast effect*}: Enhancement or diminishment of a weight or other measurement when compared with recently observed contrasting object.
+    - {*Cross-race effect*}: Tendency for people of one race to have difficulty identifying members of a race other than their own.
+    - {*Dunning-kruger effect*}: When people are incompetent in the strategies they adopt to achieve success and satisfaction, they suffer a dual burden, not only do they reach erroneous conclusions and make unfortunate choices, but their incompetence robs them of the ability to realize it. Instead, they are left with the mistaken impression that they are doing just fine.
+    - {*False consensus effect*}: Tendency for people to overestimate the degree to which others agree with them.
+    - {*Forer effect*}: Tendency to give high accuracy ratings to descriptions of their personality that supposedly are tailored specifically for them, but are in fact vague and general enough to apply to a wide range of people. Also known as the Barnum Effect. Like Horoscopes.
+    - {*Motivated cognition*}: Tendency to process information toward conclusions that suit some end or goal.
+    - {*Generation effect*}: That self-generated information is remembered best. People are better able to recall memories of statements that they have generated than similar statements generated by others.
+    - {*Google effect*}: Tendency to forget information that can be found readily online by using Internet search engines.
+    - {*Halo effect*}: Tendency for a person's positive or negative traits to "spill over" from one area of their personality to another in others' perceptions of them.
+    - {*Hostile media effect*}: Tendency to perceive news coverage as biased against your position on an issue.
+    - {*Humor effect*}: That humorous items are more easily remembered than non-humorous ones, which might be explained by the distinctiveness of humor, the increased cognitive processing time to understand the humor, or the emotional arousal caused by the humor.
+    - {*Lake wobegon effect*}: Tendency to report flattering beliefs about oneself and believe that one is above average.
+    - {*List-length effect*}: A smaller percentage of items are remembered in a longer list, but as the length of the list increases, the absolute number of items remembered increases as well.
+    - {*Mere exposure effect*}: Tendency to express undue liking for things merely because they are familiar with them.
+    - {*Misinformation effect*}: Memory becoming less accurate because of interference from post-event information.
+    - {*Modality effect*}: That memory recall is higher for the last items of a list when the list items were received via speech than when they were received through writing.
+    - {*Overconfidence effect*}: Tendency of being more certain than is justified, given your priors and the evidence available.
+    - {*Part-list cueing effect*}: That being shown some items from a list and later retrieving one item causes it to become harder to retrieve the other items.
+    - {*Picture superiority effect*}: The notion that concepts that are learned by viewing pictures are more easily and frequently recalled than are concepts that are learned by viewing their written word form counterparts.
+    - {*Positivity effect*}: That older adults favor positive over negative information in their memories.
+    - {*Primacy effect*}: Tendency to weigh initial events more than subsequent events.
+    - {*Processing effect*}: That information that takes longer to read, and is processed with more difficulty, is more easily remembered.
+    - {*Pseudocertainty effect*}: Tendency to make risk-averse choices if the expected outcome is positive, but make risk-seeking choices to avoid negative outcomes.
+    - {*Recency effect*}: Tendency to weigh recent events more than earlier events.
+    - {*Self-relevance effect*}: That memories relating to the self are better recalled than similar information relating to others.
+    - {*Spacing effect*}: That information is better recalled if exposure to it is repeated over a long span of time rather than a short one.
+    - {*Spotlight effect*}: Tendency to overestimate the amount that other people notice your appearance or behavior.
+    - {*Subadditivity effect*}: Tendency to judge probability of the whole to be less than the probabilities of the parts.
+    - {*Suffix effect*}: Diminishment of the recency effect because a sound item is appended to the list that the subject is not required to recall.
+    - {*Telescoping effect*}: Tendency to perceive recent events to have occurred more remotely and remote events appear to have occurred more recently.
+    - {*Testing effect*}: The fact that you more easily remember information you have read by rewriting it instead of rereading it.
+    - {*Underconfidence effect*}: State of being more uncertain than is justified, given your priors and the evidence you are aware of.
+    - {*Verbatim effect*}: That the "gist" of what someone has said is better remembered than the verbatim wording. This is because memories are representations, not exact copies.
+    - {*Von restorff effect*}: Tendency to remember an item that "stands out like a sore thumb", more than other items.
+    - {*Zeigarnik effect*}: That uncompleted or interrupted tasks are remembered better than completed ones.
+    - {*Focusing effect*}: Tendency of placing too much importance on one aspect of an event; causes error in accurately predicting the utility of a future outcome.
+    - {*Endowment effect*}: Tendency to demand much more to give up an object than they would be willing to pay to acquire it.
+    - {*Next-in-line effect*}: That a person in a group has diminished recall for the words of others who spoke immediately before himself, if they take turns speaking.
+    ~ Fallacies
+    - {*Conjunction fallacy*}: Assumption that specific conditions are more probable than general ones.
+    - {*Detached lever fallacy*}: Assumption that something simple for one system will be simple for others.
+    - {*Gambler's fallacy*}: Assumption that individual random events are influenced by previous random events. {*Ex*}: I've flipped heads with this coin five times consecutively, so the chance of tails coming out on the sixth flip is much greater than heads.
+    - {*Mind projection fallacy*}: Assumption that the way you see the world reflects the way the world really is.
+    - {*Typical mind fallacy*}: Assumption that other people are more like you than they actually are.
+    - {*Fallacy of gray*}: Assumption that because nothing is certain, everything is equally uncertain. It does not take into account that some things are more certain than others.
+    - {*The Sophisticate*}: "The world isn't black and white. No one does pure good or pure bad. Therefore, no one is better than anyone else." {*The Zetet*}: "Knowing only gray, you conclude that all grays are the same shade. You mock the simplicity of the two-color view, yet you replace it with a one-color view."
+    - {*Planning fallacy*}: Underestimating task-completion times.
+    - {*Sunk cost fallacy*}: Letting past investments interfere with decision-making in the present.
+    - {*Giant cheesecake fallacy*}: Occurs when an argument leaps directly from capability to actuality, without considering the necessary intermediate of motive.
+    - {*Narrative fallacy*}: A vulnerability to over-interpretation and our predilection for compact stories over raw truths.
+    - {*Scales of justice fallacy*}: Error of using a simple polarized scheme for deciding a complex issue/ each piece of evidence about the question is individually categorized as supporting exactly one of the two opposing positions.
+    - {*Top 1% fallacy*}: Related to not taking into account the idea that a small sample size is not always reflective of a whole population and that sample populations with certain characteristics, e.g. made up of repeat job seekers, are not reflective of the whole population.
+    - {*Fallacy of relative privation*}: Error of thinking that if something is worse than the problem currently being discussed, then the problem currently being discussed isn't that important at all. In other words: nothing matters if it's not literally the worst thing happening 
+    ~ Illusions
+    - {*Asymmetric insight*}: Tendency to perceive the knowledge of their peers to surpass their peers' knowledge of them.
+    - {*Control*}: Tendency to believe they can control or at least influence outcomes that they clearly cannot.
+    - {*External agency*}: Tendency to perceive self-generated preferences as instead being caused by insightful, effective and benevolent agents.
+    - {*Truth effect*}: Tendency to identify as true statements familiar statements over unfamiliar ones.
+    - {*Clustering*}: Tendency to perceive patterns where actually none exist.
+    - {*Frequency*}: Tendency to notice something everywhere after having learnt about it. Also known as the Baader-Meinhof Phenomenon.
+    - {*Transparency*}: Tendency to overestimate others' ability to know them, and they also overestimate their ability to know others. Misleading impression that your words convey more to others than they really do.
+    ~ Heuristics
+    - {*Absurdity*}: Mental shortcut where highly untypical situations are classified as absurd or impossible. 
+    - {*Affect*}: Mental shortcut basing a decision on an emotional reaction rather than a calculation.
+    - {*Availability*}: Mental shortcut that treats easily recalled information as important or more important than alternative solutions which are not as readily recalled.
+    - {*Representativeness*}: Mental shortcut where people judge the probability or frequency of a hypothesis by considering how much the hypothesis resembles available data as opposed to using a Bayesian calculation.
+
+TIERS
+  UNDE : Mirrors
+  BREF : The {{Tiers}} cheatsheet displays a spectrum of decision-making and mindsets, an abbreviated and edited list from PTFQ's original essay {{Three Tiers Of Mind|https://www.pftq.com/blabberbox/?page=Three_Tiers_of_Mind}}.
+  LONG
+    > <table>
+    > <tr><th colspan='3'>The Self</th></tr>
+    > <tr><td>Defined by intentions</td>  <td>Defined by association</td> <td>Defined by the past</td></tr>
+    > <tr><td>Self-Actualization</td>     <td>Social Validation</td>      <td>Comfort and Basic Needs</td></tr>
+    > <tr><td>Made</td>                   <td>Shaped</td>                 <td>Molded</td></tr>
+    > <tr><td>Defines a label</td>        <td>Picks a label</td>          <td>Is given a label</td></tr>
+    > <tr><th colspan='3'>The Aspirations</th></tr>
+    > <tr><td>Wants to do</td>            <td>Wants to be</td>            <td>Wants to have</td></tr>
+    > <tr><td>Wants to live forever</td>  <td>Wants to be remembered</td> <td>Wants to die happy</td></tr>
+    > <tr><td>Fears the lack of time</td> <td>Fears being wrong</td>      <td>Fears not having enough</td></tr>
+    > <tr><td>Thinks of the future</td>   <td>Thinks of what others will think</td><td>Thinks of the money</td></tr>
+    > <tr><th colspan='3'>The Actions</th></tr>
+    > <tr><td>Talks about ideas</td>      <td>Talks about people</td>         <td>Talks about things</td></tr>
+    > <tr><td>Thinks in pictures</td>     <td>Thinks in words</td>         <td>Thinks in feelings</td></tr>
+    > <tr><td>Likes the story</td>        <td>Likes the artis</td>         <td>Likes the effects</td></tr>
+    > <tr><td>Clings to the future</td>   <td>Clings to the present</td>  <td>Clings to the past</td></tr>
+    > <tr><td>Innovates</td>              <td>Improves</td>                <td>Repeats  </td></tr>
+    > <tr><td>Does it with you</td>       <td>Tells you what to do</td>   <td>Does it for you</td></tr>
+    > <tr><td>Solves the problem</td>     <td>Asks for the solution</td>   <td>Copies the solution</td></tr>
+    > <tr><td>Make it happen</td>         <td>Fake it till you make it</td> <td>Wait until it happens</td></tr>
+    > <tr><td>Praises what you did</td>   <td>Praises who you are</td>      <td>Praises what you have</td></tr>
+    > <tr><th colspan='3'>The Authority</th></tr>
+    > <tr><td>Logic, Power, Authenticity</td><td>Authority, Purpose, Conformity</td><td>Experience, Freedom, Complacency</td></tr>
+    > <tr><td>Create</td><td>Resell</td><td>Consume</td></tr>
+    > <tr><td>Imagination</td><td>Rearrangement</td><td>Trial and error</td></tr>
+    > <tr><td>Respects you</td><td>Respects your status</td><td>Respects you earnings</td></tr>
+    > <tr><td>Looks for equals</td><td>Looks for leaders</td><td>Looks for gods</td></tr>
+    > <tr><td>Puppet master</td><td>Strings</td><td>Puppet</td></tr>
+    > <tr><td>Power is created</td><td>Power is given</td><td>Power is born into</td></tr>
+    > <tr><td>Defensive if misunderstood</td><td>Defensive of their authority</td><td>Defensive of anything personal</td></tr>
+    > <tr><td>Because I want to</td><td>Because you’re supposed to</td><td>Because it feels good/bad</td></tr>
+    > <tr><td>Wrong if illogical</td><td>Wrong if no one else agrees</td><td>Wrong if I don’t see it</td></tr>
+    > <tr><td>Kantian</td><td>Utilitarian</td><td>Hedonistic</td></tr>
+    > <tr><td>Can't stand boredom</td><td>Can't stand uncertainty</td><td>Can’t stand pain</td></tr>
+    > <tr><th colspan='3'>The Truth</th></tr>
+    > <tr><td>Understands</td><td>Memorizes</td><td>Improvises</td></tr>
+    > <tr><td>From experiments</td><td>From memorization</td><td>From conditioning</td></tr>
+    > <tr><td>Rather be unhappy with truth</td><td>Rather be happy with a lie</td><td>Rather not know</td></tr>
+    > <tr><td>Arrogance is ignoring reason</td><td>Arrogance is ignoring majority</td><td>Arrogance is being right too often</td></tr>
+    > <tr><td>Truth is objective</td><td>Truth is what others say</td><td>Truth is what I see</td></tr>
+    > <tr><td>Know the truth</td><td>Know your place</td><td>Know your limits</td></tr>
+    > <tr><td>Perception is malleable</td><td>Perception is reality</td><td>Perception is BS</td></tr>
+    > <tr><th colspan='3'>The World</th></tr>
+    > <tr><td>Universe is deterministic</td><td>Universe is rule-based</td><td>Universe is chance</td></tr>
+    > <tr><td>Because cause-effect</td><td>Because what others say so</td><td>Just because</td></tr>
+    > <tr><td>Proof by logic</td><td>Proof by social validation</td><td>Proof by empirical evidence</td></tr>
+    > <tr><td>Unknown is unknown</td><td>Unknown is zero</td><td>Unknown is random</td></tr>
+    > <tr><td>The world is the beginning</td><td>The world is the world</td><td>The world is the limit</td></tr>
+    > <tr><td>Trapped by the universe</td><td>Trapped by society</td><td>Trapped by the body</td></tr>
+    > <tr><td>The world is mine</td><td>The world is everyone else's</td><td>The world is rigged</td></tr>
+    > <tr><td>Absolutes exist</td><td>Absolutes are bad</td><td>Nothing is absolute</td></tr>
+    > <tr><td>World is a sandbox</td><td>World is chutes and ladders</td><td>World is a hierarchy</td></tr>
+    > <tr><td>Chess board</td><td>Race track</td><td>Mouse trap</td></tr>
+    > </table>
+  LINK
+    https://github.com/XXIIVV/vessel.oscean/blob/master/memory/tiers.mh
 
 INVENTORY
   UNDE : Obliques
-  BREF : Detailed {{Inventory}} of equipment used in the creation of {{XXIIVV|Nataniev}}.
+  BREF : A detailed {{Inventory}} of equipment used in the creation of my work.
   TYPE : Portal full
   LONG
-    & Here are some of my favourite items of {_Everyday Carry_}.
-    ~ EDC
-    - Staedtler's Pigment Liner 0.3-2.0mm
-    - MUJI's A5 Dotgrid
-    - Gerber's Tactical + Shard
-    - J. L. Lawson & Co's MII Key holder
-    - Army Field Survival FM21-76  Manual
-    - Amazon's Kindle Paperwhite
-    ~ Camera
+    & Here are some of the items that I carry around with me in my travels.
+    ~ Everyday Carry
+    - Staedtler's {{Pigment Liner 0.3-2.0mm|http://amzn.to/2BtPR5i}}
+    - MUJI's {{A5 Dotgrid|http://amzn.to/2DELUka}}
+    - Gerber's {{Shard|http://amzn.to/2FiJNyZ}}
+    - Gerber's {{Remix Tactical|http://amzn.to/2Bt7vGq}}
+    - Davis {{Basic Rigging Knife|http://amzn.to/2DJRpxv}}
+    - J. L. Lawson's {{MII Key holder|https://www.jllawsonco.com/products/m-ii}}
+    - Amazon's {{Kindle Paperwhite|http://amzn.to/2Gj3W9E}}
+    ~ Camera Equipment
     - Voigtländer's {{Bessa R3M 250 Jahre|Camera}}
+    - Voigtländer's {{Ultron 28mm f/2.0|http://amzn.to/2BrDiHH}}
+    - Ilford {{DELTA 3200 B&W Film|http://amzn.to/2GgyBUX}}
+    - Pelican {{1200 Camera Case|http://amzn.to/2DO1HN2}}
+    ~ Electronics
+    - Poker II {{Mechanical Keyboard|Keyboard}}
+    - GoPro {{Hero Session 5|http://amzn.to/2Giw2BM}}
 
 CAMERA
   UNDE : Inventory
@@ -1777,41 +2089,8 @@ KEYBOARD
   LONG
     & The color choice is inspired from the {{Verreciel}} interface colors. I have red Cherry MX switches installed, with {{sound dampening o-rings|http://www.amazon.ca/gp/product/B00VHXHP6Q?psc=1&redirect=true&ref_=oh_aui_detailpage_o00_s00}}. It's also connected, with a braided {{90 degrees angle USB wire|http://www.amazon.ca/gp/product/B004YD6LW0?psc=1&redirect=true&ref_=oh_aui_detailpage_o00_s00}}.
 
-MIRRORS
-  UNDE : Obliques
-  TYPE : Portal
-  BREF : {{Mirrors}} of notes and articles for safekeeping and offline access.
-
-GLOSSARY
-  UNDE : Mirrors
-  BREF : The {{Glossary}} is a collection of keywords related to epistemology.
-  TYPE : Docs
-
-BIASES
-  UNDE : Mirrors
-  BREF : A {{Biases}} cheatsheet of compiled fallacies, effects, and biases.
-  LONG
-    & The list was compiled from {{LessWrong|https://wiki.lesswrong.com/wiki/Less_Wrong_Canon_on_Rationality}} as well as personal notes, collected from the Philosopher's Toolkit and other sources. Rationality is characteristic of thinking and acting optimally.
-  TYPE : Docs
-
-TIERS
-  UNDE : Mirrors
-  BREF : The {{Tiers}} cheatsheet displays a spectrum of decision-making and mindsets.
-  LONG
-    & Below is an abbreviated and edited list from PTFQ's original essay {{Three Tiers Of Mind|https://www.pftq.com/blabberbox/?page=Three_Tiers_of_Mind}}.
-  TYPE : Docs
-  LINK
-    https://github.com/XXIIVV/vessel.oscean/blob/master/memory/tiers.mh
-
-DIRECTORY
-  UNDE : Obliques
-  BREF : The {{Directory}} is a curated list of timeless art that I often refer to.
-  TYPE : Docs
-  LINK
-    https://github.com/XXIIVV/vessel.oscean/blob/master/memory/directory.mh
-
 LANGUAGE
-  UNDE : Obliques
+  UNDE : Research
   TYPE : Portal
   BREF : Various {{Language}} notes on natural and syntetic languages.
   LONG
@@ -1868,7 +2147,7 @@ DEVINE LU LINVEGA
   LONG
     & Operating under the {*Neauoire*} moniker, Devine is a {{polymath|https://monochromatic.co/writing/interview-with-devine}} working on a series of {{experimental tools|Gamme}} and {{applications|Interactive}}.
     & Populating {{Nataniev}} with notes on {{Language|Lietal}}, {{Illustrations|Illustration}} and {{Sounds|Audio}}, Devine hopes to inspire visitors to learn and to {{travel}}.
-    * To {{flee|Obliques}} is life,<br /> To linger, {{Death}}.
+    ? To {{flee|Obliques}} is life,<br /> To linger, {{Death}}.
   LINK
     https://twitter.com/neauoire/media
     https://github.com/neauoire

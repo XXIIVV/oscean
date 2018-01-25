@@ -8,14 +8,12 @@ var payload = new Runic(`
 - Exosphere Sunset(Ver\'Tale)
 - Moires Of {{Dei Dain}}
 
-
 = PORTALION
 % cover.portalion
 - From {{Laeisth}}
 - The Sixth Season Festival
 - Tunnel Aeroports of Clionn
 - Moebius Lift's Ascension
-
 
 = DEI DAIN
 % cover.dei.dain
@@ -146,7 +144,7 @@ var payload = new Runic(`
 - The City Without Streets: Side B(Bonus)
 - Bonus Track
 
-* RABBITS SOUNDTRACK
+= RABBITS SOUNDTRACK
 % cover.rabbits.soundtrack
 - Selection Q116
 - Selection Q216

@@ -264,7 +264,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 17J07 - 283      Nataniev
 17J06 - 353      Markl
 17J05 - 396      The will the wisp
-17J04 - 396      Mirrors
+17J04 - 396  413 Mirrors
 17J03 - 263      Nataniev
 17J02 - 396      Neauismetica
 17J01 - 298      Hundred rabbits
@@ -464,7 +464,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 16V06 - 263      Markl
 16V05 - 273      Markl
 16V04 - 345      Markl
-16V03 - 356      Aesthetics
+16V03 - 356  378 Aesthetics           At Rest
 16V02 - 296      Hundred rabbits
 16V01 - 243      Hundred rabbits
 16U14 - 374      Markl

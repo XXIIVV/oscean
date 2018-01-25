@@ -12,8 +12,7 @@ function Runic(raw)
     "*":{tag:"h2",class:""},
     "=":{tag:"h3",class:""},
     "+":{tag:"hs",class:""},
-    "|":{tag:"tr",sub:"td",class:"",rep:true},
-    "»":{tag:"tr",sub:"th",class:"",rep:true},
+    "|":{tag:"tr",sub:"td",class:"",stash:true},
     ">":{tag:"",class:""}
   }    
 
