@@ -1,5 +1,5 @@
 var payload = new Runic(`
-? Biases
+* Biases
 ~ Actor–observer bias
 - {*Tendency*} to overemphasize the influence of their personality and underemphasize the influence of their situation.
 ~ Attentional bias
@@ -65,7 +65,7 @@ var payload = new Runic(`
 ~ Positive outcome bias
 - {*Tendency*} to overestimate the probability of good things happening to them.
 
-? Groupthink BIAS
+* Groupthink BIAS
 ~ Groupthink
 - Tendency of humans to tend to agree with each other, and hold back objections or dissent even when the group is wrong.
 ~ Conformity bias
@@ -79,7 +79,7 @@ var payload = new Runic(`
 ~ Bandwagon fallacy
 - Assuming that an idea has merit simply because many people believe it or practice it.
 
-? Effects
+* Effects
 ~ Ambiguity effect
 - {*Tendency*} to avoid options for which missing information makes the probability seem "unknown".
 ~ Bizarreness effect
@@ -166,7 +166,7 @@ var payload = new Runic(`
 ~ Next-in-line effect
 - That a person in a group has diminished recall for the words of others who spoke immediately before himself, if they take turns speaking.
 
-? Fallacies
+* Fallacies
 ~ Conjunction fallacy
 - {*Assumption*} that specific conditions are more probable than general ones.
 ~ Detached lever fallacy
@@ -195,7 +195,7 @@ var payload = new Runic(`
 ~ Fallacy of relative privation
 - Error of thinking that if something is worse than the problem currently being discussed, then the problem currently being discussed isn't that important at all. In other words: nothing matters if it's not literally the worst thing happening
   
-? Illusions
+* Illusions
 ~ Asymmetric insight
 - {*Tendency*} to perceive the knowledge of their peers to surpass their peers' knowledge of them.
 ~ Control
@@ -211,7 +211,7 @@ var payload = new Runic(`
 ~ Transparency
 - {*Tendency*} to overestimate others' ability to know them, and they also overestimate their ability to know others. Misleading impression that your words convey more to others than they really do.
 
-? Heuristics
+* Heuristics
 ~ Absurdity
 - {*Mental shortcut*} where highly untypical situations are classified as absurd or impossible. 
 ~ Affect

@@ -1,5 +1,5 @@
 var payload = new Runic(`
-~ Books
+* Books
 - {{Flatland|https://en.wikipedia.org/wiki/Flatland}},  Edwin A. Abbott. 1884
 - {{Le Matin Des Magiciens|https://en.wikipedia.org/wiki/The_Morning_of_the_Magicians}},  L. Pauwels & J. Bergier. 1960
 - {{Le Città Invisibili|https://en.wikipedia.org/wiki/Invisible_Cities}}, Italo Calvino. 1972 
@@ -11,7 +11,7 @@ var payload = new Runic(`
 - {{Blumroch l'admirable|https://en.wikipedia.org/wiki/Louis_Pauwels}}, Louis Pauwels. 1976
 - {{The Book Of Tea|https://en.wikipedia.org/wiki/The_Book_of_Tea}}, Okakura Kakuzō. 1906
 - {{The Glass Bead Game|https://en.wikipedia.org/wiki/The_Glass_Bead_Game}}, Hermann Hesse. 1943
-~ Movies
+* Movies
 - {{Rosencrantz and Guildenstern Are Dead|https://en.wikipedia.org/wiki/Rosencrantz_%26_Guildenstern_Are_Dead_(film)}}, Tom Stoppard. 1990
 - {{Solaris|https://en.wikipedia.org/wiki/Solaris_(2002_film)}}, Steven Soderbergh. 2002
 - {{Wristcutters: A Love Story|http://www.imdb.com/title/tt0477139/}}, Goran Dukic. 2006
@@ -24,7 +24,7 @@ var payload = new Runic(`
 - {{Na srebrnym globie|https://en.wikipedia.org/wiki/On_the_Silver_Globe_(film)}}, Andrzej Żuławski. 1988
 - {{茶の味|https://en.wikipedia.org/wiki/The_Taste_of_Tea}}, Katsuhito Ishii. 2004
 - {{Cat Soup|https://en.wikipedia.org/wiki/Cat_Soup}}, Tatsuo Satō. 2001
-~ Albums
+* Albums
 - {{Weighing Souls With Sand|https://www.youtube.com/watch?v=G9ZiU7ahZso}}, by Angelic Process
 - {{HoneySuckle Æons|https://www.youtube.com/watch?v=TKWpxsmNe6k}}, by Current 93
 - {{顕信の一撃}}, by 友川カズキ
@@ -37,7 +37,7 @@ var payload = new Runic(`
 - {*Cello Concerto in E minor, Op. 85*}, by Edward Elgar
 - {{救済の技法|https://en.wikipedia.org/wiki/Technique_of_Relief}}, by 平沢 進
 - {*Noon Moon*}, by Nookicky
-~ Games
+* Games
 - {{Eve Online: Apocrypha|https://www.eveonline.com}}, CCP Games
 - {{MDK|https://en.wikipedia.org/wiki/MDK_(video_game)}}, Shiny
 - {{Persona 2: Innocent Sin|https://en.wikipedia.org/wiki/Persona_2:_Innocent_Sin}}, Atlus
