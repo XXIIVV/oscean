@@ -1436,6 +1436,12 @@ PARADICHLORISSE
     & Upon reaching its location, pilgrims collapse as they begin experiencing {_every life and every death_} through the {{speech|Nohlxeserre}} of the infinite being. 
     & {_When Paradichlorisse spoke of silence, silence fell._}
 
+ACTORS
+  UNDE : Characters
+  BREF : {{Actors}} are intelligences able to cross between the {{Soies}}, carrying freewill.
+  LONG
+    & Natural Actors were found to have existed before the {{Feu}}, anomalies. The creation of the first Synthetic Actor initiated the End Of Science.
+
 PHOTOGRAPHY
   UNDE : Visual
   BREF : The {{Photography}} Portal collects various albums over multiple mediums.
