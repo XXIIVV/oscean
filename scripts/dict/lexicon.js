@@ -1304,11 +1304,11 @@ WALLPAPER
 
 NEAUISMETICA
   UNDE : Research
-  TAGS : Portal
+  TYPE : Index
   BREF : The {{Neauismetica}} is a series of notes on the fiction of {{Dinaisth}}.
   LONG
     & Referenced in almost all of the {{Nataniev}} projects, tales of this small planet are told through {{Aliceffekt}}'s music, Devine's {{illustrations|illustration}} and are the culture behind the {{Lietal}} Language.
-    ? Immortals speak not with words<br /> but wait for things to happen,<br />and merely points at them.
+    ? Immortals speak not with words<br /> but wait for things to happen,<br />and merely point at them.
 
 NEON HERMETISM
   UNDE : Neauismetica

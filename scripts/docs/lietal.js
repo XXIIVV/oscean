@@ -3065,13 +3065,12 @@ function Lietal_Dict(dict)
 var lietal_dict = new Lietal_Dict($DICTIONAERY);
 
 var payload = new Runic(`
-* PHONOLOGY
-? VIRO KÄR'OF LIETÄL'TAKÏT.
+* Viro kär'of Lietäl'takït
 & Lietal is written from left to right with implicit neutrality, singularity and under the present tense. For the most part, its 6 vowels and 9 consonants are voiced similarly to their english equivalents.
 # A E I O U Y K T D R S L J V F <comment>The Lietal Alphabet</comment>
 & The vowels are sounded as hex{*a*}gram, n{*e*}ver, l{*ea*}ves, {*au*}tomobile, n{*ew*}, journ{*ey*} — And consonants as {*k*}iss, ti{*t*}le, {*d*}evice, retu{*r*}n, {*s*}ymphony, {*l*}igature, {*ge*}nesis, {*v*}ideo, & {*f*}estival.
 
-* MORPHOLOGY
+* Morphology
 
 & Building words from Lietal's phonemes is called childspeak. It makes for rythmical and syllabic words, but take quite a long time to actually speak it. This documentation uses the phonetically denser {_Adultspeak_}.
 & Single syllable words are reversed, so {#vo#} becomes {#${lietal_dict.adultspeak("vo")}#}. Vowel sequences, like {#lara#}, are condensed into {#${lietal_dict.adultspeak("lara")}#}. Consonant sequences, like {#lyfasa#}, are condensed into {#${lietal_dict.adultspeak("lyfasa")}#}. Here are a few examples:
@@ -3087,7 +3086,7 @@ var payload = new Runic(`
 ~ Whenever  
 - salidi — ${lietal_dict.adultspeak("salidi")}
 
-* ALPHABET
+* Alphabet
 
 & The Alphabet is a collection of 9 elementary particles, each is made of a key(consonant) and one of the 6 values(vowels). Knowing this table should allow you guess the meaning of {*any word construction*}.
 
@@ -3132,7 +3131,7 @@ var payload = new Runic(`
 # ${lietal_dict.deconstruct("laro")}
 # ${lietal_dict.deconstruct("laroko")}
 
-* GRAMMAR
+* Grammar
 
 & The basic lietal word order is as follow:
 
@@ -3162,7 +3161,7 @@ var payload = new Runic(`
 
 & Numbers are also using collections The sentence "The address is two hundred twenty three" is translated to {*Tokafo'tady el loe'il lira'lio lia ul*}, following the {#house.name [ 100.2 10.3 4 ]#} structure.
 
-* VOCABULARY
+* Vocabulary
 
 + Pronouns
 

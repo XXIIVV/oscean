@@ -391,7 +391,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 17A06 + 389  142 Donsol               Released Donsol
 17A05 - 365  363 Donsol
 17A04 - 263      Donsol
-17A03 ! 237  230 Directory
+17A03 ! 237  230 Directory            春野美子「茶の味」
 17A02 - 263      Donsol
 17A01 - 276      Nataniev
 16+02 - 243      Ronin

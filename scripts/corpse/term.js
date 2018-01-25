@@ -133,7 +133,7 @@ function Term(name,memory)
 
     var log = this.diary();
 
-    return `<b>${log.name}</b> — <a href='Desamber' class='local'>${log.time}</a>`
+    return `<b>${log.name}</b> — <a href='${log.time.year}' class='local'>${log.time}</a>`
   }
 
   this.preview = function()
@@ -167,6 +167,25 @@ function Term(name,memory)
       var term = this.children[id];
       term.start();
       html += term.preview();
+    }
+    return html;
+  }
+
+  this._index = function()
+  {
+    var html = ""
+    for(id in this.children){
+      var term = this.children[id];
+      html += `<p>${term.bref}</p>${term.long}`
+      if(term.children.length > 0){
+        html += "<quote>"
+        for(id2 in term.children){
+          var subterm = term.children[id2];
+          html += `<h3>${parseInt(id)+1}.${parseInt(id2)+1} ${term.name} — ${subterm.name}</h3><p>${subterm.bref}</p>${subterm.long}`
+        }  
+        html += "</quote>"
+      }
+      
     }
     return html;
   }
