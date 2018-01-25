@@ -12,13 +12,12 @@ var payload = new Runic(`
 - {{The Book Of Tea|https://en.wikipedia.org/wiki/The_Book_of_Tea}}, Okakura Kakuzō. 1906
 - {{The Glass Bead Game|https://en.wikipedia.org/wiki/The_Glass_Bead_Game}}, Hermann Hesse. 1943
 ~ Movies
-- {{Last Life In The Universe|https://en.wikipedia.org/wiki/Last_Life_in_the_Universe}}, Pen-Ek Ratanaruang. 2003
+- {{Rosencrantz and Guildenstern Are Dead|https://en.wikipedia.org/wiki/Rosencrantz_%26_Guildenstern_Are_Dead_(film)}}, Tom Stoppard. 1990
 - {{Solaris|https://en.wikipedia.org/wiki/Solaris_(2002_film)}}, Steven Soderbergh. 2002
 - {{Wristcutters: A Love Story|http://www.imdb.com/title/tt0477139/}}, Goran Dukic. 2006
 - {{Mais ne nous délivrez pas du mal|https://en.wikipedia.org/wiki/Don%27t_Deliver_Us_from_Evil}}, Joël Séria. 1971
 - {{Faust|https://en.wikipedia.org/wiki/Faust_(1994_film)}}, Jan Švankmajer. 1994
 - {{เรื่องรัก น้อยนิด มหาศา|https://en.wikipedia.org/wiki/Last_Life_in_the_Universe}}, Pen-Ek Ratanaruang. 2003
-- {{Rosencrantz and Guildenstern Are Dead|https://en.wikipedia.org/wiki/Rosencrantz_%26_Guildenstern_Are_Dead_(film)}}, Tom Stoppard. 1990
 - {{My Dinner with Andre|https://en.wikipedia.org/wiki/My_Dinner_with_Andre}}, Louis Malle. 1981
 - {{Valerie A Týden Divů|https://en.wikipedia.org/wiki/Valerie_and_Her_Week_of_Wonders_(film)}}, Jaromil Jireš. 1970
 - {{The Legend of Suram Fortress|https://en.wikipedia.org/wiki/The_Legend_of_Suram_Fortress}}, Sergei Parajanov. 1985
