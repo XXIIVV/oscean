@@ -25,6 +25,7 @@ function Runic(raw)
     var parts = html.split("{{")
     for(id in parts){
       var part = parts[id];
+      if(part.indexOf("}}") == -1){ continue; }
       var content = part.split("}}")[0];
       var target = content.indexOf("|") > -1 ? content.split("|")[1] : content;
       var name = content.indexOf("|") > -1 ? content.split("|")[0] : content;

@@ -227,8 +227,39 @@ function MissingTerm(name)
 {
   Term.call(this,name)
 
+  this.similarity = function(a,b){
+    var val = 0
+    for (i = 0; i < a.length; ++i) { val += b.indexOf(a.substr(i)) > -1 ? 1 : 0; }
+    for (i = 0; i < b.length; ++i) { val += a.indexOf(b.substr(i)) > -1 ? 1 : 0; }
+    a = a.split('').sort().join('');
+    b = b.split('').sort().join('');
+    for (i = 0; i < a.length; ++i) { val += b.indexOf(a.substr(i)) > -1 ? 1 : 0; }
+    for (i = 0; i < b.length; ++i) { val += a.indexOf(b.substr(i)) > -1 ? 1 : 0; }
+    return val
+  }
+
+  this.find_similar = function(target,list)
+  {
+    var similar = []
+    for(key in list){
+      var word = list[key]
+      similar.push({word:word,value:this.similarity(target,word)});
+    }
+    return similar.sort(function(a, b) {
+      return a.value - b.value;
+    }).reverse();
+  }
+
+  html = ""
+  
+  var dict = Object.keys(invoke.vessel.lexicon.terms);
+  var sorted = this.find_similar(name,dict);
+
+  this.photo = () => { return "url(media/diary/92.jpg)"; };
+  this.photo_info = () => { return new Date().desamber().toString(); };
+  this.theme = () => { return ""; }
   this.bref = ""
-  this.long = "<p>There are no pages found for \"<i>"+this.name+"</i>\" in this Lexicon.</p><p>If you think that this is an error, contact <a href='https://twitter.com/neauoire'>@neauoire</a>.</p>";
+  this.long = `<p>There were no pages found for \"${this.name}\", did you perhaps mean <a href='/${sorted[0].word.to_url()}'>${sorted[0].word}</a> or <a href='/${sorted[1].word.to_url()}'>${sorted[1].word}</a>?</p><p>If you think that a page should exist here, please contact <a href='https://twitter.com/neauoire'>@neauoire</a>, or add it as a <a href='https://github.com/XXIIVV/oscean/blob/master/scripts/dict/lexicon.js' target='_blank'>Pull Request</a>.</p>`;
 }
 
 invoke.vessel.seal("corpse","term");

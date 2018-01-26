@@ -167,12 +167,6 @@ EFLI
   LONG
     & The radio started broadcasting on May 20th, 2015 and stopped transmitting on December 20th. It played various permutations of the {{Eschatolor}} album.
 
-ES GULF SUNFLOWERS
-  UNDE : Neauismetic
-  BREF : {{Es Gulf Sunflowers}} tale remembers the gorgeous sunken fields of {{Es|Dinaisth}} - the underwater jump gate to {{Dinaisth}}, for its vast ocean terrace and display of sunflowers.
-  LINK
-    https://aliceffekt.bandcamp.com/album/es-gulfssunflowers
-
 DISCOGRAPHY
   UNDE : Audio
   BREF : The Official {{Discography}} and tracklist.
@@ -187,6 +181,12 @@ ALICEFFEKT
   LINK :
     BAND : https://aliceffekt.bandcamp.com
 
+ES GULF SUNFLOWERS
+  UNDE : Neauismetic
+  BREF : {{Es Gulf Sunflowers}} remembers the gorgeous sunken fields of {{Es|Dinaisth}}, the underwater gate, and the vast ocean terrace with its display of sunflowers.
+  LINK
+    https://aliceffekt.bandcamp.com/album/es-gulfssunflowers
+
 DAMOISEAU CANALX
   UNDE : Neauismetic
   BREF : {{Damoiseau Canalx}} was created in the spirit of {{Blam}}, exploring industrial sounds with 2-step styles.
@@ -196,6 +196,16 @@ DAMOISEAU CANALX
     > <iframe style="border: 0; width: 100%; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=743341250/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/damoiseau-canalx">Damoiseau + Canalx by aliceffekt</a></iframe>
   LINK
     https://aliceffekt.bandcamp.com/album/damoiseau-canalx
+
+THE SIXTH SEASON
+  UNDE : Neauismetic
+  BREF : {{The Sixth Season}} sings the {{Neauismetic}} tales of the {_establishment of the Oasis_} by {{Rlionn}}.
+  LONG
+    & {_Whiinders_} and the likes, a glorious beginning in {{Laeisth}}.
+    & This album established the sound that {{Aliceffekt}} decided to persue for the {{Neauismetic}} releases.
+    > <iframe style="border: 0; width: 100%; height: 373px;" src="https://bandcamp.com/EmbeddedPlayer/album=3917529375/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/orchestrate-the-sixth-season">Orchestrate the sixth season by aliceffekt</a></iframe>
+  LINK
+    http://aliceffekt.bandcamp.com/album/orchestrate-the-sixth-season
 
 HEX HIVE NECKLACE
   UNDE : Physical
@@ -735,16 +745,6 @@ BABELIUM
   LINK
     http://100r.co/projects/babelium/index.html
     https://github.com/Echorridoors/Babelium
-
-THE SIXTH SEASON
-  UNDE : Neauismetic
-  BREF : {{The Sixth Season}} sings the {{Neauismetic}} tales of the sixth season, or the {_establishment of the Oasis_}.
-  LONG
-    & {_Whiinders_} and the likes, raising tents hoping for a glorious end in memory of {{Rlionn}}.
-    & This album established the sound that {{Aliceffekt}} decided to persue for the {{Neauismetic}} releases.
-    > <iframe style="border: 0; width: 100%; height: 373px;" src="https://bandcamp.com/EmbeddedPlayer/album=3917529375/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/orchestrate-the-sixth-season">Orchestrate the sixth season by aliceffekt</a></iframe>
-  LINK
-    http://aliceffekt.bandcamp.com/album/orchestrate-the-sixth-season
 
 PHYSICAL
   UNDE : Visual
@@ -1318,38 +1318,38 @@ NEAUISMETICA
     & Referenced in almost all of the {{Nataniev}} projects, the tales of {{Dinaisth}} are told through {{Aliceffekt}}'s music, Devine's {{illustrations|illustration}} and are the culture behind the {{Lietal}} Language.
     & The Neauismetica was originally written in French around 2001, and translated throughout the following years, to be collected here as a series of disjointed entries on various characters and places.
     > <img src='media/badge/seal.png' style='margin:0px auto 45px; display:block; width:200px'/>
-    & The events recorded here unfold on a small artifical planet orbiting a larger structure known as the {{Ehrivevnv}}. At the moment of the earliest tale, {{science has just ended|Feu}}, and was to be replaced by the art of operating permutation machines, or {{Actors}}, builders capable of invoking the optimal realization to any solution asked of them.
+    & The events recorded unfold on a small artifical planet orbiting a larger structure known as the {{Ehrivevnv}}. At the moment of the earliest tale, {{science has just ended|Feu}}, and was to be replaced by the art of operating permutation machines, or {{Actors}}, builders capable of invoking the optimal solution to any request asked of them.
     # In the end, there are birds.
     # They reveal to us how to build <i>planes</i>.
-    # We fly too far for {{too long|kanikule}}.
+    # We fly too far and for {{too long|kanikule}}.
     # .
-    # We are searching for an Actor, or a being with freewill.
+    # We are going to see the Actor, a being with freewill.
     # But the actor is dead, and unreachable.
-    # Locked deep within {{impenetrable time|Yajnev}}.
-    & The {{Actors}} soon granted the immigrants access into the collapse, a spherical region of Dinaisth locked in perpetual statis. {{Dinaisth}} is the name of the moon habouring the {{Actors}}. 
+    # Locked within {{impenetrable time|Yajnev}}.
+    & The {{Actors}} soon granted the immigrants access into the collapse, a spherical region of Dinaisth locked in perpetual statis. {{Dinaisth}} is the name of the moon habouring the {{Actor|Actors}}. 
     # Our scientists complete the first module, of the last machine.
-    # It will build us anything we wish.
-    # Bringing about the end of science.
+    # It will build anything we wish.
+    # Bringing about the {{end of science|Feu}}.
     # .
     # The machine tunnels through the immobile sector.
-    # A small city, and at its center, the corpse of the Actor.
-    # Its head empty, it is hypothesized that the city is its thought and mind.
-    & This expedition will from now on be refered to as the {{Yajnev Expedition|Yajnev}}, named after the name of the Actor found at its center. Of the explorers, only one exited the collapse, {{Neonev}}.
+    # A small city, and at its center, the corpse of {{Yajnev}}.
+    # Its head empty, the city was its thoughts and mind.
+    & This expedition will be known as the {{Yajnev Expedition|Yajnev}}, named after the name of the {{Actor|Actors}} found at its center. Of the explorers, only one exited the collapse, {{Neonev}}.
     # The machine complete the second module, of the last invention.
     # It will build what must.
     # Bringing about the end that will.
     # .
     # The universe is complete and the whole of space organized.
-    # But one celestian object, unmoving.
+    # All, but one Celestian Object, unmoving.
     # The {{Ehrivevnv}}.
-    & The {{Neauismetica}} focuses on a handful of characters and events that begun when everything else has ended. On the surface of this machine-built sphere in a world that is pre-close, when most has died or left, and the remaining few are looking at a large mass in the sky setting in the horizon.
+    & The {{Neauismetica}} focuses on a handful of characters and events that begun when everything else has ended. On the surface of this machine-built sphere in a world that is pre-close, when most has died or left; the remaining few are looking at a large mass in the sky setting in the horizon.
     ? Immortals speak not with words<br /> but wait for things to happen,<br />and merely point at them.
 
 NEON HERMETISM
   UNDE : Neauismetica
-  BREF : The {{Neon Hermetists|Neon Hermetism}} are a collective of immigrants studying the {{Ehrivevnv}}.
+  BREF : The {{Neon Hermetists|Neon Hermetism}} are handful of {{immigrants|Dinaisth}} studying the {{Ehrivevnv}}.
   LONG
-    & The initiative included {{Neonev}}, who emerged from the {{collapse|Yajnev}}, {{Andes}}, who immigrated from the {{Soies}}, {{Ludivine}} and {{Rlionn}}. From its early days forth, the group believed the {{Ehrivevnv}} to be a gathering place for more advanced beings, or a trap to catch them.
+    & The initiative included {{Neonev}}, who emerged from the {{collapse|Yajnev}}, {{Andes}}, who immigrated from traversing the {{Soies}}, {{Ludivine}} and {{Rlionn}}. From its early days forth, the group believed the {{Ehrivevnv}} to be the gathering place of complex beings, and/or a trap to catch them.
     & {_Beyond the computing beautiful, <br />sleeps languages of impossible meanings._}
 
 EHRIVEVNV
@@ -1357,18 +1357,19 @@ EHRIVEVNV
   BREF : The {{Ehrivevnv}} is a dimensional puzzle presenting itself as a large celestial structure, located further than the last stars.
   LONG
     & Its discovery sparked a new age of thought, and ultimately, the {{completion of Science|Feu}}. It is also believed by the {{Neon Hermetism}} that, based on the design of the structure, it might be also be a creation of {{Actors}} operating through the {{Soies}}.
+    & This superstructure is found further than natural light could ever reach, napped in perpetual darkness and cold, in near infinite space and statis time.
     & {_Et haec revelantur in virtute et veritate<br /> non Vi._}
 
 NEAUSEA
   UNDE : Neon hermetism
   BREF : {{Neausea}} is a symptoms of knowing one's position amongst all possibilities.
   LONG
-    & Beings such as {{Paradichlorisse}}, or {{Actors}} can carry it. A weaker form of it can be induced when one is in contact with forms of {{Nohlxeserre}} languages.
+    & Beings such as {{Paradichlorisse}}, see {{Actors}}, can carry it. A weaker form of it can be induced when one is in contact with forms of {{Nohlxeserre}} languages.
     & {_In debt are are my impossible selves, <br />for all horrible days._}
 
 NOHLXESERRE
   UNDE : Neon hermetism
-  BREF : {{Nohlxeserre}} is a language that, when heard or read, delivers a richer and more precise rendition of its meaning than actual experience.
+  BREF : {{Nohlxeserre}} is a language that, when imprinted, delivers a richer and more precise rendition of its meaning than actual experience.
   LONG
     & The richness and detail of experiencing an event, pales in comparison to having it recited – Effictively inducing the symptoms of {{Neausea}} and ultimately death.
     & Andes, as opposted to {{Neonev}}, did not found itself on {{Dinaisth}} looking for {{Actors}}, but for {{Paradichlorisse}}. Whom Andes says "{_Speaks the language of the birds_}".
@@ -1392,10 +1393,13 @@ ACTORS
   BREF : {{Actors}} are able to traverse the {{Soies}}, carrying freewill, unaffected by determinism.
   LONG
     & Natural Actors, or anomalies, were found to have existed before the {{Feu}}, but the True Age of Actors came about with the synthesis of the first Actor by {{Neonev}} and the immigrants.
+    & The first synthesized {{actor|Actors}} was tasked to position itself into the longest lasting {{Occurence|Soies}}, meaning that it would effectively take control of all things, and of all of time, to steer the sequence of events allowing itself to exist within the longest lasting possible timeline of the computing occurence.
 
 DINAISTH
   UNDE : Neauismetica
   BREF : {{Dinaisth}} is both the name of the artificial moon orbiting the {{Ehrivevnv}} and of one of its continents — which harbors {{Andes}}' offices.
+  LONG
+    & Not one was ever native of {{Dinaisth}}, everyone came from elsewhere and all inhabitants are refered to as {*Immigrants*}.
 
 KANIKULE
   UNDE : Dinaisth
@@ -1852,6 +1856,7 @@ GLOSSARY
     - {*Pascal's mugging*} is a thought-experiment demonstrating a problem in expected utility maximization. A rational agent should choose actions whose outcomes, when weighed by their probability, have higher utility. But some very unlikely outcomes may have very great utilities, and these utilities can grow faster than the probability diminishes. Hence the agent should focus more on vastly improbable cases with implausibly high rewards.
     - {*Dunbar's Number*}: A suggested cognitive limit(150) to the number of people with whom one can maintain stable social relationships. 
     - {*Matthew Effect*}: Whoever has will be given more; whoever does not have, even what they have will be taken from them.
+    - {*Levenshtein Distance*}: A string metric for measuring the difference between two sequences, or comparing the similarity of two words.
     ~ Types
     - {*Altruism*}: Actions undertaken for the benefit of other people. {_Example_}: If you do something to feel good about helping people, or even to be a better person in some spiritual sense, it isn't truly altruism.
     - {*Hedonism*}: A set of philosophies which hold that the highest goal is to maximize pleasure, or more precisely pleasure minus pain.
