@@ -9,14 +9,16 @@ function Term(name,memory)
   if(memory){
     this.memory = memory;
     this.type = memory.type;
-    this.bref = this.memory.bref ? new Runic().markup(this.memory.bref) : "Missing";
-    this.long = this.memory.long ? new Runic(this.memory.long).html() : "";
     this.links = this.memory.link ? this.memory.link : [];
     this.flag = this.memory.flag ? this.memory.flag : [];
   }
   
   this.start = function()
   {
+    if(memory){
+      this.bref = this.memory.bref ? new Runic().markup(this.memory.bref) : "Missing";
+      this.long = this.memory.long ? new Runic(this.memory.long).html() : "";
+    }
     this.diaries = this.find_diaries();
   }
 
@@ -72,7 +74,6 @@ function Term(name,memory)
   {
     var html = "";
     if(this.parent && this.parent.name != this.name){
-      this.parent.start();
       html += "<ln class='parent'><a href='"+this.parent.name.to_url()+"'>"+this.parent.name.capitalize()+"</a></ln>"
       for(id in this.parent.children){
         var term = this.parent.children[id]
@@ -165,7 +166,6 @@ function Term(name,memory)
     var html = ""
     for(id in this.children){
       var term = this.children[id];
-      term.start();
       html += term.preview();
     }
     return html;

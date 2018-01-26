@@ -3,12 +3,6 @@ function Lexicon(memory)
   this.memory = memory;
   this.terms = {};
 
-  this.start = function()
-  {
-    this.add_terms();
-    this.connect_terms();
-  }
-
   this.add_terms = function()
   {
     for(name in this.memory.hash){
@@ -30,6 +24,13 @@ function Lexicon(memory)
       else{
         console.warn("lexicon","Missing parent "+term.memory.unde+" for "+term.name)
       }
+    }
+  }
+
+  this.start_terms = function()
+  {
+    for(name in this.terms){
+      this.terms[name].start();
     }
   }
 

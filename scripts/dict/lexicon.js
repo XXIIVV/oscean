@@ -1315,7 +1315,7 @@ NEAUISMETICA
   TYPE : Index
   BREF : The {{Neauismetica}} is a series of notes on the fiction of {{Dinaisth}}.
   LONG
-    & Referenced in almost all of the {{Nataniev}} projects, the {{Dinaisth}} are told through {{Aliceffekt}}'s music, Devine's {{illustrations|illustration}} and are the culture behind the {{Lietal}} Language.
+    & Referenced in almost all of the {{Nataniev}} projects, the tales of {{Dinaisth}} are told through {{Aliceffekt}}'s music, Devine's {{illustrations|illustration}} and are the culture behind the {{Lietal}} Language.
     & The Neauismetica was originally written in French around 2001, and translated throughout the following years, to be collected here as a series of disjointed entries on various characters and places.
     > <img src='media/badge/seal.png' style='margin:0px auto 45px; display:block; width:200px'/>
     & The events recorded here unfold on a small artifical planet orbiting a larger structure known as the {{Ehrivevnv}}. At the moment of the earliest tale, {{science has just ended|Feu}}, and was to be replaced by the art of operating permutation machines, or {{Actors}}, builders capable of invoking the optimal realization to any solution asked of them.

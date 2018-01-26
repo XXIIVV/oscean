@@ -3075,7 +3075,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 09R07 - 253      Drypoint
 09R06
 09R05
-09R04 ! 356  333 Neauismetica         Our forgotten Alphab
+09R04 ! 356  333 Neauismetica         Our forgotten Alphabet
 09R03
 09R02 - 253      Drypoint
 09R01

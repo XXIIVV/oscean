@@ -50,7 +50,6 @@ function Layout(host)
     
     var c = invoke.vessel.corpse;
     c.term = c.host.lexicon.find(key.replace(/\+/g," "));
-    c.term.start();
     c.photo.style.backgroundImage = c.term.photo();
     c.photo_info.innerHTML = c.term.photo_info();
     c.m1.innerHTML = "";

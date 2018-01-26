@@ -3,13 +3,6 @@ function Horaire(list)
   this.list = list;
   this.logs = [];
 
-  this.start = function()
-  {
-    this.add_logs();
-    this.connect_logs();
-    this.find_available();
-  }
-
   this.add_logs = function()
   {
     for(id in this.list.array){
