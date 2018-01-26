@@ -519,7 +519,7 @@ BIFURCAN
   LONG
     & Every second, the labyrinth reorganize itself to display the time with its twists and turns. It takes a little practice to be able to see the patterns in the lines. Clicking on the screen will unveil the time as seen in this {{video|https://www.youtube.com/watch?v=HzXIJpzPB6c}}. The original application was created in 30 minutes for a micro jam.
     & If you have a {{Pebble Watch|https://getpebble.com}}, you can download it as a {{watchface|http://www.mypebblefaces.com/apps/10183/7055/}}, the Pebble C script was written by Chase Colburn and is also available on {{Github|https://github.com/chasecolburn/line-maze}}. The screensaver version was done by {{Tekgo|http://tekgo.org}} and was also added to the source code.
-    & Named after a {{Borges short||http://en.wikipedia.org/wiki/The_Garden_of_Forking_Paths}}.
+    & Named after a {{Borges short|http://en.wikipedia.org/wiki/The_Garden_of_Forking_Paths}}.
   LINK
     https://itunes.apple.com/ca/app/bifurcan/id737264896
     https://github.com/Echorridoors/Bifurcan
@@ -881,7 +881,7 @@ SOFTWARE
   TYPE : Portal
   BREF : A collection of open-source and free {{software}}.
   LONG
-    & Released under {{Hundred Rabbits}}, these applications were created to be used offline, and to be easy to repair and improve while living {{Off the grid|Offline}}.
+    & Released under {{Hundred Rabbits}}, these applications were created to be used offline, and to be easy to repair and improve while living {*Off the grid*}.
   LINK
     http://hundredrabbits.itch.io/
     http://github.com/hundredrabbits
@@ -1349,7 +1349,7 @@ NEON HERMETISM
   UNDE : Neauismetica
   BREF : The {{Neon Hermetists|Neon Hermetism}} are a collective of immigrants studying the {{Ehrivevnv}}.
   LONG
-    & The initiative included {{Neoneve}}, who emerged from the {{collapse|Yajnev}}, {{Andes}}, who immigrated from the {{Soies}}, {{Ludivine}} and {{Rlionn}}. From its early days forth, the group believed the {{Ehrivevnv}} to be a gathering place for more advanced beings, or a trap to catch them.
+    & The initiative included {{Neonev}}, who emerged from the {{collapse|Yajnev}}, {{Andes}}, who immigrated from the {{Soies}}, {{Ludivine}} and {{Rlionn}}. From its early days forth, the group believed the {{Ehrivevnv}} to be a gathering place for more advanced beings, or a trap to catch them.
     & {_Beyond the computing beautiful, <br />sleeps languages of impossible meanings._}
 
 EHRIVEVNV
@@ -1441,7 +1441,7 @@ NEONEV
   UNDE : Characters
   BREF : {{Neonev}}, daughter of {{Rlionn}}, has traveled {{Dinaisth}} after she landing on the shores of {{Kanikule}} during the {{first season|feu}}.
   LONG
-    & Neoneve is the protagonist to {{Aliceffekt}}.
+    & Neonev is the protagonist to {{Aliceffekt}}.
 
 PARADICHLORISSE
   UNDE : Characters

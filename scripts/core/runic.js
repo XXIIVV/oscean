@@ -24,11 +24,13 @@ function Runic(raw)
 
     var parts = html.split("{{")
     for(id in parts){
-      var part = parts[id].split("}}")[0];
-      var target = part.indexOf("|") > -1 ? part.split("|")[1] : "/"+part;
-      var name = part.indexOf("|") > -1 ? part.split("|")[0] : part;
-      var external = (target.indexOf("https:") > -1 || target.indexOf("http:") > -1 || target.indexOf("dat:") > -1)
-      html = html.replace(`{{${part}}}`,`<a target='${external ? "_blank" : "_self"}'href='${external ? target : target.to_url()}' class='${external ? "external" : "local"}'>${name}</a>`)
+      var part = parts[id];
+      var content = part.split("}}")[0];
+      var target = content.indexOf("|") > -1 ? content.split("|")[1] : content;
+      var name = content.indexOf("|") > -1 ? content.split("|")[0] : content;
+      var external = (target.indexOf("https:") > -1 || target.indexOf("http:") > -1 || target.indexOf("dat:") > -1);
+      var redlink = !external && !invoke.vessel.lexicon.has_term(target); if(redlink){ console.warn("broken link",target,html); }
+      html = html.replace(`{{${content}}}`,`<a target='${external ? "_blank" : "_self"}' href='${external ? target : target.to_url()}' class='${external ? "external" : "local"} ${redlink ? "redlink" : ""}'>${name}</a>`)
     }
 
     return html;

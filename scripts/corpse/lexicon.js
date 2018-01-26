@@ -40,6 +40,11 @@ function Lexicon(memory)
     if(!this.terms[log.term.toLowerCase()]){ console.warn("horaire","Missing term for log "+log.term+" on "+log.time); return; }
     this.terms[log.term.toLowerCase()].logs.push(log)
   }
+
+  this.has_term = function(name)
+  {
+    return this.terms[name.toLowerCase()] ? true : false
+  }
   
   this.find = function(key = "Home")
   {
