@@ -1315,7 +1315,7 @@ NEAUISMETICA
   TYPE : Index
   BREF : The {{Neauismetica}} is a series of notes on the fiction of {{Dinaisth}}.
   LONG
-    & Referenced in almost all of the {{Nataniev}} projects, the tales of {{Dinaisth}} are told through {{Aliceffekt}}'s music, Devine's {{illustrations|illustration}} and are the culture behind the {{Lietal}} Language.
+    & Referenced in almost all of the {{Nataniev}} projects, the tales of {{Dinaisth}} are told through {{Aliceffekt}}'s music, {{Devine|Devine Lu Linvega}}'s {{illustrations|illustration}} and are the culture behind the {{Lietal}} Language.
     & The Neauismetica was originally written in French around 2001, and translated throughout the following years, to be collected here as a series of disjointed entries on various characters and places.
     > <img src='media/badge/seal.png' style='margin:0px auto 45px; display:block; width:200px'/>
     & The events recorded unfold on a small artifical planet orbiting a larger structure known as the {{Ehrivevnv}}. At the moment of the earliest tale, {{science has just ended|Feu}}, and was to be replaced by the art of operating permutation machines, or {{Actors}}, builders capable of invoking the optimal solution to any request asked of them.
@@ -1649,7 +1649,15 @@ HORAIRE
   TYPE : Special
   BREF : {{Horaire}} is a time tracking tool.
   LONG
-    & The Horaire logs' code format contains 3 values, looking as follow: {*326*}. The 3 values position the log in the shape of a cube where the 3 dimensions, or axis, are {*Sector*}[Audio, Visual & Research], {*Focus*}[Distracted/Attentive] and {*Meta*}[Abstract/Concrete].
+    & The Horaire logs' {{format looks|https://github.com/XXIIVV/oscean/blob/master/scripts/list/horaire.js}} as follow: {*18B01 - 156*}, and is formed of the {*Pentagrammaton*}, the {*rune*} and the {*code*}. The {{Desamber}} date format is a 5 characters long code ranging from {{00A01|Calendar}}(January 1st 2000) to {{99+02|Calendar}}(December 31st 2099). The rune assigns a log type to the entry, special events are recorded using the +rune, the default log will be marked as -rune, and other log types have their dedicated ~runes.
+    & The 3 values effectively map the log over a cube where the 3 dimensions are: the {*Sector*}, where 1 is Audio, 2 is Audio, and 3 is Research. The second dimension is the {*Focus Hour*}, an index of attention for the day's task — where 1 indicates that barely any time was invested in the task, and 9 indicates that all available time and focus was invested in the day's task. The last number is the {*Abstract/Concrete Vector*} defined as:
+    > <table>
+    > <tr><th></th><th colspan='4'>Abstract</th><th colspan='2'>—</th><th colspan='4'>Concrete</th></tr>
+    > <tr><th>Audio</th><th>1.1</th><td>Rehersal</td><th>1.3</th><td>Draft</td><th>1.5</th><td>Composition</td><th>1.7</th><td>Mastering</td><th>1.9</th><td>Release</td></tr>
+    > <tr><th>Visual</th><th>2.1</th><td>Concept</td><th>1.3</th><td>Layout</td><th>2.5</th><td>Sketch</td><th>1.7</th><td>Composition</td><th>2.9</th><td>Render</td></tr>
+    > <tr><th>Research</th><th>3.1</th><td>Planning</td><th>1.3</th><td>Testing</td><th>3.5</th><td>Tools</td><th>1.7</th><td>Update</td><th>3.9</th><td>Application</td></tr>
+    > </table>
+    & The Abstract/Concrete axis represent the value of concrete output, or index of progress toward the release of a project. It is also a vague indicator of a log's task type when combined with the sector value.
   LINK
     https://github.com/XXIIVV/oscean/blob/master/scripts/list/horaire.js
 

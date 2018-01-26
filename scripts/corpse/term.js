@@ -181,7 +181,7 @@ function Term(name,memory)
         html += "<quote>"
         for(id2 in term.children){
           var subterm = term.children[id2];
-          html += `<h3>${parseInt(id)+1}.${parseInt(id2)+1} ${term.name} — ${subterm.name}</h3><p>${subterm.bref}</p>${subterm.long}`
+          html += `<h3><t style='color:#999'>${parseInt(id)+1}.${parseInt(id2)+1}</t> ${term.name} — ${subterm.name}</h3><p>${subterm.bref}</p>${subterm.long}`
         }  
         html += "</quote>"
       }
