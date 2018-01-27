@@ -19,11 +19,13 @@ function calendar_view()
     table.year { margin-bottom:30px; width:100%}
     table.year tr {  }
     table.year tr td { vertical-align: bottom; position:relative; border:1px solid black}
-    table.year tr td a {display: block;font-size: 11px;line-height: 25px;padding: 0px 5px;color: black;font-family: 'input_mono_medium'; text-transform:uppercase}
-    table.year tr td a.today { background:white}
-    table.year tr td a.event { background:#000; color:white}
+    table.year tr td a {display: block;font-size: 11px;line-height: 25px;color: black;font-family: 'input_mono_medium'; text-transform:uppercase}
+    table.year tr td.today { background:white}
+    table.year tr td.event { background:#000}
+    table.year tr td.event a { color:white}
     table.year tr td a.missing:after { content:"---"}
-    table.year tr td a:hover { text-decoration:underline; background:white; color:black}
+    table.year tr td:hover { background:white;}
+    table.year tr td:hover a { text-decoration:underline; color:black}
     table.year tr td span.date { font-family:'input_mono_regular'}
     a.year { display:inline-block; margin-right:10px; font-size:11px; margin-bottom:15px; color:black; font-family:'input_mono_medium'}
     a.year.selected { text-decoration:underline}
@@ -36,7 +38,7 @@ function calendar_view()
 
   this.cell = function(log,desamber,today,full_width = false)
   {
-    return `<td ${full_width ? "colspan='26'" : ""}><a ${log ? "href='#"+log.term.to_url()+"'": ""} title='${new Desamber(desamber).to_gregorian()}' class='${today == desamber ? "today" : ""} ${log && log.is_event ? "event" : ""} ${!log ? "missing" : ""}'><span class='date'>${desamber}</span> ${log ? (log.sector ? log.sector.substr(0,1) : "")+""+log.value+""+log.vector : ""}</a></td>`
+    return `<td ${full_width ? "colspan='26'" : ""} class='${today == desamber ? "today" : ""} ${log && log.is_event ? "event" : ""}'><a ${log ? "href='#"+log.term.to_url()+"'": ""} title='${new Desamber(desamber).to_gregorian()}' class='${!log ? "missing" : ""}'><span class='date'>${desamber}</span> ${log ? (log.sector ? log.sector.substr(0,1) : "")+""+log.value+""+log.vector : ""}</a></td>`
   }
 
   this.calendar_graph = function(year,logs)

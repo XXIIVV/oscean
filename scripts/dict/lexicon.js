@@ -1218,7 +1218,9 @@ SUPERVISITOR
 SUPERGRID
   UNDE : Demo
   TYPE : Diary
-  BREF : {{Supergrid}} is a concept album created with {{Marabu}}, where each track is created during a single week, and the full album's planned release is at the end of year.
+  BREF : {{Supergrid}} is a concept album created with {{Marabu}}, where each track is created during a single week.
+  LONG
+    & The full album's planned release is at the end of year, the weekly tracks are available {{here|https://weeklybeats.com/aliceffekt}}.
   LINK
     https://weeklybeats.com/aliceffekt
 
