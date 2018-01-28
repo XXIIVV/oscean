@@ -711,7 +711,6 @@ OQUONIE GUIDE
   BREF : This {{Oquonie Guide}} is aimed at players who have gone past the loop of character changes.
   LONG
     & This guide is meant to be a spoiler-free list of tips to help you proceed through {{Oquonie}}. So if you have not yet found the first pillar, this is {*not*} for you, so keep playing, for your only task at the moment is to find sequences of three matching tokens.
-    % oquonie.first.pillar
     & A {*red pillar*} appeared next to one of the town's gates. What do? In your travels, you have met a small spiky ramen-eating character, speaking to him as each character will have him spawn in town and give you a {*token*} based on which character that you are. You need his help, so make sure that you have found him in each of the worlds.
     & Things get a bit trickier here, you will need to find your first token as you leave one world, your second from the ramen guy, and the last in yet another world.
     & The town's shark will remove your tokens, speak to him if you ever find yourself with tokens that you do not need. Good luck!
@@ -1318,28 +1317,28 @@ NEAUISMETICA
   BREF : The {{Neauismetica}} is a series of notes on the fiction of {{Dinaisth}}.
   LONG
     & Referenced in almost all of the {{Nataniev}} projects, the tales of {{Dinaisth}} are told through {{Aliceffekt}}'s music, {{Devine|Devine Lu Linvega}}'s {{illustrations|illustration}} and are the culture behind the {{Lietal}} Language.
-    & The Neauismetica was originally written in French around 2001, and translated throughout the following years, to be collected here as a series of disjointed entries on various characters and places.
+    & Originally written in French, the {_Neauismetica_} is being gradually translated and collected here as a series of disjointed entries on its various concepts, characters and places.
     > <img src='media/badge/seal.png' style='margin:0px auto 45px; display:block; width:200px'/>
-    & These recorded events unfold on a small artifical planet orbiting a larger structure known as the {{Ehrivevnv}}. At the moment of the earliest tale, {{science has just ended|Feu}}, and was to be replaced by the art of operating {{permutation machines|Actors}}, builders capable of invoking the optimal solution to any request asked of them.
+    & These recorded events unfold on a small artifical planet orbiting a larger structure known as the {{Ehrivevnv}}. At the moment of the earliest tale, {{science had just ended|Feu}}, and was to be replaced by the art of operating {{permutation machines|Actors}}, builders capable of invoking the optimal solution to any request asked of them.
     # In the end, there are birds.
     # They teach us how to build <i>planes</i>.
     # We fly too far and for {{too long|kanikule}}.
     # .
-    # We are to find an {{Actor}}, a being with freewill.
+    # We are to find an {{Actor|Actors}}, a being with freewill.
     # But the actor is dead, and unreachable.
     # Locked within {{impenetrable time|Yajnev}}.
-    & But the immigrants soon build the tools that will grant them access into the collapse, a spherical region of Dinaisth locked in perpetual stasis. {{Dinaisth}} is the name of the moon habouring the corpse of {{Yajnev}}. 
+    & The immigrants soon build the tools that will grant them access into the collapse, a spherical region of Dinaisth locked in perpetual stasis. {{Dinaisth}} is the name of the moon habouring the corpse of {{Yajnev}}. 
     # Our scientists complete the first module, of the last machine.
-    # It will build anything we wish.
+    # It builds anything we wish for.
     # Bringing about the {{end of science|Feu}}.
     # .
     # The machine tunnels through the immobile sector.
-    # A small city, and at its center, the corpse of {{Yajnev}}.
-    # Its head empty, the city was its thoughts and mind.
+    # At its center, the corpse of {{Yajnev}}.
+    # Its head empty, these are its thoughts and mind.
     & This expedition will be known as the {{Yajnev Expedition|Yajnev}}, named after the name of the {{Actor|Actors}} found at its center. Of the explorers, only one exited the collapse, {{Neonev}}.
     # The machine completes the second module, of the last invention.
-    # It will build what must.
-    # Bringing about the end that will.
+    # It builds what must.
+    # Bringing about the {{end that will|Feu}}.
     # .
     # The universe is complete and the whole of space organized.
     # All, but one Celestian Object, unmoving.
@@ -1359,14 +1358,14 @@ EHRIVEVNV
   BREF : The {{Ehrivevnv}} is a dimensional puzzle presenting itself as a large celestial structure, located further than the last stars.
   LONG
     & Its discovery sparked a new age of thought, and ultimately, the {{completion of Science|Feu}}. It is also believed by the {{Neon Hermetism}} that, based on the design of the structure, it might be also be a creation of {{Actors}} operating through the {{Soies}}.
-    & This superstructure is found further than natural light could ever reach, napped in perpetual darkness and cold, in near infinite space and {_stasized_} time.
+    & This superstructure is found further than natural light could ever reach, napped in perpetual darkness and cold, in near infinite space and {{stasized time|Vetetrandes}}.
     & {_Et haec revelantur in virtute et veritate<br /> non Vi._}
 
 NEAUSEA
   UNDE : Neon hermetism
   BREF : {{Neausea}} is a symptoms of knowing one's position amongst all possibilities.
   LONG
-    & Beings such as {{Paradichlorisse}}, see {{Actors}}, can carry it. A weaker form of it can be induced when one is in contact with forms of {{Nohlxeserre}} languages.
+    & Beings such as {{Paradichlorisse}}, and {{Actors}}, can carry it. A weaker form of it can be induced when one is in contact with forms of {{Nohlxeserre}} languages.
     & {_In debt are are my impossible selves, <br />for all horrible days._}
 
 NOHLXESERRE
@@ -1374,55 +1373,70 @@ NOHLXESERRE
   BREF : {{Nohlxeserre}} is a language that, when imprinted, delivers a richer and more precise rendition of its meaning than actual experience.
   LONG
     & The richness and detail of experiencing an event, pales in comparison to having it recited – Effictively inducing the symptoms of {{Neausea}} and ultimately death.
-    & Andes, as opposted to {{Neonev}}, did not found itself on {{Dinaisth}} looking for {{Actors}}, but for {{Paradichlorisse}}. Whom Andes says "{_Speaks the language of the birds_}".
+    & The Nohlxeserre Language is the language of thoughts of the {{Actors}}. Andes, as opposted to {{Neonev}}, did not found itself on {{Dinaisth}} looking for {{Actors}}, but for {{Paradichlorisse}}. Whom Andes says "{_Speaks the language of the birds_}".
 
 FEU
   UNDE : Neon hermetism
-  BREF : {{Feu}}, or {_The End Of Science_}, is the era which began with the creation of the original permutation machine when sentience and existance became irrelevant.
+  BREF : {{Feu}}, or {_The End Of Science_}, is the era which began with the creation of the original permutation machine.
   LONG
-    & Once the {{Actors}} were able to seek and execute the longest lasting {{occuring|Soies}}, no thought had not previously been weighted against all other and acted upon or dismissed.
+    & Once the {{Actors}} were able to locate the {{Longest End|Soies}}, all decision were weighted against all others and {{invoked|Actors}} or dismissed.
+    & The role of the actor is to act, as its exitence spans across the Occuring, the possible and the impossible. Once the actor comes online, its existence has always been, and will remain active until the end of the active Occuring. 
+    & {*Feu*} then simply refers to the date of activation of the machine.
 
 SOIES
   UNDE : Neon hermetism
-  BREF : {{Soies}}, is the study and traversing occuring, possible and impossible timelines.
+  BREF : {{Soies}}, or {_Size Of Impossibilities_},  is a field of action allowing {{Actors}} to traverse multiple timelines.
   LONG
-    & The Soies model makes available the first values to exist beyond the limits of the current possible space, making computeable the location of the occuring, allowing the {{Actors}} to position themselves and execute the occuring and position themselves along the {{Soies}}.
-    & This line of research is tied to the discovery of the {{Ehrivevnv}}.
+    & The Soies model predicts the first values to exist beyond the limits of the current possible or computable space, allowing the {{Actors}} to study impossible events, and to align the course of time with any given optimal occuring.
     > <img src='media/badge/soies.png' style='margin:0px auto 45px; display:block; width:200px'/>
+    & In other words, by generating the first events outside of the renderable, or Possible World, the {{Actors}} steer themselves inside and outside of the possible and impossible chain of events, granting them access to various impossible actions to navigate toward their goal, the {*Longest End*}. This line of research is tied to the discovery of the {{Ehrivevnv}} as the puzzle only exists within the Longest End.
+    & The {*Longest End*} is the longest surviving occurence amongst the inifities of other timelines. The {{Actors}}' goal is to steer the occuring chain of events to exist within the longest lasting universe.
 
 ACTORS
   UNDE : Neon hermetism
   BREF : {{Actors}} are able to traverse the {{Soies}}, carrying freewill, unaffected by determinism.
   LONG
-    & Natural Actors, or anomalies, were found to have existed before the {{Feu}}, but the True Age of Actors came about with the synthesis of the first Actor by {{Neonev}} and the immigrants.
-    & The first synthesized {{actor|Actors}} was tasked to position itself into the longest lasting {{Occurence|Soies}}, meaning that it would effectively take control of all things, and of all of time, to steer the sequence of events allowing itself to exist within the longest lasting possible timeline of the computing occurence.
+    & Natural Actors, or anomalies, were found to have existed before the {{Feu}}, but the True Age of Actors came about with the synthesis of the first Actor by {{Neonev}} and the Immigrants.
+    & The first synthesized {{actor|Actors}} was tasked to position itself into the {{Longest End|Soies}}, meaning that it would effectively take control of all things, and of all of time, to steer the sequence of events allowing itself to exist within the longest lasting possible timeline of the computing occurence.
+    & Actors have no names, and their number is unknown, it is possible that multiple actors, or multiple instances of the same actor, are competing for the {{Longest End|Soies}}.
 
 DINAISTH
   UNDE : Neauismetica
   BREF : {{Dinaisth}} is both the name of the artificial moon orbiting the {{Ehrivevnv}} and of one of its continents — which harbors {{Andes}}' offices.
   LONG
-    & Not one was ever native of {{Dinaisth}}, everyone came from elsewhere and all inhabitants are refered to as {*Immigrants*}.
-
-DUOMO
-  UNDE : Dinaisth
-  BREF : {{Duomo}} covers most of the northern hemisphere of {{Dinaisth}}.
+    & Not one being was ever native of {{Dinaisth}}, everyone came from elsewhere and all inhabitants are refered to as {*Immigrants*} — Even {{Yajnev}} will have come from somewhere else.
 
 KANIKULE
   UNDE : Dinaisth
   BREF : {{Kanikule}} is an infinite ocean that an immortal would spend an infitite amount of time crossing, effectively reaching the outer-shores mortal.
   LONG
     & While one can sail away from its center, {*Neau*}, one cannot return to it, for it occupies no space in the ocean.
-    & Neau is a circular city at the center of {{Kanikule}}, the birthplace of {{Lietal}}, and is also the place from which the {{Neauismetica}} derives its name.
-
-LAEISTH
-  UNDE : Dinaisth
-  BREF : {{Laeisth}} is a desert surrounding an Oasis, a blackened chasm where creeps the clones of its violent host {{Rlionn}}.
+    & Neau is a circular city at the center of {{Kanikule}} where {{Devine Lu Linvega}} first appeared before trying to cross Kanikule. The blue roofed city the birthplace of {{Lietal}}, and is also the place from which the {{Neauismetica}} derives its name.
 
 VETETRANDES
   UNDE : Dinaisth
   BREF : {{Vetetrandes}} is the remains of a city that surrounds {{Yajnev}}.
   LONG
-    & As you would approach the epicenter of the bound city, time is increasingly unmoving. At its center, one can find the corpse of {{Yajnev}}, who's head's insides are believed to be the only true space that can be said to be "outside".
+    & As you would approach the epicenter of the bound city, time is increasingly unmoving. At its center, one would find the corpse of {{Yajnev}}, and where Yajnev's head would have been, a hollow mask. Locked inside the mask is the only instance of true space that can be said to be "outside".
+    & The trek across Vetetrandes is only possible through the guiding of an {{Actor|Actor}}, as the local void existing in Vetetrandes is unacted, or unoperated and unredered.
+
+LAEISTH
+  UNDE : Dinaisth
+  BREF : {{Laeisth}} is a desert surrounding an Oasis, a blackened chasm where creeps the clones of its violent host {{Rlionn}}.
+  LONG
+    & Incomplete.
+
+DUOMO
+  UNDE : Dinaisth
+  BREF : {{Duomo}} covers most of the northern hemisphere of {{Dinaisth}}.
+  LONG
+    & Incomplete.
+
+DILITRIEL
+  UNDE : Dinaisth
+  BREF : {{Dilitriel}} is the central region of {{Dinaisth}}.
+  LONG
+    & Incomplete.
 
 CHARACTERS
   UNDE : Neauismetica
@@ -1430,9 +1444,10 @@ CHARACTERS
 
 YAJNEV
   UNDE : Characters
-  BREF : {{Yajnev}}, who's {_death_} engulfed {{Vetetrandes}} in an opaque and impenetrable {{lock|Ehrivevnv}}.
+  BREF : {{Yajnev}}, an {{Actor|Actors}}, who's {_death_} engulfed {{Vetetrandes}} in an opaque and impenetrable {{lock|Ehrivevnv}}.
   LONG
-    & In his life, Yajnev wrote the original papers on {{Paradichlorisse}} and {{Neausea}}.
+    & Yajnev is a {_Local-type_} {{actor|Actors}}, meaning that its acting was mainly spacial, and only briefly temporal. Its nervous imprint of local space could steer events locally, as well as affect time.
+    & The space, and time, surrounding its body was animated by {{Yajnev}}'s reflexion and thoughts. The effect of the Immigrats approaching {{Dinaisth}} might have caused the collapse, as it may have had an effect similar to that of a foreign body injecting itself in the network of dimensional nerves.
 
 RLIONN
   UNDE : Characters
@@ -1443,23 +1458,23 @@ RLIONN
 
 ANDES
   UNDE : Characters
-  BREF : {{Andes}} traversed into {{Dinaisth}} through a primitive exploit in the {{Soies}} shortly before the {{first season|Feu}} and brought along tools to study the {{Ehrivevnv}}.
+  BREF : {{Andes}} traversed into {{Dinaisth}} through an exploit in the {{Soies}} shortly before the {{first season|Feu}} and brought along tools to study the {{Ehrivevnv}}.
   LONG
     & Andes was already present on {{Dinaisth}} when {{Neonev}} and the other immigrants arrived, the role of Andes in the {{Yajnev Collapse|Yajnev}} is unknown, but his arrival coincides with the destruction of {{Vetetrandes}}.
     
-NEONEV
-  UNDE : Characters
-  BREF : {{Neonev}}, daughter of {{Rlionn}}, has traveled {{Dinaisth}} after she landing on the shores of {{Kanikule}} during the {{first season|feu}}.
-  LONG
-    & Neonev is the protagonist to {{Aliceffekt}}.
-
 PARADICHLORISSE
   UNDE : Characters
   BREF : {{Paradichlorisse}} is located near the {{Yajnev Collapse|Yajnev}}, and is known to speak a dialect of {{Nohlxeserre}}.
   LONG
     & Its purpose is unknown, but it was observed reciting stories in a fashion that ressembled the navigation of the {{Soies}}.
-    & Upon reaching its location, pilgrims collapse as they begin experiencing {_every life and every death_} through the {{speech|Nohlxeserre}} of the infinite being. 
+    & Upon reaching its location, one would infinitely collapse as they would begin experiencing {_every life and every death_} for ever, recited in the {{speech|Nohlxeserre}} of the infinite being. 
     & {_When Paradichlorisse spoke of silence, silence fell._}
+
+NEONEV
+  UNDE : Characters
+  BREF : {{Neonev}}, daughter of {{Rlionn}}, has traveled {{Dinaisth}} after landing on the shores of {{Kanikule}} during the {{first season|feu}}.
+  LONG
+    & Neonev is the protagonist to {{Aliceffekt}}.
 
 PHOTOGRAPHY
   UNDE : Visual
