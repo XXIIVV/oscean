@@ -384,7 +384,7 @@ TEN AXITECTURE
 
 MINISCOPIE
   UNDE : Beldam records
-  BREF : {{Miniscopie}} is a {{Beldam Records}} release, by {{Reine}}.
+  BREF : {{Miniscopie}} is a {{Beldam Records}} release, by {_Reine_}.
   LONG
     & Written by {{Reine|http://noirmirroir.com}}, this album combines ambient and deep IDM flavoured sounds. The album is the first music release from Elodie, who also created the {{Vast}} book.
     > <iframe style="border: 0; width: 600px; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=2603579101/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://beldamrecords.bandcamp.com/album/miniscopie">Miniscopie by Reine</a></iframe>
@@ -822,7 +822,7 @@ VETETRANDES LETTRES
   UNDE : Neauismetic
   BREF : {{Vetetrandes Lettres}}'s songs sings of the {{first ages|Neauismetica}} of {{Dinaisth}} on the island of {{Vetetrandes}}.
   LONG
-    & While the album begins in Vetetrandes, it moves to the shores of {_Dilitrielth_} and turns its attention across {{Kanikule}} and toward the {_Es_}'Gulf of {_Eaurison_}.
+    & While the album begins in Vetetrandes, it moves to the shores of {{Dilitriel}} and turns its attention across {{Kanikule}} and toward the {_Es_}'Gulf of {_Eaurison_}.
     & The album includes 4 edited tracks from the {{Es Gulf Sunflowers}} release. The {_Ver'Tale_} extension is a hint to a location of {_Whiinders_}, close to the visited {_Vert Kirlian Theatre_}.
     & The album begins with a track about {{Yajnev}}, the composition is based on his trip near the white trees of the {_Oasis_} and the {_Children of Brambles_}.
     & The album is part of {{Aliceffekt}}'s {{Neauismetic}} albums.
@@ -1117,7 +1117,7 @@ EXTENDED SLEEP
 DUOMIC
   UNDE : Aliceffekt
   TYPE : Portal
-  BREF : The {{Duomic}} albums are {{Neauismetic}} records of {{Neonev}}'s travel from {{Duomo}} to {{Dilitrielth}}.
+  BREF : The {{Duomic}} albums are {{Neauismetic}} records of {{Neonev}}'s travel from {{Duomo}} to {{Dilitriel}}.
 
 THE OPAL INQUISITORS
   UNDE : Duomic
@@ -1141,7 +1141,7 @@ PORTALION
 
 DEI DAIN
   UNDE : Duomic
-  BREF : {{Dei Dain}} is the third {{Duomic}} album, where {{Neonev}} travels from the desert of {{Laeisth}} to the nightly scapes of {{Dilitrielth}}.
+  BREF : {{Dei Dain}} is the third {{Duomic}} album, where {{Neonev}} travels from the desert of {{Laeisth}} to the nightly scapes of {{Dilitriel}}.
   TAGS : Discography
   LONG
     > <iframe style="border: 0; width: 100%; height: 472px;" src="https://bandcamp.com/EmbeddedPlayer/album=4246216793/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/dei-dain">Dei Dain by aliceffekt</a></iframe>
@@ -1320,15 +1320,15 @@ NEAUISMETICA
     & Referenced in almost all of the {{Nataniev}} projects, the tales of {{Dinaisth}} are told through {{Aliceffekt}}'s music, {{Devine|Devine Lu Linvega}}'s {{illustrations|illustration}} and are the culture behind the {{Lietal}} Language.
     & The Neauismetica was originally written in French around 2001, and translated throughout the following years, to be collected here as a series of disjointed entries on various characters and places.
     > <img src='media/badge/seal.png' style='margin:0px auto 45px; display:block; width:200px'/>
-    & The events recorded unfold on a small artifical planet orbiting a larger structure known as the {{Ehrivevnv}}. At the moment of the earliest tale, {{science has just ended|Feu}}, and was to be replaced by the art of operating permutation machines, or {{Actors}}, builders capable of invoking the optimal solution to any request asked of them.
+    & These recorded events unfold on a small artifical planet orbiting a larger structure known as the {{Ehrivevnv}}. At the moment of the earliest tale, {{science has just ended|Feu}}, and was to be replaced by the art of operating {{permutation machines|Actors}}, builders capable of invoking the optimal solution to any request asked of them.
     # In the end, there are birds.
-    # They reveal to us how to build <i>planes</i>.
+    # They teach us how to build <i>planes</i>.
     # We fly too far and for {{too long|kanikule}}.
     # .
-    # We are going to see the Actor, a being with freewill.
+    # We are to find an {{Actor}}, a being with freewill.
     # But the actor is dead, and unreachable.
     # Locked within {{impenetrable time|Yajnev}}.
-    & The {{Actors}} soon granted the immigrants access into the collapse, a spherical region of Dinaisth locked in perpetual statis. {{Dinaisth}} is the name of the moon habouring the {{Actor|Actors}}. 
+    & But the immigrants soon build the tools that will grant them access into the collapse, a spherical region of Dinaisth locked in perpetual stasis. {{Dinaisth}} is the name of the moon habouring the corpse of {{Yajnev}}. 
     # Our scientists complete the first module, of the last machine.
     # It will build anything we wish.
     # Bringing about the {{end of science|Feu}}.
@@ -1337,7 +1337,7 @@ NEAUISMETICA
     # A small city, and at its center, the corpse of {{Yajnev}}.
     # Its head empty, the city was its thoughts and mind.
     & This expedition will be known as the {{Yajnev Expedition|Yajnev}}, named after the name of the {{Actor|Actors}} found at its center. Of the explorers, only one exited the collapse, {{Neonev}}.
-    # The machine complete the second module, of the last invention.
+    # The machine completes the second module, of the last invention.
     # It will build what must.
     # Bringing about the end that will.
     # .
@@ -1359,7 +1359,7 @@ EHRIVEVNV
   BREF : The {{Ehrivevnv}} is a dimensional puzzle presenting itself as a large celestial structure, located further than the last stars.
   LONG
     & Its discovery sparked a new age of thought, and ultimately, the {{completion of Science|Feu}}. It is also believed by the {{Neon Hermetism}} that, based on the design of the structure, it might be also be a creation of {{Actors}} operating through the {{Soies}}.
-    & This superstructure is found further than natural light could ever reach, napped in perpetual darkness and cold, in near infinite space and statis time.
+    & This superstructure is found further than natural light could ever reach, napped in perpetual darkness and cold, in near infinite space and {_stasized_} time.
     & {_Et haec revelantur in virtute et veritate<br /> non Vi._}
 
 NEAUSEA
@@ -1402,6 +1402,10 @@ DINAISTH
   BREF : {{Dinaisth}} is both the name of the artificial moon orbiting the {{Ehrivevnv}} and of one of its continents — which harbors {{Andes}}' offices.
   LONG
     & Not one was ever native of {{Dinaisth}}, everyone came from elsewhere and all inhabitants are refered to as {*Immigrants*}.
+
+DUOMO
+  UNDE : Dinaisth
+  BREF : {{Duomo}} covers most of the northern hemisphere of {{Dinaisth}}.
 
 KANIKULE
   UNDE : Dinaisth
@@ -1746,7 +1750,7 @@ NUTRITION
     & The human body's own proteins are constantly being broken down into {*amino acids*} and used throughout its systems. 
     & The human body is mostly made of proteins, and proteins are made of amino acids - permutations of carbon, oxygen, hydrogen, nitrogen and sometimes sulfur. There are 22 amino acids in total and all but 9 can be synthesized, the {*Essential Amino Acids*}. 
     & To be used for growth and repair, a protein needs to be a {*complete protein*}, or have access the full sequence of required essential amino acids. If an essential amino acid is missing, the unsuable remaining amino acids are broken down into fats or sugars.
-    & Examples of foods with essential amino acid content of at least 70% of a complete protein(see {_Limiting Amino Acids_} in {{REF|#ref}}) are oats, garbanzo beans, sunflower seeds, buckwheat, red/white/black beans, rice, peanuts and pumpkin seeds.
+    & Examples of foods with essential amino acid content of at least 70% of a complete protein(see {_Limiting Amino Acids_}) are oats, garbanzo beans, sunflower seeds, buckwheat, red/white/black beans, rice, peanuts and pumpkin seeds.
     & There are also high-quality proteins in green beans, swiss chard, broccoli, mustard greens, asparagus and potatoes but in lesser quantity.
     & Soy products have within them 100% of a complete protein, or the correct ratio of essential amino acids for the body to use in tissue growth and repair.
     & The high-quality protein foods can be made whole by combining with other ingredients, but the basic optimal combinations is {*Beans with grains, nuts or seeds*}.
