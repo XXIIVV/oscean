@@ -1,12 +1,12 @@
-function Lexicon(memory)
+function Lexicon(dict)
 {
-  this.memory = memory;
+  this.dict = dict;
   this.terms = {};
 
   this.add_terms = function()
   {
-    for(name in this.memory.hash){
-      var entry = new Term(name,this.memory.hash[name]);
+    for(name in this.dict.hash){
+      var entry = new Term(name,this.dict.hash[name]);
       this.terms[name.toLowerCase()] = entry;
     }
   }
@@ -15,14 +15,14 @@ function Lexicon(memory)
   {
     for(name in this.terms){
       var term = this.terms[name];
-      var parent = term.memory.unde ? this.terms[term.memory.unde.toLowerCase()] : null;
+      var parent = term.dict.unde ? this.terms[term.dict.unde.toLowerCase()] : null;
       // Connect parents/children
       if(parent){
-        term.parent = this.terms[term.memory.unde.toLowerCase()];
+        term.parent = this.terms[term.dict.unde.toLowerCase()];
         parent.children.push(term);
       }
       else{
-        console.warn("lexicon","Missing parent "+term.memory.unde+" for "+term.name)
+        console.warn("lexicon","Missing parent "+term.dict.unde+" for "+term.name)
       }
     }
   }
@@ -54,7 +54,7 @@ function Lexicon(memory)
 
   this.find_any = function(key,value)
   {
-    var results = this.memory.find_any(key,value)
+    var results = this.dict.find_any(key,value)
     var a = [];
     for(id in results){
       var entry = new Term(id,results[id]);

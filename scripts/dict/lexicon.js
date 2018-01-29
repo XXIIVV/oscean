@@ -1,4 +1,4 @@
-let $LEXICON = new Memory(`
+let $LEXICON = new Dict(`
 HOME
   UNDE : Home
   BREF : Welcome to the {{Nataniev}} playground and ecosystem.
@@ -235,7 +235,6 @@ HUNDRED RABBITS
   UNDE : Devine lu linvega
   BREF : {{Hundred Rabbits}} is a design studio on a {{sailboat|Pino}}.
   TYPE : Diary
-  TAGS : Portal
   LONG
     & This partnership is host to interactive projects like {{Oquonie}}, {{Grimgrains|http://grimgrains.com}} and travel diaries. A {{Patreon page|https://www.patreon.com/100}} is available to help fund the production of monthly videos and liveaboard documentation.
     > <iframe style="border: 0; width: 100%; height: 241px;" src="https://bandcamp.com/EmbeddedPlayer/album=1969793667/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/hundred-rabbits">Hundred Rabbits by aliceffekt</a></iframe>
@@ -310,7 +309,6 @@ MALICE
 COLLECTED WORKS
   UNDE : Malice
   BREF : {{Collected Works}} between 2008 and 2015, written as {{Malice}}.
-  TAGS : Discography
   LONG
     & This release includes the complete {*Storm Transit record*}, hidden {{Malice}} tracks from {{Aliceffekt}} releases and the {{Merveilles Portable}} soundtrack.
   LINK
@@ -368,7 +366,6 @@ BELDAM RECORDS
   LONG
     * Catalog
   TYPE : Portal
-  TAGS : Portal
   LINK
     https://beldamrecords.bandcamp.com
     https://twitter.com/beldamrecords
@@ -662,7 +659,6 @@ NEREID
     & The soil is mostly diamonds, {_carbonado_} and the lack of atmosphere leaves the surface of the moon, mostly quiet. Pigments, illegal. Learn more through the {{Serventines}} travel diaries.
     &
   TYPE : Portal
-  TAGS : Portal
 
 PEARLS
   UNDE : Nereid
@@ -718,7 +714,6 @@ OQUONIE GUIDE
     & To input the cheat codes, just type while the game window is in focus. Their purpose is resolve mirror bugs whenever your save game glitches.
     # noplacelikehome         <comment>Warps you into the lobby.</comment>
     # susannakaysen           <comment>Erases the current save game.</comment>
-  TAGS : Guide
 
 CAMILARE
   UNDE : Oquonie
@@ -756,7 +751,6 @@ POLYGONOSCOPY
   UNDE : Illustration
   BREF : {{Polygonoscopy}} is a series of abstract videographies, recorded with the {{Kaleidoscope}}.
   TYPE : Portal
-  TAGS : Portal
 
 METHASCOPE
   UNDE : Polygonoscopy
@@ -888,7 +882,6 @@ SOFTWARE
 MARABU
   UNDE : Software
   BREF : {{Marabu}} is a music software.
-  TAGS : Guide
   LONG
     & {*Marabu*} is cross-platform tracker-type composition tool and synthetiser.
     & Marabu was original built as a fork to the opensource {_Soundbox_}, and is meant to be an improvement on functionalities and design.
@@ -1006,7 +999,6 @@ DOMINE GUIDE
   UNDE : Table
   BREF : This {{Domine Guide}} will show you how to play a simple game two player game, with dominoes.
   TYPE : Docs
-  TAGS : Guide
 
 COLLEGIENNES
   UNDE : Interactive
@@ -1086,7 +1078,6 @@ LAEISTHIC
 CHILDREN OF BRAMBLE
   UNDE : Laeisthic
   BREF : {{Children of Bramble}} is a {{Laeisthic}} album that contains four tracks that sings of the Oasis of {{Rlionn}} and her Children.
-  TAGS : Discography
   LONG
     & This album begins by the Oasis of {{Laeisth}} to finally reach the castle of {{Andes}} and its sandsunken structure. This single is part of the {{Neauismetica}}, and shares some narrative concepts with {{Telekinetic}}.
     > <iframe style="border: 0; width: 100%; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=163410848/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/children-of-bramble">Children of Bramble by aliceffekt</a></iframe>
@@ -1102,12 +1093,10 @@ KNOWN MAGYE
     > <iframe style="border: 0; width: 100%; height: 340px;" src="https://bandcamp.com/EmbeddedPlayer/album=1531404629/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/known-magye">Known Magye by aliceffekt</a></iframe>
   LINK
     https://aliceffekt.bandcamp.com/album/known-magye
-  TAGS : Discography
 
 EXTENDED SLEEP
   UNDE : Laeisthic
   BREF : {{Extended sleep}} is the {{Laeisthic}} sequel to {{Known Magye}}, a deeper exploration of its universes, its stories.
-  TAGS : Discography
   LONG
     & The album will be first performed at the A Maze Festival in Berlin, on April 23rd 2015.
     > <iframe style="border: 0; width: 100%; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=2987872258/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/extended-sleep">Extended Sleep by aliceffekt</a></iframe>
@@ -1122,7 +1111,6 @@ DUOMIC
 THE OPAL INQUISITORS
   UNDE : Duomic
   BREF : {{The Opal Inquisitors}} is the first {{Duomic}} album, where {{Neonev}} departs from central {{Dinaisth}} and head through the {_{{Dei Dain}} Canals_}.
-  TAGS : Discography
   LONG
     & These recordings are photographs taken aboard the {{Vermillionth}} tunneler, traveling up the spires of {{Duomo}}.
     > <iframe style="border: 0; width: 100%; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=1049304423/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/the-opal-inquisitors">The Opal Inquisitors by Aliceffekt</a></iframe>
@@ -1137,12 +1125,10 @@ PORTALION
     > <iframe style="border: 0; width: 100%; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=1367389203/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/portalion">Portalion by Aliceffekt</a></iframe>
   LINK
     https://aliceffekt.bandcamp.com/album/portalion
-  TAGS : Discography
 
 DEI DAIN
   UNDE : Duomic
   BREF : {{Dei Dain}} is the third {{Duomic}} album, where {{Neonev}} travels from the desert of {{Laeisth}} to the nightly scapes of {{Dilitriel}}.
-  TAGS : Discography
   LONG
     > <iframe style="border: 0; width: 100%; height: 472px;" src="https://bandcamp.com/EmbeddedPlayer/album=4246216793/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/dei-dain">Dei Dain by aliceffekt</a></iframe>
   LINK
@@ -1197,7 +1183,6 @@ SUPERWORKER
   UNDE : Demo
   TYPE : Diary
   BREF : {{Superworker}} is an album created with the {{PO-24|https://www.teenageengineering.com/products/po}}.
-  TAGS : Discography
   LONG
     & The album contains 3 tracks created from {_over 80 sessions_}, arranged into chiptune experiments.
     & Due to the lack of power during the 4 weeks long ocean crossing, the pocket battery powered synth proved to be the perfect composition tool. The tracks also include spoken words from Alan Watts.
@@ -1234,7 +1219,6 @@ OQUONIE SOUNDTRACK
   BREF : The {{Oquonie Soundtrack}}, {_Impossible Spaces_}, is the ambient score of the game {{Oquonie}}.
   LONG
     > <iframe style="border: 0; width: 100%; height: 472px;" src="https://bandcamp.com/EmbeddedPlayer/album=2065824251/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/short-stories-in-impossible-spaces">Short Stories In Impossible Spaces by aliceffekt</a></iframe>
-  TAGS : Discography
 
 RABBITS SOUNDTRACK
   UNDE : Soundtrack
@@ -1242,14 +1226,12 @@ RABBITS SOUNDTRACK
   LONG
     & This soundtrack contains 2 recorded podcasts and a selection of tracks from the videos.
     > <iframe style="border: 0; width: 100%; height: 241px;" src="https://bandcamp.com/EmbeddedPlayer/album=1969793667/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/hundred-rabbits">Hundred Rabbits by aliceffekt</a></iframe>
-  TAGS : Discography
   LINK
     https://aliceffekt.bandcamp.com/album/hundred-rabbits
 
 PURGATEUS SOUNDTRACK
   UNDE : Soundtrack
   BREF : The {{Purgateus Soundtrack}} is the score for the {{Purgateus}} remix of the game Proteus.
-  TAGS : Discography
   LONG
     > <iframe style="border: 0; width: 100%; height: 340px;" src="https://bandcamp.com/EmbeddedPlayer/album=3667464517/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/purgateus">Purgateus by aliceffekt</a></iframe>
 
@@ -1652,7 +1634,6 @@ GAMME
 NATANIEV
   UNDE : Gamme
   TYPE : portal
-  TAGS : Portal
   BREF : {{Nataniev}} is an experimental operating system.
   LONG
     & As of June 2017, a {*graphical interface*} was built onto the server tools, allowing for the co-existence of tools such as {{Marabu}}, {{Ronin}} and {{Left}}.
@@ -1664,13 +1645,13 @@ OSCEAN
   UNDE : Nataniev
   BREF : {{Oscean}} is a custom wiki engine built within {{Nataniev}}.
   LONG
-    & {{Oscean}} was initiated on {{08P13|2008}}, and was meant to be a repository of the sum of {{Devine|Devine lu linvega}}'s projects and notes. It has since expanded into a network of tools, also known as {{Nataniev}}, which now hosts a series of Nataniev Native applications such as {{Ronin}}, {{Marabu}} and its social feed protocole {{Rotonde}}.
+    & {{Oscean}} was initiated on {{08P13|2008}}, and was meant to be a repository of the sum of {{Devine|Devine lu linvega}}'s projects and notes. 
+    & It has since expanded into a network of tools, also known as {{Nataniev}}, which now hosts a series of Nataniev Native applications such as {{Ronin}}, {{Marabu}} and its social feed protocole {{Rotonde}}.
   LINK
     https://github.com/XXIIVV/vessel.oscean
 
 HORAIRE
   UNDE : Nataniev
-  TAGS : Portal
   TYPE : Special
   BREF : {{Horaire}} is a time tracking tool.
   LONG
@@ -1773,7 +1754,6 @@ NUTRITION
     & There are also high-quality proteins in green beans, swiss chard, broccoli, mustard greens, asparagus and potatoes but in lesser quantity.
     & Soy products have within them 100% of a complete protein, or the correct ratio of essential amino acids for the body to use in tissue growth and repair.
     & The high-quality protein foods can be made whole by combining with other ingredients, but the basic optimal combinations is {*Beans with grains, nuts or seeds*}.
-  TAGS : guide
   LINK
     https://en.wikiversity.org/wiki/Should_we_go_vegan%3F
 
@@ -2149,13 +2129,11 @@ RUSSIAN
   LONG
     & Below are the organized and templated notes from my Russian studies. They might serve you as a good basis to get into the language. This series of notes is inspired from Tad Perry's 1992 {_Quick and Dirty Guide to Japanese_}.
   TYPE : Docs
-  TAGS : guide
 
 FRANSSET
   UNDE : Unreleased
   BREF : {{Fransset}} are collected notes on suggested French reforms.
   TYPE : Docs
-  TAGS : guide
 
 LIETAL
   UNDE : Language
@@ -2173,7 +2151,6 @@ BLUE
 
 DEVINE LU LINVEGA
   UNDE : Home
-  TAGS : Portal
   BREF : {{Devine lu linvega}} is a nomad, developer and designer.
   LONG
     & Operating under the {*Neauoire*} moniker, Devine is a {{polymath|https://monochromatic.co/writing/interview-with-devine}} working on a series of {{experimental tools|Gamme}} and {{applications|Interactive}}.

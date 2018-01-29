@@ -1,4 +1,4 @@
-function Term(name,memory)
+function Term(name,dict)
 {
   this.name = name;
   this.diaries = [];
@@ -6,18 +6,18 @@ function Term(name,memory)
   this.parent = null;
   this.logs = [];
 
-  if(memory){
-    this.memory = memory;
-    this.type = memory.type;
-    this.links = this.memory.link ? this.memory.link : [];
-    this.flag = this.memory.flag ? this.memory.flag : [];
+  if(dict){
+    this.dict = dict;
+    this.type = dict.type;
+    this.links = this.dict.link ? this.dict.link : [];
+    this.flag = this.dict.flag ? this.dict.flag : [];
   }
   
   this.start = function()
   {
-    if(memory){
-      this.bref = this.memory.bref ? new Runic().markup(this.memory.bref) : "Missing";
-      this.long = this.memory.long ? new Runic(this.memory.long).html() : "";
+    if(dict){
+      this.bref = this.dict.bref ? new Runic().markup(this.dict.bref) : "Missing";
+      this.long = this.dict.long ? new Runic(this.dict.long).html() : "";
     }
     this.diaries = this.find_diaries();
   }

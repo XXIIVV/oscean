@@ -1,4 +1,4 @@
-function Memory(raw)
+function Dict(raw)
 {
   this.raw = raw;
   this.hash = {};
@@ -64,4 +64,4 @@ function Memory(raw)
   this.parse(this.raw);
 }
 
-invoke.seal("core","memory");
+invoke.seal("core","dict");
