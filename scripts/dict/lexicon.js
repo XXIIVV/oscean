@@ -914,13 +914,14 @@ LEFT
   UNDE : Software
   BREF : {{Left}} is a writing application.
   LONG
-    & {*Left*} includes auto-complete, a synonyms dictionary, writing statistics, basic text operations and a speed reader.
-    & The application was created to help {{Rekka}} with the writing of the upcoming novel {_Wiktopher_}. 
+    & {*Left*} is a distractionless writing tool with auto-complete, a synonyms dictionary, writing statistics, markup-based navigation and a speed-reader.
+    & The application is {{Free|http://hundredrabbits.itch.io/Left}} and {{Open Source|https://github.com/hundredrabbits/Left}}, its original purpose was to help {{Rekka}} with the writing of the upcoming novel {{Wiktopher}}. 
     > <iframe frameborder="0" src="https://itch.io/embed/173127?linkback=true&amp;link_color=000000" width="600" height="167"></iframe>
     & You can view the complete {{Left Manual|https://github.com/hundredrabbits/Left}} on Github.
   LINK
     https://github.com/hundredrabbits/Left
     http://hundredrabbits.itch.io/Left
+    https://www.producthunt.com/posts/left
 
 DOTGRID
   UNDE : Software
