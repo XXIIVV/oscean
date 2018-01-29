@@ -3,7 +3,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 18Z14 + 100      Supergrid            Supergrid Release
 18T10 + 300      Hundred rabbits      Leaving New Zealand
 18D09 + 200      Markl                Markl Release
-18C01 ! 277  414 Ehrivevnv            Orbit
+18C01 - 277  414 Ehrivevnv            Orbit
 18B14 - 367      Neauismetica
 18B13 - 168      Supergrid
 18B12 - 274      Oscean
@@ -21,7 +21,7 @@ DATE  CODE  PICT TERM                 NAME                          END
 18A14 - 253      Donsol
 18A13 - 382      Marabu
 18A12 - 372      Dotgrid
-18A11 - 279  440 Vetetrandes          Supermoon
+18A11 ! 279  440 Vetetrandes          Supermoon
 18A10 - 342      Desamber
 18A09 - 282      Donsol
 18A08 - 383      Markl

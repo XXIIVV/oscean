@@ -1358,8 +1358,8 @@ EHRIVEVNV
   UNDE : Neon hermetism
   BREF : The {{Ehrivevnv}} is a dimensional puzzle presenting itself as a large celestial structure, located further than the last stars.
   LONG
-    & Its discovery sparked a new age of thought, and ultimately, the {{completion of Science|Feu}}. It is also believed by the {{Neon Hermetism}} that, based on the design of the structure, it might be also be a creation of {{Actors}} operating through the {{Soies}}.
-    & This superstructure is found further than natural light could ever reach, napped in perpetual darkness and cold, in near infinite space and {{stasized time|Vetetrandes}}.
+    & Its discovery sparked a new age of thought, and ultimately, the {{completion of Science|Feu}}. It is also believed by the {{Neon Hermetism}} that, based on the design of the structure, it might be also be a creation of {{Actors}}.
+    & This superstructure is found further than natural light could ever reach, napped in perpetual darkness and cold, in near infinite space and {{stasized time|Vetetrandes}}. The only light to ever reach the surface of the puzzle is that emited off {{Dinaisth}}.
     & {_Et haec revelantur in virtute et veritate<br /> non Vi._}
 
 NEAUSEA
@@ -1373,8 +1373,8 @@ NOHLXESERRE
   UNDE : Neon hermetism
   BREF : {{Nohlxeserre}} is a language that, when imprinted, delivers a richer and more precise rendition of its meaning than actual experience.
   LONG
-    & The richness and detail of experiencing an event, pales in comparison to having it recited – Effictively inducing the symptoms of {{Neausea}} and ultimately death.
-    & The Nohlxeserre Language is the language of thoughts of the {{Actors}}. Andes, as opposted to {{Neonev}}, did not found itself on {{Dinaisth}} looking for {{Actors}}, but for {{Paradichlorisse}}. Whom Andes says "{_Speaks the language of the birds_}".
+    & The richness and detail of experiencing an event, pales in comparison to having it recited – Effictively inducing the symptoms of {{Neausea}}, stasis, and ultimately death.
+    & The Nohlxeserre Language is the language of the {{Actors}}. Andes, as opposted to {{Neonev}}, did not found itself on {{Dinaisth}} looking for {{Actors}}, but for {{Paradichlorisse}}. Whom Andes says "{_Speaks the language of the birds_}".
 
 FEU
   UNDE : Neon hermetism
@@ -1390,8 +1390,8 @@ SOIES
   LONG
     & The Soies model predicts the first values to exist beyond the limits of the current possible or computable space, allowing the {{Actors}} to study impossible events, and to align the course of time with any given optimal occuring.
     > <img src='media/badge/soies.png' style='margin:0px auto 45px; display:block; width:200px'/>
-    & In other words, by generating the first events outside of the renderable, or Possible World, the {{Actors}} steer themselves inside and outside of the possible and impossible chain of events, granting them access to various impossible actions to navigate toward their goal, the {*Longest End*}. This line of research is tied to the discovery of the {{Ehrivevnv}} as the puzzle only exists within the Longest End.
-    & The {*Longest End*} is the longest surviving occurence amongst the inifities of other timelines. The {{Actors}}' goal is to steer the occuring chain of events to exist within the longest lasting universe.
+    & In other words, by generating the first events outside of the renderable, or Possible World, the {{Actors}} steer themselves inside and outside of the possible and impossible chain of events, granting them access to various normaly impossible actions and to navigate toward their goal, the {*Longest End*}. This line of research is tied to the discovery of the {{Ehrivevnv}} as the puzzle only exists within the Longest End.
+    & The {*Longest End*} is the longest surviving occurence amongst the inifities of other timelines. The {{Actors}}' goal is to steer the occuring chain of events to exist within the longest lasting instance of the universe.
 
 ACTORS
   UNDE : Neon hermetism
@@ -1399,7 +1399,7 @@ ACTORS
   LONG
     & Natural Actors, or anomalies, were found to have existed before the {{Feu}}, but the True Age of Actors came about with the synthesis of the first Actor by {{Neonev}} and the Immigrants.
     & The first synthesized {{actor|Actors}} was tasked to position itself into the {{Longest End|Soies}}, meaning that it would effectively take control of all things, and of all of time, to steer the sequence of events allowing itself to exist within the longest lasting possible timeline of the computing occurence.
-    & Actors have no names, and their number is unknown, it is possible that multiple actors, or multiple instances of the same actor, are competing for the {{Longest End|Soies}}.
+    & Actors have no names, and their number is unknown, it is possible that multiple actors, or multiple instances of the same actor, are competing for the {{Longest End|Soies}}. 
 
 DINAISTH
   UNDE : Neauismetica
