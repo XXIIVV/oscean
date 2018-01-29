@@ -1364,9 +1364,12 @@ EHRIVEVNV
 
 NEAUSEA
   UNDE : Neon hermetism
-  BREF : {{Neausea}} is a symptoms of knowing one's position amongst all possibilities.
+  BREF : {{Neausea}} is one of the symptoms of knowing one's {{position|Soies}} amongst all possibilities.
   LONG
-    & Beings such as {{Paradichlorisse}}, and {{Actors}}, can carry it. A weaker form of it can be induced when one is in contact with forms of {{Nohlxeserre}} languages.
+    & {{Actors}} and beings such as {{Paradichlorisse}}, can carry it. A weaker form can be contracted when one is in contact with {{Nohlxeserre}} languages.
+    & The experience of Neausea, by the afflicted, would at first seem like one can travel through time. But the subject's impression of time-traveling is due to their focus shifting across possible sequences of events. 
+    & To the observer, the subject would simply collapse, by the time the body would hit the ground, the subject's mental gaze would have traveled across time, but would have in the process lost the track of Time.
+    & {{Andes}} is the only character known to have survived an encounter with the {{Nohlxeserre}} Languages. The fossilized mountains of corpses by the sides of {{Paradichlorisse}} are a testament of the ones who have tried to look at Time and perished.
     & {_In debt are are my impossible selves, <br />for all horrible days._}
 
 NOHLXESERRE
@@ -1419,7 +1422,7 @@ VETETRANDES
   BREF : {{Vetetrandes}} is the remains of a city that surrounds {{Yajnev}}.
   LONG
     & As you would approach the epicenter of the bound city, time is increasingly unmoving. At its center, one would find the corpse of {{Yajnev}}, and where Yajnev's head would have been, a hollow mask. Locked inside the mask is the only instance of true space that can be said to be "outside".
-    & The trek across Vetetrandes is only possible through the guiding of an {{Actor|Actor}}, as the local void existing in Vetetrandes is unacted, or unoperated and unredered.
+    & The trek across Vetetrandes is only possible through the guiding of an {{Actor|Actors}}, as the local void existing in Vetetrandes is unacted, or unoperated and unredered.
 
 LAEISTH
   UNDE : Dinaisth
