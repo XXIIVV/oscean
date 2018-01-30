@@ -3,11 +3,13 @@ DATE  CODE PICT TERM                 NAME                          END
 18Z14 +100      Supergrid            Supergrid Release
 18T10 +300      Hundred rabbits      Leaving New Zealand
 18D09 +200      Markl                Markl Release
+18C03 -274      Horaire
+18C02 -177      Hundred rabbits
 18C01 -277  414 Ehrivevnv            Orbit
 18B14 -367      Neauismetica
 18B13 -168      Supergrid
 18B12 -274      Oscean
-18B11 -358  419 Neausea              Of Fallen Pilgrims
+18B11 !358  419 Neausea              Of Fallen Pilgrims
 18B10 -277      Markl
 18B09 -259      Markl
 18B08 -158      Supergrid
