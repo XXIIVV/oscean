@@ -42,7 +42,9 @@ function Layout(host)
   {
     this.prev = this.term;
     
+
     if(this.term && key.toLowerCase() == this.term.name.toLowerCase()){ console.log("Already here",key); return; }
+
 
     this.el.style.opacity = 0;
     this.search.value = key.replace(/\+/g," ");
@@ -58,6 +60,8 @@ function Layout(host)
     document.title = c.term.name;
 
     setTimeout(function(){ 
+
+      if(c.term){ c.set_theme(c.term.theme()); }
       c.el.style.opacity = 1;
       window.scrollTo(0,0);
       c.search.setAttribute("value",c.term.name)
@@ -78,6 +82,11 @@ function Layout(host)
         invoke.vessel.corpse.icon.style.backgroundImage = "url('media/badge/"+icon_name+".svg')";
       }
     },250)
+  }
+
+  this.set_theme = function(mode)
+  {
+    this.el.className = mode;
   }
 
   this.link = function(target)

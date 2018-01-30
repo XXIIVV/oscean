@@ -46,6 +46,30 @@ function Horaire(list)
     }
   }
 
+  this.recent = function()
+  {
+    var a = [];
+    for(id in this.logs){
+      var log = this.logs[id];
+      if(log.time.offset() > 0){ continue; }
+      if(a.length > 365){ break; }
+      a.push(log);
+    }
+    return a;
+  }
+
+  this.yearly = function(y)
+  {
+    var a = []
+    for(id in this.logs){
+      var log = this.logs[id];
+      var year = log.time.year;
+      if(year != y){ continue; }
+      a.push(log);
+    }
+    return a;
+  }
+
   this.parse = function(logs = this.logs)
   {
     var h = {fh:0,ch:0,topics:{}};

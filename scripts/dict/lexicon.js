@@ -1653,6 +1653,7 @@ OSCEAN
 HORAIRE
   UNDE : Nataniev
   TYPE : Special
+  FLAG : horaire
   BREF : {{Horaire}} is a time tracking tool.
   LONG
     & The Horaire logs' {{format looks|https://github.com/XXIIVV/oscean/blob/master/scripts/list/horaire.js}} as follow: {*18B01 - 156*}, and is formed of the {*Pentagrammaton*}, the {*rune*} and the {*code*}. The {{Desamber}} date format is a 5 characters long code ranging from {{00A01|Calendar}}(January 1st 2000) to {{99+02|Calendar}}(December 31st 2099). The rune assigns a log type to the entry, special events are recorded using the +rune, the default log will be marked as -rune, and other log types have their dedicated ~runes.
@@ -1670,7 +1671,7 @@ HORAIRE
 CALENDAR
   UNDE : Horaire
   TYPE : Special
-  FLAG : no_photo
+  FLAG : horaire
   BREF : The {{Calendar}} shows the last 365 days.
 
 DESAMBER
@@ -2218,62 +2219,77 @@ IDYLLIC MINERS
 2018
   UNDE : Calendar
   TYPE : Calendar
+  FLAG : Horaire
 
 2017
   UNDE : Calendar
   TYPE : Calendar
+  FLAG : Horaire
 
 2016
   UNDE : Calendar
   TYPE : Calendar
+  FLAG : Horaire
 
 2015
   UNDE : Calendar
   TYPE : Calendar
+  FLAG : Horaire
 
 2014
   UNDE : Calendar
   TYPE : Calendar
+  FLAG : Horaire
 
 2013
   UNDE : Calendar
   TYPE : Calendar
+  FLAG : Horaire
 
 2012
   UNDE : Calendar
   TYPE : Calendar
+  FLAG : Horaire
 
 2011
   UNDE : Calendar
   TYPE : Calendar
+  FLAG : Horaire
 
 2010
   UNDE : Calendar
   TYPE : Calendar
+  FLAG : Horaire
 
 2009
   UNDE : Calendar
   TYPE : Calendar
+  FLAG : Horaire
 
 2008
   UNDE : Calendar
   TYPE : Calendar
+  FLAG : Horaire
 
 2007
   UNDE : Calendar
   TYPE : Calendar
+  FLAG : Horaire
 
 2008
   UNDE : Calendar
   TYPE : Calendar
+  FLAG : Horaire
 
 2007
   UNDE : Calendar
   TYPE : Calendar
+  FLAG : Horaire
 
 2006
   UNDE : Calendar
   TYPE : Calendar
+  FLAG : Horaire
 `);
 
 invoke.vessel.seal("dict","lexicon");

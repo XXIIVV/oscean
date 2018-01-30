@@ -2,7 +2,6 @@ function Log(list)
 {
   this.list = list;
   this.term = this.list.term;
-  this.task = this.list.task;
   this.name = this.list.name;
   this.text = this.list.text;
   this.time = new Desamber(this.list.date);

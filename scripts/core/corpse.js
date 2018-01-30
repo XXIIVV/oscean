@@ -6,7 +6,7 @@ String.prototype.to_url = function()
 function Corpse(host)
 {
   this.host = host;
-  this.styles = ["reset","fonts","main"];
+  this.styles = [];
   this.el = document.createElement('yu'); this.el.id = this.host.name;
 
   this.el.appendChild(this.hd = document.createElement('yu')); this.hd.id = "hd";

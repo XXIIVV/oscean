@@ -107,6 +107,7 @@ function Term(name,dict)
 
   this.theme = function()
   {
+    if(this.dict.flag){ return this.dict.flag.toLowerCase(); }
     if(this.diaries.length < 1 || this.flag.indexOf("no_photo") > -1){ return "no_photo"; }
     return this.diary().theme;
   }
