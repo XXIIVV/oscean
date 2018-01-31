@@ -910,11 +910,10 @@ LEFT
     & {*Left*} is a distractionless writing tool with auto-complete, a synonyms dictionary, writing statistics, markup-based navigation and a speed-reader.
     & The application is {{Free|http://hundredrabbits.itch.io/Left}} and {{Open Source|https://github.com/hundredrabbits/Left}}, its original purpose was to help {{Rekka}} with the writing of the upcoming novel {{Wiktopher}}. 
     > <iframe frameborder="0" src="https://itch.io/embed/173127?linkback=true&amp;link_color=000000" width="600" height="167"></iframe>
-    & You can view the complete {{Left Manual|https://github.com/hundredrabbits/Left}} on Github.
+    & You can view the complete {{Left Manual|https://github.com/hundredrabbits/Left}} on Github. Left was {*Product of the Day*} on {{January 28, 2018|https://www.producthunt.com/posts/left}}.
   LINK
     https://github.com/hundredrabbits/Left
     http://hundredrabbits.itch.io/Left
-    https://www.producthunt.com/posts/left
 
 DOTGRID
   UNDE : Software
@@ -925,11 +924,10 @@ DOTGRID
     & The tool was created to design logos and glyphs for various personal projects, and made available as a free and open source application.
     > <iframe frameborder="0" src="https://itch.io/embed/190851?linkback=true&amp;link_color=000000" width="600" height="167"></iframe>
     & Choose between 3 types of strokes, lines, arc and 3-points beziers. The application can be entirely operated with the keyboard and can render as both PNG and SVG files. Additional effects like horizontal, vertical and radial mirror are also available - as well as the stroke width and linecap can also be changed. The application menu can be hidden by pressing the tab key.
-    & You can view the complete {{Dotgrid Manual|https://github.com/hundredrabbits/Dotgrid}} on Github.
+    & You can view the complete {{Dotgrid Manual|https://github.com/hundredrabbits/Dotgrid}} on Github. Dotgrid was {*Product Of The Day*} on {{January 8, 2018|https://producthunt.com/posts/dotgrid}}.
   LINK
     https://github.com/hundredrabbits/Dotgrid
     http://hundredrabbits.itch.io/Dotgrid
-    https://producthunt.com/posts/dotgrid
 
 BYT
   UNDE : Unreleased
@@ -1650,39 +1648,65 @@ OSCEAN
   LINK
     https://github.com/XXIIVV/vessel.oscean
 
+TIME
+  UNDE : Research
+  FLAG : Horaire
+  TYPE : Index
+  BREF : The {{Time}} portal covers all {{Nataniev}} time related entries.
+  LONG
+    & The {{Nataniev}} time format has both a {{Date|Desamber}} and a {{Clock}} — the current Time is {{$Desamber}} {{$Clock}}.
+  LINK
+    http://github.com/hundredrabbits/Clock
+
+DESAMBER
+  UNDE : Time
+  BREF : {{Desamber}} is the time-format of the {{Nataniev}} ecosystems.
+  LONG
+    & The {{Desamber Calendar|Calendar}} has {*26 months*} of {*14 days*} each. The 365th day of the year is the {_Year Day_}, preceeded by the {_Leap Day_} on leap years. Each month has 2 weeks of 7 days, and each month's name is one of the 26 letters of the alphabet.
+  LINK
+    http://github.com/hundredrabbits/Clock
+
+CLOCK
+  UNDE : Time
+  BREF : The {{Clock}} is the time object for the {{Nataniev}} ecosystems.
+  LONG
+    & The clock has two groups of 3 digits, called the {_beat_} and the {_pulse_}. For example, {*Noon*} is 500:000, {*6AM*} is 250:000 and {*6PM*} is 750:000. In the decimal format, the shortest pulse equals to {*8.64 milliseconds*}, the second shortest {*86.4*} and so on. 1 beat, or 1000 pulses, is equivalent to {*86.4 seconds*}, or about 1m44s. A second is equivalent to 1.157 beats.
+  LINK
+    http://github.com/hundredrabbits/Clock
+
+CALENDAR
+  UNDE : Time
+  TYPE : Special
+  FLAG : horaire
+  BREF : The {{Calendar}} shows the last 365 days.
+  LONG
+    & The {{Horaire}} logs are formatted as follow: {{18B01 -156|https://github.com/XXIIVV/oscean/blob/master/scripts/list/horaire.js}}. The entry includes the {{Pentagrammaton|Desamber}}, the {*Event Rune*} and the {*Code*}. 
+    & The {{Desamber}} date format is a 5 characters long code ranging from {{00A01|Calendar}}, or Jan 1st '00, to {{99+02|Calendar}}, or Dec 31st '99. The rune assigns a log type to the entry, special events are recorded using the +rune, the default log will be marked as -rune, and other log types have their dedicated ~runes.
+
 HORAIRE
-  UNDE : Nataniev
+  UNDE : Time
   TYPE : Special
   FLAG : horaire
   BREF : {{Horaire}} is a time tracking tool.
   LONG
-    & The Horaire logs' {{format looks|https://github.com/XXIIVV/oscean/blob/master/scripts/list/horaire.js}} as follow: {*18B01 - 156*}, and is formed of the {*Pentagrammaton*}, the {*rune*} and the {*code*}. The {{Desamber}} date format is a 5 characters long code ranging from {{00A01|Calendar}}(January 1st 2000) to {{99+02|Calendar}}(December 31st 2099). The rune assigns a log type to the entry, special events are recorded using the +rune, the default log will be marked as -rune, and other log types have their dedicated ~runes.
-    & The 3 values effectively map the log over a cube where the 3 dimensions are: the {*Sector*}, where 1 is Audio, 2 is Audio, and 3 is Research. The second dimension is the {*Focus Hour*}, an index of attention for the day's task — where 1 indicates that barely any time was invested in the task, and 9 indicates that all available time and focus was invested in the day's task. The last number is the {*Abstract/Concrete Vector*} defined as:
-    > <table>
-    > <tr><th></th><th colspan='4'>Abstract</th><th colspan='2'>—</th><th colspan='4'>Concrete</th></tr>
-    > <tr><th>Audio</th><th>1.1</th><td>Rehersal</td><th>1.3</th><td>Draft</td><th>1.5</th><td>Composition</td><th>1.7</th><td>Mastering</td><th>1.9</th><td>Release</td></tr>
-    > <tr><th>Visual</th><th>2.1</th><td>Concept</td><th>1.3</th><td>Layout</td><th>2.5</th><td>Sketch</td><th>1.7</th><td>Composition</td><th>2.9</th><td>Render</td></tr>
-    > <tr><th>Research</th><th>3.1</th><td>Planning</td><th>1.3</th><td>Testing</td><th>3.5</th><td>Tools</td><th>1.7</th><td>Update</td><th>3.9</th><td>Application</td></tr>
+    & The daily entry format effectively positions the entry on a 3 dimensional plan: 
+    & {*The Sector*}, where 1 is Audio, 2 is Audio, and 3 is Research. {*The Focus Hour*}, an index of attention for the day's task — where 1 indicates that no time was invested in the task, and 9 indicates that all available time was invested in the task.  The {*Concrete Hour*} represent a value of concrete output, or index of progress toward the release of a project. It is also a vague indicator of a log's task type when combined with the sector value.
+    > <table style='max-width:600px'>
+    > <tr><th></th><th colspan='2'>Abstract</th><th colspan='2'>Median</th><th colspan='1'>Concrete</th></tr>
+    > <tr><th>Audio</th><td>Rehersal</td><td>Draft</td><td>Composition</td><td>Mastering</td><td>Release</td></tr>
+    > <tr><th>Visual</th><td>Concept</td><td>Layout</td><td>Sketch</td><td>Composition</td><td>Render</td></tr>
+    > <tr><th>Research</th><td>Planning</td><td>Testing</td><td>Tools</td><td>Update</td><td>Application</td></tr>
     > </table>
-    & The Abstract/Concrete axis represent the value of concrete output, or index of progress toward the release of a project. It is also a vague indicator of a log's task type when combined with the sector value.
   LINK
     https://github.com/XXIIVV/oscean/blob/master/scripts/list/horaire.js
 
-CALENDAR
-  UNDE : Horaire
+DEATH
+  UNDE : Time
+  BREF : The {{Death}} Progress Bar.
   TYPE : Special
-  FLAG : horaire
-  BREF : The {{Calendar}} shows the last 365 days.
-
-DESAMBER
-  UNDE : Nataniev
-  BREF : {{Desamber}} is the time-format of the {{Nataniev}} ecosystems.
   LONG
-    & The {{Desamber Calendar|Calendar}} has {*26 months*} of {*14 days*} each. The 365th day of the year is the {_Year Day_}, preceeded by the {_Leap Day_} on leap years. Each month has 2 weeks of 7 days, and each month's name is one of the 26 letters of the alphabet.
-    # 18B03 502:320 <comment>= Jan 17 2018 12:03:20</comment>
-    & The clock has two groups of 3 digits, called the {_beat_} and the {_pulse_}. For example, {*Noon*} is {_500:000_}, {*6AM*} is {_250:000_} and {*6PM*} is {_750:000_}. In the decimal format, the shortest pulse equals to {*8.64 milliseconds*}, the second shortest {*86.4*} and so on. {_1 beat, or 1000 pulses_} is equivalent to {*86.4 seconds*}, or about 1m44s. A second is equivalent to {_1.157 beats_}.
-  LINK
-    http://github.com/hundredrabbits/Clock
+    & This grid represents 52 years of my life, in which each blackened cell is a week of my life gone. This automated graphic was inspired from {_John Maxwell's Jars of Marbles_}.
+    ? "For in that sleep of death what dreams may come,<br />When we have shuffled off this mortal coil,<br />Must give us pause."
 
 ROTONDE
   UNDE : Nataniev
@@ -2161,14 +2185,6 @@ DEVINE LU LINVEGA
     https://twitter.com/neauoire/media
     https://github.com/neauoire
 
-DEATH
-  UNDE : Devine lu linvega
-  BREF : {{Death}} in progress.
-  TYPE : Special
-  LONG
-    & This grid represents 52 years of my life, in which each blackened cell is a week of my life gone.
-    ? "For in that sleep of death what dreams may come,<br />When we have shuffled off this mortal coil,<br />Must give us pause."
-
 FIRST WAVE
   UNDE : Aliceffekt
   TYPE : Portal
@@ -2217,77 +2233,77 @@ IDYLLIC MINERS
     https://aliceffekt.bandcamp.com/album/genesis-iii-20-ov-idyllic-miners
 
 2018
-  UNDE : Calendar
+  UNDE : Misc
   TYPE : Calendar
   FLAG : Horaire
 
 2017
-  UNDE : Calendar
+  UNDE : Misc
   TYPE : Calendar
   FLAG : Horaire
 
 2016
-  UNDE : Calendar
+  UNDE : Misc
   TYPE : Calendar
   FLAG : Horaire
 
 2015
-  UNDE : Calendar
+  UNDE : Misc
   TYPE : Calendar
   FLAG : Horaire
 
 2014
-  UNDE : Calendar
+  UNDE : Misc
   TYPE : Calendar
   FLAG : Horaire
 
 2013
-  UNDE : Calendar
+  UNDE : Misc
   TYPE : Calendar
   FLAG : Horaire
 
 2012
-  UNDE : Calendar
+  UNDE : Misc
   TYPE : Calendar
   FLAG : Horaire
 
 2011
-  UNDE : Calendar
+  UNDE : Misc
   TYPE : Calendar
   FLAG : Horaire
 
 2010
-  UNDE : Calendar
+  UNDE : Misc
   TYPE : Calendar
   FLAG : Horaire
 
 2009
-  UNDE : Calendar
+  UNDE : Misc
   TYPE : Calendar
   FLAG : Horaire
 
 2008
-  UNDE : Calendar
+  UNDE : Misc
   TYPE : Calendar
   FLAG : Horaire
 
 2007
-  UNDE : Calendar
+  UNDE : Misc
   TYPE : Calendar
   FLAG : Horaire
 
 2008
-  UNDE : Calendar
+  UNDE : Misc
   TYPE : Calendar
   FLAG : Horaire
 
 2007
-  UNDE : Calendar
+  UNDE : Misc
   TYPE : Calendar
   FLAG : Horaire
 
 2006
-  UNDE : Calendar
+  UNDE : Misc
   TYPE : Calendar
   FLAG : Horaire
 `);

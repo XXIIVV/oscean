@@ -27,6 +27,7 @@ function Runic(raw)
       var part = parts[id];
       if(part.indexOf("}}") == -1){ continue; }
       var content = part.split("}}")[0];
+      if(content.substr(0,1) == "$"){ html = html.replace(`{{${content}}}`, this.operation(content)); continue; }
       var target = content.indexOf("|") > -1 ? content.split("|")[1] : content;
       var name = content.indexOf("|") > -1 ? content.split("|")[0] : content;
       var external = (target.indexOf("https:") > -1 || target.indexOf("http:") > -1 || target.indexOf("dat:") > -1);
@@ -35,6 +36,19 @@ function Runic(raw)
     }
 
     return html;
+  }
+
+  this.operation = function(val)
+  {
+    val = val.replace("$","").toLowerCase().trim();
+
+    if(val == "desamber"){
+      return new Date().desamber();
+    }
+    if(val == "clock"){
+      return new Date().clock();
+    }
+    return `((${val}))`
   }
 
   this.parse = function(raw = this.raw)

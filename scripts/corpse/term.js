@@ -65,16 +65,15 @@ function Term(name,dict)
     var html = ""
     for(id in this.links){
       var link = this.links[id]
-      html += "<ln><a href='"+link+"'>"+this.format_link(link)+"</a></ln>"
+      html += "<a href='"+link+"'>"+this.format_link(link)+"</a>"
     }
-    return `<list class='outgoing'>${html}</list>`;
+    return `<yu class='outgoing'>${html}</yu>`;
   }
 
   this.navi = function()
   {
     var html = "";
     if(this.parent && this.parent.name != this.name){
-      html += "<ln class='parent'><a href='"+this.parent.name.to_url()+"'>"+this.parent.name.capitalize()+"</a></ln>"
       for(id in this.parent.children){
         var term = this.parent.children[id]
         html += "<ln class='sibling "+(term.name.toLowerCase() == this.name.toLowerCase() ? 'active' : '')+"'>"+term.bref+"</ln>"
@@ -156,6 +155,8 @@ function Term(name,dict)
     if(path.indexOf("bandcamp") > -1){ return "Bandcamp"}
     if(path.indexOf("drive.google") > -1){ return "Google Drive"}
     if(path.indexOf("producthunt") > -1){ return "ProductHunt"}
+    if(path.indexOf("twitter") > -1){ return "Twitter"}
+    if(path.indexOf("patreon") > -1){ return "Patreon"}
 
     return "Website"
   }
@@ -177,13 +178,13 @@ function Term(name,dict)
     var html = ""
     for(id in this.children){
       var term = this.children[id];
-      html += term.diary() ? `<img src='media/diary/${ term.diary().photo}.jpg'/>` : '';
+      // html += term.diary() ? `<img src='media/diary/${ term.diary().photo}.jpg'/>` : '';
       html += `<h2>${term.name}</h2><p>${term.bref}</p>${term.long}`
       if(term.children.length > 0){
         html += "<quote>"
         for(id2 in term.children){
           var subterm = term.children[id2];
-          html += subterm.diary() ? `<img src='media/diary/${ subterm.diary().photo}.jpg'/>` : '';
+          // html += subterm.diary() ? `<img src='media/diary/${ subterm.diary().photo}.jpg'/>` : '';
           html += `<h3><t style='color:#999'>${parseInt(id)+1}.${parseInt(id2)+1}</t> ${term.name} — ${subterm.name}</h3><p>${subterm.bref}</p>${subterm.long}`
         }  
         html += "</quote>"

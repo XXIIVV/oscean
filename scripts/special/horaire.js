@@ -29,7 +29,7 @@ function horaire_view()
       html += this.draw_line(years,y,"efic","white","stroke-dasharray:4,4");
     }
 
-    return `<svg style='width:calc(100% - 47px);height:200px; margin-bottom:45px; border-bottom:1px solid black; padding-bottom:15px; padding-left:15px; padding-right:2px'>${html}</svg>`
+    return `<svg style='width:calc(100% - 47px);height:200px; margin-bottom:45px; border-bottom:1px solid black; padding-bottom:15px; padding-left:15px; padding-right:2px; stroke-width:1.5; stroke-linecap:round'>${html}</svg>`
   }
 
   this.draw_year = function(y)
@@ -75,8 +75,7 @@ function horaire_view()
       <ln><h2 style='border-bottom:1px dashed black'>${summary.efec.toFixed(2)}<hs>efec</hs><hs class='sub'>${offset.efec>0?"+":""}${offset.efec != 0 ? offset.efec.toFixed(2) : ""}</hs></h2></ln>
       <ln><h2 style='border-bottom:1px dashed white'>${summary.efic.toFixed(2)}<hs>efic</hs><hs class='sub'>${offset.efic>0?"+":""}${offset.efic != 0 ? offset.efic.toFixed(2) : ""}</hs></h2></ln>
       <ln><h2>${((summary.fh + summary.ch + summary.efec + summary.efic)/4).toFixed(2)}<hs>Output</hs></h2></ln>
-      <hr />
-    </list>`;
+    </list><style>#md wr m1 { display:none !important}</style>`;
   }
 
   this.make_offset = function(a,b)

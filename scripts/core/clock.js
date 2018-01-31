@@ -27,7 +27,7 @@ function Clock()
     setTimeout(function(){ clock.update(); }, 864.0);
   }
 
-  this.formatted = function()
+  this.toString = function()
   {
     var t = this.time().toString();
     return t.substr(0,3)+":"+t.substr(3,3);
@@ -57,6 +57,11 @@ function Clock()
 
     this.el.innerHTML = '<svg width="'+w+'" height="'+h+'"><path class="fh" d="'+path+'"></path></svg>';
   }
+}
+
+Date.prototype.clock = function()
+{
+  return new Clock();
 }
 
 invoke.seal("core","clock");
