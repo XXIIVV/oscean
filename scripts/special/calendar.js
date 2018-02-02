@@ -28,7 +28,7 @@ function calendar_view()
   {
     var content = log && log.value > 0 ? `${desamber.substr(2,3)}<a href='#${log.term.to_url()}'>${log ? (log.sector ? log.sector.substr(0,1) : "")+""+log.value+""+log.vector : ""}</a>` : desamber.substr(2,3)+"---";
 
-    return `<td title='${new Desamber(desamber).to_gregorian()}' ${full_width ? "colspan='26'" : ""} class='${today == desamber ? "today" : ""} ${log && log.is_event ? "event" : ""}'>${content}</td>`
+    return `<td title='${new Desamber(desamber).to_gregorian()}' ${full_width ? "colspan='26'" : ""} class='${today == desamber ? "today" : ""} ${log && log.is_event ? "event" : ""} ${log && log.photo > 0 ? "photo" : ""}'>${content}</td>`
   }
 
   this.calendar_graph = function(logs)

@@ -214,6 +214,7 @@ function Term(name,dict)
 
     for(id in this.diaries){
       var diary = this.diaries[id];
+      if(diary.photo == this.diary().photo){ continue; }
       html += "<img src='media/diary/"+diary.photo+".jpg'/>"
     }
     return html;

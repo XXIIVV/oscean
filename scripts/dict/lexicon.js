@@ -692,6 +692,7 @@ MARKL
 OQUONIE
   UNDE : Desktop
   BREF : {{Oquonie}} is a textless isometric puzzle game.
+  TYPE : Diary
   LONG
     & You will not be alone, your incarnations will have the help of {*bizaroid*} characters speaking {{an obscure language|Camilare}}. Oquonie features an original {{soundtrack|Oquonie Soundtrack}} and was best described as {_{{Animal Crossing in a K-Hole|http://killscreendaily.com/articles/oquonie-maze-worth-entering/}}_}.
     > <iframe frameborder="0" src="https://itch.io/embed/23183?linkback=true&amp;link_color=000000" width="600" height="167"></iframe>
@@ -1687,7 +1688,7 @@ HORAIRE
   UNDE : Time
   TYPE : Special
   FLAG : horaire
-  BREF : {{Horaire}} is a time tracking tool.
+  BREF : {{Horaire}} is a {{Time}} tracking tool.
   LONG
     & The daily entry format effectively positions the entry on a 3 dimensional plan: 
     & {*The Sector*}, where 1 is Audio, 2 is Audio, and 3 is Research. {*The Focus Hour*}, an index of attention for the day's task — where 1 indicates that no time was invested in the task, and 9 indicates that all available time was invested in the task.  The {*Concrete Hour*} represent a value of concrete output, or index of progress toward the release of a project. It is also a vague indicator of a log's task type when combined with the sector value.
@@ -1763,7 +1764,7 @@ OBLIQUES
 
 LIFESTYLE
   UNDE : Obliques
-  TYPE : Portal
+  TYPE : Index
   BREF : The {{Lifestyle}} notes are a sort of diary, or blog, on the reasons behind some of my life choices.
 
 NUTRITION
@@ -1805,18 +1806,15 @@ NOMAD
   LONG
     & My first encounter with a nomad was during my stay in Prague, as Santiago, I had just met my {*Fulcanelli*}. There was a time in life when I may have felt homesick. But from then on, {_home_} was anywhere but here, a vague concept that existed out there, {_forever fleeting_}.
     & The office is no place for multi-disciplinarists, and Japan was where I last fought this loosing battle. My desk, not the medium onto which I would acquire the array of skills I longed for.
-    * PART A
     & Living on a sailboat was not picked amongst other equally enticing ideas. It was, at the time, the only {{pragmatic solution|https://www.youtube.com/watch?v=sF9TNM9R-iw}}. It would at once, align with everything that I believed in and wanted in life. In that, it might not correspond to your meaning of {_travel_}, or even be replicable.
     & The monthly rent of our beachside Tokyo housing was nearly 1.5K$USD, and this thus implicated some serious downsizing. Within 3 years, our 20K$USD sailboat would be paid at the rate of 600$ per month.
     ? Will you trade the proximity to friends and family in exchange for your independence?
     & To think that, at the time, the most heart-breaking things to let go were instruments, old consoles, books and some camera equipment — when the truly hard things to let go would be my habitual bath, tap water and reliable internet connection.
-    * PART B
     & Everything costs more than expected, takes longer than expected and Amazon doesn't deliver to your desert island. Surely you did not do all this travel for the travel alone, you had passions, habits and goals when you left.
     ? You've made it, you live a nomadic life. <br />Well done. Now what?
     & The wind rocks the habitat sideways, keeping you up at night. In the morning, you get to spend your day writing, anchored in the most beautiful bay, you go for a swim.
     & You forget about tap water, don't mind the warm water from the plastic jugs, you wonder why people take showers every day and time away from Twitter really does make you feel better.
     & Suddenly, it's business as usual. You get back to building things, only now, when you look outside, the upmost gorgeous sunset precedes the darkest of night.
-    * PART C
     & Over a year, we managed to sail 3000nm from Victoria to La Paz, while creating games, music and art. 
     & We learnt how to fix sails, repair a toilet, create electronic systems, maintain an engine, live without a fridge and power.
     & We have seen every sunset and almost every sunrise, we have sailed with dolphins, we have climbed mountains on desert islands, and we have met the most amazing people.
@@ -2085,7 +2083,7 @@ TIERS
 INVENTORY
   UNDE : Obliques
   BREF : A detailed {{Inventory}} of equipment used in the creation of my work.
-  TYPE : Portal full
+  TYPE : Index
   LONG
     & Here are some of the items that I carry around with me in my travels.
     ~ Everyday Carry
@@ -2179,6 +2177,7 @@ BLUE
 DEVINE LU LINVEGA
   UNDE : Home
   BREF : {{Devine lu linvega}} is a nomad, developer and designer.
+  TYPE : Diary
   LONG
     & Operating under the {*Neauoire*} moniker, Devine is a {{polymath|https://monochromatic.co/writing/interview-with-devine}} working on a series of {{experimental tools|Gamme}} and {{applications|Interactive}}.
     & Populating {{Nataniev}} with notes on {{Language|Lietal}}, {{Illustrations|Illustration}} and {{Sounds|Audio}}, Devine hopes to inspire visitors to learn and to {{travel}}.

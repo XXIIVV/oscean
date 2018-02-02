@@ -500,7 +500,7 @@ DATE  CODE PICT TERM                 NAME                          END
 16T04 -214      Polygonoscopy
 16T03 -257  349 Black
 16T02 -354      Pino
-16T01 -367  253 Devine lu linvega    Ensenada Tempers
+16T01 -367      Devine lu linvega    Ensenada Tempers
 16S14 -394      Nataniev
 16S13 !293  102 Wallpaper            Shinji
 16S12 !248   98 Lard shader          Study C
