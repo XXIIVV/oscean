@@ -2121,9 +2121,11 @@ CAMERA
 
 KEYBOARD
   UNDE : Inventory
-  BREF : This {{mechanical keyboard|Keyboard}} is the {{Vortex Poker II PBT Mechanical Keyboard|https://mechanicalkeyboards.com/shop/index.php?l=product_detail&p=458}} with {{Blank Mint PBT caps|https://www.massdrop.com/buy/npkc-blank-pbt-keycaps}}.
+  BREF : The specs for my {{mechanical keyboard|Keyboard}}.
+  TYPE : Diary
   LONG
-    & The color choice is inspired from the {{Verreciel}} interface colors. I have red Cherry MX switches installed, with {{sound dampening o-rings|http://www.amazon.ca/gp/product/B00VHXHP6Q?psc=1&redirect=true&ref_=oh_aui_detailpage_o00_s00}}. It's also connected, with a braided {{90 degrees angle USB wire|http://www.amazon.ca/gp/product/B004YD6LW0?psc=1&redirect=true&ref_=oh_aui_detailpage_o00_s00}}.
+    & I currently use the {{Vortex Poker II|https://mechanicalkeyboards.com/shop/index.php?l=product_detail&p=458}}  Mechanical Keyboard with {{Blank Mint PBT caps|https://www.massdrop.com/buy/npkc-blank-pbt-keycaps}} and {{red Cherry MX|http://www.keyboardco.com/blog/index.php/2012/12/an-introduction-to-cherry-mx-mechanical-switches/}} switches.
+    & I have also installed {{sound dampening o-rings|http://www.amazon.ca/gp/product/B00VHXHP6Q?psc=1&redirect=true&ref_=oh_aui_detailpage_o00_s00}}. The keyboard connected, with a braided {{90 degrees angle USB wire|http://www.amazon.ca/gp/product/B004YD6LW0?psc=1&redirect=true&ref_=oh_aui_detailpage_o00_s00}}. The color choice is inspired from the {{Verreciel}} interface.
 
 LANGUAGE
   UNDE : Research
