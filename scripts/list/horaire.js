@@ -3,7 +3,9 @@ DATE  CODE PICT TERM                 NAME                          END
 18Z14 +100      Supergrid            Supergrid Release
 18T10 +300      Hundred rabbits      Leaving New Zealand
 18D09 +200      Markl                Markl Release
-18C03 -274      Horaire
+18C05 -275      Pino
+18C04 -287      Desamber
+18C03 -274      Hundred rabbits
 18C02 -177      Hundred rabbits
 18C01 -277  414 Ehrivevnv            Orbit
 18B14 -367      Neauismetica
