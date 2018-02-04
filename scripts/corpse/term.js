@@ -65,7 +65,7 @@ function Term(name,dict)
     var html = ""
     for(id in this.links){
       var link = this.links[id]
-      html += "<a href='"+link+"'>"+this.format_link(link)+"</a>"
+      html += `<a href='${link}' class='external' target='_blank'>${this.format_link(link)}</a>`
     }
     return `<yu class='outgoing'>${html}</yu>`;
   }
