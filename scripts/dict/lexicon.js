@@ -656,7 +656,7 @@ NEREID
   UNDE : Illustration
   BREF : {{Nereid}} has but one weather, idyllic valleys.
   LONG
-    & The soil is mostly diamonds, {_carbonado_} and the lack of atmosphere leaves the surface of the moon, mostly quiet. Pigments, illegal. Learn more through the {{Serventines}} travel diaries.
+    & The soil is mostly diamonds, {_carbonado_} and the lack of atmosphere leaves the surface of the moon, quiet. Pigments, illegal.
     &
   TYPE : Portal
 

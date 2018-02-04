@@ -139,11 +139,7 @@ function Term(name,dict)
 
   this.preview = function()
   {
-    var html = "";
-
-    html += this.photo() ? "<a href='"+this.name.to_url()+"' style='background-image:"+this.photo()+"' class='photo'></a>" : ""
-    html += "<p>"+this.bref+"</p>";
-    return "<yu class='term'>"+html+"</yu>";
+    return `<yu class='term'>${this.diary() ? "<a href='"+this.name.to_url()+"'><img src='media/diary/"+this.diary().photo+".jpg'/></a>" : ""}<p>${this.bref}</p></yu>`;
   }
 
   this.format_link = function(path)
