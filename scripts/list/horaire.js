@@ -3,6 +3,8 @@ DATE  CODE PICT TERM                 NAME                          END
 18Z14 +100      Supergrid            Supergrid Release
 18T10 +300      Hundred rabbits      Leaving New Zealand
 18D09 +200      Markl                Markl Release
+18C10 -358      Marabu
+18C09 -388      Dotgrid
 18C08 -278      Dotgrid
 18C07 -137      Marabu
 18C06 -265      Pino

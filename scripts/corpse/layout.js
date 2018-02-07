@@ -40,48 +40,75 @@ function Layout(host)
 
   this.load = function(key)
   {
-    this.prev = this.term;
-    
-
+    this.prev = this.term;    
     if(this.term && key.toLowerCase() == this.term.name.toLowerCase()){ console.log("Already here",key); return; }
+    this.term = this.host.lexicon.find(key.replace(/\+/g," "));
+    this.unload();
+    setTimeout(() => { this.reload(key) },250);
+  }
 
-
+  this.unload = function()
+  {
     this.el.style.opacity = 0;
-    this.search.value = key.replace(/\+/g," ");
-    window.location = "#"+key;
-    
-    var c = invoke.vessel.corpse;
-    c.term = c.host.lexicon.find(key.replace(/\+/g," "));
-    c.photo.style.backgroundImage = c.term.photo();
-    c.photo_info.innerHTML = c.term.photo_info();
-    c.m1.innerHTML = "";
-    c.m2.innerHTML = "";
-    c.m3.innerHTML = "";
-    document.title = c.term.name;
 
-    setTimeout(function(){ 
+    document.title = "Loading..";
+    this.search.value = "Transiting..";
+    this.m1.innerHTML = "";
+    this.m2.innerHTML = "";
+    this.m3.innerHTML = "";
+    this.icon.className = "hide";
+    this.photo.className = "hide";
+    this.photo.style.backgroundImage = "";
+    this.photo_info.innerHTML = "";
+    this.icon.style.backgroundImage = "url('media/badge/nataniev.svg')";
+  }
 
-      if(c.term){ c.set_theme(c.term.theme()); }
-      c.el.style.opacity = 1;
-      window.scrollTo(0,0);
-      c.search.setAttribute("value",c.term.name)
-      
-      c.h1.innerHTML = c.term.bref;
-      c.h2.innerHTML = c.term.h2();
-      c.h3.innerHTML = c.term.h3();
-      c.hd.className = c.term.theme();
-      c.icon.style.backgroundImage = "url('media/badge/nataniev.svg')";
-      c.m1.innerHTML = c.term.long;
-      c.m2.innerHTML = c.term.view();
+  this.reload = function(key)
+  {
+    document.title = this.term.name;
+    window.location = `#${key.to_url()}`;
+    window.scrollTo(0,0);
+    this.search.value = this.term.name;
 
-      var icon_name = c.term.name.toLowerCase().replace(/\ /g,".");
-      var img = new Image();
-      img.src = "media/badge/"+icon_name+".svg";
-      img.onload = function(){
-        if(img.naturalHeight == 0){ return; }
-        invoke.vessel.corpse.icon.style.backgroundImage = "url('media/badge/"+icon_name+".svg')";
-      }
-    },250)
+    this.h1.innerHTML = this.term.bref;
+    this.h2.innerHTML = this.term.h2();
+    this.h3.innerHTML = this.term.h3();
+    this.hd.className = this.term.theme();
+    this.m1.innerHTML = this.term.long;
+    this.m2.innerHTML = this.term.view();
+
+    this.load_icon();
+    this.load_photo();
+
+    if(this.term){ 
+      this.set_theme(this.term.theme()); 
+    }
+
+    this.el.style.opacity = 1;
+  }
+
+  this.load_icon = function(icon_path = this.term.name.to_path())
+  {
+    var img = new Image();
+    img.src = `media/badge/${icon_path}.svg`;
+    img.onload = function(){
+      if(img.naturalHeight == 0){ return; }
+      invoke.vessel.corpse.icon.style.backgroundImage = `url('media/badge/${icon_path}.svg')`;
+      invoke.vessel.corpse.icon.className = "show";
+    }
+    setTimeout(() => { invoke.vessel.corpse.icon.className = "show"; },1000)
+  }
+
+  this.load_photo = function(photo_path = this.term.photo())
+  {
+    var img = new Image();
+    img.src = photo_path;
+    img.onload = function(){
+      if(img.naturalHeight == 0){ return; }
+      invoke.vessel.corpse.photo.style.backgroundImage = `url(${photo_path})`;
+      invoke.vessel.corpse.photo_info.innerHTML = invoke.vessel.corpse.term.photo_info();
+      invoke.vessel.corpse.photo.className = "show";
+    }
   }
 
   this.set_theme = function(mode)

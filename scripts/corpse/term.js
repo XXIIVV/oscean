@@ -125,7 +125,7 @@ function Term(name,dict)
   {
     if(this.diaries.length < 1){ return ""; }
 
-    return "url(media/diary/"+this.diary().photo+".jpg)";
+    return `media/diary/${this.diary().photo}.jpg`;
   }
 
   this.photo_info = function()
