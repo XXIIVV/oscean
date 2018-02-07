@@ -74,7 +74,7 @@ function horaire_view()
       <ln><h2 style='border-bottom:1px solid white'>${summary.ch.toFixed(2)}<hs>hdc</hs><hs class='sub'>${offset.ch>0?"+":""}${offset.ch != 0 ? offset.ch.toFixed(2) : ""}</hs></h2></ln>
       <ln><h2 style='border-bottom:1px dashed black'>${summary.efec.toFixed(2)}<hs>efec</hs><hs class='sub'>${offset.efec>0?"+":""}${offset.efec != 0 ? offset.efec.toFixed(2) : ""}</hs></h2></ln>
       <ln><h2 style='border-bottom:1px dashed white'>${summary.efic.toFixed(2)}<hs>efic</hs><hs class='sub'>${offset.efic>0?"+":""}${offset.efic != 0 ? offset.efic.toFixed(2) : ""}</hs></h2></ln>
-      <ln><h2>${((summary.fh + summary.ch + summary.efec + summary.efic)/4).toFixed(2)}<hs>Output</hs></h2></ln>
+      <ln><h2 style='border-bottom:0px'>${((summary.fh + summary.ch + summary.efec + summary.efic)/4).toFixed(2)}<hs>Output</hs></h2></ln>
     </list><style>#md wr m1 { display:none !important}</style>`;
   }
 

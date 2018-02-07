@@ -7,6 +7,7 @@ function Runic(raw)
     "~":{tag:"list",sub:"ln",class:"parent",stash:true},
     "-":{tag:"list",sub:"ln",class:"",stash:true},
     "#":{tag:"code",sub:"ln",class:"",stash:true},
+    "%":{tag:"img"},
     "?":{tag:"note",class:""},
     ":":{tag:"info",class:""},
     "*":{tag:"h2",class:""},
@@ -80,6 +81,9 @@ function Runic(raw)
 
   this.render = function(line = "",rune = null)
   {
+    // Special
+    if(rune && rune.tag == "img"){ return `<img src='media/${line}'/>`; }
+
     // Append to Stash
     if(this.stash.length > 0){
       if(rune && this.stash[0].rune.tag == rune.tag && rune.stash){

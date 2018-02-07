@@ -1387,9 +1387,11 @@ ACTORS
 
 DINAISTH
   UNDE : Neauismetica
+  TYPE : Index
   BREF : {{Dinaisth}} is both the name of the artificial moon orbiting the {{Ehrivevnv}} and of one of its continents — which harbors {{Andes}}' offices.
   LONG
     & Not one being was ever native of {{Dinaisth}}, everyone came from elsewhere and all inhabitants are refered to as {*Immigrants*} — Even {{Yajnev}} will have come from somewhere else.
+    % generic/dinaisth.jpg
 
 KANIKULE
   UNDE : Dinaisth
