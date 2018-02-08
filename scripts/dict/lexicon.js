@@ -1330,7 +1330,7 @@ NEAUISMETICA
 
 NEON HERMETISM
   UNDE : Neauismetica
-  BREF : The {{Neon Hermetists|Neon Hermetism}} are handful of {{immigrants|Dinaisth}} studying the {{Ehrivevnv}}.
+  BREF : The {{Neon Hermetists|Neon Hermetism}} are researchers of the {{Ehrivevnv}}.
   LONG
     & The initiative included {{Neonev}}, who emerged from the {{collapse|Yajnev}}, {{Andes}}, who immigrated from traversing the {{Soies}}, {{Ludivine}} and {{Rlionn}}. From its early days forth, the group believed the {{Ehrivevnv}} to be the gathering place of complex beings, and/or a trap to catch them.
     & {_Beyond the computing beautiful, <br />sleeps languages of impossible meanings._}
@@ -1388,7 +1388,7 @@ ACTORS
 DINAISTH
   UNDE : Neauismetica
   TYPE : Index
-  BREF : {{Dinaisth}} is both the name of the artificial moon orbiting the {{Ehrivevnv}} and of one of its continents — which harbors {{Andes}}' offices.
+  BREF : {{Dinaisth}} is the name of an artificial moon orbiting the {{Ehrivevnv}}.
   LONG
     & Not one being was ever native of {{Dinaisth}}, everyone came from elsewhere and all inhabitants are refered to as {*Immigrants*} — Even {{Yajnev}} will have come from somewhere else.
     % generic/dinaisth.jpg
@@ -1566,7 +1566,7 @@ VAMBITS
 
 NOTES
   UNDE : Research
-  BREF : Various notes written as stories.
+  BREF : Various {{notes}} written as stories.
   TYPE : Index
 
 THE SARTRE MECHANISM
@@ -1627,32 +1627,15 @@ TALK
 GAMME
   UNDE : Research
   TYPE : Index
+  FLAG : Gamme
   BREF : The {{Gamme}} is a series of concepts and tools.
   LONG
     & A recurring topic throughout the {{Nataniev}} ecosystems is the trinity of {{Audio}}, {{Visual}} and {{Research}}. 
-    & Of which the truer names, as per {{Lietal}}, should be physicality, Phisiognomy, and Psychology - Or even the subject itself, its shape & its concept. Trisight is a name given to the pursuit of the {_Grand Oeuvre_}, the trinity of its members. The {*Grand Oeuvre*}, as per Trisight vocabulary, is meant to equal the sum of one's output goals.
-
-NATANIEV
-  UNDE : Gamme
-  TYPE : portal
-  BREF : {{Nataniev}} is an experimental operating system.
-  LONG
-    & As of June 2017, a {*graphical interface*} was built onto the server tools, allowing for the co-existence of tools such as {{Marabu}}, {{Ronin}} and {{Left}}.
-    & This website, and many others, are served by a web platform named {{Nataniev}}. Their design and much of their visual and audio content is also created with {{software}} built within the platform, following its ecosystem's ideologies.
-  LINK
-    https://github.com/XXIIVV/Nataniev
-
-OSCEAN
-  UNDE : Nataniev
-  BREF : {{Oscean}} is a custom wiki engine built within {{Nataniev}}.
-  LONG
-    & {{Oscean}} was initiated on {{08P13|2008}}, and was meant to be a repository of the sum of {{Devine|Devine lu linvega}}'s projects and notes. 
-    & It has since expanded into a network of tools, also known as {{Nataniev}}, which now hosts a series of Nataniev Native applications such as {{Ronin}}, {{Marabu}} and its social feed protocole {{Rotonde}}.
-  LINK
-    https://github.com/XXIIVV/vessel.oscean
+    & Of which the truer names, as per {{Lietal}}, should be physicality, Phisiognomy, and Psychology. Or, the subject itself, its shape & its concept. 
+    & The {_Grand Oeuvre_} is the name given to the pursuit of the Trisight, or the sum of one's output goals.
 
 TIME
-  UNDE : Research
+  UNDE : Gamme
   FLAG : Horaire
   TYPE : Index
   BREF : The {{Time}} portal covers all {{Nataniev}} time related entries.
@@ -1692,13 +1675,15 @@ HORAIRE
   FLAG : horaire
   BREF : {{Horaire}} is a {{Time}} tracking tool.
   LONG
-    & The daily entry format effectively positions the entry on a 3 dimensional plan: 
-    & {*The Sector*}, where 1 is Audio, 2 is Audio, and 3 is Research. {*The Focus Hour*}, an index of attention for the day's task — where 1 indicates that no time was invested in the task, and 9 indicates that all available time was invested in the task.  The {*Concrete Hour*} represent a value of concrete output, or index of progress toward the release of a project. It is also a vague indicator of a log's task type when combined with the sector value.
-    > <table style='max-width:600px'>
-    > <tr><th></th><th colspan='2'>Abstract</th><th colspan='2'>Median</th><th colspan='1'>Concrete</th></tr>
-    > <tr><th>Audio</th><td>Rehersal</td><td>Draft</td><td>Composition</td><td>Mastering</td><td>Release</td></tr>
-    > <tr><th>Visual</th><td>Concept</td><td>Layout</td><td>Sketch</td><td>Composition</td><td>Render</td></tr>
-    > <tr><th>Research</th><td>Planning</td><td>Testing</td><td>Tools</td><td>Update</td><td>Application</td></tr>
+    & The daily entry format contains 3 values, also called axes. effectively positions the entry on a 3 dimensional plan: 
+    & {*The Sector*}, where 1 is Audio, 2 is Audio, and 3 is Research. The explanation behind this value is defined in the {{Gamme}}.
+    & {*The Focus Hour*}, an index of attention for the day's task — where 1 indicates that no time was invested in the task, and 9 indicates that all available time was invested in the task.  
+    & The {*Concrete Hour*} represent a value of concrete output, or index of progress toward the release of a project. It is also a vague indicator of a log's task type when combined with the sector value.
+    > <table class='book'>
+    > <tr><th colspan='2'>Abstract</th><th colspan='2'>Median</th><th colspan='1'>Concrete</th></tr>
+    > <tr><td>Rehersal</td><td>Draft</td><td>Composition</td><td>Mastering</td><td>Release</td></tr>
+    > <tr><td>Concept</td><td>Layout</td><td>Sketch</td><td>Composition</td><td>Render</td></tr>
+    > <tr><td>Planning</td><td>Testing</td><td>Tools</td><td>Update</td><td>Application</td></tr>
     > </table>
   LINK
     https://github.com/XXIIVV/oscean/blob/master/scripts/list/horaire.js
@@ -1711,11 +1696,31 @@ DEATH
     & This grid represents 52 years of my life, in which each blackened cell is a week of my life gone. This automated graphic was inspired from {_John Maxwell's Jars of Marbles_}.
     ? "For in that sleep of death what dreams may come,<br />When we have shuffled off this mortal coil,<br />Must give us pause."
 
-ROTONDE
+NATANIEV
+  UNDE : Gamme
+  TYPE : portal
+  BREF : {{Nataniev}} is an experimental operating system.
+  LONG
+    & As of June 2017, a {*graphical interface*} was built onto the server tools, allowing for the co-existence of tools such as {{Marabu}}, {{Ronin}} and {{Left}}.
+    & This website, and many others, are served by a web platform named {{Nataniev}}. Their design and much of their visual and audio content is also created with {{software}} built within the platform, following its ecosystem's ideologies.
+  LINK
+    https://github.com/XXIIVV/Nataniev
+
+OSCEAN
   UNDE : Nataniev
+  BREF : {{Oscean}} is a custom wiki engine built within {{Nataniev}}.
+  LONG
+    & {{Oscean}} was initiated on {{08P13|2008}}, and was meant to be a repository of the sum of {{Devine|Devine lu linvega}}'s projects and notes. 
+    & It has since expanded into a network of tools, also known as {{Nataniev}}, which now hosts a series of Nataniev Native applications such as {{Ronin}}, {{Marabu}} and its social feed protocole {{Rotonde}}.
+  LINK
+    https://github.com/XXIIVV/vessel.oscean
+
+ROTONDE
+  UNDE : Research
   BREF : {{Rotonde}} is a P2P social network.
   LONG
-    & It is a commonly agreed upon specifications of a JSON object shared between {{members of the network|https://github.com/Rotonde}}. It currently operates on the decentralized {{dat|https://datproject.org}} protocole. Nobody owns the network, it never goes offline, there are no servers and no central authority. All content is editable, versionable, hosted on your own computer and seeded by anyone who wish to follow your portal.
+    & It is a commonly agreed upon specifications of a JSON object shared between {{members of the network|https://github.com/Rotonde}}. It currently operates on the decentralized {{dat|https://datproject.org}} protocole. 
+    & Nobody owns the network, it never goes offline, there are no servers and no central authority. All content is editable, versionable, hosted on your own computer and seeded by anyone who wish to follow your portal.
     & Anyone can join {*Rotonde*} by going to {{this url|dat://2714774d6c464dd12d5f8533e28ffafd79eec23ab20990b5ac14de940680a6fe/}} with the {{Beaker Browser|https://beakerbrowser.com}}. You can add {{anyone|dat://2f21e3c122ef0f2555d3a99497710cd875c7b0383f998a2d37c02c042d598485/}} by pasting their {#dat://#} url into the input bar. 
   LINK
     https://github.com/Rotonde
@@ -1760,7 +1765,7 @@ LAE DOI
     https://github.com/XXIIVV/vessel.lietal/blob/master/memory/thousand_rooms.mh
 
 OBLIQUES
-  UNDE : Gamme
+  UNDE : Devine lu linvega
   BREF : {{Obliques}} are short essays on travel, {{lifestyle}} and optimisation.
   TYPE : Portal
 
@@ -1836,7 +1841,7 @@ MIRRORS
 
 GLOSSARY
   UNDE : Mirrors
-  BREF : The {{Glossary}} is a collection of keywords related to epistemology.
+  BREF : The {{Glossary}} is a collection of keywords related to epistemology, design, art and general knowledge.
   LONG
     ~ Arguments
     - {*Ad baculum*}: Argument relying on an appeal to fear or a threat. 
@@ -1902,6 +1907,19 @@ GLOSSARY
     - {*Egalitarianism*}: The idea that everyone should be considered equal. Equal in merit, equal in opportunity, equal in morality, and equal in achievement.
     - {*Consequentialism*}: Ethical theory that people should choose the action that will result in the best outcome.
     - {*Utilitarianism*}: A moral philosophy that says that what matters is the sum of everyone's welfare, or the "greatest good for the greatest number".
+    ~ Laws of UX
+    - {*Fitts’s Law*}: The time to acquire a target is a function of the distance to and size of the target.
+    - {*Hick’s Law*}: The time it takes to make a decision increases with the number and complexity of choices.
+    - {*Jakob’s Law*}: Users spend most of their time on other sites. This means that users prefer your site to work the same way as all the other sites they already know.
+    - {*Law of Prägnanz*}: People will perceive and interpret ambiguous or complex images as the simplest form possible, because it is the interpretation that requires the least cognitive effort of us.
+    - {*Law of Proximity*}: Objects that are near, or proximate to each other, tend to be grouped together.
+    - {*Miller’s Law*}: The average person can only keep 7 (plus or minus 2) items in their working memory.
+    - {*Pareto Principle*}: The Pareto principle states that, for many events, roughly 80% of the effects come from 20% of the causes.
+    - {*Parkinson’s Law*}: Any task will inflate until all of the available time is spent.
+    - {*Serial Position Effect*}: Users have a propensity to best remember the first and last items in a series.
+    - {*Tesler’s Law*}: Tesler's Law, also known as The Law of Conservation of Complexity, states that for any system there is a certain amount of complexity which cannot be reduced.
+    - {*Von Restorff Effect*}: The Von Restorff effect, also known as The Isolation Effect, predicts that when multiple similar objects are present, the one that differs from the rest is most likely to be remembered.
+    - {*Zeigarnik Effect*}: People remember uncompleted or interrupted tasks better than completed tasks.
     
 BIASES
   UNDE : Mirrors
@@ -2021,58 +2039,41 @@ BIASES
     - {*Availability*}: Mental shortcut that treats easily recalled information as important or more important than alternative solutions which are not as readily recalled.
     - {*Representativeness*}: Mental shortcut where people judge the probability or frequency of a hypothesis by considering how much the hypothesis resembles available data as opposed to using a Bayesian calculation.
 
-PRINCIPLES OF ADULT BEHAVIOR
+VALUES
   UNDE : Mirrors
-  BREF : {{John Perry Barlow|https://en.wikipedia.org/wiki/John_Perry_Barlow}}’s “{{Principles of Adult Behavior}}”
+  BREF : A list of {{Values}} compiled from classical {_Stoicism_}.
   LONG
-    - Be patient. No matter what.
-    - Don’t badmouth: Assign responsibility, not blame. Say nothing of another you wouldn’t say to him.
-    - Never assume the motives of others are, to them, less noble than yours are to you.
-    - Expand your sense of the possible.
-    - Don’t trouble yourself with matters you truly cannot change.
-    - Expect no more of anyone than you can deliver yourself.
-    - Tolerate ambiguity.
-    - Laugh at yourself frequently.
-    - Concern yourself with what is right rather than who is right.
-    - Never forget that, no matter how certain, you might be wrong.
-    - Give up blood sports.
-    - Remember that your life belongs to others as well. Don’t risk it frivolously.
-    - Never lie to anyone for any reason. (Lies of omission are sometimes exempt.)
-    - Learn the needs of those around you and respect them.
-    - Avoid the pursuit of happiness. Seek to define your mission and pursue that.
-    - Reduce your use of the first personal pronoun.
-    - Praise at least as often as you disparage.
-    - Admit your errors freely and soon.
-    - Become less suspicious of joy.
-    - Understand humility.
-    - Remember that love forgives everything.
-    - Foster dignity.
-    - Live memorably.
-    - Love yourself.
-    - Endure.
-
-THE LAWS OF UX
-  UNDE : Mirrors
-  BREF : A brief list from {{the Laws Of UX|https://lawsofux.com/zeigarnik-effect.html}}.
-  LONG
-    - {*Fitts’s Law*}: The time to acquire a target is a function of the distance to and size of the target.
-    - {*Hick’s Law*}: The time it takes to make a decision increases with the number and complexity of choices.
-    - {*Jakob’s Law*}: Users spend most of their time on other sites. This means that users prefer your site to work the same way as all the other sites they already know.
-    - {*Law of Prägnanz*}: People will perceive and interpret ambiguous or complex images as the simplest form possible, because it is the interpretation that requires the least cognitive effort of us.
-    - {*Law of Proximity*}: Objects that are near, or proximate to each other, tend to be grouped together.
-    - {*Miller’s Law*}: The average person can only keep 7 (plus or minus 2) items in their working memory.
-    - {*Pareto Principle*}: The Pareto principle states that, for many events, roughly 80% of the effects come from 20% of the causes.
-    - {*Parkinson’s Law*}: Any task will inflate until all of the available time is spent.
-    - {*Serial Position Effect*}: Users have a propensity to best remember the first and last items in a series.
-    - {*Tesler’s Law*}: Tesler's Law, also known as The Law of Conservation of Complexity, states that for any system there is a certain amount of complexity which cannot be reduced.
-    - {*Von Restorff Effect*}: The Von Restorff effect, also known as The Isolation Effect, predicts that when multiple similar objects are present, the one that differs from the rest is most likely to be remembered.
-    - {*Zeigarnik Effect*}: People remember uncompleted or interrupted tasks better than completed tasks.
+    & Zeno stretched out his fingers, and showed the palm of his hand, "{*Perception*}", he said, "is a thing like this". Then, when he had closed his fingers a little, "{*Assent*} is like this". Afterwards, when he had completely closed his hand, and showed his fist, he said, was "{{<b>Comprehension</b>|https://en.wikipedia.org/wiki/Katalepsis}}". 
+    & But when he brought his left hand against his right, and with it took a firm and tight hold of his fist: "{*Knowledge*}", he said, was of that character; and that was what none but a wise person possessed.
+    > <table class='book' style='min-width:600px'>
+    > <tr><th>Character</th><th>Virtues</th><th>Vices</th></tr>
+    > <tr><td></td>
+    > <td>Wisdom<br>Justice<br>Bravery<br>Temperance<br>Generosity</td>
+    > <td>Folly, or Ignorance)<br>Injustice<br>Cowardice<br>Intemperance<br>Ungenerosity</td>
+    > </tr>
+    > <tr><th>Acts</th><th>Virtuous Acts</th><th>Vicious Acts</th></tr>
+    > <tr><td></td>
+    > <td>Wise acts<br>Just acts<br>Brave acts<br>Temperate acts<br>Generous acts</td>
+    > <td>Foolish acts<br>Unjust acts<br>Cowardly acts<br>Intemperate acts<br>Ungenerous acts</td>
+    > </tr>
+    > <tr><th>Feelings</th><th>Good Feelings</th><th>Violent Feelings</th></tr>
+    > <tr><td></td>
+    > <td>Wish<br>Caution<br>Joy</td>
+    > <td>Lust<br>Fear<br />Delight<br>Distress</td>
+    > </tr>
+    > <tr><th>Indifferents</th><th>Preferred</th><th>Rejected</th></tr>
+    > <tr><td></td>
+    > <td>Survival or mere life<br>Physical beauty<br>Health<br>Popularity<br>"Good" reputation<br>Wealth<br>Technical ability</td>
+    > <td>Death<br>Ugliness<br>Illness<br>Unpopularity<br>"Bad" reputation<br>Poverty<br>Lack of technical ability</td>
+    > </tr>
+    > </table>
 
 TIERS
   UNDE : Mirrors
-  BREF : The {{Tiers}} cheatsheet displays a spectrum of decision-making and mindsets, an abbreviated and edited list from PTFQ's original essay {{Three Tiers Of Mind|https://www.pftq.com/blabberbox/?page=Three_Tiers_of_Mind}}.
+  BREF : The {{Tiers}} cheatsheet displays a spectrum of decision-making and mindset.
   LONG
-    > <table>
+    & This is an abbreviated and edited list from PTFQ's original essay {{Three Tiers Of Mind|https://www.pftq.com/blabberbox/?page=Three_Tiers_of_Mind}}.
+    > <table class='book'>
     > <tr><th colspan='3'>The Self</th></tr>
     > <tr><td>Defined by intentions</td>  <td>Defined by association</td> <td>Defined by the past</td></tr>
     > <tr><td>Self-Actualization</td>     <td>Social Validation</td>      <td>Comfort and Basic Needs</td></tr>

@@ -3,6 +3,8 @@ DATE  CODE PICT TERM                 NAME                          END
 18Z14 +100      Supergrid            Supergrid Release
 18T10 +300      Hundred rabbits      Leaving New Zealand
 18D09 +200      Markl                Markl Release
+18C12 -355      Gamme
+18C11 -354      Neauismetica
 18C10 -358      Marabu
 18C09 -388      Dotgrid
 18C08 -278      Dotgrid
@@ -52,7 +54,7 @@ DATE  CODE PICT TERM                 NAME                          END
 17Z07
 17Z06 -375      Death
 17Z05 -392      Oscean
-17Z04 !293  505 Horaire              Odessa
+17Z04 !293      Horaire              Odessa
 17Z03 -362      Horaire
 17Z02 -298      Hundred rabbits
 17Z01 -146      Hundred rabbits
@@ -236,7 +238,7 @@ DATE  CODE PICT TERM                 NAME                          END
 17M06 -355      Rotonde
 17M05 -293      Oscean
 17M04 -393      Rotonde
-17M03 !263   81 Nataniev             Nataniev OS
+17M03 !263      Nataniev             Nataniev OS
 17M02 -385      Nataniev
 17M01 -
 17L14 -293      Nataniev
@@ -2781,7 +2783,7 @@ DATE  CODE PICT TERM                 NAME                          END
 10N05 -253      Drownspire
 10N04 -198      Mixtape              Suilen
 10N03
-10N02 !356   92 Oscean               Nataniev's Portrait
+10N02 !356   92 Nataniev             Nataniev's Portrait
 10N01 -355      Oscean
 10M14
 10M13 -355      Oscean

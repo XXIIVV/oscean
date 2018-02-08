@@ -175,13 +175,13 @@ function Term(name,dict)
     for(id in this.children){
       var term = this.children[id];
       html += term.diary() ? `<img src='media/diary/${ term.diary().photo}.jpg'/>` : '';
-      html += `<h2>${term.name}</h2><p>${term.bref}</p>${term.long}`
+      html += `<h2 class='book'><a href='${term.name.to_url()}'>${term.name}</a></h2><hs>${term.bref}</hs>${term.long}`
       if(term.children.length > 0){
         html += "<quote>"
         for(id2 in term.children){
           var subterm = term.children[id2];
           html += subterm.diary() ? `<img src='media/diary/${ subterm.diary().photo}.jpg'/>` : '';
-          html += `<h3><t style='color:#999'>${parseInt(id)+1}.${parseInt(id2)+1}</t> <b>${term.name}</b> — <a href='/${subterm.name.to_url()}'>${subterm.name}</a></h3><p>${subterm.bref}</p>${subterm.long}`
+          html += `<h3 class='book'>${parseInt(id)+1}.${parseInt(id2)+1} ${subterm.name}</h3><p>${subterm.bref}</p>${subterm.long}`
         }  
         html += "</quote>"
       }
@@ -258,7 +258,7 @@ function MissingTerm(name)
 
   this.photo = () => { return "url(media/diary/92.jpg)"; };
   this.photo_info = () => { return new Date().desamber().toString(); };
-  this.theme = () => { return ""; }
+  this.theme = () => { return "no_photo"; }
   this.bref = ""
   this.long = `<p>There were no pages found for \"${this.name}\", did you perhaps mean <a href='/${sorted[0].word.to_url()}'>${sorted[0].word}</a> or <a href='/${sorted[1].word.to_url()}'>${sorted[1].word}</a>?</p><p>If you think that a page should exist here, please contact <a href='https://twitter.com/neauoire'>@neauoire</a>, or add it as a <a href='https://github.com/XXIIVV/oscean/blob/master/scripts/dict/lexicon.js' target='_blank'>Pull Request</a>.</p>`;
 }
