@@ -174,13 +174,13 @@ function Term(name,dict)
     var html = ""
     for(id in this.children){
       var term = this.children[id];
-      // html += term.diary() ? `<img src='media/diary/${ term.diary().photo}.jpg'/>` : '';
+      html += term.diary() ? `<img src='media/diary/${ term.diary().photo}.jpg'/>` : '';
       html += `<h2>${term.name}</h2><p>${term.bref}</p>${term.long}`
       if(term.children.length > 0){
         html += "<quote>"
         for(id2 in term.children){
           var subterm = term.children[id2];
-          // html += subterm.diary() ? `<img src='media/diary/${ subterm.diary().photo}.jpg'/>` : '';
+          html += subterm.diary() ? `<img src='media/diary/${ subterm.diary().photo}.jpg'/>` : '';
           html += `<h3><t style='color:#999'>${parseInt(id)+1}.${parseInt(id2)+1}</t> <b>${term.name}</b> — <a href='/${subterm.name.to_url()}'>${subterm.name}</a></h3><p>${subterm.bref}</p>${subterm.long}`
         }  
         html += "</quote>"

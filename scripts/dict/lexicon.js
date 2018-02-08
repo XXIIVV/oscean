@@ -2021,6 +2021,53 @@ BIASES
     - {*Availability*}: Mental shortcut that treats easily recalled information as important or more important than alternative solutions which are not as readily recalled.
     - {*Representativeness*}: Mental shortcut where people judge the probability or frequency of a hypothesis by considering how much the hypothesis resembles available data as opposed to using a Bayesian calculation.
 
+PRINCIPLES OF ADULT BEHAVIOR
+  UNDE : Mirrors
+  BREF : {{John Perry Barlow|https://en.wikipedia.org/wiki/John_Perry_Barlow}}’s “{{Principles of Adult Behavior}}”
+  LONG
+    - Be patient. No matter what.
+    - Don’t badmouth: Assign responsibility, not blame. Say nothing of another you wouldn’t say to him.
+    - Never assume the motives of others are, to them, less noble than yours are to you.
+    - Expand your sense of the possible.
+    - Don’t trouble yourself with matters you truly cannot change.
+    - Expect no more of anyone than you can deliver yourself.
+    - Tolerate ambiguity.
+    - Laugh at yourself frequently.
+    - Concern yourself with what is right rather than who is right.
+    - Never forget that, no matter how certain, you might be wrong.
+    - Give up blood sports.
+    - Remember that your life belongs to others as well. Don’t risk it frivolously.
+    - Never lie to anyone for any reason. (Lies of omission are sometimes exempt.)
+    - Learn the needs of those around you and respect them.
+    - Avoid the pursuit of happiness. Seek to define your mission and pursue that.
+    - Reduce your use of the first personal pronoun.
+    - Praise at least as often as you disparage.
+    - Admit your errors freely and soon.
+    - Become less suspicious of joy.
+    - Understand humility.
+    - Remember that love forgives everything.
+    - Foster dignity.
+    - Live memorably.
+    - Love yourself.
+    - Endure.
+
+THE LAWS OF UX
+  UNDE : Mirrors
+  BREF : A brief list from {{the Laws Of UX|https://lawsofux.com/zeigarnik-effect.html}}.
+  LONG
+    - {*Fitts’s Law*}: The time to acquire a target is a function of the distance to and size of the target.
+    - {*Hick’s Law*}: The time it takes to make a decision increases with the number and complexity of choices.
+    - {*Jakob’s Law*}: Users spend most of their time on other sites. This means that users prefer your site to work the same way as all the other sites they already know.
+    - {*Law of Prägnanz*}: People will perceive and interpret ambiguous or complex images as the simplest form possible, because it is the interpretation that requires the least cognitive effort of us.
+    - {*Law of Proximity*}: Objects that are near, or proximate to each other, tend to be grouped together.
+    - {*Miller’s Law*}: The average person can only keep 7 (plus or minus 2) items in their working memory.
+    - {*Pareto Principle*}: The Pareto principle states that, for many events, roughly 80% of the effects come from 20% of the causes.
+    - {*Parkinson’s Law*}: Any task will inflate until all of the available time is spent.
+    - {*Serial Position Effect*}: Users have a propensity to best remember the first and last items in a series.
+    - {*Tesler’s Law*}: Tesler's Law, also known as The Law of Conservation of Complexity, states that for any system there is a certain amount of complexity which cannot be reduced.
+    - {*Von Restorff Effect*}: The Von Restorff effect, also known as The Isolation Effect, predicts that when multiple similar objects are present, the one that differs from the rest is most likely to be remembered.
+    - {*Zeigarnik Effect*}: People remember uncompleted or interrupted tasks better than completed tasks.
+
 TIERS
   UNDE : Mirrors
   BREF : The {{Tiers}} cheatsheet displays a spectrum of decision-making and mindsets, an abbreviated and edited list from PTFQ's original essay {{Three Tiers Of Mind|https://www.pftq.com/blabberbox/?page=Three_Tiers_of_Mind}}.
