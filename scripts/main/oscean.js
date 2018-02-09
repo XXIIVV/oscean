@@ -7,7 +7,7 @@ function Oscean()
     dict:["lexicon"],
     list:["horaire"],
     docs:["directory","russian","japanese","discography","lietal","blue"],
-    special:["horaire","calendar","home","death"]
+    special:["horaire","calendar","home","death","portal","status"]
   };
 
   this.name = "oscean";

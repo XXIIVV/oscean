@@ -6,6 +6,16 @@ HOME
   ETCS
     & This wiki provides documentation and narrative context for the various {{Audio}}, {{Visual}} and {{Research}} projects of multimedia developer {{Devine Lu Linvega}}. 
 
+PORTAL
+  UNDE : Home
+  BREF : The {{Portal}} is a list of all active entries in the Lexicon.
+  TYPE : Special
+
+STATUS
+  UNDE : Portal
+  BREF : An overview of the {{state|status}} of the Lexicon.
+  TYPE : Special
+
 AUDIO
   UNDE : Home
   TYPE : Portal
