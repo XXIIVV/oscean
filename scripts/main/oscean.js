@@ -6,7 +6,7 @@ function Oscean()
     corpse:["layout","lexicon","term","horaire","log"],
     dict:["lexicon"],
     list:["horaire"],
-    docs:["directory","russian","japanese","discography","lietal","blue"],
+    docs:["directory","russian","japanese","discography","lietal","blue","glossary","biases","tiers"],
     special:["horaire","calendar","home","death","portal","status"]
   };
 

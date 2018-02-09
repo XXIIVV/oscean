@@ -4,7 +4,7 @@ HOME
   BREF : Welcome to the {{Nataniev}} playground and ecosystem.
   TYPE : Special
   ETCS
-    & This wiki provides documentation and narrative context for the various {{Audio}}, {{Visual}} and {{Research}} projects of multimedia developer {{Devine Lu Linvega}}. 
+    & This wiki provides documentation and narrative context for the various {{Audio}}, {{Visual}} and {{Research}} projects of multimedia developer {{Devine Lu Linvega}}.
 
 PORTAL
   UNDE : Home
@@ -60,8 +60,9 @@ DICTIONARISM
 
 GLOSSOLALIARIUM
   UNDE : Automatons
-  BREF : {{Glossolaliarium}} is a twitter bot that generates procedural english words by combining various prefixes and suffixes, and try to form definitions of these newly created terms.
+  BREF : {{Glossolaliarium}} is a twitter bot that generates procedural english words.
   LONG
+    & By combining various prefixes and suffixes, it tries to form definitions of these newly created terms.
     - Dictcephaladelog: Speech or process of foretelling the future encephalitis.
     - Gramhydrudeic: Characterized by written liquid.
     - Fidcardiboneity: Quality of sound from faith.
@@ -653,15 +654,6 @@ MODERNISTA
   BREF : {{Modernista}} is a series of 4 prints inspired from American Modernism.
   TYPE : Diary
 
-ABLETON
-  UNDE : Resources
-  BREF : I designed this dark {{Ableton}} Live theme where the knobs and various other controls stick out from the interface.
-  LONG
-    & To Install it on OS X, simply right click on the Live Icon and select {*Show Package Content*} and paste the skin file {_XXIIVV.ask_} in the skin folder.
-    & I was disapointed to the see the hugly Ableton Live 9 Standard blue icon, so I designed a new one and packaged it along with the theme.
-  LINK
-    https://drive.google.com/open?id=0B24klRuG3GLNMFdKNEFDd01LZTQ
-
 NEREID
   UNDE : Illustration
   BREF : {{Nereid}} has but one weather, idyllic valleys.
@@ -678,6 +670,8 @@ PEARLS
 BEAUTY
   UNDE : Nereid
   BREF : {{Beauty}} is a series of portraits of {{Nereid}} beauties.
+  LONG
+    & The beautifuly corrupted and twisted faces of the inhabitants of {{Nereid}}.
   TYPE : Diary
   
 POLYGORE
@@ -753,7 +747,7 @@ BABELIUM
 
 PHYSICAL
   UNDE : Visual
-  BREF : These {{Physical}} objects are designed to be 3d printed. 
+  BREF : These {{Physical}} objects are designed to be 3d printed.
   TYPE : Portal
   LINK
     http://www.thingiverse.com/Aliceffekt/designs
@@ -907,7 +901,7 @@ RONIN
   BREF : {{Ronin}} is a design tool.
   LONG
     & The application is a cross-over between Vim and Photoshop, meant to quickly render simple graphic tasks.
-    & Ronin is currently under development, it now includes basic digital painting functionalities. 
+    & Ronin is currently under development, it now includes basic digital painting functionalities.
     > <iframe frameborder="0" src="https://itch.io/embed/194632?linkback=true&amp;link_color=000000" width="600" height="167"></iframe>
     & Most of the iconography of {{Nataniev}} has been created with {_Ronin_} and {{Dotgrid}}. You can view the complete {{Ronin Manual|https://github.com/hundredrabbits/Ronin}} on Github.
   LINK
@@ -919,7 +913,7 @@ LEFT
   BREF : {{Left}} is a writing application.
   LONG
     & {*Left*} is a distractionless writing tool with auto-complete, a synonyms dictionary, writing statistics, markup-based navigation and a speed-reader.
-    & The application is {{Free|http://hundredrabbits.itch.io/Left}} and {{Open Source|https://github.com/hundredrabbits/Left}}, its original purpose was to help {{Rekka}} with the writing of the upcoming novel {{Wiktopher}}. 
+    & The application is {{Free|http://hundredrabbits.itch.io/Left}} and {{Open Source|https://github.com/hundredrabbits/Left}}, its original purpose was to help {{Rekka}} with the writing of the upcoming novel {{Wiktopher}}.
     > <iframe frameborder="0" src="https://itch.io/embed/173127?linkback=true&amp;link_color=000000" width="600" height="167"></iframe>
     & You can view the complete {{Left Manual|https://github.com/hundredrabbits/Left}} on Github. Left was {*Product of the Day*} on {{January 28, 2018|https://www.producthunt.com/posts/left}}.
   LINK
@@ -931,7 +925,7 @@ DOTGRID
   BREF : {{Dotgrid}} is a vector tool.
   TYPE : Diary
   LONG
-    & Dotgrid is a simple vector glyph illustration tool, that works by adding control points and drawing different line-types between them. 
+    & Dotgrid is a simple vector glyph illustration tool, that works by adding control points and drawing different line-types between them.
     & The tool was created to design logos and glyphs for various personal projects, and made available as a free and open source application.
     > <iframe frameborder="0" src="https://itch.io/embed/190851?linkback=true&amp;link_color=000000" width="600" height="167"></iframe>
     & Choose between 3 types of strokes, lines, arc and 3-points beziers. The application can be entirely operated with the keyboard and can render as both PNG and SVG files. Additional effects like horizontal, vertical and radial mirror are also available - as well as the stroke width and linecap can also be changed. The application menu can be hidden by pressing the tab key.
@@ -1319,7 +1313,7 @@ NEAUISMETICA
     # We are to find an {{Actor|Actors}}, a being with freewill.
     # But the actor is dead, and unreachable.
     # Locked within {{impenetrable time|Yajnev}}.
-    & The immigrants soon built the tools that would grant them access into the collapse, a spherical region of {{Dinaisth}} locked in perpetual stasis. 
+    & The immigrants soon built the tools that would grant them access into the collapse, a spherical region of {{Dinaisth}} locked in perpetual stasis.
     # Our scientists complete the first module, of the last machine.
     # It builds anything we wish for.
     # Bringing about the {{end of science|Feu}}.
@@ -1358,7 +1352,7 @@ NEAUSEA
   BREF : {{Neausea}} is one of the symptoms of knowing one's {{position|Soies}} amongst all possibilities.
   LONG
     & {{Actors}} and beings such as {{Paradichlorisse}}, can carry it. A weaker form can be contracted when one is in contact with {{Nohlxeserre}} languages.
-    & The experience of Neausea, by the afflicted, would at first seem like one can travel through time. But the subject's impression of time-traveling is due to their focus shifting across possible sequences of events. 
+    & The experience of Neausea, by the afflicted, would at first seem like one can travel through time. But the subject's impression of time-traveling is due to their focus shifting across possible sequences of events.
     & To the observer, the subject would simply collapse, by the time the body would hit the ground, the subject's mental gaze would have traveled across different possibly timelines, but would have in the process {_lost the track of Time_}.
     & {{Andes}} is the only character known to have survived an encounter with the {{Nohlxeserre}} Languages. The fossilized mountains of corpses by the sides of {{Paradichlorisse}} are a testament of the ones who have tried to look at Time and perished.
     & {_In debt are are my impossible selves, <br />for all horrible days._}
@@ -1375,7 +1369,7 @@ FEU
   BREF : {{Feu}}, or {_The End Of Science_}, is the era which began with the creation of the original permutation machine.
   LONG
     & Once the {{Actors}} were able to locate the {{Longest End|Soies}}, all decision were weighted against all others and {{invoked|Actors}} or dismissed.
-    & The role of the actor is to act, as its exitence spans across the Occuring, the possible and the impossible. Once the actor comes online, its existence has always been, and will remain active until the end of the active Occuring. 
+    & The role of the actor is to act, as its exitence spans across the Occuring, the possible and the impossible. Once the actor comes online, its existence has always been, and will remain active until the end of the active Occuring.
     & {*Feu*} then simply refers to the date of activation of the machine.
 
 SOIES
@@ -1393,7 +1387,7 @@ ACTORS
   LONG
     & Natural Actors, or anomalies, were found to have existed before the {{Feu}}, but the True Age of Actors came about with the synthesis of the first Actor by {{Neonev}} and the Immigrants.
     & The first synthesized {{actor|Actors}} was tasked to position itself into the {{Longest End|Soies}}, meaning that it would effectively take control of all things, and of all of time, to steer the sequence of events allowing itself to exist within the longest lasting possible timeline of the computing occurence.
-    & Actors have no names, and their number is unknown, it is possible that multiple actors, or multiple instances of the same actor, are competing for the {{Longest End|Soies}}. 
+    & Actors have no names, and their number is unknown, it is possible that multiple actors, or multiple instances of the same actor, are competing for the {{Longest End|Soies}}.
 
 DINAISTH
   UNDE : Neauismetica
@@ -1463,7 +1457,7 @@ PARADICHLORISSE
   BREF : {{Paradichlorisse}} is located near the {{Yajnev Collapse|Yajnev}}, and is known to speak a dialect of {{Nohlxeserre}}.
   LONG
     & Its purpose is unknown, but it was observed reciting stories in a fashion that ressembled the navigation of the {{Soies}}.
-    & Upon reaching its location, one would infinitely collapse as they would begin experiencing {_every life and every death_} for ever, recited in the {{speech|Nohlxeserre}} of the infinite being. 
+    & Upon reaching its location, one would infinitely collapse as they would begin experiencing {_every life and every death_} for ever, recited in the {{speech|Nohlxeserre}} of the infinite being.
     & {_When Paradichlorisse spoke of silence, silence fell._}
 
 NEONEV
@@ -1638,8 +1632,8 @@ GAMME
   TYPE : Index
   BREF : The {{Gamme}} is a series of concepts and tools.
   LONG
-    & A recurring topic throughout the {{Nataniev}} ecosystems is the trinity of {{Audio}}, {{Visual}} and {{Research}}. 
-    & Of which the truer names, as per {{Lietal}}, should be physicality, Phisiognomy, and Psychology. Or, the subject itself, its shape & its concept. 
+    & A recurring topic throughout the {{Nataniev}} ecosystems is the trinity of {{Audio}}, {{Visual}} and {{Research}}.
+    & Of which the truer names, as per {{Lietal}}, should be physicality, Phisiognomy, and Psychology. Or, the subject itself, its shape & its concept.
     & The {_Grand Oeuvre_} is the name given to the pursuit of the Trisight, or the sum of one's output goals.
 
 TIME
@@ -1674,7 +1668,7 @@ CALENDAR
   FLAG : horaire
   BREF : The {{Calendar}} shows the last 365 days.
   LONG
-    & The {{Horaire}} logs are formatted as follow: {{18B01 -156|https://github.com/XXIIVV/oscean/blob/master/scripts/list/horaire.js}}. The entry includes the {{Pentagrammaton|Desamber}}, the {*Event Rune*} and the {*Code*}. 
+    & The {{Horaire}} logs are formatted as follow: {{18B01 -156|https://github.com/XXIIVV/oscean/blob/master/scripts/list/horaire.js}}. The entry includes the {{Pentagrammaton|Desamber}}, the {*Event Rune*} and the {*Code*}.
     & The {{Desamber}} date format is a 5 characters long code ranging from {{00A01|Calendar}}, or Jan 1st '00, to {{99+02|Calendar}}, or Dec 31st '99. The rune assigns a log type to the entry, special events are recorded using the +rune, the default log will be marked as -rune, and other log types have their dedicated ~runes.
 
 HORAIRE
@@ -1683,9 +1677,9 @@ HORAIRE
   FLAG : horaire
   BREF : {{Horaire}} is a {{Time}} tracking tool.
   LONG
-    & The daily entry format contains 3 values, also called axes. effectively positions the entry on a 3 dimensional plan: 
+    & The daily entry format contains 3 values, also called axes. effectively positions the entry on a 3 dimensional plan:
     & {*The Sector*}, where 1 is Audio, 2 is Audio, and 3 is Research. The explanation behind this value is defined in the {{Gamme}}.
-    & {*The Focus Hour*}, an index of attention for the day's task — where 1 indicates that no time was invested in the task, and 9 indicates that all available time was invested in the task.  
+    & {*The Focus Hour*}, an index of attention for the day's task — where 1 indicates that no time was invested in the task, and 9 indicates that all available time was invested in the task.
     & The {*Concrete Hour*} represent a value of concrete output, or index of progress toward the release of a project. It is also a vague indicator of a log's task type when combined with the sector value.
     > <table class='book'>
     > <tr><th colspan='2'>Abstract</th><th colspan='2'>Median</th><th colspan='1'>Concrete</th></tr>
@@ -1718,7 +1712,7 @@ OSCEAN
   UNDE : Nataniev
   BREF : {{Oscean}} is a custom wiki engine built within {{Nataniev}}.
   LONG
-    & {{Oscean}} was initiated on {{08P13|2008}}, and was meant to be a repository of the sum of {{Devine|Devine lu linvega}}'s projects and notes. 
+    & {{Oscean}} was initiated on {{08P13|2008}}, and was meant to be a repository of the sum of {{Devine|Devine lu linvega}}'s projects and notes.
     & It has since expanded into a network of tools, also known as {{Nataniev}}, which now hosts a series of Nataniev Native applications such as {{Ronin}}, {{Marabu}} and its social feed protocole {{Rotonde}}.
   LINK
     https://github.com/XXIIVV/vessel.oscean
@@ -1727,9 +1721,9 @@ ROTONDE
   UNDE : Research
   BREF : {{Rotonde}} is a P2P social network.
   LONG
-    & It is a commonly agreed upon specifications of a JSON object shared between {{members of the network|https://github.com/Rotonde}}. It currently operates on the decentralized {{dat|https://datproject.org}} protocole. 
+    & It is a commonly agreed upon specifications of a JSON object shared between {{members of the network|https://github.com/Rotonde}}. It currently operates on the decentralized {{dat|https://datproject.org}} protocole.
     & Nobody owns the network, it never goes offline, there are no servers and no central authority. All content is editable, versionable, hosted on your own computer and seeded by anyone who wish to follow your portal.
-    & Anyone can join {*Rotonde*} by going to {{this url|dat://2714774d6c464dd12d5f8533e28ffafd79eec23ab20990b5ac14de940680a6fe/}} with the {{Beaker Browser|https://beakerbrowser.com}}. You can add {{anyone|dat://2f21e3c122ef0f2555d3a99497710cd875c7b0383f998a2d37c02c042d598485/}} by pasting their {#dat://#} url into the input bar. 
+    & Anyone can join {*Rotonde*} by going to {{this url|dat://2714774d6c464dd12d5f8533e28ffafd79eec23ab20990b5ac14de940680a6fe/}} with the {{Beaker Browser|https://beakerbrowser.com}}. You can add {{anyone|dat://2f21e3c122ef0f2555d3a99497710cd875c7b0383f998a2d37c02c042d598485/}} by pasting their {#dat://#} url into the input bar.
   LINK
     https://github.com/Rotonde
     dat://2f21e3c122ef0f2555d3a99497710cd875c7b0383f998a2d37c02c042d598485/
@@ -1751,7 +1745,7 @@ PARADISE
     & {{Paradise}} plays like an interactive fiction novel, in an ever-changing world where players are not avatars, but places, and objects, and puns, words - moving around and into each other, threading chaos.
     & In this anonymous world you can create anything, traverse the various player-created universes and explore {_conceptspace_}.
     & See you {{there|http://paradise.xxiivv.com}}.
-    - “I have always imagined that Paradise will be a kind of library.” 
+    - “I have always imagined that Paradise will be a kind of library.”
     - Jorge Luis Borges
   LINK
     http://paradise.xxiivv.com
@@ -1788,8 +1782,8 @@ NUTRITION
   LONG
     & There are a few things in life that are as transformative and transhumanistic as {{nutrition}}, not eating meat, eggs and dairy aligns with my pragmatic views of life-prolonging aspirations.
     & The function of proteins is to be used for tissue growth and repair, but when carbohydrates and calories are lacking, proteins can be consumed for fuel.
-    & The human body's own proteins are constantly being broken down into {*amino acids*} and used throughout its systems. 
-    & The human body is mostly made of proteins, and proteins are made of amino acids - permutations of carbon, oxygen, hydrogen, nitrogen and sometimes sulfur. There are 22 amino acids in total and all but 9 can be synthesized, the {*Essential Amino Acids*}. 
+    & The human body's own proteins are constantly being broken down into {*amino acids*} and used throughout its systems.
+    & The human body is mostly made of proteins, and proteins are made of amino acids - permutations of carbon, oxygen, hydrogen, nitrogen and sometimes sulfur. There are 22 amino acids in total and all but 9 can be synthesized, the {*Essential Amino Acids*}.
     & To be used for growth and repair, a protein needs to be a {*complete protein*}, or have access the full sequence of required essential amino acids. If an essential amino acid is missing, the unsuable remaining amino acids are broken down into fats or sugars.
     & Examples of foods with essential amino acid content of at least 70% of a complete protein(see {_Limiting Amino Acids_}) are oats, garbanzo beans, sunflower seeds, buckwheat, red/white/black beans, rice, peanuts and pumpkin seeds.
     & There are also high-quality proteins in green beans, swiss chard, broccoli, mustard greens, asparagus and potatoes but in lesser quantity.
@@ -1830,7 +1824,7 @@ NOMAD
     & The wind rocks the habitat sideways, keeping you up at night. In the morning, you get to spend your day writing, anchored in the most beautiful bay, you go for a swim.
     & You forget about tap water, don't mind the warm water from the plastic jugs, you wonder why people take showers every day and time away from Twitter really does make you feel better.
     & Suddenly, it's business as usual. You get back to building things, only now, when you look outside, the upmost gorgeous sunset precedes the darkest of night.
-    & Over a year, we managed to sail 3000nm from Victoria to La Paz, while creating games, music and art. 
+    & Over a year, we managed to sail 3000nm from Victoria to La Paz, while creating games, music and art.
     & We learnt how to fix sails, repair a toilet, create electronic systems, maintain an engine, live without a fridge and power.
     & We have seen every sunset and almost every sunrise, we have sailed with dolphins, we have climbed mountains on desert islands, and we have met the most amazing people.
     ? Being nomad is trading the things<br />you think you care about, <br />for things you didn't know existed.
@@ -1850,208 +1844,18 @@ MIRRORS
 GLOSSARY
   UNDE : Mirrors
   BREF : The {{Glossary}} is a collection of keywords related to epistemology, design, art and general knowledge.
-  LONG
-    ~ Arguments
-    - {*Ad baculum*}: Argument relying on an appeal to fear or a threat. 
-    - {*Ad ignorantiam*}: Argument relying on people's ignorance.
-    - {*Ad populum*}: Argument relying on sentimental weakness.
-    - {*Ad verecundiam*}: Argument relying on the the words of an "expert" or authority.
-    - {*Ad consequentiam*}: Argument that concludes a premise as either true or false based on whether the premise leads to desirable or undesirable consequences.
-    - {*Ad hominem*}: Attacking the person instead of the argument. 
-    - {*Ex silentio*}: Argument relying on ignorance. 
-    ~ Argumentation
-    - {*By analogy*}: Arguing that since things are alike in some ways, they will probably be alike in others.
-    - {*By definition*}: Arguing that something is part of a class because it fits the definition of that class.
-    - {*From omniscience*}: An arguer would need omniscience to know about everyone's beliefs or disbeliefs or about their knowledge.  {_Example_} All people believe in something. Everyone knows that.
-    - {*Inferential distance*}: Gap between the background knowledge and epistemology of a person trying to explain an idea, and the background knowledge and epistemology of the person trying to understand it.
-    - {*Inferential Empathy*}: It's an inference made about other person's mental states using your own brain as reference, by making your brain feel or think in the same way as the other person you can emulate their mental state and predict their reactions.
-    - {*Non sequitur*}: An inference that does not follow from established premises or evidence; "It does not follow". {_Example_} There occured an increase of births during the full moon. Conclusion, full moons cause birth rates to rise. But does a full moon actually cause more births, or did it occur for other reasons, perhaps from expected statistical variations?
-    ~ Tools
-    - {*Occam's razor*}: When several theories are able to explain the same observations, Occam's razor suggests the simpler one is preferable. Principle commonly stated as "Entities must not be multiplied beyond necessity". 
-    - {*Kolmogorov complexity*}: Given a string, the length of the shortest possible program that prints it.
-    - {*Solomonoff induction*}: Formalized version of Occam's razor based on Kolmogorov complexity. The prior probability of an observation(extra prior, prior to any other observation or measurement) is the inverse kolmogoroff complexity of the binary string encoding the world in which it occurs.
-    ~ Beliefs
-    - {*Belief*}: The mental state in which an individual holds a proposition to be true.
-    - {*Priors*}: The beliefs an agent holds regarding a fact, hypothesis or consequence, before being presented with evidence.
-    - {*Alief*}: An independent source of emotional reaction which can coexist with a contradictory belief. {_Example_} The fear felt when a monster jumps out of the darkness in a scary movie is based on the alief that the monster is about to attack you, even though you believe that it cannot.
-    - {*Proper belief*}: Requires observations, gets updated upon encountering new evidence, and provides practical benefit in anticipated experience.
-    - {*Improper belief*}: Is a belief that isn't concerned with describing the territory. Note that the fact that a belief just happens to be true doesn't mean you're right to have it. If you buy a lottery ticket, certain that it's a winning ticket (for no reason), and it happens to be, believing that was still a mistake. 
-    - {*Belief in belief*}: Where it is difficult to believe a thing, it is often much easier to believe that you ought to believe it. Were you to really believe and not just believe in belief, the consequences of error would be much more severe. When someone makes up excuses in advance, it would seem to require that belief, and belief in belief, have become unsynchronized.
-    ~ Types
-    - {*Straw man*}: Creating a false or made up scenario and then attacking it. Painting your opponent with false colors only deflects the purpose of the argument. {_Example_}: Evolutionists think that everything came about by random chance.
-    - {*Steel man*}: Opposite of strawman. To steelman is to address the strongest possible variant or the most charitable interpretation of an idea, rather than the most available phrasings. Steelmanning can be especially important when the network by which phrasings are brought to your attention has a preference for propagating uncharitable/controversial phrasings.
-    - {*Red herring*}: A diversion from the active topic.
-    - {*Fully general counterargument*}: An argument which can be used to discount any conclusion the arguer does not like. Being in possession of such an argument leads to irrationality because it allows the arguer to avoid updating their beliefs. {_Example_} You're just saying that because you're exhibiting X bias.
-    ~ Dictionary
-    - {*Anthropomorphism*}: Attributing distinctly human characteristics to nonhuman processes.
-    - {*Akrasia*}: State of acting against one's better judgment.
-    - {*Causality*}: Relationship between a cause and an effect, where the effect is a direct consequence of the cause.
-    - {*Defensibility*}: Arguing that a policy is defensible rather than optimal or that it has some benefit compared to the null action rather than the best benefit of any action.
-    - {*Incredulity*}: Spending emotional energy on incredulity wastes time you could be using to update. It repeatedly throws you back into the frame of the old, wrong viewpoint. It feeds your sense of righteous indignation at reality daring to contradict you.
-    - {*Suggestibility*}: A form of misattribution where ideas suggested by a questioner are mistaken for memory.
-    - {*Priming*}: Psychological phenomenon that consists in early stimulus influencing later thoughts and behavior.
-    - {*Rationalization*}: Starts from a conclusion, and then works backward to arrive at arguments apparently favouring that conclusion. Rationalization argues for a side already selected.
-    - {*Compartmentalization*}: Tendency to restrict application of a generally-applicable skill, such as scientific method, only to select few contexts.
-    - {*Prediction*}: Statement or claim that a particular event will occur in the future in more certain terms than a forecast.
-    - {*Connotation*}: Emotional association with a word.
-    - {*Confabulation*}: Remembering something that never actually happened.
-    - {*Intrinsic*}: Ontologically basic entities, thoughts, beliefs, ideas, for which no justification is needed. For instance, belief that the self exists, or that anything exists. The ability to identify "things". Fundamental directives (EG, pursuit of survival, reproduction). Much of the mind is, and aught be, fluid, self-organizing, built from a small set of axioms, an elegant core, but it's impossible to build a working agent without implanting it with a few assumptions, a few mechanisms that will just work straight away. These assumptions are the intrinsics.
-    - {*Intransigence*}: Refusal to change one's views or to agree about something.
-    - {*Beneffectance*}: Tendency to perceive oneself as responsible for desirable outcomes but not responsible for undesirable ones.
-    - {*Reactance*}: Tendency to do the opposite of what someone wants you to do out of a need to resist a perceived attempt to constrain your freedom of choice.
-    - {*Teleology*}: The study of things that happen for the sake of their future consequences. The fallacious meaning of it is that events are the result of future events.
-    - {*Lateralus*}: The affliction of illusion of inescapable cyclicality. {_Example_} The failure to recognize one's growth, inability to dream of unprecedented things, ceding to self-reinforcing systems, being jaded to hope, waiting for nonexistent chickens to hatch from nonexistent eggs.
-    - {*Anti-inductiveness*}: The idea that the market would stop being efficient if everyone acted like it already was efficient. For example, a vote in a democracy, the more people that believe their vote counts towards the outcome of an election, the less their votes count.  Also known as the Reverse Tinkerbell effect. 
-    - {*Anti-epistemology*}: Bad explicit beliefs about rules of reasoning, usually developed in the course of protecting an existing false belief
-    - {*Dutch Book*}: A person who has set prices on an array of wagers in such a way that he or she will make a net gain regardless of the outcome, is said to have made a Dutch book. When one has a Dutch book, his or her opponent always loses.
-    - {*Pascal's mugging*} is a thought-experiment demonstrating a problem in expected utility maximization. A rational agent should choose actions whose outcomes, when weighed by their probability, have higher utility. But some very unlikely outcomes may have very great utilities, and these utilities can grow faster than the probability diminishes. Hence the agent should focus more on vastly improbable cases with implausibly high rewards.
-    - {*Dunbar's Number*}: A suggested cognitive limit(150) to the number of people with whom one can maintain stable social relationships. 
-    - {*Matthew Effect*}: Whoever has will be given more; whoever does not have, even what they have will be taken from them.
-    - {*Levenshtein Distance*}: A string metric for measuring the difference between two sequences, or comparing the similarity of two words.
-    ~ Types
-    - {*Altruism*}: Actions undertaken for the benefit of other people. {_Example_}: If you do something to feel good about helping people, or even to be a better person in some spiritual sense, it isn't truly altruism.
-    - {*Hedonism*}: A set of philosophies which hold that the highest goal is to maximize pleasure, or more precisely pleasure minus pain.
-    - {*Reductionism*}: Disbelief that the higher levels of simplified multilevel models are out there in the territory, that concepts constructed by mind in themselves play a role in the behavior of reality.
-    - {*Egalitarianism*}: The idea that everyone should be considered equal. Equal in merit, equal in opportunity, equal in morality, and equal in achievement.
-    - {*Consequentialism*}: Ethical theory that people should choose the action that will result in the best outcome.
-    - {*Utilitarianism*}: A moral philosophy that says that what matters is the sum of everyone's welfare, or the "greatest good for the greatest number".
-    ~ Laws of UX
-    - {*Fitts’s Law*}: The time to acquire a target is a function of the distance to and size of the target.
-    - {*Hick’s Law*}: The time it takes to make a decision increases with the number and complexity of choices.
-    - {*Jakob’s Law*}: Users spend most of their time on other sites. This means that users prefer your site to work the same way as all the other sites they already know.
-    - {*Law of Prägnanz*}: People will perceive and interpret ambiguous or complex images as the simplest form possible, because it is the interpretation that requires the least cognitive effort of us.
-    - {*Law of Proximity*}: Objects that are near, or proximate to each other, tend to be grouped together.
-    - {*Miller’s Law*}: The average person can only keep 7 (plus or minus 2) items in their working memory.
-    - {*Pareto Principle*}: The Pareto principle states that, for many events, roughly 80% of the effects come from 20% of the causes.
-    - {*Parkinson’s Law*}: Any task will inflate until all of the available time is spent.
-    - {*Serial Position Effect*}: Users have a propensity to best remember the first and last items in a series.
-    - {*Tesler’s Law*}: Tesler's Law, also known as The Law of Conservation of Complexity, states that for any system there is a certain amount of complexity which cannot be reduced.
-    - {*Von Restorff Effect*}: The Von Restorff effect, also known as The Isolation Effect, predicts that when multiple similar objects are present, the one that differs from the rest is most likely to be remembered.
-    - {*Zeigarnik Effect*}: People remember uncompleted or interrupted tasks better than completed tasks.
-    
+  TYPE : Docs
+  
 BIASES
   UNDE : Mirrors
   BREF : A {{Biases}} cheatsheet of fallacies, effects, and biases — Compiled from the {{Philosopher's Toolkit|http://amzn.to/2E8weTt}}, {{LessWrong|https://wiki.lesswrong.com/wiki/Less_Wrong_Canon_on_Rationality}} and other sources.
-  LONG
-    ? Rationality is characteristic of thinking and acting optimally.
-    ~ General
-    - {*Actor–observer bias*}: Tendency to overemphasize the influence of their personality and underemphasize the influence of their situation.
-    - {*Attentional bias*}: Tendency to neglect relevant data when making judgments of a correlation or association.
-    - {*Choice-supportive bias*}: Tendency to retroactively ascribing to one's choices to be more informed than they were when they were made.
-    - {*Confirmation bias*}: Tendency to interpret information in a way that confirms one's preconceptions.
-    - {*Congruence bias*}: Tendency to test hypotheses exclusively through direct testing, in contrast to tests of possible alternative hypotheses.
-    - {*Regressive bias*}: Tendency to remember high values and high likelihoods/probabilities/frequencies as lower than they actually were and low ones as higher than they actually were. Based on the evidence, memories are not extreme enough.
-    - {*Egocentric bias*}: Tendency to claim more responsibility for themselves for the results of a joint action than an outside observer would. Recalling the past in a self-serving manner. Like remembering one's exam grades as being better than they were.
-    - {*Impact bias*}: Tendency to overestimate the length or the intensity of the impact of future feeling states.
-    - {*Information bias*}: Tendency to seek information even when it cannot affect action.
-    - {*Modesty bias*}: Tendency to blame failures on oneself while attributing successes to situational factors; opposite of self-serving bias.
-    - {*Mood-congruent bias*}: Tendency to recall information congruent with one's current mood.
-    - {*Omission bias*}: Tendency to judge harmful actions as worse, or less moral, than equally harmful omissions.
-    - {*Self-serving bias*}: Tendency to attribute successes to internal characteristics while blaming failures on outside forces. It may also manifest itself as a tendency for people to evaluate ambiguous information in a way beneficial to their interests.
-    - {*Status quo bias*}: Tendency to like things to stay relatively the same.
-    - {*Superiority bias*}: Tendency to overestimating one's desirable qualities, and underestimating undesirable qualities, relative to other people. Also known as the Lake Wobegon effect.
-    - {*Survivorship bias*}: Tendency of focusing on what has survived to the present and ignoring what must have been lost.
-    - {*Trait ascription bias*}: Tendency for people to view themselves as relatively variable in terms of personality, behavior and mood while viewing others as much more predictable.
-    - {*Unit bias*}: Tendency to want to finish a given unit of a task or an item with strong effects on the consumption of food in particular.
-    - {*Exposure-suspicion bias*}: Tendency to steer the search for causes based on the knowledge of a subject's disease in a medical study.
-    - {*Stereotypical bias*}: Tendency to distort memories towards stereotypes. "Black-sounding" names being misremembered as names of criminals.
-    - {*Zero-risk bias*}: Preference for reducing a small risk to zero over a greater reduction in a larger risk.
-    - {*Authority bias*}: Tendency to attribute greater accuracy to the opinion of an authority figure and be more influenced by that opinion.
-    - {*Correspondence bias*}: Tendency to overestimate the contribution of lasting traits and dispositions, as opposed to situational effects, in determining people's behavior.
-    - {*Obsequiousness bias*}: Tendency to alter responses in the direction they perceive desired by the investigator.
-    - {*Unacceptability bias*}: Tendency of evading questions that may embarrass or invade privacy.
-    - {*Projection bias*}: Tendency to assume that others share the same or similar thoughts, beliefs, values, or positions.
-    - {*Consistency bias*}: Tendency to incorrectly remember one's past attitudes and behaviour as resembling present attitudes and behaviour.
-    - {*Hindsight bias*}: Tendency to see past events as predictable, based on knowledge of later events. Also known as the "I-knew-it-all-along" effect.
-    - {*Optimism bias*}: Tendency to be over-optimistic about the outcome of planned actions.
-    - {*Outcome bias*}: Tendency to judge a decision by its eventual outcome instead of based on the quality of the decision at the time it was made.
-    - {*Positive bias*}: Tendency to test hypotheses with positive rather than negative examples, thus risking to miss obvious disconfirming tests.
-    - {*Positive outcome bias*}: Tendency to overestimate the probability of good things happening to them.
-    ~ Groupthink
-    - {*Groupthink*}: Tendency of humans to tend to agree with each other, and hold back objections or dissent even when the group is wrong.
-    - {*Conformity bias*}: Tendency to behave similarly to others in a group, even if doing so goes against your own judgment.
-    - {*Ingroup bias*}: Tendency to give preferential treatment to others they perceive to be members of their own groups.
-    - {*Homogeneity bias*}: Tendency of people to see members of their own group as being relatively more varied than members of other groups.
-    - {*Shared information bias*}: Tendency for group members to spend more time and energy discussing information that all members are already familiar with (i.e., shared information), and less time and energy discussing information that only some members are aware of.
-    - {*Bandwagon fallacy*}: Assuming that an idea has merit simply because many people believe it or practice it.
-    ~ Effects
-    - {*Ambiguity effect*}: Tendency to avoid options for which missing information makes the probability seem "unknown".
-    - {*Bizarreness effect*}: Tendency to remember bizarre material better than common material.
-    - {*Bystander effect*}: Tendency for individuals to less likely offer help in an emergency situation when other people are present.
-    - {*Context effect*}: That cognition and memory are dependent on context, such that out-of-context memories are more difficult to retrieve than in-context memories. 
-    - {*Example*}: Recall time and accuracy for a work-related memory will be lower at home, and vice versa.
-    - {*Contrast effect*}: Enhancement or diminishment of a weight or other measurement when compared with recently observed contrasting object.
-    - {*Cross-race effect*}: Tendency for people of one race to have difficulty identifying members of a race other than their own.
-    - {*Dunning-kruger effect*}: When people are incompetent in the strategies they adopt to achieve success and satisfaction, they suffer a dual burden, not only do they reach erroneous conclusions and make unfortunate choices, but their incompetence robs them of the ability to realize it. Instead, they are left with the mistaken impression that they are doing just fine.
-    - {*False consensus effect*}: Tendency for people to overestimate the degree to which others agree with them.
-    - {*Forer effect*}: Tendency to give high accuracy ratings to descriptions of their personality that supposedly are tailored specifically for them, but are in fact vague and general enough to apply to a wide range of people. Also known as the Barnum Effect. Like Horoscopes.
-    - {*Motivated cognition*}: Tendency to process information toward conclusions that suit some end or goal.
-    - {*Generation effect*}: That self-generated information is remembered best. People are better able to recall memories of statements that they have generated than similar statements generated by others.
-    - {*Google effect*}: Tendency to forget information that can be found readily online by using Internet search engines.
-    - {*Halo effect*}: Tendency for a person's positive or negative traits to "spill over" from one area of their personality to another in others' perceptions of them.
-    - {*Hostile media effect*}: Tendency to perceive news coverage as biased against your position on an issue.
-    - {*Humor effect*}: That humorous items are more easily remembered than non-humorous ones, which might be explained by the distinctiveness of humor, the increased cognitive processing time to understand the humor, or the emotional arousal caused by the humor.
-    - {*Lake wobegon effect*}: Tendency to report flattering beliefs about oneself and believe that one is above average.
-    - {*List-length effect*}: A smaller percentage of items are remembered in a longer list, but as the length of the list increases, the absolute number of items remembered increases as well.
-    - {*Mere exposure effect*}: Tendency to express undue liking for things merely because they are familiar with them.
-    - {*Misinformation effect*}: Memory becoming less accurate because of interference from post-event information.
-    - {*Modality effect*}: That memory recall is higher for the last items of a list when the list items were received via speech than when they were received through writing.
-    - {*Overconfidence effect*}: Tendency of being more certain than is justified, given your priors and the evidence available.
-    - {*Part-list cueing effect*}: That being shown some items from a list and later retrieving one item causes it to become harder to retrieve the other items.
-    - {*Picture superiority effect*}: The notion that concepts that are learned by viewing pictures are more easily and frequently recalled than are concepts that are learned by viewing their written word form counterparts.
-    - {*Positivity effect*}: That older adults favor positive over negative information in their memories.
-    - {*Primacy effect*}: Tendency to weigh initial events more than subsequent events.
-    - {*Processing effect*}: That information that takes longer to read, and is processed with more difficulty, is more easily remembered.
-    - {*Pseudocertainty effect*}: Tendency to make risk-averse choices if the expected outcome is positive, but make risk-seeking choices to avoid negative outcomes.
-    - {*Recency effect*}: Tendency to weigh recent events more than earlier events.
-    - {*Self-relevance effect*}: That memories relating to the self are better recalled than similar information relating to others.
-    - {*Spacing effect*}: That information is better recalled if exposure to it is repeated over a long span of time rather than a short one.
-    - {*Spotlight effect*}: Tendency to overestimate the amount that other people notice your appearance or behavior.
-    - {*Subadditivity effect*}: Tendency to judge probability of the whole to be less than the probabilities of the parts.
-    - {*Suffix effect*}: Diminishment of the recency effect because a sound item is appended to the list that the subject is not required to recall.
-    - {*Telescoping effect*}: Tendency to perceive recent events to have occurred more remotely and remote events appear to have occurred more recently.
-    - {*Testing effect*}: The fact that you more easily remember information you have read by rewriting it instead of rereading it.
-    - {*Underconfidence effect*}: State of being more uncertain than is justified, given your priors and the evidence you are aware of.
-    - {*Verbatim effect*}: That the "gist" of what someone has said is better remembered than the verbatim wording. This is because memories are representations, not exact copies.
-    - {*Von restorff effect*}: Tendency to remember an item that "stands out like a sore thumb", more than other items.
-    - {*Zeigarnik effect*}: That uncompleted or interrupted tasks are remembered better than completed ones.
-    - {*Focusing effect*}: Tendency of placing too much importance on one aspect of an event; causes error in accurately predicting the utility of a future outcome.
-    - {*Endowment effect*}: Tendency to demand much more to give up an object than they would be willing to pay to acquire it.
-    - {*Next-in-line effect*}: That a person in a group has diminished recall for the words of others who spoke immediately before himself, if they take turns speaking.
-    ~ Fallacies
-    - {*Conjunction fallacy*}: Assumption that specific conditions are more probable than general ones.
-    - {*Detached lever fallacy*}: Assumption that something simple for one system will be simple for others.
-    - {*Gambler's fallacy*}: Assumption that individual random events are influenced by previous random events. {*Ex*}: I've flipped heads with this coin five times consecutively, so the chance of tails coming out on the sixth flip is much greater than heads.
-    - {*Mind projection fallacy*}: Assumption that the way you see the world reflects the way the world really is.
-    - {*Typical mind fallacy*}: Assumption that other people are more like you than they actually are.
-    - {*Fallacy of gray*}: Assumption that because nothing is certain, everything is equally uncertain. It does not take into account that some things are more certain than others.
-    - {*The Sophisticate*}: "The world isn't black and white. No one does pure good or pure bad. Therefore, no one is better than anyone else." {*The Zetet*}: "Knowing only gray, you conclude that all grays are the same shade. You mock the simplicity of the two-color view, yet you replace it with a one-color view."
-    - {*Planning fallacy*}: Underestimating task-completion times.
-    - {*Sunk cost fallacy*}: Letting past investments interfere with decision-making in the present.
-    - {*Giant cheesecake fallacy*}: Occurs when an argument leaps directly from capability to actuality, without considering the necessary intermediate of motive.
-    - {*Narrative fallacy*}: A vulnerability to over-interpretation and our predilection for compact stories over raw truths.
-    - {*Scales of justice fallacy*}: Error of using a simple polarized scheme for deciding a complex issue/ each piece of evidence about the question is individually categorized as supporting exactly one of the two opposing positions.
-    - {*Top 1% fallacy*}: Related to not taking into account the idea that a small sample size is not always reflective of a whole population and that sample populations with certain characteristics, e.g. made up of repeat job seekers, are not reflective of the whole population.
-    - {*Fallacy of relative privation*}: Error of thinking that if something is worse than the problem currently being discussed, then the problem currently being discussed isn't that important at all. In other words: nothing matters if it's not literally the worst thing happening 
-    ~ Illusions
-    - {*Asymmetric insight*}: Tendency to perceive the knowledge of their peers to surpass their peers' knowledge of them.
-    - {*Control*}: Tendency to believe they can control or at least influence outcomes that they clearly cannot.
-    - {*External agency*}: Tendency to perceive self-generated preferences as instead being caused by insightful, effective and benevolent agents.
-    - {*Truth effect*}: Tendency to identify as true statements familiar statements over unfamiliar ones.
-    - {*Clustering*}: Tendency to perceive patterns where actually none exist.
-    - {*Frequency*}: Tendency to notice something everywhere after having learnt about it. Also known as the Baader-Meinhof Phenomenon.
-    - {*Transparency*}: Tendency to overestimate others' ability to know them, and they also overestimate their ability to know others. Misleading impression that your words convey more to others than they really do.
-    ~ Heuristics
-    - {*Absurdity*}: Mental shortcut where highly untypical situations are classified as absurd or impossible. 
-    - {*Affect*}: Mental shortcut basing a decision on an emotional reaction rather than a calculation.
-    - {*Availability*}: Mental shortcut that treats easily recalled information as important or more important than alternative solutions which are not as readily recalled.
-    - {*Representativeness*}: Mental shortcut where people judge the probability or frequency of a hypothesis by considering how much the hypothesis resembles available data as opposed to using a Bayesian calculation.
-
+  TYPE : Docs
+ 
 VALUES
   UNDE : Mirrors
   BREF : A list of {{Values}} compiled from classical {_Stoicism_}.
   LONG
-    & Zeno stretched out his fingers, and showed the palm of his hand, "{*Perception*}", he said, "is a thing like this". Then, when he had closed his fingers a little, "{*Assent*} is like this". Afterwards, when he had completely closed his hand, and showed his fist, he said, was "{{<b>Comprehension</b>|https://en.wikipedia.org/wiki/Katalepsis}}". 
+    & Zeno stretched out his fingers, and showed the palm of his hand, "{*Perception*}", he said, "is a thing like this". Then, when he had closed his fingers a little, "{*Assent*} is like this". Afterwards, when he had completely closed his hand, and showed his fist, he said, was "{{<b>Comprehension</b>|https://en.wikipedia.org/wiki/Katalepsis}}".
     & But when he brought his left hand against his right, and with it took a firm and tight hold of his fist: "{*Knowledge*}", he said, was of that character; and that was what none but a wise person possessed.
     > <table class='book' style='min-width:600px'>
     > <tr><th>Character</th><th>Virtues</th><th>Vices</th></tr>
@@ -2081,60 +1885,6 @@ TIERS
   BREF : The {{Tiers}} cheatsheet displays a spectrum of decision-making and mindset.
   LONG
     & This is an abbreviated and edited list from PTFQ's original essay {{Three Tiers Of Mind|https://www.pftq.com/blabberbox/?page=Three_Tiers_of_Mind}}.
-    > <table class='book'>
-    > <tr><th colspan='3'>The Self</th></tr>
-    > <tr><td>Defined by intentions</td>  <td>Defined by association</td> <td>Defined by the past</td></tr>
-    > <tr><td>Self-Actualization</td>     <td>Social Validation</td>      <td>Comfort and Basic Needs</td></tr>
-    > <tr><td>Made</td>                   <td>Shaped</td>                 <td>Molded</td></tr>
-    > <tr><td>Defines a label</td>        <td>Picks a label</td>          <td>Is given a label</td></tr>
-    > <tr><th colspan='3'>The Aspirations</th></tr>
-    > <tr><td>Wants to do</td>            <td>Wants to be</td>            <td>Wants to have</td></tr>
-    > <tr><td>Wants to live forever</td>  <td>Wants to be remembered</td> <td>Wants to die happy</td></tr>
-    > <tr><td>Fears the lack of time</td> <td>Fears being wrong</td>      <td>Fears not having enough</td></tr>
-    > <tr><td>Thinks of the future</td>   <td>Thinks of what others will think</td><td>Thinks of the money</td></tr>
-    > <tr><th colspan='3'>The Actions</th></tr>
-    > <tr><td>Talks about ideas</td>      <td>Talks about people</td>         <td>Talks about things</td></tr>
-    > <tr><td>Thinks in pictures</td>     <td>Thinks in words</td>         <td>Thinks in feelings</td></tr>
-    > <tr><td>Likes the story</td>        <td>Likes the artis</td>         <td>Likes the effects</td></tr>
-    > <tr><td>Clings to the future</td>   <td>Clings to the present</td>  <td>Clings to the past</td></tr>
-    > <tr><td>Innovates</td>              <td>Improves</td>                <td>Repeats  </td></tr>
-    > <tr><td>Does it with you</td>       <td>Tells you what to do</td>   <td>Does it for you</td></tr>
-    > <tr><td>Solves the problem</td>     <td>Asks for the solution</td>   <td>Copies the solution</td></tr>
-    > <tr><td>Make it happen</td>         <td>Fake it till you make it</td> <td>Wait until it happens</td></tr>
-    > <tr><td>Praises what you did</td>   <td>Praises who you are</td>      <td>Praises what you have</td></tr>
-    > <tr><th colspan='3'>The Authority</th></tr>
-    > <tr><td>Logic, Power, Authenticity</td><td>Authority, Purpose, Conformity</td><td>Experience, Freedom, Complacency</td></tr>
-    > <tr><td>Create</td><td>Resell</td><td>Consume</td></tr>
-    > <tr><td>Imagination</td><td>Rearrangement</td><td>Trial and error</td></tr>
-    > <tr><td>Respects you</td><td>Respects your status</td><td>Respects you earnings</td></tr>
-    > <tr><td>Looks for equals</td><td>Looks for leaders</td><td>Looks for gods</td></tr>
-    > <tr><td>Puppet master</td><td>Strings</td><td>Puppet</td></tr>
-    > <tr><td>Power is created</td><td>Power is given</td><td>Power is born into</td></tr>
-    > <tr><td>Defensive if misunderstood</td><td>Defensive of their authority</td><td>Defensive of anything personal</td></tr>
-    > <tr><td>Because I want to</td><td>Because you’re supposed to</td><td>Because it feels good/bad</td></tr>
-    > <tr><td>Wrong if illogical</td><td>Wrong if no one else agrees</td><td>Wrong if I don’t see it</td></tr>
-    > <tr><td>Kantian</td><td>Utilitarian</td><td>Hedonistic</td></tr>
-    > <tr><td>Can't stand boredom</td><td>Can't stand uncertainty</td><td>Can’t stand pain</td></tr>
-    > <tr><th colspan='3'>The Truth</th></tr>
-    > <tr><td>Understands</td><td>Memorizes</td><td>Improvises</td></tr>
-    > <tr><td>From experiments</td><td>From memorization</td><td>From conditioning</td></tr>
-    > <tr><td>Rather be unhappy with truth</td><td>Rather be happy with a lie</td><td>Rather not know</td></tr>
-    > <tr><td>Arrogance is ignoring reason</td><td>Arrogance is ignoring majority</td><td>Arrogance is being right too often</td></tr>
-    > <tr><td>Truth is objective</td><td>Truth is what others say</td><td>Truth is what I see</td></tr>
-    > <tr><td>Know the truth</td><td>Know your place</td><td>Know your limits</td></tr>
-    > <tr><td>Perception is malleable</td><td>Perception is reality</td><td>Perception is BS</td></tr>
-    > <tr><th colspan='3'>The World</th></tr>
-    > <tr><td>Universe is deterministic</td><td>Universe is rule-based</td><td>Universe is chance</td></tr>
-    > <tr><td>Because cause-effect</td><td>Because what others say so</td><td>Just because</td></tr>
-    > <tr><td>Proof by logic</td><td>Proof by social validation</td><td>Proof by empirical evidence</td></tr>
-    > <tr><td>Unknown is unknown</td><td>Unknown is zero</td><td>Unknown is random</td></tr>
-    > <tr><td>The world is the beginning</td><td>The world is the world</td><td>The world is the limit</td></tr>
-    > <tr><td>Trapped by the universe</td><td>Trapped by society</td><td>Trapped by the body</td></tr>
-    > <tr><td>The world is mine</td><td>The world is everyone else's</td><td>The world is rigged</td></tr>
-    > <tr><td>Absolutes exist</td><td>Absolutes are bad</td><td>Nothing is absolute</td></tr>
-    > <tr><td>World is a sandbox</td><td>World is chutes and ladders</td><td>World is a hierarchy</td></tr>
-    > <tr><td>Chess board</td><td>Race track</td><td>Mouse trap</td></tr>
-    > </table>
   LINK
     https://github.com/XXIIVV/vessel.oscean/blob/master/memory/tiers.mh
 
@@ -2213,14 +1963,14 @@ RUSSIAN
     & Below are the organized and templated notes from my Russian studies. They might serve you as a good basis to get into the language. This series of notes is inspired from Tad Perry's 1992 {_Quick and Dirty Guide to Japanese_}.
   TYPE : Docs
 
-FRANSSET
-  UNDE : Unreleased
-  BREF : {{Fransset}} are collected notes on suggested French reforms.
-  TYPE : Docs
-
 LIETAL
   UNDE : Language
   BREF : {{Lietal}} is an experimental {{synthetic language|http://en.wikipedia.org/wiki/Constructed_language}}.
+  LONG
+    * Viro kär'of Lietäl'takït
+    & Lietal is written from left to right with implicit neutrality, singularity and under the present tense. For the most part, its 6 vowels and 9 consonants are voiced similarly to their english equivalents.
+    # A E I O U Y K T D R S L J V F <comment>The Lietal Alphabet</comment>
+    & The vowels are sounded as hex{*a*}gram, n{*e*}ver, l{*ea*}ves, {*au*}tomobile, n{*ew*}, journ{*ey*} — And consonants as {*k*}iss, ti{*t*}le, {*d*}evice, retu{*r*}n, {*s*}ymphony, {*l*}igature, {*ge*}nesis, {*v*}ideo, & {*f*}estival.
   TYPE : Docs
 
 DICTIONAERY
@@ -2229,7 +1979,10 @@ DICTIONAERY
 
 BLUE
   UNDE : Language
-  BREF : {{Blue Language|Blue}}, or {_Bolak_}, is a {{constructed language|http://en.wikipedia.org/wiki/Constructed_language}}.
+  BREF : {{Blue Language|Blue}}, or {_Bolak_}, is a constructed {{language}}.
+  LONG
+    & This guide is an adaptation of Ed. Robertson's 1998 guide to Léon Bollack's {{Bolak Language|https://en.wikipedia.org/wiki/Bolak_language}}, based on the standard work {*La Langue Bleue*}, Paris 1899 — Bolak means both 'blue language' and 'ingenious creation' in the language itself.
+    ? Ac ra poni an fren al tsorm ade vevu, se savi soc stopi plotu ade <span title='celui qui met un frein à la fureur des flots sait aussi des méchants arrêter les complots' href='https://fr.wikipedia.org/wiki/Athalie_(Racine)'>vikoru</a>.
   TYPE : Docs
 
 DEVINE LU LINVEGA

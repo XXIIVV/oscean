@@ -144,30 +144,30 @@ function Blue_Dictionary()
   this.collection.shortwords.staffwords.connectives['bi'] = {en:"during"};
   this.collection.shortwords.staffwords.connectives['bo'] = {en:"but"};
   this.collection.shortwords.staffwords.connectives['ci'] = {en:"because"};
-  this.collection.shortwords.staffwords.connectives['co'] = {en:"here is, here are"}; 
+  this.collection.shortwords.staffwords.connectives['co'] = {en:"here is, here are"};
   this.collection.shortwords.staffwords.connectives['di'] = {en:"of"};
   this.collection.shortwords.staffwords.connectives['do'] = {en:"since"};
   this.collection.shortwords.staffwords.connectives['fi'] = {en:"thought"};
   this.collection.shortwords.staffwords.connectives['fo'] = {en:"when"};
   this.collection.shortwords.staffwords.connectives['fro'] = {en:"whereas"};
-  this.collection.shortwords.staffwords.connectives['gi'] = {en:"there is, there are"}; 
+  this.collection.shortwords.staffwords.connectives['gi'] = {en:"there is, there are"};
   this.collection.shortwords.staffwords.connectives['go'] = {en:"then"};
   this.collection.shortwords.staffwords.connectives['ib'] = {en:"upon"};
   this.collection.shortwords.staffwords.connectives['id'] = {en:"to(direction)"};
   this.collection.shortwords.staffwords.connectives['if'] = {en:"if wether"};
-  this.collection.shortwords.staffwords.connectives['ig'] = {en:"in spite of"}; 
+  this.collection.shortwords.staffwords.connectives['ig'] = {en:"in spite of"};
   this.collection.shortwords.staffwords.connectives['ik'] = {en:"before"};
   this.collection.shortwords.staffwords.connectives['in'] = {en:"in"};
   this.collection.shortwords.staffwords.connectives['im'] = {en:"within"};
   this.collection.shortwords.staffwords.connectives['ir'] = {en:"as to"};
   this.collection.shortwords.staffwords.connectives['it'] = {en:"and"};
   this.collection.shortwords.staffwords.connectives['ki'] = {en:"with"};
-  this.collection.shortwords.staffwords.connectives['klo'] = {en:"that is to say"}; 
+  this.collection.shortwords.staffwords.connectives['klo'] = {en:"that is to say"};
   this.collection.shortwords.staffwords.connectives['ko'] = {en:"that"};
-  this.collection.shortwords.staffwords.connectives['kvo'] = {en:"for the sake of.."}; 
+  this.collection.shortwords.staffwords.connectives['kvo'] = {en:"for the sake of.."};
   this.collection.shortwords.staffwords.connectives['li'] = {en:"until"};
   this.collection.shortwords.staffwords.connectives['lo'] = {en:"towards"};
-  this.collection.shortwords.staffwords.connectives['mi'] = {en:"at one's house"}; 
+  this.collection.shortwords.staffwords.connectives['mi'] = {en:"at one's house"};
   this.collection.shortwords.staffwords.connectives['mo'] = {en:"between"};
   this.collection.shortwords.staffwords.connectives['ni'] = {en:"neither, nor"};
   this.collection.shortwords.staffwords.connectives['oc'] = {en:"below, under"};
@@ -189,9 +189,9 @@ function Blue_Dictionary()
   this.collection.shortwords.staffwords.connectives['ro'] = {en:"instead of"};
   this.collection.shortwords.staffwords.connectives['slo'] = {en:"thus, so."};
   this.collection.shortwords.staffwords.connectives['so'] = {en:"aslike"};
-  this.collection.shortwords.staffwords.connectives['spi'] = {en:"onthe side of"}; 
-  this.collection.shortwords.staffwords.connectives['sri'] = {en:"onaccount of"}; 
-  this.collection.shortwords.staffwords.connectives['sti'] = {en:"atthe time of"}; 
+  this.collection.shortwords.staffwords.connectives['spi'] = {en:"onthe side of"};
+  this.collection.shortwords.staffwords.connectives['sri'] = {en:"onaccount of"};
+  this.collection.shortwords.staffwords.connectives['sti'] = {en:"atthe time of"};
   this.collection.shortwords.staffwords.connectives['sto'] = {en:"then, after"};
   this.collection.shortwords.staffwords.connectives['ti'] = {en:"further, besides."};
   this.collection.shortwords.staffwords.connectives['to'] = {en:"to, towards"};
@@ -240,10 +240,6 @@ function Blue_Dictionary()
 var blue_dict = new Blue_Dictionary();
 
 var payload = new Runic(`
-& This guide is an adaptation of Ed. Robertson's 1998 guide to Léon Bollack's {{Bolak Language|https://en.wikipedia.org/wiki/Bolak_language}}, based on the standard work {*La Langue Bleue*}, Paris 1899 — Bolak means both 'blue language' and 'ingenious creation' in the language itself.
-
-? Ac ra poni an fren al tsorm ade vevu, se savi soc stopi plotu ade <span title='celui qui met un frein à la fureur des flots sait aussi des méchants arrêter les complots' href='https://fr.wikipedia.org/wiki/Athalie_(Racine)'>vikoru</a>.
-
 * Alphabet
 
 & Each of these letters represents {*only one sound*}. Each sound is represented by {*only one letter*}.
@@ -253,7 +249,7 @@ var payload = new Runic(`
 
 * Rule of the Margaret
 
-&  If we take the Bolak root {#lov#}(to love), the affixes can be used to form other words as follows: 
+&  If we take the Bolak root {#lov#}(to love), the affixes can be used to form other words as follows:
 
 ~ {#alov#}
 - indifference — {*lack of love*}
@@ -268,7 +264,7 @@ var payload = new Runic(`
 
 * Motules
 
-& The small words, or {_motules_}, of Bolak are composed of a {*maximum of 3 letters*}. If composed of 3 letters, they must not end in a consonant. They perform 4 functions in the language: {*Interjections*}, {*Staffwords*}, {*Connectors*} and {*Designators*}. 
+& The small words, or {_motules_}, of Bolak are composed of a {*maximum of 3 letters*}. If composed of 3 letters, they must not end in a consonant. They perform 4 functions in the language: {*Interjections*}, {*Staffwords*}, {*Connectors*} and {*Designators*}.
 
 + Interjections
 
@@ -288,11 +284,11 @@ var payload = new Runic(`
 ~ tnu
 - int. neg. — {*me tnu lovi?*} Do I not love?
 ~ ku
-- subordinate {*X ku me lovi*} X that I love          
+- subordinate {*X ku me lovi*} X that I love
 ~ knu
 - sub. neg. {*X knu me lovi*} X that I do not love
 ~ su
-- reflexive {*me su lovi*} I love myself        
+- reflexive {*me su lovi*} I love myself
 ~ snu
 - refl. neg. {*me snu lovi*} I do not love myself
 
@@ -321,9 +317,9 @@ var payload = new Runic(`
 
 & {*Form II*}: Let us take the sentence 'give me bread', and its Bolak translation {#et givo pan#}, in the context of a speaker of French conversing with a speaker of English, using Bolak. Suppose the French speaker forgets that the Bolak for bread is pan. In this unlikely example, he or she could say:
 
-~ Et givo au 'bread'       
+~ Et givo au 'bread'
 - used to mark a proper name 'Pain'
-~ Et givo eu 'bread'  
+~ Et givo eu 'bread'
 - used to mark a technical term
 ~ Et givo iu 'bread'
 - give me what you call 'bread'
@@ -332,32 +328,32 @@ var payload = new Runic(`
 
 & This leaves 12 other possible combinations of two different vowels. Four are used as general purpose substitution words, a bit like 'je' in Esperanto.
 
-~ io          
+~ io
 - can be used to substitute for any preposition
-~ oi          
+~ oi
 - can be used to substitute for any conjunction.
-~ ea     
+~ ea
 - can be used to replace any article, adjective or pronoun in the singular
-~ ae          
+~ ae
 - Like {#ae#} but in the plural.
 
 & {*Form III*}: The other 8 are used as optional markers of verbal aspect or mood.
 
-~ oa          
+~ oa
 - to start to, to be about to
-~ eo          
+~ eo
 - to finish, to have just
-~ ia          
+~ ia
 - to intend to
-~ oe          
+~ oe
 - to have to, to be obliged to
-~ ai          
+~ ai
 - to wish to, to be inclined to
-~ ei          
+~ ei
 - to be able to, to be possible to
-~ ie          
+~ ie
 - to do frequently or regularly
-~ ao          
+~ ao
 - to do rarely or intermittently
 
 + Modality
@@ -377,11 +373,11 @@ var payload = new Runic(`
 
 + Connectives
 
-& The connectors includes things such as {*prepositions and conjunctions*}. The form of this group of words comprises two or three letters including one consonant and one or both of the vowels I and O. 
+& The connectors includes things such as {*prepositions and conjunctions*}. The form of this group of words comprises two or three letters including one consonant and one or both of the vowels I and O.
 
 > `+blue_dict.table("shortwords","staffwords","connectives")+`
 
-& The basic prepositions can be modified to express motion towards or from by the addition of -i or -o respectively: 
+& The basic prepositions can be modified to express motion towards or from by the addition of -i or -o respectively:
 
 ~ ogo
 - From behind
@@ -394,7 +390,7 @@ var payload = new Runic(`
 
 > `+blue_dict.table("shortwords","designators","relatives")+`
 
-& Designators are motules of two or three letters which have a form like that of the 'connectors', but are composed of a consonant and one or both of A or E, instead of I or O. 
+& Designators are motules of two or three letters which have a form like that of the 'connectors', but are composed of a consonant and one or both of A or E, instead of I or O.
 & There are six kinds of designators: relative, interrogative/exclamatory, personal, possessive and personal. In some of  these groups the final vowel, if any, indicates whether the word is singular or plural.
 
 ? singular/plural
@@ -419,9 +415,9 @@ var payload = new Runic(`
 
 & The personal designators, however, do not change according to whether singular or plural, and there are different consonants at the beginning for all of the personal pronouns:
 
-~ me I, te you (familiar singular), 
+~ me I, te you (familiar singular),
 - ve (respectful sing.), se he, le she, ce it
-~ ne we, pe you (fam. plural), 
+~ ne we, pe you (fam. plural),
 - ge you (resp. plur.), be they (masc.), fe they (fem.), de they (neuter).
 
 & Personal designators have a number of cases in Bolak:
@@ -459,15 +455,15 @@ var payload = new Runic(`
 & The majority are formed from two consonants ending in -A in the singular and -E in the plural. Some of these a singular and no plural, and others a plural and no singular:
 
 ~ spa
-- each               
+- each
 ~ fke
 - several
 ~ tsa
-- a little of          
+- a little of
 ~ fle
 - few
 ~ mra
-- not a                
+- not a
 ~ tle
 - every/everybody
 
@@ -507,7 +503,7 @@ var payload = new Runic(`
 # 31: teris ven               125: son dovis kel          100000: sonmel
 # 40: faris               200: dovson               1000000: mlon
 
-& Numerals are placed before the noun they relate to. Endings can then be added on to each of these cardinal numbers: 
+& Numerals are placed before the noun they relate to. Endings can then be added on to each of these cardinal numbers:
 
 ~ -am (collective)
 - venam — unity
@@ -574,7 +570,7 @@ var payload = new Runic(`
 & Nouns referring to familial or social relationships have separate words for the male and female equivalents:
 
 ~ per
-- father          
+- father
 ~ mer
 - mother
 ~ lonk
@@ -604,17 +600,17 @@ var payload = new Runic(`
 
 & Nouns can be combined with various framework words mentioned earlier, e.g.:
 
-~ bisp               
+~ bisp
 - bishop
-~ bu bisp          
+~ bu bisp
 - archbishop
-~ gon               
+~ gon
 - angle
-~ plu gon          
+~ plu gon
 - polygon
-~ lov               
+~ lov
 - love
-~ fku lov               
+~ fku lov
 - hate
 
 & The operation of the Daisy Rule prefixing nouns with a-, e-, i-, or o- has already been mentioned.
@@ -639,7 +635,7 @@ var payload = new Runic(`
 ~ Bolak ditort
 - Bolak publishing house
 
-& The subject noun always goes before the verb. A vocative noun always goes at the beginning of a sentence, as a separate clause, then followed by a vocative pronoun. 
+& The subject noun always goes before the verb. A vocative noun always goes at the beginning of a sentence, as a separate clause, then followed by a vocative pronoun.
 & Object nouns follow the verb. Any indirect object complement follows the direct object, and if there is more than one indirect object, these follow in decreasing order of interest.
 
 * Verbs

@@ -16,8 +16,8 @@ function status_view()
     if(term.bref.length > 200){ return {passed:false,err:`Bref is too long(${term.bref.length})`}; }
 
     if(!term.dict.long){ return {passed:false,err:`Long is missing`}; }
-    if(term.dict.long.length < 2){ return {passed:false,err:`Long is too short(${term.dict.long.length})`}; }
-    if(term.dict.long.length > 10){ return {passed:false,err:`Long is too long(${term.dict.long.length})`}; }
+    if(term.dict.long.length < 1){ return {passed:false,err:`Long is too short(${term.dict.long.length})`}; }
+    if(term.dict.long.length > 30){ return {passed:false,err:`Long is too long(${term.dict.long.length})`}; }
     return {passed:true,err:`OK(${term.bref.length}:${term.dict.long.length})`}
   }
 
@@ -36,7 +36,7 @@ function status_view()
   this.test_activity = function(term)
   {
     if(term.logs.length === 0){ return {passed:false,err:"Inactive"}; }
-    if(term.logs[0].time.offset() < -365){ return {passed:false,err:`Outdated(${term.logs[0].time.offset() * -1} days ago)`}; }
+    if(term.logs[0].time.offset() < -365 * 2){ return {passed:false,err:`Outdated(${term.logs[0].time.offset() * -1} days ago)`}; }
     return {passed:true,err:`OK(${term.logs.length}:${term.logs[0].time.offset()})`}
   }
 
@@ -57,12 +57,12 @@ function status_view()
       scores.tree += t_tree.passed ? 1 : 0;
       scores.photo += t_photo.passed ? 1 : 0;
       scores.activity += t_activity.passed ? 1 : 0;
-      scores.passing += t_length.passed && t_tree.passed && t_photo.passed && t_activity.passed ? 1 : 0;
+      scores.passing += t_length.passed && t_tree.passed && t_photo.passed ? 1 : 0;
       scores.count += 1;
       
       html += `
       <tr>
-        <th class='${t_length.passed && t_tree.passed && t_photo.passed && t_activity.passed ? "passed" : "failed"}'><a href='${term.name.to_url()}'>${term.name}</a></th>
+        <th class='${t_length.passed && t_tree.passed && t_photo.passed ? "passed" : "failed"}'><a href='${term.name.to_url()}'>${term.name}</a></th>
         <td class='${t_length.passed ? "passed" : "failed"}'>${t_length.err}</td>
         <td class='${t_tree.passed ? "passed" : "failed"}'>${t_tree.err}</td>
         <td class='${t_photo.passed ? "passed" : "failed"}'>${t_photo.err}</td>
