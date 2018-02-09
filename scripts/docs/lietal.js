@@ -3090,7 +3090,7 @@ var payload = new Runic(`
 
 & The Alphabet is a collection of 9 elementary particles, each is made of a key(consonant) and one of the 6 values(vowels). Knowing this table should allow you guess the meaning of {*any word construction*}.
 
-+ Table
+= Table
 
 ~ {*Ky*} Hierarchy
 - {*Ki*} Parent — {*Ka*} Location — {*Ko*} Children
@@ -3120,7 +3120,7 @@ var payload = new Runic(`
 - {*Fi*} ${lietal_dict.convert("fi").toLowerCase()} — {*Fa*} ${lietal_dict.convert("fa").toLowerCase()} — {*Fo*} ${lietal_dict.convert("fo").toLowerCase()}
 - {*Fe*} Active — {*Fu*} Inactive
 
-+ Construction
+= Construction
 
 & Words are not created, but found among the permutations of the 9 elementary particles. Here are a few examples of the resulting translations of {*fo*} and {*la*} declensions:
 # ${lietal_dict.deconstruct("fo")}
@@ -3137,7 +3137,7 @@ var payload = new Runic(`
 
 # QUESTION SETTING - SUBJECT TOPIC VERB.
 
-+ Question
+= Question
 
 & Question words are used at the beginning of a sentence. For instance, "Where am I?" is translated to ${lietal_dict.construction("where I to_be")}, following the {#where I to_be#} construction — and "Who are you?", or {#who you to_be#}, ${lietal_dict.construction("who you to_be")}.
 
@@ -3147,13 +3147,13 @@ var payload = new Runic(`
 # ${lietal_dict.deconstruct("jako")}
 # ${lietal_dict.deconstruct("jafi")}
 
-+ Location
+= Location
 
 & Locations are the environment of the sentence, it preceeds a sentence. The sentence "I am home" is translated to ${lietal_dict.construction("home.child to_be")}, following the {#home.child to_be#} structure. In written Lietal, the particles follow the word they affect.
 
 & Time is also part of the environment of the sentence, it preceeds a sentence.The sentence "I will see you later" is translated to ${lietal_dict.construction("future you to_see")}, following the {#future you to_see#} structure.
 
-+ Collections
+= Collections
 
 & Sequences of things, or topics, can be grouped together into collections and used as a single entity. The sentence "Between you and I" is translated to ${lietal_dict.construction("push you together I pop.between")}, following the {#[you & I].between#} structure.
 
@@ -3163,7 +3163,7 @@ var payload = new Runic(`
 
 * Vocabulary
 
-+ Pronouns
+= Pronouns
 
 & A sentence is expected to be at the first person if a pronoun has not already been declared, pronouns are often ommited when possible. 
 # ${lietal_dict.deconstruct("lari")}
@@ -3175,23 +3175,23 @@ var payload = new Runic(`
 
 & The sentence "I give you a book" is translated to {*Lari'ar todoti fïr*}, following the {#you.to book to_give#} structure.
 
-+ Verbs
+= Verbs
 
 & Verbs are used at the end of a sentence and are generally built from the fy family.The sentence "I take the book home" is translated to {*Tokafo'ar todoti firo*}, following the {#house.to book to_take#} structure.
 
-+ Tenses
+= Tenses
 
 & Sentences are, by default, at the present tense, a tenses marker is used to contrast against an already defined tense. Tenses markers are used at the end of the sentence.The sentence "I did not go to school" is translated to {*Radoti'ar fori'dijör*}, following the {#school.to to_go.negative_past#} structure.
  
-+ Prepositions
+= Prepositions
 
 & Lietal prepositions are aeths used as particles, placed after the word that they affect.The sentence "I will go to the city with you" is translated to {*Doradali'ar lari'is fori'dïr*}, following the {#city.to you.with to_go.future#} structure.
 
-+ Colors
+= Colors
 
 & Colors are built by combining lyra(speed) and lyfa(color).The sentence "Yellow is between red and green" is translated to {*Lyfalök el lyfalo es lyfäl ul'käs of*}, following the {#yellow [ red & green ].between to_be#} structure.
 
-+ Numbers
+= Numbers
 
 & Numbers are built by combining yl(counter) and ys(relation). When base10 is used, eleven is not used.The sentence "1, 2, 3 and 123" is translated to {*Al il lio es loe lira'il lio*}, following the {#1 2 3 & 100 10.2 3#} structure.
 

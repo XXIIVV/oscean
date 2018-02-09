@@ -1309,7 +1309,7 @@ NEAUISMETICA
     # We are to find an {{Actor|Actors}}, a being with freewill.
     # But the actor is dead, and unreachable.
     # Locked within {{impenetrable time|Yajnev}}.
-    & The immigrants soon build the tools that will grant them access into the collapse, a spherical region of Dinaisth locked in perpetual stasis. {{Dinaisth}} is the name of the moon habouring the corpse of {{Yajnev}}. 
+    & The immigrants soon built the tools that would grant them access into the collapse, a spherical region of {{Dinaisth}} locked in perpetual stasis. 
     # Our scientists complete the first module, of the last machine.
     # It builds anything we wish for.
     # Bringing about the {{end of science|Feu}}.
@@ -1332,7 +1332,7 @@ NEON HERMETISM
   UNDE : Neauismetica
   BREF : The {{Neon Hermetists|Neon Hermetism}} are researchers of the {{Ehrivevnv}}.
   LONG
-    & The initiative included {{Neonev}}, who emerged from the {{collapse|Yajnev}}, {{Andes}}, who immigrated from traversing the {{Soies}}, {{Ludivine}} and {{Rlionn}}. From its early days forth, the group believed the {{Ehrivevnv}} to be the gathering place of complex beings, and/or a trap to catch them.
+    & The initiative included {{Neonev}}, who emerged from the {{collapse|Yajnev}}, {{Andes}}, who immigrated from traversing the {{Soies}}, and {{Rlionn}} who landed on {{Dinaisth}} by accident. From its early days forth, the group believed the {{Ehrivevnv}} to be the gathering place of complex beings, and/or a trap to catch them.
     & {_Beyond the computing beautiful, <br />sleeps languages of impossible meanings._}
 
 EHRIVEVNV
@@ -1340,7 +1340,7 @@ EHRIVEVNV
   BREF : The {{Ehrivevnv}} is a dimensional puzzle presenting itself as a large celestial structure, located further than the last stars.
   LONG
     & Its discovery sparked a new age of thought, and ultimately, the {{completion of Science|Feu}}. It is also believed by the {{Neon Hermetism}} that, based on the design of the structure, it might be also be a creation of {{Actors}}.
-    & This superstructure is found further than natural light could ever reach, napped in perpetual darkness and cold, in near infinite space and {{stasized time|Vetetrandes}}. The only light to ever reach the surface of the puzzle is that emited off {{Dinaisth}}.
+    & This superstructure is located further than natural light could ever reach, blanketed in perpetual darkness and cold, in near infinite space and {{stasized time|Vetetrandes}}. The only light ever to reach the surface of the puzzle is emited from {{Dinaisth}}.
     & {_Et haec revelantur in virtute et veritate<br /> non Vi._}
 
 NEAUSEA
@@ -1349,7 +1349,7 @@ NEAUSEA
   LONG
     & {{Actors}} and beings such as {{Paradichlorisse}}, can carry it. A weaker form can be contracted when one is in contact with {{Nohlxeserre}} languages.
     & The experience of Neausea, by the afflicted, would at first seem like one can travel through time. But the subject's impression of time-traveling is due to their focus shifting across possible sequences of events. 
-    & To the observer, the subject would simply collapse, by the time the body would hit the ground, the subject's mental gaze would have traveled across time, but would have in the process lost the track of Time.
+    & To the observer, the subject would simply collapse, by the time the body would hit the ground, the subject's mental gaze would have traveled across different possibly timelines, but would have in the process {_lost the track of Time_}.
     & {{Andes}} is the only character known to have survived an encounter with the {{Nohlxeserre}} Languages. The fossilized mountains of corpses by the sides of {{Paradichlorisse}} are a testament of the ones who have tried to look at Time and perished.
     & {_In debt are are my impossible selves, <br />for all horrible days._}
 
@@ -1397,14 +1397,13 @@ KANIKULE
   UNDE : Dinaisth
   BREF : {{Kanikule}} is an infinite ocean that an immortal would spend an infitite amount of time crossing, effectively reaching the outer-shores mortal.
   LONG
-    & While one can sail away from its center, {*Neau*}, one cannot return to it, for it occupies no space in the ocean.
-    & Neau is a circular city at the center of {{Kanikule}} where {{Devine Lu Linvega}} first appeared before trying to cross Kanikule. The blue roofed city the birthplace of {{Lietal}}, and is also the place from which the {{Neauismetica}} derives its name.
+    & While one can sail away from its center, {*Neau*}, one cannot return to it, for it occupies no space in the ocean. Neau is a circular city at the center of {{Kanikule}}. The blue roofed city the birthplace of {{Lietal}}, and is also the place from which the {{Neauismetica}} derives its name.
 
 VETETRANDES
   UNDE : Dinaisth
   BREF : {{Vetetrandes}} is the remains of a city that surrounds {{Yajnev}}.
   LONG
-    & As you would approach the epicenter of the bound city, time is increasingly unmoving. At its center, one would find the corpse of {{Yajnev}}, and where Yajnev's head would have been, a hollow mask. Locked inside the mask is the only instance of true space that can be said to be "outside".
+    & As you would approach the epicenter of the bound city, time would become increasingly more unmoving. At its center, one would find the corpse of {{Yajnev}}, and where Yajnev's head would have been, a hollow mask. Locked inside the mask is the only instance of true space that can be said to be "outside".
     & The trek across Vetetrandes is only possible through the guiding of an {{Actor|Actors}}, as the local void existing in Vetetrandes is unacted, or unoperated and unredered.
 
 LAEISTH
@@ -1627,7 +1626,6 @@ TALK
 GAMME
   UNDE : Research
   TYPE : Index
-  FLAG : Gamme
   BREF : The {{Gamme}} is a series of concepts and tools.
   LONG
     & A recurring topic throughout the {{Nataniev}} ecosystems is the trinity of {{Audio}}, {{Visual}} and {{Research}}. 
