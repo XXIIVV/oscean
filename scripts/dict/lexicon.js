@@ -15,7 +15,7 @@ STATUS
   UNDE : Portal
   BREF : An overview of the {{state|status}} of the Lexicon.
   LONG
-    & You are welcome to lend a end with the archiving process and error correction by submitting {{Pull Requests|https://github.com/XXIIVV/oscean/blob/master/scripts/dict/lexicon.js}}.
+    & You're welcome to submit {{Pull Requests|https://github.com/XXIIVV/oscean/blob/master/scripts/dict/lexicon.js}} if you find an error or would like to improve an entry.
   TYPE : Special
 
 AUDIO
