@@ -2,21 +2,21 @@ var payload = new Runic(`
 * Duomic
 
 = THE OPAL INQUISITORS
-% cover.opal.inquisitors
+% generic/cover.opal.inquisitors.jpg
 - From {{Vetetrandes}}
 - Down The Vertical Canals
 - Exosphere Sunset(Ver\'Tale)
 - Moires Of {{Dei Dain}}
 
 = PORTALION
-% cover.portalion
+% generic/cover.portalion.jpg
 - From {{Laeisth}}
 - The Sixth Season Festival
 - Tunnel Aeroports of Clionn
 - Moebius Lift's Ascension
 
 = DEI DAIN
-% cover.dei.dain
+% generic/cover.dei.dain.jpg
 - From Dilitrielth
 - All I see are Yous
 - Escape from Kanikule, Neau (part 1)
@@ -31,14 +31,14 @@ var payload = new Runic(`
 * Laeisthic
 
 = CHILDREN OF BRAMBLE
-% cover.children.of.bramble
+% generic/cover.children.of.bramble.jpg
 - Thievery of the Jade Books
 - The Court of Bramble
 - Decent {{Dinaisth}}
 - Stray from the Oasis
 
 = KNOWN MAGYE
-% cover.known.magye
+% generic/cover.known.magye.jpg
 - Rotative Model
 - Across The Tunnels Of {{Known Magye}}
 - Mother To The {{Sand Emperesses|Rlionn}}
@@ -47,7 +47,7 @@ var payload = new Runic(`
 - Weaponizing The Septechoes Battalions
 
 = EXTENDED SLEEP
-% cover.extended.sleep
+% generic/cover.extended.sleep.jpg
 - Ash Cell
 - The Seventh Cardinal
 - Our Imperial Thought
@@ -56,13 +56,13 @@ var payload = new Runic(`
 * Demo
 
 = SUPERWORKER
-% cover.superworker
+% generic/cover.superworker.jpg
 - HIPHOP
 - DISCO
 - TECHNO
 
 = SUPERVISITOR
-% cover.supervisitor
+% generic/cover.supervisitor.jpg
 - SUB/FIFTH
 - ULTRASAW
 - PULSE WIDTH
@@ -71,42 +71,42 @@ var payload = new Runic(`
 * Beldam
 
 = VERRECIEL SOUNDTRACK
-% cover.verreciel
+% generic/cover.verreciel.jpg
 - Loiqe Record
 - Valen Silence
 - Senni Market
 - Usul Fog
 
 = TEN AXITECTURE
-% cover.ten.axitecture
+% generic/cover.ten.axitecture.jpg
 - Simetries of Eudoxie
 - Cyclopaedia of Tlön
 - Journaux of Urbicande
 - Opaques of {{Dinaisth}}
 
 = LOOKING GLACE
-% cover.looking.glace
+% generic/cover.looking.glace.jpg
 - Delion's Den
 - Sunflowers & You & I
 - Vertical Mansion Annex
 - Persephone
 
 = MINISCOPIE
-% cover.miniscopie
+% generic/cover.miniscopie.jpg
 - Vol'Calibrelation
 - Cybil Calling
 - Fox & Chronologique
 - Hierophant
 
 = RAMIEL
-% cover.ramiel
+% generic/cover.ramiel.jpg
 - Prism 01
 - Prism 02
 - Prism 03
 - Prism 04
 
 = GETAPAN 728K
-% cover.getapan.728
+% generic/cover.getapan.728.jpg
 - Жребий брошен
 - 1-3
 - 4
@@ -115,7 +115,7 @@ var payload = new Runic(`
 * Extra
 
 = DAMOISEAU CANALX
-% cover.damoiseau.canalx
+% generic/cover.damoiseau.canalx.jpg
 - Korben Dallas (Morning Scene)
 - Pop In The Year 9000
 - {{Blam}}, Le Passage Sacrilege
@@ -124,7 +124,7 @@ var payload = new Runic(`
 * Soundtracks
 
 = OQUONIE SOUNDTRACK
-% cover.oquonie.soundtrack
+% generic/cover.oquonie.soundtrack.jpg
 - Quiet Times Numbers
 - The Necomedre Door
 - The Nephtaline Path
@@ -145,7 +145,7 @@ var payload = new Runic(`
 - Bonus Track
 
 = RABBITS SOUNDTRACK
-% cover.rabbits.soundtrack
+% generic/cover.rabbits.soundtrack.jpg
 - Selection Q116
 - Selection Q216
 - Selection Q316
@@ -154,7 +154,7 @@ var payload = new Runic(`
 - Selection Q317(TBA)
 
 = PURGATEUS SOUNDTRACK
-% cover.purgateus.soundtrack
+% generic/cover.purgateus.soundtrack.jpg
 - Islandwalk Creature
 - Inverted Alps in Spring
 - The Six New Gods
@@ -163,7 +163,7 @@ var payload = new Runic(`
 - Cya
 
 = COLLECTED WORKS
-% cover.collected.works
+% generic/cover.collected.works.jpg
 - Kirlian Coral Parasol
 - Coral's Good Night
 - Ver'Tale Shorelines
