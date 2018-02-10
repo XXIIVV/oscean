@@ -15,7 +15,7 @@ function Runic(raw)
     "+":{tag:"hs",class:""},
     "|":{tag:"tr",sub:"td",class:"",stash:true},
     ">":{tag:"",class:""}
-  }    
+  }
 
   this.markup = function(html)
   {
@@ -48,6 +48,9 @@ function Runic(raw)
     }
     if(val == "clock"){
       return new Date().clock();
+    }
+    if(val.split(" ")[0] == "lietal"){
+      return invoke.vessel.lietal.construction(val.replace("lietal","").trim());
     }
     return `((${val}))`
   }

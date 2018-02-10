@@ -80,9 +80,14 @@ function Lietal(dict)
     var s = "";
     for(id in parts){
       var part = parts[id];
-      s += this.convert(part,"en_li")+" ";
+      if(part == "["){ part = "push"; }
+      if(part == "]"){ part = "pop"; }
+      if(part == "&"){ part = "together"; }
+      if(part == "|"){ part = "choice"; }
+      if(part.substr(0,1) == "!"){ s += `${part.replace("!","")} `; continue; }
+      s += `<t title='${part}'>${this.convert(part,"en_li")}</t> `;
     }
-    return "<b>"+s.replace(/ \' /g,"\'").trim()+"</b>";
+    return `<t class='lietal'>${s.replace(/ \' /g,"\'").trim()}</t>`;
   }
 }
 

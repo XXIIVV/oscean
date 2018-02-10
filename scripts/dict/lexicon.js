@@ -1304,7 +1304,7 @@ NEAUISMETICA
   TYPE : Index
   BREF : The {{Neauismetica}} is a series of notes on the fiction of {{Dinaisth}}.
   LONG
-    & Referenced in almost all of the {{Nataniev}} projects, the tales of {{Dinaisth}} are told through {{Aliceffekt}}'s music, {{Devine|Devine Lu Linvega}}'s {{illustrations|illustration}} and are the culture behind the {{Lietal}} Language.
+    & Referenced in almost all of the {{Nataniev}} projects, the "{_tales of Dinaisth_}" are told through {{Aliceffekt}}'s music, {{Devine|Devine Lu Linvega}}'s {{illustrations|illustration}} and are the culture behind the {{Lietal}} Language.
     & Originally written in French, the {_Neauismetica_} is being gradually translated and collected here as a series of disjointed entries on its various concepts, characters and places.
     > <img src='media/badge/seal.png' style='margin:0px auto 45px; display:block; width:200px'/>
     & These recorded events unfold on a small artifical planet orbiting a larger structure known as the {{Ehrivevnv}}. At the moment of the earliest tale, {{science had just ended|Feu}}, and was to be replaced by the art of operating {{permutation machines|Actors}}, builders capable of invoking the optimal solution to any request asked of them.
@@ -1635,8 +1635,8 @@ GAMME
   BREF : The {{Gamme}} is a series of concepts and tools.
   LONG
     & A recurring topic throughout the {{Nataniev}} ecosystems is the trinity of {{Audio}}, {{Visual}} and {{Research}}.
-    & Of which the truer names, as per {{Lietal}}, should be physicality, Phisiognomy, and Psychology. Or, the subject itself, its shape & its concept.
-    & The {_Grand Oeuvre_} is the name given to the pursuit of the Trisight, or the sum of one's output goals.
+    & Of which the truer names, as per {{Lietal}}, should be {{$lietal physic}}(itself), {{$lietal phisionomic}}(its shape), and {{$lietal psychologic}}(its concept).
+    & The {_Grand Oeuvre_}, or {{$lietal mastery}}, is the name given to the pursuit of the Trisight, or the sum of one's output goals.
 
 TIME
   UNDE : Gamme
@@ -1694,7 +1694,7 @@ HORAIRE
 
 DEATH
   UNDE : Time
-  BREF : The {{Death}} Progress Bar.
+  BREF : The {{Death}} Progress Bar, or {{$lietal death span}}.
   TYPE : Special
   LONG
     & This grid represents 52 years of my life, in which each blackened cell is a week of my life gone. This automated graphic was inspired from {_John Maxwell's Jars of Marbles_}.
@@ -1999,6 +1999,7 @@ DEVINE LU LINVEGA
   LONG
     & Operating under the {*Neauoire*} moniker, Devine is a {{polymath|https://monochromatic.co/writing/interview-with-devine}} working on a series of {{experimental tools|Gamme}} and {{applications|Interactive}}.
     & Populating {{Nataniev}} with notes on {{Language|Lietal}}, {{Illustrations|Illustration}} and {{Sounds|Audio}}, Devine hopes to inspire visitors to learn and to {{travel}}.
+    & <i style='display:block; max-width:300px'>{{$lietal !Neauoire & !Devine name.to_do [ tool & application ].to_do polymath.to_be}}.</i>
     ? To {{flee|Obliques}} is life,<br /> To linger, {{Death}}.
   LINK
     https://twitter.com/neauoire/media
