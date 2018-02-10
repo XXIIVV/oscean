@@ -3,6 +3,7 @@ DATE  CODE PICT TERM                 NAME                          END
 18Z14 +100      Supergrid            Supergrid Release
 18T10 +300      Hundred rabbits      Leaving New Zealand
 18D09 +200      Markl                Markl Release
+18C14 !289   81 Vambits              From Skógr Studios
 18C13 -388      Lietal
 18C12 -355      Gamme
 18C11 -354      Neauismetica
@@ -52,14 +53,14 @@ DATE  CODE PICT TERM                 NAME                          END
 17Z10 -245      Supergrid
 17Z09 -258  435 Duomo
 17Z08 -258  439 Kanikule
-17Z07
+17Z07 -256  253 Vambits
 17Z06 -375      Death
 17Z05 -392      Oscean
 17Z04 !293      Horaire              Odessa
 17Z03 -362      Horaire
 17Z02 -298      Hundred rabbits
 17Z01 -146      Hundred rabbits
-17Y14 -
+17Y14 -256  441 Vambits
 17Y13 -
 17Y12 -
 17Y11 -233      Markl
@@ -2626,8 +2627,8 @@ DATE  CODE PICT TERM                 NAME                          END
 10Y09 -253   93 Vambits              Vambits, Last Gen
 10Y08
 10Y07
-10Y06
-10Y05
+10Y06 -256      Vambits
+10Y05 -259      Vambits
 10Y04
 10Y03 -156      To The Aeons Hell
 10Y02

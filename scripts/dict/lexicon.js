@@ -1557,14 +1557,17 @@ DROWNSPIRE
 
 MERURE
   UNDE : Drownspire
-  BREF : A series of books I published with friends.
+  BREF : The {{Merure}} books, were a series of comics published with friends.
   TYPE : Diary
 
 VAMBITS
   UNDE : Drownspire
-  BREF : {{Vambits}} are small DIY desktoys designed to be laser cutted in acrylic. The product was initially created with {{Ponoko|https://www.ponoko.com}}.
+  BREF : {{Vambits}} are small DIY desktoys designed to be laser cutted in acrylic. 
   LONG
-    & The design was eventually ripped and sold by various resellers on Esty and in stores in Australia. The design templates are now available on Github for anyone to download and customize.
+    & The product was initially created with {{Ponoko|https://www.ponoko.com}} but is now produced by our friends at {{Skógr Studio|https://twitter.com/skogrstudio}}.
+    & The templates are free and open-source if you want to create your own faces and custom accessories! Send us {{your pictures|https://twitter.com/search?q=%23vambits}} if you do.
+    & The design stolen and sold by various resellers on Esty and in stores in Australia — Please do not support them. 
+    ? These amazing pictures were taken by {{Nyloire|https://twitter.com/nyloire}} of {*Skógr Studio*}.
   TYPE : Diary
   LINK
     https://github.com/hundredrabbits/Vambits
