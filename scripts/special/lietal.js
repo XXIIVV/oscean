@@ -20,7 +20,7 @@ function lietal_docs()
 = Table
 
 > <table class='book' style='width:100%'>
-> <tr><th>{*Ky*} ${invoke.vessel.lietal.convert("ry").toLowerCase()}</th><th>{*Ty*} ${invoke.vessel.lietal.convert("ty").toLowerCase()}</th><th>{*Ly*} ${invoke.vessel.lietal.convert("ly").toLowerCase()}</th></tr>
+> <tr><th>{*Ky*} ${invoke.vessel.lietal.convert("ky").toLowerCase()}</th><th>{*Ty*} ${invoke.vessel.lietal.convert("ty").toLowerCase()}</th><th>{*Ly*} ${invoke.vessel.lietal.convert("ly").toLowerCase()}</th></tr>
 > <tr>
 > <td>{*Ki*} ${invoke.vessel.lietal.convert("ki").toLowerCase()}<br />{*Ka*} ${invoke.vessel.lietal.convert("ka").toLowerCase()}<br />{*Ko*} ${invoke.vessel.lietal.convert("ko").toLowerCase()}<br />{*Ke*} ${invoke.vessel.lietal.convert("ke").toLowerCase()}<br />{*Ku*} ${invoke.vessel.lietal.convert("ku").toLowerCase()}</td>
 > <td>{*Ti*} ${invoke.vessel.lietal.convert("ti").toLowerCase()}<br />{*Ta*} ${invoke.vessel.lietal.convert("ta").toLowerCase()}<br />{*To*} ${invoke.vessel.lietal.convert("to").toLowerCase()}<br />{*Te*} ${invoke.vessel.lietal.convert("te").toLowerCase()}<br />{*Tu*} ${invoke.vessel.lietal.convert("tu").toLowerCase()}</td>

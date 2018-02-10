@@ -7,6 +7,17 @@ function Lietal(dict)
     this.dict.li_en[value.lietal] = value.english;
     this.dict.en_li[value.english] = value.lietal;
   }
+  
+  this.vowel = function(v)
+  {
+    if(v == "a"){ return "ä"; }
+    if(v == "e"){ return "ë"; }
+    if(v == "i"){ return "ï"; }
+    if(v == "o"){ return "ö"; }
+    if(v == "u"){ return "ü"; }
+    if(v == "y"){ return "ÿ"; }
+    return "?"
+  }
 
   this.adultspeak = function(childspeak)
   {
@@ -22,16 +33,15 @@ function Lietal(dict)
       var v1 = childspeak.substr(1,1);
       var c2 = childspeak.substr(2,1);
       var v2 = childspeak.substr(3,1);
-      if(c1 == c2){
+      
+      if(c1 == c2 && v1 == v2){
+        return c1+this.vowel(v1);
+      }
+      else if(c1 == c2){
         return c1+v1+v2;
       }
-      if(v1 == v2){
-        if(v1 == "a"){ return c1+"ä"+c2; }
-        if(v1 == "e"){ return c1+"ë"+c2; }
-        if(v1 == "i"){ return c1+"ï"+c2; }
-        if(v1 == "o"){ return c1+"ö"+c2; }
-        if(v1 == "u"){ return c1+"ü"+c2; }
-        if(v1 == "y"){ return c1+"ÿ"+c2; }
+      else if(v1 == v2){
+        return c1+this.vowel(v1)+c2;
       }
     }
     if(childspeak.length == 6){

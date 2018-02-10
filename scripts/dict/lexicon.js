@@ -1999,7 +1999,7 @@ DEVINE LU LINVEGA
   LONG
     & Operating under the {*Neauoire*} moniker, Devine is a {{polymath|https://monochromatic.co/writing/interview-with-devine}} working on a series of {{experimental tools|Gamme}} and {{applications|Interactive}}.
     & Populating {{Nataniev}} with notes on {{Language|Lietal}}, {{Illustrations|Illustration}} and {{Sounds|Audio}}, Devine hopes to inspire visitors to learn and to {{travel}}.
-    & <i style='display:block; max-width:300px'>{{$lietal !Neauoire & !Devine name.to_do [ tool & application ].to_do polymath.to_be}}.</i>
+    & {{$lietal !Neauoire & !Devine name.to_do [ tool & application ].to_do polymath.to_be}}. {{$lietal !Nataniev [ language & design & sound ].to_add}}. {{$lietal !Devine [ to_travel & to_learn ].to_want.to_make}}.
     ? To {{flee|Obliques}} is life,<br /> To linger, {{Death}}.
   LINK
     https://twitter.com/neauoire/media

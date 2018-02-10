@@ -41,7 +41,7 @@ function Runic(raw)
 
   this.operation = function(val)
   {
-    val = val.replace("$","").toLowerCase().trim();
+    val = val.replace("$","").trim();
 
     if(val == "desamber"){
       return new Date().desamber();
