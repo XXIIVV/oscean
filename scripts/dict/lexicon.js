@@ -14,6 +14,8 @@ PORTAL
 STATUS
   UNDE : Portal
   BREF : An overview of the {{state|status}} of the Lexicon.
+  LONG
+    & You are welcome to lend a end with the archiving process and error correction by submitting {{Pull Requests|https://github.com/XXIIVV/oscean/blob/master/scripts/dict/lexicon.js}}.
   TYPE : Special
 
 AUDIO
@@ -1848,7 +1850,9 @@ GLOSSARY
   
 BIASES
   UNDE : Mirrors
-  BREF : A {{Biases}} cheatsheet of fallacies, effects, and biases — Compiled from the {{Philosopher's Toolkit|http://amzn.to/2E8weTt}}, {{LessWrong|https://wiki.lesswrong.com/wiki/Less_Wrong_Canon_on_Rationality}} and other sources.
+  BREF : A {{Biases}} cheatsheet of fallacies, effects, and biases.
+  LONG
+    & Compiled from the {{Philosopher's Toolkit|http://amzn.to/2E8weTt}}, {{LessWrong|https://wiki.lesswrong.com/wiki/Less_Wrong_Canon_on_Rationality}} and other sources.
   TYPE : Docs
  
 VALUES
@@ -1975,7 +1979,10 @@ LIETAL
 
 DICTIONAERY
   UNDE : Lietal
-  BREF : Coming shortly.
+  BREF : The {{Dictionaery}} contains all the words used in the {{Lietal}} documentation.
+  LONG
+    & You are welcome to add new words to the collection through {{Pull Requests|https://github.com/XXIIVV/oscean/blob/master/scripts/list/dictionaery.js}}.
+  TYPE : Special
 
 BLUE
   UNDE : Language

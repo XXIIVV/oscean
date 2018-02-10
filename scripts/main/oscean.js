@@ -3,11 +3,11 @@ function Oscean()
   Invoke.call(this);
   
   this.requirements = {
-    corpse:["layout","lexicon","term","horaire","log"],
+    corpse:["layout","lexicon","term","horaire","log","lietal"],
     dict:["lexicon"],
-    list:["horaire"],
-    docs:["directory","russian","japanese","discography","lietal","blue","glossary","biases","tiers"],
-    special:["horaire","calendar","home","death","portal","status"]
+    list:["horaire","dictionaery"],
+    docs:["directory","russian","japanese","discography","blue","glossary","biases","tiers"],
+    special:["horaire","calendar","home","death","portal","status","lietal","dictionaery"]
   };
 
   this.name = "oscean";
@@ -17,6 +17,7 @@ function Oscean()
   {
     this.horaire = new Horaire($HORAIRE);
     this.lexicon = new Lexicon($LEXICON);
+    this.lietal  = new Lietal($DICTIONAERY);
 
     this.lexicon.add_terms();
     this.lexicon.connect_terms();
