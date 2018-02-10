@@ -94,8 +94,9 @@ function Lietal(dict)
       if(part == "]"){ part = "pop"; }
       if(part == "&"){ part = "together"; }
       if(part == "|"){ part = "choice"; }
+      if(part == ";"){ part = "position"; }
       if(part.substr(0,1) == "!"){ s += `${part.replace("!","")} `; continue; }
-      s += `<t title='${part}'>${this.convert(part,"en_li")}</t> `;
+      s += part != "'" ? ` <t title='${part}'>${this.convert(part,"en_li")}</t> ` : part;
     }
     return `<t class='lietal'>${s.replace(/ \' /g,"\'").trim()}</t>`;
   }

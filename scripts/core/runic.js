@@ -3,18 +3,43 @@ function Runic(raw)
   this.raw = raw;
 
   this.runes = {
-    "&":{tag:"p",class:""},
-    "~":{tag:"list",sub:"ln",class:"parent",stash:true},
-    "-":{tag:"list",sub:"ln",class:"",stash:true},
-    "#":{tag:"code",sub:"ln",class:"",stash:true},
-    "%":{tag:"img"},
-    "?":{tag:"note",class:""},
-    ":":{tag:"info",class:""},
-    "*":{tag:"h2",class:""},
-    "=":{tag:"h3",class:""},
-    "+":{tag:"hs",class:""},
-    "|":{tag:"tr",sub:"td",class:"",stash:true},
-    ">":{tag:"",class:""}
+    "&":{glyph:"&",tag:"p",class:""},
+    "~":{glyph:"~",tag:"list",sub:"ln",class:"parent",stash:true},
+    "-":{glyph:"-",tag:"list",sub:"ln",class:"",stash:true},
+    "!":{glyph:"!",tag:"table",sub:"tr",wrap:"th",class:"outline",stash:true},
+    "|":{glyph:"|",tag:"table",sub:"tr",wrap:"td",class:"outline",stash:true},
+    "#":{glyph:"#",tag:"code",sub:"ln",class:"",stash:true},
+    "%":{glyph:"%",tag:"img"},
+    "?":{glyph:"?",tag:"note",class:""},
+    ":":{glyph:":",tag:"info",class:""},
+    "*":{glyph:"*",tag:"h2",class:""},
+    "=":{glyph:"=",tag:"h3",class:""},
+    "+":{glyph:"+",tag:"hs",class:""},
+    ">":{glyph:">",tag:"",class:""}
+  }
+
+  this.stash = {
+    rune : "",
+    all : [],
+    add : function(rune,item){
+      this.rune = this.copy(rune)
+      this.all.push({rune:rune,item:item});
+    },
+    pop : function(){
+      var copy = this.copy(this.all);
+      this.all = [];
+      return copy;
+    },
+    is_pop : function(rune){
+      return this.all.length > 0 && rune.tag != this.rune.tag;
+    },
+    length: function()
+    {
+      return this.all.length;
+    },
+    copy : function(data){ 
+      return JSON.parse(JSON.stringify(data)); 
+    }
   }
 
   this.markup = function(html)
@@ -69,48 +94,38 @@ function Runic(raw)
       var trail = lines[id].substr(1,1);
       var line = this.markup(lines[id].substr(2));
       if(!line || line.trim() == ""){ continue; }
+
       if(!rune){ console.log(`Unknown rune:${char} : ${line}`); }
       if(trail != " "){ console.warn("Runic","Non-rune["+trail+"] at:"+id+"("+line+")"); continue; }
+
+      if(this.stash.is_pop(rune)){ html += this.render_stash(); }
+      if(rune.stash === true){ this.stash.add(rune,line) ; continue; }
       html += this.render(line,rune);
     }
-    html += this.render();
+    if(this.stash.length > 0){ this.render_stash(); }
     return html;
   }
 
-  // Render
+  this.render_stash = function()
+  {
+    var rune = this.stash.rune;
+    var stash = this.stash.pop();
 
-  this.stash = [];
-  this.prev = null;
+    var html = "";
+    for(id in stash){
+      var rune = stash[id].rune;
+      var line = stash[id].item;
+      html += rune.wrap ? `<${rune.sub}><${rune.wrap}>${line.replace(/\|/g,`</${rune.wrap}><${rune.wrap}>`).trim()}</${rune.wrap}></${rune.sub}>` : `<${rune.sub}>${line}</${rune.sub}>`;  
+    }
+    return `<${rune.tag} class='${rune.class}'>${html}</${rune.tag}>`
+  }
 
   this.render = function(line = "",rune = null)
   {
-    // Special
     if(rune && rune.tag == "img"){ return `<img src='media/${line}'/>`; }
+    if(rune && rune.tag == "table"){ return "HEY"; }
 
-    // Append to Stash
-    if(this.stash.length > 0){
-      if(rune && this.stash[0].rune.tag == rune.tag && rune.stash){
-        this.stash.push({line:line,rune:rune}); return "";
-      }
-      else{
-        var print = this.pop_stash(); this.stash = []; return print+(rune ? "<"+rune.tag+" class='"+rune.class+"'>"+line+"</"+rune.tag+">" : "");
-      }
-    }
-    // New Stash
-    if(rune && rune.stash && this.stash.length == 0){
-      this.stash.push({line:line,rune:rune}); return "";
-    }
-    // Default
     return rune ? (rune.tag ? "<"+rune.tag+" class='"+rune.class+"'>"+line+"</"+rune.tag+">" : line) : "";
-  }
-
-  this.pop_stash = function(stash = this.stash)
-  {
-    var html = ""
-    for(id in stash){
-      html += "<"+stash[0].rune.sub+" class='"+stash[id].rune.class+"'>"+stash[id].line+"</"+stash[0].rune.sub+">\n";
-    }
-    return "<"+stash[0].rune.tag+" class='"+stash[0].rune.class+"'>"+html+"</"+stash[0].rune.tag+">";
   }
 
   this.html = function()

@@ -42,7 +42,7 @@ function status_view()
 
   this.html = function()
   {
-    var html = "";
+    var html = "<tr><th>Topic</th><th>Content</th><th>Tree</th><th>Photo</th><th>Activity</th></tr>";
   
     var scores = {length:0,tree:0,photo:0,activity:0,passing:0,count:0};
     for(id in invoke.vessel.lexicon.terms){
@@ -62,7 +62,7 @@ function status_view()
       
       html += `
       <tr>
-        <th class='${t_length.passed && t_tree.passed && t_photo.passed ? "passed" : "failed"}'><a href='${term.name.to_url()}'>${term.name}</a></th>
+        <td class='${t_length.passed && t_tree.passed && t_photo.passed ? "passed" : "failed"}'><a href='${term.name.to_url()}'>${term.name}</a></th>
         <td class='${t_length.passed ? "passed" : "failed"}'>${t_length.err}</td>
         <td class='${t_tree.passed ? "passed" : "failed"}'>${t_tree.err}</td>
         <td class='${t_photo.passed ? "passed" : "failed"}'>${t_photo.err}</td>

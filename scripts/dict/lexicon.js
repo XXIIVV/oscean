@@ -1957,7 +1957,7 @@ JAPANESE
   UNDE : Language
   BREF : The {{Japanese}} page is a guide to basic Japanese.
   LONG
-    & This is an edited version on Tad Perry's 1992 {_ Quick and Dirty Guide to Japanese_} with improved templating for readability, as well as some rephrasing and editing. The romaji phonetics have been replaced with kanji and hiraganas.
+    & This is an edited version on Tad Perry's {_ Quick & Dirty Guide to Japanese(1992)_} with improved templating for readability, as well as some rephrasing and editing. The romaji phonetics have been replaced with kanji and hiraganas.
   TYPE : Docs
 
 RUSSIAN
@@ -1997,9 +1997,12 @@ DEVINE LU LINVEGA
   BREF : {{Devine lu linvega}} is a nomad, developer and designer.
   TYPE : Diary
   LONG
+    & {{$lietal welcome !<b>Devine</b> polymath.to_be [ tool & application ].to_make}}. {{$lietal !<a !href='Nataniev'>Nataniev</a> [ language & design & sound ].to_add}}. {{$lietal [ to_travel & to_learn ].to_want.to_make}}. {{$lietal !<a !href='Pino'>Pino</a>.parent !<a !href='Rekka'>Rekka</a>.together !<a !href='Hundred+rabbits'>Hundredrabbits</a>.unit [ !Vancouver from & !<a !href='Japan'>Toyko</a> toward ].to_travel [ musician & artist & developer ].to_meet}}.
+    & {{$lietal [ organisation now project !<a !href='Portal'>Portal</a>.child | organisation time !<a !href='Horaire'>Horaire</a>.child & !<a !href='Calendar'>Calendar</a>.child ] possible.to_see !<a !href='Lietal'>Lietal</a> possible.to_learn}}.
+    ? {{$lietal to_move life.to_be}}, <br />{{$lietal to_idle !<a !href='Death'>daru</a>.to_be}}.
+  ARCH
     & Operating under the {*Neauoire*} moniker, Devine is a {{polymath|https://monochromatic.co/writing/interview-with-devine}} working on a series of {{experimental tools|Gamme}} and {{applications|Interactive}}.
     & Populating {{Nataniev}} with notes on {{Language|Lietal}}, {{Illustrations|Illustration}} and {{Sounds|Audio}}, Devine hopes to inspire visitors to learn and to {{travel}}.
-    & {{$lietal !Neauoire & !Devine name.to_do [ tool & application ].to_do polymath.to_be}}. {{$lietal !Nataniev [ language & design & sound ].to_add}}. {{$lietal !Devine [ to_travel & to_learn ].to_want.to_make}}.
     ? To {{flee|Obliques}} is life,<br /> To linger, {{Death}}.
   LINK
     https://twitter.com/neauoire/media

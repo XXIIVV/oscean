@@ -8,10 +8,12 @@ function lietal_docs()
 & Building words from Lietal's phonemes is called childspeak. It makes for rythmical and syllabic words, but take quite a long time to actually speak it. This documentation uses the phonetically denser {_Adultspeak_}.
 & Single syllable words are reversed, so {#vo#} becomes {#${invoke.vessel.lietal.adultspeak("vo")}#}. Vowel sequences, like {#lara#}, are condensed into {#${invoke.vessel.lietal.adultspeak("lara")}#}. Consonant sequences, like {#lyfasa#}, are condensed into {#${invoke.vessel.lietal.adultspeak("lyfasa")}#}. Here are a few examples:
 
-> <table class='book'>
-> <tr><th>Yes</th><th>Who</th><th>Outside</th><th>To Read</th><th>Whenever</th></tr>
-> <tr><td>vi — ${invoke.vessel.lietal.adultspeak("vi")}</td><td>jada — ${invoke.vessel.lietal.adultspeak("jada")}</td><td>kika — ${invoke.vessel.lietal.adultspeak("kika")}</td><td>fatati — ${invoke.vessel.lietal.adultspeak("fatati")}</td><td>salidi — ${invoke.vessel.lietal.adultspeak("salidi")}</td></tr>
-> </table>
+! English  | Childspeak   | Adultspeak
+| Yes      | vi           | ${invoke.vessel.lietal.adultspeak("vi")}
+| Who      | jada         | ${invoke.vessel.lietal.adultspeak("jada")}
+| Outside  | kika         | ${invoke.vessel.lietal.adultspeak("kika")}
+| To Read  | fatati       | ${invoke.vessel.lietal.adultspeak("fatati")}
+| Whenever | salidi       | ${invoke.vessel.lietal.adultspeak("salidi")}
 
 * Alphabet
 
@@ -19,8 +21,8 @@ function lietal_docs()
 
 = Table
 
-> <table class='book' style='width:100%'>
-> <tr><th>{*Ky*} ${invoke.vessel.lietal.convert("ky").toLowerCase()}</th><th>{*Ty*} ${invoke.vessel.lietal.convert("ty").toLowerCase()}</th><th>{*Ly*} ${invoke.vessel.lietal.convert("ly").toLowerCase()}</th></tr>
+> <table class='outline' style='width:100%'>
+> <tr><th>{*Ky*} ${invoke.vessel.lietal.convert("ky").toLowerCase()}</th><th>{*Ty*} ${invoke.vessel.lietal.convert("ty").toLowerCase()}</th><th>{*Dy*} ${invoke.vessel.lietal.convert("dy").toLowerCase()}</th></tr>
 > <tr>
 > <td>{*Ki*} ${invoke.vessel.lietal.convert("ki").toLowerCase()}<br />{*Ka*} ${invoke.vessel.lietal.convert("ka").toLowerCase()}<br />{*Ko*} ${invoke.vessel.lietal.convert("ko").toLowerCase()}<br />{*Ke*} ${invoke.vessel.lietal.convert("ke").toLowerCase()}<br />{*Ku*} ${invoke.vessel.lietal.convert("ku").toLowerCase()}</td>
 > <td>{*Ti*} ${invoke.vessel.lietal.convert("ti").toLowerCase()}<br />{*Ta*} ${invoke.vessel.lietal.convert("ta").toLowerCase()}<br />{*To*} ${invoke.vessel.lietal.convert("to").toLowerCase()}<br />{*Te*} ${invoke.vessel.lietal.convert("te").toLowerCase()}<br />{*Tu*} ${invoke.vessel.lietal.convert("tu").toLowerCase()}</td>
@@ -46,7 +48,6 @@ function lietal_docs()
 # ${invoke.vessel.lietal.deconstruct("fo")}
 # ${invoke.vessel.lietal.deconstruct("fori")}
 # ${invoke.vessel.lietal.deconstruct("foriko")}
-
 # ${invoke.vessel.lietal.deconstruct("la")}
 # ${invoke.vessel.lietal.deconstruct("laro")}
 # ${invoke.vessel.lietal.deconstruct("laroko")}
