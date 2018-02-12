@@ -3,6 +3,7 @@ DATE  CODE PICT TERM                 NAME                          END
 18Z14 +100      Supergrid            Supergrid Release
 18T10 +300      Hundred rabbits      Leaving New Zealand
 18D09 +200      Markl                Markl Release
+18D01 !189      Supergrid
 18C14 !289   81 Vambits              From Skógr Studios
 18C13 -388      Lietal
 18C12 -355      Gamme
