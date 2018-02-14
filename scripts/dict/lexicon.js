@@ -1647,7 +1647,7 @@ TIME
   TYPE : Index
   BREF : The {{Time}} portal covers all {{Nataniev}} time related entries.
   LONG
-    & The {{Nataniev}} time format has both a {{Date|Desamber}} and a {{Clock}} — the current Time is {{$Desamber}} {{$Clock}}.
+    & The {{Nataniev}} time format has both a {{Date|Desamber}} and a {{Clock}} — the current Time is {{$desamber}} {{$clock}}.
   LINK
     http://github.com/hundredrabbits/Clock
 
