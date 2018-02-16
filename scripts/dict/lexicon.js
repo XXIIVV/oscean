@@ -1559,6 +1559,8 @@ MERURE
   UNDE : Drownspire
   BREF : The {{Merure}} books, were a series of comics published with friends.
   TYPE : Diary
+  LINK
+    https://itunes.apple.com/nz/book/merure/id888164293
 
 VAMBITS
   UNDE : Drownspire
