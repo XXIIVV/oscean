@@ -568,15 +568,16 @@ KEYBOARD 468
     https://github.com/Echorridoors/Keyboard468
 
 HIVERSAIRES
-  UNDE : Mobile
+  UNDE : Desktop
   BREF : {{Hiversaires}} is a textless point-n-click puzzle game.
   TYPE : Diary
   LONG
     & Hiversaires is the first part of a series of textless games, that also includes the isometric adventure {{Oquonie}}.
     & The dark world of Hiversaires features an original {{Aliceffekt|https://aliceffekt.bandcamp.com/album/hiversaires-soundtrack}} soundtrack to lure you through its entangled corridors.
+    > <iframe style="border: 0; width: 100%; height: 272px;" src="https://bandcamp.com/EmbeddedPlayer/album=1692242563/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless="">&lt;a href="&lt;a href="http://aliceffekt.bandcamp.com/album/hiversaires-soundtrack"&gt;Hiversaires" class="redactor-linkify-object"&gt;http://aliceffekt.bandcamp.com/album/hiversaires-soundtrack"&gt;Hiversaires&lt;/a&gt; Soundtrack by aliceffekt&lt;/a&gt;</iframe>
   LINK
+    http://hundredrabbits.itch.io/Hiversaires
     https://itunes.apple.com/au/app/hiversaires/id630992348
-    https://github.com/Echorridoors/hiversaires
 
 ENTALONERALIE
   UNDE : Mobile
