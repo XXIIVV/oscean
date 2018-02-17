@@ -1,10 +1,11 @@
 let $HORAIRE = new List(`
-DATE  CODE PICT TERM                 NAME                          END
+DATE  CODE PICT TERM                 NAME                              END
 18Z14 +100      Supergrid            Supergrid Release
 18T10 +300      Hundred rabbits      Leaving New Zealand
 18H08 +200      Talk                 Play By Play, Wellington
-18D09 +200      Markl                Markl Release
 18D06 !289  442 Hiversaires          Aitasla
+18D05 -387      Pico
+18D04 -387      Pico
 18D03 !282      Clock
 18D02 !243      Dotgrid
 18D01 !189      Supergrid
@@ -44,7 +45,7 @@ DATE  CODE PICT TERM                 NAME                          END
 18A09 -282      Donsol
 18A08 -383      Markl
 18A07 -352      Markl
-18A06 -381      Mute
+18A06 -381      Pico
 18A05 -156      Supergrid
 18A04 -176      Supergrid
 18A03 -273      Left
@@ -786,10 +787,10 @@ DATE  CODE PICT TERM                 NAME                          END
 15+01
 15Z14 -382      Horaire
 15Z13 -351      Oscean
-15Z12 -323      Mute
+15Z12 -323      Pico
 15Z11 -345      Hundred rabbits
-15Z10 -323      Mute
-15Z09 -323      Mute
+15Z10 -323      Pico
+15Z09 -323      Pico
 15Z08 -324      Oscean
 15Z07 -354      Oscean
 15Z06 -352      Horaire
@@ -946,8 +947,8 @@ DATE  CODE PICT TERM                 NAME                          END
 15O09 -395      Paradise
 15O08 -263      Oscean
 15O07 -199      Supervisitor
-15O06 -342      Mute
-15O05 -342      Mute
+15O06 -342      Pico
+15O05 -342      Pico
 15O04 -343      Lietal
 15O03 -385      Verreciel
 15O02 -365      Verreciel
@@ -1337,11 +1338,11 @@ DATE  CODE PICT TERM                 NAME                          END
 14M11 -399      Noirca               Release
 14M10 !393  124 Noirca
 14M09 !296  122 Shorthand            Cover
-14M08 -326      Mute
+14M08 -326      Pico
 14M07 -359  121 Alphavetist          Release
 14M06 -284  120 Vocavularist         2.0
-14M05 -386      Mute
-14M04 -386      Mute
+14M05 -386      Pico
+14M04 -386      Pico
 14M03 -194  119 Bifurcan             Update
 14M02 -375      Ledoliel
 14M01 -293      Ledoliel
@@ -1539,8 +1540,8 @@ DATE  CODE PICT TERM                 NAME                          END
 13Y06 -343      Oquonie
 13Y05 -343      Oquonie
 13Y04 -343      Oquonie
-13Y03 -392      Mute
-13Y02 -395      Mute
+13Y03 -392      Pico
+13Y02 -395      Pico
 13Y01 -286      Oscean
 13X14 -363      Lietal
 13X13 -363      Lietal
@@ -1594,7 +1595,7 @@ DATE  CODE PICT TERM                 NAME                          END
 13U07 -375      Oquonie
 13U06 -373      Oquonie
 13U05 -375      Oquonie
-13U04 -365      Mute
+13U04 -365      Pico
 13U03 -363      Mobile
 13U02 -363      Mobile
 13U01 -265      Oquonie
@@ -1623,22 +1624,22 @@ DATE  CODE PICT TERM                 NAME                          END
 13S06
 13S05 -166      Telekinetic
 13S04 -166  126 Telekinetic          Controller Demo
-13S03 -395      Mute
-13S02 -395      Mute
+13S03 -395      Pico
+13S02 -395      Pico
 13S01 -166      Telekinetic
 13R14 -395      Telekinetic
-13R13 -355      Mute
-13R12 -395  356 Mute                 Mutescript Draft
+13R13 -355      Pico
+13R12 -395  356 Pico                 Mutescript Draft
 13R11 -392      Telekinetic
-13R10 -355      Mute
-13R09 -355      Mute
+13R10 -355      Pico
+13R09 -355      Pico
 13R08 -373      Oquonie
 13R07 -392      Oquonie
-13R06 -335      Mute
-13R05 -335      Mute
-13R04 -332      Mute
-13R03 -326      Mute
-13R02 -326      Mute
+13R06 -335      Pico
+13R05 -335      Pico
+13R04 -332      Pico
+13R03 -326      Pico
+13R02 -326      Pico
 13R01 -283      Bifurcan
 13Q14
 13Q13
@@ -1659,11 +1660,11 @@ DATE  CODE PICT TERM                 NAME                          END
 13P12 -295      Vocavularist
 13P11 -299  355 Vocavularist         1.0
 13P10 -295      Vocavularist
-13P09 -395      Mute
+13P09 -395      Pico
 13P08 -355      Vocavularist
 13P07 -373      Oquonie
-13P06 -395      Mute
-13P05 -365      Mute
+13P06 -395      Pico
+13P05 -365      Pico
 13P04
 13P03 -373      Lietal
 13P02
@@ -2342,7 +2343,7 @@ DATE  CODE PICT TERM                 NAME                          END
 11T04
 11T03 -355      Oscean
 11T02 +159   89 The Sixth Season     The Sixth Season
-11T01 -199      The Sixth Season     Neu Installation - T
+11T01 -199      The Sixth Season     Neu Installation, Toronto
 11S14 -254      Lietal
 11S13 -258      Artwork
 11S12 -258      Artwork
@@ -2363,7 +2364,7 @@ DATE  CODE PICT TERM                 NAME                          END
 11R11 -156      The Sixth Season
 11R10 -355      Oscean
 11R09
-11R08
+11R08 !276  108 Aliceffekt           True Form
 11R07
 11R06 -358   87 Andes
 11R05

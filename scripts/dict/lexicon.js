@@ -125,6 +125,18 @@ DONSOL
     https://hundredrabbits.itch.io/donsol
     https://www.youtube.com/watch?v=GNoZrr56GqA
 
+HIVERSAIRES
+  UNDE : Desktop
+  BREF : {{Hiversaires}} is a textless point-n-click puzzle game.
+  TYPE : Diary
+  LONG
+    & {*Hiversaires*} is the first part of a series of textless experimental projects, that also includes the isometric adventure game {{Oquonie}}.
+    > <iframe frameborder="0" src="https://itch.io/embed/225445?link_color=000000" width="600" height="167"></iframe>
+    & The dark world of Hiversaires features an original Aliceffekt {{soundtrack|https://aliceffekt.bandcamp.com/album/hiversaires-soundtrack}} to lure you through its entangled corridors. The game was originally released on iOS platforms, and re-released on all desktop platforms in 2018, thanks to {{Jeremy Sachs|http://twitter.com/rezmason/status/964277430176309248}} who also ported {{Verreciel}}.
+  LINK
+    http://hundredrabbits.itch.io/Hiversaires
+    https://itunes.apple.com/au/app/hiversaires/id630992348
+
 DILUVIUM
   UNDE : Collegiennes
   BREF : {{Diluvium}} is a jam game made by {{Henk Boom|http://henk.ca}}(FRACT), {{Dominique Ferland|http://dom2d.com}}(Playpeep), {{Renaud Bedard|http://theinstructionlimit.com/}}(FEZ) and Devine Lu Linvega, made in 3 days at the Toronto Game Jam of 2012.
@@ -566,18 +578,6 @@ KEYBOARD 468
   LINK
     https://itunes.apple.com/ca/app/468-keyboard/id954698999
     https://github.com/Echorridoors/Keyboard468
-
-HIVERSAIRES
-  UNDE : Desktop
-  BREF : {{Hiversaires}} is a textless point-n-click puzzle game.
-  TYPE : Diary
-  LONG
-    & Hiversaires is the first part of a series of textless games, that also includes the isometric adventure {{Oquonie}}.
-    & The dark world of Hiversaires features an original {{Aliceffekt|https://aliceffekt.bandcamp.com/album/hiversaires-soundtrack}} soundtrack to lure you through its entangled corridors.
-    > <iframe style="border: 0; width: 100%; height: 272px;" src="https://bandcamp.com/EmbeddedPlayer/album=1692242563/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless="">&lt;a href="&lt;a href="http://aliceffekt.bandcamp.com/album/hiversaires-soundtrack"&gt;Hiversaires" class="redactor-linkify-object"&gt;http://aliceffekt.bandcamp.com/album/hiversaires-soundtrack"&gt;Hiversaires&lt;/a&gt; Soundtrack by aliceffekt&lt;/a&gt;</iframe>
-  LINK
-    http://hundredrabbits.itch.io/Hiversaires
-    https://itunes.apple.com/au/app/hiversaires/id630992348
 
 ENTALONERALIE
   UNDE : Mobile
@@ -1031,9 +1031,10 @@ WAITING FOR HORUS
   BREF : {{Waiting for Horus}} was a fast paced multiplayer arena type 3rd person shooter.
 
 PICO
-  UNDE : Collegiennes
-  BREF : {{Pico}} is an experimental color based puzzle game where the player needs to combine primary colours to create the pattern wanted by each level.
+  UNDE : Software
+  BREF : {{Pico}} is an experimental visual programming language.
   LONG
+    & color based puzzle game where the player needs to combine primary colours to create the pattern wanted by each level.
     & Read the {{forum tread|http://forums.tigsource.com/index.php?topic=15392.0}}. It was created in a few days with {{Renaud Bedard|http://theinstructionlimit.com/}} and showcased at {*Prince of the Arcade*}.
     - Create the right colours and patterns with the given tools.
     - This simple game can quickly become complex based on your take on the puzzles.
