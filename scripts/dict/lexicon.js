@@ -1034,14 +1034,11 @@ PICO
   UNDE : Software
   BREF : {{Pico}} is an experimental visual programming language.
   LONG
-    & color based puzzle game where the player needs to combine primary colours to create the pattern wanted by each level.
-    & Read the {{forum tread|http://forums.tigsource.com/index.php?topic=15392.0}}. It was created in a few days with {{Renaud Bedard|http://theinstructionlimit.com/}} and showcased at {*Prince of the Arcade*}.
-    - Create the right colours and patterns with the given tools.
-    - This simple game can quickly become complex based on your take on the puzzles.
-    - This game requires a mouse to play.
+    & A {{Pico}} program is called a Machine, and each letter of the alphabet, a function. The numbers and the dot character are inert functions. 
+    & The machine has no purpose but to operate, and the language is simply a toy to think with. The project was inspired from The Incredible Machine, and various experiments built as {{Collegiennes}}. You can view the full guide {{here|https://github.com/Hundredrabbits/Pico}}.
+    & The project status is unknown.
   LINK
-    https://github.com/Collegiennes/pico
-    http://youtu.be/kN7dUqMtIWU
+    https://github.com/Hundredrabbits/Pico
 
 PICO BATTLE
   UNDE : Collegiennes
