@@ -27,7 +27,7 @@ var payload = new Runic(`
 * Albums
 - {{Weighing Souls With Sand|https://www.youtube.com/watch?v=G9ZiU7ahZso}}, by Angelic Process
 - {{HoneySuckle Æons|https://www.youtube.com/watch?v=TKWpxsmNe6k}}, by Current 93
-- {{顕信の一撃}}, by 友川カズキ
+- {*顕信の一撃*}, by 友川カズキ
 - {{Il y a|https://www.youtube.com/watch?v=N8v4xFvATy0}}, by 夢中夢
 - {{Хтонь|https://srub.bandcamp.com/album/--3}}, Сруб
 - {{Void();|https://www.youtube.com/watch?v=OY04fTctl7A}}, Access to Arasaka

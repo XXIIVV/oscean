@@ -109,7 +109,7 @@ DONSOL
   TYPE : Diary
   LONG
     & {{Donsol}}, designed by {{John Eternal|https://twitter.com/johneternal}}, is a card game about exploring a dungeon made of a standard 54 poker card set.
-    > <iframe frameborder="0" src="https://itch.io/embed/109936?linkback=true&amp;link_color=000000" width="600" height="167"></iframe>
+    % itchio 109936
     ? A standard deck, jokers included, is a dungeon. Shuffle the deck and draw 4 cards, display them before you, this is a room. A room ends when all the cards are folded.
     * ♥︎ Heats are Potions
     & Potion give you health points equal to their value, up to a maximum of 21 health points. Drinking multiple potions in a row will make you sick and result in no extra healing, only the first potion's value will be gained in HP. Potions are equal to their value and face cards (J,Q,K,A) each are equal to 11.
@@ -131,7 +131,7 @@ HIVERSAIRES
   TYPE : Diary
   LONG
     & {*Hiversaires*} is the first part of a series of textless experimental projects, that also includes the isometric adventure game {{Oquonie}}.
-    > <iframe frameborder="0" src="https://itch.io/embed/225445?link_color=000000" width="600" height="167"></iframe>
+    % itchio 225445 
     & The dark world of Hiversaires features an original Aliceffekt {{soundtrack|https://aliceffekt.bandcamp.com/album/hiversaires-soundtrack}} to lure you through its entangled corridors. The game was originally released on iOS platforms, and re-released on all desktop platforms in 2018, thanks to {{Jeremy Sachs|http://twitter.com/rezmason/status/964277430176309248}} who also ported {{Verreciel}}.
   LINK
     http://hundredrabbits.itch.io/Hiversaires
@@ -218,7 +218,7 @@ DAMOISEAU CANALX
   LONG
     & The album was recorded live, at Passport in Montreal during the last AMP event and is being released as-is.
     & The album was composed as side project while working on {{Ten Axitecture}} and includes bits and pieces from {{Blam}}.
-    > <iframe style="border: 0; width: 100%; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=743341250/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/damoiseau-canalx">Damoiseau + Canalx by aliceffekt</a></iframe>
+    % bandcamp 743341250
   LINK
     https://aliceffekt.bandcamp.com/album/damoiseau-canalx
 
@@ -228,7 +228,7 @@ THE SIXTH SEASON
   LONG
     & {_Whiinders_} and the likes, a glorious beginning in {{Laeisth}}.
     & This album established the sound that {{Aliceffekt}} decided to persue for the {{Neauismetic}} releases.
-    > <iframe style="border: 0; width: 100%; height: 373px;" src="https://bandcamp.com/EmbeddedPlayer/album=3917529375/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/orchestrate-the-sixth-season">Orchestrate the sixth season by aliceffekt</a></iframe>
+    % bandcamp 
   LINK
     http://aliceffekt.bandcamp.com/album/orchestrate-the-sixth-season
 
@@ -262,7 +262,7 @@ HUNDRED RABBITS
   TYPE : Diary
   LONG
     & This partnership is host to interactive projects like {{Oquonie}}, {{Grimgrains|http://grimgrains.com}} and travel diaries. A {{Patreon page|https://www.patreon.com/100}} is available to help fund the production of monthly videos and liveaboard documentation.
-    > <iframe style="border: 0; width: 100%; height: 241px;" src="https://bandcamp.com/EmbeddedPlayer/album=1969793667/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/hundred-rabbits">Hundred Rabbits by aliceffekt</a></iframe>
+    % bandcamp 1969793667
   LINK
     https://patreon.com/100
     https://twitter.com/hundredrabbits
@@ -400,7 +400,7 @@ TEN AXITECTURE
   BREF : {{Ten Axitecture}} is a {{Beldam Records}} release by {{Aliceffekt}}.
   LONG
     & The 4 tracks are interpretations of different fictional worlds that have played a role in the {{Aliceffekt}} narrative: Eudoxie from Calvino's Invisible Cities, Borges' Tlon and Schuiten's Citees Obscures.
-    > <iframe style="border: 0; width: 600px; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=202709164/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/ten-axitecture">Ten Axitecture by Aliceffekt</a></iframe>
+    % bandcamp 202709164
   LINK
     https://aliceffekt.bandcamp.com/album/ten-axitecture
 
@@ -409,7 +409,7 @@ MINISCOPIE
   BREF : {{Miniscopie}} is a {{Beldam Records}} release, by {_Reine_}.
   LONG
     & Written by {{Reine|http://noirmirroir.com}}, this album combines ambient and deep IDM flavoured sounds. The album is the first music release from Elodie, who also created the {{Vast}} book.
-    > <iframe style="border: 0; width: 600px; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=2603579101/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://beldamrecords.bandcamp.com/album/miniscopie">Miniscopie by Reine</a></iframe>
+    % bandcamp 2603579101
   LINK
     https://beldamrecords.bandcamp.com/album/miniscopie
     https://itunes.apple.com/us/album/miniscopie-ep/id956624857
@@ -419,7 +419,7 @@ RAMIEL
   BREF : {{Ramiel}} is a {{Beldam Records}} release, by {_Villa Moirai_}.
   LONG
     & Written by {{Villa Moirai|https://beldamrecords.bandcamp.com}}, this album is an even mixture and techno and idm. The album name and cover are a tribute to the geometric angel of the Evangelion anime series.
-    > <iframe style="border: 0; width: 600px; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=2641389031/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://beldamrecords.bandcamp.com/album/ramiel">Ramiel by Villa Moirai</a></iframe>
+    % 2641389031
   LINK
     https://beldamrecords.bandcamp.com/album/ramiel
     https://itunes.apple.com/us/album/ramiel-ep/id958562173
@@ -429,7 +429,7 @@ ESCHATOLOR
   BREF : {{Eschatolor}} is a {{Beldam Records}} release, by {_Катя Тевелизион_}.
   LONG
     & Written by Катя Тевелизион, this album was inspired from russian number stations.
-    > <iframe style="border: 0; width: 600px; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=4198794205/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://tevelision.bandcamp.com/album/eschatolor">Eschatolor by Tevelision</a></iframe>
+    % bandcamp 4198794205
     & It was recorded playing through the FM band, from the {{EFLI}} 103.0Mhz pirate radio station in Montreal, giving it its texture and warmth.
   LINK
     https://tevelision.bandcamp.com/album/eschatolor
@@ -440,7 +440,7 @@ LOOKING GLACE
   BREF :  {{Looking Glace}} is a {{Beldam Records}} release, by {{Reine}}.
   LONG
     & Painting a harsher, and more complete picture of her acoustic universe where the liquid sounds and suffocating vocoder are incessantly present.
-    > <iframe style="border: 0; width: 600px; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=3852327660/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://beldamrecords.bandcamp.com/album/looking-glace">Looking Glace by Reine</a></iframe>
+    % bandcamp 3852327660
   LINK
     https://beldamrecords.bandcamp.com/album/looking-glace
     https://itunes.apple.com/ca/album/looking-glace-ep/id1034127266
@@ -449,7 +449,7 @@ VERRECIEL SOUNDTRACK
   UNDE : Beldam records
   BREF : The {{Verreciel OST|Verreciel Soundtrack}} is a {{Beldam Records}} release, by {{Aliceffekt}}.
   LONG
-    > <iframe style="border: 0; width: 100%; height: 406px;" src="https://bandcamp.com/EmbeddedPlayer/album=453554387/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/verreciel">Verreciel by Aliceffekt</a></iframe>
+    % bandcamp 453554387
   LINK
     https://aliceffekt.bandcamp.com/album/verreciel
 
@@ -458,7 +458,7 @@ GETAPAN 728K
   BREF : {{Getapan 728k}} is a {{Beldam Records}} release, by {{死サイコロ}}.
   LONG
     & This new release explores a region of frigid dubs yet uncharted by {{Beldam Records}}. Not much is known about 死サイコロ, their name is {_Shi Seikoro_}, or {*Death Dice*}.
-    > <iframe style="border: 0; width: 600px; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=1677022414/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://beldamrecords.bandcamp.com/album/728k">ГЕТАПАН 728K by 死サイコロ</a></iframe>
+    % bandcamp 1677022414
   LINK
     https://beldamrecords.bandcamp.com/album/728k
 
@@ -642,7 +642,7 @@ VERRECIEL
   TYPE : Diary
   LONG
     & The game joins the sequence of linguistically involved projects like {{Paradise}}, {{Hiversaires}} and {{Oquonie}}.
-    > <iframe frameborder="0" src="https://itch.io/embed/173320?linkback=true&amp;link_color=000000" width="600" height="167"></iframe>
+    % itchio 173320
     & An {{original soundtrack|Verreciel Soundtrack}} was created for the game and released on {{Beldam Records}}.
   LINK
     https://hundredrabbits.itch.io/verreciel
@@ -702,7 +702,7 @@ OQUONIE
   TYPE : Diary
   LONG
     & You will not be alone, your incarnations will have the help of {*bizaroid*} characters speaking {{an obscure language|Camilare}}. Oquonie features an original {{soundtrack|Oquonie Soundtrack}} and was best described as {_{{Animal Crossing in a K-Hole|http://killscreendaily.com/articles/oquonie-maze-worth-entering/}}_}.
-    > <iframe frameborder="0" src="https://itch.io/embed/23183?linkback=true&amp;link_color=000000" width="600" height="167"></iframe>
+    % itchio 23183
     ? Find help in the {{Oquonie Guide}}.
   LINK
     https://hundredrabbits.itch.io/oquonie
@@ -836,7 +836,7 @@ FROM SAHARAPHOREST
   LONG
     & The album was recorded as it played through cassette tapes. The first 3 tracks are ripped from cassette tapes, and the last one is a single clean mastered version. Five tapes were made and given to fans at shows as artworks.
     & This release is related to {{Vert Kirlian Theatre}} album, released in 2008.
-    > <iframe style="border: 0; width: 100%; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=1013227503/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/19th-month-from-saharaphorest-to-duomo">19th month, from Saharaphorest to Duomo by aliceffekt</a></iframe>
+    % bandcamp 1013227503
   LINK
     http://aliceffekt.bandcamp.com/album/19th-month-from-saharaphorest-to-duomo
 
@@ -846,7 +846,7 @@ EHRIVEVNV STUDIES
   LONG
     & This album was composed for and performed at {_Blip Festival Tokyo_} on October 21st 2012 and reissued on april 15th 2013, including some changes from the {_Melbourne Squaresound Show_}.
     & The track names contains encrypted {{Traumae|Lietal}}. The first track is decrypted into "Simkin Kamsi" and can be translated to {_Time Structure_}, refering to {{The Library of Sand|Paradise}}. The second track, "Xomsinsom Kim {{Yajnev}}", can be translated to {_Yajnev's Curse_} and refers to the short {*Yajnev's Thoughts*}. The third track is titled "Ko Sokamxi" which simply means {_The Impossible Exploration_}.
-    > <iframe style="border: 0; width: 100%; height: 340px;" src="https://bandcamp.com/EmbeddedPlayer/album=2576083659/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/the-ehrivevnv-studies-reissue">The Ehrivevnv Studies (Reissue) by aliceffekt</a></iframe>
+    % bandcamp 2576083659
   LINK
     https://aliceffekt.bandcamp.com/album/the-ehrivevnv-studies-reissue
 
@@ -856,7 +856,7 @@ TELEKINETIC
   LONG
     & The event was recorded and can still be watched online on <a href="http://www.ustream.tv/recorded/39105185">UStream</a>. There was a <a href="http://www.cnet.com.au/dj-turns-leap-motion-into-a-theremin-sort-of-339345563.htm">short article on CNET</a> about the event as well. The album cover features an alternate door to {{Nataniev}}'s Library of Sand ornated of the number 210 in <a href='Needle+numbers'>Needle Numbers</a> as well as the {{Lietal}} letters BI, TI, TA, SI, PO.
     & You can watch a a demo of the <a href='https://www.facebook.com/photo.php?v=10153250341045274'>prototype</a>.
-    > <iframe style="border: 0; width: 100%; height: 208px;" src="https://bandcamp.com/EmbeddedPlayer/album=2904772795/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/telekinetic">Telekinetic by aliceffekt</a></iframe>
+    % bandcamp 2904772795
   LINK
     https://aliceffekt.bandcamp.com/album/telekinetic
 
@@ -893,7 +893,7 @@ MARABU
   LONG
     & {*Marabu*} is cross-platform tracker-type composition tool and synthetiser.
     & Marabu was original built as a fork to the opensource {_Soundbox_}, and is meant to be an improvement on functionalities and design.
-    > <iframe frameborder="0" src="https://itch.io/embed/173813?linkback=true&amp;link_color=000000" width="600" height="167"></iframe>
+    % itchio 173813
     & You can view the complete {{Marabu Manual|https://github.com/hundredrabbits/Marabu}} on Github.
   LINK
     https://github.com/neauoire/Marabu
@@ -905,7 +905,7 @@ RONIN
   LONG
     & The application is a cross-over between Vim and Photoshop, meant to quickly render simple graphic tasks.
     & Ronin is currently under development, it now includes basic digital painting functionalities.
-    > <iframe frameborder="0" src="https://itch.io/embed/194632?linkback=true&amp;link_color=000000" width="600" height="167"></iframe>
+    % itchio 194632
     & Most of the iconography of {{Nataniev}} has been created with {_Ronin_} and {{Dotgrid}}. You can view the complete {{Ronin Manual|https://github.com/hundredrabbits/Ronin}} on Github.
   LINK
     https://github.com/hundredrabbits/Ronin
@@ -917,7 +917,7 @@ LEFT
   LONG
     & {*Left*} is a distractionless writing tool with auto-complete, a synonyms dictionary, writing statistics, markup-based navigation and a speed-reader.
     & The application is {{Free|http://hundredrabbits.itch.io/Left}} and {{Open Source|https://github.com/hundredrabbits/Left}}, its original purpose was to help {{Rekka}} with the writing of the upcoming novel {{Wiktopher}}.
-    > <iframe frameborder="0" src="https://itch.io/embed/173127?linkback=true&amp;link_color=000000" width="600" height="167"></iframe>
+    % itchio 173127
     & You can view the complete {{Left Manual|https://github.com/hundredrabbits/Left}} on Github. Left was {*Product of the Day*} on {{January 28, 2018|https://www.producthunt.com/posts/left}}.
   LINK
     https://github.com/hundredrabbits/Left
@@ -930,7 +930,7 @@ DOTGRID
   LONG
     & Dotgrid is a simple vector glyph illustration tool, that works by adding control points and drawing different line-types between them.
     & The tool was created to design logos and glyphs for various personal projects, and made available as a free and open source application.
-    > <iframe frameborder="0" src="https://itch.io/embed/190851?linkback=true&amp;link_color=000000" width="600" height="167"></iframe>
+    % itchio 190851
     & Choose between 3 types of strokes, lines, arc and 3-points beziers. The application can be entirely operated with the keyboard and can render as both PNG and SVG files. Additional effects like horizontal, vertical and radial mirror are also available - as well as the stroke width and linecap can also be changed. The application menu can be hidden by pressing the tab key.
     & You can view the complete {{Dotgrid Manual|https://github.com/hundredrabbits/Dotgrid}} on Github. Dotgrid was {*Product Of The Day*} on {{January 8, 2018|https://producthunt.com/posts/dotgrid}}.
   LINK
@@ -1084,7 +1084,7 @@ CHILDREN OF BRAMBLE
   BREF : {{Children of Bramble}} is a {{Laeisthic}} album that contains four tracks that sings of the Oasis of {{Rlionn}} and her Children.
   LONG
     & This album begins by the Oasis of {{Laeisth}} to finally reach the castle of {{Andes}} and its sandsunken structure. This single is part of the {{Neauismetica}}, and shares some narrative concepts with {{Telekinetic}}.
-    > <iframe style="border: 0; width: 100%; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=163410848/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/children-of-bramble">Children of Bramble by aliceffekt</a></iframe>
+    % bandcamp 163410848
   LINK
     https://aliceffekt.bandcamp.com/album/children-of-bramble
 
@@ -1094,7 +1094,7 @@ KNOWN MAGYE
   LONG
     & Sometimes reminiscent of the compositions of {{Children of bramble}}, sometimes of the drowned sounds of {{Telekinetic}}, this single is a fair mix of ambient and breaks.
     & The album was recorded live from {{San Fransisco|travel}}'s {*POW POW POW*} which was controlled entirely with the {{Leap Motion|https://www.leapmotion.com}}.
-    > <iframe style="border: 0; width: 100%; height: 340px;" src="https://bandcamp.com/EmbeddedPlayer/album=1531404629/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/known-magye">Known Magye by aliceffekt</a></iframe>
+    % bandcamp 1531404629
   LINK
     https://aliceffekt.bandcamp.com/album/known-magye
 
@@ -1103,7 +1103,7 @@ EXTENDED SLEEP
   BREF : {{Extended sleep}} is the {{Laeisthic}} sequel to {{Known Magye}}, a deeper exploration of its universes, its stories.
   LONG
     & The album will be first performed at the A Maze Festival in Berlin, on April 23rd 2015.
-    > <iframe style="border: 0; width: 100%; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=2987872258/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/extended-sleep">Extended Sleep by aliceffekt</a></iframe>
+    % bandcamp 2987872258
   LINK
     https://aliceffekt.bandcamp.com/album/extended-sleep
 
@@ -1117,7 +1117,7 @@ THE OPAL INQUISITORS
   BREF : {{The Opal Inquisitors}} is the first {{Duomic}} album, where {{Neonev}} departs from central {{Dinaisth}} and head through the {_{{Dei Dain}} Canals_}.
   LONG
     & These recordings are photographs taken aboard the {{Vermillionth}} tunneler, traveling up the spires of {{Duomo}}.
-    > <iframe style="border: 0; width: 100%; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=1049304423/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/the-opal-inquisitors">The Opal Inquisitors by Aliceffekt</a></iframe>
+    % bandcamp 1049304423
   LINK
     https://aliceffekt.bandcamp.com/album/the-opal-inquisitors
 
@@ -1126,7 +1126,7 @@ PORTALION
   BREF : {{Portalion}} is the second {{Duomic}} album, where {{Neonev}} leaves {{Duomo}} to explore the of the northernest shores of {{Laeisth}}.
   LONG
     & On a foggy night of the {_Sixth Season_}, embarking on one of the vessels of the {_Septechoes_} in the desert of {_Clionn_}, {{Neonev}} sails toward {_Whiinders_} to see its {_Immortal Birds_} once more.
-    > <iframe style="border: 0; width: 100%; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=1367389203/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/portalion">Portalion by Aliceffekt</a></iframe>
+    % bandcamp 1367389203
   LINK
     https://aliceffekt.bandcamp.com/album/portalion
 
@@ -1134,7 +1134,7 @@ DEI DAIN
   UNDE : Duomic
   BREF : {{Dei Dain}} is the third {{Duomic}} album, where {{Neonev}} travels from the desert of {{Laeisth}} to the nightly scapes of {{Dilitriel}}.
   LONG
-    > <iframe style="border: 0; width: 100%; height: 472px;" src="https://bandcamp.com/EmbeddedPlayer/album=4246216793/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/dei-dain">Dei Dain by aliceffekt</a></iframe>
+    % bandcamp 4246216793
   LINK
     https://aliceffekt.bandcamp.com/album/dei-dain
 
@@ -1155,7 +1155,7 @@ NOR LET THE FOOLS
   UNDE : Lives
   BREF : {{Nor let the fools}} was recorded live, in Tokyo at a mashup/chiptune evening, created from unreleased materials.
   LONG
-    > <iframe style="border: 0; width: 100%; height: 208px;" src="https://bandcamp.com/EmbeddedPlayer/album=1838099761/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/nor-let-the-fools-mistake-love">Nor let the fools mistake love by aliceffekt</a></iframe>
+    % bandcamp 1838099761
   LINK
     http://aliceffekt.bandcamp.com/album/nor-let-the-fools-mistake-love
 
@@ -1163,7 +1163,7 @@ TO THE AEONS HELL
   UNDE : Lives
   BREF : {{To the aeons hell}} was created in the spirit of {{Nor let the fools}}, being a mixture of unreleased remixes.
   LONG
-    > <iframe style="border: 0; width: 100%; height: 241px;" src="https://bandcamp.com/EmbeddedPlayer/album=3333907614/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/accursed-be-it-to-the-aeons-hell">Accursed be it to the aeons Hell by aliceffekt</a></iframe>
+    % bandcamp 3333907614
   LINK
     http://aliceffekt.bandcamp.com/album/accursed-be-it-to-the-aeons-hell
 
@@ -1190,7 +1190,7 @@ SUPERWORKER
   LONG
     & The album contains 3 tracks created from {_over 80 sessions_}, arranged into chiptune experiments.
     & Due to the lack of power during the 4 weeks long ocean crossing, the pocket battery powered synth proved to be the perfect composition tool. The tracks also include spoken words from Alan Watts.
-    > <iframe style="border: 0; width: 100%; height: 241px;" src="https://bandcamp.com/EmbeddedPlayer/album=610742154/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/superworker">Superworker by aliceffekt</a></iframe>
+    % bandcamp 610742154
   LINK
     https://aliceffekt.bandcamp.com/album/superworker
 
@@ -1199,7 +1199,7 @@ SUPERVISITOR
   TYPE : Diary
   BREF : {{Supervisitor}} is a concept album created with {{Arturia|http://arturia.com}}'s {{Microbrute|http://www.arturia.com/microbrute-se/overview}} synthetiser.
   LONG
-    > <iframe style="border: 0; width: 100%; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=3564075825/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/supervisitor">Supervisitor by aliceffekt</a></iframe>
+    % bandcamp 3564075825
   LINK
     https://aliceffekt.bandcamp.com/album/supervisitor
     https://itunes.apple.com/ca/album/supervisitor-ep/id951144870
@@ -1222,14 +1222,14 @@ OQUONIE SOUNDTRACK
   UNDE : Soundtrack
   BREF : The {{Oquonie Soundtrack}}, {_Impossible Spaces_}, is the ambient score of the game {{Oquonie}}.
   LONG
-    > <iframe style="border: 0; width: 100%; height: 472px;" src="https://bandcamp.com/EmbeddedPlayer/album=2065824251/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/short-stories-in-impossible-spaces">Short Stories In Impossible Spaces by aliceffekt</a></iframe>
+    % bandcamp 2065824251
 
 RABBITS SOUNDTRACK
   UNDE : Soundtrack
   BREF : The {{Rabbits Soundtrack}} is the drone audio tracks of the {{Hundred Rabbits}} video diaries.
   LONG
     & This soundtrack contains 2 recorded podcasts and a selection of tracks from the videos.
-    > <iframe style="border: 0; width: 100%; height: 241px;" src="https://bandcamp.com/EmbeddedPlayer/album=1969793667/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/hundred-rabbits">Hundred Rabbits by aliceffekt</a></iframe>
+    % bandcamp 1969793667
   LINK
     https://aliceffekt.bandcamp.com/album/hundred-rabbits
 
@@ -1237,7 +1237,7 @@ PURGATEUS SOUNDTRACK
   UNDE : Soundtrack
   BREF : The {{Purgateus Soundtrack}} is the score for the {{Purgateus}} remix of the game Proteus.
   LONG
-    > <iframe style="border: 0; width: 100%; height: 340px;" src="https://bandcamp.com/EmbeddedPlayer/album=3667464517/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless><a href="http://aliceffekt.bandcamp.com/album/purgateus">Purgateus by aliceffekt</a></iframe>
+    % bandcamp 3667464517
 
 REMIX
   UNDE : Aliceffekt
@@ -1285,7 +1285,7 @@ THOUSAND ROOMS
   BREF : {{Thousand Rooms}} is a visual novel.
   LONG
     & {{Thousand Rooms}} was created in collaboration with illustrator {{Rekka Bellum|Rekka}}, following the behaviours of four characters and a room
-    > <iframe frameborder="0" src="https://itch.io/embed/146658?linkback=true&amp;link_color=000000" width="600" height="167"></iframe>
+    % itchio 146658
     & I have written this book with the hopes of creating a sort of {_Borges for children_}, in which the reader follows a bat, a cat, an owl and a fox who try and make sense of this simple system.
     & The book also encourages to try and understand the rules, and plan unsuggested avenues. We are releasing the book in English, French, Russian, Japanese & {{Lietal}}.
     & For the Lietal side-by-side translation, see {{Lae Doi}}.

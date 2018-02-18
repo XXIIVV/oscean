@@ -9,7 +9,7 @@ function Runic(raw)
     "!":{glyph:"!",tag:"table",sub:"tr",wrap:"th",class:"outline",stash:true},
     "|":{glyph:"|",tag:"table",sub:"tr",wrap:"td",class:"outline",stash:true},
     "#":{glyph:"#",tag:"code",sub:"ln",class:"",stash:true},
-    "%":{glyph:"%",tag:"img"},
+    "%":{glyph:"%"},
     "?":{glyph:"?",tag:"note",class:""},
     ":":{glyph:":",tag:"info",class:""},
     "*":{glyph:"*",tag:"h2",class:""},
@@ -54,6 +54,7 @@ function Runic(raw)
       if(part.indexOf("}}") == -1){ continue; }
       var content = part.split("}}")[0];
       if(content.substr(0,1) == "$"){ html = html.replace(`{{${content}}}`, this.operation(content)); continue; }
+      if(content.substr(0,1) == "%"){ html = html.replace(`{{${content}}}`, this.media(content)); continue; }
       var target = content.indexOf("|") > -1 ? content.split("|")[1] : content;
       var name = content.indexOf("|") > -1 ? content.split("|")[0] : content;
       var external = (target.indexOf("https:") > -1 || target.indexOf("http:") > -1 || target.indexOf("dat:") > -1);
@@ -62,6 +63,20 @@ function Runic(raw)
     }
 
     return html;
+  }
+
+  this.media = function(val)
+  {
+    var service = val.split(" ")[0];
+    var id = val.split(" ")[1];
+
+    if(service == "itchio"){
+      return `<iframe frameborder="0" src="https://itch.io/embed/${id}?link_color=000000" width="600" height="167"></iframe>`;
+    }
+    if(service == "bandcamp"){
+      return `<iframe style="border: 0; width: 600px; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=${id}/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless></iframe>`;
+    }
+    return `<img src='media/${val}'/>`
   }
 
   this.operation = function(val)
@@ -98,11 +113,12 @@ function Runic(raw)
       if(!rune){ console.log(`Unknown rune:${char} : ${line}`); }
       if(trail != " "){ console.warn("Runic","Non-rune["+trail+"] at:"+id+"("+line+")"); continue; }
 
+      if(char == "%"){ html += this.media(line); continue; }
       if(this.stash.is_pop(rune)){ html += this.render_stash(); }
       if(rune.stash === true){ this.stash.add(rune,line) ; continue; }
       html += this.render(line,rune);
     }
-    if(this.stash.length > 0){ this.render_stash(); }
+    if(this.stash.length() > 0){ html += this.render_stash(); }
     return html;
   }
 
