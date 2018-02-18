@@ -28,12 +28,15 @@ function Layout(host)
   this.search.setAttribute("spellcheck","off");
 
   this.logo.setAttribute("href", "Home")
+  this.logo.id = "logo"
+  this.search.id = "search"
 
   this.start = function()
   {
     this.load(this.query());
-    this.links.innerHTML = "<a href='https://twitter.com/neauoire' class='icon twitter external'></a><a href='https://github.com/neauoire' class='icon github external'></a><a href='Rotonde' class='icon rotonde'></a>";
-    this.fd_wr.innerHTML = `<yu id='clock'></yu><a href='Devine+lu+linvega'>Devine Lu Linvega</a> © ${invoke.vessel.horaire.logs[invoke.vessel.horaire.logs.length-1].time}—${invoke.vessel.horaire.logs[0].time}<br/>BY-NC-SA 4.0 <span style='color:#ccc'>build${invoke.version}</span><hr />`;
+    this.fd_wr.innerHTML = `
+    <a href='https://twitter.com/neauoire' class='icon twitter external'></a><a href='https://github.com/neauoire' class='icon github external'></a><a href='Rotonde' class='icon rotonde'></a>
+    <yu id='clock'></yu><a href='Devine+lu+linvega'>Devine Lu Linvega</a> © ${invoke.vessel.horaire.logs[invoke.vessel.horaire.logs.length-1].time}—${invoke.vessel.horaire.logs[0].time}<br/>BY-NC-SA 4.0 <span style='color:#ccc'>build${invoke.version}</span><hr />`;
     this.clock = new Clock();
     this.clock.start()
   }
@@ -95,8 +98,8 @@ function Layout(host)
       if(img.naturalHeight == 0){ return; }
       invoke.vessel.corpse.icon.style.backgroundImage = `url('media/badge/${icon_path}.svg')`;
       invoke.vessel.corpse.icon.className = "show";
+      setTimeout(() => { invoke.vessel.corpse.icon.className = "show"; },1000)
     }
-    setTimeout(() => { invoke.vessel.corpse.icon.className = "show"; },1000)
   }
 
   this.load_photo = function(photo_path = this.term.photo())

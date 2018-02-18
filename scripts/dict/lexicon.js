@@ -93,8 +93,8 @@ PURGATEUS
   UNDE : Desktop
   BREF : {{Purgateus}} is a video game remix of {{Proteus|http://www.visitproteus.com}}.
   LONG
-    & This world behave just like Proteus, but looks and sounds different. Read more on {{Venus Patrol|http://venuspatrol.com/purgateus/}}. The project was inspired from a tweet by {{Ian Snyder|https://twitter.com/whatisian/status/468819959859007488}}
-    ~ Instructions
+    & This world behave like {{Proteus|https://en.wikipedia.org/wiki/Proteus_(video_game)}}, but looks, feels and sounds different. Read more on {{Venus Patrol|http://venuspatrol.com/purgateus/}}. The project was inspired from a tweet by {{Ian Snyder|https://twitter.com/whatisian/status/468819959859007488}}
+    * Instructions
     - Make a copy of your {*/resources*} folder.
     - Replace the {*/resources*} folder with the downloaded package.
     - On OS X, right-click on Proteus, {*Show Package Content*}.
@@ -707,8 +707,6 @@ OQUONIE
   LINK
     https://hundredrabbits.itch.io/oquonie
     https://itunes.apple.com/us/app/oquonie/id819777958
-    https://github.com/hundredrabbits/Oquonie
-    https://youtu.be/mepnp69qI64
 
 OQUONIE GUIDE
   UNDE : Oquonie
@@ -2063,6 +2061,7 @@ IDYLLIC MINERS
   UNDE : Misc
   TYPE : Calendar
   FLAG : Horaire
+  BREF : I've spent most of {{2017}} building tools, it's time to use them.
 
 2017
   UNDE : Misc
