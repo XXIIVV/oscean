@@ -1631,7 +1631,7 @@ DATE  CODE PICT TERM                 NAME                              END
 13S01 -166      Telekinetic
 13R14 -395      Telekinetic
 13R13 -355      Pico
-13R12 -395  356 Pico                 Mutescript Draft
+13R12 !395  356 Pico                 Mutescript Draft
 13R11 -392      Telekinetic
 13R10 -355      Pico
 13R09 -355      Pico

@@ -19,7 +19,7 @@ function portal_view()
       if(prev_n != name.substr(0,1)){
         html += `<h2 class='book' style='margin-bottom:0px'>${name.substr(0,1)}</h2>`
       }
-      html += `<ln style='margin-bottom:10px'><a href='/${name.to_url()}' style='text-transform:capitalize'>${name}</a>: ${invoke.vessel.lexicon.find(name).bref}</ln>`;
+      html += `<ln style='margin-bottom:10px'>${invoke.vessel.lexicon.find(name).bref}</ln>`;
       prev_n = name.substr(0,1);
     }
 

@@ -122,8 +122,6 @@ function Layout(host)
   this.link = function(target,force_external = false)
   {
     var name = target.replace(/^\//g,"").trim();
-
-    console.log(target)
     // External
     if(target.match(/^http|^dat/)){
       window.open(target,'_blank');

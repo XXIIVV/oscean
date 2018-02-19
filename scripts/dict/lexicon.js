@@ -296,11 +296,6 @@ GRIMGRAINS
     http://grimgrains.com/
     https://twitter.com/grimgrains
 
-BRANDING
-  UNDE : Visual
-  BREF : The {{Branding}} base is a collection of major icons of the {{Nataniev}} ecosystem.
-  TYPE : Docs
-
 ILLUSTRATION
   UNDE : Visual
   TYPE : Portal
@@ -336,6 +331,7 @@ COLLECTED WORKS
   BREF : {{Collected Works}} between 2008 and 2015, written as {{Malice}}.
   LONG
     & This release includes the complete {*Storm Transit record*}, hidden {{Malice}} tracks from {{Aliceffekt}} releases and the {{Merveilles Portable}} soundtrack.
+    % bandcamp 2256825333
   LINK
     https://gaii.bandcamp.com/
 
