@@ -119,13 +119,17 @@ function Layout(host)
     this.el.className = mode;
   }
 
-  this.link = function(target)
+  this.link = function(target,force_external = false)
   {
     var name = target.replace(/^\//g,"").trim();
 
+    console.log(target)
     // External
     if(target.match(/^http|^dat/)){
       window.open(target,'_blank');
+    }
+    else if(force_external){
+      window.open("#"+target,'_blank');
     }
     else{
       this.load(name)

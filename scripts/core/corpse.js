@@ -74,9 +74,10 @@ function Corpse(host)
   }
 
   window.onclick = function(e){ 
+    var force_external = e.button == 2 || e.metaKey || e.ctrlKey;
     if(e.target && e.target.className.indexOf("external") == -1){
-      if(e.target.localName == "a"){ invoke.vessel.corpse.link(e.target.getAttribute("href").to_url()); e.preventDefault();  } 
-      if(e.target.offsetParent && e.target.offsetParent.localName == "a"){ e.preventDefault(); invoke.vessel.corpse.link(e.target.offsetParent.getAttribute("href"));}  
+      if(e.target.localName == "a"){ invoke.vessel.corpse.link(e.target.getAttribute("href").to_url(),force_external); e.preventDefault();  } 
+      if(e.target.offsetParent && e.target.offsetParent.localName == "a"){ invoke.vessel.corpse.link(e.target.offsetParent.getAttribute("href"),force_external); e.preventDefault(); }  
     }
   };
 
