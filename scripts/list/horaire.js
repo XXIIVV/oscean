@@ -3,6 +3,9 @@ DATE  CODE PICT TERM                 NAME                              END
 18Z14 +100      Supergrid            Supergrid Release
 18T10 +300      Hundred rabbits      Leaving New Zealand
 18H08 +200      Talk                 Play By Play, Wellington
+18D11 -382      Pino
+18D10 -382      Pino
+18D09 -382      Pino
 18D08 -265      Oscean
 18D07 -298      Pico
 18D06 !289  442 Hiversaires          Aitasla
