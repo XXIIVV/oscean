@@ -1717,6 +1717,14 @@ OSCEAN
   LINK
     https://github.com/XXIIVV/vessel.oscean
 
+RIVEN
+  UNDE : Nataniev
+  BREF : {{Riven}} is a small Flowbased Programming framework.
+  LONG
+    & More details soon.
+  LINK
+    https://github.com/XXIIVV/Riven
+
 ROTONDE
   UNDE : Research
   BREF : {{Rotonde}} is a P2P social network.

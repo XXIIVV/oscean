@@ -3,6 +3,10 @@ DATE  CODE PICT TERM                 NAME                              END
 18Z14 +100      Supergrid            Supergrid Release
 18T10 +300      Hundred rabbits      Leaving New Zealand
 18H08 +200      Talk                 Play By Play, Wellington
+18E01 -392      Riven
+18D14 -392      Riven
+18D13 -392      Riven
+18D12 -382      Riven
 18D11 -382      Pino
 18D10 -382      Pino
 18D09 -382      Pino
@@ -1634,7 +1638,7 @@ DATE  CODE PICT TERM                 NAME                              END
 13S01 -166      Telekinetic
 13R14 -395      Telekinetic
 13R13 -355      Pico
-13R12 !395  356 Pico                 Mutescript Draft
+13R12 !395  356 Pico                 Pico Machine
 13R11 -392      Telekinetic
 13R10 -355      Pico
 13R09 -355      Pico
