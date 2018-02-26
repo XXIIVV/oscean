@@ -2,7 +2,7 @@ let $HORAIRE = new List(`
 DATE  CODE PICT TERM                 NAME                              END
 18Z14 +100      Supergrid            Supergrid Release
 18T10 +300      Hundred rabbits      Leaving New Zealand
-18H08 +200      Talk                 Play By Play, Wellington
+18H13 +200      Talk                 Play By Play, Wellington
 18E01 -392      Riven
 18D14 -392      Riven
 18D13 -392      Riven
