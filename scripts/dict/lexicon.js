@@ -1721,12 +1721,13 @@ RIVEN
   UNDE : Nataniev
   BREF : {{Riven}} is a small Flowbased Programming framework.
   LONG
-    & More details soon.
+    & This tiny {{framework|https://github.com/XXIIVV/Riven}} allows the spawning of nodes and communication between them.
+    & These 200 lines of code are going to be combined with {*Invoke*} and implemented into {{Oscean}}, but were developed for the creation of a serverless {{Grimgrains}}.
   LINK
     https://github.com/XXIIVV/Riven
 
 ROTONDE
-  UNDE : Research
+  UNDE : Nataniev
   BREF : {{Rotonde}} is a P2P social network.
   LONG
     & It is a commonly agreed upon specifications of a JSON object shared between {{members of the network|https://github.com/Rotonde}}. It currently operates on the decentralized {{dat|https://datproject.org}} protocole.

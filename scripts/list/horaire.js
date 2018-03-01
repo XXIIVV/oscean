@@ -1,23 +1,27 @@
 let $HORAIRE = new List(`
-DATE  CODE PICT TERM                 NAME                              END
+DATE  CODE PICT TERM                 NAME                                     END
 18Z14 +100      Supergrid            Supergrid Release
 18T10 +300      Hundred rabbits      Leaving New Zealand
 18H13 +200      Talk                 Play By Play, Wellington
-18E01 -392      Riven
+18E05 -395      Riven
+18E04 -282      Hundred rabbits
+18E03 !397  443 Riven                The portal combination's in my journal. 
+18E02 -395      Riven
+18E01 -393      Riven
 18D14 -392      Riven
 18D13 -392      Riven
 18D12 -382      Riven
 18D11 -382      Pino
-18D10 -382      Pino
+18D10 -382      Riven
 18D09 -382      Pino
 18D08 -265      Oscean
 18D07 -298      Pico
 18D06 !289  442 Hiversaires          Aitasla
 18D05 -387      Pico
 18D04 -387      Pico
-18D03 !282      Clock
-18D02 !243      Dotgrid
-18D01 !189      Supergrid
+18D03 -282      Clock
+18D02 -243      Dotgrid
+18D01 -189      Supergrid
 18C14 !289   81 Vambits              From Skógr Studios
 18C13 -388      Lietal
 18C12 -355      Gamme
@@ -76,8 +80,8 @@ DATE  CODE PICT TERM                 NAME                              END
 17Z02 -298      Hundred rabbits
 17Z01 -146      Hundred rabbits
 17Y14 -256  441 Vambits
-17Y13 -
-17Y12 -
+17Y13 -248  446 Film
+17Y12 -248  445 Film
 17Y11 -233      Markl
 17Y10 -336      Hundred rabbits
 17Y09 -223      Rotonde
@@ -95,7 +99,7 @@ DATE  CODE PICT TERM                 NAME                              END
 17X11 -362      Left
 17X10 -341      Nataniev
 17X09 -253      Oscean
-17X08
+17X08 -248  444 Film
 17X07 !277  504 Film
 17X06 !277  503 Film
 17X05 !344  499 Left
@@ -103,7 +107,7 @@ DATE  CODE PICT TERM                 NAME                              END
 17X03 -261  501 Blue
 17X02 -354      Blue
 17X01 -243      Oscean
-17W14 -
+17W14 -248  447 Film
 17W13 -375      Dotgrid
 17W12 -375      Rotonde
 17W11 -249  401 Ronin
