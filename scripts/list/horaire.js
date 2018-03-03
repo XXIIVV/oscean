@@ -3,6 +3,8 @@ DATE  CODE PICT TERM                 NAME                                     EN
 18Z14 +100      Supergrid            Supergrid Release
 18T10 +300      Hundred rabbits      Leaving New Zealand
 18H13 +200      Talk                 Play By Play, Wellington
+18E07 -325      Riven
+18E06 !276  444 Film                 Hiding from the rain
 18E05 !299  448 Artwork              Les Habitants Du Soleil
 18E04 -282      Hundred rabbits
 18E03 !397  443 Riven                The portal combination's in my journal. 
@@ -99,7 +101,7 @@ DATE  CODE PICT TERM                 NAME                                     EN
 17X11 -362      Left
 17X10 -341      Nataniev
 17X09 -253      Oscean
-17X08 -248  444 Film
+17X08
 17X07 !277  504 Film
 17X06 !277  503 Film
 17X05 !344  499 Left
