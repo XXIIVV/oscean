@@ -3,6 +3,9 @@ DATE  CODE PICT TERM                 NAME                                     EN
 18Z14 +100      Supergrid            Supergrid Release
 18T10 +300      Hundred rabbits      Leaving New Zealand
 18H13 +200      Talk                 Play By Play, Wellington
+18E10 -278      Dotgrid
+18E09 -375      Riven
+18E08 -385      Riven
 18E07 -325      Riven
 18E06 !276  444 Film                 Hiding from the rain
 18E05 !299  448 Artwork              Les Habitants Du Soleil

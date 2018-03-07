@@ -68,8 +68,7 @@ function Layout(host)
 
   this.reload = function(key)
   {
-    document.title = this.term.name;
-    window.location = `#${key.to_url()}`;
+    document.title = this.term.name.capitalize();
     window.scrollTo(0,0);
     this.search.value = this.term.name;
 
@@ -88,6 +87,7 @@ function Layout(host)
     }
 
     this.el.style.opacity = 1;
+    setTimeout(()=>{ window.history.replaceState({}, key, key.to_url()); },500)
   }
 
   this.load_icon = function(icon_path = this.term.name.to_path())
