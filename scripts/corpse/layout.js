@@ -41,8 +41,9 @@ function Layout(host)
     this.clock.start()
   }
 
-  this.load = function(key)
+  this.load = function(key = this.location)
   {
+    this.location = key;
     this.prev = this.term;    
     if(this.term && key.toLowerCase() == this.term.name.toLowerCase()){ console.log("Already here",key); return; }
     this.term = this.host.lexicon.find(key.replace(/\+/g," "));
@@ -87,7 +88,7 @@ function Layout(host)
     }
 
     this.el.style.opacity = 1;
-    setTimeout(()=>{ window.history.replaceState({}, key, key.to_url()); },500)
+    setTimeout(()=>{ window.history.replaceState({}, key, key.to_url()); },3000)
   }
 
   this.load_icon = function(icon_path = this.term.name.to_path())
@@ -156,11 +157,35 @@ function Layout(host)
     invoke.vessel.corpse.search.focus();
     window.scrollTo(0,0)
   }
+
+  this.search_unfocus = function(event)
+  {
+    event.preventDefault();
+    invoke.vessel.corpse.search.value = invoke.vessel.corpse.location;
+    invoke.vessel.corpse.search.blur();
+    window.scrollTo(0,0)
+  }
+
+  this.refresh = function(event)
+  {
+    if(document.activeElement.nodeName == "INPUT"){ return; }
+    invoke.vessel.corpse.load();
+    event.preventDefault();
+  }
+
+  this.hash_location = function(event)
+  {
+    console.log(invoke.vessel.corpse.location)
+    window.location = `index.html#${invoke.vessel.corpse.location}`
+  }
   
   window.onscroll = function(){ invoke.vessel.corpse.on_scroll(); };
 
   invoke.keyboard.add_event("Enter",this.validate,this.search);
   invoke.keyboard.add_event("Tab",this.search_focus);
+  invoke.keyboard.add_event("Escape",this.search_unfocus);
+  invoke.keyboard.add_event("r",this.refresh);
+  invoke.keyboard.add_event("`",this.hash_location);
 }
 
 invoke.vessel.seal("corpse","layout");

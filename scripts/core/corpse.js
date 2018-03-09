@@ -9,6 +9,7 @@ String.prototype.to_path = function()
 
 function Corpse(host)
 {
+  this.location = "home"
   this.host = host;
   this.styles = [];
   this.el = document.createElement('yu'); this.el.id = this.host.name;

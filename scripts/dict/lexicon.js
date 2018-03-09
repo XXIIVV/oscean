@@ -261,7 +261,7 @@ HUNDRED RABBITS
   BREF : {{Hundred Rabbits}} is a design studio on a {{sailboat|Pino}}.
   TYPE : Diary
   LONG
-    & This partnership is host to interactive projects like {{Oquonie}}, {{Grimgrains|http://grimgrains.com}} and travel diaries. A {{Patreon page|https://www.patreon.com/100}} is available to help fund the production of monthly videos and liveaboard documentation.
+    & This partnership is host to interactive projects like {{Oquonie}}, {{Grimgrains}} and travel diaries. A {{Patreon page|https://www.patreon.com/100}} is available to help fund the production of monthly videos and liveaboard documentation.
     % bandcamp 1969793667
   LINK
     https://patreon.com/100
@@ -290,6 +290,7 @@ INSTRUMENT
 GRIMGRAINS
   UNDE : Hundred rabbits
   BREF : {{Grimgrains}} is the {{Hundred Rabbits}} food blog.
+  TYPE : Diary
   LONG
     & Started in the fall of 2014, the goal of the site is to document interesting food and lifestyle experiments.
   LINK

@@ -16,7 +16,7 @@ function Keyboard()
     }
   }
 
-  this.add_event = function(key,method,target = document.body)
+  this.add_event = function(key,method,target = document.body,)
   {
     console.log("keyb","added event:"+key);
     invoke.keyboard.events[key] = method;

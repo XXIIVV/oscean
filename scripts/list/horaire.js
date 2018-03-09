@@ -3,7 +3,7 @@ DATE  CODE PICT TERM                 NAME                                     EN
 18Z14 +100      Supergrid            Supergrid Release
 18T10 +300      Hundred rabbits      Leaving New Zealand
 18H13 +200      Talk                 Play By Play, Wellington
-18E12 -288      Grimgrains
+18E12 !288  471 Grimgrains           Black Toothpaste
 18E11 -382      Riven
 18E10 -278      Dotgrid
 18E09 -375      Riven
@@ -244,7 +244,7 @@ DATE  CODE PICT TERM                 NAME                                     EN
 17N14 ~384  178 Japanese             Sidonia
 17N13 -336  169 Japanese             Nakano
 17N12 -253      Russian
-17N11 -375      Grimgrains
+17N11 -375  452 Grimgrains
 17N10 -277      Hundred rabbits
 17N09 -273      Desamber
 17N08 -176      Getapan 728k
@@ -491,7 +491,7 @@ DATE  CODE PICT TERM                 NAME                                     EN
 16W08 -362      Ronin
 16W07 -392      Ronin
 16W06 -273      Nataniev
-16W05 !263  222 Grimgrains           Bamboo Charcoal
+16W05 -263  222 Grimgrains           Bamboo Charcoal
 16W04 -395      Babelium
 16W03 -395      Babelium
 16W02 -385      Babelium
