@@ -3,6 +3,7 @@ DATE  CODE PICT TERM                 NAME                                     EN
 18Z14 +100      Supergrid            Supergrid Release
 18T10 +300      Hundred rabbits      Leaving New Zealand
 18H13 +200      Talk                 Play By Play, Wellington
+18E13 -351      Grimgrains 
 18E12 !288  471 Grimgrains           Black Toothpaste
 18E11 -382      Riven
 18E10 -278      Dotgrid

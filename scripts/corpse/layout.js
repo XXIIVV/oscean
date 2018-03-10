@@ -79,6 +79,7 @@ function Layout(host)
     this.hd.className = this.term.theme();
     this.m1.innerHTML = this.term.long;
     this.m2.innerHTML = this.term.view();
+    this.m3.innerHTML = this.term.monitor();
 
     this.load_icon();
     this.load_photo();

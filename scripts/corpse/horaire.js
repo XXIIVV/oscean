@@ -99,7 +99,9 @@ function Horaire(list)
       fh:(h.fh/logs.length),
       ch:(h.ch/logs.length),
       efec:(efec_sum/Object.keys(h.topics).length),
-      efic:(efic_sum/Object.keys(h.topics).length)
+      efic:(efic_sum/Object.keys(h.topics).length),
+      sum:h.fh,
+      count:logs.length
     }
   }
 }

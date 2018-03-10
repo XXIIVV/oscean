@@ -292,7 +292,7 @@ GRIMGRAINS
   BREF : {{Grimgrains}} is the {{Hundred Rabbits}} food blog.
   TYPE : Diary
   LONG
-    & Started in the fall of 2014, the goal of the site is to document interesting food and lifestyle experiments.
+    & Started in the fall of 2014, the goal of the site is to document interesting food and {{lifestyle}} experiments.
   LINK
     http://grimgrains.com/
     https://twitter.com/grimgrains

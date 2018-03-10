@@ -222,6 +222,13 @@ function Term(name,dict)
     if(!content){ return "Missing:"+this.name; }
     return content.html();
   }
+
+  this.monitor = function()
+  {
+    if(this.logs.length < 10){ return ""; }
+    var data = invoke.vessel.horaire.parse(this.logs)
+    return `<yu id='monitor'>— <b>${data.sum}</b>FHS <b>${data.fh.toFixed(2)}</b>HDF <b>${data.ch.toFixed(2)}</b>HDC <b>${data.efec.toFixed(2)}</b>EFEC <b>${data.efic.toFixed(2)}</b>EFIC</yu>`
+  }
 }
 
 function MissingTerm(name)
