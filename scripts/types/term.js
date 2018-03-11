@@ -31,6 +31,11 @@ function Term(name,dict)
     return new Runic(this.dict.LONG).html()
   }
 
+  this.unde = function()
+  {
+    return this.dict.UNDE
+  }
+
   this.find_diaries = function()
   {
     var a = [];
@@ -66,17 +71,6 @@ function Term(name,dict)
     html += from.time.toString() != to.time.toString() ? `${from.time.toString()}—<a href='/${to.time.year}'>${to.time.toString()}</a>` : `<a href='/${to.time.year}'>${to.time.toString()}</a>`;
 
     return `<yu class='activity'>${html}</yu>`;
-  }
-
-  this.outgoing = function()
-  {
-    if(!this.links || this.links.length < 1){ return ""; }
-    var html = ""
-    for(id in this.links){
-      var link = this.links[id]
-      html += `<a href='${link}' class='external' target='_blank'>${this.format_link(link)}</a>`
-    }
-    return `<yu class='outgoing'>${html}</yu>`;
   }
 
   this.navi = function()

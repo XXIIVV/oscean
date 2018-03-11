@@ -5,11 +5,13 @@ function PageTemplate(id,rect,...params)
   this.glyph = NODE_GLYPHS.template
   
   this.answer = function(q)
-  {    
-    console.log(q)
+  {
     return {
       title: q.name.capitalize(),
       view:{
+        header:{
+          photo: "heyyy"
+        },
         core:{
           content:"hey2"
         }

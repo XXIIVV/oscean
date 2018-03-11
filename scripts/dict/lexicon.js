@@ -2013,8 +2013,8 @@ DEVINE LU LINVEGA
     & Populating {{Nataniev}} with notes on {{Language|Lietal}}, {{Illustrations|Illustration}} and {{Sounds|Audio}}, Devine hopes to inspire visitors to learn and to {{travel}}.
     ? To {{flee|Obliques}} is life,<br /> To linger, {{Death}}.
   LINK
-    https://twitter.com/neauoire/media
-    https://github.com/neauoire
+    Twitter : https://twitter.com/neauoire/media
+    Github : https://github.com/neauoire
 
 FIRST WAVE
   UNDE : Aliceffekt

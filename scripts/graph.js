@@ -33,12 +33,21 @@ function graph()
     Ø("core").create({x:10,y:11},DomNode),
       Ø("content").create({x:10,y:16},DomNode),
       Ø("sidebar").create({x:14,y:16},DomNode),
-        Ø("icon").create({x:10,y:21},DomNode),
-        Ø("navi").create({x:14,y:21},DomNode),
+        Ø("bref").create({x:10,y:21},DomNode),
+        Ø("icon").create({x:14,y:21},DomNode),
+        Ø("navi").create({x:18,y:21},DomNode),
     Ø("footer").create({x:6,y:11},DomNode,"yu",`
       <wr>
     <a href="https://twitter.com/neauoire" class="icon twitter external"></a><a href="https://github.com/neauoire" class="icon github external"></a><a href="Rotonde" class="icon rotonde"></a>
     <yu id="clock"><svg width="35" height="35"><path class="fh" d="M23,0 L23,35 M23,22 L35,22 M26,22 L26,35 "></path></svg></yu><a onclick="Ø('query').bang('devine lu linvega')">Devine Lu Linvega</a> © 06I04—18Z14<br>BY-NC-SA 4.0 <span style="color:#ccc">build469</span><hr></wr>`),
+  ])
+
+  // Operation
+
+  Ø("operation").create({x:2,y:23})
+
+  Ø("lietal").mesh({x:6,y:23},[
+    Ø("translate").create({x:2,y:2}),  
   ])
 
   // Model
@@ -54,10 +63,13 @@ function graph()
   Ø("header").bind(["logo","photo","search"])
   Ø("view").bind(["header","core","footer"])
   Ø("core").bind(["sidebar","content"])
-  Ø("sidebar").bind(["icon","navi"])
+  Ø("sidebar").bind(["bref","icon","navi"])
 
   Ø("query").connect("router")
   Ø("router").connect("template")
 
   Ø("query").bang()
+
+  // Operations
+  Ø("operation").connect("translate")
 }
