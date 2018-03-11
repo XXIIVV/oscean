@@ -2,7 +2,7 @@ function OperationNode(id,rect,...params)
 {
   Node.call(this,id,rect);
 
-  this.glyph = NODE_GLYPHS.dom
+  this.glyph = NODE_GLYPHS.entry
   
   this.request = function(q)
   {

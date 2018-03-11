@@ -85,6 +85,7 @@ function DiaryTemplate(id,rect,...params)
 
   function make_activity(logs)
   {
+    if(logs.length < 10){ return "" }
     return `${logs[logs.length-1].time}—${logs[0].time}`
   }
 

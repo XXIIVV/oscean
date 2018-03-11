@@ -9,7 +9,7 @@ function TemplateNode(id,rect)
   this.receive = function(q)
   {
     var result = q.result;
-    var type = result.type ? result.type.toLowerCase() : "[age"
+    var type = result.type ? result.type.toLowerCase() : "page"
     var assoc = this.signal(type);
 
     if(!assoc){
