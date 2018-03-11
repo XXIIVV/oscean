@@ -1725,7 +1725,7 @@ RIVEN
     & This tiny {{framework|https://github.com/XXIIVV/Riven}} allows the spawning of nodes and communication between them.
     & These 200 lines of code are going to be combined with {*Invoke*} and implemented into {{Oscean}}, but were developed for the creation of a serverless {{Grimgrains}}.
   LINK
-    https://github.com/XXIIVV/Riven
+    Github : https://github.com/XXIIVV/Riven
 
 ROTONDE
   UNDE : Nataniev
