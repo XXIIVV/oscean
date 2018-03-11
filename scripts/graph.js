@@ -46,10 +46,10 @@ function graph()
   // Operation
 
   Ø("runic").mesh({x:6,y:23},[
-    Ø("operation").create({x:2,y:2},OperationNode),
+    Ø("operation").create({x:6,y:2},OperationNode),
     Ø("lietal").create({x:2,y:8},LietalNode),
     Ø("clock").create({x:6,y:8},ClockNode),
-    Ø("desamber").create({x:6,y:8},DesamberNode),
+    Ø("desamber").create({x:10,y:8},DesamberNode),
     Ø("dictionaery").create({x:2,y:13},CollectionNode),
   ])
 
