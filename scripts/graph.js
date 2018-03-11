@@ -12,7 +12,7 @@ function graph()
 
   Ø("assoc").mesh({x:16,y:0},[
     Ø("template").create({x:2,y:2},TemplateNode),
-    // Ø("page").create({x:2,y:8},PageTemplate),
+    Ø("page").create({x:2,y:8},PageTemplate),
     // Ø("search").create({x:5,y:14},SearchTemplate),
     // Ø("index").create({x:8,y:14},IndexTemplate),
     // Ø("home").create({x:2,y:14},HomeTemplate),
@@ -20,9 +20,9 @@ function graph()
     // Ø("ingredient").create({x:8,y:8},IngredientTemplate),
   ])
 
-  // Ø("client").mesh({x:32,y:0},[
-  //   // Ø("document").create({x:2,y:2},DocumentNode),
-  //   // Ø("view").create({x:2,y:6},DomNode),
+  Ø("client").mesh({x:32,y:0},[
+    Ø("document").create({x:2,y:2},DocumentNode),
+    Ø("view").create({x:2,y:6},DomNode),
   //   // Ø("header").create({x:2,y:11},DomNode),
   //   // Ø("logo").create({x:2,y:16},DomNode,"wr",`<a href='#home' onclick="Ø('query').bang('home')"><img src='media/interface/logo.png'/></a>`),
   //   // Ø("menu").create({x:6,y:16},DomNode,"list"),
@@ -30,17 +30,17 @@ function graph()
   //   // Ø("content").create({x:10,y:16},DomNode),
   //   // Ø("related").create({x:14,y:16},DomNode,"list"),
   //   // Ø("footer").create({x:6,y:11},DomNode,"wr",`<a onclick="Ø('query').bang('index')">See All Recipes List</a><br/><a onclick="Ø('query').bang('about')">Grimgrains</a> © 2014—2018<br/><a href='http://100r.co/' target='_blank'>Hundred Rabbits</a>`),
-  // ])
+  ])
 
   // Model
   Ø("router").syphon("database")
   Ø("database").syphon(["lexicon","horaire"])
 
   // Assoc
-  // Ø("template").syphon(["recipe","ingredient","page"])
+  Ø("template").syphon(["page"])
   // Ø("page").syphon(["home","search","index"])
 
-  // Ø("template").connect(["view","document"])
+  Ø("template").connect(["view","document"])
   // Ø("view").bind(["header","core","footer"])
   // Ø("core").bind(["content","related"])
   // Ø("header").bind(["logo","menu"])

@@ -8,14 +8,19 @@ function TemplateNode(id,rect)
 
   this.receive = function(q)
   {
-    console.log(q)
-    // var assoc = this.signal(q.type ? q.type.slice(0, -1) : "page");  
-    // var payload = assoc.answer(q)
+    var result = q.result;
+    var type = result.type.toLowerCase()
+    var assoc = this.signal(type ? type : "page");
 
-    // this.send(payload)
-    // this.label = `template:${assoc.id}`
+    if(!assoc){
+      console.warn(`Missing template: ${type}`)
+      assoc = this.signal("page");
+    }
+    
+    this.send(assoc.answer(q))
+    this.label = `template:${assoc.id}`
   
-    // // Install Dom
-    // document.body.appendChild(this.signal("view").answer())
+    // Install Dom
+    document.body.appendChild(this.signal("view").answer())
   }
 }

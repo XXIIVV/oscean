@@ -42,7 +42,8 @@ function IndentalNode(id,rect,type)
       for(id in lines){
         var line = lines[id];
         if(line.skip || line.indent > 0){ continue; }
-        h[line.content.toUpperCase()] = type ? new type(format(line)) : format(line)
+        var key = line.content.toUpperCase()
+        h[key] = type ? new type(key,format(line)) : format(line)
       }
       return h
     }

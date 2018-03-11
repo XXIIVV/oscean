@@ -8,9 +8,9 @@ function Term(name,dict)
 
   if(dict){
     this.dict = dict;
-    this.type = dict.type;
-    this.links = this.dict.link ? this.dict.link : [];
-    this.flag = this.dict.flag ? this.dict.flag : [];
+    this.type = dict.TYPE;
+    this.links = this.dict.LINK ? this.dict.LINK : [];
+    this.flag = this.dict.FLAG ? this.dict.FLAG : [];
   }
   
   this.start = function()
