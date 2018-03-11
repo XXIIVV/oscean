@@ -1,4 +1,4 @@
-function PageTemplate(id,rect,...params)
+function DeathTemplate(id,rect,...params)
 {
   Node.call(this,id,rect);
 

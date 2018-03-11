@@ -1,4 +1,4 @@
-function PageTemplate(id,rect,...params)
+function IndexTemplate(id,rect,...params)
 {
   Node.call(this,id,rect);
 

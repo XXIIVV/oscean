@@ -1,4 +1,4 @@
-function PageTemplate(id,rect,...params)
+function HomeTemplate(id,rect,...params)
 {
   Node.call(this,id,rect);
 
@@ -6,12 +6,11 @@ function PageTemplate(id,rect,...params)
   
   this.answer = function(q)
   {    
-    console.log(q)
     return {
       title: q.name.capitalize(),
       view:{
         core:{
-          content:"hey"
+          content:"Hey!"
         }
       }
     }
