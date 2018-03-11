@@ -35,7 +35,7 @@ function graph()
       Ø("sidebar").create({x:14,y:16},DomNode),
         Ø("bref").create({x:10,y:21},DomNode),
         Ø("icon").create({x:14,y:21},DomNode),
-        Ø("navi").create({x:18,y:21},DomNode),
+        Ø("navi").create({x:18,y:21},DomNode,"list"),
     Ø("footer").create({x:6,y:11},DomNode,"yu",`
       <wr>
     <a href="https://twitter.com/neauoire" class="icon twitter external"></a><a href="https://github.com/neauoire" class="icon github external"></a><a href="Rotonde" class="icon rotonde"></a>
