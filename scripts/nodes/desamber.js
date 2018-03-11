@@ -1,4 +1,4 @@
-function ClockNode(id,rect)
+function DesamberNode(id,rect)
 {
   Node.call(this,id,rect);
 
@@ -6,6 +6,6 @@ function ClockNode(id,rect)
 
   this.answer = function(q)
   {
-    return new Date().clock()
+    return new Date().desamber();
   }
 }

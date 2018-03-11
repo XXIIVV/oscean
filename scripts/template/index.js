@@ -24,13 +24,13 @@ function IndexTemplate(id,rect,...params)
             bref:make_bref(q,term,logs),
             navi:make_navi(term,siblings)
           },
-          content:`${q.result.long()}${make_index(term.name,q.tables.lexicon)}`
+          content:`${q.result.long()}${make_index(term.name,q.tables.lexicon,q.tables.horaire)}`
         }
       }
     }
   }
 
-  function make_index(name,lexicon,stop = false)
+  function make_index(name,lexicon,logs,stop = false)
   {
     var html = ""
 
@@ -43,13 +43,34 @@ function IndexTemplate(id,rect,...params)
 
     for(id in children){
       var child = children[id]
+      var photo_log = find_photo(find_logs(child.name,logs))
       html += `
-      <h2 class='book'>${child.name}</h2>
+      ${photo_log ? '<img src="media/diary/'+photo_log.photo+'.jpg"/>' : ''}
       <hs>${child.bref().to_markup()}</hs>
       ${child.long()}
-      <quote>${!stop ? make_index(child.name,lexicon,true) : ''}</quote>`
+      <quote>${!stop ? make_index(child.name,lexicon,logs,true) : ''}</quote>`
     }
     return html
+  }
+
+  function find_logs(name,logs)
+  {
+    var a = []
+    for(id in logs){
+      var log = logs[id];
+      if(log.term.toUpperCase() == name){ a.push(log) }
+    }
+    return a
+  }
+
+  function find_photo(logs)
+  {
+    for(id in logs){
+      var log = logs[id];
+      if(!log.photo){ continue; }
+      return log
+    }
+    return null
   }
 
   function make_bref(q,term,logs)

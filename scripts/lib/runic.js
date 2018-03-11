@@ -56,22 +56,6 @@ function Runic(raw)
     return `<img src='media/${val}'/>`
   }
 
-  this.operation = function(val)
-  {
-    val = val.replace("$","").trim();
-
-    if(val == "desamber"){
-      return new Date().desamber();
-    }
-    if(val == "clock"){
-      return new Date().clock();
-    }
-    if(val.split(" ")[0] == "lietal"){
-      return invoke.vessel.lietal.construction(val.replace("lietal","").trim());
-    }
-    return `((${val}))`
-  }
-
   this.parse = function(raw = this.raw)
   {
     if(!raw){ return ""; }

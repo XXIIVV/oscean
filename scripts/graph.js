@@ -49,6 +49,7 @@ function graph()
     Ø("operation").create({x:2,y:2},OperationNode),
     Ø("lietal").create({x:2,y:8},LietalNode),
     Ø("clock").create({x:6,y:8},ClockNode),
+    Ø("desamber").create({x:6,y:8},DesamberNode),
     Ø("dictionaery").create({x:2,y:13},CollectionNode),
   ])
 
@@ -71,8 +72,12 @@ function graph()
   Ø("query").connect("router")
   Ø("router").connect("template")
 
+  // Operations
+  Ø("operation").syphon(["lietal","clock","desamber"])
+
   Ø("query").bang()
 
-  // Operations
-  Ø("operation").syphon(["lietal","clock"])
+
+
+  console.log(Ø("operation"))
 }

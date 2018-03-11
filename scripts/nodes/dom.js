@@ -15,7 +15,7 @@ function DomNode(id,rect,...params)
 
   this.receive = function(content)
   {    
-    if(content[this.id]){
+    if(content[this.id] != null){
       this.update(content[this.id]);
       this.send(content[this.id])
     }
