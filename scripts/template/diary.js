@@ -24,19 +24,18 @@ function DiaryTemplate(id,rect,...params)
             bref:make_bref(q,term,logs),
             navi:make_navi(term,siblings,children)
           },
-          content:`${q.result.long()}${make_diary(logs)}`
+          content:`${q.result.long()}${make_diary(logs,photo_log.photo)}`
         }
       }
     }
   }
 
-  function make_diary(logs)
+  function make_diary(logs,skip)
   {
     var html = ""
-
     for(id in logs){
       var log = logs[id]
-      if(!log.photo){ continue; }
+      if(!log.photo || log.photo == skip){ continue; }
       html += `<img src='media/diary/${log.photo}.jpg'/>`
     }
     return html

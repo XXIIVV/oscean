@@ -8,22 +8,48 @@ function IndexTemplate(id,rect,...params)
   {    
     var term = q.result
     var logs = this.find_logs(q.name,q.tables.horaire)
+    var photo_log = this.find_photo(logs)
     var siblings = this.find_siblings(term.unde(),q.tables.lexicon)
     var children = this.find_children(q.name,q.tables.lexicon)
 
-    console.log("!")
     return {
       title: q.name.capitalize(),
       view:{
+        header:{
+          photo:photo_log ? `<media style='background-image:url(media/diary/${photo_log.photo}.jpg)'></media>` : '',
+          info:photo_log ? `<b>${photo_log.name}</b> — ${photo_log.time}` : '',
+        },
         core:{
           sidebar:{
             bref:make_bref(q,term,logs),
-            navi:make_navi(term,siblings,children)
+            navi:make_navi(term,siblings)
           },
-          content:`${q.result.long()}`
+          content:`${q.result.long()}${make_index(term.name,q.tables.lexicon)}`
         }
       }
     }
+  }
+
+  function make_index(name,lexicon,stop = false)
+  {
+    var html = ""
+
+    var children = []
+    for(id in lexicon){
+      var term = lexicon[id];
+      if(!term.unde() || name != term.unde().toUpperCase()){ continue; }
+      children.push(term)
+    } 
+
+    for(id in children){
+      var child = children[id]
+      html += `
+      <h2 class='book'>${child.name}</h2>
+      <hs>${child.bref().to_markup()}</hs>
+      ${child.long()}
+      <quote>${!stop ? make_index(child.name,lexicon,true) : ''}</quote>`
+    }
+    return html
   }
 
   function make_bref(q,term,logs)
@@ -37,7 +63,7 @@ function IndexTemplate(id,rect,...params)
     </h2>`
   }
 
-  function make_navi(term,siblings,children)
+  function make_navi(term,siblings,children = [])
   {
     var html = ""
     for(id in siblings){ 
