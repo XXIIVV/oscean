@@ -8,7 +8,7 @@ function DiaryTemplate(id,rect,...params)
   {    
     var term = q.result
     var logs = this.find_logs(q.name,q.tables.horaire)
-    var photo = this.find_photo(logs)
+    var photo_log = this.find_photo(logs)
     var siblings = this.find_siblings(term.unde(),q.tables.lexicon)
     var children = this.find_children(q.name,q.tables.lexicon)
 
@@ -16,7 +16,8 @@ function DiaryTemplate(id,rect,...params)
       title: q.name.capitalize(),
       view:{
         header:{
-          photo:photo ? `<media style='background-image:url(media/diary/${photo}.jpg)'></media>` : ''
+          photo:photo_log ? `<media style='background-image:url(media/diary/${photo_log.photo}.jpg)'></media>` : '',
+          info:photo_log ? `<b>${photo_log.name}</b> — ${photo_log.time}` : '',
         },
         core:{
           sidebar:{

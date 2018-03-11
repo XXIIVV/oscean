@@ -891,8 +891,8 @@ MARABU
     % itchio 173813
     & You can view the complete {{Marabu Manual|https://github.com/hundredrabbits/Marabu}} on Github.
   LINK
-    https://github.com/neauoire/Marabu
-    http://hundredrabbits.itch.io/Marabu
+    Github : https://github.com/neauoire/Marabu
+    Itch : http://hundredrabbits.itch.io/Marabu
 
 RONIN
   UNDE : Software

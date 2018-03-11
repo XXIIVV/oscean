@@ -30,12 +30,13 @@ function graph()
       Ø("photo").create({x:2,y:16},DomNode,"photo"),
       Ø("search").create({x:6,y:16},DomNode),
       Ø("logo").create({x:10,y:16},DomNode,"a"),
-    Ø("core").create({x:14,y:11},DomNode),
-      Ø("content").create({x:14,y:16},DomNode),
-      Ø("sidebar").create({x:18,y:16},DomNode),
-        Ø("bref").create({x:10,y:21},DomNode),
-        Ø("icon").create({x:14,y:21},DomNode),
-        Ø("navi").create({x:18,y:21},DomNode,"list"),
+      Ø("info").create({x:14,y:16},DomNode),
+    Ø("core").create({x:18,y:11},DomNode),
+      Ø("content").create({x:18,y:16},DomNode),
+      Ø("sidebar").create({x:22,y:16},DomNode),
+        Ø("bref").create({x:18,y:21},DomNode),
+        Ø("icon").create({x:22,y:21},DomNode),
+        Ø("navi").create({x:26,y:21},DomNode,"list"),
     Ø("footer").create({x:6,y:11},DomNode,"yu",`
       <wr>
     <a href="https://twitter.com/neauoire" class="icon twitter external"></a><a href="https://github.com/neauoire" class="icon github external"></a><a href="Rotonde" class="icon rotonde"></a>
@@ -62,7 +63,7 @@ function graph()
   Ø("page").syphon(["missing"])
 
   Ø("template").connect(["view","document"])
-  Ø("header").bind(["logo","photo","search"])
+  Ø("header").bind(["logo","photo","search","info"])
   Ø("view").bind(["header","core","footer"])
   Ø("core").bind(["sidebar","content"])
   Ø("sidebar").bind(["bref","icon","navi"])

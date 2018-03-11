@@ -39,7 +39,7 @@ function TemplateNode(id,rect)
     for(id in logs){
       var log = logs[id];
       if(!log.photo){ continue; }
-      return log.photo
+      return log
     }
   }
 

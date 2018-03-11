@@ -8,29 +8,50 @@ function HomeTemplate(id,rect,...params)
   {    
     var term = q.result
     var logs = q.tables.horaire
-    var photo = this.find_photo(logs)
+    var photo_log = this.find_photo(logs)
 
     return {
       title: q.name.capitalize(),
       view:{
         header:{
-          photo:photo ? `<media style='background-image:url(media/diary/${photo}.jpg)'></media>` : ''
+          photo:photo_log ? `<media style='background-image:url(media/diary/${photo_log.photo}.jpg)'></media>` : '',
+          info:photo_log ? `<b>${photo_log.name}</b> — ${photo_log.time}` : '',
         },
         core:{
           sidebar:{
             bref:make_bref(q,term,logs),
             navi:""
           },
-          content:`${q.result.long()}`
+          content:make_list(logs)
         }
       }
     }
   }
 
+  function make_list(logs)
+  {
+    var html = ""
+    var projects = {};
+
+    for(id in logs){
+      var log = logs[id];
+      if(!log.term){ continue; }
+      if(!projects[log.term]){ projects[log.term] = {name:log.term,to:log.time.toString(),count:0}}
+      projects[log.term].from = log.time.toString();
+      projects[log.term].count += 1;
+    }
+
+    for(id in projects){
+      var project = projects[id];
+      if(project.count < 10){ continue; }
+      html += `<ln>{{${project.name}}} ${project.from != project.to ? project.from+"—"+project.to : project.from}</ln>`.to_markup();
+    }
+    return `<list class='tidy'>${html}</list>`;
+  }
+
   function make_diary(logs)
   {
     var html = ""
-
     for(id in logs){
       var log = logs[id]
       if(!log.photo){ continue; }
