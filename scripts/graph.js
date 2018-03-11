@@ -6,7 +6,7 @@ function graph()
     Ø("router").create({x:4,y:2},RouterNode),
     Ø("database").create({x:4,y:9},DatabaseNode),
     Ø("lexicon").create({x:2,y:16},IndentalNode,Term),
-    Ø("horaire").create({x:6,y:16},CollectionNode,Log),
+    Ø("horaire").create({x:6,y:16},CollectionNode,Log)
   ])
 
   Ø("assoc").mesh({x:16,y:0},[
@@ -29,10 +29,10 @@ function graph()
     Ø("header").create({x:2,y:11},DomNode),
       Ø("photo").create({x:2,y:16},DomNode,"photo"),
       Ø("search").create({x:6,y:16},DomNode),
-      Ø("logo").create({x:6,y:21},DomNode,"a"),
-    Ø("core").create({x:10,y:11},DomNode),
-      Ø("content").create({x:10,y:16},DomNode),
-      Ø("sidebar").create({x:14,y:16},DomNode),
+      Ø("logo").create({x:10,y:16},DomNode,"a"),
+    Ø("core").create({x:14,y:11},DomNode),
+      Ø("content").create({x:14,y:16},DomNode),
+      Ø("sidebar").create({x:18,y:16},DomNode),
         Ø("bref").create({x:10,y:21},DomNode),
         Ø("icon").create({x:14,y:21},DomNode),
         Ø("navi").create({x:18,y:21},DomNode,"list"),
@@ -44,13 +44,15 @@ function graph()
 
   // Operation
 
-  Ø("operation").create({x:2,y:23})
-
-  Ø("lietal").mesh({x:6,y:23},[
-    Ø("translate").create({x:2,y:2}),  
+  Ø("runic").mesh({x:6,y:23},[
+    Ø("operation").create({x:2,y:2},OperationNode),
+    Ø("lietal").create({x:2,y:8},LietalNode),
+    Ø("clock").create({x:6,y:8},ClockNode),
+    Ø("dictionaery").create({x:2,y:13},CollectionNode),
   ])
 
   // Model
+  Ø("lietal").syphon("dictionaery")
   Ø("router").syphon("database")
   Ø("database").syphon(["lexicon","horaire"])
 
@@ -71,5 +73,5 @@ function graph()
   Ø("query").bang()
 
   // Operations
-  Ø("operation").connect("translate")
+  Ø("operation").syphon(["lietal","clock"])
 }

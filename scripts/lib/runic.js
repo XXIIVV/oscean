@@ -159,7 +159,7 @@ String.prototype.to_markup = function()
     var part = parts[id];
     if(part.indexOf("}}") == -1){ continue; }
     var content = part.split("}}")[0];
-    // if(content.substr(0,1) == "$"){ html = html.replace(`{{${content}}}`, this.operation(content)); continue; }
+    if(content.substr(0,1) == "$"){ html = html.replace(`{{${content}}}`, Ø("operation").request(content)); continue; }
     // if(content.substr(0,1) == "%"){ html = html.replace(`{{${content}}}`, this.media(content)); continue; }
     var target = content.indexOf("|") > -1 ? content.split("|")[1] : content;
     var name = content.indexOf("|") > -1 ? content.split("|")[0] : content;
