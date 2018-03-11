@@ -1,4 +1,4 @@
-DATABASE.db_horaire = `
+DATABASE.horaire = `
 DATE  CODE PICT TERM                 NAME                                     END
 18Z14 +100      Supergrid            Supergrid Release
 18T10 +300      Hundred rabbits      Leaving New Zealand

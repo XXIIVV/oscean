@@ -1,4 +1,4 @@
-DATABASE.db_lexicon = `
+DATABASE.lexicon = `
 HOME
   UNDE : Home
   BREF : Welcome to the {{Nataniev}} playground and ecosystem.

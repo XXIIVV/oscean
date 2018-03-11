@@ -1,7 +1,8 @@
-function CollectionNode(id,rect)
+function CollectionNode(id,rect,type)
 {
   Node.call(this,id,rect);
 
+  this.type = type;
   this.glyph = NODE_GLYPHS.database
 
   this.answer = function(q)
@@ -13,11 +14,13 @@ function CollectionNode(id,rect)
     if(this.cache){
       return this.cache;
     }
-    this.cache = parse(DATABASE[this.id])
+
+    this.label = `${this.id}=${this.type.name}`;
+    this.cache = parse(DATABASE[this.id],this.type)
     return this.cache;
   }
 
-  function parse(data)
+  function parse(data,type)
   {
     var a = [];
     var lines = data.trim().split("\n")
@@ -27,7 +30,7 @@ function CollectionNode(id,rect)
       for(i in key){
         entry[i] = lines[id].substr(key[i].from,key[i].to).trim();
       }
-      a.push(entry);
+      a.push(type ? new type(entry) : entry);
     }
     console.log("list","parsed "+a.length+" entries")
     return a

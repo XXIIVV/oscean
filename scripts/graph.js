@@ -6,11 +6,11 @@ function graph()
   Ø("model").mesh({x:6,y:0},[
     Ø("router").create({x:4,y:2},RouterNode),
     Ø("database").create({x:4,y:8},DatabaseNode),
-    Ø("db_lexicon").create({x:2,y:14},IndentalNode),
-    Ø("db_horaire").create({x:6,y:14},CollectionNode),
+    Ø("lexicon").create({x:2,y:14},IndentalNode,Term),
+    Ø("horaire").create({x:6,y:14},CollectionNode,Log),
   ])
 
-  Ø("assoc").mesh({x:19,y:0},[
+  Ø("assoc").mesh({x:16,y:0},[
     Ø("template").create({x:2,y:2},TemplateNode),
     // Ø("page").create({x:2,y:8},PageTemplate),
     // Ø("search").create({x:5,y:14},SearchTemplate),
@@ -34,7 +34,7 @@ function graph()
 
   // Model
   Ø("router").syphon("database")
-  Ø("database").syphon(["db_lexicon","db_horaire"])
+  Ø("database").syphon(["lexicon","horaire"])
 
   // Assoc
   // Ø("template").syphon(["recipe","ingredient","page"])
