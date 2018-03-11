@@ -11,7 +11,7 @@ function PageTemplate(id,rect,...params)
       title: q.name.capitalize(),
       view:{
         core:{
-          content:"hey"
+          content:"hey2"
         }
       }
     }

@@ -16,10 +16,19 @@ function Term(name,dict)
   this.start = function()
   {
     if(dict){
-      this.bref = this.dict.bref ? new Runic().markup(this.dict.bref) : "Missing";
-      this.long = this.dict.long ? new Runic(this.dict.long).html() : "";
+      this.bref = this.dict.BREF ? this.dict.BREF.to_markup() : "Missing";
     }
     this.diaries = this.find_diaries();
+  }
+
+  this.bref = function()
+  {
+    return this.dict.BREF.to_markup()
+  }
+
+  this.long = function()
+  {
+    return new Runic(this.dict.LONG).html()
   }
 
   this.find_diaries = function()

@@ -9,14 +9,15 @@ function TemplateNode(id,rect)
   this.receive = function(q)
   {
     var result = q.result;
-    var type = result.type.toLowerCase()
-    var assoc = this.signal(type ? type : "page");
+    var type = result.type ? result.type.toLowerCase() : "[age"
+    var assoc = this.signal(type);
 
     if(!assoc){
       console.warn(`Missing template: ${type}`)
       assoc = this.signal("page");
     }
     
+    console.log(assoc)
     this.send(assoc.answer(q))
     this.label = `template:${assoc.id}`
   

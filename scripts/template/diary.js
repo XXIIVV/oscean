@@ -6,12 +6,12 @@ function DiaryTemplate(id,rect,...params)
   
   this.answer = function(q)
   {    
-    console.log(q)
+    console.log(q.result.long())
     return {
       title: q.name.capitalize(),
       view:{
         core:{
-          content:"hey"
+          content:q.result.long()
         }
       }
     }
