@@ -1,19 +1,23 @@
 function DiaryTemplate(id,rect,...params)
 {
-  Node.call(this,id,rect);
+  TemplateNode.call(this,id,rect);
 
   this.glyph = NODE_GLYPHS.template
   
   this.answer = function(q)
   {    
     var term = q.result
-    var logs = find_logs(q.name,q.tables.horaire)
-    var siblings = find_siblings(term.unde(),q.tables.lexicon)
-    var children = find_children(q.name,q.tables.lexicon)
+    var logs = this.find_logs(q.name,q.tables.horaire)
+    var photo = this.find_photo(logs)
+    var siblings = this.find_siblings(term.unde(),q.tables.lexicon)
+    var children = this.find_children(q.name,q.tables.lexicon)
 
     return {
       title: q.name.capitalize(),
       view:{
+        header:{
+          photo:photo ? `<media style='background-image:url(media/diary/${photo}.jpg)'></media>` : ''
+        },
         core:{
           sidebar:{
             bref:make_bref(q,term,logs),
@@ -48,28 +52,6 @@ function DiaryTemplate(id,rect,...params)
     </h2>`
   }
 
-  function find_siblings(parent,lexicon)
-  {
-    var a = []
-    for(id in lexicon){
-      var term = lexicon[id];
-      if(!term.unde() || parent.toUpperCase() != term.unde().toUpperCase()){ continue; }
-      a.push(term)
-    }
-    return a  
-  }
-
-  function find_children(name,lexicon)
-  {
-    var a = []
-    for(id in lexicon){
-      var term = lexicon[id];
-      if(!term.unde() || name != term.unde().toUpperCase()){ continue; }
-      a.push(term)
-    }
-    return a    
-  }
-
   function make_navi(term,siblings,children)
   {
     var html = ""
@@ -99,15 +81,5 @@ function DiaryTemplate(id,rect,...params)
   {
     if(logs.length < 10){ return "" }
     return `${logs[logs.length-1].time}—${logs[0].time}`
-  }
-
-  function find_logs(name,logs)
-  {
-    var a = []
-    for(id in logs){
-      var log = logs[id];
-      if(log.term.toUpperCase() == name){ a.push(log) }
-    }
-    return a
   }
 }

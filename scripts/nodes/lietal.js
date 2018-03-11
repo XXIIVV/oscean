@@ -94,7 +94,6 @@ function LietalNode(id,rect)
       h.li_en[value.lietal] = value.english;
       h.en_li[value.english] = value.lietal;
     }
-    console.log(h,dictionaery)
     return h
   }
 }

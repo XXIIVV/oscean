@@ -264,8 +264,8 @@ HUNDRED RABBITS
     & This partnership is host to interactive projects like {{Oquonie}}, {{Grimgrains}} and travel diaries. A {{Patreon page|https://www.patreon.com/100}} is available to help fund the production of monthly videos and liveaboard documentation.
     % bandcamp 1969793667
   LINK
-    https://patreon.com/100
-    https://twitter.com/hundredrabbits
+    Patreon : https://patreon.com/100
+    Twitter : https://twitter.com/hundredrabbits
 
 PINO
   UNDE : Hundred rabbits
@@ -1645,7 +1645,7 @@ TIME
   LONG
     & The {{Nataniev}} time format has both a {{Date|Desamber}} and a {{Clock}} — the current Time is {{$desamber}} {{$clock}}.
   LINK
-    http://github.com/hundredrabbits/Clock
+    Github : http://github.com/hundredrabbits/Clock
 
 DESAMBER
   UNDE : Time
@@ -1707,7 +1707,7 @@ NATANIEV
     & As of June 2017, a {*graphical interface*} was built onto the server tools, allowing for the co-existence of tools such as {{Marabu}}, {{Ronin}} and {{Left}}.
     & This website, and many others, are served by a web platform named {{Nataniev}}. Their design and much of their visual and audio content is also created with {{software}} built within the platform, following its ecosystem's ideologies.
   LINK
-    https://github.com/XXIIVV/Nataniev
+    Github : https://github.com/XXIIVV/Nataniev
 
 OSCEAN
   UNDE : Nataniev

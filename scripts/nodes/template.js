@@ -17,11 +17,51 @@ function TemplateNode(id,rect)
       assoc = this.signal("page");
     }
     
-    console.log(assoc)
     this.send(assoc.answer(q))
     this.label = `template:${assoc.id}`
   
     // Install Dom
     document.body.appendChild(this.signal("view").answer())
+  }
+
+  this.find_logs = function(name,logs)
+  {
+    var a = []
+    for(id in logs){
+      var log = logs[id];
+      if(log.term.toUpperCase() == name){ a.push(log) }
+    }
+    return a
+  }
+
+  this.find_photo = function(logs)
+  {
+    for(id in logs){
+      var log = logs[id];
+      if(!log.photo){ continue; }
+      return log.photo
+    }
+  }
+
+  this.find_siblings = function(parent,lexicon)
+  {
+    var a = []
+    for(id in lexicon){
+      var term = lexicon[id];
+      if(!term.unde() || parent.toUpperCase() != term.unde().toUpperCase()){ continue; }
+      a.push(term)
+    }
+    return a  
+  }
+
+  this.find_children = function(name,lexicon)
+  {
+    var a = []
+    for(id in lexicon){
+      var term = lexicon[id];
+      if(!term.unde() || name != term.unde().toUpperCase()){ continue; }
+      a.push(term)
+    }
+    return a    
   }
 }
