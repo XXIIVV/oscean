@@ -10,16 +10,17 @@ function Riven()
 
 function Ø(s,network = RIVEN.network)
 {
-  if(s.indexOf(" ") > -1){
-    var node_id = s.split(" ")[0];
-    var port_id = s.split(" ")[1];
+  var id = s.toLowerCase();
+  if(id.indexOf(" ") > -1){
+    var node_id = id.split(" ")[0];
+    var port_id = id.split(" ")[1];
     return network[node_id] && network[node_id].ports[port_id] ? network[node_id].ports[port_id] : null;
   }
-  else if(network[s]){
-    return network[s];
+  else if(network[id]){
+    return network[id];
   }
   else{
-    return new Node(s);
+    return new Node(id);
   }
 }
 
@@ -108,7 +109,7 @@ function Node(id,rect={x:0,y:0,w:2,h:2})
       var port = this.ports[port_id]
       for(route_id in port.routes){
         var route = port.routes[route_id];
-        if(!route || !route.host || route.host.id != target){ continue; }
+        if(!route || !route.host || route.host.id != target.toLowerCase()){ continue; }
         return route.host
       }
     }

@@ -13,6 +13,8 @@ function graph()
     Ø("template").create({x:11,y:2},TemplateNode),
     Ø("page").create({x:2,y:11},PageTemplate),
       Ø("missing").create({x:2,y:16},MissingTemplate),
+      Ø("home").create({x:5,y:16},HomeTemplate),
+      Ø("death").create({x:8,y:16},DeathTemplate),
     Ø("diary").create({x:5,y:11},DiaryTemplate),
     Ø("portal").create({x:8,y:11},PortalTemplate),
     Ø("index").create({x:14,y:11},IndexTemplate),
@@ -25,14 +27,12 @@ function graph()
       Ø("russian").create({x:17,y:25},IndentalNode),
       Ø("blue").create({x:20,y:25},IndentalNode),
     Ø("calendar").create({x:17,y:11},DiaryTemplate),
-    Ø("special").create({x:20,y:11},SpecialTemplate),
-      Ø("home").create({x:17,y:16},HomeTemplate),
-      Ø("death").create({x:20,y:16},DeathTemplate)
   ])
 
   Ø("client").mesh({x:40,y:0},[
     Ø("document").create({x:2,y:2},DocumentNode),
     Ø("view").create({x:2,y:6},DomNode),
+    Ø("style").create({x:10,y:11},DomNode,"style"),
     Ø("header").create({x:2,y:11},DomNode),
       Ø("photo").create({x:2,y:16},DomNode,"photo"),
       Ø("search").create({x:6,y:16},InputNode),
@@ -70,14 +70,13 @@ function graph()
   Ø("database").syphon(["lexicon","horaire"])
 
   // Assoc
-  Ø("template").syphon(["page","special","diary","portal","index","docs","calendar"])
-  Ø("special").syphon(["home","death"])
+  Ø("template").syphon(["page","diary","portal","index","docs","calendar"])
   Ø("docs").syphon(["lietal","directory","glossary","biases","blue","russian","japanese"])
-  Ø("page").syphon(["missing"])
+  Ø("page").syphon(["missing","home","death"])
 
   Ø("template").connect(["view","document"])
   Ø("header").bind(["logo","photo","search","info"])
-  Ø("view").bind(["header","core","footer"])
+  Ø("view").bind(["header","core","footer","style"])
   Ø("core").bind(["sidebar","content"])
   Ø("sidebar").bind(["bref","icon","navi"])
 

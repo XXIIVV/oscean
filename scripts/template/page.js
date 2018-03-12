@@ -9,13 +9,17 @@ function PageTemplate(id,rect,...params)
     if(!q.result){
       return this.request(q).missing
     }
+    // Override
+    if(this.signal(q.name)){
+      return this.signal(q.name).answer(q)
+    }
     var term = q.result
     var logs = this.find_logs(q.name,q.tables.horaire)
     var photo_log = this.find_photo(logs)
     var siblings = this.find_siblings(term.unde(),q.tables.lexicon)
     var children = this.find_children(q.name,q.tables.lexicon)
 
-    return {
+    return  {
       title: q.name.capitalize(),
       view:{
         header:{
@@ -28,7 +32,7 @@ function PageTemplate(id,rect,...params)
             bref:make_bref(q,term,logs),
             navi:make_navi(term,siblings,children)
           },
-          content:`${q.result.long()}`
+          content:`${q.result.long()}${append ? append : ''}`
         }
       }
     }
