@@ -5,7 +5,7 @@ function PageTemplate(id,rect,...params)
   this.glyph = NODE_GLYPHS.template
   
   this.answer = function(q)
-  {    
+  {
     var term = q.result
     var logs = this.find_logs(q.name,q.tables.horaire)
     var photo_log = this.find_photo(logs)
@@ -18,6 +18,7 @@ function PageTemplate(id,rect,...params)
         header:{
           photo:photo_log ? `<media style='background-image:url(media/diary/${photo_log.photo}.jpg)'></media>` : '',
           info:photo_log ? `<b>${photo_log.name}</b> — ${photo_log.time}` : '',
+          search: q.name
         },
         core:{
           sidebar:{
@@ -31,7 +32,7 @@ function PageTemplate(id,rect,...params)
   }
 
   function make_bref(q,term,logs)
-  { 
+  {
     return `
     <h1>${q.result.bref()}</h1>
     <h2>
@@ -44,11 +45,11 @@ function PageTemplate(id,rect,...params)
   function make_navi(term,siblings,children)
   {
     var html = ""
-    for(id in siblings){ 
+    for(id in siblings){
       var sibling = siblings[id];
       html += `<ln class='sibling'>${sibling.bref()}</ln>`
       if(sibling.name == term.name){
-        for(id in children){ 
+        for(id in children){
           var child = children[id];
           html += `<ln class='child'>${child.bref()}</ln>`
         }
@@ -60,7 +61,7 @@ function PageTemplate(id,rect,...params)
   function make_links(links)
   {
     var html = ""
-    for(id in links){ 
+    for(id in links){
       html += `<a href='${links[id]}' target='_blank'>${id}</a>`
     }
     return `<yu class='links'>${html}</yu>`

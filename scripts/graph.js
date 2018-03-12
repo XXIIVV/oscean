@@ -28,7 +28,7 @@ function graph()
     Ø("view").create({x:2,y:6},DomNode),
     Ø("header").create({x:2,y:11},DomNode),
       Ø("photo").create({x:2,y:16},DomNode,"photo"),
-      Ø("search").create({x:6,y:16},DomNode),
+      Ø("search").create({x:6,y:16},InputNode),
       Ø("logo").create({x:10,y:16},DomNode,"a"),
       Ø("info").create({x:14,y:16},DomNode),
     Ø("core").create({x:18,y:11},DomNode),

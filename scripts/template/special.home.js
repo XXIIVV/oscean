@@ -5,7 +5,7 @@ function HomeTemplate(id,rect,...params)
   this.glyph = NODE_GLYPHS.template
   
   this.answer = function(q)
-  {    
+  {
     var term = q.result
     var logs = q.tables.horaire
     var photo_log = this.find_photo(logs)
@@ -16,6 +16,7 @@ function HomeTemplate(id,rect,...params)
         header:{
           photo:photo_log ? `<media style='background-image:url(media/diary/${photo_log.photo}.jpg)'></media>` : '',
           info:photo_log ? `<b>${photo_log.name}</b> — ${photo_log.time}` : '',
+          search:q.name
         },
         core:{
           sidebar:{
@@ -61,7 +62,7 @@ function HomeTemplate(id,rect,...params)
   }
 
   function make_bref(q,term,logs)
-  { 
+  {
     return `
     <h1>${q.result.bref()}</h1>
     <h2>
@@ -73,7 +74,7 @@ function HomeTemplate(id,rect,...params)
   function make_links(links)
   {
     var html = ""
-    for(id in links){ 
+    for(id in links){
       html += `<a href='${links[id]}' target='_blank'>${id}</a>`
     }
     return `<yu class='links'>${html}</yu>`
