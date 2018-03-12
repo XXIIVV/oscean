@@ -6,6 +6,9 @@ function PageTemplate(id,rect,...params)
   
   this.answer = function(q)
   {
+    if(!q.result){
+      return this.request(q).missing
+    }
     var term = q.result
     var logs = this.find_logs(q.name,q.tables.horaire)
     var photo_log = this.find_photo(logs)

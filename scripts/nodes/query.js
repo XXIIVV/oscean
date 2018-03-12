@@ -7,6 +7,8 @@ function QueryNode(id,rect)
 
   this.bang = function(target = window.location.hash.substring(1).replace(/[^0-9a-z]/gi," ").trim().toLowerCase())
   {
+    Ø("view").el.className = "loading"
+
     target = target ? target : "home"
     this.label = `query:${target}`
     window.scrollTo(0,0);

@@ -9,7 +9,7 @@ function TemplateNode(id,rect)
   this.receive = function(q)
   {
     var result = q.result;
-    var type = result.type ? result.type.toLowerCase() : "page"
+    var type = result && result.type ? result.type.toLowerCase() : "page"
     var assoc = this.signal(type);
 
     if(!assoc){
@@ -19,6 +19,8 @@ function TemplateNode(id,rect)
     
     this.send(assoc.answer(q))
     this.label = `template:${assoc.id}`
+
+    setTimeout(()=>{ Ø("view").el.className = "ready" },100)
   
     // Install Dom
     document.body.appendChild(this.signal("view").answer())
