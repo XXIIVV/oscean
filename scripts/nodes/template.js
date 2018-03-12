@@ -50,7 +50,7 @@ function TemplateNode(id,rect)
     var a = []
     for(id in lexicon){
       var term = lexicon[id];
-      if(!term.unde() || parent.toUpperCase() != term.unde().toUpperCase()){ continue; }
+      if(!term.unde() || !parent || parent.toUpperCase() != term.unde().toUpperCase()){ continue; }
       a.push(term)
     }
     return a  

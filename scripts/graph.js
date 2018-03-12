@@ -19,6 +19,8 @@ function graph()
     Ø("docs").create({x:11,y:16},DocsTemplate),
       Ø("lietal").create({x:13,y:22},IndentalNode),
       Ø("directory").create({x:9,y:22},IndentalNode),
+      Ø("biases").create({x:5,y:22},IndentalNode),
+      Ø("glossary").create({x:17,y:22},IndentalNode),
     Ø("calendar").create({x:17,y:11},DiaryTemplate),
     Ø("special").create({x:20,y:11},SpecialTemplate),
       Ø("home").create({x:17,y:16},HomeTemplate),
@@ -63,7 +65,7 @@ function graph()
   // Assoc
   Ø("template").syphon(["page","special","diary","portal","index","docs","calendar"])
   Ø("special").syphon(["home","death"])
-  Ø("docs").syphon(["lietal","directory"])
+  Ø("docs").syphon(["lietal","directory","glossary","biases"])
   Ø("page").syphon(["missing"])
 
   Ø("template").connect(["view","document"])
@@ -79,6 +81,4 @@ function graph()
   Ø("operation").syphon(["translate","clock","desamber"])
 
   Ø("query").bang()
-
-  console.log(Ø("operation"))
 }
