@@ -11,5 +11,6 @@ function QueryNode(id,rect)
     this.label = `query:${target}`
     window.scrollTo(0,0);
     this.send(target)
+    window.location.hash = target.to_url()
   }
 }
