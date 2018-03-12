@@ -15,7 +15,7 @@ function IndentalNode(id,rect,type)
       return this.cache;
     }
 
-    this.label = `${this.id}=${this.type.name}`;
+    this.label = this.type ? `${this.id}=${this.type.name}` : `${this.id}`;
     this.cache = parse(DATABASE[this.id],this.type)
     return this.cache;
   }

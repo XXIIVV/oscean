@@ -15,8 +15,10 @@ function graph()
       Ø("missing").create({x:2,y:16},MissingTemplate),
     Ø("diary").create({x:5,y:11},DiaryTemplate),
     Ø("portal").create({x:8,y:11},PortalTemplate),
-    Ø("index").create({x:11,y:11},IndexTemplate),
-    Ø("docs").create({x:14,y:11},DiaryTemplate),
+    Ø("index").create({x:14,y:11},IndexTemplate),
+    Ø("docs").create({x:11,y:16},DocsTemplate),
+      Ø("lietal").create({x:13,y:22},IndentalNode),
+      Ø("directory").create({x:9,y:22},IndentalNode),
     Ø("calendar").create({x:17,y:11},DiaryTemplate),
     Ø("special").create({x:20,y:11},SpecialTemplate),
       Ø("home").create({x:17,y:16},HomeTemplate),
@@ -47,20 +49,21 @@ function graph()
 
   Ø("runic").mesh({x:6,y:23},[
     Ø("operation").create({x:6,y:2},OperationNode),
-    Ø("lietal").create({x:2,y:8},LietalNode),
+    Ø("translate").create({x:2,y:8},LietalNode),
     Ø("clock").create({x:6,y:8},ClockNode),
     Ø("desamber").create({x:10,y:8},DesamberNode),
     Ø("dictionaery").create({x:2,y:13},CollectionNode),
   ])
 
   // Model
-  Ø("lietal").syphon("dictionaery")
+  Ø("translate").syphon("dictionaery")
   Ø("router").syphon("database")
   Ø("database").syphon(["lexicon","horaire"])
 
   // Assoc
   Ø("template").syphon(["page","special","diary","portal","index","docs","calendar"])
   Ø("special").syphon(["home","death"])
+  Ø("docs").syphon(["lietal","directory"])
   Ø("page").syphon(["missing"])
 
   Ø("template").connect(["view","document"])
@@ -73,11 +76,9 @@ function graph()
   Ø("router").connect("template")
 
   // Operations
-  Ø("operation").syphon(["lietal","clock","desamber"])
+  Ø("operation").syphon(["translate","clock","desamber"])
 
   Ø("query").bang()
-
-
 
   console.log(Ø("operation"))
 }
