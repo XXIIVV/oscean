@@ -1,6 +1,6 @@
-function LietalNode(id,rect)
+function LietalNode(id,rect,...params)
 {
-  Node.call(this,id,rect);
+  Node.call(this,id,rect,params);
 
   this.glyph = NODE_GLYPHS.value
 
@@ -11,10 +11,10 @@ function LietalNode(id,rect)
     if(!this.dict){
       this.dict = make_dict(this.request().dictionaery)
     }
-    return this.translate(q)
+    return this.id == "deconstruct" ? this.deconstruct(q) : this.translate(q,this.id)
   }
 
-  this.translate = function(q)
+  this.translate = function(q,direction = "en_li")
   {
     var parts = q.replace(/\./g," ' ").split(" ");
     var s = "";
@@ -26,9 +26,9 @@ function LietalNode(id,rect)
       if(part == "|"){ part = "choice"; }
       if(part == ";"){ part = "position"; }
       if(part.substr(0,1) == "!"){ s += `${part.replace("!","")} `; continue; }
-      s += part != "'" ? ` <t title='${part}'>${this.convert(part,"en_li")}</t> ` : part;
+      s += part != "'" ? ` <t title='${part}'>${this.convert(part,direction)}</t> ` : part;
     }
-    return `<t class='lietal'>${s.replace(/ \' /g,"\'").trim()}</t>`;
+    return `<t class='lietal'>${s.replace(/ \' /g,"\'").trim().toLowerCase()}</t>`;
   }
 
   this.vowel = function(v)
@@ -83,6 +83,28 @@ function LietalNode(id,rect)
     dict = direction == "li_en" ? this.dict.li_en : this.dict.en_li;
     word = word.toUpperCase();
     return dict[word] ? (direction == "en_li" ? this.adultspeak(dict[word]) : dict[word]) : "("+word+")";
+  }
+
+  this.deconstruct = function(childspeak)
+  {
+    childspeak = childspeak.toLowerCase();
+
+    if(childspeak.length == 2){
+      var p1 = childspeak.substr(0,2);
+      return `${this.adultspeak(childspeak)} <comment>&lt;${this.convert(p1)}&gt;</comment> {*${this.convert(childspeak)}*}`;
+    }
+    if(childspeak.length == 4){
+      var p1 = childspeak.substr(0,2);
+      var p2 = childspeak.substr(2,2);
+      return `${this.adultspeak(childspeak)} <comment>&lt;${this.convert(p1)}(${this.convert(p2)})&gt;</comment> {*${this.convert(childspeak)}*}`;
+    }
+    if(childspeak.length == 6){
+      var p1 = childspeak.substr(0,2);
+      var p2 = childspeak.substr(2,2);
+      var p3 = childspeak.substr(4,2);
+      return `${this.adultspeak(childspeak)} <comment>&lt;${this.convert(p1+p2)}(${this.convert(p3)})&gt;</comment> {*${this.convert(childspeak)}*}`;
+    }
+    return "??"
   }
 
   function make_dict(dictionaery)

@@ -17,10 +17,13 @@ function graph()
     Ø("portal").create({x:8,y:11},PortalTemplate),
     Ø("index").create({x:14,y:11},IndexTemplate),
     Ø("docs").create({x:11,y:16},DocsTemplate),
-      Ø("lietal").create({x:13,y:22},IndentalNode),
-      Ø("directory").create({x:9,y:22},IndentalNode),
-      Ø("biases").create({x:5,y:22},IndentalNode),
-      Ø("glossary").create({x:17,y:22},IndentalNode),
+      Ø("lietal").create({x:11,y:25},IndentalNode),
+      Ø("directory").create({x:8,y:25},IndentalNode),
+      Ø("biases").create({x:5,y:25},IndentalNode),
+      Ø("glossary").create({x:14,y:25},IndentalNode),
+      Ø("japanese").create({x:2,y:25},IndentalNode),
+      Ø("russian").create({x:17,y:25},IndentalNode),
+      Ø("blue").create({x:20,y:25},IndentalNode),
     Ø("calendar").create({x:17,y:11},DiaryTemplate),
     Ø("special").create({x:20,y:11},SpecialTemplate),
       Ø("home").create({x:17,y:16},HomeTemplate),
@@ -49,23 +52,27 @@ function graph()
 
   // Operation
 
-  Ø("runic").mesh({x:6,y:23},[
-    Ø("operation").create({x:6,y:2},OperationNode),
-    Ø("translate").create({x:2,y:8},LietalNode),
-    Ø("clock").create({x:6,y:8},ClockNode),
-    Ø("desamber").create({x:10,y:8},DesamberNode),
-    Ø("dictionaery").create({x:2,y:13},CollectionNode),
+  Ø("runic").mesh({x:16,y:32},[
+    Ø("operation").create({x:5,y:2},OperationNode),
+    Ø("en_li").create({x:5,y:9},LietalNode),
+    Ø("li_en").create({x:2,y:9},LietalNode),
+    Ø("clock").create({x:11,y:9},ClockNode),
+    Ø("desamber").create({x:14,y:9},DesamberNode),
+    Ø("dictionaery").create({x:5,y:16},CollectionNode),
+    Ø("deconstruct").create({x:8,y:9},LietalNode),
   ])
 
   // Model
-  Ø("translate").syphon("dictionaery")
+  Ø("en_li").syphon("dictionaery")
+  Ø("li_en").syphon("dictionaery")
+  Ø("deconstruct").syphon("dictionaery")
   Ø("router").syphon("database")
   Ø("database").syphon(["lexicon","horaire"])
 
   // Assoc
   Ø("template").syphon(["page","special","diary","portal","index","docs","calendar"])
   Ø("special").syphon(["home","death"])
-  Ø("docs").syphon(["lietal","directory","glossary","biases"])
+  Ø("docs").syphon(["lietal","directory","glossary","biases","blue","russian","japanese"])
   Ø("page").syphon(["missing"])
 
   Ø("template").connect(["view","document"])
@@ -78,7 +85,7 @@ function graph()
   Ø("router").connect("template")
 
   // Operations
-  Ø("operation").syphon(["translate","clock","desamber"])
+  Ø("operation").syphon(["li_en","en_li","clock","desamber","deconstruct"])
 
   Ø("query").bang()
 }
