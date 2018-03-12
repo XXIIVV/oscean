@@ -5,14 +5,11 @@ function QueryNode(id,rect)
   this.glyph = NODE_GLYPHS.entry
   this.label = "query"
 
-  this.bang = function(target = null)
+  this.bang = function(target = window.location.hash.substring(1).replace(/[^0-9a-z]/gi," ").trim().toLowerCase())
   {
-    var hash = window.location.hash.substring(1).replace(/[^0-9a-z]/gi," ").trim().toLowerCase()
-    if(hash == ""){
-      hash = "home";
-    }
-    this.label = `query:${hash}`
+    target = target ? target : "home"
+    this.label = `query:${target}`
     window.scrollTo(0,0);
-    this.send(target ? target : hash)
+    this.send(target)
   }
 }
