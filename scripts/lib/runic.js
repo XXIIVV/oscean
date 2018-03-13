@@ -70,6 +70,7 @@ function Runic(raw)
       var rune = this.runes[char];
       var trail = lines[id].substr(1,1);
       if(char == "$"){ html += "<p>"+Ø("operation").request(lines[id].substr(2)).to_markup()+"</p>"; continue; }
+      if(char == "%"){ html += this.media(lines[id].substr(2)); continue; }
       var line = lines[id].substr(2).to_markup();
       if(!line || line.trim() == ""){ continue; }
       if(!rune){ console.log(`Unknown rune:${char} : ${line}`); }
