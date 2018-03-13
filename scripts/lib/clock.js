@@ -22,7 +22,7 @@ function Clock()
 
   this.update = function()
   {
-    this.redraw_app();
+    this.path();
 
     setTimeout(function(){ clock.update(); }, 864.0);
   }
@@ -33,7 +33,7 @@ function Clock()
     return t.substr(0,3)+":"+t.substr(3,3);
   }
 
-  this.redraw_app = function()
+  this.path = function()
   {
     var t        = this.time();
     var t_s      = new String(t);
@@ -55,7 +55,7 @@ function Clock()
     // path += "M"+needle_5+","+needle_4+" L"+needle_5+","+h+" ";
     // path += "M"+needle_5+","+needle_6+" L"+w+","+needle_6+" ";
 
-    this.el.innerHTML = '<svg width="'+w+'" height="'+h+'"><path class="fh" d="'+path+'"></path></svg>';
+    return `<svg width="${w}" height="${h}"><path d="${path}"></path></svg>`;
   }
 }
 

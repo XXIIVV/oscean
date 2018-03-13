@@ -26,7 +26,8 @@ function IndexTemplate(id,rect,...params)
             navi:make_navi(term,siblings)
           },
           content:`${q.result.long()}${make_index(term.name,q.tables.lexicon,q.tables.horaire)}`
-        }
+        },
+        style:""
       }
     }
   }

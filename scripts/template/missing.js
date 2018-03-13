@@ -14,7 +14,8 @@ function MissingTemplate(id,rect,...params)
       view:{
         core:{
           content:html
-        }
+        },
+        style:""
       }
     }
   }

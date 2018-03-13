@@ -26,7 +26,8 @@ function PortalTemplate(id,rect,...params)
             navi:make_navi(term,siblings,children)
           },
           content:`${q.result.long()}${make_portal(term.name,children,q.tables.horaire)}`
-        }
+        },
+        style:""
       }
     }
   }

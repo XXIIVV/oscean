@@ -25,8 +25,9 @@ function DiaryTemplate(id,rect,...params)
             bref:make_bref(q,term,logs),
             navi:make_navi(term,siblings,children)
           },
-          content:`${q.result.long()}${make_diary(logs,photo_log.photo)}`
-        }
+          content:`${q.result.long()}${make_diary(logs,photo_log)}`
+        },
+        style:""
       }
     }
   }
@@ -36,7 +37,7 @@ function DiaryTemplate(id,rect,...params)
     var html = ""
     for(id in logs){
       var log = logs[id]
-      if(!log.photo || log.photo == skip){ continue; }
+      if(!log.photo || skip && log.photo == skip.photo){ continue; }
       html += `<img src='media/diary/${log.photo}.jpg'/>`
     }
     return html

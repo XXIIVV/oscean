@@ -32,7 +32,8 @@ function DocsTemplate(id,rect,...params)
             navi:make_navi(term,siblings,children)
           },
           content:`${q.result.long()}${make_content(this.signal(target).answer(q))}`
-        }
+        },
+        style:""
       }
     }
   }

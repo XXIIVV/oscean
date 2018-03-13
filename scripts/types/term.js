@@ -23,7 +23,7 @@ function Term(name,dict)
 
   this.bref = function()
   {
-    return this.dict.BREF.to_markup()
+    return this.dict && this.dict.BREF ? this.dict.BREF.to_markup() : ''
   }
 
   this.long = function()

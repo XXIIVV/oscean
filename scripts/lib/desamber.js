@@ -6,7 +6,7 @@ function Desamber(str)
   this.m = str.substr(2,1); 
   this.d = str.substr(3,2);
 
-  this.year = parseInt(`20${str.substr(0,2)}`);
+  this.year = parseInt(`20${this.y}`);
   this.month = this.m == "+" ? 26 : this.m.charCodeAt(0) - 65;
   this.doty = (parseInt(this.month) * 14) + parseInt(this.d);
 

@@ -7,7 +7,7 @@ function PageTemplate(id,rect,...params)
   this.answer = function(q)
   {
     if(!q.result){
-      return this.request(q).missing
+      return this.signal("missing").answer(q)
     }
     // Override
     if(this.signal(q.name)){
@@ -32,8 +32,9 @@ function PageTemplate(id,rect,...params)
             bref:make_bref(q,term,logs),
             navi:make_navi(term,siblings,children)
           },
-          content:`${q.result.long()}${append ? append : ''}`
-        }
+          content:`${q.result.long()}`
+        },
+        style:""
       }
     }
   }

@@ -24,7 +24,8 @@ function HomeTemplate(id,rect,...params)
             navi:""
           },
           content:make_list(logs)
-        }
+        },
+        style:""
       }
     }
   }
