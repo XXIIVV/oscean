@@ -6,8 +6,8 @@ function OperationNode(id,rect,...params)
   
   this.request = function(q)
   {
-    var operator = q.split(" ")[0].replace("$","").trim();
-    var params = q.replace("$"+operator,"").trim()
+    var operator = q.split(" ")[0].trim();
+    var params = q.replace(operator,"").trim()
 
     params = params != operator ? params : null
     return this.signal(operator) ? this.signal(operator).answer(params) : `Unknown operator:(${operator})`

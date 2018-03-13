@@ -26,6 +26,7 @@ function LietalNode(id,rect,...params)
       if(part == "|"){ part = "choice"; }
       if(part == ";"){ part = "position"; }
       if(part.substr(0,1) == "!"){ s += `${part.replace("!","")} `; continue; }
+      if(part.substr(0,1) == "~"){ s += `${part.replace("~",".")} `; continue; }
       s += part != "'" ? ` <t title='${part}'>${this.convert(part,direction)}</t> ` : part;
     }
     return `<t class='lietal'>${s.replace(/ \' /g,"\'").trim().toLowerCase()}</t>`;

@@ -15,7 +15,8 @@ function Runic(raw)
     "*":{glyph:"*",tag:"h2",class:""},
     "=":{glyph:"=",tag:"h3",class:""},
     "+":{glyph:"+",tag:"hs",class:""},
-    ">":{glyph:">",tag:"",class:""}
+    ">":{glyph:">",tag:"",class:""},
+    "$":{glyph:">",tag:"",class:""}
   }
 
   this.stash = {
@@ -68,13 +69,12 @@ function Runic(raw)
       var char = lines[id].substr(0,1).trim().toString()
       var rune = this.runes[char];
       var trail = lines[id].substr(1,1);
+      if(char == "$"){ html += "<p>"+Ø("operation").request(lines[id].substr(2)).to_markup()+"</p>"; continue; }
       var line = lines[id].substr(2).to_markup();
       if(!line || line.trim() == ""){ continue; }
-
       if(!rune){ console.log(`Unknown rune:${char} : ${line}`); }
       if(trail != " "){ console.warn("Runic","Non-rune["+trail+"] at:"+id+"("+line+")"); continue; }
 
-      if(char == "%"){ html += this.media(line); continue; }
       if(this.stash.is_pop(rune)){ html += this.render_stash(); }
       if(rune.stash === true){ this.stash.add(rune,line) ; continue; }
       html += this.render(line,rune);
@@ -143,7 +143,7 @@ String.prototype.to_markup = function()
     var part = parts[id];
     if(part.indexOf("}}") == -1){ continue; }
     var content = part.split("}}")[0];
-    if(content.substr(0,1) == "$"){ html = html.replace(`{{${content}}}`, Ø("operation").request(content)); continue; }
+    if(content.substr(0,1) == "$"){ html = html.replace(`{{${content}}}`, Ø("operation").request(content.replace("$",""))); continue; }
     // if(content.substr(0,1) == "%"){ html = html.replace(`{{${content}}}`, this.media(content)); continue; }
     var target = content.indexOf("|") > -1 ? content.split("|")[1] : content;
     var name = content.indexOf("|") > -1 ? content.split("|")[0] : content;

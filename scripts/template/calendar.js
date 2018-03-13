@@ -22,32 +22,38 @@ function CalendarTemplate(id,rect,...params)
         },
         core:{
           sidebar:{
-            bref:"",
+            bref:make_bref(q),
             navi:""
           },
-          content:html
+          content:`${q.tables.lexicon.CALENDAR.long()}${html}`
         },
         style: `
-          #content,#core,#header,#view { background:#72dec2}
-          #content { width: 100%;max-width: calc(100% - 60px);}
-          #sidebar { display:none}
+          #content,#core,#header,#view,#sidebar { background:#72dec2}
           a.year { display:inline-block; margin-right:10px; font-size:11px; margin-bottom:15px; color:black; font-family:'input_mono_medium'}
           a.year.selected { text-decoration:underline}
           a.year:hover { text-decoration:underline}
           list.tidy ln { color:#000}
           list.tidy ln a { color:#000}
           list.tidy ln a.time { display:inline-block; width:45px; font-family:'archivo_regular' !important}
-          table.horaire { border:1.5px solid black; width:100%; font-size:11px; font-family:'input_mono_regular'}
-          table.horaire tr td { font-size:11px !important; border:1.5px solid black; padding:0px 20px; text-transform:uppercase}
+          table.horaire { width:100%; font-size:11px; font-family:'input_mono_regular'}
+          table.horaire tr td { font-size:11px !important; border:1px solid black; padding:0px 20px; text-transform:uppercase}
           table.horaire tr td a { font-family:'input_mono_medium'}
           table.horaire tr td:hover { background:#fff; color:black; cursor:pointer}
           table.horaire tr td:hover a { text-decoration:underline}
           table.horaire tr td.event { color:white}
           table.horaire tr td.photo { background:black; color:white}
-          table.horaire tr td.today { background:white}
-          `
+          table.horaire tr td.today { background:white}`
       }
     }
+  }
+
+  function make_bref(q,logs)
+  {
+    return `
+    <h1>${q.name}</h1>
+    <h2>
+      <a onclick="Ø('query').bang('Calendar')">${q.name}</a><br />
+    </h2>`
   }
 
   this.cell = function(log,desamber,today,full_width = false)
