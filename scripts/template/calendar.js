@@ -17,7 +17,7 @@ function CalendarTemplate(id,rect,...params)
       view:{
         header:{
           photo:'',
-          info:'',
+          info:{title:"",glyph:""},
           search: q.name
         },
         core:{

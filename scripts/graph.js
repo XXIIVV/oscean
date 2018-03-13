@@ -38,6 +38,8 @@ function graph()
       Ø("search").create({x:6,y:16},InputNode),
       Ø("logo").create({x:10,y:16},DomNode,"yu",`<a onclick="Ø('query').bang('home')"></a>`),
       Ø("info").create({x:14,y:16},DomNode),
+        Ø("glyph").create({x:14,y:21},PathNode),
+        Ø("title").create({x:10,y:21},DomNode),
     Ø("core").create({x:18,y:11},DomNode),
       Ø("content").create({x:18,y:16},DomNode),
       Ø("sidebar").create({x:22,y:16},DomNode),
@@ -76,6 +78,7 @@ function graph()
 
   Ø("template").connect(["view","document"])
   Ø("header").bind(["logo","photo","search","info"])
+  Ø("info").bind(["glyph","title"])
   Ø("view").bind(["header","core","footer","style"])
   Ø("core").bind(["sidebar","content"])
   Ø("sidebar").bind(["bref","icon","navi"])
