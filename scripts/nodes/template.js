@@ -11,7 +11,7 @@ function TemplateNode(id,rect)
     var result = q.result;
     var type = result && result.type ? result.type.toLowerCase() : "page"
 
-    if(q.name.length == 4 && parseInt(q.name) > 2010){ type = "calendar"}
+    if(q.name.length == 4 && parseInt(q.name) > 2005){ type = "calendar"}
 
     var assoc = this.signal(type);
 

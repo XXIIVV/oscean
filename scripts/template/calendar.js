@@ -28,6 +28,7 @@ function CalendarTemplate(id,rect,...params)
           content:`${q.tables.lexicon.CALENDAR.long()}${html}`
         },
         style: `
+          #sidebar { display:none}
           #content,#core,#header,#view,#sidebar { background:#72dec2}
           a.year { display:inline-block; margin-right:10px; font-size:11px; margin-bottom:15px; color:black; font-family:'input_mono_medium'}
           a.year.selected { text-decoration:underline}
