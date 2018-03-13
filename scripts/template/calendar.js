@@ -38,8 +38,8 @@ function CalendarTemplate(id,rect,...params)
           table.horaire { width:100%; font-size:11px; font-family:'input_mono_regular'}
           table.horaire tr td { font-size:11px !important; border:1px solid black; padding:0px 20px; text-transform:uppercase}
           table.horaire tr td a { font-family:'input_mono_medium'}
-          table.horaire tr td:hover { background:#fff; color:black; cursor:pointer}
-          table.horaire tr td:hover a { text-decoration:underline}
+          table.horaire tr td:hover { background:#fff !important; color:black !important; cursor:pointer}
+          table.horaire tr td:hover a { text-decoration:underline; color:black !important}
           table.horaire tr td.event { color:white}
           table.horaire tr td.photo { background:black; color:white}
           table.horaire tr td.today { background:white}`
@@ -93,7 +93,7 @@ function CalendarTemplate(id,rect,...params)
     for(var id in logs){
       var log = logs[id];
       if(!log.is_event){ continue; }
-      html += `<ln><a class='time' href='/#${log.time.year}'>${log.time}</a> <a href='${log.term.to_url()}'>${log.name}</a> ${log.time.offset() > 0 ? log.time.offset_format() : ""}</ln>`
+      html += `<ln><a class='time' onclick='Ø("query").bang("${log.time.year}")'>${log.time}</a> <a onclick='Ø("query").bang("${log.term.to_url()}")'>${log.name}</a> ${log.time.offset() > 0 ? log.time.offset_format() : ""}</ln>`
     }
 
     return "<list class='tidy' style='max-width:100%'>"+html+"</list>";

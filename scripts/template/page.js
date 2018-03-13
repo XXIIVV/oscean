@@ -32,11 +32,18 @@ function PageTemplate(id,rect,...params)
             bref:make_bref(q,term,logs),
             navi:make_navi(term,siblings,children)
           },
-          content:`${q.result.long()}`
+          content:`${q.result.long()}${make_horaire(logs)}`
         },
         style:""
       }
     }
+  }
+
+  function make_horaire(logs)
+  {
+    var horaire = new Horaire(logs);
+    console.log(horaire)
+    return `<mini><a onclick='Ø("query").bang("horaire")'><b>${horaire.sum.toFixed(0)}</b>fh</a> <b>${horaire.fh.toFixed(2)}</b>fh/<b>${horaire.ch.toFixed(2)}</b>ch</mini>`
   }
 
   function make_bref(q,term,logs)

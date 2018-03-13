@@ -9,4 +9,10 @@ function DocumentNode(id,rect,...params)
     document.title = content.title
     this.label = `document=${content.title}`
   }
+
+  function replace_url(url)
+  {
+    window.location.hash = ""
+    history.pushState({}, null, url);
+  }
 }
