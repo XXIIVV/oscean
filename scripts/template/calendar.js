@@ -18,7 +18,7 @@ function CalendarTemplate(id,rect,...params)
         header:{
           photo:'',
           info:{title:"",glyph:""},
-          search: q.name
+          menu:{search:q.name,activity:""}
         },
         core:{
           sidebar:{

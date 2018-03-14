@@ -18,7 +18,10 @@ function PortalTemplate(id,rect,...params)
         header:{
           photo:photo_log ? `<media style='background-image:url(media/diary/${photo_log.photo}.jpg)'></media>` : '',
           info:{title:photo_log ? `<b>${photo_log.name}</b> — ${photo_log.time}` : '',glyph:term.glyph},
-          search:q.name
+          menu:{
+            search:q.name,
+            activity:""
+          }
         },
         core:{
           sidebar:{
@@ -41,7 +44,7 @@ function PortalTemplate(id,rect,...params)
       var photo_log = find_photo(find_logs(child.name,logs))
       html += `
       ${photo_log ? '<img src="media/diary/'+photo_log.photo+'.jpg"/>' : ''}
-      <h2 class='book'>${child.name}</h2>
+      <h2 class='book'><a onclick='Ø("query").bang("${child.name}")'>${child.name}</a></h2>
       <hs>${child.bref().to_markup()}</hs>
       ${child.long()}
       <quote>${!stop ? make_index(child.name,lexicon,true) : ''}</quote>`

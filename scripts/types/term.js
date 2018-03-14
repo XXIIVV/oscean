@@ -14,6 +14,9 @@ function Term(name,dict)
     this.flag = this.dict.FLAG ? this.dict.FLAG : [];
     this.glyph = this.dict.ICON ? this.dict.ICON : this.glyph;
   }
+  else{
+    console.warn(`Error with /${name}`)
+  }
   
   this.start = function()
   {

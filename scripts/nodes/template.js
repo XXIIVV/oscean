@@ -39,6 +39,17 @@ function TemplateNode(id,rect)
     return a
   }
 
+  this.find_diaries = function(logs)
+  {
+    var a = []
+    for(id in logs){
+      var log = logs[id];
+      if(!log.photo){ continue; }
+      a.push(log)
+    }
+    return a
+  }
+
   this.find_photo = function(logs)
   {
     for(id in logs){

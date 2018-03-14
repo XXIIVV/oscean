@@ -8,6 +8,7 @@ function DiaryTemplate(id,rect,...params)
   {
     var term = q.result
     var logs = this.find_logs(q.name,q.tables.horaire)
+    var diaries = this.find_diaries(logs)
     var photo_log = this.find_photo(logs)
     var siblings = this.find_siblings(term.unde(),q.tables.lexicon)
     var children = this.find_children(q.name,q.tables.lexicon)
@@ -18,18 +19,28 @@ function DiaryTemplate(id,rect,...params)
         header:{
           photo:photo_log ? `<media style='background-image:url(media/diary/${photo_log.photo}.jpg)'></media>` : '',
           info:{title:photo_log ? `<b>${photo_log.name}</b> — ${photo_log.time}` : '',glyph:term.glyph},
-          search:q.name
+          menu:{
+            search:q.name,
+            activity:`${diaries.length > 1 ? `<a id='diaries' onclick="Ø('query').bang('journal')">${diaries.length} Diaries</a>` : ''}${logs.length > 5 ? `<a id='logs' onclick="Ø('query').bang('${logs[0].time.year}')">${logs.length} Logs</a>` : ''}`
+          }
         },
         core:{
           sidebar:{
             bref:make_bref(q,term,logs),
             navi:make_navi(term,siblings,children)
           },
-          content:`${q.result.long()}${make_diary(logs,photo_log)}`
+          content:`${q.result.long()}${make_diary(logs,photo_log)}${make_horaire(logs)}`
         },
         style:""
       }
     }
+  }
+
+  function make_horaire(logs)
+  {
+    var horaire = new Horaire(logs);
+    console.log(horaire)
+    return `<mini><a onclick='Ø("query").bang("horaire")'><b>${horaire.sum.toFixed(0)}</b>fh</a> <b>${horaire.fh.toFixed(2)}</b>fh <b>${horaire.ch.toFixed(2)}</b>ch</mini>`
   }
 
   function make_diary(logs,skip)

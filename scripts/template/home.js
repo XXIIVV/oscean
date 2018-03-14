@@ -8,6 +8,7 @@ function HomeTemplate(id,rect,...params)
   {
     var term = q.result
     var logs = q.tables.horaire
+    var diaries = this.find_diaries(logs)
     var photo_log = this.find_photo(logs)
 
     return {
@@ -16,7 +17,10 @@ function HomeTemplate(id,rect,...params)
         header:{
           photo:photo_log ? `<media style='background-image:url(media/diary/${photo_log.photo}.jpg)'></media>` : '',
           info:{title:photo_log ? `<b>${photo_log.name}</b> — ${photo_log.time}` : '',glyph:term.glyph},
-          search:q.name
+          menu:{
+            search:q.name,
+            activity:`${diaries.length > 1 ? `<a id='diaries' onclick="Ø('query').bang('journal')">${diaries.length} Diaries</a>` : ''}${logs.length > 5 ? `<a id='logs' onclick="Ø('query').bang('${logs[0].time.year}')">${logs.length} Logs</a>` : ''}`
+          }
         },
         core:{
           sidebar:{

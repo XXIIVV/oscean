@@ -18,7 +18,10 @@ function IndexTemplate(id,rect,...params)
         header:{
           photo:photo_log ? `<media style='background-image:url(media/diary/${photo_log.photo}.jpg)'></media>` : '',
           info:{title:photo_log ? `<b>${photo_log.name}</b> — ${photo_log.time}` : '',glyph:term.glyph},
-          search:q.name
+          menu:{
+            search:q.name,
+            activity:''
+          }
         },
         core:{
           sidebar:{

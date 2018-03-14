@@ -11,11 +11,12 @@ function graph()
 
   Ø("assoc").mesh({x:16,y:0},[
     Ø("template").create({x:11,y:2},TemplateNode),
-    Ø("page").create({x:2,y:11},PageTemplate),
+      Ø("home").create({x:20,y:11},HomeTemplate),
+    Ø("page").create({x:5,y:11},PageTemplate),
       Ø("missing").create({x:2,y:16},MissingTemplate),
-      Ø("home").create({x:5,y:16},HomeTemplate),
+      Ø("journal").create({x:5,y:16},JournalTemplate),
       Ø("death").create({x:8,y:16},DeathTemplate),
-    Ø("diary").create({x:5,y:11},DiaryTemplate),
+    Ø("diary").create({x:2,y:11},DiaryTemplate),
     Ø("portal").create({x:8,y:11},PortalTemplate),
     Ø("index").create({x:14,y:11},IndexTemplate),
     Ø("docs").create({x:11,y:16},DocsTemplate),
@@ -35,8 +36,10 @@ function graph()
     Ø("style").create({x:10,y:11},DomNode,"style"),
     Ø("header").create({x:2,y:11},DomNode),
       Ø("photo").create({x:2,y:16},DomNode,"photo"),
-      Ø("search").create({x:6,y:16},InputNode),
       Ø("logo").create({x:10,y:16},DomNode,"yu",`<a onclick="Ø('query').bang('home')"></a>`),
+      Ø("menu").create({x:6,y:16},DomNode),
+        Ø("search").create({x:2,y:21},InputNode),
+        Ø("activity").create({x:6,y:21},DomNode),
       Ø("info").create({x:14,y:16},DomNode),
         Ø("glyph").create({x:14,y:21},PathNode),
         Ø("title").create({x:10,y:21},DomNode),
@@ -72,13 +75,14 @@ function graph()
   Ø("database").syphon(["lexicon","horaire"])
 
   // Assoc
-  Ø("template").syphon(["page","diary","portal","index","docs","calendar"])
+  Ø("template").syphon(["page","diary","portal","index","docs","calendar","home"])
   Ø("docs").syphon(["lietal","directory","glossary","biases","blue","russian","japanese"])
-  Ø("page").syphon(["missing","home","death"])
+  Ø("page").syphon(["missing","death","journal"])
 
   Ø("template").connect(["view","document"])
-  Ø("header").bind(["logo","photo","search","info"])
+  Ø("header").bind(["logo","photo","menu","info"])
   Ø("info").bind(["glyph","title"])
+  Ø("menu").bind(["search","activity"])
   Ø("view").bind(["header","core","footer","style"])
   Ø("core").bind(["sidebar","content"])
   Ø("sidebar").bind(["bref","icon","navi"])
