@@ -33,7 +33,7 @@ function CollectionNode(id,rect,type)
       }
       a.push(type ? new type(entry) : entry);
     }
-    console.log("list","parsed "+a.length+" entries")
+    console.log("list",`parsed ${a.length} entries`)
     return a
   }
 

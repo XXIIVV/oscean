@@ -16,7 +16,6 @@ function PageTemplate(id,rect,...params)
     var siblings = this.find_siblings(term.unde(),q.tables.lexicon)
     var children = this.find_children(q.name,q.tables.lexicon)
 
-    console.log(diaries)
     return  {
       title: q.name.capitalize(),
       view:{
