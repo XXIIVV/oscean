@@ -56,7 +56,7 @@ function JournalTemplate(id,rect,...params)
     var html = ""
 
     html += projects.length > 2 ? `Worked on {{${projects[0][0]}}} for ${projects[0][1]} hours, as well as {{${projects[1][0]}}}, {{${projects[2][0]}}} and ${projects.length-3} other projects for a total of {*${horaire.sum} hours*} ` : ''
-    html += `— at ${(horaire.efec*10).toFixed(2)}% Effectiveness and ${(horaire.efic*10).toFixed(2)}% Efficacy.`;
+    html += `— at ${(horaire.efec*10).toFixed(1)}% Effectiveness and ${(horaire.efic*10).toFixed(1)}% Efficacy.`;
 
     return html.to_markup()
   }

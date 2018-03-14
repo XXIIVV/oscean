@@ -29,7 +29,7 @@ function CalendarTemplate(id,rect,...params)
         },
         style: `
           #sidebar { display:none}
-          #content,#core,#header,#view,#sidebar,#photo { background:#72dec2 !important}
+          #content,#core,#header,#view,#sidebar,#photo { background:#72dec2 !important;}
           a.year { display:inline-block; margin-right:10px; font-size:11px; margin-bottom:15px; color:black; font-family:'input_mono_medium'}
           a.year.selected { text-decoration:underline}
           a.year:hover { text-decoration:underline}

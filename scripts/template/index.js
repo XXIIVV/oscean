@@ -51,9 +51,10 @@ function IndexTemplate(id,rect,...params)
       var photo_log = find_photo(find_logs(child.name,logs))
       html += `
       ${photo_log ? '<img src="media/diary/'+photo_log.photo+'.jpg"/>' : ''}
+      <h2>${child.name.capitalize()}</h2>
       <hs>${child.bref().to_markup()}</hs>
       ${child.long()}
-      <quote>${!stop ? make_index(child.name,lexicon,logs,true) : ''}</quote>`
+      ${!stop ? make_index(child.name,lexicon,logs,true) : ''}`
     }
     return html
   }
