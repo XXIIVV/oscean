@@ -24,7 +24,7 @@ function IndentalNode(id,rect,type)
   {
     return build(data.split("\n").map(liner),type)
     
-    function build(lines)
+    function build(lines,type)
     {
       // Assoc lines
       var stack = {}
@@ -55,7 +55,7 @@ function IndentalNode(id,rect,type)
       for(id in line.children){
         var child = line.children[id];
         if(child.key){ h[child.key.toUpperCase()] = child.value }
-        else if(child.children.length == 0){ a.push(child.content) }
+        else if(child.children.length == 0 && child.content){ a.push(child.content) }
         else{ h[child.content.toUpperCase()] = format(child) }
       }
       return a.length > 0 ? a : h

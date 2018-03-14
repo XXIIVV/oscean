@@ -7,7 +7,7 @@ function JournalTemplate(id,rect,...params)
   this.answer = function(q)
   {
     var groups = find_groups(q.tables.horaire)
-    var html = "<p>The journal is generated automatically each day, with recent entries from the {{Calendar}} and active topics from the {{Lexicon|Home}}. The last updated was on {{$desamber}}.</p>".to_markup()
+    var html = q.result.long()
     for(var id in groups){
       var group = groups[id]
       var sorted_projects = sort_projects(group.projects)

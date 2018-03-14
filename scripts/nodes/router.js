@@ -8,7 +8,6 @@ function RouterNode(id,rect)
   {
     var q = q.toUpperCase();
     var db = this.request("database").database;
-
     var type = find(q,db)
 
     this.label = `router:${type}/${q}`
