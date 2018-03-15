@@ -32,28 +32,15 @@ function DeathTemplate(id,rect,...params)
 
     var progress = (now - birth.getTime())/(end.getTime() - birth.getTime());
 
-    return {
-      title: q.name.capitalize(),
-      view:{
-        header:{
-          photo:photo_log ? `<media style='background-image:url(media/diary/${photo_log.photo}.jpg)'></media>` : '',
-          info:{title:photo_log ? `<b>${photo_log.name}</b> — ${photo_log.time}` : '',glyph:term.glyph},
-          search: q.name
-        },
-        core:{
-          sidebar:{
-            bref:make_bref(q,term,logs),
-            navi:make_navi(term,siblings,children)
-          },
-          content:`<yu class='death'>${html}<hr /><h1>${(progress*100).toString().substr(0,4)}</h1></yu>`
-        },
-        style:`
-          yu.death { margin: 0px auto;width: 575px;background: white;padding: 45px;margin-bottom:45px}
-          yu.death cell { background:black; width:10px; height:10px; display:block; float:left; border-radius:10px; margin:0px 1px 1px 0px}
-          yu.death cell.past { background:#fff; border:2px solid black; width:6px; height:6px}
-          yu.death h1 { font-size: 55px;line-height: 60px;font-family: 'frank_ruhl_light';text-align: center;letter-spacing: -5px;margin-top:30px}`
-      },
-    }
+    return `
+    ${term.long()}
+    <yu class='death'>${html}</yu>
+    <style>
+    yu.death { width: 365px;background: white;padding: 45px;margin-bottom:45px}
+    yu.death cell { background:black; width:6px; height:6px; display:block; float:left; border-radius:10px; margin:0px 1px 1px 0px}
+    yu.death cell.past { background:#fff; border:2px solid black; width:2px; height:2px}
+    yu.death h1 { font-size: 55px;line-height: 60px;font-family: 'frank_ruhl_light';text-align: center;letter-spacing: -5px;margin-top:30px}
+    </style>`
   }
   
   function make_bref(q,term,logs)
