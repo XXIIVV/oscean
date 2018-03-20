@@ -1,6 +1,6 @@
 # Oscean
 
-This is the repository for [http://wiki.xxiivv.com/]. 
+This is the repository for [Oscean](http://wiki.xxiivv.com/). 
 The Master Branch is the live version.
 
 # Databases
