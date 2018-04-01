@@ -54,6 +54,9 @@ function Runic(raw)
     if(service == "bandcamp"){
       return `<iframe style="border: 0; width: 600px; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=${id}/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless></iframe>`;
     }
+    if(service == "youtube"){
+      return `<iframe width="600" height="315" src="https://www.youtube.com/embed/${id}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+    }
     return `<img src='media/${val}'/>`
   }
 
