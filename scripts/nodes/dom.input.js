@@ -7,6 +7,8 @@ function InputNode(id,rect,...params)
   this.is_installed = false;
   
   this.el.addEventListener("keydown",(e)=>{ this.on_input(e); })
+  this.el.addEventListener("focus",   ()=>{ this.txt = this.el.value; this.el.value = '' })
+  this.el.addEventListener("blur",    ()=>{ this.el.value = this.txt })
   
   this.on_input = function(e)
   {
