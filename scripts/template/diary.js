@@ -27,9 +27,9 @@ function DiaryTemplate(id,rect,...params)
         core:{
           sidebar:{
             bref:make_bref(q,term,logs),
-            navi:make_navi(term,siblings,children)
           },
-          content:`${q.result.long()}${make_diary(logs,photo_log)}${make_horaire(logs)}`
+          content:`${q.result.long()}${make_diary(logs,photo_log)}${make_horaire(logs)}`,
+          navi:make_navi(term,siblings,children)
         },
         style:""
       }
@@ -66,15 +66,11 @@ function DiaryTemplate(id,rect,...params)
 
   function make_navi(term,siblings,children)
   {
-    var html = ""
-    for(id in siblings){
-      var sibling = siblings[id];
-      html += `<ln class='sibling'>${sibling.bref()}</ln>`
-      if(sibling.name == term.name){
-        for(id in children){
-          var child = children[id];
-          html += `<ln class='child'>${child.bref()}</ln>`
-        }
+    if(siblings.length > 0){
+      var html = ""
+      for(id in siblings){
+        var sibling = siblings[id];
+        html += `<ln class='sibling ${sibling.name == term.name ? "selected" : ""}'>${sibling.bref()}</ln>`
       }
     }
     return html

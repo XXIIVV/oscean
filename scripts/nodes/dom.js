@@ -41,6 +41,7 @@ function DomNode(id,rect,...params)
   {
     if(typeof content == "string"){
       this.el.innerHTML = content;
+      this.el.className = !content ? "empty" : ""
     }
   }
 }

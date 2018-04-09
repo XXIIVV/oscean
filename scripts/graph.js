@@ -48,7 +48,7 @@ function graph()
       Ø("sidebar").create({x:22,y:16},DomNode),
         Ø("bref").create({x:18,y:21},DomNode),
         Ø("icon").create({x:22,y:21},DomNode),
-        Ø("navi").create({x:26,y:21},DomNode,"list"),
+      Ø("navi").create({x:26,y:16},DomNode,"list"),
     Ø("footer").create({x:6,y:11},DomNode,"yu",`
       <wr>
     <a href="https://twitter.com/neauoire" class="icon twitter external"></a><a href="https://github.com/neauoire" class="icon github external"></a><a href="Rotonde" class="icon rotonde"></a>
@@ -84,8 +84,8 @@ function graph()
   Ø("info").bind(["glyph","title"])
   Ø("menu").bind(["search","activity"])
   Ø("view").bind(["header","core","footer","style"])
-  Ø("core").bind(["sidebar","content"])
-  Ø("sidebar").bind(["bref","icon","navi"])
+  Ø("core").bind(["sidebar","content","navi"])
+  Ø("sidebar").bind(["bref","icon",])
 
   Ø("query").connect("router")
   Ø("router").connect("template")

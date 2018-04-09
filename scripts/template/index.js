@@ -26,9 +26,9 @@ function IndexTemplate(id,rect,...params)
         core:{
           sidebar:{
             bref:make_bref(q,term,logs),
-            navi:make_navi(term,siblings)
           },
-          content:`${q.result.long()}${make_index(term.name,q.tables.lexicon,q.tables.horaire)}`
+          content:`${q.result.long()}${make_index(term.name,q.tables.lexicon,q.tables.horaire)}`,
+          navi:make_navi(term,siblings,children)
         },
         style:""
       }
@@ -90,17 +90,13 @@ function IndexTemplate(id,rect,...params)
     </h2>`
   }
 
-  function make_navi(term,siblings,children = [])
+  function make_navi(term,siblings,children)
   {
-    var html = ""
-    for(id in siblings){
-      var sibling = siblings[id];
-      html += `<ln class='sibling'>${sibling.bref()}</ln>`
-      if(sibling.name == term.name){
-        for(id in children){
-          var child = children[id];
-          html += `<ln class='child'>${child.bref()}</ln>`
-        }
+    if(siblings.length > 0){
+      var html = ""
+      for(id in siblings){
+        var sibling = siblings[id];
+        html += `<ln class='sibling ${sibling.name == term.name ? "selected" : ""}'>${sibling.bref()}</ln>`
       }
     }
     return html

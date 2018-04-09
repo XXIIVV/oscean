@@ -24,10 +24,10 @@ function HomeTemplate(id,rect,...params)
         },
         core:{
           sidebar:{
-            bref:make_bref(q,term,logs),
-            navi:""
+            bref:make_bref(q,term,logs)
           },
-          content:make_list(logs)
+          content:make_list(logs),
+          navi:""
         },
         style:""
       }

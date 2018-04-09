@@ -26,9 +26,9 @@ function PortalTemplate(id,rect,...params)
         core:{
           sidebar:{
             bref:make_bref(q,term,logs),
-            navi:make_navi(term,siblings,children)
           },
-          content:`${q.result.long()}${make_portal(term.name,children,q.tables.horaire)}`
+          content:`${q.result.long()}${make_portal(term.name,children,q.tables.horaire)}`,
+          navi:make_navi(term,siblings,children)
         },
         style:""
       }
@@ -42,6 +42,7 @@ function PortalTemplate(id,rect,...params)
     for(id in children){
       var child = children[id];
       var photo_log = find_photo(find_logs(child.name,logs))
+      if(!photo_log){ continue; }
       html += `
       ${photo_log ? `<a onclick='Ø("query").bang("${child.name}")'><img src="media/diary/${photo_log.photo}.jpg"/></a>` : ''}
       <hs>— ${child.bref().to_markup()}</hs>
@@ -84,15 +85,11 @@ function PortalTemplate(id,rect,...params)
 
   function make_navi(term,siblings,children)
   {
-    var html = ""
-    for(id in siblings){
-      var sibling = siblings[id];
-      html += `<ln class='sibling'>${sibling.bref()}</ln>`
-      if(sibling.name == term.name){
-        for(id in children){
-          var child = children[id];
-          html += `<ln class='child'>${child.bref()}</ln>`
-        }
+    if(siblings.length > 0){
+      var html = ""
+      for(id in siblings){
+        var sibling = siblings[id];
+        html += `<ln class='sibling ${sibling.name == term.name ? "selected" : ""}'>${sibling.bref()}</ln>`
       }
     }
     return html

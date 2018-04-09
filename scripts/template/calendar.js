@@ -22,10 +22,10 @@ function CalendarTemplate(id,rect,...params)
         },
         core:{
           sidebar:{
-            bref:make_bref(q),
-            navi:""
+            bref:make_bref(q)
           },
-          content:`${q.tables.lexicon.CALENDAR.long()}${html}`
+          content:`${q.tables.lexicon.CALENDAR.long()}${html}`,
+          navi:""
         },
         style: `
           #sidebar { display:none}
