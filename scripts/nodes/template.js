@@ -81,3 +81,21 @@ function TemplateNode(id,rect)
     return a    
   }
 }
+
+function on_scroll()
+{
+  var el = document.getElementById("info")
+
+  if(document.body.scrollTop > 0){
+    if(el.className != "ghost"){
+      el.className = "ghost"
+    }
+  }
+  else{
+    if(el.className == "ghost"){
+      el.className = ""
+    }
+  }
+}
+
+window.addEventListener("scroll", on_scroll);
