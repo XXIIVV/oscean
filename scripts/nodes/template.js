@@ -84,17 +84,32 @@ function TemplateNode(id,rect)
 
 function on_scroll()
 {
-  var el = document.getElementById("info")
+  var info_el = document.getElementById("info")
+  var scroll = document.body.scrollTop;
 
-  if(document.body.scrollTop > 0){
-    if(el.className != "ghost"){
-      el.className = "ghost"
+  // Info
+  if(scroll > 0){
+    if(info_el.className != "ghost"){
+      info_el.className = "ghost"
     }
   }
   else{
-    if(el.className == "ghost"){
-      el.className = ""
+    if(info_el.className == "ghost"){
+      info_el.className = ""
     }
+  }
+
+  // Logo/Search
+  var header_el = document.getElementById("header")
+  var logo_el = document.getElementById("logo")
+  var menu_el = document.getElementById("menu")
+  if(scroll > header.offsetHeight - 110){
+    if(logo_el.className != "sticky"){ logo_el.className = "sticky" }
+    if(menu_el.className != "sticky"){ menu_el.className = "sticky" }
+  }
+  else{
+    if(logo_el.className == "sticky"){ logo_el.className = "" }
+    if(menu_el.className == "sticky"){ menu_el.className = "" }
   }
 }
 
