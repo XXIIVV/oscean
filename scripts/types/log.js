@@ -11,12 +11,60 @@ function Log(list)
   this.sector = ["misc","audio","visual","research"][parseInt(this.code.substr(1,1))]
   this.value  = parseInt(this.code.substr(2,1)) > 0 ? parseInt(this.code.substr(2,1)) : 0;
   this.vector = parseInt(this.code.substr(3,1)) > 0 ? parseInt(this.code.substr(3,1)) : 0;
+  this.task   = make_task(parseInt(this.code.substr(1,1)),this.vector)
   
   this.photo = this.list.pict ? parseInt(this.list.pict) : null;
 
   this.is_featured = this.rune == "!" || this.rune == "~";
   this.is_event = this.rune == "+";
   this.theme = this.rune == "!" ? "blanc" : (this.rune == "~" || this.photo > 0 ? "noir" : "no_photo")
+
+  function make_task(sector,vector)
+  {
+    if(sector == 1){
+      switch(vector) {
+        case 1:return "rehersal"; break;
+        case 2:return "rehersal"; break;
+        case 3:return "draft"; break;
+        case 4:return "composition"; break;
+        case 5:return "composition"; break;
+        case 6:return "mastering"; break;
+        case 7:return "mastering"; break;
+        case 8: return "release"; break;
+        case 9: return "performance"; break;
+        default: return "audio"
+      }
+    }
+    if(sector == 2){
+      switch(vector) {
+        case 1:return "concept"; break;
+        case 2:return "concept"; break;
+        case 3:return "layout"; break;
+        case 4:return "layout"; break;
+        case 5:return "sketch"; break;
+        case 6:return "sketch"; break;
+        case 7:return "composition"; break;
+        case 8: return "render"; break;
+        case 9: return "showcase"; break;
+        default: return "visual"
+      }
+    }
+    if(sector == 3){
+      switch(vector) {
+        case 1:return "planning"; break;
+        case 2:return "planning"; break;
+        case 3:return "testing"; break;
+        case 4:return "testing"; break;
+        case 5:return "tools"; break;
+        case 6:return "update"; break;
+        case 7:return "update"; break;
+        case 8: return "build"; break;
+        case 9: return "application"; break;
+        default: return "research"
+      }
+    }
+    return "misc"
+  }
 }
 
 function Horaire(logs)

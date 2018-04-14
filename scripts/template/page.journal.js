@@ -6,17 +6,145 @@ function JournalTemplate(id,rect,...params)
   
   this.answer = function(q)
   {
+    var html = ""
+
+    // Find upcoming events
+    var upcomings = find_upcomings(q.tables.horaire)
+    var next_event = upcomings.reverse()[0]
+    html += print_group([next_event],q.tables.lexicon)
+
     var groups = find_groups(q.tables.horaire)
-    var html = q.result.long()
     for(var id in groups){
       var group = groups[id]
-      var sorted_projects = sort_projects(group.projects)
-      html += `<h2>${id}${group.events.length > 0 ? ': '+group.events[0].term : ''}</h2>`
-      html += make_photos(group.photos)
-      html += `<p>${make_events(group.events)}${make_projects(sorted_projects,group.horaire)}</p>`
-      html += `<p>${make_preview(sorted_projects[0] ? sorted_projects[0][0] : null,group.events[0] ? group.events[0].term : null,q.tables.lexicon)}</p>`
+      html += print_group(group,q.tables.lexicon)
     }
     return html
+  }
+
+  function find_upcomings(logs)
+  {
+    var selection = []
+    // Segment of time
+    var count = 0
+    for(var id in logs){
+      var log = logs[id]
+      if(count > 30){ break; }
+      if(log.time.offset() < 0){ continue; }
+      if(!log.is_event){ continue; }
+      if(!log.term){ continue; }
+      selection.push(log)
+      count += 1
+    }
+
+    return selection
+  }
+
+  function find_groups(logs)
+  {
+    var selection = []
+    // Segment of time
+    var count = 0
+    for(var id in logs){
+      var log = logs[id]
+      if(count > 30){ break; }
+      if(log.time.offset() > 0){ continue; }
+      if(!log.term){ continue; }
+      selection.push(log)
+      count += 1
+    }
+
+    var groups = []
+    // Group logs
+    var count = 0
+    var group = []
+    var prev  = null
+    for(var id in selection){
+      var log = selection[id]
+      if(prev && prev.term != log.term){
+        var pop = group.slice()
+        groups.push(pop)
+        group = []
+      }
+      group.push(log)
+      prev = log
+    }
+
+    return groups
+  }
+
+  function print_group(group,lexicon)
+  {
+    var html = ""
+
+    // Summarize
+    var fh = 0
+    var ch = 0
+    var term = group[0].term
+    var entry = lexicon[term.toUpperCase()]
+    var photos = []
+    var is_event = false
+    for(id in group){
+      var log = group[id];
+      fh += log.value
+      ch += log.vector
+      is_event = log.is_event
+      if(log.photo){
+        photos.push(log)
+      }
+    }
+
+    html += `
+    <log class='${is_event ? 'event' : ''}'>
+      ${print_icon(entry)}
+      <yu class='head'>
+        <a class='topic'>${term}</a>
+        <t class='time'>${group[0].time.offset_format().capitalize()}</t>
+      </yu>
+      ${log.name ? '<p>'+log.name+'.</p>' : ''}
+      ${print_media(photos)}
+      ${print_horaire(entry.unde(),group[0].task,fh,ch)}
+    </log>`
+
+    return html
+  }
+
+  function print_horaire(unde,task,fh,ch)
+  {
+    return `<mini><a class='tag'>${unde.to_url()}</a> <a class='tag'>${task}</a> ${fh > 0 ? fh+'fh' : ''} ${ch > 0 ? ch+'ch' : ''}</mini>`
+  }
+
+  function print_icon(entry)
+  {
+    return `<svg style='background:black; width:50px; height:50px; border-radius:3px; display:inline-block; position:absolute; left:15px'><path transform="scale(0.15,0.15) translate(20,20)" d="${entry.glyph}" style='stroke-width:10;stroke:white'></path></svg>`
+  }
+
+  function print_media(logs)
+  {
+    if(logs.length < 1){ return "" }
+
+    if(logs.length > 2){
+      return `
+      <gallery class='p3'>
+        <photo style='background-image:url(media/diary/${logs[0].photo}.jpg)'></photo>
+        <photo style='background-image:url(media/diary/${logs[1].photo}.jpg)'></photo>
+        <photo style='background-image:url(media/diary/${logs[2].photo}.jpg)'></photo>
+      </gallery>`
+    }
+
+    if(logs.length > 1){
+      return `
+      <gallery class='p2'>
+        <photo style='background-image:url(media/diary/${logs[0].photo}.jpg)'></photo>
+        <photo style='background-image:url(media/diary/${logs[1].photo}.jpg)'></photo>
+      </gallery>`
+    }
+
+    if(logs.length > 0){
+      return `
+      <gallery class='p1'>
+        <photo style='background-image:url(media/diary/${logs[0].photo}.jpg)'></photo>
+      </gallery>`
+    }
   }
 
   function make_preview(project,event,lexicon)
@@ -59,72 +187,5 @@ function JournalTemplate(id,rect,...params)
     html += `— at ${(horaire.efec*10).toFixed(1)}% Effectiveness and ${(horaire.efic*10).toFixed(1)}% Efficacy.`;
 
     return html.to_markup()
-  }
-
-  function make_photos(photos)
-  {
-    var html = ""
-
-    if(photos.length > 2){
-      return `
-      <gallery class='p3'>
-        <photo style='background-image:url(media/diary/${photos[0]}.jpg)'></photo>
-        <photo style='background-image:url(media/diary/${photos[1]}.jpg)'></photo>
-        <photo style='background-image:url(media/diary/${photos[2]}.jpg)'></photo>
-      </gallery>`
-    }
-
-    if(photos.length > 1){
-      return `
-      <gallery class='p2'>
-        <photo style='background-image:url(media/diary/${photos[0]}.jpg)'></photo>
-        <photo style='background-image:url(media/diary/${photos[1]}.jpg)'></photo>
-      </gallery>`
-    }
-
-    if(photos.length > 0){
-      return `
-      <gallery class='p1'>
-        <photo style='background-image:url(media/diary/${photos[0]}.jpg)'></photo>
-      </gallery>`
-    }
-
-    return ""
-  }
-
-  function find_groups(logs)
-  {
-    var h = {}
-
-    var count = 0
-    for(var id in logs){
-      var log = logs[id]
-      if(log.time.offset() > 0){ continue; }
-      if(!log.term){ continue; }
-      var group = parseInt(count/28)
-      if(group > 4){ break; }
-      if(!h[group]){ h[group] = []}
-      h[group].push(log);
-      count += 1
-    }
-
-    var groups = {}
-    for(id in h){
-      var group = h[id]
-      groups[`From ${group[0].time} to ${group[group.length-1].time}`] = parse(group)
-    }
-    return groups
-  }
-
-  function parse(group)
-  {
-    var render = {projects:{},horaire:new Horaire(group),photos:[],events:[]}
-    for(id in group){
-      var log = group[id];
-      render.projects[log.term] = render.projects[log.term] ? render.projects[log.term]+log.value : log.value
-      if(log.photo){ render.photos.push(log.photo) }
-      if(log.is_event){ render.events.push(log) }
-    }
-    return render
   }
 }

@@ -27,7 +27,10 @@ function Desamber(str)
 
     if(days == 1){ return "tomorrow"; }
     if(days == 0){ return "today"; }
-
+    if(days > 0){ return `in ${days} days`; }
+    if(days < -14){ return `${this.toString()}`; }
+    if(days < 0){ return `${days*-1} days ago`; }
+    
     return `in ${days} days`;
   }
 
