@@ -97,8 +97,8 @@ function JournalTemplate(id,rect,...params)
     <log class='${is_event ? 'event' : ''}'>
       ${print_icon(entry)}
       <yu class='head'>
-        <a class='topic'>${term}</a>
-        <t class='time'>${group[0].time.offset_format().capitalize()}</t>
+        <a class='topic' onclick="Ø('query').bang('${term}')">${term}</a>
+        <t class='time' onclick="Ø('query').bang('2018')">${group[0].time.offset_format().capitalize()}</t>
       </yu>
       ${log.name ? '<p>'+log.name+'.</p>' : ''}
       ${print_media(photos)}
@@ -110,12 +110,12 @@ function JournalTemplate(id,rect,...params)
 
   function print_horaire(unde,task,fh,ch)
   {
-    return `<mini><a class='tag'>${unde.to_url()}</a> <a class='tag'>${task}</a> ${fh > 0 ? fh+'fh' : ''} ${ch > 0 ? ch+'ch' : ''}</mini>`
+    return `<mini><a class='tag' onclick="Ø('query').bang('${unde.to_url()}')">${unde.to_url()}</a> <a class='tag'>${task}</a> ${fh > 0 ? fh+'fh' : ''}</mini>`
   }
 
   function print_icon(entry)
   {
-    return `<svg style='background:black; width:50px; height:50px; border-radius:3px; display:inline-block; position:absolute; left:15px'><path transform="scale(0.15,0.15) translate(20,20)" d="${entry.glyph}" style='stroke-width:10;stroke:white'></path></svg>`
+    return `<svg onclick="Ø('query').bang('${entry.name}')" style='background:black; width:50px; height:50px; border-radius:3px; display:inline-block; position:absolute; left:15px'><path transform="scale(0.15,0.15) translate(20,20)" d="${entry.glyph}" style='stroke-width:10;stroke:white'></path></svg>`
   }
 
   function print_media(logs)
@@ -125,24 +125,24 @@ function JournalTemplate(id,rect,...params)
     if(logs.length > 2){
       return `
       <gallery class='p3'>
-        <photo style='background-image:url(media/diary/${logs[0].photo}.jpg)'></photo>
-        <photo style='background-image:url(media/diary/${logs[1].photo}.jpg)'></photo>
-        <photo style='background-image:url(media/diary/${logs[2].photo}.jpg)'></photo>
+        <photo style='background-image:url(media/diary/${logs[0].photo}.jpg)' onclick="Ø('query').bang('${logs[0].term}')"></photo>
+        <photo style='background-image:url(media/diary/${logs[1].photo}.jpg)' onclick="Ø('query').bang('${logs[0].term}')"></photo>
+        <photo style='background-image:url(media/diary/${logs[2].photo}.jpg)' onclick="Ø('query').bang('${logs[0].term}')"></photo>
       </gallery>`
     }
 
     if(logs.length > 1){
       return `
       <gallery class='p2'>
-        <photo style='background-image:url(media/diary/${logs[0].photo}.jpg)'></photo>
-        <photo style='background-image:url(media/diary/${logs[1].photo}.jpg)'></photo>
+        <photo style='background-image:url(media/diary/${logs[0].photo}.jpg)' onclick="Ø('query').bang('${logs[0].term}')"></photo>
+        <photo style='background-image:url(media/diary/${logs[1].photo}.jpg)' onclick="Ø('query').bang('${logs[0].term}')"></photo>
       </gallery>`
     }
 
     if(logs.length > 0){
       return `
       <gallery class='p1'>
-        <photo style='background-image:url(media/diary/${logs[0].photo}.jpg)'></photo>
+        <photo style='background-image:url(media/diary/${logs[0].photo}.jpg)' onclick="Ø('query').bang('${logs[0].term}')"></photo>
       </gallery>`
     }
   }
