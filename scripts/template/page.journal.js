@@ -46,7 +46,7 @@ function JournalTemplate(id,rect,...params)
     var count = 0
     for(var id in logs){
       var log = logs[id]
-      if(count > 30){ break; }
+      if(count > 42){ break; }
       if(log.time.offset() > 0){ continue; }
       if(!log.term){ continue; }
       selection.push(log)
@@ -93,12 +93,14 @@ function JournalTemplate(id,rect,...params)
       }
     }
 
+    // 3 days ago for 3 days
+
     html += `
     <log class='${is_event ? 'event' : ''}'>
       ${print_icon(entry)}
       <yu class='head'>
         <a class='topic' onclick="Ø('query').bang('${term}')">${term}</a>
-        <t class='time' onclick="Ø('query').bang('2018')">${group[0].time.offset_format().capitalize()}</t>
+        <t class='time' onclick="Ø('query').bang('2018')">${group[0].time.offset_format().capitalize()}${group.length > 1 ? ', for '+group.length+' days' : ''}</t>
       </yu>
       ${log.name ? '<p>'+log.name+'.</p>' : ''}
       ${print_media(photos)}
