@@ -100,7 +100,7 @@ function JournalTemplate(id,rect,...params)
       ${print_icon(entry)}
       <yu class='head'>
         <a class='topic' onclick="Ø('query').bang('${term}')">${term}</a>
-        <t class='time' onclick="Ø('query').bang('2018')">${group[0].time.offset_format().capitalize()}${group.length > 1 ? ', for '+group.length+' days' : ''}</t>
+        <t class='time' onclick="Ø('query').bang('2018')">${group[group.length-1].time.offset_format().capitalize()}${group.length > 1 ? ', for '+group.length+' days' : ''}</t>
       </yu>
       ${log.name ? '<p>'+log.name+'.</p>' : ''}
       ${print_media(photos)}
