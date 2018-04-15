@@ -23,10 +23,10 @@ function Log(list)
   {
     if(sector == 1){
       switch(vector) {
-        case 1:return "rehersal"; break;
-        case 2:return "rehersal"; break;
-        case 3:return "draft"; break;
-        case 4:return "composition"; break;
+        case 1:return "experiment"; break;
+        case 2:return "writing"; break;
+        case 3:return "rehersal"; break;
+        case 4:return "draft"; break;
         case 5:return "composition"; break;
         case 6:return "mastering"; break;
         case 7:return "mastering"; break;
@@ -39,7 +39,7 @@ function Log(list)
       switch(vector) {
         case 1:return "concept"; break;
         case 2:return "concept"; break;
-        case 3:return "layout"; break;
+        case 3:return "design"; break;
         case 4:return "layout"; break;
         case 5:return "sketch"; break;
         case 6:return "sketch"; break;
@@ -51,12 +51,12 @@ function Log(list)
     }
     if(sector == 3){
       switch(vector) {
-        case 1:return "planning"; break;
+        case 1:return "research"; break;
         case 2:return "planning"; break;
-        case 3:return "testing"; break;
+        case 3:return "design"; break;
         case 4:return "testing"; break;
         case 5:return "tools"; break;
-        case 6:return "update"; break;
+        case 6:return "architecture"; break;
         case 7:return "update"; break;
         case 8: return "build"; break;
         case 9: return "application"; break;
