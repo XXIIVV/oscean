@@ -57,6 +57,9 @@ function Runic(raw)
     if(service == "youtube"){
       return `<iframe width="600" height="315" src="https://www.youtube.com/embed/${id}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
     }
+    if(service == "custom"){
+      return `<iframe src='${id}' style='width:100%;height:350px;'></iframe>`;
+    }
     return `<img src='media/${val}'/>`
   }
 
