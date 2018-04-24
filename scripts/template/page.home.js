@@ -9,7 +9,7 @@ function HomeTemplate(id,rect,...params)
     var term = q.result
     var logs = q.tables.horaire
     var diaries = this.find_diaries(logs)
-    var photo_log = this.find_photo(logs)
+    var photo_log = this.find_photo(logs)    
 
     return {
       title: q.name.capitalize(),
@@ -19,7 +19,7 @@ function HomeTemplate(id,rect,...params)
           info:{title:photo_log ? `<b>${photo_log.name}</b> — ${photo_log.time}` : '',glyph:term.glyph},
           menu:{
             search:q.name,
-            activity:`${diaries.length > 1 ? `<a id='diaries' onclick="Ø('query').bang('journal')">${diaries.length} Diaries</a>` : ''}${logs.length > 5 ? `<a id='logs' onclick="Ø('query').bang('${logs[0].time.year}')">${logs.length} Logs</a>` : ''}`
+            activity:`${diaries.length > 1 ? `<a id='diaries' onclick="Ø('query').bang('journal')">${diaries.length} Diaries</a>` : ''}${logs.length > 5 ? `<a id='logs' onclick="Ø('query').bang('${find_last_log(logs).time.year}')">${logs.length} Logs</a>` : ''}`
           }
         },
         core:{
@@ -90,5 +90,17 @@ function HomeTemplate(id,rect,...params)
   {
     if(logs.length < 10){ return "" }
     return `${logs[logs.length-1].time}—${logs[0].time}`
+  }
+
+  function find_last_log(logs)
+  {
+    var target = logs[0]
+    for(id in logs){
+      var log = logs[id];
+      if(log.time.offset() > 0){ continue; }
+      target = log;
+      break;
+    }
+    return target
   }
 }
