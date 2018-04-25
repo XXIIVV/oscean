@@ -18,7 +18,7 @@ function DiaryTemplate(id,rect,...params)
       view:{
         header:{
           photo:photo_log ? `<media style='background-image:url(media/diary/${photo_log.photo}.jpg)'></media>` : '',
-          info:{title:photo_log ? `<b>${photo_log.name}</b> — ${photo_log.time}` : '',glyph:term.glyph},
+          info:{title:photo_log ? `<b>${photo_log.name}</b> —<br />${photo_log.time}` : '',glyph:term.glyph},
           menu:{
             search:q.name,
             activity:`${diaries.length > 1 ? `<a id='diaries' onclick="Ø('query').bang('journal')">${diaries.length} Diaries</a>` : ''}${logs.length > 5 ? `<a id='logs' onclick="Ø('query').bang('${logs[0].time.year}')">${logs.length} Logs</a>` : ''}`

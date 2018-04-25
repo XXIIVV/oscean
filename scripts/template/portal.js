@@ -17,7 +17,7 @@ function PortalTemplate(id,rect,...params)
       view:{
         header:{
           photo:photo_log ? `<media style='background-image:url(media/diary/${photo_log.photo}.jpg)'></media>` : '',
-          info:{title:photo_log ? `<b>${photo_log.name}</b> — ${photo_log.time}` : '',glyph:term.glyph},
+          info:{title:photo_log ? `<b>${photo_log.name}</b> —<br />${photo_log.time}` : '',glyph:term.glyph},
           menu:{
             search:q.name,
             activity:""
@@ -41,7 +41,7 @@ function PortalTemplate(id,rect,...params)
 
     for(id in children){
       var child = children[id];
-      var photo_log = find_photo(find_logs(child.name,logs))
+      var photo_log = this.find_photo(find_logs(child.name,logs))
       if(!photo_log){ continue; }
       html += `
       ${photo_log ? `<a onclick='Ø("query").bang("${child.name}")'><img src="media/diary/${photo_log.photo}.jpg"/></a>` : ''}
@@ -62,8 +62,14 @@ function PortalTemplate(id,rect,...params)
     return a
   }
 
-  function find_photo(logs)
+  find_photo = function(logs)
   {
+    for(id in logs){
+      var log = logs[id];
+      if(!log.photo){ continue; }
+      if(!log.is_featured){ continue; }
+      return log
+    }
     for(id in logs){
       var log = logs[id];
       if(!log.photo){ continue; }

@@ -55,8 +55,15 @@ function TemplateNode(id,rect)
     for(id in logs){
       var log = logs[id];
       if(!log.photo){ continue; }
+      if(!log.is_featured){ continue; }
       return log
     }
+    for(id in logs){
+      var log = logs[id];
+      if(!log.photo){ continue; }
+      return log
+    }
+    return null
   }
 
   this.find_siblings = function(parent,lexicon)
