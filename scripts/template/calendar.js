@@ -8,8 +8,10 @@ function CalendarTemplate(id,rect,...params)
   {
     var year = parseInt(q.name);
     var html = "";
-    
-    html += this.calendar_graph(this.get_days(year,q.tables.horaire));
+    var logs = this.get_days(year,q.tables.horaire)
+
+    html += this.calendar_graph(logs);
+    html += this.summary(q.tables.horaire)
     html += this.event_graph(q.tables.horaire);
 
     return  {
@@ -22,28 +24,17 @@ function CalendarTemplate(id,rect,...params)
         },
         core:{
           sidebar:{
-            bref:make_bref(q)
+            bref:`<h1>The {{Calendar}} is based on the {{Nataniev Time|Time}}.</h1><h2>{{${parseInt(q.name)-1}}}—{{${parseInt(q.name)+1}}}</h2>`.to_markup()
           },
           content:`${q.tables.lexicon.CALENDAR.long()}${html}`,
           navi:""
         },
         style: `
-          #sidebar { display:none}
-          #content,#core,#header,#view,#sidebar,#photo { background:#72dec2 !important;}
-          a.year { display:inline-block; margin-right:10px; font-size:11px; margin-bottom:15px; color:black; font-family:'input_mono_medium'}
-          a.year.selected { text-decoration:underline}
-          a.year:hover { text-decoration:underline}
-          list.tidy ln { color:#000}
-          list.tidy ln a { color:#000}
-          list.tidy ln a.time { display:inline-block; width:45px; font-family:'archivo_regular' !important}
-          table.horaire { width:100%; font-size:11px; font-family:'input_mono_regular'}
-          table.horaire tr td { font-size:11px !important; border:1px solid black; padding:0px 20px; text-transform:uppercase}
+          #content,#core,#header,#view,#sidebar,#photo { background:#ccc !important;}
+          table.horaire { font-size:11px; font-family:'input_mono_regular';}
+          table.horaire tr td { font-size:11px !important; text-transform:uppercase; line-height:20px !important;}
           table.horaire tr td a { font-family:'input_mono_medium'}
-          table.horaire tr td:hover { background:#fff !important; color:black !important; cursor:pointer}
-          table.horaire tr td:hover a { text-decoration:underline; color:black !important}
-          table.horaire tr td.event { color:white}
-          table.horaire tr td.photo { background:black; color:white}
-          table.horaire tr td.today { background:white}`
+          table.horaire tr td.today { text-decoration:underline}`
       }
     }
   }
@@ -63,8 +54,57 @@ function CalendarTemplate(id,rect,...params)
     return `<td title='${new Desamber(desamber).to_gregorian()}' ${full_width ? "colspan='26'" : ""} class='${today == desamber ? "today" : ""} ${log && log.is_event ? "event" : ""} ${log && log.photo > 0 ? "photo" : ""}'>${content}</td>`
   }
 
+  this.summary = function(logs)
+  {
+    var html = ""
+
+    var by_y = {}
+    for(id in logs){
+      var log = logs[id]
+      var year = log.time.to_date().getFullYear()
+      if(log.time.offset() > 0){ continue; }
+      if(!by_y[year]){ by_y[year] = []; }
+      by_y[year].push(log)
+    }
+
+    var horaires = {}
+
+    for(id in by_y){
+      horaires[id] = new Horaire(by_y[id])
+    }
+
+    html += `<tr><th></th><th colspan='2'>HDf</th><th colspan='2'>HDc</th><th colspan='2'>Efec</th><th colspan='2'>Efic</th><th colspan='2'>Out</th><th colspan='2'>Osc</th></tr>`
+
+    var avrg = new Horaire(logs)
+
+    function diff(a,b)
+    {
+      var offset = (a - b)
+      return offset > 0 ? `<t style='color:white'>+${offset.toFixed(2)}</t>` : `<t style='color:#999'>${offset.toFixed(2)}</t>`
+    }
+
+    for(id in horaires){
+      var year = horaires[id]
+      html += `
+      <tr>
+        <th>${id}</th>
+        <td>${year.fh > 0 ? `${year.fh}`.substr(0,4) : '—'}</td><td>${diff(year.fh,avrg.fh)}</td>
+        <td>${year.ch > 0 ? `${year.ch}`.substr(0,4) : '—'}</td><td>${diff(year.ch,avrg.ch)}</td>
+        <td>${year.efec > 0 ? `${year.efec}`.substr(0,4) : '—'}</td><td>${diff(year.efec,avrg.efec)}</td>
+        <td>${year.efic > 0 ? `${year.efic}`.substr(0,4) : '—'}</td><td>${diff(year.efic,avrg.efic)}</td>
+        <td>${year.focus > 0 ? `${year.focus}`.substr(0,4) : '—'}</td><td>${diff(year.focus,avrg.focus)}</td>
+        <td>${year.osc.average > 0 ? `${year.osc.average}`.substr(0,4) : '—'}</td><td>${diff(year.osc.average,avrg.osc.average)}</td>
+      </tr>`
+      prev = year
+    }
+
+    return `<table class='horaire' width='740'>${html}</table><hr style='border-bottom:2px solid black; margin-bottom:30px'/>`
+  }
+
   this.calendar_graph = function(logs)
   {
+    if(Object.keys(logs).length == 0){ return ''; }
+
     var today = new Date().desamber();
     var y = Object.keys(logs)[0].substr(0,2);
     var m = 1;
@@ -84,7 +124,7 @@ function CalendarTemplate(id,rect,...params)
 
     html += `<tr>${this.cell(logs[`${y}+01`],`${y}+01`,today,"year_day")}</tr>`;
 
-    return `<table class='horaire'>${html}</table>`;
+    return `<h2>EPOCH${y - 7}</h2><table class='horaire'>${html}</table><hr style='border-bottom:2px solid black; margin-bottom:30px'/>`;
   }
 
   this.event_graph = function(logs)
@@ -94,7 +134,7 @@ function CalendarTemplate(id,rect,...params)
     for(var id in logs){
       var log = logs[id];
       if(!log.is_event){ continue; }
-      html += `<ln><a class='time' onclick='Ø("query").bang("${log.time.year}")'>${log.time}</a> <a onclick='Ø("query").bang("${log.term.to_url()}")'>${log.name}</a> ${log.time.offset() > 0 ? log.time.offset_format() : ""}</ln>`
+      html += `<ln><a onclick='Ø("query").bang("${log.term.to_url()}")'>${log.name}</a> ${log.time.offset() > 0 ? log.time.offset_format() : log.time}</ln>`
     }
 
     return "<list class='tidy' style='max-width:100%'>"+html+"</list>";

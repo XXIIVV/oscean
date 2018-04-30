@@ -69,12 +69,13 @@ function Log(list)
 
 function Horaire(logs)
 {
-  var h = {fh:0,ch:0,topics:{}};
+  var h = {fh:0,ch:0,topics:{},osc:{sum:0,average:0}};
 
   for(id in logs){
     var log = logs[id];
     h.fh += log.value;
     h.ch += log.vector;
+    h.osc.sum += Math.abs(log.value-log.vector)
     if(log.term != ""){
       if(!h.topics[log.term]){ h.topics[log.term] = {fh:0,ch:0,count:0}; }
       h.topics[log.term].fh += log.value;
@@ -92,12 +93,16 @@ function Horaire(logs)
     efic_sum += h.topics[id].hdc
   }
 
+  h.osc.average = h.osc.sum/logs.length
+
   return {
     fh:(h.fh/logs.length),
     ch:(h.ch/logs.length),
     efec:(efec_sum/Object.keys(h.topics).length),
     efic:(efic_sum/Object.keys(h.topics).length),
+    focus:((efec_sum/Object.keys(h.topics).length)+(efic_sum/Object.keys(h.topics).length))/2,
     sum:h.fh,
-    count:logs.length
+    count:logs.length,
+    osc:h.osc
   }
 }
