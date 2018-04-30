@@ -27,9 +27,25 @@ function LietalNode(id,rect,...params)
       if(part == ";"){ part = "position"; }
       if(part.substr(0,1) == "!"){ s += `${part.replace("!","")} `; continue; }
       if(part.substr(0,1) == "~"){ s += `${part.replace("~",".")} `; continue; }
-      s += part != "'" ? ` <t title='${part}'>${this.convert(part,direction)}</t> ` : part;
+      s += part != "'" ? ` ${this.convert(part,direction)} ` : part;
     }
-    return `<t class='lietal'>${s.replace(/ \' /g,"\'").trim().toLowerCase()}</t>`;
+    return `<t class='lietal'>${this.format(s)}</t>`;
+  }
+
+  this.format = function(str)
+  {
+    str = str.replace(/ \' /g,"\'")
+    str = str.replace(/ \./g,".")
+
+    // Capitalize all sentences
+    var html = ""
+    var sentences = str.split(". ")
+    for(id in sentences){
+      var sentence = sentences[id].trim()
+      html += `${sentence.charAt(0).toUpperCase() + sentence.slice(1)}. `
+    }
+
+    return html;
   }
 
   this.vowel = function(v)
