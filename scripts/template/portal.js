@@ -28,7 +28,7 @@ function PortalTemplate(id,rect,...params)
             bref:make_bref(q,term,logs),
           },
           content:`${q.result.long()}${make_portal(term.name,children,q.tables.horaire)}`,
-          navi:make_navi(term,siblings,children)
+          navi:this.make_navi(term,q.tables.lexicon)
         },
         style:""
       }
@@ -86,18 +86,6 @@ function PortalTemplate(id,rect,...params)
       ${make_activity(logs)}
       ${make_links(term.links)}
     </h2>`
-  }
-
-  function make_navi(term,siblings,children)
-  {
-    if(siblings.length > 0){
-      var html = ""
-      for(id in siblings){
-        var sibling = siblings[id];
-        html += `<ln class='sibling ${sibling.name == term.name ? "selected" : ""}'>${sibling.bref()}</ln>`
-      }
-    }
-    return html
   }
 
   function make_links(links)
