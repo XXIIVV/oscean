@@ -134,7 +134,7 @@ function CalendarTemplate(id,rect,...params)
     for(var id in logs){
       var log = logs[id];
       if(!log.is_event){ continue; }
-      html += `<ln><a onclick='Ø("query").bang("${log.term.to_url()}")'>${log.name}</a> ${log.time.offset() > 0 ? log.time.offset_format() : log.time}</ln>`
+      html += `<ln>{{${log.name}|${log.term}}}</a> ${log.time.offset() > 0 ? log.time.offset_format() : log.time}</ln>`.to_markup()
     }
 
     return "<list class='tidy' style='max-width:100%'>"+html+"</list>";
