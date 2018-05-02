@@ -42,10 +42,10 @@ function LietalNode(id,rect,...params)
     var sentences = str.split(". ")
     for(id in sentences){
       var sentence = sentences[id].trim()
-      html += `${sentence.charAt(0).toUpperCase() + sentence.slice(1)}. `
+      html += `${sentence.charAt(0).toUpperCase() + sentence.slice(1)}${sentences.length > 1 ? '.' : ''} `
     }
 
-    return html;
+    return html.trim();
   }
 
   this.vowel = function(v)
