@@ -74,7 +74,7 @@ function TemplateNode(id,rect)
       if(!term.unde() || !parent || parent.toUpperCase() != term.unde().toUpperCase()){ continue; }
       a.push(term)
     }
-    return a  
+    return a
   }
 
   this.find_children = function(name,lexicon)
@@ -85,7 +85,7 @@ function TemplateNode(id,rect)
       if(!term.unde() || name != term.unde().toUpperCase()){ continue; }
       a.push(term)
     }
-    return a    
+    return a
   }
 
   this.make_navi = function(term,lexicon)
@@ -151,11 +151,10 @@ function TemplateNode(id,rect)
 }
 
 
-
 function on_scroll()
 {
   var info_el = document.getElementById("info")
-  var scroll = document.body.scrollTop;
+  var scroll = window.scrollY;
 
   // Info
   if(scroll > 0){
