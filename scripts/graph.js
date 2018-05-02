@@ -26,7 +26,7 @@ function graph()
       Ø("glossary").create({x:14,y:25},IndentalNode),
       Ø("japanese").create({x:2,y:25},IndentalNode),
       Ø("russian").create({x:17,y:25},IndentalNode),
-      Ø("blue").create({x:20,y:25},IndentalNode),
+      Ø("tiers").create({x:20,y:25},IndentalNode),
     Ø("calendar").create({x:17,y:11},CalendarTemplate),
   ])
 
@@ -76,7 +76,7 @@ function graph()
 
   // Assoc
   Ø("template").syphon(["page","diary","portal","index","docs","calendar","home"])
-  Ø("docs").syphon(["lietal","directory","glossary","biases","blue","russian","japanese"])
+  Ø("docs").syphon(["lietal","directory","glossary","biases","tiers","russian","japanese"])
   Ø("page").syphon(["missing","death","journal"])
 
   Ø("template").connect(["view","document"])
