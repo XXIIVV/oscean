@@ -88,6 +88,22 @@ function TemplateNode(id,rect)
     return a
   }
 
+  this.make_table = function(term,lexicon,depth = 3, selection = null)
+  {
+    if(depth <= 0){ return "" }
+    var children = this.find_children(term.name,lexicon)
+    if(children.length == 0){ return ""}
+
+    var html = ""
+    html += "<table width='100%'>"
+    for(id in children){
+      var child = children[id];
+      html += `<tr><th width='100' class='${selection && child.name == selection.name ? 'selected' : ''}'>{{${child.name.capitalize()}}}</th><td>${this.make_table(child,lexicon,depth-1)}</td></tr>`.to_markup()
+    }
+    html += "</table>"
+    return html
+  }
+
   this.make_navi = function(term,lexicon)
   {
     var html = ""
@@ -95,31 +111,22 @@ function TemplateNode(id,rect)
 
     if(!portal){ console.log("No portal found"); return "" }
 
+    html += `<svg id="glyph"><path transform="scale(0.175,0.175) translate(-50,-125)" d="${portal.glyph}"></path></svg>`
     html += "<table width='100%'>"
-    html += `<tr><th width='100'><svg id="glyph"><path transform="scale(0.175,0.175) translate(-50,-50)" d="${portal.glyph}"></path></svg></th><th colspan='3'><h2>The ${portal.name.capitalize()} Portal</h2><p>${portal.bref()}</p></th></tr>`
 
-    var d1 = this.find_children(portal.name,lexicon)
-    for(id in d1){
-      var d1c = d1[id];
-      var d2 = this.find_children(d1c.name,lexicon)
-      var html_child = ``
-      for(id in d2){
-        var d2c = d2[id]
-        html_child += d2c.name == term.name ? `{*${d2c.name.capitalize()}*} ` :`{{${d2c.name.capitalize()}}} `
-        var d3 = this.find_children(d2c.name,lexicon)
-        if(d3.length > 0){
-          html_child = html_child.trim()+"("
-          for(id in d3){
-            var d3c = d3[id]
-            html_child += d3c.name == term.name ? `{*${d3c.name.capitalize()}*} ` : `{{${d3c.name.capitalize()}}} `
-          }
-          html_child = html_child.trim()+") "
-        }
-      }
-      html += `<tr><th></th><th width='100'>{{${d1c.name.capitalize()}}}</th><td>${html_child}</td></tr>`.to_markup()
+    var children = this.find_children(portal.name,lexicon)
+    for(id in children){
+      var child = children[id];
+      html += `<tr><th width='100' class='${term && child.name == term.name ? 'selected' : ''}'>{{${child.name.capitalize()}}}</th><td>${this.make_table(child,lexicon,2,term)}</td></tr>`.to_markup()
     }
     html += "</table>"
     return html
+  }
+
+  this.make_horaire = function(logs)
+  {
+    var horaire = new Horaire(logs);
+    return horaire.sum > 30 ? `<mini class='horaire'>{{<b>${horaire.sum.toFixed(0)}</b>+|Horaire}} <b>${horaire.fh.toFixed(2)}</b>HDf <b>${horaire.ch.toFixed(2)}</b>HDc <t class='right'>{{Э|https://github.com/XXIIVV/Oscean/edit/master/scripts/database/lexicon.tome}} {{T|https://github.com/XXIIVV/Oscean/issues}}</t><hr/></mini>`.to_markup() : `<mini class='horaire'><t class='right'>{{Э|https://github.com/XXIIVV/Oscean/edit/master/scripts/database/lexicon.tome}} {{T|https://github.com/XXIIVV/Oscean/issues}}</t><hr/></mini>`.to_markup()
   }
 
   this.find_portal = function(term,lexicon)

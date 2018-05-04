@@ -28,18 +28,12 @@ function DiaryTemplate(id,rect,...params)
           sidebar:{
             bref:make_bref(q,term,logs),
           },
-          content:`${q.result.long()}${make_diary(logs,photo_log)}${make_horaire(logs)}`,
+          content:`${q.result.long()}${make_diary(logs,photo_log)}${this.make_horaire(logs)}`,
           navi:this.make_navi(term,q.tables.lexicon)
         },
         style:""
       }
     }
-  }
-
-  function make_horaire(logs)
-  {
-    var horaire = new Horaire(logs);
-    return horaire.sum > 30 ? `<mini><a onclick='Ø("query").bang("horaire")'><b>${horaire.sum.toFixed(0)}</b>+</a> <b>${horaire.fh.toFixed(2)}</b>HDf <b>${horaire.ch.toFixed(2)}</b>HDc</mini>` : ''
   }
 
   function make_diary(logs,skip)
