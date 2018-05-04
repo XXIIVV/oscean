@@ -98,7 +98,7 @@ function TemplateNode(id,rect)
     html += "<table width='100%'>"
     for(id in children){
       var child = children[id];
-      html += `<tr><th width='100' class='${selection && child.name == selection.name ? 'selected' : ''}'>{{${child.name.capitalize()}}}</th><td>${this.make_table(child,lexicon,depth-1)}</td></tr>`.to_markup()
+      html += `<tr><th width='100' class='${selection && child.name == selection.name ? 'selected' : ''}'>{{${child.name.capitalize()}}}</th><td>${this.make_table(child,lexicon,depth-1,selection)}</td></tr>`.to_markup()
     }
     html += "</table>"
     return html
