@@ -16,7 +16,7 @@ function Log(list)
   this.photo = this.list.pict ? parseInt(this.list.pict) : null;
 
   this.is_featured = this.rune == "!" || this.rune == "~";
-  this.is_event = this.rune == "+";
+  this.is_event = this.rune == "+" || this.vector > 9;
   this.theme = this.rune == "!" ? "blanc" : (this.rune == "~" || this.photo > 0 ? "noir" : "no_photo")
 
   function make_task(sector,vector)
@@ -58,8 +58,22 @@ function Log(list)
         case 5:return "tools"; break;
         case 6:return "architecture"; break;
         case 7:return "update"; break;
-        case 8: return "build"; break;
+        case 8: return "release"; break;
         case 9: return "presentation"; break;
+        default: return "research"
+      }
+    }
+    if(sector == 4){
+      switch(vector) {
+        case 1:return "--"; break;
+        case 2:return "--"; break;
+        case 3:return "--"; break;
+        case 4:return "--"; break;
+        case 5:return "--"; break;
+        case 6:return "--"; break;
+        case 7:return "--"; break;
+        case 8: return "--"; break;
+        case 9: return "travel"; break;
         default: return "research"
       }
     }

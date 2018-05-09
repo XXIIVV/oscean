@@ -34,7 +34,9 @@ function CalendarTemplate(id,rect,...params)
           table.horaire { font-size:11px; font-family:'input_mono_regular';}
           table.horaire tr td { font-size:11px !important; text-transform:uppercase; line-height:20px !important;}
           table.horaire tr td a { font-family:'input_mono_medium'}
-          table.horaire tr td.today { text-decoration:underline}`
+          table.horaire tr td.today { text-decoration:underline; background:#fff}
+          table.horaire tr td.event { background:#000; color:white}
+          list ln.head { line-height:30px !important; border-bottom:1.5px solid black; margin-bottom:15px !important; display:block}`
       }
     }
   }
@@ -98,7 +100,7 @@ function CalendarTemplate(id,rect,...params)
       prev = year
     }
 
-    return `<table class='horaire' width='740'>${html}</table><hr style='border-bottom:2px solid black; margin-bottom:30px'/>`
+    return `<table class='horaire' width='740'>${html}</table><hr style='border-bottom:1.5px solid black; margin-bottom:30px'/>`
   }
 
   this.calendar_graph = function(logs)
@@ -124,17 +126,20 @@ function CalendarTemplate(id,rect,...params)
 
     html += `<tr>${this.cell(logs[`${y}+01`],`${y}+01`,today,"year_day")}</tr>`;
 
-    return `<h2>EPOCH${y - 7}</h2><table class='horaire'>${html}</table><hr style='border-bottom:2px solid black; margin-bottom:30px'/>`;
+    return `<h2>EPOCH${y - 7}</h2><table class='horaire'>${html}</table><hr style='border-bottom:1.5px solid black; margin-bottom:30px'/>`;
   }
 
   this.event_graph = function(logs)
   {
     var html = "";
 
+    var prev_y = 0;
+
     for(var id in logs){
       var log = logs[id];
       if(!log.is_event){ continue; }
-      html += `<ln>{{${log.name}|${log.term}}}</a> ${log.time.offset() > 0 ? log.time.offset_format() : log.time}</ln>`.to_markup()
+      if(log.time.y != prev_y){ html += `<ln class='head'>20${log.time.y}</ln>`; prev_y = log.time.y; }
+      html += `<ln>{{${log.name ? log.name : log.term+' '+log.task.capitalize()}|${log.term}}}</a> ${log.time.offset() > 0 ? log.time.offset_format() : log.time}</ln>`.to_markup()
     }
 
     return "<list class='tidy' style='max-width:100%'>"+html+"</list>";
