@@ -33,9 +33,12 @@ function CalendarTemplate(id,rect,...params)
           #content,#core,#header,#view,#sidebar,#photo { background:#ccc !important;}
           table.horaire { font-size:11px; font-family:'input_mono_regular';}
           table.horaire tr td { font-size:11px !important; text-transform:uppercase; line-height:20px !important;}
+          table.horaire tr td:hover { background:#fff}
           table.horaire tr td a { font-family:'input_mono_medium'}
           table.horaire tr td.today { text-decoration:underline; background:#fff}
           table.horaire tr td.event { background:#000; color:white}
+          table.horaire tr td.misc { color:#777}
+          table.horaire tr th { line-height:20px !important; }
           list ln.head { line-height:30px !important; border-bottom:1.5px solid black; margin-bottom:15px !important; display:block}`
       }
     }
@@ -53,7 +56,7 @@ function CalendarTemplate(id,rect,...params)
   this.cell = function(log,desamber,today,full_width = false)
   {
     var content = log && log.value > 0 ? `${desamber.substr(2,3)}<a onclick='Ø("query").bang("${log.term}")'>${log ? (log.sector ? log.sector.substr(0,1) : "")+""+log.value+""+log.vector : ""}</a>` : desamber.substr(2,3)+"---";
-    return `<td title='${new Desamber(desamber).to_gregorian()}' ${full_width ? "colspan='26'" : ""} class='${today == desamber ? "today" : ""} ${log && log.is_event ? "event" : ""} ${log && log.photo > 0 ? "photo" : ""}'>${content}</td>`
+    return `<td title='${new Desamber(desamber).to_gregorian()}' ${full_width ? "colspan='26'" : ""} class='${today == desamber ? "today" : ""} ${log && log.is_event ? "event" : ""} ${log && log.photo > 0 ? "photo" : ""} ${log ? log.sector : 'misc'}'>${content}</td>`
   }
 
   this.summary = function(logs)
@@ -126,7 +129,7 @@ function CalendarTemplate(id,rect,...params)
 
     html += `<tr>${this.cell(logs[`${y}+01`],`${y}+01`,today,"year_day")}</tr>`;
 
-    return `<h2>EPOCH${y - 7}</h2><table class='horaire'>${html}</table><hr style='border-bottom:1.5px solid black; margin-bottom:30px'/>`;
+    return `<table class='horaire'>${html}</table><hr style='border-bottom:1.5px solid black; margin-bottom:30px'/>`;
   }
 
   this.event_graph = function(logs)
