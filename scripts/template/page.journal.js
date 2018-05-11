@@ -83,17 +83,20 @@ function JournalTemplate(id,rect,...params)
     var entry = lexicon[term.toUpperCase()]
     var photos = []
     var is_event = false
+    var name = null
+
     for(id in group){
       var log = group[id];
       fh += log.value
       ch += log.vector
       is_event = log.is_event
+      if(log.name && !name){
+        name = log.name
+      }
       if(log.photo){
         photos.push(log)
       }
     }
-
-    // 3 days ago for 3 days
 
     html += `
     <log class='${is_event ? 'event' : ''}'>
@@ -102,7 +105,7 @@ function JournalTemplate(id,rect,...params)
         <a class='topic' onclick="Ø('query').bang('${term}')">${term}</a>
         <t class='time' onclick="Ø('query').bang('2018')">${group[group.length-1].time.offset_format().capitalize()}${group.length > 1 ? ', for '+group.length+' days' : ''}</t>
       </yu>
-      ${log.name ? '<p>'+log.name+'.</p>' : ''}
+      ${name ? '<p>'+name+'.</p>' : ''}
       ${print_media(photos)}
       ${print_horaire(entry.unde(),group[0].task,fh,ch)}
     </log>`

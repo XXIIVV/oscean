@@ -38,11 +38,11 @@ function Log(list)
     if(sector == 2){
       switch(vector) {
         case 1:return "concept"; break;
-        case 2:return "prototype"; break;
-        case 3:return "design"; break;
-        case 4:return "layout"; break;
-        case 5:return "sketch"; break;
-        case 6:return "sketch"; break;
+        case 2:return "sketch"; break;
+        case 3:return "layout"; break;
+        case 4:return "prototype"; break;
+        case 5:return "layout"; break;
+        case 6:return "draft"; break;
         case 7:return "render"; break;
         case 8: return "release"; break;
         case 9: return "showcase"; break;

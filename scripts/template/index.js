@@ -50,7 +50,7 @@ function IndexTemplate(id,rect,...params)
       var child = children[id]
       var photo_log = find_photo(find_logs(child.name,logs))
       html += `
-      ${photo_log ? '<img src="media/diary/'+photo_log.photo+'.jpg"/>' : ''}
+      ${photo_log ? `<a onclick='Ø("query").bang("${child.name}")'><img src="media/diary/${photo_log.photo}.jpg"/></a>` : ''}
       <h2 class='book'><a onclick="Ø('query').bang('${child.name.to_url()}')">${child.name.capitalize()}</a></h2>
       <hs>${child.bref().to_markup()}</hs>
       ${child.long()}

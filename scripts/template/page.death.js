@@ -6,6 +6,9 @@ function DeathTemplate(id,rect,...params)
   
   this.answer = function(q)
   {
+    // Secret.
+    debug(q.tables.horaire,q.tables.lexicon)
+
     var term = q.result
     var logs = this.find_logs(q.name,q.tables.horaire)
     var photo_log = this.find_photo(logs)
@@ -84,4 +87,36 @@ function DeathTemplate(id,rect,...params)
     if(logs.length < 10){ return "" }
     return `${logs[logs.length-1].time}—${logs[0].time}`
   }
+
+  // Secret
+
+  function debug(horaire,lexicon)
+  {
+    var photos = []
+
+    for(id in horaire){
+      var log = horaire[id]
+      if(log.photo){ photos.push(parseInt(log.photo))}
+    }
+
+    console.log(`Next available Id: ${find_available_id(photos)}`)
+  }
+
+  function find_available_id(photos)
+  {
+    var i = 1
+    while(i < 999){
+      if(photos.indexOf(i) < 0){ return i }
+      i += 1
+    }
+    return i
+  }
 }
+
+
+
+
+
+
+
+
