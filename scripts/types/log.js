@@ -92,7 +92,7 @@ function Horaire(logs)
     h.osc.sum += Math.abs(log.value-log.vector)
     if(log.sector){
       h.sectors[log.sector] += (log.value+log.vector)/2
-      h.sectors.sum += (log.value+log.vector)/2  
+      h.sectors.sum += (log.value+log.vector)/2
     }
     if(log.term != ""){
       if(!h.topics[log.term]){ h.topics[log.term] = {fh:0,ch:0,count:0}; }
@@ -116,9 +116,8 @@ function Horaire(logs)
   var audio = (h.sectors.audio/h.sectors.sum)*10
   var visual = (h.sectors.visual/h.sectors.sum)*10
   var research = (h.sectors.research/h.sectors.sum)*10
-  var balance = 9 - ((Math.abs(3.3333 - audio) + Math.abs(3.3333 - visual) + Math.abs(3.3333 - research))/3)
-
-  console.log(balance,audio,visual,research)
+  var balance = (1 - ((Math.abs(3.3333 - audio) + Math.abs(3.3333 - visual) + Math.abs(3.3333 - research))/13.3333)) * 10
+  
   return {
     fh:(h.fh/logs.length),
     ch:(h.ch/logs.length),
