@@ -83,13 +83,17 @@ function Log(list)
 
 function Horaire(logs)
 {
-  var h = {fh:0,ch:0,topics:{},osc:{sum:0,average:0}};
+  var h = {fh:0,ch:0,topics:{},osc:{sum:0,average:0},sectors:{audio:0,visual:0,research:0,sum:0}};
 
   for(id in logs){
     var log = logs[id];
     h.fh += log.value;
     h.ch += log.vector;
     h.osc.sum += Math.abs(log.value-log.vector)
+    if(log.sector){
+      h.sectors[log.sector] += (log.value+log.vector)/2
+      h.sectors.sum += (log.value+log.vector)/2  
+    }
     if(log.term != ""){
       if(!h.topics[log.term]){ h.topics[log.term] = {fh:0,ch:0,count:0}; }
       h.topics[log.term].fh += log.value;
@@ -107,8 +111,14 @@ function Horaire(logs)
     efic_sum += h.topics[id].hdc
   }
 
-  h.osc.average = h.osc.sum/logs.length
+  h.osc = h.osc.sum/logs.length
 
+  var audio = (h.sectors.audio/h.sectors.sum)*10
+  var visual = (h.sectors.visual/h.sectors.sum)*10
+  var research = (h.sectors.research/h.sectors.sum)*10
+  var balance = 9 - ((Math.abs(3.3333 - audio) + Math.abs(3.3333 - visual) + Math.abs(3.3333 - research))/3)
+
+  console.log(balance,audio,visual,research)
   return {
     fh:(h.fh/logs.length),
     ch:(h.ch/logs.length),
@@ -117,6 +127,8 @@ function Horaire(logs)
     focus:((efec_sum/Object.keys(h.topics).length)+(efic_sum/Object.keys(h.topics).length))/2,
     sum:h.fh,
     count:logs.length,
-    osc:h.osc
+    osc:h.osc,
+    sectors:{audio:audio,visual:visual,research:research},
+    balance:balance
   }
 }

@@ -78,7 +78,7 @@ function CalendarTemplate(id,rect,...params)
       horaires[id] = new Horaire(by_y[id])
     }
 
-    html += `<tr><th></th><th colspan='2'>HDf</th><th colspan='2'>HDc</th><th colspan='2'>Efec</th><th colspan='2'>Efic</th><th colspan='2'>Out</th><th colspan='2'>Osc</th></tr>`
+    html += `<tr><th></th><th colspan='2'>HDf</th><th colspan='2'>HDc</th><th colspan='2'>Efec</th><th colspan='2'>Efic</th><th colspan='2'>Out</th><th colspan='2'>Osc</th><th colspan='2'>Bal</th></tr>`
 
     var avrg = new Horaire(logs)
 
@@ -98,7 +98,8 @@ function CalendarTemplate(id,rect,...params)
         <td>${year.efec > 0 ? `${year.efec}`.substr(0,4) : '—'}</td><td>${diff(year.efec,avrg.efec)}</td>
         <td>${year.efic > 0 ? `${year.efic}`.substr(0,4) : '—'}</td><td>${diff(year.efic,avrg.efic)}</td>
         <td>${year.focus > 0 ? `${year.focus}`.substr(0,4) : '—'}</td><td>${diff(year.focus,avrg.focus)}</td>
-        <td>${year.osc.average > 0 ? `${year.osc.average}`.substr(0,4) : '—'}</td><td>${diff(year.osc.average,avrg.osc.average)}</td>
+        <td>${year.osc > 0 ? `${year.osc}`.substr(0,4) : '—'}</td><td>${diff(year.osc,avrg.osc)}</td>
+        <td>${year.balance > 0 ? `${year.balance}`.substr(0,4) : '—'}</td><td>${diff(year.balance,avrg.balance)}</td>
       </tr>`
       prev = year
     }
