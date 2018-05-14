@@ -46,7 +46,7 @@ function JournalTemplate(id,rect,...params)
     #content log .head t:hover { text-decoration: underline; cursor:pointer; }
     #content log svg.icon { cursor: pointer; background:black; width:50px; height:50px; border-radius:3px; display:inline-block; position:absolute; left:35px }
     #content log svg.icon path { fill:none; stroke-width:10;stroke:white }
-    #content log svg:hover { background:#72dec2 !important; } 
+    #content log svg:hover { background:#72dec2 !important; }
     #content log p { font-size: 22px; margin-bottom: 20px; color:#ccc }
     #content log gallery { margin-bottom:15px; }
     #content log gallery photo { cursor: pointer; }
@@ -146,7 +146,7 @@ function JournalTemplate(id,rect,...params)
       ${name ? '<p>'+name+'.</p>' : ''}
       ${print_media(photos)}
       <mini>
-        <a class='tag' onclick="Ø('query').bang('${entry.unde().to_url()}')">${entry.unde().to_url()}</a> 
+        <a class='tag' onclick="Ø('query').bang('${entry.unde().to_url()}')">${entry.unde().to_url()}</a>
         <a class='tag'>${group[0].task}</a> ${fh > 0 ? fh+'fh' : ''}
       </mini>
     </log>`
@@ -272,6 +272,9 @@ function JournalTemplate(id,rect,...params)
     html += `<rect class="misc" x="310" y="150" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
     <circle cx='${310+(cell/2)}' cy='${150+(cell/2)}' r='2' style='fill:#fff; stroke:none'></circle>
     <text x='350' y='160' style='text-anchor:left'>Diary</text>`
+    
+    var recent = new Horaire(Object.values(h).splice(0,364)).focus;
+    html += `<text x='725' y='160' style='text-anchor:end'>${recent.toFixed(2)}f</text>`
     
     return `<svg class='graph' style='max-width:${size.width+30}px; height:${(cell*8)+height}px; width:100%;'>${html}<path d="${path}"/></svg>`
   }

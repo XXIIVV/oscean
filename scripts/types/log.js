@@ -124,7 +124,7 @@ function Horaire(logs)
     efec:(efec_sum/Object.keys(h.topics).length),
     efic:(efic_sum/Object.keys(h.topics).length),
     focus:((efec_sum/Object.keys(h.topics).length)+(efic_sum/Object.keys(h.topics).length))/2,
-    sum:h.fh,
+    sum:(h.fh+h.ch)/2,
     count:logs.length,
     osc:h.osc,
     sectors:{audio:audio,visual:visual,research:research},
