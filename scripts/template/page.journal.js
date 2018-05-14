@@ -28,7 +28,7 @@ function JournalTemplate(id,rect,...params)
     return `
     yu#core { background:#000 !important; color:white;border-bottom:1px solid #333}
     yu#header photo { display:none}
-    svg.graph { background:#000; padding: 45px 38px 60px; color:white;border-bottom:1px solid #333; display:block}
+    svg.graph { background:#000; padding: 45px 40px 60px; color:white;border-bottom:1px solid #333; display:block}
     svg.graph text { stroke:none; fill:#fff; font-size:11px; text-anchor: middle; font-family:'archivo_bold' }
     svg.graph rect { stroke:none }
     svg.graph rect:hover { fill:#a1a1a1 !important; cursor:pointer}
@@ -36,7 +36,7 @@ function JournalTemplate(id,rect,...params)
     svg.graph rect.visual { fill:#ff726c }
     svg.graph rect.research { fill:#fff }
     svg.graph rect.misc { fill:#333 !important }
-    svg.graph path { stroke-linecap:butt; stroke-dasharray:1,1; fill:none;stroke:black;stroke-width:15px }
+    svg.graph path { stroke-linecap:butt; stroke-dasharray:1,1; fill:none;stroke:#333;stroke-width:13px }
 
     #content log { display:block; padding:15px; margin-bottom:1px; vertical-align:top; position:relative; padding-left:100px; font-size:14px; max-width: 700px; border-bottom:1px solid #333 }
     #content log .head { display: block; font-size:15px; line-height: 25px; }
