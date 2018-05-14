@@ -40,6 +40,13 @@ function Desamber(str)
     return new Date(year.setDate(this.doty)); 
   }
 
+  this.to_offset = function(offset)
+  {
+    var from = this.to_date()
+
+    return new Date(from.getFullYear(),from.getMonth(),from.getDate()+offset,from.getHours(),from.getMinutes(),from.getSeconds()).desamber();
+  }
+
   this.toString = function()
   {
     return this.str;

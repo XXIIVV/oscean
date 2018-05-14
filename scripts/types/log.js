@@ -41,8 +41,8 @@ function Log(list)
         case 2:return "sketch"; break;
         case 3:return "layout"; break;
         case 4:return "prototype"; break;
-        case 5:return "layout"; break;
-        case 6:return "draft"; break;
+        case 5:return "draft"; break;
+        case 6:return "design"; break;
         case 7:return "render"; break;
         case 8: return "release"; break;
         case 9: return "showcase"; break;
@@ -118,7 +118,6 @@ function Horaire(logs)
   var research = (h.sectors.research/h.sectors.sum)*10
   var balance = 9 - ((Math.abs(3.3333 - audio) + Math.abs(3.3333 - visual) + Math.abs(3.3333 - research))/3)
 
-  console.log(balance,audio,visual,research)
   return {
     fh:(h.fh/logs.length),
     ch:(h.ch/logs.length),

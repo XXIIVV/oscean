@@ -8,6 +8,8 @@ function JournalTemplate(id,rect,...params)
   {
     var html = ""
 
+    html += ActivityGraph(q.tables.horaire)
+
     // Find upcoming events
     var upcomings = find_upcomings(q.tables.horaire)
     var next_event = upcomings.reverse()[0]
@@ -192,5 +194,109 @@ function JournalTemplate(id,rect,...params)
     html += `— at ${(horaire.efec*10).toFixed(1)}% Effectiveness and ${(horaire.efic*10).toFixed(1)}% Efficacy.`;
 
     return html.to_markup()
+  }
+
+  function ActivityGraph(horaire,size = {width:700})
+  {
+    var h = {}
+    for(id in horaire){
+      var log = horaire[id];
+      h[log.time.toString()] = log;
+    }
+
+    // Cells
+    var html = ""
+    var week = 0
+    var cell = parseInt(size.width/52)
+    while(week < 52){
+      var x = parseInt(week * (cell+1))
+      var day = 0
+      html += week % 2 == 0 ? `<text x='${x+(cell/2)}' y='-15'>${new Date().desamber().to_offset(-(364 - (week*7))).m}</text>` : ''
+      while(day < 7){
+        var y = parseInt(day * (cell+1))
+        var offset = 364 - (week*7)-(day)
+        var desamber = new Date().desamber().to_offset(-offset).toString()
+        var log = h[desamber]
+        html += log && log.sector ? `<rect class='${log.sector}' x='${x}' y='${y}' width='${cell}' height='${cell}' rx="2" ry="2" title='${log.time}' onclick="Ø('query').bang('${log.term}')"></rect>` : ''
+        html += log && log.photo ? `<circle cx='${x+(cell/2)}' cy='${y+(cell/2)}' r='2' style='fill:#fff; stroke:none'></circle>` : ''
+        html += log && log.is_event ? `<circle cx='${x+(cell/2)}' cy='${y+(cell/2)}' r='2' style='fill:none; stroke:white; stroke-width:1.5px'></circle>` : ''
+        day += 1
+      }
+      week += 1
+    }
+
+    // Get min/max
+    var week = 0
+    var min = 999
+    var max = 0
+    while(week < 52){
+      var day = 0
+      var value = 0
+      while(day < 7){
+        var offset = 364 - (week*7)-(day)
+        var desamber = new Date().desamber().to_offset(-offset).toString()
+        var log = h[desamber]
+        if(log){ value += (log.value+log.vector)/2 }
+        day += 1
+      }
+      min = value < min ? value : min
+      max = value > max ? value : max
+      week += 1
+    }
+
+    // Bar Graph
+    var path = ""
+    var week = 0
+    var height = cell*2
+    var origin = {x:cell/2,y:((cell+1)*7)+height-15}
+    while(week < 52){
+      var x = parseInt(week * (cell+1))
+      var day = 0
+      var value = 0
+      while(day < 7){
+        var y = parseInt(day * (cell+1))
+        var offset = 364 - (week*7)-(day)
+        var desamber = new Date().desamber().to_offset(-offset).toString()
+        var log = h[desamber]
+        if(log){ value += (log.value+log.vector)/2 }
+        day += 1
+      }
+      var percent = (value-min)/(max-min)
+      var y = height - (percent*height)
+      week += 1
+      path += `M${x+origin.x},${origin.y+height} L${x+origin.x},${parseInt(y+origin.y)} `
+    }
+
+    // Legend
+
+    html += `<rect class="audio" x="0" y="150" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
+    <text x='40' y='160' style='text-anchor:left'>Audio</text>`
+    html += `<rect class="visual" x="70" y="150" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
+    <text x='110' y='160' style='text-anchor:left'>Visual</text>`
+    html += `<rect class="research" x="140" y="150" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
+    <text x='190' y='160' style='text-anchor:left'>Research</text>`
+
+    html += `<rect class="misc" x="240" y="150" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
+    <circle cx='${240+(cell/2)}' cy='${150+(cell/2)}' r='2' style='fill:none; stroke:white; stroke-width:1.5px'></circle>
+    <text x='280' y='160' style='text-anchor:left'>Event</text>`
+    html += `<rect class="misc" x="310" y="150" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
+    <circle cx='${310+(cell/2)}' cy='${150+(cell/2)}' r='2' style='fill:#fff; stroke:none'></circle>
+    <text x='350' y='160' style='text-anchor:left'>Diary</text>`
+
+    html += `<style>
+    yu#header photo { display:none}
+    yu#header { background:#ccc}
+    svg.graph { background:white; padding: 45px 38px 60px}
+    svg.graph text { stroke:none; fill:#000; font-size:11px; text-anchor: middle; font-family:'archivo_bold' }
+    svg.graph rect { stroke:none }
+    svg.graph rect:hover { fill:#a1a1a1 !important; cursor:pointer}
+    svg.graph rect.audio { fill:#72dec2 }
+    svg.graph rect.visual { fill:#ff746a }
+    svg.graph rect.research { fill:#000 }
+    svg.graph rect.misc { fill:#ccc !important }
+    svg.graph path { stroke-linecap:butt; stroke-dasharray:1,1; fill:none;stroke:black;stroke-width:${cell} }
+    </style>`
+    
+    return `<svg class='graph' style='max-width:${size.width+30}px; height:${(cell*8)+height}px; width:100%;'>${html}<path d="${path}"/></svg>`
   }
 }

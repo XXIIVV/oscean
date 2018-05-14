@@ -1,6 +1,7 @@
 # Oscean
 
 This is the repository for [Oscean](http://wiki.xxiivv.com/). 
+The ruby archives can be found [here](https://github.com/XXIIVV/vessel.oscean).
 The Master Branch is the live version.
 
 # Databases
