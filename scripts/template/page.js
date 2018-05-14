@@ -34,7 +34,7 @@ function PageTemplate(id,rect,...params)
           content:this.signal(q.name) ? this.signal(q.name).answer(q) : `${q.result.long()}${this.make_horaire(logs)}`,
           navi:this.make_navi(term,q.tables.lexicon)
         },
-        style:""
+        style:this.signal(q.name) ? this.signal(q.name).style(q) : ``,
       }
     }
   }

@@ -23,6 +23,43 @@ function JournalTemplate(id,rect,...params)
     return html
   }
 
+  this.style = function()
+  {
+    return `
+    yu#core { background:#000 !important; color:white;border-bottom:1px solid #333}
+    yu#header photo { display:none}
+    svg.graph { background:#000; padding: 45px 38px 60px; color:white;border-bottom:1px solid #333; display:block}
+    svg.graph text { stroke:none; fill:#fff; font-size:11px; text-anchor: middle; font-family:'archivo_bold' }
+    svg.graph rect { stroke:none }
+    svg.graph rect:hover { fill:#a1a1a1 !important; cursor:pointer}
+    svg.graph rect.audio { fill:#72dec2 }
+    svg.graph rect.visual { fill:#ff726c }
+    svg.graph rect.research { fill:#fff }
+    svg.graph rect.misc { fill:#333 !important }
+    svg.graph path { stroke-linecap:butt; stroke-dasharray:1,1; fill:none;stroke:black;stroke-width:15px }
+
+    #content log { display:block; padding:15px; margin-bottom:1px; vertical-align:top; position:relative; padding-left:100px; font-size:14px; max-width: 700px; border-bottom:1px solid #333 }
+    #content log .head { display: block; font-size:15px; line-height: 25px; }
+    #content log .head a { font-family: 'archivo_bold' }
+    #content log .head a:hover { text-decoration: underline; cursor:pointer; }
+    #content log .head t { color:#999; display: inline-block; margin-left:5px; font-size:14px; }
+    #content log .head t:hover { text-decoration: underline; cursor:pointer; }
+    #content log svg.icon { cursor: pointer; background:black; width:50px; height:50px; border-radius:3px; display:inline-block; position:absolute; left:35px }
+    #content log svg path { fill:none; }
+    #content log svg:hover { background:#72dec2 !important; } 
+    #content log p { font-size: 22px; margin-bottom: 20px; color:#ccc }
+    #content log gallery { margin-bottom:15px; }
+    #content log gallery photo { cursor: pointer; }
+    #content log mini { margin-bottom: 0px; font-family: 'archivo_medium'; font-size:12px; }
+    #content log mini a.tag { background:#333; line-height: 20px; color:#999; margin-right:5px; padding:0px 5px }
+    #content log mini a.tag:before { content:"#"; color:#999;padding-right:2.5px;}
+    #content log mini a:hover { background:black; color:white; }
+    #content log.event { background:#191919 }
+    #content log.event .head .topic:after { content: "Event";background: #72dec2;display: inline-block;margin-left: 5px;font-size:12px;padding:0px 10px;border-radius: 100px;line-height: 20px;position: absolute;right:20px;top:20px;color:black }
+
+    `
+  }
+
   function find_upcomings(logs)
   {
     var selection = []
@@ -122,7 +159,7 @@ function JournalTemplate(id,rect,...params)
 
   function print_icon(entry)
   {
-    return `<svg onclick="Ø('query').bang('${entry.name}')" style='background:black; width:50px; height:50px; border-radius:3px; display:inline-block; position:absolute; left:15px'><path transform="scale(0.15,0.15) translate(20,20)" d="${entry.glyph}" style='stroke-width:10;stroke:white'></path></svg>`
+    return `<svg onclick="Ø('query').bang('${entry.name}')" class='icon'><path transform="scale(0.15,0.15) translate(20,20)" d="${entry.glyph}" style='stroke-width:10;stroke:white'></path></svg>`
   }
 
   function print_media(logs)
@@ -218,8 +255,8 @@ function JournalTemplate(id,rect,...params)
         var desamber = new Date().desamber().to_offset(-offset).toString()
         var log = h[desamber]
         html += log && log.sector ? `<rect class='${log.sector}' x='${x}' y='${y}' width='${cell}' height='${cell}' rx="2" ry="2" title='${log.time}' onclick="Ø('query').bang('${log.term}')"></rect>` : ''
-        html += log && log.photo ? `<circle cx='${x+(cell/2)}' cy='${y+(cell/2)}' r='2' style='fill:#fff; stroke:none'></circle>` : ''
-        html += log && log.is_event ? `<circle cx='${x+(cell/2)}' cy='${y+(cell/2)}' r='2' style='fill:none; stroke:white; stroke-width:1.5px'></circle>` : ''
+        html += log && log.photo ? `<circle cx='${x+(cell/2)}' cy='${y+(cell/2)}' r='2' style='fill:black; stroke:none'></circle>` : ''
+        html += log && log.is_event ? `<circle cx='${x+(cell/2)}' cy='${y+(cell/2)}' r='2' style='fill:none; stroke:black; stroke-width:1.5px'></circle>` : ''
         day += 1
       }
       week += 1
@@ -282,20 +319,6 @@ function JournalTemplate(id,rect,...params)
     html += `<rect class="misc" x="310" y="150" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
     <circle cx='${310+(cell/2)}' cy='${150+(cell/2)}' r='2' style='fill:#fff; stroke:none'></circle>
     <text x='350' y='160' style='text-anchor:left'>Diary</text>`
-
-    html += `<style>
-    yu#header photo { display:none}
-    yu#header { background:#ccc}
-    svg.graph { background:white; padding: 45px 38px 60px}
-    svg.graph text { stroke:none; fill:#000; font-size:11px; text-anchor: middle; font-family:'archivo_bold' }
-    svg.graph rect { stroke:none }
-    svg.graph rect:hover { fill:#a1a1a1 !important; cursor:pointer}
-    svg.graph rect.audio { fill:#72dec2 }
-    svg.graph rect.visual { fill:#ff746a }
-    svg.graph rect.research { fill:#000 }
-    svg.graph rect.misc { fill:#ccc !important }
-    svg.graph path { stroke-linecap:butt; stroke-dasharray:1,1; fill:none;stroke:black;stroke-width:${cell} }
-    </style>`
     
     return `<svg class='graph' style='max-width:${size.width+30}px; height:${(cell*8)+height}px; width:100%;'>${html}<path d="${path}"/></svg>`
   }

@@ -88,6 +88,11 @@ function TemplateNode(id,rect)
     return a
   }
 
+  this.style = function()
+  {
+    return ''
+  }
+
   this.make_table = function(term,lexicon,depth = 3, selection = null)
   {
     if(depth <= 0){ return "" }
