@@ -6,16 +6,14 @@ function JournalTemplate(id,rect,...params)
   
   this.answer = function(q)
   {
-    var html = ""
-
-    html += ActivityGraph(q.tables.horaire)
-
+    var html = ActivityGraph(q.tables.horaire)
     // Find upcoming events
     var upcomings = find_upcomings(q.tables.horaire)
     var next_event = upcomings.reverse()[0]
     html += print_group([next_event],q.tables.lexicon)
-
-    var groups = find_groups(q.tables.horaire)
+    // Find any event
+    var any = find_any(q.tables.horaire)
+    var groups = make_groups(any)
     for(var id in groups){
       var group = groups[id]
       html += print_group(group,q.tables.lexicon)
@@ -36,6 +34,8 @@ function JournalTemplate(id,rect,...params)
     svg.graph rect.visual { fill:#ff726c }
     svg.graph rect.research { fill:#fff }
     svg.graph rect.misc { fill:#333 !important }
+    svg.graph circle.photo { fill:black; stroke:none }
+    svg.graph circle.event { fill:none; stroke:black; stroke-width:1.5px }
     svg.graph path { stroke-linecap:butt; stroke-dasharray:1,1; fill:none;stroke:#333;stroke-width:13px }
 
     #content log { display:block; padding:15px; margin-bottom:1px; vertical-align:top; position:relative; padding-left:100px; font-size:14px; max-width: 700px; border-bottom:1px solid #333 }
@@ -45,25 +45,22 @@ function JournalTemplate(id,rect,...params)
     #content log .head t { color:#999; display: inline-block; margin-left:5px; font-size:14px; }
     #content log .head t:hover { text-decoration: underline; cursor:pointer; }
     #content log svg.icon { cursor: pointer; background:black; width:50px; height:50px; border-radius:3px; display:inline-block; position:absolute; left:35px }
-    #content log svg path { fill:none; }
+    #content log svg.icon path { fill:none; stroke-width:10;stroke:white }
     #content log svg:hover { background:#72dec2 !important; } 
     #content log p { font-size: 22px; margin-bottom: 20px; color:#ccc }
     #content log gallery { margin-bottom:15px; }
     #content log gallery photo { cursor: pointer; }
     #content log mini { margin-bottom: 0px; font-family: 'archivo_medium'; font-size:12px; }
-    #content log mini a.tag { background:#333; line-height: 20px; color:#999; margin-right:5px; padding:0px 5px }
+    #content log mini a.tag { background:#333; line-height: 20px; color:#ccc; margin-right:5px; padding:0px 7.5px }
     #content log mini a.tag:before { content:"#"; color:#999;padding-right:2.5px;}
     #content log mini a:hover { background:black; color:white; }
     #content log.event { background:#191919 }
-    #content log.event .head .topic:after { content: "Event";background: #72dec2;display: inline-block;margin-left: 5px;font-size:12px;padding:0px 10px;border-radius: 100px;line-height: 20px;position: absolute;right:20px;top:20px;color:black }
-
-    `
+    #content log.event .head .topic:after { content: "Event";background: #72dec2;display: inline-block;margin-left: 5px;font-size:12px;padding:0px 10px;border-radius: 100px;line-height: 20px;position: absolute;right:20px;top:20px;color:black }`
   }
 
   function find_upcomings(logs)
   {
     var selection = []
-    // Segment of time
     var count = 0
     for(var id in logs){
       var log = logs[id]
@@ -74,14 +71,12 @@ function JournalTemplate(id,rect,...params)
       selection.push(log)
       count += 1
     }
-
     return selection
   }
 
-  function find_groups(logs)
+  function find_any(logs)
   {
     var selection = []
-    // Segment of time
     var count = 0
     for(var id in logs){
       var log = logs[id]
@@ -91,14 +86,17 @@ function JournalTemplate(id,rect,...params)
       selection.push(log)
       count += 1
     }
+    return selection
+  }
 
+  function make_groups(logs)
+  {
     var groups = []
-    // Group logs
     var count = 0
     var group = []
     var prev  = null
-    for(var id in selection){
-      var log = selection[id]
+    for(var id in logs){
+      var log = logs[id]
       if(prev && prev.term != log.term){
         var pop = group.slice()
         groups.push(pop)
@@ -107,7 +105,6 @@ function JournalTemplate(id,rect,...params)
       group.push(log)
       prev = log
     }
-
     return groups
   }
 
@@ -139,27 +136,22 @@ function JournalTemplate(id,rect,...params)
 
     html += `
     <log class='${is_event ? 'event' : ''}'>
-      ${print_icon(entry)}
+      <svg onclick="Ø('query').bang('${entry.name}')" class='icon'>
+        <path transform="scale(0.15,0.15) translate(20,20)" d="${entry.glyph}"></path>
+      </svg>
       <yu class='head'>
         <a class='topic' onclick="Ø('query').bang('${term}')">${term}</a>
         <t class='time' onclick="Ø('query').bang('2018')">${group[group.length-1].time.offset_format().capitalize()}${group.length > 1 ? ', for '+group.length+' days' : ''}</t>
       </yu>
       ${name ? '<p>'+name+'.</p>' : ''}
       ${print_media(photos)}
-      ${print_horaire(entry.unde(),group[0].task,fh,ch)}
+      <mini>
+        <a class='tag' onclick="Ø('query').bang('${entry.unde().to_url()}')">${entry.unde().to_url()}</a> 
+        <a class='tag'>${group[0].task}</a> ${fh > 0 ? fh+'fh' : ''}
+      </mini>
     </log>`
 
     return html
-  }
-
-  function print_horaire(unde,task,fh,ch)
-  {
-    return `<mini><a class='tag' onclick="Ø('query').bang('${unde.to_url()}')">${unde.to_url()}</a> <a class='tag'>${task}</a> ${fh > 0 ? fh+'fh' : ''}</mini>`
-  }
-
-  function print_icon(entry)
-  {
-    return `<svg onclick="Ø('query').bang('${entry.name}')" class='icon'><path transform="scale(0.15,0.15) translate(20,20)" d="${entry.glyph}" style='stroke-width:10;stroke:white'></path></svg>`
   }
 
   function print_media(logs)
@@ -191,51 +183,10 @@ function JournalTemplate(id,rect,...params)
     }
   }
 
-  function make_preview(project,event,lexicon)
-  {
-    var p = project ? lexicon[project.toUpperCase()].bref() : null
-    var e = event && event != project ? lexicon[event.toUpperCase()].bref() : null
-    return `${p ? p : ''} ${e ? e : ''}`.trim()
-  }
-
-  function sort_projects(projects)
-  {
-    var a = []
-    for(var id in projects){
-      a.push([id,projects[id]])
-    }
-    a.sort(function(a, b) {
-      return a[1] - b[1];
-    });
-
-    return a.reverse()
-  }
-
-  function make_events(events)
-  {
-    var html = ""
-
-    for(var id in events){
-      var event = events[id]
-      html += `${event.name} on {{${event.time}|${event.term}}}. `.to_markup()
-    }
-
-    return html
-  }
-
-  function make_projects(projects,horaire)
-  {
-    var html = ""
-
-    html += projects.length > 2 ? `Worked on {{${projects[0][0]}}} for ${projects[0][1]} hours, as well as {{${projects[1][0]}}}, {{${projects[2][0]}}} and ${projects.length-3} other projects for a total of {*${horaire.sum} hours*} ` : ''
-    html += `— at ${(horaire.efec*10).toFixed(1)}% Effectiveness and ${(horaire.efic*10).toFixed(1)}% Efficacy.`;
-
-    return html.to_markup()
-  }
-
   function ActivityGraph(horaire,size = {width:700})
   {
     var h = {}
+
     for(id in horaire){
       var log = horaire[id];
       h[log.time.toString()] = log;
@@ -255,14 +206,15 @@ function JournalTemplate(id,rect,...params)
         var desamber = new Date().desamber().to_offset(-offset).toString()
         var log = h[desamber]
         html += log && log.sector ? `<rect class='${log.sector}' x='${x}' y='${y}' width='${cell}' height='${cell}' rx="2" ry="2" title='${log.time}' onclick="Ø('query').bang('${log.term}')"></rect>` : ''
-        html += log && log.photo ? `<circle cx='${x+(cell/2)}' cy='${y+(cell/2)}' r='2' style='fill:black; stroke:none'></circle>` : ''
-        html += log && log.is_event ? `<circle cx='${x+(cell/2)}' cy='${y+(cell/2)}' r='2' style='fill:none; stroke:black; stroke-width:1.5px'></circle>` : ''
+        html += log && log.photo ? `<circle cx='${x+(cell/2)}' cy='${y+(cell/2)}' r='2' class='photo'></circle>` : ''
+        html += log && log.is_event ? `<circle cx='${x+(cell/2)}' cy='${y+(cell/2)}' r='2' class='event'></circle>` : ''
         day += 1
       }
       week += 1
     }
 
     // Get min/max
+
     var week = 0
     var min = 999
     var max = 0
@@ -282,6 +234,7 @@ function JournalTemplate(id,rect,...params)
     }
 
     // Bar Graph
+
     var path = ""
     var week = 0
     var height = cell*2
