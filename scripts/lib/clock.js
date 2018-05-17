@@ -20,9 +20,9 @@ function Clock()
   {
     var d = new Date(), e = new Date(d);
     var msSinceMidnight = e - d.setHours(0,0,0,0);
-    var val = (msSinceMidnight/864)/100;
-    var format = val.toFixed(3).padStart(7,"0").replace(".",":")
-    return format
+    var val = (msSinceMidnight/864) * 10;
+    var format = val.toFixed(3).padStart(7,"0").replace(".","").substr(0,6)
+    return format;
   }
 
   this.update = function()
@@ -34,12 +34,13 @@ function Clock()
 
   this.toString = function()
   {
-    return this.time();
+    var t = this.time().toString();
+    return t.substr(0,3)+":"+t.substr(3,3);
   }
 
   this.path = function(w,h,second_needle = false)
   {
-    var t        = this.time().replace(":","");
+    var t        = this.time();
     var pad      = 0;
     var needle_1 = parseInt(((t/1000000) % 1) * (h - (pad*2))) + pad;
     var needle_2 = parseInt(((t/100000) % 1) * (w - (pad*2))) + pad;
