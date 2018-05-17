@@ -51,7 +51,7 @@ function graph()
       Ø("navi").create({x:26,y:16},DomNode,"list"),
     Ø("footer").create({x:6,y:11},DomNode,"yu",`
       <wr>
-    <a href="https://twitter.com/neauoire" class="icon twitter external"></a><a href="https://github.com/neauoire" class="icon github external"></a><a href="Rotonde" class="icon rotonde"></a>
+    <a href="https://twitter.com/neauoire" class="icon twitter external"></a><a href="https://github.com/neauoire" class="icon github external"></a><a href="http://webring.xxiivv.com/" class="icon rotonde"></a>
     <yu id="clock" onclick='Ø("query").bang("Clock")'>${new Clock().svg(35,35)}</yu><a onclick="Ø('query').bang('devine lu linvega')">Devine Lu Linvega</a> © 06I04—${new Date().desamber()}<br>BY-NC-SA 4.0 <t style="color:#ccc"'>${new Clock()}</t><hr></wr>`),
   ])
 
