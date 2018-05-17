@@ -1,16 +1,5 @@
 function Clock()
 {
-  var clock = this;
-  
-  this.radius = 90;
-  this.circ = this.radius * 2 * Math.PI;
-  this.center = 105;
-  this.el = document.getElementById("clock");
-
-  this.size = {width:window.innerWidth,height:window.innerHeight,ratio:2};
-
-  this.style = {padding:100,font_size:20,stroke_width:1.5};
-
   this.start = function()
   {
     clock.update();
@@ -25,6 +14,26 @@ function Clock()
     return format;
   }
 
+  this.toString = function()
+  {
+    var t = this.time().toString();
+    return t.substr(0,3)+":"+t.substr(3,3);
+  }
+}
+
+function Entaloneralie()
+{
+  var clock = new Clock();
+  
+  this.radius = 90;
+  this.circ = this.radius * 2 * Math.PI;
+  this.center = 105;
+  this.el = document.getElementById("clock");
+
+  this.size = {width:window.innerWidth,height:window.innerHeight,ratio:2};
+
+  this.style = {padding:100,font_size:20,stroke_width:1.5};
+
   this.update = function()
   {
     this.el.innerHTML = `<svg width="${w}" height="${h}"><path d="${this.path()}"></path></svg>`;
@@ -32,15 +41,9 @@ function Clock()
     setTimeout(function(){ clock.update(); }, 864.0);
   }
 
-  this.toString = function()
-  {
-    var t = this.time().toString();
-    return t.substr(0,3)+":"+t.substr(3,3);
-  }
-
   this.path = function(w,h,second_needle = false)
   {
-    var t        = this.time();
+    var t        = clock.time();
     var pad      = 0;
     var needle_1 = parseInt(((t/1000000) % 1) * (h - (pad*2))) + pad;
     var needle_2 = parseInt(((t/100000) % 1) * (w - (pad*2))) + pad;
