@@ -11,7 +11,7 @@ function QueryNode(id,rect)
 
     target = target ? target.replace(/[^0-9a-z]/gi," ").trim().toLowerCase() : "home"
     this.label = `query:${target}`
-    window.scrollTo(0,0);
+    setTimeout(()=>{ window.scrollTo(0,0); },250)
     this.send(target)
     window.location.hash = target.to_url()
   }

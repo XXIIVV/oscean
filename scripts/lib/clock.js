@@ -10,8 +10,7 @@ function Clock()
     var d = new Date(), e = new Date(d);
     var msSinceMidnight = e - d.setHours(0,0,0,0);
     var val = (msSinceMidnight/864) * 10;
-    var format = val.toFixed(3).padStart(7,"0").replace(".","").substr(0,6)
-    return format;
+    return val.toFixed(3).padStart(7,"0").replace(".","").substr(0,6);
   }
 
   this.toString = function()
@@ -37,8 +36,6 @@ function Entaloneralie()
   this.update = function()
   {
     this.el.innerHTML = `<svg width="${w}" height="${h}"><path d="${this.path()}"></path></svg>`;
-
-    setTimeout(function(){ clock.update(); }, 864.0);
   }
 
   this.path = function(w,h,second_needle = false)
