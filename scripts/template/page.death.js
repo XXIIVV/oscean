@@ -33,8 +33,6 @@ function DeathTemplate(id,rect,...params)
       y += 1;
     }
 
-    var progress = (now - birth.getTime())/(end.getTime() - birth.getTime());
-
     return `${term.long()}<yu class='death'>${html}</yu>`
   }
   

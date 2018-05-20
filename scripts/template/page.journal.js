@@ -65,7 +65,7 @@ function JournalTemplate(id,rect,...params)
     for(var id in logs){
       var log = logs[id]
       if(count > 30){ break; }
-      if(log.time.offset() < 0){ continue; }
+      if(log.time.offset() <= 0){ continue; }
       if(!log.is_event){ continue; }
       if(!log.term){ continue; }
       selection.push(log)
