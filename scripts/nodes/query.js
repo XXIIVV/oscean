@@ -13,7 +13,11 @@ function QueryNode(id,rect)
     this.label = `query:${target}`
     setTimeout(()=>{ window.scrollTo(0,0); },250)
     this.send(target)
-    window.location.hash = target.to_url()
+    if (target === 'home') {
+      window.history.replaceState(undefined, undefined, "#" + target)
+    } else {
+      window.location.hash = target.to_url()
+    }
   }
 }
 
