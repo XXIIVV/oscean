@@ -9,11 +9,12 @@ function QueryNode(id,rect)
   {
     Ø("view").el.className = "loading"
 
+    let noHash = (target === '')
     target = target ? target.replace(/[^0-9a-z]/gi," ").trim().toLowerCase() : "home"
     this.label = `query:${target}`
     setTimeout(()=>{ window.scrollTo(0,0); },250)
     this.send(target)
-    if (target === 'home') {
+    if (noHash) {
       window.history.replaceState(undefined, undefined, "#" + target)
     } else {
       window.location.hash = target.to_url()
