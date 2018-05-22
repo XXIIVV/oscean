@@ -258,23 +258,16 @@ function JournalTemplate(id,rect,...params)
     }
 
     // Legend
+    var recent = new Horaire(Object.values(h).splice(0,364));
 
-    html += `<rect class="audio" x="0" y="150" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
-    <text x='40' y='160' style='text-anchor:left'>Audio</text>`
-    html += `<rect class="visual" x="70" y="150" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
-    <text x='110' y='160' style='text-anchor:left'>Visual</text>`
-    html += `<rect class="research" x="140" y="150" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
-    <text x='190' y='160' style='text-anchor:left'>Research</text>`
+    html += `<rect class="audio" x="${cell*0}" y="150" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
+    <text x='${(cell+1)*4}' y='160' style='text-anchor:left'>Audio ${(recent.sectors.audio*10).toFixed(1)}%</text>`
+    html += `<rect class="visual" x="${(cell+1)*8}" y="150" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
+    <text x='${(cell+1)*12}' y='160' style='text-anchor:left'>Visual ${(recent.sectors.visual*10).toFixed(1)}%</text>`
+    html += `<rect class="research" x="${(cell+1)*16}" y="150" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
+    <text x='${(cell+1)*20.5}' y='160' style='text-anchor:left'>Research ${(recent.sectors.research*10).toFixed(1)}%</text>`
 
-    html += `<rect class="misc" x="240" y="150" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
-    <circle cx='${240+(cell/2)}' cy='${150+(cell/2)}' r='2' style='fill:none; stroke:white; stroke-width:1.5px'></circle>
-    <text x='280' y='160' style='text-anchor:left'>Event</text>`
-    html += `<rect class="misc" x="310" y="150" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
-    <circle cx='${310+(cell/2)}' cy='${150+(cell/2)}' r='2' style='fill:#fff; stroke:none'></circle>
-    <text x='350' y='160' style='text-anchor:left'>Diary</text>`
-    
-    var recent = new Horaire(Object.values(h).splice(0,364)).focus;
-    html += `<text x='725' y='160' style='text-anchor:end'>${recent.toFixed(2)}f</text>`
+    html += `<text x='725' y='160' style='text-anchor:end'>${recent.sum.toFixed(0)}+</text>`
     
     return `<svg class='graph' style='max-width:${size.width+30}px; height:${(cell*8)+height}px; width:100%;'>${html}<path d="${path}"/></svg>`
   }
