@@ -100,10 +100,26 @@ function TemplateNode(id,rect)
     if(children.length == 0){ return ""}
 
     var html = ""
+
+    if(depth == 2){
+      for(id in children){
+        var child = children[id];
+        html += selection && child.name == selection.name ?  `<t class='depth${depth}'>{*${child.name.capitalize()}*}${this.make_table(child,lexicon,depth-1,selection)}</t> `.to_markup() : `<t class='depth${depth}'>{{${child.name.capitalize()}}}${this.make_table(child,lexicon,depth-1,selection)}</t> `.to_markup()
+      }
+      return html
+    }
+
+    if(depth == 1){
+      for(id in children){
+        var child = children[id];
+        html += selection && child.name == selection.name ? `<t class='depth${depth}'>{*${child.name.capitalize()}*}</t> `.to_markup() : `<t class='depth${depth}'>{{${child.name.capitalize()}}}</t> `.to_markup()
+      }
+      return children.length > 0 ? `(${html.trim()})` : ''
+    }
     html += "<table width='100%'>"
     for(id in children){
       var child = children[id];
-      html += `<tr><th width='150' class='${selection && child.name == selection.name ? 'selected' : ''}'>{{${child.name.capitalize()}}}</th><td>${this.make_table(child,lexicon,depth-1,selection)}</td></tr>`.to_markup()
+      html += `<tr class='head'><th class='${selection && child.name == selection.name ? 'selected' : ''}'>{{${child.name.capitalize()}}}</th><td>${this.make_table(child,lexicon,depth-1,selection)}</td></tr>`.to_markup()
     }
     html += "</table>"
     return html
@@ -117,13 +133,7 @@ function TemplateNode(id,rect)
     if(!portal){ console.log("No portal found"); return "" }
 
     html += `<svg id="glyph"><path transform="scale(0.175,0.175) translate(-50,-125)" d="${portal.glyph}"></path></svg>`
-    html += "<table width='100%'>"
-
-    var children = this.find_children(portal.name,lexicon)
-    for(id in children){
-      var child = children[id];
-      html += `<tr><th width='100' class='${term && child.name == term.name ? 'selected' : ''}'>{{${child.name.capitalize()}}}</th><td>${this.make_table(child,lexicon,2,term)}</td></tr>`.to_markup()
-    }
+    html += `<tr><td>${this.make_table(portal,lexicon,3,term)}</td></tr>`
     html += "</table>"
     return html
   }
@@ -143,17 +153,17 @@ function TemplateNode(id,rect)
     if(term.type && term.type.toLowerCase() == "portal"){
       portal = term
     }
-    else if(parent.type && parent.type.toLowerCase() == "portal"){
+    else if(parent.is_portal){
       portal = parent
     }
     else{
       var parent_parent = lexicon[parent.unde().toUpperCase()]
-      if(parent_parent.type && parent_parent.type.toLowerCase() == "portal"){
+      if(parent_parent.is_portal){
         portal = parent_parent
       }
       else{
         var parent_parent_parent = lexicon[parent_parent.unde().toUpperCase()]
-        if(parent_parent_parent.type && parent_parent_parent.type.toLowerCase() == "portal"){
+        if(parent_parent_parent.is_portal){
           portal = parent_parent_parent
         }
       }

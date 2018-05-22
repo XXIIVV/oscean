@@ -8,6 +8,8 @@ function Term(name,dict)
   this.links = this.dict.LINK ? this.dict.LINK : [];
   this.flag = this.dict.FLAG ? this.dict.FLAG : [];
   this.glyph = this.dict.ICON ? this.dict.ICON : this.glyph;
+
+  this.is_portal = this.type && (this.type.toLowerCase() == "portal")
   
   this.bref = function()
   {
@@ -21,6 +23,6 @@ function Term(name,dict)
 
   this.unde = function()
   {
-    return this.dict.UNDE
+    return this.dict.UNDE ? this.dict.UNDE : "Home"
   }
 }

@@ -51,7 +51,7 @@ function Log(list)
     }
     if(sector == 3){
       switch(vector) {
-        case 1:return "research"; break;
+        case 1:return "maintenance"; break;
         case 2:return "planning"; break;
         case 3:return "design"; break;
         case 4:return "testing"; break;
