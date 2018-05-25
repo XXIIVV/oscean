@@ -19,14 +19,7 @@ function graph()
     Ø("diary").create({x:2,y:11},DiaryTemplate),
     Ø("portal").create({x:8,y:11},PortalTemplate),
     Ø("index").create({x:14,y:11},IndexTemplate),
-    Ø("docs").create({x:11,y:16},DocsTemplate),
-      Ø("lietal").create({x:11,y:25},IndentalNode),
-      Ø("directory").create({x:8,y:25},IndentalNode),
-      Ø("epistemology").create({x:5,y:25},IndentalNode),
-      Ø("glossary").create({x:14,y:25},IndentalNode),
-      Ø("japanese").create({x:2,y:25},IndentalNode),
-      Ø("russian").create({x:17,y:25},IndentalNode),
-      Ø("tiers").create({x:20,y:25},IndentalNode),
+    Ø("docs").create({x:11,y:11},DocsTemplate),
     Ø("calendar").create({x:17,y:11},CalendarTemplate),
   ])
 

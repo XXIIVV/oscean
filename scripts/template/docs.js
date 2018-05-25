@@ -4,6 +4,8 @@ function DocsTemplate(id,rect,...params)
 
   this.glyph = NODE_GLYPHS.template
   
+  this.archives = [];
+
   this.answer = function(q)
   {    
     var term = q.result
@@ -13,12 +15,10 @@ function DocsTemplate(id,rect,...params)
     var siblings = this.find_siblings(term.unde(),q.tables.lexicon)
     var children = this.find_children(q.name,q.tables.lexicon)
 
-    var target = q.result.name.toLowerCase()
-    if(!this.signal(target)){
-      console.warn(`Missing docs/${target}`)
-      return;
-    }
-        
+    var filename = term.name.to_url();
+
+    this.invoke(filename);
+
     return {
       title: q.name.capitalize(),
       view:{
@@ -34,7 +34,7 @@ function DocsTemplate(id,rect,...params)
           sidebar:{
             bref:make_bref(q,term,logs)
           },
-          content:`${q.result.long()}${make_content(this.signal(target).answer(q))}`,
+          content: q.result.long()+this.load(filename),
           navi:this.make_navi(term,q.tables.lexicon)
         },
         style:""
@@ -42,15 +42,33 @@ function DocsTemplate(id,rect,...params)
     }
   }
 
-  function make_content(data)
+  this.invoke = function(filename)
   {
+    if(this.archives[filename]){ this.load(filename); return; }
+
+    var s = document.createElement('script');
+    s.type = 'text/javascript';
+    s.src = `scripts/docs/${filename}.tome?v=${new Date().desamber()}`;
+    document.getElementsByTagName('head')[0].appendChild(s);
+  }
+
+  this.seal = function(name,payload = null)
+  {
+    this.archives[name] = payload;
+    Ø('content').update(this.load(name))
+  }
+
+  this.load = function(key)
+  {
+    if(!this.archives[key]){ return `<p>Failed to load ${key}.</p>`; }
+
+    var data = new Indental(this.archives[key]).parse()
     var html = ""
     for(id in data){
-      html += `
-      <h3>${id.capitalize()}</h3>
-      ${new Runic(data[id])}`
+      var seg = data[id]
+      html += `<h3>${id.capitalize()}</h3>${new Runic(seg)}`
     }
-    return html
+    return html;
   }
 
   function make_bref(q,term,logs)
@@ -59,23 +77,7 @@ function DocsTemplate(id,rect,...params)
     <h1>${q.result.bref()}</h1>
     <h2>
       <a onclick="Ø('query').bang('${term.unde()}')">${term.unde()}</a><br />
-      ${make_activity(logs)}
-      ${make_links(term.links)}
+      <yu class='links'><a href='https://github.com/XXIIVV/Oscean/edit/master/scripts/docs/${term.name.to_url()}.tome' target='_blank'>Edit Docs</a></yu>
     </h2>`
-  }
-
-  function make_links(links)
-  {
-    var html = ""
-    for(id in links){
-      html += `<a href='${links[id]}' target='_blank'>${id}</a>`
-    }
-    return `<yu class='links'>${html}</yu>`
-  }
-
-  function make_activity(logs)
-  {
-    if(logs.length < 10){ return "" }
-    return `${logs[logs.length-1].time}—${logs[0].time}`
   }
 }

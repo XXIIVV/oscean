@@ -46,7 +46,10 @@ function JournalTemplate(id,rect,...params)
     #content log .head t:hover { text-decoration: underline; cursor:pointer; }
     #content log svg.icon { cursor: pointer; background:black; width:50px; height:50px; border-radius:3px; display:inline-block; position:absolute; left:35px }
     #content log svg.icon path { fill:none; stroke-width:10;stroke:white }
-    #content log svg:hover { background:#72dec2 !important; }
+    #content log.audio svg:hover { background:#72dec2 !important; }
+    #content log.visual svg:hover { background:#ff726c !important; }
+    #content log.research svg:hover { background:#ccc !important; }
+    #content log.misc svg:hover { background:#333333 !important; }
     #content log p { font-size: 22px; margin-bottom: 20px; color:#ccc }
     #content log gallery { margin-bottom:15px; }
     #content log gallery photo { cursor: pointer; }
@@ -135,7 +138,7 @@ function JournalTemplate(id,rect,...params)
     }
 
     html += `
-    <log class='${is_event ? 'event' : ''}'>
+    <log class='${is_event ? 'event' : ''} ${group[0].sector}'>
       <svg onclick="Ø('query').bang('${entry.name}')" class='icon'>
         <path transform="scale(0.15,0.15) translate(20,20)" d="${entry.glyph}"></path>
       </svg>
