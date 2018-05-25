@@ -51,12 +51,12 @@ function IndexTemplate(id,rect,...params)
       var photo_log = find_photo(find_logs(child.name,logs))
       html += `
       ${photo_log ? `<a onclick='Ø("query").bang("${child.name}")'><img src="media/diary/${photo_log.photo}.jpg"/></a>` : ''}
-      <h2 class='book'><a onclick="Ø('query').bang('${child.name.to_url()}')">${child.name.capitalize()}</a></h2>
+      <h2><a onclick="Ø('query').bang('${child.name.to_url()}')">${child.name.capitalize()}</a></h2>
       <hs>${child.bref().to_markup()}</hs>
       ${child.long()}
       ${!stop ? make_index(child.name,lexicon,logs,true) : ''}`
     }
-    return html
+    return children.length > 0 ? `<yu class='container'>${html}</yu>` : ''
   }
 
   function find_logs(name,logs)
