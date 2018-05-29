@@ -29,6 +29,7 @@ function LietalNode(id,rect,...params)
       if(part.substr(0,1) == "~"){ s += `${part.replace("~",".")} `; continue; }
       s += part != "'" ? ` ${this.convert(part,direction)} ` : part;
     }
+    s = s.replace(/  /g,' ')
     return `<t class='lietal'>${this.format(s)}</t>`;
   }
 
@@ -108,18 +109,18 @@ function LietalNode(id,rect,...params)
 
     if(childspeak.length == 2){
       var p1 = childspeak.substr(0,2);
-      return `${this.adultspeak(childspeak)} <comment>&lt;${this.convert(p1)}&gt;</comment> {*${this.convert(childspeak)}*}`;
+      return `${this.adultspeak(childspeak).capitalize()} <comment>${this.convert(p1)}</comment> = <b>${this.convert(childspeak)}</b>`;
     }
     if(childspeak.length == 4){
       var p1 = childspeak.substr(0,2);
       var p2 = childspeak.substr(2,2);
-      return `${this.adultspeak(childspeak)} <comment>&lt;${this.convert(p1)}(${this.convert(p2)})&gt;</comment> {*${this.convert(childspeak)}*}`;
+      return `${this.adultspeak(childspeak).capitalize()} <comment>${this.convert(p1)}(${this.convert(p2)})</comment> = <b>${this.convert(childspeak)}</b>`;
     }
     if(childspeak.length == 6){
       var p1 = childspeak.substr(0,2);
       var p2 = childspeak.substr(2,2);
       var p3 = childspeak.substr(4,2);
-      return `${this.adultspeak(childspeak)} <comment>&lt;${this.convert(p1+p2)}(${this.convert(p3)})&gt;</comment> {*${this.convert(childspeak)}*}`;
+      return `${this.adultspeak(childspeak).capitalize()} <comment>${this.convert(p1+p2)}(${this.convert(p3)})</comment> = <b>${this.convert(childspeak)}</b>`;
     }
     return "??"
   }
