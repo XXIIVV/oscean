@@ -50,7 +50,7 @@ function graph()
 
   // Operation
 
-  Ø("runic").mesh({x:16,y:32},[
+  Ø("runic").mesh({x:6,y:23},[
     Ø("operation").create({x:5,y:2},OperationNode),
     Ø("en_li").create({x:5,y:9},LietalNode),
     Ø("li_en").create({x:2,y:9},LietalNode),

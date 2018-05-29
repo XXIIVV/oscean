@@ -141,7 +141,7 @@ function TemplateNode(id,rect)
   this.make_horaire = function(logs)
   {
     var horaire = new Horaire(logs);
-    return horaire.sum > 30 ? `<mini class='horaire'>{{<b>${horaire.sum.toFixed(0)}</b>+|Horaire}} <b>${horaire.fh.toFixed(2)}</b>HDf <b>${horaire.ch.toFixed(2)}</b>HDc <t class='right'>{{:edit|https://github.com/XXIIVV/Oscean/edit/master/scripts/database/lexicon.tome}} {{:talk|https://github.com/XXIIVV/Oscean/issues}}</t><hr/></mini>`.to_markup() : `<mini class='horaire'><t class='right'>{{:edit|https://github.com/XXIIVV/Oscean/edit/master/scripts/database/lexicon.tome}} {{:talk|https://github.com/XXIIVV/Oscean/issues}}</t><hr/></mini>`.to_markup()
+    return horaire.sum > 30 ? `<mini class='horaire'>{{<b>${horaire.sum.toFixed(0)}</b>+|Horaire}} <b>${horaire.fh.toFixed(2)}</b>HDf <b>${horaire.ch.toFixed(2)}</b>HDc<hr/></mini>`.to_markup() : `<mini class='horaire'><hr/></mini>`.to_markup()
   }
 
   this.find_portal = function(term,lexicon)
