@@ -100,29 +100,47 @@ function LietalNode(id,rect,...params)
 
     dict = direction == "li_en" ? this.dict.li_en : this.dict.en_li;
     word = word.toUpperCase();
-    return dict[word] ? (direction == "en_li" ? this.adultspeak(dict[word]) : dict[word]) : "("+word+")";
+    return dict[word] ? (direction == "en_li" ? this.adultspeak(dict[word]) : dict[word]) : word;
   }
 
-  this.deconstruct = function(childspeak)
+  this.construction = function(childspeak)
   {
     childspeak = childspeak.toLowerCase();
 
     if(childspeak.length == 2){
-      var p1 = childspeak.substr(0,2);
-      return `${this.adultspeak(childspeak).capitalize()} <comment>${this.convert(p1)}</comment> = <b>${this.convert(childspeak)}</b>`;
+      return `${this.convert(childspeak.substr(0,2))}`;
     }
     if(childspeak.length == 4){
-      var p1 = childspeak.substr(0,2);
-      var p2 = childspeak.substr(2,2);
-      return `${this.adultspeak(childspeak).capitalize()} <comment>${this.convert(p1)}(${this.convert(p2)})</comment> = <b>${this.convert(childspeak)}</b>`;
+      return `${this.convert(childspeak.substr(0,2))}(${this.convert(childspeak.substr(2,2))})`;
     }
     if(childspeak.length == 6){
-      var p1 = childspeak.substr(0,2);
-      var p2 = childspeak.substr(2,2);
-      var p3 = childspeak.substr(4,2);
-      return `${this.adultspeak(childspeak).capitalize()} <comment>${this.convert(p1+p2)}(${this.convert(p3)})</comment> = <b>${this.convert(childspeak)}</b>`;
+      return `${this.convert(childspeak.substr(0,2)+childspeak.substr(2,2))}(${this.convert(childspeak.substr(4,2))})`;
     }
-    return "??"
+
+    return "(??)"
+  }
+
+  this.deconstruct = function(childspeak)
+  {
+    if(childspeak == "*"){
+      return this.table();
+    }
+    return `<b>${this.adultspeak(childspeak).capitalize()}</b> : ${this.construction(childspeak).toLowerCase()} <comment># ${this.convert(childspeak).capitalize()}</comment>`
+  }
+
+  this.table = function()
+  {
+    var html = ""
+    var dict = this.dict["li_en"]
+
+    for(li in dict){
+      var en = dict[li].trim();
+      if(en == ""){ continue; }
+      var co = this.construction(li)
+      var as = this.adultspeak(li)
+      html += `<tr><td><b>${as.capitalize()}</b></td><td>${en.capitalize()}</td><td>${co != en ? co.toLowerCase() : '*'}</td></tr>`
+    }
+    return `<table>${html}</table>`
   }
 
   function make_dict(dictionaery)
