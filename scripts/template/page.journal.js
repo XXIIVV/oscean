@@ -205,7 +205,7 @@ function JournalTemplate(id,rect,...params)
       html += week % 2 == 0 ? `<text x='${x+(cell/2)}' y='-15'>${new Date().desamber().to_offset(-(364 - (week*7))).m}</text>` : ''
       while(day < 7){
         var y = parseInt(day * (cell+1))
-        var offset = 364 - (week*7)-(day)
+        var offset = 364 - (week*7)-(day+1)
         var desamber = new Date().desamber().to_offset(-offset).toString()
         var log = h[desamber]
         html += log && log.sector ? `<rect class='${log.sector}' x='${x}' y='${y}' width='${cell}' height='${cell}' rx="2" ry="2" title='${log.time}' onclick="Ø('query').bang('${log.term}')"></rect>` : ''
