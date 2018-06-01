@@ -60,7 +60,7 @@ function DocsTemplate(id,rect,...params)
 
   this.load = function(key)
   {
-    if(!this.archives[key]){ return `<p>Failed to load ${key}.</p>`; }
+    if(!this.archives[key]){ return `<p>Loading ${key}..</p>`; }
 
     var data = new Indental(this.archives[key]).parse()
     var html = ""
