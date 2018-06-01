@@ -32,7 +32,7 @@ function CalendarTemplate(id,rect,...params)
         style: `
           #content,#core,#header,#view,#sidebar,#photo { background:#ccc !important;}
           table.horaire { font-size:11px; font-family:'input_mono_regular';}
-          table.horaire tr > * { padding:0px 5px !important}
+          table.horaire tr > * { padding:0px 5px !important; }
           table.horaire tr td { font-size:11px !important; text-transform:uppercase; line-height:20px !important;}
           table.horaire tr td:hover { background:#fff}
           table.horaire tr td a { font-family:'input_mono_medium'}
