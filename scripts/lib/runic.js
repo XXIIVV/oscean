@@ -6,6 +6,7 @@ function Runic(raw)
     "&":{glyph:"&",tag:"p",class:""},
     "~":{glyph:"~",tag:"list",sub:"ln",class:"parent",stash:true},
     "-":{glyph:"-",tag:"list",sub:"ln",class:"",stash:true},
+    "=":{glyph:"=",tag:"list",sub:"ln",class:"mini",stash:true},
     "!":{glyph:"!",tag:"table",sub:"tr",wrap:"th",class:"outline",stash:true},
     "|":{glyph:"|",tag:"table",sub:"tr",wrap:"td",class:"outline",stash:true},
     "#":{glyph:"#",tag:"code",sub:"ln",class:"",stash:true},
@@ -13,10 +14,10 @@ function Runic(raw)
     "?":{glyph:"?",tag:"note",class:""},
     ":":{glyph:":",tag:"info",class:""},
     "*":{glyph:"*",tag:"h2",class:""},
-    "=":{glyph:"=",tag:"h3",class:""},
     "+":{glyph:"+",tag:"hs",class:""},
     ">":{glyph:">",tag:"",class:""},
-    "$":{glyph:">",tag:"",class:""}
+    "$":{glyph:">",tag:"",class:""},
+    "@":{glyph:"@",tag:"quote",class:""}
   }
 
   this.stash = {
@@ -43,26 +44,6 @@ function Runic(raw)
     }
   }
 
-  this.media = function(val)
-  {
-    var service = val.split(" ")[0];
-    var id = val.split(" ")[1];
-
-    if(service == "itchio"){
-      return `<iframe frameborder="0" src="https://itch.io/embed/${id}?link_color=000000" width="600" height="167"></iframe>`;
-    }
-    if(service == "bandcamp"){
-      return `<iframe style="border: 0; width: 600px; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=${id}/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless></iframe>`;
-    }
-    if(service == "youtube"){
-      return `<iframe width="600" height="315" src="https://www.youtube.com/embed/${id}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
-    }
-    if(service == "custom"){
-      return `<iframe src='${id}' style='width:100%;height:350px;'></iframe>`;
-    }
-    return `<img src='media/${val}'/>`
-  }
-
   this.parse = function(raw = this.raw)
   {
     if(!raw){ return ""; }
@@ -77,6 +58,7 @@ function Runic(raw)
       var trail = lines[id].substr(1,1);
       if(char == "$"){ html += "<p>"+Ø("operation").request(lines[id].substr(2)).to_markup()+"</p>"; continue; }
       if(char == "%"){ html += this.media(lines[id].substr(2)); continue; }
+      if(char == "@"){ html += this.quote(lines[id].substr(2)); continue; }
       var line = lines[id].substr(2).to_markup();
       if(!line || line.trim() == ""){ continue; }
       if(!rune){ console.log(`Unknown rune:${char} : ${line}`); }
@@ -109,7 +91,38 @@ function Runic(raw)
     if(rune && rune.tag == "img"){ return `<img src='media/${line}'/>`; }
     if(rune && rune.tag == "table"){ return "HEY"; }
 
-    return rune ? (rune.tag ? "<"+rune.tag+" class='"+rune.class+"'>"+line+"</"+rune.tag+">" : line) : "";
+    return rune ? (rune.tag ? `<${rune.tag} class='${rune.class}'>${line}</${rune.tag}>` : line) : "";
+  }
+
+  this.media = function(val)
+  {
+    var service = val.split(" ")[0];
+    var id = val.split(" ")[1];
+
+    if(service == "itchio"){
+      return `<iframe frameborder="0" src="https://itch.io/embed/${id}?link_color=000000" width="600" height="167"></iframe>`;
+    }
+    if(service == "bandcamp"){
+      return `<iframe style="border: 0; width: 600px; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=${id}/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless></iframe>`;
+    }
+    if(service == "youtube"){
+      return `<iframe width="600" height="315" src="https://www.youtube.com/embed/${id}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+    }
+    if(service == "custom"){
+      return `<iframe src='${id}' style='width:100%;height:350px;'></iframe>`;
+    }
+    return `<img src='media/${val}'/>`
+  }
+
+  this.quote = function(content)
+  {
+    var parts = content.split(" | ")
+    var text = parts[0]
+    var author = parts[1]
+    var source = parts[2]
+    var link = parts[3]
+
+    return `<quote><p class='text'>${text}</p>${author ? `<p class='attrib'>${link ? `${author}, <a href='${link}'>${source}</a>` : `${author}`}</p>` : ''}</quote>`
   }
 
   this.html = function()
