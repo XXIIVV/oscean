@@ -135,7 +135,7 @@ function LietalNode(id,rect,...params)
 
     for(li in dict){
       var en = dict[li].trim();
-      if(en == ""){ continue; }
+      if(en == "" || li.length < 4){ continue; }
       var co = this.construction(li)
       var as = this.adultspeak(li)
       html += `<tr><td><b>${as.capitalize()}</b></td><td>${en.capitalize()}</td><td>${co != en ? co.toLowerCase() : '*'}</td></tr>`
