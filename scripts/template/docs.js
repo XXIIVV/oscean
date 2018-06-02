@@ -6,8 +6,12 @@ function DocsTemplate(id,rect,...params)
   
   this.archives = [];
 
+  this.term = null
+
   this.answer = function(q)
   {    
+    this.term = q.result;
+
     var term = q.result
     var logs = this.find_logs(q.name,q.tables.horaire)
     var diaries = this.find_diaries(logs)
@@ -55,7 +59,7 @@ function DocsTemplate(id,rect,...params)
   this.seal = function(name,payload = null)
   {
     this.archives[name] = payload;
-    Ø('content').update(this.load(name))
+    Ø('content').update(this.term && this.term ? this.term.long()+this.load(name) : this.load(name))
   }
 
   this.load = function(key)
