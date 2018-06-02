@@ -53,10 +53,10 @@ function Log(list)
       switch(vector) {
         case 1:return "maintenance"; break;
         case 2:return "planning"; break;
-        case 3:return "design"; break;
-        case 4:return "testing"; break;
-        case 5:return "tools"; break;
-        case 6:return "architecture"; break;
+        case 3:return "testing"; break;
+        case 4:return "tools"; break;
+        case 5:return "writing"; break;
+        case 6:return "framework"; break;
         case 7:return "update"; break;
         case 8: return "release"; break;
         case 9: return "presentation"; break;
