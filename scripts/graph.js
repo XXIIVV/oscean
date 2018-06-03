@@ -16,6 +16,7 @@ function graph()
       Ø("missing").create({x:2,y:16},MissingTemplate),
       Ø("journal").create({x:5,y:16},JournalTemplate),
       Ø("death").create({x:8,y:16},DeathTemplate),
+      Ø("status").create({x:11,y:16},StatusTemplate),
     Ø("diary").create({x:2,y:11},DiaryTemplate),
     Ø("portal").create({x:8,y:11},PortalTemplate),
     Ø("index").create({x:14,y:11},IndexTemplate),
@@ -70,7 +71,7 @@ function graph()
   // Assoc
   Ø("template").syphon(["page","diary","portal","index","docs","calendar","home"])
   Ø("docs").syphon(["lietal","directory","glossary","epistemology","tiers","russian","japanese"])
-  Ø("page").syphon(["missing","death","journal"])
+  Ø("page").syphon(["missing","death","journal","status"])
 
   Ø("template").connect(["view","document"])
   Ø("header").bind(["logo","photo","menu","info"])

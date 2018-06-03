@@ -15,7 +15,7 @@ function TemplateNode(id,rect)
 
     var assoc = this.signal(type);
 
-    if(!assoc){
+    if(!assoc && assoc != 'none'){
       console.warn(`Missing template: ${type}`)
       assoc = this.signal("page");
     }
