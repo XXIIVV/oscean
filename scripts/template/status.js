@@ -3,93 +3,140 @@ function StatusTemplate(id,rect,...params)
   TemplateNode.call(this,id,rect);
 
   this.glyph = NODE_GLYPHS.template
-  
-  this.logs_per_term = {}
-  this.links_outgoing = {}
-  this.links_incoming = {}
 
   this.answer = function(q)
   {
     var lexicon = q.tables.lexicon
     var horaire = q.tables.horaire
+    var lexicon_logs = this.make_lexicon_logs(horaire);
+    var links = this.make_links(lexicon)
 
-    // Build logs
-    for(id in horaire){
-      var log = horaire[id]
-      if(!this.logs_per_term[log.term.toUpperCase()]){ this.logs_per_term[log.term.toUpperCase()] = []; }
-      this.logs_per_term[log.term.toUpperCase()].push(log)
-    }
+    return `
+      ${this.make_status(lexicon,lexicon_logs,links)}
+      ${this.make_issues(lexicon,horaire,lexicon_logs,links)}
+      `
+  }
 
-    // Build links
-    for(id in lexicon){
-      var term = lexicon[id]
-      this.links_outgoing[term.name] = this.find_links(term.dict.BREF,term.dict.LONG)
-    }
+  this.make_issues = function(lexicon,horaire,lexicon_logs,links)
+  {
+    var html = ""
 
-    for(name in this.links_outgoing){
-      var a = this.links_outgoing[name]
-      for(id in a){
-        var link = a[id]
-        if(!this.links_incoming[link]){ this.links_incoming[link] = [] }
-        this.links_incoming[link].push(name)
+    var h = {}
+
+    // Broken links
+    for(name in lexicon){
+      for(id in links.outgoing[name]){
+        var target = links.outgoing[name][id]
+        if(lexicon[target]){ continue; }
+        if(!h[name]){ h[name] = [] }
+        h[name].push(`redlink(${target})`)
       }
     }
 
-    // Sort by type
+    for(id in horaire){
+      var term = horaire[id].term.toUpperCase()
+      var name = horaire[id].time
+      if(lexicon[term] || term == ""){ continue; }
+      if(!h[name]){ h[name] = [] }
+      h[name].push(`redlink(${term})`)
+    }
+
+    // Print
+    for(name in h){
+      var issues = h[name]
+      for(id in issues){
+        html += `<tr><td><b>${name.capitalize()}</b></td><td>${issues[id]}</td></tr>`
+      }
+    }
+
+    return `<table><tr><th>ISSUES</th></tr>${html}</table>`
+  }
+
+  this.make_status = function(lexicon,lexicon_logs,links)
+  {
+    // Build cats
     var cats = {}
     for(id in lexicon){
       var term = lexicon[id]
       if(!cats[term.type]){ cats[term.type] = [] }
       cats[term.type].push(term);
     }
-    return this.table(cats)
-  }
 
-  this.table = function(cats)
-  {
+    // Print
     var html = ""
-
+    var progress = {sum:0,count:0}
     for(id in cats){
       var cat = cats[id]
       html += `<tr><th>${id.toUpperCase()}</th><th></th></tr>`
       for(i in cat){
         var term = cat[i];
-        var rating = this.rate(term)
-        html += `<tr><td><b>${term.name.capitalize()}</b></td>${this.make_rating(rating)}</tr>`
+        var rating = this.rate(term,lexicon_logs,links)
+        var html_rating = ""
+        var s = 0
+        for(id in rating){
+          html_rating += `<td title='${id}'>${rating[id] ? '•' : ''}</td>`
+          s += rating[id] ? 1 : 0
+        }
+        var score = (s/Object.keys(rating).length)
+        var summary = score < 0.4 ? 'poor' : score < 0.7 ? 'fair' : score < 0.9 ? 'good' : 'perfect'
+        progress.sum += score
+        progress.count += 1
+        html_rating += `<td class='${summary}'>${summary}</td>`
+        html += `<tr><td><b>${term.name.capitalize()}</b></td>${html_rating}</tr>`
       }
     }
-    return `<table class='rating'>${html}</table>`
+    return `<table class='rating'>${html}</table><p>The current progress of the Nataniev improvement project, currently affecting ${progress.count} projects, is of <b>${((progress.sum/progress.count)*100).toFixed(2)}%</b>.</p>`
   }
 
-  this.make_rating = function(rating)
-  {
-    var html = ""
-    var s = 0
-    for(id in rating){
-      html += `<td title='${id}'>${rating[id] ? '•' : ''}</td>`
-      s += rating[id] ? 1 : 0
-    }
-    var score = (s/Object.keys(rating).length)
-    var summary = score < 0.4 ? 'poor' : score < 0.7 ? 'fair' : score < 0.9 ? 'good' : 'perfect'
-
-    return `${html}<td class='${summary}'>${summary}</td>`
-  }
-
-  this.rate = function(term)
+  this.rate = function(term,lexicon_logs,links)
   {
     var points = {}
 
-    var logs = this.logs_per_term[term.name]
+    var logs = lexicon_logs[term.name]
 
     points['long'] = term.dict.LONG && term.dict.LONG.length > 0
     points['logs'] = logs && logs.length > 0
     points['photo'] = logs && this.find_diaries(logs).length > 0
-    points['outgoing'] = this.links_outgoing && this.links_outgoing[term.name].length > 1
-    points['incoming'] = this.links_incoming && this.links_incoming[term.name] && this.links_incoming[term.name].length > 1
+    points['outgoing'] = links.outgoing && links.outgoing[term.name].length > 1
+    points['incoming'] = links.incoming && links.incoming[term.name] && links.incoming[term.name].length > 1
     points['glyph'] = term.glyph != ""
     points['links'] = Object.keys(term.links).length > 0
 
     return points
+  }
+
+  this.make_lexicon_logs = function(horaire)
+  {
+    var h = {}
+    for(id in horaire){
+      var log = horaire[id]
+      var name = log.term.toUpperCase()
+      if(!h[name]){ h[name] = []; }
+      h[name].push(log)
+    }
+    return h;
+  }
+
+  this.make_links = function(lexicon)
+  {
+    var h = {outgoing:{},incoming:{}}
+
+    // Outgoing
+    for(id in lexicon){
+      var term = lexicon[id]
+      h.outgoing[term.name] = this.find_links(term.dict.BREF,term.dict.LONG)
+    }
+
+    // Incoming
+    for(name in h.outgoing){
+      var a = h.outgoing[name]
+      for(id in a){
+        var link = a[id]
+        if(!h.incoming[link]){ h.incoming[link] = [] }
+        h.incoming[link].push(name)
+      }
+    }
+    return h
   }
 
   this.find_diaries = function(logs)
