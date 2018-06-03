@@ -66,7 +66,7 @@ function StatusTemplate(id,rect,...params)
     var html = ""
     var s = 0
     for(id in rating){
-      html += `<td title='${id}'>${rating[id] ? 'X' : ''}</td>`
+      html += `<td title='${id}'>${rating[id] ? '•' : ''}</td>`
       s += rating[id] ? 1 : 0
     }
     var score = (s/Object.keys(rating).length)
@@ -87,6 +87,7 @@ function StatusTemplate(id,rect,...params)
     points['outgoing'] = this.links_outgoing && this.links_outgoing[term.name].length > 1
     points['incoming'] = this.links_incoming && this.links_incoming[term.name] && this.links_incoming[term.name].length > 1
     points['glyph'] = term.glyph != ""
+    points['links'] = Object.keys(term.links).length > 0
 
     return points
   }
