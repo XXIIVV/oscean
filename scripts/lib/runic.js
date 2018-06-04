@@ -168,7 +168,7 @@ String.prototype.to_markup = function()
     var target = content.indexOf("|") > -1 ? content.split("|")[1] : content;
     var name = content.indexOf("|") > -1 ? content.split("|")[0] : content;
     var external = (target.indexOf("https:") > -1 || target.indexOf("http:") > -1 || target.indexOf("dat:") > -1);
-    html = html.replace(`{{${content}}}`,external ? `<a href='${target}' class='external' target='_blank'>${name}</a>` : `<a class='local' onclick="Ø('query').bang('${target}')">${name}</a>`)
+    html = html.replace(`{{${content}}}`,external ? `<a href='${target}' class='external' target='_blank'>${name}</a>` : `<a class='local' title='${target}' onclick="Ø('query').bang('${target}')">${name}</a>`)
   }
   return html;
 }
