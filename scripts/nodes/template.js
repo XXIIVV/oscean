@@ -172,7 +172,6 @@ function TemplateNode(id,rect)
   }
 }
 
-
 function on_scroll()
 {
   var info_el = document.getElementById("info")

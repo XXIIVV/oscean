@@ -4,9 +4,9 @@ function graph()
 
   Ø("model").mesh({x:6,y:0},[
     Ø("router").create({x:4,y:2},RouterNode),
-    Ø("database").create({x:4,y:9},DatabaseNode),
-    Ø("lexicon").create({x:2,y:16},IndentalNode,Term),
-    Ø("horaire").create({x:6,y:16},CollectionNode,Log)
+    Ø("database").create({x:4,y:6},DatabaseNode),
+    Ø("lexicon").create({x:2,y:11},IndentalNode,Term),
+    Ø("horaire").create({x:6,y:11},TablatalNode,Log)
   ])
 
   Ø("assoc").mesh({x:16,y:0},[
@@ -57,7 +57,7 @@ function graph()
     Ø("li_en").create({x:2,y:9},LietalNode),
     Ø("clock").create({x:11,y:9},ClockNode),
     Ø("desamber").create({x:14,y:9},DesamberNode),
-    Ø("dictionaery").create({x:5,y:16},CollectionNode),
+    Ø("dictionaery").create({x:5,y:16},TablatalNode),
     Ø("deconstruct").create({x:8,y:9},LietalNode),
   ])
 
