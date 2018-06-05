@@ -39,9 +39,9 @@ function DeathTemplate(id,rect,...params)
   this.style = function()
   {
     return `
-    yu.death { width: 600px;margin-bottom:45px}
-    yu.death cell { background:black; width:10px; height:10px; display:block; float:left; border-radius:10px; margin:0px 1px 1px 0px}
-    yu.death cell.past { background:#fff; border:2px solid black; width:6px; height:6px}
+    yu.death { width: 700px;margin-bottom:45px}
+    yu.death cell { background:black; width:12.45px; height:5px; display:block; float:left; border-radius:10px; margin:0px 1px 1px 0px}
+    yu.death cell.past { background:#fff; border:2px solid black; width:8.45px; height:1px}
     yu.death h1 { font-size: 55px;line-height: 60px;font-family: 'frank_ruhl_light';text-align: center;letter-spacing: -5px;margin-top:30px}`
   }
   
