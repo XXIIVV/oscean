@@ -17,10 +17,15 @@ function DomPhotoNode(id,rect,...params)
 
   this.update = function(content)
   {
-    this.media.style.backgroundImage = `url(media/diary/${content}.jpg)`;
-    this.el.className = !content ? "empty" : ""
-
-    is_dark(`media/diary/${content}.jpg`,this.update_header)
+    console.log(`Update:${content}`)
+    if(content > 0){
+      is_dark(`media/diary/${content}.jpg`,this.update_header)  
+      this.media.style.backgroundImage = `url(media/diary/${content}.jpg)`;
+      this.el.className = ""
+    }
+    else{
+      this.el.className = "empty"
+    }
   }
 
   this.update_header = function(v)

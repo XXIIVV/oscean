@@ -13,6 +13,7 @@ function MissingTemplate(id,rect,...params)
       title: q.name.capitalize(),
       view:{
         header:{
+          photo: 0,
           menu:{
             search:q.name,
             activity:""
