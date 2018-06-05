@@ -31,7 +31,7 @@ function JournalTemplate(id,rect,...params)
     svg.graph rect { stroke:none }
     svg.graph rect:hover { fill:#a1a1a1 !important; cursor:pointer}
     svg.graph rect.audio { fill:#72dec2 }
-    svg.graph rect.visual { fill:#ff726c }
+    svg.graph rect.visual { fill:#ffb545 }
     svg.graph rect.research { fill:#fff }
     svg.graph rect.misc { fill:#333 !important }
     svg.graph circle.photo { fill:black; stroke:none }
@@ -47,7 +47,7 @@ function JournalTemplate(id,rect,...params)
     #content log svg.icon { cursor: pointer; background:black; width:50px; height:50px; border-radius:3px; display:inline-block; position:absolute; left:35px }
     #content log svg.icon path { fill:none; stroke-width:10;stroke:white }
     #content log.audio svg:hover { background:#72dec2 !important; }
-    #content log.visual svg:hover { background:#ff726c !important; }
+    #content log.visual svg:hover { background:#ffb545 !important; }
     #content log.research svg:hover { background:#ccc !important; }
     #content log.misc svg:hover { background:#333333 !important; }
     #content log p { font-size: 22px; margin-bottom: 20px; color:#ccc }
