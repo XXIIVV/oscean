@@ -49,7 +49,7 @@ function DomPhotoNode(id,rect,...params)
           g = data[x+1];
           b = data[x+2];
           max_rgb = Math.max(Math.max(r, g), b);
-          if (max_rgb < 128)
+          if (max_rgb < 180)
               dark++;
           else
               light++;
