@@ -17,7 +17,6 @@ function DomPhotoNode(id,rect,...params)
 
   this.update = function(content)
   {
-    console.log(`Update:${content}`)
     if(content > 0){
       is_dark(`media/diary/${content}.jpg`,this.update_header)  
       this.media.style.backgroundImage = `url(media/diary/${content}.jpg)`;
@@ -25,10 +24,11 @@ function DomPhotoNode(id,rect,...params)
     }
     else{
       this.el.className = "empty"
+      this.update_header();
     }
   }
 
-  this.update_header = function(v)
+  this.update_header = function(v = true)
   {
     Ø("header").el.className = v ? "dark" : "light"
   }
