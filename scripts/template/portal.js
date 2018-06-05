@@ -43,8 +43,7 @@ function PortalTemplate(id,rect,...params)
       var child = children[id];
       var photo_log = this.find_photo(find_logs(child.name,logs))
       html += `
-      ${photo_log ? `<a onclick='Ø("query").bang("${child.name}")'><img src="media/diary/${photo_log.photo}.jpg"/></a>` : ''}
-      <hs>— ${child.bref().to_markup()}</hs>
+      ${photo_log ? `<a onclick='Ø("query").bang("${child.name}")'><img src="media/diary/${photo_log.photo}.jpg"/></a><hs>— ${child.bref().to_markup()}</hs>` : ''}
       ${child.long()}
       <quote>${!stop ? make_index(child.name,lexicon,true) : ''}</quote>`
     }
