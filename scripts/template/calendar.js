@@ -18,7 +18,7 @@ function CalendarTemplate(id,rect,...params)
       title: q.name.capitalize(),
       view:{
         header:{
-          photo:'',
+          photo:null,
           info:{title:"",glyph:""},
           menu:{search:q.name,activity:""}
         },

@@ -29,7 +29,7 @@ function graph()
     Ø("view").create({x:2,y:6},DomNode),
     Ø("style").create({x:10,y:11},DomNode,"style"),
     Ø("header").create({x:2,y:11},DomNode),
-      Ø("photo").create({x:2,y:16},DomNode,"photo"),
+      Ø("photo").create({x:2,y:16},DomPhotoNode,"photo"),
       Ø("logo").create({x:10,y:16},DomNode,"yu",`<a onclick="Ø('query').bang('home')"></a>`),
       Ø("menu").create({x:6,y:16},DomNode),
         Ø("search").create({x:2,y:21},InputNode),

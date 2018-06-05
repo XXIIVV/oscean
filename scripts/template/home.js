@@ -15,7 +15,7 @@ function HomeTemplate(id,rect,...params)
       title: q.name.capitalize(),
       view:{
         header:{
-          photo:photo_log ? `<media style='background-image:url(media/diary/${photo_log.photo}.jpg)'></media>` : '',
+          photo:photo_log ? photo_log.photo : null,
           info:{title:photo_log ? `<b>${photo_log.name}</b> —<br />${photo_log.time}` : '',glyph:term.glyph},
           menu:{
             search:q.name,
