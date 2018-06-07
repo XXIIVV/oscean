@@ -21,6 +21,8 @@ function RouterNode(id,rect)
 
   function find(key,db)
   {
+    if(parseInt(key) > 0){ return null; }
+    
     for(id in db){
       var table = db[id]
       if(table[key]){

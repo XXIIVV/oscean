@@ -86,7 +86,7 @@ function CalendarTemplate(id,rect,...params)
     function diff(a,b)
     {
       var offset = (a - b)
-      return offset > 0 ? `<t style='color:white'>+${offset.toFixed(2)}</t>` : `<t style='color:#999'>${offset.toFixed(2)}</t>`
+      return offset > 0 ? `<t style='color:black; font-family:"input_mono_medium"'>+${offset.toFixed(2)}</t>` : `<t style='color:#999'>${offset.toFixed(2)}</t>`
     }
 
     for(id in horaires){

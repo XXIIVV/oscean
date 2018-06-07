@@ -13,8 +13,6 @@ function PageTemplate(id,rect,...params)
     var logs = this.find_logs(q.name,q.tables.horaire)
     var diaries = this.find_diaries(logs)
     var photo_log = this.find_photo(logs)
-    var siblings = this.find_siblings(term.unde(),q.tables.lexicon)
-    var children = this.find_children(q.name,q.tables.lexicon)
 
     return  {
       title: q.name.capitalize(),
