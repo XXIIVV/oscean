@@ -35,7 +35,7 @@ function DomPhotoNode(id,rect,...params)
 
   function is_dark(imageSrc,callback)
   {
-    var fuzzy = 0.1;
+    var fuzzy = -0.4;
     var img = document.createElement("img");
     img.src = imageSrc;
 
@@ -54,7 +54,7 @@ function DomPhotoNode(id,rect,...params)
           g = data[x+1];
           b = data[x+2];
           max_rgb = Math.max(Math.max(r, g), b);
-          if (max_rgb < 200)
+          if (max_rgb < 128)
               dark++;
           else
               light++;
