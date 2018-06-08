@@ -81,7 +81,7 @@ function DocsTemplate(id,rect,...params)
     <h1>${q.result.bref()}</h1>
     <h2>
       <a onclick="Ø('query').bang('${term.unde()}')">${term.unde()}</a><br />
-      <yu class='links'><a href='https://github.com/XXIIVV/Oscean/edit/master/scripts/docs/${term.name.to_url()}.tome' target='_blank'>Edit Docs</a></yu>
+      <yu class='links'><a href='https://github.com/XXIIVV/Oscean/edit/master/scripts/docs/${term.name.to_url()}.tome' target='_blank'>Submit Revision</a></yu>
     </h2>`
   }
 }
