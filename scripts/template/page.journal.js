@@ -38,6 +38,8 @@ function JournalTemplate(id,rect,...params)
     svg.graph circle.event { fill:none; stroke:black; stroke-width:1.5px }
     svg.graph path { stroke-linecap:butt; stroke-dasharray:1,1; fill:none;stroke:#333;stroke-width:13px }
 
+    #navi { -webkit-filter: invert(1); filter: invert(1); }
+
     #content log { display:block; padding:15px; margin-bottom:1px; vertical-align:top; position:relative; padding-left:100px; font-size:14px; max-width: 700px; border-bottom:1px solid #333 }
     #content log .head { display: block; font-size:15px; line-height: 25px; }
     #content log .head a { font-family: 'archivo_bold' }

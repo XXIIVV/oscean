@@ -59,7 +59,7 @@ function DocsTemplate(id,rect,...params)
   this.seal = function(name,payload = null)
   {
     this.archives[name] = payload;
-    Ø('content').update(this.term && this.term ? this.term.long()+this.load(name) : this.load(name))
+    Ø('query').bang();
   }
 
   this.load = function(key)
