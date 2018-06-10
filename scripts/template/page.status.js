@@ -14,7 +14,7 @@ function StatusTemplate(id,rect,...params)
     return `
       ${this.make_status(lexicon,lexicon_logs,links)}
       ${this.make_issues(lexicon,horaire,lexicon_logs,links)}
-      `
+    `
   }
 
   this.make_issues = function(lexicon,horaire,lexicon_logs,links)
@@ -184,7 +184,7 @@ function StatusTemplate(id,rect,...params)
   this.style = function()
   {
     return `
-    table.rating { width: 600px;margin-bottom:45px}
+    table.rating { width: 700px;margin-bottom:45px}
     table.rating tr:hover { background:#fff}
     table.rating td.poor { background:#ff726c}
     table.rating td.fair { background:yellow}
