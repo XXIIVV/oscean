@@ -1,3 +1,11 @@
+function MAKE_JOURNAL()
+{
+  return "hello"
+}
+
+Ø("unique").seal("journal",MAKE_JOURNAL);
+
+
 function JournalTemplate(id,rect,...params)
 {
   TemplateNode.call(this,id,rect);

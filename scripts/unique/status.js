@@ -1,3 +1,10 @@
+function MAKE_STATUS(q)
+{
+  return "what?"
+}
+
+Ø("unique").seal("status",MAKE_STATUS);
+
 function StatusTemplate(id,rect,...params)
 {
   TemplateNode.call(this,id,rect);

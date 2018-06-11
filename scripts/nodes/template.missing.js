@@ -8,23 +8,7 @@ function MissingTemplate(id,rect,...params)
   {    
     var similar = find_similar(q.name,q.tables.lexicon)
 
-    var html = `<p>There were no pages found for \"${q.name.capitalize()}\", did you perhaps mean <a onclick='Ø("query").bang("${similar[0].word}")'>${similar[0].word.capitalize()}</a> or <a onclick='Ø("query").bang("${similar[1].word}")'>${similar[1].word.capitalize()}</a>?</p><p>If you think that a page should exist here, please contact <a href='https://twitter.com/neauoire'>@neauoire</a>, or add it as a <a href='https://github.com/XXIIVV/oscean/blob/master/scripts/dict/lexicon.js' target='_blank'>Pull Request</a>.</p>`
-    return {
-      title: q.name.capitalize(),
-      view:{
-        header:{
-          photo: 0,
-          menu:{
-            search:q.name,
-            activity:""
-          }
-        },
-        core:{
-          content:html
-        },
-        style:""
-      }
-    }
+    return `<p>Sorry, there are no pages found for <b>${q.name.capitalize()}</b>, did you mean <a onclick='Ø("query").bang("${similar[0].word}")'>${similar[0].word.capitalize()}</a> or <a onclick='Ø("query").bang("${similar[1].word}")'>${similar[1].word.capitalize()}</a>?</p><p>If you think that a page should exist here, please contact <a href='https://twitter.com/neauoire'>@neauoire</a>, or add it as a <a href='https://github.com/XXIIVV/oscean/blob/master/scripts/dict/lexicon.js' target='_blank'>Pull Request</a>.</p>`
   }
 
   function find_similar(target,list)

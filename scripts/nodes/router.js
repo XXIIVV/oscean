@@ -4,19 +4,23 @@ function RouterNode(id,rect)
 
   this.glyph = NODE_GLYPHS.parser
 
+  this.cache = null;
+
+
   this.receive = function(q)
   {
     var q = q.toUpperCase();
     var db = this.request("database").database;
     var type = find(q,db)
 
-    this.label = `router:${type}/${q}`
-    this.send({
+    this.cache = {
       name:q,
       type:type,
       result:db[type] ? db[type][q] : null,
       tables:db
-    })
+    }
+    this.label = `router:${type}/${q}`
+    this.send(this.cache)
   }
 
   function find(key,db)
