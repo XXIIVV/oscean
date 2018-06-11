@@ -8,18 +8,28 @@ function TypeTemplate(id,rect,...params)
   {
     var target = q.result.type
 
-    if(target == 'index' || target == 'portal'){
-      return q.result.long()+this.make_index(q.result)
-    }
-
-    if(target == 'diary'){
-      return q.result.long()+this.make_diary(q.result)
-    }
     if(target == 'home'){
       return this.make_home(q)
     }
-    
-    return `${q.result.long()}`
+
+    var html = q.result.long()
+
+    if(target == 'index' || target == 'portal'){
+      html += this.make_index(q.result)
+    }
+    if(target == 'diary'){
+      html += this.make_diary(q.result)
+    }
+
+    html += this.make_horaire(q.result.logs)
+
+    return html
+  }
+
+  this.make_horaire = function(logs)
+  {
+    var horaire = new Horaire(logs);
+    return horaire.sum > 30 ? `<mini class='horaire'>{{<b>${horaire.sum.toFixed(0)}</b>+|Horaire}} <b>${horaire.fh.toFixed(2)}</b>HDf <b>${horaire.ch.toFixed(2)}</b>HDc<hr/></mini>`.to_markup() : `<mini class='horaire'><hr/></mini>`.to_markup()
   }
 
   this.make_index = function(term)

@@ -14,7 +14,7 @@ function BuildNode(id,rect)
 
     if(q.name == "HOME"){
       featured_log = this.find_last_diary(q.tables.horaire)
-      activity = "<a id='diaries' onclick=\"Ø('query').bang('journal')\">Journal</a> <a id='logs' onclick=\"Ø('query').bang('2018')\">Calendar</a>"
+      activity = "<a id='diaries' onclick=\"Ø('query').bang('journal')\">Journal</a> <a id='logs' onclick=\"Ø('query').bang('Calendar')\">Calendar</a>"
     }
 
     this.send({
@@ -27,7 +27,7 @@ function BuildNode(id,rect)
             glyph:q.result && q.result.glyph ? q.result.glyph : 'M240,240 l0,-90 a-90,-90 0 0,0 -90,-90 l-90,0 l0,90 a90,90 0 0,0 90,90 l60,0 l0,-90 a-60,-60 0 0,0 -60,-60 l-60,0 l0,60 a60,60 0 0,0 60,60 l30,0 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0 l0,30 a30,30 0 0,0 30,30'
           },
           menu:{
-            search:q.result && q.result.name.capitalize(),
+            search:q.name && q.name.capitalize(),
             activity:activity
           }
         },
