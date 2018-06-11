@@ -2,7 +2,7 @@ function MapNode(id,rect)
 {
   Node.call(this,id,rect);
 
-  this.glyph = NODE_GLYPHS.builder
+  this.glyph = NODE_GLYPHS.filter
 
   this.is_mapped = false;
 

@@ -2,7 +2,7 @@ function BuildSidebarNode(id,rect)
 {
   Node.call(this,id,rect);
 
-  this.glyph = NODE_GLYPHS.builder
+  this.glyph = NODE_GLYPHS.template
 
   this.cache = null;
 

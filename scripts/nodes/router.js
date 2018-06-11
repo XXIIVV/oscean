@@ -2,10 +2,9 @@ function RouterNode(id,rect)
 {
   Node.call(this,id,rect);
 
-  this.glyph = NODE_GLYPHS.parser
+  this.glyph = NODE_GLYPHS.router
 
   this.cache = null;
-
 
   this.receive = function(q)
   {

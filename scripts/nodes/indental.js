@@ -3,7 +3,7 @@ function IndentalNode(id,rect,type)
   Node.call(this,id,rect);
 
   this.type = type;
-  this.glyph = NODE_GLYPHS.database
+  this.glyph = NODE_GLYPHS.table
 
   this.answer = function(q)
   {
