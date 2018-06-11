@@ -17,6 +17,7 @@ function BuildContentNode(id,rect)
     if(q.result.type){
       return q.result.type == "special" ? this.signal('special').answer(q) : this.signal('type').answer(q)
     }
+
     return this.request(q).default
   }
 }

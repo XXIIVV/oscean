@@ -1,66 +1,25 @@
-function CalendarTemplate(id,rect,...params)
+function MAKE_CALENDAR(q)
 {
-  TemplateNode.call(this,id,rect);
-
-  this.glyph = NODE_GLYPHS.template
-  
-  this.answer = function(q)
+  function get_days(year,logs)
   {
-    var year = parseInt(q.name);
-    var html = "";
-    var logs = this.get_days(year,q.tables.horaire)
+    var current_year = year > 2000 ? new Date(year,0,1).getFullYear() : new Date().getFullYear();
+    var days = {};
 
-    html += this.calendar_graph(logs);
-    html += this.summary(q.tables.horaire)
-    html += this.event_graph(q.tables.horaire);
-
-    return  {
-      title: q.name.capitalize(),
-      view:{
-        header:{
-          photo:0,
-          info:{title:"",glyph:""},
-          menu:{search:q.name,activity:""}
-        },
-        core:{
-          sidebar:{
-            bref:`<h1>The {{Calendar}} is based on the {{Nataniev Time|Time}}.</h1><h2>{{${parseInt(q.name)-1}}}—{{${parseInt(q.name)+1}}}</h2>`.to_markup()
-          },
-          content:`${q.tables.lexicon.CALENDAR.long()}${html}`,
-          navi:""
-        },
-        style: `
-          #content,#core,#header,#view,#sidebar,#photo { background:#ccc !important;}
-          table.horaire { font-size:11px; font-family:'input_mono_regular';}
-          table.horaire tr > * { padding:0px 5px !important; }
-          table.horaire tr td { font-size:11px !important; text-transform:uppercase; line-height:20px !important;}
-          table.horaire tr td:hover { background:#fff}
-          table.horaire tr td a { font-family:'input_mono_medium'}
-          table.horaire tr td.today { text-decoration:underline; background:#fff}
-          table.horaire tr td.event { background:#000; color:white}
-          table.horaire tr td.misc { color:#777}
-          table.horaire tr th { line-height:20px !important; }
-          list ln.head { line-height:30px !important; border-bottom:1.5px solid black; margin-bottom:15px !important; display:block}`
-      }
+    for(id in logs){
+      var log = logs[id];
+      if(current_year != log.time.year){ continue; }
+      days[log.time.toString()] = log;
     }
+    return days;
   }
 
-  function make_bref(q,logs)
-  {
-    return `
-    <h1>${q.name}</h1>
-    <h2>
-      <a onclick="Ø('query').bang('Calendar')">${q.name}</a><br />
-    </h2>`
-  }
-
-  this.cell = function(log,desamber,today,full_width = false)
+  function cell(log,desamber,today,full_width = false)
   {
     var content = log && log.value > 0 ? `${desamber.substr(2,3)}<a onclick='Ø("query").bang("${log.term}")'>${log ? (log.sector ? log.sector.substr(0,1) : "")+""+log.value+""+log.vector : ""}</a>` : desamber.substr(2,3)+"---";
     return `<td title='${new Desamber(desamber).to_gregorian()}' ${full_width ? "colspan='26'" : ""} class='${today == desamber ? "today" : ""} ${log && log.is_event ? "event" : ""} ${log && log.photo > 0 ? "photo" : ""} ${log ? log.sector : 'misc'}'>${content}</td>`
   }
 
-  this.summary = function(logs)
+  function summary(logs)
   {
     var html = ""
 
@@ -108,7 +67,22 @@ function CalendarTemplate(id,rect,...params)
     return `<table class='horaire' width='740'>${html}</table><hr style='border-bottom:1.5px solid black; margin-bottom:30px'/>`
   }
 
-  this.calendar_graph = function(logs)
+  function style()
+  {
+    return `#content,#core,#header,#view,#sidebar,#photo { background:#ccc !important;}
+      #content table.horaire { font-size:11px; font-family:'input_mono_regular'; width:100%}
+      #content table.horaire tr > * { padding:0px 5px !important; }
+      #content table.horaire tr td { font-size:11px !important; text-transform:uppercase; line-height:20px !important;}
+      #content table.horaire tr td:hover { background:#fff}
+      #content table.horaire tr td a { font-family:'input_mono_medium'}
+      #content table.horaire tr td.today { text-decoration:underline; background:#fff}
+      #content table.horaire tr td.event { background:#000; color:white}
+      #content table.horaire tr td.misc { color:#777}
+      #content table.horaire tr th { line-height:20px !important; }
+      #content list ln.head { line-height:30px !important; border-bottom:1.5px solid black; margin-bottom:15px !important; display:block}`
+  }
+
+  function calendar_graph(logs)
   {
     if(Object.keys(logs).length == 0){ return ''; }
 
@@ -122,19 +96,17 @@ function CalendarTemplate(id,rect,...params)
       d = 1
       while(d <= 14){
         var desamber = `${y}${String.fromCharCode(96 + m).toUpperCase()}${prepend(d,2,"0")}`
-        html_days += this.cell(logs[desamber],desamber,today);
+        html_days += cell(logs[desamber],desamber,today);
         d += 1;
       }
       html += `<tr>${html_days}</tr>`
       m += 1
     }
-
-    html += `<tr>${this.cell(logs[`${y}+01`],`${y}+01`,today,"year_day")}</tr>`;
-
+    html += `<tr>${cell(logs[`${y}+01`],`${y}+01`,today,"year_day")}</tr>`;
     return `<table class='horaire'>${html}</table><hr style='border-bottom:1.5px solid black; margin-bottom:30px'/>`;
   }
 
-  this.event_graph = function(logs)
+  function event_graph(logs)
   {
     var html = "";
 
@@ -150,19 +122,6 @@ function CalendarTemplate(id,rect,...params)
     return "<list class='tidy' style='max-width:100%'>"+html+"</list>";
   }
 
-  this.get_days = function(year,logs)
-  {
-    var current_year = year > 2000 ? new Date(year,0,1).getFullYear() : new Date().getFullYear();
-    var days = {};
-
-    for(id in logs){
-      var log = logs[id];
-      if(current_year != log.time.year){ continue; }
-      days[log.time.toString()] = log;
-    }
-    return days;
-  }
-
   function prepend(s,length,char = "0")
   {
     var p = "";
@@ -171,4 +130,16 @@ function CalendarTemplate(id,rect,...params)
     }
     return p+s;
   }
+
+  var year = parseInt(q.name) > 0 ? parseInt(q.name) : 2018;
+  var html = "";
+  var logs = get_days(year,q.tables.horaire)
+
+  html += calendar_graph(logs);
+  html += summary(q.tables.horaire)
+  html += event_graph(q.tables.horaire);
+
+  return html+`<style>${style()}</style>`
 }
+
+Ø("unique").seal("calendar",MAKE_CALENDAR);
