@@ -19,54 +19,6 @@ function MAKE_CALENDAR(q)
     return `<td title='${new Desamber(desamber).to_gregorian()}' ${full_width ? "colspan='26'" : ""} class='${today == desamber ? "today" : ""} ${log && log.is_event ? "event" : ""} ${log && log.photo > 0 ? "photo" : ""} ${log ? log.sector : 'misc'}'>${content}</td>`
   }
 
-  function summary(logs)
-  {
-    var html = ""
-
-    var by_y = {}
-    for(id in logs){
-      var log = logs[id]
-      var year = log.time.to_date().getFullYear()
-      if(log.time.offset() > 0){ continue; }
-      if(!by_y[year]){ by_y[year] = []; }
-      by_y[year].push(log)
-    }
-
-    var horaires = {}
-
-    for(id in by_y){
-      horaires[id] = new Horaire(by_y[id])
-    }
-
-    html += `<tr><th></th><th colspan='2'>HDf</th><th colspan='2'>HDc</th><th colspan='2'>Efec</th><th colspan='2'>Efic</th><th colspan='2'>Out</th><th colspan='2'>Osc</th><th colspan='2'>Bal</th></tr>`
-
-    var avrg = new Horaire(logs)
-
-    function diff(a,b)
-    {
-      var offset = (a - b)
-      return offset > 0 ? `<t style='color:black; font-family:"input_mono_medium"'>+${offset.toFixed(2)}</t>` : `<t style='color:#999'>${offset.toFixed(2)}</t>`
-    }
-
-    for(id in horaires){
-      var year = horaires[id]
-      html += `
-      <tr>
-        <th>${id}</th>
-        <td>${year.fh > 0 ? `${year.fh}`.substr(0,4) : '—'}</td><td>${diff(year.fh,avrg.fh)}</td>
-        <td>${year.ch > 0 ? `${year.ch}`.substr(0,4) : '—'}</td><td>${diff(year.ch,avrg.ch)}</td>
-        <td>${year.efec > 0 ? `${year.efec}`.substr(0,4) : '—'}</td><td>${diff(year.efec,avrg.efec)}</td>
-        <td>${year.efic > 0 ? `${year.efic}`.substr(0,4) : '—'}</td><td>${diff(year.efic,avrg.efic)}</td>
-        <td>${year.focus > 0 ? `${year.focus}`.substr(0,4) : '—'}</td><td>${diff(year.focus,avrg.focus)}</td>
-        <td>${year.osc > 0 ? `${year.osc}`.substr(0,4) : '—'}</td><td>${diff(year.osc,avrg.osc)}</td>
-        <td>${year.balance > 0 ? `${year.balance}`.substr(0,4) : '—'}</td><td>${diff(year.balance,avrg.balance)}</td>
-      </tr>`
-      prev = year
-    }
-
-    return `<table class='horaire' width='740'>${html}</table><hr style='border-bottom:1.5px solid black; margin-bottom:30px'/>`
-  }
-
   function style()
   {
     return `#content,#core,#header,#view,#sidebar,#photo { background:#ccc !important;}
@@ -136,7 +88,6 @@ function MAKE_CALENDAR(q)
   var logs = get_days(year,q.tables.horaire)
 
   html += calendar_graph(logs);
-  html += summary(q.tables.horaire)
   html += event_graph(q.tables.horaire);
 
   return html+`<style>${style()}</style>`
