@@ -8,7 +8,9 @@ function MissingTemplate(id,rect,...params)
   {    
     var similar = find_similar(q.name,q.tables.lexicon)
 
-    return `<p>Sorry, there are no pages found for <b>${q.name.capitalize()}</b>, did you mean <a onclick='Ø("query").bang("${similar[0].word}")'>${similar[0].word.capitalize()}</a> or <a onclick='Ø("query").bang("${similar[1].word}")'>${similar[1].word.capitalize()}</a>?</p><p>If you think that a page should exist here, please contact <a href='https://twitter.com/neauoire'>@neauoire</a>, or add it as a <a href='https://github.com/XXIIVV/oscean/blob/master/scripts/dict/lexicon.js' target='_blank'>Pull Request</a>.</p>`
+    return `
+    <p>Sorry, there are no pages for {*/${q.name.capitalize()}*}, did you mean {{${similar[0].word.capitalize()}}} or {{${similar[1].word.capitalize()}}}?</p>
+    <p>{*Create this page*} by submitting a {{Pull Request|https://github.com/XXIIVV/oscean/blob/master/scripts/dict/lexicon.js}}, or if you believe this to be an error, please contact {{@neauoire|https://twitter.com/neauoire}}. Alternatively, you locate missing pages from within the {{progress status|status}}.</p>`.to_markup()
   }
 
   function find_similar(target,list)

@@ -9,7 +9,7 @@ function BuildSidebarNode(id,rect)
   this.answer = function(q)
   {
     if(!q.result){
-      return "?"
+      return "<h1>Not found.</h1><h2>{{Home}}</h2>".to_markup()
     }
     var html = ""
     for(id in q.result.links){
