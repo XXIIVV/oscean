@@ -4,22 +4,24 @@ function RouterNode(id,rect)
 
   this.glyph = NODE_GLYPHS.router
 
-  this.cache = null;
-
   this.receive = function(q)
   {
-    var q = q.toUpperCase();
+    var target = q.indexOf(":") > -1 ? q.split(":")[0] : q.replace(/\+/g," ")
+    var params = q.indexOf(":") > -1 ? q.split(":")[1] : null
     var db = this.request("database").database;
-    var type = find(q,db)
+    var data = find(target.toUpperCase(),db)
 
-    this.cache = {
-      name:q,
-      type:type,
-      result:db[type] ? db[type][q] : null,
+    this.label = `${this.id}|${target}|${params}`
+
+    console.log(this.id,`${data.type}->${target}[${params}]`);
+
+    this.send({
+      name:target,
+      type:data.type,
+      result:data.result,
+      params:params,
       tables:db
-    }
-    this.label = `router:${type}/${q}`
-    this.send(this.cache)
+    })
   }
 
   function find(key,db)
@@ -29,9 +31,9 @@ function RouterNode(id,rect)
     for(id in db){
       var table = db[id]
       if(table[key]){
-        return id
+        return {type:id,result:table[key]}
       }
     }
-    return null
+    return {type:null,result:null}
   }
 }

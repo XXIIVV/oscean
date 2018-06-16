@@ -1,6 +1,6 @@
 function MAKE_JOURNAL(q)
 {
-  function find_upcomings(logs)
+  function find_next_event(logs)
   {
     var selection = []
     var count = 0
@@ -13,7 +13,7 @@ function MAKE_JOURNAL(q)
       selection.push(log)
       count += 1
     }
-    return selection
+    return selection.reverse()[0]
   }
 
   function find_any(logs)
@@ -217,7 +217,7 @@ function MAKE_JOURNAL(q)
   function style()
   {
     return `
-    yu#core { background:#000 !important; color:white;border-bottom:1px solid #333}
+    yu#core { background-color:#000 !important; color:white;border-bottom:1px solid #333}
     yu#header photo { display:none}
     svg.graph { background:#000; padding: 45px 40px 60px; color:white;border-bottom:1px solid #333; display:block}
     svg.graph text { stroke:none; fill:#fff; font-size:11px; text-anchor: middle; font-family:'archivo_bold' }
@@ -259,9 +259,7 @@ function MAKE_JOURNAL(q)
 
   var html = ActivityGraph(q.tables.horaire)
   // Find upcoming events
-  var upcomings = find_upcomings(q.tables.horaire)
-  var next_event = upcomings.reverse()[0]
-  html += print_group([next_event],q.tables.lexicon)
+  html += print_group([find_next_event(q.tables.horaire)],q.tables.lexicon)
   // Find any event
   var any = find_any(q.tables.horaire)
   var groups = make_groups(any)

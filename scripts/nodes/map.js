@@ -53,6 +53,6 @@ function MapNode(id,rect)
     }
 
     this.is_mapped = true
-    console.info(`Mapped ${q.tables.horaire.length} logs to ${Object.keys(q.tables.lexicon).length} terms, in ${(performance.now() - time).toFixed(2)}ms.`)
+    console.info(this.id,`Mapped ${q.tables.horaire.length} logs to ${Object.keys(q.tables.lexicon).length} terms, in ${(performance.now() - time).toFixed(2)}ms.`)
   }
 }

@@ -20,7 +20,7 @@ function MAKE_DEATH(q)
       if(log.photo){ photos.push(parseInt(log.photo))}
     }
 
-    console.log(`Next available Id: ${find_available_id(photos)}`)
+    console.log('debug',find_available_id(photos))
   }
 
   function find_available_id(photos)

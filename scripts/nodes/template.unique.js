@@ -8,7 +8,7 @@ function UniqueTemplate(id,rect,...params)
 
   this.answer = function(q)
   {
-    return `${q.result.long()}${this.load(q)}`
+    return this.load(q)
   }
 
   this.invoke = function(filename)
@@ -24,15 +24,15 @@ function UniqueTemplate(id,rect,...params)
   this.seal = function(name,payload = null)
   {
     this.archives[name] = payload;
-    Ø('query').bang();
+    Ø('query').bang()
   }
 
   this.load = function(q)
   {
     var filename = q.result.name.to_url()
 
-    if(!this.archives[filename]){ this.invoke(filename); return `<p>Loading ${filename}..</p>`; }
+    if(!this.archives[filename]){ this.invoke(filename); return `<p>Loading <b>/${filename}</b>, please wait..</p>`; }
 
-    return this.archives[filename](q);
+    return `${q.result.long()}${this.archives[filename](q)}`;
   }
 }

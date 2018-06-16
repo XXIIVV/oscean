@@ -5,20 +5,25 @@ function QueryNode(id,rect)
   this.glyph = NODE_GLYPHS.entry
   this.label = "query"
 
-  this.bang = function(target = window.location.hash.substring(1).replace(/[^0-9a-z]/gi," ").trim().toLowerCase())
+  this.bang = function(input = window.location.hash)
   {
+    var target = input.to_url() === '' ? 'home' : input.to_url()
+
     Ø("view").el.className = "loading"
 
-    let noHash = (target === '')
-    target = target ? target.replace(/[^0-9a-z]/gi," ").trim().toLowerCase() : "home"
-    this.label = `query:${target}`
-    setTimeout(()=>{ window.scrollTo(0,0); },250)
+    console.log(this.id,target);
+    
+    this.label = `${this.id}|${target}`
     this.send(target)
-    if (noHash) {
+
+    if(target === ''){
       window.history.replaceState(undefined, undefined, "#" + target)
-    } else {
+    }
+    else {
       window.location.hash = target.to_url()
     }
+
+    setTimeout(()=>{ window.scrollTo(0,0); },250)
   }
 }
 

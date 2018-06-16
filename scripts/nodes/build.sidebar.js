@@ -7,7 +7,7 @@ function BuildSidebarNode(id,rect)
   this.cache = null;
 
   this.answer = function(q)
-  {
+  {    
     if(!q.result){
       return "<h1>Not found.</h1><h2>{{Home}}</h2>".to_markup()
     }
