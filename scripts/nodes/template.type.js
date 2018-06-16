@@ -39,7 +39,7 @@ function TypeTemplate(id,rect,...params)
     for(id in term.children){
       var child = term.children[id];
       html += `
-      ${child.featured_log ? `<a onclick='Ø("query").bang("${child.name}")'><img src="media/diary/${child.featured_log.photo}.jpg"/></a><hs>— ${child.bref().to_markup()}</hs>` : ''}
+      ${child.featured_log ? `<a onclick='Ø("query").bang("${child.name}")'><img src="media/diary/${child.featured_log.photo}.jpg"/></a><hs>— ${child.bref().to_markup()}</hs>` : `<h2>${child.name}</h2><hs>— Expand {{${child.name.capitalize()} article|${child.name}}}.</hs>`.to_markup()}
       ${child.long()}
       <quote>${!stop ? this.make_index(child,true) : ''}</quote>`
     }

@@ -122,7 +122,7 @@ function Runic(raw)
     var source = parts[2]
     var link = parts[3]
 
-    return `<quote><p class='text'>${text}</p>${author ? `<p class='attrib'>${link ? `${author}, <a href='${link}'>${source}</a>` : `${author}`}</p>` : ''}</quote>`
+    return `<quote><p class='text'>${text.to_markup()}</p>${author ? `<p class='attrib'>${link ? `${author}, <a href='${link}'>${source}</a>` : `${author}`}</p>` : ''}</quote>`
   }
 
   this.html = function()

@@ -87,7 +87,7 @@ function MAKE_STATUS(q)
     progress.sum += score
     progress.count += 1
     html_rating += `<td class='${summary}'>${summary == 'poor' ? '<b>'+summary+'</b>' : summary}</td>`
-    html += `<tr><td><b>${term.name.capitalize()}</b></td>${html_rating}</tr>`
+    html += `<tr><td>{{${term.name.capitalize()}}}</b></td>${html_rating}</tr>`.to_markup()
   }
   return `<table class='rating'>${html}</table><p>The current progress of the Nataniev improvement project, currently affecting ${progress.count} projects, is of <b>${((progress.sum/progress.count)*100).toFixed(2)}%</b>.</p>`
 }
