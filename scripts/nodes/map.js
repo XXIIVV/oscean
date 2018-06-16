@@ -18,6 +18,7 @@ function MapNode(id,rect)
   this.map = function(q)
   {
     var time = performance.now();
+    var count = {links:0,diaries:0}
 
     // Connect Parents
     for(id in q.tables.lexicon){
@@ -35,6 +36,19 @@ function MapNode(id,rect)
       q.tables.lexicon[parent].children.push(term)
     }
 
+    // Connect links
+    for(id in q.tables.lexicon){
+      var term = q.tables.lexicon[id];
+      var links = term.find_outgoing()
+      for(id in links){
+        var link = links[id]
+        term.outgoing.push(link)
+        if(!q.tables.lexicon[link]){ console.warn("Missing incoming",`${term.name}->${link}`); continue; }
+        q.tables.lexicon[link].incoming.push(term.name)
+        count.links += 1
+      }
+    }
+
     // Connect Logs
     for(id in q.tables.horaire){
       var log = q.tables.horaire[id]
@@ -47,12 +61,13 @@ function MapNode(id,rect)
       }
       if(!log.photo){ continue; }
       q.tables.lexicon[index].diaries.push(log)
+      count.diaries += 1
       if(!q.tables.lexicon[index].featured_log || q.tables.lexicon[index].featured_log && !q.tables.lexicon[index].featured_log.is_featured && log.is_featured){
         q.tables.lexicon[index].featured_log = log
       }
     }
 
     this.is_mapped = true
-    console.info(this.id,`Mapped ${q.tables.horaire.length} logs to ${Object.keys(q.tables.lexicon).length} terms, in ${(performance.now() - time).toFixed(2)}ms.`)
+    console.info(this.id,`Mapped ${q.tables.horaire.length} logs, ${count.links} links and ${count.diaries} diaries to ${Object.keys(q.tables.lexicon).length} terms, in ${(performance.now() - time).toFixed(2)}ms.`)
   }
 }

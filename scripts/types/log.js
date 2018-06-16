@@ -15,7 +15,7 @@ function Log(list)
   
   this.photo = this.list.pict ? parseInt(this.list.pict) : null;
 
-  this.is_featured = this.rune == "!" || this.rune == "~";
+  this.is_featured = this.photo && (this.rune == "!" || this.rune == "+");
   this.is_event = this.rune == "+" || this.vector > 9;
   this.theme = this.rune == "!" ? "blanc" : (this.rune == "~" || this.photo > 0 ? "noir" : "no_photo")
 
