@@ -7,7 +7,6 @@ function Term(name,dict)
   this.links = this.dict.LINK ? this.dict.LINK : [];
   this.flag = this.dict.FLAG ? this.dict.FLAG : [];
   this.tags = this.dict.TAGS ? this.dict.TAGS.toLowerCase().split(" ") : [];
-  this.glyph = this.dict.ICON ? this.dict.ICON : '';
 
   // Filled with Ø('map')
   this.parent = null
@@ -29,6 +28,11 @@ function Term(name,dict)
   this.long = function()
   {
     return new Runic(this.dict.LONG).html()
+  }
+
+  this.glyph = function()
+  {
+    return this.dict.ICON;
   }
 
   this.unde = function()
@@ -53,7 +57,7 @@ function Term(name,dict)
     h.points.photo = this.diaries.length > 0
     h.points.outgoing = this.outgoing && this.outgoing.length > 1
     h.points.incoming = this.incoming && this.incoming.length > 1
-    h.points.glyph = this.glyph != ""
+    h.points.glyph = this.glyph() != ""
     h.points.links = Object.keys(this.links).length > 0
 
     // Score

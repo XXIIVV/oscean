@@ -79,7 +79,7 @@ function MAKE_JOURNAL(q)
     html += `
     <log class='${is_event ? 'event' : ''} ${group[0].sector}'>
       <svg onclick="Ø('query').bang('${entry.name}')" class='icon'>
-        <path transform="scale(0.15,0.15) translate(20,20)" d="${entry.glyph}"></path>
+        <path transform="scale(0.15,0.15) translate(20,20)" d="${entry.glyph()}"></path>
       </svg>
       <yu class='head'>
         <a class='topic' onclick="Ø('query').bang('${term}')">${term}</a>
