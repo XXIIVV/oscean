@@ -9,7 +9,7 @@ function BuildNaviNode(id,rect)
   this.answer = function(q)
   {
     var html = ""
-    var portal = this.find_portal(q.result,q.tables.lexicon);
+    var portal = q.result.portal();
 
     if(!portal){ return "<table></table>" }
 
@@ -50,32 +50,5 @@ function BuildNaviNode(id,rect)
     }
     html += "</table>"
     return html
-  }
-
-  this.find_portal = function(term,lexicon)
-  {
-    if(!term || !lexicon[term.unde().toUpperCase()]){ console.log("Parent is missing"); return "" }
-
-    var portal = null
-    var parent = lexicon[term.unde().toUpperCase()]
-    if(term.type && term.type.toLowerCase() == "portal"){
-      portal = term
-    }
-    else if(parent.is_portal){
-      portal = parent
-    }
-    else{
-      var parent_parent = lexicon[parent.unde().toUpperCase()]
-      if(parent_parent.is_portal){
-        portal = parent_parent
-      }
-      else{
-        var parent_parent_parent = lexicon[parent_parent.unde().toUpperCase()]
-        if(parent_parent_parent.is_portal){
-          portal = parent_parent_parent
-        }
-      }
-    }
-    return portal;
   }
 }

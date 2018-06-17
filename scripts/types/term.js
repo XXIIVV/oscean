@@ -6,6 +6,7 @@ function Term(name,dict)
   this.type = dict.TYPE ? dict.TYPE.toLowerCase() : 'none';
   this.links = this.dict.LINK ? this.dict.LINK : [];
   this.flag = this.dict.FLAG ? this.dict.FLAG : [];
+  this.tags = this.dict.TAGS ? this.dict.TAGS.toLowerCase().split(" ") : [];
   this.glyph = this.dict.ICON ? this.dict.ICON : '';
 
   // Filled with Ø('map')
@@ -18,7 +19,7 @@ function Term(name,dict)
   this.latest_log = null
   this.featured_log = null
 
-  this.is_portal = this.type && (this.type.toLowerCase() == "portal")
+  this.is_portal = this.tags.indexOf("portal") > -1
   
   this.bref = function()
   {
@@ -33,6 +34,14 @@ function Term(name,dict)
   this.unde = function()
   {
     return this.dict.UNDE ? this.dict.UNDE : "Home"
+  }
+
+  this.portal = function()
+  {
+    if(this.parent.is_portal){ return this.parent; }
+    if(this.parent.parent.is_portal){ return this.parent.parent; }
+    if(this.parent.parent.parent.is_portal){ return this.parent.parent.parent; }
+    return null;
   }
 
   this.rating = function()

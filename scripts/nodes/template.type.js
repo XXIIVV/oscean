@@ -14,7 +14,7 @@ function TypeTemplate(id,rect,...params)
 
     var html = q.result.long()
 
-    if(target == 'index' || target == 'portal'){
+    if(target == 'index'){
       html += this.make_index(q.result)
     }
     if(target == 'diary'){

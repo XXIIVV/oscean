@@ -61,7 +61,7 @@ function MAKE_HORAIRE(q)
 
   return `
   <h2>All Time Summary</h2>
-  <p>The tracking information below was generated from <b>${avrg.sum}<i style='color:#555'>fh</i></b> collected over ${avrg.count} days, since ${logs[logs.length-1].time}.</p>
+  <p>The tracking information below was generated from <b>${avrg.sum}</b><i>fh</i> collected over ${avrg.count} days, since ${logs[logs.length-1].time}.</p>
   <table class='horaire' width='740'>${html}</table>
   ${style()}`
 }
