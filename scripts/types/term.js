@@ -32,7 +32,10 @@ function Term(name,dict)
 
   this.glyph = function()
   {
-    return this.dict.ICON;
+    if(this.dict.ICON){ return this.dict.ICON; }
+    if(this.parent.glyph()){ return this.parent.glyph(); }
+    if(this.portal().glyph()){ return this.portal().glyph(); }
+    return null;
   }
 
   this.unde = function()

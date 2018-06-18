@@ -9,7 +9,7 @@ function BuildNaviNode(id,rect)
   this.answer = function(q)
   {
     var html = ""
-    var portal = q.result.portal();
+    var portal = q.result ? q.result.portal() : null;
 
     if(!portal){ return "<table></table>" }
 

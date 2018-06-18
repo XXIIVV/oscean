@@ -8,16 +8,16 @@ function TypeTemplate(id,rect,...params)
   {
     var target = q.result.type
 
-    if(target == 'home'){
+    if(target.indexOf('home') > -1){
       return this.make_home(q)
     }
 
     var html = q.result.long()
 
-    if(target == 'index'){
+    if(target.indexOf('index') > -1){
       html += this.make_index(q.result)
     }
-    if(target == 'diary'){
+    if(target.indexOf('diary') > -1){
       html += this.make_diary(q.result)
     }
 
