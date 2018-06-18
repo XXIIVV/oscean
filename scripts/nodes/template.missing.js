@@ -6,7 +6,7 @@ function MissingTemplate(id,rect,...params)
   
   this.answer = function(q)
   {    
-    var similar = find_similar(q.name,q.tables.lexicon)
+    var similar = find_similar(q.name.toUpperCase(),q.tables.lexicon)
 
     return `
     <p>Sorry, there are no pages for {*/${q.name.capitalize()}*}, did you mean {{${similar[0].word.capitalize()}}} or {{${similar[1].word.capitalize()}}}?</p>
