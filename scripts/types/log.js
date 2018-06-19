@@ -19,6 +19,17 @@ function Log(list)
   this.is_event = this.rune == "+" || this.vector > 9;
   this.theme = this.rune == "!" ? "blanc" : (this.rune == "~" || this.photo > 0 ? "noir" : "no_photo")
 
+  this.toString = function()
+  {
+    return `
+    <log class='${this.sector}'>
+      <t class='glyph'>•</t>
+      <t class='term'>${this.term}</t> 
+      <t class=''>${this.task.capitalize()}</t> 
+      <t class='date'>${this.value}:${this.time.offset_format()}</t>
+    </log>`
+  }
+
   function make_task(sector,vector)
   {
     if(sector == 1){

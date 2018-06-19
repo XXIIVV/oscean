@@ -7,29 +7,41 @@ function TypeTemplate(id,rect,...params)
   this.answer = function(q)
   {
     var target = q.result.type
+    var template = q.params
+
+    // Template URLs
+
+    if(template == 'diary' && q.result.diaries.length > 1){
+      return this.make_diary(q.result)
+    }
+    else if(template == 'horaire' && q.result.logs.length > 1){
+      return this.make_logs(q.result)
+    }
+    else if(template){
+      return `<p>Sorry, there is no <b>:${template}</b> template for {{${q.result.name.capitalize()}}}.</p>`.to_markup()
+    }
+
+    // Special(Home)
 
     if(target.indexOf('home') > -1){
       return this.make_home(q)
     }
 
+    // Default
+
     var html = q.result.long()
 
-    if(target.indexOf('index') > -1){
-      html += this.make_index(q.result)
-    }
     if(target.indexOf('diary') > -1){
       html += this.make_diary(q.result)
     }
-
-    html += this.make_horaire(q.result.logs)
+    if(target.indexOf('index') > -1){
+      html += this.make_index(q.result)
+    }
+    
+    var horaire = new Horaire(q.result.logs);
+    html += horaire.sum > 30 ? `<mini class='horaire'>{{<b>${horaire.sum.toFixed(0)}</b>+|${q.result.name}:horaire}} <b>${horaire.fh.toFixed(2)}</b>HDf <b>${horaire.ch.toFixed(2)}</b>HDc<hr/></mini>`.to_markup() : ''
 
     return html
-  }
-
-  this.make_horaire = function(logs)
-  {
-    var horaire = new Horaire(logs);
-    return horaire.sum > 30 ? `<mini class='horaire'>{{<b>${horaire.sum.toFixed(0)}</b>+|Horaire}} <b>${horaire.fh.toFixed(2)}</b>HDf <b>${horaire.ch.toFixed(2)}</b>HDc<hr/></mini>`.to_markup() : `<mini class='horaire'><hr/></mini>`.to_markup()
   }
 
   this.make_index = function(term)
@@ -78,5 +90,19 @@ function TypeTemplate(id,rect,...params)
       html += `<ln>{{${project.name}}} ${project.from != project.to ? project.from+"—"+project.to : project.from}</ln>`.to_markup();
     }
     return `<list class='tidy'>${html}</list>`;
+  }
+
+  this.make_logs = function(term)
+  {
+    var horaire = new Horaire(term.logs)
+    var html = ''
+    for(id in term.logs){
+      var log = term.logs[id]
+      html += log;
+    }
+    return `
+    <p>Showing <b>${term.logs.length} logs</b> for {{${term.name.capitalize()}}}, recorded between ${term.logs[term.logs.length-1].time} and ${term.logs[0].time}, over ${horaire.sum} hours.</p>
+    <p>For additional details on the time tracking process and tools, see the complete {{Horaire documentation|Horaire}}.</p>
+    <list class='tidy'>${html}</list>`.to_markup()
   }
 }
