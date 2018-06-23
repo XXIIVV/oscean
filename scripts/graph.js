@@ -24,7 +24,7 @@ function graph()
 
   Ø("client").mesh({x:38,y:0},[
     Ø("view").create({x:2,y:2},DocumentNode),
-    Ø("style").create({x:10,y:8},DomNode,"style"),
+    Ø("style").create({x:6,y:8},DomNode,"style"),
     Ø("header").create({x:2,y:8},DomNode),
       Ø("photo").create({x:2,y:14},DomPhotoNode,"photo"),
       Ø("logo").create({x:10,y:14},DomNode,"yu",`<a onclick="Ø('query').bang('home')"></a>`),
@@ -40,10 +40,10 @@ function graph()
         Ø("bref").create({x:18,y:20},DomNode),
         Ø("icon").create({x:22,y:20},DomNode),
       Ø("navi").create({x:26,y:14},DomNode,"list"),
-    Ø("footer").create({x:6,y:8},DomNode,"yu",`
-      <wr>
-    <a href="https://twitter.com/neauoire" class="icon twitter external"></a><a href="https://github.com/neauoire" class="icon github external"></a><a href="http://webring.xxiivv.com/#random" class="icon rotonde"></a>
-    <yu id="clock" onclick='Ø("query").bang("Time")'>${new Entaloneralie().svg(35,35)}</yu><a onclick="Ø('query').bang('devine lu linvega')">Devine Lu Linvega</a> © 06I04—${new Date().desamber()}<br>BY-NC-SA 4.0 <t style="color:#ccc"'>${new Clock()}</t><hr></wr>`),
+    Ø("footer").create({x:30,y:8},DomNode),
+      Ø("entaloneralie").create({x:30,y:14},EntaloneralieNode),
+      Ø("credits").create({x:34,y:14},DomNode,"yu",`<a href="https://twitter.com/neauoire" class="icon twitter external"></a><a href="https://github.com/neauoire" class="icon github external"></a><a href="http://webring.xxiivv.com/#random" class="icon rotonde"></a><a onclick="Ø('query').bang('devine lu linvega')">Devine Lu Linvega</a> © 06I04—${new Date().desamber()}<br>BY-NC-SA 4.0 <t style="color:#ccc"'>${new Clock()}</t><hr>
+      `),
   ])
 
   // Operation
@@ -74,6 +74,7 @@ function graph()
   Ø("view").bind(["header","core","footer","style"])
   Ø("core").bind(["sidebar","content","navi"])
   Ø("sidebar").bind(["bref","icon",])
+  Ø("footer").bind(["entaloneralie","credits",])
 
   // Operations
   Ø("en_li").syphon("dictionaery")

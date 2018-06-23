@@ -4,7 +4,7 @@ function DomNode(id,rect,...params)
 
   this.type = params[0] ? params[0] : "yu";
   this.glyph = NODE_GLYPHS.dom
-  this.label = `${this.id}:${this.type}`
+  this.label = `#${this.id}`
   this.el = document.createElement(this.type)
   this.el.id = this.id
   this.is_installed = false;
