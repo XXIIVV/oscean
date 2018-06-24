@@ -50,22 +50,29 @@ function Runic(raw)
 
     var html = "";
     var lines = raw;
-    var lines = !Array.isArray(raw) ? raw.split("\n") : raw;
+    var lines = !Array.isArray(raw) ? raw.toString().split("\n") : raw;
 
     for(id in lines){
       var char = lines[id].substr(0,1).trim().toString()
       var rune = this.runes[char];
       var trail = lines[id].substr(1,1);
+
       if(char == "$"){ html += "<p>"+Ø("operation").request(lines[id].substr(2)).to_markup()+"</p>"; continue; }
       if(char == "%"){ html += this.media(lines[id].substr(2)); continue; }
       if(char == "@"){ html += this.quote(lines[id].substr(2)); continue; }
+
       var line = lines[id].substr(2).to_markup();
+
       if(!line || line.trim() == ""){ continue; }
+
       if(!rune){ console.log(`Unknown rune:${char} : ${line}`); }
+
       if(trail != " "){ console.warn("Runic","Non-rune["+trail+"] at:"+id+"("+line+")"); continue; }
 
       if(this.stash.is_pop(rune)){ html += this.render_stash(); }
+
       if(rune.stash === true){ this.stash.add(rune,line) ; continue; }
+
       html += this.render(line,rune);
     }
     if(this.stash.length() > 0){ html += this.render_stash(); }
@@ -122,7 +129,15 @@ function Runic(raw)
     var source = parts[2]
     var link = parts[3]
 
-    return `<quote><p class='text'>${text.to_markup()}</p>${author ? `<p class='attrib'>${link ? `${author}, <a href='${link}'>${source}</a>` : `${author}`}</p>` : ''}</quote>`
+    return `
+    <quote>
+      <p class='text'>
+        ${text.to_markup()}
+      </p>
+      <p class='attrib'>
+        ${author}${source && link ? `, <a href='${link}'>${source}</a>` : source ? `, <b>${source}</b>` : ''}
+      </p>
+    </quote>`
   }
 
   this.html = function()
@@ -172,5 +187,3 @@ String.prototype.to_markup = function()
   }
   return html;
 }
-
-
