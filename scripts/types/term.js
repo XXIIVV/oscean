@@ -84,6 +84,7 @@ function Term(name,dict)
       if(part.indexOf("}}") == -1){ continue; }
       var content = part.split("}}")[0];
       if(content.substr(0,1) == "$"){ continue; }
+      if(content.substr(0,1) == "/"){ continue; }
       var target = content.indexOf("|") > -1 ? content.split("|")[1] : content;
       var name = content.indexOf("|") > -1 ? content.split("|")[0] : content;
       if(target.indexOf("//") > -1){ continue; }

@@ -101,8 +101,9 @@ function TypeTemplate(id,rect,...params)
       html += log;
     }
     return `
-    <p>Showing <b>${term.logs.length} logs</b> for {{${term.name.capitalize()}}}, recorded between ${term.logs[term.logs.length-1].time} and ${term.logs[0].time}, over ${horaire.sum} hours.</p>
+    <p>Recorded <b>${term.logs.length} logs</b>, or ${horaire.sum} hours, between ${term.logs[term.logs.length-1].time} and ${term.logs[0].time}. Last update was recorded ${term.logs[0].time.offset() * -1} days ago.</p>
     <p>For additional details on the time tracking process and tools, see the complete {{Horaire documentation|Horaire}}.</p>
-    <list class='tidy'>${html}</list>`.to_markup()
+    <p>Return to the {{${term.name.capitalize()} page}}.</p>
+    ${html}`.to_markup()
   }
 }

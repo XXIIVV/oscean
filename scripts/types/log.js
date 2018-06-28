@@ -17,16 +17,15 @@ function Log(list)
 
   this.is_featured = this.photo && (this.rune == "!" || this.rune == "+");
   this.is_event = this.rune == "+" || this.vector > 9;
-  this.theme = this.rune == "!" ? "blanc" : (this.rune == "~" || this.photo > 0 ? "noir" : "no_photo")
 
   this.toString = function()
   {
     return `
-    <log class='${this.sector}'>
-      <t class='glyph'>•</t>
+    <log class='${this.sector} ${this.is_event > 0 ? 'event' : ''}'>
+      <t class='date'>${this.time}</t>
       <t class='term'>${this.term}</t> 
-      <t class=''>${this.task.capitalize()}</t> 
-      <t class='date'>${this.value}:${this.time.offset_format()}</t>
+      <t class='task'>${this.task.capitalize()}</t> 
+      <t class="action">${this.name ? 'Added a new diary entry \"<b>'+this.name+'</b>\".' : this.photo > 0 ? 'Added an untitled media(#'+this.photo+').' : 'Logged <b>'+this.value+'h of '+this.task+'</b>.'}</t>
     </log>`
   }
 

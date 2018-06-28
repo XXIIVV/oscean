@@ -57,7 +57,7 @@ function Runic(raw)
       var rune = this.runes[char];
       var trail = lines[id].substr(1,1);
 
-      if(char == "$"){ html += "<p>"+Ø("operation").request(lines[id].substr(2)).to_markup()+"</p>"; continue; }
+      if(char == "$"){ html += `<p>${Ø("operation").request(lines[id].substr(2)).to_markup()}</p>`; continue; }
       if(char == "%"){ html += this.media(lines[id].substr(2)); continue; }
       if(char == "@"){ html += this.quote(lines[id].substr(2)); continue; }
 
@@ -179,7 +179,7 @@ String.prototype.to_markup = function()
     if(part.indexOf("}}") == -1){ continue; }
     var content = part.split("}}")[0];
     if(content.substr(0,1) == "$"){ html = html.replace(`{{${content}}}`, Ø("operation").request(content.replace("$",""))); continue; }
-    // if(content.substr(0,1) == "%"){ html = html.replace(`{{${content}}}`, this.media(content)); continue; }
+    if(content.substr(0,1) == "/"){ html = html.replace(`{{${content}}}`, eval(content.replace("/",""))); continue; }
     var target = content.indexOf("|") > -1 ? content.split("|")[1] : content;
     var name = content.indexOf("|") > -1 ? content.split("|")[0] : content;
     var external = (target.indexOf("https:") > -1 || target.indexOf("http:") > -1 || target.indexOf("dat:") > -1);
