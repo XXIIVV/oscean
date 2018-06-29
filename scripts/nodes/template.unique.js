@@ -33,6 +33,6 @@ function UniqueTemplate(id,rect,...params)
 
     if(!this.archives[filename]){ this.invoke(filename); return `<p>Loading <b>/${filename}</b>, please wait..</p>`; }
 
-    return `${q.result.long()}${this.archives[filename](q)}`;
+    return `${q.result.long(q.tables)}${this.archives[filename](q)}`;
   }
 }

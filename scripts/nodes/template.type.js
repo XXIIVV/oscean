@@ -29,13 +29,13 @@ function TypeTemplate(id,rect,...params)
 
     // Default
 
-    var html = q.result.long()
+    var html = q.result.long(q.tables)
 
     if(target.indexOf('diary') > -1){
       html += this.make_diary(q.result)
     }
     if(target.indexOf('index') > -1){
-      html += this.make_index(q.result)
+      html += this.make_index(q.result,q.tables)
     }
     
     var horaire = new Horaire(q.result.logs);
@@ -44,7 +44,7 @@ function TypeTemplate(id,rect,...params)
     return html
   }
 
-  this.make_index = function(term)
+  this.make_index = function(term,tables)
   {
     var html = ""
 
@@ -52,7 +52,7 @@ function TypeTemplate(id,rect,...params)
       var child = term.children[id];
       html += `
       ${child.featured_log ? `<a onclick='Ø("query").bang("${child.name}")'><img src="media/diary/${child.featured_log.photo}.jpg"/></a><hs>— ${child.bref().to_markup()}</hs>` : `<h2>${child.name}</h2><hs>— ${child.bref()}</hs>`.to_markup()}
-      ${child.long()}
+      ${child.long(tables)}
       <quote>${!stop ? this.make_index(child,true) : ''}</quote>`
     }
     return html

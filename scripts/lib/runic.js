@@ -1,5 +1,6 @@
-function Runic(raw)
+function Runic(raw,tables)
 {
+  this.tables = tables;
   this.raw = raw;
 
   this.runes = {
@@ -60,6 +61,7 @@ function Runic(raw)
       if(char == "$"){ html += `<p>${Ø("operation").request(lines[id].substr(2)).to_markup()}</p>`; continue; }
       if(char == "%"){ html += this.media(lines[id].substr(2)); continue; }
       if(char == "@"){ html += this.quote(lines[id].substr(2)); continue; }
+      if(char == ":"){ html += this.info(lines[id].substr(2)); continue; }
 
       var line = lines[id].substr(2).to_markup();
 
@@ -138,6 +140,16 @@ function Runic(raw)
         ${author}${source && link ? `, <a href='${link}'>${source}</a>` : source ? `, <b>${source}</b>` : ''}
       </p>
     </quote>`
+  }
+
+  this.info = function(content)
+  {
+    var key = content.split("|")[0].trim()
+    var log = this.tables.lexicon[key.toUpperCase()].logs[0]
+
+    if(!log){ return '' }
+      
+    return `<info><t class='key'>{{${key.capitalize()}}}</t><t class='val'>${log.name}</t><t class='offset'>${log.time.offset_format(new Date().desamber(),true).capitalize()}, <b>${log.time}</b></t></info>`.to_markup()
   }
 
   this.html = function()

@@ -21,14 +21,14 @@ function Desamber(str)
     return parseInt((this.to_date() - b.to_date())/86400000);
   }
 
-  this.offset_format = function(b = new Date().desamber())
+  this.offset_format = function(b = new Date().desamber(), force = false)
   {
     var days = this.offset();
 
     if(days == 1){ return "tomorrow"; }
     if(days == 0){ return "today"; }
     if(days > 0){ return `in ${days} days`; }
-    if(days < -14){ return `${this.toString()}`; }
+    if(days < -14 && force == false){ return `${this.toString()}`; }
     if(days < 0){ return `${days*-1} days ago`; }
     
     return `in ${days} days`;

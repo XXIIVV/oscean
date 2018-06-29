@@ -22,9 +22,9 @@ function MAKE_CALENDAR(q)
   function style()
   {
     return `#content,#core,#header,#view,#sidebar,#photo { background:#ccc !important;}
-      #content table.horaire { font-size:11px; font-family:'input_mono_regular'; width:100%}
+      #content table.horaire { font-size:11px; font-family:'input_mono_regular'; width:100%; padding:0px; background:none}
       #content table.horaire tr > * { padding:0px 5px !important; }
-      #content table.horaire tr td { font-size:11px !important; text-transform:uppercase; line-height:20px !important;}
+      #content table.horaire tr td { font-size:11px !important; text-transform:uppercase; line-height:20px !important; border-radius:2px; text-align:center}
       #content table.horaire tr td:hover { background:#fff}
       #content table.horaire tr td a { font-family:'input_mono_medium'}
       #content table.horaire tr td.today { text-decoration:underline; background:#fff}

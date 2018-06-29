@@ -3,7 +3,7 @@ function Term(name,dict)
   this.name = name;
 
   this.dict = dict;
-  this.type = dict.TYPE ? dict.TYPE.toLowerCase() : 'none';
+  this.type = dict.TYPE ? dict.TYPE.toLowerCase() : null;
   this.links = this.dict.LINK ? this.dict.LINK : [];
   this.flag = this.dict.FLAG ? this.dict.FLAG : [];
   this.tags = this.dict.TAGS ? this.dict.TAGS.toLowerCase().split(" ") : [];
@@ -20,14 +20,19 @@ function Term(name,dict)
 
   this.is_portal = this.tags.indexOf("portal") > -1
   
+  this.unde = function()
+  {
+    return this.dict.UNDE ? this.dict.UNDE : "Home"
+  }
+
   this.bref = function()
   {
     return this.dict && this.dict.BREF ? this.dict.BREF.to_markup() : ''
   }
 
-  this.long = function()
+  this.long = function(tables)
   {
-    return new Runic(this.dict.LONG).html()
+    return new Runic(this.dict.LONG,tables).html()
   }
 
   this.glyph = function()
@@ -36,11 +41,6 @@ function Term(name,dict)
     if(this.parent.glyph()){ return this.parent.glyph(); }
     if(this.portal().glyph()){ return this.portal().glyph(); }
     return null;
-  }
-
-  this.unde = function()
-  {
-    return this.dict.UNDE ? this.dict.UNDE : "Home"
   }
 
   this.portal = function()

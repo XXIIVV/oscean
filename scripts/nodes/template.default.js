@@ -5,8 +5,8 @@ function DefaultTemplate(id,rect,...params)
   this.glyph = NODE_GLYPHS.element
   
   this.answer = function(q)
-  {    
-    return `${q.result.long()}${this.make_horaire(q.result.logs)}`
+  {
+    return `${q.result.long(q.tables)}${this.make_horaire(q.result.logs)}`
   }
 
   this.make_horaire = function(logs)

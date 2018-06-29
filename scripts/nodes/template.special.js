@@ -8,7 +8,7 @@ function SpecialTemplate(id,rect,...params)
 
   this.answer = function(q)
   {
-    return `${q.result.long()}${this.load(q.result.name.to_url())}`
+    return `${q.result.long(q.tables)}${this.load(q.result.name.to_url())}`
   }
 
   this.invoke = function(filename)

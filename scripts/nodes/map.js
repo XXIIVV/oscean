@@ -56,7 +56,7 @@ function MapNode(id,rect)
       if(!log.term){ continue; }
       if(!q.tables.lexicon[index]){ console.warn("Missing log term",index); continue; }
       q.tables.lexicon[index].logs.push(log)
-      if(!q.tables.lexicon[index].latest_log){
+      if(!q.tables.lexicon[index].latest_log && log.time.offset() < 0){
         q.tables.lexicon[index].latest_log = log
       }
       if(!log.photo){ continue; }
