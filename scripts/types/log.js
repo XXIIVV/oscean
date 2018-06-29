@@ -51,7 +51,7 @@ function Log(list)
         case 2:return "sketch"; break;
         case 3:return "layout"; break;
         case 4:return "prototype"; break;
-        case 5:return "draft"; break;
+        case 5:return "editing"; break;
         case 6:return "design"; break;
         case 7:return "render"; break;
         case 8: return "release"; break;
