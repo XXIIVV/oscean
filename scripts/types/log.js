@@ -31,62 +31,11 @@ function Log(list)
 
   function make_task(sector,vector)
   {
-    if(sector == 1){
-      switch(vector) {
-        case 1:return "experiment"; break;
-        case 2:return "writing"; break;
-        case 3:return "rehersal"; break;
-        case 4:return "draft"; break;
-        case 5:return "composition"; break;
-        case 6:return "mastering"; break;
-        case 7:return "mastering"; break;
-        case 8: return "release"; break;
-        case 9: return "performance"; break;
-        default: return "audio"
-      }
-    }
-    if(sector == 2){
-      switch(vector) {
-        case 1:return "concept"; break;
-        case 2:return "sketch"; break;
-        case 3:return "layout"; break;
-        case 4:return "prototype"; break;
-        case 5:return "editing"; break;
-        case 6:return "design"; break;
-        case 7:return "render"; break;
-        case 8: return "release"; break;
-        case 9: return "showcase"; break;
-        default: return "visual"
-      }
-    }
-    if(sector == 3){
-      switch(vector) {
-        case 1:return "maintenance"; break;
-        case 2:return "planning"; break;
-        case 3:return "documentation"; break;
-        case 4:return "tools"; break;
-        case 5:return "writing"; break;
-        case 6:return "framework"; break;
-        case 7:return "update"; break;
-        case 8: return "release"; break;
-        case 9: return "presentation"; break;
-        default: return "research"
-      }
-    }
-    if(sector == 4){
-      switch(vector) {
-        case 1:return "--"; break;
-        case 2:return "--"; break;
-        case 3:return "--"; break;
-        case 4:return "--"; break;
-        case 5:return "--"; break;
-        case 6:return "--"; break;
-        case 7:return "--"; break;
-        case 8: return "--"; break;
-        case 9: return "travel"; break;
-        default: return "research"
-      }
-    }
-    return "misc"
+    var collection = [
+      ["experiment","writing","rehersal","draft","composition","mastering","mastering","release","performance","audio"],
+      ["concept", "sketch", "layout", "prototype", "editing", "design", "render", "release", "showcase", "visual"],
+      ["maintenance", "planning", "documentation", "tools", "writing", "framework", "update", "release", "presentation","research"]
+    ]
+    return collection[sector-1] && collection[sector-1][vector-1] ? collection[sector-1][vector-1] : "travel"
   }
 }
