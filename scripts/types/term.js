@@ -48,6 +48,7 @@ function Term(name,dict)
     if(this.parent.is_portal){ return this.parent; }
     if(this.parent.parent.is_portal){ return this.parent.parent; }
     if(this.parent.parent.parent.is_portal){ return this.parent.parent.parent; }
+    if(this.parent.parent.parent.parent.is_portal){ return this.parent.parent.parent.parent; }
     return null;
   }
 
