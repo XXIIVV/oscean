@@ -19,10 +19,10 @@
   }
 
   var creation = q.tables.horaire[q.tables.horaire.length-1];
-  var last = q.tables.horaire.find((log)=>{ if(log.time.offset() < 0){ return log; } })
+  var last = q.tables.horaire.find((log)=>{ if(log.time.offset() <= 0){ return log; } })
 
   var html = ""
-  html += `<p>Created ${(creation.time.offset()/-365).toFixed(1)} years ago, or {#${creation.time.offset_format(new Date().desamber(),true)}#}, this {{wiki|https://en.wikipedia.org/wiki/Wiki}} is currently hosting {*${Object.keys(q.tables.lexicon).length} entries*}, {*${projects.length} projects*}, {*${q.tables.horaire.length} logs*}, recorded over {*${new Horaire(q.tables.horaire).sum} hours*}. The last update was made {*${last.time.offset_format()}*}.</p>`.to_markup() 
+  html += `<p>Created ${(creation.time.offset()/-365).toFixed(0)} years ago, or ${creation.time.offset_format(new Date().desamber(),true)}, this {{wiki|https://en.wikipedia.org/wiki/Wiki}} is currently hosting {*${Object.keys(q.tables.lexicon).length} entries*}, {*${projects.length} projects*}, {*${q.tables.horaire.length} logs*}, recorded over {*${(new Horaire(q.tables.horaire).sum/1000).toFixed(3).replace(".","'")} hours*}. The {{last update|Journal}} was made {*${last.time.offset_format()}*}.</p>`.to_markup() 
 
   //
 
