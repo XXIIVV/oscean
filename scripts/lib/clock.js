@@ -31,8 +31,6 @@ function Entaloneralie()
 
   this.size = {width:window.innerWidth,height:window.innerHeight,ratio:2};
 
-  this.style = {padding:100,font_size:20,stroke_width:1.5};
-
   this.update = function(w,h)
   {
     this.el.innerHTML = `<svg width="${w}" height="${h}"><path d="${this.path(w,h)}"></path></svg>`;

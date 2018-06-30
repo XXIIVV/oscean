@@ -10,7 +10,7 @@ function EntaloneralieNode(id,rect,...params)
 
   this.update = function()
   {
-    this.clock.update(38,38);
+    this.clock.update(25,25);
   }
 
   setInterval(()=>{ this.update() },8640/2)

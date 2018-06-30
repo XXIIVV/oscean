@@ -145,11 +145,13 @@ function Runic(raw,tables)
   this.info = function(content)
   {
     var key = content.split("|")[0].trim()
-    var log = this.tables.lexicon[key.toUpperCase()].logs[0]
+    var term = this.tables.lexicon[key.toUpperCase()]
+    var log = term.logs[0]
+    var glyph = term.glyph();
 
     if(!log){ return '' }
       
-    return `<info><t class='key'>{{${key.capitalize()}}}</t><t class='val'>${log.name}</t><t class='offset'>${log.time.offset_format(new Date().desamber(),true).capitalize()}, <b>${log.time}</b></t></info>`.to_markup()
+    return `<info><svg width="30" height="30" xmlns="http://www.w3.org/2000/svg" baseProfile="full" version="1.1"><g transform='scale(0.1)'><path d='${glyph}'/></g></svg><t class='key'>{{${key.capitalize()}}}</t><t class='val'>${log.name ? log.name : log.task.capitalize()}</t><t class='offset'>${log.time.offset_format(new Date().desamber(),true).capitalize()}, <b>${log.time}</b></t></info>`.to_markup()
   }
 
   this.html = function()

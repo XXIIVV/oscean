@@ -1,6 +1,6 @@
 function Horaire(logs)
 {
-  var h = {fh:0,ch:0,topics:{},osc:{sum:0,average:0},sectors:{audio:0,visual:0,research:0,sum:0}};
+  var h = {fh:0,ch:0,topics:{},osc:{sum:0,average:0},sectors:{audio:0,visual:0,research:0,sum:0},span:logs[0].time.offset(logs[logs.length-1].time)};
 
   for(id in logs){
     var log = logs[id];
@@ -45,6 +45,8 @@ function Horaire(logs)
     count:logs.length,
     osc:h.osc,
     sectors:{audio:audio,visual:visual,research:research},
-    balance:balance
+    balance:balance,
+    span:h.span,
+    attention:logs.length/h.span
   }
 }

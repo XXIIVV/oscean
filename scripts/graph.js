@@ -41,8 +41,14 @@ function graph()
         Ø("icon").create({x:22,y:20},DomNode),
       Ø("navi").create({x:26,y:14},DomNode,"list"),
     Ø("footer").create({x:30,y:8},DomNode),
-      Ø("entaloneralie").create({x:30,y:14},EntaloneralieNode),
-      Ø("credits").create({x:34,y:14},DomNode,"yu",`<a href="https://twitter.com/neauoire" class="icon twitter external"></a><a href="https://github.com/neauoire" class="icon github external"></a><a href="http://webring.xxiivv.com/#random" class="icon rotonde"></a><a onclick="Ø('query').bang('devine lu linvega')">Devine Lu Linvega</a> © 06I04—${new Date().desamber()}<br>BY-NC-SA 4.0 <t style="color:#ccc"'>${new Clock()}</t><hr>
+      Ø("credits").create({x:34,y:14},DomNode,"yu",`
+        <a target='_blank' href="https://twitter.com/neauoire" class="icon twitter external"></a>
+        <a target='_blank' href="https://github.com/neauoire" class="icon github external"></a>
+        <a target='_blank' href="http://webring.xxiivv.com/#random" class="icon rotonde"></a>
+        <a onclick="Ø('query').bang('devine lu linvega')">Devine Lu Linvega</a> © 06I04—${new Date().desamber()}
+        <center><a onclick="Ø('query').bang('About')">BY-NC-SA 4.0</a> <t style="color:#ccc"'>${new Clock()}</t></center>
+        <a target='_blank' href="http://100r.co" class="icon hundredrabbits"></a>
+        <hr>
       `),
   ])
 
@@ -73,8 +79,8 @@ function graph()
   Ø("menu").bind(["search","activity"])
   Ø("view").bind(["header","core","footer","style"])
   Ø("core").bind(["sidebar","content","navi"])
-  Ø("sidebar").bind(["bref","icon",])
-  Ø("footer").bind(["entaloneralie","credits",])
+  Ø("sidebar").bind(["bref","icon"])
+  Ø("footer").bind(["credits"])
 
   // Operations
   Ø("en_li").syphon("dictionaery")
