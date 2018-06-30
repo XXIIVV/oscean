@@ -39,11 +39,11 @@
   html += "</list>"
 
   html += `
-  <p>This {{Riven Engine|Riven}} is designed to run without a serving platform, containing only {{front-end files|http://github.com/XXIIVV/Oscean}} written in an {{unobfuscated format|Oscean}} — With the hope that little or {{no migration|https://www.gwern.net/About#long-site}} will ever be required.</p>
+  <p>The {{Riven Engine|Riven}} is designed to run without a serving platform, using only {{front-end files|http://github.com/XXIIVV/Oscean}} written in an {{unobfuscated format|Oscean}} — With the hope that little or {{no migration|https://www.gwern.net/About#long-site}} will ever be required.</p>
   ${new Runic(": Riven",q.tables)}
-  <p>The construction of {{Oscean}} took, so far, {*${parseInt(new Horaire(q.tables.lexicon.OSCEAN.logs).sum)} hours, over ${q.tables.lexicon.OSCEAN.logs.length} days*}, which is a considerable investment of time, enough that one might wonder if it is actually worth it. There is no singular project that had more {{impact|Aesthetics}} on my work than the usage and creation of this {{application|Nataniev}}.</p>
+  <p>So far, roughly {*${parseInt(new Horaire(q.tables.lexicon.OSCEAN.logs).sum)} hours*}(over ${q.tables.lexicon.OSCEAN.logs.length} days) were invested in the construction of {{Oscean}}, which is a considerable investment of time, enough that one might wonder if it is actually worth it. There is no singular project that had more {{impact|Aesthetics}} on my work than the usage and creation of this {{application|Nataniev}}.</p>
   ${new Runic(": Oscean",q.tables)}
-  <p>{{Desamber}} Time is the current {{Time Format|Time}} used on this wiki, the current time is <b>{{$desamber}}</b> <code class='inline'>{{$clock}}</code>, refresh the page, or visit {{Clock}}, for more details. The reason for this use of un {{unconventional|https://en.wikipedia.org/wiki/Decimal_time#See_also}} time is the perdictable {{2-weeks long periods|Desamber}} of each month, ideal for the {{sprint format|https://en.wikipedia.org/wiki/Agile_software_development}}.</p>
+  <p>{{Desamber}} Time is the current {{Time Format|Time}} used on this wiki, the current time is <b>{{$desamber}}</b> <code class='inline'>{{$clock}}</code>, visit the {{Clock}} for more details. The reason for this use of un {{unconventional|https://en.wikipedia.org/wiki/Decimal_time#See_also}} time is the perdictable {{2-weeks long periods|Desamber}} of each month, ideal for the {{sprint format|https://en.wikipedia.org/wiki/Agile_software_development}}.</p>
   `.to_markup()
 
   //
