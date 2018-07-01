@@ -1,7 +1,9 @@
 function Horaire(logs)
 {
-  var h = {fh:0,ch:0,topics:{},osc:{sum:0,average:0},sectors:{audio:0,visual:0,research:0,sum:0},span:logs[0].time.offset(logs[logs.length-1].time)};
+  var h = {fh:0,ch:0,topics:{},osc:{sum:0,average:0},sectors:{audio:0,visual:0,research:0,sum:0},span:0};
 
+  h.span = logs.length > 1 ? logs[0].time.offset(logs[logs.length-1].time) : 0
+  
   for(id in logs){
     var log = logs[id];
     h.fh += log.value;
