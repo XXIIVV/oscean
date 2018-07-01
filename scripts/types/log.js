@@ -32,9 +32,9 @@ function Log(list)
   function make_task(sector,vector)
   {
     var collection = [
-      ["experiment","writing","rehersal","draft","composition","mastering","mastering","release","performance","audio"],
-      ["concept", "sketch", "layout", "prototype", "editing", "design", "render", "release", "showcase", "visual"],
-      ["maintenance", "planning", "documentation", "tools", "writing", "framework", "update", "release", "presentation","research"]
+      ["experiment","writing","rehersal","draft","composition","mastering","mastering","release","performance"],
+      ["concept", "sketch", "storyboard", "prototype", "editing", "design", "render", "release", "showcase"],
+      ["research", "maintenance", "planning", "documentation", "tools", "framework", "programming", "update", "release", "presentation"]
     ]
     return collection[sector-1] && collection[sector-1][vector-1] ? collection[sector-1][vector-1] : "travel"
   }
