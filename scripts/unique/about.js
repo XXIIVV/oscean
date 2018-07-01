@@ -62,6 +62,7 @@
   html += `
   <p>The {{platform code|http://github.com/XXIIVV/Oscean}} is under the {#MIT License#}, its content is under the creative common {#BY-NC-SA 4.0#}, read more about it {{here|https://creativecommons.org/licenses/by-nc-sa/4.0/}}.</p>
   <p>If you have any question or feedback, <br />please submit an {{issue|https://github.com/XXIIVV/Oscean/issues/new}}.</p>
+  <center><img src='media/badge/seal.png'/></center>
   `.to_markup()
 
   return html
