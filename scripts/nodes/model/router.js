@@ -11,7 +11,7 @@ function RouterNode(id,rect)
     var db = this.request("database").database;
     var data = find(target.toUpperCase(),db)
 
-    this.label = `${this.id}|${target}|${params}`
+    this.label = `${this.id}/${target}`
 
     console.log(this.id,`${data ? data.type : '?'}->${target}[${params}]`);
 

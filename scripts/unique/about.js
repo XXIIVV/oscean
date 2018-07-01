@@ -1,5 +1,5 @@
-Ø("unique").seal("about",(q) => {
-
+Ø("unique").seal("about",(q) => 
+{
   var projects = []
   for(id in q.tables.lexicon){
     var term = q.tables.lexicon[id]

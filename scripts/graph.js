@@ -5,12 +5,12 @@ function graph()
   Ø("model").mesh({x:6,y:0},[
     Ø("router").create({x:4,y:2},RouterNode),
     Ø("database").create({x:4,y:8},DatabaseNode),
-    Ø("lexicon").create({x:2,y:14},IndentalNode,Term),
-    Ø("horaire").create({x:6,y:14},TablatalNode,Log)
+    Ø("lexicon").create({x:2,y:14},TableNode,Indental,Term),
+    Ø("horaire").create({x:6,y:14},TableNode,Tablatal,Log),
+    Ø("map").create({x:8,y:2},MapNode),
   ])
 
-  Ø("assoc").mesh({x:16,y:0},[
-    Ø("map").create({x:2,y:2},MapNode),
+  Ø("assoc").mesh({x:19,y:0},[
     Ø("build").create({x:6,y:2},BuildNode),
     Ø("build_navi").create({x:2,y:8},BuildNaviNode),
     Ø("build_sidebar").create({x:6,y:8},BuildSidebarNode),
@@ -22,7 +22,7 @@ function graph()
       Ø("type").create({x:10,y:14},TypeTemplate),
   ])
 
-  Ø("client").mesh({x:38,y:0},[
+  Ø("client").mesh({x:42,y:0},[
     Ø("view").create({x:2,y:2},DocumentNode),
     Ø("style").create({x:6,y:8},DomNode,"style"),
     Ø("header").create({x:2,y:8},DomNode),
@@ -54,13 +54,13 @@ function graph()
 
   // Operation
   Ø("runic").mesh({x:6,y:21},[
-    Ø("operation").create({x:5,y:2},OperationNode),
-    Ø("en_li").create({x:5,y:9},LietalNode),
+    Ø("operation").create({x:10,y:2},OperationNode),
     Ø("li_en").create({x:2,y:9},LietalNode),
-    Ø("clock").create({x:11,y:9},ClockNode),
-    Ø("desamber").create({x:14,y:9},DesamberNode),
-    Ø("dictionaery").create({x:5,y:16},TablatalNode),
-    Ø("deconstruct").create({x:8,y:9},LietalNode),
+    Ø("en_li").create({x:6,y:9},LietalNode),
+    Ø("deconstruct").create({x:10,y:9},LietalNode),
+    Ø("clock").create({x:14,y:9},ClockNode),
+    Ø("desamber").create({x:18,y:9},DesamberNode),
+    Ø("dictionaery").create({x:6,y:16},TableNode,Tablatal),
   ])
 
   // Model

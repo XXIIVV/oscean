@@ -32,7 +32,7 @@ function Term(name,dict)
 
   this.long = function(tables)
   {
-    return new Runic(this.dict.LONG,tables).html()
+    return new Runic(this.dict.LONG,tables).parse()
   }
 
   this.glyph = function()

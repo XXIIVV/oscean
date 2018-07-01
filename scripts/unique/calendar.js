@@ -1,4 +1,4 @@
-function MAKE_CALENDAR(q)
+Ø("unique").seal("calendar",(q) => 
 {
   function get_days(year,logs)
   {
@@ -91,6 +91,4 @@ function MAKE_CALENDAR(q)
   html += event_graph(q.tables.horaire);
 
   return html+`<style>${style()}</style>`
-}
-
-Ø("unique").seal("calendar",MAKE_CALENDAR);
+});

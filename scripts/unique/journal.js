@@ -1,4 +1,4 @@
-function MAKE_JOURNAL(q)
+Ø("unique").seal("journal",(q) => 
 {
   function find_next_event(logs)
   {
@@ -268,6 +268,4 @@ function MAKE_JOURNAL(q)
     html += print_group(group,q.tables.lexicon)
   }
   return html+`<style>${style()}</style>`
-}
-
-Ø("unique").seal("journal",MAKE_JOURNAL);
+});

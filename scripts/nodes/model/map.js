@@ -8,11 +8,15 @@ function MapNode(id,rect)
 
   this.receive = function(q)
   {
-    if(!this.is_mapped){
-      this.map(q);
+    try{
+      if(!this.is_mapped){
+        this.map(q);
+      }
+      this.send(q);  
     }
-    
-    this.send(q);
+    catch(err){
+      console.log(this,err)
+    }
   }
 
   this.map = function(q)

@@ -17,7 +17,7 @@ function SpecialTemplate(id,rect,...params)
 
     var s = document.createElement('script');
     s.type = 'text/javascript';
-    s.src = `scripts/special/${filename}.tome?v=${new Date().desamber()}`;
+    s.src = `scripts/special/${filename}.ndtl?v=${new Date().desamber()}`;
     document.getElementsByTagName('head')[0].appendChild(s);
   }
 

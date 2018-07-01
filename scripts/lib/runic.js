@@ -57,24 +57,19 @@ function Runic(raw,tables)
       var char = lines[id].substr(0,1).trim().toString()
       var rune = this.runes[char];
       var trail = lines[id].substr(1,1);
+      var line = lines[id].substr(2).to_markup();
+
+      if(!line || line.trim() == ""){ continue; }
+      if(!rune){ console.log(`Unknown rune:${char} : ${line}`); continue; }
+      if(trail != " "){ console.warn("Runic",`Non-rune[${trail}] at:${id}(${line})`); continue; }
 
       if(char == "$"){ html += `<p>${Ø("operation").request(lines[id].substr(2)).to_markup()}</p>`; continue; }
       if(char == "%"){ html += this.media(lines[id].substr(2)); continue; }
       if(char == "@"){ html += this.quote(lines[id].substr(2)); continue; }
       if(char == ":"){ html += this.info(lines[id].substr(2)); continue; }
 
-      var line = lines[id].substr(2).to_markup();
-
-      if(!line || line.trim() == ""){ continue; }
-
-      if(!rune){ console.log(`Unknown rune:${char} : ${line}`); }
-
-      if(trail != " "){ console.warn("Runic","Non-rune["+trail+"] at:"+id+"("+line+")"); continue; }
-
       if(this.stash.is_pop(rune)){ html += this.render_stash(); }
-
       if(rune.stash === true){ this.stash.add(rune,line) ; continue; }
-
       html += this.render(line,rune);
     }
     if(this.stash.length() > 0){ html += this.render_stash(); }
@@ -108,18 +103,10 @@ function Runic(raw,tables)
     var service = val.split(" ")[0];
     var id = val.split(" ")[1];
 
-    if(service == "itchio"){
-      return `<iframe frameborder="0" src="https://itch.io/embed/${id}?link_color=000000" width="600" height="167"></iframe>`;
-    }
-    if(service == "bandcamp"){
-      return `<iframe style="border: 0; width: 600px; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=${id}/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless></iframe>`;
-    }
-    if(service == "youtube"){
-      return `<iframe width="600" height="315" src="https://www.youtube.com/embed/${id}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
-    }
-    if(service == "custom"){
-      return `<iframe src='${id}' style='width:100%;height:350px;'></iframe>`;
-    }
+    if(service == "itchio"){ return `<iframe frameborder="0" src="https://itch.io/embed/${id}?link_color=000000" width="600" height="167"></iframe>`; }
+    if(service == "bandcamp"){ return `<iframe style="border: 0; width: 600px; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=${id}/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless></iframe>`; }
+    if(service == "youtube"){ return `<iframe width="600" height="315" src="https://www.youtube.com/embed/${id}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`; }
+    if(service == "custom"){ return `<iframe src='${id}' style='width:100%;height:350px;'></iframe>`; }
     return `<img src='media/${val}'/>`
   }
 
@@ -154,50 +141,8 @@ function Runic(raw,tables)
     return `<info><svg width="30" height="30" xmlns="http://www.w3.org/2000/svg" baseProfile="full" version="1.1"><g transform='scale(0.1)'><path d='${glyph}'/></g></svg><t class='key'>{{${key.capitalize()}}}</t><t class='val'>${log.name ? log.name : log.task.capitalize()}</t><t class='offset'>${log.time.offset_format(new Date().desamber(),true).capitalize()}, <b>${log.time}</b></t></info>`.to_markup()
   }
 
-  this.html = function()
-  {
-    return this.parse(raw);
-  }
-
   this.toString = function()
   {
-    return this.html();
+    return this.parse();
   }
-}
-
-String.prototype.capitalize = function()
-{
-  return this.charAt(0).toUpperCase() + this.slice(1).toLowerCase();
-}
-
-String.prototype.to_url = function()
-{
-  return this.toLowerCase().replace(/ /g,"+").replace(/[^0-9a-z\+\:]/gi,"").trim();
-}
-
-String.prototype.to_path = function()
-{
-  return this.toLowerCase().replace(/ /g,".").replace(/[^0-9a-z\.]/gi,"").trim();
-}
-
-String.prototype.to_markup = function()
-{
-  html = this;
-  html = html.replace(/{_/g,"<i>").replace(/_}/g,"</i>")
-  html = html.replace(/{\*/g,"<b>").replace(/\*}/g,"</b>")
-  html = html.replace(/{\#/g,"<code class='inline'>").replace(/\#}/g,"</code>")
-
-  var parts = html.split("{{")
-  for(id in parts){
-    var part = parts[id];
-    if(part.indexOf("}}") == -1){ continue; }
-    var content = part.split("}}")[0];
-    if(content.substr(0,1) == "$"){ html = html.replace(`{{${content}}}`, Ø("operation").request(content.replace("$",""))); continue; }
-    if(content.substr(0,1) == "/"){ html = html.replace(`{{${content}}}`, eval(content.replace("/",""))); continue; }
-    var target = content.indexOf("|") > -1 ? content.split("|")[1] : content;
-    var name = content.indexOf("|") > -1 ? content.split("|")[0] : content;
-    var external = (target.indexOf("https:") > -1 || target.indexOf("http:") > -1 || target.indexOf("dat:") > -1);
-    html = html.replace(`{{${content}}}`,external ? `<a href='${target}' class='external' target='_blank'>${name}</a>` : `<a class='local' title='${target}' onclick="Ø('query').bang('${target}')">${name}</a>`)
-  }
-  return html;
 }

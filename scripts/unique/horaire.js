@@ -1,4 +1,4 @@
-function MAKE_HORAIRE(q)
+Ø("unique").seal("horaire",(q) => 
 {
   var logs = q.tables.horaire
   var html = "<tr><th></th><th colspan='2'>HDf</th><th colspan='2'>HDc</th><th colspan='2'>Efec</th><th colspan='2'>Efic</th><th colspan='2'>Out</th><th colspan='2'>Osc</th><th colspan='2'>Bal</th></tr>"
@@ -64,6 +64,4 @@ function MAKE_HORAIRE(q)
   <p>The tracking information below was generated from <b>${avrg.sum}</b><i>fh</i> collected over ${avrg.count} days, since ${logs[logs.length-1].time}.</p>
   <table class='horaire' width='740'>${html}</table>
   ${style()}`
-}
-
-Ø("unique").seal("horaire",MAKE_HORAIRE);
+});

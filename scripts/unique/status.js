@@ -1,6 +1,5 @@
-function MAKE_STATUS(q)
+Ø("unique").seal("status",(q) => 
 {
-  // Print
   var html = ""
   var progress = {sum:0,count:0}
   for(id in q.tables.lexicon){
@@ -17,6 +16,4 @@ function MAKE_STATUS(q)
     html += `<tr><td>{{${term.name.capitalize()}}}</b></td>${html_rating}</tr>`.to_markup()
   }
   return `<table class='rating'>${html}</table><p>The current progress of the Nataniev improvement project, currently affecting ${progress.count} projects, is of <b>${((progress.sum/progress.count)*100).toFixed(2)}%</b>.</p>`
-}
-
-Ø("unique").seal("status",MAKE_STATUS);
+});
