@@ -9,9 +9,9 @@ The Master Branch is the live version.
 The database format is [Indental](https://wiki.xxiivv.com/#indental).
 
 ```
-scripts/database/dictionaery.tome
-scripts/database/horaire.tome
-scripts/database/lexicon.tome
+scripts/database/dictionaery.tbtl
+scripts/database/horaire.tbtl
+scripts/database/lexicon.ndtl
 ```
 
 # Extras
