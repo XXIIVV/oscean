@@ -57,16 +57,18 @@ function Runic(raw,tables)
       var char = lines[id].substr(0,1).trim().toString()
       var rune = this.runes[char];
       var trail = lines[id].substr(1,1);
-      var line = lines[id].substr(2).to_markup();
+      var line = lines[id].substr(2);
+
+      if(char == "$"){ html += `<p>${Ø("operation").request(line).to_markup()}</p>`; continue; }
+      if(char == "%"){ html += this.media(line); continue; }
+      if(char == "@"){ html += this.quote(line); continue; }
+      if(char == ":"){ html += this.info(line); continue; }
+
+      line = line.to_markup()
 
       if(!line || line.trim() == ""){ continue; }
       if(!rune){ console.log(`Unknown rune:${char} : ${line}`); continue; }
       if(trail != " "){ console.warn("Runic",`Non-rune[${trail}] at:${id}(${line})`); continue; }
-
-      if(char == "$"){ html += `<p>${Ø("operation").request(lines[id].substr(2)).to_markup()}</p>`; continue; }
-      if(char == "%"){ html += this.media(lines[id].substr(2)); continue; }
-      if(char == "@"){ html += this.quote(lines[id].substr(2)); continue; }
-      if(char == ":"){ html += this.info(lines[id].substr(2)); continue; }
 
       if(this.stash.is_pop(rune)){ html += this.render_stash(); }
       if(rune.stash === true){ this.stash.add(rune,line) ; continue; }
@@ -100,6 +102,7 @@ function Runic(raw,tables)
 
   this.media = function(val)
   {
+    console.log(val)
     var service = val.split(" ")[0];
     var id = val.split(" ")[1];
 
