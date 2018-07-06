@@ -45,6 +45,7 @@ function graph()
         <a target='_blank' href="https://twitter.com/neauoire" class="icon twitter external"></a>
         <a target='_blank' href="https://github.com/neauoire" class="icon github external"></a>
         <a target='_blank' href="http://webring.xxiivv.com/#random" class="icon rotonde"></a>
+        <a target='_blank' href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="icon cc"></a>
         <a onclick="Ø('query').bang('devine lu linvega')">Devine Lu Linvega</a> © 06I04—${new Date().desamber()}
         <center><a onclick="Ø('query').bang('About')">BY-NC-SA 4.0</a> <t style="color:#ccc"'>${new Clock()}</t></center>
         <a target='_blank' href="http://100r.co" class="icon hundredrabbits"></a>
