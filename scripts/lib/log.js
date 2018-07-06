@@ -4,7 +4,7 @@ function Log(list)
   this.term = this.list.term;
   this.name = this.list.name;
   this.text = this.list.text;
-  this.time = new Desamber(this.list.date);
+  this.time = this.list.date ? new Desamber(this.list.date) : null;
 
   this.code = this.list.code;
   this.rune = this.code.substr(0,1);
@@ -32,10 +32,10 @@ function Log(list)
   function make_task(sector,vector)
   {
     var collection = [
-      ["experiment","writing","rehersal","draft","composition","mastering","mastering","release","performance"],
-      ["concept", "sketch", "storyboard", "prototype", "editing", "design", "render", "release", "showcase"],
-      ["research", "maintenance", "planning", "documentation", "tools", "framework", "programming", "update", "release", "presentation"]
+      ["idle","experiment","writing","rehersal","draft","composition","mastering","mastering","release","performance"],
+      ["idle","concept", "sketch", "storyboard", "prototype", "editing", "design", "render", "release", "showcase"],
+      ["idle","research", "maintenance", "planning", "documentation", "tools", "framework", "programming", "update", "release", "presentation"]
     ]
-    return collection[sector-1] && collection[sector-1][vector-1] ? collection[sector-1][vector-1] : "travel"
+    return collection[sector-1] && collection[sector-1][vector] ? collection[sector-1][vector] : "travel"
   }
 }
