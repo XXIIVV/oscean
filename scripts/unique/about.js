@@ -35,12 +35,12 @@
   html += `
   <p>The {{platform code|http://github.com/XXIIVV/Oscean}} is under the {#MIT License#}.<br />The {{media and text content|https://creativecommons.org/licenses/by-nc-sa/4.0/}} is under the {#BY-NC-SA 4.0 License#}.</p>
   <code>
-  You are free to:
+  You are free to
 
   - <b>Share</b>: copy and redistribute the material in any medium or format.
   - <b>Adapt</b>: remix, transform, and build upon the material.
 
-  Under the following terms:
+  Under the following terms
 
   - <b>Attribution</b>: You must give appropriate credit.
   - <b>NonCommercial</b>: You may not use the material for commercial purposes.
