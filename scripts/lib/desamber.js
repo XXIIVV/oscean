@@ -37,7 +37,7 @@ function Desamber(str)
 
   this.to_date = function()
   {
-    var year = new Date(this.year, 0);
+    var year = new Date(this.year-1, 0);
     return new Date(year.setDate(this.doty)); 
   }
 
