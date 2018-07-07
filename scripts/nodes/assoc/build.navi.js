@@ -11,7 +11,7 @@ function BuildNaviNode(id,rect)
     var html = ""
     var portal = q.result ? q.result.portal() : null;
 
-    if(!portal){ return "<table></table>" }
+    if(!portal){ return " " }
 
     return `
     <table>
