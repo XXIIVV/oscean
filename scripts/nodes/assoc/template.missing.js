@@ -27,7 +27,7 @@ function MissingTemplate(id,rect,...params)
 
   this.gregorian_to_desamber = function(q)
   {
-    return new Date(q).desamber()
+    return !isNaN(new Date(q)) ? new Date(q).desamber() : "Invalid Date"
   }
 
   function find_operation(query)
