@@ -8,7 +8,7 @@ function SpecialTemplate(id,rect,...params)
 
   this.answer = function(q)
   {
-    return `${q.result.long(q.tables)}${this.load(q.result.name.to_url())}`
+    return `${q.result.long(q.tables)}${this.load(q.result.name.to_url(),q.tables)}`
   }
 
   this.invoke = function(filename)
@@ -27,7 +27,7 @@ function SpecialTemplate(id,rect,...params)
     Ø('query').bang();
   }
 
-  this.load = function(filename)
+  this.load = function(filename,tables)
   {
     if(!this.archives[filename]){ this.invoke(filename); return `<p>Loading ${filename}..</p>`; }
 
@@ -35,7 +35,7 @@ function SpecialTemplate(id,rect,...params)
     var html = ""
     for(id in data){
       var seg = data[id]
-      html += `<h3>${id.capitalize()}</h3>${new Runic(seg)}`
+      html += `<h3>${id.capitalize()}</h3>${new Runic(seg,tables)}`
     }
     return html;
   }
