@@ -33,7 +33,7 @@ function MissingTemplate(id,rect,...params)
   function find_operation(query)
   {
     var operations = [
-      {name: "desamber_to_gregorian",pattern:/\d\d[A-Za-z\+]\d\d/i},
+      {name: "desamber_to_gregorian",pattern:/\d\d[a-z\+]\d\d/i},
       {name: "gregorian_to_desamber",pattern:/\d\d\d\d\-\d\d\-\d\d/i}
     ]
 
