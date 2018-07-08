@@ -3,7 +3,7 @@ function Desamber(str)
   this.str = str;
 
   this.y = str.substr(0,2);
-  this.m = str.substr(2,1); 
+  this.m = str.substr(2,1).toUpperCase(); 
   this.d = str.substr(3,2);
 
   this.year = parseInt(`20${this.y}`);
