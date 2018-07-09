@@ -37,7 +37,7 @@ function on_scroll()
   var header_el = document.getElementById("header")
   var logo_el = document.getElementById("logo")
   var menu_el = document.getElementById("menu")
-  if(scroll > header.offsetHeight - 110){
+  if(scroll > header.offsetHeight - 120){
     if(logo_el.className != "sticky"){ logo_el.className = "sticky" }
     if(menu_el.className != "sticky"){ menu_el.className = "sticky" }
   }
