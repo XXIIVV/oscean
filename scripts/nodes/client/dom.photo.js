@@ -24,7 +24,7 @@ function DomPhotoNode(id,rect,...params)
     }
     else{
       this.el.className = "empty"
-      this.update_header();
+      Ø("header").el.className = "no_photo"
     }
   }
 

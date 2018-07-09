@@ -15,7 +15,7 @@ function BuildNaviNode(id,rect)
 
     return `
     <table>
-    <tr><td><svg id="glyph"><path transform="scale(0.175,0.175) translate(-50,-125)" d="${portal.glyph()}"></path></svg></td></tr>
+    <tr><td><svg id="glyph"><path transform="scale(0.12) translate(0,-150)" d="${portal.glyph()}"></path></svg></td></tr>
     <tr><td>${this.make_table(portal,q.tables.lexicon,3,q.result)}</td></tr>
     </table>`
   }
