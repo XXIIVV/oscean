@@ -13,25 +13,26 @@ function SpecialTemplate(id,rect,...params)
 
   this.invoke = function(filename)
   {
-    if(this.archives[filename]){ this.load(filename); return; }
+    if(this.archives[filename.to_path()]){ this.load(filename); return; }
 
+    console.log(filename)
     var s = document.createElement('script');
     s.type = 'text/javascript';
-    s.src = `scripts/special/${filename}.ndtl?v=${new Date().desamber()}`;
+    s.src = `scripts/special/${filename.to_path()}.ndtl?v=${new Date().desamber()}`;
     document.getElementsByTagName('head')[0].appendChild(s);
   }
 
   this.seal = function(name,payload = null)
   {
-    this.archives[name] = payload;
+    this.archives[name.to_path()] = payload;
     Ø('query').bang();
   }
 
   this.load = function(filename,tables)
   {
-    if(!this.archives[filename]){ this.invoke(filename); return `<p>Loading ${filename}..</p>`; }
+    if(!this.archives[filename.to_path()]){ this.invoke(filename); return `<p>Loading ${filename}..</p>`; }
 
-    var data = new Indental(this.archives[filename]).parse()
+    var data = new Indental(this.archives[filename.to_path()]).parse()
     var html = ""
     for(id in data){
       var seg = data[id]

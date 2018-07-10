@@ -42,5 +42,5 @@ String.prototype.to_url = function()
 
 String.prototype.to_path = function()
 {
-  return this.toLowerCase().replace(/ /g,".").replace(/[^0-9a-z\.\-]/gi,"").trim();
+  return this.toLowerCase().replace(/\+/g,".").replace(/ /g,".").replace(/[^0-9a-z\.\-]/gi,"").trim();
 }

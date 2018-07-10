@@ -114,18 +114,16 @@ function Runic(raw,tables)
   this.quote = function(content)
   {
     var parts = content.split(" | ")
-    var text = parts[0]
+    var text = parts[0].trim()
     var author = parts[1]
     var source = parts[2]
     var link = parts[3]
 
     return `
     <quote>
-      <p class='text'>
-        ${text.to_markup()}
-      </p>
+      ${text.length > 1 ? '<p class=\'text\'>'+text.to_markup()+'</p>' : ''}
       <p class='attrib'>
-        ${author}${source && link ? `, <a href='${link}'>${source}</a>` : source ? `, <b>${source}</b>` : ''}
+        ${author}${source && link ? `, {{${source}|${link}}}`.to_markup() : source ? `, <b>${source}</b>` : ''}
       </p>
     </quote>`
   }
