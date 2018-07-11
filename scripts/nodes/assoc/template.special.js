@@ -30,7 +30,7 @@ function SpecialTemplate(id,rect,...params)
 
   this.load = function(filename,tables)
   {
-    if(!this.archives[filename.to_path()]){ this.invoke(filename); return `<p>Loading ${filename}..</p>`; }
+    if(!this.archives[filename.to_path()]){ this.invoke(filename); return `<p>Loading <b>/${filename.replace(/\+/g,' ')}</b>, please wait..</p>`; }
 
     var data = new Indental(this.archives[filename.to_path()]).parse()
     var html = ""
