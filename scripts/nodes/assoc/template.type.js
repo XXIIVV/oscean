@@ -103,7 +103,7 @@ function TypeTemplate(id,rect,...params)
     return `
     <p>Recorded <b>${term.logs.length} logs</b>, or ${horaire.sum} hours, between ${term.logs[term.logs.length-1].time} and ${term.logs[0].time}. Last update was recorded ${term.logs[0].time.offset() * -1} days ago.</p>
     <p>For additional details on the time tracking process and tools, see the complete {{Horaire documentation|Horaire}}.</p>
-    <p>Return to the {{${term.name.capitalize()} page}}.</p>
+    <p>Return to the {{${term.name.capitalize()} page|${term.name}}}.</p>
     ${html}`.to_markup()
   }
 }
