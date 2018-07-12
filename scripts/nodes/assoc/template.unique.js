@@ -32,7 +32,7 @@ function UniqueTemplate(id,rect,...params)
     var filename = q.result.name.to_url()
 
     if(!this.archives[filename]){ this.invoke(filename); return `<p>Loading <b>/${filename.replace(/\+/g,' ')}</b>, please wait..</p>`; }
-
+    
     return `${q.result.long(q.tables)}${this.archives[filename](q)}`;
   }
 }

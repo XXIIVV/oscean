@@ -27,22 +27,15 @@
   html += `
   <p>The {{Riven Engine|Riven}} is designed to run without a serving platform, using only {{front-end files|http://github.com/XXIIVV/Oscean}} written in an {{unobfuscated format|Oscean}} — With the hope that little or {{no migration|https://www.gwern.net/About#long-site}} will ever be required.</p>
   <p>So far, roughly {*${parseInt(new Horaire(q.tables.lexicon.OSCEAN.logs).sum)} hours*}(over ${q.tables.lexicon.OSCEAN.logs.length} days) were invested in the construction of {{Oscean}}, which is a considerable investment of time, enough that one might wonder if it is actually worth it. There is no singular project that had more {{impact|Aesthetics}} on my work than the usage and creation of this {{application|Nataniev}}.</p>
-  <p>{{Desamber}} is the {{Time Format|Time}} used on this wiki, the current time is <b>{{$desamber}} {{$clock}}</b> , visit the {{Clock}} for more details. The reason for using an {{unconventional|https://en.wikipedia.org/wiki/Decimal_time#See_also}} time is the perdictable {{2-weeks long length|Desamber}} of each month, ideal for the {{sprint periods|https://en.wikipedia.org/wiki/Agile_software_development}}.</p>
-  
-  <code>You are free to
+  <p>{{Desamber}} is the {{Time Format|Time}} used on this wiki, the current time is <b>{{$desamber}} {{$clock}}</b> , visit the {{Clock}} for more details. The reason for using an {{unconventional|https://en.wikipedia.org/wiki/Decimal_time#See_also}} time is the perdictable {{2-weeks long length|Desamber}} of each month, ideal for the {{sprint periods|https://en.wikipedia.org/wiki/Agile_software_development}}.</p>`.to_markup()
 
-- <b>Share</b>: copy and redistribute the material in any medium or format.
-- <b>Adapt</b>: remix, transform, and build upon the material.
-
-Under the following terms
-
-- <b>Attribution</b>: You must give appropriate credit.
-- <b>NonCommercial</b>: You may not use the material for commercial purposes.
-- <b>ShareAlike</b>: You must distribute your contributions under the same license.
-</code>
-  <p>The {{platform code|http://github.com/XXIIVV/Oscean}} is under the {#MIT License#}.<br />The {{media and text content|https://creativecommons.org/licenses/by-nc-sa/4.0/}} is under the {#BY-NC-SA 4.0 License#}.</p>
-  <p>If you have any <b>question or feedback</b>, <br />please submit a {{bug report|https://github.com/XXIIVV/Oscean/issues/new}}.</p>
-  <center><img src='media/badge/seal.png'/></center>`.to_markup()
+  for(id in q.result.children){
+    var child = q.result.children[id];
+    html += `
+    ${child.featured_log ? `<a onclick='Ø("query").bang("${child.name}")'><img src="media/diary/${child.featured_log.photo}.jpg"/></a><hs>— ${child.bref().to_markup()}</hs>` : `<h2>${child.name}</h2><hs>— ${child.bref()}</hs>`.to_markup()}
+    ${child.long(q.tables)}
+    <quote>${!stop ? this.make_index(child,true) : ''}</quote>`
+  }
 
   return html
 });
