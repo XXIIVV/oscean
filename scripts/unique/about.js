@@ -32,7 +32,7 @@
   for(id in q.result.children){
     var child = q.result.children[id];
     html += `
-    ${child.featured_log ? `<a onclick='Ø("query").bang("${child.name}")'><img src="media/diary/${child.featured_log.photo}.jpg"/></a><hs>— ${child.bref().to_markup()}</hs>` : `<h2>${child.name}</h2><hs>— ${child.bref()}</hs>`.to_markup()}
+    ${child.featured_log ? `<a onclick='Ø("query").bang("${child.name}")'><img src="media/diary/${child.featured_log.photo}.jpg"/></a><hs>— ${child.bref().to_markup()}</hs>` : `<h2>{{${child.name}}}</h2>`.to_markup()}
     ${child.long(q.tables)}
     <quote>${!stop ? this.make_index(child,true) : ''}</quote>`
   }
