@@ -68,7 +68,7 @@
       var log = logs[id];
       if(!log.is_event){ continue; }
       if(log.time.y != prev_y){ html += `<ln class='head'>20${log.time.y}</ln>`; prev_y = log.time.y; }
-      html += `<ln>{{${log.name ? log.name : log.term+' '+log.task.capitalize()}|${log.term}}}</a> <t title='${log.time}'>${log.time.offset_format(new Date().desamber(),true)}</t></ln>`.to_markup()
+      html += `<ln>{{${log.name ? log.name : log.term+' '+log.task.capitalize()}|${log.term}}}</a> <t title='${log.time}'>${log.time.offset_format()}</t></ln>`.to_markup()
     }
 
     return "<list class='tidy' style='max-width:100%'>"+html+"</list>";
