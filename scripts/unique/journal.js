@@ -83,14 +83,14 @@
       </svg>
       <yu class='head'>
         <a class='topic' onclick="Ø('query').bang('${term}')">${term}</a>
-        <t class='time' onclick="Ø('query').bang('2018')">${group[group.length-1].time.offset_format().capitalize()}${group.length > 1 ? ', for '+group.length+' days' : ''}</t>
+        <t class='time' onclick="Ø('query').bang('2018')">${group.length > 1 ? `For ${group.length} days, from ${group[group.length-1].time} to ${group[0].time}` : group[group.length-1].time.offset_format()}</t>
       </yu>
       ${name ? '<p>'+name+'.</p>' : ''}
       ${print_media(photos)}
-      <mini>
+      <yu class='tags'>
         <a class='tag' onclick="Ø('query').bang('${entry.unde().to_url()}')">${entry.unde().to_url()}</a>
-        <a class='tag'>${group[0].task}</a> ${fh > 0 ? fh+'fh' : ''}
-      </mini>
+        <a class='tag'>${group[0].task}</a> ${fh > 0 ? '<t class="fh">'+fh+'</t>' : ''}
+      </yu>
     </log>`
 
     return html
@@ -125,115 +125,16 @@
     }
   }
 
-  function ActivityGraph(horaire,size = {width:700})
-  {
-    var h = {}
-
-    for(id in horaire){
-      var log = horaire[id];
-      h[log.time.toString()] = log;
-    }
-
-    // Cells
-    var html = ""
-    var week = 0
-    var cell = parseInt(size.width/52)
-    while(week < 52){
-      var x = parseInt(week * (cell+1))
-      var day = 0
-      html += week % 2 == 0 ? `<text x='${x+(cell/2)}' y='-15'>${new Date().desamber().to_offset(-(364 - (week*7))).m}</text>` : ''
-      while(day < 7){
-        var y = parseInt(day * (cell+1))
-        var offset = 364 - (week*7)-(day+1)
-        var desamber = new Date().desamber().to_offset(-offset).toString()
-        var log = h[desamber]
-        html += log && log.sector ? `<rect class='${log.sector}' x='${x}' y='${y}' width='${cell}' height='${cell}' rx="2" ry="2" title='${log.time}' onclick="Ø('query').bang('${log.term}')"></rect>` : ''
-        html += log && log.photo ? `<circle cx='${x+(cell/2)}' cy='${y+(cell/2)}' r='2' class='photo'></circle>` : ''
-        html += log && log.is_event ? `<circle cx='${x+(cell/2)}' cy='${y+(cell/2)}' r='2' class='event'></circle>` : ''
-        day += 1
-      }
-      week += 1
-    }
-
-    // Get min/max
-
-    var week = 0
-    var min = 999
-    var max = 0
-    while(week < 52){
-      var day = 0
-      var value = 0
-      while(day < 7){
-        var offset = 364 - (week*7)-(day)
-        var desamber = new Date().desamber().to_offset(-offset).toString()
-        var log = h[desamber]
-        if(log){ value += (log.value+log.vector)/2 }
-        day += 1
-      }
-      min = value < min ? value : min
-      max = value > max ? value : max
-      week += 1
-    }
-
-    // Bar Graph
-
-    var path = ""
-    var week = 0
-    var height = cell*2
-    var origin = {x:cell/2,y:((cell+1)*7)+height-15}
-    while(week < 52){
-      var x = parseInt(week * (cell+1))
-      var day = 0
-      var value = 0
-      while(day < 7){
-        var y = parseInt(day * (cell+1))
-        var offset = 364 - (week*7)-(day)
-        var desamber = new Date().desamber().to_offset(-offset).toString()
-        var log = h[desamber]
-        if(log){ value += (log.value+log.vector)/2 }
-        day += 1
-      }
-      var percent = (value-min)/(max-min)
-      var y = height - (percent*height)
-      week += 1
-      path += `M${x+origin.x},${origin.y+height} L${x+origin.x},${parseInt(y+origin.y)} `
-    }
-
-    // Legend
-    var recent = new Horaire(Object.values(h).splice(0,364));
-
-    html += `<rect class="audio" x="${cell*0}" y="150" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
-    <text x='${(cell+1)*4}' y='160' style='text-anchor:left'>Audio ${(recent.sectors.audio*10).toFixed(1)}%</text>`
-    html += `<rect class="visual" x="${(cell+1)*8}" y="150" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
-    <text x='${(cell+1)*12}' y='160' style='text-anchor:left'>Visual ${(recent.sectors.visual*10).toFixed(1)}%</text>`
-    html += `<rect class="research" x="${(cell+1)*16}" y="150" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
-    <text x='${(cell+1)*20.5}' y='160' style='text-anchor:left'>Research ${(recent.sectors.research*10).toFixed(1)}%</text>`
-
-    html += `<text x='725' y='160' style='text-anchor:end'>${recent.sum.toFixed(0)}+</text>`
-    
-    return `<svg class='graph' style='max-width:${size.width+30}px; height:${(cell*8)+height}px; width:100%;'>${html}<path d="${path}"/></svg>`
-  }
-
   function style()
   {
     return `
+
+    yu#view { background:transparent; }
     yu#core { background-color:#000 !important; color:white;border-bottom:1px solid #333}
+    yu#header { -webkit-filter: invert(1); filter: invert(1); }
     yu#header photo { display:none}
-    svg.graph { background:#000; padding: 45px 40px 60px; color:white;border-bottom:1px solid #333; display:block}
-    svg.graph text { stroke:none; fill:#fff; font-size:11px; text-anchor: middle; font-family:'archivo_bold' }
-    svg.graph rect { stroke:none }
-    svg.graph rect:hover { fill:#a1a1a1 !important; cursor:pointer}
-    svg.graph rect.audio { fill:#72dec2 }
-    svg.graph rect.visual { fill:#ffb545 }
-    svg.graph rect.research { fill:#fff }
-    svg.graph rect.misc { fill:#333 !important }
-    svg.graph circle.photo { fill:black; stroke:none }
-    svg.graph circle.event { fill:none; stroke:black; stroke-width:1.5px }
-    svg.graph path { stroke-linecap:butt; stroke-dasharray:1,1; fill:none;stroke:#333;stroke-width:13px }
-
     #navi { -webkit-filter: invert(1); filter: invert(1); }
-
-    #content log { display:block; padding:15px; margin-bottom:1px; vertical-align:top; position:relative; padding-left:100px; font-size:14px; max-width: 700px; border-bottom:1px solid #333 }
+    #content log { display:block; padding:15px; margin-bottom:1px; vertical-align:top; position:relative; padding-left:100px; font-size:14px; max-width: 695px; border-bottom:1px solid #333 }
     #content log .head { display: block; font-size:15px; line-height: 25px; }
     #content log .head a { font-family: 'archivo_bold' }
     #content log .head a:hover { text-decoration: underline; cursor:pointer; }
@@ -248,19 +149,21 @@
     #content log p { font-size: 22px; margin-bottom: 20px; color:#ccc }
     #content log gallery { margin-bottom:15px; }
     #content log gallery photo { cursor: pointer; }
-    #content log mini { margin-bottom: 0px; font-family: 'archivo_medium'; font-size:12px; }
-    #content log mini a.tag { background:#333; line-height: 20px; color:#ccc; margin-right:5px; padding:0px 7.5px }
-    #content log mini a.tag:before { content:"#"; color:#999;padding-right:2.5px;}
-    #content log mini a:hover { background:black; color:white; }
-    #content log.event { background:#191919 }
+    #content log .tags { font-size:12px; font-family:'archivo_medium'; }
+    #content log .tags .fh { float:right; color:#aaa }
+    #content log .tags .fh:after { content:"fh"; font-family:'archivo_italic'; color:#777; padding-left:2px}
+    #content log .tags a { color:#aaa; margin-right:10px}
+    #content log .tags a:before { content:'#'; color:#777; padding-right:2px}
+    #content log .tags a:hover { color:#fff}
     #content log.event .head .topic:after { content: "Event";background: #72dec2;display: inline-block;margin-left: 5px;font-size:12px;padding:0px 10px;border-radius: 100px;line-height: 20px;position: absolute;right:20px;top:20px;color:black }
     #content > p:first-child { display:none}`
   }
 
-  var html = ActivityGraph(q.tables.horaire)
+  var html = `${new ActivityViz(q.tables.horaire)}`
+
   // Find upcoming events
   html += print_group([find_next_event(q.tables.horaire)],q.tables.lexicon)
-  // Find any event
+  // // Find any event
   var any = find_any(q.tables.horaire)
   var groups = make_groups(any)
   for(var id in groups){

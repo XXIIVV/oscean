@@ -50,7 +50,7 @@ function Desamber(str)
 
   this.toString = function()
   {
-    return this.str;
+    return this.str.toUpperCase();
   }
 
   function prepend(s,length,char = "0")
