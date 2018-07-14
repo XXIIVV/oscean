@@ -61,7 +61,13 @@
 
   return `
   <h2>All Time Summary</h2>
-  <p>The tracking information below was generated from <b>${avrg.sum}</b><i>fh</i> collected over ${avrg.count} days, since ${logs[logs.length-1].time}.</p>
   <table class='horaire' width='740'>${html}</table>
+  <code><b>HDF</b>, or Hour Day Focus, is Fh/Days.
+<b>HDC</b>, or Hour Day Concrete, is Ch/Days.
+<b>EFEC</b>, or Effectiveness, is AVRG(Fh)/Topics.
+<b>EFIC</b>, or Efficiency, is AVRG(Ch)/Topics.
+<b>OSC</b>, is an Oscillation index of ABS(EFEC-EFIC).
+<b>FOCUS</b>, is an Average Focus Index AVRG(EFEC+EFIC).
+  </code>
   ${style()}`
 });

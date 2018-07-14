@@ -53,6 +53,7 @@
   function print_group(group,lexicon)
   {
     var html = ""
+    var tags_html = ""
 
     // Summarize
     var fh = 0
@@ -60,6 +61,7 @@
     var term = group[0].term
     var entry = lexicon[term.toUpperCase()]
     var photos = []
+    var tags = {}
     var is_event = false
     var name = null
 
@@ -67,6 +69,7 @@
       var log = group[id];
       fh += log.value
       ch += log.vector
+      tags[log.task] += log.value
       is_event = log.is_event
       if(log.name && !name){
         name = log.name
@@ -74,6 +77,13 @@
       if(log.photo){
         photos.push(log)
       }
+    }
+
+    tags_html += `<a class='tag' onclick="Ø('query').bang('${entry.unde().to_url()}')">${entry.unde().to_url()}</a>`
+    
+    for(id in Object.keys(tags)){
+      var tag = Object.keys(tags)[id]
+      tags_html += `<a class='tag'>${tag}</a> `
     }
 
     html += `
@@ -88,8 +98,8 @@
       ${name ? '<p>'+name+'.</p>' : ''}
       ${print_media(photos)}
       <yu class='tags'>
-        <a class='tag' onclick="Ø('query').bang('${entry.unde().to_url()}')">${entry.unde().to_url()}</a>
-        <a class='tag'>${group[0].task}</a> ${fh > 0 ? '<t class="fh">'+fh+'</t>' : ''}
+        
+        ${tags_html} ${fh > 0 ? '<t class="fh">'+fh+'</t>' : ''}
       </yu>
     </log>`
 
@@ -152,7 +162,7 @@
     #content log .tags { font-size:12px; font-family:'archivo_medium'; }
     #content log .tags .fh { float:right; color:#aaa }
     #content log .tags .fh:after { content:"fh"; font-family:'archivo_italic'; color:#777; padding-left:2px}
-    #content log .tags a { color:#aaa; margin-right:10px}
+    #content log .tags a { color:#aaa; margin-right:5px}
     #content log .tags a:before { content:'#'; color:#777; padding-right:2px}
     #content log .tags a:hover { color:#fff}
     #content log.event .head .topic:after { content: "Event";background: #72dec2;display: inline-block;margin-left: 5px;font-size:12px;padding:0px 10px;border-radius: 100px;line-height: 20px;position: absolute;right:20px;top:20px;color:black }
