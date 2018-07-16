@@ -8,13 +8,15 @@ function DiaryTemplate(id,rect,...params)
   {
     var term = q.result;
     var skip = term.featured_log
-    var html = `${term.long(q.tables)}${this.make_horaire(term.logs)}`
+    var html = term.long(q.tables)
 
     for(id in term.diaries){
       var log = term.diaries[id]
       if(skip && log.photo == skip.photo){ continue; }
       html += `<img src='media/diary/${log.photo}.jpg'/>`
     }
+
+    html += this.make_horaire(term.logs)
     return html
   }
   

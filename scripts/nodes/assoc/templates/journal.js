@@ -22,7 +22,7 @@ function JournalTemplate(id,rect,...params)
       html += log;
     }
     return `
-    <p>A total of <b>${term.logs.length} logs</b>, over ${horaire.sum} hours, were recorded to the {{${term.name.capitalize()}}} project.</p>
+    <p>A total of <b>${term.logs.length} logs</b>, or ${horaire.sum} hours, were recorded to the {{${term.name.capitalize()}}} project.</p>
     <p>The project was {*initiated on ${term.logs[term.logs.length-1].time}*} and the last update was recorded {{${term.logs[0].time.offset_format(new Date().desamber(),true)}|Calendar}}. For additional details on the time tracking process and tools, see the complete {{Horaire documentation|Horaire}}.</p>
     ${html}`.to_markup()
   }

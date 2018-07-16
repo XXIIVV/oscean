@@ -75,7 +75,7 @@ function ActivityViz(logs,settings = {size:{width:700},theme:"noir"})
     svg.graph circle.photo { fill:black; stroke:none }
     svg.graph circle.event { fill:none; stroke:black; stroke-width:1.5px }
     svg.graph path { stroke-linecap:butt; stroke-dasharray:1,1; fill:none;stroke:#333;stroke-width:13px }
-    svg.graph.pale { padding: 30px 0px 45px; border-bottom-color:black; margin-bottom:45px}
+    svg.graph.pale { padding: 30px 0px; border-bottom-color:black; margin-bottom:30px}
     svg.graph.pale text { fill:#000}
     svg.graph.pale rect.missing { fill:#ccc}
     svg.graph.pale rect.research { fill:#333 }
