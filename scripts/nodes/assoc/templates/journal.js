@@ -12,7 +12,6 @@ function JournalTemplate(id,rect,...params)
 
     if(term.logs.length < 1){ return `<p>Sorry, there are no logging data for the {{${term.name.capitalize()} project|${term.name}}}.</p>`.to_markup() }
 
-
     var horaire = new Horaire(term.logs)
     var html = ''
 
