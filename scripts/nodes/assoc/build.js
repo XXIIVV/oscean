@@ -12,7 +12,7 @@ function BuildNode(id,rect)
     var featured_log = q.result && q.result.featured_log ? q.result.featured_log : null
     var activity = `
     ${q.result && q.result.diaries.length > 1 ? "<a id='diaries' onclick=\"Ø('query').bang('"+q.result.name+":diary')\">"+q.result.diaries.length+" Diaries</a>" : ''} 
-    ${q.result && q.result.logs.length > 2 ? "<a id='logs' onclick=\"Ø('query').bang('"+q.result.name+":horaire')\">"+q.result.logs.length+" Logs</a>" : ''}`
+    ${q.result && q.result.logs.length > 2 ? "<a id='logs' onclick=\"Ø('query').bang('"+q.result.name+":journal')\">"+q.result.logs.length+" Logs</a>" : ''}`
 
     if(q.result && q.result.name == "HOME"){
       featured_log = this.find_last_diary(q.tables.horaire)

@@ -1,4 +1,4 @@
-function ActivityViz(logs,settings = {size:{width:700}})
+function ActivityViz(logs,settings = {size:{width:700},theme:"noir"})
 {
   this.logs = logs;
   this.settings = settings;
@@ -33,8 +33,8 @@ function ActivityViz(logs,settings = {size:{width:700}})
         var y = parseInt(day * (cell+1))
         var offset = (364 - (week*7)-(day+1)) * -1
         var log = data[offset]
-        if(!log){ console.warn(`Missing log ${offset}`); }
-        html += log && log.sector ? `<rect class='${log.sector} ${log.time.offset() == 0 ? 'today' : ''}' x='${x}' y='${y}' width='${cell}' height='${cell}' rx="2" ry="2" title='${log.time}' onclick="Ø('query').bang('${log.term}')"></rect>` : ''
+        // if(!log){ console.warn(`Missing log ${offset}`); }
+        html += log && log.sector ? `<rect class='${log.sector} ${log.time.offset() == 0 ? 'today' : ''}' x='${x}' y='${y}' width='${cell}' height='${cell}' rx="2" ry="2" title='${log.time}' onclick="Ø('query').bang('${log.term}')"></rect>` : `<rect class='missing' x='${x}' y='${y}' width='${cell}' height='${cell}' rx="2" ry="2"></rect>`
         html += log && log.photo ? `<circle cx='${x+(cell/2)}' cy='${y+(cell/2)}' r='2.5' class='photo'></circle>` : ''
         html += log && log.is_event ? `<circle cx='${x+(cell/2)}' cy='${y+(cell/2)}' r='2' class='event'></circle>` : ''
         day += 1
@@ -55,7 +55,7 @@ function ActivityViz(logs,settings = {size:{width:700}})
 
     html += `<text x='725' y='${y+10}' style='text-anchor:end'>${recent.sum.toFixed(0)}+</text>`
 
-    return `<svg class='graph' style='max-width:${this.settings.size.width+30}px; height:${y+15}px; width:100%;'>${html}</svg>`
+    return `<svg class='graph ${this.settings.theme}' style='max-width:${this.settings.size.width+30}px; height:${y+15}px; width:100%;'>${html}</svg>`
   }
 
   this.style = function()
@@ -75,6 +75,10 @@ function ActivityViz(logs,settings = {size:{width:700}})
     svg.graph circle.photo { fill:black; stroke:none }
     svg.graph circle.event { fill:none; stroke:black; stroke-width:1.5px }
     svg.graph path { stroke-linecap:butt; stroke-dasharray:1,1; fill:none;stroke:#333;stroke-width:13px }
+    svg.graph.pale { padding: 30px 0px 45px; border-bottom-color:black; margin-bottom:45px}
+    svg.graph.pale text { fill:#000}
+    svg.graph.pale rect.missing { fill:#ccc}
+    svg.graph.pale rect.research { fill:#333 }
     </style>
     `
   }

@@ -8,15 +8,16 @@ function BuildContentNode(id,rect)
 
   this.answer = function(q)
   {
-    if(!q.result){
-      return this.signal('missing').answer(q)
-    }
-    if(q.result.type == "unique"){
-      return this.signal('unique').answer(q)
-    }
-    if(q.result.type){
-      return q.result.type == "special" ? this.signal('special').answer(q) : this.signal('type').answer(q)
-    }
-    return this.signal('default').answer(q)
+    if(!q.result){ return this.signal('missing').answer(q) }
+
+    var template = q.params ? q.params.toLowerCase() : q.result.type ? q.result.type.toLowerCase() : null
+
+    if(!template){ return this.signal('default').answer(q) }
+
+    var responder = this.signal(template)
+
+    if(!responder){ return `<p>Sorry, there is no <b>:${template}</b> template for {{${q.result.name.capitalize()}}}.</p>`.to_markup() }
+
+    return responder.answer(q)
   }
 }

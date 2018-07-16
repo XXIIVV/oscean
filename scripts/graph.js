@@ -16,13 +16,16 @@ function graph()
     Ø("build_sidebar").create({x:6,y:8},BuildSidebarNode),
     Ø("build_content").create({x:10,y:8},BuildContentNode),
       Ø("missing").create({x:2,y:14},MissingTemplate),
-      Ø("default").create({x:6,y:14},DefaultTemplate),
-      Ø("special").create({x:14,y:14},SpecialTemplate),
-      Ø("unique").create({x:18,y:14},UniqueTemplate),
-      Ø("type").create({x:10,y:14},TypeTemplate),
+      Ø("default").create({x:5,y:14},DefaultTemplate),
+      Ø("home").create({x:8,y:14},HomeTemplate),
+      Ø("special").create({x:11,y:14},SpecialTemplate),
+      Ø("unique").create({x:14,y:14},UniqueTemplate),
+      Ø("journal").create({x:17,y:14},JournalTemplate),
+      Ø("diary").create({x:20,y:14},DiaryTemplate),
+      Ø("index").create({x:23,y:14},IndexTemplate),
   ])
 
-  Ø("client").mesh({x:42,y:0},[
+  Ø("client").mesh({x:47,y:0},[
     Ø("view").create({x:2,y:2},DocumentNode),
     Ø("style").create({x:6,y:8},DomNode,"style"),
     Ø("header").create({x:2,y:8},DomNode),
@@ -41,7 +44,7 @@ function graph()
         Ø("icon").create({x:22,y:20},DomNode),
       Ø("navi").create({x:26,y:14},DomNode,"list"),
     Ø("footer").create({x:30,y:8},DomNode),
-      Ø("credits").create({x:34,y:14},DomNode,"yu",`
+      Ø("credits").create({x:30,y:14},DomNode,"yu",`
         <a target='_blank' href="https://twitter.com/neauoire" class="icon twitter external"></a>
         <a target='_blank' href="https://github.com/neauoire" class="icon github external"></a>
         <a target='_blank' href="http://webring.xxiivv.com/#random" class="icon rotonde"></a>
@@ -71,7 +74,7 @@ function graph()
 
   // Assoc
   Ø("build").syphon(["build_navi","build_content","build_sidebar"])
-  Ø("build_content").syphon(["missing","default","type","special","unique"])
+  Ø("build_content").syphon(["missing","default","special","unique","journal","index","home","diary"])
   Ø("build").connect(["view"])
 
   // Dom
