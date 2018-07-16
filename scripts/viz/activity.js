@@ -34,7 +34,7 @@ function ActivityViz(logs,settings = {size:{width:700},theme:"noir"})
         var offset = (364 - (week*7)-(day+1)) * -1
         var log = data[offset]
         // if(!log){ console.warn(`Missing log ${offset}`); }
-        html += log && log.sector ? `<rect class='${log.sector} ${log.time.offset() == 0 ? 'today' : ''}' x='${x}' y='${y}' width='${cell}' height='${cell}' rx="2" ry="2" title='${log.time}' onclick="Ø('query').bang('${log.term}')"></rect>` : `<rect class='missing' x='${x}' y='${y}' width='${cell}' height='${cell}' rx="2" ry="2"></rect>`
+        html += log && log.sector ? `<rect class='${log.sector} ${log.time.offset() == 0 ? 'today' : ''}' x='${x}' y='${y}' width='${cell}' height='${cell}' rx="2" ry="2" title='${log.time}' onclick="Ø('query').bang('${log.term}')"></rect>` : `<rect class='missing ${day == 6 && week == 51 ? 'today' : ''}' x='${x}' y='${y}' width='${cell}' height='${cell}' rx="2" ry="2"></rect>`
         html += log && log.photo ? `<circle cx='${x+(cell/2)}' cy='${y+(cell/2)}' r='2.5' class='photo'></circle>` : ''
         html += log && log.is_event ? `<circle cx='${x+(cell/2)}' cy='${y+(cell/2)}' r='2' class='event'></circle>` : ''
         day += 1
@@ -71,7 +71,7 @@ function ActivityViz(logs,settings = {size:{width:700},theme:"noir"})
     svg.graph rect.visual { fill:#ffb545 }
     svg.graph rect.research { fill:#fff }
     svg.graph rect.misc { fill:#555 !important }
-    svg.graph rect.today { animation: blink 2s linear infinite;}
+    svg.graph rect.today { animation: blink 1s linear infinite;}
     svg.graph circle.photo { fill:black; stroke:none }
     svg.graph circle.event { fill:none; stroke:black; stroke-width:1.5px }
     svg.graph path { stroke-linecap:butt; stroke-dasharray:1,1; fill:none;stroke:#333;stroke-width:13px }
