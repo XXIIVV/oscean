@@ -32,7 +32,7 @@ function Log(list)
   function make_task(sector,vector)
   {
     var collection = [
-      ["idle", "listening" , "experiment" , "rehersal"      , "draft"     , "composition" , "mastering"   , "mastering" , "release" , "performance" ],
+      ["idle", "listening" , "experiment" , "rehersal"      , "draft"     , "composition" , "sound design", "mastering" , "release" , "performance" ],
       ["idle", "watching"  , "experiment" , "storyboard"    , "prototype" , "editing"     , "design"      , "rendering" , "release" , "showcase" ],
       ["idle", "research"  , "experiment" , "documentation" , "planning"  , "tooling"     , "maintenance" , "updating"  , "release" , "talk" ]
     ]
