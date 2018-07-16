@@ -32,9 +32,9 @@ function Horaire(logs)
 
   h.osc = h.osc.sum/logs.length
 
-  var audio = (h.sectors.audio/h.sectors.sum)*10
-  var visual = (h.sectors.visual/h.sectors.sum)*10
-  var research = (h.sectors.research/h.sectors.sum)*10
+  var audio = h.sectors.audio > 0 ? (h.sectors.audio/h.sectors.sum)*10 : 0
+  var visual = h.sectors.visual > 0 ? (h.sectors.visual/h.sectors.sum)*10 : 0
+  var research = h.sectors.research ? (h.sectors.research/h.sectors.sum)*10 : 0
   var balance = (1 - ((Math.abs(3.3333 - audio) + Math.abs(3.3333 - visual) + Math.abs(3.3333 - research))/13.3333)) * 10
   
   return {
