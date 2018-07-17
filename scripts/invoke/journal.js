@@ -1,4 +1,4 @@
-Ø("unique").seal("journal",(q) => 
+Ø("invoke").seal("journal",(q) => 
 {
   function find_next_event(logs)
   {

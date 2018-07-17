@@ -8,9 +8,10 @@ function graph()
     Ø("lexicon").create({x:2,y:14},TableNode,Indental,Term),
     Ø("horaire").create({x:6,y:14},TableNode,Tablatal,Log),
     Ø("map").create({x:8,y:2},MapNode),
+    Ø("invoke").create({x:12,y:2},InvokeNode),
   ])
 
-  Ø("assoc").mesh({x:19,y:0},[
+  Ø("assoc").mesh({x:23,y:0},[
     Ø("build").create({x:6,y:2},BuildNode),
     Ø("build_navi").create({x:2,y:8},BuildNaviNode),
     Ø("build_sidebar").create({x:6,y:8},BuildSidebarNode),
@@ -18,14 +19,12 @@ function graph()
       Ø("missing").create({x:2,y:14},MissingTemplate),
       Ø("default").create({x:5,y:14},DefaultTemplate),
       Ø("home").create({x:8,y:14},HomeTemplate),
-      Ø("special").create({x:11,y:14},SpecialTemplate),
-      Ø("unique").create({x:14,y:14},UniqueTemplate),
-      Ø("journal").create({x:17,y:14},JournalTemplate),
-      Ø("diary").create({x:20,y:14},DiaryTemplate),
-      Ø("index").create({x:23,y:14},IndexTemplate),
+      Ø("journal").create({x:11,y:14},JournalTemplate),
+      Ø("diary").create({x:14,y:14},DiaryTemplate),
+      Ø("index").create({x:17,y:14},IndexTemplate),
   ])
 
-  Ø("client").mesh({x:47,y:0},[
+  Ø("client").mesh({x:45,y:0},[
     Ø("view").create({x:2,y:2},DocumentNode),
     Ø("style").create({x:6,y:8},DomNode,"style"),
     Ø("header").create({x:2,y:8},DomNode),
@@ -70,11 +69,12 @@ function graph()
   // Model
   Ø("query").connect("router")
   Ø("router").connect("map")
-  Ø("map").connect("build")
+  Ø("map").connect("invoke")
+  Ø("invoke").connect("build")
 
   // Assoc
   Ø("build").syphon(["build_navi","build_content","build_sidebar"])
-  Ø("build_content").syphon(["missing","default","special","unique","journal","index","home","diary"])
+  Ø("build_content").syphon(["missing","default","journal","index","home","diary"])
   Ø("build").connect(["view"])
 
   // Dom

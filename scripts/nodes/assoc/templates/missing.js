@@ -7,16 +7,16 @@ function MissingTemplate(id,rect,...params)
   this.answer = function(q)
   {
     // Operations
-    var o = find_operation(q.name)
+    var o = find_operation(q.target)
 
     if(o){
-      return `<code>${this[o.name](q.name)} <comment># ${o.name}</comment>\n</code>`
+      return `<code>${this[o.name](q.target)} <comment># ${o.name}</comment>\n</code>`
     }
 
-    var similar = find_similar(q.name.toUpperCase(),q.tables.lexicon)
+    var similar = find_similar(q.target.toUpperCase(),q.tables.lexicon)
 
     return `
-    <p>Sorry, there are no pages for {*/${q.name.capitalize()}*}, did you mean {{${similar[0].word.capitalize()}}} or {{${similar[1].word.capitalize()}}}?</p>
+    <p>Sorry, there are no pages for {*/${q.target.capitalize()}*}, did you mean {{${similar[0].word.capitalize()}}} or {{${similar[1].word.capitalize()}}}?</p>
     <p>{*Create this page*} by submitting a {{Pull Request|https://github.com/XXIIVV/oscean/blob/master/scripts/dict/lexicon.js}}, or if you believe this to be an error, please contact {{@neauoire|https://twitter.com/neauoire}}. Alternatively, you locate missing pages from within the {{progress status|status}}.</p>`.to_markup()
   }
 

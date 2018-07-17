@@ -1,4 +1,4 @@
-Ø("unique").seal("calendar",(q) => 
+Ø("invoke").seal("calendar",(q) => 
 {
   function get_days(year,logs)
   {
@@ -83,7 +83,7 @@
     return p+s;
   }
 
-  var year = parseInt(q.name) > 0 ? parseInt(q.name) : 2018;
+  var year = parseInt(q.target) > 0 ? parseInt(q.target) : 2018;
   var html = "";
   var logs = get_days(year,q.tables.horaire)
 

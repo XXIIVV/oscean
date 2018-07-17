@@ -1,4 +1,4 @@
-Ø("unique").seal("about",(q) => 
+Ø("invoke").seal("about",(q) => 
 {
   var projects = []
   for(id in q.tables.lexicon){

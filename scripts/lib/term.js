@@ -5,7 +5,7 @@ function Term(name,dict)
   this.dict = dict;
   this.type = dict.TYPE ? dict.TYPE.toLowerCase() : null;
   this.links = this.dict.LINK ? this.dict.LINK : [];
-  this.flag = this.dict.FLAG ? this.dict.FLAG : [];
+  this.flag = this.dict.FLAG ? this.dict.FLAG.toLowerCase().split(" ") : [];
   this.tags = this.dict.TAGS ? this.dict.TAGS.toLowerCase().split(" ") : [];
 
   // Filled with Ø('map')
@@ -32,7 +32,7 @@ function Term(name,dict)
 
   this.long = function(tables)
   {
-    return new Runic(this.dict.LONG,tables).parse()
+    return new Runic(this.dict.LONG,tables).parse() + (this.dict.LATE ? this.dict.LATE : '')
   }
 
   this.glyph = function()

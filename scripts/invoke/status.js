@@ -1,4 +1,4 @@
-Ø("unique").seal("status",(q) => 
+Ø("invoke").seal("status",(q) => 
 {
   var html = ""
   var progress = {sum:0,count:0}

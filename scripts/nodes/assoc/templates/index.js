@@ -7,7 +7,7 @@ function IndexTemplate(id,rect,...params)
   this.answer = function(q)
   {
     var term = q.result;
-    var html = ""
+    var html = `${term.long(q.tables)}`
 
     for(id in term.children){
       var child = term.children[id];

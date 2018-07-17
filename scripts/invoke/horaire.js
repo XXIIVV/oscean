@@ -1,4 +1,4 @@
-Ø("unique").seal("horaire",(q) => 
+Ø("invoke").seal("horaire",(q) => 
 {
   var logs = q.tables.horaire
   var html = "<tr><th></th><th colspan='2'>HDf</th><th colspan='2'>HDc</th><th colspan='2'>Efec</th><th colspan='2'>Efic</th><th colspan='2'>Out</th><th colspan='2'>Osc</th><th colspan='2'>Bal</th></tr>"
