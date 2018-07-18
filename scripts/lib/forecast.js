@@ -25,7 +25,7 @@ function Forecast(logs,limit = 14)
     for(id in logs){
       var log = logs[id];
       if(id < 14){ recents.push(log); continue; }
-      if(id < 14 * 5){ habits.push(log); continue; }
+      if(id < 14 * 20){ habits.push(log); continue; }
       break;
     }
 
