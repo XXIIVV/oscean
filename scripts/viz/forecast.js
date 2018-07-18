@@ -30,8 +30,9 @@ function ForecastViz(logs,settings = {})
       var x = id * (cell+1);
       var y = (cell * 3) * (1-(log.value/10))
       var height = (cell * 3) - y
-      html += `<rect class='${log.sector} ${log.time.offset() == -1 ? 'today' : ''}' x='${x}' y='${y}' width='${cell}' height='${height}' rx="2" ry="2"></rect>`
+      html += `<rect class='${log.sector} ${log.time.offset() == 0 ? 'today' : ''}' x='${x}' y='${y}' width='${cell}' height='${height}' rx="2" ry="2"></rect>`
       html += `<text x='${x+13}' y='-10' style='text-anchor:middle'>${log.time.d}</text>`
+      html += log.value >= 3 ? `<text x='${x+13}' y='70' style='text-anchor:middle; fill:white'>${log.value}h</text>` : ''
     }
 
     // Future
@@ -42,6 +43,7 @@ function ForecastViz(logs,settings = {})
       var y = (cell * 3) * (1-(log.value/10))
       var height = (cell * 3) - y
       html += `<rect class='${log.sector} val${log.value} future' x='${x}' y='${y}' width='${cell}' height='${height}' rx="2" ry="2"></rect>`
+      html += log.value >= 3 ? `<text x='${x+13}' y='70' style='text-anchor:middle; fill:white'>${log.value}h</text>` : ''
     }
 
     html += `<text x='385' y='105' style='text-anchor:end'>TODAY</text>`
@@ -56,7 +58,7 @@ function ForecastViz(logs,settings = {})
     return `
     <style>
       @keyframes blink { 50% { opacity: 0; } }
-      svg.graph.forecast { border-bottom:1.5px solid black; width:730px; padding-top:30px; height:135px; margin-bottom:30px}
+      svg.graph.forecast { border-bottom:1.5px solid black; width:730px; padding-top:30px; height:125px; margin-bottom:30px}
       svg.graph.forecast text { stroke:none; fill:#000; font-size:11px; text-anchor: middle; font-family:'archivo_bold' }
       svg.graph.forecast rect { fill:#ccc; stroke:none}
       svg.graph.forecast rect.audio { fill:#72dec2 }

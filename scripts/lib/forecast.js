@@ -40,7 +40,7 @@ function Forecast(logs,limit = 14)
     var sectors = sort_sectors(offset)
     var sector = sectors[0]
     var sector_code = ["audio","visual","research"].indexOf(sector[0])+1
-    var sector_value = clamp(parseInt((sectors[0][1] - sectors[2][1])*2),0,9)
+    var sector_value = clamp(parseInt((sectors[0][1] - sectors[2][1])*1.5),0,9)
     return new Log({code:`-${sector_code}${sector_value}0`})
   }
 
@@ -55,7 +55,7 @@ function Forecast(logs,limit = 14)
     }).reverse();
   }
 
-  function clamp(v, min, max) { return v < min ? min : v > max ? max : v; }
+  function clamp(v, min, max){ return v < min ? min : v > max ? max : v; }
 
   return predict(logs,limit)
 }

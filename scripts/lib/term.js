@@ -46,6 +46,7 @@ function Term(name,dict)
 
   this.portal = function()
   {
+    if(this.is_portal){ return this; }
     if(this.parent.is_portal){ return this.parent; }
     if(this.parent.parent.is_portal){ return this.parent.parent; }
     if(this.parent.parent.parent.is_portal){ return this.parent.parent.parent; }
