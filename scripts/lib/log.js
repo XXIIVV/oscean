@@ -8,7 +8,7 @@ function Log(list)
 
   this.code = this.list.code;
   this.rune = this.code.substr(0,1);
-  this.sector = ["misc","audio","visual","research"][parseInt(this.code.substr(1,1))]
+  this.sector = ["misc","audio","visual","research","misc"][parseInt(this.code.substr(1,1))]
   this.value  = parseInt(this.code.substr(2,1)) > 0 ? parseInt(this.code.substr(2,1)) : 0;
   this.vector = parseInt(this.code.substr(3,1)) > 0 ? parseInt(this.code.substr(3,1)) : 0;
   this.task   = make_task(parseInt(this.code.substr(1,1)),this.vector)
@@ -22,11 +22,15 @@ function Log(list)
   {
     return `
     <log class='${this.sector} ${this.is_event > 0 ? 'event' : ''}'>
-      <t class='date'>${this.time}</t>
-      <t class='term'>${this.term}</t> 
-      <t class='task'>${this.task.capitalize()}</t> 
-      <t class="action">${this.name ? 'Added a new diary entry \"<b>'+this.name+'</b>\".' : this.photo > 0 ? 'Added an untitled media(#'+this.photo+').' : 'Logged <b>'+this.value+'h of '+this.task+'</b>.'}</t>
-    </log>`
+      <t class='flag date'>${this.time}</t>
+      
+      ${this.is_event ? '<t class=\'flag\'>!</t> ' : ''}
+      <t class='term'>{{${this.term}}}</t> 
+      <t class='task'>${this.task.capitalize()}</t>
+      ${this.value > 0 ? `<t class='value'>${this.value}Fh</t>` : ''}
+      <t class="action">${this.name ? '— Added a new diary \"<b>'+this.name+'</b>\"' : this.photo > 0 ? 'Added <b>untitled media #'+this.photo+'</b>' : ''}</t>
+      ${this.time.offset() > 0 ? '<t class="offset">'+this.time.offset_format()+'</t> ' : ''}
+    </log>`.to_markup()
   }
 
   function make_task(sector,vector)

@@ -42,10 +42,11 @@ function ForecastViz(logs,settings = {})
       var x = (id * (cell+1)) + offset_x;
       var y = (cell * 3) * (1-(log.value/10))
       var height = (cell * 3) - y
-      html += `<rect class='${log.sector} val${log.value} future' x='${x}' y='${y}' width='${cell}' height='${height}' rx="2" ry="2"></rect>`
+      html += `<rect class='${log.sector} future' x='${x}' y='${y}' width='${cell}' height='${height}' rx="2" ry="2"></rect>`
       html += log.value >= 3 ? `<text x='${x+13}' y='70' style='text-anchor:middle; fill:white'>${log.value}h</text>` : ''
     }
 
+    html += `<text x='370' y='0' style='text-anchor:end'>—</text>`
     html += `<text x='385' y='105' style='text-anchor:end'>TODAY</text>`
     html += `<text x='605' y='105' style='text-anchor:end'>FUTURE</text>`
     html += `<text x='160' y='105' style='text-anchor:end'>PAST</text>`
