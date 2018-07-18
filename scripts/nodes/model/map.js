@@ -22,13 +22,13 @@ function MapNode(id,rect)
   this.map = function(q)
   {
     var time = performance.now();
-    var count = {links:0,diaries:0}
+    var count = {links:0,diaries:0,issues:0}
 
     // Connect Parents
     for(id in q.tables.lexicon){
       var term = q.tables.lexicon[id];
       var parent = !term.dict.UNDE ? "HOME" : term.dict.UNDE.toUpperCase()
-      if(!q.tables.lexicon[parent]){ console.warn("Unknown parent term:",parent); }
+      if(!q.tables.lexicon[parent]){ console.warn(`Unknown parent ${parent} for ${term.name}`); }
       term.parent = q.tables.lexicon[parent];
     }
 
@@ -71,7 +71,16 @@ function MapNode(id,rect)
       }
     }
 
+    // Connect issues
+    for(term in q.tables.issues){
+      var index = term.toUpperCase()
+      var issues = q.tables.issues[term]
+      if(!q.tables.lexicon[index]){ console.warn("Missing issue parent",index); continue; }
+      q.tables.lexicon[index].issues = q.tables.issues[index]
+      count.issues += issues.length
+    }
+
     this.is_mapped = true
-    console.info(this.id,`Mapped ${q.tables.horaire.length} logs, ${count.links} links and ${count.diaries} diaries to ${Object.keys(q.tables.lexicon).length} terms, in ${(performance.now() - time).toFixed(2)}ms.`)
+    console.info(this.id,`Mapped ${q.tables.horaire.length} logs, ${count.links} links, ${count.issues} issues, and ${count.diaries} diaries to ${Object.keys(q.tables.lexicon).length} terms, in ${(performance.now() - time).toFixed(2)}ms.`)
   }
 }

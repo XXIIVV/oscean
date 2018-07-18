@@ -12,6 +12,7 @@ function Term(name,dict)
   this.parent = null
   this.children = []
   this.logs = []
+  this.issues = []
   this.diaries = []
   this.outgoing = []
   this.incoming = []
@@ -62,6 +63,7 @@ function Term(name,dict)
     h.points.outgoing = this.outgoing && this.outgoing.length > 1
     h.points.incoming = this.incoming && this.incoming.length > 1
     h.points.glyph = this.glyph() != ""
+    h.points.issues = this.issues.length == 0
     h.points.links = Object.keys(this.links).length > 0
 
     // Score
@@ -73,6 +75,11 @@ function Term(name,dict)
     h['score'] = (p/Object.keys(h.points).length)
     h['status'] = h['score'] < 0.4 ? 'poor' : h['score'] < 0.7 ? 'fair' : h['score'] < 0.9 ? 'good' : ''
     return h
+  }
+
+  this.widget = function()
+  {
+    return `<yu><b>${this.name}</b></yu>`
   }
 
   this.find_outgoing = function()

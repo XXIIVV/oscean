@@ -3,15 +3,16 @@ function graph()
   Ø("query").create({x:2,y:4},QueryNode)
 
   Ø("model").mesh({x:6,y:0},[
-    Ø("router").create({x:4,y:2},RouterNode),
-    Ø("database").create({x:4,y:8},DatabaseNode),
-    Ø("lexicon").create({x:2,y:14},TableNode,Indental,Term),
-    Ø("horaire").create({x:6,y:14},TableNode,Tablatal,Log),
-    Ø("map").create({x:8,y:2},MapNode),
-    Ø("invoke").create({x:12,y:2},InvokeNode),
+    Ø("router").create({x:5,y:2},RouterNode),
+    Ø("database").create({x:5,y:8},DatabaseNode),
+      Ø("lexicon").create({x:2,y:14},TableNode,Indental,Term),
+      Ø("horaire").create({x:5,y:14},TableNode,Tablatal,Log),
+      Ø("issues").create({x:8,y:14},TableNode,Indental),
+    Ø("map").create({x:9,y:2},MapNode),
+    Ø("invoke").create({x:13,y:2},InvokeNode),
   ])
 
-  Ø("assoc").mesh({x:23,y:0},[
+  Ø("assoc").mesh({x:24,y:0},[
     Ø("build").create({x:6,y:2},BuildNode),
     Ø("build_navi").create({x:2,y:8},BuildNaviNode),
     Ø("build_sidebar").create({x:6,y:8},BuildSidebarNode),
@@ -24,7 +25,7 @@ function graph()
       Ø("index").create({x:17,y:14},IndexTemplate),
   ])
 
-  Ø("client").mesh({x:45,y:0},[
+  Ø("client").mesh({x:46,y:0},[
     Ø("view").create({x:2,y:2},DocumentNode),
     Ø("style").create({x:6,y:8},DomNode,"style"),
     Ø("header").create({x:2,y:8},DomNode),
@@ -91,7 +92,7 @@ function graph()
   Ø("li_en").syphon("dictionaery")
   Ø("deconstruct").syphon("dictionaery")
   Ø("router").syphon("database")
-  Ø("database").syphon(["lexicon","horaire"])
+  Ø("database").syphon(["lexicon","horaire","issues"])
   Ø("operation").syphon(["li_en","en_li","clock","desamber","deconstruct"])
 
   Ø("query").bang()

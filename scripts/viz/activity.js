@@ -78,7 +78,11 @@ function ActivityViz(logs,settings = {size:{width:700},theme:"noir"})
     svg.graph.pale { padding: 30px 0px; border-bottom-color:black; margin-bottom:30px}
     svg.graph.pale text { fill:#000}
     svg.graph.pale rect.missing { fill:#ccc}
-    svg.graph.pale rect.research { fill:#333 }
+    svg.graph.pale rect.audio { fill:#72dec2 }
+    svg.graph.pale rect.visual { fill:#51a196 }
+    svg.graph.pale rect.research { fill:#316067 }
+    svg.graph.pale circle.photo { fill:white; stroke:none }
+    svg.graph.pale circle.event { fill:none; stroke:white; stroke-width:1.5px }
     </style>
     `
   }
