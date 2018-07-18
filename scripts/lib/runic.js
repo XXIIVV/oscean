@@ -38,8 +38,8 @@ function Runic(raw)
     {
       return this.all.length;
     },
-    copy : function(data){ 
-      return JSON.parse(JSON.stringify(data)); 
+    copy : function(data){
+      return JSON.parse(JSON.stringify(data));
     }
   }
 
@@ -99,7 +99,7 @@ function Runic(raw)
     for(id in stash){
       var rune = stash[id].rune;
       var line = stash[id].item;
-      html += rune.wrap ? `<${rune.sub}><${rune.wrap}>${line.replace(/\|/g,`</${rune.wrap}><${rune.wrap}>`).trim()}</${rune.wrap}></${rune.sub}>` : `<${rune.sub}>${line}</${rune.sub}>`;  
+      html += rune.wrap ? `<${rune.sub}><${rune.wrap}>${line.replace(/\|/g,`</${rune.wrap}><${rune.wrap}>`).trim()}</${rune.wrap}></${rune.sub}>` : `<${rune.sub}>${line}</${rune.sub}>`;
     }
     return `<${rune.tag} class='${rune.class}'>${html}</${rune.tag}>`
   }
@@ -155,7 +155,7 @@ String.prototype.to_markup = function()
     var target = content.indexOf("|") > -1 ? content.split("|")[1] : content;
     var name = content.indexOf("|") > -1 ? content.split("|")[0] : content;
     var external = (target.indexOf("https:") > -1 || target.indexOf("http:") > -1 || target.indexOf("dat:") > -1);
-    html = html.replace(`{{${content}}}`,external ? `<a href='${target}' class='external' target='_blank'>${name}</a>` : `<a class='local' onclick="Ø('query').bang('${target}')">${name}</a>`)
+    html = html.replace(`{{${content}}}`,external ? `<a href='${target}' class='external' target='_blank'>${name}</a>` : `<a class='local' href='#${target.toLowerCase().replace(/\s/g, '+')}' onclick="Ø('query').bang('${target}')">${name}</a>`)
   }
   return html;
 }
