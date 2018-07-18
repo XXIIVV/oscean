@@ -3,7 +3,7 @@ function Desamber(str)
   this.str = str;
 
   this.y = str.substr(0,2);
-  this.m = str.substr(2,1); 
+  this.m = str.substr(2,1).toUpperCase(); 
   this.d = str.substr(3,2);
 
   this.year = parseInt(`20${this.y}`);
@@ -21,22 +21,23 @@ function Desamber(str)
     return parseInt((this.to_date() - b.to_date())/86400000);
   }
 
-  this.offset_format = function(b = new Date().desamber())
+  this.offset_format = function(b = new Date().desamber(), force = false)
   {
     var days = this.offset();
 
+    if(days == -1){ return `yesterday`; }
     if(days == 1){ return "tomorrow"; }
     if(days == 0){ return "today"; }
     if(days > 0){ return `in ${days} days`; }
-    if(days < -14){ return `${this.toString()}`; }
-    if(days < 0){ return `${days*-1} days ago`; }
+    if(days < -14 && force == false){ return `${this.toString()}`; }
+    if(days < 1){ return `${days*-1} days ago`; }
     
     return `in ${days} days`;
   }
 
   this.to_date = function()
   {
-    var year = new Date(this.year, 0);
+    var year = new Date(this.year-1, 0);
     return new Date(year.setDate(this.doty)); 
   }
 
@@ -49,7 +50,7 @@ function Desamber(str)
 
   this.toString = function()
   {
-    return this.str;
+    return this.str.toUpperCase();
   }
 
   function prepend(s,length,char = "0")
