@@ -122,9 +122,7 @@ function Runic(raw,tables)
     return `
     <quote>
       ${text.length > 1 ? '<p class=\'text\'>'+text.to_markup()+'</p>' : ''}
-      <p class='attrib'>
-        ${author}${source && link ? `, {{${source}|${link}}}`.to_markup() : source ? `, <b>${source}</b>` : ''}
-      </p>
+      ${author ? `<p class='attrib'>${author}${source && link ? `, {{${source}|${link}}}`.to_markup() : source ? `, <b>${source}</b>` : ''}</p>` : ''}
     </quote>`
   }
 
