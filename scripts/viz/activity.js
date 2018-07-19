@@ -11,7 +11,7 @@ function ActivityViz(logs,settings = {size:{width:700},theme:"noir"})
       var log = logs[id];
       var offset = log.time.offset();
       if(offset > 0){ continue; }
-      if(offset < -365){ break; }
+      if(offset < -364){ break; }
       h[log.time.offset()] = log;
     }
     return h
@@ -32,9 +32,9 @@ function ActivityViz(logs,settings = {size:{width:700},theme:"noir"})
       while(day < 7){
         var y = parseInt(day * (cell+1))
         var offset = (365 - (week*7)-(day+1)) * -1
-        var log = data[offset]
+        var log = data[offset+1]
         // if(!log){ console.warn(`Missing log ${offset}`); }
-        html += log && log.sector ? `<rect class='${log.sector} ${log.time.offset() >= -1 ? 'today' : ''}' x='${x}' y='${y}' width='${cell}' height='${cell}' rx="2" ry="2" title='${log.time}' onclick="Ø('query').bang('${log.term}')"></rect>` : `<rect class='missing ${day == 6 && week == 51 ? 'today' : ''}' x='${x}' y='${y}' width='${cell}' height='${cell}' rx="2" ry="2"></rect>`
+        html += log && log.sector ? `<rect class='${log.sector} ${log.time.offset() == 0 ? 'today' : ''}' x='${x}' y='${y}' width='${cell}' height='${cell}' rx="2" ry="2" title='${log.time}' onclick="Ø('query').bang('${log.term}')"></rect>` : `<rect class='missing ${day == 6 && week == 51 ? 'today' : ''}' x='${x}' y='${y}' width='${cell}' height='${cell}' rx="2" ry="2"></rect>`
         html += log && log.photo ? `<circle cx='${x+(cell/2)}' cy='${y+(cell/2)}' r='2.5' class='photo'></circle>` : ''
         html += log && log.is_event ? `<circle cx='${x+(cell/2)}' cy='${y+(cell/2)}' r='2' class='event'></circle>` : ''
         day += 1
