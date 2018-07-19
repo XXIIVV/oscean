@@ -29,13 +29,5 @@
   <p>So far, roughly {*${parseInt(new Horaire(q.tables.lexicon.OSCEAN.logs).sum)} hours*}(over ${q.tables.lexicon.OSCEAN.logs.length} days) were invested in the construction of {{Oscean}}, which is a considerable investment of time, enough that one might wonder if it is actually worth it. There is no singular project that had more {{impact|Aesthetics}} on my work than the usage and creation of this {{application|Nataniev}}.</p>
   <p>{{Desamber}} is the {{Time Format|Time}} used on this wiki, the current time is <b>{{$desamber}} {{$clock}}</b> , visit the {{Clock}} for more details. The reason for using an {{unconventional|https://en.wikipedia.org/wiki/Decimal_time#See_also}} time is the perdictable {{2-weeks long length|Desamber}} of each month, ideal for the {{sprint periods|https://en.wikipedia.org/wiki/Agile_software_development}}.</p>`.to_markup()
 
-  for(id in q.result.children){
-    var child = q.result.children[id];
-    html += `
-    ${child.featured_log ? `<a onclick='Ø("query").bang("${child.name}")'><img src="media/diary/${child.featured_log.photo}.jpg"/></a><hs>— ${child.bref().to_markup()}</hs>` : `<h2>${child.name.capitalize()}</h2><hs>${child.bref()}</hs>`.to_markup()}
-    ${child.long(q.tables)}
-    <quote>${!stop ? this.make_index(child,true) : ''}</quote>`
-  }
-
   return html
 });
