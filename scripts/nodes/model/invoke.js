@@ -17,7 +17,7 @@ function InvokeNode(id,rect)
 
   this.invoke = function(target)
   {
-    var filename = target.name.to_url();
+    var filename = target.name.to_path();
     var extension = target.flag.indexOf('indental') > -1 ? 'ndtl' : 'js'
 
     if(this.archives[filename]){ this.send(this.cache); return; }
