@@ -53,7 +53,7 @@ function ActivityViz(logs,settings = {size:{width:700},theme:"noir"})
     <rect class="research" x="${(cell+1)*16}" y="${y}" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
     <text x='${(cell+1)*20.5}' y='${y+10}' style='text-anchor:left'>Research ${(recent.sectors.research*10).toFixed(1)}%</text>`
 
-    html += `<text x='725' y='${y+10}' style='text-anchor:end'>${recent.sum.toFixed(0)}+</text>`
+    html += `<text x='725' y='${y+10}' style='text-anchor:end'>${recent.sum.toFixed(0)} Hours</text>`
 
     return `<svg class='graph activity ${this.settings.theme}' style='max-width:${this.settings.size.width+30}px; height:${y+15}px; width:100%;'>${html}</svg>`
   }
@@ -70,7 +70,7 @@ function ActivityViz(logs,settings = {size:{width:700},theme:"noir"})
     svg.graph.activity rect.audio { fill:#72dec2 }
     svg.graph.activity rect.visual { fill:#ffb545 }
     svg.graph.activity rect.research { fill:#fff }
-    svg.graph.activity rect.misc { fill:#555 !important }
+    svg.graph.activity rect.misc { fill:#000 !important }
     svg.graph.activity rect.today { animation: blink 1s linear infinite;}
     svg.graph.activity circle.photo { fill:black; stroke:none }
     svg.graph.activity circle.event { fill:none; stroke:black; stroke-width:1.5px }
