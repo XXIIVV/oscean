@@ -61,7 +61,8 @@ function StatusViz(logs,settings = {})
 
   this.offset = function(now,before,trail = 1)
   {
-    return now-before > 0 ? `+${(now-before).toFixed(trail)}` : `${(now-before).toFixed(trail-1)}`
+    var print = now-before > 0 ? `+${(now-before).toFixed(trail)}` : `${(now-before).toFixed(trail)}`
+    return print != "-0.0" && print != "+0.0" ? print : '0.0'
   }
 
   this.style = function()
