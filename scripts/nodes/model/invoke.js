@@ -9,7 +9,7 @@ function InvokeNode(id,rect)
 
   this.receive = function(q)
   {
-    if(!q.result || q.result.flag.indexOf('invoke') < 0){ this.send(q); return; }
+    if(!q.result || !q.result.has_tag('invoke')){ this.send(q); return; }
 
     this.cache = q;
     this.invoke(this.cache.result)
@@ -18,7 +18,7 @@ function InvokeNode(id,rect)
   this.invoke = function(target)
   {
     var filename = target.name.to_path();
-    var extension = target.flag.indexOf('indental') > -1 ? 'ndtl' : 'js'
+    var extension = target.has_tag('indental') ? 'ndtl' : 'js'
 
     if(this.archives[filename]){ this.send(this.cache); return; }
 

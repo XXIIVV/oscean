@@ -2,18 +2,29 @@
 {
   var html = ""
   var progress = {sum:0,count:0}
+  var ratings = {}
+
   for(id in q.tables.lexicon){
     var term = q.tables.lexicon[id];
-    var rating = term.rating()
-    var html_rating = ""
-    for(id in rating.points){
-      html_rating += `<td title='${id}'>${rating.points[id] ? '•' : ''}</td>`
-    }
-    progress.sum += rating.score
-    progress.count += 1
-    html_rating += `<td>${term.incoming.length > 1 ? '>'+term.incoming.length : ''}</td><td>${term.outgoing.length > 1 ? term.outgoing.length+'>' : ''}</td>`
-    html_rating += `<td>${rating.status}</td>`
-    html += `<tr><td>{{${term.name.capitalize()}}}</b></td>${html_rating}</tr>`.to_markup()
+    var rating = term.rating().status
+    if(!ratings[rating]){ ratings[rating] = []; }
+    ratings[rating].push(term)
   }
-  return `<table class='rating'>${html}</table><p>The current progress of the Nataniev improvement project, currently affecting ${progress.count} projects, is of <b>${((progress.sum/progress.count)*100).toFixed(2)}%</b>.</p>`
+
+  for(rating in ratings){
+    html += `<tr><th>${rating} — ${ratings[rating].length}</th></tr>`
+    for(id in ratings[rating]){
+      var term = ratings[rating][id];
+      var r = term.rating()
+      var html_rating = ""
+      for(i in r.points){
+        html_rating += `<td title='${i}'>${r.points[i] ? '•' : ''}</td>`
+      }
+      progress.sum += r.score
+      progress.count += 1
+      html_rating += `<td>${term.incoming.length > 1 ? '>'+term.incoming.length : ''}</td><td>${term.outgoing.length > 1 ? term.outgoing.length+'>' : ''}</td>`
+      html += `<tr><td>{{${term.name.capitalize()}}}</b></td><td>${r.score}</td>${html_rating}</tr>`.to_markup()
+    }
+  }
+  return `<table class='rating'>${html}</table>`
 });

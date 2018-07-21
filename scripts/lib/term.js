@@ -5,7 +5,6 @@ function Term(name,dict)
   this.dict = dict;
   this.type = dict.TYPE ? dict.TYPE.toLowerCase() : null;
   this.links = this.dict.LINK ? this.dict.LINK : [];
-  this.flag = this.dict.FLAG ? this.dict.FLAG.toLowerCase().split(" ") : [];
   this.tags = this.dict.TAGS ? this.dict.TAGS.toLowerCase().split(" ") : [];
 
   // Filled with Ø('map')
@@ -60,6 +59,7 @@ function Term(name,dict)
 
     h.points.long = this.dict.LONG && this.dict.LONG.length > 0
     h.points.logs = this.logs.length > 0
+    h.points.children = this.children.length > 0
     h.points.photo = this.diaries.length > 0
     h.points.outgoing = this.outgoing && this.outgoing.length > 1
     h.points.incoming = this.incoming && this.incoming.length > 1
@@ -73,14 +73,14 @@ function Term(name,dict)
       p += h.points[id] ? 1 : 0
     }
 
-    h['score'] = (p/Object.keys(h.points).length)
-    h['status'] = h['score'] < 0.4 ? 'poor' : h['score'] < 0.7 ? 'fair' : h['score'] < 0.9 ? 'good' : ''
+    h['score'] = (p/Object.keys(h.points).length).toFixed(2)
+    h['status'] = h['score'] < 0.4 ? 'poor' : h['score'] < 0.7 ? 'fair' : h['score'] < 0.9 ? 'good' : 'perfect'
     return h
   }
 
-  this.widget = function()
+  this.has_tag = function(target)
   {
-    return `<yu><b>${this.name}</b></yu>`
+    return this.tags.indexOf(target.toLowerCase()) > -1
   }
 
   this.find_outgoing = function()
