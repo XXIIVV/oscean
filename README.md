@@ -1,6 +1,6 @@
 # Oscean
 
-This is the repository for the wiki engine [Oscean](http://wiki.xxiivv.com/). The Master Branch is the **live version**.
+This is the repository for the wiki engine [Oscean](http://wiki.xxiivv.com/), see [current status](http://wiki.xxiivv.com/Status). The Master Branch is the **live version**.
 
 ## Flow-Based
 
@@ -8,12 +8,12 @@ Oscean uses the flow-based framework [Riven](https://github.com/XXIIVV/Riven), t
 
 ## Front-End Databases
 
-The database format are [Indental](https://wiki.xxiivv.com/Indental) and [Tablatal](https://wiki.xxiivv.com/Tablatal). The database content is formatted with [Runic](https://wiki.xxiivv.com/Runic).
+The database formats are [Indental](https://wiki.xxiivv.com/Indental) and [Tablatal](https://wiki.xxiivv.com/Tablatal), their content uses the templating format [Runic](https://wiki.xxiivv.com/Runic) and [Oscean Markup](https://wiki.xxiivv.com/Markup).
 
 - [scripts/database/horaire.tbtl](https://github.com/XXIIVV/Oscean/blob/master/scripts/database/horaire.tbtl)
 - [scripts/database/lexicon.ndtl](https://github.com/XXIIVV/Oscean/blob/master/scripts/database/lexicon.ndtl)
 
-# Extras
+## Extras
 
 - Pull Requests are welcome.
 - See the [License](LICENSE.md) file for license rights and limitations(MIT).
