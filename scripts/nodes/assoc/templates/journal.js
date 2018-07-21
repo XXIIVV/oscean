@@ -16,6 +16,7 @@ function JournalTemplate(id,rect,...params)
     var html = ''
 
     html += new ActivityViz(term.logs,{size:{width:700},theme:"pale"});
+    // html += new RecentViz(term.logs);
 
     for(id in term.logs){
       var log = term.logs[id]
