@@ -23,7 +23,6 @@ function Log(list)
     return `
     <log class='${this.sector} ${this.is_event > 0 ? 'event' : ''}'>
       <t class='flag date'>${this.time}</t>
-      
       ${this.is_event ? '<t class=\'flag\'>!</t> ' : ''}
       <t class='term'>{{${this.term}}}</t> 
       <t class='task'>${this.task.capitalize()}</t>
