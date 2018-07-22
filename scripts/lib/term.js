@@ -7,16 +7,15 @@ function Term(name,dict)
   this.links = this.dict.LINK ? this.dict.LINK : [];
   this.tags = this.dict.TAGS ? this.dict.TAGS.toLowerCase().split(" ") : [];
 
-  // Filled with Ø('map')
-  this.parent = null
-  this.children = []
-  this.logs = []
-  this.issues = []
-  this.diaries = []
-  this.outgoing = []
-  this.incoming = []
-  this.latest_log = null
-  this.featured_log = null
+  this.parent = null       // Assigned in Map
+  this.children = []       // Assigned in Map
+  this.logs = []           // Assigned in Map
+  this.issues = []         // Assigned in Map
+  this.diaries = []        // Assigned in Map
+  this.outgoing = []       // Assigned in Map
+  this.incoming = []       // Assigned in Map
+  this.latest_log = null   // Assigned in Map
+  this.featured_log = null // Assigned in Map
 
   this.is_portal = this.tags.indexOf("portal") > -1
   

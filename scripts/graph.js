@@ -7,7 +7,7 @@ function graph()
     Ø("database").create({x:5,y:8},DatabaseNode),
       Ø("lexicon").create({x:2,y:14},TableNode,Indental,Term),
       Ø("horaire").create({x:5,y:14},TableNode,Tablatal,Log),
-      Ø("issues").create({x:8,y:14},TableNode,Indental),
+      Ø("issues").create({x:8,y:14},TableNode,Tablatal,Issue),
     Ø("map").create({x:9,y:2},MapNode),
     Ø("invoke").create({x:13,y:2},InvokeNode),
   ])

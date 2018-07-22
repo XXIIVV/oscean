@@ -22,7 +22,7 @@ function MapNode(id,rect)
   this.map = function(q)
   {
     var time = performance.now();
-    var count = {links:0,diaries:0,issues:0}
+    var count = {links:0,diaries:0}
 
     // Connect Parents
     for(id in q.tables.lexicon){
@@ -72,15 +72,15 @@ function MapNode(id,rect)
     }
 
     // Connect issues
-    for(term in q.tables.issues){
-      var index = term.toUpperCase()
-      var issues = q.tables.issues[term]
-      if(!q.tables.lexicon[index]){ console.warn("Missing issue parent",index); continue; }
-      q.tables.lexicon[index].issues = q.tables.issues[index]
-      count.issues += issues.length
+    for(id in q.tables.issues){
+      var issue = q.tables.issues[id]
+      var term_name = issue.data.term.toUpperCase();
+      if(!q.tables.lexicon[term_name]){ console.warn("Missing issue parent",term_name, issue); continue; }
+      q.tables.lexicon[term_name].issues.push(issue)
+      issue.term = q.tables.lexicon[term_name];
     }
 
     this.is_mapped = true
-    console.info(this.id,`Mapped ${q.tables.horaire.length} logs, ${count.links} links, ${count.issues} issues, and ${count.diaries} diaries to ${Object.keys(q.tables.lexicon).length} terms, in ${(performance.now() - time).toFixed(2)}ms.`)
+    console.info(this.id,`Mapped ${q.tables.horaire.length} logs, ${count.links} links, ${q.tables.issues.length} issues, and ${count.diaries} diaries to ${Object.keys(q.tables.lexicon).length} terms, in ${(performance.now() - time).toFixed(2)}ms.`)
   }
 }

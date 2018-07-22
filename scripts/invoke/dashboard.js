@@ -44,16 +44,15 @@
   }
   html += "</list>"
 
-  html += '<table>'
-  for(id in q.tables.issues){
-    var issues = q.tables.issues[id];
-    html += `<tr><th>{{${id.capitalize()}}}</th><td>`.to_markup()
-    for(i in issues){
-      html += `${issues[i]}<br />`.to_markup();
-    }
-    html += '</td></tr>'
+  var issues = q.tables.issues;
+  console.log(issues)
+
+  html += "<list>"
+  for(id in issues){
+    var issue = issues[id]
+    html += `${issue}`
   }
-  html += '</table>'
+  html += "</list>"
 
   return html
 });

@@ -8,7 +8,7 @@ function Tablatal(data)
     var lines = this.data.trim().split("\n")
     var key = make_key(lines[0]);
     for(id in lines){
-      if(id == 0){ continue; }
+      if(id == 0 || lines[id].trim() == ""){ continue; }
       var entry = {};
       for(i in key){
         entry[i] = lines[id].substr(key[i].from,key[i].to).trim();

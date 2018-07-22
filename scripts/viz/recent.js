@@ -58,9 +58,9 @@ function RecentViz(logs,settings = {size:{width:730,height:125}})
 
     return `
     <svg class='graph recent'>
-      <path class='research' d='${paths.research} L${last.research.x},${last.research.y} L${this.settings.size.width},${this.settings.size.height} Z'/>
-      <path class='visual' d='${paths.visual} L${last.visual.x},${last.visual.y} L${this.settings.size.width},${this.settings.size.height} Z'/>
-      <path class='audio' d='${paths.audio} L${last.audio.x},${last.audio.y} L${this.settings.size.width},${this.settings.size.height} Z'/>
+      <path class='research' d='${paths.research} L${last.research.x},${last.research.y} L${this.settings.size.width},${last.research.y} L${this.settings.size.width},${this.settings.size.height} Z'/>
+      <path class='visual' d='${paths.visual} L${last.visual.x},${last.visual.y} L${this.settings.size.width},${last.visual.y} L${this.settings.size.width},${this.settings.size.height} Z'/>
+      <path class='audio' d='${paths.audio} L${last.audio.x},${last.audio.y} L${this.settings.size.width},${last.audio.y} L${this.settings.size.width},${this.settings.size.height} Z'/>
       <text x='0' y='15'>${logs[logs.length-1].time.offset_format()}</text>
       <text x='${this.settings.size.width}' y='15' style='text-anchor:end'>Today</text>
     </svg>`
