@@ -43,16 +43,6 @@
     html += `${event}`
   }
   html += "</list>"
-
-  var issues = q.tables.issues;
-  console.log(issues)
-
-  html += "<list>"
-  for(id in issues){
-    var issue = issues[id]
-    html += `${issue}`
-  }
-  html += "</list>"
-
+  
   return html
 });

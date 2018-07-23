@@ -1,7 +1,7 @@
 function Desamber(str)
 {
   this.str = str;
-
+  
   this.y = str.substr(0,2);
   this.m = str.substr(2,1).toUpperCase(); 
   this.d = str.substr(3,2);
@@ -51,6 +51,11 @@ function Desamber(str)
   this.toString = function()
   {
     return this.str.toUpperCase();
+  }
+
+  function next(s)
+  {
+    
   }
 
   function prepend(s,length,char = "0")
