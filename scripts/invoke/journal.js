@@ -144,7 +144,7 @@
     yu#header { -webkit-filter: invert(1); filter: invert(1); }
     yu#header photo { display:none}
     #navi { -webkit-filter: invert(1); filter: invert(1); }
-    #content log { display:block; padding:15px; margin-bottom:1px; vertical-align:top; position:relative; padding-left:100px; font-size:14px; max-width: 695px; border-bottom:1px solid #333 }
+    #content log { display: block;padding: 15px 45px 15px;margin-bottom: 1px;vertical-align: top;position: relative;padding-left: 100px;font-size: 14px;max-width: 665px;border-bottom: 1px solid #333 }
     #content log .head { display: block; font-size:15px; line-height: 25px; }
     #content log .head a { font-family: 'archivo_bold' }
     #content log .head a:hover { text-decoration: underline; cursor:pointer; }
@@ -165,7 +165,7 @@
     #content log .tags a { color:#aaa; margin-right:5px}
     #content log .tags a:before { content:'#'; color:#777; padding-right:2px}
     #content log .tags a:hover { color:#fff}
-    #content log.event .head .topic:after { content: "Event";background: #72dec2;display: inline-block;margin-left: 5px;font-size:12px;padding:0px 10px;border-radius: 100px;line-height: 20px;position: absolute;right:20px;top:20px;color:black }
+    #content log.event .head .topic:after { content: "Event";background: #72dec2;display: inline-block;margin-left: 5px;font-size:12px;padding:0px 10px;border-radius: 100px;line-height: 20px;position: absolute;right:45px;top:20px;color:black }
     #content > p:first-child { display:none}`
   }
 

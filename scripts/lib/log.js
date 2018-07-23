@@ -21,14 +21,13 @@ function Log(list)
   this.toString = function()
   {
     return `
-    <log class='${this.sector} ${this.is_event > 0 ? 'event' : ''}'>
+    <log class='${this.sector} ${this.is_event > 0 ? 'event' : ''} ${this.time.offset() == 0 ? 'today' : ''}' title='${this.term} ${this.task} +${this.value}${this.vector}'>
       <t class='flag date'>${this.time}</t>
-      ${this.is_event ? '<t class=\'flag\'>!</t> ' : ''}
       <t class='term'>{{${this.term}}}</t> 
       <t class='task'>${this.task.capitalize()}</t>
-      ${this.value > 0 ? `<t class='value'>${this.value}Fh</t>` : ''}
       <t class="action">${this.name ? '— Added a new diary \"<b>'+this.name+'</b>\"' : this.photo > 0 ? 'Added <b>untitled media #'+this.photo+'</b>' : ''}</t>
-      ${this.time.offset() > 0 ? '<t class="offset">'+this.time.offset_format()+'</t> ' : ''}
+      ${this.time.offset() >= 0 ? '<t class="offset">'+this.time.offset_format()+'</t> ' : ''}
+      ${this.value > 0 && this.vector > 0 ? `<t class='flag value'>+${((this.value+this.vector)/2).toFixed(1)}h</t>` : ''}
     </log>`.to_markup()
   }
 
