@@ -19,7 +19,7 @@ function BuildNode(id,rect)
     if(q.result && q.result.name == "HOME"){
       featured_log = this.find_last_diary(q.tables.horaire)
     }
-    if(q.result && (q.result.name == "HOME" || q.result.name == "JOURNAL" || q.result.name == "CALENDAR")){
+    if(q.result && (q.result.name == "HOME" || q.result.name == "JOURNAL" || q.result.name == "CALENDAR" || q.result.name == "DASHBOARD")){
       activity = "<a id='diaries' onclick=\"Ø('query').bang('journal')\">Journal</a> <a id='logs' onclick=\"Ø('query').bang('Calendar')\">Calendar</a> <a id='issues' onclick=\"Ø('query').bang('Dashboard')\">Dashboard</a>"
     }
 

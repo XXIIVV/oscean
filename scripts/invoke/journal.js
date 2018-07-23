@@ -16,17 +16,19 @@
     return selection.reverse()[0]
   }
 
-  function find_any(logs)
+  function find_page(logs,offset = 0,page = 42)
   {
     var selection = []
     var count = 0
+    var from = page * offset;
+    var to = page * (offset+1);
     for(var id in logs){
       var log = logs[id]
-      if(count > 42){ break; }
-      if(log.time.offset() > 0){ continue; }
-      if(!log.term){ continue; }
-      selection.push(log)
+      if(log.time.offset() > 0 || !log.term){ continue; }
       count += 1
+      if(count < from){ continue; }
+      if(count > to){ break; }
+      selection.push(log)
     }
     return selection
   }
@@ -138,7 +140,6 @@
   function style()
   {
     return `
-
     yu#view { background:transparent; }
     yu#core { background-color:#000 !important; color:white;border-bottom:1px solid #333}
     yu#header { -webkit-filter: invert(1); filter: invert(1); }
@@ -166,15 +167,21 @@
     #content log .tags a:before { content:'#'; color:#777; padding-right:2px}
     #content log .tags a:hover { color:#fff}
     #content log.event .head .topic:after { content: "Event";background: #72dec2;display: inline-block;margin-left: 5px;font-size:12px;padding:0px 10px;border-radius: 100px;line-height: 20px;position: absolute;right:45px;top:20px;color:black }
-    #content > p:first-child { display:none}`
+    #content > p:first-child { display:none}
+    #content yu.pagination a { display: block;line-height: 60px;text-align: center;max-width: 810px;font-family: 'archivo_bold';font-size:12px}
+    #content yu.pagination a:hover { text-decoration:underline}
+    `
+
   }
 
+  // Clear cache
   var html = `${new ActivityViz(q.tables.horaire)}`
 
   // Find upcoming events
   html += print_group([find_next_event(q.tables.horaire)],q.tables.lexicon)
   // // Find any event
-  var any = find_any(q.tables.horaire)
+  var page = parseInt(q.params) > 0 ? parseInt(q.params) : 0
+  var any = find_page(q.tables.horaire,page)
   var groups = make_groups(any)
   for(var id in groups){
     var group = groups[id]

@@ -16,7 +16,7 @@ function BuildContentNode(id,rect)
 
     var responder = this.signal(template)
 
-    if(!responder){ return `<p>Sorry, there is no <b>:${template}</b> template for {{${q.result.name.capitalize()}}}.</p>`.to_markup() }
+    if(!responder){ return this.signal('default').answer(q) }
 
     return responder.answer(q)
   }
