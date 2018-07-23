@@ -1,7 +1,7 @@
 function Desamber(str)
 {
-  this.str = str;
-  
+  this.str = str.match(/\d\d[a-z\+]\d\d/i) ? str : func(str);
+
   this.y = str.substr(0,2);
   this.m = str.substr(2,1).toUpperCase(); 
   this.d = str.substr(3,2);
@@ -35,10 +35,10 @@ function Desamber(str)
     return `in ${days} days`;
   }
 
-  this.to_date = function()
+  this.to_date = function(offset = 0)
   {
-    var year = new Date(this.year-1, 0);
-    return new Date(year.setDate(this.doty)); 
+    var year = new Date(this.year, 0);
+    return new Date(year.setDate(this.doty + offset)); 
   }
 
   this.to_offset = function(offset)
@@ -53,9 +53,22 @@ function Desamber(str)
     return this.str.toUpperCase();
   }
 
-  function next(s)
+  function func(s)
   {
-    
+    var y = s.substr(0,2);
+    var m = s.substr(2,1).toUpperCase(); 
+    var d = s.substr(3,2);
+
+    var offset = 1;
+    while(offset < 30){
+      var next = new Date().desamber().to_date(offset).desamber()
+      var qualifies = {};
+      if((y == "**" || y == next.y) && (m == "*" || m == next.m) && (d == "**" || d == next.d)){
+        return next.toString();
+      }
+      offset += 1;
+    }
+    return "18Z01"
   }
 
   function prepend(s,length,char = "0")
@@ -70,11 +83,16 @@ function Desamber(str)
 
 Date.prototype.desamber = function()
 {
-  var start = new Date(this.getFullYear(), 0, 0);
+  var year = this.getFullYear()
+  var start = new Date(year, 0, 0);
   var diff = (this - start) + ((start.getTimezoneOffset() - this.getTimezoneOffset()) * 60 * 1000);
   var doty = Math.floor(diff/86400000);
-  var y = this.getFullYear().toString().substr(2,2);
-  var m = String.fromCharCode(97 + Math.floor(((doty-1)/364) * 26)).toUpperCase(); m = doty == 365 || doty == 366 ? "+" : m;
+  var leap = ((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0)
+  var days = leap ? 366 : 365
+
+  var y = year.toString().substr(2,2);
+  var m = String.fromCharCode(97 + Math.floor(((doty)/days) * 26)).toUpperCase(); m = doty == 365 || doty == 366 ? "+" : m;
   var d = (doty % 14); d = d < 10 ? `0${d}` : d; d = d == "00" ? "14" : d; d = doty == 365 ? "01" : (doty == 366 ? "02" : d);
+  
   return new Desamber(`${y}${m}${d}`);
 }
