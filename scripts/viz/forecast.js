@@ -19,20 +19,23 @@ function ForecastViz(logs,settings = {})
   {
     var data = this.parse();
     var future_logs = new Forecast(data,13);
-    var past_logs = data.splice(0,14).reverse()
+    var past_logs = {} ; for(id in data){ past_logs[`${data[id].time}`] = data[id] }
 
     var cell = 13 * 2
 
     var html = ""
     // Past
-    for(id in past_logs){
-      var log = past_logs[id];
-      var x = id * (cell+1);
+    var d = 13
+    while(d > 0){
+      var desamber = new Date().desamber().to_date(-d).desamber()
+      var log = past_logs[`${desamber}`];
+      if(!log){ d -= 1; continue; }
+      var x = (13-d) * (cell+1);
       var y = (cell * 3) * (1-(log.value/10))
-      var height = (cell * 3) - y
-      html += `<rect class='${log.sector} ${log.time.offset() == 0 ? 'today' : ''}' x='${x}' y='${y}' width='${cell}' height='${height}' rx="2" ry="2"></rect>`
-      html += `<text x='${x+13}' y='-10' style='text-anchor:middle'>${log.time.d}</text>`
+      html += `<rect class='${log.sector} ${d == 0 ? 'today' : ''}' x='${x}' y='${y}' width='${cell}' height='${(cell * 3) - y}' rx="2" ry="2"></rect>`
+      html += `<text x='${x+13}' y='-10' style='text-anchor:middle'>${desamber.d}</text>`
       html += log.value >= 3 ? `<text x='${x+13}' y='70' style='text-anchor:middle; fill:white'>${log.value}h</text>` : ''
+      d -= 1
     }
 
     // Future
