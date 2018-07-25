@@ -36,7 +36,7 @@ function Log(list)
     var collection = [
       ["idle", "listening" , "experiment" , "rehersal"      , "draft"     , "composition" , "sound design", "mastering" , "release" , "performance" ],
       ["idle", "watching"  , "experiment" , "storyboard"    , "prototype" , "editing"     , "design"      , "rendering" , "release" , "showcase" ],
-      ["idle", "research"  , "experiment" , "documentation" , "planning"  , "maintenance" , "tooling" , "updating"  , "release" , "talk" ]
+      ["idle", "research"  , "experiment" , "documentation" , "planning"  , "maintenance" , "tooling"     , "updating"  , "release" , "talk" ]
     ]
     return collection[sector-1] && collection[sector-1][vector] ? collection[sector-1][vector] : "travel"
   }
