@@ -12,7 +12,7 @@ function Indental(data)
       var line = lines[id]
       if(line.skip){ continue; }
       target = stack[line.indent-2];
-      if(target){ target.children.push(line) }
+      if(target){ target.children[target.children.length] = line }
       stack[line.indent] = line
     }
 
@@ -34,7 +34,7 @@ function Indental(data)
     for(id in line.children){
       var child = line.children[id];
       if(child.key){ h[child.key.toUpperCase()] = child.value }
-      else if(child.children.length == 0 && child.content){ a.push(child.content) }
+      else if(child.children.length == 0 && child.content){ a[a.length] = child.content }
       else{ h[child.content.toUpperCase()] = format(child) }
     }
     return a.length > 0 ? a : h
