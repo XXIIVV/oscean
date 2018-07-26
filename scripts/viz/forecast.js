@@ -10,7 +10,7 @@ function ForecastViz(logs,settings = {})
       var log = logs[id];
       if(log.time.offset() > 0){ continue; }
       if(a.length > 14*5){ break; }
-      a.push(log);
+      a[a.length] = log
     }
     return a
   }
@@ -26,7 +26,7 @@ function ForecastViz(logs,settings = {})
     var html = ""
     // Past
     var d = 13
-    while(d > 0){
+    while(d >= 0){
       var desamber = new Date().desamber().to_date(-d).desamber()
       var log = past_logs[`${desamber}`];
       if(!log){ d -= 1; continue; }
