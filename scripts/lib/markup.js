@@ -49,3 +49,8 @@ String.prototype.to_entities = function()
 {
   return this.replace(/[\u00A0-\u9999<>\&]/gim, function(i) { return `&#${i.charCodeAt(0)}`; });
 }
+
+String.prototype.to_rss = function()
+{
+  return this.replace(/\</g,"&lt;").replace(/\>/g,"&gt;")
+}

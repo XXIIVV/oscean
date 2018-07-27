@@ -37,7 +37,11 @@ function RssNode(id,rect)
     <title>${log.name}</title>
     <link>http://wiki.xxiivv.com/${log.term.to_url()}</link>
     <pubDate>${log.time.to_date()}</pubDate>
-    <description>&lt;img src="https://wiki.xxiivv.com/media/diary/${log.photo}.jpg"/&gt;${log.host.dict.BREF ? log.host.dict.BREF.to_markup(true).to_entities() : ''}</description>
+    <description>
+      &lt;img src="https://wiki.xxiivv.com/media/diary/${log.photo}.jpg"/&gt;
+      &lt;br/&gt;
+      ${log.host.dict.BREF ? log.host.dict.BREF.to_markup(true).to_rss() : ''}
+    </description>
   </item>
 `
     }
@@ -54,6 +58,10 @@ function RssNode(id,rect)
   <title>XXIIVV — Journal</title>
   <link>https://wiki.xxiivv.com/</link>
   <description>Devine Lu Linvega's Journal</description>
+  <generator>https://wiki.xxiivv.com/Riven</generator>
+  <author>
+    <name>Devine Lu Linvega</name>
+  </author>
   ${this.items(logs)}
 </channel>
 
