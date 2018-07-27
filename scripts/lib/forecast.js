@@ -41,7 +41,7 @@ function Forecast(logs,limit = 14)
     var sector = sectors[0]
     var sector_code = ["audio","visual","research"].indexOf(sector[0])+1
     var sector_value = clamp(parseInt((sectors[0][1] - sectors[2][1])*1.5),0,9)
-    return new Log({code:`-${sector_code}${sector_value}0`})
+    return new Log({code:`-${sector_code}0${sector_value}`})
   }
 
   function sort_sectors(offset)

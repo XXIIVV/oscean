@@ -171,7 +171,6 @@
     #content yu.pagination a { display: block;line-height: 60px;text-align: center;max-width: 810px;font-family: 'archivo_bold';font-size:12px}
     #content yu.pagination a:hover { text-decoration:underline}
     `
-
   }
 
   // Clear cache
