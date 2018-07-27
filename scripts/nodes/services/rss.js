@@ -37,6 +37,7 @@ function RssNode(id,rect)
     <title>${log.name}</title>
     <link>http://wiki.xxiivv.com/${log.term.to_url()}</link>
     <pubDate>${log.time.to_date().to_rss()}</pubDate>
+    <dc:creator><![CDATA[Devine Lu Linvega]]></dc:creator>
     <description>
       &lt;img src="https://wiki.xxiivv.com/media/diary/${log.photo}.jpg"/&gt;
       &lt;br/&gt;
