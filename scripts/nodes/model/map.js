@@ -59,6 +59,7 @@ function MapNode(id,rect)
       var index = log.term.toUpperCase()
       if(!log.term){ continue; }
       if(!q.tables.lexicon[index]){ console.warn("Missing log term",index); continue; }
+      log.host = q.tables.lexicon[index];
       q.tables.lexicon[index].logs.push(log)
       if(!q.tables.lexicon[index].latest_log && log.time.offset() < 0){
         q.tables.lexicon[index].latest_log = log

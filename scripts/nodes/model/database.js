@@ -12,3 +12,5 @@ function DatabaseNode(id,rect)
     this.send(this.request(this.cache))
   }
 }
+
+var DATABASE = {};

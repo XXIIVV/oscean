@@ -11,10 +11,8 @@ function TableNode(id,rect,parser,type)
 
   this.answer = function(q)
   {
-    if(!DATABASE[this.id]){
-      console.warn(`Missing /database/${this.id}`)
-      return null;
-    }
+    if(!DATABASE[this.id]){ console.warn(`Missing /database/${this.id}`); return null; }
+
     if(this.cache){
       return this.cache;
     }
@@ -23,5 +21,3 @@ function TableNode(id,rect,parser,type)
     return this.cache;
   }
 }
-
-var DATABASE = {};

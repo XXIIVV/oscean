@@ -2,7 +2,7 @@ function Markup(tables)
 {
   this.tables = tables;
 
-  this.parse = function(text)
+  this.parse = function(text,force_external = false)
   {
     this.text = text
     this.text = this.text.replace(/{_/g,"<i>").replace(/_}/g,"</i>")
@@ -19,15 +19,15 @@ function Markup(tables)
       var target = content.indexOf("|") > -1 ? content.split("|")[1] : content;
       var name = content.indexOf("|") > -1 ? content.split("|")[0] : content;
       var external = (target.indexOf("https:") > -1 || target.indexOf("http:") > -1 || target.indexOf("dat:") > -1);
-      this.text = this.text.replace(`{{${content}}}`,external ? `<a href='${target}' class='external' target='_blank'>${name}</a>` : `<a class='local' href='#${target.toLowerCase().replace(/\s/g, '+')}' title='${target}' onclick="Ø('query').bang('${target}')">${name}</a>`)
+      this.text = this.text.replace(`{{${content}}}`,external || force_external ? `<a href='${target}' class='external' target='_blank'>${name}</a>` : `<a class='local' href='#${target.toLowerCase().replace(/\s/g, '+')}' title='${target}' onclick="Ø('query').bang('${target}')">${name}</a>`)
     }
     return this.text;
   }
 }
 
-String.prototype.to_markup = function()
+String.prototype.to_markup = function(force_external)
 {
-  return new Markup().parse(this);
+  return new Markup().parse(this,force_external);
 }
 
 String.prototype.capitalize = function()
@@ -43,4 +43,9 @@ String.prototype.to_url = function()
 String.prototype.to_path = function()
 {
   return this.toLowerCase().replace(/\+/g,".").replace(/ /g,".").replace(/[^0-9a-z\.\-]/gi,"").trim();
+}
+
+String.prototype.to_entities = function()
+{
+  return this.replace(/[\u00A0-\u9999<>\&]/gim, function(i) { return `&#${i.charCodeAt(0)}`; });
 }
