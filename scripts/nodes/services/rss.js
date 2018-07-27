@@ -6,8 +6,6 @@ function RssNode(id,rect)
 
   this.receive = function(q)
   {
-    console.log('Generating Rss');
-
     var logs = Ø('router').cache.tables.horaire;
 
     var selection = []
@@ -19,13 +17,15 @@ function RssNode(id,rect)
       selection.push(log);
     }
 
-    var html = this.render(selection)
-    var win = window.open("", "Title", "toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=yes,width=640,height=480,top="+(screen.height-200)+",left="+(screen.width-640));
-    win.document.body.innerHTML = `<pre>${html.to_entities()}</pre>`;
-
-    console.log('Generating Rss<done>',);
+    var html = this.render(selection);
+    this.show(html)
   }
 
+  this.show = function(html)
+  {
+    var win = window.open("", "Title", "toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=yes,width=640,height=480,top="+(screen.height-200)+",left="+(screen.width-640));
+    win.document.body.innerHTML = `<pre>${html.to_entities()}</pre>`;
+  }
 
   this.items = function(logs)
   {
@@ -58,7 +58,8 @@ function RssNode(id,rect)
   <title>XXIIVV — Journal</title>
   <link>https://wiki.xxiivv.com/</link>
   <description>Devine Lu Linvega's Journal</description>
-  <generator>https://wiki.xxiivv.com/Riven</generator>
+  <pubDate>${logs[0].time.to_date().to_rss()}</pubDate>
+  <generator>Oscean - Riven</generator>
   <author>
     <name>Devine Lu Linvega</name>
   </author>
