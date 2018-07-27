@@ -34,7 +34,7 @@ function RssNode(id,rect)
       var log = logs[id];
       html += `
   <item>
-    <title>${log.name}</title>
+    <title>${log.term} — ${log.name}</title>
     <link>http://wiki.xxiivv.com/${log.term.to_url()}</link>
     <pubDate>${log.time.to_date().to_rss()}</pubDate>
     <dc:creator><![CDATA[Devine Lu Linvega]]></dc:creator>
