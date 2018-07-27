@@ -96,3 +96,12 @@ Date.prototype.desamber = function()
   
   return new Desamber(`${y}${m}${d}`);
 }
+
+Date.prototype.to_rss = function()
+{
+  var pieces     = this.toString().split(' ')
+  var offsetTime = pieces[5].match(/[-+]\d{4}/)
+  var offset     = (offsetTime) ? offsetTime : pieces[5]
+  var parts      = [pieces[0] + ',', pieces[2], pieces[1], pieces[3], pieces[4], offset];
+  return parts.join(' ');
+}
