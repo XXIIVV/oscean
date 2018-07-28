@@ -62,12 +62,11 @@
   return `
   <h2>All Time Summary</h2>
   <table class='horaire' width='740'>${html}</table>
-  <code><b>HDF</b>, or Hour Day Focus, is Fh/Days.
-<b>HDC</b>, or Hour Day Concrete, is Ch/Days.
-<b>EFEC</b>, or Effectiveness, is AVRG(Fh)/Topics.
-<b>EFIC</b>, or Efficiency, is AVRG(Ch)/Topics.
-<b>OSC</b>, is an Oscillation index of ABS(EFEC-EFIC).
-<b>FOCUS</b>, is an Average Focus Index AVRG(EFEC+EFIC).
-  </code>
+  <code><b>HDf</b>, or Hour Day Focus, is Fh/Days.
+<b>HDc</b>, or Hour Day Concrete, is Ch/Days.
+<b>Efec</b>, or Effectiveness, is AVRG(Fh)/Topics.
+<b>Efic</b>, or Efficiency, is AVRG(Ch)/Topics.
+<b>Out</b>, is an Average Focus Index AVRG(EFEC+EFIC).
+<b>Osc</b>, is an Oscillation index of ABS(EFEC-EFIC).</code>
   ${style()}`
 });

@@ -18,19 +18,20 @@ function graph()
   ])
 
   Ø("assoc").mesh({x:22,y:0},[
-    Ø("build").create({x:5,y:2},BuildNode),
-    Ø("build_navi").create({x:2,y:8},BuildNaviNode),
-    Ø("build_sidebar").create({x:5,y:8},BuildSidebarNode),
-    Ø("build_content").create({x:8,y:8},BuildContentNode),
+    Ø("build").create({x:8,y:2},BuildNode),
+    Ø("build_navi").create({x:5,y:8},BuildNaviNode),
+    Ø("build_sidebar").create({x:8,y:8},BuildSidebarNode),
+    Ø("build_content").create({x:11,y:8},BuildContentNode),
       Ø("missing").create({x:2,y:14},MissingTemplate),
       Ø("default").create({x:5,y:14},DefaultTemplate),
       Ø("home").create({x:8,y:14},HomeTemplate),
       Ø("journal").create({x:11,y:14},JournalTemplate),
-      Ø("diary").create({x:14,y:14},DiaryTemplate),
-      Ø("index").create({x:17,y:14},IndexTemplate),
+      Ø("tracker").create({x:14,y:14},TrackerTemplate),
+      Ø("diary").create({x:17,y:14},DiaryTemplate),
+      Ø("index").create({x:20,y:14},IndexTemplate),
   ])
 
-  Ø("client").mesh({x:44,y:0},[
+  Ø("client").mesh({x:47,y:0},[
     Ø("view").create({x:2,y:2},DocumentNode),
     Ø("style").create({x:5,y:8},DomNode,"style"),
     Ø("header").create({x:2,y:8},DomNode),
@@ -81,7 +82,7 @@ function graph()
 
   // Assoc
   Ø("build").syphon(["build_navi","build_content","build_sidebar"])
-  Ø("build_content").syphon(["missing","default","journal","index","home","diary"])
+  Ø("build_content").syphon(["missing","default","journal","tracker","index","home","diary"])
   Ø("build").connect(["view"])
 
   // Dom

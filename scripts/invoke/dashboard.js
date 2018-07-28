@@ -16,33 +16,6 @@
   html += `${new StatusViz(a)}`
   html += `${new RecentViz(a)}`
   html += `${new ForecastViz(a)}`
-
-  // Upcomign events
-
-  function find_next_event(logs)
-  {
-    var selection = []
-    var count = 0
-    for(var id in logs){
-      var log = logs[id]
-      if(count > 30){ break; }
-      if(log.time.offset() <= 0){ continue; }
-      if(!log.is_event){ continue; }
-      if(!log.term){ continue; }
-      selection.push(log)
-      count += 1
-    }
-    return selection
-  }
-
-  var upcoming = find_next_event(q.tables.horaire)
-
-  html += "<list>"
-  for(id in upcoming){
-    var event = upcoming[id]
-    html += `${event}`
-  }
-  html += "</list>"
   
   return html
 });

@@ -73,8 +73,13 @@ function ForecastViz(logs,settings = {})
     `
   }
 
+  this.legend = function()
+  {
+    return `<p>The {*Forecast Graph*} is a suggestion toward an optimal investment of time, based on {{previous patterns|Journal}} of creative output which yielded the maximal value of {{Focus Hour|Horaire}}.</p>`.to_markup()
+  }
+
   this.toString = function()
   {
-    return this.draw()+this.style()
+    return this.draw()+this.legend()+this.style()
   }
 }

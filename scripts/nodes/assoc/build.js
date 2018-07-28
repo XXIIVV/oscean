@@ -14,7 +14,7 @@ function BuildNode(id,rect)
     var activity = `
     ${q.result && q.result.diaries.length > 1 && q.result.type != "diary" ? "<a id='diaries' onclick=\"Ø('query').bang('"+q.result.name+":diary')\">"+q.result.diaries.length+" Diaries</a>" : ''} 
     ${q.result && q.result.logs.length > 2  && q.result.type != "journal" ? "<a id='logs' onclick=\"Ø('query').bang('"+q.result.name+":journal')\">"+q.result.logs.length+" Logs</a>" : ''}
-    ${q.result && q.result.issues.length > 0  && q.result.name.toLowerCase() != "dashboard" ? "<a id='issues' onclick=\"Ø('query').bang('dashboard')\">"+q.result.issues.length+" Issue"+(q.result.issues.length > 1 ? 's' : '')+"</a>" : ''}`
+    ${q.result && q.result.issues.length > 0  && q.result.name.toLowerCase() != "dashboard" ? "<a id='issues' onclick=\"Ø('query').bang('"+q.result.name+":tracker')\">"+q.result.issues.length+" Issue"+(q.result.issues.length > 1 ? 's' : '')+"</a>" : ''}`
 
     if(q.result && q.result.name == "HOME"){
       featured_log = this.find_last_diary(q.tables.horaire)

@@ -21,6 +21,17 @@ function Desamber(str)
     return parseInt((this.to_date() - b.to_date())/86400000);
   }
 
+  this.ago = function()
+  {
+    var days = this.offset();
+
+    if(days == -1){ return `yesterday`; }
+    if(days == 1) { return "tomorrow"; }
+    if(days == 0) { return "today"; }
+    if(days < 1)  { return `${days*-1} days ago`; }
+    return `in ${days} days`;
+  }
+
   this.offset_format = function(b = new Date().desamber(), force = false)
   {
     var days = this.offset();
