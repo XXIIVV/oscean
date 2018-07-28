@@ -81,6 +81,6 @@ function MapNode(id,rect)
       count.issues += issues.length
     }
     this.is_mapped = true
-    console.info(this.id,`Mapped ${q.tables.horaire.length} logs, ${count.links} links, ${q.tables.issues.length} issues, and ${count.diaries} diaries to ${Object.keys(q.tables.lexicon).length} terms, in ${(performance.now() - time).toFixed(2)}ms.`)
+    console.info(this.id,`Mapped ${q.tables.horaire.length} logs, ${count.links} links, ${count.issues} issues, and ${count.diaries} diaries to ${Object.keys(q.tables.lexicon).length} terms, in ${(performance.now() - time).toFixed(2)}ms.`)
   }
 }

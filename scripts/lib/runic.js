@@ -5,20 +5,19 @@ function Runic(raw,tables)
 
   this.runes = {
     "&":{glyph:"&",tag:"p",class:""},
-    "~":{glyph:"~",tag:"list",sub:"ln",class:"parent",stash:true},
     "-":{glyph:"-",tag:"list",sub:"ln",class:"",stash:true},
     "=":{glyph:"=",tag:"list",sub:"ln",class:"mini",stash:true},
     "!":{glyph:"!",tag:"table",sub:"tr",wrap:"th",class:"outline",stash:true},
     "|":{glyph:"|",tag:"table",sub:"tr",wrap:"td",class:"outline",stash:true},
     "#":{glyph:"#",tag:"code",sub:"ln",class:"",stash:true},
-    "%":{glyph:"%"},
-    "?":{glyph:"?",tag:"note",class:""},
-    ":":{glyph:":",tag:"info",class:""},
     "*":{glyph:"*",tag:"h2",class:""},
     "+":{glyph:"+",tag:"hs",class:""},
     ">":{glyph:">",tag:"",class:""},
+
     "$":{glyph:">",tag:"",class:""},
-    "@":{glyph:"@",tag:"quote",class:""}
+    "%":{glyph:"%"},
+    "@":{glyph:"@",tag:"quote",class:""},
+    ":":{glyph:":",tag:"info",class:""}
   }
 
   this.stash = {
