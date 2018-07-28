@@ -36,7 +36,7 @@ function RssNode(id,rect)
   <item>
     <title>${log.term} — ${log.name}</title>
     <link>https://wiki.xxiivv.com/${log.term.to_url()}</link>
-    <pubDate>${log.time.to_date().to_rss()}</pubDate>
+    <pubDate>${log.time.to_date().toUTCString()}</pubDate>
     <dc:creator><![CDATA[Devine Lu Linvega]]></dc:creator>
     <description>
       &lt;img src="https://wiki.xxiivv.com/media/diary/${log.photo}.jpg"/&gt;
@@ -53,17 +53,14 @@ function RssNode(id,rect)
   {
     return `
 <?xml version="1.0" encoding="UTF-8" ?>
-<rss version="2.0">
+<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/">
 
 <channel>
   <title>XXIIVV — Journal</title>
   <link>https://wiki.xxiivv.com/</link>
   <description>Devine Lu Linvega's Journal</description>
-  <pubDate>${logs[0].time.to_date().to_rss()}</pubDate>
+  <pubDate>${logs[0].time.to_date().toUTCString()}</pubDate>
   <generator>Oscean - Riven</generator>
-  <author>
-    <name>Devine Lu Linvega</name>
-  </author>
   ${this.items(logs)}
 </channel>
 
