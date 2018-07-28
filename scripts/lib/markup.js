@@ -19,7 +19,7 @@ function Markup(tables)
       var target = content.indexOf("|") > -1 ? content.split("|")[1] : content;
       var name = content.indexOf("|") > -1 ? content.split("|")[0] : content;
       var external = (target.indexOf("https:") > -1 || target.indexOf("http:") > -1 || target.indexOf("dat:") > -1);
-      this.text = this.text.replace(`{{${content}}}`,external || force_external ? `<a href='${!external && force_external ? 'https://wiki.xxiivv.com/':''}${target.to_url()}' class='external' target='_blank'>${name}</a>` : `<a class='local' href='#${target.to_url()}' title='${target}' onclick="Ø('query').bang('${target}')">${name}</a>`)
+      this.text = this.text.replace(`{{${content}}}`,external || force_external ? `<a href='${!external && force_external ? 'https://wiki.xxiivv.com/':''}${force_external ? target.to_url() : target}' class='external' target='_blank'>${name}</a>` : `<a class='local' href='#${target.to_url()}' title='${target}' onclick="Ø('query').bang('${target}')">${name}</a>`)
     }
     return this.text;
   }
@@ -37,7 +37,7 @@ String.prototype.capitalize = function()
 
 String.prototype.to_url = function()
 {
-  return this.toLowerCase().replace(/ /g,"+").replace(/[^0-9a-z\+\:\-]/gi,"").trim();
+  return this.toLowerCase().replace(/ /g,"+").replace(/[^0-9a-z\+\:\-\.\/]/gi,"").trim();
 }
 
 String.prototype.to_path = function()
