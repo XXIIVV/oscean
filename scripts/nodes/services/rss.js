@@ -11,7 +11,7 @@ function RssNode(id,rect)
     var selection = []
     for(id in logs){
       var log = logs[id];
-      if(selection.length >= 30){ break; }
+      if(selection.length >= 60){ break; }
       if(log.time.offset() > 0){ continue; }
       if(!log.photo){ continue; }
       selection.push(log);
