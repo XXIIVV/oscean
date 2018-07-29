@@ -7,7 +7,7 @@
   for(id in logs){
     var log = logs[id]
     var year = log.time.to_date().getFullYear()
-    if(year >= new Date().getFullYear()){ continue; }
+    if(year > new Date().getFullYear()){ continue; }
     if(!by_y[year]){ by_y[year] = []; }
     by_y[year].push(log)
   }
@@ -41,6 +41,18 @@
     </tr>`
     prev = year
   }
+
+    html += `
+    <tr>
+      <th>AVRG</th>
+      <td>${avrg.fh > 0 ? `${avrg.fh}`.substr(0,4) : '—'}</td><td></td>
+      <td>${avrg.ch > 0 ? `${avrg.ch}`.substr(0,4) : '—'}</td><td></td>
+      <td>${avrg.efec > 0 ? `${avrg.efec}`.substr(0,4) : '—'}</td><td></td>
+      <td>${avrg.efic > 0 ? `${avrg.efic}`.substr(0,4) : '—'}</td><td></td>
+      <td>${avrg.focus > 0 ? `${avrg.focus}`.substr(0,4) : '—'}</td><td></td>
+      <td>${avrg.osc > 0 ? `${avrg.osc}`.substr(0,4) : '—'}</td><td></td>
+      <td>${avrg.balance > 0 ? `${avrg.balance}`.substr(0,4) : '—'}</td><td></td>
+    </tr>`
 
   function style()
   {
