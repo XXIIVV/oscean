@@ -64,6 +64,7 @@ function Journal(logs = [])
   this._tags = function()
   {
     var html = ''
+    html += this.logs[0].host && this.logs[0].host.parent ? `<a class='tag' onclick="Ø('query').bang('${this.logs[0].host.parent.name.capitalize()}')">${this.logs[0].host.parent.name.to_path()}</a> ` : ''
     for(id in this.horaire.tasks){
       html += `<a class='tag' onclick="Ø('query').bang('${id}')">${id}</a> `
     }

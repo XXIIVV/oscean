@@ -31,7 +31,7 @@ function StatusViz(logs,settings = {})
           <t class='display'>
             <t class='value'>${now.sum.toFixed(1)}</t>
             <t class='offset'>${this.offset(now.sum,before.sum)}</t>
-            <t class='unit'>hours</t>
+            <t class='unit'>hours/14d</t>
           </t>
         </th>
         <th>
