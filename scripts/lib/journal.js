@@ -8,16 +8,11 @@ function Journal(logs = [])
   this.push = function(log)
   {
     if(!log.host){ return; }
-    this.logs.push(log)
-  }
+    if(log.term){ this.term = log.term }
+    if(log.sector){ this.term = log.sector }
+    if(log.time && !this.time){ this.time = log.time }
 
-  this.update = function()
-  {
-    this.term = this.logs[0].term;
-    this.sector = this.logs[0].sector;
-    this.time = this.logs[0].time;
-    this.photo = null;
-    this.horaire = new Horaire(this.logs);
+    this.logs[logs.length] = log
   }
 
   // Fragments
@@ -33,7 +28,7 @@ function Journal(logs = [])
     return `
     <yu class='head'>
       <a class='topic' onclick="Ø('query').bang('${this.term}')">${this.term}</a>
-      <t class='time' onclick="Ø('query').bang('${this.term}:Journal')">${this.time.ago()}${this.logs.length > 1 ? `, from ${this.logs[0].time} to ${this.logs[this.logs.length-1].time}` : ''}</t>
+      <t class='time' onclick="Ø('query').bang('${this.term}:Journal')">${this.logs[0].time.ago()}${this.logs.length > 1 ? `, from ${this.logs[0].time} to ${this.logs[this.logs.length-1].time}` : ''}</t>
     </yu>`
   }
 
@@ -65,17 +60,18 @@ function Journal(logs = [])
   {
     var html = ''
     html += this.logs[0].host && this.logs[0].host.parent ? `<a class='tag' onclick="Ø('query').bang('${this.logs[0].host.parent.name.capitalize()}')">${this.logs[0].host.parent.name.to_path()}</a> ` : ''
-    for(id in this.horaire.tasks){
+
+    var horaire = new Horaire(this.logs);
+
+    for(id in horaire.tasks){
       html += `<a class='tag' onclick="Ø('query').bang('${id}')">${id}</a> `
     }
-    return `<yu class='tags'>${html}<t class="focus">${this.horaire.sum}</t></yu>`
+    return `<yu class='tags'>${html}<t class="focus">${horaire.sum}</t></yu>`
   }
 
   this.toString = function()
   {
     if(this.logs.length < 1){ return ''; }
-
-    this.update();
 
     var html = ""
 
