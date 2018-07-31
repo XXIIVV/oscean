@@ -9,7 +9,7 @@ function Journal(logs = [])
   {
     if(!log.host){ return; }
     if(log.term){ this.term = log.term }
-    if(log.sector){ this.term = log.sector }
+    if(log.sector){ this.sector = log.sector }
     if(log.time && !this.time){ this.time = log.time }
 
     this.logs[logs.length] = log
