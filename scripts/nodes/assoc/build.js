@@ -25,6 +25,7 @@ function BuildNode(id,rect)
 
     this.send({
       title: `XXIIVV — ${q.target.capitalize()}`,
+      theme: q.result ? q.result.theme : 'default',
       view:{
         header:{
           photo:featured_log ? featured_log.photo : 0,
@@ -50,8 +51,6 @@ function BuildNode(id,rect)
         }
       }
     }) 
-
-    setTimeout(()=>{ Ø("view").el.className = "ready" },100)
   
     // Install Dom
     document.body.appendChild(this.signal("view").answer())

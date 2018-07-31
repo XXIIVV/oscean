@@ -18,17 +18,25 @@ function Log(list)
   this.is_featured = this.photo && (this.rune == "!" || this.rune == "+");
   this.is_event = this.rune == "+" || this.vector > 9;
 
+  this.host = null; // From Ø('map')
+
   this.toString = function()
   {
     return `
-    <log class='${this.sector} ${this.is_event > 0 ? 'event' : ''} ${this.time.offset() == 0 ? 'today' : ''}' title='${this.term} ${this.task} +${this.value}${this.vector}'>
-      <t class='flag date'>${this.time}</t>
-      <t class='term'>{{${this.term}}}</t> 
-      <t class='task'>${this.task.capitalize()}</t>
-      <t class="action">${this.name ? '— Added a new diary \"<b>'+this.name+'</b>\"' : this.photo > 0 ? 'Added <b>untitled media #'+this.photo+'</b>' : ''}</t>
-      ${this.time.offset() >= 0 ? '<t class="offset">'+this.time.offset_format()+'</t> ' : ''}
-      ${this.value > 0 && this.vector > 0 ? `<t class='flag value'>+${((this.value+this.vector)/2).toFixed(1)}h</t>` : ''}
-    </log>`.to_markup()
+    <log class='entry ${this.is_event ? 'event' : ''} ${this.sector}'>
+      <svg onclick="Ø('query').bang('${this.host.name}')" class='icon'>
+        <path transform="scale(0.15,0.15) translate(20,20)" d="${this.host.glyph()}"></path>
+      </svg>
+      <yu class='head'>
+        <a class='topic' onclick="Ø('query').bang('${this.term}')">${this.term}</a>
+        <t class='time' onclick="Ø('query').bang('${this.host.name}:Journal')">${this.time.ago()}</t>
+      </yu>
+      ${this.name ? `<p>${this.name}</p>` : ''}
+      ${this.photo ? `<photo style='background-image:url(media/diary/${this.photo}.jpg)' onclick="Ø('query').bang('${this.term}')"></photo>` : ''}
+      <yu class='tags'>
+        <a class='tag' onclick="Ø('query').bang('${this.host.parent.name}')">${this.host.parent.name.to_path()}</a> <t class="focus">${((this.value+this.vector)/2).toFixed(1)}</t>
+      </yu>
+    </log>`
   }
 
   function make_task(sector,vector)

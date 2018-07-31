@@ -1,4 +1,4 @@
-function ActivityViz(logs,settings = {size:{width:700},theme:"noir"})
+function ActivityViz(logs,settings = {size:{width:700}})
 {
   this.logs = logs;
   this.settings = settings;
@@ -55,7 +55,7 @@ function ActivityViz(logs,settings = {size:{width:700},theme:"noir"})
 
     html += `<text x='725' y='${y+10}' style='text-anchor:end'>${recent.sum.toFixed(0)} Hours</text>`
 
-    return `<svg class='graph activity ${this.settings.theme}' style='max-width:${this.settings.size.width+30}px; height:${y+15}px; width:100%;'>${html}</svg>`
+    return `<svg class='graph activity' style='max-width:${this.settings.size.width+30}px; height:${y+15}px; width:100%;'>${html}</svg>`
   }
 
   this.style = function()
@@ -63,26 +63,24 @@ function ActivityViz(logs,settings = {size:{width:700},theme:"noir"})
     return `
     <style>
     @keyframes blink { 50% { opacity: 0; } }
-    svg.graph.activity { padding: 30px 40px 45px; border-bottom:1.5px solid #fff; display:block}
-    svg.graph.activity text { stroke:none; fill:#fff; font-size:11px; text-anchor: middle; font-family:'archivo_bold' }
+    svg.graph.activity { border-bottom: 1.5px solid #333;display: block;padding: 30px 0px;margin-bottom: 30px}
+    svg.graph.activity text { stroke:none; fill:#fff; font-size:11px; text-anchor: middle; font-family:'archivo_bold'; fill:#000 }
     svg.graph.activity rect { stroke:none }
     svg.graph.activity rect:hover { fill:#a1a1a1 !important; cursor:pointer}
     svg.graph.activity rect.audio { fill:#72dec2 }
-    svg.graph.activity rect.visual { fill:#ffb545 }
-    svg.graph.activity rect.research { fill:#fff }
+    svg.graph.activity rect.missing { fill:#ddd }
+    svg.graph.activity rect.visual { fill:#51a196 }
+    svg.graph.activity rect.research { fill:#316067 }
     svg.graph.activity rect.misc { fill:#000 !important }
     svg.graph.activity rect.today { animation: blink 1s linear infinite;}
-    svg.graph.activity circle.photo { fill:black; stroke:none }
-    svg.graph.activity circle.event { fill:none; stroke:black; stroke-width:1.5px }
+    svg.graph.activity circle.photo { fill:white; stroke:none }
+    svg.graph.activity circle.event { fill:none; stroke:white; stroke-width:1.5px }
     svg.graph.activity path { stroke-linecap:butt; stroke-dasharray:1,1; fill:none;stroke:#333;stroke-width:13px }
-    svg.graph.activity.pale { padding: 30px 0px; border-bottom-color:black; margin-bottom:30px}
-    svg.graph.activity.pale text { fill:#000}
-    svg.graph.activity.pale rect.missing { fill:#ccc}
-    svg.graph.activity.pale rect.audio { fill:#72dec2 }
-    svg.graph.activity.pale rect.visual { fill:#51a196 }
-    svg.graph.activity.pale rect.research { fill:#316067 }
-    svg.graph.activity.pale circle.photo { fill:white; stroke:none }
-    svg.graph.activity.pale circle.event { fill:none; stroke:white; stroke-width:1.5px }
+
+    #view.noir svg.graph.activity text { fill:white}
+    #view.noir svg.graph.activity rect.missing { fill:#333 }
+    #view.noir svg.graph.activity circle.photo { fill:white; stroke:none }
+    #view.noir svg.graph.activity circle.event { fill:none; stroke:white; stroke-width:1.5px }
     </style>
     `
   }

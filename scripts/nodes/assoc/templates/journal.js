@@ -3,27 +3,44 @@ function JournalTemplate(id,rect,...params)
   Node.call(this,id,rect);
 
   this.glyph = NODE_GLYPHS.element
-  
-  this.archives = [];
+
+  function find_next_event(logs)
+  {
+    var selection = []
+    var count = 0
+    for(var id in logs){
+      var log = logs[id]
+      if(count > 30){ break; }
+      if(log.time.offset() <= 0){ continue; }
+      if(!log.is_event){ continue; }
+      if(!log.term){ continue; }
+      selection.push(log)
+      count += 1
+    }
+    return selection.reverse()[0]
+  }
 
   this.answer = function(q)
   {
-    var term = q.result;
+    var logs = q.target == "journal" ? q.tables.horaire : q.result.logs;
+    var html = ""
 
-    if(term.logs.length < 1){ return `<p>Sorry, there are no logging data for the {{${term.name.capitalize()} project|${term.name}}}.</p>`.to_markup() }
+    html += new ActivityViz(logs);
+    html += find_next_event(q.tables.horaire).toString()
 
-    var horaire = new Horaire(term.logs)
-    var html = ''
-
-    html += new ActivityViz(term.logs,{size:{width:700},theme:"pale"});
-
-    for(id in term.logs){
-      var log = term.logs[id]
-      html += log;
+    var count = 0
+    var prev = null;
+    for(id in logs){
+      var log = logs[id]
+      if(count > 30){ break; }
+      if(log.time.offset() > 0){ continue; }
+      if(!log.term || log.value < 1){ continue; }
+      if(prev && log.term && log.term == prev){ continue; }
+      html += `${log}`
+      count += 1
+      prev = log.term
     }
-    return `
-    <p>A total of <b>${term.logs.length} logs</b>, or ${horaire.sum} hours, were recorded to the {{${term.name.capitalize()}}} project.</p>
-    <p>The project was {*initiated on ${term.logs[term.logs.length-1].time}*} and the last update was recorded {{${term.logs[0].time.offset_format(new Date().desamber(),true)}|Calendar}}. For additional details on the time tracking process and tools, see the complete {{Horaire documentation|Horaire}}.</p>
-    ${html}`.to_markup()
+
+    return html
   }
 }

@@ -6,6 +6,7 @@ function Term(name,dict)
   this.type = dict.TYPE ? dict.TYPE.toLowerCase() : null;
   this.links = this.dict.LINK ? this.dict.LINK : [];
   this.tags = this.dict.TAGS ? this.dict.TAGS.toLowerCase().split(" ") : [];
+  this.theme = this.dict.LOOK ? this.dict.LOOK.toLowerCase() : 'default';
 
   this.parent = null       // Assigned in Map
   this.children = []       // Assigned in Map

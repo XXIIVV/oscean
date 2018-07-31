@@ -7,7 +7,10 @@ function DocumentNode(id,rect,...params)
   this.receive = function(content = {title:"Unknown"})
   {
     document.title = content.title
+
     this.label = `${content.title}`
+
+    setTimeout(()=>{ this.el.className = `${content.theme} ready`; },100)
 
     if(content && content[this.id] != null){
       this.update(content[this.id]);
