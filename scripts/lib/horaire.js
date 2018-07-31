@@ -1,6 +1,6 @@
 function Horaire(logs)
 {
-  var h = {fh:0,ch:0,topics:{},osc:{sum:0,average:0},sectors:{audio:0,visual:0,research:0,sum:0},span:0};
+  var h = {fh:0,ch:0,topics:{},tasks:{},osc:{sum:0,average:0},sectors:{audio:0,visual:0,research:0,sum:0},span:0};
 
   h.span = logs.length > 1 && logs[0].time ? logs[0].time.offset(logs[logs.length-1].time) : 0
   
@@ -9,6 +9,7 @@ function Horaire(logs)
     h.fh += log.value;
     h.ch += log.vector;
     h.osc.sum += Math.abs(log.value-log.vector)
+    h.tasks[log.task] = h.tasks[log.task] ? h.tasks[log.task]+log.value : log.value
     if(log.sector){
       h.sectors[log.sector] += (log.value+log.vector)/2
       h.sectors.sum += (log.value+log.vector)/2
@@ -47,8 +48,9 @@ function Horaire(logs)
     count:logs.length,
     osc:h.osc,
     sectors:{audio:audio,visual:visual,research:research},
+    tasks:h.tasks,
     balance:balance,
     span:h.span,
-    attention:logs.length/h.span
+    attention:logs.length/h.span,
   }
 }

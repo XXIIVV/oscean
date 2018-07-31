@@ -20,25 +20,6 @@ function Log(list)
 
   this.host = null; // From Ø('map')
 
-  this.toString = function()
-  {
-    return `
-    <log class='entry ${this.is_event ? 'event' : ''} ${this.sector}'>
-      <svg onclick="Ø('query').bang('${this.host.name}')" class='icon'>
-        <path transform="scale(0.15,0.15) translate(20,20)" d="${this.host.glyph()}"></path>
-      </svg>
-      <yu class='head'>
-        <a class='topic' onclick="Ø('query').bang('${this.term}')">${this.term}</a>
-        <t class='time' onclick="Ø('query').bang('${this.host.name}:Journal')">${this.time.ago()}</t>
-      </yu>
-      ${this.name ? `<p>${this.name}</p>` : ''}
-      ${this.photo ? `<photo style='background-image:url(media/diary/${this.photo}.jpg)' onclick="Ø('query').bang('${this.term}')"></photo>` : ''}
-      <yu class='tags'>
-        <a class='tag' onclick="Ø('query').bang('${this.host.parent.name}')">${this.host.parent.name.to_path()}</a> <t class="focus">${((this.value+this.vector)/2).toFixed(1)}</t>
-      </yu>
-    </log>`
-  }
-
   function make_task(sector,vector)
   {
     var collection = [

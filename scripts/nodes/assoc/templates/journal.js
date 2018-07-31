@@ -4,7 +4,7 @@ function JournalTemplate(id,rect,...params)
 
   this.glyph = NODE_GLYPHS.element
 
-  function find_next_event(logs)
+  this.next_event = function()
   {
     var selection = []
     var count = 0
@@ -17,28 +17,28 @@ function JournalTemplate(id,rect,...params)
       selection.push(log)
       count += 1
     }
-    return selection.reverse()[0]
+    return selection.length > 0 ? selection.reverse()[0] : ''
   }
 
-  this.answer = function(q)
+  this.answer = function(q,upcoming = false)
   {
     var logs = q.target == "journal" ? q.tables.horaire : q.result.logs;
     var html = ""
 
-    html += new ActivityViz(logs);
-    html += find_next_event(q.tables.horaire).toString()
-
-    var count = 0
-    var prev = null;
+    var journals = {}
     for(id in logs){
-      var log = logs[id]
-      if(count > 30){ break; }
-      if(log.time.offset() > 0){ continue; }
-      if(!log.term || log.value < 1){ continue; }
-      if(prev && log.term && log.term == prev){ continue; }
-      html += `${log}`
-      count += 1
-      prev = log.term
+      var log = logs[id];
+      if(log.time.offset() > 0 && !upcoming){ continue; }
+      if(Object.keys(journals).length > 16){ break; }
+      if(!journals[log.term]){ journals[log.term] = new Journal(); }
+      journals[log.term].push(log)
+    }
+
+    html += `${new ActivityViz(logs)}`
+
+    for(id in journals){
+      var journal = journals[id];
+      html += `${journal}`
     }
 
     return html
