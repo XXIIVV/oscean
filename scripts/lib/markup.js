@@ -1,29 +1,60 @@
-function Markup(tables)
+function Markup()
 {
-  this.tables = tables;
+  this.operation = function(part)
+  {
+    return `${Ø("operation").request(part)}`
+  }
+
+  this.eval = function(part)
+  {
+    return `${eval(part)}`;
+  }
+
+  this.link = function(part,force_external = false)
+  {
+    var target = part.indexOf("|") > -1 ? part.split("|")[1] : part;
+    var name = part.indexOf("|") > -1 ? part.split("|")[0] : part;
+    var external = (target.indexOf("https:") > -1 || target.indexOf("http:") > -1 || target.indexOf("dat:") > -1);
+    return external || force_external ? `<a href='${!external && force_external ? 'https://wiki.xxiivv.com/':''}${force_external ? target.to_url() : target}' class='external' target='_blank'>${name}</a>` : `<a class='local' href='#${target.to_url()}' title='${target}' onclick="Ø('query').bang('${target}')">${name}</a>`
+  }
+
+  this.convert = function(part,force_external = false)
+  {
+    var key = `${part}`.substr(0,1);
+    var val = part.replace(key,"").trim()
+    
+    switch(key){
+      case "$": return this.operation(val); 
+      case "/": return this.eval(val);
+      default: return this.link(part);
+    }
+  }
 
   this.parse = function(text,force_external = false)
   {
-    this.text = text
-    this.text = this.text.replace(/{_/g,"<i>").replace(/_}/g,"</i>")
-    this.text = this.text.replace(/{\*/g,"<b>").replace(/\*}/g,"</b>")
-    this.text = this.text.replace(/{\#/g,"<code class='inline'>").replace(/\#}/g,"</code>")
+    // Partial braces
+    text = text.replace(/{_/g,"<i>").replace(/_}/g,"</i>").replace(/{\*/g,"<b>").replace(/\*}/g,"</b>").replace(/{\#/g,"<code class='inline'>").replace(/\#}/g,"</code>")
 
-    var parts = this.text.split("{{")
+    // Full Braces
+    var parts = uniq(text.match(/[^{{\}}]+(?=})/g));
+
     for(id in parts){
-      var part = parts[id];
-      if(part.indexOf("}}") == -1){ continue; }
-      var content = part.split("}}")[0];
-      if(content.substr(0,1) == "$"){ this.text = this.text.replace(`{{${content}}}`, Ø("operation").request(content.replace("$",""))); continue; }
-      if(content.substr(0,1) == "/"){ this.text = this.text.replace(`{{${content}}}`, eval(content.replace("/",""))); continue; }
-      var target = content.indexOf("|") > -1 ? content.split("|")[1] : content;
-      var name = content.indexOf("|") > -1 ? content.split("|")[0] : content;
-      var external = (target.indexOf("https:") > -1 || target.indexOf("http:") > -1 || target.indexOf("dat:") > -1);
-      this.text = this.text.replace(`{{${content}}}`,external || force_external ? `<a href='${!external && force_external ? 'https://wiki.xxiivv.com/':''}${force_external ? target.to_url() : target}' class='external' target='_blank'>${name}</a>` : `<a class='local' href='#${target.to_url()}' title='${target}' onclick="Ø('query').bang('${target}')">${name}</a>`)
+      text = text.replace_all(`{{${parts[id]}}}`,this.convert(parts[id],force_external))
     }
-    return this.text;
+
+    return text;
   }
 }
+
+function uniq(array = [])
+{
+  return array ? array.reduce(function(a,b){ if (a.indexOf(b) < 0 ) a.push(b); return a; },[]) : [];
+}
+
+String.prototype.replace_all = function(search, replacement)
+{
+  return `${this}`.split(search).join(replacement);
+};
 
 String.prototype.to_markup = function(force_external)
 {
