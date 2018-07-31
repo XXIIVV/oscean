@@ -28,6 +28,7 @@ function JournalTemplate(id,rect,...params)
     var journals = {}
     for(id in logs){
       var log = logs[id];
+      if(!log.term){ continue; }
       if(log.time.offset() > 0 && !upcoming){ continue; }
       if(Object.keys(journals).length > 16){ break; }
       if(!journals[log.term]){ journals[log.term] = new Journal(); }
@@ -35,6 +36,7 @@ function JournalTemplate(id,rect,...params)
     }
 
     html += `${new ActivityViz(logs)}`
+    html += `${new StatusViz(logs)}`
 
     for(id in journals){
       var journal = journals[id];

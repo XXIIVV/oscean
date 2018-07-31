@@ -76,6 +76,7 @@ function StatusViz(logs,settings = {})
       #content .graph.status th t.display t.value {}
       #content .graph.status th t.display t.unit { font-size:12px; font-family:'input_mono_regular';}
       #content .graph.status th t.display t.offset { font-size:12px; font-family:'input_mono_medium'; text-transform:uppercase; position:absolute; margin-top:-7.5px}
+      #view.noir .graph.status { margin-bottom:0px; border-bottom:1.5px solid #333; }
     </style>
     `
   }

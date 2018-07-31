@@ -77,8 +77,11 @@ function MapNode(id,rect)
       var index = term.toUpperCase()
       var issues = q.tables.issues[term]
       if(!q.tables.lexicon[index]){ console.warn("Missing issue parent",index); continue; }
-      q.tables.lexicon[index].issues = q.tables.issues[index]
-      count.issues += issues.length
+      for(id in issues){
+        var issue = new Issue(id,issues[id]);
+        q.tables.lexicon[index].issues.push(issue)
+        count.issues += 1
+      }
     }
     this.is_mapped = true
     console.info(this.id,`Mapped ${q.tables.horaire.length} logs, ${count.links} links, ${count.issues} issues, and ${count.diaries} diaries to ${Object.keys(q.tables.lexicon).length} terms, in ${(performance.now() - time).toFixed(2)}ms.`)

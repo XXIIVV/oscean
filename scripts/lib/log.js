@@ -1,7 +1,7 @@
 function Log(list)
 {
   this.list = list;
-  this.term = this.list.term;
+  this.term = this.list.term ? this.list.term.toLowerCase() : '';
   this.name = this.list.name;
   this.text = this.list.text;
   this.time = this.list.date ? new Desamber(this.list.date) : null;
