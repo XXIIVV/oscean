@@ -1,4 +1,4 @@
-function Log(data = {})
+function Log(data = {code:'-400'})
 {
   this.host  = null; // From Ø('map')
 
@@ -8,7 +8,7 @@ function Log(data = {})
   this.time  = data.date ? new Desamber(data.date) : null;
   this.photo = data.pict ? parseInt(data.pict) : null;
 
-  this.rune   = data.code.substr(0,1)
+  this.rune   = data.code.length == 4 ? data.code.substr(0,1) : "-"
   this.sc     = data.code.length == 4 ? parseInt(data.code.substr(1,1)) : 0
   this.ch     = data.code.length == 4 ? parseInt(data.code.substr(2,1)) : 0
   this.fh     = data.code.length == 4 ? parseInt(data.code.substr(3,1)) : 0

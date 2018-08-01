@@ -2,6 +2,8 @@
 {
   var html = ""
 
+  return "<p>Under development.</p>"
+
   // Last 365 Days
   var a = []
   for(id in q.tables.horaire){
@@ -12,9 +14,6 @@
     a.push(log)
   }
 
-  html += `${new ActivityViz(a,{size:{width:700},theme:"pale"})}`
-  html += `${new StatusViz(a)}`
-  html += `${new RecentViz(a)}`
   html += `${new ForecastViz(a)}`
   
   return html

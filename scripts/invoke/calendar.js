@@ -57,10 +57,20 @@
 
   var html = "";
 
-
-  var data = {code: '-380'}
-  console.log(new Log(data).task)
   find_available(q)
+
+
+  // Bar Graph
+  var logs = []
+  for(id in q.tables.horaire){
+    var log = q.tables.horaire[id]
+    if(log.time.offset() > 0){ continue; }
+    if(log.time.offset() < -365 * 10){ continue; }
+    logs.push(log)
+  }
+
+
+  html += `${new BarViz(logs)}`
 
   html += echo_events(q)
   html += on_this_day(q)

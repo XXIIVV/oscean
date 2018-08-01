@@ -47,11 +47,11 @@ function ActivityViz(logs,settings = {size:{width:700}})
     var y = 115
     html += `
     <rect class="audio" x="${cell*0}" y="${y}" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
-    <text x='${(cell+1)*4}' y='${y+10}' style='text-anchor:left'>Audio ${(recent.sectors.audio*10).toFixed(1)}%</text>
+    <text x='${(cell+1)*2}' y='${y+10}' style='text-anchor:start'>Audio ${(recent.sectors.audio*10).toFixed(1)}%</text>
     <rect class="visual" x="${(cell+1)*8}" y="${y}" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
-    <text x='${(cell+1)*12}' y='${y+10}' style='text-anchor:left'>Visual ${(recent.sectors.visual*10).toFixed(1)}%</text>
+    <text x='${(cell+1)*10}' y='${y+10}' style='text-anchor:start'>Visual ${(recent.sectors.visual*10).toFixed(1)}%</text>
     <rect class="research" x="${(cell+1)*16}" y="${y}" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
-    <text x='${(cell+1)*20.5}' y='${y+10}' style='text-anchor:left'>Research ${(recent.sectors.research*10).toFixed(1)}%</text>`
+    <text x='${(cell+1)*18}' y='${y+10}' style='text-anchor:start'>Research ${(recent.sectors.research*10).toFixed(1)}%</text>`
 
     html += `<text x='725' y='${y+10}' style='text-anchor:end'>${recent.sum.toFixed(0)} Hours</text>`
 
@@ -64,7 +64,7 @@ function ActivityViz(logs,settings = {size:{width:700}})
     <style>
     @keyframes blink { 50% { opacity: 0; } }
     svg.graph.activity { border-bottom: 1.5px solid #333;display: block;padding: 30px 0px;margin-bottom: 30px}
-    svg.graph.activity text { stroke:none; fill:#fff; font-size:11px; text-anchor: middle; font-family:'archivo_bold'; fill:#000 }
+    svg.graph.activity text { stroke:none; fill:#fff; font-size:11px; text-anchor: middle; font-family:'archivo_bold'; fill:#000; text-transform:capitalize }
     svg.graph.activity rect { stroke:none }
     svg.graph.activity rect:hover { fill:#a1a1a1 !important; cursor:pointer}
     svg.graph.activity rect.audio { fill:#72dec2 }

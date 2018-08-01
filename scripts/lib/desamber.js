@@ -25,10 +25,11 @@ function Desamber(str)
   {
     var days = this.offset();
 
-    if(days == -1){ return `yesterday`; }
-    if(days == 1) { return "tomorrow"; }
-    if(days == 0) { return "today"; }
-    if(days < 1)  { return `${days*-1} days ago`; }
+    if(days == -1)   { return `yesterday`; }
+    if(days == 1)    { return "tomorrow"; }
+    if(days == 0)    { return "today"; }
+    if(days < -365)  { return `${parseInt(days/-365)} years ago`; }
+    if(days < 1)     { return `${days*-1} days ago`; }
     return `in ${days} days`;
   }
 
