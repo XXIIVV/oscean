@@ -55,7 +55,7 @@ function ActivityViz(logs,settings = {size:{width:700}})
 
     html += `<text x='725' y='${y+10}' style='text-anchor:end'>${recent.sum.toFixed(0)} Hours</text>`
 
-    return `<svg class='graph activity' style='max-width:${this.settings.size.width+30}px; height:${y+15}px; width:100%;'>${html}</svg>`
+    return `<svg class='graph activity' style='max-width:${this.settings.size.width+30}px; height:${y}px; width:100%;'>${html}</svg>`
   }
 
   this.style = function()

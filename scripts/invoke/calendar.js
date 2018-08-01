@@ -71,7 +71,6 @@
 
 
   html += `${new BarViz(logs)}`
-
   html += echo_events(q)
   html += on_this_day(q)
 

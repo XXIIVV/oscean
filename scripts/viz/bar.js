@@ -65,7 +65,7 @@ function BarViz(logs,settings = {size:{width:730,height:125}})
 
     html += `<text x='725' y='${y+10}' style='text-anchor:end'>${recent.sum.toFixed(0)} Hours</text>`
 
-    return `<svg class='graph bar' style='height:${y + 15}px;'>${html}</svg>`
+    return `<svg class='graph bar' style='height:${y}px;'>${html}</svg>`
   }
 
   this.style = function()
