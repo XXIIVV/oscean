@@ -6,18 +6,18 @@ function Horaire(logs)
   
   for(id in logs){
     var log = logs[id];
-    h.fh += log.value;
-    h.ch += log.vector;
-    h.osc.sum += Math.abs(log.value-log.vector)
-    h.tasks[log.task] = h.tasks[log.task] ? h.tasks[log.task]+log.value : log.value
+    h.fh += log.fh;
+    h.ch += log.ch;
+    h.osc.sum += Math.abs(log.fh-log.ch)
+    h.tasks[log.task] = h.tasks[log.task] ? h.tasks[log.task]+log.fh : log.fh
     if(log.sector){
-      h.sectors[log.sector] += (log.value+log.vector)/2
-      h.sectors.sum += (log.value+log.vector)/2
+      h.sectors[log.sector] += (log.fh+log.ch)/2
+      h.sectors.sum += (log.fh+log.ch)/2
     }
     if(log.term != ""){
       if(!h.topics[log.term]){ h.topics[log.term] = {fh:0,ch:0,count:0}; }
-      h.topics[log.term].fh += log.value;
-      h.topics[log.term].ch += log.vector;
+      h.topics[log.term].fh += log.fh;
+      h.topics[log.term].ch += log.ch;
       h.topics[log.term].count += 1;
     }
   }

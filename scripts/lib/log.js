@@ -1,29 +1,26 @@
-function Log(list = {})
+function Log(data = {})
 {
-  this.list  = list;
-  this.term  = this.list.term ? this.list.term.capitalize() : '';
-  this.name  = this.list.name;
-  this.text  = this.list.text;
-  this.time  = this.list.date ? new Desamber(this.list.date) : null;
-  this.photo = this.list.pict ? parseInt(this.list.pict) : null;
+  this.host  = null; // From Ø('map')
 
-  this.code = this.list.code ? this.list.code : '-400';
-  this.rune = this.code.substr(0,1);
-  this.sector = ["misc","audio","visual","research","misc"][parseInt(this.code.substr(1,1))]
-  this.vector = parseInt(this.code.substr(2,1)) > 0 ? parseInt(this.code.substr(2,1)) : 0;
-  this.value  = parseInt(this.code.substr(3,1)) > 0 ? parseInt(this.code.substr(3,1)) : 0;
+  this.term  = data.term ? data.term.capitalize() : '';
+  this.name  = data.name;
+  this.text  = data.text;
+  this.time  = data.date ? new Desamber(data.date) : null;
+  this.photo = data.pict ? parseInt(data.pict) : null;
 
+  this.rune   = data.code.substr(0,1)
+  this.sc     = data.code.length == 4 ? parseInt(data.code.substr(1,1)) : 0
+  this.ch     = data.code.length == 4 ? parseInt(data.code.substr(2,1)) : 0
+  this.fh     = data.code.length == 4 ? parseInt(data.code.substr(3,1)) : 0
+
+  this.sector      = ["misc","audio","visual","research","misc"][this.sc]
   this.is_featured = this.photo && (this.rune == "!" || this.rune == "+");
-  this.is_event = this.rune == "+" || this.vector > 9;
+  this.is_event    = this.rune == "+" || this.vector > 9;
 
-  this.host = null; // From Ø('map')
-
-  // Tasks
   this.tasks = [
     ["idle", "listening" , "experiment" , "rehersal"      , "draft"     , "composition" , "sound design", "mastering" , "release" , "performance" ],
     ["idle", "watching"  , "experiment" , "storyboard"    , "prototype" , "editing"     , "design"      , "rendering" , "release" , "showcase" ],
     ["idle", "research"  , "experiment" , "documentation" , "planning"  , "maintenance" , "tooling"     , "updating"  , "release" , "talk" ]
   ]
-
-  this.task   = this.tasks[this.sector-1] ? this.tasks[this.sector-1][this.vector] : 'travel';
+  this.task   = this.tasks[this.sc-1] ? this.tasks[this.sc-1][this.ch] : 'travel';
 }

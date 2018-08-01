@@ -50,13 +50,16 @@
       var log = q.tables.horaire[id];
       if(!log.is_event){ continue; }
       if(log.time.y != prev_y){ html += `<ln class='head'>20${log.time.y}</ln>`; prev_y = log.time.y; }
-      html += `<ln>{{${log.name ? log.name : log.term+' '+log.task.capitalize()}|${log.term}}}</a> <t title='${log.time}'>${log.time.offset_format()}</t></ln>`.to_markup()
+      html += `<ln style='${log.time.offset() > 0 ? 'color:#aaa' : ''}'>{{${log.name ? log.name : log.term+' '+log.task.capitalize()}|${log.term}}}</a> <t title='${log.time}'>${log.time.offset_format()}</t></ln>`.to_markup()
     }
     return `<list class='tidy' style='max-width:calc(100% - 15px)'>${html}</list>`;
   }
 
   var html = "";
 
+
+  var data = {code: '-380'}
+  console.log(new Log(data).task)
   find_available(q)
 
   html += echo_events(q)

@@ -8,6 +8,7 @@ function Journal(logs = [])
   this.push = function(log)
   {
     if(!log.host){ return; }
+
     if(log.term){ this.term = log.term }
     if(log.sector){ this.sector = log.sector }
     if(log.time && !this.time){ this.time = log.time }
@@ -44,6 +45,13 @@ function Journal(logs = [])
     return ''
   }
 
+  this._bref = function()
+  {
+    if(!this.logs[0].host){ return ''; }
+
+    return `<p class='bref'>${this.logs[0].host.bref()}</p>`
+  }
+
   this._issues = function()
   {
     var html = ''
@@ -78,6 +86,7 @@ function Journal(logs = [])
     html += this._glyph()
     html += this._head()
     html += this._photo()
+    html += this._bref()
     html += this._issues()
     html += this._tags()
 

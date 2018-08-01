@@ -8,7 +8,7 @@ function Forecast(logs,limit = 14)
     var logs = logs
     while(d < limit){
       var log = make_log(offset)
-      a.push({sector:log.sector,value:log.value,offset:offset})
+      a.push({sector:log.sector,value:log.fh,offset:offset})
       logs = [log].concat(logs)
       offset = make_offset(logs)
       d += 1

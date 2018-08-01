@@ -18,8 +18,8 @@ function RecentViz(logs,settings = {size:{width:730,height:125}})
       if(!h[Math.ceil(pos)]){ h[Math.ceil(pos)] = {}; }
       if(!h[Math.ceil(pos)][log.sector]){ h[Math.ceil(pos)][log.sector] = 0; }
 
-      h[Math.floor(pos)][log.sector] += ((log.value + log.vector)/2) * (1-share)
-      h[Math.ceil(pos)][log.sector] += ((log.value + log.vector)/2) * share
+      h[Math.floor(pos)][log.sector] += ((log.fh + log.ch)/2) * (1-share)
+      h[Math.ceil(pos)][log.sector] += ((log.fh + log.ch)/2) * share
     }
     return h
   }

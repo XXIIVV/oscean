@@ -31,10 +31,10 @@ function ForecastViz(logs,settings = {})
       var log = past_logs[`${desamber}`];
       if(!log){ d -= 1; continue; }
       var x = (13-d) * (cell+1);
-      var y = (cell * 3) * (1-(log.value/10))
+      var y = (cell * 3) * (1-(log.fh/10))
       html += `<rect class='${log.sector} ${d == 0 ? 'today' : ''}' x='${x}' y='${y}' width='${cell}' height='${(cell * 3) - y}' rx="2" ry="2"></rect>`
       html += `<text x='${x+13}' y='-10' style='text-anchor:middle'>${desamber.d}</text>`
-      html += log.value >= 3 ? `<text x='${x+13}' y='70' style='text-anchor:middle; fill:white'>${log.value}h</text>` : ''
+      html += log.fh >= 3 ? `<text x='${x+13}' y='70' style='text-anchor:middle; fill:white'>${log.fh}h</text>` : ''
       d -= 1
     }
 
@@ -43,10 +43,10 @@ function ForecastViz(logs,settings = {})
       var log = future_logs[id];
       var offset_x = (cell+1) * 14
       var x = (id * (cell+1)) + offset_x;
-      var y = (cell * 3) * (1-(log.value/10))
+      var y = (cell * 3) * (1-(log.fh/10))
       var height = (cell * 3) - y
       html += `<rect class='${log.sector} future' x='${x}' y='${y}' width='${cell}' height='${height}' rx="2" ry="2"></rect>`
-      html += log.value >= 3 ? `<text x='${x+13}' y='70' style='text-anchor:middle; fill:white'>${log.value}h</text>` : ''
+      html += log.fh >= 3 ? `<text x='${x+13}' y='70' style='text-anchor:middle; fill:white'>${log.fh}h</text>` : ''
     }
 
     html += `<text x='370' y='0' style='text-anchor:end'>—</text>`

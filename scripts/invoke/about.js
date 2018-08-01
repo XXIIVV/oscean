@@ -11,7 +11,7 @@
   var tasks = {}
   for(id in q.tables.horaire){
     var log = q.tables.horaire[id]
-    tasks[log.task] = tasks[log.task] ? tasks[log.task]+log.value : log.value
+    tasks[log.task] = tasks[log.task] ? tasks[log.task]+log.fh : log.fh
   }
   var tasks_sortable = []
   for(id in tasks){
