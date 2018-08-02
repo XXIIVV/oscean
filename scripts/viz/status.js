@@ -21,7 +21,7 @@ function StatusViz(logs)
       <tr>
         <th>
           <t class='display'>
-            <t class='value'>${(recent.fh * 14).toFixed(1)}</t>
+            <t class='value'>${(recent.fh * 14) > 100 ? parseInt(recent.fh * 14) : (recent.fh * 14).toFixed(1)}</t>
             <t class='offset'>${this.offset(recent.fh * 14,before.fh * 14)}</t>
             <t class='unit'>hours/14d</t>
           </t>
