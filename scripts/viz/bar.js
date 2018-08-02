@@ -1,6 +1,5 @@
-function BarViz(logs,settings = {size:{width:730,height:125}})
+function BarViz(logs)
 {
-  this.settings = settings;
   this.logs = []
 
   // Only keep the last 10 years
@@ -44,22 +43,22 @@ function BarViz(logs,settings = {size:{width:730,height:125}})
       var seg = segments[id]
       var x = parseInt(id) * (cell+1);
       var audio_h = clamp(seg.audio * mod,4,100)
-      var audio_y = audio_h;
+      var audio_y = audio_h + 30;
       var visual_h = clamp(seg.visual * mod,4,100)
       var visual_y = (visual_h + audio_y)+0.5;
       var research_h = clamp(seg.visual * mod,4,100)
       var research_y = (research_h + visual_y)+0.5;
-      html += `<rect class='audio' x='${x}' y='${this.settings.size.height - audio_y}' width='${cell}' height='${audio_h}' rx="2" ry="2"></rect>`
-      html += `<rect class='visual' x='${x}' y='${this.settings.size.height - visual_y}' width='${cell}' height='${visual_h}' rx="2" ry="2"></rect>`
-      html += `<rect class='research' x='${x}' y='${this.settings.size.height - research_y}' width='${cell}' height='${research_h}' rx="2" ry="2"></rect>`
+      html += `<rect class='audio' x='${x}' y='${125 - audio_y}' width='${cell}' height='${audio_h}' rx="2" ry="2"></rect>`
+      html += `<rect class='visual' x='${x}' y='${125 - visual_y}' width='${cell}' height='${visual_h}' rx="2" ry="2"></rect>`
+      html += `<rect class='research' x='${x}' y='${125 - research_y}' width='${cell}' height='${research_h}' rx="2" ry="2"></rect>`
     }
 
-    var y = 145
+    var y = 115
     var recent = new Horaire(Object.values(this.logs));
 
     html += `
-    <text x='${2}' y='${-10}' style='text-anchor:start'>${this.logs[this.logs.length-1].time.ago().capitalize()}</text>
-    <text x='${730}' y='${-10}' style='text-anchor:end'>${this.logs[0].time.ago().capitalize()}</text>
+    <text x='${2}' y='${-15}' style='text-anchor:start'>${this.logs[this.logs.length-1].time.ago().capitalize()}</text>
+    <text x='${730}' y='${-15}' style='text-anchor:end'>${this.logs[0].time.ago().capitalize()}</text>
     <rect class="audio" x="${cell*0}" y="${y}" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
     <text x='${(cell+1)*2}' y='${y+10}' style='text-anchor:start'>Audio ${(recent.sectors.audio*10).toFixed(1)}%</text>
     <rect class="visual" x="${(cell+1)*8}" y="${y}" width="13" height="13" rx="2" ry="2" title="17O11"></rect>

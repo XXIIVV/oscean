@@ -1,7 +1,15 @@
-function ActivityViz(logs,settings = {size:{width:700}})
+function ActivityViz(logs)
 {
-  this.logs = logs;
-  this.settings = settings;
+  this.logs = []
+
+  // Only keep the last 365 days
+  for(id in logs){
+    var log = logs[id]
+    var offset = log.time.offset();
+    if(offset > 0){ continue; }
+    if(offset < -365 * 10){ continue; }
+    this.logs[this.logs.length] = log;
+  }
 
   this.parse = function(logs = this.logs)
   {
@@ -24,7 +32,7 @@ function ActivityViz(logs,settings = {size:{width:700}})
     var html = ""
     var week = 0
     var height = cell*2
-    var cell = parseInt(settings.size.width/52)
+    var cell = parseInt(700/52)
     while(week < 52){
       var x = parseInt(week * (cell+1))
       var day = 0
@@ -33,7 +41,6 @@ function ActivityViz(logs,settings = {size:{width:700}})
         var y = parseInt(day * (cell+1))
         var offset = (365 - (week*7)-(day+1)) * -1
         var log = data[offset+1]
-        // if(!log){ console.warn(`Missing log ${offset}`); }
         html += log && log.sector ? `<rect class='${log.sector} ${log.time.offset() == 0 ? 'today' : ''}' x='${x}' y='${y}' width='${cell}' height='${cell}' rx="2" ry="2" title='${log.time}' onclick="Ø('query').bang('${log.term}')"></rect>` : `<rect class='missing ${day == 6 && week == 51 ? 'today' : ''}' x='${x}' y='${y}' width='${cell}' height='${cell}' rx="2" ry="2"></rect>`
         html += log && log.photo ? `<circle cx='${x+(cell/2)}' cy='${y+(cell/2)}' r='2.5' class='photo'></circle>` : ''
         html += log && log.is_event ? `<circle cx='${x+(cell/2)}' cy='${y+(cell/2)}' r='2' class='event'></circle>` : ''
@@ -42,7 +49,7 @@ function ActivityViz(logs,settings = {size:{width:700}})
       week += 1
     }
 
-    var recent = new Horaire(Object.values(data).splice(0,364));
+    var recent = new Horaire(this.logs);
 
     var y = 115
     html += `
@@ -51,11 +58,10 @@ function ActivityViz(logs,settings = {size:{width:700}})
     <rect class="visual" x="${(cell+1)*8}" y="${y}" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
     <text x='${(cell+1)*10}' y='${y+10}' style='text-anchor:start'>Visual ${(recent.sectors.visual*10).toFixed(1)}%</text>
     <rect class="research" x="${(cell+1)*16}" y="${y}" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
-    <text x='${(cell+1)*18}' y='${y+10}' style='text-anchor:start'>Research ${(recent.sectors.research*10).toFixed(1)}%</text>`
+    <text x='${(cell+1)*18}' y='${y+10}' style='text-anchor:start'>Research ${(recent.sectors.research*10).toFixed(1)}%</text>
+    <text x='725' y='${y+10}' style='text-anchor:end'>${recent.sum.toFixed(0)} Hours</text>`
 
-    html += `<text x='725' y='${y+10}' style='text-anchor:end'>${recent.sum.toFixed(0)} Hours</text>`
-
-    return `<svg class='graph activity' style='max-width:${this.settings.size.width+30}px; height:${y}px; width:100%;'>${html}</svg>`
+    return `<svg class='graph activity' style='max-width:730px; height:${y}px; width:100%;'>${html}</svg>`
   }
 
   this.style = function()
