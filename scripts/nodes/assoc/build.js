@@ -12,17 +12,16 @@ function BuildNode(id,rect)
     var featured_log = q.result && q.result.featured_log ? q.result.featured_log : null
     
     var activity = `
-    ${q.result && q.result.issues.length > 0  && q.result.name.toLowerCase() != "dashboard" ? "<a id='issues' onclick=\"Ø('query').bang('"+q.result.name+":tracker')\">"+q.result.issues.length+" Issue"+(q.result.issues.length > 1 ? 's' : '')+"</a>" : ''}
+    ${q.result && q.result.issues.length > 0  && q.result.name.toLowerCase() != "tracker" ? "<a id='issues' onclick=\"Ø('query').bang('"+q.result.name+":tracker')\">"+q.result.issues.length+" Issue"+(q.result.issues.length > 1 ? 's' : '')+"</a>" : ''}
     ${q.result && q.result.diaries.length > 1 && q.result.type != "diary" ? "<a id='diaries' onclick=\"Ø('query').bang('"+q.result.name+":diary')\">"+q.result.diaries.length+" Diaries</a>" : ''} 
     ${q.result && q.result.logs.length > 2  && q.result.type != "journal" ? "<a id='logs' onclick=\"Ø('query').bang('"+q.result.name+":journal')\">"+q.result.logs.length+" Logs</a>" : ''}`
     
-
     if(q.result && q.result.name == "HOME"){
       featured_log = this.find_last_diary(q.tables.horaire)
     }
-    if(q.result && (q.result.name == "HOME" || q.result.name == "JOURNAL" || q.result.name == "CALENDAR" || q.result.name == "DASHBOARD")){
+    if(q.result && (q.result.name == "HOME" || q.result.name == "JOURNAL" || q.result.name == "CALENDAR" || q.result.name == "TRACKER")){
       activity = `
-      <a id='issues' onclick=\"Ø('query').bang('Dashboard')\">Dashboard</a>
+      <a id='issues' onclick=\"Ø('query').bang('Tracker')\">Tracker</a>
       <a id='diaries' onclick=\"Ø('query').bang('journal')\">Journal</a> 
       <a id='logs' onclick=\"Ø('query').bang('Calendar')\">Calendar</a> `
     }

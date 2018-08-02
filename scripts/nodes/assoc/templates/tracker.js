@@ -20,10 +20,7 @@ function TrackerTemplate(id,rect,...params)
   {
     var html = ""
 
-    html += `<p>Under development..</p>`
-    // html += `<p>There are currently {*${q.result.issues.length} known issue${q.result.issues.length > 1 ? 's' : ''}*} associated to /{{${q.result.name.capitalize()}}}.</p>`.to_markup()
-    // html += q.result.logs.length > 0 ? `<p>The last update to the {{${q.result.name.capitalize()}}} project was made {{${q.result.latest_log.time.ago()}|${q.result.name}:journal}}. To see a list of {*all active issues*}, see the {{Project Tracker|tracker}}. </p>`.to_markup() : ''
-    // html += this.make_list(q)
+    html += `<p>Currently under development, look at the {{Journal}} and {{Calendar}} in the meantime.</p>`.to_markup()
 
     return html
   }
