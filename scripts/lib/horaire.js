@@ -1,25 +1,24 @@
 function Horaire(logs)
 {
-  var h = {fh:0,ch:0,topics:{},tasks:{},osc:{sum:0,average:0},sectors:{audio:0,visual:0,research:0,sum:0},span:0};
+  var h = {fh:0,ch:0,topics:{},tasks:{},osc:{sum:0,average:0},sectors:{audio:0,visual:0,research:0,misc:0,sum:0},span:0};
 
   h.span = logs.length > 1 && logs[0].time ? logs[0].time.offset(logs[logs.length-1].time) : 0
   
   for(id in logs){
     var log = logs[id];
+    if(!log.term){ continue; }
+
     h.fh += log.fh;
     h.ch += log.ch;
-    h.osc.sum += Math.abs(log.fh-log.ch)
-    h.tasks[log.task] = h.tasks[log.task] ? h.tasks[log.task]+log.fh : log.fh
-    if(log.sector){
-      h.sectors[log.sector] += (log.fh+log.ch)/2
-      h.sectors.sum += (log.fh+log.ch)/2
-    }
-    if(log.term != ""){
-      if(!h.topics[log.term]){ h.topics[log.term] = {fh:0,ch:0,count:0}; }
-      h.topics[log.term].fh += log.fh;
-      h.topics[log.term].ch += log.ch;
-      h.topics[log.term].count += 1;
-    }
+    h.osc.sum += Math.abs(log.fh-log.ch);
+    h.tasks[log.task] = h.tasks[log.task] ? h.tasks[log.task]+log.fh : log.fh;
+    h.sectors[log.sector] += (log.fh+log.ch)/2;
+    h.sectors.sum += (log.fh+log.ch)/2;
+
+    if(!h.topics[log.term]){ h.topics[log.term] = {fh:0,ch:0,count:0}; }
+    h.topics[log.term].fh += log.fh;
+    h.topics[log.term].ch += log.ch;
+    h.topics[log.term].count += 1;
   }
 
   var efec_sum = 0

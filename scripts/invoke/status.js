@@ -4,6 +4,52 @@
   var progress = {sum:0,count:0}
   var ratings = {}
 
+  // Service
+  function find_available(q)
+  {
+    var used = []
+    for(id in q.tables.horaire){
+      var log = q.tables.horaire[id]
+      if(!log.photo){ continue; }
+      used.push(log.photo)
+    }
+    var available = 1
+    while(available < 999){
+      if(used.indexOf(available) < 0){ console.log(`Next Available:${available}`); break; }
+      available += 1
+    }
+  }
+
+  function on_this_day(q)
+  {
+    var today = new Date().desamber();
+    var a = []
+    for(id in q.tables.horaire){
+      var log = q.tables.horaire[id]
+      if(!log.is_event){ continue; }
+      if(!log.name){ continue; }
+      if(log.time.offset() >= 0){ continue; }
+      if(log.time.doty != today.doty){ continue; }
+      a.push(log)
+    }
+
+    var html = "";
+
+    if(a.length > 0){
+      html += "<code>"
+      for(id in a){
+        var log = a[id];
+        html += `<comment>${today.y - log.time.y}y ago today</comment> ${log.name}\n`
+      }
+      html += "</code>"
+    }
+    return html;
+  }
+
+  find_available(q)
+
+  html += on_this_day(q)
+
   for(id in q.tables.lexicon){
     var term = q.tables.lexicon[id];
     var rating = term.rating().status

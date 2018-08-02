@@ -1,57 +1,49 @@
-function StatusViz(logs,settings = {})
+function StatusViz(logs)
 {
-  this.logs = logs;
-  this.settings = settings;
+  this.data = {recent:[],before:[]}
 
-  this.parse = function(logs = this.logs)
-  {
-    var h = {now:[],before:[]}
-    var i = 0
-    for(id in logs){
-      var log = logs[id];
-      var offset = log.time.offset();
-      if(offset > 0){ continue; }
-      if(offset > -14){ h.now.push(log); continue; }
-      if(offset > -24){ h.before.push(log); continue; }
-      break;
-    }
-    return h
+  // Split the last 14 days
+  for(id in logs){
+    var log = logs[id]
+    var offset = log.time.offset();
+    if(offset > 0){ continue; }
+    if(offset > -14){ this.data.recent[this.data.recent.length] = log; }
+    else{ this.data.before[this.data.before.length] = log; }
   }
 
   this.draw = function()
   {
-    var data = this.parse();
-    var now = new Horaire(data.now)
-    var before = new Horaire(data.before)
+    var recent = new Horaire(this.data.recent)
+    var before = new Horaire(this.data.before)
 
     return `
     <table class='graph status'>
       <tr>
         <th>
           <t class='display'>
-            <t class='value'>${now.sum.toFixed(1)}</t>
-            <t class='offset'>${this.offset(now.sum,before.sum)}</t>
+            <t class='value'>${(recent.fh * 14).toFixed(1)}</t>
+            <t class='offset'>${this.offset(recent.fh * 14,before.fh * 14)}</t>
             <t class='unit'>hours/14d</t>
           </t>
         </th>
         <th>
           <t class='display'>
-            <t class='value'>${now.fh.toFixed(2)}</t>
-            <t class='offset'>${this.offset(now.fh,before.fh)}</t>
+            <t class='value'>${recent.fh.toFixed(2)}</t>
+            <t class='offset'>${this.offset(recent.fh,before.fh)}</t>
             <t class='unit'>hours/day</t>
           </t>
         </th>
         <th>
           <t class='display'>
-            <t class='value'>${now.efec.toFixed(2)}</t>
-            <t class='offset'>${this.offset(now.efec,before.efec)}</t>
+            <t class='value'>${recent.efec.toFixed(2)}</t>
+            <t class='offset'>${this.offset(recent.efec,before.efec)}</t>
             <t class='unit'>efec</t>
           </t>
         </th>
         <th>
           <t class='display'>
-            <t class='value'>${now.efic.toFixed(2)}</t>
-            <t class='offset'>${this.offset(now.efic,before.efic)}</t>
+            <t class='value'>${recent.efic.toFixed(2)}</t>
+            <t class='offset'>${this.offset(recent.efic,before.efic)}</t>
             <t class='unit'>efic</t>
           </t>
         </th>
@@ -59,9 +51,9 @@ function StatusViz(logs,settings = {})
     </table>`
   }
 
-  this.offset = function(now,before,trail = 1)
+  this.offset = function(recent,before,trail = 1)
   {
-    var print = now-before > 0 ? `+${(now-before).toFixed(trail)}` : `${(now-before).toFixed(trail)}`
+    var print = recent-before > 0 ? `+${(recent-before).toFixed(trail)}` : `${(recent-before).toFixed(trail)}`
     return print != "-0.0" && print != "+0.0" ? print : '0.0'
   }
 

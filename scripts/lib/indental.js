@@ -5,6 +5,7 @@ function Indental(data)
   this.parse = function(type)
   {
     var lines = this.data.split("\n").map(liner)
+    
     // Assoc lines
     var stack = {}
     var target = lines[0]

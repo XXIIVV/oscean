@@ -1,5 +1,15 @@
 function Term(name,dict)
 {
+  this.parent = null       // From Ø('map')
+  this.children = []       // From Ø('map')
+  this.logs = []           // From Ø('map')
+  this.issues = []         // From Ø('map')
+  this.diaries = []        // From Ø('map')
+  this.outgoing = []       // From Ø('map')
+  this.incoming = []       // From Ø('map')
+  this.latest_log = null   // From Ø('map')
+  this.featured_log = null // From Ø('map')
+
   this.name = name;
 
   this.dict = dict;
@@ -7,16 +17,6 @@ function Term(name,dict)
   this.links = this.dict.LINK ? this.dict.LINK : [];
   this.tags = this.dict.TAGS ? this.dict.TAGS.toLowerCase().split(" ") : [];
   this.theme = this.dict.LOOK ? this.dict.LOOK.toLowerCase() : 'default';
-
-  this.parent = null       // Assigned in Map
-  this.children = []       // Assigned in Map
-  this.logs = []           // Assigned in Map
-  this.issues = []         // Assigned in Map
-  this.diaries = []        // Assigned in Map
-  this.outgoing = []       // Assigned in Map
-  this.incoming = []       // Assigned in Map
-  this.latest_log = null   // Assigned in Map
-  this.featured_log = null // Assigned in Map
 
   this.is_portal = this.tags.indexOf("portal") > -1
   
@@ -69,9 +69,7 @@ function Term(name,dict)
 
     // Score
     var p = 0
-    for(id in h.points){
-      p += h.points[id] ? 1 : 0
-    }
+    for(id in h.points){ p += h.points[id] ? 1 : 0 }
 
     h['score'] = (p/Object.keys(h.points).length).toFixed(2)
     h['status'] = h['score'] < 0.4 ? 'poor' : h['score'] < 0.7 ? 'fair' : h['score'] < 0.9 ? 'good' : 'perfect'

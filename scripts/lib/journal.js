@@ -20,8 +20,7 @@ function Journal(logs = [])
 
   this._glyph = function()
   {
-    return `
-    <svg onclick="Ø('query').bang('${this.term}')" class='icon'><path transform="scale(0.15,0.15) translate(20,20)" d="${this.logs[0].host.glyph()}"></path></svg>`
+    return `<svg onclick="Ø('query').bang('${this.term}')" class='icon'><path transform="scale(0.15,0.15) translate(20,20)" d="${this.logs[0].host.glyph()}"></path></svg>`
   }
 
   this._head = function()

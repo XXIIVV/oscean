@@ -1,5 +1,7 @@
 function Issue(name,tasks)
 {
+  this.host  = null; // From Ø('map')
+  
   this.name = name;
   this.tasks = tasks;
 
