@@ -5,7 +5,7 @@ function BarViz(logs)
   // Only keep the last 10 years
   for(id in logs){
     var log = logs[id]
-    var offset = log.time.offset();
+    var offset = log.time.offset;
     if(offset > 0){ continue; }
     if(offset < -365 * 10){ continue; }
     this.logs[this.logs.length] = log;
@@ -13,11 +13,11 @@ function BarViz(logs)
 
   this.parse = function(logs, parts = 51)
   {
-    var limit = logs[logs.length-1].time.offset() * -1
+    var limit = logs[logs.length-1].time.offset * -1
     var h = {}
     for(id in logs){
       var log = logs[id];
-      var offset = log.time.offset();
+      var offset = log.time.offset;
       var pos = parts - (((offset*-1)/limit) * parts);
       var share = (pos-Math.floor(pos))
 

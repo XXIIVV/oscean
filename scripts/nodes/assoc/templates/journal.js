@@ -13,8 +13,8 @@ function JournalTemplate(id,rect,...params)
     for(id in all_logs){
       var log = all_logs[id];
       if(!log.term){ continue; }
-      if(log.time.offset() > 0 && !upcoming){ continue; }
-      if(log.time.offset() < -366){ continue; }
+      if(log.time.offset > 0 && !upcoming){ continue; }
+      if(log.time.offset < -366){ continue; }
       logs[logs.length] = log
     }
 

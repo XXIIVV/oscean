@@ -29,6 +29,7 @@ function graph()
       Ø("tracker").create({x:14,y:14},TrackerTemplate),
       Ø("diary").create({x:17,y:14},DiaryTemplate),
       Ø("index").create({x:20,y:14},IndexTemplate),
+      Ø("calendar").create({x:23,y:14},CalendarTemplate),
   ])
 
   Ø("client").mesh({x:47,y:0},[
@@ -82,7 +83,7 @@ function graph()
 
   // Assoc
   Ø("build").syphon(["build_navi","build_content","build_sidebar"])
-  Ø("build_content").syphon(["missing","default","journal","tracker","index","home","diary"])
+  Ø("build_content").syphon(["missing","default","journal","tracker","index","home","diary","calendar"])
   Ø("build").connect(["view"])
 
   // Dom

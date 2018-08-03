@@ -5,7 +5,7 @@ function ActivityViz(logs)
   // Only keep the last 365 days
   for(id in logs){
     var log = logs[id]
-    var offset = log.time.offset();
+    var offset = log.time.offset;
     if(offset > 0){ continue; }
     if(offset < -365 * 10){ continue; }
     this.logs[this.logs.length] = log;
@@ -17,13 +17,14 @@ function ActivityViz(logs)
     var i = 0
     for(id in logs){
       var log = logs[id];
-      var offset = log.time.offset();
+      var offset = log.time.offset;
       if(offset > 0){ continue; }
       if(offset < -364){ break; }
-      h[log.time.offset()] = log;
+      h[log.time.offset] = log;
     }
     return h
   }
+
 
   this.draw = function()
   {
@@ -36,12 +37,13 @@ function ActivityViz(logs)
     while(week < 52){
       var x = parseInt(week * (cell+1))
       var day = 0
-      html += week % 2 == 0 ? `<text x='${x+(cell/2)}' y='-15'>${new Date().desamber().to_offset(-(365 - (week*7))).m}</text>` : ''
+      var offset = -(365 - (week*7));
+      html += week % 2 == 0 ? `<text x='${x+(cell/2)}' style='text-anchor:middle' y='-15'>${new Date(new Date() - 1000 * 60 * 60 * 24 * -offset).desamber().m}</text>` : ''
       while(day < 7){
         var y = parseInt(day * (cell+1))
         var offset = (365 - (week*7)-(day+1)) * -1
         var log = data[offset+1]
-        html += log && log.sector ? `<rect class='${log.sector} ${log.time.offset() == 0 ? 'today' : ''}' x='${x}' y='${y}' width='${cell}' height='${cell}' rx="2" ry="2" title='${log.time}' onclick="Ø('query').bang('${log.term}')"></rect>` : `<rect class='missing ${day == 6 && week == 51 ? 'today' : ''}' x='${x}' y='${y}' width='${cell}' height='${cell}' rx="2" ry="2"></rect>`
+        html += log && log.sector ? `<rect class='${log.sector} ${log.time.offset == 0 ? 'today' : ''}' x='${x}' y='${y}' width='${cell}' height='${cell}' rx="2" ry="2" title='${log.time}' onclick="Ø('query').bang('${log.term}')"></rect>` : `<rect class='missing ${day == 6 && week == 51 ? 'today' : ''}' x='${x}' y='${y}' width='${cell}' height='${cell}' rx="2" ry="2"></rect>`
         html += log && log.photo ? `<circle cx='${x+(cell/2)}' cy='${y+(cell/2)}' r='2.5' class='photo'></circle>` : ''
         html += log && log.is_event ? `<circle cx='${x+(cell/2)}' cy='${y+(cell/2)}' r='2' class='event'></circle>` : ''
         day += 1
@@ -70,7 +72,7 @@ function ActivityViz(logs)
     <style>
     @keyframes blink { 50% { opacity: 0; } }
     svg.graph.activity { border-bottom: 1.5px solid #333;display: block;padding: 30px 0px;margin-bottom: 30px}
-    svg.graph.activity text { stroke:none; fill:#fff; font-size:11px; text-anchor: middle; font-family:'archivo_bold'; fill:#000; text-transform:capitalize }
+    svg.graph.activity text { stroke:none; fill:#fff; font-size:11px; text-anchor: start; font-family:'archivo_bold'; fill:#000; text-transform:capitalize }
     svg.graph.activity rect { stroke:none }
     svg.graph.activity rect:hover { fill:#a1a1a1 !important; cursor:pointer}
     svg.graph.activity rect.audio { fill:#72dec2 }

@@ -28,7 +28,7 @@
       var log = q.tables.horaire[id]
       if(!log.is_event){ continue; }
       if(!log.name){ continue; }
-      if(log.time.offset() >= 0){ continue; }
+      if(log.time.offset >= 0){ continue; }
       if(log.time.doty != today.doty){ continue; }
       a.push(log)
     }

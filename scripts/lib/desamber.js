@@ -10,20 +10,18 @@ function Desamber(str)
   this.month = this.m == "+" ? 26 : this.m.charCodeAt(0) - 65;
   this.doty = (parseInt(this.month) * 14) + parseInt(this.d);
 
+  this.greg = new Date(this.year, 0).setDate(this.doty)
+  this.offset = parseInt((this.greg - new Date())/86400000)
+
   this.to_gregorian = function()
   {
     var date = this.to_date();
     return `${date.getFullYear()}-${prepend(date.getMonth()+1,2)}-${prepend(date.getDate(),2)}`;
   }
 
-  this.offset = function(b = new Date().desamber())
-  {
-    return parseInt((this.to_date() - b.to_date())/86400000);
-  }
-
   this.ago = function()
   {
-    var days = this.offset();
+    var days = this.offset;
 
     if(days == -1)   { return `yesterday`; }
     if(days == 1)    { return "tomorrow"; }
@@ -35,7 +33,7 @@ function Desamber(str)
 
   this.offset_format = function(b = new Date().desamber(), force = false)
   {
-    var days = this.offset();
+    var days = this.offset;
 
     if(days == -1){ return `yesterday`; }
     if(days == 1){ return "tomorrow"; }
@@ -49,8 +47,7 @@ function Desamber(str)
 
   this.to_date = function(offset = 0)
   {
-    var year = new Date(this.year, 0);
-    return new Date(year.setDate(this.doty + offset)); 
+    return this.greg;
   }
 
   this.to_offset = function(offset)

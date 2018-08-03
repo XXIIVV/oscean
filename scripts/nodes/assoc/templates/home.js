@@ -12,7 +12,7 @@ function HomeTemplate(id,rect,...params)
     for(id in q.tables.horaire){
       var log = q.tables.horaire[id];
       if(!log.term){ continue; }
-      if(log.time.offset() > 0){ continue; }
+      if(log.time.offset > 0){ continue; }
       if(!projects[log.term]){ projects[log.term] = {name:log.term,to:log.time.toString(),count:0}}
       projects[log.term].from = log.time.toString();
       projects[log.term].count += 1;

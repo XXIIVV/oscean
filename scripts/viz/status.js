@@ -5,7 +5,7 @@ function StatusViz(logs)
   // Split the last 14 days
   for(id in logs){
     var log = logs[id]
-    var offset = log.time.offset();
+    var offset = log.time.offset;
     if(offset > 0){ continue; }
     if(offset > -14){ this.data.recent[this.data.recent.length] = log; }
     else{ this.data.before[this.data.before.length] = log; }

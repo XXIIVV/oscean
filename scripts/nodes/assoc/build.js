@@ -64,7 +64,7 @@ function BuildNode(id,rect)
     for(id in horaire){
       var log = horaire[id]
       if(!log.is_featured){ continue; }
-      if(log.time.offset() > 0){ continue; }
+      if(log.time.offset > 0){ continue; }
       return log;
     }
     return null;
