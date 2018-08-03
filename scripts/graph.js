@@ -32,7 +32,7 @@ function graph()
       Ø("calendar").create({x:23,y:14},CalendarTemplate),
   ])
 
-  Ø("client").mesh({x:47,y:0},[
+  Ø("client").mesh({x:50,y:0},[
     Ø("view").create({x:2,y:2},DocumentNode),
     Ø("style").create({x:5,y:8},DomNode,"style"),
     Ø("header").create({x:2,y:8},DomNode),

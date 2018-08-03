@@ -22,7 +22,7 @@
   var last = q.tables.horaire.find((log)=>{ if(log.time.offset <= 0){ return log; } })
 
   var html = ""
-  html += `<p>Created ${(creation.time.offset()/-365).toFixed(0)} years ago, or ${creation.time.offset_format(new Date().desamber(),true)}, XXIIVV is currently hosting {*${Object.keys(q.tables.lexicon).length} entries*}, {*${projects.length} projects*}, {*${q.tables.horaire.length} logs*}, recorded over {*${(new Horaire(q.tables.horaire).sum/1000).toFixed(3).replace(".","'")} hours*} — The {{last update|Journal}} was made {*${last.time.offset_format()}*}.</p>`.to_markup() 
+  html += `<p>Created ${(creation.time.offset/-365).toFixed(0)} years ago, XXIIVV is currently hosting {*${Object.keys(q.tables.lexicon).length} entries*}, {*${projects.length} projects*}, {*${q.tables.horaire.length} logs*}, recorded over {*${(new Horaire(q.tables.horaire).sum/1000).toFixed(3).replace(".","'")} hours*} — The {{last update|Journal}} was made {*${last.time.ago()}*}.</p>`.to_markup() 
 
   html += `
   <p>The {{Riven Engine|Riven}} is designed to run without a serving platform, using only {{front-end files|http://github.com/XXIIVV/Oscean}} written in an {{unobfuscated format|Oscean}} — With the hope that little or {{no migration|https://www.gwern.net/About#long-site}} will ever be required.</p>

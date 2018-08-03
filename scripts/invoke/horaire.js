@@ -6,7 +6,7 @@
   var by_y = {}
   for(id in logs){
     var log = logs[id]
-    var year = log.time.to_date().getFullYear()
+    var year = log.time.date.getFullYear()
     if(year > new Date().getFullYear()){ continue; }
     if(!by_y[year]){ by_y[year] = []; }
     by_y[year].push(log)

@@ -75,13 +75,15 @@ function BarViz(logs)
     return `
     <style>
       svg.graph.bar { border-bottom: 1.5px solid #333;display: block;padding: 30px 0px;margin-bottom: 30px; width:730px}
-      svg.graph.bar text { stroke:none; fill:#fff; font-size:11px; text-anchor: middle; font-family:'archivo_bold'; fill:#fff;text-transform:capitalize }
+      svg.graph.bar text { stroke:none; fill:#000; font-size:11px; text-anchor: middle; font-family:'archivo_bold'; text-transform:capitalize }
       svg.graph.bar rect { stroke:none }
       svg.graph.bar rect:hover { fill:#a1a1a1 !important; cursor:pointer}
       svg.graph.bar rect.audio { fill:#72dec2 }
       svg.graph.bar rect.missing { fill:#ddd }
       svg.graph.bar rect.visual { fill:#51a196 }
       svg.graph.bar rect.research { fill:#316067 }
+
+      #view.noir svg.graph.bar text { fill:white}
     </style>
     `
   }

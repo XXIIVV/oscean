@@ -1,6 +1,6 @@
 function Desamber(str)
 {
-  this.str = str.match(/\d\d[a-z\+]\d\d/i) ? str : func(str);
+  this.str = str.match(/\d\d[a-z\+]\d\d/i) ? str : "01+01";
 
   this.y = str.substr(0,2);
   this.m = str.substr(2,1).toUpperCase(); 
@@ -10,18 +10,19 @@ function Desamber(str)
   this.month = this.m == "+" ? 26 : this.m.charCodeAt(0) - 65;
   this.doty = (parseInt(this.month) * 14) + parseInt(this.d);
 
-  this.greg = new Date(this.year, 0).setDate(this.doty)
-  this.offset = parseInt((this.greg - new Date())/86400000)
+  this.date = new Date(this.year, 0).setDate(this.doty)
+  this.offset = parseInt((this.date - new Date())/86400000)
 
   this.to_gregorian = function()
   {
-    var date = this.to_date();
-    return `${date.getFullYear()}-${prepend(date.getMonth()+1,2)}-${prepend(date.getDate(),2)}`;
+    return `${this.date.getFullYear()}-${prepend(this.date.getMonth()+1,2)}-${prepend(this.date.getDate(),2)}`;
   }
 
-  this.ago = function()
+  this.ago = function(cap = 9999)
   {
     var days = this.offset;
+
+    if(-days > cap)  { return `${this.toString()}`; }
 
     if(days == -1)   { return `yesterday`; }
     if(days == 1)    { return "tomorrow"; }
@@ -31,63 +32,12 @@ function Desamber(str)
     return `in ${days} days`;
   }
 
-  this.offset_format = function(b = new Date().desamber(), force = false)
-  {
-    var days = this.offset;
-
-    if(days == -1){ return `yesterday`; }
-    if(days == 1){ return "tomorrow"; }
-    if(days == 0){ return "today"; }
-    if(days > 0){ return `in ${days} days`; }
-    if(days < -14 && force == false){ return `${this.toString()}`; }
-    if(days < 1){ return `${days*-1} days ago`; }
-    
-    return `in ${days} days`;
-  }
-
-  this.to_date = function(offset = 0)
-  {
-    return this.greg;
-  }
-
-  this.to_offset = function(offset)
-  {
-    var from = this.to_date()
-
-    return new Date(from.getFullYear(),from.getMonth(),from.getDate()+offset,from.getHours(),from.getMinutes(),from.getSeconds()).desamber();
-  }
-
   this.toString = function()
   {
     return this.str.toUpperCase();
   }
 
-  function func(s)
-  {
-    var y = s.substr(0,2);
-    var m = s.substr(2,1).toUpperCase(); 
-    var d = s.substr(3,2);
-
-    var offset = 1;
-    while(offset < 30){
-      var next = new Date().desamber().to_date(offset).desamber()
-      var qualifies = {};
-      if((y == "**" || y == next.y) && (m == "*" || m == next.m) && (d == "**" || d == next.d)){
-        return next.toString();
-      }
-      offset += 1;
-    }
-    return "18Z01"
-  }
-
-  function prepend(s,length,char = "0")
-  {
-    var p = "";
-    while((p+s).length < length){
-      p += char;
-    }
-    return p+s;
-  }
+  function prepend(s,l,c="0"){ while(s.length < l){ s = `${c}${s}`; }; return s; }
 }
 
 Date.prototype.desamber = function()

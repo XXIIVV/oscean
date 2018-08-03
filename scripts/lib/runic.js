@@ -133,7 +133,7 @@ function Runic(raw,tables)
     var term = this.tables.lexicon[key.toUpperCase()]
     var log = term.logs[0]
       
-    return log ? `<info><svg width="30" height="30" xmlns="http://www.w3.org/2000/svg" baseProfile="full" version="1.1"><g transform='scale(0.1)'><path d='${term.glyph()}'/></g></svg><t class='key'>{{${key.capitalize()}}}</t><t class='val'>${log.name ? log.name : log.task.capitalize()}</t><t class='offset'>${log.time.offset_format(new Date().desamber(),true).capitalize()}, <b>${log.time}</b></t></info>`.to_markup() : ''
+    return log ? `<info><svg width="30" height="30" xmlns="http://www.w3.org/2000/svg" baseProfile="full" version="1.1"><g transform='scale(0.1)'><path d='${term.glyph()}'/></g></svg><t class='key'>{{${key.capitalize()}}}</t><t class='val'>${log.name ? log.name : log.task.capitalize()}</t><t class='offset'>${log.time.ago()}, <b>${log.time}</b></t></info>`.to_markup() : ''
   }
 
   this.toString = function()
