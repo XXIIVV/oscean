@@ -13,7 +13,6 @@ function QueryNode(id,rect)
 
     console.log(this.id,target);
     
-    this.label = `${this.id}|${target}`
     this.send(target)
 
     if(target === ''){

@@ -6,10 +6,14 @@ function DatabaseNode(id,rect)
 
   this.cache = null;
 
-  this.receive = function(q)
+  this.answer = function(q)
   {
-    this.cache = this.cache ? this.cache : this.request();
-    this.send(this.request(this.cache))
+    if(!this.cache){
+      this.cache = this.request(this.cache);
+      this.send(this.cache); // Send to Ø(MAP), for filtering.
+    }
+
+    return this.cache;
   }
 }
 

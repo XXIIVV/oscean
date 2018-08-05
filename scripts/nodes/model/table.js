@@ -13,11 +13,8 @@ function TableNode(id,rect,parser,type)
   {
     if(!DATABASE[this.id]){ console.warn(`Missing /database/${this.id}`); return null; }
 
-    if(this.cache){
-      return this.cache;
-    }
+    this.cache = this.cache ? this.cache : new this.parser(DATABASE[this.id]).parse(this.type);
 
-    this.cache = new this.parser(DATABASE[this.id]).parse(this.type)
     return this.cache;
   }
 }

@@ -14,9 +14,7 @@ function RouterNode(id,rect)
     this.cache.params = q.indexOf(":") > -1 ? q.split(":")[1] : null
     this.cache.tables = this.request("database").database;
     this.cache.result = find(this.cache.target.toUpperCase(),this.cache.tables)
-
-    this.label = `${this.id}/${this.cache.target}`
-
+    
     this.send(this.cache)
   }
 
