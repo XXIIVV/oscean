@@ -22,17 +22,15 @@ function graph()
     Ø("build_navi").create({x:5,y:8},BuildNaviNode),
     Ø("build_sidebar").create({x:8,y:8},BuildSidebarNode),
     Ø("build_content").create({x:11,y:8},BuildContentNode),
-      Ø("missing").create({x:2,y:14},MissingTemplate),
+      Ø("missing").create({x:5,y:20},MissingTemplate),
       Ø("default").create({x:5,y:14},DefaultTemplate),
       Ø("home").create({x:8,y:14},HomeTemplate),
       Ø("journal").create({x:11,y:14},JournalTemplate),
       Ø("tracker").create({x:14,y:14},TrackerTemplate),
-      Ø("diary").create({x:17,y:14},DiaryTemplate),
-      Ø("index").create({x:20,y:14},IndexTemplate),
-      Ø("calendar").create({x:23,y:14},CalendarTemplate),
+      Ø("calendar").create({x:17,y:14},CalendarTemplate),
   ])
 
-  Ø("client").mesh({x:47,y:0},[
+  Ø("client").mesh({x:41,y:0},[
     Ø("view").create({x:2,y:2},DocumentNode),
     Ø("style").create({x:5,y:8},DomNode,"style"),
     Ø("header").create({x:2,y:8},DomNode),
@@ -64,7 +62,7 @@ function graph()
   ])
 
   // Operation
-  Ø("runic").mesh({x:22,y:21},[
+  Ø("runic").mesh({x:6,y:30},[
     Ø("operation").create({x:8,y:2},OperationNode),
     Ø("li_en").create({x:2,y:9},LietalNode),
     Ø("en_li").create({x:5,y:9},LietalNode),
@@ -83,8 +81,9 @@ function graph()
 
   // Assoc
   Ø("build").syphon(["build_navi","build_content","build_sidebar"])
-  Ø("build_content").syphon(["missing","default","journal","tracker","index","home","diary","calendar"])
+  Ø("build_content").syphon(["default","journal","tracker","home","calendar"])
   Ø("build").connect(["view"])
+  Ø("default").syphon(["missing"])
 
   // Dom
   Ø("header").bind(["logo","photo","menu","info"])
