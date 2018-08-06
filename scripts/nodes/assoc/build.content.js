@@ -8,7 +8,7 @@ function BuildContentNode(id,rect)
 
   this.answer = function(q)
   {
-    if(!q.result){ return this.signal('missing').answer(q) }
+    if(!q.result){ return this.signal('default').answer(q) }
 
     var template = q.params ? q.params.toLowerCase() : q.result.type ? q.result.type.toLowerCase() : null
 
