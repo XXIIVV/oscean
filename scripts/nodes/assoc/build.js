@@ -43,10 +43,10 @@ function BuildNode(id,rect)
         },
         core:{
           sidebar:{
-            bref:builds.build_sidebar,
+            bref:builds._sidebar,
           },
-          content:builds.build_content,
-          navi:builds.build_navi
+          content:builds._content,
+          navi:builds._navi
         },
         style:``,
         footer:{
