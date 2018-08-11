@@ -93,7 +93,7 @@ function Term(name,dict)
   {
     for(var id in this.logs){
       var log = this.logs[id];
-      if(log.offset > 0){ continue; }
+      if(log.time.offset > 0){ continue; }
       if(log.ch == 8){ return log; }
     }
     return null;
