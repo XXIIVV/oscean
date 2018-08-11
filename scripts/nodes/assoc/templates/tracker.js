@@ -10,7 +10,7 @@ function TrackerTemplate(id,rect,...params)
 
     var html = ""
 
-    html += `${new TimelineViz(q.tables.lexicon)}`;
+    html += `${new LifelineViz(q.tables.lexicon)}`;
     html += `<p>Currently under development, look at the {{Journal}} and {{Calendar}} in the meantime.</p>`.to_markup()
 
     return html

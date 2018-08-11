@@ -15,7 +15,7 @@ function Log(data = {code:'-400'})
 
   this.sector      = ["misc","audio","visual","research","misc"][this.sc]
   this.is_featured = this.photo && (this.rune == "!" || this.rune == "+");
-  this.is_event    = this.rune == "+" || this.vector > 8;
+  this.is_event    = this.rune == "+" || this.vector >= 8;
 
   this.tasks = [
     ["idle", "listening" , "experiment" , "rehersal"      , "draft"     , "composition" , "sound design", "mastering" , "release" , "performance" ],

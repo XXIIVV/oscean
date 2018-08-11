@@ -81,6 +81,24 @@ function Term(name,dict)
     return this.tags.indexOf(target.toLowerCase()) > -1
   }
 
+  this.sectors = function()
+  {
+    var h = new Horaire(this.logs).sectors;
+    var a = [["audio",h.audio],["visual",h.visual],["research",h.research]]
+
+    return sort(a);
+  }
+
+  this.released = function()
+  {
+    for(var id in this.logs){
+      var log = this.logs[id];
+      if(log.offset > 0){ continue; }
+      if(log.ch == 8){ return log; }
+    }
+    return null;
+  }
+
   this.find_outgoing = function()
   {
     var a = []
@@ -98,5 +116,11 @@ function Term(name,dict)
       a.push(target.toUpperCase())
     }
     return a;
+  }
+
+  function sort(array){
+    return array.sort(function(a, b){
+      return a[1] - b[1];
+    }).reverse();
   }
 }
