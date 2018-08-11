@@ -18,7 +18,8 @@ function Runic(raw,tables)
     "$":{tag:"",class:""},
     "%":{},
     "@":{tag:"quote",class:""},
-    ":":{tag:"info",class:""}
+    ":":{tag:"info",class:""},
+    "?":{tag:"note",class:""},
   }
 
   this.stash = {

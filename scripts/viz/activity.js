@@ -32,7 +32,6 @@ function ActivityViz(logs)
 
     var html = ""
     var week = 0
-    var height = cell*2
     var cell = parseInt(700/52)
     while(week < 52){
       var x = parseInt(week * (cell+1))
