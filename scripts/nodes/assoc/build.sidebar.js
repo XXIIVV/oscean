@@ -20,7 +20,7 @@ function BuildSidebarNode(id,rect)
     <h2>
       <a onclick="Ø('query').bang('${q.result.unde()}')">${q.result.unde()}</a><br />
       ${q.result.logs.length >= 10 ? q.result.logs[q.result.logs.length-1].time+'—'+q.result.logs[0].time : ''}
-      <yu class='links'>${html}</yu>
+      <div class='links'>${html}</div>
     </h2>`
   }
 }

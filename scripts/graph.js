@@ -35,7 +35,7 @@ function graph()
     Ø("style").create({x:5,y:8},DomNode,"style"),
     Ø("header").create({x:2,y:8},DomNode),
       Ø("photo").create({x:2,y:14},DomPhotoNode,"photo"),
-      Ø("logo").create({x:8,y:14},DomNode,"yu",`<a onclick="Ø('query').bang('home')"></a>`),
+      Ø("logo").create({x:8,y:14},DomNode,"div",`<a onclick="Ø('query').bang('home')"></a>`),
       Ø("menu").create({x:5,y:14},DomNode),
         Ø("search").create({x:2,y:20},InputNode),
         Ø("activity").create({x:5,y:20},DomNode),
@@ -49,7 +49,7 @@ function graph()
         Ø("icon").create({x:17,y:20},DomNode),
       Ø("navi").create({x:20,y:14},DomNode,"list"),
     Ø("footer").create({x:23,y:8},DomNode),
-      Ø("credits").create({x:23,y:14},DomNode,"yu",`
+      Ø("credits").create({x:23,y:14},DomNode,"div",`
         <a target='_blank' href="https://twitter.com/neauoire" class="icon twitter external"></a>
         <a target='_blank' href="https://github.com/neauoire" class="icon github external"></a>
         <a target='_blank' href="http://webring.xxiivv.com/#random" class="icon rotonde"></a>

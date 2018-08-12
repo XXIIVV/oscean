@@ -2,7 +2,7 @@ function PathNode(id,rect,...params)
 {
   DomNode.call(this,id,rect);
 
-  this.type = params[0] ? params[0] : "yu";
+  this.type = params[0] ? params[0] : "div";
   this.glyph = NODE_GLYPHS.dom
   this.label = `${this.id}:${this.type}`
   this.el = document.createElementNS("http://www.w3.org/2000/svg", "svg");

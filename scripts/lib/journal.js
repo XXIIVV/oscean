@@ -26,10 +26,10 @@ function Journal(logs = [])
   this._head = function()
   {
     return `
-    <yu class='head'>
+    <div class='head'>
       <a class='topic' onclick="Ø('query').bang('${this.term}')">${this.term}</a>
       <t class='time' onclick="Ø('query').bang('${this.term}:Journal')">${this.logs[0].time.ago()}${this.logs.length > 1 ? `, from ${this.logs[0].time} to ${this.logs[this.logs.length-1].time}` : ''}</t>
-    </yu>`
+    </div>`
   }
 
   this._photo = function()
@@ -73,7 +73,7 @@ function Journal(logs = [])
     for(id in horaire.tasks){
       html += `<a class='tag' onclick="Ø('query').bang('${id}')">${id}</a> `
     }
-    return `<yu class='tags'>${html}<t class="focus">${horaire.sum}</t></yu>`
+    return `<div class='tags'>${html}<t class="focus">${horaire.sum}</t></div>`
   }
 
   this.toString = function()
