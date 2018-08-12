@@ -20,7 +20,7 @@ function Markup()
     switch(key){
       case "$": return this.operation(val); 
       case "/": return this.eval(val);
-      default: return this.link(part);
+      default: return this.link(part,force_external);
     }
   }
 

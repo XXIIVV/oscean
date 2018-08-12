@@ -68,6 +68,7 @@ function LifelineViz(terms)
     for(var id in this.terms){
       var term = this.terms[id]
       if(term.logs.length < 10){ continue; }
+      if(!term.released()){ continue; }
       unsorted.push([id,term.logs[0].time.offset]) // 
     }
 

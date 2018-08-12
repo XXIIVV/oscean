@@ -18,6 +18,11 @@ function Desamber(str)
     return `${this.date.getFullYear()}-${prepend(this.date.getMonth()+1,2)}-${prepend(this.date.getDate(),2)}`;
   }
 
+  this.to_date = function()
+  {
+    return new Date(this.date);
+  }
+
   this.ago = function(cap = 9999)
   {
     var days = this.offset;
