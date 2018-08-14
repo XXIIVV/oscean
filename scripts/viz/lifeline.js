@@ -22,7 +22,7 @@ function LifelineViz(terms)
     var y = (id * (cell+1))+(cell/2)
 
     // Clickable
-    html += `<rect x='0' y='${y}' width='${width+padding+cell}' height='${cell}' style='fill:black; stroke:none' onclick="Ø('query').bang('${term.name}')"/>`
+    html += `<rect x='0' y='${y}' width='${width+padding+cell}' height='${cell}' class='bg' onclick="Ø('query').bang('${term.name}')"/>`
 
     for(var id in term.logs){
       var log = term.logs[id];
@@ -55,7 +55,7 @@ function LifelineViz(terms)
       html += `<rect class='unreleased' x='${this.position(span.from.time)-(cell/2)}' y='${y-(cell/2)}' width='${clamp(w,cell,width)}' height='${cell}' rx="2" ry="2" />`
     }
 
-    html += `<text class='${!span.release ? 'unreleased' : ''}' x='0' y='${y+(cell*0.3)}' style='text-anchor:start;fill:white;stroke:none; font-size:11px'>${term.name.capitalize()}</text>`
+    html += `<text class='${!span.release ? 'unreleased' : ''}' x='0' y='${y+(cell*0.3)}'>${term.name.capitalize()}</text>`
 
     return `<g style='width:${width}; height:${cell}'>${html}</g>`;
   }
@@ -68,7 +68,7 @@ function LifelineViz(terms)
     for(var id in this.terms){
       var term = this.terms[id]
       if(term.logs.length < 10){ continue; }
-      if(!term.released()){ continue; }
+      // if(!term.released()){ continue; }
       unsorted.push([id,term.logs[0].time.offset]) // 
     }
 
@@ -104,19 +104,28 @@ function LifelineViz(terms)
     return `
     <style>
       svg.graph.timeline { margin-bottom:30px; padding-top:30px}
-      svg.graph.timeline line { stroke-width:1.5; stroke:#fff }
-      svg.graph.timeline line.bg { stroke-width:1.5; stroke:#333 }
+      svg.graph.timeline line { stroke-width:1.5; stroke:#000 }
+      svg.graph.timeline line.bg { stroke-width:1.5; stroke:#ddd }
       svg.graph.timeline rect { stroke:none }
+      svg.graph.timeline rect.bg { opacity:0 }
       svg.graph.timeline rect.development { fill:#72dec2 }
       svg.graph.timeline rect.release { fill:#51a196 }
       svg.graph.timeline rect.maintenance { fill:#316067 }
-      svg.graph.timeline rect.unreleased { fill:#333 }
-      svg.graph.timeline text { font-family:'archivo_medium'; stroke:none; fill:white; font-size:11px;text-anchor:start }
-      svg.graph.timeline text.unreleased { fill:#999 !important}
+      svg.graph.timeline rect.unreleased { fill:#ddd }
+      svg.graph.timeline text { font-family:'archivo_medium'; stroke:none; fill:black; font-size:11px;text-anchor:start }
+      svg.graph.timeline text.unreleased { fill:#999 }
       svg.graph.timeline text.right { text-anchor:end}
       svg.graph.timeline text.bold { font-family:'archivo_bold'}
       svg.graph.timeline g { cursor:pointer}
-      svg.graph.timeline g:hover text { fill:#72dec2 !important}
+      svg.graph.timeline g:hover text { fill:#72dec2 }
+
+      #view.noir svg.graph.timeline text { fill:white}
+      #view.noir svg.graph.timeline text.unreleased { fill:#777}
+      #view.noir svg.graph.timeline line.bg { stroke:#333}
+      #view.noir svg.graph.timeline rect.unreleased { fill:#333}
+      #view.noir svg.graph.timeline rect.missing { fill:#333 }
+      #view.noir svg.graph.timeline circle.photo { fill:white; stroke:none }
+      #view.noir svg.graph.timeline circle.event { fill:none; stroke:white; stroke-width:1.5px }
     </style>
     `
   }
