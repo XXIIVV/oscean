@@ -66,6 +66,7 @@ function Term(name,dict)
     h.points.glyph = this.glyph() != ""
     h.points.issues = this.issues.length == 0
     h.points.links = Object.keys(this.links).length > 0
+    h.points.tags = this.tags.length > 0
 
     // Score
     var p = 0
