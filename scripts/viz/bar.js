@@ -1,15 +1,8 @@
 function BarViz(logs)
 {
-  this.logs = []
+  Viz.call(this);
 
-  // Only keep the last 10 years
-  for(id in logs){
-    var log = logs[id]
-    var offset = log.time.offset;
-    if(offset > 0){ continue; }
-    if(offset < -365 * 10){ continue; }
-    this.logs[this.logs.length] = log;
-  }
+  this.logs = this.slice(logs,-365 * 10,0);
 
   this.parse = function(logs, parts = 51)
   {
@@ -53,44 +46,9 @@ function BarViz(logs)
       html += `<rect class='research' x='${x}' y='${125 - research_y}' width='${cell}' height='${research_h}' rx="2" ry="2"></rect>`
     }
 
-    var y = 115
-    var recent = new Horaire(Object.values(this.logs));
+    html += this.legend(this.logs);
 
-    html += `
-    <text x='${2}' y='${-15}' style='text-anchor:start'>${this.logs[this.logs.length-1].time.ago().capitalize()}</text>
-    <text x='${730}' y='${-15}' style='text-anchor:end'>${this.logs[0].time.ago().capitalize()}</text>
-    <rect class="audio" x="${cell*0}" y="${y}" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
-    <text x='${(cell+1)*2}' y='${y+10}' style='text-anchor:start'>Audio ${(recent.sectors.audio*10).toFixed(1)}%</text>
-    <rect class="visual" x="${(cell+1)*8}" y="${y}" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
-    <text x='${(cell+1)*10}' y='${y+10}' style='text-anchor:start'>Visual ${(recent.sectors.visual*10).toFixed(1)}%</text>
-    <rect class="research" x="${(cell+1)*16}" y="${y}" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
-    <text x='${(cell+1)*18}' y='${y+10}' style='text-anchor:start'>Research ${(recent.sectors.research*10).toFixed(1)}%</text>
-    <text x='725' y='${y+10}' style='text-anchor:end'>${recent.sum.toFixed(0)} Hours</text>`
-
-    return `<svg class='graph bar' style='height:${y}px;'>${html}</svg>`
-  }
-
-  this.style = function()
-  {
-    return `
-    <style>
-      svg.graph.bar { border-bottom: 1.5px solid #333;display: block;padding: 30px 0px;margin-bottom: 30px; width:730px}
-      svg.graph.bar text { stroke:none; fill:#000; font-size:11px; text-anchor: middle; font-family:'archivo_bold'; text-transform:capitalize }
-      svg.graph.bar rect { stroke:none }
-      svg.graph.bar rect:hover { fill:#a1a1a1 !important; cursor:pointer}
-      svg.graph.bar rect.audio { fill:#72dec2 }
-      svg.graph.bar rect.missing { fill:#ddd }
-      svg.graph.bar rect.visual { fill:#51a196 }
-      svg.graph.bar rect.research { fill:#316067 }
-
-      #view.noir svg.graph.bar text { fill:white}
-    </style>
-    `
-  }
-
-  this.toString = function()
-  {
-    return this.draw()+this.style()
+    return `<svg class='viz'>${html}</svg>`
   }
 
   function clamp(v, min, max){ return v < min ? min : v > max ? max : v; }

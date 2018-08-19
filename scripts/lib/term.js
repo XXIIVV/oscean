@@ -72,7 +72,7 @@ function Term(name,dict)
     var p = 0
     for(id in h.points){ p += h.points[id] ? 1 : 0 }
 
-    h['score'] = (p/Object.keys(h.points).length).toFixed(2)
+    h['score'] = (p/Object.keys(h.points).length)
     h['status'] = h['score'] < 0.4 ? 'poor' : h['score'] < 0.7 ? 'fair' : h['score'] < 0.9 ? 'good' : 'perfect'
     return h
   }

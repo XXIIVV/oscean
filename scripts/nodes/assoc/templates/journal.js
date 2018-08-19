@@ -34,6 +34,6 @@ function JournalTemplate(id,rect,...params)
       html += `${journal}`
     }
 
-    return `${new ActivityViz(logs)}${new StatusViz(logs)}${html}`
+    return `${new ActivityViz(logs)}${new StatusViz(logs)}${html}<style>.graph.status { margin-bottom:0px !important }</style>`
   }
 }

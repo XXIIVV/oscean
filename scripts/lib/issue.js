@@ -1,9 +1,9 @@
-function Issue(name,tasks)
+function Issue(name,tasks = [])
 {
   this.host  = null; // From Ø('map')
   
-  this.name = name;
-  this.tasks = tasks;
+  this.name = name.capitalize();
+  this.tasks = tasks ? tasks : [];
 
   this.toString = function()
   {
