@@ -2,6 +2,8 @@ function Riven_Graph()
 {
   Riven.call(this);
 
+  this.is_graph = true;
+
   var GRID_SIZE = 20
 
   this.el = document.createElementNS("http://www.w3.org/2000/svg", "svg");

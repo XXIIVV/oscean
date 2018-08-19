@@ -3,6 +3,8 @@
 
 function Riven()
 {
+  this.is_graph = false;
+
   this.network = {}
 }
 
