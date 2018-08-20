@@ -71,7 +71,7 @@ function TrackerTemplate(id,rect,...params)
     var html = ''
     for(var t in issue.tasks){
       var task = issue.tasks[t];
-      html += `<tr><td colspan='20'><t class='task'>${task.to_markup()}</t></td></tr>`
+      html += `<tr class='task'><td colspan='20'><t class='task'>${task.to_markup()}</t></td></tr>`
     }
     return html
   }
@@ -81,7 +81,7 @@ function TrackerTemplate(id,rect,...params)
     var html = ''
     for(var i in term.issues){
       var issue = term.issues[i]
-      html += `<tr><td colspan='20'><t class='issue'>${issue.name}<t class='right'>${issue.tasks.length} Tasks</t></t></td></tr>`
+      html += `<tr class='issue'><td colspan='20'><t class='issue'>${issue.name}<t class='right'>${issue.tasks.length} Tasks</t></t></td></tr>`
       html += this._tasks(issue)
     }
 
@@ -95,7 +95,7 @@ function TrackerTemplate(id,rect,...params)
     html += `<tr>`
     html += `
     <td class='${r.status}' style='width:250px'>{{${term.name.capitalize()}}}</b><t class='right'>${parseInt(r.score * 100)}%</t></td>
-    <td style='padding-left:15px'>${term.incoming.length}/${term.outgoing.length} ${term && term.latest_log ? term.latest_log.time.offset : ''}</td>
+    <td style='padding-left:15px'>${term.incoming.length < 1 && term.outgoing.length < 1 ? 'unlinked' : `${term.incoming.length}/${term.outgoing.length}`}</td>
     `.to_markup()
     for(i in r.points){ html += `<td title='${i}' class='bullet'>${r.points[i] ? '•' : ''}</td>` }
     html += `</tr>`
@@ -104,17 +104,24 @@ function TrackerTemplate(id,rect,...params)
     return html
   }
 
-  this._table = function(q)
+  this._table = function(target,q)
   {
     var logs = q.target == "tracker" ? q.tables.horaire : q.result.logs;
 
     var html = ""
 
+    var sorted = Object.keys(q.tables.lexicon).sort()
+
     html += `<table class='tracker'>`
-    for(var id in q.tables.lexicon){
-      var term = q.tables.lexicon[id]
-      html += this._term(term);
+    if(target == 'tracker'){
+      for(id in sorted){
+        html += this._term(q.tables.lexicon[sorted[id]]);
+      }
     }
+    else{
+      html += this._term(q.tables.lexicon[target.toUpperCase()]);
+    }
+    
     html += `</table>`
 
     return html;
@@ -124,19 +131,31 @@ function TrackerTemplate(id,rect,...params)
   {
     return `<style>
     table.tracker { width:730px}
+    table.tracker tr { position:relative}
+    table.tracker tr.issue td { border-bottom:1px dotted #333;}
+    table.tracker tr.task td { border-bottom:1px dotted #000; color:#999; position:relative}
+    table.tracker tr.task td:before { content:"• "; color:#555; position: absolute; left:45px}
     table.tracker td { border-bottom:1px solid #333; padding:2px 5px}
     table.tracker td.bullet { text-align: center}
-    table.tracker td.perfect { color:#fff;}
-    table.tracker td.good { color:#aaa;}
-    table.tracker td.fair { color:#777;}
-    table.tracker td.poor { color:#444;}
+    
     table.tracker td t.right { float:right}
     table.tracker td t.issue { display:block; margin-left:15px; border-radius:2px; padding-left:10px; padding-right:10px}
     table.tracker td t.task { display:block; margin-left:45px; border-radius:2px; padding-left:10px; padding-right:5px}
+
     div.progress_wrapper { max-width:730px; }
-    div.progress_wrapper t { color:white; width:100%; display:block; font-family:'archivo_bold'; font-size:12px; text-align:center; position:relative; top:-15px; }
-    div.progress_wrapper div.progress { border:1.5px solid white; border-radius:30px; height:10px; max-width:250px; margin:0px auto 30px;}
-    div.progress_wrapper div.progress div.bar { background:white; height:6px;margin:2px; border-radius:30px}
+    div.progress_wrapper t { color:black; width:100%; display:block; font-family:'archivo_bold'; font-size:12px; text-align:center; position:relative; top:-15px; }
+    div.progress_wrapper div.progress { border:1.5px solid black; border-radius:30px; height:10px; max-width:250px; margin:0px auto 30px;}
+    div.progress_wrapper div.progress div.bar { background:black; height:6px;margin:2px; border-radius:30px}
+
+    #view.noir div.progress_wrapper t { color:white; }
+    #view.noir div.progress_wrapper div.progress { border:1.5px solid white; }
+    #view.noir div.progress_wrapper div.progress div.bar { background:white; }
+
+    #view.noir table.tracker td.perfect { color:#fff;}
+    #view.noir table.tracker td.good { color:#aaa;}
+    #view.noir table.tracker td.fair { color:#777;}
+    #view.noir table.tracker td.poor { color:#444;}
+    
     </style>`
   }
 
@@ -145,12 +164,13 @@ function TrackerTemplate(id,rect,...params)
     console.info("Next Available:",find_available(q))
     console.info("On This Day:",on_this_day(q))
 
+    var target = q.target.toLowerCase();
     var html = ""
 
     html += `${new BalanceViz(q.tables.horaire)}`
     html += `${new StatusViz(this.slice(q.tables.horaire,-51,0))}`
-    html += `${this._progress(q)}`
-    html += `${this._table(q)}`
+    html +=  target == 'tracker' ? `${this._progress(q)}` : ''
+    html += `${this._table(target,q)}`
     html += `${this._style()}`
 
     return html

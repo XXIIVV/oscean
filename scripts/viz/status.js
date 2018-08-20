@@ -14,6 +14,7 @@ function StatusViz(logs)
 
   this.draw = function()
   {
+    if(this.data.recent.length < 3 || this.data.before.length < 3){ return ''; }
     var recent = new Horaire(this.data.recent)
     var before = new Horaire(this.data.before)
 

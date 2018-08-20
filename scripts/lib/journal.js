@@ -51,18 +51,6 @@ function Journal(logs = [])
     return `<p class='bref'>${this.logs[0].host.bref()}</p>`
   }
 
-  this._issues = function()
-  {
-    var html = ''
-    var issues = this.logs[0].host.issues;
-
-    for(id in issues){
-      var issue = issues[id]
-      html += `${issue}`
-    }
-    return html
-  }
-
   this._tags = function()
   {
     var html = ''
@@ -86,7 +74,6 @@ function Journal(logs = [])
     html += this._head()
     html += this._photo()
     html += this._bref()
-    html += this._issues()
     html += this._tags()
 
     return `<log class='entry ${this.sector}'>${html}</log>`
