@@ -9,7 +9,7 @@ function BuildNode(id,rect)
   this.receive = function(q)
   {
     var builds = this.request(q)
-    var featured_log = q.result.name == "HOME" ? this.find_last_diary(q.tables.horaire) : q.result.featured_log
+    var featured_log = q.result && q.result.name == "HOME" ? this.find_last_diary(q.tables.horaire) : q.result && q.result.featured_log ? q.result.featured_log : null
 
     this.send({
       title: `XXIIVV — ${q.target.capitalize()}`,
