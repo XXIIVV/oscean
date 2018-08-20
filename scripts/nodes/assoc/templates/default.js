@@ -56,6 +56,13 @@ function DefaultTemplate(id,rect,...params)
       html += q.tables.glossary[tag] ? `<h3>${tag.capitalize()}</h3>${q.tables.glossary[tag]}` : ''
     }
 
+    html += `<h2>Glossary</h2>`;
+    html += `<list class='tidy' style='padding-left:30px'>`
+    for(var id in q.tables.glossary){
+      html += `<ln>{{${id.capitalize()}}}, ${q.tables.glossary[id].to_a().length} words</ln>`.to_markup()
+    }
+    html += `</list>`
+
     return html;
   }
 }

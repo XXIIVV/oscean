@@ -46,7 +46,7 @@ function List(name,data)
   {
     var html = ""
 
-    html += `<h2>Other lists</h2>`;
+    html += `<h2>{{Glossary}}</h2>`;
 
     html += `<list class='tidy' style='padding-left:30px'>`
     for(var id in glossary){
