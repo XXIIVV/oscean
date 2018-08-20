@@ -55,7 +55,7 @@ function DefaultTemplate(id,rect,...params)
 
     for(var id in q.result.tags){
       var tag = q.result.tags[id].toUpperCase().replace(/_/g,' ').trim();
-      html += q.tables.glossary[tag] ? `<h3>${tag.capitalize()}</h3>${q.tables.glossary[tag]}` : ''
+      html += q.tables.glossary[tag] ? `<h3>{{${tag.capitalize()}}}</h3>${q.tables.glossary[tag]}`.to_markup() : ''
     }
 
     return html;
@@ -64,14 +64,14 @@ function DefaultTemplate(id,rect,...params)
   this._glossary = function(q)
   {
     var html = ""
-    html += `<h2>Glossary</h2>`;
+    html += `<h2>{{Glossary}}</h2>`;
     html += `<list class='tidy' style='padding-left:30px'>`
     var words = Object.keys(q.tables.glossary).sort();
     for(var id in words){
       var word = words[id]
-      html += `<ln>{{${word.capitalize()}}}, ${q.tables.glossary[word].to_a().length} words</ln>`.to_markup()
+      html += `<ln>{{${word.capitalize()}}}, ${q.tables.glossary[word].to_a().length} items</ln>`
     }
     html += `</list>`
-    return html
+    return html.to_markup()
   }
 }

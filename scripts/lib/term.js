@@ -77,9 +77,10 @@ function Term(name,dict)
     return h
   }
 
-  this.has_tag = function(target)
+  this.has_tag = function(str)
   {
-    return this.tags.indexOf(target.toLowerCase()) > -1
+    var target = str.toLowerCase().replace(/ /g,"_").trim()
+    return this.tags.indexOf(target) > -1
   }
 
   this.sectors = function()

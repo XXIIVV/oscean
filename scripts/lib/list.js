@@ -25,9 +25,9 @@ function List(name,data)
 
   this.long = function(tables)
   {
-    var html = `<p>The {*${this.name.capitalize()}*} list contains ${Object.keys(this.data).length} items.</p>`
+    var connections = this.connections(tables);
+    var html = connections.length > 0 ? `<p>{*${this.name.capitalize()}*} is part of the {{${connections[0].name.capitalize()}}} collection.</p>` : `<p>The {*${this.name.capitalize()}*} list contains ${Object.keys(this.data).length} items.</p>`
     html += this.toString();
-
     html += this._lists(tables.glossary);
 
     return html.to_markup();
@@ -42,7 +42,7 @@ function List(name,data)
     var words = Object.keys(glossary).sort();
     for(var id in words){
       var word = words[id]
-      html += `<ln>{{${word.capitalize()}}}, ${glossary[word].to_a().length} words</ln>`.to_markup()
+      html += `<ln>{{${word.capitalize()}}}, ${glossary[word].to_a().length} items</ln>`.to_markup()
     }
     html += `</list>`
 
@@ -69,6 +69,18 @@ function List(name,data)
     return Object.keys(this.data);
   }
 
+  this.connections = function(tables)
+  {
+    var a = []
+    for(id in tables.lexicon){
+      var term = tables.lexicon[id];
+      if(term.has_tag("list") && term.has_tag(this.name)){
+        a.push(term)
+      }
+    }
+    return a;
+  }
+
   this.indexOf = function(target)
   {
     var i = 0;
@@ -79,15 +91,6 @@ function List(name,data)
       i += 1;
     }
     return -1;
-  }
-
-  this._from_array = function()
-  {
-    var html = ''
-    for(var id in this.data){
-      html += `<ln>${this.data[id]}</ln>`
-    }
-    return html.to_markup()
   }
 
   this._from_object = function()
@@ -101,6 +104,6 @@ function List(name,data)
 
   this.toString = function()
   {
-    return `<list>${Array.isArray(this.data) ? this._from_array() : this._from_object()}</list>`
+    return `<list>${Array.isArray(this.data) ? new Runic(this.data) : this._from_object()}</list>`
   }
 }
