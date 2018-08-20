@@ -71,7 +71,7 @@ function TrackerTemplate(id,rect,...params)
     var html = ''
     for(var t in issue.tasks){
       var task = issue.tasks[t];
-      html += `<tr><td colspan='2'><t class='task'>${task.to_markup()}</t></td></tr>`
+      html += `<tr><td colspan='20'><t class='task'>${task.to_markup()}</t></td></tr>`
     }
     return html
   }
@@ -81,7 +81,7 @@ function TrackerTemplate(id,rect,...params)
     var html = ''
     for(var i in term.issues){
       var issue = term.issues[i]
-      html += `<tr><td colspan='2'><t class='issue'>${issue.name}<t class='right'>${issue.tasks.length} Tasks</t></t></td></tr>`
+      html += `<tr><td colspan='20'><t class='issue'>${issue.name}<t class='right'>${issue.tasks.length} Tasks</t></t></td></tr>`
       html += this._tasks(issue)
     }
 
@@ -97,7 +97,7 @@ function TrackerTemplate(id,rect,...params)
     <td class='${r.status}' style='width:250px'>{{${term.name.capitalize()}}}</b><t class='right'>${parseInt(r.score * 100)}%</t></td>
     <td style='padding-left:15px'>${term.incoming.length}/${term.outgoing.length} ${term && term.latest_log ? term.latest_log.time.offset : ''}</td>
     `.to_markup()
-    for(i in r.points){ html += `<td title='${i}'>${r.points[i] ? '•' : ''}</td>` }
+    for(i in r.points){ html += `<td title='${i}' class='bullet'>${r.points[i] ? '•' : ''}</td>` }
     html += `</tr>`
 
     html += this._issues(term);
@@ -110,7 +110,7 @@ function TrackerTemplate(id,rect,...params)
 
     var html = ""
 
-    html += `<table style='width:730px'>`
+    html += `<table class='tracker'>`
     for(var id in q.tables.lexicon){
       var term = q.tables.lexicon[id]
       html += this._term(term);
@@ -123,13 +123,16 @@ function TrackerTemplate(id,rect,...params)
   this._style = function()
   {
     return `<style>
-    table td.perfect { background:#000; border-radius:2px}
-    table td.good { background:#333; border-radius:2px}
-    table td.fair { background:#666; border-radius:2px}
-    table td.poor { background:#999; border-radius:2px}
-    table td t.right { float:right}
-    table td t.issue { display:block; background:white; margin-left:15px; color:black; border-radius:2px; padding-left:10px; width:225px; padding-right:10px}
-    table td t.task { display:block; background:#aaa; margin-left:45px; color:black; border-radius:2px; padding-left:10px; width:200px; padding-right:5px}
+    table.tracker { width:730px}
+    table.tracker td { border-bottom:1px solid #333; padding:2px 5px}
+    table.tracker td.bullet { text-align: center}
+    table.tracker td.perfect { color:#fff;}
+    table.tracker td.good { color:#aaa;}
+    table.tracker td.fair { color:#777;}
+    table.tracker td.poor { color:#444;}
+    table.tracker td t.right { float:right}
+    table.tracker td t.issue { display:block; margin-left:15px; border-radius:2px; padding-left:10px; padding-right:10px}
+    table.tracker td t.task { display:block; margin-left:45px; border-radius:2px; padding-left:10px; padding-right:5px}
     div.progress_wrapper { max-width:730px; }
     div.progress_wrapper t { color:white; width:100%; display:block; font-family:'archivo_bold'; font-size:12px; text-align:center; position:relative; top:-15px; }
     div.progress_wrapper div.progress { border:1.5px solid white; border-radius:30px; height:10px; max-width:250px; margin:0px auto 30px;}
