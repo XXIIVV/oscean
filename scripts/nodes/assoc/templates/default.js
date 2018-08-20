@@ -50,10 +50,11 @@ function DefaultTemplate(id,rect,...params)
 
   this._list = function(q)
   {
-    var html = q.tables.glossary[q.result.name] ? `${q.tables.glossary[q.result.name]}` : ''
+    var target = q.result.name.toUpperCase();
+    var html = q.tables.glossary[target] ? `${q.tables.glossary[target]}` : ''
 
     for(var id in q.result.tags){
-      var tag = q.result.tags[id].toUpperCase();
+      var tag = q.result.tags[id].toUpperCase().replace(/_/g,' ').trim();
       html += q.tables.glossary[tag] ? `<h3>${tag.capitalize()}</h3>${q.tables.glossary[tag]}` : ''
     }
 
