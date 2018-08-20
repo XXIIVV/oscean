@@ -58,8 +58,10 @@ function DefaultTemplate(id,rect,...params)
 
     html += `<h2>Glossary</h2>`;
     html += `<list class='tidy' style='padding-left:30px'>`
-    for(var id in q.tables.glossary){
-      html += `<ln>{{${id.capitalize()}}}, ${q.tables.glossary[id].to_a().length} words</ln>`.to_markup()
+    var words = Object.keys(q.tables.glossary).sort();
+    for(var id in words){
+      var word = words[id]
+      html += `<ln>{{${word.capitalize()}}}, ${q.tables.glossary[word].to_a().length} words</ln>`.to_markup()
     }
     html += `</list>`
 

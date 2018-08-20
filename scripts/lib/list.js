@@ -24,7 +24,7 @@ function List(name,data)
 
   this.unde = function()
   {
-    return this.name;
+    return "Glossary";
   }
 
   this.bref = function()
@@ -47,10 +47,11 @@ function List(name,data)
     var html = ""
 
     html += `<h2>{{Glossary}}</h2>`;
-
     html += `<list class='tidy' style='padding-left:30px'>`
-    for(var id in glossary){
-      html += `<ln>{{${id.capitalize()}}}, ${glossary[id].to_a().length} words</ln>`
+    var words = Object.keys(glossary).sort();
+    for(var id in words){
+      var word = words[id]
+      html += `<ln>{{${word.capitalize()}}}, ${glossary[word].to_a().length} words</ln>`.to_markup()
     }
     html += `</list>`
 
