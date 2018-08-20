@@ -9,7 +9,7 @@ function InvokeNode(id,rect)
 
   this.receive = function(q)
   {
-    if(!q.result || !q.is_term || !q.result.has_tag('invoke')){ this.send(q); return; }
+    if(!q.result || !q.result.has_tag('invoke')){ this.send(q); return; }
 
     this.cache = q;
     this.invoke(this.cache.result)

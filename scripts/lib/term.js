@@ -19,7 +19,6 @@ function Term(name,dict)
   this.theme = this.dict.LOOK ? this.dict.LOOK.toLowerCase() : 'default';
 
   this.is_portal = this.tags.indexOf("portal") > -1
-  this.is_term = true;
   
   this.unde = function()
   {
