@@ -13,6 +13,7 @@ function DefaultTemplate(id,rect,...params)
     html += q.result.long(q.tables);
     html += q.result.has_tag("diary") ? this._diary(q) : ''
     html += q.result.has_tag("index") ? this._index(q) : ''
+    html += q.result.has_tag("list") ? this._list(q) : ''
 
     return html
   }
@@ -44,5 +45,17 @@ function DefaultTemplate(id,rect,...params)
       ${child.long(q.tables)}`
     }
     return html
+  }
+
+  this._list = function(q)
+  {
+    var html = q.tables.glossary[q.result.name] ? `${q.tables.glossary[q.result.name]}` : ''
+
+    for(var id in q.result.tags){
+      var tag = q.result.tags[id].toUpperCase();
+      html += q.tables.glossary[tag] ? `<h3>${tag.capitalize()}</h3>${q.tables.glossary[tag]}` : ''
+    }
+
+    return html;
   }
 }

@@ -47,8 +47,8 @@ function Indental(data)
       indent:line.search(/\S|$/),
       content:line.trim(),
       skip:line == "" || line.substr(0,1) == "~",
-      key:line.indexOf(" : ") > -1 && line.trim().indexOf(" : ") < 20 ? line.split(" : ")[0].trim() : null,
-      value:line.indexOf(" : ") > -1 && line.trim().indexOf(" : ") < 20 ? line.split(" : ")[1].trim() : null,
+      key:line.indexOf(" : ") > -1 ? line.split(" : ")[0].trim() : null,
+      value:line.indexOf(" : ") > -1 ? line.split(" : ")[1].trim() : null,
       children:[]
     }
   }

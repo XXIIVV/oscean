@@ -21,13 +21,23 @@ function RouterNode(id,rect)
   function find(key,db)
   {
     if(parseInt(key) > 0){ return null; }
-    
-    for(id in db){
+
+    // Try first level
+    for(var id in db){
       var table = db[id]
       if(table[key]){
         return table[key]
       }
     }
+
+    // Try in glossary
+    for(var id in db.glossary){
+      var list = db.glossary[id]
+      if(list.indexOf(key) > -1){
+        return list;
+      }
+    }
+
     return null
   }
 }
