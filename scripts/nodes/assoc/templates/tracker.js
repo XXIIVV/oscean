@@ -81,7 +81,7 @@ function TrackerTemplate(id,rect,...params)
     var html = ''
     for(var i in term.issues){
       var issue = term.issues[i]
-      html += `<tr class='issue'><td colspan='20'><t class='issue'>${issue.name}<t class='right'>${issue.tasks.length} Tasks</t></t></td></tr>`
+      html += `<tr class='issue'><td colspan='20'><t class='issue'>{{${issue.name}|${term.name.capitalize()}:Tracker}}<t class='right'>${issue.tasks.length} Tasks</t></t></td></tr>`.to_markup()
       html += this._tasks(issue)
     }
 
@@ -97,7 +97,7 @@ function TrackerTemplate(id,rect,...params)
     <td class='${r.status}' style='width:250px'>{{${term.name.capitalize()}}}</b><t class='right'>${parseInt(r.score * 100)}%</t></td>
     <td style='padding-left:15px'>${term.incoming.length < 1 && term.outgoing.length < 1 ? 'unlinked' : `${term.incoming.length}/${term.outgoing.length}`}</td>
     `.to_markup()
-    for(i in r.points){ html += `<td title='${i}' class='bullet'>${r.points[i] ? '•' : ''}</td>` }
+    for(i in r.points){ html += `<td title='${i}' class='bullet ${r.points[i] ? 'done' : 'undone'}'>•</td>` }
     html += `</tr>`
 
     html += this._issues(term);
@@ -137,6 +137,8 @@ function TrackerTemplate(id,rect,...params)
     table.tracker tr.task td:before { content:"• "; color:#555; position: absolute; left:45px}
     table.tracker td { border-bottom:1px solid #333; padding:2px 5px}
     table.tracker td.bullet { text-align: center}
+    table.tracker td.bullet.done { color:black; }
+    table.tracker td.bullet.undone { color:#ccc; }
     
     table.tracker td t.right { float:right}
     table.tracker td t.issue { display:block; margin-left:15px; border-radius:2px; padding-left:10px; padding-right:10px}
@@ -155,7 +157,9 @@ function TrackerTemplate(id,rect,...params)
     #view.noir table.tracker td.good { color:#aaa;}
     #view.noir table.tracker td.fair { color:#777;}
     #view.noir table.tracker td.poor { color:#444;}
-    
+    #view.noir table.tracker td.bullet.done { color:white; }
+    #view.noir table.tracker td.bullet.undone { color:#333; }
+
     </style>`
   }
 

@@ -9,22 +9,7 @@ function BuildNode(id,rect)
   this.receive = function(q)
   {
     var builds = this.request(q)
-    var featured_log = q.result && q.result.featured_log ? q.result.featured_log : null
-    
-    var activity = `
-    ${q.result && q.result.issues.length > 0  && q.result.name.toLowerCase() != "tracker" ? "<a id='issues' onclick=\"Ø('query').bang('"+q.result.name+":tracker')\">"+q.result.issues.length+" Issue"+(q.result.issues.length > 1 ? 's' : '')+"</a>" : ''}
-    ${q.result && q.result.diaries.length > 1 && q.result.type != "diary" ? "<a id='diaries' onclick=\"Ø('query').bang('"+q.result.name+":diary')\">"+q.result.diaries.length+" Diaries</a>" : ''} 
-    ${q.result && q.result.logs.length > 2  && q.result.type != "journal" ? "<a id='logs' onclick=\"Ø('query').bang('"+q.result.name+":journal')\">"+q.result.logs.length+" Logs</a>" : ''}`
-    
-    if(q.result && q.result.name == "HOME"){
-      featured_log = this.find_last_diary(q.tables.horaire)
-    }
-    if(q.result && (q.result.name == "HOME" || q.result.name == "JOURNAL" || q.result.name == "CALENDAR" || q.result.name == "TRACKER")){
-      activity = `
-      <a id='issues' onclick=\"Ø('query').bang('Tracker')\">Tracker</a>
-      <a id='diaries' onclick=\"Ø('query').bang('journal')\">Journal</a> 
-      <a id='logs' onclick=\"Ø('query').bang('Calendar')\">Calendar</a> `
-    }
+    var featured_log = q.result.name == "HOME" ? this.find_last_diary(q.tables.horaire) : q.result.featured_log
 
     this.send({
       title: `XXIIVV — ${q.target.capitalize()}`,
@@ -38,7 +23,7 @@ function BuildNode(id,rect)
           },
           menu:{
             search:q.target && q.target.capitalize(),
-            activity:activity
+            activity:this._activity(q)
           }
         },
         core:{
@@ -57,6 +42,29 @@ function BuildNode(id,rect)
   
     // Install Dom
     document.body.appendChild(this.signal("view").answer())
+  }
+
+  this._activity = function(q)
+  {
+    var html = ""
+
+    if(!q.result){ return ''; }
+
+    if(q.result.name == "HOME" || q.result.name == "JOURNAL" || q.result.name == "CALENDAR" || q.result.name == "TRACKER"){
+      return `<a id='issues' onclick=\"Ø('query').bang('Tracker')\">Tracker</a> <a id='diaries' onclick=\"Ø('query').bang('journal')\">Journal</a> <a id='logs' onclick=\"Ø('query').bang('Calendar')\">Calendar</a> `
+    }
+    
+    if(q.result.issues.length > 0){
+      html += `<a id='issues' onclick=\"Ø('query').bang('${q.result.name}:tracker')\">${q.result.issues.length} Issue${q.result.issues.length > 1 ? 's' : ''}</a>`
+    }
+    if(q.result.diaries.length > 1 && !q.result.has_tag("diary")){
+      html += `<a id='diaries' onclick=\"Ø('query').bang('${q.result.name}:diary')\">${q.result.diaries.length} Diaries</a>`;
+    }
+    if(q.result.logs.length > 2 && q.result.latest_log.time.offset > -365 && !q.result.has_tag("journal")){
+      html += `<a id='logs' onclick=\"Ø('query').bang('${q.result.name}:journal')\">${q.result.logs.length} Logs</a>`
+    }
+
+    return html;
   }
 
   this.find_last_diary = function(horaire)

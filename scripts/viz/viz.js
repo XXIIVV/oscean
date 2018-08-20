@@ -68,6 +68,8 @@ function Viz()
 
   this.toString = function()
   {
+    if(this.logs.length < 1){ return '<p>Not enough data to display the infographic.</p>'; }
+
     return this.draw()+this.style()
   }
 }
