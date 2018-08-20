@@ -14,6 +14,7 @@ function DefaultTemplate(id,rect,...params)
     html += q.result.has_tag("diary") ? this._diary(q) : ''
     html += q.result.has_tag("index") ? this._index(q) : ''
     html += q.result.has_tag("list") ? this._list(q) : ''
+    html += q.result.has_tag("glossary") ? this._glossary(q) : ''
 
     return html
   }
@@ -56,6 +57,12 @@ function DefaultTemplate(id,rect,...params)
       html += q.tables.glossary[tag] ? `<h3>${tag.capitalize()}</h3>${q.tables.glossary[tag]}` : ''
     }
 
+    return html;
+  }
+
+  this._glossary = function(q)
+  {
+    var html = ""
     html += `<h2>Glossary</h2>`;
     html += `<list class='tidy' style='padding-left:30px'>`
     var words = Object.keys(q.tables.glossary).sort();
@@ -64,7 +71,6 @@ function DefaultTemplate(id,rect,...params)
       html += `<ln>{{${word.capitalize()}}}, ${q.tables.glossary[word].to_a().length} words</ln>`.to_markup()
     }
     html += `</list>`
-
-    return html;
+    return html
   }
 }
