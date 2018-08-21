@@ -26,7 +26,7 @@ function List(name,data)
   this.long = function(tables)
   {
     var connections = this.connections(tables);
-    var html = connections.length > 0 ? `<p>{*${this.name.capitalize()}*} is part of the {{${connections[0].name.capitalize()}}} collection.</p>` : `<p>The {*${this.name.capitalize()}*} contains ${Object.keys(this.data).length} items.</p>`
+    var html = connections.length > 0 ? `<p>{*${this.name.capitalize()}*} is part of the {{${connections[0].name.capitalize()}}} collection.</p>` : `<p>{*${this.name.capitalize()}*} contains ${Object.keys(this.data).length} items.</p>`
     html += this.toString();
     html += this._lists(tables.glossary);
 
