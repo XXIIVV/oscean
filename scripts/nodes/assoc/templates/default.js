@@ -11,7 +11,7 @@ function DefaultTemplate(id,rect,...params)
     var html = ""
 
     html += q.result.long(q.tables);
-    html += q.result.has_tag("diary") ? this._diary(q) : ''
+    html += q.result.has_tag("diary") || q.params == "diary" ? this._diary(q) : ''
     html += q.result.has_tag("index") ? this._index(q) : ''
     html += q.result.has_tag("list") ? this._list(q) : ''
     html += q.result.has_tag("glossary") ? this._glossary(q) : ''
@@ -21,6 +21,7 @@ function DefaultTemplate(id,rect,...params)
 
   this._diary = function(q)
   {
+
     var html = ""
     var term = q.result;
     var skip = term.featured_log
