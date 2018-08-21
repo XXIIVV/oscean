@@ -11,6 +11,7 @@ function DefaultTemplate(id,rect,...params)
     var html = ""
 
     html += q.result.long(q.tables);
+    html += q.result.has_tag("children") ? this._children(q) : ''
     html += q.result.has_tag("diary") || q.params == "diary" ? this._diary(q) : ''
     html += q.result.has_tag("index") ? this._index(q) : ''
     html += q.result.has_tag("list") ? this._list(q) : ''
@@ -74,5 +75,16 @@ function DefaultTemplate(id,rect,...params)
     }
     html += `</list>`
     return html.to_markup()
+  }
+
+  this._children = function(q)
+  {
+    var html = ""
+
+    for(id in q.result.children){
+      var term = q.result.children[id]
+      html += `<ln>{*{{${term.name.capitalize()}}}*}: ${term.bref()}</ln>`
+    }
+    return `<list>${html}</list>`.to_markup();
   }
 }
