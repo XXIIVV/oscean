@@ -8,8 +8,9 @@ function Runic(lines = [])
     "#":{tag:"ln",wrapper:"code"},
     "*":{tag:"h2"},
     "+":{tag:"hs"},
-    ">":{},
-    "/":{tag:"operate"}
+    "@":{tag:"quote",fn:quote},
+    "%":{tag:"media",fn:media},
+    ">":{}
   }
 
   function is_runic(l)
@@ -45,10 +46,43 @@ function Runic(lines = [])
     var wr = runes[stash.rune].wrapper
     for(var id in stash.a){
       var tag = runes[stash.rune].tag;
-      html += tag ? `<${tag}>${stash.a[id]}</${tag}>` : `${stash.a[id]}`
+      var fn  = runes[stash.rune].fn
+      var str = fn ? fn(stash.a[id]) : stash.a[id]
+      html += tag ? `<${tag}>${str}</${tag}>` : `${str}`
     }
     return wr ? `${acc}<${wr}>${html}</${wr}>` : `${acc}${html}`
   }
+
+  // Templates  
+
+  function quote(content)
+  {
+    var parts = content.split(" | ")
+    var text = parts[0].trim()
+    var author = parts[1]
+    var source = parts[2]
+    var link = parts[3]
+
+    return `
+    <quote>
+      ${text.length > 1 ? `<p class=\'text\'>${text}</p>` : ''}
+      ${author ? `<p class='attrib'>${author}${source && link ? `, {{${source}|${link}}}` : source ? `, <b>${source}</b>` : ''}</p>` : ''}
+    </quote>`
+  }
+
+  function media(content)
+  {
+    var service = content.split(" ")[0];
+    var id = content.split(" ")[1];
+
+    if(service == "itchio"){ return `<iframe frameborder="0" src="https://itch.io/embed/${id}?link_color=000000" width="600" height="167"></iframe>`; }
+    if(service == "bandcamp"){ return `<iframe style="border: 0; width: 600px; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=${id}/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless></iframe>`; }
+    if(service == "youtube"){ return `<iframe width="100%" height="380" src="https://www.youtube.com/embed/${id}?rel=0" style="max-width:700px" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`; }
+    if(service == "custom"){ return `<iframe src='${id}' style='width:100%;height:350px;'></iframe>`; }
+    return `<img src='media/${service}' class='${id}'/>`
+  }
+
+  // 
 
   this.toString = function()
   {
