@@ -90,6 +90,11 @@ function TrackerTemplate(id,rect,...params)
 
   this._term = function(term)
   {
+    // Test for errors
+    term.bref()
+    term.long()
+    
+    // Print
     var html = ''
     var r = term.rating()
     html += `<tr>`
@@ -115,11 +120,13 @@ function TrackerTemplate(id,rect,...params)
     html += `<table class='tracker'>`
     if(target == 'tracker'){
       for(id in sorted){
-        html += this._term(q.tables.lexicon[sorted[id]]);
+        var term = q.tables.lexicon[sorted[id]]
+        html += this._term(term);
       }
     }
     else{
-      html += this._term(q.tables.lexicon[target.toUpperCase()]);
+      var term = q.tables.lexicon[target.toUpperCase()]
+      html += this._term(term);
     }
     
     html += `</table>`
