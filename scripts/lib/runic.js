@@ -1,4 +1,4 @@
-function Runic(lines)
+function Runic(lines = [])
 {
   this.lines = lines;
 
@@ -8,21 +8,22 @@ function Runic(lines)
     "#":{tag:"ln",wrapper:"code"},
     "*":{tag:"h2"},
     "+":{tag:"hs"},
-    ">":{}
+    ">":{},
+    "/":{tag:"operate"}
   }
 
-  function is_runic(line,runes)
+  function is_runic(l)
   {
-    var rune = line.substr(0,1);
-    var trail = line.substr(1,1);
+    var rune = l.substr(0,1);
+    var trail = l.substr(1,1);
 
-    if(trail != " "){ return false; }
-    if(!runes[rune]){ return false; }
+    if(trail != " "){ console.warn("Non-Runic",l); return false; }
+    if(!runes[rune]){ console.warn(`Non-Runic[${rune}]`,l); return false; }
 
     return true;
   }
 
-  function stash(acc,l = "")
+  function stash(acc,l)
   {
     var rune = l.substr(0,1)
     var line = l.substr(2).trim()
@@ -51,7 +52,7 @@ function Runic(lines)
 
   this.toString = function()
   {
-    this.lines.filter(is_runic)
-    return this.lines.reduce(stash,[]).reduce(_html,"");
+    var lines = this.lines.filter(is_runic);
+    return lines.reduce(stash,[]).reduce(_html,"");
   }
 }
