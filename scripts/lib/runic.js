@@ -10,6 +10,7 @@ function Runic(lines = [])
     "*":{tag:"h2"},
     "+":{tag:"hs"},
     "@":{tag:"quote",fn:quote},
+    "|":{tag:"tr",wrapper:"table",fn:table},
     "%":{fn:media},
     ">":{}
   }
@@ -78,6 +79,11 @@ function Runic(lines = [])
     if(service == "youtube"){ return `<iframe width="100%" height="380" src="https://www.youtube.com/embed/${id}?rel=0" style="max-width:700px" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`; }
     if(service == "custom"){ return `<iframe src='${id}' style='width:100%;height:350px;'></iframe>`; }
     return `<img src='media/${service}' class='${id}'/>`
+  }
+
+  function table(content)
+  {
+    return `<td>${content.replace(/ \| /g,"</td><td>")}</td>`
   }
 
   // 
