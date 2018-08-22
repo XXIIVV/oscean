@@ -4,11 +4,12 @@ function Runic(lines = [])
 
   var runes = {
     "&":{tag:"p"},
+    "?":{tag:"p",class:"note"},
     "-":{tag:"ln",wrapper:"list"},
     "#":{tag:"ln",wrapper:"code"},
     "*":{tag:"h2"},
     "+":{tag:"hs"},
-    "@":{fn:quote},
+    "@":{tag:"quote",fn:quote},
     "%":{fn:media},
     ">":{}
   }
@@ -45,10 +46,9 @@ function Runic(lines = [])
     var html = ""
     var wr = runes[stash.rune].wrapper
     for(var id in stash.a){
-      var tag = runes[stash.rune].tag;
-      var fn  = runes[stash.rune].fn
-      var str = fn ? fn(stash.a[id]) : stash.a[id]
-      html += tag ? `<${tag}>${str}</${tag}>` : `${str}`
+      var r = runes[stash.rune]
+      var str = r.fn ? r.fn(stash.a[id]) : stash.a[id]
+      html += r.tag ? `<${r.tag} class='${r.class ? r.class : ''}'>${str}</${r.tag}>` : `${str}`
     }
     return wr ? `${acc}<${wr}>${html}</${wr}>` : `${acc}${html}`
   }
@@ -64,10 +64,8 @@ function Runic(lines = [])
     var link = parts[3]
 
     return `
-    <quote>
       ${text.length > 1 ? `<p class=\'text\'>${text}</p>` : ''}
-      ${author ? `<p class='attrib'>${author}${source && link ? `, {{${source}|${link}}}` : source ? `, <b>${source}</b>` : ''}</p>` : ''}
-    </quote>`
+      ${author ? `<p class='attrib'>${author}${source && link ? `, {{${source}|${link}}}` : source ? `, <b>${source}</b>` : ''}</p>` : ''}`
   }
 
   function media(content)
