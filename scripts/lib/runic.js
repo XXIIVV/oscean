@@ -8,8 +8,8 @@ function Runic(lines = [])
     "#":{tag:"ln",wrapper:"code"},
     "*":{tag:"h2"},
     "+":{tag:"hs"},
-    "@":{tag:"quote",fn:quote},
-    "%":{tag:"media",fn:media},
+    "@":{fn:quote},
+    "%":{fn:media},
     ">":{}
   }
 
