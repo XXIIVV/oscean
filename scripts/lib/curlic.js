@@ -1,6 +1,6 @@
 function Curlic(text = "",force_external = false)
 {
-  this.text = text;
+  this.text = `${text}`;
 
   var runes = {
     "*":{tag:"b"},
@@ -72,7 +72,7 @@ function Curlic(text = "",force_external = false)
   this.toString = function()
   {
     var matches = this.extract();
-    if(!matches){ return `${i}`; }
+    if(!matches){ return this.text; }
 
     matches.forEach(el => {
       this.text = this.text.replace(`{${el}}`,parse(el))

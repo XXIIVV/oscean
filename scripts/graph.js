@@ -107,7 +107,6 @@ function graph()
   Ø("query").bang()
 }
 
-
 // Tools
 
 String.prototype.replace_all = function(search, replacement){ return `${this}`.split(search).join(replacement); };

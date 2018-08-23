@@ -1,4 +1,4 @@
-function Runic(lines = [])
+function Runic(lines = [],templater = null)
 {
   this.lines = lines;
 
@@ -48,8 +48,9 @@ function Runic(lines = [])
     var wr = runes[stash.rune].wrapper
     for(var id in stash.a){
       var r = runes[stash.rune]
-      var str = r.fn ? r.fn(stash.a[id]) : stash.a[id]
-      html += r.tag ? `<${r.tag} class='${r.class ? r.class : ''}'>${str}</${r.tag}>` : `${str}`
+      var txt = r.fn ? r.fn(stash.a[id]) : stash.a[id]
+      var htm = templater ? new templater(txt) : txt
+      html += r.tag ? `<${r.tag} class='${r.class ? r.class : ''}'>${htm}</${r.tag}>` : `${htm}`
     }
     return wr ? `${acc}<${wr}>${html}</${wr}>` : `${acc}${html}`
   }
