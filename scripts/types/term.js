@@ -111,7 +111,8 @@ function Term(name,dict)
     if(!curlies){ return []; }
 
     curlies = curlies.filter(el =>{ return el.indexOf("(") > -1; })
-    curlies = curlies.filter(el =>{ return el.indexOf("//") < 0; })
+    curlies = curlies.filter(el =>{ return el.indexOf("//") < 0; }) // Skip external
+    curlies = curlies.filter(el =>{ return el.indexOf("[") < 0; })  // Skip evals
 
     curlies.forEach(el=>{
       var name = el.split("(")[1].replace(")","")
