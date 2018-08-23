@@ -1,6 +1,7 @@
-function Curlic(text = "",force_external = false)
+function Curlic(text = "",origin = null)
 {
   this.text = `${text}`;
+  this.origin = origin;
 
   var runes = {
     "*":{tag:"b"},
@@ -25,9 +26,9 @@ function Curlic(text = "",force_external = false)
     var target = t.replace("(","").replace(")","")
     var external = target.indexOf("//") > -1
     var name = s.replace(`(${target})`,"")
-    var href = this.force_external ? 'https://wiki.xxiivv.com/'+target.url() : !external ? `#${target.to_url()}` : target
+    var href = this.origin ? this.origin+target.url() : !external ? `#${target.to_url()}` : target
     var click = !external ? `Ø('query').bang('${target}')` : ''
-    var view = this.force_external || external ? '_blank' : '_self'
+    var view = this.origin || external ? '_blank' : '_self'
     var className = external ? 'external' : 'local'
 
     return `<a href='${href}' title='${target}' onclick="${click}" class='${className}' target='${view}'>${name ? name : target}</a>`
@@ -81,4 +82,4 @@ function Curlic(text = "",force_external = false)
   }
 }
 
-String.prototype.to_curlic = function(force_external){ return `${new Curlic(this,force_external)}`; }
+String.prototype.to_curlic = function(origin){ return `${new Curlic(this,origin)}`; }
