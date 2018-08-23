@@ -26,7 +26,7 @@ function Curlic(text = "",force_external = false)
     var external = target.indexOf("//") > -1
     var name = s.replace(`(${target})`,"")
     var href = this.force_external ? 'https://wiki.xxiivv.com/'+target.url() : !external ? `#${target.to_url()}` : target
-    var click = `Ø('query').bang('${target}')`
+    var click = !external ? `Ø('query').bang('${target}')` : ''
     var view = this.force_external || external ? '_blank' : '_self'
     var className = external ? 'external' : 'local'
 
