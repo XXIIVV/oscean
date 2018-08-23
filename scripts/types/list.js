@@ -20,33 +20,33 @@ function List(name,data)
 
   this.bref = function()
   {
-    return `The {{${this.name.capitalize()}}} word list.`.to_markup()
+    return `The {(${this.name.capitalize()})} word list.`.to_curlic()
   }
 
   this.long = function(tables)
   {
     var connections = this.connections(tables);
-    var html = connections.length > 1 ? `<p>{*${this.name.capitalize()}*} is part of {{${connections[0].name.capitalize()}}} and {{${connections[1].name.capitalize()}}}.</p>` : connections.length == 1 ? `<p>{*${this.name.capitalize()}*} is part of the {{${connections[0].name.capitalize()}}} collection.</p>` : `<p>{*${this.name.capitalize()}*} contains ${Object.keys(this.data).length} items.</p>`
+    var html = connections.length > 1 ? `<p>{*${this.name.capitalize()}*} is part of {(${connections[0].name.capitalize()})} and {(${connections[1].name.capitalize()})}.</p>` : connections.length == 1 ? `<p>{*${this.name.capitalize()}*} is part of the {(${connections[0].name.capitalize()})} collection.</p>` : `<p>{*${this.name.capitalize()}*} contains ${Object.keys(this.data).length} items.</p>`
     html += this.toString();
     html += this._lists(tables.glossary);
 
-    return html.to_markup();
+    return html.to_curlic();
   }
 
   this._lists = function(glossary)
   {
     var html = ""
 
-    html += `<h2>{{Glossary}}</h2>`;
+    html += `<h2>{(Glossary)}</h2>`;
     html += `<list class='tidy' style='padding-left:30px'>`
     var words = Object.keys(glossary).sort();
     for(var id in words){
       var word = words[id]
-      html += `<ln>{{${word.capitalize()}}}, ${glossary[word].to_a().length} items</ln>`.to_markup()
+      html += `<ln>{(${word.capitalize()})}, ${glossary[word].to_a().length} items</ln>`.to_curlic()
     }
     html += `</list>`
 
-    return html.to_markup();
+    return html.to_curlic();
   }
 
   this.has_tag = function()
@@ -99,7 +99,7 @@ function List(name,data)
     for(var id in this.data){
       html += `<ln>{*${id.capitalize()}*}: ${this.data[id]}</ln>`
     }
-    return html.to_markup()
+    return html.to_curlic()
   }
 
   this.toString = function()

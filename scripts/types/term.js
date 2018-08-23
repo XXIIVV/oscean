@@ -27,12 +27,12 @@ function Term(name,dict)
 
   this.bref = function()
   {
-    return this.dict && this.dict.BREF ? this.dict.BREF.to_markup() : ''
+    return this.dict && this.dict.BREF ? this.dict.BREF.to_curlic() : ''
   }
 
   this.long = function(tables)
   {
-    return `${new Runic(this.dict.LONG,tables)}`.to_markup() + (this.dict.LATE ? this.dict.LATE : '')
+    return `${new Runic(this.dict.LONG,tables)}`.to_curlic() + (this.dict.LATE ? this.dict.LATE : '')
   }
 
   this.glyph = function()
@@ -105,18 +105,18 @@ function Term(name,dict)
   {
     var a = []
     var str = this.dict.BREF + (this.dict.LONG ? this.dict.LONG.join("\n") : '');
-    var parts = str.split("{{")
-    for(id in parts){
-      var part = parts[id];
-      if(part.indexOf("}}") == -1){ continue; }
-      var content = part.split("}}")[0];
-      if(content.substr(0,1) == "$"){ continue; }
-      if(content.substr(0,1) == "/"){ continue; }
-      var target = content.indexOf("|") > -1 ? content.split("|")[1] : content;
-      var name = content.indexOf("|") > -1 ? content.split("|")[0] : content;
-      if(target.indexOf("//") > -1){ continue; }
-      a.push(target.toUpperCase())
-    }
+
+    var curlies = new Curlic(str).extract()
+
+    if(!curlies){ return []; }
+
+    curlies = curlies.filter(el =>{ return el.indexOf("(") > -1; })
+    curlies = curlies.filter(el =>{ return el.indexOf("//") < 0; })
+
+    curlies.forEach(el=>{
+      var name = el.split("(")[1].replace(")","")
+      a.push(name.toUpperCase())
+    });
     return a;
   }
 

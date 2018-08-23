@@ -44,7 +44,9 @@ function DefaultTemplate(id,rect,...params)
     for(id in term.children){
       var child = term.children[id];
       html += `
-      ${child.featured_log ? `<a onclick='Ø("query").bang("${child.name}")'><img src="media/diary/${child.featured_log.photo}.jpg"/></a><hs>${child.bref().to_markup()}</hs>` : `<h2>${child.name.capitalize()}</h2><hs>${child.bref()}</hs>`.to_markup()}
+      <h2>${child.name.capitalize()}</h2>
+      <hs>${child.bref()}</hs>
+      ${child.featured_log ? `<a onclick='Ø("query").bang("${child.name}")'><img src="media/diary/${child.featured_log.photo}.jpg"/></a>` : ''}
       ${child.long(q.tables)}`
     }
     return html
@@ -57,7 +59,7 @@ function DefaultTemplate(id,rect,...params)
 
     for(var id in q.result.tags){
       var tag = q.result.tags[id].toUpperCase().replace(/_/g,' ').trim();
-      html += q.tables.glossary[tag] ? `<h3>{{${tag.capitalize()}}}</h3>${q.tables.glossary[tag]}`.to_markup() : ''
+      html += q.tables.glossary[tag] ? `<h3>{(${tag.capitalize()})}</h3>${q.tables.glossary[tag]}`.to_curlic() : ''
     }
 
     return html;
@@ -66,15 +68,15 @@ function DefaultTemplate(id,rect,...params)
   this._glossary = function(q)
   {
     var html = ""
-    html += `<h2>{{Glossary}}</h2>`;
+    html += `<h2>{(Glossary)}</h2>`;
     html += `<list class='tidy' style='padding-left:30px'>`
     var words = Object.keys(q.tables.glossary).sort();
     for(var id in words){
       var word = words[id]
-      html += `<ln>{{${word.capitalize()}}}, ${q.tables.glossary[word].to_a().length} items</ln>`
+      html += `<ln>{(${word.capitalize()})}, ${q.tables.glossary[word].to_a().length} items</ln>`
     }
     html += `</list>`
-    return html.to_markup()
+    return html.to_curlic()
   }
 
   this._children = function(q)
@@ -83,8 +85,8 @@ function DefaultTemplate(id,rect,...params)
 
     for(id in q.result.children){
       var term = q.result.children[id]
-      html += `<ln>{*{{${term.name.capitalize()}}}*}: ${term.bref()}</ln>`
+      html += `<ln>{(${term.name.capitalize()})}: ${term.bref()}</ln>`
     }
-    return `<list>${html}</list>`.to_markup();
+    return `<list>${html}</list>`.to_curlic();
   }
 }

@@ -71,7 +71,7 @@ function TrackerTemplate(id,rect,...params)
     var html = ''
     for(var t in issue.tasks){
       var task = issue.tasks[t];
-      html += `<tr class='task'><td colspan='20'><t class='task'>${task.to_markup()}</t></td></tr>`
+      html += `<tr class='task'><td colspan='20'><t class='task'>${task.to_curlic()}</t></td></tr>`
     }
     return html
   }
@@ -81,7 +81,7 @@ function TrackerTemplate(id,rect,...params)
     var html = ''
     for(var i in term.issues){
       var issue = term.issues[i]
-      html += `<tr class='issue'><td colspan='20'><t class='issue'>{{${issue.name}|${term.name.capitalize()}:Tracker}}<t class='right'>${issue.tasks.length} Tasks</t></t></td></tr>`.to_markup()
+      html += `<tr class='issue'><td colspan='20'><t class='issue'>{${issue.name}(${term.name.capitalize()}:Tracker)}<t class='right'>${issue.tasks.length} Tasks</t></t></td></tr>`.to_curlic()
       html += this._tasks(issue)
     }
 
@@ -99,9 +99,9 @@ function TrackerTemplate(id,rect,...params)
     var r = term.rating()
     html += `<tr>`
     html += `
-    <td class='${r.status}' style='width:250px'>{{${term.name.capitalize()}}}</b><t class='right'>${parseInt(r.score * 100)}%</t></td>
+    <td class='${r.status}' style='width:250px'>{(${term.name.capitalize()})}</b><t class='right'>${parseInt(r.score * 100)}%</t></td>
     <td style='padding-left:15px'>${term.incoming.length < 1 && term.outgoing.length < 1 ? 'unlinked' : `${term.incoming.length}/${term.outgoing.length}`}</td>
-    `.to_markup()
+    `.to_curlic()
     for(i in r.points){ html += `<td title='${i}' class='bullet ${r.points[i] ? 'done' : 'undone'}'>•</td>` }
     html += `</tr>`
 

@@ -11,6 +11,6 @@ function Issue(name,tasks = [])
     for(id in this.tasks){
       html += `<ln class='task'>${this.tasks[id]}</ln>`
     }
-    return `<issue><div class='name'>${this.name.capitalize()}${this.tasks.length > 1 ? `, ${this.tasks.length} Tasks` : ''}</div><list>${html}</list></issue>`.to_markup()
+    return `<issue><div class='name'>${this.name.capitalize()}${this.tasks.length > 1 ? `, ${this.tasks.length} Tasks` : ''}</div><list>${html}</list></issue>`.to_curlic()
   }
 }

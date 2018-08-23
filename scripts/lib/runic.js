@@ -66,7 +66,7 @@ function Runic(lines = [])
 
     return `
       ${text.length > 1 ? `<p class=\'text\'>${text}</p>` : ''}
-      ${author ? `<p class='attrib'>${author}${source && link ? `, {{${source}|${link}}}` : source ? `, <b>${source}</b>` : ''}</p>` : ''}`
+      ${author ? `<p class='attrib'>${author}${source && link ? `, <a href='${link}'>${source}</a>` : source ? `, <b>${source}</b>` : ''}</p>` : ''}`
   }
 
   function media(content)

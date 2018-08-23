@@ -31,7 +31,7 @@ function BuildNaviNode(id,rect)
     if(depth == 2){
       for(id in children){
         var child = children[id];
-        html += selection && child.name == selection.name ?  `<t class='depth${depth}'>{*${child.name.capitalize()}*}${this.make_table(child,lexicon,depth-1,selection)}</t> `.to_markup() : `<t class='depth${depth}'>{{${child.name.capitalize()}}}${this.make_table(child,lexicon,depth-1,selection)}</t> `.to_markup()
+        html += selection && child.name == selection.name ?  `<t class='depth${depth}'>{*${child.name.capitalize()}*}${this.make_table(child,lexicon,depth-1,selection)}</t> `.to_curlic() : `<t class='depth${depth}'>{(${child.name.capitalize()})}${this.make_table(child,lexicon,depth-1,selection)}</t> `.to_curlic()
       }
       return html
     }
@@ -39,14 +39,14 @@ function BuildNaviNode(id,rect)
     if(depth == 1){
       for(id in children){
         var child = children[id];
-        html += selection && child.name == selection.name ? `<t class='depth${depth}'>{*${child.name.capitalize()}*}</t> `.to_markup() : `<t class='depth${depth}'>{{${child.name.capitalize()}}}</t> `.to_markup()
+        html += selection && child.name == selection.name ? `<t class='depth${depth}'>{*${child.name.capitalize()}*}</t> `.to_curlic() : `<t class='depth${depth}'>{(${child.name.capitalize()})}</t> `.to_curlic()
       }
       return children.length > 0 ? `(${html.trim()})` : ''
     }
     html += "<table width='100%'>"
     for(id in children){
       var child = children[id];
-      html += `<tr class='head'><th class='${selection && child.name == selection.name ? 'selected' : ''}'>{{${child.name.capitalize()}}}</th><td>${this.make_table(child,lexicon,depth-1,selection)}</td></tr>`.to_markup()
+      html += `<tr class='head'><th class='${selection && child.name == selection.name ? 'selected' : ''}'>{(${child.name.capitalize()})}</th><td>${this.make_table(child,lexicon,depth-1,selection)}</td></tr>`.to_curlic()
     }
     html += "</table>"
     return html

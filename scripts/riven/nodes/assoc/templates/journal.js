@@ -19,7 +19,7 @@ function JournalTemplate(id,rect,...params)
     }
 
     if(logs.length < 1){
-      return `<p>There is no recent activity to the {{${q.result.name.capitalize()}}} project, go {{back|${q.result.name.capitalize()}}}.</p>`.to_markup()
+      return `<p>There is no recent activity to the {(${q.result.name.capitalize()})} project, go {back(${q.result.name.capitalize()})}.</p>`.to_curlic()
     }
 
     // Build journals
