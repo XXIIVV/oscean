@@ -48,7 +48,7 @@ function Journal(logs = [])
   {
     if(!this.logs[0].host){ return ''; }
 
-    return `<p class='bref'>${this.logs[0].host.bref()}</p>`
+    return `<p class='bref'>${this.logs[0].host.bref.to_curlic()}</p>`
   }
 
   this._tags = function()

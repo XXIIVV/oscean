@@ -50,6 +50,6 @@ var detectBackOrForward = function(onBack, onForward)
 };
 
 window.addEventListener("hashchange", detectBackOrForward(
-  function() { console.log("back"); Ø('query').bang() },
-  function() { console.log("forward"); Ø('query').bang() }
+  function() { Ø('query').bang() },
+  function() { Ø('query').bang() }
 ));

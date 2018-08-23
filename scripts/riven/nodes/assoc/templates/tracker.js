@@ -89,11 +89,7 @@ function TrackerTemplate(id,rect,...params)
   }
 
   this._term = function(term)
-  {
-    // Test for errors
-    term.bref()
-    term.long()
-    
+  {    
     // Print
     var html = ''
     var r = term.rating()

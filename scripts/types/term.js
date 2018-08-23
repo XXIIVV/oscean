@@ -15,6 +15,8 @@ function Term(name,data)
   this.name = name;
 
   this.data = data;
+  this.bref = data.BREF ? data.BREF : ''
+  this.unde = data.UNDE ? data.UNDE : 'Home'
   this.type = data.TYPE ? data.TYPE.toLowerCase() : null;
   this.links = this.data.LINK ? this.data.LINK : [];
   this.tags = this.data.TAGS ? this.data.TAGS.toLowerCase().split(" ") : [];
@@ -22,21 +24,6 @@ function Term(name,data)
 
   this.is_portal = this.tags.indexOf("portal") > -1
   
-  this.unde = function()
-  {
-    return this.data.UNDE ? this.data.UNDE : "Home"
-  }
-
-  this.bref = function()
-  {
-    return this.data && this.data.BREF ? this.data.BREF.to_curlic() : ''
-  }
-
-  this.long = function(tables)
-  {
-    return `${new Runic(this.data.LONG,Curlic)}` + (this.data.LATE ? this.data.LATE : '')
-  }
-
   this.glyph = function()
   {
     if(this.data.ICON){ return this.data.ICON; }
@@ -127,5 +114,10 @@ function Term(name,data)
     return array.sort(function(a, b){
       return a[1] - b[1];
     }).reverse();
+  }
+
+  this.toString = function()
+  {
+    return `${new Runic(this.data.LONG,Curlic)}`
   }
 }
