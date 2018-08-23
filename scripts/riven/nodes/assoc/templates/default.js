@@ -6,6 +6,7 @@ function DefaultTemplate(id,rect,...params)
   
   this.answer = function(q)
   {
+    if(q.target.toLowerCase() == "index"){ return this.signal('index').answer(q) }
     if(!q.result){ return this.signal('missing').answer(q) }
 
     var html = ""
@@ -22,7 +23,6 @@ function DefaultTemplate(id,rect,...params)
 
   this._diary = function(q)
   {
-
     var html = ""
     var term = q.result;
     var skip = term.featured_log

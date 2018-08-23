@@ -1,4 +1,4 @@
-function KnownTemplate(id,rect,...params)
+function IndexTemplate(id,rect,...params)
 {
   Node.call(this,id,rect);
 
@@ -6,6 +6,7 @@ function KnownTemplate(id,rect,...params)
   
   this.answer = function(q)
   {
+    console.log(q.tables)
     return "hello"
   }
 }

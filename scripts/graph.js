@@ -24,7 +24,7 @@ function graph()
     Ø("_sidebar").create({x:5,y:8},BuildSidebarNode),
     Ø("_content").create({x:8,y:8},BuildContentNode),
       Ø("missing").create({x:2,y:20},MissingTemplate),
-      Ø("known").create({x:5,y:20},KnownTemplate),
+      Ø("index").create({x:5,y:20},IndexTemplate),
       Ø("default").create({x:2,y:14},DefaultTemplate),
       Ø("home").create({x:5,y:14},HomeTemplate),
       Ø("journal").create({x:8,y:14},JournalTemplate),
@@ -85,7 +85,7 @@ function graph()
   Ø("build").syphon(["_navi","_content","_sidebar"])
   Ø("_content").syphon(["default","journal","tracker","home","calendar"])
   Ø("build").connect(["view"])
-  Ø("default").syphon(["missing","known"])
+  Ø("default").syphon(["missing","index"])
 
   // Dom
   Ø("header").bind(["logo","photo","menu","info"])
