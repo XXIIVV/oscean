@@ -21,8 +21,8 @@ function HomeTemplate(id,rect,...params)
     for(id in projects){
       var project = projects[id];
       if(project.count < 10){ continue; }
-      html += `<ln>{(${project.name.capitalize()})} ${project.from != project.to ? project.from+"—"+project.to : project.from}</ln>`.to_curlic();
+      html += `<ln>{(${project.name.capitalize()})} ${project.from != project.to ? project.from+"—"+project.to : project.from}</ln>`
     }
-    return `<list class='tidy'>${html}</list>`;
+    return `<list class='tidy'>${html}</list>`.to_curlic();;
   }
 }

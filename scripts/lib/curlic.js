@@ -23,16 +23,19 @@ function Curlic(text = "",origin = null)
 
   function link(s,t)
   {
+    this.origin = null
+
     var target = t.replace("(","").replace(")","")
-    var external = target.indexOf("//") > -1
+    var external = target.indexOf("//") > -1 || this.origin
     var name = s.replace(`(${target})`,"")
     var location = target.toLowerCase().replace(/ /g,"+").replace(/[^0-9a-z\+\:\-\.\/]/gi,"").trim();
-    var href = this.origin ? this.origin+location : !external ? `#${location}` : target
-    var click = !external && Ø ? `Ø('query').bang('${target}')` : ''
-    var view = this.origin || external ? '_blank' : '_self'
-    var className = external ? 'external' : 'local'
 
-    return `<a href='${href}' title='${target}' onclick="${click}" class='${className}' target='${view}'>${name ? name : target}</a>`
+    if(external){
+      return `<a href='${target}' target='_blank' class='external'>${name ? name : target}</a>`
+    }
+    else{
+      return `<a href='#${location}' onclick="${!external && Ø ? `Ø('query').bang('${target}')` : ''}">${name ? name : target}</a>`
+    }
   }
 
   function evaluate(s,t)
