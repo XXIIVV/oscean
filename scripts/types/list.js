@@ -1,5 +1,7 @@
 function List(name,data)
 {
+  Entry.call(this,name,data);
+  
   this.name = name;
   this.data = data;
 

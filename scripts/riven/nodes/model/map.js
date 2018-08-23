@@ -24,7 +24,7 @@ function MapNode(id,rect)
     // Connect Parents
     for(id in tables.lexicon){
       var term = tables.lexicon[id];
-      var parent = !term.dict.UNDE ? "HOME" : term.dict.UNDE.toUpperCase()
+      var parent = !term.data.UNDE ? "HOME" : term.data.UNDE.toUpperCase()
       if(!tables.lexicon[parent]){ console.warn(`Unknown parent ${parent} for ${term.name}`); }
       term.parent = tables.lexicon[parent];
     }

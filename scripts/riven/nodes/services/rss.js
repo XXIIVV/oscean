@@ -42,7 +42,7 @@ function RssNode(id,rect)
     <description>
       &lt;img src="https://wiki.xxiivv.com/media/diary/${log.photo}.jpg"/&gt;
       &lt;br/&gt;
-      ${log.host.dict.BREF ? log.host.dict.BREF.to_curlic('https://wiki.xxiivv.com/').to_rss() : ''}
+      ${log.host.data.BREF ? log.host.data.BREF.to_curlic('https://wiki.xxiivv.com/').to_rss() : ''}
     </description>
   </item>
 `

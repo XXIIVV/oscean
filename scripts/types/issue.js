@@ -1,9 +1,11 @@
-function Issue(name,tasks = [])
+function Issue(name,data = [])
 {
+  Entry.call(this,name,data);
+
   this.host  = null; // From Ø('map')
   
   this.name = name.capitalize();
-  this.tasks = tasks ? tasks : [];
+  this.tasks = data ? data : [];
 
   this.toString = function()
   {

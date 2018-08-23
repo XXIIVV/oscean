@@ -1,9 +1,10 @@
 function Log(data = {code:'-400'})
 {
+  Entry.call(this,data.name,data);
+
   this.host  = null; // From Ø('map')
 
   this.term  = data.term ? data.term.capitalize() : '';
-  this.name  = data.name;
   this.text  = data.text;
   this.time  = data.date ? new Desamber(data.date) : null;
   this.photo = data.pict ? parseInt(data.pict) : null;
