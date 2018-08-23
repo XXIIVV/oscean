@@ -28,7 +28,7 @@ function Curlic(text = "",origin = null)
     var name = s.replace(`(${target})`,"")
     var location = target.toLowerCase().replace(/ /g,"+").replace(/[^0-9a-z\+\:\-\.\/]/gi,"").trim();
     var href = this.origin ? this.origin+location : !external ? `#${location}` : target
-    var click = !external ? `Ø('query').bang('${target}')` : ''
+    var click = !external && Ø ? `Ø('query').bang('${target}')` : ''
     var view = this.origin || external ? '_blank' : '_self'
     var className = external ? 'external' : 'local'
 
@@ -74,6 +74,7 @@ function Curlic(text = "",origin = null)
   this.toString = function()
   {
     var matches = this.extract();
+
     if(!matches){ return this.text; }
 
     matches.forEach(el => {
