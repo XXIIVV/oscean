@@ -69,8 +69,10 @@ function DefaultTemplate(id,rect,...params)
     var html = ""
     var words = Object.keys(q.tables.glossary).sort();
     for(var id in words){
-      var word = words[id]
-      html += `<ln>{(${word.capitalize()})}, ${q.tables.glossary[word].to_a().length} items</ln>`
+      var name = words[id]
+      var word = q.tables.glossary[name]
+      var children = Object.keys(word.data)
+      html += `<ln>{(${name.capitalize()})} — ${children.length} items</ln>`
     }
     return `<h2>{(Glossary)}</h2><list class='tidy' style='padding-left:30px'>${html}</list>`.to_curlic()
   }
