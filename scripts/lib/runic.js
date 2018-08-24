@@ -7,7 +7,7 @@ function Runic(lines = [],templater = null)
     "?":{tag:"p",class:"note"},
     "-":{tag:"ln",wrapper:"list"},
     "#":{tag:"ln",wrapper:"code"},
-    "*":{tag:"h2"},
+    "*":{tag:"h3"},
     "+":{tag:"hs"},
     "@":{tag:"quote",fn:quote},
     "|":{tag:"tr",wrapper:"table",fn:table},
@@ -84,7 +84,7 @@ function Runic(lines = [],templater = null)
 
   function table(content)
   {
-    return `<td>${content.replace(/ \| /g,"</td><td>")}</td>`
+    return `<td>${content.trim().replace(/ \| /g,"</td><td>")}</td>`
   }
 
   // 
