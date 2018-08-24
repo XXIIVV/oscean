@@ -6,7 +6,7 @@ function IndexTemplate(id,rect,...params)
 
   this.add = function(entries,t,s)
   {
-    var term = `${t}`.toLowerCase().trim();
+    var term = `${t}`.capitalize().trim();
     if(!term||term == ""){ return; }
     if(!entries[term]){ entries[term] = []; }
     var source = s.capitalize();

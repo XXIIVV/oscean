@@ -43,7 +43,7 @@ function InvokeNode(id,rect)
       var html = ""
       for(id in data){
         var seg = data[id]
-        html += `<h3>${id.capitalize()}</h3>${new Runic(seg,this.cache.tables)}`
+        html += `<h3>${id.capitalize()}</h3>${new Runic(seg,Curlic)}`
       }
       this.cache.result.data.LATE = html
     }

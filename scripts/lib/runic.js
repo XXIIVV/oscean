@@ -29,7 +29,7 @@ function Runic(lines = [],templater = null)
   function stash(acc,l)
   {
     var rune = l.substr(0,1)
-    var line = l.substr(2).trim()
+    var line = l.substr(2)
     var prev = acc[acc.length-1] ? acc[acc.length-1] : [{rune:rune,a:[]}]
 
     if(prev.rune == rune){
