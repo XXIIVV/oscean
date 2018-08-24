@@ -40,9 +40,6 @@ function List(name,data)
 
   this.toString = function()
   {
-    var html = `<p>{*${this.name.capitalize()}*} contains ${Object.keys(this.data).length} items.</p>`
-    html += `<list>${Array.isArray(this.data) ? new Runic(this.data) : this._from_object()}</list>`;
-
-    return html.to_curlic();
+    return `<list>${Array.isArray(this.data) ? new Runic(this.data) : this._from_object()}</list>`.to_curlic();
   }
 }
