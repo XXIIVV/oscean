@@ -3,57 +3,62 @@ function IndexTemplate(id,rect,...params)
   Node.call(this,id,rect);
 
   this.glyph = NODE_GLYPHS.element
-  
-  this.entries = {}
 
-  this.add = function(t,source)
+  this.add = function(entries,t,s)
   {
-    var term = t.toLowerCase().trim();
+    var term = `${t}`.toLowerCase().trim();
     if(!term||term == ""){ return; }
-    if(!this.entries[term]){ this.entries[term] = []; }
-    if(this.entries[term].indexOf(source) > -1){ return; }
-    this.entries[term].push(source)
+    if(!entries[term]){ entries[term] = []; }
+    var source = s.capitalize();
+    if(entries[term].indexOf(source) > -1){ return; }
+    entries[term].push(source)
   }
 
   this.collect = function(q)
   {
+    var h = {}
     for(var id in q.tables.lexicon){
       var term = q.tables.lexicon[id]
-      this.add(term.name,"lexicon")
+      this.add(h,term.name,term.parent.name)
     }
-
     for(var id in q.tables.glossary){
       var list = q.tables.glossary[id]
-      this.add(list.name,"glossary")
+      this.add(h,list.name,list.name)
       for(var i in list.data){
-        this.add(i,"glossary")
+        this.add(h,i,list.name)
       }
     }
-
     for(var id in q.tables.horaire){
-      this.add(q.tables.horaire[id].name,"horaire")
+      var log = q.tables.horaire[id]
+      this.add(h,log.name,`${log.term}`)
     }
+    return h;
+  }
 
-    this.entries;
+  function _format(name,sources)
+  {
+    return `<ln>{${name.capitalize()}(${sources[0]})} ${sources[0].toLowerCase() != name.toLowerCase() ? ' — '+sources[0] : ''}</ln>`
   }
 
   this.answer = function(q)
   {
-    this.collect(q);
+    var entries = this.collect(q);
 
-    var sortable = Object.keys(this.entries).sort();
+    var sortable = Object.keys(entries).sort();
 
     var prev = ""
     var html = ""
     for(id in sortable){
-      var lead = sortable[id].substr(0,1)
+      var entry = sortable[id];
+      var lead = entry.substr(0,1)
       if(parseInt(lead) > 0){ continue; }
+      if(!entry.to_alpha()){ continue; }
       if(prev != lead){
-        html += `<h2>${lead}</h2>`
+        html += `<ln class='head'>${lead}</ln>`
       }
-      html += `<ln>{(${sortable[id].capitalize()})} — ${this.entries[sortable[id]]}</ln>`.to_curlic()
+      html += _format(entry,entries[entry]);
       prev = lead
     }
-    return `<list>${html}</list>`
+    return `<p>The {*Wiki*} contains ${sortable.length} searchable terms.</p><list class='tidy'>${html}</list>`.to_curlic()
   }
 }
