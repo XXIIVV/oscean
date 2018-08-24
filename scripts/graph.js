@@ -12,10 +12,9 @@ function graph()
     Ø("database").create({x:5,y:8},DatabaseNode),
       Ø("lexicon").create({x:2,y:14},TableNode,Indental,Term),
       Ø("horaire").create({x:5,y:14},TableNode,Tablatal,Log),
-      Ø("issues").create({x:8,y:14},TableNode,Indental),
+      Ø("issues").create({x:8,y:14},TableNode,Tablatal,Issue),
       Ø("glossary").create({x:11,y:14},TableNode,Indental,List),
     Ø("map").create({x:8,y:8},MapNode),
-    Ø("invoke").create({x:8,y:2},InvokeNode),
   ])
 
   Ø("assoc").mesh({x:22,y:0},[
@@ -69,17 +68,14 @@ function graph()
     Ø("li_en").create({x:2,y:9},LietalNode),
     Ø("en_li").create({x:5,y:9},LietalNode),
     Ø("deconstruct").create({x:8,y:9},LietalNode),
-    Ø("clock").create({x:11,y:9},ClockNode),
-    Ø("desamber").create({x:14,y:9},DesamberNode),
     Ø("dictionaery").create({x:5,y:16},TableNode,Tablatal),
   ])
 
   // Model
   Ø("keyboard").connect("rss")
   Ø("query").connect("router")
-  Ø("router").connect("invoke")
   Ø("database").connect("map")
-  Ø("invoke").connect("build")
+  Ø("router").connect("build")
 
   // Assoc
   Ø("build").syphon(["_navi","_content","_sidebar"])
@@ -101,7 +97,7 @@ function graph()
   Ø("li_en").syphon("dictionaery")
   Ø("deconstruct").syphon("dictionaery")
   Ø("router").syphon("database")
-  Ø("database").syphon(["lexicon","horaire","issues","glossary"])
+  Ø("database").syphon(["horaire","issues","glossary","lexicon"])
   Ø("operation").syphon(["li_en","en_li","clock","desamber","deconstruct"])
 
   Ø("query").bang()

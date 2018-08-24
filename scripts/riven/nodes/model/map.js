@@ -19,10 +19,10 @@ function MapNode(id,rect)
   this.map = function(tables)
   {
     var time = performance.now();
-    var count = {links:0,diaries:0,issues:0}
+    var count = {links:0,diaries:0}
 
     // Connect Parents
-    for(id in tables.lexicon){
+    for(var id in tables.lexicon){
       var term = tables.lexicon[id];
       var parent = !term.data.UNDE ? "HOME" : term.data.UNDE.toUpperCase()
       if(!tables.lexicon[parent]){ console.warn(`Unknown parent ${parent} for ${term.name}`); }
@@ -30,7 +30,7 @@ function MapNode(id,rect)
     }
 
     // Connect children
-    for(id in tables.lexicon){
+    for(var id in tables.lexicon){
       var term = tables.lexicon[id];
       var parent = term.parent.name
       if(!tables.lexicon[parent]){ console.warn("Missing children term",log.term); continue; }
@@ -38,7 +38,7 @@ function MapNode(id,rect)
     }
 
     // Connect links
-    for(id in tables.lexicon){
+    for(var id in tables.lexicon){
       var term = tables.lexicon[id];
       var links = term.find_outgoing()
       for(id in links){
@@ -51,7 +51,7 @@ function MapNode(id,rect)
     }
 
     // Connect Logs
-    for(id in tables.horaire){
+    for(var id in tables.horaire){
       var log = tables.horaire[id]
       var index = log.term.toUpperCase()
       if(!log.term){ continue; }
@@ -70,17 +70,14 @@ function MapNode(id,rect)
     }
 
     // Connect issues
-    for(term in tables.issues){
-      var index = term.toUpperCase()
-      var issues = tables.issues[term]
+    for(var id in tables.issues){
+      var issue = tables.issues[id]
+      var index = issue.term.toUpperCase()
       if(!tables.lexicon[index]){ console.warn("Missing issue parent",index); continue; }
-      for(id in issues){
-        var issue = new Issue(id,issues[id]);
-        tables.lexicon[index].issues.push(issue)
-        count.issues += 1
-      }
+      tables.lexicon[index].issues.push(issue)
+      issue.host = tables.lexicon[index]
     }
     this.is_mapped = true
-    console.info(this.id,`Mapped ${tables.horaire.length} logs, ${count.links} links, ${count.issues} issues, and ${count.diaries} diaries to ${Object.keys(tables.lexicon).length} terms, in ${(performance.now() - time).toFixed(2)}ms.`)
+    console.info(this.id,`Mapped ${tables.horaire.length} logs, ${count.links} links, ${tables.issues.length} issues, and ${count.diaries} diaries to ${Object.keys(tables.lexicon).length} terms, in ${(performance.now() - time).toFixed(2)}ms.`)
   }
 }

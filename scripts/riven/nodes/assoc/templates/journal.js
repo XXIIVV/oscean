@@ -23,19 +23,15 @@ function JournalTemplate(id,rect,...params)
     }
 
     // Build journals
-    var journals = {}
-    for(id in logs){
-      var log = logs[id];
-      if(Object.keys(journals).length > 16){ break; }
-      if(!journals[log.term]){ journals[log.term] = new Journal(); }
-      journals[log.term].push(log)
-    }
 
     var html = ''
-
-    for(id in journals){
-      var journal = journals[id];
-      html += `${journal}`
+    var i = 0
+    for(id in logs){
+      if(i > 14){ break; }
+      var log = logs[id];
+      if(!log.photo){ continue; }
+      html += `${log}`
+      i += 1
     }
 
     return `${new ActivityViz(logs)}${new StatusViz(logs)}${html}<style>.graph.status { margin-bottom:0px !important }</style>`

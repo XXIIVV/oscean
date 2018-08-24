@@ -81,10 +81,8 @@ function TrackerTemplate(id,rect,...params)
     var html = ''
     for(var i in term.issues){
       var issue = term.issues[i]
-      html += `<tr class='issue'><td colspan='20'><t class='issue'>{${issue.name}(${term.name.capitalize()}:Tracker)}<t class='right'>${issue.tasks.length} Tasks</t></t></td></tr>`.to_curlic()
-      html += this._tasks(issue)
+      html += `${issue}`
     }
-
     return html;
   }
 
@@ -101,7 +99,7 @@ function TrackerTemplate(id,rect,...params)
     for(i in r.points){ html += `<td title='${i}' class='bullet ${r.points[i] ? 'done' : 'undone'}'>•</td>` }
     html += `</tr>`
 
-    html += this._issues(term);
+    html += term.issues.length > 0 ? `<tr><td colspan='100'>${this._issues(term)}</td></tr>` : '';
     return html
   }
 

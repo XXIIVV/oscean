@@ -8,6 +8,7 @@ function Log(data = {code:'-400'})
   this.text  = data.text;
   this.time  = data.date ? new Desamber(data.date) : null;
   this.photo = data.pict ? parseInt(data.pict) : null;
+  this.bref  = `Log ${this.name ? 'titled '+this.name+', ' : ''}added on ${this.time}.`
 
   this.rune   = data.code.length == 4 ? data.code.substr(0,1) : "-"
   this.sc     = data.code.length == 4 ? parseInt(data.code.substr(1,1)) : 0
@@ -24,4 +25,17 @@ function Log(data = {code:'-400'})
     ["idle", "research"  , "experiment" , "documentation" , "planning"  , "maintenance" , "tooling"     , "updating"  , "release" , "talk" ]
   ]
   this.task   = this.tasks[this.sc-1] ? this.tasks[this.sc-1][this.ch] : 'travel';
+
+  this.toString = function()
+  {
+    return `
+    <div class='entry log'>
+      <svg onclick="Ø('query').bang('${this.term}')" class='icon'><path transform="scale(0.15,0.15) translate(20,20)" d="${this.host.glyph()}"></path></svg>
+      <div class='head'>
+        <div class='details'><a class='topic' onclick="Ø('query').bang('${this.term}')">${this.term}</a> <t class='time' onclick="Ø('query').bang('${this.term}:Journal')">${this.time}</t></div>
+        <div class='bref'>${this.host.bref.to_curlic()}</div>
+        ${this.photo ? `<photo style='background-image:url(media/diary/${this.photo}.jpg)' onclick="Ø('query').bang('${this.term}')"></photo>` : ''}
+      </div>
+    </div>`
+  }
 }

@@ -6,8 +6,7 @@ function DefaultTemplate(id,rect,...params)
   
   this.answer = function(q)
   {
-    if(q.target.toLowerCase() == "index"){ return this.signal('index').answer(q) }
-    if(!q.result){ return this.signal('missing').answer(q) }
+    if(!q.result){ return Ø('database').find(q.target) ? this.signal('index').answer(q) : this.signal('missing').answer(q) }
 
     var html = `${q.result}`
 
