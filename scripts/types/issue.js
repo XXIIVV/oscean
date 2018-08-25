@@ -10,6 +10,6 @@ function Issue(data = {})
 
   this.toString = function()
   {
-    return `<div>${this.task}: ${this.name}</div>`
+    return `<div><b>${this.task}</b>: ${this.name}</div>`
   }
 }
