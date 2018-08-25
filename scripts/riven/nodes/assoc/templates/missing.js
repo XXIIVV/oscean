@@ -18,7 +18,7 @@ function MissingTemplate(id,rect,...params)
 
     return `
     <p>Sorry, there are no pages for {*/${q.target.capitalize()}*}, did you mean {(${similar[0].word.capitalize()})} or {(${similar[1].word.capitalize()})}?</p>
-    <p>{*Create this page*} by submitting a {Pull Request(https://github.com/XXIIVV/oscean)}, or if you believe this to be an error, please contact {@neauoire(https://twitter.com/neauoire)}. Alternatively, you locate missing pages from within the {progress status(status)}.</p>`.to_curlic()
+    <p>{*Create this page*} by submitting a {Pull Request(https://github.com/XXIIVV/oscean)}, or if you believe this to be an error, please contact {@neauoire(https://twitter.com/neauoire)}. Alternatively, you locate missing pages from within the {progress tracker(Tracker)}.</p>`.to_curlic()
   }
 
   this.desamber_to_gregorian = function(q)

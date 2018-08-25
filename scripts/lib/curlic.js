@@ -44,7 +44,7 @@ function Curlic(text = "",origin = null)
       return `${eval(t.substr(1,t.length-2))}`  
     }
     catch(err){
-      console.warn("Cannot eval",t); return t
+      console.warn(`Cannot eval:${t}`,err); return t
     }
   }
 
@@ -58,7 +58,7 @@ function Curlic(text = "",origin = null)
     // Wrap
     for(var ch in runes){
       var rune = runes[ch];
-      if(s.count(ch) < 2){ continue; }
+      if(s.count(ch) < 2 || s.indexOf(ch) > 0){ continue; }
       s = wrap(s,ch,rune)
     }
 

@@ -9,15 +9,16 @@ function graph()
 
   Ø("model").mesh({x:6,y:0},[
     Ø("router").create({x:5,y:2},RouterNode),
-    Ø("database").create({x:5,y:8},DatabaseNode),
-      Ø("lexicon").create({x:2,y:14},TableNode,Indental,Term),
-      Ø("horaire").create({x:5,y:14},TableNode,Tablatal,Log),
-      Ø("issues").create({x:8,y:14},TableNode,Tablatal,Issue),
-      Ø("glossary").create({x:11,y:14},TableNode,Indental,List),
-    Ø("map").create({x:8,y:8},MapNode),
+    Ø("database").create({x:8,y:8},DatabaseNode),
+      Ø("dictionaery").create({x:2,y:14},TableNode,Tablatal,Aeth),
+      Ø("lexicon").create({x:5,y:14},TableNode,Indental,Term),
+      Ø("horaire").create({x:8,y:14},TableNode,Tablatal,Log),
+      Ø("issues").create({x:11,y:14},TableNode,Tablatal,Issue),
+      Ø("glossary").create({x:14,y:14},TableNode,Indental,List),
+    Ø("map").create({x:11,y:8},MapNode),
   ])
 
-  Ø("assoc").mesh({x:22,y:0},[
+  Ø("assoc").mesh({x:25,y:0},[
     Ø("build").create({x:5,y:2},BuildNode),
     Ø("_navi").create({x:2,y:8},BuildNaviNode),
     Ø("_sidebar").create({x:5,y:8},BuildSidebarNode),
@@ -31,7 +32,7 @@ function graph()
       Ø("calendar").create({x:14,y:14},CalendarTemplate),
   ])
 
-  Ø("client").mesh({x:41,y:0},[
+  Ø("client").mesh({x:44,y:0},[
     Ø("view").create({x:2,y:2},DocumentNode),
     Ø("style").create({x:5,y:8},DomNode,"style"),
     Ø("header").create({x:2,y:8},DomNode),
@@ -62,15 +63,6 @@ function graph()
       `),
   ])
 
-  // Operation
-  Ø("runic").mesh({x:6,y:30},[
-    Ø("operation").create({x:8,y:2},OperationNode),
-    Ø("li_en").create({x:2,y:9},LietalNode),
-    Ø("en_li").create({x:5,y:9},LietalNode),
-    Ø("deconstruct").create({x:8,y:9},LietalNode),
-    Ø("dictionaery").create({x:5,y:16},TableNode,Tablatal),
-  ])
-
   // Model
   Ø("keyboard").connect("rss")
   Ø("query").connect("router")
@@ -93,12 +85,8 @@ function graph()
   Ø("footer").bind(["credits"])
 
   // Operations
-  Ø("en_li").syphon("dictionaery")
-  Ø("li_en").syphon("dictionaery")
-  Ø("deconstruct").syphon("dictionaery")
   Ø("router").syphon("database")
-  Ø("database").syphon(["horaire","issues","glossary","lexicon"])
-  Ø("operation").syphon(["li_en","en_li","clock","desamber","deconstruct"])
+  Ø("database").syphon(["issues","horaire","glossary","lexicon"])
 
   Ø("query").bang()
 }
