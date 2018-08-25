@@ -26,7 +26,7 @@ function DatabaseNode(id,rect)
         var el = db[i]
         if(!el.name){ continue; }
         if(!el.index){ continue; }
-        this.index[el.name.toUpperCase()] = el
+        this.index[el.name.toUpperCase().to_alpha()] = el
       }
     }
     console.info(this.id,`Indexed ${Object.keys(this.index).length} searchables, in ${(performance.now() - time).toFixed(2)}ms.`)

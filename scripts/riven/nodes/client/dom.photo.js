@@ -35,6 +35,7 @@ function DomPhotoNode(id,rect,...params)
   
   function diff(data,width,height)
   {
+    var fuzzy = -0.4;
     var r,g,b, max_rgb;
     var light = 0, dark = 0;
     for(var x = 0, len = data.length; x < len; x+=4){

@@ -6,7 +6,7 @@ function IndexTemplate(id,rect,...params)
 
   function _format(name,entry)
   {
-    return `<ln>{${name.capitalize()}(${name})} ${entry.host ? ' — '+entry.host.name.capitalize() : ''}</ln>`
+    return `<ln>{${name.capitalize()}(${name.to_alphanum()})} ${entry.host ? ' — '+entry.host.name.capitalize() : ''}</ln>`
   }
 
   this.answer = function(q)
