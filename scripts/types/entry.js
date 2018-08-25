@@ -1,9 +1,10 @@
 function Entry(name,data)
 {
-  this.name = name;
-  this.data = data;
-  this.unde = "Home"
-  this.bref = `—`
+  this.name  = name;
+  this.data  = data;
+  this.unde  = "Home"
+  this.bref  = `—`
+  this.index = true;
 
   this.span = {from:null,to:null}
   this.issues = []

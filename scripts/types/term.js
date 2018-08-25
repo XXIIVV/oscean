@@ -12,8 +12,6 @@ function Term(name,data)
   this.latest_log = null   // From Ø('map')
   this.featured_log = null // From Ø('map')
 
-  this.name = name;
-
   this.data = data;
   this.bref = data.BREF ? data.BREF : ''
   this.unde = data.UNDE ? data.UNDE : 'Home'
@@ -21,6 +19,7 @@ function Term(name,data)
   this.links = this.data.LINK ? this.data.LINK : [];
   this.tags = this.data.TAGS ? this.data.TAGS.toLowerCase().split(" ") : [];
   this.theme = this.data.LOOK ? this.data.LOOK.toLowerCase() : 'default';
+  this.index = true;
 
   this.is_portal = this.tags.indexOf("portal") > -1
   

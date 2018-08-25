@@ -86,7 +86,7 @@ function graph()
 
   // Operations
   Ø("router").syphon("database")
-  Ø("database").syphon(["issues","horaire","glossary","lexicon"])
+  Ø("database").syphon(["dictionaery","issues","horaire","glossary","lexicon"])
 
   Ø("query").bang()
 }

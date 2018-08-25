@@ -2,8 +2,9 @@ function List(name,data)
 {
   Entry.call(this,name,data);
 
-  this.bref = `The {(${this.name.capitalize()})} word list.`
-  this.unde = 'Glossary'
+  this.bref  = `The {(${this.name.capitalize()})} word list.`
+  this.unde  = 'Glossary'
+  this.index = true;
 
   this.connections = function(tables)
   {

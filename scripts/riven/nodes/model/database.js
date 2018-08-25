@@ -25,6 +25,7 @@ function DatabaseNode(id,rect)
       for(var i in db){
         var el = db[i]
         if(!el.name){ continue; }
+        if(!el.index){ continue; }
         this.index[el.name.toUpperCase()] = el
       }
     }

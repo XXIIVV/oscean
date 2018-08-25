@@ -4,6 +4,7 @@ function Aeth(data = {},name = null)
 
   this.childspeak = name ? name : data.name;
   this.adultspeak = adultspeak(name ? name : data.name)
+  this.index = false;
 
   this.to_english = function()
   {

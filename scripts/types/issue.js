@@ -4,8 +4,9 @@ function Issue(data = {})
 
   this.host  = null; // From Ø('map')
   
-  this.term = data.term;
-  this.task = data.task;
+  this.term  = data.term;
+  this.task  = data.task;
+  this.index = false;
 
   this.toString = function()
   {
