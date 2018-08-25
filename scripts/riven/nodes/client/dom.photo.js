@@ -18,7 +18,7 @@ function DomPhotoNode(id,rect,...params)
   this.update = function(content)
   {
     if(content > 0){
-      is_dark(`media/diary/${content}.jpg`,this.update_header)  
+      is_dark(`media/diary/${content}.jpg`,this.update_header)
       this.media.style.backgroundImage = `url(media/diary/${content}.jpg)`;
       this.el.className = ""
     }
@@ -31,6 +31,24 @@ function DomPhotoNode(id,rect,...params)
   this.update_header = function(v = true)
   {
     Ø("header").el.className = v ? "dark" : "light"
+  }
+  
+  function diff(data,width,height)
+  {
+    var r,g,b, max_rgb;
+    var light = 0, dark = 0;
+    for(var x = 0, len = data.length; x < len; x+=4){
+      r = data[x];
+      g = data[x+1];
+      b = data[x+2];
+      max_rgb = Math.max(Math.max(r, g), b);
+      if (max_rgb < 128)
+        dark++;
+      else
+        light++;
+    }
+    var dl_diff = ((light - dark) / (width*height));
+    return dl_diff + fuzzy < 0 ? true : false
   }
 
   function is_dark(imageSrc,callback)
@@ -45,22 +63,12 @@ function DomPhotoNode(id,rect,...params)
       canvas.height = this.height;
       var ctx = canvas.getContext("2d");
       ctx.drawImage(this,0,0);
-      var imageData = ctx.getImageData(0,0,canvas.width,canvas.height);
-      var data = imageData.data;
-      var r,g,b, max_rgb;
-      var light = 0, dark = 0;
-      for(var x = 0, len = data.length; x < len; x+=4){
-          r = data[x];
-          g = data[x+1];
-          b = data[x+2];
-          max_rgb = Math.max(Math.max(r, g), b);
-          if (max_rgb < 128)
-              dark++;
-          else
-              light++;
+      
+      try{
+        var imageData = ctx.getImageData(0,0,canvas.width,canvas.height);
+        callback(diff(imageData.data,this.width,this.height));
       }
-      var dl_diff = ((light - dark) / (this.width*this.height));
-      callback(dl_diff + fuzzy < 0 ? true : false);
+      catch(err){ console.warn("Could not get photo data"); callback(); }
     }
   }
 }
