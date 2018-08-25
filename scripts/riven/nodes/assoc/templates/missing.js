@@ -13,7 +13,8 @@ function MissingTemplate(id,rect,...params)
       return `<code>${this[o.name](q.target)} <comment># ${o.name}</comment>\n</code>`
     }
 
-    var similar = find_similar(q.target.toUpperCase(),q.tables.lexicon)
+    var index = Object.keys(Ø('database').index)
+    var similar = find_similar(q.target.toUpperCase(),index);
 
     return `
     <p>Sorry, there are no pages for {*/${q.target.capitalize()}*}, did you mean {(${similar[0].word.capitalize()})} or {(${similar[1].word.capitalize()})}?</p>
@@ -50,7 +51,7 @@ function MissingTemplate(id,rect,...params)
   {
     var similar = []
     for(key in list){
-      var word = list[key].name
+      var word = list[key]
       similar.push({word:word,value:similarity(target,word)});
     }
     return similar.sort(function(a, b){

@@ -4,17 +4,14 @@ function IndexTemplate(id,rect,...params)
 
   this.glyph = NODE_GLYPHS.element
 
-  function _format(name,sources)
+  function _format(name,entry)
   {
-    return `<ln>{${name.capitalize()}(${sources[0]})} ${sources[0].toLowerCase() != name.toLowerCase() ? ' — '+sources[0] : ''}</ln>`
+    return `<ln>{${name.capitalize()}(${name})} ${entry.host ? ' — '+entry.host.name.capitalize() : ''}</ln>`
   }
 
   this.answer = function(q)
   {
-    console.log(q)
-    return "?"
-    var entries = this.collect(q);
-
+    var entries = Ø('database').index
     var sortable = Object.keys(entries).sort();
 
     var prev = ""
