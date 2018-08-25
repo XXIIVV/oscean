@@ -15,7 +15,8 @@ function Desamber(str)
 
   this.to_gregorian = function()
   {
-    return `${this.date.getFullYear()}-${prepend(this.date.getMonth()+1,2)}-${prepend(this.date.getDate(),2)}`;
+    var d = this.to_date()
+    return `${d.getFullYear()}-${prepend(d.getMonth()+1,2)}-${prepend(d.getDate(),2)}`;
   }
 
   this.to_date = function()
@@ -42,7 +43,7 @@ function Desamber(str)
     return this.str.toUpperCase();
   }
 
-  function prepend(s,l,c="0"){ while(s.length < l){ s = `${c}${s}`; }; return s; }
+  function prepend(s,l,c="0"){ while(`${s}`.length < l){ s = `${c}${s}`; }; return s; }
 }
 
 Date.prototype.desamber = function()

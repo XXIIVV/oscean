@@ -52,7 +52,8 @@ function Curlic(text = "",origin = null)
   {
     // Eval
     if(s.match(/\[.*\]/g)){
-      s = evaluate(s,s.match(/\[.*\]/g)[0])
+      var t = s.match(/\[.*\]/g)[0]
+      s = s.replace(`${t}`,evaluate(s,t))
     }
 
     // Wrap
