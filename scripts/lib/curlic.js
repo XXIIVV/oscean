@@ -22,7 +22,7 @@ function Curlic(text = "",origin = null)
     let external = target.indexOf("//") > -1 || this.origin
     let name = s.replace(`(${target})`,"")
     let location = target.toLowerCase().replace(/ /g,"+").replace(/[^0-9a-z\+\:\-\.\/]/gi,"").trim();
-    return `<a href='${external ? target : '#'+location}' target='${external ? '_blank' : '_self'}' class='${external ? 'external' : 'local'}' data-goto='${target}'>${name ? name : target}</a>`
+    return `<a href='${external ? target : '#'+location}' target='${external ? '_blank' : '_self'}' class='${external ? 'external' : 'local'}' data-goto='${!external ? target : ''}'>${name ? name : target}</a>`
   }
 
   function evaluate(s,t)
