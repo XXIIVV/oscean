@@ -33,9 +33,9 @@ function Log(data = {code:'-400'})
     <div class='entry log'>
       <svg data-goto='${this.term}' class='icon'><path transform="scale(0.15,0.15) translate(20,20)" d="${this.host.glyph()}"></path></svg>
       <div class='head'>
-        <div class='details'><a class='topic' data-goto='${this.term}'>${this.term}</a> ${this.name ? ' — '+this.name : ''} <t class='time' data-goto='${this.term}:Journal'>${this.time}</t></div>
+        <div class='details'><a class='topic' data-goto='${this.term}'>${this.term}</a> ${this.name ? ` — <span class='name' data-goto='${this.name}'>${this.name}</span>` : ''} <t class='time' data-goto='${this.term}:Journal'>${this.time}</t></div>
         <div class='bref'>${this.host.bref.to_curlic()}</div>
-        ${this.photo ? `<photo style='background-image:url(media/diary/${this.photo}.jpg)' data-goto='${this.term}'></photo>` : ''}
+        ${this.photo ? `<img src='media/diary/${this.photo}.jpg' data-goto='${this.term}'/>` : ''}
       </div>
     </div>`
   }
