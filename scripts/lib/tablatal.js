@@ -10,7 +10,7 @@ function Tablatal(data)
     for(let id in lines){
       if(id == 0 || lines[id].trim() == ""){ continue; }
       let entry = {};
-      for(i in key){
+      for(let i in key){
         entry[i] = lines[id].substr(key[i].from,key[i].to).trim();
       }
       a[a.length] = type ? new type(entry) : entry;

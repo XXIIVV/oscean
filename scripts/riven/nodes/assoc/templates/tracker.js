@@ -96,7 +96,7 @@ function TrackerTemplate(id,rect,...params)
     <td class='${r.status}' style='width:250px'>{(${term.name.capitalize()})}</b><t class='right'>${parseInt(r.score * 100)}%</t></td>
     <td style='padding-left:15px'>${term.incoming.length < 1 && term.outgoing.length < 1 ? 'unlinked' : `${term.incoming.length}/${term.outgoing.length}`}</td>
     `.to_curlic()
-    for(i in r.points){ html += `<td title='${i}' class='bullet ${r.points[i] ? 'done' : 'undone'}'>•</td>` }
+    for(let i in r.points){ html += `<td title='${i}' class='bullet ${r.points[i] ? 'done' : 'undone'}'>•</td>` }
     html += `</tr>`
 
     html += term.issues.length > 0 ? `<tr><td colspan='100'>${this._issues(term)}</td></tr>` : '';
