@@ -1,8 +1,8 @@
 function graph()
 {
   Ø("query").create({x:2,y:2},QueryNode)
-  Ø("keyboard").create({x:2,y:23},KeyboardNode)
-  Ø("mouse").create({x:2,y:19},MouseNode)
+  Ø("keyboard").create({x:2,y:6},KeyboardNode)
+  Ø("mouse").create({x:2,y:10},MouseNode)
 
   Ø("services").mesh({x:6,y:21},[
     Ø("rss").create({x:2,y:2},RssNode)
@@ -59,13 +59,13 @@ function graph()
         <a target='_blank' href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="icon cc"></a>
         <a data-goto='devine lu linvega'>Devine Lu Linvega</a> © 06I04—${new Date().desamber()}
         <center><a data-goto='About'>BY-NC-SA 4.0</a> <t style="color:#ccc"'>${new Clock()}</t></center>
-        <a target='_blank' href="http://100r.co" class="icon hundredrabbits"></a>
-        <hr>
+        <a target='_blank' href="http://100r.co" class="icon hundredrabbits"></a><hr>
       `),
   ])
 
   // Model
-  Ø("keyboard").connect("rss")
+  Ø("router").syphon("database")
+  Ø("database").syphon(["dictionaery","issues","horaire","glossary","lexicon"])
   Ø("query").connect("router")
   Ø("database").connect("map")
   Ø("router").connect("build")
@@ -85,21 +85,6 @@ function graph()
   Ø("sidebar").bind(["bref","icon"])
   Ø("footer").bind(["credits"])
 
-  // Operations
-  Ø("router").syphon("database")
-  Ø("database").syphon(["dictionaery","issues","horaire","glossary","lexicon"])
-
+  // Start
   Ø("query").bang()
 }
-
-// Tools
-
-String.prototype.replace_all = function(search, replacement){ return `${this}`.split(search).join(replacement); };
-String.prototype.capitalize = function(){ return this.charAt(0).toUpperCase() + this.slice(1).toLowerCase(); }
-String.prototype.to_url = function(){ return this.toLowerCase().replace(/ /g,"+").replace(/[^0-9a-z\+\:\-\.\/]/gi,"").trim(); }
-String.prototype.to_path = function(){ return this.toLowerCase().replace(/\+/g,".").replace(/ /g,".").replace(/[^0-9a-z\.\-]/gi,"").trim(); }
-String.prototype.to_entities = function(){ return this.replace(/[\u00A0-\u9999<>\&]/gim, function(i) { return `&#${i.charCodeAt(0)}`; }); }
-String.prototype.to_rss = function(){ return this.replace(/\</g,"&lt;").replace(/\>/g,"&gt;") }
-String.prototype.to_alpha = function(){ return this.replace(/[^a-z ]/gi,"").trim(); }
-String.prototype.to_alphanum = function(){ return this.replace(/[^0-9a-z ]/gi,""); }
-String.prototype.count=function(c) { let r = 0, i = 0; for(let i;i<this.length;i++)if(this[i]==c) r++; return r; }

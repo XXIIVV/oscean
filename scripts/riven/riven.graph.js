@@ -3,6 +3,8 @@ function Riven_Graph()
   Riven.call(this);
 
   const GRID_SIZE = 20
+  const PORT_TYPES = {default:0,input:1,output:2,request:3,answer:4}
+  const ROUTE_TYPES = {default:0,request:1}
 
   this.is_graph = true;
   this.el = document.createElementNS("http://www.w3.org/2000/svg", "svg");

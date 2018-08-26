@@ -10,7 +10,7 @@ function KeyboardNode(id,rect)
   this.key_up = function(e)
   {
     if(e.key == "g" && e.ctrlKey){
-      this.send("generate")
+      Ø('rss').bang()
     }
   }
 }

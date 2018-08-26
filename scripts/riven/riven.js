@@ -29,6 +29,9 @@ function Ø(s,network = RIVEN.network)
 
 function Node(id,rect={x:0,y:0,w:2,h:2})
 {
+  const PORT_TYPES = {default:0,input:1,output:2,request:3,answer:4}
+  const ROUTE_TYPES = {default:0,request:1}
+  
   this.id = id;
   this.ports = {}
   this.rect = rect;
@@ -203,5 +206,3 @@ function Node(id,rect={x:0,y:0,w:2,h:2})
   }
 }
 
-let PORT_TYPES = {default:"default",input:"input",output:"output",request:"request",answer:"answer"}
-let ROUTE_TYPES = {default:"default",request:"request"}
