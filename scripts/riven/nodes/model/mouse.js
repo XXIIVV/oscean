@@ -9,9 +9,13 @@ function MouseNode(id,rect)
 
   this.click = function(e)
   {
-    if(e.target.getAttribute('data-goto') && e.target.className != 'external'){
-      Ø('query').bang(e.target.getAttribute('data-goto'))
-      e.preventDefault();
-    }
+    if(e.target.className == 'external'){ return; }
+
+    let el = e.target.getAttribute('data-goto') ? e.target : e.target.parentNode.getAttribute('data-goto') ? e.target.parentNode : null;
+
+    if(!el){ return; }
+
+    Ø('query').bang(el.getAttribute('data-goto'))
+    e.preventDefault();
   }
 }

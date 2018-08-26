@@ -10,45 +10,39 @@ function Curlic(text = "",origin = null)
     "$":{tag:"span",fn:eval},
   }
 
+  function evaluate(t)
+  {
+    try{ return `${eval(t)}`; }
+    catch(err){ console.warn(`Cannot eval:${t}`,err); return t; }
+  }
+
   function wrap(s,c,r)
   {
-    s = s.replace(c,'').replace(c,'');
-    return `<${r.tag}>${r.fn ? s.replace(s,r.fn(s)) : s}</${r.tag}>`
+    s = s.replace(c,`<${r.tag}>`).replace(c,`</${r.tag}>`);
+    return r.fn ? s.replace(s,r.fn(s)) : s
   }
 
   function link(s,t)
   {
-    let target = t.replace("(","").replace(")","")
+    let target = t.substr(1,t.length-2).trim();
     let external = target.indexOf("//") > -1 || this.origin
-    let name = s.replace(`(${target})`,"")
+    let name = s.replace(`(${target})`,"").trim();
     let location = target.toLowerCase().replace(/ /g,"+").replace(/[^0-9a-z\+\:\-\.\/]/gi,"").trim();
     return `<a href='${external ? target : '#'+location}' target='${external ? '_blank' : '_self'}' class='${external ? 'external' : 'local'}' data-goto='${!external ? target : ''}'>${name ? name : target}</a>`
   }
 
-  function evaluate(s,t)
-  {
-    try{
-      return `${eval(t.substr(1,t.length-2))}`  
-    }
-    catch(err){ console.warn(`Cannot eval:${t}`,err); return t; }
-  }
-
   function parse(s)
   {
-    // Eval
-    if(s.match(/\[.*\]/g)){
-      let t = s.match(/\[.*\]/g)[0]
-      s = s.replace(`${t}`,evaluate(s,t))
-    }
-    // Wrap
+    let to_eval = s.match(/ *\[[^)]*\] */g)
+    if(to_eval){ s = s.replace(to_eval[0],evaluate(to_eval[0])); }
+    let to_link = s.match(/ *\([^)]*\) */g)
+    if(to_link){ s = s.replace(to_link[0],""); }
     for(let ch in runes){
-      let rune = runes[ch];
-      if(s.indexOf(ch) != 0){ continue; }
-      s = wrap(s,ch,rune)
+      if(s.indexOf(ch) < 0){ continue; }
+      s = wrap(s,ch,runes[ch])
     }
-    // Link
-    if(s.match(/\(.*\)/g)){
-      s = link(s,s.match(/\(.*\)/g)[0])
+    if(to_link){
+      s = link(s,to_link[0])
     }
     return s
   }
