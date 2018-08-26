@@ -59,7 +59,7 @@ function Curlic(text = "",origin = null)
     // Wrap
     for(var ch in runes){
       var rune = runes[ch];
-      if(s.count(ch) < 2 || s.indexOf(ch) > 0){ continue; }
+      if(s.indexOf(ch) != 0){ continue; }
       s = wrap(s,ch,rune)
     }
 
