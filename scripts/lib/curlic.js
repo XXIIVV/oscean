@@ -33,9 +33,9 @@ function Curlic(text = "",origin = null)
 
   function parse(s)
   {
-    let to_eval = s.match(/ *\[[^)]*\] */g)
+    let to_eval = s.match(/\[(.*)\]/g)
     if(to_eval){ s = s.replace(to_eval[0],evaluate(to_eval[0])); }
-    let to_link = s.match(/ *\([^)]*\) */g)
+    let to_link = s.match(/\((.*)\)/g)
     if(to_link){ s = s.replace(to_link[0],""); }
     for(let ch in runes){
       if(s.indexOf(ch) < 0){ continue; }
