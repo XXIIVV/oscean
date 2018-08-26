@@ -2,10 +2,9 @@ function Riven_Graph()
 {
   Riven.call(this);
 
+  const GRID_SIZE = 20
+
   this.is_graph = true;
-
-  let GRID_SIZE = 20
-
   this.el = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   document.body.appendChild(this.el)
   
@@ -41,7 +40,6 @@ function Riven_Graph()
   function draw_node(node)
   {
     let rect = get_rect(node);
-
     return `
     <g class='node ${node.is_mesh ? 'mesh' : ''}' id='node_${node.id}'>
       <rect rx='2' ry='2' x=${rect.x} y=${rect.y-(GRID_SIZE/2)} width="${rect.w}" height="${rect.h}" class='${node.children.length == 0 ? "fill" : ""}'/>

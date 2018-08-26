@@ -2,7 +2,7 @@ function BuildNaviNode(id,rect)
 {
   Node.call(this,id,rect);
 
-  this.glyph = NODE_GLYPHS.template
+  this.glyph = "M60,60 L60,60 L240,60 L240,240 L60,240 Z"
 
   this.cache = null;
 

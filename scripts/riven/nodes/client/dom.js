@@ -3,7 +3,7 @@ function DomNode(id,rect,...params)
   Node.call(this,id,rect);
 
   this.type = params[0] ? params[0] : "div";
-  this.glyph = NODE_GLYPHS.dom
+  this.glyph = "M150,60 L150,60 L60,150 L150,240 L240,150 Z"
   this.label = `#${this.id}`
   this.el = document.createElement(this.type)
   this.el.id = this.id

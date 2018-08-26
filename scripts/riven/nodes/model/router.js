@@ -2,7 +2,7 @@ function RouterNode(id,rect)
 {
   Node.call(this,id,rect);
 
-  this.glyph = NODE_GLYPHS.router
+  this.glyph = "M60,120 L60,120 L150,120 L240,60 M60,150 L60,150 L240,150 M60,180 L60,180 L150,180 L240,240"
 
   this.archives = {}
 

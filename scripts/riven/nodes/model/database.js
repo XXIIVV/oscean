@@ -2,7 +2,7 @@ function DatabaseNode(id,rect)
 {
   Node.call(this,id,rect);
 
-  this.glyph = NODE_GLYPHS.database
+  this.glyph = "M60,60 L60,60 L240,60 L240,240 L60,240 Z M60,150 L60,150 L240,150 M60,105 L60,105 L240,105 M60,195 L60,195 L240,195 "
 
   this.cache = null;
   this.index = {};
