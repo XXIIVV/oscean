@@ -18,31 +18,31 @@ function MapNode(id,rect)
 
   this.map = function(tables)
   {
-    var time = performance.now();
-    var count = {links:0,diaries:0}
+    let time = performance.now();
+    let count = {links:0,diaries:0}
 
     // Connect Parents
-    for(var id in tables.lexicon){
-      var term = tables.lexicon[id];
-      var parent = !term.data.UNDE ? "HOME" : term.data.UNDE.toUpperCase()
+    for(let id in tables.lexicon){
+      let term = tables.lexicon[id];
+      let parent = !term.data.UNDE ? "HOME" : term.data.UNDE.toUpperCase()
       if(!tables.lexicon[parent]){ console.warn(`Unknown parent ${parent} for ${term.name}`); }
       term.parent = tables.lexicon[parent];
     }
 
     // Connect children
-    for(var id in tables.lexicon){
-      var term = tables.lexicon[id];
-      var parent = term.parent.name
+    for(let id in tables.lexicon){
+      let term = tables.lexicon[id];
+      let parent = term.parent.name
       if(!tables.lexicon[parent]){ console.warn("Missing children term",log.term); continue; }
       tables.lexicon[parent].children.push(term)
     }
 
     // Connect links
-    for(var id in tables.lexicon){
-      var term = tables.lexicon[id];
-      var links = term.find_outgoing()
+    for(let id in tables.lexicon){
+      let term = tables.lexicon[id];
+      let links = term.find_outgoing()
       for(id in links){
-        var link = links[id]
+        let link = links[id]
         term.outgoing.push(link)
         if(!tables.lexicon[link]){ console.warn("Missing incoming",`${term.name}->${link}`); continue; }
         tables.lexicon[link].incoming.push(term.name)
@@ -51,9 +51,9 @@ function MapNode(id,rect)
     }
 
     // Connect Logs
-    for(var id in tables.horaire){
-      var log = tables.horaire[id]
-      var index = log.term.toUpperCase()
+    for(let id in tables.horaire){
+      let log = tables.horaire[id]
+      let index = log.term.toUpperCase()
       if(!log.term){ continue; }
       if(!tables.lexicon[index]){ console.warn("Missing log term",index); continue; }
       log.host = tables.lexicon[index];
@@ -70,9 +70,9 @@ function MapNode(id,rect)
     }
 
     // Connect issues
-    for(var id in tables.issues){
-      var issue = tables.issues[id]
-      var index = issue.term.toUpperCase()
+    for(let id in tables.issues){
+      let issue = tables.issues[id]
+      let index = issue.term.toUpperCase()
       if(!tables.lexicon[index]){ console.warn("Missing issue parent",index); continue; }
       tables.lexicon[index].issues.push(issue)
       issue.host = tables.lexicon[index]

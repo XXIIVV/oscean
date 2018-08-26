@@ -11,14 +11,14 @@ function IndexTemplate(id,rect,...params)
 
   this.answer = function(q)
   {
-    var entries = Ø('database').index
-    var sortable = Object.keys(entries).sort();
+    let entries = Ø('database').index
+    let sortable = Object.keys(entries).sort();
 
-    var prev = ""
-    var html = ""
+    let prev = ""
+    let html = ""
     for(id in sortable){
-      var entry = sortable[id];
-      var lead = entry.substr(0,1)
+      let entry = sortable[id];
+      let lead = entry.substr(0,1)
       if(parseInt(lead) > 0){ continue; }
       if(!entry.to_alpha()){ continue; }
       if(prev != lead){

@@ -8,13 +8,13 @@ function Aeth(data = {},name = null)
 
   this.to_english = function()
   {
-    var r = Ø('database').find(this.name)
+    let r = Ø('database').find(this.name)
     return r && r.data.english ? r.data.english.toLowerCase() : null
   }
 
   this.to_deconstruction = function()
   {
-    var html = ""
+    let html = ""
 
     ae1 = new Aeth(null,this.name.substr(0,2))
     ae2 = new Aeth(null,this.name.substr(2,2))
@@ -25,19 +25,19 @@ function Aeth(data = {},name = null)
 
   function adultspeak(cs)
   {
-    var childspeak = cs.toLowerCase();
-    var vowels = {"a":"ä","e":"ë","i":"ï","o":"ö","u":"ü","y":"ÿ"}
+    let childspeak = cs.toLowerCase();
+    let vowels = {"a":"ä","e":"ë","i":"ï","o":"ö","u":"ü","y":"ÿ"}
 
     if(childspeak.length == 2){
-      var c = childspeak.substr(0,1);
-      var v = childspeak.substr(1,1);
+      let c = childspeak.substr(0,1);
+      let v = childspeak.substr(1,1);
       return v+c;
     }
     if(childspeak.length == 4){
-      var c1 = childspeak.substr(0,1);
-      var v1 = childspeak.substr(1,1);
-      var c2 = childspeak.substr(2,1);
-      var v2 = childspeak.substr(3,1);
+      let c1 = childspeak.substr(0,1);
+      let v1 = childspeak.substr(1,1);
+      let c2 = childspeak.substr(2,1);
+      let v2 = childspeak.substr(3,1);
       
       if(c1 == c2 && v1 == v2){
         return c1+vowels[v1];
@@ -60,7 +60,7 @@ function Aeth(data = {},name = null)
 
   this.toString = function()
   {
-    var en = this.to_english()
+    let en = this.to_english()
     return `<p>{*${this.name.capitalize()}*}${this.name.toLowerCase() != this.adultspeak.toLowerCase() ? ', or '+this.adultspeak.capitalize() : ''} is a {(Lietal)} word${en ? ' that translates to \"'+en+'\" in {(English)}' : ''}.</p>`.to_curlic()
   }
 }

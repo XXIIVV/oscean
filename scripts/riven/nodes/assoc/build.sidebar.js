@@ -12,7 +12,7 @@ function BuildSidebarNode(id,rect)
       return "<h1>The {(Nataniev)} Services Desk</h1><h2>{(Home)}</h2>".to_curlic()
     }
 
-    var html = ""
+    let html = ""
     
     for(id in q.result.links){
       html += `<a href='${q.result.links[id]}' target='_blank'>${id}</a>`

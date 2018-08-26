@@ -5,8 +5,8 @@ function StatusViz(logs)
 
   // Split the last 14 days
   for(id in logs){
-    var log = logs[id]
-    var offset = log.time.offset;
+    let log = logs[id]
+    let offset = log.time.offset;
     if(offset > 0){ continue; }
     if(offset > -this.limit){ this.data.recent[this.data.recent.length] = log; }
     else{ this.data.before[this.data.before.length] = log; }
@@ -15,8 +15,8 @@ function StatusViz(logs)
   this.draw = function()
   {
     if(this.data.recent.length < 3 || this.data.before.length < 3){ return ''; }
-    var recent = new Horaire(this.data.recent)
-    var before = new Horaire(this.data.before)
+    let recent = new Horaire(this.data.recent)
+    let before = new Horaire(this.data.before)
 
     return `
     <table class='graph status'>
@@ -55,7 +55,7 @@ function StatusViz(logs)
 
   this.offset = function(recent,before,trail = 1)
   {
-    var print = recent-before > 0 ? `+${(recent-before).toFixed(trail)}` : `${(recent-before).toFixed(trail)}`
+    let print = recent-before > 0 ? `+${(recent-before).toFixed(trail)}` : `${(recent-before).toFixed(trail)}`
     return print != "-0.0" && print != "+0.0" ? print : '0.0'
   }
 

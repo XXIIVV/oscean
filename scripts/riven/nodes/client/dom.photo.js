@@ -35,10 +35,10 @@ function DomPhotoNode(id,rect,...params)
   
   function diff(data,width,height)
   {
-    var fuzzy = -0.4;
-    var r,g,b, max_rgb;
-    var light = 0, dark = 0;
-    for(var x = 0, len = data.length; x < len; x+=4){
+    let fuzzy = -0.4;
+    let r,g,b, max_rgb;
+    let light = 0, dark = 0;
+    for(let x = 0, len = data.length; x < len; x+=4){
       r = data[x];
       g = data[x+1];
       b = data[x+2];
@@ -48,25 +48,25 @@ function DomPhotoNode(id,rect,...params)
       else
         light++;
     }
-    var dl_diff = ((light - dark) / (width*height));
+    let dl_diff = ((light - dark) / (width*height));
     return dl_diff + fuzzy < 0 ? true : false
   }
 
   function is_dark(imageSrc,callback)
   {
-    var fuzzy = -0.4;
-    var img = document.createElement("img");
+    let fuzzy = -0.4;
+    let img = document.createElement("img");
     img.src = imageSrc;
 
     img.onload = function(){
-      var canvas = document.createElement("canvas");
+      let canvas = document.createElement("canvas");
       canvas.width = this.width;
       canvas.height = this.height;
-      var ctx = canvas.getContext("2d");
+      let ctx = canvas.getContext("2d");
       ctx.drawImage(this,0,0);
       
       try{
-        var imageData = ctx.getImageData(0,0,canvas.width,canvas.height);
+        let imageData = ctx.getImageData(0,0,canvas.width,canvas.height);
         callback(diff(imageData.data,this.width,this.height));
       }
       catch(err){ console.warn("Could not get photo data"); callback(); }

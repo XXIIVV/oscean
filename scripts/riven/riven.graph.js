@@ -4,20 +4,20 @@ function Riven_Graph()
 
   this.is_graph = true;
 
-  var GRID_SIZE = 20
+  let GRID_SIZE = 20
 
   this.el = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   document.body.appendChild(this.el)
   
   this.graph = function()
   {
-    var html = "";
+    let html = "";
     for(id in this.network){
-      var node = this.network[id];
+      let node = this.network[id];
       html += draw_routes(node);
     }
     for(id in this.network){
-      var node = this.network[id];
+      let node = this.network[id];
       html += draw_node(node);
     }
     this.el.innerHTML = html;
@@ -25,12 +25,12 @@ function Riven_Graph()
 
   function draw_routes(node)
   {
-    var html = "";
+    let html = "";
     for(id in node.ports){
-      var port = node.ports[id]
-      var pos = port ? get_port_position(port) : {x:0,y:0}
+      let port = node.ports[id]
+      let pos = port ? get_port_position(port) : {x:0,y:0}
       for(route_id in port.routes){
-        var route = port.routes[route_id];
+        let route = port.routes[route_id];
         if(!route){ continue; }
         html += route ? draw_connection(port,route) : ""
       }
@@ -40,7 +40,7 @@ function Riven_Graph()
 
   function draw_node(node)
   {
-    var rect = get_rect(node);
+    let rect = get_rect(node);
 
     return `
     <g class='node ${node.is_mesh ? 'mesh' : ''}' id='node_${node.id}'>
@@ -53,7 +53,7 @@ function Riven_Graph()
 
   function draw_ports(node)
   {
-    var html = "";
+    let html = "";
     for(id in node.ports){
       html += draw_port(node.ports[id]);
     }
@@ -62,13 +62,13 @@ function Riven_Graph()
 
   function draw_glyph(node)
   {
-    var rect = get_rect(node);
+    let rect = get_rect(node);
     return !node.is_mesh && node.glyph ? `<path class='glyph' transform="translate(${rect.x+(GRID_SIZE/4)},${rect.y-(GRID_SIZE/4)}) scale(0.1)" d='${node.glyph}'/>` : ""
   }
 
   function draw_port(port)
   {
-    var pos = port ? get_port_position(port) : {x:0,y:0}
+    let pos = port ? get_port_position(port) : {x:0,y:0}
     return `<g id='${port.host.id}_port_${port.id}'>${(port.type == PORT_TYPES.request || port.type == PORT_TYPES.answer)? `<path d='${draw_diamond(pos)}' class='port ${port.type} ${port.host.ports[id] && port.host.ports[id].route ? "route" : ""}' />` : `<circle cx='${pos.x}' cy="${pos.y}" r="${parseInt(GRID_SIZE/6)}" class='port ${port.type} ${port.host.ports[id] && port.host.ports[id].route ? "route" : ""}'/>`}</g>`
   }
 
@@ -84,9 +84,9 @@ function Riven_Graph()
   function is_bidirectional(a,b)
   {
     for(id in a.ports.output.routes){
-      var route_a = a.ports.output.routes[id]
+      let route_a = a.ports.output.routes[id]
       for(id in a.ports.request.routes){
-        var route_b = a.ports.request.routes[id]
+        let route_b = a.ports.request.routes[id]
         if(route_a.host.id == route_b.host.id){
           return true;
         }
@@ -97,13 +97,13 @@ function Riven_Graph()
 
   function draw_connection_output(a,b)
   {
-    var pos_a = get_port_position(a)
-    var pos_b = get_port_position(b)
-    var pos_m = middle(pos_a,pos_b)
-    var pos_c1 = {x:(pos_m.x+(pos_a.x+GRID_SIZE))/2,y:pos_a.y}
-    var pos_c2 = {x:(pos_m.x+(pos_b.x-GRID_SIZE))/2,y:pos_b.y}
+    let pos_a = get_port_position(a)
+    let pos_b = get_port_position(b)
+    let pos_m = middle(pos_a,pos_b)
+    let pos_c1 = {x:(pos_m.x+(pos_a.x+GRID_SIZE))/2,y:pos_a.y}
+    let pos_c2 = {x:(pos_m.x+(pos_b.x-GRID_SIZE))/2,y:pos_b.y}
 
-    var path = ""
+    let path = ""
 
     path += `M${pos_a.x},${pos_a.y} L${pos_a.x+GRID_SIZE},${pos_a.y} `
     path += `Q${pos_c1.x},${pos_c1.y} ${pos_m.x},${pos_m.y} `
@@ -116,13 +116,13 @@ function Riven_Graph()
 
   function draw_connection_request(a,b)
   {
-    var pos_a = get_port_position(a)
-    var pos_b = get_port_position(b)
-    var pos_m = middle(pos_a,pos_b)
-    var pos_c1 = {x:pos_a.x,y:(pos_m.y+(pos_a.y+GRID_SIZE))/2}
-    var pos_c2 = {x:pos_b.x,y:(pos_m.y+(pos_b.y-GRID_SIZE))/2}
+    let pos_a = get_port_position(a)
+    let pos_b = get_port_position(b)
+    let pos_m = middle(pos_a,pos_b)
+    let pos_c1 = {x:pos_a.x,y:(pos_m.y+(pos_a.y+GRID_SIZE))/2}
+    let pos_c2 = {x:pos_b.x,y:(pos_m.y+(pos_b.y-GRID_SIZE))/2}
 
-    var path = ""
+    let path = ""
 
     path += `M${pos_a.x},${pos_a.y} L${pos_a.x},${pos_a.y+GRID_SIZE} `
     path += `Q${pos_c1.x},${pos_c1.y} ${pos_m.x},${pos_m.y} `
@@ -135,13 +135,13 @@ function Riven_Graph()
 
   function draw_connection_bidirectional(a,b)
   {
-    var pos_a = get_port_position(a)
-    var pos_b = get_port_position(b)
-    var pos_m = middle(pos_a,pos_b)
-    var pos_c1 = {x:pos_a.x,y:(pos_m.y+(pos_a.y+GRID_SIZE))/2}
-    var pos_c2 = {x:pos_b.x,y:(pos_m.y+(pos_b.y-GRID_SIZE))/2}
+    let pos_a = get_port_position(a)
+    let pos_b = get_port_position(b)
+    let pos_m = middle(pos_a,pos_b)
+    let pos_c1 = {x:pos_a.x,y:(pos_m.y+(pos_a.y+GRID_SIZE))/2}
+    let pos_c2 = {x:pos_b.x,y:(pos_m.y+(pos_b.y-GRID_SIZE))/2}
 
-    var path = ""
+    let path = ""
 
     path += `M${pos_a.x},${pos_a.y} L${pos_a.x},${pos_a.y+GRID_SIZE} `
     path += `L${pos_a.x},${pos_m.y} L${pos_b.x},${pos_m.y}`
@@ -152,14 +152,14 @@ function Riven_Graph()
   
   function draw_diamond(pos)
   {
-    var r = GRID_SIZE/6
+    let r = GRID_SIZE/6
     return `M${pos.x-(r)},${pos.y} L${pos.x},${pos.y-(r)} L${pos.x+(r)},${pos.y} L${pos.x},${pos.y+(r)} Z`
   }
 
   function get_port_position(port)
   {
-    var rect = get_rect(port.host)
-    var offset = {x:0,y:0}
+    let rect = get_rect(port.host)
+    let offset = {x:0,y:0}
     if(port.type == PORT_TYPES.output){
       offset = {x:GRID_SIZE*2,y:GRID_SIZE/2}
     }
@@ -177,14 +177,14 @@ function Riven_Graph()
 
   function get_rect(node)
   {
-    var rect = node.rect
-    var x = node.rect.x * GRID_SIZE;
-    var y = node.rect.y * GRID_SIZE;
-    var w = node.rect.w * GRID_SIZE;
-    var h = node.rect.h * GRID_SIZE;
+    let rect = node.rect
+    let x = node.rect.x * GRID_SIZE;
+    let y = node.rect.y * GRID_SIZE;
+    let w = node.rect.w * GRID_SIZE;
+    let h = node.rect.h * GRID_SIZE;
 
     if(node.parent){
-      var offset = get_rect(node.parent);
+      let offset = get_rect(node.parent);
       x += offset.x;
       y += offset.y;
     }

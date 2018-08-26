@@ -3,7 +3,7 @@ function Curlic(text = "",origin = null)
   this.text = `${text}`;
   this.origin = origin;
 
-  var runes = {
+  let runes = {
     "*":{tag:"b"},
     "_":{tag:"i"},
     "#":{tag:"code"},
@@ -15,6 +15,7 @@ function Curlic(text = "",origin = null)
     s = s.replace(c,'').replace(c,'');
 
     if(r.fn){
+      console.log(s,r.fn)
       s = s.replace(s,r.fn(s));
     }
 
@@ -25,10 +26,10 @@ function Curlic(text = "",origin = null)
   {
     this.origin = null
 
-    var target = t.replace("(","").replace(")","")
-    var external = target.indexOf("//") > -1 || this.origin
-    var name = s.replace(`(${target})`,"")
-    var location = target.toLowerCase().replace(/ /g,"+").replace(/[^0-9a-z\+\:\-\.\/]/gi,"").trim();
+    let target = t.replace("(","").replace(")","")
+    let external = target.indexOf("//") > -1 || this.origin
+    let name = s.replace(`(${target})`,"")
+    let location = target.toLowerCase().replace(/ /g,"+").replace(/[^0-9a-z\+\:\-\.\/]/gi,"").trim();
 
     if(external){
       return `<a href='${target}' target='_blank' class='external'>${name ? name : target}</a>`
@@ -52,13 +53,13 @@ function Curlic(text = "",origin = null)
   {
     // Eval
     if(s.match(/\[.*\]/g)){
-      var t = s.match(/\[.*\]/g)[0]
+      let t = s.match(/\[.*\]/g)[0]
       s = s.replace(`${t}`,evaluate(s,t))
     }
 
     // Wrap
-    for(var ch in runes){
-      var rune = runes[ch];
+    for(let ch in runes){
+      let rune = runes[ch];
       if(s.indexOf(ch) != 0){ continue; }
       s = wrap(s,ch,rune)
     }
@@ -77,7 +78,7 @@ function Curlic(text = "",origin = null)
 
   this.toString = function()
   {
-    var matches = this.extract();
+    let matches = this.extract();
 
     if(!matches){ return this.text; }
 

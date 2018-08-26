@@ -19,11 +19,11 @@ function DatabaseNode(id,rect)
 
   this.build = function()
   {
-    var time = performance.now();
-    for(var id in this.cache){
-      var db = this.cache[id];
-      for(var i in db){
-        var el = db[i]
+    let time = performance.now();
+    for(let id in this.cache){
+      let db = this.cache[id];
+      for(let i in db){
+        let el = db[i]
         if(!el.name){ continue; }
         if(!el.index){ continue; }
         this.index[el.name.toUpperCase().to_alpha()] = el
@@ -38,4 +38,4 @@ function DatabaseNode(id,rect)
   }
 }
 
-var DATABASE = {};
+let DATABASE = {};

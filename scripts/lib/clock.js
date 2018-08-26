@@ -2,13 +2,13 @@ function Clock()
 {
   this.time = function()
   {
-    var d = new Date(), e = new Date(d);
+    let d = new Date(), e = new Date(d);
     return (e - d.setHours(0,0,0,0)/8640) * 100;
   }
 
   this.toString = function()
   {
-    var t = `${this.time()}`;
+    let t = `${this.time()}`;
     return t.substr(0,3)+":"+t.substr(3,3);
   }
 }

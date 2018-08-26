@@ -9,7 +9,7 @@ function DefaultTemplate(id,rect,...params)
     if(q.target == "index"){ return this.signal('index').answer(q) }
     if(!q.result){ return this.signal('missing').answer(q) }
 
-    var html = `${q.result}`
+    let html = `${q.result}`
 
     html += q.result.has_tag("children") ? this._children(q) : ''
     html += q.result.has_tag("diary") || q.params == "diary" ? this._diary(q) : ''
@@ -22,12 +22,12 @@ function DefaultTemplate(id,rect,...params)
 
   this._diary = function(q)
   {
-    var html = ""
-    var term = q.result;
-    var skip = term.featured_log
+    let html = ""
+    let term = q.result;
+    let skip = term.featured_log
 
     for(id in term.diaries){
-      var log = term.diaries[id]
+      let log = term.diaries[id]
       if(skip && log.photo == skip.photo){ continue; }
       html += `<img src='media/diary/${log.photo}.jpg'/>`
     }
@@ -37,11 +37,11 @@ function DefaultTemplate(id,rect,...params)
 
   this._index = function(q)
   {
-    var html = ""
-    var term = q.result;
+    let html = ""
+    let term = q.result;
 
     for(id in term.children){
-      var child = term.children[id];
+      let child = term.children[id];
       html += `
       <h2>${child.name.capitalize()}</h2>
       <hs>${child.bref.to_curlic()}</hs>
@@ -53,11 +53,11 @@ function DefaultTemplate(id,rect,...params)
 
   this._list = function(q)
   {
-    var target = q.result.name.toUpperCase();
-    var html = q.tables.glossary[target] ? `${q.tables.glossary[target]}` : ''
+    let target = q.result.name.toUpperCase();
+    let html = q.tables.glossary[target] ? `${q.tables.glossary[target]}` : ''
 
-    for(var id in q.result.tags){
-      var tag = q.result.tags[id].toUpperCase().replace(/_/g,' ').trim();
+    for(let id in q.result.tags){
+      let tag = q.result.tags[id].toUpperCase().replace(/_/g,' ').trim();
       html += q.tables.glossary[tag] ? `<h3>{(${tag.capitalize()})}</h3>${q.tables.glossary[tag]}`.to_curlic() : ''
     }
 
@@ -66,12 +66,12 @@ function DefaultTemplate(id,rect,...params)
 
   this._glossary = function(q)
   {
-    var html = ""
-    var words = Object.keys(q.tables.glossary).sort();
-    for(var id in words){
-      var name = words[id]
-      var word = q.tables.glossary[name]
-      var children = Object.keys(word.data)
+    let html = ""
+    let words = Object.keys(q.tables.glossary).sort();
+    for(let id in words){
+      let name = words[id]
+      let word = q.tables.glossary[name]
+      let children = Object.keys(word.data)
       html += `<ln>{(${name.capitalize()})} — ${children.length} items</ln>`
     }
     return `<h2>{(Glossary)}</h2><list class='tidy' style='padding-left:30px'>${html}</list>`.to_curlic()
@@ -79,10 +79,10 @@ function DefaultTemplate(id,rect,...params)
 
   this._children = function(q)
   {
-    var html = ""
+    let html = ""
 
     for(id in q.result.children){
-      var term = q.result.children[id]
+      let term = q.result.children[id]
       html += `<ln>{(${term.name.capitalize()})}: ${term.bref}</ln>`
     }
     return `<list>${html}</list>`.to_curlic();

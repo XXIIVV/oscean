@@ -7,14 +7,14 @@ function MissingTemplate(id,rect,...params)
   this.answer = function(q)
   {
     // Operations
-    var o = find_operation(q.target)
+    let o = find_operation(q.target)
 
     if(o){
       return `<code>${this[o.name](q.target)} <comment># ${o.name}</comment>\n</code>`
     }
 
-    var index = Object.keys(Ø('database').index)
-    var similar = find_similar(q.target.toUpperCase(),index);
+    let index = Object.keys(Ø('database').index)
+    let similar = find_similar(q.target.toUpperCase(),index);
 
     return `
     <p>Sorry, there are no pages for {*/${q.target.capitalize()}*}, did you mean {(${similar[0].word.capitalize()})} or {(${similar[1].word.capitalize()})}?</p>
@@ -33,13 +33,13 @@ function MissingTemplate(id,rect,...params)
 
   function find_operation(query)
   {
-    var operations = [
+    let operations = [
       {name: "desamber_to_gregorian",pattern:/\d\d[a-z\+]\d\d/i},
       {name: "gregorian_to_desamber",pattern:/\d\d\d\d\-\d\d\-\d\d/i}
     ]
 
     for(id in operations){
-      var op = operations[id]
+      let op = operations[id]
       if(query.match(op.pattern)){
         return op;
       }
@@ -49,9 +49,9 @@ function MissingTemplate(id,rect,...params)
 
   function find_similar(target,list)
   {
-    var similar = []
+    let similar = []
     for(key in list){
-      var word = list[key]
+      let word = list[key]
       similar.push({word:word,value:similarity(target,word)});
     }
     return similar.sort(function(a, b){
@@ -61,7 +61,7 @@ function MissingTemplate(id,rect,...params)
 
   function similarity(a,b)
   {
-    var val = 0
+    let val = 0
     for (i = 0; i < a.length; ++i) { val += b.indexOf(a.substr(i)) > -1 ? 1 : 0; }
     for (i = 0; i < b.length; ++i) { val += a.indexOf(b.substr(i)) > -1 ? 1 : 0; }
     a = a.split('').sort().join('');

@@ -4,13 +4,13 @@ function Indental(data)
 
   this.parse = function(type)
   {
-    var lines = this.data.split("\n").map(liner)
+    let lines = this.data.split("\n").map(liner)
     
     // Assoc lines
-    var stack = {}
-    var target = lines[0]
+    let stack = {}
+    let target = lines[0]
     for(id in lines){
-      var line = lines[id]
+      let line = lines[id]
       if(line.skip){ continue; }
       target = stack[line.indent-2];
       if(target){ target.children[target.children.length] = line }
@@ -18,11 +18,11 @@ function Indental(data)
     }
 
     // Format
-    var h = {}
+    let h = {}
     for(id in lines){
-      var line = lines[id];
+      let line = lines[id];
       if(line.skip || line.indent > 0){ continue; }
-      var key = line.content.toUpperCase()
+      let key = line.content.toUpperCase()
       h[key] = type ? new type(key,format(line)) : format(line)
     }
     return h
@@ -30,10 +30,10 @@ function Indental(data)
 
   function format(line)
   {
-    var a = [];
-    var h = {};
+    let a = [];
+    let h = {};
     for(id in line.children){
-      var child = line.children[id];
+      let child = line.children[id];
       if(child.key){ h[child.key.toUpperCase()] = child.value }
       else if(child.children.length == 0 && child.content){ a[a.length] = child.content }
       else{ h[child.content.toUpperCase()] = format(child) }

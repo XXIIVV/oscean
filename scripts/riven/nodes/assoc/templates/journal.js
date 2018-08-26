@@ -6,12 +6,12 @@ function JournalTemplate(id,rect,...params)
 
   this.answer = function(q,upcoming = false)
   {
-    var all_logs = q.target == "journal" ? q.tables.horaire : q.result.logs;
+    let all_logs = q.target == "journal" ? q.tables.horaire : q.result.logs;
 
     // Collect only the last 366 logs
-    var logs = []
+    let logs = []
     for(id in all_logs){
-      var log = all_logs[id];
+      let log = all_logs[id];
       if(!log.term){ continue; }
       if(log.time.offset > 0 && !upcoming){ continue; }
       if(log.time.offset < -366){ continue; }
@@ -24,11 +24,11 @@ function JournalTemplate(id,rect,...params)
 
     // Build journals
 
-    var html = ''
-    var i = 0
+    let html = ''
+    let i = 0
     for(id in logs){
       if(i > 14){ break; }
-      var log = logs[id];
+      let log = logs[id];
       if(!log.photo){ continue; }
       html += `${log}`
       i += 1

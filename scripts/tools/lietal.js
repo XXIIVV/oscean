@@ -20,19 +20,19 @@ function Aeth(data)
   function adultspeak(cs)
   {
     return ""
-    var childspeak = cs.toLowerCase();
-    var vowels = {"a":"ä","e":"ë","i":"ï","o":"ö","u":"ü","y":"ÿ"}
+    let childspeak = cs.toLowerCase();
+    let vowels = {"a":"ä","e":"ë","i":"ï","o":"ö","u":"ü","y":"ÿ"}
 
     if(childspeak.length == 2){
-      var c = childspeak.substr(0,1);
-      var v = childspeak.substr(1,1);
+      let c = childspeak.substr(0,1);
+      let v = childspeak.substr(1,1);
       return v+c;
     }
     if(childspeak.length == 4){
-      var c1 = childspeak.substr(0,1);
-      var v1 = childspeak.substr(1,1);
-      var c2 = childspeak.substr(2,1);
-      var v2 = childspeak.substr(3,1);
+      let c1 = childspeak.substr(0,1);
+      let v1 = childspeak.substr(1,1);
+      let c2 = childspeak.substr(2,1);
+      let v2 = childspeak.substr(3,1);
       
       if(c1 == c2 && v1 == v2){
         return c1+vowels[v1];

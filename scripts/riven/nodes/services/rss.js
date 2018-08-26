@@ -6,32 +6,32 @@ function RssNode(id,rect)
 
   this.receive = function(q)
   {
-    var logs = Ø('router').cache.tables.horaire;
+    let logs = Ø('router').cache.tables.horaire;
 
-    var selection = []
+    let selection = []
     for(id in logs){
-      var log = logs[id];
+      let log = logs[id];
       if(selection.length >= 60){ break; }
       if(log.time.offset > 0){ continue; }
       if(!log.photo){ continue; }
       selection.push(log);
     }
 
-    var html = this.render(selection);
+    let html = this.render(selection);
     this.show(html)
   }
 
   this.show = function(html)
   {
-    var win = window.open("", "Title", "toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=yes,width=640,height=480,top="+(screen.height-200)+",left="+(screen.width-640));
+    let win = window.open("", "Title", "toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=yes,width=640,height=480,top="+(screen.height-200)+",left="+(screen.width-640));
     win.document.body.innerHTML = `<pre>${html.to_entities()}</pre>`;
   }
 
   this.items = function(logs)
   {
-    var html = ""
+    let html = ""
     for(id in logs){
-      var log = logs[id];
+      let log = logs[id];
       html += `
   <item>
     <title>${log.term} — ${log.name}</title>

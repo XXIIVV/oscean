@@ -15,7 +15,7 @@ function Desamber(str)
 
   this.to_gregorian = function()
   {
-    var d = this.to_date()
+    let d = this.to_date()
     return `${d.getFullYear()}-${prepend(d.getMonth()+1,2)}-${prepend(d.getDate(),2)}`;
   }
 
@@ -26,7 +26,7 @@ function Desamber(str)
 
   this.ago = function(cap = 9999)
   {
-    var days = this.offset;
+    let days = this.offset;
 
     if(-days > cap)  { return `${this.toString()}`; }
 
@@ -48,16 +48,16 @@ function Desamber(str)
 
 Date.prototype.desamber = function()
 {
-  var year = this.getFullYear()
-  var start = new Date(year, 0, 0);
-  var diff = (this - start) + ((start.getTimezoneOffset() - this.getTimezoneOffset()) * 60 * 1000);
-  var doty = Math.floor(diff/86400000);
-  var leap = ((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0)
-  var days = leap ? 366 : 365
+  let year = this.getFullYear()
+  let start = new Date(year, 0, 0);
+  let diff = (this - start) + ((start.getTimezoneOffset() - this.getTimezoneOffset()) * 60 * 1000);
+  let doty = Math.floor(diff/86400000);
+  let leap = ((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0)
+  let days = leap ? 366 : 365
 
-  var y = year.toString().substr(2,2);
-  var m = String.fromCharCode(97 + Math.floor(((doty)/days) * 26)).toUpperCase(); m = doty == 365 || doty == 366 ? "+" : m;
-  var d = (doty % 14); d = d < 10 ? `0${d}` : d; d = d == "00" ? "14" : d; d = doty == 365 ? "01" : (doty == 366 ? "02" : d);
+  let y = year.toString().substr(2,2);
+  let m = String.fromCharCode(97 + Math.floor(((doty)/days) * 26)).toUpperCase(); m = doty == 365 || doty == 366 ? "+" : m;
+  let d = (doty % 14); d = d < 10 ? `0${d}` : d; d = d == "00" ? "14" : d; d = doty == 365 ? "01" : (doty == 366 ? "02" : d);
   
   return new Desamber(`${y}${m}${d}`);
 }

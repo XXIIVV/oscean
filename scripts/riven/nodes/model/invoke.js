@@ -17,14 +17,14 @@ function InvokeNode(id,rect)
 
   this.invoke = function(target)
   {
-    var filename = target.name.to_path();
-    var extension = target.has_tag('indental') ? 'ndtl' : 'js'
+    let filename = target.name.to_path();
+    let extension = target.has_tag('indental') ? 'ndtl' : 'js'
 
     if(this.archives[filename]){ this.send(this.cache); return; }
 
     console.log("Invoking..",filename)
 
-    var s = document.createElement('script');
+    let s = document.createElement('script');
     s.type = 'text/javascript';
     s.src = `scripts/invoke/${filename}.${extension}?v=${new Date().desamber()}`;
     document.getElementsByTagName('head')[0].appendChild(s);
@@ -39,10 +39,10 @@ function InvokeNode(id,rect)
       this.cache.result.data.LATE = payload(this.cache)  
     }
     else{
-      var data = new parser(payload).parse()
-      var html = ""
+      let data = new parser(payload).parse()
+      let html = ""
       for(id in data){
-        var seg = data[id]
+        let seg = data[id]
         html += `<h3>${id.capitalize()}</h3>${new Runic(seg,Curlic)}`
       }
       this.cache.result.data.LATE = html

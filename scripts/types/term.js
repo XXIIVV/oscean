@@ -43,7 +43,7 @@ function Term(name,data)
 
   this.rating = function()
   {
-    var h = {points:{}}
+    let h = {points:{}}
 
     h.points.long = this.data.LONG && this.data.LONG.length > 0
     h.points.logs = this.logs.length > 0
@@ -57,7 +57,7 @@ function Term(name,data)
     h.points.tags = this.tags.length > 0
 
     // Score
-    var p = 0
+    let p = 0
     for(id in h.points){ p += h.points[id] ? 1 : 0 }
 
     h['score'] = (p/Object.keys(h.points).length)
@@ -67,22 +67,22 @@ function Term(name,data)
 
   this.has_tag = function(str)
   {
-    var target = str.toLowerCase().replace(/ /g,"_").trim()
+    let target = str.toLowerCase().replace(/ /g,"_").trim()
     return this.tags.indexOf(target) > -1
   }
 
   this.sectors = function()
   {
-    var h = new Horaire(this.logs).sectors;
-    var a = [["audio",h.audio],["visual",h.visual],["research",h.research]]
+    let h = new Horaire(this.logs).sectors;
+    let a = [["audio",h.audio],["visual",h.visual],["research",h.research]]
 
     return sort(a);
   }
 
   this.released = function()
   {
-    for(var id in this.logs){
-      var log = this.logs[id];
+    for(let id in this.logs){
+      let log = this.logs[id];
       if(log.time.offset > 0){ continue; }
       if(log.ch == 8){ return log; }
     }
@@ -91,10 +91,10 @@ function Term(name,data)
 
   this.find_outgoing = function()
   {
-    var a = []
-    var str = this.data.BREF + (this.data.LONG ? this.data.LONG.join("\n") : '');
+    let a = []
+    let str = this.data.BREF + (this.data.LONG ? this.data.LONG.join("\n") : '');
 
-    var curlies = new Curlic(str).extract()
+    let curlies = new Curlic(str).extract()
 
     if(!curlies){ return []; }
 
@@ -103,7 +103,7 @@ function Term(name,data)
     curlies = curlies.filter(el =>{ return el.indexOf("[") < 0; })  // Skip evals
 
     curlies.forEach(el=>{
-      var name = el.split("(")[1].replace(")","")
+      let name = el.split("(")[1].replace(")","")
       a.push(name.toUpperCase())
     });
     return a;

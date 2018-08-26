@@ -2,7 +2,7 @@ function Runic(lines = [],templater = null)
 {
   this.lines = lines;
 
-  var runes = {
+  let runes = {
     "&":{tag:"p"},
     "?":{tag:"p",class:"note"},
     "-":{tag:"ln",wrapper:"list"},
@@ -17,8 +17,8 @@ function Runic(lines = [],templater = null)
 
   function is_runic(l)
   {
-    var rune = l.substr(0,1);
-    var trail = l.substr(1,1);
+    let rune = l.substr(0,1);
+    let trail = l.substr(1,1);
 
     if(trail != " "){ console.warn("Non-Runic",l); return false; }
     if(!runes[rune]){ console.warn(`Non-Runic[${rune}]`,l); return false; }
@@ -28,9 +28,9 @@ function Runic(lines = [],templater = null)
 
   function stash(acc,l)
   {
-    var rune = l.substr(0,1)
-    var line = l.substr(2)
-    var prev = acc[acc.length-1] ? acc[acc.length-1] : [{rune:rune,a:[]}]
+    let rune = l.substr(0,1)
+    let line = l.substr(2)
+    let prev = acc[acc.length-1] ? acc[acc.length-1] : [{rune:rune,a:[]}]
 
     if(prev.rune == rune){
       prev.a.push(line)
@@ -44,12 +44,12 @@ function Runic(lines = [],templater = null)
 
   function _html(acc,stash)
   {
-    var html = ""
-    var wr = runes[stash.rune].wrapper
-    for(var id in stash.a){
-      var r = runes[stash.rune]
-      var txt = r.fn ? r.fn(stash.a[id]) : stash.a[id]
-      var htm = templater ? new templater(txt) : txt
+    let html = ""
+    let wr = runes[stash.rune].wrapper
+    for(let id in stash.a){
+      let r = runes[stash.rune]
+      let txt = r.fn ? r.fn(stash.a[id]) : stash.a[id]
+      let htm = templater ? new templater(txt) : txt
       html += r.tag ? `<${r.tag} class='${r.class ? r.class : ''}'>${htm}</${r.tag}>` : `${htm}`
     }
     return wr ? `${acc}<${wr}>${html}</${wr}>` : `${acc}${html}`
@@ -59,11 +59,11 @@ function Runic(lines = [],templater = null)
 
   function quote(content)
   {
-    var parts = content.split(" | ")
-    var text = parts[0].trim()
-    var author = parts[1]
-    var source = parts[2]
-    var link = parts[3]
+    let parts = content.split(" | ")
+    let text = parts[0].trim()
+    let author = parts[1]
+    let source = parts[2]
+    let link = parts[3]
 
     return `
       ${text.length > 1 ? `<p class=\'text\'>${text}</p>` : ''}
@@ -72,8 +72,8 @@ function Runic(lines = [],templater = null)
 
   function media(content)
   {
-    var service = content.split(" ")[0];
-    var id = content.split(" ")[1];
+    let service = content.split(" ")[0];
+    let id = content.split(" ")[1];
 
     if(service == "itchio"){ return `<iframe frameborder="0" src="https://itch.io/embed/${id}?link_color=000000" width="600" height="167"></iframe>`; }
     if(service == "bandcamp"){ return `<iframe style="border: 0; width: 600px; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=${id}/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless></iframe>`; }
@@ -91,7 +91,7 @@ function Runic(lines = [],templater = null)
 
   this.toString = function()
   {
-    var lines = this.lines.filter(is_runic);
+    let lines = this.lines.filter(is_runic);
     return lines.reduce(stash,[]).reduce(_html,"");
   }
 }

@@ -8,13 +8,13 @@ function TrackerTemplate(id,rect,...params)
 
   function find_available(q)
   {
-    var used = []
+    let used = []
     for(id in q.tables.horaire){
-      var log = q.tables.horaire[id]
+      let log = q.tables.horaire[id]
       if(!log.photo){ continue; }
       used.push(log.photo)
     }
-    var available = 1
+    let available = 1
     while(available < 999){
       if(used.indexOf(available) < 0){ return available; }
       available += 1
@@ -23,10 +23,10 @@ function TrackerTemplate(id,rect,...params)
 
   function on_this_day(q)
   {
-    var today = new Date().desamber();
-    var a = []
+    let today = new Date().desamber();
+    let a = []
     for(id in q.tables.horaire){
-      var log = q.tables.horaire[id]
+      let log = q.tables.horaire[id]
       if(!log.is_event){ continue; }
       if(!log.name){ continue; }
       if(log.time.offset >= 0){ continue; }
@@ -38,9 +38,9 @@ function TrackerTemplate(id,rect,...params)
 
   this.slice = function(logs,from,to)
   {
-    var a = []
-    for(var id in logs){
-      var log = logs[id];
+    let a = []
+    for(let id in logs){
+      let log = logs[id];
       if(log.time.offset < from){ continue; }
       if(log.time.offset > to){ continue; }
       a.push(log)
@@ -50,12 +50,12 @@ function TrackerTemplate(id,rect,...params)
 
   this._progress = function(q)
   {
-    var html = ""
+    let html = ""
 
-    var score = {ratings:0,entries:0,average:0,issues:0};
+    let score = {ratings:0,entries:0,average:0,issues:0};
 
-    for(var id in q.tables.lexicon){
-      var term = q.tables.lexicon[id]
+    for(let id in q.tables.lexicon){
+      let term = q.tables.lexicon[id]
       score.ratings += term.rating().score
       score.entries += 1
     }
@@ -68,9 +68,9 @@ function TrackerTemplate(id,rect,...params)
 
   this._tasks = function(issue)
   {
-    var html = ''
-    for(var t in issue.tasks){
-      var task = issue.tasks[t];
+    let html = ''
+    for(let t in issue.tasks){
+      let task = issue.tasks[t];
       html += `<tr class='task'><td colspan='20'><t class='task'>${task.to_curlic()}</t></td></tr>`
     }
     return html
@@ -78,9 +78,9 @@ function TrackerTemplate(id,rect,...params)
 
   this._issues = function(term)
   {
-    var html = ''
-    for(var i in term.issues){
-      var issue = term.issues[i]
+    let html = ''
+    for(let i in term.issues){
+      let issue = term.issues[i]
       html += `${issue}`
     }
     return html;
@@ -89,8 +89,8 @@ function TrackerTemplate(id,rect,...params)
   this._term = function(term)
   {    
     // Print
-    var html = ''
-    var r = term.rating()
+    let html = ''
+    let r = term.rating()
     html += `<tr>`
     html += `
     <td class='${r.status}' style='width:250px'>{(${term.name.capitalize()})}</b><t class='right'>${parseInt(r.score * 100)}%</t></td>
@@ -105,21 +105,21 @@ function TrackerTemplate(id,rect,...params)
 
   this._table = function(target,q)
   {
-    var logs = q.target == "tracker" ? q.tables.horaire : q.result.logs;
+    let logs = q.target == "tracker" ? q.tables.horaire : q.result.logs;
 
-    var html = ""
+    let html = ""
 
-    var sorted = Object.keys(q.tables.lexicon).sort()
+    let sorted = Object.keys(q.tables.lexicon).sort()
 
     html += `<table class='tracker'>`
     if(target == 'tracker'){
       for(id in sorted){
-        var term = q.tables.lexicon[sorted[id]]
+        let term = q.tables.lexicon[sorted[id]]
         html += this._term(term);
       }
     }
     else{
-      var term = q.tables.lexicon[target.toUpperCase()]
+      let term = q.tables.lexicon[target.toUpperCase()]
       html += this._term(term);
     }
     
@@ -169,8 +169,8 @@ function TrackerTemplate(id,rect,...params)
     console.info("Next Available:",find_available(q))
     console.info("On This Day:",on_this_day(q))
 
-    var target = q.target.toLowerCase();
-    var html = ""
+    let target = q.target.toLowerCase();
+    let html = ""
 
     html += `${new BalanceViz(q.tables.horaire)}`
     html += `${new StatusViz(this.slice(q.tables.horaire,-51,0))}`

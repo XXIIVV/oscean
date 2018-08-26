@@ -31,8 +31,8 @@ function DocumentNode(id,rect,...params)
 
 function on_scroll()
 {
-  var info_el = document.getElementById("info")
-  var scroll = window.scrollY;
+  let info_el = document.getElementById("info")
+  let scroll = window.scrollY;
 
   // Info
   if(scroll > 0){
@@ -47,9 +47,9 @@ function on_scroll()
   }
 
   // Logo/Search
-  var header_el = document.getElementById("header")
-  var logo_el = document.getElementById("logo")
-  var menu_el = document.getElementById("menu")
+  let header_el = document.getElementById("header")
+  let logo_el = document.getElementById("logo")
+  let menu_el = document.getElementById("menu")
   if(scroll > header.offsetHeight - 120){
     if(logo_el.className != "sticky"){ logo_el.className = "sticky" }
     if(menu_el.className != "sticky"){ menu_el.className = "sticky" }

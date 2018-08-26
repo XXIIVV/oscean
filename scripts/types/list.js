@@ -8,9 +8,9 @@ function List(name,data)
 
   this.connections = function(tables)
   {
-    var a = []
+    let a = []
     for(id in tables.lexicon){
-      var term = tables.lexicon[id];
+      let term = tables.lexicon[id];
       if(term.has_tag("list") && term.has_tag(this.name)){
         a.push(term)
       }
@@ -20,8 +20,8 @@ function List(name,data)
 
   this.indexOf = function(target)
   {
-    var i = 0;
-    for(var id in this.data){
+    let i = 0;
+    for(let id in this.data){
       if(target.toLowerCase() == id.toLowerCase()){
         return parseInt(i)
       }
@@ -32,8 +32,8 @@ function List(name,data)
 
   this._from_object = function()
   {
-    var html = ''
-    for(var id in this.data){
+    let html = ''
+    for(let id in this.data){
       html += `<ln>{*${id.capitalize()}*}: ${this.data[id]}</ln>`
     }
     return html.to_curlic()

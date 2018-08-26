@@ -7,7 +7,7 @@ function QueryNode(id,rect)
 
   this.bang = function(input = window.location.hash)
   {
-    var target = input.to_url() === '' ? 'home' : input.to_url()
+    let target = input.to_url() === '' ? 'home' : input.to_url()
 
     Ø("view").el.className = "loading"
 
@@ -26,14 +26,14 @@ function QueryNode(id,rect)
   }
 }
 
-var detectBackOrForward = function(onBack, onForward)
+let detectBackOrForward = function(onBack, onForward)
 {
   hashHistory = [window.location.hash];
   historyLength = window.history.length;
 
   return function()
   {
-    var hash = window.location.hash, length = window.history.length;
+    let hash = window.location.hash, length = window.history.length;
     if (hashHistory.length && historyLength == length) {
       if (hashHistory[hashHistory.length - 2] == hash) {
         hashHistory = hashHistory.slice(0, -1);

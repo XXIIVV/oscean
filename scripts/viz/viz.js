@@ -1,12 +1,12 @@
 function Viz()
 {
-  var cell = 13;
+  let cell = 13;
 
   this.slice = function(logs,from,to)
   {
-    var a = []
-    for(var id in logs){
-      var log = logs[id];
+    let a = []
+    for(let id in logs){
+      let log = logs[id];
       if(log.time.offset < from){ continue; }
       if(log.time.offset > to){ continue; }
       a.push(log)
@@ -16,9 +16,9 @@ function Viz()
 
   this.legend = function(logs)
   {
-    var html = ""
+    let html = ""
 
-    var y = 115
+    let y = 115
 
     // Top
     html += `
@@ -26,7 +26,7 @@ function Viz()
     <text x='${730}' y='${-15}' style='text-anchor:end'>${logs[0].time.ago().capitalize()}</text>`
 
     // Below
-    var horaire = new Horaire(logs);
+    let horaire = new Horaire(logs);
     html += `
     <rect class="audio" x="${cell*0}" y="${y}" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
     <text x='${(cell+1)*2}' y='${y+10}' style='text-anchor:start'>Audio ${(horaire.sectors.audio*10).toFixed(1)}%</text>

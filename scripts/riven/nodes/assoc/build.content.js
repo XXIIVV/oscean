@@ -10,11 +10,11 @@ function BuildContentNode(id,rect)
   {
     if(!q.result){ return this.signal('default').answer(q) }
 
-    var template = q.params ? q.params.toLowerCase() : q.result.type ? q.result.type.toLowerCase() : null
+    let template = q.params ? q.params.toLowerCase() : q.result.type ? q.result.type.toLowerCase() : null
 
     if(!template){ return this.signal('default').answer(q) }
 
-    var responder = this.signal(template)
+    let responder = this.signal(template)
 
     if(!responder){ return this.signal('default').answer(q) }
 
