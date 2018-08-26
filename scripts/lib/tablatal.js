@@ -7,7 +7,7 @@ function Tablatal(data)
     let a = [];
     let lines = this.data.trim().split("\n")
     let key = make_key(lines[0]);
-    for(id in lines){
+    for(let id in lines){
       if(id == 0 || lines[id].trim() == ""){ continue; }
       let entry = {};
       for(i in key){
@@ -24,7 +24,7 @@ function Tablatal(data)
     let distance = 0;
     let key = {};
     let prev = null
-    for(id in parts){
+    for(let id in parts){
       let part = parts[id].toLowerCase();
       if(part != ""){
         key[part] = {from:distance,to:0};

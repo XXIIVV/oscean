@@ -10,7 +10,7 @@ function JournalTemplate(id,rect,...params)
 
     // Collect only the last 366 logs
     let logs = []
-    for(id in all_logs){
+    for(let id in all_logs){
       let log = all_logs[id];
       if(!log.term){ continue; }
       if(log.time.offset > 0 && !upcoming){ continue; }
@@ -26,7 +26,7 @@ function JournalTemplate(id,rect,...params)
 
     let html = ''
     let i = 0
-    for(id in logs){
+    for(let id in logs){
       if(i > 14){ break; }
       let log = logs[id];
       if(!log.photo){ continue; }

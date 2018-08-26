@@ -69,7 +69,7 @@ function BuildNode(id,rect)
 
   this.find_last_diary = function(horaire)
   {
-    for(id in horaire){
+    for(let id in horaire){
       let log = horaire[id]
       if(!log.is_featured){ continue; }
       if(log.time.offset > 0){ continue; }

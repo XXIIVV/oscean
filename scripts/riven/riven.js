@@ -64,7 +64,7 @@ function Node(id,rect={x:0,y:0,w:2,h:2})
     RIVEN.network[node.id] = node
 
     if(n instanceof Array){
-      for(id in n){
+      for(let id in n){
         n[id].parent = node;
         node.children.push(n[id]);  
         node.update();
@@ -83,7 +83,7 @@ function Node(id,rect={x:0,y:0,w:2,h:2})
   this.connect = function(q,type = ROUTE_TYPES.output)
   {
     if(q instanceof Array){
-      for(id in q){
+      for(let id in q){
         this.connect(q[id],type)
       }
     }
@@ -193,7 +193,7 @@ function Node(id,rect={x:0,y:0,w:2,h:2})
     this.update = function()
     {
       let bounds = {x:0,y:0};
-      for(id in this.children){
+      for(let id in this.children){
         let node = this.children[id];
         bounds.x = node.rect.x > bounds.x ? node.rect.x : bounds.x
         bounds.y = node.rect.y > bounds.y ? node.rect.y : bounds.y

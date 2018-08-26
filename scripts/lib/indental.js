@@ -9,7 +9,7 @@ function Indental(data)
     // Assoc lines
     let stack = {}
     let target = lines[0]
-    for(id in lines){
+    for(let id in lines){
       let line = lines[id]
       if(line.skip){ continue; }
       target = stack[line.indent-2];
@@ -19,7 +19,7 @@ function Indental(data)
 
     // Format
     let h = {}
-    for(id in lines){
+    for(let id in lines){
       let line = lines[id];
       if(line.skip || line.indent > 0){ continue; }
       let key = line.content.toUpperCase()
@@ -32,7 +32,7 @@ function Indental(data)
   {
     let a = [];
     let h = {};
-    for(id in line.children){
+    for(let id in line.children){
       let child = line.children[id];
       if(child.key){ h[child.key.toUpperCase()] = child.value }
       else if(child.children.length == 0 && child.content){ a[a.length] = child.content }

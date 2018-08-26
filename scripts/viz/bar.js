@@ -8,7 +8,7 @@ function BarViz(logs)
   {
     let limit = logs[logs.length-1].time.offset * -1
     let h = {}
-    for(id in logs){
+    for(let id in logs){
       let log = logs[id];
       let offset = log.time.offset;
       let pos = parts - (((offset*-1)/limit) * parts);
@@ -32,7 +32,7 @@ function BarViz(logs)
 
     let cell = 13
     let mod = 0.18
-    for(id in segments){
+    for(let id in segments){
       let seg = segments[id]
       let x = parseInt(id) * (cell+1);
       let audio_h = clamp(seg.audio * mod,4,100)

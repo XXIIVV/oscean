@@ -26,7 +26,7 @@ function DefaultTemplate(id,rect,...params)
     let term = q.result;
     let skip = term.featured_log
 
-    for(id in term.diaries){
+    for(let id in term.diaries){
       let log = term.diaries[id]
       if(skip && log.photo == skip.photo){ continue; }
       html += `<img src='media/diary/${log.photo}.jpg'/>`
@@ -40,7 +40,7 @@ function DefaultTemplate(id,rect,...params)
     let html = ""
     let term = q.result;
 
-    for(id in term.children){
+    for(let id in term.children){
       let child = term.children[id];
       html += `
       <h2>${child.name.capitalize()}</h2>
@@ -81,7 +81,7 @@ function DefaultTemplate(id,rect,...params)
   {
     let html = ""
 
-    for(id in q.result.children){
+    for(let id in q.result.children){
       let term = q.result.children[id]
       html += `<ln>{(${term.name.capitalize()})}: ${term.bref}</ln>`
     }

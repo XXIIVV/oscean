@@ -9,7 +9,7 @@ function RssNode(id,rect)
     let logs = Ø('router').cache.tables.horaire;
 
     let selection = []
-    for(id in logs){
+    for(let id in logs){
       let log = logs[id];
       if(selection.length >= 60){ break; }
       if(log.time.offset > 0){ continue; }
@@ -30,7 +30,7 @@ function RssNode(id,rect)
   this.items = function(logs)
   {
     let html = ""
-    for(id in logs){
+    for(let id in logs){
       let log = logs[id];
       html += `
   <item>

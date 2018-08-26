@@ -9,7 +9,7 @@ function TrackerTemplate(id,rect,...params)
   function find_available(q)
   {
     let used = []
-    for(id in q.tables.horaire){
+    for(let id in q.tables.horaire){
       let log = q.tables.horaire[id]
       if(!log.photo){ continue; }
       used.push(log.photo)
@@ -25,7 +25,7 @@ function TrackerTemplate(id,rect,...params)
   {
     let today = new Date().desamber();
     let a = []
-    for(id in q.tables.horaire){
+    for(let id in q.tables.horaire){
       let log = q.tables.horaire[id]
       if(!log.is_event){ continue; }
       if(!log.name){ continue; }
@@ -113,7 +113,7 @@ function TrackerTemplate(id,rect,...params)
 
     html += `<table class='tracker'>`
     if(target == 'tracker'){
-      for(id in sorted){
+      for(let id in sorted){
         let term = q.tables.lexicon[sorted[id]]
         html += this._term(term);
       }

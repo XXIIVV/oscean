@@ -4,7 +4,7 @@ function StatusViz(logs)
   this.limit = logs.length/2
 
   // Split the last 14 days
-  for(id in logs){
+  for(let id in logs){
     let log = logs[id]
     let offset = log.time.offset;
     if(offset > 0){ continue; }

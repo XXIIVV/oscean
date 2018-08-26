@@ -38,7 +38,7 @@ function MissingTemplate(id,rect,...params)
       {name: "gregorian_to_desamber",pattern:/\d\d\d\d\-\d\d\-\d\d/i}
     ]
 
-    for(id in operations){
+    for(let id in operations){
       let op = operations[id]
       if(query.match(op.pattern)){
         return op;

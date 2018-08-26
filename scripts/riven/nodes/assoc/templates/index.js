@@ -16,7 +16,7 @@ function IndexTemplate(id,rect,...params)
 
     let prev = ""
     let html = ""
-    for(id in sortable){
+    for(let id in sortable){
       let entry = sortable[id];
       let lead = entry.substr(0,1)
       if(parseInt(lead) > 0){ continue; }

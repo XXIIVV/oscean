@@ -41,7 +41,7 @@ function MapNode(id,rect)
     for(let id in tables.lexicon){
       let term = tables.lexicon[id];
       let links = term.find_outgoing()
-      for(id in links){
+      for(let id in links){
         let link = links[id]
         term.outgoing.push(link)
         if(!tables.lexicon[link]){ console.warn("Missing incoming",`${term.name}->${link}`); continue; }

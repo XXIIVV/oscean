@@ -8,7 +8,7 @@ function ActivityViz(logs)
   {
     let h = {}
     let i = 0
-    for(id in logs){
+    for(let id in logs){
       let log = logs[id];
       let offset = log.time.offset;
       if(offset > 0){ continue; }

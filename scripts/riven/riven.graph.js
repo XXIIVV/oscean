@@ -12,11 +12,11 @@ function Riven_Graph()
   this.graph = function()
   {
     let html = "";
-    for(id in this.network){
+    for(let id in this.network){
       let node = this.network[id];
       html += draw_routes(node);
     }
-    for(id in this.network){
+    for(let id in this.network){
       let node = this.network[id];
       html += draw_node(node);
     }
@@ -26,7 +26,7 @@ function Riven_Graph()
   function draw_routes(node)
   {
     let html = "";
-    for(id in node.ports){
+    for(let id in node.ports){
       let port = node.ports[id]
       let pos = port ? get_port_position(port) : {x:0,y:0}
       for(route_id in port.routes){
@@ -54,7 +54,7 @@ function Riven_Graph()
   function draw_ports(node)
   {
     let html = "";
-    for(id in node.ports){
+    for(let id in node.ports){
       html += draw_port(node.ports[id]);
     }
     return html
@@ -83,9 +83,9 @@ function Riven_Graph()
 
   function is_bidirectional(a,b)
   {
-    for(id in a.ports.output.routes){
+    for(let id in a.ports.output.routes){
       let route_a = a.ports.output.routes[id]
-      for(id in a.ports.request.routes){
+      for(let id in a.ports.request.routes){
         let route_b = a.ports.request.routes[id]
         if(route_a.host.id == route_b.host.id){
           return true;

@@ -23,7 +23,7 @@ function DocumentNode(id,rect,...params)
     if(RIVEN.is_graph){ return; }
     
     this.is_installed = true;
-    for(id in elements){
+    for(let id in elements){
       this.el.appendChild(elements[id])
     }
   }

@@ -2,7 +2,7 @@ function Horaire(logs)
 {
   let h = {fh:0,ch:0,topics:{},tasks:{},osc:{sum:0,average:0},sectors:{audio:0,visual:0,research:0,misc:0,sum:0}};
   
-  for(id in logs){
+  for(let id in logs){
     let log = logs[id];
     if(!log.term){ continue; }
 
@@ -21,7 +21,7 @@ function Horaire(logs)
 
   let efec_sum = 0
   let efic_sum = 0
-  for(id in h.topics){
+  for(let id in h.topics){
     h.topics[id].hdf = h.topics[id].fh/h.topics[id].count;
     h.topics[id].hdc = h.topics[id].ch/h.topics[id].count;
     efec_sum += h.topics[id].hdf

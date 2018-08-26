@@ -10,7 +10,7 @@ function DomPhotoNode(id,rect,...params)
     this.is_installed = true;
     this.el.appendChild(this.media);
 
-    for(id in elements){
+    for(let id in elements){
       this.el.appendChild(elements[id])
     }
   }

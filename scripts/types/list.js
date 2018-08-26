@@ -9,7 +9,7 @@ function List(name,data)
   this.connections = function(tables)
   {
     let a = []
-    for(id in tables.lexicon){
+    for(let id in tables.lexicon){
       let term = tables.lexicon[id];
       if(term.has_tag("list") && term.has_tag(this.name)){
         a.push(term)

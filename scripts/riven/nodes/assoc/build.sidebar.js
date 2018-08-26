@@ -14,7 +14,7 @@ function BuildSidebarNode(id,rect)
 
     let html = ""
     
-    for(id in q.result.links){
+    for(let id in q.result.links){
       html += `<a href='${q.result.links[id]}' target='_blank'>${id}</a>`
     }
 

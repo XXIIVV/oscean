@@ -9,7 +9,7 @@ function HomeTemplate(id,rect,...params)
     let html = ""
     let projects = {};
 
-    for(id in q.tables.horaire){
+    for(let id in q.tables.horaire){
       let log = q.tables.horaire[id];
       if(!log.term){ continue; }
       if(log.time.offset > 0){ continue; }
@@ -18,7 +18,7 @@ function HomeTemplate(id,rect,...params)
       projects[log.term].count += 1;
     }
 
-    for(id in projects){
+    for(let id in projects){
       let project = projects[id];
       if(project.count < 10){ continue; }
       html += `<ln>{(${project.name.capitalize()})} ${project.from != project.to ? project.from+"—"+project.to : project.from}</ln>`

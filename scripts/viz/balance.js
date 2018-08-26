@@ -9,7 +9,7 @@ function BalanceViz(logs)
     let logs = this.slice(this.logs,offset-52,offset);
     let sectors = {audio:0,visual:0,research:0,sum:0}
 
-    for(id in logs){
+    for(let id in logs){
       let log = logs[id];
       if(!log.term){ continue; }
       sectors[log.sector] += (log.fh+log.ch)/2;
