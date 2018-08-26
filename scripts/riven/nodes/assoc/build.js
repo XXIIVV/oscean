@@ -51,17 +51,17 @@ function BuildNode(id,rect)
     if(!q.result){ return ''; }
 
     if(q.result.name == "HOME" || q.result.name == "JOURNAL" || q.result.name == "CALENDAR" || q.result.name == "TRACKER"){
-      return `<a id='issues' onclick=\"Ø('query').bang('Tracker')\">Tracker</a> <a id='diaries' onclick=\"Ø('query').bang('journal')\">Journal</a> <a id='logs' onclick=\"Ø('query').bang('Calendar')\">Calendar</a> `
+      return `<a id='issues' data-goto='Tracker'>Tracker</a> <a id='diaries' data-goto='journal'>Journal</a> <a id='logs' data-goto='Calendar'>Calendar</a> `
     }
     
     if(q.result.issues.length > 0){
-      html += `<a id='issues' onclick=\"Ø('query').bang('${q.result.name}:tracker')\">${q.result.issues.length} Issue${q.result.issues.length > 1 ? 's' : ''}</a>`
+      html += `<a id='issues' data-goto='${q.result.name}:tracker'>${q.result.issues.length} Issue${q.result.issues.length > 1 ? 's' : ''}</a>`
     }
     if(q.result.diaries.length > 1 && !q.result.has_tag("diary")){
-      html += `<a id='diaries' onclick=\"Ø('query').bang('${q.result.name}:diary')\">${q.result.diaries.length} Diaries</a>`;
+      html += `<a id='diaries' data-goto='${q.result.name}:diary'>${q.result.diaries.length} Diaries</a>`;
     }
     if(q.result.logs.length > 2 && q.result.latest_log.time.offset > -365 && !q.result.has_tag("journal")){
-      html += `<a id='logs' onclick=\"Ø('query').bang('${q.result.name}:journal')\">${q.result.logs.length} Logs</a>`
+      html += `<a id='logs' data-goto='${q.result.name}:journal'>${q.result.logs.length} Logs</a>`
     }
 
     return html;

@@ -69,7 +69,7 @@ function Riven_Graph()
   function draw_port(port)
   {
     let pos = port ? get_port_position(port) : {x:0,y:0}
-    return `<g id='${port.host.id}_port_${port.id}'>${(port.type == PORT_TYPES.request || port.type == PORT_TYPES.answer)? `<path d='${draw_diamond(pos)}' class='port ${port.type} ${port.host.ports[id] && port.host.ports[id].route ? "route" : ""}' />` : `<circle cx='${pos.x}' cy="${pos.y}" r="${parseInt(GRID_SIZE/6)}" class='port ${port.type} ${port.host.ports[id] && port.host.ports[id].route ? "route" : ""}'/>`}</g>`
+    return `<g id='${port.host.id}_port_${port.id}'>${(port.type == PORT_TYPES.request || port.type == PORT_TYPES.answer)? `<path d='${draw_diamond(pos)}' class='port ${port.type} ${port.host.ports[this.id] && port.host.ports[this.id].route ? "route" : ""}' />` : `<circle cx='${pos.x}' cy="${pos.y}" r="${parseInt(GRID_SIZE/6)}" class='port ${port.type} ${port.host.ports[this.id] && port.host.ports[this.id].route ? "route" : ""}'/>`}</g>`
   }
 
   function draw_connection(a,b,type)

@@ -4,6 +4,7 @@ function KeyboardNode(id,rect)
 
   this.glyph = NODE_GLYPHS.entry
 
+  console.info(this.id,"started")
   window.addEventListener("keyup",(e)=>{ this.key_up(e); })
 
   this.key_up = function(e)

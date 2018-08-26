@@ -3,40 +3,26 @@ function Curlic(text = "",origin = null)
   this.text = `${text}`;
   this.origin = origin;
 
-  let runes = {
+  const runes = {
     "*":{tag:"b"},
     "_":{tag:"i"},
     "#":{tag:"code"},
-    "$":{tag:"t",fn:eval},
+    "$":{tag:"span",fn:eval},
   }
 
   function wrap(s,c,r)
   {
     s = s.replace(c,'').replace(c,'');
-
-    if(r.fn){
-      console.log(s,r.fn)
-      s = s.replace(s,r.fn(s));
-    }
-
-    return `<${r.tag}>${s}</${r.tag}>`
+    return `<${r.tag}>${r.fn ? s.replace(s,r.fn(s)) : s}</${r.tag}>`
   }
 
   function link(s,t)
   {
-    this.origin = null
-
     let target = t.replace("(","").replace(")","")
     let external = target.indexOf("//") > -1 || this.origin
     let name = s.replace(`(${target})`,"")
     let location = target.toLowerCase().replace(/ /g,"+").replace(/[^0-9a-z\+\:\-\.\/]/gi,"").trim();
-
-    if(external){
-      return `<a href='${target}' target='_blank' class='external'>${name ? name : target}</a>`
-    }
-    else{
-      return `<a href='#${location}' onclick="${!external && Ø ? `Ø('query').bang('${target}')` : ''}">${name ? name : target}</a>`
-    }
+    return `<a href='${external ? target : '#'+location}' target='${external ? '_blank' : '_self'}' class='${external ? 'external' : 'local'}' data-goto='${target}'>${name ? name : target}</a>`
   }
 
   function evaluate(s,t)
@@ -44,9 +30,7 @@ function Curlic(text = "",origin = null)
     try{
       return `${eval(t.substr(1,t.length-2))}`  
     }
-    catch(err){
-      console.warn(`Cannot eval:${t}`,err); return t
-    }
+    catch(err){ console.warn(`Cannot eval:${t}`,err); return t; }
   }
 
   function parse(s)
@@ -56,14 +40,12 @@ function Curlic(text = "",origin = null)
       let t = s.match(/\[.*\]/g)[0]
       s = s.replace(`${t}`,evaluate(s,t))
     }
-
     // Wrap
     for(let ch in runes){
       let rune = runes[ch];
       if(s.indexOf(ch) != 0){ continue; }
       s = wrap(s,ch,rune)
     }
-
     // Link
     if(s.match(/\(.*\)/g)){
       s = link(s,s.match(/\(.*\)/g)[0])
@@ -81,7 +63,7 @@ function Curlic(text = "",origin = null)
     let matches = this.extract();
 
     if(!matches){ return this.text; }
-
+    
     matches.forEach(el => {
       this.text = this.text.replace(`{${el}}`,parse(el))
     })

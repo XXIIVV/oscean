@@ -31,11 +31,11 @@ function Log(data = {code:'-400'})
   {
     return `
     <div class='entry log'>
-      <svg onclick="Ø('query').bang('${this.term}')" class='icon'><path transform="scale(0.15,0.15) translate(20,20)" d="${this.host.glyph()}"></path></svg>
+      <svg data-goto='${this.term}' class='icon'><path transform="scale(0.15,0.15) translate(20,20)" d="${this.host.glyph()}"></path></svg>
       <div class='head'>
-        <div class='details'><a class='topic' onclick="Ø('query').bang('${this.term}')">${this.term}</a> ${this.name ? ' — '+this.name : ''} <t class='time' onclick="Ø('query').bang('${this.term}:Journal')">${this.time}</t></div>
+        <div class='details'><a class='topic' data-goto='${this.term}'>${this.term}</a> ${this.name ? ' — '+this.name : ''} <t class='time' data-goto='${this.term}:Journal'>${this.time}</t></div>
         <div class='bref'>${this.host.bref.to_curlic()}</div>
-        ${this.photo ? `<photo style='background-image:url(media/diary/${this.photo}.jpg)' onclick="Ø('query').bang('${this.term}')"></photo>` : ''}
+        ${this.photo ? `<photo style='background-image:url(media/diary/${this.photo}.jpg)' data-goto='${this.term}'></photo>` : ''}
       </div>
     </div>`
   }

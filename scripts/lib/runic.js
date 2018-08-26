@@ -2,7 +2,7 @@ function Runic(lines = [],templater = null)
 {
   this.lines = lines;
 
-  let runes = {
+  const runes = {
     "&":{tag:"p"},
     "?":{tag:"p",class:"note"},
     "-":{tag:"ln",wrapper:"list"},

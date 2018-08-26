@@ -45,7 +45,7 @@ function DefaultTemplate(id,rect,...params)
       html += `
       <h2>${child.name.capitalize()}</h2>
       <hs>${child.bref.to_curlic()}</hs>
-      ${child.featured_log ? `<a onclick='Ø("query").bang("${child.name}")'><img src="media/diary/${child.featured_log.photo}.jpg"/></a>` : ''}
+      ${child.featured_log ? `<a data-goto='${child.name}'><img src="media/diary/${child.featured_log.photo}.jpg"/></a>` : ''}
       ${child}`
     }
     return html
