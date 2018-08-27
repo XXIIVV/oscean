@@ -1,4 +1,4 @@
-function Curlic(text = "",origin = null)
+function Curlic(text = "",origin)
 {
   this.text = `${text}`;
   this.origin = origin;
@@ -25,10 +25,11 @@ function Curlic(text = "",origin = null)
   function link(s,t)
   {
     let target = t.substr(1,t.length-2).trim();
-    let external = target.indexOf("//") > -1 || this.origin
+    let external = target.indexOf("//") > -1 || this.origin.indexOf("//") > -1
     let name = s.replace(`(${target})`,"").trim();
     let location = target.toLowerCase().replace(/ /g,"+").replace(/[^0-9a-z\+\:\-\.\/]/gi,"").trim();
-    return `<a href='${external ? target : '#'+location}' target='${external ? '_blank' : '_self'}' class='${external ? 'external' : 'local'}' data-goto='${!external ? target : ''}'>${name ? name : target}</a>`
+    
+    return `<a href='${external ? target : '#'+location}' target='${external ? '_blank' : '_self'}' class='${external ? 'external' : 'local'}' data-goto='${external ? '' : target}'>${name ? name : target}</a>`
   }
 
   function parse(s)

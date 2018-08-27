@@ -79,15 +79,27 @@ function TrackerTemplate(id,rect,...params)
   this._issues = function(term)
   {
     let html = ''
+    let cats = {}
+    // Order by task
     for(let i in term.issues){
       let issue = term.issues[i]
-      html += `${issue}`
+      if(!cats[issue.task]){ cats[issue.task] = []; }
+      cats[issue.task].push(issue.name)
+    }
+    console.log(cats)
+    // Print
+    for(let i in cats){
+      let cat = cats[i]
+      html += `<tr><td class='task' colspan='10'><b>${i}</b></td></tr>`
+      for(let i in cat){
+        html += `<tr><td class='name' colspan='10'>${cat[i]}</td></tr>`
+      }
     }
     return html;
   }
 
   this._term = function(term)
-  {    
+  {
     // Print
     let html = ''
     let r = term.rating()
@@ -106,9 +118,7 @@ function TrackerTemplate(id,rect,...params)
   this._table = function(target,q)
   {
     let logs = q.target == "tracker" ? q.tables.horaire : q.result.logs;
-
     let html = ""
-
     let sorted = Object.keys(q.tables.lexicon).sort()
 
     html += `<table class='tracker'>`
@@ -133,13 +143,15 @@ function TrackerTemplate(id,rect,...params)
     return `<style>
     table.tracker { width:730px}
     table.tracker tr { position:relative}
-    table.tracker tr.issue td { border-bottom:1px dotted #333;}
-    table.tracker tr.task td { border-bottom:1px dotted #000; color:#999; position:relative}
+    table.tracker tr.issue td { }
+    table.tracker tr.task td {position:relative}
     table.tracker tr.task td:before { content:"• "; color:#555; position: absolute; left:45px}
-    table.tracker td { border-bottom:1px solid #333; padding:2px 5px}
+    table.tracker td { padding:2px 5px}
     table.tracker td.bullet { text-align: center}
     table.tracker td.bullet.done { color:black; }
     table.tracker td.bullet.undone { color:#ccc; }
+    table.tracker td.task { padding-left:20px !important}
+    table.tracker td.name { padding-left:40px !important}
     
     table.tracker td t.right { float:right}
     table.tracker td t.issue { display:block; margin-left:15px; border-radius:2px; padding-left:10px; padding-right:10px}
