@@ -1,3 +1,5 @@
+'use strict';
+
 function graph()
 {
   Ø("query").create({x:2,y:2},QueryNode)

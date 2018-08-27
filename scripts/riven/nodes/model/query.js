@@ -1,3 +1,5 @@
+'use strict';
+
 function QueryNode(id,rect)
 {
   Node.call(this,id,rect);
@@ -28,8 +30,8 @@ function QueryNode(id,rect)
 
 let detectBackOrForward = function(onBack, onForward)
 {
-  hashHistory = [window.location.hash];
-  historyLength = window.history.length;
+  let hashHistory = [window.location.hash];
+  let historyLength = window.history.length;
 
   return function()
   {

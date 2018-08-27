@@ -1,3 +1,5 @@
+'use strict';
+
 function HomeTemplate(id,rect,...params)
 {
   Node.call(this,id,rect);

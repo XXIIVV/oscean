@@ -1,3 +1,5 @@
+'use strict';
+
 function BuildNaviNode(id,rect)
 {
   Node.call(this,id,rect);

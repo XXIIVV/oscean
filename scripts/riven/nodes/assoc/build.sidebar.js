@@ -1,3 +1,5 @@
+'use strict';
+
 function BuildSidebarNode(id,rect)
 {
   Node.call(this,id,rect);
@@ -7,7 +9,7 @@ function BuildSidebarNode(id,rect)
   this.cache = null;
 
   this.answer = function(q)
-  {    
+  {
     if(!q.result){
       return "<h1>The {(Nataniev)} Services Desk</h1><h2>{(Home)}</h2>".to_curlic()
     }

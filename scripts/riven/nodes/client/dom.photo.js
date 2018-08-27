@@ -1,3 +1,5 @@
+'use strict';
+
 function DomPhotoNode(id,rect,...params)
 {
   DomNode.call(this,id,rect);

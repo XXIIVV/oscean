@@ -1,3 +1,5 @@
+'use strict';
+
 function BuildNode(id,rect)
 {
   Node.call(this,id,rect);
@@ -38,7 +40,7 @@ function BuildNode(id,rect)
           entaloneralie:true
         }
       }
-    }) 
+    })
   
     // Install Dom
     document.body.appendChild(this.signal("view").answer())

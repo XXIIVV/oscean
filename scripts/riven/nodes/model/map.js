@@ -1,3 +1,5 @@
+'use strict';
+
 function MapNode(id,rect)
 {
   Node.call(this,id,rect);

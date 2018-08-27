@@ -1,3 +1,5 @@
+'use strict';
+
 function PathNode(id,rect,...params)
 {
   DomNode.call(this,id,rect);

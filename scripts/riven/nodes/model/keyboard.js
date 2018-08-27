@@ -1,3 +1,5 @@
+'use strict';
+
 function KeyboardNode(id,rect)
 {
   Node.call(this,id,rect);

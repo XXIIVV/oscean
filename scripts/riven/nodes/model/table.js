@@ -1,3 +1,5 @@
+'use strict';
+
 function TableNode(id,rect,parser,type)
 {
   Node.call(this,id,rect);
