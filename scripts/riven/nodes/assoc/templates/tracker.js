@@ -86,7 +86,6 @@ function TrackerTemplate(id,rect,...params)
       if(!cats[issue.task]){ cats[issue.task] = []; }
       cats[issue.task].push(issue.name)
     }
-    console.log(cats)
     // Print
     for(let i in cats){
       let cat = cats[i]

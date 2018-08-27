@@ -1,3 +1,5 @@
+'use strict';
+
 function ActivityViz(logs)
 {
   Viz.call(this);

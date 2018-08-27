@@ -1,3 +1,5 @@
+'use strict';
+
 function Forecast(logs,limit = 14)
 {
   function predict(logs,limit)

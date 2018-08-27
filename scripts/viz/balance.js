@@ -1,3 +1,5 @@
+'use strict';
+
 function BalanceViz(logs)
 {
   Viz.call(this);

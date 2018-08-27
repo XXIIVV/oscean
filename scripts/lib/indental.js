@@ -1,3 +1,5 @@
+'use strict';
+
 function Indental(data)
 {
   this.data = data;

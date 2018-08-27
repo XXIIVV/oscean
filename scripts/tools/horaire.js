@@ -1,3 +1,5 @@
+'use strict';
+
 function Horaire(logs)
 {
   let h = {fh:0,ch:0,topics:{},tasks:{},osc:{sum:0,average:0},sectors:{audio:0,visual:0,research:0,misc:0,sum:0}};

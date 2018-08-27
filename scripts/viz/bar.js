@@ -1,3 +1,5 @@
+'use strict';
+
 function BarViz(logs)
 {
   Viz.call(this);

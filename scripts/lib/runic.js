@@ -1,3 +1,5 @@
+'use strict';
+
 function Runic(lines = [],templater = null)
 {
   this.lines = lines;
@@ -55,7 +57,7 @@ function Runic(lines = [],templater = null)
     return wr ? `${acc}<${wr}>${html}</${wr}>` : `${acc}${html}`
   }
 
-  // Templates  
+  // Templates
 
   function quote(content)
   {
@@ -87,7 +89,7 @@ function Runic(lines = [],templater = null)
     return `<td>${content.trim().replace(/ \| /g,"</td><td>")}</td>`
   }
 
-  // 
+  //
 
   this.toString = function()
   {

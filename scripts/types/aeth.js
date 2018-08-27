@@ -1,3 +1,5 @@
+'use strict';
+
 function Aeth(data = {},name = null)
 {
   Entry.call(this,name ? name : data.name,data);

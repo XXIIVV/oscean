@@ -1,3 +1,5 @@
+'use strict';
+
 function StatusViz(logs)
 {
   this.data = {recent:[],before:[]}

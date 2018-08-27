@@ -1,3 +1,5 @@
+'use strict';
+
 function Clock()
 {
   this.time = function()

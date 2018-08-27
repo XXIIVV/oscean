@@ -1,9 +1,11 @@
+'use strict';
+
 function Desamber(str)
 {
   this.str = str.match(/\d\d[a-z\+]\d\d/i) ? str : "01+01";
 
   this.y = str.substr(0,2);
-  this.m = str.substr(2,1).toUpperCase(); 
+  this.m = str.substr(2,1).toUpperCase();
   this.d = str.substr(3,2);
 
   this.year = parseInt(`20${this.y}`);

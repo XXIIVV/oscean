@@ -1,3 +1,5 @@
+'use strict';
+
 function List(name,data)
 {
   Entry.call(this,name,data);

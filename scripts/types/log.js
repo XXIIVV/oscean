@@ -1,3 +1,5 @@
+'use strict';
+
 function Log(data = {code:'-400'})
 {
   Entry.call(this,data.name,data);

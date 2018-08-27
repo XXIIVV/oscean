@@ -1,3 +1,5 @@
+'use strict';
+
 function Aeth(data)
 {
   if(!Array.isArray(data)){ data = {name:data}}

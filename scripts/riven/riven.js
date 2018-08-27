@@ -1,6 +1,8 @@
 
 // "Don't forget, the portal combination's in my journal."" — Catherine
 
+'use strict';
+
 function Riven()
 {
   this.is_graph = false;
@@ -9,8 +11,9 @@ function Riven()
 
 // QUERY
 
-function Ø(s,network = RIVEN.network)
+function Ø(s)
 {
+  let network = RIVEN.network;
   let id = s.toLowerCase();
   if(id.indexOf(" ") > -1){
     let node_id = id.split(" ")[0];
@@ -49,7 +52,7 @@ function Node(id,rect={x:0,y:0,w:2,h:2})
 
   this.create = function(pos = {x:0,y:0},type = Node,...params)
   {
-    let node = new type(this.id,rect,...params)  
+    let node = new type(this.id,rect,...params)
     this.rect.x = pos.x
     this.rect.y = pos.y
     node.setup();
@@ -59,7 +62,7 @@ function Node(id,rect={x:0,y:0,w:2,h:2})
 
   this.mesh = function(pos,n)
   {
-    let node = new Mesh(this.id,pos)  
+    let node = new Mesh(this.id,pos)
     node.rect.x = pos.x
     node.rect.y = pos.y
     node.setup();
@@ -68,13 +71,13 @@ function Node(id,rect={x:0,y:0,w:2,h:2})
     if(n instanceof Array){
       for(let id in n){
         n[id].parent = node;
-        node.children.push(n[id]);  
+        node.children.push(n[id]);
         node.update();
       }
     }
     else{
       n.parent = node;
-      node.children.push(n);  
+      node.children.push(n);
       node.update();
     }
     return node;
@@ -90,7 +93,7 @@ function Node(id,rect={x:0,y:0,w:2,h:2})
       }
     }
     else{
-      this.ports[type == ROUTE_TYPES.request ? "request" : "output"].connect(`${q} ${type == ROUTE_TYPES.request ? "answer" : "input"}`,type);  
+      this.ports[type == ROUTE_TYPES.request ? "request" : "output"].connect(`${q} ${type == ROUTE_TYPES.request ? "answer" : "input"}`,type);
     }
   }
 
@@ -109,9 +112,9 @@ function Node(id,rect={x:0,y:0,w:2,h:2})
 
   this.signal = function(target)
   {
-    for(port_id in this.ports){
+    for(let port_id in this.ports){
       let port = this.ports[port_id]
-      for(route_id in port.routes){
+      for(let route_id in port.routes){
         let route = port.routes[route_id];
         if(!route || !route.host || route.host.id != target.toLowerCase()){ continue; }
         return route.host
@@ -124,7 +127,7 @@ function Node(id,rect={x:0,y:0,w:2,h:2})
 
   this.send = function(payload)
   {
-    for(route_id in this.ports.output.routes){
+    for(let route_id in this.ports.output.routes){
       let route = this.ports.output.routes[route_id];
       if(!route){ continue; }
       route.host.receive(payload)
@@ -137,7 +140,7 @@ function Node(id,rect={x:0,y:0,w:2,h:2})
     for(route_id in port.routes){
       let route = port.routes[route_id];
       if(route){
-        route.host.receive(q)  
+        route.host.receive(q)
       }
     }
   }
@@ -157,7 +160,7 @@ function Node(id,rect={x:0,y:0,w:2,h:2})
   this.request = function(q)
   {
     let payload = {};
-    for(route_id in this.ports.request.routes){
+    for(let route_id in this.ports.request.routes){
       let route = this.ports.request.routes[route_id];
       if(!route){ continue; }
       let answer = route.host.answer(q)
@@ -184,7 +187,7 @@ function Node(id,rect={x:0,y:0,w:2,h:2})
 
   // MESH
 
-  function Mesh(id,rect) 
+  function Mesh(id,rect)
   {
     Node.call(this,id,rect);
 

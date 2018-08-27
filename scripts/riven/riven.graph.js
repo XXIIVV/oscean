@@ -1,3 +1,5 @@
+'use strict';
+
 function Riven_Graph()
 {
   Riven.call(this);

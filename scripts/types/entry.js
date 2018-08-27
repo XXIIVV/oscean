@@ -1,3 +1,5 @@
+'use strict';
+
 function Entry(name,data)
 {
   this.name  = name;

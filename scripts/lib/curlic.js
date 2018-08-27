@@ -1,7 +1,8 @@
-function Curlic(text = "",origin)
+'use strict';
+
+function Curlic(text = "")
 {
   this.text = `${text}`;
-  this.origin = origin;
 
   const runes = {
     "*":{tag:"b"},
@@ -25,7 +26,7 @@ function Curlic(text = "",origin)
   function link(s,t)
   {
     let target = t.substr(1,t.length-2).trim();
-    let external = target.indexOf("//") > -1 || this.origin.indexOf("//") > -1
+    let external = target.indexOf("//") > -1
     let name = s.replace(`(${target})`,"").trim();
     let location = target.toLowerCase().replace(/ /g,"+").replace(/[^0-9a-z\+\:\-\.\/]/gi,"").trim();
     
@@ -66,4 +67,4 @@ function Curlic(text = "",origin)
   }
 }
 
-String.prototype.to_curlic = function(origin){ return `${new Curlic(this,origin)}`; }
+String.prototype.to_curlic = function(){ return `${new Curlic(this)}`; }

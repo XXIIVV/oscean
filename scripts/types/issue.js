@@ -1,3 +1,5 @@
+'use strict';
+
 function Issue(data = {})
 {
   Entry.call(this,data.name,data);

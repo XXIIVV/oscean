@@ -1,3 +1,5 @@
+'use strict';
+
 function Term(name,data)
 {
   Entry.call(this,name,data);
