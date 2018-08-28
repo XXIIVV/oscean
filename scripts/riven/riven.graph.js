@@ -32,7 +32,7 @@ function Riven_Graph()
     for(let id in node.ports){
       let port = node.ports[id]
       let pos = port ? get_port_position(port) : {x:0,y:0}
-      for(route_id in port.routes){
+      for(let route_id in port.routes){
         let route = port.routes[route_id];
         if(!route){ continue; }
         html += route ? draw_connection(port,route) : ""
@@ -71,7 +71,7 @@ function Riven_Graph()
   function draw_port(port)
   {
     let pos = port ? get_port_position(port) : {x:0,y:0}
-    return `<g id='${port.host.id}_port_${port.id}'>${(port.type == PORT_TYPES.request || port.type == PORT_TYPES.answer)? `<path d='${draw_diamond(pos)}' class='port ${port.type} ${port.host.ports[this.id] && port.host.ports[this.id].route ? "route" : ""}' />` : `<circle cx='${pos.x}' cy="${pos.y}" r="${parseInt(GRID_SIZE/6)}" class='port ${port.type} ${port.host.ports[this.id] && port.host.ports[this.id].route ? "route" : ""}'/>`}</g>`
+    return `<g id='${port.host.id}_port_${port.id}'>${(port.type == PORT_TYPES.request || port.type == PORT_TYPES.answer)? `<path d='${draw_diamond(pos)}' class='port ${port.type} ${port.host.ports[port.id] && port.host.ports[port.id].route ? "route" : ""}' />` : `<circle cx='${pos.x}' cy="${pos.y}" r="${parseInt(GRID_SIZE/6)}" class='port ${port.type} ${port.host.ports[port.id] && port.host.ports[port.id].route ? "route" : ""}'/>`}</g>`
   }
 
   function draw_connection(a,b,type)
