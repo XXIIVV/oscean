@@ -52,7 +52,7 @@ function MissingTemplate(id,rect,...params)
   function find_similar(target,list)
   {
     let similar = []
-    for(key in list){
+    for(let key in list){
       let word = list[key]
       similar.push({word:word,value:similarity(target,word)});
     }
@@ -64,12 +64,12 @@ function MissingTemplate(id,rect,...params)
   function similarity(a,b)
   {
     let val = 0
-    for (i = 0; i < a.length; ++i) { val += b.indexOf(a.substr(i)) > -1 ? 1 : 0; }
-    for (i = 0; i < b.length; ++i) { val += a.indexOf(b.substr(i)) > -1 ? 1 : 0; }
+    for(let i = 0; i < a.length; ++i) { val += b.indexOf(a.substr(i)) > -1 ? 1 : 0; }
+    for(let i = 0; i < b.length; ++i) { val += a.indexOf(b.substr(i)) > -1 ? 1 : 0; }
     a = a.split('').sort().join('');
     b = b.split('').sort().join('');
-    for (i = 0; i < a.length; ++i) { val += b.indexOf(a.substr(i)) > -1 ? 1 : 0; }
-    for (i = 0; i < b.length; ++i) { val += a.indexOf(b.substr(i)) > -1 ? 1 : 0; }
+    for(let i = 0; i < a.length; ++i) { val += b.indexOf(a.substr(i)) > -1 ? 1 : 0; }
+    for(let i = 0; i < b.length; ++i) { val += a.indexOf(b.substr(i)) > -1 ? 1 : 0; }
     return val
   }
 }
