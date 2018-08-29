@@ -6,7 +6,7 @@ function RssNode(id,rect)
 
   this.glyph = "M60,60 L60,60 L150,120 L240,120 M60,150 L60,150 L240,150 M60,240 L60,240 L150,180 L240,180"
 
-  this.receive = function(q)
+  this.receive = function()
   {
     let logs = Ø('router').cache.tables.horaire;
 
@@ -44,7 +44,7 @@ function RssNode(id,rect)
     <description>
       &lt;img src="https://wiki.xxiivv.com/media/diary/${log.photo}.jpg"/&gt;
       &lt;br/&gt;
-      ${log.host.data.BREF ? log.host.data.BREF.to_curlic('https://wiki.xxiivv.com/').to_rss() : ''}
+      ${log.host.data.BREF ? log.host.data.BREF.to_curlic().to_rss().replace_all("href='#","href='https://wiki.xxiiv.com/") : ''}
     </description>
   </item>
 `

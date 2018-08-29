@@ -12,7 +12,7 @@ function KeyboardNode(id,rect)
   this.key_up = function(e)
   {
     if(e.key == "g" && e.ctrlKey){
-      Ø('rss').bang()
+      Ø('rss').receive()
     }
   }
 }
