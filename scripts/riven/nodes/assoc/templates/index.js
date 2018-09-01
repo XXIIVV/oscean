@@ -23,6 +23,7 @@ function IndexTemplate(id,rect,...params)
       let lead = entry.substr(0,1)
       if(parseInt(lead) > 0){ continue; }
       if(!entry.to_alpha()){ continue; }
+      if(!entry.index){ continue; }
       if(prev != lead){
         html += `<ln class='head'>${lead}</ln>`
       }
