@@ -22,6 +22,7 @@ function DatabaseNode(id,rect)
   this.build = function()
   {
     let time = performance.now();
+    let count = {indexed:0,any:0}
     for(let id in this.cache){
       let db = this.cache[id];
       for(let i in db){
