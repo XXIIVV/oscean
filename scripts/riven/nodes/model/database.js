@@ -8,6 +8,7 @@ function DatabaseNode(id,rect)
 
   this.cache = null;
   this.index = {};
+  this.all = {}
 
   this.answer = function(q)
   {
@@ -22,21 +23,24 @@ function DatabaseNode(id,rect)
   this.build = function()
   {
     let time = performance.now();
+    let count = {indexed:0,any:0}
     for(let id in this.cache){
       let db = this.cache[id];
       for(let i in db){
         let el = db[i]
         if(!el.name){ continue; }
-        if(!el.index){ continue; }
+        if(el.index){ count.indexed += 1; }
         this.index[el.name.toUpperCase().to_alpha()] = el
+        count.any += 1
       }
     }
-    console.info(this.id,`Indexed ${Object.keys(this.index).length} searchables, in ${(performance.now() - time).toFixed(2)}ms.`)
+    console.info(this.id,`Collected ${count.any} searchables, ${count.indexed} indexed, in ${(performance.now() - time).toFixed(2)}ms.`)
   }
 
-  this.find = function(q)
+  this.find = function(q,deep = false)
   {
-    return this.index[q.toUpperCase()];
+    let r = this.index[q.toUpperCase()]
+    return r && r.index ? r : r && deep ? r : null;
   }
 }
 

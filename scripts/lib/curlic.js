@@ -19,6 +19,7 @@ function Curlic(text = "")
 
   function wrap(s,c,r)
   {
+    if(s.indexOf(c) > 0){ return s; }
     s = s.replace(c,`<${r.tag}>`).replace(c,`</${r.tag}>`);
     return r.fn ? s.replace(s,r.fn(s)) : s
   }

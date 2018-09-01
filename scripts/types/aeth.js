@@ -3,14 +3,23 @@
 function Aeth(data = {},name = null)
 {
   Entry.call(this,name ? name : data.name,data);
-
+  
+  this.consonant = this.name.substr(0,1)
+  this.vowel = this.name.substr(1,1)
   this.childspeak = name ? name : data.name;
   this.adultspeak = adultspeak(name ? name : data.name)
   this.index = false;
-
+  
+  this.type = function()
+  {
+    return Ø('database').find(`${this.consonant}Y`,true).to_english()
+  }
+  
   this.to_english = function()
   {
-    let r = Ø('database').find(this.name)
+    if(this.data && this.data.english){ return this.data.english.toLowerCase(); }
+    
+    let r = Ø('database').find(this.name,true)
     return r && r.data.english ? r.data.english.toLowerCase() : null
   }
 
@@ -18,10 +27,10 @@ function Aeth(data = {},name = null)
   {
     let html = ""
 
-    ae1 = new Aeth(null,this.name.substr(0,2))
-    ae2 = new Aeth(null,this.name.substr(2,2))
-
-    html += `${ae1.adultspeak}:<b>${ae1.to_english()}</b> + ${ae2.adultspeak}:<b>${ae2.to_english()}</b> = ${this.adultspeak}:<b>${this.to_english()}</b>`
+    let ae1 = new Aeth(null,this.name.substr(0,2))
+    let ae2 = new Aeth(null,this.name.substr(2,2))
+    
+    html += `${ae1.adultspeak}:<b>${ae2.type()}.${ae1.to_english()}</b>&#40;${ae2.adultspeak}:<b>${ae2.type()}.${ae2.to_english()}</b>&#41; = ${this.adultspeak}:<b>${this.type()}.${this.to_english()}</b>`
     return html
   }
 
@@ -64,5 +73,32 @@ function Aeth(data = {},name = null)
   {
     let en = this.to_english()
     return `<p>{*${this.name.capitalize()}*}${this.name.toLowerCase() != this.adultspeak.toLowerCase() ? ', or '+this.adultspeak.capitalize() : ''} is a {(Lietal)} word${en ? ' that translates to \"'+en+'\" in {(English)}' : ''}.</p>`.to_curlic()
+  }
+}
+
+function Construction(str)
+{
+  this.str = str;
+  
+  this.find = function(target)
+  {
+    var d = Ø('database').cache.dictionaery;
+    for(let id in d){
+      if(d[id].to_english() == target.toLowerCase()){
+        return d[id].adultspeak
+      }
+    }
+    return target
+  }
+  
+  this.toString = function()
+  {
+    let html = ''
+    let parts = this.str.split(' ');
+    for(let id in parts){
+      var part = parts[id];
+      html += `${this.find(part)} `
+    }
+    return html.trim();
   }
 }
