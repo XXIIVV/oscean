@@ -23,13 +23,13 @@ function IndexTemplate(id,rect,...params)
       let lead = entry.substr(0,1)
       if(parseInt(lead) > 0){ continue; }
       if(!entry.to_alpha()){ continue; }
-      if(!entry.index){ continue; }
+      if(!entries[entry].index){ continue; }
       if(prev != lead){
         html += `<ln class='head'>${lead}</ln>`
       }
       html += _format(entry,entries[entry]);
       prev = lead
     }
-    return `<p>The {*Wiki*} contains ${sortable.length} searchable terms.</p><list class='tidy'>${html}</list>`.to_curlic()
+    return `<p>The {*Wiki*} contains ${sortable.length} entries.</p><list class='tidy'>${html}</list>`.to_curlic()
   }
 }
