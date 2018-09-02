@@ -25,14 +25,15 @@ function JournalTemplate(id,rect,...params)
     }
 
     // Build journals
-
     let html = ''
     let i = 0
+    let known = []
     for(let id in logs){
-      if(i > 14){ break; }
+      if(i > 20){ break; }
       let log = logs[id];
-      if(!log.photo){ continue; }
+      if(!log.photo && known.indexOf(log.term) > -1){ continue; }
       html += `${log}`
+      known.push(log.term)
       i += 1
     }
 
