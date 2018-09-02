@@ -80,6 +80,16 @@ function Construction(str)
 {
   this.str = str;
   
+  this.prepare = function(str)
+  {
+    return str.replace(/\'/g," ' ");
+  }
+
+  this.complete = function(html)
+  {
+    return html.replace(/ \' /g,"'").trim();
+  }
+
   this.find = function(target)
   {
     var d = Ø('database').cache.dictionaery;
@@ -94,11 +104,12 @@ function Construction(str)
   this.toString = function()
   {
     let html = ''
-    let parts = this.str.split(' ');
+    let str = this.prepare(this.str);
+    let parts = str.split(' ');
     for(let id in parts){
       var part = parts[id];
       html += `${this.find(part)} `
     }
-    return html.trim();
+    return this.complete(html);
   }
 }
