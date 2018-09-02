@@ -37,8 +37,8 @@ function Log(data = {code:'-400'})
       <div class='head'>
         <div class='details'><a class='topic' data-goto='${this.term}'>${this.term}</a> ${this.name ? ` — <span class='name' data-goto='${this.name}'>${this.name}</span>` : ''} <t class='time' data-goto='${this.term}:Journal'>${this.time}</t></div>
         <div class='bref'>${this.host.bref.to_curlic()}</div>
-        ${this.photo ? `<img src='media/diary/${this.photo}.jpg' data-goto='${this.term}'/>` : ''}
       </div>
+      ${this.photo ? `<img src='media/diary/${this.photo}.jpg' data-goto='${this.term}'/>` : ''}
     </div>`
   }
 }
