@@ -16,6 +16,6 @@ The database formats are [Indental](https://wiki.xxiivv.com/Indental) and [Tabla
 ## Extras
 
 - Pull Requests are welcome.
-- See the [License](LICENSE.md) file for license rights and limitations(MIT).
+- See the [License](LICENSE) file for license rights and limitations(MIT).
 
 <img src='https://github.com/XXIIVV/Oscean/blob/master/media/brand/logo.crest.png?raw=true' width='200'/>
