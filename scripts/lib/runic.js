@@ -14,7 +14,8 @@ function Runic(lines = [],templater = null)
     "@":{tag:"quote",fn:quote},
     "|":{tag:"tr",wrapper:"table",fn:table},
     "%":{fn:media},
-    ">":{}
+    ">":{}, 
+    "G":{fn:gallery}
   }
 
   function is_runic(l)
@@ -70,6 +71,12 @@ function Runic(lines = [],templater = null)
     return `
       ${text.length > 1 ? `<p class=\'text\'>${text}</p>` : ''}
       ${author ? `<p class='attrib'>${author}${source && link ? `, <a href='${link}'>${source}</a>` : source ? `, <b>${source}</b>` : ''}</p>` : ''}`
+  }
+  
+  function gallery(content)
+  {
+    let g = content.split(" ");
+    return `<div id="gallery">${g.map((item, i) => `<div class="image"><img src="content/images/${g[i].trim()}"></div>`).join('')}</div>`;
   }
 
   function media(content)
