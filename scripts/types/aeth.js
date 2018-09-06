@@ -50,6 +50,21 @@ function Aeth(data = {},name = null)
       let c2 = childspeak.substr(2,1);
       let v2 = childspeak.substr(3,1);
       
+      // Complex
+      if(v1 == "i" && v2 == "a" && c1 == c2){
+        return "e"+c1;
+      }
+      else if(v1 == "a" && v2 == "o" && c1 == c2){
+        return "u"+c1;
+      }
+      else if(v1 == "i" && v2 == "a"){
+        return c1+"e"+c2;
+      }
+      else if(v1 == "a" && v2 == "o"){
+        return c1+"u"+c2;
+      }
+
+      // Basics
       if(c1 == c2 && v1 == v2){
         return c1+vowels[v1];
       }
