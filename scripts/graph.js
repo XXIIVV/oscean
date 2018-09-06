@@ -40,7 +40,7 @@ function graph()
     Ø("style").create({x:5,y:8},DomNode,"style"),
     Ø("header").create({x:2,y:8},DomNode),
       Ø("photo").create({x:2,y:14},DomPhotoNode,"photo"),
-      Ø("logo").create({x:8,y:14},DomNode,"div",`<a data-goto='home'></a>`),
+      Ø("logo").create({x:8,y:14},DomNode,"div",`<a data-goto='home' href='#home'></a>`),
       Ø("menu").create({x:5,y:14},DomNode),
         Ø("search").create({x:2,y:20},InputNode),
         Ø("activity").create({x:5,y:20},DomNode),
@@ -59,8 +59,8 @@ function graph()
         <a target='_blank' href="https://github.com/neauoire" class="icon github external"></a>
         <a target='_blank' href="http://webring.xxiivv.com/#random" class="icon rotonde"></a>
         <a target='_blank' href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="icon cc"></a>
-        <a data-goto='devine lu linvega'>Devine Lu Linvega</a> © 06I04—${new Date().desamber()}
-        <center><a data-goto='About'>BY-NC-SA 4.0</a> <t style="color:#ccc"'>${new Clock()}</t></center>
+        <a data-goto='devine lu linvega' href='#devine+lu+linvega'>Devine Lu Linvega</a> © 06I04—${new Date().desamber()}
+        <center><a data-goto='About' href='#About'>BY-NC-SA 4.0</a> <t style="color:#ccc"'>${new Clock()}</t></center>
         <a target='_blank' href="http://100r.co" class="icon hundredrabbits"></a><hr>
       `),
   ])
