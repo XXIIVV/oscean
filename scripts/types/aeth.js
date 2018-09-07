@@ -66,7 +66,7 @@ function Aeth(data = {},name = null)
 
       // Basics
       if(c1 == c2 && v1 == v2){
-        return c1+vowels[v1];
+        return vowels[v1]+c1;
       }
       else if(c1 == c2){
         return c1+v1+v2;
