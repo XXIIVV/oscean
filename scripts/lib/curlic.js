@@ -8,7 +8,6 @@ function Curlic(text = "")
     "*":{tag:"b"},
     "_":{tag:"i"},
     "#":{tag:"code"},
-    "$":{tag:"span",fn:eval},
   }
 
   function evaluate(t)

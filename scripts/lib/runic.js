@@ -15,7 +15,6 @@ function Runic(lines = [],templater = null)
     "|":{tag:"tr",wrapper:"table",fn:table},
     "%":{fn:media},
     ">":{}, 
-    "G":{fn:gallery}
   }
 
   function is_runic(l)
@@ -72,12 +71,6 @@ function Runic(lines = [],templater = null)
       ${text.length > 1 ? `<p class=\'text\'>${text}</p>` : ''}
       ${author ? `<p class='attrib'>${author}${source && link ? `, <a href='${link}'>${source}</a>` : source ? `, <b>${source}</b>` : ''}</p>` : ''}`
   }
-  
-  function gallery(content)
-  {
-    let g = content.split(" ");
-    return `<div id="gallery">${g.map((item, i) => `<div class="image"><img src="content/images/${g[i].trim()}"></div>`).join('')}</div>`;
-  }
 
   function media(content)
   {
@@ -88,7 +81,12 @@ function Runic(lines = [],templater = null)
     if(service == "bandcamp"){ return `<iframe style="border: 0; width: 600px; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=${id}/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless></iframe>`; }
     if(service == "youtube"){ return `<iframe width="100%" height="380" src="https://www.youtube.com/embed/${id}?rel=0" style="max-width:700px" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`; }
     if(service == "custom"){ return `<iframe src='${id}' style='width:100%;height:350px;'></iframe>`; }
-    return `<img src='media/${service}' class='${id}'/>`
+    return content.indexOf(" | ") > -1 ? gallery(content.split(" | ")) : `<img src='media/${service}' class='${id}'/>`;
+  }
+
+  function gallery(content)
+  {
+    return `<div class="gallery">${content.map(media)}</div>`;
   }
 
   function table(content)
