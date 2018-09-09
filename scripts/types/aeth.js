@@ -107,7 +107,7 @@ function Construction(str)
 
   this.find = function(target,adultspeak = true)
   {
-    var d = Ø('database').cache.dictionaery;
+    let d = Ø('database').cache.dictionaery;
     for(let id in d){
       if(d[id].to_english() == target.toLowerCase()){
         return adultspeak ? d[id].adultspeak : d[id].childspeak;
@@ -127,7 +127,7 @@ function Construction(str)
     let str = this.prepare(this.str);
     let parts = str.split(' ');
     for(let id in parts){
-      var part = parts[id];
+      let part = parts[id];
       html += `${this.find(part,adultspeak)} `
     }
     return this.complete(html);

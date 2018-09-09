@@ -6,6 +6,7 @@ function Septambres(aeth)
   {
     let offset = glyph_id*(style.size.w+style.spacing);
     let rect = {w:style.size.w,h:style.size.h}
+    let angle = grid == 3 && seg_id > 0 || grid == 4 ? 0.25 : 0.75
     
     if(grid == 1){
       rect = {x:offset,y:0,w:style.size.w,h:style.size.h}
@@ -28,7 +29,7 @@ function Septambres(aeth)
     else{
       console.warn('Unknown grid',grid)
     }
-    
+
     return {
       TL:{x:rect.x,y:rect.y},
       TC:{x:rect.x+(rect.w/2),y:rect.y},
@@ -39,7 +40,7 @@ function Septambres(aeth)
       BL:{x:rect.x,y:rect.y+rect.h},
       BC:{x:rect.x+(rect.w/2),y:rect.y+rect.h},
       BR:{x:rect.x+rect.w,y:rect.y+rect.h},
-      PUSH:{x:style.thickness*0.5,y:style.thickness*0.5}
+      PUSH:{x:style.thickness*angle,y:style.thickness*angle}
     }
   }
   
@@ -117,13 +118,13 @@ function Septambres(aeth)
   
   this.medium = function(weight = 400)
   {
-    var t = {200:3.5,400:5.5,600:7.5}
+    let t = {200:3.5,400:5.5,600:7.5}
     return this.toString({pad:15,size:{w:40,h:40},spacing:10,thickness:t[weight]})
   }
   
   this.large = function(weight = 400)
   {
-    var t = {200:3.5,400:5.5,600:29.5}
+    let t = {200:3.5,400:5.5,600:29.5}
     return this.toString({pad:15,size:{w:200,h:200},spacing:0,thickness:t[weight]})
   }
   
