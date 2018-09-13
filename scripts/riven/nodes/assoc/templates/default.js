@@ -14,6 +14,7 @@ function DefaultTemplate(id,rect,...params)
     let html = `${q.result}`
 
     html += q.result.has_tag("children") ? this._children(q) : ''
+    html += q.result.has_tag("children_children") ? this._children_children(q) : ''
     html += q.result.has_tag("diary") || q.params == "diary" ? this._diary(q) : ''
     html += q.result.has_tag("index") ? this._index(q) : ''
     html += q.result.has_tag("list") ? this._list(q) : ''
@@ -79,13 +80,26 @@ function DefaultTemplate(id,rect,...params)
     return `<h2>{(Glossary)}</h2><list class='tidy' style='padding-left:30px'>${html}</list>`.to_curlic()
   }
 
-  this._children = function(q)
+  this._children = function(a = q.result.children)
+  {
+    let html = ""
+
+    for(let id in a){
+      let term = a[id]
+      html += `<ln>${term.bref}</ln>`
+    }
+    return `<list class='bullet'>${html}</list>`.to_curlic();
+  }
+
+  this._children_children = function(q)
   {
     let html = ""
 
     for(let id in q.result.children){
       let term = q.result.children[id]
-      html += `<ln>{(${term.name.capitalize()})}: ${term.bref}</ln>`
+      html += `<h3>{(${term.name.capitalize()})}</h3>`
+      html += `<p>${term.bref}</p>`
+      html += this._children(term.children)
     }
     return `<list>${html}</list>`.to_curlic();
   }

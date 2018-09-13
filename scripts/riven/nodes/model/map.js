@@ -34,6 +34,7 @@ function MapNode(id,rect)
     // Connect children
     for(let id in tables.lexicon){
       let term = tables.lexicon[id];
+      if(!term.parent){ console.warn("Missing parent term",id); continue; }
       let parent = term.parent.name
       if(!tables.lexicon[parent]){ console.warn("Missing children term",log.term); continue; }
       tables.lexicon[parent].children.push(term)
