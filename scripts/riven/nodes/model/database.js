@@ -29,7 +29,7 @@ function DatabaseNode(id,rect)
         let el = db[i]
         if(!el.name){ continue; }
         if(el.index){ count.indexed += 1; }
-        this.index[el.name.toUpperCase().to_alpha()] = el
+        this.index[el.name.toUpperCase().to_alphanum()] = el
         count.any += 1
       }
     }
