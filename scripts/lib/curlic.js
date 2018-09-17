@@ -10,6 +10,13 @@ function Curlic(text = "")
     "#":{tag:"code"},
   }
 
+  function validate(t)
+  {
+    if(t.indexOf("(") > -1 && t.indexOf(")") < 0){ console.warn(`Missing closing(:${t}`); }
+    if(t.indexOf("[") > -1 && t.indexOf("]") < 0){ console.warn(`Missing closing[:${t}`); }
+    if(t.indexOf("{") > -1 && t.indexOf("}") < 0){ console.warn(`Missing closing{:${t}`); }
+  }
+
   function evaluate(t)
   {
     try{ return `${eval(t)}`; }
@@ -35,6 +42,8 @@ function Curlic(text = "")
 
   function parse(s)
   {
+    validate(s);
+
     let to_eval = s.match(/\[(.*)\]/g)
     if(to_eval){ s = s.replace(to_eval[0],evaluate(to_eval[0])); }
     let to_link = s.match(/\((.*)\)/g)
