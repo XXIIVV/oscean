@@ -60,7 +60,7 @@ function graph()
         <a target='_blank' href="http://webring.xxiivv.com/#random" class="icon rotonde"></a>
         <a target='_blank' href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="icon cc"></a>
         <a data-goto='devine lu linvega' href='#devine+lu+linvega'>Devine Lu Linvega</a> © 06I04—${new Date().desamber()}
-        <center><a data-goto='About' href='#About'>BY-NC-SA 4.0</a> <t style="color:#ccc"'>${new Clock()}</t></center>
+        <center><a data-goto='About' href='#About'>BY-NC-SA 4.0</a> <t style="color:#ccc"'>${new Oneralie()}</t></center>
         <a target='_blank' href="http://100r.co" class="icon hundredrabbits"></a><hr>
       `),
   ])

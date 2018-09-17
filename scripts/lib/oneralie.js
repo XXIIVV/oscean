@@ -1,6 +1,6 @@
 'use strict';
 
-function Clock()
+function Oneralie()
 {
   this.time = function()
   {
@@ -15,7 +15,7 @@ function Clock()
   }
 }
 
-Date.prototype.clock = function()
+Date.prototype.oneralie = function()
 {
-  return new Clock();
+  return new Oneralie();
 }
