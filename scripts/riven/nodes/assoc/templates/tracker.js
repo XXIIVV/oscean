@@ -6,38 +6,6 @@ function TrackerTemplate(id,rect,...params)
 
   this.glyph = "M60,60 L60,60 L240,60 L240,240 L60,240 Z M240,150 L240,150 L150,150 L150,240"
 
-  // Services
-
-  function find_available(q)
-  {
-    let used = []
-    for(let id in q.tables.horaire){
-      let log = q.tables.horaire[id]
-      if(!log.photo){ continue; }
-      used.push(log.photo)
-    }
-    let available = 1
-    while(available < 999){
-      if(used.indexOf(available) < 0){ return available; }
-      available += 1
-    }
-  }
-
-  function on_this_day(q)
-  {
-    let today = new Date().desamber();
-    let a = []
-    for(let id in q.tables.horaire){
-      let log = q.tables.horaire[id]
-      if(!log.is_event){ continue; }
-      if(!log.name){ continue; }
-      if(log.time.offset >= 0){ continue; }
-      if(log.time.doty != today.doty){ continue; }
-      a.push(log)
-    }
-    return a;
-  }
-
   this.slice = function(logs,from,to)
   {
     let a = []
@@ -179,9 +147,6 @@ function TrackerTemplate(id,rect,...params)
 
   this.answer = function(q)
   {
-    console.info("Next Available:",find_available(q))
-    console.info("On This Day:",on_this_day(q))
-
     let target = q.target.toLowerCase();
     let html = ""
 
