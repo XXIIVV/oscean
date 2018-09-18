@@ -38,8 +38,9 @@ function graph()
   Ø("client").mesh({x:44,y:0},[
     Ø("view").create({x:2,y:2},DocumentNode),
     Ø("style").create({x:5,y:8},DomNode,"style"),
+    Ø("terminal").create({x:8,y:8},TerminalNode),
     Ø("header").create({x:2,y:8},DomNode),
-      Ø("photo").create({x:2,y:14},DomPhotoNode,"photo"),
+      Ø("photo").create({x:2,y:14},PhotoNode,"photo"),
       Ø("logo").create({x:8,y:14},DomNode,"div",`<a data-goto='home' href='#home'></a>`),
       Ø("menu").create({x:5,y:14},DomNode),
         Ø("search").create({x:2,y:20},InputNode),
@@ -82,7 +83,7 @@ function graph()
   Ø("header").bind(["logo","photo","menu","info"])
   Ø("info").bind(["glyph","title"])
   Ø("menu").bind(["search","activity"])
-  Ø("view").bind(["header","core","footer","style"])
+  Ø("view").bind(["header","core","footer","terminal","style"])
   Ø("core").bind(["sidebar","content","navi"])
   Ø("sidebar").bind(["bref","icon"])
   Ø("footer").bind(["credits"])

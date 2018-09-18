@@ -46,4 +46,29 @@ function DomNode(id,rect,...params)
       this.el.className = !content || content.trim() == "" ? "empty" : ""
     }
   }
+
+  // Class
+
+  this.set_class = function(c)
+  {
+    this.el.className = `${c.toLowerCase()}`;
+  }
+
+  this.add_class = function(c)
+  {
+    if(this.has_class(c)){ return; }
+
+    this.el.className = `${this.el.className} ${c.toLowerCase()}`.trim();
+  }
+
+  this.remove_class = function(c)
+  {
+    if(!this.has_class(c)){ return; }
+    this.el.className = this.el.className.replace(c.toLowerCase(),"").trim();
+  }
+
+  this.has_class = function(c)
+  {
+    return this.el.className.indexOf(c.toLowerCase()) > -1;
+  }
 }

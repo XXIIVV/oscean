@@ -11,7 +11,7 @@ function QueryNode(id,rect)
   {
     let target = input.to_url() === '' ? 'home' : input.to_url()
 
-    Ø("view").el.className = "loading"
+    Ø("view").set_class("loading");
 
     console.log(this.id,target);
     

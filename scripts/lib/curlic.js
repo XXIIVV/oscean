@@ -46,15 +46,19 @@ function Curlic(text = "")
 
     let to_eval = s.match(/\[(.*)\]/g)
     if(to_eval){ s = s.replace(to_eval[0],evaluate(to_eval[0])); }
+
     let to_link = s.match(/\((.*)\)/g)
     if(to_link){ s = s.replace(to_link[0],""); }
+
     for(let ch in runes){
       if(s.indexOf(ch) < 0){ continue; }
       s = wrap(s,ch,runes[ch])
     }
+
     if(to_link){
       s = link(s,to_link[0])
     }
+    
     return s
   }
 

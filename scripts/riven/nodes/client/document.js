@@ -12,7 +12,11 @@ function DocumentNode(id,rect,...params)
 
     this.label = `${content.title}`
 
-    setTimeout(()=>{ this.el.className = `${content.theme} ready`; },100)
+    setTimeout(()=>{ 
+      this.remove_class("loading");
+      this.add_class(content.theme);
+      this.add_class("ready");
+    },100)
 
     if(content && content[this.id] != null){
       this.update(content[this.id]);
