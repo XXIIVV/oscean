@@ -50,10 +50,10 @@ function Viz()
     svg.viz text { stroke:none; fill:#fff; font-size:11px; text-anchor: start; font-family:'archivo_bold'; fill:#000; text-transform:capitalize }
     svg.viz rect { stroke:none }
     svg.viz rect:hover { fill:#a1a1a1 !important; cursor:pointer}
-    svg.viz rect.audio { fill:#72dec2 }
+    svg.viz rect.audio { fill:var(--color_1) }
+    svg.viz rect.visual { fill:var(--color_2) }
+    svg.viz rect.research { fill:var(--color_3) }
     svg.viz rect.missing { fill:#ddd }
-    svg.viz rect.visual { fill:#51a196 }
-    svg.viz rect.research { fill:#316067 }
     svg.viz rect.misc { fill:#000 !important }
     svg.viz rect.today { animation: blink 1s linear infinite;}
     svg.viz circle.photo { fill:white; stroke:none }
