@@ -101,6 +101,6 @@ function DefaultTemplate(id,rect,...params)
       html += `<p>${term.bref}</p>`
       html += this._children(term)
     }
-    return `<list>${html}</ul>`.to_curlic();
+    return `<ul>${html}</ul>`.to_curlic();
   }
 }

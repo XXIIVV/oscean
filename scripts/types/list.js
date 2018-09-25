@@ -43,6 +43,6 @@ function List(name,data)
 
   this.toString = function()
   {
-    return `<list>${Array.isArray(this.data) ? new Runic(this.data) : this._from_object()}</ul>`.to_curlic();
+    return `<ul>${Array.isArray(this.data) ? new Runic(this.data) : this._from_object()}</ul>`.to_curlic();
   }
 }
