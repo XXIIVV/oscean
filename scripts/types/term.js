@@ -33,6 +33,11 @@ function Term(name,data)
     return null;
   }
 
+  this.span = function()
+  {
+    return this.logs.length > 2 ? {from:this.logs[this.logs.length-1].time,to:this.logs[0].time} : null;
+  }
+
   this.portal = function()
   {
     if(this.is_portal){ return this; }
