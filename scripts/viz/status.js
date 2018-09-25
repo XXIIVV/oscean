@@ -24,32 +24,32 @@ function StatusViz(logs)
     <table class='graph status'>
       <tr>
         <th>
-          <t class='display'>
-            <t class='value'>${recent.ch.toFixed(2)}</t>
-            <t class='offset'>${this.offset(recent.ch,before.ch)}</t>
-            <t class='unit'>ch/day</t>
-          </t>
+          <span class='display'>
+            <span class='value'>${recent.ch.toFixed(2)}</span>
+            <span class='offset'>${this.offset(recent.ch,before.ch)}</span>
+            <span class='unit'>ch/day</span>
+          </span>
         </th>
         <th>
-          <t class='display'>
-            <t class='value'>${recent.fh.toFixed(2)}</t>
-            <t class='offset'>${this.offset(recent.fh,before.fh)}</t>
-            <t class='unit'>fh/day</t>
-          </t>
+          <span class='display'>
+            <span class='value'>${recent.fh.toFixed(2)}</span>
+            <span class='offset'>${this.offset(recent.fh,before.fh)}</span>
+            <span class='unit'>fh/day</span>
+          </span>
         </th>
         <th>
-          <t class='display'>
-            <t class='value'>${recent.efec.toFixed(2)}</t>
-            <t class='offset'>${this.offset(recent.efec,before.efec)}</t>
-            <t class='unit'>efec</t>
-          </t>
+          <span class='display'>
+            <span class='value'>${recent.efec.toFixed(2)}</span>
+            <span class='offset'>${this.offset(recent.efec,before.efec)}</span>
+            <span class='unit'>efec</span>
+          </span>
         </th>
         <th>
-          <t class='display'>
-            <t class='value'>${recent.efic.toFixed(2)}</t>
-            <t class='offset'>${this.offset(recent.efic,before.efic)}</t>
-            <t class='unit'>efic</t>
-          </t>
+          <span class='display'>
+            <span class='value'>${recent.efic.toFixed(2)}</span>
+            <span class='offset'>${this.offset(recent.efic,before.efic)}</span>
+            <span class='unit'>efic</span>
+          </span>
         </th>
       </tr>
     </table>`
@@ -68,10 +68,10 @@ function StatusViz(logs)
       #content .graph.status { background:transparent; padding:0px; width:730px; margin-bottom:30px}
       #content .graph.status th { font-size:40px; font-family:var(--font_t);line-height:40px; }
       #content .graph.status tr > * { padding:5px 0px}
-      #content .graph.status th t.display { display:inline-block; border-bottom:1.5px solid black; width:180px; padding-bottom:15px}
-      #content .graph.status th t.display t.value {}
-      #content .graph.status th t.display t.unit { font-size:12px; font-family:'input_mono_regular';}
-      #content .graph.status th t.display t.offset { font-size:12px; font-family:'input_mono_medium'; text-transform:uppercase; position:absolute; margin-top:-7.5px}
+      #content .graph.status th span.display { display:inline-block; border-bottom:1.5px solid black; width:180px; padding-bottom:15px}
+      #content .graph.status th span.display span.value {}
+      #content .graph.status th span.display span.unit { font-size:12px; font-family:'input_mono_regular';}
+      #content .graph.status th span.display span.offset { font-size:12px; font-family:'input_mono_medium'; text-transform:uppercase; position:absolute; margin-top:-7.5px}
       #view.noir .graph.status { border-bottom:1.5px solid #333; }
     </style>
     `

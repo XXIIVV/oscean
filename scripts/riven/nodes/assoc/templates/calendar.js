@@ -16,7 +16,7 @@ function CalendarTemplate(id,rect,...params)
       let log = logs[id];
       if(!log.is_event){ continue; }
       if(log.time.y != prev_y){ html += `<li class='head'>20${log.time.y}</li>`; prev_y = log.time.y; }
-      html += `<li style='${log.time.offset > 0 ? 'color:#aaa' : ''}'>{${log.name ? log.name : log.term+' '+log.task.capitalize()}(${log.term})}</a> <t title='${log.time}'>${log.time.ago(60)}</t></li>`.to_curlic()
+      html += `<li style='${log.time.offset > 0 ? 'color:#aaa' : ''}'>{${log.name ? log.name : log.term+' '+log.task.capitalize()}(${log.term})}</a> <span title='${log.time}'>${log.time.ago(60)}</span></li>`.to_curlic()
     }
     return `${new BarViz(logs)}${new StatusViz(logs)}<ul class='tidy' style='max-width:calc(100% - 15px)'>${html}</ul>`;
   }

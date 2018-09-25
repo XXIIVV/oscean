@@ -32,7 +32,7 @@ function TrackerTemplate(id,rect,...params)
     score.average = score.ratings/score.entries;
 
     html += `<div class='progress'><div class='bar' style='width:${(score.average*100).toFixed(2)}%'></div></div>`
-    html += `<t>${(score.average*100).toFixed(2)}% Complete</t>`
+    html += `<span>${(score.average*100).toFixed(2)}% Complete</span>`
     return `<div class='progress_wrapper'>${html}</div>`
   }
 
@@ -41,7 +41,7 @@ function TrackerTemplate(id,rect,...params)
     let html = ''
     for(let t in issue.tasks){
       let task = issue.tasks[t];
-      html += `<tr class='task'><td colspan='20'><t class='task'>${task.to_curlic()}</t></td></tr>`
+      html += `<tr class='task'><td colspan='20'><span class='task'>${task.to_curlic()}</span></td></tr>`
     }
     return html
   }
