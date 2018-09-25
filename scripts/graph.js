@@ -44,7 +44,7 @@ function graph()
       Ø("logo").create({x:8,y:14},DomNode,"div",`<a data-goto='home' href='#home'></a>`),
       Ø("menu").create({x:5,y:14},DomNode),
         Ø("search").create({x:2,y:20},InputNode),
-        Ø("activity").create({x:5,y:20},DomNode),
+        Ø("activity").create({x:5,y:20},DomNode,"ul"),
       Ø("info").create({x:11,y:14},DomNode),
         Ø("glyph").create({x:11,y:20},PathNode),
         Ø("title").create({x:8,y:20},DomNode),
