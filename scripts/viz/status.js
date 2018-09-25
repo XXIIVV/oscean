@@ -66,7 +66,7 @@ function StatusViz(logs)
     return `
     <style>
       #content .graph.status { background:transparent; padding:0px; width:730px; margin-bottom:30px}
-      #content .graph.status th { font-size:40px; font-family:'archivo_light';line-height:40px; }
+      #content .graph.status th { font-size:40px; font-family:var(--font_t);line-height:40px; }
       #content .graph.status tr > * { padding:5px 0px}
       #content .graph.status th t.display { display:inline-block; border-bottom:1.5px solid black; width:180px; padding-bottom:15px}
       #content .graph.status th t.display t.value {}

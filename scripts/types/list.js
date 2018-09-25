@@ -36,13 +36,13 @@ function List(name,data)
   {
     let html = ''
     for(let id in this.data){
-      html += `<ln>{*${id.capitalize()}*}: ${this.data[id]}</ln>`
+      html += `<li>{*${id.capitalize()}*}: ${this.data[id]}</li>`
     }
     return html.to_curlic()
   }
 
   this.toString = function()
   {
-    return `<list>${Array.isArray(this.data) ? new Runic(this.data) : this._from_object()}</list>`.to_curlic();
+    return `<list>${Array.isArray(this.data) ? new Runic(this.data) : this._from_object()}</ul>`.to_curlic();
   }
 }

@@ -53,20 +53,20 @@ function BuildNode(id,rect)
     if(!q.result){ return ''; }
 
     if(q.result.name == "HOME" || q.result.name == "JOURNAL" || q.result.name == "CALENDAR" || q.result.name == "TRACKER"){
-      return `<a id='issues' data-goto='Tracker' href='#Tracker'>Tracker</a> <a id='diaries' data-goto='journal' href='#journal'>Journal</a> <a id='logs' data-goto='Calendar' href='#Calendar'>Calendar</a> `
+      return `<li><a id='issues' data-goto='Tracker' href='#Tracker'>Tracker</a> <a id='diaries' data-goto='journal' href='#journal'>Journal</a> <a id='logs' data-goto='Calendar' href='#Calendar'>Calendar</a></li>`
     }
     
     if(q.result.issues.length > 0){
-      html += `<a id='issues' data-goto='${q.result.name}:tracker' href='#${q.result.name}:tracker'>${q.result.issues.length} Issue${q.result.issues.length > 1 ? 's' : ''}</a>`
+      html += `<li><a id='issues' data-goto='${q.result.name}:tracker' href='#${q.result.name}:tracker'>${q.result.issues.length} Issue${q.result.issues.length > 1 ? 's' : ''}</a></li>`
     }
     if(q.result.diaries.length > 1 && !q.result.has_tag("diary")){
-      html += `<a id='diaries' data-goto='${q.result.name}:diary' href='#${q.result.name}:diary'>${q.result.diaries.length} Diaries</a>`;
+      html += `<li><a id='diaries' data-goto='${q.result.name}:diary' href='#${q.result.name}:diary'>${q.result.diaries.length} Diaries</a></li>`;
     }
     if(q.result.logs.length > 2 && q.result.latest_log.time.offset > -365 && !q.result.has_tag("journal")){
-      html += `<a id='logs' data-goto='${q.result.name}:journal' href='#${q.result.name}:journal'>${q.result.logs.length} Logs</a>`
+      html += `<li><a id='logs' data-goto='${q.result.name}:journal' href='#${q.result.name}:journal'>${q.result.logs.length} Logs</a></li>`
     }
 
-    return html;
+    return `<ul>${html}</ul>`;
   }
 
   this.find_last_diary = function(horaire)

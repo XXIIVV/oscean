@@ -17,14 +17,14 @@ function BuildSidebarNode(id,rect)
     let html = ""
     
     for(let id in q.result.links){
-      html += `<a href='${q.result.links[id]}' target='_blank'>${id}</a>`
+      html += `<li><a href='${q.result.links[id]}' target='_blank'>${id.toLowerCase()}</a></li>`
     }
 
     return `<h1>${q.result.bref.to_curlic()}</h1>
     <h2>
       <a data-goto='${q.result.unde}' href='#${q.result.unde}'>${q.result.unde}</a><br />
       ${q.result.span.from && q.result.span.to ? q.result.span.from+'—'+q.result.span.to : ''}
-      <div class='links'>${html}</div>
-    </h2>`
+    </h2>
+    <ul class='links'>${html}</ul>`
   }
 }

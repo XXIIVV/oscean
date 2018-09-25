@@ -7,8 +7,8 @@ function Runic(lines = [],templater = null)
   const runes = {
     "&":{tag:"p"},
     "?":{tag:"p",class:"note"},
-    "-":{tag:"ln",wrapper:"list"},
-    "#":{tag:"ln",wrapper:"code"},
+    "-":{tag:"li",wrapper:"ul"},
+    "#":{tag:"li",wrapper:"code"},
     "*":{tag:"h3"},
     "+":{tag:"hs"},
     "@":{tag:"quote",fn:quote},

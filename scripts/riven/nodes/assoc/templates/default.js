@@ -75,9 +75,9 @@ function DefaultTemplate(id,rect,...params)
       let name = words[id]
       let word = q.tables.glossary[name]
       let children = Object.keys(word.data)
-      html += `<ln>{(${name.capitalize()})} — ${children.length} items</ln>`
+      html += `<li>{(${name.capitalize()})} — ${children.length} items</li>`
     }
-    return `<h2>{(Glossary)}</h2><list class='tidy' style='padding-left:30px'>${html}</list>`.to_curlic()
+    return `<h2>{(Glossary)}</h2><ul class='tidy' style='padding-left:30px'>${html}</ul>`.to_curlic()
   }
 
   this._children = function(a)
@@ -86,9 +86,9 @@ function DefaultTemplate(id,rect,...params)
 
     for(let id in a.children){
       let term = a.children[id]
-      html += `<ln>${term.bref}</ln>`
+      html += `<li>${term.bref}</li>`
     }
-    return `<list class='bullet'>${html}</list>`.to_curlic();
+    return `<ul class='bullet'>${html}</ul>`.to_curlic();
   }
 
   this._children_children = function(q)
@@ -101,6 +101,6 @@ function DefaultTemplate(id,rect,...params)
       html += `<p>${term.bref}</p>`
       html += this._children(term)
     }
-    return `<list>${html}</list>`.to_curlic();
+    return `<list>${html}</ul>`.to_curlic();
   }
 }

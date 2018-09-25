@@ -8,7 +8,7 @@ function IndexTemplate(id,rect,...params)
 
   function _format(name,entry)
   {
-    return `<ln>{${name.capitalize()}(${name.to_alphanum()})} ${entry.host ? ' — '+entry.host.name.capitalize() : ''}</ln>`
+    return `<li>{${name.capitalize()}(${name.to_alphanum()})} ${entry.host ? ' — '+entry.host.name.capitalize() : ''}</li>`
   }
 
   this.answer = function(q)
@@ -25,11 +25,11 @@ function IndexTemplate(id,rect,...params)
       if(!entry.to_alpha()){ continue; }
       if(!entries[entry].index){ continue; }
       if(prev != lead){
-        html += `<ln class='head'>${lead}</ln>`
+        html += `<li class='head'>${lead}</li>`
       }
       html += _format(entry,entries[entry]);
       prev = lead
     }
-    return `<p>The {*Wiki*} contains ${sortable.length} entries.</p><list class='tidy'>${html}</list>`.to_curlic()
+    return `<p>The {*Wiki*} contains ${sortable.length} entries.</p><ul class='tidy'>${html}</ul>`.to_curlic()
   }
 }
