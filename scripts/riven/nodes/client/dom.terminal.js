@@ -71,6 +71,21 @@ function TerminalNode(id,rect,...params)
       return `There are no available diary IDs under 999.`
     },
 
+    walk: (q) => 
+    {
+      for(let id in Ø("database").cache.lexicon){
+        let term = Ø("database").cache.lexicon[id]
+        term.toString();
+      }
+      return `Done.`
+    },
+
+    rss: (q) => 
+    {
+      Ø('rss').receive()
+      return `Done.`
+    },
+
     otd: (q) =>
     {
       let today = new Date().desamber();
