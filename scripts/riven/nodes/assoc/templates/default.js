@@ -47,7 +47,7 @@ function DefaultTemplate(id,rect,...params)
       let child = term.children[id];
       html += `
       <h2>${child.name.capitalize()}</h2>
-      <hs>${child.bref.to_curlic()}</hs>
+      <h4>${child.bref.to_curlic()}</h4>
       ${child.featured_log ? `<a data-goto='${child.name}'><img src="media/diary/${child.featured_log.photo}.jpg"/></a>` : ''}
       ${child}`
     }

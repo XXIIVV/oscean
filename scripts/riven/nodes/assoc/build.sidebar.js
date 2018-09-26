@@ -10,9 +10,7 @@ function BuildSidebarNode(id,rect)
 
   this.answer = function(q)
   {
-    if(!q.result){
-      return "<h1>The {(Nataniev)} Services Desk</h1><h2>{(Home)}</h2>".to_curlic()
-    }
+    if(!q.result){ return "<h1>The {(Nataniev)} Services Desk</h1><h2>{(Home)}</h2>".to_curlic(); }
 
     let span = q.result.span();
     let html = ""
@@ -22,7 +20,7 @@ function BuildSidebarNode(id,rect)
     }
 
     return `<h1>${q.result.bref.to_curlic()}</h1>
-    <h2><a data-goto='${q.result.unde}' href='#${q.result.unde}'>${span ? `${span.from}—${span.to}` : `${q.result.unde}`}</a></h2>
+    <h2><a data-goto='${q.result.unde}' href='#${q.result.unde}'>${span && q.result.logs.length > 20 ? `${span.from}—${span.to}` : `${q.result.unde}`}</a></h2>
     <ul class='links'>${html}</ul>`
   }
 }

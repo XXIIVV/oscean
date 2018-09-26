@@ -51,8 +51,6 @@ function graph()
     Ø("core").create({x:14,y:8},DomNode),
       Ø("content").create({x:14,y:14},DomNode),
       Ø("sidebar").create({x:17,y:14},DomNode),
-        Ø("bref").create({x:14,y:20},DomNode),
-        Ø("icon").create({x:17,y:20},DomNode),
       Ø("navi").create({x:20,y:14},DomNode,"ul"),
     Ø("footer").create({x:23,y:8},DomNode),
       Ø("credits").create({x:23,y:14},DomNode,"div",`
@@ -85,7 +83,6 @@ function graph()
   Ø("menu").bind(["search","activity"])
   Ø("view").bind(["header","core","footer","terminal","style"])
   Ø("core").bind(["sidebar","content","navi"])
-  Ø("sidebar").bind(["bref","icon"])
   Ø("footer").bind(["credits"])
 
   // Start

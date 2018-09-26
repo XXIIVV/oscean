@@ -41,37 +41,10 @@ function Viz()
     return html
   }
 
-  this.style = function()
-  {
-    return `
-    <style>
-    @keyframes blink { 50% { opacity: 0; } }
-    svg.viz { border-bottom: 1.5px solid #333;display: block;padding: 30px 0px;margin-bottom: 30px; max-width:730px; height:115px; width:100%;}
-    svg.viz text { stroke:none; fill:#fff; font-size:11px; text-anchor: start; font-family:'archivo_bold'; fill:#000; text-transform:capitalize }
-    svg.viz rect { stroke:none }
-    svg.viz rect:hover { fill:#a1a1a1 !important; cursor:pointer}
-    svg.viz rect.audio { fill:var(--color_1) }
-    svg.viz rect.visual { fill:var(--color_2) }
-    svg.viz rect.research { fill:var(--color_3) }
-    svg.viz rect.missing { fill:#ddd }
-    svg.viz rect.misc { fill:#000 !important }
-    svg.viz rect.today { animation: blink 1s linear infinite;}
-    svg.viz circle.photo { fill:white; stroke:none }
-    svg.viz circle.event { fill:none; stroke:white; stroke-width:1.5px }
-    svg.viz path { stroke-linecap:butt; stroke-dasharray:1,1; fill:none;stroke:#333;stroke-width:13px }
-
-    #view.noir svg.viz text { fill:white}
-    #view.noir svg.viz rect.missing { fill:#333 }
-    #view.noir svg.viz circle.photo { fill:white; stroke:none }
-    #view.noir svg.viz circle.event { fill:none; stroke:white; stroke-width:1.5px }
-    </style>
-    `
-  }
-
   this.toString = function()
   {
     if(this.logs.length < 1){ return '<p>Not enough data to display the infographic.</p>'; }
 
-    return this.draw()+this.style()
+    return this.draw()
   }
 }

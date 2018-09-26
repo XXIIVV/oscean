@@ -29,9 +29,7 @@ function BuildNode(id,rect)
           }
         },
         core:{
-          sidebar:{
-            bref:builds._sidebar,
-          },
+          sidebar:builds._sidebar,
           content:builds._content,
           navi:builds._navi
         },
