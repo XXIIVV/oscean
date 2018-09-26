@@ -51,7 +51,10 @@ function BuildNode(id,rect)
     if(!q.result){ return ''; }
 
     if(q.result.name == "HOME" || q.result.name == "JOURNAL" || q.result.name == "CALENDAR" || q.result.name == "TRACKER"){
-      return `<li><a id='issues' data-goto='Tracker' href='#Tracker'>Tracker</a> <a id='diaries' data-goto='journal' href='#journal'>Journal</a> <a id='logs' data-goto='Calendar' href='#Calendar'>Calendar</a></li>`
+      return `
+      <li><a id='issues' data-goto='Tracker' href='#Tracker'>Tracker</a></li> 
+      <li><a id='diaries' data-goto='journal' href='#journal'>Journal</a> 
+      <li><a id='logs' data-goto='Calendar' href='#Calendar'>Calendar</a></li>`
     }
     
     if(q.result.issues.length > 0){
@@ -64,7 +67,7 @@ function BuildNode(id,rect)
       html += `<li><a id='logs' data-goto='${q.result.name}:journal' href='#${q.result.name}:journal'>${q.result.logs.length} Logs</a></li>`
     }
 
-    return `<ul>${html}</ul>`;
+    return html;
   }
 
   this.find_last_diary = function(horaire)

@@ -151,10 +151,9 @@ function TrackerTemplate(id,rect,...params)
     let html = ""
 
     html += `${new BalanceViz(q.tables.horaire)}`
-    html += `${new StatusViz(this.slice(q.tables.horaire,-51,0))}`
-    html +=  target == 'tracker' ? `${this._progress(q)}` : ''
-    html += `${this._table(target,q)}`
-    html += `${this._style()}`
+    // html +=  target == 'tracker' ? `${this._progress(q)}` : ''
+    // html += `${this._table(target,q)}`
+    // html += `${this._style()}`
 
     return html
   }

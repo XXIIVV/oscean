@@ -2,9 +2,7 @@
 
 function BarViz(logs)
 {
-  Viz.call(this);
-
-  this.logs = this.slice(logs,-365 * 10,0);
+  Viz.call(this,logs,-365 * 10,0);
 
   this.parse = function(logs, parts = 51)
   {
@@ -50,7 +48,7 @@ function BarViz(logs)
 
     html += this.legend(this.logs);
 
-    return `<svg class='viz'>${html}</svg>`
+    return html
   }
 
   function clamp(v, min, max){ return v < min ? min : v > max ? max : v; }

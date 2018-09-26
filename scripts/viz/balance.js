@@ -2,13 +2,23 @@
 
 function BalanceViz(logs)
 {
-  Viz.call(this);
+  Viz.call(this,logs,-52 * 2,0);
 
-  this.logs = this.slice(logs,-52 * 2,0);
+  function slice(logs,from,to)
+  {
+    let a = []
+    for(let id in logs){
+      let log = logs[id];
+      if(log.time.offset < from){ continue; }
+      if(log.time.offset > to){ continue; }
+      a.push(log)
+    }
+    return a
+  }
 
   this.balance_at = function(offset)
   {
-    let logs = this.slice(this.logs,offset-52,offset);
+    let logs = slice(this.logs,offset-52,offset);
     let sectors = {audio:0,visual:0,research:0,sum:0}
 
     for(let id in logs){
@@ -57,8 +67,8 @@ function BalanceViz(logs)
       day -= 1
     }
 
-    html += this.legend(this.slice(this.logs,-52,0));
+    html += this.legend(slice(this.logs,-52,0));
 
-    return `<svg class='viz'>${html}</svg>`
+    return html;
   }
 }

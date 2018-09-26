@@ -2,9 +2,7 @@
 
 function ActivityViz(logs)
 {
-  Viz.call(this);
-
-  this.logs = this.slice(logs,-365,0)
+  Viz.call(this,logs,-365,0);
 
   this.parse = function(logs = this.logs)
   {
@@ -43,8 +41,6 @@ function ActivityViz(logs)
       week += 1
     }
 
-    html += this.legend(this.logs);
-
-    return `<svg class='viz'>${html}</svg>`
+    return html
   }
 }

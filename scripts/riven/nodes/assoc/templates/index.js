@@ -30,6 +30,6 @@ function IndexTemplate(id,rect,...params)
       html += _format(entry,entries[entry]);
       prev = lead
     }
-    return `<p>The {*Wiki*} contains ${sortable.length} entries.</p><ul class='tidy'>${html}</ul>`.to_curlic()
+    return `<p>The {*Wiki*} contains ${sortable.length} entries.</p><ul>${html}</ul>`.to_curlic()
   }
 }

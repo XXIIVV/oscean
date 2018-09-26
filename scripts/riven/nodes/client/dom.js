@@ -11,8 +11,16 @@ function DomNode(id,rect,...params)
   this.el.id = this.id
   this.is_installed = false;
 
+  // Set Content
   if(params[1]){
     this.el.innerHTML = params[1]
+  }
+
+  // Set Attributes
+  if(params[2]){
+    for(let id in params[2]){
+      this.el.setAttribute(id,params[2][id])
+    }
   }
 
   this.receive = function(content)
@@ -56,19 +64,22 @@ function DomNode(id,rect,...params)
 
   this.add_class = function(c)
   {
-    if(this.has_class(c)){ return; }
+    if(!c || this.has_class(c)){ return; }
 
     this.el.className = `${this.el.className} ${c.toLowerCase()}`.trim();
   }
 
   this.remove_class = function(c)
   {
-    if(!this.has_class(c)){ return; }
+    if(!c || !this.has_class(c)){ return; }
+
     this.el.className = this.el.className.replace(c.toLowerCase(),"").trim();
   }
 
   this.has_class = function(c)
   {
+    if(!c){ return; }
+
     return this.el.className.indexOf(c.toLowerCase()) > -1;
   }
 }
