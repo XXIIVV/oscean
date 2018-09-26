@@ -67,8 +67,6 @@ function BalanceViz(logs)
       day -= 1
     }
 
-    html += this.legend(slice(this.logs,-52,0));
-
     return html;
   }
 }

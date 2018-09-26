@@ -104,6 +104,17 @@ function TerminalNode(id,rect,...params)
       return html;
     },
 
+    score: (q) =>
+    {
+      let score = {ratings:0,entries:0,average:0,issues:0};
+      for(let id in Ø("database").cache.lexicon){
+        score.ratings += Ø("database").cache.lexicon[id].rating().score
+        score.entries += 1
+      }
+      score.average = score.ratings/score.entries;
+      return `${(score.average*100).toFixed(2)}% Complete`
+    },
+
     unknown: (q) => 
     {
       return `Unknown command <i>${q}</i>, type <i>help</i> to see available commands.`
