@@ -73,6 +73,10 @@ function CalendarTemplate(id,rect,...params)
 
   this.answer = function(q)
   {
-    return `${new BalanceViz(q.tables.horaire)}${this.calendar(q.tables.horaire,q.tables.issues)}${q.result}`
+    return `
+    ${new BalanceViz(q.tables.horaire)}
+    <h2 style='margin-top:30px'>Forecast</h2>
+    ${q.result}
+    ${this.calendar(q.tables.horaire,q.tables.issues)}`
   }
 }
