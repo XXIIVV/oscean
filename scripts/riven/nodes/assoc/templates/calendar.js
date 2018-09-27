@@ -59,16 +59,19 @@ function CalendarTemplate(id,rect,...params)
     return d
   }
 
-  function _cell(dec,f)
+  function _cell(dec,f,filter)
   {
+    let link = f.event ? f.event.term : f.task ? f.task.term : null
+    let cl = `${f.event ? 'event' : ''} ${f.sector} ${filter && link && filter.to_url() != link.to_url() ? 'disabled' : ''}`
+
     return`
-    <td class='${f.event ? 'event' : ''} ${f.sector}'>
+    <td class='${cl}' ${link ? `data-goto='${link.to_url()}:calendar'` : ''}>
       <span class='date'>${dec.m}${dec.d}</span>
       ${f.event ? `<span class='event'>${f.event.name}</span>` : f.task ? `<span class='task'><b>${f.task.term}</b> ${f.task.name}</span>` : ''}
     </td>`
   }
 
-  function _calendar(forecast)
+  function _calendar(forecast,filter = null)
   {
     let html = ""
     let offset = 0
@@ -78,7 +81,7 @@ function CalendarTemplate(id,rect,...params)
       let d_html = ""
       while(d < 7){
         let dec = date_from_offset(offset).desamber();
-        d_html += _cell(dec,forecast[`${dec}`])
+        d_html += _cell(dec,forecast[`${dec}`],filter)
         offset++;
         d++;
       }
@@ -93,10 +96,11 @@ function CalendarTemplate(id,rect,...params)
     let tasks = make_tasks(q.tables.issues);
     let upcomings = make_upcomings(q.tables.horaire)    
     let forecast = make_forecasts(q.tables.horaire,tasks,upcomings)
+    let filter = q.result && q.result.name.toLowerCase() != "calendar" ? q.result.name : null;
 
     return `
     ${new BalanceViz(q.tables.horaire)}
-    ${_calendar(forecast)}
+    ${_calendar(forecast,filter)}
     ${q.result}
     `
   }
