@@ -48,6 +48,14 @@ function Desamber(str)
   function prepend(s,l,c="0"){ while(`${s}`.length < l){ s = `${c}${s}`; }; return s; }
 }
 
+Date.prototype.doty = function()
+{
+  let year = this.getFullYear()
+  let start = new Date(year, 0, 0);
+  let diff = (this - start) + ((start.getTimezoneOffset() - this.getTimezoneOffset()) * 60 * 1000);
+  return Math.floor(diff/86400000);
+}
+
 Date.prototype.desamber = function()
 {
   let year = this.getFullYear()

@@ -6,14 +6,13 @@ function Horaire(logs)
   
   for(let id in logs){
     let log = logs[id];
-    if(!log.term){ continue; }
 
     h.fh += log.fh;
     h.ch += log.ch;
     h.osc.sum += Math.abs(log.fh-log.ch);
     h.tasks[log.task] = h.tasks[log.task] ? h.tasks[log.task]+log.fh : log.fh;
-    h.sectors[log.sector] += (log.fh+log.ch)/2;
-    h.sectors.sum += (log.fh+log.ch)/2;
+    h.sectors[log.sector] += log.fh/2;
+    h.sectors.sum += log.fh/2;
 
     if(!h.topics[log.term]){ h.topics[log.term] = {fh:0,ch:0,count:0}; }
     h.topics[log.term].fh += log.fh;
@@ -34,7 +33,7 @@ function Horaire(logs)
 
   let audio = h.sectors.audio > 0 ? (h.sectors.audio/h.sectors.sum)*10 : 0
   let visual = h.sectors.visual > 0 ? (h.sectors.visual/h.sectors.sum)*10 : 0
-  let research = h.sectors.research ? (h.sectors.research/h.sectors.sum)*10 : 0
+  let research = h.sectors.research > 0 ? (h.sectors.research/h.sectors.sum)*10 : 0
   let balance = (1 - ((Math.abs(3.3333 - audio) + Math.abs(3.3333 - visual) + Math.abs(3.3333 - research))/13.3333)) * 10
   
   return {

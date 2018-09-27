@@ -52,9 +52,9 @@ function BuildNode(id,rect)
 
     if(q.result.name == "HOME" || q.result.name == "JOURNAL" || q.result.name == "CALENDAR" || q.result.name == "TRACKER"){
       return `
-      <li><a id='issues' data-goto='Tracker' href='#Tracker'>Tracker</a></li> 
+      <li><a id='issues' data-goto='Calendar' href='#Calendar'>Calendar</a></li> 
       <li><a id='diaries' data-goto='journal' href='#journal'>Journal</a> 
-      <li><a id='logs' data-goto='Calendar' href='#Calendar'>Calendar</a></li>`
+      <li><a id='logs' data-goto='Tracker' href='#Tracker'>Tracker</a></li>`
     }
     
     if(q.result.issues.length > 0){
