@@ -56,6 +56,12 @@ Date.prototype.doty = function()
   return Math.floor(diff/86400000);
 }
 
+Date.prototype.offset = function(days)
+{
+  let date = new Date();
+  return this.setDate(date.getDate()+1)
+}
+
 Date.prototype.desamber = function()
 {
   let year = this.getFullYear()
