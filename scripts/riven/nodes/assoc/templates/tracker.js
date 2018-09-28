@@ -15,7 +15,10 @@ function TrackerTemplate(id,rect,...params)
     for(const id in logs){
       const log = logs[id];
       if(!log.is_event){ continue; }
-      if(log.time.y != prev_y){ html += `<li class='head'>20${log.time.y}</li>`; prev_y = log.time.y; }
+      if(log.time.y != prev_y){ 
+        html += `<li class='head'>20${log.time.y}</li>`; 
+        prev_y = log.time.y; 
+      }
       html += `<li style='${log.time.offset > 0 ? 'color:#aaa' : ''}'>{${log.name ? log.name : log.term+' '+log.task.capitalize()}(${log.term})}</a> <span title='${log.time}'>${log.time.ago(60)}</span></li>`.to_curlic()
     }
     return `${new BarViz(logs)}<ul class='tidy' style='margin-top:30px'>${html}</ul>`;

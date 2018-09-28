@@ -24,7 +24,19 @@ function QueryNode(id,rect)
       window.location.hash = target.to_url()
     }
 
-    setTimeout(()=>{ window.scrollTo(0,0); },250)
+    if(window.scrollY != 0){
+      setTimeout(()=>{ window.scrollTo(0,0); },250)
+    }
+  }
+
+  this.queue = function(a,speed = 1000)
+  {
+    if(a.length == 0){ return; }
+
+    setTimeout(() => {
+      this.send(a[0].to_url())
+      this.queue(a.slice(1))
+    },100)
   }
 }
 

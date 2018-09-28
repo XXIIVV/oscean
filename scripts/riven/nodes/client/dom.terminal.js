@@ -73,10 +73,7 @@ function TerminalNode(id,rect,...params)
 
     walk: (q) => 
     {
-      for(const id in Ø("database").cache.lexicon){
-        const term = Ø("database").cache.lexicon[id]
-        term.toString();
-      }
+      Ø("query").queue(Object.keys(Ø("database").cache.lexicon),50);
       return `Done.`
     },
 

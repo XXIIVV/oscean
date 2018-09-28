@@ -20,18 +20,13 @@ function Viz(logs,from,to)
 
   this.legend = function(logs)
   {
-    let html = ""
-
     const y = 115
-
-    // Top
-    html += `
-    <text x='${2}' y='${-15}' style='text-anchor:start'>${logs[logs.length-1].time.ago().capitalize()}</text>
-    <text x='${730}' y='${-15}' style='text-anchor:end'>${logs[0].time.ago().capitalize()}</text>`
-
-    // Below
     const horaire = new Horaire(logs);
-    html += `
+
+    return `
+    <text x='${2}' y='${-15}' style='text-anchor:start'>${logs[logs.length-1].time.ago().capitalize()}</text>
+    <text x='${730}' y='${-15}' style='text-anchor:end'>${logs[0].time.ago().capitalize()}</text>
+
     <rect class="audio" x="${cell*0}" y="${y}" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
     <text x='${(cell+1)*2}' y='${y+10}' style='text-anchor:start'>Audio ${(horaire.sectors.audio*10).toFixed(1)}%</text>
     <rect class="visual" x="${(cell+1)*8}" y="${y}" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
@@ -39,8 +34,6 @@ function Viz(logs,from,to)
     <rect class="research" x="${(cell+1)*16}" y="${y}" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
     <text x='${(cell+1)*18}' y='${y+10}' style='text-anchor:start'>Research ${(horaire.sectors.research*10).toFixed(1)}%</text>
     <text x='725' y='${y+10}' style='text-anchor:end'>${horaire.sum.toFixed(0)} Hours</text>`
-
-    return html
   }
 
   this.draw = function()

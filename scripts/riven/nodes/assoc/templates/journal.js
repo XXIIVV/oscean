@@ -30,7 +30,7 @@ function JournalTemplate(id,rect,...params)
     let i = 0
     for(let id in logs){
       if(i > 20){ break; }
-      let log = logs[id];
+      const log = logs[id];
       if(!log.photo && known.indexOf(log.term) > -1){ continue; }
       html += `${log}`
       known.push(log.term)
