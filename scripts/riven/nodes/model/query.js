@@ -42,12 +42,12 @@ function QueryNode(id,rect)
 
 const detectBackOrForward = function(onBack, onForward)
 {
-  const hashHistory = [window.location.hash];
+  let hashHistory = [window.location.hash];
   let historyLength = window.history.length;
 
   return function()
   {
-    const hash = window.location.hash, length = window.history.length;
+    let hash = window.location.hash, length = window.history.length;
     if (hashHistory.length && historyLength == length) {
       if (hashHistory[hashHistory.length - 2] == hash) {
         hashHistory = hashHistory.slice(0, -1);
