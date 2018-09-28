@@ -10,8 +10,8 @@ function BuildNode(id,rect)
 
   this.receive = function(q)
   {
-    let builds = this.request(q)
-    let featured_log = q.result && q.result.name == "HOME" ? this.find_last_diary(q.tables.horaire) : q.result && q.result.featured_log ? q.result.featured_log : null
+    const builds = this.request(q)
+    const featured_log = q.result && q.result.name == "HOME" ? this.find_last_diary(q.tables.horaire) : q.result && q.result.featured_log ? q.result.featured_log : null
 
     this.send({
       title: `XXIIVV — ${q.target.capitalize()}`,
@@ -72,8 +72,8 @@ function BuildNode(id,rect)
 
   this.find_last_diary = function(horaire)
   {
-    for(let id in horaire){
-      let log = horaire[id]
+    for(const id in horaire){
+      const log = horaire[id]
       if(!log.is_featured){ continue; }
       if(log.time.offset > 0){ continue; }
       return log;

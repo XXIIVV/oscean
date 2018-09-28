@@ -4,13 +4,13 @@ function Viz(logs,from,to)
 {
   this.logs = slice(logs,from,to);
 
-  let cell = 13;
+  const cell = 13;
 
   function slice(logs,from,to)
   {
-    let a = []
-    for(let id in logs){
-      let log = logs[id];
+    const a = []
+    for(const id in logs){
+      const log = logs[id];
       if(log.time.offset < from){ continue; }
       if(log.time.offset > to){ continue; }
       a.push(log)
@@ -22,7 +22,7 @@ function Viz(logs,from,to)
   {
     let html = ""
 
-    let y = 115
+    const y = 115
 
     // Top
     html += `
@@ -30,7 +30,7 @@ function Viz(logs,from,to)
     <text x='${730}' y='${-15}' style='text-anchor:end'>${logs[0].time.ago().capitalize()}</text>`
 
     // Below
-    let horaire = new Horaire(logs);
+    const horaire = new Horaire(logs);
     html += `
     <rect class="audio" x="${cell*0}" y="${y}" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
     <text x='${(cell+1)*2}' y='${y+10}' style='text-anchor:start'>Audio ${(horaire.sectors.audio*10).toFixed(1)}%</text>
@@ -50,13 +50,13 @@ function Viz(logs,from,to)
 
   this.status = function()
   {
-    let data = {recent:[],before:[]}
-    let limit = this.logs.length/2
+    const data = {recent:[],before:[]}
+    const limit = this.logs.length/2
 
     // Split the last 14 days
-    for(let id in logs){
-      let log = logs[id]
-      let offset = log.time.offset;
+    for(const id in logs){
+      const log = logs[id]
+      const offset = log.time.offset;
       if(offset > 0){ continue; }
       if(offset > -limit){data.recent[data.recent.length] = log; }
       else{ data.before[data.before.length] = log; }
@@ -64,8 +64,8 @@ function Viz(logs,from,to)
 
     if(data.recent.length < 3 || data.before.length < 3){ return ''; }
 
-    let recent = new Horaire(data.recent)
-    let before = new Horaire(data.before)
+    const recent = new Horaire(data.recent)
+    const before = new Horaire(data.before)
 
     return `
     <line x1='0' y1='${cell * 11.5}' x2='730' y2='${cell * 11.5}'/>
@@ -89,7 +89,7 @@ function Viz(logs,from,to)
 
   function offset(recent,before,trail = 1)
   {
-    let print = recent-before > 0 ? `+${(recent-before).toFixed(trail)}` : `${(recent-before).toFixed(trail)}`
+    const print = recent-before > 0 ? `+${(recent-before).toFixed(trail)}` : `${(recent-before).toFixed(trail)}`
     return print != "-0.0" && print != "+0.0" ? print : '0.0'
   }
 

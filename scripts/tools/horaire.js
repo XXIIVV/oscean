@@ -2,10 +2,10 @@
 
 function Horaire(logs)
 {
-  let h = {fh:0,ch:0,topics:{},tasks:{},osc:{sum:0,average:0},sectors:{audio:0,visual:0,research:0,misc:0,sum:0}};
+  const h = {fh:0,ch:0,topics:{},tasks:{},osc:{sum:0,average:0},sectors:{audio:0,visual:0,research:0,misc:0,sum:0}};
   
-  for(let id in logs){
-    let log = logs[id];
+  for(const id in logs){
+    const log = logs[id];
 
     h.fh += log.fh;
     h.ch += log.ch;
@@ -22,7 +22,7 @@ function Horaire(logs)
 
   let efec_sum = 0
   let efic_sum = 0
-  for(let id in h.topics){
+  for(const id in h.topics){
     h.topics[id].hdf = h.topics[id].fh/h.topics[id].count;
     h.topics[id].hdc = h.topics[id].ch/h.topics[id].count;
     efec_sum += h.topics[id].hdf
@@ -31,10 +31,10 @@ function Horaire(logs)
 
   h.osc = h.osc.sum/logs.length
 
-  let audio = h.sectors.audio > 0 ? (h.sectors.audio/h.sectors.sum)*10 : 0
-  let visual = h.sectors.visual > 0 ? (h.sectors.visual/h.sectors.sum)*10 : 0
-  let research = h.sectors.research > 0 ? (h.sectors.research/h.sectors.sum)*10 : 0
-  let balance = (1 - ((Math.abs(3.3333 - audio) + Math.abs(3.3333 - visual) + Math.abs(3.3333 - research))/13.3333)) * 10
+  const audio = h.sectors.audio > 0 ? (h.sectors.audio/h.sectors.sum)*10 : 0
+  const visual = h.sectors.visual > 0 ? (h.sectors.visual/h.sectors.sum)*10 : 0
+  const research = h.sectors.research > 0 ? (h.sectors.research/h.sectors.sum)*10 : 0
+  const balance = (1 - ((Math.abs(3.3333 - audio) + Math.abs(3.3333 - visual) + Math.abs(3.3333 - research))/13.3333)) * 10
   
   return {
     fh:(h.fh/logs.length),

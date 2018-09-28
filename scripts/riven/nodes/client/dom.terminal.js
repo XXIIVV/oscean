@@ -10,8 +10,8 @@ function TerminalNode(id,rect,...params)
   {
     if(q.substr(0,1) == "~"){ q = q.replace("~","").trim(); }
 
-    let cmd = q.split(" ")[0]
-    let par = q.substr(cmd.length,q.length-cmd.length).trim();
+    const cmd = q.split(" ")[0]
+    const par = q.substr(cmd.length,q.length-cmd.length).trim();
 
     if(!cmd){ return; }
 
@@ -57,13 +57,13 @@ function TerminalNode(id,rect,...params)
 
     next: (q) => 
     {
-      let used = []
-      for(let id in Ø("database").cache.horaire){
-        let log = Ø("database").cache.horaire[id]
+      const used = []
+      for(const id in Ø("database").cache.horaire){
+        const log = Ø("database").cache.horaire[id]
         if(!log.photo){ continue; }
         used.push(log.photo)
       }
-      let available = 1
+      const available = 1
       while(available < 999){
         if(used.indexOf(available) < 0){ return `The next available diary ID is <b>${available}</b>.`; }
         available += 1
@@ -73,8 +73,8 @@ function TerminalNode(id,rect,...params)
 
     walk: (q) => 
     {
-      for(let id in Ø("database").cache.lexicon){
-        let term = Ø("database").cache.lexicon[id]
+      for(const id in Ø("database").cache.lexicon){
+        const term = Ø("database").cache.lexicon[id]
         term.toString();
       }
       return `Done.`
@@ -88,16 +88,16 @@ function TerminalNode(id,rect,...params)
 
     otd: (q) =>
     {
-      let today = new Date().desamber();
-      let a = []
-      for(let id in Ø("database").cache.horaire){
-        let log = Ø("database").cache.horaire[id]
+      const today = new Date().desamber();
+      const a = []
+      for(const id in Ø("database").cache.horaire){
+        const log = Ø("database").cache.horaire[id]
         if(log.time.m != today.m || log.time.d != today.d){ continue; }
         a.push(log)
       }
       let html = "On This Day:\n"
-      for(let id in a){
-        let log = a[id]
+      for(const id in a){
+        const log = a[id]
         if(!log.term){ continue; }
         html += `— <b>${log.time}</b> ${log.is_event ? '*' : '•'} ${log.term}${log.name ? ' \"'+log.name+'\"' : ''}\n`
       }
@@ -106,8 +106,8 @@ function TerminalNode(id,rect,...params)
 
     score: (q) =>
     {
-      let score = {ratings:0,entries:0,average:0,issues:0};
-      for(let id in Ø("database").cache.lexicon){
+      const score = {ratings:0,entries:0,average:0,issues:0};
+      for(const id in Ø("database").cache.lexicon){
         score.ratings += Ø("database").cache.lexicon[id].rating().score
         score.entries += 1
       }

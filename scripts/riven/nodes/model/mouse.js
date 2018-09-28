@@ -1,3 +1,5 @@
+'use strict';
+
 function MouseNode(id,rect)
 {
   Node.call(this,id,rect);
@@ -9,8 +11,8 @@ function MouseNode(id,rect)
 
   this.click = function(e)
   {
-    let in_tab = e.ctrlKey || e.shiftKey || e.metaKey || 2 === e.which || (e.button && e.button == 1)
-    let el = e.target.getAttribute('data-goto') ? e.target : e.target.parentNode.getAttribute('data-goto') ? e.target.parentNode : null;
+    const in_tab = e.ctrlKey || e.shiftKey || e.metaKey || 2 === e.which || (e.button && e.button == 1)
+    const el = e.target.getAttribute('data-goto') ? e.target : e.target.parentNode.getAttribute('data-goto') ? e.target.parentNode : null;
     
     if(!el || el.className == 'external' || in_tab){ return; }
 

@@ -19,8 +19,8 @@ function Runic(lines = [],templater = null)
 
   function is_runic(l)
   {
-    let rune = l.substr(0,1);
-    let trail = l.substr(1,1);
+    const rune = l.substr(0,1);
+    const trail = l.substr(1,1);
 
     if(trail != " "){ console.warn("Non-Runic",l); return false; }
     if(!runes[rune]){ console.warn(`Non-Runic[${rune}]`,l); return false; }
@@ -30,9 +30,9 @@ function Runic(lines = [],templater = null)
 
   function stash(acc,l)
   {
-    let rune = l.substr(0,1)
-    let line = l.substr(2)
-    let prev = acc[acc.length-1] ? acc[acc.length-1] : [{rune:rune,a:[]}]
+    const rune = l.substr(0,1)
+    const line = l.substr(2)
+    const prev = acc[acc.length-1] ? acc[acc.length-1] : [{rune:rune,a:[]}]
 
     if(prev.rune == rune){
       prev.a.push(line)
@@ -47,11 +47,11 @@ function Runic(lines = [],templater = null)
   function _html(acc,stash)
   {
     let html = ""
-    let wr = runes[stash.rune].wrapper
-    for(let id in stash.a){
-      let r = runes[stash.rune]
-      let txt = r.fn ? r.fn(stash.a[id]) : stash.a[id]
-      let htm = templater ? new templater(txt) : txt
+    const wr = runes[stash.rune].wrapper
+    for(const id in stash.a){
+      const r = runes[stash.rune]
+      const txt = r.fn ? r.fn(stash.a[id]) : stash.a[id]
+      const htm = templater ? new templater(txt) : txt
       html += r.tag ? `<${r.tag} class='${r.class ? r.class : ''}'>${htm}</${r.tag}>` : `${htm}`
     }
     return wr ? `${acc}<${wr}>${html}</${wr}>` : `${acc}${html}`
@@ -61,11 +61,11 @@ function Runic(lines = [],templater = null)
 
   function quote(content)
   {
-    let parts = content.split(" | ")
-    let text = parts[0].trim()
-    let author = parts[1]
-    let source = parts[2]
-    let link = parts[3]
+    const parts = content.split(" | ")
+    const text = parts[0].trim()
+    const author = parts[1]
+    const source = parts[2]
+    const link = parts[3]
 
     return `
       ${text.length > 1 ? `<p class=\'text\'>${text}</p>` : ''}
@@ -74,8 +74,8 @@ function Runic(lines = [],templater = null)
 
   function media(content)
   {
-    let service = content.split(" ")[0];
-    let id = content.split(" ")[1];
+    const service = content.split(" ")[0];
+    const id = content.split(" ")[1];
 
     if(service == "itchio"){ return `<iframe frameborder="0" src="https://itch.io/embed/${id}?link_color=000000" width="600" height="167"></iframe>`; }
     if(service == "bandcamp"){ return `<iframe style="border: 0; width: 600px; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=${id}/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless></iframe>`; }
@@ -93,7 +93,7 @@ function Runic(lines = [],templater = null)
 
   this.toString = function()
   {
-    let lines = this.lines.filter(is_runic);
+    const lines = this.lines.filter(is_runic);
     return lines.reduce(stash,[]).reduce(_html,"");
   }
 }

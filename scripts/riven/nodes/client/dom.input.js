@@ -15,7 +15,7 @@ function InputNode(id,rect,...params)
   
   this.on_input = function(e)
   {
-    let value = this.el.value.trim().toLowerCase();
+    const value = this.el.value.trim().toLowerCase();
 
     if(value.substr(0,1) == "~"){
       Ø("view").add_class("terminal");

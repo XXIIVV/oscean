@@ -10,9 +10,9 @@ function List(name,data)
 
   this.connections = function(tables)
   {
-    let a = []
-    for(let id in tables.lexicon){
-      let term = tables.lexicon[id];
+    const a = []
+    for(const id in tables.lexicon){
+      const term = tables.lexicon[id];
       if(term.has_tag("list") && term.has_tag(this.name)){
         a.push(term)
       }
@@ -22,8 +22,8 @@ function List(name,data)
 
   this.indexOf = function(target)
   {
-    let i = 0;
-    for(let id in this.data){
+    const i = 0;
+    for(const id in this.data){
       if(target.toLowerCase() == id.toLowerCase()){
         return parseInt(i)
       }
@@ -35,7 +35,7 @@ function List(name,data)
   this._from_object = function()
   {
     let html = ''
-    for(let id in this.data){
+    for(const id in this.data){
       html += `<li>{*${id.capitalize()}*}: ${this.data[id]}</li>`
     }
     return html.to_curlic()

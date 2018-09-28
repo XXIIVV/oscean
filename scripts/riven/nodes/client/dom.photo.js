@@ -12,7 +12,7 @@ function PhotoNode(id,rect,...params)
     this.is_installed = true;
     this.el.appendChild(this.media);
 
-    for(let id in elements){
+    for(const id in elements){
       this.el.appendChild(elements[id])
     }
   }
@@ -56,19 +56,19 @@ function PhotoNode(id,rect,...params)
 
   function is_dark(imageSrc,callback)
   {
-    let fuzzy = -0.4;
-    let img = document.createElement("img");
+    const fuzzy = -0.4;
+    const img = document.createElement("img");
     img.src = imageSrc;
 
     img.onload = function(){
-      let canvas = document.createElement("canvas");
+      const canvas = document.createElement("canvas");
       canvas.width = this.width;
       canvas.height = this.height;
-      let ctx = canvas.getContext("2d");
+      const ctx = canvas.getContext("2d");
       ctx.drawImage(this,0,0);
       
       try{
-        let imageData = ctx.getImageData(0,0,canvas.width,canvas.height);
+        const imageData = ctx.getImageData(0,0,canvas.width,canvas.height);
         callback(diff(imageData.data,this.width,this.height));
       }
       catch(err){ console.warn("Could not get photo data"); callback(); }

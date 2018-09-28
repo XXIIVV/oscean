@@ -8,12 +8,12 @@ function TrackerTemplate(id,rect,...params)
 
   this.answer = function(q)
   {
-    let logs = q.target == "tracker" ? q.tables.horaire : q.result.logs;
+    const logs = q.target == "tracker" ? q.tables.horaire : q.result.logs;
     let html = ``;
 
     let prev_y = 0;
-    for(let id in logs){
-      let log = logs[id];
+    for(const id in logs){
+      const log = logs[id];
       if(!log.is_event){ continue; }
       if(log.time.y != prev_y){ html += `<li class='head'>20${log.time.y}</li>`; prev_y = log.time.y; }
       html += `<li style='${log.time.offset > 0 ? 'color:#aaa' : ''}'>{${log.name ? log.name : log.term+' '+log.task.capitalize()}(${log.term})}</a> <span title='${log.time}'>${log.time.ago(60)}</span></li>`.to_curlic()

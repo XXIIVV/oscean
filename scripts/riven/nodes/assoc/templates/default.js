@@ -26,11 +26,11 @@ function DefaultTemplate(id,rect,...params)
   this._diary = function(q)
   {
     let html = ""
-    let term = q.result;
-    let skip = term.featured_log
+    const term = q.result;
+    const skip = term.featured_log
 
-    for(let id in term.diaries){
-      let log = term.diaries[id]
+    for(const id in term.diaries){
+      const log = term.diaries[id]
       if(skip && log.photo == skip.photo){ continue; }
       html += `<img src='media/diary/${log.photo}.jpg'/>`
     }
@@ -41,10 +41,10 @@ function DefaultTemplate(id,rect,...params)
   this._index = function(q)
   {
     let html = ""
-    let term = q.result;
+    const term = q.result;
 
-    for(let id in term.children){
-      let child = term.children[id];
+    for(const id in term.children){
+      const child = term.children[id];
       html += `
       <h2>${child.name.capitalize()}</h2>
       <h4>${child.bref.to_curlic()}</h4>
@@ -56,11 +56,11 @@ function DefaultTemplate(id,rect,...params)
 
   this._list = function(q)
   {
-    let target = q.result.name.toUpperCase();
+    const target = q.result.name.toUpperCase();
     let html = q.tables.glossary[target] ? `${q.tables.glossary[target]}` : ''
 
-    for(let id in q.result.tags){
-      let tag = q.result.tags[id].toUpperCase().replace(/_/g,' ').trim();
+    for(const id in q.result.tags){
+      const tag = q.result.tags[id].toUpperCase().replace(/_/g,' ').trim();
       html += q.tables.glossary[tag] ? `<h3>{(${tag.capitalize()})}</h3>${q.tables.glossary[tag]}`.to_curlic() : ''
     }
 
@@ -70,11 +70,11 @@ function DefaultTemplate(id,rect,...params)
   this._glossary = function(q)
   {
     let html = ""
-    let words = Object.keys(q.tables.glossary).sort();
-    for(let id in words){
-      let name = words[id]
-      let word = q.tables.glossary[name]
-      let children = Object.keys(word.data)
+    const words = Object.keys(q.tables.glossary).sort();
+    for(const id in words){
+      const name = words[id]
+      const word = q.tables.glossary[name]
+      const children = Object.keys(word.data)
       html += `<li>{(${name.capitalize()})} — ${children.length} items</li>`
     }
     return `<h2>{(Glossary)}</h2><ul class='tidy' style='padding-left:30px'>${html}</ul>`.to_curlic()
@@ -84,8 +84,8 @@ function DefaultTemplate(id,rect,...params)
   {
     let html = ""
 
-    for(let id in a.children){
-      let term = a.children[id]
+    for(const id in a.children){
+      const term = a.children[id]
       html += `<li>${term.bref}</li>`
     }
     return `<ul class='bullet'>${html}</ul>`.to_curlic();
@@ -95,8 +95,8 @@ function DefaultTemplate(id,rect,...params)
   {
     let html = ""
 
-    for(let id in q.children){
-      let term = q.children[id]
+    for(const id in q.children){
+      const term = q.children[id]
       html += `<h3>{(${term.name.capitalize()})}</h3>`
       html += `<p>${term.bref}</p>`
       html += this._children(term)

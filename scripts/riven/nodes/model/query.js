@@ -9,7 +9,7 @@ function QueryNode(id,rect)
 
   this.bang = function(input = window.location.hash)
   {
-    let target = input.to_url() === '' ? 'home' : input.to_url()
+    const target = input.to_url() === '' ? 'home' : input.to_url()
 
     Ø("view").set_class("loading");
 
@@ -28,14 +28,14 @@ function QueryNode(id,rect)
   }
 }
 
-let detectBackOrForward = function(onBack, onForward)
+const detectBackOrForward = function(onBack, onForward)
 {
-  let hashHistory = [window.location.hash];
+  const hashHistory = [window.location.hash];
   let historyLength = window.history.length;
 
   return function()
   {
-    let hash = window.location.hash, length = window.history.length;
+    const hash = window.location.hash, length = window.history.length;
     if (hashHistory.length && historyLength == length) {
       if (hashHistory[hashHistory.length - 2] == hash) {
         hashHistory = hashHistory.slice(0, -1);

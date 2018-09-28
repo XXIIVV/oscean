@@ -15,12 +15,12 @@ function Riven_Graph()
   this.graph = function()
   {
     let html = "";
-    for(let id in this.network){
-      let node = this.network[id];
+    for(const id in this.network){
+      const node = this.network[id];
       html += draw_routes(node);
     }
-    for(let id in this.network){
-      let node = this.network[id];
+    for(const id in this.network){
+      const node = this.network[id];
       html += draw_node(node);
     }
     this.el.innerHTML = html;
@@ -29,11 +29,11 @@ function Riven_Graph()
   function draw_routes(node)
   {
     let html = "";
-    for(let id in node.ports){
-      let port = node.ports[id]
-      let pos = port ? get_port_position(port) : {x:0,y:0}
-      for(let route_id in port.routes){
-        let route = port.routes[route_id];
+    for(const id in node.ports){
+      const port = node.ports[id]
+      const pos = port ? get_port_position(port) : {x:0,y:0}
+      for(const route_id in port.routes){
+        const route = port.routes[route_id];
         if(!route){ continue; }
         html += route ? draw_connection(port,route) : ""
       }
@@ -43,7 +43,7 @@ function Riven_Graph()
 
   function draw_node(node)
   {
-    let rect = get_rect(node);
+    const rect = get_rect(node);
     return `
     <g class='node ${node.is_mesh ? 'mesh' : ''}' id='node_${node.id}'>
       <rect rx='2' ry='2' x=${rect.x} y=${rect.y-(GRID_SIZE/2)} width="${rect.w}" height="${rect.h}" class='${node.children.length == 0 ? "fill" : ""}'/>
@@ -56,7 +56,7 @@ function Riven_Graph()
   function draw_ports(node)
   {
     let html = "";
-    for(let id in node.ports){
+    for(const id in node.ports){
       html += draw_port(node.ports[id]);
     }
     return html
@@ -64,13 +64,13 @@ function Riven_Graph()
 
   function draw_glyph(node)
   {
-    let rect = get_rect(node);
+    const rect = get_rect(node);
     return !node.is_mesh && node.glyph ? `<path class='glyph' transform="translate(${rect.x+(GRID_SIZE/4)},${rect.y-(GRID_SIZE/4)}) scale(0.1)" d='${node.glyph}'/>` : ""
   }
 
   function draw_port(port)
   {
-    let pos = port ? get_port_position(port) : {x:0,y:0}
+    const pos = port ? get_port_position(port) : {x:0,y:0}
     return `<g id='${port.host.id}_port_${port.id}'>${(port.type == PORT_TYPES.request || port.type == PORT_TYPES.answer)? `<path d='${draw_diamond(pos)}' class='port ${port.type} ${port.host.ports[port.id] && port.host.ports[port.id].route ? "route" : ""}' />` : `<circle cx='${pos.x}' cy="${pos.y}" r="${parseInt(GRID_SIZE/6)}" class='port ${port.type} ${port.host.ports[port.id] && port.host.ports[port.id].route ? "route" : ""}'/>`}</g>`
   }
 
@@ -85,10 +85,10 @@ function Riven_Graph()
 
   function is_bidirectional(a,b)
   {
-    for(let id in a.ports.output.routes){
-      let route_a = a.ports.output.routes[id]
-      for(let id in a.ports.request.routes){
-        let route_b = a.ports.request.routes[id]
+    for(const id in a.ports.output.routes){
+      const route_a = a.ports.output.routes[id]
+      for(const id in a.ports.request.routes){
+        const route_b = a.ports.request.routes[id]
         if(route_a.host.id == route_b.host.id){
           return true;
         }
@@ -99,11 +99,11 @@ function Riven_Graph()
 
   function draw_connection_output(a,b)
   {
-    let pos_a = get_port_position(a)
-    let pos_b = get_port_position(b)
-    let pos_m = middle(pos_a,pos_b)
-    let pos_c1 = {x:(pos_m.x+(pos_a.x+GRID_SIZE))/2,y:pos_a.y}
-    let pos_c2 = {x:(pos_m.x+(pos_b.x-GRID_SIZE))/2,y:pos_b.y}
+    const pos_a = get_port_position(a)
+    const pos_b = get_port_position(b)
+    const pos_m = middle(pos_a,pos_b)
+    const pos_c1 = {x:(pos_m.x+(pos_a.x+GRID_SIZE))/2,y:pos_a.y}
+    const pos_c2 = {x:(pos_m.x+(pos_b.x-GRID_SIZE))/2,y:pos_b.y}
 
     let path = ""
 
@@ -118,11 +118,11 @@ function Riven_Graph()
 
   function draw_connection_request(a,b)
   {
-    let pos_a = get_port_position(a)
-    let pos_b = get_port_position(b)
-    let pos_m = middle(pos_a,pos_b)
-    let pos_c1 = {x:pos_a.x,y:(pos_m.y+(pos_a.y+GRID_SIZE))/2}
-    let pos_c2 = {x:pos_b.x,y:(pos_m.y+(pos_b.y-GRID_SIZE))/2}
+    const pos_a = get_port_position(a)
+    const pos_b = get_port_position(b)
+    const pos_m = middle(pos_a,pos_b)
+    const pos_c1 = {x:pos_a.x,y:(pos_m.y+(pos_a.y+GRID_SIZE))/2}
+    const pos_c2 = {x:pos_b.x,y:(pos_m.y+(pos_b.y-GRID_SIZE))/2}
 
     let path = ""
 
@@ -137,11 +137,11 @@ function Riven_Graph()
 
   function draw_connection_bidirectional(a,b)
   {
-    let pos_a = get_port_position(a)
-    let pos_b = get_port_position(b)
-    let pos_m = middle(pos_a,pos_b)
-    let pos_c1 = {x:pos_a.x,y:(pos_m.y+(pos_a.y+GRID_SIZE))/2}
-    let pos_c2 = {x:pos_b.x,y:(pos_m.y+(pos_b.y-GRID_SIZE))/2}
+    const pos_a = get_port_position(a)
+    const pos_b = get_port_position(b)
+    const pos_m = middle(pos_a,pos_b)
+    const pos_c1 = {x:pos_a.x,y:(pos_m.y+(pos_a.y+GRID_SIZE))/2}
+    const pos_c2 = {x:pos_b.x,y:(pos_m.y+(pos_b.y-GRID_SIZE))/2}
 
     let path = ""
 
@@ -154,14 +154,15 @@ function Riven_Graph()
   
   function draw_diamond(pos)
   {
-    let r = GRID_SIZE/6
+    const r = GRID_SIZE/6
     return `M${pos.x-(r)},${pos.y} L${pos.x},${pos.y-(r)} L${pos.x+(r)},${pos.y} L${pos.x},${pos.y+(r)} Z`
   }
 
   function get_port_position(port)
   {
-    let rect = get_rect(port.host)
+    const rect = get_rect(port.host)
     let offset = {x:0,y:0}
+
     if(port.type == PORT_TYPES.output){
       offset = {x:GRID_SIZE*2,y:GRID_SIZE/2}
     }
@@ -179,14 +180,14 @@ function Riven_Graph()
 
   function get_rect(node)
   {
-    let rect = node.rect
+    const rect = node.rect
+    const w = node.rect.w * GRID_SIZE;
+    const h = node.rect.h * GRID_SIZE;
     let x = node.rect.x * GRID_SIZE;
     let y = node.rect.y * GRID_SIZE;
-    let w = node.rect.w * GRID_SIZE;
-    let h = node.rect.h * GRID_SIZE;
 
     if(node.parent){
-      let offset = get_rect(node.parent);
+      const offset = get_rect(node.parent);
       x += offset.x;
       y += offset.y;
     }

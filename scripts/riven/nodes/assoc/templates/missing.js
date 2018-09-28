@@ -8,8 +8,8 @@ function MissingTemplate(id,rect,...params)
   
   this.answer = function(q)
   {
-    let index = Object.keys(Ø('database').index)
-    let similar = find_similar(q.target.toUpperCase(),index);
+    const index = Object.keys(Ø('database').index)
+    const similar = find_similar(q.target.toUpperCase(),index);
 
     return `
     <p>Sorry, there are no pages for {*/${q.target.capitalize()}*}, did you mean {(${similar[0].word.capitalize()})} or {(${similar[1].word.capitalize()})}?</p>
@@ -18,9 +18,9 @@ function MissingTemplate(id,rect,...params)
 
   function find_similar(target,list)
   {
-    let similar = []
-    for(let key in list){
-      let word = list[key]
+    const similar = []
+    for(const key in list){
+      const word = list[key]
       similar.push({word:word,value:similarity(target,word)});
     }
     return similar.sort(function(a, b){
@@ -30,13 +30,13 @@ function MissingTemplate(id,rect,...params)
 
   function similarity(a,b)
   {
-    let val = 0
-    for(let i = 0; i < a.length; ++i) { val += b.indexOf(a.substr(i)) > -1 ? 1 : 0; }
-    for(let i = 0; i < b.length; ++i) { val += a.indexOf(b.substr(i)) > -1 ? 1 : 0; }
+    const val = 0
+    for(const i = 0; i < a.length; ++i) { val += b.indexOf(a.substr(i)) > -1 ? 1 : 0; }
+    for(const i = 0; i < b.length; ++i) { val += a.indexOf(b.substr(i)) > -1 ? 1 : 0; }
     a = a.split('').sort().join('');
     b = b.split('').sort().join('');
-    for(let i = 0; i < a.length; ++i) { val += b.indexOf(a.substr(i)) > -1 ? 1 : 0; }
-    for(let i = 0; i < b.length; ++i) { val += a.indexOf(b.substr(i)) > -1 ? 1 : 0; }
+    for(const i = 0; i < a.length; ++i) { val += b.indexOf(a.substr(i)) > -1 ? 1 : 0; }
+    for(const i = 0; i < b.length; ++i) { val += a.indexOf(b.substr(i)) > -1 ? 1 : 0; }
     return val
   }
 }

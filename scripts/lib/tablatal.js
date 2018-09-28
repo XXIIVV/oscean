@@ -1,16 +1,18 @@
+'use strict';
+
 function Tablatal(data)
 {
   this.data = data;
 
   this.parse = function(type)
   {
-    let a = [];
-    let lines = this.data.trim().split("\n")
-    let key = make_key(lines[0]);
-    for(let id in lines){
+    const a = [];
+    const lines = this.data.trim().split("\n")
+    const key = make_key(lines[0]);
+    for(const id in lines){
       if(id == 0 || lines[id].trim() == "" || lines[id].substr(0,1) == "~"){ continue; }
-      let entry = {};
-      for(let i in key){
+      const entry = {};
+      for(const i in key){
         entry[i] = lines[id].substr(key[i].from,key[i].to).trim();
       }
       a[a.length] = type ? new type(entry) : entry;
@@ -20,12 +22,12 @@ function Tablatal(data)
 
   function make_key(raw)
   {
-    let parts = raw.split(" ")
+    const parts = raw.split(" ")
+    const key = {};
     let distance = 0;
-    let key = {};
-    let prev = null
-    for(let id in parts){
-      let part = parts[id].toLowerCase();
+    let prev = null;
+    for(const id in parts){
+      const part = parts[id].toLowerCase();
       if(part != ""){
         key[part] = {from:distance,to:0};
         if(key[prev]){ key[prev].to = distance - key[prev].from - 1; }

@@ -32,10 +32,10 @@ function Curlic(text = "")
 
   function link(s,t)
   {
-    let target = t.substr(1,t.length-2).trim();
-    let external = target.indexOf("//") > -1
-    let name = s.replace(`(${target})`,"").trim();
-    let location = target.toLowerCase().replace(/ /g,"+").replace(/[^0-9a-z\+\:\-\.\/]/gi,"").trim();
+    const target = t.substr(1,t.length-2).trim();
+    const external = target.indexOf("//") > -1
+    const name = s.replace(`(${target})`,"").trim();
+    const location = target.toLowerCase().replace(/ /g,"+").replace(/[^0-9a-z\+\:\-\.\/]/gi,"").trim();
     
     return `<a href='${external ? target : '#'+location}' target='${external ? '_blank' : '_self'}' class='${external ? 'external' : 'local'}' data-goto='${external ? '' : target}'>${name ? name : target}</a>`
   }
@@ -44,13 +44,13 @@ function Curlic(text = "")
   {
     validate(s);
 
-    let to_eval = s.match(/\[(.*)\]/g)
+    const to_eval = s.match(/\[(.*)\]/g)
     if(to_eval){ s = s.replace(to_eval[0],evaluate(to_eval[0])); }
 
-    let to_link = s.match(/\((.*)\)/g)
+    const to_link = s.match(/\((.*)\)/g)
     if(to_link){ s = s.replace(to_link[0],""); }
 
-    for(let ch in runes){
+    for(const ch in runes){
       if(s.indexOf(ch) < 0){ continue; }
       s = wrap(s,ch,runes[ch])
     }
@@ -69,7 +69,7 @@ function Curlic(text = "")
 
   this.toString = function()
   {
-    let matches = this.extract();
+    const matches = this.extract();
 
     if(!matches){ return this.text; }
     

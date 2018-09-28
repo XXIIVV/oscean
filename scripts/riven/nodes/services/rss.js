@@ -8,32 +8,31 @@ function RssNode(id,rect)
 
   this.receive = function()
   {
-    let logs = Ø('router').cache.tables.horaire;
+    const logs = Ø('router').cache.tables.horaire;
 
-    let selection = []
-    for(let id in logs){
-      let log = logs[id];
+    const selection = []
+    for(const id in logs){
+      const log = logs[id];
       if(selection.length >= 60){ break; }
       if(log.time.offset > 0){ continue; }
       if(!log.photo){ continue; }
       selection.push(log);
     }
 
-    let html = this.render(selection);
-    this.show(html)
+    this.show(this.render(selection))
   }
 
   this.show = function(html)
   {
-    let win = window.open("", "Title", "toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=yes,width=640,height=480,top="+(screen.height-200)+",left="+(screen.width-640));
+    const win = window.open("", "Title", "toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=yes,width=640,height=480,top="+(screen.height-200)+",left="+(screen.width-640));
     win.document.body.innerHTML = `<pre>${html.to_entities()}</pre>`;
   }
 
   this.items = function(logs)
   {
     let html = ""
-    for(let id in logs){
-      let log = logs[id];
+    for(const id in logs){
+      const log = logs[id];
       html += `
   <item>
     <title>${log.term} — ${log.name}</title>

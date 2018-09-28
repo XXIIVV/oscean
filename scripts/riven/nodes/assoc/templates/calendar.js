@@ -8,8 +8,8 @@ function CalendarTemplate(id,rect,...params)
 
   function make_tasks(issues)
   {
-    let h = {}
-    for(let id in issues){
+    const h = {}
+    for(const id in issues){
       if(!h[issues[id].sector]){ h[issues[id].sector] = []; }
       h[issues[id].sector].push(issues[id]);
     }
@@ -18,9 +18,9 @@ function CalendarTemplate(id,rect,...params)
 
   function make_upcomings(logs)
   {
-    let h = {}
-    for(let id in logs){
-      let log = logs[id];
+    const h = {}
+    for(const id in logs){
+      const log = logs[id];
       if(log.time.offset < 0){ continue; }
       h[`${log.time}`] = log;
     }
@@ -29,14 +29,14 @@ function CalendarTemplate(id,rect,...params)
 
   function make_forecasts(logs,tasks,upcomings)
   {
-    let h = {}
+    const h = {}
     let day = 0
-    let ids = {audio:0,visual:0,research:0,misc:0}
+    const ids = {audio:0,visual:0,research:0,misc:0}
     while(day < 49){
-      let dec = date_from_offset(day).desamber();
-      let log = new Forecast(logs)
-      let event = upcomings[`${dec}`];
-      let task = !event && log.fh > 0 ? find_task(tasks,ids,log.sector) : null;
+      const dec = date_from_offset(day).desamber();
+      const log = new Forecast(logs)
+      const event = upcomings[`${dec}`];
+      const task = !event && log.fh > 0 ? find_task(tasks,ids,log.sector) : null;
       h[`${dec}`] = { event:event, sector:log.fh > 0 ? log.sector : 'misc', fh:log.fh, task: task }
       logs = [log].concat(logs)
       day++;
@@ -46,23 +46,23 @@ function CalendarTemplate(id,rect,...params)
 
   function find_task(tasks,ids,sector)
   {
-    let id = ids[sector]
-    let task = tasks[sector][id]
+    const id = ids[sector]
+    const task = tasks[sector][id]
     ids[sector]++;
     return task
   }
 
   function date_from_offset(offset)
   {
-    let d = new Date();
+    const d = new Date();
     d.setDate(d.getDate()+offset);
     return d
   }
 
   function _cell(dec,f,filter)
   {
-    let link = f.event ? f.event.term : f.task ? f.task.term : null
-    let cl = `${f.event ? 'event' : ''} ${f.sector} ${filter && link && filter.to_url() != link.to_url() ? 'disabled' : ''}`
+    const link = f.event ? f.event.term : f.task ? f.task.term : null
+    const cl = `${f.event ? 'event' : ''} ${f.sector} ${filter && link && filter.to_url() != link.to_url() ? 'disabled' : ''}`
 
     return`
     <td class='${cl}' ${link ? `data-goto='${link.to_url()}:calendar'` : ''}>
@@ -93,10 +93,10 @@ function CalendarTemplate(id,rect,...params)
 
   this.answer = function(q)
   {
-    let tasks = make_tasks(q.tables.issues);
-    let upcomings = make_upcomings(q.tables.horaire)    
-    let forecast = make_forecasts(q.tables.horaire,tasks,upcomings)
-    let filter = q.result && q.result.name.toLowerCase() != "calendar" ? q.result.name : null;
+    const tasks = make_tasks(q.tables.issues);
+    const upcomings = make_upcomings(q.tables.horaire)    
+    const forecast = make_forecasts(q.tables.horaire,tasks,upcomings)
+    const filter = q.result && q.result.name.toLowerCase() != "calendar" ? q.result.name : null;
 
     return `
     ${new BalanceViz(q.tables.horaire)}

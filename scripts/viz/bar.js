@@ -6,13 +6,13 @@ function BarViz(logs)
 
   this.parse = function(logs, parts = 51)
   {
-    let limit = logs[logs.length-1].time.offset * -1
-    let h = {}
-    for(let id in logs){
-      let log = logs[id];
-      let offset = log.time.offset;
-      let pos = parts - (((offset*-1)/limit) * parts);
-      let share = (pos-Math.floor(pos))
+    const limit = logs[logs.length-1].time.offset * -1
+    const h = {}
+    for(const id in logs){
+      const log = logs[id];
+      const offset = log.time.offset;
+      const pos = parts - (((offset*-1)/limit) * parts);
+      const share = (pos-Math.floor(pos))
 
       if(!h[Math.floor(pos)]){ h[Math.floor(pos)] = {audio:0,visual:0,research:0}; }
       if(!h[Math.ceil(pos)]){ h[Math.ceil(pos)] = {audio:0,visual:0,research:0}; }
@@ -27,20 +27,20 @@ function BarViz(logs)
 
   this.draw = function()
   {
-    let segments = this.parse(this.logs);
+    const segments = this.parse(this.logs);
     let html = ""
 
-    let cell = 13
-    let mod = 0.18
-    for(let id in segments){
-      let seg = segments[id]
-      let x = parseInt(id) * (cell+1);
-      let audio_h = clamp(seg.audio * mod,4,100)
-      let audio_y = audio_h + 30;
-      let visual_h = clamp(seg.visual * mod,4,100)
-      let visual_y = (visual_h + audio_y)+0.5;
-      let research_h = clamp(seg.visual * mod,4,100)
-      let research_y = (research_h + visual_y)+0.5;
+    const cell = 13
+    const mod = 0.18
+    for(const id in segments){
+      const seg = segments[id]
+      const x = parseInt(id) * (cell+1);
+      const audio_h = clamp(seg.audio * mod,4,100)
+      const audio_y = audio_h + 30;
+      const visual_h = clamp(seg.visual * mod,4,100)
+      const visual_y = (visual_h + audio_y)+0.5;
+      const research_h = clamp(seg.visual * mod,4,100)
+      const research_y = (research_h + visual_y)+0.5;
       html += `<rect class='audio' x='${x}' y='${125 - audio_y}' width='${cell}' height='${audio_h}' rx="2" ry="2"></rect>`
       html += `<rect class='visual' x='${x}' y='${125 - visual_y}' width='${cell}' height='${visual_h}' rx="2" ry="2"></rect>`
       html += `<rect class='research' x='${x}' y='${125 - research_y}' width='${cell}' height='${research_h}' rx="2" ry="2"></rect>`

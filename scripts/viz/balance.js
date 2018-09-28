@@ -6,9 +6,9 @@ function BalanceViz(logs)
 
   function slice(logs,from,to)
   {
-    let a = []
-    for(let id in logs){
-      let log = logs[id];
+    const a = []
+    for(const id in logs){
+      const log = logs[id];
       if(log.time.offset < from){ continue; }
       if(log.time.offset > to){ continue; }
       a.push(log)
@@ -18,11 +18,11 @@ function BalanceViz(logs)
 
   this.balance_at = function(offset)
   {
-    let logs = slice(this.logs,offset-52,offset);
-    let sectors = {audio:0,visual:0,research:0,sum:0}
+    const logs = slice(this.logs,offset-52,offset);
+    const sectors = {audio:0,visual:0,research:0,sum:0}
 
-    for(let id in logs){
-      let log = logs[id];
+    for(const id in logs){
+      const log = logs[id];
       if(!log.term){ continue; }
       sectors[log.sector] += (log.fh+log.ch)/2;
       sectors.sum += (log.fh+log.ch)/2;
@@ -37,7 +37,7 @@ function BalanceViz(logs)
 
   this.parse = function()
   {
-    let days = []
+    const days = []
     let day = 53;
     while(day > 0){
       days.push(this.balance_at(-day))
@@ -48,19 +48,19 @@ function BalanceViz(logs)
 
   this.draw = function()
   {
-    let data = this.parse();
+    const data = this.parse();
 
     let html = ""
     let day = 52
-    let cell = 13
-    let height = 95
-    let y = 0
+    const cell = 13
+    const height = 95
+    const y = 0
     while(day > 0){
-      let x = parseInt(day * (cell+1) - (cell))
-      let bal = data[day];
-      let h_research = parseInt(100 * bal.research)
-      let h_visual = parseInt(100 * bal.visual)
-      let h_audio = height - h_visual - h_research
+      const x = parseInt(day * (cell+1) - (cell))
+      const bal = data[day];
+      const h_research = parseInt(100 * bal.research)
+      const h_visual = parseInt(100 * bal.visual)
+      const h_audio = height - h_visual - h_research
       html += `<rect class='research' x='${x}' y='${y}' width='${cell}' height='${h_research}' rx="2" ry="2"></rect>`
       html += `<rect class='visual' x='${x}' y='${h_research+1}' width='${cell}' height='${h_visual}' rx="2" ry="2"></rect>`
       html += `<rect class='audio' x='${x}' y='${h_research+h_visual+2}' width='${cell}' height='${h_audio}' rx="2" ry="2"></rect>`

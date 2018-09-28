@@ -14,7 +14,7 @@ function BuildSidebarNode(id,rect)
 
     let html = ""
     
-    for(let id in q.result.links){
+    for(const id in q.result.links){
       html += `<li><a href='${q.result.links[id]}' target='_blank'>${id.toLowerCase()}</a></li>`
     }
 

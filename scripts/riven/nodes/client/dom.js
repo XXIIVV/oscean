@@ -18,7 +18,7 @@ function DomNode(id,rect,...params)
 
   // Set Attributes
   if(params[2]){
-    for(let id in params[2]){
+    for(const id in params[2]){
       this.el.setAttribute(id,params[2][id])
     }
   }
@@ -42,7 +42,7 @@ function DomNode(id,rect,...params)
   this.install = function(elements)
   {
     this.is_installed = true;
-    for(let id in elements){
+    for(const id in elements){
       this.el.appendChild(elements[id])
     }
   }

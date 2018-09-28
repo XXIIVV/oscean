@@ -21,12 +21,12 @@ function DatabaseNode(id,rect)
 
   this.build = function()
   {
-    let time = performance.now();
-    let count = {indexed:0,any:0}
-    for(let id in this.cache){
-      let db = this.cache[id];
-      for(let i in db){
-        let el = db[i]
+    const time = performance.now();
+    const count = {indexed:0,any:0}
+    for(const id in this.cache){
+      const db = this.cache[id];
+      for(const i in db){
+        const el = db[i]
         if(!el.name){ continue; }
         if(el.index){ count.indexed += 1; }
         this.index[el.name.toUpperCase().to_alphanum()] = el
@@ -38,9 +38,9 @@ function DatabaseNode(id,rect)
 
   this.find = function(q,deep = false)
   {
-    let r = this.index[q.toUpperCase()]
+    const r = this.index[q.toUpperCase()]
     return r && r.index ? r : r && deep ? r : null;
   }
 }
 
-let DATABASE = {};
+const DATABASE = {};

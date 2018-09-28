@@ -1,3 +1,5 @@
+'use strict';
+
 function Septambres(aeth)
 {
   this.aeth = aeth.toLowerCase();

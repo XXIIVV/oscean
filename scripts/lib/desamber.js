@@ -17,7 +17,7 @@ function Desamber(str)
 
   this.to_gregorian = function()
   {
-    let d = this.to_date()
+    const d = this.to_date()
     return `${d.getFullYear()}-${prepend(d.getMonth()+1,2)}-${prepend(d.getDate(),2)}`;
   }
 
@@ -28,7 +28,7 @@ function Desamber(str)
 
   this.ago = function(cap = 9999)
   {
-    let days = this.offset;
+    const days = this.offset;
 
     if(-days > cap)  { return `${this.toString()}`; }
 
@@ -50,30 +50,35 @@ function Desamber(str)
 
 Date.prototype.doty = function()
 {
-  let year = this.getFullYear()
-  let start = new Date(year, 0, 0);
-  let diff = (this - start) + ((start.getTimezoneOffset() - this.getTimezoneOffset()) * 60 * 1000);
+  const year = this.getFullYear()
+  const start = new Date(year, 0, 0);
+  const diff = (this - start) + ((start.getTimezoneOffset() - this.getTimezoneOffset()) * 60 * 1000);
   return Math.floor(diff/86400000);
 }
 
 Date.prototype.offset = function(days)
 {
-  let date = new Date();
+  const date = new Date();
   return this.setDate(date.getDate()+1)
 }
 
 Date.prototype.desamber = function()
 {
-  let year = this.getFullYear()
-  let start = new Date(year, 0, 0);
-  let diff = (this - start) + ((start.getTimezoneOffset() - this.getTimezoneOffset()) * 60 * 1000);
-  let doty = Math.floor(diff/86400000);
-  let leap = ((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0)
-  let days = leap ? 366 : 365
+  const year = this.getFullYear()
+  const start = new Date(year, 0, 0);
+  const diff = (this - start) + ((start.getTimezoneOffset() - this.getTimezoneOffset()) * 60 * 1000);
+  const doty = Math.floor(diff/86400000);
+  const leap = ((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0)
+  const days = leap ? 366 : 365
 
-  let y = year.toString().substr(2,2);
-  let m = String.fromCharCode(97 + Math.floor(((doty)/days) * 26)).toUpperCase(); m = doty == 365 || doty == 366 ? "+" : m;
-  let d = (doty % 14); d = d < 10 ? `0${d}` : d; d = d == "00" ? "14" : d; d = doty == 365 ? "01" : (doty == 366 ? "02" : d);
+  const y = year.toString().substr(2,2);
+  const m = doty == 365 || doty == 366 ? "+" : String.fromCharCode(97 + Math.floor(((doty)/days) * 26)).toUpperCase();
+
+  // TODO: Clean
+  let d = (doty % 14); 
+  d = d < 10 ? `0${d}` : d; 
+  d = d == "00" ? "14" : d; 
+  d = doty == 365 ? "01" : (doty == 366 ? "02" : d);
   
   return new Desamber(`${y}${m}${d}`);
 }

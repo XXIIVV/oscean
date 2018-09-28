@@ -9,10 +9,10 @@ function HomeTemplate(id,rect,...params)
   this.answer = function(q)
   {
     let html = ""
-    let projects = {};
+    const projects = {};
 
-    for(let id in q.tables.horaire){
-      let log = q.tables.horaire[id];
+    for(const id in q.tables.horaire){
+      const log = q.tables.horaire[id];
       if(!log.term){ continue; }
       if(log.time.offset > 0){ continue; }
       if(!projects[log.term]){ projects[log.term] = {name:log.term,to:log.time.toString(),count:0}}
@@ -20,8 +20,8 @@ function HomeTemplate(id,rect,...params)
       projects[log.term].count += 1;
     }
 
-    for(let id in projects){
-      let project = projects[id];
+    for(const id in projects){
+      const project = projects[id];
       if(project.count < 10){ continue; }
       html += `<li>{(${project.name.capitalize()})} ${project.from != project.to ? project.from+"—"+project.to : project.from}</li>`
     }

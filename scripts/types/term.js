@@ -50,7 +50,7 @@ function Term(name,data)
 
   this.rating = function()
   {
-    let h = {points:{}}
+    const h = {points:{}}
 
     h.points.long = this.data.LONG && this.data.LONG.length > 0
     h.points.logs = this.logs.length > 0
@@ -64,8 +64,8 @@ function Term(name,data)
     h.points.tags = this.tags.length > 0
 
     // Score
-    let p = 0
-    for(let id in h.points){ p += h.points[id] ? 1 : 0 }
+    const p = 0
+    for(const id in h.points){ p += h.points[id] ? 1 : 0 }
 
     h['score'] = (p/Object.keys(h.points).length)
     h['status'] = h['score'] < 0.4 ? 'poor' : h['score'] < 0.7 ? 'fair' : h['score'] < 0.9 ? 'good' : 'perfect'
@@ -74,22 +74,22 @@ function Term(name,data)
 
   this.has_tag = function(str)
   {
-    let target = str.toLowerCase().replace(/ /g,"_").trim()
+    const target = str.toLowerCase().replace(/ /g,"_").trim()
     return this.tags.indexOf(target) > -1
   }
 
   this.sectors = function()
   {
-    let h = new Horaire(this.logs).sectors;
-    let a = [["audio",h.audio],["visual",h.visual],["research",h.research]]
+    const h = new Horaire(this.logs).sectors;
+    const a = [["audio",h.audio],["visual",h.visual],["research",h.research]]
 
     return sort(a);
   }
 
   this.released = function()
   {
-    for(let id in this.logs){
-      let log = this.logs[id];
+    for(const id in this.logs){
+      const log = this.logs[id];
       if(log.time.offset > 0){ continue; }
       if(log.ch == 8){ return log; }
     }
@@ -98,8 +98,8 @@ function Term(name,data)
 
   this.find_outgoing = function()
   {
-    let a = []
-    let str = this.data.BREF + (this.data.LONG ? this.data.LONG.join("\n") : '');
+    const a = []
+    const str = this.data.BREF + (this.data.LONG ? this.data.LONG.join("\n") : '');
 
     let curlies = new Curlic(str).extract()
 
@@ -110,7 +110,7 @@ function Term(name,data)
     curlies = curlies.filter(el =>{ return el.indexOf("[") < 0; })  // Skip evals
 
     curlies.forEach(el=>{
-      let name = el.split("(")[1].replace(")","")
+      const name = el.split("(")[1].replace(")","")
       a.push(name.toUpperCase())
     });
     return a;

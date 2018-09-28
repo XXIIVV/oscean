@@ -19,7 +19,7 @@ function Aeth(data = {},name = null)
   {
     if(this.data && this.data.english){ return this.data.english.toLowerCase(); }
     
-    let r = Ø('database').find(this.name,true)
+    const r = Ø('database').find(this.name,true)
     return r && r.data.english ? r.data.english.toLowerCase() : null
   }
 
@@ -27,8 +27,8 @@ function Aeth(data = {},name = null)
   {
     let html = ""
 
-    let ae1 = new Aeth(null,this.name.substr(0,2))
-    let ae2 = new Aeth(null,this.name.substr(2,2))
+    const ae1 = new Aeth(null,this.name.substr(0,2))
+    const ae2 = new Aeth(null,this.name.substr(2,2))
     
     html += `${ae1.adultspeak}:<b>${ae1.type()}.${ae1.to_english()}</b>&#40;${ae2.adultspeak}:<b>${ae2.type()}.${ae2.to_english()}</b>&#41; = ${this.adultspeak}:<b>${this.type()}.${this.to_english()}</b>`
     return html
@@ -36,19 +36,19 @@ function Aeth(data = {},name = null)
 
   function adultspeak(cs)
   {
-    let childspeak = cs.toLowerCase();
-    let vowels = {"a":"ä","e":"ë","i":"ï","o":"ö","u":"ü","y":"ÿ"}
+    const childspeak = cs.toLowerCase();
+    const vowels = {"a":"ä","e":"ë","i":"ï","o":"ö","u":"ü","y":"ÿ"}
 
     if(childspeak.length == 2){
-      let c = childspeak.substr(0,1);
-      let v = childspeak.substr(1,1);
+      const c = childspeak.substr(0,1);
+      const v = childspeak.substr(1,1);
       return v+c;
     }
     if(childspeak.length == 4){
-      let c1 = childspeak.substr(0,1);
-      let v1 = childspeak.substr(1,1);
-      let c2 = childspeak.substr(2,1);
-      let v2 = childspeak.substr(3,1);
+      const c1 = childspeak.substr(0,1);
+      const v1 = childspeak.substr(1,1);
+      const c2 = childspeak.substr(2,1);
+      const v2 = childspeak.substr(3,1);
       
       // Complex
       if(v1 == "i" && v2 == "a" && c1 == c2){
@@ -86,7 +86,7 @@ function Aeth(data = {},name = null)
 
   this.toString = function()
   {
-    let en = this.to_english()
+    const en = this.to_english()
     return `<p>{*${this.name.capitalize()}*}${this.name.toLowerCase() != this.adultspeak.toLowerCase() ? ', or '+this.adultspeak.capitalize() : ''} is a {(Lietal)} word${en ? ' that translates to \"'+en+'\" in {(English)}' : ''}.</p>`.to_curlic()
   }
 }
@@ -107,8 +107,8 @@ function Construction(str)
 
   this.find = function(target,adultspeak = true)
   {
-    let d = Ø('database').cache.dictionaery;
-    for(let id in d){
+    const d = Ø('database').cache.dictionaery;
+    for(const id in d){
       if(d[id].to_english() == target.toLowerCase()){
         return adultspeak ? d[id].adultspeak : d[id].childspeak;
       }
@@ -124,10 +124,10 @@ function Construction(str)
   this.toString = function(adultspeak = true)
   {
     let html = ''
-    let str = this.prepare(this.str);
-    let parts = str.split(' ');
-    for(let id in parts){
-      let part = parts[id];
+    const str = this.prepare(this.str);
+    const parts = str.split(' ');
+    for(const id in parts){
+      const part = parts[id];
       html += `${this.find(part,adultspeak)} `
     }
     return this.complete(html);
