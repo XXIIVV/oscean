@@ -12,14 +12,12 @@ function BuildSidebarNode(id,rect)
   {
     if(!q.result){ return "<h1>The {(Nataniev)} Services Desk</h1><h2>{(Home)}</h2>".to_curlic(); }
 
-    let html = ""
-    
-    for(const id in q.result.links){
-      html += `<li><a href='${q.result.links[id]}' target='_blank'>${id.toLowerCase()}</a></li>`
-    }
+    const _links = Object.keys(q.result.links).reduce((acc,val) => {
+      return `${acc}<li><a href='${q.result.links[val]}' target='_blank'>${val.toLowerCase()}</a></li>`
+    },"")
 
     return `<h1>${q.result.bref.to_curlic()}</h1>
     <h2><a data-goto='${q.result.unde}' href='#${q.result.unde}'>${q.result.unde}</a></h2>
-    <ul class='links'>${html}</ul>`
+    <ul class='links'>${_links}</ul>`
   }
 }

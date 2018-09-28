@@ -25,13 +25,10 @@ function Aeth(data = {},name = null)
 
   this.to_deconstruction = function()
   {
-    let html = ""
-
     const ae1 = new Aeth(null,this.name.substr(0,2))
     const ae2 = new Aeth(null,this.name.substr(2,2))
-    
-    html += `${ae1.adultspeak}:<b>${ae1.type()}.${ae1.to_english()}</b>&#40;${ae2.adultspeak}:<b>${ae2.type()}.${ae2.to_english()}</b>&#41; = ${this.adultspeak}:<b>${this.type()}.${this.to_english()}</b>`
-    return html
+     
+    return `${ae1.adultspeak}:<b>${ae1.type()}.${ae1.to_english()}</b>&#40;${ae2.adultspeak}:<b>${ae2.type()}.${ae2.to_english()}</b>&#41; = ${this.adultspeak}:<b>${this.type()}.${this.to_english()}</b>`
   }
 
   function adultspeak(cs)

@@ -34,11 +34,9 @@ function List(name,data)
 
   this._from_object = function()
   {
-    let html = ''
-    for(const id in this.data){
-      html += `<li>{*${id.capitalize()}*}: ${this.data[id]}</li>`
-    }
-    return html.to_curlic()
+    return Object.keys(this.data).reduce((acc,val) => { 
+      return `${acc}<li>{*${val.capitalize()}*}: ${this.data[val]}</li>`; 
+    },"").to_curlic()
   }
 
   this.toString = function()
