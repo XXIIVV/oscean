@@ -6,8 +6,6 @@ function BuildContentNode(id,rect)
 
   this.glyph = "M60,60 L60,60 L240,60 L240,240 L60,240 Z"
 
-  this.cache = null;
-
   this.answer = function(q)
   {
     if(!q.result){ return this.signal('default').answer(q) }

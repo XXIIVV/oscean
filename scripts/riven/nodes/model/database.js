@@ -13,7 +13,7 @@ function DatabaseNode(id,rect)
   {
     if(!this.cache){
       this.cache = this.request(this.cache);
-      this.send(this.cache); // Send to Ø(MAP), for filtering.
+      this.send(this.cache); // Send ref to Ø(MAP), for filtering.
       this.build();
     }
     return this.cache;

@@ -14,16 +14,13 @@ function Riven_Graph()
   
   this.graph = function()
   {
-    let html = "";
-    for(const id in this.network){
-      const node = this.network[id];
-      html += draw_routes(node);
-    }
-    for(const id in this.network){
-      const node = this.network[id];
-      html += draw_node(node);
-    }
-    this.el.innerHTML = html;
+    const _routes = Object.keys(this.network).reduce((acc,val,id) =>{
+      return `${acc}${draw_routes(this.network[val])}`
+    },"");
+    const _nodes = Object.keys(this.network).reduce((acc,val,id) =>{
+      return `${acc}${draw_node(this.network[val])}`
+    },"");
+    this.el.innerHTML = `${_routes}${_nodes}`
   }
 
   function draw_routes(node)
@@ -55,11 +52,9 @@ function Riven_Graph()
 
   function draw_ports(node)
   {
-    let html = "";
-    for(const id in node.ports){
-      html += draw_port(node.ports[id]);
-    }
-    return html
+    return Object.keys(node.ports).reduce((acc,val,id) => {
+      return `${acc}${draw_port(node.ports[val])}`
+    },"")
   }
 
   function draw_glyph(node)

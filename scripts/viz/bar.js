@@ -28,12 +28,10 @@ function BarViz(logs)
   this.draw = function()
   {
     const segments = this.parse(this.logs);
-    let html = ""
-
     const cell = 13
     const mod = 0.18
-    for(const id in segments){
-      const seg = segments[id]
+    return Object.keys(segments).reduce((acc,val,id) => {
+      const seg = segments[val]
       const x = parseInt(id) * (cell+1);
       const audio_h = clamp(seg.audio * mod,4,100)
       const audio_y = audio_h + 30;
@@ -41,14 +39,11 @@ function BarViz(logs)
       const visual_y = (visual_h + audio_y)+0.5;
       const research_h = clamp(seg.visual * mod,4,100)
       const research_y = (research_h + visual_y)+0.5;
-      html += `<rect class='audio' x='${x}' y='${125 - audio_y}' width='${cell}' height='${audio_h}' rx="2" ry="2"></rect>`
-      html += `<rect class='visual' x='${x}' y='${125 - visual_y}' width='${cell}' height='${visual_h}' rx="2" ry="2"></rect>`
-      html += `<rect class='research' x='${x}' y='${125 - research_y}' width='${cell}' height='${research_h}' rx="2" ry="2"></rect>`
-    }
-
-    html += this.legend(this.logs);
-
-    return html
+      return `${acc}
+      <rect class='audio' x='${x}' y='${125 - audio_y}' width='${cell}' height='${audio_h}' rx="2" ry="2"></rect>
+      <rect class='visual' x='${x}' y='${125 - visual_y}' width='${cell}' height='${visual_h}' rx="2" ry="2"></rect>
+      <rect class='research' x='${x}' y='${125 - research_y}' width='${cell}' height='${research_h}' rx="2" ry="2"></rect>`
+    },"")
   }
 
   function clamp(v, min, max){ return v < min ? min : v > max ? max : v; }

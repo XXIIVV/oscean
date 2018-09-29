@@ -3,15 +3,14 @@
 function graph()
 {
   Ø("query").create({x:2,y:2},QueryNode)
-  Ø("keyboard").create({x:2,y:6},KeyboardNode)
-  Ø("mouse").create({x:2,y:10},MouseNode)
+  Ø("mouse").create({x:2,y:8},MouseNode)
 
   Ø("services").mesh({x:6,y:21},[
     Ø("rss").create({x:2,y:2},RssNode)
   ])
 
   Ø("model").mesh({x:6,y:0},[
-    Ø("router").create({x:5,y:2},RouterNode),
+    Ø("router").create({x:8,y:2},RouterNode),
     Ø("database").create({x:8,y:8},DatabaseNode),
       Ø("dictionaery").create({x:2,y:14},TableNode,Tablatal,Aeth),
       Ø("lexicon").create({x:5,y:14},TableNode,Indental,Term),

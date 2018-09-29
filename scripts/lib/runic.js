@@ -46,14 +46,13 @@ function Runic(lines = [],templater = null)
 
   function _html(acc,stash)
   {
-    let html = ""
     const wr = runes[stash.rune].wrapper
-    for(const id in stash.a){
+    const html = stash.a.reduce((acc,val,id) => {
       const r = runes[stash.rune]
       const txt = r.fn ? r.fn(stash.a[id]) : stash.a[id]
       const htm = templater ? new templater(txt) : txt
-      html += r.tag ? `<${r.tag} class='${r.class ? r.class : ''}'>${htm}</${r.tag}>` : `${htm}`
-    }
+      return `${acc}${r.tag ? `<${r.tag} class='${r.class ? r.class : ''}'>${htm}</${r.tag}>` : `${htm}` }`
+    },"")
     return wr ? `${acc}<${wr}>${html}</${wr}>` : `${acc}${html}`
   }
 

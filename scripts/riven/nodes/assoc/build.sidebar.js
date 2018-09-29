@@ -6,18 +6,33 @@ function BuildSidebarNode(id,rect)
 
   this.glyph = "M60,60 L60,60 L240,60 L240,240 L60,240 Z"
 
-  this.cache = null;
+  function _bref(term)
+  {
+    return `<h1>${term.bref.to_curlic()}</h1>`
+  }
+
+  function _parent(term)
+  {
+    return `<h2><a data-goto='${term.unde}' href='#${term.unde}'>${term.unde}</a></h2>`
+  }
+
+  function _links(term)
+  {
+    return `
+    <ul class='links'>
+      ${Object.keys(term.links).reduce((acc,val) => { 
+        return `${acc}<li><a href='${term.links[val]}' target='_blank'>${val.toLowerCase()}</a></li>`; 
+      },"")}
+    </ul>`
+  }
 
   this.answer = function(q)
   {
     if(!q.result){ return "<h1>The {(Nataniev)} Services Desk</h1><h2>{(Home)}</h2>".to_curlic(); }
 
-    const _links = Object.keys(q.result.links).reduce((acc,val) => {
-      return `${acc}<li><a href='${q.result.links[val]}' target='_blank'>${val.toLowerCase()}</a></li>`
-    },"")
-
-    return `<h1>${q.result.bref.to_curlic()}</h1>
-    <h2><a data-goto='${q.result.unde}' href='#${q.result.unde}'>${q.result.unde}</a></h2>
-    <ul class='links'>${_links}</ul>`
+    return `
+    ${_bref(q.result)}
+    ${_parent(q.result)}
+    ${_links(q.result)}`
   }
 }
