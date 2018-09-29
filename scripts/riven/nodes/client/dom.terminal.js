@@ -37,7 +37,7 @@ function TerminalNode(id,rect,...params)
 
     time: (q) => 
     {
-      return `The current local time is <b>${new Date().desamber()} ${new Oneralie()}</b>.`;
+      return `The current local time is <b>${new Date().desamber()} ${new Neralie()}</b>.`;
     },
 
     hello: (q) => 

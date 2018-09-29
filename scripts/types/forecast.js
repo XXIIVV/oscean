@@ -37,8 +37,7 @@ function Forecast(logs)
     const bump = -sectors[sectors.length-1][1];
     const sectors_mined = sectors.map((val) => { return [val[0],val[1]+bump]; })
     const limit = sectors_mined[0][1];
-    const sectors_maxed = sectors_mined.map((val) => { return [val[0],val[1]/limit]; })
-    return sectors_maxed
+    return sectors_mined.map((val) => { return [val[0],val[1]/limit]; })
   }
 
   function sort_sectors(offset)
@@ -47,12 +46,10 @@ function Forecast(logs)
     for(const key in offset){
       sectors.push([key,offset[key]]);
     }
-    return sectors.sort(function(a, b){
+    return sectors.sort((a, b) => {
       return a[1] - b[1];
     }).reverse();
   }
-
-  function clamp(v, min, max){ return v < min ? min : v > max ? max : v; }
 
   return predict(logs)
 }

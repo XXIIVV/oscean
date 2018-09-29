@@ -17,13 +17,14 @@ function graph()
       Ø("horaire").create({x:8,y:14},TableNode,Tablatal,Log),
       Ø("issues").create({x:11,y:14},TableNode,Tablatal,Issue),
       Ø("glossary").create({x:14,y:14},TableNode,Indental,List),
-    Ø("map").create({x:11,y:8},MapNode),
+    Ø("map").create({x:14,y:8},MapNode),
   ])
 
   Ø("assoc").mesh({x:25,y:0},[
     Ø("build").create({x:5,y:2},BuildNode),
-    Ø("_navi").create({x:2,y:8},BuildNaviNode),
+    Ø("_header").create({x:2,y:8},BuildHeaderNode),
     Ø("_sidebar").create({x:5,y:8},BuildSidebarNode),
+    Ø("_navi").create({x:11,y:8},BuildNaviNode),
     Ø("_content").create({x:8,y:8},BuildContentNode),
       Ø("missing").create({x:2,y:20},MissingTemplate),
       Ø("default").create({x:2,y:14},DefaultTemplate),
@@ -35,7 +36,6 @@ function graph()
 
   Ø("client").mesh({x:44,y:0},[
     Ø("view").create({x:2,y:2},DocumentNode),
-    Ø("style").create({x:5,y:8},DomNode,"style"),
     Ø("terminal").create({x:8,y:8},TerminalNode),
     Ø("header").create({x:2,y:8},DomNode),
       Ø("photo").create({x:2,y:14},PhotoNode,"photo"),
@@ -57,7 +57,7 @@ function graph()
         <a target='_blank' href="http://webring.xxiivv.com/#random" class="icon rotonde"></a>
         <a target='_blank' href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="icon cc"></a>
         <a data-goto='devine lu linvega' href='#devine+lu+linvega'>Devine Lu Linvega</a> © 06I04—${new Date().desamber()}
-        <center><a data-goto='About' href='#About'>BY-NC-SA 4.0</a> <span style="color:#ccc"'>${new Oneralie()}</span></center>
+        <center><a data-goto='About' href='#About'>BY-NC-SA 4.0</a> <span style="color:#ccc"'>${new Neralie()}</span></center>
         <a target='_blank' href="http://100r.co" class="icon hundredrabbits"></a><hr>
       `),
   ])
@@ -70,7 +70,7 @@ function graph()
   Ø("router").connect("build")
 
   // Assoc
-  Ø("build").syphon(["_navi","_content","_sidebar"])
+  Ø("build").syphon(["_navi","_content","_sidebar","_header"])
   Ø("_content").syphon(["default","journal","tracker","home","calendar"])
   Ø("build").connect(["view"])
   Ø("default").syphon(["missing"])
@@ -79,7 +79,7 @@ function graph()
   Ø("header").bind(["logo","photo","menu","info"])
   Ø("info").bind(["glyph","title"])
   Ø("menu").bind(["search","activity"])
-  Ø("view").bind(["header","core","footer","terminal","style"])
+  Ø("view").bind(["header","core","footer","terminal"])
   Ø("core").bind(["sidebar","content","navi"])
   Ø("footer").bind(["credits"])
 
