@@ -25,15 +25,17 @@ function BuildHeaderNode(id,rect)
 
     if(q.result.name == "HOME" || q.result.name == "JOURNAL" || q.result.name == "CALENDAR" || q.result.name == "TRACKER"){
       return `
-      <li><a id='issues' data-goto='Calendar' href='#Calendar'>Calendar</a></li> 
-      <li><a id='diaries' data-goto='journal' href='#journal'>Journal</a> 
-      <li><a id='logs' data-goto='Tracker' href='#Tracker'>Tracker</a></li>`
+      <li><a class='issues' data-goto='Calendar' href='#Calendar'>Calendar</a></li> 
+      <li><a class='diaries' data-goto='journal' href='#journal'>Journal</a> 
+      <li><a class='logs' data-goto='Tracker' href='#Tracker'>Tracker</a></li>`
     }
 
     return `
-    ${q.result.issues.length > 0 ? `<li><a id='issues' data-goto='${q.result.name}:tracker' href='#${q.result.name}:tracker'>${q.result.issues.length} Issue${q.result.issues.length > 1 ? 's' : ''}</a></li>` : ''}
-    ${q.result.diaries.length > 1 && !q.result.has_tag("diary") ? `<li><a id='diaries' data-goto='${q.result.name}:diary' href='#${q.result.name}:diary'>${q.result.diaries.length} Diaries</a></li>` : ''}
-    ${q.result.logs.length > 2 && !q.result.has_tag("journal") ? `<li><a id='logs' data-goto='${q.result.name}:journal' href='#${q.result.name}:journal'>${q.result.logs.length} Logs</a></li>` : ''}`
+    ${q.params ? `<li><a class='return' data-goto='${q.result.name}' href='#${q.result.name}'>Return</a></li>` : ''}
+    ${q.result.issues.length > 0 ? `<li><a class='issues' data-goto='${q.result.name}:calendar' href='#${q.result.name}:calendar'>${q.result.issues.length} Issue${q.result.issues.length > 1 ? 's' : ''}</a></li>` : ''}
+    ${q.result.logs.length > 2 && !q.result.has_tag("journal") ? `<li><a class='diaries' data-goto='${q.result.name}:journal' href='#${q.result.name}:journal'>${q.result.logs.length} Logs</a></li>` : ''}
+    ${q.result.diaries.length > 1 && !q.result.has_tag("diary") ? `<li><a class'logs' data-goto='${q.result.name}:tracker' href='#${q.result.name}:tracker'>${q.result.diaries.length} Diaries</a></li>` : ''}
+    `
   }
 
   this.answer = function(q)
