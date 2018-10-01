@@ -18,6 +18,7 @@ function BuildSidebarNode(id,rect)
 
   function _links(term)
   {
+    if(!term.links){ return ''; }
     return `
     <ul class='links'>
       ${Object.keys(term.links).reduce((acc,val) => { 

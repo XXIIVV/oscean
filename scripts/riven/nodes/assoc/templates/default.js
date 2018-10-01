@@ -11,7 +11,7 @@ function DefaultTemplate(id,rect,...params)
     if(q.target == "index"){ return this.signal('index').answer(q) }
     if(!q.result){ return this.signal('missing').answer(q) }
 
-    let html = `${q.result}`
+    let html = `${q.result.toString(q)}`
 
     html += q.result.has_tag("children") ? this._children(q.result) : ''
     html += q.result.has_tag("children_children") ? this._children_children(q.result) : ''

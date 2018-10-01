@@ -8,18 +8,6 @@ function List(name,data)
   this.unde  = 'Glossary'
   this.index = true;
 
-  this.connections = function(tables)
-  {
-    const a = []
-    for(const id in tables.lexicon){
-      const term = tables.lexicon[id];
-      if(term.has_tag("list") && term.has_tag(this.name)){
-        a.push(term)
-      }
-    }
-    return a;
-  }
-
   this.indexOf = function(target)
   {
     const i = 0;
@@ -32,6 +20,25 @@ function List(name,data)
     return -1;
   }
 
+  this.find_related = function()
+  {
+    const a = []
+    const terms = Ø("database").cache.lexicon;
+    for(const id in terms){
+      const term = terms[id];
+      if(term.has_tag(this.name)){
+        a.push(term);
+      }
+    }
+    return a;
+  }
+
+  this._related = function()
+  {
+    const a = this.find_related();
+    return `<p class='note'>The {*${this.name.capitalize()}*} list is part of "{(${a[0].name.capitalize()})}".</p>`.to_curlic()
+  }
+
   this._from_object = function()
   {
     return Object.keys(this.data).reduce((acc,val) => { 
@@ -39,8 +46,8 @@ function List(name,data)
     },"").to_curlic()
   }
 
-  this.toString = function()
+  this.toString = function(q)
   {
-    return `<ul>${Array.isArray(this.data) ? new Runic(this.data) : this._from_object()}</ul>`.to_curlic();
+    return `<ul>${Array.isArray(this.data) ? new Runic(this.data) : this._from_object()}</ul>${q ? this._related() : ''}`.to_curlic();
   }
 }
