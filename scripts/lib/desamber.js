@@ -42,7 +42,7 @@ function Desamber(str)
 
   this.toString = function()
   {
-    return this.str.toUpperCase();
+    return `<span title='${this.to_gregorian()}'>${this.str.toUpperCase()}</span>`;
   }
 
   function prepend(s,l,c="0"){ while(`${s}`.length < l){ s = `${c}${s}`; }; return s; }
