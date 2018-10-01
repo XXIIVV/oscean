@@ -30,7 +30,7 @@ function Desamber(str)
   {
     const days = this.offset;
 
-    if(-days > cap)  { return `${this.toString()}`; }
+    if(-days > cap)  { return `${this.toString(true)}`; }
 
     if(days == -1)   { return `yesterday`; }
     if(days == 1)    { return "tomorrow"; }
@@ -40,9 +40,9 @@ function Desamber(str)
     return `in ${days} days`;
   }
 
-  this.toString = function()
+  this.toString = function(template = false)
   {
-    return `<span title='${this.to_gregorian()}'>${this.str.toUpperCase()}</span>`;
+    return template ? `<span title='${this.to_gregorian()}'>${this.str.toUpperCase()}</span>` : this.str.toUpperCase();
   }
 
   function prepend(s,l,c="0"){ while(`${s}`.length < l){ s = `${c}${s}`; }; return s; }
