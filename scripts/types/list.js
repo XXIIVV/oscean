@@ -36,7 +36,8 @@ function List(name,data)
   this._related = function()
   {
     const a = this.find_related();
-    return `<p class='note'>The {*${this.name.capitalize()}*} list is part of "{(${a[0].name.capitalize()})}".</p>`.to_curlic()
+
+    return a.length > 0 ? `<p class='note'>The {*${this.name.capitalize()}*} list is part of "{(${a[0].name.capitalize()})}".</p>`.to_curlic() : ''
   }
 
   this._from_object = function()
