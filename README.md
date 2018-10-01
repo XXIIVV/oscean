@@ -13,6 +13,10 @@ The database formats are [Indental](https://wiki.xxiivv.com/Indental) and [Tabla
 
 - [scripts/database/lexicon.ndtl](https://github.com/XXIIVV/Oscean/blob/master/scripts/database/lexicon.ndtl)
 
+## Syntax Highlight
+
+The `Resources/` folder inclues syntax highlight for both [Indental](https://wiki.xxiivv.com/Indental) and [Tablatal](https://wiki.xxiivv.com/Tablatal), to install them on Sublime, copy them into `~/Library/Application Support/Sublime Text 3/Packages/User/`.
+
 ## Extras
 
 - Pull Requests are welcome.
