@@ -1,6 +1,6 @@
 'use strict';
 
-function Runic(lines = [],templater = null)
+function Runic(lines = [],templater = null,host = null)
 {
   this.lines = lines;
 
@@ -14,6 +14,7 @@ function Runic(lines = [],templater = null)
     "@":{tag:"quote",fn:quote},
     "|":{tag:"tr",wrapper:"table",fn:table},
     "%":{fn:media},
+    "λ":{fn:lisp},
     ">":{}, 
   }
 
@@ -86,6 +87,11 @@ function Runic(lines = [],templater = null)
   function table(content)
   {
     return `<td>${content.trim().replace(/ \| /g,"</td><td>")}</td>`
+  }
+
+  function lisp(content)
+  {
+    return `${new Heol(content,Ø("database").cache,host)}`;
   }
 
   //

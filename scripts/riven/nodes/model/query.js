@@ -36,7 +36,7 @@ function QueryNode(id,rect)
     setTimeout(() => {
       this.send(a[0].to_url())
       this.queue(a.slice(1))
-    },100)
+    },speed)
   }
 }
 

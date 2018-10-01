@@ -1,6 +1,6 @@
 'use strict';
 
-function Curlic(text = "")
+function Curlic(text = "",host)
 {
   this.text = `${text}`;
 

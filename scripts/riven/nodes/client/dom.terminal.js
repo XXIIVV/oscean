@@ -73,7 +73,7 @@ function TerminalNode(id,rect,...params)
 
     walk: (q) => 
     {
-      Ø("query").queue(Object.keys(Ø("database").cache.lexicon),50);
+      Ø("query").queue(Object.keys(Ø("database").cache.lexicon),500);
       return `Done.`
     },
 

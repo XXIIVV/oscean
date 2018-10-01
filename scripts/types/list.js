@@ -49,6 +49,6 @@ function List(name,data)
 
   this.toString = function(q)
   {
-    return `<ul>${Array.isArray(this.data) ? new Runic(this.data) : this._from_object()}</ul>${q ? this._related() : ''}`.to_curlic();
+    return `<h3>${name.capitalize()}</h3><ul>${Array.isArray(this.data) ? new Runic(this.data,Curlic,this) : this._from_object()}</ul>${q ? this._related() : ''}`.to_curlic();
   }
 }

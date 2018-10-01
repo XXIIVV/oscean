@@ -122,8 +122,13 @@ function Term(name,data)
     }).reverse();
   }
 
+  this.body = function()
+  {
+    return new Runic(this.data.LONG,Curlic,this);
+  }
+
   this.toString = function()
   {
-    return `${new Runic(this.data.LONG,Curlic)}`
+    return `<h2>${this.name.capitalize()}</h2><h4>${this.bref}</h4>${this.body()}`
   }
 }
