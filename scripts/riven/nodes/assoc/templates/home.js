@@ -23,7 +23,7 @@ function HomeTemplate(id,rect,...params)
     for(const id in projects){
       const project = projects[id];
       if(project.count < 10){ continue; }
-      html += `<li>{(${project.name.capitalize()})} ${project.from != project.to ? project.from+"—"+project.to : project.from}</li>`
+      html += `<li>{(${project.name.capitalize()})} ${project.from != project.to ? `${new Desamber(project.from).toString(true)}—${new Desamber(project.to).toString(true)}` : new Desamber(project.from).toString(true)}</li>`
     }
     return `<ul class='tidy'>${html}</ul>`.to_curlic();;
   }
