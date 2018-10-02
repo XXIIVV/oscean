@@ -76,7 +76,7 @@ function TerminalNode(id,rect,...params)
       for(const id in Ø("database").index){
         Ø("database").index[id].toString();
       }
-      return `Done.`
+      return `Done(walked ${Object.keys(Ø("database").index).length} indexes).`
     },
 
     rss: (q) => 
