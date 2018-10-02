@@ -20,20 +20,15 @@ function List(name,data)
     return -1;
   }
 
-  this._from_object = function()
-  {
-    return Object.keys(this.data).reduce((acc,val) => { 
-      return `${acc}<li>{*${val.capitalize()}*}: ${this.data[val]}</li>`; 
-    },"").to_curlic()
-  }
-
   this.body = function()
   {
-    return `<ul>${Array.isArray(this.data) ? new Runic(this.data,Curlic,this) : this._from_object()}</ul>`;
+    return `<ul>${Object.keys(this.data).reduce((acc,val) => { 
+      return `${acc}<li>{*${val.capitalize()}*}: ${this.data[val]}</li>`; 
+    },"")}</ul>`.to_curlic();
   }
 
   this.toString = function(q)
   {
-    return `<h3>${name.capitalize()}</h3>${this.body()}`.to_curlic();
+    return `<h3>${name.capitalize()}</h3>${this.body()}`;
   }
 }

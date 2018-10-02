@@ -67,7 +67,7 @@ function Lisp(input,lib,tables,host)
       return context.get(input.value);
     } 
     else if(input.type === "keyword"){
-      return host[input.value] ? host[input.value] : '';
+      return host[input.value] ? host[input.value] : null;
     }
     else if(input.type === "number" || input.type === "string"){
       return input.value;
