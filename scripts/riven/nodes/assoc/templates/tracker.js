@@ -21,6 +21,6 @@ function TrackerTemplate(id,rect,...params)
       }
       html += `<li style='${log.time.offset > 0 ? 'color:#aaa' : ''}'>{${log.name ? log.name : log.term+' '+log.task.capitalize()}(${log.term})}</a> <span title='${log.time}'>${log.time.ago(60)}</span></li>`.to_curlic()
     }
-    return `${new BarViz(logs)}<ul class='tidy' style='margin-top:30px'>${html}</ul>`;
+    return `${new BarViz(logs)}<ul class='tidy col3' style='margin-top:30px'>${html}</ul>`;
   }
 }

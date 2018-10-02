@@ -4,10 +4,6 @@ function Heol(input,tables,host)
 {
   const lib =
   {
-    this: function(param)
-    {
-      return param ? host[param] : host;
-    },
     match: function(source,items)
     {
       const a = []

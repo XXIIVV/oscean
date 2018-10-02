@@ -73,7 +73,9 @@ function TerminalNode(id,rect,...params)
 
     walk: (q) => 
     {
-      Ø("query").queue(Object.keys(Ø("database").cache.lexicon),500);
+      for(const id in Ø("database").index){
+        Ø("database").index[id].toString();
+      }
       return `Done.`
     },
 

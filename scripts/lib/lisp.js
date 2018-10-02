@@ -1,6 +1,6 @@
 "use strict";
 
-function Lisp(input,lib)
+function Lisp(input,lib,tables,host)
 {
   this.input = input;
 
@@ -56,7 +56,7 @@ function Lisp(input,lib)
   };
 
   const interpret = function(input, context)
-  {
+  {    
     if(context === undefined){
       return interpret(input, new Context(lib));
     } 
@@ -66,6 +66,9 @@ function Lisp(input,lib)
     else if(input.type === "identifier"){
       return context.get(input.value);
     } 
+    else if(input.type === "keyword"){
+      return host[input.value] ? host[input.value] : '';
+    }
     else if(input.type === "number" || input.type === "string"){
       return input.value;
     }
@@ -76,10 +79,13 @@ function Lisp(input,lib)
     if(!isNaN(parseFloat(input))){
       return { type:'number', value: parseFloat(input) };
     } 
-    else if (input[0] === '"' && input.slice(-1) === '"'){
+    else if(input[0] === '"' && input.slice(-1) === '"'){
       return { type:'string', value: input.slice(1, -1) };
     } 
-    else{
+    else if(input[0] === ':'){
+      return { type:'keyword', value: input.substr(1,input.length-1) };
+    } 
+    else {
       return { type:'identifier', value: input };
     }
   };
