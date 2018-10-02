@@ -34,6 +34,6 @@ function List(name,data)
 
   this.toString = function(q)
   {
-    return `<h3>${name.capitalize()}</h3>`.to_curlic();
+    return `<h3>${name.capitalize()}</h3>${this.body()}`.to_curlic();
   }
 }
