@@ -69,5 +69,5 @@ function Heol(input,tables,host)
     }
   }
 
-  Lisp.call(this,input,lib)
+  Lisp.call(this,input,lib,tables,host)
 }
