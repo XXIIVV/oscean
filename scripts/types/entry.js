@@ -29,8 +29,13 @@ function Entry(name,data)
     return false
   }
 
+  this.body = function()
+  {
+    return `Unformatted Entry: ${name}`
+  }
+
   this.toString = function()
   {
-    return `<div class='error'>Unformatted Entry: ${name}</div>`
+    return `<div class='error'>${this.body()}</div>`
   }
 }

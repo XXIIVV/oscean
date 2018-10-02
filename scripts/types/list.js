@@ -47,8 +47,13 @@ function List(name,data)
     },"").to_curlic()
   }
 
+  this.body = function()
+  {
+    return `<ul>${Array.isArray(this.data) ? new Runic(this.data,Curlic,this) : this._from_object()}</ul>`;
+  }
+
   this.toString = function(q)
   {
-    return `<h3>${name.capitalize()}</h3><ul>${Array.isArray(this.data) ? new Runic(this.data,Curlic,this) : this._from_object()}</ul>${q ? this._related() : ''}`.to_curlic();
+    return `<h3>${name.capitalize()}</h3>${q ? this._related() : ''}`.to_curlic();
   }
 }
