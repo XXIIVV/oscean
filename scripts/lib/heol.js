@@ -22,6 +22,10 @@ function Heol(input,tables,host)
     {
       return tables[source];
     },
+    keys: function(h)
+    {
+      return Object.keys(h)
+    },
     find: function(source,target,sub)
     {
       return source[target.toUpperCase()] ? source[target.toUpperCase()][children] : [];
@@ -32,13 +36,17 @@ function Heol(input,tables,host)
         return `${acc}${val}`;
       },"")
     },
+    wrap: function(item,tag,cl)
+    {
+      return `<${tag} class='${cl ? cl : ''}'>${item}</${tag}>`
+    },
 
     // Templaters
 
-    template: function(items,t)
+    template: function(items,t,p)
     {
       return items.map((val) => {
-        return t(val);
+        return `${t(val,p)}`;
       })
     },
     INDEX: function(item)
@@ -46,6 +54,10 @@ function Heol(input,tables,host)
       return `<h3>{(${item.name.capitalize()})}</h3><p>${item.bref}</p><ul class='bullet'>${item.children.reduce((acc,term) => {
         return `${acc}<li>${term.bref}</li>`;
       },"")}</ul>`;
+    },
+    LINK: function(item)
+    {
+      return `{(${item.capitalize()})}`;
     },
     TITLE: function(item)
     {

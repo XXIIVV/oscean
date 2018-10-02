@@ -20,26 +20,6 @@ function List(name,data)
     return -1;
   }
 
-  this.find_related = function()
-  {
-    const a = []
-    const terms = Ø("database").cache.lexicon;
-    for(const id in terms){
-      const term = terms[id];
-      if(term.has_tag(this.name)){
-        a.push(term);
-      }
-    }
-    return a;
-  }
-
-  this._related = function()
-  {
-    const a = this.find_related();
-
-    return a.length > 0 ? `<p class='note'>The {*${this.name.capitalize()}*} list is part of "{(${a[0].name.capitalize()})}".</p>`.to_curlic() : ''
-  }
-
   this._from_object = function()
   {
     return Object.keys(this.data).reduce((acc,val) => { 
@@ -54,6 +34,6 @@ function List(name,data)
 
   this.toString = function(q)
   {
-    return `<h3>${name.capitalize()}</h3>${q ? this._related() : ''}`.to_curlic();
+    return `<h3>${name.capitalize()}</h3>`.to_curlic();
   }
 }
