@@ -4,7 +4,7 @@ function ActivityViz(logs)
 {
   Viz.call(this,logs,-365,0);
 
-  this.parse = function(logs = this.logs)
+  function parse(logs)
   {
     const h = {}
     const i = 0
@@ -20,7 +20,7 @@ function ActivityViz(logs)
 
   this.draw = function()
   {
-    const data = this.parse();
+    const data = parse(this.logs);
     const cell = parseInt(700/52)
 
     let html = ""

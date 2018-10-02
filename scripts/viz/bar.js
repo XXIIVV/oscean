@@ -4,7 +4,7 @@ function BarViz(logs)
 {
   Viz.call(this,logs,-365 * 10,0);
 
-  this.parse = function(logs, parts = 51)
+  function parse(logs, parts = 51)
   {
     const limit = logs[logs.length-1].time.offset * -1
     const h = {}
@@ -27,7 +27,7 @@ function BarViz(logs)
 
   this.draw = function()
   {
-    const segments = this.parse(this.logs);
+    const segments = parse(this.logs);
     const cell = 13
     const mod = 0.18
     return Object.keys(segments).reduce((acc,val,id) => {

@@ -14,6 +14,11 @@ function Issue(data = {})
   this.ch     = data.code.length == 2 ? parseInt(data.code.substr(1,1)) : 0
   this.sector = ["misc","audio","visual","research","misc"][this.sc]
 
+  this.body = function()
+  {
+    return `${this.name}`;
+  }
+
   this.toString = function()
   {
     return `<div><b>${this.task}</b>: ${this.name}</div>`

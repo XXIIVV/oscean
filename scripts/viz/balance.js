@@ -16,13 +16,13 @@ function BalanceViz(logs)
     return a
   }
 
-  this.balance_at = function(offset)
+  function make_balance(logs,offset)
   {
-    const logs = slice(this.logs,offset-52,offset);
+    const sliced_logs = slice(logs,offset-52,offset);
     const sectors = {audio:0,visual:0,research:0,sum:0}
 
-    for(const id in logs){
-      const log = logs[id];
+    for(const id in sliced_logs){
+      const log = sliced_logs[id];
       if(!log.term){ continue; }
       sectors[log.sector] += (log.fh+log.ch)/2;
       sectors.sum += (log.fh+log.ch)/2;
@@ -35,12 +35,12 @@ function BalanceViz(logs)
     };
   }
 
-  this.parse = function()
+  function parse(logs)
   {
     const days = []
     let day = 53;
     while(day > 0){
-      days.push(this.balance_at(-day))
+      days.push(make_balance(logs,-day))
       day -= 1
     }
     return days;
@@ -48,7 +48,7 @@ function BalanceViz(logs)
 
   this.draw = function()
   {
-    const data = this.parse();
+    const data = parse(this.logs);
 
     let html = ""
     let day = 52

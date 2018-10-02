@@ -4,31 +4,6 @@ function Indental(data)
 {
   this.data = data;
 
-  this.parse = function(type)
-  {
-    const lines = this.data.split("\n").map(liner)
-    
-    // Assoc lines
-    const stack = {}
-    for(const id in lines){
-      const line = lines[id]
-      if(line.skip){ continue; }
-      const target = stack[line.indent-2];
-      if(target){ target.children[target.children.length] = line }
-      stack[line.indent] = line
-    }
-
-    // Format
-    const h = {}
-    for(const id in lines){
-      const line = lines[id];
-      if(line.skip || line.indent > 0){ continue; }
-      const key = line.content.toUpperCase()
-      h[key] = type ? new type(key,format(line)) : format(line)
-    }
-    return h
-  }
-
   function format(line)
   {
     const a = [];
@@ -52,5 +27,30 @@ function Indental(data)
       value:line.indexOf(" : ") > -1 ? line.split(" : ")[1].trim() : null,
       children:[]
     }
+  }
+
+  this.parse = function(type)
+  {
+    const lines = this.data.split("\n").map(liner)
+    
+    // Assoc lines
+    const stack = {}
+    for(const id in lines){
+      const line = lines[id]
+      if(line.skip){ continue; }
+      const target = stack[line.indent-2];
+      if(target){ target.children[target.children.length] = line }
+      stack[line.indent] = line
+    }
+
+    // Format
+    const h = {}
+    for(const id in lines){
+      const line = lines[id];
+      if(line.skip || line.indent > 0){ continue; }
+      const key = line.content.toUpperCase()
+      h[key] = type ? new type(key,format(line)) : format(line)
+    }
+    return h
   }
 }
