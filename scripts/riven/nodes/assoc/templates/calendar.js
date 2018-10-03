@@ -71,6 +71,27 @@ function CalendarTemplate(id,rect,...params)
     </td>`
   }
 
+  function _style()
+  {
+    return `
+    <style>
+      #view #core #content table.cells { background:transparent; width:100%; max-width: 730px; padding:0px; font-family: var(--font) }
+      #view #core #content table.cells tr td { margin:5px; height:100px; color:#000; position: relative; border-bottom:1.5px solid #333; }
+      #view #core #content table.cells tr td:hover { border-bottom-color: #000 !important; cursor: pointer; }
+      #view #core #content table.cells tr td:hover span.date { color:#000; }
+      #view #core #content table.cells tr td.event { border-bottom-color:white !important;}
+      #view #core #content table.cells tr td.audio { border-bottom-color: var(--color_1) }
+      #view #core #content table.cells tr td.visual { border-bottom-color: var(--color_2) }
+      #view #core #content table.cells tr td.research { border-bottom-color: var(--color_3) }
+      #view #core #content table.cells tr td.disabled span.event { opacity:0.25; }
+      #view #core #content table.cells tr td.disabled span.task { opacity:0.25; }
+      #view #core #content table.cells tr td span.date { position: absolute; top:5px; left:0px; font-size:12px; font-family: var(--mono); color:#666; }
+      #view #core #content table.cells tr td span.event { position: absolute;top: 30px;left: 0px;font-size: 12px;font-family: var(--font_b);line-height: 15px; padding-right:10px; }
+      #view #core #content table.cells tr td span.task { position: absolute;top: 30px;left: 0px;font-size: 12px;font-family: var(--font_m);line-height: 15px; padding-right:10px; height:60px;overflow: hidden }
+      #view #core #content table.cells tr td span.task b { font-family: var(--font_b) }
+    </style>`
+  }
+
   function _calendar(forecast,filter = null)
   {
     let html = ""
@@ -88,7 +109,7 @@ function CalendarTemplate(id,rect,...params)
       html += `<tr>${d_html}</tr>`
       w++;
     }
-    return `<table class='cells' style='margin-top:30px'>${html}</table>`
+    return `<table class='cells' style='margin-top:30px'>${html}</table>${_style()}`
   }
 
   this.answer = function(q)

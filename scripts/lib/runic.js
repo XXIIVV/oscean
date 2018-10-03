@@ -6,12 +6,12 @@ function Runic(lines = [],templater = null,host = null)
 
   const runes = {
     "&":{tag:"p"},
-    "?":{tag:"p",class:"note"},
-    "-":{tag:"li",wrapper:"ul"},
-    "#":{tag:"li",wrapper:"code"},
     "*":{tag:"h3"},
     "+":{tag:"hs"},
-    "@":{tag:"quote",fn:quote},
+    "?":{tag:"div",class:"note"},
+    "@":{tag:"div",class:"quote",fn:quote},
+    "-":{tag:"li",wrapper:"ul"},
+    "#":{tag:"li",wrapper:"code"},
     "|":{tag:"tr",wrapper:"table",fn:table},
     "%":{fn:media},
     "λ":{fn:lisp},
