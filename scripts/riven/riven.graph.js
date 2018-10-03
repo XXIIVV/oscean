@@ -1,250 +1,229 @@
-'use strict';
+'use strict'
 
-function Riven_Graph()
-{
-  Riven.call(this);
+function Riven_Graph () {
+  Riven.call(this)
 
   const GRID_SIZE = 20
-  const PORT_TYPES = {default:0,input:1,output:2,request:3,answer:4}
-  const ROUTE_TYPES = {default:0,request:1}
+  const PORT_TYPES = { default: 0, input: 1, output: 2, request: 3, answer: 4 }
+  const ROUTE_TYPES = { default: 0, request: 1 }
 
-  this.is_graph = true;
-  this.el = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  this.is_graph = true
+  this.el = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
   document.body.appendChild(this.el)
-  
-  this.graph = function()
-  {
-    const _routes = Object.keys(this.network).reduce((acc,val,id) =>{
+
+  this.graph = function () {
+    const _routes = Object.keys(this.network).reduce((acc, val, id) => {
       return `${acc}${draw_routes(this.network[val])}`
-    },"");
-    const _nodes = Object.keys(this.network).reduce((acc,val,id) =>{
+    }, '')
+    const _nodes = Object.keys(this.network).reduce((acc, val, id) => {
       return `${acc}${draw_node(this.network[val])}`
-    },"");
+    }, '')
     this.el.innerHTML = `${_routes}${_nodes}`
   }
 
-  function draw_routes(node)
-  {
-    let html = "";
-    for(const id in node.ports){
+  function draw_routes (node) {
+    let html = ''
+    for (const id in node.ports) {
       const port = node.ports[id]
-      const pos = port ? get_port_position(port) : {x:0,y:0}
-      for(const route_id in port.routes){
-        const route = port.routes[route_id];
-        if(!route){ continue; }
-        html += route ? draw_connection(port,route) : ""
+      const pos = port ? get_port_position(port) : { x: 0, y: 0 }
+      for (const route_id in port.routes) {
+        const route = port.routes[route_id]
+        if (!route) { continue }
+        html += route ? draw_connection(port, route) : ''
       }
     }
     return `<g id='routes'>${html}</g>`
   }
 
-  function draw_node(node)
-  {
-    const rect = get_rect(node);
+  function draw_node (node) {
+    const rect = get_rect(node)
     return `
     <g class='node ${node.is_mesh ? 'mesh' : ''}' id='node_${node.id}'>
-      <rect rx='2' ry='2' x=${rect.x} y=${rect.y-(GRID_SIZE/2)} width="${rect.w}" height="${rect.h}" class='${node.children.length == 0 ? "fill" : ""}'/>
-      <text x="${rect.x+(rect.w/2)}" y="${rect.y+rect.h+(GRID_SIZE/2)}">${node.label}</text>
+      <rect rx='2' ry='2' x=${rect.x} y=${rect.y - (GRID_SIZE / 2)} width="${rect.w}" height="${rect.h}" class='${node.children.length == 0 ? 'fill' : ''}'/>
+      <text x="${rect.x + (rect.w / 2)}" y="${rect.y + rect.h + (GRID_SIZE / 2)}">${node.label}</text>
       ${draw_ports(node)}
       ${draw_glyph(node)}
     </g>`
   }
 
-  function draw_ports(node)
-  {
-    return Object.keys(node.ports).reduce((acc,val,id) => {
+  function draw_ports (node) {
+    return Object.keys(node.ports).reduce((acc, val, id) => {
       return `${acc}${draw_port(node.ports[val])}`
-    },"")
+    }, '')
   }
 
-  function draw_glyph(node)
-  {
-    const rect = get_rect(node);
-    return !node.is_mesh && node.glyph ? `<path class='glyph' transform="translate(${rect.x+(GRID_SIZE/4)},${rect.y-(GRID_SIZE/4)}) scale(0.1)" d='${node.glyph}'/>` : ""
+  function draw_glyph (node) {
+    const rect = get_rect(node)
+    return !node.is_mesh && node.glyph ? `<path class='glyph' transform="translate(${rect.x + (GRID_SIZE / 4)},${rect.y - (GRID_SIZE / 4)}) scale(0.1)" d='${node.glyph}'/>` : ''
   }
 
-  function draw_port(port)
-  {
-    const pos = port ? get_port_position(port) : {x:0,y:0}
-    return `<g id='${port.host.id}_port_${port.id}'>${(port.type == PORT_TYPES.request || port.type == PORT_TYPES.answer)? `<path d='${draw_diamond(pos)}' class='port ${port.type} ${port.host.ports[port.id] && port.host.ports[port.id].route ? "route" : ""}' />` : `<circle cx='${pos.x}' cy="${pos.y}" r="${parseInt(GRID_SIZE/6)}" class='port ${port.type} ${port.host.ports[port.id] && port.host.ports[port.id].route ? "route" : ""}'/>`}</g>`
+  function draw_port (port) {
+    const pos = port ? get_port_position(port) : { x: 0, y: 0 }
+    return `<g id='${port.host.id}_port_${port.id}'>${(port.type == PORT_TYPES.request || port.type == PORT_TYPES.answer) ? `<path d='${draw_diamond(pos)}' class='port ${port.type} ${port.host.ports[port.id] && port.host.ports[port.id].route ? 'route' : ''}' />` : `<circle cx='${pos.x}' cy="${pos.y}" r="${parseInt(GRID_SIZE / 6)}" class='port ${port.type} ${port.host.ports[port.id] && port.host.ports[port.id].route ? 'route' : ''}'/>`}</g>`
   }
 
-  function draw_connection(a,b,type)
-  {
-    if(is_bidirectional(a.host,b.host)){
-      return a.type != PORT_TYPES.output ? draw_connection_bidirectional(a,b) : ""
+  function draw_connection (a, b, type) {
+    if (is_bidirectional(a.host, b.host)) {
+      return a.type != PORT_TYPES.output ? draw_connection_bidirectional(a, b) : ''
     }
-    
-    return a.type == PORT_TYPES.output ? draw_connection_output(a,b) : draw_connection_request(a,b)
+
+    return a.type == PORT_TYPES.output ? draw_connection_output(a, b) : draw_connection_request(a, b)
   }
 
-  function is_bidirectional(a,b)
-  {
-    for(const id in a.ports.output.routes){
+  function is_bidirectional (a, b) {
+    for (const id in a.ports.output.routes) {
       const route_a = a.ports.output.routes[id]
-      for(const id in a.ports.request.routes){
+      for (const id in a.ports.request.routes) {
         const route_b = a.ports.request.routes[id]
-        if(route_a.host.id == route_b.host.id){
-          return true;
+        if (route_a.host.id == route_b.host.id) {
+          return true
         }
       }
     }
     return false
   }
 
-  function draw_connection_output(a,b)
-  {
+  function draw_connection_output (a, b) {
     const pos_a = get_port_position(a)
     const pos_b = get_port_position(b)
-    const pos_m = middle(pos_a,pos_b)
-    const pos_c1 = {x:(pos_m.x+(pos_a.x+GRID_SIZE))/2,y:pos_a.y}
-    const pos_c2 = {x:(pos_m.x+(pos_b.x-GRID_SIZE))/2,y:pos_b.y}
+    const pos_m = middle(pos_a, pos_b)
+    const pos_c1 = { x: (pos_m.x + (pos_a.x + GRID_SIZE)) / 2, y: pos_a.y }
+    const pos_c2 = { x: (pos_m.x + (pos_b.x - GRID_SIZE)) / 2, y: pos_b.y }
 
-    let path = ""
+    let path = ''
 
-    path += `M${pos_a.x},${pos_a.y} L${pos_a.x+GRID_SIZE},${pos_a.y} `
+    path += `M${pos_a.x},${pos_a.y} L${pos_a.x + GRID_SIZE},${pos_a.y} `
     path += `Q${pos_c1.x},${pos_c1.y} ${pos_m.x},${pos_m.y} `
-    path += `Q ${pos_c2.x},${pos_c2.y} ${pos_b.x-GRID_SIZE},${pos_b.y}`
+    path += `Q ${pos_c2.x},${pos_c2.y} ${pos_b.x - GRID_SIZE},${pos_b.y}`
     path += `L${pos_b.x},${pos_b.y}`
 
     return `<path d="${path}" class='route output'/>
     <circle cx='${pos_m.x}' cy='${pos_m.y}' r='2' fill='white'></circle>`
   }
 
-  function draw_connection_request(a,b)
-  {
+  function draw_connection_request (a, b) {
     const pos_a = get_port_position(a)
     const pos_b = get_port_position(b)
-    const pos_m = middle(pos_a,pos_b)
-    const pos_c1 = {x:pos_a.x,y:(pos_m.y+(pos_a.y+GRID_SIZE))/2}
-    const pos_c2 = {x:pos_b.x,y:(pos_m.y+(pos_b.y-GRID_SIZE))/2}
+    const pos_m = middle(pos_a, pos_b)
+    const pos_c1 = { x: pos_a.x, y: (pos_m.y + (pos_a.y + GRID_SIZE)) / 2 }
+    const pos_c2 = { x: pos_b.x, y: (pos_m.y + (pos_b.y - GRID_SIZE)) / 2 }
 
-    let path = ""
+    let path = ''
 
-    path += `M${pos_a.x},${pos_a.y} L${pos_a.x},${pos_a.y+GRID_SIZE} `
+    path += `M${pos_a.x},${pos_a.y} L${pos_a.x},${pos_a.y + GRID_SIZE} `
     path += `Q${pos_c1.x},${pos_c1.y} ${pos_m.x},${pos_m.y} `
-    path += `Q ${pos_c2.x},${pos_c2.y} ${pos_b.x},${pos_b.y-GRID_SIZE}`
+    path += `Q ${pos_c2.x},${pos_c2.y} ${pos_b.x},${pos_b.y - GRID_SIZE}`
     path += `L${pos_b.x},${pos_b.y}`
 
     return `<path d="${path}" class='route request'/>
     <circle cx='${pos_m.x}' cy='${pos_m.y}' r='2' fill='white'></circle>`
   }
 
-  function draw_connection_bidirectional(a,b)
-  {
+  function draw_connection_bidirectional (a, b) {
     const pos_a = get_port_position(a)
     const pos_b = get_port_position(b)
-    const pos_m = middle(pos_a,pos_b)
-    const pos_c1 = {x:pos_a.x,y:(pos_m.y+(pos_a.y+GRID_SIZE))/2}
-    const pos_c2 = {x:pos_b.x,y:(pos_m.y+(pos_b.y-GRID_SIZE))/2}
+    const pos_m = middle(pos_a, pos_b)
+    const pos_c1 = { x: pos_a.x, y: (pos_m.y + (pos_a.y + GRID_SIZE)) / 2 }
+    const pos_c2 = { x: pos_b.x, y: (pos_m.y + (pos_b.y - GRID_SIZE)) / 2 }
 
-    let path = ""
+    let path = ''
 
-    path += `M${pos_a.x},${pos_a.y} L${pos_a.x},${pos_a.y+GRID_SIZE} `
+    path += `M${pos_a.x},${pos_a.y} L${pos_a.x},${pos_a.y + GRID_SIZE} `
     path += `L${pos_a.x},${pos_m.y} L${pos_b.x},${pos_m.y}`
-    path += `L${pos_b.x},${pos_b.y-GRID_SIZE} L${pos_b.x},${pos_b.y}`
+    path += `L${pos_b.x},${pos_b.y - GRID_SIZE} L${pos_b.x},${pos_b.y}`
 
     return `<path d="${path}" class='route bidirectional'/>`
   }
-  
-  function draw_diamond(pos)
-  {
-    const r = GRID_SIZE/6
-    return `M${pos.x-(r)},${pos.y} L${pos.x},${pos.y-(r)} L${pos.x+(r)},${pos.y} L${pos.x},${pos.y+(r)} Z`
+
+  function draw_diamond (pos) {
+    const r = GRID_SIZE / 6
+    return `M${pos.x - (r)},${pos.y} L${pos.x},${pos.y - (r)} L${pos.x + (r)},${pos.y} L${pos.x},${pos.y + (r)} Z`
   }
 
-  function get_port_position(port)
-  {
+  function get_port_position (port) {
     const rect = get_rect(port.host)
-    let offset = {x:0,y:0}
+    let offset = { x: 0, y: 0 }
 
-    if(port.type == PORT_TYPES.output){
-      offset = {x:GRID_SIZE*2,y:GRID_SIZE/2}
+    if (port.type == PORT_TYPES.output) {
+      offset = { x: GRID_SIZE * 2, y: GRID_SIZE / 2 }
+    } else if (port.type == PORT_TYPES.input) {
+      offset = { x: 0, y: GRID_SIZE / 2 }
+    } else if (port.type == PORT_TYPES.answer) {
+      offset = { x: GRID_SIZE, y: -GRID_SIZE * 0.5 }
+    } else if (port.type == PORT_TYPES.request) {
+      offset = { x: GRID_SIZE, y: GRID_SIZE * 1.5 }
     }
-    else if(port.type == PORT_TYPES.input){
-      offset = {x:0,y:GRID_SIZE/2}
-    }
-    else if(port.type == PORT_TYPES.answer){
-      offset = {x:GRID_SIZE,y:-GRID_SIZE*0.5}
-    }
-    else if(port.type == PORT_TYPES.request){
-      offset = {x:GRID_SIZE,y:GRID_SIZE*1.5}
-    }
-    return {x:rect.x+offset.x,y:rect.y+offset.y}
+    return { x: rect.x + offset.x, y: rect.y + offset.y }
   }
 
-  function get_rect(node)
-  {
+  function get_rect (node) {
     const rect = node.rect
-    const w = node.rect.w * GRID_SIZE;
-    const h = node.rect.h * GRID_SIZE;
-    let x = node.rect.x * GRID_SIZE;
-    let y = node.rect.y * GRID_SIZE;
+    const w = node.rect.w * GRID_SIZE
+    const h = node.rect.h * GRID_SIZE
+    let x = node.rect.x * GRID_SIZE
+    let y = node.rect.y * GRID_SIZE
 
-    if(node.parent){
-      const offset = get_rect(node.parent);
-      x += offset.x;
-      y += offset.y;
+    if (node.parent) {
+      const offset = get_rect(node.parent)
+      x += offset.x
+      y += offset.y
     }
-    return {x:x,y:y,w:w,h:h}
+    return { x: x, y: y, w: w, h: h }
   }
 
-  function distance(a,b)
-  {
-    return Math.sqrt( (a.x - b.x)*(a.x - b.x) + (a.y - b.y)*(a.y - b.y) );
+  function distance (a, b) {
+    return Math.sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y))
   }
 
-  function diagonal(a,b)
-  {
+  function diagonal (a, b) {
     return a.x == b.x || a.y == b.y || a.y - a.x == b.y - b.x || b.y - a.x == a.y - b.x
   }
 
-  function middle(a,b)
-  {
-    return {x:(a.x+b.x)/2,y:(a.y+b.y)/2}
+  function middle (a, b) {
+    return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }
   }
 
   // Cursor
 
   this.cursor = {
-    host:null,
-    el:document.createElement("cursor"),
-    pos:{x:0,y:0},
-    offset:{x:0,y:0},
-    origin:null,
-    install: function(host){
-      this.host = host;
+    host: null,
+    el: document.createElement('cursor'),
+    pos: { x: 0, y: 0 },
+    offset: { x: 0, y: 0 },
+    origin: null,
+    install: function (host) {
+      this.host = host
       document.body.appendChild(this.el)
-      document.addEventListener('mousedown',(e)=>{ this.touch({x:e.clientX,y:e.clientY},true); e.preventDefault(); });
-      document.addEventListener('mousemove',(e)=>{ this.touch({x:e.clientX,y:e.clientY},false); e.preventDefault(); });
-      document.addEventListener('mouseup',  (e)=>{ this.touch({x:e.clientX,y:e.clientY}); e.preventDefault(); });
+      document.addEventListener('mousedown', (e) => { this.touch({ x: e.clientX, y: e.clientY }, true); e.preventDefault() })
+      document.addEventListener('mousemove', (e) => { this.touch({ x: e.clientX, y: e.clientY }, false); e.preventDefault() })
+      document.addEventListener('mouseup', (e) => { this.touch({ x: e.clientX, y: e.clientY }); e.preventDefault() })
     },
-    update: function(){
-      this.host.el.style.left = `${parseInt(this.offset.x)}px`;
-      this.host.el.style.top = `${parseInt(this.offset.y)}px`;
-      document.body.style.backgroundPosition = `${parseInt(this.offset.x/2)}px ${parseInt(this.offset.y/2)}px`;
+    update: function () {
+      this.host.el.style.left = `${parseInt(this.offset.x)}px`
+      this.host.el.style.top = `${parseInt(this.offset.y)}px`
+      document.body.style.backgroundPosition = `${parseInt(this.offset.x / 2)}px ${parseInt(this.offset.y / 2)}px`
     },
-    touch: function(pos,click = null){
-      if(click == true){
-        this.origin = pos;
-        return;
+    touch: function (pos, click = null) {
+      if (click == true) {
+        this.origin = pos
+        return
       }
-      if(this.origin){
-        this.offset.x += (pos.x - this.origin.x)/2;
-        this.offset.y += (pos.y - this.origin.y)/2;
-        this.update();
-        this.origin = pos;
+      if (this.origin) {
+        this.offset.x += (pos.x - this.origin.x) / 2
+        this.offset.y += (pos.y - this.origin.y) / 2
+        this.update()
+        this.origin = pos
       }
-      if(click == null){
-        this.origin = null;
-        return;
+      if (click == null) {
+        this.origin = null
+        return
       }
-      this.pos = pos;
+      this.pos = pos
     },
-    magnet: function(val){
-      return (parseInt(val/GRID_SIZE)*GRID_SIZE)+(GRID_SIZE/2);
+    magnet: function (val) {
+      return (parseInt(val / GRID_SIZE) * GRID_SIZE) + (GRID_SIZE / 2)
     }
   }
 
-  this.cursor.install(this);
+  this.cursor.install(this)
 }

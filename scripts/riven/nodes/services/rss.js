@@ -1,38 +1,34 @@
-'use strict';
+'use strict'
 
-function RssNode(id,rect)
-{
-  Node.call(this,id,rect);
+function RssNode (id, rect) {
+  Node.call(this, id, rect)
 
-  this.glyph = "M60,60 L60,60 L150,120 L240,120 M60,150 L60,150 L240,150 M60,240 L60,240 L150,180 L240,180"
+  this.glyph = 'M60,60 L60,60 L150,120 L240,120 M60,150 L60,150 L240,150 M60,240 L60,240 L150,180 L240,180'
 
-  this.receive = function()
-  {
-    const logs = Ø('router').cache.tables.horaire;
+  this.receive = function () {
+    const logs = Ø('router').cache.tables.horaire
 
     const selection = []
-    for(const id in logs){
-      const log = logs[id];
-      if(selection.length >= 60){ break; }
-      if(log.time.offset > 0){ continue; }
-      if(!log.photo){ continue; }
-      selection.push(log);
+    for (const id in logs) {
+      const log = logs[id]
+      if (selection.length >= 60) { break }
+      if (log.time.offset > 0) { continue }
+      if (!log.photo) { continue }
+      selection.push(log)
     }
 
     this.show(this.render(selection))
   }
 
-  this.show = function(html)
-  {
-    const win = window.open("", "Title", "toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=yes,width=640,height=480,top="+(screen.height-200)+",left="+(screen.width-640));
-    win.document.body.innerHTML = `<pre>${html.to_entities()}</pre>`;
+  this.show = function (html) {
+    const win = window.open('', 'Title', 'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=yes,width=640,height=480,top=' + (screen.height - 200) + ',left=' + (screen.width - 640))
+    win.document.body.innerHTML = `<pre>${html.to_entities()}</pre>`
   }
 
-  this.items = function(logs)
-  {
-    let html = ""
-    for(const id in logs){
-      const log = logs[id];
+  this.items = function (logs) {
+    let html = ''
+    for (const id in logs) {
+      const log = logs[id]
       html += `
   <item>
     <title>${log.term} — ${log.name}</title>
@@ -43,16 +39,15 @@ function RssNode(id,rect)
     <description>
       &lt;img src="https://wiki.xxiivv.com/media/diary/${log.photo}.jpg"/&gt;
       &lt;br/&gt;
-      ${log.host.data.BREF ? log.host.data.BREF.to_curlic().to_rss().replace_all("href='#","href='https://wiki.xxiiv.com/") : ''}
+      ${log.host.data.BREF ? log.host.data.BREF.to_curlic().to_rss().replace_all("href='#", "href='https://wiki.xxiiv.com/") : ''}
     </description>
   </item>
 `
     }
-    return html;
+    return html
   }
 
-  this.render = function(logs)
-  {
+  this.render = function (logs) {
     return `
 <?xml version="1.0" encoding="UTF-8" ?>
 <rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/">
