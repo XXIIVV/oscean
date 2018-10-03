@@ -22,9 +22,9 @@ function Heol(input,tables,host)
     {
       return Object.keys(h)
     },
-    find: function(source,target,sub)
+    find: function(source,target)
     {
-      return source[target.toUpperCase()] ? source[target.toUpperCase()][children] : [];
+      return source[target.toUpperCase()] ? source[target.toUpperCase()] : '';
     },
     echo: function(items)
     {
