@@ -43,12 +43,12 @@ function MapNode(id,rect)
     // Connect links
     for(const id in tables.lexicon){
       const term = tables.lexicon[id];
-      const links = term.find_outgoing()
+      const links = term.find_outgoing();
       for(const id in links){
         const link = links[id]
         term.outgoing.push(link)
-        if(!tables.lexicon[link]){ console.warn("Missing incoming",`${term.name}->${link}`); continue; }
-        tables.lexicon[link].incoming.push(term.name)
+        if(!Ø("database").index[link]){ console.warn("Missing incoming",`${term.name}->${link}`); continue; }
+        Ø("database").index[link].incoming.push(term.name)
         count.links += 1
       }
     }

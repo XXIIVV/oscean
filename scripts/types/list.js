@@ -6,7 +6,7 @@ function List(name,data)
 
   this.bref  = `The {(${this.name.capitalize()})} word list.`
   this.unde  = 'Glossary'
-  this.index = true;
+  this.indexes = [name].concat(Object.keys(data));
 
   this.indexOf = function(target)
   {

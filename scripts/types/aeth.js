@@ -8,7 +8,7 @@ function Aeth(data = {},name = null)
   this.vowel = this.name.substr(1,1)
   this.childspeak = name ? name : data.name;
   this.adultspeak = adultspeak(name ? name : data.name)
-  this.index = false;
+  this.indexes = [];
   
   this.type = function()
   {

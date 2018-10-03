@@ -8,7 +8,7 @@ function Issue(data = {})
   
   this.term  = data.term;
   this.category  = data.category;
-  this.index = false;
+  this.indexes = [this.category];
 
   this.sc     = data.code.length == 2 ? parseInt(data.code.substr(0,1)) : 0
   this.ch     = data.code.length == 2 ? parseInt(data.code.substr(1,1)) : 0

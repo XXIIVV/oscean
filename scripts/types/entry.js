@@ -6,7 +6,9 @@ function Entry(name,data)
   this.data  = data;
   this.unde  = "Home"
   this.bref  = `—`
-  this.index = true;
+  this.indexes = [this.name];
+  this.outgoing = []       // From Ø('map')
+  this.incoming = []       // From Ø('map')
 
   this.span = {from:null,to:null}
   this.issues = []
@@ -32,6 +34,11 @@ function Entry(name,data)
   this.body = function()
   {
     return `Unformatted Entry: ${name}`
+  }
+
+  this.indexes = function()
+  {
+    return [this.name];
   }
 
   this.toString = function()

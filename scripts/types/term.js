@@ -9,8 +9,6 @@ function Term(name,data)
   this.logs = []           // From Ø('map')
   this.issues = []         // From Ø('map')
   this.diaries = []        // From Ø('map')
-  this.outgoing = []       // From Ø('map')
-  this.incoming = []       // From Ø('map')
   this.latest_log = null   // From Ø('map')
   this.featured_log = null // From Ø('map')
 
@@ -18,10 +16,10 @@ function Term(name,data)
   this.bref = data.BREF ? data.BREF : ''
   this.unde = data.UNDE ? data.UNDE : 'Home'
   this.type = data.TYPE ? data.TYPE.toLowerCase() : null;
-  this.links = this.data.LINK ? this.data.LINK : [];
-  this.tags = this.data.TAGS ? this.data.TAGS.toLowerCase().split(" ") : [];
-  this.theme = this.data.LOOK ? this.data.LOOK.toLowerCase() : 'default';
-  this.index = true;
+  this.links = data.LINK ? data.LINK : [];
+  this.tags = data.TAGS ? data.TAGS.toLowerCase().split(" ") : [];
+  this.theme = data.LOOK ? data.LOOK.toLowerCase() : 'default';
+  this.indexes = data.ALTS ? [name].concat(data.ALTS.split(" ")) : [name];
 
   this.is_portal = this.tags.indexOf("portal") > -1
   

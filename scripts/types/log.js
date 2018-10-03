@@ -11,7 +11,7 @@ function Log(data = {code:'-400'})
   this.time  = data.date ? new Desamber(data.date) : null;
   this.photo = data.pict ? parseInt(data.pict) : null;
   this.bref  = `A log added on {${this.time}(Calendar)} to {(${this.term})}.`
-  this.index = this.photo;
+  this.indexes = data.name ? [data.name] : [];
 
   this.rune   = data.code.length == 4 ? data.code.substr(0,1) : "-"
   this.sc     = data.code.length == 4 ? parseInt(data.code.substr(1,1)) : 0
