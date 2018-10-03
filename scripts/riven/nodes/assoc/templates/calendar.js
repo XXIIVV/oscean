@@ -101,7 +101,7 @@ function CalendarTemplate(id,rect,...params)
     return `
     ${new BalanceViz(q.tables.horaire)}
     ${_calendar(forecast,filter)}
-    ${q.result}
+    ${q.result.body()}
     `
   }
 }
