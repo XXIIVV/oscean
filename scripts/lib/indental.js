@@ -8,7 +8,7 @@ function Indental (data) {
     const h = {}
     for (const id in line.children) {
       const child = line.children[id]
-      if (child.key) { h[child.key.toUpperCase()] = child.value } else if (child.children.length == 0 && child.content) { a[a.length] = child.content } else { h[child.content.toUpperCase()] = format(child) }
+      if (child.key) { h[child.key.toUpperCase()] = child.value } else if (child.children.length === 0 && child.content) { a[a.length] = child.content } else { h[child.content.toUpperCase()] = format(child) }
     }
     return a.length > 0 ? a : h
   }
@@ -17,7 +17,7 @@ function Indental (data) {
     return {
       indent: line.search(/\S|$/),
       content: line.trim(),
-      skip: line.trim() == '' || line.substr(0, 1) == '~',
+      skip: line.trim() === '' || line.substr(0, 1) === '~',
       key: line.indexOf(' : ') > -1 ? line.split(' : ')[0].trim() : null,
       value: line.indexOf(' : ') > -1 ? line.split(' : ')[1].trim() : null,
       children: []

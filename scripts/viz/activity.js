@@ -5,7 +5,6 @@ function ActivityViz (logs) {
 
   function parse (logs) {
     const h = {}
-    const i = 0
     for (const id in logs) {
       const log = logs[id]
       const offset = log.time.offset
@@ -19,12 +18,10 @@ function ActivityViz (logs) {
   this.draw = function () {
     const data = parse(this.logs)
     const cell = parseInt(700 / 52)
-
     let html = ''
     let week = 0
     while (week < 52) {
       const x = parseInt(week * (cell + 1))
-      const offset = -(365 - (week * 7))
       let day = 0
       while (day < 7) {
         const y = parseInt(day * (cell + 1))
