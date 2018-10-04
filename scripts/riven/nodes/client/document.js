@@ -23,7 +23,7 @@ RIVEN.lib.document = function DocumentNode (id, rect, ...params) {
   }
 
   this.install = function (elements) {
-    if (RIVEN.is_graph) { return }
+    if (!params[0]) { return }
 
     this.is_installed = true
 

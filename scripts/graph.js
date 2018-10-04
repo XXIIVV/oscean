@@ -1,6 +1,6 @@
 'use strict'
 
-function graph () {
+function graph (append = true) {
   Ø('query').create({ x: 2, y: 2 }, RIVEN.lib.query)
   Ø('mouse').create({ x: 2, y: 8 }, RIVEN.lib.mouse)
 
@@ -34,7 +34,7 @@ function graph () {
   ])
 
   Ø('client').mesh({ x: 44, y: 0 }, [
-    Ø('view').create({ x: 2, y: 2 }, RIVEN.lib.document),
+    Ø('view').create({ x: 2, y: 2 }, RIVEN.lib.document, append),
     Ø('terminal').create({ x: 8, y: 8 }, RIVEN.lib.terminal),
     Ø('header').create({ x: 2, y: 8 }, RIVEN.lib.dom),
     Ø('photo').create({ x: 2, y: 14 }, RIVEN.lib.photo, 'photo'),
