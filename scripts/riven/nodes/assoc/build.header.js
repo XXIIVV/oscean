@@ -8,7 +8,7 @@ function BuildHeaderNode (id, rect) {
   function find_featured_log (q) {
     if (!q.result) { return }
 
-    if (q.result.name == 'HOME') {
+    if (q.result.name === 'HOME') {
       for (const id in q.tables.horaire) {
         if (q.tables.horaire[id].is_featured && q.tables.horaire[id].time.offset <= 0 && q.tables.horaire[id]) { return q.tables.horaire[id] }
       }
@@ -20,7 +20,7 @@ function BuildHeaderNode (id, rect) {
   function make_activity (q) {
     if (!q.result) { return '' }
 
-    if (q.result.name == 'HOME' || q.result.name == 'JOURNAL' || q.result.name == 'CALENDAR' || q.result.name == 'TRACKER') {
+    if (q.result.name === 'HOME' || q.result.name === 'JOURNAL' || q.result.name === 'CALENDAR' || q.result.name === 'TRACKER') {
       return `
       <li><a class='issues' data-goto='Calendar' href='#Calendar'>Calendar</a></li> 
       <li><a class='diaries' data-goto='journal' href='#journal'>Journal</a> 

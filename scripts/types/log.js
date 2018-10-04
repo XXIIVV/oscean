@@ -12,14 +12,14 @@ function Log (data = { code: '-400' }) {
   this.bref = `A log added on {${this.time}(Calendar)} to {(${this.term})}.`
   this.indexes = data.name ? [data.name] : []
 
-  this.rune = data.code.length == 4 ? data.code.substr(0, 1) : '-'
-  this.sc = data.code.length == 4 ? parseInt(data.code.substr(1, 1)) : 0
-  this.ch = data.code.length == 4 ? parseInt(data.code.substr(2, 1)) : 0
-  this.fh = data.code.length == 4 ? parseInt(data.code.substr(3, 1)) : 0
+  this.rune = data.code.length === 4 ? data.code.substr(0, 1) : '-'
+  this.sc = data.code.length === 4 ? parseInt(data.code.substr(1, 1)) : 0
+  this.ch = data.code.length === 4 ? parseInt(data.code.substr(2, 1)) : 0
+  this.fh = data.code.length === 4 ? parseInt(data.code.substr(3, 1)) : 0
 
   this.sector = ['misc', 'audio', 'visual', 'research', 'misc'][this.sc]
-  this.is_featured = this.photo && (this.rune == '!' || this.rune == '+')
-  this.is_event = this.rune == '+' || this.vector >= 8
+  this.is_featured = this.photo && (this.rune === '!' || this.rune === '+')
+  this.is_event = this.rune === '+' || this.vector >= 8
 
   this.tasks = [
     ['idle', 'listening', 'experiment', 'rehersal', 'draft', 'composition', 'sound design', 'mastering', 'release', 'performance' ],

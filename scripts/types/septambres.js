@@ -6,22 +6,22 @@ function Septambres (aeth) {
   this.template = function (glyph_id, seg_id, grid, style) {
     let offset = glyph_id * (style.size.w + style.spacing)
     let rect = { w: style.size.w, h: style.size.h }
-    let angle = grid == 3 && seg_id > 0 || grid == 4 ? 0.25 : 0.75
+    let angle = grid === 3 && seg_id > 0 || grid === 4 ? 0.25 : 0.75
 
-    if (grid == 1) {
+    if (grid === 1) {
       rect = { x: offset, y: 0, w: style.size.w, h: style.size.h }
-    } else if (grid == 2) {
-      if (seg_id == 0) { rect = { x: offset, y: 0, w: (style.size.w), h: (style.size.h / 2) } }
-      if (seg_id == 1) { rect = { x: offset, y: (style.size.w / 2), w: (style.size.w), h: (style.size.h / 2) } }
-    } else if (grid == 3) {
-      if (seg_id == 0) { rect = { x: offset, y: 0, w: (style.size.w), h: (style.size.h / 2) } }
-      if (seg_id == 1) { rect = { x: offset, y: (style.size.w / 2), w: (style.size.w / 2), h: (style.size.h / 2) } }
-      if (seg_id == 2) { rect = { x: offset + (style.size.w / 2), y: (style.size.w / 2), w: (style.size.w / 2), h: (style.size.h / 2) } }
-    } else if (grid == 4) {
-      if (seg_id == 0) { rect = { x: offset, y: 0, w: (style.size.w / 2), h: (style.size.h / 2) } }
-      if (seg_id == 1) { rect = { x: offset + (style.size.w / 2), y: 0, w: (style.size.w / 2), h: (style.size.h / 2) } }
-      if (seg_id == 2) { rect = { x: offset, y: (style.size.w / 2), w: (style.size.w / 2), h: (style.size.h / 2) } }
-      if (seg_id == 3) { rect = { x: offset + (style.size.w / 2), y: (style.size.w / 2), w: (style.size.w / 2), h: (style.size.h / 2) } }
+    } else if (grid === 2) {
+      if (seg_id === 0) { rect = { x: offset, y: 0, w: (style.size.w), h: (style.size.h / 2) } }
+      if (seg_id === 1) { rect = { x: offset, y: (style.size.w / 2), w: (style.size.w), h: (style.size.h / 2) } }
+    } else if (grid === 3) {
+      if (seg_id === 0) { rect = { x: offset, y: 0, w: (style.size.w), h: (style.size.h / 2) } }
+      if (seg_id === 1) { rect = { x: offset, y: (style.size.w / 2), w: (style.size.w / 2), h: (style.size.h / 2) } }
+      if (seg_id === 2) { rect = { x: offset + (style.size.w / 2), y: (style.size.w / 2), w: (style.size.w / 2), h: (style.size.h / 2) } }
+    } else if (grid === 4) {
+      if (seg_id === 0) { rect = { x: offset, y: 0, w: (style.size.w / 2), h: (style.size.h / 2) } }
+      if (seg_id === 1) { rect = { x: offset + (style.size.w / 2), y: 0, w: (style.size.w / 2), h: (style.size.h / 2) } }
+      if (seg_id === 2) { rect = { x: offset, y: (style.size.w / 2), w: (style.size.w / 2), h: (style.size.h / 2) } }
+      if (seg_id === 3) { rect = { x: offset + (style.size.w / 2), y: (style.size.w / 2), w: (style.size.w / 2), h: (style.size.h / 2) } }
     } else {
       console.warn('Unknown grid', grid)
     }
@@ -45,8 +45,8 @@ function Septambres (aeth) {
     let consonant = seg.substr(0, 1)
     let vowel = seg.substr(1, 1)
     let path = ''
-    let x = (consonant == 'd' || consonant == 'l' || consonant == 'f') ? 1 : (consonant == 't' || consonant == 's' || consonant == 'v') ? 0 : -1
-    let y = (consonant == 'k' || consonant == 't' || consonant == 'd') ? 1 : (consonant == 'r' || consonant == 's' || consonant == 'l') ? 0 : -1
+    let x = (consonant === 'd' || consonant === 'l' || consonant === 'f') ? 1 : (consonant === 't' || consonant === 's' || consonant === 'v') ? 0 : -1
+    let y = (consonant === 'k' || consonant === 't' || consonant === 'd') ? 1 : (consonant === 'r' || consonant === 's' || consonant === 'l') ? 0 : -1
 
     // Int
     for (let id in template) {
@@ -54,16 +54,16 @@ function Septambres (aeth) {
     }
 
     // Consonant
-    if (consonant == 'k') { path += `M${template.CL.x},${template.CL.y} L${template.TL.x},${template.TL.y} L${template.TR.x},${template.TR.y} ` } else if (consonant == 't') { path += `M${template.TL.x},${template.TL.y} L${template.TR.x},${template.TR.y} M${template.TC.x},${template.TC.y} L${template.CC.x},${template.CC.y} ` } else if (consonant == 'd') { path += `M${template.TL.x},${template.TL.y} L${template.TR.x},${template.TR.y} L${template.CR.x},${template.CR.y} ` } else if (consonant == 'r') { path += `M${template.TL.x},${template.TL.y} L${template.BL.x},${template.BL.y} M${template.CL.x},${template.CL.y} L${template.CC.x},${template.CC.y} ` } else if (consonant == 's') { path += `M${template.TC.x},${template.TC.y} L${template.BC.x},${template.BC.y} ` } else if (consonant == 'l') { path += `M${template.TR.x},${template.TR.y} L${template.BR.x},${template.BR.y} M${template.CC.x},${template.CC.y} L${template.CR.x},${template.CR.y} ` } else if (consonant == 'j') { path += `M${template.CL.x},${template.CL.y} L${template.BL.x},${template.BL.y} L${template.BR.x},${template.BR.y} ` } else if (consonant == 'v') { path += `M${template.BL.x},${template.BL.y} L${template.BR.x},${template.BR.y} M${template.CC.x},${template.CC.y} L${template.BC.x},${template.BC.y} ` } else if (consonant == 'f') { path += `M${template.BL.x},${template.BL.y} L${template.BR.x},${template.BR.y} L${template.CR.x},${template.CR.y} ` } else if (consonant == '-') { } else { console.warn('Missing consonant', consonant) }
+    if (consonant === 'k') { path += `M${template.CL.x},${template.CL.y} L${template.TL.x},${template.TL.y} L${template.TR.x},${template.TR.y} ` } else if (consonant === 't') { path += `M${template.TL.x},${template.TL.y} L${template.TR.x},${template.TR.y} M${template.TC.x},${template.TC.y} L${template.CC.x},${template.CC.y} ` } else if (consonant === 'd') { path += `M${template.TL.x},${template.TL.y} L${template.TR.x},${template.TR.y} L${template.CR.x},${template.CR.y} ` } else if (consonant === 'r') { path += `M${template.TL.x},${template.TL.y} L${template.BL.x},${template.BL.y} M${template.CL.x},${template.CL.y} L${template.CC.x},${template.CC.y} ` } else if (consonant === 's') { path += `M${template.TC.x},${template.TC.y} L${template.BC.x},${template.BC.y} ` } else if (consonant === 'l') { path += `M${template.TR.x},${template.TR.y} L${template.BR.x},${template.BR.y} M${template.CC.x},${template.CC.y} L${template.CR.x},${template.CR.y} ` } else if (consonant === 'j') { path += `M${template.CL.x},${template.CL.y} L${template.BL.x},${template.BL.y} L${template.BR.x},${template.BR.y} ` } else if (consonant === 'v') { path += `M${template.BL.x},${template.BL.y} L${template.BR.x},${template.BR.y} M${template.CC.x},${template.CC.y} L${template.BC.x},${template.BC.y} ` } else if (consonant === 'f') { path += `M${template.BL.x},${template.BL.y} L${template.BR.x},${template.BR.y} L${template.CR.x},${template.CR.y} ` } else if (consonant === '-') { } else { console.warn('Missing consonant', consonant) }
 
     // Vowel
-    if (vowel == 'i') {
-      if (consonant == '-') { path += `M${template.CC.x},${template.CC.y} L${template.CC.x - template.PUSH.x},${template.CC.y} L${template.BL.x + template.PUSH.x},${template.BL.y} L${template.BL.x},${template.BL.y} ` } else if (y == -1 || x == -1 && y <= 0) { path += `M${template.CC.x},${template.CC.y} L${template.CC.x + template.PUSH.x},${template.CC.y} L${template.TR.x - template.PUSH.x},${template.TR.y} L${template.TR.x},${template.TR.y} ` } else { path += `M${template.CC.x},${template.CC.y} L${template.CC.x - template.PUSH.x},${template.CC.y} L${template.BL.x + template.PUSH.x},${template.BL.y} L${template.BL.x},${template.BL.y} ` }
-    } else if (vowel == 'o') {
-      if (consonant == '-') { path += `M${template.CC.x},${template.CC.y} L${template.CC.x - template.PUSH.x},${template.CC.y} L${template.TL.x + template.PUSH.x},${template.TL.y} L${template.TL.x},${template.TL.y} ` } else if (y == -1 || x == 1 && y == 0) { path += `M${template.CC.x},${template.CC.y} L${template.CC.x - template.PUSH.x},${template.CC.y} L${template.TL.x + template.PUSH.x},${template.TL.y} L${template.TL.x},${template.TL.y} ` } else { path += `M${template.CC.x},${template.CC.y} L${template.CC.x + template.PUSH.x},${template.CC.y} L${template.BR.x - template.PUSH.x},${template.BR.y} L${template.BR.x},${template.BR.y} ` }
-    } else if (vowel == 'a') {
-      if (consonant == '-') { path += `M${template.CC.x},${template.CC.y} L${template.CL.x},${template.CL.y} ` } else if (consonant == 'k' || consonant == 'r' || consonant == 'j' || consonant == 't') { path += `M${template.CC.x},${template.CC.y} L${template.CR.x},${template.CR.y} ` } else if (consonant == 'd' || consonant == 'l' || consonant == 'f' || consonant == 'v') { path += `M${template.CC.x},${template.CC.y} L${template.CL.x},${template.CL.y} ` } else { path += `M${template.CL.x},${template.CL.y} L${template.CR.x},${template.CR.y} ` }
-    } else if (vowel == '-' || vowel == 'y') { } else { console.warn('Missing vowel', vowel) }
+    if (vowel === 'i') {
+      if (consonant === '-') { path += `M${template.CC.x},${template.CC.y} L${template.CC.x - template.PUSH.x},${template.CC.y} L${template.BL.x + template.PUSH.x},${template.BL.y} L${template.BL.x},${template.BL.y} ` } else if (y === -1 || x === -1 && y <= 0) { path += `M${template.CC.x},${template.CC.y} L${template.CC.x + template.PUSH.x},${template.CC.y} L${template.TR.x - template.PUSH.x},${template.TR.y} L${template.TR.x},${template.TR.y} ` } else { path += `M${template.CC.x},${template.CC.y} L${template.CC.x - template.PUSH.x},${template.CC.y} L${template.BL.x + template.PUSH.x},${template.BL.y} L${template.BL.x},${template.BL.y} ` }
+    } else if (vowel === 'o') {
+      if (consonant === '-') { path += `M${template.CC.x},${template.CC.y} L${template.CC.x - template.PUSH.x},${template.CC.y} L${template.TL.x + template.PUSH.x},${template.TL.y} L${template.TL.x},${template.TL.y} ` } else if (y === -1 || x === 1 && y === 0) { path += `M${template.CC.x},${template.CC.y} L${template.CC.x - template.PUSH.x},${template.CC.y} L${template.TL.x + template.PUSH.x},${template.TL.y} L${template.TL.x},${template.TL.y} ` } else { path += `M${template.CC.x},${template.CC.y} L${template.CC.x + template.PUSH.x},${template.CC.y} L${template.BR.x - template.PUSH.x},${template.BR.y} L${template.BR.x},${template.BR.y} ` }
+    } else if (vowel === 'a') {
+      if (consonant === '-') { path += `M${template.CC.x},${template.CC.y} L${template.CL.x},${template.CL.y} ` } else if (consonant === 'k' || consonant === 'r' || consonant === 'j' || consonant === 't') { path += `M${template.CC.x},${template.CC.y} L${template.CR.x},${template.CR.y} ` } else if (consonant === 'd' || consonant === 'l' || consonant === 'f' || consonant === 'v') { path += `M${template.CC.x},${template.CC.y} L${template.CL.x},${template.CL.y} ` } else { path += `M${template.CL.x},${template.CL.y} L${template.CR.x},${template.CR.y} ` }
+    } else if (vowel === '-' || vowel === 'y') { } else { console.warn('Missing vowel', vowel) }
 
     return path
   }

@@ -44,8 +44,8 @@ function Node (id, rect = { x: 0, y: 0, w: 2, h: 2 }) {
     this.ports.request = new Port(this, 'request', PORT_TYPES.request)
   }
 
-  this.create = function (pos = { x: 0, y: 0 }, type = Node, ...params) {
-    const node = new type(this.id, rect, ...params)
+  this.create = function (pos = { x: 0, y: 0 }, Type = Node, ...params) {
+    const node = new Type(this.id, rect, ...params)
     this.rect.x = pos.x
     this.rect.y = pos.y
     node.setup()
@@ -82,7 +82,7 @@ function Node (id, rect = { x: 0, y: 0, w: 2, h: 2 }) {
         this.connect(q[id], type)
       }
     } else {
-      this.ports[type == ROUTE_TYPES.request ? 'request' : 'output'].connect(`${q} ${type == ROUTE_TYPES.request ? 'answer' : 'input'}`, type)
+      this.ports[type === ROUTE_TYPES.request ? 'request' : 'output'].connect(`${q} ${type === ROUTE_TYPES.request ? 'answer' : 'input'}`, type)
     }
   }
 
@@ -102,7 +102,7 @@ function Node (id, rect = { x: 0, y: 0, w: 2, h: 2 }) {
       const port = this.ports[port_id]
       for (const route_id in port.routes) {
         const route = port.routes[route_id]
-        if (!route || !route.host || route.host.id != target.toLowerCase()) { continue }
+        if (!route || !route.host || route.host.id !== target.toLowerCase()) { continue }
         return route.host
       }
     }

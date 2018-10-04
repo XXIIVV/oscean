@@ -15,19 +15,19 @@ function InputNode (id, rect, ...params) {
   this.on_input = function (e) {
     const value = this.el.value.trim().toLowerCase()
 
-    if (value.substr(0, 1) == '~') {
+    if (value.substr(0, 1) === '~') {
       Ø('view').add_class('terminal')
     } else {
       Ø('view').remove_class('terminal')
     }
 
-    if (e.key == 'Enter') {
+    if (e.key === 'Enter') {
       this.validate(value)
     }
   }
 
   this.validate = function (value) {
-    if (value.substr(0, 1) == '~') {
+    if (value.substr(0, 1) === '~') {
       Ø('terminal').bang(value)
     } else {
       Ø('query').bang(value)

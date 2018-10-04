@@ -30,6 +30,19 @@ function Heol (input, tables, host) {
       return `<${tag} class='${cl || ''}'>${item}</${tag}>`
     },
 
+    // will modify properties or run a function onto each object.
+    map: function (arr, fn) {
+      return arr.map((val, id, arr) => fn)
+    },
+    // will only keeps elements returning true.
+    filter: function (arr, fn) {
+      return arr.map((val, id, arr) => fn)
+    },
+    // will reduce it into a single value.
+    reduce: function (arr, fn, acc) {
+      return arr.reduce((acc, val, id, arr) => fn, acc)
+    },
+
     // Templaters
 
     template: function (items, t, p) {
@@ -49,7 +62,7 @@ function Heol (input, tables, host) {
       return `<h2>${item.name.capitalize()}</h2><h4>${item.bref}</h4>`
     },
     PHOTO: function (item) {
-      return host.featured_log && host.featured_log.photo != item.photo ? `<img src="media/diary/${item.photo}.jpg"/>` : ''
+      return host.featured_log && host.featured_log.photo !== item.photo ? `<img src="media/diary/${item.photo}.jpg"/>` : ''
     },
     GALLERY: function (item) {
       return `${item.featured_log ? `<a data-goto='${item.name}'><img src="media/diary/${item.featured_log.photo}.jpg"/></a>` : ''}<h2>${item.name.capitalize()}</h2><h4>${item.bref}</h4>`

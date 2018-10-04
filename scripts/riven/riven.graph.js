@@ -39,7 +39,7 @@ function Riven_Graph () {
     const rect = get_rect(node)
     return `
     <g class='node ${node.is_mesh ? 'mesh' : ''}' id='node_${node.id}'>
-      <rect rx='2' ry='2' x=${rect.x} y=${rect.y - (GRID_SIZE / 2)} width="${rect.w}" height="${rect.h}" class='${node.children.length == 0 ? 'fill' : ''}'/>
+      <rect rx='2' ry='2' x=${rect.x} y=${rect.y - (GRID_SIZE / 2)} width="${rect.w}" height="${rect.h}" class='${node.children.length === 0 ? 'fill' : ''}'/>
       <text x="${rect.x + (rect.w / 2)}" y="${rect.y + rect.h + (GRID_SIZE / 2)}">${node.label}</text>
       ${draw_ports(node)}
       ${draw_glyph(node)}
@@ -59,15 +59,15 @@ function Riven_Graph () {
 
   function draw_port (port) {
     const pos = port ? get_port_position(port) : { x: 0, y: 0 }
-    return `<g id='${port.host.id}_port_${port.id}'>${(port.type == PORT_TYPES.request || port.type == PORT_TYPES.answer) ? `<path d='${draw_diamond(pos)}' class='port ${port.type} ${port.host.ports[port.id] && port.host.ports[port.id].route ? 'route' : ''}' />` : `<circle cx='${pos.x}' cy="${pos.y}" r="${parseInt(GRID_SIZE / 6)}" class='port ${port.type} ${port.host.ports[port.id] && port.host.ports[port.id].route ? 'route' : ''}'/>`}</g>`
+    return `<g id='${port.host.id}_port_${port.id}'>${(port.type === PORT_TYPES.request || port.type === PORT_TYPES.answer) ? `<path d='${draw_diamond(pos)}' class='port ${port.type} ${port.host.ports[port.id] && port.host.ports[port.id].route ? 'route' : ''}' />` : `<circle cx='${pos.x}' cy="${pos.y}" r="${parseInt(GRID_SIZE / 6)}" class='port ${port.type} ${port.host.ports[port.id] && port.host.ports[port.id].route ? 'route' : ''}'/>`}</g>`
   }
 
   function draw_connection (a, b, type) {
     if (is_bidirectional(a.host, b.host)) {
-      return a.type != PORT_TYPES.output ? draw_connection_bidirectional(a, b) : ''
+      return a.type !== PORT_TYPES.output ? draw_connection_bidirectional(a, b) : ''
     }
 
-    return a.type == PORT_TYPES.output ? draw_connection_output(a, b) : draw_connection_request(a, b)
+    return a.type === PORT_TYPES.output ? draw_connection_output(a, b) : draw_connection_request(a, b)
   }
 
   function is_bidirectional (a, b) {
@@ -75,7 +75,7 @@ function Riven_Graph () {
       const route_a = a.ports.output.routes[id]
       for (const id in a.ports.request.routes) {
         const route_b = a.ports.request.routes[id]
-        if (route_a.host.id == route_b.host.id) {
+        if (route_a.host.id === route_b.host.id) {
           return true
         }
       }
@@ -144,13 +144,13 @@ function Riven_Graph () {
     const rect = get_rect(port.host)
     let offset = { x: 0, y: 0 }
 
-    if (port.type == PORT_TYPES.output) {
+    if (port.type === PORT_TYPES.output) {
       offset = { x: GRID_SIZE * 2, y: GRID_SIZE / 2 }
-    } else if (port.type == PORT_TYPES.input) {
+    } else if (port.type === PORT_TYPES.input) {
       offset = { x: 0, y: GRID_SIZE / 2 }
-    } else if (port.type == PORT_TYPES.answer) {
+    } else if (port.type === PORT_TYPES.answer) {
       offset = { x: GRID_SIZE, y: -GRID_SIZE * 0.5 }
-    } else if (port.type == PORT_TYPES.request) {
+    } else if (port.type === PORT_TYPES.request) {
       offset = { x: GRID_SIZE, y: GRID_SIZE * 1.5 }
     }
     return { x: rect.x + offset.x, y: rect.y + offset.y }
@@ -176,7 +176,7 @@ function Riven_Graph () {
   }
 
   function diagonal (a, b) {
-    return a.x == b.x || a.y == b.y || a.y - a.x == b.y - b.x || b.y - a.x == a.y - b.x
+    return a.x === b.x || a.y === b.y || a.y - a.x === b.y - b.x || b.y - a.x === a.y - b.x
   }
 
   function middle (a, b) {
@@ -204,7 +204,7 @@ function Riven_Graph () {
       document.body.style.backgroundPosition = `${parseInt(this.offset.x / 2)}px ${parseInt(this.offset.y / 2)}px`
     },
     touch: function (pos, click = null) {
-      if (click == true) {
+      if (click === true) {
         this.origin = pos
         return
       }
@@ -214,7 +214,7 @@ function Riven_Graph () {
         this.update()
         this.origin = pos
       }
-      if (click == null) {
+      if (click === null) {
         this.origin = null
         return
       }

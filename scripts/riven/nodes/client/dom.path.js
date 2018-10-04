@@ -14,7 +14,7 @@ function PathNode (id, rect, ...params) {
   this.is_installed = false
 
   this.receive = function (content) {
-    if (content && content[this.id] != null) {
+    if (content && content[this.id] !== null) {
       this.update(content[this.id])
       this.send(content[this.id])
     }

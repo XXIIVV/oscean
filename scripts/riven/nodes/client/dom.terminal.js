@@ -6,7 +6,7 @@ function TerminalNode (id, rect, ...params) {
   this.glyph = 'M65,65 L65,65 L245,65 M65,125 L65,125 L245,125 M65,185 L65,185 L245,185 M65,245 L65,245 L245,245 '
 
   this.bang = function (q) {
-    if (q.substr(0, 1) == '~') { q = q.replace('~', '').trim() }
+    if (q.substr(0, 1) === '~') { q = q.replace('~', '').trim() }
 
     const cmd = q.split(' ')[0]
     const par = q.substr(cmd.length, q.length - cmd.length).trim()
@@ -79,7 +79,7 @@ function TerminalNode (id, rect, ...params) {
       const a = []
       for (const id in Ø('database').cache.horaire) {
         const log = Ø('database').cache.horaire[id]
-        if (log.time.m != today.m || log.time.d != today.d) { continue }
+        if (log.time.m !== today.m || log.time.d !== today.d) { continue }
         a.push(log)
       }
       let html = 'On This Day:\n'

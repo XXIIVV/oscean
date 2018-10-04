@@ -11,21 +11,21 @@ function BuildNaviNode (id, rect) {
 
   function _table (portal, term) {
     const _children = portal.children.reduce((acc, child, id) => {
-      return `${acc}${`<tr class='head'><th class='${term && child.name == term.name ? 'selected' : ''}'>{(${child.name.capitalize()})}</th><td>${_table_depth1(child, term)}</td></tr>`}`
+      return `${acc}${`<tr class='head'><th class='${term && child.name === term.name ? 'selected' : ''}'>{(${child.name.capitalize()})}</th><td>${_table_depth1(child, term)}</td></tr>`}`
     }, '')
     return `<table width='100%'>${_children}</table>`
   }
 
   function _table_depth1 (portal, term) {
     const _children = portal.children.reduce((acc, child, id) => {
-      return `${acc}${term && child.name == term.name ? `<span class='depth1'><b>${child.name.capitalize()}</b></span> ` : `<span class='depth1'>{(${child.name.capitalize()})}${_table_depth2(child, term)}</span> `}`
+      return `${acc}${term && child.name === term.name ? `<span class='depth1'><b>${child.name.capitalize()}</b></span> ` : `<span class='depth1'>{(${child.name.capitalize()})}${_table_depth2(child, term)}</span> `}`
     }, '')
     return portal.children.length > 0 ? `${_children.trim()}` : ''
   }
 
   function _table_depth2 (portal, term) {
     const _children = portal.children.reduce((acc, child, id) => {
-      return `${acc}${term && child.name == term.name ? `<span class='depth2'>{*${child.name.capitalize()}*}</span> ` : `<span class='depth2'>{(${child.name.capitalize()})}</span> `}`
+      return `${acc}${term && child.name === term.name ? `<span class='depth2'>{*${child.name.capitalize()}*}</span> ` : `<span class='depth2'>{(${child.name.capitalize()})}</span> `}`
     }, '')
     return portal.children.length > 0 ? `(${_children.trim()})` : ''
   }

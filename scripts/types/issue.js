@@ -9,8 +9,8 @@ function Issue (data = {}) {
   this.category = data.category
   this.indexes = [this.category]
 
-  this.sc = data.code.length == 2 ? parseInt(data.code.substr(0, 1)) : 0
-  this.ch = data.code.length == 2 ? parseInt(data.code.substr(1, 1)) : 0
+  this.sc = data.code.length === 2 ? parseInt(data.code.substr(0, 1)) : 0
+  this.ch = data.code.length === 2 ? parseInt(data.code.substr(1, 1)) : 0
   this.sector = ['misc', 'audio', 'visual', 'research', 'misc'][this.sc]
 
   this.tasks = [

@@ -8,7 +8,7 @@ function Desamber (str) {
   this.d = str.substr(3, 2)
 
   this.year = parseInt(`20${this.y}`)
-  this.month = this.m == '+' ? 26 : this.m.charCodeAt(0) - 65
+  this.month = this.m === '+' ? 26 : this.m.charCodeAt(0) - 65
   this.doty = (parseInt(this.month) * 14) + parseInt(this.d)
 
   this.date = new Date(this.year, 0).setDate(this.doty)
@@ -28,9 +28,9 @@ function Desamber (str) {
 
     if (-days > cap) { return `${this.toString(true)}` }
 
-    if (days == -1) { return `yesterday` }
-    if (days == 1) { return 'tomorrow' }
-    if (days == 0) { return 'today' }
+    if (days === -1) { return `yesterday` }
+    if (days === 1) { return 'tomorrow' }
+    if (days === 0) { return 'today' }
     if (days < -365) { return `${parseInt(days / -365)} years ago` }
     if (days < 1) { return `${days * -1} days ago` }
     return `in ${days} days`
@@ -60,17 +60,17 @@ Date.prototype.desamber = function () {
   const start = new Date(year, 0, 0)
   const diff = (this - start) + ((start.getTimezoneOffset() - this.getTimezoneOffset()) * 60 * 1000)
   const doty = Math.floor(diff / 86400000)
-  const leap = ((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0)
+  const leap = ((year % 4 === 0) && (year % 100 !== 0)) || (year % 400 === 0)
   const days = leap ? 366 : 365
 
   const y = year.toString().substr(2, 2)
-  const m = doty == 365 || doty == 366 ? '+' : String.fromCharCode(97 + Math.floor(((doty) / days) * 26)).toUpperCase()
+  const m = doty === 365 || doty === 366 ? '+' : String.fromCharCode(97 + Math.floor(((doty) / days) * 26)).toUpperCase()
 
   // TODO: Clean
   let d = (doty % 14)
   d = d < 10 ? `0${d}` : d
-  d = d == '00' ? '14' : d
-  d = doty == 365 ? '01' : (doty == 366 ? '02' : d)
+  d = d === '00' ? '14' : d
+  d = doty === 365 ? '01' : (doty === 366 ? '02' : d)
 
   return new Desamber(`${y}${m}${d}`)
 }

@@ -16,7 +16,7 @@ function DocumentNode (id, rect, ...params) {
       this.add_class('ready')
     }, 100)
 
-    if (content && content[this.id] != null) {
+    if (content && content[this.id] !== null) {
       this.update(content[this.id])
       this.send(content[this.id])
     }
@@ -39,11 +39,11 @@ function on_scroll () {
 
   // Info
   if (scroll > 0) {
-    if (info_el.className != 'ghost') {
+    if (info_el.className !== 'ghost') {
       info_el.className = 'ghost'
     }
   } else {
-    if (info_el.className == 'ghost') {
+    if (info_el.className === 'ghost') {
       info_el.className = ''
     }
   }
@@ -53,11 +53,11 @@ function on_scroll () {
   const logo_el = document.getElementById('logo')
   const menu_el = document.getElementById('menu')
   if (scroll > header.offsetHeight - 120) {
-    if (logo_el.className != 'sticky') { logo_el.className = 'sticky' }
-    if (menu_el.className != 'sticky') { menu_el.className = 'sticky' }
+    if (logo_el.className !== 'sticky') { logo_el.className = 'sticky' }
+    if (menu_el.className !== 'sticky') { menu_el.className = 'sticky' }
   } else {
-    if (logo_el.className == 'sticky') { logo_el.className = '' }
-    if (menu_el.className == 'sticky') { menu_el.className = '' }
+    if (logo_el.className === 'sticky') { logo_el.className = '' }
+    if (menu_el.className === 'sticky') { menu_el.className = '' }
   }
 }
 

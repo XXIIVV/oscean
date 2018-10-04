@@ -51,8 +51,8 @@ function Term (name, data) {
     h.points.photo = this.diaries.length > 0
     h.points.outgoing = this.outgoing && this.outgoing.length > 1
     h.points.incoming = this.incoming && this.incoming.length > 1
-    h.points.glyph = this.glyph() != ''
-    h.points.issues = this.issues.length == 0
+    h.points.glyph = this.glyph() !== ''
+    h.points.issues = this.issues.length === 0
     h.points.links = Object.keys(this.links).length > 0
     h.points.tags = this.tags.length > 0
 
@@ -81,7 +81,7 @@ function Term (name, data) {
     for (const id in this.logs) {
       const log = this.logs[id]
       if (log.time.offset > 0) { continue }
-      if (log.ch == 8) { return log }
+      if (log.ch === 8) { return log }
     }
     return null
   }

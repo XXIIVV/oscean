@@ -21,7 +21,7 @@ function Runic (lines = [], templater = null, host = null) {
     const rune = l.substr(0, 1)
     const trail = l.substr(1, 1)
 
-    if (trail != ' ') { console.warn('Non-Runic', l); return false }
+    if (trail !== ' ') { console.warn('Non-Runic', l); return false }
     if (!runes[rune]) { console.warn(`Non-Runic[${rune}]`, l); return false }
 
     return true
@@ -32,7 +32,7 @@ function Runic (lines = [], templater = null, host = null) {
     const line = l.substr(2)
     const prev = acc[acc.length - 1] ? acc[acc.length - 1] : [{ rune: rune, a: [] }]
 
-    if (prev.rune == rune) {
+    if (prev.rune === rune) {
       prev.a.push(line)
     } else {
       acc.push({ rune: rune, a: [line] })
@@ -70,10 +70,10 @@ function Runic (lines = [], templater = null, host = null) {
     const service = content.split(' ')[0]
     const id = content.split(' ')[1]
 
-    if (service == 'itchio') { return `<iframe frameborder="0" src="https://itch.io/embed/${id}?link_color=000000" width="600" height="167"></iframe>` }
-    if (service == 'bandcamp') { return `<iframe style="border: 0; width: 600px; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=${id}/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless></iframe>` }
-    if (service == 'youtube') { return `<iframe width="100%" height="380" src="https://www.youtube.com/embed/${id}?rel=0" style="max-width:700px" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>` }
-    if (service == 'custom') { return `<iframe src='${id}' style='width:100%;height:350px;'></iframe>` }
+    if (service === 'itchio') { return `<iframe frameborder="0" src="https://itch.io/embed/${id}?link_color=000000" width="600" height="167"></iframe>` }
+    if (service === 'bandcamp') { return `<iframe style="border: 0; width: 600px; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=${id}/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless></iframe>` }
+    if (service === 'youtube') { return `<iframe width="100%" height="380" src="https://www.youtube.com/embed/${id}?rel=0" style="max-width:700px" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>` }
+    if (service === 'custom') { return `<iframe src='${id}' style='width:100%;height:350px;'></iframe>` }
     return `<img src='media/${service}' class='${id}'/>`
   }
 

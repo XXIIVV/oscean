@@ -21,13 +21,13 @@ function QueryNode (id, rect) {
       window.location.hash = target.to_url()
     }
 
-    if (window.scrollY != 0) {
+    if (window.scrollY !== 0) {
       setTimeout(() => { window.scrollTo(0, 0) }, 250)
     }
   }
 
   this.queue = function (a, speed = 1000) {
-    if (a.length == 0) { return }
+    if (a.length === 0) { return }
 
     setTimeout(() => {
       this.send(a[0].to_url())
@@ -42,8 +42,8 @@ const detectBackOrForward = function (onBack, onForward) {
 
   return function () {
     let hash = window.location.hash; let length = window.history.length
-    if (hashHistory.length && historyLength == length) {
-      if (hashHistory[hashHistory.length - 2] == hash) {
+    if (hashHistory.length && historyLength === length) {
+      if (hashHistory[hashHistory.length - 2] === hash) {
         hashHistory = hashHistory.slice(0, -1)
         onBack()
       } else {

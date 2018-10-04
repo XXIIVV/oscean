@@ -18,7 +18,7 @@ function Viz (logs, from, to) {
 
   function offset (recent, before, trail = 1) {
     const print = recent - before > 0 ? `+${(recent - before).toFixed(trail)}` : `${(recent - before).toFixed(trail)}`
-    return print != '-0.0' && print != '+0.0' ? print : '0.0'
+    return print !== '-0.0' && print !== '+0.0' ? print : '0.0'
   }
 
   function _legend (logs) {

@@ -8,4 +8,4 @@ String.prototype.to_entities = function () { return this.replace(/[\u00A0-\u9999
 String.prototype.to_rss = function () { return this.replace(/\</g, '&lt;').replace(/\>/g, '&gt;') }
 String.prototype.to_alpha = function () { return this.replace(/[^a-z ]/gi, '').trim() }
 String.prototype.to_alphanum = function () { return this.replace(/[^0-9a-z ]/gi, '') }
-String.prototype.count = function (c) { let r = 0; let i = 0; for (let i; i < this.length; i++) if (this[i] == c) r++; return r }
+String.prototype.count = function (c) { let r = 0; for (let i; i < this.length; i++) if (this[i] === c) r++; return r }

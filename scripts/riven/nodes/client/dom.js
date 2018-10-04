@@ -23,7 +23,7 @@ function DomNode (id, rect, ...params) {
   }
 
   this.receive = function (content) {
-    if (content && content[this.id] != null) {
+    if (content && content[this.id] !== null) {
       this.update(content[this.id])
       this.send(content[this.id])
     }
@@ -46,7 +46,7 @@ function DomNode (id, rect, ...params) {
   this.update = function (content) {
     if (typeof content === 'string') {
       this.el.innerHTML = content
-      this.el.className = !content || content.trim() == '' ? 'empty' : ''
+      this.el.className = !content || content.trim() === '' ? 'empty' : ''
     }
   }
 
