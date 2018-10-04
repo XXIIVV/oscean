@@ -5,8 +5,11 @@
 
 function Riven () {
   this.is_graph = false
+  this.lib = {}
   this.network = {}
 }
+
+const RIVEN = new Riven()
 
 // QUERY
 
@@ -20,13 +23,13 @@ function Ø (s) {
   } else if (network[id]) {
     return network[id]
   } else {
-    return new Node(id)
+    return new RIVEN.Node(id)
   }
 }
 
 // NODE
 
-function Node (id, rect = { x: 0, y: 0, w: 2, h: 2 }) {
+RIVEN.Node = function (id, rect = { x: 0, y: 0, w: 2, h: 2 }) {
   const PORT_TYPES = { default: 0, input: 1, output: 2, request: 3, answer: 4 }
   const ROUTE_TYPES = { default: 0, request: 1 }
 
@@ -44,7 +47,7 @@ function Node (id, rect = { x: 0, y: 0, w: 2, h: 2 }) {
     this.ports.request = new Port(this, 'request', PORT_TYPES.request)
   }
 
-  this.create = function (pos = { x: 0, y: 0 }, Type = Node, ...params) {
+  this.create = function (pos = { x: 0, y: 0 }, Type = this.Node, ...params) {
     const node = new Type(this.id, rect, ...params)
     this.rect.x = pos.x
     this.rect.y = pos.y
@@ -121,7 +124,7 @@ function Node (id, rect = { x: 0, y: 0, w: 2, h: 2 }) {
 
   this.receive = function (q) {
     const port = this.ports.output
-    for (route_id in port.routes) {
+    for (const route_id in port.routes) {
       const route = port.routes[route_id]
       if (route) {
         route.host.receive(q)
@@ -167,7 +170,7 @@ function Node (id, rect = { x: 0, y: 0, w: 2, h: 2 }) {
   // MESH
 
   function Mesh (id, rect) {
-    Node.call(this, id, rect)
+    RIVEN.Node.call(this, id, rect)
 
     this.is_mesh = true
 

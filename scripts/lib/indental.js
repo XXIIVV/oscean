@@ -24,7 +24,7 @@ function Indental (data) {
     }
   }
 
-  this.parse = function (type) {
+  this.parse = function (Type) {
     const lines = this.data.split('\n').map(liner)
 
     // Assoc lines
@@ -43,7 +43,7 @@ function Indental (data) {
       const line = lines[id]
       if (line.skip || line.indent > 0) { continue }
       const key = line.content.toUpperCase()
-      h[key] = type ? new type(key, format(line)) : format(line)
+      h[key] = Type ? new Type(key, format(line)) : format(line)
     }
     return h
   }

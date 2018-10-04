@@ -1,7 +1,7 @@
 'use strict'
 
-function DomNode (id, rect, ...params) {
-  Node.call(this, id, rect)
+RIVEN.lib.dom = function DomNode (id, rect, ...params) {
+  RIVEN.Node.call(this, id, rect)
 
   this.type = params[0] ? params[0] : 'div'
   this.glyph = 'M150,60 L150,60 L60,150 L150,240 L240,150 Z'

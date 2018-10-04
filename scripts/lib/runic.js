@@ -1,6 +1,6 @@
 'use strict'
 
-function Runic (lines = [], templater = null, host = null) {
+function Runic (lines = [], Templater = null, host = null) {
   this.lines = lines
 
   const runes = {
@@ -46,7 +46,7 @@ function Runic (lines = [], templater = null, host = null) {
     const html = stash.a.reduce((acc, val, id) => {
       const r = runes[stash.rune]
       const txt = r.fn ? r.fn(stash.a[id]) : stash.a[id]
-      const htm = templater ? new templater(txt) : txt
+      const htm = Templater ? new Templater(txt) : txt
       return `${acc}${r.tag ? `<${r.tag} class='${r.class ? r.class : ''}'>${htm}</${r.tag}>` : `${htm}`}`
     }, '')
     return wr ? `${acc}<${wr}>${html}</${wr}>` : `${acc}${html}`

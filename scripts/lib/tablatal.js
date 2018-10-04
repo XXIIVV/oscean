@@ -3,7 +3,7 @@
 function Tablatal (data) {
   this.data = data
 
-  this.parse = function (type) {
+  this.parse = function (Type) {
     const a = []
     const lines = this.data.trim().split('\n')
     const key = make_key(lines[0])
@@ -13,7 +13,7 @@ function Tablatal (data) {
       for (const i in key) {
         entry[i] = lines[id].substr(key[i].from, key[i].to).trim()
       }
-      a[a.length] = type ? new type(entry) : entry
+      a[a.length] = Type ? new Type(entry) : entry
     }
     return a
   }

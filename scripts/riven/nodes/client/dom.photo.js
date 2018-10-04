@@ -1,7 +1,7 @@
 'use strict'
 
-function PhotoNode (id, rect, ...params) {
-  DomNode.call(this, id, rect)
+RIVEN.lib.photo = function PhotoNode (id, rect, ...params) {
+  RIVEN.lib.dom.call(this, id, rect)
 
   this.media = document.createElement('media')
   this.glyph = 'M60,90 L60,90 L60,60 L90,60 M210,60 L210,60 L240,60 L240,90 M240,210 L240,210 L240,240 L210,240 M90,240 L90,240 L60,240 L60,210 '

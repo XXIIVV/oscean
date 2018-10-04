@@ -1,7 +1,7 @@
 'use strict'
 
-function MapNode (id, rect) {
-  Node.call(this, id, rect)
+RIVEN.lib.map = function MapNode (id, rect) {
+  RIVEN.Node.call(this, id, rect)
 
   this.glyph = 'M60,60 L60,60 L240,60 L240,240 L60,240 Z M150,60 L150,60 L150,240 M60,150 L60,150 L240,150 '
 

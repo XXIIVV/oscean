@@ -1,56 +1,56 @@
 'use strict'
 
 function graph () {
-  Ø('query').create({ x: 2, y: 2 }, QueryNode)
-  Ø('mouse').create({ x: 2, y: 8 }, MouseNode)
+  Ø('query').create({ x: 2, y: 2 }, RIVEN.lib.query)
+  Ø('mouse').create({ x: 2, y: 8 }, RIVEN.lib.mouse)
 
   Ø('services').mesh({ x: 6, y: 21 }, [
-    Ø('rss').create({ x: 2, y: 2 }, RssNode)
+    Ø('rss').create({ x: 2, y: 2 }, RIVEN.lib.rss)
   ])
 
   Ø('model').mesh({ x: 6, y: 0 }, [
-    Ø('router').create({ x: 8, y: 2 }, RouterNode),
-    Ø('database').create({ x: 8, y: 8 }, DatabaseNode),
-    Ø('dictionaery').create({ x: 2, y: 14 }, TableNode, Tablatal, Aeth),
-    Ø('lexicon').create({ x: 5, y: 14 }, TableNode, Indental, Term),
-    Ø('horaire').create({ x: 8, y: 14 }, TableNode, Tablatal, Log),
-    Ø('issues').create({ x: 11, y: 14 }, TableNode, Tablatal, Issue),
-    Ø('glossary').create({ x: 14, y: 14 }, TableNode, Indental, List),
-    Ø('map').create({ x: 14, y: 8 }, MapNode)
+    Ø('router').create({ x: 8, y: 2 }, RIVEN.lib.router),
+    Ø('database').create({ x: 8, y: 8 }, RIVEN.lib.database),
+    Ø('dictionaery').create({ x: 2, y: 14 }, RIVEN.lib.table, Tablatal, Aeth),
+    Ø('lexicon').create({ x: 5, y: 14 }, RIVEN.lib.table, Indental, Term),
+    Ø('horaire').create({ x: 8, y: 14 }, RIVEN.lib.table, Tablatal, Log),
+    Ø('issues').create({ x: 11, y: 14 }, RIVEN.lib.table, Tablatal, Issue),
+    Ø('glossary').create({ x: 14, y: 14 }, RIVEN.lib.table, Indental, List),
+    Ø('map').create({ x: 14, y: 8 }, RIVEN.lib.map)
   ])
 
   Ø('assoc').mesh({ x: 25, y: 0 }, [
-    Ø('build').create({ x: 5, y: 2 }, BuildNode),
-    Ø('_header').create({ x: 2, y: 8 }, BuildHeaderNode),
-    Ø('_sidebar').create({ x: 5, y: 8 }, BuildSidebarNode),
-    Ø('_navi').create({ x: 11, y: 8 }, BuildNaviNode),
-    Ø('_content').create({ x: 8, y: 8 }, BuildContentNode),
-    Ø('missing').create({ x: 2, y: 20 }, MissingTemplate),
-    Ø('default').create({ x: 2, y: 14 }, DefaultTemplate),
-    Ø('home').create({ x: 5, y: 14 }, HomeTemplate),
-    Ø('journal').create({ x: 8, y: 14 }, JournalTemplate),
-    Ø('tracker').create({ x: 11, y: 14 }, TrackerTemplate),
-    Ø('calendar').create({ x: 14, y: 14 }, CalendarTemplate)
+    Ø('build').create({ x: 5, y: 2 }, RIVEN.lib.build),
+    Ø('_header').create({ x: 2, y: 8 }, RIVEN.lib.header),
+    Ø('_sidebar').create({ x: 5, y: 8 }, RIVEN.lib.sidebar),
+    Ø('_navi').create({ x: 11, y: 8 }, RIVEN.lib.navi),
+    Ø('_content').create({ x: 8, y: 8 }, RIVEN.lib.content),
+    Ø('missing').create({ x: 2, y: 20 }, RIVEN.lib.missing),
+    Ø('default').create({ x: 2, y: 14 }, RIVEN.lib.default),
+    Ø('home').create({ x: 5, y: 14 }, RIVEN.lib.home),
+    Ø('journal').create({ x: 8, y: 14 }, RIVEN.lib.journal),
+    Ø('tracker').create({ x: 11, y: 14 }, RIVEN.lib.tracker),
+    Ø('calendar').create({ x: 14, y: 14 }, RIVEN.lib.calendar)
   ])
 
   Ø('client').mesh({ x: 44, y: 0 }, [
-    Ø('view').create({ x: 2, y: 2 }, DocumentNode),
-    Ø('terminal').create({ x: 8, y: 8 }, TerminalNode),
-    Ø('header').create({ x: 2, y: 8 }, DomNode),
-    Ø('photo').create({ x: 2, y: 14 }, PhotoNode, 'photo'),
-    Ø('logo').create({ x: 8, y: 14 }, DomNode, 'a', null, { 'data-goto': 'home', href: '#home' }),
-    Ø('menu').create({ x: 5, y: 14 }, DomNode),
-    Ø('search').create({ x: 2, y: 20 }, InputNode),
-    Ø('activity').create({ x: 5, y: 20 }, DomNode, 'ul'),
-    Ø('info').create({ x: 11, y: 14 }, DomNode),
-    Ø('glyph').create({ x: 11, y: 20 }, PathNode),
-    Ø('title').create({ x: 8, y: 20 }, DomNode),
-    Ø('core').create({ x: 14, y: 8 }, DomNode),
-    Ø('content').create({ x: 14, y: 14 }, DomNode),
-    Ø('sidebar').create({ x: 17, y: 14 }, DomNode),
-    Ø('navi').create({ x: 20, y: 14 }, DomNode, 'ul'),
-    Ø('footer').create({ x: 23, y: 8 }, DomNode),
-    Ø('credits').create({ x: 23, y: 14 }, DomNode, 'div', `
+    Ø('view').create({ x: 2, y: 2 }, RIVEN.lib.document),
+    Ø('terminal').create({ x: 8, y: 8 }, RIVEN.lib.terminal),
+    Ø('header').create({ x: 2, y: 8 }, RIVEN.lib.dom),
+    Ø('photo').create({ x: 2, y: 14 }, RIVEN.lib.photo, 'photo'),
+    Ø('logo').create({ x: 8, y: 14 }, RIVEN.lib.dom, 'a', null, { 'data-goto': 'home', href: '#home' }),
+    Ø('menu').create({ x: 5, y: 14 }, RIVEN.lib.dom),
+    Ø('search').create({ x: 2, y: 20 }, RIVEN.lib.input),
+    Ø('activity').create({ x: 5, y: 20 }, RIVEN.lib.dom, 'ul'),
+    Ø('info').create({ x: 11, y: 14 }, RIVEN.lib.dom),
+    Ø('glyph').create({ x: 11, y: 20 }, RIVEN.lib.path),
+    Ø('title').create({ x: 8, y: 20 }, RIVEN.lib.dom),
+    Ø('core').create({ x: 14, y: 8 }, RIVEN.lib.dom),
+    Ø('content').create({ x: 14, y: 14 }, RIVEN.lib.dom),
+    Ø('sidebar').create({ x: 17, y: 14 }, RIVEN.lib.dom),
+    Ø('navi').create({ x: 20, y: 14 }, RIVEN.lib.dom, 'ul'),
+    Ø('footer').create({ x: 23, y: 8 }, RIVEN.lib.dom),
+    Ø('credits').create({ x: 23, y: 14 }, RIVEN.lib.dom, 'div', `
         <a target='_blank' href="https://twitter.com/neauoire" class="icon twitter external"></a>
         <a target='_blank' href="https://github.com/neauoire" class="icon github external"></a>
         <a target='_blank' href="http://webring.xxiivv.com/#random" class="icon rotonde"></a>

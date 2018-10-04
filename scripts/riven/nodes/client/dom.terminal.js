@@ -1,7 +1,7 @@
 'use strict'
 
-function TerminalNode (id, rect, ...params) {
-  DomNode.call(this, id, rect, 'pre')
+RIVEN.lib.terminal = function TerminalNode (id, rect, ...params) {
+  RIVEN.lib.dom.call(this, id, rect, 'pre')
 
   this.glyph = 'M65,65 L65,65 L245,65 M65,125 L65,125 L245,125 M65,185 L65,185 L245,185 M65,245 L65,245 L245,245 '
 
