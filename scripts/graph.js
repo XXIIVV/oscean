@@ -27,7 +27,6 @@ function graph (append = true) {
     Ø('_content').create({ x: 8, y: 8 }, RIVEN.lib.content),
     Ø('missing').create({ x: 2, y: 20 }, RIVEN.lib.missing),
     Ø('default').create({ x: 2, y: 14 }, RIVEN.lib.default),
-    Ø('home').create({ x: 5, y: 14 }, RIVEN.lib.home),
     Ø('journal').create({ x: 8, y: 14 }, RIVEN.lib.journal),
     Ø('tracker').create({ x: 11, y: 14 }, RIVEN.lib.tracker),
     Ø('calendar').create({ x: 14, y: 14 }, RIVEN.lib.calendar)

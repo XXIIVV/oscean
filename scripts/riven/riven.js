@@ -191,7 +191,6 @@ RIVEN.Node = function (id, rect = { x: 0, y: 0, w: 2, h: 2 }) {
 // GRAPH
 
 RIVEN.graph = () => {
-
   const network = RIVEN.network
   const GRID_SIZE = 20
   const PORT_TYPES = { default: 0, input: 1, output: 2, request: 3, answer: 4 }
@@ -414,4 +413,3 @@ RIVEN.graph = () => {
 
   this.cursor.install(this)
 }
-

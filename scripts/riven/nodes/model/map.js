@@ -57,8 +57,12 @@ RIVEN.lib.map = function MapNode (id, rect) {
       if (!tables.lexicon[index]) { console.warn('Missing log term', index); continue }
       log.host = tables.lexicon[index]
       tables.lexicon[index].logs.push(log)
-      if (!tables.lexicon[index].latest_log && log.time.offset < 0) {
-        tables.lexicon[index].latest_log = log
+      // Span
+      if (log.time.offset < 0) {
+        tables.lexicon[index].span.from = log
+        if (!tables.lexicon[index].span.to) {
+          tables.lexicon[index].span.to = log
+        }
       }
       if (!log.photo) { continue }
       tables.lexicon[index].diaries.push(log)

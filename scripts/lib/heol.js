@@ -4,19 +4,22 @@ function Heol (input, tables, host) {
   const lib =
   {
     match: function (source, items) {
-      const a = []
-      for (const id in items) {
-        const name = items[id].toUpperCase()
-        if (!source[name]) { continue }
-        a.push(source[name])
-      }
-      return a
+      const filtered = items.filter((val) => { return source[val.toUpperCase()] })
+      return filtered.map((val) => { return source[val.toUpperCase()] })
     },
     table: function (source) {
       return tables[source]
     },
     keys: function (h) {
       return Object.keys(h)
+    },
+    values: function (a, name) {
+      return a.map((val) => { return val[name] })
+    },
+    uniq: function (items) {
+      return items.filter((value, index, self) => {
+        return self.indexOf(value) === index
+      })
     },
     find: function (source, target) {
       return source[target.toUpperCase()] ? source[target.toUpperCase()] : ''
@@ -66,6 +69,14 @@ function Heol (input, tables, host) {
     },
     GALLERY: function (item) {
       return `${item.featured_log ? `<a data-goto='${item.name}'><img src="media/diary/${item.featured_log.photo}.jpg"/></a>` : ''}<h2>${item.name.capitalize()}</h2><h4>${item.bref}</h4>`
+    },
+    SPAN: function (item) {
+      return item.logs.length > 10 && item.span.from && item.span.to ? `<li>{(${item.name.capitalize()})} ${item.span.from.time}—${item.span.to.time}</li>`.to_curlic() : ''
+    },
+
+    log: function (item) {
+      console.log(item)
+      return 'hey'
     }
   }
 

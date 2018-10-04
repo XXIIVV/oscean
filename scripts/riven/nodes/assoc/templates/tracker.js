@@ -26,7 +26,7 @@ RIVEN.lib.tracker = function TrackerTemplate (id, rect, ...params) {
 
     const issues = q.tables.issues.filter((issue) => { return issue.host && issue.host.name == q.result.name })
 
-    return `<h2>${issues.length} Active issues</h2><h4>Last updated <b>${q.result.latest_log ? q.result.latest_log.time.ago() : ''}</b></h4>` + issues.reduce((acc, val) => {
+    return `<h2>${issues.length} Active issues</h2><h4>Last updated <b>${q.result.span.to ? q.result.span.to.time.ago() : ''}</b></h4>` + issues.reduce((acc, val) => {
       return `${acc}${val}`
     }, '')
   }

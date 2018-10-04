@@ -8,7 +8,7 @@ function Term (name, data) {
   this.logs = [] // From Ø('map')
   this.issues = [] // From Ø('map')
   this.diaries = [] // From Ø('map')
-  this.latest_log = null // From Ø('map')
+  this.span = { from: null, to: null }
   this.featured_log = null // From Ø('map')
 
   this.data = data
@@ -27,10 +27,6 @@ function Term (name, data) {
     if (this.parent.glyph()) { return this.parent.glyph() }
     if (this.portal().glyph()) { return this.portal().glyph() }
     return null
-  }
-
-  this.span = function () {
-    return this.logs.length > 2 ? { from: this.logs[this.logs.length - 1].time, to: this.logs[0].time } : null
   }
 
   this.portal = function () {
