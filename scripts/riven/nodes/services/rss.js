@@ -34,7 +34,7 @@ RIVEN.lib.rss = function RssNode (id, rect) {
     <title>${log.term} — ${log.name}</title>
     <link>https://wiki.xxiivv.com/${log.term.to_url()}</link>
     <guid isPermaLink='false'>IV${log.photo}</guid>
-    <pubDate>${log.time.to_date().toUTCString()}</pubDate>
+    <pubDate>${log.time.toDate().toUTCString()}</pubDate>
     <dc:creator><![CDATA[Devine Lu Linvega]]></dc:creator>
     <description>
       &lt;img src="https://wiki.xxiivv.com/media/diary/${log.photo}.jpg"/&gt;
@@ -56,7 +56,7 @@ RIVEN.lib.rss = function RssNode (id, rect) {
   <title>XXIIVV — Journal</title>
   <link>https://wiki.xxiivv.com/</link>
   <description>Devine Lu Linvega's Journal</description>
-  <pubDate>${logs[0].time.to_date().toUTCString()}</pubDate>
+  <pubDate>${logs[0].time.toDate().toUTCString()}</pubDate>
   <generator>Oscean - Riven</generator>
   ${this.items(logs)}
 </channel>

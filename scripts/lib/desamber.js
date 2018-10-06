@@ -1,33 +1,38 @@
 'use strict'
 
-function Desamber (str) {
-  this.str = str.match(/\d\d[a-z\+]\d\d/i) ? str : '01+01'
+function desamber (date = new Date()) {
+  const start = new Date(date.getFullYear(), 0, 0)
+  const diff = (date - start) + ((start.getTimezoneOffset() - date.getTimezoneOffset()) * 60 * 1000)
+  const doty = Math.floor(diff / 86400000) - 1
+  const l = Math.floor(((doty) / 364) * 26)
+  const y = date.getFullYear().toString().substr(2, 2)
+  const m = doty == 365 || doty == 366 ? '+' : String.fromCharCode(97 + l).toUpperCase()
+  const d = `${(doty == 365 ? 1 : doty == 366 ? 2 : (doty % 14)) + 1}`.padStart(2, '0')
+  return `${y}${m}${d}`
+}
 
-  this.y = str.substr(0, 2)
-  this.m = str.substr(2, 1).toUpperCase()
-  this.d = str.substr(3, 2)
-
+function Desamber (t = desamber()) {
+  this.t = t.match(/\d\d[a-z\+]\d\d/i) ? t.toUpperCase() : '01+01'
+  this.y = t.substr(0, 2)
+  this.m = t.substr(2, 1).toUpperCase()
+  this.d = t.substr(3, 2)
   this.year = parseInt(`20${this.y}`)
   this.month = this.m === '+' ? 26 : this.m.charCodeAt(0) - 65
   this.doty = (parseInt(this.month) * 14) + parseInt(this.d)
-
   this.date = new Date(this.year, 0).setDate(this.doty)
   this.offset = parseInt((this.date - new Date()) / 86400000)
 
-  this.to_gregorian = function () {
-    const d = this.to_date()
-    return `${d.getFullYear()}-${prepend(d.getMonth() + 1, 2)}-${prepend(d.getDate(), 2)}`
+  this.toGregorian = function (d = this.toDate()) {
+    return `${d.getFullYear()}-${`${d.getMonth() + 1}`.padStart(2, '0')}-${`${d.getDate()}`.padStart(2, '0')}`
   }
 
-  this.to_date = function () {
+  this.toDate = function () {
     return new Date(this.date)
   }
 
   this.ago = function (cap = 9999) {
     const days = this.offset
-
     if (-days > cap) { return `${this.toString(true)}` }
-
     if (days === -1) { return `yesterday` }
     if (days === 1) { return 'tomorrow' }
     if (days === 0) { return 'today' }
@@ -37,10 +42,8 @@ function Desamber (str) {
   }
 
   this.toString = function (template = false) {
-    return template ? `<span title='${this.to_gregorian()}'>${this.str.toUpperCase()}</span>` : this.str.toUpperCase()
+    return template ? `<span title='${this.toGregorian()}'>${this.t}</span>` : this.t
   }
-
-  function prepend (s, l, c = '0') { while (`${s}`.length < l) { s = `${c}${s}` }; return s }
 }
 
 Date.prototype.doty = function () {
@@ -56,21 +59,5 @@ Date.prototype.offset = function (days) {
 }
 
 Date.prototype.desamber = function () {
-  const year = this.getFullYear()
-  const start = new Date(year, 0, 0)
-  const diff = (this - start) + ((start.getTimezoneOffset() - this.getTimezoneOffset()) * 60 * 1000)
-  const doty = Math.floor(diff / 86400000)
-  const leap = ((year % 4 === 0) && (year % 100 !== 0)) || (year % 400 === 0)
-  const days = leap ? 366 : 365
-
-  const y = year.toString().substr(2, 2)
-  const m = doty === 365 || doty === 366 ? '+' : String.fromCharCode(97 + Math.floor(((doty) / days) * 26)).toUpperCase()
-
-  // TODO: Clean
-  let d = (doty % 14)
-  d = d < 10 ? `0${d}` : d
-  d = d === '00' ? '14' : d
-  d = doty === 365 ? '01' : (doty === 366 ? '02' : d)
-
-  return new Desamber(`${y}${m}${d}`)
+  return desamber(this)
 }
