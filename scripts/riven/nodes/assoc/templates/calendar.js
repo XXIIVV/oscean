@@ -29,11 +29,11 @@ RIVEN.lib.calendar = function CalendarTemplate (id, rect, ...params) {
     let day = 0
     const ids = { audio: 0, visual: 0, research: 0, misc: 0 }
     while (day < 49) {
-      const dec = date_from_offset(day).desamber()
+      const des = date_from_offset(day).desamber()
       const log = new Forecast(logs)
-      const event = upcomings[`${dec}`]
+      const event = upcomings[`${des}`]
       const task = !event && log.fh > 0 ? find_task(tasks, ids, log.sector) : null
-      h[`${dec}`] = { event: event, sector: log.fh > 0 ? log.sector : 'misc', fh: log.fh, task: task }
+      h[`${des}`] = { event: event, sector: log.fh > 0 ? log.sector : 'misc', fh: log.fh, task: task }
       logs = [log].concat(logs)
       day++
     }
@@ -53,13 +53,12 @@ RIVEN.lib.calendar = function CalendarTemplate (id, rect, ...params) {
     return d
   }
 
-  function _cell (dec, f, filter) {
+  function _cell (des, f, filter) {
     const link = f.event ? f.event.term : f.task ? f.task.term : null
     const cl = `${f.event ? 'event' : ''} ${f.sector} ${filter && link && filter.to_url() != link.to_url() ? 'disabled' : ''}`
-
     return `
     <td class='${cl}' ${link ? `data-goto='${link.to_url()}:calendar'` : ''}>
-      <span class='date'>${dec.m}${dec.d}</span>
+      <span class='date'>${des.m}${des.d}</span>
       ${f.event ? `<span class='event'>${f.event.name}</span>` : f.task ? `<span class='task'><b>${f.task.term}</b> ${f.task.name}</span>` : ''}
     </td>`
   }
@@ -92,8 +91,8 @@ RIVEN.lib.calendar = function CalendarTemplate (id, rect, ...params) {
       let d = 0
       let d_html = ''
       while (d < 7) {
-        let dec = date_from_offset(offset).desamber()
-        d_html += _cell(dec, forecast[`${dec}`], filter)
+        let des = date_from_offset(offset).desamber()
+        d_html += _cell(des, forecast[`${des}`], filter)
         offset++
         d++
       }

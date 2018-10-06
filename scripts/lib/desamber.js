@@ -59,5 +59,5 @@ Date.prototype.offset = function (days) {
 }
 
 Date.prototype.desamber = function () {
-  return desamber(this)
+  return new Desamber(desamber(this))
 }
