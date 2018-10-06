@@ -31,7 +31,7 @@ RIVEN.lib.header = function BuildHeaderNode (id, rect) {
     ${q.params ? `<li><a class='return' data-goto='${q.result.name}' href='#${q.result.name}'>Return</a></li>` : ''}
     ${q.result.issues.length > 0 ? `<li><a class='issues' data-goto='${q.result.name}:calendar' href='#${q.result.name}:calendar'>Calendar</a></li>` : ''}
     ${q.result.logs.length > 2 && !q.result.has_tag('journal') ? `<li><a class='diaries' data-goto='${q.result.name}:journal' href='#${q.result.name}:journal'>${q.result.logs.length} Logs</a></li>` : ''}
-    ${q.result.diaries.length > 1 && !q.result.has_tag('diary') ? `<li><a class='logs' data-goto='${q.result.name}:tracker' href='#${q.result.name}:tracker'>${q.result.issues.length} Issues</a></li>` : ''}
+    ${q.result.issues.length > 1 && !q.result.has_tag('diary') ? `<li><a class='logs' data-goto='${q.result.name}:tracker' href='#${q.result.name}:tracker'>${q.result.issues.length} Issues</a></li>` : ''}
     `
   }
 

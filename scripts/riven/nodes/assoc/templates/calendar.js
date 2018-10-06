@@ -103,6 +103,20 @@ RIVEN.lib.calendar = function CalendarTemplate (id, rect, ...params) {
     return `<table class='cells' style='margin-top:30px'>${html}</table>${_style()}`
   }
 
+  function _timeline (logs) {
+    const events = logs.filter((log) => { return log.is_event })
+
+    return `<ul class='tidy col3' style='margin-top:30px; padding-top:30px; border-top:1.5px solid #333'>${events.reduce((acc, log, id, arr) => {
+      return `
+      ${acc}
+      ${!arr[id - 1] || arr[id - 1].time.y != log.time.y ? `<li class='head'>20${log.time.y}</li>` : ''}
+      <li style='${log.time.offset > 0 ? 'color:#aaa' : ''}'>
+        {${log.name}(${log.term})}</a> 
+        <span title='${log.time}'>${log.time.ago(60)}</span>
+      </li>`
+    }, '')}</ul>`.to_curlic()
+  }
+
   this.answer = function (q) {
     const tasks = make_tasks(q.tables.issues)
     const upcomings = make_upcomings(q.tables.horaire)
@@ -113,6 +127,7 @@ RIVEN.lib.calendar = function CalendarTemplate (id, rect, ...params) {
     ${new BalanceViz(q.tables.horaire)}
     ${_calendar(forecast, filter)}
     ${q.result.body()}
+    ${_timeline(q.tables.horaire)}
     `
   }
 }
