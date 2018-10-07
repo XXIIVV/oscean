@@ -91,6 +91,10 @@ RIVEN.lib.terminal = function TerminalNode (id, rect, ...params) {
       return html
     },
 
+    age: (q) => {
+      return `You are ${((new Date()-new Date("1986-03-22"))/31557600000).toFixed(4)} years old.`
+    },
+
     score: (q) => {
       const score = { ratings: 0, entries: 0, average: 0, issues: 0 }
       for (const id in Ø('database').cache.lexicon) {
