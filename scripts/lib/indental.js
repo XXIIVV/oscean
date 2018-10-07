@@ -1,19 +1,17 @@
 'use strict'
 
-function Indental (data) {
-  this.data = data
-
-  function format (line) {
+function indental (data, Type) {
+  function formatLine (line) {
     const a = []
     const h = {}
     for (const id in line.children) {
       const child = line.children[id]
-      if (child.key) { h[child.key.toUpperCase()] = child.value } else if (child.children.length === 0 && child.content) { a[a.length] = child.content } else { h[child.content.toUpperCase()] = format(child) }
+      if (child.key) { h[child.key.toUpperCase()] = child.value } else if (child.children.length === 0 && child.content) { a[a.length] = child.content } else { h[child.content.toUpperCase()] = formatLine(child) }
     }
     return a.length > 0 ? a : h
   }
 
-  function liner (line) {
+  function makeLine (line) {
     return {
       indent: line.search(/\S|$/),
       content: line.trim(),
@@ -24,27 +22,25 @@ function Indental (data) {
     }
   }
 
-  this.parse = function (Type) {
-    const lines = this.data.split('\n').map(liner)
+  const lines = data.split('\n').map(makeLine)
 
-    // Assoc lines
-    const stack = {}
-    for (const id in lines) {
-      const line = lines[id]
-      if (line.skip) { continue }
-      const target = stack[line.indent - 2]
-      if (target) { target.children[target.children.length] = line }
-      stack[line.indent] = line
-    }
-
-    // Format
-    const h = {}
-    for (const id in lines) {
-      const line = lines[id]
-      if (line.skip || line.indent > 0) { continue }
-      const key = line.content.toUpperCase()
-      h[key] = Type ? new Type(key, format(line)) : format(line)
-    }
-    return h
+  // Assoc lines
+  const stack = {}
+  for (const id in lines) {
+    const line = lines[id]
+    if (line.skip) { continue }
+    const target = stack[line.indent - 2]
+    if (target) { target.children[target.children.length] = line }
+    stack[line.indent] = line
   }
+
+  // Format
+  const h = {}
+  for (const id in lines) {
+    const line = lines[id]
+    if (line.skip || line.indent > 0) { continue }
+    const key = line.content.toUpperCase()
+    h[key] = Type ? new Type(key, formatLine(line)) : formatLine(line)
+  }
+  return h
 }

@@ -11,11 +11,11 @@ RIVEN.create = (append = true) => {
   Ø('model').mesh({ x: 6, y: 0 }, [
     Ø('router').create({ x: 8, y: 2 }, RIVEN.lib.router),
     Ø('database').create({ x: 8, y: 8 }, RIVEN.lib.database),
-    Ø('dictionaery').create({ x: 2, y: 14 }, RIVEN.lib.table, Tablatal, Aeth),
-    Ø('lexicon').create({ x: 5, y: 14 }, RIVEN.lib.table, Indental, Term),
-    Ø('horaire').create({ x: 8, y: 14 }, RIVEN.lib.table, Tablatal, Log),
-    Ø('issues').create({ x: 11, y: 14 }, RIVEN.lib.table, Tablatal, Issue),
-    Ø('glossary').create({ x: 14, y: 14 }, RIVEN.lib.table, Indental, List),
+    Ø('dictionaery').create({ x: 2, y: 14 }, RIVEN.lib.table, tablatal, Aeth),
+    Ø('lexicon').create({ x: 5, y: 14 }, RIVEN.lib.table, indental, Term),
+    Ø('horaire').create({ x: 8, y: 14 }, RIVEN.lib.table, tablatal, Log),
+    Ø('issues').create({ x: 11, y: 14 }, RIVEN.lib.table, tablatal, Issue),
+    Ø('glossary').create({ x: 14, y: 14 }, RIVEN.lib.table, indental, List),
     Ø('map').create({ x: 14, y: 8 }, RIVEN.lib.map)
   ])
 
