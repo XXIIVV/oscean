@@ -103,11 +103,10 @@ RIVEN.lib.terminal = function TerminalNode (id, rect, ...params) {
     score: (q) => {
       const score = { ratings: 0, entries: 0, average: 0, issues: 0 }
       for (const id in Ø('database').cache.lexicon) {
-        score.ratings += Ø('database').cache.lexicon[id].rating().score
+        score.ratings += Ø('database').cache.lexicon[id].rating()
         score.entries += 1
       }
-      score.average = score.ratings / score.entries
-      return `${(score.average * 100).toFixed(2)}% Complete`
+      return `${((score.ratings / score.entries) * 100).toFixed(2)}% Complete`
     },
 
     unknown: (q) => {

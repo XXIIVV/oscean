@@ -13,13 +13,16 @@ function Heol (input, tables, host) {
     keys: function (h) {
       return Object.keys(h)
     },
-    values: function (a, name) {
-      return a.map((val) => { return val[name] })
+    values: function (h) {
+      return Object.keys(h).map((val) => { return h[val]});
     },
     uniq: function (items) {
       return items.filter((value, index, self) => {
         return self.indexOf(value) === index
       })
+    },
+    attribute: function (a, name) {
+      return a.map((val) => { return val[name] })
     },
     find: function (source, target) {
       return source[target.toUpperCase()] ? source[target.toUpperCase()] : ''

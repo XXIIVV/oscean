@@ -9,8 +9,8 @@ function List (name, data) {
 
   this.body = function () {
     return `<ul>${Object.keys(this.data).reduce((acc, val) => {
-      return `${acc}<li>{*${val.capitalize()}*}: ${this.data[val]}</li>`
-    }, '')}</ul>`.to_curlic()
+      return `${acc}<li>{*${val.capitalize()}*}: ${this.data[val].to_curlic()}</li>`
+    }, '')}</ul>`
   }
 
   this.toString = function (q) {

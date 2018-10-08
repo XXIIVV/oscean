@@ -39,26 +39,21 @@ function Term (name, data) {
   }
 
   this.rating = function () {
-    const h = { points: {} }
+    const points = {
+      long: this.data.LONG && this.data.LONG.length > 0,
+      logs: this.logs.length > 0,
+      children: this.children.length > 0,
+      photo: this.diaries.length > 0,
+      outgoing: this.outgoing && this.outgoing.length > 1,
+      incoming: this.incoming && this.incoming.length > 1,
+      glyph: this.glyph() !== '',
+      issues: this.issues.length === 0,
+      links: Object.keys(this.links).length > 0,
+      tags: this.tags.length > 0
+    }
 
-    h.points.long = this.data.LONG && this.data.LONG.length > 0
-    h.points.logs = this.logs.length > 0
-    h.points.children = this.children.length > 0
-    h.points.photo = this.diaries.length > 0
-    h.points.outgoing = this.outgoing && this.outgoing.length > 1
-    h.points.incoming = this.incoming && this.incoming.length > 1
-    h.points.glyph = this.glyph() !== ''
-    h.points.issues = this.issues.length === 0
-    h.points.links = Object.keys(this.links).length > 0
-    h.points.tags = this.tags.length > 0
-
-    // Score
-    let p = 0
-    for (const id in h.points) { p += h.points[id] ? 1 : 0 }
-
-    h['score'] = (p / Object.keys(h.points).length)
-    h['status'] = h['score'] < 0.4 ? 'poor' : h['score'] < 0.7 ? 'fair' : h['score'] < 0.9 ? 'good' : 'perfect'
-    return h
+    const score = Object.keys(points).reduce((acc,val) => { return acc + (points[val] ? 1 : 0) },0)
+    return score / Object.keys(points).length
   }
 
   this.has_tag = function (str) {
