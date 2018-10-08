@@ -74,6 +74,11 @@ RIVEN.lib.terminal = function TerminalNode (id, rect, ...params) {
       return `Done.`
     },
 
+    static: (q) => {
+      Ø('static').receive()
+      return `Done.`
+    },
+
     otd: (q) => {
       const today = new Date().desamber()
       const a = []
@@ -92,7 +97,7 @@ RIVEN.lib.terminal = function TerminalNode (id, rect, ...params) {
     },
 
     age: (q) => {
-      return `You are ${((new Date()-new Date("1986-03-22"))/31557600000).toFixed(4)} years old.`
+      return `You are ${((new Date() - new Date('1986-03-22')) / 31557600000).toFixed(4)} years old.`
     },
 
     score: (q) => {

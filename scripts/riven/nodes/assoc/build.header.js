@@ -41,7 +41,7 @@ RIVEN.lib.header = function BuildHeaderNode (id, rect) {
     return {
       photo: featured_log ? featured_log.photo : 0,
       info: {
-        title: featured_log ? `<a href='#(${featured_log.term.to_url()}:diary)'>${featured_log.name}</a> —<br />${timeAgo(featured_log.time,60)}` : ' ',
+        title: featured_log ? `<a href='#(${featured_log.term.to_url()}:diary)'>${featured_log.name}</a> —<br />${timeAgo(featured_log.time, 60)}` : ' ',
         glyph: q.result && q.result.glyph() ? q.result.glyph() : 'M240,240 l0,-90 a-90,-90 0 0,0 -90,-90 l-90,0 l0,90 a90,90 0 0,0 90,90 l60,0 l0,-90 a-60,-60 0 0,0 -60,-60 l-60,0 l0,60 a60,60 0 0,0 60,60 l30,0 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0 l0,30 a30,30 0 0,0 30,30'
       },
       menu: {

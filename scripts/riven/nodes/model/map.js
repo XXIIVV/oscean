@@ -59,9 +59,9 @@ RIVEN.lib.map = function MapNode (id, rect) {
       tables.lexicon[index].logs.push(log)
       // Span
       if (log.time.offset < 0) {
-        tables.lexicon[index].span.from = log
+        tables.lexicon[index].span.from = `${log.time}`
         if (!tables.lexicon[index].span.to) {
-          tables.lexicon[index].span.to = log
+          tables.lexicon[index].span.to = `${log.time}`
         }
       }
       if (!log.photo) { continue }

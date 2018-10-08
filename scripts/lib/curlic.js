@@ -31,7 +31,7 @@ function Curlic (text = '', host) {
     const name = s.replace(`(${target})`, '').trim()
     const location = target.toLowerCase().replace(/ /g, '+').replace(/[^0-9a-z\+\:\-\.\/]/gi, '').trim()
 
-    return `<a href='${external ? target : '#' + location}' target='${external ? '_blank' : '_self'}' class='${external ? 'external' : 'local'}' data-goto='${external ? '' : target}'>${name || target}</a>`
+    return `<a href='${external ? target : 'index.html#' + location}' target='${external ? '_blank' : '_self'}' class='${external ? 'external' : 'local'}' data-goto='${external ? '' : target}'>${name || target}</a>`
   }
 
   function parse (s) {
@@ -71,4 +71,4 @@ function Curlic (text = '', host) {
   }
 }
 
-String.prototype.to_curlic = function () { return `${new Curlic(this)}` }
+String.prototype.to_curlic = function (attr) { return `${new Curlic(this, attr)}` }

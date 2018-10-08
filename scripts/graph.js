@@ -5,7 +5,8 @@ RIVEN.create = (append = true) => {
   Ø('mouse').create({ x: 2, y: 8 }, RIVEN.lib.mouse)
 
   Ø('services').mesh({ x: 6, y: 21 }, [
-    Ø('rss').create({ x: 2, y: 2 }, RIVEN.lib.rss)
+    Ø('rss').create({ x: 2, y: 2 }, RIVEN.lib.rss),
+    Ø('static').create({ x: 5, y: 2 }, RIVEN.lib.static)
   ])
 
   Ø('model').mesh({ x: 6, y: 0 }, [
