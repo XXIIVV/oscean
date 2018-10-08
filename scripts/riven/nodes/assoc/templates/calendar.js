@@ -111,7 +111,7 @@ RIVEN.lib.calendar = function CalendarTemplate (id, rect, ...params) {
       ${!arr[id - 1] || arr[id - 1].time.y != log.time.y ? `<li class='head'>20${log.time.y}</li>` : ''}
       <li style='${log.time.offset > 0 ? 'color:#aaa' : ''}'>
         {${log.name}(${log.term})}</a> 
-        <span title='${log.time}'>${log.time.ago(60)}</span>
+        <span title='${log.time}'>${timeAgo(log.time,60)}</span>
       </li>`
     }, '')}</ul>`.to_curlic()
   }

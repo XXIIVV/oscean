@@ -24,8 +24,8 @@ function Viz (logs, from, to) {
   function _legend (logs) {
     const horaire = new Horaire(logs)
     return `
-    <text x='${2}' y='${-15}' style='text-anchor:start'>${logs[logs.length - 1].time.ago().capitalize()}</text>
-    <text x='${730}' y='${-15}' style='text-anchor:end'>${logs[0].time.ago().capitalize()}</text>
+    <text x='${2}' y='${-15}' style='text-anchor:start'>${timeAgo(logs[logs.length - 1].time).capitalize()}</text>
+    <text x='${730}' y='${-15}' style='text-anchor:end'>${timeAgo(logs[0].time).capitalize()}</text>
 
     <rect class="audio" x="${cell * 0}" y="115" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
     <text x='${(cell + 1) * 2}' y='125' style='text-anchor:start'>Audio ${(horaire.sectors.audio * 10).toFixed(1)}%</text>
