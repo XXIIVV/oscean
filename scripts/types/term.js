@@ -52,7 +52,7 @@ function Term (name, data) {
       tags: this.tags.length > 0
     }
 
-    const score = Object.keys(points).reduce((acc,val) => { return acc + (points[val] ? 1 : 0) },0)
+    const score = Object.keys(points).reduce((acc, val) => { return acc + (points[val] ? 1 : 0) }, 0)
     return score / Object.keys(points).length
   }
 
