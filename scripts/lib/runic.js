@@ -9,7 +9,7 @@ function Runic (lines = [], Templater = null, host = null) {
     '+': { tag: 'hs' },
     '?': { tag: 'div', class: 'note' },
     '@': { tag: 'div', class: 'quote', fn: quote },
-    '-': { tag: 'li', wrapper: 'ul' },
+    '-': { tag: 'li', wrapper: 'ul', wrapper_class:'bullet' },
     '#': { tag: 'li', wrapper: 'code' },
     '|': { tag: 'tr', wrapper: 'table', fn: table },
     '%': { fn: media },
@@ -43,13 +43,14 @@ function Runic (lines = [], Templater = null, host = null) {
 
   function _html (acc, stash) {
     const wr = runes[stash.rune].wrapper
+    const wr_class = runes[stash.rune].wrapper_class
     const html = stash.a.reduce((acc, val, id) => {
       const r = runes[stash.rune]
       const txt = r.fn ? r.fn(stash.a[id]) : stash.a[id]
       const htm = Templater ? new Templater(txt) : txt
       return `${acc}${r.tag ? `<${r.tag} class='${r.class ? r.class : ''}'>${htm}</${r.tag}>` : `${htm}`}`
     }, '')
-    return wr ? `${acc}<${wr}>${html}</${wr}>` : `${acc}${html}`
+    return wr ? `${acc}<${wr} class='${wr_class ? wr_class : ''}'>${html}</${wr}>` : `${acc}${html}`
   }
 
   // Templates
