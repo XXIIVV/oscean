@@ -1,8 +1,7 @@
 'use strict'
 
 function Lisp (input, lib, tables, host) {
-  this.input = input
-
+  
   const Context = function (scope, parent) {
     this.scope = scope
     this.parent = parent
@@ -99,6 +98,6 @@ function Lisp (input, lib, tables, host) {
   }
 
   this.toString = function () {
-    return `${interpret(this.parse(this.input))}`
+    return `${interpret(this.parse(input))}`
   }
 }

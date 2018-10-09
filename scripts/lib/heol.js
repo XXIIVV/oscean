@@ -1,8 +1,8 @@
 'use strict'
 
 function Heol (input, tables, host) {
-  const lib =
-  {
+
+  const lib = {
     match: function (source, items) {
       const filtered = items.filter((val) => { return source[val.toUpperCase()] })
       return filtered.map((val) => { return source[val.toUpperCase()] })
@@ -35,7 +35,6 @@ function Heol (input, tables, host) {
     wrap: function (item, tag, cl) {
       return `<${tag} class='${cl || ''}'>${item}</${tag}>`
     },
-
     // will modify properties or run a function onto each object.
     map: function (arr, fn) {
       return arr.map((val, id, arr) => fn)
@@ -48,9 +47,7 @@ function Heol (input, tables, host) {
     reduce: function (arr, fn, acc) {
       return arr.reduce((acc, val, id, arr) => fn, acc)
     },
-
     // Templaters
-
     template: function (items, t, p) {
       return items.map((val) => {
         return `${t(val, p)}`

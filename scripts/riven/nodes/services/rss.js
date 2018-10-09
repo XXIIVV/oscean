@@ -7,7 +7,6 @@ RIVEN.lib.rss = function RssNode (id, rect) {
 
   this.receive = function () {
     const logs = Ø('router').cache.tables.horaire
-
     const selection = []
     for (const id in logs) {
       const log = logs[id]

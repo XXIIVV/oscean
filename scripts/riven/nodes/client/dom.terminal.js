@@ -79,6 +79,10 @@ RIVEN.lib.terminal = function TerminalNode (id, rect, ...params) {
       return `Done.`
     },
 
+    heol: (q) => {
+      return `${new Heol(q,Ø('database').cache,null)}`
+    },
+
     otd: (q) => {
       const today = new Date().desamber()
       const a = []
