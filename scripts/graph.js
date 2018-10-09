@@ -2,55 +2,55 @@
 
 RIVEN.create = (append = true) => {
   Ø('query').create({ x: 2, y: 2 }, RIVEN.lib.query)
-  Ø('mouse').create({ x: 2, y: 8 }, RIVEN.lib.mouse)
+  Ø('mouse').create({ x: 2, y: 6 }, RIVEN.lib.mouse)
 
-  Ø('services').mesh({ x: 6, y: 21 }, [
+  Ø('services').mesh({ x: 6, y: 17 }, [
     Ø('rss').create({ x: 2, y: 2 }, RIVEN.lib.rss),
     Ø('static').create({ x: 5, y: 2 }, RIVEN.lib.static)
   ])
 
   Ø('model').mesh({ x: 6, y: 0 }, [
     Ø('router').create({ x: 8, y: 2 }, RIVEN.lib.router),
-    Ø('database').create({ x: 8, y: 8 }, RIVEN.lib.database),
-    Ø('dictionaery').create({ x: 2, y: 14 }, RIVEN.lib.table, tablatal, Aeth),
-    Ø('lexicon').create({ x: 5, y: 14 }, RIVEN.lib.table, indental, Term),
-    Ø('horaire').create({ x: 8, y: 14 }, RIVEN.lib.table, tablatal, Log),
-    Ø('issues').create({ x: 11, y: 14 }, RIVEN.lib.table, tablatal, Issue),
-    Ø('glossary').create({ x: 14, y: 14 }, RIVEN.lib.table, indental, List),
-    Ø('map').create({ x: 14, y: 8 }, RIVEN.lib.map)
+    Ø('database').create({ x: 8, y: 6 }, RIVEN.lib.database),
+    Ø('dictionaery').create({ x: 2, y: 10 }, RIVEN.lib.table, tablatal, Aeth),
+    Ø('lexicon').create({ x: 5, y: 10 }, RIVEN.lib.table, indental, Term),
+    Ø('horaire').create({ x: 8, y: 10 }, RIVEN.lib.table, tablatal, Log),
+    Ø('issues').create({ x: 11, y: 10 }, RIVEN.lib.table, tablatal, Issue),
+    Ø('glossary').create({ x: 14, y: 10 }, RIVEN.lib.table, indental, List),
+    Ø('map').create({ x: 11, y: 6 }, RIVEN.lib.map)
   ])
 
   Ø('assoc').mesh({ x: 25, y: 0 }, [
     Ø('build').create({ x: 5, y: 2 }, RIVEN.lib.build),
-    Ø('_header').create({ x: 2, y: 8 }, RIVEN.lib.header),
-    Ø('_sidebar').create({ x: 5, y: 8 }, RIVEN.lib.sidebar),
-    Ø('_navi').create({ x: 11, y: 8 }, RIVEN.lib.navi),
-    Ø('_content').create({ x: 8, y: 8 }, RIVEN.lib.content),
-    Ø('missing').create({ x: 2, y: 20 }, RIVEN.lib.missing),
-    Ø('default').create({ x: 2, y: 14 }, RIVEN.lib.default),
-    Ø('journal').create({ x: 8, y: 14 }, RIVEN.lib.journal),
-    Ø('tracker').create({ x: 11, y: 14 }, RIVEN.lib.tracker),
-    Ø('calendar').create({ x: 14, y: 14 }, RIVEN.lib.calendar)
+    Ø('_header').create({ x: 2, y: 6 }, RIVEN.lib.header),
+    Ø('_sidebar').create({ x: 5, y: 6 }, RIVEN.lib.sidebar),
+    Ø('_navi').create({ x: 11, y: 6 }, RIVEN.lib.navi),
+    Ø('_content').create({ x: 8, y: 6 }, RIVEN.lib.content),
+    Ø('missing').create({ x: 5, y: 14 }, RIVEN.lib.missing),
+    Ø('default').create({ x: 5, y: 10 }, RIVEN.lib.default),
+    Ø('journal').create({ x: 8, y: 10 }, RIVEN.lib.journal),
+    Ø('tracker').create({ x: 11, y: 10 }, RIVEN.lib.tracker),
+    Ø('calendar').create({ x: 14, y: 10 }, RIVEN.lib.calendar)
   ])
 
   Ø('client').mesh({ x: 44, y: 0 }, [
     Ø('view').create({ x: 2, y: 2 }, RIVEN.lib.document, append),
-    Ø('terminal').create({ x: 8, y: 8 }, RIVEN.lib.terminal),
-    Ø('header').create({ x: 2, y: 8 }, RIVEN.lib.dom),
-    Ø('photo').create({ x: 2, y: 14 }, RIVEN.lib.photo, 'photo'),
-    Ø('logo').create({ x: 8, y: 14 }, RIVEN.lib.dom, 'a', null, { 'data-goto': 'home', href: '#home' }),
-    Ø('menu').create({ x: 5, y: 14 }, RIVEN.lib.dom),
-    Ø('search').create({ x: 2, y: 20 }, RIVEN.lib.input),
-    Ø('activity').create({ x: 5, y: 20 }, RIVEN.lib.dom, 'ul'),
-    Ø('info').create({ x: 11, y: 14 }, RIVEN.lib.dom),
-    Ø('glyph').create({ x: 11, y: 20 }, RIVEN.lib.path),
-    Ø('title').create({ x: 8, y: 20 }, RIVEN.lib.dom),
-    Ø('core').create({ x: 14, y: 8 }, RIVEN.lib.dom),
-    Ø('content').create({ x: 14, y: 14 }, RIVEN.lib.dom),
-    Ø('sidebar').create({ x: 17, y: 14 }, RIVEN.lib.dom),
-    Ø('navi').create({ x: 20, y: 14 }, RIVEN.lib.dom, 'ul'),
-    Ø('footer').create({ x: 23, y: 8 }, RIVEN.lib.dom),
-    Ø('credits').create({ x: 23, y: 14 }, RIVEN.lib.dom, 'div', `
+    Ø('terminal').create({ x: 8, y: 6 }, RIVEN.lib.terminal),
+    Ø('header').create({ x: 2, y: 6 }, RIVEN.lib.dom),
+    Ø('photo').create({ x: 2, y: 10 }, RIVEN.lib.photo, 'photo'),
+    Ø('logo').create({ x: 8, y: 10 }, RIVEN.lib.dom, 'a', null, { 'data-goto': 'home', href: '#home' }),
+    Ø('menu').create({ x: 5, y: 10 }, RIVEN.lib.dom),
+    Ø('search').create({ x: 2, y: 14 }, RIVEN.lib.input),
+    Ø('activity').create({ x: 5, y: 14 }, RIVEN.lib.dom, 'ul'),
+    Ø('info').create({ x: 11, y: 10 }, RIVEN.lib.dom),
+    Ø('glyph').create({ x: 11, y: 14 }, RIVEN.lib.path),
+    Ø('title').create({ x: 8, y: 14 }, RIVEN.lib.dom),
+    Ø('core').create({ x: 14, y: 6 }, RIVEN.lib.dom),
+    Ø('content').create({ x: 14, y: 10 }, RIVEN.lib.dom),
+    Ø('sidebar').create({ x: 17, y: 10 }, RIVEN.lib.dom),
+    Ø('navi').create({ x: 20, y: 10 }, RIVEN.lib.dom, 'ul'),
+    Ø('footer').create({ x: 23, y: 6 }, RIVEN.lib.dom),
+    Ø('credits').create({ x: 23, y: 10 }, RIVEN.lib.dom, 'div', `
       <a target='_blank' href="https://twitter.com/neauoire" class="icon twitter external"></a>
       <a target='_blank' href="https://github.com/neauoire" class="icon github external"></a>
       <a target='_blank' href="http://webring.xxiivv.com/#random" class="icon rotonde"></a>
@@ -70,7 +70,7 @@ RIVEN.create = (append = true) => {
 
   // Assoc
   Ø('build').syphon(['_navi', '_content', '_sidebar', '_header'])
-  Ø('_content').syphon(['default', 'journal', 'tracker', 'home', 'calendar'])
+  Ø('_content').syphon(['default', 'journal', 'tracker', 'calendar'])
   Ø('build').connect(['view'])
   Ø('default').syphon(['missing'])
 

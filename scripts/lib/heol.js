@@ -14,7 +14,7 @@ function Heol (input, tables, host) {
       return Object.keys(h)
     },
     values: function (h) {
-      return Object.keys(h).map((val) => { return h[val] })
+      return Object.values(h)
     },
     uniq: function (items) {
       return items.filter((value, index, self) => {
