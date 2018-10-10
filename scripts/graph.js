@@ -6,10 +6,10 @@ RIVEN.create = (append = true) => {
   Ø('query').create({ x: 2, y: 0 }, lib.Query)
   Ø('mouse').create({ x: 2, y: 4 }, lib.Mouse)
 
-  // Ø('services').create({ x: 6, y: 17 }, lib.Mesh, [
-  //   Ø('rss').create({ x: 2, y: 2 }, lib.Rss),
-  //   Ø('static').create({ x: 5, y: 2 }, lib.Static)
-  // ])
+  Ø('services').create({ x: 6, y: 17 }, lib.Mesh, [
+    Ø('rss').create({ x: 2, y: 2 }, lib.Rss),
+    Ø('static').create({ x: 5, y: 2 }, lib.Static)
+  ])
 
   Ø('model').create({ x: 6, y: 0 }, lib.Mesh, [
     Ø('router').create({ x: 6, y: 0 }, lib.Router),
