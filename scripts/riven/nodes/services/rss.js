@@ -38,7 +38,7 @@ RIVEN.lib.Rss = function RssNode (id, rect) {
     <description>
       &lt;img src="https://wiki.xxiivv.com/media/diary/${log.photo}.jpg"/&gt;
       &lt;br/&gt;
-      ${log.host.data.BREF ? log.host.data.BREF.to_curlic().to_rss().replace_all("href='index.html#", "href='https://wiki.xxiiv.com/") : ''}
+      ${log.host.data.BREF ? log.host.data.BREF.to_curlic().to_rss().replace_all("href='index.html#", "href='https://wiki.xxiivv.com/") : ''}
     </description>
   </item>
 `
