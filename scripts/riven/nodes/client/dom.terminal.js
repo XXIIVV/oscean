@@ -95,7 +95,7 @@ RIVEN.lib.Terminal = function TerminalNode (id, rect, ...params) {
       for (const id in a) {
         const log = a[id]
         if (!log.term) { continue }
-        html += `— <b>${log.time}</b> ${log.is_event ? '*' : '•'} ${log.term}${log.name ? ' \"' + log.name + '\"' : ''}\n`
+        html += `— <b>${log.time}</b> ${log.isEvent ? '*' : '•'} ${log.term} — ${log.name}\n`
       }
       return html
     },

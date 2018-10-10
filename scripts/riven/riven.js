@@ -1,4 +1,3 @@
-
 // "Don't forget, the portal combination's in my journal."" — Catherine
 
 'use strict'
@@ -258,9 +257,6 @@ RIVEN.graph = () => {
   function drawConnectionEntry (a, b) {
     const posA = getPortPosition(a)
     const posB = getPortPosition(b)
-    const posM = middle(posA, posB)
-    const posC1 = { x: (posM.x + (posA.x + GRID_SIZE)) / 2, y: posA.y }
-    const posC2 = { x: (posM.x + (posB.x - GRID_SIZE)) / 2, y: posB.y }
 
     return `
     <path d="
@@ -274,9 +270,6 @@ RIVEN.graph = () => {
   function drawConnectionExit (a, b) {
     const posA = getPortPosition(a)
     const posB = getPortPosition(b)
-    const posM = middle(posA, posB)
-    const posC1 = { x: (posM.x + (posA.x + GRID_SIZE)) / 2, y: posA.y }
-    const posC2 = { x: (posM.x + (posB.x - GRID_SIZE)) / 2, y: posB.y }
 
     return `
     <path d="

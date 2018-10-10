@@ -23,7 +23,7 @@ function Entry (name, data) {
     return null
   }
 
-  this.has_tag = function () {
+  this.hasTag = function () {
     return false
   }
 

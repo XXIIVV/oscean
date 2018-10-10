@@ -6,7 +6,7 @@ RIVEN.lib.Journal = function JournalTemplate (id, rect, ...params) {
   this.glyph = 'M60,60 L60,60 L240,60 L240,240 L60,240 Z M240,150 L240,150 L150,150 L150,240'
 
   this.answer = function (q, upcoming = false) {
-    const all_logs = q.target == 'journal' ? q.tables.horaire : q.result.logs
+    const all_logs = q.target === 'journal' ? q.tables.horaire : q.result.logs
 
     // Collect only the last 366 logs
     const logs = []

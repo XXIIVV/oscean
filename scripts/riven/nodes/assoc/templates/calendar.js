@@ -55,7 +55,7 @@ RIVEN.lib.Calendar = function CalendarTemplate (id, rect, ...params) {
 
   function _cell (des, f, filter) {
     const link = f.event ? f.event.term : f.task ? f.task.term : null
-    const cl = `${f.event ? 'event' : ''} ${f.sector} ${filter && link && filter.to_url() != link.to_url() ? 'disabled' : ''}`
+    const cl = `${f.event ? 'event' : ''} ${f.sector} ${filter && link && filter.to_url() !== link.to_url() ? 'disabled' : ''}`
     return `
     <td class='${cl}' ${link ? `data-goto='${link.to_url()}:calendar'` : ''}>
       <span class='date'>${des.m}${des.d}</span>
@@ -103,12 +103,12 @@ RIVEN.lib.Calendar = function CalendarTemplate (id, rect, ...params) {
   }
 
   function _timeline (logs) {
-    const events = logs.filter((log) => { return log.is_event })
+    const events = logs.filter((log) => { return log.isEvent })
 
     return `<ul class='tidy col3' style='margin-top:30px; padding-top:30px; border-top:1.5px solid #333'>${events.reduce((acc, log, id, arr) => {
       return `
       ${acc}
-      ${!arr[id - 1] || arr[id - 1].time.y != log.time.y ? `<li class='head'>20${log.time.y}</li>` : ''}
+      ${!arr[id - 1] || arr[id - 1].time.y !== log.time.y ? `<li class='head'>20${log.time.y}</li>` : ''}
       <li style='${log.time.offset > 0 ? 'color:#aaa' : ''}'>
         {${log.name}(${log.term})}</a> 
         <span title='${log.time}'>${timeAgo(log.time, 60)}</span>
@@ -120,7 +120,7 @@ RIVEN.lib.Calendar = function CalendarTemplate (id, rect, ...params) {
     const tasks = make_tasks(q.tables.issues)
     const upcomings = make_upcomings(q.tables.horaire)
     const forecast = make_forecasts(q.tables.horaire, tasks, upcomings)
-    const filter = q.result && q.result.name.toLowerCase() != 'calendar' ? q.result.name : null
+    const filter = q.result && q.result.name.toLowerCase() !== 'calendar' ? q.result.name : null
 
     return `
     ${new BalanceViz(q.tables.horaire)}

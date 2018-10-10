@@ -64,10 +64,10 @@ function Heol (input, tables, host) {
       return `<h2>${item.name.capitalize()}</h2><h4>${item.bref}</h4>`
     },
     PHOTO: function (item) {
-      return host.featured_log && host.featured_log.photo !== item.photo ? `<img src="media/diary/${item.photo}.jpg"/>` : ''
+      return host.featuredLog && host.featuredLog.photo !== item.photo ? `<img src="media/diary/${item.photo}.jpg"/>` : ''
     },
     GALLERY: function (item) {
-      return `${item.featured_log ? `<a data-goto='${item.name}'><img src="media/diary/${item.featured_log.photo}.jpg"/></a>` : ''}<h2>${item.name.capitalize()}</h2><h4>${item.bref}</h4>`
+      return `${item.featuredLog ? `<a data-goto='${item.name}'><img src="media/diary/${item.featuredLog.photo}.jpg"/></a>` : ''}<h2>${item.name.capitalize()}</h2><h4>${item.bref}</h4>`
     },
     SPAN: function (item) {
       return item.logs.length > 10 && item.span.from && item.span.to ? `<li>{(${item.name.capitalize()})} ${item.span.from}—${item.span.to}</li>`.to_curlic() : ''

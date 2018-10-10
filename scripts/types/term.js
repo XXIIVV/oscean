@@ -9,7 +9,7 @@ function Term (name, data) {
   this.issues = [] // From Ø('map')
   this.diaries = [] // From Ø('map')
   this.span = { from: null, to: null }
-  this.featured_log = null // From Ø('map')
+  this.featuredLog = null // From Ø('map')
 
   this.data = data
   this.bref = data.BREF ? data.BREF : ''
@@ -56,7 +56,7 @@ function Term (name, data) {
     return score / Object.keys(points).length
   }
 
-  this.has_tag = function (str) {
+  this.hasTag = function (str) {
     const target = str.toLowerCase().replace(/ /g, '_').trim()
     return this.tags.indexOf(target) > -1
   }

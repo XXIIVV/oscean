@@ -67,16 +67,16 @@ RIVEN.lib.Map = function MapNode (id, rect) {
       if (!log.photo) { continue }
       tables.lexicon[index].diaries.push(log)
       count.diaries += 1
-      if (!tables.lexicon[index].featured_log) {
-        tables.lexicon[index].featured_log = log
+      if (!tables.lexicon[index].featuredLog) {
+        tables.lexicon[index].featuredLog = log
         continue
       }
-      if (!tables.lexicon[index].featured_log.is_featured) {
-        tables.lexicon[index].featured_log = log
+      if (!tables.lexicon[index].featuredLog.isFeatured) {
+        tables.lexicon[index].featuredLog = log
         continue
       }
-      if (!tables.lexicon[index].featured_log && log.is_featured) {
-        tables.lexicon[index].featured_log = log
+      if (!tables.lexicon[index].featuredLog && log.isFeatured) {
+        tables.lexicon[index].featuredLog = log
       }
     }
 

@@ -38,13 +38,13 @@ RIVEN.lib.Tracker = function TrackerTemplate (id, rect, ...params) {
   }
 
   this.answer = function (q) {
-    if (!q.result || (q.target != 'tracker' && q.result.issues.length < 1)) {
+    if (!q.result || (q.target !== 'tracker' && q.result.issues.length < 1)) {
       return `<p>There are no issues for ${q.target}.</p>`
     }
 
-    const issues = q.target == 'tracker' ? q.tables.issues : q.result ? q.result.issues : []
+    const issues = q.target === 'tracker' ? q.tables.issues : q.result ? q.result.issues : []
     const sorted_issues = sort_issues(issues)
 
-    return q.target == 'tracker' ? `${new BarViz(q.tables.horaire)}${_all_issues(sorted_issues)}` : q.result && q.result.issues.length > 0 ? `${_term_issues(sorted_issues[q.result.name.toLowerCase()])}` : ''
+    return q.target === 'tracker' ? `${new BarViz(q.tables.horaire)}${_all_issues(sorted_issues)}` : q.result && q.result.issues.length > 0 ? `${_term_issues(sorted_issues[q.result.name.toLowerCase()])}` : ''
   }
 }
