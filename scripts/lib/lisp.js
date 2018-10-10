@@ -1,7 +1,6 @@
 'use strict'
 
 function Lisp (input, lib, tables, host) {
-  
   const Context = function (scope, parent) {
     this.scope = scope
     this.parent = parent

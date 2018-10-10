@@ -1,7 +1,6 @@
 'use strict'
 
 function Heol (input, tables, host) {
-
   const lib = {
     match: function (source, items) {
       const filtered = items.filter((val) => { return source[val.toUpperCase()] })

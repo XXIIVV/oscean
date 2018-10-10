@@ -1,6 +1,6 @@
 'use strict'
 
-RIVEN.lib.navi = function BuildNaviNode (id, rect) {
+RIVEN.lib.Navi = function BuildNaviNode (id, rect) {
   RIVEN.Node.call(this, id, rect)
 
   this.glyph = 'M60,60 L60,60 L240,60 L240,240 L60,240 Z'

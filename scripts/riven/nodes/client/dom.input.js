@@ -1,7 +1,7 @@
 'use strict'
 
-RIVEN.lib.input = function InputNode (id, rect, ...params) {
-  RIVEN.lib.dom.call(this, id, rect, ...params)
+RIVEN.lib.Input = function InputNode (id, rect, ...params) {
+  RIVEN.lib.Dom.call(this, id, rect, ...params)
 
   this.el = document.createElement('input')
   this.el.id = this.id

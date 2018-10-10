@@ -1,6 +1,6 @@
 'use strict'
 
-RIVEN.lib.dom = function DomNode (id, rect, ...params) {
+RIVEN.lib.Dom = function DomNode (id, rect, ...params) {
   RIVEN.Node.call(this, id, rect)
 
   this.type = params[0] ? params[0] : 'div'

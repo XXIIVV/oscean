@@ -1,6 +1,6 @@
 'use strict'
 
-RIVEN.lib.router = function RouterNode (id, rect) {
+RIVEN.lib.Router = function RouterNode (id, rect) {
   RIVEN.Node.call(this, id, rect)
 
   this.glyph = 'M60,120 L60,120 L150,120 L240,60 M60,150 L60,150 L240,150 M60,180 L60,180 L150,180 L240,240'

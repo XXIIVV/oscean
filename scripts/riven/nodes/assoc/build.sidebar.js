@@ -1,6 +1,6 @@
 'use strict'
 
-RIVEN.lib.sidebar = function BuildSidebarNode (id, rect) {
+RIVEN.lib.Sidebar = function BuildSidebarNode (id, rect) {
   RIVEN.Node.call(this, id, rect)
 
   this.glyph = 'M60,60 L60,60 L240,60 L240,240 L60,240 Z'
