@@ -81,7 +81,7 @@ function Term (name, data) {
     const a = []
     const str = this.data.BREF + (this.data.LONG ? this.data.LONG.join('\n') : '')
 
-    let curlies = new Curlic(str).extract()
+    let curlies = str.match(/[^{\}]+(?=})/g)
 
     if (!curlies) { return [] }
 
@@ -103,7 +103,7 @@ function Term (name, data) {
   }
 
   this.body = function () {
-    return new Runic(this.data.LONG, Curlic, this)
+    return `${runic(this.data.LONG, curlic, this)}`
   }
 
   this.toString = function () {

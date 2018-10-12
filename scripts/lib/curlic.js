@@ -1,8 +1,6 @@
 'use strict'
 
-function Curlic (text = '', host) {
-  this.text = `${text}`
-
+function curlic (text = '', host) {
   const runes = {
     '*': { tag: 'b' },
     '_': { tag: 'i' },
@@ -55,20 +53,19 @@ function Curlic (text = '', host) {
     return s
   }
 
-  this.extract = function () {
-    return this.text.match(/[^{\}]+(?=})/g)
+  function extract (text) {
+    return text.match(/[^{\}]+(?=})/g)
   }
 
-  this.toString = function () {
-    const matches = this.extract()
+  const matches = extract(text)
 
-    if (!matches) { return this.text }
+  if (!matches) { return text }
 
-    matches.forEach(el => {
-      this.text = this.text.replace(`{${el}}`, parse(el))
-    })
-    return this.text
-  }
+  matches.forEach(el => {
+    text = text.replace(`{${el}}`, parse(el))
+  })
+
+  return text
 }
 
-String.prototype.to_curlic = function (attr) { return `${new Curlic(this, attr)}` }
+String.prototype.to_curlic = function (attr) { return `${curlic(this, attr)}` }
