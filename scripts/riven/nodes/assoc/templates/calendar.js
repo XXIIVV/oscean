@@ -67,7 +67,7 @@ RIVEN.lib.Calendar = function CalendarTemplate (id, rect, ...params) {
     return `
     <style>
       #view #core #content table.cells { background:transparent; width:100%; max-width: 730px; padding:0px; font-family: var(--font) }
-      #view #core #content table.cells tr td { margin:5px; height:100px; color:#000; position: relative; border-bottom:1.5px solid #333; }
+      #view #core #content table.cells tr td { margin:5px; height:100px; color:#000; position: relative; border-bottom:1.5px solid #333; width: calc(100% / 7); }
       #view #core #content table.cells tr td:hover { border-bottom-color: #000 !important; cursor: pointer; }
       #view #core #content table.cells tr td:hover span.date { color:#000; }
       #view #core #content table.cells tr td.event { border-bottom-color:white !important;}

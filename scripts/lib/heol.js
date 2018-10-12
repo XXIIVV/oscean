@@ -15,6 +15,9 @@ function Heol (input, tables, host) {
     values: function (h) {
       return Object.values(h)
     },
+    sort: function (a) {
+      return a.sort()
+    },
     uniq: function (items) {
       return items.filter((value, index, self) => {
         return self.indexOf(value) === index
