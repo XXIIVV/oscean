@@ -15,6 +15,9 @@ function Heol (input, tables, host) {
     values: function (h) {
       return Object.values(h)
     },
+    value: function (h, val) {
+      return h[val]
+    },
     sort: function (a) {
       return a.sort()
     },
@@ -49,16 +52,13 @@ function Heol (input, tables, host) {
     reduce: function (arr, fn, acc) {
       return arr.reduce((acc, val, id, arr) => fn, acc)
     },
-    // Templaters
     template: function (items, t, p) {
       return items.map((val) => {
         return `${t(val, p)}`
       })
     },
     INDEX: function (item) {
-      return `<h3>{(${item.name.capitalize()})}</h3><p>${item.bref}</p><ul class='bullet'>${item.children.reduce((acc, term) => {
-        return `${acc}<li>${term.bref}</li>`
-      }, '')}</ul>`
+      return `<h3>{(${item.name.capitalize()})}</h3><p>${item.bref}</p><ul class='bullet'>${item.children.reduce((acc, term) => { return `${acc}<li>${term.bref}</li>` }, '')}</ul>`
     },
     LINK: function (item) {
       return `{(${item.capitalize()})}`
@@ -74,11 +74,6 @@ function Heol (input, tables, host) {
     },
     SPAN: function (item) {
       return item.logs.length > 10 && item.span.from && item.span.to ? `<li>{(${item.name.capitalize()})} ${item.span.from}—${item.span.to}</li>`.to_curlic() : ''
-    },
-
-    log: function (item) {
-      console.log(item)
-      return 'hey'
     }
   }
 

@@ -35,6 +35,10 @@ RIVEN.lib.Journal = function JournalTemplate (id, rect, ...params) {
       i += 1
     }
 
-    return `${new ActivityViz(logs)}${html}<style>.graph.status { margin-bottom:0px !important }</style>`
+    return `
+    ${new ActivityViz(logs)}
+    ${q.result.body()}
+    ${html}
+    <style>.graph.status { margin-bottom:0px !important }</style>`
   }
 }
