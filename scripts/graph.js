@@ -7,8 +7,8 @@ RIVEN.create = (append = true) => {
   Ø('mouse').create({ x: 2, y: 4 }, lib.Mouse)
 
   Ø('services').create({ x: 6, y: 17 }, lib.Mesh, [
-    Ø('rss').create({ x: 2, y: 2 }, lib.Rss),
-    Ø('static').create({ x: 5, y: 2 }, lib.Static)
+    Ø('rss').create({ x: 0, y: 0 }, lib.Rss),
+    Ø('static').create({ x: 3, y: 0 }, lib.Static)
   ])
 
   Ø('model').create({ x: 6, y: 0 }, lib.Mesh, [
@@ -23,36 +23,36 @@ RIVEN.create = (append = true) => {
   ], 'router', 'router')
 
   Ø('assoc').create({ x: 28, y: 0 }, lib.Mesh, [
-    Ø('build').create({ x: 5, y: 0 }, lib.Build),
-    Ø('_header').create({ x: 2, y: 4 }, lib.Header),
-    Ø('_sidebar').create({ x: 5, y: 4 }, lib.Sidebar),
-    Ø('_navi').create({ x: 11, y: 4 }, lib.Navi),
-    Ø('_content').create({ x: 8, y: 4 }, lib.Content),
-    Ø('missing').create({ x: 5, y: 12 }, lib.Missing),
-    Ø('default').create({ x: 5, y: 8 }, lib.Default),
-    Ø('journal').create({ x: 8, y: 8 }, lib.Journal),
-    Ø('tracker').create({ x: 11, y: 8 }, lib.Tracker),
-    Ø('calendar').create({ x: 14, y: 8 }, lib.Calendar)
+    Ø('build').create({ x: 3, y: 0 }, lib.Build),
+    Ø('_header').create({ x: 0, y: 4 }, lib.Header),
+    Ø('_sidebar').create({ x: 3, y: 4 }, lib.Sidebar),
+    Ø('_navi').create({ x: 9, y: 4 }, lib.Navi),
+    Ø('_content').create({ x: 6, y: 4 }, lib.Content),
+    Ø('missing').create({ x: 3, y: 12 }, lib.Missing),
+    Ø('default').create({ x: 3, y: 8 }, lib.Default),
+    Ø('journal').create({ x: 6, y: 8 }, lib.Journal),
+    Ø('tracker').create({ x: 9, y: 8 }, lib.Tracker),
+    Ø('calendar').create({ x: 12, y: 8 }, lib.Calendar)
   ], 'build', 'build')
 
-  Ø('client').create({ x: 52, y: 0 }, lib.Mesh, [
-    Ø('view').create({ x: 2, y: 2 }, lib.Document, append),
-    Ø('terminal').create({ x: 8, y: 6 }, lib.Terminal),
-    Ø('header').create({ x: 2, y: 6 }, lib.Dom),
-    Ø('photo').create({ x: 2, y: 10 }, lib.Photo, 'photo'),
-    Ø('logo').create({ x: 8, y: 10 }, lib.Dom, 'a', null, { 'data-goto': 'home', href: '#home' }),
-    Ø('menu').create({ x: 5, y: 10 }, lib.Dom),
-    Ø('search').create({ x: 2, y: 14 }, lib.Input),
-    Ø('activity').create({ x: 5, y: 14 }, lib.Dom, 'ul'),
-    Ø('info').create({ x: 11, y: 10 }, lib.Dom),
-    Ø('glyph').create({ x: 11, y: 14 }, lib.Path),
-    Ø('title').create({ x: 8, y: 14 }, lib.Dom),
-    Ø('core').create({ x: 14, y: 6 }, lib.Dom),
-    Ø('content').create({ x: 14, y: 10 }, lib.Dom),
-    Ø('sidebar').create({ x: 17, y: 10 }, lib.Dom),
-    Ø('navi').create({ x: 20, y: 10 }, lib.Dom, 'ul'),
-    Ø('footer').create({ x: 23, y: 6 }, lib.Dom),
-    Ø('credits').create({ x: 23, y: 10 }, lib.Dom, 'div', `
+  Ø('client').create({ x: 50, y: 0 }, lib.Mesh, [
+    Ø('view').create({ x: 0, y: 2 }, lib.Document, append),
+    Ø('terminal').create({ x: 6, y: 6 }, lib.Terminal),
+    Ø('header').create({ x: 0, y: 6 }, lib.Dom),
+    Ø('photo').create({ x: 0, y: 10 }, lib.Photo, 'photo'),
+    Ø('logo').create({ x: 6, y: 10 }, lib.Dom, 'a', null, { 'data-goto': 'home', href: '#home' }),
+    Ø('menu').create({ x: 3, y: 10 }, lib.Dom),
+    Ø('search').create({ x: 0, y: 14 }, lib.Input),
+    Ø('activity').create({ x: 3, y: 14 }, lib.Dom, 'ul'),
+    Ø('info').create({ x: 9, y: 10 }, lib.Dom),
+    Ø('glyph').create({ x: 9, y: 14 }, lib.Path),
+    Ø('title').create({ x: 6, y: 14 }, lib.Dom),
+    Ø('core').create({ x: 12, y: 6 }, lib.Dom),
+    Ø('content').create({ x: 12, y: 10 }, lib.Dom),
+    Ø('sidebar').create({ x: 15, y: 10 }, lib.Dom),
+    Ø('navi').create({ x: 18, y: 10 }, lib.Dom, 'ul'),
+    Ø('footer').create({ x: 21, y: 6 }, lib.Dom),
+    Ø('credits').create({ x: 21, y: 10 }, lib.Dom, 'div', `
       <a target='_blank' href="https://twitter.com/neauoire" class="icon twitter external"></a>
       <a target='_blank' href="https://github.com/neauoire" class="icon github external"></a>
       <a target='_blank' href="http://webring.xxiivv.com/#random" class="icon rotonde"></a>
