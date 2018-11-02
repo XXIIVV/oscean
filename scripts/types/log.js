@@ -10,7 +10,7 @@ function Log (data = { code: '-400' }) {
   this.time = data.date ? new Desamber(data.date) : null
   this.photo = data.pict ? parseInt(data.pict) : null
   this.bref = `A log added on {${this.time}(Calendar)} to {(${this.term})}.`
-  this.indexes = data.name ? [data.name] : []
+  this.indexes = data.name && this.photo ? [data.name, `${this.photo}`] : []
 
   this.rune = data.code.length === 4 ? data.code.substr(0, 1) : '-'
   this.sc = data.code.length === 4 ? parseInt(data.code.substr(1, 1)) : 0
@@ -28,7 +28,7 @@ function Log (data = { code: '-400' }) {
   ]
   this.task = this.tasks[this.sc - 1] ? this.tasks[this.sc - 1][this.ch] : 'travel'
 
-  this.toString = function () {
+  this.body = function () {
     return `
     <div class='entry log'>
       <svg data-goto='${this.term}' class='icon'><path transform="scale(0.15,0.15) translate(20,20)" d="${this.host ? this.host.glyph() : ''}"></path></svg>
@@ -38,5 +38,9 @@ function Log (data = { code: '-400' }) {
       </div>
       ${this.photo ? `<img src='media/diary/${this.photo}.jpg' data-goto='${this.term}'/>` : ''}
     </div>`
+  }
+
+  this.toString = function () {
+    return this.body()
   }
 }

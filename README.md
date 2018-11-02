@@ -39,4 +39,4 @@ The `Resources/` folder inclues syntax highlight for both [Indental](https://wik
 - Pull Requests are welcome.
 - See the [License](LICENSE) file for license rights and limitations(MIT).
 
-<img src='https://github.com/XXIIVV/Oscean/blob/master/media/brand/logo.crest.png?raw=true' width='200'/>
+<img src='https://github.com/XXIIVV/Oscean/blob/master/media/identity/logo.crest.png?raw=true' width='200'/>

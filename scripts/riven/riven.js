@@ -143,7 +143,6 @@ RIVEN.Node = function (id, rect = { x: 0, y: 0, w: 2, h: 2 }) {
 
     this.connect = function (port) {
       if (!port) { console.warn(`Unknown port from: ${this.host.id}`); return }
-      console.log(`Connect ${this.host.id}.${this.id} -> ${port.host.id}.${port.id}`)
       this.routes.push(port)
     }
   }
