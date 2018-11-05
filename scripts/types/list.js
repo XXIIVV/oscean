@@ -4,7 +4,7 @@ function List (name, data) {
   Entry.call(this, name, data)
 
   this.bref = `The {(${this.name.capitalize()})} word list.`
-  this.unde = 'Glossary'
+  this.unde = 'Mirrors'
   this.indexes = [name].concat(Object.keys(data))
 
   this.body = function () {

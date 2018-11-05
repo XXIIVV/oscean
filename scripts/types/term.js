@@ -40,7 +40,7 @@ function Term (name, data) {
 
   this.rating = function () {
     const points = {
-      long: this.data.LONG && this.data.LONG.length > 0,
+      body: this.data.BODY && this.data.BODY.length > 0,
       logs: this.logs.length > 0,
       children: this.children.length > 0,
       photo: this.diaries.length > 0,
@@ -79,7 +79,7 @@ function Term (name, data) {
 
   this.find_outgoing = function () {
     const a = []
-    const str = this.data.BREF + (this.data.LONG ? this.data.LONG.join('\n') : '')
+    const str = this.data.BREF + (this.data.BODY ? this.data.BODY.join('\n') : '')
 
     let curlies = str.match(/[^{\}]+(?=})/g)
 
@@ -103,7 +103,7 @@ function Term (name, data) {
   }
 
   this.body = function () {
-    return `${runic(this.data.LONG, curlic, this)}`
+    return `${runic(this.data.BODY, curlic, this)}`
   }
 
   this.toString = function () {
