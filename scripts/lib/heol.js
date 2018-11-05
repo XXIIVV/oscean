@@ -58,17 +58,24 @@ function Heol (input, tables, host) {
       })
     },
     adultspeak: function (item) {
-      return new Aeth(null, item).adultspeak
+      return new Aeth(item).adultspeak
     },
     lien: function (item) {
-      // Ø('database').cache.dictionaery[item.toUpperCase()]
-      // console.log()
-      return 'TODO'
+      const result = Ø('database').cache.dictionaery[item.toUpperCase()]
+      return result ? result.toEn() : 'err:unknown'
     },
-    enli: function (item) {
-      // Ø('database').cache.dictionaery[item.toUpperCase()]
-      // console.log()
-      return 'TODO'
+    enli: function (...items) {
+      const dict = Ø('database').cache.dictionaery
+      let s = ''
+      for (const key in items) {
+        for (const id in dict) {
+          if (dict[id].hasEn(items[key])) { s += `${new Aeth(id.toLowerCase()).adultspeak} `; break }
+        }
+      }
+      return s.trim()
+    },
+    septambres: function (item) {
+      return new Septambres(item)
     },
     INDEX: function (item) {
       return `<h3>{(${item.name.capitalize()})}</h3><p>${item.bref}</p><ul class='bullet'>${item.children.reduce((acc, term) => { return `${acc}<li>${term.bref}</li>` }, '')}</ul>`

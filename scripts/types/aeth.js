@@ -1,7 +1,7 @@
 'use strict'
 
-function Aeth (data = {}, name = null) {
-  Entry.call(this, name || data.name, data)
+function Aeth (name = null, data = []) {
+  Entry.call(this, name, data)
 
   this.consonant = this.name.substr(0, 1)
   this.vowel = this.name.substr(1, 1)
@@ -13,18 +13,12 @@ function Aeth (data = {}, name = null) {
     return Ø('database').find(`${this.consonant}Y`, true).to_english()
   }
 
-  this.to_english = function () {
-    if (this.data && this.data.english) { return this.data.english.toLowerCase() }
-
-    const r = Ø('database').find(this.name, true)
-    return r && r.data.english ? r.data.english.toLowerCase() : null
+  this.toEn = function () {
+    return data[0].toLowerCase()
   }
 
-  this.to_deconstruction = function () {
-    const ae1 = new Aeth(null, this.name.substr(0, 2))
-    const ae2 = new Aeth(null, this.name.substr(2, 2))
-
-    return `${ae1.adultspeak}:<b>${ae1.type()}.${ae1.to_english()}</b>&#40;${ae2.adultspeak}:<b>${ae2.type()}.${ae2.to_english()}</b>&#41; = ${this.adultspeak}:<b>${this.type()}.${this.to_english()}</b>`
+  this.hasEn = function (target = '') {
+    return this.data && this.data instanceof Array ? this.data.indexOf(target.toUpperCase()) > -1 : false
   }
 
   function adultspeak (cs) {
