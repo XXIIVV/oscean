@@ -91,7 +91,7 @@ function Term (name, data) {
 
     curlies.forEach(el => {
       const name = el.split('(')[1].replace(')', '')
-      a.push(name.toUpperCase())
+      if (el.substr(0, 1) !== 'λ') { a.push(name.toUpperCase()) }
     })
     return a
   }

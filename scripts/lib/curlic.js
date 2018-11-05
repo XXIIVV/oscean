@@ -17,6 +17,10 @@ function curlic (text = '', host) {
     try { return `${eval(t)}` } catch (err) { console.warn(`Cannot eval:${t}`, err); return t }
   }
 
+  function heol (t) {
+    return new Heol(t, Ø('database').cache, host)
+  }
+
   function wrap (s, c, r) {
     if (s.indexOf(c) > 0) { return s }
     s = s.replace(c, `<${r.tag}>`).replace(c, `</${r.tag}>`)
@@ -34,6 +38,9 @@ function curlic (text = '', host) {
 
   function parse (s) {
     validate(s)
+
+    const to_heol = s.substr(0, 1) === 'λ'
+    if (to_heol) { s = s.replace(s, heol(s.substr(1))) }
 
     const to_eval = s.match(/\[(.*)\]/g)
     if (to_eval) { s = s.replace(to_eval[0], evaluate(to_eval[0])) }

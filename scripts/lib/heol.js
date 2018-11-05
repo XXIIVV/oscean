@@ -57,6 +57,19 @@ function Heol (input, tables, host) {
         return `${t(val, p)}`
       })
     },
+    adultspeak: function (item) {
+      return new Aeth(null, item).adultspeak
+    },
+    lien: function (item) {
+      // Ø('database').cache.dictionaery[item.toUpperCase()]
+      // console.log()
+      return 'TODO'
+    },
+    enli: function (item) {
+      // Ø('database').cache.dictionaery[item.toUpperCase()]
+      // console.log()
+      return 'TODO'
+    },
     INDEX: function (item) {
       return `<h3>{(${item.name.capitalize()})}</h3><p>${item.bref}</p><ul class='bullet'>${item.children.reduce((acc, term) => { return `${acc}<li>${term.bref}</li>` }, '')}</ul>`
     },
