@@ -5,7 +5,7 @@ function Log (data = { code: '-400' }) {
 
   this.host = null // From Ø('map')
 
-  this.term = data.term ? data.term.capitalize() : ''
+  this.term = data.term ? data.term.toCapitalCase() : ''
   this.text = data.text
   this.time = data.date ? new Desamber(data.date) : null
   this.photo = data.pict ? parseInt(data.pict) : null

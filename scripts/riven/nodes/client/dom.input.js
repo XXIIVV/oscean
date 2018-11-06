@@ -36,7 +36,7 @@ RIVEN.lib.Input = function InputNode (id, rect, ...params) {
 
   this.update = function (content) {
     if (typeof content === 'string') {
-      this.el.value = content.capitalize()
+      this.el.value = content.toCapitalCase()
     }
   }
 }

@@ -107,6 +107,6 @@ function Term (name, data) {
   }
 
   this.toString = function () {
-    return `<h2>${this.name.capitalize()}</h2><h4>${this.bref}</h4>${this.body()}`
+    return `<h2>${this.name.toCapitalCase()}</h2><h4>${this.bref}</h4>${this.body()}`
   }
 }

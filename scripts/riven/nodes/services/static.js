@@ -13,11 +13,11 @@ RIVEN.lib.Static = function StaticNode (id, rect) {
   function _item (term) {
     return `
     <li>
-      <b>${term.name.capitalize()}</b>
+      <b>${term.name.toCapitalCase()}</b>
       ${term.featuredLog ? `(<a href='media/diary/${term.featuredLog.photo}.jpg' target='_blank'>jpg</a>)` : ''}
       ${term.span.from && term.span.to ? `[${term.span.from}-${term.span.to}]` : ''}: 
       ${term.bref.to_curlic(term)}
-      <ul>${Object.keys(term.links).reduce((acc, val) => { return `${acc}<li><a href='${term.links[val]}' target='_blank'>${val.capitalize()}</a></li>\n` }, ' ')}</ul>
+      <ul>${Object.keys(term.links).reduce((acc, val) => { return `${acc}<li><a href='${term.links[val]}' target='_blank'>${val.toCapitalCase()}</a></li>\n` }, ' ')}</ul>
     </li>`
   }
 

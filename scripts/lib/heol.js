@@ -52,11 +52,47 @@ function Heol (input, tables, host) {
     reduce: function (arr, fn, acc) {
       return arr.reduce((acc, val, id, arr) => fn, acc)
     },
+    // -----------------------
+    // Strings
+    // -----------------------
+    lc: function (item) {
+      return item.toLowerCase()
+    },
+    cc: function (item) {
+      return item.toCapitalCase()
+    },
+    uc: function (item) {
+      return item.toUpperCase()
+    },
+    // -----------------------
+    // Templates
+    // -----------------------
     template: function (items, t, p) {
       return items.map((val) => {
         return `${t(val, p)}`
       })
     },
+    INDEX: function (item) {
+      return `<h3>{(${item.name.toCapitalCase()})}</h3><p>${item.bref}</p><ul class='bullet'>${item.children.reduce((acc, term) => { return `${acc}<li>${term.bref}</li>` }, '')}</ul>`
+    },
+    LINK: function (item) {
+      return `{(${item.toCapitalCase()})}`
+    },
+    TITLE: function (item) {
+      return `<h2>${item.name.toCapitalCase()}</h2><h4>${item.bref}</h4>`
+    },
+    PHOTO: function (item) {
+      return host.featuredLog && host.featuredLog.photo !== item.photo ? `<img src="media/diary/${item.photo}.jpg"/>` : ''
+    },
+    GALLERY: function (item) {
+      return `${item.featuredLog ? `<a data-goto='${item.name}'><img src="media/diary/${item.featuredLog.photo}.jpg"/></a>` : ''}<h2>${item.name.toCapitalCase()}</h2><h4>${item.bref}</h4>`
+    },
+    SPAN: function (item) {
+      return item.logs.length > 10 && item.span.from && item.span.to ? `<li>{(${item.name.toCapitalCase()})} ${item.span.from}—${item.span.to}</li>`.to_curlic() : ''
+    },
+    // -----------------------
+    // Lietal
+    // -----------------------
     adultspeak: function (item) {
       return new Aeth(item).adultspeak
     },
@@ -76,24 +112,6 @@ function Heol (input, tables, host) {
     },
     septambres: function (item) {
       return new Septambres(item)
-    },
-    INDEX: function (item) {
-      return `<h3>{(${item.name.capitalize()})}</h3><p>${item.bref}</p><ul class='bullet'>${item.children.reduce((acc, term) => { return `${acc}<li>${term.bref}</li>` }, '')}</ul>`
-    },
-    LINK: function (item) {
-      return `{(${item.capitalize()})}`
-    },
-    TITLE: function (item) {
-      return `<h2>${item.name.capitalize()}</h2><h4>${item.bref}</h4>`
-    },
-    PHOTO: function (item) {
-      return host.featuredLog && host.featuredLog.photo !== item.photo ? `<img src="media/diary/${item.photo}.jpg"/>` : ''
-    },
-    GALLERY: function (item) {
-      return `${item.featuredLog ? `<a data-goto='${item.name}'><img src="media/diary/${item.featuredLog.photo}.jpg"/></a>` : ''}<h2>${item.name.capitalize()}</h2><h4>${item.bref}</h4>`
-    },
-    SPAN: function (item) {
-      return item.logs.length > 10 && item.span.from && item.span.to ? `<li>{(${item.name.capitalize()})} ${item.span.from}—${item.span.to}</li>`.to_curlic() : ''
     }
   }
 

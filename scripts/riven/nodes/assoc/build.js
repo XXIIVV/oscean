@@ -9,7 +9,7 @@ RIVEN.lib.Build = function BuildNode (id, rect) {
     const builds = this.request(q)
 
     this.send({
-      title: `XXIIVV — ${q.target.capitalize()}`,
+      title: `XXIIVV — ${q.target.toCapitalCase()}`,
       theme: q.result ? q.result.theme : 'default',
       view: {
         header: builds._header,
