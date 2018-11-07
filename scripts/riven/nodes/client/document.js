@@ -5,6 +5,8 @@ RIVEN.lib.Document = function DocumentNode (id, rect, ...params) {
 
   this.glyph = 'M150,60 L150,60 L240,150 L150,240 L60,150 Z M150,120 L150,120 L180,150 L150,180 L120,150 Z '
 
+  this.view = 'default'
+
   this.receive = function (content = { title: 'Unknown' }) {
     document.title = content.title
 
@@ -31,6 +33,12 @@ RIVEN.lib.Document = function DocumentNode (id, rect, ...params) {
       this.el.appendChild(elements[id])
     }
   }
+
+  this.setView = function (view) {
+    this.remove_class(this.view)
+    this.view = view
+    this.add_class(this.view)
+  }
 }
 
 function on_scroll () {
@@ -41,7 +49,7 @@ function on_scroll () {
   const header_el = document.getElementById('header')
   const logo_el = document.getElementById('logo')
   const menu_el = document.getElementById('menu')
-  if (scroll > header.offsetHeight - 120) {
+  if (scroll > header.offsetHeight - 90) {
     if (menu_el.className !== 'sticky') { menu_el.className = 'sticky' }
   } else {
     if (menu_el.className === 'sticky') { menu_el.className = '' }

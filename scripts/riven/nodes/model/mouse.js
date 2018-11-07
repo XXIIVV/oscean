@@ -12,6 +12,14 @@ RIVEN.lib.Mouse = function MouseNode (id, rect) {
     const in_tab = e.ctrlKey || e.shiftKey || e.metaKey || e.which === 2 || (e.button && e.button === 1)
     const el = e.target.getAttribute('data-goto') ? e.target : e.target.parentNode.getAttribute('data-goto') ? e.target.parentNode : null
 
+    const view = e.target.getAttribute('data-view') ? e.target : e.target.parentNode.getAttribute('data-view') ? e.target.parentNode : null
+
+    if (view) {
+      Ø('view').setView(view.getAttribute('data-view'))
+      e.preventDefault()
+      return
+    }
+
     if (!el || el.className === 'external' || in_tab) { return }
 
     Ø('query').bang(el.getAttribute('data-goto'))

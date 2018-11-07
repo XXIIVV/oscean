@@ -57,7 +57,7 @@ RIVEN.lib.Calendar = function CalendarTemplate (id, rect, ...params) {
     const link = f.event ? f.event.term : f.task ? f.task.term : null
     const cl = `${f.event ? 'event' : ''} ${f.sector} ${filter && link && filter.to_url() !== link.to_url() ? 'disabled' : ''}`
     return `
-    <td class='${cl}' ${link ? `data-goto='${link.to_url()}:calendar'` : ''}>
+    <td class='${cl}' ${link ? `data-view='${link.to_url()}:calendar'` : ''}>
       <span class='date'>${des.m}${des.d}</span>
       ${f.event ? `<span class='event'>${f.event.name}</span>` : f.task ? `<span class='task'><b>${f.task.term}</b> ${f.task.name}</span>` : ''}
     </td>`

@@ -29,7 +29,7 @@ RIVEN.lib.Tracker = function TrackerTemplate (id, rect, ...params) {
     return `
     <h2 style='margin-top:30px'>${Object.keys(issues).length} Active Projects</h2>
     ${Object.keys(issues).reduce((acc, term) => {
-    return `${acc}<h3><a data-goto='${term.to_url()}:tracker' href='#${term.to_url()}:tracker'>${term}</a></h3><div style='margin-bottom:30px'>${Object.keys(issues[term]).reduce((acc, category) => {
+    return `${acc}<h3><a data-view='${term.to_url()}:tracker' href='#${term.to_url()}:tracker'>${term}</a></h3><div style='margin-bottom:30px'>${Object.keys(issues[term]).reduce((acc, category) => {
       return `${acc}${issues[term][category].reduce((acc, issue) => {
         return `${acc}${issue}`
       }, '')}`
