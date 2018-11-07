@@ -9,7 +9,7 @@ RIVEN.lib.Path = function PathNode (id, rect, ...params) {
   this.el = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
   this.el.id = this.id
   this.path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
-  this.path.setAttribute('transform', 'scale(0.175,0.175) translate(-50,-50)')
+  this.path.setAttribute('transform', 'scale(0.165,0.165) translate(-50,-50)')
   this.el.appendChild(this.path)
   this.is_installed = false
 

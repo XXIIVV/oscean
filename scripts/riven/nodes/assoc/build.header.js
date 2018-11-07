@@ -40,13 +40,13 @@ RIVEN.lib.Header = function BuildHeaderNode (id, rect) {
 
     return {
       photo: featuredLog ? featuredLog.photo : 0,
-      info: {
-        title: featuredLog ? `<a href='#(${featuredLog.term.to_url()}:diary)'>${featuredLog.name}</a> —<br />${timeAgo(featuredLog.time, 60)}` : ' ',
-        glyph: q.result && q.result.glyph() ? q.result.glyph() : 'M240,240 l0,-90 a-90,-90 0 0,0 -90,-90 l-90,0 l0,90 a90,90 0 0,0 90,90 l60,0 l0,-90 a-60,-60 0 0,0 -60,-60 l-60,0 l0,60 a60,60 0 0,0 60,60 l30,0 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0 l0,30 a30,30 0 0,0 30,30'
-      },
       menu: {
         search: q.target && q.target.toCapitalCase(),
-        activity: makeActivity(q)
+        activity: makeActivity(q),
+        info: {
+          title: featuredLog ? `<a href='#(${featuredLog.term.to_url()}:diary)'>${featuredLog.name}</a> — ${timeAgo(featuredLog.time, 60)}` : ' ',
+          glyph: q.result && q.result.glyph() ? q.result.glyph() : 'M240,240 l0,-90 a-90,-90 0 0,0 -90,-90 l-90,0 l0,90 a90,90 0 0,0 90,90 l60,0 l0,-90 a-60,-60 0 0,0 -60,-60 l-60,0 l0,60 a60,60 0 0,0 60,60 l30,0 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0 l0,30 a30,30 0 0,0 30,30'
+        }
       }
     }
   }

@@ -77,7 +77,8 @@ RIVEN.create = (append = true) => {
   Ø('assoc').connect('client')
 
   // // Dom
-  Ø('header').bind(['logo', 'photo', 'menu', 'info'])
+  Ø('header').bind(['photo', 'menu'])
+  Ø('menu').bind(['logo', 'info'])
   Ø('info').bind(['glyph', 'title'])
   Ø('menu').bind(['search', 'activity'])
   Ø('view').bind(['header', 'core', 'footer', 'terminal'])

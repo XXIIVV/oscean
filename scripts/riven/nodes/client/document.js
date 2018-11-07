@@ -37,26 +37,13 @@ function on_scroll () {
   const info_el = document.getElementById('info')
   const scroll = window.scrollY
 
-  // Info
-  if (scroll > 0) {
-    if (info_el.className !== 'ghost') {
-      info_el.className = 'ghost'
-    }
-  } else {
-    if (info_el.className === 'ghost') {
-      info_el.className = ''
-    }
-  }
-
   // Logo/Search
   const header_el = document.getElementById('header')
   const logo_el = document.getElementById('logo')
   const menu_el = document.getElementById('menu')
   if (scroll > header.offsetHeight - 120) {
-    if (logo_el.className !== 'sticky') { logo_el.className = 'sticky' }
     if (menu_el.className !== 'sticky') { menu_el.className = 'sticky' }
   } else {
-    if (logo_el.className === 'sticky') { logo_el.className = '' }
     if (menu_el.className === 'sticky') { menu_el.className = '' }
   }
 }
