@@ -50,7 +50,7 @@ RIVEN.create = (append = true) => {
     Ø('core').create({ x: 12, y: 4 }, lib.Dom),
     Ø('content').create({ x: 12, y: 8 }, lib.Dom),
     Ø('sidebar').create({ x: 15, y: 8 }, lib.Dom),
-    Ø('navi').create({ x: 18, y: 8 }, lib.Dom, 'ul'),
+    Ø('navi').create({ x: 18, y: 8 }, lib.Dom),
     Ø('footer').create({ x: 21, y: 4 }, lib.Dom),
     Ø('credits').create({ x: 21, y: 8 }, lib.Dom, 'div', `
       <a target='_blank' href="https://twitter.com/neauoire" class="icon twitter external"></a>

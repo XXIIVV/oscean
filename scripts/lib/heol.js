@@ -26,6 +26,9 @@ function Heol (input, tables, host) {
         return self.indexOf(value) === index
       })
     },
+    random: function (a) {
+      return a[parseInt(Math.random() * a.length)]
+    },
     attribute: function (a, name) {
       return a.map((val) => { return val[name] })
     },
@@ -77,6 +80,9 @@ function Heol (input, tables, host) {
     },
     LINK: function (item) {
       return `{(${item.toCapitalCase()})}`
+    },
+    REDIRECT: function (item) {
+      return `<meta http-equiv="refresh" content="2; url=#${item}">`
     },
     TITLE: function (item) {
       return `<h2>${item.name.toCapitalCase()}</h2><h4>${item.bref}</h4>`
