@@ -53,7 +53,7 @@ RIVEN.lib.Map = function MapNode (id, rect) {
     for (const id in tables.horaire) {
       const log = tables.horaire[id]
       const index = log.term.toUpperCase()
-      if (!log.term) { continue }
+      if (!log.term) { console.warn(`Empty log at ${log.time}`); continue }
       if (!tables.lexicon[index]) { console.warn('Missing log term', index); continue }
       log.host = tables.lexicon[index]
       tables.lexicon[index].logs.push(log)
