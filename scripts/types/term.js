@@ -14,10 +14,9 @@ function Term (name, data) {
   this.data = data
   this.bref = data.BREF ? data.BREF : ''
   this.unde = data.UNDE ? data.UNDE : 'Home'
-  this.type = data.TYPE ? data.TYPE.toLowerCase() : null
+  this.view = data.VIEW ? data.VIEW.toLowerCase() : 'main'
   this.links = data.LINK ? data.LINK : {}
   this.tags = data.TAGS ? data.TAGS.toLowerCase().split(' ') : []
-  this.theme = data.LOOK ? data.LOOK.toLowerCase() : 'default'
   this.indexes = data.ALTS ? [name].concat(data.ALTS.split(' ')) : [name]
 
   this.is_portal = this.tags.indexOf('portal') > -1

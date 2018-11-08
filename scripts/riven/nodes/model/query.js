@@ -9,7 +9,7 @@ RIVEN.lib.Query = function QueryNode (id, rect) {
   this.bang = function (input = window.location.hash) {
     const target = input.to_url() === '' ? 'home' : input.to_url()
 
-    Ø('view').set_class('loading')
+    Ø('document').set_class('loading')
 
     console.log(this.id, target)
 

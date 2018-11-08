@@ -12,9 +12,10 @@ RIVEN.lib.Document = function DocumentNode (id, rect, ...params) {
 
     this.label = `${content.title}`
 
+    this.setView(content.view)
+
     setTimeout(() => {
       this.remove_class('loading')
-      this.add_class(content.theme)
       this.add_class('ready')
     }, 100)
 
@@ -34,8 +35,10 @@ RIVEN.lib.Document = function DocumentNode (id, rect, ...params) {
     }
   }
 
-  this.setView = function (view) {
-    if (this.view === view) { this.setView('main'); return }
+  this.setView = function (view = 'main') {
+    if (this.view === view && this.view !== 'main') { this.setView('main'); return }
+
+    console.log(`Set view: ${view}`)
 
     this.remove_class(this.view)
     this.view = view

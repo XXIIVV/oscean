@@ -15,7 +15,7 @@ RIVEN.lib.Mouse = function MouseNode (id, rect) {
     const view = e.target.getAttribute('data-view') ? e.target : e.target.parentNode.getAttribute('data-view') ? e.target.parentNode : null
 
     if (view) {
-      Ø('view').setView(view.getAttribute('data-view'))
+      Ø('document').setView(view.getAttribute('data-view'))
       e.preventDefault()
       return
     }

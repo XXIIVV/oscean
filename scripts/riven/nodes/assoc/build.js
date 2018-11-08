@@ -10,8 +10,8 @@ RIVEN.lib.Build = function BuildNode (id, rect) {
 
     this.send({
       title: `XXIIVV — ${q.target.toCapitalCase()}`,
-      theme: q.result ? q.result.theme : 'default',
-      view: {
+      view: q.result ? q.result.view : 'main',
+      document: {
         header: builds._header,
         core: {
           sidebar: builds._sidebar,
@@ -21,6 +21,6 @@ RIVEN.lib.Build = function BuildNode (id, rect) {
       }
     })
 
-    document.body.appendChild(this.signal('assoc').signal('client').signal('view').answer())
+    document.body.appendChild(this.signal('assoc').signal('client').signal('document').answer())
   }
 }

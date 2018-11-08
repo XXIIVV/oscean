@@ -3,6 +3,7 @@
 function Entry (name, data) {
   this.name = name
   this.data = data
+  this.view = 'main'
   this.unde = 'Home'
   this.bref = `—`
   this.indexes = [this.name]

@@ -16,9 +16,9 @@ RIVEN.lib.Input = function InputNode (id, rect, ...params) {
     const value = this.el.value.trim().toLowerCase()
 
     if (value.substr(0, 1) === '~') {
-      Ø('view').add_class('terminal')
+      Ø('document').add_class('terminal')
     } else {
-      Ø('view').remove_class('terminal')
+      Ø('document').remove_class('terminal')
     }
 
     if (e.key === 'Enter') {

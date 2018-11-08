@@ -34,7 +34,7 @@ RIVEN.create = (append = true) => {
   ], 'build', 'build')
 
   Ø('client').create({ x: 47, y: 0 }, lib.Mesh, [
-    Ø('view').create({ x: 0, y: 0 }, lib.Document, append),
+    Ø('document').create({ x: 0, y: 0 }, lib.Document, append),
     Ø('terminal').create({ x: 3, y: 4 }, lib.Terminal),
     Ø('header').create({ x: 0, y: 4 }, lib.Dom),
     Ø('photo').create({ x: 0, y: 8 }, lib.Photo, 'photo'),
@@ -63,7 +63,7 @@ RIVEN.create = (append = true) => {
       <center><a data-goto='About' href='#About'>BY-NC-SA 4.0</a> <span style="color:#ccc"'>${neralie()}</span></center>
       <a target='_blank' href="http://100r.co" class="icon hundredrabbits"></a><hr>
     `)
-  ], 'view')
+  ], 'document')
 
   // // Model
   Ø('router').syphon('database')
@@ -82,7 +82,7 @@ RIVEN.create = (append = true) => {
   Ø('header').bind(['photo', 'menu'])
   Ø('menu').bind(['logo', 'info', 'search', 'activity'])
   Ø('info').bind(['glyph', 'title'])
-  Ø('view').bind(['header', 'core', 'footer', 'terminal'])
+  Ø('document').bind(['header', 'core', 'footer', 'terminal'])
   Ø('core').bind(['sidebar', 'content', 'navi'])
   Ø('content').bind(['main', 'journal', 'tracker', 'calendar'])
 
