@@ -31,14 +31,14 @@ RIVEN.lib.Rss = function RssNode (id, rect) {
       html += `
   <item>
     <title>${log.term} — ${log.name}</title>
-    <link>https://wiki.xxiivv.com/${log.term.to_url()}</link>
+    <link>https://wiki.xxiivv.com/${log.term.toUrl()}</link>
     <guid isPermaLink='false'>IV${log.photo}</guid>
     <pubDate>${log.time.toDate().toUTCString()}</pubDate>
     <dc:creator><![CDATA[Devine Lu Linvega]]></dc:creator>
     <description>
       &lt;img src="https://wiki.xxiivv.com/media/diary/${log.photo}.jpg"/&gt;
       &lt;br/&gt;
-      ${log.host.data.BREF ? log.host.data.BREF.to_curlic().to_rss().replace_all("href='index.html#", "href='https://wiki.xxiivv.com/") : ''}
+      ${log.host.data.BREF ? log.host.data.BREF.toCurlic().to_rss().replace_all("href='index.html#", "href='https://wiki.xxiivv.com/") : ''}
     </description>
   </item>
 `

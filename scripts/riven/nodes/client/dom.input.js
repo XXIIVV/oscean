@@ -21,8 +21,19 @@ RIVEN.lib.Input = function InputNode (id, rect, ...params) {
       Ø('terminal').removeClass('active')
     }
 
+    this.test(value)
+
     if (e.key === 'Enter') {
       this.validate(value)
+    }
+  }
+
+  this.test = function (value) {
+    const result = Ø('database').index[value.toUpperCase()]
+    if (result) {
+      this.addClass('known')
+    } else {
+      this.removeClass('known')
     }
   }
 

@@ -6,7 +6,7 @@ RIVEN.lib.Sidebar = function BuildSidebarNode (id, rect) {
   this.glyph = 'M60,60 L60,60 L240,60 L240,240 L60,240 Z'
 
   function _bref (term) {
-    return `<h1>${term.bref.to_curlic()}</h1>`
+    return `<h1>${term.bref.toCurlic()}</h1>`
   }
 
   function _parent (term) {
@@ -24,7 +24,7 @@ RIVEN.lib.Sidebar = function BuildSidebarNode (id, rect) {
   }
 
   this.answer = function (q) {
-    if (!q.result) { return '<h1>The {(Nataniev)} Services Desk</h1><h2>{(Home)}</h2>'.to_curlic() }
+    if (!q.result) { return '<h1>The {(Nataniev)} Services Desk</h1><h2>{(Home)}</h2>'.toCurlic() }
 
     return `
     ${_bref(q.result)}

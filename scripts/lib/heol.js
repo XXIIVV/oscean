@@ -94,7 +94,7 @@ function Heol (input, tables, host) {
       return `${item.featuredLog ? `<a data-goto='${item.name}'><img src="media/diary/${item.featuredLog.photo}.jpg"/></a>` : ''}<h2>${item.name.toCapitalCase()}</h2><h4>${item.bref}</h4>`
     },
     SPAN: function (item) {
-      return item.logs.length > 10 && item.span.from && item.span.to ? `<li>{(${item.name.toCapitalCase()})} ${item.span.from}—${item.span.to}</li>`.to_curlic() : ''
+      return item.logs.length > 10 && item.span.from && item.span.to ? `<li>{(${item.name.toCapitalCase()})} ${item.span.from}—${item.span.to}</li>`.toCurlic() : ''
     },
     // -----------------------
     // Lietal

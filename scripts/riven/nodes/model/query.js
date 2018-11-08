@@ -8,7 +8,7 @@ RIVEN.lib.Query = function QueryNode (id, rect) {
 
   this.bang = function (input = window.location.hash) {
     const time = performance.now()
-    const target = input.to_url() === '' ? 'home' : input.to_url()
+    const target = input.toUrl() === '' ? 'home' : input.toUrl()
 
     Ø('document').set_class('loading')
 
@@ -22,7 +22,7 @@ RIVEN.lib.Query = function QueryNode (id, rect) {
     if (target === '') {
       window.history.replaceState(undefined, undefined, '#' + target)
     } else {
-      window.location.hash = target.to_url()
+      window.location.hash = target.toUrl()
     }
 
     if (window.scrollY !== 0) {
@@ -37,7 +37,7 @@ RIVEN.lib.Query = function QueryNode (id, rect) {
     if (a.length === 0) { return }
 
     setTimeout(() => {
-      this.send(a[0].to_url())
+      this.send(a[0].toUrl())
       this.queue(a.slice(1))
     }, speed)
   }

@@ -31,7 +31,7 @@ RIVEN.lib.Analytics = function DefaultTemplate (id, rect, ...params) {
     return `
     <h2 style='margin-top:30px'>${Object.keys(issues).length} Active Projects</h2>
       ${Object.keys(issues).reduce((acc, term) => {
-    return `${acc}<h3><a data-view='${term.to_url()}:tracker' href='#${term.to_url()}:tracker'>${term}</a></h3><div style='margin-bottom:30px'>${Object.keys(issues[term]).reduce((acc, category) => {
+    return `${acc}<h3><a data-view='${term.toUrl()}:tracker' href='#${term.toUrl()}:tracker'>${term}</a></h3><div style='margin-bottom:30px'>${Object.keys(issues[term]).reduce((acc, category) => {
       return `${acc}${issues[term][category].reduce((acc, issue) => {
         return `${acc}${issue}`
       }, '')}`
@@ -102,9 +102,9 @@ RIVEN.lib.Analytics = function DefaultTemplate (id, rect, ...params) {
 
   function _cell (des, f, filter) {
     const link = f.event ? f.event.term : f.task ? f.task.term : null
-    const cl = `${f.event ? 'event' : ''} ${f.sector} ${filter && link && filter.to_url() !== link.to_url() ? 'disabled' : ''}`
+    const cl = `${f.event ? 'event' : ''} ${f.sector} ${filter && link && filter.toUrl() !== link.toUrl() ? 'disabled' : ''}`
     return `
-    <td class='${cl}' ${link ? `data-view='${link.to_url()}:calendar'` : ''}>
+    <td class='${cl}' ${link ? `data-view='${link.toUrl()}:calendar'` : ''}>
       <span class='date'>${des.m}${des.d}</span>
       ${f.event ? `<span class='event'>${f.event.name}</span>` : f.task ? `<span class='task'><b>${f.task.term}</b> ${f.task.name}</span>` : ''}
     </td>`
@@ -160,10 +160,12 @@ RIVEN.lib.Analytics = function DefaultTemplate (id, rect, ...params) {
         {${log.name}(${log.term})}</a> 
         <span title='${log.time}'>${timeAgo(log.time, 60)}</span>
       </li>`
-    }, '')}</ul>`.to_curlic()
+    }, '')}</ul>`.toCurlic()
   }
 
   this._calendar = function (q) {
+    if (q.result.name != 'CALENDAR') { return '<p>The per-topic calendar is currently under development.</p>' }
+
     const tasks = make_tasks(q.tables.issues)
     const upcomings = make_upcomings(q.tables.horaire)
     const forecast = make_forecasts(q.tables.horaire, tasks, upcomings)
@@ -192,7 +194,7 @@ RIVEN.lib.Analytics = function DefaultTemplate (id, rect, ...params) {
     }
 
     if (logs.length < 1) {
-      return `<p>There is no recent activity to the {(${q.result.name.toCapitalCase()})} project.</p>`.to_curlic()
+      return `<p>There is no recent activity to the {(${q.result.name.toCapitalCase()})} project.</p>`.toCurlic()
     }
 
     // Build journals

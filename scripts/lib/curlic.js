@@ -39,22 +39,22 @@ function curlic (text = '', host) {
   function parse (s) {
     validate(s)
 
-    const to_heol = s.substr(0, 1) === 'λ'
-    if (to_heol) { s = s.replace(s, heol(s.substr(1))) }
+    const toHeol = s.substr(0, 1) === 'λ'
+    if (toHeol) { s = s.replace(s, heol(s.substr(1))) }
 
-    const to_eval = s.match(/\[(.*)\]/g)
-    if (to_eval) { s = s.replace(to_eval[0], evaluate(to_eval[0])) }
+    const toEval = s.match(/\[(.*)\]/g)
+    if (toEval) { s = s.replace(toEval[0], evaluate(toEval[0])) }
 
-    const to_link = s.match(/\((.*)\)/g)
-    if (to_link) { s = s.replace(to_link[0], '') }
+    const toLink = s.match(/\((.*)\)/g)
+    if (toLink) { s = s.replace(toLink[0], '') }
 
     for (const ch in runes) {
       if (s.indexOf(ch) < 0) { continue }
       s = wrap(s, ch, runes[ch])
     }
 
-    if (to_link) {
-      s = link(s, to_link[0])
+    if (toLink) {
+      s = link(s, toLink[0])
     }
 
     return s
@@ -75,4 +75,4 @@ function curlic (text = '', host) {
   return text
 }
 
-String.prototype.to_curlic = function (attr) { return `${curlic(this, attr)}` }
+String.prototype.toCurlic = function (attr) { return `${curlic(this, attr)}` }

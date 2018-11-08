@@ -28,9 +28,9 @@ RIVEN.lib.Header = function BuildHeaderNode (id, rect) {
     }
 
     return `
-    ${q.result.issues.length > 0 ? `<li><a class='calendar' data-view='calendar' href='#${q.result.name}:calendar'>Calendar</a></li>` : ''}
-    ${q.result.logs.length > 2 && !q.result.hasTag('journal') ? `<li><a class='journal' data-view='journal' href='#${q.result.name}:journal'>${q.result.logs.length} Logs</a></li>` : ''}
-    ${q.result.issues.length > 1 && !q.result.hasTag('diary') ? `<li><a class='tracker' data-view='tracker' href='#${q.result.name}:tracker'>${q.result.issues.length} Issues</a></li>` : ''}
+    ${q.result.issues.length > 0 ? `<li><a class='calendar' data-view='calendar' href='#${q.result.name.toUrl()}:calendar'>Calendar</a></li>` : ''}
+    ${q.result.logs.length > 2 && !q.result.hasTag('journal') ? `<li><a class='journal' data-view='journal' href='#${q.result.name.toUrl()}:journal'>${q.result.logs.length} Logs</a></li>` : ''}
+    ${q.result.issues.length > 1 && !q.result.hasTag('diary') ? `<li><a class='tracker' data-view='tracker' href='#${q.result.name.toUrl()}:tracker'>${q.result.issues.length} Issues</a></li>` : ''}
     `
   }
 

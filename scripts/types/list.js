@@ -9,7 +9,7 @@ function List (name, data) {
 
   this.body = function () {
     return `<ul>${Object.keys(this.data).reduce((acc, val) => {
-      return `${acc}<li><b>${val.toCapitalCase()}</b>: ${this.data[val].to_curlic()}</li>`
+      return `${acc}<li><b>${val.toCapitalCase()}</b>: ${this.data[val].toCurlic()}</li>`
     }, '')}</ul>`
   }
 

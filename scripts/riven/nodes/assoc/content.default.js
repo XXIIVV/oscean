@@ -16,7 +16,7 @@ RIVEN.lib.Default = function DefaultTemplate (id, rect, ...params) {
 
     return `
     <p>Sorry, there are no pages for {*/${q.target.toCapitalCase()}*}, did you mean {(${similar[0].word.toCapitalCase()})} or {(${similar[1].word.toCapitalCase()})}?</p>
-    <p>{*Create this page*} by submitting a {Pull Request(https://github.com/XXIIVV/oscean)}, or if you believe this to be an error, please contact {@neauoire(https://twitter.com/neauoire)}. Alternatively, you locate missing pages from within the {progress tracker(Tracker)}.</p>`.to_curlic()
+    <p>{*Create this page*} by submitting a {Pull Request(https://github.com/XXIIVV/oscean)}, or if you believe this to be an error, please contact {@neauoire(https://twitter.com/neauoire)}. Alternatively, you locate missing pages from within the {progress tracker(Tracker)}.</p>`.toCurlic()
   }
 
   function findSimilar (target, list) {

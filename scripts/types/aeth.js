@@ -67,7 +67,7 @@ function Aeth (name = null, data = []) {
 
   this.toString = function () {
     const en = this.to_english()
-    return `<p>{*${this.name.toCapitalCase()}*}${this.name.toLowerCase() !== this.adultspeak.toLowerCase() ? ', or ' + this.adultspeak.toCapitalCase() : ''} is a {(Lietal)} word${en ? ' that translates to \"' + en + '\" in {(English)}' : ''}.</p>`.to_curlic()
+    return `<p>{*${this.name.toCapitalCase()}*}${this.name.toLowerCase() !== this.adultspeak.toLowerCase() ? ', or ' + this.adultspeak.toCapitalCase() : ''} is a {(Lietal)} word${en ? ' that translates to \"' + en + '\" in {(English)}' : ''}.</p>`.toCurlic()
   }
 }
 
