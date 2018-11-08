@@ -14,14 +14,14 @@ RIVEN.lib.Navi = function BuildNaviNode (id, rect) {
 
   function _table_depth1 (portal, term) {
     const _children = portal.children.reduce((acc, child, id) => {
-      return `${acc}${`<ul><li>{(${child.name.toCapitalCase()})}</li>${_table_depth2(child, term)}</ul>`}`
+      return `${acc}${`<ul><li class='${child.name === term.name || child.name.toLowerCase() === term.unde.toLowerCase() ? 'selected' : ''}'>{(${child.name.toCapitalCase()})}</li>${child.name === term.name || child.name.toLowerCase() === term.unde.toLowerCase() ? _table_depth2(child, term) : ''}</ul>`}`
     }, '')
     return `<ul>${_children}</ul>`
   }
 
   function _table_depth2 (portal, term) {
     const _children = portal.children.reduce((acc, child, id) => {
-      return `${acc}${`<ul><li>{(${child.name.toCapitalCase()})}</li></ul>`}`
+      return `${acc}${`<ul><li class='${child.name === term.name ? 'selected' : ''}'>{(${child.name.toCapitalCase()})}</li></ul>`}`
     }, '')
     return `<ul>${_children}</ul>`
   }

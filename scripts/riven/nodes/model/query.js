@@ -22,6 +22,7 @@ RIVEN.lib.Query = function QueryNode (id, rect) {
     }
 
     if (window.scrollY !== 0) {
+      window.scrollTo(0, 0)
       setTimeout(() => { window.scrollTo(0, 0) }, 250)
     }
   }
