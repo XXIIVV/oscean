@@ -5,7 +5,7 @@ RIVEN.lib.Document = function DocumentNode (id, rect, ...params) {
 
   this.glyph = 'M150,60 L150,60 L240,150 L150,240 L60,150 Z M150,120 L150,120 L180,150 L150,180 L120,150 Z '
 
-  this.view = 'default'
+  this.view = 'main'
 
   this.receive = function (content = { title: 'Unknown' }) {
     document.title = content.title

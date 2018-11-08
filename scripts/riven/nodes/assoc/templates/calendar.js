@@ -1,7 +1,7 @@
 'use strict'
 
 RIVEN.lib.Calendar = function CalendarTemplate (id, rect, ...params) {
-  RIVEN.Node.call(this, id, rect)
+  RIVEN.lib.Dom.call(this, id, rect)
 
   this.glyph = 'M60,60 L60,60 L240,60 L240,240 L60,240 Z M240,150 L240,150 L150,150 L150,240'
 
@@ -116,17 +116,17 @@ RIVEN.lib.Calendar = function CalendarTemplate (id, rect, ...params) {
     }, '')}</ul>`.to_curlic()
   }
 
-  this.answer = function (q) {
-    const tasks = make_tasks(q.tables.issues)
-    const upcomings = make_upcomings(q.tables.horaire)
-    const forecast = make_forecasts(q.tables.horaire, tasks, upcomings)
-    const filter = q.result && q.result.name.toLowerCase() !== 'calendar' ? q.result.name : null
+  // this.answer = function (q) {
+  // const tasks = make_tasks(q.tables.issues)
+  // const upcomings = make_upcomings(q.tables.horaire)
+  // const forecast = make_forecasts(q.tables.horaire, tasks, upcomings)
+  // const filter = q.result && q.result.name.toLowerCase() !== 'calendar' ? q.result.name : null
 
-    return `
-    ${new BalanceViz(q.tables.horaire)}
-    ${_calendar(forecast, filter)}
-    ${q.result.body()}
-    ${_timeline(q.tables.horaire)}
-    `
-  }
+  // return `
+  // ${new BalanceViz(q.tables.horaire)}
+  // ${_calendar(forecast, filter)}
+  // ${q.result.body()}
+  // ${_timeline(q.tables.horaire)}
+  // `
+  // }
 }

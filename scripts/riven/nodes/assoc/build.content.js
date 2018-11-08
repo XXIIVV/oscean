@@ -5,7 +5,7 @@ RIVEN.lib.Content = function BuildContentNode (id, rect) {
 
   this.glyph = 'M60,60 L60,60 L240,60 L240,240 L60,240 Z'
 
-  this.answer = function (q) {
+  this.make = function (q) {
     if (!q.result) { return this.signal('default').answer(q) }
 
     const template = q.params ? q.params.toLowerCase() : q.result.type ? q.result.type.toLowerCase() : null
@@ -17,5 +17,9 @@ RIVEN.lib.Content = function BuildContentNode (id, rect) {
     if (!responder) { return this.signal('default').answer(q) }
 
     return responder.answer(q)
+  }
+
+  this.answer = function (q) {
+    return { main: this.make(q) }
   }
 }

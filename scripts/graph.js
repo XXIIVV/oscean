@@ -30,26 +30,28 @@ RIVEN.create = (append = true) => {
     Ø('_content').create({ x: 6, y: 4 }, lib.Content),
     Ø('missing').create({ x: 3, y: 12 }, lib.Missing),
     Ø('default').create({ x: 3, y: 8 }, lib.Default),
-    Ø('journal').create({ x: 6, y: 8 }, lib.Journal),
-    Ø('tracker').create({ x: 9, y: 8 }, lib.Tracker),
-    Ø('calendar').create({ x: 12, y: 8 }, lib.Calendar)
+    Ø('analytics').create({ x: 6, y: 8 }, lib.Analytics)
   ], 'build', 'build')
 
-  Ø('client').create({ x: 50, y: 0 }, lib.Mesh, [
+  Ø('client').create({ x: 47, y: 0 }, lib.Mesh, [
     Ø('view').create({ x: 0, y: 0 }, lib.Document, append),
-    Ø('terminal').create({ x: 6, y: 4 }, lib.Terminal),
+    Ø('terminal').create({ x: 3, y: 4 }, lib.Terminal),
     Ø('header').create({ x: 0, y: 4 }, lib.Dom),
     Ø('photo').create({ x: 0, y: 8 }, lib.Photo, 'photo'),
-    Ø('logo').create({ x: 6, y: 8 }, lib.Dom, 'a', null, { 'data-goto': 'home', href: '#home' }),
     Ø('menu').create({ x: 3, y: 8 }, lib.Dom),
-    Ø('search').create({ x: 0, y: 12 }, lib.Input),
+    Ø('logo').create({ x: 6, y: 12 }, lib.Dom, 'a', null, { 'data-goto': 'home', href: '#home' }),
+    Ø('search').create({ x: 9, y: 12 }, lib.Input),
     Ø('activity').create({ x: 3, y: 12 }, lib.Dom, 'ul'),
-    Ø('info').create({ x: 9, y: 8 }, lib.Dom),
-    Ø('glyph').create({ x: 9, y: 12 }, lib.Path),
-    Ø('title').create({ x: 6, y: 12 }, lib.Dom),
+    Ø('info').create({ x: 0, y: 12 }, lib.Dom),
+    Ø('glyph').create({ x: 3, y: 16 }, lib.Path),
+    Ø('title').create({ x: 0, y: 16 }, lib.Dom),
     Ø('core').create({ x: 12, y: 4 }, lib.Dom),
-    Ø('content').create({ x: 12, y: 8 }, lib.Dom),
-    Ø('sidebar').create({ x: 15, y: 8 }, lib.Dom),
+    Ø('content').create({ x: 15, y: 8 }, lib.Dom),
+    Ø('main').create({ x: 12, y: 12 }, lib.Dom),
+    Ø('tracker').create({ x: 15, y: 12 }, lib.Tracker),
+    Ø('calendar').create({ x: 18, y: 12 }, lib.Calendar),
+    Ø('journal').create({ x: 21, y: 12 }, lib.Journal),
+    Ø('sidebar').create({ x: 12, y: 8 }, lib.Dom),
     Ø('navi').create({ x: 18, y: 8 }, lib.Dom),
     Ø('footer').create({ x: 21, y: 4 }, lib.Dom),
     Ø('credits').create({ x: 21, y: 8 }, lib.Dom, 'div', `
@@ -72,17 +74,18 @@ RIVEN.create = (append = true) => {
 
   // // Assoc
   Ø('build').syphon(['_navi', '_content', '_sidebar', '_header'])
-  Ø('_content').syphon(['default', 'journal', 'tracker', 'calendar'])
+  Ø('_content').syphon(['default', 'analytics'])
   Ø('default').syphon(['missing'])
   Ø('assoc').connect('client')
 
   // // Dom
   Ø('header').bind(['photo', 'menu'])
-  Ø('menu').bind(['logo', 'info'])
+  Ø('menu').bind(['logo', 'info', 'search', 'activity'])
   Ø('info').bind(['glyph', 'title'])
-  Ø('menu').bind(['search', 'activity'])
   Ø('view').bind(['header', 'core', 'footer', 'terminal'])
   Ø('core').bind(['sidebar', 'content', 'navi'])
+  Ø('content').bind(['main', 'journal', 'tracker', 'calendar'])
+
   Ø('footer').bind(['credits'])
 
   // Start

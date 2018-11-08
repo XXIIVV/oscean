@@ -23,14 +23,14 @@ RIVEN.lib.Header = function BuildHeaderNode (id, rect) {
     if (q.result.name === 'HOME' || q.result.name === 'JOURNAL' || q.result.name === 'CALENDAR' || q.result.name === 'TRACKER') {
       return `
       <li><a class='issues' data-goto='Calendar' href='#Calendar'>Calendar</a></li> 
-      <li><a class='diaries' data-goto='journal' href='#journal'>Journal</a> 
+      <li><a class='journal' data-goto='journal' href='#journal'>Journal</a> 
       <li><a class='logs' data-goto='Tracker' href='#Tracker'>Tracker</a></li>`
     }
 
     return `
     ${q.params ? `<li><a class='return' data-view='default' href='#${q.result.name}'>Return</a></li>` : ''}
     ${q.result.issues.length > 0 ? `<li><a class='issues' data-view='calendar' href='#${q.result.name}:calendar'>Calendar</a></li>` : ''}
-    ${q.result.logs.length > 2 && !q.result.hasTag('journal') ? `<li><a class='diaries' data-view='journal' href='#${q.result.name}:journal'>${q.result.logs.length} Logs</a></li>` : ''}
+    ${q.result.logs.length > 2 && !q.result.hasTag('journal') ? `<li><a class='journal' data-view='journal' href='#${q.result.name}:journal'>${q.result.logs.length} Logs</a></li>` : ''}
     ${q.result.issues.length > 1 && !q.result.hasTag('diary') ? `<li><a class='logs' data-view='tracker' href='#${q.result.name}:tracker'>${q.result.issues.length} Issues</a></li>` : ''}
     `
   }
@@ -44,7 +44,7 @@ RIVEN.lib.Header = function BuildHeaderNode (id, rect) {
         search: q.target && q.target.toCapitalCase(),
         activity: makeActivity(q),
         info: {
-          title: featuredLog ? `<a href='#(${featuredLog.term.to_url()}:diary)'>${featuredLog.name}</a> — ${timeAgo(featuredLog.time, 60)}` : ' ',
+          title: featuredLog ? `<a data-goto='journal' href='#journal'>${featuredLog.name}</a> — ${timeAgo(featuredLog.time, 60)}` : ' ',
           glyph: featuredLog ? featuredLog.host.glyph() : q.result && q.result.glyph() ? q.result.glyph() : 'M240,240 l0,-90 a-90,-90 0 0,0 -90,-90 l-90,0 l0,90 a90,90 0 0,0 90,90 l60,0 l0,-90 a-60,-60 0 0,0 -60,-60 l-60,0 l0,60 a60,60 0 0,0 60,60 l30,0 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0 l0,30 a30,30 0 0,0 30,30'
         }
       }
