@@ -1,9 +1,56 @@
 'use strict'
 
-RIVEN.lib.Calendar = function CalendarTemplate (id, rect, ...params) {
-  RIVEN.lib.Dom.call(this, id, rect)
+RIVEN.lib.Analytics = function DefaultTemplate (id, rect, ...params) {
+  RIVEN.Node.call(this, id, rect)
 
   this.glyph = 'M60,60 L60,60 L240,60 L240,240 L60,240 Z M240,150 L240,150 L150,150 L150,240'
+
+  // Tracker
+
+  function sort_issues (issues) {
+    const h = {}
+    for (const id in issues) {
+      const issue = issues[id]
+      const term = issue.term.toLowerCase()
+      if (!h[term]) { h[term] = {} }
+      if (!h[term][issue.category]) { h[term][issue.category] = [] }
+      h[term][issue.category].push(issue)
+    }
+    return h
+  }
+
+  function _term_issues (issues) {
+    return `<h2>${Object.keys(issues).length} Active Projects</h2>${Object.keys(issues).reduce((acc, category) => {
+      return `${acc}<h3>${category}</h3><div style='margin-bottom:30px'>${issues[category].reduce((acc, issue) => {
+        return `${acc}${issue}`
+      }, '')}</div>`
+    }, '')}`
+  }
+
+  function _all_issues (issues) {
+    return `
+    <h2 style='margin-top:30px'>${Object.keys(issues).length} Active Projects</h2>
+      ${Object.keys(issues).reduce((acc, term) => {
+    return `${acc}<h3><a data-view='${term.to_url()}:tracker' href='#${term.to_url()}:tracker'>${term}</a></h3><div style='margin-bottom:30px'>${Object.keys(issues[term]).reduce((acc, category) => {
+      return `${acc}${issues[term][category].reduce((acc, issue) => {
+        return `${acc}${issue}`
+      }, '')}`
+    }, '')}</div>`
+  }, '')}`
+  }
+
+  this._tracker = function (q) {
+    if (!q.result || (q.target !== 'tracker' && q.result.issues.length < 1)) {
+      return `<p>There are no issues for ${q.target}.</p>`
+    }
+
+    const issues = q.target === 'tracker' ? q.tables.issues : q.result ? q.result.issues : []
+    const sorted_issues = sort_issues(issues)
+
+    return q.target === 'tracker' ? `${new BarViz(q.tables.horaire)}${_all_issues(sorted_issues)}` : q.result && q.result.issues.length > 0 ? `${_term_issues(sorted_issues[q.result.name.toLowerCase()])}` : ''
+  }
+
+  // Calendar
 
   function make_tasks (issues) {
     const h = {}
@@ -116,17 +163,62 @@ RIVEN.lib.Calendar = function CalendarTemplate (id, rect, ...params) {
     }, '')}</ul>`.to_curlic()
   }
 
-  // this.answer = function (q) {
-  // const tasks = make_tasks(q.tables.issues)
-  // const upcomings = make_upcomings(q.tables.horaire)
-  // const forecast = make_forecasts(q.tables.horaire, tasks, upcomings)
-  // const filter = q.result && q.result.name.toLowerCase() !== 'calendar' ? q.result.name : null
+  this._calendar = function (q) {
+    const tasks = make_tasks(q.tables.issues)
+    const upcomings = make_upcomings(q.tables.horaire)
+    const forecast = make_forecasts(q.tables.horaire, tasks, upcomings)
+    const filter = q.result && q.result.name.toLowerCase() !== 'calendar' ? q.result.name : null
 
-  // return `
-  // ${new BalanceViz(q.tables.horaire)}
-  // ${_calendar(forecast, filter)}
-  // ${q.result.body()}
-  // ${_timeline(q.tables.horaire)}
-  // `
-  // }
+    return `
+    ${new BalanceViz(q.tables.horaire)}
+    ${_calendar(forecast, filter)}
+    ${_timeline(q.tables.horaire)}
+    `
+  }
+
+  // Journal
+
+  this._journal = function (q, upcoming = false) {
+    const all_logs = q.target === 'journal' ? q.tables.horaire : q.result.logs
+
+    // Collect only the last 366 logs
+    const logs = []
+    for (const id in all_logs) {
+      const log = all_logs[id]
+      if (!log.term) { continue }
+      if (log.time.offset > 0 && !upcoming) { continue }
+      if (log.time.offset < -366) { continue }
+      logs[logs.length] = log
+    }
+
+    if (logs.length < 1) {
+      return `<p>There is no recent activity to the {(${q.result.name.toCapitalCase()})} project, go {back(${q.result.name.toCapitalCase()})}.</p>`.to_curlic()
+    }
+
+    // Build journals
+    const known = []
+    let html = ''
+    let i = 0
+    for (let id in logs) {
+      if (i > 20) { break }
+      const log = logs[id]
+      if (!log.photo && known.indexOf(log.term) > -1) { continue }
+      html += `${log}`
+      known.push(log.term)
+      i += 1
+    }
+
+    return `
+    ${new ActivityViz(logs)}
+    ${html}
+    <style>.graph.status { margin-bottom:0px !important }</style>`
+  }
+
+  this.answer = function (q) {
+    return {
+      tracker: this._tracker(q),
+      calendar: this._calendar(q),
+      journal: this._journal(q)
+    }
+  }
 }
