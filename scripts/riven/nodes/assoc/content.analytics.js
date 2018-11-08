@@ -179,7 +179,7 @@ RIVEN.lib.Analytics = function DefaultTemplate (id, rect, ...params) {
   // Journal
 
   this._journal = function (q, upcoming = false) {
-    const all_logs = q.target === 'journal' ? q.tables.horaire : q.result.logs
+    const all_logs = q.target === 'home' ? q.tables.horaire : q.result.logs
 
     // Collect only the last 366 logs
     const logs = []

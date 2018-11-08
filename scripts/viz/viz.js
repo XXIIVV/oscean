@@ -47,8 +47,6 @@ function Viz (logs, from, to) {
       if (offset > -(logs.length / 2)) { data.recent[data.recent.length] = log } else { data.before[data.before.length] = log }
     }
 
-    if (data.recent.length < 3 || data.before.length < 3) { return '' }
-
     const recent = new Horaire(data.recent)
     const before = new Horaire(data.before)
 

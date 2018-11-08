@@ -22,16 +22,16 @@ RIVEN.lib.Header = function BuildHeaderNode (id, rect) {
 
     if (q.result.name === 'HOME' || q.result.name === 'JOURNAL' || q.result.name === 'CALENDAR' || q.result.name === 'TRACKER') {
       return `
-      <li><a class='issues' data-goto='Calendar' href='#Calendar'>Calendar</a></li> 
+      <li><a class='calendar' data-goto='Calendar' href='#Calendar'>Calendar</a></li> 
       <li><a class='journal' data-goto='journal' href='#journal'>Journal</a> 
-      <li><a class='logs' data-goto='Tracker' href='#Tracker'>Tracker</a></li>`
+      <li><a class='tracker' data-goto='Tracker' href='#Tracker'>Tracker</a></li>`
     }
 
     return `
     ${q.params ? `<li><a class='return' data-view='default' href='#${q.result.name}'>Return</a></li>` : ''}
-    ${q.result.issues.length > 0 ? `<li><a class='issues' data-view='calendar' href='#${q.result.name}:calendar'>Calendar</a></li>` : ''}
+    ${q.result.issues.length > 0 ? `<li><a class='calendar' data-view='calendar' href='#${q.result.name}:calendar'>Calendar</a></li>` : ''}
     ${q.result.logs.length > 2 && !q.result.hasTag('journal') ? `<li><a class='journal' data-view='journal' href='#${q.result.name}:journal'>${q.result.logs.length} Logs</a></li>` : ''}
-    ${q.result.issues.length > 1 && !q.result.hasTag('diary') ? `<li><a class='logs' data-view='tracker' href='#${q.result.name}:tracker'>${q.result.issues.length} Issues</a></li>` : ''}
+    ${q.result.issues.length > 1 && !q.result.hasTag('diary') ? `<li><a class='tracker' data-view='tracker' href='#${q.result.name}:tracker'>${q.result.issues.length} Issues</a></li>` : ''}
     `
   }
 
