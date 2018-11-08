@@ -36,16 +36,8 @@ function Viz (logs, from, to) {
     <text x='725' y='125' style='text-anchor:end'>${horaire.sum.toFixed(0)} Hours</text>`
   }
 
-  function _status (logs) {
-    const data = { recent: [], before: [] }
-
-    // Split the last 14 days
-    for (const id in logs) {
-      const log = logs[id]
-      const offset = log.time.offset
-      if (offset > 0) { continue }
-      if (offset > -(logs.length / 2)) { data.recent[data.recent.length] = log } else { data.before[data.before.length] = log }
-    }
+  function _status (data) {
+    if (data.recent.length < 2 || data.before.length < 2) { return '' }
 
     const recent = new Horaire(data.recent)
     const before = new Horaire(data.before)
@@ -77,10 +69,19 @@ function Viz (logs, from, to) {
   this.toString = function () {
     if (this.logs.length < 1) { return '<p>Not enough data to display the infographic.</p>' }
 
+    const data = { recent: [], before: [] }
+    // Split the last 14 days
+    for (const id in this.logs) {
+      const log = this.logs[id]
+      const offset = log.time.offset
+      if (offset > 0) { continue }
+      if (offset > -(this.logs.length / 2)) { data.recent[data.recent.length] = log } else { data.before[data.before.length] = log }
+    }
+
     return `
-    <svg class='viz'>
+    <svg class='viz ${data.recent.length < 2 || data.before.length < 2 ? 'no_status' : ''}'>
       ${_legend(this.logs)}
-      ${_status(logs)}
+      ${_status(data)}
       ${this.draw()}
     </svg>`
   }

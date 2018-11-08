@@ -7,13 +7,17 @@ RIVEN.lib.Query = function QueryNode (id, rect) {
   this.label = 'query'
 
   this.bang = function (input = window.location.hash) {
+    const time = performance.now()
     const target = input.to_url() === '' ? 'home' : input.to_url()
 
     Ø('document').set_class('loading')
 
-    console.log(this.id, target)
-
     this.send(target)
+
+    setTimeout(() => {
+      Ø('document').remove_class('loading')
+      Ø('document').add_class('ready')
+    }, 150)
 
     if (target === '') {
       window.history.replaceState(undefined, undefined, '#' + target)
@@ -25,6 +29,8 @@ RIVEN.lib.Query = function QueryNode (id, rect) {
       window.scrollTo(0, 0)
       setTimeout(() => { window.scrollTo(0, 0) }, 250)
     }
+
+    console.log(this.id, `Query(${target}) completed in ${(performance.now() - time).toFixed(2)}ms.`)
   }
 
   this.queue = function (a, speed = 1000) {

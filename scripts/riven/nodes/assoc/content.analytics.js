@@ -192,7 +192,7 @@ RIVEN.lib.Analytics = function DefaultTemplate (id, rect, ...params) {
     }
 
     if (logs.length < 1) {
-      return `<p>There is no recent activity to the {(${q.result.name.toCapitalCase()})} project, go {back(${q.result.name.toCapitalCase()})}.</p>`.to_curlic()
+      return `<p>There is no recent activity to the {(${q.result.name.toCapitalCase()})} project.</p>`.to_curlic()
     }
 
     // Build journals
@@ -208,10 +208,7 @@ RIVEN.lib.Analytics = function DefaultTemplate (id, rect, ...params) {
       i += 1
     }
 
-    return `
-    ${new ActivityViz(logs)}
-    ${html}
-    <style>.graph.status { margin-bottom:0px !important }</style>`
+    return `${new ActivityViz(logs)}${html}`
   }
 
   this.answer = function (q) {

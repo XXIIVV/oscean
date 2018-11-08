@@ -28,7 +28,6 @@ RIVEN.create = (append = true) => {
     Ø('_sidebar').create({ x: 3, y: 4 }, lib.Sidebar),
     Ø('_navi').create({ x: 9, y: 4 }, lib.Navi),
     Ø('_content').create({ x: 6, y: 4 }, lib.Content),
-    Ø('missing').create({ x: 3, y: 12 }, lib.Missing),
     Ø('default').create({ x: 3, y: 8 }, lib.Default),
     Ø('analytics').create({ x: 6, y: 8 }, lib.Analytics)
   ], 'build', 'build')
@@ -75,7 +74,6 @@ RIVEN.create = (append = true) => {
   // // Assoc
   Ø('build').syphon(['_navi', '_content', '_sidebar', '_header'])
   Ø('_content').syphon(['default', 'analytics'])
-  Ø('default').syphon(['missing'])
   Ø('assoc').connect('client')
 
   // // Dom

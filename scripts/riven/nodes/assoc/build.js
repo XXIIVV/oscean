@@ -10,7 +10,7 @@ RIVEN.lib.Build = function BuildNode (id, rect) {
 
     this.send({
       title: `XXIIVV — ${q.target.toCapitalCase()}`,
-      view: q.result ? q.result.view : 'main',
+      view: q.params ? q.params : q.result ? q.result.view : 'main',
       document: {
         header: builds._header,
         core: {
