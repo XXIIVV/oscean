@@ -80,7 +80,7 @@ RIVEN.create = (append = true) => {
   Ø('header').bind(['photo', 'menu'])
   Ø('menu').bind(['logo', 'info', 'search', 'activity'])
   Ø('info').bind(['glyph', 'title'])
-  Ø('document').bind(['header', 'core', 'footer', 'terminal'])
+  Ø('document').bind(['terminal', 'header', 'core', 'footer'])
   Ø('core').bind(['sidebar', 'content', 'navi'])
   Ø('content').bind(['main', 'journal', 'tracker', 'calendar'])
 

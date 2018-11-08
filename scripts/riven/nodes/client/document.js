@@ -33,14 +33,14 @@ RIVEN.lib.Document = function DocumentNode (id, rect, ...params) {
   this.setView = function (view = 'main') {
     if (this.view === view && this.view !== 'main') { this.setView('main'); return }
 
-    this.remove_class(this.view)
+    this.removeClass(this.view)
     this.view = view
-    this.add_class(this.view)
+    this.addClass(this.view)
 
     if (this.view === 'main') {
-      this.remove_class('analytics')
+      this.removeClass('analytics')
     } else {
-      this.add_class('analytics')
+      this.addClass('analytics')
     }
   }
 }

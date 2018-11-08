@@ -15,8 +15,8 @@ RIVEN.lib.Query = function QueryNode (id, rect) {
     this.send(target)
 
     setTimeout(() => {
-      Ø('document').remove_class('loading')
-      Ø('document').add_class('ready')
+      Ø('document').removeClass('loading')
+      Ø('document').addClass('ready')
     }, 150)
 
     if (target === '') {

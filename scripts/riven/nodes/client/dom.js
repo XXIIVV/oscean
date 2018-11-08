@@ -56,13 +56,13 @@ RIVEN.lib.Dom = function DomNode (id, rect, ...params) {
     this.el.className = `${c.toLowerCase()}`
   }
 
-  this.add_class = function (c) {
+  this.addClass = function (c) {
     if (!c || this.has_class(c)) { return }
 
     this.el.className = `${this.el.className} ${c.toLowerCase()}`.trim()
   }
 
-  this.remove_class = function (c) {
+  this.removeClass = function (c) {
     if (!c || !this.has_class(c)) { return }
 
     this.el.className = this.el.className.replace(c.toLowerCase(), '').trim()
