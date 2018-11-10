@@ -31,7 +31,7 @@ function Log (data = { code: '-400' }) {
   this.body = function () {
     return `
     <div class='entry log ${this.isEvent ? 'event' : ''}'>
-      <svg data-goto='${this.term}' class='icon'><path transform="scale(0.15,0.15) translate(20,20)" d="${this.host ? this.host.glyph() : ''}"></path></svg>
+      <svg data-goto='${this.host.name}' class='icon'><path transform="scale(0.15,0.15) translate(20,20)" d="${this.host ? this.host.glyph() : ''}"></path></svg>
       <div class='head'>
         <div class='details'><a class='topic' data-goto='${this.term}' href='${this.term.toUrl()}'>${this.term}</a> ${this.name && !this.isEvent ? ` — <span class='name' data-goto='${this.name}'>${this.name}</span>` : ''} <span class='time' data-goto='${this.term}:Journal'>${timeAgo(this.time, 14)}</span></div>
         <div class='bref'>${this.isEvent ? this.name : this.host ? this.host.bref.toCurlic() : ''}</div>

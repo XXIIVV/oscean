@@ -1,30 +1,37 @@
 'use strict'
 
-function Issue (data = {}) {
-  Entry.call(this, data.name, data)
+function Issue (name, data = {}) {
+  Entry.call(this, name, data)
 
   this.host = null // From Ø('map')
 
-  this.term = data.term
-  this.category = data.category
-  this.indexes = [this.category]
+  this.name = name
+  this.projects = data
+  this.indexes = Object.keys(this.projects)
 
-  this.sc = data.code.length === 2 ? parseInt(data.code.substr(0, 1)) : 0
-  this.ch = data.code.length === 2 ? parseInt(data.code.substr(1, 1)) : 0
-  this.sector = ['misc', 'audio', 'visual', 'research', 'misc'][this.sc]
-
-  this.tasks = [
-    ['idle', 'listening', 'experiment', 'rehersal', 'draft', 'composition', 'sound design', 'mastering', 'release', 'performance' ],
-    ['idle', 'watching', 'experiment', 'storyboard', 'prototype', 'editing', 'design', 'rendering', 'release', 'showcase' ],
-    ['idle', 'research', 'experiment', 'documentation', 'planning', 'maintenance', 'tooling', 'updating', 'release', 'talk' ]
-  ]
-  this.task = this.tasks[this.sc - 1] ? this.tasks[this.sc - 1][this.ch] : 'travel'
+  this.unwrap = function () {
+    const a = []
+    for (const id in this.projects) {
+      a.push(new Issue(id, this.projects[id]))
+    }
+    return a
+  }
 
   this.body = function () {
-    return `${this.name}`
+    return `
+    <div class='entry issue'>
+      <svg data-goto='${this.host.name}' class='icon'><path transform="scale(0.15,0.15) translate(20,20)" d="${this.host ? this.host.glyph() : ''}"></path></svg>
+      <div class='head'>
+        <div class='details'><a class='topic' data-goto='${this.host.name}' href='${this.host.name.toUrl()}'>${this.host.name.toCapitalCase()}</a> ${this.name ? ` — <span class='name' data-goto='${this.name}'>${this.name.toCapitalCase()}</span>` : ''} <span class='time' data-goto='${this.host.name}:Journal'>${this.projects.length} Tasks</span></div>
+        <div class='bref'>${this.isEvent ? this.name : this.host ? this.host.bref.toCurlic() : ''}</div>
+      </div>
+      <ul>
+        ${this.projects.reduce((acc, task) => { return `${acc}<li>${task}</li>` }, '')}
+      </ul>
+    </div>`
   }
 
   this.toString = function () {
-    return `<div class='entry issue ${this.sector}'><b>${this.category}</b> <i>${this.task}</i> ${this.name}</div>`
+    return this.body()
   }
 }

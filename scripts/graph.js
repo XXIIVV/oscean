@@ -17,7 +17,7 @@ RIVEN.create = (append = true) => {
     Ø('dictionaery').create({ x: 0, y: 8 }, lib.Table, indental, Aeth),
     Ø('lexicon').create({ x: 3, y: 8 }, lib.Table, indental, Term),
     Ø('horaire').create({ x: 6, y: 8 }, lib.Table, tablatal, Log),
-    Ø('issues').create({ x: 9, y: 8 }, lib.Table, tablatal, Issue),
+    Ø('issues').create({ x: 9, y: 8 }, lib.Table, indental, Issue),
     Ø('glossary').create({ x: 12, y: 8 }, lib.Table, indental, List),
     Ø('map').create({ x: 9, y: 4 }, lib.Map)
   ], 'router', 'router')

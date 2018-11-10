@@ -17,7 +17,7 @@ RIVEN.lib.Map = function MapNode (id, rect) {
 
   this.map = function (tables) {
     const time = performance.now()
-    const count = { links: 0, diaries: 0, events: 0 }
+    const count = { links: 0, diaries: 0, events: 0, issues: 0 }
 
     // Connect Parents
     for (const id in tables.lexicon) {
@@ -85,15 +85,19 @@ RIVEN.lib.Map = function MapNode (id, rect) {
       }
     }
 
-    // Connect issues
-    for (const id in tables.issues) {
-      const issue = tables.issues[id]
-      const index = issue.term.toUpperCase()
+    // Connect/Unwrap issues
+    for (const term in tables.issues) {
+      const issue = tables.issues[term]
+      const index = term.toUpperCase()
       if (!tables.lexicon[index]) { console.warn('Missing issue parent', index); continue }
-      tables.lexicon[index].issues.push(issue)
-      issue.host = tables.lexicon[index]
+      const issues = issue.unwrap()
+      tables.lexicon[index].issues = issues
+      count.issues += issues.length
+      for (const id in issues) {
+        issues[id].host = tables.lexicon[index]
+      }
     }
     this.is_mapped = true
-    console.info(this.id, `Mapped ${tables.horaire.length} logs, ${count.links} links, ${tables.issues.length} issues, ${count.events} events , and ${count.diaries} diaries to ${Object.keys(tables.lexicon).length} terms, in ${(performance.now() - time).toFixed(2)}ms.`)
+    console.info(this.id, `Mapped ${tables.horaire.length} logs, ${count.links} links, ${count.issues} issues, ${count.events} events , and ${count.diaries} diaries to ${Object.keys(tables.lexicon).length} terms, in ${(performance.now() - time).toFixed(2)}ms.`)
   }
 }
