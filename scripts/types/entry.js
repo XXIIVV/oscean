@@ -14,6 +14,7 @@ function Entry (name, data) {
   this.issues = []
   this.logs = []
   this.diaries = []
+  this.events = []
   this.tags = []
 
   this.glyph = function () {

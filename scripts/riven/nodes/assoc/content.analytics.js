@@ -113,20 +113,20 @@ RIVEN.lib.Analytics = function DefaultTemplate (id, rect, ...params) {
   function _style () {
     return `
     <style>
-      #view #core #content table.cells { background:transparent; width:100%; max-width: 730px; padding:0px; font-family: var(--font) }
-      #view #core #content table.cells tr td { margin:5px; height:100px; color:#000; position: relative; border-bottom:1.5px solid #333; width: calc(100% / 7); }
-      #view #core #content table.cells tr td:hover { border-bottom-color: #000 !important; cursor: pointer; }
-      #view #core #content table.cells tr td:hover span.date { color:#000; }
-      #view #core #content table.cells tr td.event { border-bottom-color:white !important;}
-      #view #core #content table.cells tr td.audio { border-bottom-color: var(--color_1) }
-      #view #core #content table.cells tr td.visual { border-bottom-color: var(--color_2) }
-      #view #core #content table.cells tr td.research { border-bottom-color: var(--color_3) }
-      #view #core #content table.cells tr td.disabled span.event { opacity:0.25; }
-      #view #core #content table.cells tr td.disabled span.task { opacity:0.25; }
-      #view #core #content table.cells tr td span.date { position: absolute; top:5px; left:0px; font-size:12px; font-family: var(--mono); color:#666; }
-      #view #core #content table.cells tr td span.event { position: absolute;top: 30px;left: 0px;font-size: 12px;font-family: var(--font_b);line-height: 15px; padding-right:10px; }
-      #view #core #content table.cells tr td span.task { position: absolute;top: 30px;left: 0px;font-size: 12px;font-family: var(--font_m);line-height: 15px; padding-right:10px; height:60px;overflow: hidden }
-      #view #core #content table.cells tr td span.task b { font-family: var(--font_b) }
+      #document #core #content table.cells { background:transparent; width:100%; max-width: 730px; padding:0px; font-family: var(--font) }
+      #document #core #content table.cells tr td { margin:5px; height:100px; color:#000; position: relative; border-bottom:1.5px solid #333; width: calc(100% / 7); }
+      #document #core #content table.cells tr td:hover { border-bottom-color: #000 !important; cursor: pointer; }
+      #document #core #content table.cells tr td:hover span.date { color:#000; }
+      #document #core #content table.cells tr td.event { border-bottom-color:white !important;}
+      #document #core #content table.cells tr td.audio { border-bottom-color: var(--color_1) }
+      #document #core #content table.cells tr td.visual { border-bottom-color: var(--color_2) }
+      #document #core #content table.cells tr td.research { border-bottom-color: var(--color_3) }
+      #document #core #content table.cells tr td.disabled span.event { opacity:0.25; }
+      #document #core #content table.cells tr td.disabled span.task { opacity:0.25; }
+      #document #core #content table.cells tr td span.date { position: absolute; top:5px; left:0px; font-size:12px; font-family: var(--mono); color:#666; }
+      #document #core #content table.cells tr td span.event { position: absolute;top: 30px;left: 0px;font-size: 12px;font-family: var(--font_b);line-height: 15px; padding-right:10px; }
+      #document #core #content table.cells tr td span.task { position: absolute;top: 30px;left: 0px;font-size: 12px;font-family: var(--font_m);line-height: 15px; padding-right:10px; height:60px;overflow: hidden }
+      #document #core #content table.cells tr td span.task b { font-family: var(--font_b) }
     </style>`
   }
 
@@ -149,10 +149,8 @@ RIVEN.lib.Analytics = function DefaultTemplate (id, rect, ...params) {
     return `<table class='cells' style='margin-top:30px'>${html}</table>${_style()}`
   }
 
-  function _timeline (logs) {
-    const events = logs.filter((log) => { return log.isEvent })
-
-    return `<ul class='tidy col3' style='margin-top:30px; padding-top:30px; border-top:1.5px solid #333'>${events.reduce((acc, log, id, arr) => {
+  function _timeline (events) {
+    return `<ul class='tidy ${events.length > 20 ? 'col3' : ''}' style='margin-top:30px; padding-top:30px; border-top:1.5px solid #333'>${events.reduce((acc, log, id, arr) => {
       return `
       ${acc}
       ${!arr[id - 1] || arr[id - 1].time.y !== log.time.y ? `<li class='head'>20${log.time.y}</li>` : ''}
@@ -164,7 +162,7 @@ RIVEN.lib.Analytics = function DefaultTemplate (id, rect, ...params) {
   }
 
   this._calendar = function (q) {
-    if (q.result.name != 'CALENDAR') { return '<p>The per-topic calendar is currently under development.</p>' }
+    if (q.result.name != 'CALENDAR') { return q.result ? `${_timeline(q.result.events)}` : '--' }
 
     const tasks = make_tasks(q.tables.issues)
     const upcomings = make_upcomings(q.tables.horaire)
@@ -181,17 +179,7 @@ RIVEN.lib.Analytics = function DefaultTemplate (id, rect, ...params) {
   // Journal
 
   this._journal = function (q, upcoming = false) {
-    const all_logs = q.target === 'journal' ? q.tables.horaire : q.result.logs
-
-    // Collect only the last 366 logs
-    const logs = []
-    for (const id in all_logs) {
-      const log = all_logs[id]
-      if (!log.term) { continue }
-      if (log.time.offset > 0 && !upcoming) { continue }
-      if (log.time.offset < -366) { continue }
-      logs[logs.length] = log
-    }
+    const logs = q.target === 'journal' ? q.tables.horaire : q.result.logs
 
     if (logs.length < 1) {
       return `<p>There is no recent activity to the {(${q.result.name.toCapitalCase()})} project.</p>`.toCurlic()
@@ -204,7 +192,7 @@ RIVEN.lib.Analytics = function DefaultTemplate (id, rect, ...params) {
     for (let id in logs) {
       if (i > 20) { break }
       const log = logs[id]
-      if (!log.photo && known.indexOf(log.term) > -1) { continue }
+      if (!log.photo && !log.isEvent && known.indexOf(log.term) > -1) { continue }
       html += `${log}`
       known.push(log.term)
       i += 1

@@ -67,7 +67,7 @@ function Viz (logs, from, to) {
   }
 
   this.toString = function () {
-    if (this.logs.length < 1) { return '<p>Not enough data to display the infographic.</p>' }
+    if (this.logs.length < 1) { return '' }
 
     const data = { recent: [], before: [] }
     // Split the last 14 days

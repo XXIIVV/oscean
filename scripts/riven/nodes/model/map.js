@@ -17,7 +17,7 @@ RIVEN.lib.Map = function MapNode (id, rect) {
 
   this.map = function (tables) {
     const time = performance.now()
-    const count = { links: 0, diaries: 0 }
+    const count = { links: 0, diaries: 0, events: 0 }
 
     // Connect Parents
     for (const id in tables.lexicon) {
@@ -64,6 +64,10 @@ RIVEN.lib.Map = function MapNode (id, rect) {
           tables.lexicon[index].span.to = `${log.time}`
         }
       }
+      if (log.isEvent) {
+        tables.lexicon[index].events.push(log)
+        count.events += 1
+      }
       if (!log.photo) { continue }
       if (!log.name) { console.warn(`Missing caption: ${log.photo}`) }
       tables.lexicon[index].diaries.push(log)
@@ -90,6 +94,6 @@ RIVEN.lib.Map = function MapNode (id, rect) {
       issue.host = tables.lexicon[index]
     }
     this.is_mapped = true
-    console.info(this.id, `Mapped ${tables.horaire.length} logs, ${count.links} links, ${tables.issues.length} issues, and ${count.diaries} diaries to ${Object.keys(tables.lexicon).length} terms, in ${(performance.now() - time).toFixed(2)}ms.`)
+    console.info(this.id, `Mapped ${tables.horaire.length} logs, ${count.links} links, ${tables.issues.length} issues, ${count.events} events , and ${count.diaries} diaries to ${Object.keys(tables.lexicon).length} terms, in ${(performance.now() - time).toFixed(2)}ms.`)
   }
 }
