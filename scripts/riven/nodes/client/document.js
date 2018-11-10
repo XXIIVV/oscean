@@ -10,8 +10,7 @@ RIVEN.lib.Document = function DocumentNode (id, rect, ...params) {
   this.receive = function (content = { title: 'Unknown' }) {
     document.title = content.title
 
-    this.label = `${content.title}`
-
+    console.log(this.is_installed)
     this.setView(content.view)
 
     if (content && content[this.id] !== null) {

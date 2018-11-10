@@ -80,6 +80,7 @@ RIVEN.Node = function (id, rect = { x: 0, y: 0, w: 2, h: 2 }) {
   // SEND/RECEIVE
 
   this.send = function (payload) {
+    console.log(this.ports.output.routes)
     for (const routeId in this.ports.output.routes) {
       const route = this.ports.output.routes[routeId]
       if (!route) { continue }

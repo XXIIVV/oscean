@@ -18,6 +18,7 @@ function Issue (name, data = {}) {
   }
 
   this.body = function () {
+    if (!this.host) { return '' }
     return `
     <div class='entry issue'>
       <svg data-goto='${this.host.name}' class='icon'><path transform="scale(0.15,0.15) translate(20,20)" d="${this.host ? this.host.glyph() : ''}"></path></svg>

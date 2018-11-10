@@ -30,7 +30,7 @@ RIVEN.lib.Query = function QueryNode (id, rect) {
       setTimeout(() => { window.scrollTo(0, 0) }, 250)
     }
 
-    console.log(this.id, `Query(${target}) completed in ${(performance.now() - time).toFixed(2)}ms.`)
+    console.info(this.id, `Query(${target}) completed in ${(performance.now() - time).toFixed(2)}ms.`)
   }
 
   this.queue = function (a, speed = 1000) {

@@ -69,7 +69,7 @@ RIVEN.lib.Map = function MapNode (id, rect) {
         count.events += 1
       }
       if (!log.photo) { continue }
-      if (!log.name) { console.warn(`Missing caption: ${log.photo}`) }
+      // if (!log.name) { console.warn(`Missing caption: ${log.photo}`) }
       tables.lexicon[index].diaries.push(log)
       count.diaries += 1
       if (!tables.lexicon[index].featuredLog) {

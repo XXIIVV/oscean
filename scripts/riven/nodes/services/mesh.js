@@ -52,6 +52,8 @@ RIVEN.lib.Mesh = function (id, rect, children, entry, exit) {
   }
 
   this.exit = function (q, origin, route) {
+    // TODO: Pass along the signal to the DOM, and install
+    console.log(q, origin, route)
     const port = this.ports.output
     for (const routeId in port.routes) {
       const route = port.routes[routeId]

@@ -19,20 +19,11 @@ RIVEN.create = (append = true) => {
     Ø('horaire').create({ x: 6, y: 8 }, lib.Table, tablatal, Log),
     Ø('issues').create({ x: 9, y: 8 }, lib.Table, indental, Issue),
     Ø('glossary').create({ x: 12, y: 8 }, lib.Table, indental, List),
-    Ø('map').create({ x: 9, y: 4 }, lib.Map)
-  ], 'router', 'router')
+    Ø('map').create({ x: 9, y: 4 }, lib.Map),
+    Ø('template').create({ x: 12, y: 0 }, lib.Template)
+  ], 'router', 'template')
 
-  Ø('assoc').create({ x: 28, y: 0 }, lib.Mesh, [
-    Ø('build').create({ x: 6, y: 0 }, lib.Build),
-    Ø('_header').create({ x: 0, y: 4 }, lib.Header),
-    Ø('_sidebar').create({ x: 3, y: 4 }, lib.Sidebar),
-    Ø('_navi').create({ x: 9, y: 4 }, lib.Navi),
-    Ø('_content').create({ x: 6, y: 4 }, lib.Content),
-    Ø('default').create({ x: 3, y: 8 }, lib.Default),
-    Ø('analytics').create({ x: 6, y: 8 }, lib.Analytics)
-  ], 'build', 'build')
-
-  Ø('client').create({ x: 47, y: 0 }, lib.Mesh, [
+  Ø('client').create({ x: 28, y: 0 }, lib.Mesh, [
     Ø('document').create({ x: 0, y: 0 }, lib.Document, append),
     Ø('terminal').create({ x: 3, y: 4 }, lib.Terminal),
     Ø('header').create({ x: 0, y: 4 }, lib.Dom),
@@ -66,15 +57,10 @@ RIVEN.create = (append = true) => {
 
   // // Model
   Ø('router').syphon('database')
+  Ø('router').connect('template')
   Ø('database').syphon(['dictionaery', 'issues', 'horaire', 'glossary', 'lexicon'])
   Ø('query').connect('model')
   Ø('database').connect('map')
-  Ø('model').connect('assoc')
-
-  // // Assoc
-  Ø('build').syphon(['_navi', '_content', '_sidebar', '_header'])
-  Ø('_content').syphon(['default', 'analytics'])
-  Ø('assoc').connect('client')
 
   // // Dom
   Ø('header').bind(['photo', 'menu'])
