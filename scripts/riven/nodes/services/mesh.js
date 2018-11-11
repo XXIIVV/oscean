@@ -1,6 +1,6 @@
 'use strict'
 
-RIVEN.lib.Mesh = function (id, rect, children, entry, exit) {
+RIVEN.lib.Mesh = function (id, rect, children, entry, exit, requestEntry, requestExit) {
   RIVEN.Node.call(this, id, rect)
 
   const PORT_TYPES = { default: 0, input: 1, output: 2, request: 3, answer: 4, entry: 5, exit: 6 }
@@ -51,9 +51,11 @@ RIVEN.lib.Mesh = function (id, rect, children, entry, exit) {
     }
   }
 
+  this.answer = function (q, origin, route) {
+    return Ø(requestEntry).answer(q)
+  }
+
   this.exit = function (q, origin, route) {
-    // TODO: Pass along the signal to the DOM, and install
-    console.log(q, origin, route)
     const port = this.ports.output
     for (const routeId in port.routes) {
       const route = port.routes[routeId]

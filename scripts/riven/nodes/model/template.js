@@ -27,8 +27,6 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
     }
     console.info(this.id, `Templated html in ${(performance.now() - time).toFixed(2)}ms.`)
     this.send(template)
-
-    console.log(this.request())
   }
 
   // Header

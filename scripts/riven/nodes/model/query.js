@@ -17,7 +17,7 @@ RIVEN.lib.Query = function QueryNode (id, rect) {
     setTimeout(() => {
       Ø('document').removeClass('loading')
       Ø('document').addClass('ready')
-    }, 150)
+    }, 250)
 
     if (target === '') {
       window.history.replaceState(undefined, undefined, '#' + target)
@@ -31,6 +31,10 @@ RIVEN.lib.Query = function QueryNode (id, rect) {
     }
 
     console.info(this.id, `Query(${target}) completed in ${(performance.now() - time).toFixed(2)}ms.`)
+  }
+
+  this.answer = function (q) {
+    this.bang()
   }
 
   this.queue = function (a, speed = 1000) {

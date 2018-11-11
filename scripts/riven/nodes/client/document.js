@@ -10,7 +10,6 @@ RIVEN.lib.Document = function DocumentNode (id, rect, ...params) {
   this.receive = function (content = { title: 'Unknown' }) {
     document.title = content.title
 
-    console.log(this.is_installed)
     this.setView(content.view)
 
     if (content && content[this.id] !== null) {
@@ -19,14 +18,13 @@ RIVEN.lib.Document = function DocumentNode (id, rect, ...params) {
     }
   }
 
-  this.install = function (elements) {
+  this.answer = function (q) {
     if (!params[0]) { return }
 
-    this.is_installed = true
-
-    for (const id in elements) {
-      this.el.appendChild(elements[id])
+    if (!this.is_installed) {
+      this.install(this.request())
     }
+    document.body.appendChild(this.el)
   }
 
   this.setView = function (view = 'main') {
@@ -52,9 +50,9 @@ function on_scroll () {
   const header_el = document.getElementById('header')
   const logo_el = document.getElementById('logo')
   const menu_el = document.getElementById('menu')
-  if (scroll > header.offsetHeight - 90) {
+  if (header_el && scroll > header_el.offsetHeight - 90) {
     if (menu_el.className !== 'sticky') { menu_el.className = 'sticky' }
-  } else {
+  } else if (header_el) {
     if (menu_el.className === 'sticky') { menu_el.className = '' }
   }
 }
