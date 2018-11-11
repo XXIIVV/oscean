@@ -147,10 +147,10 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
   // Tracker
 
   this._tracker = function (q) {
-    const issues = q.target === 'tracker' ? Object.values(q.tables.lexicon).reduce((acc, term) => { acc = acc.concat(term.issues); return acc }, []) : q.result.issues
+    const issues = q.target === 'tracker' ? Object.values(q.tables.lexicon).reduce((acc, term) => { acc = acc.concat(term.issues); return acc }, []) : q.result ? q.result.issues : []
 
     if (issues.length < 1) {
-      return `<p>There are no issues to the {(${q.result.name.toCapitalCase()})} project.</p>`.toCurlic()
+      return `<p>There are no issues to the {(${q.target.toCapitalCase()})} project.</p>`.toCurlic()
     }
 
     const html = issues.reduce((acc, key) => { return `${acc}${key}` }, '')
@@ -160,10 +160,10 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
   // Calendar
 
   this._calendar = function (q) {
-    const events = q.target === 'calendar' ? q.tables.horaire.filter((log) => { return log.isEvent }) : q.result.events
+    const events = q.target === 'calendar' ? q.tables.horaire.filter((log) => { return log.isEvent }) : q.result ? q.result.events : []
 
     if (events.length < 1) {
-      return `<p>There is no events to the {(${q.result.name.toCapitalCase()})} project.</p>`.toCurlic()
+      return `<p>There is no events to the {(${q.target.toCapitalCase()})} project.</p>`.toCurlic()
     }
 
     const html = `<ul class='tidy ${events.length > 20 ? 'col3' : ''}' style='padding-top:30px;'>${events.reduce((acc, log, id, arr) => {
@@ -182,10 +182,10 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
   // Journal
 
   this._journal = function (q, upcoming = false) {
-    const logs = q.target === 'journal' ? q.tables.horaire : q.result.logs
+    const logs = q.target === 'journal' ? q.tables.horaire : q.result ? q.result.logs : []
 
     if (logs.length < 1) {
-      return `<p>There is no recent activity to the {(${q.result.name.toCapitalCase()})} project.</p>`.toCurlic()
+      return `<p>There is no recent activity to the {(${q.target.toCapitalCase()})} project.</p>`.toCurlic()
     }
 
     // Build journals
