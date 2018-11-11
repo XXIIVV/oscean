@@ -10,14 +10,14 @@ RIVEN.lib.Query = function QueryNode (id, rect) {
     const time = performance.now()
     const target = input.toUrl() === '' ? 'home' : input.toUrl()
 
-    Ø('document').set_class('loading')
+    // Ø('document').set_class('loading')
 
     this.send(target)
 
-    setTimeout(() => {
-      Ø('document').removeClass('loading')
-      Ø('document').addClass('ready')
-    }, 250)
+    // setTimeout(() => {
+    //   Ø('document').removeClass('loading')
+    //   Ø('document').addClass('ready')
+    // }, 250)
 
     if (target === '') {
       window.history.replaceState(undefined, undefined, '#' + target)
