@@ -102,9 +102,14 @@ function Heol (input, tables, host) {
     adultspeak: function (item) {
       return new Aeth(item).adultspeak
     },
-    lien: function (item) {
-      const result = Ø('database').cache.dictionaery[item.toUpperCase()]
-      return result ? result.toEn() : 'err:unknown'
+    lien: function (...items) {
+      const dict = Ø('database').cache.dictionaery
+      let s = ''
+      for (const key in items) {
+        const result = dict[items[key].toUpperCase()]
+        s += (result ? result.toEn() : 'err:unknown') + ' '
+      }
+      return s.trim()
     },
     enli: function (...items) {
       const dict = Ø('database').cache.dictionaery
