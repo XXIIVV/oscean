@@ -24,7 +24,6 @@ RIVEN.lib.Document = function DocumentNode (id, rect, ...params) {
 
   this.answer = function (q) {
     if (!params[0]) { return }
-
     if (!this.is_installed) {
       this.install(this.request())
     }
@@ -48,7 +47,6 @@ RIVEN.lib.Document = function DocumentNode (id, rect, ...params) {
 }
 
 function on_scroll () {
-  const info_el = document.getElementById('info')
   const scroll = window.scrollY
 
   // Logo/Search
