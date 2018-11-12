@@ -11,6 +11,7 @@ function Log (data = { code: '-400' }) {
   this.photo = data.pict ? parseInt(data.pict) : null
   this.bref = `A log added on {${this.time}(Calendar)} to {(${this.term})}.`
   this.indexes = data.name && this.photo ? [data.name, `${this.photo}`] : []
+  this.theme = 'noir'
 
   this.rune = data.code.length === 4 ? data.code.substr(0, 1) : '-'
   this.sc = data.code.length === 4 ? parseInt(data.code.substr(1, 1)) : 0

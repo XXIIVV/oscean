@@ -7,7 +7,8 @@ function Issue (name, data = {}) {
 
   this.name = name
   this.projects = data
-  this.indexes = Object.keys(this.projects)
+  this.indexes = []
+  this.theme = 'noir'
 
   this.unwrap = function () {
     const a = []

@@ -5,12 +5,16 @@ RIVEN.lib.Document = function DocumentNode (id, rect, ...params) {
 
   this.glyph = 'M150,60 L150,60 L240,150 L150,240 L60,150 Z M150,120 L150,120 L180,150 L150,180 L120,150 Z '
 
+  // Modes
+  this.state = 'ready'
   this.view = 'main'
+  this.theme = 'blanc'
 
   this.receive = function (content = { title: 'Unknown' }) {
     document.title = content.title
 
-    this.setView(content.view)
+    this.setMode('view', content.view)
+    this.setMode('theme', content.theme)
 
     if (content && content[this.id] !== null) {
       this.update(content[this.id])
@@ -27,18 +31,19 @@ RIVEN.lib.Document = function DocumentNode (id, rect, ...params) {
     document.body.appendChild(this.el)
   }
 
-  this.setView = function (view = 'main') {
-    if (this.view === view && this.view !== 'main') { this.setView('main'); return }
-
-    this.removeClass(this.view)
-    this.view = view
-    this.addClass(this.view)
-
-    if (this.view === 'main') {
-      this.removeClass('analytics')
-    } else {
-      this.addClass('analytics')
+  this.setMode = function (mode, value) {
+    if (mode === 'view') {
+      if (this.view === value) {
+        value = 'main'
+        this.theme = 'blanc'
+      }
+      if (value !== 'main') {
+        this.theme = 'noir'
+      }
     }
+
+    this[mode] = value
+    this.setClass(`state_${this.state} view_${this.view} theme_${this.theme}`)
   }
 }
 

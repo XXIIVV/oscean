@@ -14,7 +14,7 @@ RIVEN.lib.Mouse = function MouseNode (id, rect) {
     const view = e.target.getAttribute('data-view') ? e.target : e.target.parentNode.getAttribute('data-view') ? e.target.parentNode : null
 
     if (view && !in_tab) {
-      Ø('document').setView(view.getAttribute('data-view'))
+      Ø('document').setMode('view', view.getAttribute('data-view'))
       e.preventDefault()
       return
     }

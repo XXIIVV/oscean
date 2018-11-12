@@ -3,9 +3,12 @@
 function Entry (name, data) {
   this.name = name
   this.data = data
-  this.view = 'main'
   this.unde = 'Home'
-  this.bref = `—`
+  this.bref = '-'
+
+  this.view = 'main'
+  this.theme = 'noir'
+
   this.indexes = [this.name]
   this.outgoing = [] // From Ø('map')
   this.incoming = [] // From Ø('map')

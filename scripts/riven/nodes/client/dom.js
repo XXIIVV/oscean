@@ -52,23 +52,23 @@ RIVEN.lib.Dom = function DomNode (id, rect, ...params) {
 
   // Class
 
-  this.set_class = function (c) {
+  this.setClass = function (c) {
     this.el.className = `${c.toLowerCase()}`
   }
 
   this.addClass = function (c) {
-    if (!c || this.has_class(c)) { return }
+    if (!c || this.hasClass(c)) { return }
 
     this.el.className = `${this.el.className} ${c.toLowerCase()}`.trim()
   }
 
   this.removeClass = function (c) {
-    if (!c || !this.has_class(c)) { return }
+    if (!c || !this.hasClass(c)) { return }
 
     this.el.className = this.el.className.replace(c.toLowerCase(), '').trim()
   }
 
-  this.has_class = function (c) {
+  this.hasClass = function (c) {
     if (!c) { return }
 
     return this.el.className.indexOf(c.toLowerCase()) > -1

@@ -11,6 +11,7 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
     const template = {
       title: `XXIIVV — ${q.target.toCapitalCase()}`,
       view: q.params ? q.params : q.result ? q.result.view : 'main',
+      theme: this._theme(q),
       document: {
         header: this._header(q),
         core: {
@@ -27,6 +28,10 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
     }
     console.info(this.id, `Templated html in ${(performance.now() - time).toFixed(2)}ms.`)
     this.send(template)
+  }
+
+  this._theme = function (q) {
+    return q.result ? q.result.theme : 'blanc'
   }
 
   // Header
