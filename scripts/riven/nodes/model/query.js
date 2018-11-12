@@ -4,7 +4,6 @@ RIVEN.lib.Query = function QueryNode (id, rect) {
   RIVEN.Node.call(this, id, rect)
 
   this.glyph = 'M60,150 L60,150 L240,150 L240,150 L150,240 M150,60 L150,60 L240,150'
-  this.label = 'query'
   this.location = null
 
   this.bang = function (input = window.location.hash) {
@@ -41,6 +40,12 @@ RIVEN.lib.Query = function QueryNode (id, rect) {
       this.queue(a.slice(1))
     }, speed)
   }
+}
+
+RIVEN.lib.Init = function QueryNode (id, rect) {
+  RIVEN.Node.call(this, id, rect)
+
+  this.glyph = 'M60,150 L60,150 L240,150 L240,150 L150,240 M150,60 L150,60 L240,150'
 }
 
 const detectBackOrForward = function (onBack, onForward) {

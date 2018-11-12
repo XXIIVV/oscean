@@ -35,9 +35,6 @@ function Heol (input, tables, host) {
         return `${acc}${val}`
       }, '')
     },
-    wrap: (item, tag, cl) => {
-      return `<${tag} class='${cl || ''}'>${item}</${tag}>`
-    },
     // -----------------------
     // Time
     // -----------------------
@@ -113,6 +110,9 @@ function Heol (input, tables, host) {
       return items.map((val) => {
         return `${t(val, p)}`
       })
+    },
+    wrap: (item, tag, cl) => {
+      return `<${tag} class='${cl || ''}'>${item}</${tag}>`
     },
     INDEX: (item) => {
       return `<h3>{(${item.name.toCapitalCase()})}</h3><p>${item.bref}</p><ul class='bullet'>${item.children.reduce((acc, term) => { return `${acc}<li>${term.bref}</li>` }, '')}</ul>`

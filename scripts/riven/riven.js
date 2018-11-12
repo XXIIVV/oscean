@@ -282,17 +282,13 @@ RIVEN.graph = () => {
   function drawConnectionRequest (a, b) {
     const posA = getPortPosition(a)
     const posB = getPortPosition(b)
-    const posM = middle(posA, posB)
-    const posC1 = { x: posA.x, y: (posM.y + (posA.y + GRID_SIZE)) / 2 }
-    const posC2 = { x: posB.x, y: (posM.y + (posB.y - GRID_SIZE)) / 2 }
 
     return `<path d="
-      M${posA.x},${posA.y} L${posA.x},${posA.y + GRID_SIZE} 
-      Q${posC1.x},${posC1.y} ${posM.x},${posM.y} 
-      Q ${posC2.x},${posC2.y} ${posB.x},${posB.y - GRID_SIZE}
+      M${posA.x},${posA.y} 
+      L${posA.x},${posA.y + GRID_SIZE} 
+      L${posB.x},${posA.y + GRID_SIZE} 
       L${posB.x},${posB.y}
-    " class='route request'/>
-    <circle cx='${posM.x}' cy='${posM.y}' r='2' fill='white'></circle>`
+    " class='route request'/>`
   }
 
   function drawConnectionBidirectional (a, b) {
