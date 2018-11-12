@@ -2,116 +2,146 @@
 
 function Heol (input, tables, host) {
   const lib = {
-    match: function (source, items) {
+    match: (source, items) => {
       const filtered = items.filter((val) => { return source[val.toUpperCase()] })
       return filtered.map((val) => { return source[val.toUpperCase()] })
     },
-    table: function (source) {
+    table: (source) => {
       return tables[source]
     },
-    keys: function (h) {
+    keys: (h) => {
       return Object.keys(h)
     },
-    values: function (h) {
+    values: (h) => {
       return Object.values(h)
     },
-    value: function (h, val) {
+    value: (h, val) => {
       return h[val]
     },
-    sort: function (a) {
-      return a.sort()
-    },
-    uniq: function (items) {
-      return items.filter((value, index, self) => {
-        return self.indexOf(value) === index
-      })
-    },
-    Ø: function (item) {
+    Ø: (item) => {
       return Ø(item)
     },
-    count: function (item) {
-      return item.length
-    },
-    add: function (...items) {
-      return items.reduce((acc, val) => { return acc + val }, 0)
-    },
-    random: function (a) {
+    random: (a) => {
       return a[parseInt(Math.random() * a.length)]
     },
-    attribute: function (a, name) {
+    attribute: (a, name) => {
       return a.map((val) => { return val[name] })
     },
-    find: function (source, target) {
+    find: (source, target) => {
       return source[target.toUpperCase()] ? source[target.toUpperCase()] : ''
     },
-    echo: function (items) {
+    echo: (items) => {
       return items.reduce((acc, val) => {
         return `${acc}${val}`
       }, '')
     },
-    wrap: function (item, tag, cl) {
+    wrap: (item, tag, cl) => {
       return `<${tag} class='${cl || ''}'>${item}</${tag}>`
     },
+    // -----------------------
+    // Time
+    // -----------------------
+    daysSince: (greg) => {
+      return parseInt((Date.now() - new Date(greg)) / 1000 / 86400)
+    },
+    msSince: (greg) => {
+      return Date.now() - new Date(greg)
+    },
+    // -----------------------
+    // Math
+    // -----------------------
+    add: (...items) => {
+      return items.reduce((acc, val) => { return acc + val }, 0)
+    },
+    sub: (...items) => {
+      return items[0] - items[1]
+    },
+    mul: (...items) => {
+      return items.reduce((acc, val) => { return acc === 0 ? val : acc * val }, 0)
+    },
+    div: (...items) => {
+      return items[0] / items[1]
+    },
+    floor: (item) => {
+      return Math.floor(item)
+    },
+    fix: (...items) => {
+      return items[0].toFixed(items[1])
+    },
+    // -----------------------
+    // Arrays
+    // -----------------------
     // will modify properties or run a function onto each object.
-    map: function (arr, fn) {
+    map: (arr, fn) => {
       return arr.map((val, id, arr) => fn)
     },
     // will only keeps elements returning true.
-    filter: function (arr, fn) {
+    filter: (arr, fn) => {
       return arr.map((val, id, arr) => fn)
     },
     // will reduce it into a single value.
-    reduce: function (arr, fn, acc) {
+    reduce: (arr, fn, acc) => {
       return arr.reduce((acc, val, id, arr) => fn, acc)
+    },
+    count: (item) => {
+      return item.length
+    },
+    sort: (a) => {
+      return a.sort()
+    },
+    uniq: (items) => {
+      return items.filter((value, index, self) => {
+        return self.indexOf(value) === index
+      })
     },
     // -----------------------
     // Strings
     // -----------------------
-    lc: function (item) {
+    lc: (item) => {
       return item.toLowerCase()
     },
-    cc: function (item) {
+    cc: (item) => {
       return item.toCapitalCase()
     },
-    uc: function (item) {
+    uc: (item) => {
       return item.toUpperCase()
     },
     // -----------------------
     // Templates
     // -----------------------
-    template: function (items, t, p) {
+    template: (items, t, p) => {
       return items.map((val) => {
         return `${t(val, p)}`
       })
     },
-    INDEX: function (item) {
+    INDEX: (item) => {
       return `<h3>{(${item.name.toCapitalCase()})}</h3><p>${item.bref}</p><ul class='bullet'>${item.children.reduce((acc, term) => { return `${acc}<li>${term.bref}</li>` }, '')}</ul>`
     },
-    LINK: function (item) {
+    LINK: (item) => {
       return `{(${item.toCapitalCase()})}`
     },
-    REDIRECT: function (item) {
+    REDIRECT: (item) => {
       return `<meta http-equiv="refresh" content="2; url=#${item}">`
     },
-    TITLE: function (item) {
+    TITLE: (item) => {
       return `<h2>${item.name.toCapitalCase()}</h2><h4>${item.bref}</h4>`
     },
-    PHOTO: function (item) {
+    PHOTO: (item) => {
       return host.featuredLog && host.featuredLog.photo !== item.photo ? `<img src="media/diary/${item.photo}.jpg"/>` : ''
     },
-    GALLERY: function (item) {
+    GALLERY: (item) => {
       return `${item.featuredLog ? `<a data-goto='${item.name}'><img src="media/diary/${item.featuredLog.photo}.jpg"/></a>` : ''}<h2>${item.name.toCapitalCase()}</h2><h4>${item.bref}</h4>`
     },
-    SPAN: function (item) {
+    SPAN: (item) => {
       return item.logs.length > 10 && item.span.from && item.span.to ? `<li>{(${item.name.toCapitalCase()})} ${item.span.from}—${item.span.to}</li>`.toCurlic() : ''
     },
     // -----------------------
     // Lietal
     // -----------------------
-    adultspeak: function (item) {
+    adultspeak: (item) => {
       return new Aeth(item).adultspeak
     },
-    lien: function (...items) {
+    lien: (...items) => {
       const dict = Ø('database').cache.dictionaery
       let s = ''
       for (const key in items) {
@@ -120,7 +150,7 @@ function Heol (input, tables, host) {
       }
       return s.trim()
     },
-    enli: function (...items) {
+    enli: (...items) => {
       const dict = Ø('database').cache.dictionaery
       let s = ''
       for (const key in items) {
@@ -130,8 +160,20 @@ function Heol (input, tables, host) {
       }
       return s.trim()
     },
-    septambres: function (item) {
+    septambres: (item) => {
       return new Septambres(item)
+    },
+    // -----------------------
+    // Desamber
+    // -----------------------
+    desamber: () => {
+      return `${new Desamber()}`
+    },
+    dtog: (q) => {
+      return `${new Desamber(q).toGregorian()}`
+    },
+    gtod: (q) => {
+      return !isNaN(new Date(q)) ? `${new Date(q).desamber()}` : 'Invalid Date'
     }
   }
 

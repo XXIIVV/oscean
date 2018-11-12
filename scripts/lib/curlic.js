@@ -13,10 +13,6 @@ function curlic (text = '', host) {
     if (t.indexOf('{') > -1 && t.indexOf('}') < 0) { console.warn(`Missing closing{:${t}`) }
   }
 
-  function evaluate (t) {
-    try { return `${eval(t)}` } catch (err) { console.warn(`Cannot eval:${t}`, err); return t }
-  }
-
   function heol (t) {
     return new Heol(t, Ø('database').cache, host)
   }
@@ -41,9 +37,6 @@ function curlic (text = '', host) {
 
     const toHeol = s.substr(0, 1) === 'λ'
     if (toHeol) { s = s.replace(s, heol(s.substr(1))) }
-
-    const toEval = s.match(/\[(.*)\]/g)
-    if (toEval) { s = s.replace(toEval[0], evaluate(toEval[0])) }
 
     const toLink = s.match(/\((.*)\)/g)
     if (toLink) { s = s.replace(toLink[0], '') }
