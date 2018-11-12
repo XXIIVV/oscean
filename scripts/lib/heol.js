@@ -32,6 +32,9 @@ function Heol (input, tables, host) {
     count: function (item) {
       return item.length
     },
+    add: function (...items) {
+      return items.reduce((acc, val) => { return acc + val }, 0)
+    },
     random: function (a) {
       return a[parseInt(Math.random() * a.length)]
     },
