@@ -6,12 +6,12 @@ RIVEN.lib.Document = function DocumentNode (id, rect, ...params) {
   this.glyph = 'M150,60 L150,60 L240,150 L150,240 L60,150 Z M150,120 L150,120 L180,150 L150,180 L120,150 Z '
 
   // Modes
-  this.state = 'ready'
-  this.view = 'main'
-  this.theme = 'blanc'
+  this.modes = { state: '', view: '', theme: '' }
 
   this.receive = function (content = { title: 'Unknown' }) {
     document.title = content.title
+
+    window.scrollTo(0, 0)
 
     this.setMode('view', content.view)
     this.setMode('theme', content.theme)
@@ -31,18 +31,20 @@ RIVEN.lib.Document = function DocumentNode (id, rect, ...params) {
   }
 
   this.setMode = function (mode, value) {
+    if (this.modes[mode] === value) { return }
+
     if (mode === 'view') {
       if (this.view === value) {
         value = 'main'
-        this.theme = 'blanc'
+        this.modes.theme = 'blanc'
       }
       if (value !== 'main') {
-        this.theme = 'noir'
+        this.modes.theme = 'noir'
       }
     }
 
-    this[mode] = value
-    this.setClass(`state_${this.state} view_${this.view} theme_${this.theme}`)
+    this.modes[mode] = value
+    this.setClass(`state_${this.modes.state} view_${this.modes.view} theme_${this.modes.theme}`)
   }
 }
 

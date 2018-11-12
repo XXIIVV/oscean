@@ -5,30 +5,31 @@ RIVEN.lib.Query = function QueryNode (id, rect) {
 
   this.glyph = 'M60,150 L60,150 L240,150 L240,150 L150,240 M150,60 L150,60 L240,150'
   this.label = 'query'
+  this.location = null
 
   this.bang = function (input = window.location.hash) {
+    const target = input.toUrl()
+
+    if (this.location === target) { return }
+
+    this.goto(target || 'home')
+  }
+
+  this.goto = function (target) {
     const time = performance.now()
-    const target = input.toUrl() === '' ? 'home' : input.toUrl()
+
+    this.location = target
+    window.location.hash = this.location
 
     Ø('document').setMode('state', 'loading')
     setTimeout(() => { this.send(target) }, 50)
     setTimeout(() => { Ø('document').setMode('state', 'ready') }, 150)
 
-    if (target === '') {
-      window.history.replaceState(undefined, undefined, '#' + target)
-    } else {
-      window.location.hash = target.toUrl()
-    }
-
-    if (window.scrollY !== 0) {
-      window.scrollTo(0, 0)
-      setTimeout(() => { window.scrollTo(0, 0) }, 250)
-    }
-
-    console.info(this.id, `Query(${target}) completed in ${(performance.now() - time).toFixed(2)}ms.`)
+    console.info(this.id, `Queried(${target}) completed in ${(performance.now() - time).toFixed(2)}ms.`)
   }
 
   this.answer = function (q) {
+    console.info(this.id, 'Initializing..')
     this.bang()
   }
 

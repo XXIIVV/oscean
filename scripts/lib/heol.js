@@ -26,6 +26,12 @@ function Heol (input, tables, host) {
         return self.indexOf(value) === index
       })
     },
+    Ø: function (item) {
+      return Ø(item)
+    },
+    count: function (item) {
+      return item.length
+    },
     random: function (a) {
       return a[parseInt(Math.random() * a.length)]
     },

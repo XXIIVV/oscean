@@ -13,14 +13,16 @@ RIVEN.lib.Mouse = function MouseNode (id, rect) {
     const view = e.target.getAttribute('data-view') ? e.target : e.target.parentNode.getAttribute('data-view') ? e.target.parentNode : null
 
     if (view && !in_tab) {
-      Ø('document').setMode('view', view.getAttribute('data-view'))
+      const dataView = view.getAttribute('data-view')
+      Ø('document').setMode('view', dataView)
       e.preventDefault()
       return
     }
 
     if (!el || el.className === 'external' || in_tab) { return }
 
-    Ø('query').bang(el.getAttribute('data-goto'))
+    const dataGoto = el.getAttribute('data-goto')
+    Ø('query').bang(dataGoto)
     e.preventDefault()
   }
 }

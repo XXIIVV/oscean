@@ -7,13 +7,24 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
 
   this.receive = function (q) {
     const time = performance.now()
+    const featuredLog = findFeaturedLog(q)
 
     const template = {
       title: `XXIIVV — ${q.target.toCapitalCase()}`,
-      view: q.params ? q.params : q.result ? q.result.view : 'main',
+      view: this._view(q),
       theme: this._theme(q),
       document: {
-        header: this._header(q),
+        header: {
+          photo: featuredLog ? featuredLog.photo : 0,
+          menu: {
+            search: q.target && q.target.toCapitalCase(),
+            activity: this._activity(q),
+            info: {
+              title: featuredLog ? `<a data-goto='journal' href='#journal'>${featuredLog.name}</a> — ${timeAgo(featuredLog.time, 60)}` : ' ',
+              glyph: featuredLog ? featuredLog.host.glyph() : q.result && q.result.glyph() ? q.result.glyph() : 'M240,240 l0,-90 a-90,-90 0 0,0 -90,-90 l-90,0 l0,90 a90,90 0 0,0 90,90 l60,0 l0,-90 a-60,-60 0 0,0 -60,-60 l-60,0 l0,60 a60,60 0 0,0 60,60 l30,0 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0 l0,30 a30,30 0 0,0 30,30'
+            }
+          }
+        },
         core: {
           sidebar: this._sidebar(q),
           content: {
@@ -26,29 +37,21 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
         }
       }
     }
-    console.info(this.id, `Templated html in ${(performance.now() - time).toFixed(2)}ms.`)
+
+    console.info(this.id, `Templated(${q.target}) in ${(performance.now() - time).toFixed(2)}ms.`)
+
     this.send(template)
+  }
+
+  this._view = function (q) {
+    return q.params ? q.params : q.result ? q.result.view : 'main'
   }
 
   this._theme = function (q) {
     return q.result ? q.result.theme : 'blanc'
   }
 
-  // Header
-
-  function findFeaturedLog (q) {
-    if (!q.result) { return }
-
-    if (q.result.name === 'HOME') {
-      for (const id in q.tables.horaire) {
-        if (q.tables.horaire[id].isFeatured && q.tables.horaire[id].time.offset <= 0 && q.tables.horaire[id]) { return q.tables.horaire[id] }
-      }
-    }
-
-    return q.result.featuredLog
-  }
-
-  function makeActivity (q) {
+  this._activity = function (q) {
     if (!q.result) { return '' }
 
     if (q.result.name === 'HOME' || q.result.name === 'JOURNAL' || q.result.name === 'CALENDAR' || q.result.name === 'TRACKER') {
@@ -65,31 +68,21 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
     `
   }
 
-  this._header = function (q) {
-    const featuredLog = findFeaturedLog(q)
+  // Header
 
-    return {
-      photo: featuredLog ? featuredLog.photo : 0,
-      menu: {
-        search: q.target && q.target.toCapitalCase(),
-        activity: makeActivity(q),
-        info: {
-          title: featuredLog ? `<a data-goto='journal' href='#journal'>${featuredLog.name}</a> — ${timeAgo(featuredLog.time, 60)}` : ' ',
-          glyph: featuredLog ? featuredLog.host.glyph() : q.result && q.result.glyph() ? q.result.glyph() : 'M240,240 l0,-90 a-90,-90 0 0,0 -90,-90 l-90,0 l0,90 a90,90 0 0,0 90,90 l60,0 l0,-90 a-60,-60 0 0,0 -60,-60 l-60,0 l0,60 a60,60 0 0,0 60,60 l30,0 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0 l0,30 a30,30 0 0,0 30,30'
-        }
+  function findFeaturedLog (q) {
+    if (!q.result) { return }
+
+    if (q.result.name === 'HOME') {
+      for (const id in q.tables.horaire) {
+        if (q.tables.horaire[id].isFeatured && q.tables.horaire[id].time.offset <= 0 && q.tables.horaire[id]) { return q.tables.horaire[id] }
       }
     }
+
+    return q.result.featuredLog
   }
 
   // Sidebar
-
-  function _bref (term) {
-    return `<h1>${term.bref.toCurlic()}</h1>`
-  }
-
-  function _parent (term) {
-    return `<h2><a data-goto='${term.unde}' href='#${term.unde}'>${term.unde}</a></h2>`
-  }
 
   function _links (term) {
     if (!term.links) { return '' }
@@ -105,8 +98,8 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
     if (!q.result) { return '<h1>The {(Nataniev)} Services Desk</h1><h2>{(Home)}</h2>'.toCurlic() }
 
     return `
-    ${_bref(q.result)}
-    ${_parent(q.result)}
+    <h1>${q.result.bref.toCurlic()}</h1>
+    <h2><a data-goto='${q.result.unde}' href='#${q.result.unde}'>${q.result.unde}</a></h2>
     ${_links(q.result)}`
   }
 
