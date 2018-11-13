@@ -1,7 +1,7 @@
 'use strict'
 
 RIVEN.lib.Terminal = function TerminalNode (id, rect, ...params) {
-  RIVEN.lib.Dom.call(this, id, rect, 'pre')
+  RIVEN.lib.Dom.call(this, id, rect, 'div')
 
   this.glyph = 'M65,65 L65,65 L245,65 M65,125 L65,125 L245,125 M65,185 L65,185 L245,185 M65,245 L65,245 L245,245 '
 
@@ -13,14 +13,21 @@ RIVEN.lib.Terminal = function TerminalNode (id, rect, ...params) {
 
     if (!cmd) { return }
 
-    this.push(`~ <b>${cmd}${par ? '(' + par + ')' : ''}</b>`, 125)
-    this.push(`> ${this.services[cmd] ? this.services[cmd](par).trim() : this.services['unknown'](cmd)}`, 250)
+    this.push('guest', `${cmd}${par ? '(' + par + ')' : ''}`, 125)
+    this.push('maeve', `${this.services[cmd] ? this.services[cmd](par).trim() : this.services['unknown'](cmd)}`, 250)
 
     Ø('search').el.value = '~'
   }
 
-  this.push = function (txt, delay = 0) {
-    setTimeout(() => { this.el.innerHTML = `${txt}\n${this.el.innerHTML}` }, delay)
+  this.push = function (author, txt, delay = 0) {
+    setTimeout(() => {
+      this.el.innerHTML = `
+      <div class='line ${author}'>
+        <span class='time'>${neralie()}</span>
+        <span class='author'>${author}</span>
+        <span class='body'>${txt}</span>
+      </div>\n${this.el.innerHTML}`
+    }, delay)
   }
 
   // Services
