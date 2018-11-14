@@ -111,13 +111,22 @@ RIVEN.lib.Terminal = function TerminalNode (id, rect, ...params) {
       return `You are ${((new Date() - new Date('1986-03-22')) / 31557600000).toFixed(4)} years old.`
     },
 
-    score: (q) => {
+    status: (q) => {
       const score = { ratings: 0, entries: 0, average: 0, issues: 0 }
       for (const id in Ø('database').cache.lexicon) {
         score.ratings += Ø('database').cache.lexicon[id].rating()
         score.entries += 1
       }
-      return `${((score.ratings / score.entries) * 100).toFixed(2)}% Complete`
+      return `Oscean is ${((score.ratings / score.entries) * 100).toFixed(2)}% Completed.`
+    },
+
+    orphans: (q) => {
+      let html = ''
+      for (const id in Ø('database').cache.lexicon) {
+        const term = Ø('database').cache.lexicon[id]
+        if (term.incoming.length < 2) { html += `${term.name}\n` }
+      }
+      return html
     },
 
     unknown: (q) => {
