@@ -249,8 +249,7 @@ RIVEN.graph = () => {
       Q${posC1.x},${posC1.y} ${posM.x},${posM.y} 
       Q ${posC2.x},${posC2.y} ${posB.x - GRID_SIZE},${posB.y} 
       L${posB.x},${posB.y}
-    " class='route output'/>
-    <circle cx='${posM.x}' cy='${posM.y}' r='2' fill='white'></circle>`
+    " class='route output'/>`
   }
 
   function drawConnectionEntry (a, b) {

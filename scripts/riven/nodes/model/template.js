@@ -7,7 +7,7 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
 
   this.receive = function (q) {
     const time = performance.now()
-    const featuredLog = findFeaturedLog(q)
+    const featuredLog = q.result ? q.result.featuredLog : null
 
     const template = {
       title: `XXIIVV — ${q.target.toCapitalCase()}`,
@@ -66,20 +66,6 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
     ${q.result.logs.length > 2 && !q.result.hasTag('journal') ? `<li><a class='journal' data-view='journal' href='#${q.result.name.toUrl()}:journal'>${q.result.logs.length} Logs</a></li>` : ''}
     ${q.result.issues.length > 0 && !q.result.hasTag('diary') ? `<li><a class='tracker' data-view='tracker' href='#${q.result.name.toUrl()}:tracker'>${q.result.issues.length} Issue${q.result.issues.length > 1 ? 's' : ''}</a></li>` : ''}
     `
-  }
-
-  // Header
-
-  function findFeaturedLog (q) {
-    if (!q.result) { return }
-
-    if (q.result.name === 'HOME') {
-      for (const id in q.tables.horaire) {
-        if (q.tables.horaire[id].isFeatured && q.tables.horaire[id].time.offset <= 0 && q.tables.horaire[id]) { return q.tables.horaire[id] }
-      }
-    }
-
-    return q.result.featuredLog
   }
 
   // Sidebar

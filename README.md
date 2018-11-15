@@ -1,6 +1,6 @@
 # Oscean
 
-This is the repository for the [Oscean](http://wiki.xxiivv.com/) wiki engine, see [on-side documentation](http://wiki.xxiivv.com/About). Oscean uses the flow-based framework [Riven](https://github.com/XXIIVV/Riven), the routing graph can be seen [here](http://wiki.xxiivv.com/riven.html). The database formats are [Indental](https://wiki.xxiivv.com/Indental) and [Tablatal](https://wiki.xxiivv.com/Tablatal), their content uses the templating format [Runic](https://wiki.xxiivv.com/Runic) and [Curlic](https://wiki.xxiivv.com/Curlic).
+This is the repository for the [Oscean](http://wiki.xxiivv.com/) wiki engine, see [on-site documentation](http://wiki.xxiivv.com/About). Oscean uses the flow-based framework [Riven](https://github.com/XXIIVV/Riven), the routing graph can be seen [here](http://wiki.xxiivv.com/riven.html). The database formats are [Indental](https://wiki.xxiivv.com/Indental) and [Tablatal](https://wiki.xxiivv.com/Tablatal), their content uses the templating format [Runic](https://wiki.xxiivv.com/Runic) and [Curlic](https://wiki.xxiivv.com/Curlic).
 
 - [scripts/database/lexicon.ndtl](https://github.com/XXIIVV/Oscean/blob/master/scripts/database/lexicon.ndtl)
 
@@ -16,18 +16,17 @@ For example, to test all lexicon entries for broken Curlic, type:
 ~walk
 ```
 
+A compact version of the site and RSS feed can be generated with:
+
+```
+~static
+~rss
+```
+
 ## Moving toward Standard
 
 ```
 standard --fix
-```
-
-## RSS/Static Site
-
-A compact version of the site and RSS feed can be generated with:
-
-```
-node tools/index.js
 ```
 
 ## Syntax Highlight

@@ -20,11 +20,14 @@ RIVEN.create = (append = true) => {
     Ø('horaire').create({ x: 6, y: 8 }, lib.Table, tablatal, Log),
     Ø('issues').create({ x: 9, y: 8 }, lib.Table, indental, Issue),
     Ø('glossary').create({ x: 12, y: 8 }, lib.Table, indental, List),
-    Ø('map').create({ x: 3, y: 4 }, lib.Map),
-    Ø('template').create({ x: 6, y: 0 }, lib.Template)
+    Ø('map').create({ x: 3, y: 4 }, lib.Map)
   ])
 
-  Ø('client').create({ x: 28, y: 4 }, lib.Mesh, [
+  Ø('assoc').create({ x: 27, y: 4 }, lib.Mesh, [
+    Ø('template').create({ x: 0, y: 0 }, lib.Template)
+  ])
+
+  Ø('client').create({ x: 36, y: 4 }, lib.Mesh, [
     Ø('document').create({ x: 0, y: 0 }, lib.Document, append),
     Ø('terminal').create({ x: 6, y: 4 }, lib.Terminal),
     Ø('header').create({ x: 0, y: 4 }, lib.Dom),

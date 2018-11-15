@@ -1,5 +1,8 @@
 'use strict'
 
+// Originally created by maryrosecook
+// https://github.com/maryrosecook/littlelisp
+
 function Lisp (input, lib, tables, host) {
   const Context = function (scope, parent) {
     this.scope = scope
