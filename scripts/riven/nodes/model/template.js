@@ -92,11 +92,8 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
   // Main
 
   this._main = function (q) {
-    if (!q.result) { return this.missing(q) }
-    return `${q.result.body()}`
-  }
+    if (q.result) { return `${q.result.body()}` }
 
-  this.missing = function (q) {
     const index = Object.keys(Ø('database').index)
     const similar = findSimilar(q.target.toUpperCase(), index)
 
@@ -190,31 +187,22 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
 
   // Navi
 
-  function depth1 (portal, term) {
-    const _children = portal.children.reduce((acc, child, id) => {
-      return `${acc}${`<ul><li>{(${child.name.toCapitalCase()})}</li>${depth2(child, term)}</ul>`}`
-    }, '')
-    return `<ul>${_children}</ul>`
-  }
-
-  function depth2 (portal, term) {
-    const _children = portal.children.reduce((acc, child, id) => {
-      return `${acc}${`<ul><li class='${child.name === term.name || child.name.toLowerCase() === term.unde.toLowerCase() ? 'selected' : ''}'>{(${child.name.toCapitalCase()})}</li>${child.name === term.name || child.name.toLowerCase() === term.unde.toLowerCase() ? depth3(child, term) : ''}</ul>`}`
-    }, '')
-    return `<ul>${_children}</ul>`
-  }
-
-  function depth3 (portal, term) {
-    const _children = portal.children.reduce((acc, child, id) => {
-      return `${acc}${`<ul><li class='${child.name === term.name ? 'selected' : ''}'>{(${child.name.toCapitalCase()})}</li></ul>`}`
-    }, '')
-    return `<ul>${_children}</ul>`
-  }
-
   this._navi = function (q) {
-    const portal = q.result ? q.result.portal() : null
+    if (!q.result) { return '' }
 
-    return portal ? `
-    <svg id="glyph"><path transform="scale(0.15) translate(0,-150)" d="${portal.glyph()}"></path></svg>${depth1(portal, q.result)}`.toCurlic() : ' '
+    const term = q.result
+    const portal = q.result.portal()
+
+    if (!portal) { return '' }
+
+    return `
+    <svg id="glyph"><path transform="scale(0.15)" d="${portal.glyph()}"></path></svg>
+    <ul>${portal.children.reduce((acc, child, id) => {
+    return `${acc}${`<ul><li>{(${child.name.toCapitalCase()})}</li><ul>${child.children.reduce((acc, child, id) => {
+      return `${acc}${`<ul><li class='${child.name === term.name || child.name.toLowerCase() === term.unde.toLowerCase() ? 'selected' : ''}'>{(${child.name.toCapitalCase()})}</li>${child.name === term.name || child.name.toLowerCase() === term.unde.toLowerCase() ? `<ul>${child.children.reduce((acc, child, id) => {
+        return `${acc}${`<ul><li class='${child.name === term.name ? 'selected' : ''}'>{(${child.name.toCapitalCase()})}</li></ul>`}`
+      }, '')}</ul>` : ''}</ul>`}`
+    }, '')}</ul></ul>`}`
+  }, '')}</ul>`.toCurlic()
   }
 }
