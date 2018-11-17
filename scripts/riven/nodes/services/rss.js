@@ -55,6 +55,11 @@ RIVEN.lib.Rss = function RssNode (id, rect) {
   <title>XXIIVV — Journal</title>
   <link>https://wiki.xxiivv.com/</link>
   <description>Devine Lu Linvega's Journal</description>
+  <image>
+    <url>https://wiki.xxiivv.com/media/services/rss.jpg</url>
+    <title>XXIIVV — koseki091450</title>
+    <link>https://wiki.xxiivv.com</link>
+  </image>
   <pubDate>${logs[0].time.toDate().toUTCString()}</pubDate>
   <generator>Oscean - Riven</generator>
   ${this.items(logs)}
