@@ -73,7 +73,7 @@ RIVEN.lib.Map = function MapNode (id, rect) {
       tables.lexicon[index].diaries.push(log)
       count.diaries += 1
       // Set Home Featured
-      if(!tables.lexicon.HOME.featuredLog && log.isFeatured){
+      if (!tables.lexicon.HOME.featuredLog && log.isFeatured) {
         tables.lexicon.HOME.featuredLog = log
       }
       if (!tables.lexicon[index].featuredLog) {

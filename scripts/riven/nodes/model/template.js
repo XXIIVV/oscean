@@ -74,9 +74,7 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
     if (!term.links) { return '' }
     return `
     <ul class='links'>
-      ${Object.keys(term.links).reduce((acc, val) => {
-    return `${acc}<li><a href='${term.links[val]}' target='_blank'>${val.toLowerCase()}</a></li>`
-  }, '')}
+      ${Object.keys(term.links).reduce((acc, val) => { return `${acc}<li><a href='${term.links[val]}' target='_blank'>${val.toLowerCase()}</a></li>` }, '')}
     </ul>`
   }
 
@@ -124,7 +122,6 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
     return val
   }
 
-  //
   // Tracker
 
   this._tracker = function (q) {
