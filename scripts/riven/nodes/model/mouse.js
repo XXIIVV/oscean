@@ -8,7 +8,7 @@ RIVEN.lib.Mouse = function MouseNode (id, rect) {
   window.addEventListener('click', (e) => { this.click(e) })
 
   this.click = function (e) {
-    if(!e.button && e.button !== 0 && e.button !== 1){ return ; }
+    if(e.button || e.which === 3 || e.button === 2){ return }
 
     const in_tab = e.ctrlKey || e.shiftKey || e.metaKey
     const el = e.target.getAttribute('data-goto') ? e.target : e.target.parentNode.getAttribute('data-goto') ? e.target.parentNode : null
