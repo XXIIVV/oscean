@@ -129,6 +129,11 @@ RIVEN.lib.Terminal = function TerminalNode (id, rect, ...params) {
       return html
     },
 
+    clear: (q) => {
+      this.el.innerHTML = ''
+      return ``
+    },
+
     unknown: (q) => {
       return `Unknown command <i>${q}</i>, type <i>help</i> to see available commands.`
     }
