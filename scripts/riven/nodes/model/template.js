@@ -132,7 +132,7 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
     }
 
     const html = issues.reduce((acc, key) => { return `${acc}${key}` }, '')
-    return `${new BarViz(q.tables.horaire)}${html}`
+    return `${new BarViz(q.result.logs)}${html}`
   }
 
   // Calendar
