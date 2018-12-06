@@ -10,14 +10,14 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
     const featuredLog = q.result ? q.result.featuredLog : null
 
     const template = {
-      title: `XXIIVV — ${q.target.toCapitalCase()}`,
+      title: `XXIIVV — ${q.target.toTitleCase()}`,
       view: this._view(q),
       theme: this._theme(q),
       document: {
         header: {
           photo: featuredLog ? featuredLog.photo : 0,
           menu: {
-            search: q.target && q.target.toCapitalCase(),
+            search: q.target && q.target.toTitleCase(),
             activity: this._activity(q),
             info: {
               title: featuredLog ? `<a data-goto='journal' href='#journal'>${featuredLog.name}</a> — ${timeAgo(featuredLog.time, 60)}` : ' ',
@@ -96,7 +96,7 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
     const similar = findSimilar(q.target.toUpperCase(), index)
 
     return `
-    <p>Sorry, there are no pages for {*/${q.target.toCapitalCase()}*}, did you mean {(${similar[0].word.toCapitalCase()})} or {(${similar[1].word.toCapitalCase()})}?</p>
+    <p>Sorry, there are no pages for {*/${q.target.toTitleCase()}*}, did you mean {(${similar[0].word.toTitleCase()})} or {(${similar[1].word.toTitleCase()})}?</p>
     <p>{*Create this page*} by submitting a {Pull Request(https://github.com/XXIIVV/oscean)}, or if you believe this to be an error, please contact {@neauoire(https://twitter.com/neauoire)}. Alternatively, you locate missing pages from within the {progress tracker(Tracker)}.</p>`.toCurlic()
   }
 
@@ -128,7 +128,7 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
     const issues = q.target === 'tracker' ? Object.values(q.tables.lexicon).reduce((acc, term) => { acc = acc.concat(term.issues); return acc }, []) : q.result ? q.result.issues : []
 
     if (issues.length < 1) {
-      return `<p>There are no issues to the {(${q.target.toCapitalCase()})} project.</p>`.toCurlic()
+      return `<p>There are no issues to the {(${q.target.toTitleCase()})} project.</p>`.toCurlic()
     }
 
     const html = issues.reduce((acc, key) => { return `${acc}${key}` }, '')
@@ -141,7 +141,7 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
     const events = q.target === 'calendar' ? q.tables.horaire.filter((log) => { return log.isEvent }) : q.result ? q.result.events : []
 
     if (events.length < 1) {
-      return `<p>There is no events to the {(${q.target.toCapitalCase()})} project.</p>`.toCurlic()
+      return `<p>There is no events to the {(${q.target.toTitleCase()})} project.</p>`.toCurlic()
     }
 
     const html = `<ul class='tidy ${events.length > 20 ? 'col3' : ''}' style='padding-top:30px;'>${events.reduce((acc, log, id, arr) => {
@@ -163,7 +163,7 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
     const logs = q.target === 'journal' ? q.tables.horaire : q.result ? q.result.logs : []
 
     if (logs.length < 1) {
-      return `<p>There is no recent activity to the {(${q.target.toCapitalCase()})} project.</p>`.toCurlic()
+      return `<p>There is no recent activity to the {(${q.target.toTitleCase()})} project.</p>`.toCurlic()
     }
 
     // Build journals
@@ -195,9 +195,9 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
     return `
     <svg id="glyph"><path transform="scale(0.15)" d="${portal.glyph()}"></path></svg>
     <ul>${portal.children.reduce((acc, child, id) => {
-    return `${acc}${`<ul><li>{(${child.name.toCapitalCase()})}</li><ul>${child.children.reduce((acc, child, id) => {
-      return `${acc}${`<ul><li class='${child.name === term.name || child.name.toLowerCase() === term.unde.toLowerCase() ? 'selected' : ''}'>{(${child.name.toCapitalCase()})}</li>${child.name === term.name || child.name.toLowerCase() === term.unde.toLowerCase() ? `<ul>${child.children.reduce((acc, child, id) => {
-        return `${acc}${`<ul><li class='${child.name === term.name ? 'selected' : ''}'>{(${child.name.toCapitalCase()})}</li></ul>`}`
+    return `${acc}${`<ul><li>{(${child.name.toTitleCase()})}</li><ul>${child.children.reduce((acc, child, id) => {
+      return `${acc}${`<ul><li class='${child.name === term.name || child.name.toLowerCase() === term.unde.toLowerCase() ? 'selected' : ''}'>{(${child.name.toTitleCase()})}</li>${child.name === term.name || child.name.toLowerCase() === term.unde.toLowerCase() ? `<ul>${child.children.reduce((acc, child, id) => {
+        return `${acc}${`<ul><li class='${child.name === term.name ? 'selected' : ''}'>{(${child.name.toTitleCase()})}</li></ul>`}`
       }, '')}</ul>` : ''}</ul>`}`
     }, '')}</ul></ul>`}`
   }, '')}</ul>`.toCurlic()

@@ -98,7 +98,7 @@ function Heol (input, tables, host) {
       return item.toLowerCase()
     },
     cc: (item) => {
-      return item.toCapitalCase()
+      return item.toTitleCase()
     },
     uc: (item) => {
       return item.toUpperCase()
@@ -115,25 +115,25 @@ function Heol (input, tables, host) {
       return `<${tag} class='${cl || ''}'>${item}</${tag}>`
     },
     INDEX: (item) => {
-      return `<h3>{(${item.name.toCapitalCase()})}</h3><p>${item.bref}</p><ul class='bullet'>${item.children.reduce((acc, term) => { return `${acc}<li>${term.bref}</li>` }, '')}</ul>`
+      return `<h3>{(${item.name.toTitleCase()})}</h3><p>${item.bref}</p><ul class='bullet'>${item.children.reduce((acc, term) => { return `${acc}<li>${term.bref}</li>` }, '')}</ul>`
     },
     LINK: (item) => {
-      return `{(${item.toCapitalCase()})}`
+      return `{(${item.toTitleCase()})}`
     },
     REDIRECT: (item) => {
       return `<meta http-equiv="refresh" content="2; url=#${item}">`
     },
     TITLE: (item) => {
-      return `<h2>${item.name.toCapitalCase()}</h2><h4>${item.bref}</h4>`
+      return `<h2>${item.name.toTitleCase()}</h2><h4>${item.bref}</h4>`
     },
     PHOTO: (item) => {
       return host.featuredLog && host.featuredLog.photo !== item.photo ? `<img src="media/diary/${item.photo}.jpg"/>` : ''
     },
     GALLERY: (item) => {
-      return `${item.featuredLog ? `<a data-goto='${item.name}'><img src="media/diary/${item.featuredLog.photo}.jpg"/></a>` : ''}<h2>${item.name.toCapitalCase()}</h2><h4>${item.bref}</h4>`
+      return `${item.featuredLog ? `<a data-goto='${item.name}'><img src="media/diary/${item.featuredLog.photo}.jpg"/></a>` : ''}<h2>${item.name.toTitleCase()}</h2><h4>${item.bref}</h4>`
     },
     SPAN: (item) => {
-      return item.logs.length > 10 && item.span.from && item.span.to ? `<li>{(${item.name.toCapitalCase()})} ${item.span.from}—${item.span.to}</li>`.toCurlic() : ''
+      return item.logs.length > 10 && item.span.from && item.span.to ? `<li>{(${item.name.toTitleCase()})} ${item.span.from}—${item.span.to}</li>`.toCurlic() : ''
     },
     // -----------------------
     // Lietal
