@@ -132,7 +132,7 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
     }
 
     const html = issues.reduce((acc, key) => { return `${acc}${key}` }, '')
-    return `${new BarViz(q.target === 'tracker' ? q.tables.horaire : q.result.logs)}${html}`
+    return `${new BalanceViz(q.tables.horaire)}${html}`
   }
 
   // Calendar
@@ -154,7 +154,7 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
       </li>`
     }, '')}</ul>`.toCurlic()
 
-    return `${new BalanceViz(q.tables.horaire)}${html}`
+    return `${new BarViz(q.target === 'calendar' ? q.tables.horaire : q.result.logs)}${html}`
   }
 
   // Journal
