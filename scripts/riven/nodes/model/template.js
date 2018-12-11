@@ -38,7 +38,7 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
       }
     }
 
-    console.info(this.id, `Templated(${q.target}) in ${(performance.now() - time).toFixed(2)}ms.`)
+    console.info(`${this.id}-${q.target}`, `Template completed in ${(performance.now() - time).toFixed(2)}ms.`)
 
     this.send(template)
   }

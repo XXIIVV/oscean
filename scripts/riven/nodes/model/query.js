@@ -24,11 +24,10 @@ RIVEN.lib.Query = function QueryNode (id, rect) {
     setTimeout(() => { this.send(target) }, 50)
     setTimeout(() => { Ø('document').setMode('state', 'ready') }, 150)
 
-    console.info(this.id, `Queried(${target}) completed in ${(performance.now() - time).toFixed(2)}ms.`)
+    console.info(`${this.id}-${target}`, `Query completed in ${(performance.now() - time).toFixed(2)}ms.`)
   }
 
   this.answer = function (q) {
-    console.info(this.id, 'Initializing..')
     this.bang()
   }
 
