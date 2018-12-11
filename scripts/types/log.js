@@ -23,9 +23,9 @@ function Log (data = { code: '-400' }) {
   this.isEvent = this.rune === '+' || this.vector >= 8
 
   this.tasks = [
-    ['idle', 'listening', 'experiment', 'rehersal', 'draft', 'composition', 'sound design', 'mastering', 'release', 'performance' ],
-    ['idle', 'watching', 'experiment', 'storyboard', 'prototype', 'editing', 'design', 'rendering', 'release', 'showcase' ],
-    ['idle', 'research', 'experiment', 'documentation', 'planning', 'maintenance', 'tooling', 'updating', 'release', 'talk' ]
+    ['idle', 'session', 'audio experiment', 'rehersal', 'draft', 'composition', 'sound design', 'mastering', 'audio release', 'performance' ],
+    ['idle', 'screening', 'visual experiment', 'storyboard', 'prototype', 'edition', 'graphic design', 'rendering', 'visual release', 'showcase' ],
+    ['idle', 'research', 'code experiment', 'documentation', 'planning', 'maintenance', 'interaction design', 'updating', 'software release', 'talk' ]
   ]
   this.task = this.tasks[this.sc - 1] ? this.tasks[this.sc - 1][this.ch] : 'travel'
 

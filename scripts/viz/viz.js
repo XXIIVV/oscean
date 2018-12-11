@@ -1,6 +1,6 @@
 'use strict'
 
-function Viz (logs, from, to) {
+function Viz (logs, from, to, showDetails = true) {
   this.logs = slice(logs, from, to)
 
   const cell = 13
@@ -22,6 +22,7 @@ function Viz (logs, from, to) {
   }
 
   function _legend (logs) {
+    if (!showDetails) { return '' }
     const horaire = new Horaire(logs)
     return `
     <text x='${2}' y='${-15}' style='text-anchor:start'>${timeAgo(logs[logs.length - 1].time).toTitleCase()}</text>
@@ -37,7 +38,7 @@ function Viz (logs, from, to) {
   }
 
   function _status (data) {
-    if (data.recent.length < 2 || data.before.length < 2) { return '' }
+    if (!showDetails || data.recent.length < 2 || data.before.length < 2) { return '' }
 
     const recent = new Horaire(data.recent)
     const before = new Horaire(data.before)

@@ -100,6 +100,104 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
     <p>{*Create this page*} by submitting a {Pull Request(https://github.com/XXIIVV/oscean)}, or if you believe this to be an error, please contact {@neauoire(https://twitter.com/neauoire)}. Alternatively, you locate missing pages from within the {progress tracker(Tracker)}.</p>`.toCurlic()
   }
 
+  // Tracker
+
+  this._tracker = function (q) {
+    const issues = q.target === 'tracker' ? Object.values(q.tables.lexicon).reduce((acc, term) => { acc = acc.concat(term.issues); return acc }, []) : q.result ? q.result.issues : []
+
+    if (issues.length < 1) {
+      return `<p>There are no issues to the {(${q.target.toTitleCase()})} project.</p>`.toCurlic()
+    }
+
+    const viz = new BalanceViz(q.tables.horaire)
+    const html = issues.reduce((acc, key) => { return `${acc}${key}` }, '')
+    // Review
+    const segment = (q.target === 'tracker' ? q.tables.horaire : q.result.logs).filter(__onlyCurrentYear)
+    const tasks = sortHash(segment.reduce(__intoTasks, {}))
+    const terms = sortHash(segment.reduce(__intoTerms, {}))
+    const offset = segment[segment.length - 1].time.offset * -1
+    const _review = `
+    <h3 style="margin-top:30px">Tasks</h3>
+    <h4>Showing the <b>last ${offset} days</b>.</h4>
+    <ul class="tidy col3">${tasks.reduce(__intoRatioTemplate, '')}</ul>
+    <h3 style="margin-top:30px">Projects</h3>
+    <h4>Showing the <b>last ${offset} days</b>.</h4>
+    <ul class="tidy col3">${terms.reduce(__intoRatioTemplate, '')}</ul>
+    `
+    return `${viz}${_review}${html}`
+  }
+
+  // Calendar
+
+  this._calendar = function (q) {
+    const events = q.target === 'calendar' ? q.tables.horaire.filter((log) => { return log.isEvent }) : q.result ? q.result.events : []
+
+    if (events.length < 1) {
+      return `<p>There is no events to the {(${q.target.toTitleCase()})} project.</p>`.toCurlic()
+    }
+
+    const viz = new BarViz(q.target === 'calendar' ? q.tables.horaire : q.result.logs)
+    const html = `<ul class='tidy ${events.length > 20 ? 'col3' : ''}' style='padding-top:30px;'>${events.reduce((acc, log, id, arr) => {
+      return `
+      ${acc}
+      ${!arr[id - 1] || arr[id - 1].time.y !== log.time.y ? `<li class='head'>20${log.time.y}</li>` : ''}
+      <li style='${log.time.offset > 0 ? 'color:#aaa' : ''}'>
+        {${log.name}(${log.term})}</a> 
+        <span title='${log.time}'>${timeAgo(log.time, 60)}</span>
+      </li>`
+    }, '')}</ul>`.toCurlic()
+
+    return `${viz}${html}`
+  }
+
+  // Journal
+
+  this._journal = function (q, upcoming = false) {
+    const logs = q.target === 'journal' ? q.tables.horaire : q.result ? q.result.logs : []
+
+    if (logs.length < 1) {
+      return `<p>There is no recent activity to the {(${q.target.toTitleCase()})} project.</p>`.toCurlic()
+    }
+
+    const viz = new ActivityViz(logs)
+    const known = []
+    let html = ''
+    let i = 0
+    for (let id in logs) {
+      if (i > 20) { break }
+      const log = logs[id]
+      if (!log.photo && !log.isEvent && known.indexOf(log.term) > -1) { continue }
+      html += `${log}`
+      known.push(log.term)
+      i += 1
+    }
+
+    return `${viz}${html}`
+  }
+
+  // Navi
+
+  this._navi = function (q) {
+    if (!q.result) { return '' }
+
+    const term = q.result
+    const portal = q.result.portal()
+
+    if (!portal) { return '' }
+
+    return `
+      <svg id="glyph"><path transform="scale(0.15)" d="${portal.glyph()}"></path></svg>
+      <ul>${portal.children.reduce((acc, child, id) => {
+    return `${acc}${`<ul><li>{(${child.name.toTitleCase()})}</li><ul>${child.children.reduce((acc, child, id) => {
+      return `${acc}${`<ul><li class='${child.name === term.name || child.name.toLowerCase() === term.unde.toLowerCase() ? 'selected' : ''}'>{(${child.name.toTitleCase()})}</li>${child.name === term.name || child.name.toLowerCase() === term.unde.toLowerCase() ? `<ul>${child.children.reduce((acc, child, id) => {
+        return `${acc}${`<ul><li class='${child.name === term.name ? 'selected' : ''}'>{(${child.name.toTitleCase()})}</li></ul>`}`
+      }, '')}</ul>` : ''}</ul>`}`
+    }, '')}</ul></ul>`}`
+  }, '')}</ul>`.toCurlic()
+  }
+
+  // Tools
+
   function findSimilar (target, list) {
     const similar = []
     for (const key in list) {
@@ -120,86 +218,5 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
     for (let i = 0; i < a.length; ++i) { val += b.indexOf(a.substr(i)) > -1 ? 1 : 0 }
     for (let i = 0; i < b.length; ++i) { val += a.indexOf(b.substr(i)) > -1 ? 1 : 0 }
     return val
-  }
-
-  // Tracker
-
-  this._tracker = function (q) {
-    const issues = q.target === 'tracker' ? Object.values(q.tables.lexicon).reduce((acc, term) => { acc = acc.concat(term.issues); return acc }, []) : q.result ? q.result.issues : []
-
-    if (issues.length < 1) {
-      return `<p>There are no issues to the {(${q.target.toTitleCase()})} project.</p>`.toCurlic()
-    }
-
-    const html = issues.reduce((acc, key) => { return `${acc}${key}` }, '')
-    return `${new BalanceViz(q.tables.horaire)}${html}`
-  }
-
-  // Calendar
-
-  this._calendar = function (q) {
-    const events = q.target === 'calendar' ? q.tables.horaire.filter((log) => { return log.isEvent }) : q.result ? q.result.events : []
-
-    if (events.length < 1) {
-      return `<p>There is no events to the {(${q.target.toTitleCase()})} project.</p>`.toCurlic()
-    }
-
-    const html = `<ul class='tidy ${events.length > 20 ? 'col3' : ''}' style='padding-top:30px;'>${events.reduce((acc, log, id, arr) => {
-      return `
-      ${acc}
-      ${!arr[id - 1] || arr[id - 1].time.y !== log.time.y ? `<li class='head'>20${log.time.y}</li>` : ''}
-      <li style='${log.time.offset > 0 ? 'color:#aaa' : ''}'>
-        {${log.name}(${log.term})}</a> 
-        <span title='${log.time}'>${timeAgo(log.time, 60)}</span>
-      </li>`
-    }, '')}</ul>`.toCurlic()
-
-    return `${new BarViz(q.target === 'calendar' ? q.tables.horaire : q.result.logs)}${html}`
-  }
-
-  // Journal
-
-  this._journal = function (q, upcoming = false) {
-    const logs = q.target === 'journal' ? q.tables.horaire : q.result ? q.result.logs : []
-
-    if (logs.length < 1) {
-      return `<p>There is no recent activity to the {(${q.target.toTitleCase()})} project.</p>`.toCurlic()
-    }
-
-    // Build journals
-    const known = []
-    let html = ''
-    let i = 0
-    for (let id in logs) {
-      if (i > 20) { break }
-      const log = logs[id]
-      if (!log.photo && !log.isEvent && known.indexOf(log.term) > -1) { continue }
-      html += `${log}`
-      known.push(log.term)
-      i += 1
-    }
-
-    return `${new ActivityViz(logs)}${html}`
-  }
-
-  // Navi
-
-  this._navi = function (q) {
-    if (!q.result) { return '' }
-
-    const term = q.result
-    const portal = q.result.portal()
-
-    if (!portal) { return '' }
-
-    return `
-    <svg id="glyph"><path transform="scale(0.15)" d="${portal.glyph()}"></path></svg>
-    <ul>${portal.children.reduce((acc, child, id) => {
-    return `${acc}${`<ul><li>{(${child.name.toTitleCase()})}</li><ul>${child.children.reduce((acc, child, id) => {
-      return `${acc}${`<ul><li class='${child.name === term.name || child.name.toLowerCase() === term.unde.toLowerCase() ? 'selected' : ''}'>{(${child.name.toTitleCase()})}</li>${child.name === term.name || child.name.toLowerCase() === term.unde.toLowerCase() ? `<ul>${child.children.reduce((acc, child, id) => {
-        return `${acc}${`<ul><li class='${child.name === term.name ? 'selected' : ''}'>{(${child.name.toTitleCase()})}</li></ul>`}`
-      }, '')}</ul>` : ''}</ul>`}`
-    }, '')}</ul></ul>`}`
-  }, '')}</ul>`.toCurlic()
   }
 }

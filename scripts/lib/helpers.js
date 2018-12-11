@@ -37,3 +37,43 @@ function doty (date) {
   const diff = (date - start) + ((start.getTimezoneOffset() - date.getTimezoneOffset()) * 60 * 1000)
   return Math.floor(diff / 86400000)
 }
+
+function sortHash (h) {
+  const sortable = []
+  for (const key in h) {
+    sortable.push([key, h[key]])
+  }
+  return sortable.sort((a, b) => {
+    return a[1] - b[1]
+  }).reverse()
+}
+
+// Horaire Filters
+
+function __onlyCurrentYear (log) {
+  return log.time.year === 2018
+}
+
+function __onlyLast365 (log) {
+  return log.time.offset < 0 && log.time.offset > -365
+}
+
+// Horaire Reduce
+
+function __intoTerms (acc, log) {
+  acc[log.term] = acc[log.term] ? acc[log.term] + log.fh : log.fh
+  return acc
+}
+
+function __intoTasks (acc, log) {
+  acc[log.task] = acc[log.task] ? acc[log.task] + log.fh : log.fh
+  return acc
+}
+
+function __intoRatioTemplate (acc, data, id, a) {
+  return data[1] > 10 ? `${acc}<li><b class='tc'>${data[0]}</b> ${data[1]}fh ${__progressBar((data[1] / a[0][1]) * 100, 50)}</li>` : acc
+}
+
+function __progressBar (perc, width, cl) {
+  return `<div class='progress ${cl}' style='width:${width}px'><div class='bar' style='width:${perc}%'></div></div>`
+}

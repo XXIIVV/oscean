@@ -3,7 +3,7 @@
 function Forecast (logs) {
   function predict (logs) {
     const offset = make_offset(logs)
-    const sectors = sort_sectors(offset)
+    const sectors = sortHash(offset)
     const normalized = normalize(sectors)
     const sector = normalized[0]
     const sector_code = ['audio', 'visual', 'research'].indexOf(sector[0]) + 1
@@ -34,16 +34,6 @@ function Forecast (logs) {
     const sectors_mined = sectors.map((val) => { return [val[0], val[1] + bump] })
     const limit = sectors_mined[0][1]
     return sectors_mined.map((val) => { return [val[0], val[1] / limit] })
-  }
-
-  function sort_sectors (offset) {
-    const sectors = []
-    for (const key in offset) {
-      sectors.push([key, offset[key]])
-    }
-    return sectors.sort((a, b) => {
-      return a[1] - b[1]
-    }).reverse()
   }
 
   return predict(logs)
