@@ -13,14 +13,14 @@ function Log (data = { code: '-400' }) {
   this.indexes = data.name && this.photo ? [data.name, `${this.photo}`] : []
   this.theme = 'noir'
 
-  this.rune = data.code.length === 4 ? data.code.substr(0, 1) : '-'
-  this.sc = data.code.length === 4 ? parseInt(data.code.substr(1, 1)) : 0
-  this.ch = data.code.length === 4 ? parseInt(data.code.substr(2, 1)) : 0
-  this.fh = data.code.length === 4 ? parseInt(data.code.substr(3, 1)) : 0
+  this.rune = data.code.length > 0 ? data.code.substr(0, 1) : '-'
+  this.sc = data.code.length > 1 ? parseInt(data.code.substr(1, 1)) : 0
+  this.ch = data.code.length > 2 ? parseInt(data.code.substr(2, 1)) : 0
+  this.fh = data.code.length > 3 ? parseInt(data.code.substr(3, 1)) : 0
 
   this.sector = ['misc', 'audio', 'visual', 'research', 'misc'][this.sc]
   this.isFeatured = this.photo && (this.rune === '!' || this.rune === '+')
-  this.isEvent = this.rune === '+' || this.vector >= 8
+  this.isEvent = this.rune === '+'
 
   this.tasks = [
     ['idle', 'session', 'audio experiment', 'rehersal', 'draft', 'composition', 'sound design', 'mastering', 'audio release', 'performance' ],

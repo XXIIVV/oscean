@@ -174,6 +174,12 @@ function Heol (input, tables, host) {
     },
     gtod: (q) => {
       return !isNaN(new Date(q)) ? `${new Date(q).desamber()}` : 'Invalid Date'
+    },
+    // -----------------------
+    // Horaire
+    // -----------------------
+    task: (code) => {
+      return `${new Log({ code: '-' + code }).task}`
     }
   }
 
