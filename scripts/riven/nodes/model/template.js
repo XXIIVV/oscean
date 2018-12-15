@@ -103,7 +103,7 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
   // Tracker
 
   this._tracker = function (q) {
-    const issues = q.target === 'tracker' ? Object.values(q.tables.lexicon).reduce((acc, term) => { acc = acc.concat(term.issues); return acc }, []) : q.result ? q.result.issues : []
+    const issues = q.result && q.result.name === 'TRACKER' ? Object.values(q.tables.lexicon).reduce((acc, term) => { acc = acc.concat(term.issues); return acc }, []) : q.result ? q.result.issues : []
 
     if (issues.length < 1) {
       return `<p>There are no issues to the {(${q.target.toTitleCase()})} project.</p>`.toCurlic()
@@ -130,7 +130,7 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
   // Calendar
 
   this._calendar = function (q) {
-    const events = q.target === 'calendar' ? q.tables.horaire.filter((log) => { return log.isEvent }) : q.result ? q.result.events : []
+    const events = q.result && q.result.name === 'CALENDAR' ? q.tables.horaire.filter((log) => { return log.isEvent }) : q.result ? q.result.events : []
 
     if (events.length < 1) {
       return `<p>There is no events to the {(${q.target.toTitleCase()})} project.</p>`.toCurlic()
@@ -153,7 +153,7 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
   // Journal
 
   this._journal = function (q, upcoming = false) {
-    const logs = q.target === 'journal' ? q.tables.horaire : q.result ? q.result.logs : []
+    const logs = q.result && q.result.name === 'JOURNAL' ? q.tables.horaire : q.result ? q.result.logs : []
 
     if (logs.length < 1) {
       return `<p>There is no recent activity to the {(${q.target.toTitleCase()})} project.</p>`.toCurlic()
