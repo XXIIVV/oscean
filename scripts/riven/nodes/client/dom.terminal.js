@@ -134,6 +134,11 @@ RIVEN.lib.Terminal = function TerminalNode (id, rect, ...params) {
       return ``
     },
 
+    forecast: (q) => {
+      const log = new Forecast( Ø('database').cache.horaire)
+      return `Forecasted task is ${log.task}(${log.sector}), for a maximum of ${log.fh}fh.`
+    },
+
     unknown: (q) => {
       return `Unknown command <i>${q}</i>, type <i>help</i> to see available commands.`
     }

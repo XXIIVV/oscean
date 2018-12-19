@@ -111,20 +111,8 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
 
     const viz = new BalanceViz(q.tables.horaire)
     const html = issues.reduce((acc, key) => { return `${acc}${key}` }, '')
-    // Review
-    const segment = (q.target === 'tracker' ? q.tables.horaire : q.result.logs).filter(__onlyCurrentYear)
-    const tasks = sortHash(segment.reduce(__intoTasks, {}))
-    const terms = sortHash(segment.reduce(__intoTerms, {}))
-    const offset = segment[segment.length - 1].time.offset * -1
-    const _review = `
-    <h3 style="margin-top:30px">Tasks</h3>
-    <h4>Showing the <b>last ${offset} days</b>.</h4>
-    <ul class="tidy col3">${tasks.reduce(__intoRatioTemplate, '')}</ul>
-    <h3 style="margin-top:30px">Projects</h3>
-    <h4>Showing the <b>last ${offset} days</b>.</h4>
-    <ul class="tidy col3">${terms.reduce(__intoRatioTemplate, '')}</ul>
-    `
-    return `${viz}${_review}${html}`
+    
+    return `${viz}${html}`
   }
 
   // Calendar
@@ -147,7 +135,21 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
       </li>`
     }, '')}</ul>`.toCurlic()
 
-    return `${viz}${html}`
+    // Review
+    const segment = (q.target === 'calendar' ? q.tables.horaire : q.result.logs).filter(__onlyCurrentYear)
+    const tasks = sortHash(segment.reduce(__intoTasks, {}))
+    const terms = sortHash(segment.reduce(__intoTerms, {}))
+    const offset = segment[segment.length - 1].time.offset * -1
+    const _review = `
+    <h3 style="margin-top:30px">Tasks</h3>
+    <h4>Showing the <b>last ${offset} days</b>.</h4>
+    <ul class="tidy col3">${tasks.reduce(__intoRatioTemplate, '')}</ul>
+    <h3 style="margin-top:30px">Projects</h3>
+    <h4>Showing the <b>last ${offset} days</b>.</h4>
+    <ul class="tidy col3">${terms.reduce(__intoRatioTemplate, '')}</ul>
+    `
+
+    return `${viz}${html}${_review}`
   }
 
   // Journal
