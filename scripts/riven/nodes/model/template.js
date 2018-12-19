@@ -111,7 +111,7 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
 
     const viz = new BalanceViz(q.tables.horaire)
     const html = issues.reduce((acc, key) => { return `${acc}${key}` }, '')
-    
+
     return `${viz}${html}`
   }
 

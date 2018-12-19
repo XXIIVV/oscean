@@ -2,17 +2,23 @@
 
 function Forecast (logs) {
   function predict (logs) {
-    const offset = make_offset(logs)
+    const section = trim(logs)
+    const offset = {
+      audio: section.habit.sectors.audio - section.recent.sectors.audio,
+      visual: section.habit.sectors.visual - section.recent.sectors.visual,
+      research: section.habit.sectors.research - section.recent.sectors.research
+    }
+
     const sectors = sortHash(offset)
     const normalized = normalize(sectors)
     const sector = normalized[0]
     const sector_code = ['audio', 'visual', 'research'].indexOf(sector[0]) + 1
     const sector_value = 1 - normalized[1][1]
-    const code = `-${sector_code}0${parseInt(sector_value * 10)}`
+    const code = `-${sector_code}${parseInt(section.recent.ch)}${parseInt(sector_value * 10)}`
     return new Log({ code: code })
   }
 
-  function make_offset (logs) {
+  function trim (logs) {
     const habits = []
     const recents = []
 
@@ -23,10 +29,7 @@ function Forecast (logs) {
       break
     }
 
-    const habit = new Horaire(habits).sectors
-    const recent = new Horaire(recents).sectors
-
-    return { audio: habit.audio - recent.audio, visual: habit.visual - recent.visual, research: habit.research - recent.research }
+    return { habit: new Horaire(habits), recent: new Horaire(recents) }
   }
 
   function normalize (sectors) {
