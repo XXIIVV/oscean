@@ -78,13 +78,25 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
     </ul>`
   }
 
+  function _directory (term) {
+    const stem = term.children.length > 0 ? term : term.parent
+    let html = `<li class='parent'>{${stem.name.toTitleCase()}(${stem.name === term.name ? stem.parent.name : stem.name}))}</li>`
+    for (const id in stem.children) {
+      const leaf = stem.children[id]
+      if (leaf.name === stem.name) { continue }
+      if (leaf.hasTag('hidden')) { continue }
+      html += `<li class='children ${leaf.name === term.name ? 'active' : ''}'>{(${leaf.name.toTitleCase()})}</li>`
+    }
+    return `<ul class='directory'>${html}</ul>`.toCurlic()
+  }
+
   this._sidebar = function (q) {
     if (!q.result) { return '<h1>The {(Nataniev)} Services Desk</h1><h2>{(Home)}</h2>'.toCurlic() }
-
     return `
     <h1>${q.result.bref.toCurlic()}</h1>
-    <h2><a data-goto='${q.result.unde}' href='#${q.result.unde}'>${q.result.unde}</a></h2>
-    ${_links(q.result)}`
+    ${q.result.logs.length > 2 ? `<h2>${q.result.logs[q.result.logs.length - 1].time}—${q.result.logs[0].time}</h2>` : ''}
+    ${_links(q.result)}
+    ${_directory(q.result)}`
   }
 
   // Main
@@ -117,6 +129,24 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
 
   // Calendar
 
+  function _review (q) {
+    const segment = (q.target === 'calendar' ? q.tables.horaire : q.result.logs).filter(__onlyCurrentYear)
+
+    if (segment.length < 1) { return '' }
+
+    const tasks = sortHash(segment.reduce(__intoTasks, {}))
+    const terms = sortHash(segment.reduce(__intoTerms, {}))
+    const offset = segment[segment.length - 1].time.offset * -1
+    const _review = `
+    <h3 style="margin-top:30px">Tasks</h3>
+    <h4>Showing the <b>last ${offset} days</b>.</h4>
+    <ul class="tidy col3">${tasks.reduce(__intoRatioTemplate, '')}</ul>
+    <h3 style="margin-top:30px">Projects</h3>
+    <h4>Showing the <b>last ${offset} days</b>.</h4>
+    <ul class="tidy col3">${terms.reduce(__intoRatioTemplate, '')}</ul>
+    `
+  }
+
   this._calendar = function (q) {
     const events = q.result && q.result.name === 'CALENDAR' ? q.tables.horaire.filter((log) => { return log.isEvent }) : q.result ? q.result.events : []
 
@@ -135,21 +165,7 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
       </li>`
     }, '')}</ul>`.toCurlic()
 
-    // Review
-    const segment = (q.target === 'calendar' ? q.tables.horaire : q.result.logs).filter(__onlyCurrentYear)
-    const tasks = sortHash(segment.reduce(__intoTasks, {}))
-    const terms = sortHash(segment.reduce(__intoTerms, {}))
-    const offset = segment[segment.length - 1].time.offset * -1
-    const _review = `
-    <h3 style="margin-top:30px">Tasks</h3>
-    <h4>Showing the <b>last ${offset} days</b>.</h4>
-    <ul class="tidy col3">${tasks.reduce(__intoRatioTemplate, '')}</ul>
-    <h3 style="margin-top:30px">Projects</h3>
-    <h4>Showing the <b>last ${offset} days</b>.</h4>
-    <ul class="tidy col3">${terms.reduce(__intoRatioTemplate, '')}</ul>
-    `
-
-    return `${viz}${html}${_review}`
+    return `${viz}${html}${_review(q)}`
   }
 
   // Journal
