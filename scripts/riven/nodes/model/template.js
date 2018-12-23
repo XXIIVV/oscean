@@ -131,13 +131,13 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
 
   function _review (q) {
     const segment = (q.target === 'calendar' ? q.tables.horaire : q.result.logs).filter(__onlyCurrentYear)
-
+    
     if (segment.length < 1) { return '' }
 
     const tasks = sortHash(segment.reduce(__intoTasks, {}))
     const terms = sortHash(segment.reduce(__intoTerms, {}))
     const offset = segment[segment.length - 1].time.offset * -1
-    const _review = `
+    return `
     <h3 style="margin-top:30px">Tasks</h3>
     <h4>Showing the <b>last ${offset} days</b>.</h4>
     <ul class="tidy col3">${tasks.reduce(__intoRatioTemplate, '')}</ul>
