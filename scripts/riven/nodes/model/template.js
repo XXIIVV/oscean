@@ -79,6 +79,7 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
   }
 
   function _directory (term) {
+    if(!term.children){ return '' }
     const stem = term.children.length > 0 ? term : term.parent
     let html = `<li class='parent'>{${stem.name.toTitleCase()}(${stem.name === term.name ? stem.parent.name : stem.name}))}</li>`
     for (const id in stem.children) {
