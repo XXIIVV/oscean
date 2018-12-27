@@ -48,7 +48,7 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
   }
 
   this._theme = function (q) {
-    return q.result ? q.result.theme : 'blanc'
+    return q.params ? 'noir' : q.result ? q.result.theme : 'blanc'
   }
 
   this._activity = function (q) {
