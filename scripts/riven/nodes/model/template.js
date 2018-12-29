@@ -63,7 +63,7 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
 
     return `
     ${q.result.events.length > 0 ? `<li><a class='calendar' data-view='calendar' href='#${q.result.name.toUrl()}:calendar'>${q.result.events.length} Event${q.result.events.length > 1 ? 's' : ''}</a></li>` : ''}
-    ${q.result.logs.length > 2 && !q.result.hasTag('journal') ? `<li><a class='journal' data-view='journal' href='#${q.result.name.toUrl()}:journal'>${q.result.logs.length} Logs</a></li>` : ''}
+    ${q.result.activity().length > 2 && !q.result.hasTag('journal') ? `<li><a class='journal' data-view='journal' href='#${q.result.name.toUrl()}:journal'>${q.result.activity().length} Logs</a></li>` : ''}
     ${q.result.issues.length > 0 && !q.result.hasTag('diary') ? `<li><a class='tracker' data-view='tracker' href='#${q.result.name.toUrl()}:tracker'>${q.result.issues.length} Issue${q.result.issues.length > 1 ? 's' : ''}</a></li>` : ''}
     `
   }
@@ -154,7 +154,7 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
   // Journal
 
   this._journal = function (q, upcoming = false) {
-    const logs = q.result && q.result.name === 'JOURNAL' ? q.tables.horaire : q.result ? q.result.logs : []
+    const logs = q.result && q.result.name === 'JOURNAL' ? q.tables.horaire : q.result ? q.result.activity() : []
 
     if (logs.length < 1) {
       return `<p>There is no recent activity to the {(${q.target.toTitleCase()})} project.</p>`.toCurlic()

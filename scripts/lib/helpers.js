@@ -48,6 +48,12 @@ function sortHash (h) {
   }).reverse()
 }
 
+function sortLogs (arr) {
+  return arr.sort(function (a, b) {
+    return a.time.offset - b.time.offset
+  }).reverse()
+}
+
 // Horaire Filters
 
 function __onlyCurrentYear (log) {
