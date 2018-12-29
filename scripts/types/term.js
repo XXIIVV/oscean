@@ -39,10 +39,6 @@ function Term (name, data) {
   }
 
   this.activity = function () {
-    if (!this.hasTag('host')) {
-      if (this.children.length < 1) { return this.logs }
-      if (this.logs.length > 10) { return this.logs }
-    }
     return sortLogs(this.children.reduce((acc, term) => { return acc.concat(term.logs) }, this.logs))
   }
 
