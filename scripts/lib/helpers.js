@@ -58,22 +58,26 @@ function __onlyLast365 (log) {
   return log.time.offset < 0 && log.time.offset > -365
 }
 
-// Horaire Reduce
+// Compare strings
 
-function __intoTerms (acc, log) {
-  acc[log.term] = acc[log.term] ? acc[log.term] + log.fh : log.fh
-  return acc
+function findSimilar (target, list) {
+  const similar = []
+  for (const key in list) {
+    const word = list[key]
+    similar.push({ word: word, value: similarity(target, word) })
+  }
+  return similar.sort(function (a, b) {
+    return a.value - b.value
+  }).reverse()
 }
 
-function __intoTasks (acc, log) {
-  acc[log.task] = acc[log.task] ? acc[log.task] + log.fh : log.fh
-  return acc
-}
-
-function __intoRatioTemplate (acc, data, id, a) {
-  return data[1] > 10 ? `${acc}<li><b class='tc'>${data[0]}</b> ${data[1]}fh ${__progressBar((data[1] / a[0][1]) * 100, 50)}</li>` : acc
-}
-
-function __progressBar (perc, width, cl) {
-  return `<div class='progress ${cl}' style='width:${width}px'><div class='bar' style='width:${perc}%'></div></div>`
+function similarity (a, b) {
+  let val = 0
+  for (let i = 0; i < a.length; ++i) { val += b.indexOf(a.substr(i)) > -1 ? 1 : 0 }
+  for (let i = 0; i < b.length; ++i) { val += a.indexOf(b.substr(i)) > -1 ? 1 : 0 }
+  a = a.split('').sort().join('')
+  b = b.split('').sort().join('')
+  for (let i = 0; i < a.length; ++i) { val += b.indexOf(a.substr(i)) > -1 ? 1 : 0 }
+  for (let i = 0; i < b.length; ++i) { val += a.indexOf(b.substr(i)) > -1 ? 1 : 0 }
+  return val
 }

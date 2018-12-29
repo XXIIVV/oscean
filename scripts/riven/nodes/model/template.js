@@ -79,7 +79,7 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
   }
 
   function _directory (term) {
-    if(!term.children){ return '' }
+    if (!term.children) { return '' }
     const stem = term.children.length > 0 ? term : term.parent
     let html = `<li class='parent'>{${stem.name.toTitleCase()}(${stem.name === term.name ? stem.parent.name : stem.name}))}</li>`
     for (const id in stem.children) {
@@ -130,24 +130,6 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
 
   // Calendar
 
-  function _review (q) {
-    const segment = (q.target === 'calendar' ? q.tables.horaire : q.result.logs).filter(__onlyCurrentYear)
-    
-    if (segment.length < 1) { return '' }
-
-    const tasks = sortHash(segment.reduce(__intoTasks, {}))
-    const terms = sortHash(segment.reduce(__intoTerms, {}))
-    const offset = segment[segment.length - 1].time.offset * -1
-    return `
-    <h3 style="margin-top:30px">Tasks</h3>
-    <h4>Showing the <b>last ${offset} days</b>.</h4>
-    <ul class="tidy col3">${tasks.reduce(__intoRatioTemplate, '')}</ul>
-    <h3 style="margin-top:30px">Projects</h3>
-    <h4>Showing the <b>last ${offset} days</b>.</h4>
-    <ul class="tidy col3">${terms.reduce(__intoRatioTemplate, '')}</ul>
-    `
-  }
-
   this._calendar = function (q) {
     const events = q.result && q.result.name === 'CALENDAR' ? q.tables.horaire.filter((log) => { return log.isEvent }) : q.result ? q.result.events : []
 
@@ -166,7 +148,7 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
       </li>`
     }, '')}</ul>`.toCurlic()
 
-    return `${viz}${html}${_review(q)}`
+    return `${viz}${html}`
   }
 
   // Journal
@@ -213,29 +195,5 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
       }, '')}</ul>` : ''}</ul>`}`
     }, '')}</ul></ul>`}`
   }, '')}</ul>`.toCurlic()
-  }
-
-  // Tools
-
-  function findSimilar (target, list) {
-    const similar = []
-    for (const key in list) {
-      const word = list[key]
-      similar.push({ word: word, value: similarity(target, word) })
-    }
-    return similar.sort(function (a, b) {
-      return a.value - b.value
-    }).reverse()
-  }
-
-  function similarity (a, b) {
-    let val = 0
-    for (let i = 0; i < a.length; ++i) { val += b.indexOf(a.substr(i)) > -1 ? 1 : 0 }
-    for (let i = 0; i < b.length; ++i) { val += a.indexOf(b.substr(i)) > -1 ? 1 : 0 }
-    a = a.split('').sort().join('')
-    b = b.split('').sort().join('')
-    for (let i = 0; i < a.length; ++i) { val += b.indexOf(a.substr(i)) > -1 ? 1 : 0 }
-    for (let i = 0; i < b.length; ++i) { val += a.indexOf(b.substr(i)) > -1 ? 1 : 0 }
-    return val
   }
 }
