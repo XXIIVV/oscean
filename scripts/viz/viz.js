@@ -53,13 +53,13 @@ function Viz (logs, from, to, showDetails = true) {
     <text class='display small' x='${180 + (cell * 7)}' y='${cell * 15.1}'>${offset(recent.fh, before.fh)}</text>
     <text class='display small' x='${180 + (cell * 7)}' y='${cell * 16.5}' style='font-family: var(--mono);'>fh/day</text>
 
-    <text class='display' x='${360}' y='${cell * 16.5}'>${recent.efec.toFixed(2)}</text>
-    <text class='display small' x='${360 + (cell * 7)}' y='${cell * 15.1}'>${offset(recent.efec, before.efec)}</text>
-    <text class='display small' x='${360 + (cell * 7)}' y='${cell * 16.5}' style='font-family: var(--mono);'>efec</text>
+    <text class='display' x='${360}' y='${cell * 16.5}'>${recent.focus.toFixed(2)}</text>
+    <text class='display small' x='${360 + (cell * 7)}' y='${cell * 15.1}'>${offset(recent.focus, before.focus)}</text>
+    <text class='display small' x='${360 + (cell * 7)}' y='${cell * 16.5}' style='font-family: var(--mono);'>focus</text>
 
-    <text class='display' x='${550}' y='${cell * 16.5}'>${recent.efic.toFixed(2)}</text>
-    <text class='display small' x='${550 + (cell * 7)}' y='${cell * 15.1}'>${offset(recent.efic, before.efic)}</text>
-    <text class='display small' x='${550 + (cell * 7)}' y='${cell * 16.5}' style='font-family: var(--mono);'>efic</text>
+    <text class='display' x='${550}' y='${cell * 16.5}'>${recent.balance.toFixed(2)}</text>
+    <text class='display small' x='${550 + (cell * 7)}' y='${cell * 15.1}'>${offset(recent.balance, before.balance)}</text>
+    <text class='display small' x='${550 + (cell * 7)}' y='${cell * 16.5}' style='font-family: var(--mono);'>balance</text>
     `
   }
 

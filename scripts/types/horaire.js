@@ -30,17 +30,22 @@ function Horaire (logs) {
 
   h.osc = h.osc.sum / logs.length
 
+  const fh = (h.fh / logs.length)
+  const ch = (h.ch / logs.length)
+  const efec = (efec_sum / Object.keys(h.topics).length)
+  const efic = (efic_sum / Object.keys(h.topics).length)
   const audio = h.sectors.audio > 0 ? (h.sectors.audio / h.sectors.sum) * 10 : 0
   const visual = h.sectors.visual > 0 ? (h.sectors.visual / h.sectors.sum) * 10 : 0
   const research = h.sectors.research > 0 ? (h.sectors.research / h.sectors.sum) * 10 : 0
   const balance = (1 - ((Math.abs(3.3333 - audio) + Math.abs(3.3333 - visual) + Math.abs(3.3333 - research)) / 13.3333)) * 10
-
+  const productivity = ch - fh
   return {
-    fh: (h.fh / logs.length),
-    ch: (h.ch / logs.length),
-    efec: (efec_sum / Object.keys(h.topics).length),
-    efic: (efic_sum / Object.keys(h.topics).length),
-    focus: ((efec_sum / Object.keys(h.topics).length) + (efic_sum / Object.keys(h.topics).length)) / 2,
+    fh: fh,
+    ch: ch,
+    efec: efec,
+    efic: efic,
+    productivity: productivity,
+    focus: (efec + efic) / 2,
     sum: h.fh,
     count: logs.length,
     osc: h.osc,
