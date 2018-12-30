@@ -6,7 +6,7 @@ function desamber (date = new Date()) {
   const doty = Math.floor(diff / 86400000) - 1
   const l = Math.floor(((doty) / 364) * 26)
   const y = date.getFullYear().toString().substr(2, 2)
-  const m = doty === 365 || doty === 366 ? '+' : String.fromCharCode(97 + l).toUpperCase()
+  const m = doty === 364 || doty === 365 ? '+' : String.fromCharCode(97 + l).toUpperCase()
   const d = `${(doty === 365 ? 1 : doty === 366 ? 2 : (doty % 14)) + 1}`.padStart(2, '0')
   return `${y}${m}${d}`
 }
