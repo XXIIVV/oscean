@@ -5,14 +5,12 @@ function Horaire (logs) {
 
   for (const id in logs) {
     const log = logs[id]
-
     h.fh += log.fh
     h.ch += log.ch
     h.osc.sum += Math.abs(log.fh - log.ch)
     h.tasks[log.task] = h.tasks[log.task] ? h.tasks[log.task] + log.fh : log.fh
     h.sectors[log.sector] += log.fh / 2
     h.sectors.sum += log.fh / 2
-
     if (!h.topics[log.term]) { h.topics[log.term] = { fh: 0, ch: 0, count: 0 } }
     h.topics[log.term].fh += log.fh
     h.topics[log.term].ch += log.ch
