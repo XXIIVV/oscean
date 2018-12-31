@@ -24,6 +24,10 @@ function Entry (name, data) {
     return null
   }
 
+  this.activity = function () {
+    return []
+  }
+
   this.portal = function () {
     return null
   }
