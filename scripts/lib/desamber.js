@@ -45,19 +45,3 @@ function Desamber (t = desamber()) {
     return template ? `<span title='${this.toGregorian()}'>${this.t}</span>` : this.t
   }
 }
-
-Date.prototype.doty = function () {
-  const year = this.getFullYear()
-  const start = new Date(year, 0, 0)
-  const diff = (this - start) + ((start.getTimezoneOffset() - this.getTimezoneOffset()) * 60 * 1000)
-  return Math.floor(diff / 86400000)
-}
-
-Date.prototype.offset = function (days) {
-  const date = new Date()
-  return this.setDate(date.getDate() + 1)
-}
-
-Date.prototype.desamber = function () {
-  return new Desamber(desamber(this))
-}
