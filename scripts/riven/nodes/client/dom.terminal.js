@@ -39,7 +39,7 @@ RIVEN.lib.Terminal = function TerminalNode (id, rect, ...params) {
     },
 
     time: (q) => {
-      return `The current local time is <b>${desamber()} ${neralie()}</b>.`
+      return `The local time is <b>${desamber()} ${neralie()}</b>.`
     },
 
     hello: (q) => {

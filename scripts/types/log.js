@@ -10,7 +10,7 @@ function Log (data = { code: '-400' }) {
   this.time = data.date ? new Desamber(data.date) : null
   this.photo = data.pict ? parseInt(data.pict) : null
   this.bref = `A log added on {${this.time}(Calendar)} to {(${this.term})}.`
-  this.indexes = data.name && this.photo ? [data.name, `${this.photo}`] : []
+  this.indexes = data.name && this.photo ? [data.name, `${this.photo}`, `${this.time}`] : [`${this.time}`]
   this.theme = 'noir'
 
   this.rune = data.code.length > 0 ? data.code.substr(0, 1) : '-'
@@ -34,7 +34,7 @@ function Log (data = { code: '-400' }) {
     <div class='entry log ${this.isEvent ? 'event' : ''}'>
       <svg data-goto='${this.host.name}' class='icon'><path transform="scale(0.15,0.15) translate(20,20)" d="${this.host ? this.host.glyph() : ''}"></path></svg>
       <div class='head'>
-        <div class='details'><a class='topic' data-goto='${this.term}' href='${this.term.toUrl()}'>${this.term}</a> ${this.name && !this.isEvent ? ` — <span class='name' data-goto='${this.name}'>${this.name}</span>` : ''} <span class='time' data-goto='${this.term}:Journal'>${timeAgo(this.time, 14)}</span></div>
+        <div class='details'><a class='topic' data-goto='${this.term}' href='${this.term.toUrl()}'>${this.term}</a> ${this.name && !this.isEvent ? ` — <span class='name' data-goto='${this.name}'>${this.name}</span>` : ''} <span class='time' data-goto='${this.time}'>${timeAgo(this.time, 14)}</span></div>
         <div class='bref'>${this.isEvent ? this.name : this.host ? this.host.bref.toCurlic() : ''}</div>
       </div>
       ${this.photo ? `<img src='media/diary/${this.photo}.jpg' data-goto='${this.term}'/>` : ''}

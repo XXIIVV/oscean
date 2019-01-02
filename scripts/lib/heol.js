@@ -18,9 +18,6 @@ function Heol (input, tables, host) {
     value: (h, val) => {
       return h[val]
     },
-    Ø: (item) => {
-      return Ø(item)
-    },
     random: (a) => {
       return a[parseInt(Math.random() * a.length)]
     },
@@ -73,8 +70,8 @@ function Heol (input, tables, host) {
       return arr.map((val, id, arr) => fn)
     },
     // will only keeps elements returning true.
-    filter: (arr, fn) => {
-      return arr.map((val, id, arr) => fn)
+    filter: (arr, fn, param) => {
+      return arr.filter((val, id, arr) => fn)
     },
     // will reduce it into a single value.
     reduce: (arr, fn, acc) => {
@@ -134,6 +131,12 @@ function Heol (input, tables, host) {
     },
     SPAN: (item) => {
       return item.logs.length > 10 && item.span.from && item.span.to ? `<li>{(${item.name.toTitleCase()})} ${item.span.from}—${item.span.to}</li>`.toCurlic() : ''
+    },
+    // -----------------------
+    // Riven
+    // -----------------------
+    Ø: (item) => {
+      return Ø(item)
     },
     // -----------------------
     // Lietal
