@@ -16,11 +16,11 @@ function Desamber (t = desamber()) {
   this.y = t.substr(0, 2)
   this.m = t.substr(2, 1).toUpperCase()
   this.d = t.substr(3, 2)
-  this.year = parseInt(`20${this.y}`)
+  this.year = Math.floor(`20${this.y}`)
   this.month = this.m === '+' ? 26 : this.m.charCodeAt(0) - 65
-  this.doty = (parseInt(this.month) * 14) + parseInt(this.d)
+  this.doty = (Math.floor(this.month) * 14) + Math.floor(this.d)
   this.date = new Date(this.year, 0).setDate(this.doty)
-  this.offset = parseInt((this.date - new Date()) / 86400000)
+  this.offset = Math.floor((this.date - new Date()) / 86400000)
 
   this.toGregorian = function (d = this.toDate()) {
     return `${d.getFullYear()}-${`${d.getMonth() + 1}`.padStart(2, '0')}-${`${d.getDate()}`.padStart(2, '0')}`
@@ -36,7 +36,7 @@ function Desamber (t = desamber()) {
     if (days === -1) { return `yesterday` }
     if (days === 1) { return 'tomorrow' }
     if (days === 0) { return 'today' }
-    if (days < -365) { return `${parseInt(days / -365)} years ago` }
+    if (days < -365) { return `${Math.floor(days / -365)} years ago` }
     if (days < 1) { return `${days * -1} days ago` }
     return `in ${days} days`
   }

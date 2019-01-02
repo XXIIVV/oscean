@@ -30,7 +30,7 @@ function Log (data = { code: '-400' }) {
   this.task = this.tasks[this.sc - 1] ? this.tasks[this.sc - 1][this.ch] : 'travel'
 
   this.body = function () {
-    return `
+    return this.host ? `
     <div class='entry log ${this.isEvent ? 'event' : ''}'>
       <svg data-goto='${this.host.name}' class='icon'><path transform="scale(0.15,0.15) translate(20,20)" d="${this.host ? this.host.glyph() : ''}"></path></svg>
       <div class='head'>
@@ -38,7 +38,7 @@ function Log (data = { code: '-400' }) {
         <div class='bref'>${this.isEvent ? this.name : this.host ? this.host.bref.toCurlic() : ''}</div>
       </div>
       ${this.photo ? `<img src='media/diary/${this.photo}.jpg' data-goto='${this.term}'/>` : ''}
-    </div>`
+    </div>` : ''
   }
 
   this.toString = function () {
