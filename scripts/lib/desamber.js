@@ -20,7 +20,7 @@ function Desamber (t = desamber()) {
   this.month = this.m === '+' ? 26 : this.m.charCodeAt(0) - 65
   this.doty = (Math.floor(this.month) * 14) + Math.floor(this.d)
   this.date = new Date(this.year, 0).setDate(this.doty)
-  this.offset = Math.floor((this.date - new Date()) / 86400000)
+  this.offset = Math.ceil((this.date - new Date()) / 86400000)
 
   this.toGregorian = function (d = this.toDate()) {
     return `${d.getFullYear()}-${`${d.getMonth() + 1}`.padStart(2, '0')}-${`${d.getDate()}`.padStart(2, '0')}`
