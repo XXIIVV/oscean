@@ -13,15 +13,13 @@ String.prototype.count = function (c) { let r = 0; for (let i; i < this.length; 
 // Desamber
 
 function timeAgo (desamber, cap = 9999) {
-  const date = new Date(desamber.year, 0).setDate(desamber.doty)
-  const days = parseInt((date - new Date()) / 86400000)
-  if (-days > cap) { return `${desamber}` }
-  if (days === -1) { return `yesterday` }
-  if (days === 1) { return 'tomorrow' }
-  if (days === 0) { return 'today' }
-  if (days < -365) { return `${parseInt(days / -365)} years ago` }
-  if (days < 1) { return `${days * -1} days ago` }
-  return `in ${days} days`
+  if (-desamber.offset > cap) { return `${desamber}` }
+  if (desamber.offset === 1) { return 'tomorrow' }
+  if (desamber.offset === 0) { return 'today' }
+  if (desamber.offset === -1) { return `yesterday` }
+  if (desamber.offset < -365) { return `${parseInt(desamber.offset / -365)} years ago` }
+  if (desamber.offset < 1) { return `${desamber.offset * -1} days ago` }
+  return `in ${desamber.offset} days`
 }
 
 function dtog (desamber) {
