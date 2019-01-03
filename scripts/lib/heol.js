@@ -124,10 +124,10 @@ function Heol (input, tables, host) {
       return `<h2>${item.name.toTitleCase()}</h2><h4>${item.bref}</h4>`
     },
     PHOTO: (item) => {
-      return host.featuredLog && host.featuredLog.photo !== item.photo ? `<img src="media/diary/${item.photo}.jpg"/>` : ''
+      return host.featuredLog && host.featuredLog.pict !== item.pict ? `<img src="media/diary/${item.pict}.jpg"/>` : ''
     },
     GALLERY: (item) => {
-      return `${item.featuredLog ? `<a data-goto='${item.name}'><img src="media/diary/${item.featuredLog.photo}.jpg"/></a>` : ''}<h2>${item.name.toTitleCase()}</h2><h4>${item.bref}</h4>`
+      return `${item.featuredLog ? `<a data-goto='${item.name}'><img src="media/diary/${item.featuredLog.pict}.jpg"/></a>` : ''}<h2>${item.name.toTitleCase()}</h2><h4>${item.bref}</h4>`
     },
     SPAN: (item) => {
       return item.logs.length > 10 && item.span.from && item.span.to ? `<li>{(${item.name.toTitleCase()})} ${item.span.from}—${item.span.to}</li>`.toCurlic() : ''

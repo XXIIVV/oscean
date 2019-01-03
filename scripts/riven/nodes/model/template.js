@@ -167,7 +167,7 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
     for (let id in logs) {
       if (i > 20) { break }
       const log = logs[id]
-      if (!log.photo && !log.isEvent && known.indexOf(log.term) > -1) { continue }
+      if (!log.pict && !log.isEvent && known.indexOf(log.term) > -1) { continue }
       html += `${log}`
       known.push(log.term)
       i += 1

@@ -28,7 +28,7 @@ function ActivityViz (logs) {
         const offset = (365 - (week * 7) - (day + 1)) * -1
         const log = data[offset + 1]
         html += log && log.sector ? `<rect class='${log.sector} ${log.time.offset === 0 ? 'today' : ''}' x='${x}' y='${y}' width='${cell}' height='${cell}' rx="2" ry="2" title='${log.time}' data-goto='${log.term}'></rect>` : `<rect class='missing ${day === 6 && week === 51 ? 'today' : ''}' x='${x}' y='${y}' width='${cell}' height='${cell}' rx="2" ry="2"></rect>`
-        html += log && log.photo ? `<circle cx='${x + (cell / 2)}' cy='${y + (cell / 2)}' r='2.5' class='photo'></circle>` : ''
+        html += log && log.pict ? `<circle cx='${x + (cell / 2)}' cy='${y + (cell / 2)}' r='2.5' class='photo'></circle>` : ''
         html += log && log.isEvent ? `<circle cx='${x + (cell / 2)}' cy='${y + (cell / 2)}' r='2' class='event'></circle>` : ''
         day += 1
       }

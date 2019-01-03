@@ -15,7 +15,7 @@ RIVEN.lib.Static = function StaticNode (id, rect) {
     const links = Object.keys(term.links).reduce((acc, val) => { return `${acc}<li><a href='${term.links[val]}' target='_blank'>${val.toTitleCase()}</a></li>\n` }, ' ').trim()
     return `
     <h2>${term.name.toTitleCase()}</h2>
-    ${term.parent.name.toTitleCase()}/<b>${term.name.toTitleCase()}</b>${term.featuredLog ? `(<a href='media/diary/${term.featuredLog.photo}.jpg' target='_blank'>jpg</a>)` : ''}${term.span.from && term.span.to ? `[${term.span.from}-${term.span.to}]` : ''}: ${term.bref.toCurlic(term)}
+    ${term.parent.name.toTitleCase()}/<b>${term.name.toTitleCase()}</b>${term.featuredLog ? `(<a href='media/diary/${term.featuredLog.pict}.jpg' target='_blank'>jpg</a>)` : ''}${term.span.from && term.span.to ? `[${term.span.from}-${term.span.to}]` : ''}: ${term.bref.toCurlic(term)}
     ${term.data.BODY ? curlic(runic(body)) : ''}
     ${links ? `<ul>${links}</ul>` : ''}
     `

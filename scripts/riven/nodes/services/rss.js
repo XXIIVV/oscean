@@ -12,7 +12,7 @@ RIVEN.lib.Rss = function RssNode (id, rect) {
       const log = logs[id]
       if (selection.length >= 60) { break }
       if (log.time.offset > 0) { continue }
-      if (!log.photo) { continue }
+      if (!log.pict) { continue }
       selection.push(log)
     }
 
@@ -32,11 +32,11 @@ RIVEN.lib.Rss = function RssNode (id, rect) {
   <item>
     <title>${log.term} — ${log.name}</title>
     <link>https://wiki.xxiivv.com/${log.term.toUrl()}</link>
-    <guid isPermaLink='false'>IV${log.photo}</guid>
+    <guid isPermaLink='false'>IV${log.pict}</guid>
     <pubDate>${log.time.toDate().toUTCString()}</pubDate>
     <dc:creator><![CDATA[Devine Lu Linvega]]></dc:creator>
     <description>
-      &lt;img src="https://wiki.xxiivv.com/media/diary/${log.photo}.jpg"/&gt;
+      &lt;img src="https://wiki.xxiivv.com/media/diary/${log.pict}.jpg"/&gt;
       &lt;br/&gt;
       ${log.host.data.BREF ? log.host.data.BREF.toCurlic().to_rss().replace_all("href='index.html#", "href='https://wiki.xxiivv.com/") : ''}
     </description>

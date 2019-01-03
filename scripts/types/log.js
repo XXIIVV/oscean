@@ -8,9 +8,9 @@ function Log (data = { code: '-400' }) {
   this.term = data.term ? data.term.toTitleCase() : ''
   this.text = data.text
   this.time = data.date ? new Desamber(data.date) : null
-  this.photo = data.pict ? parseInt(data.pict) : null
+  this.pict = data.pict ? parseInt(data.pict) : null
   this.bref = `A log added on {${this.time}(Calendar)} to {(${this.term})}.`
-  this.indexes = data.name && this.photo ? [data.name, `${this.photo}`, `${this.time}`] : [`${this.time}`]
+  this.indexes = data.name && this.pict ? [data.name, `${this.pict}`, `${this.time}`] : [`${this.time}`]
   this.theme = 'noir'
 
   this.rune = data.code.length > 0 ? data.code.substr(0, 1) : '-'
@@ -19,7 +19,7 @@ function Log (data = { code: '-400' }) {
   this.fh = data.code.length > 3 ? parseInt(data.code.substr(3, 1)) : 0
 
   this.sector = ['misc', 'audio', 'visual', 'research', 'misc'][this.sc]
-  this.isFeatured = this.photo && (this.rune === '!' || this.rune === '+')
+  this.isFeatured = this.pict && (this.rune === '!' || this.rune === '+')
   this.isEvent = this.rune === '+'
 
   this.tasks = [
@@ -29,6 +29,10 @@ function Log (data = { code: '-400' }) {
   ]
   this.task = this.tasks[this.sc - 1] ? this.tasks[this.sc - 1][this.ch] : 'travel'
 
+  this.photo = function () {
+    return parseInt(data.pict)
+  }
+
   this.body = function () {
     return this.host ? `
     <div class='entry log ${this.isEvent ? 'event' : ''}'>
@@ -37,7 +41,7 @@ function Log (data = { code: '-400' }) {
         <div class='details'><a class='topic' data-goto='${this.term}' href='${this.term.toUrl()}'>${this.term}</a> ${this.name && !this.isEvent ? ` — <span class='name' data-goto='${this.name}'>${this.name}</span>` : ''} <span class='time' data-goto='${this.time}'>${timeAgo(this.time, 14)}</span></div>
         <div class='bref'>${this.isEvent ? this.name : this.host ? this.host.bref.toCurlic() : ''}</div>
       </div>
-      ${this.photo ? `<img src='media/diary/${this.photo}.jpg' data-goto='${this.term}'/>` : ''}
+      ${this.pict ? `<img src='media/diary/${this.pict}.jpg' data-goto='${this.term}'/>` : ''}
     </div>` : ''
   }
 

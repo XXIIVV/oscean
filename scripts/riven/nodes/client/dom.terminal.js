@@ -58,8 +58,8 @@ RIVEN.lib.Terminal = function TerminalNode (id, rect, ...params) {
       const used = []
       for (const id in Ø('database').cache.horaire) {
         const log = Ø('database').cache.horaire[id]
-        if (!log.photo) { continue }
-        used.push(log.photo)
+        if (!log.pict) { continue }
+        used.push(log.pict)
       }
       let available = 1
       while (available < 999) {
