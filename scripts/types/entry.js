@@ -44,6 +44,15 @@ function Entry (name, data) {
     return [this.name]
   }
 
+  this.photo = function () {
+    return 0
+  }
+
+  this.hasTag = function (str) {
+    const target = str.toLowerCase().replace(/ /g, '_').trim()
+    return this.tags.indexOf(target) > -1
+  }
+
   this.toString = function () {
     return `<div class='error'>${this.body()}</div>`
   }

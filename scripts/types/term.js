@@ -29,6 +29,12 @@ function Term (name, data) {
     return null
   }
 
+  this.photo = function () {
+    if (this.data.PHTO) { return this.data.PHTO }
+    if (this.featuredLog && this.featuredLog.photo) { return this.featuredLog.photo }
+    return 0
+  }
+
   this.portal = function () {
     if (this.is_portal) { return this }
     if (this.parent.is_portal) { return this.parent }
@@ -58,27 +64,6 @@ function Term (name, data) {
 
     const score = Object.keys(points).reduce((acc, val) => { return acc + (points[val] ? 1 : 0) }, 0)
     return score / Object.keys(points).length
-  }
-
-  this.hasTag = function (str) {
-    const target = str.toLowerCase().replace(/ /g, '_').trim()
-    return this.tags.indexOf(target) > -1
-  }
-
-  this.sectors = function () {
-    const h = new Horaire(this.logs).sectors
-    const a = [['audio', h.audio], ['visual', h.visual], ['research', h.research]]
-
-    return sort(a)
-  }
-
-  this.released = function () {
-    for (const id in this.logs) {
-      const log = this.logs[id]
-      if (log.time.offset > 0) { continue }
-      if (log.ch === 8) { return log }
-    }
-    return null
   }
 
   this.find_outgoing = function () {

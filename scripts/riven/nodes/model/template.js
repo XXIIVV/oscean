@@ -15,7 +15,7 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
       theme: this._theme(q),
       document: {
         header: {
-          photo: featuredLog ? featuredLog.photo : 0,
+          photo: q.result ? q.result.photo() : 0,
           menu: {
             search: q.target && q.target.toTitleCase(),
             activity: this._activity(q),
