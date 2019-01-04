@@ -21,19 +21,25 @@ function Viz (logs, from, to, showDetails = true) {
     return print !== '-0.0' && print !== '+0.0' ? print : '0.0'
   }
 
+  function _perc (val, sum) {
+    return ((val / sum) * 100).toFixed(1)
+  }
+
   function _legend (logs) {
     if (!showDetails) { return '' }
     const horaire = new Horaire(logs)
+    const sum = horaire.sectors.audio + horaire.sectors.visual + horaire.sectors.research
+
     return `
     <text x='${2}' y='${-15}' style='text-anchor:start'>${timeAgo(logs[logs.length - 1].time).toTitleCase()}</text>
     <text x='${730}' y='${-15}' style='text-anchor:end'>${timeAgo(logs[0].time).toTitleCase()}</text>
 
     <rect class="audio" x="${cell * 0}" y="115" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
-    <text x='${(cell + 1) * 2}' y='125' style='text-anchor:start'>Audio ${(horaire.sectors.audio * 10).toFixed(1)}%</text>
+    <text x='${(cell + 1) * 2}' y='125' style='text-anchor:start'>Audio ${_perc(horaire.sectors.audio, sum)}%</text>
     <rect class="visual" x="${(cell + 1) * 8}" y="115" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
-    <text x='${(cell + 1) * 10}' y='125' style='text-anchor:start'>Visual ${(horaire.sectors.visual * 10).toFixed(1)}%</text>
+    <text x='${(cell + 1) * 10}' y='125' style='text-anchor:start'>Visual ${_perc(horaire.sectors.visual, sum)}%</text>
     <rect class="research" x="${(cell + 1) * 16}" y="115" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
-    <text x='${(cell + 1) * 18}' y='125' style='text-anchor:start'>Research ${(horaire.sectors.research * 10).toFixed(1)}%</text>
+    <text x='${(cell + 1) * 18}' y='125' style='text-anchor:start'>Research ${_perc(horaire.sectors.research, sum)}%</text>
     <text x='725' y='125' style='text-anchor:end'>${horaire.fhs.toFixed(0)} Hours</text>`
   }
 
