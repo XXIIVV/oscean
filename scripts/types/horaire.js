@@ -1,12 +1,12 @@
 'use strict'
 
 function Horaire (logs) {
-  const h = { fh: 0, ch: 0, topics: {}, tasks: {}, osc: { sum: 0, average: 0 }, sectors: { audio: 0, visual: 0, research: 0, misc: 0, sum: 0 } }
+  const h = { fhs: 0, chs: 0, topics: {}, tasks: {}, osc: { sum: 0, average: 0 }, sectors: { audio: 0, visual: 0, research: 0, misc: 0, sum: 0 } }
 
   for (const id in logs) {
     const log = logs[id]
-    h.fh += log.fh
-    h.ch += log.ch
+    h.fhs += log.fh
+    h.chs += log.ch
     h.osc.sum += Math.abs(log.fh - log.ch)
     h.tasks[log.task] = h.tasks[log.task] ? h.tasks[log.task] + log.fh : log.fh
     h.sectors[log.sector] += log.fh / 2
@@ -28,27 +28,33 @@ function Horaire (logs) {
 
   h.osc = h.osc.sum / logs.length
 
-  const fh = (h.fh / logs.length)
-  const ch = (h.ch / logs.length)
+  const fh = (h.fhs / logs.length)
+  const ch = (h.chs / logs.length)
   const efec = (efec_sum / Object.keys(h.topics).length)
   const efic = (efic_sum / Object.keys(h.topics).length)
   const audio = h.sectors.audio > 0 ? (h.sectors.audio / h.sectors.sum) * 10 : 0
   const visual = h.sectors.visual > 0 ? (h.sectors.visual / h.sectors.sum) * 10 : 0
   const research = h.sectors.research > 0 ? (h.sectors.research / h.sectors.sum) * 10 : 0
-  const balance = (1 - ((Math.abs(3.3333 - audio) + Math.abs(3.3333 - visual) + Math.abs(3.3333 - research)) / 13.3333)) * 10
-  const productivity = ch - fh
+  const focus = ((h.fhs + h.chs) / 2) / ((Object.keys(h.topics).length + Object.keys(h.tasks).length) / 2)
+  const balance = (1 - ((Math.abs(3.3333 - audio) + Math.abs(3.3333 - visual) + Math.abs(3.3333 - research)) / 13.3333)) * 100
+
   return {
+    fhs: h.fhs,
+    chs: h.chs,
     fh: fh,
     ch: ch,
+    focus: focus,
+    balance: balance,
     efec: efec,
     efic: efic,
-    productivity: productivity,
-    focus: (efec + efic) / 2,
     sum: h.fh,
     count: logs.length,
     osc: h.osc,
     sectors: { audio: audio, visual: visual, research: research },
     tasks: h.tasks,
-    balance: balance
+    range: {
+      from: logs[logs.length - 1],
+      to: logs[0]
+    }
   }
 }

@@ -34,7 +34,7 @@ function Viz (logs, from, to, showDetails = true) {
     <text x='${(cell + 1) * 10}' y='125' style='text-anchor:start'>Visual ${(horaire.sectors.visual * 10).toFixed(1)}%</text>
     <rect class="research" x="${(cell + 1) * 16}" y="115" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
     <text x='${(cell + 1) * 18}' y='125' style='text-anchor:start'>Research ${(horaire.sectors.research * 10).toFixed(1)}%</text>
-    <text x='725' y='125' style='text-anchor:end'>${horaire.sum.toFixed(0)} Hours</text>`
+    <text x='725' y='125' style='text-anchor:end'>${horaire.fhs.toFixed(0)} Hours</text>`
   }
 
   function _status (data) {
@@ -53,11 +53,11 @@ function Viz (logs, from, to, showDetails = true) {
     <text class='display small' x='${180 + (cell * 7)}' y='${cell * 15.1}'>${offset(recent.fh, before.fh)}</text>
     <text class='display small' x='${180 + (cell * 7)}' y='${cell * 16.5}' style='font-family: var(--mono);'>fh/day</text>
 
-    <text class='display' x='${360}' y='${cell * 16.5}'>${recent.focus.toFixed(2)}</text>
+    <text class='display' x='${360}' y='${cell * 16.5}'>${recent.focus.toFixed(2).substr(0, 4)}</text>
     <text class='display small' x='${360 + (cell * 7)}' y='${cell * 15.1}'>${offset(recent.focus, before.focus)}</text>
     <text class='display small' x='${360 + (cell * 7)}' y='${cell * 16.5}' style='font-family: var(--mono);'>focus</text>
 
-    <text class='display' x='${550}' y='${cell * 16.5}'>${recent.balance.toFixed(2)}</text>
+    <text class='display' x='${550}' y='${cell * 16.5}'>${recent.balance.toFixed(2).substr(0, 4)}</text>
     <text class='display small' x='${550 + (cell * 7)}' y='${cell * 15.1}'>${offset(recent.balance, before.balance)}</text>
     <text class='display small' x='${550 + (cell * 7)}' y='${cell * 16.5}' style='font-family: var(--mono);'>balance</text>
     `

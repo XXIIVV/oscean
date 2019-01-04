@@ -183,6 +183,9 @@ function Heol (input, tables, host) {
     // -----------------------
     task: (code) => {
       return `${new Log({ code: '-' + code }).task}`
+    },
+    status: () => {
+      return `${new Status(tables.horaire)}`
     }
   }
 

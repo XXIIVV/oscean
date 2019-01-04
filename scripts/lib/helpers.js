@@ -54,12 +54,19 @@ function sortLogs (arr) {
 
 // Horaire Filters
 
-function __onlyCurrentYear (log) {
-  return log.time.year === 2018
+function __onlyLast14 (log) {
+  return log.time.offset <= 0 && log.time.offset > -14
 }
-
 function __onlyLast365 (log) {
   return log.time.offset < 0 && log.time.offset > -365
+}
+
+function __onlyCurrentYear (log) {
+  return log.time.y === new Desamber().y
+}
+
+function __onlyCurrentMonth (log) {
+  return log.time.m === new Desamber().m && log.time.y === new Desamber().y
 }
 
 // Compare strings
