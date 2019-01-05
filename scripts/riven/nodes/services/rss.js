@@ -21,7 +21,7 @@ RIVEN.lib.Rss = function RssNode (id, rect) {
 
   this.show = function (html) {
     const win = window.open('', 'Title', 'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=yes,width=640,height=480,top=' + (screen.height - 200) + ',left=' + (screen.width - 640))
-    win.document.body.innerHTML = `<pre>${html.to_entities()}</pre>`
+    win.document.body.innerHTML = `<pre>${html.toEntities()}</pre>`
   }
 
   this.items = function (logs) {
@@ -38,7 +38,7 @@ RIVEN.lib.Rss = function RssNode (id, rect) {
     <description>
       &lt;img src="https://wiki.xxiivv.com/media/diary/${log.pict}.jpg"/&gt;
       &lt;br/&gt;
-      ${log.host.data.BREF ? log.host.data.BREF.toCurlic().to_rss().replace_all("href='index.html#", "href='https://wiki.xxiivv.com/") : ''}
+      ${log.host.data.BREF ? log.host.data.BREF.toCurlic().toRss().replace_all("href='index.html#", "href='https://wiki.xxiivv.com/") : ''}
     </description>
   </item>
 `

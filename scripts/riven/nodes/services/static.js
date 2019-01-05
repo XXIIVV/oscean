@@ -7,7 +7,7 @@ RIVEN.lib.Static = function StaticNode (id, rect) {
 
   function win (html) {
     const win = window.open('', 'Static', 'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=yes,width=640,height=480,top=' + 100 + ',left=' + (screen.width - (640 * 1.5)))
-    win.document.body.innerHTML = `<pre>${html.to_entities()}</pre>`
+    win.document.body.innerHTML = `<pre>${html.toEntities()}</pre>`
   }
 
   function _item (term) {
