@@ -8,8 +8,8 @@ RIVEN.lib.Query = function QueryNode (id, rect) {
 
   this.bang = function (input = window.location.hash) {
     const target = input.toUrl()
-    if (this.location !== target) { 
-      this.goto(target || 'home') 
+    if (this.location !== target) {
+      this.goto(target || 'home')
     }
   }
 

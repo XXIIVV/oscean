@@ -4,6 +4,7 @@ RIVEN.lib.Mesh = function (id, rect, children) {
   RIVEN.Node.call(this, id, rect)
 
   this.glyph = ''
+  this.name = 'meshnode'
 
   this.update = function () {
     const bounds = { x: 0, y: 0 }

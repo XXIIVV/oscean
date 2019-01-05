@@ -32,6 +32,7 @@ RIVEN.Node = function (id, rect = { x: 0, y: 0, w: 2, h: 2 }) {
   this.parent = null
   this.children = []
   this.label = id
+  this.name = this.constructor.name.toLowerCase()
   this.glyph = 'M155,65 A90,90 0 0,1 245,155 A90,90 0 0,1 155,245 A90,90 0 0,1 65,155 A90,90 0 0,1 155,65 Z'
 
   this.setup = function (pos) {
@@ -185,7 +186,7 @@ RIVEN.graph = () => {
   function drawNode (node) {
     const rect = getRect(node)
     return `
-    <g class='node' id='node_${node.id}'>
+    <g class='node ${node.name}' id='node_${node.id}'>
       <rect rx='2' ry='2' x=${rect.x} y=${rect.y - (GRID_SIZE / 2)} width="${rect.w}" height="${rect.h}" class='${node.children.length === 0 ? 'fill' : ''}'/>
       <text x="${rect.x + (rect.w / 2) + (GRID_SIZE * 0.3)}" y="${rect.y + rect.h + (GRID_SIZE * 0.2)}">${node.label}</text>
       ${drawPorts(node)}
