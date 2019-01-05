@@ -3,16 +3,17 @@
 RIVEN.create = (append = true) => {
   const lib = RIVEN.lib
 
-  Ø('init').create({ x: 2, y: 0 }, lib.Init)
-  Ø('query').create({ x: 2, y: 6 }, lib.Query)
-  Ø('mouse').create({ x: 2, y: 10 }, lib.Mouse)
+  Ø('mouse').create({ x: 2, y: 4 }, lib.Mouse)
 
-  Ø('services').create({ x: 6, y: 20 }, lib.Mesh, [
+  Ø('init').create({ x: 2, y: 0 }, lib.Init)
+  Ø('query').create({ x: 8, y: 6 }, lib.Query)
+
+  Ø('services').create({ x: 12, y: 20 }, lib.Mesh, [
     Ø('rss').create({ x: 0, y: 0 }, lib.Rss),
     Ø('static').create({ x: 3, y: 0 }, lib.Static)
   ])
 
-  Ø('model').create({ x: 6, y: 4 }, lib.Mesh, [
+  Ø('model').create({ x: 12, y: 4 }, lib.Mesh, [
     Ø('router').create({ x: 3, y: 0 }, lib.Router),
     Ø('database').create({ x: 0, y: 4 }, lib.Database),
     Ø('dictionaery').create({ x: 12, y: 8 }, lib.Table, indental, Aeth),
@@ -23,11 +24,11 @@ RIVEN.create = (append = true) => {
     Ø('map').create({ x: 3, y: 4 }, lib.Map)
   ])
 
-  Ø('assoc').create({ x: 27, y: 4 }, lib.Mesh, [
+  Ø('assoc').create({ x: 32, y: 4 }, lib.Mesh, [
     Ø('template').create({ x: 0, y: 0 }, lib.Template)
   ])
 
-  Ø('client').create({ x: 36, y: 4 }, lib.Mesh, [
+  Ø('client').create({ x: 40, y: 4 }, lib.Mesh, [
     Ø('document').create({ x: 0, y: 0 }, lib.Document, append),
     Ø('terminal').create({ x: 6, y: 4 }, lib.Terminal),
     Ø('header').create({ x: 0, y: 4 }, lib.Dom),
@@ -61,6 +62,8 @@ RIVEN.create = (append = true) => {
   ])
 
   Ø('init').syphon(['database', 'document', 'query'])
+
+  Ø('mouse').connect('query')
 
   // // Model
   Ø('router').syphon('database')
