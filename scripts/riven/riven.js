@@ -168,7 +168,7 @@ RIVEN.graph = () => {
     return `${acc}${drawNode(network[val])}`
   }, '')
 
-  this.el.innerHTML = `${_routes}${_nodes}`
+  this.el.innerHTML = `<g id='routes'>${_routes}</g><g id='nodes'>${_nodes}</g>`
 
   function drawRoutes (node) {
     let html = ''
@@ -180,7 +180,7 @@ RIVEN.graph = () => {
         html += route ? drawConnection(port, route) : ''
       }
     }
-    return html ? `<g id='routes'>${html}</g>` : ''
+    return html
   }
 
   function drawNode (node) {
@@ -208,7 +208,7 @@ RIVEN.graph = () => {
   function drawPort (port) {
     const pos = port ? getPortPosition(port) : { x: 0, y: 0 }
     const r = GRID_SIZE / 6
-    return `<g id='${port.host.id}_port_${port.id}'><path d='M${pos.x - (r)},${pos.y} L${pos.x},${pos.y - (r)} L${pos.x + (r)},${pos.y} L${pos.x},${pos.y + (r)} Z' class='port ${port.type} ${port.host.ports[port.id] && port.host.ports[port.id].route ? 'route' : ''}' /></g>`
+    return `<g class='port ${port.id}' id='${port.host.id}_port_${port.id}'><path d='M${pos.x - (r)},${pos.y} L${pos.x},${pos.y - (r)} L${pos.x + (r)},${pos.y} L${pos.x},${pos.y + (r)} Z'/></g>`
   }
 
   function drawConnection (a, b) {

@@ -15,11 +15,11 @@ RIVEN.create = (append = true) => {
   Ø('model').create({ x: 6, y: 4 }, lib.Mesh, [
     Ø('router').create({ x: 3, y: 0 }, lib.Router),
     Ø('database').create({ x: 0, y: 4 }, lib.Database),
-    Ø('dictionaery').create({ x: 0, y: 8 }, lib.Table, indental, Aeth),
+    Ø('dictionaery').create({ x: 12, y: 8 }, lib.Table, indental, Aeth),
     Ø('lexicon').create({ x: 3, y: 8 }, lib.Table, indental, Term),
     Ø('horaire').create({ x: 6, y: 8 }, lib.Table, tablatal, Log),
     Ø('issues').create({ x: 9, y: 8 }, lib.Table, indental, Issue),
-    Ø('glossary').create({ x: 12, y: 8 }, lib.Table, indental, List),
+    Ø('glossary').create({ x: 0, y: 8 }, lib.Table, indental, List),
     Ø('map').create({ x: 3, y: 4 }, lib.Map)
   ])
 
