@@ -355,9 +355,7 @@ RIVEN.graph = () => {
       document.addEventListener('mouseup', (e) => { this.touch({ x: e.clientX, y: e.clientY }); e.preventDefault() })
     },
     update: function () {
-      this.host.el.style.left = `${parseInt(this.offset.x)}px`
-      this.host.el.style.top = `${parseInt(this.offset.y)}px`
-      document.body.style.backgroundPosition = `${parseInt(this.offset.x / 2)}px ${parseInt(this.offset.y / 2)}px`
+      this.host.el.style.transform = `translate(${parseInt(this.offset.x)}px,${parseInt(this.offset.y)}px)`
     },
     touch: function (pos, click = null) {
       if (click === true) {
