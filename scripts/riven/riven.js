@@ -363,8 +363,8 @@ RIVEN.graph = () => {
         return
       }
       if (this.origin) {
-        this.offset.x += (pos.x - this.origin.x) / 2
-        this.offset.y += (pos.y - this.origin.y) / 2
+        this.offset.x += parseInt(pos.x - this.origin.x)
+        this.offset.y += parseInt(pos.y - this.origin.y)
         this.update()
         this.origin = pos
       }

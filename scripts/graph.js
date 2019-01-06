@@ -8,11 +8,6 @@ RIVEN.create = (append = true) => {
   Ø('init').create({ x: 2, y: 0 }, lib.Init)
   Ø('query').create({ x: 8, y: 6 }, lib.Query)
 
-  Ø('services').create({ x: 12, y: 20 }, lib.Mesh, [
-    Ø('rss').create({ x: 0, y: 0 }, lib.Rss),
-    Ø('static').create({ x: 3, y: 0 }, lib.Static)
-  ])
-
   Ø('model').create({ x: 12, y: 4 }, lib.Mesh, [
     Ø('router').create({ x: 3, y: 0 }, lib.Router),
     Ø('database').create({ x: 0, y: 4 }, lib.Database),
@@ -24,11 +19,17 @@ RIVEN.create = (append = true) => {
     Ø('map').create({ x: 3, y: 4 }, lib.Map)
   ])
 
-  Ø('assoc').create({ x: 32, y: 4 }, lib.Mesh, [
-    Ø('template').create({ x: 0, y: 0 }, lib.Template)
+  Ø('controller').create({ x: 32, y: 4 }, lib.Mesh, [
+    Ø('template').create({ x: 0, y: 0 }, lib.Template),
+    Ø(':default').create({ x: 0, y: 4 }, lib.DefaultTemplate),
+    Ø(':journal').create({ x: 3, y: 4 }, lib.JournalTemplate),
+    Ø(':calendar').create({ x: 6, y: 4 }, lib.CalendarTemplate),
+    Ø(':tracker').create({ x: 9, y: 4 }, lib.TrackerTemplate),
+    Ø('rss').create({ x: 0, y: 8 }, lib.Rss),
+    Ø('static').create({ x: 3, y: 8 }, lib.Static)
   ])
 
-  Ø('client').create({ x: 40, y: 4 }, lib.Mesh, [
+  Ø('view').create({ x: 49, y: 4 }, lib.Mesh, [
     Ø('document').create({ x: 0, y: 0 }, lib.Document, append),
     Ø('terminal').create({ x: 6, y: 4 }, lib.Terminal),
     Ø('header').create({ x: 0, y: 4 }, lib.Dom),
@@ -65,7 +66,7 @@ RIVEN.create = (append = true) => {
 
   Ø('mouse').connect('query')
 
-  // // Model
+  // Model
   Ø('router').syphon('database')
   Ø('router').connect('template')
   Ø('database').syphon(['dictionaery', 'issues', 'horaire', 'glossary', 'lexicon'])
@@ -73,7 +74,10 @@ RIVEN.create = (append = true) => {
   Ø('database').connect('map')
   Ø('template').connect('document')
 
-  // // Dom
+  // Controller
+  Ø('template').syphon([':default', ':calendar', ':journal', ':tracker'])
+
+  // Dom
   Ø('header').bind(['photo', 'menu'])
   Ø('menu').bind(['logo', 'info', 'search', 'activity'])
   Ø('info').bind(['glyph', 'title'])

@@ -8,6 +8,7 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
   this.receive = function (q) {
     const time = performance.now()
     const featuredLog = q.result ? q.result.featuredLog : null
+    const content = this.request(q)
 
     const template = {
       title: `XXIIVV — ${q.target.toTitleCase()}`,
@@ -28,10 +29,10 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
         core: {
           sidebar: this._sidebar(q),
           content: {
-            main: this._main(q),
-            calendar: this._calendar(q),
-            journal: this._journal(q),
-            tracker: this._tracker(q)
+            main: content[':default'],
+            calendar: content[':calendar'],
+            journal: content[':journal'],
+            tracker: content[':tracker']
           },
           navi: this._navi(q)
         }

@@ -3,7 +3,7 @@
 RIVEN.lib.Rss = function RssNode (id, rect) {
   RIVEN.Node.call(this, id, rect)
 
-  this.glyph = 'M60,60 L60,60 L150,120 L240,120 M60,150 L60,150 L240,150 M60,240 L60,240 L150,180 L240,180'
+  this.glyph = 'M65,65 L65,65 L245,65 L245,245 L65,245 Z M65,125 L65,125 L245,125 M95,95 L95,95 L95,95 '
 
   this.receive = function () {
     const logs = Ø('router').cache.tables.horaire
