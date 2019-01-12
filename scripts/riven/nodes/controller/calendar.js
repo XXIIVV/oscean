@@ -13,7 +13,7 @@ RIVEN.lib.CalendarTemplate = function TemplateNode (id, rect) {
     }
 
     const viz = new BarViz(q.target === 'calendar' ? q.tables.horaire : q.result.activity())
-    
+
     const html = `<ul class='tidy ${events.length > 10 ? 'col3' : ''}' style='padding-top:30px;'>${events.reduce((acc, log, id, arr) => {
       return `
       ${acc}
