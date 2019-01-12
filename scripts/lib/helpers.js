@@ -56,6 +56,10 @@ function __onlyCurrentMonth (log) {
   return log.time.m === new Desamber().m && log.time.y === new Desamber().y
 }
 
+function __onlyEvents (log) {
+  return log.isEvent
+}
+
 // Compare strings
 
 function findSimilar (target, list) {
