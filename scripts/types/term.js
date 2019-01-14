@@ -95,7 +95,11 @@ function Term (name, data) {
     return `${runic(this.data.BODY, curlic, this)}`
   }
 
-  this.toString = function () {
-    return `<h2>${this.name.toTitleCase()}</h2><h4>${this.bref}</h4>${this.body()}`
+  this._photo = function () {
+    return this.featuredLog ? `<a data-goto='${this.name}'><img src="media/diary/${this.featuredLog.pict}.jpg"/></a>` : ''
+  }
+
+  this.toString = function (photo = false) {
+    return `<h2>${this.name.toTitleCase()}</h2><h4>${this.bref}</h4>${photo === true ? this._photo() : ''}${this.body()}`
   }
 }
