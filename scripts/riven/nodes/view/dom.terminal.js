@@ -39,19 +39,19 @@ RIVEN.lib.Terminal = function TerminalNode (id, rect, ...params) {
     },
 
     time: (q) => {
-      return `The local time is <b>${desamber()} ${neralie()}</b>.`
+      return `The local time is <b>${arvelie()} ${neralie()}</b>.`
     },
 
     hello: (q) => {
       return `Hi.`
     },
 
-    dtog: (q) => {
-      return `${new Desamber(q).toGregorian()}`
+    atog: (q) => {
+      return `${new Arvelie(q).toGregorian()}`
     },
 
-    gtod: (q) => {
-      return !isNaN(new Date(q)) ? `${new Date(q).desamber()}` : 'Invalid Date'
+    gtoa: (q) => {
+      return !isNaN(new Date(q)) ? `${new Date(q).arvelie()}` : 'Invalid Date'
     },
 
     next: (q) => {
@@ -91,7 +91,7 @@ RIVEN.lib.Terminal = function TerminalNode (id, rect, ...params) {
     },
 
     otd: (q) => {
-      const today = new Date().desamber()
+      const today = new Date().arvelie()
       const a = []
       for (const id in Ø('database').cache.horaire) {
         const log = Ø('database').cache.horaire[id]

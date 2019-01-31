@@ -7,7 +7,7 @@ function Log (data = { code: '-400' }) {
 
   this.term = data.term ? data.term.toTitleCase() : ''
   this.text = data.text
-  this.time = data.date ? new Desamber(data.date) : null
+  this.time = data.date ? new Arvelie(data.date) : null
   this.pict = data.pict ? parseInt(data.pict) : null
   this.bref = `A log added on {${this.time}(Calendar)} to {(${this.term})}.`
   this.indexes = data.name && this.pict ? [data.name, `${this.pict}`, `${this.time}`] : [`${this.time}`]

@@ -3,11 +3,11 @@
 function Status (logs) {
   this.toString = function () {
     const len = 14
-    const today = new Desamber()
+    const today = new Arvelie()
     const now = new Horaire(logs.filter(__onlyCurrentMonth))
     const average = new Horaire(logs.filter(__onlyLast365))
     const elapsed = parseInt(now.range.to.time.d)
-    
+
     return `
     <div class='status'>
       <ul>

@@ -56,7 +56,7 @@ RIVEN.create = (append = true) => {
       <a target='_blank' href="https://merveilles.town/@neauoire" class="icon merveilles external"></a>
       <a target='_blank' href="http://webring.xxiivv.com/#random" class="icon rotonde"></a>
       <a target='_blank' href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="icon cc"></a>
-      <a data-goto='devine lu linvega' href='#devine+lu+linvega'>Devine Lu Linvega</a> © ${new Desamber('06I04').toString(true)}—${desamber()}
+      <a data-goto='devine lu linvega' href='#devine+lu+linvega'>Devine Lu Linvega</a> © ${new Arvelie('06I04').toString(true)}—${arvelie()}
       <center><a data-goto='About' href='#About'>BY-NC-SA 4.0</a> <span style="color:#ccc"'>${neralie()}</span></center>
       <a target='_blank' href="http://100r.co" class="icon hundredrabbits"></a><hr>
     `)

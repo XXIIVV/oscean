@@ -10,16 +10,16 @@ String.prototype.toAlpha = function () { return this.replace(/[^a-z ]/gi, '').tr
 String.prototype.toAlphanum = function () { return this.replace(/[^0-9a-z ]/gi, '') }
 String.prototype.count = function (c) { let r = 0; for (let i; i < this.length; i++) if (this[i] === c) r++; return r }
 
-// Desamber
+// Arvelie
 
-function timeAgo (desamber, cap = 9999) {
-  if (-desamber.offset > cap) { return `${desamber}` }
-  if (desamber.offset === 1) { return 'tomorrow' }
-  if (desamber.offset === 0) { return 'today' }
-  if (desamber.offset === -1) { return `yesterday` }
-  if (desamber.offset < -365) { return `${parseInt(desamber.offset / -365)} years ago` }
-  if (desamber.offset < 1) { return `${desamber.offset * -1} days ago` }
-  return `in ${desamber.offset} days`
+function timeAgo (arvelie, cap = 9999) {
+  if (-arvelie.offset > cap) { return `${arvelie}` }
+  if (arvelie.offset === 1) { return 'tomorrow' }
+  if (arvelie.offset === 0) { return 'today' }
+  if (arvelie.offset === -1) { return `yesterday` }
+  if (arvelie.offset < -365) { return `${parseInt(arvelie.offset / -365)} years ago` }
+  if (arvelie.offset < 1) { return `${arvelie.offset * -1} days ago` }
+  return `in ${arvelie.offset} days`
 }
 
 function sortHash (h) {
@@ -49,11 +49,11 @@ function __onlyLast365 (log) {
 }
 
 function __onlyCurrentYear (log) {
-  return log.time.y === new Desamber().y
+  return log.time.y === new Arvelie().y
 }
 
 function __onlyCurrentMonth (log) {
-  return log.time.m === new Desamber().m && log.time.y === new Desamber().y
+  return log.time.m === new Arvelie().m && log.time.y === new Arvelie().y
 }
 
 function __onlyEvents (log) {
@@ -96,6 +96,6 @@ Date.prototype.offset = function (days) {
   return this.setDate(date.getDate() + 1)
 }
 
-Date.prototype.desamber = function () {
-  return new Desamber(desamber(this))
+Date.prototype.arvelie = function () {
+  return new Arvelie(arvelie(this))
 }

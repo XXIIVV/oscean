@@ -1,6 +1,6 @@
 'use strict'
 
-function desamber (date = new Date()) {
+function arvelie (date = new Date()) {
   const start = new Date(date.getFullYear(), 0, 0)
   const diff = (date - start) + ((start.getTimezoneOffset() - date.getTimezoneOffset()) * 60 * 1000)
   const doty = Math.floor(diff / 86400000) - 1
@@ -11,7 +11,7 @@ function desamber (date = new Date()) {
   return `${y}${m}${d}`
 }
 
-function Desamber (t = desamber()) {
+function Arvelie (t = arvelie()) {
   this.t = t.match(/\d\d[a-z\+]\d\d/i) ? t.toUpperCase() : '01+01'
   this.y = t.substr(0, 2)
   this.m = t.substr(2, 1).toUpperCase()

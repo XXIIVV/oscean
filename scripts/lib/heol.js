@@ -170,16 +170,16 @@ function Heol (input, tables, host) {
       return new Septambres(item)
     },
     // -----------------------
-    // Desamber
+    // Arvelie
     // -----------------------
-    desamber: () => {
-      return `${new Desamber()}`
+    arvelie: () => {
+      return `${new Arvelie()}`
     },
     dtog: (q) => {
-      return `${new Desamber(q).toGregorian()}`
+      return `${new Arvelie(q).toGregorian()}`
     },
     gtod: (q) => {
-      return !isNaN(new Date(q)) ? `${new Date(q).desamber()}` : 'Invalid Date'
+      return !isNaN(new Date(q)) ? `${new Date(q).arvelie()}` : 'Invalid Date'
     },
     // -----------------------
     // Horaire
