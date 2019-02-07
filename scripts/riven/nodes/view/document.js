@@ -50,15 +50,12 @@ RIVEN.lib.Document = function DocumentNode (id, rect, ...params) {
 
 function on_scroll () {
   const scroll = window.scrollY
-
-  // Logo/Search
-  const header_el = document.getElementById('header')
-  const logo_el = document.getElementById('logo')
-  const menu_el = document.getElementById('menu')
-  if (header_el && scroll > header_el.offsetHeight - 90) {
-    if (menu_el.className !== 'sticky') { menu_el.className = 'sticky' }
-  } else if (header_el) {
-    if (menu_el.className === 'sticky') { menu_el.className = '' }
+  const _header = document.getElementById('header')
+  const _menu = document.getElementById('menu')
+  if (_header && scroll > _header.offsetHeight - 90) {
+    if (_menu.className !== 'sticky') { _menu.className = 'sticky' }
+  } else if (_header) {
+    if (_menu.className === 'sticky') { _menu.className = '' }
   }
 }
 

@@ -11,12 +11,12 @@ RIVEN.lib.Database = function DatabaseNode (id, rect) {
   function index_tables (tables) {
     const h = {}
     const time = performance.now()
-    for (const table_id in tables) {
-      for (const entry_id in tables[table_id]) {
-        for (const index_id in tables[table_id][entry_id].indexes) {
-          const entry = tables[table_id][entry_id]
-          const index = entry.indexes[index_id].toUpperCase()
-          h[index] = entry
+    for (const tId in tables) {
+      const table = tables[tId]
+      for (const eId in table) {
+        const entry = table[eId]
+        for (const i in entry.indexes) {
+          h[entry.indexes[i].toUpperCase()] = entry
         }
       }
     }

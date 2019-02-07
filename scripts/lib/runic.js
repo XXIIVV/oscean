@@ -5,7 +5,7 @@ function runic (lines = [], templater = null, host = null) {
     '&': { tag: 'p' },
     '*': { tag: 'h3' },
     '+': { tag: 'hs' },
-    '?': { tag: 'div', class: 'note' },
+    '?': { tag: 'div', class: 'notice' },
     '-': { tag: 'li', wrapper: 'ul', wrapperClass: 'bullet' },
     '#': { tag: 'li', wrapper: 'code' },
     '@': { tag: 'div', class: 'quote', fn: quote },
