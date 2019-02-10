@@ -26,7 +26,9 @@ RIVEN.create = (append = true) => {
     Ø(':calendar').create({ x: 6, y: 4 }, lib.CalendarTemplate),
     Ø(':tracker').create({ x: 9, y: 4 }, lib.TrackerTemplate),
     Ø('rss').create({ x: 0, y: 8 }, lib.Rss),
-    Ø('static').create({ x: 3, y: 8 }, lib.Static)
+    Ø('static').create({ x: 3, y: 8 }, lib.Static),
+    Ø('lxtxt').create({ x: 6, y: 8 }, lib.Lxtxt),
+    Ø('twtxt').create({ x: 9, y: 8 }, lib.Twtxt)
   ])
 
   Ø('view').create({ x: 49, y: 4 }, lib.Mesh, [

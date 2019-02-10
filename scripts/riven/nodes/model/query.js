@@ -8,6 +8,7 @@ RIVEN.lib.Query = function QueryNode (id, rect) {
 
   this.bang = function (input = window.location.hash) {
     const target = input.toUrl()
+
     if (this.location !== target) {
       this.goto(target || 'home')
     }
@@ -20,6 +21,7 @@ RIVEN.lib.Query = function QueryNode (id, rect) {
     Ø('document').setMode('state', 'loading')
     setTimeout(() => { this.send(target) }, 50)
     setTimeout(() => { Ø('document').setMode('state', 'ready') }, 150)
+    Ø('terminal').listen(target, true)
     console.info(`${this.id}-${target}`, `Query completed in ${(performance.now() - time).toFixed(2)}ms.`)
   }
 

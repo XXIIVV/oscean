@@ -19,6 +19,21 @@ RIVEN.lib.Terminal = function TerminalNode (id, rect, ...params) {
     Ø('search').el.value = '~'
   }
 
+  this.listen = function (q, bang = false) {
+    if (q.substr(0, 1) === '~') {
+      if (!Ø('terminal').hasClass('active')) {
+        Ø('terminal').push('maeve', 'Idle.', 500)
+      }
+      Ø('terminal').addClass('active')
+    } else {
+      Ø('terminal').removeClass('active')
+    }
+
+    if (bang === true && q.substr(0, 1) === '~') {
+      this.bang(q)
+    }
+  }
+
   this.push = function (author, txt, delay = 0) {
     setTimeout(() => {
       this.el.innerHTML = `
@@ -77,13 +92,19 @@ RIVEN.lib.Terminal = function TerminalNode (id, rect, ...params) {
     },
 
     rss: (q) => {
-      Ø('rss').receive()
-      return `Done.`
+      return `<textarea>${Ø('rss').receive(q)}</textarea>`
     },
 
     static: (q) => {
-      Ø('static').receive()
-      return `Done.`
+      return `<textarea>${Ø('static').receive(q)}</textarea>`
+    },
+
+    twtxt: (q) => {
+      return `<textarea>${Ø('twtxt').receive(q)}</textarea>`
+    },
+
+    lxtwt: (q) => {
+      return `<textarea>${Ø('lxtwt').receive(q)}</textarea>`
     },
 
     heol: (q) => {

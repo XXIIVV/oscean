@@ -6,7 +6,7 @@ RIVEN.lib.Rss = function RssNode (id, rect) {
   this.glyph = 'M65,65 L65,65 L245,65 L245,245 L65,245 Z M65,125 L65,125 L245,125 M95,95 L95,95 L95,95 '
 
   this.receive = function () {
-    const logs = Ø('router').cache.tables.horaire
+    const logs = Ø('database').cache.horaire
     const selection = []
     for (const id in logs) {
       const log = logs[id]
@@ -16,12 +16,7 @@ RIVEN.lib.Rss = function RssNode (id, rect) {
       selection.push(log)
     }
 
-    this.show(this.render(selection))
-  }
-
-  this.show = function (html) {
-    const win = window.open('', 'Title', 'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=yes,width=640,height=480,top=' + (screen.height - 200) + ',left=' + (screen.width - 640))
-    win.document.body.innerHTML = `<pre>${html.toEntities()}</pre>`
+    return this.render(selection)
   }
 
   this.items = function (logs) {
@@ -65,6 +60,6 @@ RIVEN.lib.Rss = function RssNode (id, rect) {
   ${this.items(logs)}
 </channel>
 
-</rss>`
+</rss>`.toEntities()
   }
 }

@@ -48,4 +48,14 @@ function Log (data = { code: '-400' }) {
   this.toString = function () {
     return this.body()
   }
+
+  this.toText = function () {
+    if (this.isEvent) {
+      return `${this.name}`
+    }
+    if (this.pict) {
+      return `Added a ${this.host.parent.name.toLowerCase()} diary to ${this.term}.`
+    }
+    return `${this.fh}fh of ${this.task}, on ${this.term} ${this.host.parent.name.toLowerCase()}.`
+  }
 }

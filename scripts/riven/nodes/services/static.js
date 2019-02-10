@@ -5,11 +5,6 @@ RIVEN.lib.Static = function StaticNode (id, rect) {
 
   this.glyph = 'M65,65 L65,65 L245,65 L245,245 L65,245 Z M65,125 L65,125 L245,125 M95,95 L95,95 L95,95 '
 
-  function win (html) {
-    const win = window.open('', 'Static', 'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=yes,width=640,height=480,top=' + 100 + ',left=' + (screen.width - (640 * 1.5)))
-    win.document.body.innerHTML = `<pre>${html.toEntities()}</pre>`
-  }
-
   function _item (term) {
     const body = term.data.BODY ? term.data.BODY.filter((line) => { return line.substr(0, 1) === '&' || line.substr(0, 1) === '-' || line.substr(0, 1) === '|' || line.substr(0, 1) === '#' }) : ''
     const links = Object.keys(term.links).reduce((acc, val) => { return `${acc}<li><a href='${term.links[val]}' target='_blank'>${val.toTitleCase()}</a></li>\n` }, ' ').trim()
@@ -22,8 +17,8 @@ RIVEN.lib.Static = function StaticNode (id, rect) {
   }
 
   this.receive = function () {
-    const terms = Ø('router').cache.tables.lexicon
-    win(`
+    const terms = Ø('database').cache.lexicon
+    return `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -50,9 +45,9 @@ RIVEN.lib.Static = function StaticNode (id, rect) {
 </head>
 <body style='max-width:600px'>
   <h1>Oscean</h1>
-  <h3>Last Update: ${Ø('router').cache.tables.horaire[0].time}</h3>
+  <h3>Last Update: ${Ø('database').cache.horaire[0].time}</h3>
   ${Object.keys(terms).sort().reduce((acc, val) => { return `${acc}${_item(terms[val])}` }, '').trim()}
 </body>
-</html>`)
+</html>`.toEntities()
   }
 }

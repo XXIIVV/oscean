@@ -8,21 +8,14 @@ RIVEN.lib.Input = function InputNode (id, rect, ...params) {
   this.is_installed = false
   this.el.setAttribute('spellcheck', false)
 
-  this.el.addEventListener('keydown', (e) => { this.on_input(e) })
+  this.el.addEventListener('keydown', (e) => { this.onInput(e) })
   this.el.addEventListener('focus', () => { this.txt = this.el.value; this.el.value = '' })
   this.el.addEventListener('blur', () => { this.el.value = this.txt ? this.txt : window.location.hash.replace('#', '').trim() })
 
-  this.on_input = function (e) {
+  this.onInput = function (e) {
     const value = this.el.value.trim().toLowerCase()
 
-    if (value.substr(0, 1) === '~') {
-      if (!Ø('terminal').hasClass('active')) {
-        Ø('terminal').push('maeve', 'Idle.', 500)
-      }
-      Ø('terminal').addClass('active')
-    } else {
-      Ø('terminal').removeClass('active')
-    }
+    Ø('terminal').listen(value)
 
     this.test(value)
 
