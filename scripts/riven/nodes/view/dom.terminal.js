@@ -103,8 +103,8 @@ RIVEN.lib.Terminal = function TerminalNode (id, rect, ...params) {
       return `<textarea>${Ø('twtxt').receive(q)}</textarea>`
     },
 
-    lxtwt: (q) => {
-      return `<textarea>${Ø('lxtwt').receive(q)}</textarea>`
+    lxtxt: (q) => {
+      return `<textarea>${Ø('lxtxt').receive(q)}</textarea>`
     },
 
     heol: (q) => {
