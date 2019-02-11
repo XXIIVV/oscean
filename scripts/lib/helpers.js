@@ -40,11 +40,15 @@ function sortLogs (arr) {
 
 // Horaire Filters
 
-function __onlyLast14 (log) {
+function __onlyPast (log) {
+  return log.time.offset < 0
+}
+
+function __onlyPast14 (log) {
   return log.time.offset <= 0 && log.time.offset > -14
 }
 
-function __onlyLast365 (log) {
+function __onlyPast365 (log) {
   return log.time.offset < 0 && log.time.offset > -365
 }
 

@@ -5,7 +5,7 @@ function Status (logs) {
     const len = 14
     const today = new Arvelie()
     const now = new Horaire(logs.filter(__onlyCurrentMonth))
-    const average = new Horaire(logs.filter(__onlyLast365))
+    const average = new Horaire(logs.filter(__onlyPast365))
     const elapsed = parseInt(now.range.to.time.d)
 
     return `

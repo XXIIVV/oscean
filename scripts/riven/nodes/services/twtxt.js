@@ -11,6 +11,6 @@ RIVEN.lib.Twtxt = function TwtxtNode (id, rect) {
   }
 
   this.receive = function () {
-    return Ø('database').cache.horaire.reduce(_template, '')
+    return Ø('database').cache.horaire.filter(__onlyPast).reduce(_template, '')
   }
 }
