@@ -94,7 +94,7 @@ function Heol (input, tables, host) {
     lc: (item) => {
       return item.toLowerCase()
     },
-    cc: (item) => {
+    tc: (item) => {
       return item.toTitleCase()
     },
     uc: (item) => {
@@ -148,7 +148,7 @@ function Heol (input, tables, host) {
       return new Aeth(item).adultspeak
     },
     lien: (...items) => {
-      const dict = Ø('database').cache.dictionaery
+      const dict = Ø('database').cache.saldota
       let s = ''
       for (const key in items) {
         const result = dict[items[key].toUpperCase()]
@@ -157,7 +157,7 @@ function Heol (input, tables, host) {
       return s.trim()
     },
     enli: (...items) => {
-      const dict = Ø('database').cache.dictionaery
+      const dict = Ø('database').cache.saldota
       let s = ''
       for (const key in items) {
         for (const id in dict) {

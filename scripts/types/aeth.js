@@ -83,7 +83,7 @@ function Construction (str) {
   }
 
   this.find = function (target, adultspeak = true) {
-    const d = Ø('database').cache.dictionaery
+    const d = Ø('database').cache.saldota
     for (const id in d) {
       if (d[id].to_english() === target.toLowerCase()) {
         return adultspeak ? d[id].adultspeak : d[id].childspeak

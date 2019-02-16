@@ -11,7 +11,7 @@ RIVEN.create = (append = true) => {
   Ø('model').create({ x: 12, y: 4 }, lib.Mesh, [
     Ø('router').create({ x: 3, y: 0 }, lib.Router),
     Ø('database').create({ x: 0, y: 4 }, lib.Database),
-    Ø('dictionaery').create({ x: 12, y: 8 }, lib.Table, indental, Aeth),
+    Ø('saldota').create({ x: 12, y: 8 }, lib.Table, indental, Aeth),
     Ø('lexicon').create({ x: 3, y: 8 }, lib.Table, indental, Term),
     Ø('horaire').create({ x: 6, y: 8 }, lib.Table, tablatal, Log),
     Ø('issues').create({ x: 9, y: 8 }, lib.Table, indental, Issue),
@@ -71,7 +71,7 @@ RIVEN.create = (append = true) => {
   // Model
   Ø('router').syphon('database')
   Ø('router').connect('template')
-  Ø('database').syphon(['dictionaery', 'issues', 'horaire', 'glossary', 'lexicon'])
+  Ø('database').syphon(['saldota', 'issues', 'horaire', 'glossary', 'lexicon'])
   Ø('query').connect('router')
   Ø('database').connect('map')
   Ø('template').connect('document')
