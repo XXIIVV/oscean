@@ -1,14 +1,14 @@
 'use strict'
 
-String.prototype.replace_all = function (search, replacement) { return `${this}`.split(search).join(replacement) }
 String.prototype.toTitleCase = function () { return this.toLowerCase().split(' ').map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join(' ') }
 String.prototype.toUrl = function () { return this.toLowerCase().replace(/ /g, '+').replace(/[^0-9a-z\+\:\-\.\/\~]/gi, '').trim() }
 String.prototype.toPath = function () { return this.toLowerCase().replace(/\+/g, '.').replace(/ /g, '.').replace(/[^0-9a-z\.\-]/gi, '').trim() }
 String.prototype.toEntities = function () { return this.replace(/[\u00A0-\u9999<>\&]/gim, function (i) { return `&#${i.charCodeAt(0)}` }) }
-String.prototype.toRss = function () { return this.replace(/\</g, '&lt;').replace(/\>/g, '&gt;') }
 String.prototype.toAlpha = function () { return this.replace(/[^a-z ]/gi, '').trim() }
 String.prototype.toAlphanum = function () { return this.replace(/[^0-9a-z ]/gi, '') }
 String.prototype.count = function (c) { let r = 0; for (let i; i < this.length; i++) if (this[i] === c) r++; return r }
+String.prototype.stripHTML = function () { return this.replace(/<(?:.|\n)*?>/gm, '') }
+String.prototype.replaceAll = function (search, replacement) { return `${this}`.split(search).join(replacement) }
 
 // Arvelie
 
