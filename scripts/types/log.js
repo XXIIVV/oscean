@@ -50,12 +50,12 @@ function Log (data = { code: '-400' }) {
   }
 
   this.toText = function () {
-    if (this.isEvent) {
+    if (this.isEvent && this.name !== '') {
       return `${this.name}`
     }
-    if (this.pict) {
-      return `Added a ${this.host.parent.name.toLowerCase()} diary to ${this.term}.`
+    if (this.pict && this.name !== '') {
+      return `${this.term} ${this.host.parent.name.toTitleCase()} — \"${this.name}\"`
     }
-    return `${this.fh}fh of ${this.task}, on ${this.term} ${this.host.parent.name.toLowerCase()}.`
+    return `${this.term} ${this.host.parent.name.toTitleCase()} ${this.fh}fh ${this.task}`
   }
 }

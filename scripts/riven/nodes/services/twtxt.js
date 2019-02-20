@@ -7,10 +7,27 @@ RIVEN.lib.Twtxt = function TwtxtNode (id, rect) {
 
   function _template (acc, log) {
     const date = log.time.toGregorian() + 'T12:00:00'
-    return `${acc}${date}\t${log.toText()}\n`
+    const logText = log.toText() + '.'
+    const lexText = log.host.bref.toCurlic().stripHTML()
+    const urlText = `https://wiki.xxiivv.com/${log.host.name.toUrl()}`
+    let text = `${logText} ${lexText} ${urlText}`.trim()
+
+    if (text.length > 140) {
+      text = `${logText} ${lexText} ${urlText}`.trim()
+    }
+
+    if (text.length > 140) {
+      text = `${lexText} ${urlText}`.trim()
+    }
+
+    if (text.length > 140) {
+      console.warn(`[>${text.length}ch]${text}`)
+      return `${acc}`
+    }
+    return `${acc}${date}\t${text}\n`
   }
 
   this.receive = function () {
-    return Ø('database').cache.horaire.filter(__onlyPast).reduce(_template, '')
+    return Ø('database').cache.horaire.filter(__onlyLast).reduce(_template, '')
   }
 }

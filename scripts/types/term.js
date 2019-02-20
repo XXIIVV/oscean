@@ -85,12 +85,6 @@ function Term (name, data) {
     return a
   }
 
-  function sort (array) {
-    return array.sort(function (a, b) {
-      return a[1] - b[1]
-    }).reverse()
-  }
-
   this.body = function () {
     return `${runic(this.data.BODY, curlic, this)}`
   }

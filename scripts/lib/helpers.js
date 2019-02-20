@@ -22,14 +22,18 @@ function timeAgo (arvelie, cap = 9999) {
   return `in ${arvelie.offset} days`
 }
 
+function sort (array) {
+  return array.sort(function (a, b) {
+    return a[1] - b[1]
+  }).reverse()
+}
+
 function sortHash (h) {
   const sortable = []
   for (const key in h) {
     sortable.push([key, h[key]])
   }
-  return sortable.sort((a, b) => {
-    return a[1] - b[1]
-  }).reverse()
+  return sort(sortable)
 }
 
 function sortLogs (arr) {
@@ -50,6 +54,10 @@ function __onlyPast14 (log) {
 
 function __onlyPast365 (log) {
   return log.time.offset < 0 && log.time.offset > -365
+}
+
+function __onlyLast (log) {
+  return log.host.logs[0].time.offset === log.time.offset
 }
 
 function __onlyCurrentYear (log) {
