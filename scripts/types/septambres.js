@@ -1,6 +1,6 @@
 'use strict'
 
-function Septambres (aeth) {
+function Septambres (aeth, size = 40, thickness = 9) {
   this.aeth = aeth.toLowerCase()
 
   this.template = function (glyph_id, seg_id, grid, style) {
@@ -47,15 +47,12 @@ function Septambres (aeth) {
     let path = ''
     let x = (consonant === 'd' || consonant === 'l' || consonant === 'f') ? 1 : (consonant === 't' || consonant === 's' || consonant === 'v') ? 0 : -1
     let y = (consonant === 'k' || consonant === 't' || consonant === 'd') ? 1 : (consonant === 'r' || consonant === 's' || consonant === 'l') ? 0 : -1
-
     // Int
     for (let id in template) {
       template[id] = { x: parseInt(template[id].x), y: parseInt(template[id].y) }
     }
-
     // Consonant
     if (consonant === 'k') { path += `M${template.CL.x},${template.CL.y} L${template.TL.x},${template.TL.y} L${template.TR.x},${template.TR.y} ` } else if (consonant === 't') { path += `M${template.TL.x},${template.TL.y} L${template.TR.x},${template.TR.y} M${template.TC.x},${template.TC.y} L${template.CC.x},${template.CC.y} ` } else if (consonant === 'd') { path += `M${template.TL.x},${template.TL.y} L${template.TR.x},${template.TR.y} L${template.CR.x},${template.CR.y} ` } else if (consonant === 'r') { path += `M${template.TL.x},${template.TL.y} L${template.BL.x},${template.BL.y} M${template.CL.x},${template.CL.y} L${template.CC.x},${template.CC.y} ` } else if (consonant === 's') { path += `M${template.TC.x},${template.TC.y} L${template.BC.x},${template.BC.y} ` } else if (consonant === 'l') { path += `M${template.TR.x},${template.TR.y} L${template.BR.x},${template.BR.y} M${template.CC.x},${template.CC.y} L${template.CR.x},${template.CR.y} ` } else if (consonant === 'j') { path += `M${template.CL.x},${template.CL.y} L${template.BL.x},${template.BL.y} L${template.BR.x},${template.BR.y} ` } else if (consonant === 'v') { path += `M${template.BL.x},${template.BL.y} L${template.BR.x},${template.BR.y} M${template.CC.x},${template.CC.y} L${template.BC.x},${template.BC.y} ` } else if (consonant === 'f') { path += `M${template.BL.x},${template.BL.y} L${template.BR.x},${template.BR.y} L${template.CR.x},${template.CR.y} ` } else if (consonant === '-') { } else { console.warn('Missing consonant', consonant) }
-
     // Vowel
     if (vowel === 'i') {
       if (consonant === '-') { path += `M${template.CC.x},${template.CC.y} L${template.CC.x - template.PUSH.x},${template.CC.y} L${template.BL.x + template.PUSH.x},${template.BL.y} L${template.BL.x},${template.BL.y} ` } else if (y === -1 || x === -1 && y <= 0) { path += `M${template.CC.x},${template.CC.y} L${template.CC.x + template.PUSH.x},${template.CC.y} L${template.TR.x - template.PUSH.x},${template.TR.y} L${template.TR.x},${template.TR.y} ` } else { path += `M${template.CC.x},${template.CC.y} L${template.CC.x - template.PUSH.x},${template.CC.y} L${template.BL.x + template.PUSH.x},${template.BL.y} L${template.BL.x},${template.BL.y} ` }
@@ -99,11 +96,16 @@ function Septambres (aeth) {
   }
 
   this.toString = function (style = { pad: 15, size: { w: 40, h: 40 }, spacing: 10, thickness: 9 }) {
-    let path = ''
-    let parts = this.aeth.split(' ')
-    for (let id in parts) {
-      path += this.glyph(parseInt(id), parts[id], style)
-    }
-    return `<svg style='width:${parts.length * (style.size.w + style.spacing) - style.spacing}px; height:${style.size.h}px; padding:${style.pad}'><path d='${path}' stroke='black' fill='none' stroke-width='${style.thickness}' stroke-linecap='square'/></svg>`
+    style.size = { w: size, h: size }
+    style.thickness = thickness
+    const pad = size * 0.35
+    const parts = this.aeth.split(' ')
+    const path = parts.reduce((acc, part, id) => { return `${acc}${this.glyph(parseInt(id), part, style)}` }, '')
+    const w = parts.length * (style.size.w + style.spacing) - style.spacing
+    const h = style.size.h
+    return `
+    <svg style='width:${w}px; height:${h}px; padding:${pad}px' title='${this.aeth}'>
+      <path d='${path}' stroke='black' fill='none' stroke-width='${style.thickness}' stroke-linecap='square' stroke-linejoin='round'/>
+    </svg>`
   }
 }

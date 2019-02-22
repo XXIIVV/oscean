@@ -132,18 +132,9 @@ RIVEN.lib.Terminal = function TerminalNode (id, rect, ...params) {
     otd: (q) => {
       const today = new Date().arvelie()
       const a = []
-      for (const id in Ø('database').cache.horaire) {
-        const log = Ø('database').cache.horaire[id]
-        if (log.time.m !== today.m || log.time.d !== today.d) { continue }
-        a.push(log)
-      }
-      let html = 'On This Day:\n'
-      for (const id in a) {
-        const log = a[id]
-        if (!log.term) { continue }
-        html += `— <b>${log.time}</b> ${log.isEvent ? '*' : '•'} ${log.term} — ${log.name}\n`
-      }
-      return html
+      const logs = Ø('database').cache.horaire.filter(__onlyEvents).filter(__onlyThisDay)
+      if (logs.length < 1) { return `There are no events on this day.` }
+      return `<b>On This Day</b>, on ${timeAgo(logs[0].time, 14)}, ${logs[0].host.name.toTitleCase()} — ${logs[0].name}.`
     },
 
     orphans: (q) => {

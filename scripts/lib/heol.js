@@ -145,30 +145,38 @@ function Heol (input, tables, host) {
     // Lietal
     // -----------------------
     adultspeak: (item) => {
-      return new Aeth(item).adultspeak
+      return new Aeth({ name: item }).adultspeak
     },
     lien: (...items) => {
       const dict = Ø('database').cache.saldota
+      const keys = dict.map((val) => { return val.name })
       let s = ''
-      for (const key in items) {
-        const target = items[key].toUpperCase()
-        const result = dict[target]
-        s += (result ? result.toEn() : 'err:unknown') + ' '
+      for (const id in items) {
+        const key = items[id].toLowerCase()
+        const pos = keys.indexOf(key)
+        if (pos > -1) {
+          const result = dict[pos]
+          s += (result ? result.english : 'err:unknown') + ' '
+        }
       }
       return s.trim()
     },
     enli: (...items) => {
       const dict = Ø('database').cache.saldota
+      const keys = dict.map((val) => { return val.english })
       let s = ''
-      for (const key in items) {
-        for (const id in dict) {
-          if (dict[id].hasEn(items[key])) { s += `${new Aeth(id.toLowerCase()).adultspeak} `; break }
+      for (const id in items) {
+        const key = items[id].toLowerCase()
+        const pos = keys.indexOf(key)
+        if (pos > -1) {
+          const result = dict[pos]
+          s += (result ? result.adultspeak : 'err:unknown') + ' '
         }
       }
       return s.trim()
     },
-    septambres: (item) => {
-      return new Septambres(item)
+    septambres: (item, size, thickness) => {
+      return new Septambres(item, size, thickness)
     },
     // -----------------------
     // Arvelie
