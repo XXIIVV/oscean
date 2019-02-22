@@ -151,7 +151,8 @@ function Heol (input, tables, host) {
       const dict = Ø('database').cache.saldota
       let s = ''
       for (const key in items) {
-        const result = dict[items[key].toUpperCase()]
+        const target = items[key].toUpperCase()
+        const result = dict[target]
         s += (result ? result.toEn() : 'err:unknown') + ' '
       }
       return s.trim()
