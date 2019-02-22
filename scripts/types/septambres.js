@@ -1,7 +1,7 @@
 'use strict'
 
-function Septambres (aeth, size = 40, thickness = 9) {
-  this.aeth = aeth.toLowerCase()
+function Septambres (lyta, size = 40, thickness = 9) {
+  this.lyta = lyta.toLowerCase()
 
   this.template = function (glyph_id, seg_id, grid, style) {
     let offset = glyph_id * (style.size.w + style.spacing)
@@ -65,16 +65,16 @@ function Septambres (aeth, size = 40, thickness = 9) {
     return path
   }
 
-  this.glyph = function (id, aeth, style) {
+  this.glyph = function (id, lyta, style) {
     let path = ''
     let segs = []
-    if (aeth.length > 0) { segs.push(aeth.substr(0, 2)) }
-    if (aeth.length > 2) { segs.push(aeth.substr(2, 2)) }
-    if (aeth.length > 4) { segs.push(aeth.substr(4, 2)) }
-    if (aeth.length > 6) { segs.push(aeth.substr(6, 2)) }
+    if (lyta.length > 0) { segs.push(lyta.substr(0, 2)) }
+    if (lyta.length > 2) { segs.push(lyta.substr(2, 2)) }
+    if (lyta.length > 4) { segs.push(lyta.substr(4, 2)) }
+    if (lyta.length > 6) { segs.push(lyta.substr(6, 2)) }
 
     for (let i in segs) {
-      let template = this.template(parseInt(id), parseInt(i), aeth.length / 2, style)
+      let template = this.template(parseInt(id), parseInt(i), lyta.length / 2, style)
       path += this.draw(segs[i], template)
     }
 
@@ -99,12 +99,12 @@ function Septambres (aeth, size = 40, thickness = 9) {
     style.size = { w: size, h: size }
     style.thickness = thickness
     const pad = size * 0.35
-    const parts = this.aeth.split(' ')
+    const parts = this.lyta.split(' ')
     const path = parts.reduce((acc, part, id) => { return `${acc}${this.glyph(parseInt(id), part, style)}` }, '')
     const w = parts.length * (style.size.w + style.spacing) - style.spacing
     const h = style.size.h
     return `
-    <svg style='width:${w}px; height:${h}px; padding:${pad}px' title='${this.aeth}'>
+    <svg style='width:${w}px; height:${h}px; padding:${pad}px' title='${this.lyta}'>
       <path d='${path}' stroke='black' fill='none' stroke-width='${style.thickness}' stroke-linecap='square' stroke-linejoin='round'/>
     </svg>`
   }

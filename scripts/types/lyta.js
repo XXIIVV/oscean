@@ -1,6 +1,6 @@
 'use strict'
 
-function Aeth (data = {}) {
+function Lyta (data = {}) {
   Entry.call(this, data.name, data)
 
   this.english = data.english

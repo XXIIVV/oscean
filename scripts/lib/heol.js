@@ -145,7 +145,7 @@ function Heol (input, tables, host) {
     // Lietal
     // -----------------------
     adultspeak: (item) => {
-      return new Aeth({ name: item }).adultspeak
+      return new Lyta({ name: item }).adultspeak
     },
     lien: (...items) => {
       const dict = Ø('database').cache.saldota

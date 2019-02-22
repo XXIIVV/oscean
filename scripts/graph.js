@@ -11,7 +11,7 @@ RIVEN.create = (append = true) => {
   Ø('model').create({ x: 12, y: 4 }, lib.Mesh, [
     Ø('router').create({ x: 3, y: 0 }, lib.Router),
     Ø('database').create({ x: 0, y: 4 }, lib.Database),
-    Ø('saldota').create({ x: 12, y: 8 }, lib.Table, tablatal, Aeth),
+    Ø('saldota').create({ x: 12, y: 8 }, lib.Table, tablatal, Lyta),
     Ø('lexicon').create({ x: 3, y: 8 }, lib.Table, indental, Term),
     Ø('horaire').create({ x: 6, y: 8 }, lib.Table, tablatal, Log),
     Ø('issues').create({ x: 9, y: 8 }, lib.Table, indental, Issue),
