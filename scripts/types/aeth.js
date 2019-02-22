@@ -14,7 +14,7 @@ function Aeth (name = null, data = []) {
   }
 
   this.toEn = function () {
-    return data[0].toLowerCase()
+    return data[0] ? data[0].toLowerCase() : '?'
   }
 
   this.hasEn = function (target = '') {

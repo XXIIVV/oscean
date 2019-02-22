@@ -98,7 +98,7 @@ function Septambres (aeth) {
     return this.toString({ pad: 15, size: { w: 200, h: 200 }, spacing: 0, thickness: t[weight] })
   }
 
-  this.toString = function (style = { pad: 15, size: { w: 40, h: 40 }, spacing: 10, thickness: 7.5 }) {
+  this.toString = function (style = { pad: 15, size: { w: 40, h: 40 }, spacing: 10, thickness: 9 }) {
     let path = ''
     let parts = this.aeth.split(' ')
     for (let id in parts) {
