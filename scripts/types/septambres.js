@@ -3,25 +3,25 @@
 function Septambres (lyta, size = 40, thickness = 9) {
   this.lyta = lyta.toLowerCase()
 
-  this.template = function (glyph_id, seg_id, grid, style) {
-    let offset = glyph_id * (style.size.w + (style.thickness + 1))
-    let rect = { w: style.size.w, h: style.size.h }
+  this.template = function (glyph_id, seg_id, grid, w, h, thickness) {
+    let offset = glyph_id * (w + (thickness + 1))
+    let rect = { w: w, h: h }
     let angle = grid === 3 && seg_id > 0 || grid === 4 ? 0.25 : 0.75
 
     if (grid === 1) {
-      rect = { x: offset, y: 0, w: style.size.w, h: style.size.h }
+      rect = { x: offset, y: 0, w: w, h: h }
     } else if (grid === 2) {
-      if (seg_id === 0) { rect = { x: offset, y: 0, w: (style.size.w), h: (style.size.h / 2) } }
-      if (seg_id === 1) { rect = { x: offset, y: (style.size.h / 2), w: (style.size.w), h: (style.size.h / 2) } }
+      if (seg_id === 0) { rect = { x: offset, y: 0, w: (w), h: (h / 2) } }
+      if (seg_id === 1) { rect = { x: offset, y: (h / 2), w: (w), h: (h / 2) } }
     } else if (grid === 3) {
-      if (seg_id === 0) { rect = { x: offset, y: 0, w: (style.size.w), h: (style.size.h / 2) } }
-      if (seg_id === 1) { rect = { x: offset, y: (style.size.h / 2), w: (style.size.w / 2), h: (style.size.h / 2) } }
-      if (seg_id === 2) { rect = { x: offset + (style.size.w / 2), y: (style.size.h / 2), w: (style.size.w / 2), h: (style.size.h / 2) } }
+      if (seg_id === 0) { rect = { x: offset, y: 0, w: (w), h: (h / 2) } }
+      if (seg_id === 1) { rect = { x: offset, y: (h / 2), w: (w / 2), h: (h / 2) } }
+      if (seg_id === 2) { rect = { x: offset + (w / 2), y: (h / 2), w: (w / 2), h: (h / 2) } }
     } else if (grid === 4) {
-      if (seg_id === 0) { rect = { x: offset, y: 0, w: (style.size.w / 2), h: (style.size.h / 2) } }
-      if (seg_id === 1) { rect = { x: offset + (style.size.w / 2), y: 0, w: (style.size.w / 2), h: (style.size.h / 2) } }
-      if (seg_id === 2) { rect = { x: offset, y: (style.size.h / 2), w: (style.size.w / 2), h: (style.size.h / 2) } }
-      if (seg_id === 3) { rect = { x: offset + (style.size.w / 2), y: (style.size.h / 2), w: (style.size.w / 2), h: (style.size.h / 2) } }
+      if (seg_id === 0) { rect = { x: offset, y: 0, w: (w / 2), h: (h / 2) } }
+      if (seg_id === 1) { rect = { x: offset + (w / 2), y: 0, w: (w / 2), h: (h / 2) } }
+      if (seg_id === 2) { rect = { x: offset, y: (h / 2), w: (w / 2), h: (h / 2) } }
+      if (seg_id === 3) { rect = { x: offset + (w / 2), y: (h / 2), w: (w / 2), h: (h / 2) } }
     } else {
       console.warn('Unknown grid', grid)
     }
@@ -36,7 +36,7 @@ function Septambres (lyta, size = 40, thickness = 9) {
       BL: { x: rect.x, y: rect.y + rect.h },
       BC: { x: rect.x + (rect.w / 2), y: rect.y + rect.h },
       BR: { x: rect.x + rect.w, y: rect.y + rect.h },
-      PUSH: { x: style.thickness * angle, y: style.thickness * angle }
+      PUSH: { x: thickness * angle, y: thickness * angle }
     }
   }
 
@@ -65,11 +65,11 @@ function Septambres (lyta, size = 40, thickness = 9) {
     return path
   }
 
-  this.grid = function (id, lyta, style) {
+  this.grid = function (id, lyta, w, h, thickness) {
     let path = ''
     const segs = this.getSegs(lyta)
     for (let i in segs) {
-      let template = this.template(parseInt(id), parseInt(i), lyta.length / 2, style)
+      let template = this.template(parseInt(id), parseInt(i), lyta.length / 2, w, h, thickness)
       let peg = { x: 5, y: 5 }
       path += `M${template.TL.x},${template.TL.y} L${template.TR.x},${template.TR.y} L${template.BR.x},${template.BR.y} L${template.BL.x},${template.BL.y} Z `
       path += `M${template.TC.x},${template.TC.y} L${template.TC.x},${template.TC.y + peg.y} `
@@ -80,11 +80,11 @@ function Septambres (lyta, size = 40, thickness = 9) {
     return path
   }
 
-  this.glyph = function (id, lyta, style) {
+  this.glyph = function (id, lyta, w, h, thickness) {
     let path = ''
     const segs = this.getSegs(lyta)
     for (let i in segs) {
-      let template = this.template(parseInt(id), parseInt(i), lyta.length / 2, style)
+      let template = this.template(parseInt(id), parseInt(i), lyta.length / 2, w, h, thickness)
       path += this.draw(segs[i], template)
     }
     return path
@@ -104,24 +104,12 @@ function Septambres (lyta, size = 40, thickness = 9) {
     return { w: this.lyta.split(' ').length * (w + thickness), h: h }
   }
 
-  this.toGrid = function (w = 40, h = 40, thickness = 9, color = 'black') {
-    const style = { size: { w: w, h: h }, thickness: 9 }
-    const parts = this.lyta.split(' ')
-    let s = ''
-    for (const id in parts) {
-      s += this.grid(parseInt(id), parts[id], style)
-    }
-    return s
+  this.toGrid = function (w = 40, h = 40, thickness = 9) {
+    return this.lyta.split(' ').reduce((acc, val, id) => { return `${acc}${this.grid(id, val, w, h, thickness)}` }, '')
   }
 
   this.toPath = function (w, h) {
-    const style = { size: { w: w, h: h }, thickness: 9 }
-    const parts = this.lyta.split(' ')
-    let s = ''
-    for (const id in parts) {
-      s += this.glyph(parseInt(id), parts[id], style)
-    }
-    return s
+    return this.lyta.split(' ').reduce((acc, val, id) => { return `${acc}${this.glyph(id, val, w, h, thickness)}` }, '')
   }
 
   this.toSVG = function (w = 40, h = 40, thickness = 9, color = 'black', guide = false) {

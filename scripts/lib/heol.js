@@ -175,8 +175,8 @@ function Heol (input, tables, host) {
       }
       return s.trim()
     },
-    septambres: (item, w, h, thickness) => {
-      return new Septambres(item).toSVG(w, h, thickness)
+    septambres: (item, w, h, thickness = 9, color = 'black', guide = false) => {
+      return new Septambres(item).toSVG(w, h, thickness, color, guide)
     },
     // -----------------------
     // Arvelie
