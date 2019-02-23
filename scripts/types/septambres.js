@@ -4,7 +4,7 @@ function Septambres (lyta, size = 40, thickness = 9) {
   this.lyta = lyta.toLowerCase()
 
   this.template = function (glyph_id, seg_id, grid, style) {
-    let offset = glyph_id * (style.size.w + style.spacing)
+    let offset = glyph_id * (style.size.w + (style.thickness + 1))
     let rect = { w: style.size.w, h: style.size.h }
     let angle = grid === 3 && seg_id > 0 || grid === 4 ? 0.25 : 0.75
 
@@ -65,47 +65,67 @@ function Septambres (lyta, size = 40, thickness = 9) {
     return path
   }
 
+  this.grid = function () {
+    return 'M0,0 L100,100'
+  }
+
   this.glyph = function (id, lyta, style) {
     let path = ''
-    let segs = []
-    if (lyta.length > 0) { segs.push(lyta.substr(0, 2)) }
-    if (lyta.length > 2) { segs.push(lyta.substr(2, 2)) }
-    if (lyta.length > 4) { segs.push(lyta.substr(4, 2)) }
-    if (lyta.length > 6) { segs.push(lyta.substr(6, 2)) }
-
+    const segs = this.getSegs(lyta)
     for (let i in segs) {
       let template = this.template(parseInt(id), parseInt(i), lyta.length / 2, style)
       path += this.draw(segs[i], template)
     }
-
     return path
   }
 
-  this.small = function () {
-    return this.toString({ pad: 5, size: { w: 20, h: 20 }, spacing: 5, thickness: 3.5 })
+  this.getSegs = function (lyta) {
+    const a = []
+    let s = `${lyta}`
+    while (s.length > 0) {
+      a.push(s.substr(0, 2))
+      s = s.substr(2, s.length - 2)
+    }
+    return a
   }
 
-  this.medium = function (weight = 400) {
-    let t = { 200: 3.5, 400: 5.5, 600: 7.5 }
-    return this.toString({ pad: 15, size: { w: 40, h: 40 }, spacing: 10, thickness: t[weight] })
+  this.getBounds = function (w, h, thickness) {
+    return { w: this.lyta.split(' ').length * (w + thickness), h: h }
   }
 
-  this.large = function (weight = 400) {
-    let t = { 200: 3.5, 400: 5.5, 600: 29.5 }
-    return this.toString({ pad: 15, size: { w: 200, h: 200 }, spacing: 0, thickness: t[weight] })
-  }
-
-  this.toString = function (style = { pad: 15, size: { w: 40, h: 40 }, spacing: 10, thickness: 9 }) {
-    style.size = { w: size, h: size }
-    style.thickness = thickness
-    const pad = size * 0.35
-    const parts = this.lyta.split(' ')
-    const path = parts.reduce((acc, part, id) => { return `${acc}${this.glyph(parseInt(id), part, style)}` }, '')
-    const w = parts.length * (style.size.w + style.spacing) - style.spacing
-    const h = style.size.h
+  this.toGrid = function (w = 40, h = 40, thickness = 9, color = 'black') {
+    const bounds = this.getBounds(w, h, 10)
+    const grid = this.grid(w, h)
+    const path = this.toPath(w, h)
     return `
-    <svg style='width:${w}px; height:${h}px; padding:${pad}px' title='${this.lyta}'>
-      <path d='${path}' stroke='black' fill='none' stroke-width='${style.thickness}' stroke-linecap='square' stroke-linejoin='round'/>
+    <svg style='width:${bounds.w}px; height:${bounds.h}px; padding:${thickness / 2}px' title='${this.lyta}'>
+      <path d='${grid}' stroke='${color}' fill='none' stroke-width='1' stroke-linecap='square' stroke-linejoin='round'/>
+      <path d='${path}' stroke='${color}' fill='none' stroke-width='${thickness}' stroke-linecap='square' stroke-linejoin='round'/>
     </svg>`
+  }
+
+  this.toPath = function (w, h) {
+    const style = { size: { w: w, h: h }, thickness: 9 }
+    const parts = this.lyta.split(' ')
+    let s = ''
+    for (const id in parts) {
+      const part = parts[id]
+      const glyph = this.glyph(parseInt(id), part, style)
+      s += glyph
+    }
+    return s
+  }
+
+  this.toSVG = function (w = 40, h = 40, thickness = 9, color = 'black') {
+    const bounds = this.getBounds(w, h, 10)
+    const path = this.toPath(w, h)
+    return `
+    <svg style='width:${bounds.w}px; height:${bounds.h}px; padding:${thickness / 2}px' title='${this.lyta}'>
+      <path d='${path}' stroke='${color}' fill='none' stroke-width='${thickness}' stroke-linecap='square' stroke-linejoin='round'/>
+    </svg>`
+  }
+
+  this.toString = function (w = 40, h = 40, thickness = 9, color = 'black') {
+    return `${this.toSVG(w, h, thickness, color)}`
   }
 }

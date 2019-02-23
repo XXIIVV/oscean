@@ -6,11 +6,17 @@ function Lyta (data = {}) {
   this.english = data.english
   this.childspeak = name || data.name
   this.adultspeak = adultspeak(name || data.name)
+  this.key = this.childspeak.substr(0, 2)
   this.indexes = [this.name]
+  this.septambres = new Septambres(this.childspeak)
   this.bref = `<p><b>${this.name.toTitleCase()}</b>${this.name !== this.adultspeak ? `, or ${this.adultspeak}, ` : ''} is the {(Lietal)} word for \"${this.english}\" in English.</p>`.toCurlic()
 
+  this.glyph = function () {
+    return `M65,155 L65,155 L155,155 M155,65 L155,65 L155,245 M185,155 L185,155 L245,155 M185,185 L185,185 L185,185`
+  }
+
   this.body = function () {
-    return `${deconstruct(this.name)}${new Septambres(this.childspeak)}`
+    return `<p>${deconstruct(this.name)}</p>${this.septambres.toGrid(100, 100, 10, 'white')}`
   }
 
   this.toString = function () {
