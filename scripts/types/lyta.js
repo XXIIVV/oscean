@@ -10,7 +10,7 @@ function Lyta (data = {}) {
   this.bref = `<p><b>${this.name.toTitleCase()}</b>${this.name !== this.adultspeak ? `, or ${this.adultspeak}, ` : ''} is the {(Lietal)} word for \"${this.english}\" in English.</p>`.toCurlic()
 
   this.body = function () {
-    return `${deconstruct(this.name)}`
+    return `${deconstruct(this.name)}${new Septambres(this.childspeak)}`
   }
 
   this.toString = function () {
