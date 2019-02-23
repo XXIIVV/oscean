@@ -5,6 +5,8 @@ RIVEN.lib.Terminal = function TerminalNode (id, rect, ...params) {
 
   this.glyph = 'M65,65 L65,65 L245,65 M65,125 L65,125 L245,125 M65,185 L65,185 L245,185 M65,245 L65,245 L245,245 '
 
+  this.isBooted = false
+
   this.bang = function (q) {
     if (q.substr(0, 1) === '~') { q = q.replace('~', '').trim() }
 
@@ -21,10 +23,10 @@ RIVEN.lib.Terminal = function TerminalNode (id, rect, ...params) {
 
   this.listen = function (q, bang = false) {
     if (q.substr(0, 1) === '~') {
-      if (!Ø('terminal').hasClass('active')) {
-        Ø('terminal').push('maeve', 'Idle.', 500)
-      }
       Ø('terminal').addClass('active')
+      if (this.isBooted === false) {
+        this.boot()
+      }
     } else {
       Ø('terminal').removeClass('active')
     }
@@ -32,6 +34,21 @@ RIVEN.lib.Terminal = function TerminalNode (id, rect, ...params) {
     if (bang === true && q.substr(0, 1) === '~') {
       this.bang(q)
     }
+  }
+
+  this.boot = function () {
+    const forecast = new Forecast(Ø('database').cache.horaire)
+    const score = { ratings: 0, entries: 0 }
+    for (const id in Ø('database').cache.lexicon) {
+      score.ratings += Ø('database').cache.lexicon[id].rating()
+      score.entries += 1
+    }
+
+    this.push('maeve', `Welcome back, the local time is ${arvelie()} ${neralie()}.
+Today's forecast is ${forecast.fh}fh of <b>${forecast.sector} ${forecast.task}</b>.
+Oscean is presently <b>${((score.ratings / score.entries) * 100).toFixed(2)}% Completed</b>.
+You are now <b>${((new Date() - new Date('1986-03-22')) / 31557600000).toFixed(4)} years</b> old.`, 500)
+    this.isBooted = true
   }
 
   this.push = function (author, txt, delay = 0) {
@@ -51,32 +68,6 @@ RIVEN.lib.Terminal = function TerminalNode (id, rect, ...params) {
   {
     help: (q) => {
       return 'Available commands:\n<ul>' + Object.keys(this.services).reduce((acc, val) => { return acc + `<li><i>${val}</i></li>` }, '') + '</ul>'
-    },
-
-    time: (q) => {
-      return `The local time is <b>${arvelie()} ${neralie()}</b>.`
-    },
-
-    age: (q) => {
-      return `Devine is <b>${((new Date() - new Date('1986-03-22')) / 31557600000).toFixed(4)} years</b> old.`
-    },
-
-    status: (q) => {
-      const score = { ratings: 0, entries: 0, average: 0, issues: 0 }
-      for (const id in Ø('database').cache.lexicon) {
-        score.ratings += Ø('database').cache.lexicon[id].rating()
-        score.entries += 1
-      }
-      return `Oscean is <b>${((score.ratings / score.entries) * 100).toFixed(2)}% Completed</b>.`
-    },
-
-    forecast: (q) => {
-      const log = new Forecast(Ø('database').cache.horaire)
-      return `Forecasted task is ${log.task}(${log.sector}), for a maximum of ${log.fh}fh.`
-    },
-
-    hello: (q) => {
-      return `Hi.`
     },
 
     atog: (q) => {
