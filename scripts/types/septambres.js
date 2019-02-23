@@ -12,16 +12,16 @@ function Septambres (lyta, size = 40, thickness = 9) {
       rect = { x: offset, y: 0, w: style.size.w, h: style.size.h }
     } else if (grid === 2) {
       if (seg_id === 0) { rect = { x: offset, y: 0, w: (style.size.w), h: (style.size.h / 2) } }
-      if (seg_id === 1) { rect = { x: offset, y: (style.size.w / 2), w: (style.size.w), h: (style.size.h / 2) } }
+      if (seg_id === 1) { rect = { x: offset, y: (style.size.h / 2), w: (style.size.w), h: (style.size.h / 2) } }
     } else if (grid === 3) {
       if (seg_id === 0) { rect = { x: offset, y: 0, w: (style.size.w), h: (style.size.h / 2) } }
-      if (seg_id === 1) { rect = { x: offset, y: (style.size.w / 2), w: (style.size.w / 2), h: (style.size.h / 2) } }
-      if (seg_id === 2) { rect = { x: offset + (style.size.w / 2), y: (style.size.w / 2), w: (style.size.w / 2), h: (style.size.h / 2) } }
+      if (seg_id === 1) { rect = { x: offset, y: (style.size.h / 2), w: (style.size.w / 2), h: (style.size.h / 2) } }
+      if (seg_id === 2) { rect = { x: offset + (style.size.w / 2), y: (style.size.h / 2), w: (style.size.w / 2), h: (style.size.h / 2) } }
     } else if (grid === 4) {
       if (seg_id === 0) { rect = { x: offset, y: 0, w: (style.size.w / 2), h: (style.size.h / 2) } }
       if (seg_id === 1) { rect = { x: offset + (style.size.w / 2), y: 0, w: (style.size.w / 2), h: (style.size.h / 2) } }
-      if (seg_id === 2) { rect = { x: offset, y: (style.size.w / 2), w: (style.size.w / 2), h: (style.size.h / 2) } }
-      if (seg_id === 3) { rect = { x: offset + (style.size.w / 2), y: (style.size.w / 2), w: (style.size.w / 2), h: (style.size.h / 2) } }
+      if (seg_id === 2) { rect = { x: offset, y: (style.size.h / 2), w: (style.size.w / 2), h: (style.size.h / 2) } }
+      if (seg_id === 3) { rect = { x: offset + (style.size.w / 2), y: (style.size.h / 2), w: (style.size.w / 2), h: (style.size.h / 2) } }
     } else {
       console.warn('Unknown grid', grid)
     }
@@ -65,8 +65,19 @@ function Septambres (lyta, size = 40, thickness = 9) {
     return path
   }
 
-  this.grid = function () {
-    return 'M0,0 L100,100'
+  this.grid = function (id, lyta, style) {
+    let path = ''
+    const segs = this.getSegs(lyta)
+    for (let i in segs) {
+      let template = this.template(parseInt(id), parseInt(i), lyta.length / 2, style)
+      let peg = { x: 5, y: 5 }
+      path += `M${template.TL.x},${template.TL.y} L${template.TR.x},${template.TR.y} L${template.BR.x},${template.BR.y} L${template.BL.x},${template.BL.y} Z `
+      path += `M${template.TC.x},${template.TC.y} L${template.TC.x},${template.TC.y + peg.y} `
+      path += `M${template.BC.x},${template.BC.y} L${template.BC.x},${template.BC.y - peg.y} `
+      path += `M${template.CL.x},${template.CL.y} L${template.CL.x + peg.x},${template.CL.y} `
+      path += `M${template.CR.x},${template.CR.y} L${template.CR.x - peg.x},${template.CR.y} `
+    }
+    return path
   }
 
   this.glyph = function (id, lyta, style) {
@@ -94,14 +105,13 @@ function Septambres (lyta, size = 40, thickness = 9) {
   }
 
   this.toGrid = function (w = 40, h = 40, thickness = 9, color = 'black') {
-    const bounds = this.getBounds(w, h, 10)
-    const grid = this.grid(w, h)
-    const path = this.toPath(w, h)
-    return `
-    <svg style='width:${bounds.w}px; height:${bounds.h}px; padding:${thickness / 2}px' title='${this.lyta}'>
-      <path d='${grid}' stroke='${color}' fill='none' stroke-width='1' stroke-linecap='square' stroke-linejoin='round'/>
-      <path d='${path}' stroke='${color}' fill='none' stroke-width='${thickness}' stroke-linecap='square' stroke-linejoin='round'/>
-    </svg>`
+    const style = { size: { w: w, h: h }, thickness: 9 }
+    const parts = this.lyta.split(' ')
+    let s = ''
+    for (const id in parts) {
+      s += this.grid(parseInt(id), parts[id], style)
+    }
+    return s
   }
 
   this.toPath = function (w, h) {
@@ -109,19 +119,17 @@ function Septambres (lyta, size = 40, thickness = 9) {
     const parts = this.lyta.split(' ')
     let s = ''
     for (const id in parts) {
-      const part = parts[id]
-      const glyph = this.glyph(parseInt(id), part, style)
-      s += glyph
+      s += this.glyph(parseInt(id), parts[id], style)
     }
     return s
   }
 
-  this.toSVG = function (w = 40, h = 40, thickness = 9, color = 'black') {
+  this.toSVG = function (w = 40, h = 40, thickness = 9, color = 'black', guide = false) {
     const bounds = this.getBounds(w, h, 10)
-    const path = this.toPath(w, h)
     return `
     <svg style='width:${bounds.w}px; height:${bounds.h}px; padding:${thickness / 2}px' title='${this.lyta}'>
-      <path d='${path}' stroke='${color}' fill='none' stroke-width='${thickness}' stroke-linecap='square' stroke-linejoin='round'/>
+      <path d='${this.toPath(w, h)}' stroke='${color}' fill='none' stroke-width='${thickness}' stroke-linecap='square' stroke-linejoin='round'/>
+      ${guide === true ? `<path d='${this.toGrid(w, h)}' stroke='red' fill='none' stroke-width='1' stroke-linecap='square' stroke-linejoin='square'/>` : ''}
     </svg>`
   }
 
