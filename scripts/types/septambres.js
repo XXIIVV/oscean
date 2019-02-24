@@ -26,7 +26,7 @@ function Septambres (lyta, size = 40, thickness = 9) {
       console.warn('Unknown grid', grid)
     }
 
-    return {
+    const t = {
       TL: { x: rect.x, y: rect.y },
       TC: { x: rect.x + (rect.w / 2), y: rect.y },
       TR: { x: rect.x + rect.w, y: rect.y },
@@ -36,33 +36,124 @@ function Septambres (lyta, size = 40, thickness = 9) {
       BL: { x: rect.x, y: rect.y + rect.h },
       BC: { x: rect.x + (rect.w / 2), y: rect.y + rect.h },
       BR: { x: rect.x + rect.w, y: rect.y + rect.h },
-      PUSH: { x: thickness * angle, y: thickness * angle }
+      PUSH: { x: thickness * angle, y: thickness * angle },
+      TYPE: rect.w === rect.h ? 'square' : rect.w > rect.h ? 'horizontal' : 'vertical'
     }
+    for (let id in t) {
+      if (id === 'TYPE') { continue }
+      t[id] = { x: parseInt(t[id].x), y: parseInt(t[id].y) }
+    }
+    return t
   }
 
-  this.draw = function (seg, template) {
-    let html = ''
-    let consonant = seg.substr(0, 1)
-    let vowel = seg.substr(1, 1)
-    let path = ''
-    let x = (consonant === 'd' || consonant === 'l' || consonant === 'f') ? 1 : (consonant === 't' || consonant === 's' || consonant === 'v') ? 0 : -1
-    let y = (consonant === 'k' || consonant === 't' || consonant === 'd') ? 1 : (consonant === 'r' || consonant === 's' || consonant === 'l') ? 0 : -1
-    // Int
-    for (let id in template) {
-      template[id] = { x: parseInt(template[id].x), y: parseInt(template[id].y) }
+  this.consonant = function (consonant, vowel, template, thickness) {
+    switch (consonant) {
+      case 'k':
+        return `M${template.CL.x},${template.CL.y} L${template.TL.x},${template.TL.y} L${template.TR.x},${template.TR.y}`
+      case 't':
+        return `M${template.TL.x},${template.TL.y} L${template.TR.x},${template.TR.y}`
+      case 'd':
+        return `M${template.TL.x},${template.TL.y} L${template.TR.x},${template.TR.y} L${template.CR.x},${template.CR.y}`
+      case 'r':
+        return `M${template.TL.x},${template.TL.y} L${template.BL.x},${template.BL.y}`
+      case 's':
+        return `M${template.TC.x},${template.TC.y} L${template.BC.x},${template.BC.y}`
+      case 'l':
+        return `M${template.TR.x},${template.TR.y} L${template.BR.x},${template.BR.y}`
+      case 'j':
+        return `M${template.CL.x},${template.CL.y} L${template.BL.x},${template.BL.y} L${template.BR.x},${template.BR.y}`
+      case 'v':
+        return `M${template.BL.x},${template.BL.y} L${template.BR.x},${template.BR.y}`
+      case 'f':
+        return `M${template.BL.x},${template.BL.y} L${template.BR.x},${template.BR.y} L${template.CR.x},${template.CR.y}`
     }
-    // Consonant
-    if (consonant === 'k') { path += `M${template.CL.x},${template.CL.y} L${template.TL.x},${template.TL.y} L${template.TR.x},${template.TR.y} ` } else if (consonant === 't') { path += `M${template.TL.x},${template.TL.y} L${template.TR.x},${template.TR.y} M${template.TC.x},${template.TC.y} L${template.CC.x},${template.CC.y} ` } else if (consonant === 'd') { path += `M${template.TL.x},${template.TL.y} L${template.TR.x},${template.TR.y} L${template.CR.x},${template.CR.y} ` } else if (consonant === 'r') { path += `M${template.TL.x},${template.TL.y} L${template.BL.x},${template.BL.y} M${template.CL.x},${template.CL.y} L${template.CC.x},${template.CC.y} ` } else if (consonant === 's') { path += `M${template.TC.x},${template.TC.y} L${template.BC.x},${template.BC.y} ` } else if (consonant === 'l') { path += `M${template.TR.x},${template.TR.y} L${template.BR.x},${template.BR.y} M${template.CC.x},${template.CC.y} L${template.CR.x},${template.CR.y} ` } else if (consonant === 'j') { path += `M${template.CL.x},${template.CL.y} L${template.BL.x},${template.BL.y} L${template.BR.x},${template.BR.y} ` } else if (consonant === 'v') { path += `M${template.BL.x},${template.BL.y} L${template.BR.x},${template.BR.y} M${template.CC.x},${template.CC.y} L${template.BC.x},${template.BC.y} ` } else if (consonant === 'f') { path += `M${template.BL.x},${template.BL.y} L${template.BR.x},${template.BR.y} L${template.CR.x},${template.CR.y} ` } else if (consonant === '-') { } else { console.warn('Missing consonant', consonant) }
-    // Vowel
-    if (vowel === 'i') {
-      if (consonant === '-') { path += `M${template.CC.x},${template.CC.y} L${template.CC.x - template.PUSH.x},${template.CC.y} L${template.BL.x + template.PUSH.x},${template.BL.y} L${template.BL.x},${template.BL.y} ` } else if (y === -1 || x === -1 && y <= 0) { path += `M${template.CC.x},${template.CC.y} L${template.CC.x + template.PUSH.x},${template.CC.y} L${template.TR.x - template.PUSH.x},${template.TR.y} L${template.TR.x},${template.TR.y} ` } else { path += `M${template.CC.x},${template.CC.y} L${template.CC.x - template.PUSH.x},${template.CC.y} L${template.BL.x + template.PUSH.x},${template.BL.y} L${template.BL.x},${template.BL.y} ` }
-    } else if (vowel === 'o') {
-      if (consonant === '-') { path += `M${template.CC.x},${template.CC.y} L${template.CC.x - template.PUSH.x},${template.CC.y} L${template.TL.x + template.PUSH.x},${template.TL.y} L${template.TL.x},${template.TL.y} ` } else if (y === -1 || x === 1 && y === 0) { path += `M${template.CC.x},${template.CC.y} L${template.CC.x - template.PUSH.x},${template.CC.y} L${template.TL.x + template.PUSH.x},${template.TL.y} L${template.TL.x},${template.TL.y} ` } else { path += `M${template.CC.x},${template.CC.y} L${template.CC.x + template.PUSH.x},${template.CC.y} L${template.BR.x - template.PUSH.x},${template.BR.y} L${template.BR.x},${template.BR.y} ` }
-    } else if (vowel === 'a') {
-      if (consonant === '-') { path += `M${template.CC.x},${template.CC.y} L${template.CL.x},${template.CL.y} ` } else if (consonant === 'k' || consonant === 'r' || consonant === 'j' || consonant === 't') { path += `M${template.CC.x},${template.CC.y} L${template.CR.x},${template.CR.y} ` } else if (consonant === 'd' || consonant === 'l' || consonant === 'f' || consonant === 'v') { path += `M${template.CC.x},${template.CC.y} L${template.CL.x},${template.CL.y} ` } else { path += `M${template.CL.x},${template.CL.y} L${template.CR.x},${template.CR.y} ` }
-    } else if (vowel === '-' || vowel === 'y') { } else { console.warn('Missing vowel', vowel) }
+    console.warn(`Unknown consonant: ${consonant}`)
+    return ''
+  }
 
-    return path
+  this.vowel = function (consonant, vowel, t, thickness) {
+    if (consonant === 'k') {
+      switch (vowel) {
+        case 'y': return ''
+        case 'i': return curve('BL', 'CC', t)
+        case 'a': return stroke('CC', 'CR', t)
+        case 'o': return curve('CC', 'BR', t)
+      }
+    }
+
+    if (consonant === 't') {
+      switch (vowel) {
+        case 'y': return stroke('TC', 'CC', t)
+        case 'i': return stroke('BL', 'BC', t) + curve('BC', 'CR', t, false)
+        case 'a': return stroke('TC', 'BC', t)
+        case 'o': return stroke('CL', 'CC', t) + curve('CC', 'BR', t, false)
+      }
+    }
+
+    if (consonant === 'd') {
+      switch (vowel) {
+        case 'y': return ''
+        case 'i': return curve('BL', 'CC', t)
+        case 'a': return stroke('CL', 'CC', t)
+        case 'o': return curve('CC', 'BR', t)
+      }
+    }
+
+    if (consonant === 'r') {
+      switch (vowel) {
+        case 'y': return stroke('CL', 'CC', t)
+        case 'i': return stroke('CL', 'CC', t) + curve('CC', 'TR', t, false)
+        case 'a': return stroke('CL', 'CR', t)
+        case 'o': return stroke('CL', 'CC', t) + curve('CC', 'BR', t, false)
+      }
+    }
+
+    if (consonant === 'l') {
+      switch (vowel) {
+        case 'y': return stroke('CR', 'CC', t)
+        case 'i': return curve('BL', 'CC', t) + stroke('CC', 'CR', t, false)
+        case 'a': return stroke('CR', 'CL', t)
+        case 'o': return curve('TL', 'CC', t) + stroke('CC', 'CR', t, false)
+      }
+    }
+
+    if (consonant === 's') {
+      switch (vowel) {
+        case 'y': return ''
+        case 'i': return stroke('TR', 'CR', t) + stroke('CR', 'CC', t, false)
+        case 'a': return stroke('CL', 'CR', t)
+        case 'o': return stroke('CC', 'CL', t) + stroke('CL', 'BL', t, false)
+      }
+    }
+
+    if (consonant === 'j') {
+      switch (vowel) {
+        case 'y': return ' '
+        case 'i': return curve('CC', 'TR', t)
+        case 'a': return stroke('CC', 'CR', t)
+        case 'o': return curve('TL', 'CC', t)
+      }
+    }
+
+    if (consonant === 'v') {
+      switch (vowel) {
+        case 'y': return stroke('BC', 'CC', t)
+        case 'i': return curve('CL', 'CC', t, true, true) + curve('CC', 'TR', t, false)
+        case 'a': return stroke('BC', 'TC', t)
+        case 'o': return curve('TL', 'TC', t, true, true) + curve('TC', 'CR', t, false)
+      }
+    }
+
+    if (consonant === 'f') {
+      switch (vowel) {
+        case 'y': return ' '
+        case 'i': return curve('CC', 'TR', t)
+        case 'a': return stroke('CC', 'CL', t)
+        case 'o': return curve('TL', 'CC', t)
+      }
+    }
+    console.warn(`Unknown vowel: ${vowel}`)
+    return ''
   }
 
   this.grid = function (id, lyta, w, h, thickness) {
@@ -84,8 +175,11 @@ function Septambres (lyta, size = 40, thickness = 9) {
     let path = ''
     const segs = this.getSegs(lyta)
     for (let i in segs) {
-      let template = this.template(parseInt(id), parseInt(i), lyta.length / 2, w, h, thickness)
-      path += this.draw(segs[i], template)
+      const seg = segs[i]
+      const template = this.template(parseInt(id), parseInt(i), lyta.length / 2, w, h, thickness)
+      const consonant = seg.substr(0, 1)
+      const vowel = seg.substr(1, 1)
+      path += this.consonant(consonant, vowel, template, thickness) + ' ' + this.vowel(consonant, vowel, template, thickness) + ' '
     }
     return path
   }
@@ -101,8 +195,10 @@ function Septambres (lyta, size = 40, thickness = 9) {
   }
 
   this.getBounds = function (w, h, thickness) {
-    return { w: this.lyta.split(' ').length * (w + thickness), h: h }
+    return { w: this.lyta.split(' ').length * (w + thickness) - thickness, h: h }
   }
+
+  // Outputs
 
   this.toGrid = function (w = 40, h = 40, thickness = 9) {
     return this.lyta.split(' ').reduce((acc, val, id) => { return `${acc}${this.grid(id, val, w, h, thickness)}` }, '')
@@ -123,5 +219,16 @@ function Septambres (lyta, size = 40, thickness = 9) {
 
   this.toString = function (w = 40, h = 40, thickness = 9, color = 'black') {
     return `${this.toSVG(w, h, thickness, color)}`
+  }
+
+  // Tools
+
+  function stroke (from, to, template, init = true) {
+    return `${init === true ? 'M' : 'L'}${template[from].x},${template[from].y} L${template[to].x},${template[to].y}`
+  }
+
+  function curve (from, to, template, init = true) {
+    const push = (template.BC.x - template.BL.x) / 4
+    return `${init === true ? 'M' : 'L'}${template[from].x},${template[from].y} L${template[from].x + push},${template[from].y} L${template[to].x - push},${template[to].y} L${template[to].x},${template[to].y}`
   }
 }
