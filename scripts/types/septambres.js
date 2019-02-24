@@ -161,7 +161,7 @@ function Septambres (lyta, size = 40, thickness = 9) {
     const segs = this.getSegs(lyta)
     for (let i in segs) {
       let template = this.template(parseInt(id), parseInt(i), lyta.length / 2, w, h, thickness)
-      let peg = thickness
+      let peg = thickness / 2
       path += `M${template.TL.x},${template.TL.y} L${template.TR.x},${template.TR.y} L${template.BR.x},${template.BR.y} L${template.BL.x},${template.BL.y} Z `
       path += `M${template.TC.x},${template.TC.y} L${template.TC.x},${template.TC.y + peg} `
       path += `M${template.BC.x},${template.BC.y} L${template.BC.x},${template.BC.y - peg} `
