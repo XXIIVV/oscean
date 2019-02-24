@@ -161,12 +161,12 @@ function Septambres (lyta, size = 40, thickness = 9) {
     const segs = this.getSegs(lyta)
     for (let i in segs) {
       let template = this.template(parseInt(id), parseInt(i), lyta.length / 2, w, h, thickness)
-      let peg = { x: 5, y: 5 }
+      let peg = thickness
       path += `M${template.TL.x},${template.TL.y} L${template.TR.x},${template.TR.y} L${template.BR.x},${template.BR.y} L${template.BL.x},${template.BL.y} Z `
-      path += `M${template.TC.x},${template.TC.y} L${template.TC.x},${template.TC.y + peg.y} `
-      path += `M${template.BC.x},${template.BC.y} L${template.BC.x},${template.BC.y - peg.y} `
-      path += `M${template.CL.x},${template.CL.y} L${template.CL.x + peg.x},${template.CL.y} `
-      path += `M${template.CR.x},${template.CR.y} L${template.CR.x - peg.x},${template.CR.y} `
+      path += `M${template.TC.x},${template.TC.y} L${template.TC.x},${template.TC.y + peg} `
+      path += `M${template.BC.x},${template.BC.y} L${template.BC.x},${template.BC.y - peg} `
+      path += `M${template.CL.x},${template.CL.y} L${template.CL.x + peg},${template.CL.y} `
+      path += `M${template.CR.x},${template.CR.y} L${template.CR.x - peg},${template.CR.y} `
     }
     return path
   }
@@ -212,8 +212,8 @@ function Septambres (lyta, size = 40, thickness = 9) {
     const bounds = this.getBounds(w, h, 10)
     return `
     <svg style='width:${bounds.w}px; height:${bounds.h}px; padding:${thickness / 2}px' title='${this.lyta}'>
+      ${guide === true ? `<path d='${this.toGrid(w, h)}' stroke='#ccc' fill='none' stroke-width='1' stroke-linecap='square' stroke-linejoin='square'/>` : ''}
       <path d='${this.toPath(w, h)}' stroke='${color}' fill='none' stroke-width='${thickness}' stroke-linecap='square' stroke-linejoin='round'/>
-      ${guide === true ? `<path d='${this.toGrid(w, h)}' stroke='red' fill='none' stroke-width='1' stroke-linecap='square' stroke-linejoin='square'/>` : ''}
     </svg>`
   }
 

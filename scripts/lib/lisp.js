@@ -57,7 +57,7 @@ function Lisp (input, lib, tables, host) {
       return context.get(input.value)
     } else if (input.type === 'keyword') {
       return host[input.value] ? host[input.value] : null
-    } else if (input.type === 'number' || input.type === 'string') {
+    } else if (input.type === 'number' || input.type === 'string' || input.type === 'bool') {
       return input.value
     }
   }
@@ -69,6 +69,8 @@ function Lisp (input, lib, tables, host) {
       return { type: 'string', value: input.slice(1, -1) }
     } else if (input[0] === ':') {
       return { type: 'keyword', value: input.substr(1, input.length - 1) }
+    } else if (input === 'true' || input === 'false') {
+      return { type: 'bool', value: input === 'true' }
     } else {
       return { type: 'identifier', value: input }
     }
