@@ -170,6 +170,14 @@ function Heol (input, tables, host) {
       }
       return s.trim()
     },
+    deconstruct: (item) => {
+      const res = Ø('saldota').find(item)
+      if (!res) { return 'Unknown Lyta: ' + item }
+      return `<table><tr>${res.parts().reduce((acc, childspeak) => {
+        const l = Ø('saldota').find(childspeak)
+        return `${acc}<td>${l.septambres}<br />${l.adultspeak}<br />${l.english}</td>`
+      }, '')}</tr></table>`
+    },
     septambres: (item, w, h, thickness = 9, color = 'black', guide = false) => {
       return new Septambres(item).toSVG(w, h, thickness, color, guide)
     },

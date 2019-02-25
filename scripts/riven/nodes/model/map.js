@@ -104,6 +104,6 @@ RIVEN.lib.Map = function MapNode (id, rect) {
       }
     }
     this.is_mapped = true
-    console.info(this.id, `Mapped ${tables.horaire.length} logs, ${count.links} links, ${count.issues} issues, ${count.events} events , and ${count.diaries} diaries to ${Object.keys(tables.lexicon).length} terms, in ${(performance.now() - time).toFixed(2)}ms.`)
+    console.info(this.id, `Mapped ${tables.horaire.length} logs, ${count.links} links, ${count.issues} issues, ${count.events} events, and ${count.diaries} diaries to ${Object.keys(tables.lexicon).length} terms, in ${(performance.now() - time).toFixed(2)}ms.`)
   }
 }

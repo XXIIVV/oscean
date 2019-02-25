@@ -6,10 +6,22 @@ function Lyta (data = {}) {
   this.english = data.english
   this.childspeak = name || data.name
   this.adultspeak = adultspeak(name || data.name)
-  this.key = this.childspeak.substr(0, 2)
+  this.type = this.childspeak.substr(0, 2)
+  this.key = this.childspeak.substr(0, this.childspeak.length - 2)
   this.indexes = [this.name]
   this.septambres = new Septambres(this.childspeak)
   this.bref = `<b>${this.name.toTitleCase()}</b>${this.name !== this.adultspeak ? `, or ${this.adultspeak}, ` : ''} is the {(Lietal)} word for \"${this.english}\" in English.`.toCurlic()
+
+  this.parts = function (size = 2) {
+    const chunks = []
+    let target = `${this.childspeak}`
+    let from = size
+    while (from < target.length + size) {
+      chunks.push(target.substr(target.length - from, from))
+      from += size
+    }
+    return chunks
+  }
 
   this.glyph = function () {
     return `M65,155 L65,155 L155,155 M155,65 L155,65 L155,245 M185,155 L185,155 L245,155 M185,185 L185,185 L185,185`
@@ -26,23 +38,32 @@ function Lyta (data = {}) {
 }
 
 function permutate (key) {
-  return `<table><tr><td>${key}</td></tr></table>`
-}
-
-function deconstruct (target) {
-  const chunks = []
-  const size = 2
-  while (target.length > 0) {
-    chunks.push(target.substr(0, size))
-    target = target.substr(size, target.length - size)
+  const a = [['k', 't', 'd'], ['r', 's', 'l'], ['j', 'v', 'f']]
+  const v = ['y', 'i', 'a', 'o']
+  let html = ''
+  for (const ai in a) {
+    const b = a[ai]
+    html += `<tr>`
+    for (const bi in b) {
+      const consonant = b[bi]
+      html += `<td>`
+      for (const vi in v) {
+        const vowel = v[vi]
+        const name = `${key}${consonant}${vowel}`
+        const lyta = new Lyta({ name: name })
+        const result = Ø('saldota').find(lyta.childspeak)
+        html += `<b>${lyta.adultspeak}</b>: ${result ? result.english : '<i>--</i>'}<br />`
+      }
+      html += `</td>`
+    }
+    html += `</tr>`
   }
-  return `${chunks}`
+  return `<table>${html}</table>`
 }
 
 function adultspeak (cs) {
   const childspeak = cs.toLowerCase()
   const vowels = { 'a': 'ä', 'e': 'ë', 'i': 'ï', 'o': 'ö', 'u': 'ü', 'y': 'ÿ' }
-
   if (childspeak.length === 2) {
     const c = childspeak.substr(0, 1)
     const v = childspeak.substr(1, 1)
@@ -53,7 +74,6 @@ function adultspeak (cs) {
     const v1 = childspeak.substr(1, 1)
     const c2 = childspeak.substr(2, 1)
     const v2 = childspeak.substr(3, 1)
-
     // Complex
     if (v1 === 'i' && v2 === 'a' && c1 === c2) {
       return 'e' + c1
@@ -64,7 +84,6 @@ function adultspeak (cs) {
     } else if (v1 === 'a' && v2 === 'o') {
       return c1 + 'u' + c2
     }
-
     // Basics
     if (c1 === c2 && v1 === v2) {
       return vowels[v1] + c1
@@ -81,41 +100,4 @@ function adultspeak (cs) {
     return adultspeak(childspeak.substr(0, 4)) + adultspeak(childspeak.substr(4, 4))
   }
   return childspeak
-}
-
-function Construction (str) {
-  this.str = str
-
-  this.prepare = function (str) {
-    return str.replace(/\'/g, " ' ").replace(/\,/g, ' , ').replace(/\?/g, ' ? ').replace(/\!/g, ' ! ')
-  }
-
-  this.complete = function (html) {
-    return html.replace(/ \' /g, "'").replace(/ \, /g, ', ').replace(/ \? /g, '? ').replace(/ \! /g, '! ').trim()
-  }
-
-  this.find = function (target, adultspeak = true) {
-    const d = Ø('database').cache.saldota
-    for (const id in d) {
-      if (d[id].english === target.toLowerCase()) {
-        return adultspeak ? d[id].adultspeak : d[id].childspeak
-      }
-    }
-    return target
-  }
-
-  this.to_septambres = function () {
-    return new Septambres(this.toString(false))
-  }
-
-  this.toString = function (adultspeak = true) {
-    let html = ''
-    const str = this.prepare(this.str)
-    const parts = str.split(' ')
-    for (const id in parts) {
-      const part = parts[id]
-      html += `${this.find(part, adultspeak)} `
-    }
-    return this.complete(html)
-  }
 }
