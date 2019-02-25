@@ -148,16 +148,11 @@ function Heol (input, tables, host) {
       return new Lyta({ name: item }).adultspeak
     },
     lien: (...items) => {
-      const dict = Ø('database').cache.saldota
-      const keys = dict.map((val) => { return val.name })
       let s = ''
       for (const id in items) {
         const key = items[id].toLowerCase()
-        const pos = keys.indexOf(key)
-        if (pos > -1) {
-          const result = dict[pos]
-          s += (result ? result.english : 'err:unknown') + ' '
-        }
+        const result = Ø('saldota').find(key)
+        s += (result ? result.english : 'err:unknown') + ' '
       }
       return s.trim()
     },

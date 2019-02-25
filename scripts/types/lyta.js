@@ -16,13 +16,17 @@ function Lyta (data = {}) {
   }
 
   this.body = function () {
-    return `${this.septambres.toSVG(100, 100, 23, 'white', true)}`
+    return `${permutate(this.key)}${this.septambres.toSVG(100, 100, 23, 'white', true)}`
   }
 
   this.toString = function () {
     const en = this.english
     return `<p>{*${this.name.toTitleCase()}*}${this.name.toLowerCase() !== this.adultspeak.toLowerCase() ? ', or ' + this.adultspeak.toTitleCase() : ''} is a {(Lietal)} word${en ? ' that translates to \"' + en + '\" in {(English)}' : ''}.</p>`.toCurlic()
   }
+}
+
+function permutate (key) {
+  return `<table><tr><td>${key}</td></tr></table>`
 }
 
 function deconstruct (target) {

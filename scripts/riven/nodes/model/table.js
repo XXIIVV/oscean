@@ -14,4 +14,26 @@ RIVEN.lib.Table = function TableNode (id, rect, parser, Type) {
 
     return this.cache
   }
+
+  this.find = function (q) {
+    if (this.cache.constructor === Array) {
+      if (!this.indexes) {
+        this.indexes = this.assoc(this.cache)
+      }
+      return this.indexes[q.toUpperCase()]
+    } else {
+      return this.cache[q.toUpperCase()]
+    }
+  }
+
+  this.assoc = function (a) {
+    const time = performance.now()
+    const h = {}
+    for (const id in a) {
+      if (!a[id].name) { continue }
+      h[a[id].name.toUpperCase()] = a[id]
+    }
+    console.info(`table-${id}`, `Built special indexes in ${(performance.now() - time).toFixed(2)}ms.`)
+    return h
+  }
 }
