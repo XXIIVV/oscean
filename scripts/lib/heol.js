@@ -165,7 +165,9 @@ function Heol (input, tables, host) {
         const pos = keys.indexOf(key)
         if (pos > -1) {
           const result = dict[pos]
-          s += (result ? result.adultspeak : 'err:unknown') + ' '
+          s += (result ? result.adultspeak : `err[${key}]`) + ' '
+        } else {
+          s += `err[${key}]` + ' '
         }
       }
       return s.trim()
@@ -175,7 +177,7 @@ function Heol (input, tables, host) {
       if (!res) { return 'Unknown Lyta: ' + item }
       return `<table><tr>${res.parts().reduce((acc, childspeak) => {
         const l = Ø('saldota').find(childspeak)
-        return `${acc}<td>${l.septambres}<br />${l.adultspeak}<br />${l.english}</td>`
+        return `${acc}<td>${l.septambres}<br />${l.adultspeak}<br />${item === l.childspeak ? '<b>' + l.english + '</b>' : l.english}</td>`
       }, '')}</tr></table>`
     },
     septambres: (item, w, h, thickness = 9, color = 'black', guide = false) => {
