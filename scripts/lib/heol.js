@@ -180,6 +180,30 @@ function Heol (input, tables, host) {
         return `${acc}<td>${l.septambres}<br />${l.adultspeak}<br />${item === l.childspeak ? '<b>' + l.english + '</b>' : l.english}</td>`
       }, '')}</tr></table>`
     },
+    saldota: (q) => {
+      const c = ['k', 't', 'd', 'r', 's', 'l', 'j', 'v', 'f']
+      const v = ['y', 'i', 'a', 'o']
+      const e = []
+      // Elementary
+      for (const ci in c) {
+        for (const vi in v) {
+          e.push(`${c[ci]}${v[vi]}`)
+        }
+      }
+      // Permutations
+      const a = []
+      for (const ai1 in e) {
+        for (const ai2 in e) {
+          a.push(`${e[ai1]}${e[ai2]}`)
+        }
+      }
+      // Draw
+      const html = a.reduce((acc, val) => {
+        const res = Ø('saldota').find(val)
+        return res ? `${acc}<li><b>${res.adultspeak.toTitleCase()}</b>: ${res.english}</li>` : acc
+      }, '')
+      return `<ul class='col3'>${html}</ul>`
+    },
     septambres: (item, w, h, thickness = 9, color = 'black', guide = false) => {
       return new Septambres(item).toSVG(w, h, thickness, color, guide)
     },
