@@ -152,7 +152,7 @@ function Heol (input, tables, host) {
       for (const id in items) {
         const key = items[id].toLowerCase()
         const result = Ø('saldota').find(key)
-        s += (result ? result.english : 'err:unknown') + ' '
+        s += (result ? result.english : `err[${key}]`) + ' '
       }
       return s.trim()
     },
@@ -177,7 +177,7 @@ function Heol (input, tables, host) {
       if (!res) { return 'Unknown Lyta: ' + item }
       return `<table><tr>${res.parts().reduce((acc, childspeak) => {
         const l = Ø('saldota').find(childspeak)
-        return `${acc}<td>${l.septambres}<br />${l.adultspeak}<br />${item === l.childspeak ? '<b>' + l.english + '</b>' : l.english}</td>`
+        return l ? `${acc}<td>${l.lytadota}<br />${l.adultspeak}<br />${item === l.childspeak ? '<b>' + l.english + '</b>' : l.english}</td>` : `${acc}err[${item}]`
       }, '')}</tr></table>`
     },
     saldota: (q) => {
@@ -204,8 +204,8 @@ function Heol (input, tables, host) {
       }, '')
       return `<ul class='col3'>${html}</ul>`
     },
-    septambres: (item, w, h, thickness = 9, color = 'black', guide = false) => {
-      return new Septambres(item).toSVG(w, h, thickness, color, guide)
+    lytadota: (item, w, h, thickness = 9, color = 'black', guide = false) => {
+      return new Lytadota(item).toSVG(w, h, thickness, color, guide)
     },
     // -----------------------
     // Arvelie

@@ -1,6 +1,6 @@
 'use strict'
 
-function Septambres (lyta, size = 40, thickness = 9) {
+function Lytadota (lyta, size = 40, thickness = 9) {
   this.lyta = lyta.toLowerCase()
 
   this.template = function (glyph_id, seg_id, grid, w, h, thickness) {

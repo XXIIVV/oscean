@@ -9,7 +9,7 @@ function Lyta (data = {}) {
   this.type = this.childspeak.substr(0, 2)
   this.key = this.childspeak.substr(0, this.childspeak.length - 2)
   this.indexes = [this.name]
-  this.septambres = new Septambres(this.childspeak)
+  this.lytadota = new Lytadota(this.childspeak)
   this.bref = `<b>${this.name.toTitleCase()}</b>${this.name !== this.adultspeak ? `, or ${this.adultspeak}, ` : ''} is the {(Lietal)} word for \"${this.english}\" in English.`.toCurlic()
 
   this.parts = function (size = 2) {
@@ -28,7 +28,7 @@ function Lyta (data = {}) {
   }
 
   this.body = function () {
-    return `${permutate(this.key)}${this.septambres.toSVG(100, 100, 23, 'white', true)}`
+    return `${permutate(this.key)}${this.lytadota.toSVG(100, 100, 23, 'white', true)}`
   }
 
   this.toString = function () {
