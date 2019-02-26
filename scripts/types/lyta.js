@@ -61,43 +61,33 @@ function permutate (key) {
   return `<table>${html}</table>`
 }
 
-function adultspeak (cs) {
+function adultspeak (cs, secondary = false) {
   const childspeak = cs.toLowerCase()
-  const vowels = { 'a': 'ä', 'e': 'ë', 'i': 'ï', 'o': 'ö', 'u': 'ü', 'y': 'ÿ' }
   if (childspeak.length === 2) {
-    const c = childspeak.substr(0, 1)
-    const v = childspeak.substr(1, 1)
-    return v + c
-  }
-  if (childspeak.length === 4) {
-    const c1 = childspeak.substr(0, 1)
-    const v1 = childspeak.substr(1, 1)
-    const c2 = childspeak.substr(2, 1)
-    const v2 = childspeak.substr(3, 1)
-    // Complex
-    if (v1 === 'i' && v2 === 'a' && c1 === c2) {
-      return 'e' + c1
-    } else if (v1 === 'a' && v2 === 'o' && c1 === c2) {
-      return 'u' + c1
-    } else if (v1 === 'i' && v2 === 'a') {
-      return c1 + 'e' + c2
-    } else if (v1 === 'a' && v2 === 'o') {
-      return c1 + 'u' + c2
-    }
-    // Basics
-    if (c1 === c2 && v1 === v2) {
-      return vowels[v1] + c1
-    } else if (c1 === c2) {
-      return c1 + v1 + v2
-    } else if (v1 === v2) {
-      return c1 + vowels[v1] + c2
-    }
+    return childspeak
   }
   if (childspeak.length === 6) {
-    return adultspeak(childspeak.substr(0, 2)) + adultspeak(childspeak.substr(2, 4))
+    return adultspeak(childspeak.substr(0, 2)) + adultspeak(childspeak.substr(2, 4), true)
   }
   if (childspeak.length === 8) {
-    return adultspeak(childspeak.substr(0, 4)) + adultspeak(childspeak.substr(4, 4))
+    return adultspeak(childspeak.substr(0, 4), true) + adultspeak(childspeak.substr(4, 4), true)
   }
-  return childspeak
+  const vowels = { 'a': 'ä', 'e': 'ë', 'i': 'ï', 'o': 'ö', 'u': 'ü', 'y': 'ÿ' }
+  const c1 = childspeak.substr(0, 1)
+  const v1 = childspeak.substr(1, 1)
+  const c2 = childspeak.substr(2, 1)
+  const v2 = childspeak.substr(3, 1)
+  // lili -> lï
+  if (c1 === c2 && v1 === v2) {
+    return c1 + vowels[v1]
+  }
+  // lila -> lia
+  if (c1 === c2) {
+    return c1 + v1 + v2
+  }
+  // kala -> käl
+  if (v1 === v2) {
+    return c1 + vowels[v1] + c2
+  }
+  return secondary === true ? v1 + c1 + c2 + v2 : childspeak
 }
