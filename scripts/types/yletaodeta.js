@@ -1,6 +1,6 @@
 'use strict'
 
-function Yletaodeta (yleta, size = 40, thickness = 9) {
+function Yletaodeta (yleta) {
   this.yleta = yleta.toLowerCase()
 
   this.template = function (glyph_id, seg_id, grid, w, h, thickness) {
@@ -204,7 +204,7 @@ function Yletaodeta (yleta, size = 40, thickness = 9) {
     return this.yleta.split(' ').reduce((acc, val, id) => { return `${acc}${this.grid(id, val, w, h, thickness)}` }, '')
   }
 
-  this.toPath = function (w, h) {
+  this.toPath = function (w, h, thickness = 9) {
     return this.yleta.split(' ').reduce((acc, val, id) => { return `${acc}${this.glyph(id, val, w, h, thickness)}` }, '')
   }
 
@@ -224,11 +224,11 @@ function Yletaodeta (yleta, size = 40, thickness = 9) {
   // Tools
 
   function stroke (from, to, template, init = true) {
-    return `${init === true ? 'M' : 'L'}${template[from].x},${template[from].y} L${template[to].x},${template[to].y}`
+    return `${init === true ? 'M' : 'L'}${Math.floor(template[from].x)},${Math.floor(template[from].y)} L${Math.floor(template[to].x)},${Math.floor(template[to].y)}`
   }
 
   function curve (from, to, template, init = true) {
     const push = (template.BC.x - template.BL.x) / 4
-    return `${init === true ? 'M' : 'L'}${template[from].x},${template[from].y} L${template[from].x + push},${template[from].y} L${template[to].x - push},${template[to].y} L${template[to].x},${template[to].y}`
+    return `${init === true ? 'M' : 'L'}${Math.floor(template[from].x)},${Math.floor(template[from].y)} L${Math.floor(template[from].x + push)},${Math.floor(template[from].y)} L${Math.floor(template[to].x - push)},${Math.floor(template[to].y)} L${Math.floor(template[to].x)},${Math.floor(template[to].y)}`
   }
 }

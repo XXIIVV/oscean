@@ -198,10 +198,18 @@ function Heol (input, tables, host) {
         }
       }
       // Draw
-      const html = a.reduce((acc, val) => {
+      let html = a.reduce((acc, val) => {
         const res = Ø('asulodeta').find(val)
-        return res ? `${acc}<li><b>${res.adultspeak.toTitleCase()}</b>: ${res.english}</li>` : acc
+        return res ? `${acc}<li style='line-height:20px; margin-bottom:20px; padding-left:70px'><div style='position:absolute; left:0px'>${res.yletaodeta.toString(40, 40, 9)}</div><b>${res.adultspeak.toTitleCase()}</b><br/>${res.english}<hr/></li>` : acc
       }, '')
+
+      const dict = Ø('database').cache.asulodeta
+      for (const id in dict) {
+        const res = dict[id]
+        if (res.childspeak.length <= 4) { continue }
+        html += `<li style='line-height:20px; margin-bottom:20px; padding-left:70px'><div style='position:absolute; left:0px'>${res.yletaodeta.toString(40, 40, 9)}</div><b>${res.adultspeak.toTitleCase()}</b><br/>${res.english}<hr/></li>`
+      }
+
       return `<ul class='col3'>${html}</ul>`
     },
     yletaodeta: (item, w, h, thickness = 9, color = 'black', guide = false) => {
