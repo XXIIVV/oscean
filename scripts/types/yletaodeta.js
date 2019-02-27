@@ -1,7 +1,7 @@
 'use strict'
 
-function Lytadota (lyta, size = 40, thickness = 9) {
-  this.lyta = lyta.toLowerCase()
+function Yletaodeta (yleta, size = 40, thickness = 9) {
+  this.yleta = yleta.toLowerCase()
 
   this.template = function (glyph_id, seg_id, grid, w, h, thickness) {
     let offset = glyph_id * (w + (thickness + 1))
@@ -156,11 +156,11 @@ function Lytadota (lyta, size = 40, thickness = 9) {
     return ''
   }
 
-  this.grid = function (id, lyta, w, h, thickness) {
+  this.grid = function (id, yleta, w, h, thickness) {
     let path = ''
-    const segs = this.getSegs(lyta)
+    const segs = this.getSegs(yleta)
     for (let i in segs) {
-      let template = this.template(parseInt(id), parseInt(i), lyta.length / 2, w, h, thickness)
+      let template = this.template(parseInt(id), parseInt(i), yleta.length / 2, w, h, thickness)
       let peg = thickness / 2
       path += `M${template.TL.x},${template.TL.y} L${template.TR.x},${template.TR.y} L${template.BR.x},${template.BR.y} L${template.BL.x},${template.BL.y} Z `
       path += `M${template.TC.x},${template.TC.y} L${template.TC.x},${template.TC.y + peg} `
@@ -171,12 +171,12 @@ function Lytadota (lyta, size = 40, thickness = 9) {
     return path
   }
 
-  this.glyph = function (id, lyta, w, h, thickness) {
+  this.glyph = function (id, yleta, w, h, thickness) {
     let path = ''
-    const segs = this.getSegs(lyta)
+    const segs = this.getSegs(yleta)
     for (let i in segs) {
       const seg = segs[i]
-      const template = this.template(parseInt(id), parseInt(i), lyta.length / 2, w, h, thickness)
+      const template = this.template(parseInt(id), parseInt(i), yleta.length / 2, w, h, thickness)
       const consonant = seg.substr(0, 1)
       const vowel = seg.substr(1, 1)
       path += this.consonant(consonant, vowel, template, thickness) + ' ' + this.vowel(consonant, vowel, template, thickness) + ' '
@@ -184,9 +184,9 @@ function Lytadota (lyta, size = 40, thickness = 9) {
     return path
   }
 
-  this.getSegs = function (lyta) {
+  this.getSegs = function (yleta) {
     const a = []
-    let s = `${lyta}`
+    let s = `${yleta}`
     while (s.length > 0) {
       a.push(s.substr(0, 2))
       s = s.substr(2, s.length - 2)
@@ -195,23 +195,23 @@ function Lytadota (lyta, size = 40, thickness = 9) {
   }
 
   this.getBounds = function (w, h, thickness) {
-    return { w: this.lyta.split(' ').length * (w + thickness) - thickness, h: h }
+    return { w: this.yleta.split(' ').length * (w + thickness) - thickness, h: h }
   }
 
   // Outputs
 
   this.toGrid = function (w = 40, h = 40, thickness = 9) {
-    return this.lyta.split(' ').reduce((acc, val, id) => { return `${acc}${this.grid(id, val, w, h, thickness)}` }, '')
+    return this.yleta.split(' ').reduce((acc, val, id) => { return `${acc}${this.grid(id, val, w, h, thickness)}` }, '')
   }
 
   this.toPath = function (w, h) {
-    return this.lyta.split(' ').reduce((acc, val, id) => { return `${acc}${this.glyph(id, val, w, h, thickness)}` }, '')
+    return this.yleta.split(' ').reduce((acc, val, id) => { return `${acc}${this.glyph(id, val, w, h, thickness)}` }, '')
   }
 
   this.toSVG = function (w = 40, h = 40, thickness = 9, color = 'black', guide = false) {
     const bounds = this.getBounds(w, h, 10)
     return `
-    <svg style='width:${bounds.w}px; height:${bounds.h}px; padding:${thickness / 2}px' title='${this.lyta}'>
+    <svg style='width:${bounds.w}px; height:${bounds.h}px; padding:${thickness / 2}px' title='${this.yleta}'>
       ${guide === true ? `<path d='${this.toGrid(w, h)}' stroke='#ccc' fill='none' stroke-width='1' stroke-linecap='square' stroke-linejoin='square'/>` : ''}
       <path d='${this.toPath(w, h)}' stroke='${color}' fill='none' stroke-width='${thickness}' stroke-linecap='square' stroke-linejoin='round'/>
     </svg>`

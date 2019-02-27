@@ -1,6 +1,6 @@
 'use strict'
 
-function Lyta (data = {}) {
+function Yleta (data = {}) {
   Entry.call(this, data.name, data)
 
   this.english = data.english
@@ -9,7 +9,7 @@ function Lyta (data = {}) {
   this.type = this.childspeak.substr(0, 2)
   this.key = this.childspeak.substr(0, this.childspeak.length - 2)
   this.indexes = [this.name]
-  this.lytadota = new Lytadota(this.childspeak)
+  this.yletaodeta = new Yletaodeta(this.childspeak)
   this.bref = `<b>${this.name.toTitleCase()}</b>${this.name !== this.adultspeak ? `, or ${this.adultspeak}, ` : ''} is the {(Lietal)} word for \"${this.english}\" in English.`.toCurlic()
 
   this.parts = function (size = 2) {
@@ -28,7 +28,7 @@ function Lyta (data = {}) {
   }
 
   this.body = function () {
-    return `${permutate(this.key)}${this.lytadota.toSVG(100, 100, 23, 'white', true)}`
+    return `${permutate(this.key)}${this.yletaodeta.toSVG(100, 100, 23, 'white', true)}`
   }
 
   this.toString = function () {
@@ -50,9 +50,9 @@ function permutate (key) {
       for (const vi in v) {
         const vowel = v[vi]
         const name = `${key}${consonant}${vowel}`
-        const lyta = new Lyta({ name: name })
-        const result = Ø('saldota').find(lyta.childspeak)
-        html += `<b>${lyta.adultspeak}</b>: ${result ? result.english : '<i>--</i>'}<br />`
+        const yleta = new Yleta({ name: name })
+        const result = Ø('asulodeta').find(yleta.childspeak)
+        html += `<b>${yleta.adultspeak}</b>: ${result ? result.english : '<i>--</i>'}<br />`
       }
       html += `</td>`
     }
@@ -61,7 +61,7 @@ function permutate (key) {
   return `<table>${html}</table>`
 }
 
-function adultspeak (cs) {
+function adultspeak (cs, vowels = { 'a': 'ä', 'i': 'ï', 'o': 'ö', 'y': 'ÿ' }) {
   const childspeak = cs.toLowerCase()
   if (childspeak.length === 2) {
     const c = childspeak.substr(0, 1)
@@ -72,9 +72,9 @@ function adultspeak (cs) {
     return adultspeak(childspeak.substr(0, 2)) + adultspeak(childspeak.substr(2, 4))
   }
   if (childspeak.length === 8) {
-    return adultspeak(childspeak.substr(0, 4)) + adultspeak(childspeak.substr(4, 4))
+    const as = adultspeak(childspeak.substr(0, 4)) + adultspeak(childspeak.substr(4, 4))
+    return as.replace('aa', 'ä').replace('ii', 'ï').replace('oo', 'ö').replace('yy', 'ÿ')
   }
-  const vowels = { 'a': 'ä', 'e': 'ë', 'i': 'ï', 'o': 'ö', 'u': 'ü', 'y': 'ÿ' }
   const c1 = childspeak.substr(0, 1)
   const v1 = childspeak.substr(1, 1)
   const c2 = childspeak.substr(2, 1)

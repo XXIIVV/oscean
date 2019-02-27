@@ -145,19 +145,19 @@ function Heol (input, tables, host) {
     // Lietal
     // -----------------------
     adultspeak: (item) => {
-      return new Lyta({ name: item }).adultspeak
+      return new Yleta({ name: item }).adultspeak
     },
     lien: (...items) => {
       let s = ''
       for (const id in items) {
         const key = items[id].toLowerCase()
-        const result = Ø('saldota').find(key)
+        const result = Ø('asulodeta').find(key)
         s += (result ? result.english : `err[${key}]`) + ' '
       }
       return s.trim()
     },
     enli: (...items) => {
-      const dict = Ø('database').cache.saldota
+      const dict = Ø('database').cache.asulodeta
       const keys = dict.map((val) => { return val.english })
       let s = ''
       for (const id in items) {
@@ -173,14 +173,14 @@ function Heol (input, tables, host) {
       return s.trim()
     },
     deconstruct: (item) => {
-      const res = Ø('saldota').find(item)
-      if (!res) { return 'Unknown Lyta: ' + item }
+      const res = Ø('asulodeta').find(item)
+      if (!res) { return 'Unknown Yleta: ' + item }
       return `<table><tr>${res.parts().reduce((acc, childspeak) => {
-        const l = Ø('saldota').find(childspeak)
-        return l ? `${acc}<td>${l.lytadota}<br />${l.adultspeak}<br />${item === l.childspeak ? '<b>' + l.english + '</b>' : l.english}</td>` : `${acc}err[${item}]`
+        const l = Ø('asulodeta').find(childspeak)
+        return l ? `${acc}<td>${l.yletaodeta}<br />${l.adultspeak}<br />${item === l.childspeak ? '<b>' + l.english + '</b>' : l.english}</td>` : `${acc}err[${item}]`
       }, '')}</tr></table>`
     },
-    saldota: (q) => {
+    asulodeta: (q) => {
       const c = ['k', 't', 'd', 'r', 's', 'l', 'j', 'v', 'f']
       const v = ['y', 'i', 'a', 'o']
       const e = []
@@ -199,13 +199,13 @@ function Heol (input, tables, host) {
       }
       // Draw
       const html = a.reduce((acc, val) => {
-        const res = Ø('saldota').find(val)
+        const res = Ø('asulodeta').find(val)
         return res ? `${acc}<li><b>${res.adultspeak.toTitleCase()}</b>: ${res.english}</li>` : acc
       }, '')
       return `<ul class='col3'>${html}</ul>`
     },
-    lytadota: (item, w, h, thickness = 9, color = 'black', guide = false) => {
-      return new Lytadota(item).toSVG(w, h, thickness, color, guide)
+    yletaodeta: (item, w, h, thickness = 9, color = 'black', guide = false) => {
+      return new Yletaodeta(item).toSVG(w, h, thickness, color, guide)
     },
     // -----------------------
     // Arvelie
