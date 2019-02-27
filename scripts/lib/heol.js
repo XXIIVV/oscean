@@ -83,15 +83,12 @@ function Heol (input, tables, host) {
     // -----------------------
     // Arrays
     // -----------------------
-    // will modify properties or run a function onto each object.
     map: (arr, fn) => {
       return arr.map((val, id, arr) => fn)
     },
-    // will only keeps elements returning true.
     filter: (arr, fn, param) => {
       return arr.filter((val, id, arr) => fn)
     },
-    // will reduce it into a single value.
     reduce: (arr, fn, acc) => {
       return arr.reduce((acc, val, id, arr) => fn, acc)
     },
@@ -102,9 +99,7 @@ function Heol (input, tables, host) {
       return a.sort()
     },
     uniq: (items) => {
-      return items.filter((value, index, self) => {
-        return self.indexOf(value) === index
-      })
+      return items.filter((value, index, self) => { return self.indexOf(value) === index })
     },
     // -----------------------
     // Time
@@ -116,7 +111,7 @@ function Heol (input, tables, host) {
       return Date.now() - new Date(greg)
     },
     // -----------------------
-    // Arvelie
+    // Arvelie & Neralie
     // -----------------------
     arvelie: () => {
       return `${new Arvelie()}`
@@ -134,9 +129,7 @@ function Heol (input, tables, host) {
     // Templates
     // -----------------------
     template: (items, t, p) => {
-      return items.map((val) => {
-        return `${t(val, p)}`
-      })
+      return items.map((val) => { return `${t(val, p)}` })
     },
     wrap: (item, tag, cl) => {
       return `<${tag} class='${cl || ''}'>${item}</${tag}>`
