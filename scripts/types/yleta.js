@@ -51,7 +51,7 @@ function permutate (key) {
         const vowel = v[vi]
         const name = `${key}${consonant}${vowel}`
         const yleta = new Yleta({ name: name })
-        const result = Ø('asulodeta').find(yleta.childspeak)
+        const result = Ø('asulodeta').find(yleta.childspeak, name)
         html += `<b>${yleta.adultspeak}</b>: ${result ? result.english : '<i>--</i>'}<br />`
       }
       html += `</td>`

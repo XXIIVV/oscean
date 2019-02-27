@@ -9,31 +9,34 @@ RIVEN.lib.Table = function TableNode (id, rect, parser, Type) {
 
   this.answer = function (q) {
     if (!DATABASE[this.id]) { console.warn(`Missing /database/${this.id}`); return null }
-
     this.cache = this.cache ? this.cache : parser(DATABASE[this.id], Type)
-
     return this.cache
   }
 
-  this.find = function (q) {
+  // Query
+
+  this.indexes = {}
+
+  this.find = function (q, key) {
     if (this.cache.constructor === Array) {
-      if (!this.indexes) {
-        this.indexes = this.assoc(this.cache)
+      if (!this.indexes[key]) {
+        this.indexes[key] = this.assoc(key)
       }
-      return this.indexes[q.toUpperCase()]
+      return this.indexes[key][q.toUpperCase()]
     } else {
       return this.cache[q.toUpperCase()]
     }
   }
 
-  this.assoc = function (a) {
+  this.assoc = function (key) {
     const time = performance.now()
     const h = {}
-    for (const id in a) {
-      if (!a[id].name) { continue }
-      h[a[id].name.toUpperCase()] = a[id]
+    for (const id in this.cache) {
+      const entry = this.cache
+      if (!entry[id][key]) { continue }
+      h[entry[id][key].toUpperCase()] = entry[id]
     }
-    console.info(`table-${id}`, `Built special indexes in ${(performance.now() - time).toFixed(2)}ms.`)
+    console.info(`table-${id}`, `Built special index for '${key}' in ${(performance.now() - time).toFixed(2)}ms.`)
     return h
   }
 }

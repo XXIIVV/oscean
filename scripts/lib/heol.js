@@ -2,6 +2,15 @@
 
 function Heol (input, tables, host) {
   const lib = {
+    // -----------------------
+    // Riven
+    // -----------------------
+    Ø: (item) => {
+      return Ø(item)
+    },
+    // -----------------------
+    // Basics
+    // -----------------------
     match: (source, items) => {
       const filtered = items.filter((val) => { return source[val.toUpperCase()] })
       return filtered.map((val) => { return source[val.toUpperCase()] })
@@ -33,15 +42,6 @@ function Heol (input, tables, host) {
       }, '')
     },
     // -----------------------
-    // Time
-    // -----------------------
-    daysSince: (greg) => {
-      return parseInt((Date.now() - new Date(greg)) / 1000 / 86400)
-    },
-    msSince: (greg) => {
-      return Date.now() - new Date(greg)
-    },
-    // -----------------------
     // Math
     // -----------------------
     add: (...items) => {
@@ -56,11 +56,29 @@ function Heol (input, tables, host) {
     div: (...items) => {
       return items[0] / items[1]
     },
+    fix: (...items) => {
+      return items[0].toFixed(items[1])
+    },
     floor: (item) => {
       return Math.floor(item)
     },
-    fix: (...items) => {
-      return items[0].toFixed(items[1])
+    ceil: (item) => {
+      return Math.ceil(item)
+    },
+    // -----------------------
+    // Strings
+    // -----------------------
+    lc: (item) => {
+      return item.toLowerCase()
+    },
+    tc: (item) => {
+      return item.toTitleCase()
+    },
+    uc: (item) => {
+      return item.toUpperCase()
+    },
+    cc: (item) => {
+      return item.substr(0, 1).toUpperCase() + item.substr(1)
     },
     // -----------------------
     // Arrays
@@ -89,16 +107,28 @@ function Heol (input, tables, host) {
       })
     },
     // -----------------------
-    // Strings
+    // Time
     // -----------------------
-    lc: (item) => {
-      return item.toLowerCase()
+    daysSince: (greg) => {
+      return parseInt((Date.now() - new Date(greg)) / 1000 / 86400)
     },
-    tc: (item) => {
-      return item.toTitleCase()
+    msSince: (greg) => {
+      return Date.now() - new Date(greg)
     },
-    uc: (item) => {
-      return item.toUpperCase()
+    // -----------------------
+    // Arvelie
+    // -----------------------
+    arvelie: () => {
+      return `${new Arvelie()}`
+    },
+    dtog: (q) => {
+      return `${new Arvelie(q).toGregorian()}`
+    },
+    gtod: (q) => {
+      return !isNaN(new Date(q)) ? `${new Date(q).arvelie()}` : 'Invalid Date'
+    },
+    neralie: () => {
+      return `${new Neralie()}`
     },
     // -----------------------
     // Templates
@@ -136,12 +166,6 @@ function Heol (input, tables, host) {
       return item.logs.length > 10 && item.span.from && item.span.to ? `<li>{(${item.name.toTitleCase()})} ${item.span.from}—${item.span.to}</li>`.toCurlic() : ''
     },
     // -----------------------
-    // Riven
-    // -----------------------
-    Ø: (item) => {
-      return Ø(item)
-    },
-    // -----------------------
     // Lietal
     // -----------------------
     adultspeak: (item) => {
@@ -151,8 +175,8 @@ function Heol (input, tables, host) {
       let s = ''
       for (const id in items) {
         const key = items[id].toLowerCase()
-        const result = Ø('asulodeta').find(key)
-        s += (result ? result.english : `err[${key}]`) + ' '
+        const res = Ø('asulodeta').find(key, 'name')
+        s += (res ? res.english : `err[${key}]`) + ' '
       }
       return s.trim()
     },
@@ -173,10 +197,10 @@ function Heol (input, tables, host) {
       return s.trim()
     },
     deconstruct: (item) => {
-      const res = Ø('asulodeta').find(item)
+      const res = Ø('asulodeta').find(item, 'name')
       if (!res) { return 'Unknown Yleta: ' + item }
       return `<table><tr>${res.parts().reduce((acc, childspeak) => {
-        const l = Ø('asulodeta').find(childspeak)
+        const l = Ø('asulodeta').find(childspeak, 'name')
         return l ? `${acc}<td>${l.yletaodeta}<br />${l.adultspeak}<br />${item === l.childspeak ? '<b>' + l.english + '</b>' : l.english}</td>` : `${acc}err[${item}]`
       }, '')}</tr></table>`
     },
@@ -214,18 +238,6 @@ function Heol (input, tables, host) {
     },
     yletaodeta: (item, w, h, thickness = 9, color = 'black', guide = false) => {
       return new Yletaodeta(item).toSVG(w, h, thickness, color, guide)
-    },
-    // -----------------------
-    // Arvelie
-    // -----------------------
-    arvelie: () => {
-      return `${new Arvelie()}`
-    },
-    dtog: (q) => {
-      return `${new Arvelie(q).toGregorian()}`
-    },
-    gtod: (q) => {
-      return !isNaN(new Date(q)) ? `${new Date(q).arvelie()}` : 'Invalid Date'
     },
     // -----------------------
     // Horaire
