@@ -32,9 +32,9 @@ RIVEN.lib.Table = function TableNode (id, rect, parser, Type) {
     const time = performance.now()
     const h = {}
     for (const id in this.cache) {
-      const entry = this.cache
-      if (!entry[id][key]) { continue }
-      h[entry[id][key].toUpperCase()] = entry[id]
+      const entry = this.cache[id]
+      if (!entry || !entry[key]) { continue }
+      h[entry[key].toUpperCase()] = entry
     }
     console.info(`table-${id}`, `Built special index for '${key}' in ${(performance.now() - time).toFixed(2)}ms.`)
     return h

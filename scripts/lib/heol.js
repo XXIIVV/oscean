@@ -171,30 +171,14 @@ function Heol (input, tables, host) {
     adultspeak: (item) => {
       return new Yleta({ name: item }).adultspeak
     },
+    yletaodeta: (item, w, h, thickness = 9, color = 'black', guide = false) => {
+      return new Yletaodeta(item).toSVG(w, h, thickness, color, guide)
+    },
     lien: (...items) => {
-      let s = ''
-      for (const id in items) {
-        const key = items[id].toLowerCase()
-        const res = Ø('asulodeta').find(key, 'name')
-        s += (res ? res.english : `err[${key}]`) + ' '
-      }
-      return s.trim()
+      return items.reduce((acc, val) => { const res = Ø('asulodeta').find(val.toLowerCase(), 'name'); return `${acc}${res ? res.english : `err[${val}]`} ` }, '').trim()
     },
     enli: (...items) => {
-      const dict = Ø('database').cache.asulodeta
-      const keys = dict.map((val) => { return val.english })
-      let s = ''
-      for (const id in items) {
-        const key = items[id].toLowerCase()
-        const pos = keys.indexOf(key)
-        if (pos > -1) {
-          const result = dict[pos]
-          s += (result ? result.adultspeak : `err[${key}]`) + ' '
-        } else {
-          s += `err[${key}]` + ' '
-        }
-      }
-      return s.trim()
+      return items.reduce((acc, val) => { const res = Ø('asulodeta').find(val.toLowerCase(), 'english'); return `${acc}${res ? res.adultspeak : `err[${val}]`} ` }, '').trim()
     },
     deconstruct: (item) => {
       const res = Ø('asulodeta').find(item, 'name')
@@ -236,17 +220,11 @@ function Heol (input, tables, host) {
 
       return `<ul class='col3'>${html}</ul>`
     },
-    yletaodeta: (item, w, h, thickness = 9, color = 'black', guide = false) => {
-      return new Yletaodeta(item).toSVG(w, h, thickness, color, guide)
-    },
     // -----------------------
     // Horaire
     // -----------------------
     task: (code) => {
       return `${new Log({ code: '-' + code }).task}`
-    },
-    status: () => {
-      return `${new Status(tables.horaire)}`
     }
   }
 

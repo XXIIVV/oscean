@@ -4,7 +4,7 @@ function Yleta (data = {}) {
   Entry.call(this, data.name, data)
 
   this.english = data.english
-  this.childspeak = name || data.name
+  this.childspeak = name || data.name.toLowerCase()
   this.adultspeak = adultspeak(name || data.name)
   this.type = this.childspeak.substr(0, 2)
   this.key = this.childspeak.substr(0, this.childspeak.length - 2)
@@ -35,6 +35,35 @@ function Yleta (data = {}) {
     const en = this.english
     return `<p>{*${this.name.toTitleCase()}*}${this.name.toLowerCase() !== this.adultspeak.toLowerCase() ? ', or ' + this.adultspeak.toTitleCase() : ''} is a {(Lietal)} word${en ? ' that translates to \"' + en + '\" in {(English)}' : ''}.</p>`.toCurlic()
   }
+
+  function adultspeak (childspeak, vowels = { 'a': 'ä', 'i': 'ï', 'o': 'ö', 'y': 'ÿ' }) {
+    if (childspeak.length === 2) {
+      return childspeak.substr(1, 1) + childspeak.substr(0, 1)
+    }
+    if (childspeak.length === 6) {
+      return adultspeak(childspeak.substr(0, 2)) + adultspeak(childspeak.substr(2, 4))
+    }
+    if (childspeak.length === 8) {
+      return (adultspeak(childspeak.substr(0, 4)) + adultspeak(childspeak.substr(4, 4))).replace('aa', 'ä').replace('ii', 'ï').replace('oo', 'ö').replace('yy', 'ÿ')
+    }
+    const c1 = childspeak.substr(0, 1)
+    const v1 = childspeak.substr(1, 1)
+    const c2 = childspeak.substr(2, 1)
+    const v2 = childspeak.substr(3, 1)
+    // lili -> lï
+    if (c1 === c2 && v1 === v2) {
+      return vowels[v1] + c1
+    }
+    // lila -> lia
+    if (c1 === c2) {
+      return v1 + c1 + v2
+    }
+    // kala -> käl
+    if (v1 === v2) {
+      return vowels[v1] + c1 + 'u' + c2
+    }
+    return v1 + c1 + 'e' + c2 + v2
+  }
 }
 
 function permutate (key) {
@@ -59,37 +88,4 @@ function permutate (key) {
     html += `</tr>`
   }
   return `<table>${html}</table>`
-}
-
-function adultspeak (cs, vowels = { 'a': 'ä', 'i': 'ï', 'o': 'ö', 'y': 'ÿ' }) {
-  const childspeak = cs.toLowerCase()
-  if (childspeak.length === 2) {
-    const c = childspeak.substr(0, 1)
-    const v = childspeak.substr(1, 1)
-    return v + c
-  }
-  if (childspeak.length === 6) {
-    return adultspeak(childspeak.substr(0, 2)) + adultspeak(childspeak.substr(2, 4))
-  }
-  if (childspeak.length === 8) {
-    const as = adultspeak(childspeak.substr(0, 4)) + adultspeak(childspeak.substr(4, 4))
-    return as.replace('aa', 'ä').replace('ii', 'ï').replace('oo', 'ö').replace('yy', 'ÿ')
-  }
-  const c1 = childspeak.substr(0, 1)
-  const v1 = childspeak.substr(1, 1)
-  const c2 = childspeak.substr(2, 1)
-  const v2 = childspeak.substr(3, 1)
-  // lili -> lï
-  if (c1 === c2 && v1 === v2) {
-    return vowels[v1] + c1
-  }
-  // lila -> lia
-  if (c1 === c2) {
-    return v1 + c1 + v2
-  }
-  // kala -> käl
-  if (v1 === v2) {
-    return vowels[v1] + c1 + 'u' + c2
-  }
-  return v1 + c1 + 'e' + c2 + v2
 }
