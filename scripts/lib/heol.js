@@ -168,17 +168,17 @@ function Heol (input, tables, host) {
       return new Yletaodeta(item).toSVG(w, h, thickness, color, guide)
     },
     lien: (...items) => {
-      return items.reduce((acc, val) => { const res = Ø('asulodeta').find(val.toLowerCase(), 'name'); return `${acc}${res ? res.english : `err[${val}]`} ` }, '').trim()
+      return items.reduce((acc, val) => { const res = Ø('asulodeta').find(val.toLowerCase(), 'name'); return `${acc}${res ? res.english : val} ` }, '').trim()
     },
     enli: (...items) => {
-      return items.reduce((acc, val) => { const res = Ø('asulodeta').find(val.toLowerCase(), 'english'); return `${acc}${res ? res.adultspeak : `err[${val}]`} ` }, '').trim()
+      return items.reduce((acc, val) => { const res = Ø('asulodeta').find(val.toLowerCase(), 'english'); return `${acc}${res ? res.adultspeak : val} ` }, '').trim()
     },
     deconstruct: (item) => {
       const res = Ø('asulodeta').find(item, 'name')
       if (!res) { return 'Unknown Yleta: ' + item }
       return `<table><tr>${res.parts().reduce((acc, childspeak) => {
         const l = Ø('asulodeta').find(childspeak, 'name')
-        return l ? `${acc}<td>${l.yletaodeta}<br />${l.adultspeak}<br />${item === l.childspeak ? '<b>' + l.english + '</b>' : l.english}</td>` : `${acc}err[${item}]`
+        return l ? `${acc}<td>${l.yletaodeta}<br />${l.adultspeak}<br />${item === l.childspeak ? '<b>' + l.english + '</b>' : l.english}</td>` : item
       }, '')}</tr></table>`
     },
     asulodeta: (q) => {
