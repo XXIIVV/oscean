@@ -171,7 +171,7 @@ function Heol (input, tables, host) {
       return items.reduce((acc, val) => { const res = Ø('asulodeta').find(val.toLowerCase(), 'name'); return `${acc}${res ? res.english : val} ` }, '').trim()
     },
     enli: (...items) => {
-      return items.reduce((acc, val) => { const res = Ø('asulodeta').find(val.toLowerCase(), 'english'); return `${acc}${res ? res.adultspeak : val} ` }, '').replace(/ \. /g, '. ').replace(/ \, /g, ', ').replace(/ \' /g, '\'').replace(/ \! /g, '! ').trim()
+      return items.reduce((acc, val) => { const res = Ø('asulodeta').find(val.toLowerCase(), 'english'); return `${acc}${res ? res.adultspeak : val} ` }, '').replace(/ \. /g, '. ').replace(/ \, /g, ', ').replace(/ \' /g, '\'').replace(/ \! /g, '! ').replace(/  /g, ' ').trim()
     },
     deconstruct: (item) => {
       const res = Ø('asulodeta').find(item, 'name')
