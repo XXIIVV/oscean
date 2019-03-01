@@ -89,3 +89,23 @@ function permutate (key) {
   }
   return `<table>${html}</table>`
 }
+
+function divieths () {
+  const c = ['k', 't', 'd', 'r', 's', 'l', 'j', 'v', 'f']
+  const v = ['y', 'i', 'a', 'o']
+  const e = []
+  // Elementary
+  for (const ci in c) {
+    for (const vi in v) {
+      e.push(`${c[ci]}${v[vi]}`)
+    }
+  }
+  // Permutations
+  const a = []
+  for (const ai1 in e) {
+    for (const ai2 in e) {
+      a.push(`${e[ai1]}${e[ai2]}`)
+    }
+  }
+  return a
+}

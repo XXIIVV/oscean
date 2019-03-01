@@ -171,7 +171,7 @@ function Heol (input, tables, host) {
       return items.reduce((acc, val) => { const res = Ø('asulodeta').find(val.toLowerCase(), 'name'); return `${acc}${res ? res.english : val} ` }, '').trim()
     },
     enli: (...items) => {
-      return items.reduce((acc, val) => { const res = Ø('asulodeta').find(val.toLowerCase(), 'english'); return `${acc}${res ? res.adultspeak : val} ` }, '').replace(/ \. /g, '. ').replace(/ \, /g, ', ').replace(/ \' /g, '\'').replace(/ \! /g, '! ').replace(/  /g, ' ').trim()
+      return items.reduce((acc, val) => { const res = Ø('asulodeta').find(val.toLowerCase(), 'english'); return `${acc}${res ? res.adultspeak : val} ` }, '').replace(/ \. /g, '. ').replace(/ \, /g, ', ').replace(/ \' /g, '\'').replace(/ \! /g, '! ').replace(/ {2}/g, ' ').trim()
     },
     deconstruct: (item) => {
       const res = Ø('asulodeta').find(item, 'name')
@@ -180,38 +180,6 @@ function Heol (input, tables, host) {
         const l = Ø('asulodeta').find(childspeak, 'name')
         return l ? `${acc}<td>${l.yletaodeta}<br />${l.adultspeak}<br />${item === l.childspeak ? '<b>' + l.english + '</b>' : l.english}</td>` : item
       }, '')}</tr></table>`
-    },
-    asulodeta: (q) => {
-      const c = ['k', 't', 'd', 'r', 's', 'l', 'j', 'v', 'f']
-      const v = ['y', 'i', 'a', 'o']
-      const e = []
-      // Elementary
-      for (const ci in c) {
-        for (const vi in v) {
-          e.push(`${c[ci]}${v[vi]}`)
-        }
-      }
-      // Permutations
-      const a = []
-      for (const ai1 in e) {
-        for (const ai2 in e) {
-          a.push(`${e[ai1]}${e[ai2]}`)
-        }
-      }
-      // Draw
-      let html = a.reduce((acc, val) => {
-        const res = Ø('asulodeta').find(val)
-        return res ? `${acc}<li style='line-height:20px; margin-bottom:20px; padding-left:70px'><div style='position:absolute; left:0px'>${res.yletaodeta.toString(40, 40, 9)}</div><b>${res.adultspeak.toTitleCase()}</b><br/>${res.english}<hr/></li>` : acc
-      }, '')
-
-      const dict = Ø('database').cache.asulodeta
-      for (const id in dict) {
-        const res = dict[id]
-        if (res.childspeak.length <= 4) { continue }
-        html += `<li style='line-height:20px; margin-bottom:20px; padding-left:70px'><div style='position:absolute; left:0px'>${res.yletaodeta.toString(40, 40, 9)}</div><b>${res.adultspeak.toTitleCase()}</b><br/>${res.english}<hr/></li>`
-      }
-
-      return `<ul class='col3'>${html}</ul>`
     },
     // -----------------------
     // Horaire
