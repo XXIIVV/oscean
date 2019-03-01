@@ -8,7 +8,7 @@ RIVEN.lib.Static = function StaticNode (id, rect) {
   function _item (term) {
     const body = term.data.BODY ? term.data.BODY.filter((line) => { return line.substr(0, 1) === '&' || line.substr(0, 1) === '-' || line.substr(0, 1) === '|' || line.substr(0, 1) === '#' }) : ''
     const links = Object.keys(term.links).reduce((acc, val) => { return `${acc}<a href='${term.links[val]}' target='_blank'>${val.toTitleCase()}</a> ` }, ' ').trim()
-    return `<tr><td>${term.name.toTitleCase()}</td><td>${term.parent.name.toTitleCase()}</td><td>${term.span.from && term.span.to ? `[${term.span.from}-${term.span.to}]` : ''}</td><td>${term.bref.toCurlic(term).stripHTML()}</td><td>${links}</td></tr>\n`
+    return `<tr><td><a href='/${term.name.toUrl()}'>${term.name.toTitleCase()}</a></td><td><a href='/${term.parent.name.toUrl()}'>${term.parent.name.toTitleCase()}</a></td><td>${term.span.from && term.span.to ? `[${term.span.from}-${term.span.to}]` : ''}</td><td>${term.bref.toCurlic(term).stripHTML()}</td><td>${links}</td></tr>\n`
   }
 
   this.receive = function () {
