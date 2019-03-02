@@ -168,10 +168,10 @@ function Heol (input, tables, host) {
       return new Yletaodeta(item).toSVG(w, h, thickness, color, guide)
     },
     lien: (...items) => {
-      return items.reduce((acc, val) => { const res = Ø('asulodeta').find(val.toLowerCase(), 'name'); return `${acc}${res ? res.english : val} ` }, '').trim()
+      return items.reduce((acc, val) => { const res = Ø('asulodeta').find(val, 'name'); return `${acc}${res ? res.english : val} ` }, '').trim()
     },
     enli: (...items) => {
-      return items.reduce((acc, val) => { const res = Ø('asulodeta').find(val.toLowerCase(), 'english'); return `${acc}${res ? res.adultspeak : val} ` }, '').replace(/ \. /g, '. ').replace(/ \, /g, ', ').replace(/ \' /g, '\'').replace(/ \! /g, '! ').replace(/ {2}/g, ' ').trim()
+      return items.reduce((acc, val) => { const res = Ø('asulodeta').find(val, 'english'); return `${acc}${res ? res.adultspeak : val} ` }, '').replace(/ \. /g, '. ').replace(/ \, /g, ', ').replace(/ \' /g, '\'').replace(/ \! /g, '! ').replace(/ {2}/g, ' ').trim()
     },
     deconstruct: (item) => {
       const res = Ø('asulodeta').find(item, 'name')

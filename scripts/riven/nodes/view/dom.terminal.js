@@ -78,6 +78,16 @@ You are now <b>${((new Date() - new Date('1986-03-22')) / 31557600000).toFixed(4
       return !isNaN(new Date(q)) ? `${new Date(q).arvelie()}` : 'Invalid Date'
     },
 
+    lien: (q) => {
+      const res = Ø('asulodeta').find(q, 'name')
+      return res ? res.english.toTitleCase() : 'Unknown'
+    },
+
+    enli: (q) => {
+      const res = Ø('asulodeta').find(q, 'english')
+      return res ? res.adultspeak.toTitleCase() : 'Unknown'
+    },
+
     next: (q) => {
       const used = []
       for (const id in Ø('database').cache.horaire) {
