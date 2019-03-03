@@ -3,6 +3,7 @@
 function Yleta (data = {}) {
   Entry.call(this, data.name, data)
 
+  this.unde = 'Lietal'
   this.english = data.english
   this.childspeak = name || data.name.toLowerCase()
   this.adultspeak = adultspeak(name || data.name)
@@ -77,11 +78,9 @@ function permutate (key) {
       const consonant = b[bi]
       html += `<td>`
       for (const vi in v) {
-        const vowel = v[vi]
-        const name = `${key}${consonant}${vowel}`
-        const yleta = new Yleta({ name: name })
-        const result = Ø('asulodeta').find(yleta.childspeak, name)
-        html += `<b>${yleta.adultspeak}</b>: ${result ? result.english : '<i>--</i>'}<br />`
+        const name = `${key}${consonant}${v[vi]}`
+        const result = Ø('asulodeta').find(name, 'name')
+        html += `<b>{${new Yleta({ name: name }).adultspeak}</b>(${name})}: ${result ? result.english : '<i>--</i>'}<br />`.toCurlic()
       }
       html += `</td>`
     }

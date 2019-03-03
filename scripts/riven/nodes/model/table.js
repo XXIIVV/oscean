@@ -34,7 +34,9 @@ RIVEN.lib.Table = function TableNode (id, rect, parser, Type) {
     for (const id in this.cache) {
       const entry = this.cache[id]
       if (!entry || !entry[key]) { continue }
-      h[entry[key].toUpperCase()] = entry
+      const index = entry[key].toUpperCase()
+      if (h[index]) { console.warn(`Duplicated special index for ${index}`) }
+      h[index] = entry
     }
     console.info(`table-${id}`, `Built special index for '${key}' in ${(performance.now() - time).toFixed(2)}ms.`)
     return h
