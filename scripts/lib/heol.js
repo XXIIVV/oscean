@@ -152,6 +152,9 @@ function Heol (input, tables, host) {
     GALLERY: (item) => {
       return `${item.featuredLog ? `<a data-goto='${item.name}'><img src="media/diary/${item.featuredLog.pict}.jpg"/></a>` : ''}<h2>${item.name.toTitleCase()}</h2><h4>${item.bref}</h4>`
     },
+    LIST: (item) => {
+      return `<li>${item.bref.toCurlic()}</li>`
+    },
     FULL: (item) => {
       return item.toString(true)
     },
