@@ -107,7 +107,7 @@ function similarity (a, b) {
   return val
 }
 
-// Date 
+// Date
 
 Date.prototype.doty = function () {
   const year = this.getFullYear()

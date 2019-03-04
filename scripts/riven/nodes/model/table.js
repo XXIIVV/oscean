@@ -9,7 +9,9 @@ RIVEN.lib.Table = function TableNode (id, rect, parser, Type) {
 
   this.answer = function (q) {
     if (!DATABASE[this.id]) { console.warn(`Missing /database/${this.id}`); return null }
+    const time = performance.now()
     this.cache = this.cache ? this.cache : parser(DATABASE[this.id], Type)
+    console.info(`table-${id}`, `Parsed ${this.length()} items, in ${(performance.now() - time).toFixed(2)}ms.`)
     return this.cache
   }
 
@@ -40,5 +42,9 @@ RIVEN.lib.Table = function TableNode (id, rect, parser, Type) {
     }
     console.info(`table-${id}`, `Built special index for '${key}' in ${(performance.now() - time).toFixed(2)}ms.`)
     return h
+  }
+
+  this.length = function(){
+    return this.cache.constructor === Array ? this.cache.length : Object.keys(this.cache).length
   }
 }
