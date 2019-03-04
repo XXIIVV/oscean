@@ -8,7 +8,7 @@ RIVEN.lib.Terminal = function TerminalNode (id, rect, ...params) {
   this.isBooted = false
 
   this.bang = function (q) {
-    if (q.substr(0, 1) === '~') { q = q.replace('~', '').trim() }
+    if (q.substr(0, 1) === '~') { q = q.replace('~', '').replace(/\+/g, ' ').trim() }
 
     const cmd = q.split(' ')[0]
     const par = q.substr(cmd.length, q.length - cmd.length).trim()
@@ -24,7 +24,7 @@ RIVEN.lib.Terminal = function TerminalNode (id, rect, ...params) {
   this.listen = function (q, bang = false) {
     if (q.substr(0, 1) === '~') {
       Ø('terminal').addClass('active')
-      if (this.isBooted === false) {
+      if (this.isBooted === false && bang === false) {
         this.boot()
       }
     } else {
@@ -80,12 +80,12 @@ You are now <b>${((new Date() - new Date('1986-03-22')) / 31557600000).toFixed(4
 
     lien: (q) => {
       const res = Ø('asulodeta').find(q, 'name')
-      return res ? res.english.toTitleCase() : 'Unknown'
+      return res ? `The Lietal translation of {(${q.toTitleCase()})}, is: "{*${res.english.toTitleCase()}*}".`.toCurlic() : 'Unknown'
     },
 
     enli: (q) => {
       const res = Ø('asulodeta').find(q, 'english')
-      return res ? res.adultspeak.toTitleCase() : 'Unknown'
+      return res ? `The English translation of {(${q.toTitleCase()})}, is: "{*${res.adultspeak.toTitleCase()}*}".`.toCurlic() : 'Unknown'
     },
 
     next: (q) => {
