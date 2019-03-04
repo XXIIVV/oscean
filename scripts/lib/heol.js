@@ -148,7 +148,7 @@ function Heol (input, tables, host) {
       if (target.indexOf('//') > -1) {
         return `<a href='${target}' target='_blank' class='external'>${name}</a>`
       }
-      if (!Ø('database').find(target)) { console.warn(`Broken link: ${target}`) }
+      if (!Ø('database').find(target)) { console.warn(`Broken link: ${target}, near ${input}.`) }
       return `<a href='${target.toUrl()}' data-goto='${target.toUrl()}' target='_self' class='local'>${name.toTitleCase()}</a>`
     },
     // -----------------------
@@ -161,10 +161,10 @@ function Heol (input, tables, host) {
       return `<${tag} class='${cl || ''}'>${item}</${tag}>`
     },
     INDEX: (item) => {
-      return `<h3>{(${item.name.toTitleCase()})}</h3><p>${item.bref}</p><ul class='bullet'>${item.children.reduce((acc, term) => { return `${acc}<li>${term.bref}</li>` }, '')}</ul>`
+      return `<h3>{λ(link "${item.name.toTitleCase()}")}</h3><p>${item.bref}</p><ul class='bullet'>${item.children.reduce((acc, term) => { return `${acc}<li>${term.bref}</li>` }, '')}</ul>`
     },
     LINK: (item) => {
-      return `{(${item.toTitleCase()})}`
+      return `{λ(link "${item.toTitleCase()}")}`
     },
     REDIRECT: (item) => {
       return `<meta http-equiv="refresh" content="2; url=#${item}">`
@@ -185,7 +185,7 @@ function Heol (input, tables, host) {
       return item.toString(true)
     },
     SPAN: (item) => {
-      return item.logs.length > 10 && item.span.from && item.span.to ? `<li>{(${item.name.toTitleCase()})} ${item.span.from}—${item.span.to}</li>`.toCurlic(host) : ''
+      return item.logs.length > 10 && item.span.from && item.span.to ? `<li>{λ(link "${item.name.toTitleCase()}")} ${item.span.from}—${item.span.to}</li>`.toCurlic(host) : ''
     },
     // -----------------------
     // Lietal

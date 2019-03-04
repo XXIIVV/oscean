@@ -19,7 +19,7 @@ RIVEN.lib.CalendarTemplate = function TemplateNode (id, rect) {
       ${acc}
       ${!arr[id - 1] || arr[id - 1].time.y !== log.time.y ? `<li class='head'>20${log.time.y}</li>` : ''}
       <li style='${log.time.offset > 0 ? 'color:#aaa' : ''}'>
-        {${log.name}(${log.term})}</a> 
+        {λ(link "${log.term}" "${log.name}")}</a> 
         <span title='${log.time}'>${timeAgo(log.time, 60)}</span>
       </li>`
     }, '')}</ul>`.toCurlic()
