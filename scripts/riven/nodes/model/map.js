@@ -38,19 +38,6 @@ RIVEN.lib.Map = function MapNode (id, rect) {
       tables.lexicon[parent].children.push(term)
     }
 
-    // Connect links
-    for (const id in tables.lexicon) {
-      const term = tables.lexicon[id]
-      const links = term.find_outgoing()
-      for (const id in links) {
-        const link = links[id]
-        term.outgoing.push(link)
-        if (!Ø('database').index[link]) { console.warn('Missing incoming', `${term.name}->${link}`); continue }
-        Ø('database').index[link].incoming.push(term.name)
-        count.links += 1
-      }
-    }
-
     // Connect Logs
     for (const id in tables.horaire) {
       const log = tables.horaire[id]
@@ -104,6 +91,6 @@ RIVEN.lib.Map = function MapNode (id, rect) {
       }
     }
     this.is_mapped = true
-    console.info(this.id, `Mapped ${tables.horaire.length} logs, ${count.links} links, ${count.issues} issues, ${count.events} events, and ${count.diaries} diaries to ${Object.keys(tables.lexicon).length} terms, in ${(performance.now() - time).toFixed(2)}ms.`)
+    console.info(this.id, `Mapped ${tables.horaire.length} logs, ${count.issues} issues, ${count.events} events, and ${count.diaries} diaries to ${Object.keys(tables.lexicon).length} terms, in ${(performance.now() - time).toFixed(2)}ms.`)
   }
 }

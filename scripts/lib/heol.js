@@ -137,19 +137,8 @@ function Heol (input, host) {
     code: (item) => {
       return `<code>${item}</code>`
     },
-    // TODO: Cleanup..
     link: (target, name) => {
-      if (!target) {
-        return `<a href='${host.name.toUrl()}' target='_self' class='local' data-goto='${host.name.toUrl()}'>${host.name.toTitleCase()}</a>`
-      }
-      if (!name) {
-        name = target
-      }
-      if (target.indexOf('//') > -1) {
-        return `<a href='${target}' target='_blank' class='external'>${name}</a>`
-      }
-      if (!Ø('database').find(target)) { console.warn(`Broken link: ${target}, near ${input}.`) }
-      return `<a href='${target.toUrl()}' data-goto='${target.toUrl()}' target='_self' class='local'>${name}</a>`
+      return `${target.toLink(name)}`
     },
     // -----------------------
     // Templates
@@ -222,19 +211,11 @@ function Heol (input, host) {
 }
 
 String.prototype.toHeol = function (host) {
-  function parse (s) {
-    if (s.substr(0, 1) !== 'λ') { return s }
-    return s.replace(s, new Heol(s.substr(1), host))
-  }
-
   const matches = this.match(/[^{\}]+(?=})/g)
   if (!matches) { return this }
-
   let text = `${this}`
-
   matches.forEach(el => {
-    text = text.replace(`{${el}}`, parse(el))
+    text = text.replace(`{${el}}`, new Heol(el, host))
   })
-
   return text
 }

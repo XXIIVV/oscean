@@ -16,7 +16,6 @@ function Term (name, data) {
   this.bref = data.BREF ? data.BREF : ''
   this.unde = data.UNDE ? data.UNDE : 'Home'
   this.view = data.VIEW ? data.VIEW.toLowerCase() : 'main'
-  this.links = data.LINK ? data.LINK : {}
   this.theme = data.LOOK ? data.LOOK : null
   this.tags = data.TAGS ? data.TAGS.toLowerCase().split(' ') : []
   this.indexes = data.ALTS ? [name].concat(data.ALTS.split(' ')) : [name]
@@ -59,30 +58,11 @@ function Term (name, data) {
       incoming: this.incoming && this.incoming.length > 1,
       glyph: this.glyph() !== '',
       issues: this.issues.length === 0,
-      links: Object.keys(this.links).length > 0,
       tags: this.tags.length > 0
     }
 
     const score = Object.keys(points).reduce((acc, val) => { return acc + (points[val] ? 1 : 0) }, 0)
     return score / Object.keys(points).length
-  }
-
-  this.find_outgoing = function () {
-    const a = []
-    const str = this.data.BREF + (this.data.BODY ? this.data.BODY.join('\n') : '')
-
-    let curlies = str.match(/[^{\}]+(?=})/g)
-
-    if (!curlies) { return [] }
-
-    curlies = curlies.filter(el => { return el.indexOf('(') > -1 })
-    curlies = curlies.filter(el => { return el.indexOf('//') < 0 }) // Skip external
-
-    curlies.forEach(el => {
-      const name = el.split('(')[1].replace(')', '')
-      if (el.substr(0, 1) !== 'λ') { a.push(name.toUpperCase()) }
-    })
-    return a
   }
 
   this.body = function () {
