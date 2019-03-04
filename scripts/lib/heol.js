@@ -149,7 +149,7 @@ function Heol (input, tables, host) {
         return `<a href='${target}' target='_blank' class='external'>${name}</a>`
       }
       if (!Ø('database').find(target)) { console.warn(`Broken link: ${target}, near ${input}.`) }
-      return `<a href='${target.toUrl()}' data-goto='${target.toUrl()}' target='_self' class='local'>${name.toTitleCase()}</a>`
+      return `<a href='${target.toUrl()}' data-goto='${target.toUrl()}' target='_self' class='local'>${name}</a>`
     },
     // -----------------------
     // Templates
