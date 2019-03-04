@@ -8,7 +8,7 @@ RIVEN.lib.Database = function DatabaseNode (id, rect) {
   this.cache = null
   this.index = {}
 
-  function index_tables (tables) {
+  function indexTables (tables) {
     const h = {}
     const time = performance.now()
     for (const tId in tables) {
@@ -27,16 +27,15 @@ RIVEN.lib.Database = function DatabaseNode (id, rect) {
   this.answer = function (q) {
     if (!this.cache) {
       this.cache = this.request(this.cache)
-      this.index = index_tables(this.cache)
+      this.index = indexTables(this.cache)
       // Send ref to Ø(MAP), for filtering.
       this.send(this.cache)
     }
     return this.cache
   }
 
-  this.find = function (q, deep = false) {
-    const key = q.toUpperCase()
-    return this.index[key]
+  this.find = function (q) {
+    return this.index[q.toUpperCase()]
   }
 }
 

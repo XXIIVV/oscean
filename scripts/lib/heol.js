@@ -126,6 +126,29 @@ function Heol (input, tables, host) {
       return `${new Neralie()}`
     },
     // -----------------------
+    // Markup
+    // -----------------------
+    bold: (item) => {
+      return `<b>${item}</b>`
+    },
+    ital: (item) => {
+      return `<i>${item}</i>`
+    },
+    // TODO: Cleanup..
+    link: (target, name) => {
+      if (!target) {
+        return `<a href='${host.name.toUrl()}' target='_self' class='local' data-goto='${host.name.toUrl()}'>${host.name.toTitleCase()}</a>`
+      }
+      if (!name) {
+        name = target
+      }
+      if (target.indexOf('//') > -1) {
+        return `<a href='${target}' target='_blank' class='external'>${name}</a>`
+      }
+      if (!Ø('database').find(target)) { console.warn(`Broken link: ${target}`) }
+      return `<a href='${target.toUrl()}' data-goto='${target.toUrl()}' target='_self' class='local'>${name.toTitleCase()}</a>`
+    },
+    // -----------------------
     // Templates
     // -----------------------
     template: (items, t, p) => {
@@ -153,13 +176,13 @@ function Heol (input, tables, host) {
       return `${item.featuredLog ? `<a data-goto='${item.name}'><img src="media/diary/${item.featuredLog.pict}.jpg"/></a>` : ''}<h2>${item.name.toTitleCase()}</h2><h4>${item.bref}</h4>`
     },
     LIST: (item) => {
-      return `<li>${item.bref.toCurlic()}</li>`
+      return `<li>${item.bref.toCurlic(host)}</li>`
     },
     FULL: (item) => {
       return item.toString(true)
     },
     SPAN: (item) => {
-      return item.logs.length > 10 && item.span.from && item.span.to ? `<li>{(${item.name.toTitleCase()})} ${item.span.from}—${item.span.to}</li>`.toCurlic() : ''
+      return item.logs.length > 10 && item.span.from && item.span.to ? `<li>{(${item.name.toTitleCase()})} ${item.span.from}—${item.span.to}</li>`.toCurlic(host) : ''
     },
     // -----------------------
     // Lietal

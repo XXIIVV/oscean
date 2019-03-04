@@ -36,7 +36,7 @@ function runic (lines = [], templater = null, host = null) {
     const html = stash.a.reduce((acc, val, id) => {
       const r = runes[stash.rune]
       const txt = r.fn ? r.fn(stash.a[id]) : stash.a[id]
-      const htm = templater ? templater(txt) : txt
+      const htm = templater ? templater(txt, host) : txt
       return `${acc}${r.tag ? `<${r.tag} class='${r.class ? r.class : ''}'>${htm}</${r.tag}>` : `${htm}`}`
     }, '')
     return wr ? `${acc}<${wr} class='${wrClass || ''}'>${html}</${wr}>` : `${acc}${html}`

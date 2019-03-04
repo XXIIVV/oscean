@@ -68,4 +68,4 @@ function curlic (text = '', host) {
   return text
 }
 
-String.prototype.toCurlic = function (attr) { return `${curlic(this, attr)}` }
+String.prototype.toCurlic = function (host) { return `${curlic(this, host)}` }
