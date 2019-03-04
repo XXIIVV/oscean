@@ -134,6 +134,9 @@ function Heol (input, tables, host) {
     ital: (item) => {
       return `<i>${item}</i>`
     },
+    code: (item) => {
+      return `<code>${item}</code>`
+    },
     // TODO: Cleanup..
     link: (target, name) => {
       if (!target) {
