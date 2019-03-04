@@ -10,7 +10,7 @@ RIVEN.lib.Lxtxt = function LxtxtNode (id, rect) {
     if (term.logs.length < 1) { return `${acc}` }
     const name = term.name.toTitleCase()
     const date = term.logs[0].time.toGregorian() + 'T12:00:00'
-    const text = term.bref.toCurlic().stripHTML().trim()
+    const text = term.bref.toHeol(term).stripHTML().trim()
     return `${acc}${name}\t${date}\t${text}\n`
   }
 

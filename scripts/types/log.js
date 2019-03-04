@@ -39,7 +39,7 @@ function Log (data = { code: '-400' }) {
       <svg data-goto='${this.host.name}' class='icon'><path transform="scale(0.15,0.15) translate(20,20)" d="${this.host ? this.host.glyph() : ''}"></path></svg>
       <div class='head'>
         <div class='details'><a class='topic' data-goto='${this.term}' href='${this.term.toUrl()}'>${this.term}</a> ${this.name && !this.isEvent ? ` — <span class='name' data-goto='${this.name}'>${this.name}</span>` : ''} <span class='time' data-goto='${this.time}'>${timeAgo(this.time, 14)}</span></div>
-        <div class='bref'>${this.isEvent ? this.name : this.host ? this.host.bref.toCurlic() : ''}</div>
+        <div class='bref'>${this.isEvent ? this.name : this.host ? this.host.bref.toHeol(this.host) : ''}</div>
       </div>
       ${this.pict ? `<img src='media/diary/${this.pict}.jpg' data-goto='${this.term}'/>` : ''}
     </div>` : ''

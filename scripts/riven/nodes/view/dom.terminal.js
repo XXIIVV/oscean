@@ -127,7 +127,7 @@ You are now <b>${((new Date() - new Date('1986-03-22')) / 31557600000).toFixed(4
     },
 
     heol: (q) => {
-      return `${new Heol(q, Ø('database').cache, null)}`
+      return `${new Heol(q, null)}`
     },
 
     otd: (q) => {

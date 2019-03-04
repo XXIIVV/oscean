@@ -9,7 +9,7 @@ RIVEN.lib.TrackerTemplate = function TemplateNode (id, rect) {
     const issues = q.result && q.result.name === 'TRACKER' ? Object.values(q.tables.lexicon).reduce((acc, term) => { acc = acc.concat(term.issues); return acc }, []) : q.result ? q.result.issues : []
 
     if (issues.length < 1) {
-      return `<p>There are no issues to the {(${q.target.toTitleCase()})} project.</p>`.toCurlic()
+      return `<p>There are no issues to the ${q.target.toTitleCase().toLink()} project.</p>`
     }
 
     const viz = new BalanceViz(q.tables.horaire)

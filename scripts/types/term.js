@@ -86,7 +86,7 @@ function Term (name, data) {
   }
 
   this.body = function () {
-    return `${runic(this.data.BODY, curlic, this)}`
+    return `${runic(this.data.BODY, this)}`
   }
 
   this._photo = function () {

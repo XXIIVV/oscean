@@ -11,7 +11,7 @@ function Yleta (data = {}) {
   this.key = this.childspeak.substr(0, this.childspeak.length - 2)
   this.indexes = [this.name]
   this.yletaodeta = new Yletaodeta(this.childspeak)
-  this.bref = `<b>${this.name.toTitleCase()}</b>${this.name !== this.adultspeak ? `, or ${this.adultspeak}, ` : ''} is the {(Lietal)} word for \"${this.english}\" in English.`.toCurlic()
+  this.bref = `<b>${this.name.toTitleCase()}</b>${this.name !== this.adultspeak ? `, or ${this.adultspeak}, ` : ''} is the ${'Lietal'.toLink()} word for \"${this.english}\" in English.`
 
   this.parts = function (size = 2) {
     const chunks = []
@@ -34,7 +34,7 @@ function Yleta (data = {}) {
 
   this.toString = function () {
     const en = this.english
-    return `<p>{*${this.name.toTitleCase()}*}${this.name.toLowerCase() !== this.adultspeak.toLowerCase() ? ', or ' + this.adultspeak.toTitleCase() : ''} is a {(Lietal)} word${en ? ' that translates to \"' + en + '\" in {(English)}' : ''}.</p>`.toCurlic()
+    return `<p><b>${this.name.toTitleCase()}</b>${this.name.toLowerCase() !== this.adultspeak.toLowerCase() ? ', or ' + this.adultspeak.toTitleCase() : ''} is a ${'Lietal'.toLink()} word${en ? ' that translates to \"' + en + '\" in <i>English</i>' : ''}.</p>`
   }
 
   function adultspeak (childspeak, vowels = { 'a': 'ä', 'i': 'ï', 'o': 'ö', 'y': 'ÿ' }) {
@@ -80,7 +80,7 @@ function permutate (key) {
       for (const vi in v) {
         const name = `${key}${consonant}${v[vi]}`
         const result = Ø('asulodeta').find(name, 'name')
-        html += `<b>{${new Yleta({ name: name }).adultspeak}</b>(${name})}: ${result ? result.english : '<i>--</i>'}<br />`.toCurlic()
+        html += `<b>${new Yleta({ name: name }).adultspeak}</b>: ${result ? result.english : '<i>--</i>'}<br />`
       }
       html += `</td>`
     }

@@ -1,6 +1,6 @@
 'use strict'
 
-function Heol (input, tables, host) {
+function Heol (input, host) {
   const lib = {
     // -----------------------
     // Riven
@@ -16,7 +16,7 @@ function Heol (input, tables, host) {
       return filtered.map((val) => { return source[val.toUpperCase()] })
     },
     table: (source) => {
-      return tables[source]
+      return Ø('database').cache[source]
     },
     keys: (h) => {
       return Object.keys(h)
@@ -179,13 +179,13 @@ function Heol (input, tables, host) {
       return `${item.featuredLog ? `<a data-goto='${item.name}'><img src="media/diary/${item.featuredLog.pict}.jpg"/></a>` : ''}<h2>${item.name.toTitleCase()}</h2><h4>${item.bref}</h4>`
     },
     LIST: (item) => {
-      return `<li>${item.bref.toCurlic(host)}</li>`
+      return `<li>${item.bref.toHeol(host)}</li>`
     },
     FULL: (item) => {
       return item.toString(true)
     },
     SPAN: (item) => {
-      return item.logs.length > 10 && item.span.from && item.span.to ? `<li>{λ(link "${item.name.toTitleCase()}")} ${item.span.from}—${item.span.to}</li>`.toCurlic(host) : ''
+      return item.logs.length > 10 && item.span.from && item.span.to ? `<li>${item.name.toTitleCase().toLink()} ${item.span.from}—${item.span.to}</li>` : ''
     },
     // -----------------------
     // Lietal
@@ -218,5 +218,23 @@ function Heol (input, tables, host) {
     }
   }
 
-  Lisp.call(this, input, lib, tables, host)
+  Lisp.call(this, input, lib, Ø('database').cache, host)
+}
+
+String.prototype.toHeol = function (host) {
+  function parse (s) {
+    if (s.substr(0, 1) !== 'λ') { return s }
+    return s.replace(s, new Heol(s.substr(1), host))
+  }
+
+  const matches = this.match(/[^{\}]+(?=})/g)
+  if (!matches) { return this }
+
+  let text = `${this}`
+
+  matches.forEach(el => {
+    text = text.replace(`{${el}}`, parse(el))
+  })
+
+  return text
 }

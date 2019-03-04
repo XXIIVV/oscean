@@ -1,6 +1,6 @@
 'use strict'
 
-function runic (lines = [], templater = null, host = null) {
+function runic (lines = [], host = null) {
   const runes = {
     '&': { tag: 'p' },
     '*': { tag: 'h3' },
@@ -36,7 +36,7 @@ function runic (lines = [], templater = null, host = null) {
     const html = stash.a.reduce((acc, val, id) => {
       const r = runes[stash.rune]
       const txt = r.fn ? r.fn(stash.a[id]) : stash.a[id]
-      const htm = templater ? templater(txt, host) : txt
+      const htm = txt.toHeol(host)
       return `${acc}${r.tag ? `<${r.tag} class='${r.class ? r.class : ''}'>${htm}</${r.tag}>` : `${htm}`}`
     }, '')
     return wr ? `${acc}<${wr} class='${wrClass || ''}'>${html}</${wr}>` : `${acc}${html}`
@@ -70,7 +70,7 @@ function runic (lines = [], templater = null, host = null) {
   }
 
   function heol (content) {
-    return `${new Heol(content, Ø('database').cache, host)}`
+    return `${new Heol(content, host)}`
   }
 
   return lines.filter(isRunic).reduce(stash, []).reduce(_html, '')

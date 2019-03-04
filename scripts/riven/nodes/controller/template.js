@@ -85,20 +85,20 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
   function _directory (term) {
     if (!term.children) { return '' }
     const stem = term.children.length > 0 ? term : term.parent
-    let html = `<li class='parent'>{λ(link "${stem.name === term.name ? stem.parent.name : stem.name}" "${stem.name.toTitleCase()}")}</li>`
+    let html = `<li class='parent'>${(stem.name === term.name ? stem.parent.name : stem.name).toLink(stem.name.toTitleCase())}</li>`
     for (const id in stem.children) {
       const leaf = stem.children[id]
       if (leaf.name === stem.name) { continue }
       if (leaf.hasTag('hidden')) { continue }
-      html += `<li class='children ${leaf.name === term.name ? 'active' : ''}'>{λ(link "${leaf.name.toTitleCase()}")}</li>`
+      html += `<li class='children ${leaf.name === term.name ? 'active' : ''}'>${leaf.name.toTitleCase().toLink()}</li>`
     }
-    return `<ul class='directory'>${html}</ul>`.toCurlic()
+    return `<ul class='directory'>${html}</ul>`
   }
 
   this._sidebar = function (q) {
-    if (!q.result) { return '<h1>The {λ(link "Nataniev")} Services Desk</h1><h2>{λ(link "Home")}</h2>'.toCurlic() }
+    if (!q.result) { return `<h1>The ${'Nataniev'.toLink()} Services Desk</h1><h2>${'Home'.toLink()}</h2>` }
     return `
-    <h1>${q.result.bref.toCurlic()}</h1>
+    <h1>${q.result.bref.toHeol(q.result)}</h1>
     ${q.result.logs.length > 2 ? `<h2>${q.result.logs[q.result.logs.length - 1].time}—${q.result.logs[0].time}</h2>` : ''}
     ${_links(q.result)}
     ${_directory(q.result)}`
@@ -117,11 +117,11 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
     return `
       <svg id="glyph"><path transform="scale(0.15)" d="${portal.glyph()}"></path></svg>
       <ul>${portal.children.reduce((acc, child, id) => {
-    return `${acc}${`<ul><li>{λ(link "${child.name.toTitleCase()}")}</li><ul>${child.children.reduce((acc, child, id) => {
-      return `${acc}${`<ul><li class='${child.name === term.name || child.name.toLowerCase() === term.unde.toLowerCase() ? 'selected' : ''}'>{λ(link "${child.name.toTitleCase()}")}</li>${child.name === term.name || child.name.toLowerCase() === term.unde.toLowerCase() ? `<ul>${child.children.reduce((acc, child, id) => {
-        return `${acc}${`<ul><li class='${child.name === term.name ? 'selected' : ''}'>{λ(link "${child.name.toTitleCase()}")}</li></ul>`}`
+    return `${acc}${`<ul><li>${child.name.toTitleCase().toLink()}</li><ul>${child.children.reduce((acc, child, id) => {
+      return `${acc}${`<ul><li class='${child.name === term.name || child.name.toLowerCase() === term.unde.toLowerCase() ? 'selected' : ''}'>${child.name.toTitleCase().toLink()}</li>${child.name === term.name || child.name.toLowerCase() === term.unde.toLowerCase() ? `<ul>${child.children.reduce((acc, child, id) => {
+        return `${acc}${`<ul><li class='${child.name === term.name ? 'selected' : ''}'>${child.name.toTitleCase().toLink()}</li></ul>`}`
       }, '')}</ul>` : ''}</ul>`}`
     }, '')}</ul></ul>`}`
-  }, '')}</ul>`.toCurlic()
+  }, '')}</ul>`
   }
 }

@@ -33,7 +33,7 @@ RIVEN.lib.Rss = function RssNode (id, rect) {
     <description>
       &lt;img src="https://wiki.xxiivv.com/media/diary/${log.pict}.jpg"/&gt;
       &lt;br/&gt;
-      ${log.host.data.BREF.toCurlic().stripHTML()}
+      ${log.host.data.BREF.toHeol(log.host).stripHTML()}
     </description>
   </item>
 `

@@ -8,7 +8,7 @@ RIVEN.lib.Twtxt = function TwtxtNode (id, rect) {
   function _template (acc, log) {
     const date = log.time.toGregorian() + 'T01:01:01+01:00'
     const logText = log.toText() + '.'
-    const lexText = log.host.bref.toCurlic().stripHTML()
+    const lexText = log.host.bref.toHeol(log.host).stripHTML()
     const urlText = `https://wiki.xxiivv.com/${log.host.name.toUrl()}`
     let text = `${logText} ${lexText} ${urlText}`.trim()
 
