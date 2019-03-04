@@ -9,7 +9,7 @@ RIVEN.lib.JournalTemplate = function TemplateNode (id, rect) {
     const logs = q.result && q.result.name === 'JOURNAL' ? q.tables.horaire : q.result ? q.result.activity() : []
 
     if (logs.length < 1) {
-      return `<p>There is no recent activity to the {(${q.target.toTitleCase()})} project.</p>`.toCurlic()
+      return `<p>There is no recent activity to the ${q.target.toTitleCase().toLink()} project.</p>`
     }
 
     const viz = new ActivityViz(logs)

@@ -9,6 +9,7 @@ String.prototype.toLength = function (len, c = '_') { let s = `${this}`; while (
 String.prototype.count = function (c) { let r = 0; for (let i; i < this.length; i++) if (this[i] === c) r++; return r }
 String.prototype.stripHTML = function () { return this.replace(/<(?:.|\n)*?>/gm, '') }
 String.prototype.replaceAll = function (search, replacement) { return `${this}`.split(search).join(replacement) }
+String.prototype.toLink = function (name, external = false) { return `<a href='${external ? this : this.toUrl()}' data-goto='${external ? '' : this.toUrl()}' target='${external ? '_blank' : '_self'}' class='local'>${name || this}</a>` }
 
 // Arvelie
 

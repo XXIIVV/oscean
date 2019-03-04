@@ -9,7 +9,7 @@ RIVEN.lib.CalendarTemplate = function TemplateNode (id, rect) {
     const events = q.result && q.result.name === 'CALENDAR' ? q.tables.horaire.filter(__onlyEvents) : q.result ? q.result.activity().filter(__onlyEvents) : []
 
     if (events.length < 1) {
-      return `<p>There is no events to the {(${q.target.toTitleCase()})} project.</p>`.toCurlic()
+      return `<p>There is no events to the ${q.target.toLink()} project.</p>`
     }
 
     const viz = new BarViz(q.target === 'calendar' ? q.tables.horaire : q.result.activity())
