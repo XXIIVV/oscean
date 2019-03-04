@@ -75,7 +75,7 @@ You are now <b>${((new Date() - new Date('1986-03-22')) / 31557600000).toFixed(4
     },
 
     gtoa: (q) => {
-      return !isNaN(new Date(q)) ? `${new Date(q).arvelie()}` : 'Invalid Date'
+      return !isNaN(new Date(q)) ? `${new Date(q).toArvelie()}` : 'Invalid Date'
     },
 
     lien: (q) => {
@@ -131,7 +131,7 @@ You are now <b>${((new Date() - new Date('1986-03-22')) / 31557600000).toFixed(4
     },
 
     otd: (q) => {
-      const today = new Date().arvelie()
+      const today = new Date().toArvelie()
       const a = []
       const logs = Ø('database').cache.horaire.filter(__onlyEvents).filter(__onlyThisDay)
       if (logs.length < 1) { return `There are no events on this day.` }

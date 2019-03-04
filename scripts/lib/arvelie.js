@@ -45,3 +45,7 @@ function Arvelie (t = arvelie()) {
     return template ? `<span title='${this.toGregorian()}'>${this.t}</span>` : this.t
   }
 }
+
+Date.prototype.toArvelie = function () {
+  return new Arvelie(arvelie(this))
+}

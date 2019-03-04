@@ -1,15 +1,21 @@
 'use strict'
 
+// Transforms
+
 String.prototype.toTitleCase = function () { return this.toLowerCase().split(' ').map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join(' ') }
 String.prototype.toUrl = function () { return this.toLowerCase().replace(/ /g, '+').replace(/[^0-9a-z\+\:\-\.\/\~]/gi, '').trim() }
 String.prototype.toEntities = function () { return this.replace(/[\u00A0-\u9999<>\&]/gim, function (i) { return `&#${i.charCodeAt(0)}` }) }
 String.prototype.toAlpha = function () { return this.replace(/[^a-z ]/gi, '').trim() }
 String.prototype.toAlphanum = function () { return this.replace(/[^0-9a-z ]/gi, '') }
 String.prototype.toLength = function (len, c = '_') { let s = `${this}`; while (s.length < len) { s = `${s}${c}` } ; return s }
+String.prototype.toLink = function (name) { return this.indexOf('//') > -1 ? this.toExternalLink(name) : `<a href='${this.toUrl()}' data-goto='${this.toUrl()}' target='_self' class='local'>${name || this}</a>` }
+String.prototype.toExternalLink = function (name) { return `<a href='${this}' target='_blank' class='external'>${name || this}</a>` }
+
+// Tools
+
 String.prototype.count = function (c) { let r = 0; for (let i; i < this.length; i++) if (this[i] === c) r++; return r }
 String.prototype.stripHTML = function () { return this.replace(/<(?:.|\n)*?>/gm, '') }
 String.prototype.replaceAll = function (search, replacement) { return `${this}`.split(search).join(replacement) }
-String.prototype.toLink = function (name) { const external = this.indexOf('//') > -1; return `<a href='${external === true ? this : this.toUrl()}' data-goto='${external === true ? '' : this.toUrl()}' target='${external === true ? '_blank' : '_self'}' class='${external === true ? 'external' : 'local'}'>${name || this}</a>` }
 
 // Arvelie
 
@@ -101,6 +107,8 @@ function similarity (a, b) {
   return val
 }
 
+// Date 
+
 Date.prototype.doty = function () {
   const year = this.getFullYear()
   const start = new Date(year, 0, 0)
@@ -111,8 +119,4 @@ Date.prototype.doty = function () {
 Date.prototype.offset = function (days) {
   const date = new Date()
   return this.setDate(date.getDate() + 1)
-}
-
-Date.prototype.arvelie = function () {
-  return new Arvelie(arvelie(this))
 }

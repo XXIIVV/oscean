@@ -120,7 +120,7 @@ function Heol (input, host) {
       return `${new Arvelie(q).toGregorian()}`
     },
     gtod: (q) => {
-      return !isNaN(new Date(q)) ? `${new Date(q).arvelie()}` : 'Invalid Date'
+      return !isNaN(new Date(q)) ? `${new Date(q).toArvelie()}` : 'Invalid Date'
     },
     neralie: () => {
       return `${new Neralie()}`
