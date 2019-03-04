@@ -80,12 +80,12 @@ You are now <b>${((new Date() - new Date('1986-03-22')) / 31557600000).toFixed(4
 
     lien: (q) => {
       const res = Ø('asulodeta').find(q, 'name')
-      return res ? `The Lietal translation of {(${res.adultspeak.toTitleCase()})}, is: "{*${res.english.toTitleCase()}*}".`.toCurlic() : 'Unknown'
+      return res ? `The English translation of "{(${res.adultspeak.toTitleCase()})}" is "{*${res.english.toTitleCase()}*}".`.toCurlic() : 'Unknown'
     },
 
     enli: (q) => {
       const res = Ø('asulodeta').find(q, 'english')
-      return res ? `The English translation of {(${q.toTitleCase()})}, is: "{*${res.adultspeak.toTitleCase()}*}".`.toCurlic() : 'Unknown'
+      return res ? `The Lietal translation of "{*${q.toTitleCase()}*}" is "{*${res.adultspeak.toTitleCase()}*(${res.childspeak})}".`.toCurlic() : 'Unknown'
     },
 
     next: (q) => {
