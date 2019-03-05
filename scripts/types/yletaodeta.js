@@ -36,7 +36,6 @@ function Yletaodeta (yleta) {
       BL: { x: rect.x, y: rect.y + rect.h },
       BC: { x: rect.x + (rect.w / 2), y: rect.y + rect.h },
       BR: { x: rect.x + rect.w, y: rect.y + rect.h },
-      PUSH: { x: thickness * angle, y: thickness * angle },
       TYPE: rect.w === rect.h ? 'square' : rect.w > rect.h ? 'horizontal' : 'vertical'
     }
     for (let id in t) {

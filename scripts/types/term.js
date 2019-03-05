@@ -20,7 +20,7 @@ function Term (name, data) {
   this.tags = data.TAGS ? data.TAGS.toLowerCase().split(' ') : []
   this.indexes = data.ALTS ? [name].concat(data.ALTS.split(' ')) : [name]
   this.theme = data.LOOK ? data.LOOK.toLowerCase() : 'blanc'
-  this.is_portal = this.tags.indexOf('portal') > -1
+  this.isPortal = this.tags.indexOf('portal') > -1
 
   this.glyph = function () {
     if (this.data.ICON) { return this.data.ICON }
@@ -36,11 +36,11 @@ function Term (name, data) {
   }
 
   this.portal = function () {
-    if (this.is_portal) { return this }
-    if (this.parent.is_portal) { return this.parent }
-    if (this.parent.parent.is_portal) { return this.parent.parent }
-    if (this.parent.parent.parent.is_portal) { return this.parent.parent.parent }
-    if (this.parent.parent.parent.parent.is_portal) { return this.parent.parent.parent.parent }
+    if (this.isPortal) { return this }
+    if (this.parent.isPortal) { return this.parent }
+    if (this.parent.parent.isPortal) { return this.parent.parent }
+    if (this.parent.parent.parent.isPortal) { return this.parent.parent.parent }
+    if (this.parent.parent.parent.parent.isPortal) { return this.parent.parent.parent.parent }
     return null
   }
 
@@ -70,7 +70,7 @@ function Term (name, data) {
   }
 
   this._photo = function () {
-    return this.featuredLog ? `<a data-goto='${this.name}'><img src="media/diary/${this.featuredLog.pict}.jpg"/></a>` : ''
+    return this.featuredLog ? this.name.toLink(`<img src="media/diary/${this.featuredLog.pict}.jpg"/>`) : ''
   }
 
   this.toString = function (photo = false) {

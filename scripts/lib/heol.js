@@ -113,6 +113,9 @@ function Heol (input, host) {
     // -----------------------
     // Arvelie & Neralie
     // -----------------------
+    neralie: () => {
+      return `${new Neralie()}`
+    },
     arvelie: () => {
       return `${new Arvelie()}`
     },
@@ -121,9 +124,6 @@ function Heol (input, host) {
     },
     gtod: (q) => {
       return !isNaN(new Date(q)) ? `${new Date(q).toArvelie()}` : 'Invalid Date'
-    },
-    neralie: () => {
-      return `${new Neralie()}`
     },
     // -----------------------
     // Markup
@@ -162,10 +162,10 @@ function Heol (input, host) {
       return `<h2>${item.name.toTitleCase()}</h2><h4>${item.bref}</h4>`
     },
     PHOTO: (item) => {
-      return host.featuredLog && host.featuredLog.pict !== item.pict ? `<a data-goto='${item.name}'><img src="media/diary/${item.pict}.jpg"/></a>` : ''
+      return host.featuredLog && host.featuredLog.pict !== item.pict ? item.name.toLink(`<img src="media/diary/${item.pict}.jpg"/>`) : ''
     },
     GALLERY: (item) => {
-      return `${item.featuredLog ? `<a data-goto='${item.name}'><img src="media/diary/${item.featuredLog.pict}.jpg"/></a>` : ''}<h2>${item.name.toTitleCase()}</h2><h4>${item.bref}</h4>`
+      return `${item.featuredLog ? item.name.toLink(`<img src="media/diary/${item.featuredLog.pict}.jpg"/>`) : ''}<h2>${item.name.toTitleCase()}</h2><h4>${item.bref}</h4>`
     },
     LIST: (item) => {
       return `<li>${item.bref.toHeol(host)}</li>`

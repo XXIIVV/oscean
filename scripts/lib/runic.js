@@ -52,7 +52,7 @@ function runic (lines = [], host = null) {
     const link = parts[3]
     return `
       ${text.length > 1 ? `<p class='text'>${text}</p>` : ''}
-      ${author ? `<p class='attrib'>${author}${source && link ? `, <a href='${link}'>${source}</a>` : source ? `, <b>${source}</b>` : ''}</p>` : ''}`
+      ${author ? `<p class='attrib'>${author}${source && link ? `, ${link.toLink(source)}` : source ? `, <b>${source}</b>` : ''}</p>` : ''}`
   }
 
   function media (content) {

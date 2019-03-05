@@ -44,7 +44,7 @@ RIVEN.lib.Table = function TableNode (id, rect, parser, Type) {
     return h
   }
 
-  this.length = function(){
+  this.length = function () {
     return this.cache.constructor === Array ? this.cache.length : Object.keys(this.cache).length
   }
 }

@@ -21,7 +21,7 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
             search: q.target && q.target.toTitleCase(),
             activity: this._activity(q),
             info: {
-              title: featuredLog ? `<a data-goto='journal' href='#journal'>${featuredLog.name}</a> — ${timeAgo(featuredLog.time, 60)}` : ' ',
+              title: featuredLog ? `${'journal'.toLink(featuredLog.name)} — ${timeAgo(featuredLog.time, 60)}` : ' ',
               glyph: featuredLog ? featuredLog.host.glyph() : q.result && q.result.glyph() ? q.result.glyph() : 'M240,240 l0,-90 a-90,-90 0 0,0 -90,-90 l-90,0 l0,90 a90,90 0 0,0 90,90 l60,0 l0,-90 a-60,-60 0 0,0 -60,-60 l-60,0 l0,60 a60,60 0 0,0 60,60 l30,0 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0 l0,30 a30,30 0 0,0 30,30'
             }
           }
@@ -57,9 +57,9 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
 
     if (q.result.name === 'HOME' || q.result.name === 'JOURNAL' || q.result.name === 'CALENDAR' || q.result.name === 'TRACKER') {
       return `
-      <li><a class='calendar' data-goto='calendar' href='#calendar'>Calendar</a></li> 
-      <li><a class='journal' data-goto='journal' href='#journal'>Journal</a> 
-      <li><a class='tracker' data-goto='tracker' href='#tracker'>Tracker</a></li>`
+      <li>${'calendar'.toLink('Calendar', 'calendar')}</li> 
+      <li>${'journal'.toLink('Journal', 'journal')}</li>
+      <li>${'tracker'.toLink('Tracker', 'tracker')}</li>`
     }
 
     const activity = q.result.activity()
@@ -78,7 +78,7 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
     if (!term.links) { return '' }
     return `
     <ul class='links'>
-      ${Object.keys(term.links).reduce((acc, val) => { return `${acc}<li><a href='${term.links[val]}' target='_blank'>${val.toLowerCase()}</a></li>` }, '')}
+      ${Object.keys(term.links).reduce((acc, val) => { return `${acc}<li>${term.links[val].toLink(val)}</li>` }, '')}
     </ul>`
   }
 

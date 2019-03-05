@@ -104,10 +104,11 @@ You are now <b>${((new Date() - new Date('1986-03-22')) / 31557600000).toFixed(4
     },
 
     walk: (q) => {
+      const time = performance.now()
       for (const id in Ø('database').index) {
         Ø('database').index[id].toString()
       }
-      return `Done(walked ${Object.keys(Ø('database').index).length} indexes).`
+      return `Walked ${Object.keys(Ø('database').index).length} indexes, in ${(performance.now() - time).toFixed(2)}ms.`
     },
 
     rss: (q) => {

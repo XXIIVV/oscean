@@ -3,7 +3,7 @@
 function List (name, data) {
   Entry.call(this, name, data)
 
-  this.bref = `The {(${this.name.toTitleCase()})} word list.`
+  this.bref = `The ${this.name.toTitleCase().toLink()} word list.`
   this.unde = 'Mirrors'
   this.indexes = [name].concat(Object.keys(data))
 
