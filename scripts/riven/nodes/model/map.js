@@ -25,6 +25,7 @@ RIVEN.lib.Map = function MapNode (id, rect) {
       const parent = !term.data.UNDE ? 'HOME' : term.data.UNDE.toUpperCase()
       if (!tables.lexicon[parent]) { console.warn(`Unknown parent ${parent} for ${term.name}`) }
       if (!term.data.BREF) { console.warn(`Missing .bref, for ${term.name}`) }
+      if (!term.data.BODY) { console.warn(`Missing .body, for ${term.name}`) }
       term.parent = tables.lexicon[parent]
     }
 
