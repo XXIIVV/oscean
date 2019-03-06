@@ -88,6 +88,10 @@ You are now <b>${((new Date() - new Date('1986-03-22')) / 31557600000).toFixed(4
       return res ? `The Lietal translation of "<b>${q.toTitleCase()}</b>" is "${res.childspeak.toLink(res.adultspeak.toTitleCase())}".` : 'Unknown'
     },
 
+    yleta: (q) => {
+      return new Yleta({ name: q }).body()
+    },
+
     next: (q) => {
       const used = []
       for (const id in Ø('database').cache.horaire) {
