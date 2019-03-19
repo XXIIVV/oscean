@@ -61,7 +61,7 @@ function Yleta (data = {}) {
     }
     // kala -> käl
     if (v1 === v2) {
-      return v1 + c1 + c2 + v1
+      return vowels[v1] + c1 + 'e' + c2
     }
     return v1 + c1 + 'e' + c2 + v2
   }
