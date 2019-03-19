@@ -9,9 +9,9 @@ RIVEN.lib.Query = function QueryNode (id, rect) {
   this.bang = function (input = window.location.hash) {
     if (input.indexOf('~') > -1) {
       Ø('terminal').bang(input)
-      this.goto()
+      this.goto('home')
     } else if (this.location !== input.toUrl()) {
-      this.goto(input)
+      this.goto(input || 'home')
     }
   }
 
