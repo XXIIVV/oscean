@@ -8,32 +8,20 @@ RIVEN.lib.Terminal = function TerminalNode (id, rect, ...params) {
   this.isBooted = false
 
   this.bang = function (q) {
-    if (q.substr(0, 1) === '~') { q = q.replace('~', '').replace(/\+/g, ' ').trim() }
+    if (q.indexOf('~') < 0) { return }
 
-    const cmd = q.split(' ')[0]
-    const par = q.substr(cmd.length, q.length - cmd.length).trim()
+    const cmd = q.split(' ')[0].toUrl().replace('~', '').trim()
+    const par = q.substr(cmd.length, cmd.length - cmd.length).trim()
 
     if (!cmd) { return }
+
+    console.info(this.id, `${cmd}(${par})`)
 
     this.push('guest', `${cmd}${par ? '(' + par + ')' : ''}`, 125)
     this.push('maeve', `${this.services[cmd] ? this.services[cmd](par).trim() : this.services['unknown'](cmd)}`, 250)
 
     Ø('search').el.value = '~'
-  }
-
-  this.listen = function (q, bang = false) {
-    if (q.substr(0, 1) === '~') {
-      Ø('terminal').addClass('active')
-      if (this.isBooted === false && bang === false) {
-        this.boot()
-      }
-    } else {
-      Ø('terminal').removeClass('active')
-    }
-
-    if (bang === true && q.substr(0, 1) === '~') {
-      this.bang(q)
-    }
+    Ø('terminal').addClass('active')
   }
 
   this.boot = function () {

@@ -70,7 +70,6 @@ RIVEN.lib.Dom = function DomNode (id, rect, ...params) {
 
   this.hasClass = function (c) {
     if (!c) { return }
-
     return this.el.className.indexOf(c.toLowerCase()) > -1
   }
 }

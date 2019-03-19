@@ -35,7 +35,8 @@ RIVEN.lib.Database = function DatabaseNode (id, rect) {
   }
 
   this.find = function (q) {
-    return this.index[q.toUpperCase()]
+    const key = q.toUpperCase().trim()
+    return this.index[key]
   }
 }
 
