@@ -13,31 +13,26 @@ RIVEN.lib.Input = function InputNode (id, rect, ...params) {
   this.el.addEventListener('blur', () => { this.el.value = this.txt ? this.txt : window.location.hash.replace('#', '').trim() })
 
   this.onInput = function (e) {
-    const value = this.el.value.trim().toLowerCase()
-
-    Ø('terminal').listen(value)
-
-    this.test(value)
-
-    if (e.key === 'Enter') {
-      this.validate(value)
-    }
-  }
-
-  this.test = function (value) {
-    const result = Ø('database').index[value.toUpperCase()]
-    if (result) {
+    const target = this.el.value.toUrl()
+    if (Ø('database').find(target)) {
       this.addClass('known')
     } else {
       this.removeClass('known')
     }
+    // Shortcuts
+    if (e.key === 'Enter') {
+      this.validate(target)
+    }
+    if (e.key === 'Escape') {
+      Ø('terminal').removeClass('active')
+    }
   }
 
-  this.validate = function (value) {
-    if (value.substr(0, 1) === '~') {
-      Ø('terminal').bang(value)
+  this.validate = function (target) {
+    if (target.substr(0, 1) === '~') {
+      Ø('terminal').bang(target)
     } else {
-      Ø('query').bang(value)
+      Ø('query').bang(target)
     }
   }
 

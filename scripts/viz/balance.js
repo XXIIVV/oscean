@@ -56,12 +56,14 @@ function BalanceViz (logs) {
       const h_research = parseInt(100 * bal.research)
       const h_visual = parseInt(100 * bal.visual)
       const h_audio = height - h_visual - h_research
-      html += `<rect class='research' x='${x}' y='${y}' width='${cell}' height='${h_research}' rx="2" ry="2"></rect>`
-      html += `<rect class='visual' x='${x}' y='${h_research + 1}' width='${cell}' height='${h_visual}' rx="2" ry="2"></rect>`
-      html += `<rect class='audio' x='${x}' y='${h_research + h_visual + 2}' width='${cell}' height='${h_audio}' rx="2" ry="2"></rect>`
+      html += `<rect class='research' x='${x}' y='${y}' width='${cell}' height='${clamp(h_research, 0)}' rx="2" ry="2"></rect>`
+      html += `<rect class='visual' x='${x}' y='${h_research + 1}' width='${cell}' height='${clamp(h_visual, 0)}' rx="2" ry="2"></rect>`
+      html += `<rect class='audio' x='${x}' y='${h_research + h_visual + 2}' width='${cell}' height='${clamp(h_audio, 0)}' rx="2" ry="2"></rect>`
       day -= 1
     }
 
     return html
   }
+
+  function clamp (v, min, max) { return v < min ? min : v > max ? max : v }
 }

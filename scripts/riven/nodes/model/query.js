@@ -7,21 +7,22 @@ RIVEN.lib.Query = function QueryNode (id, rect) {
   this.location = null
 
   this.bang = function (input = window.location.hash) {
-    const target = input.toUrl()
-    if (this.location !== target) {
-      this.goto(target || 'home')
+    if (input.indexOf('~') > -1) {
+      Ø('terminal').bang(input)
+      this.goto()
+    } else if (this.location !== input.toUrl()) {
+      this.goto(input)
     }
   }
 
-  this.goto = function (target) {
+  this.goto = function (input = 'home') {
     const time = performance.now()
-    this.location = target
+    this.location = input.toUrl()
     window.location.hash = this.location
     Ø('document').setMode('state', 'loading')
-    setTimeout(() => { this.send(target) }, 50)
+    setTimeout(() => { this.send(this.location) }, 50)
     setTimeout(() => { Ø('document').setMode('state', 'ready') }, 150)
-    Ø('terminal').listen(target, true)
-    console.info(`${this.id}-${target}`, `Query completed in ${(performance.now() - time).toFixed(2)}ms.`)
+    console.info(`${this.id}-${this.location}`, `Query completed in ${(performance.now() - time).toFixed(2)}ms.`)
   }
 
   this.answer = function (q) {
