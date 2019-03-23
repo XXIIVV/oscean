@@ -16,7 +16,7 @@ RIVEN.lib.Terminal = function TerminalNode (id, rect, ...params) {
 
     if (!cmd) { return }
 
-    console.info(this.id, `${cmd}(${par})`,this.services[cmd])
+    console.info(this.id, `${cmd}(${par})`)
 
     this.push('guest', `${cmd}${par ? '(' + par + ')' : ''}`, 125)
     this.push('maeve', `${this.services[cmd] ? this.services[cmd](par).trim() : this.services['unknown'](cmd)}`, 250)
