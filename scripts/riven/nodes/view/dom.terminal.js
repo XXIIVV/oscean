@@ -10,13 +10,13 @@ RIVEN.lib.Terminal = function TerminalNode (id, rect, ...params) {
   this.bang = function (q) {
     if (q.indexOf('~') < 0) { return }
 
-    const words = q.split('+')
+    const words = q.substr(1).split('+')
     const cmd = words[0].substr(1)
     const par = words.splice(1).join(' ')
 
     if (!cmd) { return }
 
-    console.info(this.id, `${cmd}(${par})`)
+    console.info(this.id, `${cmd}(${par})`,this.services[cmd])
 
     this.push('guest', `${cmd}${par ? '(' + par + ')' : ''}`, 125)
     this.push('maeve', `${this.services[cmd] ? this.services[cmd](par).trim() : this.services['unknown'](cmd)}`, 250)
