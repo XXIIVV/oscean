@@ -11,7 +11,7 @@ RIVEN.lib.Terminal = function TerminalNode (id, rect, ...params) {
     if (q.indexOf('~') < 0) { return }
 
     const words = q.substr(1).split('+')
-    const cmd = words[0].substr(1)
+    const cmd = words[0]
     const par = words.splice(1).join(' ')
 
     if (!cmd) { return }
