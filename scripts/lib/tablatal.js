@@ -22,7 +22,7 @@ function tablatal (data, Type) {
   const lines = data.trim().split('\n')
   const key = makeKey(lines.splice(0, 1)[0])
   for (const id in lines) {
-    if (lines[id].trim() === '' || lines[id].substr(0, 1) === '~') { continue }
+    if (lines[id].trim() === '' || lines[id].substr(0, 1) === ';') { continue }
     const entry = {}
     for (const i in key) {
       entry[i] = lines[id].substr(key[i].from, key[i].to).trim()
