@@ -12,19 +12,10 @@ RIVEN.lib.JournalTemplate = function TemplateNode (id, rect) {
       return `<p>There is no recent activity to the ${q.target.toTitleCase().toLink()} project.</p>`
     }
 
-    const viz = new ActivityViz(logs)
-    const known = []
-    let html = ''
-    let i = 0
-    for (let id in logs) {
-      if (i > 20) { break }
-      const log = logs[id]
-      if (!log.pict && !log.isEvent && known.indexOf(log.term) > -1) { continue }
-      html += `${log}`
-      known.push(log.term)
-      i += 1
-    }
+    const html = logs.slice(0, 14 * 4).filter(__onlyOnce).slice(0, 20).reduce((acc, log) => {
+      return `${acc}${log}`
+    }, '')
 
-    return `${viz}${html}`
+    return `${new ActivityViz(logs)}${html}`
   }
 }

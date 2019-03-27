@@ -91,6 +91,20 @@ function __onlyEvents (log) {
   return log.isEvent
 }
 
+function __onlyPhotos (log) {
+  return log.pict !== null
+}
+
+function __onlyOnce (log, id, logs) {
+  for (const i in logs) {
+    if (log.pict || log.isEvent) { return true }
+    if (i < id && logs[i].term === log.term) {
+      return false
+    }
+  }
+  return true
+}
+
 // Compare strings
 
 function findSimilar (target, list) {
