@@ -15,7 +15,7 @@ function indental (data, Type) {
     return {
       indent: line.search(/\S|$/),
       content: line.trim(),
-      skip: line.trim() === '' || line.substr(0, 1) === '~',
+      skip: line.trim() === '' || line.substr(0, 1) === ';',
       key: line.indexOf(' : ') > -1 ? line.split(' : ')[0].trim() : null,
       value: line.indexOf(' : ') > -1 ? line.split(' : ')[1].trim() : null,
       children: []
