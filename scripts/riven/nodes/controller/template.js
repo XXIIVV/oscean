@@ -75,11 +75,10 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
   // Sidebar
 
   function _links (term) {
-    if (!term.links) { return '' }
-    return `
+    return term.links ? `
     <ul class='links'>
       ${Object.keys(term.links).reduce((acc, val) => { return `${acc}<li>${term.links[val].toLink(val)}</li>` }, '')}
-    </ul>`
+    </ul>` : ''
   }
 
   function _directory (term) {
