@@ -17,6 +17,7 @@ function Term (name, data) {
   this.unde = data.UNDE ? data.UNDE : 'Home'
   this.view = data.VIEW ? data.VIEW.toLowerCase() : 'main'
   this.theme = data.LOOK ? data.LOOK : null
+  this.links = data.LINK ? data.LINK : null
   this.tags = data.TAGS ? data.TAGS.toLowerCase().split(' ') : []
   this.indexes = data.ALTS ? [name].concat(data.ALTS.split(' ')) : [name]
   this.theme = data.LOOK ? data.LOOK.toLowerCase() : 'blanc'
