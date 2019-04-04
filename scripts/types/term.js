@@ -12,7 +12,6 @@ function Term (name, data) {
   this.featuredLog = null // From Ø('map')
 
   this.data = data
-  this.pict = data.PICT ? data.PICT : 0
   this.bref = data.BREF ? data.BREF : ''
   this.unde = data.UNDE ? data.UNDE : 'Home'
   this.view = data.VIEW ? data.VIEW.toLowerCase() : 'main'
@@ -31,7 +30,6 @@ function Term (name, data) {
   }
 
   this.photo = function () {
-    if (this.pict) { return this.pict }
     if (this.featuredLog && this.featuredLog.pict) { return this.featuredLog.pict }
     return 0
   }
