@@ -162,10 +162,10 @@ function Heol (input, host) {
       return `<h2>${item.name.toTitleCase()}</h2><h4>${item.bref}</h4>`
     },
     PHOTO: (item) => {
-      return host.featuredLog && host.featuredLog.pict !== item.pict ? item.name.toLink(`<img src="media/diary/${item.pict}.jpg"/>`) : ''
+      return host.featuredLog && host.featuredLog.pict !== item.pict ? item.name.toLink(`<img title="${item.name}" src="media/diary/${item.pict}.jpg"/>`) : ''
     },
     GALLERY: (item) => {
-      return `${item.featuredLog ? item.name.toLink(`<img src="media/diary/${item.featuredLog.pict}.jpg"/>`) : ''}<h2>${item.name.toTitleCase()}</h2><h4>${item.bref}</h4>`
+      return `${item.featuredLog ? item.name.toLink(`<img title="${item.name}" src="media/diary/${item.featuredLog.pict}.jpg"/>`) : ''}<h2>${item.name.toTitleCase()}</h2><h4>${item.bref}</h4>`
     },
     LIST: (item) => {
       return `<li>${item.bref.toHeol(host)}</li>`
