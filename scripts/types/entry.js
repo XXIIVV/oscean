@@ -20,20 +20,8 @@ function Entry (name, data) {
   this.events = []
   this.tags = []
 
-  this.glyph = function () {
-    return null
-  }
-
   this.activity = function () {
     return []
-  }
-
-  this.portal = function () {
-    return null
-  }
-
-  this.hasTag = function () {
-    return false
   }
 
   this.body = function () {
@@ -44,8 +32,20 @@ function Entry (name, data) {
     return [this.name]
   }
 
+  this.glyph = function () {
+    return null
+  }
+
+  this.portal = function () {
+    return null
+  }
+
+  this.hasTag = function () {
+    return false
+  }
+
   this.photo = function () {
-    return 0
+    return null
   }
 
   this.hasTag = function (str) {
