@@ -7,7 +7,7 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
 
   this.receive = function (q) {
     const time = performance.now()
-    const featuredLog = q.result ? q.result.featuredLog : null
+    const photo = q.result ? q.result.photo() : null
     const content = this.request(q)
 
     const template = {
@@ -16,13 +16,13 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
       theme: this._theme(q),
       document: {
         header: {
-          photo: q.result ? q.result.photo() : 0,
+          photo: photo ? photo.pict : 0,
           menu: {
             search: q.target && q.target.toTitleCase(),
             activity: this._activity(q),
             info: {
-              title: featuredLog ? `${'journal'.toLink(featuredLog.name)} — ${timeAgo(featuredLog.time, 60)}` : ' ',
-              glyph: featuredLog ? featuredLog.host.glyph() : q.result && q.result.glyph() ? q.result.glyph() : 'M240,240 l0,-90 a-90,-90 0 0,0 -90,-90 l-90,0 l0,90 a90,90 0 0,0 90,90 l60,0 l0,-90 a-60,-60 0 0,0 -60,-60 l-60,0 l0,60 a60,60 0 0,0 60,60 l30,0 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0 l0,30 a30,30 0 0,0 30,30'
+              title: photo ? `${'journal'.toLink(photo.name)} — ${timeAgo(photo.time, 60)}` : ' ',
+              glyph: photo ? photo.host.glyph() : q.result && q.result.glyph() ? q.result.glyph() : 'M240,240 l0,-90 a-90,-90 0 0,0 -90,-90 l-90,0 l0,90 a90,90 0 0,0 90,90 l60,0 l0,-90 a-60,-60 0 0,0 -60,-60 l-60,0 l0,60 a60,60 0 0,0 60,60 l30,0 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0 l0,30 a30,30 0 0,0 30,30'
             }
           }
         },

@@ -9,7 +9,6 @@ function Term (name, data) {
   this.issues = [] // From Ø('map')
   this.diaries = [] // From Ø('map')
   this.span = { from: null, to: null }
-  this.featuredLog = null // From Ø('map')
 
   this.data = data
   this.bref = data.BREF ? data.BREF : ''
@@ -30,8 +29,20 @@ function Term (name, data) {
   }
 
   this.photo = function () {
-    if (this.featuredLog && this.featuredLog.pict) { return this.featuredLog.pict }
-    return 0
+    const diaries = name === 'HOME' ? Ø('horaire').cache : this.diaries
+    for (const id in diaries) {
+      const diary = diaries[id]
+      if (diary.isFeatured && diary.time.offset < 0) {
+        return diaries[id]
+      }
+    }
+    const logs = this.activity()
+    for (const id in logs) {
+      if (logs[id].pict > 0) {
+        return logs[id]
+      }
+    }
+    return null
   }
 
   this.portal = function () {
@@ -69,7 +80,7 @@ function Term (name, data) {
   }
 
   this._photo = function () {
-    return this.featuredLog ? this.name.toLink(`<img src="media/diary/${this.featuredLog.pict}.jpg"/>`) : ''
+    return this.photo() ? this.name.toLink(`<img src="media/diary/${this.photo().pict}.jpg"/>`) : ''
   }
 
   this.toString = function (photo = false) {
