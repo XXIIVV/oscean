@@ -84,6 +84,6 @@ function Term (name, data) {
   }
 
   this.toString = function (photo = false) {
-    return `<h2>${this.name.toTitleCase()}</h2><h4>${this.bref}</h4>${photo === true ? this._photo() : ''}${this.body()}`
+    return `<h2>${this.name.toTitleCase()}</h2><h4>${this.bref}</h4>${photo === true ? this._photo() : ''}${this.body()}`.toHeol(this)
   }
 }
