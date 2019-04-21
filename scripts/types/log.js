@@ -45,10 +45,6 @@ function Log (data = { code: '-400' }) {
     </div>` : ''
   }
 
-  this.toString = function () {
-    return this.body()
-  }
-
   this.toText = function () {
     if (this.isEvent && this.name !== '') {
       return `${this.name}`
@@ -57,5 +53,15 @@ function Log (data = { code: '-400' }) {
       return `${this.term} ${this.host.parent.name.toTitleCase()} — \"${this.name}\"`
     }
     return `${this.term} ${this.host.parent.name.toTitleCase()} ${this.fh}fh ${this.task}`
+  }
+
+  this.validate = function () {
+    if (['+', '-', '!'].indexOf(this.rune) < 0) {
+      console.warn(`Unknown rune: ${this.rune}, on ${this.time}.`)
+    }
+  }
+
+  this.toString = function () {
+    return this.body()
   }
 }
