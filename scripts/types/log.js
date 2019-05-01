@@ -30,7 +30,7 @@ function Log (data = { code: '-400' }) {
   this.task = this.tasks[this.sc - 1] ? this.tasks[this.sc - 1][this.ch] : 'travel'
 
   this.photo = function () {
-    return parseInt(data.pict)
+    return this
   }
 
   this.body = function () {
