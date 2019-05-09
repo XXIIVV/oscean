@@ -60,8 +60,8 @@ function Log (data = { code: '-400' }) {
       console.warn(`Unknown rune: ${data.code}, on ${this.time}.`)
     }
     if (this.sc > 3) {
-      if(this.sc === 0 && (this.fh > 0 || this.ch > 0)){
-        console.warn(`Misformated code: ${data.code}, on ${this.time}.`)  
+      if (this.sc === 0 && (this.fh > 0 || this.ch > 0)) {
+        console.warn(`Misformated code: ${data.code}, on ${this.time}.`)
       }
       console.warn(`Unknown code: ${data.code}, on ${this.time}.`)
     }
