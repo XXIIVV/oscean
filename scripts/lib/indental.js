@@ -40,7 +40,7 @@ function indental (data, Type) {
     const line = lines[id]
     if (line.skip || line.indent > 0) { continue }
     const key = line.content.toUpperCase()
-    if (h[key]) { console.warn(`Re-defined key: ${key}`) }
+    if (h[key]) { console.warn(`Redefined key: ${key}, line ${id}.`) }
     h[key] = Type ? new Type(key, formatLine(line)) : formatLine(line)
   }
   return h
