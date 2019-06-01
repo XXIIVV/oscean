@@ -3,10 +3,10 @@
 RIVEN.create = (append = true) => {
   const lib = RIVEN.lib
 
-  Ø('mouse').create({ x: 2, y: 4 }, lib.Mouse)
+  Ø('mouse').create({ x: 0, y: 4 }, lib.Mouse)
 
-  Ø('init').create({ x: 2, y: 0 }, lib.Init)
-  Ø('query').create({ x: 8, y: 6 }, lib.Query)
+  Ø('init').create({ x: 0, y: 0 }, lib.Init)
+  Ø('query').create({ x: 6, y: 6 }, lib.Query)
 
   Ø('model').create({ x: 12, y: 4 }, lib.Mesh, [
     Ø('router').create({ x: 3, y: 0 }, lib.Router),
