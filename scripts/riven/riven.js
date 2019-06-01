@@ -332,7 +332,7 @@ RIVEN.graph = () => {
       x += offset.x + (2 * GRID_SIZE)
       y += offset.y + (2 * GRID_SIZE)
     }
-    return { x: x, y: y, w: w, h: h }
+    return { x: x + (2 * GRID_SIZE), y: y + (2 * GRID_SIZE), w: w, h: h }
   }
 
   function middle (a, b) {
