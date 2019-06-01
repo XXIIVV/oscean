@@ -168,7 +168,7 @@ RIVEN.graph = () => {
     return `${acc}${drawNode(network[val])}`
   }, '')
 
-  this.el.innerHTML = `<g id='routes'>${_routes}</g><g id='nodes'>${_nodes}</g>`
+  this.el.innerHTML = `<g id='viewport'><g id='routes'>${_routes}</g><g id='nodes'>${_nodes}</g></g>`
 
   function drawRoutes (node) {
     let html = ''
@@ -329,8 +329,8 @@ RIVEN.graph = () => {
 
     if (node.parent) {
       const offset = getRect(node.parent)
-      x += offset.x + (2 * GRID_SIZE)
-      y += offset.y + (2 * GRID_SIZE)
+      x += offset.x
+      y += offset.y
     }
     return { x: x + (2 * GRID_SIZE), y: y + (2 * GRID_SIZE), w: w, h: h }
   }
@@ -344,18 +344,20 @@ RIVEN.graph = () => {
   this.cursor = {
     host: null,
     el: document.createElement('cursor'),
+    target: null,
     pos: { x: 0, y: 0 },
     offset: { x: 0, y: 0 },
     origin: null,
     install: function (host) {
       this.host = host
+      this.target = document.getElementById('viewport')
       document.body.appendChild(this.el)
       document.addEventListener('mousedown', (e) => { this.touch({ x: e.clientX, y: e.clientY }, true); e.preventDefault() })
       document.addEventListener('mousemove', (e) => { this.touch({ x: e.clientX, y: e.clientY }, false); e.preventDefault() })
       document.addEventListener('mouseup', (e) => { this.touch({ x: e.clientX, y: e.clientY }); e.preventDefault() })
     },
     update: function () {
-      this.host.el.style.transform = `translate(${parseInt(this.offset.x)}px,${parseInt(this.offset.y)}px)`
+      this.target.style.transform = `translate(${parseInt(this.offset.x)}px,${parseInt(this.offset.y)}px)`
     },
     touch: function (pos, click = null) {
       if (click === true) {
