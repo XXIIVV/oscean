@@ -98,7 +98,7 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
     if (!q.result) { return `<h1>The ${'Nataniev'.toLink()} Services Desk</h1><h2>${'Home'.toLink()}</h2>` }
     return `
     <h1>${q.result.bref.toHeol(q.result)}</h1>
-    ${q.result.logs.length > 2 ? `<h2>${q.result.logs[q.result.logs.length - 1].time}—${q.result.logs[0].time}</h2>` : ''}
+    ${q.result.logs.length > 2 ? `<h2>${q.result.logs[q.result.logs.length - 1].time} — ${q.result.logs[0].time}</h2>` : ''}
     ${_links(q.result)}
     ${_directory(q.result)}`
   }
