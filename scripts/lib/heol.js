@@ -137,7 +137,7 @@ function Heol (input, host) {
     code: (item) => {
       return `<code>${item}</code>`
     },
-    link: (target = host.name, name) => {
+    link: (target = host.name.toTitleCase(), name) => {
       return `${target.toLink(name)}`
     },
     // -----------------------
