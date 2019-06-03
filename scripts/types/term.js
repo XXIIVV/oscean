@@ -32,7 +32,7 @@ function Term (name, data) {
     const diaries = name === 'HOME' ? Ø('horaire').cache : this.diaries
     for (const id in diaries) {
       const diary = diaries[id]
-      if (diary.isFeatured && diary.time.offset < 0) {
+      if (diary.isFeatured === true && diary.time.offset <= 0) {
         return diaries[id]
       }
     }
