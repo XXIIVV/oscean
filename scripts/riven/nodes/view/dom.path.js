@@ -10,7 +10,7 @@ RIVEN.lib.Path = function PathNode (id, rect, ...params) {
   this.path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
   this.path.setAttribute('transform', 'scale(0.165,0.165) translate(-50,-50)')
   this.el.appendChild(this.path)
-  this.is_installed = false
+  this.isInstalled = false
 
   this.receive = function (content) {
     if (content && content[this.id] !== null) {

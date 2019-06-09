@@ -10,18 +10,18 @@ RIVEN.lib.Mouse = function MouseNode (id, rect) {
   this.click = function (e) {
     if (e.button || e.which === 3 || e.button === 2) { return }
 
-    const in_tab = e.ctrlKey || e.shiftKey || e.metaKey
+    const inTab = e.ctrlKey || e.shiftKey || e.metaKey
     const el = e.target.getAttribute('data-goto') ? e.target : e.target.parentNode.getAttribute('data-goto') ? e.target.parentNode : null
     const view = e.target.getAttribute('data-view') ? e.target : e.target.parentNode.getAttribute('data-view') ? e.target.parentNode : null
 
-    if (view && !in_tab) {
+    if (view && !inTab) {
       const dataView = view.getAttribute('data-view')
       Ø('document').setMode('view', dataView)
       e.preventDefault()
       return
     }
 
-    if (!el || el.className === 'external' || in_tab) { return }
+    if (!el || el.className === 'external' || inTab) { return }
 
     const dataGoto = el.getAttribute('data-goto')
     Ø('query').bang(dataGoto)

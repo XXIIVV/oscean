@@ -5,7 +5,7 @@ RIVEN.lib.Map = function MapNode (id, rect) {
 
   this.glyph = 'M60,60 L60,60 L240,60 L240,240 L60,240 Z M150,60 L150,60 L150,240 M60,150 L60,150 L240,150 '
 
-  this.is_mapped = false
+  this.isMapped = false
 
   this.receive = function (tables) {
     try {
@@ -76,7 +76,7 @@ RIVEN.lib.Map = function MapNode (id, rect) {
         issues[id].host = tables.lexicon[index]
       }
     }
-    this.is_mapped = true
+    this.isMapped = true
     console.info(this.id, `Mapped ${tables.horaire.length} logs, ${count.issues} issues, ${count.events} events, and ${count.diaries} diaries to ${Object.keys(tables.lexicon).length} terms, in ${(performance.now() - time).toFixed(2)}ms.`)
   }
 }
