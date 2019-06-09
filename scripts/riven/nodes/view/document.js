@@ -24,7 +24,7 @@ RIVEN.lib.Document = function DocumentNode (id, rect, ...params) {
 
   this.answer = function (q) {
     if (!params[0]) { return }
-    if (!this.is_installed) {
+    if (!this.isInstalled) {
       this.install(this.request())
     }
     document.body.appendChild(this.el)

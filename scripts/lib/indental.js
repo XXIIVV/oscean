@@ -6,7 +6,13 @@ function indental (data, Type) {
     const h = {}
     for (const id in line.children) {
       const child = line.children[id]
-      if (child.key) { h[child.key.toUpperCase()] = child.value } else if (child.children.length === 0 && child.content) { a[a.length] = child.content } else { h[child.content.toUpperCase()] = formatLine(child) }
+      if (child.key) {
+        h[child.key.toUpperCase()] = child.value
+      } else if (child.children.length === 0 && child.content) {
+        a[a.length] = child.content
+      } else {
+        h[child.content.toUpperCase()] = formatLine(child)
+      }
     }
     return a.length > 0 ? a : h
   }
@@ -22,7 +28,11 @@ function indental (data, Type) {
     }
   }
 
-  const lines = data.split('\n').map(makeLine)
+  function shouldSkip (line) {
+    return line.trim() !== '' && line.substr(0, 1) !== ';'
+  }
+
+  const lines = data.split('\n').filter(shouldSkip).map(makeLine)
 
   // Assoc lines
   const stack = {}

@@ -7,7 +7,7 @@ RIVEN.lib.Photo = function PhotoNode (id, rect, ...params) {
   this.glyph = 'M60,90 L60,90 L60,60 L90,60 M210,60 L210,60 L240,60 L240,90 M240,210 L240,210 L240,240 L210,240 M90,240 L90,240 L60,240 L60,210 '
 
   this.install = function (elements) {
-    this.is_installed = true
+    this.isInstalled = true
     this.el.appendChild(this.media)
 
     for (const id in elements) {
@@ -17,7 +17,7 @@ RIVEN.lib.Photo = function PhotoNode (id, rect, ...params) {
 
   this.update = function (content) {
     if (content > 0) {
-      is_dark(`media/diary/${content}.jpg`, this.update_header)
+      isDark(`media/diary/${content}.jpg`, this.update_header)
       this.media.style.backgroundImage = `url(media/diary/${content}.jpg)`
       this.el.className = ''
     } else {
@@ -45,7 +45,7 @@ RIVEN.lib.Photo = function PhotoNode (id, rect, ...params) {
     return dl_diff + fuzzy < 0
   }
 
-  function is_dark (imageSrc, callback) {
+  function isDark (imageSrc, callback) {
     const fuzzy = -0.4
     const img = document.createElement('img')
     img.src = imageSrc

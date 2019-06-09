@@ -149,7 +149,33 @@ RIVEN.Node = function (id, rect = { x: 0, y: 0, w: 2, h: 2 }) {
   }
 }
 
-// GRAPH
+// Mesh
+
+RIVEN.lib.Mesh = function (id, rect, children) {
+  RIVEN.Node.call(this, id, rect)
+
+  this.glyph = ''
+  this.name = 'meshnode'
+
+  this.update = function () {
+    const bounds = { x: 0, y: 0 }
+    for (const id in this.children) {
+      const node = this.children[id]
+      bounds.x = node.rect.x > bounds.x ? node.rect.x : bounds.x
+      bounds.y = node.rect.y > bounds.y ? node.rect.y : bounds.y
+    }
+    this.rect.w = bounds.x + 7
+    this.rect.h = bounds.y + 6
+  }
+
+  for (const cid in children) {
+    children[cid].parent = this
+    this.children.push(children[cid])
+    this.update()
+  }
+}
+
+// Graph
 
 RIVEN.graph = () => {
   const network = RIVEN.network
@@ -358,6 +384,7 @@ RIVEN.graph = () => {
     },
     update: function () {
       this.target.style.transform = `translate(${parseInt(this.offset.x)}px,${parseInt(this.offset.y)}px)`
+      document.body.style.backgroundPosition = `${parseInt(this.offset.x * 0.75)}px ${parseInt(this.offset.y * 0.75)}px`
     },
     touch: function (pos, click = null) {
       if (click === true) {

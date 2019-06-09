@@ -5,7 +5,7 @@ RIVEN.lib.Input = function InputNode (id, rect, ...params) {
 
   this.el = document.createElement('input')
   this.el.id = this.id
-  this.is_installed = false
+  this.isInstalled = false
   this.el.setAttribute('spellcheck', false)
 
   this.el.addEventListener('keydown', (e) => { this.onInput(e) })

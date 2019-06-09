@@ -8,7 +8,7 @@ RIVEN.lib.Dom = function DomNode (id, rect, ...params) {
   this.label = `#${this.id}`
   this.el = document.createElement(this.type)
   this.el.id = this.id
-  this.is_installed = false
+  this.isInstalled = false
 
   // Set Content
   if (params[1]) {
@@ -30,14 +30,14 @@ RIVEN.lib.Dom = function DomNode (id, rect, ...params) {
   }
 
   this.answer = function () {
-    if (!this.is_installed) {
+    if (!this.isInstalled) {
       this.install(this.request())
     }
     return this.el
   }
 
   this.install = function (elements) {
-    this.is_installed = true
+    this.isInstalled = true
     for (const id in elements) {
       this.el.appendChild(elements[id])
     }
