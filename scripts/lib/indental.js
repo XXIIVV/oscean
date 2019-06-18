@@ -7,7 +7,7 @@ function indental (data, Type) {
     for (const id in line.children) {
       const child = line.children[id]
       if (child.key) {
-        h[child.key.toUpperCase()] = child.value
+        h[child.key] = child.value
       } else if (child.children.length === 0 && child.content) {
         a[a.length] = child.content
       } else {
@@ -18,11 +18,14 @@ function indental (data, Type) {
   }
 
   function makeLine (line) {
-    return {
+    return line.indexOf(' : ') > -1 ? {
       indent: line.search(/\S|$/),
       content: line.trim(),
-      key: line.indexOf(' : ') > -1 ? line.split(' : ')[0].trim() : null,
-      value: line.indexOf(' : ') > -1 ? line.split(' : ')[1].trim() : null,
+      key: line.split(' : ')[0].trim().toUpperCase(),
+      value: line.split(' : ')[1].trim()
+    } : {
+      indent: line.search(/\S|$/),
+      content: line.trim(),
       children: []
     }
   }
@@ -33,12 +36,12 @@ function indental (data, Type) {
 
   const lines = data.split('\n').filter(skipLine).map(makeLine)
 
-  // Assoc lines
+  // Assoc
   const stack = {}
   for (const id in lines) {
     const line = lines[id]
     const target = stack[line.indent - 2]
-    if (target) { target.children[target.children.length] = line }
+    if (target) { target.children.push(line) }
     stack[line.indent] = line
   }
 
