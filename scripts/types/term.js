@@ -38,7 +38,7 @@ function Term (name, data) {
     }
     const logs = this.activity()
     for (const id in logs) {
-      if (logs[id].pict > 0) {
+      if (logs[id].pict) {
         return logs[id]
       }
     }
