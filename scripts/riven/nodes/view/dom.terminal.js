@@ -90,7 +90,7 @@ You are now <b>${((new Date() - new Date('1986-03-22')) / 31557600000).toFixed(4
       }
       let available = 1
       while (available < 999) {
-        if (used.indexOf(available) < 0) { return `The next available diary ID is <b>${available}</b>.` }
+        if (used.indexOf(available.toString(16)) < 0) { return `The next available diary ID is <b>${available.toString(16).padStart(3, '0').toUpperCase()}</b>.` }
         available += 1
       }
       return `There are no available diary IDs under 999.`
