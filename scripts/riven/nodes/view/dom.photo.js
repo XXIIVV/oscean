@@ -45,21 +45,17 @@ RIVEN.lib.Photo = function PhotoNode (id, rect, ...params) {
     return dl_diff + fuzzy < 0
   }
 
-  function isDark (imageSrc, callback) {
+  function isDark (imageSrc, callback, w = 200, h = 200) {
     const fuzzy = -0.4
     const img = document.createElement('img')
     img.src = imageSrc
-
     img.onload = function () {
       const canvas = document.createElement('canvas')
-      canvas.width = this.width
-      canvas.height = this.height
-      const ctx = canvas.getContext('2d')
-      ctx.drawImage(this, 0, 0)
-
+      canvas.width = w
+      canvas.height = h
+      canvas.getContext('2d').drawImage(this, 0, 0, canvas.width, canvas.height)
       try {
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-        callback(diff(imageData.data, this.width, this.height))
+        callback(diff(canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height))
       } catch (err) { console.warn('Could not get photo data'); callback() }
     }
   }
