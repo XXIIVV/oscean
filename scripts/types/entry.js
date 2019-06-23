@@ -53,10 +53,6 @@ function Entry (name, data) {
     return this.tags.indexOf(target) > -1
   }
 
-  this.validate = function () {
-
-  }
-
   this.toString = function () {
     return `<div class='error'>${this.body()}</div>`
   }

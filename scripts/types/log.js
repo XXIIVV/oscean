@@ -55,19 +55,14 @@ function Log (data = { code: '-400' }) {
     return `${this.term} ${this.host.parent.name.toTitleCase()} ${this.fh}fh ${this.task}`
   }
 
-  this.validate = function () {
-    if (['+', '-', '!'].indexOf(this.rune) < 0) {
-      console.warn(`Unknown rune: ${data.code}, on ${this.time}.`)
-    }
-    if (this.sc > 3) {
-      if (this.sc === 0 && (this.fh > 0 || this.ch > 0)) {
-        console.warn(`Misformated code: ${data.code}, on ${this.time}.`)
-      }
-      console.warn(`Unknown code: ${data.code}, on ${this.time}.`)
-    }
-  }
-
   this.toString = function () {
     return this.body()
   }
+
+  // Checks
+
+  if (this.pict !== null && !this.name) { console.warn('Log', `Missing caption: ${this.time}`) }
+  if (this.pict === null && this.rune === '!') { console.warn('Log', `Feature without picture: ${this.time}`) }
+  if (['+', '-', '!'].indexOf(this.rune) < 0) { console.warn('Log', `Unknown rune: ${data.code}, on ${this.time}.`) }
+  if (this.sc > 3 || this.sc === 0 && (this.fh > 0 || this.ch > 0)) { console.warn('Log', `Unknown code: ${data.code}, on ${this.time}.`) }
 }
