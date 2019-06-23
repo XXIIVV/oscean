@@ -1,6 +1,6 @@
 'use strict'
 
-RIVEN.lib.Rss = function RssNode (id, rect) {
+RIVEN.lib.RssService = function RssNode (id, rect) {
   RIVEN.Node.call(this, id, rect)
 
   this.glyph = 'M65,65 L65,65 L245,65 L245,245 L65,245 Z M65,125 L65,125 L245,125 M95,95 L95,95 L95,95 '

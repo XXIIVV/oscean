@@ -86,4 +86,10 @@ function Term (name, data) {
   this.toString = function (photo = false) {
     return `<h2>${this.name.toTitleCase()}</h2><h4>${this.bref}</h4>${photo === true ? this._photo() : ''}${this.body()}`.toHeol(this)
   }
+
+  // Checks
+
+  if (!this.data.UNDE) { console.warn('Term', `Missing .UNDE, for ${this.name}`) }
+  if (!this.data.BREF) { console.warn('Term', `Missing .BREF, for ${this.name}`) }
+  if (!this.data.BODY) { console.warn('Term', `Missing .BODY, for ${this.name}`) }
 }

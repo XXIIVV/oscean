@@ -16,7 +16,7 @@ RIVEN.lib.Photo = function PhotoNode (id, rect, ...params) {
   }
 
   this.update = function (content) {
-    if (parseInt(content,16) > 0) {
+    if (parseInt(content, 16) > 0) {
       isDark(`media/diary/${content}.jpg`, this.update_header)
       this.media.style.backgroundImage = `url(media/diary/${content}.jpg)`
       this.el.className = ''

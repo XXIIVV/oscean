@@ -7,6 +7,7 @@ function indental (data, Type) {
     for (const id in line.children) {
       const child = line.children[id]
       if (child.key) {
+        if (h[child.key]) { console.warn(`Redefined key: ${child.key}.`) }
         h[child.key] = child.value
       } else if (child.children.length === 0 && child.content) {
         a[a.length] = child.content

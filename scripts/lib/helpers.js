@@ -7,14 +7,9 @@ String.prototype.toUrl = function () { return this.toLowerCase().replace(/ /g, '
 String.prototype.toEntities = function () { return this.replace(/[\u00A0-\u9999<>\&]/gim, function (i) { return `&#${i.charCodeAt(0)}` }) }
 String.prototype.toAlpha = function () { return this.replace(/[^a-z ]/gi, '').trim() }
 String.prototype.toAlphanum = function () { return this.replace(/[^0-9a-z ]/gi, '') }
-String.prototype.toLength = function (len, c = '_') { let s = `${this}`; while (s.length < len) { s = `${s}${c}` } ; return s }
 String.prototype.toLink = function (name, cl) { return this.indexOf('//') > -1 ? this.toExternalLink(name, cl) : this.toLocalLink(name, cl) }
 String.prototype.toLocalLink = function (name, cl = '') { return `<a href='${this.toUrl()}' data-goto='${this.toUrl()}' target='_self' class='local ${cl} ${redLink(this)}'>${name || this}</a>` }
 String.prototype.toExternalLink = function (name, cl = '') { return `<a href='${this}' target='_blank' class='external ${cl}'>${name || this}</a>` }
-
-// Tools
-
-String.prototype.count = function (c) { let r = 0; for (let i; i < this.length; i++) if (this[i] === c) r++; return r }
 String.prototype.stripHTML = function () { return this.replace(/<(?:.|\n)*?>/gm, '') }
 String.prototype.replaceAll = function (search, replacement) { return `${this}`.split(search).join(replacement) }
 

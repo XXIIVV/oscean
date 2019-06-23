@@ -23,9 +23,7 @@ RIVEN.lib.Map = function MapNode (id, rect) {
     for (const id in tables.lexicon) {
       const term = tables.lexicon[id]
       const parent = !term.data.UNDE ? 'HOME' : term.data.UNDE.toUpperCase()
-      if (!tables.lexicon[parent]) { console.warn(`Unknown parent ${parent} for ${term.name}`) }
-      if (!term.data.BREF) { console.warn(`Missing .bref, for ${term.name}`) }
-      if (!term.data.BODY) { console.warn(`Missing .body, for ${term.name}`) }
+      if (!tables.lexicon[parent]) { console.warn(`Unknown parent ${parent} for ${term.name}`); continue }
       term.parent = tables.lexicon[parent]
     }
 
@@ -59,7 +57,6 @@ RIVEN.lib.Map = function MapNode (id, rect) {
       }
       if (!log.pict) { continue }
       if (log.time.offset > 0) { continue }
-      if (!log.name) { console.warn(`Missing caption: ${log.pict}`) }
       tables.lexicon[index].diaries.push(log)
       count.diaries += 1
     }
