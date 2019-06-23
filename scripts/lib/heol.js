@@ -150,7 +150,7 @@ function Heol (input, host) {
       return `<${tag} class='${cl || ''}'>${item}</${tag}>`
     },
     INDEX: (item) => {
-      return `<h3>{λ(link "${item.name.toTitleCase()}")}</h3><p>${item.bref}</p><ul class='bullet'>${item.children.reduce((acc, term) => { return `${acc}<li>${term.bref}</li>` }, '')}</ul>`
+      return `<h3>{λ(link "${item.name.toTitleCase()}")}</h3><p>${item.bref}</p><ul class='bullet'>${item.children.reduce((acc, term) => { return `${acc}<li>${term.bref}</li>` }, '')}</ul>`.toHeol(item)
     },
     LINK: (item) => {
       return `{λ(link "${item.toTitleCase()}")}`
@@ -159,7 +159,7 @@ function Heol (input, host) {
       return `<meta http-equiv="refresh" content="2; url=#${item}">`
     },
     TITLE: (item) => {
-      return `<h2>${item.name.toTitleCase()}</h2><h4>${item.bref}</h4>`
+      return `<h2>${item.name.toTitleCase()}</h2><h4>${item.bref}</h4>`.toHeol(item)
     },
     PHOTO: (item) => {
       return host.photo() && host.photo().pict !== item.pict ? item.name.toLink(`<img title="${item.name}" src="media/diary/${item.pict}.jpg"/>`) : ''
@@ -168,10 +168,10 @@ function Heol (input, host) {
       return `${item.photo() ? item.name.toLink(`<img title="${item.name}" src="media/diary/${item.photo().pict}.jpg"/>`) : ''}<h2>${item.name.toTitleCase()}</h2><h4>${item.bref}</h4>`.toHeol(item)
     },
     LIST: (item) => {
-      return `<li>${item.bref.toHeol(host)}</li>`
+      return `<li>${item.bref}</li>`.toHeol(item)
     },
     FULL: (item) => {
-      return item.toString(true)
+      return item.toString(true).toHeol(item)
     },
     SPAN: (item) => {
       return item.logs.length > 10 && item.span.from && item.span.to ? `<li>${item.name.toTitleCase().toLink()} ${item.span.from}—${item.span.to}</li>` : ''

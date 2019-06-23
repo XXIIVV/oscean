@@ -89,7 +89,8 @@ function Term (name, data) {
 
   // Checks
 
-  if (!this.data.UNDE) { console.warn('Term', `Missing .UNDE, for ${this.name}`) }
-  if (!this.data.BREF) { console.warn('Term', `Missing .BREF, for ${this.name}`) }
-  if (!this.data.BODY) { console.warn('Term', `Missing .BODY, for ${this.name}`) }
+  if (!this.data.UNDE) { console.warn('Term', `Missing .UNDE, for ${this.name}.`) }
+  if (!this.data.BREF) { console.warn('Term', `Missing .BREF, for ${this.name}.`) }
+  if (!this.data.BODY) { console.warn('Term', `Missing .BODY, for ${this.name}.`) }
+  if (this.data.BREF.indexOf('{(link)}') < 0) { console.warn('Term', `Missing self-reference, for ${this.name}.`) }
 }
