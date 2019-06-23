@@ -16,27 +16,21 @@ RIVEN.lib.Terminal = function TerminalNode (id, rect, ...params) {
 
     if (!cmd) { return }
 
-    console.info(this.id, `${cmd}(${par})`)
+    this.boot()
 
     this.push('guest', `${cmd}${par ? '(' + par + ')' : ''}`, 125)
-    this.push('maeve', `${this.services[cmd] ? this.services[cmd](par).trim() : this.services['unknown'](cmd)}`, 250)
+    this.push('maeve', `${this.services[cmd] ? this.services[cmd](par) : this.services['unknown'](cmd)}`, 250)
 
     Ø('search').el.value = '~'
     Ø('terminal').addClass('active')
   }
 
   this.boot = function () {
-    const forecast = new Forecast(Ø('database').cache.horaire)
-    const score = { ratings: 0, entries: 0 }
-    for (const id in Ø('database').cache.lexicon) {
-      score.ratings += Ø('database').cache.lexicon[id].rating()
-      score.entries += 1
-    }
-
-    this.push('maeve', `Welcome back, the local time is ${arvelie()} ${neralie()}.
-Today's forecast is ${forecast.fh}fh of <b>${forecast.sector} ${forecast.task}</b>.
-Oscean is presently <b>${((score.ratings / score.entries) * 100).toFixed(2)}% Completed</b>.
-You are now <b>${((new Date() - new Date('1986-03-22')) / 31557600000).toFixed(4)} years</b> old.`, 500)
+    if (this.isBooted === true) { return }
+    this.push('maeve', `The local time is ${arvelie()} ${neralie()}.
+Today's forecast is <b>${this.services.forecast()}</b>.
+Oscean is presently <b>${this.services.progress().toFixed(2)}% Completed</b>.
+Devine is now <b>${this.services.age().toFixed(4)} years</b> old.`, 0)
     this.isBooted = true
   }
 
@@ -67,12 +61,12 @@ You are now <b>${((new Date() - new Date('1986-03-22')) / 31557600000).toFixed(4
       return !isNaN(new Date(q)) ? `${new Date(q).toArvelie()}` : 'Invalid Date'
     },
 
-    lien: (q) => {
+    litoen: (q) => {
       const res = Ø('asulodeta').find(q, 'name')
       return res ? `The English translation of "${res.childspeak.toLink(res.adultspeak.toTitleCase())}" is "<b>${res.english.toTitleCase()}</b>".` : 'Unknown'
     },
 
-    enli: (q) => {
+    entoli: (q) => {
       const res = Ø('asulodeta').find(q, 'english')
       return res ? `The Lietal translation of "<b>${q.toTitleCase()}</b>" is "${res.childspeak.toLink(res.adultspeak.toTitleCase())}".` : 'Unknown'
     },
@@ -113,16 +107,26 @@ You are now <b>${((new Date() - new Date('1986-03-22')) / 31557600000).toFixed(4
       return `<textarea>${Ø('static').receive(q)}</textarea>`
     },
 
-    twtxt: (q) => {
-      return `<textarea>${Ø('twtxt').receive(q)}</textarea>`
-    },
-
-    lxtxt: (q) => {
-      return `<textarea>${Ø('lxtxt').receive(q)}</textarea>`
-    },
-
     heol: (q) => {
       return `${new Heol(q, null)}`
+    },
+
+    age: (q) => {
+      return ((new Date() - new Date('1986-03-22')) / 31557600000)
+    },
+
+    progress: (q) => {
+      const score = { ratings: 0, entries: 0 }
+      for (const id in Ø('database').cache.lexicon) {
+        score.ratings += Ø('database').cache.lexicon[id].rating()
+        score.entries += 1
+      }
+      return ((score.ratings / score.entries) * 100)
+    },
+
+    forecast: (q) => {
+      const forecast = new Forecast(Ø('database').cache.horaire)
+      return `${forecast.fh}fh of ${forecast.sector} ${forecast.task}`
     },
 
     otd: (q) => {
