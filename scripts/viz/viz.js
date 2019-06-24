@@ -31,9 +31,6 @@ function Viz (logs, from, to, showDetails = true) {
     const sum = horaire.sectors.audio + horaire.sectors.visual + horaire.sectors.research
 
     return `
-    <text x='${2}' y='${-15}' style='text-anchor:start'>${timeAgo(logs[logs.length - 1].time).toTitleCase()}</text>
-    <text x='${730}' y='${-15}' style='text-anchor:end'>${timeAgo(logs[0].time).toTitleCase()}</text>
-
     <rect class="audio" x="${cell * 0}" y="115" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
     <text x='${(cell + 1) * 2}' y='125' style='text-anchor:start'>Audio ${_perc(horaire.sectors.audio, sum)}%</text>
     <rect class="visual" x="${(cell + 1) * 8}" y="115" width="13" height="13" rx="2" ry="2" title="17O11"></rect>

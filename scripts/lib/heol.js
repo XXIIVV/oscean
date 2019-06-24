@@ -83,14 +83,26 @@ function Heol (input, host) {
     // -----------------------
     // Arrays
     // -----------------------
-    map: (arr, fn) => {
+    map: (arr, name) => {
       return arr.map((val, id, arr) => fn)
     },
-    filter: (arr, fn, param) => {
-      return arr.filter((val, id, arr) => fn)
+    filter: (arr, name) => {
+      return arr.filter(window[name])
     },
-    reduce: (arr, fn, acc) => {
+    reduce: (arr, name, acc) => {
       return arr.reduce((acc, val, id, arr) => fn, acc)
+    },
+    splice: (arr, index, length) => {
+      return arr.splice(index, length)
+    },
+    slice: (arr, index, length) => {
+      return arr.slice(index, length)
+    },
+    reverse: (arr) => {
+      return arr.reverse()
+    },
+    first: (arr) => {
+      return arr[0]
     },
     count: (item) => {
       return item.length
@@ -150,7 +162,7 @@ function Heol (input, host) {
       return `<${tag} class='${cl || ''}'>${item}</${tag}>`
     },
     INDEX: (item) => {
-      return `<h3>{λ(link "${item.name.toTitleCase()}")}</h3><p>${item.bref}</p><ul class='bullet'>${item.children.reduce((acc, term) => { return `${acc}<li>${term.bref}</li>` }, '')}</ul>`.toHeol(item)
+      return `<h3>{λ(link "${item.name.toTitleCase()}")}</h3><h4>${item.bref}</h4><ul class='bullet'>${item.children.reduce((acc, term) => { return `${acc}<li>${term.bref}</li>`.toHeol(term) }, '')}</ul>`.toHeol(item)
     },
     LINK: (item) => {
       return `{λ(link "${item.toTitleCase()}")}`

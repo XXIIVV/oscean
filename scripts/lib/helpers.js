@@ -58,6 +58,10 @@ function __onlyPast (log) {
   return log.time.offset < 0
 }
 
+function __onlyFuture (log) {
+  return log.time.offset > 0
+}
+
 function __onlyPast14 (log) {
   return log.time.offset <= 0 && log.time.offset > -14
 }
