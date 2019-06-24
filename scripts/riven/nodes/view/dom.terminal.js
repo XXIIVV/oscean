@@ -71,6 +71,10 @@ Devine is now <b>${this.services.age().toFixed(4)} years</b> old.`, 0)
       return res ? `The Lietal translation of "<b>${q.toTitleCase()}</b>" is "${res.childspeak.toLink(res.adultspeak.toTitleCase())}".` : 'Unknown'
     },
 
+    task: (q) => {
+      return `${new Log({ code: '-' + q }).task}`
+    },
+
     yleta: (q) => {
       return new Yleta({ name: q }).body()
     },
