@@ -26,6 +26,7 @@ RIVEN.lib.Document = function DocumentNode (id, rect, ...params) {
     if (!params[0]) { return }
     if (!this.isInstalled) {
       this.install(this.request())
+      window.addEventListener('scroll', this.onScroll)
     }
     document.body.appendChild(this.el)
   }
@@ -46,17 +47,8 @@ RIVEN.lib.Document = function DocumentNode (id, rect, ...params) {
     this.modes[mode] = value
     this.setClass(`state_${this.modes.state} view_${this.modes.view} theme_${this.modes.theme}`)
   }
-}
 
-function on_scroll () {
-  const scroll = window.scrollY
-  const _header = document.getElementById('header')
-  const _menu = document.getElementById('menu')
-  if (_header && scroll > _header.offsetHeight - 90) {
-    if (_menu.className !== 'sticky') { _menu.className = 'sticky' }
-  } else if (_header) {
-    if (_menu.className === 'sticky') { _menu.className = '' }
+  this.onScroll = function () {
+    Ø('menu').setClass(window.scrollY > Ø('header').el.offsetHeight - 90 ? 'sticky' : '')
   }
 }
-
-window.addEventListener('scroll', on_scroll)
