@@ -159,7 +159,7 @@ function Heol (input, host) {
       return items.map((val) => { return `${t(val, p)}` })
     },
     wrap: (item, tag, cl) => {
-      return `<${tag} class='${cl || ''}'>${item}</${tag}>`
+      return item ? `<${tag} class='${cl || ''}'>${item}</${tag}>` : ''
     },
     INDEX: (item) => {
       return `<h3>{λ(link "${item.name.toTitleCase()}")}</h3><h4>${item.bref}</h4><ul class='bullet'>${item.children.reduce((acc, term) => { return `${acc}<li>${term.bref}</li>`.toHeol(term) }, '')}</ul>`.toHeol(item)
