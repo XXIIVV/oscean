@@ -89,4 +89,5 @@ RIVEN.create = (append = true) => {
 
   // Start
   Ø('init').request()
+  Ø('init').bang()
 }

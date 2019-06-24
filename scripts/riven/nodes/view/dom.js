@@ -53,6 +53,8 @@ RIVEN.lib.Dom = function DomNode (id, rect, ...params) {
   // Class
 
   this.setClass = function (c) {
+    if (this.el.className === c) { return }
+
     this.el.className = `${c.toLowerCase()}`
   }
 
