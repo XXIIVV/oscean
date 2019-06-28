@@ -124,3 +124,93 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
   }, '')}</ul>`
   }
 }
+
+RIVEN.lib.TrackerTemplate = function TemplateNode (id, rect) {
+  RIVEN.Node.call(this, id, rect)
+
+  this.glyph = 'M60,60 L60,60 L240,60 L240,240 L60,240 Z M240,150 L240,150 L150,150 L150,240'
+
+  this.answer = function (q) {
+    const issues = q.result && q.result.name === 'TRACKER' ? Object.values(q.tables.lexicon).reduce((acc, term) => { acc = acc.concat(term.issues); return acc }, []) : q.result ? q.result.issues : []
+
+    if (issues.length < 1) {
+      return `<p>There are no issues to the ${q.target.toTitleCase().toLink()} project.</p>`
+    }
+
+    const viz = new BalanceViz(q.tables.horaire)
+    const html = issues.reduce((acc, key) => { return `${acc}${key}` }, '')
+
+    return `${viz}${html}`
+  }
+}
+
+RIVEN.lib.JournalTemplate = function TemplateNode (id, rect) {
+  RIVEN.Node.call(this, id, rect)
+
+  this.glyph = 'M60,60 L60,60 L240,60 L240,240 L60,240 Z M240,150 L240,150 L150,150 L150,240'
+
+  this.answer = function (q) {
+    const logs = q.result && q.result.name === 'JOURNAL' ? q.tables.horaire : q.result ? q.result.activity() : []
+
+    if (logs.length < 1) {
+      return `<p>There is no recent activity to the ${q.target.toTitleCase().toLink()} project.</p>`
+    }
+
+    const html = logs.slice(0, 14 * 4).filter(__onlyOnce).slice(0, 20).reduce((acc, log) => {
+      return `${acc}${log}`
+    }, '')
+
+    return `${new ActivityViz(logs)}${html}`
+  }
+}
+
+RIVEN.lib.DefaultTemplate = function TemplateNode (id, rect) {
+  RIVEN.Node.call(this, id, rect)
+
+  this.glyph = 'M60,60 L60,60 L240,60 L240,240 L60,240 Z M240,150 L240,150 L150,150 L150,240'
+
+  this.answer = function (q) {
+    if (q.result) { return `${_redirected(q)}${q.result.body()}` }
+
+    const index = Object.keys(Ø('database').index)
+    const similar = findSimilar(q.target.toUpperCase(), index)
+
+    return `
+    <p>Sorry, there are no pages for <b>${q.target.toTitleCase()}</b>, did you mean ${similar[0].word.toTitleCase().toLink()} or ${similar[1].word.toTitleCase().toLink()}?</p>
+    <p><b>Create this page</b> by submitting a ${'https://github.com/XXIIVV/oscean'.toLink('Pull Request', true)}, or if you believe this to be an error, please contact ${'https://twitter.com/neauoire'.toLink('@neauoire', true)}. Alternatively, you locate missing pages from within the ${'Tracker'.toLink('progress tracker')}.</p>`
+  }
+
+  function _redirected (q) {
+    if (q.target.toUrl() !== q.result.name.toUrl()) {
+      return `<div class='notice'>Redirected to ${q.result.name.toTitleCase().toLink()}, from <b>${q.target.toTitleCase()}</b>.</div>`
+    }
+    return ``
+  }
+}
+
+RIVEN.lib.CalendarTemplate = function TemplateNode (id, rect) {
+  RIVEN.Node.call(this, id, rect)
+
+  this.glyph = 'M60,60 L60,60 L240,60 L240,240 L60,240 Z M240,150 L240,150 L150,150 L150,240'
+
+  this.answer = function (q) {
+    const events = q.result && q.result.name === 'CALENDAR' ? q.tables.horaire.filter(__onlyEvents) : q.result ? q.result.activity().filter(__onlyEvents) : []
+
+    if (events.length < 1) {
+      return `<p>There is no events to the ${q.target.toLink()} project.</p>`
+    }
+
+    const viz = new BarViz(q.target === 'calendar' ? q.tables.horaire : q.result.activity())
+
+    const html = `<ul class='tidy ${events.length > 10 ? 'col3' : ''}' style='padding-top:30px;'>${events.reduce((acc, log, id, arr) => {
+      return `
+      ${acc}
+      ${!arr[id - 1] || arr[id - 1].time.y !== log.time.y ? `<li class='head'>20${log.time.y}</li>` : ''}
+      <li style='${log.time.offset > 0 ? 'color:#aaa' : ''}'>
+        ${log.term.toLink(log.name)} <span title='${log.time}'>${timeAgo(log.time, 60)}</span>
+      </li>`
+    }, '')}</ul>`
+
+    return `${viz}${html}`
+  }
+}
