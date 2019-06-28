@@ -239,10 +239,9 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
     const events = activity.filter(__onlyEvents)
 
     return `
-    ${events.length > 0 ? `<li><a class='calendar sprite_calendar' data-view='calendar' href='#${q.result.name.toUrl()}:calendar'>${events.length} Event${events.length > 1 ? 's' : ''}</a></li>` : ''}
-    ${activity.length > 2 && !q.result.hasTag('journal') ? `<li><a class='journal sprite_journal' data-view='journal' href='#${q.result.name.toUrl()}:journal'>${activity.length} Logs</a></li>` : ''}
-    ${q.result.issues.length > 0 && !q.result.hasTag('diary') ? `<li><a class='tracker sprite_tracker' data-view='tracker' href='#${q.result.name.toUrl()}:tracker'>${q.result.issues.length} Issue${q.result.issues.length > 1 ? 's' : ''}</a></li>` : ''}
-    `
+    ${events.length > 0 ? `<li><a class='calendar sprite_calendar' data-goto='${q.result.name.toUrl()}:calendar' href='#${q.result.name.toUrl()}:calendar'>${events.length} Event${events.length > 1 ? 's' : ''}</a></li>` : ''}
+    ${activity.length > 2 && !q.result.hasTag('journal') ? `<li><a class='journal sprite_journal' data-goto='${q.result.name.toUrl()}:journal' href='#${q.result.name.toUrl()}:journal'>${activity.length} Logs</a></li>` : ''}
+    ${q.result.issues.length > 0 && !q.result.hasTag('diary') ? `<li><a class='tracker sprite_tracker' data-goto='${q.result.name.toUrl()}:tracker' href='#${q.result.name.toUrl()}:tracker'>${q.result.issues.length} Issue${q.result.issues.length > 1 ? 's' : ''}</a></li>` : ''}`
   }
 
   // Sidebar
@@ -298,12 +297,38 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
   }
 }
 
+RIVEN.lib.DefaultTemplate = function TemplateNode (id, rect) {
+  RIVEN.Node.call(this, id, rect)
+
+  this.glyph = 'M60,60 L60,60 L240,60 L240,240 L60,240 Z M240,150 L240,150 L150,150 L150,240'
+
+  this.answer = function (q) {
+    if (q.params) { return '' }
+    if (q.result) { return `${_redirected(q)}${q.result.body()}` }
+
+    const index = Object.keys(Ø('database').index)
+    const similar = findSimilar(q.target.toUpperCase(), index)
+
+    return `
+    <p>Sorry, there are no pages for <b>${q.target.toTitleCase()}</b>, did you mean ${similar[0].word.toTitleCase().toLink()} or ${similar[1].word.toTitleCase().toLink()}?</p>
+    <p><b>Create this page</b> by submitting a ${'https://github.com/XXIIVV/oscean'.toLink('Pull Request', true)}, or if you believe this to be an error, please contact ${'https://twitter.com/neauoire'.toLink('@neauoire', true)}. Alternatively, you locate missing pages from within the ${'Tracker'.toLink('progress tracker')}.</p>`
+  }
+
+  function _redirected (q) {
+    if (q.target.toUrl() !== q.result.name.toUrl()) {
+      return `<div class='notice'>Redirected to ${q.result.name.toTitleCase().toLink()}, from <b>${q.target.toTitleCase()}</b>.</div>`
+    }
+    return ``
+  }
+}
+
 RIVEN.lib.TrackerTemplate = function TemplateNode (id, rect) {
   RIVEN.Node.call(this, id, rect)
 
   this.glyph = 'M60,60 L60,60 L240,60 L240,240 L60,240 Z M240,150 L240,150 L150,150 L150,240'
 
   this.answer = function (q) {
+    if (`:${q.params}` !== id && `:${q.target}` !== id) { return '' }
     const issues = q.result && q.result.name === 'TRACKER' ? Object.values(q.tables.lexicon).reduce((acc, term) => { acc = acc.concat(term.issues); return acc }, []) : q.result ? q.result.issues : []
 
     if (issues.length < 1) {
@@ -323,6 +348,7 @@ RIVEN.lib.JournalTemplate = function TemplateNode (id, rect) {
   this.glyph = 'M60,60 L60,60 L240,60 L240,240 L60,240 Z M240,150 L240,150 L150,150 L150,240'
 
   this.answer = function (q) {
+    if (`:${q.params}` !== id && `:${q.target}` !== id) { return '' }
     const logs = q.result && q.result.name === 'JOURNAL' ? q.tables.horaire : q.result ? q.result.activity() : []
 
     if (logs.length < 1) {
@@ -337,36 +363,13 @@ RIVEN.lib.JournalTemplate = function TemplateNode (id, rect) {
   }
 }
 
-RIVEN.lib.DefaultTemplate = function TemplateNode (id, rect) {
-  RIVEN.Node.call(this, id, rect)
-
-  this.glyph = 'M60,60 L60,60 L240,60 L240,240 L60,240 Z M240,150 L240,150 L150,150 L150,240'
-
-  this.answer = function (q) {
-    if (q.result) { return `${_redirected(q)}${q.result.body()}` }
-
-    const index = Object.keys(Ø('database').index)
-    const similar = findSimilar(q.target.toUpperCase(), index)
-
-    return `
-    <p>Sorry, there are no pages for <b>${q.target.toTitleCase()}</b>, did you mean ${similar[0].word.toTitleCase().toLink()} or ${similar[1].word.toTitleCase().toLink()}?</p>
-    <p><b>Create this page</b> by submitting a ${'https://github.com/XXIIVV/oscean'.toLink('Pull Request', true)}, or if you believe this to be an error, please contact ${'https://twitter.com/neauoire'.toLink('@neauoire', true)}. Alternatively, you locate missing pages from within the ${'Tracker'.toLink('progress tracker')}.</p>`
-  }
-
-  function _redirected (q) {
-    if (q.target.toUrl() !== q.result.name.toUrl()) {
-      return `<div class='notice'>Redirected to ${q.result.name.toTitleCase().toLink()}, from <b>${q.target.toTitleCase()}</b>.</div>`
-    }
-    return ``
-  }
-}
-
 RIVEN.lib.CalendarTemplate = function TemplateNode (id, rect) {
   RIVEN.Node.call(this, id, rect)
 
   this.glyph = 'M60,60 L60,60 L240,60 L240,240 L60,240 Z M240,150 L240,150 L150,150 L150,240'
 
   this.answer = function (q) {
+    if (`:${q.params}` !== id && `:${q.target}` !== id) { return '' }
     const events = q.result && q.result.name === 'CALENDAR' ? q.tables.horaire.filter(__onlyEvents) : q.result ? q.result.activity().filter(__onlyEvents) : []
 
     if (events.length < 1) {
@@ -560,16 +563,14 @@ RIVEN.lib.Mouse = function MouseNode (id, rect) {
     const view = e.target.getAttribute('data-view') ? e.target : e.target.parentNode.getAttribute('data-view') ? e.target.parentNode : null
 
     if (view && !inTab) {
-      const dataView = view.getAttribute('data-view')
-      Ø('document').setMode('view', dataView)
+      Ø('document').setMode('view', view.getAttribute('data-view'))
       e.preventDefault()
       return
     }
 
     if (!el || el.className === 'external' || inTab) { return }
 
-    const dataGoto = el.getAttribute('data-goto')
-    Ø('query').bang(dataGoto)
+    Ø('query').bang(el.getAttribute('data-goto'))
     e.preventDefault()
   }
 }
