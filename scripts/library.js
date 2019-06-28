@@ -230,18 +230,18 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
 
     if (q.result.name === 'HOME' || q.result.name === 'JOURNAL' || q.result.name === 'CALENDAR' || q.result.name === 'TRACKER') {
       return `
-      <li>${'calendar'.toLink('Calendar', 'calendar')}</li> 
-      <li>${'journal'.toLink('Journal', 'journal')}</li>
-      <li>${'tracker'.toLink('Tracker', 'tracker')}</li>`
+      <li>${'calendar'.toLink('Calendar', 'calendar sprite_calendar')}</li> 
+      <li>${'journal'.toLink('Journal', 'journal sprite_journal')}</li>
+      <li>${'tracker'.toLink('Tracker', 'tracker sprite_tracker')}</li>`
     }
 
     const activity = q.result.activity()
     const events = activity.filter(__onlyEvents)
 
     return `
-    ${events.length > 0 ? `<li><a class='calendar' data-view='calendar' href='#${q.result.name.toUrl()}:calendar'>${events.length} Event${events.length > 1 ? 's' : ''}</a></li>` : ''}
-    ${activity.length > 2 && !q.result.hasTag('journal') ? `<li><a class='journal' data-view='journal' href='#${q.result.name.toUrl()}:journal'>${activity.length} Logs</a></li>` : ''}
-    ${q.result.issues.length > 0 && !q.result.hasTag('diary') ? `<li><a class='tracker' data-view='tracker' href='#${q.result.name.toUrl()}:tracker'>${q.result.issues.length} Issue${q.result.issues.length > 1 ? 's' : ''}</a></li>` : ''}
+    ${events.length > 0 ? `<li><a class='calendar sprite_calendar' data-view='calendar' href='#${q.result.name.toUrl()}:calendar'>${events.length} Event${events.length > 1 ? 's' : ''}</a></li>` : ''}
+    ${activity.length > 2 && !q.result.hasTag('journal') ? `<li><a class='journal sprite_journal' data-view='journal' href='#${q.result.name.toUrl()}:journal'>${activity.length} Logs</a></li>` : ''}
+    ${q.result.issues.length > 0 && !q.result.hasTag('diary') ? `<li><a class='tracker sprite_tracker' data-view='tracker' href='#${q.result.name.toUrl()}:tracker'>${q.result.issues.length} Issue${q.result.issues.length > 1 ? 's' : ''}</a></li>` : ''}
     `
   }
 
