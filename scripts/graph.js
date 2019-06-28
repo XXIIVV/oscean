@@ -51,14 +51,14 @@ RIVEN.create = (append = true) => {
     Ø('navi').create({ x: 18, y: 8 }, lib.Dom),
     Ø('footer').create({ x: 21, y: 4 }, lib.Dom),
     Ø('credits').create({ x: 21, y: 8 }, lib.Dom, 'div', `
-      <a target='_blank' href="https://twitter.com/neauoire" class="icon twitter external"></a>
-      <a target='_blank' href="https://github.com/neauoire" class="icon github external"></a>      
-      <a target='_blank' href="https://merveilles.town/@neauoire" class="icon merveilles external"></a>
-      <a target='_blank' href="http://webring.xxiivv.com/#random" class="icon rotonde"></a>
-      <a target='_blank' href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="icon cc"></a>
+      <a target='_blank' rel='noreferrer' href="https://twitter.com/neauoire" class="icon twitter external"></a>
+      <a target='_blank' rel='noreferrer' href="https://github.com/neauoire" class="icon github external"></a>      
+      <a target='_blank' rel='noreferrer' href="https://merveilles.town/@neauoire" class="icon merveilles external"></a>
+      <a target='_blank' rel='noreferrer' href="http://webring.xxiivv.com/#random" class="icon rotonde"></a>
+      <a target='_blank' rel='noreferrer' href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="icon cc"></a>
       <a data-goto='devine lu linvega' href='#devine+lu+linvega'>Devine Lu Linvega</a> © ${new Arvelie('06I04').toString(true)}—${arvelie()}
       <center>${'About'.toLink('BY-NC-SA 4.0')} <span style="color:#ccc"'>${neralie()}</span></center>
-      <a target='_blank' href="http://100r.co" class="icon hundredrabbits"></a><hr>
+      <a target='_blank' href='https://100r.co' class="icon hundredrabbits"></a><hr>
     `)
   ])
 
