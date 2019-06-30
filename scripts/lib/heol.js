@@ -113,6 +113,9 @@ function Heol (input, host) {
     uniq: (items) => {
       return items.filter((value, index, self) => { return self.indexOf(value) === index })
     },
+    like: (source, target) => {
+      return source.filter((val) => { return val.indexOf(target) > -1 })
+    },
     // -----------------------
     // Time
     // -----------------------
