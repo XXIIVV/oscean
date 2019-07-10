@@ -1,22 +1,24 @@
 'use strict'
 
-function runic (lines = [], templater = null, host = null) {
+function runic (lines = [], host = null) {
   const runes = {
     '&': { tag: 'p' },
     '*': { tag: 'h3' },
     '+': { tag: 'hs' },
-    '?': { tag: 'div', class: 'note' },
+    '?': { tag: 'div', class: 'notice' },
     '-': { tag: 'li', wrapper: 'ul', wrapperClass: 'bullet' },
     '#': { tag: 'li', wrapper: 'code' },
     '@': { tag: 'div', class: 'quote', fn: quote },
     '|': { tag: 'tr', wrapper: 'table', fn: table },
     '%': { fn: media },
     'λ': { fn: heol },
-    '>': {}
+    '>': {},
+    ';': { }
   }
 
   function isRunic (l) {
     const rune = l.substr(0, 1)
+    if (rune === ';') { return false } // Comment ;
     if (l.substr(1, 1) !== ' ') { console.warn('Non-Runic', l); return false }
     if (!runes[rune]) { console.warn(`Non-Runic[${rune}]`, l); return false }
     return true
@@ -36,7 +38,7 @@ function runic (lines = [], templater = null, host = null) {
     const html = stash.a.reduce((acc, val, id) => {
       const r = runes[stash.rune]
       const txt = r.fn ? r.fn(stash.a[id]) : stash.a[id]
-      const htm = templater ? templater(txt) : txt
+      const htm = txt.toHeol(host)
       return `${acc}${r.tag ? `<${r.tag} class='${r.class ? r.class : ''}'>${htm}</${r.tag}>` : `${htm}`}`
     }, '')
     return wr ? `${acc}<${wr} class='${wrClass || ''}'>${html}</${wr}>` : `${acc}${html}`
@@ -52,7 +54,7 @@ function runic (lines = [], templater = null, host = null) {
     const link = parts[3]
     return `
       ${text.length > 1 ? `<p class='text'>${text}</p>` : ''}
-      ${author ? `<p class='attrib'>${author}${source && link ? `, <a href='${link}'>${source}</a>` : source ? `, <b>${source}</b>` : ''}</p>` : ''}`
+      ${author ? `<p class='attrib'>${author}${source && link ? `, ${link.toLink(source)}` : source ? `, <b>${source}</b>` : ''}</p>` : ''}`
   }
 
   function media (content) {
@@ -70,7 +72,7 @@ function runic (lines = [], templater = null, host = null) {
   }
 
   function heol (content) {
-    return `${new Heol(content, Ø('database').cache, host)}`
+    return `${new Heol(content, host)}`
   }
 
   return lines.filter(isRunic).reduce(stash, []).reduce(_html, '')

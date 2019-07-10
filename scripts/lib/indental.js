@@ -6,31 +6,43 @@ function indental (data, Type) {
     const h = {}
     for (const id in line.children) {
       const child = line.children[id]
-      if (child.key) { h[child.key.toUpperCase()] = child.value } else if (child.children.length === 0 && child.content) { a[a.length] = child.content } else { h[child.content.toUpperCase()] = formatLine(child) }
+      if (child.key) {
+        if (h[child.key]) { console.warn(`Redefined key: ${child.key}.`) }
+        h[child.key] = child.value
+      } else if (child.children.length === 0 && child.content) {
+        a[a.length] = child.content
+      } else {
+        h[child.content.toUpperCase()] = formatLine(child)
+      }
     }
     return a.length > 0 ? a : h
   }
 
   function makeLine (line) {
-    return {
+    return line.indexOf(' : ') > -1 ? {
       indent: line.search(/\S|$/),
       content: line.trim(),
-      skip: line.trim() === '' || line.substr(0, 1) === '~',
-      key: line.indexOf(' : ') > -1 ? line.split(' : ')[0].trim() : null,
-      value: line.indexOf(' : ') > -1 ? line.split(' : ')[1].trim() : null,
+      key: line.split(' : ')[0].trim().toUpperCase(),
+      value: line.split(' : ')[1].trim()
+    } : {
+      indent: line.search(/\S|$/),
+      content: line.trim(),
       children: []
     }
   }
 
-  const lines = data.split('\n').map(makeLine)
+  function skipLine (line) {
+    return line.trim() !== '' && line.substr(0, 1) !== ';'
+  }
 
-  // Assoc lines
+  const lines = data.split('\n').filter(skipLine).map(makeLine)
+
+  // Assoc
   const stack = {}
   for (const id in lines) {
     const line = lines[id]
-    if (line.skip) { continue }
     const target = stack[line.indent - 2]
-    if (target) { target.children[target.children.length] = line }
+    if (target) { target.children.push(line) }
     stack[line.indent] = line
   }
 
@@ -38,9 +50,9 @@ function indental (data, Type) {
   const h = {}
   for (const id in lines) {
     const line = lines[id]
-    if (line.skip || line.indent > 0) { continue }
+    if (line.indent > 0) { continue }
     const key = line.content.toUpperCase()
-    if (h[key]) { console.warn(`Re-defined key: ${key}`) }
+    if (h[key]) { console.warn(`Redefined key: ${key}, line ${id}.`) }
     h[key] = Type ? new Type(key, formatLine(line)) : formatLine(line)
   }
   return h

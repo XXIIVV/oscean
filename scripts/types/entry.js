@@ -20,6 +20,18 @@ function Entry (name, data) {
   this.events = []
   this.tags = []
 
+  this.activity = function () {
+    return []
+  }
+
+  this.body = function () {
+    return `Unformatted Entry: ${name}`
+  }
+
+  this.indexes = function () {
+    return [this.name]
+  }
+
   this.glyph = function () {
     return null
   }
@@ -32,12 +44,13 @@ function Entry (name, data) {
     return false
   }
 
-  this.body = function () {
-    return `Unformatted Entry: ${name}`
+  this.photo = function () {
+    return null
   }
 
-  this.indexes = function () {
-    return [this.name]
+  this.hasTag = function (str) {
+    const target = str.toLowerCase().replace(/ /g, '_').trim()
+    return this.tags.indexOf(target) > -1
   }
 
   this.toString = function () {

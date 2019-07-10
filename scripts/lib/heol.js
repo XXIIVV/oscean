@@ -1,13 +1,22 @@
 'use strict'
 
-function Heol (input, tables, host) {
+function Heol (input, host) {
   const lib = {
+    // -----------------------
+    // Riven
+    // -----------------------
+    Ø: (item) => {
+      return Ø(item)
+    },
+    // -----------------------
+    // Basics
+    // -----------------------
     match: (source, items) => {
       const filtered = items.filter((val) => { return source[val.toUpperCase()] })
       return filtered.map((val) => { return source[val.toUpperCase()] })
     },
     table: (source) => {
-      return tables[source]
+      return Ø('database').cache[source]
     },
     keys: (h) => {
       return Object.keys(h)
@@ -17,9 +26,6 @@ function Heol (input, tables, host) {
     },
     value: (h, val) => {
       return h[val]
-    },
-    Ø: (item) => {
-      return Ø(item)
     },
     random: (a) => {
       return a[parseInt(Math.random() * a.length)]
@@ -36,15 +42,6 @@ function Heol (input, tables, host) {
       }, '')
     },
     // -----------------------
-    // Time
-    // -----------------------
-    daysSince: (greg) => {
-      return parseInt((Date.now() - new Date(greg)) / 1000 / 86400)
-    },
-    msSince: (greg) => {
-      return Date.now() - new Date(greg)
-    },
-    // -----------------------
     // Math
     // -----------------------
     add: (...items) => {
@@ -59,26 +56,53 @@ function Heol (input, tables, host) {
     div: (...items) => {
       return items[0] / items[1]
     },
+    fix: (...items) => {
+      return items[0].toFixed(items[1])
+    },
     floor: (item) => {
       return Math.floor(item)
     },
-    fix: (...items) => {
-      return items[0].toFixed(items[1])
+    ceil: (item) => {
+      return Math.ceil(item)
+    },
+    // -----------------------
+    // Strings
+    // -----------------------
+    lc: (item) => {
+      return item.toLowerCase()
+    },
+    tc: (item) => {
+      return item.toTitleCase()
+    },
+    uc: (item) => {
+      return item.toUpperCase()
+    },
+    cc: (item) => {
+      return item.substr(0, 1).toUpperCase() + item.substr(1)
     },
     // -----------------------
     // Arrays
     // -----------------------
-    // will modify properties or run a function onto each object.
-    map: (arr, fn) => {
+    map: (arr, name) => {
       return arr.map((val, id, arr) => fn)
     },
-    // will only keeps elements returning true.
-    filter: (arr, fn) => {
-      return arr.map((val, id, arr) => fn)
+    filter: (arr, name) => {
+      return arr.filter(window[name])
     },
-    // will reduce it into a single value.
-    reduce: (arr, fn, acc) => {
+    reduce: (arr, name, acc) => {
       return arr.reduce((acc, val, id, arr) => fn, acc)
+    },
+    splice: (arr, index, length) => {
+      return arr.splice(index, length)
+    },
+    slice: (arr, index, length) => {
+      return arr.slice(index, length)
+    },
+    reverse: (arr) => {
+      return arr.reverse()
+    },
+    first: (arr) => {
+      return arr[0]
     },
     count: (item) => {
       return item.length
@@ -87,93 +111,108 @@ function Heol (input, tables, host) {
       return a.sort()
     },
     uniq: (items) => {
-      return items.filter((value, index, self) => {
-        return self.indexOf(value) === index
-      })
+      return items.filter((value, index, self) => { return self.indexOf(value) === index })
+    },
+    like: (source, target) => {
+      return source.filter((val) => { return val.indexOf(target) > -1 })
     },
     // -----------------------
-    // Strings
+    // Time
     // -----------------------
-    lc: (item) => {
-      return item.toLowerCase()
+    daysSince: (greg) => {
+      return parseInt((Date.now() - new Date(greg)) / 1000 / 86400)
     },
-    cc: (item) => {
-      return item.toTitleCase()
+    msSince: (greg) => {
+      return Date.now() - new Date(greg)
     },
-    uc: (item) => {
-      return item.toUpperCase()
+    // -----------------------
+    // Arvelie & Neralie
+    // -----------------------
+    neralie: () => {
+      return `${new Neralie()}`
+    },
+    arvelie: () => {
+      return `${new Arvelie()}`
+    },
+    dtog: (q) => {
+      return `${new Arvelie(q).toGregorian()}`
+    },
+    gtod: (q) => {
+      return !isNaN(new Date(q)) ? `${new Date(q).toArvelie()}` : 'Invalid Date'
+    },
+    // -----------------------
+    // Markup
+    // -----------------------
+    bold: (item) => {
+      return `<b>${item}</b>`
+    },
+    ital: (item) => {
+      return `<i>${item}</i>`
+    },
+    code: (item) => {
+      return `<code>${item}</code>`
+    },
+    link: (target = host.name.toTitleCase(), name) => {
+      return `${target.toLink(name)}`
     },
     // -----------------------
     // Templates
     // -----------------------
     template: (items, t, p) => {
-      return items.map((val) => {
-        return `${t(val, p)}`
-      })
+      return items.map((val) => { return `${t(val, p)}` })
     },
     wrap: (item, tag, cl) => {
-      return `<${tag} class='${cl || ''}'>${item}</${tag}>`
+      return item ? `<${tag} class='${cl || ''}'>${item}</${tag}>` : ''
     },
     INDEX: (item) => {
-      return `<h3>{(${item.name.toTitleCase()})}</h3><p>${item.bref}</p><ul class='bullet'>${item.children.reduce((acc, term) => { return `${acc}<li>${term.bref}</li>` }, '')}</ul>`
+      return `<h3>{λ(link "${item.name.toTitleCase()}")}</h3><h4>${item.bref}</h4><ul class='bullet'>${item.children.reduce((acc, term) => { return `${acc}<li>${term.bref}</li>`.toHeol(term) }, '')}</ul>`.toHeol(item)
     },
     LINK: (item) => {
-      return `{(${item.toTitleCase()})}`
+      return `{λ(link "${item.toTitleCase()}")}`
     },
     REDIRECT: (item) => {
       return `<meta http-equiv="refresh" content="2; url=#${item}">`
     },
     TITLE: (item) => {
-      return `<h2>${item.name.toTitleCase()}</h2><h4>${item.bref}</h4>`
+      return `<h2>${item.name.toTitleCase()}</h2><h4>${item.bref}</h4>`.toHeol(item)
     },
     PHOTO: (item) => {
-      return host.featuredLog && host.featuredLog.photo !== item.photo ? `<img src="media/diary/${item.photo}.jpg"/>` : ''
+      return host.photo() && host.photo().pict !== item.pict ? item.name.toLink(`<img title="${item.name}" src="media/diary/${item.pict}.jpg"/>`) : ''
     },
     GALLERY: (item) => {
-      return `${item.featuredLog ? `<a data-goto='${item.name}'><img src="media/diary/${item.featuredLog.photo}.jpg"/></a>` : ''}<h2>${item.name.toTitleCase()}</h2><h4>${item.bref}</h4>`
+      return `${item.photo() ? item.name.toLink(`<img title="${item.name}" src="media/diary/${item.photo().pict}.jpg"/>`) : ''}<h2>${item.name.toTitleCase()}</h2><h4>${item.bref}</h4>`.toHeol(item)
+    },
+    LIST: (item) => {
+      return `<li>${item.bref}</li>`.toHeol(item)
+    },
+    FULL: (item) => {
+      return item.toString(true).toHeol(item)
     },
     SPAN: (item) => {
-      return item.logs.length > 10 && item.span.from && item.span.to ? `<li>{(${item.name.toTitleCase()})} ${item.span.from}—${item.span.to}</li>`.toCurlic() : ''
+      return item.logs.length > 10 && item.span.from && item.span.to ? `<li>${item.name.toTitleCase().toLink()} ${item.span.from}—${item.span.to}</li>` : ''
     },
     // -----------------------
     // Lietal
     // -----------------------
     adultspeak: (item) => {
-      return new Aeth(item).adultspeak
+      return new Yleta({ name: item }).adultspeak
+    },
+    yletaodeta: (item, w, h, thickness = 9, color = 'black', guide = false) => {
+      return new Yletaodeta(item).toSVG(w, h, thickness, color, guide)
     },
     lien: (...items) => {
-      const dict = Ø('database').cache.dictionaery
-      let s = ''
-      for (const key in items) {
-        const result = dict[items[key].toUpperCase()]
-        s += (result ? result.toEn() : 'err:unknown') + ' '
-      }
-      return s.trim()
+      return items.reduce((acc, val) => { const res = Ø('asulodeta').find(val, 'name'); return `${acc}${res ? res.english : val} ` }, '').trim()
     },
     enli: (...items) => {
-      const dict = Ø('database').cache.dictionaery
-      let s = ''
-      for (const key in items) {
-        for (const id in dict) {
-          if (dict[id].hasEn(items[key])) { s += `${new Aeth(id.toLowerCase()).adultspeak} `; break }
-        }
-      }
-      return s.trim()
+      return items.reduce((acc, val) => { const res = Ø('asulodeta').find(val, 'english'); return `${acc}${res ? res.adultspeak : val} ` }, '').replace(/ \. /g, '. ').replace(/ \, /g, ', ').replace(/ \' /g, '\'').replace(/ \! /g, '! ').replace(/ {2}/g, ' ').trim()
     },
-    septambres: (item) => {
-      return new Septambres(item)
-    },
-    // -----------------------
-    // Desamber
-    // -----------------------
-    desamber: () => {
-      return `${new Desamber()}`
-    },
-    dtog: (q) => {
-      return `${new Desamber(q).toGregorian()}`
-    },
-    gtod: (q) => {
-      return !isNaN(new Date(q)) ? `${new Date(q).desamber()}` : 'Invalid Date'
+    deconstruct: (item) => {
+      const res = Ø('asulodeta').find(item, 'name')
+      if (!res) { return 'Unknown Yleta: ' + item }
+      return `<table><tr>${res.parts().reduce((acc, childspeak) => {
+        const l = Ø('asulodeta').find(childspeak, 'name')
+        return l ? `${acc}<td>${l.yletaodeta}<br />${l.adultspeak}<br />${item === l.childspeak ? '<b>' + l.english + '</b>' : l.english}</td>` : item
+      }, '')}</tr></table>`
     },
     // -----------------------
     // Horaire
@@ -183,5 +222,15 @@ function Heol (input, tables, host) {
     }
   }
 
-  Lisp.call(this, input, lib, tables, host)
+  Lisp.call(this, input, lib, Ø('database').cache, host)
+}
+
+String.prototype.toHeol = function (host) {
+  const matches = this.match(/[^{\}]+(?=})/g)
+  if (!matches) { return this }
+  let text = `${this}`
+  matches.forEach(el => {
+    text = text.replace(`{${el}}`, new Heol(el, host))
+  })
+  return text
 }

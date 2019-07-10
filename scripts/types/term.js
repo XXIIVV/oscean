@@ -9,18 +9,17 @@ function Term (name, data) {
   this.issues = [] // From Ø('map')
   this.diaries = [] // From Ø('map')
   this.span = { from: null, to: null }
-  this.featuredLog = null // From Ø('map')
 
   this.data = data
   this.bref = data.BREF ? data.BREF : ''
   this.unde = data.UNDE ? data.UNDE : 'Home'
   this.view = data.VIEW ? data.VIEW.toLowerCase() : 'main'
-  this.links = data.LINK ? data.LINK : {}
   this.theme = data.LOOK ? data.LOOK : null
+  this.links = data.LINK ? data.LINK : null
   this.tags = data.TAGS ? data.TAGS.toLowerCase().split(' ') : []
   this.indexes = data.ALTS ? [name].concat(data.ALTS.split(' ')) : [name]
   this.theme = data.LOOK ? data.LOOK.toLowerCase() : 'blanc'
-  this.is_portal = this.tags.indexOf('portal') > -1
+  this.isPortal = this.tags.indexOf('portal') > -1
 
   this.glyph = function () {
     if (this.data.ICON) { return this.data.ICON }
@@ -29,12 +28,29 @@ function Term (name, data) {
     return null
   }
 
+  this.photo = function () {
+    const diaries = name === 'HOME' ? Ø('horaire').cache : this.diaries
+    for (const id in diaries) {
+      const diary = diaries[id]
+      if (diary.isFeatured === true && diary.time.offset <= 0) {
+        return diaries[id]
+      }
+    }
+    const logs = this.activity()
+    for (const id in logs) {
+      if (logs[id].pict) {
+        return logs[id]
+      }
+    }
+    return null
+  }
+
   this.portal = function () {
-    if (this.is_portal) { return this }
-    if (this.parent.is_portal) { return this.parent }
-    if (this.parent.parent.is_portal) { return this.parent.parent }
-    if (this.parent.parent.parent.is_portal) { return this.parent.parent.parent }
-    if (this.parent.parent.parent.parent.is_portal) { return this.parent.parent.parent.parent }
+    if (this.isPortal) { return this }
+    if (this.parent.isPortal) { return this.parent }
+    if (this.parent.parent.isPortal) { return this.parent.parent }
+    if (this.parent.parent.parent.isPortal) { return this.parent.parent.parent }
+    if (this.parent.parent.parent.parent.isPortal) { return this.parent.parent.parent.parent }
     return null
   }
 
@@ -52,7 +68,6 @@ function Term (name, data) {
       incoming: this.incoming && this.incoming.length > 1,
       glyph: this.glyph() !== '',
       issues: this.issues.length === 0,
-      links: Object.keys(this.links).length > 0,
       tags: this.tags.length > 0
     }
 
@@ -60,56 +75,22 @@ function Term (name, data) {
     return score / Object.keys(points).length
   }
 
-  this.hasTag = function (str) {
-    const target = str.toLowerCase().replace(/ /g, '_').trim()
-    return this.tags.indexOf(target) > -1
-  }
-
-  this.sectors = function () {
-    const h = new Horaire(this.logs).sectors
-    const a = [['audio', h.audio], ['visual', h.visual], ['research', h.research]]
-
-    return sort(a)
-  }
-
-  this.released = function () {
-    for (const id in this.logs) {
-      const log = this.logs[id]
-      if (log.time.offset > 0) { continue }
-      if (log.ch === 8) { return log }
-    }
-    return null
-  }
-
-  this.find_outgoing = function () {
-    const a = []
-    const str = this.data.BREF + (this.data.BODY ? this.data.BODY.join('\n') : '')
-
-    let curlies = str.match(/[^{\}]+(?=})/g)
-
-    if (!curlies) { return [] }
-
-    curlies = curlies.filter(el => { return el.indexOf('(') > -1 })
-    curlies = curlies.filter(el => { return el.indexOf('//') < 0 }) // Skip external
-
-    curlies.forEach(el => {
-      const name = el.split('(')[1].replace(')', '')
-      if (el.substr(0, 1) !== 'λ') { a.push(name.toUpperCase()) }
-    })
-    return a
-  }
-
-  function sort (array) {
-    return array.sort(function (a, b) {
-      return a[1] - b[1]
-    }).reverse()
-  }
-
   this.body = function () {
-    return `${runic(this.data.BODY, curlic, this)}`
+    return `${runic(this.data.BODY, this)}`
   }
 
-  this.toString = function () {
-    return `<h2>${this.name.toTitleCase()}</h2><h4>${this.bref}</h4>${this.body()}`
+  this._photo = function () {
+    return this.photo() ? this.name.toLink(`<img src="media/diary/${this.photo().pict}.jpg"/>`) : ''
   }
+
+  this.toString = function (photo = false) {
+    return `<h2>${this.name.toTitleCase()}</h2><h4>${this.bref}</h4>${photo === true ? this._photo() : ''}${this.body()}`.toHeol(this)
+  }
+
+  // Checks
+
+  if (!this.data.UNDE) { console.warn('Term', `Missing .UNDE, for ${this.name}.`) }
+  if (!this.data.BREF) { console.warn('Term', `Missing .BREF, for ${this.name}.`) }
+  if (!this.data.BODY) { console.warn('Term', `Missing .BODY, for ${this.name}.`) }
+  if (this.data.BREF.indexOf('{(link)}') < 0) { console.warn('Term', `Missing self-reference, for ${this.name}.`) }
 }
