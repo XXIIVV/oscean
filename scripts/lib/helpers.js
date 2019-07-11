@@ -12,6 +12,7 @@ String.prototype.toLocalLink = function (name, cl = '') { return `<a href='${thi
 String.prototype.toExternalLink = function (name, cl = '') { return `<a href='${this}' target='_blank' rel='noreferrer' class='external ${cl}'>${name || this}</a>` }
 String.prototype.stripHTML = function () { return this.replace(/<(?:.|\n)*?>/gm, '') }
 String.prototype.replaceAll = function (search, replacement) { return `${this}`.split(search).join(replacement) }
+String.prototype.isUrl = function () { return this.substr(0, 4) === 'http' }
 
 // Redlinks
 

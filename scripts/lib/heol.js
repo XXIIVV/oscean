@@ -41,6 +41,10 @@ function Heol (input, host) {
         return `${acc}${val}`
       }, '')
     },
+    log: (x) => {
+      console.log(x)
+      return x
+    },
     // -----------------------
     // Math
     // -----------------------
