@@ -210,9 +210,9 @@ function Yletaodeta (yleta) {
   this.toSVG = function (w = 40, h = 40, thickness = 9, color = 'black', guide = false) {
     const bounds = this.getBounds(w, h, 10)
     return `
-    <svg style='width:${bounds.w}px; height:${bounds.h}px; padding:${thickness / 2}px' title='${this.yleta}'>
-      ${guide === true ? `<path d='${this.toGrid(w, h)}' stroke='#ccc' fill='none' stroke-width='1' stroke-linecap='square' stroke-linejoin='square'/>` : ''}
-      <path d='${this.toPath(w, h)}' stroke='${color}' fill='none' stroke-width='${thickness}' stroke-linecap='square' stroke-linejoin='round'/>
+    <svg style='width:${bounds.w}px; height:${bounds.h}px; padding:${thickness / 2}px' title='${this.yleta}' class='yletaodeta'>
+      ${guide === true ? `<path d='${this.toGrid(w, h)}' class='guide'/>` : ''}
+      <path d='${this.toPath(w, h)}' stroke='${color}' stroke-width='${thickness}'/>
     </svg>`
   }
 
