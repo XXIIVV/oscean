@@ -13,6 +13,7 @@ String.prototype.toExternalLink = function (name, cl = '') { return `<a href='${
 String.prototype.stripHTML = function () { return this.replace(/<(?:.|\n)*?>/gm, '') }
 String.prototype.replaceAll = function (search, replacement) { return `${this}`.split(search).join(replacement) }
 String.prototype.isUrl = function () { return this.substr(0, 4) === 'http' }
+String.prototype.insert = function (s, i) { return [this.slice(0, i), s, this.slice(i)].join('') }
 
 // Redlinks
 

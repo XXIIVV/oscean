@@ -24,6 +24,10 @@ function Entry (name, data) {
     return []
   }
 
+  this.head = function () {
+    return this.bref ? `<p>${this.bref.toHeol(this)}</p>` : ''
+  }
+
   this.body = function () {
     return `Unformatted Entry: ${name}`
   }

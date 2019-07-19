@@ -134,7 +134,7 @@ RIVEN.lib.Map = function MapNode (id, rect) {
       const log = tables.horaire[id]
       const index = log.term.toUpperCase()
       if (!log.term) { console.warn(`Empty log at ${log.time}`); continue }
-      if (!tables.lexicon[index]) { console.warn('Missing log term', index); continue }
+      if (!tables.lexicon[index]) { console.warn(`Missing log term at ${log.time}`, index); continue }
       log.host = tables.lexicon[index]
       tables.lexicon[index].logs.push(log)
       // Span
@@ -269,8 +269,7 @@ RIVEN.lib.Template = function TemplateNode (id, rect) {
   this._sidebar = function (q) {
     if (!q.result) { return `<h1>The ${'Nataniev'.toLink()} Services Desk</h1><h2>${'Home'.toLink()}</h2>` }
     return `
-    <h1>${q.result.bref.toHeol(q.result)}</h1>
-    ${q.result.logs.length > 2 ? `<h2>${q.result.logs[q.result.logs.length - 1].time} — ${q.result.logs[0].time}</h2>` : ''}
+    ${q.result.logs.length > 2 ? `<h2>${q.result.logs[q.result.logs.length - 1].time} — ${q.result.logs[0].time}</h2>` : `<h2>${q.tables.horaire[q.tables.horaire.length - 1].time} — ${q.tables.horaire[0].time}</h2>`}
     ${_links(q.result)}
     ${_directory(q.result)}`
   }
@@ -304,7 +303,7 @@ RIVEN.lib.DefaultTemplate = function TemplateNode (id, rect) {
 
   this.answer = function (q) {
     if (q.params) { return '' }
-    if (q.result) { return `${_redirected(q)}${q.result.body()}` }
+    if (q.result) { return `${_redirected(q)}${q.result.head()}${q.result.body()}` }
 
     const index = Object.keys(Ø('database').index)
     const similar = findSimilar(q.target.toUpperCase(), index)
