@@ -57,7 +57,7 @@ RIVEN.create = (append = true) => {
       <a target='_blank' rel='noreferrer' href='http://webring.xxiivv.com/#random' class='icon rotonde sprite_rotonde'></a>
       <a target='_blank' rel='noreferrer' href='https://creativecommons.org/licenses/by-nc-sa/4.0/' class='icon cc sprite_cc'></a>
       <a data-goto='devine lu linvega' href='#devine+lu+linvega'>Devine Lu Linvega</a> © ${new Arvelie('06I04').toString(true)}—${arvelie()}
-      <center>${'About'.toLink('BY-NC-SA 4.0')} <span style="color:#ccc"'>${neralie()}</span></center>
+      <center>${'Wiki'.toLink('BY-NC-SA 4.0')} <span style="color:#ccc"'>${neralie()}</span></center>
       <a target='_blank' href='https://100r.co' rel='noreferrer' class='icon hundredrabbits sprite_hundredrabbits'></a><hr>
     `)
   ])
