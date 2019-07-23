@@ -1,4 +1,4 @@
-// "Don't forget, the portal combination's in my journal."" — Catherine
+// "Don't forget, the portal combination's in my journal." — Catherine
 
 'use strict'
 
