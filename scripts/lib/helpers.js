@@ -7,6 +7,7 @@ String.prototype.toUrl = function () { return this.toLowerCase().replace(/ /g, '
 String.prototype.toEntities = function () { return this.replace(/[\u00A0-\u9999<>\&]/gim, function (i) { return `&#${i.charCodeAt(0)}` }) }
 String.prototype.toAlpha = function () { return this.replace(/[^a-z ]/gi, '').trim() }
 String.prototype.toAlphanum = function () { return this.replace(/[^0-9a-z ]/gi, '') }
+String.prototype.isAlphanum = function() { return !!this.match(/^[A-Za-z0-9 ]+$/) }
 String.prototype.toLink = function (name, cl) { return this.indexOf('//') > -1 ? this.toExternalLink(name, cl) : this.toLocalLink(name, cl) }
 String.prototype.toLocalLink = function (name, cl = '') { return `<a href='${this.toUrl()}' data-goto='${this.toUrl()}' target='_self' class='local ${cl} ${redLink(this)}'>${name || this}</a>` }
 String.prototype.toExternalLink = function (name, cl = '') { return `<a href='${this}' target='_blank' rel='noreferrer' class='external ${cl}'>${name || this}</a>` }
