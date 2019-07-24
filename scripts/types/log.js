@@ -9,7 +9,7 @@ function Log (data = { code: '-400' }) {
   this.text = data.text
   this.time = data.date ? new Arvelie(data.date) : null
   this.pict = data.pict ? data.pict : null
-  this.bref = `A log added on ${this.time} to ${this.term}.`
+  this.bref = `A log added on ${this.time} to ${this.term.toLink()}.`
   this.indexes = data.name && this.pict ? [data.name, `${this.pict}`, `${this.time}`] : []
   this.theme = 'noir'
 
