@@ -63,6 +63,6 @@ function Log (data = { code: '-400' }) {
 
   if (this.pict !== null && !this.name) { console.warn('Log', `Missing caption: ${this.time}`) }
   if (this.pict === null && this.rune === '!') { console.warn('Log', `Feature without picture: ${this.time}`) }
-  if (['+', '-', '!'].indexOf(this.rune) < 0) { console.warn('Log', `Unknown rune: ${data.code}, on ${this.time}.`) }
+  if (['+', '-', '!'].indexOf(this.rune) < 0) { console.warn('Log', `Unknown rune: ${data.code}, on ${this.time}.`, data) }
   if (this.sc > 3 || this.sc === 0 && (this.fh > 0 || this.ch > 0)) { console.warn('Log', `Unknown code: ${data.code}, on ${this.time}.`) }
 }
