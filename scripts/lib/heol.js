@@ -2,15 +2,9 @@
 
 function Heol (input, host) {
   const lib = {
-    // -----------------------
-    // Riven
-    // -----------------------
     Ø: (item) => {
       return Ø(item)
     },
-    // -----------------------
-    // Basics
-    // -----------------------
     match: (source, items) => {
       const filtered = items.filter((val) => { return source[val.toUpperCase()] })
       return filtered.map((val) => { return source[val.toUpperCase()] })
@@ -45,9 +39,6 @@ function Heol (input, host) {
       console.log(x)
       return x
     },
-    // -----------------------
-    // Math
-    // -----------------------
     add: (...items) => {
       return items.reduce((acc, val) => { return acc + val }, 0)
     },
@@ -69,9 +60,6 @@ function Heol (input, host) {
     ceil: (item) => {
       return Math.ceil(item)
     },
-    // -----------------------
-    // Strings
-    // -----------------------
     lc: (item) => {
       return item.toLowerCase()
     },
@@ -84,9 +72,6 @@ function Heol (input, host) {
     cc: (item) => {
       return item.substr(0, 1).toUpperCase() + item.substr(1)
     },
-    // -----------------------
-    // Arrays
-    // -----------------------
     map: (arr, name) => {
       return arr.map((val, id, arr) => fn)
     },
@@ -120,18 +105,12 @@ function Heol (input, host) {
     like: (source, target) => {
       return source.filter((val) => { return val.indexOf(target) > -1 })
     },
-    // -----------------------
-    // Time
-    // -----------------------
     daysSince: (greg) => {
       return parseInt((Date.now() - new Date(greg)) / 1000 / 86400)
     },
     msSince: (greg) => {
       return Date.now() - new Date(greg)
     },
-    // -----------------------
-    // Arvelie & Neralie
-    // -----------------------
     neralie: () => {
       return `${new Neralie()}`
     },
@@ -144,9 +123,6 @@ function Heol (input, host) {
     gtod: (q) => {
       return !isNaN(new Date(q)) ? `${new Date(q).toArvelie()}` : 'Invalid Date'
     },
-    // -----------------------
-    // Markup
-    // -----------------------
     bold: (item) => {
       return `<b>${item}</b>`
     },
@@ -159,9 +135,6 @@ function Heol (input, host) {
     link: (target = host.name.toTitleCase(), name) => {
       return `${target.toLink(name)}`
     },
-    // -----------------------
-    // Templates
-    // -----------------------
     template: (items, t, p) => {
       return items.map((val) => { return `${t(val, p)}` })
     },
@@ -195,9 +168,6 @@ function Heol (input, host) {
     SPAN: (item) => {
       return item.logs.length > 10 && item.span.from && item.span.to ? `<li>${item.name.toTitleCase().toLink()} ${item.span.from}—${item.span.to}</li>` : ''
     },
-    // -----------------------
-    // Lietal
-    // -----------------------
     adultspeak: (item) => {
       return new Yleta({ name: item }).adultspeak
     },
@@ -218,14 +188,10 @@ function Heol (input, host) {
         return l ? `${acc}<td>${l.yletaodeta}<br />${l.adultspeak}<br />${item === l.childspeak ? '<b>' + l.english + '</b>' : l.english}</td>` : item
       }, '')}</tr></table>`
     },
-    // -----------------------
-    // Horaire
-    // -----------------------
     task: (code) => {
       return `${new Log({ code: '-' + code }).task}`
     }
   }
-
   Lisp.call(this, input, lib, Ø('database').cache, host)
 }
 

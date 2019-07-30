@@ -1,6 +1,7 @@
 const fs = require('fs')
-
 const styles = ['./links/main.css']
+const tablatals = ['./scripts/database/asulodeta.tbtl', './scripts/database/horaire.tbtl']
+const indentals = ['./scripts/database/lexicon.ndtl', './scripts/database/glossary.ndtl', './scripts/database/issues.ndtl']
 
 function lintStyle (txt) {
   const lines = txt.split('\n')
@@ -20,21 +21,6 @@ function lintStyle (txt) {
   }).join('\n')
 }
 
-const indentals = ['./scripts/database/lexicon.ndtl', './scripts/database/glossary.ndtl', './scripts/database/issues.ndtl']
-
-function lintIndetal (txt) {
-  const lines = txt.split('\n')
-  return lines.filter((line) => {
-    // Remove blanks
-    return line.trim() !== ''
-  }).map((line) => {
-    // Trim
-    return line.trimEnd()
-  }).join('\n')
-}
-
-const tablatals = ['./scripts/database/asulodeta.tbtl', './scripts/database/horaire.tbtl']
-
 function lintTablatal (txt) {
   const lines = txt.split('\n')
   return lines.filter((line) => {
@@ -46,7 +32,16 @@ function lintTablatal (txt) {
   }).join('\n')
 }
 
-//
+function lintIndetal (txt) {
+  const lines = txt.split('\n')
+  return lines.filter((line) => {
+    // Remove blanks
+    return line.trim() !== ''
+  }).map((line) => {
+    // Trim
+    return line.trimEnd()
+  }).join('\n')
+}
 
 console.log('Starting..')
 
