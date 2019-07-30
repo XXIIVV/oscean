@@ -957,11 +957,16 @@ Devine is now <b>${this.services.age().toFixed(4)} years</b> old.`, 0)
     },
 
     walk: (q) => {
-      const time = performance.now()
+      const totalTime = performance.now()
       for (const id in Ø('database').index) {
+        const entryTime = performance.now()
         Ø('database').index[id].toString()
+        const entryTimeComplete = performance.now() - entryTime
+        if (entryTimeComplete > 300) {
+          console.warn('Slow', id, entryTimeComplete)
+        }
       }
-      return `Walked ${Object.keys(Ø('database').index).length} indexes, in ${(performance.now() - time).toFixed(2)}ms.`
+      return `Walked ${Object.keys(Ø('database').index).length} indexes, in ${(performance.now() - totalTime).toFixed(2)}ms.`
     },
 
     rss: (q) => {
