@@ -19,7 +19,7 @@ The `Resources/` folder inclues syntax highlight for both [Indental](https://wik
 [twtxt](https://github.com/buckket/twtxt) is a format specification for self-hosted flat file based microblogging, you can find my feed [here](https://raw.githubusercontent.com/XXIIVV/Oscean/master/twtxt.txt). The command line operation to append to the twtxt.txt file:
 
 ```
-echo -e "`date +%FT%T%Z`\tMESSAGE!" >> twtxt.txt
+echo -e "`date +%FT%T%:z`\tMESSAGE!" >> twtxt.txt
 ```
 
 ## Extras
