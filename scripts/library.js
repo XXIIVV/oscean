@@ -1027,7 +1027,6 @@ ${this.services.otd()}`, 0)
         return 'This browser does not support desktop notification'
       }
       if (Notification.permission === 'granted') {
-        console.log(30 * 86400)
         setTimeout(() => {
           const body = `The pomodoro has ended at ${neralie()}.`
           new Notification('Oscean', { body, icon: 'media/icon/notification.jpg' })
@@ -1037,6 +1036,7 @@ ${this.services.otd()}`, 0)
       }
       if (Notification.permission !== 'denied') {
         Notification.requestPermission().then((permission) => { this.pomodoro(q) })
+        return "You must allow notifications."
       }
     },
 
