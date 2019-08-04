@@ -10,8 +10,6 @@ function Entry (name, data) {
   this.theme = 'noir'
 
   this.indexes = [this.name]
-  this.outgoing = [] // From Ø('map')
-  this.incoming = [] // From Ø('map')
 
   this.span = { from: null, to: null }
   this.issues = []

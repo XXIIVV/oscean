@@ -1014,12 +1014,14 @@ ${this.services.otd()}`, 0)
     },
 
     orphans: (q) => {
-      let html = ''
+      let index = {}
       for (const id in Ø('database').cache.lexicon) {
-        const term = Ø('database').cache.lexicon[id]
-        if (term.incoming.length < 2) { html += `${term.name}\n` }
+        const links = Ø('database').cache.lexicon[id].outgoing()
+        for (const link of links) {
+          index[link] = index[link] ? index[link] + 1 : 1
+        }
       }
-      return `<ul>${html}</ul>`
+      return `<ul>${Object.keys(Ø('database').cache.lexicon).reduce((acc, item) => { return index[item] ? acc : `${acc}<li>${item}</li>` }, '')}</ul>`
     },
 
     pomodoro: (q) => {
@@ -1036,8 +1038,9 @@ ${this.services.otd()}`, 0)
       }
       if (Notification.permission !== 'denied') {
         Notification.requestPermission().then((permission) => { this.pomodoro(q) })
-        return "You must allow notifications."
+        return 'You must allow notifications.'
       }
+      return 'You have not allowed notifications.'
     },
 
     clear: (q) => {

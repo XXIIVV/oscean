@@ -64,13 +64,8 @@ function Term (name, data) {
       logs: this.logs.length > 0,
       children: this.children.length > 0,
       photo: this.diaries.length > 0,
-      outgoing: this.outgoing && this.outgoing.length > 1,
-      incoming: this.incoming && this.incoming.length > 1,
-      glyph: this.glyph() !== '',
-      issues: this.issues.length === 0,
-      tags: this.tags.length > 0
+      glyph: this.glyph() !== ''
     }
-
     const score = Object.keys(points).reduce((acc, val) => { return acc + (points[val] ? 1 : 0) }, 0)
     return score / Object.keys(points).length
   }
@@ -81,6 +76,13 @@ function Term (name, data) {
 
   this._photo = function () {
     return this.photo() ? this.name.toLink(`<img src="media/diary/${this.photo().pict}.jpg"/>`) : ''
+  }
+
+  this.outgoing = function () {
+    const body = [this.data.BREF].concat(this.data.BODY).join('')
+    const links = body.split('{(link "').map((item) => { return item.split('"')[0].toUpperCase() })
+    links.shift()
+    return links.filter((item) => { return item.indexOf('HTTP') < 0 })
   }
 
   this.toString = function (photo = false) {
