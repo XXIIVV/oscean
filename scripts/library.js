@@ -873,7 +873,7 @@ RIVEN.lib.Terminal = function TerminalNode (id, rect, ...params) {
     if (q.indexOf('~') < 0) { return }
 
     const words = q.substr(1).split('+')
-    const cmd = words[0]
+    const cmd = words[0].substr(0, 1) === '~' ? words[0].substr(1) : words[0]
     const par = words.splice(1).join(' ')
 
     if (!cmd) { return }
@@ -892,7 +892,8 @@ RIVEN.lib.Terminal = function TerminalNode (id, rect, ...params) {
     this.push('maeve', `The local time is ${arvelie()} ${neralie()}.
 Today's forecast is <b>${this.services.forecast()}</b>.
 Oscean is presently <b>${this.services.progress().toFixed(2)}% Completed</b>.
-Devine is now <b>${this.services.age().toFixed(4)} years</b> old.`, 0)
+Devine is now <b>${this.services.age().toFixed(4)} years</b> old.
+${this.services.otd()}`, 0)
     this.isBooted = true
   }
 
@@ -923,6 +924,14 @@ Devine is now <b>${this.services.age().toFixed(4)} years</b> old.`, 0)
       return !isNaN(new Date(q)) ? `${new Date(q).toArvelie()}` : 'Invalid Date'
     },
 
+    otd: (q) => {
+      const today = new Date().toArvelie()
+      const a = []
+      const logs = Ø('database').cache.horaire.filter(__onlyEvents).filter(__onlyThisDay)
+      if (logs.length < 1) { return `There were no events on this day.` }
+      return `<b>On This Day</b>, on ${timeAgo(logs[0].time, 14)}, ${logs[0].host.name.toTitleCase()} — ${logs[0].name}.`
+    },
+
     litoen: (q) => {
       const res = Ø('asulodeta').find(q, 'name')
       return res ? `The English translation of "${res.childspeak.toLink(res.adultspeak.toTitleCase())}" is "<b>${res.english.toTitleCase()}</b>".` : 'Unknown'
@@ -931,6 +940,10 @@ Devine is now <b>${this.services.age().toFixed(4)} years</b> old.`, 0)
     entoli: (q) => {
       const res = Ø('asulodeta').find(q, 'english')
       return res ? `The Lietal translation of "<b>${q.toTitleCase()}</b>" is "${res.childspeak.toLink(res.adultspeak.toTitleCase())}".` : 'Unknown'
+    },
+
+    iso: (q) => {
+      return new Date().toISOString()
     },
 
     task: (q) => {
@@ -1000,14 +1013,6 @@ Devine is now <b>${this.services.age().toFixed(4)} years</b> old.`, 0)
       return `${forecast.fh}fh of ${forecast.sector} ${forecast.task}`
     },
 
-    otd: (q) => {
-      const today = new Date().toArvelie()
-      const a = []
-      const logs = Ø('database').cache.horaire.filter(__onlyEvents).filter(__onlyThisDay)
-      if (logs.length < 1) { return `There are no events on this day.` }
-      return `<b>On This Day</b>, on ${timeAgo(logs[0].time, 14)}, ${logs[0].host.name.toTitleCase()} — ${logs[0].name}.`
-    },
-
     orphans: (q) => {
       let html = ''
       for (const id in Ø('database').cache.lexicon) {
@@ -1017,8 +1022,22 @@ Devine is now <b>${this.services.age().toFixed(4)} years</b> old.`, 0)
       return `<ul>${html}</ul>`
     },
 
-    iso: (q) => {
-      return new Date().toISOString()
+    pomodoro: (q) => {
+      if (!('Notification' in window)) {
+        return 'This browser does not support desktop notification'
+      }
+      if (Notification.permission === 'granted') {
+        console.log(30 * 86400)
+        setTimeout(() => {
+          const body = `The pomodoro has ended at ${neralie()}.`
+          new Notification('Oscean', { body, icon: 'media/icon/notification.jpg' })
+          Ø('terminal').push('pomodoro', body)
+        }, 20 * 86.4 * 1000)
+        return `The pomodoro has started at ${neralie()}.`
+      }
+      if (Notification.permission !== 'denied') {
+        Notification.requestPermission().then((permission) => { this.pomodoro(q) })
+      }
     },
 
     clear: (q) => {
