@@ -55,6 +55,18 @@ function sortLogs (arr) {
   }).reverse()
 }
 
+function plainTable (arr, pad = 2, cols = 4) {
+  const length = Math.max(...(arr.map(el => el.length))) + pad
+  let html = ''
+  for (let i = 0; i <= arr.length; i += cols) {
+    for (let c = 0; c < cols; c += 1) {
+      html += arr[i + c] ? arr[i + c].padEnd(length, ' ') : ''
+    }
+    html += '\n'
+  }
+  return html
+}
+
 // Horaire Filters
 
 function __onlyPast (log) {

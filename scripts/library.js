@@ -913,7 +913,7 @@ ${this.services.otd()}`, 0)
   this.services =
   {
     help: (q) => {
-      return 'Available commands:\n<ul>' + Object.keys(this.services).reduce((acc, val) => { return acc + `<li><i>${val}</i></li>` }, '') + '</ul>'
+      return 'Available commands:\n' + plainTable(Object.keys(this.services))
     },
 
     atog: (q) => {
@@ -924,14 +924,6 @@ ${this.services.otd()}`, 0)
       return !isNaN(new Date(q)) ? `${new Date(q).toArvelie()}` : 'Invalid Date'
     },
 
-    otd: (q) => {
-      const today = new Date().toArvelie()
-      const a = []
-      const logs = Ø('database').cache.horaire.filter(__onlyEvents).filter(__onlyThisDay)
-      if (logs.length < 1) { return `There were no past events on this date.` }
-      return `<b>On This Day</b>, on ${timeAgo(logs[0].time, 14)}, ${logs[0].host.name.toTitleCase()} — ${logs[0].name}.`
-    },
-
     litoen: (q) => {
       const res = Ø('asulodeta').find(q, 'name')
       return res ? `The English translation of "${res.childspeak.toLink(res.adultspeak.toTitleCase())}" is "<b>${res.english.toTitleCase()}</b>".` : 'Unknown'
@@ -940,6 +932,14 @@ ${this.services.otd()}`, 0)
     entoli: (q) => {
       const res = Ø('asulodeta').find(q, 'english')
       return res ? `The Lietal translation of "<b>${q.toTitleCase()}</b>" is "${res.childspeak.toLink(res.adultspeak.toTitleCase())}".` : 'Unknown'
+    },
+
+    otd: (q) => {
+      const today = new Date().toArvelie()
+      const a = []
+      const logs = Ø('database').cache.horaire.filter(__onlyEvents).filter(__onlyThisDay)
+      if (logs.length < 1) { return `There were no past events on this date.` }
+      return `<b>On This Day</b>, on ${timeAgo(logs[0].time, 14)}, ${logs[0].host.name.toTitleCase()} — ${logs[0].name}.`
     },
 
     iso: (q) => {
@@ -977,7 +977,7 @@ ${this.services.otd()}`, 0)
         Ø('database').index[id].toString()
         const entryTimeComplete = performance.now() - entryTime
         if (entryTimeComplete > 300) {
-          console.warn('Slow', id, entryTimeComplete)
+          Ø('terminal').push('null', `${id} slow: ${entryTimeComplete}ms.`)
         }
       }
       return `Walked ${Object.keys(Ø('database').index).length} indexes, in ${(performance.now() - totalTime).toFixed(2)}ms.`
@@ -1015,13 +1015,17 @@ ${this.services.otd()}`, 0)
 
     orphans: (q) => {
       let index = {}
+      let orphans = []
       for (const id in Ø('database').cache.lexicon) {
         const links = Ø('database').cache.lexicon[id].outgoing()
         for (const link of links) {
           index[link] = index[link] ? index[link] + 1 : 1
         }
       }
-      return `<ul>${Object.keys(Ø('database').cache.lexicon).reduce((acc, item) => { return index[item] ? acc : `${acc}<li>${item}</li>` }, '')}</ul>`
+      for (const key of Object.keys(Ø('database').cache.lexicon)) {
+        if (!index[key]) { orphans.push(key.toLowerCase()) }
+      }
+      return plainTable(orphans, 2, 3)
     },
 
     pomodoro: (q) => {
