@@ -33,13 +33,22 @@ const template = `
     (wrap 
       (join (for (entries res:links) 
         (λ (a) (concat "<li><a href='" a:1 "'>" a:0 "</a></li>")))) "ul" "links") )
-  (def __date (wrap (concat (tunnel res "span" "from") " — " (tunnel res "span" "to")) "h2"))
+  (def span-from 
+    (if (gt (len res:diaries) 0) 
+      (tunnel res "span" "from") 
+      (:time (last (database:select-table "horaire")))))
+  (def span-to 
+    (if (gt (len res:diaries) 1) 
+      (tunnel res "span" "to") 
+      (:time (first (database:select-table "horaire")))))
+  (def __date (wrap (concat span-from " — " span-to) "h2"))
   (def __directory (wrap "<li class='parent'><a href='home' data-goto='home' target='_self' class='local  '>Home</a></li><li class='children '><a href='audio' data-goto='audio' target='_self' class='local  '>Audio</a></li><li class='children '><a href='visual' data-goto='visual' target='_self' class='local  '>Visual</a></li><li class='children '><a href='research' data-goto='research' target='_self' class='local  '>Research</a></li>" "ul" "directory"))
   (dom:set-html _sidebar (concat __date __links __directory))))
 
 (defn display (q) (
   (def res (database:find q))
   (dom:set-title res:name)
+  (dom:set-hash res:name)
   (dom:scroll 0)
   (display-photo res)
   (display-glyph res)
@@ -51,6 +60,7 @@ const template = `
 (defn query () (
   (def current-page 
     (replace (substr location:hash 1) "/\+/g" " "))
+  (if (eq current-page "") (def current-page "home"))
   (display current-page)
   ))
 
@@ -59,7 +69,6 @@ const template = `
 ; click
 
 (defn goto (target) (
-  (set location "hash" target)
   (display target)))
 
 (on:click goto)

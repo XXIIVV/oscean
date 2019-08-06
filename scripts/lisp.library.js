@@ -41,6 +41,9 @@ function Library () {
     'set-title': (title) => {
       document.title = title
     },
+    'set-hash': (hash) => {
+      document.location.hash = `${hash}`.toUrl()
+    },
     scroll: (y) => {
       window.scrollTo(0, y)
     },
@@ -111,6 +114,18 @@ function Library () {
 
   this.join = (arr, ch = '') => {
     return arr.join(ch)
+  }
+
+  this.first = (arr) => {
+    return arr[0]
+  }
+
+  this.last = (arr) => {
+    return arr[arr.length - 1]
+  }
+
+  this.len = (arr) => {
+    return arr.length
   }
 
   this.entries = (obj) => {
@@ -222,6 +237,9 @@ function Library () {
         }
       }
       console.info(`Indexed ${this.database.length()} searchables, in ${(performance.now() - time).toFixed(2)}ms.`)
+    },
+    'select-table': (name) => {
+      return this.database.tables[name]
     },
     find: (q) => {
       return this.database.index[q.toUpperCase()] ? this.database.index[q.toUpperCase()] : new Entry(q)
