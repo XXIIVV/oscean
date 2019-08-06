@@ -6,9 +6,10 @@ function Library (ronin) {
   // Parsimony: Write a big program only when it is clear by demonstration that nothing else will do.
 
   this.dom = {
-    create: (id, type = 'div') => {
+    create: (id, type = 'div', cl = '') => {
       const el = document.createElement(type)
       el.id = id
+      el.className = cl
       return el
     },
     text: (el, s) => {
