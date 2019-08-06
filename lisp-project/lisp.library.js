@@ -1,6 +1,6 @@
 'use strict'
 
-function Library (ronin) {
+function Library () {
   // Modularity: Write simple parts connected by clean interfaces.
   // Composition: Design programs to be connected to other programs.
   // Parsimony: Write a big program only when it is clear by demonstration that nothing else will do.
@@ -28,6 +28,14 @@ function Library (ronin) {
     },
     body: document.body
   }
+
+  this.on = {
+    click: (fn) => {
+      bindings.click = fn
+    }
+  }
+
+  this.document = document
 
   this.debug = (arg) => {
     console.log(arg)
