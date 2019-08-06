@@ -178,3 +178,13 @@ function Lisp (lib = {}) {
     return interpret(this.parse(`(${input})`))
   }
 }
+
+String.prototype.template = function (host) {
+  const matches = this.match(/[^{\}]+(?=})/g)
+  if (!matches) { return this }
+  let text = `${this}`
+  matches.forEach(el => {
+    text = text.replace(`{${el}}`, lisp.run(el, host))
+  })
+  return text
+}

@@ -111,9 +111,6 @@ function Library () {
     'set-attr': (host, attr, value) => {
       host.setAttribute(attr, value)
     },
-    wrap: (content, tag, cl) => {
-      return `<${tag} class='${cl}'>${content}</${tag}>`
-    },
     body: document.body
   }
 
@@ -178,7 +175,31 @@ function Library () {
     console.log(arg)
     return arg
   }
-  
+
+  // Templating
+
+  this.wrap = (content, tag, cl) => {
+    return `<${tag} class='${cl}'>${content}</${tag}>`
+  }
+
+  this.bold = (item) => {
+    return this.wrap(item, 'b')
+  }
+
+  this.ital = (item) => {
+    return this.wrap(item, 'i')
+  }
+
+  this.code = (item) => {
+    return this.wrap(item, 'code')
+  }
+
+  this.link = (target, handle) => {
+    return `<a href='${target}'>${handle || target}</a>`
+  }
+
+  // Access
+
   this.document = document
   this.location = document.location
 }

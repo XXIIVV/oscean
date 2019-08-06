@@ -11,7 +11,7 @@ function Term (name, data) {
   this.span = { from: null, to: null }
 
   this.data = data
-  this.bref = data.BREF ? data.BREF : ''
+  this.bref = data.BREF ? data.BREF.template() : ''
   this.unde = data.UNDE ? data.UNDE : 'Home'
   this.view = data.VIEW ? data.VIEW.toLowerCase() : 'main'
   this.theme = data.LOOK ? data.LOOK : null
@@ -70,7 +70,7 @@ function Term (name, data) {
   }
 
   this.body = () => {
-    return `${runic(this.data.BODY, this)}`
+    return `${runic(this.data.BODY, this)}`.template()
   }
 
   this._photo = () => {
