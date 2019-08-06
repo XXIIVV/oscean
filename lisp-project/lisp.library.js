@@ -8,6 +8,7 @@ function Library () {
   this.Tablatal = tablatal
   this.Indental = indental
   this.Log = Log
+  this.Term = Term
 
   this.database = {
     index: {},
@@ -24,11 +25,14 @@ function Library () {
         for (const id in table) {
           const entry = table[id]
           for (const id in entry.indexes) {
-            this.database.index[entry.indexes[id]] = entry
+            this.database.index[entry.indexes[id].toUpperCase()] = entry
           }
         }
       }
       console.info(`Indexed ${this.database.length()} searchables, in ${(performance.now() - time).toFixed(2)}ms.`)
+    },
+    find: (q) => {
+      return this.database.index[q.toUpperCase()]
     },
     length: () => {
       return Object.keys(this.database.index).length
@@ -73,6 +77,14 @@ function Library () {
 
   this.substr = (str, from, len) => {
     return str.substr(from, len)
+  }
+
+  this.concat = (...items) => { // Concat multiple strings.
+    return items.reduce((acc, item) => { return `${acc}${item}` }, '')
+  }
+
+  this.split = (string, char) => { // Split string at character.
+    return string.split(char)
   }
 
   this.debug = (arg) => {

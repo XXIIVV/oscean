@@ -22,8 +22,8 @@ function Entry (name, data) {
     return []
   }
 
-  this.head = function () {
-    return this.bref ? `<p>${this.bref.toHeol(this)}</p>` : ''
+  this.head = () => {
+    return this.bref ? `<p>${this.bref}</p>` : ''
   }
 
   this.body = function () {

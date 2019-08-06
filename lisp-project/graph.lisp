@@ -70,10 +70,19 @@ const graph = `
 (database:create-table "lexicon" Indental Term)
 (database:create-index)
 
-
 ; start handling clicks
 (on:click debug)
 
+
+(defn display (q) (
+  (debug (concat "display: " q))
+  (def res (database:find q))
+  (def _head (res:head))
+  (debug _head)
+  ; (dom:set-html _main _head)
+
+  (debug res)
+))
 
 
 
@@ -81,7 +90,7 @@ const graph = `
   ; current page
   (def current-page 
     (substr location:hash 1))
-  (debug current-page)
+  (display current-page)
 ))
 
 
