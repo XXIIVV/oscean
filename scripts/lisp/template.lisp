@@ -19,6 +19,7 @@ const template = `
 
 (defn display-photo (res) (
   (def photo-log (res:photo))
+  (if photo-log (dom:show _title) (dom:hide _title))
   (dom:set-html _title (concat "<a href='journal' data-goto='journal' target='_self' class='local'>" photo-log:name "</a> — " (photo-log:time)))
   (dom:set-html _photo (concat "<media id='media' style='background-image: url(media/diary/" photo-log:pict ".jpg)'></media>"))))
 
@@ -32,12 +33,11 @@ const template = `
     (wrap 
       (join (for (entries res:links) 
         (λ (a) (concat "<li><a href='" a:1 "'>" a:0 "</a></li>")))) "ul" "links") )
-  (def __date (wrap "29G21 — 29G22" "h2"))
+  (def __date (wrap (concat (tunnel res "span" "from") " — " (tunnel res "span" "to")) "h2"))
   (def __directory (wrap "<li class='parent'><a href='home' data-goto='home' target='_self' class='local  '>Home</a></li><li class='children '><a href='audio' data-goto='audio' target='_self' class='local  '>Audio</a></li><li class='children '><a href='visual' data-goto='visual' target='_self' class='local  '>Visual</a></li><li class='children '><a href='research' data-goto='research' target='_self' class='local  '>Research</a></li>" "ul" "directory"))
   (dom:set-html _sidebar (concat __date __links __directory))))
 
 (defn display (q) (
-  (debug (concat "display: " q))
   (def res (database:find q))
   (dom:set-title res:name)
   (dom:scroll 0)
@@ -50,7 +50,7 @@ const template = `
 
 (defn query () (
   (def current-page 
-    (substr location:hash 1))
+    (replace (substr location:hash 1) "/\+/g" " "))
   (display current-page)
   ))
 

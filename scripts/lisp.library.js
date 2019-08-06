@@ -5,6 +5,198 @@ function Library () {
   // Composition: Design programs to be connected to other programs.
   // Parsimony: Write a big program only when it is clear by demonstration that nothing else will do.
 
+  this.dom = {
+    create: (id, type = 'div', cl = '') => {
+      const el = document.createElement(type)
+      this.dom['set-attr'](el, 'id', id)
+      this.dom['set-class'](el, cl)
+      return el
+    },
+    'create-ns': (id, type = 'svg', cl = '') => {
+      const el = document.createElementNS('http://www.w3.org/2000/svg', type)
+      this.dom['set-attr'](el, 'id', id)
+      this.dom['set-class'](el, cl)
+      return el
+    },
+    append: (el, children) => {
+      for (const child of children) {
+        el.appendChild(child)
+      }
+    },
+    bind: (el, event, fn) => {
+      el.addEventListener(event, fn)
+    },
+    'set-text': (el, text) => {
+      el.textContent = text
+    },
+    'set-html': (el, html) => {
+      el.innerHTML = html
+    },
+    'set-attr': (el, attr, value) => {
+      el.setAttribute(attr, value)
+    },
+    'set-class': (el, cl) => {
+      this.dom['set-attr'](el, 'class', cl)
+    },
+    'set-title': (title) => {
+      document.title = title
+    },
+    scroll: (y) => {
+      window.scrollTo(0, y)
+    },
+    show: (el) => {
+      this.dom['set-class'](el, 'visible')
+    },
+    hide: (el) => {
+      this.dom['set-class'](el, 'hidden')
+    },
+    body: document.body
+  }
+
+  this.on = {
+    click: (fn) => {
+      bindings.click = fn
+    },
+    load: (fn) => {
+      bindings.load = fn
+    },
+    search: (fn) => {
+      bindings.search = fn
+    }
+  }
+
+  this.substr = (str, from, len) => {
+    return str.substr(from, len)
+  }
+
+  this.concat = (...items) => { // Concat multiple strings.
+    return items.reduce((acc, item) => { return `${acc}${item}` }, '')
+  }
+
+  this.split = (string, char) => { // Split string at character.
+    return string.split(char)
+  }
+
+  this.replace = (str, from, to) => {
+    return str.replace(/\+/g, to)
+  }
+
+  this.keys = (h) => {
+    return Object.keys(h)
+  }
+
+  this.values = (h) => {
+    return Object.values(h)
+  }
+
+  this.map = (arr, fn) => {
+    return arr.map((val, id, arr) => fn)
+  }
+
+  this.filter = (arr, name) => {
+    return arr.filter(window[name])
+  }
+
+  this.reduce = (arr, fn, acc = '') => {
+    console.log(arr, fn)
+    return arr.reduce((acc, val, id, arr) => fn, acc)
+  }
+
+  this.for = (arr, fn) => {
+    for (const item in arr) {
+      arr[item] = fn(arr[item])
+    }
+    return arr
+  }
+
+  this.join = (arr, ch = '') => {
+    return arr.join(ch)
+  }
+
+  this.entries = (obj) => {
+    return obj ? Object.entries(obj) : []
+  }
+
+  this.debug = (arg) => {
+    console.log(arg)
+    return arg
+  }
+
+  this.set = (host, key, val) => {
+    console.log(host, key, val)
+    host[key] = val
+  }
+
+  this.gt = (a, b) => { // Returns true if a is greater than b, else false.
+    return a > b
+  }
+
+  this.lt = (a, b) => { // Returns true if a is less than b, else false.
+    return a < b
+  }
+
+  this.eq = (a, b) => { // Returns true if a is equal to b, else false.
+    return a === b
+  }
+
+  this.and = (...args) => { // Returns true if all conditions are true.
+    for (let i = 0; i < args.length; i++) {
+      if (!args[i]) {
+        return args[i]
+      }
+    }
+    return args[args.length - 1]
+  }
+
+  this.or = (a, b, ...rest) => { // Returns true if at least one condition is true.
+    let args = [a, b].concat(rest)
+    for (let i = 0; i < args.length; i++) {
+      if (args[i]) {
+        return args[i]
+      }
+    }
+    return args[args.length - 1]
+  }
+
+  this.get = (host, key) => {
+    return host[key]
+  }
+
+  this.tunnel = (h, ...keys) => {
+    return keys.reduce((acc, key) => {
+      return key && acc && acc[key] ? acc[key] : null
+    }, h)
+  }
+
+  // Templating
+
+  this.wrap = (content, tag, cl) => {
+    return `<${tag} class='${cl}'>${content}</${tag}>`
+  }
+
+  this.bold = (item) => {
+    return this.wrap(item, 'b')
+  }
+
+  this.ital = (item) => {
+    return this.wrap(item, 'i')
+  }
+
+  this.code = (item) => {
+    return this.wrap(item, 'code')
+  }
+
+  this.link = (target = '[BLANK]', name) => {
+    return target.toLink(name)
+  }
+
+  // Access
+
+  this.document = document
+  this.location = document.location
+
+  // Monsters, to migrate to lisp
+
   this.Tablatal = tablatal
   this.Indental = indental
   this.Log = Log
@@ -32,7 +224,7 @@ function Library () {
       console.info(`Indexed ${this.database.length()} searchables, in ${(performance.now() - time).toFixed(2)}ms.`)
     },
     find: (q) => {
-      return this.database.index[q.toUpperCase()]
+      return this.database.index[q.toUpperCase()] ? this.database.index[q.toUpperCase()] : new Entry(q)
     },
     map: () => {
       const time = performance.now()
@@ -84,180 +276,5 @@ function Library () {
     }
   }
 
-  this.dom = {
-    create: (id, type = 'div', cl = '') => {
-      const el = document.createElement(type)
-      this.dom['set-attr'](el, 'id', id)
-      this.dom['set-attr'](el, 'class', cl)
-      return el
-    },
-    'create-ns': (id, type = 'svg', cl = '') => {
-      const el = document.createElementNS('http://www.w3.org/2000/svg', type)
-      this.dom['set-attr'](el, 'id', id)
-      this.dom['set-attr'](el, 'class', cl)
-      return el
-    },
-    append: (host, children) => {
-      for (const child of children) {
-        host.appendChild(child)
-      }
-    },
-    bind: (host, event, fn) => {
-      host.addEventListener(event, fn)
-    },
-    'set-text': (host, text) => {
-      el.textContent = text
-    },
-    'set-html': (host, html) => {
-      host.innerHTML = html
-    },
-    'set-attr': (host, attr, value) => {
-      host.setAttribute(attr, value)
-    },
-    'set-title': (title) => {
-      document.title = title
-    },
-    scroll: (y) => {
-      window.scrollTo(0, y)
-    },
-    body: document.body
-  }
-
-  this.on = {
-    click: (fn) => {
-      bindings.click = fn
-    },
-    load: (fn) => {
-      bindings.load = fn
-    },
-    search: (fn) => {
-      bindings.search = fn
-    }
-  }
-
-  this.substr = (str, from, len) => {
-    return str.substr(from, len)
-  }
-
-  this.concat = (...items) => { // Concat multiple strings.
-    return items.reduce((acc, item) => { return `${acc}${item}` }, '')
-  }
-
-  this.split = (string, char) => { // Split string at character.
-    return string.split(char)
-  }
-
-  this.keys = (h) => {
-    return Object.keys(h)
-  }
-
-  this.values = (h) => {
-    return Object.values(h)
-  }
-
-  this.map = (arr, fn) => {
-    return arr.map((val, id, arr) => fn)
-  }
-
-  this.filter = (arr, name) => {
-    return arr.filter(window[name])
-  }
-
-  this.reduce = (arr, fn, acc = '') => {
-    console.log(arr, fn)
-    return arr.reduce((acc, val, id, arr) => fn, acc)
-  }
-
-  this.for = (arr, fn) => {
-    for (const item in arr) {
-      arr[item] = fn(arr[item])
-    }
-    return arr
-  }
-
-  this.join = (arr, ch = '') => {
-    return arr.join(ch)
-  }
-
-  this.entries = (obj) => {
-    return Object.entries(obj)
-  }
-
-  this.debug = (arg) => {
-    console.log(arg)
-    return arg
-  }
-
-  this.set = (host, key, val) => {
-    console.log(host, key, val)
-    host[key] = val
-  }
-
-  this.gt = (a, b) => { // Returns true if a is greater than b, else false.
-    return a > b
-  }
-
-  this.lt = (a, b) => { // Returns true if a is less than b, else false.
-    return a < b
-  }
-
-  this.eq = (a, b) => { // Returns true if a is equal to b, else false.
-    return a === b
-  }
-
-  this.and = (...args) => { // Returns true if all conditions are true.
-    for (let i = 0; i < args.length; i++) {
-      if (!args[i]) {
-        return args[i]
-      }
-    }
-    return args[args.length - 1]
-  }
-
-  this.or = (a, b, ...rest) => { // Returns true if at least one condition is true.
-    let args = [a, b].concat(rest)
-    for (let i = 0; i < args.length; i++) {
-      if (args[i]) {
-        return args[i]
-      }
-    }
-    return args[args.length - 1]
-  }
-
-  this.get = (host, key) => {
-    return host[key]
-  }
-
-  this.tunnel = (h, ...keys) => {
-    return keys.reduce((acc, key) => {
-      return acc[key]
-    }, h)
-  }
-
-  // Templating
-
-  this.wrap = (content, tag, cl) => {
-    return `<${tag} class='${cl}'>${content}</${tag}>`
-  }
-
-  this.bold = (item) => {
-    return this.wrap(item, 'b')
-  }
-
-  this.ital = (item) => {
-    return this.wrap(item, 'i')
-  }
-
-  this.code = (item) => {
-    return this.wrap(item, 'code')
-  }
-
-  this.link = (target = '[BLANK]', name) => {
-    return target.toLink(name)
-  }
-
-  // Access
-
-  this.document = document
-  this.location = document.location
+  // end
 }
