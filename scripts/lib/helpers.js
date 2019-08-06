@@ -19,7 +19,7 @@ String.prototype.insert = function (s, i) { return [this.slice(0, i), s, this.sl
 // Redlinks
 
 function redLink (index) {
-  if (Ø('database').cache && !Ø('database').find(index)) { console.warn(`Redlink! ${index}.`); return 'redlink' }
+  // if (Ø('database').cache && !Ø('database').find(index)) { console.warn(`Redlink! ${index}.`); return 'redlink' }
   return ''
 }
 
