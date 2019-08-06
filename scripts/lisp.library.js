@@ -114,6 +114,12 @@ function Library () {
     'set-attr': (host, attr, value) => {
       host.setAttribute(attr, value)
     },
+    'set-title': (title) => {
+      document.title = title
+    },
+    scroll: (y) => {
+      window.scrollTo(0, y)
+    },
     body: document.body
   }
 
