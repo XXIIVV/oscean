@@ -11,7 +11,7 @@ function runic (lines = [], host = null) {
     '@': { tag: 'div', class: 'quote', fn: quote },
     '|': { tag: 'tr', wrapper: 'table', fn: table },
     '%': { fn: media },
-    'λ': { fn: heol },
+    'λ': { fn: interpret },
     '>': {},
     ';': { }
   }
@@ -71,8 +71,8 @@ function runic (lines = [], host = null) {
     return `<td>${content.trim().replace(/ \| /g, '</td><td>')}</td>`
   }
 
-  function heol (content) {
-    return `${content}`
+  function interpret (content) {
+    return `${lisp.run(content, host)}`
   }
 
   return lines.filter(isRunic).reduce(stash, []).reduce(_html, '')

@@ -174,7 +174,8 @@ function Lisp (lib = {}) {
     return parenthesize(tokenize(input))
   }
 
-  this.run = function (input) {
+  this.run = function (input, host) {
+    lib.host = host
     return interpret(this.parse(`(${input})`))
   }
 }

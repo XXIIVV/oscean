@@ -1,9 +1,11 @@
 'use strict'
 
-function Library () {
+function Library (host) {
   // Modularity: Write simple parts connected by clean interfaces.
   // Composition: Design programs to be connected to other programs.
   // Parsimony: Write a big program only when it is clear by demonstration that nothing else will do.
+
+  this.host = host
 
   this.dom = {
     create: (id, type = 'div', cl = '') => {
@@ -201,8 +203,82 @@ function Library () {
     return this.wrap(item, 'code')
   }
 
-  this.link = (target = '[BLANK]', name) => {
+  this.link = (target = this.host.name.toTitleCase(), name) => {
     return target.toLink(name)
+  }
+
+  this.template = (items, t, p) => {
+    return items.map((val) => { return `${t(val, p)}` }).join('')
+  }
+
+  this.INDEX = (item) => {
+    return `<h3>{λ(link "${item.name.toTitleCase()}")}</h3><h4>${item.bref}</h4><ul class='bullet'>${item.children.reduce((acc, term) => { return `${acc}<li>${term.bref}</li>`.template(term) }, '')}</ul>`.template(item)
+  }
+
+  this.REDIRECT = (item) => {
+    return `<meta http-equiv="refresh" content="2; url=#${item}">`
+  }
+
+  this.TITLE = (item) => {
+    return `<h2>${item.name.toTitleCase()}</h2><h4>${item.bref}</h4>`.template(item)
+  }
+
+  this.PHOTO = (item) => {
+    return this.host.photo() && this.host.photo().pict !== item.pict ? item.name.toLink(`<img title="${item.name}" src="media/diary/${item.pict}.jpg"/>`) : ''
+  }
+
+  this.GALLERY = (item) => {
+    return `${item.photo() ? item.name.toLink(`<img title="${item.name}" src="media/diary/${item.photo().pict}.jpg"/>`) : ''}<h2>${item.name.toTitleCase()}</h2><h4>${item.bref}</h4>`.template(item)
+  }
+
+  this.LIST = (item) => {
+    return `<li>${item.bref}</li>`.template(item)
+  }
+
+  this.FULL = (item) => {
+    return item.toString(true).template(item)
+  }
+
+  this.SPAN = (item) => {
+    return item.logs.length > 10 && item.span.from && item.span.to ? `<li>${item.name.toTitleCase().toLink()} ${item.span.from}—${item.span.to}</li>` : ''
+  }
+
+  //
+
+  this.add = (...args) => { // Adds values.
+    return args.reduce((sum, val) => sum + val)
+  }
+
+  this.sub = (...args) => { // Subtracts values.
+    return args.reduce((sum, val) => sum - val)
+  }
+
+  this.mul = (...args) => { // Multiplies values.
+    return args.reduce((sum, val) => sum * val)
+  }
+
+  this.div = (...args) => { // Divides values.
+    return args.reduce((sum, val) => sum / val)
+  }
+
+  this.mod = (a, b) => { // Returns the modulo of a and b.
+    return a % b
+  }
+
+  this.rad = (degrees) => { // Convert radians to degrees.
+    return degrees * (Math.PI / 180)
+  }
+
+  this.deg = (radians) => { // Convert degrees to radians.
+    return radians * (180 / Math.PI)
+  }
+
+  this.clamp = (val, min, max) => { // Clamps a value between min and max.
+    return this.min(max, this.max(min, val))
+  }
+
+  this.step = (val, step) => {
+    return this.round(val / step) * step
   }
 
   // Access
