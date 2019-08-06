@@ -72,7 +72,7 @@ function Heol (input, host) {
     cc: (item) => {
       return item.substr(0, 1).toUpperCase() + item.substr(1)
     },
-    map: (arr, name) => {
+    map: (arr, fn) => {
       return arr.map((val, id, arr) => fn)
     },
     filter: (arr, name) => {

@@ -33,7 +33,7 @@ function Lisp (lib = {}) {
       const fnName = input[1].value
       const fnParams = input[2].type === TYPES.string && input[3] ? input[3] : input[2]
       const fnBody = input[2].type === TYPES.string && input[4] ? input[4] : input[3]
-      context.scope[fnName] = async function () {
+      context.scope[fnName] = function () {
         const lambdaArguments = arguments
         const lambdaScope = fnParams.reduce(function (acc, x, i) {
           acc[x.value] = lambdaArguments[i]
@@ -43,7 +43,7 @@ function Lisp (lib = {}) {
       }
     },
     lambda: function (input, context) {
-      return async function () {
+      return function () {
         const lambdaArguments = arguments
         const lambdaScope = input[1].reduce(function (acc, x, i) {
           acc[x.value] = lambdaArguments[i]
@@ -52,14 +52,14 @@ function Lisp (lib = {}) {
         return interpret(input[2], new Context(lambdaScope, context))
       }
     },
-    if: async function (input, context) {
-      if (await interpret(input[1], context)) {
+    if: function (input, context) {
+      if (interpret(input[1], context)) {
         return interpret(input[2], context)
       }
       return input[3] ? interpret(input[3], context) : []
     },
     __fn: function (input, context) {
-      return async function () {
+      return function () {
         const lambdaArguments = arguments
         const keys = [...new Set(input.slice(2).flat(100).filter(i =>
           i.type === TYPES.identifier &&
@@ -72,16 +72,16 @@ function Lisp (lib = {}) {
         return interpret(input.slice(1), new Context(lambdaScope, context))
       }
     },
-    __obj: async function (input, context) {
+    __obj: function (input, context) {
       const obj = {}
       for (let i = 1; i < input.length; i += 2) {
-        obj[await interpret(input[i], context)] = await interpret(input[i + 1], context)
+        obj[interpret(input[i], context)] = interpret(input[i + 1], context)
       }
       return obj
     }
   }
 
-  const interpretList = async function (input, context) {
+  const interpretList = function (input, context) {
     if (input.length > 0 && input[0].value in special) {
       return special[input[0].value](input, context)
     }
@@ -89,7 +89,7 @@ function Lisp (lib = {}) {
     for (let i = 0; i < input.length; i++) {
       if (input[i].type === TYPES.symbol) {
         if (input[i].host) {
-          const host = await context.get(input[i].host)
+          const host = context.get(input[i].host)
           if (host) {
             list.push(host[input[i].value])
           }
@@ -97,13 +97,13 @@ function Lisp (lib = {}) {
           list.push(obj => obj[input[i].value])
         }
       } else {
-        list.push(await interpret(input[i], context))
+        list.push(interpret(input[i], context))
       }
     }
     return list[0] instanceof Function ? list[0].apply(undefined, list.slice(1)) : list
   }
 
-  const interpret = async function (input, context) {
+  const interpret = function (input, context) {
     if (!input) { console.warn('Lisp', 'error', context.scope); return null }
     if (context === undefined) {
       return interpret(input, new Context(lib))
@@ -174,7 +174,7 @@ function Lisp (lib = {}) {
     return parenthesize(tokenize(input))
   }
 
-  this.run = async function (input) {
+  this.run = function (input) {
     return interpret(this.parse(`(${input})`))
   }
 }

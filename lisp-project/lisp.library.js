@@ -90,6 +90,42 @@ function Library () {
     return string.split(char)
   }
 
+  this.keys = (h) => {
+    return Object.keys(h)
+  }
+
+  this.values = (h) => {
+    return Object.values(h)
+  }
+
+  this.map = (arr, fn) => {
+    return arr.map((val, id, arr) => fn)
+  }
+
+  this.filter = (arr, name) => {
+    return arr.filter(window[name])
+  }
+
+  this.reduce = (arr, fn, acc = '') => {
+    console.log(arr, fn)
+    return arr.reduce((acc, val, id, arr) => fn, acc)
+  }
+
+  this.for = (arr, fn) => {
+    for (const item in arr) {
+      arr[item] = fn(arr[item])
+    }
+    return arr
+  }
+
+  this.join = (arr, ch = '') => {
+    return arr.join(ch)
+  }
+
+  this.entries = (obj) => {
+    return Object.entries(obj)
+  }
+
   this.debug = (arg) => {
     console.log(arg)
     return arg
