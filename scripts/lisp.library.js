@@ -176,6 +176,15 @@ function Library () {
     return arg
   }
 
+  this.set = (host, key, val) => {
+    console.log(host, key, val)
+    host[key] = val
+  }
+
+  this.get = (host, key) => {
+    return host[key]
+  }
+
   // Templating
 
   this.wrap = (content, tag, cl) => {
@@ -194,8 +203,8 @@ function Library () {
     return this.wrap(item, 'code')
   }
 
-  this.link = (target, handle) => {
-    return `<a href='${target}'>${handle || target}</a>`
+  this.link = (target = '[BLANK]', name) => {
+    return target.toLink(name)
   }
 
   // Access

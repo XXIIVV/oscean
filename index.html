@@ -60,15 +60,49 @@
     const bindings = {}
     const library = new Library()
     const lisp = new Lisp(library)
+
     lisp.run(graph+template)
+
+    const detectBackOrForward = function (onBack, onForward) {
+      let hashHistory = [window.location.hash]
+      let historyLength = window.history.length
+
+      return function () {
+        let hash = window.location.hash; let length = window.history.length
+        if (hashHistory.length && historyLength === length) {
+          if (hashHistory[hashHistory.length - 2] === hash) {
+            hashHistory = hashHistory.slice(0, -1)
+            onBack()
+          } else {
+            hashHistory.push(hash)
+            onForward()
+          }
+        } else {
+          hashHistory.push(hash)
+          historyLength = length
+        }
+      }
+    }
+
+    window.addEventListener('hashchange', detectBackOrForward(
+      function () { Ø('query').bang() },
+      function () { Ø('query').bang() }
+    ))
 
     window.addEventListener('load', (e) => { 
       bindings.load(e) 
     })
 
     window.addEventListener('click', (e) => { 
-      bindings.click(e) 
+      if (e.button || e.which === 3 || e.button === 2) { return }
+      const inTab = e.ctrlKey || e.shiftKey || e.metaKey
+      const el = e.target.getAttribute('data-goto') ? e.target : e.target.parentNode.getAttribute('data-goto') ? e.target.parentNode : null
+      if (!el || el.className === 'external' || inTab) { return }
+      const target = el.getAttribute('data-goto')
+      bindings.click(target) 
+      e.preventDefault()
     })
+
   </script>
   <noscript>
     Go to <a href='static.txt' target='_blank'>/static.txt</a><br />
