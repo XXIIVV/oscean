@@ -21,7 +21,10 @@ const template = `
 
 (defn display-photo (res) (
   (def photo-log (res:photo))
-  (dom:set-html _title (concat "<a href='journal' data-goto='journal' target='_self' class='local'>" photo-log:name "</a> — " (photo-log:time)))))
+  (dom:set-html _title (concat "<a href='journal' data-goto='journal' target='_self' class='local'>" photo-log:name "</a> — " (photo-log:time)))
+  (dom:set-html _photo "<media id='media' style='background-image: url(../media/diary/1C.jpg)'></media>")
+
+  ))
 
 (defn display-main (res) (
   (def _head (res:head))
