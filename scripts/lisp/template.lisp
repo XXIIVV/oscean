@@ -66,4 +66,12 @@ const template = `
 
 (on:click goto)
 
+; search
+
+(defn search (e) (
+  (if (eq e:key "Enter") (
+    (goto (tunnel e "target" "value"))))))
+
+(dom:bind _search "keydown" search)
+
 `

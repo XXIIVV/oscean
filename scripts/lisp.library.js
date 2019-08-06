@@ -102,6 +102,9 @@ function Library () {
         host.appendChild(child)
       }
     },
+    bind: (host, event, fn) => {
+      host.addEventListener(event, fn)
+    },
     'set-text': (host, text) => {
       el.textContent = text
     },
@@ -120,6 +123,9 @@ function Library () {
     },
     load: (fn) => {
       bindings.load = fn
+    },
+    search: (fn) => {
+      bindings.search = fn
     }
   }
 
@@ -181,8 +187,45 @@ function Library () {
     host[key] = val
   }
 
+  this.gt = (a, b) => { // Returns true if a is greater than b, else false.
+    return a > b
+  }
+
+  this.lt = (a, b) => { // Returns true if a is less than b, else false.
+    return a < b
+  }
+
+  this.eq = (a, b) => { // Returns true if a is equal to b, else false.
+    return a === b
+  }
+
+  this.and = (...args) => { // Returns true if all conditions are true.
+    for (let i = 0; i < args.length; i++) {
+      if (!args[i]) {
+        return args[i]
+      }
+    }
+    return args[args.length - 1]
+  }
+
+  this.or = (a, b, ...rest) => { // Returns true if at least one condition is true.
+    let args = [a, b].concat(rest)
+    for (let i = 0; i < args.length; i++) {
+      if (args[i]) {
+        return args[i]
+      }
+    }
+    return args[args.length - 1]
+  }
+
   this.get = (host, key) => {
     return host[key]
+  }
+
+  this.tunnel = (h, ...keys) => {
+    return keys.reduce((acc, key) => {
+      return acc[key]
+    }, h)
   }
 
   // Templating
