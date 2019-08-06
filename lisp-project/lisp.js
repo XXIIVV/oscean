@@ -42,7 +42,7 @@ function Lisp (lib = {}) {
         return interpret(fnBody, new Context(lambdaScope, context))
       }
     },
-    lambda: function (input, context) {
+    'λ': function (input, context) {
       return function () {
         const lambdaArguments = arguments
         const lambdaScope = input[1].reduce(function (acc, x, i) {
@@ -156,7 +156,7 @@ function Lisp (lib = {}) {
   }
 
   const tokenize = function (input) {
-    const i = input.replace(/^\;.*\n?/gm, '').replace(/λ /g, 'lambda ').split('"')
+    const i = input.replace(/^\;.*\n?/gm, '').split('"')
     return i.map(function (x, i) {
       return i % 2 === 0
         ? x.replace(/\(/g, ' ( ')

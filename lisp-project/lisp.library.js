@@ -34,6 +34,51 @@ function Library () {
     find: (q) => {
       return this.database.index[q.toUpperCase()]
     },
+    map: () => {
+      const time = performance.now()
+      const count = { links: 0, diaries: 0, events: 0 }
+      const tables = this.database.tables
+      // Connect Parents
+      for (const id in tables.lexicon) {
+        const term = tables.lexicon[id]
+        const parent = !term.data.UNDE ? 'HOME' : term.data.UNDE.toUpperCase()
+        if (!tables.lexicon[parent]) { console.warn(`Unknown parent ${parent} for ${term.name}`); continue }
+        term.parent = tables.lexicon[parent]
+      }
+      // Connect children
+      for (const id in tables.lexicon) {
+        const term = tables.lexicon[id]
+        if (!term.parent) { console.warn('Missing parent term', id); continue }
+        const parent = term.parent.name
+        if (!tables.lexicon[parent]) { console.warn('Missing children term', parent); continue }
+        tables.lexicon[parent].children.push(term)
+      }
+      // Connect Logs
+      for (const id in tables.horaire) {
+        const log = tables.horaire[id]
+        const index = log.term.toUpperCase()
+        if (!log.term) { console.warn(`Empty log at ${log.time}`); continue }
+        if (!tables.lexicon[index]) { console.warn(`Missing log term at ${log.time}`, index); continue }
+        log.host = tables.lexicon[index]
+        tables.lexicon[index].logs.push(log)
+        // Span
+        if (log.time.offset < 0) {
+          tables.lexicon[index].span.from = `${log.time}`
+          if (!tables.lexicon[index].span.to) {
+            tables.lexicon[index].span.to = `${log.time}`
+          }
+        }
+        if (log.isEvent) {
+          tables.lexicon[index].events.push(log)
+          count.events += 1
+        }
+        if (!log.pict) { continue }
+        if (log.time.offset > 0) { continue }
+        tables.lexicon[index].diaries.push(log)
+        count.diaries += 1
+      }
+      console.info(`Mapped ${tables.horaire.length} logs, ${count.events} events, and ${count.diaries} diaries to ${Object.keys(tables.lexicon).length} terms, in ${(performance.now() - time).toFixed(2)}ms.`)
+    },
     length: () => {
       return Object.keys(this.database.index).length
     }
@@ -42,17 +87,23 @@ function Library () {
   this.dom = {
     create: (id, type = 'div', cl = '') => {
       const el = document.createElement(type)
-      el.id = id
-      el.className = cl
+      this.dom['set-attr'](el, 'id', id)
+      this.dom['set-attr'](el, 'class', cl)
       return el
     },
-    text: (el, s) => {
-      el.textContent = s
+    'create-ns': (id, type = 'svg', cl = '') => {
+      const el = document.createElementNS('http://www.w3.org/2000/svg', type)
+      this.dom['set-attr'](el, 'id', id)
+      this.dom['set-attr'](el, 'class', cl)
+      return el
     },
     append: (host, children) => {
       for (const child of children) {
         host.appendChild(child)
       }
+    },
+    'set-text': (host, text) => {
+      el.textContent = text
     },
     'set-html': (host, html) => {
       host.innerHTML = html

@@ -21,19 +21,18 @@ function Term (name, data) {
   this.theme = data.LOOK ? data.LOOK.toLowerCase() : 'blanc'
   this.isPortal = this.tags.indexOf('portal') > -1
 
-  this.glyph = function () {
+  this.glyph = () => {
     if (this.data.ICON) { return this.data.ICON }
     if (this.parent.glyph()) { return this.parent.glyph() }
     if (this.portal().glyph()) { return this.portal().glyph() }
     return null
   }
 
-  this.photo = function () {
-    const diaries = name === 'HOME' ? Ø('horaire').cache : this.diaries
-    for (const id in diaries) {
-      const diary = diaries[id]
+  this.photo = () => {
+    for (const id in this.diaries) {
+      const diary = this.diaries[id]
       if (diary.isFeatured === true && diary.time.offset <= 0) {
-        return diaries[id]
+        return this.diaries[id]
       }
     }
     const logs = this.activity()
@@ -45,7 +44,7 @@ function Term (name, data) {
     return null
   }
 
-  this.portal = function () {
+  this.portal = () => {
     if (this.isPortal) { return this }
     if (this.parent.isPortal) { return this.parent }
     if (this.parent.parent.isPortal) { return this.parent.parent }
@@ -54,11 +53,11 @@ function Term (name, data) {
     return null
   }
 
-  this.activity = function () {
+  this.activity = () => {
     return sortLogs(this.children.reduce((acc, term) => { return acc.concat(term.logs) }, this.logs))
   }
 
-  this.rating = function () {
+  this.rating = () => {
     const points = {
       body: this.data.BODY && this.data.BODY.length > 0,
       logs: this.logs.length > 0,
@@ -74,18 +73,18 @@ function Term (name, data) {
     return `${runic(this.data.BODY, this)}`
   }
 
-  this._photo = function () {
+  this._photo = () => {
     return this.photo() ? this.name.toLink(`<img src="media/diary/${this.photo().pict}.jpg"/>`) : ''
   }
 
-  this.outgoing = function () {
+  this.outgoing = () => {
     const body = [this.data.BREF].concat(this.data.BODY).join('')
     const links = body.split('{(link "').map((item) => { return item.split('"')[0].toUpperCase() })
     links.shift()
     return links.filter((item) => { return item.indexOf('HTTP') < 0 })
   }
 
-  this.toString = function (photo = false) {
+  this.toString = (photo = false) => {
     return `<h2>${this.name.toTitleCase()}</h2><h4>${this.bref}</h4>${photo === true ? this._photo() : ''}${this.body()}`
   }
 
