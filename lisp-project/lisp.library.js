@@ -60,6 +60,9 @@ function Library () {
     'set-attr': (host, attr, value) => {
       host.setAttribute(attr, value)
     },
+    wrap: (content, tag, cl) => {
+      return `<${tag} class='${cl}'>${content}</${tag}>`
+    },
     body: document.body
   }
 

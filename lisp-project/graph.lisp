@@ -70,7 +70,6 @@ const graph = `
 (database:create-table "lexicon" Indental Term)
 (database:create-index)
 
-; start handling clicks
 (on:click debug)
 
 
@@ -78,16 +77,20 @@ const graph = `
   (debug (concat "display: " q))
   (def res (database:find q))
   (def _head (res:head))
-  (debug _head)
-  ; (dom:set-html _main _head)
+  (def _body (res:body))
+  (dom:set-html _main (concat _head _body))
 
+  ; sidebar
+  (def __date (dom:wrap "29G21 — 29G22" "h2"))
+  (def __links (dom:wrap "<li><a href='https://monome.org/' target='_blank' rel='noreferrer' class='external '>WEBSITE</a></li><li><a href='https://llllllll.co/t/using-a-grid-as-linnstrument/23637' target='_blank' rel='noreferrer' class='external '>LINN FORUM</a></li><li><a href='https://llllllll.co/t/using-a-grid-as-drum-rack/23932' target='_blank' rel='noreferrer' class='external '>RACK FORUM</a></li>" "ul" "links"))
+  (def __directory (dom:wrap "<li class='parent'><a href='home' data-goto='home' target='_self' class='local  '>Home</a></li><li class='children '><a href='audio' data-goto='audio' target='_self' class='local  '>Audio</a></li><li class='children '><a href='visual' data-goto='visual' target='_self' class='local  '>Visual</a></li><li class='children '><a href='research' data-goto='research' target='_self' class='local  '>Research</a></li>" "ul" "directory"))
+  (dom:set-html _sidebar (concat __date __links __directory))
   (debug res)
 ))
 
 
 
 (defn query () (
-  ; current page
   (def current-page 
     (substr location:hash 1))
   (display current-page)

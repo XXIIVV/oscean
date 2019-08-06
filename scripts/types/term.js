@@ -70,7 +70,7 @@ function Term (name, data) {
     return score / Object.keys(points).length
   }
 
-  this.body = function () {
+  this.body = () => {
     return `${runic(this.data.BODY, this)}`
   }
 
@@ -86,7 +86,7 @@ function Term (name, data) {
   }
 
   this.toString = function (photo = false) {
-    return `<h2>${this.name.toTitleCase()}</h2><h4>${this.bref}</h4>${photo === true ? this._photo() : ''}${this.body()}`.toHeol(this)
+    return `<h2>${this.name.toTitleCase()}</h2><h4>${this.bref}</h4>${photo === true ? this._photo() : ''}${this.body()}`
   }
 
   // Checks
