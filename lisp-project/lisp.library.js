@@ -126,9 +126,6 @@ function Library () {
     }
   }
 
-  this.document = document
-  this.location = document.location
-
   this.substr = (str, from, len) => {
     return str.substr(from, len)
   }
@@ -181,4 +178,7 @@ function Library () {
     console.log(arg)
     return arg
   }
+  
+  this.document = document
+  this.location = document.location
 }
