@@ -299,10 +299,6 @@ function Library (host) {
     return arr[0]
   }
 
-  this.count = (item) => {
-    return item.length
-  }
-
   this.sort = (a) => {
     return a.sort()
   }
