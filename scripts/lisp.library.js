@@ -11,11 +11,11 @@ function Library (host) {
     return str.substr(from, len)
   }
 
-  this.concat = (...items) => { 
+  this.concat = (...items) => {
     return items.reduce((acc, item) => { return `${acc}${item}` }, '')
   }
 
-  this.split = (string, char) => { 
+  this.split = (string, char) => {
     return string.split(char)
   }
 
@@ -105,19 +105,19 @@ function Library (host) {
     host[key] = val
   }
 
-  this.gt = (a, b) => { 
+  this.gt = (a, b) => {
     return a > b
   }
 
-  this.lt = (a, b) => { 
+  this.lt = (a, b) => {
     return a < b
   }
 
-  this.eq = (a, b) => { 
+  this.eq = (a, b) => {
     return a === b
   }
 
-  this.neq = (a, b) => { 
+  this.neq = (a, b) => {
     return a !== b
   }
 
@@ -125,7 +125,7 @@ function Library (host) {
     return arr.indexOf(item)
   }
 
-  this.and = (...args) => { 
+  this.and = (...args) => {
     for (let i = 0; i < args.length; i++) {
       if (!args[i]) {
         return args[i]
@@ -134,7 +134,7 @@ function Library (host) {
     return args[args.length - 1]
   }
 
-  this.or = (a, b, ...rest) => { 
+  this.or = (a, b, ...rest) => {
     let args = [a, b].concat(rest)
     for (let i = 0; i < args.length; i++) {
       if (args[i]) {
@@ -186,10 +186,6 @@ function Library (host) {
 
   this.INDEX = (item) => {
     return `<h3>{(link "${item.name.toTitleCase()}")}</h3><h4>${item.bref}</h4><ul class='bullet'>${item.children.reduce((acc, term) => { return `${acc}<li>${term.bref}</li>`.template(term) }, '')}</ul>`.template(item)
-  }
-
-  this.REDIRECT = (item) => {
-    return `<meta http-equiv="refresh" content="2; url=#${item}">`
   }
 
   this.TITLE = (item) => {
@@ -351,6 +347,10 @@ function Library (host) {
     setTimeout(fn, s * 1000)
   }
 
+  this.random = (arr) => {
+    return arr[parseInt(Math.random() * arr.length)]
+  }
+
   // Access
 
   this.document = document
@@ -430,6 +430,9 @@ function Library (host) {
     },
     hide: (el) => {
       this.dom['set-class'](el, 'hidden')
+    },
+    goto: (target) => {
+      console.log(target)
     },
     'get-pixels': (path, ratio = 1, callback = null) => {
       const img = document.createElement('img')
