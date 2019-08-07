@@ -586,20 +586,20 @@ function Library (host) {
       return !isNaN(new Date(q)) ? `${new Date(q).toArvelie()}` : 'Invalid Date'
     },
 
-    litoen: (q) => {
-      const res = Ø('asulodeta').find(q, 'name')
-      return res ? `The English translation of "${res.childspeak.toLink(res.adultspeak.toTitleCase())}" is "<b>${res.english.toTitleCase()}</b>".` : 'Unknown'
-    },
+    // litoen: (q) => {
+    //   const res = Ø('asulodeta').find(q, 'name')
+    //   return res ? `The English translation of "${res.childspeak.toLink(res.adultspeak.toTitleCase())}" is "<b>${res.english.toTitleCase()}</b>".` : 'Unknown'
+    // },
 
-    entoli: (q) => {
-      const res = Ø('asulodeta').find(q, 'english')
-      return res ? `The Lietal translation of "<b>${q.toTitleCase()}</b>" is "${res.childspeak.toLink(res.adultspeak.toTitleCase())}".` : 'Unknown'
-    },
+    // entoli: (q) => {
+    //   const res = Ø('asulodeta').find(q, 'english')
+    //   return res ? `The Lietal translation of "<b>${q.toTitleCase()}</b>" is "${res.childspeak.toLink(res.adultspeak.toTitleCase())}".` : 'Unknown'
+    // },
 
     otd: (q) => {
       const today = new Date().toArvelie()
       const a = []
-      const logs = Ø('database').cache.horaire.filter(__onlyEvents).filter(__onlyThisDay)
+      const logs = this.database['select-table']('horaire').filter(__onlyEvents).filter(__onlyThisDay)
       if (logs.length < 1) { return `There were no past events on this date.` }
       return `<b>On This Day</b>, on ${timeAgo(logs[0].time, 14)}, ${logs[0].host.name.toTitleCase()} — ${logs[0].name}.`
     },
@@ -633,15 +633,16 @@ function Library (host) {
 
     walk: (q) => {
       const totalTime = performance.now()
-      for (const id in Ø('database').index) {
+      for (const id in this.database.index) {
         const entryTime = performance.now()
-        Ø('database').index[id].toString()
+        console.log(id)
+        this.database.index[id].toString()
         const entryTimeComplete = performance.now() - entryTime
         if (entryTimeComplete > 300) {
-          Ø('terminal').push('null', `${id} slow: ${entryTimeComplete}ms.`)
+          console.log(`${id} slow: ${entryTimeComplete}ms.`)
         }
       }
-      return `Walked ${Object.keys(Ø('database').index).length} indexes, in ${(performance.now() - totalTime).toFixed(2)}ms.`
+      return `Walked ${Object.keys(this.database.index).length} indexes, in ${(performance.now() - totalTime).toFixed(2)}ms.`
     },
 
     rss: (q) => {
@@ -670,7 +671,7 @@ function Library (host) {
     },
 
     forecast: (q) => {
-      const forecast = new Forecast(Ø('database').cache.horaire)
+      const forecast = new Forecast(this.database['select-table']('horaire'))
       return `${forecast.fh}fh of ${forecast.sector} ${forecast.task}`
     },
 

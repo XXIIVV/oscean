@@ -147,8 +147,12 @@ const template = `
 ; search
 
 (defn search (e) (
-  (if (eq e:key "Enter") (
-    (goto (tunnel e "target" "value"))))))
+  (if 
+    (eq e:key "Enter") 
+    (goto (tunnel e "target" "value")))
+  (if 
+    (eq e:key "Escape") 
+    (dom:set-class _terminal ""))))
 
 (dom:bind _search "keydown" search)
 
