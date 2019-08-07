@@ -163,6 +163,9 @@ const template = `
 
 (on:load query)
 
+
+(on:page query)
+
 ; click
 
 (defn goto 

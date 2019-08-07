@@ -55,20 +55,19 @@
 
     lisp.run(prelude+graph+template)
 
-    const detectBackOrForward = function (onBack, onForward) {
+    const detectPage = function (onChange) {
       let hashHistory = [window.location.hash]
       let historyLength = window.history.length
 
-      return function () {
+      return () => {
         let hash = window.location.hash; let length = window.history.length
         if (hashHistory.length && historyLength === length) {
           if (hashHistory[hashHistory.length - 2] === hash) {
             hashHistory = hashHistory.slice(0, -1)
-            onBack()
           } else {
             hashHistory.push(hash)
-            onForward()
           }
+          onChange()
         } else {
           hashHistory.push(hash)
           historyLength = length
@@ -76,9 +75,8 @@
       }
     }
 
-    window.addEventListener('hashchange', detectBackOrForward(
-      function () { console.log('!') },
-      function () { console.log('?') }
+    window.addEventListener('hashchange', detectPage(
+      (e) => { BINDINGS.page(e) }
     ))
 
     window.addEventListener('load', (e) => { 

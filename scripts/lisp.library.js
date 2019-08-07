@@ -468,6 +468,9 @@ function Library (host) {
     },
     search: (fn) => {
       BINDINGS.search = fn
+    },
+    page: (fn) => {
+      BINDINGS.page = fn
     }
   }
 
