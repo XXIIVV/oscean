@@ -56,7 +56,7 @@ const template = `
     (def _body (res:body))
     (
       (def similar-terms
-        (find-similar (uc res:name) (keys database:index)))
+        (similars (uc res:name) (keys database:index)))
       (def similar-text 
         (concat "Did you mean " (bold (link (tc (tunnel similar-terms:0 "word")))) ", " (link (tc (tunnel similar-terms:1 "word"))) ", or " (link (tc (tunnel similar-terms:2 "word"))) "? "))
       (def pull-request-text

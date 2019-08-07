@@ -26,19 +26,19 @@ function Library (host) {
   }
 
   this.lc = (str) => {
-    return str.toLowerCase()
+    return `${str}`.toLowerCase()
   }
 
   this.tc = (str) => {
-    return str.toTitleCase()
+    return `${str}`.toTitleCase()
   }
 
   this.uc = (str) => {
-    return str.toUpperCase()
+    return `${str}`.toUpperCase()
   }
 
   this.cc = (str) => {
-    return str.substr(0, 1).toUpperCase() + str.substr(1)
+    return `${str}`.substr(0, 1).toUpperCase() + str.substr(1)
   }
 
   // arr
@@ -60,11 +60,7 @@ function Library (host) {
   }
 
   this.for = (arr, fn) => {
-    const a = []
-    for (const item in arr) {
-      a.push(fn(arr[item]))
-    }
-    return a
+    return arr.reduce((acc, item) => { acc.push(fn(item)); return acc }, [])
   }
 
   this.join = (arr, ch = '') => {
@@ -125,12 +121,12 @@ function Library (host) {
     return arr.filter((val) => { return val.indexOf(target) > -1 })
   }
 
-  this['find-similar'] = (target, arr) => {
-    return findSimilar(target, arr)
-  }
-
   this.random = (arr) => {
     return arr[Math.floor(Math.random() * arr.length)]
+  }
+
+  this.similars = (target, arr) => {
+    return findSimilar(target, arr)
   }
 
   // obj
@@ -156,24 +152,7 @@ function Library (host) {
   }
 
   this.tunnel = (obj, ...keys) => {
-    return keys.reduce((acc, key) => {
-      return key && acc && acc[key] ? acc[key] : null
-    }, obj)
-  }
-
-  this.is = {
-    null: (q) => {
-      return q === undefined || q === null
-    },
-    real: (q) => {
-      return !this.is.null(q)
-    },
-    false: (q) => {
-      return q === false
-    },
-    true: (q) => {
-      return !this.is.false(q)
-    }
+    return keys.reduce((acc, key) => { return key && acc && acc[key] ? acc[key] : null }, obj)
   }
 
   // logic
@@ -241,10 +220,6 @@ function Library (host) {
 
   this.INDEX = (item) => {
     return `<h3>{(link "${item.name.toTitleCase()}")}</h3><h4>${item.bref}</h4><ul class='bullet'>${item.children.reduce((acc, term) => { return `${acc}<li>${term.bref}</li>`.template(term) }, '')}</ul>`.template(item)
-  }
-
-  this.TITLE = (item) => {
-    return `<h2>${item.name.toTitleCase()}</h2><h4>${item.bref}</h4>`.template(item)
   }
 
   this.PHOTO = (item) => {
@@ -350,6 +325,31 @@ function Library (host) {
 
   this.delay = (s, fn) => {
     setTimeout(fn, s * 1000)
+  }
+
+  this.is = {
+    null: (q) => {
+      return q === undefined || q === null
+    },
+    real: (q) => {
+      return !this.is.null(q)
+    },
+    false: (q) => {
+      return q === false
+    },
+    true: (q) => {
+      return !this.is.false(q)
+    }
+  }
+
+  // Lietal TODO placeholders
+
+  this.lien = (q) => {
+    return ''
+  }
+
+  this.enli = (q) => {
+    return ''
   }
 
   // Access
@@ -591,16 +591,6 @@ function Library (host) {
       return !isNaN(new Date(q)) ? `${new Date(q).toArvelie()}` : 'Invalid Date'
     },
 
-    // litoen: (q) => {
-    //   const res = Ø('asulodeta').find(q, 'name')
-    //   return res ? `The English translation of "${res.childspeak.toLink(res.adultspeak.toTitleCase())}" is "<b>${res.english.toTitleCase()}</b>".` : 'Unknown'
-    // },
-
-    // entoli: (q) => {
-    //   const res = Ø('asulodeta').find(q, 'english')
-    //   return res ? `The Lietal translation of "<b>${q.toTitleCase()}</b>" is "${res.childspeak.toLink(res.adultspeak.toTitleCase())}".` : 'Unknown'
-    // },
-
     otd: (q) => {
       const today = new Date().toArvelie()
       const a = []
@@ -615,10 +605,6 @@ function Library (host) {
 
     task: (q) => {
       return `${new Log({ code: '-' + q }).task}`
-    },
-
-    yleta: (q) => {
-      return new Yleta({ name: q }).body()
     },
 
     next: (q) => {
@@ -640,7 +626,6 @@ function Library (host) {
       const totalTime = performance.now()
       for (const id in this.database.index) {
         const entryTime = performance.now()
-        console.log(id)
         this.database.index[id].toString()
         const entryTimeComplete = performance.now() - entryTime
         if (entryTimeComplete > 300) {
