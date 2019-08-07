@@ -347,6 +347,10 @@ function Library (host) {
     return findSimilar(target, arr)
   }
 
+  this.delay = (s, fn) => {
+    setTimeout(fn, s * 1000)
+  }
+
   // Access
 
   this.document = document
@@ -390,14 +394,27 @@ function Library (host) {
     'set-attr': (el, attr, value) => {
       el.setAttribute(attr, value)
     },
+    'get-attr': (el, attr) => {
+      return el.getAttribute(attr)
+    },
     'set-class': (el, cl) => {
       this.dom['set-attr'](el, 'class', this.uniq(cl.split(' ')).join(' '))
     },
+    'get-class': (el) => {
+      return this.dom['get-attr'](el, 'class')
+    },
+    'has-class': (el, cl) => {
+      return this.dom['get-class'](el).indexOf(cl) > -1
+    },
     'add-class': (el, cl) => {
-      this.dom['set-class'](el, el.getAttribute('class') + cl)
+      if (!this.dom['has-class'](el, cl)) {
+        this.dom['set-class'](el, el.getAttribute('class') + ' ' + cl)
+      }
     },
     'remove-class': (el, cl) => {
-      this.dom['set-class'](el, el.getAttribute('class').replace(cl, '').trim())
+      if (this.dom['has-class'](el, cl)) {
+        this.dom['set-class'](el, el.getAttribute('class').replace(cl, '').trim())
+      }
     },
     'set-title': (title) => {
       document.title = title

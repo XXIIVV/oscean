@@ -66,13 +66,13 @@ const template = `
     (dom:hide _title))
   (dom:set-html _title 
     (concat (link "Journal" photo-log:name) " — " (photo-log:time)))
-  (if photo-log
-    (dom:remove-class _header "no_photo")
-    (dom:add-class _header "no_photo"))
   (if
     photo-log 
     (dom:get-pixels photo-path 0.1 set-theme)
-    (dom:add-class _header "light"))
+    (dom:set-class _header "light"))
+  (if photo-log
+    (dom:remove-class _header "no_photo")
+    (dom:add-class _header "no_photo"))
   (if 
     photo-log
     (dom:set-html _photo (concat "<media id='media' style='background-image: url(" photo-path ")'></media>"))
@@ -104,7 +104,7 @@ const template = `
   (def __links 
     (wrap 
       (join (for (entries res:links) 
-        (λ (a) (concat "<li><a href='" a:1 "'>" a:0 "</a></li>")))) "ul" "links") )
+        (λ (a) (wrap (link a:1 a:0) "li")))) "ul" "links") )
   (def span-from 
     (if 
       (gt (len res:diaries) 0) 
@@ -135,11 +135,17 @@ const template = `
     (database:find q))
   (dom:set-title (concat "XXIIVV — " (tc res:name)))
   (dom:set-hash res:name)
+  (dom:set-class dom:body "loading")
   (dom:scroll 0)
-  (display-photo res)
-  (display-glyph res)
-  (display-main res)
-  (display-sidebar res)))
+  (delay 0.1 (λ ()
+    ((display-photo res)
+    (display-glyph res)
+    (display-main res)
+    (display-sidebar res)
+    (delay 0.1 (λ () 
+      (dom:set-class dom:body "ready")))
+    )))
+  ))
 
 ; query
 

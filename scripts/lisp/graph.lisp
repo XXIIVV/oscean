@@ -2,6 +2,8 @@
 
 const graph = `
 
+(dom:set-class dom:body "loading")
+
 ; html graph
 
 (def _header 
