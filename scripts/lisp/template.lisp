@@ -170,6 +170,7 @@ const template = `
 (defn goto 
   (target) 
   (
+    (dom:set-value _search "")
     (if
       (eq (substr target 0 1) "~")
       (terminal:run (substr target 1))

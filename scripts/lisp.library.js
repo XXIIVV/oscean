@@ -390,6 +390,9 @@ function Library (host) {
     'set-attr': (el, attr, value) => {
       el.setAttribute(attr, value)
     },
+    'set-value': (el, value) => {
+      el.value = value
+    },
     'get-attr': (el, attr) => {
       return el.getAttribute(attr)
     },
@@ -614,15 +617,14 @@ function Library (host) {
 
     next: (q) => {
       const used = []
-      for (const id in Ø('database').cache.horaire) {
-        const log = Ø('database').cache.horaire[id]
+      for (const log of this.database['select-table']('horaire')) {
         if (!log.pict) { continue }
         used.push(log.pict)
       }
       let available = 1
       while (available < 999) {
         const target = available.toString(16).toUpperCase()
-        if (used.indexOf(target) < 0) { return `The next available diary ID is <b>${target}</b>.` }
+        if (used.indexOf(target) < 0) { return `The next available diary ID is ${target}.` }
         available += 1
       }
       return `There are no available diary IDs under 999.`
