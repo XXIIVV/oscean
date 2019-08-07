@@ -25,6 +25,7 @@ function Entry (name, data) {
   }
 
   this.head = () => {
+    if (name === 'HOME') { return '' }
     return this.bref ? `<p>${this.bref}</p>`.template() : `<p>The term {(bold "${name}")} could not be found.</p>`.template(this)
   }
 
@@ -41,6 +42,10 @@ function Entry (name, data) {
   }
 
   this.portal = function () {
+    return null
+  }
+
+  this._portal = function () {
     return null
   }
 

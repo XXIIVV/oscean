@@ -32,8 +32,8 @@ const graph = `
   (dom:create "sidebar"))
 (def _content 
   (dom:create "content"))
-(def _navi 
-  (dom:create "navi"))
+(def _portal 
+  (dom:create "portal"))
 (def _main 
   (dom:create "main"))
 (def _tracker 
@@ -58,7 +58,7 @@ const graph = `
 (dom:append _menu (_info _logo _search _activity))
 (dom:append _header (_photo _menu))
 (dom:append _content (_main _tracker _calendar _journal))
-(dom:append _core (_sidebar _content _navi))
+(dom:append _core (_sidebar _content _portal))
 (dom:append dom:body (_header _core _footer))
 
 `

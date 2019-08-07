@@ -53,6 +53,20 @@ function Term (name, data) {
     return null
   }
 
+  this._portal = () => {
+    const portal = this.portal()
+    if (!portal) { return '' }
+    return `
+    <svg id="glyph"><path transform="scale(0.15)" d="${portal.glyph()}"></path></svg>
+    <ul>${portal.children.reduce((acc, child, id) => {
+    return `${acc}${`<ul><li>${child.name.toTitleCase().toLink()}</li><ul>${child.children.reduce((acc, child, id) => {
+      return `${acc}${`<ul><li class='${child.name === this.name || child.name.toLowerCase() === this.unde.toLowerCase() ? 'selected' : ''}'>${child.name.toTitleCase().toLink()}</li>${child.name === this.name || child.name.toLowerCase() === this.unde.toLowerCase() ? `<ul>${child.children.reduce((acc, child, id) => {
+        return `${acc}${`<ul><li class='${child.name === this.name ? 'selected' : ''}'>${child.name.toTitleCase().toLink()}</li></ul>`}`
+      }, '')}</ul>` : ''}</ul>`}`
+    }, '')}</ul></ul>`}`
+  }, '')}</ul>`
+  }
+
   this.activity = () => {
     return sortLogs(this.children.reduce((acc, term) => { return acc.concat(term.logs) }, this.logs))
   }
