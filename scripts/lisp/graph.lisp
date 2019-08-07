@@ -37,14 +37,6 @@ const graph = `
   (dom:create "content"))
 (def _portal 
   (dom:create "portal"))
-(def _main 
-  (dom:create "main"))
-(def _tracker 
-  (dom:create "tracker"))
-(def _calendar 
-  (dom:create "calendar"))
-(def _journal 
-  (dom:create "journal"))
 
 ;
 
@@ -60,7 +52,6 @@ const graph = `
 (dom:append _info (_glyph _title))
 (dom:append _menu (_info _logo _search _activity))
 (dom:append _header (_photo _menu))
-(dom:append _content (_main _tracker _calendar _journal))
 (dom:append _core (_sidebar _content _portal))
 (dom:append dom:body (_header _core _footer))
 

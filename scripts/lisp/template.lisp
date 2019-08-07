@@ -102,7 +102,7 @@ const template = `
     (dom:hide _portal)
     (dom:show _portal))
   (dom:set-html _portal (res:_portal))
-  (dom:set-html _main (concat _head _body))))
+  (dom:set-html _content (concat _head _body))))
 
 (defn display-sidebar (res) (
   (def __links 
@@ -139,7 +139,7 @@ const template = `
     (database:find q))
   (dom:set-title (concat "XXIIVV — " (tc res:name)))
   (dom:set-hash res:name)
-  (dom:set-class dom:body "loading")
+  (dom:set-class dom:body (concat "loading " res:theme))
   (dom:scroll 0)
   (delay 0.1 (λ ()
     ((display-photo res)
@@ -147,7 +147,7 @@ const template = `
     (display-main res)
     (display-sidebar res)
     (delay 0.1 (λ () 
-      (dom:set-class dom:body "ready")))
+      (dom:set-class dom:body (concat "ready " res:theme))))
     )))
   ))
 
@@ -162,7 +162,6 @@ const template = `
   (display current-page)))
 
 (on:load query)
-
 
 (on:page query)
 

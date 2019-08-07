@@ -696,5 +696,116 @@ function Library (host) {
     }
   }
 
+  // Generators TODO
+
+  this.JOURNAL_TEMPLATE = () => {
+    const logs = this.database['select-table']('horaire')
+    const html = logs.slice(0, 14 * 4).filter(__onlyOnce).slice(0, 20).reduce((acc, log) => {
+      return `${acc}${log}`
+    }, '')
+    return `${html}` // ${new ActivityViz(logs)}
+  }
+
+  this.CALENDAR_TEMPLATE = () => {
+    const logs = this.database['select-table']('horaire')
+    const events = logs.filter(__onlyEvents)
+    const html = `<ul class='tidy ${events.length > 10 ? 'col3' : ''}'>${events.reduce((acc, log, id, arr) => {
+      return `
+      ${acc}
+      ${!arr[id - 1] || arr[id - 1].time.y !== log.time.y ? `<li class='head'>20${log.time.y}</li>` : ''}
+      <li style='${log.time.offset > 0 ? 'color:#aaa' : ''}'>
+        ${log.term.toLink(log.name)} <span title='${log.time}'>${timeAgo(log.time, 60)}</span>
+      </li>`
+    }, '')}</ul>`
+
+    return `${html}`
+  }
+
+  //   this.RssService = () => {
+
+  //     const logs = Ø('database').cache.horaire
+  //     const selection = []
+  //     for (const id in logs) {
+  //       const log = logs[id]
+  //       if (selection.length >= 60) { break }
+  //       if (log.time.offset > 0) { continue }
+  //       if (!log.pict) { continue }
+  //       selection.push(log)
+  //     }
+
+  //     return this.render(selection)
+
+  //   this.items = function (logs) {
+  //     let html = ''
+  //     for (const id in logs) {
+  //       const log = logs[id]
+  //       html += `
+  //   <item>
+  //     <title>${log.term} — ${log.name}</title>
+  //     <link>https://wiki.xxiivv.com/${log.term.toUrl()}</link>
+  //     <guid isPermaLink='false'>IV${log.pict}</guid>
+  //     <pubDate>${log.time.toDate().toUTCString()}</pubDate>
+  //     <dc:creator><![CDATA[Devine Lu Linvega]]></dc:creator>
+  //     <description>
+  //       &lt;img src="https://wiki.xxiivv.com/media/diary/${log.pict}.jpg"/&gt;
+  //       &lt;br/&gt;
+  //       ${log.host.data.BREF.toHeol(log.host).stripHTML()}
+  //     </description>
+  //   </item>
+  // `
+  //     }
+  //     return html
+  //   }
+
+  //   this.render = function (logs) {
+  //     return `
+  // <?xml version="1.0" encoding="UTF-8" ?>
+  // <rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/">
+
+  // <channel>
+  //   <title>XXIIVV — Journal</title>
+  //   <link>https://wiki.xxiivv.com/</link>
+  //   <description>Devine Lu Linvega's Journal</description>
+  //   <image>
+  //     <url>https://wiki.xxiivv.com/media/services/rss.jpg</url>
+  //     <title>XXIIVV — koseki091450</title>
+  //     <link>https://wiki.xxiivv.com</link>
+  //   </image>
+  //   <pubDate>${logs[0].time.toDate().toUTCString()}</pubDate>
+  //   <generator>Oscean - Riven</generator>
+  //   ${this.items(logs)}
+  // </channel>
+
+  // </rss>`.toEntities()
+  //   }
+  // }
+
+  // RIVEN.lib.StaticService = function StaticNode (id, rect) {
+  //   RIVEN.Node.call(this, id, rect)
+
+  //   this.glyph = 'M65,65 L65,65 L245,65 L245,245 L65,245 Z M65,125 L65,125 L245,125 M95,95 L95,95 L95,95 '
+
+  //   function _header () {
+  //     const lastLog = Ø('database').cache.horaire[0]
+  //     return `\n\nUpdated ${lastLog.time} — ${lastLog.time.toGregorian()}\n\n`
+  //   }
+
+  //   function _item (term) {
+  //     return `${term.name.toTitleCase()}\n  ${term.bref.toHeol(term).stripHTML()}\n${term.links ? Object.keys(term.links).reduce((acc, val) => { return `${acc}  - ${term.links[val]}\n` }, '') : ''}\n`
+  //   }
+
+  //   function _items () {
+  //     const terms = Ø('database').cache.lexicon
+  //     const items = Object.keys(terms).sort()
+  //     return items.reduce((acc, val) => {
+  //       return `${acc}${_item(terms[val])}`
+  //     }, '').trim()
+  //   }
+
+  //   this.receive = function () {
+  //     return `${_header()}${_items()}`
+  //   }
+  // }
+
   // end
 }
