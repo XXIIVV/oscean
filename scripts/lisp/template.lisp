@@ -4,9 +4,9 @@ const template = `
 
 ; database
 
+(database:create-table "glossary" Indental List)
 (database:create-table "horaire" Tablatal Log)
 (database:create-table "lexicon" Indental Term)
-(database:create-table "glossary" Indental List)
 (database:create-index)
 (database:map)
 
@@ -45,22 +45,34 @@ const template = `
 (defn display-glyph (res) (
   (dom:set-attr _path "d" (res:glyph))))
 
+(defn set-theme (pixels) (
+  (if 
+    (gt (dom:get-lum pixels) 170)
+    (dom:set-class _header "light")
+    (dom:set-class _header "dark"))))
+
 (defn display-photo (res) (
-  (def photo-log 
-    (res:photo))
   (if (eq res:name "HOME")
     (def photo-log (until 
       (database:select-table "horaire") 
-      (λ (a) (tunnel a "pict")))))
+      (λ (a) (tunnel a "pict"))))
+    (def photo-log 
+      (res:photo)))
+  (def photo-path 
+    (concat "media/diary/" photo-log:pict ".jpg"))
   (if 
     photo-log 
     (dom:show _title) 
     (dom:hide _title))
   (dom:set-html _title 
-    (concat "<a href='journal' data-goto='journal' target='_self' class='local'>" photo-log:name "</a> — " (photo-log:time)))
+    (concat (link "Journal" photo-log:name) " — " (photo-log:time)))
+  (if
+    photo-log 
+    (dom:get-pixels photo-path 0.1 set-theme)
+    (dom:set-class _header "light no_photo"))
   (if 
     photo-log
-    (dom:set-html _photo (concat "<media id='media' style='background-image: url(media/diary/" photo-log:pict ".jpg)'></media>"))
+    (dom:set-html _photo (concat "<media id='media' style='background-image: url(" photo-path ")'></media>"))
     (dom:set-html _photo ""))))
 
 (defn display-main (res) (

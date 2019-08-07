@@ -7,69 +7,6 @@ function Library (host) {
 
   this.host = host
 
-  this.dom = {
-    create: (id, type = 'div', cl = '') => {
-      const el = document.createElement(type)
-      this.dom['set-attr'](el, 'id', id)
-      this.dom['set-class'](el, cl)
-      return el
-    },
-    'create-ns': (id, type = 'svg', cl = '') => {
-      const el = document.createElementNS('http://www.w3.org/2000/svg', type)
-      this.dom['set-attr'](el, 'id', id)
-      this.dom['set-class'](el, cl)
-      return el
-    },
-    append: (el, children) => {
-      for (const child of children) {
-        el.appendChild(child)
-      }
-    },
-    bind: (el, event, fn) => {
-      el.addEventListener(event, fn)
-    },
-    'set-text': (el, text) => {
-      el.textContent = text
-    },
-    'set-html': (el, html) => {
-      el.innerHTML = html
-    },
-    'set-attr': (el, attr, value) => {
-      el.setAttribute(attr, value)
-    },
-    'set-class': (el, cl) => {
-      this.dom['set-attr'](el, 'class', cl)
-    },
-    'set-title': (title) => {
-      document.title = title
-    },
-    'set-hash': (hash) => {
-      document.location.hash = `${hash}`.toUrl()
-    },
-    scroll: (y) => {
-      window.scrollTo(0, y)
-    },
-    show: (el) => {
-      this.dom['set-class'](el, 'visible')
-    },
-    hide: (el) => {
-      this.dom['set-class'](el, 'hidden')
-    },
-    body: document.body
-  }
-
-  this.on = {
-    click: (fn) => {
-      BINDINGS.click = fn
-    },
-    load: (fn) => {
-      BINDINGS.load = fn
-    },
-    search: (fn) => {
-      BINDINGS.search = fn
-    }
-  }
-
   this.substr = (str, from, len) => {
     return str.substr(from, len)
   }
@@ -423,6 +360,88 @@ function Library (host) {
   this.Term = Term
   this.List = List
 
+  this.dom = {
+    create: (id, type = 'div', cl = '') => {
+      const el = document.createElement(type)
+      this.dom['set-attr'](el, 'id', id)
+      this.dom['set-class'](el, cl)
+      return el
+    },
+    'create-ns': (id, type = 'svg', cl = '') => {
+      const el = document.createElementNS('http://www.w3.org/2000/svg', type)
+      this.dom['set-attr'](el, 'id', id)
+      this.dom['set-class'](el, cl)
+      return el
+    },
+    append: (el, children) => {
+      for (const child of children) {
+        el.appendChild(child)
+      }
+    },
+    bind: (el, event, fn) => {
+      el.addEventListener(event, fn)
+    },
+    'set-text': (el, text) => {
+      el.textContent = text
+    },
+    'set-html': (el, html) => {
+      el.innerHTML = html
+    },
+    'set-attr': (el, attr, value) => {
+      el.setAttribute(attr, value)
+    },
+    'set-class': (el, cl) => {
+      this.dom['set-attr'](el, 'class', cl)
+    },
+    'set-title': (title) => {
+      document.title = title
+    },
+    'set-hash': (hash) => {
+      document.location.hash = `${hash}`.toUrl()
+    },
+    scroll: (y) => {
+      window.scrollTo(0, y)
+    },
+    show: (el) => {
+      this.dom['set-class'](el, 'visible')
+    },
+    hide: (el) => {
+      this.dom['set-class'](el, 'hidden')
+    },
+    'get-pixels': (path, ratio = 1, callback = null) => {
+      const img = document.createElement('img')
+      img.src = path
+      img.onload = function () {
+        const canvas = document.createElement('canvas')
+        canvas.width = parseInt(img.width * ratio)
+        canvas.height = parseInt(img.height * ratio)
+        canvas.getContext('2d').drawImage(this, 0, 0, canvas.width, canvas.height)
+        const pixels = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data
+        try { callback(pixels) } catch (err) { console.warn('Could not get photo data', err) }
+      }
+    },
+    'get-lum': (pixels) => {
+      let sum = 0
+      for (let x = 0, len = pixels.length; x < len; x += 4) {
+        sum += pixels[x] + pixels[x + 1] + pixels[x + 2]
+      }
+      return sum / (pixels.length * 0.75)
+    },
+    body: document.body
+  }
+
+  this.on = {
+    click: (fn) => {
+      BINDINGS.click = fn
+    },
+    load: (fn) => {
+      BINDINGS.load = fn
+    },
+    search: (fn) => {
+      BINDINGS.search = fn
+    }
+  }
+
   this.database = {
     index: {},
     tables: {},
@@ -438,7 +457,9 @@ function Library (host) {
         for (const id in table) {
           const entry = table[id]
           for (const id in entry.indexes) {
-            this.database.index[entry.indexes[id].toUpperCase()] = entry
+            const key = entry.indexes[id].toUpperCase()
+            if (this.database.index[key]) { console.warn(`Redefining ${key}.`) }
+            this.database.index[key] = entry
           }
         }
       }
