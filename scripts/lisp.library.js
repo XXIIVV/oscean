@@ -563,12 +563,13 @@ function Library (host) {
       } else {
         console.warn('Unknown ' + cmd)
       }
+      document.getElementById('termhand').innerHTML = `<b>${this.arvelie()} ${this.neralie()}</b> ${q}<span class='right' data-term='~close'>~close</span>`
     },
     activate: () => {
       document.getElementById('terminal').className = 'active'
     },
     update: (res) => {
-      document.getElementById('terminal').innerHTML = `<textarea>${res}</textarea>`
+      document.getElementById('termview').innerHTML = `${res.trim()}`
     }
   }
 
@@ -709,6 +710,11 @@ function Library (host) {
 
     clear: (q) => {
       this.el.innerHTML = ''
+      return ``
+    },
+
+    close: (q) => {
+      document.getElementById('terminal').className = ''
       return ``
     },
 

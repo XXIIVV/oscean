@@ -6,6 +6,10 @@ const graph = `
 
 (def _terminal
   (dom:create "terminal"))
+(def _termhand
+  (dom:create "termhand"))
+(def _termview
+  (dom:create "termview" "textarea"))
 
 ; html graph
 
@@ -83,6 +87,7 @@ const graph = `
 
 (dom:set-html _footer (wrap (concat __socials __author __license) "div" "wr"))
 
+(dom:append _terminal (_termhand _termview))
 (dom:append _glyph (_path))
 (dom:append _info (_glyph _title))
 (dom:append _menu (_info _logo _search _activity))
