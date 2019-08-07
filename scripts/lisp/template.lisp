@@ -10,7 +10,11 @@ const template = `
 (database:create-index)
 (database:map)
 
-(dom:set-html _activity "<li><a href='calendar' data-goto='calendar' target='_self' class='local calendar sprite_calendar '>Calendar</a></li> <li><a href='journal' data-goto='journal' target='_self' class='local journal sprite_journal '>Journal</a></li><li><a href='tracker' data-goto='tracker' target='_self' class='local tracker sprite_tracker '>Tracker</a></li>")
+(dom:set-html _activity 
+  (concat 
+    (wrap (link "calendar" "Calendar" "local calendar sprite_calendar") "li")
+    (wrap (link "journal" "Journal" "local journal sprite_journal") "li")
+    (wrap (link "tracker" "Tracker" "local tracker sprite_tracker") "li")))
 
 ; footer
 
