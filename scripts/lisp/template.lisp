@@ -52,7 +52,6 @@ const template = `
     (dom:set-class _header "dark"))))
 
 (defn display-photo (res) (
-  (dom:set-class _header "light")
   (if (eq res:name "HOME")
     (def photo-log (until 
       (database:select-table "horaire") 
@@ -72,7 +71,8 @@ const template = `
     (dom:add-class _header "no_photo"))
   (if
     photo-log 
-    (dom:get-pixels photo-path 0.1 set-theme))
+    (dom:get-pixels photo-path 0.1 set-theme)
+    (dom:add-class _header "light"))
   (if 
     photo-log
     (dom:set-html _photo (concat "<media id='media' style='background-image: url(" photo-path ")'></media>"))

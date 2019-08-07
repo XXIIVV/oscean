@@ -529,5 +529,153 @@ function Library (host) {
       return Object.keys(this.database.index).length
     }
   }
+
+  this.services =
+  {
+    help: (q) => {
+      return 'Available commands:\n' + plainTable(Object.keys(this.services))
+    },
+
+    atog: (q) => {
+      return `${new Arvelie(q).toGregorian()}`
+    },
+
+    gtoa: (q) => {
+      return !isNaN(new Date(q)) ? `${new Date(q).toArvelie()}` : 'Invalid Date'
+    },
+
+    litoen: (q) => {
+      const res = Ø('asulodeta').find(q, 'name')
+      return res ? `The English translation of "${res.childspeak.toLink(res.adultspeak.toTitleCase())}" is "<b>${res.english.toTitleCase()}</b>".` : 'Unknown'
+    },
+
+    entoli: (q) => {
+      const res = Ø('asulodeta').find(q, 'english')
+      return res ? `The Lietal translation of "<b>${q.toTitleCase()}</b>" is "${res.childspeak.toLink(res.adultspeak.toTitleCase())}".` : 'Unknown'
+    },
+
+    otd: (q) => {
+      const today = new Date().toArvelie()
+      const a = []
+      const logs = Ø('database').cache.horaire.filter(__onlyEvents).filter(__onlyThisDay)
+      if (logs.length < 1) { return `There were no past events on this date.` }
+      return `<b>On This Day</b>, on ${timeAgo(logs[0].time, 14)}, ${logs[0].host.name.toTitleCase()} — ${logs[0].name}.`
+    },
+
+    iso: (q) => {
+      return new Date().toISOString()
+    },
+
+    task: (q) => {
+      return `${new Log({ code: '-' + q }).task}`
+    },
+
+    yleta: (q) => {
+      return new Yleta({ name: q }).body()
+    },
+
+    next: (q) => {
+      const used = []
+      for (const id in Ø('database').cache.horaire) {
+        const log = Ø('database').cache.horaire[id]
+        if (!log.pict) { continue }
+        used.push(log.pict)
+      }
+      let available = 1
+      while (available < 999) {
+        const target = available.toString(16).toUpperCase()
+        if (used.indexOf(target) < 0) { return `The next available diary ID is <b>${target}</b>.` }
+        available += 1
+      }
+      return `There are no available diary IDs under 999.`
+    },
+
+    walk: (q) => {
+      const totalTime = performance.now()
+      for (const id in Ø('database').index) {
+        const entryTime = performance.now()
+        Ø('database').index[id].toString()
+        const entryTimeComplete = performance.now() - entryTime
+        if (entryTimeComplete > 300) {
+          Ø('terminal').push('null', `${id} slow: ${entryTimeComplete}ms.`)
+        }
+      }
+      return `Walked ${Object.keys(Ø('database').index).length} indexes, in ${(performance.now() - totalTime).toFixed(2)}ms.`
+    },
+
+    rss: (q) => {
+      return `<textarea>${Ø('rss').receive(q)}</textarea>`
+    },
+
+    static: (q) => {
+      return `<textarea>${Ø('static').receive(q)}</textarea>`
+    },
+
+    heol: (q) => {
+      return `${new Heol(q, null)}`
+    },
+
+    age: (q) => {
+      return ((new Date() - new Date('1986-03-22')) / 31557600000)
+    },
+
+    progress: (q) => {
+      const score = { ratings: 0, entries: 0 }
+      for (const id in Ø('database').cache.lexicon) {
+        score.ratings += Ø('database').cache.lexicon[id].rating()
+        score.entries += 1
+      }
+      return ((score.ratings / score.entries) * 100)
+    },
+
+    forecast: (q) => {
+      const forecast = new Forecast(Ø('database').cache.horaire)
+      return `${forecast.fh}fh of ${forecast.sector} ${forecast.task}`
+    },
+
+    orphans: (q) => {
+      let index = {}
+      let orphans = []
+      for (const id in Ø('database').cache.lexicon) {
+        const links = Ø('database').cache.lexicon[id].outgoing()
+        for (const link of links) {
+          index[link] = index[link] ? index[link] + 1 : 1
+        }
+      }
+      for (const key of Object.keys(Ø('database').cache.lexicon)) {
+        if (!index[key]) { orphans.push(key.toLowerCase()) }
+      }
+      return plainTable(orphans, 2, 3)
+    },
+
+    pomodoro: (q) => {
+      if (!('Notification' in window)) {
+        return 'This browser does not support desktop notification'
+      }
+      if (Notification.permission === 'granted') {
+        setTimeout(() => {
+          const body = `The pomodoro has ended at ${neralie()}.`
+          new Notification('Oscean', { body, icon: 'media/icon/notification.jpg' })
+          Ø('terminal').push('pomodoro', body)
+        }, 20 * 86.4 * 1000)
+        return `The pomodoro has started at ${neralie()}.`
+      }
+      if (Notification.permission !== 'denied') {
+        Notification.requestPermission().then((permission) => { this.pomodoro(q) })
+        return 'You must allow notifications.'
+      }
+      return 'You have not allowed notifications.'
+    },
+
+    clear: (q) => {
+      this.el.innerHTML = ''
+      return ``
+    },
+
+    unknown: (q) => {
+      return `Unknown command <i>${q}</i>, type <i>help</i> to see available commands.`
+    }
+  }
+
   // end
 }

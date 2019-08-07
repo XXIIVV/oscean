@@ -29,11 +29,11 @@ function Log (data = { code: '-400' }) {
   ]
   this.task = this.tasks[this.sc - 1] ? this.tasks[this.sc - 1][this.ch] : 'travel'
 
-  this.photo = function () {
+  this.photo = () => {
     return this
   }
 
-  this.body = function () {
+  this.body = () => {
     return this.host ? `
     <div class='entry log ${this.isEvent ? 'event' : ''}'>
       <svg data-goto='${this.host.name}' class='icon'><path transform="scale(0.15) translate(20,20)" d="${this.host ? this.host.glyph() : ''}"></path></svg>
@@ -45,7 +45,7 @@ function Log (data = { code: '-400' }) {
     </div>` : ''
   }
 
-  this.toText = function () {
+  this.toText = () => {
     if (this.isEvent && this.name !== '') {
       return `${this.name}`
     }
@@ -55,7 +55,7 @@ function Log (data = { code: '-400' }) {
     return `${this.term} ${this.host.parent.name.toTitleCase()} ${this.fh}fh ${this.task}`
   }
 
-  this.toString = function () {
+  this.toString = () => {
     return this.body()
   }
 
