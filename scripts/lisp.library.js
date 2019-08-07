@@ -391,7 +391,13 @@ function Library (host) {
       el.setAttribute(attr, value)
     },
     'set-class': (el, cl) => {
-      this.dom['set-attr'](el, 'class', cl)
+      this.dom['set-attr'](el, 'class', this.uniq(cl.split(' ')).join(' '))
+    },
+    'add-class': (el, cl) => {
+      this.dom['set-class'](el, el.getAttribute('class') + cl)
+    },
+    'remove-class': (el, cl) => {
+      this.dom['set-class'](el, el.getAttribute('class').replace(cl, '').trim())
     },
     'set-title': (title) => {
       document.title = title
@@ -416,8 +422,11 @@ function Library (host) {
         canvas.width = parseInt(img.width * ratio)
         canvas.height = parseInt(img.height * ratio)
         canvas.getContext('2d').drawImage(this, 0, 0, canvas.width, canvas.height)
-        const pixels = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data
-        try { callback(pixels) } catch (err) { console.warn('Could not get photo data', err) }
+        try {
+          callback(canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data)
+        } catch (err) {
+          console.warn('Could not get photo data', err)
+        }
       }
     },
     'get-lum': (pixels) => {
