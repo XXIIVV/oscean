@@ -5,6 +5,7 @@ const template = `
 
 (database:create-table "horaire" Tablatal Log)
 (database:create-table "lexicon" Indental Term)
+(database:create-table "glossary" Indental List)
 (database:create-index)
 (database:map)
 
@@ -37,6 +38,8 @@ const template = `
       (gt (len res:diaries) 0) 
       (tunnel res "span" "from") 
       (:time (last (database:select-table "horaire")))))
+  (def stem 
+    (if (gt (len res:children) 0) res (tunnel res "parent")))
   (def span-to 
     (if 
       (gt (len res:diaries) 1) 
@@ -44,8 +47,11 @@ const template = `
       (:time (first (database:select-table "horaire")))))
   (def __date 
     (wrap (concat span-from " — " span-to) "h2"))
+  (def __children 
+    (join (for stem:children 
+      (λ (a) (concat "<li>" (link a:name) "</li>")))))
   (def __directory 
-    (wrap "<li class='parent'><a href='home' data-goto='home' target='_self' class='local  '>Home</a></li><li class='children '><a href='audio' data-goto='audio' target='_self' class='local  '>Audio</a></li><li class='children '><a href='visual' data-goto='visual' target='_self' class='local  '>Visual</a></li><li class='children '><a href='research' data-goto='research' target='_self' class='local  '>Research</a></li>" "ul" "directory"))
+    (wrap (concat (wrap (link stem:name) "li" "parent") __children) "ul" "directory"))
   (dom:set-html _sidebar (concat __date __links __directory))))
 
 (defn display (q) (

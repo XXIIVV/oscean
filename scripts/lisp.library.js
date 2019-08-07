@@ -108,10 +108,11 @@ function Library (host) {
   }
 
   this.for = (arr, fn) => {
+    const a = []
     for (const item in arr) {
-      arr[item] = fn(arr[item])
+      a.push(fn(arr[item]))
     }
-    return arr
+    return a
   }
 
   this.join = (arr, ch = '') => {
@@ -212,7 +213,7 @@ function Library (host) {
   }
 
   this.INDEX = (item) => {
-    return `<h3>{λ(link "${item.name.toTitleCase()}")}</h3><h4>${item.bref}</h4><ul class='bullet'>${item.children.reduce((acc, term) => { return `${acc}<li>${term.bref}</li>`.template(term) }, '')}</ul>`.template(item)
+    return `<h3>{(link "${item.name.toTitleCase()}")}</h3><h4>${item.bref}</h4><ul class='bullet'>${item.children.reduce((acc, term) => { return `${acc}<li>${term.bref}</li>`.template(term) }, '')}</ul>`.template(item)
   }
 
   this.REDIRECT = (item) => {
@@ -281,6 +282,95 @@ function Library (host) {
     return this.round(val / step) * step
   }
 
+  this.match = (source, items) => {
+    const filtered = items.filter((val) => { return source[val.toUpperCase()] })
+    return filtered.map((val) => { return source[val.toUpperCase()] })
+  }
+
+  this.fix = (...items) => {
+    return items[0].toFixed(items[1])
+  }
+
+  this.floor = (item) => {
+    return Math.floor(item)
+  }
+
+  this.ceil = (item) => {
+    return Math.ceil(item)
+  }
+
+  this.lc = (item) => {
+    return item.toLowerCase()
+  }
+
+  this.tc = (item) => {
+    return item.toTitleCase()
+  }
+
+  this.uc = (item) => {
+    return item.toUpperCase()
+  }
+
+  this.cc = (item) => {
+    return item.substr(0, 1).toUpperCase() + item.substr(1)
+  }
+
+  this.splice = (arr, index, length) => {
+    return arr.splice(index, length)
+  }
+
+  this.slice = (arr, index, length) => {
+    return arr.slice(index, length)
+  }
+
+  this.reverse = (arr) => {
+    return arr.reverse()
+  }
+
+  this.first = (arr) => {
+    return arr[0]
+  }
+
+  this.count = (item) => {
+    return item.length
+  }
+
+  this.sort = (a) => {
+    return a.sort()
+  }
+
+  this.uniq = (items) => {
+    return items.filter((value, index, self) => { return self.indexOf(value) === index })
+  }
+
+  this.like = (source, target) => {
+    return source.filter((val) => { return val.indexOf(target) > -1 })
+  }
+
+  this.daysSince = (greg) => {
+    return parseInt((Date.now() - new Date(greg)) / 1000 / 86400)
+  }
+
+  this.msSince = (greg) => {
+    return Date.now() - new Date(greg)
+  }
+
+  this.neralie = () => {
+    return `${new Neralie()}`
+  }
+
+  this.arvelie = () => {
+    return `${new Arvelie()}`
+  }
+
+  this.dtog = (q) => {
+    return `${new Arvelie(q).toGregorian()}`
+  }
+
+  this.gtod = (q) => {
+    return !isNaN(new Date(q)) ? `${new Date(q).toArvelie()}` : 'Invalid Date'
+  }
+
   // Access
 
   this.document = document
@@ -292,6 +382,7 @@ function Library (host) {
   this.Indental = indental
   this.Log = Log
   this.Term = Term
+  this.List = List
 
   this.database = {
     index: {},
