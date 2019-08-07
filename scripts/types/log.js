@@ -3,7 +3,7 @@
 function Log (data = { code: '-400' }) {
   Entry.call(this, data.name, data)
 
-  this.host = null // From Ø('map')
+  this.host = null
 
   this.term = data.term ? data.term.toTitleCase() : ''
   this.text = data.text
@@ -29,23 +29,23 @@ function Log (data = { code: '-400' }) {
   ]
   this.task = this.tasks[this.sc - 1] ? this.tasks[this.sc - 1][this.ch] : 'travel'
 
-  this.photo = function () {
+  this.photo = () => {
     return this
   }
 
-  this.body = function () {
+  this.body = () => {
     return this.host ? `
     <div class='entry log ${this.isEvent ? 'event' : ''}'>
       <svg data-goto='${this.host.name}' class='icon'><path transform="scale(0.15) translate(20,20)" d="${this.host ? this.host.glyph() : ''}"></path></svg>
       <div class='head'>
         <div class='details'>${this.term.toLink(this.term, 'topic')} ${this.name && !this.isEvent ? ` — <span class='name' data-goto='${this.name}'>${this.name}</span>` : ''} <span class='time' data-goto='${this.time}'>${timeAgo(this.time, 14)}</span></div>
-        <div class='bref'>${this.isEvent ? this.name : this.host ? this.host.bref.toHeol(this.host) : ''}</div>
+        <div class='bref'>${this.isEvent ? this.name : this.host ? this.host.bref : ''}</div>
       </div>
       ${this.pict ? `<img src='media/diary/${this.pict}.jpg' data-goto='${this.term}'/>` : ''}
     </div>` : ''
   }
 
-  this.toText = function () {
+  this.toText = () => {
     if (this.isEvent && this.name !== '') {
       return `${this.name}`
     }
@@ -55,7 +55,7 @@ function Log (data = { code: '-400' }) {
     return `${this.term} ${this.host.parent.name.toTitleCase()} ${this.fh}fh ${this.task}`
   }
 
-  this.toString = function () {
+  this.toString = () => {
     return this.body()
   }
 

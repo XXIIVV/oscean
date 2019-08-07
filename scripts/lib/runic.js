@@ -11,7 +11,7 @@ function runic (lines = [], host = null) {
     '@': { tag: 'div', class: 'quote', fn: quote },
     '|': { tag: 'tr', wrapper: 'table', fn: table },
     '%': { fn: media },
-    'λ': { fn: heol },
+    'λ': { fn: interpret },
     '>': {},
     ';': { }
   }
@@ -38,7 +38,7 @@ function runic (lines = [], host = null) {
     const html = stash.a.reduce((acc, val, id) => {
       const r = runes[stash.rune]
       const txt = r.fn ? r.fn(stash.a[id]) : stash.a[id]
-      const htm = txt.toHeol(host)
+      const htm = txt
       return `${acc}${r.tag ? `<${r.tag} class='${r.class ? r.class : ''}'>${htm}</${r.tag}>` : `${htm}`}`
     }, '')
     return wr ? `${acc}<${wr} class='${wrClass || ''}'>${html}</${wr}>` : `${acc}${html}`
@@ -71,8 +71,8 @@ function runic (lines = [], host = null) {
     return `<td>${content.trim().replace(/ \| /g, '</td><td>')}</td>`
   }
 
-  function heol (content) {
-    return `${new Heol(content, host)}`
+  function interpret (content) {
+    return `${lisp.run(content, host)}`
   }
 
   return lines.filter(isRunic).reduce(stash, []).reduce(_html, '')

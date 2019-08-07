@@ -1,7 +1,7 @@
 const fs = require('fs')
 const styles = ['./links/main.css']
 const tablatals = ['./scripts/database/asulodeta.tbtl', './scripts/database/horaire.tbtl']
-const indentals = ['./scripts/database/lexicon.ndtl', './scripts/database/glossary.ndtl', './scripts/database/issues.ndtl']
+const indentals = ['./scripts/database/lexicon.ndtl', './scripts/database/glossary.ndtl']
 
 function lintStyle (txt) {
   const lines = txt.split('\n')
