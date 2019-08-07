@@ -169,7 +169,11 @@ const template = `
 
 (defn goto 
   (target) 
-  ((display target)))
+  (
+    (if
+      (eq (substr target 0 1) "~")
+      (terminal:run (substr target 1))
+      (display target))))
 
 (on:click goto)
 
