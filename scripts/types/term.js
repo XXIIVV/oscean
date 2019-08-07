@@ -30,7 +30,7 @@ function Term (name, data) {
   this.photo = () => {
     for (const id in this.diaries) {
       const diary = this.diaries[id]
-      if (diary.isFeatured === true && diary.time.offset <= 0) {
+      if (diary.featured === true && diary.time.offset <= 0) {
         return this.diaries[id]
       }
     }

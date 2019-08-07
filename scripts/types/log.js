@@ -19,7 +19,7 @@ function Log (data = { code: '-400' }) {
   this.fh = data.code.length > 3 ? parseInt(data.code.substr(3, 1)) : 0
 
   this.sector = ['misc', 'audio', 'visual', 'research', 'misc'][this.sc]
-  this.isFeatured = this.pict && (this.rune === '!' || this.rune === '+')
+  this.featured = this.pict && (this.rune === '!' || this.rune === '+')
   this.isEvent = this.rune === '+'
 
   this.tasks = [

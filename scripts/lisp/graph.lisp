@@ -51,6 +51,37 @@ const graph = `
 (dom:set-attr _logo "data-goto" "home")
 (dom:set-attr _path "transform" "scale(0.165,0.165) translate(-50,-50)")
 
+(dom:set-html _activity 
+  (concat 
+    (wrap (link "calendar" "Calendar" "local calendar sprite_calendar") "li")
+    (wrap (link "journal" "Journal" "local journal sprite_journal") "li")
+    (wrap (link "tracker" "Tracker" "local tracker sprite_tracker") "li")))
+
+; footer
+
+(def __socials
+  (concat
+    (link "https://twitter.com/neauoire" "" "icon twitter sprite_twitter external")
+    (link "https://github.com/neauoire" "" "icon github sprite_github external")
+    (link "https://merveilles.town/@neauoire" "" "icon merveilles sprite_merveilles external")
+    (link "http://webring.xxiivv.com/#random" "" "icon rotonde sprite_rotonde external")
+    (link "https://creativecommons.org/licenses/by-nc-sa/4.0" "" "icon cc sprite_cc external")
+    (link "https://100r.co" "" "icon hundredrabbits sprite_hundredrabbits external")))
+
+(def __author 
+  (concat 
+    (link "Devine Lu Linvega") 
+    " © 06I04 — "
+    (arvelie)))
+
+(def __license
+  (wrap 
+    (concat 
+      (link "About" "BY-NC-SA 4.0")
+      " "
+      (neralie)) "center"))
+
+(dom:set-html _footer (wrap (concat __socials __author __license) "div" "wr"))
 
 (dom:append _glyph (_path))
 (dom:append _info (_glyph _title))

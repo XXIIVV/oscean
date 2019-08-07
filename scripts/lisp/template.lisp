@@ -10,40 +10,6 @@ const template = `
 (database:create-index)
 (database:map)
 
-(dom:set-html _activity 
-  (concat 
-    (wrap (link "calendar" "Calendar" "local calendar sprite_calendar") "li")
-    (wrap (link "journal" "Journal" "local journal sprite_journal") "li")
-    (wrap (link "tracker" "Tracker" "local tracker sprite_tracker") "li")))
-
-; footer
-
-(def __socials
-  (concat
-    (link "https://twitter.com/neauoire" "" "icon twitter sprite_twitter external")
-    (link "https://github.com/neauoire" "" "icon github sprite_github external")
-    (link "https://merveilles.town/@neauoire" "" "icon merveilles sprite_merveilles external")
-    (link "http://webring.xxiivv.com/#random" "" "icon rotonde sprite_rotonde external")
-    (link "https://creativecommons.org/licenses/by-nc-sa/4.0" "" "icon cc sprite_cc external")
-    (link "https://100r.co" "" "icon hundredrabbits sprite_hundredrabbits external")))
-
-(def __author 
-  (concat 
-    (link "Devine Lu Linvega") 
-    " © " 
-    (tunnel (last (database:select-table "horaire")) "time") 
-    "—" 
-    (tunnel (first (database:select-table "horaire")) "time")))
-
-(def __license
-  (wrap 
-    (concat 
-      (link "About" "BY-NC-SA 4.0")
-      " "
-      (neralie)) "center"))
-
-(dom:set-html _footer (wrap (concat __socials __author __license) "div" "wr"))
-
 ; display
 
 (defn display-glyph (res) (
@@ -59,7 +25,7 @@ const template = `
   (if (eq res:name "HOME")
     (def photo-log (until 
       (database:select-table "horaire") 
-      (λ (a) (tunnel a "pict"))))
+      (λ (a) (tunnel a "featured"))))
     (def photo-log 
       (res:photo)))
   (def photo-path 
