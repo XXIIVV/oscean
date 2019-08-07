@@ -175,6 +175,14 @@ function Library (host) {
     return a === b
   }
 
+  this['not-eq'] = (a, b) => { // Returns true if a is equal to b, else false.
+    return a !== b
+  }
+
+  this.index = (arr, item) => {
+    return arr.indexOf(item)
+  }
+
   this.and = (...args) => { // Returns true if all conditions are true.
     for (let i = 0; i < args.length; i++) {
       if (!args[i]) {

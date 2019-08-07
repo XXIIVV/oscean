@@ -98,7 +98,9 @@ const template = `
     (wrap (link navi-stem:name) "li" "parent"))
   (def __children 
     (join (for navi-stem:children 
-      (λ (a) (concat "<li>" (link a:name) "</li>")))))
+      (λ (a) (if  
+        (and (not-eq a:name res:name) (eq (index a:tags "hidden") -1))
+        (concat "<li>" (link a:name) "</li>"))))))
   (def __directory 
     (wrap (concat __stem __children) "ul" "directory"))
   (dom:set-html _sidebar (concat __date __links __directory))))
