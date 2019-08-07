@@ -222,8 +222,8 @@ function Library (host) {
     return this.wrap(item, 'code')
   }
 
-  this.link = (target = this.host.name.toTitleCase(), name) => {
-    return target.toLink(name)
+  this.link = (target = this.host.name.toTitleCase(), name, cl = '') => {
+    return target.toLink(name, cl)
   }
 
   this.template = (items, t, p) => {
