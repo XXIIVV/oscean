@@ -60,6 +60,7 @@ const template = `
 
 (defn display-main (res) (
   (def _head (res:head))
+  (def __portal (res:_portal))
   (if 
     (is:real res:data)
     (def _body (res:body))
@@ -72,6 +73,10 @@ const template = `
         (concat "You can create the page by submitting a " (link "https://github.com/XXIIVV/Oscean/blob/master/scripts/database/lexicon.ndtl" "pull request") ", or if you think this is an error, please contact " (link "https://twitter.com/neauoire" "@neauoire") "."))
       (def _body 
         (wrap (concat similar-text pull-request-text) "p"))))
+  (if 
+    (eq __portal "")
+    (dom:hide _portal)
+    (dom:show _portal))
   (dom:set-html _portal (res:_portal))
   (dom:set-html _main (concat _head _body))))
 
