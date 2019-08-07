@@ -33,7 +33,7 @@ const template = `
 (def __license
   (wrap 
     (concat 
-      (link "https://creativecommons.org/licenses/by-nc-sa/4.0/" "BY-NC-SA 4.0")
+      (link "wiki" "BY-NC-SA 4.0")
       " "
       (neralie)) "center"))
 

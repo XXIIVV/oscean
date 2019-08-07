@@ -204,6 +204,10 @@ function Library (host) {
     }, h)
   }
 
+  this.pry = (a, name) => {
+    return a.map((val) => { return val[name] })
+  }
+
   // Templating
 
   this.wrap = (content, tag, cl) => {
@@ -482,6 +486,5 @@ function Library (host) {
       return Object.keys(this.database.index).length
     }
   }
-
   // end
 }
