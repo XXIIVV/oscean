@@ -7,29 +7,41 @@ function Library (host) {
 
   this.host = host
 
+  this.debug = (arg) => {
+    console.log(arg)
+  }
+
+  // str
+
   this.substr = (str, from, len) => {
     return str.substr(from, len)
   }
 
-  this.concat = (...items) => {
-    return items.reduce((acc, item) => { return `${acc}${item}` }, '')
-  }
-
-  this.split = (string, char) => {
-    return string.split(char)
+  this.split = (str, char) => {
+    return str.split(char)
   }
 
   this.replace = (str, from, to) => {
     return str.replace(/\+/g, to)
   }
 
-  this.keys = (h) => {
-    return Object.keys(h)
+  this.lc = (str) => {
+    return str.toLowerCase()
   }
 
-  this.values = (h) => {
-    return Object.values(h)
+  this.tc = (str) => {
+    return str.toTitleCase()
   }
+
+  this.uc = (str) => {
+    return str.toUpperCase()
+  }
+
+  this.cc = (str) => {
+    return str.substr(0, 1).toUpperCase() + str.substr(1)
+  }
+
+  // arr
 
   this.map = (arr, fn) => {
     return arr.map((val, id, arr) => fn)
@@ -40,8 +52,11 @@ function Library (host) {
   }
 
   this.reduce = (arr, fn, acc = '') => {
-    console.log(arr, fn)
     return arr.reduce((acc, val, id, arr) => fn, acc)
+  }
+
+  this.concat = (...arr) => {
+    return arr.reduce((acc, item) => { return `${acc}${item}` }, '')
   }
 
   this.for = (arr, fn) => {
@@ -68,16 +83,82 @@ function Library (host) {
     return arr.length
   }
 
+  this.until = (arr, fn) => {
+    for (const item of arr) {
+      if (fn(item)) { return item }
+    }
+  }
+
+  this.index = (arr, item) => {
+    return arr.indexOf(item)
+  }
+
+  this.pry = (arr, name) => {
+    return arr.map((val) => { return val[name] })
+  }
+
+  this.splice = (arr, index, length) => {
+    return arr.splice(index, length)
+  }
+
+  this.slice = (arr, index, length) => {
+    return arr.slice(index, length)
+  }
+
+  this.reverse = (arr) => {
+    return arr.reverse()
+  }
+
+  this.first = (arr) => {
+    return arr[0]
+  }
+
+  this.sort = (arr) => {
+    return arr.sort()
+  }
+
+  this.uniq = (arr) => {
+    return arr.filter((value, index, self) => { return self.indexOf(value) === index })
+  }
+
+  this.like = (arr, target) => {
+    return arr.filter((val) => { return val.indexOf(target) > -1 })
+  }
+
+  this['find-similar'] = (target, arr) => {
+    return findSimilar(target, arr)
+  }
+
+  this.random = (arr) => {
+    return arr[Math.floor(Math.random() * arr.length)]
+  }
+
+  // obj
+
+  this.keys = (obj) => {
+    return obj ? Object.keys(obj) : []
+  }
+
+  this.values = (obj) => {
+    return obj ? Object.values(obj) : []
+  }
+
   this.entries = (obj) => {
     return obj ? Object.entries(obj) : []
   }
 
-  this.debug = (arg) => {
-    console.log(arg)
+  this.set = (obj, key, val) => {
+    obj[key] = val
   }
 
-  this.return = (val) => {
-    return val
+  this.get = (obj, key) => {
+    return obj[key]
+  }
+
+  this.tunnel = (obj, ...keys) => {
+    return keys.reduce((acc, key) => {
+      return key && acc && acc[key] ? acc[key] : null
+    }, obj)
   }
 
   this.is = {
@@ -95,15 +176,7 @@ function Library (host) {
     }
   }
 
-  this.until = (arr, fn) => {
-    for (const item of arr) {
-      if (fn(item)) { return item }
-    }
-  }
-
-  this.set = (host, key, val) => {
-    host[key] = val
-  }
+  // logic
 
   this.gt = (a, b) => {
     return a > b
@@ -119,10 +192,6 @@ function Library (host) {
 
   this.neq = (a, b) => {
     return a !== b
-  }
-
-  this.index = (arr, item) => {
-    return arr.indexOf(item)
   }
 
   this.and = (...args) => {
@@ -142,20 +211,6 @@ function Library (host) {
       }
     }
     return args[args.length - 1]
-  }
-
-  this.get = (host, key) => {
-    return host[key]
-  }
-
-  this.tunnel = (h, ...keys) => {
-    return keys.reduce((acc, key) => {
-      return key && acc && acc[key] ? acc[key] : null
-    }, h)
-  }
-
-  this.pry = (a, name) => {
-    return a.map((val) => { return val[name] })
   }
 
   // Templating
@@ -212,7 +267,7 @@ function Library (host) {
     return item.logs.length > 10 && item.span.from && item.span.to ? `<li>${item.name.toTitleCase().toLink()} ${item.span.from}—${item.span.to}</li>` : ''
   }
 
-  //
+  // Math
 
   this.add = (...args) => { // Adds values.
     return args.reduce((sum, val) => sum + val)
@@ -267,49 +322,7 @@ function Library (host) {
     return Math.ceil(item)
   }
 
-  this.lc = (item) => {
-    return item.toLowerCase()
-  }
-
-  this.tc = (item) => {
-    return item.toTitleCase()
-  }
-
-  this.uc = (item) => {
-    return item.toUpperCase()
-  }
-
-  this.cc = (item) => {
-    return item.substr(0, 1).toUpperCase() + item.substr(1)
-  }
-
-  this.splice = (arr, index, length) => {
-    return arr.splice(index, length)
-  }
-
-  this.slice = (arr, index, length) => {
-    return arr.slice(index, length)
-  }
-
-  this.reverse = (arr) => {
-    return arr.reverse()
-  }
-
-  this.first = (arr) => {
-    return arr[0]
-  }
-
-  this.sort = (a) => {
-    return a.sort()
-  }
-
-  this.uniq = (items) => {
-    return items.filter((value, index, self) => { return self.indexOf(value) === index })
-  }
-
-  this.like = (source, target) => {
-    return source.filter((val) => { return val.indexOf(target) > -1 })
-  }
+  // Misc
 
   this.daysSince = (greg) => {
     return parseInt((Date.now() - new Date(greg)) / 1000 / 86400)
@@ -335,16 +348,8 @@ function Library (host) {
     return !isNaN(new Date(q)) ? `${new Date(q).toArvelie()}` : 'Invalid Date'
   }
 
-  this['find-similar'] = (target, arr) => {
-    return findSimilar(target, arr)
-  }
-
   this.delay = (s, fn) => {
     setTimeout(fn, s * 1000)
-  }
-
-  this.random = (arr) => {
-    return arr[parseInt(Math.random() * arr.length)]
   }
 
   // Access
@@ -789,33 +794,4 @@ function Library (host) {
 
     return `${html}`
   }
-
-  // RIVEN.lib.StaticService = function StaticNode (id, rect) {
-  //   RIVEN.Node.call(this, id, rect)
-
-  //   this.glyph = 'M65,65 L65,65 L245,65 L245,245 L65,245 Z M65,125 L65,125 L245,125 M95,95 L95,95 L95,95 '
-
-  //   function _header () {
-  //     const lastLog = Ø('database').cache.horaire[0]
-  //     return `\n\nUpdated ${lastLog.time} — ${lastLog.time.toGregorian()}\n\n`
-  //   }
-
-  //   function _item (term) {
-  //     return `${term.name.toTitleCase()}\n  ${term.bref.toHeol(term).stripHTML()}\n${term.links ? Object.keys(term.links).reduce((acc, val) => { return `${acc}  - ${term.links[val]}\n` }, '') : ''}\n`
-  //   }
-
-  //   function _items () {
-  //     const terms = Ø('database').cache.lexicon
-  //     const items = Object.keys(terms).sort()
-  //     return items.reduce((acc, val) => {
-  //       return `${acc}${_item(terms[val])}`
-  //     }, '').trim()
-  //   }
-
-  //   this.receive = function () {
-  //     return `${_header()}${_items()}`
-  //   }
-  // }
-
-  // end
 }
