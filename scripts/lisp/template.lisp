@@ -38,8 +38,6 @@ const template = `
       (gt (len res:diaries) 0) 
       (tunnel res "span" "from") 
       (:time (last (database:select-table "horaire")))))
-  (def stem 
-    (if (gt (len res:children) 0) res (tunnel res "parent")))
   (def span-to 
     (if 
       (gt (len res:diaries) 1) 
@@ -47,16 +45,20 @@ const template = `
       (:time (first (database:select-table "horaire")))))
   (def __date 
     (wrap (concat span-from " — " span-to) "h2"))
+  (def navi-stem 
+    (if (gt (len res:children) 0) res (tunnel res "parent")))
+  (def __stem 
+    (wrap (link navi-stem:name) "li" "parent"))
   (def __children 
-    (join (for stem:children 
+    (join (for navi-stem:children 
       (λ (a) (concat "<li>" (link a:name) "</li>")))))
   (def __directory 
-    (wrap (concat (wrap (link stem:name) "li" "parent") __children) "ul" "directory"))
+    (wrap (concat __stem __children) "ul" "directory"))
   (dom:set-html _sidebar (concat __date __links __directory))))
 
 (defn display (q) (
   (def res (database:find q))
-  (dom:set-title res:name)
+  (dom:set-title (concat "XXIIVV — " (tc res:name)))
   (dom:set-hash res:name)
   (dom:scroll 0)
   (display-photo res)
