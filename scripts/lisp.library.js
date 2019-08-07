@@ -60,13 +60,13 @@ function Library (host) {
 
   this.on = {
     click: (fn) => {
-      bindings.click = fn
+      BINDINGS.click = fn
     },
     load: (fn) => {
-      bindings.load = fn
+      BINDINGS.load = fn
     },
     search: (fn) => {
-      bindings.search = fn
+      BINDINGS.search = fn
     }
   }
 
@@ -158,8 +158,13 @@ function Library (host) {
     }
   }
 
+  this.until = (arr, fn) => {
+    for (const item of arr) {
+      if (fn(item)) { return item }
+    }
+  }
+
   this.set = (host, key, val) => {
-    console.log(host, key, val)
     host[key] = val
   }
 

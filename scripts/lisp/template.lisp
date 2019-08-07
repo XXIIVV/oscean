@@ -1,4 +1,5 @@
 'use strict'
+
 const template = `
 
 ; database
@@ -33,7 +34,7 @@ const template = `
 (def __license
   (wrap 
     (concat 
-      (link "wiki" "BY-NC-SA 4.0")
+      (link "About" "BY-NC-SA 4.0")
       " "
       (neralie)) "center"))
 
@@ -47,6 +48,10 @@ const template = `
 (defn display-photo (res) (
   (def photo-log 
     (res:photo))
+  (if (eq res:name "HOME")
+    (def photo-log (until 
+      (database:select-table "horaire") 
+      (λ (a) (tunnel a "pict")))))
   (if 
     photo-log 
     (dom:show _title) 
