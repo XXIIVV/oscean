@@ -4,7 +4,7 @@ function Entry (name, data) {
   this.name = name
   this.data = data
   this.unde = 'Home'
-  this.bref = '-'
+  this.bref = null
 
   this.view = 'main'
   this.theme = 'noir'
@@ -13,7 +13,9 @@ function Entry (name, data) {
 
   this.span = { from: null, to: null }
   this.issues = []
+  this.links = []
   this.logs = []
+  this.children = []
   this.diaries = []
   this.events = []
   this.tags = []
@@ -23,11 +25,11 @@ function Entry (name, data) {
   }
 
   this.head = () => {
-    return this.bref ? `<p>${this.bref}</p>` : ''
+    return this.bref ? `<p>${this.bref}</p>`.template() : `<p>The term {(bold "${name}")} could not be found.</p>`.template(this)
   }
 
-  this.body = function () {
-    return `Unformatted Entry: ${name}`
+  this.body = () => {
+    return 'Unformatted entry.'
   }
 
   this.indexes = function () {

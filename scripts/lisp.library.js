@@ -137,7 +137,25 @@ function Library (host) {
 
   this.debug = (arg) => {
     console.log(arg)
-    return arg
+  }
+
+  this.return = (val) => {
+    return val
+  }
+
+  this.is = {
+    null: (q) => {
+      return q === undefined || q === null
+    },
+    real: (q) => {
+      return !this.is.null(q)
+    },
+    false: (q) => {
+      return q === false
+    },
+    true: (q) => {
+      return !this.is.false(q)
+    }
   }
 
   this.set = (host, key, val) => {
@@ -369,6 +387,10 @@ function Library (host) {
 
   this.gtod = (q) => {
     return !isNaN(new Date(q)) ? `${new Date(q).toArvelie()}` : 'Invalid Date'
+  }
+
+  this['find-similar'] = (target, arr) => {
+    return findSimilar(target, arr)
   }
 
   // Access

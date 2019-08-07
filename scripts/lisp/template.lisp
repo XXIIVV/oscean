@@ -25,7 +25,18 @@ const template = `
 
 (defn display-main (res) (
   (def _head (res:head))
-  (def _body (res:body))
+  (if 
+    (is:real res:data)
+    (def _body (res:body))
+    (
+      (def similar-terms
+        (find-similar (uc res:name) (keys database:index)))
+      (def similar-text 
+        (concat "Did you mean " (bold (link (tc (tunnel similar-terms:0 "word")))) ", " (link (tc (tunnel similar-terms:1 "word"))) ", or " (link (tc (tunnel similar-terms:2 "word"))) "? "))
+      (def pull-request-text
+        (concat "You can create the page by submitting a " (link "https://github.com/XXIIVV/Oscean/blob/master/scripts/database/lexicon.ndtl" "pull request") ", or if you think this is an error, please contact " (link "https://twitter.com/neauoire" "@neauoire") "."))
+      (def _body 
+        (wrap (concat similar-text pull-request-text) "p"))))
   (dom:set-html _main (concat _head _body))))
 
 (defn display-sidebar (res) (
