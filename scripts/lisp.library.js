@@ -212,22 +212,6 @@ function Library (host) {
 
   // Templating
 
-  this.wrap = (content, tag, cl) => {
-    return `<${tag} class='${cl}'>${content}</${tag}>`
-  }
-
-  this.bold = (item) => {
-    return this.wrap(item, 'b')
-  }
-
-  this.ital = (item) => {
-    return this.wrap(item, 'i')
-  }
-
-  this.code = (item) => {
-    return this.wrap(item, 'code')
-  }
-
   this.link = (target = this.host.name.toTitleCase(), name, cl = '') => {
     return target.toLink(name, cl)
   }
