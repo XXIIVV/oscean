@@ -523,7 +523,7 @@ function Library (host) {
       this.terminal.activate()
       const words = q.split(' ')
       const cmd = words.shift()
-      const params = words.join()
+      const params = words.join(' ')
       if (this.services[cmd]) {
         this.terminal.update(this.services[cmd](params))
       } else {
@@ -569,8 +569,7 @@ function Library (host) {
     },
 
     repl: (q) => {
-      lisp.run(q)
-      return 'done.'
+      return lisp.run(q)
     },
 
     task: (q) => {
