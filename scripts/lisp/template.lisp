@@ -1,6 +1,4 @@
-'use strict'
-
-const template = `
+'use strict'; const template = `
 
 ; database, mostly magic until I finish migrating.
 
@@ -159,5 +157,4 @@ const template = `
     (dom:set-class _terminal ""))))
 
 (dom:bind _search "keydown" search)
-
 `

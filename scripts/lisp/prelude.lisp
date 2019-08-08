@@ -1,6 +1,4 @@
-'use strict'
-
-const prelude = `
+'use strict'; const prelude = `
 
 ; todo
 
