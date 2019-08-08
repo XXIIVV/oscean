@@ -1,8 +1,7 @@
 'use strict'; const graph = `
 ; In the real world, it didn’t matter if I was there or not.
 ; When I realized that, I was no longer afraid of losing my body.
-; — Chisa Yomoda
-(dom:set-class dom:body "loading")
+(set-class dom:body "loading")
 (def _terminal (dom:create "terminal"))
 (def _termhand (dom:create "termhand"))
 (def _termview (dom:create "termview" "textarea"))
@@ -53,4 +52,9 @@
 (dom:append _header (_photo _menu))
 (dom:append _core (_sidebar _content _portal))
 (dom:append dom:body (_terminal _header _core _footer))
+
+(add-class _glyph "test")
+(del-class _glyph "test")
+
+
 `

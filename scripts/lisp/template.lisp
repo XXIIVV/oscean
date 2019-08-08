@@ -16,8 +16,8 @@
 (defn set-theme (pixels) (
   (if 
     (gt (dom:get-lum pixels) 170)
-    (dom:set-class _header "light")
-    (dom:set-class _header "dark"))))
+    (set-class _header "light")
+    (set-class _header "dark"))))
 
 (defn display-photo (res) (
   (if (eq res:name "HOME")
@@ -30,17 +30,17 @@
     (concat "media/diary/" photo-log:pict ".jpg"))
   (if 
     photo-log 
-    (dom:show _title) 
-    (dom:hide _title))
+    (set-class _title "visible") 
+    (set-class _title "hidden"))
   (dom:set-html _title 
     (concat (link "Journal" photo-log:name) " — " (photo-log:time)))
   (if
     photo-log 
     (dom:get-pixels photo-path 0.1 set-theme)
-    (dom:set-class _header "light"))
+    (set-class _header "light"))
   (if photo-log
-    (dom:remove-class _header "no_photo")
-    (dom:add-class _header "no_photo"))
+    (del-class _header "no_photo")
+    (add-class _header "no_photo"))
   (if 
     photo-log
     (dom:set-html _photo (concat "<media id='media' style='background-image: url(" photo-path ")'></media>"))
@@ -73,8 +73,8 @@
         (wrap (concat similar-text pull-request-text) "p"))))
   (if 
     (eq __portal "")
-    (dom:hide _portal)
-    (dom:show _portal))
+    (set-class _portal "hidden")
+    (set-class _portal "visible"))
   (dom:set-html _portal (res:_portal))
   (dom:set-html _content (concat _head _body))))
 
@@ -116,7 +116,7 @@
     (database:find q))
   (dom:set-title (concat "XXIIVV — " (tc res:name)))
   (dom:set-hash res:name)
-  (dom:set-class dom:body (concat "loading " res:theme))
+  (set-class dom:body (concat "loading " res:theme))
   (dom:scroll 0)
   (wait 0.1 (λ ()
     ((display-photo res)
@@ -124,7 +124,7 @@
       (display-main res)
       (display-sidebar res)
       (wait 0.1 (λ () 
-        (dom:set-class dom:body (concat "ready " res:theme))))
+        (set-class dom:body (concat "ready " res:theme))))
       )))
   ))
 
@@ -154,7 +154,7 @@
     (goto (tunnel e "target" "value")))
   (if 
     (eq e:key "Escape") 
-    (dom:set-class _terminal ""))))
+    (set-class _terminal ""))))
 
 (dom:bind _search "keydown" search)
 `

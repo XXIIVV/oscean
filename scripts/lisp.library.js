@@ -390,16 +390,17 @@ function Library (host) {
   }
 
   this.dom = {
+    body: document.body,
     create: (id, type = 'div', cl = '') => {
       const el = document.createElement(type)
       this.dom['set-attr'](el, 'id', id)
-      this.dom['set-class'](el, cl)
+      this.dom['set-attr'](el, 'class', cl)
       return el
     },
     'create-ns': (id, type = 'svg', cl = '') => {
       const el = document.createElementNS('http://www.w3.org/2000/svg', type)
       this.dom['set-attr'](el, 'id', id)
-      this.dom['set-class'](el, cl)
+      this.dom['set-attr'](el, 'class', cl)
       return el
     },
     append: (el, children) => {
@@ -417,50 +418,22 @@ function Library (host) {
       el.innerHTML = html
     },
     'set-attr': (el, attr, value) => {
-      el.setAttribute(attr, value)
-    },
-    'set-value': (el, value) => {
-      el.value = value
+      el.setAttribute(attr, value.trim())
     },
     'get-attr': (el, attr) => {
       return el.getAttribute(attr)
     },
-    'set-class': (el, cl) => {
-      this.dom['set-attr'](el, 'class', this.uniq(cl.split(' ')).join(' '))
-    },
-    'get-class': (el) => {
-      return this.dom['get-attr'](el, 'class')
-    },
-    'has-class': (el, cl) => {
-      return this.dom['get-class'](el).indexOf(cl) > -1
-    },
-    'add-class': (el, cl) => {
-      if (!this.dom['has-class'](el, cl)) {
-        this.dom['set-class'](el, el.getAttribute('class') + ' ' + cl)
-      }
-    },
-    'remove-class': (el, cl) => {
-      if (this.dom['has-class'](el, cl)) {
-        this.dom['set-class'](el, el.getAttribute('class').replace(cl, '').trim())
-      }
-    },
-    'set-title': (title) => {
-      document.title = title
+    'set-value': (el, value) => {
+      el.value = value
     },
     'set-hash': (hash) => {
       document.location.hash = `${hash}`.toUrl()
     },
+    'set-title': (title) => {
+      document.title = title
+    },
     scroll: (y) => {
       window.scrollTo(0, y)
-    },
-    show: (el) => {
-      this.dom['set-class'](el, 'visible')
-    },
-    hide: (el) => {
-      this.dom['set-class'](el, 'hidden')
-    },
-    goto: (target) => {
-      console.log(target)
     },
     'get-pixels': (path, ratio = 1, callback = null) => {
       const img = document.createElement('img')
@@ -483,8 +456,7 @@ function Library (host) {
         sum += pixels[x] + pixels[x + 1] + pixels[x + 2]
       }
       return sum / (pixels.length * 0.75)
-    },
-    body: document.body
+    }
   }
 
   this.database = {

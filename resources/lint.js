@@ -9,7 +9,7 @@ String.prototype.insert = function (s, i) { return [this.slice(0, i), `${s}`, th
 function lintLisp (input) {
   let txt = input.split('\n')
   // remove first and last line
-  let head = txt.shift() 
+  let head = txt.shift()
   let foot = txt.pop()
   txt = txt.join('')
   // parse
