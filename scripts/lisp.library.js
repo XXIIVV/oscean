@@ -225,8 +225,8 @@ function Library (host) {
     return target.toLink(name, cl)
   }
 
-  this.template = (items, t, p) => {
-    return items.map((val) => { return `${t(val, p)}` }).join('')
+  this.template = (items, t) => {
+    return items.map((val, id, arr) => { return `${t(val, id, arr)}` }).join('')
   }
 
   this.INDEX = (item) => {
@@ -253,8 +253,8 @@ function Library (host) {
     return item.logs.length > 10 && item.span.from && item.span.to ? `<li>${item.name.toTitleCase().toLink()} ${item.span.from}—${item.span.to}</li>` : ''
   }
 
-  this.DATE = (item) => {
-    return `<li style='${item.time.offset > 0 ? 'color:#aaa' : ''}'>${item.term.toLink(item.name)} <span title='${item.time}'>${timeAgo(item.time, 60)}</span></li>`
+  this.DATE = (item, id, arr) => {
+    return `${arr[id - 1] && item.time.y != arr[id - 1].time.y ? `<li class='head'>20${item.time.y}</li>` : ''}<li style='${item.time.offset > 0 ? 'color:#aaa' : ''}'>${item.term.toLink(item.name)} <span title='${item.time}'>${timeAgo(item.time, 60)}</span></li>`
   }
 
   // Math
