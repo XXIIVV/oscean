@@ -107,7 +107,7 @@ const template = `
   (def __children 
     (join (for navi-stem:children 
       (λ (a) (if  
-        (and (eq (index a:tags "hidden") -1))
+        (eq (index a:tags "hidden") -1)
         (concat "<li class='" (if (eq a:name res:name) "active") "'>" (link a:name) "</li>"))))))
   (def __directory 
     (wrap (concat __stem __children) "ul" "directory"))

@@ -11,6 +11,11 @@ function Library (host) {
     console.log(arg)
   }
 
+  this.test = (name, a, b) => {
+    if (`${a}` !== `${b}`) { console.warn('failed ' + name, a, b) } else { console.log('passed ' + name, a) }
+    return a === b
+  }
+
   // str
 
   this.substr = (str, from, len) => {
@@ -69,6 +74,10 @@ function Library (host) {
 
   this.first = (arr) => {
     return arr[0]
+  }
+
+  this.rest = ([_, ...arr]) => {
+    return arr
   }
 
   this.last = (arr) => {
@@ -174,20 +183,15 @@ function Library (host) {
   }
 
   this.and = (...args) => {
-    for (let i = 0; i < args.length; i++) {
-      if (!args[i]) {
-        return args[i]
-      }
+    for (const arg of args) {
+      if (!arg) { return arg }
     }
     return args[args.length - 1]
   }
 
-  this.or = (a, b, ...rest) => {
-    let args = [a, b].concat(rest)
-    for (let i = 0; i < args.length; i++) {
-      if (args[i]) {
-        return args[i]
-      }
+  this.or = (...args) => {
+    for (const arg of args) {
+      if (arg) { return arg }
     }
     return args[args.length - 1]
   }
@@ -280,11 +284,11 @@ function Library (host) {
   }
 
   this.clamp = (val, min, max) => { // Clamps a value between min and max.
-    return this.min(max, this.max(min, val))
+    return Math.min(max, Math.max(min, val))
   }
 
   this.step = (val, step) => {
-    return this.round(val / step) * step
+    return Math.round(val / step) * step
   }
 
   this.match = (source, items) => {
@@ -506,7 +510,6 @@ function Library (host) {
           const entry = table[id]
           for (const id in entry.indexes) {
             const key = entry.indexes[id].toUpperCase()
-            if (this.database.index[key]) { console.warn(`Redefining ${key}.`) }
             this.database.index[key] = entry
           }
         }
@@ -588,7 +591,6 @@ function Library (host) {
   }
 
   this.services = {
-
     help: (q) => {
       return 'Available commands:\n\n' + plainTable(Object.keys(this.services))
     },
@@ -607,6 +609,10 @@ function Library (host) {
       const logs = this.database['select-table']('horaire').filter(__onlyEvents).filter(__onlyThisDay)
       if (logs.length < 1) { return `There were no past events on this date.` }
       return `<b>On This Day</b>, on ${timeAgo(logs[0].time, 14)}, ${logs[0].host.name.toTitleCase()} — ${logs[0].name}.`
+    },
+
+    benchmark: (q) => {
+      return lisp.run(benchmark)
     },
 
     iso: (q) => {
