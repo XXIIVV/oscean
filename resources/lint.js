@@ -2,7 +2,7 @@ const fs = require('fs')
 const styles = ['./links/main.css']
 const tablatals = ['./scripts/database/asulodeta.tbtl', './scripts/database/horaire.tbtl']
 const indentals = ['./scripts/database/lexicon.ndtl', './scripts/database/glossary.ndtl']
-const lisps = ['./scripts/lisp/graph.lisp']
+const lisps = []
 
 String.prototype.insert = function (s, i) { return [this.slice(0, i), `${s}`, this.slice(i)].join('') }
 
