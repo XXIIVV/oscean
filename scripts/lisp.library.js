@@ -774,14 +774,4 @@ function Library (host) {
       return `Unknown command <i>${q}</i>, type <i>help</i> to see available commands.`
     }
   }
-
-  // Generators TODO
-
-  this.JOURNAL_TEMPLATE = () => {
-    const logs = this.database['select-table']('horaire')
-    const html = logs.slice(0, 14 * 4).filter(__onlyOnce).slice(0, 20).reduce((acc, log) => {
-      return `${acc}${log}`
-    }, '')
-    return `${html}` // ${new ActivityViz(logs)}
-  }
 }
