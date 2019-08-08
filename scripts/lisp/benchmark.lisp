@@ -1,7 +1,18 @@
 'use strict'
 
 const benchmark = `
+
 ; this file is used to test the library.
+
+; strings
+
+(test "substr" (substr "hello world" 2 4) "llo ")
+(test "split" (split "hello world" " ") ("hello" "world"))
+(test "replace" (replace "hello world" "hello" "bye") "bye world")
+(test "lc" (lc "hello World") "hello world")
+(test "tc" (tc "hello World") "Hello World")
+(test "uc" (uc "hello World") "HELLO WORLD")
+(test "cc" (cc "hello World") "Hello World")
 
 ; Basics
 

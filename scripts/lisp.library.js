@@ -12,7 +12,7 @@ function Library (host) {
   }
 
   this.test = (name, a, b) => {
-    if (`${a}` !== `${b}`) { console.warn('failed ' + name, a, b) } else { console.log('passed ' + name, a) }
+    if (`${a}` !== `${b}`) { console.warn('failed ' + name, `[${a}]`, `[${b}]`) } else { console.log('passed ' + name, a) }
     return a === b
   }
 
@@ -27,7 +27,7 @@ function Library (host) {
   }
 
   this.replace = (str, from, to) => {
-    return str.replace(/\+/g, to)
+    return str.replaceAll(from, to)
   }
 
   this.lc = (str) => {
