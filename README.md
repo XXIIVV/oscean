@@ -14,6 +14,12 @@ A series of tools are available through the search bar, type `~help` to see avai
 https://wiki.xxiivv.com/~benchmark
 ```
 
+### Neralie Pomodoro
+
+```
+https://wiki.xxiivv.com/~pomodoro
+```
+
 ## Syntax Highlight
 
 The `Resources/` folder inclues syntax highlight for both [Indental](https://wiki.xxiivv.com/Indental) and [Tablatal](https://wiki.xxiivv.com/Tablatal), to install them onto [Sublime](http://sublimetext.com), copy them into `~/Library/Application Support/Sublime Text 3/Packages/User/`.
