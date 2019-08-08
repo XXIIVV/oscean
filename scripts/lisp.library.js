@@ -253,6 +253,10 @@ function Library (host) {
     return item.logs.length > 10 && item.span.from && item.span.to ? `<li>${item.name.toTitleCase().toLink()} ${item.span.from}—${item.span.to}</li>` : ''
   }
 
+  this.DATE = (item) => {
+    return `<li style='${item.time.offset > 0 ? 'color:#aaa' : ''}'>${item.term.toLink(item.name)} <span title='${item.time}'>${timeAgo(item.time, 60)}</span></li>`
+  }
+
   // Math
 
   this.add = (...args) => { // Adds values.
@@ -779,20 +783,5 @@ function Library (host) {
       return `${acc}${log}`
     }, '')
     return `${html}` // ${new ActivityViz(logs)}
-  }
-
-  this.CALENDAR_TEMPLATE = () => {
-    const logs = this.database['select-table']('horaire')
-    const events = logs.filter(__onlyEvents)
-    const html = `<ul class='tidy ${events.length > 10 ? 'col3' : ''}'>${events.reduce((acc, log, id, arr) => {
-      return `
-      ${acc}
-      ${!arr[id - 1] || arr[id - 1].time.y !== log.time.y ? `<li class='head'>20${log.time.y}</li>` : ''}
-      <li style='${log.time.offset > 0 ? 'color:#aaa' : ''}'>
-        ${log.term.toLink(log.name)} <span title='${log.time}'>${timeAgo(log.time, 60)}</span>
-      </li>`
-    }, '')}</ul>`
-
-    return `${html}`
   }
 }
