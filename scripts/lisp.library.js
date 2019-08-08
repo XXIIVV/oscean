@@ -330,7 +330,7 @@ function Library (host) {
     return !isNaN(new Date(q)) ? `${new Date(q).toArvelie()}` : 'Invalid Date'
   }
 
-  this.delay = (s, fn) => {
+  this.wait = (s, fn) => {
     setTimeout(fn, s * 1000)
   }
 
