@@ -30,7 +30,13 @@ const benchmark = `
 ; Logic
 
 (test "lt" (lt 3 4) true)
+(test "lt" (lt 4 3) false)
+(test "gt" (gt 4 3) true)
 (test "gt" (gt 3 4) false)
+(test "eq" (eq 3 3) true)
+(test "eq" (eq 3 4) false)
+(test "neq" (neq 3 4) true)
+(test "neq" (neq 3 3) false)
 
 (test "and - true" (and 1 2 true 4) 4)
 (test "and - false" (and 1 false 2) false)

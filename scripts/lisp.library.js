@@ -6,6 +6,13 @@ function Library (host) {
   // Parsimony: Write a big program only when it is clear by demonstration that nothing else will do.
 
   this.host = host
+  this.document = document
+  this.location = document.location
+  this.Tablatal = tablatal
+  this.Indental = indental
+  this.Log = Log
+  this.Term = Term
+  this.List = List
 
   this.debug = (arg) => {
     console.log(arg)
@@ -279,16 +286,16 @@ function Library (host) {
     return a % b
   }
 
-  this.rad = (degrees) => { // Convert radians to degrees.
-    return degrees * (Math.PI / 180)
-  }
-
-  this.deg = (radians) => { // Convert degrees to radians.
-    return radians * (180 / Math.PI)
-  }
-
   this.clamp = (val, min, max) => { // Clamps a value between min and max.
     return Math.min(max, Math.max(min, val))
+  }
+
+  this.floor = (item) => {
+    return Math.floor(item)
+  }
+
+  this.ceil = (item) => {
+    return Math.ceil(item)
   }
 
   this.step = (val, step) => {
@@ -302,14 +309,6 @@ function Library (host) {
 
   this.fix = (...items) => {
     return items[0].toFixed(items[1])
-  }
-
-  this.floor = (item) => {
-    return Math.floor(item)
-  }
-
-  this.ceil = (item) => {
-    return Math.ceil(item)
   }
 
   // Misc
@@ -367,11 +366,6 @@ function Library (host) {
 
   // Lietal TODO placeholders
 
-  // Access
-
-  this.document = document
-  this.location = document.location
-
   this.lien = (q) => {
     return ''
   }
@@ -379,11 +373,21 @@ function Library (host) {
   this.enli = (q) => {
     return ''
   }
-  this.Tablatal = tablatal
-  this.Indental = indental
-  this.Log = Log
-  this.Term = Term
-  this.List = List
+
+  this.on = {
+    click: (fn) => {
+      BINDINGS.click = fn
+    },
+    start: (fn) => {
+      BINDINGS.start = fn
+    },
+    search: (fn) => {
+      BINDINGS.search = fn
+    },
+    change: (fn) => {
+      BINDINGS.change = fn
+    }
+  }
 
   this.dom = {
     create: (id, type = 'div', cl = '') => {
@@ -481,21 +485,6 @@ function Library (host) {
       return sum / (pixels.length * 0.75)
     },
     body: document.body
-  }
-
-  this.on = {
-    click: (fn) => {
-      BINDINGS.click = fn
-    },
-    start: (fn) => {
-      BINDINGS.start = fn
-    },
-    search: (fn) => {
-      BINDINGS.search = fn
-    },
-    change: (fn) => {
-      BINDINGS.change = fn
-    }
   }
 
   this.database = {
