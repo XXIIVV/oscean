@@ -2,7 +2,7 @@
 
 const template = `
 
-; database
+; database, mostly magic until I finish migrating.
 
 (database:create-table "glossary" Indental List)
 (database:create-table "horaire" Tablatal Log)
@@ -60,9 +60,17 @@ const template = `
       (def similar-terms
         (similars (uc res:name) (keys database:index)))
       (def similar-text 
-        (concat "Did you mean " (bold (link (tc (tunnel similar-terms:0 "word")))) ", " (link (tc (tunnel similar-terms:1 "word"))) ", or " (link (tc (tunnel similar-terms:2 "word"))) "? "))
+        (concat 
+          "Did you mean " 
+          (bold (link (tc (tunnel similar-terms:0 "word")))) ", " 
+          (link (tc (tunnel similar-terms:1 "word"))) ", or " 
+          (link (tc (tunnel similar-terms:2 "word"))) "? "))
       (def pull-request-text
-        (concat "You can create the page by submitting a " (link "https://github.com/XXIIVV/Oscean/blob/master/scripts/database/lexicon.ndtl" "pull request") ", or if you think this is an error, please contact " (link "https://twitter.com/neauoire" "@neauoire") "."))
+        (concat 
+          "You can create the page by submitting a " 
+          (link "https://github.com/XXIIVV/Oscean/blob/master/scripts/database/lexicon.ndtl" "pull request") 
+          ", or if you think this is an error, please contact " 
+          (link "https://twitter.com/neauoire" "@neauoire") "."))
       (def _body 
         (wrap (concat similar-text pull-request-text) "p"))))
   (if 
@@ -114,12 +122,12 @@ const template = `
   (dom:scroll 0)
   (wait 0.1 (λ ()
     ((display-photo res)
-    (display-glyph res)
-    (display-main res)
-    (display-sidebar res)
-    (wait 0.1 (λ () 
-      (dom:set-class dom:body (concat "ready " res:theme))))
-    )))
+      (display-glyph res)
+      (display-main res)
+      (display-sidebar res)
+      (wait 0.1 (λ () 
+        (dom:set-class dom:body (concat "ready " res:theme))))
+      )))
   ))
 
 ; click
