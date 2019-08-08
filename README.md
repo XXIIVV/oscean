@@ -14,6 +14,14 @@ A series of tools are available through the search bar, type `~help` to see avai
 
 The `Resources/` folder inclues syntax highlight for both [Indental](https://wiki.xxiivv.com/Indental) and [Tablatal](https://wiki.xxiivv.com/Tablatal), to install them onto [Sublime](http://sublimetext.com), copy them into `~/Library/Application Support/Sublime Text 3/Packages/User/`.
 
+## Lint
+
+I use a special format for CSS and database formats, the linter cleans these files up a bit.
+
+```
+node resources/lint
+```
+
 ## Twtxt
 
 [twtxt](https://github.com/buckket/twtxt) is a format specification for self-hosted flat file based microblogging, you can find my feed [here](https://raw.githubusercontent.com/XXIIVV/Oscean/master/twtxt.txt). The command line operation to append to the twtxt.txt file:

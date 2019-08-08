@@ -49,8 +49,10 @@ const template = `
     (dom:set-html _photo ""))))
 
 (defn display-main (res) (
-  (def _head (res:head))
-  (def __portal (res:_portal))
+  (def _head 
+    (res:head))
+  (def __portal 
+    (res:_portal))
   (if 
     (is:real res:data)
     (def _body (res:body))
@@ -88,7 +90,10 @@ const template = `
   (def __date 
     (wrap (concat span-from " — " span-to) "h2"))
   (def navi-stem 
-    (if (gt (len res:children) 0) res (tunnel res "parent")))
+    (if 
+      (gt (len res:children) 0) 
+      res 
+      (either (tunnel res "parent") (database:find "home"))))
   (def __stem 
     (wrap (link (tunnel navi-stem:parent "name") navi-stem:name) "li" "parent"))
   (def __children 
@@ -117,32 +122,21 @@ const template = `
     )))
   ))
 
-; query
-
-(defn query () (
-  (def current-page 
-    (replace (substr location:hash 1) "/\+/g" " "))
-  (if 
-    (eq current-page "") 
-    (def current-page "home"))
-  (display current-page)))
-
-(on:load query)
-
-(on:page query)
-
 ; click
 
 (defn goto 
-  (target) 
+  (data-goto) 
   (
     (dom:set-value _search "")
-    (if
-      (eq (substr target 0 1) "~")
-      (terminal:run (substr target 1))
-      (display target))))
+    (if 
+      (eq (substr data-goto 0 1) "~")
+      (terminal:run (substr data-goto 1))
+      (display data-goto))))
 
+
+(on:start goto)
 (on:click goto)
+(on:change goto)
 
 ; search
 

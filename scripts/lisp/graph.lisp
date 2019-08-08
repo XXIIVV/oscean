@@ -54,6 +54,7 @@ const graph = `
 
 (dom:set-attr _logo "data-goto" "home")
 (dom:set-attr _path "transform" "scale(0.165,0.165) translate(-50,-50)")
+(dom:set-attr _termview "spellcheck" "false")
 
 (dom:set-html _activity 
   (concat 

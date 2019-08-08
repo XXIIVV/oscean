@@ -58,7 +58,6 @@
     const detectPage = function (onChange) {
       let hashHistory = [window.location.hash]
       let historyLength = window.history.length
-
       return () => {
         let hash = window.location.hash; let length = window.history.length
         if (hashHistory.length && historyLength === length) {
@@ -76,25 +75,20 @@
     }
 
     window.addEventListener('hashchange', detectPage(
-      (e) => { BINDINGS.page(e) }
+      (e) => { BINDINGS.change(window.location.hash.replace(/\+/g,' ').replace('#','')) }
     ))
 
     window.addEventListener('load', (e) => { 
-      BINDINGS.load(e) 
+      BINDINGS.start(window.location.hash.replace(/\+/g,' ').replace('#','')) 
     })
 
     window.addEventListener('click', (e) => { 
-      if (e.button || e.which === 3 || e.button === 2) { return }
+      if (e.button || e.which === 3 || e.button === 2 || e.ctrlKey || e.shiftKey || e.metaKey) { return }
 
-      if(e.target.getAttribute('data-term')){
-        document.getElementById('search').value = e.target.getAttribute('data-term')
-        document.getElementById('search').focus()
-      }
-      const inTab = e.ctrlKey || e.shiftKey || e.metaKey
       const el = e.target.getAttribute('data-goto') ? e.target : e.target.parentNode.getAttribute('data-goto') ? e.target.parentNode : null
-      if (!el || el.className === 'external' || inTab) { return }
-      const target = el.getAttribute('data-goto')
-      BINDINGS.click(target.replace(/\+/g,' ')) 
+      if (!el || el.className === 'external') { return }
+
+      BINDINGS.click(el.getAttribute('data-goto').replace(/\+/g,' ')) 
       e.preventDefault()
     })
 

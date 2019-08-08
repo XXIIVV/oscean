@@ -192,6 +192,13 @@ function Library (host) {
     return args[args.length - 1]
   }
 
+  this.either = (...args) => {
+    for (const arg of args) {
+      if (arg) { return arg }
+    }
+    return null
+  }
+
   // Templating
 
   this.wrap = (content, tag, cl) => {
@@ -342,7 +349,14 @@ function Library (host) {
     }
   }
 
+  // Monsters, TODO migrate to lisp, omg..
+
   // Lietal TODO placeholders
+
+  // Access
+
+  this.document = document
+  this.location = document.location
 
   this.lien = (q) => {
     return ''
@@ -351,14 +365,6 @@ function Library (host) {
   this.enli = (q) => {
     return ''
   }
-
-  // Access
-
-  this.document = document
-  this.location = document.location
-
-  // Monsters, to migrate to lisp
-
   this.Tablatal = tablatal
   this.Indental = indental
   this.Log = Log
@@ -467,14 +473,14 @@ function Library (host) {
     click: (fn) => {
       BINDINGS.click = fn
     },
-    load: (fn) => {
-      BINDINGS.load = fn
+    start: (fn) => {
+      BINDINGS.start = fn
     },
     search: (fn) => {
       BINDINGS.search = fn
     },
-    page: (fn) => {
-      BINDINGS.page = fn
+    change: (fn) => {
+      BINDINGS.change = fn
     }
   }
 
@@ -568,19 +574,20 @@ function Library (host) {
       } else {
         console.warn('Unknown ' + cmd)
       }
-      document.getElementById('termhand').innerHTML = `<b>${this.arvelie()} ${this.neralie()}</b> ${q}<span class='right' data-term='~close'>~close</span>`
+      document.getElementById('termhand').innerHTML = `<b>${this.arvelie()} ${this.neralie()}</b> ${q}<span class='right' data-goto='~close'>~close</span>`
     },
     activate: () => {
       document.getElementById('terminal').className = 'active'
     },
     update: (res) => {
-      document.getElementById('termview').innerHTML = `${res.trim()}`
+      document.getElementById('termview').innerHTML = `${res}`.trim()
     }
   }
 
   this.services = {
+
     help: (q) => {
-      return 'Available commands:\n' + plainTable(Object.keys(this.services))
+      return 'Available commands:\n\n' + plainTable(Object.keys(this.services))
     },
 
     atog: (q) => {
@@ -603,6 +610,11 @@ function Library (host) {
       return new Date().toISOString()
     },
 
+    repl: (q) => {
+      lisp.run(q)
+      return 'done.'
+    },
+
     task: (q) => {
       return `${new Log({ code: '-' + q }).task}`
     },
@@ -622,6 +634,10 @@ function Library (host) {
       return `There are no available diary IDs under 999.`
     },
 
+    age: (q) => {
+      return ((new Date() - new Date('1986-03-22')) / 31557600000)
+    },
+
     walk: (q) => {
       const totalTime = performance.now()
       for (const id in this.database.index) {
@@ -635,26 +651,11 @@ function Library (host) {
       return `Walked ${Object.keys(this.database.index).length} indexes, in ${(performance.now() - totalTime).toFixed(2)}ms.`
     },
 
-    rss: (q) => {
-      return `<textarea>${Ø('rss').receive(q)}</textarea>`
-    },
-
-    static: (q) => {
-      return `<textarea>${Ø('static').receive(q)}</textarea>`
-    },
-
-    heol: (q) => {
-      return `${new Heol(q, null)}`
-    },
-
-    age: (q) => {
-      return ((new Date() - new Date('1986-03-22')) / 31557600000)
-    },
-
     progress: (q) => {
       const score = { ratings: 0, entries: 0 }
-      for (const id in Ø('database').cache.lexicon) {
-        score.ratings += Ø('database').cache.lexicon[id].rating()
+      const lexicon = this.database['select-table']('lexicon')
+      for (const id in exicon) {
+        score.ratings += lexicon[id].rating()
         score.entries += 1
       }
       return ((score.ratings / score.entries) * 100)
@@ -668,13 +669,15 @@ function Library (host) {
     orphans: (q) => {
       let index = {}
       let orphans = []
-      for (const id in Ø('database').cache.lexicon) {
-        const links = Ø('database').cache.lexicon[id].outgoing()
+      const lexicon = this.database['select-table']('lexicon')
+      for (const id in lexicon) {
+        console.log(id, lexicon)
+        const links = lexicon[id].outgoing()
         for (const link of links) {
           index[link] = index[link] ? index[link] + 1 : 1
         }
       }
-      for (const key of Object.keys(Ø('database').cache.lexicon)) {
+      for (const key of Object.keys(lexicon)) {
         if (!index[key]) { orphans.push(key.toLowerCase()) }
       }
       return plainTable(orphans, 2, 3)
@@ -707,6 +710,10 @@ function Library (host) {
     close: (q) => {
       document.getElementById('terminal').className = ''
       return ``
+    },
+
+    static: (q) => {
+      return 'TODO.'
     },
 
     rss: () => {
