@@ -334,6 +334,12 @@ function Library (host) {
     setTimeout(fn, s * 1000)
   }
 
+  this.perf = (id, fn) => {
+    const time = performance.now()
+    fn()
+    console.info(`Completed ${id}, in ${(performance.now() - time).toFixed(2)}ms.`)
+  }
+
   this.is = {
     null: (q) => {
       return q === undefined || q === null
@@ -505,7 +511,7 @@ function Library (host) {
           }
         }
       }
-      console.info(`Indexed ${this.database.length()} searchables, in ${(performance.now() - time).toFixed(2)}ms.`)
+      console.info(`Indexed ${Object.keys(this.database.index).length} searchables, in ${(performance.now() - time).toFixed(2)}ms.`)
     },
     'select-table': (name) => {
       return this.database.tables[name]
@@ -557,9 +563,6 @@ function Library (host) {
         count.diaries += 1
       }
       console.info(`Mapped ${tables.horaire.length} logs, ${count.events} events, and ${count.diaries} diaries to ${Object.keys(tables.lexicon).length} terms, in ${(performance.now() - time).toFixed(2)}ms.`)
-    },
-    length: () => {
-      return Object.keys(this.database.index).length
     }
   }
 

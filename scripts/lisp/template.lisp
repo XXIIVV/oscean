@@ -129,10 +129,12 @@ const template = `
   (
     (dom:set-value _search "")
     (if 
+      (eq data-goto "")
+      (def data-goto "home"))
+    (if 
       (eq (substr data-goto 0 1) "~")
       (terminal:run (substr data-goto 1))
       (display data-goto))))
-
 
 (on:start goto)
 (on:click goto)

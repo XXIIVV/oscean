@@ -2,6 +2,10 @@
 
 const graph = `
 
+; In the real world, it didn’t matter if I was there or not.
+; When I realized that, I was no longer afraid of losing my body.
+; — Chisa Yomoda
+
 (dom:set-class dom:body "loading")
 
 (def _terminal
