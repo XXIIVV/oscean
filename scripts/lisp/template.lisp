@@ -22,7 +22,8 @@
     (set-class _header "dark"))))
 
 (defn display-photo (res) (
-  (if (eq res:name "HOME")
+  (if 
+    (eq res:name "HOME")
     (def photo-log (until 
       (database:select "horaire") 
       (λ (a) (tunnel a "featured"))))
@@ -130,23 +131,24 @@
       )))
   ))
 
-; click
+; repl
 
-(defn goto 
-  (data-goto) 
-  (
-    (if 
-      (eq data-goto "")
-      (def data-goto "home"))
-    (if 
-      (eq (substr data-goto 0 1) "~")
-      (terminal:run (substr data-goto 1))
-      (display data-goto))
-    (dom:set-value _search data-goto)))
+(defn run-repl (q) (
+  (set-class _terminal "active")
+  (dom:set-html _termhand (concat (arvelie) " " (neralie) " " q (wrap "λ close" "span" "right")))
+  (dom:set-html _termview (interpreter:run q))))
 
-(on:start goto)
-(on:click goto)
-(on:change goto)
+; goto
+
+(defn goto (data-goto) (
+  (if 
+    (eq data-goto "")
+    (def data-goto "home"))
+  (if 
+    (eq (substr data-goto 0 1) "(")
+    (run-repl data-goto)
+    (display data-goto))
+  (dom:set-value _search data-goto)))
 
 ; search
 
@@ -159,4 +161,8 @@
     (set-class _terminal ""))))
 
 (dom:bind _search "keydown" search)
+
+(on:start goto)
+(on:click goto)
+(on:change goto)
 `

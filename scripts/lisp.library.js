@@ -7,6 +7,21 @@ function Library (host) {
 
   // Custom
 
+  this.on = {
+    click: (fn) => {
+      BINDINGS.click = fn
+    },
+    start: (fn) => {
+      BINDINGS.start = fn
+    },
+    search: (fn) => {
+      BINDINGS.search = fn
+    },
+    change: (fn) => {
+      BINDINGS.change = fn
+    }
+  }
+
   this.host = host
   this.document = document
   this.location = document.location
@@ -15,6 +30,7 @@ function Library (host) {
   this.Log = Log
   this.Term = Term
   this.List = List
+  this.js = window
 
   this.neralie = () => {
     return `${new Neralie()}`
@@ -350,21 +366,6 @@ function Library (host) {
     return ''
   }
 
-  this.on = {
-    click: (fn) => {
-      BINDINGS.click = fn
-    },
-    start: (fn) => {
-      BINDINGS.start = fn
-    },
-    search: (fn) => {
-      BINDINGS.search = fn
-    },
-    change: (fn) => {
-      BINDINGS.change = fn
-    }
-  }
-
   this.dom = {
     body: document.body,
     create: (id, type = 'div', cl = '') => {
@@ -513,32 +514,10 @@ function Library (host) {
     }
   }
 
-  this.terminal = {
-    run: (q) => {
-      this.terminal.activate()
-      const words = q.split(' ')
-      const cmd = words.shift()
-      const params = words.join(' ')
-      if (this.services[cmd]) {
-        this.terminal.update(this.services[cmd](params))
-      } else {
-        console.warn('Unknown ' + cmd)
-      }
-      document.getElementById('termhand').innerHTML = `<b>${this.arvelie()} ${this.neralie()}</b> ${q}<span class='right' data-goto='~close'>~close</span>`
-    },
-    activate: () => {
-      document.getElementById('terminal').className = 'active'
-    },
-    update: (res) => {
-      document.getElementById('termview').innerHTML = `${res}`.trim()
-    }
-  }
-
   this.services = {
     help: (q) => {
       return 'Available commands:\n\n' + plainTable(Object.keys(this.services))
     },
-
     atog: (q) => {
       return `${new Arvelie(q).toGregorian()}`
     },
@@ -556,15 +535,11 @@ function Library (host) {
     },
 
     benchmark: (q) => {
-      return lisp.run(benchmark)
+      return interpreter.run(benchmark)
     },
 
     iso: (q) => {
       return new Date().toISOString()
-    },
-
-    repl: (q) => {
-      return lisp.run(q)
     },
 
     task: (q) => {
@@ -657,10 +632,6 @@ function Library (host) {
     close: (q) => {
       document.getElementById('terminal').className = ''
       return ``
-    },
-
-    static: (q) => {
-      return 'TODO.'
     },
 
     rss: () => {

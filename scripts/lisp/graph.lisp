@@ -52,9 +52,4 @@
 (dom:append _header (_photo _menu))
 (dom:append _core (_sidebar _content _portal))
 (dom:append dom:body (_terminal _header _core _footer))
-
-(add-class _glyph "test")
-(del-class _glyph "test")
-
-
 `

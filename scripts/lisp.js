@@ -150,8 +150,9 @@ function Lisp (lib = {}) {
     return parenthesize(tokenize(input))
   }
 
-  this.run = function (input, host) {
+  this.run = (input, host) => {
     lib.host = host
+    lib.interpreter = this
     return interpret(this.parse(`(${input})`))
   }
 }
@@ -161,7 +162,7 @@ String.prototype.template = function (host) {
   if (!matches) { return this }
   let text = `${this}`
   matches.forEach(el => {
-    text = text.replace(`{${el}}`, lisp.run(el, host))
+    text = text.replace(`{${el}}`, interpreter.run(el, host))
   })
   return text
 }
