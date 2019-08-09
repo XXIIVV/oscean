@@ -4,20 +4,14 @@ This is the repository for the [Oscean Wiki Engine](http://wiki.xxiivv.com/), se
 
 The Master Branch is the **live version**, to see active tasks & issues, visit the [Issue Tracker](http://wiki.xxiivv.com/Oscean:tracker).
 
-## Terminal
+## Search Repl
 
-A series of tools are available through the search bar, type `~help` to see available commands. This is used mostly to perform maintenance tasks such as generating rss(`~rss`), or to test all lexicon entries for broken entries(`~walk`), or to convert Gregorian dates to [Arvelie](http://wiki.xxiivv.com/Arvelie)(`~gtoa 1986-03-22`), etc..
+A series of tools are available through the search bar, type `(add 5 6)` to see the resulting `11`, any search query starting with `(` will be interpreted. This is used mostly to perform maintenance tasks such as generating rss(`(services:rss)`), or to test all lexicon entries for broken entries(`(services:walk)`), or to convert Gregorian dates to [Arvelie](http://wiki.xxiivv.com/Arvelie)(`(gtoa 1986-03-22)`), etc..
 
-### LISP Benchmark
-
-```
-https://wiki.xxiivv.com/~benchmark
-```
-
-### Neralie Pomodoro
+### Run Benchmark
 
 ```
-https://wiki.xxiivv.com/~pomodoro
+(join (interpreter:run projects:benchmark))
 ```
 
 ## Syntax Highlight

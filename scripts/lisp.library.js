@@ -31,6 +31,7 @@ function Library (host) {
   this.Term = Term
   this.List = List
   this.js = window
+  this.projects = PROJECTS
 
   this.neralie = () => {
     return `${new Neralie()}`
@@ -55,8 +56,7 @@ function Library (host) {
   }
 
   this.test = (name, a, b) => {
-    if (`${a}` !== `${b}`) { console.warn('failed ' + name, `[${a}]`, `[${b}]`) } else { console.log('passed ' + name, a) }
-    return a === b
+    return `${name} ${`${a}` === `${b}` ? 'OK' : `FAILED [${a}] [${b}]`} \n`
   }
 
   // str
@@ -444,7 +444,7 @@ function Library (host) {
     tables: {},
     'create': (name, parser, type) => {
       const time = performance.now()
-      this.database.tables[name] = parser(database[name], type)
+      this.database.tables[name] = parser(DATABASE[name], type)
       console.info(`Created table ${name}, in ${(performance.now() - time).toFixed(2)}ms.`)
     },
     'create-index': () => {

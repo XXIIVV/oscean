@@ -1,4 +1,4 @@
-'use strict'; const template = `
+'use strict'; PROJECTS.template = `
 
 ; database, mostly magic until I finish migrating.
 
@@ -135,15 +135,17 @@
 
 (defn run-repl (q) (
   (set-class _terminal "active")
-  (dom:set-html _termhand (concat (arvelie) " " (neralie) " " q (wrap "λ close" "span" "right")))
+  (dom:set-html _termhand (concat (arvelie) " " (neralie) " " q (link "(set-class (dom:select \"terminal\")))" "close" "right")))
   (dom:set-html _termview (interpreter:run q))))
 
 ; goto
 
 (defn goto (data-goto) (
+  (debug data-goto)
   (if 
     (eq data-goto "")
-    (def data-goto "home"))
+    (def data-goto "home")
+    (def data-goto (replace data-goto "%20" " ")))
   (if 
     (eq (substr data-goto 0 1) "(")
     (run-repl data-goto)

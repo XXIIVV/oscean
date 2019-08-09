@@ -1,4 +1,4 @@
-'use strict'; const benchmark = `
+'use strict'; PROJECTS.benchmark = `
 ; strings
 (test "substr" (substr "hello world" 2 4) "llo ")
 (test "split" (split "hello world" " ") ("hello" "world"))

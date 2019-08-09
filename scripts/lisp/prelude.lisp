@@ -1,4 +1,4 @@
-'use strict'; const prelude = `
+'use strict'; PROJECTS.prelude = `
 ; array
 (defn first (arr) (get arr 0))
 (defn last (arr) (get arr (sub (len arr) 1)))

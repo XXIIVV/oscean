@@ -1,4 +1,4 @@
-'use strict'; const graph = `
+'use strict'; PROJECTS.graph = `
 ; In the real world, it didn’t matter if I was there or not.
 ; When I realized that, I was no longer afraid of losing my body.
 (set-class dom:body "loading")
