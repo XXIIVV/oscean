@@ -11,7 +11,9 @@
 ; display
 
 (defn display-glyph (res) (
-  (dom:set-attr _path "d" (res:glyph))))
+  (if 
+    (res:glyph) 
+    (dom:set-attr _path "d" (res:glyph)))))
 
 (defn set-theme (pixels) (
   (if 

@@ -135,6 +135,14 @@ function Library (host) {
 
   // obj
 
+  this.set = (obj, key, val) => {
+    obj[key] = val
+  }
+
+  this.get = (obj, key) => {
+    return obj[key]
+  }
+
   this.keys = (obj) => {
     return obj ? Object.keys(obj) : []
   }
@@ -145,14 +153,6 @@ function Library (host) {
 
   this.entries = (obj) => {
     return obj ? Object.entries(obj) : []
-  }
-
-  this.set = (obj, key, val) => {
-    obj[key] = val
-  }
-
-  this.get = (obj, key) => {
-    return obj[key]
   }
 
   this.tunnel = (obj, ...keys) => {
