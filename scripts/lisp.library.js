@@ -5,6 +5,8 @@ function Library (host) {
   // Composition: Design programs to be connected to other programs.
   // Parsimony: Write a big program only when it is clear by demonstration that nothing else will do.
 
+  // Custom
+
   this.host = host
   this.document = document
   this.location = document.location
@@ -14,8 +16,26 @@ function Library (host) {
   this.Term = Term
   this.List = List
 
+  this.neralie = () => {
+    return `${new Neralie()}`
+  }
+
+  this.arvelie = () => {
+    return `${new Arvelie()}`
+  }
+
   this.debug = (arg) => {
     console.log(arg)
+  }
+
+  this.wait = (s, fn) => {
+    setTimeout(fn, s * 1000)
+  }
+
+  this.perf = (id, fn) => {
+    const time = performance.now()
+    fn()
+    console.info(`Completed ${id}, in ${(performance.now() - time).toFixed(2)}ms.`)
   }
 
   this.test = (name, a, b) => {
@@ -71,12 +91,14 @@ function Library (host) {
     return arr.reduce((acc, item) => { return `${acc}${item}` }, '')
   }
 
-  this.for = (arr, fn) => {
-    return arr.reduce((acc, item) => { acc.push(fn(item)); return acc }, [])
-  }
+  // TODO: duplicate of concat?
 
   this.join = (arr, ch = '') => {
     return arr.join(ch)
+  }
+
+  this.for = (arr, fn) => {
+    return arr.reduce((acc, item) => { acc.push(fn(item)); return acc }, [])
   }
 
   this.rest = ([_, ...arr]) => {
@@ -85,12 +107,6 @@ function Library (host) {
 
   this.len = (arr) => {
     return arr.length
-  }
-
-  this.until = (arr, fn) => {
-    for (const item of arr) {
-      if (fn(item)) { return item }
-    }
   }
 
   this.index = (arr, item) => {
@@ -123,6 +139,12 @@ function Library (host) {
 
   this.like = (arr, target) => {
     return arr.filter((val) => { return val.indexOf(target) > -1 })
+  }
+
+  this.until = (arr, fn) => {
+    for (const item of arr) {
+      if (fn(item)) { return item }
+    }
   }
 
   this.random = (arr) => {
@@ -293,30 +315,12 @@ function Library (host) {
     return Date.now() - new Date(greg)
   }
 
-  this.neralie = () => {
-    return `${new Neralie()}`
-  }
-
-  this.arvelie = () => {
-    return `${new Arvelie()}`
-  }
-
   this.dtog = (q) => {
     return `${new Arvelie(q).toGregorian()}`
   }
 
   this.gtod = (q) => {
     return !isNaN(new Date(q)) ? `${new Date(q).toArvelie()}` : 'Invalid Date'
-  }
-
-  this.wait = (s, fn) => {
-    setTimeout(fn, s * 1000)
-  }
-
-  this.perf = (id, fn) => {
-    const time = performance.now()
-    fn()
-    console.info(`Completed ${id}, in ${(performance.now() - time).toFixed(2)}ms.`)
   }
 
   this.is = {
@@ -648,11 +652,6 @@ function Library (host) {
         return 'You must allow notifications.'
       }
       return 'You have not allowed notifications.'
-    },
-
-    clear: (q) => {
-      this.el.innerHTML = ''
-      return ``
     },
 
     close: (q) => {
