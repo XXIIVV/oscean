@@ -518,6 +518,9 @@ function Library (host) {
     help: (q) => {
       return 'Available commands:\n\n' + plainTable(Object.keys(this.services))
     },
+    close: (q) => {
+      document.getElementById('terminal').className = ''
+    },
     atog: (q) => {
       return `${new Arvelie(q).toGregorian()}`
     },

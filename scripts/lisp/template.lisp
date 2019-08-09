@@ -135,8 +135,8 @@
 
 (defn run-repl (q) (
   (set-class _terminal "active")
-  (dom:set-html _termhand (concat (arvelie) " " (neralie) " " q (link "(set-class (dom:select \"terminal\")))" "close" "right")))
-  (dom:set-html _termview (interpreter:run q))))
+  (dom:set-html _termhand (concat (arvelie) " " (neralie) " " q (link "(services:close)" "close" "right")))
+  (dom:set-html _termview (interpreter:run (replace q "%20" " ")))))
 
 ; goto
 
@@ -144,8 +144,7 @@
   (debug data-goto)
   (if 
     (eq data-goto "")
-    (def data-goto "home")
-    (def data-goto (replace data-goto "%20" " ")))
+    (def data-goto "home"))
   (if 
     (eq (substr data-goto 0 1) "(")
     (run-repl data-goto)
