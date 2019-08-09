@@ -387,6 +387,9 @@ function Library (host) {
       this.dom['set-attr'](el, 'class', cl)
       return el
     },
+    select: (id) => {
+      return document.getElementById(id)
+    },
     append: (el, children) => {
       for (const child of children) {
         el.appendChild(child)
