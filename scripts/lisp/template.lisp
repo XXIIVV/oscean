@@ -2,9 +2,9 @@
 
 ; database, mostly magic until I finish migrating.
 
-(database:create-table "glossary" Indental List)
-(database:create-table "horaire" Tablatal Log)
-(database:create-table "lexicon" Indental Term)
+(database:create "glossary" Indental List)
+(database:create "horaire" Tablatal Log)
+(database:create "lexicon" Indental Term)
 (database:create-index)
 (database:map)
 
@@ -22,7 +22,7 @@
 (defn display-photo (res) (
   (if (eq res:name "HOME")
     (def photo-log (until 
-      (database:select-table "horaire") 
+      (database:select "horaire") 
       (λ (a) (tunnel a "featured"))))
     (def photo-log 
       (res:photo)))
@@ -87,12 +87,12 @@
     (if 
       (gt (len res:diaries) 0) 
       (tunnel res "span" "from") 
-      (:time (last (database:select-table "horaire")))))
+      (:time (last (database:select "horaire")))))
   (def span-to 
     (if 
       (gt (len res:diaries) 1) 
       (tunnel res "span" "to") 
-      (:time (first (database:select-table "horaire")))))
+      (:time (first (database:select "horaire")))))
   (def __date 
     (wrap (concat span-from " — " span-to) "h2"))
   (def navi-stem 

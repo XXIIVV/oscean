@@ -1,4 +1,7 @@
 'use strict'; const prelude = `
+; array
+(defn first (arr) (get arr 0))
+(defn last (arr) (get arr (sub (len arr) 1)))
 ; dom tools
 (defn includes (str txt) (gt (index str txt) -1))
 (defn get-class (el) (dom:get-attr el "class"))

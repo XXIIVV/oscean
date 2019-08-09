@@ -26,15 +26,15 @@ function Library (host) {
   // str
 
   this.substr = (str, from, len) => {
-    return str.substr(from, len)
+    return `${str}`.substr(from, len)
   }
 
   this.split = (str, char) => {
-    return str.split(char)
+    return `${str}`.split(char)
   }
 
   this.replace = (str, from, to) => {
-    return str.replaceAll(from, to)
+    return `${str}`.replaceAll(from, to)
   }
 
   this.lc = (str) => {
@@ -79,16 +79,8 @@ function Library (host) {
     return arr.join(ch)
   }
 
-  this.first = (arr) => {
-    return arr[0]
-  }
-
   this.rest = ([_, ...arr]) => {
     return arr
-  }
-
-  this.last = (arr) => {
-    return arr[arr.length - 1]
   }
 
   this.len = (arr) => {
@@ -119,10 +111,6 @@ function Library (host) {
 
   this.reverse = (arr) => {
     return arr.reverse()
-  }
-
-  this.first = (arr) => {
-    return arr[0]
   }
 
   this.sort = (arr) => {
@@ -449,7 +437,7 @@ function Library (host) {
   this.database = {
     index: {},
     tables: {},
-    'create-table': (name, parser, type) => {
+    'create': (name, parser, type) => {
       const time = performance.now()
       this.database.tables[name] = parser(database[name], type)
       console.info(`Created table ${name}, in ${(performance.now() - time).toFixed(2)}ms.`)
@@ -468,7 +456,7 @@ function Library (host) {
       }
       console.info(`Indexed ${Object.keys(this.database.index).length} searchables, in ${(performance.now() - time).toFixed(2)}ms.`)
     },
-    'select-table': (name) => {
+    'select': (name) => {
       return this.database.tables[name]
     },
     find: (q) => {
@@ -558,7 +546,7 @@ function Library (host) {
     otd: (q) => {
       const today = new Date().toArvelie()
       const a = []
-      const logs = this.database['select-table']('horaire').filter(__onlyEvents).filter(__onlyThisDay)
+      const logs = this.database.select('horaire').filter(__onlyEvents).filter(__onlyThisDay)
       if (logs.length < 1) { return `There were no past events on this date.` }
       return `<b>On This Day</b>, on ${timeAgo(logs[0].time, 14)}, ${logs[0].host.name.toTitleCase()} — ${logs[0].name}.`
     },
@@ -581,7 +569,7 @@ function Library (host) {
 
     next: (q) => {
       const used = []
-      for (const log of this.database['select-table']('horaire')) {
+      for (const log of this.database.select('horaire')) {
         if (!log.pict) { continue }
         used.push(log.pict)
       }
@@ -613,7 +601,7 @@ function Library (host) {
 
     progress: (q) => {
       const score = { ratings: 0, entries: 0 }
-      const lexicon = this.database['select-table']('lexicon')
+      const lexicon = this.database.select('lexicon')
       for (const id in exicon) {
         score.ratings += lexicon[id].rating()
         score.entries += 1
@@ -622,14 +610,14 @@ function Library (host) {
     },
 
     forecast: (q) => {
-      const forecast = new Forecast(this.database['select-table']('horaire'))
+      const forecast = new Forecast(this.database.select('horaire'))
       return `${forecast.fh}fh of ${forecast.sector} ${forecast.task}`
     },
 
     orphans: (q) => {
       let index = {}
       let orphans = []
-      const lexicon = this.database['select-table']('lexicon')
+      const lexicon = this.database.select('lexicon')
       for (const id in lexicon) {
         console.log(id, lexicon)
         const links = lexicon[id].outgoing()
@@ -677,7 +665,7 @@ function Library (host) {
     },
 
     rss: () => {
-      const logs = this.database['select-table']('horaire').filter(__onlyPast60).filter(__onlyPhotos)
+      const logs = this.database.select('horaire').filter(__onlyPast60).filter(__onlyPhotos)
       function makeRssItems (logs) {
         let html = ''
         for (const id in logs) {
