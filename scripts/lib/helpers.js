@@ -114,6 +114,10 @@ function __onlyPhotos (log) {
   return log.pict !== null
 }
 
+function __onlyProjects (term) {
+  return term.logs.length > 10 && (term.span.to.offset - term.span.from.offset) > 300
+}
+
 function __onlyOnce (log, id, logs) {
   for (const i in logs) {
     if (log.pict || log.isEvent) { return true }
@@ -122,6 +126,12 @@ function __onlyOnce (log, id, logs) {
     }
   }
   return true
+}
+
+// Sorters
+
+function __byRecentLog (a, b) {
+  return a.span.to.offset - b.span.to.offset
 }
 
 // Compare strings

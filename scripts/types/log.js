@@ -61,6 +61,8 @@ function Log (data = { code: '-400' }) {
 
   // Checks
 
+  if (this.ch >= 8 && (!this.name || !this.isEvent)) { console.warn('Log', `Incomplete event: ${this.time}`) }
+  if (this.ch !== 8 && this.name.toLowerCase().indexOf('release') > -1) { console.warn('Log', `Error release event: ${this.time}`) }
   if (this.pict !== null && !this.name) { console.warn('Log', `Missing caption: ${this.time}`) }
   if (this.pict === null && this.rune === '!') { console.warn('Log', `Feature without picture: ${this.time}`) }
   if (['+', '-', '!'].indexOf(this.rune) < 0) { console.warn('Log', `Unknown rune: ${data.code}, on ${this.time}.`, data) }

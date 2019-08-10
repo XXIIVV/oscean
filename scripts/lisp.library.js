@@ -498,9 +498,13 @@ function Library (host) {
         tables.lexicon[index].logs.push(log)
         // Span
         if (log.time.offset < 0) {
-          tables.lexicon[index].span.from = `${log.time}`
+          tables.lexicon[index].span.from = log.time
           if (!tables.lexicon[index].span.to) {
-            tables.lexicon[index].span.to = `${log.time}`
+            tables.lexicon[index].span.to = log.time
+          }
+          if (log.ch === 8) {
+            if (tables.lexicon[index].span.release) { console.warn(`Re-released ${log.term} ${log.time} ${tables.lexicon[index].span.release}`) }
+            tables.lexicon[index].span.release = log.time
           }
         }
         if (log.isEvent) {
@@ -598,6 +602,41 @@ function Library (host) {
         if (!index[key]) { orphans.push(key.toLowerCase()) }
       }
       return plainTable(orphans, 2, 3)
+    },
+
+    projectStatus: (project) => {
+      if (project.span.to.offset < -365) {
+        return project.span.release ? 'Complete' : 'Inactive'
+      }
+      if (project.span.to.offset > -365) {
+        return project.span.release ? `Updated ${timeAgo(project.span.to)}` : `Active`
+      }
+      return 'Unknown'
+    },
+
+    tracker: (q) => {
+      const projects = Object.values(this.database.select('lexicon')).filter(__onlyProjects).sort(__byRecentLog).reverse()
+      let html = ''
+      let bounds = { from: null, to: null }
+      for (const project of projects) {
+        bounds.from = !bounds.from || project.span.from.offset < bounds.from.offset ? project.span.from : bounds.from
+        bounds.to = !bounds.to || project.span.to.offset > bounds.to.offset ? project.span.to : bounds.to
+      }
+      for (const project of projects) {
+        const a = (1 - (project.span.from.offset / bounds.from.offset)) * 100
+        const b = (1 - (project.span.to.offset / bounds.from.offset)) * 100
+        const c = project.span.release ? (1 - (project.span.release.offset / bounds.from.offset)) * 100 : 0
+        html += `
+        <li class='${!project.span.release ? 'unreleased' : ''}'><a>${project.name.toTitleCase()}</a> <span>${this.services.projectStatus(project)}</span>
+          <div class='progress'>
+            <div class='bar' style='width:${(b - a).toFixed(2)}%;left:${a.toFixed(2)}%'></div>
+            <div class='maintenance' style='width:${b - c}%; left:${c}%; ${!project.span.release ? 'display:none' : ''}'></div>
+            <div class='release' style='left:${c}%; ${!project.span.release ? 'display:none' : ''}'></div>
+            <div class='to' style='left:${b}%'></div>
+          </div>
+        </li>`
+      }
+      return `<ul class='tracker col2'>${html}</ul>`
     },
 
     pomodoro: (q) => {
