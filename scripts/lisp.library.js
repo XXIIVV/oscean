@@ -636,7 +636,7 @@ function Library (host) {
           </div>
         </li>`
       }
-      return `<ul class='tracker col2'>${html}</ul>`
+      return `<ul class='tracker'>${html}</ul>`
     },
 
     pomodoro: (q) => {
