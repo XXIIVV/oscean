@@ -622,7 +622,11 @@ function Library (host) {
         bounds.from = !bounds.from || project.span.from.offset < bounds.from.offset ? project.span.from : bounds.from
         bounds.to = !bounds.to || project.span.to.offset > bounds.to.offset ? project.span.to : bounds.to
       }
+      let lastYear = null
       for (const project of projects) {
+        if (lastYear && project.span.to.y !== lastYear) {
+          html += `<li class='head'>20${project.span.to.y}</li>`
+        }
         const a = (1 - (project.span.from.offset / bounds.from.offset)) * 100
         const b = (1 - (project.span.to.offset / bounds.from.offset)) * 100
         const c = project.span.release ? (1 - (project.span.release.offset / bounds.from.offset)) * 100 : 0
@@ -635,6 +639,7 @@ function Library (host) {
             <div class='to' style='left:${b}%'></div>
           </div>
         </li>`
+        lastYear = project.span.to.y
       }
       return `<ul class='tracker'>${html}</ul>`
     },
