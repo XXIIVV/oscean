@@ -141,7 +141,6 @@
 ; goto
 
 (defn goto (data-goto) (
-  (debug data-goto)
   (if 
     (eq data-goto "")
     (def data-goto "home"))

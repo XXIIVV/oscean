@@ -14,4 +14,7 @@
 (defn bold (body) (wrap body "b"))
 (defn ital (body) (wrap body "i"))
 (defn code (body) (wrap body "code"))
+; time
+(defn ms-since (g) (sub (time:now) (time:new g)))
+(defn days-since (g) (div (div (ms-since g) 1000) 86400))
 `

@@ -22,6 +22,18 @@ function Library (host) {
     }
   }
 
+  this.time = {
+    now: () => {
+      return Date.now()
+    },
+    new: (g) => {
+      return new Date(g)
+    },
+    iso: (g) => {
+      new Date(g).toISOString()
+    }
+  }
+
   this.host = host
   this.document = document
   this.location = document.location
@@ -39,6 +51,14 @@ function Library (host) {
 
   this.arvelie = () => {
     return `${new Arvelie()}`
+  }
+
+  atog: (q) => {
+    return `${new Arvelie(q).toGregorian()}`
+  }
+
+  gtoa: (q) => {
+    return !isNaN(new Date(q)) ? `${new Date(q).toArvelie()}` : 'Invalid Date'
   }
 
   this.debug = (arg) => {
@@ -107,10 +127,24 @@ function Library (host) {
     return arr.reduce((acc, item) => { return `${acc}${item}` }, '')
   }
 
-  // TODO: duplicate of concat?
-
   this.join = (arr, ch = '') => {
     return arr.join(ch)
+  }
+
+  this.splice = (arr, index, length) => {
+    return arr.splice(index, length)
+  }
+
+  this.slice = (arr, index, length) => {
+    return arr.slice(index, length)
+  }
+
+  this.reverse = (arr) => {
+    return arr.reverse()
+  }
+
+  this.sort = (arr) => {
+    return arr.sort()
   }
 
   this.for = (arr, fn) => {
@@ -131,22 +165,6 @@ function Library (host) {
 
   this.pry = (arr, name) => {
     return arr.map((val) => { return val[name] })
-  }
-
-  this.splice = (arr, index, length) => {
-    return arr.splice(index, length)
-  }
-
-  this.slice = (arr, index, length) => {
-    return arr.slice(index, length)
-  }
-
-  this.reverse = (arr) => {
-    return arr.reverse()
-  }
-
-  this.sort = (arr) => {
-    return arr.sort()
   }
 
   this.uniq = (arr) => {
@@ -322,22 +340,6 @@ function Library (host) {
   }
 
   // Misc
-
-  this.daysSince = (greg) => {
-    return parseInt((Date.now() - new Date(greg)) / 1000 / 86400)
-  }
-
-  this.msSince = (greg) => {
-    return Date.now() - new Date(greg)
-  }
-
-  this.dtog = (q) => {
-    return `${new Arvelie(q).toGregorian()}`
-  }
-
-  this.gtod = (q) => {
-    return !isNaN(new Date(q)) ? `${new Date(q).toArvelie()}` : 'Invalid Date'
-  }
 
   this.is = {
     null: (q) => {
@@ -521,13 +523,6 @@ function Library (host) {
     close: (q) => {
       document.getElementById('terminal').className = ''
     },
-    atog: (q) => {
-      return `${new Arvelie(q).toGregorian()}`
-    },
-
-    gtoa: (q) => {
-      return !isNaN(new Date(q)) ? `${new Date(q).toArvelie()}` : 'Invalid Date'
-    },
 
     otd: (q) => {
       const today = new Date().toArvelie()
@@ -535,14 +530,6 @@ function Library (host) {
       const logs = this.database.select('horaire').filter(__onlyEvents).filter(__onlyThisDay)
       if (logs.length < 1) { return `There were no past events on this date.` }
       return `<b>On This Day</b>, on ${timeAgo(logs[0].time, 14)}, ${logs[0].host.name.toTitleCase()} — ${logs[0].name}.`
-    },
-
-    benchmark: (q) => {
-      return interpreter.run(benchmark)
-    },
-
-    iso: (q) => {
-      return new Date().toISOString()
     },
 
     task: (q) => {
