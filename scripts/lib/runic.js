@@ -12,7 +12,7 @@ function runic (lines = [], host = null) {
     '|': { tag: 'tr', wrapper: 'table', fn: table },
     '%': { fn: media },
     'λ': { fn: interpret },
-    '>': {},
+    '>': { },
     ';': { }
   }
 

@@ -1,6 +1,6 @@
 # Oscean
 
-This is the repository for the [Oscean Wiki Engine](http://wiki.xxiivv.com/), see [on-site documentation](http://wiki.xxiivv.com/About). Oscean uses a **LISP frameworks** called [Lain](https://github.com/XXIIVV/Lain). The database formats are [Indental](https://wiki.xxiivv.com/Indental) and [Tablatal](https://wiki.xxiivv.com/Tablatal), their content uses the [Runic](https://wiki.xxiivv.com/Runic) templating format and Lain LISP as a **markup language**.
+This is the repository for the [Oscean wiki](http://wiki.xxiivv.com/), see the [on-site documentation](http://wiki.xxiivv.com/About) for more up-to-date details. Oscean is a static _dynamic site_ that uses [LISP](https://github.com/XXIIVV/Lain) as templating and markup language. The database formats are [Indental](https://wiki.xxiivv.com/Indental) and [Tablatal](https://wiki.xxiivv.com/Tablatal), the indental content also uses [Runic](https://wiki.xxiivv.com/Runic) as templating format.
 
 The Master Branch is the **live version**, to see active tasks & issues, visit the [Issue Tracker](http://wiki.xxiivv.com/Oscean:tracker).
 
@@ -28,7 +28,9 @@ node resources/lint
 
 ## Twtxt
 
-[twtxt](https://github.com/buckket/twtxt) is a format specification for self-hosted flat file based microblogging, you can find my feed [here](https://raw.githubusercontent.com/XXIIVV/Oscean/master/twtxt.txt). The command line operation to append to the twtxt.txt file:
+[twtxt](https://github.com/buckket/twtxt) is a format specification for self-hosted flat file based microblogging, you can find my feed [here](https://raw.githubusercontent.com/XXIIVV/Oscean/master/twtxt.txt). Oscean is part of the [webring's Hallway](https://webring.xxiivv.com/hallway.html) decentralized forum.
+
+The command line operation to append to the twtxt.txt file:
 
 ```
 echo -e "`date +%FT%T%:z`\tMESSAGE!" >> twtxt.txt
@@ -37,6 +39,6 @@ echo -e "`date +%FT%T%:z`\tMESSAGE!" >> twtxt.txt
 ## Extras
 
 - Pull Requests are welcome.
-- See the [License](LICENSE) file for license rights and limitations(MIT), the media content is [BY-NC-SA 4.0](http://wiki.xxiivv.com/About).
+- See the [License](LICENSE) file for license rights and limitations(MIT), the media assets are [BY-NC-SA 4.0](http://wiki.xxiivv.com/About).
 
 <img src='https://github.com/XXIIVV/Oscean/blob/master/media/identity/logo.crest.png?raw=true' width='200'/>

@@ -85,7 +85,7 @@
   (def __links 
     (wrap 
       (join (for (entries res:links) 
-        (λ (a) (wrap (link a:1 a:0) "li")))) "ul" "links") )
+        (λ (a) (wrap (link a:1 a:0) "li")))) "ul" "links"))
   (def span-from 
     (if 
       (gt (len res:diaries) 0) 
