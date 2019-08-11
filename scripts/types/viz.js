@@ -3,7 +3,7 @@
 function Viz (logs, from, to, showDetails = true) {
   this.logs = slice(logs, from, to)
 
-  const cell = 13
+  const cell = 12
 
   function slice (logs, from, to) {
     const a = []
@@ -31,39 +31,13 @@ function Viz (logs, from, to, showDetails = true) {
     const sum = horaire.sectors.audio + horaire.sectors.visual + horaire.sectors.research
 
     return `
-    <rect class="audio" x="${cell * 0}" y="115" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
-    <text x='${(cell + 1) * 2}' y='125' style='text-anchor:start'>Audio ${_perc(horaire.sectors.audio, sum)}%</text>
-    <rect class="visual" x="${(cell + 1) * 8}" y="115" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
-    <text x='${(cell + 1) * 10}' y='125' style='text-anchor:start'>Visual ${_perc(horaire.sectors.visual, sum)}%</text>
-    <rect class="research" x="${(cell + 1) * 16}" y="115" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
-    <text x='${(cell + 1) * 18}' y='125' style='text-anchor:start'>Research ${_perc(horaire.sectors.research, sum)}%</text>
-    <text x='725' y='125' style='text-anchor:end'>${horaire.fhs.toFixed(0)} Hours</text>`
-  }
-
-  function _status (data) {
-    if (!showDetails || data.recent.length < 2 || data.before.length < 2) { return '' }
-
-    const recent = new Horaire(data.recent)
-    const before = new Horaire(data.before)
-
-    return `
-    <line x1='0' y1='${cell * 11.5}' x2='730' y2='${cell * 11.5}'/>
-    <text class='display' x='${0}' y='${cell * 16.5}'>${recent.ch.toFixed(2)}</text>
-    <text class='display small' x='${cell * 7}' y='${cell * 15.1}'>${offset(recent.ch, before.ch)}</text>
-    <text class='display small' x='${cell * 7}' y='${cell * 16.5}' style='font-family: var(--mono);'>ch/day</text>
-
-    <text class='display' x='${180}' y='${cell * 16.5}'>${recent.fh.toFixed(2)}</text>
-    <text class='display small' x='${180 + (cell * 7)}' y='${cell * 15.1}'>${offset(recent.fh, before.fh)}</text>
-    <text class='display small' x='${180 + (cell * 7)}' y='${cell * 16.5}' style='font-family: var(--mono);'>fh/day</text>
-
-    <text class='display' x='${360}' y='${cell * 16.5}'>${recent.os.toFixed(2).substr(0, 4)}</text>
-    <text class='display small' x='${360 + (cell * 7)}' y='${cell * 15.1}'>${offset(recent.os, before.os)}</text>
-    <text class='display small' x='${360 + (cell * 7)}' y='${cell * 16.5}' style='font-family: var(--mono);'>focus</text>
-
-    <text class='display' x='${550}' y='${cell * 16.5}'>${recent.balance.toFixed(2).substr(0, 4)}</text>
-    <text class='display small' x='${550 + (cell * 7)}' y='${cell * 15.1}'>${offset(recent.balance, before.balance)}</text>
-    <text class='display small' x='${550 + (cell * 7)}' y='${cell * 16.5}' style='font-family: var(--mono);'>balance</text>
-    `
+    <rect class="audio" x="${cell * 0}" y="105" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
+    <text x='${(cell + 1) * 2}' y='115' style='text-anchor:start'>Audio ${_perc(horaire.sectors.audio, sum)}%</text>
+    <rect class="visual" x="${(cell + 1) * 9}" y="105" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
+    <text x='${(cell + 1) * 11}' y='115' style='text-anchor:start'>Visual ${_perc(horaire.sectors.visual, sum)}%</text>
+    <rect class="research" x="${(cell + 1) * 18}" y="105" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
+    <text x='${(cell + 1) * 20}' y='115' style='text-anchor:start'>Research ${_perc(horaire.sectors.research, sum)}%</text>
+    <text x='675' y='115' style='text-anchor:end'>${horaire.fhs.toFixed(0)} Hours</text>`
   }
 
   this.draw = function () {
@@ -83,9 +57,8 @@ function Viz (logs, from, to, showDetails = true) {
     }
 
     return `
-    <svg class='viz ${data.recent.length < 2 || data.before.length < 2 ? 'no_status' : ''}'>
+    <svg class='viz'>
       ${_legend(this.logs)}
-      ${_status(data)}
       ${this.draw()}
     </svg>`
   }
@@ -108,7 +81,7 @@ function ActivityViz (logs) {
 
   this.draw = function () {
     const data = parse(this.logs)
-    const cell = parseInt(700 / 52)
+    const cell = 12
     let html = ''
     let week = 0
     while (week < 52) {
@@ -119,8 +92,6 @@ function ActivityViz (logs) {
         const offset = (365 - (week * 7) - (day + 1)) * -1
         const log = data[offset + 1]
         html += log && log.sector ? `<rect class='${log.sector} ${log.time.offset === 0 ? 'today' : ''}' x='${x}' y='${y}' width='${cell}' height='${cell}' rx="2" ry="2" title='${log.time}' data-goto='${log.term}'></rect>` : `<rect class='missing ${day === 6 && week === 51 ? 'today' : ''}' x='${x}' y='${y}' width='${cell}' height='${cell}' rx="2" ry="2"></rect>`
-        html += log && log.pict ? `<circle cx='${x + (cell / 2)}' cy='${y + (cell / 2)}' r='2.5' class='photo'></circle>` : ''
-        html += log && log.isEvent ? `<circle cx='${x + (cell / 2)}' cy='${y + (cell / 2)}' r='2' class='event'></circle>` : ''
         day += 1
       }
       week += 1
@@ -155,13 +126,13 @@ function BarViz (logs) {
 
   this.draw = function () {
     const segments = parse(this.logs)
-    const cell = 13
-    const mod = 0.18
+    const cell = 12
+    const mod = 0.16
     return Object.keys(segments).reduce((acc, val, id) => {
       const seg = segments[val]
       const x = parseInt(id) * (cell + 1)
       const audio_h = clamp(seg.audio * mod, 4, 100)
-      const audio_y = audio_h + 30
+      const audio_y = audio_h + 35
       const visual_h = clamp(seg.visual * mod, 4, 100)
       const visual_y = (visual_h + audio_y) + 0.5
       const research_h = clamp(seg.visual * mod, 4, 100)
@@ -223,8 +194,8 @@ function BalanceViz (logs) {
 
     let html = ''
     let day = 52
-    const cell = 13
-    const height = 95
+    const cell = 12
+    const height = 85
     const y = 0
     while (day > 0) {
       const x = parseInt(day * (cell + 1) - (cell))
