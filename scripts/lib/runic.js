@@ -37,11 +37,10 @@ function runic (lines = [], host = null) {
     const wrClass = runes[stash.rune].wrapperClass
     const html = stash.a.reduce((acc, val, id) => {
       const r = runes[stash.rune]
-      const txt = r.fn ? r.fn(stash.a[id]) : stash.a[id]
-      const htm = txt
-      return `${acc}${r.tag ? `<${r.tag} class='${r.class ? r.class : ''}'>${htm}</${r.tag}>` : `${htm}`}`
+      const text = r.fn ? r.fn(stash.a[id]) : stash.a[id]
+      return `${acc}${r.tag ? `<${r.tag} class='${r.class ? r.class : ''}'>${text.template(host)}</${r.tag}>` : `${text}`}`
     }, '')
-    return wr ? `${acc}<${wr} class='${wrClass || ''}'>${html}</${wr}>` : `${acc}${html}`
+    return wr ? `${acc}<${wr} class='${wrClass || ''}'>${html.template(host)}</${wr}>` : `${acc}${html}`
   }
 
   // Templates
@@ -53,7 +52,7 @@ function runic (lines = [], host = null) {
     const source = parts[2]
     const link = parts[3]
     return `
-      ${text.length > 1 ? `<p class='text'>${text}</p>` : ''}
+      ${text.length > 1 ? `<p class='text'>${text.template(host)}</p>` : ''}
       ${author ? `<p class='attrib'>${author}${source && link ? `, ${link.toLink(source)}` : source ? `, <b>${source}</b>` : ''}</p>` : ''}`
   }
 

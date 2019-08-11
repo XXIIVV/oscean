@@ -112,7 +112,7 @@
         (concat "<li class='" (if (eq a:name res:name) "active") "'>" (link a:name) "</li>"))))))
   (def __directory 
     (wrap (concat __stem __children) "ul" "directory"))
-  (dom:set-html _sidebar (concat __date __links __directory))))
+  (dom:set-html _sidebar (concat __date __directory __links))))
 
 (defn display (q) (
   (def res 
@@ -124,8 +124,8 @@
   (wait 0.1 (λ ()
     ((display-photo res)
       (display-glyph res)
-      (display-main res)
       (display-sidebar res)
+      (display-main res)
       (wait 0.1 (λ () 
         (set-class dom:body (concat "ready " res:theme))))
       )))

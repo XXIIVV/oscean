@@ -83,7 +83,7 @@ function Term (name, data) {
   }
 
   this.body = () => {
-    return `${runic(this.data.BODY, this)}`.template(this)
+    return `${runic(this.data.BODY, this)}`
   }
 
   this._photo = () => {

@@ -357,7 +357,6 @@ function Library (host) {
   }
 
   // Monsters, TODO migrate to lisp, omg..
-
   // Lietal TODO placeholders
 
   this.lien = (q) => {
@@ -666,6 +665,10 @@ function Library (host) {
     close: (q) => {
       document.getElementById('terminal').className = ''
       return ``
+    },
+
+    viz: (logs) => {
+      return `${new ActivityViz(logs)}`
     },
 
     rss: () => {
