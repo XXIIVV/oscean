@@ -18,8 +18,8 @@
 (defn set-theme (pixels) (
   (if 
     (gt (dom:get-lum pixels) 170)
-    (set-class _header "light")
-    (set-class _header "dark"))))
+    (dom:set-class _header "light")
+    (dom:set-class _header "dark"))))
 
 (defn display-photo (res) (
   (if 
@@ -33,17 +33,21 @@
     (concat "media/diary/" photo-log:pict ".jpg"))
   (if 
     photo-log 
-    (set-class _title "visible") 
-    (set-class _title "hidden"))
+    (dom:set-class _title "visible") 
+    (dom:set-class _title "hidden"))
+  (debug "a")
   (dom:set-html _title 
     (concat (link "Journal" photo-log:name) " — " (photo-log:time)))
+  (debug "b")
   (if
     photo-log 
     (dom:get-pixels photo-path 0.1 set-theme)
-    (set-class _header "light"))
+    (dom:set-class _header "light"))
+  (debug "c")
   (if photo-log
-    (del-class _header "no_photo")
-    (add-class _header "no_photo"))
+    (dom:del-class _header "no_photo")
+    (dom:add-class _header "no_photo"))
+  (debug "d")
   (if 
     photo-log
     (dom:set-html _photo (concat "<media id='media' style='background-image: url(" photo-path ")'></media>"))
@@ -76,8 +80,8 @@
         (wrap (concat similar-text pull-request-text) "p"))))
   (if 
     (eq __portal "")
-    (set-class _portal "hidden")
-    (set-class _portal "visible"))
+    (dom:set-class _portal "hidden")
+    (dom:set-class _portal "visible"))
   (dom:set-html _portal (res:_portal))
   (dom:set-html _content (concat _head _body))))
 
@@ -119,7 +123,7 @@
     (database:find q))
   (dom:set-title (concat "XXIIVV — " (tc res:name)))
   (dom:set-hash res:name)
-  (set-class dom:body (concat "loading " res:theme))
+  (dom:set-class dom:body (concat "loading " res:theme))
   (dom:scroll 0)
   (wait 0.1 (λ ()
     ((display-photo res)
@@ -127,14 +131,14 @@
       (display-sidebar res)
       (display-main res)
       (wait 0.1 (λ () 
-        (set-class dom:body (concat "ready " res:theme))))
+        (dom:set-class dom:body (concat "ready " res:theme))))
       )))
   ))
 
 ; repl
 
 (defn run-repl (q) (
-  (set-class _terminal "active")
+  (dom:set-class _terminal "active")
   (dom:set-html _termhand (concat (arvelie) " " (neralie) " " q (link "(services:close)" "close" "right")))
   (dom:set-html _termview (interpreter:run (replace q "%20" " ")))))
 
@@ -158,7 +162,7 @@
     (goto (tunnel e "target" "value")))
   (if 
     (eq e:key "Escape") 
-    (set-class _terminal ""))))
+    (dom:set-class _terminal ""))))
 
 (dom:bind _search "keydown" search)
 

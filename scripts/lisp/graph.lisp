@@ -1,7 +1,7 @@
 'use strict'; PROJECTS.graph = `
 ; In the real world, it didn’t matter if I was there or not.
 ; When I realized that, I was no longer afraid of losing my body.
-(set-class dom:body "loading")
+(dom:set-class dom:body "loading")
 (def _terminal (dom:create "terminal"))
 (def _termhand (dom:create "termhand"))
 (def _termview (dom:create "termview" "textarea"))
