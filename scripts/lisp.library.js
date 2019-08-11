@@ -667,8 +667,14 @@ function Library (host) {
       return ``
     },
 
-    viz: (logs) => {
+    'activity-viz': (logs) => {
       return `${new ActivityViz(logs)}`
+    },
+    'bar-viz': (logs) => {
+      return `${new BarViz(logs)}`
+    },
+    'balance-viz': (logs) => {
+      return `${new BalanceViz(logs)}`
     },
 
     rss: () => {
