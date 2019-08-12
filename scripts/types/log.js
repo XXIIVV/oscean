@@ -25,7 +25,7 @@ function Log (data = { code: '-400' }) {
   this.tasks = [
     ['idle', 'session', 'audio experiment', 'rehersal', 'draft', 'composition', 'sound design', 'mastering', 'audio release', 'performance' ],
     ['idle', 'screening', 'visual experiment', 'storyboard', 'sketch', 'editing', 'graphic design', 'rendering', 'visual release', 'showcase' ],
-    ['idle', 'exploration', 'code experiment', 'maintenance', 'prototype', 'planning', 'interaction design', 'updating', 'software release', 'talk' ]
+    ['idle', 'exploration', 'code experiment', 'maintenance', 'planning', 'prototype', 'interaction design', 'updating', 'software release', 'talk' ]
   ]
   this.task = this.tasks[this.sc - 1] ? this.tasks[this.sc - 1][this.ch] : 'travel'
 
