@@ -35,19 +35,15 @@
     photo-log 
     (dom:set-class _title "visible") 
     (dom:set-class _title "hidden"))
-  (debug "a")
   (dom:set-html _title 
     (concat (link "Journal" photo-log:name) " — " (photo-log:time)))
-  (debug "b")
   (if
     photo-log 
     (dom:get-pixels photo-path 0.1 set-theme)
     (dom:set-class _header "light"))
-  (debug "c")
   (if photo-log
     (dom:del-class _header "no_photo")
     (dom:add-class _header "no_photo"))
-  (debug "d")
   (if 
     photo-log
     (dom:set-html _photo (concat "<media id='media' style='background-image: url(" photo-path ")'></media>"))

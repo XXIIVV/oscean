@@ -115,7 +115,11 @@ function __onlyPhotos (log) {
 }
 
 function __onlyProjects (term) {
-  return term.logs.length > 10 && (term.span.to.offset - term.span.from.offset) > 300
+  return term.logs.length > 20 && (term.span.to.offset - term.span.from.offset) > 300
+}
+
+function __onlyReleasedProjects (term) {
+  return term.logs.length > 30 && (term.span.to.offset - term.span.from.offset) > 100 && term.span.release
 }
 
 function __onlyOnce (log, id, logs) {

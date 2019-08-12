@@ -57,6 +57,17 @@ function Entry (name, data) {
     return null
   }
 
+  this.status = () => {
+    if (!this.span.from || !this.span.to) { return 'Unknown' }
+    if (this.span.to.offset < -365) {
+      return this.span.release ? 'complete' : 'inactive'
+    }
+    if (this.span.to.offset > -365) {
+      return this.span.release ? `maintained` : `active`
+    }
+    return 'unknown'
+  }
+
   this.hasTag = function (str) {
     const target = str.toLowerCase().replace(/ /g, '_').trim()
     return this.tags.indexOf(target) > -1

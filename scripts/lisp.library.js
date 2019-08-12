@@ -523,6 +523,7 @@ function Library (host) {
     help: (q) => {
       return 'Available commands:\n\n' + plainTable(Object.keys(this.services))
     },
+
     close: (q) => {
       document.getElementById('terminal').className = ''
     },
@@ -533,10 +534,6 @@ function Library (host) {
       const logs = this.database.select('horaire').filter(__onlyEvents).filter(__onlyThisDay)
       if (logs.length < 1) { return `There were no past events on this date.` }
       return `<b>On This Day</b>, on ${timeAgo(logs[0].time, 14)}, ${logs[0].host.name.toTitleCase()} — ${logs[0].name}.`
-    },
-
-    task: (q) => {
-      return `${new Log({ code: '-' + q }).task}`
     },
 
     next: (q) => {
@@ -603,21 +600,10 @@ function Library (host) {
       return plainTable(orphans, 2, 3)
     },
 
-    projectStatus: (project) => {
-      if (project.span.to.offset < -365) {
-        return project.span.release ? 'Complete' : 'Inactive'
-      }
-      if (project.span.to.offset > -365) {
-        return project.span.release ? `Updated ${timeAgo(project.span.to)}` : `Active`
-      }
-      return 'Unknown'
-    },
-
-    tracker: (q) => {
-      const projects = Object.values(this.database.select('lexicon')).filter(__onlyProjects).sort(__byRecentLog).reverse()
+    tracker: (projects) => {
       let html = ''
       let bounds = { from: null, to: null }
-      for (const project of projects) {
+      for (const project of projects.sort(__byRecentLog).reverse()) {
         bounds.from = !bounds.from || project.span.from.offset < bounds.from.offset ? project.span.from : bounds.from
         bounds.to = !bounds.to || project.span.to.offset > bounds.to.offset ? project.span.to : bounds.to
       }
@@ -630,7 +616,7 @@ function Library (host) {
         const b = (1 - (project.span.to.offset / bounds.from.offset)) * 100
         const c = project.span.release ? (1 - (project.span.release.offset / bounds.from.offset)) * 100 : 0
         html += `
-        <li class='${!project.span.release ? 'unreleased' : ''}'><a>${project.name.toTitleCase()}</a> <span>${this.services.projectStatus(project)}</span>
+        <li class='${!project.span.release ? 'unreleased' : ''}'><a>${project.name.toTitleCase()}</a> <span>${project.status()}</span>
           <div class='progress'>
             <div class='bar' style='width:${(b - a).toFixed(2)}%;left:${a.toFixed(2)}%'></div>
             <div class='maintenance' style='width:${b - c}%; left:${c}%; ${!project.span.release ? 'display:none' : ''}'></div>
@@ -660,11 +646,6 @@ function Library (host) {
         return 'You must allow notifications.'
       }
       return 'You have not allowed notifications.'
-    },
-
-    close: (q) => {
-      document.getElementById('terminal').className = ''
-      return ``
     },
 
     'activity-viz': (logs) => {
@@ -716,10 +697,6 @@ function Library (host) {
   ${makeRssItems(logs)}
 </channel>
 </rss>`.toEntities()
-    },
-
-    unknown: (q) => {
-      return `Unknown command <i>${q}</i>, type <i>help</i> to see available commands.`
     }
   }
 }
