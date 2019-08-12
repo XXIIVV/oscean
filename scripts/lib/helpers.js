@@ -71,7 +71,7 @@ function plainTable (arr, pad = 2, cols = 4) {
 // Horaire Filters
 
 function __onlyPast (log) {
-  return log.time.offset < 0
+  return log.time.offset <= 0
 }
 
 function __onlyFuture (log) {
@@ -87,7 +87,7 @@ function __onlyPast60 (log) {
 }
 
 function __onlyPast365 (log) {
-  return log.time.offset < 0 && log.time.offset > -365
+  return log.time.offset <= 0 && log.time.offset > -365
 }
 
 function __onlyLast (log) {

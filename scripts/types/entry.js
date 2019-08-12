@@ -63,7 +63,7 @@ function Entry (name, data) {
       return this.span.release ? 'complete' : 'inactive'
     }
     if (this.span.to.offset > -365) {
-      return this.span.release ? `maintained` : `active`
+      return this.span.release ? `maintenance` : `development`
     }
     return 'unknown'
   }

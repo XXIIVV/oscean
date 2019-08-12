@@ -496,7 +496,7 @@ function Library (host) {
         log.host = tables.lexicon[index]
         tables.lexicon[index].logs.push(log)
         // Span
-        if (log.time.offset < 0) {
+        if (log.time.offset <= 0) {
           tables.lexicon[index].span.from = log.time
           if (!tables.lexicon[index].span.to) {
             tables.lexicon[index].span.to = log.time
