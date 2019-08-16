@@ -57,7 +57,7 @@ function Library (host) {
     return `${new Arvelie(q).toGregorian()}`
   }
 
-  gtoa: (q) => {
+  this.gtoa = (q) => {
     return !isNaN(new Date(q)) ? `${new Date(q).toArvelie()}` : 'Invalid Date'
   }
 
