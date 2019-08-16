@@ -3,25 +3,25 @@
 function Yletaodeta (yleta) {
   this.yleta = yleta.toLowerCase()
 
-  this.template = function (glyph_id, seg_id, grid, w, h, thickness) {
+  this.template = function (glyph_id, segId, grid, w, h, thickness) {
     let offset = glyph_id * (w + (thickness + 1))
     let rect = { w: w, h: h }
-    let angle = grid === 3 && seg_id > 0 || grid === 4 ? 0.25 : 0.75
+    let angle = grid === 3 && segId > 0 || grid === 4 ? 0.25 : 0.75
 
     if (grid === 1) {
       rect = { x: offset, y: 0, w: w, h: h }
     } else if (grid === 2) {
-      if (seg_id === 0) { rect = { x: offset, y: 0, w: (w), h: (h / 2) } }
-      if (seg_id === 1) { rect = { x: offset, y: (h / 2), w: (w), h: (h / 2) } }
+      if (segId === 0) { rect = { x: offset, y: 0, w: (w), h: (h / 2) } }
+      if (segId === 1) { rect = { x: offset, y: (h / 2), w: (w), h: (h / 2) } }
     } else if (grid === 3) {
-      if (seg_id === 0) { rect = { x: offset, y: 0, w: (w), h: (h / 2) } }
-      if (seg_id === 1) { rect = { x: offset, y: (h / 2), w: (w / 2), h: (h / 2) } }
-      if (seg_id === 2) { rect = { x: offset + (w / 2), y: (h / 2), w: (w / 2), h: (h / 2) } }
+      if (segId === 0) { rect = { x: offset, y: 0, w: (w), h: (h / 2) } }
+      if (segId === 1) { rect = { x: offset, y: (h / 2), w: (w / 2), h: (h / 2) } }
+      if (segId === 2) { rect = { x: offset + (w / 2), y: (h / 2), w: (w / 2), h: (h / 2) } }
     } else if (grid === 4) {
-      if (seg_id === 0) { rect = { x: offset, y: 0, w: (w / 2), h: (h / 2) } }
-      if (seg_id === 1) { rect = { x: offset + (w / 2), y: 0, w: (w / 2), h: (h / 2) } }
-      if (seg_id === 2) { rect = { x: offset, y: (h / 2), w: (w / 2), h: (h / 2) } }
-      if (seg_id === 3) { rect = { x: offset + (w / 2), y: (h / 2), w: (w / 2), h: (h / 2) } }
+      if (segId === 0) { rect = { x: offset, y: 0, w: (w / 2), h: (h / 2) } }
+      if (segId === 1) { rect = { x: offset + (w / 2), y: 0, w: (w / 2), h: (h / 2) } }
+      if (segId === 2) { rect = { x: offset, y: (h / 2), w: (w / 2), h: (h / 2) } }
+      if (segId === 3) { rect = { x: offset + (w / 2), y: (h / 2), w: (w / 2), h: (h / 2) } }
     } else {
       console.warn('Unknown grid', grid)
     }

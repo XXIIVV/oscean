@@ -289,7 +289,7 @@ function Library (host) {
   }
 
   this.DATE = (item, id, arr) => {
-    return `${arr[id - 1] && item.time.y != arr[id - 1].time.y ? `<li class='head'>20${item.time.y}</li>` : ''}<li style='${item.time.offset > 0 ? 'color:#aaa' : ''}'>${item.term.toLink(item.name)} <span title='${item.time}'>${timeAgo(item.time, 60)}</span></li>`
+    return `${arr[id - 1] && item.time.y !== arr[id - 1].time.y ? `<li class='head'>20${item.time.y}</li>` : ''}<li style='${item.time.offset > 0 ? 'color:#aaa' : ''}'>${item.term.toLink(item.name)} <span title='${item.time}'>${timeAgo(item.time, 60)}</span></li>`
   }
 
   // Math
