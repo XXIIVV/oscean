@@ -53,7 +53,7 @@ function Library (host) {
     return `${new Arvelie()}`
   }
 
-  atog: (q) => {
+  this.atog = (q) => {
     return `${new Arvelie(q).toGregorian()}`
   }
 
