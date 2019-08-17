@@ -16,19 +16,24 @@ function Horaire (logs) {
     h.sectors[log.sector] = h.sectors[log.sector] ? h.sectors[log.sector] + log.fh : log.fh
   }
 
+  const ph = h.chs / h.fhs
+  const sector = sortHash(h.sectors)[0][0]
   const balance = (1 - ((Math.abs(3.3333 - (h.sectors.audio / logs.length)) + Math.abs(3.3333 - h.sectors.visual / logs.length) + Math.abs(3.3333 - h.sectors.research / logs.length)) / 13.3333)) * 100
 
   return {
-    range: range,
+    range,
+    sector,
     // Raw
     fhs: h.fhs,
     chs: h.chs,
     osc: h.osc,
     // Average
+    ph,
     fh: h.fhs / logs.length, // Stamina
     ch: h.chs / logs.length, // Focus
     os: h.osc / logs.length, // Balance
     // Collections
+    sector: sector,
     sectors: h.sectors,
     tasks: h.tasks,
     terms: h.terms,

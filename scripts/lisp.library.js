@@ -30,7 +30,7 @@ function Library (host) {
       return new Date(g)
     },
     iso: (g) => {
-      new Date(g).toISOString()
+      return (g ? new Date(g) : new Date()).toISOString()
     }
   }
 
@@ -588,7 +588,6 @@ function Library (host) {
       let orphans = []
       const lexicon = this.database.select('lexicon')
       for (const id in lexicon) {
-        console.log(id, lexicon)
         const links = lexicon[id].outgoing()
         for (const link of links) {
           index[link] = index[link] ? index[link] + 1 : 1
@@ -607,24 +606,8 @@ function Library (host) {
         bounds.from = !bounds.from || project.span.from.offset < bounds.from.offset ? project.span.from : bounds.from
         bounds.to = !bounds.to || project.span.to.offset > bounds.to.offset ? project.span.to : bounds.to
       }
-      let lastYear = null
       for (const project of projects) {
-        if (lastYear && project.span.to.y !== lastYear) {
-          html += `<li class='head'>20${project.span.to.y}</li>`
-        }
-        const a = (1 - (project.span.from.offset / bounds.from.offset)) * 100
-        const b = (1 - (project.span.to.offset / bounds.from.offset)) * 100
-        const c = project.span.release ? (1 - (project.span.release.offset / bounds.from.offset)) * 100 : 0
-        html += `
-        <li class='${!project.span.release ? 'unreleased' : ''}'><a>${project.name.toTitleCase()}</a> <span>${project.status()}</span>
-          <div class='progress'>
-            <div class='bar' style='width:${(b - a).toFixed(2)}%;left:${a.toFixed(2)}%'></div>
-            <div class='maintenance' style='width:${b - c}%; left:${c}%; ${!project.span.release ? 'display:none' : ''}'></div>
-            <div class='release' style='left:${c}%; ${!project.span.release ? 'display:none' : ''}'></div>
-            <div class='to' style='left:${b}%'></div>
-          </div>
-        </li>`
-        lastYear = project.span.to.y
+        html += project.horaire()
       }
       return `<ul class='tracker'>${html}</ul>`
     },

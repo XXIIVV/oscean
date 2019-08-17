@@ -104,7 +104,7 @@ function ActivityViz (logs) {
 function BarViz (logs) {
   Viz.call(this, logs, -365 * 10, 0)
 
-  function parse (logs, parts = 51) {
+  function distribute (logs, parts = 51) {
     const limit = logs[logs.length - 1].time.offset * -1
     const h = {}
     for (const id in logs) {
@@ -125,7 +125,7 @@ function BarViz (logs) {
   }
 
   this.draw = function () {
-    const segments = parse(this.logs)
+    const segments = distribute(this.logs)
     const cell = 12
     const mod = 0.16
     return Object.keys(segments).reduce((acc, val, id) => {
@@ -213,4 +213,57 @@ function BalanceViz (logs) {
   }
 
   function clamp (v, min, max) { return v < min ? min : v > max ? max : v }
+}
+
+function HoraireViz (logs) {
+  const w = 200
+  const h = 30
+  const end = new Date() // 5 years ago
+  const start = new Date(new Date() - (31536000 * 1000 * 5)) // 5 years ago
+  const offset = Math.ceil((new Date(2009) - new Date()) / 86400000)
+  function distribute (logs, parts = 51) {
+    const limit = logs[logs.length - 1].time.offset * -1
+    const h = {}
+    for (const id in logs) {
+      const log = logs[id]
+      const ratio = (log.time.date - start) / (end - start)
+      if (ratio < 0) { continue }
+      const pos = ratio * parts
+      const share = (pos - Math.floor(pos))
+      const low = Math.floor(pos)
+      const high = Math.ceil(pos)
+      const value = log.fh * log.ch
+      if (!h[low]) { h[low] = 0 }
+      if (!h[high]) { h[high] = 0 }
+      h[low] += value * (1 - share)
+      h[high] += value * share
+    }
+    return h
+  }
+
+  this.draw = function () {
+    const segments = distribute(logs)
+    let html = ''
+    let prev = 0
+    let max = Math.max(...Object.values(segments))
+    const real = []
+    for (let i = 0; i < 52; i++) {
+      const x = i * (w / 52) + 2
+      const v = !isNaN(segments[i]) ? segments[i] : 0
+      real.push((1 - (v / max)) * h)
+    }
+    for (const i in real) {
+      const x = parseInt(i) * (w / 52) + 2
+      const y = real[i]
+      const before = !isNaN(real[i - 1]) ? real[i - 1] : h
+      const after = !isNaN(real[i + 1]) ? real[i + 1] : h
+      const soften = ((y + before + after) / 3) - 4
+      html += `${x},${soften} `
+    }
+    return `<svg style='width:${w}px; height: ${h}px'><polyline points="${html}"/></svg>`
+  }
+
+  this.toString = function () {
+    return this.draw()
+  }
 }

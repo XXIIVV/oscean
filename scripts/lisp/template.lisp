@@ -56,7 +56,8 @@
     (res:_portal))
   (if 
     (is:real res:data)
-    (def _body (res:body))
+    (def _body 
+      (concat (res:body) (res:horaire)))
     (
       (def similar-terms
         (similars (uc res:name) (keys database:index)))
