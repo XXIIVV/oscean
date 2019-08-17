@@ -232,7 +232,7 @@ function HoraireViz (logs) {
       const share = (pos - Math.floor(pos))
       const low = Math.floor(pos)
       const high = Math.ceil(pos)
-      const value = log.fh * log.ch
+      const value = log.ch/log.fh
       if (!h[low]) { h[low] = 0 }
       if (!h[high]) { h[high] = 0 }
       h[low] += value * (1 - share)
