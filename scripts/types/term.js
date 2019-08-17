@@ -101,6 +101,17 @@ function Term (name, data) {
     return `<h2>${this.name.toTitleCase()}</h2><h4>${this.bref}</h4>${photo === true ? this._photo() : ''}${this.body()}`
   }
 
+  this.toEntry = () => {
+    const h = new Horaire(this.activity())
+    return `<div class='entry'>
+      <svg data-goto='${this.name}' class="icon"><path transform="scale(0.15) translate(20,20)" d="${this.glyph()}"></path></svg>
+      <div class='head'>
+        <div class='details'>${this.name.toTitleCase().toLink()}<span class='time'><b>${this.status()}</b>, ${this.span.to.ago()}</span></div>
+        <div class='bref'>${new HoraireViz(this.activity()).toString(200, 40)}</div>
+      </div>
+    </div>`
+  }
+
   // Checks
 
   if (!this.data.UNDE) { console.warn('Term', `Missing .UNDE, for ${this.name}.`) }

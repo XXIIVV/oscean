@@ -23,6 +23,8 @@ function Horaire (logs) {
   return {
     range,
     sector,
+    balance,
+    length: logs.length,
     // Raw
     fhs: h.fhs,
     chs: h.chs,
@@ -36,8 +38,6 @@ function Horaire (logs) {
     sector: sector,
     sectors: h.sectors,
     tasks: h.tasks,
-    terms: h.terms,
-    // Compiled
-    balance: balance
+    terms: h.terms
   }
 }

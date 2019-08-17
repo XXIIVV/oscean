@@ -608,7 +608,7 @@ function Library (host) {
       }
       for (const project of projects) {
         const h = new Horaire(project.logs)
-        html += `<li>${project.name.toTitleCase().toLink()} <span style='color:#777'>${h.ph.toFixed(2)}</span> ${project.horaire(52)}</li>`
+        html += project.toEntry()
       }
       return `<ul class='tracker'>${html}</ul>`
     },

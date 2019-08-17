@@ -217,7 +217,6 @@ function BalanceViz (logs) {
 
 function HoraireViz (logs) {
   const w = 160
-  const h = 20
   const end = new Date() // 5 years ago
   const start = new Date(new Date() - (31536000 * 1000 * 5)) // 5 years ago
   const offset = Math.ceil((new Date(2009) - new Date()) / 86400000)
@@ -241,7 +240,7 @@ function HoraireViz (logs) {
     return h
   }
 
-  this.toString = function (parts = 28) {
+  this.toString = function (parts = 28, height = 20) {
     const segments = distribute(logs, parts)
     let html = ''
     let prev = 0
@@ -249,16 +248,16 @@ function HoraireViz (logs) {
     const real = []
     for (let i = 0; i < parts; i++) {
       const v = !isNaN(segments[i]) ? segments[i] : 0
-      real.push((1 - (v / max)) * h)
+      real.push((1 - (v / max)) * height)
     }
     for (const i in real) {
       const x = (parseInt(i) * 3) + 2
       const y = real[i]
-      const before = !isNaN(real[i - 1]) ? real[i - 1] : h
-      const after = !isNaN(real[i + 1]) ? real[i + 1] : h
+      const before = !isNaN(real[i - 1]) ? real[i - 1] : height
+      const after = !isNaN(real[i + 1]) ? real[i + 1] : height
       const soften = ((y + before + after) / 3)
-      html += `M${x},${h} L${x},${soften} `
+      html += `M${x},${height} L${x},${parseInt(soften)} `
     }
-    return `<svg class='horaire' style='width:${parts * 3}px; height: ${h + 4}px'><path d="${html}"/></svg>`
+    return `<svg class='horaire' style='width:${parts * 3}px; height: ${height + 4}px'><path d="${html}"/></svg>`
   }
 }
