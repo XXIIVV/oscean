@@ -216,12 +216,12 @@ function BalanceViz (logs) {
 }
 
 function HoraireViz (logs) {
-  const w = 200
-  const h = 30
+  const w = 160
+  const h = 20
   const end = new Date() // 5 years ago
   const start = new Date(new Date() - (31536000 * 1000 * 5)) // 5 years ago
   const offset = Math.ceil((new Date(2009) - new Date()) / 86400000)
-  function distribute (logs, parts = 51) {
+  function distribute (logs, parts) {
     const limit = logs[logs.length - 1].time.offset * -1
     const h = {}
     for (const id in logs) {
@@ -232,7 +232,7 @@ function HoraireViz (logs) {
       const share = (pos - Math.floor(pos))
       const low = Math.floor(pos)
       const high = Math.ceil(pos)
-      const value = log.ch/log.fh
+      const value = log.ch / log.fh
       if (!h[low]) { h[low] = 0 }
       if (!h[high]) { h[high] = 0 }
       h[low] += value * (1 - share)
@@ -241,29 +241,24 @@ function HoraireViz (logs) {
     return h
   }
 
-  this.draw = function () {
-    const segments = distribute(logs)
+  this.toString = function (parts = 28) {
+    const segments = distribute(logs, parts)
     let html = ''
     let prev = 0
     let max = Math.max(...Object.values(segments))
     const real = []
-    for (let i = 0; i < 52; i++) {
-      const x = i * (w / 52) + 2
+    for (let i = 0; i < parts; i++) {
       const v = !isNaN(segments[i]) ? segments[i] : 0
       real.push((1 - (v / max)) * h)
     }
     for (const i in real) {
-      const x = parseInt(i) * (w / 52) + 2
+      const x = (parseInt(i) * 3) + 2
       const y = real[i]
       const before = !isNaN(real[i - 1]) ? real[i - 1] : h
       const after = !isNaN(real[i + 1]) ? real[i + 1] : h
-      const soften = ((y + before + after) / 3) - 4
-      html += `${x},${soften} `
+      const soften = ((y + before + after) / 3)
+      html += `M${x},${h} L${x},${soften} `
     }
-    return `<svg style='width:${w}px; height: ${h}px'><polyline points="${html}"/></svg>`
-  }
-
-  this.toString = function () {
-    return this.draw()
+    return `<svg class='horaire' style='width:${parts * 3}px; height: ${h + 4}px'><path d="${html}"/></svg>`
   }
 }

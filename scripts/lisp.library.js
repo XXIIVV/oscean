@@ -607,7 +607,8 @@ function Library (host) {
         bounds.to = !bounds.to || project.span.to.offset > bounds.to.offset ? project.span.to : bounds.to
       }
       for (const project of projects) {
-        html += project.horaire()
+        const h = new Horaire(project.logs)
+        html += `<li>${project.name.toTitleCase().toLink()} <span style='color:#777'>${h.ph.toFixed(2)}</span> ${project.horaire(52)}</li>`
       }
       return `<ul class='tracker'>${html}</ul>`
     },

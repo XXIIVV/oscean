@@ -57,10 +57,8 @@ function Entry (name, data) {
     return null
   }
 
-  this.horaire = () => {
-    const h = new Horaire(this.activity())
-    const v = new HoraireViz(this.activity())
-    return this.span.to ? `<div class='horaire'><span><b class='bg_${h.sector}'>${'horaire'.toLink(h.ph.toFixed(2), 'horaire')}</b> ${this.name.toTitleCase().toLink()} <span class='date'>Updated ${this.span.to ? this.span.to.ago() : ''}</span></span> ${v}</div>` : ''
+  this.horaire = (parts = 28) => {
+    return this.span.to ? 'Horaire'.toLink(new HoraireViz(this.activity()).toString(parts)) : ''
   }
 
   this.status = () => {
