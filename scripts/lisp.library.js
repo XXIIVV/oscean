@@ -31,6 +31,9 @@ function Library (host) {
     },
     iso: (g) => {
       return (g ? new Date(g) : new Date()).toISOString()
+    },
+    'years-since': (q = '1986-03-22') => {
+      return ((new Date() - new Date(q)) / 31557600000)
     }
   }
 
@@ -165,6 +168,10 @@ function Library (host) {
 
   this.pry = (arr, name) => {
     return arr.map((val) => { return val[name] })
+  }
+
+  this['pry-method'] = (arr, name, param) => {
+    return arr.map((val) => { return val[name](param) })
   }
 
   this.uniq = (arr) => {
@@ -533,7 +540,7 @@ function Library (host) {
       const a = []
       const logs = this.database.select('horaire').filter(__onlyEvents).filter(__onlyThisDay)
       if (logs.length < 1) { return `There were no past events on this date.` }
-      return `<b>On This Day</b>, on ${timeAgo(logs[0].time, 14)}, ${logs[0].host.name.toTitleCase()} — ${logs[0].name}.`
+      return `On This Day, on ${timeAgo(logs[0].time, 14)}, ${logs[0].host.name.toTitleCase()} — ${logs[0].name}.`
     },
 
     next: (q) => {
@@ -549,10 +556,6 @@ function Library (host) {
         available += 1
       }
       return `There are no available diary IDs under 999.`
-    },
-
-    age: (q) => {
-      return ((new Date() - new Date('1986-03-22')) / 31557600000)
     },
 
     walk: (q) => {
@@ -571,7 +574,7 @@ function Library (host) {
     progress: (q) => {
       const score = { ratings: 0, entries: 0 }
       const lexicon = this.database.select('lexicon')
-      for (const id in exicon) {
+      for (const id in lexicon) {
         score.ratings += lexicon[id].rating()
         score.entries += 1
       }
@@ -597,20 +600,6 @@ function Library (host) {
         if (!index[key]) { orphans.push(key.toLowerCase()) }
       }
       return plainTable(orphans, 2, 3)
-    },
-
-    tracker: (projects) => {
-      let html = ''
-      let bounds = { from: null, to: null }
-      for (const project of projects.sort(__byRecentLog).reverse()) {
-        bounds.from = !bounds.from || project.span.from.offset < bounds.from.offset ? project.span.from : bounds.from
-        bounds.to = !bounds.to || project.span.to.offset > bounds.to.offset ? project.span.to : bounds.to
-      }
-      for (const project of projects) {
-        const h = new Horaire(project.logs)
-        html += project.toEntry()
-      }
-      return `<ul class='tracker'>${html}</ul>`
     },
 
     pomodoro: (q) => {

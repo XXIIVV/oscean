@@ -220,6 +220,7 @@ function HoraireViz (logs) {
   const end = new Date() // 5 years ago
   const start = new Date(new Date() - (31536000 * 1000 * 5)) // 5 years ago
   const offset = Math.ceil((new Date(2009) - new Date()) / 86400000)
+
   function distribute (logs, parts) {
     const limit = logs[logs.length - 1].time.offset * -1
     const h = {}
