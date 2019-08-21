@@ -547,6 +547,21 @@ function Library (host) {
       return `On This Day, on ${timeAgo(logs[0].time, 14)}, ${logs[0].host.name.toTitleCase()} — ${logs[0].name}.`
     },
 
+    forecast: (q) => {
+      const forecast = new Forecast(this.database.select('horaire'))
+      return `${forecast.fh}fh of ${forecast.sector} ${forecast.task}`
+    },
+
+    'activity-viz': (logs) => {
+      return `${new ActivityViz(logs)}`
+    },
+    'bar-viz': (logs) => {
+      return `${new BarViz(logs)}`
+    },
+    'balance-viz': (logs) => {
+      return `${new BalanceViz(logs)}`
+    },
+
     next: (q) => {
       const used = []
       for (const log of this.database.select('horaire')) {
@@ -585,11 +600,6 @@ function Library (host) {
       return ((score.ratings / score.entries) * 100)
     },
 
-    forecast: (q) => {
-      const forecast = new Forecast(this.database.select('horaire'))
-      return `${forecast.fh}fh of ${forecast.sector} ${forecast.task}`
-    },
-
     orphans: (q) => {
       let index = {}
       let orphans = []
@@ -614,7 +624,6 @@ function Library (host) {
         setTimeout(() => {
           const body = `The pomodoro has ended at ${neralie()}.`
           new Notification('Oscean', { body, icon: 'media/icon/notification.jpg' })
-          Ø('terminal').push('pomodoro', body)
         }, 20 * 86.4 * 1000)
         return `The pomodoro has started at ${neralie()}.`
       }
@@ -623,16 +632,6 @@ function Library (host) {
         return 'You must allow notifications.'
       }
       return 'You have not allowed notifications.'
-    },
-
-    'activity-viz': (logs) => {
-      return `${new ActivityViz(logs)}`
-    },
-    'bar-viz': (logs) => {
-      return `${new BarViz(logs)}`
-    },
-    'balance-viz': (logs) => {
-      return `${new BalanceViz(logs)}`
     },
 
     static: () => {
@@ -654,8 +653,7 @@ function Library (host) {
       const logs = this.database.select('horaire').filter(__onlyPast60).filter(__onlyPhotos)
       function makeRssItems (logs) {
         let html = ''
-        for (const id in logs) {
-          const log = logs[id]
+        for (const log of logs) {
           html += `
   <item>
     <title>${log.term} — ${log.name}</title>
