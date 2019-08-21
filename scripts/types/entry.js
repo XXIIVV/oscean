@@ -49,10 +49,6 @@ function Entry (name, data) {
     return null
   }
 
-  this.hasTag = function () {
-    return false
-  }
-
   this.photo = function () {
     return null
   }

@@ -122,6 +122,10 @@ function __onlyReleasedProjects (term) {
   return __onlyProjects(term) && (term.span.to.offset - term.span.from.offset) > 100 && term.span.release
 }
 
+function __onlyNotSpecial (term) {
+  return !term.hasTag('special')
+}
+
 function __onlyOnce (log, id, logs) {
   for (const i in logs) {
     if (log.pict || log.isEvent) { return true }

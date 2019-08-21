@@ -635,6 +635,21 @@ function Library (host) {
       return `${new BalanceViz(logs)}`
     },
 
+    static: () => {
+      const terms = Object.values(this.database.select('lexicon')).filter(__onlyNotSpecial)
+      return `
+<!DOCTYPE html>
+  <html lang='en'>
+  <head>
+    <meta charset='utf-8'>
+    <title>Oscean — Static</title>
+  </head>
+  <body>
+  ${terms.reduce((acc, item) => { return `${acc}${item._static()}` }, '')}
+  </body>
+</html>`
+    },
+
     rss: () => {
       const logs = this.database.select('horaire').filter(__onlyPast60).filter(__onlyPhotos)
       function makeRssItems (logs) {

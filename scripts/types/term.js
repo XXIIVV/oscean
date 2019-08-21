@@ -90,6 +90,14 @@ function Term (name, data) {
     return this.photo() ? this.name.toLink(`<img src="media/diary/${this.photo().pict}.jpg"/>`) : ''
   }
 
+  this._static = () => {
+    return `
+    <h2 id='${this.name.toUrl()}'>${this.name.toTitleCase()}</h2>
+    <h3>${this.bref}</h3>
+    ${runic(this.data.BODY.filter((item) => { return item.substr(0, 1) !== 'λ' && item.substr(0, 1) !== '%' && item.substr(0, 1) !== '>' }), this)}
+    ${this.links ? '<ul>' + Object.values(this.links).reduce((acc, item) => { return `${acc}<li><a href='${item}'>${item}</a></li>` }, '') + '</ul>' : ''}\n\n`
+  }
+
   this.outgoing = () => {
     const body = [this.data.BREF].concat(this.data.BODY).join('')
     const links = body.split('{(link "').map((item) => { return item.split('"')[0].toUpperCase() })
