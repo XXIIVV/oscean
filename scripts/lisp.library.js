@@ -646,7 +646,7 @@ function Library (host) {
   <body>
   ${terms.reduce((acc, item) => { return `${acc}${item._static()}` }, '')}
   </body>
-</html>`
+</html>`.trim()
     },
 
     rss: () => {
