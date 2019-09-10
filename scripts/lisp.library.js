@@ -454,7 +454,7 @@ function Library (host) {
   this.database = {
     index: {},
     tables: {},
-    'create': (name, parser, type) => {
+    'create-table': (name, parser, type) => {
       const time = performance.now()
       this.database.tables[name] = parser(DATABASE[name], type)
       console.info(`Created table ${name}, in ${(performance.now() - time).toFixed(2)}ms.`)

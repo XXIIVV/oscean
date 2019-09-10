@@ -2,9 +2,9 @@
 
 ; database, mostly magic until I finish migrating.
 
-(database:create "glossary" Indental List)
-(database:create "horaire" Tablatal Log)
-(database:create "lexicon" Indental Term)
+(database:create-table "glossary" Indental List)
+(database:create-table "horaire" Tablatal Log)
+(database:create-table "lexicon" Indental Term)
 (database:create-index)
 (database:map)
 
