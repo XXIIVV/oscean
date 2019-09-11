@@ -31,11 +31,11 @@ function Viz (logs, from, to, showDetails = true) {
     const sum = horaire.sectors.audio + horaire.sectors.visual + horaire.sectors.research
 
     return `
-    <rect class="audio" x="${cell * 0}" y="105" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
+    <rect class="bg_audio" x="${cell * 0}" y="105" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
     <text x='${(cell + 1) * 2}' y='115' style='text-anchor:start'>Audio ${_perc(horaire.sectors.audio, sum)}%</text>
-    <rect class="visual" x="${(cell + 1) * 9}" y="105" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
+    <rect class="bg_visual" x="${(cell + 1) * 9}" y="105" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
     <text x='${(cell + 1) * 11}' y='115' style='text-anchor:start'>Visual ${_perc(horaire.sectors.visual, sum)}%</text>
-    <rect class="research" x="${(cell + 1) * 18}" y="105" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
+    <rect class="bg_research" x="${(cell + 1) * 18}" y="105" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
     <text x='${(cell + 1) * 20}' y='115' style='text-anchor:start'>Research ${_perc(horaire.sectors.research, sum)}%</text>
     <text x='675' y='115' style='text-anchor:end'>${horaire.fhs.toFixed(0)} Hours</text>`
   }
@@ -91,7 +91,7 @@ function ActivityViz (logs) {
         const y = parseInt(day * (cell + 1))
         const offset = (365 - (week * 7) - (day + 1)) * -1
         const log = data[offset + 1]
-        html += log && log.sector ? `<rect class='${log.sector} ${log.time.offset === 0 ? 'today' : ''}' x='${x}' y='${y}' width='${cell}' height='${cell}' rx="2" ry="2" title='${log.time}' data-goto='${log.term}'></rect>` : `<rect class='missing ${day === 6 && week === 51 ? 'today' : ''}' x='${x}' y='${y}' width='${cell}' height='${cell}' rx="2" ry="2"></rect>`
+        html += log && log.sector ? `<rect class='bg_${log.sector} ${log.isEvent ? 'event' : ''}' x='${x}' y='${y}' width='${cell}' height='${cell}' rx="2" ry="2" title='${log.time}' data-goto='${log.term}'></rect>` : `<rect class='missing ${day === 6 && week === 51 ? 'today' : ''}' x='${x}' y='${y}' width='${cell}' height='${cell}' rx="2" ry="2"></rect>`
         day += 1
       }
       week += 1
@@ -138,9 +138,9 @@ function BarViz (logs) {
       const research_h = clamp(seg.visual * mod, 4, 100)
       const research_y = (research_h + visual_y) + 0.5
       return `${acc}
-      <rect class='audio' x='${x}' y='${125 - audio_y}' width='${cell}' height='${audio_h}' rx="2" ry="2"></rect>
-      <rect class='visual' x='${x}' y='${125 - visual_y}' width='${cell}' height='${visual_h}' rx="2" ry="2"></rect>
-      <rect class='research' x='${x}' y='${125 - research_y}' width='${cell}' height='${research_h}' rx="2" ry="2"></rect>`
+      <rect class='bg_audio' x='${x}' y='${125 - audio_y}' width='${cell}' height='${audio_h}' rx="2" ry="2"></rect>
+      <rect class='bg_visual' x='${x}' y='${125 - visual_y}' width='${cell}' height='${visual_h}' rx="2" ry="2"></rect>
+      <rect class='bg_research' x='${x}' y='${125 - research_y}' width='${cell}' height='${research_h}' rx="2" ry="2"></rect>`
     }, '')
   }
 
@@ -183,9 +183,9 @@ function BalanceViz (logs) {
       const research_h = 89 - audio_h - visual_h
       const research_y = (audio_h + visual_h) + 1
       return `${acc}
-      <rect class='audio' x='${x}' y='${audio_y}' width='${cell}' height='${audio_h}' rx="2" ry="2"></rect>
-      <rect class='visual' x='${x}' y='${visual_y}' width='${cell}' height='${visual_h}' rx="2" ry="2"></rect>
-      <rect class='research' x='${x}' y='${research_y}' width='${cell}' height='${research_h}' rx="2" ry="2"></rect>`
+      <rect class='bg_audio' x='${x}' y='${audio_y}' width='${cell}' height='${audio_h}' rx="2" ry="2"></rect>
+      <rect class='bg_visual' x='${x}' y='${visual_y}' width='${cell}' height='${visual_h}' rx="2" ry="2"></rect>
+      <rect class='bg_research' x='${x}' y='${research_y}' width='${cell}' height='${research_h}' rx="2" ry="2"></rect>`
     }, '')
   }
 
