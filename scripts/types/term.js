@@ -87,7 +87,7 @@ function Term (name, data) {
   }
 
   this._photo = () => {
-    return this.photo() ? this.name.toLink(`<img src="media/diary/${this.photo().pict}.jpg"/>`) : ''
+    return this.photo() ? this.name.toLink(`<img src='media/diary/${this.photo().pict}.jpg' loading='lazy'/>`) : ''
   }
 
   this._static = () => {

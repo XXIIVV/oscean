@@ -41,7 +41,7 @@ function Log (data = { code: '-400' }) {
         <div class='details'>${this.term.toLink(this.term, 'topic')} ${this.name && !this.isEvent ? ` — <span class='name' data-goto='${this.name}'>${this.name}</span>` : ''} <span class='time' data-goto='${this.time}'><b>${this.task}</b>, ${timeAgo(this.time, 14)}</span></div>
         <div class='bref'>${this.isEvent ? this.name : this.host ? this.host.bref : ''}</div>
       </div>
-      ${this.pict ? `<img src='media/diary/${this.pict}.jpg' data-goto='${this.term}'/>` : ''}
+      ${this.pict ? `<img src='media/diary/${this.pict}.jpg' data-goto='${this.term}' loading='lazy'/>` : ''}
     </div>` : ''
   }
 

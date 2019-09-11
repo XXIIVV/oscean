@@ -280,11 +280,11 @@ function Library (host) {
   }
 
   this.PHOTO = (item) => {
-    return this.host.photo() && this.host.photo().pict !== item.pict ? item.name.toLink(`<img title="${item.name}" src="media/diary/${item.pict}.jpg"/>`) : ''
+    return this.host.photo() && this.host.photo().pict !== item.pict ? item.name.toLink(`<img src='media/diary/${item.pict}.jpg' title='${item.name}' loading='lazy'/>`) : ''
   }
 
   this.GALLERY = (item) => {
-    return `${item.photo() ? item.name.toLink(`<img title="${item.name}" src="media/diary/${item.photo().pict}.jpg"/>`) : ''}<h2>${item.name.toTitleCase()}</h2><h4>${item.bref}</h4>`.template(item)
+    return `${item.photo() ? item.name.toLink(`<img src='media/diary/${item.photo().pict}.jpg' title='${item.name}' loading='lazy'/>`) : ''}<h2>${item.name.toTitleCase()}</h2><h4>${item.bref}</h4>`.template(item)
   }
 
   this.LIST = (item) => {
