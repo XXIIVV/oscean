@@ -5,87 +5,6 @@ function Library (host) {
   // Composition: Design programs to be connected to other programs.
   // Parsimony: Write a big program only when it is clear by demonstration that nothing else will do.
 
-  // Custom
-
-  this.require = (name) => {
-    return window[name]
-  }
-
-  this.on = {
-    click: (fn) => {
-      BINDINGS.click = fn
-    },
-    start: (fn) => {
-      BINDINGS.start = fn
-    },
-    search: (fn) => {
-      BINDINGS.search = fn
-    },
-    change: (fn) => {
-      BINDINGS.change = fn
-    }
-  }
-
-  this.time = {
-    now: () => {
-      return Date.now()
-    },
-    new: (g) => {
-      return new Date(g)
-    },
-    iso: (g) => {
-      return (g ? new Date(g) : new Date()).toISOString()
-    },
-    'years-since': (q = '1986-03-22') => {
-      return ((new Date() - new Date(q)) / 31557600000)
-    }
-  }
-
-  this.host = host
-  this.document = document
-  this.location = document.location
-  this.Tablatal = tablatal
-  this.Indental = indental
-  this.Log = Log
-  this.Term = Term
-  this.List = List
-  this.js = window
-  this.projects = PROJECTS
-
-  this.neralie = () => {
-    return `${new Neralie()}`
-  }
-
-  this.arvelie = () => {
-    return `${new Arvelie()}`
-  }
-
-  this.atog = (q) => {
-    return `${new Arvelie(q).toGregorian()}`
-  }
-
-  this.gtoa = (q) => {
-    return !isNaN(new Date(q)) ? `${new Date(q).toArvelie()}` : 'Invalid Date'
-  }
-
-  this.debug = (arg) => {
-    console.log(arg)
-  }
-
-  this.wait = (s, fn) => {
-    setTimeout(fn, s * 1000)
-  }
-
-  this.perf = (id, fn) => {
-    const time = performance.now()
-    fn()
-    console.info(`Completed ${id}, in ${(performance.now() - time).toFixed(2)}ms.`)
-  }
-
-  this.test = (name, a, b) => {
-    return `${name} ${`${a}` === `${b}` ? 'OK' : `FAILED [${a}] [${b}]`} \n`
-  }
-
   // str
 
   this.substr = (str, from, len) => {
@@ -105,7 +24,7 @@ function Library (host) {
   }
 
   this.tc = (str) => {
-    return `${str}`.toTitleCase()
+    return `${str}`.toLowerCase().split(' ').map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join(' ')
   }
 
   this.uc = (str) => {
@@ -265,44 +184,6 @@ function Library (host) {
     return null
   }
 
-  // Templating
-
-  this.link = (target = this.host.name.toTitleCase(), name, cl = '') => {
-    return target.toLink(name, cl)
-  }
-
-  this.template = (items, t) => {
-    return items.map((val, id, arr) => { return `${t(val, id, arr)}` }).join('')
-  }
-
-  this.INDEX = (item) => {
-    return `<h3>{(link "${item.name.toTitleCase()}")}</h3><h4>${item.bref}</h4><ul class='bullet'>${item.children.reduce((acc, term) => { return `${acc}<li>${term.bref}</li>`.template(term) }, '')}</ul>`.template(item)
-  }
-
-  this.PHOTO = (item) => {
-    return this.host.photo() && this.host.photo().pict !== item.pict ? item.name.toLink(`<img src='media/diary/${item.pict}.jpg' title='${item.name}' loading='lazy'/>`) : ''
-  }
-
-  this.GALLERY = (item) => {
-    return `${item.photo() ? item.name.toLink(`<img src='media/diary/${item.photo().pict}.jpg' title='${item.name}' loading='lazy'/>`) : ''}<h2>${item.name.toTitleCase()}</h2><h4>${item.bref}</h4>`.template(item)
-  }
-
-  this.LIST = (item) => {
-    return `<li>${item.bref}</li>`.template(item)
-  }
-
-  this.FULL = (item) => {
-    return item.toString(true).template(item)
-  }
-
-  this.SPAN = (item) => {
-    return item.logs.length > 10 && item.span.from && item.span.to ? `<li>${item.name.toTitleCase().toLink()} ${item.span.from}—${item.span.to}</li>` : ''
-  }
-
-  this.DATE = (item, id, arr) => {
-    return `${arr[id - 1] && item.time.y !== arr[id - 1].time.y ? `<li class='head'>20${item.time.y}</li>` : ''}<li style='${item.time.offset > 0 ? 'color:#aaa' : ''}'>${item.term.toLink(item.name)} <span title='${item.time}'>${timeAgo(item.time, 60)}</span></li>`
-  }
-
   // Math
 
   this.add = (...args) => { // Adds values.
@@ -348,34 +229,6 @@ function Library (host) {
 
   this.fix = (...items) => {
     return items[0].toFixed(items[1])
-  }
-
-  // Misc
-
-  this.is = {
-    null: (q) => {
-      return q === undefined || q === null
-    },
-    real: (q) => {
-      return !this.is.null(q)
-    },
-    false: (q) => {
-      return q === false
-    },
-    true: (q) => {
-      return !this.is.false(q)
-    }
-  }
-
-  // Monsters, TODO migrate to lisp, omg..
-  // Lietal TODO placeholders
-
-  this.lien = (q) => {
-    return ''
-  }
-
-  this.enli = (q) => {
-    return ''
   }
 
   this.dom = {
@@ -528,6 +381,149 @@ function Library (host) {
       }
       console.info(`Mapped ${tables.horaire.length} logs, ${count.events} events, and ${count.diaries} diaries to ${Object.keys(tables.lexicon).length} terms, in ${(performance.now() - time).toFixed(2)}ms.`)
     }
+  }
+
+  // Custom
+
+  this.on = {
+    click: (fn) => {
+      BINDINGS.click = fn
+    },
+    start: (fn) => {
+      BINDINGS.start = fn
+    },
+    search: (fn) => {
+      BINDINGS.search = fn
+    },
+    change: (fn) => {
+      BINDINGS.change = fn
+    }
+  }
+
+  this.time = {
+    now: () => {
+      return Date.now()
+    },
+    new: (g) => {
+      return new Date(g)
+    },
+    iso: (g) => {
+      return (g ? new Date(g) : new Date()).toISOString()
+    },
+    'years-since': (q = '1986-03-22') => {
+      return ((new Date() - new Date(q)) / 31557600000)
+    }
+  }
+
+  this.host = host
+  this.document = document
+  this.location = document.location
+  this.Tablatal = tablatal
+  this.Indental = indental
+  this.Log = Log
+  this.Term = Term
+  this.List = List
+  this.js = window
+  this.projects = PROJECTS
+
+  this.neralie = () => {
+    return `${new Neralie()}`
+  }
+
+  this.arvelie = () => {
+    return `${new Arvelie()}`
+  }
+
+  this.atog = (q) => {
+    return `${new Arvelie(q).toGregorian()}`
+  }
+
+  this.gtoa = (q) => {
+    return !isNaN(new Date(q)) ? `${new Date(q).toArvelie()}` : 'Invalid Date'
+  }
+
+  this.debug = (arg) => {
+    console.log(arg)
+  }
+
+  this.wait = (s, fn) => {
+    setTimeout(fn, s * 1000)
+  }
+
+  this.perf = (id, fn) => {
+    const time = performance.now()
+    fn()
+    console.info(`Completed ${id}, in ${(performance.now() - time).toFixed(2)}ms.`)
+  }
+
+  this.test = (name, a, b) => {
+    return `${name} ${`${a}` === `${b}` ? 'OK' : `FAILED [${a}] [${b}]`} \n`
+  }
+
+  // Templating
+
+  this.link = (target = this.host.name.toTitleCase(), name, cl = '') => {
+    return target.toLink(name, cl)
+  }
+
+  this.template = (items, t) => {
+    return items.map((val, id, arr) => { return `${t(val, id, arr)}` }).join('')
+  }
+
+  this.INDEX = (item) => {
+    return `<h3>{(link "${item.name.toTitleCase()}")}</h3><h4>${item.bref}</h4><ul class='bullet'>${item.children.reduce((acc, term) => { return `${acc}<li>${term.bref}</li>`.template(term) }, '')}</ul>`.template(item)
+  }
+
+  this.PHOTO = (item) => {
+    return this.host.photo() && this.host.photo().pict !== item.pict ? item.name.toLink(`<img src='media/diary/${item.pict}.jpg' title='${item.name}' loading='lazy'/>`) : ''
+  }
+
+  this.GALLERY = (item) => {
+    return `${item.photo() ? item.name.toLink(`<img src='media/diary/${item.photo().pict}.jpg' title='${item.name}' loading='lazy'/>`) : ''}<h2>${item.name.toTitleCase()}</h2><h4>${item.bref}</h4>`.template(item)
+  }
+
+  this.LIST = (item) => {
+    return `<li>${item.bref}</li>`.template(item)
+  }
+
+  this.FULL = (item) => {
+    return item.toString(true).template(item)
+  }
+
+  this.SPAN = (item) => {
+    return item.logs.length > 10 && item.span.from && item.span.to ? `<li>${item.name.toTitleCase().toLink()} ${item.span.from}—${item.span.to}</li>` : ''
+  }
+
+  this.DATE = (item, id, arr) => {
+    return `${arr[id - 1] && item.time.y !== arr[id - 1].time.y ? `<li class='head'>20${item.time.y}</li>` : ''}<li style='${item.time.offset > 0 ? 'color:#aaa' : ''}'>${item.term.toLink(item.name)} <span title='${item.time}'>${timeAgo(item.time, 60)}</span></li>`
+  }
+
+  // Misc
+
+  this.is = {
+    null: (q) => {
+      return q === undefined || q === null
+    },
+    real: (q) => {
+      return !this.is.null(q)
+    },
+    false: (q) => {
+      return q === false
+    },
+    true: (q) => {
+      return !this.is.false(q)
+    }
+  }
+
+  // Monsters, TODO migrate to lisp, omg..
+  // Lietal TODO placeholders
+
+  this.lien = (q) => {
+    return ''
+  }
+
+  this.enli = (q) => {
+    return ''
   }
 
   this.services = {
