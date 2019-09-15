@@ -32,7 +32,7 @@ function Library (host) {
   }
 
   this.cc = (str) => {
-    return `${str}`.substr(0, 1).toUpperCase() + str.substr(1)
+    return `${str}`.substr(0, 1).toUpperCase() + `${str}`.substr(1)
   }
 
   // arr
@@ -423,6 +423,7 @@ function Library (host) {
   this.Log = Log
   this.Term = Term
   this.List = List
+  this.Yleta = Yleta
   this.js = window
   this.projects = PROJECTS
 
@@ -500,6 +501,62 @@ function Library (host) {
 
   // Misc
 
+  this.lietal = {
+    cache: {},
+    create: () => {
+      this.lietal.cache.en = {}
+      this.lietal.cache.li = {}
+      for (const yleta of this.database.select('asulodeta')) {
+        this.lietal.cache.en[yleta.english] = yleta
+        this.lietal.cache.li[yleta.childspeak] = yleta
+      }
+    },
+    adultspeak: (childspeak, vowels = { 'a': 'ä', 'i': 'ï', 'o': 'ö', 'y': 'ÿ' }) => {
+      if (childspeak.length === 2) {
+        return childspeak.substr(1, 1) + childspeak.substr(0, 1)
+      }
+      if (childspeak.length === 6) {
+        return this.lietal.adultspeak(childspeak.substr(0, 2)) + this.lietal.adultspeak(childspeak.substr(2, 4))
+      }
+      if (childspeak.length === 8) {
+        return (this.lietal.adultspeak(childspeak.substr(0, 4)) + this.lietal.adultspeak(childspeak.substr(4, 4))).replace('aa', 'ä').replace('ii', 'ï').replace('oo', 'ö').replace('yy', 'ÿ')
+      }
+      const c1 = childspeak.substr(0, 1)
+      const v1 = childspeak.substr(1, 1)
+      const c2 = childspeak.substr(2, 1)
+      const v2 = childspeak.substr(3, 1)
+      // lili -> lï
+      if (c1 === c2 && v1 === v2) {
+        return vowels[v1] + c1
+      }
+      // lila -> lia
+      if (c1 === c2) {
+        return v1 + c1 + v2
+      }
+      // kala -> käl
+      if (v1 === v2) {
+        return vowels[v1] + c1 + 'e' + c2
+      }
+      return v1 + c1 + 'e' + c2 + v2
+    },
+    enli: (...q) => {
+      if (!this.lietal.cache.en) { this.lietal.create() }
+      let text = ''
+      for (const word of q) {
+        text += this.lietal.cache.en[word] ? this.lietal.cache.en[word].adultspeak + ' ' : '?? '
+      }
+      return text.trim()
+    },
+    lien: (...q) => {
+      if (!this.lietal.cache.en) { this.lietal.create() }
+      let text = ''
+      for (const word of q) {
+        text += this.lietal.cache.li[word] ? this.lietal.cache.li[word].english + ' ' : '?? '
+      }
+      return text.trim()
+    }
+  }
+
   this.is = {
     null: (q) => {
       return q === undefined || q === null
@@ -513,17 +570,6 @@ function Library (host) {
     true: (q) => {
       return !this.is.false(q)
     }
-  }
-
-  // Monsters, TODO migrate to lisp, omg..
-  // Lietal TODO placeholders
-
-  this.lien = (q) => {
-    return ''
-  }
-
-  this.enli = (q) => {
-    return ''
   }
 
   this.services = {
@@ -541,11 +587,6 @@ function Library (host) {
       const logs = this.database.select('horaire').filter(__onlyEvents).filter(__onlyThisDay)
       if (logs.length < 1) { return `There were no past events on this date.` }
       return `On This Day, on ${timeAgo(logs[0].time, 14)}, ${logs[0].host.name.toTitleCase()} — ${logs[0].name}.`
-    },
-
-    forecast: (q) => {
-      const forecast = new Forecast(this.database.select('horaire'))
-      return `${forecast.fh}fh of ${forecast.sector} ${forecast.task}`
     },
 
     'activity-viz': (logs) => {

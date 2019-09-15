@@ -2,6 +2,7 @@
 
 ; database, mostly magic until I finish migrating.
 
+(database:create-table "asulodeta" Tablatal Yleta)
 (database:create-table "glossary" Indental List)
 (database:create-table "horaire" Tablatal Log)
 (database:create-table "lexicon" Indental Term)

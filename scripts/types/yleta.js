@@ -10,7 +10,6 @@ function Yleta (data = {}) {
   this.type = this.childspeak.substr(0, 2)
   this.key = this.childspeak.substr(0, this.childspeak.length - 2)
   this.indexes = [this.name]
-  this.yletaodeta = new Yletaodeta(this.childspeak)
   this.bref = `<b>${this.name.toTitleCase()}</b>${this.name !== this.adultspeak ? `, or ${this.adultspeak}, ` : ''} is the ${'Lietal'.toLink()} word for \"${this.english}\" in English.`
 
   this.parts = function (size = 2) {
