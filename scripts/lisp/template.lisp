@@ -2,12 +2,12 @@
 
 ; database, mostly magic until I finish migrating.
 
-(database:create-table "asulodeta" Tablatal Yleta)
-(database:create-table "glossary" Indental List)
-(database:create-table "horaire" Tablatal Log)
-(database:create-table "lexicon" Indental Term)
+(database:create-table "asulodeta" (require "tablatal") (require "Yleta"))
+(database:create-table "glossary" (require "indental") (require "List"))
+(database:create-table "horaire" (require "tablatal") (require "Log"))
+(database:create-table "lexicon" (require "indental") (require "Term"))
 (database:create-index)
-(database:map)
+(database:create-map)
 
 ; display
 
@@ -137,7 +137,7 @@
 
 (defn run-repl (q) (
   (dom:set-class _terminal "active")
-  (dom:set-html _termhand (concat (arvelie) " " (neralie) " " q (link "(services:close)" "close" "right")))
+  (dom:set-html _termhand (concat (arvelie) " " (neralie) " " q))
   (dom:set-html _termview (interpreter:run (replace q "%20" " ")))))
 
 ; goto

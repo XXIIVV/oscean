@@ -5,6 +5,8 @@ function Library (host) {
   // Composition: Design programs to be connected to other programs.
   // Parsimony: Write a big program only when it is clear by demonstration that nothing else will do.
 
+  this.host = host
+
   // str
 
   this.substr = (str, from, len) => {
@@ -231,6 +233,101 @@ function Library (host) {
     return items[0].toFixed(items[1])
   }
 
+  // Javascript
+
+  this.require = (name, params) => {
+    return window[name]
+  }
+
+  this.new = (name, params) => {
+    return new window[name](params)
+  }
+
+  this.debug = (arg) => {
+    console.log(arg)
+  }
+
+  this.wait = (s, fn) => {
+    setTimeout(fn, s * 1000)
+  }
+
+  this.perf = (id, fn) => {
+    const time = performance.now()
+    fn()
+    console.info(`Completed ${id}, in ${(performance.now() - time).toFixed(2)}ms.`)
+  }
+
+  this.test = (name, a, b) => {
+    return `${name} ${`${a}` === `${b}` ? 'OK' : `FAILED [${a}] [${b}]`} \n`
+  }
+
+  // Time
+
+  this.time = {
+    now: () => {
+      return Date.now()
+    },
+    new: (g) => {
+      return new Date(g)
+    },
+    iso: (g) => {
+      return (g ? new Date(g) : new Date()).toISOString()
+    },
+    'years-since': (q = '1986-03-22') => {
+      return ((new Date() - new Date(q)) / 31557600000)
+    }
+  }
+
+  this.is = {
+    null: (q) => {
+      return q === undefined || q === null
+    },
+    real: (q) => {
+      return !this.is.null(q)
+    },
+    false: (q) => {
+      return q === false
+    },
+    true: (q) => {
+      return !this.is.false(q)
+    }
+  }
+
+  // Special
+
+  this.neralie = () => {
+    return `${new Neralie()}`
+  }
+
+  this.arvelie = () => {
+    return `${new Arvelie()}`
+  }
+
+  this.atog = (q) => {
+    return `${new Arvelie(q).toGregorian()}`
+  }
+
+  this.gtoa = (q) => {
+    return !isNaN(new Date(q)) ? `${new Date(q).toArvelie()}` : 'Invalid Date'
+  }
+
+  this.on = {
+    click: (fn) => {
+      BINDINGS.click = fn
+    },
+    start: (fn) => {
+      BINDINGS.start = fn
+    },
+    search: (fn) => {
+      BINDINGS.search = fn
+    },
+    change: (fn) => {
+      BINDINGS.change = fn
+    }
+  }
+
+  // Dom
+
   this.dom = {
     body: document.body,
     create: (id, type = 'div', cl = '') => {
@@ -305,34 +402,24 @@ function Library (host) {
   }
 
   this.database = {
-    index: {},
+    index: null,
     tables: {},
     'create-table': (name, parser, type) => {
-      const time = performance.now()
       this.database.tables[name] = parser(DATABASE[name], type)
-      console.info(`Created table ${name}, in ${(performance.now() - time).toFixed(2)}ms.`)
     },
     'create-index': () => {
       const time = performance.now()
-      for (const id in this.database.tables) {
-        const table = this.database.tables[id]
-        for (const id in table) {
-          const entry = table[id]
-          for (const id in entry.indexes) {
-            const key = entry.indexes[id].toUpperCase()
-            this.database.index[key] = entry
+      this.database.index = {}
+      for (const table of Object.values(this.database.tables)) {
+        for (const entry of Object.values(table)) {
+          for (const key of entry.indexes) {
+            this.database.index[key.toUpperCase()] = entry
           }
         }
       }
       console.info(`Indexed ${Object.keys(this.database.index).length} searchables, in ${(performance.now() - time).toFixed(2)}ms.`)
     },
-    'select': (name) => {
-      return this.database.tables[name]
-    },
-    find: (q) => {
-      return this.database.index[q.toUpperCase()] ? this.database.index[q.toUpperCase()] : new Entry(q)
-    },
-    map: () => {
+    'create-map': () => {
       const time = performance.now()
       const count = { links: 0, diaries: 0, events: 0 }
       const tables = this.database.tables
@@ -380,91 +467,22 @@ function Library (host) {
         count.diaries += 1
       }
       console.info(`Mapped ${tables.horaire.length} logs, ${count.events} events, and ${count.diaries} diaries to ${Object.keys(tables.lexicon).length} terms, in ${(performance.now() - time).toFixed(2)}ms.`)
+    },
+    select: (name) => {
+      return this.database.tables[name]
+    },
+    find: (q) => {
+      return this.database.index && this.database.index[q.toUpperCase()] ? this.database.index[q.toUpperCase()] : new Entry(q)
     }
-  }
-
-  // Custom
-
-  this.on = {
-    click: (fn) => {
-      BINDINGS.click = fn
-    },
-    start: (fn) => {
-      BINDINGS.start = fn
-    },
-    search: (fn) => {
-      BINDINGS.search = fn
-    },
-    change: (fn) => {
-      BINDINGS.change = fn
-    }
-  }
-
-  this.time = {
-    now: () => {
-      return Date.now()
-    },
-    new: (g) => {
-      return new Date(g)
-    },
-    iso: (g) => {
-      return (g ? new Date(g) : new Date()).toISOString()
-    },
-    'years-since': (q = '1986-03-22') => {
-      return ((new Date() - new Date(q)) / 31557600000)
-    }
-  }
-
-  this.host = host
-  this.document = document
-  this.location = document.location
-  this.Tablatal = tablatal
-  this.Indental = indental
-  this.Log = Log
-  this.Term = Term
-  this.List = List
-  this.Yleta = Yleta
-  this.js = window
-  this.projects = PROJECTS
-
-  this.neralie = () => {
-    return `${new Neralie()}`
-  }
-
-  this.arvelie = () => {
-    return `${new Arvelie()}`
-  }
-
-  this.atog = (q) => {
-    return `${new Arvelie(q).toGregorian()}`
-  }
-
-  this.gtoa = (q) => {
-    return !isNaN(new Date(q)) ? `${new Date(q).toArvelie()}` : 'Invalid Date'
-  }
-
-  this.debug = (arg) => {
-    console.log(arg)
-  }
-
-  this.wait = (s, fn) => {
-    setTimeout(fn, s * 1000)
-  }
-
-  this.perf = (id, fn) => {
-    const time = performance.now()
-    fn()
-    console.info(`Completed ${id}, in ${(performance.now() - time).toFixed(2)}ms.`)
-  }
-
-  this.test = (name, a, b) => {
-    return `${name} ${`${a}` === `${b}` ? 'OK' : `FAILED [${a}] [${b}]`} \n`
   }
 
   // Templating
 
-  this.link = (target = this.host.name.toTitleCase(), name, cl = '') => {
-    return target.toLink(name, cl)
+  this.link = (target = this.host ? this.host.name.toTitleCase() : '??', name, cl = '') => {
+    if (target.indexOf('//') > -1) { return `<a href='${target}' target='_blank' rel='noreferrer' class='external ${cl}'>${name || target}</a>` }
+    if (target.substr(0, 1) === '(') { return `<a href='#${this}' data-goto='${this}' class='repl ${cl}'>${name || this}</a>` }
+    if (this.database.index && !this.database.find(target).data) { console.warn(`Redlink: ${target} ${host}.`) }
+    return `<a href='#${target.toUrl()}' data-goto='${target.toUrl()}' target='_self' class='local ${cl}'>${name || target}</a>`
   }
 
   this.template = (items, t) => {
@@ -525,16 +543,13 @@ function Library (host) {
       const v1 = childspeak.substr(1, 1)
       const c2 = childspeak.substr(2, 1)
       const v2 = childspeak.substr(3, 1)
-      // lili -> lï
-      if (c1 === c2 && v1 === v2) {
+      if (c1 === c2 && v1 === v2) { // lili -> lï
         return vowels[v1] + c1
       }
-      // lila -> lia
-      if (c1 === c2) {
+      if (c1 === c2) { // lila -> lia
         return v1 + c1 + v2
       }
-      // kala -> käl
-      if (v1 === v2) {
+      if (v1 === v2) { // kala -> käl
         return vowels[v1] + c1 + 'e' + c2
       }
       return v1 + c1 + 'e' + c2 + v2
@@ -543,9 +558,9 @@ function Library (host) {
       if (!this.lietal.cache.en) { this.lietal.create() }
       let text = ''
       for (const word of q) {
-        text += this.lietal.cache.en[word] ? this.lietal.cache.en[word].adultspeak + ' ' : '?? '
+        text += this.lietal.cache.en[word] ? this.lietal.adultspeak(this.lietal.cache.en[word].childspeak) + ' ' : word + ' '
       }
-      return text.trim()
+      return text.trim().replace(/ , /g, ', ')
     },
     lien: (...q) => {
       if (!this.lietal.cache.en) { this.lietal.create() }
@@ -554,21 +569,6 @@ function Library (host) {
         text += this.lietal.cache.li[word] ? this.lietal.cache.li[word].english + ' ' : '?? '
       }
       return text.trim()
-    }
-  }
-
-  this.is = {
-    null: (q) => {
-      return q === undefined || q === null
-    },
-    real: (q) => {
-      return !this.is.null(q)
-    },
-    false: (q) => {
-      return q === false
-    },
-    true: (q) => {
-      return !this.is.false(q)
     }
   }
 
@@ -587,16 +587,6 @@ function Library (host) {
       const logs = this.database.select('horaire').filter(__onlyEvents).filter(__onlyThisDay)
       if (logs.length < 1) { return `There were no past events on this date.` }
       return `On This Day, on ${timeAgo(logs[0].time, 14)}, ${logs[0].host.name.toTitleCase()} — ${logs[0].name}.`
-    },
-
-    'activity-viz': (logs) => {
-      return `${new ActivityViz(logs)}`
-    },
-    'bar-viz': (logs) => {
-      return `${new BarViz(logs)}`
-    },
-    'balance-viz': (logs) => {
-      return `${new BalanceViz(logs)}`
     },
 
     next: (q) => {
