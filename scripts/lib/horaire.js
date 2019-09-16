@@ -6,12 +6,13 @@ function Horaire (logs) {
 
   for (const id in logs) {
     const log = logs[id]
+    const task = log.task()
     // Raw
     h.fhs += log.fh
     h.chs += log.ch
     h.osc += Math.abs(log.fh - log.ch)
     // Collections
-    h.tasks[log.task] = h.tasks[log.task] ? h.tasks[log.task] + log.fh : log.fh
+    h.tasks[task] = h.tasks[task] ? h.tasks[task] + log.fh : log.fh
     h.terms[log.term] = h.terms[log.term] ? h.terms[log.term] + log.fh : log.fh
     h.sectors[log.sector] = h.sectors[log.sector] ? h.sectors[log.sector] + log.fh : log.fh
   }

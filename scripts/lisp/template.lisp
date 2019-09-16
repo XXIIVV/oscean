@@ -90,13 +90,13 @@
         (λ (a) (wrap (link a:1 a:0) "li")))) "ul" "links"))
   (def span-from 
     (if 
-      (gt (len res:diaries) 0) 
-      (tunnel res "span" "from") 
+      (gt (len (res:diaries)) 0) 
+      (tunnel (res:span) "from") 
       (:time (last (database:select "horaire")))))
   (def span-to 
     (if 
-      (gt (len res:diaries) 1) 
-      (tunnel res "span" "to") 
+      (gt (len (res:diaries)) 1) 
+      (tunnel (res:span) "to") 
       (:time (first (database:select "horaire")))))
   (def __date 
     (wrap (concat span-from " — " span-to) "h2"))

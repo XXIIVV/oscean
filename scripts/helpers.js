@@ -107,7 +107,7 @@ function __onlyEvents (log) {
   return log.isEvent
 }
 
-function __onlyPhotos (log) {
+function __onlyDiaries (log) {
   return log.pict !== null
 }
 
@@ -116,11 +116,11 @@ function __onlyProjects (term) {
 }
 
 function __onlyActiveProjects (term) {
-  return __onlyProjects(term) && term.span.to.offset > -365 * 5
+  return __onlyProjects(term) && term.span().to.offset > -365 * 5
 }
 
 function __onlyReleasedProjects (term) {
-  return __onlyProjects(term) && (term.span.to.offset - term.span.from.offset) > 100 && term.span.release
+  return __onlyProjects(term) && (term.span().to.offset - term.span().from.offset) > 100 && term.span().release
 }
 
 function __onlyNotSpecial (term) {
@@ -137,10 +137,14 @@ function __onlyOnce (log, id, logs) {
   return true
 }
 
+function __onlyStaticRunes (line) {
+  return ['λ', '%', '>'].indexOf(line.substr(0, 1)) < 0
+}
+
 // Sorters
 
 function __byRecentLog (a, b) {
-  return a.span.to.offset - b.span.to.offset
+  return a.span().to.offset - b.span().to.offset
 }
 
 // Compare strings
@@ -165,18 +169,4 @@ function similarity (a, b) {
   for (let i = 0; i < a.length; ++i) { val += b.indexOf(a.substr(i)) > -1 ? 1 : 0 }
   for (let i = 0; i < b.length; ++i) { val += a.indexOf(b.substr(i)) > -1 ? 1 : 0 }
   return val
-}
-
-// Date
-
-Date.prototype.doty = function () {
-  const year = this.getFullYear()
-  const start = new Date(year, 0, 0)
-  const diff = (this - start) + ((start.getTimezoneOffset() - this.getTimezoneOffset()) * 60 * 1000)
-  return Math.floor(diff / 86400000)
-}
-
-Date.prototype.offset = function (days) {
-  const date = new Date()
-  return this.setDate(date.getDate() + 1)
 }

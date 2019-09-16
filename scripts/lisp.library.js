@@ -273,6 +273,12 @@ function Library (host) {
     iso: (g) => {
       return (g ? new Date(g) : new Date()).toISOString()
     },
+    doty: () => {
+      const year = this.getFullYear()
+      const start = new Date(year, 0, 0)
+      const diff = (this - start) + ((start.getTimezoneOffset() - this.getTimezoneOffset()) * 60 * 1000)
+      return Math.floor(diff / 86400000)
+    },
     'years-since': (q = '1986-03-22') => {
       return ((new Date() - new Date(q)) / 31557600000)
     }
@@ -421,52 +427,22 @@ function Library (host) {
     },
     'create-map': () => {
       const time = performance.now()
-      const count = { links: 0, diaries: 0, events: 0 }
       const tables = this.database.tables
       // Connect Parents
-      for (const id in tables.lexicon) {
-        const term = tables.lexicon[id]
-        const parent = !term.data.UNDE ? 'HOME' : term.data.UNDE.toUpperCase()
-        if (!tables.lexicon[parent]) { console.warn(`Unknown parent ${parent} for ${term.name}`); continue }
-        term.parent = tables.lexicon[parent]
-      }
-      // Connect children
-      for (const id in tables.lexicon) {
-        const term = tables.lexicon[id]
-        if (!term.parent) { console.warn('Missing parent term', id); continue }
-        const parent = term.parent.name
-        if (!tables.lexicon[parent]) { console.warn('Missing children term', parent); continue }
-        tables.lexicon[parent].children.push(term)
+      for (const term of Object.values(tables.lexicon)) {
+        const parent = tables.lexicon[term.data.UNDE.toUpperCase()]
+        if (!parent) { console.warn(`Unknown parent ${parent.name} for ${term.name}`); continue }
+        term.parent = parent
+        term.parent.children.push(term)
       }
       // Connect Logs
-      for (const id in tables.horaire) {
-        const log = tables.horaire[id]
+      for (const log of tables.horaire) {
         const index = log.term.toUpperCase()
-        if (!log.term) { console.warn(`Empty log at ${log.time}`); continue }
-        if (!tables.lexicon[index]) { console.warn(`Missing log term at ${log.time}`, index); continue }
         log.host = tables.lexicon[index]
-        tables.lexicon[index].logs.push(log)
-        // Span
-        if (log.time.offset <= 0) {
-          tables.lexicon[index].span.from = log.time
-          if (!tables.lexicon[index].span.to) {
-            tables.lexicon[index].span.to = log.time
-          }
-          if (log.ch === 8) {
-            if (tables.lexicon[index].span.release) { console.warn(`Re-released ${log.term} ${log.time} ${tables.lexicon[index].span.release}`) }
-            tables.lexicon[index].span.release = log.time
-          }
-        }
-        if (log.isEvent) {
-          tables.lexicon[index].events.push(log)
-          count.events += 1
-        }
-        if (!log.pict) { continue }
-        if (log.time.offset > 0) { continue }
-        tables.lexicon[index].diaries.push(log)
-        count.diaries += 1
+        if (!log.host) { console.warn(`Missing log host, on ${log.time}`, index); continue }
+        log.host.logs.push(log)
       }
-      console.info(`Mapped ${tables.horaire.length} logs, ${count.events} events, and ${count.diaries} diaries to ${Object.keys(tables.lexicon).length} terms, in ${(performance.now() - time).toFixed(2)}ms.`)
+      console.info(`Mapped ${tables.horaire.length} logs to ${Object.keys(tables.lexicon).length} terms, in ${(performance.now() - time).toFixed(2)}ms.`)
     },
     select: (name) => {
       return this.database.tables[name]
@@ -510,7 +486,8 @@ function Library (host) {
   }
 
   this.SPAN = (item) => {
-    return item.logs.length > 10 && item.span.from && item.span.to ? `<li>${item.name.toTitleCase().toLink()} ${item.span.from}—${item.span.to}</li>` : ''
+    const span = item.span()
+    return item.logs.length > 10 && span.from && span.to ? `<li>${item.name.toTitleCase().toLink()} ${span.from}—${span.to}</li>` : ''
   }
 
   this.DATE = (item, id, arr) => {
@@ -617,32 +594,6 @@ function Library (host) {
       return `Walked ${Object.keys(this.database.index).length} indexes, in ${(performance.now() - totalTime).toFixed(2)}ms.`
     },
 
-    progress: (q) => {
-      const score = { ratings: 0, entries: 0 }
-      const lexicon = this.database.select('lexicon')
-      for (const id in lexicon) {
-        score.ratings += lexicon[id].rating()
-        score.entries += 1
-      }
-      return ((score.ratings / score.entries) * 100)
-    },
-
-    orphans: (q) => {
-      let index = {}
-      let orphans = []
-      const lexicon = this.database.select('lexicon')
-      for (const id in lexicon) {
-        const links = lexicon[id].outgoing()
-        for (const link of links) {
-          index[link] = index[link] ? index[link] + 1 : 1
-        }
-      }
-      for (const key of Object.keys(lexicon)) {
-        if (!index[key]) { orphans.push(key.toLowerCase()) }
-      }
-      return plainTable(orphans, 2, 3)
-    },
-
     pomodoro: (q) => {
       if (!('Notification' in window)) {
         return 'This browser does not support desktop notification'
@@ -671,13 +622,21 @@ function Library (host) {
     <title>Oscean — Static</title>
   </head>
   <body>
-  ${terms.reduce((acc, item) => { return `${acc}${item._static()}` }, '')}
+  ${terms.reduce((acc, term) => {
+    return `${acc}
+    <h2 id='${term.name.toUrl()}'>${term.name.toTitleCase()}</h2>
+    <h3>${term.bref.template(term)}</h3>
+    ${runic(term.data.BODY.filter(__onlyStaticRunes), term).template(term)}
+    ${term.links ? '<ul>' + Object.values(term.links).reduce((acc, item) => {
+    return `${acc}<li><a href='${item}'>${item}</a></li>`
+  }, '') + '</ul>' : ''}`.trim()
+  }, '')}
   </body>
 </html>`.trim()
     },
 
     rss: () => {
-      const logs = this.database.select('horaire').filter(__onlyPast60).filter(__onlyPhotos)
+      const logs = this.database.select('horaire').filter(__onlyPast60).filter(__onlyDiaries)
       function makeRssItems (logs) {
         let html = ''
         for (const log of logs) {

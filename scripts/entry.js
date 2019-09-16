@@ -5,18 +5,14 @@ function Entry (name, data) {
   this.data = data
   this.unde = 'Home'
   this.bref = null
-
   this.view = 'main'
   this.theme = 'noir'
 
   this.indexes = [this.name]
 
-  this.span = { from: null, to: null }
   this.links = []
   this.logs = []
   this.children = []
-  this.diaries = []
-  this.events = []
   this.tags = []
 
   this.activity = function () {
@@ -25,7 +21,7 @@ function Entry (name, data) {
 
   this.head = () => {
     if (name === 'HOME') { return '' }
-    return this.bref ? `<p>${this.bref.template(this)}</p>` : `<p>The term {(bold "${name}")} could not be found.</p>`.template(this)
+    return (this.bref ? `<p>${this.bref}</p>` : `<p>The term {(bold "${name}")} could not be found.</p>`).template(this)
   }
 
   this.body = () => {
@@ -44,30 +40,15 @@ function Entry (name, data) {
     return null
   }
 
-  this._portal = function () {
-    return null
-  }
-
   this.photo = function () {
     return null
   }
 
   this.horaire = (parts = 28) => {
-    if (!this.span.to) { return '' }
+    if (!this.span().to) { return '' }
     const h = new Horaire(this.logs)
     const v = new HoraireViz(this.activity()).toString(parts)
-    return this.span.to ? `<div class='horaire'>${'Horaire'.toLink(v)}<span>${h.ph.toFixed(2)}</span></div>` : ''
-  }
-
-  this.status = () => {
-    if (!this.span.from || !this.span.to) { return 'Unknown' }
-    if (this.span.to.offset < -365) {
-      return this.span.release ? 'complete' : 'inactive'
-    }
-    if (this.span.to.offset > -365) {
-      return this.span.release ? `maintenance` : `development`
-    }
-    return 'unknown'
+    return this.span().to ? `<div class='horaire'>${'Horaire'.toLink(v)}<span>${h.ph.toFixed(2)}</span></div>` : ''
   }
 
   this.hasTag = function (str) {
@@ -78,6 +59,10 @@ function Entry (name, data) {
   this.toString = function () {
     return `<div class='error'>${this.body()}</div>`
   }
+
+  this._portal = function () {
+    return null
+  }
 }
 
 // Log
@@ -85,31 +70,33 @@ function Entry (name, data) {
 function Log (data = { code: '-400' }) {
   Entry.call(this, data.name, data)
 
-  this.host = null
-
-  this.term = data.term ? data.term.toTitleCase() : ''
-  this.text = data.text
+  this.term = data.term
   this.time = data.date ? new Arvelie(data.date) : null
   this.pict = data.pict ? data.pict : null
   this.bref = `A log added on ${this.time} to ${this.term.toLink()}.`
   this.indexes = data.name && this.pict ? [data.name, `${this.pict}`, `${this.time}`] : []
   this.theme = 'noir'
 
+  // Map
+  this.host = null
+
   this.rune = data.code.length > 0 ? data.code.substr(0, 1) : '-'
   this.sc = data.code.length > 1 ? parseInt(data.code.substr(1, 1)) : 0
   this.ch = data.code.length > 2 ? parseInt(data.code.substr(2, 1)) : 0
   this.fh = data.code.length > 3 ? parseInt(data.code.substr(3, 1)) : 0
 
-  this.sector = ['misc', 'audio', 'visual', 'research', 'misc'][this.sc]
+  this.sector = ['misc', 'audio', 'visual', 'research'][this.sc]
   this.featured = this.pict && (this.rune === '!' || this.rune === '+')
   this.isEvent = this.rune === '+'
 
-  this.tasks = [
-    ['idle', 'session', 'audio experiment', 'rehearsal', 'draft', 'composition', 'sound design', 'mastering', 'audio release', 'performance' ],
-    ['idle', 'screening', 'visual experiment', 'storyboard', 'sketch', 'editing', 'graphic design', 'rendering', 'visual release', 'showcase' ],
-    ['idle', 'exploration', 'code experiment', 'maintenance', 'planning', 'prototype', 'interaction design', 'updating', 'software release', 'talk' ]
-  ]
-  this.task = this.tasks[this.sc - 1] ? this.tasks[this.sc - 1][this.ch] : 'travel'
+  this.task = () => {
+    const tasks = [
+      ['idle', 'session', 'audio experiment', 'rehearsal', 'draft', 'composition', 'sound design', 'mastering', 'audio release', 'performance' ],
+      ['idle', 'screening', 'visual experiment', 'storyboard', 'sketch', 'editing', 'graphic design', 'rendering', 'visual release', 'showcase' ],
+      ['idle', 'exploration', 'code experiment', 'maintenance', 'planning', 'prototype', 'interaction design', 'updating', 'software release', 'talk' ]
+    ]
+    return tasks[this.sc - 1] ? tasks[this.sc - 1][this.ch] : 'travel'
+  }
 
   this.photo = () => {
     return this
@@ -120,21 +107,11 @@ function Log (data = { code: '-400' }) {
     <div class='entry log ${this.isEvent ? 'event' : ''}'>
       <svg data-goto='${this.host.name}' class='icon'><path transform="scale(0.15) translate(20,20)" d="${this.host ? this.host.glyph() : ''}"></path></svg>
       <div class='head'>
-        <div class='details'>${this.term.toLink(this.term, 'topic')} ${this.name && !this.isEvent ? ` — <span class='name' data-goto='${this.name}'>${this.name}</span>` : ''} <span class='time' data-goto='${this.time}'><b>${this.task.toTitleCase()}</b>, ${timeAgo(this.time, 14)}</span></div>
+        <div class='details'>${this.term.toLink(this.term, 'topic')} ${this.name && !this.isEvent ? ` — <span class='name' data-goto='${this.name}'>${this.name}</span>` : ''} <span class='time' data-goto='${this.time}'><b>${this.task().toTitleCase()}</b>, ${timeAgo(this.time, 14)}</span></div>
         <div class='bref'>${this.isEvent ? this.name : this.host ? this.host.bref.template(this.host) : ''}</div>
       </div>
       ${this.pict ? `<img src='media/diary/${this.pict}.jpg' data-goto='${this.term}' loading='lazy'/>` : ''}
     </div>` : ''
-  }
-
-  this.toText = () => {
-    if (this.isEvent && this.name !== '') {
-      return `${this.name}`
-    }
-    if (this.pict && this.name !== '') {
-      return `${this.term} ${this.host.parent.name.toTitleCase()} — \"${this.name}\"`
-    }
-    return `${this.term} ${this.host.parent.name.toTitleCase()} ${this.fh}fh ${this.task}`
   }
 
   this.toString = () => {
@@ -148,19 +125,16 @@ function Log (data = { code: '-400' }) {
   if (this.pict !== null && !this.name) { console.warn('Log', `Missing caption: ${this.time}`) }
   if (this.pict === null && this.rune === '!') { console.warn('Log', `Feature without picture: ${this.time}`) }
   if (['+', '-', '!'].indexOf(this.rune) < 0) { console.warn('Log', `Unknown rune: ${data.code}, on ${this.time}.`, data) }
-  if (this.sc > 3 || this.sc === 0 && (this.fh > 0 || this.ch > 0)) { console.warn('Log', `Unknown code: ${data.code}, on ${this.time}.`) }
+  if (this.sc > 3) { console.warn('Log', `Unknown code: ${data.code}, on ${this.time}.`) }
+  if (this.sc === 0 && (this.fh > 0 || this.ch > 0)) { console.warn('Log', `Empty code: ${data.code}, on ${this.time}.`) }
+  if (!this.data.term) { console.warn('Log', `Missing term from lexicon, on ${time.time}.`) }
+  // if (this.data.term !== this.data.term.toTitleCase()) { console.warn('Log', `${this.data.term} is not in title case at ${this.time}.`) }
 }
 
 // Term
 
 function Term (name, data) {
   Entry.call(this, name, data)
-
-  this.parent = null // From Ø('map')
-  this.children = [] // From Ø('map')
-  this.logs = [] // From Ø('map')
-  this.diaries = [] // From Ø('map')
-  this.span = { from: null, to: null }
 
   this.data = data
   this.bref = data.BREF ? data.BREF : ''
@@ -172,6 +146,11 @@ function Term (name, data) {
   this.theme = data.LOOK ? data.LOOK.toLowerCase() : 'blanc'
   this.isPortal = this.tags.indexOf('portal') > -1
 
+  // Map
+  this.parent = null
+  this.children = []
+  this.logs = []
+
   this.glyph = () => {
     if (this.data.ICON) { return this.data.ICON }
     if (this.parent.glyph()) { return this.parent.glyph() }
@@ -179,11 +158,39 @@ function Term (name, data) {
     return null
   }
 
+  this.diaries = () => {
+    return this.logs.filter(__onlyDiaries)
+  }
+
+  this.events = () => {
+    return this.logs.filter(__onlyEvents)
+  }
+
+  this.activity = () => {
+    return sortLogs(this.children.reduce((acc, term) => {
+      return acc.concat(term.logs)
+    }, this.logs))
+  }
+
+  this.span = () => {
+    const h = { from: null, to: null }
+    for (const log of this.logs) {
+      if (!h.from || log.time.offset < h.from.offset) {
+        h.from = log.time
+      }
+      if (!h.to || log.time.to > h.from.to) {
+        h.to = log.time
+      }
+    }
+    return h
+  }
+
   this.photo = () => {
-    for (const id in this.diaries) {
-      const diary = this.diaries[id]
+    const diaries = this.diaries()
+    for (const id in diaries) {
+      const diary = diaries[id]
       if (diary.featured === true && diary.time.offset <= 0) {
-        return this.diaries[id]
+        return diaries[id]
       }
     }
     const logs = this.activity()
@@ -218,22 +225,6 @@ function Term (name, data) {
   }, '')}</ul>`
   }
 
-  this.activity = () => {
-    return sortLogs(this.children.reduce((acc, term) => { return acc.concat(term.logs) }, this.logs))
-  }
-
-  this.rating = () => {
-    const points = {
-      body: this.data.BODY && this.data.BODY.length > 0,
-      logs: this.logs.length > 0,
-      children: this.children.length > 0,
-      photo: this.diaries.length > 0,
-      glyph: this.glyph() !== ''
-    }
-    const score = Object.keys(points).reduce((acc, val) => { return acc + (points[val] ? 1 : 0) }, 0)
-    return score / Object.keys(points).length
-  }
-
   this.body = () => {
     return `${runic(this.data.BODY, this)}`
   }
@@ -242,34 +233,19 @@ function Term (name, data) {
     return this.photo() ? this.name.toLink(`<img src='media/diary/${this.photo().pict}.jpg' loading='lazy'/>`) : ''
   }
 
-  this._static = () => {
-    return `
-    <h2 id='${this.name.toUrl()}'>${this.name.toTitleCase()}</h2>
-    <h3>${this.bref}</h3>
-    ${runic(this.data.BODY.filter((item) => { return item.substr(0, 1) !== 'λ' && item.substr(0, 1) !== '%' && item.substr(0, 1) !== '>' }), this)}
-    ${this.links ? '<ul>' + Object.values(this.links).reduce((acc, item) => { return `${acc}<li><a href='${item}'>${item}</a></li>` }, '') + '</ul>' : ''}\n\n`
-  }
-
-  this.outgoing = () => {
-    const body = [this.data.BREF].concat(this.data.BODY).join('')
-    const links = body.split('{(link "').map((item) => { return item.split('"')[0].toUpperCase() })
-    links.shift()
-    return links.filter((item) => { return item.indexOf('HTTP') < 0 })
-  }
-
-  this.toString = (photo = false) => {
-    return `<h2>${this.name.toTitleCase()}</h2><h4>${this.bref}</h4>${photo === true ? this._photo() : ''}${this.body()}`
-  }
-
   this.toEntry = () => {
     const h = new Horaire(this.activity())
     return `<div class='entry'>
       <svg data-goto='${this.name}' class="icon"><path transform="scale(0.15) translate(20,20)" d="${this.glyph()}"></path></svg>
       <div class='head'>
-        <div class='details'>${this.name.toTitleCase().toLink()}<span class='time'><b>${h.length} logs</b>, updated ${this.span.to.ago()}</span></div>
+        <div class='details'>${this.name.toTitleCase().toLink()}<span class='time'><b>${h.length} logs</b>, updated ${this.span().to.ago()}</span></div>
         <div class='bref'>${new HoraireViz(this.activity()).toString(200, 40)}</div>
       </div>
     </div>`
+  }
+
+  this.toString = (photo = false) => {
+    return `<h2>${this.name.toTitleCase()}</h2><h4>${this.bref}</h4>${photo === true ? this._photo() : ''}${this.body()}`
   }
 
   // Checks
@@ -298,11 +274,11 @@ function Yleta (data = {}) {
   }
 
   this.body = function () {
-    return '??'
+    return `${data.name} is a Lietal word.`
   }
 
   this.toString = function () {
-    return '??'
+    return `<p>${this.body()}</p>`
   }
 }
 
