@@ -12,9 +12,7 @@
 ; display
 
 (defn display-glyph (res) (
-  (if 
-    (res:glyph) 
-    (dom:set-attr _path "d" (res:glyph)))))
+  (dom:set-attr _path "d" (res:glyph))))
 
 (defn set-theme (pixels) (
   (if 
@@ -51,8 +49,6 @@
     (dom:set-html _photo ""))))
 
 (defn display-main (res) (
-  (def _head 
-    (res:head))
   (if 
     (is:real res:data)
     (def _body 
@@ -74,9 +70,7 @@
           (link "https://twitter.com/neauoire" "@neauoire") "."))
       (def _body 
         (wrap (wrap (concat similar-text pull-request-text) "p") "div"))))
-
-  (debug _body)
-  (dom:set-html _content (concat _head _body))))
+  (dom:set-html _content (concat (res:head) _body))))
 
 (defn display-sidebar (res) (
   (def __links 
