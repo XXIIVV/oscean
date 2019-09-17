@@ -73,7 +73,9 @@
           ", or if you think this is an error, please contact " 
           (link "https://twitter.com/neauoire" "@neauoire") "."))
       (def _body 
-        (wrap (concat similar-text pull-request-text) "p"))))
+        (wrap (wrap (concat similar-text pull-request-text) "p") "div"))))
+
+  (debug _body)
   (dom:set-html _content (concat _head _body))))
 
 (defn display-sidebar (res) (
@@ -83,12 +85,12 @@
         (λ (a) (wrap (link a:1 a:0) "li")))) "ul" "links"))
   (def span-from 
     (if 
-      (gt (len (res:diaries)) 0) 
+      (and (gt (len (res:diaries)) 0) (tunnel (res:span) "from")) 
       (tunnel (res:span) "from") 
       (:time (last (database:select "horaire")))))
   (def span-to 
     (if 
-      (gt (len (res:diaries)) 1) 
+      (and (gt (len (res:diaries)) 1) (tunnel (res:span) "to")) 
       (tunnel (res:span) "to") 
       (:time (first (database:select "horaire")))))
   (def __date 

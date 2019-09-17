@@ -15,12 +15,12 @@ function Entry (name, data) {
   this.children = []
   this.tags = []
 
-  this.activity = function () {
-    return []
+  this.glyph = () => {
+    return 'M150,60 A90,90 0 0,1 240,150 A-90,90 0 0,1 150,240 A-90,-90 0 0,1 60,150 A90,-90 0 0,1 150,60 Z'
   }
 
-  this.glyph = function () {
-    return null
+  this.activity = function () {
+    return []
   }
 
   this.portal = function () {
