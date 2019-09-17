@@ -4,6 +4,7 @@
 ; When I realized that, I was no longer afraid of losing my body.
 
 (dom:set-class dom:body "loading")
+
 (def _terminal (dom:create "terminal"))
 (def _termhand (dom:create "termhand"))
 (def _termview (dom:create "termview" "textarea"))
@@ -22,7 +23,6 @@
 (def _core (dom:create "core"))
 (def _sidebar (dom:create "sidebar"))
 (def _content (dom:create "content"))
-(def _portal (dom:create "portal"))
 ; footer
 (def _footer (dom:create "footer"))
 ; set
@@ -52,6 +52,6 @@
 (dom:append _info (_glyph _title))
 (dom:append _menu (_info _logo _search _activity))
 (dom:append _header (_photo _menu))
-(dom:append _core (_sidebar _content _portal))
+(dom:append _core (_sidebar _content))
 (dom:append dom:body (_terminal _header _core _footer))
 `

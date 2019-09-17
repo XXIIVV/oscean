@@ -124,7 +124,7 @@ function __onlyReleasedProjects (term) {
 }
 
 function __onlyNotSpecial (term) {
-  return !term.hasTag('special')
+  return term.tags.indexOf('special') < 0
 }
 
 function __onlyOnce (log, id, logs) {
