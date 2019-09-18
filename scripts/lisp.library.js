@@ -577,7 +577,7 @@ function Library (host) {
           const body = `The pomodoro has ended at ${neralie()}.`
           new Notification('Oscean', { body, icon: 'media/icon/notification.jpg' })
         }, 20 * 86.4 * 1000)
-        return `The pomodoro has started at ${neralie()}.`
+        return `The pomodoro has started at ${neralie()}.\nDo not close this window.`
       }
       if (Notification.permission !== 'denied') {
         Notification.requestPermission().then((permission) => { this.pomodoro(q) })
