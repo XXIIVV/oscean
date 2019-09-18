@@ -462,9 +462,9 @@ function Library (host) {
   }
 
   this.template = (entries, name) => {
-    return entries.map((entry) => {
+    return entries.map((entry, id, arr) => {
       if (!entry.templates[name]) { console.warn(`Unknown ${name} template for ${entry.name}.`) }
-      return `${entry.templates[name]()}`
+      return `${entry.templates[name](id, arr)}`
     }).join('')
   }
 
