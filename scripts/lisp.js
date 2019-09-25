@@ -140,7 +140,7 @@ function Lisp (lib = {}) {
   }
 
   const tokenize = function (input) {
-    const i = input.replace(/^\;.*\n?/gm, '').split('"')
+    const i = input.replace(/^[\s]*\;.*\n?/gm, '').split('"')
     return i.map(function (x, i) {
       return i % 2 === 0 ? x.replace(/\(/g, ' ( ').replace(/\)/g, ' ) ').replace(/\{/g, ' { ').replace(/\}/g, ' } ') : x.replace(/ /g, '!ws!')
     }).join('"').trim().split(/\s+/).map(function (x) { return x.replace(/!ws!/g, ' ') })
