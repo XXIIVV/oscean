@@ -1,12 +1,12 @@
 # Oscean
 
-This is the repository for the [Oscean wiki](http://wiki.xxiivv.com/), see the [on-site documentation](http://wiki.xxiivv.com/About) for more up-to-date details. Oscean is a static _dynamic site_ that uses [LISP](https://github.com/XXIIVV/Lain) as templating and markup language. The database formats are [Indental](https://wiki.xxiivv.com/Indental) and [Tablatal](https://wiki.xxiivv.com/Tablatal), the indental content also uses [Runic](https://wiki.xxiivv.com/Runic) as templating format.
+This is the repository for the [Oscean wiki](http://wiki.xxiivv.com/), see the [on-site documentation](http://wiki.xxiivv.com/About) for more up-to-date details. Oscean is a static _dynamic site_ that uses [LISP](https://github.com/XXIIVV/Lain) as templating and markup language. The database formats are [Indental](https://wiki.xxiivv.com/Indental) and [Tablatal](https://wiki.xxiivv.com/Tablatal), some of the indental content is templated using into [Runic blocks](https://wiki.xxiivv.com/Runic).
 
-The Master Branch is the **live version**, to see active tasks & issues, visit the [Issue Tracker](http://wiki.xxiivv.com/Oscean:tracker).
+The Master Branch is the **live version**.
 
 ## Search Repl
 
-A series of tools are available through the search bar, type `(add 5 6)` to see the resulting `11`, any search query starting with `(` will be interpreted. This is used mostly to perform maintenance tasks such as generating rss(`(services:rss)`), or to test all lexicon entries for broken entries(`(services:walk)`), or to convert Gregorian dates to [Arvelie](http://wiki.xxiivv.com/Arvelie)(`(gtoa 1986-03-22)`), etc..
+A series of tools is available through the search bar, type `(add 5 6)` to see the resulting `11`, lisp queries will be interpreted. This is used mostly to perform maintenance tasks such as generating rss(`(services:rss)`), or to test all lexicon entries for broken entries(`(services:walk)`), or to convert Gregorian dates to [Arvelie](http://wiki.xxiivv.com/Arvelie)(`(gtoa 1986-03-22)`), etc..
 
 ### Run Benchmark
 
