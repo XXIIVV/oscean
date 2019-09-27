@@ -447,8 +447,9 @@ function Library (host) {
     select: (name) => {
       return this.database.tables[name]
     },
-    find: (q) => {
-      return this.database.index && this.database.index[q.toUpperCase()] ? this.database.index[q.toUpperCase()] : new Entry(q)
+    find: (q, from) => {
+      const source = from ? this.database.tables[from] : this.database.index
+      return source && source[q.toUpperCase()] ? source[q.toUpperCase()] : new Entry(q)
     }
   }
 
