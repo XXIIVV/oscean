@@ -95,7 +95,7 @@
       res 
       (either (tunnel res "parent") (database:find "home"))))
   (def __stem 
-    (wrap (link (tunnel navi-stem:parent "name") navi-stem:name) "li" "parent"))
+    (wrap (link (tunnel res:parent "name") navi-stem:name) "li" "parent"))
   (def __children 
     (join (for navi-stem:children 
       (λ (a) (if  

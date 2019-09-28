@@ -11,7 +11,7 @@
 (set dom "add-class" (λ (el cl) ((if (eq (dom:has-class el cl) false) (dom:set-class el (concat (dom:get-class el) " " cl))))))
 (set dom "del-class" (λ (el cl) ((if (eq (dom:has-class el cl) true) (dom:set-class el (replace (dom:get-class el) cl " "))))))
 ; markup tools
-(defn wrap (body tag cl) (concat "<" tag " class='" (if cl cl "") "'>" body "</" tag ">"))
+(defn wrap (body tag cl) (concat "<" tag " " (if cl (concat "class='" cl "'") "") ">" body "</" tag ">"))
 (defn bold (body) (wrap body "b"))
 (defn ital (body) (wrap body "i"))
 (defn code (body) (wrap body "code"))
