@@ -53,7 +53,7 @@ function Entry (name, data) {
       return `<li>${this.host.bref}</li>`.template(this)
     },
     index: () => {
-      return `<h3>{(link "${this.name.toTitleCase()}")}</h3><h4>${this.bref.template(this)}</h4><ul class='bullet'>${this.children.reduce((acc, term) => { return `${acc}<li>${term.bref.template(term)}</li>` }, '')}</ul>`
+      return `<h3>${this.name.toTitleCase()}</h3><h4>${this.bref.template(this)}</h4><ul class='bullet'>${this.children.reduce((acc, term) => { return `${acc}<li>${term.bref.template(term)}</li>` }, '')}</ul>`
     },
     full: () => {
       return this.toString(true).template(this)
