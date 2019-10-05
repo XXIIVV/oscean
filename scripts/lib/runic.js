@@ -4,7 +4,7 @@ function runic (lines = [], host = null) {
   const runes = {
     '&': { tag: 'p' },
     '*': { tag: 'h3' },
-    '+': { tag: 'hs' },
+    '+': { tag: 'h4' },
     '?': { tag: 'div', class: 'notice' },
     '-': { tag: 'li', wrapper: 'ul', wrapperClass: 'bullet' },
     '#': { tag: 'li', wrapper: 'code' },
