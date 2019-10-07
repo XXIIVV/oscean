@@ -47,7 +47,7 @@ function Entry (name, data) {
       return `${p ? this.name.toLink(`<img src='media/diary/${p.pict}.jpg' title='${p.name}' loading='lazy'/>`) : ''}`
     },
     gallery: () => {
-      return `${this.templates.photo()}<h2>${this.name.toTitleCase()}</h2><h4>${this.bref.template(this)}</h4>`.template(this)
+      return `${this.templates.photo()}<h2>${this.name.toTitleCase()}</h2><p>${this.bref.template(this)}</p>`.template(this)
     },
     list: () => {
       return `<li>${this.host.bref}</li>`.template(this)
