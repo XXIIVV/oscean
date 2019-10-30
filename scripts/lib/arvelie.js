@@ -32,7 +32,7 @@ function Arvelie (t = arvelie()) {
   this.ago = function (cap = 9999) {
     const days = this.offset
     if (-days > cap) { return `${this.toString(true)}` }
-    if (days === -1) { return `yesterday` }
+    if (days === -1) { return 'yesterday' }
     if (days === 1) { return 'tomorrow' }
     if (days === 0) { return 'today' }
     if (days < -365) { return `${Math.floor(days / -365)} years ago` }

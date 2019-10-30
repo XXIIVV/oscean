@@ -43,8 +43,9 @@ function Entry (name, data) {
       return `<svg data-goto='${this.host.name}' class='icon'><path transform="scale(0.15) translate(20,20)" d="${this.host.glyph()}"></path></svg>`
     },
     photo: () => {
-      const p = this.photo()
-      return `${p ? this.name.toLink(`<img src='media/diary/${p.pict}.jpg' title='${p.name}' loading='lazy'/>`) : ''}`
+      const headerlog = this.host.photo()
+      const photolog = this.photo()
+      return `${photolog && photolog.pict !== headerlog.pict ? this.name.toLink(`<img src='media/diary/${photolog.pict}.jpg' title='${photolog.name}' loading='lazy'/>`) : ''}`
     },
     gallery: () => {
       return `${this.templates.photo()}<h2>${this.name.toTitleCase()}</h2><p>${this.bref.template(this)}</p>`.template(this)
@@ -106,9 +107,9 @@ function Log (data = { code: '-400' }) {
 
   this.task = () => {
     const tasks = [
-      ['idle', 'session', 'audio experiment', 'rehearsal', 'draft', 'composition', 'sound design', 'mastering', 'audio release', 'performance' ],
-      ['idle', 'screening', 'visual experiment', 'storyboard', 'sketch', 'editing', 'graphic design', 'rendering', 'visual release', 'showcase' ],
-      ['idle', 'exploration', 'code experiment', 'maintenance', 'planning', 'prototype', 'interaction design', 'updating', 'software release', 'talk' ]
+      ['idle', 'session', 'audio experiment', 'rehearsal', 'draft', 'composition', 'sound design', 'mastering', 'audio release', 'performance'],
+      ['idle', 'screening', 'visual experiment', 'storyboard', 'sketch', 'editing', 'graphic design', 'rendering', 'visual release', 'showcase'],
+      ['idle', 'exploration', 'code experiment', 'maintenance', 'planning', 'prototype', 'interaction design', 'updating', 'software release', 'talk']
     ]
     return tasks[this.sc - 1] ? tasks[this.sc - 1][this.ch] : 'travel'
   }
@@ -260,7 +261,7 @@ function Yleta (data = {}) {
   this.type = this.childspeak.substr(0, 2)
   this.key = this.childspeak.substr(0, this.childspeak.length - 2)
   this.indexes = [this.name]
-  this.bref = `??`
+  this.bref = '??'
 
   this.glyph = () => {
     return `M65,155 L65,155 L155,155 M155,65 L155,65 L155,245 M185,155 L185,155 L245,155 M185,185 L185,185 L185,185`

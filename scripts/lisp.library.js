@@ -1,5 +1,7 @@
 'use strict'
 
+/* global performance */
+
 function Library (host) {
   // Modularity: Write simple parts connected by clean interfaces.
   // Composition: Design programs to be connected to other programs.
@@ -481,7 +483,7 @@ function Library (host) {
         this.lietal.cache.li[yleta.childspeak] = yleta
       }
     },
-    adultspeak: (childspeak, vowels = { 'a': 'ä', 'i': 'ï', 'o': 'ö', 'y': 'ÿ' }) => {
+    adultspeak: (childspeak, vowels = { a: 'ä', i: 'ï', o: 'ö', y: 'ÿ' }) => {
       if (childspeak.length === 2) {
         return childspeak.substr(1, 1) + childspeak.substr(0, 1)
       }
@@ -537,7 +539,7 @@ function Library (host) {
       const today = new Date().toArvelie()
       const a = []
       const logs = this.database.select('horaire').filter(__onlyEvents).filter(__onlyThisDay)
-      if (logs.length < 1) { return `There were no past events on this date.` }
+      if (logs.length < 1) { return 'There were no past events on this date.' }
       return `On This Day, on ${timeAgo(logs[0].time, 14)}, ${logs[0].host.name.toTitleCase()} — ${logs[0].name}.`
     },
 
@@ -553,7 +555,7 @@ function Library (host) {
         if (used.indexOf(target) < 0) { return `The next available diary ID is ${target}.` }
         available += 1
       }
-      return `There are no available diary IDs under 999.`
+      return 'There are no available diary IDs under 999.'
     },
 
     walk: (q) => {

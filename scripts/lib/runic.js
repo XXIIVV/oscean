@@ -11,7 +11,7 @@ function runic (lines = [], host = null) {
     '@': { tag: 'div', class: 'quote', fn: quote },
     '|': { tag: 'tr', wrapper: 'table', fn: table },
     '%': { fn: media },
-    'λ': { fn: interpret },
+    λ: { fn: interpret },
     '>': { },
     ';': { }
   }

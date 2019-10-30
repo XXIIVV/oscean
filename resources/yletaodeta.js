@@ -4,9 +4,9 @@ function Yletaodeta (yleta) {
   this.yleta = yleta.toLowerCase()
 
   this.template = function (glyph_id, segId, grid, w, h, thickness) {
-    let offset = glyph_id * (w + (thickness + 1))
+    const offset = glyph_id * (w + (thickness + 1))
     let rect = { w: w, h: h }
-    let angle = grid === 3 && segId > 0 || grid === 4 ? 0.25 : 0.75
+    const angle = grid === 3 && segId > 0 || grid === 4 ? 0.25 : 0.75
 
     if (grid === 1) {
       rect = { x: offset, y: 0, w: w, h: h }
@@ -38,7 +38,7 @@ function Yletaodeta (yleta) {
       BR: { x: rect.x + rect.w, y: rect.y + rect.h },
       TYPE: rect.w === rect.h ? 'square' : rect.w > rect.h ? 'horizontal' : 'vertical'
     }
-    for (let id in t) {
+    for (const id in t) {
       if (id === 'TYPE') { continue }
       t[id] = { x: parseInt(t[id].x), y: parseInt(t[id].y) }
     }
@@ -158,9 +158,9 @@ function Yletaodeta (yleta) {
   this.grid = function (id, yleta, w, h, thickness) {
     let path = ''
     const segs = this.getSegs(yleta)
-    for (let i in segs) {
-      let template = this.template(parseInt(id), parseInt(i), yleta.length / 2, w, h, thickness)
-      let peg = thickness / 2
+    for (const i in segs) {
+      const template = this.template(parseInt(id), parseInt(i), yleta.length / 2, w, h, thickness)
+      const peg = thickness / 2
       path += `M${template.TL.x},${template.TL.y} L${template.TR.x},${template.TR.y} L${template.BR.x},${template.BR.y} L${template.BL.x},${template.BL.y} Z `
       path += `M${template.TC.x},${template.TC.y} L${template.TC.x},${template.TC.y + peg} `
       path += `M${template.BC.x},${template.BC.y} L${template.BC.x},${template.BC.y - peg} `
@@ -173,7 +173,7 @@ function Yletaodeta (yleta) {
   this.glyph = function (id, yleta, w, h, thickness) {
     let path = ''
     const segs = this.getSegs(yleta)
-    for (let i in segs) {
+    for (const i in segs) {
       const seg = segs[i]
       const template = this.template(parseInt(id), parseInt(i), yleta.length / 2, w, h, thickness)
       const consonant = seg.substr(0, 1)

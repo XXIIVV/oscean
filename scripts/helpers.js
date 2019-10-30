@@ -23,7 +23,7 @@ function timeAgo (arvelie, cap = 9999) {
   if (-arvelie.offset > cap) { return `${arvelie}` }
   if (arvelie.offset === 1) { return 'tomorrow' }
   if (arvelie.offset === 0) { return 'today' }
-  if (arvelie.offset === -1) { return `yesterday` }
+  if (arvelie.offset === -1) { return 'yesterday' }
   if (arvelie.offset < -365) { return `${parseInt(arvelie.offset / -365)} years ago` }
   if (arvelie.offset < 1) { return `${arvelie.offset * -1} days ago` }
   return `in ${arvelie.offset} days`

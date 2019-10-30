@@ -44,7 +44,7 @@ function Lisp (lib = {}) {
         return interpret(fnBody, new Context(lambdaScope, context))
       }
     },
-    'λ': function (input, context) {
+    λ: function (input, context) {
       return function () {
         const lambdaArguments = arguments
         const lambdaScope = input[1].reduce(function (acc, x, i) {

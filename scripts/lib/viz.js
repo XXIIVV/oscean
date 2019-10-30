@@ -221,8 +221,8 @@ function HoraireViz (logs) {
   this.toString = function (parts = 28, height = 20) {
     const segments = distribute(logs, parts)
     let html = ''
-    let prev = 0
-    let max = Math.max(...Object.values(segments))
+    const prev = 0
+    const max = Math.max(...Object.values(segments))
     const real = []
     for (let i = 0; i < parts; i++) {
       const v = !isNaN(segments[i]) ? segments[i] : 0
