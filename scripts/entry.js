@@ -48,7 +48,8 @@ function Entry (name, data) {
       return `${photolog && photolog.pict !== headerlog.pict ? this.name.toLink(`<img src='media/diary/${photolog.pict}.jpg' title='${photolog.name}' loading='lazy'/>`) : ''}`
     },
     gallery: () => {
-      return `${this.templates.photo()}<h2>${this.name.toTitleCase()}</h2><p>${this.bref.template(this)}</p>`.template(this)
+      const photolog = this.photo()
+      return `${photolog ? this.name.toLink(`<img src='media/diary/${photolog.pict}.jpg' title='${photolog.name}' loading='lazy'/>`) : ''}<h2>${this.name.toTitleCase()}</h2><p>${this.bref.template(this)}</p>`.template(this)
     },
     list: () => {
       return `<li>${this.host.bref}</li>`.template(this)
