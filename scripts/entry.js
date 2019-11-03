@@ -10,7 +10,7 @@ function Entry (name, data) {
 
   this.indexes = [this.name]
 
-  this.links = []
+  this.links = {}
   this.logs = []
   this.children = []
   this.tags = []
@@ -152,7 +152,7 @@ function Term (name, data) {
   this.bref = data.BREF ? data.BREF : ''
   this.unde = data.UNDE ? data.UNDE : 'Home'
   this.view = data.VIEW ? data.VIEW.toLowerCase() : 'main'
-  this.links = data.LINK ? data.LINK : null
+  this.links = data.LINK ? data.LINK : {}
   this.tags = data.TAGS ? data.TAGS.toLowerCase().split(' ') : []
   this.indexes = data.ALTS ? [name].concat(data.ALTS.split(' ')) : [name]
   this.theme = data.LOOK ? data.LOOK.toLowerCase() : 'blanc'
@@ -230,10 +230,20 @@ function Term (name, data) {
 
   this.toEntry = () => {
     const h = new Horaire(this.activity())
+    const links = (this.links.SOURCES ? `<a href='${this.links.SOURCES}'>Sources</a>` : `<a class='inactive'>no sources</a>`)
+
     return `<div class='entry'>
       ${this.templates.icon()}
       <div class='head'>
-        <div class='details'>${this.name.toTitleCase().toLink()}<span class='time'><b>${h.length} logs</b>, updated ${this.span().to.ago()}</span></div>
+        <div class='details'>
+          ${this.name.toTitleCase().toLink()}
+          <span class='time'><b>${h.length} logs</b>, updated ${this.span().to.ago()}</span>
+          <span class='links'>
+            ${(this.links.SOURCES ? `<a class='bg_audio' target='_blank' href='${this.links.SOURCES}'>Sources</a>` : `<a class='bg_misc'>no sources</a>`)}
+            ${(this.links.BUILDS ? `<a class='bg_visual' target='_blank' href='${this.links.BUILDS}'>Builds</a>` : `<a class='bg_misc'>no builds</a>`)}
+            ${(this.links.LIVE ? `<a class='bg_research' target='_blank' href='${this.links.LIVE}'>Live</a>` : `<a class='bg_misc'>no live</a>`)}
+          </span>
+        </div>
         <div class='bref'>${new HoraireViz(this.activity()).toString(200, 40)}</div>
       </div>
     </div>`
