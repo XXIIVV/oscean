@@ -17,6 +17,17 @@ String.prototype.replaceAll = function (search, replacement) { return `${this}`.
 String.prototype.isUrl = function () { return this.substr(0, 4) === 'http' }
 String.prototype.insert = function (s, i) { return [this.slice(0, i), s, this.slice(i)].join('') }
 
+String.prototype.template = function (host) {
+  const matches = this.match(/[^{\}]+(?=})/g)
+  if (!matches) { return this }
+  let text = `${this}`
+  library.host = host
+  matches.forEach(el => {
+    text = text.replace(`{${el}}`, `${interpreter.run(el, host)}`)
+  })
+  return text
+}
+
 // Arvelie
 
 function timeAgo (arvelie, cap = 9999) {

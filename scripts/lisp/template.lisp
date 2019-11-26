@@ -52,7 +52,7 @@
   (if 
     (is:real res:data)
     (def _body 
-      (concat (res:body) (res:horaire)))
+      (res:body))
     (
       (def similar-terms
         (similars (uc res:name) (keys database:index)))

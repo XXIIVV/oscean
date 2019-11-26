@@ -36,7 +36,6 @@ function Horaire (logs) {
     ch: h.chs / logs.length, // Focus
     os: h.osc / logs.length, // Balance
     // Collections
-    sector: sector,
     sectors: h.sectors,
     tasks: h.tasks,
     terms: h.terms

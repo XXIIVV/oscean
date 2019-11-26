@@ -31,13 +31,6 @@ function Entry (name, data) {
     return null
   }
 
-  this.horaire = (parts = 28) => {
-    if (!this.span || !this.span().to) { return '' }
-    const h = new Horaire(this.logs)
-    const v = new HoraireViz(this.activity()).toString(parts)
-    return this.span().to ? `<div class='horaire'>${'Horaire'.toLink(v)}<span>${h.ph.toFixed(2)}</span></div>` : ''
-  }
-
   this.templates = {
     icon: () => {
       return `<svg data-goto='${this.host.name}' class='icon'><path transform="scale(0.15) translate(20,20)" d="${this.host.glyph()}"></path></svg>`
@@ -230,7 +223,7 @@ function Term (name, data) {
 
   this.toEntry = () => {
     const h = new Horaire(this.activity())
-    const links = (this.links.SOURCES ? `<a href='${this.links.SOURCES}'>Sources</a>` : `<a class='inactive'>no sources</a>`)
+    const links = (this.links.SOURCES ? `<a href='${this.links.SOURCES}'>Sources</a>` : '<a class=\'inactive\'>no sources</a>')
 
     return `<div class='entry'>
       ${this.templates.icon()}
@@ -239,9 +232,9 @@ function Term (name, data) {
           ${this.name.toTitleCase().toLink()}
           <span class='time'><b>${h.length} logs</b>, updated ${this.span().to.ago()}</span>
           <span class='links'>
-            ${(this.links.SOURCES ? `<a class='bg_audio' target='_blank' href='${this.links.SOURCES}'>Sources</a>` : `<a class='bg_misc'>no sources</a>`)}
-            ${(this.links.BUILDS ? `<a class='bg_visual' target='_blank' href='${this.links.BUILDS}'>Builds</a>` : `<a class='bg_misc'>no builds</a>`)}
-            ${(this.links.LIVE ? `<a class='bg_research' target='_blank' href='${this.links.LIVE}'>Live</a>` : `<a class='bg_misc'>no live</a>`)}
+            ${(this.links.SOURCES ? `<a class='bg_audio' target='_blank' href='${this.links.SOURCES}'>Sources</a>` : '<a class=\'bg_misc\'>no sources</a>')}
+            ${(this.links.BUILDS ? `<a class='bg_visual' target='_blank' href='${this.links.BUILDS}'>Builds</a>` : '<a class=\'bg_misc\'>no builds</a>')}
+            ${(this.links.LIVE ? `<a class='bg_research' target='_blank' href='${this.links.LIVE}'>Live</a>` : '<a class=\'bg_misc\'>no live</a>')}
           </span>
         </div>
         <div class='bref'>${new HoraireViz(this.activity()).toString(200, 40)}</div>
