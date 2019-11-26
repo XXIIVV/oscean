@@ -1,5 +1,8 @@
 'use strict'
 
+/* global Arvelie */
+/* global Horaire */
+
 function Entry (name, data) {
   this.name = name
   this.data = data
