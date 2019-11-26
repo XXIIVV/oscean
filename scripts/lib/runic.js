@@ -71,7 +71,7 @@ function runic (lines = [], host = null) {
   }
 
   function interpret (content) {
-    return `${interpreter.run(content, host)}`
+    return `${lain.run(content, host)}`
   }
 
   return lines.filter(isRunic).reduce(stash, []).reduce(_html, '')

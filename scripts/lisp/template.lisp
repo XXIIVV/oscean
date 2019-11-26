@@ -127,7 +127,7 @@
 (defn run-repl (q) (
   (dom:set-class _terminal "active")
   (dom:set-html _termhand (concat (arvelie) " " (neralie) " " q))
-  (dom:set-html _termview (interpreter:run (replace q "%20" " ")))))
+  (dom:set-html _termview (lain:run (replace q "%20" " ")))))
 
 ; goto
 

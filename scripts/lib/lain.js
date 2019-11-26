@@ -3,7 +3,7 @@
 // In the real world, it didn’t matter if I was there or not.
 // When I realized that, I was no longer afraid of losing my body.
 
-function Lisp (lib = {}) {
+function Lain (lib = {}) {
   const TYPES = { identifier: 0, number: 1, string: 2, bool: 3, symbol: 4 }
 
   const Context = function (scope, parent) {
@@ -27,15 +27,20 @@ function Lisp (lib = {}) {
       return interpret(input[2], letContext)
     },
     def: function (input, context) {
-      const identifier = input[1].value
-      if (context.scope[identifier]) { console.warn(`Redefining variable: ${identifier}`) }
-      const value = input[2].type === TYPES.string && input[3] ? input[3] : input[2]
-      context.scope[identifier] = interpret(value, context)
-      return value
+      if (input.length !== 3) { console.warn('Lain', 'Invalid definition.'); return }
+      const identifier = input[1].host ? input[1].host : input[1].value
+      // obj
+      if (input[1].host) {
+        if (!context.scope[identifier]) { context.scope[identifier] = {} }
+        context.scope[identifier][input[1].value] = interpret(input[2], context)
+        return context.scope[identifier][input[1].value]
+      }
+      context.scope[identifier] = interpret(input[2], context)
+      return context.scope[identifier]
     },
     defn: function (input, context) {
       const identifier = input[1].value
-      if (context.scope[identifier]) { console.warn(`Redefining function: ${identifier}`) }
+      if (context.scope[identifier]) { console.warn('Lain', `Redefining function: ${identifier}`) }
       const fnParams = input[2].type === TYPES.string && input[3] ? input[3] : input[2]
       const fnBody = input[2].type === TYPES.string && input[4] ? input[4] : input[3]
       context.scope[identifier] = function () {
@@ -88,7 +93,7 @@ function Lisp (lib = {}) {
   }
 
   const interpret = function (input, context) {
-    if (!input) { console.warn('Lisp', 'error', context.scope); return null }
+    if (!input) { console.warn('Lain', context.scope); return null }
     if (context === undefined) {
       return interpret(input, new Context(lib))
     } else if (input instanceof Array) {
@@ -132,7 +137,7 @@ function Lisp (lib = {}) {
   }
 
   const tokenize = function (input) {
-    const i = input.replace(/^[\s]*\;.*\n?/gm, '').replace(/λ /g, 'lambda ').split('"')
+    const i = input.replace(/^[\s]*\;.*\n?/gm, '').split('"')
     return i.map(function (x, i) {
       return i % 2 === 0 ? x.replace(/\(/g, ' ( ').replace(/\)/g, ' ) ') : x.replace(/ /g, '!ws!')
     }).join('"').trim().split(/\s+/).map(function (x) { return x.replace(/!ws!/g, ' ') })

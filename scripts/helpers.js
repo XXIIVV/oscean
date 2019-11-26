@@ -23,7 +23,7 @@ String.prototype.template = function (host) {
   let text = `${this}`
   library.host = host
   matches.forEach(el => {
-    text = text.replace(`{${el}}`, `${interpreter.run(el, host)}`)
+    text = text.replace(`{${el}}`, `${lain.run(el, host)}`)
   })
   return text
 }

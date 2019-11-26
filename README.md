@@ -11,7 +11,7 @@ A series of tools is available through the search bar, type `(add 5 6)` to see t
 ### Run Benchmark
 
 ```
-(join (interpreter:run projects:benchmark))
+(join (lain:run projects:benchmark))
 ```
 
 ## Syntax Highlight
