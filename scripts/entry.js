@@ -264,14 +264,14 @@ function Yleta (data = {}) {
 
   this.unde = 'Lietal'
   this.english = data.english
-  this.childspeak = name || data.name.toLowerCase()
+  this.childspeak = data.name.toLowerCase()
   this.type = this.childspeak.substr(0, 2)
   this.key = this.childspeak.substr(0, this.childspeak.length - 2)
   this.indexes = [this.name]
   this.bref = '??'
 
   this.glyph = () => {
-    return `M65,155 L65,155 L155,155 M155,65 L155,65 L155,245 M185,155 L185,155 L245,155 M185,185 L185,185 L185,185`
+    return 'M65,155 L65,155 L155,155 M155,65 L155,65 L155,245 M185,155 L185,155 L245,155 M185,185 L185,185 L185,185'
   }
 
   this.body = function () {

@@ -71,6 +71,7 @@ function runic (lines = [], host = null) {
   }
 
   function interpret (content) {
+    library.host = host
     return `${lain.run(content, host)}`
   }
 

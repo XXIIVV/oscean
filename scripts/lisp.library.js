@@ -62,7 +62,7 @@ function Library (host) {
   }
 
   this.join = (arr, ch = '') => {
-    return arr.join(ch)
+    return arr ? arr.join(ch) : arr
   }
 
   this.splice = (arr, index, length) => {
