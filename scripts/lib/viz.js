@@ -1,42 +1,31 @@
 'use strict'
 
-function Viz (logs, from, to, showDetails = true) {
-  this.logs = slice(logs, from, to)
+/* global Horaire */
 
-  const cell = 12
+function Viz (logs, from, to, size = 12) {
+  this.logs = []
 
-  function slice (logs, from, to) {
-    const a = []
-    for (const id in logs) {
-      const log = logs[id]
-      if (log.time.offset < from) { continue }
-      if (log.time.offset > to) { continue }
-      a.push(log)
-    }
-    return a
+  for (const log of logs) {
+    if (log.time.offset < from) { continue }
+    if (log.time.offset > to) { continue }
+    this.logs.push(log)
   }
 
-  function offset (recent, before, trail = 1) {
-    const print = recent - before > 0 ? `+${(recent - before).toFixed(trail)}` : `${(recent - before).toFixed(trail)}`
-    return print !== '-0.0' && print !== '+0.0' ? print : '0.0'
-  }
-
-  function _perc (val, sum) {
-    return ((val / sum) * 100).toFixed(1)
+  function makePercentage (val, sum, len = 1) {
+    return `${((val / sum) * 100).toFixed(len)}%`
   }
 
   function _legend (logs) {
-    if (!showDetails) { return '' }
     const horaire = new Horaire(logs)
     const sum = horaire.sectors.audio + horaire.sectors.visual + horaire.sectors.research
 
     return `
-    <rect class="bg_audio" x="${cell * 0}" y="105" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
-    <text x='${(cell + 1) * 2}' y='115' style='text-anchor:start'>Audio ${_perc(horaire.sectors.audio, sum)}%</text>
-    <rect class="bg_visual" x="${(cell + 1) * 9}" y="105" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
-    <text x='${(cell + 1) * 11}' y='115' style='text-anchor:start'>Visual ${_perc(horaire.sectors.visual, sum)}%</text>
-    <rect class="bg_research" x="${(cell + 1) * 18}" y="105" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
-    <text x='${(cell + 1) * 20}' y='115' style='text-anchor:start'>Research ${_perc(horaire.sectors.research, sum)}%</text>
+    <rect class="bg_audio" x="${size * 0}" y="105" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
+    <text x='${(size + 1) * 2}' y='115' style='text-anchor:start'>Audio ${makePercentage(horaire.sectors.audio, sum)}</text>
+    <rect class="bg_visual" x="${(size + 1) * 9}" y="105" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
+    <text x='${(size + 1) * 11}' y='115' style='text-anchor:start'>Visual ${makePercentage(horaire.sectors.visual, sum)}</text>
+    <rect class="bg_research" x="${(size + 1) * 18}" y="105" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
+    <text x='${(size + 1) * 20}' y='115' style='text-anchor:start'>Research ${makePercentage(horaire.sectors.research, sum)}</text>
     <text x='675' y='115' style='text-anchor:end'>${horaire.fhs.toFixed(0)} Hours</text>`
   }
 
@@ -44,21 +33,10 @@ function Viz (logs, from, to, showDetails = true) {
     return ''
   }
 
-  this.toString = function () {
-    if (this.logs.length < 1) { return '' }
-
-    const data = { recent: [], before: [] }
-    // Split the last 14 days
-    for (const id in this.logs) {
-      const log = this.logs[id]
-      const offset = log.time.offset
-      if (offset > 0) { continue }
-      if (offset > -(this.logs.length / 2)) { data.recent[data.recent.length] = log } else { data.before[data.before.length] = log }
-    }
-
+  this.toString = function (showDetails = true) {
     return `
     <svg class='viz'>
-      ${_legend(this.logs)}
+      ${showDetails === true ? _legend(this.logs) : ''}
       ${this.draw()}
     </svg>`
   }
