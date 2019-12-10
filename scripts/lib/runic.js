@@ -2,7 +2,9 @@
 
 function Runic (lib = {}) {
   function filter (line) {
-    return lib[line.substr(0, 1)] && line.substr(1, 1) === ' '
+    const pass = lib[line.substr(0, 1)] && line.substr(1, 1) === ' '
+    if (pass !== true) { console.warn('Runic', 'Error near: ', line) }
+    return pass
   }
 
   function stash (acc, line) {
