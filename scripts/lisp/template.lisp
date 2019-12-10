@@ -110,7 +110,7 @@
     (database:find q))
   (dom:set-title (concat "XXIIVV — " (tc res:name)))
   (dom:set-hash res:name)
-  (dom:set-class dom:body (concat "loading " res:theme))
+  (dom:set-class (dom:body) (concat "loading " res:theme))
   (dom:scroll 0)
   (wait 0.1 (λ ()
     ((display-photo res)
@@ -118,7 +118,7 @@
       (display-sidebar res)
       (display-main res)
       (wait 0.1 (λ () 
-        (dom:set-class dom:body (concat "ready " res:theme))))
+        (dom:set-class (dom:body) (concat "ready " res:theme))))
       )))
   ))
 
@@ -126,7 +126,7 @@
 
 (defn run-repl (q) (
   (dom:set-class _terminal "active")
-  (dom:set-html _termhand (concat (arvelie) " " (neralie) " " q))
+  (dom:set-html _termhand (concat (new "Arvelie") " " (new "Neralie") " " q))
   (dom:set-html _termview (lain:run (replace q "%20" " ")))))
 
 ; goto

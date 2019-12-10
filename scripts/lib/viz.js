@@ -131,16 +131,16 @@ function BarViz (logs) {
     return Object.keys(segments).reduce((acc, val, id) => {
       const seg = segments[val]
       const x = parseInt(id) * (cell + 1)
-      const audio_h = clamp(seg.audio * mod, 4, 100)
-      const audio_y = audio_h + 35
-      const visual_h = clamp(seg.visual * mod, 4, 100)
-      const visual_y = (visual_h + audio_y) + 0.5
-      const research_h = clamp(seg.visual * mod, 4, 100)
-      const research_y = (research_h + visual_y) + 0.5
+      const audioh = clamp(seg.audio * mod, 4, 100)
+      const audioy = audioh + 35
+      const visualh = clamp(seg.visual * mod, 4, 100)
+      const visualy = (visualh + audioy) + 0.5
+      const researchh = clamp(seg.visual * mod, 4, 100)
+      const researchy = (researchh + visualy) + 0.5
       return `${acc}
-      <rect class='bg_audio' x='${x}' y='${125 - audio_y}' width='${cell}' height='${audio_h}' rx="2" ry="2"></rect>
-      <rect class='bg_visual' x='${x}' y='${125 - visual_y}' width='${cell}' height='${visual_h}' rx="2" ry="2"></rect>
-      <rect class='bg_research' x='${x}' y='${125 - research_y}' width='${cell}' height='${research_h}' rx="2" ry="2"></rect>`
+      <rect class='bg_audio' x='${x}' y='${125 - audioy}' width='${cell}' height='${audioh}' rx="2" ry="2"></rect>
+      <rect class='bg_visual' x='${x}' y='${125 - visualy}' width='${cell}' height='${visualh}' rx="2" ry="2"></rect>
+      <rect class='bg_research' x='${x}' y='${125 - researchy}' width='${cell}' height='${researchh}' rx="2" ry="2"></rect>`
     }, '')
   }
 
@@ -171,21 +171,20 @@ function BalanceViz (logs) {
   this.draw = function () {
     const segments = distribute(this.logs)
     const cell = 12
-    const mod = 0.16
     return Object.keys(segments).reduce((acc, val, id) => {
       const seg = segments[val]
       const x = parseInt(id) * (cell + 1)
       const sum = seg.audio + seg.visual + seg.research
-      const audio_h = Math.floor(clamp((seg.audio / sum) * 90, 4, 125))
-      const audio_y = 0
-      const visual_h = Math.floor(clamp((seg.visual / sum) * 90, 4, 125))
-      const visual_y = audio_h + 0.5
-      const research_h = 89 - audio_h - visual_h
-      const research_y = (audio_h + visual_h) + 1
+      const audioh = Math.floor(clamp((seg.audio / sum) * 90, 4, 125))
+      const audioy = 0
+      const visualh = Math.floor(clamp((seg.visual / sum) * 90, 4, 125))
+      const visualy = audioh + 0.5
+      const researchh = 89 - audioh - visualh
+      const researchy = (audioh + visualh) + 1
       return `${acc}
-      <rect class='bg_audio' x='${x}' y='${audio_y}' width='${cell}' height='${audio_h}' rx="2" ry="2"></rect>
-      <rect class='bg_visual' x='${x}' y='${visual_y}' width='${cell}' height='${visual_h}' rx="2" ry="2"></rect>
-      <rect class='bg_research' x='${x}' y='${research_y}' width='${cell}' height='${research_h}' rx="2" ry="2"></rect>`
+      <rect class='bg_audio' x='${x}' y='${audioy}' width='${cell}' height='${audioh}' rx="2" ry="2"></rect>
+      <rect class='bg_visual' x='${x}' y='${visualy}' width='${cell}' height='${visualh}' rx="2" ry="2"></rect>
+      <rect class='bg_research' x='${x}' y='${researchy}' width='${cell}' height='${researchh}' rx="2" ry="2"></rect>`
     }, '')
   }
 
@@ -195,10 +194,8 @@ function BalanceViz (logs) {
 function HoraireViz (logs) {
   const end = new Date() // 5 years ago
   const start = new Date(new Date() - (31536000 * 1000 * 5)) // 5 years ago
-  const offset = Math.ceil((new Date(2009) - new Date()) / 86400000)
 
   function distribute (logs, parts) {
-    const limit = logs[logs.length - 1].time.offset * -1
     const h = {}
     for (const id in logs) {
       const log = logs[id]
@@ -220,7 +217,6 @@ function HoraireViz (logs) {
   this.toString = function (parts = 28, height = 20) {
     const segments = distribute(logs, parts)
     let html = ''
-    const prev = 0
     const max = Math.max(...Object.values(segments))
     const real = []
     for (let i = 0; i < parts; i++) {

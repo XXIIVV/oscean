@@ -63,10 +63,7 @@ function Lain (lib = {}) {
       }
     },
     if: function (input, context) {
-      if (interpret(input[1], context)) {
-        return interpret(input[2], context)
-      }
-      return input[3] ? interpret(input[3], context) : []
+      return interpret(input[1], context) ? interpret(input[2], context) : input[3] ? interpret(input[3], context) : []
     }
   }
 
@@ -137,13 +134,14 @@ function Lain (lib = {}) {
   }
 
   const tokenize = function (input) {
-    const i = input.replace(/^[\s]*\;.*\n?/gm, '').split('"')
+    const i = input.replace(/^[\s]*;.*\n?/gm, '').split('"')
     return i.map(function (x, i) {
       return i % 2 === 0 ? x.replace(/\(/g, ' ( ').replace(/\)/g, ' ) ') : x.replace(/ /g, '!ws!')
     }).join('"').trim().split(/\s+/).map(function (x) { return x.replace(/!ws!/g, ' ') })
   }
 
-  this.run = (input) => {
+  this.run = (input, host) => {
+    lainLibrary.host = host
     return interpret(parenthesize(tokenize(input)))
   }
 }

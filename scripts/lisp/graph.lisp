@@ -3,7 +3,7 @@
 ; In the real world, it didn’t matter if I was there or not.
 ; When I realized that, I was no longer afraid of losing my body.
 
-(dom:set-class dom:body "loading")
+(dom:set-class (dom:body) "loading")
 
 (def _terminal (dom:create "terminal"))
 (def _termhand (dom:create "termhand"))
@@ -43,8 +43,8 @@
     (link "http://webring.xxiivv.com/#random" "" "icon rotonde sprite_rotonde external") 
     (link "https://creativecommons.org/licenses/by-nc-sa/4.0" "" "icon cc sprite_cc external") 
     (link "https://100r.co" "" "icon hundredrabbits sprite_hundredrabbits external") 
-    (link "Devine Lu Linvega") " © 06I04 — " (arvelie) 
-    (wrap (concat (link "About" "BY-NC-SA 4.0") " " (neralie)) "center")))
+    (link "Devine Lu Linvega") " © 06I04 — " (new "Arvelie") 
+    (wrap (concat (link "About" "BY-NC-SA 4.0") " " (new "Neralie")) "center")))
 ; assemble
 (dom:set-html _footer (wrap (concat __socials) "div" "wr"))
 (dom:append _terminal (_termhand _termview))
@@ -53,5 +53,5 @@
 (dom:append _menu (_info _logo _search _activity))
 (dom:append _header (_photo _menu))
 (dom:append _core (_sidebar _content))
-(dom:append dom:body (_terminal _header _core _footer))
+(dom:append (dom:body) (_terminal _header _core _footer))
 `

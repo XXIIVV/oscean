@@ -221,7 +221,7 @@ function Term (name, data) {
   }
 
   this.body = () => {
-    return `${runic(this.data.BODY, this)}`
+    return `${runic.run(this.data.BODY, this)}`
   }
 
   this.toEntry = () => {

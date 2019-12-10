@@ -1,79 +1,30 @@
 'use strict'
 
-function runic (lines = [], host = null) {
-  const runes = {
-    '&': { tag: 'p' },
-    '*': { tag: 'h3' },
-    '+': { tag: 'h4' },
-    '?': { tag: 'div', class: 'notice' },
-    '-': { tag: 'li', wrapper: 'ul', wrapperClass: 'bullet' },
-    '#': { tag: 'li', wrapper: 'code' },
-    '@': { tag: 'div', class: 'quote', fn: quote },
-    '|': { tag: 'tr', wrapper: 'table', fn: table },
-    '%': { fn: media },
-    λ: { fn: interpret },
-    '>': { },
-    ';': { }
+function Runic (lib = {}) {
+  function filter (line) {
+    return lib[line.substr(0, 1)] && line.substr(1, 1) === ' '
   }
 
-  function isRunic (l) {
-    const rune = l.substr(0, 1)
-    if (rune === ';') { return false } // Comment ;
-    if (l.substr(1, 1) !== ' ') { console.warn('Non-Runic', l); return false }
-    if (!runes[rune]) { console.warn(`Non-Runic[${rune}]`, l); return false }
-    return true
-  }
-
-  function stash (acc, l) {
-    const rune = l.substr(0, 1)
-    const line = l.substr(2)
-    const prev = acc[acc.length - 1] ? acc[acc.length - 1] : [{ rune: rune, a: [] }]
-    if (prev.rune === rune) { prev.a.push(line) } else { acc.push({ rune: rune, a: [line] }) }
+  function stash (acc, line) {
+    const rune = line.substr(0, 1)
+    const prev = acc[acc.length - 1] ? acc[acc.length - 1] : [{ rune: rune, arr: [] }]
+    if (prev.rune === rune) { prev.arr.push(line.substr(2)) } else { acc.push({ rune: rune, arr: [line.substr(2)] }) }
     return acc
   }
 
-  function _html (acc, stash) {
-    const wr = runes[stash.rune].wrapper
-    const wrClass = runes[stash.rune].wrapperClass
-    const html = stash.a.reduce((acc, val, id) => {
-      const r = runes[stash.rune]
-      const text = r.fn ? r.fn(stash.a[id]) : stash.a[id]
-      return `${acc}${r.tag ? `<${r.tag} class='${r.class ? r.class : ''}'>${text.template(host)}</${r.tag}>` : `${text}`}`
+  function wrap (html, tag, cl) {
+    return tag ? `<${tag} ${cl ? 'class="' + cl + '"' : ''}>${html}</${tag}>` : html
+  }
+
+  this.run = (input = [], host = null) => {
+    return input.filter(filter).reduce(stash, []).reduce((acc, stash) => {
+      const rune = lib[stash.rune]
+      const html = stash.arr.reduce((acc, val, id) => {
+        const inner = rune.fn ? rune.fn(stash.arr[id], host) : stash.arr[id]
+        const outer = rune.tag ? wrap(inner, rune.tag, rune.class) : inner
+        return `${acc}${outer}`
+      }, '')
+      return `${acc}${wrap(html, rune.wrapper, rune.wrapperClass)}`
     }, '')
-    return wr ? `${acc}<${wr} class='${wrClass || ''}'>${html.template(host)}</${wr}>` : `${acc}${html}`
   }
-
-  // Templates
-
-  function quote (content) {
-    const parts = content.split(' | ')
-    const text = parts[0].trim()
-    const author = parts[1]
-    const source = parts[2]
-    const link = parts[3]
-    return `
-      ${text.length > 1 ? `<p class='text'>${text.template(host)}</p>` : ''}
-      ${author ? `<p class='attrib'>${author}${source && link ? `, ${link.toLink(source)}` : source ? `, <b>${source}</b>` : ''}</p>` : ''}`
-  }
-
-  function media (content) {
-    const service = content.split(' ')[0]
-    const id = content.split(' ')[1]
-    if (service === 'itchio') { return `<iframe frameborder="0" src="https://itch.io/embed/${id}?link_color=000000" width="600" height="167"></iframe>` }
-    if (service === 'bandcamp') { return `<iframe style="border: 0; width: 600px; height: 274px;" src="https://bandcamp.com/EmbeddedPlayer/album=${id}/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/" seamless></iframe>` }
-    if (service === 'youtube') { return `<iframe width="100%" height="380" src="https://www.youtube.com/embed/${id}?rel=0" style="max-width:700px" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>` }
-    if (service === 'custom') { return `<iframe src='${id}' style='width:100%;height:350px;'></iframe>` }
-    return `<img src='media/${service}' loading='lazy' class='${id}'/>`
-  }
-
-  function table (content) {
-    return `<td>${content.trim().replace(/ \| /g, '</td><td>')}</td>`
-  }
-
-  function interpret (content) {
-    library.host = host
-    return `${lain.run(content, host)}`
-  }
-
-  return lines.filter(isRunic).reduce(stash, []).reduce(_html, '')
 }

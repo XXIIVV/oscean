@@ -21,7 +21,7 @@ String.prototype.template = function (host) {
   const matches = this.match(/[^{\}]+(?=})/g)
   if (!matches) { return this }
   let text = `${this}`
-  library.host = host
+  lainLibrary.host = host
   matches.forEach(el => {
     text = text.replace(`{${el}}`, `${lain.run(el, host)}`)
   })
