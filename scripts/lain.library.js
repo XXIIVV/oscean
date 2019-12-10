@@ -267,20 +267,8 @@ const lainLibrary = {
     now: () => {
       return Date.now()
     },
-    new: (g) => {
-      return new Date(g)
-    },
     iso: (g) => {
       return (g ? new Date(g) : new Date()).toISOString()
-    },
-    doty: () => {
-      const year = lainLibrary.getFullYear()
-      const start = new Date(year, 0, 0)
-      const diff = (this - start) + ((start.getTimezoneOffset() - lainLibrary.getTimezoneOffset()) * 60 * 1000)
-      return Math.floor(diff / 86400000)
-    },
-    'years-since': (q = '1986-03-22') => {
-      return ((new Date() - new Date(q)) / 31557600000)
     }
   },
 
@@ -379,18 +367,17 @@ const lainLibrary = {
     },
     'get-pixels': (path, ratio = 1, callback = null) => {
       const img = document.createElement('img')
+      const canvas = document.createElement('canvas')
       img.src = path
       img.onload = function () {
-        // TODO
-        // const canvas = document.createElement('canvas')
-        // canvas.width = parseInt(img.width * ratio)
-        // canvas.height = parseInt(img.height * ratio)
-        // canvas.getContext('2d').drawImage(lainLibrary, 0, 0, canvas.width, canvas.height)
-        // try {
-        //   callback(canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data)
-        // } catch (err) {
-        //   console.warn('Could not get photo data', err)
-        // }
+        canvas.width = parseInt(img.width * ratio)
+        canvas.height = parseInt(img.height * ratio)
+        canvas.getContext('2d').drawImage(this, 0, 0, canvas.width, canvas.height)
+        try {
+          callback(canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data)
+        } catch (err) {
+          console.warn('Could not get photo data', err)
+        }
       }
     },
     'get-lum': (pixels) => {
