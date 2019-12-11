@@ -141,7 +141,7 @@ function Lain (lib = {}) {
   }
 
   this.run = (input, host) => {
-    lainLibrary.host = host
+    lib.host = host
     return interpret(parenthesize(tokenize(input)))
   }
 }
