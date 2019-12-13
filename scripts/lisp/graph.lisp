@@ -12,13 +12,10 @@
 (def _header (dom:create "header"))
 (def _photo (dom:create "photo"))
 (def _menu (dom:create "menu"))
-(def _info (dom:create "info"))
 (def _activity (dom:create "activity" "ul"))
 (def _logo (dom:create "logo" "a" "sprite_logo"))
 (def _search (dom:create "search" "input"))
 (def _title (dom:create "title"))
-(def _glyph (dom:create-ns "glyph" "svg"))
-(def _path (dom:create-ns "path" "path"))
 ; core
 (def _core (dom:create "core"))
 (def _sidebar (dom:create "sidebar"))
@@ -27,7 +24,6 @@
 (def _footer (dom:create "footer"))
 ; set
 (dom:set-attr _logo "data-goto" "home")
-(dom:set-attr _path "transform" "scale(0.165,0.165) translate(-50,-50)")
 (dom:set-attr _termview "spellcheck" "false")
 (dom:set-html _activity 
   (concat 
@@ -48,9 +44,7 @@
 ; assemble
 (dom:set-html _footer (wrap (concat __socials) "div" "wr"))
 (dom:append _terminal (_termhand _termview))
-(dom:append _glyph (_path))
-(dom:append _info (_glyph _title))
-(dom:append _menu (_info _logo _search _activity))
+(dom:append _menu (_logo _search _activity))
 (dom:append _header (_photo _menu))
 (dom:append _core (_sidebar _content))
 (dom:append (dom:body) (_terminal _header _core _footer))

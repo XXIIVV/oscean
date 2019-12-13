@@ -11,9 +11,6 @@
 
 ; display
 
-(defn display-glyph (res) (
-  (dom:set-attr _path "d" (res:glyph))))
-
 (defn set-theme (pixels) (
   (if 
     (gt (dom:get-lum pixels) 170)
@@ -114,7 +111,6 @@
   (dom:scroll 0)
   (wait 0.1 (λ ()
     ((display-photo res)
-      (display-glyph res)
       (display-sidebar res)
       (display-main res)
       (wait 0.1 (λ () 
@@ -128,6 +124,14 @@
   (dom:set-class _terminal "active")
   (dom:set-html _termhand (concat (new "Arvelie") " " (new "Neralie") " " q))
   (dom:set-html _termview (lain:run (replace q "%20" " ")))))
+
+; update header on scroll
+
+(on:scroll 
+  (λ (y) 
+    (if (lt (sub _photo:clientHeight y 86) 0)
+      (dom:set-class _menu "sticky")
+      (dom:set-class _menu ""))))
 
 ; goto
 

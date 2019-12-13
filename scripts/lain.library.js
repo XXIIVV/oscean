@@ -243,8 +243,8 @@ const lainLibrary = {
     return new window[name](params)
   },
 
-  debug: (arg) => {
-    console.log(arg)
+  debug: (...args) => {
+    console.log(args)
   },
 
   wait: (s, fn) => {
@@ -309,6 +309,9 @@ const lainLibrary = {
     },
     change: (fn) => {
       BINDINGS.change = fn
+    },
+    scroll: (fn) => {
+      BINDINGS.scroll = fn
     }
   },
 
@@ -342,12 +345,15 @@ const lainLibrary = {
       el.addEventListener(event, fn)
     },
     'set-text': (el, text) => {
+      if (el.textContent === html) { return }
       el.textContent = text
     },
     'set-html': (el, html) => {
+      if (el.innerHTML === html) { return }
       el.innerHTML = html
     },
     'set-attr': (el, attr, value) => {
+      if (el.getAttribute(attr) === value) { return }
       el.setAttribute(attr, value.trim())
     },
     'get-attr': (el, attr) => {
