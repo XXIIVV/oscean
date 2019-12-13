@@ -26,7 +26,7 @@ function Viz (logs, from, to, size = 12) {
     <text x='${(size + 1) * 11}' y='115' style='text-anchor:start'>Visual ${makePercentage(horaire.sectors.visual, sum)}</text>
     <rect class="bg_research" x="${(size + 1) * 18}" y="105" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
     <text x='${(size + 1) * 20}' y='115' style='text-anchor:start'>Research ${makePercentage(horaire.sectors.research, sum)}</text>
-    <text x='675' y='115' style='text-anchor:end'>${horaire.fhs.toFixed(0)} Hours</text>`
+    <text x='675' y='115' style='text-anchor:end'>${horaire.range.from.time.ago()}</text>`
   }
 
   this.draw = function () {

@@ -11,7 +11,7 @@ function arvelie (date = new Date()) {
 }
 
 function Arvelie (t = arvelie()) {
-  this.t = t.match(/\d\d[a-z\+]\d\d/i) ? t.toUpperCase() : '01+01'
+  this.t = t.match(/\d\d[a-z+]\d\d/i) ? t.toUpperCase() : '01+01'
   this.y = t.substr(0, 2)
   this.m = t.substr(2, 1).toUpperCase()
   this.d = t.substr(3, 2)

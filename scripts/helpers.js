@@ -98,6 +98,10 @@ function __onlyPast5Years (log) {
   return log.time.offset <= 0 && log.time.offset > -365 * 5
 }
 
+function __onlyLast5Years (log) {
+  return log.time.offset <= 0 && log.time.year > new Date().getFullYear() - 5
+}
+
 function __onlyLast (log) {
   return log.host.logs[0].time.offset === log.time.offset
 }
