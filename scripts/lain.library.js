@@ -239,8 +239,8 @@ const lainLibrary = {
     return window[name]
   },
 
-  new: (name, params) => {
-    return new window[name](params)
+  new: (name, p1, p2) => {
+    return new window[name](p1, p2)
   },
 
   debug: (...args) => {
@@ -269,6 +269,14 @@ const lainLibrary = {
     },
     iso: (g) => {
       return (g ? new Date(g) : new Date()).toISOString()
+    },
+    year: (g) => {
+      return new Date().getFullYear()
+    },
+    doty: (date = new Date()) => {
+      const start = new Date(date.getFullYear(), 0, 0)
+      const diff = (date - start) + ((start.getTimezoneOffset() - date.getTimezoneOffset()) * 60 * 1000)
+      return Math.floor(diff / 86400000) - 1
     }
   },
 
@@ -597,6 +605,20 @@ const lainLibrary = {
   }, '')}
   </body>
 </html>`.trim()
+    },
+
+    txt: () => {
+      const terms = Object.values(lainLibrary.database.select('lexicon')).filter(__onlyNotSpecial)
+      return terms.reduce((acc, term) => {
+        const body = term.data.BODY.filter(__onlyStaticRunes).map((line) => { return line.substr(2) }).join('\n').template(term).stripHTML().trim()
+        return `${acc}
+${term.name.toTitleCase()}
+${term.bref.template(term).stripHTML()}\n
+${wrapTo(body, 80)}\n
+${Object.keys(term.links).reduce((acc, key) => { return `${acc}* ${key.toTitleCase()}: ${term.links[key]}\n` }, '').trim()}
+-- 
+`
+      }, '').trim()
     },
 
     rss: () => {

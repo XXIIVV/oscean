@@ -17,6 +17,10 @@ String.prototype.replaceAll = function (search, replacement) { return `${this}`.
 String.prototype.isUrl = function () { return this.substr(0, 4) === 'http' }
 String.prototype.insert = function (s, i) { return [this.slice(0, i), s, this.slice(i)].join('') }
 
+const wrapTo = (s, w) => s.replace(
+  new RegExp(`(?![^\\n]{1,${w}}$)([^\\n]{1,${w}})\\s`, 'g'), '$1\n'
+)
+
 String.prototype.template = function (host) {
   const matches = this.match(/[^{\}]+(?=})/g)
   if (!matches) { return this }

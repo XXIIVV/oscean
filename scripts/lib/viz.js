@@ -2,31 +2,53 @@
 
 /* global Horaire */
 
-function Viz (logs, from, to, size = 12) {
-  this.logs = []
+function Viz (logs, from, to, name) {
+  this.size = 12
 
-  for (const log of logs) {
-    if (log.time.offset < from) { continue }
-    if (log.time.offset > to) { continue }
-    this.logs.push(log)
+  this.slice = (logs, from, length) => {
+    const h = {}
+    for (const id in logs) {
+      const log = logs[id]
+      if (Object.keys(h).length > length) { break }
+      if (log.time.offset < from) { continue }
+      h[log.time.offset] = log
+    }
+    return h
   }
 
-  function makePercentage (val, sum, len = 1) {
-    return `${((val / sum) * 100).toFixed(len)}%`
+  this.distrib = (logs, from, length) => {
+    const a = Array(52).fill()
+    let i = 0
+    while (i < length) {
+      const offset = from + i
+      const pos = (i / length) * 52
+      const share = (pos - Math.floor(pos))
+      const log = logs[offset]
+      if (log) {
+        const floor = Math.floor(pos)
+        const ceil = Math.ceil(pos)
+        if (!a[floor]) { a[floor] = { audio: 0, visual: 0, research: 0 } }
+        if (!a[ceil]) { a[ceil] = { audio: 0, visual: 0, research: 0 } }
+        a[floor][log.sector] += ((log.fh + log.ch) / 2) * (1 - share)
+        a[ceil][log.sector] += ((log.fh + log.ch) / 2) * share
+      }
+      i++
+    }
+    return a
   }
 
-  function _legend (logs) {
+  this._legend = function (logs) {
     const horaire = new Horaire(logs)
     const sum = horaire.sectors.audio + horaire.sectors.visual + horaire.sectors.research
 
     return `
-    <rect class="bg_audio" x="${size * 0}" y="105" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
-    <text x='${(size + 1) * 2}' y='115' style='text-anchor:start'>Audio ${makePercentage(horaire.sectors.audio, sum)}</text>
-    <rect class="bg_visual" x="${(size + 1) * 9}" y="105" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
-    <text x='${(size + 1) * 11}' y='115' style='text-anchor:start'>Visual ${makePercentage(horaire.sectors.visual, sum)}</text>
-    <rect class="bg_research" x="${(size + 1) * 18}" y="105" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
-    <text x='${(size + 1) * 20}' y='115' style='text-anchor:start'>Research ${makePercentage(horaire.sectors.research, sum)}</text>
-    <text x='675' y='115' style='text-anchor:end'>${horaire.range.from.time.ago()}</text>`
+    <rect class="bg_audio" x="${this.size * 0}" y="105" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
+    <text x='${(this.size + 1) * 2}' y='115' style='text-anchor:start'>Audio ${makePercentage(horaire.sectors.audio, sum)}</text>
+    <rect class="bg_visual" x="${(this.size + 1) * 9}" y="105" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
+    <text x='${(this.size + 1) * 11}' y='115' style='text-anchor:start'>Visual ${makePercentage(horaire.sectors.visual, sum)}</text>
+    <rect class="bg_research" x="${(this.size + 1) * 18}" y="105" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
+    <text x='${(this.size + 1) * 20}' y='115' style='text-anchor:start'>Research ${makePercentage(horaire.sectors.research, sum)}</text>
+    <text x='675' y='115' style='text-anchor:end'>${name} — ${horaire.range.from.time.ago()}</text>`
   }
 
   this.draw = function () {
@@ -36,40 +58,31 @@ function Viz (logs, from, to, size = 12) {
   this.toString = function (showDetails = true) {
     return `
     <svg class='viz'>
-      ${showDetails === true ? _legend(this.logs) : ''}
+      ${showDetails === true ? this._legend(logs) : ''}
       ${this.draw()}
     </svg>`
   }
+
+  function makePercentage (val, sum, len = 1) {
+    return `${((val / sum) * 100).toFixed(len)}%`
+  }
 }
 
-function ActivityViz (logs) {
-  Viz.call(this, logs, -365, 0)
-
-  function parse (logs) {
-    const h = {}
-    for (const id in logs) {
-      const log = logs[id]
-      const offset = log.time.offset
-      if (offset > 0) { continue }
-      if (offset < -364) { break }
-      h[log.time.offset] = log
-    }
-    return h
-  }
+function DotViz (logs, from = -365, length = 365) {
+  Viz.call(this, logs, from, length, 'Activity')
 
   this.draw = function () {
-    const data = parse(this.logs)
-    const cell = 12
+    const data = this.slice(logs, from)
     let html = ''
     let week = 0
     while (week < 52) {
-      const x = parseInt(week * (cell + 1))
+      const x = parseInt(week * (this.size + 1))
       let day = 0
       while (day < 7) {
-        const y = parseInt(day * (cell + 1))
-        const offset = (365 - (week * 7) - (day + 1)) * -1
+        const y = parseInt(day * (this.size + 1))
+        const offset = ((from * -1) - (week * 7) - (day + 1)) * -1
         const log = data[offset + 1]
-        html += log && log.sector ? `<rect class='bg_${log.sector} ${log.isEvent ? 'event' : ''}' x='${x}' y='${y}' width='${cell}' height='${cell}' rx="2" ry="2" title='${log.time}' data-goto='${log.term}'></rect>` : `<rect class='missing ${day === 6 && week === 51 ? 'today' : ''}' x='${x}' y='${y}' width='${cell}' height='${cell}' rx="2" ry="2"></rect>`
+        html += log && log.sector ? `<rect class='bg_${log.sector} ${log.isEvent ? 'event' : ''}' x='${x}' y='${y}' width='${this.size}' height='${this.size}' rx="2" ry="2" title='${log.time}' data-goto='${log.term}'></rect>` : `<rect class='missing ${day === 6 && week === 51 ? 'today' : ''}' x='${x}' y='${y}' width='${this.size}' height='${this.size}' rx="2" ry="2"></rect>`
         day += 1
       }
       week += 1
@@ -79,79 +92,59 @@ function ActivityViz (logs) {
   }
 }
 
-function BarViz (logs) {
-  Viz.call(this, logs, -365 * 10, 0)
-
-  function distribute (logs, parts = 51) {
-    const limit = logs[logs.length - 1].time.offset * -1
-    const h = {}
-    for (const id in logs) {
-      const log = logs[id]
-      const offset = log.time.offset
-      const pos = parts - (((offset * -1) / limit) * parts)
-      const share = (pos - Math.floor(pos))
-
-      if (!h[Math.floor(pos)]) { h[Math.floor(pos)] = { audio: 0, visual: 0, research: 0 } }
-      if (!h[Math.ceil(pos)]) { h[Math.ceil(pos)] = { audio: 0, visual: 0, research: 0 } }
-      if (!h[Math.floor(pos)][log.sector]) { h[Math.floor(pos)][log.sector] = 0 }
-      if (!h[Math.ceil(pos)][log.sector]) { h[Math.ceil(pos)][log.sector] = 0 }
-
-      h[Math.floor(pos)][log.sector] += ((log.fh + log.ch) / 2) * (1 - share)
-      h[Math.ceil(pos)][log.sector] += ((log.fh + log.ch) / 2) * share
-    }
-    return h
-  }
+function BarViz (logs, from = -365, length = 365) {
+  Viz.call(this, logs, from, length, 'Focus')
 
   this.draw = function () {
-    const segments = distribute(this.logs)
-    const cell = 12
-    const mod = 0.16
+    const data = this.slice(logs, from, length)
+    const segments = this.distrib(data, from, length)
+    const range = { min: 9999, max: 0 }
+
+    // Clamp
+    for (const key in segments) {
+      if (!segments[key]) { segments[key] = { audio: 0, visual: 0, research: 0 } }
+      segments[key].audio = clamp(segments[key].audio, 2)
+      segments[key].visual = clamp(segments[key].visual, 2)
+      segments[key].research = clamp(segments[key].research, 2)
+    }
+
+    // min
+    for (const seg of Object.values(segments)) {
+      const sum = seg.audio + seg.visual + seg.research
+      if (sum < range.min) { range.min = sum }
+      if (sum > range.max) { range.max = sum }
+    }
+
     return Object.keys(segments).reduce((acc, val, id) => {
+      const x = parseInt(id) * (this.size + 1)
       const seg = segments[val]
-      const x = parseInt(id) * (cell + 1)
-      const audioh = clamp(seg.audio * mod, 4, 100)
-      const audioy = audioh + 35
-      const visualh = clamp(seg.visual * mod, 4, 100)
-      const visualy = (visualh + audioy) + 0.5
-      const researchh = clamp(seg.visual * mod, 4, 100)
-      const researchy = (researchh + visualy) + 0.5
+      const sum = seg.audio + seg.visual + seg.research
+      const sumHeight = (sum / range.max) * 91
+      const audio = { h: (seg.audio / sum) * sumHeight, y: 91 - sumHeight }
+      const visual = { h: (seg.visual / sum) * sumHeight, y: audio.y + audio.h + 0.5 }
+      const research = { h: (seg.research / sum) * sumHeight, y: visual.y + visual.h + 0.5 }
+
       return `${acc}
-      <rect class='bg_audio' x='${x}' y='${125 - audioy}' width='${cell}' height='${audioh}' rx="2" ry="2"></rect>
-      <rect class='bg_visual' x='${x}' y='${125 - visualy}' width='${cell}' height='${visualh}' rx="2" ry="2"></rect>
-      <rect class='bg_research' x='${x}' y='${125 - researchy}' width='${cell}' height='${researchh}' rx="2" ry="2"></rect>`
+      <rect class='bg_misc' x='${x}' y='${91 - sumHeight}' width='${this.size}' height='${sumHeight}' rx="2" ry="2"></rect>
+      <rect class='bg_audio' x='${x}' y='${audio.y}' width='${this.size}' height='${audio.h}' rx="2" ry="2"></rect>
+      <rect class='bg_visual' x='${x}' y='${visual.y}' width='${this.size}' height='${visual.h}' rx="2" ry="2"></rect>
+      <rect class='bg_research' x='${x}' y='${research.y}' width='${this.size}' height='${research.h}' rx="2" ry="2"></rect>
+      `
     }, '')
   }
 
   function clamp (v, min, max) { return v < min ? min : v > max ? max : v }
 }
 
-function BalanceViz (logs) {
-  Viz.call(this, logs, -365 * 10, 0)
-
-  function distribute (logs, parts = 51) {
-    const limit = logs[logs.length - 1].time.offset * -1
-    const h = {}
-    for (const id in logs) {
-      const log = logs[id]
-      const offset = log.time.offset
-      const pos = parts - (((offset * -1) / limit) * parts)
-      const share = (pos - Math.floor(pos))
-      if (!h[Math.floor(pos)]) { h[Math.floor(pos)] = { audio: 0, visual: 0, research: 0 } }
-      if (!h[Math.ceil(pos)]) { h[Math.ceil(pos)] = { audio: 0, visual: 0, research: 0 } }
-      if (!h[Math.floor(pos)][log.sector]) { h[Math.floor(pos)][log.sector] = 0 }
-      if (!h[Math.ceil(pos)][log.sector]) { h[Math.ceil(pos)][log.sector] = 0 }
-      h[Math.floor(pos)][log.sector] += ((log.fh + log.ch) / 2) * (1 - share)
-      h[Math.ceil(pos)][log.sector] += ((log.fh + log.ch) / 2) * share
-    }
-    return h
-  }
+function BalanceViz (logs, from = -365, length = 365) {
+  Viz.call(this, logs, -365 * 10, 0, 'Balance')
 
   this.draw = function () {
-    const segments = distribute(this.logs)
-    const cell = 12
+    const data = this.slice(logs, from, length)
+    const segments = this.distrib(data, from, length)
     return Object.keys(segments).reduce((acc, val, id) => {
       const seg = segments[val]
-      const x = parseInt(id) * (cell + 1)
+      const x = parseInt(id) * (this.size + 1)
       const sum = seg.audio + seg.visual + seg.research
       const audioh = Math.floor(clamp((seg.audio / sum) * 90, 4, 125))
       const audioy = 0
@@ -160,9 +153,9 @@ function BalanceViz (logs) {
       const researchh = 89 - audioh - visualh
       const researchy = (audioh + visualh) + 1
       return `${acc}
-      <rect class='bg_audio' x='${x}' y='${audioy}' width='${cell}' height='${audioh}' rx="2" ry="2"></rect>
-      <rect class='bg_visual' x='${x}' y='${visualy}' width='${cell}' height='${visualh}' rx="2" ry="2"></rect>
-      <rect class='bg_research' x='${x}' y='${researchy}' width='${cell}' height='${researchh}' rx="2" ry="2"></rect>`
+      <rect class='bg_audio' x='${x}' y='${audioy}' width='${this.size}' height='${audioh}' rx="2" ry="2"></rect>
+      <rect class='bg_visual' x='${x}' y='${visualy}' width='${this.size}' height='${visualh}' rx="2" ry="2"></rect>
+      <rect class='bg_research' x='${x}' y='${researchy}' width='${this.size}' height='${researchh}' rx="2" ry="2"></rect>`
     }, '')
   }
 
@@ -213,23 +206,24 @@ function HoraireViz (logs) {
   }
 }
 
-function PieChart (logs) {
+function PieViz (logs) {
   this.colors = ['#72dec2', '#51a196', '#316067']
   this.data = sortHash(Horaire(logs).terms).slice(0, 18)
-  this.size = { w: 120, h: 120, t: 12 }
+  this.diameter = 120
+  this.size = 12
 
   this.pie = (id, ratio, color = 'red', offset = 0) => {
-    const r = (this.size.w / 2) - this.size.t
+    const r = (this.diameter / 2) - this.size
     const c = 2 * Math.PI * r
     return `
-    <g transform = "rotate(${offset} ${this.size.w / 2} ${this.size.h / 2})">
+    <g transform = "rotate(${offset} ${this.diameter / 2} ${this.diameter / 2})">
       <circle 
         r='${r}' 
-        cx="${this.size.w / 2}" 
-        cy="${this.size.h / 2}" 
+        cx="${this.diameter / 2}" 
+        cy="${this.diameter / 2}" 
         fill='none' 
         stroke='${color}' 
-        stroke-width='${this.size.t}' 
+        stroke-width='${this.size}' 
         stroke-dasharray='${c}' 
         stroke-dashoffset='${c * (1 - ratio)}' 
         stroke-linecap='butt'/>
@@ -263,8 +257,8 @@ function PieChart (logs) {
     }
     return `
     <svg class='horaire' style='
-      width:${this.size.w}px; 
-      height: ${this.size.h}px; 
+      width:${this.diameter}px; 
+      height: ${this.diameter}px; 
       float:left; 
       margin-right:45px; 
       transform: rotate(-90deg);'>
