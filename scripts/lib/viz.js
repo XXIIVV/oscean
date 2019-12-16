@@ -261,6 +261,16 @@ function PieChart (logs) {
       total += value
       count++
     }
-    return `<svg class='horaire' style='width:${this.size.w}px; height: ${this.size.h}px; float:left; margin-right:45px; transform: rotate(-90deg);'>${xml}</svg>${this.legend()}<hr />`
+    return `
+    <svg class='horaire' style='
+      width:${this.size.w}px; 
+      height: ${this.size.h}px; 
+      float:left; 
+      margin-right:45px; 
+      transform: rotate(-90deg);'>
+      ${xml}
+    </svg>
+    ${this.legend()}
+    <hr />`
   }
 }
