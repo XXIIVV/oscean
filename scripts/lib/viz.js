@@ -212,3 +212,55 @@ function HoraireViz (logs) {
     return `<svg class='horaire' style='width:${parts * 3}px; height: ${height + 4}px'><path d="${html}"/></svg>`
   }
 }
+
+function PieChart (logs) {
+  this.colors = ['#72dec2', '#51a196', '#316067']
+  this.data = sortHash(Horaire(logs).terms).slice(0, 18)
+  this.size = { w: 120, h: 120, t: 12 }
+
+  this.pie = (id, ratio, color = 'red', offset = 0) => {
+    const r = (this.size.w / 2) - this.size.t
+    const c = 2 * Math.PI * r
+    return `
+    <g transform = "rotate(${offset} ${this.size.w / 2} ${this.size.h / 2})">
+      <circle 
+        r='${r}' 
+        cx="${this.size.w / 2}" 
+        cy="${this.size.h / 2}" 
+        fill='none' 
+        stroke='${color}' 
+        stroke-width='${this.size.t}' 
+        stroke-dasharray='${c}' 
+        stroke-dashoffset='${c * (1 - ratio)}' 
+        stroke-linecap='butt'/>
+    </g>`
+  }
+
+  this.legend = () => {
+    let html = ''
+    let count = 0
+    for (const item of this.data) {
+      html += `<li>${item[0].toLink()} ${item[1]}fh <span style='color:${this.color(count)}'>•</span></li>`
+      count++
+    }
+    return `<ul class='tidy col3'>${html}</ul>`
+  }
+
+  this.color = (id) => {
+    return this.colors[id % this.colors.length]
+  }
+
+  this.toString = () => {
+    let xml = ''
+    const sum = Object.values(this.data).reduce((acc, item) => { return acc + item[1] }, 0)
+    let count = 0
+    let total = 0
+    for (const item of this.data) {
+      const value = item[1]
+      xml += this.pie(item[0], value / sum, this.color(count), (total / sum) * 360)
+      total += value
+      count++
+    }
+    return `<svg class='horaire' style='width:${this.size.w}px; height: ${this.size.h}px; float:left; margin-right:45px; transform: rotate(-90deg);'>${xml}</svg>${this.legend()}<hr />`
+  }
+}

@@ -126,6 +126,10 @@ function __onlyDiaries (log) {
   return log.pict !== null
 }
 
+function __onlyOfProjects (log) {
+  return __onlyProjects(log.host)
+}
+
 function __onlyProjects (term) {
   return term.logs.length > 20
 }

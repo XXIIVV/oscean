@@ -79,7 +79,7 @@ function Entry (name, data) {
 function Log (data = { code: '-400' }) {
   Entry.call(this, data.name, data)
 
-  this.term = data.term
+  this.term = data.term.toTitleCase()
   this.time = data.date ? new Arvelie(data.date) : null
   this.pict = data.pict ? data.pict : null
   this.bref = `A log added on ${this.time} to ${this.term.toLink()}.`
