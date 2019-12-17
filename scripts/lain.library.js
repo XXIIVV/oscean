@@ -240,6 +240,7 @@ const lainLibrary = {
   },
 
   new: (name, p1, p2) => {
+    console.log(name,p1,p2)
     return new window[name](p1, p2)
   },
 
@@ -264,6 +265,9 @@ const lainLibrary = {
   // Time
 
   time: {
+    date: (g) => {
+      return new Date(g)
+    },
     now: () => {
       return Date.now()
     },

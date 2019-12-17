@@ -16,6 +16,6 @@
 (defn ital (body) (wrap body "i"))
 (defn code (body) (wrap body "code"))
 ; time
-(defn ms-since (g) (sub (time:now) (new "Date" g)))
+(defn ms-since (g) (sub (time:now) (time:date g)))
 (defn days-since (g) (div (div (ms-since g) 1000) 86400))
 `
