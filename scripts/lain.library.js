@@ -144,7 +144,7 @@ const lainLibrary = {
   },
 
   tunnel: (obj, ...keys) => {
-    return keys.reduce((acc, key) => { return key && acc && acc[key] ? acc[key] : null }, obj)
+    return keys.reduce((acc, key) => { return key && acc ? acc[key] : null }, obj)
   },
 
   // logic
@@ -248,7 +248,9 @@ const lainLibrary = {
   },
 
   debug: (...args) => {
-    console.log(args)
+    for (const arg of args) {
+      console.log(arg)
+    }
   },
 
   wait: (s, fn) => {
@@ -279,6 +281,9 @@ const lainLibrary = {
     },
     year: (g) => {
       return new Date().getFullYear()
+    },
+    ago: (offset) => {
+      return timeAgo(offset)
     },
     doty: (date = new Date()) => {
       const start = new Date(date.getFullYear(), 0, 0)
