@@ -136,15 +136,32 @@ function BarViz (logs, from = -365, length = 365) {
   function clamp (v, min, max) { return v < min ? min : v > max ? max : v }
 }
 
-function BalanceViz (logs, from = -365, length = 365) {
-  Viz.call(this, logs, -365 * 10, 0, 'Balance')
+function BalViz (logs, from = -365, length = 365) {
+  Viz.call(this, logs, from, length, 'Balance')
 
   this.draw = function () {
     const data = this.slice(logs, from, length)
     const segments = this.distrib(data, from, length)
+    const range = { min: 9999, max: 0 }
+
+    // Clamp
+    for (const key in segments) {
+      if (!segments[key]) { segments[key] = { audio: 0, visual: 0, research: 0 } }
+      segments[key].audio = clamp(segments[key].audio, 2)
+      segments[key].visual = clamp(segments[key].visual, 2)
+      segments[key].research = clamp(segments[key].research, 2)
+    }
+
+    // min
+    for (const seg of Object.values(segments)) {
+      const sum = seg.audio + seg.visual + seg.research
+      if (sum < range.min) { range.min = sum }
+      if (sum > range.max) { range.max = sum }
+    }
+
     return Object.keys(segments).reduce((acc, val, id) => {
-      const seg = segments[val]
       const x = parseInt(id) * (this.size + 1)
+      const seg = segments[val]
       const sum = seg.audio + seg.visual + seg.research
       const audioh = Math.floor(clamp((seg.audio / sum) * 90, 4, 125))
       const audioy = 0

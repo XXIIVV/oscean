@@ -130,6 +130,10 @@ function __onlyDiaries (log) {
   return log.pict !== null
 }
 
+function __onlyDanglings (log) {
+  return log.pict === null && log.host.logs.length < 5 && !log.isEvent
+}
+
 function __onlyOfProjects (log) {
   return __onlyProjects(log.host)
 }

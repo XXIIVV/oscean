@@ -566,6 +566,11 @@ const lainLibrary = {
       return `Walked ${Object.keys(lainLibrary.database.index).length} indexes, in ${(performance.now() - totalTime).toFixed(2)}ms.`
     },
 
+    danglings: (q) => {
+      const logs = lainLibrary.database.select('horaire').filter(__onlyDanglings)
+      return logs.reduce((acc, log) => { return `${acc}${log.time} ${log.term}\n` }, '')
+    },
+
     pomodoro: (q) => {
       if (!('Notification' in window)) {
         return 'This browser does not support desktop notification'

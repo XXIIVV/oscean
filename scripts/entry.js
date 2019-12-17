@@ -106,7 +106,7 @@ function Log (data = { code: '-400' }) {
     const tasks = [
       ['idle', 'session', 'audio experiment', 'rehearsal', 'draft', 'composition', 'sound design', 'mastering', 'audio release', 'performance'],
       ['idle', 'screening', 'visual experiment', 'storyboard', 'sketch', 'editing', 'graphic design', 'rendering', 'visual release', 'showcase'],
-      ['idle', 'exploration', 'code experiment', 'planning', 'maintenance', 'prototype', 'interaction design', 'updating', 'software release', 'talk']
+      ['idle', 'documentation', 'code experiment', 'planning', 'maintenance', 'prototype', 'interaction design', 'updating', 'software release', 'talk']
     ]
     return tasks[this.sc - 1] ? tasks[this.sc - 1][this.ch] : 'travel'
   }
