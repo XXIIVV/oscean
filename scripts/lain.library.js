@@ -239,9 +239,12 @@ const lainLibrary = {
     return window[name]
   },
 
-  new: (name, p1, p2) => {
-    console.log(name,p1,p2)
-    return new window[name](p1, p2)
+  new: (name, p1, p2, p3, p4) => {
+    return new window[name](p1, p2, p3, p4)
+  },
+
+  run: (fn, ...params) => {
+    return fn(params)
   },
 
   debug: (...args) => {
@@ -539,7 +542,7 @@ const lainLibrary = {
       const a = []
       const logs = lainLibrary.database.select('horaire').filter(__onlyEvents).filter(__onlyThisDay)
       if (logs.length < 1) { return 'There were no past events on this date.' }
-      return `On This Day, on ${timeAgo(logs[0].time, 14)}, ${logs[0].host.name.toTitleCase()} — ${logs[0].name}.`
+      return `On This Day, on ${timeAgo(logs[0].time.offset, 14)}, ${logs[0].host.name.toTitleCase()} — ${logs[0].name}.`
     },
 
     next: (q) => {

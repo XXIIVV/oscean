@@ -9,8 +9,7 @@ function Viz (logs, from, to, name) {
     const h = {}
     for (const id in logs) {
       const log = logs[id]
-      if (Object.keys(h).length > length) { break }
-      if (log.time.offset < from) { continue }
+      if (log.time.offset < from || log.time.offset > from + length) { continue }
       h[log.time.offset] = log
     }
     return h
@@ -48,7 +47,7 @@ function Viz (logs, from, to, name) {
     <text x='${(this.size + 1) * 11}' y='115' style='text-anchor:start'>Visual ${makePercentage(horaire.sectors.visual, sum)}</text>
     <rect class="bg_research" x="${(this.size + 1) * 18}" y="105" width="13" height="13" rx="2" ry="2" title="17O11"></rect>
     <text x='${(this.size + 1) * 20}' y='115' style='text-anchor:start'>Research ${makePercentage(horaire.sectors.research, sum)}</text>
-    <text x='675' y='115' style='text-anchor:end'>${name} — ${horaire.range.from.time.ago()}</text>`
+    <text x='675' y='115' style='text-anchor:end'>${name} — ${timeAgo(from)}</text>`
   }
 
   this.draw = function () {

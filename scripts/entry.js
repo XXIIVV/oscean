@@ -61,7 +61,7 @@ function Entry (name, data) {
       return this.logs.length > 10 && span.from && span.to ? `<li>${this.name.toTitleCase().toLink()} ${span.from}—${span.to}</li>` : ''
     },
     date: (id, arr) => {
-      return `${arr[id - 1] && this.time.y !== arr[id - 1].time.y ? `<li class='head'>20${this.time.y}</li>` : ''}<li style='${this.time.offset > 0 ? 'color:#aaa' : ''}'>${this.term.toLink(this.name)} <span title='${this.time}'>${timeAgo(this.time, 60)}</span></li>`
+      return `${arr[id - 1] && this.time.y !== arr[id - 1].time.y ? `<li class='head'>20${this.time.y}</li>` : ''}<li style='${this.time.offset > 0 ? 'color:#aaa' : ''}'>${this.term.toLink(this.name)} <span title='${this.time}'>${timeAgo(this.time.offset, 60)}</span></li>`
     }
   }
 
@@ -116,7 +116,7 @@ function Log (data = { code: '-400' }) {
     <div class='entry log ${this.isEvent ? 'event' : ''}'>
       ${this.templates.icon()}
       <div class='head'>
-        <div class='details'>${this.term.toLink(this.term, 'topic')} ${this.name && !this.isEvent ? ` — <span class='name' data-goto='${this.name}'>${this.name}</span>` : ''} <span class='time' data-goto='${this.time}'><b>${this.task().toTitleCase()}</b>, ${timeAgo(this.time, 14)}</span></div>
+        <div class='details'>${this.term.toLink(this.term, 'topic')} ${this.name && !this.isEvent ? ` — <span class='name' data-goto='${this.name}'>${this.name}</span>` : ''} <span class='time' data-goto='${this.time}'><b>${this.task().toTitleCase()}</b>, ${timeAgo(this.time.offset, 14)}</span></div>
         <div class='bref'>${this.isEvent ? this.name : this.host ? this.host.bref.template(this.host) : ''}</div>
       </div>
       ${this.pict ? `<img src='media/diary/${this.pict}.jpg' data-goto='${this.term}' loading='lazy'/>` : ''}

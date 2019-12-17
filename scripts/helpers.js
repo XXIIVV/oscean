@@ -34,14 +34,14 @@ String.prototype.template = function (host) {
 
 // Arvelie
 
-function timeAgo (arvelie, cap = 9999) {
-  if (-arvelie.offset > cap) { return `${arvelie}` }
-  if (arvelie.offset === 1) { return 'tomorrow' }
-  if (arvelie.offset === 0) { return 'today' }
-  if (arvelie.offset === -1) { return 'yesterday' }
-  if (arvelie.offset < -365) { return `${parseInt(arvelie.offset / -365)} years ago` }
-  if (arvelie.offset < 1) { return `${arvelie.offset * -1} days ago` }
-  return `in ${arvelie.offset} days`
+function timeAgo (offset, cap = 9999) {
+  if (-offset > cap) { return `${offset} days ago` }
+  if (offset === 1) { return 'tomorrow' }
+  if (offset === 0) { return 'today' }
+  if (offset === -1) { return 'yesterday' }
+  if (offset < -365) { return `${parseInt(offset / -365)} years ago` }
+  if (offset < 1) { return `${offset * -1} days ago` }
+  return `in ${offset} days`
 }
 
 function sort (array) {
