@@ -34,8 +34,7 @@ String.prototype.template = function (host) {
 
 // Arvelie
 
-function timeAgo (offset, cap = 9999) {
-  if (-offset > cap) { return `${offset} days ago` }
+function timeAgo (offset, cap = 400) {
   if (offset === 1) { return 'tomorrow' }
   if (offset === 0) { return 'today' }
   if (offset === -1) { return 'yesterday' }

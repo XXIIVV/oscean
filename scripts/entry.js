@@ -61,7 +61,7 @@ function Entry (name, data) {
       return this.logs.length > 10 && span.from && span.to ? `<li>${this.name.toTitleCase().toLink()} ${span.from}—${span.to}</li>` : ''
     },
     date: (id, arr) => {
-      return `${arr[id - 1] && this.time.y !== arr[id - 1].time.y ? `<li class='head'>20${this.time.y}</li>` : ''}<li style='${this.time.offset > 0 ? 'color:#aaa' : ''}'>${this.term.toLink(this.name)} <span title='${this.time}'>${timeAgo(this.time.offset, 60)}</span></li>`
+      return `${arr[id - 1] && this.time.y !== arr[id - 1].time.y ? `<li class='head'>20${this.time.y}</li>` : ''}<li style='${this.time.offset > 0 ? 'color:#aaa' : ''}'>${this.term.toLink(this.name)} <span title='${this.time}'>${this.time.offset > -99 ? timeAgo(this.time.offset, 60) : this.time}</span></li>`
     }
   }
 
