@@ -33,7 +33,6 @@
 ; footer
 (def __socials 
   (concat 
-    (link "https://twitter.com/neauoire" "" "icon twitter sprite_twitter external") 
     (link "https://github.com/neauoire" "" "icon github sprite_github external") 
     (link "https://merveilles.town/@neauoire" "" "icon merveilles sprite_merveilles external") 
     (link "http://webring.xxiivv.com/#random" "" "icon rotonde sprite_rotonde external") 
