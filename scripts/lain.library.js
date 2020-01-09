@@ -37,6 +37,17 @@ const lainLibrary = {
     return `${str}`.substr(0, 1).toUpperCase() + `${str}`.substr(1)
   },
 
+  __link: (str, a,b) => {
+    if(str.isUrl()){
+      if(!a){ return `?"? LINK(?"?${str}?"?) ?"?` }
+      return `?"? LINKNAME(?"?${str}?"?, ?"?${a}?"?) ?"?`
+    }
+    if(!a){ 
+      return `?"? SEND(${str.toSnake()}_path) ?"?` 
+    }
+    return `?"? SENDNAME(${str.toSnake()}_path, ?"?${a}?"?) ?"?` 
+  },
+
   // arr
 
   map: (arr, fn) => {
@@ -581,6 +592,128 @@ const lainLibrary = {
     danglings: (q) => {
       const logs = lainLibrary.database.select('horaire').filter(__onlyDanglings)
       return logs.reduce((acc, log) => { return `${acc}${log.time} ${log.term}\n` }, '')
+    },
+
+    convert_lexicon: (q) => {
+      let html = ''
+      for (const id in lainLibrary.database.select('lexicon')) {
+        const term = lainLibrary.database.select('lexicon')[id]
+        // html += `#define ${id.toSnake()}_path ${id.toSnake()}`;
+        html += `Term ${id.toSnake()} = create_term("${id.toLowerCase()}", "${term.bref.template(term).stripHTML()}");\n`
+        html += `set_parent(&${term.name.toSnake()}, &${term.data.UNDE.toSnake()});\n`
+        if(term.glyph()){
+          html += `set_icon(&${term.name.toSnake()}, "${term.glyph()}");\n`
+        }
+
+        for(let line of term.data.BODY){
+          const rune = line.substr(0,1)
+          line = line.replaceAll('{(link ','{(__link ')
+          if(rune === '&'){
+            const text = line.substr(2).template(term).replace(/\"/g,'\\"')
+            html += `add_text(&${term.name.toSnake()}, "${text}");\n`
+          }
+          else if(rune === '@'){
+            const text = line.substr(2).template(term).split('|')[0].trim().replace(/\"/g,'\\"')
+            const source = line.replace(text,'').replace('@ ').trim()
+            html += `add_quote(&${term.name.toSnake()}, "${text}", "${source}");\n`
+          }
+          else if(rune === '*'){
+            const text = line.substr(2).template(term).trim().replace(/\"/g,'\\"')
+            html += `add_header(&${term.name.toSnake()}, "${text}");\n`
+          }
+          else if(rune === '+'){
+            const text = line.substr(2).template(term).trim().replace(/\"/g,'\\"')
+            html += `add_subheader(&${term.name.toSnake()}, "${text}");\n`
+          }
+          else if(rune === '?'){
+            const text = line.substr(2).template(term).trim().replace(/\"/g,'\\"')
+            html += `add_note(&${term.name.toSnake()}, "${text}");\n`
+          }
+          else if(rune === '%'){
+            const source = line.substr(2).trim().split(' ')[0]
+            const id = line.substr(2).trim().split(' ')[1]
+            html += `add_${source}(&${term.name.toSnake()}, "${id}");\n`
+          }
+          else if(rune === '>'){
+            const text = line.substr(2).template(term).trim().replace(/\"/g,'\\"')
+            html += `add_html(&${term.name.toSnake()}, "${text}");\n`
+          }
+          else if(rune === '#'){
+            const text = line.substr(2).template(term).trim().replace(/\"/g,'\\"')
+            html += `add_code(&${term.name.toSnake()}, "${text}");\n`
+          }
+          else if(rune === '|'){
+            const text = line.substr(2).template(term).trim().replace(/\"/g,'\\"')
+            html += `add_table(&${term.name.toSnake()}, "${text}");\n`
+          }
+          else if(rune === '-'){
+            const text = line.substr(2).template(term).trim().replace(/\"/g,'\\"')
+            html += `add_list(&${term.name.toSnake()}, "${text}");\n`
+          }
+          else{
+            console.warn('unknown rune', rune)
+          }
+        }
+
+        for(const id in term.links){
+          html += `add_link(&${term.name.toSnake()}, "${id.toLowerCase()}", "${term.links[id]}");\n`
+        }
+        html += `\n`
+      }
+
+
+      html += `Term lexicon = {`;
+      for (const id in lainLibrary.database.select('lexicon')) {
+        const term = lainLibrary.database.select('lexicon')[id]
+        html += `&${term.name.toSnake()}, `
+      }
+      html += `};`;
+
+
+      for (const id in lainLibrary.database.select('lexicon')) {
+        const term = lainLibrary.database.select('lexicon')[id]
+        html += `#define ${term.name.toSnake()}_path "${term.name.toSnake()}"\n`
+      }
+
+      return html.replace(/\?\\"\?/g,'"')
+    },
+
+    convert_horaire: (q) => {
+      let html = ''
+      for (const log of lainLibrary.database.select('horaire')) {
+        if(log.pict > 0){
+          if(log.isEvent){
+            html += `add_diary_event(&${log.data.term.toSnake()}, "${log.time}", ${parseInt(log.data.code.substr(1))}, "${log.name}", ${log.pict});\n`
+          }
+          else{
+            html += `add_diary(&${log.data.term.toSnake()}, "${log.time}", ${parseInt(log.data.code.substr(1))}, "${log.name}", ${log.pict});\n`  
+          }
+        }
+        else{
+          if(log.isEvent){
+            html += `add_event(&${log.data.term.toSnake()}, "${log.time}", ${parseInt(log.data.code.substr(1))}, "${log.name}");\n`
+          }
+          else{
+            html += `add_log(&${log.data.term.toSnake()}, "${log.time}", ${parseInt(log.data.code.substr(1))});\n`  
+          }
+        }
+      }
+
+      return html.replace(/\?\\"\?/g,'"')
+    },
+
+    convert_glossary: (q) => {
+      let html = ''
+      const lists = lainLibrary.database.select('glossary')
+      for (const id in lists) {
+        html += `Dict ${id.toSnake()} = create_dict("${id.toSnake()}");\n`
+        for(const word in lists[id].data){
+          html += `add_word(&${id.toSnake()}, "${word.toSnake()}", "${lists[id].data[word].trim().replace(/\"/g,'\\"')}");\n`
+        }
+        html += `\n`
+      }
+
+      return html.replace(/\?\\"\?/g,'"')
     },
 
     pomodoro: (q) => {
