@@ -197,7 +197,7 @@ void build_page(Term *term) {
   // Image
   for (int i = 0; i < term->logs_len; ++i) {
     if(term->logs_pict[i] > 0){
-      fprintf(myfile, "<img src='../media/diary/%d.jpg' alt='%s' width='100%'/>", term->logs_pict[i], term->logs_name[i]);
+      fprintf(myfile, "<img src='../media/diary/%d.jpg' alt='%s' width='400px'/>", term->logs_pict[i], term->logs_name[i]);
       fprintf(myfile, "<h5>%s - %s</h5>", term->logs_name[i], term->logs_date[i]);
       break;
     }
