@@ -305,8 +305,8 @@
 #define japanese_path "japanese"
 #define russian_path "russian"
 
-#define LINK(link_id) "<a href='"link_id"'>"link_id"</a>"
-#define LINKNAME(linkname_id, linkname_name) "<a href='"linkname_id"'>"linkname_name"</a>"
+#define LINK(link_id) "<a href='"link_id"' class='external' target='_blank'>"link_id"</a>"
+#define LINKNAME(linkname_id, linkname_name) "<a href='"linkname_id"' class='external' target='_blank'>"linkname_name"</a>"
 #define SEND(send_id) "<a href='" send_id ".html'>" send_id "</a>"
 #define SENDNAME(sendname_id, sendname_text) "<a href='" sendname_id ".html'>" sendname_text "</a>"
 

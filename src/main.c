@@ -2,13 +2,40 @@
 #include <stdio.h>
 #include <string.h>
 
+#define STR_BUF_LEN 64
+#define LOGS_BUFFER 1000
+
+char *html_head = "<!DOCTYPE html><html lang='en'><head><meta name='author' content='Devine Lu Linvega'><meta name='description' content='The Nataniev Library.'/><meta name='keywords' content='Aliceffekt, Traumae, Devine Lu Linvega, Lietal, Oquonie, Verreciel, Nataniev, Oscean, Solarpunk' /><meta name='license' content='name=BY-NC-SA(4.0), url=https://creativecommons.org/licenses/by-nc-sa/4.0/'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width, initial-scale=1.0'><meta name='twitter:card' content='summary'><meta name='twitter:site' content='@neauoire'><meta name='twitter:title' content='The Nataniev Library'><meta name='twitter:description' content='The digital playground and documentation for the projects of Devine Lu Linvega.'><meta name='twitter:creator' content='@neauoire'><meta name='twitter:image' content='https://wiki.xxiivv.com/media/services/rss.jpg'><meta property='og:title' content='The Nataniev Library' /><meta property='og:type' content='article' /><meta property='og:url' content='http://wiki.xxiivv.com/' /><meta property='og:image' content='https://wiki.xxiivv.com/media/services/rss.jpg' /><meta property='og:description' content='The digital playground and documentation for the projects of Devine Lu Linvega.' /> <meta property='og:site_name' content='XXIIVV' /><title>XXIIVV — %s</title><link rel='stylesheet' type='text/css' href='../links/main.css'></head><body>";
+
+char *html_header = "<header><a id='logo' href='home.html'><img src='../media/interface/logo.svg' alt='XXIIVV'></a></header>";
+
+char *html_footer = "<footer><a href='https://100r.co' target='_blank' rel='noreferrer' class='icon hundredrabbits sprite_hundredrabbits'>https://100r.co</a> <a href='devine_lu_linvega.html' target='_self'>Devine Lu Linvega © 2020</a> <a href='about.html' target='_self'>BY-NC-SA 4.0</a> <a href='https://creativecommons.org/licenses/by-nc-sa/4.0' target='_blank' rel='noreferrer' class='external icon cc sprite_cc'>https://creativecommons.org/licenses/by-nc-sa/4.0</a> <a href='http://webring.xxiivv.com/#random' target='_blank' rel='noreferrer' class='external icon rotonde sprite_rotonde'>http://webring.xxiivv.com/#random</a> <a href='https://merveilles.town/@neauoire' target='_blank' rel='noreferrer' class='external icon merveilles sprite_merveilles'>https://merveilles.town/@neauoire</a> <a href='https://github.com/neauoire' target='_blank' rel='noreferrer' class='external icon github sprite_github'>https://github.com/neauoire</a></footer></body></html>";
+
+typedef struct Log {
+  char *date;
+  char *name;
+  int pict;
+} Log;
+
 typedef struct Term {
   char *name;
   char *bref;
   char *link;
-  struct Term * parent;
+  struct Term *parent;
+  int children_len;
+  struct Term *children[32];
   int body_len;
   char *body[32];
+
+  int links_len;
+  char *links_names[32];
+  char *links_urls[32];
+
+  int logs_len;
+  char *logs_date[LOGS_BUFFER];
+  char *logs_name[LOGS_BUFFER];
+  int logs_pict[LOGS_BUFFER];
+  int logs_code[LOGS_BUFFER];
 } Term;
 
 typedef struct Dict {
@@ -37,13 +64,8 @@ Term create_term(char *name, char *bref) {
   Term t;
   t.name = name;
   t.bref = bref;
-  t.link = bref;
-
-  // char filename[STR_BUF_LEN];
-  // to_lowercase(t.link, filename, STR_BUF_LEN);
-
-  // to_lowercase(t.link)
   t.parent = NULL;
+  t.children_len = 0;
   return t;
 }
 
@@ -54,7 +76,8 @@ Dict create_dict(char *name) {
 }
 
 void add_text(Term *term, char *text) {
-  // printf("%s\n", text);
+  term->body[term->body_len] = text;
+  term->body_len++;
 }
 
 void add_word(Dict *dict, char *key, char *value) {
@@ -66,7 +89,9 @@ void set_icon(Term *term, char *path) {
 }
 
 void set_parent(Term *term, Term *parent) {
-  
+  term->parent = parent;
+  parent->children[parent->children_len] = term;
+  parent->children_len++;
 }
 
 void add_quote(Term *term, char *text, char *source) {
@@ -79,7 +104,6 @@ void add_note(Term *term, char *text) {
 
 void add_header(Term *term, char *text) {
   
-
 }
 
 void add_html(Term *term, char *text) {
@@ -120,37 +144,92 @@ void add_table(Term *term, char *text) {
 }
 
 void add_link(Term *term, char *name, char *url) {
-  
+  term->links_names[term->links_len] = name;
+  term->links_urls[term->links_len] = url;
+  term->links_len++;
+}
+
+void add_log(Term *term, char *date, int code) {
+  term->logs_date[term->logs_len] = date;
+  term->logs_code[term->logs_len] = code;
+  term->logs_name[term->logs_len] = "";
+  term->logs_pict[term->logs_len] = 0;
+  term->logs_len++;
+}
+
+void add_diary(Term *term, char *date, int code, char *name, int pict) {
+  term->logs_date[term->logs_len] = date;
+  term->logs_code[term->logs_len] = code;
+  term->logs_name[term->logs_len] = name;
+  term->logs_pict[term->logs_len] = pict;
+  term->logs_len++;
 }
 
 void add_event(Term *term, char *date, int code, char *name) {
 
 }
 
-void add_log(Term *term, char *date, int code) {
+void add_diary_event(Term *term, char *date, int code, char *name, int pict) {
 
 }
 
-void add_diary(Term *term, char *date, int code, char *name, int photo) {
+void build_page(Term *term) {
+  char filename[STR_BUF_LEN];
+  to_lowercase(term->name, filename, STR_BUF_LEN);
+  char filepath[STR_BUF_LEN];
+  snprintf(filepath, STR_BUF_LEN, "../site/%s.html", filename);
+  FILE *myfile = fopen(filepath, "w");
 
+  fprintf(myfile, html_head, term->name);
+  fputs(html_header, myfile);
+
+  fputs("<main>", myfile);
+  fprintf(myfile, "<h1>%s</h1>", term->name);
+  fprintf(myfile, "<h2>%s</h2>", term->bref);
+  if(term->name != term->parent->name){
+    char parent_filename[STR_BUF_LEN];
+    to_lowercase(term->parent->name, parent_filename, STR_BUF_LEN);
+    fprintf(myfile, "<h3><a href='%s.html'>%s</a></h3>", parent_filename, term->parent->name); 
+  }
+  if(term->logs_len > 1){
+    fprintf(myfile, "<h4>%d logs</h4>", term->logs_len);
+  }
+  // Image
+  for (int i = 0; i < term->logs_len; ++i) {
+    if(term->logs_pict[i] > 0){
+      fprintf(myfile, "<img src='../media/diary/%d.jpg' alt='%s' width='100%'/>", term->logs_pict[i], term->logs_name[i]);
+      fprintf(myfile, "<h5>%s - %s</h5>", term->logs_name[i], term->logs_date[i]);
+      break;
+    }
+  }
+  // body
+  for (int i = 0; i < term->body_len; ++i) {
+    fprintf(myfile, "<p>%s</p>", term->body[i]);
+  }
+  // children
+  fputs("<ul class='children'>", myfile);
+  for (int i = 0; i < term->children_len; ++i) {
+    char child_filename[STR_BUF_LEN];
+    to_lowercase(term->children[i]->name, child_filename, STR_BUF_LEN);
+    fprintf(myfile, "<li><a href='%s.html'>%s</a></li>", child_filename, term->children[i]->name);
+  }
+  fputs("</ul>", myfile);
+  // links
+  fputs("<ul class='links'>", myfile);
+  for (int i = 0; i < term->links_len; ++i) {
+    fprintf(myfile, "<li><a href='%s'>%s</a></li>", term->links_urls[i], term->links_names[i]);
+  }
+  fputs("</ul>", myfile);
+
+  fputs("</main>", myfile);
+  fputs("<hr/>", myfile);
+
+  fputs(html_footer, myfile);
+
+  fclose(myfile);
 }
-
-void add_diary_event(Term *term, char *date, int code, char *name, int photo) {
-
-}
-
 
 /*
-#define STR_BUF_LEN 64
-
-char *html_head = "<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='description' content='Hundred Rabbits is a digital studio aboard a sailboat.'><meta name='viewport' content='width=device-width, initial-scale=1.0'><meta name='twitter:card' content='summary'><meta name='twitter:site' content='@RekkaBell'><meta name='twitter:title' content='Hundred Rabbits'><meta name='twitter:description' content='An illustrated food blog.'><meta name='twitter:creator' content='@RekkaBell'><meta name='twitter:image' content='https://grimgrains.com/media/services/icon.jpg'><meta property='og:title' content='Hundred Rabbits'><meta property='og:type' content='article'><meta property='og:url' content='http://grimgrains.com/'><meta property='og:image' content='https://grimgrains.com/media/services/icon.jpg'><meta property='og:description' content='An illustrated food blog.'><meta property='og:site_name' content='Hundred Rabbits'><title>Hundred Rabbits — %s</title><link rel='stylesheet' type='text/css' href='../links/main.css'></head><body class='%s'>";
-
-char *html_header = "<header><a id='logo' href='home.html'><img src='../media/interface/logo.svg' alt='Hundred Rabbits'></a></header>";
-
-char *html_footer = "<footer><p>Never miss an update</p><form action='https://tinyletter.com/hundredrabbits' method='post' target='popupwindow' onsubmit='window.open(\'https://tinyletter.com/hundredrabbits\', \'popupwindow\', \'scrollbars=yes,width=800,height=600\');return true'><input type='email' value='' name='EMAIL' class='email' placeholder='email@address.com' required=''><input type='submit' value='Subscribe' name='subscribe' class='button'></form></footer></body></html>";
-
-
-
 
 typedef struct {
   char *name;
@@ -181,47 +260,6 @@ void add_part(Page *page, char *name, char *description) {
 void add_page(Category *category, Page *page) {
   category->pages[category->pages_len] = page;
   category->pages_len++;
-}
-
-void build_page(Page *page) {
-  char filename[STR_BUF_LEN];
-  to_lowercase(page->name, filename, STR_BUF_LEN);
-  char filepath[STR_BUF_LEN];
-  snprintf(filepath, STR_BUF_LEN, "../site/%s.html", filename);
-  FILE *myfile = fopen(filepath, "w");
-
-  fprintf(myfile, html_head, page->name, "page");
-  fputs(html_header, myfile);
-
-  fputs("<main class='page'>", myfile);
-  fprintf(myfile, "<h1>%s</h1>", page->name);
-
-  if (page->parts_len > 5) {
-    fputs("<ul class='jump'>", myfile);
-    for (int i = 0; i < page->parts_len; ++i) {
-      char *part_name = page->parts_names[i];
-      char part_index[STR_BUF_LEN];
-      to_lowercase(part_name, part_index, STR_BUF_LEN);
-      fprintf(myfile, "<li><a href='#%s'>%s</a></li>", part_index, part_name);
-    }
-    fputs("</ul>", myfile);
-  }
-
-  for (int i = 0; i < page->parts_len; ++i) {
-    char *part_name = page->parts_names[i];
-    char *part_description = page->parts_descriptions[i];
-    char part_index[STR_BUF_LEN];
-    to_lowercase(part_name, part_index, STR_BUF_LEN);
-    fprintf(myfile, "<h2 id='%s'>%s</h2>", part_index, part_name);
-    fputs(part_description, myfile);
-  }
-
-  fputs("<hr/>", myfile);
-  fputs("</main>", myfile);
-
-  fputs(html_footer, myfile);
-
-  fclose(myfile);
 }
 
 void build_home(Category **categories, int categories_len) {
@@ -256,22 +294,20 @@ void build_home(Category **categories, int categories_len) {
 
 int main(void) {
   #include "lexicon.c"
-  // #include "horaire.c"
+  #include "horaire.c"
   #include "glossary.c"
 
-  // int categories_len = sizeof categories / sizeof categories[0];
+  int lexicon_len = sizeof lexicon / sizeof lexicon[0];
+
+  printf("Lexicon: %d entries\n", lexicon_len);
 
   // printf("Found categories: %d\n", categories_len);
 
   // build_home(categories, categories_len);
 
-  // for (int i = 0; i < categories_len; ++i) {
-  //   Category *category = categories[i];
-  //   for (int j = 0; j < category->pages_len; ++j) {
-  //     Page *page = category->pages[j];
-  //     build_page(page);
-  //   }
-  // }
+  for (int i = 0; i < lexicon_len; ++i) {
+    build_page(lexicon[i]);
+  }
 
   return (0);
 }
