@@ -930,7 +930,7 @@ add_code(&riven, "Ø(\"query\").send(true) <comment># Send a message to the mode
 add_text(&riven, "This project is not meant to be an optimial way of building web applications, but a mere experimental framework to toy with the concepts of " LINKNAME("https://en.wikipedia.org/wiki/Flow-based_programming", "flow-based programming") ".");
 add_link(&riven, "sources", "https://github.com/XXIIVV/Riven");
 
-Term tools = create_term("tools", "The Tools collection is an ecosystem of open-source software to create audio and visual works, released as Hundred Rabbits.");
+Term tools = create_portal("tools", "The Tools collection is an ecosystem of open-source software to create audio and visual works, released as Hundred Rabbits.");
 set_parent(&tools, &software);
 set_icon(&tools, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
 add_text(&tools, "You can learn more about the philosophy behind these various projects on the " LINKNAME("https://100r.co/pages/tools_ecosystem.html", "Hundred Rabbits blog") ".");

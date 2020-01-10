@@ -1,5 +1,6 @@
 #include <ctype.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <string.h>
 
 #define STR_BUF_LEN 64
@@ -23,6 +24,7 @@ typedef struct Term {
   char *name;
   char *bref;
   char *link;
+  bool isPortal;
   struct Term *parent;
   int children_len;
   struct Term *children[32];
@@ -68,6 +70,13 @@ Term create_term(char *name, char *bref) {
   t.bref = bref;
   t.parent = NULL;
   t.children_len = 0;
+  t.isPortal = false;
+  return t;
+}
+
+Term create_portal(char *name, char *bref) {
+  Term t = create_term(name, bref);
+  t.isPortal = true;
   return t;
 }
 
@@ -175,6 +184,16 @@ void add_diary_event(Term *term, char *date, int code, char *name, int pict) {
 
 }
 
+int find_term_pict(Term *term){
+  printf("%s(%d)\n", term->name, term->logs_len);
+  for (int i = 0; i < term->logs_len; ++i) {
+    if(term->logs_pict[i] > 0){
+      return term->logs_pict[i];
+    }
+  }
+  return 0;
+}
+
 void build_nav_child(FILE *myfile, Term *target){
   fputs("<ul>", myfile);
   for (int k = 0; k < target->children_len; ++k) {
@@ -221,17 +240,7 @@ void build_nav_child_child_child(FILE *myfile, Term *term, Term *target){
   fputs("</ul>", myfile);
 }
 
-void build_page(Term *term) {
-  char filename[STR_BUF_LEN];
-  to_lowercase(term->name, filename, STR_BUF_LEN);
-  char filepath[STR_BUF_LEN];
-  snprintf(filepath, STR_BUF_LEN, "../site/%s.html", filename);
-  FILE *myfile = fopen(filepath, "w");
-
-  fprintf(myfile, html_head, term->name);
-  fputs(html_header, myfile);
-
-  // Nav
+void build_nav(FILE *myfile, Term *term){
   fputs("<nav>", myfile);
   if(term->name == term->parent->name){
     build_nav_child(myfile, term);
@@ -243,13 +252,25 @@ void build_page(Term *term) {
     build_nav_child_child_child(myfile, term->parent, term);  
   }
   fputs("</nav>", myfile);
+}
+
+void build_page(Term *term) {
+  char filename[STR_BUF_LEN];
+  to_lowercase(term->name, filename, STR_BUF_LEN);
+  char filepath[STR_BUF_LEN];
+  snprintf(filepath, STR_BUF_LEN, "../site/%s.html", filename);
+  FILE *myfile = fopen(filepath, "w");
+
+  fprintf(myfile, html_head, term->name);
+  fputs(html_header, myfile);
+  build_nav(myfile, term);
   
   fputs("<main>", myfile);
   // Image
   for (int i = 0; i < term->logs_len; ++i) {
     if(term->logs_pict[i] > 0){
-      fprintf(myfile, "<img class='banner' src='../media/diary/%d.jpg' alt='%s'/>", term->logs_pict[i], term->logs_name[i]);
-      fprintf(myfile, "<h4 class='caption'>%s - %s</h4>", term->logs_name[i], term->logs_date[i]);
+      fprintf(myfile, "<img src='../media/diary/%d.jpg' alt='%s'/>", term->logs_pict[i], term->logs_name[i]);
+      fprintf(myfile, "<h4>%s - %s</h4>", term->logs_name[i], term->logs_date[i]);
       break;
     }
   }
@@ -259,7 +280,20 @@ void build_page(Term *term) {
   for (int i = 0; i < term->body_len; ++i) {
     fprintf(myfile, "<p>%s</p>", term->body[i]);
   }
-  fputs("</ul>", myfile);
+
+  // Portal
+  if(term->isPortal == true){
+    for (int k = 0; k < term->children_len; ++k) {
+      char child_filename[STR_BUF_LEN];
+      to_lowercase(term->children[k]->name, child_filename, STR_BUF_LEN);
+      int pict = find_term_pict(term->children[k]);
+      if(pict > 0){
+        fprintf(myfile, "<a href='%s.html'><img src='../media/diary/%d.jpg' alt='%s picture'/></a>", child_filename, pict, term->children[k]->name);
+      }
+      fprintf(myfile, "<h3><a href='%s.html'>%s</a></h3>", child_filename, term->children[k]->name);
+      fprintf(myfile, "<p>%s</p>", term->children[k]->bref);
+    }
+  }
   // links
   fputs("<ul class='links'>", myfile);
   for (int i = 0; i < term->links_len; ++i) {
