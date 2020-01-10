@@ -1,29 +1,14 @@
 # Oscean
 
-This is the repository for the [Oscean wiki](http://wiki.xxiivv.com/), see the [on-site documentation](http://wiki.xxiivv.com/About) for more up-to-date details. Oscean is a static _dynamic site_ that uses [LISP](https://github.com/XXIIVV/Lain) as templating and markup language. The database formats are [Indental](https://wiki.xxiivv.com/Indental) and [Tablatal](https://wiki.xxiivv.com/Tablatal), some of the indental content is templated using into [Runic blocks](https://wiki.xxiivv.com/Runic).
+This is the repository for the [Oscean wiki](http://wiki.xxiivv.com/), see the [on-site documentation](http://wiki.xxiivv.com/About) for more up-to-date details. Oscean is a _static site_ written in [C99](https://en.wikipedia.org/wiki/C99).
 
 The Master Branch is the **live version**.
 
-## Search Repl
-
-A series of tools is available through the search bar, type `(add 5 6)` to see the resulting `11`, lisp queries will be interpreted. This is used mostly to perform maintenance tasks such as generating rss(`(services:rss)`), or to test all lexicon entries for broken entries(`(services:walk)`), or to convert Gregorian dates to [Arvelie](http://wiki.xxiivv.com/Arvelie)(`(gtoa 1986-03-22)`), etc..
-
-### Run Benchmark
+## Build
 
 ```
-(join (lain:run projects:benchmark))
-```
-
-## Syntax Highlight
-
-The `Resources/` folder inclues syntax highlight for both [Indental](https://wiki.xxiivv.com/Indental) and [Tablatal](https://wiki.xxiivv.com/Tablatal), to install them onto [Sublime](http://sublimetext.com), copy them into `~/Library/Application Support/Sublime Text 3/Packages/User/`.
-
-## Lint
-
-I use a special format for CSS and database formats, the linter cleans these files up a bit.
-
-```
-node resources/lint
+cd src/
+./build
 ```
 
 ## Twtxt
