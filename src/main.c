@@ -9,7 +9,7 @@ char *html_head = "<!DOCTYPE html><html lang='en'><head><meta name='author' cont
 
 char *html_header = "<header><a id='logo' href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV'></a></header>";
 
-char *html_footer = "<footer><a href='https://100r.co' target='_blank' rel='noreferrer' class='icon hundredrabbits sprite_hundredrabbits'>https://100r.co</a> <a href='devine_lu_linvega.html' target='_self'>Devine Lu Linvega © 2020</a> <a href='about.html' target='_self'>BY-NC-SA 4.0</a> <a href='https://creativecommons.org/licenses/by-nc-sa/4.0' target='_blank' rel='noreferrer' class='external icon cc sprite_cc'>https://creativecommons.org/licenses/by-nc-sa/4.0</a> <a href='http://webring.xxiivv.com/#random' target='_blank' rel='noreferrer' class='external icon rotonde sprite_rotonde'>http://webring.xxiivv.com/#random</a> <a href='https://merveilles.town/@neauoire' target='_blank' rel='noreferrer' class='external icon merveilles sprite_merveilles'>https://merveilles.town/@neauoire</a> <a href='https://github.com/neauoire' target='_blank' rel='noreferrer' class='external icon github sprite_github'>https://github.com/neauoire</a></footer></body></html>";
+char *html_footer = "<footer><a href='https://100r.co' target='_blank' rel='noreferrer' class='icon hundredrabbits sprite_hundredrabbits'>https://100r.co</a> <a href='https://creativecommons.org/licenses/by-nc-sa/4.0' target='_blank' rel='noreferrer' class='external icon cc sprite_cc'>https://creativecommons.org/licenses/by-nc-sa/4.0</a> <a href='http://webring.xxiivv.com/#random' target='_blank' rel='noreferrer' class='external icon rotonde sprite_rotonde'>http://webring.xxiivv.com/#random</a> <a href='https://merveilles.town/@neauoire' target='_blank' rel='noreferrer' class='external icon merveilles sprite_merveilles'>https://merveilles.town/@neauoire</a> <a href='https://github.com/neauoire' target='_blank' rel='noreferrer' class='external icon github sprite_github'>https://github.com/neauoire</a> <span><a class='profile' href='devine_lu_linvega.html' target='_self'>Devine Lu Linvega</a> © 2020 — <a class='about' href='about.html' target='_self'>BY-NC-SA 4.0</a></span><hr /></footer></body></html>";
 
 typedef struct Log {
   char *date;
@@ -228,12 +228,12 @@ void build_page(Term *term) {
   for (int i = 0; i < term->logs_len; ++i) {
     if(term->logs_pict[i] > 0){
       fprintf(myfile, "<img class='banner' src='../media/diary/%d.jpg' alt='%s'/>", term->logs_pict[i], term->logs_name[i]);
-      fprintf(myfile, "<h4>%s - %s</h4>", term->logs_name[i], term->logs_date[i]);
+      fprintf(myfile, "<h4 class='caption'>%s - %s</h4>", term->logs_name[i], term->logs_date[i]);
       break;
     }
   }
-  fprintf(myfile, "<h1>%s</h1>", term->name);
-  fprintf(myfile, "<h2>%s</h2>", term->bref);
+  fprintf(myfile, "<h1 class='title'>%s</h1>", term->name);
+  fprintf(myfile, "<h2 class='brief'>%s</h2>", term->bref);
   // body
   for (int i = 0; i < term->body_len; ++i) {
     fprintf(myfile, "<p>%s</p>", term->body[i]);
