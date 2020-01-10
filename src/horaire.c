@@ -2178,7 +2178,7 @@ add_log(&telekinetic, "13S10", 329);
 add_log(&telekinetic, "13S09", 168);
 add_log(&telekinetic, "13S08", 164);
 add_diary(&telekinesis, "13S05", 166, "Pure Data Controller", 126);
-add_diary(&telekinetic, "13S04", 166, "Controller Demo", 126);
+add_log(&telekinetic, "13S04", 166);
 add_log(&orca, "13S03", 359);
 add_log(&orca, "13S02", 359);
 add_log(&telekinetic, "13S01", 166);

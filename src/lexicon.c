@@ -307,6 +307,7 @@
 #define LINKNAME(linkname_id, linkname_name) "<a href='"linkname_id"' class='external' target='_blank'>"linkname_name"</a>"
 #define SEND(send_id) "<a href='" send_id ".html'>" send_id "</a>"
 #define SENDNAME(sendname_id, sendname_text) "<a href='" sendname_id ".html'>" sendname_text "</a>"
+#define MODITCHIO(itchio_id) "<iframe frameborder='0' src='https://itch.io/embed/"itchio_id"?link_color=000000' width='600' height='167'></iframe>"
 
 Term home = create_term("home", "");
 set_parent(&home, &home);
@@ -434,7 +435,7 @@ add_text(&vambits, "The templates are free and open-source if you want to create
 add_text(&vambits, "The design stolen and sold by various resellers on Esty and in stores in Australia — Please do not support them.");
 add_link(&vambits, "sources", "https://github.com/hundredrabbits/Vambits");
 
-Term pino = create_term("pino", "Pino is a Yamaha 33 sailboat built in 1982.");
+Term pino = create_album("pino", "Pino is a Yamaha 33 sailboat built in 1982.");
 set_parent(&pino, &hundred_rabbits);
 set_icon(&pino, "M60,105 Q105,75 150,105 Q195,135 240,105 M60,150 Q105,120 150,150 Q195,180 240,150 M60,195 Q105,165 150,195 Q195,225 240,195");
 add_text(&pino, "Purchased in 2016, on Vancouver Island, <b>Pino</b> has since sailed across the " SENDNAME(marquesas_path, "Pacific Ocean") ". We maintain a list of " LINKNAME("http://github.com/hundredrabbits/pino", "technical details") ", and our current position can be accessed through our " LINKNAME("http://100r.co/#map", "tracker") ".");
@@ -719,7 +720,7 @@ set_parent(&yajnev_studies, &neauismetic);
 set_icon(&yajnev_studies, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&yajnev_studies, "The album is entirely written in " SEND(orca_path) " and is designed to be performed as a livecoding installation, more details shortly.");
 
-Term telekinetic = create_term("telekinetic", "Telekinetic is a Laeisthic concept album performed live with the Leap Motion controller.");
+Term telekinetic = create_portal("telekinetic", "Telekinetic is a Laeisthic concept album performed live with the Leap Motion controller.");
 set_parent(&telekinetic, &neauismetic);
 set_icon(&telekinetic, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&telekinetic, "The event was recorded and can still be watched online on " LINKNAME("http://www.ustream.tv/recorded/39105185", "UStream") ".");
@@ -943,7 +944,7 @@ set_parent(&orca, &tools);
 set_icon(&orca, "M60,60 L210,60 A30,30 0 0,1 240,90 L240,240 M240,120 A30,30 0 0,1 210,150 L90,150 A30,30 0 0,0 60,180 L60,240");
 add_text(&orca, "Orca uses an <b>esoteric programming language</b> designed to quickly create procedural sequencers, in which every letter of the alphabet is an operation, where lowercase letters operate on bang, uppercase letters operate each frame.");
 add_text(&orca, "The " LINKNAME("https://github.com/hundredrabbits/Orca", "application") " is capable of communicating with audio & visual softwares via " LINKNAME("https://github.com/hundredrabbits/Orca/blob/master/WORKSHOP.md", "MIDI, OSC & UDP") ".");
-add_itchio(&orca, "225814");
+add_html(&orca, MODITCHIO("225814"));
 add_text(&orca, "You can find a <b>portable and lightweight version</b> of Orca " LINKNAME("https://github.com/hundredrabbits/orca-c", "here") ", and a version  for the " SEND(norns_path) " " LINKNAME("https://llllllll.co/t/orca/22492", "here") ". Learn more by reading the " LINKNAME("https://github.com/Hundredrabbits/Orca", "manual") ", or have a look at a " LINKNAME("https://www.youtube.com/watch?v=RaI_TuISSJE", "tutorial video") ". If you need <b>help</b>, visit the " LINKNAME("https://talk.lurk.org/channel/orca", "chatroom") " or the " LINKNAME("https://llllllll.co/t/orca-live-coding-tool/17689", "forum") ".");
 // add_quote(&orca, "Each letter of the alphabet is an operation, uppercase letters operate each frame, lowercase letters operate on bang.", "undefined");
 add_link(&orca, "sources", "https://github.com/hundredrabbits/Orca");
@@ -966,7 +967,7 @@ set_icon(&pilot, "M150,60 A30,30 0 0,0 180,90 L210,90 A30,30 0 0,1 240,120 A30,3
 add_text(&pilot, "<b>Pilot</b> is a <b>mini synthetiser</b> designed to be used with " SEND(orca_path) " via UDP.");
 add_text(&pilot, "Pilot features <b>16 voices, and 8 audio effects</b>, each operatable with their own set of commands, and their own FFT visualiser. The complete operation guide can be seen " LINKNAME("https://github.com/Hundredrabbits/Pilot", "here") ".");
 add_text(&pilot, "If you need <b>help</b>, visit the " LINKNAME("https://talk.lurk.org/channel/orca", "chatroom") " or the " LINKNAME("https://llllllll.co/t/orca-live-coding-tool/17689", "forum") ".");
-add_itchio(&pilot, "402423");
+add_html(&pilot, MODITCHIO("402423"));
 add_link(&pilot, "builds", "http://hundredrabbits.itch.io/Pilot");
 add_link(&pilot, "sources", "https://github.com/neauoire/Pilot");
 add_link(&pilot, "demo", "https://twitter.com/neauoire/status/1114770190552653824");
@@ -976,7 +977,7 @@ set_parent(&ronin, &tools);
 set_icon(&ronin, "M60,60 L195,60 A45,45 0 0,1 240,105 A45,45 0 0,1 195,150 L60,150 M195,150 A45,45 0 0,1 240,195 L240,240");
 add_text(&ronin, "Ronin is a <b>procedural graphics tool</b> designed to automate simple graphical tasks, like resizing, cropping, coloring, and generating algorithmic images. It interprets a minimal " LINKNAME("https://en.wikipedia.org/wiki/Lisp_(programming_language)", "dialect of LISP") ", look at these " LINKNAME("https://github.com/hundredrabbits/Ronin/tree/master/examples", "examples") " to better understand how this all works.");
 add_text(&ronin, "The library updates is constantly revealing new applications to Ronin, you can see the list of available functions " LINKNAME("https://github.com/hundredrabbits/Ronin#library", "here") ". The iconography of " SEND(nataniev_path) " has been created with both " SEND(ronin_path) " and " SEND(dotgrid_path) ".");
-add_itchio(&ronin, "194632");
+add_html(&ronin, MODITCHIO("194632"));
 add_text(&ronin, "Learn more by reading the " LINKNAME("https://github.com/Hundredrabbits/Ronin", "manual") ", or have a look at some experiments on " LINKNAME("https://twitter.com/neauoire/status/1152481692193419267", "twitter") ". If you need <b>help</b>, visit the " LINKNAME("https://hundredrabbits.itch.io/ronin/community", "Community") " or watch the " LINKNAME("https://www.youtube.com/watch?v=SgAWGh1s9zg", "video tutorial") ".");
 add_link(&ronin, "sources", "https://github.com/hundredrabbits/Ronin");
 add_link(&ronin, "builds", "http://hundredrabbits.itch.io/Ronin");
@@ -988,7 +989,7 @@ set_parent(&dotgrid, &tools);
 set_icon(&dotgrid, "M60,60 L60,60 L60,60 M120,60 L120,60 L120,60 M120,120 L120,120 L120,120 M60,120 L60,120 L60,120 M180,60 L180,60 L180,60 M180,120 L180,120 L180,120 M240,60 L240,60 L240,60 M240,120 L240,120 L240,120 M60,180 L60,180 L60,180 M120,180 L120,180 L120,180 M180,180 L180,180 L180,180 M240,180 L240,180 L240,180 M240,240 L240,240 L240,240 M180,240 L180,240 L180,240 M120,240 L120,240 L120,240 M60,240 L60,240 L60,240");
 add_text(&dotgrid, "Dotgrid is a <b>grid-based vector drawing software</b> designed to create logos, icons and type. It supports layers, the full SVG specs and additional effects such as mirroring and radial drawing. Dotgrid exports to both PNG and SVG files.");
 add_text(&dotgrid, "The " LINKNAME("https://github.com/hundredrabbits/Dotgrid", "application") " was initially created for internal use, and later made available as a free and " LINKNAME("https://github.com/hundredrabbits/Dotgrid", "open source") " software.");
-add_itchio(&dotgrid, "190851");
+add_html(&dotgrid, MODITCHIO("190851"));
 add_text(&dotgrid, "Learn more by reading the " LINKNAME("https://github.com/Hundredrabbits/Dotgrid", "manual") ", or have a look at a " LINKNAME("https://www.youtube.com/watch?v=Xt1zYHhpypk", "tutorial video") ". If you need <b>help</b>, visit the " LINKNAME("https://hundredrabbits.itch.io/dotgrid/community", "Community") ".");
 add_text(&dotgrid, "Dotgrid was ProductHunt's <b>Product Of The Day</b> on " LINKNAME("https://producthunt.com/posts/dotgrid", "January 8, 2018") ".");
 add_link(&dotgrid, "sources", "https://github.com/hundredrabbits/Dotgrid");
@@ -1001,7 +1002,7 @@ set_parent(&left, &tools);
 set_icon(&left, "M60,60 l180,0 M60,150 l120,0 M60,240 l180,0 M60,195 l60,0 M60,105 l60,0");
 add_text(&left, "Left is <b>distractionless plaintext editor</b> designed to quickly navigate between segments of an essay, or multiple documents. It features an auto-complete, synonyms suggestions, writing statistics, markup-based navigation and a speed-reader.");
 add_text(&left, "The " LINKNAME("https://github.com/hundredrabbits/Left", "application") " was initially created to help " SEND(rekka_path) " with the writing of the upcoming novel " SEND(wiktopher_path) ", and later made available as a free and " LINKNAME("https://github.com/hundredrabbits/Left", "open source") " software.");
-add_itchio(&left, "173127");
+add_html(&left, MODITCHIO("173127"));
 add_text(&left, "Learn more by reading the " LINKNAME("https://github.com/Hundredrabbits/Left", "manual") ", or have a look at a " LINKNAME("https://www.youtube.com/watch?v=QloUoqqhXGE", "tutorial video") ". If you need <b>help</b>, visit the " LINKNAME("https://hundredrabbits.itch.io/left/community", "Community") ".");
 add_text(&left, "Left was ProductHunt's <b>Product of the Day</b> on " LINKNAME("https://www.producthunt.com/posts/left", "January 28, 2018") ".");
 add_link(&left, "download", "http://hundredrabbits.itch.io/Left");
@@ -1051,7 +1052,7 @@ set_icon(&oquonie, "M45,60 l210,0 M45,240 l210,0 M255,60 a-15,15 0 0,0 -15,15 a-
 add_text(&oquonie, "You must make your way through a seemingly endless succession of rooms. You will not be alone. Your incarnations will have the help of <b>bizaroid</b> characters that speak an " SENDNAME(camilare_path, "an obscure language") ".");
 add_text(&oquonie, "We made Oquonie while living in " SEND(japan_path) ". The game was our first collaborative project as " SEND(hundred_rabbits_path) ", and a reflection of our experience navigating a new country, with language as a recurent obstacle. Oquonie is about being lost in a foreign space.");
 add_text(&oquonie, "A big inspiration for this project was the short story \"A town without streets\" by Junji Ito, about a city of endless interconnecting houses and rooms, where privacy is non-existent. To preserve the little privacy they do have, the townspeople wear masks.");
-add_itchio(&oquonie, "23183");
+add_html(&oquonie, MODITCHIO("23183"));
 add_text(&oquonie, "Back in 2013, we both had full-time jobs in different studios in Tokyo, we worked on Oquonie after work, and on weekends, for a total of 6 months. You can learn more about the development of the project " LINKNAME("https://100r.co/pages/oquonie.html", "here") ".");
 // add_quote(&oquonie, "Find help in the " SEND(oquonie_guide_path) ".", "undefinedFind help in the {(__link "Oquonie Guide")}.");
 // add_text(&oquonie, "Oquonie features an original " SENDNAME(oquonie_soundtrack_path, "soundtrack") " and was best described as <i ><a href='http://killscreendaily.com/articles/oquonie-maze-worth-entering/' target='_blank' rel='noreferrer' class='external '>Animal Crossing in a K-Hole</a></i>.", "undefined");
@@ -1091,7 +1092,7 @@ set_icon(&verreciel, "M150,60 l0,180 M60,195 l180,0 M60,105 l180,0 M150,210 a15,
 add_text(&verreciel, "<b>Verreciel</b> is an experimental space exploration game happening within a small glass capsule.");
 add_text(&verreciel, "The game's controls are inspired from <b>modular synthesisers</b>, where modules are routed into one another to create more complex operations. The game joins the sequence of linguistically involved projects like " SEND(paradise_path) ", " SEND(hiversaires_path) " and " SEND(oquonie_path) ".");
 add_text(&verreciel, "An " SENDNAME(verreciel_soundtrack_path, "original soundtrack") " was created for the game and released on " SEND(beldam_records_path) ".");
-add_itchio(&verreciel, "173320");
+add_html(&verreciel, MODITCHIO("173320"));
 // add_note(&verreciel, "The game's icon is the " SEND(lietal_path) " " SENDNAME(lytadota_path, "Sä glyph") ".");
 add_link(&verreciel, "itunes", "https://hundredrabbits.itch.io/verreciel");
 add_link(&verreciel, "sources", "https://github.com/Echorridoors/Verreciel");
@@ -1107,7 +1108,7 @@ add_code(&paradise, "program create a coffee");
 add_code(&paradise, "leave");
 add_code(&paradise, "use the machine");
 add_text(&paradise, "Until then, in this anonymous world you can create anything, traverse vastly different universes, and share your world with others.");
-add_itchio(&paradise, "251450");
+add_html(&paradise, MODITCHIO("251450"));
 add_quote(&paradise, "I have always imagined that <b>Paradise</b> will be a kind of library.", "Jorge Luis Borges");
 add_link(&paradise, "sources", "http://github.com/hundredrabbits/Paradise");
 add_link(&paradise, "builds", "https://hundredrabbits.itch.io/paradise");
@@ -1458,7 +1459,7 @@ set_parent(&donsol, &games);
 set_icon(&donsol, "M150,60 l-90,90 l90,90 l90,-90 l-90,-90");
 add_text(&donsol, "<b>Donsol</b>, designed by " LINKNAME("https://twitter.com/johneternal", "John Eternal") ", is a card game about exploring a dungeon of 54 playing cards.");
 add_text(&donsol, "<b>A standard deck of 54 cards</b>, jokers included, is a dungeon. Shuffle the deck and draw 4 cards, display them before you, this is a room. A room ends when all the cards are folded.");
-add_itchio(&donsol, "109936");
+add_html(&donsol, MODITCHIO("109936"));
 add_header(&donsol, "♥︎ Heart Potions");
 add_text(&donsol, "A <b>potion</b> gives you health points equal to its value, up to a maximum of 21 health points.");
 add_text(&donsol, "Drinking multiple potions in a row will make you sick and result in no extra healing, only the first potion's value will be gained in HP. Potions are equal to their value and face cards (J,Q,K,A) each are equal to 11.");
@@ -1481,7 +1482,7 @@ Term hiversaires = create_term("hiversaires", "Hiversaires is a textless point-n
 set_parent(&hiversaires, &games);
 set_icon(&hiversaires, "M60,60 L60,60 L60,240 M150,60 L150,60 L150,240 M240,60 L240,60 L240,240 M60,195 A45,-45 0 0,1 105,150 A45,45 0 0,1 150,195 A45,-45 0 0,1 195,150 A45,45 0 0,1 240,195");
 add_text(&hiversaires, "<b>Hiversaires</b> is the first part of a series of textless experimental projects, that also includes the isometric adventure game " SEND(oquonie_path) ".");
-add_itchio(&hiversaires, "225445");
+add_html(&hiversaires, MODITCHIO("225445"));
 add_text(&hiversaires, "The dark world of Hiversaires features an original Aliceffekt " LINKNAME("https://aliceffekt.bandcamp.com/album/hiversaires-soundtrack", "soundtrack") " to lure you through its entangled corridors. The game was originally released on iOS platforms, and re-released on all desktop platforms in 2018, thanks to " LINKNAME("http://twitter.com/rezmason/status/964277430176309248", "Jeremy Sachs") " who also ported " SEND(verreciel_path) ".");
 add_link(&hiversaires, "itch", "http://hundredrabbits.itch.io/Hiversaires");
 add_link(&hiversaires, "itunes", "https://itunes.apple.com/au/app/hiversaires/id630992348");
@@ -1772,20 +1773,20 @@ set_icon(&vast, "M150,60 A90,90 0 0,1 240,150 A-90,90 0 0,1 150,240 A-90,-90 0 0
 add_text(&vast, "I recently found myself illustrating " SENDNAME(miniscopie_path, "Elodie") "'s abstract book \"<i >Vast - the perfect, the circular, the subjugated</i>\".");
 add_text(&vast, "A strangely perfect nonsensical coffee table curiosity that grabbed me from the moment I heard of its ties with some of the same Borgesian concepts that have also been exploring lately.");
 add_text(&vast, "I have created a series of ink fractals to ornate the book's preface, table of content and cover.");
-add_itchio(&vast, "23341");
+add_html(&vast, MODITCHIO("23341"));
 
 Term defraction_optics = create_term("defraction optics", "Defraction Optics is the second book of Elodie Lareine, a manual of procedural imagery, in the fashion of Vast.");
 set_parent(&defraction_optics, &physical);
 set_icon(&defraction_optics, "M150,60 A90,90 0 0,1 240,150 A-90,90 0 0,1 150,240 A-90,-90 0 0,1 60,150 A90,-90 0 0,1 150,60");
 add_text(&defraction_optics, "A guide to null;");
-add_itchio(&defraction_optics, "23342");
+add_html(&defraction_optics, MODITCHIO("23342"));
 add_link(&defraction_optics, "itch", "https://reine.itch.io/defractions");
 
 Term thousand_rooms = create_term("thousand rooms", "Thousand Rooms is a visual novel.");
 set_parent(&thousand_rooms, &physical);
 set_icon(&thousand_rooms, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 add_text(&thousand_rooms, "" SEND(thousand_rooms_path) " was created in collaboration with illustrator " SENDNAME(rekka_path, "Rekka Bellum") ", following the behaviours of four characters and a room");
-add_itchio(&thousand_rooms, "146658");
+add_html(&thousand_rooms, MODITCHIO("146658"));
 add_text(&thousand_rooms, "I have written this book with the hopes of creating a sort of <i >Borges for children</i>, in which the reader follows a bat, a cat, an owl and a fox who try and make sense of this " SENDNAME(paradise_path, "simple system") ".");
 add_text(&thousand_rooms, "The book also encourages to try and understand the rules, and plan unsuggested avenues. We are releasing the book in English, French, Russian, Japanese & " SEND(lietal_path) ".");
 add_link(&thousand_rooms, "itcho", "https://hundredrabbits.itch.io/thousand-rooms");
@@ -2156,9 +2157,9 @@ add_text(&devine_lu_linvega, "<b>Devine Lu Linvega</b> is composing " SENDNAME(a
 add_text(&devine_lu_linvega, "Since 2006, Devine has been populating this " SENDNAME(about_path, "wiki") " with notes on various topics, including on " SEND(language_path) ", " SEND(lifestyle_path) " and " SEND(nutrition_path) ". You can learn more about their <b>related interests</b> in the " SEND(mirrors_path) ", and in the " SEND(directory_path) ".");
 add_text(&devine_lu_linvega, "They currently live aboard a " SENDNAME(pino_path, "sailboat") ", somewhere along the foggy coast of " SEND(japan_path) ". You can follow their position " LINKNAME("http://100r.co/#map", "here") ", or learn more about offgrid living " LINKNAME("https://100r.co/pages/knowledge.html", "here") ".");
 add_text(&devine_lu_linvega, "Get in touch via email at <b>aliceffekt@gmail.com</b>, or<br />on the fediverse at <b><a href='http://merveilles.town/@neauoire' target='_blank' rel='noreferrer' class='external '>merveilles.town/@neauoire</a></b>.");
-// add_quote(&devine_lu_linvega, "To flee is Life,<br />To linger, " SEND(death_path) ".", "undefinedTo flee is Life,<br />To linger, {(__link "Death")}.");
+add_quote(&devine_lu_linvega, "To flee is Life,<br />To linger, death.", "Let The Right One In");
 
-Term lifestyle = create_term("lifestyle", "The collection of diary entries on Lifestyle.");
+Term lifestyle = create_portal("lifestyle", "The collection of diary entries on Lifestyle.");
 set_parent(&lifestyle, &devine_lu_linvega);
 set_icon(&lifestyle, "M150,60 l0,180 M180,60 l0,180 l0,-60 a30,-30 0 0,1 30,-30 l30,0 M120,60 l0,180 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0");
 add_text(&lifestyle, "I rarely blog, but I've collected here a handful of <b>long-form posts</b> on various topics. ");
@@ -2234,7 +2235,7 @@ add_text(&longtermism, "Despite all this, I dream of a line of simple electronic
 add_text(&longtermism, "My dream sailboat has no diesel engine, no fuel outboard and no lead acid battery storage, but instead a compressed air engine with its compression stored in diving tanks, a bike crank powered compressor, a hydro generator pump, and a dynamo to charge our low-power electronics. The only crutial electronic systems connected to the house tanks would be the AIS transciver, the VHF radio, a basic chartplotter and habitat lighting. Our work and entertainment electronics, like our laptops and cameras, would run off solar charging a minimal array of LiPo batteries.");
 add_text(&longtermism, "Is there a way to distribute entertainment in a way that is environmentally conscious? I read this thinking, how dare I think that only work has value and that entertainment and leisure has somehow less right to pollute.");
 
-Term inventory = create_term("inventory", "The collection of technical details on the Inventory.");
+Term inventory = create_portal("inventory", "The collection of technical details on the Inventory.");
 set_parent(&inventory, &devine_lu_linvega);
 set_icon(&inventory, "M150,60 l0,180 M180,60 l0,180 l0,-60 a30,-30 0 0,1 30,-30 l30,0 M120,60 l0,180 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0");
 add_text(&inventory, "Some of the items I carry around with me in my " SENDNAME(travel_path, "travels") ".");
@@ -2816,7 +2817,7 @@ set_parent(&marabu, &unreleased);
 set_icon(&marabu, "M60,60 a60,60 0 0,1 60,60 l0,120 M180,240 l0,-120 a60,-60 0 0,1 60,-60");
 add_text(&marabu, "<b>Marabu</b> is cross-platform tracker-type composition tool and synthesizer.");
 add_text(&marabu, "Marabu was original built as a fork to the opensource <i >Soundbox</i>, and is meant to be an improvement on functionalities and design.");
-add_itchio(&marabu, "173813");
+add_html(&marabu, MODITCHIO("173813"));
 add_text(&marabu, "You can view the complete " LINKNAME("https://github.com/hundredrabbits/Marabu", "Manual") " on Github. " SEND(marabu_path) " is currently used for the creation of the " SEND(supergrid_path) " album.");
 add_link(&marabu, "download", "http://hundredrabbits.itch.io/Marabu");
 add_link(&marabu, "sources", "https://github.com/neauoire/Marabu");

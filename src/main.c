@@ -12,7 +12,7 @@ char *html_header = "<header><a id='logo' href='home.html'><img src='../media/ic
 
 char *html_footer = "<footer><hr/><a href='https://creativecommons.org/licenses/by-nc-sa/4.0' target='_blank'><img src='../media/icon/cc.svg' alt='by-nc-sa' width='30'/></a> <a href='http://webring.xxiivv.com/#random' target='_blank' rel='noreferrer'><img src='../media/icon/rotonde.svg' alt='webring' width='30'/></a> <a href='https://merveilles.town/@neauoire' target='_blank'><img src='../media/icon/merveilles.svg' alt='Merveilles' width='30'/></a> <a href='https://github.com/neauoire' target='_blank'><img src='../media/icon/github.png' alt='github' width='30'/></a> <span><a class='profile' href='devine_lu_linvega.html' target='_self'>Devine Lu Linvega</a> © 2020 — <a class='about' href='about.html' target='_self'>BY-NC-SA 4.0</a></span></footer></body></html>";
 
-char *html_style = "<style>body { padding:30px; font-family: sans-serif } body a { color:black } header { margin-bottom:30px } nav { float:left; margin: 0px 45px 30px 0px } nav ul { padding:0px 0px 0px 15px; font-family:monospace; margin:0px } nav ul li { list-style-type:'. '} nav ul li.folder { list-style-type:'/ ' } nav ul li a { text-decoration:none } nav ul li a:hover { background:black; color:white } main { max-width:600px; float:left; margin:0px 0px 30px 0px } main h1 { display:none } main h2 { max-width: 400px; margin-top:0px } main p { line-height:25px } main img { max-width:100% } main a.external:before { content:'~' } footer { clear:both; font-family:monospace } footer hr { margin:0px 0px 30px; border:0; border-top:1.5px solid black } footer img { margin: 0px 0px -10px 0px } footer a { font-weight:bold; text-decoration:none }</style>";
+char *html_style = "<style>body { padding:30px; font-family: sans-serif } body a { color:black } header { margin-bottom:30px } nav { float:left; margin: 0px 45px 30px 0px } nav ul { padding:0px 0px 0px 15px; font-family:monospace; margin: 0px 0px 0px -10px } nav ul li { list-style-type:none } nav ul li a { text-decoration:none } nav ul li a:hover { background:black; color:white } main { max-width:600px; float:left; margin:0px 0px 30px 0px } main h1 { display:none } main h2 { max-width: 400px; margin-top:0px } main p { line-height:25px } main q { font-family:serif; font-size:18px; font-style: italic } main img { max-width:100% } main a.external:before { content:'~' } footer { clear:both; font-family:monospace } footer hr { margin:0px 0px 30px; border:0; border-top:1.5px solid black } footer img { margin: 0px 0px -10px 0px } footer a { font-weight:bold; text-decoration:none }</style>";
 
 typedef struct Log {
   char *date;
@@ -37,7 +37,8 @@ typedef struct Term {
   int children_len;
   struct Term *children[32];
   int body_len;
-  char *body[32];
+  char *body_text[32];
+  char *body_tags[32];
 
   int links_len;
   char *links_names[32];
@@ -100,11 +101,23 @@ Term create_album(char *name, char *bref) {
   return t;
 }
 
+void add_html(Term *term, char *text) {
+  term->body_text[term->body_len] = text;
+  term->body_tags[term->body_len] = "div";
+  term->body_len++;  
+}
+
 void add_text(Term *term, char *text) {
-  term->body[term->body_len] = text;
+  term->body_text[term->body_len] = text;
+  term->body_tags[term->body_len] = "p";
   term->body_len++;
 }
 
+void add_quote(Term *term, char *text, char *source) {
+  term->body_text[term->body_len] = text;
+  term->body_tags[term->body_len] = "q";
+  term->body_len++;
+}
 
 void set_icon(Term *term, char *path) {
   
@@ -116,19 +129,12 @@ void set_parent(Term *term, Term *parent) {
   parent->children_len++;
 }
 
-void add_quote(Term *term, char *text, char *source) {
-  
-}
 
 void add_note(Term *term, char *text) {
   
 }
 
 void add_header(Term *term, char *text) {
-  
-}
-
-void add_html(Term *term, char *text) {
   
 }
 
@@ -147,11 +153,6 @@ void add_code(Term *term, char *text) {
 void add_list(Term *term, char *text) {
   
 }
-
-void add_itchio(Term *term, char *id) {
-  
-}
-
 
 void add_bandcamp(Term *term, char *id) {
   
@@ -216,13 +217,13 @@ void build_nav_child(FILE *f, Term *target){
     char child_filename[STR_BUF_LEN];
     to_lowercase(target->children[k]->name, child_filename, STR_BUF_LEN);
     if(target->children[k]->name == target->name){
-      fprintf(f, "<li><b>%s</b></li>", target->children[k]->name);
+      fprintf(f, "<li>> <b>%s</b></li>", target->children[k]->name);
     }
     else if(target->children[k]->children_len > 0){
-      fprintf(f, "<li class='folder'><a href='%s.html'>%s</a></li>", child_filename, target->children[k]->name);
+      fprintf(f, "<li class='folder'>/ <a href='%s.html'>%s</a></li>", child_filename, target->children[k]->name);
     }
     else{
-      fprintf(f, "<li><a href='%s.html'>%s</a></li>", child_filename, target->children[k]->name);
+      fprintf(f, "<li>. <a href='%s.html'>%s</a></li>", child_filename, target->children[k]->name);
     }
   }
   fputs("</ul>", f);
@@ -234,13 +235,13 @@ void build_nav_child_child(FILE *f, Term *term, Term *target){
     char child_filename[STR_BUF_LEN];
     to_lowercase(term->children[k]->name, child_filename, STR_BUF_LEN);
     if(term->children[k]->name == target->name){
-      fprintf(f, "<li><b>%s</b></li>", term->children[k]->name);
+      fprintf(f, "<li>> <b>%s</b></li>", term->children[k]->name);
     }
     else if(term->children[k]->children_len > 0){
-      fprintf(f, "<li class='folder'><a href='%s.html'>%s</a></li>", child_filename, term->children[k]->name);
+      fprintf(f, "<li class='folder'>/ <a href='%s.html'>%s</a></li>", child_filename, term->children[k]->name);
     }
     else{
-      fprintf(f, "<li><a href='%s.html'>%s</a></li>", child_filename, term->children[k]->name);
+      fprintf(f, "<li>. <a href='%s.html'>%s</a></li>", child_filename, term->children[k]->name);
     }
     if(target->name == term->children[k]->name){
       build_nav_child(f, term->children[k]);
@@ -254,7 +255,12 @@ void build_nav_child_child_child(FILE *f, Term *term, Term *target){
   for (int k = 0; k < term->parent->children_len; ++k) {
     char child_filename[STR_BUF_LEN];
     to_lowercase(term->parent->children[k]->name, child_filename, STR_BUF_LEN);
-    fprintf(f, "<li><a href='%s.html'>%s</a></li>", child_filename, term->parent->children[k]->name);
+    if(target->parent->name == term->parent->children[k]->name){
+      fprintf(f, "<li>+ <a href='%s.html'>%s</a></li>", child_filename, term->parent->children[k]->name);
+    }
+    else{
+      fprintf(f, "<li>. <a href='%s.html'>%s</a></li>", child_filename, term->parent->children[k]->name);  
+    }
     if(target->parent->name == term->parent->children[k]->name){
       build_nav_child_child(f, term->parent->children[k], target);
     }
@@ -290,7 +296,7 @@ void build_body(FILE *f, Term *term){
   fprintf(f, "<h1 class='title'>%s</h1>", term->name);
   fprintf(f, "<h2 class='brief'>%s</h2>", term->bref);
   for (int i = 0; i < term->body_len; ++i) {
-    fprintf(f, "<p>%s</p>", term->body[i]);
+    fprintf(f, "<%s>%s</%s>", term->body_tags[i], term->body_text[i], term->body_tags[i]);
   }
 }
 
@@ -312,8 +318,9 @@ void build_portal(FILE *f, Term *term){
 
 void build_album(FILE *f, Term *term){
   if(term->isAlbum != true){ return; }
+  int pict = find_term_pict(term);
   for (int k = 0; k < term->logs_len; ++k) {
-    if(term->logs_pict[k] > 0){
+    if(term->logs_pict[k] > 0 && term->logs_pict[k] != pict){
       build_pict(f, term->logs_pict[k], term->logs_name[k]);
     }
     fprintf(f, "<h4>%s</h4>", term->logs_name[k]);
