@@ -227,7 +227,7 @@ void build_page(Term *term) {
   // Image
   for (int i = 0; i < term->logs_len; ++i) {
     if(term->logs_pict[i] > 0){
-      fprintf(myfile, "<img src='../media/diary/%d.jpg' alt='%s' width='600px' style='margin-top:-30px'/>", term->logs_pict[i], term->logs_name[i]);
+      fprintf(myfile, "<img class='banner' src='../media/diary/%d.jpg' alt='%s'/>", term->logs_pict[i], term->logs_name[i]);
       fprintf(myfile, "<h4>%s - %s</h4>", term->logs_name[i], term->logs_date[i]);
       break;
     }
