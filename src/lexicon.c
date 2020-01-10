@@ -312,16 +312,16 @@ Term home = create_term("home", "");
 set_parent(&home, &home);
 set_icon(&home, "M150,60 A90,90 0 0,1 240,150 A-90,90 0 0,1 150,240 A-90,-90 0 0,1 60,150 A90,-90 0 0,1 150,60 Z");
 
-Term audio = create_term("audio", "The Audio portal hosts various soundtrack, records and live projects.");
+Term audio = create_portal("audio", "The Audio portal hosts various soundtrack, records and live projects.");
 set_parent(&audio, &home);
 set_icon(&audio, "M150,60 A90,90 0 0,1 240,150 A-90,90 0 0,1 150,240 A-90,-90 0 0,1 60,150 A90,-90 0 0,1 150,60 Z");
 // add_quote(&audio, "Music is the space between the notes.", "undefined");
 
-Term visual = create_term("visual", "The Visual hosts design and interaction projects.");
+Term visual = create_portal("visual", "The Visual hosts design and interaction projects.");
 set_parent(&visual, &home);
 set_icon(&visual, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 
-Term research = create_term("research", "The Research hosts philosophy and linguistics projects.");
+Term research = create_portal("research", "The Research hosts philosophy and linguistics projects.");
 set_parent(&research, &home);
 set_icon(&research, "M60,240 a30,-30 0 0,1 30,-30 l150,0 M90,195 a30,-30 0 0,1 30,-30 l90,0 M120,150 a30,-30 0 0,1 30,-30 l30,0 M195,120 l45,0 M225,165 l15,0 M150,105 a30,-30 0 0,1 30,-30 l60,0");
 
@@ -476,12 +476,12 @@ add_link(&grimgrains, "twitter", "https://twitter.com/grimgrains");
 add_link(&grimgrains, "live", "https://grimgrains.com");
 add_link(&grimgrains, "sources", "https://github.com/hundredrabbits/Grimgrains");
 
-Term illustration = create_term("illustration", "A collection of Illustration projects.");
+Term illustration = create_portal("illustration", "A collection of Illustration projects.");
 set_parent(&illustration, &visual);
 set_icon(&illustration, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 add_text(&illustration, "The <b>Illustration portal</b> forks into the worlds of the " SEND(nereid_path) ", " SENDNAME(polygonoscopy_path, "Polygonoscopic") " and " SEND(neauismetic_path) " Collections.");
 
-Term beldam_records = create_term("beldam records", "Beldam Records is a netlabel releasing 4 tracks mini-albums.");
+Term beldam_records = create_portal("beldam records", "Beldam Records is a netlabel releasing 4 tracks mini-albums.");
 set_parent(&beldam_records, &audio);
 set_icon(&beldam_records, "M120,180 L120,180 L240,180 M139,109 L139,109 L79,212.9 M191,161 L191,161 L131,57.1");
 add_text(&beldam_records, "" SEND(beldam_records_path) " was initiated as an alternative channel for non-" SEND(aliceffekt_path) " releases, focusing on IDM textures and lowfi techno.");
@@ -595,7 +595,7 @@ set_parent(&pearls, &nereid);
 set_icon(&pearls, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 add_text(&pearls, "The pearls of " SEND(nereid_path) " lead to the discovery of the " SENDNAME(polygonoscopy_path, "Polygonoscopic") " world.");
 
-Term physical = create_term("physical", "These Physical objects are designed to be 3d printed.");
+Term physical = create_portal("physical", "These Physical objects are designed to be 3d printed.");
 set_parent(&physical, &visual);
 set_icon(&physical, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 add_link(&physical, "downloads", "http://www.thingiverse.com/Aliceffekt/designs");
@@ -733,7 +733,7 @@ set_icon(&telekinesis, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A
 add_text(&telekinesis, "The tool was used for both, the live performance of " SEND(telekinetic_path) " and " SEND(ten_axitecture_path) ".");
 add_text(&telekinesis, "The picture was taken at 8Static, by " LINKNAME("https://www.flickr.com/photos/m_becker/", "Marjorie Becker") ".");
 
-Term software = create_term("software", "The Software portal is a collection of interactive applications.");
+Term software = create_portal("software", "The Software portal is a collection of interactive applications.");
 set_parent(&software, &research);
 set_icon(&software, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
 add_text(&software, "The <b>Software</b> archive is a collection of <b>Free & Open-source</b> projects.");
@@ -1148,7 +1148,7 @@ add_code(&parade, "> |");
 add_text(&parade, "A <b>Network of Parade systems</b> would be traversible(read-only) by an acting vessel. The Parade's typical behaviours for moving about will persist onto the remote systems so, a vessel can move, enter, use remote vessels and suggest changes to the host world as commits — All the while, respecting the host's vessel permissions. For instance, a vessel might make itself usable by a visiting vessel, but will not let itself be moved or altered.");
 add_text(&parade, "<i>For a working preview of Parade, <br />try the cli version of " SEND(paradise_path) " available " LINKNAME("https://github.com/hundredrabbits/Paradise/#cli", "here") ".</i>");
 
-Term hardware = create_term("hardware", "A handful of experimental projects on small Hardware.");
+Term hardware = create_portal("hardware", "A handful of experimental projects on small Hardware.");
 set_parent(&hardware, &research);
 set_icon(&hardware, "M60,240 a30,-30 0 0,1 30,-30 l150,0 M90,195 a30,-30 0 0,1 30,-30 l90,0 M120,150 a30,-30 0 0,1 30,-30 l30,0 M195,120 l45,0 M225,165 l15,0 M150,105 a30,-30 0 0,1 30,-30 l60,0");
 
@@ -2005,7 +2005,7 @@ add_text(&paradichlorisse, "Its purpose is unknown, but it was observed reciting
 add_text(&paradichlorisse, "Upon reaching its location, one would infinitely collapse as they would begin experiencing <i >every life and every death</i> for ever, recited in the " SENDNAME(nohlxeserre_path, "speech") " of the infinite being.");
 add_text(&paradichlorisse, "<i >When Paradichlorisse spoke of silence, silence fell.</i>");
 
-Term photography = create_term("photography", "The Photography Portal collects various albums over multiple mediums.");
+Term photography = create_portal("photography", "The Photography Portal collects various albums over multiple mediums.");
 set_parent(&photography, &visual);
 set_icon(&photography, "M90,210 L90,210 L210,90 M150,90 A60,60 0 0,1 210,150 A-60,60 0 0,1 150,210 A-60,-60 0 0,1 90,150 A60,-60 0 0,1 150,90 Z");
 add_text(&photography, "View the list of " SEND(camera_path) " equipment.");
@@ -2014,7 +2014,7 @@ Term macro = create_term("macro", "The Macro album contains various shots from u
 set_parent(&macro, &photography);
 set_icon(&macro, "M90,210 L90,210 L210,90 M150,90 A60,60 0 0,1 210,150 A-60,60 0 0,1 150,210 A-60,-60 0 0,1 90,150 A60,-60 0 0,1 150,90 Z");
 
-Term personal = create_term("personal", "The Personal album contain various memories.");
+Term personal = create_album("personal", "The Personal album contain various memories.");
 set_parent(&personal, &photography);
 set_icon(&personal, "M90,210 L90,210 L210,90 M150,90 A60,60 0 0,1 210,150 A-60,60 0 0,1 150,210 A-60,-60 0 0,1 90,150 A60,-60 0 0,1 150,90 Z");
 
@@ -2034,7 +2034,7 @@ Term infrared = create_term("infrared", "The Infrared photographs were taken wit
 set_parent(&infrared, &photography);
 set_icon(&infrared, "M90,210 L90,210 L210,90 M150,90 A60,60 0 0,1 210,150 A-60,60 0 0,1 150,210 A-60,-60 0 0,1 90,150 A60,-60 0 0,1 150,90 Z");
 
-Term travel = create_term("travel", "Travel diaries around the world.");
+Term travel = create_portal("travel", "Travel diaries around the world.");
 set_parent(&travel, &photography);
 set_icon(&travel, "M90,210 L90,210 L210,90 M150,90 A60,60 0 0,1 210,150 A-60,60 0 0,1 150,210 A-60,-60 0 0,1 90,150 A60,-60 0 0,1 150,90 Z");
 
@@ -2046,12 +2046,12 @@ Term netherlands = create_term("netherlands", "Trip to Netherlands in 2015 for I
 set_parent(&netherlands, &travel);
 set_icon(&netherlands, "M90,210 L90,210 L210,90 M150,90 A60,60 0 0,1 210,150 A-60,60 0 0,1 150,210 A-60,-60 0 0,1 90,150 A60,-60 0 0,1 150,90 Z");
 
-Term japan = create_term("japan", "A variety of diary entries written throughout trips to Japan.");
+Term japan = create_portal("japan", "A variety of diary entries written throughout trips to Japan.");
 set_parent(&japan, &travel);
 set_icon(&japan, "M60,90 L60,90 L240,90 M150,60 L150,60 L150,240 M150,90 Q150,150 60,210 M150,90 Q150,150 240,210 M105,210 L105,210 L195,210");
 add_quote(&japan, "Let's never come here again 'cos it would never be as much fun.", "undefined | Charlotte | Lost in Translation");
 
-Term minamiise = create_term("minamiise", "We sailed to Minamiise in the spring of 2019, from Shizuoka.");
+Term minamiise = create_album("minamiise", "We sailed to Minamiise in the spring of 2019, from Shizuoka.");
 set_parent(&minamiise, &japan);
 set_icon(&minamiise, "M60,90 L60,90 L240,90 M150,60 L150,60 L150,240 M150,90 Q150,150 60,210 M150,90 Q150,150 240,210 M105,210 L105,210 L195,210");
 add_text(&minamiise, "Damp forest roads, misty mountains and ghost towns.");

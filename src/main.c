@@ -12,7 +12,7 @@ char *html_header = "<header><a id='logo' href='home.html'><img src='../media/ic
 
 char *html_footer = "<footer><hr/><a href='https://creativecommons.org/licenses/by-nc-sa/4.0' target='_blank'><img src='../media/icon/cc.svg' alt='by-nc-sa' width='30'/></a> <a href='http://webring.xxiivv.com/#random' target='_blank' rel='noreferrer'><img src='../media/icon/rotonde.svg' alt='webring' width='30'/></a> <a href='https://merveilles.town/@neauoire' target='_blank'><img src='../media/icon/merveilles.svg' alt='Merveilles' width='30'/></a> <a href='https://github.com/neauoire' target='_blank'><img src='../media/icon/github.png' alt='github' width='30'/></a> <span><a class='profile' href='devine_lu_linvega.html' target='_self'>Devine Lu Linvega</a> © 2020 — <a class='about' href='about.html' target='_self'>BY-NC-SA 4.0</a></span></footer></body></html>";
 
-char *html_style = "<style>body { padding:30px } header { margin-bottom:30px } nav { float:left; margin: 10px 45px 30px 0px } nav ul { padding:0px 0px 0px 15px } main { max-width:600px; float:left; margin:0px 0px 30px 0px } main h1 { display:none } main img { max-width:100% } main a.external:before { content:'~' } footer { clear:both } footer hr { margin:0px 0px 30px } footer img { margin: 0px 0px -10px 0px }</style>";
+char *html_style = "<style>body { padding:30px; font-family: sans-serif } body a { color:black } header { margin-bottom:30px } nav { float:left; margin: 0px 45px 30px 0px } nav ul { padding:0px 0px 0px 15px; font-family:monospace; margin:0px } nav ul li { list-style-type:'. '} nav ul li.folder { list-style-type:'/ ' } nav ul li a { text-decoration:none } nav ul li a:hover { background:black; color:white } main { max-width:600px; float:left; margin:0px 0px 30px 0px } main h1 { display:none } main h2 { max-width: 400px; margin-top:0px } main p { line-height:25px } main img { max-width:100% } main a.external:before { content:'~' } footer { clear:both; font-family:monospace } footer hr { margin:0px 0px 30px; border:0; border-top:1.5px solid black } footer img { margin: 0px 0px -10px 0px } footer a { font-weight:bold; text-decoration:none }</style>";
 
 typedef struct Log {
   char *date;
@@ -20,11 +20,19 @@ typedef struct Log {
   int pict;
 } Log;
 
+typedef struct Dict {
+  char *name;
+  int words_len;
+  char *keys[32];
+  char *values[32];
+} Dict;
+
 typedef struct Term {
   char *name;
   char *bref;
   char *link;
   bool isPortal;
+  bool isAlbum;
   struct Term *parent;
   int children_len;
   struct Term *children[32];
@@ -42,13 +50,6 @@ typedef struct Term {
   int logs_code[LOGS_BUFFER];
 } Term;
 
-typedef struct Dict {
-  char *name;
-  int words_len;
-  char *keys[32];
-  char *values[32];
-} Dict;
-
 void to_lowercase(char *str, char *target, size_t tsize) {
   for (size_t i = 0; i < tsize; i++) {
     target[i] = str[i];
@@ -64,6 +65,18 @@ void to_lowercase(char *str, char *target, size_t tsize) {
   target[tsize - 1] = '\0';
 }
 
+Dict create_dict(char *name) {
+  Dict d;
+  d.name = name;
+  return d;
+}
+
+void add_word(Dict *dict, char *key, char *value) {
+  
+}
+
+// Term
+
 Term create_term(char *name, char *bref) {
   Term t;
   t.name = name;
@@ -71,6 +84,7 @@ Term create_term(char *name, char *bref) {
   t.parent = NULL;
   t.children_len = 0;
   t.isPortal = false;
+  t.isAlbum = false;
   return t;
 }
 
@@ -80,10 +94,10 @@ Term create_portal(char *name, char *bref) {
   return t;
 }
 
-Dict create_dict(char *name) {
-  Dict d;
-  d.name = name;
-  return d;
+Term create_album(char *name, char *bref) {
+  Term t = create_term(name, bref);
+  t.isAlbum = true;
+  return t;
 }
 
 void add_text(Term *term, char *text) {
@@ -91,9 +105,6 @@ void add_text(Term *term, char *text) {
   term->body_len++;
 }
 
-void add_word(Dict *dict, char *key, char *value) {
-  
-}
 
 void set_icon(Term *term, char *path) {
   
@@ -185,7 +196,6 @@ void add_diary_event(Term *term, char *date, int code, char *name, int pict) {
 }
 
 int find_term_pict(Term *term){
-  printf("%s(%d)\n", term->name, term->logs_len);
   for (int i = 0; i < term->logs_len; ++i) {
     if(term->logs_pict[i] > 0){
       return term->logs_pict[i];
@@ -194,64 +204,133 @@ int find_term_pict(Term *term){
   return 0;
 }
 
-void build_nav_child(FILE *myfile, Term *target){
-  fputs("<ul>", myfile);
+// Build
+
+void build_pict(FILE *f, int id, char *name){
+  fprintf(f, "<img src='../media/diary/%d.jpg' alt='%s picture'/>", id, name);
+}
+
+void build_nav_child(FILE *f, Term *target){
+  fputs("<ul>", f);
   for (int k = 0; k < target->children_len; ++k) {
     char child_filename[STR_BUF_LEN];
     to_lowercase(target->children[k]->name, child_filename, STR_BUF_LEN);
     if(target->children[k]->name == target->name){
-      fprintf(myfile, "<li><i>%s</i></li>", target->children[k]->name);
+      fprintf(f, "<li><b>%s</b></li>", target->children[k]->name);
+    }
+    else if(target->children[k]->children_len > 0){
+      fprintf(f, "<li class='folder'><a href='%s.html'>%s</a></li>", child_filename, target->children[k]->name);
     }
     else{
-      fprintf(myfile, "<li><a href='%s.html'>%s</a></li>", child_filename, target->children[k]->name);
+      fprintf(f, "<li><a href='%s.html'>%s</a></li>", child_filename, target->children[k]->name);
     }
   }
-  fputs("</ul>", myfile);
+  fputs("</ul>", f);
 }
 
-void build_nav_child_child(FILE *myfile, Term *term, Term *target){
-  fputs("<ul>", myfile);
+void build_nav_child_child(FILE *f, Term *term, Term *target){
+  fputs("<ul>", f);
   for (int k = 0; k < term->children_len; ++k) {
     char child_filename[STR_BUF_LEN];
     to_lowercase(term->children[k]->name, child_filename, STR_BUF_LEN);
     if(term->children[k]->name == target->name){
-      fprintf(myfile, "<li><i>%s</i></li>", term->children[k]->name);
+      fprintf(f, "<li><b>%s</b></li>", term->children[k]->name);
+    }
+    else if(term->children[k]->children_len > 0){
+      fprintf(f, "<li class='folder'><a href='%s.html'>%s</a></li>", child_filename, term->children[k]->name);
     }
     else{
-      fprintf(myfile, "<li><a href='%s.html'>%s</a></li>", child_filename, term->children[k]->name);
+      fprintf(f, "<li><a href='%s.html'>%s</a></li>", child_filename, term->children[k]->name);
     }
     if(target->name == term->children[k]->name){
-      build_nav_child(myfile, term->children[k]);
+      build_nav_child(f, term->children[k]);
     }
   }
-  fputs("</ul>", myfile);
+  fputs("</ul>", f);
 }
 
-void build_nav_child_child_child(FILE *myfile, Term *term, Term *target){
-  fputs("<ul>", myfile);
+void build_nav_child_child_child(FILE *f, Term *term, Term *target){
+  fputs("<ul>", f);
   for (int k = 0; k < term->parent->children_len; ++k) {
     char child_filename[STR_BUF_LEN];
     to_lowercase(term->parent->children[k]->name, child_filename, STR_BUF_LEN);
-    fprintf(myfile, "<li><a href='%s.html'>%s</a></li>", child_filename, term->parent->children[k]->name);
+    fprintf(f, "<li><a href='%s.html'>%s</a></li>", child_filename, term->parent->children[k]->name);
     if(target->parent->name == term->parent->children[k]->name){
-      build_nav_child_child(myfile, term->parent->children[k], target);
+      build_nav_child_child(f, term->parent->children[k], target);
     }
   }
-  fputs("</ul>", myfile);
+  fputs("</ul>", f);
 }
 
-void build_nav(FILE *myfile, Term *term){
-  fputs("<nav>", myfile);
+void build_nav(FILE *f, Term *term){
+  fputs("<nav>", f);
   if(term->name == term->parent->name){
-    build_nav_child(myfile, term);
+    build_nav_child(f, term);
   }
   else if(term->parent->parent->name == term->parent->name){
-    build_nav_child_child(myfile, term->parent, term);
+    build_nav_child_child(f, term->parent, term);
   }
   else{
-    build_nav_child_child_child(myfile, term->parent, term);  
+    build_nav_child_child_child(f, term->parent, term);  
   }
-  fputs("</nav>", myfile);
+  fputs("</nav>", f);
+}
+
+void build_banner(FILE *f, Term *term){
+  for (int i = 0; i < term->logs_len; ++i) {
+    if(term->logs_pict[i] > 0){
+      build_pict(f, term->logs_pict[i], term->logs_name[i]);
+      fprintf(f, "<h4>%s - %s</h4>", term->logs_name[i], term->logs_date[i]);
+      break;
+    }
+  }
+}
+
+void build_body(FILE *f, Term *term){
+  fprintf(f, "<h1 class='title'>%s</h1>", term->name);
+  fprintf(f, "<h2 class='brief'>%s</h2>", term->bref);
+  for (int i = 0; i < term->body_len; ++i) {
+    fprintf(f, "<p>%s</p>", term->body[i]);
+  }
+}
+
+void build_portal(FILE *f, Term *term){
+  if(term->isPortal != true){ return; }
+  for (int k = 0; k < term->children_len; ++k) {
+    char child_filename[STR_BUF_LEN];
+    to_lowercase(term->children[k]->name, child_filename, STR_BUF_LEN);
+    int pict = find_term_pict(term->children[k]);
+    if(pict > 0){
+      fprintf(f, "<a href='%s.html'>", child_filename);
+      build_pict(f, pict, term->children[k]->name);
+      fprintf(f, "</a>");
+    }
+    fprintf(f, "<h3><a href='%s.html'>%s</a></h3>", child_filename, term->children[k]->name);
+    fprintf(f, "<p>%s</p>", term->children[k]->bref);
+  }
+}
+
+void build_album(FILE *f, Term *term){
+  if(term->isAlbum != true){ return; }
+  for (int k = 0; k < term->logs_len; ++k) {
+    if(term->logs_pict[k] > 0){
+      build_pict(f, term->logs_pict[k], term->logs_name[k]);
+    }
+    fprintf(f, "<h4>%s</h4>", term->logs_name[k]);
+  }
+}
+
+void build_links(FILE *f, Term *term){
+  fputs("<ul class='links'>", f);
+  for (int i = 0; i < term->links_len; ++i) {
+    fprintf(f, "<li><a href='%s' class='external'>%s</a></li>", term->links_urls[i], term->links_names[i]);
+  }
+  fputs("</ul>", f);
+}
+
+void build_horaire(FILE *f, Term *term){
+  if(term->logs_len < 2){ return; }
+  fprintf(f, "<h5>%d logs</h5>", term->logs_len);
 }
 
 void build_page(Term *term) {
@@ -259,57 +338,25 @@ void build_page(Term *term) {
   to_lowercase(term->name, filename, STR_BUF_LEN);
   char filepath[STR_BUF_LEN];
   snprintf(filepath, STR_BUF_LEN, "../site/%s.html", filename);
-  FILE *myfile = fopen(filepath, "w");
+  FILE *f = fopen(filepath, "w");
 
-  fprintf(myfile, html_head, term->name);
-  fputs(html_header, myfile);
-  build_nav(myfile, term);
+  fprintf(f, html_head, term->name);
+  fputs(html_header, f);
+  build_nav(f, term);
   
-  fputs("<main>", myfile);
-  // Image
-  for (int i = 0; i < term->logs_len; ++i) {
-    if(term->logs_pict[i] > 0){
-      fprintf(myfile, "<img src='../media/diary/%d.jpg' alt='%s'/>", term->logs_pict[i], term->logs_name[i]);
-      fprintf(myfile, "<h4>%s - %s</h4>", term->logs_name[i], term->logs_date[i]);
-      break;
-    }
-  }
-  fprintf(myfile, "<h1 class='title'>%s</h1>", term->name);
-  fprintf(myfile, "<h2 class='brief'>%s</h2>", term->bref);
-  // body
-  for (int i = 0; i < term->body_len; ++i) {
-    fprintf(myfile, "<p>%s</p>", term->body[i]);
-  }
+  fputs("<main>", f);
+  build_banner(f, term);
+  build_body(f, term);
+  build_portal(f, term);
+  build_album(f, term);
+  build_links(f, term);
+  build_horaire(f, term);
+  fputs("</main>", f);
 
-  // Portal
-  if(term->isPortal == true){
-    for (int k = 0; k < term->children_len; ++k) {
-      char child_filename[STR_BUF_LEN];
-      to_lowercase(term->children[k]->name, child_filename, STR_BUF_LEN);
-      int pict = find_term_pict(term->children[k]);
-      if(pict > 0){
-        fprintf(myfile, "<a href='%s.html'><img src='../media/diary/%d.jpg' alt='%s picture'/></a>", child_filename, pict, term->children[k]->name);
-      }
-      fprintf(myfile, "<h3><a href='%s.html'>%s</a></h3>", child_filename, term->children[k]->name);
-      fprintf(myfile, "<p>%s</p>", term->children[k]->bref);
-    }
-  }
-  // links
-  fputs("<ul class='links'>", myfile);
-  for (int i = 0; i < term->links_len; ++i) {
-    fprintf(myfile, "<li><a href='%s'>%s</a></li>", term->links_urls[i], term->links_names[i]);
-  }
-  fputs("</ul>", myfile);
+  fputs(html_footer, f);
+  fputs(html_style, f);
 
-  if(term->logs_len > 1){
-    fprintf(myfile, "<h5>%d logs</h5>", term->logs_len);
-  }
-  fputs("</main>", myfile);
-
-  fputs(html_footer, myfile);
-  fputs(html_style, myfile);
-
-  fclose(myfile);
+  fclose(f);
 }
 
 int main(void) {
