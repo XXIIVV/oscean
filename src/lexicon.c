@@ -402,7 +402,7 @@ add_text(&alicef, "<b>Alicef</b> is a fragment of time taken from " SEND(aliceff
 add_text(&alicef, "There are currently no complete releases available for the <b>Alicef</b> project, only a handful of " LINKNAME("https://www.youtube.com/watch?v=hQXa6TkSeH0", "demos") " and the " SEND(azolla_path) " release.");
 add_youtube(&alicef, "hQXa6TkSeH0");
 
-Term aliceffekt = create_term("aliceffekt", "Aliceffekt, is an audio project following the adventures of Neonev across Dinaisth.");
+Term aliceffekt = create_portal("aliceffekt", "Aliceffekt, is an audio project following the adventures of Neonev across Dinaisth.");
 set_parent(&aliceffekt, &audio);
 set_icon(&aliceffekt, "M150,60 l0,180 M60,195 l180,0 M60,105 l180,0 M150,210 a15,-15 0 0,1 15,-15 a-15,-15 0 0,1 -15,-15 a-15,15 0 0,1 -15,15 a15,15 0 0,1 15,15 M150,90 a15,15 0 0,0 15,15 a-15,15 0 0,0 -15,15 a-15,-15 0 0,0 -15,-15 a15,-15 0 0,0 15,-15");
 add_text(&aliceffekt, "A travel across the fictional worlds of the " SEND(neauismetica_path) " where every album is a sort of travel diary across the " SEND(dinaisth_path) " landscape.");
@@ -1033,7 +1033,7 @@ add_text(&enfer, "<b>Enfer</b> is a web-based sampler and synthetiser designed t
 add_text(&enfer, "The sampler is meant to be used with the " LINKNAME("https://www.akaipro.com/lpd8-lpd8", "Akai LPD8") " midi controller while livecoding, its interface is reflecting the state of the knobs on the controller.");
 add_link(&enfer, "sources", "https://github.com/neauoire/Enfer");
 
-Term games = create_term("games", "The Games are a collection of experimental interactive projects.");
+Term games = create_portal("games", "The Games are a collection of experimental interactive projects.");
 set_parent(&games, &software);
 set_icon(&games, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
 
@@ -1292,7 +1292,7 @@ add_link(&monome, "website", "https://monome.org/");
 add_link(&monome, "linn forum", "https://llllllll.co/t/using-a-grid-as-linnstrument/23637");
 add_link(&monome, "rack forum", "https://llllllll.co/t/using-a-grid-as-drum-rack/23932");
 
-Term mobile = create_term("mobile", "The Mobile collection is both mobile tools and games.");
+Term mobile = create_portal("mobile", "The Mobile collection is both mobile tools and games.");
 set_parent(&mobile, &software);
 set_icon(&mobile, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
 add_text(&mobile, "As of <b>March 2019</b>, these applications are no longer maintained.");
