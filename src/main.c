@@ -11,7 +11,7 @@ char *html_header = "<header><a id='logo' href='home.html'><img src='../media/ic
 
 char *html_footer = "<footer><hr/><a href='https://creativecommons.org/licenses/by-nc-sa/4.0' target='_blank'><img src='../media/icon/cc.svg' alt='by-nc-sa' width='30'/></a> <a href='http://webring.xxiivv.com/#random' target='_blank' rel='noreferrer'><img src='../media/icon/rotonde.svg' alt='webring' width='30'/></a> <a href='https://merveilles.town/@neauoire' target='_blank'><img src='../media/icon/merveilles.svg' alt='Merveilles' width='30'/></a> <a href='https://github.com/neauoire' target='_blank'><img src='../media/icon/github.png' alt='github' width='30'/></a> <span><a class='profile' href='devine_lu_linvega.html' target='_self'>Devine Lu Linvega</a> © 2020 — <a class='about' href='about.html' target='_self'>BY-NC-SA 4.0</a></span></footer></body></html>";
 
-char *html_style = "<style>body { padding:30px } header { margin-bottom:30px } nav { float:left; margin: 10px 45px 30px 0px } nav ul { padding:0px 0px 0px 15px } main { max-width:600px; float:left; margin:0px 0px 30px 30px } main h1 { display:none } main img { max-width:100% } footer { clear:both } footer hr { margin:0px 0px 30px } footer img { margin: 0px 0px -10px 0px }</style>";
+char *html_style = "<style>body { padding:30px } header { margin-bottom:30px } nav { float:left; margin: 10px 45px 30px 0px } nav ul { padding:0px 0px 0px 15px } main { max-width:600px; float:left; margin:0px 0px 30px 0px } main h1 { display:none } main img { max-width:100% } main a.external:before { content:'~' } footer { clear:both } footer hr { margin:0px 0px 30px } footer img { margin: 0px 0px -10px 0px }</style>";
 
 typedef struct Log {
   char *date;
