@@ -2246,7 +2246,7 @@ add_text(&longtermism, "Despite all this, I dream of a line of simple electronic
 add_text(&longtermism, "My dream sailboat has no diesel engine, no fuel outboard and no lead acid battery storage, but instead a compressed air engine with its compression stored in diving tanks, a bike crank powered compressor, a hydro generator pump, and a dynamo to charge our low-power electronics. The only crutial electronic systems connected to the house tanks would be the AIS transciver, the VHF radio, a basic chartplotter and habitat lighting. Our work and entertainment electronics, like our laptops and cameras, would run off solar charging a minimal array of LiPo batteries.");
 add_text(&longtermism, "Is there a way to distribute entertainment in a way that is environmentally conscious? I read this thinking, how dare I think that only work has value and that entertainment and leisure has somehow less right to pollute.");
 
-Term inventory = create_term("inventory", "The collection of techincal details on the Inventory.");
+Term inventory = create_term("inventory", "The collection of technical details on the Inventory.");
 set_parent(&inventory, &devine_lu_linvega);
 set_icon(&inventory, "M150,60 l0,180 M180,60 l0,180 l0,-60 a30,-30 0 0,1 30,-30 l30,0 M120,60 l0,180 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0");
 add_text(&inventory, "Some of the items I carry around with me in my " SENDNAME(travel_path, "travels") ".");

@@ -5,11 +5,13 @@
 #define STR_BUF_LEN 64
 #define LOGS_BUFFER 1000
 
-char *html_head = "<!DOCTYPE html><html lang='en'><head><meta name='author' content='Devine Lu Linvega'><meta name='description' content='The Nataniev Library.'/><meta name='keywords' content='Aliceffekt, Traumae, Devine Lu Linvega, Lietal, Oquonie, Verreciel, Nataniev, Oscean, Solarpunk' /><meta name='license' content='name=BY-NC-SA(4.0), url=https://creativecommons.org/licenses/by-nc-sa/4.0/'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width, initial-scale=1.0'><meta name='twitter:card' content='summary'><meta name='twitter:site' content='@neauoire'><meta name='twitter:title' content='The Nataniev Library'><meta name='twitter:description' content='The digital playground and documentation for the projects of Devine Lu Linvega.'><meta name='twitter:creator' content='@neauoire'><meta name='twitter:image' content='https://wiki.xxiivv.com/media/services/rss.jpg'><meta property='og:title' content='The Nataniev Library' /><meta property='og:type' content='article' /><meta property='og:url' content='http://wiki.xxiivv.com/' /><meta property='og:image' content='https://wiki.xxiivv.com/media/services/rss.jpg' /><meta property='og:description' content='The digital playground and documentation for the projects of Devine Lu Linvega.' /> <meta property='og:site_name' content='XXIIVV' /><link rel='stylesheet' type='text/css' href='../links/fonts.css'><link rel='stylesheet' type='text/css' href='../links/main.css'><title>XXIIVV — %s</title></head><body>";
+char *html_head = "<!DOCTYPE html><html lang='en'><head><meta name='author' content='Devine Lu Linvega'><meta name='description' content='The Nataniev Library.'/><meta name='keywords' content='Aliceffekt, Traumae, Devine Lu Linvega, Lietal, Oquonie, Verreciel, Nataniev, Oscean, Solarpunk' /><meta name='license' content='name=BY-NC-SA(4.0), url=https://creativecommons.org/licenses/by-nc-sa/4.0/'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width, initial-scale=1.0'><meta name='twitter:card' content='summary'><meta name='twitter:site' content='@neauoire'><meta name='twitter:title' content='The Nataniev Library'><meta name='twitter:description' content='The digital playground and documentation for the projects of Devine Lu Linvega.'><meta name='twitter:creator' content='@neauoire'><meta name='twitter:image' content='https://wiki.xxiivv.com/media/services/rss.jpg'><meta property='og:title' content='The Nataniev Library' /><meta property='og:type' content='article' /><meta property='og:url' content='http://wiki.xxiivv.com/' /><meta property='og:image' content='https://wiki.xxiivv.com/media/services/rss.jpg' /><meta property='og:description' content='The digital playground and documentation for the projects of Devine Lu Linvega.' /> <meta property='og:site_name' content='XXIIVV' /><title>XXIIVV — %s</title></head><body>";
 
 char *html_header = "<header><a id='logo' href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV'></a></header>";
 
-char *html_footer = "<footer><a href='https://100r.co' target='_blank' rel='noreferrer' class='icon hundredrabbits sprite_hundredrabbits'>https://100r.co</a> <a href='https://creativecommons.org/licenses/by-nc-sa/4.0' target='_blank' rel='noreferrer' class='external icon cc sprite_cc'>https://creativecommons.org/licenses/by-nc-sa/4.0</a> <a href='http://webring.xxiivv.com/#random' target='_blank' rel='noreferrer' class='external icon rotonde sprite_rotonde'>http://webring.xxiivv.com/#random</a> <a href='https://merveilles.town/@neauoire' target='_blank' rel='noreferrer' class='external icon merveilles sprite_merveilles'>https://merveilles.town/@neauoire</a> <a href='https://github.com/neauoire' target='_blank' rel='noreferrer' class='external icon github sprite_github'>https://github.com/neauoire</a> <span><a class='profile' href='devine_lu_linvega.html' target='_self'>Devine Lu Linvega</a> © 2020 — <a class='about' href='about.html' target='_self'>BY-NC-SA 4.0</a></span><hr /></footer></body></html>";
+char *html_footer = "<footer><hr/><a href='https://creativecommons.org/licenses/by-nc-sa/4.0' target='_blank'><img src='../media/icon/cc.svg' alt='by-nc-sa' width='30'/></a> <a href='http://webring.xxiivv.com/#random' target='_blank' rel='noreferrer'><img src='../media/icon/rotonde.svg' alt='webring' width='30'/></a> <a href='https://merveilles.town/@neauoire' target='_blank'><img src='../media/icon/merveilles.svg' alt='Merveilles' width='30'/></a> <a href='https://github.com/neauoire' target='_blank'><img src='../media/icon/github.png' alt='github' width='30'/></a> <span><a class='profile' href='devine_lu_linvega.html' target='_self'>Devine Lu Linvega</a> © 2020 — <a class='about' href='about.html' target='_self'>BY-NC-SA 4.0</a></span></footer></body></html>";
+
+char *html_style = "<style>body { padding:30px } header { margin-bottom:30px } nav { float:left; margin: 10px 45px 30px 0px } nav ul { padding:0px 0px 0px 15px } main { max-width:600px; float:left; margin:0px 0px 30px 30px } main h1 { display:none } main img { max-width:100% } footer { clear:both } footer hr { margin:0px 0px 30px } footer img { margin: 0px 0px -10px 0px }</style>";
 
 typedef struct Log {
   char *date;
@@ -173,6 +175,52 @@ void add_diary_event(Term *term, char *date, int code, char *name, int pict) {
 
 }
 
+void build_nav_child(FILE *myfile, Term *target){
+  fputs("<ul>", myfile);
+  for (int k = 0; k < target->children_len; ++k) {
+    char child_filename[STR_BUF_LEN];
+    to_lowercase(target->children[k]->name, child_filename, STR_BUF_LEN);
+    if(target->children[k]->name == target->name){
+      fprintf(myfile, "<li><i>%s</i></li>", target->children[k]->name);
+    }
+    else{
+      fprintf(myfile, "<li><a href='%s.html'>%s</a></li>", child_filename, target->children[k]->name);
+    }
+  }
+  fputs("</ul>", myfile);
+}
+
+void build_nav_child_child(FILE *myfile, Term *term, Term *target){
+  fputs("<ul>", myfile);
+  for (int k = 0; k < term->children_len; ++k) {
+    char child_filename[STR_BUF_LEN];
+    to_lowercase(term->children[k]->name, child_filename, STR_BUF_LEN);
+    if(term->children[k]->name == target->name){
+      fprintf(myfile, "<li><i>%s</i></li>", term->children[k]->name);
+    }
+    else{
+      fprintf(myfile, "<li><a href='%s.html'>%s</a></li>", child_filename, term->children[k]->name);
+    }
+    if(target->name == term->children[k]->name){
+      build_nav_child(myfile, term->children[k]);
+    }
+  }
+  fputs("</ul>", myfile);
+}
+
+void build_nav_child_child_child(FILE *myfile, Term *term, Term *target){
+  fputs("<ul>", myfile);
+  for (int k = 0; k < term->parent->children_len; ++k) {
+    char child_filename[STR_BUF_LEN];
+    to_lowercase(term->parent->children[k]->name, child_filename, STR_BUF_LEN);
+    fprintf(myfile, "<li><a href='%s.html'>%s</a></li>", child_filename, term->parent->children[k]->name);
+    if(target->parent->name == term->parent->children[k]->name){
+      build_nav_child_child(myfile, term->parent->children[k], target);
+    }
+  }
+  fputs("</ul>", myfile);
+}
+
 void build_page(Term *term) {
   char filename[STR_BUF_LEN];
   to_lowercase(term->name, filename, STR_BUF_LEN);
@@ -183,46 +231,19 @@ void build_page(Term *term) {
   fprintf(myfile, html_head, term->name);
   fputs(html_header, myfile);
 
-
+  // Nav
   fputs("<nav>", myfile);
-
-  // parents
-  fputs("<ul class='parents'>", myfile);
-  for (int i = 0; i < term->parent->parent->children_len; ++i) {
-    char parent_filename[STR_BUF_LEN];
-    to_lowercase(term->parent->parent->children[i]->name, parent_filename, STR_BUF_LEN);
-    if(term->parent->parent->children[i]->name == term->parent->name){
-      fprintf(myfile, "<li class='selected'><a href='%s.html'>%s</a></li>", parent_filename, term->parent->parent->children[i]->name);
-    }
-    else{
-      fprintf(myfile, "<li><a href='%s.html'>%s</a></li>", parent_filename, term->parent->parent->children[i]->name);  
-    }
+  if(term->name == term->parent->name){
+    build_nav_child(myfile, term);
   }
-  fputs("</ul>", myfile);
-  // siblings
-  fputs("<ul class='siblings'>", myfile);
-  for (int i = 0; i < term->parent->children_len; ++i) {
-    char sibling_filename[STR_BUF_LEN];
-    to_lowercase(term->parent->children[i]->name, sibling_filename, STR_BUF_LEN);
-    if(term->parent->children[i]->name == term->name){
-      fprintf(myfile, "<li class='selected'><a href='%s.html'>%s</a></li>", sibling_filename, term->parent->children[i]->name);
-    }
-    else{
-      fprintf(myfile, "<li><a href='%s.html'>%s</a></li>", sibling_filename, term->parent->children[i]->name);
-    }
+  else if(term->parent->parent->name == term->parent->name){
+    build_nav_child_child(myfile, term->parent, term);
   }
-  fputs("</ul>", myfile);
-  // children
-  fputs("<ul class='children'>", myfile);
-  for (int i = 0; i < term->children_len; ++i) {
-    char child_filename[STR_BUF_LEN];
-    to_lowercase(term->children[i]->name, child_filename, STR_BUF_LEN);
-    fprintf(myfile, "<li><a href='%s.html'>%s</a></li>", child_filename, term->children[i]->name);
+  else{
+    build_nav_child_child_child(myfile, term->parent, term);  
   }
-  fputs("</ul>", myfile);
-  fputs("<hr/></nav>", myfile);
-
-
+  fputs("</nav>", myfile);
+  
   fputs("<main>", myfile);
   // Image
   for (int i = 0; i < term->logs_len; ++i) {
@@ -250,75 +271,12 @@ void build_page(Term *term) {
     fprintf(myfile, "<h5>%d logs</h5>", term->logs_len);
   }
   fputs("</main>", myfile);
-  fputs("<hr/>", myfile);
 
   fputs(html_footer, myfile);
+  fputs(html_style, myfile);
 
   fclose(myfile);
 }
-
-/*
-
-typedef struct {
-  char *name;
-  int pages_len;
-  Page *pages[32];
-} Category;
-
-Category create_category(char *name) {
-  Category a;
-  a.name = name;
-  a.pages_len = 0;
-  return a;
-}
-
-Page create_page(char *name) {
-  Page a;
-  a.name = name;
-  a.parts_len = 0;
-  return a;
-}
-
-void add_part(Page *page, char *name, char *description) {
-  page->parts_names[page->parts_len] = name;
-  page->parts_descriptions[page->parts_len] = description;
-  page->parts_len++;
-}
-
-void add_page(Category *category, Page *page) {
-  category->pages[category->pages_len] = page;
-  category->pages_len++;
-}
-
-void build_home(Category **categories, int categories_len) {
-  FILE *myfile = fopen("../site/home.html", "w");
-
-  fprintf(myfile, html_head, "home", "home");
-  fputs(html_header, myfile);
-
-  fputs("<main class='home'>", myfile);
-
-  for (int i = 0; i < categories_len; ++i) {
-    Category *category = categories[i];
-    fprintf(myfile, "<h2>%s</h2>", category->name);
-    fputs("<ul>", myfile);
-    for (int j = 0; j < category->pages_len; ++j) {
-      Page *page = category->pages[j];
-      char page_index[STR_BUF_LEN];
-      to_lowercase(page->name, page_index, STR_BUF_LEN);
-      fprintf(myfile, "<li><a href='%s.html'>%s</a></li>", page_index,page->name);
-    }
-    fputs("</ul>", myfile);
-  }
-
-  fputs("<hr/>", myfile);
-  fputs("</main>", myfile);
-
-  fputs(html_footer, myfile);
-
-  fclose(myfile);
-}
-*/
 
 int main(void) {
   #include "lexicon.c"
@@ -328,10 +286,6 @@ int main(void) {
   int lexicon_len = sizeof lexicon / sizeof lexicon[0];
 
   printf("Lexicon: %d entries\n", lexicon_len);
-
-  // printf("Found categories: %d\n", categories_len);
-
-  // build_home(categories, categories_len);
 
   for (int i = 0; i < lexicon_len; ++i) {
     build_page(lexicon[i]);
