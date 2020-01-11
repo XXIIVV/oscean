@@ -76,10 +76,6 @@
 #define software_path "software"
 #define nataniev_path "nataniev"
 #define oscean_path "oscean"
-#define indental_path "indental"
-#define tablatal_path "tablatal"
-#define runic_path "runic"
-#define lain_path "lain"
 #define horaire_path "horaire"
 #define time_path "time"
 #define neralie_path "neralie"
@@ -747,86 +743,14 @@ set_parent(&nataniev, &software);
 set_icon(&nataniev, "M240,240 l0,-90 a-90,-90 0 0,0 -90,-90 l-90,0 l0,90 a90,90 0 0,0 90,90 l60,0 l0,-90 a-60,-60 0 0,0 -60,-60 l-60,0 l0,60 a60,60 0 0,0 60,60 l30,0 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0 l0,30 a30,30 0 0,0 30,30");
 add_text(&nataniev, "<b>Nataniev</b> is a collection of free and open-source software following a singular design " SENDNAME(about_path, "philosophy") ", and " SENDNAME(aesthetics_path, "aesthetic") ".");
 
-Term oscean = create_term("oscean", "Oscean is a flat-file wiki engine.");
+Term oscean = create_album("oscean", "Oscean is a flat-file wiki engine.");
 set_parent(&oscean, &nataniev);
 set_icon(&oscean, "M240,240 l0,-90 a-90,-90 0 0,0 -90,-90 l-90,0 l0,90 a90,90 0 0,0 90,90 l60,0 l0,-90 a-60,-60 0 0,0 -60,-60 l-60,0 l0,60 a60,60 0 0,0 60,60 l30,0 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0 l0,30 a30,30 0 0,0 30,30");
-add_text(&oscean, "<b>Oscean</b> is a fully static publishing platform created for the " LINKNAME("https://en.wikipedia.org/wiki/Peer-to-peer", "peer-to-peer web") ".");
-add_text(&oscean, "The wiki engine has grown into a collection of frontend tools, including the database formats " SEND(indental_path) " & " SEND(tablatal_path) ", the time formats " SEND(neralie_path) " & " SEND(arvelie_path) ", and the templating and scripting languages " SEND(runic_path) " & " SEND(lain_path) ".");
-add_text(&oscean, "The following <b>example</b> shows the content of an " SEND(indental_path) " file, with a body templated in " SEND(runic_path) ", which includes a paragraph with a bold link declared in " SEND(lain_path) ".");
-// add_code(&oscean, "<comment># lexicon.ndtl</comment>");
-// add_code(&oscean, "HOME");
-// add_code(&oscean, "  BREF : A basic term.");
-// add_code(&oscean, "  TAGS : diary gallery");
-// add_code(&oscean, "  BODY");
-// add_code(&oscean, "    & Foo {(bold (link \"sources\"))}.");
-// add_code(&oscean, "    λ (join host:children)");
+// add_text(&oscean, "<b>Oscean</b> is a fully static publishing platform created for the " LINKNAME("https://en.wikipedia.org/wiki/Peer-to-peer", "peer-to-peer web") ".");
+// add_text(&oscean, "The wiki engine has grown into a collection of frontend tools, including the database formats " SEND(indental_path) " & " SEND(tablatal_path) ", the time formats " SEND(neralie_path) " & " SEND(arvelie_path) ", and the templating and scripting languages " SEND(runic_path) " & " SEND(lain_path) ".");
+// add_text(&oscean, "The following <b>example</b> shows the content of an " SEND(indental_path) " file, with a body templated in " SEND(runic_path) ", which includes a paragraph with a bold link declared in " SEND(lain_path) ".");
 add_link(&oscean, "sources", "https://github.com/XXIIVV/Oscean");
 add_link(&oscean, "live", "https://wiki.xxiivv.com");
-
-Term indental = create_term("indental", "Indental is a dictionary-type database format.");
-set_parent(&indental, &oscean);
-set_icon(&indental, "M240,240 l0,-90 a-90,-90 0 0,0 -90,-90 l-90,0 l0,90 a90,90 0 0,0 90,90 l60,0 l0,-90 a-60,-60 0 0,0 -60,-60 l-60,0 l0,60 a60,60 0 0,0 60,60 l30,0 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0 l0,30 a30,30 0 0,0 30,30");
-add_text(&indental, "This space-sensitive database format is designed to store a dictionary of elements, accessible by name. The " LINKNAME("https://github.com/XXIIVV/Oscean/blob/master/scripts/lib/indental.js", "parser") " is a mere 50 lines, and allows for human-readable data structures for static sites such as " SEND(oscean_path) ", also see " SEND(tablatal_path) ".");
-// add_code(&indental, "NAME");
-// add_code(&indental, "  KEY : VALUE");
-// add_code(&indental, "  LIST");
-// add_code(&indental, "    ITEM1");
-// add_code(&indental, "    ITEM2");
-// add_code(&indental, "<comment>Or, {NAME:{KEY:VALUE,LIST:[ITEM1,ITEM2])}</comment>");
-add_text(&indental, "In the Indental file, <b>an unindented line declares the key</b> to a new root node, children lines can associate either parameters or lists to their parent node, a line divided with a colon will associate a value to a parameter to the parent node, and a sequence of equally indented lines will append to a list.");
-add_link(&indental, "sources", "https://github.com/XXIIVV/Oscean/blob/master/scripts/lib/indental.js");
-add_link(&indental, "syntax", "https://github.com/csmccaleb/Tome");
-
-Term tablatal = create_term("tablatal", "Tablatal is a list-type database format.");
-set_parent(&tablatal, &oscean);
-set_icon(&tablatal, "M240,240 l0,-90 a-90,-90 0 0,0 -90,-90 l-90,0 l0,90 a90,90 0 0,0 90,90 l60,0 l0,-90 a-60,-60 0 0,0 -60,-60 l-60,0 l0,60 a60,60 0 0,0 60,60 l30,0 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0 l0,30 a30,30 0 0,0 30,30");
-add_text(&tablatal, "This space-sensitive database format is designed to store a list of elements of the same length, accessible by id. The " LINKNAME("https://github.com/XXIIVV/Oscean/blob/master/scripts/lib/tablatal.js", "parser") " is 30 lines long, and allows for human-readable data structures for static sites such as " SEND(oscean_path) ", also see " SEND(indental_path) ".");
-// add_code(&tablatal, "NAME    AGE   COLOR");
-// add_code(&tablatal, "Erica   12    Opal");
-// add_code(&tablatal, "Alex    23    Cyan");
-// add_code(&tablatal, "Nike    34    Red");
-// add_code(&tablatal, "Ruca    45    Grey");
-// add_code(&tablatal, "<comment>Or, [{name:Erica,Age:12,Color:Blue},{name:Alex,Age..}</comment>");
-add_text(&tablatal, "In the Tablatal file, <b>the first line declares the key</b>, the spacing between each key defines the length of the parameters for all subsequent lines.");
-add_link(&tablatal, "sources", "https://github.com/XXIIVV/Oscean/blob/master/scripts/lib/tablatal.js");
-
-Term runic = create_term("runic", "Runic is a templating format.");
-set_parent(&runic, &oscean);
-set_icon(&runic, "M240,240 l0,-90 a-90,-90 0 0,0 -90,-90 l-90,0 l0,90 a90,90 0 0,0 90,90 l60,0 l0,-90 a-60,-60 0 0,0 -60,-60 l-60,0 l0,60 a60,60 0 0,0 60,60 l30,0 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0 l0,30 a30,30 0 0,0 30,30");
-add_text(&runic, "<b>Runic</b> is a first order templating language operating on arrays of strings");
-add_text(&runic, "Where each one is prefixed by a rune, giving a sense of the data being handled. Have a look at the " LINKNAME("https://github.com/XXIIVV/Oscean/blob/master/scripts/database/lexicon.ndtl", "Oscean Lexicon") " to better understand its applications.");
-// add_code(&runic, "* Header");
-// add_code(&runic, "& Paragraph");
-// add_code(&runic, "- List Element 1");
-// add_code(&runic, "- List Element 2");
-// add_code(&runic, "| table | row1");
-// add_code(&runic, "| table | row2");
-// add_code(&runic, "# <comment>-- CODE BLOCK</comment>");
-// add_code(&runic, "> <comment>-- HTML BLOCK</comment>");
-// add_code(&runic, "λ <comment>-- " SEND(lain_path) " BLOCK</comment>");
-add_link(&runic, "sources", "https://github.com/XXIIVV/Oscean/blob/master/scripts/lib/runic.js");
-add_link(&runic, "syntax", "https://github.com/csmccaleb/Tome");
-
-Term lain = create_term("lain", "Lain is a LISP dialect.");
-set_parent(&lain, &oscean);
-set_icon(&lain, "M240,240 l0,-90 a-90,-90 0 0,0 -90,-90 l-90,0 l0,90 a90,90 0 0,0 90,90 l60,0 l0,-90 a-60,-60 0 0,0 -60,-60 l-60,0 l0,60 a60,60 0 0,0 60,60 l30,0 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0 l0,30 a30,30 0 0,0 30,30");
-add_text(&lain, "Lain is both an <b>inline scripting library</b> that allows for complex templating of the wiki pages, and a <b>programming language</b> that exists at the core of the engine to load and parse content for each article.");
-add_header(&lain, "Templating With Lain");
-// add_code(&lain, "(link \"home\")                             " SEND(home_path) "");
-// add_code(&lain, "(link \"home\" \"local\")                     " SENDNAME(home_path, "local") "");
-// add_code(&lain, "(link \"https://github.com/\")              " LINK("https://github.com/") "");
-// add_code(&lain, "(link \"https://github.com/\" \"external\")   " LINKNAME("https://github.com/", "external") "");
-// add_code(&lain, "(bold \"bold\")                             <b>bold</b>");
-// add_code(&lain, "(ital \"italic\")                           <i >italic</i>");
-// add_code(&lain, "(bold (link \"home\" \"bold link\"))          <b><a href='#home' data-goto='home' target='_self' class='local '>bold link</a></b>");
-add_header(&lain, "Programming With Lain");
-// add_code(&lain, "(add (sub 5 3) 2)                         ; Basic Math");
-// add_code(&lain, "(λ (a b c) (concat a b c))                ; Lambda");
-// add_code(&lain, "(def obj:foo \"bar\")                       ; Creating object");
-// add_code(&lain, "(obj:foo)                                 ; Reading object parameters");
-// add_code(&lain, "(def _sidebar (dom:create \"sidebar\"))     ; Creating DOM elements");
-add_text(&lain, "The Lain parser can also be found in the " SEND(ronin_path) " and " SEND(paradise_path) " applications.");
-add_link(&lain, "sources", "https://github.com/XXIIVV/Oscean/tree/master/scripts/lisp");
 
 Term horaire = create_term("horaire", "Horaire is a time-tracking tool.");
 set_parent(&horaire, &nataniev);
@@ -1103,7 +1027,7 @@ Term paradise = create_term("paradise", "Paradise is an interactive-fiction play
 set_parent(&paradise, &games);
 set_icon(&paradise, "M150.0,60.0 L150.0,60.0 L150.0,135.0 M227.9,195.0 L227.9,195.0 L163.0,157.5 M72.1,195.0 L72.1,195.0 L137.0,157.5");
 add_text(&paradise, "In <b>Paradise</b>, you are but a force acting upon places, objects, words — vessels.");
-add_text(&paradise, "<b>Paradise</b> is currently being expanded into an " LINKNAME("https://github.com/hundredrabbits/Paradise", "experimental shell") ", and file-system, for an upcoming light Linux distribution. The project also features an inline scripting language inspired from " LINKNAME("https://en.wikipedia.org/wiki/Lisp_(programming_language)", "LISP") ", called " SEND(lain_path) ".");
+add_text(&paradise, "<b>Paradise</b> is currently being expanded into an " LINKNAME("https://github.com/hundredrabbits/Paradise", "experimental shell") ", and file-system, for an upcoming light Linux distribution. The project also features an inline scripting language inspired from " LINKNAME("https://en.wikipedia.org/wiki/Lisp_(programming_language)", "LISP") ", called Lain.");
 // add_code(&paradise, "create a coffee machine");
 // add_code(&paradise, "enter the machine");
 // add_code(&paradise, "program create a coffee");
@@ -3078,4 +3002,4 @@ add_text(&russian, "Aspects are indicators of completion of an action on some ve
 // add_table(&russian, "to convince, to talk into   | <b>уговорить</b>");
 // add_table(&russian, "to memorize                 | <b>выучить</b>");
 
-Term *lexicon[] = { &home, &audio, &visual, &research, &about, &license, &benchmark, &tracker, &journal, &calendar, &dodecae, &efli, &alicef, &aliceffekt, &es_gulf_sunflowers, &damoiseau_canalx, &the_sixth_season, &hex_hive_necklace, &victorian_punch, &rekka, &wiktopher, &hundred_rabbits, &drownspire, &merure, &vambits, &pino, &grimgrains, &illustration, &beldam_records, &ten_axitecture, &miniscopie, &ramiel, &eschatolor, &looking_glace, &verreciel_soundtrack, &getapan_728k, &azolla, &malice, &collected_works, &markl, &verreciel, &modernista, &nereid, &beauty, &serventines, &polygore, &pearls, &occulter, &oquonie, &oquonie_guide, &camilare, &babelium, &physical, &polygonoscopy, &methascope, &kaleidoscope, &hypervoid, &brane, &astratas, &ar_moire, &nervous, &artwork, &sketchbook, &flactals, &old_cities, &lard_shader, &ring_of_scales, &neauismetic, &vetetrandes_lettres, &from_saharaphorest, &ehrivevnv_studies, &yajnev_studies, &telekinetic, &telekinesis, &software, &nataniev, &oscean, &indental, &tablatal, &runic, &lain, &horaire, &time, &neralie, &arvelie, &webring, &merveilles, &rotonde, &riven, &tools, &orca, &juni, &pilot, &ronin, &dotgrid, &left, &utilities, &noodle, &enfer, &paradise, &maeve, &parade, &games, &hardware, &raspberry, &media_station, &radio_station, &framboisedorf, &weather_station, &instrument, &assembly, &microbit, &playground, &norns, &monome, &mobile, &bifurcan, &keyboard_468, &alphavetist, &vocavularist, &rafinograde, &noirca, &dew, &ledoliel, &automatons, &the_will_the_wisp, &dictionarism, &glossolaliarium, &advent_v, &unity, &siseon, &zjeveni, &drypoint, &valentinel_hopes, &cenote, &cyanosis_fever, &donsol, &hiversaires, &purgateus, &collegiennes, &diluvium, &volkenessen, &waiting_for_horus, &marabu, &pico3, &pico_battle, &spagettini_scale, &spool_holder, &laeisthic, &children_of_bramble, &known_magye, &extended_sleep, &duomic, &opal_inquisitors, &portalion, &dei_dain, &habitants_du_soleil, &lives, &shikanokoa_vs_1h1d, &pedestrian_paradise, &nor_let_the_fools, &to_the_aeons_hell, &vermillionth, &time_alloy, &demo, &superworker, &supervisitor, &supergrid, &soundtrack, &oquonie_soundtrack, &rabbits_soundtrack, &purgateus_soundtrack, &noon_guest, &remix, &typography, &vast, &defraction_optics, &thousand_rooms, &wallpapers, &neauismetica, &neon_hermetism, &feu, &actors, &ehrivevnv, &soies, &longest_end, &soies_machine, &soies_injection, &neausea, &nohlxeserre, &dinaisth, &kanikule, &vetetrandes, &laeisth, &andes_castel, &duomo, &neau, &dilitriel, &aitasla, &characters, &rlionn, &neonev, &andes, &yajnev, &paradichlorisse, &photography, &macro, &personal, &film, &black, &infrared, &travel, &austria, &netherlands, &japan, &minamiise, &shizuoka, &ogasawara, &yokohama, &fuji, &osaka, &tokyo, &fiji, &marquesas, &marshall_islands, &niue, &czech, &france, &the_sublime, &new_zealand, &america, &germany, &canada, &mexico, &lifestyle, &aesthetics, &nomad, &nutrition, &routine, &longtermism, &inventory, &everyday, &skate, &bike, &studio, &computer, &plan9, &camera, &keyboard, &directory, &bookmarks, &readings, &goals, &death, &faqs, &audio_faqs, &visual_faqs, &research_faqs, &lifestyle_faqs, &mirrors, &wisdom, &action, &inaction, &knowledge, &programming, &design, &work, &writing, &health, &collapsology, &solarpunk, &ascetism, &cheatsheets, &discourse, &psychology, &documentation, &quotes, &language, &english, &notebook, &the_sartre_mechanism, &talk, &systems, &vedic, &needles, &shorthand, &unreleased, &blindfolk, &milavrega, &devine_lu_linvega, &first_wave, &regionsteam_snowdays, &downtemperature, &blam, &vert_kirlian_theatre, &ann_yozora_saint, &nether_esper_inserts, &otoroutes_miniatures, &idyllic_miners, &lietal, &asodeky, &japanese, &russian };
+Term *lexicon[] = { &home, &audio, &visual, &research, &about, &license, &benchmark, &tracker, &journal, &calendar, &dodecae, &efli, &alicef, &aliceffekt, &es_gulf_sunflowers, &damoiseau_canalx, &the_sixth_season, &hex_hive_necklace, &victorian_punch, &rekka, &wiktopher, &hundred_rabbits, &drownspire, &merure, &vambits, &pino, &grimgrains, &illustration, &beldam_records, &ten_axitecture, &miniscopie, &ramiel, &eschatolor, &looking_glace, &verreciel_soundtrack, &getapan_728k, &azolla, &malice, &collected_works, &markl, &verreciel, &modernista, &nereid, &beauty, &serventines, &polygore, &pearls, &occulter, &oquonie, &oquonie_guide, &camilare, &babelium, &physical, &polygonoscopy, &methascope, &kaleidoscope, &hypervoid, &brane, &astratas, &ar_moire, &nervous, &artwork, &sketchbook, &flactals, &old_cities, &lard_shader, &ring_of_scales, &neauismetic, &vetetrandes_lettres, &from_saharaphorest, &ehrivevnv_studies, &yajnev_studies, &telekinetic, &telekinesis, &software, &nataniev, &oscean, &horaire, &time, &neralie, &arvelie, &webring, &merveilles, &rotonde, &riven, &tools, &orca, &juni, &pilot, &ronin, &dotgrid, &left, &utilities, &noodle, &enfer, &paradise, &maeve, &parade, &games, &hardware, &raspberry, &media_station, &radio_station, &framboisedorf, &weather_station, &instrument, &assembly, &microbit, &playground, &norns, &monome, &mobile, &bifurcan, &keyboard_468, &alphavetist, &vocavularist, &rafinograde, &noirca, &dew, &ledoliel, &automatons, &the_will_the_wisp, &dictionarism, &glossolaliarium, &advent_v, &unity, &siseon, &zjeveni, &drypoint, &valentinel_hopes, &cenote, &cyanosis_fever, &donsol, &hiversaires, &purgateus, &collegiennes, &diluvium, &volkenessen, &waiting_for_horus, &marabu, &pico3, &pico_battle, &spagettini_scale, &spool_holder, &laeisthic, &children_of_bramble, &known_magye, &extended_sleep, &duomic, &opal_inquisitors, &portalion, &dei_dain, &habitants_du_soleil, &lives, &shikanokoa_vs_1h1d, &pedestrian_paradise, &nor_let_the_fools, &to_the_aeons_hell, &vermillionth, &time_alloy, &demo, &superworker, &supervisitor, &supergrid, &soundtrack, &oquonie_soundtrack, &rabbits_soundtrack, &purgateus_soundtrack, &noon_guest, &remix, &typography, &vast, &defraction_optics, &thousand_rooms, &wallpapers, &neauismetica, &neon_hermetism, &feu, &actors, &ehrivevnv, &soies, &longest_end, &soies_machine, &soies_injection, &neausea, &nohlxeserre, &dinaisth, &kanikule, &vetetrandes, &laeisth, &andes_castel, &duomo, &neau, &dilitriel, &aitasla, &characters, &rlionn, &neonev, &andes, &yajnev, &paradichlorisse, &photography, &macro, &personal, &film, &black, &infrared, &travel, &austria, &netherlands, &japan, &minamiise, &shizuoka, &ogasawara, &yokohama, &fuji, &osaka, &tokyo, &fiji, &marquesas, &marshall_islands, &niue, &czech, &france, &the_sublime, &new_zealand, &america, &germany, &canada, &mexico, &lifestyle, &aesthetics, &nomad, &nutrition, &routine, &longtermism, &inventory, &everyday, &skate, &bike, &studio, &computer, &plan9, &camera, &keyboard, &directory, &bookmarks, &readings, &goals, &death, &faqs, &audio_faqs, &visual_faqs, &research_faqs, &lifestyle_faqs, &mirrors, &wisdom, &action, &inaction, &knowledge, &programming, &design, &work, &writing, &health, &collapsology, &solarpunk, &ascetism, &cheatsheets, &discourse, &psychology, &documentation, &quotes, &language, &english, &notebook, &the_sartre_mechanism, &talk, &systems, &vedic, &needles, &shorthand, &unreleased, &blindfolk, &milavrega, &devine_lu_linvega, &first_wave, &regionsteam_snowdays, &downtemperature, &blam, &vert_kirlian_theatre, &ann_yozora_saint, &nether_esper_inserts, &otoroutes_miniatures, &idyllic_miners, &lietal, &asodeky, &japanese, &russian };
