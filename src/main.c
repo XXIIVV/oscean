@@ -254,18 +254,33 @@ void build_nav_child_child_child(FILE *f, Term *term, Term *target){
   }
 }
 
+void build_nav_list(FILE *f, Term *term, Term *target){
+  fputs("<ul>", f);
+  for (int i = 0; i < term->parent->children_len; ++i) {
+    char child_filename[STR_BUF_LEN];
+    to_lowercase(term->parent->children[i]->name, child_filename, STR_BUF_LEN);
+    fprintf(f, "<li><a href='%s.html'>%s</a></li>", child_filename, term->parent->children[i]->name);
+  }
+  fputs("</ul>", f);
+}
+
 void build_nav(FILE *f, Term *term){
-  fputs("<nav><ul>", f);
-  if(term->name == term->parent->name){
-    build_nav_child(f, term);
-  }
-  else if(term->parent->parent->name == term->parent->name){
-    build_nav_child_child(f, term->parent, term);
-  }
-  else{
-    build_nav_child_child_child(f, term->parent, term);  
-  }
-  fputs("</ul></nav>", f);
+  fputs("<nav>", f);
+  build_nav_list(f, term->parent);
+
+
+  fputs("</nav>", f);
+  // fputs("<nav><ul>", f);
+  // if(term->name == term->parent->name){
+  //   build_nav_child(f, term);
+  // }
+  // else if(term->parent->parent->name == term->parent->name){
+  //   build_nav_child_child(f, term->parent, term);
+  // }
+  // else{
+  //   build_nav_child_child_child(f, term->parent, term);  
+  // }
+  // fputs("</ul></nav>", f);
 }
 
 void build_banner(FILE *f, Term *term){
