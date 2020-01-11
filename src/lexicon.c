@@ -310,6 +310,7 @@
 #define MODITCHIO(itchio_id) "<iframe frameborder='0' src='https://itch.io/embed/"itchio_id"?link_color=000000' width='600' height='167'></iframe>"
 #define MODBANDCAMP(bandcamp_id) "<iframe style='border: 0; width: 600px; height: 274px;' src='https://bandcamp.com/EmbeddedPlayer/album="bandcamp_id"/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/' seamless></iframe>"
 #define MODYOUTUBE(youtube_id) "<iframe width='100%' height='380' src='https://www.youtube.com/embed/"youtube_id"?rel=0' style='max-width:700px' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe>"
+#define MODFRAME(frame_id) "<iframe width='100%' height='380' src='"frame_id"' style='border:0' allowfullscreen></iframe>"
 
 Term home = create_term("home", "");
 set_parent(&home, &home);
@@ -873,7 +874,7 @@ add_link(&calendar, "rss feed", "https://wiki.xxiivv.com/links/rss.xml");
 Term time = create_term("time", "Documentation on the different Time formats.");
 set_parent(&time, &nataniev);
 set_icon(&time, "M240,240 l0,-90 a-90,-90 0 0,0 -90,-90 l-90,0 l0,90 a90,90 0 0,0 90,90 l60,0 l0,-90 a-60,-60 0 0,0 -60,-60 l-60,0 l0,60 a60,60 0 0,0 60,60 l30,0 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0 l0,30 a30,30 0 0,0 30,30");
-add_frame(&time, "https://clock.xxiivv.com");
+add_html(&time, MODFRAME("https://clock.xxiivv.com"));
 
 Term neralie = create_term("neralie", "Neralie is a decimal time format.");
 set_parent(&neralie, &time);
@@ -2012,7 +2013,7 @@ set_parent(&photography, &visual);
 set_icon(&photography, "M90,210 L90,210 L210,90 M150,90 A60,60 0 0,1 210,150 A-60,60 0 0,1 150,210 A-60,-60 0 0,1 90,150 A60,-60 0 0,1 150,90 Z");
 add_text(&photography, "View the list of " SEND(camera_path) " equipment.");
 
-Term macro = create_term("macro", "The Macro album contains various shots from up close.");
+Term macro = create_album("macro", "The Macro album contains various shots from up close.");
 set_parent(&macro, &photography);
 set_icon(&macro, "M90,210 L90,210 L210,90 M150,90 A60,60 0 0,1 210,150 A-60,60 0 0,1 150,210 A-60,-60 0 0,1 90,150 A60,-60 0 0,1 150,90 Z");
 
@@ -2020,19 +2021,19 @@ Term personal = create_album("personal", "The Personal album contain various mem
 set_parent(&personal, &photography);
 set_icon(&personal, "M90,210 L90,210 L210,90 M150,90 A60,60 0 0,1 210,150 A-60,60 0 0,1 150,210 A-60,-60 0 0,1 90,150 A60,-60 0 0,1 150,90 Z");
 
-Term film = create_term("film", "Color Film photography diary of the life aboard Pino.");
+Term film = create_album("film", "Color Film photography diary of the life aboard Pino.");
 set_parent(&film, &photography);
 set_icon(&film, "M90,210 L90,210 L210,90 M150,90 A60,60 0 0,1 210,150 A-60,60 0 0,1 150,210 A-60,-60 0 0,1 90,150 A60,-60 0 0,1 150,90 Z");
 add_text(&film, "This album will be periodically updated with shots taken with the " SENDNAME(camera_path, "250 Jaher") " Voigtländer.");
 add_text(&film, "A " SEND(black_path) " and white album is also maintained.");
 
-Term black = create_term("black", "Black and White film photography diary of the life aboard Pino.");
+Term black = create_album("black", "Black and White film photography diary of the life aboard Pino.");
 set_parent(&black, &photography);
 set_icon(&black, "M90,210 L90,210 L210,90 M150,90 A60,60 0 0,1 210,150 A-60,60 0 0,1 150,210 A-60,-60 0 0,1 90,150 A60,-60 0 0,1 150,90 Z");
 add_text(&black, "This album will be updated periodically, shot with the " SENDNAME(camera_path, "250 Jaher") " Voigtländer.");
 add_text(&black, "A color film photography album can be found " SENDNAME(film_path, "here") ".");
 
-Term infrared = create_term("infrared", "The Infrared photographs were taken with a modified Nikon camera.");
+Term infrared = create_album("infrared", "The Infrared photographs were taken with a modified Nikon camera.");
 set_parent(&infrared, &photography);
 set_icon(&infrared, "M90,210 L90,210 L210,90 M150,90 A60,60 0 0,1 210,150 A-60,60 0 0,1 150,210 A-60,-60 0 0,1 90,150 A60,-60 0 0,1 150,90 Z");
 
@@ -2299,6 +2300,7 @@ add_list(&computer, "<b>Operating System</b>: " LINKNAME("https://elementary.io"
 add_list(&computer, "<b>Processor</b>: Intel Core i7 3 GHz");
 add_list(&computer, "<b>Memory</b>: 16 GB");
 add_list(&computer, "<b>Mouse</b>: Wacom Intuos 3. 2005");
+add_dict(&computer, &software_links);
 add_link(&computer, "usesthis", "https://usesthis.com/interviews/devine.lu.linvega/");
 
 Term plan9 = create_term("plan9", "Notes and links related to the Plan9 operating system.");
@@ -2330,16 +2332,39 @@ add_quote(&keyboard, "Because it cheers me up.", "undefined");
 Term directory = create_term("directory", "The Directory is a curated list of timeless art.");
 set_parent(&directory, &devine_lu_linvega);
 set_icon(&directory, "M60,150 Q150,60 240,150 Q150,240 60,150 M150,120 A30,30 0 0,1 180,150 A-30,30 0 0,1 150,180 A-30,-30 0 0,1 120,150 A30,-30 0 0,1 150,120 Z");
+add_dict(&directory, &books);
+add_dict(&directory, &movies);
+add_dict(&directory, &albums);
+add_dict(&directory, &comics);
+add_dict(&directory, &videogames);
 
 Term bookmarks = create_term("bookmarks", "The Bookmarks is a curated list of websites.");
 set_parent(&bookmarks, &directory);
 set_icon(&bookmarks, "M120,60 L120,60 L120,240 M150,60 L150,60 L150,240 M180,60 L180,60 L180,240 M60,150 A30,0 0 0,1 90,150 A30,30 0 0,1 120,180 M240,150 A-30,0 0 0,0 210,150 A-30,30 0 0,0 180,180");
-add_quote(&bookmarks, "Computer Science is no more about computers than astronomy is about telescopes.", "undefined | E. W. Dijkstra");
+add_quote(&bookmarks, "Computer Science is no more about computers than astronomy is about telescopes.", "E. W. Dijkstra");
+add_dict(&bookmarks, &technology_links);
+add_dict(&bookmarks, &hardware_links);
+add_dict(&bookmarks, &operating_system_links);
+add_dict(&bookmarks, &plan9_links);
+add_dict(&bookmarks, &programming_links);
+add_dict(&bookmarks, &solarpunk_links);
+add_dict(&bookmarks, &personal_wiki_links);
+add_dict(&bookmarks, &wiki_links);
+add_dict(&bookmarks, &podcast_links);
+add_dict(&bookmarks, &blog_links);
+add_dict(&bookmarks, &entries_links);
+add_dict(&bookmarks, &collapsology_links);
+add_dict(&bookmarks, &general_knowledge_links);
+add_dict(&bookmarks, &software_links);
 
 Term readings = create_term("readings", "The Readings is a curated list of books.");
 set_parent(&readings, &directory);
 set_icon(&readings, "M60,150 Q150,60 240,150 Q150,240 60,150 M150,120 A30,30 0 0,1 180,150 A-30,30 0 0,1 150,180 A-30,-30 0 0,1 120,150 A30,-30 0 0,1 150,120 Z");
-// add_text(&readings, "For a list of all time favourites, see " SEND(books_path) ".");
+add_text(&readings, "For a list of all time favourites, see " SEND(directory_path) ".");
+add_dict(&readings, &reading_list_2016);
+add_dict(&readings, &reading_list_2017);
+add_dict(&readings, &reading_list_2018);
+add_dict(&readings, &reading_list_2019);
 
 Term goals = create_term("goals", "A list of general Goals.");
 set_parent(&goals, &devine_lu_linvega);

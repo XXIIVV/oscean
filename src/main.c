@@ -23,32 +23,34 @@ typedef struct Log {
 typedef struct Dict {
   char *name;
   int words_len;
-  char *keys[32];
-  char *values[32];
+  char *keys[64];
+  char *values[64];
 } Dict;
 
 typedef struct Term {
   char *name;
   char *bref;
   char *link;
-  bool isPortal;
-  bool isAlbum;
+  char *icon;
   struct Term *parent;
   int children_len;
   struct Term *children[32];
+  bool isPortal;
+  bool isAlbum;
   int body_len;
   char *body_text[32];
+  char *body_meta[32];
   char *body_tags[32];
-
   int links_len;
   char *links_names[32];
   char *links_urls[32];
-
   int logs_len;
   char *logs_date[LOGS_BUFFER];
   char *logs_name[LOGS_BUFFER];
   int logs_pict[LOGS_BUFFER];
   int logs_code[LOGS_BUFFER];
+  int dicts_len;
+  Dict *dicts[32];
 } Term;
 
 void to_lowercase(char *str, char *target, size_t tsize) {
@@ -73,7 +75,9 @@ Dict create_dict(char *name) {
 }
 
 void add_word(Dict *dict, char *key, char *value) {
-  
+  dict->keys[dict->words_len] = key;
+  dict->values[dict->words_len] = value;
+  dict->words_len++;  
 }
 
 // Term
@@ -115,12 +119,18 @@ void add_text(Term *term, char *text) {
 
 void add_quote(Term *term, char *text, char *source) {
   term->body_text[term->body_len] = text;
+  term->body_meta[term->body_len] = source;
   term->body_tags[term->body_len] = "q";
   term->body_len++;
 }
 
+void add_dict(Term *term, Dict *dict){
+  term->dicts[term->dicts_len] = dict;
+  term->dicts_len++;
+}
+
 void set_icon(Term *term, char *path) {
-  
+  term->icon = path;
 }
 
 void set_parent(Term *term, Term *parent) {
@@ -128,7 +138,6 @@ void set_parent(Term *term, Term *parent) {
   parent->children[parent->children_len] = term;
   parent->children_len++;
 }
-
 
 void add_note(Term *term, char *text) {
   
@@ -139,10 +148,6 @@ void add_header(Term *term, char *text) {
 }
 
 void add_subheader(Term *term, char *text) {
-  
-}
-
-void add_frame(Term *term, char *url) {
   
 }
 
@@ -277,6 +282,17 @@ void build_portal(FILE *f, Term *term){
   }
 }
 
+void build_dictionary(FILE *f, Term *term){
+  for (int i = 0; i < term->dicts_len; ++i) {
+    fprintf(f, "<h3>%s</h3>", term->dicts[i]->name);
+    fputs("<ul>", f);
+    for (int j = 0; j < term->dicts[i]->words_len; ++j) {
+      fprintf(f, "<li><b>%s</b>: %s</li>", term->dicts[i]->keys[j], term->dicts[i]->values[j]);
+    }
+    fputs("</ul>", f);
+  }
+}
+
 void build_album(FILE *f, Term *term){
   if(term->isAlbum != true){ return; }
   int pict = find_term_pict(term);
@@ -289,7 +305,7 @@ void build_album(FILE *f, Term *term){
 }
 
 void build_links(FILE *f, Term *term){
-  fputs("<ul class='links'>", f);
+  fputs("<ul>", f);
   for (int i = 0; i < term->links_len; ++i) {
     fprintf(f, "<li><a href='%s' class='external'>%s</a></li>", term->links_urls[i], term->links_names[i]);
   }
@@ -315,6 +331,7 @@ void build_page(Term *term) {
   fputs("<main>", f);
   build_banner(f, term);
   build_body(f, term);
+  build_dictionary(f, term);
   build_portal(f, term);
   build_album(f, term);
   build_links(f, term);
@@ -328,9 +345,9 @@ void build_page(Term *term) {
 }
 
 int main(void) {
+  #include "glossary.c"
   #include "lexicon.c"
   #include "horaire.c"
-  #include "glossary.c"
 
   int lexicon_len = sizeof lexicon / sizeof lexicon[0];
 
