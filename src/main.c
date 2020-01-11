@@ -203,34 +203,36 @@ void add_link(Term *term, char *name, char *url) {
   term->links_len++;
 }
 
-void add_log(Term *term, char *date, int code) {
+
+void add_diary(Term *term, char *date, int code, char *name, char *pict) {
   term->logs_date[term->logs_len] = date;
   term->logs_code[term->logs_len] = code;
-  term->logs_name[term->logs_len] = "";
-  term->logs_pict[term->logs_len] = 0;
+  // term->logs_name[term->logs_len] = name;
+  // term->logs_pict[term->logs_len] = pict;
   term->logs_len++;
 }
 
-void add_diary(Term *term, char *date, int code, char *name, int pict) {
+void add_event_diary(Term *term, char *date, int code, char *name, char *pict) {
   term->logs_date[term->logs_len] = date;
   term->logs_code[term->logs_len] = code;
-  term->logs_name[term->logs_len] = name;
-  term->logs_pict[term->logs_len] = pict;
+  // term->logs_name[term->logs_len] = name;
+  // term->logs_pict[term->logs_len] = pict;
   term->logs_len++;
 }
 
 void add_event(Term *term, char *date, int code, char *name) {
   term->logs_date[term->logs_len] = date;
   term->logs_code[term->logs_len] = code;
-  term->logs_name[term->logs_len] = name;
+  // term->logs_name[term->logs_len] = name;
   term->logs_len++;
 }
 
-void add_diary_event(Term *term, char *date, int code, char *name, int pict) {
+
+void add_log(Term *term, char *date, int code) {
   term->logs_date[term->logs_len] = date;
   term->logs_code[term->logs_len] = code;
-  term->logs_name[term->logs_len] = name;
-  term->logs_pict[term->logs_len] = pict;
+  // term->logs_name[term->logs_len] = "";
+  // term->logs_pict[term->logs_len] = 0;
   term->logs_len++;
 }
 
