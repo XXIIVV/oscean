@@ -184,11 +184,6 @@ void set_parent(Term *term, Term *parent) {
   parent->children_len++;
 }
 
-void add_note(Term *term, char *text) {
-  
-}
-
-
 
 void add_code(Term *term, char *text) {
   

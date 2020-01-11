@@ -333,7 +333,7 @@ add_text(&about, SEND(oscean_path) " is written in " LINKNAME("https://en.wikipe
 add_text(&about, "Each part of this project should aim to persist across technological <b>Long Term</b>, not one part of it should rely on heavy dependencies. — Every function should be <b>specific</b>, <b>unobfuscated</b>, and each one carefully chosen against general-purpose libraries, frameworks or wasteful foreign entities.");
 add_text(&about, "Using this tool should be <b>frictionless and undisruptive</b>, its formats and subsequent products versionable, re-purposable, interpretable and text-editable. Only through <b>open sources, open standards, human-readable formats</b> and their independencies, might they survive this fleeting age of self-destructing informatics.");
 add_text(&about, "These attributes should not only be <b>perceptible in its design</b>, <br />but deeply <b>rooted in its code</b>.");
-add_note(&about, "This type of website is a often referred to as a \"memex\", a kind of archive and mirror of everything that one has done, and everything that has learnt. It's a living document that outlines where you have been, and a tool that advises where you are going.");
+add_text(&about, "This type of website is a often referred to as a \"memex\", a kind of archive and mirror of everything that one has done, and everything that has learnt. It's a living document that outlines where you have been, and a tool that advises where you are going.");
 add_quote(&about, "Consider a future device, a sort of mechanized private library in which an individual stores all his books, records, and communications, and which may be consulted with exceeding speed and flexibility. It is an enlarged intimate supplement to his memory.", "Vannevar Bush, As We May Think");
 add_link(&about, "source files", "https://github.com/XXIIVV/Oscean");
 add_link(&about, "rss feed", "https://wiki.xxiivv.com/links/rss.xml");
@@ -969,7 +969,7 @@ set_icon(&markl, "M105,150 L150,240  M195,150 L150,240  M150,60 L60,240  M150,60
 add_text(&markl, "<b>Markl</b> is a game in which players must " LINKNAME("https://twitter.com/hundredrabbits/status/916842882677358592", "program") " their character's fighting style, to face various opponents in a battle happening too fast for humans to compete.");
 add_text(&markl, "There are 4 characters to choose from, with unique attributes and stats, allowing for varied loadouts and combat styles.");
 add_text(&markl, "The game will be released as " SEND(hundred_rabbits_path) " in the fall of 2019, for all desktop platforms. The game supersedes the " SEND(blindfolk_path) " project.");
-add_note(&markl, "<b>TAIBA</b>: Tactical AI Battle Arena");
+add_text(&markl, "<b>TAIBA</b>: Tactical AI Battle Arena");
 add_link(&markl, "sources", "https://github.com/hundredrabbits/Markl");
 
 Term oquonie = create_term("oquonie", "Oquonie is a textless isometric puzzle game.");
@@ -989,7 +989,7 @@ Term oquonie_guide = create_term("oquonie guide", "This Oquonie Guide is aimed a
 set_parent(&oquonie_guide, &oquonie);
 set_icon(&oquonie_guide, "M45,60 l210,0 M45,240 l210,0 M255,60 a-15,15 0 0,0 -15,15 a-15,-15 0 0,0 -15,-15 M75,60 a-15,15 0 0,0 -15,15 a-15,-15 0 0,0 -15,-15 M255,240 a-15,-15 0 0,1 -15,-15 a-15,15 0 0,1 -15,15 M75,240 a-15,-15 0 0,1 -15,-15 a-15,15 0 0,1 -15,15 M60,75 l0,150 M240,75 l0,150 M60,150 l180,0");
 add_text(&oquonie_guide, "This guide is meant to be a spoiler-free list of tips to help you proceed through " SEND(oquonie_path) ".");
-add_note(&oquonie_guide, "If you have not yet found the <b>first pillar</b> keep playing, for your only task at the moment is to find sequences of three matching tokens.");
+add_text(&oquonie_guide, "If you have not yet found the <b>first pillar</b> keep playing, for your only task at the moment is to find sequences of three matching tokens.");
 add_text(&oquonie_guide, "A <b>red pillar</b> appeared next to one of the town's gates. What do? In your travels, you have met a small spiky ramen-eating character, speaking to him as each character will have him spawn in town and give you a <b>token</b> based on which character that you are. You need his help, so make sure that you have found him in each of the worlds.");
 add_text(&oquonie_guide, "Things get a bit trickier here, you will need to find your first token as you leave one world, your second from the ramen guy, and the last in yet another world.");
 add_text(&oquonie_guide, "The town's shark will remove your tokens, speak to him if you ever find yourself with tokens that you do not need. Good luck!");
@@ -1019,7 +1019,7 @@ add_text(&verreciel, "<b>Verreciel</b> is an experimental space exploration game
 add_text(&verreciel, "The game's controls are inspired from <b>modular synthesisers</b>, where modules are routed into one another to create more complex operations. The game joins the sequence of linguistically involved projects like " SEND(paradise_path) ", " SEND(hiversaires_path) " and " SEND(oquonie_path) ".");
 add_text(&verreciel, "An " SENDNAME(verreciel_soundtrack_path, "original soundtrack") " was created for the game and released on " SEND(beldam_records_path) ".");
 add_html(&verreciel, MODITCHIO("173320"));
-// add_note(&verreciel, "The game's icon is the " SEND(lietal_path) " " SENDNAME(lytadota_path, "Sä glyph") ".");
+// add_text(&verreciel, "The game's icon is the " SEND(lietal_path) " " SENDNAME(lytadota_path, "Sä glyph") ".");
 add_link(&verreciel, "itunes", "https://hundredrabbits.itch.io/verreciel");
 add_link(&verreciel, "sources", "https://github.com/Echorridoors/Verreciel");
 
@@ -1229,7 +1229,7 @@ set_icon(&bifurcan, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 
 add_text(&bifurcan, "Every second, <b>The Labyrinth</b> reorganize itself to display the time in twists and turns.");
 add_text(&bifurcan, "It takes a little practice to be able to see the patterns in the lines. Clicking on the screen will unveil the time as seen in this " LINKNAME("https://www.youtube.com/watch?v=HzXIJpzPB6c", "video") ".");
 add_text(&bifurcan, "If you have a " LINKNAME("https://getpebble.com", "Pebble Watch") ", you can download it as a " LINKNAME("http://www.mypebblefaces.com/apps/10183/7055/", "watchface") ", the Pebble C script was written by Chase Colburn and is also available on " LINKNAME("https://github.com/chasecolburn/line-maze", "Github") ". The screensaver version was done by " LINKNAME("http://tekgo.org", "Tekgo") " and was also added to the source code. Named after a " LINKNAME("http://en.wikipedia.org/wiki/The_Garden_of_Forking_Paths", "Borges short") ".");
-add_note(&bifurcan, "As of March 2019, This application is no longer maintained.");
+add_text(&bifurcan, "As of March 2019, This application is no longer maintained.");
 add_link(&bifurcan, "itunes", "https://itunes.apple.com/ca/app/bifurcan/id737264896");
 add_link(&bifurcan, "sources", "https://github.com/Echorridoors/Bifurcan");
 add_link(&bifurcan, "pebble", "http://www.mypebblefaces.com/apps/10183/7055/");
@@ -1239,7 +1239,7 @@ set_parent(&keyboard_468, &mobile);
 set_icon(&keyboard_468, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
 add_text(&keyboard_468, "The letters are <b>sorted by frequency</b> in the English language, and their likeliness to follow the last input character.");
 add_text(&keyboard_468, "The purpose of this experimental keyboard is to have a keyboard displaying large letters, making it so you only ever need to <b>type using the two rows at the top</b>, maximizing the space and allowing for big large letters. The hidden letters are accessible through the <i >alt</i> key, alongside symbols and numbers.");
-add_note(&keyboard_468, "As of March 2019, This application is no longer maintained. <br />This project was superseded by the " SENDNAME(juni_path, "Juni Layout") ".");
+add_text(&keyboard_468, "As of March 2019, This application is no longer maintained. <br />This project was superseded by the " SENDNAME(juni_path, "Juni Layout") ".");
 add_link(&keyboard_468, "itunes", "https://itunes.apple.com/ca/app/468-keyboard/id954698999");
 add_link(&keyboard_468, "sources", "https://github.com/Echorridoors/Keyboard468");
 
@@ -1247,7 +1247,7 @@ Term alphavetist = create_term("alphavetist", "Alphavetist is an alphabet learni
 set_parent(&alphavetist, &mobile);
 set_icon(&alphavetist, "M240,60 A-120,0 0 0,0 120,60 A-60,60 0 0,0 60,120 A60,60 0 0,0 120,180 A120,0 0 0,0 240,180 M120,180 A-60,60 0 0,0 60,240");
 add_text(&alphavetist, "Currently included are the Hebrew, " SENDNAME(russian_path, "Cyrillic") ", Korean, Inuktitut, Greek, Morse and " SEND(japanese_path) " alphabets.");
-add_note(&alphavetist, "As of March 2019, This application is no longer maintained.");
+add_text(&alphavetist, "As of March 2019, This application is no longer maintained.");
 add_link(&alphavetist, "itunes", "https://itunes.apple.com/ca/app/hahapapa/id689193147");
 add_link(&alphavetist, "sources", "https://github.com/Echorridoors/alphavetist");
 
@@ -1255,7 +1255,7 @@ Term vocavularist = create_term("vocavularist", "Vocavularist, is a vocabulary l
 set_parent(&vocavularist, &mobile);
 set_icon(&vocavularist, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
 add_text(&vocavularist, "<b>Vocavularist</b> contains the 600 first kanji, 600 simple Russian words and 800 simple korean expressions.");
-add_note(&vocavularist, "As of March 2019, This application is no longer maintained.");
+add_text(&vocavularist, "As of March 2019, This application is no longer maintained.");
 add_link(&vocavularist, "itunes", "https://itunes.apple.com/us/app/nijuniju/id686266543");
 add_link(&vocavularist, "sources", "https://github.com/Echorridoors/Vocavularist");
 
@@ -1263,7 +1263,7 @@ Term rafinograde = create_term("rafinograde", "Rafinograde was a drawing tool.")
 set_parent(&rafinograde, &mobile);
 set_icon(&rafinograde, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
 add_text(&rafinograde, "<b>Rafinograde</b> was superseded by " SEND(dotgrid_path) " for Desktop platforms.");
-add_note(&rafinograde, "As of March 2019, This application is no longer maintained.");
+add_text(&rafinograde, "As of March 2019, This application is no longer maintained.");
 add_link(&rafinograde, "itunes", "https://itunes.apple.com/us/app/rafinograde/id951781579");
 add_link(&rafinograde, "sources", "https://github.com/Echorridoors/Rafinograde");
 
@@ -1271,7 +1271,7 @@ Term noirca = create_term("noirca", "Noirca is a monochromatic camera tool.");
 set_parent(&noirca, &mobile);
 set_icon(&noirca, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
 add_text(&noirca, "<b>Noirca</b> has one purpose, to launch quickly and render the photos with a softly washed out B&W film quality.");
-add_note(&noirca, "As of March 2019, This application is no longer maintained.");
+add_text(&noirca, "As of March 2019, This application is no longer maintained.");
 add_link(&noirca, "itunes", "https://itunes.apple.com/us/app/noirca/id893715212");
 add_link(&noirca, "sources", "https://github.com/Echorridoors/noirca");
 
@@ -1279,7 +1279,7 @@ Term dew = create_term("dew", "Dew is an alarm/timer.");
 set_parent(&dew, &mobile);
 set_icon(&dew, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
 add_text(&dew, "The application will then  wake you with a soft white noise tone that will gradually bring you back to reality.");
-add_note(&dew, "As of March 2019, This application is no longer maintained.");
+add_text(&dew, "As of March 2019, This application is no longer maintained.");
 add_link(&dew, "itunes", "https://itunes.apple.com/ca/app/dew/id954020907");
 add_link(&dew, "sources", "https://github.com/Echorridoors/dew");
 
@@ -1287,7 +1287,7 @@ Term ledoliel = create_term("ledoliel", "Ledoliel is a dating-sim game.");
 set_parent(&ledoliel, &mobile);
 set_icon(&ledoliel, "M60,60 L60,60 L60,240 L240,240 M240,60 L240,60 L150,60 L150,240 M150,150 L150,150 L240,150");
 add_text(&ledoliel, "In <b>Ledoliel</b>, one must try and figure out what topics their guests might want to discuss, gift they might want to recieve and, places they may like to be <i >touched</i>.");
-add_note(&ledoliel, "As of March 2019, This application is no longer maintained.");
+add_text(&ledoliel, "As of March 2019, This application is no longer maintained.");
 add_link(&ledoliel, "itunes", "https://itunes.apple.com/us/app/ledoliel/id891693763");
 add_link(&ledoliel, "sources", "https://github.com/Echorridoors/Ledoliel");
 
@@ -1400,7 +1400,7 @@ add_text(&donsol, "You may <b>escape a room</b>. When escaping, the remaining ca
 // add_list(&donsol, "And, there is only one card left in the room. (<b>Hard Mode</b>)");
 // add_list(&donsol, "Can never escape. (<b>Expert Mode</b>)");
 add_html(&donsol, MODYOUTUBE("GNoZrr56GqA"));
-add_note(&donsol, "The game was created in collaboration with " LINKNAME("https://twitter.com/johneternal", "John Eternal") ", released for " SEND(mobile_path) " back in 2016, and re-released for Desktop in 2017 as " SEND(hundred_rabbits_path) ". While the game was designed on a train, without internet connection, it seemed like Donsol's gameplay accidentally ended up being a twist to Zach Gage and Kurt Bieg's " LINKNAME("http://stfj.net/index2.php?project=art/2011/Scoundrel.pdf", "Scoundrel") ", designed in 2011.");
+add_text(&donsol, "The game was created in collaboration with " LINKNAME("https://twitter.com/johneternal", "John Eternal") ", released for " SEND(mobile_path) " back in 2016, and re-released for Desktop in 2017 as " SEND(hundred_rabbits_path) ". While the game was designed on a train, without internet connection, it seemed like Donsol's gameplay accidentally ended up being a twist to Zach Gage and Kurt Bieg's " LINKNAME("http://stfj.net/index2.php?project=art/2011/Scoundrel.pdf", "Scoundrel") ", designed in 2011.");
 add_link(&donsol, "itch", "https://hundredrabbits.itch.io/donsol");
 add_link(&donsol, "sources", "https://github.com/hundredrabbits/Donsol");
 
@@ -1448,7 +1448,7 @@ set_parent(&volkenessen, &collegiennes);
 set_icon(&volkenessen, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
 add_text(&volkenessen, "Players start with 9 attached items on their back, and the goal is to strip the other player of their items.");
 add_text(&volkenessen, "When items are removed, they clutter up the playing area, making it even more chaotic and hilarious. The washing machine and sink in the background can also fall and bounce around!");
-add_note(&volkenessen, "Winning game of the Montreal edition of the Global Game Jam 2012, Volkenessen is a 2D Fighting game developed by " LINKNAME("http://theinstructionlimit.com/", "Renaud Bedard") " and myself.");
+add_text(&volkenessen, "Winning game of the Montreal edition of the Global Game Jam 2012, Volkenessen is a 2D Fighting game developed by " LINKNAME("http://theinstructionlimit.com/", "Renaud Bedard") " and myself.");
 add_html(&volkenessen, MODYOUTUBE("VheiqV4AuRE"));
 add_text(&volkenessen, "To hit the other player, you need to get close to him by hitting away from him, then hit him by moving away from him. Ramming into the opponent just doesn't do it, you need to throw punches, and depending on the impact velocity, even that might not be enough. You can throw double-punches to make sure you land a solid hit and take off an item.");
 add_link(&volkenessen, "download", "http://theinstructionlimit.com/volkenssen-global-game-jam-2012");
@@ -1753,7 +1753,7 @@ add_text(&the_sixth_season, "<i >Whiinders</i> and the likes, a glorious beginni
 add_text(&the_sixth_season, "This album established the sound that " SEND(aliceffekt_path) " decided to persue for the " SEND(neauismetic_path) " releases.");
 add_link(&the_sixth_season, "bandcamp", "http://aliceffekt.bandcamp.com/album/orchestrate-the-sixth-season");
 
-Term neon_hermetism = create_term("neon hermetism", "Neon Hermetism is a collection of general Neauismetic concepts.");
+Term neon_hermetism = create_portal("neon hermetism", "Neon Hermetism is a collection of general Neauismetic concepts.");
 set_parent(&neon_hermetism, &neauismetica);
 set_icon(&neon_hermetism, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&neon_hermetism, "The <b>Neon Hermetic</b> concepts are the foundations to understanding the " SEND(neauismetica_path) ", its characters and their purpose.");
@@ -1834,12 +1834,12 @@ add_text(&nohlxeserre, "The richness and detail of experiencing an event, pales 
 add_text(&nohlxeserre, "The Nohlxeserre Language is the language of the " SEND(actors_path) ". Andes, as opposed to " SEND(neonev_path) ", did not found itself on " SEND(dinaisth_path) " looking for " SEND(actors_path) ", but for " SEND(paradichlorisse_path) ". Whom Andes says \"<i >Speaks the language of the birds</i>\".");
 // add_quote(&nohlxeserre, "When " SEND(paradichlorisse_path) " spoke of silence, silence fell.", "undefinedWhen {(__link "Paradichlorisse")} spoke of silence, silence fell.");
 
-Term dinaisth = create_term("dinaisth", "Dinaisth is the name of the Satellite onto which unfolds the events of the Neauismetica.");
+Term dinaisth = create_portal("dinaisth", "Dinaisth is the name of the Satellite onto which unfolds the events of the Neauismetica.");
 set_parent(&dinaisth, &neauismetica);
 set_icon(&dinaisth, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&dinaisth, "<b>Dinaisth</b> is a small celestial object that orbits the " SEND(ehrivevnv_path) " megastructure, beyond the furthest reaching starlight.");
+add_html(&dinaisth, "<center><img src='../media/identity/dinaisth.flag.color.svg' width='300'/></center>");
 add_text(&dinaisth, "The <b>Flag of Dinaisth</b> depicts the " SENDNAME(ehrivevnv_path, "Ultraviolet Sun") ", reflected upon the " SENDNAME(kanikule_path, "Kanikule Ocean") " below the " SENDNAME(feu_path, "Lightless Sky") ".");
-add_html(&dinaisth, "<center><img src='media/identity/dinaisth.flag.color.svg'/></center>");
 
 Term kanikule = create_term("kanikule", "Kanikule is the ocean surrounding Neau.");
 set_parent(&kanikule, &dinaisth);
@@ -1891,7 +1891,7 @@ set_icon(&aitasla, "M60,60 L60,60 L240,60 M60,150 L60,150 L240,150 M150,60 L150,
 add_text(&aitasla, "Folk stories, from " SEND(dinaisth_path) ", about the satellite include tall tales of the existence of beings with " SENDNAME(habitants_du_soleil_path, "large organic hats") ".");
 add_text(&aitasla, "The " SEND(aitasla_path) " object is rumoured to be the location of the " SEND(hiversaires_path) " station.");
 
-Term characters = create_term("characters", "Characters are a selection of resident Immortals of Dinaisth.");
+Term characters = create_index("characters", "Characters are a selection of resident Immortals of Dinaisth.");
 set_parent(&characters, &neauismetica);
 set_icon(&characters, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&characters, "Introducing <b>The Courtship Of The Birds</b>.");
@@ -2283,14 +2283,14 @@ set_icon(&goals, "M150,60 l0,180 M180,60 l0,180 l0,-60 a30,-30 0 0,1 30,-30 l30,
 add_text(&goals, "<b>Internal</b> are goals dealing with personal growth, and <b>external</b>, as having an effect on the outside world.");
 add_header(&goals, "Internal Targets");
 add_text(&goals, "<b>See the world</b>. Travel the earth by my own means and my own terms. Find countries too small to be seen on a map and go there.");
-add_note(&goals, "<b>Status</b> Currently living in " SEND(japan_path) ", after effectively completing a 4 years long " SENDNAME(pino_path, "sailing") " adventure circumnavigating the " SENDNAME(marquesas_path, "Pacific Ocean") ", across countries I did not know existed.");
+add_text(&goals, "<b>Status</b> Currently living in " SEND(japan_path) ", after effectively completing a 4 years long " SENDNAME(pino_path, "sailing") " adventure circumnavigating the " SENDNAME(marquesas_path, "Pacific Ocean") ", across countries I did not know existed.");
 add_text(&goals, "<b>Become polyglot</b>. Fluently speak <b>French</b>, " SEND(english_path) ", " SEND(russian_path) " and " SEND(japanese_path) ", to speak four languages from four different roots.");
-add_note(&goals, "<b>Status</b> Acquired a basic understanding of written and spoken Japanese after living in " SEND(tokyo_path) " for 2 years. Took introductory " SEND(russian_path) " classes, have yet to visit Russia. English, done. French, done.");
+add_text(&goals, "<b>Status</b> Acquired a basic understanding of written and spoken Japanese after living in " SEND(tokyo_path) " for 2 years. Took introductory " SEND(russian_path) " classes, have yet to visit Russia. English, done. French, done.");
 add_header(&goals, "External Targets");
 add_text(&goals, "Facilitate the creation and <b>acceleration of arts & sciences</b> through tooling and mentorship.");
-add_note(&goals, "<b>Status</b> Created free and open-source " SEND(tools_path) " to compose music, to create graphics and to write. Currently building decentralized social & networking platforms to fuel collaboration among a collective of artists and developers.");
+add_text(&goals, "<b>Status</b> Created free and open-source " SEND(tools_path) " to compose music, to create graphics and to write. Currently building decentralized social & networking platforms to fuel collaboration among a collective of artists and developers.");
 add_text(&goals, "<b>Minimize pain and suffering</b>, including that of non-human animals through the promotion and application of pragmatic solutions to nutrition and sustainable energy.");
-add_note(&goals, "<b>Status</b> Currently living and working off-the-grid off solar energy, and have optimized for means of generating the least amount of waste through an ascetic lifestyle and a plant-based diet.");
+add_text(&goals, "<b>Status</b> Currently living and working off-the-grid off solar energy, and have optimized for means of generating the least amount of waste through an ascetic lifestyle and a plant-based diet.");
 
 Term death = create_term("death", "The Death Progress Bar.");
 set_parent(&death, &devine_lu_linvega);
@@ -2638,7 +2638,7 @@ add_text(&the_sartre_mechanism, "Crouched over a heap of cogs, she did not look 
 add_text(&the_sartre_mechanism, "What I first perceived as a pile of junk turned out to be an intricate clocklike mechanism; where the needles would have been, a small hand rested at the end of a short metallic arm.");
 add_text(&the_sartre_mechanism, "My friend held a minuscule weight above the tiny hand, before carefully laying it onto its opened palm. Whirring and clicking, a second arm emerged and plucked a gear out from its own ticking body and laid it back into the toolbox at its side. In controlled gestures, activated by the weight, tiny arms dismantled bolts and screws, while carefully putting them in that toolbox, gradually taking the casing of the mechanism apart, leaving its core exposed.");
 add_text(&the_sartre_mechanism, "I stared in silent awe, at the busy mechanical concerto playing its own requiem. The arms eventually began to unbuilding the core, growing forever weakly as it dismantled the remaining components, moving them back into the box. This obscene ritual of disembowelment and exposé on pointlessness ended as the tiny arms and the weight had fallen back into the toolbox.");
-add_note(&the_sartre_mechanism, "Written by " LINKNAME("https://twitter.com/voidshaper", "Voidshaper") " & " SENDNAME(devine_lu_linvega_path, "Neauoire") ".");
+add_text(&the_sartre_mechanism, "Written by " LINKNAME("https://twitter.com/voidshaper", "Voidshaper") " & " SENDNAME(devine_lu_linvega_path, "Neauoire") ".");
 
 Term talk = create_term("talk", "For when I Talk in public.");
 set_parent(&talk, &notebook);
