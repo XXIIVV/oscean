@@ -2397,7 +2397,7 @@ add_text(&death, "The " LINKNAME("https://80000hours.org/career-guide/introducti
 // add_code(&death, "Career: 65.74% Left");
 add_link(&death, "le soleil est noir", "https://www.youtube.com/watch?v=MtFeMT5Uugc");
 
-Term faqs = create_term("faqs", "Answers to the frequently asked questions, Faqs.");
+Term faqs = create_index("faqs", "Answers to the frequently asked questions, Faqs.");
 set_parent(&faqs, &devine_lu_linvega);
 set_icon(&faqs, "M150,60 l0,180 M180,60 l0,180 l0,-60 a30,-30 0 0,1 30,-30 l30,0 M120,60 l0,180 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0");
 add_text(&faqs, "This is a work in progress, I'm currently building this page. Come back later.");
