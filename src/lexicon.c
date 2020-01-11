@@ -2200,16 +2200,7 @@ Term studio = create_term("studio", "The Studio equipment.");
 set_parent(&studio, &inventory);
 set_icon(&studio, "M150,60 l0,180 M180,60 l0,180 l0,-60 a30,-30 0 0,1 30,-30 l30,0 M120,60 l0,180 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0");
 add_text(&studio, "While the " SEND(aliceffekt_path) " sounds were mostly sampled from the " LINKNAME("https://www.arturia.com/microbrute/overview", "Microbrute") ", the " SEND(alicef_path) " sounds came from the " LINKNAME("https://www.eltamusic.com/polivoks-mini", "Поливокс") ".");
-// add_list(&studio, "<b>Semi-Modular Synthesizer</b>: " LINKNAME("https://www.arturia.com/microbrute/overview", "Arturia Microbrute") "");
-// add_list(&studio, "<b>Analog Synthesizer</b>: " LINKNAME("https://www.eltamusic.com/polivoks-mini", "Elta Поливокс Мини") "");
-// add_list(&studio, "<b>Analog Resynthesizer</b>: " LINKNAME("https://hologramelectronics.com/infinite-jets/", "Hologram Infinite Jets") "");
-// add_list(&studio, "<b>Sound card</b>: " LINKNAME("https://www.native-instruments.com/en/products/traktor/dj-audio-interfaces/traktor-audio-2/", "Traktor Audio") "");
-// add_list(&studio, "<b>Sound Computer</b>: " LINKNAME("https://monome.org/norns/", "Monome Norns") "");
-// add_list(&studio, "<b>Midi Interface</b>: " LINKNAME("https://www.roland.com/global/products/um-one/", "Roland UM One") "");
-// add_list(&studio, "<b>Midi Pads</b>: " LINKNAME("https://monome.org/grid", "Monome Grid") " & " LINKNAME("http://akai-pro.jp/lpd8/", "Akai LPD8") "");
-// add_list(&studio, "<b>Midi Keys</b>: " LINKNAME("http://akai-pro.jp/lpk25/", "Akai LPK25") "");
-add_header(&studio, "Notes");
-// add_code(&studio, "Infitite Jets");
+add_dict(&studio, &studio_workstation);
 // add_code(&studio, "Factory Reset: A + B while plugging in the power.");
 // add_code(&studio, "Calibrate: Bypass + B footswitches for two seconds.");
 
@@ -2218,11 +2209,7 @@ set_parent(&computer, &inventory);
 set_icon(&computer, "M75,90 L75,90 L225,90 M105,90 A-15,15 0 0,0 90,105 A0,120 0 0,0 90,225 A15,15 0 0,0 105,240 A-30,0 0 0,0 75,240 A15,-15 0 0,0 90,225 A0,-120 0 0,0 90,105 A-15,-15 0 0,0 75,90 M195,90 A15,15 0 0,1 210,105 A0,120 0 0,1 210,225 A-15,15 0 0,1 195,240 A30,0 0 0,1 225,240 A-15,-15 0 0,1 210,225 A0,-120 0 0,1 210,105 A15,-15 0 0,1 225,90");
 add_text(&computer, "I presently use a <b>Apple Macbook Pro</b> with the " LINKNAME("https://elementary.io", "ElementaryOS") " Linux operating system. I also frequently use various " SENDNAME(raspberry_path, "Raspberry Pi") " devices as servers and utilities.");
 add_text(&computer, "My <b>Laptop Computer</b> is an old MacBook Pro with an even older Wacom Tablet. I use it mainly for <b>front-end work</b>, be it layouts, websites, movies and " SEND(games_path) ".");
-// add_list(&computer, "<b>System</b>: MacBook Pro Retina, 13\". 2014");
-// add_list(&computer, "<b>Operating System</b>: " LINKNAME("https://elementary.io", "ElementaryOS") "");
-// add_list(&computer, "<b>Processor</b>: Intel Core i7 3 GHz");
-// add_list(&computer, "<b>Memory</b>: 16 GB");
-// add_list(&computer, "<b>Mouse</b>: Wacom Intuos 3. 2005");
+add_dict(&computer, &macbook_workstation);
 add_dict(&computer, &software_links);
 add_link(&computer, "usesthis", "https://usesthis.com/interviews/devine.lu.linvega/");
 
@@ -2230,6 +2217,7 @@ Term plan9 = create_term("plan9", "Notes and links related to the Plan9 operatin
 set_parent(&plan9, &computer);
 set_icon(&plan9, "M75,90 L75,90 L225,90 M105,90 A-15,15 0 0,0 90,105 A0,120 0 0,0 90,225 A15,15 0 0,0 105,240 A-30,0 0 0,0 75,240 A15,-15 0 0,0 90,225 A0,-120 0 0,0 90,105 A-15,-15 0 0,0 75,90 M195,90 A15,15 0 0,1 210,105 A0,120 0 0,1 210,225 A-15,15 0 0,1 195,240 A30,0 0 0,1 225,240 A-15,-15 0 0,1 210,225 A0,-120 0 0,1 210,105 A15,-15 0 0,1 225,90");
 add_quote(&plan9, "An argument for simplicity and clarity.", "undefined | Rob Pike");
+add_dict(&plan9, &plan9_links);
 add_link(&plan9, "notes", "https://github.com/neauoire/p9-notes");
 add_link(&plan9, "irc", "https://9p.io/wiki/plan9/IRC/index.html");
 

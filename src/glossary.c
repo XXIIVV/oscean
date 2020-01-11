@@ -671,6 +671,31 @@ add_word(&reading_list_2019, "How To Do Nothing", "Jenny Odell");
 add_word(&reading_list_2019, "The Complete Cosmicomics", "Italo Calvino");
 add_word(&reading_list_2019, "La Société du spectacle", "Guy Debord");
 
+Dict macbook_workstation = create_dict("macbook workstation");
+add_word(&macbook_workstation,"System", "MacBook Pro Retina, 13\". 2014");
+add_word(&macbook_workstation,"Operating System", "ElementaryOS");
+add_word(&macbook_workstation,"Processor", "Intel Core i7 3 GHz");
+add_word(&macbook_workstation,"Memory", "16 GB");
+add_word(&macbook_workstation,"Mouse", "Wacom Intuos 3. 2005");
+
+Dict studio_workstation = create_dict("studio workstation");
+add_word(&studio_workstation, "System", "MacBook Pro Retina, 13\". 2014");
+add_word(&macbook_workstation, "Operating System", "ElementaryOS");
+add_word(&macbook_workstation, "Processor", "Intel Core i7 3 GHz");
+add_word(&macbook_workstation, "Memory", "16 GB");
+add_word(&macbook_workstation, "Mouse", "Wacom Intuos 3. 2005");
+
+
+add_word(&studio_workstation, "Semi-Modular Synthesizer", "Arturia Microbrute");
+add_word(&studio_workstation, "Analog Synthesizer", "Elta Поливокс Мини");
+add_word(&studio_workstation, "Analog Resynthesizer", "Hologram Infinite Jets");
+add_word(&studio_workstation, "Sound card", "Traktor Audio");
+add_word(&studio_workstation, "Sound Computer", "Monome Norns");
+add_word(&studio_workstation, "Midi Interface", "Roland UM One");
+add_word(&studio_workstation, "Midi Pads", "Monome Grid | Akai LPD8");
+add_word(&studio_workstation, "Midi Keys", "Akai LPK25");
+
+
 List programming_knowledge = create_list("programming knowledge");
 add_item(&programming_knowledge, "The freedom <b>to run</b> the program as you wish, for any purpose.");
 add_item(&programming_knowledge, "The freedom <b>to study</b> how the program works, and change it.");
