@@ -402,7 +402,7 @@ set_parent(&alicef, &audio);
 set_icon(&alicef, "M120,180 L120,180 L240,180 M139,109 L139,109 L79,212.9 M191,161 L191,161 L131,57.1");
 add_text(&alicef, "<b>Alicef</b> is a fragment of time taken from " SEND(aliceffekt_path) "'s diary, exploring " SENDNAME(dinaisth_path, "similar spaces") ", but focusing on the aesthetics of pattern & repetition.");
 add_text(&alicef, "There are currently no complete releases available for the <b>Alicef</b> project, only a handful of " LINKNAME("https://www.youtube.com/watch?v=hQXa6TkSeH0", "demos") " and the " SEND(azolla_path) " release.");
-add_youtube(&alicef, "hQXa6TkSeH0");
+add_html(&alicef, MODYOUTUBE("hQXa6TkSeH0"));
 
 Term aliceffekt = create_portal("aliceffekt", "Aliceffekt, is an audio project following the adventures of Neonev across Dinaisth.");
 set_parent(&aliceffekt, &audio);
@@ -496,14 +496,14 @@ set_parent(&ten_axitecture, &beldam_records);
 set_icon(&ten_axitecture, "M120,180 L120,180 L240,180 M139,109 L139,109 L79,212.9 M191,161 L191,161 L131,57.1");
 add_text(&ten_axitecture, "Three of the four tracks names are that of different fictional worlds that have inspired the " SEND(aliceffekt_path) " narrative.");
 add_text(&ten_axitecture, "Eudoxie from Calvino's Invisible Cities, Borges' Tlon and Schuiten's Citees Obscures.");
-add_bandcamp(&ten_axitecture, "202709164");
+add_html(&ten_axitecture, MODBANDCAMP("202709164"));
 add_link(&ten_axitecture, "bandcamp", "https://aliceffekt.bandcamp.com/album/ten-axitecture");
 
 Term miniscopie = create_term("miniscopie", "Miniscopie is a Beldam Records release, by Reine.");
 set_parent(&miniscopie, &beldam_records);
 set_icon(&miniscopie, "M120,180 L120,180 L240,180 M139,109 L139,109 L79,212.9 M191,161 L191,161 L131,57.1");
 add_text(&miniscopie, "Written by " LINKNAME("http://noirmirroir.com", "Reine") ", this album combines ambient and deep IDM flavoured sounds. The album is the first music release from Elodie, who also created the " SEND(vast_path) " book.");
-add_bandcamp(&miniscopie, "2603579101");
+add_html(&miniscopie, MODBANDCAMP("2603579101"));
 add_link(&miniscopie, "bandcamp", "https://beldamrecords.bandcamp.com/album/miniscopie");
 add_link(&miniscopie, "itunes", "https://itunes.apple.com/us/album/miniscopie-ep/id956624857");
 
@@ -512,7 +512,7 @@ set_parent(&ramiel, &beldam_records);
 set_icon(&ramiel, "M120,180 L120,180 L240,180 M139,109 L139,109 L79,212.9 M191,161 L191,161 L131,57.1");
 add_text(&ramiel, "Written by " LINKNAME("https://beldamrecords.bandcamp.com", "Villa Moirai") ", this album is an even mixture and techno and idm.");
 add_text(&ramiel, "The album name and cover are a tribute to the geometric angel of the Evangelion anime series.");
-add_bandcamp(&ramiel, "2641389031");
+add_html(&ramiel, MODBANDCAMP("2641389031"));
 add_link(&ramiel, "bandcamp", "https://beldamrecords.bandcamp.com/album/ramiel");
 add_link(&ramiel, "itunes", "https://itunes.apple.com/us/album/ramiel-ep/id958562173");
 
@@ -520,7 +520,7 @@ Term eschatolor = create_term("eschatolor", "Eschatolor is a Beldam Records rele
 set_parent(&eschatolor, &beldam_records);
 set_icon(&eschatolor, "M120,180 L120,180 L240,180 M139,109 L139,109 L79,212.9 M191,161 L191,161 L131,57.1");
 add_text(&eschatolor, "Written by Катя Тевелизион, this album was inspired from Russian number stations.");
-add_bandcamp(&eschatolor, "4198794205");
+add_html(&eschatolor, MODBANDCAMP("4198794205"));
 add_text(&eschatolor, "It was recorded playing through the FM band, from the " SEND(efli_path) " 103.0Mhz pirate radio station in Montreal, giving it its texture and warmth.");
 add_link(&eschatolor, "bandcamp", "https://tevelision.bandcamp.com/album/eschatolor");
 add_link(&eschatolor, "itunes", "https://itunes.apple.com/ca/album/eschatolor/id1000241341");
@@ -534,21 +534,21 @@ Term looking_glace = create_term("looking glace", "Looking Glace is a Beldam Rec
 set_parent(&looking_glace, &beldam_records);
 set_icon(&looking_glace, "M120,180 L120,180 L240,180 M139,109 L139,109 L79,212.9 M191,161 L191,161 L131,57.1");
 add_text(&looking_glace, "Painting a harsher, and more complete picture of her acoustic universe where the liquid sounds and suffocating vocoder are incessantly present.");
-add_bandcamp(&looking_glace, "3852327660");
+add_html(&looking_glace, MODBANDCAMP("3852327660"));
 add_link(&looking_glace, "bandcamp", "https://beldamrecords.bandcamp.com/album/looking-glace");
 add_link(&looking_glace, "itunes", "https://itunes.apple.com/ca/album/looking-glace-ep/id1034127266");
 
 Term verreciel_soundtrack = create_term("verreciel soundtrack", "The Verreciel Soundtrack is a Beldam Records release, by Aliceffekt.");
 set_parent(&verreciel_soundtrack, &beldam_records);
 set_icon(&verreciel_soundtrack, "M120,180 L120,180 L240,180 M139,109 L139,109 L79,212.9 M191,161 L191,161 L131,57.1");
-add_bandcamp(&verreciel_soundtrack, "453554387");
+add_html(&verreciel_soundtrack, MODBANDCAMP("453554387"));
 add_link(&verreciel_soundtrack, "bandcamp", "https://aliceffekt.bandcamp.com/album/verreciel");
 
 Term getapan_728k = create_term("getapan 728k", "Getapan 728k is a Beldam Records release, by 死サイコロ.");
 set_parent(&getapan_728k, &beldam_records);
 set_icon(&getapan_728k, "M120,180 L120,180 L240,180 M139,109 L139,109 L79,212.9 M191,161 L191,161 L131,57.1");
 add_text(&getapan_728k, "This new release explores a region of frigid dubs yet uncharted by " SEND(beldam_records_path) ". Not much is known about 死サイコロ, their name is <i >Shi Seikoro</i>, or <b>Death Dice</b>.");
-add_bandcamp(&getapan_728k, "1677022414");
+add_html(&getapan_728k, MODBANDCAMP("1677022414"));
 add_link(&getapan_728k, "bandcamp", "https://beldamrecords.bandcamp.com/album/728k");
 
 Term azolla = create_term("azolla", "Azolla is a Beldam Records release, by Alicef.");
@@ -557,7 +557,7 @@ set_icon(&azolla, "M120,180 L120,180 L240,180 M139,109 L139,109 L79,212.9 M191,1
 add_text(&azolla, "" SEND(azolla_path) " is a research project involving composition and development, with the purpose of creating a catalog of works written entirely using " SENDNAME(tools_path, "homebrew tools") " like " SEND(orca_path) " and " SEND(enfer_path) ".");
 add_text(&azolla, "The previous performances include Berlin(ReactBerlin), Amsterdam(JSNation) and Sheffield(Algorave).");
 add_text(&azolla, "The track can be downloaded " LINKNAME("https://aliceffekt.bandcamp.com/album/Azolla", "here") ".");
-add_youtube(&azolla, "9FPrPgOQqZg");
+add_html(&azolla, MODYOUTUBE("9FPrPgOQqZg"));
 add_link(&azolla, "sources", "https://github.com/neauoire/alicef");
 add_link(&azolla, "live", "https://beldamrecords.bandcamp.com/album/azolla");
 add_link(&azolla, "video", "https://www.youtube.com/watch?v=9FPrPgOQqZg");
@@ -572,7 +572,7 @@ Term collected_works = create_term("collected works", "Collected Works between 2
 set_parent(&collected_works, &malice);
 set_icon(&collected_works, "M150,60 A90,90 0 0,1 240,150 A-90,90 0 0,1 150,240 A-90,-90 0 0,1 60,150 A90,-90 0 0,1 150,60 Z");
 add_text(&collected_works, "This release includes the complete <b>Storm Transit record</b>, hidden " SEND(malice_path) " tracks from " SEND(aliceffekt_path) " releases and the " SEND(merveilles_path) " soundtrack.");
-add_bandcamp(&collected_works, "2256825333");
+add_html(&collected_works, MODBANDCAMP("2256825333"));
 add_link(&collected_works, "bandcamp", "https://gaii.bandcamp.com/");
 
 Term nereid = create_term("nereid", "Nereid is a dull grey moon.");
@@ -706,7 +706,7 @@ set_parent(&from_saharaphorest, &neauismetic);
 set_icon(&from_saharaphorest, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&from_saharaphorest, "The album was recorded as it played through cassette tapes. The first 3 tracks are ripped from cassette tapes, and the last one is a single clean mastered version. Five tapes were made and given to fans at shows as artworks.");
 add_text(&from_saharaphorest, "This release is related to " SEND(vert_kirlian_theatre_path) " album, released in 2008.");
-add_bandcamp(&from_saharaphorest, "1013227503");
+add_html(&from_saharaphorest, MODBANDCAMP("1013227503"));
 add_link(&from_saharaphorest, "bandcamp", "http://aliceffekt.bandcamp.com/album/19th-month-from-saharaphorest-to-duomo");
 
 Term ehrivevnv_studies = create_term("ehrivevnv studies", "The Ehrivevnv Studies is an album exploring the Dinaisth region surroudning Andes' office.");
@@ -714,7 +714,7 @@ set_parent(&ehrivevnv_studies, &neauismetic);
 set_icon(&ehrivevnv_studies, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&ehrivevnv_studies, "The album was composed for and performed at <b>Blip Festival Tokyo</b> on October 21st 2012 and reissued on april 15th 2013.");
 add_text(&ehrivevnv_studies, "The track names contains encrypted " SENDNAME(lietal_path, "Traumae") ". The first track is decrypted into \"Simkin Kamsi\" and can be translated to <i >Time Structure</i>, refering to " SENDNAME(paradise_path, "The Library of Sand") ". The second track, \"Xomsinsom Kim " SEND(yajnev_path) "\", can be translated to <i >Yajnev's Curse</i> and refers to the short <b>Yajnev's Thoughts</b>. The third track is titled \"Ko Sokamxi\" which simply means <i >The Impossible Exploration</i>.");
-add_bandcamp(&ehrivevnv_studies, "2576083659");
+add_html(&ehrivevnv_studies, MODBANDCAMP("2576083659"));
 add_link(&ehrivevnv_studies, "bandcamp", "https://aliceffekt.bandcamp.com/album/the-ehrivevnv-studies-reissue");
 
 Term yajnev_studies = create_term("yajnev studies", "The Yajnev Studies is an upcoming album exploring Yajnev' sector Vetetrandes.");
@@ -727,7 +727,7 @@ set_parent(&telekinetic, &neauismetic);
 set_icon(&telekinetic, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&telekinetic, "The event was recorded and can still be watched online on " LINKNAME("http://www.ustream.tv/recorded/39105185", "UStream") ".");
 add_text(&telekinetic, "There was a " LINKNAME("http://www.cnet.com.au/dj-turns-leap-motion-into-a-theremin-sort-of-339345563.htm", "short article on CNET") " about the event as well. The album cover features an alternate door to " SEND(nataniev_path) "'s Library of Sand ornated of the number 210 in " SEND(needles_path) " as well as the " SEND(lietal_path) " letters BI, TI, TA, SI, PO.");
-add_bandcamp(&telekinetic, "2904772795");
+add_html(&telekinetic, MODBANDCAMP("2904772795"));
 add_link(&telekinetic, "bandcamp", "https://aliceffekt.bandcamp.com/album/telekinetic");
 
 Term telekinesis = create_term("telekinesis", "Telekinesis is a Pure Data controller and instrument used for Telekinetic.");
@@ -960,7 +960,7 @@ set_parent(&juni, &orca);
 set_icon(&juni, "M60,60 L210,60 A30,30 0 0,1 240,90 L240,240 M240,120 A30,30 0 0,1 210,150 L90,150 A30,30 0 0,0 60,180 L60,240");
 add_text(&juni, "The <b>Juni Layout</b> is a 12-keys " LINKNAME("https://en.wikipedia.org/wiki/Chorded_keyboard", "chorded keyboard") ".");
 add_text(&juni, "The " SEND(keyboard_path) " model is " LINKNAME("https://learn.pimoroni.com/keybow", "Pimoroni's Keybow") ", the <code >.lua</code> layout is available on " LINKNAME("https://github.com/neauoire/Juni", "Github") ". It was designed to be used with the " SEND(orca_path) " livecoding environment, but has most common keys and controls, making it a versatile and portable single-handed keyboard.");
-add_youtube(&juni, "cgBvWsM3Z7g");
+add_html(&juni, MODYOUTUBE("cgBvWsM3Z7g"));
 add_link(&juni, "sources", "https://github.com/neauoire/Juni");
 
 Term pilot = create_term("pilot", "Pilot is a mini synthesiser.");
@@ -1424,7 +1424,7 @@ add_text(&unity, "Sadly, a lot of these games were lost in a computer death, and
 Term siseon = create_term("siseon", "Siseon is an exploration game set within a life-infested megastructure.");
 set_parent(&siseon, &unity);
 set_icon(&siseon, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
-add_youtube(&siseon, "es6YXGlsgxw");
+add_html(&siseon, MODYOUTUBE("es6YXGlsgxw"));
 
 Term zjeveni = create_term("zjeveni", "Zjeveni is a third person exploration game about climbing to the high points of the structure.");
 set_parent(&zjeveni, &unity);
@@ -1475,7 +1475,7 @@ add_list(&donsol, "All monsters have been dealt with. (<b>Easy Mode</b>)");
 add_list(&donsol, "And, the player has not escaped the previous room. (<b>Normal Mode</b>)");
 add_list(&donsol, "And, there is only one card left in the room. (<b>Hard Mode</b>)");
 add_list(&donsol, "Can never escape. (<b>Expert Mode</b>)");
-add_youtube(&donsol, "GNoZrr56GqA");
+add_html(&donsol, MODYOUTUBE("GNoZrr56GqA"));
 add_note(&donsol, "The game was created in collaboration with " LINKNAME("https://twitter.com/johneternal", "John Eternal") ", released for " SEND(mobile_path) " back in 2016, and re-released for Desktop in 2017 as " SEND(hundred_rabbits_path) ". While the game was designed on a train, without internet connection, it seemed like Donsol's gameplay accidentally ended up being a twist to Zach Gage and Kurt Bieg's " LINKNAME("http://stfj.net/index2.php?project=art/2011/Scoundrel.pdf", "Scoundrel") ", designed in 2011.");
 add_link(&donsol, "itch", "https://hundredrabbits.itch.io/donsol");
 add_link(&donsol, "sources", "https://github.com/hundredrabbits/Donsol");
@@ -1494,7 +1494,7 @@ set_parent(&purgateus, &games);
 set_icon(&purgateus, "M60,210 L60,210 L240,210 M60,210 L60,210 L150,60 L240,210");
 add_text(&purgateus, "This video game remix behave like " LINKNAME("https://en.wikipedia.org/wiki/Proteus_", "Proteus") ", but looks and " SENDNAME(purgateus_soundtrack_path, "sounds") " different.");
 add_text(&purgateus, "Learn more about the project on " LINKNAME("http://venuspatrol.com/purgateus/", "Venus Patrol") ", the remix was inspired from a tweet by " LINKNAME("https://twitter.com/whatisian/status/468819959859007488", "Ian Snyder") "");
-add_bandcamp(&purgateus, "3667464517");
+add_html(&purgateus, MODBANDCAMP("3667464517"));
 add_header(&purgateus, "Installation");
 add_code(&purgateus, "<comment>On OS X</comment> right-click on Proteus, <b>Show Package Content</b>.");
 add_code(&purgateus, "<comment>On Windows</comment> locate <b>/resources</b>.");
@@ -1514,7 +1514,7 @@ set_icon(&diluvium, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 
 add_text(&diluvium, "This is a multiplayer typing tactics game where you incarnate an animal summoner.");
 add_text(&diluvium, "Created by Henk Boom, " LINKNAME("http://dom2d.com", "Dominique Ferland") ", " LINKNAME("http://theinstructionlimit.com/", "Renaud Bedard") " and Devine Lu Linvega, " SEND(diluvium_path) " was first showcased at the " LINKNAME("https://www.facebook.com/events/447362851940595/", "Indies Meetup") " in june of 2012.");
 add_text(&diluvium, "You must type, quickly and intelligently, sequences of animal names to counter and destroy your opponent.");
-add_youtube(&diluvium, "z7NNBzNXncw");
+add_html(&diluvium, MODYOUTUBE("z7NNBzNXncw"));
 add_text(&diluvium, "The game will <i >most likely</i> let you summon any animal you can think of, choose wisely for each animal has it's own speed, power and intelligence stats.");
 add_link(&diluvium, "youtube", "http://youtu.be/z7NNBzNXncw");
 add_link(&diluvium, "sources", "https://github.com/Collegiennes/diluvium");
@@ -1525,7 +1525,7 @@ set_icon(&volkenessen, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90
 add_text(&volkenessen, "Players start with 9 attached items on their back, and the goal is to strip the other player of their items.");
 add_text(&volkenessen, "When items are removed, they clutter up the playing area, making it even more chaotic and hilarious. The washing machine and sink in the background can also fall and bounce around!");
 add_note(&volkenessen, "Winning game of the Montreal edition of the Global Game Jam 2012, Volkenessen is a 2D Fighting game developed by " LINKNAME("http://theinstructionlimit.com/", "Renaud Bedard") " and myself.");
-add_youtube(&volkenessen, "VheiqV4AuRE");
+add_html(&volkenessen, MODYOUTUBE("VheiqV4AuRE"));
 add_text(&volkenessen, "To hit the other player, you need to get close to him by hitting away from him, then hit him by moving away from him. Ramming into the opponent just doesn't do it, you need to throw punches, and depending on the impact velocity, even that might not be enough. You can throw double-punches to make sure you land a solid hit and take off an item.");
 add_link(&volkenessen, "download", "http://theinstructionlimit.com/volkenssen-global-game-jam-2012");
 add_link(&volkenessen, "sources", "https://github.com/Collegiennes/volkenessen");
@@ -1534,7 +1534,7 @@ Term waiting_for_horus = create_term("waiting for horus", "Waiting For Horus was
 set_parent(&waiting_for_horus, &unity);
 set_icon(&waiting_for_horus, "M150,60 L150,60 L60,240 L60,240 L120,240 M165,90 L165,90 L90,240 M180,120 L180,120 L120,240 M195,150 L195,150 L150,240 M195,150 L195,150 L240,240 M180,180 L180,180 L210,240");
 add_text(&waiting_for_horus, "It was originally created by " LINKNAME("http://theinstructionlimit.com", "Renaud Bedard") " and I as a weekend project to play with friends over IRC.");
-add_youtube(&waiting_for_horus, "2tSoZ-jd6cA");
+add_html(&waiting_for_horus, MODYOUTUBE("2tSoZ-jd6cA"));
 add_text(&waiting_for_horus, "I have very fond memories of building and playing this amazing project with friends. " LINKNAME("https://mangadrive.bandcamp.com", "Mangadrive") " created some amazing music for the project.");
 add_link(&waiting_for_horus, "sources", "http://github.com/merveilles/WaitingForHorus");
 
@@ -1552,7 +1552,7 @@ set_icon(&pico_battle, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90
 add_text(&pico_battle, "You must learn to build shields to defend yourself against incoming colors.");
 add_text(&pico_battle, "" LINKNAME("http://theinstructionlimit.com/", "Renaud Bedard") " and I showcased an experimental game at <b>Prince of the Arcade</b> last year but, between " SEND(volkenessen_path) ", " SEND(diluvium_path) " and " SEND(waiting_for_horus_path) ", only got back to release it now.");
 // add_text(&pico_battle, "It is called " SEND(pico_battle_path) " and like our other " SEND(pico_path) " titled game — this game also plays with colours; but this time, in multiplayer.");
-add_youtube(&pico_battle, "et58Ndob9M4");
+add_html(&pico_battle, MODYOUTUBE("et58Ndob9M4"));
 add_text(&pico_battle, "Unlike our last game, text-heavy " SEND(diluvium_path) ", <b>Pico Battle</b> is wordless. There is no contextual hints within the game, but an audio tutorial that starts automaticaly in the lobby.");
 add_header(&pico_battle, "Lobby");
 add_text(&pico_battle, "Upon launching the game, you will find yourself in the Lobby, a temporary haven. You should look for an hexagon floating about the edges of your screen (right click drag to rotate around the planet) and click on it to practice against the AI. You might see circles too, they are other players and could challenge you as soon as you raise your shield.");
@@ -1583,7 +1583,7 @@ set_parent(&children_of_bramble, &laeisthic);
 set_icon(&children_of_bramble, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&children_of_bramble, "This album begins by the Oasis of " SEND(laeisth_path) " to finally reach the castle of " SEND(andes_path) " and its sandsunken structure.");
 add_text(&children_of_bramble, "This single is the first part of the " SEND(laeisthic_path) " collection, and shares some narrative concepts with " SEND(telekinetic_path) ".");
-add_bandcamp(&children_of_bramble, "163410848");
+add_html(&children_of_bramble, MODBANDCAMP("163410848"));
 add_link(&children_of_bramble, "bandcamp", "https://aliceffekt.bandcamp.com/album/children-of-bramble");
 
 Term known_magye = create_term("known magye", "Known Magye is a Laeisthic album telling the tales of the industrious times of Dinaisth.");
@@ -1591,14 +1591,14 @@ set_parent(&known_magye, &laeisthic);
 set_icon(&known_magye, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&known_magye, "Sometimes reminiscent of the compositions of " SEND(children_of_bramble_path) ", sometimes of the drowned sounds of " SEND(telekinetic_path) ", this single is a fair mix of ambient and breaks.");
 add_text(&known_magye, "This single is the second part of the " SEND(laeisthic_path) " collection, and was recorded live from " SENDNAME(travel_path, "San Fransisco") "'s <b>POW POW POW</b> which was controlled entirely with the " LINKNAME("https://www.leapmotion.com", "Leap Motion") ".");
-add_bandcamp(&known_magye, "1531404629");
+add_html(&known_magye, MODBANDCAMP("1531404629"));
 add_link(&known_magye, "bandcamp", "https://aliceffekt.bandcamp.com/album/known-magye");
 
 Term extended_sleep = create_term("extended sleep", "Extended Sleep is the sequel album to Known Magye, a deeper exploration of its stories.");
 set_parent(&extended_sleep, &laeisthic);
 set_icon(&extended_sleep, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&extended_sleep, "This single is the third part of the " SEND(laeisthic_path) " collection, and was performed at the AMaze Festival in Berlin, on April 23rd 2015.");
-add_bandcamp(&extended_sleep, "2987872258");
+add_html(&extended_sleep, MODBANDCAMP("2987872258"));
 add_link(&extended_sleep, "bandcamp", "https://aliceffekt.bandcamp.com/album/extended-sleep");
 
 Term duomic = create_term("duomic", "The Duomic albums are Neauismetic records of Neonev's travel from Duomo to Dilitriel.");
@@ -1609,7 +1609,7 @@ Term opal_inquisitors = create_term("opal inquisitors", "The Opal Inquisitors is
 set_parent(&opal_inquisitors, &duomic);
 set_icon(&opal_inquisitors, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&opal_inquisitors, "These recordings are taken aboard the " SEND(vermillionth_path) " tunneler, traveling up the spires of " SEND(duomo_path) ", where " SEND(neonev_path) " departs from central " SEND(dinaisth_path) " and head through the " SENDNAME(dei_dain_path, "Dei Dain Canals") ".");
-add_bandcamp(&opal_inquisitors, "1049304423");
+add_html(&opal_inquisitors, MODBANDCAMP("1049304423"));
 add_link(&opal_inquisitors, "bandcamp", "https://aliceffekt.bandcamp.com/album/the-opal-inquisitors");
 
 Term portalion = create_term("portalion", "Portalion is an album where Neonev leaves Duomo to explore the shores of Laeisth.");
@@ -1617,14 +1617,14 @@ set_parent(&portalion, &duomic);
 set_icon(&portalion, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&portalion, "On a foggy night of the <i >Sixth Season</i>, embarking on one of the vessels of the <i >Septechoes</i> in the desert of <i >Clionn</i>.");
 add_text(&portalion, "" SEND(neonev_path) " sails toward <i >Whiinders</i> to see its <i >Immortal Birds</i> once more.");
-add_bandcamp(&portalion, "1367389203");
+add_html(&portalion, MODBANDCAMP("1367389203"));
 add_link(&portalion, "bandcamp", "https://aliceffekt.bandcamp.com/album/portalion");
 
 Term dei_dain = create_term("dei dain", "Dei Dain is the third Duomic album.");
 set_parent(&dei_dain, &duomic);
 set_icon(&dei_dain, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&dei_dain, "In which " SEND(neonev_path) " travels from the desert of " SEND(laeisth_path) " to the nightly scapes of " SEND(dilitriel_path) ".");
-add_bandcamp(&dei_dain, "4246216793");
+add_html(&dei_dain, MODBANDCAMP("4246216793"));
 add_link(&dei_dain, "bandcamp", "https://aliceffekt.bandcamp.com/album/dei-dain");
 
 Term habitants_du_soleil = create_term("habitants du soleil", "Les Habitants Du Soleil is a single track Duomic album.");
@@ -1633,7 +1633,7 @@ set_icon(&habitants_du_soleil, "M60,60 L60,60 L240,60 M60,150 L60,150 L240,150 M
 add_text(&habitants_du_soleil, "The singular " SEND(duomic_path) " track <b>Nepturne 7757</b> is a moment in the narrative of the " SENDNAME(aitasla_path, "Aitasla Solei") ", the nearest star to " SEND(dinaisth_path) ".");
 add_code(&habitants_du_soleil, "Our telescope has revealed a minuscule " SENDNAME(dinaisth_path, "satellite") " orbiting our world.");
 add_code(&habitants_du_soleil, "我々の望遠鏡は、世界を周回する小さな衛星を検出しました。");
-add_bandcamp(&habitants_du_soleil, "3495178462");
+add_html(&habitants_du_soleil, MODBANDCAMP("3495178462"));
 add_text(&habitants_du_soleil, "The album cover was part of the " LINKNAME("http://famicase.com", "Famicase Exhibition 2018") " showcased at Super Meteor in Tokyo, " SEND(japan_path) ".");
 add_link(&habitants_du_soleil, "bandcamp", "https://aliceffekt.bandcamp.com/album/les-habitants-du-soleil");
 add_link(&habitants_du_soleil, "famicase", "http://famicase.com");
@@ -1656,14 +1656,14 @@ Term nor_let_the_fools = create_term("nor let the fools", "Nor Let The Fools cre
 set_parent(&nor_let_the_fools, &lives);
 set_icon(&nor_let_the_fools, "M150,60 l0,180 M60,195 l180,0 M60,105 l180,0 M150,210 a15,-15 0 0,1 15,-15 a-15,-15 0 0,1 -15,-15 a-15,15 0 0,1 -15,15 a15,15 0 0,1 15,15 M150,90 a15,15 0 0,0 15,15 a-15,15 0 0,0 -15,15 a-15,-15 0 0,0 -15,-15 a15,-15 0 0,0 15,-15");
 add_text(&nor_let_the_fools, "The album was recorded live, in Tokyo at a chiptune/mashup party.");
-add_bandcamp(&nor_let_the_fools, "1838099761");
+add_html(&nor_let_the_fools, MODBANDCAMP("1838099761"));
 add_link(&nor_let_the_fools, "bandcamp", "http://aliceffekt.bandcamp.com/album/nor-let-the-fools-mistake-love");
 
 Term to_the_aeons_hell = create_term("to the aeons hell", "To The Aeons Hell was created in the spirit of Nor let the fools, being a mixture of unreleased remixes.");
 set_parent(&to_the_aeons_hell, &lives);
 set_icon(&to_the_aeons_hell, "M150,60 l0,180 M60,195 l180,0 M60,105 l180,0 M150,210 a15,-15 0 0,1 15,-15 a-15,-15 0 0,1 -15,-15 a-15,15 0 0,1 -15,15 a15,15 0 0,1 15,15 M150,90 a15,15 0 0,0 15,15 a-15,15 0 0,0 -15,15 a-15,-15 0 0,0 -15,-15 a15,-15 0 0,0 15,-15");
 add_text(&to_the_aeons_hell, "The album was recorded live, in Tokyo at a chiptune/mashup party.");
-add_bandcamp(&to_the_aeons_hell, "3333907614");
+add_html(&to_the_aeons_hell, MODBANDCAMP("3333907614"));
 add_link(&to_the_aeons_hell, "bandcamp", "http://aliceffekt.bandcamp.com/album/accursed-be-it-to-the-aeons-hell");
 
 Term vermillionth = create_term("vermillionth", "Vermillionth was the recording of the live performance at the Kinetik Festival, in Montreal.");
@@ -1685,14 +1685,14 @@ set_parent(&superworker, &demo);
 set_icon(&superworker, "M150,60 L150,60 L150,240 M60,150 L60,150 L240,150");
 add_text(&superworker, "The album contains 3 tracks created from <i >over 80 sessions</i>, arranged into chiptune experiments.");
 add_text(&superworker, "Due to the lack of power during the 4 weeks long " SENDNAME(marquesas_path, "ocean crossing") ", the pocket battery powered synth proved to be the perfect composition tool. The tracks also include spoken words from " LINKNAME("https://en.wikipedia.org/wiki/Alan_Watts", "Alan Watts") ".");
-add_bandcamp(&superworker, "610742154");
+add_html(&superworker, MODBANDCAMP("610742154"));
 add_link(&superworker, "bandcamp", "https://aliceffekt.bandcamp.com/album/superworker");
 
 Term supervisitor = create_term("supervisitor", "Supervisitor is a concept album created with Arturia's Microbrute synthetiser.");
 set_parent(&supervisitor, &demo);
 set_icon(&supervisitor, "M150,60 L150,60 L150,240 M60,150 L60,150 L240,150");
 add_text(&supervisitor, "The album was released during the event " SEND(dodecae_path) " in <b>Toronto</b>.");
-add_bandcamp(&supervisitor, "3564075825");
+add_html(&supervisitor, MODBANDCAMP("3564075825"));
 add_link(&supervisitor, "bandcamp", "https://aliceffekt.bandcamp.com/album/supervisitor");
 add_link(&supervisitor, "itunes", "https://itunes.apple.com/ca/album/supervisitor-ep/id951144870");
 
@@ -1716,27 +1716,27 @@ set_icon(&soundtrack, "M150,60 l0,180 M60,195 l180,0 M60,105 l180,0 M150,210 a15
 Term oquonie_soundtrack = create_term("oquonie soundtrack", "The Oquonie Soundtrack, Impossible Spaces, is the ambient score of the game Oquonie.");
 set_parent(&oquonie_soundtrack, &soundtrack);
 set_icon(&oquonie_soundtrack, "M150,60 l0,180 M60,195 l180,0 M60,105 l180,0 M150,210 a15,-15 0 0,1 15,-15 a-15,-15 0 0,1 -15,-15 a-15,15 0 0,1 -15,15 a15,15 0 0,1 15,15 M150,90 a15,15 0 0,0 15,15 a-15,15 0 0,0 -15,15 a-15,-15 0 0,0 -15,-15 a15,-15 0 0,0 15,-15");
-add_bandcamp(&oquonie_soundtrack, "2065824251");
+add_html(&oquonie_soundtrack, MODBANDCAMP("2065824251"));
 
 Term rabbits_soundtrack = create_term("rabbits soundtrack", "The Rabbits Soundtrack is the drone audio tracks of the Hundred Rabbits video diaries.");
 set_parent(&rabbits_soundtrack, &soundtrack);
 set_icon(&rabbits_soundtrack, "M120,60 L120,60 L120,60 M90,60 L90,60 L90,60 M60,60 L60,60 L60,60 M60,90 L60,90 L60,90 M90,90 L90,90 L90,90 M120,90 L120,90 L120,90 M60,120 L60,120 L60,120 M90,120 L90,120 L90,120 M120,120 L120,120 L120,120 M60,150 L60,150 L60,150 M90,150 L90,150 L90,150 M120,150 L120,150 L120,150 M60,180 L60,180 L60,180 M90,180 L90,180 L90,180 M120,180 L120,180 L120,180 M60,210 L60,210 L60,210 M90,210 L90,210 L90,210 M120,210 L120,210 L120,210 M60,240 L60,240 L60,240 M90,240 L90,240 L90,240 M120,240 L120,240 L120,240 M150,90 L150,90 L150,90 M150,120 L150,120 L150,120 M150,150 L150,150 L150,150 M150,180 L150,180 L150,180 M150,210 L150,210 L150,210 M150,240 L150,240 L150,240 M150,60 L150,60 L150,60 M180,60 L180,60 L180,60 M210,60 L210,60 L210,60 M240,60 L240,60 L240,60 M180,90 L180,90 L180,90 M210,90 L210,90 L210,90 M240,90 L240,90 L240,90 M180,120 L180,120 L180,120 M210,120 L210,120 L210,120 M240,120 L240,120 L240,120 M180,150 L180,150 L180,150 M210,150 L210,150 L210,150 M240,150 L240,150 L240,150 M180,180 L180,180 L180,180 M210,180 L210,180 L210,180 M240,180 L240,180 L240,180 M180,210 L180,210 L180,210 M210,210 L210,210 L210,210 M240,210 L240,210 L240,210 M180,240 L180,240 L180,240 M210,240 L210,240 L210,240 M240,240 L240,240 L240,240");
 add_text(&rabbits_soundtrack, "This soundtrack contains 2 recorded podcasts and a selection of tracks from the videos.");
-add_bandcamp(&rabbits_soundtrack, "1969793667");
+add_html(&rabbits_soundtrack, MODBANDCAMP("1969793667"));
 add_link(&rabbits_soundtrack, "bandcamp", "https://aliceffekt.bandcamp.com/album/hundred-rabbits");
 
 Term purgateus_soundtrack = create_term("purgateus soundtrack", "The Purgateus Soundtrack is the score for the Purgateus remix of the game Proteus.");
 set_parent(&purgateus_soundtrack, &soundtrack);
 set_icon(&purgateus_soundtrack, "M60,210 L60,210 L240,210 M60,210 L60,210 L150,60 L240,210");
 add_text(&purgateus_soundtrack, "The album was recorded while talking across " SEND(purgateus_path) ".");
-add_bandcamp(&purgateus_soundtrack, "3667464517");
+add_html(&purgateus_soundtrack, MODBANDCAMP("3667464517"));
 
 Term noon_guest = create_term("noon guest", "Noon Guest is the official MoonQuest soundtrack.");
 set_parent(&noon_guest, &soundtrack);
 set_icon(&noon_guest, "M150,60 l0,180 M60,195 l180,0 M60,105 l180,0 M150,210 a15,-15 0 0,1 15,-15 a-15,-15 0 0,1 -15,-15 a-15,15 0 0,1 -15,15 a15,15 0 0,1 15,15 M150,90 a15,15 0 0,0 15,15 a-15,15 0 0,0 -15,15 a-15,-15 0 0,0 -15,-15 a15,-15 0 0,0 15,-15");
 add_text(&noon_guest, "Created over the span of 2 years, this ambient album navigates across various biomes populated with a wide collection of <b>chatting critters</b>.");
 add_text(&noon_guest, "The album condenses 70 minutes of xenomorphic field recordings into 25 minutes of ambience from the game, interspersed with fragments of electronic and techno music.");
-add_bandcamp(&noon_guest, "3182076487");
+add_html(&noon_guest, MODBANDCAMP("3182076487"));
 add_header(&noon_guest, "Tracklist");
 add_code(&noon_guest, "<b>Noon Guest</b>: Pyre(Special Ver.)");
 add_code(&noon_guest, "<b>Hoon Vest</b>: Miasma Part I & part 2");
@@ -1811,7 +1811,7 @@ Term es_gulf_sunflowers = create_term("es gulf sunflowers", "Es Gulf Sunflowers 
 set_parent(&es_gulf_sunflowers, &neauismetic);
 set_icon(&es_gulf_sunflowers, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&es_gulf_sunflowers, "It remembers the sunken fields of " SENDNAME(dinaisth_path, "Es") ", the underwater gate, and the vast ocean terrace with its display of sunflowers.");
-add_bandcamp(&es_gulf_sunflowers, "1429563952");
+add_html(&es_gulf_sunflowers, MODBANDCAMP("1429563952"));
 add_link(&es_gulf_sunflowers, "bandcamp", "https://aliceffekt.bandcamp.com/album/es-gulfssunflowers");
 
 Term damoiseau_canalx = create_term("damoiseau canalx", "Damoiseau Canalx was created in the spirit of Blam, exploring industrial sounds with 2-step styles.");
@@ -1819,7 +1819,7 @@ set_parent(&damoiseau_canalx, &neauismetic);
 set_icon(&damoiseau_canalx, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&damoiseau_canalx, "The album was recorded live, at Passport in Montreal during the last AMP event and is being released as-is.");
 add_text(&damoiseau_canalx, "The album was composed as side project while working on " SEND(ten_axitecture_path) " and includes bits and pieces from " SEND(blam_path) ".");
-add_bandcamp(&damoiseau_canalx, "743341250");
+add_html(&damoiseau_canalx, MODBANDCAMP("743341250"));
 add_link(&damoiseau_canalx, "bandcamp", "https://aliceffekt.bandcamp.com/album/damoiseau-canalx");
 
 Term the_sixth_season = create_term("the sixth season", "The Sixth Season sings the Neauismetic tales of the establishment of the Oasis by Rlionn.");
@@ -1827,7 +1827,6 @@ set_parent(&the_sixth_season, &neauismetic);
 set_icon(&the_sixth_season, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&the_sixth_season, "<i >Whiinders</i> and the likes, a glorious beginning in " SEND(laeisth_path) ".");
 add_text(&the_sixth_season, "This album established the sound that " SEND(aliceffekt_path) " decided to persue for the " SEND(neauismetic_path) " releases.");
-add_bandcamp(&the_sixth_season, "undefined");
 add_link(&the_sixth_season, "bandcamp", "http://aliceffekt.bandcamp.com/album/orchestrate-the-sixth-season");
 
 Term neon_hermetism = create_term("neon hermetism", "Neon Hermetism is a collection of general Neauismetic concepts.");
@@ -2070,7 +2069,7 @@ set_icon(&ogasawara, "M60,90 L60,90 L240,90 M150,60 L150,60 L150,240 M150,90 Q15
 add_text(&ogasawara, "We sailed into the <b>Futami arbor</b> on our way to " SENDNAME(japan_path, "Osaka") " from the " SEND(marshall_islands_path) ".");
 add_text(&ogasawara, "The island of Chichijima is one of the most beautiful place I have had the chance of spending time at, it exists at the intersection of my favourite climate and " SENDNAME(nutrition_path, "foods") ". We spent our time there " SENDNAME(bike_path, "cycling") " up and down the coastal slopes, and cooking delicious meals from our favourite Japanese ingredients.");
 add_header(&ogasawara, "Video");
-add_youtube(&ogasawara, "ueTCjpNXing");
+add_html(&ogasawara, MODYOUTUBE("ueTCjpNXing"));
 
 Term yokohama = create_album("yokohama", "We cycled to Yokohama, from Tokyo.");
 set_parent(&yokohama, &japan);
