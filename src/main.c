@@ -14,12 +14,6 @@ char *html_footer = "<footer><hr/><a href='https://creativecommons.org/licenses/
 
 char *html_style = "<style>body { padding:30px } body a { color:black } body a:hover { text-decoration:none } header { margin: 0px 0px 35px; float: left } nav { margin: 0px 0px 30px } nav ul { padding: 0px; margin: 0px 45px 30px 0px; float: left } nav ul li { list-style-type:none; white-space:pre } nav ul li a { text-decoration:none } nav ul li a:hover { background:black; color:white } main { max-width:600px } main h1 { display:none } main h2 { max-width: 400px; margin-top:0px } main p { line-height:25px } main q { font-family: serif; font-size: 18px; font-style: italic; display: block; margin-bottom: 30px } main img { max-width:100% } main a.external:before { content:'~' } footer { border-top:1.5px solid; padding-top:30px; font-family:monospace } footer img { margin: 0px 0px -10px 0px } footer a { font-weight:bold; text-decoration:none } hr { border:0; clear:both }</style>";
 
-typedef struct Log {
-  char *date;
-  char *name;
-  int pict;
-} Log;
-
 typedef struct Dict {
   char *name;
   int words_len;
@@ -80,6 +74,7 @@ void to_lowercase(char *str, char *target, size_t tsize) {
 Dict create_dict(char *name) {
   Dict d;
   d.name = name;
+  d.words_len = 0;
   return d;
 }
 
@@ -92,6 +87,7 @@ void add_word(Dict *dict, char *key, char *value) {
 List create_list(char *name) {
   List l;
   l.name = name;
+  l.items_len = 0;
   return l;
 }
 
@@ -107,10 +103,15 @@ Term create_term(char *name, char *bref) {
   t.name = name;
   t.bref = bref;
   t.parent = NULL;
-  t.children_len = 0;
   t.isPortal = false;
   t.isAlbum = false;
   t.isIndex = false;
+  t.children_len = 0;
+  t.body_len = 0;
+  t.links_len = 0;
+  t.logs_len = 0;
+  t.dicts_len = 0;
+  t.lists_len = 0;
   return t;
 }
 
@@ -204,26 +205,27 @@ void add_link(Term *term, char *name, char *url) {
 }
 
 
-void add_diary(Term *term, char *date, int code, char *name, char *pict) {
+void add_diary(Term *term, char *date, int code, char *name, int pict) {
   term->logs_date[term->logs_len] = date;
   term->logs_code[term->logs_len] = code;
-  // term->logs_name[term->logs_len] = name;
-  // term->logs_pict[term->logs_len] = pict;
+  term->logs_name[term->logs_len] = name;
+  term->logs_pict[term->logs_len] = pict;
   term->logs_len++;
 }
 
-void add_event_diary(Term *term, char *date, int code, char *name, char *pict) {
+void add_event_diary(Term *term, char *date, int code, char *name, int pict) {
   term->logs_date[term->logs_len] = date;
   term->logs_code[term->logs_len] = code;
-  // term->logs_name[term->logs_len] = name;
-  // term->logs_pict[term->logs_len] = pict;
+  term->logs_name[term->logs_len] = name;
+  term->logs_pict[term->logs_len] = pict;
   term->logs_len++;
 }
 
 void add_event(Term *term, char *date, int code, char *name) {
   term->logs_date[term->logs_len] = date;
   term->logs_code[term->logs_len] = code;
-  // term->logs_name[term->logs_len] = name;
+  term->logs_name[term->logs_len] = name;
+  term->logs_pict[term->logs_len] = 0;
   term->logs_len++;
 }
 
@@ -231,8 +233,8 @@ void add_event(Term *term, char *date, int code, char *name) {
 void add_log(Term *term, char *date, int code) {
   term->logs_date[term->logs_len] = date;
   term->logs_code[term->logs_len] = code;
-  // term->logs_name[term->logs_len] = "";
-  // term->logs_pict[term->logs_len] = 0;
+  term->logs_name[term->logs_len] = "";
+  term->logs_pict[term->logs_len] = 0;
   term->logs_len++;
 }
 
