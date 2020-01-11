@@ -497,6 +497,8 @@ add_word(&entries_links, "Personal Search Infrastructure", "https://beepb00p.xyz
  
 Dict collapsology_links = create_dict("collapsology links");
 add_word(&collapsology_links, "Dark Mountain Manifesto", "https://dark-mountain.net/about/manifesto");
+add_word(&collapsology_links, "Unearthed", "https://meanjin.com.au/essays/unearthed");
+add_word(&collapsology_links, "Policymakers", "https://www.ipcc.ch/site/assets/uploads/2018/02/WG1AR5_SPM_FINAL.pdf");
 add_word(&collapsology_links, "Effective Altruism Forum", "https://forum.effectivealtruism.org");
 add_word(&collapsology_links, "Deep Adaptation", "https://www.lifeworth.com/deepadaptation.pdf");
  
@@ -707,3 +709,63 @@ add_item(&design_pragnanz, "The mind remembers uncompleted or interrupted tasks 
 add_item(&design_pragnanz, "The mind will perceive and interpret ambiguous or complex images as the simplest form possible.");
 add_item(&design_pragnanz, "The time it takes to make a decision increases with the number and complexity of choices.");
 add_item(&design_pragnanz, "The time to acquire a target is a function of the distance to and size of the target.");
+
+List work_knowledge = create_list("work knowledge");
+add_item(&work_knowledge, "Find your passion and figure out how to <b>get paid for it</b>.");
+add_item(&work_knowledge, "Do whatever you want to do, but <b>be the best at it</b>.");
+add_item(&work_knowledge, "Strive for <b>simplicity and competence</b>, but embrace the messiness along the way.");
+add_item(&work_knowledge, "<b>Under-promise</b> and over-deliver, and <b>own up</b> to your screw-ups.");
+add_item(&work_knowledge, "Doing what everybody else is doing feels like the safest thing to do, making it the most competitive, and thus the riskiest.");
+add_item(&work_knowledge, "No one is on their deathbed is wishing they spent more time at work.");
+add_item(&work_knowledge, "Never stop learning.");
+
+List work_habits = create_list("work habits");
+add_item(&work_habits, "Doing <b>the right tasks</b> is more important than doing your tasks efficiently.");
+add_item(&work_habits, "Write down your goals. <b>Break them down</b> into manageable tasks.");
+add_item(&work_habits, "Tackle <b>one task at a time</b>, and group similar tasks together.");
+add_item(&work_habits, "You're more attentive in the morning, tackle hard stuff then.");
+add_item(&work_habits, "If you can't do it in 8 hours, you can't do it in 10.");
+add_item(&work_habits, "Don't forget to stretch, and drink plenty of water.");
+add_item(&work_habits, "<b>Keep a record</b> of your time use.");
+
+List work_charisma = create_list("work charisma");
+add_item(&work_charisma, "Always <b>look a person in the eye</b> when you talk to them.");
+add_item(&work_charisma, "Always <b>stand up to shake someone's hand</b>.");
+add_item(&work_charisma, "Be conscious of your <b>body language</b>.");
+add_item(&work_charisma, "<b>Ask more</b> than you answer.");
+add_item(&work_charisma, "<b>First impressions</b> matter.");
+add_item(&work_charisma, "When you <b>walk, look straight ahead</b>, not at your feet.");
+add_item(&work_charisma, "<b>Never hit anyone</b> unless they are an immediate threat.");
+add_item(&work_charisma, "No matter their job or status, <b>everyone deserves your respect</b>.");
+
+List writing_knowledge = create_list("writing knowledge");
+add_item(&writing_knowledge, "<b>Never use a long word</b> where a short one will do.");
+add_item(&writing_knowledge, "If it is possible to cut a word out, <b>always cut it out</b>.");
+add_item(&writing_knowledge, "Never use the passive where you can <b>use the active</b>.");
+add_item(&writing_knowledge, "Never use a foreign or scientific word, if you can <b>think of an English equivalent</b>.");
+add_item(&writing_knowledge, "Never use a figure of speech which you are used to seeing in print.");
+add_item(&writing_knowledge, "Break any of these rules sooner than say anything outright barbarous.");
+
+List health_knowledge = create_list("health knowledge");
+add_item(&health_knowledge, "Eat <b>varied foods</b>, biodiversity in the diet means less monoculture in the fields.");
+add_item(&health_knowledge, "Pay more for foods grown or raised less intensively and with more care, <b>eat less</b>.");
+add_item(&health_knowledge, "Eat <b>mostly plants</b>, especially leaves. <b>Cook</b>, and if you can, plant a garden.");
+add_item(&health_knowledge, "Avoid food products with unpronounceable ingredients, or more than five in number.");
+add_item(&health_knowledge, "Don't eat anything your great-great-grandmother wouldn't recognize as food.");
+
+List health_breathing = create_list("health breathing");
+add_item(&health_breathing, "Expel all of the air from your lungs.");
+add_item(&health_breathing, "Keep them empty for four seconds.");
+add_item(&health_breathing, "Inhale through your nose for four seconds.");
+add_item(&health_breathing, "Hold for four four seconds, don’t clamp down or create pressure.");
+
+List collapsology_knowledge = create_list("collapsology knowledge");
+add_item(&collapsology_knowledge, "We will <b>face this reality honestly and learn how to live with it</b>.");
+add_item(&collapsology_knowledge, "We realize that <b>the current and upcoming crises cannot be reduced to a set of problems in need of technological or political solutions</b>.");
+add_item(&collapsology_knowledge, "We believe that <b>the roots of the current and upcoming crises lie in the stories we have been telling ourselves</b>.");
+add_item(&collapsology_knowledge, "The end of the world as we know it is not the end of the world full stop.");
+add_item(&collapsology_knowledge, "Humans are not the point and purpose of the planet.");
+add_item(&collapsology_knowledge, "The Dark Mountaineers intend to challenge the stories which underpin our civilisation:");
+add_item(&collapsology_knowledge, "<b>The myth of progress</b>: The myth first tells us that we are destined for greatness, that we began grunting in the primeval swamps, as a humble part of something called ‘nature', which we have now triumphantly subdued.");
+add_item(&collapsology_knowledge, "<b>The myth of human centrality</b>: The myth that humans are the point and purpose of the planet.");
+add_item(&collapsology_knowledge, "<b>The myth of separation from nature</b>: The myth that humans exist outside of natural forces, and that the agent that is nature can be vainquised.");
