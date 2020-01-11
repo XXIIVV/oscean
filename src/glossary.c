@@ -668,3 +668,42 @@ add_word(&reading_list_2019, "Persepolis", "Marjane Satrapi");
 add_word(&reading_list_2019, "How To Do Nothing", "Jenny Odell");
 add_word(&reading_list_2019, "The Complete Cosmicomics", "Italo Calvino");
 add_word(&reading_list_2019, "La Société du spectacle", "Guy Debord");
+
+List programming_knowledge = create_list("programming knowledge");
+add_item(&programming_knowledge, "The freedom <b>to run</b> the program as you wish, for any purpose.");
+add_item(&programming_knowledge, "The freedom <b>to study</b> how the program works, and change it.");
+add_item(&programming_knowledge, "The freedom <b>to redistribute</b> copies so you can help others.");
+add_item(&programming_knowledge, "The freedom <b>to distribute</b> copies of your modified versions to others.");
+
+List programming_practices = create_list("programming practices");
+add_item(&programming_practices, "<b>Prototype before polishing</b>. Get it working before optimizing it.");
+add_item(&programming_practices, "<b>Separate policy from mechanism</b>, separate interfaces from engines.");
+add_item(&programming_practices, "<b>Write simple modular parts</b> connected by clean interfaces.");
+add_item(&programming_practices, "Design programs to be <b>connected to other programs</b>.");
+add_item(&programming_practices, "Write <b>programs to write programs</b> when you can.");
+add_item(&programming_practices, "<b>Design for the future</b>, because it will be here sooner than you think.");
+add_item(&programming_practices, "In interface design, always do the <b>least surprising thing</b>.");
+add_item(&programming_practices, "When a program has nothing surprising to say, it should <b>say nothing</b>.");
+add_item(&programming_practices, "When a program must fail, it should <b>fail noisily</b> and as soon as possible.");
+add_item(&programming_practices, "Write big programs only when it is clear by demonstration that nothing else will do.");
+add_item(&programming_practices, "Consider how you would solve your immediate problem without adding anything new.");
+
+List design_knowledge = create_list("design knowledge");
+add_item(&design_knowledge, "Good design makes a product <b>useful</b>.");
+add_item(&design_knowledge, "Good design makes a product <b>understandable</b>.");
+add_item(&design_knowledge, "Good design is <b>unobtrusive</b>.");
+add_item(&design_knowledge, "Good design is <b>honest</b>.");
+add_item(&design_knowledge, "Good design is <b>long-lasting</b>.");
+add_item(&design_knowledge, "Good design is <b>thorough</b> down to the last detail.");
+add_item(&design_knowledge, "Good design is <b>environmentally friendly</b>.");
+add_item(&design_knowledge, "Good design is as little design as possible.");
+
+List design_pragnanz = create_list("design pragnanz");
+add_item(&design_pragnanz, "The mind perceives objects as being symmetrical and forming around a center point.");
+add_item(&design_pragnanz, "The mind perceives objects that are near, or proximate to each other, to be grouped together.");
+add_item(&design_pragnanz, "The mind can only keep 7 (plus or minus 2) items in their working memory, on average.");
+add_item(&design_pragnanz, "The mind has a propensity to best remember the first and last items in a series.");
+add_item(&design_pragnanz, "The mind remembers uncompleted or interrupted tasks better than completed tasks.");
+add_item(&design_pragnanz, "The mind will perceive and interpret ambiguous or complex images as the simplest form possible.");
+add_item(&design_pragnanz, "The time it takes to make a decision increases with the number and complexity of choices.");
+add_item(&design_pragnanz, "The time to acquire a target is a function of the distance to and size of the target.");

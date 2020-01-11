@@ -27,6 +27,12 @@ typedef struct Dict {
   char *values[64];
 } Dict;
 
+typedef struct List {
+  char *name;
+  int items_len;
+  char *items[64];
+} List;
+
 typedef struct Term {
   char *name;
   char *bref;
@@ -37,6 +43,7 @@ typedef struct Term {
   struct Term *children[32];
   bool isPortal;
   bool isAlbum;
+  bool isIndex;
   int body_len;
   char *body_text[32];
   char *body_meta[32];
@@ -51,6 +58,8 @@ typedef struct Term {
   int logs_code[LOGS_BUFFER];
   int dicts_len;
   Dict *dicts[32];
+  int lists_len;
+  List *lists[32];
 } Term;
 
 void to_lowercase(char *str, char *target, size_t tsize) {
@@ -80,6 +89,17 @@ void add_word(Dict *dict, char *key, char *value) {
   dict->words_len++;  
 }
 
+List create_list(char *name) {
+  List l;
+  l.name = name;
+  return l;
+}
+
+void add_item(List *list, char *item) {
+  list->items[list->items_len] = item;
+  list->items_len++;  
+}
+
 // Term
 
 Term create_term(char *name, char *bref) {
@@ -90,6 +110,7 @@ Term create_term(char *name, char *bref) {
   t.children_len = 0;
   t.isPortal = false;
   t.isAlbum = false;
+  t.isIndex = false;
   return t;
 }
 
@@ -102,6 +123,12 @@ Term create_portal(char *name, char *bref) {
 Term create_album(char *name, char *bref) {
   Term t = create_term(name, bref);
   t.isAlbum = true;
+  return t;
+}
+
+Term create_index(char *name, char *bref) {
+  Term t = create_term(name, bref);
+  t.isIndex = true;
   return t;
 }
 
@@ -141,6 +168,11 @@ void add_dict(Term *term, Dict *dict){
   term->dicts_len++;
 }
 
+void add_list(Term *term, List *list){
+  term->lists[term->lists_len] = list;
+  term->lists_len++;
+}
+
 void set_icon(Term *term, char *path) {
   term->icon = path;
 }
@@ -158,10 +190,6 @@ void add_note(Term *term, char *text) {
 
 
 void add_code(Term *term, char *text) {
-  
-}
-
-void add_list(Term *term, char *text) {
   
 }
 
@@ -272,6 +300,42 @@ void build_body(FILE *f, Term *term){
   }
 }
 
+void build_dictionary(FILE *f, Term *term){
+  for (int i = 0; i < term->dicts_len; ++i) {
+    fprintf(f, "<h3>%s</h3>", term->dicts[i]->name);
+    fputs("<ul>", f);
+    for (int j = 0; j < term->dicts[i]->words_len; ++j) {
+      fprintf(f, "<li><b>%s</b>: %s</li>", term->dicts[i]->keys[j], term->dicts[i]->values[j]);
+    }
+    fputs("</ul>", f);
+  }
+}
+
+void build_listing(FILE *f, Term *term){
+  for (int i = 0; i < term->lists_len; ++i) {
+    fprintf(f, "<h3>%s</h3>", term->lists[i]->name);
+    fputs("<ul>", f);
+    for (int j = 0; j < term->lists[i]->items_len; ++j) {
+      fprintf(f, "<li>%s</li>", term->lists[i]->items[j]);
+    }
+    fputs("</ul>", f);
+  }
+}
+
+void build_index(FILE *f, Term *term){
+  if(term->isIndex != true){ return; }
+  for (int k = 0; k < term->children_len; ++k) {
+    char child_filename[STR_BUF_LEN];
+    to_lowercase(term->children[k]->name, child_filename, STR_BUF_LEN);
+    fprintf(f, "<h3><a href='%s.html'>%s</a></h3>", child_filename, term->children[k]->name);
+    for (int i = 0; i < term->children[k]->body_len; ++i) {
+      fprintf(f, "<%s>%s</%s>", term->children[k]->body_tags[i], term->children[k]->body_text[i], term->children[k]->body_tags[i]);
+    }
+    build_dictionary(f, term->children[k]);
+    build_listing(f, term->children[k]);
+  }
+}
+
 void build_portal(FILE *f, Term *term){
   if(term->isPortal != true){ return; }
   for (int k = 0; k < term->children_len; ++k) {
@@ -285,17 +349,6 @@ void build_portal(FILE *f, Term *term){
     }
     fprintf(f, "<h3><a href='%s.html'>%s</a></h3>", child_filename, term->children[k]->name);
     fprintf(f, "<p>%s</p>", term->children[k]->bref);
-  }
-}
-
-void build_dictionary(FILE *f, Term *term){
-  for (int i = 0; i < term->dicts_len; ++i) {
-    fprintf(f, "<h3>%s</h3>", term->dicts[i]->name);
-    fputs("<ul>", f);
-    for (int j = 0; j < term->dicts[i]->words_len; ++j) {
-      fprintf(f, "<li><b>%s</b>: %s</li>", term->dicts[i]->keys[j], term->dicts[i]->values[j]);
-    }
-    fputs("</ul>", f);
   }
 }
 
@@ -338,6 +391,8 @@ void build_page(Term *term) {
   build_banner(f, term);
   build_body(f, term);
   build_dictionary(f, term);
+  build_listing(f, term);
+  build_index(f, term);
   build_portal(f, term);
   build_album(f, term);
   build_links(f, term);
