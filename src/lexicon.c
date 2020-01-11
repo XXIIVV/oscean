@@ -688,7 +688,7 @@ set_icon(&ring_of_scales, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,18
 add_text(&ring_of_scales, "The ring was originally named the armor ring.");
 add_link(&ring_of_scales, "download", "http://www.thingiverse.com/thing:19152");
 
-Term neauismetic = create_term("neauismetic", "The Neauismetic albums are audio diaries from the early ages of the Neauismetica.");
+Term neauismetic = create_portal("neauismetic", "The Neauismetic albums are audio diaries from the early ages of the Neauismetica.");
 set_parent(&neauismetic, &aliceffekt);
 set_icon(&neauismetic, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 
@@ -1574,7 +1574,7 @@ set_icon(&spool_holder, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 
 add_text(&spool_holder, "When you need big spools..");
 add_link(&spool_holder, "download", "http://www.thingiverse.com/thing:18833");
 
-Term laeisthic = create_term("laeisthic", "The Laeisthic albums are Neauismetic albums occurring only within the Laeisth continent of Dinaisth.");
+Term laeisthic = create_portal("laeisthic", "The Laeisthic albums are Neauismetic albums occurring only within the Laeisth continent of Dinaisth.");
 set_parent(&laeisthic, &aliceffekt);
 set_icon(&laeisthic, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 
@@ -1601,7 +1601,7 @@ add_text(&extended_sleep, "This single is the third part of the " SEND(laeisthic
 add_html(&extended_sleep, MODBANDCAMP("2987872258"));
 add_link(&extended_sleep, "bandcamp", "https://aliceffekt.bandcamp.com/album/extended-sleep");
 
-Term duomic = create_term("duomic", "The Duomic albums are Neauismetic records of Neonev's travel from Duomo to Dilitriel.");
+Term duomic = create_portal("duomic", "The Duomic albums are Neauismetic records of Neonev's travel from Duomo to Dilitriel.");
 set_parent(&duomic, &aliceffekt);
 set_icon(&duomic, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 
@@ -1638,7 +1638,7 @@ add_text(&habitants_du_soleil, "The album cover was part of the " LINKNAME("http
 add_link(&habitants_du_soleil, "bandcamp", "https://aliceffekt.bandcamp.com/album/les-habitants-du-soleil");
 add_link(&habitants_du_soleil, "famicase", "http://famicase.com");
 
-Term lives = create_term("lives", "Various albums recorded as Lives.");
+Term lives = create_portal("lives", "Various albums recorded as Lives.");
 set_parent(&lives, &aliceffekt);
 set_icon(&lives, "M150,60 l0,180 M60,195 l180,0 M60,105 l180,0 M150,210 a15,-15 0 0,1 15,-15 a-15,-15 0 0,1 -15,-15 a-15,15 0 0,1 -15,15 a15,15 0 0,1 15,15 M150,90 a15,15 0 0,0 15,15 a-15,15 0 0,0 -15,15 a-15,-15 0 0,0 -15,-15 a15,-15 0 0,0 15,-15");
 
@@ -1676,7 +1676,7 @@ Term time_alloy = create_term("time alloy", "The Time Alloy is a series of Polyg
 set_parent(&time_alloy, &polygonoscopy);
 set_icon(&time_alloy, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 
-Term demo = create_term("demo", "The Demo albums are created with specific pieces of hardwares.");
+Term demo = create_portal("demo", "The Demo albums are created with specific pieces of hardwares.");
 set_parent(&demo, &aliceffekt);
 set_icon(&demo, "M150,60 L150,60 L150,240 M60,150 L60,150 L240,150");
 
@@ -1709,7 +1709,7 @@ set_icon(&supergrid, "M150,60 L150,60 L150,240 M60,150 L60,150 L240,150");
 add_text(&supergrid, "The full album's planned release is at the end of year, the weekly tracks are available " LINKNAME("https://weeklybeats.com/aliceffekt", "here") ".");
 add_link(&supergrid, "sources", "https://weeklybeats.com/aliceffekt");
 
-Term soundtrack = create_term("soundtrack", "The Soundtrack collection contains various scores written for Software projects.");
+Term soundtrack = create_portal("soundtrack", "The Soundtrack collection contains various scores written for Software projects.");
 set_parent(&soundtrack, &aliceffekt);
 set_icon(&soundtrack, "M150,60 l0,180 M60,195 l180,0 M60,105 l180,0 M150,210 a15,-15 0 0,1 15,-15 a-15,-15 0 0,1 -15,-15 a-15,15 0 0,1 -15,15 a15,15 0 0,1 15,15 M150,90 a15,15 0 0,0 15,15 a-15,15 0 0,0 -15,15 a-15,-15 0 0,0 -15,-15 a15,-15 0 0,0 15,-15");
 
@@ -1747,7 +1747,7 @@ add_header(&noon_guest, "Tracklist");
 add_link(&noon_guest, "bandcamp", "https://aliceffekt.bandcamp.com/album/noon-guest");
 add_link(&noon_guest, "on steam", "https://store.steampowered.com/app/511540/MoonQuest/");
 
-Term remix = create_term("remix", "The Remix collection contains a list of the Aliceffekt remixes and unique tracks made for compilations.");
+Term remix = create_portal("remix", "The Remix collection contains a list of the Aliceffekt remixes and unique tracks made for compilations.");
 set_parent(&remix, &aliceffekt);
 set_icon(&remix, "M150,60 l0,180 M60,195 l180,0 M60,105 l180,0 M150,210 a15,-15 0 0,1 15,-15 a-15,-15 0 0,1 -15,-15 a-15,15 0 0,1 -15,15 a15,15 0 0,1 15,15 M150,90 a15,15 0 0,0 15,15 a-15,15 0 0,0 -15,15 a-15,-15 0 0,0 -15,-15 a15,-15 0 0,0 15,-15");
 add_header(&remix, "Remixes");
@@ -2805,7 +2805,7 @@ set_parent(&milavrega, &unreleased);
 set_icon(&milavrega, "M60,240 a30,-30 0 0,1 30,-30 l150,0 M90,195 a30,-30 0 0,1 30,-30 l90,0 M120,150 a30,-30 0 0,1 30,-30 l30,0 M195,120 l45,0 M225,165 l15,0 M150,105 a30,-30 0 0,1 30,-30 l60,0");
 add_text(&milavrega, "You must try and find your way through the folders, emails and contacts to decipher the enigma of the phone's owner.");
 
-Term first_wave = create_term("first wave", "The First Wave contains material mostly unrelated to the Neauismetica and proto-Aliceffekt.");
+Term first_wave = create_portal("first wave", "The First Wave contains material mostly unrelated to the Neauismetica and proto-Aliceffekt.");
 set_parent(&first_wave, &aliceffekt);
 set_icon(&first_wave, "M150,60 l0,180 M60,195 l180,0 M60,105 l180,0 M150,210 a15,-15 0 0,1 15,-15 a-15,-15 0 0,1 -15,-15 a-15,15 0 0,1 -15,15 a15,15 0 0,1 15,15 M150,90 a15,15 0 0,0 15,15 a-15,15 0 0,0 -15,15 a-15,-15 0 0,0 -15,-15 a15,-15 0 0,0 15,-15");
 
