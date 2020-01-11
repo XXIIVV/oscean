@@ -392,6 +392,7 @@ add_word(&technology_links, "sustainable_web", "https://sustainablewebmanifesto.
 add_word(&technology_links, "local_first_software", "https://www.inkandswitch.com/local-first.html");
 add_word(&technology_links, "paper_phone", "http://specialprojects.studio/project/paper-phone");
 add_word(&technology_links, "lot2046", "https://www.lot2046.com");
+add_word(&technology_links, "c2 wiki", "http://wiki.c2.com/?StartingPoints");
 
 Dict hardware_links = create_dict("hardware_links");
 add_word(&hardware_links, "fairphone", "https://fairphone.com/en");

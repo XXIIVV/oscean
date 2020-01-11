@@ -308,6 +308,8 @@
 #define SEND(send_id) "<a href='" send_id ".html'>" send_id "</a>"
 #define SENDNAME(sendname_id, sendname_text) "<a href='" sendname_id ".html'>" sendname_text "</a>"
 #define MODITCHIO(itchio_id) "<iframe frameborder='0' src='https://itch.io/embed/"itchio_id"?link_color=000000' width='600' height='167'></iframe>"
+#define MODBANDCAMP(bandcamp_id) "<iframe style='border: 0; width: 600px; height: 274px;' src='https://bandcamp.com/EmbeddedPlayer/album="bandcamp_id"/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/' seamless></iframe>"
+#define MODYOUTUBE(youtube_id) "<iframe width='100%' height='380' src='https://www.youtube.com/embed/"youtube_id"?rel=0' style='max-width:700px' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe>"
 
 Term home = create_term("home", "");
 set_parent(&home, &home);
@@ -616,66 +618,66 @@ set_parent(&victorian_punch, &physical);
 set_icon(&victorian_punch, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 add_link(&victorian_punch, "sources", "http://www.thingiverse.com/thing:18853");
 
-Term polygonoscopy = create_term("polygonoscopy", "Polygonoscopy is a series of abstract videographies, recorded with the Kaleidoscope.");
+Term polygonoscopy = create_portal("polygonoscopy", "Polygonoscopy is a series of abstract videographies, recorded with the Kaleidoscope.");
 set_parent(&polygonoscopy, &illustration);
 set_icon(&polygonoscopy, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 
-Term methascope = create_term("methascope", "Frozen Methascope drops, similar to snowflakes.");
+Term methascope = create_album("methascope", "Frozen Methascope drops, similar to snowflakes.");
 set_parent(&methascope, &polygonoscopy);
 set_icon(&methascope, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 add_text(&methascope, "At its smallest scale, the " SEND(methascope_path) " unfolds as the " SENDNAME(ar_moire_path, "Ar Moires") ".");
 
-Term kaleidoscope = create_term("kaleidoscope", "The Kaleidoscope records the intersection of overlapping structures.");
+Term kaleidoscope = create_album("kaleidoscope", "The Kaleidoscope records the intersection of overlapping structures.");
 set_parent(&kaleidoscope, &polygonoscopy);
 set_icon(&kaleidoscope, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 add_text(&kaleidoscope, "Nothing is as reassuring as looking through the " SENDNAME(polygonoscopy_path, "Polygonoscope") " and seeing everything is where you left it.");
 
-Term hypervoid = create_term("hypervoid", "The Hypervoid is navigating the nullplane of dichromatic Anti-pigments.");
+Term hypervoid = create_album("hypervoid", "The Hypervoid is navigating the nullplane of dichromatic Anti-pigments.");
 set_parent(&hypervoid, &polygonoscopy);
 set_icon(&hypervoid, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 add_text(&hypervoid, "The  pieces were selected to be on the cover of the second volume of the " LINKNAME("http://issuu.com/independenceamazing/docs/amaze_screen", "Amaze Newspaper") ".");
 
-Term brane = create_term("brane", "Brane are digital fabrics.");
+Term brane = create_album("brane", "Brane are digital fabrics.");
 set_parent(&brane, &polygonoscopy);
 set_icon(&brane, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 add_text(&brane, "This " SENDNAME(polygonoscopy_path, "Polygonoscopic") " collection of large " SENDNAME(nervous_path, "Nervous Systems") " was exposed at the MIGS gallery on november 10th 2014.");
 
-Term astratas = create_term("astratas", "The Astratas topologic maps oscillate to Serventines's Polygonoscopic frequencies.");
+Term astratas = create_album("astratas", "The Astratas topologic maps oscillate to Serventines's Polygonoscopic frequencies.");
 set_parent(&astratas, &polygonoscopy);
 set_icon(&astratas, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 // add_quote(&astratas, "The Art of Cartography attained such Perfection that the map of a single Province occupied the entirety of a City, and the map of the Empire, the entirety of a Province.", "undefined | Jorge Luis Borges | On Rigor in Science | https://en.wikipedia.org/wiki/On_Exactitude_in_Science");
 
-Term ar_moire = create_term("ar moire", "The Ar Moire diagrams are Polygonoscopic sounds.");
+Term ar_moire = create_album("ar moire", "The Ar Moire diagrams are Polygonoscopic sounds.");
 set_parent(&ar_moire, &polygonoscopy);
 set_icon(&ar_moire, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 
-Term nervous = create_term("nervous", "Nervous are studies of Polygonoscopic Fields.");
+Term nervous = create_album("nervous", "Nervous are studies of Polygonoscopic Fields.");
 set_parent(&nervous, &polygonoscopy);
 set_icon(&nervous, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 add_text(&nervous, "A closer look to the fibers of the " SEND(brane_path) " mesh.");
 
-Term artwork = create_term("artwork", "Artwork collection of unrelated concepts and characters.");
+Term artwork = create_album("artwork", "Artwork collection of unrelated concepts and characters.");
 set_parent(&artwork, &illustration);
 set_icon(&artwork, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 
-Term sketchbook = create_term("sketchbook", "Various rough illustration from the Sketchbook.");
+Term sketchbook = create_album("sketchbook", "Various rough illustration from the Sketchbook.");
 set_parent(&sketchbook, &artwork);
 set_icon(&sketchbook, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 add_text(&sketchbook, "Always carry some sort of " SEND(notebook_path) ".");
 
-Term flactals = create_term("flactals", "Flactals is a series of abstract six-sided flowers drawn using an early version of Ronin.");
+Term flactals = create_album("flactals", "Flactals is a series of abstract six-sided flowers drawn using an early version of Ronin.");
 set_parent(&flactals, &sketchbook);
 set_icon(&flactals, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 add_text(&flactals, "These flowers have inspired a series of illustrations used in Elodie Lareine's book titled \"" SEND(vast_path) "\" as well as the cover of the " SEND(aliceffekt_path) " single titled \"" SEND(known_magye_path) "\", released in 2014.");
 // add_quote(&flactals, "Drawing flowers, therapeutic.", "undefined");
 
-Term old_cities = create_term("old cities", "The Old Cities were old drawings created for school.");
+Term old_cities = create_album("old cities", "The Old Cities were old drawings created for school.");
 set_parent(&old_cities, &sketchbook);
 set_icon(&old_cities, "M60,240 L60,240 L60,60 L180,60 L180,120 M120,240 L120,240 L120,120 L210,120 L210,180 M180,240 L180,240 L180,180 L240,180 L240,240 M60,240 L60,240 L240,240");
 add_text(&old_cities, "Traditional drawings created in the style of " SENDNAME(directory_path, "ブラム!") "");
 add_text(&old_cities, "These dark locations were to become the brightened structures of " SENDNAME(collected_works_path, "Malice") " and " SEND(merveilles_path) ".");
 
-Term lard_shader = create_term("lard shader", "Lard Shader is a 3d vertex shader transforming neoclassical figures into their plump selves.");
+Term lard_shader = create_album("lard shader", "Lard Shader is a 3d vertex shader transforming neoclassical figures into their plump selves.");
 set_parent(&lard_shader, &illustration);
 set_icon(&lard_shader, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 add_text(&lard_shader, "The shader first creates a vertical vertex displacement based on the intersection of brightness and red pixel values, and then re-apply itself 3 times onto the resulted new topology.");
@@ -2039,11 +2041,11 @@ Term travel = create_portal("travel", "Travel diaries around the world.");
 set_parent(&travel, &photography);
 set_icon(&travel, "M90,210 L90,210 L210,90 M150,90 A60,60 0 0,1 210,150 A-60,60 0 0,1 150,210 A-60,-60 0 0,1 90,150 A60,-60 0 0,1 150,90 Z");
 
-Term austria = create_term("austria", "Trip to Austria, in September of 2015, for Ars Electronica.");
+Term austria = create_album("austria", "Trip to Austria, in September of 2015, for Ars Electronica.");
 set_parent(&austria, &travel);
 set_icon(&austria, "M90,210 L90,210 L210,90 M150,90 A60,60 0 0,1 210,150 A-60,60 0 0,1 150,210 A-60,-60 0 0,1 90,150 A60,-60 0 0,1 150,90 Z");
 
-Term netherlands = create_term("netherlands", "Trip to Netherlands in 2015 for Indievelopment.");
+Term netherlands = create_album("netherlands", "Trip to Netherlands in 2015 for Indievelopment.");
 set_parent(&netherlands, &travel);
 set_icon(&netherlands, "M90,210 L90,210 L210,90 M150,90 A60,60 0 0,1 210,150 A-60,60 0 0,1 150,210 A-60,-60 0 0,1 90,150 A60,-60 0 0,1 150,90 Z");
 
@@ -2057,12 +2059,12 @@ set_parent(&minamiise, &japan);
 set_icon(&minamiise, "M60,90 L60,90 L240,90 M150,60 L150,60 L150,240 M150,90 Q150,150 60,210 M150,90 Q150,150 240,210 M105,210 L105,210 L195,210");
 add_text(&minamiise, "Damp forest roads, misty mountains and ghost towns.");
 
-Term shizuoka = create_term("shizuoka", "We sailed to Shizuoka in the late winter of 2019, from Ogasawara.");
+Term shizuoka = create_album("shizuoka", "We sailed to Shizuoka in the late winter of 2019, from Ogasawara.");
 set_parent(&shizuoka, &japan);
 set_icon(&shizuoka, "M60,90 L60,90 L240,90 M150,60 L150,60 L150,240 M150,90 Q150,150 60,210 M150,90 Q150,150 240,210 M105,210 L105,210 L195,210");
 add_text(&shizuoka, "We moved to <a href='#shizuoka' data-goto='shizuoka' target='_self' class='local '>Shizuoka</a> which offers the most beautiful sight of " SEND(fuji_path) ".");
 
-Term ogasawara = create_term("ogasawara", "We sailed to Ogasawara in the late winter of 2019, from Fiji.");
+Term ogasawara = create_album("ogasawara", "We sailed to Ogasawara in the late winter of 2019, from Fiji.");
 set_parent(&ogasawara, &japan);
 set_icon(&ogasawara, "M60,90 L60,90 L240,90 M150,60 L150,60 L150,240 M150,90 Q150,150 60,210 M150,90 Q150,150 240,210 M105,210 L105,210 L195,210");
 add_text(&ogasawara, "We sailed into the <b>Futami arbor</b> on our way to " SENDNAME(japan_path, "Osaka") " from the " SEND(marshall_islands_path) ".");
@@ -2070,83 +2072,83 @@ add_text(&ogasawara, "The island of Chichijima is one of the most beautiful plac
 add_header(&ogasawara, "Video");
 add_youtube(&ogasawara, "ueTCjpNXing");
 
-Term yokohama = create_term("yokohama", "We cycled to Yokohama, from Tokyo.");
+Term yokohama = create_album("yokohama", "We cycled to Yokohama, from Tokyo.");
 set_parent(&yokohama, &japan);
 set_icon(&yokohama, "M60,90 L60,90 L240,90 M150,60 L150,60 L150,240 M150,90 Q150,150 60,210 M150,90 Q150,150 240,210 M105,210 L105,210 L195,210");
 
-Term fuji = create_term("fuji", "Our trip up Mount Fuji, Japan.");
+Term fuji = create_album("fuji", "Our trip up Mount Fuji, Japan.");
 set_parent(&fuji, &japan);
 set_icon(&fuji, "M60,90 L60,90 L240,90 M150,60 L150,60 L150,240 M150,90 Q150,150 60,210 M150,90 Q150,150 240,210 M105,210 L105,210 L195,210");
 add_text(&fuji, "We climbed it at night, and arrived at the top for sunrise.");
 add_link(&fuji, "wikipedia", "https://en.wikipedia.org/wiki/Mount_Fuji");
 
-Term osaka = create_term("osaka", "We traveled to Osaka in 2010 to attend the 1H1D music festival, and returned in 2019.");
+Term osaka = create_album("osaka", "We traveled to Osaka in 2010 to attend the 1H1D music festival, and returned in 2019.");
 set_parent(&osaka, &japan);
 set_icon(&osaka, "M60,90 L60,90 L240,90 M150,60 L150,60 L150,240 M150,90 Q150,150 60,210 M150,90 Q150,150 240,210 M105,210 L105,210 L195,210");
 
-Term tokyo = create_term("tokyo", "Unforgettable time in Tokyo between 2010 and 2012.");
+Term tokyo = create_album("tokyo", "Unforgettable time in Tokyo between 2010 and 2012.");
 set_parent(&tokyo, &japan);
 set_icon(&tokyo, "M60,90 L60,90 L240,90 M150,60 L150,60 L150,240 M150,90 Q150,150 60,210 M150,90 Q150,150 240,210 M105,210 L105,210 L195,210");
 
-Term fiji = create_term("fiji", "We sailed to Fiji from New Zealand, aboard Pino.");
+Term fiji = create_album("fiji", "We sailed to Fiji from New Zealand, aboard Pino.");
 set_parent(&fiji, &travel);
 set_icon(&fiji, "M90,210 L90,210 L210,90 M150,90 A60,60 0 0,1 210,150 A-60,60 0 0,1 150,210 A-60,-60 0 0,1 90,150 A60,-60 0 0,1 150,90 Z");
 add_text(&fiji, "We lived by the towns of " LINKNAME("https://en.wikipedia.org/wiki/Savusavu", "Savusavu") ", " LINKNAME("https://en.wikipedia.org/wiki/Lami,_Fiji", "Lami") " and " LINKNAME("https://en.wikipedia.org/wiki/Vuda_Point", "Vuda") " for the Summer of 2018.");
 add_text(&fiji, "We stopped in <b>Fiji</b> on our way to " SEND(japan_path) " from " SEND(new_zealand_path) ", living off watermelon and bittermelon, breadfruit and passionfruit. It felt great to finally be pointing North, after heading west throughout our " SEND(marquesas_path) " Ocean crossing.");
 
-Term marquesas = create_term("marquesas", "Travel pictures from our crossing of the South Pacific Ocean, from Mexico to the Marquesas.");
+Term marquesas = create_album("marquesas", "Travel pictures from our crossing of the South Pacific Ocean, from Mexico to the Marquesas.");
 set_parent(&marquesas, &travel);
 set_icon(&marquesas, "M60,150 L60,150 L150,150 M195,72.1 L195,72.1 L150,150 M195,227.9 L195,227.9 L150,150");
 add_text(&marquesas, "Some of the first pictures taken after " SENDNAME(the_sublime_path, "sailing across") " the South Pacific Ocean from " SEND(mexico_path) " to the " LINKNAME("https://en.wikipedia.org/wiki/Marquesas_Islands", "Marquesas Islands") ".");
 add_text(&marquesas, "We then proceeded toward " SEND(niue_path) " island.");
 add_link(&marquesas, "trip", "http://100r.co");
 
-Term marshall_islands = create_term("marshall islands", "We sailed to the Marshall Islands from Fiji, aboard Pino.");
+Term marshall_islands = create_album("marshall islands", "We sailed to the Marshall Islands from Fiji, aboard Pino.");
 set_parent(&marshall_islands, &travel);
 set_icon(&marshall_islands, "M90,210 L90,210 L210,90 M150,90 A60,60 0 0,1 210,150 A-60,60 0 0,1 150,210 A-60,-60 0 0,1 90,150 A60,-60 0 0,1 150,90 Z");
 add_text(&marshall_islands, "We lived in <b>Majuro</b> for a few weeks waiting for a weather window to would allow us to sail " SENDNAME(japan_path, "north") ".");
 
-Term niue = create_term("niue", "That time we sailed to the gorgeous coral shores of the country of Niue.");
+Term niue = create_album("niue", "That time we sailed to the gorgeous coral shores of the country of Niue.");
 set_parent(&niue, &travel);
 set_icon(&niue, "M60,150 L60,150 L150,150 M195,72.1 L195,72.1 L150,150 M195,227.9 L195,227.9 L150,150");
 add_text(&niue, "We reached the " LINKNAME("https://en.wikipedia.org/wiki/Niue", "incredible island") " of " SEND(niue_path) " in July of 2017, on our way across the " SEND(marquesas_path) " Ocean.");
 add_text(&niue, "We anchored by the pier, and explored its canyons and chasms for a week, before proceeding toward " SEND(new_zealand_path) ".");
 add_link(&niue, "wikipedia", "https://en.wikipedia.org/wiki/Niue");
 
-Term czech = create_term("czech", "Trip to Czech Republic in 2011.");
+Term czech = create_album("czech", "Trip to Czech Republic in 2011.");
 set_parent(&czech, &travel);
 set_icon(&czech, "M60,150 L60,150 L150,150 M195,72.1 L195,72.1 L150,150 M195,227.9 L195,227.9 L150,150");
 add_text(&czech, "Back in " SENDNAME(calendar_path, "2011") ", I traveled alone and spent a few days with friends in " LINKNAME("https://en.wikipedia.org/wiki/Prague", "Prague") " and nearby.");
 
-Term france = create_term("france", "That time I played a show in Paris, France.");
+Term france = create_album("france", "That time I played a show in Paris, France.");
 set_parent(&france, &travel);
 set_icon(&france, "M90,210 L90,210 L210,90 M150,90 A60,60 0 0,1 210,150 A-60,60 0 0,1 150,210 A-60,-60 0 0,1 90,150 A60,-60 0 0,1 150,90 Z");
 
-Term the_sublime = create_term("the sublime", "The Sublime, are various pictures taken at sea aboard Pino.");
+Term the_sublime = create_album("the sublime", "The Sublime, are various pictures taken at sea aboard Pino.");
 set_parent(&the_sublime, &travel);
 set_icon(&the_sublime, "M60,150 L60,150 L150,150 M195,72.1 L195,72.1 L150,150 M195,227.9 L195,227.9 L150,150");
 
-Term new_zealand = create_term("new zealand", "That time we lived in New Zealand.");
+Term new_zealand = create_album("new zealand", "That time we lived in New Zealand.");
 set_parent(&new_zealand, &travel);
 set_icon(&new_zealand, "M90,210 L90,210 L210,90 M150,90 A60,60 0 0,1 210,150 A-60,60 0 0,1 150,210 A-60,-60 0 0,1 90,150 A60,-60 0 0,1 150,90 Z");
 add_text(&new_zealand, "Most of our <b>New Zealand</b> pictures were taken on " SEND(film_path) ".");
 add_text(&new_zealand, "We sailed to New Zealand aboard " SEND(pino_path) " in 2016, from " LINKNAME("https://en.wikipedia.org/wiki/Tonga", "Tonga") ", on our way to " SEND(japan_path) ", during our " SEND(marquesas_path) " circumnavigation. We were moored in Whangarei for 8 months.");
 
-Term america = create_term("america", "Various landscapes taken around America.");
+Term america = create_album("america", "Various landscapes taken around America.");
 set_parent(&america, &travel);
 set_icon(&america, "M90,210 L90,210 L210,90 M150,90 A60,60 0 0,1 210,150 A-60,60 0 0,1 150,210 A-60,-60 0 0,1 90,150 A60,-60 0 0,1 150,90 Z");
 add_text(&america, "Some taken while in a 52 hours train ride during " LINKNAME("http://trainjam.com", "Train Jam") " in 2015, from Chicago; others taken when we " SENDNAME(pino_path, "sailed") " into the San Francisco Bay from Vancouver.");
 
-Term germany = create_term("germany", "That time I played a show in Berlin, Germany.");
+Term germany = create_album("germany", "That time I played a show in Berlin, Germany.");
 set_parent(&germany, &travel);
 set_icon(&germany, "M90,210 L90,210 L210,90 M150,90 A60,60 0 0,1 210,150 A-60,60 0 0,1 150,210 A-60,-60 0 0,1 90,150 A60,-60 0 0,1 150,90 Z");
 add_text(&germany, "We first went to " SEND(germany_path) " for the Amaze festival, and I later returned for the React Berlin conference and a livecoding show.");
 
-Term canada = create_term("canada", "Despite being from there, Canada has become a travel destination to me.");
+Term canada = create_album("canada", "Despite being from there, Canada has become a travel destination to me.");
 set_parent(&canada, &travel);
 set_icon(&canada, "M90,210 L90,210 L210,90 M150,90 A60,60 0 0,1 210,150 A-60,60 0 0,1 150,210 A-60,-60 0 0,1 90,150 A60,-60 0 0,1 150,90 Z");
 
-Term mexico = create_term("mexico", "That time we lived in Mexico.");
+Term mexico = create_album("mexico", "That time we lived in Mexico.");
 set_parent(&mexico, &travel);
 set_icon(&mexico, "M60,150 L60,150 L150,150 M195,72.1 L195,72.1 L150,150 M195,227.9 L195,227.9 L150,150");
 
