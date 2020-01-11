@@ -325,7 +325,7 @@ Term research = create_portal("research", "The Research hosts philosophy and lin
 set_parent(&research, &home);
 set_icon(&research, "M60,240 a30,-30 0 0,1 30,-30 l150,0 M90,195 a30,-30 0 0,1 30,-30 l90,0 M120,150 a30,-30 0 0,1 30,-30 l30,0 M195,120 l45,0 M225,165 l15,0 M150,105 a30,-30 0 0,1 30,-30 l60,0");
 
-Term about = create_term("about", "This wiki is a digital playground and personal logging system.");
+Term about = create_index("about", "This wiki is a digital playground and personal logging system.");
 set_parent(&about, &home);
 set_icon(&about, "M150,60 A90,90 0 0,1 240,150 A-90,90 0 0,1 150,240 A-90,-90 0 0,1 60,150 A90,-90 0 0,1 150,60 Z");
 add_text(&about, "The aim of this wiki is to build a form of <b>personal assistant</b> to help with the management of a vast repository of recorded statistics which includes daily logs, notes on personal projects and curated pages of general knowledge.");
@@ -344,14 +344,9 @@ Term license = create_term("license", "The License for code and assets.");
 set_parent(&license, &about);
 set_icon(&license, "M150,60 A90,90 0 0,1 240,150 A-90,90 0 0,1 150,240 A-90,-90 0 0,1 60,150 A90,-90 0 0,1 150,60 Z");
 add_text(&license, "The license applies to all the <b>documented projects, the projects themselves and their assets</b>.");
-add_text(&license, "The " LINKNAME("http://github.com/XXIIVV/Oscean", "platform code") " is under the <code >MIT License</code>.<br />The " LINKNAME("https://creativecommons.org/licenses/by-nc-sa/4.0/", "media and text content") " is under the <code >BY-NC-SA 4.0 License</code>.");
-// add_code(&license, "You are free to<br /><br />");
-// add_code(&license, "- <b>Share</b>: copy and redistribute the material in any medium or format.");
-// add_code(&license, "- <b>Adapt</b>: remix, transform, and build upon the material.<br /><br />");
-// add_code(&license, "Under the following terms<br /><br />");
-// add_code(&license, "- <b>Attribution</b>: You must give appropriate credit.");
-// add_code(&license, "- <b>NonCommercial</b>: You may not use the material for commercial purposes.");
-// add_code(&license, "- <b>ShareAlike</b>: You must distribute your contributions under the same license.");
+add_text(&license, "The " LINKNAME("http://github.com/XXIIVV/Oscean", "platform code") " is under the <code >MIT License</code>.<br />The " LINKNAME("https://creativecommons.org/licenses/by-nc-sa/4.0/", "assets and text content") " is under the <code >BY-NC-SA4.0 License</code>.");
+add_text(&license, "You are free to: <b>Share</b>: copy and redistribute the material in any medium or format. <b>Adapt</b>: remix, transform, and build upon the material.");
+add_text(&license, "Under the following terms: <b>Attribution</b>: You must give appropriate credit. <b>NonCommercial</b>: You may not use the material for commercial purposes. <b>ShareAlike</b>: You must distribute your contributions under the same license.");
 add_text(&license, "If you have any <b>question or feedback</b>, please submit a " LINKNAME("https://github.com/XXIIVV/Oscean/issues/new", "bug report") ".");
 
 Term notebook = create_term("notebook", "From the Notebook.");
