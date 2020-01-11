@@ -12,7 +12,7 @@ char *html_header = "<header><a id='logo' href='home.html'><img src='../media/ic
 
 char *html_footer = "<footer><hr/><a href='https://creativecommons.org/licenses/by-nc-sa/4.0' target='_blank'><img src='../media/icon/cc.svg' alt='by-nc-sa' width='30'/></a> <a href='http://webring.xxiivv.com/#random' target='_blank' rel='noreferrer'><img src='../media/icon/rotonde.svg' alt='webring' width='30'/></a> <a href='https://merveilles.town/@neauoire' target='_blank'><img src='../media/icon/merveilles.svg' alt='Merveilles' width='30'/></a> <a href='https://github.com/neauoire' target='_blank'><img src='../media/icon/github.png' alt='github' width='30'/></a> <span><a class='profile' href='devine_lu_linvega.html' target='_self'>Devine Lu Linvega</a> © 2020 — <a class='about' href='about.html' target='_self'>BY-NC-SA 4.0</a></span></footer></body></html>";
 
-char *html_style = "<style>body { padding:30px } body a { color:black } body a:hover { text-decoration:none } header { margin: 0px 0px 35px; float: left } nav { margin: 0px 0px 30px } nav ul { padding: 0px; margin: 0px 45px 30px 0px; float: left } nav ul li { list-style-type:none; white-space:pre } nav ul li a { text-decoration:none } nav ul li a:hover { background:black; color:white } main { max-width:600px } main h1 { display:none } main h2 { max-width: 400px; margin-top:0px } main p { line-height:25px } main q { font-family:serif; font-size:18px; font-style: italic } main img { max-width:100% } main a.external:before { content:'~' } footer { border-top:1.5px solid; padding-top:30px; font-family:monospace } footer img { margin: 0px 0px -10px 0px } footer a { font-weight:bold; text-decoration:none } hr { border:0; clear:both }</style>";
+char *html_style = "<style>body { padding:30px } body a { color:black } body a:hover { text-decoration:none } header { margin: 0px 0px 35px; float: left } nav { margin: 0px 0px 30px } nav ul { padding: 0px; margin: 0px 45px 30px 0px; float: left } nav ul li { list-style-type:none; white-space:pre } nav ul li a { text-decoration:none } nav ul li a:hover { background:black; color:white } main { max-width:600px } main h1 { display:none } main h2 { max-width: 400px; margin-top:0px } main p { line-height:25px } main q { font-family: serif; font-size: 18px; font-style: italic; display: block; margin-bottom: 30px } main img { max-width:100% } main a.external:before { content:'~' } footer { border-top:1.5px solid; padding-top:30px; font-family:monospace } footer img { margin: 0px 0px -10px 0px } footer a { font-weight:bold; text-decoration:none } hr { border:0; clear:both }</style>";
 
 typedef struct Log {
   char *date;
@@ -117,6 +117,18 @@ void add_text(Term *term, char *text) {
   term->body_len++;
 }
 
+void add_header(Term *term, char *text) {
+  term->body_text[term->body_len] = text;
+  term->body_tags[term->body_len] = "h3";
+  term->body_len++;
+}
+
+void add_subheader(Term *term, char *text) {
+  term->body_text[term->body_len] = text;
+  term->body_tags[term->body_len] = "h4";
+  term->body_len++;  
+}
+
 void add_quote(Term *term, char *text, char *source) {
   term->body_text[term->body_len] = text;
   term->body_meta[term->body_len] = source;
@@ -143,13 +155,7 @@ void add_note(Term *term, char *text) {
   
 }
 
-void add_header(Term *term, char *text) {
-  
-}
 
-void add_subheader(Term *term, char *text) {
-  
-}
 
 void add_code(Term *term, char *text) {
   
