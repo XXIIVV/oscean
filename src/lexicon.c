@@ -2160,7 +2160,7 @@ add_text(&devine_lu_linvega, "They currently live aboard a " SENDNAME(pino_path,
 add_text(&devine_lu_linvega, "Get in touch via email at <b>aliceffekt@gmail.com</b>, or<br />on the fediverse at <b><a href='http://merveilles.town/@neauoire' target='_blank' rel='noreferrer' class='external '>merveilles.town/@neauoire</a></b>.");
 add_quote(&devine_lu_linvega, "To flee is Life,<br />To linger, death.", "Let The Right One In");
 
-Term lifestyle = create_portal("lifestyle", "The collection of diary entries on Lifestyle.");
+Term lifestyle = create_index("lifestyle", "The collection of diary entries on Lifestyle.");
 set_parent(&lifestyle, &devine_lu_linvega);
 set_icon(&lifestyle, "M150,60 l0,180 M180,60 l0,180 l0,-60 a30,-30 0 0,1 30,-30 l30,0 M120,60 l0,180 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0");
 add_text(&lifestyle, "I rarely blog, but I've collected here a handful of <b>long-form posts</b> on various topics. ");
