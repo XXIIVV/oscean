@@ -14,6 +14,8 @@ char *html_footer = "<footer><hr/><a href='https://creativecommons.org/licenses/
 
 char *html_style = "<style>body { padding:30px } body a { color:black } body a:hover { text-decoration:none } header { margin: 0px 0px 35px; float: left } nav { margin: 0px 0px 30px } nav ul { padding: 0px; margin: 0px 45px 30px 0px; float: left } nav ul li { list-style-type:none; white-space:pre } nav ul li a { text-decoration:none } nav ul li a:hover { background:black; color:white } main { max-width:600px } main h1 { display:none } main h2 { max-width: 400px; margin-top:0px } main p { line-height:25px } main q { font-family: serif; font-size: 18px; font-style: italic; display: block; margin-bottom: 30px } main img { max-width:100% } main a.external:before { content:'~' } footer { border-top:1.5px solid; padding-top:30px; font-family:monospace } footer img { margin: 0px 0px -10px 0px } footer a { font-weight:bold; text-decoration:none } hr { border:0; clear:both }</style>";
 
+// Dict
+
 typedef struct Dict {
   char *name;
   int words_len;
@@ -21,23 +23,53 @@ typedef struct Dict {
   char *values[64];
 } Dict;
 
+Dict create_dict(char *name) {
+  Dict d;
+  d.name = name;
+  d.words_len = 0;
+  return d;
+}
+
+void add_word(Dict *dict, char *key, char *value) {
+  dict->keys[dict->words_len] = key;
+  dict->values[dict->words_len] = value;
+  dict->words_len++;  
+}
+
+// List
+
 typedef struct List {
   char *name;
   int items_len;
   char *items[64];
 } List;
 
+List create_list(char *name) {
+  List l;
+  l.name = name;
+  l.items_len = 0;
+  return l;
+}
+
+void add_item(List *list, char *item) {
+  list->items[list->items_len] = item;
+  list->items_len++;  
+}
+
+// Term
+
 typedef struct Term {
   char *name;
   char *bref;
   char *link;
   char *icon;
-  struct Term *parent;
-  int children_len;
-  struct Term *children[32];
+  int pict;
   bool isPortal;
   bool isAlbum;
   bool isIndex;
+  struct Term *parent;
+  int children_len;
+  struct Term *children[32];
   int body_len;
   char *body_text[32];
   char *body_meta[32];
@@ -56,48 +88,6 @@ typedef struct Term {
   List *lists[32];
 } Term;
 
-void to_lowercase(char *str, char *target, size_t tsize) {
-  for (size_t i = 0; i < tsize; i++) {
-    target[i] = str[i];
-    if (target[i] == '\0') {
-      break;
-    }
-    if (target[i] == ' ') {
-      target[i] = '_';
-    } else {
-      target[i] = tolower(target[i]);
-    }
-  }
-  target[tsize - 1] = '\0';
-}
-
-Dict create_dict(char *name) {
-  Dict d;
-  d.name = name;
-  d.words_len = 0;
-  return d;
-}
-
-void add_word(Dict *dict, char *key, char *value) {
-  dict->keys[dict->words_len] = key;
-  dict->values[dict->words_len] = value;
-  dict->words_len++;  
-}
-
-List create_list(char *name) {
-  List l;
-  l.name = name;
-  l.items_len = 0;
-  return l;
-}
-
-void add_item(List *list, char *item) {
-  list->items[list->items_len] = item;
-  list->items_len++;  
-}
-
-// Term
-
 Term create_term(char *name, char *bref) {
   Term t;
   t.name = name;
@@ -106,6 +96,7 @@ Term create_term(char *name, char *bref) {
   t.isPortal = false;
   t.isAlbum = false;
   t.isIndex = false;
+  t.pict = -1;
   t.children_len = 0;
   t.body_len = 0;
   t.links_len = 0;
@@ -131,6 +122,16 @@ Term create_index(char *name, char *bref) {
   Term t = create_term(name, bref);
   t.isIndex = true;
   return t;
+}
+
+void set_parent(Term *term, Term *parent) {
+  term->parent = parent;
+  parent->children[parent->children_len] = term;
+  parent->children_len++;
+}
+
+void set_icon(Term *term, char *path) {
+  term->icon = path;
 }
 
 void add_html(Term *term, char *text) {
@@ -174,16 +175,11 @@ void add_list(Term *term, List *list){
   term->lists_len++;
 }
 
-void set_icon(Term *term, char *path) {
-  term->icon = path;
+void add_link(Term *term, char *name, char *url) {
+  term->links_names[term->links_len] = name;
+  term->links_urls[term->links_len] = url;
+  term->links_len++;
 }
-
-void set_parent(Term *term, Term *parent) {
-  term->parent = parent;
-  parent->children[parent->children_len] = term;
-  parent->children_len++;
-}
-
 
 void add_code(Term *term, char *text) {
   
@@ -193,18 +189,14 @@ void add_table(Term *term, char *text) {
   
 }
 
-void add_link(Term *term, char *name, char *url) {
-  term->links_names[term->links_len] = name;
-  term->links_urls[term->links_len] = url;
-  term->links_len++;
-}
-
-
 void add_diary(Term *term, char *date, int code, char *name, int pict) {
   term->logs_date[term->logs_len] = date;
   term->logs_code[term->logs_len] = code;
   term->logs_name[term->logs_len] = name;
   term->logs_pict[term->logs_len] = pict;
+  if(term->pict < 0){
+    term->pict = term->logs_len;
+  }
   term->logs_len++;
 }
 
@@ -213,6 +205,9 @@ void add_event_diary(Term *term, char *date, int code, char *name, int pict) {
   term->logs_code[term->logs_len] = code;
   term->logs_name[term->logs_len] = name;
   term->logs_pict[term->logs_len] = pict;
+  if(term->pict < 0){
+    term->pict = term->logs_len;
+  }
   term->logs_len++;
 }
 
@@ -224,7 +219,6 @@ void add_event(Term *term, char *date, int code, char *name) {
   term->logs_len++;
 }
 
-
 void add_log(Term *term, char *date, int code) {
   term->logs_date[term->logs_len] = date;
   term->logs_code[term->logs_len] = code;
@@ -233,22 +227,39 @@ void add_log(Term *term, char *date, int code) {
   term->logs_len++;
 }
 
-int find_term_pict(Term *term){
-  for (int i = 0; i < term->logs_len; ++i) {
-    if(term->logs_pict[i] > 0){
-      return term->logs_pict[i];
+// Tools
+
+void to_lowercase(char *str, char *target, size_t tsize) {
+  for (size_t i = 0; i < tsize; i++) {
+    target[i] = str[i];
+    if (target[i] == '\0') {
+      break;
+    }
+    if (target[i] == ' ') {
+      target[i] = '_';
+    } else {
+      target[i] = tolower(target[i]);
     }
   }
-  return 0;
+  target[tsize - 1] = '\0';
 }
 
-// Build
+// Build(parts)
 
-void build_pict(FILE *f, int id, char *name){
+void build_pict_part(FILE *f, int id, char *name, char *date, bool caption){
   fprintf(f, "<img src='../media/diary/%d.jpg' alt='%s picture'/>", id, name);
+  if(caption){
+    fprintf(f, "<h4>%s - %s</h4>", date,name);
+  }
 }
 
-void build_nav_list(FILE *f, Term *term, Term *target){
+void build_body_part(FILE *f, Term *term){
+  for (int i = 0; i < term->body_len; ++i) {
+    fprintf(f, "<%s>%s</%s>", term->body_tags[i], term->body_text[i], term->body_tags[i]);
+  }
+}
+
+void build_nav_part(FILE *f, Term *term, Term *target){
   fputs("<ul>", f);
   for (int i = 0; i < term->children_len; ++i) {
     char child_filename[STR_BUF_LEN];
@@ -263,40 +274,35 @@ void build_nav_list(FILE *f, Term *term, Term *target){
   fputs("</ul>", f);
 }
 
+// Build
+
+void build_banner(FILE *f, Term *term, bool caption){
+  if(term->pict > -1){
+    build_pict_part(f, term->logs_pict[term->pict], term->logs_name[term->pict], term->logs_date[term->pict], caption);
+  }
+}
+
 void build_nav(FILE *f, Term *term){
   fputs("<nav>", f);
   if(term->parent->parent->name == term->parent->name){
-    build_nav_list(f, term->parent->parent, term);
+    build_nav_part(f, term->parent->parent, term);
   }
   else{
-    build_nav_list(f, term->parent->parent, term->parent);
+    build_nav_part(f, term->parent->parent, term->parent);
   }
-  
   if(term->parent->parent->name != term->parent->name){
-    build_nav_list(f, term->parent, term);
+    build_nav_part(f, term->parent, term);
   }
   if(term->parent->name != term->name){
-    build_nav_list(f, term, term);
+    build_nav_part(f, term, term);
   }
   fputs("<hr/></nav>", f);
-}
-
-void build_banner(FILE *f, Term *term){
-  for (int i = 0; i < term->logs_len; ++i) {
-    if(term->logs_pict[i] > 0){
-      build_pict(f, term->logs_pict[i], term->logs_name[i]);
-      fprintf(f, "<h4>%s - %s</h4>", term->logs_name[i], term->logs_date[i]);
-      break;
-    }
-  }
 }
 
 void build_body(FILE *f, Term *term){
   fprintf(f, "<h1 class='title'>%s</h1>", term->name);
   fprintf(f, "<h2 class='brief'>%s</h2>", term->bref);
-  for (int i = 0; i < term->body_len; ++i) {
-    fprintf(f, "<%s>%s</%s>", term->body_tags[i], term->body_text[i], term->body_tags[i]);
-  }
+  build_body_part(f, term);
 }
 
 void build_dictionary(FILE *f, Term *term){
@@ -327,9 +333,7 @@ void build_index(FILE *f, Term *term){
     char child_filename[STR_BUF_LEN];
     to_lowercase(term->children[k]->name, child_filename, STR_BUF_LEN);
     fprintf(f, "<h3><a href='%s.html'>%s</a></h3>", child_filename, term->children[k]->name);
-    for (int i = 0; i < term->children[k]->body_len; ++i) {
-      fprintf(f, "<%s>%s</%s>", term->children[k]->body_tags[i], term->children[k]->body_text[i], term->children[k]->body_tags[i]);
-    }
+    build_body_part(f, term->children[k]);
     build_dictionary(f, term->children[k]);
     build_listing(f, term->children[k]);
   }
@@ -340,10 +344,9 @@ void build_portal(FILE *f, Term *term){
   for (int k = 0; k < term->children_len; ++k) {
     char child_filename[STR_BUF_LEN];
     to_lowercase(term->children[k]->name, child_filename, STR_BUF_LEN);
-    int pict = find_term_pict(term->children[k]);
-    if(pict > 0){
+    if(term->children[k]->pict > -1){
       fprintf(f, "<a href='%s.html'>", child_filename);
-      build_pict(f, pict, term->children[k]->name);
+      build_banner(f, term->children[k], false);
       fprintf(f, "</a>");
     }
     fprintf(f, "<h3><a href='%s.html'>%s</a></h3>", child_filename, term->children[k]->name);
@@ -353,10 +356,9 @@ void build_portal(FILE *f, Term *term){
 
 void build_album(FILE *f, Term *term){
   if(term->isAlbum != true){ return; }
-  int pict = find_term_pict(term);
   for (int k = 0; k < term->logs_len; ++k) {
-    if(term->logs_pict[k] > 0 && term->logs_pict[k] != pict){
-      build_pict(f, term->logs_pict[k], term->logs_name[k]);
+    if(term->logs_pict[k] > 0 && term->logs_pict[k] != term->logs_pict[term->pict]){
+      build_pict_part(f, term->logs_pict[k], term->logs_name[k], term->logs_date[k], false);
     }
     fprintf(f, "<h4>%s</h4>", term->logs_name[k]);
   }
@@ -387,7 +389,7 @@ void build_page(Term *term) {
   build_nav(f, term);
   
   fputs("<main>", f);
-  build_banner(f, term);
+  build_banner(f, term, true);
   build_body(f, term);
   build_dictionary(f, term);
   build_listing(f, term);
