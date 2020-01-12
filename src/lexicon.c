@@ -315,7 +315,7 @@ set_icon(&home, "M150,60 A90,90 0 0,1 240,150 A-90,90 0 0,1 150,240 A-90,-90 0 0
 Term audio = create_portal("audio", "The Audio portal hosts various soundtrack, records and live projects.");
 set_parent(&audio, &home);
 set_icon(&audio, "M150,60 A90,90 0 0,1 240,150 A-90,90 0 0,1 150,240 A-90,-90 0 0,1 60,150 A90,-90 0 0,1 150,60 Z");
-// add_quote(&audio, "Music is the space between the notes.", "undefined");
+add_quote(&audio, "Music is the space between the notes.", "Claude Debussy");
 
 Term visual = create_portal("visual", "The Visual hosts design and interaction projects.");
 set_parent(&visual, &home);
@@ -409,7 +409,7 @@ add_text(&hundred_rabbits, "The name <i >Hundred Rabbits</i> comes from the name
 add_link(&hundred_rabbits, "patreon", "https://patreon.com/100");
 add_link(&hundred_rabbits, "twitter", "https://twitter.com/hundredrabbits");
 
-Term drownspire = create_term("drownspire", "Drownspire was the name of an online store founded with Rekka Bellum, back in 2009.");
+Term drownspire = create_portal("drownspire", "Drownspire was the name of an online store founded with Rekka Bellum, back in 2009.");
 set_parent(&drownspire, &hundred_rabbits);
 set_icon(&drownspire, "M120,60 L120,60 L120,60 M90,60 L90,60 L90,60 M60,60 L60,60 L60,60 M60,90 L60,90 L60,90 M90,90 L90,90 L90,90 M120,90 L120,90 L120,90 M60,120 L60,120 L60,120 M90,120 L90,120 L90,120 M120,120 L120,120 L120,120 M60,150 L60,150 L60,150 M90,150 L90,150 L90,150 M120,150 L120,150 L120,150 M60,180 L60,180 L60,180 M90,180 L90,180 L90,180 M120,180 L120,180 L120,180 M60,210 L60,210 L60,210 M90,210 L90,210 L90,210 M120,210 L120,210 L120,210 M60,240 L60,240 L60,240 M90,240 L90,240 L90,240 M120,240 L120,240 L120,240 M150,90 L150,90 L150,90 M150,120 L150,120 L150,120 M150,150 L150,150 L150,150 M150,180 L150,180 L150,180 M150,210 L150,210 L150,210 M150,240 L150,240 L150,240 M150,60 L150,60 L150,60 M180,60 L180,60 L180,60 M210,60 L210,60 L210,60 M240,60 L240,60 L240,60 M180,90 L180,90 L180,90 M210,90 L210,90 L210,90 M240,90 L240,90 L240,90 M180,120 L180,120 L180,120 M210,120 L210,120 L210,120 M240,120 L240,120 L240,120 M180,150 L180,150 L180,150 M210,150 L210,150 L210,150 M240,150 L240,150 L240,150 M180,180 L180,180 L180,180 M210,180 L210,180 L210,180 M240,180 L240,180 L240,180 M180,210 L180,210 L180,210 M210,210 L210,210 L210,210 M240,210 L240,210 L240,210 M180,240 L180,240 L180,240 M210,240 L210,240 L210,240 M240,240 L240,240 L240,240");
 add_text(&drownspire, "Our goals then, fueled what is now " SEND(hundred_rabbits_path) ". We distributed the " SEND(vambits_path) " designer toys and published the " SEND(merure_path) " books.");
@@ -432,24 +432,17 @@ Term pino = create_album("pino", "Pino is a Yamaha 33 sailboat built in 1982.");
 set_parent(&pino, &hundred_rabbits);
 set_icon(&pino, "M60,105 Q105,75 150,105 Q195,135 240,105 M60,150 Q105,120 150,150 Q195,180 240,150 M60,195 Q105,165 150,195 Q195,225 240,195");
 add_text(&pino, "Purchased in 2016, on Vancouver Island, <b>Pino</b> has since sailed across the " SENDNAME(marquesas_path, "Pacific Ocean") ". We maintain a list of " LINKNAME("http://github.com/hundredrabbits/pino", "technical details") ", and our current position can be accessed through our " LINKNAME("http://100r.co/#map", "tracker") ".");
-// add_code(&pino, "<b>Name</b> PINO");
-// add_code(&pino, "<b>Builder</b> Yamaha");
-// add_code(&pino, "<b>Year</b> 1982");
-// add_code(&pino, "<b>Length</b> 33'(10 meters)");
-// add_code(&pino, "<b>Engine Fuel</b> Type Single / diesel(13 HP)");
-// add_code(&pino, "<b>Hull Material</b> Fiberglass");
-// add_code(&pino, "<b>Keel</b> Fin");
-// add_code(&pino, "" LINKNAME("http://github.com/hundredrabbits/pino", "Full Specs") "");
-add_text(&pino, "If you are interested in learning about the " SENDNAME(nomad_path, "digital-nomad") " lifestyle, have a look at the " LINKNAME("http://100r.co/", "Hundred Rabbits Website") ". We have a lot of " SEND(raspberry_path) "-powered devices onboard, learn more about our " SEND(media_station_path) " and " SEND(radio_station_path) ".");
-// add_quote(&pino, "There's no such thing as bad weather, only inappropriate clothing.", "undefined | Linda Geddes | Living without artificial light | http://www.bbc.com/future/story/20180424-what-i-learnt-by-living-without-artificial-light");
+add_dict(&pino, &pino_details);
+add_text(&pino, "If you are interested in learning about the " SENDNAME(nomad_path, "digital-nomad") " lifestyle, have a look at the " LINKNAME("http://100r.co/", "Hundred Rabbits Website") ". We have a lot of " SEND(raspberry_path) "-powered devices onboard, learn more about our " SENDNAME(media_station_path, "media station") " and " SENDNAME(radio_station_path, "radio station") ".");
+add_quote(&pino, "There's no such thing as bad weather, only inappropriate clothing.", "Linda Geddes, Living without artificial light");
 add_link(&pino, "details", "http://github.com/hundredrabbits/pino");
 add_link(&pino, "patreon", "https://patreon.com/100");
 
-Term rekka = create_term("rekka", "Rekka Bellum, is an illustrator and writer.");
+Term rekka = create_album("rekka", "Rekka Bellum, is an illustrator and writer.");
 set_parent(&rekka, &hundred_rabbits);
 set_icon(&rekka, "M120,60 L120,60 L120,60 M90,60 L90,60 L90,60 M60,60 L60,60 L60,60 M60,90 L60,90 L60,90 M90,90 L90,90 L90,90 M120,90 L120,90 L120,90 M60,120 L60,120 L60,120 M90,120 L90,120 L90,120 M120,120 L120,120 L120,120 M60,150 L60,150 L60,150 M90,150 L90,150 L90,150 M120,150 L120,150 L120,150 M60,180 L60,180 L60,180 M90,180 L90,180 L90,180 M120,180 L120,180 L120,180 M60,210 L60,210 L60,210 M90,210 L90,210 L90,210 M120,210 L120,210 L120,210 M60,240 L60,240 L60,240 M90,240 L90,240 L90,240 M120,240 L120,240 L120,240 M150,90 L150,90 L150,90 M150,120 L150,120 L150,120 M150,150 L150,150 L150,150 M150,180 L150,180 L150,180 M150,210 L150,210 L150,210 M150,240 L150,240 L150,240 M150,60 L150,60 L150,60 M180,60 L180,60 L180,60 M210,60 L210,60 L210,60 M240,60 L240,60 L240,60 M180,90 L180,90 L180,90 M210,90 L210,90 L210,90 M240,90 L240,90 L240,90 M180,120 L180,120 L180,120 M210,120 L210,120 L210,120 M240,120 L240,120 L240,120 M180,150 L180,150 L180,150 M210,150 L210,150 L210,150 M240,150 L240,150 L240,150 M180,180 L180,180 L180,180 M210,180 L210,180 L210,180 M240,180 L240,180 L240,180 M180,210 L180,210 L180,210 M210,210 L210,210 L210,210 M240,210 L240,210 L240,210 M180,240 L180,240 L180,240 M210,240 L210,240 L210,240 M240,240 L240,240 L240,240");
 add_text(&rekka, "<b>Rekka</b> is the co-founder of " SEND(drownspire_path) " and " SEND(hundred_rabbits_path) ".");
-add_text(&rekka, "" SENDNAME(devine_lu_linvega_path, "Devine") " and " SEND(rekka_path) " collaborated on projects like " SEND(oquonie_path) ", " SEND(grimgrains_path) ", " SEND(thousand_rooms_path) " and " SEND(paradise_path) ".");
+add_text(&rekka, SENDNAME(devine_lu_linvega_path, "Devine") " and " SEND(rekka_path) " collaborated on projects like " SEND(oquonie_path) ", " SEND(grimgrains_path) ", " SEND(thousand_rooms_path) " and " SEND(paradise_path) ".");
 add_link(&rekka, "website", "http://kokorobot.ca/");
 
 Term wiktopher = create_term("wiktopher", "Wiktopher is Rekka's upcoming travel novel.");
@@ -1074,7 +1067,7 @@ Term hardware = create_portal("hardware", "A handful of experimental projects on
 set_parent(&hardware, &research);
 set_icon(&hardware, "M60,240 a30,-30 0 0,1 30,-30 l150,0 M90,195 a30,-30 0 0,1 30,-30 l90,0 M120,150 a30,-30 0 0,1 30,-30 l30,0 M195,120 l45,0 M225,165 l15,0 M150,105 a30,-30 0 0,1 30,-30 l60,0");
 
-Term raspberry = create_term("raspberry", "The Raspberry is a small inexpensive single-board computer.");
+Term raspberry = create_portal("raspberry", "The Raspberry is a small inexpensive single-board computer.");
 set_parent(&raspberry, &hardware);
 set_icon(&raspberry, "M75,90 L75,90 L225,90 M105,90 A-15,15 0 0,0 90,105 A0,120 0 0,0 90,225 A15,15 0 0,0 105,240 A-30,0 0 0,0 75,240 A15,-15 0 0,0 90,225 A0,-120 0 0,0 90,105 A-15,-15 0 0,0 75,90 M195,90 A15,15 0 0,1 210,105 A0,120 0 0,1 210,225 A-15,15 0 0,1 195,240 A30,0 0 0,1 225,240 A-15,-15 0 0,1 210,225 A0,-120 0 0,1 210,105 A15,-15 0 0,1 225,90");
 add_text(&raspberry, "The <b>Raspberry Pi</b> is a small inexpensive single-board computer.");

@@ -1,4 +1,3 @@
-
 add_event(&japan, "20D09", 0, "Return to Japan");
 add_log(&hundred_rabbits, "20A06", 268);
 add_log(&grimgrains, "20A05", 345);

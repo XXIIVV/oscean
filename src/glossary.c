@@ -688,6 +688,15 @@ add_word(&studio_workstation, "Midi Interface", "Roland UM One");
 add_word(&studio_workstation, "Midi Pads", "Monome Grid | Akai LPD8");
 add_word(&studio_workstation, "Midi Keys", "Akai LPK25");
 
+Dict pino_details = create_dict("pino details");
+add_word(&pino_details, "Name", "PINO");
+add_word(&pino_details, "Builder", "Yamaha");
+add_word(&pino_details, "Year", "1982");
+add_word(&pino_details, "Length", "33'(10 meters)");
+add_word(&pino_details, "Engine Fuel", "Type Single / diesel(13 HP)");
+add_word(&pino_details, "Hull Material", "Fiberglass");
+add_word(&pino_details, "Keel", "Fin");
+
 List programming_knowledge = create_list("programming knowledge");
 add_item(&programming_knowledge, "The freedom <b>to run</b> the program as you wish, for any purpose.");
 add_item(&programming_knowledge, "The freedom <b>to study</b> how the program works, and change it.");

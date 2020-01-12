@@ -59,32 +59,32 @@ void add_item(List *list, char *item) {
 // Term
 
 typedef struct Term {
+  bool isPortal;
+  bool isAlbum;
+  bool isIndex;
+  int pict;
+  int children_len;
+  int body_len;
+  int links_len;
+  int logs_len;
+  int dicts_len;
+  int lists_len;
   char *name;
   char *bref;
   char *link;
   char *icon;
-  int pict;
-  bool isPortal;
-  bool isAlbum;
-  bool isIndex;
-  struct Term *parent;
-  int children_len;
-  struct Term *children[32];
-  int body_len;
+  int logs_pict[LOGS_BUFFER];
+  int logs_code[LOGS_BUFFER];
+  char *logs_date[LOGS_BUFFER];
+  char *logs_name[LOGS_BUFFER];
   char *body_text[32];
   char *body_meta[32];
   char *body_tags[32];
-  int links_len;
   char *links_names[32];
   char *links_urls[32];
-  int logs_len;
-  char *logs_date[LOGS_BUFFER];
-  char *logs_name[LOGS_BUFFER];
-  int logs_pict[LOGS_BUFFER];
-  int logs_code[LOGS_BUFFER];
-  int dicts_len;
+  struct Term *parent;
+  struct Term *children[32];
   Dict *dicts[32];
-  int lists_len;
   List *lists[32];
 } Term;
 
@@ -194,6 +194,7 @@ void add_diary(Term *term, char *date, int code, char *name, int pict) {
   term->logs_code[term->logs_len] = code;
   term->logs_name[term->logs_len] = name;
   term->logs_pict[term->logs_len] = pict;
+  // term->logs_type[term->logs_len] = 0;
   if(term->pict < 0){
     term->pict = term->logs_len;
   }
@@ -205,6 +206,7 @@ void add_event_diary(Term *term, char *date, int code, char *name, int pict) {
   term->logs_code[term->logs_len] = code;
   term->logs_name[term->logs_len] = name;
   term->logs_pict[term->logs_len] = pict;
+  // term->logs_type[term->logs_len] = 0;
   if(term->pict < 0){
     term->pict = term->logs_len;
   }
@@ -216,6 +218,7 @@ void add_event(Term *term, char *date, int code, char *name) {
   term->logs_code[term->logs_len] = code;
   term->logs_name[term->logs_len] = name;
   term->logs_pict[term->logs_len] = 0;
+  // term->logs_type[term->logs_len] = 0;
   term->logs_len++;
 }
 
@@ -224,6 +227,7 @@ void add_log(Term *term, char *date, int code) {
   term->logs_code[term->logs_len] = code;
   term->logs_name[term->logs_len] = "";
   term->logs_pict[term->logs_len] = 0;
+  // term->logs_type[term->logs_len] = 0;
   term->logs_len++;
 }
 
