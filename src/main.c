@@ -23,6 +23,54 @@ typedef struct Dict {
   char *values[64];
 } Dict;
 
+typedef struct List {
+  char *name;
+  int items_len;
+  char *items[64];
+} List;
+
+typedef struct Log {
+  char *date;
+  int code;
+  char *name;
+  int pict;
+} Log;
+
+typedef struct Term {
+  bool isPortal;
+  bool isAlbum;
+  bool isIndex;
+
+  int pict;
+  int children_len;
+  int body_len;
+  int links_len;
+  int logs_len;
+  int dicts_len;
+  int lists_len;
+
+  char *name;
+  char *bref;
+  char *icon;
+
+  struct Term *parent;
+
+  int logs_pict[LOGS_BUFFER];
+  int logs_code[LOGS_BUFFER];
+  char *logs_date[LOGS_BUFFER];
+  char *logs_name[LOGS_BUFFER];
+  char *body_text[32];
+  char *body_meta[32];
+  char *body_tags[32];
+  char *links_names[32];
+  char *links_urls[32];
+  struct Term *children[32];
+  Dict *dicts[32];
+  List *lists[32];
+} Term;
+
+// Creators/Setters
+
 Dict create_dict(char *name) {
   Dict d;
   d.name = name;
@@ -36,14 +84,6 @@ void add_word(Dict *dict, char *key, char *value) {
   dict->words_len++;  
 }
 
-// List
-
-typedef struct List {
-  char *name;
-  int items_len;
-  char *items[64];
-} List;
-
 List create_list(char *name) {
   List l;
   l.name = name;
@@ -56,46 +96,12 @@ void add_item(List *list, char *item) {
   list->items_len++;  
 }
 
-// Term
-
-typedef struct Term {
-  bool isPortal;
-  bool isAlbum;
-  bool isIndex;
-  int pict;
-  int children_len;
-  int body_len;
-  int links_len;
-  int logs_len;
-  int dicts_len;
-  int lists_len;
-  char *name;
-  char *bref;
-  char *link;
-  char *icon;
-  int logs_pict[LOGS_BUFFER];
-  int logs_code[LOGS_BUFFER];
-  char *logs_date[LOGS_BUFFER];
-  char *logs_name[LOGS_BUFFER];
-  char *body_text[32];
-  char *body_meta[32];
-  char *body_tags[32];
-  char *links_names[32];
-  char *links_urls[32];
-  struct Term *parent;
-  struct Term *children[32];
-  Dict *dicts[32];
-  List *lists[32];
-} Term;
-
 Term create_term(char *name, char *bref) {
   Term t;
-  t.name = name;
-  t.bref = bref;
-  t.parent = NULL;
   t.isPortal = false;
   t.isAlbum = false;
   t.isIndex = false;
+
   t.pict = -1;
   t.children_len = 0;
   t.body_len = 0;
@@ -103,6 +109,12 @@ Term create_term(char *name, char *bref) {
   t.logs_len = 0;
   t.dicts_len = 0;
   t.lists_len = 0;
+
+  t.name = name;
+  t.bref = bref;
+  t.icon = "";
+
+  t.parent = NULL;
   return t;
 }
 
@@ -131,7 +143,8 @@ void set_parent(Term *term, Term *parent) {
 }
 
 void set_icon(Term *term, char *path) {
-  term->icon = path;
+  // TODO
+  // term->icon = path;
 }
 
 void add_html(Term *term, char *text) {
