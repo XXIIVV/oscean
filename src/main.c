@@ -142,11 +142,6 @@ void set_parent(Term *term, Term *parent) {
   parent->children_len++;
 }
 
-void set_icon(Term *term, char *path) {
-  // TODO
-  // term->icon = path;
-}
-
 void add_html(Term *term, char *text) {
   term->body_text[term->body_len] = text;
   term->body_tags[term->body_len] = "div";
@@ -194,20 +189,11 @@ void add_link(Term *term, char *name, char *url) {
   term->links_len++;
 }
 
-void add_code(Term *term, char *text) {
-  
-}
-
-void add_table(Term *term, char *text) {
-  
-}
-
 void add_diary(Term *term, char *date, int code, char *name, int pict) {
   term->logs_date[term->logs_len] = date;
   term->logs_code[term->logs_len] = code;
   term->logs_name[term->logs_len] = name;
   term->logs_pict[term->logs_len] = pict;
-  // term->logs_type[term->logs_len] = 0;
   if(term->pict < 0){
     term->pict = term->logs_len;
   }
@@ -219,7 +205,6 @@ void add_event_diary(Term *term, char *date, int code, char *name, int pict) {
   term->logs_code[term->logs_len] = code;
   term->logs_name[term->logs_len] = name;
   term->logs_pict[term->logs_len] = pict;
-  // term->logs_type[term->logs_len] = 0;
   if(term->pict < 0){
     term->pict = term->logs_len;
   }
@@ -231,7 +216,6 @@ void add_event(Term *term, char *date, int code, char *name) {
   term->logs_code[term->logs_len] = code;
   term->logs_name[term->logs_len] = name;
   term->logs_pict[term->logs_len] = 0;
-  // term->logs_type[term->logs_len] = 0;
   term->logs_len++;
 }
 
@@ -240,7 +224,6 @@ void add_log(Term *term, char *date, int code) {
   term->logs_code[term->logs_len] = code;
   term->logs_name[term->logs_len] = "";
   term->logs_pict[term->logs_len] = 0;
-  // term->logs_type[term->logs_len] = 0;
   term->logs_len++;
 }
 
@@ -375,9 +358,8 @@ void build_album(FILE *f, Term *term){
   if(term->isAlbum != true){ return; }
   for (int k = 0; k < term->logs_len; ++k) {
     if(term->logs_pict[k] > 0 && term->logs_pict[k] != term->logs_pict[term->pict]){
-      build_pict_part(f, term->logs_pict[k], term->logs_name[k], term->logs_date[k], false);
+      build_pict_part(f, term->logs_pict[k], term->logs_name[k], term->logs_date[k], true);
     }
-    fprintf(f, "<h4>%s</h4>", term->logs_name[k]);
   }
 }
 
@@ -390,8 +372,16 @@ void build_links(FILE *f, Term *term){
 }
 
 void build_horaire(FILE *f, Term *term){
-  if(term->logs_len < 2){ return; }
-  fprintf(f, "<h5>%d logs</h5>", term->logs_len);
+  // TODO display events
+  // if(term->logs_len < 2){ return; }
+  // fprintf(f, "<h5>%d logs</h5>", term->logs_len);
+  // fputs("<ul>", f);
+  // for (int i = 0; i < term->logs_len; ++i) {
+  //   if(term->logs_name[i] != ""){
+  //     fprintf(f, "<li>%s - %s</li>", term->logs_date[i], term->logs_name[i]);  
+  //   }
+  // }
+  // fputs("</ul>", f);
 }
 
 void build_page(Term *term) {
