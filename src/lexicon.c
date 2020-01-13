@@ -454,7 +454,7 @@ add_text(&wiktopher, "The novel is written <i >entirely without genders</i>, and
 add_link(&wiktopher, "read online", "http://wiktopher.kokorobot.ca");
 add_link(&wiktopher, "about the author", "https://twitter.com/RekkaBell");
 
-Term grimgrains = create_term("grimgrains", "Grimgrains is the Hundred Rabbits food and cooking resources site.");
+Term grimgrains = create_album("grimgrains", "Grimgrains is the Hundred Rabbits food and cooking resources site.");
 set_parent(&grimgrains, &hundred_rabbits);
 // set_icon(&grimgrains, "M120,60 L120,60 L120,60 M90,60 L90,60 L90,60 M60,60 L60,60 L60,60 M60,90 L60,90 L60,90 M90,90 L90,90 L90,90 M120,90 L120,90 L120,90 M60,120 L60,120 L60,120 M90,120 L90,120 L90,120 M120,120 L120,120 L120,120 M60,150 L60,150 L60,150 M90,150 L90,150 L90,150 M120,150 L120,150 L120,150 M60,180 L60,180 L60,180 M90,180 L90,180 L90,180 M120,180 L120,180 L120,180 M60,210 L60,210 L60,210 M90,210 L90,210 L90,210 M120,210 L120,210 L120,210 M60,240 L60,240 L60,240 M90,240 L90,240 L90,240 M120,240 L120,240 L120,240 M150,90 L150,90 L150,90 M150,120 L150,120 L150,120 M150,150 L150,150 L150,150 M150,180 L150,180 L150,180 M150,210 L150,210 L150,210 M150,240 L150,240 L150,240 M150,60 L150,60 L150,60 M180,60 L180,60 L180,60 M210,60 L210,60 L210,60 M240,60 L240,60 L240,60 M180,90 L180,90 L180,90 M210,90 L210,90 L210,90 M240,90 L240,90 L240,90 M180,120 L180,120 L180,120 M210,120 L210,120 L210,120 M240,120 L240,120 L240,120 M180,150 L180,150 L180,150 M210,150 L210,150 L210,150 M240,150 L240,150 L240,150 M180,180 L180,180 L180,180 M210,180 L210,180 L210,180 M240,180 L240,180 L240,180 M180,210 L180,210 L180,210 M210,210 L210,210 L210,210 M240,210 L240,210 L240,210 M180,240 L180,240 L180,240 M210,240 L210,240 L210,240 M240,240 L240,240 L240,240");
 add_text(&grimgrains, "Started in the fall of 2014, the goal of the site is to document interesting " SENDNAME(nutrition_path, "foods") " and " SEND(lifestyle_path) " experiments.");
@@ -2153,7 +2153,7 @@ set_parent(&inventory, &devine_lu_linvega);
 // set_icon(&inventory, "M150,60 l0,180 M180,60 l0,180 l0,-60 a30,-30 0 0,1 30,-30 l30,0 M120,60 l0,180 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0");
 add_text(&inventory, "Some of the items I carry around with me in my " SENDNAME(travel_path, "travels") ".");
 
-Term everyday = create_term("everyday", "Everyday items found in my bag or pockets.");
+Term everyday = create_album("everyday", "Everyday items found in my bag or pockets.");
 set_parent(&everyday, &inventory);
 // set_icon(&everyday, "M120,60 L120,60 L120,240 M150,60 L150,60 L150,240 M180,60 L180,60 L180,240 M60,150 A30,0 0 0,1 90,150 A30,30 0 0,1 120,180 M240,150 A-30,0 0 0,0 210,150 A-30,30 0 0,0 180,180");
 // add_list(&everyday, "<b>Pigment Liner 0.3-2.0mm</b>: " LINKNAME("http://amzn.to/2BtPR5i", "Staedtler") "");
@@ -2165,7 +2165,7 @@ set_parent(&everyday, &inventory);
 // add_list(&everyday, "<b>Kindle Paperwhite</b>: " LINKNAME("http://amzn.to/2Gj3W9E", "Amazon") "");
 // add_list(&everyday, "<b>RFID Blocking Wallet</b>: " LINKNAME("https://duxtio.com/", "Duxtio") "");
 
-Term skate = create_term("skate", "The Skate specs.");
+Term skate = create_album("skate", "The Skate specs.");
 set_parent(&skate, &inventory);
 // set_icon(&skate, "M150,60 l0,180 M180,60 l0,180 l0,-60 a30,-30 0 0,1 30,-30 l30,0 M120,60 l0,180 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0");
 add_text(&skate, "When the sun is just about to set, and when the road is that perfect kind of slick.");
@@ -2173,7 +2173,7 @@ add_text(&skate, "We carry a little " LINKNAME("https://www.pennyskateboards.com
 // add_list(&skate, "<b>Frame</b>: Penny Board 68.58cm");
 // add_list(&skate, "<b>Wheels</b>: Wide 59mm");
 
-Term bike = create_term("bike", "The Bike specs.");
+Term bike = create_album("bike", "The Bike specs.");
 set_parent(&bike, &inventory);
 // set_icon(&bike, "M150,60 l0,180 M180,60 l0,180 l0,-60 a30,-30 0 0,1 30,-30 l30,0 M120,60 l0,180 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0");
 add_text(&bike, "That <b>bike</b> that I've carried all over the world during my " SENDNAME(travel_path, "Travels") ".");
@@ -2184,7 +2184,7 @@ add_text(&bike, "We have somehow managed to fit two large track bikes inside of 
 // add_list(&bike, "<b>Tires</b>: 700x25C(200g)");
 // add_list(&bike, "<b>Tubes</b>: 700x18-25C, 48mm valves");
 
-Term studio = create_term("studio", "The Studio equipment.");
+Term studio = create_album("studio", "The Studio equipment.");
 set_parent(&studio, &inventory);
 // set_icon(&studio, "M150,60 l0,180 M180,60 l0,180 l0,-60 a30,-30 0 0,1 30,-30 l30,0 M120,60 l0,180 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0");
 add_text(&studio, "While the " SEND(aliceffekt_path) " sounds were mostly sampled from the " LINKNAME("https://www.arturia.com/microbrute/overview", "Microbrute") ", the " SEND(alicef_path) " sounds came from the " LINKNAME("https://www.eltamusic.com/polivoks-mini", "Поливокс") ".");
@@ -2192,7 +2192,7 @@ add_dict(&studio, &studio_workstation);
 // add_code(&studio, "Factory Reset: A + B while plugging in the power.");
 // add_code(&studio, "Calibrate: Bypass + B footswitches for two seconds.");
 
-Term computer = create_term("computer", "Technical details on my current Computer setup.");
+Term computer = create_album("computer", "Technical details on my current Computer setup.");
 set_parent(&computer, &inventory);
 // set_icon(&computer, "M75,90 L75,90 L225,90 M105,90 A-15,15 0 0,0 90,105 A0,120 0 0,0 90,225 A15,15 0 0,0 105,240 A-30,0 0 0,0 75,240 A15,-15 0 0,0 90,225 A0,-120 0 0,0 90,105 A-15,-15 0 0,0 75,90 M195,90 A15,15 0 0,1 210,105 A0,120 0 0,1 210,225 A-15,15 0 0,1 195,240 A30,0 0 0,1 225,240 A-15,-15 0 0,1 210,225 A0,-120 0 0,1 210,105 A15,-15 0 0,1 225,90");
 add_text(&computer, "I presently use a <b>Apple Macbook Pro</b> with the " LINKNAME("https://elementary.io", "ElementaryOS") " Linux operating system. I also frequently use various " SENDNAME(raspberry_path, "Raspberry Pi") " devices as servers and utilities.");
@@ -2201,7 +2201,7 @@ add_dict(&computer, &macbook_workstation);
 add_dict(&computer, &software_links);
 add_link(&computer, "usesthis", "https://usesthis.com/interviews/devine.lu.linvega/");
 
-Term plan9 = create_term("plan9", "Notes and links related to the Plan9 operating system.");
+Term plan9 = create_album("plan9", "Notes and links related to the Plan9 operating system.");
 set_parent(&plan9, &computer);
 // set_icon(&plan9, "M75,90 L75,90 L225,90 M105,90 A-15,15 0 0,0 90,105 A0,120 0 0,0 90,225 A15,15 0 0,0 105,240 A-30,0 0 0,0 75,240 A15,-15 0 0,0 90,225 A0,-120 0 0,0 90,105 A-15,-15 0 0,0 75,90 M195,90 A15,15 0 0,1 210,105 A0,120 0 0,1 210,225 A-15,15 0 0,1 195,240 A30,0 0 0,1 225,240 A-15,-15 0 0,1 210,225 A0,-120 0 0,1 210,105 A15,-15 0 0,1 225,90");
 add_quote(&plan9, "An argument for simplicity and clarity.", "undefined | Rob Pike");
@@ -2209,7 +2209,7 @@ add_dict(&plan9, &plan9_links);
 add_link(&plan9, "notes", "https://github.com/neauoire/p9-notes");
 add_link(&plan9, "irc", "https://9p.io/wiki/plan9/IRC/index.html");
 
-Term camera = create_term("camera", "The Camera specs.");
+Term camera = create_album("camera", "The Camera specs.");
 set_parent(&camera, &inventory);
 // set_icon(&camera, "M90,210 L90,210 L210,90 M150,90 A60,60 0 0,1 210,150 A-60,60 0 0,1 150,210 A-60,-60 0 0,1 90,150 A60,-60 0 0,1 150,90 Z");
 add_text(&camera, "For " SEND(film_path) ", I use the <b>Voigtländer's Bessa R3M 250 Jahre</b>, and for digital, <b>Sony's Alpha a6000 24.3 MP</b>.");
@@ -2219,7 +2219,7 @@ add_header(&camera, "The Lenses");
 // add_list(&camera, "" LINKNAME("http://amzn.to/2BrDiHH", "Voigtländer") " — Ultron <b>28mm</b> f2");
 // add_list(&camera, "" LINKNAME("https://commons.wikimedia.org/wiki/File:Auto_nikkor_50mm.jpg", "Nikon") " — Nikkor <b>50mm</b> f1.2");
 
-Term keyboard = create_term("keyboard", "The mechanical Keyboard specs.");
+Term keyboard = create_album("keyboard", "The mechanical Keyboard specs.");
 set_parent(&keyboard, &inventory);
 // set_icon(&keyboard, "M150,60 l0,180 M180,60 l0,180 l0,-60 a30,-30 0 0,1 30,-30 l30,0 M120,60 l0,180 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0");
 add_text(&keyboard, "I currently use the " LINKNAME("https://olkb.com/planck/hi-pro-mod-aluminum-milled-bottom", "OLKB Hi-pro mod") " Planck 6 hotswap, plate, Halo Clear switches and Acute caps.");
