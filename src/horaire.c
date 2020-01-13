@@ -276,7 +276,7 @@ add_log(&paradise, "19F10", 327);
 add_log(&paradise, "19F09", 236);
 add_log(&azolla, "19F08", 136);
 add_log(&orca, "19F07", 367);
-add_log(&shizuoka, "19F06", 275);
+add_diary(&bike, "19F06", 275, "In front of Mt. Fuji", 650);
 add_log(&orca, "19F05", 244);
 add_log(&orca, "19F04", 233);
 add_event_diary(&shizuoka, "19E12", 275, "Sail to Shizuoka, Japan", 592);
