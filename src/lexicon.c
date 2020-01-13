@@ -2178,7 +2178,7 @@ add_dict(&readings, &reading_list_2017);
 add_dict(&readings, &reading_list_2018);
 add_dict(&readings, &reading_list_2019);
 
-Term goals = create_term("goals", "A list of general Goals.");
+Term goals = create_album("goals", "A list of general Goals.");
 set_parent(&goals, &devine_lu_linvega);
 // set_icon(&goals, "M150,60 l0,180 M180,60 l0,180 l0,-60 a30,-30 0 0,1 30,-30 l30,0 M120,60 l0,180 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0");
 add_text(&goals, "<b>Internal</b> are goals dealing with personal growth, and <b>external</b>, as having an effect on the outside world.");
