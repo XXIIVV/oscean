@@ -592,12 +592,12 @@ set_parent(&occulter, &physical);
 // set_icon(&occulter, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 add_text(&occulter, "The NYC boutique <b>Occulter</b> has since closed.");
 
-Term hex_hive_necklace = create_term("hex hive necklace", "The Hex Hive Necklace is small designer necklace.");
+Term hex_hive_necklace = create_album("hex hive necklace", "The Hex Hive Necklace is small designer necklace.");
 set_parent(&hex_hive_necklace, &physical);
 // set_icon(&hex_hive_necklace, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 add_link(&hex_hive_necklace, "sources", "http://www.thingiverse.com/thing:18853");
 
-Term victorian_punch = create_term("victorian punch", "The Victorian Punch is a knuckle weapon.");
+Term victorian_punch = create_album("victorian punch", "The Victorian Punch is a knuckle weapon.");
 set_parent(&victorian_punch, &physical);
 // set_icon(&victorian_punch, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 add_link(&victorian_punch, "sources", "http://www.thingiverse.com/thing:18853");
@@ -721,13 +721,13 @@ add_text(&telekinesis, "The tool was used for both, the live performance of " SE
 add_text(&telekinesis, "The picture was taken at 8Static, by " LINKNAME("https://www.flickr.com/photos/m_becker/", "Marjorie Becker") ".");
 
 Term software = create_portal("software", "The Software portal is a collection of interactive applications.");
-set_parent(&software, &research);
+set_parent(&software, &visual);
 // set_icon(&software, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
 add_text(&software, "The <b>Software</b> archive is a collection of <b>Free & Open-source</b> projects.");
 add_text(&software, "These projects were made possible by the help of countless developers who fixed issues, submitted pull requests and spent time improving the code.");
 
 Term nataniev = create_term("nataniev", "The Nataniev ecosystem is a collection of exocortex tools.");
-set_parent(&nataniev, &software);
+set_parent(&nataniev, &research);
 // set_icon(&nataniev, "M240,240 l0,-90 a-90,-90 0 0,0 -90,-90 l-90,0 l0,90 a90,90 0 0,0 90,90 l60,0 l0,-90 a-60,-60 0 0,0 -60,-60 l-60,0 l0,60 a60,60 0 0,0 60,60 l30,0 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0 l0,30 a30,30 0 0,0 30,30");
 add_text(&nataniev, "<b>Nataniev</b> is a collection of free and open-source software following a singular design " SENDNAME(about_path, "philosophy") ", and " SENDNAME(aesthetics_path, "aesthetic") ".");
 
@@ -846,7 +846,7 @@ add_text(&riven, "This project is not meant to be an optimial way of building we
 add_link(&riven, "sources", "https://github.com/XXIIVV/Riven");
 
 Term tools = create_portal("tools", "The Tools collection is an ecosystem of open-source software to create audio and visual works, released as Hundred Rabbits.");
-set_parent(&tools, &software);
+set_parent(&tools, &research);
 // set_icon(&tools, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
 add_text(&tools, "You can learn more about the philosophy behind these various projects on the " LINKNAME("https://100r.co/pages/tools_ecosystem.html", "Hundred Rabbits blog") ".");
 // add_quote(&tools, "What I cannot create, I do not understand", "undefined | Richard Feynman");
@@ -948,7 +948,7 @@ add_text(&enfer, "The sampler is meant to be used with the " LINKNAME("https://w
 add_link(&enfer, "sources", "https://github.com/neauoire/Enfer");
 
 Term games = create_portal("games", "The Games are a collection of experimental interactive projects.");
-set_parent(&games, &software);
+set_parent(&games, &visual);
 // set_icon(&games, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
 
 Term markl = create_term("markl", "Markl is a TAIBA game. In Development.");
@@ -1207,7 +1207,7 @@ add_link(&monome, "linn forum", "https://llllllll.co/t/using-a-grid-as-linnstrum
 add_link(&monome, "rack forum", "https://llllllll.co/t/using-a-grid-as-drum-rack/23932");
 
 Term mobile = create_portal("mobile", "The Mobile collection is both mobile tools and games.");
-set_parent(&mobile, &software);
+set_parent(&mobile, &visual);
 // set_icon(&mobile, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
 add_text(&mobile, "As of <b>March 2019</b>, these applications are no longer maintained.");
 
@@ -2658,7 +2658,7 @@ add_text(&shorthand, "I played with different ideas and this is the system that 
 add_text(&shorthand, "Simple enough, now most letters are transformed into a single stroke shape that flows and combines to form shorter words, that can be written faster.");
 
 Term unreleased = create_term("unreleased", "A list of Unreleased projects.");
-set_parent(&unreleased, &research);
+set_parent(&unreleased, &visual);
 // set_icon(&unreleased, "M60,240 a30,-30 0 0,1 30,-30 l150,0 M90,195 a30,-30 0 0,1 30,-30 l90,0 M120,150 a30,-30 0 0,1 30,-30 l30,0 M195,120 l45,0 M225,165 l15,0 M150,105 a30,-30 0 0,1 30,-30 l60,0");
 
 Term marabu = create_term("marabu", "Marabu is a music tool.");

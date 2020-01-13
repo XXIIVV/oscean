@@ -4,7 +4,15 @@
 #include <string.h>
 
 #define STR_BUF_LEN 64
-#define LOGS_BUFFER 1000
+#define LOGS_BUFFER 512
+#define DICT_BUFFER 46
+#define LIST_BUFFER 46
+#define TERM_DICT_BUFFER 16
+#define TERM_LIST_BUFFER 16
+#define TERM_BODY_BUFFER 24
+#define TERM_LINK_BUFFER 8
+#define TERM_LOGS_BUFFER 340
+#define TERM_CHILDREN_BUFFER 16
 
 char *html_head = "<!DOCTYPE html><html lang='en'><head><meta name='author' content='Devine Lu Linvega'><meta name='description' content='The Nataniev Library.'/><meta name='keywords' content='Aliceffekt, Traumae, Devine Lu Linvega, Lietal, Oquonie, Verreciel, Nataniev, Oscean, Solarpunk' /><meta name='license' content='name=BY-NC-SA(4.0), url=https://creativecommons.org/licenses/by-nc-sa/4.0/'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width, initial-scale=1.0'><link rel='shortcut icon' type='image/x-icon' href='../media/services/favicon.ico' /><title>XXIIVV — %s</title></head><body>";
 
@@ -12,21 +20,21 @@ char *html_header = "<header><a id='logo' href='home.html'><img src='../media/ic
 
 char *html_footer = "<footer><hr/><a href='https://creativecommons.org/licenses/by-nc-sa/4.0' target='_blank'><img src='../media/icon/cc.svg' alt='by-nc-sa' width='30'/></a> <a href='http://webring.xxiivv.com/#random' target='_blank' rel='noreferrer'><img src='../media/icon/rotonde.svg' alt='webring' width='30'/></a> <a href='https://merveilles.town/@neauoire' target='_blank'><img src='../media/icon/merveilles.svg' alt='Merveilles' width='30'/></a> <a href='https://github.com/neauoire' target='_blank'><img src='../media/icon/github.png' alt='github' width='30'/></a> <span><a class='profile' href='devine_lu_linvega.html' target='_self'>Devine Lu Linvega</a> © 2020 — <a class='about' href='about.html' target='_self'>BY-NC-SA 4.0</a></span></footer></body></html>";
 
-char *html_style = "<style>body { padding:30px } body a { color:black } body a:hover { text-decoration:none } header { margin: 0px 0px 35px; float: left } nav { margin: 0px 0px 30px } nav ul { padding: 0px; margin: 0px 45px 30px 0px; float: left } nav ul li { list-style-type:none; white-space:pre } nav ul li a { text-decoration:none } nav ul li a:hover { background:black; color:white } main { max-width:600px } main h1 { display:none } main h2 { max-width: 400px; margin-top:0px } main p { line-height:25px } main q { font-family: serif; font-size: 18px; font-style: italic; display: block; margin-bottom: 30px } main img { max-width:100% } main a.external:before { content:'~' } footer { border-top:1.5px solid; padding-top:30px; font-family:monospace } footer img { margin: 0px 0px -10px 0px } footer a { font-weight:bold; text-decoration:none } hr { border:0; clear:both }</style>";
+char *html_style = "<style>body { padding:30px } body a { color:black } body a:hover { text-decoration:none } header { margin: 0px 0px 35px; float: left } nav { margin: 0px 0px 30px } nav ul { padding: 0px; margin: 0px 45px 30px 0px; float: left } nav ul li { list-style-type:none; white-space:pre } nav ul li a { text-decoration:none } nav ul li a:hover { background:black; color:white } main { max-width:600px } main h1 { display:none } main h2 { max-width: 400px; margin-top:0px } main h4 { font-family:monospace } main p { line-height:25px } main q { font-family: serif; font-size: 18px; font-style: italic; display: block; margin-bottom: 30px } main img { max-width:100% } main a.external:before { content:'~' } footer { border-top:1.5px solid; padding-top:30px; font-family:monospace } footer img { margin: 0px 0px -10px 0px } footer a { font-weight:bold; text-decoration:none } hr { border:0; clear:both }</style>";
 
-// Dict
+// Types
 
 typedef struct Dict {
   char *name;
   int words_len;
-  char *keys[64];
-  char *values[64];
+  char *keys[DICT_BUFFER];
+  char *values[DICT_BUFFER];
 } Dict;
 
 typedef struct List {
   char *name;
   int items_len;
-  char *items[64];
+  char *items[LIST_BUFFER];
 } List;
 
 typedef struct Log {
@@ -55,18 +63,20 @@ typedef struct Term {
 
   struct Term *parent;
 
+  bool logs_event[LOGS_BUFFER];
   int logs_pict[LOGS_BUFFER];
   int logs_code[LOGS_BUFFER];
   char *logs_date[LOGS_BUFFER];
   char *logs_name[LOGS_BUFFER];
-  char *body_text[32];
-  char *body_meta[32];
-  char *body_tags[32];
-  char *links_names[32];
-  char *links_urls[32];
-  struct Term *children[32];
-  Dict *dicts[32];
-  List *lists[32];
+  char *body_text[TERM_BODY_BUFFER];
+  char *body_meta[TERM_BODY_BUFFER];
+  char *body_tags[TERM_BODY_BUFFER];
+  char *links_names[TERM_LINK_BUFFER];
+  char *links_urls[TERM_LINK_BUFFER];
+  struct Term *children[TERM_CHILDREN_BUFFER];
+  Dict *dicts[TERM_DICT_BUFFER];
+  List *lists[TERM_LIST_BUFFER];
+  Log *logs[LOGS_BUFFER];
 } Term;
 
 // Creators/Setters
@@ -79,6 +89,10 @@ Dict create_dict(char *name) {
 }
 
 void add_word(Dict *dict, char *key, char *value) {
+  if(dict->words_len > DICT_BUFFER-1){ 
+    printf("Reached DICT_BUFFER\n");
+    return;
+  }
   dict->keys[dict->words_len] = key;
   dict->values[dict->words_len] = value;
   dict->words_len++;  
@@ -92,6 +106,10 @@ List create_list(char *name) {
 }
 
 void add_item(List *list, char *item) {
+  if(list->items_len > LIST_BUFFER-1){ 
+    printf("Reached LIST_BUFFER\n");
+    return;
+  }
   list->items[list->items_len] = item;
   list->items_len++;  
 }
@@ -137,36 +155,60 @@ Term create_index(char *name, char *bref) {
 }
 
 void set_parent(Term *term, Term *parent) {
+  if(parent->children_len > TERM_CHILDREN_BUFFER-1){
+    printf("Reached TERM_CHILDREN_BUFFER\n");
+    return;
+  }
   term->parent = parent;
   parent->children[parent->children_len] = term;
   parent->children_len++;
 }
 
 void add_html(Term *term, char *text) {
+  if(term->body_len > TERM_BODY_BUFFER-1){
+    printf("Reached TERM_BODY_BUFFER\n");
+    return;
+  }
   term->body_text[term->body_len] = text;
   term->body_tags[term->body_len] = "div";
   term->body_len++;  
 }
 
 void add_text(Term *term, char *text) {
+  if(term->body_len > TERM_BODY_BUFFER-1){
+    printf("Reached TERM_BODY_BUFFER\n");
+    return;
+  }
   term->body_text[term->body_len] = text;
   term->body_tags[term->body_len] = "p";
   term->body_len++;
 }
 
 void add_header(Term *term, char *text) {
+  if(term->body_len > TERM_BODY_BUFFER-1){
+    printf("Reached TERM_BODY_BUFFER\n");
+    return;
+  }
   term->body_text[term->body_len] = text;
   term->body_tags[term->body_len] = "h3";
   term->body_len++;
 }
 
 void add_subheader(Term *term, char *text) {
+  if(term->body_len > TERM_BODY_BUFFER-1){
+    printf("Reached TERM_BODY_BUFFER\n");
+    return;
+  }
   term->body_text[term->body_len] = text;
   term->body_tags[term->body_len] = "h4";
   term->body_len++;  
 }
 
 void add_quote(Term *term, char *text, char *source) {
+  if(term->body_len > TERM_BODY_BUFFER-1){
+    printf("Reached TERM_BODY_BUFFER\n");
+    return;
+  }
   term->body_text[term->body_len] = text;
   term->body_meta[term->body_len] = source;
   term->body_tags[term->body_len] = "q";
@@ -174,37 +216,59 @@ void add_quote(Term *term, char *text, char *source) {
 }
 
 void add_dict(Term *term, Dict *dict){
+  if(term->dicts_len > TERM_DICT_BUFFER-1){ 
+    printf("Reached TERM_DICT_BUFFER\n");
+    return;
+  }
   term->dicts[term->dicts_len] = dict;
   term->dicts_len++;
 }
 
 void add_list(Term *term, List *list){
+  if(term->dicts_len > TERM_LIST_BUFFER-1){ 
+    printf("Reached TERM_LIST_BUFFER\n");
+    return;
+  }
   term->lists[term->lists_len] = list;
   term->lists_len++;
 }
 
 void add_link(Term *term, char *name, char *url) {
+  if(term->links_len > TERM_LINK_BUFFER-1){
+    printf("Reached TERM_LINK_BUFFER\n");
+    return;
+  }
   term->links_names[term->links_len] = name;
   term->links_urls[term->links_len] = url;
   term->links_len++;
 }
 
-void add_diary(Term *term, char *date, int code, char *name, int pict) {
+void add_event_diary(Term *term, char *date, int code, char *name, int pict) {
+  if(term->logs_len > TERM_LOGS_BUFFER-1){
+    printf("Reached TERM_LOGS_BUFFER\n");
+    return;
+  }
   term->logs_date[term->logs_len] = date;
   term->logs_code[term->logs_len] = code;
   term->logs_name[term->logs_len] = name;
   term->logs_pict[term->logs_len] = pict;
+  term->logs_event[term->logs_len] = true;
   if(term->pict < 0){
     term->pict = term->logs_len;
   }
   term->logs_len++;
 }
 
-void add_event_diary(Term *term, char *date, int code, char *name, int pict) {
+void add_diary(Term *term, char *date, int code, char *name, int pict) {
+  if(term->logs_len > TERM_LOGS_BUFFER-1){
+    printf("Reached TERM_LOGS_BUFFER\n");
+    return;
+  }
   term->logs_date[term->logs_len] = date;
   term->logs_code[term->logs_len] = code;
   term->logs_name[term->logs_len] = name;
   term->logs_pict[term->logs_len] = pict;
+  term->logs_event[term->logs_len] = false;
   if(term->pict < 0){
     term->pict = term->logs_len;
   }
@@ -212,18 +276,28 @@ void add_event_diary(Term *term, char *date, int code, char *name, int pict) {
 }
 
 void add_event(Term *term, char *date, int code, char *name) {
+  if(term->logs_len > TERM_LOGS_BUFFER-1){
+    printf("Reached TERM_LOGS_BUFFER\n");
+    return;
+  }
   term->logs_date[term->logs_len] = date;
   term->logs_code[term->logs_len] = code;
   term->logs_name[term->logs_len] = name;
   term->logs_pict[term->logs_len] = 0;
+  term->logs_event[term->logs_len] = true;
   term->logs_len++;
 }
 
 void add_log(Term *term, char *date, int code) {
+  if(term->logs_len > TERM_LOGS_BUFFER-1){
+    printf("Reached TERM_LOGS_BUFFER\n");
+    return;
+  }
   term->logs_date[term->logs_len] = date;
   term->logs_code[term->logs_len] = code;
   term->logs_name[term->logs_len] = "";
   term->logs_pict[term->logs_len] = 0;
+  term->logs_event[term->logs_len] = false;
   term->logs_len++;
 }
 
@@ -249,7 +323,7 @@ void to_lowercase(char *str, char *target, size_t tsize) {
 void build_pict_part(FILE *f, int id, char *name, char *date, bool caption){
   fprintf(f, "<img src='../media/diary/%d.jpg' alt='%s picture'/>", id, name);
   if(caption){
-    fprintf(f, "<h4>%s - %s</h4>", date,name);
+    fprintf(f, "<h4>%s — %s</h4>", date,name);
   }
 }
 
@@ -372,16 +446,15 @@ void build_links(FILE *f, Term *term){
 }
 
 void build_horaire(FILE *f, Term *term){
-  // TODO display events
-  // if(term->logs_len < 2){ return; }
-  // fprintf(f, "<h5>%d logs</h5>", term->logs_len);
-  // fputs("<ul>", f);
-  // for (int i = 0; i < term->logs_len; ++i) {
-  //   if(term->logs_name[i] != ""){
-  //     fprintf(f, "<li>%s - %s</li>", term->logs_date[i], term->logs_name[i]);  
-  //   }
-  // }
-  // fputs("</ul>", f);
+  if(term->logs_len < 2){ return; }
+  fprintf(f, "<p><i>Last update on <a href='https://github.com/xxiivv/oscean' target='_blank' class='external'>%s</a>, %d logs.</i></p>", term->logs_date[0], term->logs_len);
+  fputs("<ul>", f);
+  for (int i = 0; i < term->logs_len; ++i) {
+    if(term->logs_event[i]){
+      fprintf(f, "<li>%s — %s</li>", term->logs_date[i], term->logs_name[i]);
+    }
+  }
+  fputs("</ul>", f);
 }
 
 void build_page(Term *term) {

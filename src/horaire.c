@@ -1,4 +1,8 @@
 add_event(&japan, "20D09", 0, "Return to Japan");
+add_log(&oscean, "20A12", 324);
+add_log(&hundred_rabbits, "20A11", 224);
+add_log(&grimgrains, "20A10", 255);
+add_log(&donsol, "20A09", 324);
 add_log(&hundred_rabbits, "20A06", 268);
 add_log(&grimgrains, "20A05", 345);
 add_log(&assembly, "20A02", 313);
