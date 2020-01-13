@@ -310,26 +310,21 @@
 
 Term home = create_term("home", "");
 set_parent(&home, &home);
-// set_icon(&home, "M150,60 A90,90 0 0,1 240,150 A-90,90 0 0,1 150,240 A-90,-90 0 0,1 60,150 A90,-90 0 0,1 150,60 Z");
 
 Term audio = create_portal("audio", "The Audio portal hosts various soundtrack, records and live projects.");
 set_parent(&audio, &home);
-// set_icon(&audio, "M150,60 A90,90 0 0,1 240,150 A-90,90 0 0,1 150,240 A-90,-90 0 0,1 60,150 A90,-90 0 0,1 150,60 Z");
 add_quote(&audio, "Music is the space between the notes.", "Claude Debussy");
 
 Term visual = create_portal("visual", "The Visual hosts design and interaction projects.");
 set_parent(&visual, &home);
-// set_icon(&visual, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 
 Term research = create_portal("research", "The Research hosts philosophy and linguistics projects.");
 set_parent(&research, &home);
-// set_icon(&research, "M60,240 a30,-30 0 0,1 30,-30 l150,0 M90,195 a30,-30 0 0,1 30,-30 l90,0 M120,150 a30,-30 0 0,1 30,-30 l30,0 M195,120 l45,0 M225,165 l15,0 M150,105 a30,-30 0 0,1 30,-30 l60,0");
 
 Term about = create_index("about", "This wiki is a digital playground and personal logging system.");
 set_parent(&about, &home);
-// set_icon(&about, "M150,60 A90,90 0 0,1 240,150 A-90,90 0 0,1 150,240 A-90,-90 0 0,1 60,150 A90,-90 0 0,1 150,60 Z");
 add_text(&about, "The aim of this wiki is to build a form of <b>personal assistant</b> to help with the management of a vast repository of recorded statistics which includes daily logs, notes on personal projects and curated pages of general knowledge.");
-add_text(&about, SEND(oscean_path) " is written in " LINKNAME("https://en.wikipedia.org/wiki/C99", "C99") ", and designed to operate on low-powered devices. It is built in a flexbile style to adapt to my needs as they change, and to technology as it evolves.");
+add_text(&about, SENDNAME(oscean_path, "Oscean") " is written in " LINKNAME("https://en.wikipedia.org/wiki/C99", "C99") ", and designed to operate on low-powered devices. It is built in a flexbile style to adapt to my needs as they change, and to " SENDNAME(longtermism_path, "technology as it evolves") ".");
 add_text(&about, "Each part of this project should aim to persist across technological <b>Long Term</b>, not one part of it should rely on heavy dependencies. — Every function should be <b>specific</b>, <b>unobfuscated</b>, and each one carefully chosen against general-purpose libraries, frameworks or wasteful foreign entities.");
 add_text(&about, "Using this tool should be <b>frictionless and undisruptive</b>, its formats and subsequent products versionable, re-purposable, interpretable and text-editable. Only through <b>open sources, open standards, human-readable formats</b> and their independencies, might they survive this fleeting age of self-destructing informatics.");
 add_text(&about, "These attributes should not only be <b>perceptible in its design</b>, <br />but deeply <b>rooted in its code</b>.");
@@ -342,22 +337,19 @@ add_link(&about, "activitypub", "https://bots.tinysubversions.com/u/neauoire/");
 
 Term license = create_term("license", "The License for code and assets.");
 set_parent(&license, &about);
-// set_icon(&license, "M150,60 A90,90 0 0,1 240,150 A-90,90 0 0,1 150,240 A-90,-90 0 0,1 60,150 A90,-90 0 0,1 150,60 Z");
 add_text(&license, "The license applies to all the <b>documented projects, the projects themselves and their assets</b>.");
 add_text(&license, "The " LINKNAME("http://github.com/XXIIVV/Oscean", "platform code") " is under the <code >MIT License</code>.<br />The " LINKNAME("https://creativecommons.org/licenses/by-nc-sa/4.0/", "assets and text content") " is under the <code >BY-NC-SA4.0 License</code>.");
 add_text(&license, "You are free to: <b>Share</b>: copy and redistribute the material in any medium or format. <b>Adapt</b>: remix, transform, and build upon the material.");
 add_text(&license, "Under the following terms: <b>Attribution</b>: You must give appropriate credit. <b>NonCommercial</b>: You may not use the material for commercial purposes. <b>ShareAlike</b>: You must distribute your contributions under the same license.");
 add_text(&license, "If you have any <b>question or feedback</b>, please submit a " LINKNAME("https://github.com/XXIIVV/Oscean/issues/new", "bug report") ".");
 
-Term notebook = create_term("notebook", "From the Notebook.");
+Term notebook = create_portal("notebook", "From the Notebook.");
 set_parent(&notebook, &research);
-// set_icon(&notebook, "M150.0,60.0 L150.0,60.0 L150.0,135.0 M227.9,195.0 L227.9,195.0 L163.0,157.5 M72.1,195.0 L72.1,195.0 L137.0,157.5");
 add_text(&notebook, "The <b>Notebook</b> is a collection of scribbles on various topics that have yet to find themselves permanently included in the " SENDNAME(oscean_path, "wiki") ".");
 add_text(&notebook, "Are you looking for the " SEND(sketchbook_path) "?");
 
 Term benchmark = create_term("benchmark", "The Benchmark testing tool.");
 set_parent(&benchmark, &notebook);
-// set_icon(&benchmark, "M150.0,60.0 L150.0,60.0 L150.0,135.0 M227.9,195.0 L227.9,195.0 L163.0,157.5 M72.1,195.0 L72.1,195.0 L137.0,157.5");
 add_header(&benchmark, "Table");
 // add_table(&benchmark, "normal");
 // add_table(&benchmark, "" SEND(home_path) "");
@@ -390,20 +382,17 @@ add_header(&benchmark, "Code");
 
 Term alicef = create_term("alicef", "Alicef, is an livecoding audio/visual project built around Orca.");
 set_parent(&alicef, &audio);
-// set_icon(&alicef, "M120,180 L120,180 L240,180 M139,109 L139,109 L79,212.9 M191,161 L191,161 L131,57.1");
 add_text(&alicef, "<b>Alicef</b> is a fragment of time taken from " SEND(aliceffekt_path) "'s diary, exploring " SENDNAME(dinaisth_path, "similar spaces") ", but focusing on the aesthetics of pattern & repetition.");
 add_text(&alicef, "There are currently no complete releases available for the <b>Alicef</b> project, only a handful of " LINKNAME("https://www.youtube.com/watch?v=hQXa6TkSeH0", "demos") " and the " SEND(azolla_path) " release.");
 add_html(&alicef, MODYOUTUBE("hQXa6TkSeH0"));
 
 Term aliceffekt = create_portal("aliceffekt", "Aliceffekt, is an audio project following the adventures of Neonev across Dinaisth.");
 set_parent(&aliceffekt, &audio);
-// set_icon(&aliceffekt, "M150,60 l0,180 M60,195 l180,0 M60,105 l180,0 M150,210 a15,-15 0 0,1 15,-15 a-15,-15 0 0,1 -15,-15 a-15,15 0 0,1 -15,15 a15,15 0 0,1 15,15 M150,90 a15,15 0 0,0 15,15 a-15,15 0 0,0 -15,15 a-15,-15 0 0,0 -15,-15 a15,-15 0 0,0 15,-15");
 add_text(&aliceffekt, "A travel across the fictional worlds of the " SEND(neauismetica_path) " where every album is a sort of travel diary across the " SEND(dinaisth_path) " landscape.");
 add_link(&aliceffekt, "bandcamp", "https://aliceffekt.bandcamp.com");
 
 Term hundred_rabbits = create_album("hundred rabbits", "Hundred Rabbits is a design studio on a sailboat.");
 set_parent(&hundred_rabbits, &home);
-// set_icon(&hundred_rabbits, "M120,60 L120,60 L120,60 M90,60 L90,60 L90,60 M60,60 L60,60 L60,60 M60,90 L60,90 L60,90 M90,90 L90,90 L90,90 M120,90 L120,90 L120,90 M60,120 L60,120 L60,120 M90,120 L90,120 L90,120 M120,120 L120,120 L120,120 M60,150 L60,150 L60,150 M90,150 L90,150 L90,150 M120,150 L120,150 L120,150 M60,180 L60,180 L60,180 M90,180 L90,180 L90,180 M120,180 L120,180 L120,180 M60,210 L60,210 L60,210 M90,210 L90,210 L90,210 M120,210 L120,210 L120,210 M60,240 L60,240 L60,240 M90,240 L90,240 L90,240 M120,240 L120,240 L120,240 M150,90 L150,90 L150,90 M150,120 L150,120 L150,120 M150,150 L150,150 L150,150 M150,180 L150,180 L150,180 M150,210 L150,210 L150,210 M150,240 L150,240 L150,240 M150,60 L150,60 L150,60 M180,60 L180,60 L180,60 M210,60 L210,60 L210,60 M240,60 L240,60 L240,60 M180,90 L180,90 L180,90 M210,90 L210,90 L210,90 M240,90 L240,90 L240,90 M180,120 L180,120 L180,120 M210,120 L210,120 L210,120 M240,120 L240,120 L240,120 M180,150 L180,150 L180,150 M210,150 L210,150 L210,150 M240,150 L240,150 L240,150 M180,180 L180,180 L180,180 M210,180 L210,180 L210,180 M240,180 L240,180 L240,180 M180,210 L180,210 L180,210 M210,210 L210,210 L210,210 M240,210 L240,210 L240,210 M180,240 L180,240 L180,240 M210,240 L210,240 L210,240 M240,240 L240,240 L240,240");
 add_text(&hundred_rabbits, "This partnership is host to interactive projects like " SEND(oquonie_path) ", " SEND(grimgrains_path) " and " LINKNAME("https://www.youtube.com/channel/UCzdg4pZb-viC3EdA1zxRl4A?view_as=subscriber", "travel diaries") ".");
 add_text(&hundred_rabbits, "The name <i >Hundred Rabbits</i> comes from the name of the sailboat in the Japanese animated show " LINKNAME("http://ergoproxy.wikia.com/wiki/Dead_Calm_", "Ergo proxy") ", while the sailboat's name " SEND(pino_path) " comes from that of an android sailor from that same show.");
 add_link(&hundred_rabbits, "patreon", "https://patreon.com/100");
@@ -411,18 +400,15 @@ add_link(&hundred_rabbits, "twitter", "https://twitter.com/hundredrabbits");
 
 Term drownspire = create_portal("drownspire", "Drownspire was the name of an online store founded with Rekka Bellum, back in 2009.");
 set_parent(&drownspire, &hundred_rabbits);
-// set_icon(&drownspire, "M120,60 L120,60 L120,60 M90,60 L90,60 L90,60 M60,60 L60,60 L60,60 M60,90 L60,90 L60,90 M90,90 L90,90 L90,90 M120,90 L120,90 L120,90 M60,120 L60,120 L60,120 M90,120 L90,120 L90,120 M120,120 L120,120 L120,120 M60,150 L60,150 L60,150 M90,150 L90,150 L90,150 M120,150 L120,150 L120,150 M60,180 L60,180 L60,180 M90,180 L90,180 L90,180 M120,180 L120,180 L120,180 M60,210 L60,210 L60,210 M90,210 L90,210 L90,210 M120,210 L120,210 L120,210 M60,240 L60,240 L60,240 M90,240 L90,240 L90,240 M120,240 L120,240 L120,240 M150,90 L150,90 L150,90 M150,120 L150,120 L150,120 M150,150 L150,150 L150,150 M150,180 L150,180 L150,180 M150,210 L150,210 L150,210 M150,240 L150,240 L150,240 M150,60 L150,60 L150,60 M180,60 L180,60 L180,60 M210,60 L210,60 L210,60 M240,60 L240,60 L240,60 M180,90 L180,90 L180,90 M210,90 L210,90 L210,90 M240,90 L240,90 L240,90 M180,120 L180,120 L180,120 M210,120 L210,120 L210,120 M240,120 L240,120 L240,120 M180,150 L180,150 L180,150 M210,150 L210,150 L210,150 M240,150 L240,150 L240,150 M180,180 L180,180 L180,180 M210,180 L210,180 L210,180 M240,180 L240,180 L240,180 M180,210 L180,210 L180,210 M210,210 L210,210 L210,210 M240,210 L240,210 L240,210 M180,240 L180,240 L180,240 M210,240 L210,240 L210,240 M240,240 L240,240 L240,240");
 add_text(&drownspire, "Our goals then, fueled what is now " SEND(hundred_rabbits_path) ". We distributed the " SEND(vambits_path) " designer toys and published the " SEND(merure_path) " books.");
 add_header(&drownspire, "The Studio");
 
 Term merure = create_term("merure", "The Merure books, were a series of comics published with friends.");
 set_parent(&merure, &drownspire);
-// set_icon(&merure, "M120,60 L120,60 L120,60 M90,60 L90,60 L90,60 M60,60 L60,60 L60,60 M60,90 L60,90 L60,90 M90,90 L90,90 L90,90 M120,90 L120,90 L120,90 M60,120 L60,120 L60,120 M90,120 L90,120 L90,120 M120,120 L120,120 L120,120 M60,150 L60,150 L60,150 M90,150 L90,150 L90,150 M120,150 L120,150 L120,150 M60,180 L60,180 L60,180 M90,180 L90,180 L90,180 M120,180 L120,180 L120,180 M60,210 L60,210 L60,210 M90,210 L90,210 L90,210 M120,210 L120,210 L120,210 M60,240 L60,240 L60,240 M90,240 L90,240 L90,240 M120,240 L120,240 L120,240 M150,90 L150,90 L150,90 M150,120 L150,120 L150,120 M150,150 L150,150 L150,150 M150,180 L150,180 L150,180 M150,210 L150,210 L150,210 M150,240 L150,240 L150,240 M150,60 L150,60 L150,60 M180,60 L180,60 L180,60 M210,60 L210,60 L210,60 M240,60 L240,60 L240,60 M180,90 L180,90 L180,90 M210,90 L210,90 L210,90 M240,90 L240,90 L240,90 M180,120 L180,120 L180,120 M210,120 L210,120 L210,120 M240,120 L240,120 L240,120 M180,150 L180,150 L180,150 M210,150 L210,150 L210,150 M240,150 L240,150 L240,150 M180,180 L180,180 L180,180 M210,180 L210,180 L210,180 M240,180 L240,180 L240,180 M180,210 L180,210 L180,210 M210,210 L210,210 L210,210 M240,210 L240,210 L240,210 M180,240 L180,240 L180,240 M210,240 L210,240 L210,240 M240,240 L240,240 L240,240");
 add_link(&merure, "itunes", "https://itunes.apple.com/nz/book/merure/id888164293");
 
 Term vambits = create_term("vambits", "Vambits are small DIY desktoys designed to be laser cut in acrylic.");
 set_parent(&vambits, &drownspire);
-// set_icon(&vambits, "M120,60 L120,60 L120,60 M90,60 L90,60 L90,60 M60,60 L60,60 L60,60 M60,90 L60,90 L60,90 M90,90 L90,90 L90,90 M120,90 L120,90 L120,90 M60,120 L60,120 L60,120 M90,120 L90,120 L90,120 M120,120 L120,120 L120,120 M60,150 L60,150 L60,150 M90,150 L90,150 L90,150 M120,150 L120,150 L120,150 M60,180 L60,180 L60,180 M90,180 L90,180 L90,180 M120,180 L120,180 L120,180 M60,210 L60,210 L60,210 M90,210 L90,210 L90,210 M120,210 L120,210 L120,210 M60,240 L60,240 L60,240 M90,240 L90,240 L90,240 M120,240 L120,240 L120,240 M150,90 L150,90 L150,90 M150,120 L150,120 L150,120 M150,150 L150,150 L150,150 M150,180 L150,180 L150,180 M150,210 L150,210 L150,210 M150,240 L150,240 L150,240 M150,60 L150,60 L150,60 M180,60 L180,60 L180,60 M210,60 L210,60 L210,60 M240,60 L240,60 L240,60 M180,90 L180,90 L180,90 M210,90 L210,90 L210,90 M240,90 L240,90 L240,90 M180,120 L180,120 L180,120 M210,120 L210,120 L210,120 M240,120 L240,120 L240,120 M180,150 L180,150 L180,150 M210,150 L210,150 L210,150 M240,150 L240,150 L240,150 M180,180 L180,180 L180,180 M210,180 L210,180 L210,180 M240,180 L240,180 L240,180 M180,210 L180,210 L180,210 M210,210 L210,210 L210,210 M240,210 L240,210 L240,210 M180,240 L180,240 L180,240 M210,240 L210,240 L210,240 M240,240 L240,240 L240,240");
 add_text(&vambits, "The product was initially created with " LINKNAME("https://www.ponoko.com", "Ponoko") " but is now produced by our friends at " LINKNAME("https://twitter.com/skogrstudio", "Skógr Studio") ".");
 add_text(&vambits, "The templates are free and open-source if you want to create your own faces and custom accessories! Send us " LINKNAME("https://twitter.com/search?q=%23vambits", "your pictures") " if you do.");
 add_text(&vambits, "The design stolen and sold by various resellers on Esty and in stores in Australia — Please do not support them.");
@@ -430,7 +416,6 @@ add_link(&vambits, "sources", "https://github.com/hundredrabbits/Vambits");
 
 Term pino = create_album("pino", "Pino is a Yamaha 33 sailboat built in 1982.");
 set_parent(&pino, &hundred_rabbits);
-// set_icon(&pino, "M60,105 Q105,75 150,105 Q195,135 240,105 M60,150 Q105,120 150,150 Q195,180 240,150 M60,195 Q105,165 150,195 Q195,225 240,195");
 add_text(&pino, "Purchased in 2016, on Vancouver Island, <b>Pino</b> has since sailed across the " SENDNAME(marquesas_path, "Pacific Ocean") ". We maintain a list of " LINKNAME("http://github.com/hundredrabbits/pino", "technical details") ", and our current position can be accessed through our " LINKNAME("http://100r.co/#map", "tracker") ".");
 add_dict(&pino, &pino_details);
 add_text(&pino, "If you are interested in learning about the " SENDNAME(nomad_path, "digital-nomad") " lifestyle, have a look at the " LINKNAME("http://100r.co/", "Hundred Rabbits Website") ". We have a lot of " SEND(raspberry_path) "-powered devices onboard, learn more about our " SENDNAME(media_station_path, "media station") " and " SENDNAME(radio_station_path, "radio station") ".");
@@ -440,14 +425,12 @@ add_link(&pino, "patreon", "https://patreon.com/100");
 
 Term rekka = create_album("rekka", "Rekka Bellum, is an illustrator and writer.");
 set_parent(&rekka, &hundred_rabbits);
-// set_icon(&rekka, "M120,60 L120,60 L120,60 M90,60 L90,60 L90,60 M60,60 L60,60 L60,60 M60,90 L60,90 L60,90 M90,90 L90,90 L90,90 M120,90 L120,90 L120,90 M60,120 L60,120 L60,120 M90,120 L90,120 L90,120 M120,120 L120,120 L120,120 M60,150 L60,150 L60,150 M90,150 L90,150 L90,150 M120,150 L120,150 L120,150 M60,180 L60,180 L60,180 M90,180 L90,180 L90,180 M120,180 L120,180 L120,180 M60,210 L60,210 L60,210 M90,210 L90,210 L90,210 M120,210 L120,210 L120,210 M60,240 L60,240 L60,240 M90,240 L90,240 L90,240 M120,240 L120,240 L120,240 M150,90 L150,90 L150,90 M150,120 L150,120 L150,120 M150,150 L150,150 L150,150 M150,180 L150,180 L150,180 M150,210 L150,210 L150,210 M150,240 L150,240 L150,240 M150,60 L150,60 L150,60 M180,60 L180,60 L180,60 M210,60 L210,60 L210,60 M240,60 L240,60 L240,60 M180,90 L180,90 L180,90 M210,90 L210,90 L210,90 M240,90 L240,90 L240,90 M180,120 L180,120 L180,120 M210,120 L210,120 L210,120 M240,120 L240,120 L240,120 M180,150 L180,150 L180,150 M210,150 L210,150 L210,150 M240,150 L240,150 L240,150 M180,180 L180,180 L180,180 M210,180 L210,180 L210,180 M240,180 L240,180 L240,180 M180,210 L180,210 L180,210 M210,210 L210,210 L210,210 M240,210 L240,210 L240,210 M180,240 L180,240 L180,240 M210,240 L210,240 L210,240 M240,240 L240,240 L240,240");
 add_text(&rekka, "<b>Rekka</b> is the co-founder of " SEND(drownspire_path) " and " SEND(hundred_rabbits_path) ".");
 add_text(&rekka, SENDNAME(devine_lu_linvega_path, "Devine") " and " SEND(rekka_path) " collaborated on projects like " SEND(oquonie_path) ", " SEND(grimgrains_path) ", " SEND(thousand_rooms_path) " and " SEND(paradise_path) ".");
 add_link(&rekka, "website", "http://kokorobot.ca/");
 
 Term wiktopher = create_term("wiktopher", "Wiktopher is Rekka's upcoming travel novel.");
 set_parent(&wiktopher, &rekka);
-// set_icon(&wiktopher, "M120,60 L120,60 L120,60 M90,60 L90,60 L90,60 M60,60 L60,60 L60,60 M60,90 L60,90 L60,90 M90,90 L90,90 L90,90 M120,90 L120,90 L120,90 M60,120 L60,120 L60,120 M90,120 L90,120 L90,120 M120,120 L120,120 L120,120 M60,150 L60,150 L60,150 M90,150 L90,150 L90,150 M120,150 L120,150 L120,150 M60,180 L60,180 L60,180 M90,180 L90,180 L90,180 M120,180 L120,180 L120,180 M60,210 L60,210 L60,210 M90,210 L90,210 L90,210 M120,210 L120,210 L120,210 M60,240 L60,240 L60,240 M90,240 L90,240 L90,240 M120,240 L120,240 L120,240 M150,90 L150,90 L150,90 M150,120 L150,120 L150,120 M150,150 L150,150 L150,150 M150,180 L150,180 L150,180 M150,210 L150,210 L150,210 M150,240 L150,240 L150,240 M150,60 L150,60 L150,60 M180,60 L180,60 L180,60 M210,60 L210,60 L210,60 M240,60 L240,60 L240,60 M180,90 L180,90 L180,90 M210,90 L210,90 L210,90 M240,90 L240,90 L240,90 M180,120 L180,120 L180,120 M210,120 L210,120 L210,120 M240,120 L240,120 L240,120 M180,150 L180,150 L180,150 M210,150 L210,150 L210,150 M240,150 L240,150 L240,150 M180,180 L180,180 L180,180 M210,180 L210,180 L210,180 M240,180 L240,180 L240,180 M180,210 L180,210 L180,210 M210,210 L210,210 L210,210 M240,210 L240,210 L240,210 M180,240 L180,240 L180,240 M210,240 L210,240 L210,240 M240,240 L240,240 L240,240");
 add_text(&wiktopher, "<b>Wiktopher</b> tells the travel stories of Lupin, who fell from one of the three great cities erected on the backs of desert walkers; and Eka, a creature of wonder and of seemingly, infinite kindness and curiosity.");
 add_text(&wiktopher, "Together, they learn the innumerable ways of the world, traversing deserts and villages, meeting their inhabitants and discovering their customs.");
 add_text(&wiktopher, "The novel is written <i >entirely without genders</i>, and will be released as audiobooks, ebooks and paperbacks.");
@@ -456,7 +439,6 @@ add_link(&wiktopher, "about the author", "https://twitter.com/RekkaBell");
 
 Term grimgrains = create_album("grimgrains", "Grimgrains is the Hundred Rabbits food and cooking resources site.");
 set_parent(&grimgrains, &hundred_rabbits);
-// set_icon(&grimgrains, "M120,60 L120,60 L120,60 M90,60 L90,60 L90,60 M60,60 L60,60 L60,60 M60,90 L60,90 L60,90 M90,90 L90,90 L90,90 M120,90 L120,90 L120,90 M60,120 L60,120 L60,120 M90,120 L90,120 L90,120 M120,120 L120,120 L120,120 M60,150 L60,150 L60,150 M90,150 L90,150 L90,150 M120,150 L120,150 L120,150 M60,180 L60,180 L60,180 M90,180 L90,180 L90,180 M120,180 L120,180 L120,180 M60,210 L60,210 L60,210 M90,210 L90,210 L90,210 M120,210 L120,210 L120,210 M60,240 L60,240 L60,240 M90,240 L90,240 L90,240 M120,240 L120,240 L120,240 M150,90 L150,90 L150,90 M150,120 L150,120 L150,120 M150,150 L150,150 L150,150 M150,180 L150,180 L150,180 M150,210 L150,210 L150,210 M150,240 L150,240 L150,240 M150,60 L150,60 L150,60 M180,60 L180,60 L180,60 M210,60 L210,60 L210,60 M240,60 L240,60 L240,60 M180,90 L180,90 L180,90 M210,90 L210,90 L210,90 M240,90 L240,90 L240,90 M180,120 L180,120 L180,120 M210,120 L210,120 L210,120 M240,120 L240,120 L240,120 M180,150 L180,150 L180,150 M210,150 L210,150 L210,150 M240,150 L240,150 L240,150 M180,180 L180,180 L180,180 M210,180 L210,180 L210,180 M240,180 L240,180 L240,180 M180,210 L180,210 L180,210 M210,210 L210,210 L210,210 M240,210 L240,210 L240,210 M180,240 L180,240 L180,240 M210,240 L210,240 L210,240 M240,240 L240,240 L240,240");
 add_text(&grimgrains, "Started in the fall of 2014, the goal of the site is to document interesting " SENDNAME(nutrition_path, "foods") " and " SEND(lifestyle_path) " experiments.");
 add_text(&grimgrains, "A collection of notes on cooking tools is also maintained " LINKNAME("https://grimgrains.com/Tools", "here") ".");
 add_link(&grimgrains, "twitter", "https://twitter.com/grimgrains");
@@ -465,19 +447,16 @@ add_link(&grimgrains, "sources", "https://github.com/hundredrabbits/Grimgrains")
 
 Term illustration = create_portal("illustration", "A collection of Illustration projects.");
 set_parent(&illustration, &visual);
-// set_icon(&illustration, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 add_text(&illustration, "The <b>Illustration portal</b> forks into the worlds of the " SEND(nereid_path) ", " SENDNAME(polygonoscopy_path, "Polygonoscopic") " and " SEND(neauismetic_path) " Collections.");
 
 Term beldam_records = create_portal("beldam records", "Beldam Records is a netlabel releasing 4 tracks mini-albums.");
 set_parent(&beldam_records, &audio);
-// set_icon(&beldam_records, "M120,180 L120,180 L240,180 M139,109 L139,109 L79,212.9 M191,161 L191,161 L131,57.1");
 add_text(&beldam_records, "" SEND(beldam_records_path) " was initiated as an alternative channel for non-" SEND(aliceffekt_path) " releases, focusing on IDM textures and lowfi techno.");
 add_link(&beldam_records, "bandcamp", "https://beldamrecords.bandcamp.com");
 add_link(&beldam_records, "twitter", "https://twitter.com/beldamrecords");
 
 Term ten_axitecture = create_term("ten axitecture", "Ten Axitecture is a Beldam Records release by Aliceffekt.");
 set_parent(&ten_axitecture, &beldam_records);
-// set_icon(&ten_axitecture, "M120,180 L120,180 L240,180 M139,109 L139,109 L79,212.9 M191,161 L191,161 L131,57.1");
 add_text(&ten_axitecture, "Three of the four tracks names are that of different fictional worlds that have inspired the " SEND(aliceffekt_path) " narrative.");
 add_text(&ten_axitecture, "Eudoxie from Calvino's Invisible Cities, Borges' Tlon and Schuiten's Citees Obscures.");
 add_html(&ten_axitecture, MODBANDCAMP("202709164"));
@@ -485,7 +464,6 @@ add_link(&ten_axitecture, "bandcamp", "https://aliceffekt.bandcamp.com/album/ten
 
 Term miniscopie = create_term("miniscopie", "Miniscopie is a Beldam Records release, by Reine.");
 set_parent(&miniscopie, &beldam_records);
-// set_icon(&miniscopie, "M120,180 L120,180 L240,180 M139,109 L139,109 L79,212.9 M191,161 L191,161 L131,57.1");
 add_text(&miniscopie, "Written by " LINKNAME("http://noirmirroir.com", "Reine") ", this album combines ambient and deep IDM flavoured sounds. The album is the first music release from Elodie, who also created the " SEND(vast_path) " book.");
 add_html(&miniscopie, MODBANDCAMP("2603579101"));
 add_link(&miniscopie, "bandcamp", "https://beldamrecords.bandcamp.com/album/miniscopie");
@@ -493,7 +471,6 @@ add_link(&miniscopie, "itunes", "https://itunes.apple.com/us/album/miniscopie-ep
 
 Term ramiel = create_term("ramiel", "Ramiel is a Beldam Records release, by Villa Moirai.");
 set_parent(&ramiel, &beldam_records);
-// set_icon(&ramiel, "M120,180 L120,180 L240,180 M139,109 L139,109 L79,212.9 M191,161 L191,161 L131,57.1");
 add_text(&ramiel, "Written by " LINKNAME("https://beldamrecords.bandcamp.com", "Villa Moirai") ", this album is an even mixture and techno and idm.");
 add_text(&ramiel, "The album name and cover are a tribute to the geometric angel of the Evangelion anime series.");
 add_html(&ramiel, MODBANDCAMP("2641389031"));
@@ -502,7 +479,6 @@ add_link(&ramiel, "itunes", "https://itunes.apple.com/us/album/ramiel-ep/id95856
 
 Term eschatolor = create_term("eschatolor", "Eschatolor is a Beldam Records release, by Катя Тевелизион.");
 set_parent(&eschatolor, &beldam_records);
-// set_icon(&eschatolor, "M120,180 L120,180 L240,180 M139,109 L139,109 L79,212.9 M191,161 L191,161 L131,57.1");
 add_text(&eschatolor, "Written by Катя Тевелизион, this album was inspired from Russian number stations.");
 add_html(&eschatolor, MODBANDCAMP("4198794205"));
 add_text(&eschatolor, "It was recorded playing through the FM band, from the " SEND(efli_path) " 103.0Mhz pirate radio station in Montreal, giving it its texture and warmth.");
@@ -511,12 +487,10 @@ add_link(&eschatolor, "itunes", "https://itunes.apple.com/ca/album/eschatolor/id
 
 Term efli = create_term("efli", "Efli, 103.0FM, was a pirate radio broadcast, available from Montreal's Plateau area, between 22:00 and 6:00.");
 set_parent(&efli, &eschatolor);
-// set_icon(&efli, "M120,180 L120,180 L240,180 M139,109 L139,109 L79,212.9 M191,161 L191,161 L131,57.1");
 add_text(&efli, "The radio started broadcasting on May 20th, 2015 and stopped transmitting on December 20th. It played various permutations of the " SEND(eschatolor_path) " album.");
 
 Term looking_glace = create_term("looking glace", "Looking Glace is a Beldam Records release, by Reine.");
 set_parent(&looking_glace, &beldam_records);
-// set_icon(&looking_glace, "M120,180 L120,180 L240,180 M139,109 L139,109 L79,212.9 M191,161 L191,161 L131,57.1");
 add_text(&looking_glace, "Painting a harsher, and more complete picture of her acoustic universe where the liquid sounds and suffocating vocoder are incessantly present.");
 add_html(&looking_glace, MODBANDCAMP("3852327660"));
 add_link(&looking_glace, "bandcamp", "https://beldamrecords.bandcamp.com/album/looking-glace");
@@ -524,20 +498,17 @@ add_link(&looking_glace, "itunes", "https://itunes.apple.com/ca/album/looking-gl
 
 Term verreciel_soundtrack = create_term("verreciel soundtrack", "The Verreciel Soundtrack is a Beldam Records release, by Aliceffekt.");
 set_parent(&verreciel_soundtrack, &beldam_records);
-// set_icon(&verreciel_soundtrack, "M120,180 L120,180 L240,180 M139,109 L139,109 L79,212.9 M191,161 L191,161 L131,57.1");
 add_html(&verreciel_soundtrack, MODBANDCAMP("453554387"));
 add_link(&verreciel_soundtrack, "bandcamp", "https://aliceffekt.bandcamp.com/album/verreciel");
 
 Term getapan_728k = create_term("getapan 728k", "Getapan 728k is a Beldam Records release, by 死サイコロ.");
 set_parent(&getapan_728k, &beldam_records);
-// set_icon(&getapan_728k, "M120,180 L120,180 L240,180 M139,109 L139,109 L79,212.9 M191,161 L191,161 L131,57.1");
 add_text(&getapan_728k, "This new release explores a region of frigid dubs yet uncharted by " SEND(beldam_records_path) ". Not much is known about 死サイコロ, their name is <i >Shi Seikoro</i>, or <b>Death Dice</b>.");
 add_html(&getapan_728k, MODBANDCAMP("1677022414"));
 add_link(&getapan_728k, "bandcamp", "https://beldamrecords.bandcamp.com/album/728k");
 
 Term azolla = create_term("azolla", "Azolla is a Beldam Records release, by Alicef.");
 set_parent(&azolla, &beldam_records);
-// set_icon(&azolla, "M120,180 L120,180 L240,180 M139,109 L139,109 L79,212.9 M191,161 L191,161 L131,57.1");
 add_text(&azolla, "" SEND(azolla_path) " is a research project involving composition and development, with the purpose of creating a catalog of works written entirely using " SENDNAME(tools_path, "homebrew tools") " like " SEND(orca_path) " and " SEND(enfer_path) ".");
 add_text(&azolla, "The previous performances include Berlin(ReactBerlin), Amsterdam(JSNation) and Sheffield(Algorave).");
 add_text(&azolla, "The track can be downloaded " LINKNAME("https://aliceffekt.bandcamp.com/album/Azolla", "here") ".");
@@ -548,136 +519,109 @@ add_link(&azolla, "video", "https://www.youtube.com/watch?v=9FPrPgOQqZg");
 
 Term malice = create_term("malice", "Malice, GAII or 害意, tells the earlier tales of Neonev as she crossed the Kanikule ocean.");
 set_parent(&malice, &audio);
-// set_icon(&malice, "M150,60 A90,90 0 0,1 240,150 A-90,90 0 0,1 150,240 A-90,-90 0 0,1 60,150 A90,-90 0 0,1 150,60 Z");
 add_text(&malice, "The Malice logo was designed by " LINKNAME("http://visualscream.net", "Jan Vranovský") ".");
 add_link(&malice, "bandcamp", "https://gaii.bandcamp.com/");
 
 Term collected_works = create_term("collected works", "Collected Works between 2008 and 2015, written as Malice.");
 set_parent(&collected_works, &malice);
-// set_icon(&collected_works, "M150,60 A90,90 0 0,1 240,150 A-90,90 0 0,1 150,240 A-90,-90 0 0,1 60,150 A90,-90 0 0,1 150,60 Z");
 add_text(&collected_works, "This release includes the complete <b>Storm Transit record</b>, hidden " SEND(malice_path) " tracks from " SEND(aliceffekt_path) " releases and the " SEND(merveilles_path) " soundtrack.");
 add_html(&collected_works, MODBANDCAMP("2256825333"));
 add_link(&collected_works, "bandcamp", "https://gaii.bandcamp.com/");
 
 Term nereid = create_portal("nereid", "Nereid is a dull grey moon.");
 set_parent(&nereid, &illustration);
-// set_icon(&nereid, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 add_text(&nereid, "The soil is mostly " SENDNAME(polygonoscopy_path, "Polygonoscopic") " diamonds, and the lack of atmosphere leaves the surface of the moon, quiet. Pigments, illegal.");
 
 Term beauty = create_album("beauty", "The Beauty series is a collection of portraits from the beautiful inhabitants of Nereid.");
 set_parent(&beauty, &nereid);
-// set_icon(&beauty, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 
 Term serventines = create_album("serventines", "Serventines is a travel diary from travels across Nereid.");
 set_parent(&serventines, &nereid);
-// set_icon(&serventines, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 
 Term polygore = create_album("polygore", "Polygore are the base elements Nereid.");
 set_parent(&polygore, &nereid);
-// set_icon(&polygore, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 add_text(&polygore, "The beautifuly corrupted and polygons of of " SEND(nereid_path) ".");
 
 Term pearls = create_album("pearls", "The Pearls are polygonoscopies of Nereid.");
 set_parent(&pearls, &nereid);
-// set_icon(&pearls, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 add_text(&pearls, "The pearls of " SEND(nereid_path) " lead to the discovery of the " SENDNAME(polygonoscopy_path, "Polygonoscopic") " world.");
 
 Term physical = create_album("physical", "These Physical objects are designed to be 3d printed.");
 set_parent(&physical, &visual);
-// set_icon(&physical, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 add_link(&physical, "downloads", "http://www.thingiverse.com/Aliceffekt/designs");
 
 Term occulter = create_album("occulter", "Occulter is a shape inspired by the logo of a boutique I like.");
 set_parent(&occulter, &physical);
-// set_icon(&occulter, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 add_text(&occulter, "The NYC boutique <b>Occulter</b> has since closed.");
 
 Term hex_hive_necklace = create_album("hex hive necklace", "The Hex Hive Necklace is small designer necklace.");
 set_parent(&hex_hive_necklace, &physical);
-// set_icon(&hex_hive_necklace, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 add_link(&hex_hive_necklace, "sources", "http://www.thingiverse.com/thing:18853");
 
 Term victorian_punch = create_album("victorian punch", "The Victorian Punch is a knuckle weapon.");
 set_parent(&victorian_punch, &physical);
-// set_icon(&victorian_punch, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 add_link(&victorian_punch, "sources", "http://www.thingiverse.com/thing:18853");
 
 Term polygonoscopy = create_portal("polygonoscopy", "Polygonoscopy is a series of abstract videographies, recorded with the Kaleidoscope.");
 set_parent(&polygonoscopy, &illustration);
-// set_icon(&polygonoscopy, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 
 Term methascope = create_album("methascope", "Frozen Methascope drops, similar to snowflakes.");
 set_parent(&methascope, &polygonoscopy);
-// set_icon(&methascope, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 add_text(&methascope, "At its smallest scale, the " SEND(methascope_path) " unfolds as the " SENDNAME(ar_moire_path, "Ar Moires") ".");
 
 Term kaleidoscope = create_album("kaleidoscope", "The Kaleidoscope records the intersection of overlapping structures.");
 set_parent(&kaleidoscope, &polygonoscopy);
-// set_icon(&kaleidoscope, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 add_text(&kaleidoscope, "Nothing is as reassuring as looking through the " SENDNAME(polygonoscopy_path, "Polygonoscope") " and seeing everything is where you left it.");
 
 Term hypervoid = create_album("hypervoid", "The Hypervoid is navigating the nullplane of dichromatic Anti-pigments.");
 set_parent(&hypervoid, &polygonoscopy);
-// set_icon(&hypervoid, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 add_text(&hypervoid, "The  pieces were selected to be on the cover of the second volume of the " LINKNAME("http://issuu.com/independenceamazing/docs/amaze_screen", "Amaze Newspaper") ".");
 
 Term brane = create_album("brane", "Brane are digital fabrics.");
 set_parent(&brane, &polygonoscopy);
-// set_icon(&brane, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 add_text(&brane, "This " SENDNAME(polygonoscopy_path, "Polygonoscopic") " collection of large " SENDNAME(nervous_path, "Nervous Systems") " was exposed at the MIGS gallery on november 10th 2014.");
 
 Term astratas = create_album("astratas", "The Astratas topologic maps oscillate to Serventines's Polygonoscopic frequencies.");
 set_parent(&astratas, &polygonoscopy);
-// set_icon(&astratas, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 add_quote(&astratas, "The Art of Cartography attained such Perfection that the map of a single Province occupied the entirety of a City, and the map of the Empire, the entirety of a Province.", "Jorge Luis Borges, On Rigor in Science");
 
 Term ar_moire = create_album("ar moire", "The Ar Moire diagrams are Polygonoscopic sounds.");
 set_parent(&ar_moire, &polygonoscopy);
-// set_icon(&ar_moire, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 
 Term nervous = create_album("nervous", "Nervous are studies of Polygonoscopic Fields.");
 set_parent(&nervous, &polygonoscopy);
-// set_icon(&nervous, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 add_text(&nervous, "A closer look to the fibers of the " SEND(brane_path) " mesh.");
 
 Term artwork = create_album("artwork", "Artwork collection of unrelated concepts and characters.");
 set_parent(&artwork, &illustration);
-// set_icon(&artwork, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 
 Term sketchbook = create_portal("sketchbook", "Various rough illustration from the Sketchbook.");
 set_parent(&sketchbook, &artwork);
-// set_icon(&sketchbook, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 add_text(&sketchbook, "Always carry some sort of " SEND(notebook_path) ".");
 
 Term flactals = create_album("flactals", "Flactals is a series of abstract six-sided flowers drawn using an early version of Ronin.");
 set_parent(&flactals, &sketchbook);
-// set_icon(&flactals, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 add_text(&flactals, "These flowers have inspired a series of illustrations used in Elodie Lareine's book titled \"" SEND(vast_path) "\" as well as the cover of the " SEND(aliceffekt_path) " single titled \"" SEND(known_magye_path) "\", released in 2014.");
 
 Term old_cities = create_album("old cities", "The Old Cities were old drawings created for school.");
 set_parent(&old_cities, &sketchbook);
-// set_icon(&old_cities, "M60,240 L60,240 L60,60 L180,60 L180,120 M120,240 L120,240 L120,120 L210,120 L210,180 M180,240 L180,240 L180,180 L240,180 L240,240 M60,240 L60,240 L240,240");
 add_text(&old_cities, "Traditional drawings created in the style of " SENDNAME(directory_path, "ブラム!") "");
 add_text(&old_cities, "These dark locations were to become the brightened structures of " SENDNAME(collected_works_path, "Malice") " and " SEND(merveilles_path) ".");
 
 Term lard_shader = create_album("lard shader", "Lard Shader is a 3d vertex shader transforming neoclassical figures into their plump selves.");
 set_parent(&lard_shader, &illustration);
-// set_icon(&lard_shader, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 add_text(&lard_shader, "The shader first creates a vertical vertex displacement based on the intersection of brightness and red pixel values, and then re-apply itself 3 times onto the resulted new topology.");
 
 Term ring_of_scales = create_term("ring of scales", "The Ring Of Scales is a large ring made of 3 scales.");
 set_parent(&ring_of_scales, &physical);
-// set_icon(&ring_of_scales, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 add_text(&ring_of_scales, "The ring was originally named the armor ring.");
 add_link(&ring_of_scales, "download", "http://www.thingiverse.com/thing:19152");
 
 Term neauismetic = create_portal("neauismetic", "The Neauismetic albums are audio diaries from the early ages of the Neauismetica.");
 set_parent(&neauismetic, &aliceffekt);
-// set_icon(&neauismetic, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 
 Term vetetrandes_lettres = create_term("vetetrandes lettres", "Vetetrandes Lettres's songs sings of the first ages of Dinaisth on the island of Vetetrandes.");
 set_parent(&vetetrandes_lettres, &neauismetic);
-// set_icon(&vetetrandes_lettres, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&vetetrandes_lettres, "While the album begins in Vetetrandes, it moves to the shores of " SEND(dilitriel_path) " and turns its attention across " SEND(kanikule_path) " and toward the <i >Es</i>'Gulf of <i >Eaurison</i>.");
 add_text(&vetetrandes_lettres, "The album includes 4 edited tracks from the " SEND(es_gulf_sunflowers_path) " release. The <i >Ver'Tale</i> extension is a hint to a location of <i >Whiinders</i>, close to the visited <i >Vert Kirlian Theatre</i>.");
 add_text(&vetetrandes_lettres, "The album begins with a track about " SEND(yajnev_path) ", the composition is based on his trip near the white trees of the <i >Oasis</i> and the <i >Children of Brambles</i>.");
@@ -686,7 +630,6 @@ add_link(&vetetrandes_lettres, "bandcamp", "http://aliceffekt.bandcamp.com/album
 
 Term from_saharaphorest = create_term("from saharaphorest", "From Saharaphorest is an album telling the tale of a visit at Paradichlorisse.");
 set_parent(&from_saharaphorest, &neauismetic);
-// set_icon(&from_saharaphorest, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&from_saharaphorest, "The album was recorded as it played through cassette tapes. The first 3 tracks are ripped from cassette tapes, and the last one is a single clean mastered version. Five tapes were made and given to fans at shows as artworks.");
 add_text(&from_saharaphorest, "This release is related to " SEND(vert_kirlian_theatre_path) " album, released in 2008.");
 add_html(&from_saharaphorest, MODBANDCAMP("1013227503"));
@@ -694,7 +637,6 @@ add_link(&from_saharaphorest, "bandcamp", "http://aliceffekt.bandcamp.com/album/
 
 Term ehrivevnv_studies = create_term("ehrivevnv studies", "The Ehrivevnv Studies is an album exploring the Dinaisth region surroudning Andes' office.");
 set_parent(&ehrivevnv_studies, &neauismetic);
-// set_icon(&ehrivevnv_studies, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&ehrivevnv_studies, "The album was composed for and performed at <b>Blip Festival Tokyo</b> on October 21st 2012 and reissued on april 15th 2013.");
 add_text(&ehrivevnv_studies, "The track names contains encrypted " SENDNAME(lietal_path, "Traumae") ". The first track is decrypted into \"Simkin Kamsi\" and can be translated to <i >Time Structure</i>, refering to " SENDNAME(paradise_path, "The Library of Sand") ". The second track, \"Xomsinsom Kim " SEND(yajnev_path) "\", can be translated to <i >Yajnev's Curse</i> and refers to the short <b>Yajnev's Thoughts</b>. The third track is titled \"Ko Sokamxi\" which simply means <i >The Impossible Exploration</i>.");
 add_html(&ehrivevnv_studies, MODBANDCAMP("2576083659"));
@@ -702,12 +644,10 @@ add_link(&ehrivevnv_studies, "bandcamp", "https://aliceffekt.bandcamp.com/album/
 
 Term yajnev_studies = create_term("yajnev studies", "The Yajnev Studies is an upcoming album exploring Yajnev' sector Vetetrandes.");
 set_parent(&yajnev_studies, &neauismetic);
-// set_icon(&yajnev_studies, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&yajnev_studies, "The album is entirely written in " SEND(orca_path) " and is designed to be performed as a livecoding installation, more details shortly.");
 
 Term telekinetic = create_portal("telekinetic", "Telekinetic is a Laeisthic concept album performed live with the Leap Motion controller.");
 set_parent(&telekinetic, &neauismetic);
-// set_icon(&telekinetic, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&telekinetic, "The event was recorded and can still be watched online on " LINKNAME("http://www.ustream.tv/recorded/39105185", "UStream") ".");
 add_text(&telekinetic, "There was a " LINKNAME("http://www.cnet.com.au/dj-turns-leap-motion-into-a-theremin-sort-of-339345563.htm", "short article on CNET") " about the event as well. The album cover features an alternate door to " SEND(nataniev_path) "'s Library of Sand ornated of the number 210 in " SEND(needles_path) " as well as the " SEND(lietal_path) " letters BI, TI, TA, SI, PO.");
 add_html(&telekinetic, MODBANDCAMP("2904772795"));
@@ -715,34 +655,29 @@ add_link(&telekinetic, "bandcamp", "https://aliceffekt.bandcamp.com/album/teleki
 
 Term telekinesis = create_term("telekinesis", "Telekinesis is a Pure Data controller and instrument used for Telekinetic.");
 set_parent(&telekinesis, &telekinetic);
-// set_icon(&telekinesis, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&telekinesis, "The tool was used for both, the live performance of " SEND(telekinetic_path) " and " SEND(ten_axitecture_path) ".");
 add_text(&telekinesis, "The picture was taken at 8Static, by " LINKNAME("https://www.flickr.com/photos/m_becker/", "Marjorie Becker") ".");
 
 Term software = create_portal("software", "The Software portal is a collection of interactive applications.");
 set_parent(&software, &visual);
-// set_icon(&software, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
 add_text(&software, "The <b>Software</b> archive is a collection of <b>Free & Open-source</b> projects.");
 add_text(&software, "These projects were made possible by the help of countless developers who fixed issues, submitted pull requests and spent time improving the code.");
 
 Term nataniev = create_term("nataniev", "The Nataniev ecosystem is a collection of exocortex tools.");
 set_parent(&nataniev, &research);
-// set_icon(&nataniev, "M240,240 l0,-90 a-90,-90 0 0,0 -90,-90 l-90,0 l0,90 a90,90 0 0,0 90,90 l60,0 l0,-90 a-60,-60 0 0,0 -60,-60 l-60,0 l0,60 a60,60 0 0,0 60,60 l30,0 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0 l0,30 a30,30 0 0,0 30,30");
 add_text(&nataniev, "<b>Nataniev</b> is a collection of free and open-source software following a singular design " SENDNAME(about_path, "philosophy") ", and " SENDNAME(aesthetics_path, "aesthetic") ".");
 
 Term oscean = create_album("oscean", "Oscean is a flat-file wiki engine.");
 set_parent(&oscean, &nataniev);
-// set_icon(&oscean, "M240,240 l0,-90 a-90,-90 0 0,0 -90,-90 l-90,0 l0,90 a90,90 0 0,0 90,90 l60,0 l0,-90 a-60,-60 0 0,0 -60,-60 l-60,0 l0,60 a60,60 0 0,0 60,60 l30,0 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0 l0,30 a30,30 0 0,0 30,30");
-// add_text(&oscean, "<b>Oscean</b> is a fully static publishing platform created for the " LINKNAME("https://en.wikipedia.org/wiki/Peer-to-peer", "peer-to-peer web") ".");
-// add_text(&oscean, "The wiki engine has grown into a collection of frontend tools, including the database formats " SEND(indental_path) " & " SEND(tablatal_path) ", the time formats " SEND(neralie_path) " & " SEND(arvelie_path) ", and the templating and scripting languages " SEND(runic_path) " & " SEND(lain_path) ".");
-// add_text(&oscean, "The following <b>example</b> shows the content of an " SEND(indental_path) " file, with a body templated in " SEND(runic_path) ", which includes a paragraph with a bold link declared in " SEND(lain_path) ".");
+add_text(&oscean, "<b>Oscean</b> is a static wiki engine written entirely in" LINKNAME("https://en.wikipedia.org/wiki/C99", "C99") ", designed to be deployed from " SENDNAME(raspberry_path, "low-power devices") " with " LINKNAME("https://en.wikipedia.org/wiki/GNU_Compiler_Collection", "gcc") " as its only dependecy. The engine has grown into a collection of tools, including the time tracking software " SEND(horaire_path) ", as well as the time formats " SEND(neralie_path) " & " SEND(arvelie_path) ".");
+add_text(&oscean, "The generated files use no javascript, are optimized for screen-readers and terminal browsers, the entire CSS content of the entire site should be under 1kb.");
+add_text(&oscean, "The software architecture is inspired by " SEND(longtermism_path) ".");
 add_link(&oscean, "sources", "https://github.com/XXIIVV/Oscean");
 add_link(&oscean, "live", "https://wiki.xxiivv.com");
 
 Term horaire = create_term("horaire", "Horaire is a time-tracking tool.");
 set_parent(&horaire, &nataniev);
-// set_icon(&horaire, "M60,60 L60,60 L240,60 L240,240 L60,240 Z M60,120 L60,120 L240,120 M120,120 L120,120 L120,240 M120,180 L120,180 L240,180 M180,180 L180,180 L180,240");
-add_text(&horaire, "<b>Horaire</b> is a time-tracking engine designed to record and host human-readable " LINKNAME("https://github.com/XXIIVV/Oscean/blob/master/scripts/database/horaire.tbtl", "daily logs") " that can be easily parsed into " SENDNAME(tracker_path, "infographics") ". A daily productivity log is recorded at the end of the day, and contains 3 values.");
+add_text(&horaire, "<b>Horaire</b> is a time-tracking engine designed to record and host daily activity logs. A log is recorded at the end of the day, and contains 3 values.");
 // add_list(&horaire, "The <b>Sector</b> <code >Sh</code>, either " SEND(audio_path) ", " SEND(visual_path) ", or " SEND(research_path) ", is the general sector of the task.");
 // add_list(&horaire, "The <b>Concrete Hour</b> <code >Ch</code> represents a value of concrete output, or index of progress toward the release of a project — where 1 indicates an introverted task like documentation, or planning, and 9 indicates an extroverted task like giving a talk, or releasing a project.");
 // add_list(&horaire, "The <b>Focus Hour</b> <code >Fh</code> is an index of attention for the day's task — where 1 indicates that almost no time was invested in the task, and 9 indicates that most of the available time was invested in the task.");
@@ -763,53 +698,39 @@ add_text(&horaire, "A <b>task name</b> can be generated from the intersection of
 // add_table(&horaire, "18 | audio release    | 28 | visual release    | 38 | software");
 // add_table(&horaire, "19 | performance      | 29 | showcase          | 39 | talk");
 add_text(&horaire, "You can learn more about the " SENDNAME(oscean_path, "related tools") ", and " SENDNAME(about_path, "related projects") ", to the entire " SEND(nataniev_path) " ecosystem. For additional questions, contact " SEND(devine_lu_linvega_path) "");
-add_quote(&horaire, "<b>Effectiveness</b>, is doing the right thing.<br><b>Efficiency</b>, is doing it the right way.", "Unknown");
-add_link(&horaire, "view database", "https://github.com/XXIIVV/Oscean/blob/master/scripts/database/horaire.tbtl");
+add_quote(&horaire, "<b>Effectiveness</b>, is doing the right thing.<br><b>Efficiency</b>, is doing it the right way.", NULL);
 
 Term tracker = create_term("tracker", "The Tracker shows issues and balance.");
 set_parent(&tracker, &horaire);
-// set_icon(&tracker, "M150,90 A45,45 0 0,1 195,135 A-45,45 0 0,1 150,180 A-45,-45 0 0,1 105,135 A45,-45 0 0,1 150,90 M180,135 A45,45 0 0,1 225,180 A-45,45 0 0,1 180,225 A-45,-45 0 0,1 135,180 A45,-45 0 0,1 180,135 M120,135 A45,45 0 0,1 165,180 A-45,45 0 0,1 120,225 A-45,-45 0 0,1 75,180 A45,-45 0 0,1 120,135");
 add_link(&tracker, "rss feed", "https://wiki.xxiivv.com/links/rss.xml");
 
 Term journal = create_term("journal", "The Journal shows recent activity.");
 set_parent(&journal, &horaire);
-// set_icon(&journal, "M60,90 L60,90 L210,90 M60,120 L60,120 L180,120 M210,120 L210,120 L240,120 M60,150 L60,150 L150,150 M180,150 L180,150 L240,150 M60,180 L60,180 L120,180 M150,180 L150,180 L240,180 M60,210 L60,210 L90,210 M120,210 L120,210 L240,210 M90,240 L90,240 L240,240");
 add_link(&journal, "rss feed", "https://wiki.xxiivv.com/links/rss.xml");
 
 Term calendar = create_term("calendar", "The Calendar shows upcoming events.");
 set_parent(&calendar, &horaire);
-// set_icon(&calendar, "M60,60 L60,60 L240,60 L240,240 L60,240 Z M60,120 L60,120 L240,120 M120,120 L120,120 L120,240 M120,180 L120,180 L240,180 M180,180 L180,180 L180,240");
 add_link(&calendar, "rss feed", "https://wiki.xxiivv.com/links/rss.xml");
 
-Term time = create_term("time", "Documentation on the different Time formats.");
+Term time = create_index("time", "Documentation on the different Time formats.");
 set_parent(&time, &nataniev);
-// set_icon(&time, "M240,240 l0,-90 a-90,-90 0 0,0 -90,-90 l-90,0 l0,90 a90,90 0 0,0 90,90 l60,0 l0,-90 a-60,-60 0 0,0 -60,-60 l-60,0 l0,60 a60,60 0 0,0 60,60 l30,0 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0 l0,30 a30,30 0 0,0 30,30");
 add_html(&time, MODFRAME("https://clock.xxiivv.com"));
 
 Term neralie = create_term("neralie", "Neralie is a decimal time format.");
 set_parent(&neralie, &time);
-// set_icon(&neralie, "M60,60 L60,60 L240,60 L240,240 L60,240 Z M60,120 L60,120 L240,120 M120,120 L120,120 L120,240 M120,180 L120,180 L240,180 M180,180 L180,180 L180,240");
 add_text(&neralie, "This <b>decimal clock</b> has two groups of 3 digits, called the <i >beat</i> & the <i >pulse</i>. A beat contains 1000 pulses, and equivalent to <b>86.4 seconds</b>.");
-// add_table(&neralie, "<b>6:00</b>  | 250:000 | <b>12:00</b> | 500:000");
-// add_table(&neralie, "<b>18:00</b> | 750:000 | <b>Now</b>   | 605:759");
+add_html(&neralie, "<ul><li><b>6:00</b> 250:000</li><li><b>12:00</b> 500:000</li><li><b>18:00</b> 750:000</li></ul>");
 add_link(&neralie, "view online", "https://clock.xxiivv.com");
-add_link(&neralie, "itunes", "https://itunes.apple.com/us/app/entaloneralie/id657224738");
-add_link(&neralie, "library", "https://github.com/XXIIVV/Oscean/blob/master/scripts/lib/neralie.js");
 
 Term arvelie = create_term("arvelie", "Arvelie is an alphabetic date format.");
 set_parent(&arvelie, &time);
-// set_icon(&arvelie, "M60,60 L60,60 L240,60 L240,240 L60,240 Z M60,120 L60,120 L240,120 M120,120 L120,120 L120,240 M120,180 L120,180 L240,180 M180,180 L180,180 L180,240");
 add_text(&arvelie, "The Arvelie " SENDNAME(calendar_path, "Calendar") " has <b>26 months</b> of <b>14 days</b> each.");
 add_text(&arvelie, "Each month has <b>2 weeks</b> of <b>7 days</b>, and each month's name is one of the 26 letters of the alphabet. The 365th day of the year is the <i >Year Day</i>(+01), preceded by the <i >Leap Day</i>(+02) on leap years.");
-// add_table(&arvelie, "<b>02A01</b> | 2002-01-01 | <b>01D07</b>    | 2001-02-18");
-// add_table(&arvelie, "<b>13B12</b> | 2013-01-26 | <b>02E07</b>    | 2002-03-04");
-// add_table(&arvelie, "<b>24C01</b> | 2024-01-29 | <b>03+01</b>    | 2003-12-31");
-// add_table(&arvelie, "<b>22D12</b> | 2022-02-23 | <b>20A09</b>  | Today");
+add_html(&arvelie, "<ul><li><b>02A01</b> 2002-01-01</li><li><b>01D07</b> 2001-02-18</li><li><b>13B12</b> 2013-01-26</li><li><b>02E07</b> 2002-03-04</li><li><b>24C01</b> 2024-01-29</li><li><b>03+01</b> 2003-12-31</li></ul>");
 add_link(&arvelie, "library", "https://github.com/XXIIVV/Oscean/blob/master/scripts/lib/arvelie.js");
 
 Term webring = create_term("webring", "The Webring, like it's the 2000s.");
 set_parent(&webring, &nataniev);
-// set_icon(&webring, "M150,60 A90,90 0 0,1 240,150 A-90,90 0 0,1 150,240 A-90,-90 0 0,1 60,150 A90,-90 0 0,1 150,60");
 add_text(&webring, "The <b>webring</b> is a directory of neighbor websites and portfolios.");
 add_text(&webring, "This is an attempt to <b>inspire artists and developers to create and maintain their own personal website</b>, and share traffic organically among each other. The ring's aim is to promote the creation of hand crafted diaries, wikis, bookmarks and portfolios.");
 add_text(&webring, "You can view the full directory " LINKNAME("https://webring.xxiivv.com/", "here") ", or more info on how to join the network " LINKNAME("https://github.com/XXIIVV/webring", "here") ". To navigate the webring, start " LINKNAME("http://webring.xxiivv.com/#random", "here") ". The webring also operates as a decentralized forum based on " LINKNAME("https://github.com/buckket/twtxt", "twtxt") ", see the " LINKNAME("https://webring.xxiivv.com/hallway.html", "Hallway") ".");
@@ -819,7 +740,6 @@ add_link(&webring, "jump in", "https://webring.xxiivv.com/#random");
 
 Term merveilles = create_term("merveilles", "Merveilles is a community of artists and developers.");
 set_parent(&merveilles, &webring);
-// set_icon(&merveilles, "M60,60 L60,60 L240,240 M60,240 L60,240 L240,60 M120,120 L120,120 L180,60 M120,60 L120,60 L180,120 M120,180 L120,180 L180,240 M180,180 L180,180 L120,240");
 add_text(&merveilles, "The <b>Merveilles community</b> is an informal group of artists and developers seeking augmentation through the arts of engineering and design.");
 add_text(&merveilles, "Maybe it's a movement, I'm not sure. It might be that we all grew up with similar influences, yet it might not. Sometimes I think it's a style of going about art, but again, it also applies to musician and programmers. But when we see each other, we know.");
 add_link(&merveilles, "on sources", "https://github.com/Merveilles");
@@ -827,7 +747,6 @@ add_link(&merveilles, "on mastodon", "http://merveilles.town");
 
 Term rotonde = create_term("rotonde", "Rotonde was a decentralized social network.");
 set_parent(&rotonde, &webring);
-// set_icon(&rotonde, "M150,60 A90,90 0 0,1 240,150 A-90,90 0 0,1 150,240 A-90,-90 0 0,1 60,150 A90,-90 0 0,1 150,60");
 add_text(&rotonde, "It is a commonly agreed upon specifications of a JSON object shared between " LINKNAME("https://github.com/Rotonde", "members of the network") ", its current incarnation is the " SEND(webring_path) "'s " LINKNAME("https://webring.xxiivv.com/hallway.html", "Hallway") ".");
 add_text(&rotonde, "<b>Nobody owns the network, it never goes offline</b>, there are no servers and no central authority. All content is editable, versionable, hosted on your own computer and seeded by anyone who wish to follow your portal.");
 add_link(&rotonde, "sources", "https://github.com/Rotonde");
@@ -835,9 +754,8 @@ add_link(&rotonde, "dat", "dat://2f21e3c122ef0f2555d3a99497710cd875c7b0383f998a2
 
 Term riven = create_term("riven", "Riven is a flow-based web framework.");
 set_parent(&riven, &nataniev);
-// set_icon(&riven, "M45,60 L45,60 L255,60 M45,240 L45,240 L255,240 M60,60 L60,60 L60,240 M240,60 L240,60 L240,240 M150,60 L150,60 L60,150 L150,240");
 add_text(&riven, "<b>Riven</b> handles the creation of nodes and the communication of signals between them.");
-add_text(&riven, "For more than two years, it existed as the front-end framework of " SEND(oscean_path) " until it was replaced by Lisp, but was originally developed for the creation of serverless websites such as " SEND(grimgrains_path) ", " SEND(wiktopher_path) ", and " SEND(rekka_path) "'s " LINKNAME("http://kokorobot.ca", "website") ".");
+add_text(&riven, "For more than two years, it existed as the front-end framework of " SEND(oscean_path) " until it was replaced, but was originally developed for the creation of serverless websites.");
 // add_code(&riven, "Ø(\"query\").create(nodePosition,nodeType) <comment># Create a node</comment>");
 // add_code(&riven, "Ø(\"query\").connect(\"model\") <comment># Connect</comment>");
 // add_code(&riven, "Ø(\"query\").send(true) <comment># Send a message to the model node.</comment>");
@@ -846,7 +764,6 @@ add_link(&riven, "sources", "https://github.com/XXIIVV/Riven");
 
 Term tools = create_portal("tools", "The Tools collection is an ecosystem of open-source software to create audio and visual works, released as Hundred Rabbits.");
 set_parent(&tools, &research);
-// set_icon(&tools, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
 add_text(&tools, "You can learn more about the philosophy behind these various projects on the " LINKNAME("https://100r.co/pages/tools_ecosystem.html", "Hundred Rabbits blog") ".");
 add_quote(&tools, "What I cannot create, I do not understand", "Richard Feynman");
 add_link(&tools, "itch", "http://hundredrabbits.itch.io/");
@@ -854,7 +771,6 @@ add_link(&tools, "sources", "http://github.com/hundredrabbits");
 
 Term orca = create_term("orca", "Orca is a livecoding playground.");
 set_parent(&orca, &tools);
-// set_icon(&orca, "M60,60 L210,60 A30,30 0 0,1 240,90 L240,240 M240,120 A30,30 0 0,1 210,150 L90,150 A30,30 0 0,0 60,180 L60,240");
 add_text(&orca, "Orca uses an <b>esoteric programming language</b> designed to quickly create procedural sequencers, in which every letter of the alphabet is an operation, where lowercase letters operate on bang, uppercase letters operate each frame.");
 add_text(&orca, "The " LINKNAME("https://github.com/hundredrabbits/Orca", "application") " is capable of communicating with audio & visual softwares via " LINKNAME("https://github.com/hundredrabbits/Orca/blob/master/WORKSHOP.md", "MIDI, OSC & UDP") ".");
 add_html(&orca, MODITCHIO("225814"));
@@ -2067,7 +1983,7 @@ set_parent(&devine_lu_linvega, &hundred_rabbits);
 // set_icon(&devine_lu_linvega, "M150,60 l0,180 M180,60 l0,180 l0,-60 a30,-30 0 0,1 30,-30 l30,0 M120,60 l0,180 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0");
 add_text(&devine_lu_linvega, "<b>Devine Lu Linvega</b> is composing " SENDNAME(audio_path, "experimental electronic music") ", illustrating the " SENDNAME(visual_path, "frozen wastelands of a fictional world") ", and developing " SENDNAME(research_path, "esoteric software") ".");
 add_text(&devine_lu_linvega, "Since 2006, Devine has been populating this " SENDNAME(about_path, "wiki") " with notes on various topics, including on " SEND(language_path) ", " SEND(lifestyle_path) " and " SEND(nutrition_path) ". You can learn more about their <b>related interests</b> in the " SEND(mirrors_path) ", and in the " SEND(directory_path) ".");
-add_text(&devine_lu_linvega, "They currently live aboard a " SENDNAME(pino_path, "sailboat") ", somewhere along the foggy coast of " SEND(japan_path) ". You can follow their position " LINKNAME("http://100r.co/#map", "here") ", or learn more about offgrid living " LINKNAME("https://100r.co/pages/knowledge.html", "here") ".");
+add_text(&devine_lu_linvega, "They currently live aboard a " SENDNAME(pino_path, "sailboat") ", somewhere along the foggy coast of " SEND(japan_path) ". You can follow their position " LINKNAME("http://100r.co/live", "here") ", or learn more about offgrid living " LINKNAME("https://100r.co/pages/knowledge.html", "here") ".");
 add_text(&devine_lu_linvega, "Get in touch via email at <b>aliceffekt@gmail.com</b>, or<br />on the fediverse at <b><a href='http://merveilles.town/@neauoire' target='_blank' rel='noreferrer' class='external '>merveilles.town/@neauoire</a></b>.");
 add_quote(&devine_lu_linvega, "To flee is Life,<br />To linger, death.", "");
 
@@ -2136,16 +2052,15 @@ add_link(&routine, "full interview", "https://interfacelovers.com/interviews/dev
 
 Term longtermism = create_term("longtermism", "Notes on Longtermism and sustainability.");
 set_parent(&longtermism, &lifestyle);
-// set_icon(&longtermism, "M150,60 l0,180 M180,60 l0,180 l0,-60 a30,-30 0 0,1 30,-30 l30,0 M120,60 l0,180 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0");
-add_text(&longtermism, "In an age of disposable smart devices and unrepairable electronics, there are few topics that occupy my mind as much as <b>solutioning for technological resilience and development longtermism</b>.");
-add_text(&longtermism, "" SENDNAME(pino_path, "Living aboard a sailboat") ", away from reliable internet connectivity and outside of delivery networks, encourages us at " SEND(hundred_rabbits_path) ", to consider ways in which we can strenghten the toolset onto which we rely, to reflect on novel ways to simplify the systems that we use, and to optimize toward more " SENDNAME(solarpunk_path, "environmentally councious") " practices.");
+add_text(&longtermism, "In an age of disposable smart devices and unrepairable electronics, there are few topics that occupy my mind as much as <b>solutioning for technological resilience</b>.");
+add_text(&longtermism, SENDNAME(pino_path, "Living aboard a sailboat") ", away from reliable internet connectivity and outside of delivery networks, encourages us at " SENDNAME(hundred_rabbits_path, "Hundred Rabbits") ", to consider ways with which we can strenghten the toolset onto which we rely, to reflect on novel ways to simplify the systems that we use, and to optimize toward more " SENDNAME(solarpunk_path, "environmentally councious") " practices.");
 add_text(&longtermism, "We must abandon 3-in-1 packages, bloated always-online services and general planned obsolesce, and establish practices of recyclism, minimum viable products, small-sharp modular utilities. We see smart and resilience as opposing attributes to a device, smart is inherantly contrary to a single purpose tool, and thus incompatible with longtermism.");
-add_text(&longtermism, "Our focus over the past year has gradually shifted from open-source software, toward modular and combinable electronics. Looking back, we are proud of the open-source tools that we created, enabling a handful of people to exit subscription services, and uninspectable utilities. Moving forward, we are thinking more and more about hardware, or at least to do without the operating system layer.");
+add_text(&longtermism, "Our focus over the past year has gradually shifted toward open-source software and modular(combinable) electronics. Looking back, we are proud of the open-source tools that we created, enabling a handful of people to exit subscription services, and inscrutable closed-source utilities. Moving forward, we are thinking more and more about hardware, or at least software that resides closer to the metal.");
 add_text(&longtermism, "I periodically find myself thinking about operating systems, or more specifically the interaction design of OSes. I attempting to tackle the difficult UX challenges of that space, unrealizing that my failure to solve these issues might very well come from the simple fact that the purpose of operating systems is to enable multi-tasking, multi-tasking that I try to erradicate from my daily life, making these these issues deeply unsolvable and my love for sharp tools and OSes ireconcilable.");
-add_text(&longtermism, "Sometimes I wonder if we shouldn't re-orient our focus onto things that can run on small low-power open-source boards like Arduinos, but I also consider the impact of pushing for the purchase and production more electronics.");
+add_text(&longtermism, "Sometimes I wonder if we shouldn't re-orient our focus onto things that can run on small low-power open-source single-purpose boards, but I also consider the impact of pushing for the purchase and production more electronics as problematic; perhaps creating software targetting old hardware might be what I'm looking for.");
 add_text(&longtermism, "Despite all this, I dream of a line of simple electronics, each one designed for a single purpose. Or even for things beyond the realm of electronics, like a kit bike with all its superfluousities removed.");
-add_text(&longtermism, "My dream sailboat has no diesel engine, no fuel outboard and no lead acid battery storage, but instead a compressed air engine with its compression stored in diving tanks, a bike crank powered compressor, a hydro generator pump, and a dynamo to charge our low-power electronics. The only crutial electronic systems connected to the house tanks would be the AIS transciver, the VHF radio, a basic chartplotter and habitat lighting. Our work and entertainment electronics, like our laptops and cameras, would run off solar charging a minimal array of LiPo batteries.");
-add_text(&longtermism, "Is there a way to distribute entertainment in a way that is environmentally conscious? I read this thinking, how dare I think that only work has value and that entertainment and leisure has somehow less right to pollute.");
+add_text(&longtermism, "My dream sailboat has no diesel engine, no fuel outboard and no lead acid battery storage, but instead a compressed air engine with its compression stored in diving tanks, a bike crank powered compressor, a hydro generator pump, and a dynamo to charge our low-power electronics. The only crutial electronic systems connected to the house tanks would be the AIS transceiver, the VHF radio, a basic chartplotter and habitat lighting. Our work and entertainment electronics, like our laptops and cameras, would run off solar charging a minimal array of LiPo batteries.");
+add_text(&longtermism, "Is there a way to create and distribute software and electronics in a way that is environmentally conscious? perhaps " LINKNAME("https://en.wikipedia.org/wiki/Degrowth", "not") ".");
 
 Term inventory = create_portal("inventory", "The collection of technical details on the Inventory.");
 set_parent(&inventory, &devine_lu_linvega);
