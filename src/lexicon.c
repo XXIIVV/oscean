@@ -2456,7 +2456,6 @@ add_link(&documentation, "sources", "https://www.divio.com/blog/documentation/")
 
 Term quotes = create_term("quotes", "A collection of Quotes.");
 set_parent(&quotes, &mirrors);
-// set_icon(&quotes, "M60,60 L60,60 L240,60 L240,240 L60,240 Z M90,90 L90,90 L210,90 L210,210 L90,210 Z");
 add_quote(&quotes, "<b>Aesthetic realism</b> holds beauty to be a real property of works of art, there to be discovered by the discerning viewer.<br /><b>Ontological realism</b> holds that physical objects exist independently of our own minds.<br /><b>Epistemological realism</b> is the view that statements are true, or false, independently of whether we believe them to be true or false. Aesthetic realism holds beauty to be a real property of works of art, there to be discovered by the discerning viewer. Ontological realism holds that physical objects exist independently of our own minds.Epistemological realism is the view that statements are true, or false, independently of whether we believe them to be true or false.", "Adapted from Baggini & Fosl, The Philosopher's Toolkit");
 add_header(&quotes, "Objective Beings");
 add_quote(&quotes, "Every block of stone has a statue inside it and it is the task of the sculptor to discover it. I saw the angel in the marble and carved until I set him free.", "Michelangelo, Lettera a messer Benedetto Varchi");
@@ -2475,11 +2474,11 @@ add_header(&quotes, "Hermeneutic Circle");
 add_quote(&quotes, "Hovering in the background, like a specter, the ultimate possibility of no possibility, of no-more-being-there, the possibility of impossibility. What ultimately lies ahead for Dasein, its uttermost potentiality, is death. Hovering in the background, like a specter, the ultimate possibility of no possibility, of no-more-being-there, the possibility of impossibility. What ultimately lies ahead for Dasein, its uttermost potentiality, is Death.", "John D. Caputo, Hermeneutic: Facts and Interpretation");
 add_quote(&quotes, "The Victorious Ones have announced that emptiness is the relinquishing of all views. Those who are possessed of the view of emptiness are said to be incorrigible. The Victorious Ones have announced that emptiness is the relinquishing of all views. Those who are possessed of the view of emptiness are said to be incorrigible.", "Verse, Mūlamadhyamakakārikā");
 add_header(&quotes, "God Eternally Geometrizes");
-add_quote(&quotes, "No limiting qualities <br />are to be attributed to the <b>Absolute</b>. No limiting qualities <br />are to be attributed to the Absolute.", "Plutarch, Convivalium Disputationum libri novem");
+add_quote(&quotes, "They did not know it was impossible, <br />so they did it.", "Mark Twain");
+add_quote(&quotes, "No limiting qualities are to be attributed to the <b>Absolute</b>. ", "Plutarch, Convivalium Disputationum libri novem");
 
 Term language = create_portal("language", "Various Language notes on natural and synthetic languages.");
 set_parent(&language, &research);
-// set_icon(&language, "M60,240 a30,-30 0 0,1 30,-30 l150,0 M90,195 a30,-30 0 0,1 30,-30 l90,0 M120,150 a30,-30 0 0,1 30,-30 l30,0 M195,120 l45,0 M225,165 l15,0 M150,105 a30,-30 0 0,1 30,-30 l60,0");
 add_text(&language, "Welcome to the <b>Language Portal</b>.");
 add_text(&language, "The goal of these pages is to host a few resources, summaries and notes from my own language studies. To give you a sense of my interests in linguistics, here are some of my <b>favourite words</b>:");
 // add_list(&language, "" LINKNAME("https://en.wikipedia.org/wiki/Juniper", "Juniper") ", in English.");
