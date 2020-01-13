@@ -663,6 +663,40 @@ set_parent(&software, &visual);
 add_text(&software, "The <b>Software</b> archive is a collection of <b>Free & Open-source</b> projects.");
 add_text(&software, "These projects were made possible by the help of countless developers who fixed issues, submitted pull requests and spent time improving the code.");
 
+Term automatons = create_portal("automatons", "The Automatons is a collection of Twitter games and chatbots.");
+set_parent(&automatons, &software);
+add_text(&automatons, "I can almost remember when Twitter was a playground, a place people used to collaborate with to public interactive art. The bots have since fallen into disrepair from API changes and development hostile decisions by the platform.");
+
+Term the_will_the_wisp = create_term("the will the wisp", "The Will The Wisp was a twitter bot that generated short rhymes.");
+set_parent(&the_will_the_wisp, &automatons);
+add_text(&the_will_the_wisp, "One of the better generated poem:");
+add_html(&the_will_the_wisp, "<ul><li>Somewhen future, and secondly obscure.</li><li>Thus traveled, nor inwardly transient.</li><li>Upon devices, hopefully devils.</li><li>Someplace cute, and terribly brute.</li><li>But thy nautilus is actually nauseous.</li></ul>");
+add_link(&the_will_the_wisp, "twitter", "https://twitter.com/thewillthewisp");
+add_link(&the_will_the_wisp, "sources", "https://github.com/XXIIVV/vessel.thewillthewisp");
+
+Term dictionarism = create_term("dictionarism", "Dictionarism is a simple twitter bot that generates -isms.");
+set_parent(&dictionarism, &automatons);
+add_text(&dictionarism, "Some of the better generated words:");
+add_html(&dictionarism, "<ul><li>Mirrorism</li><li>Polygonism</li><li>Neptunism</li><li>Librarism</li><li>Helplessism</li></ul>");
+add_link(&dictionarism, "twitter", "https://twitter.com/dictionarism");
+add_link(&dictionarism, "sources", "https://github.com/XXIIVV/vessel.dictionarism");
+
+Term advent_v = create_term("advent v", "Advent V was a simple twitter game in the format of the Choose Your Own Adventure.");
+set_parent(&advent_v, &automatons);
+add_text(&advent_v, "Players are invited to tell Advent where to go in a choice of locations from a previous tweet.");
+add_html(&advent_v, "<pre>Punching a serpent at the lake, lost 6hp.<br>Go to the Forest or the Camp?<br>Day2 Atk0 Def4, via <b>@auriea</b></pre>");
+add_text(&advent_v, "Illustrations were created by " LINKNAME("https://twitter.com/heygleeson", "Andrio") ".");
+add_link(&advent_v, "twitter", "https://twitter.com/adventvrecall");
+add_link(&advent_v, "sources", "https://github.com/XXIIVV/vessel.adventv");
+
+Term glossolaliarium = create_term("glossolaliarium", "Glossolaliarium is a twitter bot that generates procedural english words.");
+set_parent(&glossolaliarium, &automatons);
+add_text(&glossolaliarium, "By combining various prefixes and suffixes, it tries to form definitions of these newly created terms.");
+add_text(&glossolaliarium, "Some of the better generated words:");
+add_html(&glossolaliarium, "<ul><li>Dictcephaladelog: Speech or process of foretelling the future encephalitis.</li><li>Gramhydrudeic: Characterized by written liquid.</li><li>Fidcardiboneity: Quality of sound from faith.</li><li>Centblastbileian: Relating to one who loves the hundred primitives.</li><li>Ferdynletoid: Resembling version of bear energy.</li></ul>");
+add_link(&glossolaliarium, "twitter", "https://twitter.com/Glossolaliarium");
+add_link(&glossolaliarium, "sources", "https://github.com/XXIIVV/vessel.glossolaliarium");
+
 Term nataniev = create_term("nataniev", "The Nataniev ecosystem is a collection of exocortex tools.");
 set_parent(&nataniev, &research);
 add_text(&nataniev, "<b>Nataniev</b> is a collection of free and open-source software following a singular design " SENDNAME(about_path, "philosophy") ", and " SENDNAME(aesthetics_path, "aesthetic") ".");
@@ -1180,7 +1214,6 @@ add_link(&noirca, "sources", "https://github.com/Echorridoors/noirca");
 
 Term dew = create_term("dew", "Dew is an alarm/timer.");
 set_parent(&dew, &mobile);
-// set_icon(&dew, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
 add_text(&dew, "The application will then  wake you with a soft white noise tone that will gradually bring you back to reality.");
 add_text(&dew, "As of March 2019, This application is no longer maintained.");
 add_link(&dew, "itunes", "https://itunes.apple.com/ca/app/dew/id954020907");
@@ -1188,61 +1221,12 @@ add_link(&dew, "sources", "https://github.com/Echorridoors/dew");
 
 Term ledoliel = create_term("ledoliel", "Ledoliel is a dating-sim game.");
 set_parent(&ledoliel, &mobile);
-// set_icon(&ledoliel, "M60,60 L60,60 L60,240 L240,240 M240,60 L240,60 L150,60 L150,240 M150,150 L150,150 L240,150");
 add_text(&ledoliel, "In <b>Ledoliel</b>, one must try and figure out what topics their guests might want to discuss, gift they might want to recieve and, places they may like to be <i >touched</i>.");
 add_text(&ledoliel, "As of March 2019, This application is no longer maintained.");
 add_link(&ledoliel, "itunes", "https://itunes.apple.com/us/app/ledoliel/id891693763");
 add_link(&ledoliel, "sources", "https://github.com/Echorridoors/Ledoliel");
 
-Term automatons = create_term("automatons", "The Automatons is a collection of Twitter games and chatbots.");
-set_parent(&automatons, &software);
-// set_icon(&automatons, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
-
-Term the_will_the_wisp = create_term("the will the wisp", "The Will The Wisp is a twitter bot that generates short rhymes.");
-set_parent(&the_will_the_wisp, &automatons);
-// set_icon(&the_will_the_wisp, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
-add_text(&the_will_the_wisp, "A generated poem.");
-// add_code(&the_will_the_wisp, "" SENDNAME(mirrors_path, "Somewhen future") ", and secondly obscure.");
-// add_code(&the_will_the_wisp, "Thus " SENDNAME(travel_path, "traveled") ", nor inwardly transient.");
-// add_code(&the_will_the_wisp, "Upon devices, hopefully devils.");
-// add_code(&the_will_the_wisp, "Someplace cute, and terribly brute.");
-// add_code(&the_will_the_wisp, "But thy nautilus is actually " SENDNAME(neausea_path, "nauseous") ".");
-add_link(&the_will_the_wisp, "twitter", "https://twitter.com/thewillthewisp");
-add_link(&the_will_the_wisp, "sources", "https://github.com/XXIIVV/vessel.thewillthewisp");
-
-Term dictionarism = create_term("dictionarism", "Dictionarism is a simple twitter bot that generates -isms.");
-set_parent(&dictionarism, &automatons);
-// set_icon(&dictionarism, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
-// add_list(&dictionarism, "Mirrorism");
-// add_list(&dictionarism, "Polygonism");
-// add_list(&dictionarism, "Neptunism");
-// add_list(&dictionarism, "Librarism");
-// add_list(&dictionarism, "Helplessism");
-add_link(&dictionarism, "twitter", "https://twitter.com/dictionarism");
-add_link(&dictionarism, "sources", "https://github.com/XXIIVV/vessel.dictionarism");
-
-Term glossolaliarium = create_term("glossolaliarium", "Glossolaliarium is a twitter bot that generates procedural english words.");
-set_parent(&glossolaliarium, &automatons);
-// set_icon(&glossolaliarium, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
-add_text(&glossolaliarium, "By combining various prefixes and suffixes, it tries to form definitions of these newly created terms.");
-// add_list(&glossolaliarium, "Dictcephaladelog: Speech or process of foretelling the future encephalitis.");
-// add_list(&glossolaliarium, "Gramhydrudeic: Characterized by written liquid.");
-// add_list(&glossolaliarium, "Fidcardiboneity: Quality of sound from faith.");
-// add_list(&glossolaliarium, "Centblastbileian: Relating to one who loves the hundred primitives.");
-// add_list(&glossolaliarium, "Ferdynletoid: Resembling version of bear energy.");
-add_link(&glossolaliarium, "twitter", "https://twitter.com/Glossolaliarium");
-add_link(&glossolaliarium, "sources", "https://github.com/XXIIVV/vessel.glossolaliarium");
-
-Term advent_v = create_term("advent v", "Advent V was a simple twitter game in the format of the Choose Your Own Adventure.");
-set_parent(&advent_v, &automatons);
-// set_icon(&advent_v, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
-add_text(&advent_v, "Players are invited to tell Advent where to go in a choice of locations from a previous tweet.");
-// add_code(&advent_v, "Punching a serpent at the lake, lost 6hp.<br>Go to the Forest or the Camp?<br>Day2 Atk0 Def4, via <a href=\"https://twitter.com/auriea?ref_src=twsrc%5Etfw\">@auriea</a></p>— Advent V. Recall (@adventvrecall) <a href=\"https://twitter.com/adventvrecall/status/745192040229572609?ref_src=twsrc%5Etfw\">June 21, 2016</a></blockquote> <script async src=\"https://platform.twitter.com/widgets.js\" charset=\"utf-8\"></script>");
-add_text(&advent_v, "Illustrations were created by " LINKNAME("https://twitter.com/heygleeson", "Andrio") ".");
-add_link(&advent_v, "twitter", "https://twitter.com/adventvrecall");
-add_link(&advent_v, "sources", "https://github.com/XXIIVV/vessel.adventv");
-
-Term unity = create_term("unity", "The Unity collection contains various older desktop games.");
+Term unity = create_portal("unity", "The Unity collection contains various older desktop games.");
 set_parent(&unity, &software);
 // set_icon(&unity, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
 add_text(&unity, "As of <b>January 2015</b>, these applications are no longer maintained.");
@@ -1331,7 +1315,7 @@ add_link(&purgateus, "venus patrol", "http://venuspatrol.com/purgateus/");
 add_link(&purgateus, "download", "https://drive.google.com/open?id=0B24klRuG3GLNaHlYNVJQd1lXVzQ");
 add_link(&purgateus, "soundtrack", "https://aliceffekt.bandcamp.com/album/purgateus");
 
-Term collegiennes = create_term("collegiennes", "The Collegiennes collective is a game jam team.");
+Term collegiennes = create_portal("collegiennes", "The Collegiennes collective is a game jam team.");
 set_parent(&collegiennes, &software);
 // set_icon(&collegiennes, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
 
@@ -1632,7 +1616,7 @@ add_text(&neauismetica, "The tales of the <b>Neauismetica</b> unfold on a minusc
 add_text(&neauismetica, "Originally written in French, \"<b>Les Récits De Dinaisth</b>\" begins when most things have ended, on the surface of a Satellite where the remaining immortals have gathered, and are looking up at the <b>lightless skies</b>.");
 add_text(&neauismetica, "This series of disjointed " SENDNAME(neon_hermetism_path, "concepts") ", " SEND(characters_path) " and " SENDNAME(dinaisth_path, "places") " are the connecting thread that lives through " SEND(aliceffekt_path) "'s music, " SENDNAME(devine_lu_linvega_path, "Devine") "'s " SENDNAME(illustration_path, "illustrations") ", and are the culture behind the " SEND(lietal_path) " Language.");
 add_quote(&neauismetica, "Immortals speak not with words, but wait for things to happen, and merely point at them.", "Coralinev");
-add_html(&neauismetica, "<center><img src='media/identity/seal.png'/></center>");
+add_html(&neauismetica, "<center><img src='../media/identity/seal.png' width='200'/></center>");
 
 Term es_gulf_sunflowers = create_term("es gulf sunflowers", "Es Gulf Sunflowers is a Neauismetic album.");
 set_parent(&es_gulf_sunflowers, &neauismetic);
@@ -1693,7 +1677,7 @@ set_parent(&soies, &neon_hermetism);
 add_text(&soies, "The " SENDNAME(soies_machine_path, "Soies machines") " finds their own location according to the " SEND(longest_end_path) ", by generating the value disallowed to exist withinin the currently renderer occuring.");
 add_text(&soies, "It allows for the study of unexisting events, to align the Occuring with the neighboring optimal possible worlds.");
 add_text(&soies, "In other words, by generating the first events outside of the renderable, or Possible World, the " SEND(actors_path) " steer themselves inside and outside of the possible and impossible chain of events, granting themselves access to various normaly impossible actions.");
-add_html(&soies, "<center><img src='media/identity/soies.png'/></center>");
+add_html(&soies, "<center><img src='../media/identity/soies.png' width='200'/></center>");
 add_text(&soies, "This line of research is tied to the discovery of the " SEND(ehrivevnv_path) " as the resolve of the puzzle only exists within the " SEND(longest_end_path) ".");
 
 Term longest_end = create_term("longest end", "The Longest End is the succeeding occurence.");
@@ -1770,7 +1754,7 @@ add_text(&andes_castel, "Injected into " SEND(dinaisth_path) " by " SEND(andes_p
 add_text(&andes_castel, "While its intricate networks of ornate tunnels and decorated halls appear to suggest its creation to be the result of artificial construction —  It was found by the " SENDNAME(neon_hermetism_path, "Neon Hermetists") " to have come into being from the natural sway of the " SENDNAME(kanikule_path, "ocean") ", erosion and accumulation of debris, across a long period of time.");
 add_text(&andes_castel, "When looking North from the " SENDNAME(laeisth_path, "Oasis") ", three High Towers, connected by bridges, are visible above the horizon. Its very existence suggest an " SENDNAME(soies_injection_path, "injection") " into the " SEND(soies_path) ".");
 add_text(&andes_castel, "The bridge connecting the center, and highest, Tower(B) to the rightmost one(C)(when observed from the Oasis) has been sectioned. A silhouette of the Castel can be seen on the " SEND(neauismetica_path) " sigil.");
-add_html(&andes_castel, "<center><img src='media/identity/seal.png'/></center>");
+add_html(&andes_castel, "<center><img src='../media/identity/seal.png'/></center>");
 add_text(&andes_castel, "The buildings have been mostly left vacant, except from the occasional visit of the " SENDNAME(rlionn_path, "Rlionns") ".");
 
 Term duomo = create_term("duomo", "Duomo covers most of the northern hemisphere of Dinaisth.");
@@ -2183,15 +2167,15 @@ set_parent(&goals, &devine_lu_linvega);
 // set_icon(&goals, "M150,60 l0,180 M180,60 l0,180 l0,-60 a30,-30 0 0,1 30,-30 l30,0 M120,60 l0,180 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0");
 add_text(&goals, "<b>Internal</b> are goals dealing with personal growth, and <b>external</b>, as having an effect on the outside world.");
 add_header(&goals, "Internal Targets");
-add_text(&goals, "<b>See the world</b>. Travel the earth by my own means and my own terms. Find countries too small to be seen on a map and go there.");
-add_text(&goals, "<b>Status</b> Currently living in " SEND(japan_path) ", after effectively completing a 4 years long " SENDNAME(pino_path, "sailing") " adventure circumnavigating the " SENDNAME(marquesas_path, "Pacific Ocean") ", across countries I did not know existed.");
-add_text(&goals, "<b>Become polyglot</b>. Fluently speak <b>French</b>, " SEND(english_path) ", " SEND(russian_path) " and " SEND(japanese_path) ", to speak four languages from four different roots.");
-add_text(&goals, "<b>Status</b> Acquired a basic understanding of written and spoken Japanese after living in " SEND(tokyo_path) " for 2 years. Took introductory " SEND(russian_path) " classes, have yet to visit Russia. English, done. French, done.");
+add_quote(&goals, "<b>See the world</b>. Travel the earth by my own means and my own terms. Find countries too small to be seen on a map and go there.", NULL);
+add_text(&goals, "<b>— Status</b> Currently living in " SEND(japan_path) ", after effectively completing a 4 years long " SENDNAME(pino_path, "sailing") " adventure circumnavigating the " SENDNAME(marquesas_path, "Pacific Ocean") ", across countries I did not know existed.");
+add_quote(&goals, "<b>Become polyglot</b>. Fluently speak <b>French</b>, " SEND(english_path) ", " SEND(russian_path) " and " SEND(japanese_path) ", to speak four languages from four different roots.", NULL);
+add_text(&goals, "<b>— Status</b> Acquired a basic understanding of written and spoken Japanese after living in " SEND(tokyo_path) " for 2 years. Took introductory " SEND(russian_path) " classes, have yet to visit Russia. English, done. French, done.");
 add_header(&goals, "External Targets");
-add_text(&goals, "Facilitate the creation and <b>acceleration of arts & sciences</b> through tooling and mentorship.");
-add_text(&goals, "<b>Status</b> Created free and open-source " SEND(tools_path) " to compose music, to create graphics and to write. Currently building decentralized social & networking platforms to fuel collaboration among a collective of artists and developers.");
-add_text(&goals, "<b>Minimize pain and suffering</b>, including that of non-human animals through the promotion and application of pragmatic solutions to nutrition and sustainable energy.");
-add_text(&goals, "<b>Status</b> Currently living and working off-the-grid off solar energy, and have optimized for means of generating the least amount of waste through an ascetic lifestyle and a plant-based diet.");
+add_quote(&goals, "Facilitate the creation and <b>acceleration of arts & sciences</b> through tooling and mentorship.", NULL);
+add_text(&goals, "<b>— Status</b> Created free and open-source " SEND(tools_path) " to compose music, to create graphics and to write. Currently building decentralized social & networking platforms to fuel collaboration among a collective of artists and developers.");
+add_quote(&goals, "<b>Minimize pain and suffering</b>, including that of non-human animals through the promotion and application of pragmatic solutions to nutrition and sustainable energy.", NULL);
+add_text(&goals, "<b>— Status</b> Currently living and working off-the-grid off solar energy, and have optimized for means of generating the least amount of waste through an ascetic lifestyle and a plant-based diet.");
 
 Term death = create_term("death", "The Death Progress Bar.");
 set_parent(&death, &devine_lu_linvega);
@@ -2552,30 +2536,25 @@ set_parent(&systems, &notebook);
 
 Term vedic = create_term("vedic", "The Vedic multiplication table is a very elegant and visual way to multiply.");
 set_parent(&vedic, &systems);
-// set_icon(&vedic, "M75,60 L75,60 L75,240 M225,60 L225,60 L225,240 M210,60 L210,60 L210,240 M60,75 L60,75 L240,75 M60,90 L60,90 L240,90 M60,225 L60,225 L240,225 M60,210 L60,210 L240,210 M60,195 L60,195 L240,195");
 add_text(&vedic, "To find the result, draw lines for each individual numbers, where each number intersects the other's perpendicularly and <b>count the number of intersections</b>.");
 // add_generic/vedic.svg(&vedic, "undefined");
 
 Term needles = create_term("needles", "Needles are glyphs of which the intersection count is equal to the value of the character.");
 set_parent(&needles, &systems);
-// set_icon(&needles, "M150.0,60.0 L150.0,60.0 L150.0,135.0 M227.9,195.0 L227.9,195.0 L163.0,157.5 M72.1,195.0 L72.1,195.0 L137.0,157.5");
 add_text(&needles, "The glyphs are not used into any specific project, but are available here as a reference of a meaningful numeric glyph system.");
 // add_generic/needles.svg(&needles, "undefined");
 
 Term shorthand = create_term("shorthand", "Shorthand is a calligraphy style developed to take faster notes.");
 set_parent(&shorthand, &systems);
-// set_icon(&shorthand, "M150.0,60.0 L150.0,60.0 L150.0,135.0 M227.9,195.0 L227.9,195.0 L163.0,157.5 M72.1,195.0 L72.1,195.0 L137.0,157.5");
 add_text(&shorthand, "I played with different ideas and this is the system that worked best for me. It's a mixture of already existing shorthand systems that fits my writing style.");
 // add_generic/shorthand.svg(&shorthand, "undefined");
 add_text(&shorthand, "Simple enough, now most letters are transformed into a single stroke shape that flows and combines to form shorter words, that can be written faster.");
 
-Term unreleased = create_term("unreleased", "A list of Unreleased projects.");
+Term unreleased = create_portal("unreleased", "A list of Unreleased projects.");
 set_parent(&unreleased, &visual);
-// set_icon(&unreleased, "M60,240 a30,-30 0 0,1 30,-30 l150,0 M90,195 a30,-30 0 0,1 30,-30 l90,0 M120,150 a30,-30 0 0,1 30,-30 l30,0 M195,120 l45,0 M225,165 l15,0 M150,105 a30,-30 0 0,1 30,-30 l60,0");
 
 Term marabu = create_term("marabu", "Marabu is a music tool.");
 set_parent(&marabu, &unreleased);
-// set_icon(&marabu, "M60,60 a60,60 0 0,1 60,60 l0,120 M180,240 l0,-120 a60,-60 0 0,1 60,-60");
 add_text(&marabu, "<b>Marabu</b> is cross-platform tracker-type composition tool and synthesizer.");
 add_text(&marabu, "Marabu was original built as a fork to the opensource <i >Soundbox</i>, and is meant to be an improvement on functionalities and design.");
 add_html(&marabu, MODITCHIO("173813"));
@@ -2585,13 +2564,11 @@ add_link(&marabu, "sources", "https://github.com/neauoire/Marabu");
 
 Term babelium = create_term("babelium", "Babelium is a roguelike set in the Borges' Library of Babel.");
 set_parent(&babelium, &unreleased);
-// set_icon(&babelium, "M60,240 a30,-30 0 0,1 30,-30 l150,0 M90,195 a30,-30 0 0,1 30,-30 l90,0 M120,150 a30,-30 0 0,1 30,-30 l30,0 M195,120 l45,0 M225,165 l15,0 M150,105 a30,-30 0 0,1 30,-30 l60,0");
 add_text(&babelium, "Begin by finding the <i >guide</i>(<b>g</b>), in every second hexagon, the guide will tell you things to look for. If you find yourself to be walking rather slowly, find the closet in which you can sleep standing up.");
 add_link(&babelium, "sources", "https://github.com/Echorridoors/Babelium");
 
 Term modernista = create_term("modernista", "Modernista is a series of 4 prints inspired from American Modernism.");
 set_parent(&modernista, &unreleased);
-// set_icon(&modernista, "M60,240 a30,-30 0 0,1 30,-30 l150,0 M90,195 a30,-30 0 0,1 30,-30 l90,0 M120,150 a30,-30 0 0,1 30,-30 l30,0 M195,120 l45,0 M225,165 l15,0 M150,105 a30,-30 0 0,1 30,-30 l60,0");
 
 Term blindfolk = create_term("blindfolk", "Blindfolk was a esoteric multiplayer programming combat game.");
 set_parent(&blindfolk, &unreleased);
