@@ -629,7 +629,7 @@ add_text(&brane, "This " SENDNAME(polygonoscopy_path, "Polygonoscopic") " collec
 Term astratas = create_album("astratas", "The Astratas topologic maps oscillate to Serventines's Polygonoscopic frequencies.");
 set_parent(&astratas, &polygonoscopy);
 // set_icon(&astratas, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
-// add_quote(&astratas, "The Art of Cartography attained such Perfection that the map of a single Province occupied the entirety of a City, and the map of the Empire, the entirety of a Province.", "undefined | Jorge Luis Borges | On Rigor in Science | https://en.wikipedia.org/wiki/On_Exactitude_in_Science");
+add_quote(&astratas, "The Art of Cartography attained such Perfection that the map of a single Province occupied the entirety of a City, and the map of the Empire, the entirety of a Province.", "Jorge Luis Borges, On Rigor in Science");
 
 Term ar_moire = create_album("ar moire", "The Ar Moire diagrams are Polygonoscopic sounds.");
 set_parent(&ar_moire, &polygonoscopy);
@@ -653,7 +653,6 @@ Term flactals = create_album("flactals", "Flactals is a series of abstract six-s
 set_parent(&flactals, &sketchbook);
 // set_icon(&flactals, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 add_text(&flactals, "These flowers have inspired a series of illustrations used in Elodie Lareine's book titled \"" SEND(vast_path) "\" as well as the cover of the " SEND(aliceffekt_path) " single titled \"" SEND(known_magye_path) "\", released in 2014.");
-// add_quote(&flactals, "Drawing flowers, therapeutic.", "undefined");
 
 Term old_cities = create_album("old cities", "The Old Cities were old drawings created for school.");
 set_parent(&old_cities, &sketchbook);
@@ -764,7 +763,7 @@ add_text(&horaire, "A <b>task name</b> can be generated from the intersection of
 // add_table(&horaire, "18 | audio release    | 28 | visual release    | 38 | software");
 // add_table(&horaire, "19 | performance      | 29 | showcase          | 39 | talk");
 add_text(&horaire, "You can learn more about the " SENDNAME(oscean_path, "related tools") ", and " SENDNAME(about_path, "related projects") ", to the entire " SEND(nataniev_path) " ecosystem. For additional questions, contact " SEND(devine_lu_linvega_path) "");
-// add_quote(&horaire, "<b>Effectiveness</b>, is doing the right thing.<br><b>Efficiency</b>, is doing it the right way.", "undefined");
+add_quote(&horaire, "<b>Effectiveness</b>, is doing the right thing.<br><b>Efficiency</b>, is doing it the right way.", "Unknown");
 add_link(&horaire, "view database", "https://github.com/XXIIVV/Oscean/blob/master/scripts/database/horaire.tbtl");
 
 Term tracker = create_term("tracker", "The Tracker shows issues and balance.");
@@ -814,7 +813,7 @@ set_parent(&webring, &nataniev);
 add_text(&webring, "The <b>webring</b> is a directory of neighbor websites and portfolios.");
 add_text(&webring, "This is an attempt to <b>inspire artists and developers to create and maintain their own personal website</b>, and share traffic organically among each other. The ring's aim is to promote the creation of hand crafted diaries, wikis, bookmarks and portfolios.");
 add_text(&webring, "You can view the full directory " LINKNAME("https://webring.xxiivv.com/", "here") ", or more info on how to join the network " LINKNAME("https://github.com/XXIIVV/webring", "here") ". To navigate the webring, start " LINKNAME("http://webring.xxiivv.com/#random", "here") ". The webring also operates as a decentralized forum based on " LINKNAME("https://github.com/buckket/twtxt", "twtxt") ", see the " LINKNAME("https://webring.xxiivv.com/hallway.html", "Hallway") ".");
-// add_quote(&webring, "The internet is a utility world for me now. It is efficient and all-encompassing. It is not very much fun.", "undefined | Dan Nosowitz | Source | http://nymag.com/selectall/2018/05/i-dont-know-how-to-waste-time-on-the-internet-anymore.html");
+add_quote(&webring, "The internet is a utility world for me now. It is efficient and all-encompassing. It is not very much fun.", "Dan Nosowitz");
 add_link(&webring, "sources", "https://github.com/XXIIVV/webring");
 add_link(&webring, "jump in", "https://webring.xxiivv.com/#random");
 
@@ -849,7 +848,7 @@ Term tools = create_portal("tools", "The Tools collection is an ecosystem of ope
 set_parent(&tools, &research);
 // set_icon(&tools, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
 add_text(&tools, "You can learn more about the philosophy behind these various projects on the " LINKNAME("https://100r.co/pages/tools_ecosystem.html", "Hundred Rabbits blog") ".");
-// add_quote(&tools, "What I cannot create, I do not understand", "undefined | Richard Feynman");
+add_quote(&tools, "What I cannot create, I do not understand", "Richard Feynman");
 add_link(&tools, "itch", "http://hundredrabbits.itch.io/");
 add_link(&tools, "sources", "http://github.com/hundredrabbits");
 
@@ -860,7 +859,7 @@ add_text(&orca, "Orca uses an <b>esoteric programming language</b> designed to q
 add_text(&orca, "The " LINKNAME("https://github.com/hundredrabbits/Orca", "application") " is capable of communicating with audio & visual softwares via " LINKNAME("https://github.com/hundredrabbits/Orca/blob/master/WORKSHOP.md", "MIDI, OSC & UDP") ".");
 add_html(&orca, MODITCHIO("225814"));
 add_text(&orca, "You can find a <b>portable and lightweight version</b> of Orca " LINKNAME("https://github.com/hundredrabbits/orca-c", "here") ", and a version  for the " SEND(norns_path) " " LINKNAME("https://llllllll.co/t/orca/22492", "here") ". Learn more by reading the " LINKNAME("https://github.com/Hundredrabbits/Orca", "manual") ", or have a look at a " LINKNAME("https://www.youtube.com/watch?v=RaI_TuISSJE", "tutorial video") ". If you need <b>help</b>, visit the " LINKNAME("https://talk.lurk.org/channel/orca", "chatroom") " or the " LINKNAME("https://llllllll.co/t/orca-live-coding-tool/17689", "forum") ".");
-// add_quote(&orca, "Each letter of the alphabet is an operation, uppercase letters operate each frame, lowercase letters operate on bang.", "undefined");
+add_quote(&orca, "Each letter of the alphabet is an operation, uppercase letters operate each frame, lowercase letters operate on bang.", "Orca");
 add_link(&orca, "sources", "https://github.com/hundredrabbits/Orca");
 add_link(&orca, "builds", "http://hundredrabbits.itch.io/Orca");
 add_link(&orca, "live", "https://hundredrabbits.github.io/Orca");
@@ -1716,7 +1715,7 @@ set_parent(&neauismetica, &research);
 add_text(&neauismetica, "The tales of the <b>Neauismetica</b> unfold on a minuscule " SENDNAME(dinaisth_path, "celestial object") ", where three " SENDNAME(characters_path, "Immortals") " dwell.");
 add_text(&neauismetica, "Originally written in French, \"<b>Les Récits De Dinaisth</b>\" begins when most things have ended, on the surface of a Satellite where the remaining immortals have gathered, and are looking up at the <b>lightless skies</b>.");
 add_text(&neauismetica, "This series of disjointed " SENDNAME(neon_hermetism_path, "concepts") ", " SEND(characters_path) " and " SENDNAME(dinaisth_path, "places") " are the connecting thread that lives through " SEND(aliceffekt_path) "'s music, " SENDNAME(devine_lu_linvega_path, "Devine") "'s " SENDNAME(illustration_path, "illustrations") ", and are the culture behind the " SEND(lietal_path) " Language.");
-add_quote(&neauismetica, "Immortals speak not with words, but wait for things to happen, and merely point at them.", "undefined");
+add_quote(&neauismetica, "Immortals speak not with words, but wait for things to happen, and merely point at them.", "Coralinev");
 add_html(&neauismetica, "<center><img src='media/identity/seal.png'/></center>");
 
 Term es_gulf_sunflowers = create_term("es gulf sunflowers", "Es Gulf Sunflowers is a Neauismetic album.");
@@ -1770,7 +1769,7 @@ add_text(&ehrivevnv, "The Ehrivevnv was found to exists in the timelines that pe
 add_text(&ehrivevnv, "The puzzle is orbited by both " SEND(dinaisth_path) ", and " SEND(aitasla_path) ". Its discovery, and the research that it inspired, ultimately brought about the " SENDNAME(feu_path, "completion of Science") ".");
 add_text(&ehrivevnv, "This superstructure is located further than natural light could ever reach, blanketed in perpetual darkness and cold, in near infinite space and " SENDNAME(vetetrandes_path, "stasized time") ". The only light ever to reach the surface of the puzzle is emited from " SEND(dinaisth_path) ".");
 add_text(&ehrivevnv, "It is believed by " SEND(neon_hermetism_path) " that it might be the creation of " SEND(actors_path) " — " SEND(soies_injection_path) ".");
-add_quote(&ehrivevnv, "Et haec revelantur in virtute et veritate non Vi.", "undefined");
+add_quote(&ehrivevnv, "Et haec revelantur in virtute et veritate non Vi.", "Unknown");
 
 Term soies = create_term("soies", "The Soies are the studies of the influence of Actors.");
 set_parent(&soies, &neon_hermetism);
@@ -1963,7 +1962,7 @@ set_parent(&netherlands, &travel);
 Term japan = create_portal("japan", "A variety of diary entries written throughout trips to Japan.");
 set_parent(&japan, &travel);
 // set_icon(&japan, "M60,90 L60,90 L240,90 M150,60 L150,60 L150,240 M150,90 Q150,150 60,210 M150,90 Q150,150 240,210 M105,210 L105,210 L195,210");
-add_quote(&japan, "Let's never come here again 'cos it would never be as much fun.", "undefined | Charlotte | Lost in Translation");
+add_quote(&japan, "Let's never come here again 'cos it would never be as much fun.", "Charlotte, Lost in Translation");
 
 Term minamiise = create_album("minamiise", "We sailed to Minamiise in the spring of 2019, from Shizuoka.");
 set_parent(&minamiise, &japan);
@@ -2070,7 +2069,7 @@ add_text(&devine_lu_linvega, "<b>Devine Lu Linvega</b> is composing " SENDNAME(a
 add_text(&devine_lu_linvega, "Since 2006, Devine has been populating this " SENDNAME(about_path, "wiki") " with notes on various topics, including on " SEND(language_path) ", " SEND(lifestyle_path) " and " SEND(nutrition_path) ". You can learn more about their <b>related interests</b> in the " SEND(mirrors_path) ", and in the " SEND(directory_path) ".");
 add_text(&devine_lu_linvega, "They currently live aboard a " SENDNAME(pino_path, "sailboat") ", somewhere along the foggy coast of " SEND(japan_path) ". You can follow their position " LINKNAME("http://100r.co/#map", "here") ", or learn more about offgrid living " LINKNAME("https://100r.co/pages/knowledge.html", "here") ".");
 add_text(&devine_lu_linvega, "Get in touch via email at <b>aliceffekt@gmail.com</b>, or<br />on the fediverse at <b><a href='http://merveilles.town/@neauoire' target='_blank' rel='noreferrer' class='external '>merveilles.town/@neauoire</a></b>.");
-add_quote(&devine_lu_linvega, "To flee is Life,<br />To linger, death.", "Let The Right One In");
+add_quote(&devine_lu_linvega, "To flee is Life,<br />To linger, death.", "");
 
 Term lifestyle = create_index("lifestyle", "The collection of diary entries on Lifestyle.");
 set_parent(&lifestyle, &devine_lu_linvega);
@@ -2084,7 +2083,7 @@ add_text(&aesthetics, "I have aligned my life toward a singular design, the <b>a
 add_text(&aesthetics, "The analysis of " SENDNAME(horaire_path, "personal statistics") " recorded through <b>daily journaling</b>, revealed " SEND(travel_path) " to convert into the most inspiration hours. I have then steered my creative work toward facilitating opportunities to travel.");
 add_text(&aesthetics, "Multi-tasking revealed itself to have a negative impact on my productivity. Working within the confines of a single medium, would convert into long periods of lesser creativity and intermittent productivity. Living at any one place over a period of a year showed a decay in inspiration. Leaving school, learning to play music, moving abroad — showed an improvement in the realization of <i >Arts & Sciences</i>.");
 add_text(&aesthetics, "Automating work always converted to higher long-term output than attempts at brute force. Building specific " SEND(tools_path) " mostly returned higher performance than " SENDNAME(about_path, "learning general purpose tools") ".");
-// add_quote(&aesthetics, "Optimizing toward the <b>need for less revenue</b> has yielded better results than optimizing toward the generation of more.", "undefinedOptimizing toward the {(bold "need for less revenue")} has yielded better results than optimizing toward the generation of more.");
+add_quote(&aesthetics, "Optimizing toward the <b>need for less revenue</b> has yielded better results than optimizing toward the generation of more.", "DLL");
 add_text(&aesthetics, "Remaining immobile in moments of doubts and planning, always converted into better output, against acting impulsively and making possible accidental steps away from the acceleration of <i >Arts & Sciences</i>.");
 add_text(&aesthetics, "I have kept " SENDNAME(journal_path, "journals") " recording oscillation in flux of <b>Efficiency</b> and <b>Effectiveness</b>, and used this data to optimize and steer moods of productivity. Each day has a singular task assigned, connected to a specific medium, suggested from previous optimal patterns of productivity.");
 add_text(&aesthetics, "When a day ends before its task was completed, the day was a planning failure; and the task is broken down into smaller tasks, each assigned to one day. When the task is completed before mid-day, the day is also a planning failure.");
@@ -2098,11 +2097,11 @@ add_text(&nomad, "There was a time in my life when I may have felt homesick. But
 add_text(&nomad, "An office is no place a multi-disciplinarist, and " SEND(japan_path) " was where I last fought this loosing battle. My desk, not the medium onto which I would acquire the skills I longed for.");
 add_text(&nomad, "The suffocating curiousity of wanting to know how different my life might be, had gotten worse than the daily frictions of my current situation. The decision of living aboard a " SENDNAME(pino_path, "float home") " was not picked amongst other equally enticing ideas, for it was, at the time, the only solution that would align with what I wanted in life.");
 add_text(&nomad, "The monthly rent of our beachside Tokyo appartment was of about 1.5K$, and transitioning from it, to a sailboat, implicated some serious downsizing. The way we looked at it was that, within 3 years, our 20K$ sailboat would be paid at the rate of 600$ per month — Or that by cutting the costs of our current living situation in half, we could be both \"home owners\" and keep our traveling options open.");
-add_quote(&nomad, "Will you trade the proximity to friends and family in exchange for your independence?", "undefined");
+add_quote(&nomad, "Will you trade the proximity to friends and family in exchange for your independence?", "DLL");
 add_text(&nomad, "To think that, at the time, the most heart-breaking things to let go of were instruments, old consoles, books and some camera equipment — When the truly hard things to let go of would be the habitual bath, tap water and reliable internet connection.");
 add_text(&nomad, "Everything costs more than expected, takes longer than expected and Amazon doesn't deliver to your " SENDNAME(marquesas_path, "desert island") ". Surely you did not do all this travel for the travel alone, you had passions, habits and goals when you left.");
 add_text(&nomad, "The wind rocks the habitat sideways, keeping you up at night. But at least, you get to spend your day writing. You forget about tap water, don't mind the warm water from the plastic jugs, you wonder why people take showers every day, and time away from social networks really does make you feel better.");
-add_quote(&nomad, "Being nomad is trading the things you think you care about, for things you didn't know existed.", "undefined");
+add_quote(&nomad, "Being nomad is trading the things you think you care about, for things you didn't know existed.", "DLL");
 add_text(&nomad, "Suddenly, it's business as usual. You get back to building things, only now, when you look outside, the upmost gorgeous sunset precedes the darkest of night.");
 add_text(&nomad, "You learnt how to fix sails, repair a toilet, create electronic systems, maintain an engine — Even to live without a fridge and power.");
 add_text(&nomad, "We have seen every sunset and almost every sunrise, we have sailed with dolphins, we have climbed mountains on desert islands, and we have met the most amazing people.");
@@ -2115,11 +2114,11 @@ add_text(&nutrition, "The human body's own proteins are constantly being broken 
 add_text(&nutrition, "The human body is mostly made of proteins, and proteins are made of amino acids - permutations of carbon, oxygen, hydrogen, nitrogen and sometimes sulphur. There are 22 amino acids in total and all but 9 can be synthesized, the <b>Essential Amino Acids</b>.");
 add_text(&nutrition, "To be used for growth and repair, a protein needs have access to the full sequence of required essential amino acids. If an essential amino acid is missing, the unusable remaining amino acids are broken down into fats or sugars.");
 add_text(&nutrition, "Examples of foods with essential amino acid content of at least 70% of a complete protein(see <i >Limiting Amino Acids</i>) are oats, garbanzo beans, sunflower seeds, buckwheat, red/white/black beans, rice, peanuts and pumpkin seeds.");
-// add_quote(&nutrition, "There are a few things in life that are as transformative and transhumanistic as " SEND(nutrition_path) ".", "undefinedThere are a few things in life that are as transformative and transhumanistic as {(__link "nutrition")}.");
+add_quote(&nutrition, "There are a few things in life that are as transformative and transhumanistic as " SEND(nutrition_path) ".", "DLL");
 add_text(&nutrition, "There are also high-quality proteins in green beans, swiss chard, broccoli, mustard greens, asparagus and potatoes but in lesser quantity.");
 add_text(&nutrition, "Soy products have within them 100% of a complete protein, or the correct ratio of essential amino acids for the body to use in tissue growth and repair.");
 add_text(&nutrition, "The high-quality protein foods can be made whole by combining with other ingredients, but the basic optimal combinations is <b>Beans with grains, nuts or seeds</b>.");
-add_quote(&nutrition, "The doctor of the future will give no medicine, but will instruct his patient in the care of the human frame in diet and in the cause and prevention of diseases.", "undefined | Thomas Edison | 1903");
+add_quote(&nutrition, "The doctor of the future will give no medicine, but will instruct his patient in the care of the human frame in diet and in the cause and prevention of diseases.", "Thomas Edison, 1903");
 add_link(&nutrition, "wikiversity", "https://en.wikiversity.org/wiki/Should_we_go_vegan%3F");
 add_link(&nutrition, "vegan health", "https://veganhealth.org/daily-needs/");
 add_link(&nutrition, "low-cost meals plans", "https://www.vrg.org/journal/vj2006issue2/2006_issue2_mealplans.php");
@@ -2204,7 +2203,7 @@ add_link(&computer, "usesthis", "https://usesthis.com/interviews/devine.lu.linve
 Term plan9 = create_album("plan9", "Notes and links related to the Plan9 operating system.");
 set_parent(&plan9, &computer);
 // set_icon(&plan9, "M75,90 L75,90 L225,90 M105,90 A-15,15 0 0,0 90,105 A0,120 0 0,0 90,225 A15,15 0 0,0 105,240 A-30,0 0 0,0 75,240 A15,-15 0 0,0 90,225 A0,-120 0 0,0 90,105 A-15,-15 0 0,0 75,90 M195,90 A15,15 0 0,1 210,105 A0,120 0 0,1 210,225 A-15,15 0 0,1 195,240 A30,0 0 0,1 225,240 A-15,-15 0 0,1 210,225 A0,-120 0 0,1 210,105 A15,-15 0 0,1 225,90");
-add_quote(&plan9, "An argument for simplicity and clarity.", "undefined | Rob Pike");
+add_quote(&plan9, "An argument for simplicity and clarity.", "Rob Pike");
 add_dict(&plan9, &plan9_links);
 add_link(&plan9, "notes", "https://github.com/neauoire/p9-notes");
 add_link(&plan9, "irc", "https://9p.io/wiki/plan9/IRC/index.html");
@@ -2226,7 +2225,6 @@ add_text(&keyboard, "I currently use the " LINKNAME("https://olkb.com/planck/hi-
 add_header(&keyboard, "Previous Models");
 add_text(&keyboard, "The keycaps were the " LINKNAME("https://www.massdrop.com/buy/npkc-blank-pbt-keycaps", "Blank Mint PBT") " with " LINKNAME("http://www.keyboardco.com/blog/index.php/2012/12/an-introduction-to-cherry-mx-mechanical-switches/", "Red Cherry MX") " switches. I have also installed " LINKNAME("http://www.amazon.ca/gp/product/B00VHXHP6Q?psc=1&redirect=true&ref_=oh_aui_detailpage_o00_s00", "sound dampening o-rings") ". The keyboard connected, with a braided " LINKNAME("http://www.amazon.ca/gp/product/B004YD6LW0?psc=1&redirect=true&ref_=oh_aui_detailpage_o00_s00", "90 degrees angle USB wire") ". The color choice is inspired from the " SEND(verreciel_path) " interface.");
 // add_text(&keyboard, "If you're looking for the " SEND(alicef_path) " one-handed keyboard, see " SEND(juni_path) ". Learn more about my " SEND(workstation_path) ".");
-add_quote(&keyboard, "Because it cheers me up.", "undefined");
 
 Term directory = create_term("directory", "The Directory is a curated list of timeless art.");
 set_parent(&directory, &devine_lu_linvega);
@@ -2283,7 +2281,7 @@ add_text(&goals, "<b>Status</b> Currently living and working off-the-grid off so
 Term death = create_term("death", "The Death Progress Bar.");
 set_parent(&death, &devine_lu_linvega);
 // set_icon(&death, "M60,60 L240,60  M180,60 L180,225  A15,15 0 0,0 195,240  A30,0 0 0,1 225,240  A15,-15 0 0,0 240,225  M190,160 L240,120  M135,105 L90,105  M90,60 Q90,150 60,150  M135,105 Q135,240 60,240  M90,150 L120,165");
-add_quote(&death, "Death is only one of many ways to lose your life.", "undefined | Simon, Alvah | North To The Night");
+add_quote(&death, "Death is only one of many ways to lose your life.", "Simon Alvah, North To The Night");
 add_header(&death, "Marbles Jar");
 add_text(&death, "The " LINKNAME("http://www.johnmaxwell.com/blog/dont-lose-your-marbles", "Jars of Marbles model") " says that \"The average person lives <b>about 75 years, of 52 weeks each, totalling 3,900 Saturdays</b> which the average person has in their lifetime.\"");
 // add_code(&death, "Available Marbles: 3900");
@@ -2380,14 +2378,14 @@ Term mirrors = create_portal("mirrors", "The collection of Mirrors.");
 set_parent(&mirrors, &research);
 // set_icon(&mirrors, "M60,150 Q150,60 240,150 Q150,240 60,150 M150,120 A30,30 0 0,1 180,150 A-30,30 0 0,1 150,180 A-30,-30 0 0,1 120,150 A30,-30 0 0,1 150,120 Z");
 add_text(&mirrors, "The <b>mirrors</b> are collected notes on the topics of " SEND(knowledge_path) " and " SEND(wisdom_path) ".");
-add_quote(&mirrors, "Mystery exists in the mind, not in reality. <br />Confusion exists in the map, not in the territory.", "undefined");
+add_quote(&mirrors, "Mystery exists in the mind, not in reality. <br />Confusion exists in the map, not in the territory.", "E.T. Jaynes");
 
 Term wisdom = create_index("wisdom", "A collection of notes on Wisdom.");
 set_parent(&wisdom, &mirrors);
 // set_icon(&wisdom, "M155,65 A90,90 0 0,1 245,155 A90,90 0 0,1 155,245 A90,90 0 0,1 65,155 A90,90 0 0,1 155,65 A0,0 0 0,1 155,65 A45,45 0 0,1 200,110 A45,45 0 0,1 155,155 A45,45 0 0,0 110,200 A45,45 0 0,0 155,245 M155,110 L155,110 L155,110 M155,200 L155,200 L155,200");
 add_text(&wisdom, "The end of the cycle is that of the independent, clear-minded, all-seeing Child. That is the level known as <b>wisdom</b>.");
 add_text(&wisdom, "To be a philosopher is not merely to have subtle thoughts, but so to love wisdom as to live according to its dictates, a life of <b>simplicity, independence, magnanimity, and trust</b>.");
-// add_quote(&wisdom, "There are two wisdoms: the first inclines to " SEND(action_path) ", the second to " SEND(inaction_path) ".", "undefinedThere are two wisdoms: the first inclines to {(__link "action")}, the second to {(__link "inaction")}. | Stanislaw Lem | Cyberiada");
+add_quote(&wisdom, "There are two wisdoms: the first inclines to " SEND(action_path) ", the second to " SEND(inaction_path) ".", "Stanislaw Lem, Cyberiada");
 
 Term action = create_term("action", "A collection of notes in regard to Action.");
 set_parent(&action, &wisdom);
@@ -2401,7 +2399,7 @@ add_text(&action, "<b>Ahimsa</b>, or <i >Cause no injury, do no harm</i>, is a B
 // add_list(&action, "You may compete to the full extent of your capabilities, but you may not hunt down your competitors.");
 // add_list(&action, "The creatures who act as though they belond to the world follow the peace-keeping law, they give the creatures around them a chance to grow toward watever it's possible for them to become. That's how man came into being, the australopithecus didn't imagine that the world belonged to them, so they let him live and grow.");
 // add_list(&action, "You must absolutely and forever relinquish the idea that you know who live and who should die on this planet.");
-add_quote(&action, "Be mindful of impermanence.<br /> Be careful of idleness.", "undefined");
+add_quote(&action, "Be mindful of impermanence.<br /> Be careful of idleness.", "Unknown");
 
 Term inaction = create_term("inaction", "A collection of notes in regard to Inaction.");
 set_parent(&inaction, &wisdom);
@@ -2410,7 +2408,7 @@ add_text(&inaction, "<b>Wu Wei</b> means without doing, causing, or making. It f
 // add_list(&inaction, "Establishment of an always perfect tolerance, irrespective of the actions and words of others towards oneself.");
 // add_list(&inaction, "Truthfulness (to say only what is right).");
 // add_list(&inaction, "Rejection of hatred and worship. Not to follow any particular idea. Maintaining the mind in equanimity.");
-add_quote(&inaction, "Many people are afraid of Emptiness, <br />because it reminds them of Loneliness.", "undefined");
+add_quote(&inaction, "Many people are afraid of Emptiness, <br />because it reminds them of Loneliness.", "Unknown");
 
 Term knowledge = create_index("knowledge", "A collection of notes on general Knowledge.");
 set_parent(&knowledge, &mirrors);
@@ -2422,7 +2420,7 @@ set_parent(&programming, &knowledge);
 // set_icon(&programming, "M90,90 L90,90 L210,90 M75,120 L75,120 L225,120 M60,150 L60,150 L240,150 M75,180 L75,180 L225,180 M90,210 L90,210 L210,210 M135,60 L135,60 L165,60 M135,240 L135,240 L165,240");
 add_list(&programming, &programming_knowledge);
 add_list(&programming, &programming_practices);
-add_quote(&programming, "To make a magical technology, it must be sufficiently advanced.", "undefined | Lion Kimbro");
+add_quote(&programming, "To make a magical technology, it must be sufficiently advanced.", "Lion Kimbro");
 
 Term design = create_term("design", "A collection of notes on Design.");
 set_parent(&design, &knowledge);
@@ -2434,16 +2432,16 @@ Term work = create_term("work", "A collection of notes on Work.");
 set_parent(&work, &knowledge);
 // set_icon(&work, "M90,90 L90,90 L210,90 M75,120 L75,120 L225,120 M60,150 L60,150 L240,150 M75,180 L75,180 L225,180 M90,210 L90,210 L210,210 M135,60 L135,60 L165,60 M135,240 L135,240 L165,240");
 add_list(&work, &work_knowledge);
-add_quote(&work, "Work expands so as to fill the time available for its completion.", "undefined | Parkinson's law");
+add_quote(&work, "Work expands so as to fill the time available for its completion.", "Parkinson's law");
 add_list(&work, &work_habits);
 add_list(&work, &work_charisma);
-add_quote(&work, "A leader is best when people barely know they exists, when their work is done, their aim fulfilled, people will say: we did it ourselves.", "undefined | 老子(Lao Tse) | 道德經(Dao De Jing) | https://en.wikipedia.org/wiki/Tao_Te_Ching");
+add_quote(&work, "A leader is best when people barely know they exists, when their work is done, their aim fulfilled, people will say: we did it ourselves.", "老子(Lao Tse), 道德經(Dao De Jing)");
 
 Term writing = create_term("writing", "A collection of notes on Writing.");
 set_parent(&writing, &knowledge);
 // set_icon(&writing, "M90,90 L90,90 L210,90 M75,120 L75,120 L225,120 M60,150 L60,150 L240,150 M75,180 L75,180 L225,180 M90,210 L90,210 L210,210 M135,60 L135,60 L165,60 M135,240 L135,240 L165,240");
 add_list(&writing, &writing_knowledge);
-add_quote(&writing, "I have only made this letter longer because I have not had the time to make it shorter.", "undefined | Blaise Pascal | The Provincial Letters | https://en.wikipedia.org/wiki/Lettres_provinciales");
+add_quote(&writing, "I have only made this letter longer because I have not had the time to make it shorter.", "Blaise Pascal, The Provincial Letters");
 
 Term health = create_term("health", "A collection of notes on Health.");
 set_parent(&health, &knowledge);
@@ -2456,8 +2454,7 @@ set_parent(&collapsology, &knowledge);
 // set_icon(&collapsology, "M90,90 L90,90 L210,90 M75,120 L75,120 L225,120 M60,150 L60,150 L240,150 M75,180 L75,180 L225,180 M90,210 L90,210 L210,210 M135,60 L135,60 L165,60 M135,240 L135,240 L165,240");
 add_text(&collapsology, "We live in a time of social, economic and ecological unravelling. All around us are signs that our whole way of living is already passing into history.");
 add_list(&collapsology, &collapsology_knowledge);
-add_dict(&collapsology, &collapsology_links);
-add_quote(&collapsology, "The end of the human race will be that it will eventually die of civilisation.", "undefined | Ralph Waldo Emerson");
+add_quote(&collapsology, "The end of the human race will be that it will eventually die of civilisation.", "Ralph Waldo Emerson");
 
 Term solarpunk = create_term("solarpunk", "A collection of notes on Solarpunk.");
 set_parent(&solarpunk, &knowledge);
@@ -2474,7 +2471,7 @@ add_quote(&solarpunk, "We're Solarpunks because the only other options are denia
 Term ascetism = create_term("ascetism", "A collection of notes on Ascetism.");
 set_parent(&ascetism, &knowledge);
 // set_icon(&ascetism, "M90,90 L90,90 L210,90 M75,120 L75,120 L225,120 M60,150 L60,150 L240,150 M75,180 L75,180 L225,180 M90,210 L90,210 L210,210 M135,60 L135,60 L165,60 M135,240 L135,240 L165,240");
-add_quote(&ascetism, "A man is wealthy in proportion to the things he can do without.", "undefined | Epicurus");
+add_quote(&ascetism, "A man is wealthy in proportion to the things he can do without.", "Epicurus");
 
 Term cheatsheets = create_index("cheatsheets", "A collection of Cheatsheets.");
 set_parent(&cheatsheets, &mirrors);
@@ -2506,7 +2503,7 @@ add_text(&discourse, "The responses rankings are taken from " LINKNAME("http://w
 // add_table(&discourse, "●●●○○○ | <b>Contradiction</b>      | State the opposing case, what.");
 // add_table(&discourse, "●●○○○○ | <b>Responding to Tone</b> | Responding to the author's tone, how.");
 // add_table(&discourse, "●○○○○○ | <b>Ad Hominem</b>         | Attacking the author directly, who.");
-add_quote(&discourse, "You should attempt to re-express your target's position so clearly, vividly, and fairly that your target says, “Thanks, I wish I'd thought of putting it that way.”", "undefined | Rapoport's First Rule");
+add_quote(&discourse, "You should attempt to re-express your target's position so clearly, vividly, and fairly that your target says, “Thanks, I wish I'd thought of putting it that way.”", "Rapoport's First Rule");
 add_link(&discourse, "kind communication", "https://www.gnu.org/philosophy/kind-communication.html");
 
 Term psychology = create_term("psychology", "A cheatsheet on Psychology.");
@@ -2530,7 +2527,7 @@ add_html(&psychology, "<tr><td>●●●</td><td> Wants to live forever   </td><
 add_html(&psychology, "<tr><td>●●○</td><td> Wants to be remembered  </td><td> Looks for leaders </td><td>Fears uncertainty  </td></tr>");
 add_html(&psychology, "<tr><td>●○○</td><td> Wants to die happy      </td><td> Looks for gods </td><td>Fears pain         </td></tr>");
 add_html(&psychology, "</table>");
-add_quote(&psychology, "The world is a comedy to those that think, a tragedy to those that feel.", "undefined | Howace Walpole");
+add_quote(&psychology, "The world is a comedy to those that think, a tragedy to those that feel.", "Howace Walpole");
 
 Term documentation = create_term("documentation", "A cheatsheet on Documentation.");
 set_parent(&documentation, &cheatsheets);
@@ -2555,7 +2552,7 @@ add_text(&documentation, "<b>Reference</b> guides are technical descriptions of 
 // add_list(&documentation, "References material should be austere and to the point.");
 // add_list(&documentation, "Structure the documentation around the code");
 // add_list(&documentation, "Do nothing but describe");
-add_quote(&documentation, "Clarity is better than cleverness", "undefined");
+add_quote(&documentation, "Clarity is better than cleverness", "unknown");
 add_link(&documentation, "sources", "https://www.divio.com/blog/documentation/");
 
 Term quotes = create_term("quotes", "A collection of Quotes.");
@@ -2571,7 +2568,7 @@ add_header(&quotes, "Body Without Organs");
 add_quote(&quotes, "When you will have made him a body without organs, then you will have delivered him from all his automatic reactions and restored him to his true freedom.", "Antonin Artaud, To Have Done with the Judgment of God");
 add_quote(&quotes, "The trouble is that we have a bad habit, encouraged by pedants and sophisticates, of considering happiness as something rather stupid. Only pain is intellectual, only evil interesting. This is the treason of the artist: a refusal to admit the banality of evil and the terrible boredom of pain.", "Ursula K. Le Guin, The Ones Who Walk Away From Omelas");
 add_header(&quotes, "No 44");
-add_quote(&quotes, "In a little while you will be alone in shoreless space, to wander its limitless solitudes without friend or comrade forever - for you will remain a thought, the only existent thought, and by your nature inextinguishable, indestructible.", "undefined | Mark Twain | The Mysterious Stranger | http://en.wikipedia.org/wiki/The_Mysterious_Stranger");
+add_quote(&quotes, "In a little while you will be alone in shoreless space, to wander its limitless solitudes without friend or comrade forever - for you will remain a thought, the only existent thought, and by your nature inextinguishable, indestructible.", "Mark Twain | The Mysterious Stranger | http://en.wikipedia.org/wiki/The_Mysterious_Stranger");
 add_quote(&quotes, "There is no future. There is no past. <b>Time</b> is simultaneous, an intricately structured jewel that humans insist on viewing one edge at a time, when the whole design is visible in every facet. There is no future. There is no past. Time is simultaneous, an intricately structured jewel that humans insist on viewing one edge at a time, when the whole design is visible in every facet.", "Alan Moore, Watchmen");
 add_header(&quotes, "Infinite World Ethics");
 add_quote(&quotes, "If the cosmos is finite, then our own comparative smallness does not necessarily undermine the idea that our conduct matters even from an impersonal perspective.<br /><br />But if the cosmos is infinite, and we can but do a finite amount of good or bad. In cardinal arithmetic, adding or subtracting a finite quantity does not change an infinite quantity. Every possible act of ours therefore has the same net effect on the total amount of good and bad in a canonically infinite world: none whatsoever.", "Nick Bostrom, Infinite Ethics");
@@ -2592,7 +2589,7 @@ add_text(&language, "The goal of these pages is to host a few resources, summari
 // add_list(&language, "" LINKNAME("https://fr.wiktionary.org/wiki/roÿne", "Roÿnes") ", queen in Middle French.");
 // add_list(&language, "<b>Pleurir</b>, crying-laugh in French.");
 // add_list(&language, "<b>Rions Noir</b>, \"dark laugh\" French palindrome.");
-// add_quote(&language, "Kolik jazyků znáš, <br />tolikrát jsi člověkem.", "undefined | Tomáš Garrigue Masaryk");
+add_quote(&language, "Kolik jazyků znáš, <br />tolikrát jsi člověkem.", "Tomáš Garrigue Masaryk");
 add_link(&language, "koseki-091450", "http://glyphwiki.org/wiki/koseki-091450");
 add_link(&language, "unicode u+21dc9", "https://www.unicode.org/cgi-bin/GetUnihanData.pl?codepoint=U%2B21DC9");
 
@@ -2675,7 +2672,6 @@ Term babelium = create_term("babelium", "Babelium is a roguelike set in the Borg
 set_parent(&babelium, &unreleased);
 // set_icon(&babelium, "M60,240 a30,-30 0 0,1 30,-30 l150,0 M90,195 a30,-30 0 0,1 30,-30 l90,0 M120,150 a30,-30 0 0,1 30,-30 l30,0 M195,120 l45,0 M225,165 l15,0 M150,105 a30,-30 0 0,1 30,-30 l60,0");
 add_text(&babelium, "Begin by finding the <i >guide</i>(<b>g</b>), in every second hexagon, the guide will tell you things to look for. If you find yourself to be walking rather slowly, find the closet in which you can sleep standing up.");
-// add_quote(&babelium, "The game is currently in open beta, if you find any issue, add it to the github repository below.", "undefined");
 add_link(&babelium, "sources", "https://github.com/Echorridoors/Babelium");
 
 Term modernista = create_term("modernista", "Modernista is a series of 4 prints inspired from American Modernism.");

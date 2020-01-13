@@ -170,6 +170,7 @@ void add_html(Term *term, char *text) {
     return;
   }
   term->body_text[term->body_len] = text;
+  term->body_meta[term->body_len] = NULL;
   term->body_tags[term->body_len] = "div";
   term->body_len++;  
 }
@@ -180,6 +181,7 @@ void add_text(Term *term, char *text) {
     return;
   }
   term->body_text[term->body_len] = text;
+  term->body_meta[term->body_len] = NULL;
   term->body_tags[term->body_len] = "p";
   term->body_len++;
 }
@@ -190,6 +192,7 @@ void add_header(Term *term, char *text) {
     return;
   }
   term->body_text[term->body_len] = text;
+  term->body_meta[term->body_len] = NULL;
   term->body_tags[term->body_len] = "h3";
   term->body_len++;
 }
@@ -200,6 +203,7 @@ void add_subheader(Term *term, char *text) {
     return;
   }
   term->body_text[term->body_len] = text;
+  term->body_meta[term->body_len] = NULL;
   term->body_tags[term->body_len] = "h4";
   term->body_len++;  
 }
@@ -330,6 +334,9 @@ void build_pict_part(FILE *f, int id, char *name, char *date, bool caption){
 void build_body_part(FILE *f, Term *term){
   for (int i = 0; i < term->body_len; ++i) {
     fprintf(f, "<%s>%s</%s>", term->body_tags[i], term->body_text[i], term->body_tags[i]);
+    if(term->body_meta[i] != NULL){
+      fprintf(f, "<h5>— %s</h5>", term->body_meta[i]);
+    }
   }
 }
 
