@@ -1,4 +1,5 @@
 add_event(&japan, "20D09", 0, "Return to Japan");
+add_log(&ethics, "20A13", 327);
 add_log(&horaire, "20A12", 324);
 add_log(&hundred_rabbits, "20A11", 224);
 add_log(&grimgrains, "20A10", 255);
