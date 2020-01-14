@@ -16,24 +16,22 @@ add_word(&principles, "Bechdel test", "A method for evaluating the portrayal of 
 add_word(&principles, "Finkbeiner test", "A checklist proposed to help journalists avoid gender bias in media articles about women in science.");
 add_word(&principles, "Ship of Theseus", "A thought experiment that raises the question of whether an object that has had all of its components replaced remains fundamentally the same object.");
 add_word(&principles, "Goodhart’s law", "When a measure becomes a target, it ceases to be a good measure.");
- 
-// Dict time = create_dict("time");
-// add_word(&time, "Causality", "Relationship between a cause and an effect, where the effect is a direct consequence of the cause.");
-// add_word(&time, "Eternal Return", "A theory that the universe and all existence and energy has been recurring, and will continue to recur, in a self-similar form an infinite number of times across infinite time or space.");
-// add_word(&time, "Super now", "A type of prediction taking things that are happening now and imagining that the future will be just like now, only “more extreme.”");
-// add_word(&time, "Teleology", "The study of things that happen for the sake of their future consequences. The fallacious meaning of it is that events are the result of future events.");
-// add_word(&time, "Prediction", "Statement or claim that a particular event will occur in the future in more certain terms than a forecast.");
-// add_word(&time, "Equinox", "Twice a year, around 20 March and 22 September, when daytime and nighttime are of approximately equal duration all over the planet.");
-// add_word(&time, "Solstice", "Twice a year, when either hemisphere has the most sunlight of the year(summer solstice) or the least sunlight of the year(winter solstice) for any place other than the Equator.");
- 
-Dict space = create_dict("space");
-add_word(&space, "Entropy", "Or Irreversibility, a lack of order or predictability; gradual decline into disorder.");
-add_word(&space, "False Vacuum", "An hypothetical vacuum(space devoid of matter) that is not entirely stable. If a small region of the universe reached a more stable vacuum, this change would spread.");
-add_word(&space, "Great Filter", "With no evidence of intelligent life other than ourselves, it appears that the process of starting with a star and ending with \"advanced explosive lasting life\" must be unlikely.");
-add_word(&space, "Von Neumann probes", "Or Universal Assemblers, A spacecraft capable of replicating itself.");
-add_word(&space, "Final anthropic principle", "Intelligent information-processing must come into existence in the Universe, and, once it comes into existence, will never die out.");
-add_word(&space, "Mathematical universe hypothesis", "Or Tegmark Universe, our external physical reality is a mathematical structure consisting of starting conditions with rules about how they are to evolve. Any universe that corresponds to a logically coherent mathematical object exists, but universes exist “more”(in some sense) in proportion to their underlying mathematical simplicity.");
-add_word(&space, "Liminality", "The quality of ambiguity, or disorientation, that occurs during a middle stage, or a threshold. Liminal places can range from borders and frontiers to crossroads and airports, which people pass through but do not live in.");
+
+Dict spacetime = create_dict("spacetime");
+add_word(&spacetime, "Entropy", "Or Irreversibility, a lack of order or predictability; gradual decline into disorder.");
+add_word(&spacetime, "False Vacuum", "An hypothetical vacuum(space devoid of matter) that is not entirely stable. If a small region of the universe reached a more stable vacuum, this change would spread.");
+add_word(&spacetime, "Great Filter", "With no evidence of intelligent life other than ourselves, it appears that the process of starting with a star and ending with \"advanced explosive lasting life\" must be unlikely.");
+add_word(&spacetime, "Von Neumann probes", "Or Universal Assemblers, A spacecraft capable of replicating itself.");
+add_word(&spacetime, "Final anthropic principle", "Intelligent information-processing must come into existence in the Universe, and, once it comes into existence, will never die out.");
+add_word(&spacetime, "Mathematical universe hypothesis", "Or Tegmark Universe, our external physical reality is a mathematical structure consisting of starting conditions with rules about how they are to evolve. Any universe that corresponds to a logically coherent mathematical object exists, but universes exist “more”(in some sense) in proportion to their underlying mathematical simplicity.");
+add_word(&spacetime, "Liminality", "The quality of ambiguity, or disorientation, that occurs during a middle stage, or a threshold. Liminal places can range from borders and frontiers to crossroads and airports, which people pass through but do not live in.");
+add_word(&spacetime, "Causality", "Relationship between a cause and an effect, where the effect is a direct consequence of the cause.");
+add_word(&spacetime, "Eternal Return", "A theory that the universe and all existence and energy has been recurring, and will continue to recur, in a self-similar form an infinite number of times across infinite time or space.");
+add_word(&spacetime, "Super now", "A type of prediction taking things that are happening now and imagining that the future will be just like now, only “more extreme.”");
+add_word(&spacetime, "Teleology", "The study of things that happen for the sake of their future consequences. The fallacious meaning of it is that events are the result of future events.");
+add_word(&spacetime, "Prediction", "Statement or claim that a particular event will occur in the future in more certain terms than a forecast.");
+add_word(&spacetime, "Equinox", "Twice a year, around 20 March and 22 September, when daytime and nighttime are of approximately equal duration all over the planet.");
+add_word(&spacetime, "Solstice", "Twice a year, when either hemisphere has the most sunlight of the year(summer solstice) or the least sunlight of the year(winter solstice) for any place other than the Equator.");
  
 Dict sociology = create_dict("sociology");
 add_word(&sociology, "Philanthropy", "The desire to promote the welfare of others.");
