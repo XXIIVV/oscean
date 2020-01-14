@@ -468,6 +468,15 @@ void build_page(Term *term) {
   char filename[STR_BUF_LEN];
   to_lowercase(term->name, filename, STR_BUF_LEN);
   char filepath[STR_BUF_LEN];
+
+  int result = snprintf(filepath, sizeof filepath, "../site/%s.html", filename);
+  bool is_ok = result > 0 && (size_t)result < sizeof filename;
+
+  if (!is_ok) {
+    printf("error\n" );
+    return;
+  }
+
   snprintf(filepath, STR_BUF_LEN, "../site/%s.html", filename);
   FILE *f = fopen(filepath, "w");
 

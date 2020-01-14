@@ -474,6 +474,7 @@ add_word(&entries_links, "The Fable of the Dragon-Tyrant", "https://nickbostrom.
 add_word(&entries_links, "Green Days In Brunei", "http://e-reading.mobi/chapter.php/71789/6/Sterling_-_Crystal_Express.html");
 add_word(&entries_links, "Bus Ticket Theory", "http://paulgraham.com/genius.html");
 add_word(&entries_links, "Personal Search Infrastructure", "https://beepb00p.xyz/pkm-search.html");
+add_word(&entries_links, "The Depth Year", "https://www.raptitude.com/2017/12/go-deeper-not-wider");
  
 Dict collapsology_links = create_dict("collapsology links");
 add_word(&collapsology_links, "Dark Mountain Manifesto", "https://dark-mountain.net/about/manifesto");

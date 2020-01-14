@@ -2179,31 +2179,22 @@ add_text(&goals, "<b>— Status</b> Currently living and working off-the-grid of
 
 Term death = create_term("death", "The Death Progress Bar.");
 set_parent(&death, &devine_lu_linvega);
-// set_icon(&death, "M60,60 L240,60  M180,60 L180,225  A15,15 0 0,0 195,240  A30,0 0 0,1 225,240  A15,-15 0 0,0 240,225  M190,160 L240,120  M135,105 L90,105  M90,60 Q90,150 60,150  M135,105 Q135,240 60,240  M90,150 L120,165");
 add_quote(&death, "Death is only one of many ways to lose your life.", "Simon Alvah, North To The Night");
 add_header(&death, "Marbles Jar");
 add_text(&death, "The " LINKNAME("http://www.johnmaxwell.com/blog/dont-lose-your-marbles", "Jars of Marbles model") " says that \"The average person lives <b>about 75 years, of 52 weeks each, totalling 3,900 Saturdays</b> which the average person has in their lifetime.\"");
-// add_code(&death, "Available Marbles: 3900");
-// add_code(&death, "Current Marble: #1763");
-// add_code(&death, "Marble Jar: 54.77% Left");
+
 add_header(&death, "80'000 Hours");
 add_text(&death, "The " LINKNAME("https://80000hours.org/career-guide/introduction/", "80'000h model") " says that \"You'll spend about 80,000 hours working in your career: <b>40 hours a week, 50 weeks a year, for 40 years</b>\".");
-// add_code(&death, "Available Hours: 80000h");
-// add_code(&death, "Hours Taken: 27407h");
-// add_code(&death, "Hours Remaining: 52593h");
-// add_code(&death, "Career: 65.74% Left");
 add_link(&death, "le soleil est noir", "https://www.youtube.com/watch?v=MtFeMT5Uugc");
 
 Term faqs = create_index("faqs", "Answers to the frequently asked questions, Faqs.");
 set_parent(&faqs, &devine_lu_linvega);
-// set_icon(&faqs, "M150,60 l0,180 M180,60 l0,180 l0,-60 a30,-30 0 0,1 30,-30 l30,0 M120,60 l0,180 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0");
 add_text(&faqs, "This is a work in progress, I'm currently building this page. Come back later.");
 add_text(&faqs, "This collection of questions and answers come from various interviews taken over the years, many of them are archived " LINKNAME("https://gist.github.com/neauoire", "here") ".");
 add_link(&faqs, "archives", "https://gist.github.com/neauoire");
 
 Term audio_faqs = create_term("audio faqs", "");
 set_parent(&audio_faqs, &faqs);
-// set_icon(&audio_faqs, "M150,60 l0,180 M180,60 l0,180 l0,-60 a30,-30 0 0,1 30,-30 l30,0 M120,60 l0,180 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0");
 add_subheader(&audio_faqs, "What inspired you to play music?");
 add_text(&audio_faqs, "I stumbled on the idea of writing my own music at a chiptune concert, I realized at that moment that I could write music with non-traditional and custom-made instruments.");
 add_subheader(&audio_faqs, "When were you first introduced to chiptune music?");
@@ -2229,7 +2220,6 @@ add_text(&audio_faqs, "Alice Effekt was a " LINKNAME("https://youtu.be/VSKXfDMpq
 
 Term visual_faqs = create_term("visual faqs", "");
 set_parent(&visual_faqs, &faqs);
-// set_icon(&visual_faqs, "M150,60 l0,180 M180,60 l0,180 l0,-60 a30,-30 0 0,1 30,-30 l30,0 M120,60 l0,180 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0");
 add_subheader(&visual_faqs, "Which creative discipline did you begin with, and how did you shift to other mediums?");
 add_text(&visual_faqs, "At first, I stumbled onto photo manipulation. From DeviantArt, to Raster and to Depthcore, I was moving from working with photos, to drawing, and eventually modeling. While I enjoyed visual arts, I felt that to keep sharpening the rendition of the worlds I was drawing, I needed to add a new dimension and so I began writing soundtracks to the pictures, and eventually putting all of it together in the form of websites, and games.");
 add_subheader(&visual_faqs, "What is the meaning of the glyph in your avatar?");
@@ -2245,7 +2235,6 @@ add_text(&visual_faqs, "She was unique from other antagonists in that she doesn'
 
 Term research_faqs = create_term("research faqs", "");
 set_parent(&research_faqs, &faqs);
-// set_icon(&research_faqs, "M150,60 l0,180 M180,60 l0,180 l0,-60 a30,-30 0 0,1 30,-30 l30,0 M120,60 l0,180 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0");
 add_subheader(&research_faqs, "What are the most important concepts that you impart in your works?");
 add_text(&research_faqs, "A lot of my work deal with foreignness and adaptiveness, some of the most romantic ideas that one will find in my work is that of explorers wandering the remains of a long extinguished civilisation, and trying to make sense of it.");
 add_subheader(&research_faqs, "Why do you release free software?");
@@ -2520,16 +2509,6 @@ set_parent(&blindfolk, &unreleased);
 // set_icon(&blindfolk, "M60,240 a30,-30 0 0,1 30,-30 l150,0 M90,195 a30,-30 0 0,1 30,-30 l90,0 M120,150 a30,-30 0 0,1 30,-30 l30,0 M195,120 l45,0 M225,165 l15,0 M150,105 a30,-30 0 0,1 30,-30 l60,0");
 add_text(&blindfolk, "Each player programs a short script(called fighting style) for their character that will run automatically every 5 minutes, against all other players.");
 add_text(&blindfolk, "The scripts contained a series of attacks, moves and blocks, as well as responses to collisions against other players.");
-add_header(&blindfolk, "Example Fighting Style");
-// add_code(&blindfolk, "when attack.backward");
-// add_code(&blindfolk, "step.left");
-// add_code(&blindfolk, "when sight.forward");
-// add_code(&blindfolk, "dash.toward");
-// add_code(&blindfolk, "default");
-// add_code(&blindfolk, "attack.forward");
-// add_code(&blindfolk, "turn.right");
-// add_code(&blindfolk, "attack.backward");
-// add_code(&blindfolk, "say yatta!");
 add_text(&blindfolk, "It was first created in the span of 48 hours for " LINKNAME("http://globalgamejam.org", "Global Game Jam 2016") ". The game was very popular for the days after its release, but soon became too time-consuming to maintain and keep alive, and was turned off a few days later. This design was revisited and lives on as part of the upcoming game " SEND(markl_path) ".");
 add_link(&blindfolk, "sources", "https://github.com/XXIIVV/vessel.blindfolk");
 
