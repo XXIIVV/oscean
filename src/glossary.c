@@ -33,6 +33,38 @@ add_word(&spacetime, "Prediction", "Statement or claim that a particular event w
 add_word(&spacetime, "Equinox", "Twice a year, around 20 March and 22 September, when daytime and nighttime are of approximately equal duration all over the planet.");
 add_word(&spacetime, "Solstice", "Twice a year, when either hemisphere has the most sunlight of the year(summer solstice) or the least sunlight of the year(winter solstice) for any place other than the Equator.");
  
+Dict aeropunk = create_dict("aeropunk");
+add_word(&aeropunk, "Compressed Air Energy Storage", "A way to store energy generated at one time for use at another time using compressed air.");
+add_word(&aeropunk, "Carbon Fiber Tank", "Brittle and can split under sufficient stress, but creates no shrapnel when it does so. Carbon-fiber tanks safely hold air at a pressure somewhere around 4500 psi, making them comparable to steel tanks.");
+add_word(&aeropunk, "Stirling Engine", "A quiet heat engine that is operated by a cyclic compression and expansion and a flywheel, generating no emissions.");
+add_word(&aeropunk, "The Paris Compressed Air Power Network", "The city of Paris once had an extensive network for distributing power by compressed air which served more than 10,000 customers and remained in use for 100 years.");
+add_word(&aeropunk, "Bicycle With Shaft", "Experimental bicyle design that used a shaft connecting the crank to the back wheel instead of a drive chain.");
+add_word(&aeropunk, "Rectenna", "A circuit that produces a voltage by harvesting the energy from the electromagnetic fields around us trough an antenna.");
+
+Dict linguistics = create_dict("linguistics");
+add_word(&linguistics, "Gematria", "A cipher that assigns numerical value to a word, name, or phrase in the belief that words or phrases with identical numerical values bear some relation to each other.");
+add_word(&linguistics, "Palindrome", "A word, number, or other sequence of characters which reads the same backward as forward.");
+add_word(&linguistics, "Ambigram", "A word, art form or other symbolic representation whose elements retain meaning when viewed or interpreted from a different direction, perspective, or orientation.");
+add_word(&linguistics, "Leitmotif", "A short, constantly recurring musical phrase associated with a particular person, place, or idea.");
+
+// Psychology
+
+Dict psychology_lexicon = create_dict("psychology lexicon");
+add_word(&psychology_lexicon, "Derealization", "An alteration in the perception or experience of the external world so that it seems unreal.");
+add_word(&psychology_lexicon, "Solipsism syndrome", "A psychological state in which a person feels that the world is not external to his or her mind.");
+add_word(&psychology_lexicon, "Qualia", "Term used in philosophy to refer to individual instances of subjective, conscious experience. The pain of a headache, or the taste of wine.");
+add_word(&psychology_lexicon, "Suggestibility", "A form of misattribution where ideas suggested by a questioner are mistaken for memory.");
+add_word(&psychology_lexicon, "Priming", "Psychological phenomenon that consists in early stimulus influencing later thoughts and behavior.");
+add_word(&psychology_lexicon, "Confabulation", "Remembering something that never actually happened.");
+add_word(&psychology_lexicon, "Salience", "The perceptual quality by which an observable thing stands out relative to its environment.");
+add_word(&psychology_lexicon, "Method of loci", "A method of memory enhancement which uses visualizations with the use of spatial memory to quickly and efficiently recall information.");
+ 
+Dict personalities = create_dict("personalities");
+add_word(&personalities, "Extraversion Introversion", "Represents the source and direction of a person’s energy expression. An extravert’s source and direction of energy expression is mainly in the external world, while an introvert has a source of energy mainly in their own internal world.");
+add_word(&personalities, "Sensing Intuition", "Represents the method by which someone perceives information. Sensing means that a person mainly believes information they receive directly from the external world. Intuition means that a person believes mainly information they receive from the internal or imaginative world.");
+add_word(&personalities, "Thinking Feeling", "Represents how a person processes information. Thinking means that a person makes a decision mainly through logic. Feeling means that, as a rule, they make a decision based on emotion, i.e. based on what they feel they should do.");
+add_word(&personalities, "Judging Perceiving", "Represents how a person implements the information they have processed. Judging means that a person organizes all of his life events and, as a rule, sticks to his plans. Perceiving means that they are inclined to improvise and explore alternative options.");
+
 Dict sociology = create_dict("sociology");
 add_word(&sociology, "Philanthropy", "The desire to promote the welfare of others.");
 add_word(&sociology, "Effective Altruism", "A philosophy and social movement that uses evidence and reasoning to determine the most effective ways to benefit others.");
@@ -46,88 +78,6 @@ add_word(&sociology, "The Veil Of Ignorance", "Imagine yourself behind a veil of
 add_word(&sociology, "Behavioral sink", "A term used to describe the collapse in behavior(stress, alienation, hostility, sexual perversion, parental incompetence, and rabid violence) which resulted from overcrowdedness in an experiment on mice, drawing parallels with societal collapse found in the human Megalopolis.");
 add_word(&sociology, "Groupthink", "Tendency of humans to tend to agree with each other, and hold back objections or dissent even when the group is wrong.");
 add_word(&sociology, "Paradox of tolerance", "States that if a society is tolerant without limit, its ability to be tolerant is eventually seized or destroyed by the intolerant.");
- 
-// Dict psychology = create_dict("psychology");
-// add_word(&psychology, "Derealization", "An alteration in the perception or experience of the external world so that it seems unreal.");
-// add_word(&psychology, "Solipsism syndrome", "A psychological state in which a person feels that the world is not external to his or her mind.");
-// add_word(&psychology, "Qualia", "Term used in philosophy to refer to individual instances of subjective, conscious experience. The pain of a headache, or the taste of wine.");
-// add_word(&psychology, "Suggestibility", "A form of misattribution where ideas suggested by a questioner are mistaken for memory.");
-// add_word(&psychology, "Priming", "Psychological phenomenon that consists in early stimulus influencing later thoughts and behavior.");
-// add_word(&psychology, "Confabulation", "Remembering something that never actually happened.");
-// add_word(&psychology, "Salience", "The perceptual quality by which an observable thing stands out relative to its environment.");
-// add_word(&psychology, "Method of loci", "A method of memory enhancement which uses visualizations with the use of spatial memory to quickly and efficiently recall information.");
- 
-Dict philosophy = create_dict("philosophy");
-add_word(&philosophy, "Ontology", "The topic concerning the nature of being.");
-add_word(&philosophy, "Gestalt", "The conscious experience must be considered globally, as having a reality of its own, independent of the parts.");
-add_word(&philosophy, "Dasein", "German word for 'existence', literally meaning 'being there'.");
-add_word(&philosophy, "Deliberate practice", "Focused, consistent and goal-oriented training. It favours quality over quantity. It knows not all practice is created equal.");
-add_word(&philosophy, "Perfect Duty", "Perfect duties are duties that are blameworthy if not met, as they are a basic required duty for a human being.");
-add_word(&philosophy, "Maxim", "A concise expression of a fundamental moral rule or principle.");
-add_word(&philosophy, "Hermeneutics", "The branch of knowledge that deals with interpretation.");
-add_word(&philosophy, "Ubermensch", "The one who seeks out hardship and creates new values.");
-add_word(&philosophy, "The Last Man", "The one who seeks comfort and alms.");
-add_word(&philosophy, "Saudade", "A deep emotional state of nostalgic or profound melancholic longing for an absent something or someone that one loves. Saudade was once described as \"the love that remains\" after someone is gone.");
-add_word(&philosophy, "Wabisabi", "Acknowledgement that nothing lasts, nothing is finished, and that nothing is perfect.");
- 
-Dict linguistics = create_dict("linguistics");
-add_word(&linguistics, "Gematria", "A cipher that assigns numerical value to a word, name, or phrase in the belief that words or phrases with identical numerical values bear some relation to each other.");
-add_word(&linguistics, "Palindrome", "A word, number, or other sequence of characters which reads the same backward as forward.");
-add_word(&linguistics, "Ambigram", "A word, art form or other symbolic representation whose elements retain meaning when viewed or interpreted from a different direction, perspective, or orientation.");
-add_word(&linguistics, "Leitmotif", "A short, constantly recurring musical phrase associated with a particular person, place, or idea.");
- 
-Dict personalities = create_dict("personalities");
-add_word(&personalities, "Extraversion Introversion", "Represents the source and direction of a person’s energy expression. An extravert’s source and direction of energy expression is mainly in the external world, while an introvert has a source of energy mainly in their own internal world.");
-add_word(&personalities, "Sensing Intuition", "Represents the method by which someone perceives information. Sensing means that a person mainly believes information they receive directly from the external world. Intuition means that a person believes mainly information they receive from the internal or imaginative world.");
-add_word(&personalities, "Thinking Feeling", "Represents how a person processes information. Thinking means that a person makes a decision mainly through logic. Feeling means that, as a rule, they make a decision based on emotion, i.e. based on what they feel they should do.");
-add_word(&personalities, "Judging Perceiving", "Represents how a person implements the information they have processed. Judging means that a person organizes all of his life events and, as a rule, sticks to his plans. Perceiving means that they are inclined to improvise and explore alternative options.");
- 
-Dict green_anarchism = create_dict("green anarchism");
-add_word(&green_anarchism, "Veganism", "A philosophy and way of living which seeks to prevent all forms of exploitation of, and cruelty to, other animals for food, clothing or any other purpose.");
-add_word(&green_anarchism, "Health", "A state of complete physical, mental and social well-being and not merely the absence of disease or infirmity.");
-add_word(&green_anarchism, "Animal Liberation Front", "An international, leaderless resistance that engages in removing animals from laboratories and farms, destroying facilities, arranging safe houses and veterinary care, and operating sanctuaries where the animals subsequently live.");
-add_word(&green_anarchism, "Animal Advocacy", "Promotion of the interests of animals, generally. Includes work for animal rights and animal welfare.");
-add_word(&green_anarchism, "Animal Rights", "Refers to the position that the interests of nonhuman animals, including their interest in not suffering, should be afforded the same consideration as the interests of humans and that nonhuman animals have rights and inherent value independent of their usefulness to humans.");
-add_word(&green_anarchism, "Commodification", "The conversion of a living being, principle, or natural environment into an \"object\" that is used, exchanged, or consumed for profit or other desired gain.");
-add_word(&green_anarchism, "Debarking", "The surgical removal and manipulation of tissue in a dog's vocal cords to drastically quiet his or her natural bark. Debarking does not address the underlying reasons that a dog may be barking excessively, and the dog will continue to bark, albeit more quietly or silently.");
-add_word(&green_anarchism, "Dark Greens", "The ones who believe that environmental problems are an inherent part of industrialized civilization, and seek radical political change.");
-add_word(&green_anarchism, "Draize Test", "Infamous and excruciating eye-irritation test for household products and cosmetics in which drops of a substance are placed in the eyes of rabbits, causing the animals ulcers, blindness, and other injuries before they are ultimately killed.");
-add_word(&green_anarchism, "Ecofeminism", "Ecofeminist thinkers draw on the concept of gender to theorize on the relationship between humans and the natural world.");
-add_word(&green_anarchism, "Flowerpot Technique", "A technique used in sleep deprivation studies designed to allow NREM sleep but prevent REM sleep.");
-add_word(&green_anarchism, "Forced Molting", "The egg-industry practice of artificially inducing hens to molt by depriving them of food for several days to two weeks when their egg production has declined.");
-add_word(&green_anarchism, "Light Greens", "The ones who see protecting the environment first and foremost as a personal responsibility, focusing on environmentalism as a lifestyle choice.");
-add_word(&green_anarchism, "Rape Rack", "The industry term referring to the contraptions in which cows and pigs are restrained while they are forcibly inseminated.");
-add_word(&green_anarchism, "Speciesism", "Discrimination on the basis of species, oppression and judgment of an animal on the basis of that animal's species or that animal's non-membership in a species. The belief in human superiority over other animals or certain nonhuman animals' superiority over others.");
-add_word(&green_anarchism, "Veal Crate", "Small crate in which a calf being raised for veal is confined and tied up. The calf's movement within the crate is intentionally restricted to limit the strengthening of muscle, and an insufficient diet is provided intentionally to keep the cow anemic.");
- 
-// Dict collapsology = create_dict("collapsology");
-// add_word(&collapsology, "Uncivilisation", "It is to accept the world for what it is and to make our home here, rather than dreaming of relocating to the stars, or existing in a Man-forged bubble and pretending to ourselves that there is nothing outside it to which we have any connection at all.");
-// add_word(&collapsology, "Dark Mountaineers", "Artists who generally ascribe to the idea that climate collapse cannot be stopped or reversed, a forum in which one can be honest about their sense of dread and loss.");
-// add_word(&collapsology, "Inhumanism", "A shifting of emphasis and significance from man to not-man, the rejection of human solipsism and recognition of the transhuman magnificence.");
-// add_word(&collapsology, "Anthropocene", "A proposed epoch dating from the commencement of significant human impact on Earth's geology and ecosystems, including, but not limited to, anthropogenic climate change.");
-// add_word(&collapsology, "Simple pastoral", "Merely another of our many vehicles of escape from reality, that doesn’t interrogate civilisation's main driving forces, but instead focuses on returning to rural simplicity.");
-// add_word(&collapsology, "Object Oriented Ontology", "A school of thought that rejects the privileging of human existence over the existence of nonhuman objects, that objects exist independently of human perception and are not ontologically exhausted by their relations with humans.");
-// add_word(&collapsology, "Freudian death drive", "The hypothesis of a death instinct, the task of which is to lead organic life back into the inanimate state.");
-// add_word(&collapsology, "Agrilogistics paradox", "A maniacal urge to live, and to diminish stimulation, that ends up being self-destructive, generating mass extinction, through global warming, that it was designed to avoid.");
-// add_word(&collapsology, "Existential Risk", "An event that could cause human extinction or permanently and drastically curtail humanity's potential.");
-// add_word(&collapsology, "Strong Longtermism", "The primary determinant of the value of our actions is the effects of those actions on the very long-run future.");
-// add_word(&collapsology, "The Hinge of History Hypothesis", "The hypothese that we are living at the most influential time ever.");
-// add_word(&collapsology, "Negative Emissions", "Divided into “natural” and “technological”  categories, these strategies aim to remove carbon from the atmosphere, however, there remains no evidence that either branch is feasible despite their inclusion in climate modeling. The large majority of IPCC models (344/400 as of 2019) feature theoretical negative emissions.");
-// add_word(&collapsology, "Carbon Capture", "A technological negative emissions solution that aims to remove carbon from the air, storing it as inert material. Small units exist at high cost, and it remains unclear whether large scale deployment is possible or desirable.");
-// add_word(&collapsology, "Carbon Budget", "An attempt to provide the world with a means of tracking emissions with goals set based on projected temperature rise. Most models are not believed to accurately account for feedback loops.");
-// add_word(&collapsology, "Feedback Loops", "The results of global warming are complex. Much of the destruction caused by warming also contributes: the albedo effect, forest fires, melting ice, and ocean acidification all mean more greenhouse gases and less places for carbon to go. It remains unclear how these systems will interact with ongoing anthropogenic warming.");
-// add_word(&collapsology, "Albedo Effect", "Warming caused by the disappearance of ice which previously reflect heat back into space.");
-// add_word(&collapsology, "Scientific Reticence", "A phenomenon where scientists failed to emphasize many the more dramatic results of the study of global warming over concerns of reception.");
-// add_word(&collapsology, "Fossil Capitalism", "A theory suggesting the modern economy is actually just a system that runs on fossil fuel.");
-// add_word(&collapsology, "Tragedy of the Commons", "A situation in a shared-resource system where individual users, acting independently according to their own self-interest, behave contrary to the common good of all users by depleting or spoiling the shared resource through their collective action.");
- 
-Dict aeropunk = create_dict("aeropunk");
-add_word(&aeropunk, "Compressed Air Energy Storage", "A way to store energy generated at one time for use at another time using compressed air.");
-add_word(&aeropunk, "Carbon Fiber Tank", "Brittle and can split under sufficient stress, but creates no shrapnel when it does so. Carbon-fiber tanks safely hold air at a pressure somewhere around 4500 psi, making them comparable to steel tanks.");
-add_word(&aeropunk, "Stirling Engine", "A quiet heat engine that is operated by a cyclic compression and expansion and a flywheel, generating no emissions.");
-add_word(&aeropunk, "The Paris Compressed Air Power Network", "The city of Paris once had an extensive network for distributing power by compressed air which served more than 10,000 customers and remained in use for 100 years.");
-add_word(&aeropunk, "Bicycle With Shaft", "Experimental bicyle design that used a shaft connecting the crank to the back wheel instead of a drive chain.");
-add_word(&aeropunk, "Rectenna", "A circuit that produces a voltage by harvesting the energy from the electromagnetic fields around us trough an antenna.");
  
 Dict biases = create_dict("biases");
 add_word(&biases, "Actor–observer bias", "Tendency to overemphasize the influence of their personality and underemphasize the influence of their situation.");
@@ -245,6 +195,62 @@ add_word(&illusions, "Transparency", "Tendency to overestimate others' ability t
 add_word(&illusions, "Anti-inductiveness", "The idea that the market would stop being efficient if everyone acted like it already was efficient. For example, a vote in a democracy, the more people that believe their vote counts towards the outcome of an election, the less their votes count.  Also known as the Reverse Tinkerbell effect.");
 add_word(&illusions, "Anti-epistemology", "Bad explicit beliefs about rules of reasoning, usually developed in the course of protecting an existing false belief");
  
+Dict philosophy = create_dict("philosophy");
+add_word(&philosophy, "Ontology", "The topic concerning the nature of being.");
+add_word(&philosophy, "Gestalt", "The conscious experience must be considered globally, as having a reality of its own, independent of the parts.");
+add_word(&philosophy, "Dasein", "German word for 'existence', literally meaning 'being there'.");
+add_word(&philosophy, "Deliberate practice", "Focused, consistent and goal-oriented training. It favours quality over quantity. It knows not all practice is created equal.");
+add_word(&philosophy, "Perfect Duty", "Perfect duties are duties that are blameworthy if not met, as they are a basic required duty for a human being.");
+add_word(&philosophy, "Maxim", "A concise expression of a fundamental moral rule or principle.");
+add_word(&philosophy, "Hermeneutics", "The branch of knowledge that deals with interpretation.");
+add_word(&philosophy, "Ubermensch", "The one who seeks out hardship and creates new values.");
+add_word(&philosophy, "The Last Man", "The one who seeks comfort and alms.");
+add_word(&philosophy, "Saudade", "A deep emotional state of nostalgic or profound melancholic longing for an absent something or someone that one loves. Saudade was once described as \"the love that remains\" after someone is gone.");
+add_word(&philosophy, "Wabisabi", "Acknowledgement that nothing lasts, nothing is finished, and that nothing is perfect.");
+ 
+// Ethics
+
+Dict green_anarchism = create_dict("green anarchism");
+add_word(&green_anarchism, "Health", "A state of complete physical, mental and social well-being and not merely the absence of disease or infirmity.");
+add_word(&green_anarchism, "Dark Greens", "The ones who believe that environmental problems are an inherent part of industrialized civilization, and seek radical political change.");
+add_word(&green_anarchism, "Light Greens", "The ones who see protecting the environment first and foremost as a personal responsibility, focusing on environmentalism as a lifestyle choice.");
+add_word(&green_anarchism, "Veganism", "A philosophy and way of living which seeks to prevent all forms of exploitation of, and cruelty to, other animals for food, clothing or any other purpose.");
+add_word(&green_anarchism, "Ecofeminism", "Ecofeminist thinkers draw on the concept of gender to theorize on the relationship between humans and the natural world.");
+
+Dict animal_rights = create_dict("animal rights");
+add_word(&animal_rights, "Animal Rights", "Refers to the position that the interests of nonhuman animals, including their interest in not suffering, should be afforded the same consideration as the interests of humans and that nonhuman animals have rights and inherent value independent of their usefulness to humans.");
+add_word(&animal_rights, "Animal Liberation Front", "An international, leaderless resistance that engages in removing animals from laboratories and farms, destroying facilities, arranging safe houses and veterinary care, and operating sanctuaries where the animals subsequently live.");
+add_word(&animal_rights, "Animal Advocacy", "Promotion of the interests of animals, generally. Includes work for animal rights and animal welfare.");
+add_word(&animal_rights, "Commodification", "The conversion of a living being, principle, or natural environment into an \"object\" that is used, exchanged, or consumed for profit or other desired gain.");
+add_word(&animal_rights, "Speciesism", "Discrimination on the basis of species, oppression and judgment of an animal on the basis of that animal's species or that animal's non-membership in a species. The belief in human superiority over other animals or certain nonhuman animals' superiority over others.");
+add_word(&animal_rights, "Debarking", "The surgical removal and manipulation of tissue in a dog's vocal cords to drastically quiet his or her natural bark. Debarking does not address the underlying reasons that a dog may be barking excessively, and the dog will continue to bark, albeit more quietly or silently.");
+add_word(&animal_rights, "Draize Test", "Infamous and excruciating eye-irritation test for household products and cosmetics in which drops of a substance are placed in the eyes of rabbits, causing the animals ulcers, blindness, and other injuries before they are ultimately killed.");
+add_word(&animal_rights, "Flowerpot Technique", "A technique used in sleep deprivation studies designed to allow NREM sleep but prevent REM sleep.");
+add_word(&animal_rights, "Forced Molting", "The egg-industry practice of artificially inducing hens to molt by depriving them of food for several days to two weeks when their egg production has declined.");
+add_word(&animal_rights, "Rape Rack", "The industry term referring to the contraptions in which cows and pigs are restrained while they are forcibly inseminated.");
+add_word(&animal_rights, "Veal Crate", "Small crate in which a calf being raised for veal is confined and tied up. The calf's movement within the crate is intentionally restricted to limit the strengthening of muscle, and an insufficient diet is provided intentionally to keep the cow anemic.");
+
+Dict adaptation = create_dict("adaptation");
+add_word(&adaptation, "Uncivilisation", "It is to accept the world for what it is and to make our home here, rather than dreaming of relocating to the stars, or existing in a Man-forged bubble and pretending to ourselves that there is nothing outside it to which we have any connection at all.");
+add_word(&adaptation, "Dark Mountaineers", "Artists who generally ascribe to the idea that climate collapse cannot be stopped or reversed, a forum in which one can be honest about their sense of dread and loss.");
+add_word(&adaptation, "Inhumanism", "A shifting of emphasis and significance from man to not-man, the rejection of human solipsism and recognition of the transhuman magnificence.");
+add_word(&adaptation, "Anthropocene", "A proposed epoch dating from the commencement of significant human impact on Earth's geology and ecosystems, including, but not limited to, anthropogenic climate change.");
+add_word(&adaptation, "Simple pastoral", "Merely another of our many vehicles of escape from reality, that doesn’t interrogate civilisation's main driving forces, but instead focuses on returning to rural simplicity.");
+add_word(&adaptation, "Object Oriented Ontology", "A school of thought that rejects the privileging of human existence over the existence of nonhuman objects, that objects exist independently of human perception and are not ontologically exhausted by their relations with humans.");
+add_word(&adaptation, "Freudian death drive", "The hypothesis of a death instinct, the task of which is to lead organic life back into the inanimate state.");
+add_word(&adaptation, "Agrilogistics paradox", "A maniacal urge to live, and to diminish stimulation, that ends up being self-destructive, generating mass extinction, through global warming, that it was designed to avoid.");
+add_word(&adaptation, "Existential Risk", "An event that could cause human extinction or permanently and drastically curtail humanity's potential.");
+add_word(&adaptation, "Strong Longtermism", "The primary determinant of the value of our actions is the effects of those actions on the very long-run future.");
+add_word(&adaptation, "The Hinge of History Hypothesis", "The hypothese that we are living at the most influential time ever.");
+add_word(&adaptation, "Negative Emissions", "Divided into “natural” and “technological”  categories, these strategies aim to remove carbon from the atmosphere, however, there remains no evidence that either branch is feasible despite their inclusion in climate modeling. The large majority of IPCC models (344/400 as of 2019) feature theoretical negative emissions.");
+add_word(&adaptation, "Carbon Capture", "A technological negative emissions solution that aims to remove carbon from the air, storing it as inert material. Small units exist at high cost, and it remains unclear whether large scale deployment is possible or desirable.");
+add_word(&adaptation, "Carbon Budget", "An attempt to provide the world with a means of tracking emissions with goals set based on projected temperature rise. Most models are not believed to accurately account for feedback loops.");
+add_word(&adaptation, "Feedback Loops", "The results of global warming are complex. Much of the destruction caused by warming also contributes: the albedo effect, forest fires, melting ice, and ocean acidification all mean more greenhouse gases and less places for carbon to go. It remains unclear how these systems will interact with ongoing anthropogenic warming.");
+add_word(&adaptation, "Albedo Effect", "Warming caused by the disappearance of ice which previously reflect heat back into space.");
+add_word(&adaptation, "Scientific Reticence", "A phenomenon where scientists failed to emphasize many the more dramatic results of the study of global warming over concerns of reception.");
+add_word(&adaptation, "Fossil Capitalism", "A theory suggesting the modern economy is actually just a system that runs on fossil fuel.");
+add_word(&adaptation, "Tragedy of the Commons", "A situation in a shared-resource system where individual users, acting independently according to their own self-interest, behave contrary to the common good of all users by depleting or spoiling the shared resource through their collective action.");
+ 
 Dict beliefs = create_dict("beliefs");
 add_word(&beliefs, "Belief", "The mental state in which an individual holds a proposition to be true.");
 add_word(&beliefs, "Priors", "The beliefs an agent holds regarding a fact, hypothesis or consequence, before being presented with evidence.");
@@ -284,30 +290,6 @@ add_word(&buddhism, "Wu wei", "A concept literally meaning non-action, non-doing
 add_word(&buddhism, "Anicca", "The first of the three marks of existence, the doctrine of impermanence asserts that all of conditioned existence, without exception, is \"transient, evanescent, inconstant\".");
 add_word(&buddhism, "Anatta", "The second of the three marks of existence, the doctrine of non-self asserts that there is no unchanging, permanent self, soul or essence in living beings.");
 add_word(&buddhism, "Dukkha", "The third of the three marks of existence, the doctrine of suffering includes physical and mental sufferings of birth, aging, illness, dying.");
- 
-Dict paramis = create_dict("paramis");
-add_word(&paramis, "Dana parami", "Abandonment of possessions by making donations.");
-add_word(&paramis, "Sila parami", "Control of actions and speech to avoid unwholesome actions.");
-add_word(&paramis, "Nekkhamma parami", "Renunciation of the lay life in favour of the solitary life.");
-add_word(&paramis, "Panna parami", "Development of knowledge and understanding through study and analytical reflection. To teach knowledge to others. To use one's wisdom for a maximum of benefits.");
-add_word(&paramis, "Viriya parami", "Effort to work as much as possible for the good of others, even at the risk of one's life.");
-add_word(&paramis, "Khanti parami", "Establishment of an always perfect tolerance, irrespective of the actions and words of others towards oneself.");
-add_word(&paramis, "Sacca parami", "Truthfulness (to say only what is right).");
-add_word(&paramis, "Adhitthana parami", "Decision to devote oneself to beneficial actions and to remain steadfast on it.");
-add_word(&paramis, "Metta parami", "Maintaining a state of mind turned to the happiness of others, to practise love for all beings without exception.");
-add_word(&paramis, "Upekkha parami", "Rejection of hatred and worship. Not to follow any particular idea. Maintaining the mind in equanimity.");
- 
-// Dict ascetism = create_dict("ascetism");
-// add_word(&ascetism, "Pamsukula", "Abandonned robes, wearing only second hand clothes.");
-// add_word(&ascetism, "Tecivarika", "Three robes, having only 3 sets of clothes.");
-// add_word(&ascetism, "Ekasanika", "A single meal, eating only a single serving, and no between-meals snacks.");
-// add_word(&ascetism, "Pattapindika", "Everything within the bowl, using a single recipient for a meal, this somehow ties in with eating no meals including indigestible parts, such as bones.");
-// add_word(&ascetism, "Arannika", "To remain in the forest, dwelling in places away from inhabited areas, such as cities.");
-// add_word(&ascetism, "Rukkhamula", "To remain beneath a tree, renouncing the shelter of a roof.");
-// add_word(&ascetism, "Abbhokasika", "To remain on the bare earth without shelter, dwelling on a bare, unsheltered spot.");
-// add_word(&ascetism, "Susanika", "To remain among charnels, dwell near graveyards, or nearby the dead.");
-// add_word(&ascetism, "Yathasantatika", "To sleep at the alloted spot, \"One must know how to be fully contented with the conditions we benefit with and what we get\"");
-// add_word(&ascetism, "Nesajjika", "To renonce to the lying posture, training into always remaining seated, including at time of rest.");
  
 Dict dark_patterns = create_dict("dark patterns");
 add_word(&dark_patterns, "Bait and Switch", "You set out to do one thing, but a different, undesirable thing happens instead.");
@@ -695,6 +677,25 @@ add_word(&pino_details, "Engine Fuel", "Type Single / diesel(13 HP)");
 add_word(&pino_details, "Hull Material", "Fiberglass");
 add_word(&pino_details, "Keel", "Fin");
 
+Dict arguments_ranking = create_dict("arguments ranking");
+add_word(&arguments_ranking, "●●●●● High-level generators", "Disagreements that remain when everyone understands exactly what's being argued, and agrees on what all the evidence says, but have vague and hard-to-define reasons for disagreeing.");
+add_word(&arguments_ranking, "●●●●○ Operationalizing", "Where both parties understand they're in a cooperative effort to fix exactly what they're arguing about.");
+add_word(&arguments_ranking, "●●●○○ Survey of evidence", "Not trying to devastate the other person with a mountain of facts and start looking at the studies and arguments on both sides and figuring out what kind of complex picture they paint.");
+add_word(&arguments_ranking, "●●●○○ Disputing definitions", "Argument hinges on the meaning of words, or whether something counts as a member of a category or not.");
+add_word(&arguments_ranking, "●●○○○ Single Studies", "Better than scattered facts, proving they at least looked into the issue formally.");
+add_word(&arguments_ranking, "●●○○○ Demands for rigor", "Attempts to demand that an opposing argument be held to such strict standards that nothing could possibly clear the bar.");
+add_word(&arguments_ranking, "●○○○○ Single Facts", "One fact, which admittedly does support their argument, but presented as if it solves the debate in and of itself.");
+add_word(&arguments_ranking, "●○○○○ Gotchas", "Short claims that purport to be devastating proof that one side can't possibly be right.");
+add_word(&arguments_ranking, "○○○○○ Social shaming", "A demand for listeners to place someone outside the boundary of whom deserve to be heard.");
+
+Dict responses_ranking = create_dict("responses ranking");
+add_word(&responses_ranking, "●●●●●● Central point", "Commit to refute explicitly the central point.");
+add_word(&responses_ranking, "●●●●●○ Refutation", "Argue a conflicting passage, explain why it's mistaken.");
+add_word(&responses_ranking, "●●●●○○ Counterargument", "Contradict with added reasoning or evidence.");
+add_word(&responses_ranking, "●●●○○○ Contradiction", "State the opposing case, what.");
+add_word(&responses_ranking, "●●○○○○ Responding to Tone", "Responding to the author's tone, how.");
+add_word(&responses_ranking, "●○○○○○ Ad Hominem", "Attacking the author directly, who.");
+
 List programming_knowledge = create_list("programming knowledge");
 add_item(&programming_knowledge, "The freedom <b>to run</b> the program as you wish, for any purpose.");
 add_item(&programming_knowledge, "The freedom <b>to study</b> how the program works, and change it.");
@@ -783,13 +784,43 @@ add_item(&health_breathing, "Keep them empty for four seconds.");
 add_item(&health_breathing, "Inhale through your nose for four seconds.");
 add_item(&health_breathing, "Hold for four four seconds, don’t clamp down or create pressure.");
 
-List collapsology_knowledge = create_list("collapsology knowledge");
-add_item(&collapsology_knowledge, "We will <b>face this reality honestly and learn how to live with it</b>.");
-add_item(&collapsology_knowledge, "We realize that <b>the current and upcoming crises cannot be reduced to a set of problems in need of technological or political solutions</b>.");
-add_item(&collapsology_knowledge, "We believe that <b>the roots of the current and upcoming crises lie in the stories we have been telling ourselves</b>.");
-add_item(&collapsology_knowledge, "The end of the world as we know it is not the end of the world full stop.");
-add_item(&collapsology_knowledge, "Humans are not the point and purpose of the planet.");
-add_item(&collapsology_knowledge, "The Dark Mountaineers intend to challenge the stories which underpin our civilisation:");
-add_item(&collapsology_knowledge, "<b>The myth of progress</b>: The myth first tells us that we are destined for greatness, that we began grunting in the primeval swamps, as a humble part of something called ‘nature', which we have now triumphantly subdued.");
-add_item(&collapsology_knowledge, "<b>The myth of human centrality</b>: The myth that humans are the point and purpose of the planet.");
-add_item(&collapsology_knowledge, "<b>The myth of separation from nature</b>: The myth that humans exist outside of natural forces, and that the agent that is nature can be vainquised.");
+List dark_mountaineers = create_list("dark mountaineers");
+add_item(&dark_mountaineers, "We will <b>face this reality honestly and learn how to live with it</b>.");
+add_item(&dark_mountaineers, "We realize that <b>the current and upcoming crises cannot be reduced to a set of problems in need of technological or political solutions</b>.");
+add_item(&dark_mountaineers, "We believe that <b>the roots of the current and upcoming crises lie in the stories we have been telling ourselves</b>.");
+add_item(&dark_mountaineers, "The end of the world as we know it is not the end of the world full stop.");
+add_item(&dark_mountaineers, "Humans are not the point and purpose of the planet.");
+add_item(&dark_mountaineers, "The Dark Mountaineers intend to challenge the stories which underpin our civilisation:");
+add_item(&dark_mountaineers, "<b>The myth of progress</b>: The myth first tells us that we are destined for greatness, that we began grunting in the primeval swamps, as a humble part of something called ‘nature', which we have now triumphantly subdued.");
+add_item(&dark_mountaineers, "<b>The myth of human centrality</b>: The myth that humans are the point and purpose of the planet.");
+add_item(&dark_mountaineers, "<b>The myth of separation from nature</b>: The myth that humans exist outside of natural forces, and that the agent that is nature can be vainquised.");
+
+List solarpunk_knowledge = create_list("solarpunk knowledge");
+add_item(&solarpunk_knowledge, "Solarpunks cherish both <b>nature and progress</b>, the <b>individual and the community</b>.");
+add_item(&solarpunk_knowledge, "They believe in a world that is <b>green, colourful, and bright</b>. It can be described as a literary genre, an aesthetic, or a movement. The key points are:");
+add_item(&solarpunk_knowledge, "A demand for technology and society to re-centre around <b>sustainability, longevity, and balance</b> with an emphasis on <b>renewable energy</b>.");
+add_item(&solarpunk_knowledge, "A focus on <b>decentralisation, community activism, social justice and civic empowerment</b>.");
+add_item(&solarpunk_knowledge, "A recognition that <b>economic, social, and ecological injustices</b> are all deeply <b>inter-connected</b>.");
+add_item(&solarpunk_knowledge, "We're destroying the world because we are, in a very literal and deliberate way, at war with it. People need more than to be made to feel stupid and guilty. They need more than a vision of doom. They need a vision of the world and of themselves that inspires them.");
+add_item(&solarpunk_knowledge, "Solarpunk is the opposite of cyberpunk's nihilism, offering “ingenuity, positive creation, independence, and community.”");
+
+List action_wisdom = create_list("action wisdom");
+add_item(&action_wisdom, "Control of actions and speech to avoid unwholesome actions.");
+add_item(&action_wisdom, "Effort to work as much as possible for the good of others, even at the risk of one's life.");
+add_item(&action_wisdom, "Decision to devote oneself to beneficial actions and to remain steadfast on it.");
+add_item(&action_wisdom, "Maintaining a state of mind turned to the happiness of others, to practise love for all beings without exception.");
+add_item(&action_wisdom, "Development of knowledge and understanding through study and analytical reflection. To teach knowledge to others. To use one's wisdom for a maximum of benefits.");
+add_item(&action_wisdom, "You may compete to the full extent of your capabilities, but you may not hunt down your competitors.");
+add_item(&action_wisdom, "The creatures who act as though they belond to the world follow the peace-keeping law, they give the creatures around them a chance to grow toward watever it's possible for them to become. That's how man came into being, the australopithecus didn't imagine that the world belonged to them, so they let him live and grow.");
+add_item(&action_wisdom, "You must absolutely and forever relinquish the idea that you know who live and who should die on this planet.");
+
+List inaction_wisdom = create_list("inaction wisdom");
+add_item(&inaction_wisdom, "Establishment of an always perfect tolerance, irrespective of the actions and words of others towards oneself.");
+add_item(&inaction_wisdom, "Truthfulness (to say only what is right).");
+add_item(&inaction_wisdom, "Rejection of hatred and worship. Not to follow any particular idea. Maintaining the mind in equanimity.");
+
+List three_gates = create_list("the three gates of speech");
+add_item(&three_gates, "Before you speak, let your words pass through <b>three gates</b>.");
+add_item(&three_gates, "At the first gate, ask yourself, is it <b>true</b>.");
+add_item(&three_gates, "At the second gate ask, is it <b>necessary</b>.");
+add_item(&three_gates, "At the third gate ask, is it <b>kind</b>.");

@@ -2257,7 +2257,6 @@ add_text(&research_faqs, "I keep records of everything I make, and everything I 
 
 Term lifestyle_faqs = create_term("lifestyle faqs", "");
 set_parent(&lifestyle_faqs, &faqs);
-// set_icon(&lifestyle_faqs, "M150,60 l0,180 M180,60 l0,180 l0,-60 a30,-30 0 0,1 30,-30 l30,0 M120,60 l0,180 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0");
 add_subheader(&lifestyle_faqs, "What is your background?");
 add_text(&lifestyle_faqs, "I was first interested in illustration and motion graphics. I soon started writing music to complement these pictures, and finally I began implementing interaction and turn these designs into games, websites and tools.");
 add_subheader(&lifestyle_faqs, "Where do you work?");
@@ -2275,61 +2274,44 @@ add_text(&lifestyle_faqs, "Working behind an avatar and living online through a 
 
 Term mirrors = create_portal("mirrors", "The collection of Mirrors.");
 set_parent(&mirrors, &research);
-// set_icon(&mirrors, "M60,150 Q150,60 240,150 Q150,240 60,150 M150,120 A30,30 0 0,1 180,150 A-30,30 0 0,1 150,180 A-30,-30 0 0,1 120,150 A30,-30 0 0,1 150,120 Z");
 add_text(&mirrors, "The <b>mirrors</b> are collected notes on the topics of " SEND(knowledge_path) " and " SEND(wisdom_path) ".");
 add_quote(&mirrors, "Mystery exists in the mind, not in reality. <br />Confusion exists in the map, not in the territory.", "E.T. Jaynes");
 
 Term wisdom = create_index("wisdom", "A collection of notes on Wisdom.");
 set_parent(&wisdom, &mirrors);
-// set_icon(&wisdom, "M155,65 A90,90 0 0,1 245,155 A90,90 0 0,1 155,245 A90,90 0 0,1 65,155 A90,90 0 0,1 155,65 A0,0 0 0,1 155,65 A45,45 0 0,1 200,110 A45,45 0 0,1 155,155 A45,45 0 0,0 110,200 A45,45 0 0,0 155,245 M155,110 L155,110 L155,110 M155,200 L155,200 L155,200");
 add_text(&wisdom, "The end of the cycle is that of the independent, clear-minded, all-seeing Child. That is the level known as <b>wisdom</b>.");
 add_text(&wisdom, "To be a philosopher is not merely to have subtle thoughts, but so to love wisdom as to live according to its dictates, a life of <b>simplicity, independence, magnanimity, and trust</b>.");
 add_quote(&wisdom, "There are two wisdoms: the first inclines to " SEND(action_path) ", the second to " SEND(inaction_path) ".", "Stanislaw Lem, Cyberiada");
 
 Term action = create_term("action", "A collection of notes in regard to Action.");
 set_parent(&action, &wisdom);
-// set_icon(&action, "M155,65 A90,90 0 0,1 245,155 A90,90 0 0,1 155,245 A90,90 0 0,1 65,155 A90,90 0 0,1 155,65 A0,0 0 0,1 155,65 A45,45 0 0,1 200,110 A45,45 0 0,1 155,155 A45,45 0 0,0 110,200 A45,45 0 0,0 155,245 M155,110 L155,110 L155,110 M155,200 L155,200 L155,200");
 add_text(&action, "<b>Ahimsa</b>, or <i >Cause no injury, do no harm</i>, is a Buddhist concept referred to as nonviolence, and it applies to all living beings—including all animals.");
-// add_list(&action, "Control of actions and speech to avoid unwholesome actions.");
-// add_list(&action, "Effort to work as much as possible for the good of others, even at the risk of one's life.");
-// add_list(&action, "Decision to devote oneself to beneficial actions and to remain steadfast on it.");
-// add_list(&action, "Maintaining a state of mind turned to the happiness of others, to practise love for all beings without exception.");
-// add_list(&action, "Development of knowledge and understanding through study and analytical reflection. To teach knowledge to others. To use one's wisdom for a maximum of benefits.");
-// add_list(&action, "You may compete to the full extent of your capabilities, but you may not hunt down your competitors.");
-// add_list(&action, "The creatures who act as though they belond to the world follow the peace-keeping law, they give the creatures around them a chance to grow toward watever it's possible for them to become. That's how man came into being, the australopithecus didn't imagine that the world belonged to them, so they let him live and grow.");
-// add_list(&action, "You must absolutely and forever relinquish the idea that you know who live and who should die on this planet.");
 add_quote(&action, "Be mindful of impermanence.<br /> Be careful of idleness.", "Unknown");
+add_list(&action, &action_wisdom);
 
 Term inaction = create_term("inaction", "A collection of notes in regard to Inaction.");
 set_parent(&inaction, &wisdom);
-// set_icon(&inaction, "M60,150 Q150,60 240,150 Q150,240 60,150 M150,120 A30,30 0 0,1 180,150 A-30,30 0 0,1 150,180 A-30,-30 0 0,1 120,150 A30,-30 0 0,1 150,120 Z");
 add_text(&inaction, "<b>Wu Wei</b> means without doing, causing, or making. It flows like water, reflects like a mirror, and responds like an echo.");
-// add_list(&inaction, "Establishment of an always perfect tolerance, irrespective of the actions and words of others towards oneself.");
-// add_list(&inaction, "Truthfulness (to say only what is right).");
-// add_list(&inaction, "Rejection of hatred and worship. Not to follow any particular idea. Maintaining the mind in equanimity.");
 add_quote(&inaction, "Many people are afraid of Emptiness, <br />because it reminds them of Loneliness.", "Unknown");
+add_list(&inaction, &inaction_wisdom);
 
 Term knowledge = create_index("knowledge", "A collection of notes on general Knowledge.");
 set_parent(&knowledge, &mirrors);
-// set_icon(&knowledge, "M90,90 L90,90 L210,90 M75,120 L75,120 L225,120 M60,150 L60,150 L240,150 M75,180 L75,180 L225,180 M90,210 L90,210 L210,210 M135,60 L135,60 L165,60 M135,240 L135,240 L165,240");
 add_text(&knowledge, "The <b>knowledge portal</b> serves as a clipboard, a place to collect various bits of knowledge from various books and their authors.");
 
 Term programming = create_term("programming", "A collection of notes on Programming.");
 set_parent(&programming, &knowledge);
-// set_icon(&programming, "M90,90 L90,90 L210,90 M75,120 L75,120 L225,120 M60,150 L60,150 L240,150 M75,180 L75,180 L225,180 M90,210 L90,210 L210,210 M135,60 L135,60 L165,60 M135,240 L135,240 L165,240");
 add_list(&programming, &programming_knowledge);
 add_list(&programming, &programming_practices);
 add_quote(&programming, "To make a magical technology, it must be sufficiently advanced.", "Lion Kimbro");
 
 Term design = create_term("design", "A collection of notes on Design.");
 set_parent(&design, &knowledge);
-// set_icon(&design, "M60,150 Q150,60 240,150 Q150,240 60,150 M150,120 A30,30 0 0,1 180,150 A-30,30 0 0,1 150,180 A-30,-30 0 0,1 120,150 A30,-30 0 0,1 150,120 Z");
 add_list(&design, &design_knowledge);
 add_list(&design, &design_pragnanz);
 
 Term work = create_term("work", "A collection of notes on Work.");
 set_parent(&work, &knowledge);
-// set_icon(&work, "M90,90 L90,90 L210,90 M75,120 L75,120 L225,120 M60,150 L60,150 L240,150 M75,180 L75,180 L225,180 M90,210 L90,210 L210,210 M135,60 L135,60 L165,60 M135,240 L135,240 L165,240");
 add_list(&work, &work_knowledge);
 add_quote(&work, "Work expands so as to fill the time available for its completion.", "Parkinson's law");
 add_list(&work, &work_habits);
@@ -2338,119 +2320,86 @@ add_quote(&work, "A leader is best when people barely know they exists, when the
 
 Term writing = create_term("writing", "A collection of notes on Writing.");
 set_parent(&writing, &knowledge);
-// set_icon(&writing, "M90,90 L90,90 L210,90 M75,120 L75,120 L225,120 M60,150 L60,150 L240,150 M75,180 L75,180 L225,180 M90,210 L90,210 L210,210 M135,60 L135,60 L165,60 M135,240 L135,240 L165,240");
 add_list(&writing, &writing_knowledge);
 add_quote(&writing, "I have only made this letter longer because I have not had the time to make it shorter.", "Blaise Pascal, The Provincial Letters");
 
 Term health = create_term("health", "A collection of notes on Health.");
 set_parent(&health, &knowledge);
-// set_icon(&health, "M90,90 L90,90 L210,90 M75,120 L75,120 L225,120 M60,150 L60,150 L240,150 M75,180 L75,180 L225,180 M90,210 L90,210 L210,210 M135,60 L135,60 L165,60 M135,240 L135,240 L165,240");
 add_list(&health, &health_knowledge);
 add_list(&health, &health_breathing);
 
-Term collapsology = create_term("collapsology", "A collection of notes on Collapsology.");
-set_parent(&collapsology, &knowledge);
-// set_icon(&collapsology, "M90,90 L90,90 L210,90 M75,120 L75,120 L225,120 M60,150 L60,150 L240,150 M75,180 L75,180 L225,180 M90,210 L90,210 L210,210 M135,60 L135,60 L165,60 M135,240 L135,240 L165,240");
-add_text(&collapsology, "We live in a time of social, economic and ecological unravelling. All around us are signs that our whole way of living is already passing into history.");
-add_list(&collapsology, &collapsology_knowledge);
-add_quote(&collapsology, "The end of the human race will be that it will eventually die of civilisation.", "Ralph Waldo Emerson");
-
-Term solarpunk = create_term("solarpunk", "A collection of notes on Solarpunk.");
-set_parent(&solarpunk, &knowledge);
-// set_icon(&solarpunk, "M90,90 L90,90 L210,90 M75,120 L75,120 L225,120 M60,150 L60,150 L240,150 M75,180 L75,180 L225,180 M90,210 L90,210 L210,210 M135,60 L135,60 L165,60 M135,240 L135,240 L165,240");
-add_text(&solarpunk, "" SENDNAME(solarpunk_path, "Solarpunks") " cherish both <b>nature and progress</b>, the <b>individual and the community</b>.");
-add_text(&solarpunk, "They believe in a world that is <b>green, colourful, and bright</b>. It can be described as a literary genre, an aesthetic, or a movement. The key points are:");
-add_text(&solarpunk, "A demand for technology and society to re-centre around <b>sustainability, longevity, and balance</b> with an emphasis on <b>renewable energy</b>.");
-add_text(&solarpunk, "A focus on <b>decentralisation, community activism, social justice and civic empowerment</b>.");
-add_text(&solarpunk, "A recognition that <b>economic, social, and ecological injustices</b> are all deeply <b>inter-connected</b>.");
-add_text(&solarpunk, "We're destroying the world because we are, in a very literal and deliberate way, at war with it. People need more than to be made to feel stupid and guilty. They need more than a vision of doom. They need a vision of the world and of themselves that inspires them.");
-add_text(&solarpunk, "Solarpunk is the opposite of cyberpunk's nihilism, offering “ingenuity, positive creation, independence, and community.”");
-add_quote(&solarpunk, "We're Solarpunks because the only other options are denial or despair.", "Adam Flynn, Notes toward a manifesto");
-
 Term ascetism = create_term("ascetism", "A collection of notes on Ascetism.");
 set_parent(&ascetism, &knowledge);
-// set_icon(&ascetism, "M90,90 L90,90 L210,90 M75,120 L75,120 L225,120 M60,150 L60,150 L240,150 M75,180 L75,180 L225,180 M90,210 L90,210 L210,210 M135,60 L135,60 L165,60 M135,240 L135,240 L165,240");
 add_quote(&ascetism, "A man is wealthy in proportion to the things he can do without.", "Epicurus");
 
-Term cheatsheets = create_index("cheatsheets", "A collection of Cheatsheets.");
+Term cheatsheets = create_portal("cheatsheets", "A collection of Cheatsheets.");
 set_parent(&cheatsheets, &mirrors);
-// set_icon(&cheatsheets, "M60,150 Q150,60 240,150 Q150,240 60,150 M150,120 A30,30 0 0,1 180,150 A-30,30 0 0,1 150,180 A-30,-30 0 0,1 120,150 A30,-30 0 0,1 150,120 Z");
 
 Term discourse = create_term("discourse", "A cheatsheet on Discourse.");
 set_parent(&discourse, &cheatsheets);
-// set_icon(&discourse, "M60,150 Q150,60 240,150 Q150,240 60,150 M150,120 A30,30 0 0,1 180,150 A-30,30 0 0,1 150,180 A-30,-30 0 0,1 120,150 A30,-30 0 0,1 150,120 Z");
-add_text(&discourse, "Before you speak, let your words pass through <b>three gates</b>.");
-// add_list(&discourse, "At the first gate, ask yourself, is it <b>true</b>.");
-// add_list(&discourse, "At the second gate ask, is it <b>necessary</b>.");
-// add_list(&discourse, "At the third gate ask, is it <b>kind</b>.");
-add_header(&discourse, "Arguments Ranking");
-add_text(&discourse, "The arguments rankings are taken from " LINKNAME("http://slatestarcodex.com/2018/05/08/varieties-of-argumentative-experience/", "Scott Alexander") ".");
-// add_table(&discourse, "●●●●● | <b>High-level generators</b> | Disagreements that remain when everyone understands exactly what's being argued, and agrees on what all the evidence says, but have vague and hard-to-define reasons for disagreeing.");
-// add_table(&discourse, "●●●●○ | <b>Operationalizing</b>      | Where both parties understand they're in a cooperative effort to fix exactly what they're arguing about.");
-// add_table(&discourse, "●●●○○ | <b>Survey of evidence</b>    | Not trying to devastate the other person with a mountain of facts and start looking at the studies and arguments on both sides and figuring out what kind of complex picture they paint.");
-// add_table(&discourse, "●●●○○ | <b>Disputing definitions</b> | Argument hinges on the meaning of words, or whether something counts as a member of a category or not.");
-// add_table(&discourse, "●●○○○ | <b>Single Studies</b>        | Better than scattered facts, proving they at least looked into the issue formally.");
-// add_table(&discourse, "●●○○○ | <b>Demands for rigor</b>     | Attempts to demand that an opposing argument be held to such strict standards that nothing could possibly clear the bar.");
-// add_table(&discourse, "●○○○○ | <b>Single Facts</b>          | One fact, which admittedly does support their argument, but presented as if it solves the debate in and of itself.");
-// add_table(&discourse, "●○○○○ | <b>Gotchas</b>               | Short claims that purport to be devastating proof that one side can't possibly be right.");
-// add_table(&discourse, "○○○○○ | <b>Social shaming</b>        | A demand for listeners to place someone outside the boundary of whom deserve to be heard.");
-add_header(&discourse, "Responses Ranking");
-add_text(&discourse, "The responses rankings are taken from " LINKNAME("http://www.paulgraham.com/disagree.html", "Paul Graham") ".");
-// add_table(&discourse, "●●●●●● | <b>Central point</b>      | Commit to refute explicitly the central point.");
-// add_table(&discourse, "●●●●●○ | <b>Refutation</b>         | Argue a conflicting passage, explain why it's mistaken.");
-// add_table(&discourse, "●●●●○○ | <b>Counterargument</b>    | Contradict with added reasoning or evidence.");
-// add_table(&discourse, "●●●○○○ | <b>Contradiction</b>      | State the opposing case, what.");
-// add_table(&discourse, "●●○○○○ | <b>Responding to Tone</b> | Responding to the author's tone, how.");
-// add_table(&discourse, "●○○○○○ | <b>Ad Hominem</b>         | Attacking the author directly, who.");
 add_quote(&discourse, "You should attempt to re-express your target's position so clearly, vividly, and fairly that your target says, “Thanks, I wish I'd thought of putting it that way.”", "Rapoport's First Rule");
 add_link(&discourse, "kind communication", "https://www.gnu.org/philosophy/kind-communication.html");
+add_text(&discourse, "The arguments rankings are taken from " LINKNAME("http://slatestarcodex.com/2018/05/08/varieties-of-argumentative-experience/", "Scott Alexander") ", and the responses rankings are taken from " LINKNAME("http://www.paulgraham.com/disagree.html", "Paul Graham") ".");
+add_dict(&discourse, &arguments_ranking);
+add_dict(&discourse, &arguments);
+add_dict(&discourse, &responses_ranking);
+add_dict(&discourse, &responses);
+add_list(&discourse, &three_gates);
+add_dict(&discourse, &beliefs);
 
 Term psychology = create_term("psychology", "A cheatsheet on Psychology.");
 set_parent(&psychology, &cheatsheets);
-// set_icon(&psychology, "M60,150 Q150,60 240,150 Q150,240 60,150 M150,120 A30,30 0 0,1 180,150 A-30,30 0 0,1 150,180 A-30,-30 0 0,1 120,150 A30,-30 0 0,1 150,120 Z");
-add_text(&psychology, "This is an edited version of " LINKNAME("https://www.pftq.com/blabberbox/?page=Three_Tiers_of_Mind", "PTFQ") "'s <b>Three Tiers of Mind</b>.");
+add_dict(&psychology, &psychology_lexicon);
+add_dict(&psychology, &personalities);
+add_dict(&psychology, &biases);
+add_dict(&psychology, &groupthink_biases);
+add_dict(&psychology, &effects);
+add_dict(&psychology, &fallacies);
+add_dict(&psychology, &illusions);
+add_dict(&psychology, &sociology);
+// add_text(&psychology, "This is an edited version of " LINKNAME("https://www.pftq.com/blabberbox/?page=Three_Tiers_of_Mind", "PTFQ") "'s <b>Three Tiers of Mind</b>.");
 // add_table(&psychology, "●●● | <b>Logic</b>       | <b>Power</b>    | <b>Authenticity</b> | <b>Creates</b>   | <b>Innovates</b> | <b>Understands</b>");
 // add_table(&psychology, "●●○ | Authority   | Purpose  | Conformity   | Resells   | Improves  | Memorizese");
 // add_table(&psychology, "●○○ | Experience  | Freedom  | Complacency  | Consumes  | Repeat    | Improvises");
-add_html(&psychology, "<table>");
-add_html(&psychology, "<tr><th colspan='10'>Intention</th></tr>");
-add_html(&psychology, "<tr><td>●●●</td><td> Clings to the future       </td><td> Respects you </td><td> Defined by intentions   </td></tr>");
-add_html(&psychology, "<tr><td>●●○</td><td> Clings to the present      </td><td> Respects your status   </td><td> Defined by association  </td></tr>");
-add_html(&psychology, "<tr><td>●○○</td><td> Clings to the past         </td><td> Respects your earnings </td><td> Defined by the past     </td></tr>");
-add_html(&psychology, "<tr><th colspan='10'>Actions</th></tr>");
-add_html(&psychology, "<tr><td>●●●</td><td> Talks of ideas          </td><td> Thinks in pictures            </td><td> Praises what you did </td></tr>");
-add_html(&psychology, "<tr><td>●●○</td><td> Talks of people         </td><td> Thinks in words               </td><td> Praises who you are </td></tr>");
-add_html(&psychology, "<tr><td>●○○</td><td> Talks of things         </td><td> Thinks in feelings            </td><td> Praises what you have </td></tr>");
-add_html(&psychology, "<tr><th colspan='10'>Aspirations</th></tr>");
-add_html(&psychology, "<tr><td>●●●</td><td> Wants to live forever   </td><td> Looks for equals </td><td>Fears boredom      </td></tr>");
-add_html(&psychology, "<tr><td>●●○</td><td> Wants to be remembered  </td><td> Looks for leaders </td><td>Fears uncertainty  </td></tr>");
-add_html(&psychology, "<tr><td>●○○</td><td> Wants to die happy      </td><td> Looks for gods </td><td>Fears pain         </td></tr>");
-add_html(&psychology, "</table>");
+// add_html(&psychology, "<table>");
+// add_html(&psychology, "<tr><th colspan='10'>Intention</th></tr>");
+// add_html(&psychology, "<tr><td>●●●</td><td> Clings to the future       </td><td> Respects you </td><td> Defined by intentions   </td></tr>");
+// add_html(&psychology, "<tr><td>●●○</td><td> Clings to the present      </td><td> Respects your status   </td><td> Defined by association  </td></tr>");
+// add_html(&psychology, "<tr><td>●○○</td><td> Clings to the past         </td><td> Respects your earnings </td><td> Defined by the past     </td></tr>");
+// add_html(&psychology, "<tr><th colspan='10'>Actions</th></tr>");
+// add_html(&psychology, "<tr><td>●●●</td><td> Talks of ideas          </td><td> Thinks in pictures            </td><td> Praises what you did </td></tr>");
+// add_html(&psychology, "<tr><td>●●○</td><td> Talks of people         </td><td> Thinks in words               </td><td> Praises who you are </td></tr>");
+// add_html(&psychology, "<tr><td>●○○</td><td> Talks of things         </td><td> Thinks in feelings            </td><td> Praises what you have </td></tr>");
+// add_html(&psychology, "<tr><th colspan='10'>Aspirations</th></tr>");
+// add_html(&psychology, "<tr><td>●●●</td><td> Wants to live forever   </td><td> Looks for equals </td><td>Fears boredom      </td></tr>");
+// add_html(&psychology, "<tr><td>●●○</td><td> Wants to be remembered  </td><td> Looks for leaders </td><td>Fears uncertainty  </td></tr>");
+// add_html(&psychology, "<tr><td>●○○</td><td> Wants to die happy      </td><td> Looks for gods </td><td>Fears pain         </td></tr>");
+// add_html(&psychology, "</table>");
 add_quote(&psychology, "The world is a comedy to those that think, a tragedy to those that feel.", "Howace Walpole");
+
+Term ethics = create_index("ethics", "A collection of notes on various topics concerning ethics.");
+set_parent(&ethics, &cheatsheets);
+add_text(&ethics, "We live in a time of social, economic and ecological unravelling. All around us are signs that our whole way of living is already passing into history.");
+add_quote(&ethics, "The end of the human race will be that it will eventually die of civilisation.", "Ralph Waldo Emerson");
+add_quote(&ethics, "We're Solarpunks because the only other options are denial or despair.", "Adam Flynn, Notes toward a manifesto");
+add_dict(&ethics, &green_anarchism);
+add_dict(&ethics, &animal_rights);
+add_dict(&ethics, &adaptation);
+add_list(&ethics, &dark_mountaineers);
+add_list(&ethics, &solarpunk_knowledge);
 
 Term documentation = create_term("documentation", "A cheatsheet on Documentation.");
 set_parent(&documentation, &cheatsheets);
-// set_icon(&documentation, "M60,150 Q150,60 240,150 Q150,240 60,150 M150,120 A30,30 0 0,1 180,150 A-30,30 0 0,1 150,180 A-30,-30 0 0,1 120,150 A30,-30 0 0,1 150,120 Z");
 add_text(&documentation, "This outlines the " SEND(documentation_path) " guidelines for the release of Nataniev projects.");
 add_text(&documentation, "<b>Tutorials</b> are lessons that take the reader by the hand through a series of steps to complete a project of some kind. They are what your project needs in order to show a beginner that they can achieve something with it.");
-// add_list(&documentation, "<b>Gets the user started</b>");
-// add_list(&documentation, "Allows the user to learn by doing");
-// add_list(&documentation, "Ensures the user sees results immediately");
-// add_list(&documentation, "Focuses on concrete steps, not abstract concepts");
+add_html(&documentation, "<ul><li><b>Gets the user started</b></li><li>Allows the user to learn by doing</li><li>Ensures the user sees results immediately</li><li>Focuses on concrete steps, not abstract concepts</li></ul>");
 add_text(&documentation, "<b>How-to guides</b> assume some knowledge and understanding, and take the reader through the steps required to solve a real-world problem. They are recipes, directions to achieve a specific end - for example: how to create a web form; how to plot a three-dimensional data-set; how to enable LDAP authentication.");
 add_text(&documentation, "How-to guides are quite distinct from tutorials. A how-to guide is an answer to a question that a true beginner might not even be able to formulate.");
-// add_list(&documentation, "<b>Solves a problem</b>");
-// add_list(&documentation, "Focuses on results");
-// add_list(&documentation, "Allows for some flexibility");
+add_html(&documentation, "<ul><li><b>Solves a problem</b></li><li>Focuses on results</li><li>Allows for some flexibility</li></ul>");
 add_text(&documentation, "<b>Explanations</b> can equally well be described as discussions. They are a chance for the documentation to relax and step back from the software, taking a wider view, illuminating it from a higher level or even from different perspectives. You might imagine a discussion document being read at leisure, rather than over the code.");
-// add_list(&documentation, "<b>Explains a choice</b>");
-// add_list(&documentation, "Provides context");
-// add_list(&documentation, "Discusses alternatives & opinions");
+add_html(&documentation, "<ul><li><b>Explains a choice</b></li><li>Provides context</li><li>Discusses alternatives & opinions</li></ul>");
 add_text(&documentation, "<b>Reference</b> guides are technical descriptions of the machinery and how to operate it. They are code-determined, because ultimately that's what they describe: key classes, functions, APIs, and so they should list things like functions, fields, attributes and methods, and set out how to use them.");
-// add_list(&documentation, "<b>Describes the machinery</b>");
-// add_list(&documentation, "References material should be austere and to the point.");
-// add_list(&documentation, "Structure the documentation around the code");
-// add_list(&documentation, "Do nothing but describe");
+add_html(&documentation, "<ul><li><b>Describes the machinery</b></li><li>References material should be austere and to the point.</li><li>Structure the documentation around the code</li><li>Do nothing but describe</li></ul>");
 add_quote(&documentation, "Clarity is better than cleverness", "unknown");
 add_link(&documentation, "sources", "https://www.divio.com/blog/documentation/");
 
@@ -2515,7 +2464,6 @@ add_text(&english, "The Spivak pronouns are a set of gender-neutral pronouns in 
 
 Term the_sartre_mechanism = create_term("the sartre mechanism", "The The Sartre Mechanism short.");
 set_parent(&the_sartre_mechanism, &notebook);
-// set_icon(&the_sartre_mechanism, "M150.0,60.0 L150.0,60.0 L150.0,135.0 M227.9,195.0 L227.9,195.0 L163.0,157.5 M72.1,195.0 L72.1,195.0 L137.0,157.5");
 add_text(&the_sartre_mechanism, "It was the first day of the winter when a friend invited me to witness the completion of a recent project.");
 add_text(&the_sartre_mechanism, "Crouched over a heap of cogs, she did not look over as I hung my snow-covered coat on something that, by the look of it, might very well be a time machine. A distracted gaze turned for a moment, perhaps to make sure that I did not break anything as I navigated the busy studio.");
 add_text(&the_sartre_mechanism, "What I first perceived as a pile of junk turned out to be an intricate clocklike mechanism; where the needles would have been, a small hand rested at the end of a short metallic arm.");
@@ -2525,13 +2473,11 @@ add_text(&the_sartre_mechanism, "Written by " LINKNAME("https://twitter.com/void
 
 Term talk = create_term("talk", "For when I Talk in public.");
 set_parent(&talk, &notebook);
-// set_icon(&talk, "M150.0,60.0 L150.0,60.0 L150.0,135.0 M227.9,195.0 L227.9,195.0 L163.0,157.5 M72.1,195.0 L72.1,195.0 L137.0,157.5");
 add_text(&talk, "Often gravitating around the topics of " SEND(nataniev_path) ", " SEND(oscean_path) " and " SEND(horaire_path) ", the <code >/Talk</code> is used mainly as a marker for Live events.");
 add_link(&talk, "sources", "https://github.com/neauoire/Talk-Amaze");
 
 Term systems = create_term("systems", "Various experimental writing and numerical Systems.");
 set_parent(&systems, &notebook);
-// set_icon(&systems, "M150.0,60.0 L150.0,60.0 L150.0,135.0 M227.9,195.0 L227.9,195.0 L163.0,157.5 M72.1,195.0 L72.1,195.0 L137.0,157.5");
 
 Term vedic = create_term("vedic", "The Vedic multiplication table is a very elegant and visual way to multiply.");
 set_parent(&vedic, &systems);
@@ -2589,60 +2535,49 @@ add_link(&blindfolk, "sources", "https://github.com/XXIIVV/vessel.blindfolk");
 
 Term milavrega = create_term("milavrega", "Milavrega was a mobile game happening in someone's lost phone.");
 set_parent(&milavrega, &unreleased);
-// set_icon(&milavrega, "M60,240 a30,-30 0 0,1 30,-30 l150,0 M90,195 a30,-30 0 0,1 30,-30 l90,0 M120,150 a30,-30 0 0,1 30,-30 l30,0 M195,120 l45,0 M225,165 l15,0 M150,105 a30,-30 0 0,1 30,-30 l60,0");
 add_text(&milavrega, "You must try and find your way through the folders, emails and contacts to decipher the enigma of the phone's owner.");
 
 Term first_wave = create_portal("first wave", "The First Wave contains material mostly unrelated to the Neauismetica and proto-Aliceffekt.");
 set_parent(&first_wave, &aliceffekt);
-// set_icon(&first_wave, "M150,60 l0,180 M60,195 l180,0 M60,105 l180,0 M150,210 a15,-15 0 0,1 15,-15 a-15,-15 0 0,1 -15,-15 a-15,15 0 0,1 -15,15 a15,15 0 0,1 15,15 M150,90 a15,15 0 0,0 15,15 a-15,15 0 0,0 -15,15 a-15,-15 0 0,0 -15,-15 a15,-15 0 0,0 15,-15");
 
 Term regionsteam_snowdays = create_term("regionsteam snowdays", "Regionsteam Snowdays is the first official Aliceffekt release.");
 set_parent(&regionsteam_snowdays, &first_wave);
-// set_icon(&regionsteam_snowdays, "M150,60 l0,180 M60,195 l180,0 M60,105 l180,0 M150,210 a15,-15 0 0,1 15,-15 a-15,-15 0 0,1 -15,-15 a-15,15 0 0,1 -15,15 a15,15 0 0,1 15,15 M150,90 a15,15 0 0,0 15,15 a-15,15 0 0,0 -15,15 a-15,-15 0 0,0 -15,-15 a15,-15 0 0,0 15,-15");
 add_text(&regionsteam_snowdays, "Incomplete.");
 
 Term downtemperature = create_term("downtemperature", "Downtemperature is the first Aliceffekt EP.");
 set_parent(&downtemperature, &first_wave);
-// set_icon(&downtemperature, "M150,60 l0,180 M60,195 l180,0 M60,105 l180,0 M150,210 a15,-15 0 0,1 15,-15 a-15,-15 0 0,1 -15,-15 a-15,15 0 0,1 -15,15 a15,15 0 0,1 15,15 M150,90 a15,15 0 0,0 15,15 a-15,15 0 0,0 -15,15 a-15,-15 0 0,0 -15,-15 a15,-15 0 0,0 15,-15");
 add_text(&downtemperature, "Released originally as three albums <i >First Air & Last Aid</i>, <i >Goneplains</i> and <i >Downtemperature</i>, the three albums were consolidated into a single release in 2017.");
 
 Term blam = create_term("blam", "Blam is an improvisational album created as a live performance, that ultimately fell through.");
 set_parent(&blam, &first_wave);
-// set_icon(&blam, "M150,60 l0,180 M60,195 l180,0 M60,105 l180,0 M150,210 a15,-15 0 0,1 15,-15 a-15,-15 0 0,1 -15,-15 a-15,15 0 0,1 -15,15 a15,15 0 0,1 15,15 M150,90 a15,15 0 0,0 15,15 a-15,15 0 0,0 -15,15 a-15,-15 0 0,0 -15,-15 a15,-15 0 0,0 15,-15");
 add_text(&blam, "This album is the precursor to " SEND(damoiseau_canalx_path) ", it was never performed live as it was intended, but recorded later in the car ride back.");
 add_text(&blam, "The story behind the reason for why it was never performed will be for another time..");
 add_link(&blam, "bandcamp", "https://aliceffekt.bandcamp.com/album/blam-le-passage-sacrilege");
 
 Term vert_kirlian_theatre = create_term("vert kirlian theatre", "The Vert Kirlian Theatre was created during on a long train ride, on the Yamanote line, during my first trip to Tokyo.");
 set_parent(&vert_kirlian_theatre, &first_wave);
-// set_icon(&vert_kirlian_theatre, "M150,60 l0,180 M60,195 l180,0 M60,105 l180,0 M150,210 a15,-15 0 0,1 15,-15 a-15,-15 0 0,1 -15,-15 a-15,15 0 0,1 -15,15 a15,15 0 0,1 15,15 M150,90 a15,15 0 0,0 15,15 a-15,15 0 0,0 -15,15 a-15,-15 0 0,0 -15,-15 a15,-15 0 0,0 15,-15");
 add_text(&vert_kirlian_theatre, "This release inspired the creation of " SEND(from_saharaphorest_path) ".");
 
 Term ann_yozora_saint = create_term("ann yozora saint", "Ann Yozora Saint was originally released as two albums, Ann Yozora Saint and Lu's Floral Funeralis, they were consolidated into a single release in 2017.");
 set_parent(&ann_yozora_saint, &first_wave);
-// set_icon(&ann_yozora_saint, "M150,60 l0,180 M60,195 l180,0 M60,105 l180,0 M150,210 a15,-15 0 0,1 15,-15 a-15,-15 0 0,1 -15,-15 a-15,15 0 0,1 -15,15 a15,15 0 0,1 15,15 M150,90 a15,15 0 0,0 15,15 a-15,15 0 0,0 -15,15 a-15,-15 0 0,0 -15,-15 a15,-15 0 0,0 15,-15");
 add_text(&ann_yozora_saint, "Incomplete.");
 add_link(&ann_yozora_saint, "bandcamp", "https://aliceffekt.bandcamp.com/album/ann-yozora-saint");
 
 Term nether_esper_inserts = create_term("nether esper inserts", "Nether Esper Inserts was originally released as two albums, Nether Esper Inserts and Howls Virgil Systems, they were consolidated into a single release in 2017.");
 set_parent(&nether_esper_inserts, &first_wave);
-// set_icon(&nether_esper_inserts, "M150,60 l0,180 M60,195 l180,0 M60,105 l180,0 M150,210 a15,-15 0 0,1 15,-15 a-15,-15 0 0,1 -15,-15 a-15,15 0 0,1 -15,15 a15,15 0 0,1 15,15 M150,90 a15,15 0 0,0 15,15 a-15,15 0 0,0 -15,15 a-15,-15 0 0,0 -15,-15 a15,-15 0 0,0 15,-15");
 add_text(&nether_esper_inserts, "Incomplete.");
 
 Term otoroutes_miniatures = create_term("otoroutes miniatures", "Otoroutes Miniatures was created especially for the first large Toy Company festival.");
 set_parent(&otoroutes_miniatures, &first_wave);
-// set_icon(&otoroutes_miniatures, "M150,60 l0,180 M60,195 l180,0 M60,105 l180,0 M150,210 a15,-15 0 0,1 15,-15 a-15,-15 0 0,1 -15,-15 a-15,15 0 0,1 -15,15 a15,15 0 0,1 15,15 M150,90 a15,15 0 0,0 15,15 a-15,15 0 0,0 -15,15 a-15,-15 0 0,0 -15,-15 a15,-15 0 0,0 15,-15");
 add_text(&otoroutes_miniatures, "Incomplete.");
 
 Term idyllic_miners = create_term("idyllic miners", "Idyllic Miners was created for the Kinetik Festival.");
 set_parent(&idyllic_miners, &first_wave);
-// set_icon(&idyllic_miners, "M150,60 l0,180 M60,195 l180,0 M60,105 l180,0 M150,210 a15,-15 0 0,1 15,-15 a-15,-15 0 0,1 -15,-15 a-15,15 0 0,1 -15,15 a15,15 0 0,1 15,15 M150,90 a15,15 0 0,0 15,15 a-15,15 0 0,0 -15,15 a-15,-15 0 0,0 -15,-15 a15,-15 0 0,0 15,-15");
 add_text(&idyllic_miners, "Incomplete.");
 add_link(&idyllic_miners, "bandcamp", "https://aliceffekt.bandcamp.com/album/genesis-iii-20-ov-idyllic-miners");
 
 Term lietal = create_term("lietal", "Lietal is an experimental synthetic language.");
 set_parent(&lietal, &language);
-// set_icon(&lietal, "M60,240 a30,-30 0 0,1 30,-30 l150,0 M90,195 a30,-30 0 0,1 30,-30 l90,0 M120,150 a30,-30 0 0,1 30,-30 l30,0 M195,120 l45,0 M225,165 l15,0 M150,105 a30,-30 0 0,1 30,-30 l60,0");
 add_text(&lietal, "<b>Lietal</b> is written from left to right with implicit neutrality, singularity and at the present tense.");
 add_text(&lietal, "For the most part, its <b>6 vowels and 9 consonants</b> are voiced similarly to their " SEND(english_path) " equivalents. Sustained vowels, such as \"<i >ä</i>\", are indicated with the trema. The Lietal \"<i >e</i>\" is very short, a barely audible junction between two consonants.");
 // add_table(&lietal, "I /i/ | l<b>ea</b>ves      | Y /ɨ/ | journ<b>ey</b>     | E /e/ | n<b>e</b>ver");
@@ -2686,7 +2621,6 @@ add_text(&lietal, "The <b>leading syllable determines a word's type</b>, for exa
 
 Term asodeky = create_term("asodeky", "The Asodeky, is the advanced Lietal language guide.");
 set_parent(&asodeky, &lietal);
-// set_icon(&asodeky, "M60,240 a30,-30 0 0,1 30,-30 l150,0 M90,195 a30,-30 0 0,1 30,-30 l90,0 M120,150 a30,-30 0 0,1 30,-30 l30,0 M195,120 l45,0 M225,165 l15,0 M150,105 a30,-30 0 0,1 30,-30 l60,0");
 add_text(&asodeky, "The order of words <b>follows the table of Elementary Particles</b>. In a typical sentence, <b>traverse</b>-type(\"k\") words will be found at the beginning, and <b>action</b>-type(\"f\") words, at the end.");
 add_text(&asodeky, "The following sequence of letters is the normal flow of a sentence, <b>when a sentence must break the word order, commas are used</b>. Notice the word order in the following sentence, and specifically how a comma is used to join two sentences that would normaly break the word order.");
 // add_table(&asodeky, "K | T | D | R | S | L | J | V | F");
@@ -2865,4 +2799,4 @@ add_text(&russian, "Aspects are indicators of completion of an action on some ve
 // add_table(&russian, "to convince, to talk into   | <b>уговорить</b>");
 // add_table(&russian, "to memorize                 | <b>выучить</b>");
 
-Term *lexicon[] = { &home, &audio, &visual, &research, &about, &license, &benchmark, &tracker, &journal, &calendar, &dodecae, &efli, &alicef, &aliceffekt, &es_gulf_sunflowers, &damoiseau_canalx, &the_sixth_season, &hex_hive_necklace, &victorian_punch, &rekka, &wiktopher, &hundred_rabbits, &drownspire, &merure, &vambits, &pino, &grimgrains, &illustration, &beldam_records, &ten_axitecture, &miniscopie, &ramiel, &eschatolor, &looking_glace, &verreciel_soundtrack, &getapan_728k, &azolla, &malice, &collected_works, &markl, &verreciel, &modernista, &nereid, &beauty, &serventines, &polygore, &pearls, &occulter, &oquonie, &oquonie_guide, &camilare, &babelium, &physical, &polygonoscopy, &methascope, &kaleidoscope, &hypervoid, &brane, &astratas, &ar_moire, &nervous, &artwork, &sketchbook, &flactals, &old_cities, &lard_shader, &ring_of_scales, &neauismetic, &vetetrandes_lettres, &from_saharaphorest, &ehrivevnv_studies, &yajnev_studies, &telekinetic, &telekinesis, &software, &nataniev, &oscean, &horaire, &time, &neralie, &arvelie, &webring, &merveilles, &rotonde, &riven, &tools, &orca, &juni, &pilot, &ronin, &dotgrid, &left, &utilities, &noodle, &enfer, &paradise, &maeve, &parade, &games, &hardware, &raspberry, &media_station, &radio_station, &framboisedorf, &weather_station, &instrument, &assembly, &microbit, &playground, &norns, &monome, &mobile, &bifurcan, &keyboard_468, &alphavetist, &vocavularist, &rafinograde, &noirca, &dew, &ledoliel, &automatons, &the_will_the_wisp, &dictionarism, &glossolaliarium, &advent_v, &unity, &siseon, &zjeveni, &drypoint, &valentinel_hopes, &cenote, &cyanosis_fever, &donsol, &hiversaires, &purgateus, &collegiennes, &diluvium, &volkenessen, &waiting_for_horus, &marabu, &pico3, &pico_battle, &spagettini_scale, &spool_holder, &laeisthic, &children_of_bramble, &known_magye, &extended_sleep, &duomic, &opal_inquisitors, &portalion, &dei_dain, &habitants_du_soleil, &lives, &shikanokoa_vs_1h1d, &pedestrian_paradise, &nor_let_the_fools, &to_the_aeons_hell, &vermillionth, &time_alloy, &demo, &superworker, &supervisitor, &supergrid, &soundtrack, &oquonie_soundtrack, &rabbits_soundtrack, &purgateus_soundtrack, &noon_guest, &remix, &typography, &vast, &defraction_optics, &thousand_rooms, &wallpapers, &neauismetica, &neon_hermetism, &feu, &actors, &ehrivevnv, &soies, &longest_end, &soies_machine, &soies_injection, &neausea, &nohlxeserre, &dinaisth, &kanikule, &vetetrandes, &laeisth, &andes_castel, &duomo, &neau, &dilitriel, &aitasla, &characters, &rlionn, &neonev, &andes, &yajnev, &paradichlorisse, &photography, &macro, &personal, &film, &black, &infrared, &travel, &austria, &netherlands, &japan, &minamiise, &shizuoka, &ogasawara, &yokohama, &fuji, &osaka, &tokyo, &fiji, &marquesas, &marshall_islands, &niue, &czech, &france, &the_sublime, &new_zealand, &america, &germany, &canada, &mexico, &lifestyle, &aesthetics, &nomad, &nutrition, &routine, &longtermism, &inventory, &everyday, &skate, &bike, &studio, &computer, &plan9, &camera, &keyboard, &directory, &bookmarks, &readings, &goals, &death, &faqs, &audio_faqs, &visual_faqs, &research_faqs, &lifestyle_faqs, &mirrors, &wisdom, &action, &inaction, &knowledge, &programming, &design, &work, &writing, &health, &collapsology, &solarpunk, &ascetism, &cheatsheets, &discourse, &psychology, &documentation, &quotes, &language, &english, &notebook, &the_sartre_mechanism, &talk, &systems, &vedic, &needles, &shorthand, &unreleased, &blindfolk, &milavrega, &devine_lu_linvega, &first_wave, &regionsteam_snowdays, &downtemperature, &blam, &vert_kirlian_theatre, &ann_yozora_saint, &nether_esper_inserts, &otoroutes_miniatures, &idyllic_miners, &lietal, &asodeky, &japanese, &russian };
+Term *lexicon[] = { &home, &audio, &visual, &research, &about, &license, &benchmark, &tracker, &journal, &calendar, &dodecae, &efli, &alicef, &aliceffekt, &es_gulf_sunflowers, &damoiseau_canalx, &the_sixth_season, &hex_hive_necklace, &victorian_punch, &rekka, &wiktopher, &hundred_rabbits, &drownspire, &merure, &vambits, &pino, &grimgrains, &illustration, &beldam_records, &ten_axitecture, &miniscopie, &ramiel, &eschatolor, &looking_glace, &verreciel_soundtrack, &getapan_728k, &azolla, &malice, &collected_works, &markl, &verreciel, &modernista, &nereid, &beauty, &serventines, &polygore, &pearls, &occulter, &oquonie, &oquonie_guide, &camilare, &babelium, &physical, &polygonoscopy, &methascope, &kaleidoscope, &hypervoid, &brane, &astratas, &ar_moire, &nervous, &artwork, &sketchbook, &flactals, &old_cities, &lard_shader, &ring_of_scales, &neauismetic, &vetetrandes_lettres, &from_saharaphorest, &ehrivevnv_studies, &yajnev_studies, &telekinetic, &telekinesis, &software, &nataniev, &oscean, &horaire, &time, &neralie, &arvelie, &webring, &merveilles, &rotonde, &riven, &tools, &orca, &juni, &pilot, &ronin, &dotgrid, &left, &utilities, &noodle, &enfer, &paradise, &maeve, &parade, &games, &hardware, &raspberry, &media_station, &radio_station, &framboisedorf, &weather_station, &instrument, &assembly, &microbit, &playground, &norns, &monome, &mobile, &bifurcan, &keyboard_468, &alphavetist, &vocavularist, &rafinograde, &noirca, &dew, &ledoliel, &automatons, &the_will_the_wisp, &dictionarism, &glossolaliarium, &advent_v, &unity, &siseon, &zjeveni, &drypoint, &valentinel_hopes, &cenote, &cyanosis_fever, &donsol, &hiversaires, &purgateus, &collegiennes, &diluvium, &volkenessen, &waiting_for_horus, &marabu, &pico3, &pico_battle, &spagettini_scale, &spool_holder, &laeisthic, &children_of_bramble, &known_magye, &extended_sleep, &duomic, &opal_inquisitors, &portalion, &dei_dain, &habitants_du_soleil, &lives, &shikanokoa_vs_1h1d, &pedestrian_paradise, &nor_let_the_fools, &to_the_aeons_hell, &vermillionth, &time_alloy, &demo, &superworker, &supervisitor, &supergrid, &soundtrack, &oquonie_soundtrack, &rabbits_soundtrack, &purgateus_soundtrack, &noon_guest, &remix, &typography, &vast, &defraction_optics, &thousand_rooms, &wallpapers, &neauismetica, &neon_hermetism, &feu, &actors, &ehrivevnv, &soies, &longest_end, &soies_machine, &soies_injection, &neausea, &nohlxeserre, &dinaisth, &kanikule, &vetetrandes, &laeisth, &andes_castel, &duomo, &neau, &dilitriel, &aitasla, &characters, &rlionn, &neonev, &andes, &yajnev, &paradichlorisse, &photography, &macro, &personal, &film, &black, &infrared, &travel, &austria, &netherlands, &japan, &minamiise, &shizuoka, &ogasawara, &yokohama, &fuji, &osaka, &tokyo, &fiji, &marquesas, &marshall_islands, &niue, &czech, &france, &the_sublime, &new_zealand, &america, &germany, &canada, &mexico, &lifestyle, &aesthetics, &nomad, &nutrition, &routine, &longtermism, &inventory, &everyday, &skate, &bike, &studio, &computer, &plan9, &camera, &keyboard, &directory, &bookmarks, &readings, &goals, &death, &faqs, &audio_faqs, &visual_faqs, &research_faqs, &lifestyle_faqs, &mirrors, &wisdom, &action, &inaction, &knowledge, &programming, &design, &work, &writing, &health, &ethics, &ascetism, &cheatsheets, &discourse, &psychology, &documentation, &quotes, &language, &english, &notebook, &the_sartre_mechanism, &talk, &systems, &vedic, &needles, &shorthand, &unreleased, &blindfolk, &milavrega, &devine_lu_linvega, &first_wave, &regionsteam_snowdays, &downtemperature, &blam, &vert_kirlian_theatre, &ann_yozora_saint, &nether_esper_inserts, &otoroutes_miniatures, &idyllic_miners, &lietal, &asodeky, &japanese, &russian };
