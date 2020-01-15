@@ -14,6 +14,9 @@
 #define TERM_LOGS_BUFFER 340
 #define TERM_CHILDREN_BUFFER 16
 
+int pict_used_len = 0;
+int pict_used[999];
+
 char *html_head = "<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='author' content='Devine Lu Linvega'><meta name='description' content='The Nataniev Library.'/><meta name='keywords' content='Aliceffekt, Devine Lu Linvega, Lietal, Oquonie, Verreciel, Nataniev, Oscean, Solarpunk' /><meta name='license' content='name=BY-NC-SA(4.0), url=https://creativecommons.org/licenses/by-nc-sa/4.0/'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width, initial-scale=1.0'><link rel='shortcut icon' type='image/x-icon' href='../media/services/favicon.ico' /><title>XXIIVV — %s</title><style>%s</style></head><body>";
 
 char *html_header = "<header><a id='logo' href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV'></a></header>";
@@ -261,6 +264,9 @@ void add_event_diary(Term *term, char *date, int code, char *name, int pict) {
     term->pict = term->logs_len;
   }
   term->logs_len++;
+
+  pict_used[pict_used_len] = pict;
+  pict_used_len++;
 }
 
 void add_diary(Term *term, char *date, int code, char *name, int pict) {
@@ -277,6 +283,9 @@ void add_diary(Term *term, char *date, int code, char *name, int pict) {
     term->pict = term->logs_len;
   }
   term->logs_len++;
+
+  pict_used[pict_used_len] = pict;
+  pict_used_len++;
 }
 
 void add_event(Term *term, char *date, int code, char *name) {
@@ -320,6 +329,26 @@ void to_lowercase(char *str, char *target, size_t tsize) {
     }
   }
   target[tsize - 1] = '\0';
+}
+
+int index_of(int a[], int num_elements, int value) {
+  int i;
+  for (i = 0; i < num_elements; i++) {
+    if (a[i] == value) {
+      return (value);
+    }
+  }
+  return (-1);
+}
+
+int pict_next() {
+  for (int i = 1; i < 999; ++i) {
+    int index = index_of(pict_used, pict_used_len, i);
+    if(index < 0){
+      return i;
+    }
+  }
+  return -1;
 }
 
 // Build(parts)
@@ -506,6 +535,7 @@ int main(void) {
   #include "lexicon.c"
   #include "horaire.c"
 
+
   int lexicon_len = sizeof lexicon / sizeof lexicon[0];
 
   printf("Lexicon: %d entries\n", lexicon_len);
@@ -513,6 +543,8 @@ int main(void) {
   for (int i = 0; i < lexicon_len; ++i) {
     build_page(lexicon[i]);
   }
+
+  printf("Next available pict id: %d\n", pict_next());
 
   return (0);
 }

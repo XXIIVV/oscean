@@ -365,22 +365,6 @@ add_text(&hundred_rabbits, "The name <i >Hundred Rabbits</i> comes from the name
 add_link(&hundred_rabbits, "patreon", "https://patreon.com/100");
 add_link(&hundred_rabbits, "twitter", "https://twitter.com/hundredrabbits");
 
-Term drownspire = create_portal("drownspire", "Drownspire was the name of an online store founded with Rekka Bellum, back in 2009.");
-set_parent(&drownspire, &hundred_rabbits);
-add_text(&drownspire, "Our goals then, fueled what is now " SEND(hundred_rabbits_path) ". We distributed the " SEND(vambits_path) " designer toys and published the " SEND(merure_path) " books.");
-add_header(&drownspire, "The Studio");
-
-Term merure = create_term("merure", "The Merure books, were a series of comics published with friends.");
-set_parent(&merure, &drownspire);
-add_link(&merure, "itunes", "https://itunes.apple.com/nz/book/merure/id888164293");
-
-Term vambits = create_term("vambits", "Vambits are small DIY desktoys designed to be laser cut in acrylic.");
-set_parent(&vambits, &drownspire);
-add_text(&vambits, "The product was initially created with " LINKNAME("https://www.ponoko.com", "Ponoko") " but is now produced by our friends at " LINKNAME("https://twitter.com/skogrstudio", "Skógr Studio") ".");
-add_text(&vambits, "The templates are free and open-source if you want to create your own faces and custom accessories! Send us " LINKNAME("https://twitter.com/search?q=%23vambits", "your pictures") " if you do.");
-add_text(&vambits, "The design stolen and sold by various resellers on Esty and in stores in Australia — Please do not support them.");
-add_link(&vambits, "sources", "https://github.com/hundredrabbits/Vambits");
-
 Term pino = create_album("pino", "Pino is a Yamaha 33 sailboat built in 1982.");
 set_parent(&pino, &hundred_rabbits);
 add_text(&pino, "Purchased in 2016, on Vancouver Island, <b>Pino</b> has since sailed across the " SENDNAME(marquesas_path, "Pacific Ocean") ". We maintain a list of " LINKNAME("http://github.com/hundredrabbits/pino", "technical details") ", and our current position can be accessed through our " LINKNAME("http://100r.co/#map", "tracker") ".");
@@ -411,6 +395,22 @@ add_text(&grimgrains, "A collection of notes on cooking tools is also maintained
 add_link(&grimgrains, "twitter", "https://twitter.com/grimgrains");
 add_link(&grimgrains, "live", "https://grimgrains.com");
 add_link(&grimgrains, "sources", "https://github.com/hundredrabbits/Grimgrains");
+
+Term drownspire = create_portal("drownspire", "Drownspire was the name of an online store founded with Rekka Bellum, back in 2009.");
+set_parent(&drownspire, &hundred_rabbits);
+add_text(&drownspire, "Our goals then, fueled what is now " SEND(hundred_rabbits_path) ". We distributed the " SEND(vambits_path) " designer toys and published the " SEND(merure_path) " books.");
+add_header(&drownspire, "The Studio");
+
+Term merure = create_term("merure", "The Merure books, were a series of comics published with friends.");
+set_parent(&merure, &drownspire);
+add_link(&merure, "itunes", "https://itunes.apple.com/nz/book/merure/id888164293");
+
+Term vambits = create_term("vambits", "Vambits are small DIY desktoys designed to be laser cut in acrylic.");
+set_parent(&vambits, &drownspire);
+add_text(&vambits, "The product was initially created with " LINKNAME("https://www.ponoko.com", "Ponoko") " but is now produced by our friends at " LINKNAME("https://twitter.com/skogrstudio", "Skógr Studio") ".");
+add_text(&vambits, "The templates are free and open-source if you want to create your own faces and custom accessories! Send us " LINKNAME("https://twitter.com/search?q=%23vambits", "your pictures") " if you do.");
+add_text(&vambits, "The design stolen and sold by various resellers on Esty and in stores in Australia — Please do not support them.");
+add_link(&vambits, "sources", "https://github.com/hundredrabbits/Vambits");
 
 Term illustration = create_portal("illustration", "A collection of Illustration projects.");
 set_parent(&illustration, &visual);
@@ -1659,7 +1659,6 @@ add_text(&longest_end, "The " SEND(actors_path) "' goal is to steer the occurrin
 
 Term soies_machine = create_term("soies machine", "The Soies Machine was the last machine.");
 set_parent(&soies_machine, &soies);
-// set_icon(&soies_machine, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&soies_machine, "The <b>Soies Machine</b> is a kind of clock, with needles rotating around each available axis of space, at the fastest allowed speed by the " SENDNAME(soies_path, "Occurence") ".");
 add_text(&soies_machine, "The purpose of the machine was to locate the required design across all timelines, forcing the " SENDNAME(soies_path, "Occuring") " to render as the " SEND(longest_end_path) ".");
 add_text(&soies_machine, "Sealed in an <b>Optimal Cartesian Vaccum</b>, the clock spins inside a pocket of syntetic space ruled by optimal natural laws; an uttermost stable engineered universe, in a vaccum.");
@@ -1667,13 +1666,11 @@ add_text(&soies_machine, "Each \"needle\" rotate in its own dimension, vanishing
 
 Term soies_injection = create_term("soies injection", "A Soies Injection is a syntetic event found in the occurring.");
 set_parent(&soies_injection, &soies);
-// set_icon(&soies_injection, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&soies_injection, "Injections are unnatural events found in the " SENDNAME(soies_path, "Occurring") ", forced into existence by " SEND(actors_path) " condensing the possible events.");
 add_text(&soies_injection, "The " SEND(andes_castel_path) " found in " SEND(laeisth_path) " is a known <b>injection</b>, the " SENDNAME(neon_hermetism_path, "Neon Hermetists") " suggest the " SEND(ehrivevnv_path) " to also be an injection.");
 
 Term neausea = create_term("neausea", "The Neausea is a sickness manifested in beings who knows their Soies position.");
 set_parent(&neausea, &neon_hermetism);
-// set_icon(&neausea, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&neausea, "" SEND(actors_path) " and beings such as " SEND(paradichlorisse_path) ", can carry it. A weaker form can be contracted when one is in contact with " SEND(nohlxeserre_path) " languages.");
 add_text(&neausea, "The experience of <b>Neausea</b>, by the afflicted, would at first seem like one can travel through time. But the subject's impression of time-traveling is due to their focus shifting across possible sequences of events.");
 add_text(&neausea, "To the observer, the subject would simply collapse, by the time the body would hit the ground, the subject's mental gaze would have traveled across different possible timelines, but would have in the process <i >lost the track of Time</i> — Effectively extracting themself from the " SENDNAME(soies_path, "Occurring") ".");
@@ -1682,7 +1679,6 @@ add_text(&neausea, "<i >In debt are are my impossible selves, <br />for all the 
 
 Term nohlxeserre = create_term("nohlxeserre", "Nohlxeserre is an hypothetical language from the Neauismetica.");
 set_parent(&nohlxeserre, &neausea);
-// set_icon(&nohlxeserre, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&nohlxeserre, "<b>Nohlxeserre</b> is a language that delivers a richer and more precise rendition of its meaning than actual experience.");
 add_text(&nohlxeserre, "The richness and detail of experiencing an event, pales in comparison to having it recited – Effictively inducing the symptoms of " SEND(neausea_path) ", stasis, and ultimately death.");
 add_text(&nohlxeserre, "The Nohlxeserre Language is the language of the " SEND(actors_path) ". Andes, as opposed to " SEND(neonev_path) ", did not found itself on " SEND(dinaisth_path) " looking for " SEND(actors_path) ", but for " SEND(paradichlorisse_path) ". Whom Andes says \"<i >Speaks the language of the birds</i>\".");
@@ -1690,20 +1686,17 @@ add_text(&nohlxeserre, "The Nohlxeserre Language is the language of the " SEND(a
 
 Term dinaisth = create_portal("dinaisth", "Dinaisth is the name of the Satellite onto which unfolds the events of the Neauismetica.");
 set_parent(&dinaisth, &neauismetica);
-// set_icon(&dinaisth, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&dinaisth, "<b>Dinaisth</b> is a small celestial object that orbits the " SEND(ehrivevnv_path) " megastructure, beyond the furthest reaching starlight.");
 add_html(&dinaisth, "<center><img src='../media/identity/dinaisth.flag.color.svg' width='300'/></center>");
 add_text(&dinaisth, "The <b>Flag of Dinaisth</b> depicts the " SENDNAME(ehrivevnv_path, "Ultraviolet Sun") ", reflected upon the " SENDNAME(kanikule_path, "Kanikule Ocean") " below the " SENDNAME(feu_path, "Lightless Sky") ".");
 
 Term kanikule = create_term("kanikule", "Kanikule is the ocean surrounding Neau.");
 set_parent(&kanikule, &dinaisth);
-// set_icon(&kanikule, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&kanikule, "<b>Kanikule</b> is an infinite ocean that an immortal would spend an infitite amount of time crossing, effectively reaching the outer-shores mortal.");
 add_text(&kanikule, "While one can sail away from its center, <b>Neau</b>, one cannot return to it, for it occupies no space in the ocean. Neau is a circular city at the center of " SEND(kanikule_path) ". The blue roofed city the birthplace of " SEND(lietal_path) ", and is also the place from which the " SEND(neauismetica_path) " derives its name.");
 
 Term vetetrandes = create_term("vetetrandes", "Vetetrandes is the remains of a city where Yajnev rests.");
 set_parent(&vetetrandes, &dinaisth);
-// set_icon(&vetetrandes, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&vetetrandes, "As you would approach the epicenter of the bound city, time would become increasingly more " SENDNAME(soies_machine_path, "unmoving") ".");
 add_text(&vetetrandes, "At its center, one would find the corpse of " SEND(yajnev_path) ", and where Yajnev's head would have been, a hollow mask. Locked inside the mask is the only instance of true space that can be said to be \"outside\".");
 add_text(&vetetrandes, "The trek across Vetetrandes is only possible through the guiding of an " SENDNAME(actors_path, "Actor") ", as the local void existing in Vetetrandes is unacted, or unoperated and unredered.");
@@ -1711,12 +1704,10 @@ add_text(&vetetrandes, "The " SENDNAME(neon_hermetism_path, "Neon Hermetists") "
 
 Term laeisth = create_term("laeisth", "Laeisth is a desert on Dinaisth.");
 set_parent(&laeisth, &dinaisth);
-// set_icon(&laeisth, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&laeisth, "Surrounding an Oasis, a blackened chasm where creeps the clones of its violent host " SEND(rlionn_path) ", the " SEND(andes_castel_path) " stands quiet.");
 
 Term andes_castel = create_term("andes castel", "The Andes Castel is a large unnatural structure found in Laeisth.");
 set_parent(&andes_castel, &laeisth);
-// set_icon(&andes_castel, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&andes_castel, "Injected into " SEND(dinaisth_path) " by " SEND(andes_path) ", the castellum is a seemingly artificial structure found North of the " SENDNAME(laeisth_path, "Laeisth Desert") ".");
 add_text(&andes_castel, "While its intricate networks of ornate tunnels and decorated halls appear to suggest its creation to be the result of artificial construction —  It was found by the " SENDNAME(neon_hermetism_path, "Neon Hermetists") " to have come into being from the natural sway of the " SENDNAME(kanikule_path, "ocean") ", erosion and accumulation of debris, across a long period of time.");
 add_text(&andes_castel, "When looking North from the " SENDNAME(laeisth_path, "Oasis") ", three High Towers, connected by bridges, are visible above the horizon. Its very existence suggest an " SENDNAME(soies_injection_path, "injection") " into the " SEND(soies_path) ".");
@@ -1726,28 +1717,23 @@ add_text(&andes_castel, "The buildings have been mostly left vacant, except from
 
 Term duomo = create_term("duomo", "Duomo covers most of the northern hemisphere of Dinaisth.");
 set_parent(&duomo, &dinaisth);
-// set_icon(&duomo, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&duomo, "Incomplete.");
 
 Term neau = create_term("neau", "Neau is a location found at the center of Kanikule.");
 set_parent(&neau, &kanikule);
-// set_icon(&neau, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&neau, "Incomplete.");
 
 Term dilitriel = create_term("dilitriel", "Dilitriel is the central region of Dinaisth.");
 set_parent(&dilitriel, &dinaisth);
-// set_icon(&dilitriel, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&dilitriel, "Incomplete.");
 
 Term aitasla = create_term("aitasla", "Aitasla is a satellite orbiting orbiting the Ehrivevnv.");
 set_parent(&aitasla, &dinaisth);
-// set_icon(&aitasla, "M60,60 L60,60 L240,60 M60,150 L60,150 L240,150 M150,60 L150,60 L150,240");
 add_text(&aitasla, "Folk stories, from " SEND(dinaisth_path) ", about the satellite include tall tales of the existence of beings with " SENDNAME(habitants_du_soleil_path, "large organic hats") ".");
 add_text(&aitasla, "The " SEND(aitasla_path) " object is rumoured to be the location of the " SEND(hiversaires_path) " station.");
 
 Term characters = create_index("characters", "Characters are a selection of resident Immortals of Dinaisth.");
 set_parent(&characters, &neauismetica);
-// set_icon(&characters, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&characters, "Introducing <b>The Courtship Of The Birds</b>.");
 add_text(&characters, "While other lives happened to find themselves on " SEND(dinaisth_path) ", at one point or another, the " SEND(neauismetica_path) " focuses on the handful that worked in or alongside the " SEND(neon_hermetism_path) ".");
 add_text(&characters, "The name comes from the " SEND(nohlxeserre_path) ", which is also known as <b>The Language Of The Birds</b>.");
