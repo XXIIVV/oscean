@@ -136,7 +136,7 @@ Term create_term(char *name, char *bref) {
   t.isPortal = false;
   t.isAlbum = false;
   t.isIndex = false;
-  
+
   t.children_len = 0;
   t.body_len = 0;
   t.links_len = 0;
@@ -512,6 +512,14 @@ void build_special_journal(FILE *f, Term *term, Journal *journal){
     build_pict_part(f, &journal->logs[i], true);
     count++;
   }
+
+
+  char buffer[4096];
+  FILE *fp = fopen("../404.html", "r");
+  while (size_t sz = fread(buffer, sizeof(buffer), fp)) {
+    fwrite(buffer , 1 , sizeof(buffer) , fp);
+  }
+  fclose(fp);
 }
 
 void build_page(Term *term, Journal *journal) {
