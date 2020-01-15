@@ -13,6 +13,7 @@
 #define TERM_LINK_BUFFER 8
 #define TERM_LOGS_BUFFER 340
 #define TERM_CHILDREN_BUFFER 16
+#define JOURNAL_BUFFER 8192
 
 int pict_used_len = 0;
 int pict_used[999];
@@ -40,33 +41,6 @@ typedef struct List {
   char *items[LIST_BUFFER];
 } List;
 
-typedef struct Log {
-  char *date;
-  int code;
-  char *name;
-  int pict;
-  bool isEvent;
-} Log;
-
-typedef struct Journal {
-  int logs_len;
-  Log logs[700];
-} Journal;
-
-Journal all_logs;
-
-void add_journal_log(Journal *journal, char *date, int code, char *name, int pict, bool isEvent){
-  if(journal->logs_len > 700){ return; }
-  Log log;
-  log.date = date;
-  log.code = code;
-  log.name = name;
-  log.pict = pict;
-  log.isEvent = isEvent;
-  journal->logs[journal->logs_len] = log;
-  journal->logs_len++;
-}
-
 typedef struct Term {
   bool isPortal;
   bool isAlbum;
@@ -76,7 +50,6 @@ typedef struct Term {
   int children_len;
   int body_len;
   int links_len;
-  int logs_len;
   int dicts_len;
   int lists_len;
 
@@ -86,11 +59,6 @@ typedef struct Term {
 
   struct Term *parent;
 
-  bool logs_event[LOGS_BUFFER];
-  int logs_pict[LOGS_BUFFER];
-  int logs_code[LOGS_BUFFER];
-  char *logs_date[LOGS_BUFFER];
-  char *logs_name[LOGS_BUFFER];
   char *body_text[TERM_BODY_BUFFER];
   char *body_meta[TERM_BODY_BUFFER];
   char *body_tags[TERM_BODY_BUFFER];
@@ -99,9 +67,36 @@ typedef struct Term {
   struct Term *children[TERM_CHILDREN_BUFFER];
   Dict *dicts[TERM_DICT_BUFFER];
   List *lists[TERM_LIST_BUFFER];
-  Log *logs[LOGS_BUFFER];
 } Term;
 
+typedef struct Log {
+  Term *term;
+  char *date;
+  int code;
+  char *name;
+  int pict;
+  bool is_event;
+} Log;
+
+typedef struct Journal {
+  int len;
+  Log logs[JOURNAL_BUFFER];
+} Journal;
+
+Journal all_logs;
+
+void add_journal_log(Journal *journal, Term *term, char *date, int code, char *name, int pict, bool is_event){
+  if(journal->len > JOURNAL_BUFFER){ return; }
+  Log log;
+  log.term = term;
+  log.date = date;
+  log.code = code;
+  log.name = name;
+  log.pict = pict;
+  log.is_event = is_event;
+  journal->logs[journal->len] = log;
+  journal->len++;
+}
 // Creators/Setters
 
 Dict create_dict(char *name) {
@@ -147,7 +142,6 @@ Term create_term(char *name, char *bref) {
   t.children_len = 0;
   t.body_len = 0;
   t.links_len = 0;
-  t.logs_len = 0;
   t.dicts_len = 0;
   t.lists_len = 0;
 
@@ -271,68 +265,23 @@ void add_link(Term *term, char *name, char *url) {
 }
 
 void add_event_diary(Term *term, char *date, int code, char *name, int pict) {
-  if(term->logs_len > TERM_LOGS_BUFFER-1){
-    printf("Reached TERM_LOGS_BUFFER\n");
-    return;
-  }
-  term->logs_date[term->logs_len] = date;
-  term->logs_code[term->logs_len] = code;
-  term->logs_name[term->logs_len] = name;
-  term->logs_pict[term->logs_len] = pict;
-  term->logs_event[term->logs_len] = true;
-  if(term->pict < 0){
-    term->pict = term->logs_len;
-  }
-  term->logs_len++;
-
+  add_journal_log(&all_logs, term, date, code, name, pict, true);
   pict_used[pict_used_len] = pict;
   pict_used_len++;
 }
 
 void add_diary(Term *term, char *date, int code, char *name, int pict) {
-  if(term->logs_len > TERM_LOGS_BUFFER-1){
-    printf("Reached TERM_LOGS_BUFFER\n");
-    return;
-  }
-  term->logs_date[term->logs_len] = date;
-  term->logs_code[term->logs_len] = code;
-  term->logs_name[term->logs_len] = name;
-  term->logs_pict[term->logs_len] = pict;
-  term->logs_event[term->logs_len] = false;
-  if(term->pict < 0){
-    term->pict = term->logs_len;
-  }
-  term->logs_len++;
-  add_journal_log(&all_logs, date, code, name, pict, false);
-
+  add_journal_log(&all_logs, term, date, code, name, pict, false);
   pict_used[pict_used_len] = pict;
   pict_used_len++;
 }
 
 void add_event(Term *term, char *date, int code, char *name) {
-  if(term->logs_len > TERM_LOGS_BUFFER-1){
-    printf("Reached TERM_LOGS_BUFFER\n");
-    return;
-  }
-  term->logs_date[term->logs_len] = date;
-  term->logs_code[term->logs_len] = code;
-  term->logs_name[term->logs_len] = name;
-  term->logs_pict[term->logs_len] = 0;
-  term->logs_event[term->logs_len] = true;
-  term->logs_len++;
+  add_journal_log(&all_logs, term, date, code, name, 0, true);
 }
 
 void add_log(Term *term, char *date, int code) {
-  if(term->logs_len > TERM_LOGS_BUFFER-1){
-    printf("Reached TERM_LOGS_BUFFER\n");
-    return;
-  }
-  term->logs_date[term->logs_len] = date;
-  term->logs_code[term->logs_len] = code;
-  term->logs_name[term->logs_len] = "";
-  term->logs_pict[term->logs_len] = 0;
-  term->logs_event[term->logs_len] = false;
-  term->logs_len++;
+  add_journal_log(&all_logs, term, date, code, NULL, 0, false);
 }
 
 // Tools
@@ -353,8 +302,7 @@ void to_lowercase(char *str, char *target, size_t tsize) {
 }
 
 int index_of(int a[], int num_elements, int value) {
-  int i;
-  for (i = 0; i < num_elements; i++) {
+  for (int i = 0; i < num_elements; i++) {
     if (a[i] == value) {
       return (value);
     }
@@ -374,10 +322,10 @@ void scan_pict_next() {
 
 // Build(parts)
 
-void build_pict_part(FILE *f, int id, char *name, char *date, bool caption){
-  fprintf(f, "<img src='../media/diary/%d.jpg' alt='%s picture'/>", id, name);
+void build_pict_part(FILE *f, Log *log, bool caption){
+  fprintf(f, "<img src='../media/diary/%d.jpg' alt='%s picture'/>", log->pict, log->term->name);
   if(caption){
-    fprintf(f, "<h4>%s — %s</h4>", date,name);
+    fprintf(f, "<h4>%s — %s</h4>", log->date, log->name);
   }
 }
 
@@ -407,10 +355,22 @@ void build_nav_part(FILE *f, Term *term, Term *target){
 
 // Build
 
-void build_banner(FILE *f, Term *term, bool caption){
-  if(term->pict > -1){
-    build_pict_part(f, term->logs_pict[term->pict], term->logs_name[term->pict], term->logs_date[term->pict], caption);
+Log *find_last_diary(Term *term){
+  for (int i = 0; i < all_logs.len; ++i) {
+    Log *l = &all_logs.logs[i];
+    if(l->term != term){ continue; }
+    if(l->pict < 1){ continue; }
+    return l;
   }
+  return NULL;
+}
+
+void build_banner(FILE *f, Term *term, bool caption){
+  Log *l = find_last_diary(term);
+
+  if(!l){ return; }
+
+  build_pict_part(f, l, caption);
 }
 
 void build_nav(FILE *f, Term *term){
@@ -460,6 +420,7 @@ void build_listing(FILE *f, Term *term){
 
 void build_index(FILE *f, Term *term){
   if(term->isIndex != true){ return; }
+
   for (int k = 0; k < term->children_len; ++k) {
     char child_filename[STR_BUF_LEN];
     to_lowercase(term->children[k]->name, child_filename, STR_BUF_LEN);
@@ -472,6 +433,7 @@ void build_index(FILE *f, Term *term){
 
 void build_portal(FILE *f, Term *term){
   if(term->isPortal != true){ return; }
+
   for (int k = 0; k < term->children_len; ++k) {
     char child_filename[STR_BUF_LEN];
     to_lowercase(term->children[k]->name, child_filename, STR_BUF_LEN);
@@ -487,10 +449,14 @@ void build_portal(FILE *f, Term *term){
 
 void build_album(FILE *f, Term *term){
   if(term->isAlbum != true){ return; }
-  for (int k = 0; k < term->logs_len; ++k) {
-    if(term->logs_pict[k] > 0 && term->logs_pict[k] != term->logs_pict[term->pict]){
-      build_pict_part(f, term->logs_pict[k], term->logs_name[k], term->logs_date[k], true);
-    }
+
+  Log *header_log = find_last_diary(term);
+  for (int i = 0; i < all_logs.len; ++i) {
+    Log l = all_logs.logs[i];
+    if(l.term != term){ continue; }
+    if(l.pict < 1){ continue; }
+    if(l.pict == header_log->pict){ continue; }
+    build_pict_part(f, &l, true);
   }
 }
 
@@ -503,13 +469,13 @@ void build_links(FILE *f, Term *term){
 }
 
 void build_horaire(FILE *f, Term *term){
-  if(term->logs_len < 2){ return; }
-  fprintf(f, "<p><i>Last update on <a href='https://github.com/xxiivv/oscean' target='_blank' class='external'>%s</a>, %d logs.</i></p>", term->logs_date[0], term->logs_len);
+  // fprintf(f, "<p><i>Last update on <a href='https://github.com/xxiivv/oscean' target='_blank' class='external'>%s</a>, %d logs.</i></p>", term->logs_date[0], term->logs_len);
   fputs("<ul>", f);
-  for (int i = 0; i < term->logs_len; ++i) {
-    if(term->logs_event[i]){
-      fprintf(f, "<li>%s — %s</li>", term->logs_date[i], term->logs_name[i]);
-    }
+  for (int i = 0; i < all_logs.len; ++i) {
+    Log l = all_logs.logs[i];
+    if(l.term != term){ continue; }
+    if(l.is_event != true){ continue; }
+    fprintf(f, "<li>%s — %s</li>", l.date, l.name);
   }
   fputs("</ul>", f);
 }
@@ -520,8 +486,9 @@ void build_special_calendar(FILE *f, Term *term, Journal *journal){
   if(strcmp(term->name, "calendar") != 0){ return; }
 
   fputs("<ul>", f);
-  for (int i = 0; i < journal->logs_len; ++i) {
-    fprintf(f, "<li>%s</li>", journal->logs[i].name);
+  for (int i = 0; i < journal->len; ++i) {
+    if(journal->logs[i].pict == 0){ continue; }
+    fprintf(f, "<li>%s - %s</li>", journal->logs[i].date, journal->logs[i].name);  
   }
   fputs("</ul>", f);
 }
@@ -531,9 +498,17 @@ void build_special_calendar(FILE *f, Term *term, Journal *journal){
 
 // }
 
-// void build_special_journal(FILE *f, Term *term){
-//   if(strcmp(term->name, "journal") != 0){ return; }
-// }
+void build_special_journal(FILE *f, Term *term, Journal *journal){
+  if(strcmp(term->name, "journal") != 0){ return; }
+
+  int count = 0;
+  for (int i = 0; i < journal->len; ++i) {
+    if(count > 20){ break; }
+    if(journal->logs[i].pict == 0){ continue; }
+    build_pict_part(f, &journal->logs[i], true);
+    count++;
+  }
+}
 
 void build_page(Term *term, Journal *journal) {
   char filename[STR_BUF_LEN];
@@ -568,7 +543,7 @@ void build_page(Term *term, Journal *journal) {
 
   build_special_calendar(f, term, journal);
   // build_special_tracker(f, term);
-  // build_special_journal(f, term);
+  build_special_journal(f, term, journal);
 
   fputs("</main>", f);
 

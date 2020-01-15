@@ -709,7 +709,7 @@ Term journal = create_term("journal", "The Journal shows recent activity.");
 set_parent(&journal, &horaire);
 add_link(&journal, "rss feed", "https://wiki.xxiivv.com/links/rss.xml");
 
-Term calendar = create_term("calendar", "The Calendar shows upcoming events.");
+Term calendar = create_term("calendar", "The Calendar shows upcoming and past events.");
 set_parent(&calendar, &horaire);
 add_link(&calendar, "rss feed", "https://wiki.xxiivv.com/links/rss.xml");
 
