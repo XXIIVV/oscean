@@ -785,7 +785,6 @@ add_link(&orca, "demo", "https://twitter.com/neauoire/status/1064738259077554176
 
 Term juni = create_term("juni", "Juni one-handed chorded keyboard.");
 set_parent(&juni, &orca);
-// set_icon(&juni, "M60,60 L210,60 A30,30 0 0,1 240,90 L240,240 M240,120 A30,30 0 0,1 210,150 L90,150 A30,30 0 0,0 60,180 L60,240");
 add_text(&juni, "The <b>Juni Layout</b> is a 12-keys " LINKNAME("https://en.wikipedia.org/wiki/Chorded_keyboard", "chorded keyboard") ".");
 add_text(&juni, "The " SEND(keyboard_path) " model is " LINKNAME("https://learn.pimoroni.com/keybow", "Pimoroni's Keybow") ", the <code >.lua</code> layout is available on " LINKNAME("https://github.com/neauoire/Juni", "Github") ". It was designed to be used with the " SEND(orca_path) " livecoding environment, but has most common keys and controls, making it a versatile and portable single-handed keyboard.");
 add_html(&juni, MODYOUTUBE("cgBvWsM3Z7g"));
@@ -793,7 +792,6 @@ add_link(&juni, "sources", "https://github.com/neauoire/Juni");
 
 Term pilot = create_term("pilot", "Pilot is a mini synthesiser.");
 set_parent(&pilot, &orca);
-// set_icon(&pilot, "M150,60 A30,30 0 0,0 180,90 L210,90 A30,30 0 0,1 240,120 A30,30 0 0,1 210,150 L90,150 A30,30 0 0,0 60,180 A30,30 0 0,0 90,210 L120,210 A30,30 0 0,1 150,240");
 add_text(&pilot, "<b>Pilot</b> is a <b>mini synthetiser</b> designed to be used with " SEND(orca_path) " via UDP.");
 add_text(&pilot, "Pilot features <b>16 voices, and 8 audio effects</b>, each operatable with their own set of commands, and their own FFT visualiser. The complete operation guide can be seen " LINKNAME("https://github.com/Hundredrabbits/Pilot", "here") ".");
 add_text(&pilot, "If you need <b>help</b>, visit the " LINKNAME("https://talk.lurk.org/channel/orca", "chatroom") " or the " LINKNAME("https://llllllll.co/t/orca-live-coding-tool/17689", "forum") ".");
@@ -804,7 +802,6 @@ add_link(&pilot, "demo", "https://twitter.com/neauoire/status/111477019055265382
 
 Term ronin = create_term("ronin", "Ronin is an procedural graphics tool.");
 set_parent(&ronin, &tools);
-// set_icon(&ronin, "M60,60 L195,60 A45,45 0 0,1 240,105 A45,45 0 0,1 195,150 L60,150 M195,150 A45,45 0 0,1 240,195 L240,240");
 add_text(&ronin, "Ronin is a <b>procedural graphics tool</b> designed to automate simple graphical tasks, like resizing, cropping, coloring, and generating algorithmic images. It interprets a minimal " LINKNAME("https://en.wikipedia.org/wiki/Lisp_(programming_language)", "dialect of LISP") ", look at these " LINKNAME("https://github.com/hundredrabbits/Ronin/tree/master/examples", "examples") " to better understand how this all works.");
 add_text(&ronin, "The library updates is constantly revealing new applications to Ronin, you can see the list of available functions " LINKNAME("https://github.com/hundredrabbits/Ronin#library", "here") ". The iconography of " SEND(nataniev_path) " has been created with both " SEND(ronin_path) " and " SEND(dotgrid_path) ".");
 add_html(&ronin, MODITCHIO("194632"));
@@ -816,7 +813,6 @@ add_link(&ronin, "community", "https://hundredrabbits.itch.io/Ronin/community");
 
 Term dotgrid = create_term("dotgrid", "Dotgrid is a vector graphics tool.");
 set_parent(&dotgrid, &tools);
-// set_icon(&dotgrid, "M60,60 L60,60 L60,60 M120,60 L120,60 L120,60 M120,120 L120,120 L120,120 M60,120 L60,120 L60,120 M180,60 L180,60 L180,60 M180,120 L180,120 L180,120 M240,60 L240,60 L240,60 M240,120 L240,120 L240,120 M60,180 L60,180 L60,180 M120,180 L120,180 L120,180 M180,180 L180,180 L180,180 M240,180 L240,180 L240,180 M240,240 L240,240 L240,240 M180,240 L180,240 L180,240 M120,240 L120,240 L120,240 M60,240 L60,240 L60,240");
 add_text(&dotgrid, "Dotgrid is a <b>grid-based vector drawing software</b> designed to create logos, icons and type. It supports layers, the full SVG specs and additional effects such as mirroring and radial drawing. Dotgrid exports to both PNG and SVG files.");
 add_text(&dotgrid, "The " LINKNAME("https://github.com/hundredrabbits/Dotgrid", "application") " was initially created for internal use, and later made available as a free and " LINKNAME("https://github.com/hundredrabbits/Dotgrid", "open source") " software.");
 add_html(&dotgrid, MODITCHIO("190851"));
@@ -932,11 +928,7 @@ set_parent(&paradise, &games);
 // set_icon(&paradise, "M150.0,60.0 L150.0,60.0 L150.0,135.0 M227.9,195.0 L227.9,195.0 L163.0,157.5 M72.1,195.0 L72.1,195.0 L137.0,157.5");
 add_text(&paradise, "In <b>Paradise</b>, you are but a force acting upon places, objects, words — vessels.");
 add_text(&paradise, "<b>Paradise</b> is currently being expanded into an " LINKNAME("https://github.com/hundredrabbits/Paradise", "experimental shell") ", and file-system, for an upcoming light Linux distribution. The project also features an inline scripting language inspired from " LINKNAME("https://en.wikipedia.org/wiki/Lisp_(programming_language)", "LISP") ", called Lain.");
-// add_code(&paradise, "create a coffee machine");
-// add_code(&paradise, "enter the machine");
-// add_code(&paradise, "program create a coffee");
-// add_code(&paradise, "leave");
-// add_code(&paradise, "use the machine");
+add_html(&paradise, "<ul><li>create a coffee machine</li><li>enter the machine</li><li>program create a coffee</li><li>leave</li><li>use the machine</li></ul>");
 add_text(&paradise, "Until then, in this anonymous world you can create anything, traverse vastly different universes, and share your world with others.");
 add_html(&paradise, MODITCHIO("251450"));
 add_quote(&paradise, "I have always imagined that <b>Paradise</b> will be a kind of library.", "Jorge Luis Borges");
@@ -946,13 +938,11 @@ add_link(&paradise, "live", "https://hundredrabbits.github.io/Paradise/");
 
 Term maeve = create_term("maeve", "Maeve is an automated Paradise vessel");
 set_parent(&maeve, &paradise);
-// set_icon(&maeve, "M150.0,60.0 L150.0,60.0 L150.0,135.0 M227.9,195.0 L227.9,195.0 L163.0,157.5 M72.1,195.0 L72.1,195.0 L137.0,157.5");
 add_text(&maeve, "Traveling across the " SEND(nataniev_path) " landscapes, <b>Maeve</b> is a service bot.");
 add_text(&maeve, "You can get help from Maeve within " SEND(oscean_path) " by typing <code >~</code> in the search bar, to see a list of available commads, type <code >~help</code>.");
 
 Term parade = create_term("parade", "Parade is an experimental operating system inspired from Paradise.");
 set_parent(&parade, &paradise);
-// set_icon(&parade, "M150.0,60.0 L150.0,60.0 L150.0,135.0 M227.9,195.0 L227.9,195.0 L163.0,157.5 M72.1,195.0 L72.1,195.0 L137.0,157.5");
 add_text(&parade, "The <b>Parade</b> is an experimental operating system using " SEND(paradise_path) " as a <i >filesystem</i>.");
 add_header(&parade, "Primitives");
 // add_table(&parade, "create | become | enter | leave");
@@ -981,11 +971,9 @@ add_text(&parade, "<i>For a working preview of Parade, <br />try the cli version
 
 Term hardware = create_portal("hardware", "A handful of experimental projects on small Hardware.");
 set_parent(&hardware, &research);
-// set_icon(&hardware, "M60,240 a30,-30 0 0,1 30,-30 l150,0 M90,195 a30,-30 0 0,1 30,-30 l90,0 M120,150 a30,-30 0 0,1 30,-30 l30,0 M195,120 l45,0 M225,165 l15,0 M150,105 a30,-30 0 0,1 30,-30 l60,0");
 
 Term raspberry = create_portal("raspberry", "The Raspberry is a small inexpensive single-board computer.");
 set_parent(&raspberry, &hardware);
-// set_icon(&raspberry, "M75,90 L75,90 L225,90 M105,90 A-15,15 0 0,0 90,105 A0,120 0 0,0 90,225 A15,15 0 0,0 105,240 A-30,0 0 0,0 75,240 A15,-15 0 0,0 90,225 A0,-120 0 0,0 90,105 A-15,-15 0 0,0 75,90 M195,90 A15,15 0 0,1 210,105 A0,120 0 0,1 210,225 A-15,15 0 0,1 195,240 A30,0 0 0,1 225,240 A-15,-15 0 0,1 210,225 A0,-120 0 0,1 210,105 A15,-15 0 0,1 225,90");
 add_text(&raspberry, "The <b>Raspberry Pi</b> is a small inexpensive single-board computer.");
 add_text(&raspberry, "To get started with a new device, download " LINKNAME("https://www.raspberrypi.org/downloads/raspbian/", "Raspbian Lite") ", and use " LINKNAME("https://etcher.io", "Etcher") " to flash the SD card.");
 add_header(&raspberry, "SSH");
@@ -1091,13 +1079,11 @@ add_link(&assembly, "notes", "https://github.com/neauoire/linux-notebook/tree/ma
 
 Term microbit = create_term("microbit", "The Microbit is a small educational micro-controller from BBC.");
 set_parent(&microbit, &hardware);
-// set_icon(&microbit, "M60,240 a30,-30 0 0,1 30,-30 l150,0 M90,195 a30,-30 0 0,1 30,-30 l90,0 M120,150 a30,-30 0 0,1 30,-30 l30,0 M195,120 l45,0 M225,165 l15,0 M150,105 a30,-30 0 0,1 30,-30 l60,0");
 add_text(&microbit, "Here's a list of <b>simple projects & sources</b> for the <a href='#microbit' data-goto='microbit' target='_self' class='local '>Microbit</a>. The Microbit is an excellent toy to learn to code and create electronics projects.");
 add_link(&microbit, "official site", "https://microbit.org/");
 
 Term playground = create_term("playground", "The Playground is a flexible experimental micro-controller from Adafruit.");
 set_parent(&playground, &hardware);
-// set_icon(&playground, "M60,240 a30,-30 0 0,1 30,-30 l150,0 M90,195 a30,-30 0 0,1 30,-30 l90,0 M120,150 a30,-30 0 0,1 30,-30 l30,0 M195,120 l45,0 M225,165 l15,0 M150,105 a30,-30 0 0,1 30,-30 l60,0");
 add_text(&playground, "The Playground Express is a ATSAMD21 ARM Cortex M0 Processor, running at 3.3V and 48MHz, the USB port can act as serial port, keyboard, mouse, joystick or MIDI.");
 // add_list(&playground, "10 multi-color LEDs, push buttons, and a slide switch");
 // add_list(&playground, "Mini speaker with class D amplifier (7.5mm magnetic speaker/buzzer)");
@@ -1109,13 +1095,11 @@ add_link(&playground, "adafruit", "https://www.adafruit.com/product/3333");
 
 Term norns = create_term("norns", "The Norns is an open-source DSP computer, with 3 knobs and 3 keys.");
 set_parent(&norns, &hardware);
-// set_icon(&norns, "M60,240 a30,-30 0 0,1 30,-30 l150,0 M90,195 a30,-30 0 0,1 30,-30 l90,0 M120,150 a30,-30 0 0,1 30,-30 l30,0 M195,120 l45,0 M225,165 l15,0 M150,105 a30,-30 0 0,1 30,-30 l60,0");
 add_text(&norns, "I currently maintain a <b>programming tutorial guide</b> for the " SEND(norns_path) ", which can be found " LINKNAME("https://llllllll.co/t/norns-tutorial/23241", "here") ". You can also find a version of " SEND(orca_path) " for the Norns " LINKNAME("https://llllllll.co/t/orca/22492", "here") ".");
 add_link(&norns, "tutorial", "https://llllllll.co/t/norns-tutorial/23241");
 
 Term monome = create_term("monome", "The Monome is an open-source controller, each of its 128 keys can light up between 16 levels of brightness.");
 set_parent(&monome, &hardware);
-// set_icon(&monome, "M60,240 a30,-30 0 0,1 30,-30 l150,0 M90,195 a30,-30 0 0,1 30,-30 l90,0 M120,150 a30,-30 0 0,1 30,-30 l30,0 M195,120 l45,0 M225,165 l15,0 M150,105 a30,-30 0 0,1 30,-30 l60,0");
 add_text(&monome, "I presently use the device for audio & visual experiments under the " SEND(alicef_path) " alias, ultimately I would like to carry the " SEND(monome_path) " and the " SEND(norns_path) " along with me on stage during events.");
 add_text(&monome, "I created a handful of scripts for the device, such as the implementations for the " LINKNAME("https://github.com/neauoire/linn", "Linnstrument Keyboard layout") ", and " LINKNAME("https://github.com/neauoire/rack", "Ableton Drum Rack layout") ".");
 add_link(&monome, "website", "https://monome.org/");
@@ -1124,12 +1108,10 @@ add_link(&monome, "rack forum", "https://llllllll.co/t/using-a-grid-as-drum-rack
 
 Term mobile = create_portal("mobile", "The Mobile collection is both mobile tools and games.");
 set_parent(&mobile, &visual);
-// set_icon(&mobile, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
 add_text(&mobile, "As of <b>March 2019</b>, these applications are no longer maintained.");
 
 Term bifurcan = create_term("bifurcan", "Bifurcan is a watchface.");
 set_parent(&bifurcan, &mobile);
-// set_icon(&bifurcan, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
 add_text(&bifurcan, "Every second, <b>The Labyrinth</b> reorganize itself to display the time in twists and turns.");
 add_text(&bifurcan, "It takes a little practice to be able to see the patterns in the lines. Clicking on the screen will unveil the time as seen in this " LINKNAME("https://www.youtube.com/watch?v=HzXIJpzPB6c", "video") ".");
 add_text(&bifurcan, "If you have a " LINKNAME("https://getpebble.com", "Pebble Watch") ", you can download it as a " LINKNAME("http://www.mypebblefaces.com/apps/10183/7055/", "watchface") ", the Pebble C script was written by Chase Colburn and is also available on " LINKNAME("https://github.com/chasecolburn/line-maze", "Github") ". The screensaver version was done by " LINKNAME("http://tekgo.org", "Tekgo") " and was also added to the source code. Named after a " LINKNAME("http://en.wikipedia.org/wiki/The_Garden_of_Forking_Paths", "Borges short") ".");
@@ -1140,7 +1122,6 @@ add_link(&bifurcan, "pebble", "http://www.mypebblefaces.com/apps/10183/7055/");
 
 Term keyboard_468 = create_term("keyboard 468", "Keyboard 468 was a 18-keys keyboard.");
 set_parent(&keyboard_468, &mobile);
-// set_icon(&keyboard_468, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
 add_text(&keyboard_468, "The letters are <b>sorted by frequency</b> in the English language, and their likeliness to follow the last input character.");
 add_text(&keyboard_468, "The purpose of this experimental keyboard is to have a keyboard displaying large letters, making it so you only ever need to <b>type using the two rows at the top</b>, maximizing the space and allowing for big large letters. The hidden letters are accessible through the <i >alt</i> key, alongside symbols and numbers.");
 add_text(&keyboard_468, "As of March 2019, This application is no longer maintained. <br />This project was superseded by the " SENDNAME(juni_path, "Juni Layout") ".");
@@ -1149,7 +1130,6 @@ add_link(&keyboard_468, "sources", "https://github.com/Echorridoors/Keyboard468"
 
 Term alphavetist = create_term("alphavetist", "Alphavetist is an alphabet learning tool.");
 set_parent(&alphavetist, &mobile);
-// set_icon(&alphavetist, "M240,60 A-120,0 0 0,0 120,60 A-60,60 0 0,0 60,120 A60,60 0 0,0 120,180 A120,0 0 0,0 240,180 M120,180 A-60,60 0 0,0 60,240");
 add_text(&alphavetist, "Currently included are the Hebrew, " SENDNAME(russian_path, "Cyrillic") ", Korean, Inuktitut, Greek, Morse and " SEND(japanese_path) " alphabets.");
 add_text(&alphavetist, "As of March 2019, This application is no longer maintained.");
 add_link(&alphavetist, "itunes", "https://itunes.apple.com/ca/app/hahapapa/id689193147");
@@ -1157,7 +1137,6 @@ add_link(&alphavetist, "sources", "https://github.com/Echorridoors/alphavetist")
 
 Term vocavularist = create_term("vocavularist", "Vocavularist, is a vocabulary learning tool.");
 set_parent(&vocavularist, &mobile);
-// set_icon(&vocavularist, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
 add_text(&vocavularist, "<b>Vocavularist</b> contains the 600 first kanji, 600 simple Russian words and 800 simple korean expressions.");
 add_text(&vocavularist, "As of March 2019, This application is no longer maintained.");
 add_link(&vocavularist, "itunes", "https://itunes.apple.com/us/app/nijuniju/id686266543");
@@ -1165,7 +1144,6 @@ add_link(&vocavularist, "sources", "https://github.com/Echorridoors/Vocavularist
 
 Term rafinograde = create_term("rafinograde", "Rafinograde was a drawing tool.");
 set_parent(&rafinograde, &mobile);
-// set_icon(&rafinograde, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
 add_text(&rafinograde, "<b>Rafinograde</b> was superseded by " SEND(dotgrid_path) " for Desktop platforms.");
 add_text(&rafinograde, "As of March 2019, This application is no longer maintained.");
 add_link(&rafinograde, "itunes", "https://itunes.apple.com/us/app/rafinograde/id951781579");
@@ -1173,7 +1151,6 @@ add_link(&rafinograde, "sources", "https://github.com/Echorridoors/Rafinograde")
 
 Term noirca = create_term("noirca", "Noirca is a monochromatic camera tool.");
 set_parent(&noirca, &mobile);
-// set_icon(&noirca, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
 add_text(&noirca, "<b>Noirca</b> has one purpose, to launch quickly and render the photos with a softly washed out B&W film quality.");
 add_text(&noirca, "As of March 2019, This application is no longer maintained.");
 add_link(&noirca, "itunes", "https://itunes.apple.com/us/app/noirca/id893715212");
@@ -1195,27 +1172,22 @@ add_link(&ledoliel, "sources", "https://github.com/Echorridoors/Ledoliel");
 
 Term unity = create_portal("unity", "The Unity collection contains various older desktop games.");
 set_parent(&unity, &software);
-// set_icon(&unity, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
 add_text(&unity, "As of <b>January 2015</b>, these applications are no longer maintained.");
 add_text(&unity, "Sadly, a lot of these games were lost in a computer death, and are only listed here for memory's sake. Some additional Unity games are available under " SEND(collegiennes_path) ".");
 
 Term siseon = create_term("siseon", "Siseon is an exploration game set within a life-infested megastructure.");
 set_parent(&siseon, &unity);
-// set_icon(&siseon, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
 add_html(&siseon, MODYOUTUBE("es6YXGlsgxw"));
 
 Term zjeveni = create_term("zjeveni", "Zjeveni is a third person exploration game about climbing to the high points of the structure.");
 set_parent(&zjeveni, &unity);
-// set_icon(&zjeveni, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
 
 Term drypoint = create_term("drypoint", "Drypoint is a very hard platformer game for keyboard cowboys.");
 set_parent(&drypoint, &unity);
-// set_icon(&drypoint, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
 add_text(&drypoint, "See if you can get to the blue door. Read about Drypoint on the " LINKNAME("http://forums.tigsource.com/index.php?topic=8241", "TIGSource forum tread") ".");
 
 Term valentinel_hopes = create_term("valentinel hopes", "Valentinel Hopes is a platformer inspired from parkour and trance music.");
 set_parent(&valentinel_hopes, &unity);
-// set_icon(&valentinel_hopes, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
 add_text(&valentinel_hopes, "The game has no music, you are invited to listen to your own.");
 // add_list(&valentinel_hopes, "Typical FPS control except for the mouse direction.");
 // add_list(&valentinel_hopes, "Take a break sometime.");
@@ -1223,7 +1195,6 @@ add_text(&valentinel_hopes, "The game has no music, you are invited to listen to
 
 Term cenote = create_term("cenote", "Cenote is an experimental platformer inspired by Underwater Base Jumping.");
 set_parent(&cenote, &unity);
-// set_icon(&cenote, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
 add_text(&cenote, "The goal is to reach a small red planet with the highest amount of points left. Cenote is the spiritual prequel of " SEND(zjeveni_path) ".");
 // add_list(&cenote, "The air is only depleting when you are sinking.");
 // add_list(&cenote, "Each time you stop, your drop speed is reseted, so the least stops the faster you reach the bottom.");
@@ -1236,7 +1207,6 @@ add_text(&cyanosis_fever, "If you start to foam, close the game.");
 
 Term donsol = create_term("donsol", "Donsol is a dungeon-crawler card game.");
 set_parent(&donsol, &games);
-// set_icon(&donsol, "M150,60 l-90,90 l90,90 l90,-90 l-90,-90");
 add_text(&donsol, "<b>Donsol</b>, designed by " LINKNAME("https://twitter.com/johneternal", "John Eternal") ", is a card game about exploring a dungeon of 54 playing cards.");
 add_text(&donsol, "<b>A standard deck of 54 cards</b>, jokers included, is a dungeon. Shuffle the deck and draw 4 cards, display them before you, this is a room. A room ends when all the cards are folded.");
 add_html(&donsol, MODITCHIO("109936"));
@@ -1310,7 +1280,6 @@ add_link(&volkenessen, "sources", "https://github.com/Collegiennes/volkenessen")
 
 Term waiting_for_horus = create_term("waiting for horus", "Waiting For Horus was a fast paced multiplayer arena type 3rd person shooter.");
 set_parent(&waiting_for_horus, &unity);
-// set_icon(&waiting_for_horus, "M150,60 L150,60 L60,240 L60,240 L120,240 M165,90 L165,90 L90,240 M180,120 L180,120 L120,240 M195,150 L195,150 L150,240 M195,150 L195,150 L240,240 M180,180 L180,180 L210,240");
 add_text(&waiting_for_horus, "It was originally created by " LINKNAME("http://theinstructionlimit.com", "Renaud Bedard") " and I as a weekend project to play with friends over IRC.");
 add_html(&waiting_for_horus, MODYOUTUBE("2tSoZ-jd6cA"));
 add_text(&waiting_for_horus, "I have very fond memories of building and playing this amazing project with friends. " LINKNAME("https://mangadrive.bandcamp.com", "Mangadrive") " created some amazing music for the project.");
@@ -1318,7 +1287,6 @@ add_link(&waiting_for_horus, "sources", "http://github.com/merveilles/WaitingFor
 
 Term pico3 = create_term("pico3", "Pico3 is a colour-based 3D puzzler.");
 set_parent(&pico3, &collegiennes);
-// set_icon(&pico3, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
 add_text(&pico3, "It was created in collaboration with " LINKNAME("http://theinstructionlimit.com/", "Renaud Bedard") ".");
 add_text(&pico3, "Also check out " SEND(pico_battle_path) ".");
 add_link(&pico3, "win", "http://theinstructionlimit.com/collegiennes/pico_windows.zip");
@@ -1326,7 +1294,6 @@ add_link(&pico3, "osx", "http://theinstructionlimit.com/collegiennes/pico_mac.zi
 
 Term pico_battle = create_term("pico battle", "Pico Battle is a colour-based multiplayer battle puzzler.");
 set_parent(&pico_battle, &collegiennes);
-// set_icon(&pico_battle, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
 add_text(&pico_battle, "You must learn to build shields to defend yourself against incoming colors.");
 add_text(&pico_battle, "" LINKNAME("http://theinstructionlimit.com/", "Renaud Bedard") " and I showcased an experimental game at <b>Prince of the Arcade</b> last year but, between " SEND(volkenessen_path) ", " SEND(diluvium_path) " and " SEND(waiting_for_horus_path) ", only got back to release it now.");
 // add_text(&pico_battle, "It is called " SEND(pico_battle_path) " and like our other " SEND(pico_path) " titled game — this game also plays with colours; but this time, in multiplayer.");
@@ -1343,22 +1310,18 @@ add_link(&pico_battle, "sources", "https://github.com/Collegiennes/picoBattle");
 
 Term spagettini_scale = create_term("spagettini scale", "This Spagettini Scale was first featured on the Makerbot Blog and should help you always cook the right quantity of pasta.");
 set_parent(&spagettini_scale, &physical);
-// set_icon(&spagettini_scale, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 add_text(&spagettini_scale, "My first experiment at creating household items.");
 
 Term spool_holder = create_term("spool holder", "This Spool Holder works with the PP3DP Printer and should allow you to fit a larger spool on your printer.");
 set_parent(&spool_holder, &physical);
-// set_icon(&spool_holder, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 add_text(&spool_holder, "When you need big spools..");
 add_link(&spool_holder, "download", "http://www.thingiverse.com/thing:18833");
 
 Term laeisthic = create_portal("laeisthic", "The Laeisthic albums are Neauismetic albums occurring only within the Laeisth continent of Dinaisth.");
 set_parent(&laeisthic, &aliceffekt);
-// set_icon(&laeisthic, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 
 Term children_of_bramble = create_term("children of bramble", "Children Of Bramble is a Laeisthic album that sings of the Oasis of Rlionn.");
 set_parent(&children_of_bramble, &laeisthic);
-// set_icon(&children_of_bramble, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&children_of_bramble, "This album begins by the Oasis of " SEND(laeisth_path) " to finally reach the castle of " SEND(andes_path) " and its sandsunken structure.");
 add_text(&children_of_bramble, "This single is the first part of the " SEND(laeisthic_path) " collection, and shares some narrative concepts with " SEND(telekinetic_path) ".");
 add_html(&children_of_bramble, MODBANDCAMP("163410848"));
@@ -1366,7 +1329,6 @@ add_link(&children_of_bramble, "bandcamp", "https://aliceffekt.bandcamp.com/albu
 
 Term known_magye = create_term("known magye", "Known Magye is a Laeisthic album telling the tales of the industrious times of Dinaisth.");
 set_parent(&known_magye, &laeisthic);
-// set_icon(&known_magye, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&known_magye, "Sometimes reminiscent of the compositions of " SEND(children_of_bramble_path) ", sometimes of the drowned sounds of " SEND(telekinetic_path) ", this single is a fair mix of ambient and breaks.");
 add_text(&known_magye, "This single is the second part of the " SEND(laeisthic_path) " collection, and was recorded live from " SENDNAME(travel_path, "San Fransisco") "'s <b>POW POW POW</b> which was controlled entirely with the " LINKNAME("https://www.leapmotion.com", "Leap Motion") ".");
 add_html(&known_magye, MODBANDCAMP("1531404629"));
@@ -1374,25 +1336,21 @@ add_link(&known_magye, "bandcamp", "https://aliceffekt.bandcamp.com/album/known-
 
 Term extended_sleep = create_term("extended sleep", "Extended Sleep is the sequel album to Known Magye, a deeper exploration of its stories.");
 set_parent(&extended_sleep, &laeisthic);
-// set_icon(&extended_sleep, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&extended_sleep, "This single is the third part of the " SEND(laeisthic_path) " collection, and was performed at the AMaze Festival in Berlin, on April 23rd 2015.");
 add_html(&extended_sleep, MODBANDCAMP("2987872258"));
 add_link(&extended_sleep, "bandcamp", "https://aliceffekt.bandcamp.com/album/extended-sleep");
 
 Term duomic = create_portal("duomic", "The Duomic albums are Neauismetic records of Neonev's travel from Duomo to Dilitriel.");
 set_parent(&duomic, &aliceffekt);
-// set_icon(&duomic, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 
 Term opal_inquisitors = create_term("opal inquisitors", "The Opal Inquisitors is the first Duomic album.");
 set_parent(&opal_inquisitors, &duomic);
-// set_icon(&opal_inquisitors, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&opal_inquisitors, "These recordings are taken aboard the " SEND(vermillionth_path) " tunneler, traveling up the spires of " SEND(duomo_path) ", where " SEND(neonev_path) " departs from central " SEND(dinaisth_path) " and head through the " SENDNAME(dei_dain_path, "Dei Dain Canals") ".");
 add_html(&opal_inquisitors, MODBANDCAMP("1049304423"));
 add_link(&opal_inquisitors, "bandcamp", "https://aliceffekt.bandcamp.com/album/the-opal-inquisitors");
 
 Term portalion = create_term("portalion", "Portalion is an album where Neonev leaves Duomo to explore the shores of Laeisth.");
 set_parent(&portalion, &duomic);
-// set_icon(&portalion, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&portalion, "On a foggy night of the <i >Sixth Season</i>, embarking on one of the vessels of the <i >Septechoes</i> in the desert of <i >Clionn</i>.");
 add_text(&portalion, "" SEND(neonev_path) " sails toward <i >Whiinders</i> to see its <i >Immortal Birds</i> once more.");
 add_html(&portalion, MODBANDCAMP("1367389203"));
@@ -1400,14 +1358,12 @@ add_link(&portalion, "bandcamp", "https://aliceffekt.bandcamp.com/album/portalio
 
 Term dei_dain = create_term("dei dain", "Dei Dain is the third Duomic album.");
 set_parent(&dei_dain, &duomic);
-// set_icon(&dei_dain, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&dei_dain, "In which " SEND(neonev_path) " travels from the desert of " SEND(laeisth_path) " to the nightly scapes of " SEND(dilitriel_path) ".");
 add_html(&dei_dain, MODBANDCAMP("4246216793"));
 add_link(&dei_dain, "bandcamp", "https://aliceffekt.bandcamp.com/album/dei-dain");
 
 Term habitants_du_soleil = create_term("habitants du soleil", "Les Habitants Du Soleil is a single track Duomic album.");
 set_parent(&habitants_du_soleil, &duomic);
-// set_icon(&habitants_du_soleil, "M60,60 L60,60 L240,60 M60,150 L60,150 L240,150 M150,60 L150,60 L150,240");
 add_text(&habitants_du_soleil, "The singular " SEND(duomic_path) " track <b>Nepturne 7757</b> is a moment in the narrative of the " SENDNAME(aitasla_path, "Aitasla Solei") ", the nearest star to " SEND(dinaisth_path) ".");
 // add_code(&habitants_du_soleil, "Our telescope has revealed a minuscule " SENDNAME(dinaisth_path, "satellite") " orbiting our world.");
 // add_code(&habitants_du_soleil, "我々の望遠鏡は、世界を周回する小さな衛星を検出しました。");
@@ -1418,49 +1374,40 @@ add_link(&habitants_du_soleil, "famicase", "http://famicase.com");
 
 Term lives = create_portal("lives", "Various albums recorded as Lives.");
 set_parent(&lives, &aliceffekt);
-// set_icon(&lives, "M150,60 l0,180 M60,195 l180,0 M60,105 l180,0 M150,210 a15,-15 0 0,1 15,-15 a-15,-15 0 0,1 -15,-15 a-15,15 0 0,1 -15,15 a15,15 0 0,1 15,15 M150,90 a15,15 0 0,0 15,15 a-15,15 0 0,0 -15,15 a-15,-15 0 0,0 -15,-15 a15,-15 0 0,0 15,-15");
 
 Term shikanokoa_vs_1h1d = create_term("shikanokoa vs 1h1d", "Shikanokoa Vs 1h1d is an album of improvisational tracks.");
 set_parent(&shikanokoa_vs_1h1d, &lives);
-// set_icon(&shikanokoa_vs_1h1d, "M150,60 l0,180 M60,195 l180,0 M60,105 l180,0 M150,210 a15,-15 0 0,1 15,-15 a-15,-15 0 0,1 -15,-15 a-15,15 0 0,1 -15,15 a15,15 0 0,1 15,15 M150,90 a15,15 0 0,0 15,15 a-15,15 0 0,0 -15,15 a-15,-15 0 0,0 -15,-15 a15,-15 0 0,0 15,-15");
 add_text(&shikanokoa_vs_1h1d, "It was recorded in Osaka at the event of the same name.");
 
 Term pedestrian_paradise = create_term("pedestrian paradise", "Pedestrian Paradise is an album made from various bits and pieces of unreleased material.");
 set_parent(&pedestrian_paradise, &lives);
-// set_icon(&pedestrian_paradise, "M150,60 l0,180 M60,195 l180,0 M60,105 l180,0 M150,210 a15,-15 0 0,1 15,-15 a-15,-15 0 0,1 -15,-15 a-15,15 0 0,1 -15,15 a15,15 0 0,1 15,15 M150,90 a15,15 0 0,0 15,15 a-15,15 0 0,0 -15,15 a-15,-15 0 0,0 -15,-15 a15,-15 0 0,0 15,-15");
 add_text(&pedestrian_paradise, "It was recorded live at the <i >Piknik Electronic</i> event in Montreal.");
 
 Term nor_let_the_fools = create_term("nor let the fools", "Nor Let The Fools created from unreleased materials.");
 set_parent(&nor_let_the_fools, &lives);
-// set_icon(&nor_let_the_fools, "M150,60 l0,180 M60,195 l180,0 M60,105 l180,0 M150,210 a15,-15 0 0,1 15,-15 a-15,-15 0 0,1 -15,-15 a-15,15 0 0,1 -15,15 a15,15 0 0,1 15,15 M150,90 a15,15 0 0,0 15,15 a-15,15 0 0,0 -15,15 a-15,-15 0 0,0 -15,-15 a15,-15 0 0,0 15,-15");
 add_text(&nor_let_the_fools, "The album was recorded live, in Tokyo at a chiptune/mashup party.");
 add_html(&nor_let_the_fools, MODBANDCAMP("1838099761"));
 add_link(&nor_let_the_fools, "bandcamp", "http://aliceffekt.bandcamp.com/album/nor-let-the-fools-mistake-love");
 
 Term to_the_aeons_hell = create_term("to the aeons hell", "To The Aeons Hell was created in the spirit of Nor let the fools, being a mixture of unreleased remixes.");
 set_parent(&to_the_aeons_hell, &lives);
-// set_icon(&to_the_aeons_hell, "M150,60 l0,180 M60,195 l180,0 M60,105 l180,0 M150,210 a15,-15 0 0,1 15,-15 a-15,-15 0 0,1 -15,-15 a-15,15 0 0,1 -15,15 a15,15 0 0,1 15,15 M150,90 a15,15 0 0,0 15,15 a-15,15 0 0,0 -15,15 a-15,-15 0 0,0 -15,-15 a15,-15 0 0,0 15,-15");
 add_text(&to_the_aeons_hell, "The album was recorded live, in Tokyo at a chiptune/mashup party.");
 add_html(&to_the_aeons_hell, MODBANDCAMP("3333907614"));
 add_link(&to_the_aeons_hell, "bandcamp", "http://aliceffekt.bandcamp.com/album/accursed-be-it-to-the-aeons-hell");
 
 Term vermillionth = create_term("vermillionth", "Vermillionth was the recording of the live performance at the Kinetik Festival, in Montreal.");
 set_parent(&vermillionth, &lives);
-// set_icon(&vermillionth, "M150,60 l0,180 M60,195 l180,0 M60,105 l180,0 M150,210 a15,-15 0 0,1 15,-15 a-15,-15 0 0,1 -15,-15 a-15,15 0 0,1 -15,15 a15,15 0 0,1 15,15 M150,90 a15,15 0 0,0 15,15 a-15,15 0 0,0 -15,15 a-15,-15 0 0,0 -15,-15 a15,-15 0 0,0 15,-15");
 add_text(&vermillionth, "It was performed live with Yameki and Veroníque, at the large Usine C venue, it includes a cover of Memmaker.");
 add_link(&vermillionth, "bandcamp", "https://aliceffekt.bandcamp.com/album/vermillionth");
 
 Term time_alloy = create_term("time alloy", "The Time Alloy is a series of Polygonoscopic samples, created for The sartre mechanism.");
 set_parent(&time_alloy, &polygonoscopy);
-// set_icon(&time_alloy, "M75,210 L75,210 L225,210 M135.5,55 L135.5,55 L60.5,185 M239.5,185 L239.5,185 L164.5,55");
 
 Term demo = create_portal("demo", "The Demo albums are created with specific pieces of hardwares.");
 set_parent(&demo, &aliceffekt);
-// set_icon(&demo, "M150,60 L150,60 L150,240 M60,150 L60,150 L240,150");
 
 Term superworker = create_term("superworker", "Superworker is an album created with the PO-24.");
 set_parent(&superworker, &demo);
-// set_icon(&superworker, "M150,60 L150,60 L150,240 M60,150 L60,150 L240,150");
 add_text(&superworker, "The album contains 3 tracks created from <i >over 80 sessions</i>, arranged into chiptune experiments.");
 add_text(&superworker, "Due to the lack of power during the 4 weeks long " SENDNAME(marquesas_path, "ocean crossing") ", the pocket battery powered synth proved to be the perfect composition tool. The tracks also include spoken words from " LINKNAME("https://en.wikipedia.org/wiki/Alan_Watts", "Alan Watts") ".");
 add_html(&superworker, MODBANDCAMP("610742154"));
@@ -1468,7 +1415,6 @@ add_link(&superworker, "bandcamp", "https://aliceffekt.bandcamp.com/album/superw
 
 Term supervisitor = create_term("supervisitor", "Supervisitor is a concept album created with Arturia's Microbrute synthetiser.");
 set_parent(&supervisitor, &demo);
-// set_icon(&supervisitor, "M150,60 L150,60 L150,240 M60,150 L60,150 L240,150");
 add_text(&supervisitor, "The album was released during the event " SEND(dodecae_path) " in <b>Toronto</b>.");
 add_html(&supervisitor, MODBANDCAMP("3564075825"));
 add_link(&supervisitor, "bandcamp", "https://aliceffekt.bandcamp.com/album/supervisitor");
@@ -1476,20 +1422,17 @@ add_link(&supervisitor, "itunes", "https://itunes.apple.com/ca/album/supervisito
 
 Term dodecae = create_term("dodecae", "The Dodecae was a collaboration with the BentoMiso co-working space.");
 set_parent(&dodecae, &supervisitor);
-// set_icon(&dodecae, "M150,60 L150,60 L150,240 M60,150 L60,150 L240,150");
 add_text(&dodecae, "Presented live experimental music from " LINKNAME("http://tympanikaudio.com/releases/ta025", "Adversary") ", " LINKNAME("https://ilkae.bandcamp.com", "Ilkae") ", " LINKNAME("https://dualryan.bandcamp.com", "Dualryan") " and " LINKNAME("https://aliceffekt.bandcamp.com", "Aliceffekt") " alongside the visualists " LINKNAME("http://theinstructionlimit.com", "Nonante") " and " LINKNAME("http://www.pocaille.com", "Melesul3") "");
 add_text(&dodecae, "The event was following the yearly " LINKNAME("https://bentomiso.com/bit-bazaar-winter-market-2014/", "Bit Bazzar") " market on <i >December 6th, 2014</i>.");
 add_link(&dodecae, "event", "https://www.facebook.com/events/558238014277230/?fref=ts");
 
 Term supergrid = create_term("supergrid", "Supergrid is a concept album created with Marabu.");
 set_parent(&supergrid, &demo);
-// set_icon(&supergrid, "M150,60 L150,60 L150,240 M60,150 L60,150 L240,150");
 add_text(&supergrid, "The full album's planned release is at the end of year, the weekly tracks are available " LINKNAME("https://weeklybeats.com/aliceffekt", "here") ".");
 add_link(&supergrid, "sources", "https://weeklybeats.com/aliceffekt");
 
 Term soundtrack = create_portal("soundtrack", "The Soundtrack collection contains various scores written for Software projects.");
 set_parent(&soundtrack, &aliceffekt);
-// set_icon(&soundtrack, "M150,60 l0,180 M60,195 l180,0 M60,105 l180,0 M150,210 a15,-15 0 0,1 15,-15 a-15,-15 0 0,1 -15,-15 a-15,15 0 0,1 -15,15 a15,15 0 0,1 15,15 M150,90 a15,15 0 0,0 15,15 a-15,15 0 0,0 -15,15 a-15,-15 0 0,0 -15,-15 a15,-15 0 0,0 15,-15");
 
 Term oquonie_soundtrack = create_term("oquonie soundtrack", "The Oquonie Soundtrack, Impossible Spaces, is the ambient score of the game Oquonie.");
 set_parent(&oquonie_soundtrack, &soundtrack);

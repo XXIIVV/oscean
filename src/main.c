@@ -45,7 +45,27 @@ typedef struct Log {
   int code;
   char *name;
   int pict;
+  bool isEvent;
 } Log;
+
+typedef struct Journal {
+  int logs_len;
+  Log logs[700];
+} Journal;
+
+Journal all_logs;
+
+void add_journal_log(Journal *journal, char *date, int code, char *name, int pict, bool isEvent){
+  if(journal->logs_len > 700){ return; }
+  Log log;
+  log.date = date;
+  log.code = code;
+  log.name = name;
+  log.pict = pict;
+  log.isEvent = isEvent;
+  journal->logs[journal->logs_len] = log;
+  journal->logs_len++;
+}
 
 typedef struct Term {
   bool isPortal;
@@ -283,6 +303,7 @@ void add_diary(Term *term, char *date, int code, char *name, int pict) {
     term->pict = term->logs_len;
   }
   term->logs_len++;
+  add_journal_log(&all_logs, date, code, name, pict, false);
 
   pict_used[pict_used_len] = pict;
   pict_used_len++;
@@ -341,14 +362,14 @@ int index_of(int a[], int num_elements, int value) {
   return (-1);
 }
 
-int pict_next() {
+void scan_pict_next() {
   for (int i = 1; i < 999; ++i) {
     int index = index_of(pict_used, pict_used_len, i);
     if(index < 0){
-      return i;
+      printf("Next available pict: %d\n", i);
+      return;
     }
   }
-  return -1;
 }
 
 // Build(parts)
@@ -493,7 +514,28 @@ void build_horaire(FILE *f, Term *term){
   fputs("</ul>", f);
 }
 
-void build_page(Term *term) {
+// Oh my god, what the hell am I doing--
+
+void build_special_calendar(FILE *f, Term *term, Journal *journal){
+  if(strcmp(term->name, "calendar") != 0){ return; }
+
+  fputs("<ul>", f);
+  for (int i = 0; i < journal->logs_len; ++i) {
+    fprintf(f, "<li>%s</li>", journal->logs[i].name);
+  }
+  fputs("</ul>", f);
+}
+
+// void build_special_tracker(FILE *f, Term *term){
+//   if(strcmp(term->name, "tracker") != 0){ return; }
+
+// }
+
+// void build_special_journal(FILE *f, Term *term){
+//   if(strcmp(term->name, "journal") != 0){ return; }
+// }
+
+void build_page(Term *term, Journal *journal) {
   char filename[STR_BUF_LEN];
   to_lowercase(term->name, filename, STR_BUF_LEN);
   char filepath[STR_BUF_LEN];
@@ -523,6 +565,11 @@ void build_page(Term *term) {
   build_album(f, term);
   build_links(f, term);
   build_horaire(f, term);
+
+  build_special_calendar(f, term, journal);
+  // build_special_tracker(f, term);
+  // build_special_journal(f, term);
+
   fputs("</main>", f);
 
   fputs(html_footer, f);
@@ -535,16 +582,15 @@ int main(void) {
   #include "lexicon.c"
   #include "horaire.c"
 
-
   int lexicon_len = sizeof lexicon / sizeof lexicon[0];
 
   printf("Lexicon: %d entries\n", lexicon_len);
 
   for (int i = 0; i < lexicon_len; ++i) {
-    build_page(lexicon[i]);
+    build_page(lexicon[i], &all_logs);
   }
 
-  printf("Next available pict id: %d\n", pict_next());
+  scan_pict_next();
 
   return (0);
 }
