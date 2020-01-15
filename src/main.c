@@ -469,12 +469,11 @@ void build_page(Term *term) {
   to_lowercase(term->name, filename, STR_BUF_LEN);
   char filepath[STR_BUF_LEN];
 
-  // CLEANUP..
   int result = snprintf(filepath, sizeof filepath, "../site/%s.html", filename);
-  bool is_ok = result > 0 && (size_t)result < sizeof filename;
+  bool is_valid = result > 0 && (size_t)result < sizeof filename;
 
-  if (!is_ok) {
-    printf("error\n" );
+  if (!is_valid) {
+    printf("Invalid filename: %s\n", filename);
     return;
   }
 
