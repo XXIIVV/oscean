@@ -46,7 +46,6 @@ typedef struct Term {
   bool isAlbum;
   bool isIndex;
 
-  int pict;
   int children_len;
   int body_len;
   int links_len;
@@ -137,8 +136,7 @@ Term create_term(char *name, char *bref) {
   t.isPortal = false;
   t.isAlbum = false;
   t.isIndex = false;
-
-  t.pict = -1;
+  
   t.children_len = 0;
   t.body_len = 0;
   t.links_len = 0;
@@ -437,11 +435,13 @@ void build_portal(FILE *f, Term *term){
   for (int k = 0; k < term->children_len; ++k) {
     char child_filename[STR_BUF_LEN];
     to_lowercase(term->children[k]->name, child_filename, STR_BUF_LEN);
-    if(term->children[k]->pict > -1){
+    Log *l = find_last_diary(term->children[k]);
+    if(l){
       fprintf(f, "<a href='%s.html'>", child_filename);
-      build_banner(f, term->children[k], false);
+      build_pict_part(f, l, false);
       fprintf(f, "</a>");
     }
+
     fprintf(f, "<h3><a href='%s.html'>%s</a></h3>", child_filename, term->children[k]->name);
     fprintf(f, "<p>%s</p>", term->children[k]->bref);
   }
@@ -469,7 +469,13 @@ void build_links(FILE *f, Term *term){
 }
 
 void build_horaire(FILE *f, Term *term){
-  // fprintf(f, "<p><i>Last update on <a href='https://github.com/xxiivv/oscean' target='_blank' class='external'>%s</a>, %d logs.</i></p>", term->logs_date[0], term->logs_len);
+  for (int i = 0; i < all_logs.len; ++i) {
+    Log *l = &all_logs.logs[i];
+    if(l->term != term){ continue; }
+    fprintf(f, "<p><i>Last update on <a href='https://github.com/xxiivv/oscean' target='_blank' class='external'>%s</a>.</i></p>", l->date);  
+    break;
+  }
+
   fputs("<ul>", f);
   for (int i = 0; i < all_logs.len; ++i) {
     Log l = all_logs.logs[i];
@@ -480,14 +486,12 @@ void build_horaire(FILE *f, Term *term){
   fputs("</ul>", f);
 }
 
-// Oh my god, what the hell am I doing--
-
 void build_special_calendar(FILE *f, Term *term, Journal *journal){
   if(strcmp(term->name, "calendar") != 0){ return; }
 
   fputs("<ul>", f);
   for (int i = 0; i < journal->len; ++i) {
-    if(journal->logs[i].pict == 0){ continue; }
+    if(journal->logs[i].is_event != true){ continue; }
     fprintf(f, "<li>%s - %s</li>", journal->logs[i].date, journal->logs[i].name);  
   }
   fputs("</ul>", f);
