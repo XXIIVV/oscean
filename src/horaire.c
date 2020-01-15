@@ -1347,7 +1347,7 @@ add_log(&verreciel, "16C12", 235);
 add_log(&lietal, "16C11", 338);
 add_log(&lietal, "16C10", 338);
 add_log(&verreciel, "16C09", 165);
-add_diary(&asodeky, "16C08", 238, "The Lietal Flag", 492);
+add_diary(&lietal, "16C08", 238, "The Lietal Flag", 492);
 add_log(&blindfolk, "16C07", 359);
 add_log(&blindfolk, "16C06", 342);
 add_log(&blindfolk, "16C05", 342);

@@ -308,6 +308,15 @@ int index_of(int a[], int num_elements, int value) {
   return (-1);
 }
 
+bool file_exists(char *filename) {
+  FILE *file = fopen(filename, "r");
+  if (file != NULL) {
+    fclose(file);
+    return true;
+  }
+  return false;
+}
+
 void scan_pict_next() {
   for (int i = 1; i < 999; ++i) {
     int index = index_of(pict_used, pict_used_len, i);
@@ -416,6 +425,37 @@ void build_listing(FILE *f, Term *term){
   }
 }
 
+void build_include(FILE *f, Term *term){
+  char filename[STR_BUF_LEN];
+  to_lowercase(term->name, filename, STR_BUF_LEN);
+  char filepath[STR_BUF_LEN];
+
+  int result = snprintf(filepath, sizeof filepath, "inc/%s.htm", filename);
+  bool is_valid = result > 0 && (size_t)result < sizeof filename;
+
+  if (!is_valid) {
+    printf("Invalid filename: %s\n", filename);
+    return;
+  }
+
+  char buffer[4096];
+  FILE *fp = fopen(filepath, "r");
+  if(fp == NULL){ return; }
+
+  printf("Including: %s(%s)\n", term->name, filepath);
+
+  for (;;) {
+    size_t sz = fread(buffer, 1, sizeof(buffer), fp);
+    if (sz) {
+      fwrite(buffer, 1, sz, f);
+    } else if (feof(fp) || ferror(fp)) {
+      break;
+    }
+  }   
+  fclose(fp);
+
+}
+
 void build_index(FILE *f, Term *term){
   if(term->isIndex != true){ return; }
 
@@ -512,14 +552,6 @@ void build_special_journal(FILE *f, Term *term, Journal *journal){
     build_pict_part(f, &journal->logs[i], true);
     count++;
   }
-
-
-  char buffer[4096];
-  FILE *fp = fopen("../404.html", "r");
-  while (size_t sz = fread(buffer, sizeof(buffer), fp)) {
-    fwrite(buffer , 1 , sizeof(buffer) , fp);
-  }
-  fclose(fp);
 }
 
 void build_page(Term *term, Journal *journal) {
@@ -547,6 +579,7 @@ void build_page(Term *term, Journal *journal) {
   build_body(f, term);
   build_dictionary(f, term);
   build_listing(f, term);
+  build_include(f, term);
   build_index(f, term);
   build_portal(f, term);
   build_album(f, term);
