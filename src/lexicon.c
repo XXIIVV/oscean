@@ -664,7 +664,7 @@ add_html(&glossolaliarium, "<ul><li>Dictcephaladelog: Speech or process of foret
 add_link(&glossolaliarium, "twitter", "https://twitter.com/Glossolaliarium");
 add_link(&glossolaliarium, "sources", "https://github.com/XXIIVV/vessel.glossolaliarium");
 
-Term nataniev = create_term("nataniev", "The Nataniev ecosystem is a collection of exocortex tools.");
+Term nataniev = create_portal("nataniev", "The Nataniev ecosystem is a collection of exocortex tools.");
 set_parent(&nataniev, &research);
 add_text(&nataniev, "<b>Nataniev</b> is a collection of free and open-source software following a singular design " SENDNAME(about_path, "philosophy") ", and " SENDNAME(aesthetics_path, "aesthetic") ".");
 
