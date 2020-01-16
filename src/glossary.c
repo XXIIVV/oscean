@@ -698,6 +698,20 @@ add_word(&responses_ranking, "●●●○○○ Contradiction", "State the oppo
 add_word(&responses_ranking, "●●○○○○ Responding to Tone", "Responding to the author's tone, how.");
 add_word(&responses_ranking, "●○○○○○ Ad Hominem", "Attacking the author directly, who.");
 
+Dict rare_tracks = create_dict("rare tracks");
+
+add_word(&rare_tracks, "Aliceffekt - Glenda's Travels", "ChipsynthMD, Toy Company 2019");
+add_word(&rare_tracks, "Comaduster - Winter Eyes(Aliceffekt Remix)", "Tympanik Audio 2013");
+add_word(&rare_tracks, "Veroníque - Fisherman II(Aliceffekt Remix)", "2013");
+add_word(&rare_tracks, "iVardensphere - Ghostnote(Aliceffekt Remix)", "Metropolis Records 2012");
+add_word(&rare_tracks, "Aliceffekt - Thievery of the Jade Books", "Kinetik Festival Volume 4, Artoffact 2011");
+add_word(&rare_tracks, "Misteur Valaire - Dan Dan(Aliceffekt Remix)", "2011");
+add_word(&rare_tracks, "Doomer - Weltenzerstorer(Aliceffekt Remix)", "2010");
+add_word(&rare_tracks, "Iszoloscope - Dumachus Junction Feat. Aliceffekt", "Beyond Within, Ant-zen 2010");
+add_word(&rare_tracks, "Aliceffekt - Laeis 7th Passage E.th", "Kinetik Festival Volume 3, Artoffact 2010");
+add_word(&rare_tracks, "Stray - Does it really matter(Aliceffekt Remix)", "2009");
+add_word(&rare_tracks, "Perfection Plastic - Bad Girls(Aliceffekt Remix)", "2009");
+
 List programming_knowledge = create_list("programming knowledge");
 add_item(&programming_knowledge, "The freedom <b>to run</b> the program as you wish, for any purpose.");
 add_item(&programming_knowledge, "The freedom <b>to study</b> how the program works, and change it.");

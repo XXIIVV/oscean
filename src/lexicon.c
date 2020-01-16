@@ -1454,19 +1454,7 @@ add_link(&noon_guest, "on steam", "https://store.steampowered.com/app/511540/Moo
 
 Term remix = create_portal("remix", "The Remix collection contains a list of the Aliceffekt remixes and unique tracks made for compilations.");
 set_parent(&remix, &aliceffekt);
-// set_icon(&remix, "M150,60 l0,180 M60,195 l180,0 M60,105 l180,0 M150,210 a15,-15 0 0,1 15,-15 a-15,-15 0 0,1 -15,-15 a-15,15 0 0,1 -15,15 a15,15 0 0,1 15,15 M150,90 a15,15 0 0,0 15,15 a-15,15 0 0,0 -15,15 a-15,-15 0 0,0 -15,-15 a15,-15 0 0,0 15,-15");
-add_header(&remix, "Remixes");
-// add_list(&remix, "Comaduster - " LINKNAME("http://www.adnoiseam.net/store/comaduster-winter-eyes_p4083.html", "Winter Eyes") ", Tympanik Audio 2013");
-// add_list(&remix, "Veroníque - " LINKNAME("http://www.youtube.com/watch?v=lQItP8L8N2k", "Fisherman II") " 2013");
-// add_list(&remix, "iVardensphere - " LINKNAME("http://www.youtube.com/watch?v=3kALWsZPJi8", "Ghostnote") " Metropolis Records 2012");
-// add_list(&remix, "Misteur Valaire - " LINKNAME("http://www.youtube.com/watch?v=ehB-ZSWymic", "Dan Dan") " 2011");
-// add_list(&remix, "Doomer - Weltenzerstorer 2010");
-// add_list(&remix, "Stray - Does it really matter 2009");
-// add_list(&remix, "Perfection Plastic - Bad Girls 2009");
-add_header(&remix, "Rare Tracks");
-// add_list(&remix, "Iszoloscope - " LINKNAME("http://ant-zen.bandcamp.com/track/dumachus-junction-feat-aliceffekt", "Dumachus Junction Feat. Aliceffekt") "[Beyond Within], Ant-zen 2010");
-// add_list(&remix, "VA - <b> Laeis 7th Passage E.th </b>[Kinetik Festival Volume 3], Artoffact 2010");
-// add_list(&remix, "VA - " LINKNAME("http://www.youtube.com/watch?v=TtgUpM5HxhY", "Thievery of the Jade Books") "[Kinetik Festival Volume 4], Artoffact 2011");
+add_dict(&remix, &rare_tracks);
 
 Term typography = create_album("typography", "Typography work created for Nataniev and Lietal projects.");
 set_parent(&typography, &illustration);
