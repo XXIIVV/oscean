@@ -2275,15 +2275,6 @@ add_list(&ethics, &solarpunk_knowledge);
 Term documentation = create_term("documentation", "A cheatsheet on Documentation.");
 set_parent(&documentation, &cheatsheets);
 add_text(&documentation, "This outlines the " SEND(documentation_path) " guidelines for the release of Nataniev projects.");
-add_text(&documentation, "<b>Tutorials</b> are lessons that take the reader by the hand through a series of steps to complete a project of some kind. They are what your project needs in order to show a beginner that they can achieve something with it.");
-add_html(&documentation, "<ul><li><b>Gets the user started</b></li><li>Allows the user to learn by doing</li><li>Ensures the user sees results immediately</li><li>Focuses on concrete steps, not abstract concepts</li></ul>");
-add_text(&documentation, "<b>How-to guides</b> assume some knowledge and understanding, and take the reader through the steps required to solve a real-world problem. They are recipes, directions to achieve a specific end - for example: how to create a web form; how to plot a three-dimensional data-set; how to enable LDAP authentication.");
-add_text(&documentation, "How-to guides are quite distinct from tutorials. A how-to guide is an answer to a question that a true beginner might not even be able to formulate.");
-add_html(&documentation, "<ul><li><b>Solves a problem</b></li><li>Focuses on results</li><li>Allows for some flexibility</li></ul>");
-add_text(&documentation, "<b>Explanations</b> can equally well be described as discussions. They are a chance for the documentation to relax and step back from the software, taking a wider view, illuminating it from a higher level or even from different perspectives. You might imagine a discussion document being read at leisure, rather than over the code.");
-add_html(&documentation, "<ul><li><b>Explains a choice</b></li><li>Provides context</li><li>Discusses alternatives & opinions</li></ul>");
-add_text(&documentation, "<b>Reference</b> guides are technical descriptions of the machinery and how to operate it. They are code-determined, because ultimately that's what they describe: key classes, functions, APIs, and so they should list things like functions, fields, attributes and methods, and set out how to use them.");
-add_html(&documentation, "<ul><li><b>Describes the machinery</b></li><li>References material should be austere and to the point.</li><li>Structure the documentation around the code</li><li>Do nothing but describe</li></ul>");
 add_quote(&documentation, "Clarity is better than cleverness", "unknown");
 add_link(&documentation, "sources", "https://www.divio.com/blog/documentation/");
 
