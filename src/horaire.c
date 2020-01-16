@@ -1,4 +1,5 @@
 add_event(&japan, "20D09", 0, "Return to Japan");
+add_log(&pedestrian_paradise, "20B03", 277);
 add_log(&russian, "20B02", 335);
 add_log(&japanese, "20B01", 337);
 add_log(&ethics, "20A13", 327);
@@ -3156,7 +3157,7 @@ add_event_diary(&drypoint, "09S07", 289, "Drypoint Release", 304);
 add_log(&drypoint, "09S06", 239);
 add_diary(&drypoint, "09S05", 339, "Drypoint Landing Zone", 518);
 add_log(&drypoint, "09S04", 336);
-add_log(&pedestrian_paradise, "09S03", 136);
+add_diary(&pedestrian_paradise, "09S03", 136, "Pedestrian Paradise Reissue", 130);
 add_log(&drypoint, "09S02", 239);
 add_event_diary(&pedestrian_paradise, "09R14", 185, "Pedestrian Paradise Release", 71);
 add_event(&pedestrian_paradise, "09R12", 199, "Piknic Electronik Live");

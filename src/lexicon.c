@@ -161,7 +161,6 @@
 #define demo_path "demo"
 #define superworker_path "superworker"
 #define supervisitor_path "supervisitor"
-#define supergrid_path "supergrid"
 #define soundtrack_path "soundtrack"
 #define oquonie_soundtrack_path "oquonie_soundtrack"
 #define rabbits_soundtrack_path "rabbits_soundtrack"
@@ -1366,6 +1365,7 @@ add_text(&shikanokoa_vs_1h1d, "It was recorded in Osaka at the event of the same
 Term pedestrian_paradise = create_term("pedestrian paradise", "Pedestrian Paradise is an album made from various bits and pieces of unreleased material.");
 set_parent(&pedestrian_paradise, &lives);
 add_text(&pedestrian_paradise, "It was recorded live at the <i >Piknik Electronic</i> event in Montreal.");
+add_html(&pedestrian_paradise, MODBANDCAMP("1545290997"));
 
 Term nor_let_the_fools = create_term("nor let the fools", "Nor Let The Fools created from unreleased materials.");
 set_parent(&nor_let_the_fools, &lives);
@@ -1409,11 +1409,6 @@ set_parent(&dodecae, &supervisitor);
 add_text(&dodecae, "Presented live experimental music from " LINKNAME("http://tympanikaudio.com/releases/ta025", "Adversary") ", " LINKNAME("https://ilkae.bandcamp.com", "Ilkae") ", " LINKNAME("https://dualryan.bandcamp.com", "Dualryan") " and " LINKNAME("https://aliceffekt.bandcamp.com", "Aliceffekt") " alongside the visualists " LINKNAME("http://theinstructionlimit.com", "Nonante") " and " LINKNAME("http://www.pocaille.com", "Melesul3") "");
 add_text(&dodecae, "The event was following the yearly " LINKNAME("https://bentomiso.com/bit-bazaar-winter-market-2014/", "Bit Bazzar") " market on <i >December 6th, 2014</i>.");
 add_link(&dodecae, "event", "https://www.facebook.com/events/558238014277230/?fref=ts");
-
-Term supergrid = create_term("supergrid", "Supergrid is a concept album created with Marabu.");
-set_parent(&supergrid, &demo);
-add_text(&supergrid, "The full album's planned release is at the end of year, the weekly tracks are available " LINKNAME("https://weeklybeats.com/aliceffekt", "here") ".");
-add_link(&supergrid, "sources", "https://weeklybeats.com/aliceffekt");
 
 Term soundtrack = create_portal("soundtrack", "The Soundtrack collection contains various scores written for Software projects.");
 set_parent(&soundtrack, &aliceffekt);
@@ -2004,7 +1999,6 @@ add_dict(&directory, &videogames);
 
 Term bookmarks = create_term("bookmarks", "The Bookmarks is a curated list of websites.");
 set_parent(&bookmarks, &directory);
-// set_icon(&bookmarks, "M120,60 L120,60 L120,240 M150,60 L150,60 L150,240 M180,60 L180,60 L180,240 M60,150 A30,0 0 0,1 90,150 A30,30 0 0,1 120,180 M240,150 A-30,0 0 0,0 210,150 A-30,30 0 0,0 180,180");
 add_quote(&bookmarks, "Computer Science is no more about computers than astronomy is about telescopes.", "E. W. Dijkstra");
 add_dict(&bookmarks, &technology_links);
 add_dict(&bookmarks, &hardware_links);
@@ -2023,16 +2017,15 @@ add_dict(&bookmarks, &software_links);
 
 Term readings = create_term("readings", "The Readings is a curated list of books.");
 set_parent(&readings, &directory);
-// set_icon(&readings, "M60,150 Q150,60 240,150 Q150,240 60,150 M150,120 A30,30 0 0,1 180,150 A-30,30 0 0,1 150,180 A-30,-30 0 0,1 120,150 A30,-30 0 0,1 150,120 Z");
 add_text(&readings, "For a list of all time favourites, see " SEND(directory_path) ".");
-add_dict(&readings, &reading_list_2016);
-add_dict(&readings, &reading_list_2017);
-add_dict(&readings, &reading_list_2018);
+add_dict(&readings, &reading_list_2020);
 add_dict(&readings, &reading_list_2019);
+add_dict(&readings, &reading_list_2018);
+add_dict(&readings, &reading_list_2017);
+add_dict(&readings, &reading_list_2016);
 
 Term goals = create_album("goals", "A list of general Goals.");
 set_parent(&goals, &devine_lu_linvega);
-// set_icon(&goals, "M150,60 l0,180 M180,60 l0,180 l0,-60 a30,-30 0 0,1 30,-30 l30,0 M120,60 l0,180 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0");
 add_text(&goals, "<b>Internal</b> are goals dealing with personal growth, and <b>external</b>, as having an effect on the outside world.");
 add_header(&goals, "Internal Targets");
 add_quote(&goals, "<b>See the world</b>. Travel the earth by my own means and my own terms. Find countries too small to be seen on a map and go there.", NULL);
@@ -2308,7 +2301,7 @@ set_parent(&marabu, &unreleased);
 add_text(&marabu, "<b>Marabu</b> is cross-platform tracker-type composition tool and synthesizer.");
 add_text(&marabu, "Marabu was original built as a fork to the opensource <i >Soundbox</i>, and is meant to be an improvement on functionalities and design.");
 add_html(&marabu, MODITCHIO("173813"));
-add_text(&marabu, "You can view the complete " LINKNAME("https://github.com/hundredrabbits/Marabu", "Manual") " on Github. " SEND(marabu_path) " is currently used for the creation of the " SEND(supergrid_path) " album.");
+add_text(&marabu, "You can view the complete " LINKNAME("https://github.com/hundredrabbits/Marabu", "Manual") " on Github. ");
 add_link(&marabu, "download", "http://hundredrabbits.itch.io/Marabu");
 add_link(&marabu, "sources", "https://github.com/neauoire/Marabu");
 
@@ -2381,4 +2374,4 @@ add_link(&japanese, "sci.lang.japan", "http://rut.org/~wmaton/www/pub/jap.guide.
 Term russian = create_term("russian", "The Russian page is a collection of Russian study notes.");
 set_parent(&russian, &language);
 
-Term *lexicon[] = { &home, &audio, &visual, &research, &about, &license, &tracker, &journal, &calendar, &dodecae, &efli, &alicef, &aliceffekt, &es_gulf_sunflowers, &damoiseau_canalx, &the_sixth_season, &hex_hive_necklace, &victorian_punch, &rekka, &wiktopher, &hundred_rabbits, &drownspire, &merure, &vambits, &pino, &grimgrains, &illustration, &beldam_records, &ten_axitecture, &miniscopie, &ramiel, &eschatolor, &looking_glace, &verreciel_soundtrack, &getapan_728k, &azolla, &malice, &collected_works, &markl, &verreciel, &modernista, &nereid, &beauty, &serventines, &polygore, &pearls, &occulter, &oquonie, &oquonie_guide, &camilare, &babelium, &physical, &polygonoscopy, &methascope, &kaleidoscope, &hypervoid, &brane, &astratas, &ar_moire, &nervous, &artwork, &sketchbook, &flactals, &old_cities, &lard_shader, &ring_of_scales, &neauismetic, &vetetrandes_lettres, &from_saharaphorest, &ehrivevnv_studies, &yajnev_studies, &telekinetic, &telekinesis, &software, &nataniev, &oscean, &horaire, &time, &neralie, &arvelie, &webring, &merveilles, &rotonde, &riven, &tools, &orca, &juni, &pilot, &ronin, &dotgrid, &left, &utilities, &noodle, &enfer, &paradise, &maeve, &parade, &games, &hardware, &raspberry, &media_station, &radio_station, &framboisedorf, &weather_station, &instrument, &assembly, &microbit, &playground, &norns, &monome, &mobile, &bifurcan, &keyboard_468, &alphavetist, &vocavularist, &rafinograde, &noirca, &dew, &ledoliel, &automatons, &the_will_the_wisp, &dictionarism, &glossolaliarium, &advent_v, &unity, &siseon, &zjeveni, &drypoint, &valentinel_hopes, &cenote, &cyanosis_fever, &donsol, &hiversaires, &purgateus, &collegiennes, &diluvium, &volkenessen, &waiting_for_horus, &marabu, &pico3, &pico_battle, &spagettini_scale, &spool_holder, &laeisthic, &children_of_bramble, &known_magye, &extended_sleep, &duomic, &opal_inquisitors, &portalion, &dei_dain, &habitants_du_soleil, &lives, &shikanokoa_vs_1h1d, &pedestrian_paradise, &nor_let_the_fools, &to_the_aeons_hell, &vermillionth, &time_alloy, &demo, &superworker, &supervisitor, &supergrid, &soundtrack, &oquonie_soundtrack, &rabbits_soundtrack, &purgateus_soundtrack, &noon_guest, &remix, &typography, &vast, &defraction_optics, &thousand_rooms, &wallpapers, &neauismetica, &neon_hermetism, &feu, &actors, &ehrivevnv, &soies, &longest_end, &soies_machine, &soies_injection, &neausea, &nohlxeserre, &dinaisth, &kanikule, &vetetrandes, &laeisth, &andes_castel, &duomo, &neau, &dilitriel, &aitasla, &characters, &rlionn, &neonev, &andes, &yajnev, &paradichlorisse, &photography, &macro, &personal, &film, &black, &infrared, &travel, &austria, &netherlands, &japan, &minamiise, &shizuoka, &ogasawara, &yokohama, &fuji, &osaka, &tokyo, &fiji, &marquesas, &marshall_islands, &niue, &czech, &france, &the_sublime, &new_zealand, &america, &germany, &canada, &mexico, &lifestyle, &aesthetics, &nomad, &nutrition, &routine, &longtermism, &inventory, &everyday, &skate, &bike, &studio, &computer, &plan9, &camera, &keyboard, &directory, &bookmarks, &readings, &goals, &death, &faqs, &audio_faqs, &visual_faqs, &research_faqs, &lifestyle_faqs, &mirrors, &wisdom, &action, &inaction, &knowledge, &programming, &design, &work, &writing, &health, &ethics, &ascetism, &cheatsheets, &discourse, &psychology, &documentation, &quotes, &language, &english, &notebook, &the_sartre_mechanism, &talk, &systems, &vedic, &needles, &shorthand, &unreleased, &blindfolk, &milavrega, &devine_lu_linvega, &first_wave, &regionsteam_snowdays, &downtemperature, &blam, &vert_kirlian_theatre, &ann_yozora_saint, &nether_esper_inserts, &otoroutes_miniatures, &idyllic_miners, &lietal, &japanese, &russian };
+Term *lexicon[] = { &home, &audio, &visual, &research, &about, &license, &tracker, &journal, &calendar, &dodecae, &efli, &alicef, &aliceffekt, &es_gulf_sunflowers, &damoiseau_canalx, &the_sixth_season, &hex_hive_necklace, &victorian_punch, &rekka, &wiktopher, &hundred_rabbits, &drownspire, &merure, &vambits, &pino, &grimgrains, &illustration, &beldam_records, &ten_axitecture, &miniscopie, &ramiel, &eschatolor, &looking_glace, &verreciel_soundtrack, &getapan_728k, &azolla, &malice, &collected_works, &markl, &verreciel, &modernista, &nereid, &beauty, &serventines, &polygore, &pearls, &occulter, &oquonie, &oquonie_guide, &camilare, &babelium, &physical, &polygonoscopy, &methascope, &kaleidoscope, &hypervoid, &brane, &astratas, &ar_moire, &nervous, &artwork, &sketchbook, &flactals, &old_cities, &lard_shader, &ring_of_scales, &neauismetic, &vetetrandes_lettres, &from_saharaphorest, &ehrivevnv_studies, &yajnev_studies, &telekinetic, &telekinesis, &software, &nataniev, &oscean, &horaire, &time, &neralie, &arvelie, &webring, &merveilles, &rotonde, &riven, &tools, &orca, &juni, &pilot, &ronin, &dotgrid, &left, &utilities, &noodle, &enfer, &paradise, &maeve, &parade, &games, &hardware, &raspberry, &media_station, &radio_station, &framboisedorf, &weather_station, &instrument, &assembly, &microbit, &playground, &norns, &monome, &mobile, &bifurcan, &keyboard_468, &alphavetist, &vocavularist, &rafinograde, &noirca, &dew, &ledoliel, &automatons, &the_will_the_wisp, &dictionarism, &glossolaliarium, &advent_v, &unity, &siseon, &zjeveni, &drypoint, &valentinel_hopes, &cenote, &cyanosis_fever, &donsol, &hiversaires, &purgateus, &collegiennes, &diluvium, &volkenessen, &waiting_for_horus, &marabu, &pico3, &pico_battle, &spagettini_scale, &spool_holder, &laeisthic, &children_of_bramble, &known_magye, &extended_sleep, &duomic, &opal_inquisitors, &portalion, &dei_dain, &habitants_du_soleil, &lives, &shikanokoa_vs_1h1d, &pedestrian_paradise, &nor_let_the_fools, &to_the_aeons_hell, &vermillionth, &time_alloy, &demo, &superworker, &supervisitor, &soundtrack, &oquonie_soundtrack, &rabbits_soundtrack, &purgateus_soundtrack, &noon_guest, &remix, &typography, &vast, &defraction_optics, &thousand_rooms, &wallpapers, &neauismetica, &neon_hermetism, &feu, &actors, &ehrivevnv, &soies, &longest_end, &soies_machine, &soies_injection, &neausea, &nohlxeserre, &dinaisth, &kanikule, &vetetrandes, &laeisth, &andes_castel, &duomo, &neau, &dilitriel, &aitasla, &characters, &rlionn, &neonev, &andes, &yajnev, &paradichlorisse, &photography, &macro, &personal, &film, &black, &infrared, &travel, &austria, &netherlands, &japan, &minamiise, &shizuoka, &ogasawara, &yokohama, &fuji, &osaka, &tokyo, &fiji, &marquesas, &marshall_islands, &niue, &czech, &france, &the_sublime, &new_zealand, &america, &germany, &canada, &mexico, &lifestyle, &aesthetics, &nomad, &nutrition, &routine, &longtermism, &inventory, &everyday, &skate, &bike, &studio, &computer, &plan9, &camera, &keyboard, &directory, &bookmarks, &readings, &goals, &death, &faqs, &audio_faqs, &visual_faqs, &research_faqs, &lifestyle_faqs, &mirrors, &wisdom, &action, &inaction, &knowledge, &programming, &design, &work, &writing, &health, &ethics, &ascetism, &cheatsheets, &discourse, &psychology, &documentation, &quotes, &language, &english, &notebook, &the_sartre_mechanism, &talk, &systems, &vedic, &needles, &shorthand, &unreleased, &blindfolk, &milavrega, &devine_lu_linvega, &first_wave, &regionsteam_snowdays, &downtemperature, &blam, &vert_kirlian_theatre, &ann_yozora_saint, &nether_esper_inserts, &otoroutes_miniatures, &idyllic_miners, &lietal, &japanese, &russian };

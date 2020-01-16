@@ -653,6 +653,11 @@ add_word(&reading_list_2019, "How To Do Nothing", "Jenny Odell");
 add_word(&reading_list_2019, "The Complete Cosmicomics", "Italo Calvino");
 add_word(&reading_list_2019, "La Société du spectacle", "Guy Debord");
 
+Dict reading_list_2020 = create_dict("reading list 2020");
+add_word(&reading_list_2020, "6502 Assembly Programming Language", "Mike Smith");
+add_word(&reading_list_2020, "The Elements of Computing Systems", "Noam Nisan and Shimon Schocken");
+add_word(&reading_list_2020, "Made to break", "Giles Slade");
+
 Dict macbook_workstation = create_dict("macbook workstation");
 add_word(&macbook_workstation,"System", "MacBook Pro Retina, 13\". 2014");
 add_word(&macbook_workstation,"Operating System", "ElementaryOS");
