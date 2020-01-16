@@ -576,9 +576,9 @@ void build_page(Term *term, Journal *journal) {
   fputs("<main>", f);
   build_banner(f, term, true);
   build_body(f, term);
+  build_include(f, term);
   build_dictionary(f, term);
   build_listing(f, term);
-  build_include(f, term);
   build_index(f, term);
   build_portal(f, term);
   build_album(f, term);
