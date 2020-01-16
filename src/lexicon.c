@@ -512,7 +512,7 @@ Term pearls = create_album("pearls", "The Pearls are polygonoscopies of Nereid."
 set_parent(&pearls, &nereid);
 add_text(&pearls, "The pearls of " SEND(nereid_path) " lead to the discovery of the " SENDNAME(polygonoscopy_path, "Polygonoscopic") " world.");
 
-Term physical = create_album("physical", "These Physical objects are designed to be 3d printed.");
+Term physical = create_portal("physical", "These Physical objects are designed to be 3d printed.");
 set_parent(&physical, &visual);
 add_link(&physical, "downloads", "http://www.thingiverse.com/Aliceffekt/designs");
 

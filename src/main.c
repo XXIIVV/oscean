@@ -453,7 +453,6 @@ void build_include(FILE *f, Term *term){
     }
   }   
   fclose(fp);
-
 }
 
 void build_index(FILE *f, Term *term){
