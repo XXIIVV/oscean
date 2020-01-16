@@ -2310,7 +2310,7 @@ add_log(&milavrega, "13I09", 235);
 add_log(&milavrega, "13I08", 235);
 add_log(&milavrega, "13I07", 335);
 add_log(&milavrega, "13I05", 332);
-add_diary(&remix, "13I04", 169, "Veronique - Fisherma", 224);
+add_log(&remix, "13I04", 169);
 add_log(&milavrega, "13I03", 332);
 add_log(&milavrega, "13I02", 332);
 add_log(&remix, "13I01", 169);
