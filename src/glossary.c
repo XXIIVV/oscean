@@ -828,3 +828,15 @@ add_item(&three_gates, "Before you speak, let your words pass through <b>three g
 add_item(&three_gates, "At the first gate, ask yourself, is it <b>true</b>.");
 add_item(&three_gates, "At the second gate ask, is it <b>necessary</b>.");
 add_item(&three_gates, "At the third gate ask, is it <b>kind</b>.");
+
+List inventory_items = create_list("inventory items");
+add_item(&inventory_items, "Staedtler Pigment Liner 0.3-2.0mm");
+add_item(&inventory_items, "MUJI A5 Dotgrid");
+add_item(&inventory_items, "Gerber Shard");
+add_item(&inventory_items, "Gerber Remix Tactical");
+add_item(&inventory_items, "Davis Basic Rigging Knife");
+add_item(&inventory_items, "Lawson MII Key holder");
+add_item(&inventory_items, "Amazon Kindle Paperwhite");
+add_item(&inventory_items, "DuxtioRFID Blocking Wallet");
+
+

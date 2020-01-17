@@ -697,18 +697,6 @@ add_text(&horaire, "A <b>task name</b> can be generated from the intersection of
 add_text(&horaire, "You can learn more about the " SENDNAME(oscean_path, "related tools") ", and " SENDNAME(about_path, "related projects") ", to the entire " SEND(nataniev_path) " ecosystem. For additional questions, contact " SEND(devine_lu_linvega_path) "");
 add_quote(&horaire, "<b>Effectiveness</b>, is doing the right thing.<br><b>Efficiency</b>, is doing it the right way.", NULL);
 
-Term tracker = create_term("tracker", "The Tracker shows issues and balance.");
-set_parent(&tracker, &horaire);
-add_link(&tracker, "rss feed", "https://wiki.xxiivv.com/links/rss.xml");
-
-Term journal = create_term("journal", "The Journal shows recent activity.");
-set_parent(&journal, &horaire);
-add_link(&journal, "rss feed", "https://wiki.xxiivv.com/links/rss.xml");
-
-Term calendar = create_term("calendar", "The Calendar shows upcoming and past events.");
-set_parent(&calendar, &horaire);
-add_link(&calendar, "rss feed", "https://wiki.xxiivv.com/links/rss.xml");
-
 Term time = create_index("time", "Documentation on the different Time formats.");
 set_parent(&time, &nataniev);
 add_html(&time, MODFRAME("https://clock.xxiivv.com"));
@@ -1907,45 +1895,39 @@ add_text(&longtermism, "Despite all this, I dream of a line of simple electronic
 add_text(&longtermism, "My dream sailboat has no diesel engine, no fuel outboard and no lead acid battery storage, but instead a compressed air engine with its compression stored in diving tanks, a bike crank powered compressor, a hydro generator pump, and a dynamo to charge our low-power electronics. The only crutial electronic systems connected to the house tanks would be the AIS transceiver, the VHF radio, a basic chartplotter and habitat lighting. Our work and entertainment electronics, like our laptops and cameras, would run off solar charging a minimal array of LiPo batteries.");
 add_text(&longtermism, "Is there a way to create and distribute software and electronics in a way that is environmentally conscious? perhaps " LINKNAME("https://en.wikipedia.org/wiki/Degrowth", "not") ".");
 
+Term journal = create_term("journal", "The Journal shows recent activity.");
+set_parent(&journal, &devine_lu_linvega);
+add_link(&journal, "rss feed", "https://wiki.xxiivv.com/links/rss.xml");
+
+Term tracker = create_term("tracker", "The Tracker shows issues and balance.");
+set_parent(&tracker, &journal);
+add_link(&tracker, "rss feed", "https://wiki.xxiivv.com/links/rss.xml");
+
+Term calendar = create_term("calendar", "The Calendar shows upcoming and past events.");
+set_parent(&calendar, &journal);
+add_link(&calendar, "rss feed", "https://wiki.xxiivv.com/links/rss.xml");
+
 Term inventory = create_portal("inventory", "The collection of technical details on the Inventory.");
 set_parent(&inventory, &devine_lu_linvega);
-// set_icon(&inventory, "M150,60 l0,180 M180,60 l0,180 l0,-60 a30,-30 0 0,1 30,-30 l30,0 M120,60 l0,180 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0");
 add_text(&inventory, "Some of the items I carry around with me in my " SENDNAME(travel_path, "travels") ".");
 
 Term everyday = create_album("everyday", "Everyday items found in my bag or pockets.");
 set_parent(&everyday, &inventory);
-// set_icon(&everyday, "M120,60 L120,60 L120,240 M150,60 L150,60 L150,240 M180,60 L180,60 L180,240 M60,150 A30,0 0 0,1 90,150 A30,30 0 0,1 120,180 M240,150 A-30,0 0 0,0 210,150 A-30,30 0 0,0 180,180");
-// add_list(&everyday, "<b>Pigment Liner 0.3-2.0mm</b>: " LINKNAME("http://amzn.to/2BtPR5i", "Staedtler") "");
-// add_list(&everyday, "<b>A5 Dotgrid</b>: " LINKNAME("http://amzn.to/2DELUka", "MUJI") "");
-// add_list(&everyday, "<b>Shard</b>: " LINKNAME("http://amzn.to/2FiJNyZ", "Gerber") "");
-// add_list(&everyday, "<b>Remix Tactical</b>: " LINKNAME("http://amzn.to/2Bt7vGq", "Gerber") "");
-// add_list(&everyday, "<b>Basic Rigging Knife</b>: " LINKNAME("http://amzn.to/2DJRpxv", "Davis") "");
-// add_list(&everyday, "<b>MII Key holder</b>: " LINKNAME("https://www.jllawsonco.com/products/m-ii", "Lawson") ", J. L");
-// add_list(&everyday, "<b>Kindle Paperwhite</b>: " LINKNAME("http://amzn.to/2Gj3W9E", "Amazon") "");
-// add_list(&everyday, "<b>RFID Blocking Wallet</b>: " LINKNAME("https://duxtio.com/", "Duxtio") "");
+add_list(&everyday, &inventory_items);
 
 Term skate = create_album("skate", "The Skate specs.");
 set_parent(&skate, &inventory);
-// set_icon(&skate, "M150,60 l0,180 M180,60 l0,180 l0,-60 a30,-30 0 0,1 30,-30 l30,0 M120,60 l0,180 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0");
 add_text(&skate, "When the sun is just about to set, and when the road is that perfect kind of slick.");
 add_text(&skate, "We carry a little " LINKNAME("https://www.pennyskateboards.com/us/blackout-27.html", "skateboard") " with us on " SEND(pino_path) ".");
-// add_list(&skate, "<b>Frame</b>: Penny Board 68.58cm");
-// add_list(&skate, "<b>Wheels</b>: Wide 59mm");
+add_text(&skate, "We have the 68.58cm board, with the 59mm wheels.");
 
 Term bike = create_album("bike", "The Bike specs.");
 set_parent(&bike, &inventory);
-// set_icon(&bike, "M150,60 l0,180 M180,60 l0,180 l0,-60 a30,-30 0 0,1 30,-30 l30,0 M120,60 l0,180 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0");
 add_text(&bike, "That <b>bike</b> that I've carried all over the world during my " SENDNAME(travel_path, "Travels") ".");
-add_text(&bike, "We have somehow managed to fit two large track bikes inside of " SEND(pino_path) ".");
-// add_list(&bike, "<b>Frame</b>: Trek District S, 2014");
-// add_list(&bike, "<b>Ratio</b>: 48/15(3.2)");
-// add_list(&bike, "<b>Lock</b>: Abus Foldable");
-// add_list(&bike, "<b>Tires</b>: 700x25C(200g)");
-// add_list(&bike, "<b>Tubes</b>: 700x18-25C, 48mm valves");
+add_text(&bike, "We have somehow managed to fit two large track bikes inside of " SEND(pino_path) ". My bike is the Trek District S(2014), with a 48/15(3.2) ratio, my lock is the Abus Foldable, the tires are 700x25C(200g) and the tubes 700x18-25C with 48mm valves.");
 
 Term studio = create_album("studio", "The Studio equipment.");
 set_parent(&studio, &inventory);
-// set_icon(&studio, "M150,60 l0,180 M180,60 l0,180 l0,-60 a30,-30 0 0,1 30,-30 l30,0 M120,60 l0,180 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0");
 add_text(&studio, "While the " SEND(aliceffekt_path) " sounds were mostly sampled from the " LINKNAME("https://www.arturia.com/microbrute/overview", "Microbrute") ", the " SEND(alicef_path) " sounds came from the " LINKNAME("https://www.eltamusic.com/polivoks-mini", "Поливокс") ".");
 add_dict(&studio, &studio_workstation);
 // add_code(&studio, "Factory Reset: A + B while plugging in the power.");
@@ -1953,7 +1935,6 @@ add_dict(&studio, &studio_workstation);
 
 Term computer = create_album("computer", "Technical details on my current Computer setup.");
 set_parent(&computer, &inventory);
-// set_icon(&computer, "M75,90 L75,90 L225,90 M105,90 A-15,15 0 0,0 90,105 A0,120 0 0,0 90,225 A15,15 0 0,0 105,240 A-30,0 0 0,0 75,240 A15,-15 0 0,0 90,225 A0,-120 0 0,0 90,105 A-15,-15 0 0,0 75,90 M195,90 A15,15 0 0,1 210,105 A0,120 0 0,1 210,225 A-15,15 0 0,1 195,240 A30,0 0 0,1 225,240 A-15,-15 0 0,1 210,225 A0,-120 0 0,1 210,105 A15,-15 0 0,1 225,90");
 add_text(&computer, "I presently use a <b>Apple Macbook Pro</b> with the " LINKNAME("https://elementary.io", "ElementaryOS") " Linux operating system. I also frequently use various " SENDNAME(raspberry_path, "Raspberry Pi") " devices as servers and utilities.");
 add_text(&computer, "My <b>Laptop Computer</b> is an old MacBook Pro with an even older Wacom Tablet. I use it mainly for <b>front-end work</b>, be it layouts, websites, movies and " SEND(games_path) ".");
 add_dict(&computer, &macbook_workstation);
@@ -2033,7 +2014,7 @@ add_quote(&goals, "<b>Minimize pain and suffering</b>, including that of non-hum
 add_text(&goals, "<b>— Status</b> Currently living and working off-the-grid off solar energy, and have optimized for means of generating the least amount of waste through an ascetic lifestyle and a plant-based diet.");
 
 Term death = create_term("death", "The Death Progress Bar.");
-set_parent(&death, &devine_lu_linvega);
+set_parent(&death, &journal);
 add_quote(&death, "Death is only one of many ways to lose your life.", "Simon Alvah, North To The Night");
 add_header(&death, "Marbles Jar");
 add_text(&death, "The " LINKNAME("http://www.johnmaxwell.com/blog/dont-lose-your-marbles", "Jars of Marbles model") " says that \"The average person lives <b>about 75 years, of 52 weeks each, totalling 3,900 Saturdays</b> which the average person has in their lifetime.\"");
