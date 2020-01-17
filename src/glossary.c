@@ -539,6 +539,7 @@ add_word(&movies, "Тіні забутих предків", "Sergei Parajanov. 1
 add_word(&movies, "Na srebrnym globie", "Andrzej Żuławski. 1988");
 add_word(&movies, "茶の味", "Katsuhito Ishii. 2004");
 add_word(&movies, "Cat Soup", "Tatsuo Satō. 2001");
+add_word(&movies, "Black Moon", "Louis Malle. 1975");
  
 Dict albums = create_dict("albums");
 add_word(&albums, "Weighing Souls With Sand", "Angelic Process. 2007");
@@ -683,25 +684,6 @@ add_word(&pino_details, "Length", "33'(10 meters)");
 add_word(&pino_details, "Engine Fuel", "Type Single / diesel(13 HP)");
 add_word(&pino_details, "Hull Material", "Fiberglass");
 add_word(&pino_details, "Keel", "Fin");
-
-Dict arguments_ranking = create_dict("arguments ranking");
-add_word(&arguments_ranking, "●●●●● High-level generators", "Disagreements that remain when everyone understands exactly what's being argued, and agrees on what all the evidence says, but have vague and hard-to-define reasons for disagreeing.");
-add_word(&arguments_ranking, "●●●●○ Operationalizing", "Where both parties understand they're in a cooperative effort to fix exactly what they're arguing about.");
-add_word(&arguments_ranking, "●●●○○ Survey of evidence", "Not trying to devastate the other person with a mountain of facts and start looking at the studies and arguments on both sides and figuring out what kind of complex picture they paint.");
-add_word(&arguments_ranking, "●●●○○ Disputing definitions", "Argument hinges on the meaning of words, or whether something counts as a member of a category or not.");
-add_word(&arguments_ranking, "●●○○○ Single Studies", "Better than scattered facts, proving they at least looked into the issue formally.");
-add_word(&arguments_ranking, "●●○○○ Demands for rigor", "Attempts to demand that an opposing argument be held to such strict standards that nothing could possibly clear the bar.");
-add_word(&arguments_ranking, "●○○○○ Single Facts", "One fact, which admittedly does support their argument, but presented as if it solves the debate in and of itself.");
-add_word(&arguments_ranking, "●○○○○ Gotchas", "Short claims that purport to be devastating proof that one side can't possibly be right.");
-add_word(&arguments_ranking, "○○○○○ Social shaming", "A demand for listeners to place someone outside the boundary of whom deserve to be heard.");
-
-Dict responses_ranking = create_dict("responses ranking");
-add_word(&responses_ranking, "●●●●●● Central point", "Commit to refute explicitly the central point.");
-add_word(&responses_ranking, "●●●●●○ Refutation", "Argue a conflicting passage, explain why it's mistaken.");
-add_word(&responses_ranking, "●●●●○○ Counterargument", "Contradict with added reasoning or evidence.");
-add_word(&responses_ranking, "●●●○○○ Contradiction", "State the opposing case, what.");
-add_word(&responses_ranking, "●●○○○○ Responding to Tone", "Responding to the author's tone, how.");
-add_word(&responses_ranking, "●○○○○○ Ad Hominem", "Attacking the author directly, who.");
 
 Dict rare_tracks = create_dict("rare tracks");
 

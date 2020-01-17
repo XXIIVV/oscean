@@ -265,9 +265,7 @@
 #define collapsology_path "collapsology"
 #define solarpunk_path "solarpunk"
 #define ascetism_path "ascetism"
-#define cheatsheets_path "cheatsheets"
 #define discourse_path "discourse"
-#define psychology_path "psychology"
 #define documentation_path "documentation"
 #define quotes_path "quotes"
 #define language_path "language"
@@ -1964,7 +1962,6 @@ add_link(&computer, "usesthis", "https://usesthis.com/interviews/devine.lu.linve
 
 Term plan9 = create_album("plan9", "Notes and links related to the Plan9 operating system.");
 set_parent(&plan9, &computer);
-// set_icon(&plan9, "M75,90 L75,90 L225,90 M105,90 A-15,15 0 0,0 90,105 A0,120 0 0,0 90,225 A15,15 0 0,0 105,240 A-30,0 0 0,0 75,240 A15,-15 0 0,0 90,225 A0,-120 0 0,0 90,105 A-15,-15 0 0,0 75,90 M195,90 A15,15 0 0,1 210,105 A0,120 0 0,1 210,225 A-15,15 0 0,1 195,240 A30,0 0 0,1 225,240 A-15,-15 0 0,1 210,225 A0,-120 0 0,1 210,105 A15,-15 0 0,1 225,90");
 add_quote(&plan9, "An argument for simplicity and clarity.", "Rob Pike");
 add_dict(&plan9, &plan9_links);
 add_link(&plan9, "notes", "https://github.com/neauoire/p9-notes");
@@ -1972,7 +1969,6 @@ add_link(&plan9, "irc", "https://9p.io/wiki/plan9/IRC/index.html");
 
 Term camera = create_album("camera", "The Camera specs.");
 set_parent(&camera, &inventory);
-// set_icon(&camera, "M90,210 L90,210 L210,90 M150,90 A60,60 0 0,1 210,150 A-60,60 0 0,1 150,210 A-60,-60 0 0,1 90,150 A60,-60 0 0,1 150,90 Z");
 add_text(&camera, "For " SEND(film_path) ", I use the <b>Voigtländer's Bessa R3M 250 Jahre</b>, and for digital, <b>Sony's Alpha a6000 24.3 MP</b>.");
 add_text(&camera, "My favourite " SENDNAME(black_path, "black and white") " film is " LINKNAME("http://amzn.to/2GgyBUX", "Ilford's DELTA 3200") ". I use Novoflex's " LINKNAME("https://www.novoflexus.com/products/lens-adapters/for-leica-lenses/novoflex-nex-lem.htm", "NEX/LEM Adapter") " to fit M-Mount lenses.");
 add_header(&camera, "The Lenses");
@@ -1982,15 +1978,13 @@ add_header(&camera, "The Lenses");
 
 Term keyboard = create_album("keyboard", "The mechanical Keyboard specs.");
 set_parent(&keyboard, &inventory);
-// set_icon(&keyboard, "M150,60 l0,180 M180,60 l0,180 l0,-60 a30,-30 0 0,1 30,-30 l30,0 M120,60 l0,180 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0");
 add_text(&keyboard, "I currently use the " LINKNAME("https://olkb.com/planck/hi-pro-mod-aluminum-milled-bottom", "OLKB Hi-pro mod") " Planck 6 hotswap, plate, Halo Clear switches and Acute caps.");
 add_header(&keyboard, "Previous Models");
 add_text(&keyboard, "The keycaps were the " LINKNAME("https://www.massdrop.com/buy/npkc-blank-pbt-keycaps", "Blank Mint PBT") " with " LINKNAME("http://www.keyboardco.com/blog/index.php/2012/12/an-introduction-to-cherry-mx-mechanical-switches/", "Red Cherry MX") " switches. I have also installed " LINKNAME("http://www.amazon.ca/gp/product/B00VHXHP6Q?psc=1&redirect=true&ref_=oh_aui_detailpage_o00_s00", "sound dampening o-rings") ". The keyboard connected, with a braided " LINKNAME("http://www.amazon.ca/gp/product/B004YD6LW0?psc=1&redirect=true&ref_=oh_aui_detailpage_o00_s00", "90 degrees angle USB wire") ". The color choice is inspired from the " SEND(verreciel_path) " interface.");
 // add_text(&keyboard, "If you're looking for the " SEND(alicef_path) " one-handed keyboard, see " SEND(juni_path) ". Learn more about my " SEND(workstation_path) ".");
 
-Term directory = create_term("directory", "The Directory is a curated list of timeless art.");
+Term directory = create_album("directory", "The Directory is a curated list of timeless art.");
 set_parent(&directory, &devine_lu_linvega);
-// set_icon(&directory, "M60,150 Q150,60 240,150 Q150,240 60,150 M150,120 A30,30 0 0,1 180,150 A-30,30 0 0,1 150,180 A-30,-30 0 0,1 120,150 A30,-30 0 0,1 150,120 Z");
 add_dict(&directory, &books);
 add_dict(&directory, &movies);
 add_dict(&directory, &albums);
@@ -2125,6 +2119,7 @@ add_text(&lifestyle_faqs, "Working behind an avatar and living online through a 
 Term mirrors = create_portal("mirrors", "The collection of Mirrors.");
 set_parent(&mirrors, &research);
 add_text(&mirrors, "The <b>mirrors</b> are collected notes on the topics of " SEND(knowledge_path) " and " SEND(wisdom_path) ".");
+add_text(&mirrors, "Morals refer mainly to guiding principles, and ethics refer to specific rules and actions, or behaviors. A moral precept is an idea or opinion that’s driven by a desire to be good. An ethical code is a set of rules that defines allowable actions or correct behavior.");
 add_quote(&mirrors, "Mystery exists in the mind, not in reality. <br />Confusion exists in the map, not in the territory.", "E.T. Jaynes");
 
 Term wisdom = create_index("wisdom", "A collection of notes on Wisdom.");
@@ -2182,35 +2177,30 @@ Term ascetism = create_term("ascetism", "A collection of notes on Ascetism.");
 set_parent(&ascetism, &knowledge);
 add_quote(&ascetism, "A man is wealthy in proportion to the things he can do without.", "Epicurus");
 
-Term cheatsheets = create_portal("cheatsheets", "A collection of Cheatsheets.");
-set_parent(&cheatsheets, &mirrors);
-
 Term discourse = create_term("discourse", "A cheatsheet on Discourse.");
-set_parent(&discourse, &cheatsheets);
+set_parent(&discourse, &mirrors);
 add_quote(&discourse, "You should attempt to re-express your target's position so clearly, vividly, and fairly that your target says, “Thanks, I wish I'd thought of putting it that way.”", "Rapoport's First Rule");
 add_link(&discourse, "kind communication", "https://www.gnu.org/philosophy/kind-communication.html");
 add_text(&discourse, "The arguments rankings are taken from " LINKNAME("http://slatestarcodex.com/2018/05/08/varieties-of-argumentative-experience/", "Scott Alexander") ", and the responses rankings are taken from " LINKNAME("http://www.paulgraham.com/disagree.html", "Paul Graham") ".");
-add_dict(&discourse, &arguments_ranking);
 add_dict(&discourse, &arguments);
-add_dict(&discourse, &responses_ranking);
 add_dict(&discourse, &responses);
 add_list(&discourse, &three_gates);
 add_dict(&discourse, &beliefs);
 
-Term psychology = create_term("psychology", "A cheatsheet on Psychology.");
-set_parent(&psychology, &cheatsheets);
-add_dict(&psychology, &psychology_lexicon);
-add_dict(&psychology, &personalities);
-add_dict(&psychology, &biases);
-add_dict(&psychology, &groupthink_biases);
-add_dict(&psychology, &effects);
-add_dict(&psychology, &fallacies);
-add_dict(&psychology, &illusions);
-add_dict(&psychology, &sociology);
-add_quote(&psychology, "The world is a comedy to those that think, a tragedy to those that feel.", "Howace Walpole");
+Term morals = create_term("morals", "A cheatsheet on Morals.");
+set_parent(&morals, &mirrors);
+add_dict(&morals, &psychology_lexicon);
+add_dict(&morals, &personalities);
+add_dict(&morals, &biases);
+add_dict(&morals, &groupthink_biases);
+add_dict(&morals, &effects);
+add_dict(&morals, &fallacies);
+add_dict(&morals, &illusions);
+add_dict(&morals, &sociology);
+add_quote(&morals, "The world is a comedy to those that think, a tragedy to those that feel.", "Howace Walpole");
 
 Term ethics = create_index("ethics", "A collection of notes on various topics concerning ethics.");
-set_parent(&ethics, &cheatsheets);
+set_parent(&ethics, &mirrors);
 add_text(&ethics, "We live in a time of social, economic and ecological unravelling. All around us are signs that our whole way of living is already passing into history.");
 add_quote(&ethics, "The end of the human race will be that it will eventually die of civilisation.", "Ralph Waldo Emerson");
 add_quote(&ethics, "We're Solarpunks because the only other options are denial or despair.", "Adam Flynn, Notes toward a manifesto");
@@ -2221,7 +2211,7 @@ add_list(&ethics, &dark_mountaineers);
 add_list(&ethics, &solarpunk_knowledge);
 
 Term documentation = create_term("documentation", "A cheatsheet on Documentation.");
-set_parent(&documentation, &cheatsheets);
+set_parent(&documentation, &research);
 add_text(&documentation, "This outlines the " SEND(documentation_path) " guidelines for the release of Nataniev projects.");
 add_quote(&documentation, "Clarity is better than cleverness", "unknown");
 add_link(&documentation, "sources", "https://www.divio.com/blog/documentation/");
@@ -2374,4 +2364,4 @@ add_link(&japanese, "sci.lang.japan", "http://rut.org/~wmaton/www/pub/jap.guide.
 Term russian = create_term("russian", "The Russian page is a collection of Russian study notes.");
 set_parent(&russian, &language);
 
-Term *lexicon[] = { &home, &audio, &visual, &research, &about, &license, &tracker, &journal, &calendar, &dodecae, &efli, &alicef, &aliceffekt, &es_gulf_sunflowers, &damoiseau_canalx, &the_sixth_season, &hex_hive_necklace, &victorian_punch, &rekka, &wiktopher, &hundred_rabbits, &drownspire, &merure, &vambits, &pino, &grimgrains, &illustration, &beldam_records, &ten_axitecture, &miniscopie, &ramiel, &eschatolor, &looking_glace, &verreciel_soundtrack, &getapan_728k, &azolla, &malice, &collected_works, &markl, &verreciel, &modernista, &nereid, &beauty, &serventines, &polygore, &pearls, &occulter, &oquonie, &oquonie_guide, &camilare, &babelium, &physical, &polygonoscopy, &methascope, &kaleidoscope, &hypervoid, &brane, &astratas, &ar_moire, &nervous, &artwork, &sketchbook, &flactals, &old_cities, &lard_shader, &ring_of_scales, &neauismetic, &vetetrandes_lettres, &from_saharaphorest, &ehrivevnv_studies, &yajnev_studies, &telekinetic, &telekinesis, &software, &nataniev, &oscean, &horaire, &time, &neralie, &arvelie, &webring, &merveilles, &rotonde, &riven, &tools, &orca, &juni, &pilot, &ronin, &dotgrid, &left, &utilities, &noodle, &enfer, &paradise, &maeve, &parade, &games, &hardware, &raspberry, &media_station, &radio_station, &framboisedorf, &weather_station, &instrument, &assembly, &microbit, &playground, &norns, &monome, &mobile, &bifurcan, &keyboard_468, &alphavetist, &vocavularist, &rafinograde, &noirca, &dew, &ledoliel, &automatons, &the_will_the_wisp, &dictionarism, &glossolaliarium, &advent_v, &unity, &siseon, &zjeveni, &drypoint, &valentinel_hopes, &cenote, &cyanosis_fever, &donsol, &hiversaires, &purgateus, &collegiennes, &diluvium, &volkenessen, &waiting_for_horus, &marabu, &pico3, &pico_battle, &spagettini_scale, &spool_holder, &laeisthic, &children_of_bramble, &known_magye, &extended_sleep, &duomic, &opal_inquisitors, &portalion, &dei_dain, &habitants_du_soleil, &lives, &shikanokoa_vs_1h1d, &pedestrian_paradise, &nor_let_the_fools, &to_the_aeons_hell, &vermillionth, &time_alloy, &demo, &superworker, &supervisitor, &soundtrack, &oquonie_soundtrack, &rabbits_soundtrack, &purgateus_soundtrack, &noon_guest, &remix, &typography, &vast, &defraction_optics, &thousand_rooms, &wallpapers, &neauismetica, &neon_hermetism, &feu, &actors, &ehrivevnv, &soies, &longest_end, &soies_machine, &soies_injection, &neausea, &nohlxeserre, &dinaisth, &kanikule, &vetetrandes, &laeisth, &andes_castel, &duomo, &neau, &dilitriel, &aitasla, &characters, &rlionn, &neonev, &andes, &yajnev, &paradichlorisse, &photography, &macro, &personal, &film, &black, &infrared, &travel, &austria, &netherlands, &japan, &minamiise, &shizuoka, &ogasawara, &yokohama, &fuji, &osaka, &tokyo, &fiji, &marquesas, &marshall_islands, &niue, &czech, &france, &the_sublime, &new_zealand, &america, &germany, &canada, &mexico, &lifestyle, &aesthetics, &nomad, &nutrition, &routine, &longtermism, &inventory, &everyday, &skate, &bike, &studio, &computer, &plan9, &camera, &keyboard, &directory, &bookmarks, &readings, &goals, &death, &faqs, &audio_faqs, &visual_faqs, &research_faqs, &lifestyle_faqs, &mirrors, &wisdom, &action, &inaction, &knowledge, &programming, &design, &work, &writing, &health, &ethics, &ascetism, &cheatsheets, &discourse, &psychology, &documentation, &quotes, &language, &english, &notebook, &the_sartre_mechanism, &talk, &systems, &vedic, &needles, &shorthand, &unreleased, &blindfolk, &milavrega, &devine_lu_linvega, &first_wave, &regionsteam_snowdays, &downtemperature, &blam, &vert_kirlian_theatre, &ann_yozora_saint, &nether_esper_inserts, &otoroutes_miniatures, &idyllic_miners, &lietal, &japanese, &russian };
+Term *lexicon[] = { &home, &audio, &visual, &research, &about, &license, &tracker, &journal, &calendar, &dodecae, &efli, &alicef, &aliceffekt, &es_gulf_sunflowers, &damoiseau_canalx, &the_sixth_season, &hex_hive_necklace, &victorian_punch, &rekka, &wiktopher, &hundred_rabbits, &drownspire, &merure, &vambits, &pino, &grimgrains, &illustration, &beldam_records, &ten_axitecture, &miniscopie, &ramiel, &eschatolor, &looking_glace, &verreciel_soundtrack, &getapan_728k, &azolla, &malice, &collected_works, &markl, &verreciel, &modernista, &nereid, &beauty, &serventines, &polygore, &pearls, &occulter, &oquonie, &oquonie_guide, &camilare, &babelium, &physical, &polygonoscopy, &methascope, &kaleidoscope, &hypervoid, &brane, &astratas, &ar_moire, &nervous, &artwork, &sketchbook, &flactals, &old_cities, &lard_shader, &ring_of_scales, &neauismetic, &vetetrandes_lettres, &from_saharaphorest, &ehrivevnv_studies, &yajnev_studies, &telekinetic, &telekinesis, &software, &nataniev, &oscean, &horaire, &time, &neralie, &arvelie, &webring, &merveilles, &rotonde, &riven, &tools, &orca, &juni, &pilot, &ronin, &dotgrid, &left, &utilities, &noodle, &enfer, &paradise, &maeve, &parade, &games, &hardware, &raspberry, &media_station, &radio_station, &framboisedorf, &weather_station, &instrument, &assembly, &microbit, &playground, &norns, &monome, &mobile, &bifurcan, &keyboard_468, &alphavetist, &vocavularist, &rafinograde, &noirca, &dew, &ledoliel, &automatons, &the_will_the_wisp, &dictionarism, &glossolaliarium, &advent_v, &unity, &siseon, &zjeveni, &drypoint, &valentinel_hopes, &cenote, &cyanosis_fever, &donsol, &hiversaires, &purgateus, &collegiennes, &diluvium, &volkenessen, &waiting_for_horus, &marabu, &pico3, &pico_battle, &spagettini_scale, &spool_holder, &laeisthic, &children_of_bramble, &known_magye, &extended_sleep, &duomic, &opal_inquisitors, &portalion, &dei_dain, &habitants_du_soleil, &lives, &shikanokoa_vs_1h1d, &pedestrian_paradise, &nor_let_the_fools, &to_the_aeons_hell, &vermillionth, &time_alloy, &demo, &superworker, &supervisitor, &soundtrack, &oquonie_soundtrack, &rabbits_soundtrack, &purgateus_soundtrack, &noon_guest, &remix, &typography, &vast, &defraction_optics, &thousand_rooms, &wallpapers, &neauismetica, &neon_hermetism, &feu, &actors, &ehrivevnv, &soies, &longest_end, &soies_machine, &soies_injection, &neausea, &nohlxeserre, &dinaisth, &kanikule, &vetetrandes, &laeisth, &andes_castel, &duomo, &neau, &dilitriel, &aitasla, &characters, &rlionn, &neonev, &andes, &yajnev, &paradichlorisse, &photography, &macro, &personal, &film, &black, &infrared, &travel, &austria, &netherlands, &japan, &minamiise, &shizuoka, &ogasawara, &yokohama, &fuji, &osaka, &tokyo, &fiji, &marquesas, &marshall_islands, &niue, &czech, &france, &the_sublime, &new_zealand, &america, &germany, &canada, &mexico, &lifestyle, &aesthetics, &nomad, &nutrition, &routine, &longtermism, &inventory, &everyday, &skate, &bike, &studio, &computer, &plan9, &camera, &keyboard, &directory, &bookmarks, &readings, &goals, &death, &faqs, &audio_faqs, &visual_faqs, &research_faqs, &lifestyle_faqs, &mirrors, &wisdom, &action, &inaction, &knowledge, &programming, &design, &work, &writing, &health, &ethics, &ascetism, &discourse, &morals, &documentation, &quotes, &language, &english, &notebook, &the_sartre_mechanism, &talk, &systems, &vedic, &needles, &shorthand, &unreleased, &blindfolk, &milavrega, &devine_lu_linvega, &first_wave, &regionsteam_snowdays, &downtemperature, &blam, &vert_kirlian_theatre, &ann_yozora_saint, &nether_esper_inserts, &otoroutes_miniatures, &idyllic_miners, &lietal, &japanese, &russian };
