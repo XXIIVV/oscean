@@ -1,4 +1,5 @@
 add_event(&japan, "20D09", 0, "Return to Japan");
+add_log(&assembly, "20B04", 237);
 add_log(&pedestrian_paradise, "20B03", 277);
 add_log(&russian, "20B02", 335);
 add_log(&japanese, "20B01", 337);
