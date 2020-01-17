@@ -1,174 +1,164 @@
-<h3>NES System Architecture</h3>
+<h3>Basics</h3>
 
-<table border='1s'>
-  <tr><td>ROM</td><td>Read Only Memory, holds data that cannot be changed. This is where the game code or graphics is stored on the cart.</td></tr>
-  <tr><td>RAM</td><td>Random Access Memory, holds data that can be read and written. When power is removed, the chip is erased. A battery can be used to keep power and data valid.</td></tr>
-  <tr><td>PRG</td><td>Program memory, the code for the game</td></tr>
-  <tr><td>CHR</td><td>Character memory, the data for graphics</td></tr>
-  <tr><td>CPU</td><td>Central Processing Unit, the main processor chip</td></tr>
-  <tr><td>PPU</td><td>Picture Processing Unit, the graphics chip</td></tr>
-  <tr><td>APU</td><td>Audio Processing Unit, the sound chip inside the CPU</td></tr>
-</table>
+<ul>
+  <li><b>Bit</b>: The smallest unit in computers. It is either a 1 or a 0.</li>
+  <li><b>Nibble</b>: Half a byte, or 4 bites. </li>
+  <li><b>Byte</b>: 8 bits together form one byte, a number from 0 to 255. Two bytes put together is 16 bits, forming a number from 0 to 65535. Bits in the byte are numbered starting from the right at 0.</li>
+  <li><b>Hex Number</b>: A HEX number consisting of 4 numbers is 16-bit.</li>
+</ul>  
 
 <h3>Registers</h3>
 
 <p>The 6502 handles data in its registers, each of which holds one byte(8-bits) of data. There are a total of three general use and two special purpose registers:</p>
+<p><b>Note:</b> When you use X it adds the value of X to the memory address and uses the 16-bit value at that address to do the write. Whereas when you use Y it adds the value of Y to the address stored in the memory address it's reading from instead. 6502 is little-endian, so $0200 is stored as $00 $02 in memory.</p>
 
 <ul>
-  <li>A: The accumulator handles all arithmetic and logic. The real heart of the system.</li>
-  <li>X, Y: General purpose registers with limited abilities.</li>
-  <li>SP: This stack pointer is decremented every time a byte is pushed onto the stack, and incremented when a byte is popped off the stack.</li>
-  <li>PC is the program counter - it’s how the processor knows at what point in the program it currently is. It’s like the current line number of an executing script. In the JavaScript simulator the code is assembled starting at memory location $0600, so PC always starts there.</li>
-  <li>The Processor status shows the processor flags. Each flag is one bit, so all seven flags live in a single byte. The flags are set by the processor to give information about the previous instruction. More on that later. Read more about the registers and flags here.</li>
+  <li><b>A</b>: The accumulator handles all arithmetic and logic. The real heart of the system..</li>
+  <li><b>X&Y</b>: General purpose registers with limited abilities..</li>
+  <li><b>SP</b>: The stack pointer is decremented every time a byte is pushed onto the stack, and incremented when a byte is popped off the stack..</li>
+  <li><b>PC</b>: The program counter is how the processor knows at what point in the program it currently is. It’s like the current line number of an executing script. In the JavaScript simulator the code is assembled starting at memory location $0600, so PC always starts there..</li>
+  <li><b>PF</b>: The Processor flag contains 7 bytes, each flag live in a single byte. The flags are set by the processor to give information about the previous instruction. More on that later. Read more about the registers and flags here..</li>
+</ul>
+
+<h3>NES System Architecture</h3>
+
+<p>The NES screen resolution is 256x240. </p>
+<ul>
+  <li><b>ROM</b>: Read Only Memory, holds data that cannot be changed. This is where the game code or graphics is stored on the cart..</li>
+  <li><b>RAM</b>: Random Access Memory, holds data that can be read and written. When power is removed, the chip is erased. A battery can be used to keep power and data valid..</li>
+  <li><b>PRG</b>: Program memory, the code for the game.</li>
+  <li><b>CHR</b>: Character memory, the data for graphics.</li>
+  <li><b>CPU</b>: Central Processing Unit, the main processor chip.</li>
+  <li><b>PPU</b>: Picture Processing Unit, the graphics chip.</li>
+  <li><b>APU</b>: Audio Processing Unit, the sound chip inside the CPU.</li>
 </ul>
 
 <h3>6502 Processor Overview</h3>
 
-<table border='1s'>
-  <tr><td>$0000-0800</td><td>Internal RAM, 2KB chip in the NES</td></tr>
-  <tr><td>$2000-2007</td><td>PPU access ports</td></tr>
-  <tr><td>$4000-4017</td><td>Audio and controller access ports</td></tr>
-  <tr><td>$6000-7FFF</td><td>Optional WRAM inside the game cart</td></tr>
-  <tr><td>$8000-FFFF</td><td>Game cart ROM</td></tr>
+<table border='1'>
+  <tr><td>$0000-0800</td><td colspan='2'>Internal RAM, 2KB chip in the NES</td></tr>
+  <tr><td rowspan='10'>$2000-2007</td><td colspan='2'>PPU access ports</td></tr>
+  <tr><td>$2000</td><td>PPUCTRL</td></tr>
+  <tr><td>$2001</td><td>PPUMASK</td></tr>
+  <tr><td>$2002</td><td>PPUSTATUS</td></tr>
+  <tr><td>$2002</td><td>PPUSTAT</td></tr>
+  <tr><td>$2003</td><td>SPRADDR</td></tr>
+  <tr><td>$2003</td><td>OAMADDR</td></tr>
+  <tr><td>$2005</td><td>PPUSCROLL</td></tr>
+  <tr><td>$2006</td><td>PPUADDR</td></tr>
+  <tr><td>$2007</td><td>PPUDATA</td></tr>
+  <tr><td rowspan='6'>$4000-4017</td><td colspan='2'>Audio and controller access ports</td></tr>
+  <tr><td>$4014</td><td>SPRDMA</td></tr>
+  <tr><td>$4014</td><td>OAMDMA</td></tr>
+  <tr><td>$4015</td><td>SNDCHN</td></tr>
+  <tr><td>$4016</td><td>JOY1</td></tr>
+  <tr><td>$4017</td><td>JOY2</td></tr>
+  <tr><td>$6000-7FFF</td><td colspan='2'>Optional WRAM inside the game cart</td></tr>
+  <tr><td>$8000-FFFF</td><td colspan='2'>Game cart ROM</td></tr>
 </table>
 
 <h3>Directives</h3>
 
 <p>Directives are commands you send to the assembler to do things like locating code in memory. They start with . and are indented. This sample directive tells the assembler to put the code starting at memory location $8000, which is inside the game ROM area:</p>
 
-<code>
+<pre>
   .org $8000
-</code>
+</pre>
 
 <h3>Labels</h3>
 
 <p>The label is aligned to the far left and has a : at the end. The label is just something you use to organize your code and make it easier to read. The assembler translates the label into an address. Sample label:</p>
 
-<code>
+<pre>
   .org $8000
 MyFunction:
-</code>
+</pre>
 
 <h3>Opcodes</h3>
 
 <p>The opcode is the instruction that the processor will run, and is indented like the directives. In this sample, JMP is the opcode that tells the processor to jump to the MyFunction label:</p>
 
-<code>
+<pre>
   .org $8000
 MyFunction:
   JMP MyFunction
-</code>
+</pre>
 
 <h3>Operands</h3>
 
 <p>The operands are additional information for the opcode. Opcodes have between one and three operands. In this example the #$FF is the operand:</p>
 
-<code>
+<pre>
   .org $8000
 MyFunction:
   LDA #$FF
   JMP MyFunction
-</code>
+</pre>
 
 <h3>Comments</h3>
 
 <p>Comments are to help you understand in English what the code is doing. When you write code and come back later, the comments will save you. You do not need a comment on every line, but should have enough to explain what is happening. Comments start with a ; and are completely ignored by the assembler. They can be put anywhere horizontally, but are usually spaced beyond the long lines.</p>
 
-<code>
+<pre>
   .org $8000
 MyFunction:        ; loads FF into accumulator
   LDA #$FF
   JMP MyFunction
-</code>
+</pre>
 
 <h3>Common Opcodes</h3>
 
 <h4>Load/Store opcodes</h4>
 
-<pre>
-LDA #$0A   ; LoaD the value 0A into the accumulator A
-           ; the number part of the opcode can be a value or an address
-           ; if the value is zero, the zero flag will be set.
-LDX $0000  ; LoaD the value at address $0000 into the index register X
-           ; if the value is zero, the zero flag will be set.
-LDY #$FF   ; LoaD the value $FF into the index register Y
-           ; if the value is zero, the zero flag will be set.
-STA $2000  ; STore the value from accumulator A into the address $2000
-           ; the number part must be an address
-STX $4016  ; STore value in X into $4016
-           ; the number part must be an address
-STY $0101  ; STore Y into $0101
-           ; the number part must be an address
-TAX        ; Transfer the value from A into X
-           ; if the value is zero, the zero flag will be set
-TAY        ; Transfer A into Y
-           ; if the value is zero, the zero flag will be set
-TXA        ; Transfer X into A
-           ; if the value is zero, the zero flag will be set
-TYA        ; Transfer Y into A
-           ; if the value is zero, the zero flag will be set
-</pre>
+<table border='1'>
+  <tr><td width='100'>LDA #$0A</td><td>LoaD the value 0A into the accumulator A. The number part of the opcode can be a value or an address. If the value is zero, the zero flag will be set.</td></tr>
+  <tr><td>LDX $0000</td><td>LoaD the value at address $0000 into the index register X. If the value is zero, the zero flag will be set.</td></tr>
+  <tr><td>LDY #$FF </td><td>LoaD the value $FF into the index register Y. If the value is zero, the zero flag will be set.</td></tr>
+  <tr><td>STA $2000</td><td>STore the value from accumulator A into the address $2000. The number part must be an address.</td></tr>
+  <tr><td>STX $4016</td><td>STore value in X into $4016. The number part must be an address.</td></tr>
+  <tr><td>STY $0101</td><td>STore Y into $0101. The number part must be an address.</td></tr>
+  <tr><td>TAX      </td><td>Transfer the value from A into X. If the value is zero, the zero flag will be set.</td></tr>
+  <tr><td>TAY      </td><td>Transfer A into Y. If the value is zero, the zero flag will be set.</td></tr>
+  <tr><td>TXA      </td><td>Transfer X into A. If the value is zero, the zero flag will be set.</td></tr>
+  <tr><td>TYA      </td><td>Transfer Y into A. If the value is zero, the zero flag will be set.</td></tr>
+</table>
 
 <h4>Math opcodes</h4>
 
-<pre>
-ADC #$01   ; ADd with Carry
-           ; A = A + $01 + carry
-           ; if the result is zero, the zero flag will be set
-SBC #$80   ; SuBtract with Carry
-           ; A = A - $80 - (1 - carry)
-           ; if the result is zero, the zero flag will be set
-CLC        ; CLear Carry flag in status register
-           ; usually this should be done before ADC
-SEC        ; SEt Carry flag in status register
-           ; usually this should be done before SBC
-INC $0100  ; INCrement value at address $0100
-           ; if the result is zero, the zero flag will be set
-DEC $0001  ; DECrement $0001
-           ; if the result is zero, the zero flag will be set
-INY        ; INcrement Y register
-           ; if the result is zero, the zero flag will be set
-INX        ; INcrement X register
-           ; if the result is zero, the zero flag will be set
-DEY        ; DEcrement Y
-           ; if the result is zero, the zero flag will be set
-DEX        ; DEcrement X
-           ; if the result is zero, the zero flag will be set
-ASL A      ; Arithmetic Shift Left
-           ; shift all bits one position to the left
-           ; this is a multiply by 2
-           ; if the result is zero, the zero flag will be set
-LSR $6000  ; Logical Shift Right
-           ; shift all bits one position to the right
-           ; this is a divide by 2
-           ; if the result is zero, the zero flag will be set
-</pre>
+<table border='1'>
+  <tr><td width='100'>ADC #$01 </td><td>ADd with Carry. A = A + $01 + carry. If the result is zero, the zero flag will be set</td></tr>
+  <tr><td>SBC #$80 </td><td>SuBtract with Carry. A = A - $80 - (1 - carry). If the result is zero, the zero flag will be set</td></tr>
+  <tr><td>CLC      </td><td>CLear Carry flag in status register. Usually this should be done before ADC</td></tr>
+  <tr><td>SEC      </td><td>SEt Carry flag in status register. Usually this should be done before SBC</td></tr>
+  <tr><td>INC $0100</td><td>INCrement value at address $0100. If the result is zero, the zero flag will be set</td></tr>
+  <tr><td>DEC $0001</td><td>DECrement $0001. If the result is zero, the zero flag will be set</td></tr>
+  <tr><td>INY      </td><td>INcrement Y register. If the result is zero, the zero flag will be set</td></tr>
+  <tr><td>INX      </td><td>INcrement X register. If the result is zero, the zero flag will be set</td></tr>
+  <tr><td>DEY      </td><td>DEcrement Y. If the result is zero, the zero flag will be set</td></tr>
+  <tr><td>DEX      </td><td>DEcrement X. If the result is zero, the zero flag will be set</td></tr>
+  <tr><td>ASL A    </td><td>Arithmetic Shift Left. Shift all bits one position to the left. This is a multiply by 2. If the result is zero, the zero flag will be set</td></tr>
+  <tr><td>LSR $6000</td><td>Logical Shift Right. Shift all bits one position to the right. This is a divide by 2. If the result is zero, the zero flag will be set</td></tr>
+</table>
 
 <h4>Comparison opcodes</h4>
 
-<pre>
-CMP #$01   ; CoMPare A to the value $01
-           ; this actually does a subtract, but does not keep the result
-           ; instead you check the status register to check for equal, 
-           ; less than, or greater than
-CPX $0050  ; ComPare X to the value at address $0050
-CPY #$FF   ; ComPare Y to the value $FF
+<table border='1'>
+  <tr><td width='100'>CMP #$01 </td><td>CoMPare A to the value $01. This actually does a subtract, but does not keep the result. Instead you check the status register to check for equal, . Less than, or greater than</td></tr>
+  <tr><td>CPX $0050</td><td>ComPare X to the value at address $0050</td></tr>
+  <tr><td>CPY #$FF </td><td>ComPare Y to the value $FF</td></tr>
+</table>
 
-Control Flow opcodes
+<h4>Control Flow opcodes</h4>
 
-JMP $8000  ; JuMP to $8000, continue running code there
-BEQ $FF00  ; Branch if EQual, contnue running code there
-           ; first you would do a CMP, which clears or sets the zero flag
-           ; then the BEQ will check the zero flag
-           ; if zero is set (values were equal) the code jumps to $FF00 and runs there
-           ; if zero is clear (values not equal) there is no jump, runs next instruction
-BNE $FF00  ; Branch if Not Equal - opposite above, jump is made when zero flag is clear
-</pre>
+<table border='1'>
+  <tr><td width='100'>JMP $8000</td><td>JuMP to $8000, continue running code there</td></tr>
+  <tr><td>BEQ $FF00</td><td>Branch if EQual, contnue running code there. First you would do a CMP, which clears or sets the zero flag. Then the BEQ will check the zero flag. If zero is set (values were equal) the code jumps to $FF00 and runs there. If zero is clear (values not equal) there is no jump, runs next instruction</td></tr>
+  <tr><td>BNE $FF00</td><td>Branch if Not Equal - opposite above, jump is made when zero flag is clear</td></tr>
+</table>
 
 <h3>Controller Ports</h3>
 
 <p>The controllers are accessed through memory port addresses $4016 and $4017. First you have to write the value $01 then the value $00 to port $4016. This tells the controllers to latch the current button positions. Then you read from $4016 for first player or $4017 for second player. The buttons are sent one at a time, in bit 0. If bit 0 is 0, the button is not pressed. If bit 0 is 1, the button is pressed.</p>
-
 <p>Button status for each controller is returned in the following order: A, B, Select, Start, Up, Down, Left, Right.</p>
 
 <pre>
@@ -177,14 +167,14 @@ STA $4016
 LDA #$00
 STA $4016     ; tell both the controllers to latch buttons
 
-LDA $4016     ; player 1 - A
-LDA $4016     ; player 1 - B
-LDA $4016     ; player 1 - Select
-LDA $4016     ; player 1 - Start
-LDA $4016     ; player 1 - Up
-LDA $4016     ; player 1 - Down
-LDA $4016     ; player 1 - Left
-LDA $4016     ; player 1 - Right
+LDA $4016     ; player 1 - A(1)
+LDA $4016     ; player 1 - B(2)
+LDA $4016     ; player 1 - Select(4)
+LDA $4016     ; player 1 - Start(8)
+LDA $4016     ; player 1 - Up(16)
+LDA $4016     ; player 1 - Down(32)
+LDA $4016     ; player 1 - Left(64)
+LDA $4016     ; player 1 - Right(128)
 
 LDA $4017     ; player 2 - A
 LDA $4017     ; player 2 - B
@@ -271,17 +261,4 @@ LDA $4017     ; player 2 - Right
     <td data-nes="0x3E" style="background:rgb(0,0,0);">3E</td>
     <td data-nes="0x3F" style="background:rgb(0,0,0);">3F</td>
   </tr>
-</table>
-
-<h3>Notes</h3>
-
-<ul>
-  <li>Bit: The smallest unit in computers. It is either a 1 (on) or a 0 (off), like a light switch.</li>
-  <li>Byte: 8 bits together form one byte, a number from 0 to 255. Two bytes put together is 16 bits, forming a number from 0 to 65535. Bits in the byte are numbered starting from the right at 0.</li>
-  <li>The 6502js simulator screen pixels go from $0200 to $05e0.</li>
-  <li>The NES screen resolution is 256x240.</li>
-  <li>When you use X it adds the value of X to the memory address and uses the 16-bit value at that address to do the write</li>
-  <li>whereas when you use Y it adds the value of Y to the address stored in the memory address it's reading from instead.</li>
-  <li>6502 is little-endian, so $0200 is stored as $00 $02 in memory.</li>
-  <li>a HEX number consisting of 4 numbers is 16-bit.</li>
-</ul>   
+</table> 
