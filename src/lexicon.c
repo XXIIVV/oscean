@@ -1948,17 +1948,13 @@ Term camera = create_album("camera", "The Camera specs.");
 set_parent(&camera, &inventory);
 add_text(&camera, "For " SEND(film_path) ", I use the <b>Voigtländer's Bessa R3M 250 Jahre</b>, and for digital, <b>Sony's Alpha a6000 24.3 MP</b>.");
 add_text(&camera, "My favourite " SENDNAME(black_path, "black and white") " film is " LINKNAME("http://amzn.to/2GgyBUX", "Ilford's DELTA 3200") ". I use Novoflex's " LINKNAME("https://www.novoflexus.com/products/lens-adapters/for-leica-lenses/novoflex-nex-lem.htm", "NEX/LEM Adapter") " to fit M-Mount lenses.");
-add_header(&camera, "The Lenses");
-// add_list(&camera, "" LINKNAME("http://www.kenrockwell.com/voigtlander/15mm.htm", "Voigtländer") " — Super Wide Heliar <b>15mm</b> f4.5");
-// add_list(&camera, "" LINKNAME("http://amzn.to/2BrDiHH", "Voigtländer") " — Ultron <b>28mm</b> f2");
-// add_list(&camera, "" LINKNAME("https://commons.wikimedia.org/wiki/File:Auto_nikkor_50mm.jpg", "Nikon") " — Nikkor <b>50mm</b> f1.2");
+add_text(&camera, "My lenses are the Voigtländer Super Wide Heliar <b>15mm</b> f4.5, the Voigtländer Ultron <b>28mm</b> f2 and the Nikkor <b>50mm</b> f1.2");
 
 Term keyboard = create_album("keyboard", "The mechanical Keyboard specs.");
 set_parent(&keyboard, &inventory);
 add_text(&keyboard, "I currently use the " LINKNAME("https://olkb.com/planck/hi-pro-mod-aluminum-milled-bottom", "OLKB Hi-pro mod") " Planck 6 hotswap, plate, Halo Clear switches and Acute caps.");
 add_header(&keyboard, "Previous Models");
 add_text(&keyboard, "The keycaps were the " LINKNAME("https://www.massdrop.com/buy/npkc-blank-pbt-keycaps", "Blank Mint PBT") " with " LINKNAME("http://www.keyboardco.com/blog/index.php/2012/12/an-introduction-to-cherry-mx-mechanical-switches/", "Red Cherry MX") " switches. I have also installed " LINKNAME("http://www.amazon.ca/gp/product/B00VHXHP6Q?psc=1&redirect=true&ref_=oh_aui_detailpage_o00_s00", "sound dampening o-rings") ". The keyboard connected, with a braided " LINKNAME("http://www.amazon.ca/gp/product/B004YD6LW0?psc=1&redirect=true&ref_=oh_aui_detailpage_o00_s00", "90 degrees angle USB wire") ". The color choice is inspired from the " SEND(verreciel_path) " interface.");
-// add_text(&keyboard, "If you're looking for the " SEND(alicef_path) " one-handed keyboard, see " SEND(juni_path) ". Learn more about my " SEND(workstation_path) ".");
 
 Term directory = create_album("directory", "The Directory is a curated list of timeless art.");
 set_parent(&directory, &devine_lu_linvega);
@@ -2282,7 +2278,6 @@ set_parent(&modernista, &unreleased);
 
 Term blindfolk = create_term("blindfolk", "Blindfolk was a esoteric multiplayer programming combat game.");
 set_parent(&blindfolk, &unreleased);
-// set_icon(&blindfolk, "M60,240 a30,-30 0 0,1 30,-30 l150,0 M90,195 a30,-30 0 0,1 30,-30 l90,0 M120,150 a30,-30 0 0,1 30,-30 l30,0 M195,120 l45,0 M225,165 l15,0 M150,105 a30,-30 0 0,1 30,-30 l60,0");
 add_text(&blindfolk, "Each player programs a short script(called fighting style) for their character that will run automatically every 5 minutes, against all other players.");
 add_text(&blindfolk, "The scripts contained a series of attacks, moves and blocks, as well as responses to collisions against other players.");
 add_text(&blindfolk, "It was first created in the span of 48 hours for " LINKNAME("http://globalgamejam.org", "Global Game Jam 2016") ". The game was very popular for the days after its release, but soon became too time-consuming to maintain and keep alive, and was turned off a few days later. This design was revisited and lives on as part of the upcoming game " SEND(markl_path) ".");
