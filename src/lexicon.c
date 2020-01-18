@@ -1915,9 +1915,7 @@ add_list(&everyday, &inventory_items);
 
 Term skate = create_album("skate", "The Skate specs.");
 set_parent(&skate, &inventory);
-add_text(&skate, "When the sun is just about to set, and when the road is that perfect kind of slick.");
-add_text(&skate, "We carry a little " LINKNAME("https://www.pennyskateboards.com/us/blackout-27.html", "skateboard") " with us on " SEND(pino_path) ".");
-add_text(&skate, "We have the 68.58cm board, with the 59mm wheels.");
+add_text(&skate, "For when the sun is just about to set, and when the road is that perfect kind of slick, we carry a little " LINKNAME("https://www.pennyskateboards.com/us/blackout-27.html", "skateboard") " with us on " SEND(pino_path) ". We have the 68cm board, with the 59mm wheels.");
 
 Term bike = create_album("bike", "The Bike specs.");
 set_parent(&bike, &inventory);
