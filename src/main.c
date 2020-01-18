@@ -94,6 +94,7 @@ void add_journal_log(Journal *journal, Term *term, char *date, int code, char *n
   journal->logs[journal->len] = log;
   journal->len++;
 }
+
 // Creators/Setters
 
 Dict create_dict(char *name) {
@@ -177,59 +178,35 @@ void set_parent(Term *term, Term *parent) {
   parent->children_len++;
 }
 
-void add_html(Term *term, char *text) {
-  if(term->body_len > TERM_BODY_BUFFER-1){
+void add_body(Term *term, char *text, char *tag, char *meta) {
+  if (term->body_len > TERM_BODY_BUFFER - 1) {
     printf("Reached TERM_BODY_BUFFER\n");
     return;
   }
   term->body_text[term->body_len] = text;
-  term->body_meta[term->body_len] = NULL;
-  term->body_tags[term->body_len] = "div";
-  term->body_len++;  
+  term->body_tags[term->body_len] = tag;
+  term->body_meta[term->body_len] = meta;
+  term->body_len++;
+}
+
+void add_html(Term *term, char *text) {
+  add_body(term, text, "div", NULL);
 }
 
 void add_text(Term *term, char *text) {
-  if(term->body_len > TERM_BODY_BUFFER-1){
-    printf("Reached TERM_BODY_BUFFER\n");
-    return;
-  }
-  term->body_text[term->body_len] = text;
-  term->body_meta[term->body_len] = NULL;
-  term->body_tags[term->body_len] = "p";
-  term->body_len++;
+  add_body(term, text, "p", NULL);
 }
 
 void add_header(Term *term, char *text) {
-  if(term->body_len > TERM_BODY_BUFFER-1){
-    printf("Reached TERM_BODY_BUFFER\n");
-    return;
-  }
-  term->body_text[term->body_len] = text;
-  term->body_meta[term->body_len] = NULL;
-  term->body_tags[term->body_len] = "h3";
-  term->body_len++;
+  add_body(term, text, "h3", NULL);
 }
 
 void add_subheader(Term *term, char *text) {
-  if(term->body_len > TERM_BODY_BUFFER-1){
-    printf("Reached TERM_BODY_BUFFER\n");
-    return;
-  }
-  term->body_text[term->body_len] = text;
-  term->body_meta[term->body_len] = NULL;
-  term->body_tags[term->body_len] = "h4";
-  term->body_len++;  
+  add_body(term, text, "h4", NULL);
 }
 
 void add_quote(Term *term, char *text, char *source) {
-  if(term->body_len > TERM_BODY_BUFFER-1){
-    printf("Reached TERM_BODY_BUFFER\n");
-    return;
-  }
-  term->body_text[term->body_len] = text;
-  term->body_meta[term->body_len] = source;
-  term->body_tags[term->body_len] = "q";
-  term->body_len++;
+  add_body(term, text, "q", source);
 }
 
 void add_dict(Term *term, Dict *dict){
@@ -337,31 +314,35 @@ Log *find_last_diary(Term *term){
 
 // Build(parts)
 
+void build_pict(FILE *f, int pict, char *host, char *name, bool caption, char *link) {
+  fputs("<figure>", f);
+  fprintf(f, "<img src='../media/diary/%d.jpg' alt='%s picture'/>", pict, name);
+  if(caption){
+    fputs("<figcaption>", f);
+    if(link){
+      fprintf(f, "<a href='%s.html'>%s</a> — %s", link, host, name);
+    }
+    else{
+      fprintf(f, "%s — %s", host, name);
+    }
+    fputs("</figcaption>", f);
+  }
+  fputs("</figure>", f);
+}
+
 void build_term_pict(FILE *f, Term *term, bool caption){
   Log *log = find_last_diary(term);
-
   if(log == NULL){
     printf("Missing portal log for: %s\n", term->name);
     return;
   }
   char filename[STR_BUF_LEN];
   to_lowercase(term->name, filename, STR_BUF_LEN);
-
-  fputs("<figure>", f);
-  fprintf(f, "<img src='../media/diary/%d.jpg' alt='%s picture'/>", log->pict, log->term->name);
-  if(caption){
-    fprintf(f, "<figcaption><a href='%s.html'>%s</a> — %s</figcaption>", filename, term->name, term->bref);
-  }
-  fputs("</figure>", f);
+  build_pict(f, log->pict, term->name, term->bref, caption, filename);
 }
 
 void build_log_pict(FILE *f, Log *log, bool caption){
-  fputs("<figure>", f);
-  fprintf(f, "<img src='../media/diary/%d.jpg' alt='%s picture'/>", log->pict, log->term->name);
-  if(caption){
-    fprintf(f, "<figcaption>%s — %s</figcaption>", log->date, log->name);
-  }
-  fputs("</figure>", f);
+  build_pict(f, log->pict, log->date, log->name, caption, NULL);
 }
 
 void build_body_part(FILE *f, Term *term){
