@@ -372,7 +372,7 @@ add_link(&pino, "patreon", "https://patreon.com/100");
 
 Term rekka = create_album("rekka", "Rekka Bellum, is an illustrator and writer.");
 set_parent(&rekka, &hundred_rabbits);
-add_text(&rekka, "<b>Rekka</b> is the co-founder of " SEND(drownspire_path) " and " SEND(hundred_rabbits_path) ".");
+add_text(&rekka, "<b>Rekka</b> is the co-founder of " SEND(drownspire_path) " and " SENDNAME(hundred_rabbits_path, "hundred rabbits") ".");
 add_text(&rekka, SENDNAME(devine_lu_linvega_path, "Devine") " and " SEND(rekka_path) " collaborated on projects like " SEND(oquonie_path) ", " SEND(grimgrains_path) ", " SEND(thousand_rooms_path) " and " SEND(paradise_path) ".");
 add_link(&rekka, "website", "http://kokorobot.ca/");
 
@@ -851,7 +851,7 @@ set_parent(&markl, &games);
 // set_icon(&markl, "M105,150 L150,240  M195,150 L150,240  M150,60 L60,240  M150,60 L240,240");
 add_text(&markl, "<b>Markl</b> is a game in which players must " LINKNAME("https://twitter.com/hundredrabbits/status/916842882677358592", "program") " their character's fighting style, to face various opponents in a battle happening too fast for humans to compete.");
 add_text(&markl, "There are 4 characters to choose from, with unique attributes and stats, allowing for varied loadouts and combat styles.");
-add_text(&markl, "The game will be released as " SEND(hundred_rabbits_path) " in the fall of 2019, for all desktop platforms. The game supersedes the " SEND(blindfolk_path) " project.");
+add_text(&markl, "The game will be released as " SENDNAME(hundred_rabbits_path, "hundred rabbits") " in the fall of 2019, for all desktop platforms. The game supersedes the " SEND(blindfolk_path) " project.");
 add_text(&markl, "<b>TAIBA</b>: Tactical AI Battle Arena");
 add_link(&markl, "sources", "https://github.com/hundredrabbits/Markl");
 
@@ -859,7 +859,7 @@ Term oquonie = create_term("oquonie", "Oquonie is a textless isometric puzzle ga
 set_parent(&oquonie, &games);
 // set_icon(&oquonie, "M45,60 l210,0 M45,240 l210,0 M255,60 a-15,15 0 0,0 -15,15 a-15,-15 0 0,0 -15,-15 M75,60 a-15,15 0 0,0 -15,15 a-15,-15 0 0,0 -15,-15 M255,240 a-15,-15 0 0,1 -15,-15 a-15,15 0 0,1 -15,15 M75,240 a-15,-15 0 0,1 -15,-15 a-15,15 0 0,1 -15,15 M60,75 l0,150 M240,75 l0,150 M60,150 l180,0");
 add_text(&oquonie, "You must make your way through a seemingly endless succession of rooms. You will not be alone. Your incarnations will have the help of <b>bizaroid</b> characters that speak an " SENDNAME(camilare_path, "an obscure language") ".");
-add_text(&oquonie, "We made Oquonie while living in " SEND(japan_path) ". The game was our first collaborative project as " SEND(hundred_rabbits_path) ", and a reflection of our experience navigating a new country, with language as a recurent obstacle. Oquonie is about being lost in a foreign space.");
+add_text(&oquonie, "We made Oquonie while living in " SEND(japan_path) ". The game was our first collaborative project as " SENDNAME(hundred_rabbits_path, "hundred rabbits") ", and a reflection of our experience navigating a new country, with language as a recurent obstacle. Oquonie is about being lost in a foreign space.");
 add_text(&oquonie, "A big inspiration for this project was the short story \"A town without streets\" by Junji Ito, about a city of endless interconnecting houses and rooms, where privacy is non-existent. To preserve the little privacy they do have, the townspeople wear masks.");
 add_html(&oquonie, MODITCHIO("23183"));
 add_text(&oquonie, "Back in 2013, we both had full-time jobs in different studios in Tokyo, we worked on Oquonie after work, and on weekends, for a total of 6 months. You can learn more about the development of the project " LINKNAME("https://100r.co/pages/oquonie.html", "here") ".");
