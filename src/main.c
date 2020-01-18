@@ -18,13 +18,11 @@
 int pict_used_len = 0;
 int pict_used[999];
 
-char *html_head = "<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='author' content='Devine Lu Linvega'><meta name='description' content='The Nataniev Library.'/><meta name='keywords' content='Aliceffekt, Devine Lu Linvega, Lietal, Oquonie, Verreciel, Nataniev, Oscean, Solarpunk' /><meta name='license' content='name=BY-NC-SA(4.0), url=https://creativecommons.org/licenses/by-nc-sa/4.0/'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width, initial-scale=1.0'><link rel='shortcut icon' type='image/x-icon' href='../media/services/favicon.ico' /><title>XXIIVV — %s</title><style>%s</style></head><body>";
+char *html_head = "<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='author' content='Devine Lu Linvega'><meta name='description' content='The Nataniev Library.'/><meta name='keywords' content='Aliceffekt, Devine Lu Linvega, Lietal, Oquonie, Verreciel, Nataniev, Oscean, Solarpunk' /><meta name='license' content='name=BY-NC-SA(4.0), url=https://creativecommons.org/licenses/by-nc-sa/4.0/'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width, initial-scale=1.0'><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/x-icon' href='../media/services/favicon.ico' /><title>XXIIVV — %s</title></head><body>";
 
 char *html_header = "<header><a id='logo' href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV'></a></header>";
 
-char *html_footer = "<footer><hr/><a href='https://creativecommons.org/licenses/by-nc-sa/4.0' target='_blank'><img src='../media/icon/cc.svg' alt='by-nc-sa' width='30'/></a> <a href='http://webring.xxiivv.com/#random' target='_blank' rel='noreferrer'><img src='../media/icon/rotonde.svg' alt='webring' width='30'/></a> <a href='https://merveilles.town/@neauoire' target='_blank'><img src='../media/icon/merveilles.svg' alt='Merveilles' width='30'/></a> <a href='https://github.com/neauoire' target='_blank'><img src='../media/icon/github.png' alt='github' width='30'/></a> <span><a class='profile' href='devine_lu_linvega.html' target='_self'>Devine Lu Linvega</a> © 2020 — <a class='about' href='about.html' target='_self'>BY-NC-SA 4.0</a></span></footer></body></html>";
-
-char *html_style = "body { padding:30px } body a { color:black } body a:hover { text-decoration:none } header { margin: 0px 0px 35px; float: left } nav { margin: 0px 0px 30px } nav ul { padding: 0px; margin: 0px 45px 30px 0px; float: left } nav ul li { list-style-type:none; white-space:pre } nav ul li a { text-decoration:none } nav ul li a:hover { background:black; color:white } main { max-width:600px } main h1 { display:none } main h2 { max-width: 400px; margin-top:0px } main h4 { font-family:monospace } main p { line-height:25px } main q { font-family: serif; font-size: 18px; font-style: italic; display: block; margin-bottom: 30px } main img { max-width:100% } main a.external:before { content:'~' } footer { border-top:1.5px solid; padding-top:30px; font-family:monospace } footer img { margin: 0px 0px -10px 0px } footer a { font-weight:bold; text-decoration:none } hr { border:0; clear:both }";
+char *html_footer = "<footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0' target='_blank'><img src='../media/icon/cc.svg' alt='by-nc-sa' width='30'/></a> <a href='http://webring.xxiivv.com/' target='_blank' rel='noreferrer'><img src='../media/icon/rotonde.svg' alt='webring' width='30'/></a> <a href='https://merveilles.town/@neauoire' target='_blank'><img src='../media/icon/merveilles.svg' alt='Merveilles' width='30'/></a> <a href='https://github.com/neauoire' target='_blank'><img src='../media/icon/github.png' alt='github' width='30'/></a> <span><a href='devine_lu_linvega.html' target='_self'>Devine Lu Linvega</a> © 2020 — <a href='about.html' target='_self'>BY-NC-SA 4.0</a></span></footer></body></html>";
 
 // Types
 
@@ -327,13 +325,43 @@ void scan_pict_next() {
   }
 }
 
+Log *find_last_diary(Term *term){
+  for (int i = 0; i < all_logs.len; ++i) {
+    Log *l = &all_logs.logs[i];
+    if(l->term != term){ continue; }
+    if(l->pict < 1){ continue; }
+    return l;
+  }
+  return NULL;
+}
+
 // Build(parts)
 
-void build_pict_part(FILE *f, Log *log, bool caption){
+void build_term_pict(FILE *f, Term *term, bool caption){
+  Log *log = find_last_diary(term);
+
+  if(log == NULL){
+    printf("Missing portal log for: %s\n", term->name);
+    return;
+  }
+  char filename[STR_BUF_LEN];
+  to_lowercase(term->name, filename, STR_BUF_LEN);
+
+  fputs("<figure>", f);
   fprintf(f, "<img src='../media/diary/%d.jpg' alt='%s picture'/>", log->pict, log->term->name);
   if(caption){
-    fprintf(f, "<h4>%s — %s</h4>", log->date, log->name);
+    fprintf(f, "<figcaption><a href='%s.html'>%s</a> — %s</figcaption>", filename, term->name, term->bref);
   }
+  fputs("</figure>", f);
+}
+
+void build_log_pict(FILE *f, Log *log, bool caption){
+  fputs("<figure>", f);
+  fprintf(f, "<img src='../media/diary/%d.jpg' alt='%s picture'/>", log->pict, log->term->name);
+  if(caption){
+    fprintf(f, "<figcaption>%s — %s</figcaption>", log->date, log->name);
+  }
+  fputs("</figure>", f);
 }
 
 void build_body_part(FILE *f, Term *term){
@@ -362,22 +390,12 @@ void build_nav_part(FILE *f, Term *term, Term *target){
 
 // Build
 
-Log *find_last_diary(Term *term){
-  for (int i = 0; i < all_logs.len; ++i) {
-    Log *l = &all_logs.logs[i];
-    if(l->term != term){ continue; }
-    if(l->pict < 1){ continue; }
-    return l;
-  }
-  return NULL;
-}
-
 void build_banner(FILE *f, Term *term, bool caption){
   Log *l = find_last_diary(term);
 
   if(!l){ return; }
 
-  build_pict_part(f, l, caption);
+  build_log_pict(f, l, caption);
 }
 
 void build_nav(FILE *f, Term *term){
@@ -394,12 +412,11 @@ void build_nav(FILE *f, Term *term){
   if(term->parent->name != term->name){
     build_nav_part(f, term, term);
   }
-  fputs("<hr/></nav>", f);
+  fputs("</nav>", f);
 }
 
 void build_body(FILE *f, Term *term){
-  fprintf(f, "<h1 class='title'>%s</h1>", term->name);
-  fprintf(f, "<h2 class='brief'>%s</h2>", term->bref);
+  fprintf(f, "<h2>%s</h2>", term->bref);
   build_body_part(f, term);
 }
 
@@ -472,17 +489,7 @@ void build_portal(FILE *f, Term *term){
   if(term->isPortal != true){ return; }
 
   for (int k = 0; k < term->children_len; ++k) {
-    char child_filename[STR_BUF_LEN];
-    to_lowercase(term->children[k]->name, child_filename, STR_BUF_LEN);
-    Log *l = find_last_diary(term->children[k]);
-    if(l){
-      fprintf(f, "<a href='%s.html'>", child_filename);
-      build_pict_part(f, l, false);
-      fprintf(f, "</a>");
-    }
-
-    fprintf(f, "<h3><a href='%s.html'>%s</a></h3>", child_filename, term->children[k]->name);
-    fprintf(f, "<p>%s</p>", term->children[k]->bref);
+    build_term_pict(f, term->children[k], true);
   }
 }
 
@@ -495,7 +502,7 @@ void build_album(FILE *f, Term *term){
     if(l.term != term){ continue; }
     if(l.pict < 1){ continue; }
     if(l.pict == header_log->pict){ continue; }
-    build_pict_part(f, &l, true);
+    build_log_pict(f, &l, true);
   }
 }
 
@@ -548,7 +555,7 @@ void build_special_journal(FILE *f, Term *term, Journal *journal){
   for (int i = 0; i < journal->len; ++i) {
     if(count > 20){ break; }
     if(journal->logs[i].pict == 0){ continue; }
-    build_pict_part(f, &journal->logs[i], true);
+    build_log_pict(f, &journal->logs[i], true);
     count++;
   }
 }
@@ -569,7 +576,7 @@ void build_page(Term *term, Journal *journal) {
   snprintf(filepath, STR_BUF_LEN, "../site/%s.html", filename);
   FILE *f = fopen(filepath, "w");
 
-  fprintf(f, html_head, term->name, html_style);
+  fprintf(f, html_head, term->name);
   fputs(html_header, f);
   build_nav(f, term);
   

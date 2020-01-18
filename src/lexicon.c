@@ -394,8 +394,7 @@ add_link(&grimgrains, "sources", "https://github.com/hundredrabbits/Grimgrains")
 
 Term drownspire = create_portal("drownspire", "Drownspire was the name of an online store founded with Rekka Bellum, back in 2009.");
 set_parent(&drownspire, &hundred_rabbits);
-add_text(&drownspire, "Our goals then, fueled what is now " SEND(hundred_rabbits_path) ". We distributed the " SEND(vambits_path) " designer toys and published the " SEND(merure_path) " books.");
-add_header(&drownspire, "The Studio");
+add_text(&drownspire, "Our goals then, fueled what is now " SENDNAME(hundred_rabbits_path, "hundred rabbits") ". We distributed the " SEND(vambits_path) " designer toys and published the " SEND(merure_path) " books.");
 
 Term merure = create_term("merure", "The Merure books, were a series of comics published with friends.");
 set_parent(&merure, &drownspire);
@@ -1057,8 +1056,7 @@ add_link(&instrument, "sources", "http://github.com/hundredrabbits/Instrument");
 
 Term assembly = create_term("assembly", "Assembly(6502) is the language used to program the famicom microprocessor.");
 set_parent(&assembly, &hardware);
-// set_icon(&assembly, "M60,240 a30,-30 0 0,1 30,-30 l150,0 M90,195 a30,-30 0 0,1 30,-30 l90,0 M120,150 a30,-30 0 0,1 30,-30 l30,0 M195,120 l45,0 M225,165 l15,0 M150,105 a30,-30 0 0,1 30,-30 l60,0");
-add_text(&assembly, "More detals on this project shortly, currently collecting notes on " LINKNAME("https://github.com/neauoire/linux-notebook/tree/master/6502", "6502 asm") ".");
+add_text(&assembly, "This page is a collection of notes on the basics of 6502 assembly, assembled from various guides and tutorial..");
 add_link(&assembly, "notes", "https://github.com/neauoire/linux-notebook/tree/master/6502");
 
 Term microbit = create_term("microbit", "The Microbit is a small educational micro-controller from BBC.");
