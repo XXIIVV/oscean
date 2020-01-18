@@ -1055,7 +1055,7 @@ add_text(&instrument, "Its original purpose was to help with night sailing where
 // add_list(&instrument, "Vesper Marine " LINKNAME("https://www2.vespermarine.com/xb8000-ais-transponder", "XB-8000 AIS Transponder") "");
 add_link(&instrument, "sources", "http://github.com/hundredrabbits/Instrument");
 
-Term assembly = create_term("assembly", "The Assembly microprocessor is the famicom chip and assembly language.");
+Term assembly = create_term("assembly", "Assembly(6502) is the language used to program the famicom microprocessor.");
 set_parent(&assembly, &hardware);
 // set_icon(&assembly, "M60,240 a30,-30 0 0,1 30,-30 l150,0 M90,195 a30,-30 0 0,1 30,-30 l90,0 M120,150 a30,-30 0 0,1 30,-30 l30,0 M195,120 l45,0 M225,165 l15,0 M150,105 a30,-30 0 0,1 30,-30 l60,0");
 add_text(&assembly, "More detals on this project shortly, currently collecting notes on " LINKNAME("https://github.com/neauoire/linux-notebook/tree/master/6502", "6502 asm") ".");
