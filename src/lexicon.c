@@ -362,7 +362,7 @@ add_link(&hundred_rabbits, "twitter", "https://twitter.com/hundredrabbits");
 
 Term pino = create_album("pino", "Pino is a Yamaha 33 sailboat built in 1982.");
 set_parent(&pino, &hundred_rabbits);
-add_text(&pino, "Purchased in 2016, on Vancouver Island, <b>Pino</b> has since sailed across the " SENDNAME(marquesas_path, "Pacific Ocean") ". We maintain a list of " LINKNAME("http://github.com/hundredrabbits/pino", "technical details") ", and our current position can be accessed through our " LINKNAME("http://100r.co/#map", "tracker") ".");
+add_text(&pino, "Purchased in 2016, on Vancouver Island, <b>Pino</b> has since sailed across the " SENDNAME(marquesas_path, "Pacific Ocean") ". We maintain a list of " LINKNAME("http://github.com/hundredrabbits/pino", "technical details") ", and our current position can be accessed through our " LINKNAME("http://100r.co/live", "tracker") ".");
 add_dict(&pino, &pino_details);
 add_text(&pino, "If you are interested in learning about the " SENDNAME(nomad_path, "digital-nomad") " lifestyle, have a look at the " LINKNAME("http://100r.co/", "Hundred Rabbits Website") ". We have a lot of " SEND(raspberry_path) "-powered devices onboard, learn more about our " SENDNAME(media_station_path, "media station") " and " SENDNAME(radio_station_path, "radio station") ".");
 add_quote(&pino, "There's no such thing as bad weather, only inappropriate clothing.", "Linda Geddes, Living without artificial light");
@@ -747,7 +747,7 @@ add_link(&riven, "sources", "https://github.com/XXIIVV/Riven");
 
 Term tools = create_portal("tools", "The Tools collection is an ecosystem of open-source software to create audio and visual works, released as Hundred Rabbits.");
 set_parent(&tools, &research);
-add_text(&tools, "You can learn more about the philosophy behind these various projects on the " LINKNAME("https://100r.co/pages/tools_ecosystem.html", "Hundred Rabbits blog") ".");
+add_text(&tools, "You can learn more about the philosophy behind these various projects on the " LINKNAME("https://100r.co/site/tools_ecosystem.html", "Hundred Rabbits blog") ".");
 add_quote(&tools, "What I cannot create, I do not understand", "Richard Feynman");
 add_link(&tools, "itch", "http://hundredrabbits.itch.io/");
 add_link(&tools, "sources", "http://github.com/hundredrabbits");
@@ -861,7 +861,7 @@ add_text(&oquonie, "You must make your way through a seemingly endless successio
 add_text(&oquonie, "We made Oquonie while living in " SEND(japan_path) ". The game was our first collaborative project as " SENDNAME(hundred_rabbits_path, "hundred rabbits") ", and a reflection of our experience navigating a new country, with language as a recurent obstacle. Oquonie is about being lost in a foreign space.");
 add_text(&oquonie, "A big inspiration for this project was the short story \"A town without streets\" by Junji Ito, about a city of endless interconnecting houses and rooms, where privacy is non-existent. To preserve the little privacy they do have, the townspeople wear masks.");
 add_html(&oquonie, MODITCHIO("23183"));
-add_text(&oquonie, "Back in 2013, we both had full-time jobs in different studios in Tokyo, we worked on Oquonie after work, and on weekends, for a total of 6 months. You can learn more about the development of the project " LINKNAME("https://100r.co/pages/oquonie.html", "here") ".");
+add_text(&oquonie, "Back in 2013, we both had full-time jobs in different studios in Tokyo, we worked on Oquonie after work, and on weekends, for a total of 6 months. You can learn more about the development of the project " LINKNAME("https://100r.co/site/oquonie.html", "here") ".");
 // add_quote(&oquonie, "Find help in the " SEND(oquonie_guide_path) ".", "undefinedFind help in the {(__link "Oquonie Guide")}.");
 // add_text(&oquonie, "Oquonie features an original " SENDNAME(oquonie_soundtrack_path, "soundtrack") " and was best described as <i ><a href='http://killscreendaily.com/articles/oquonie-maze-worth-entering/' target='_blank' rel='noreferrer' class='external '>Animal Crossing in a K-Hole</a></i>.", "undefined");
 add_link(&oquonie, "builds", "https://hundredrabbits.itch.io/oquonie");
@@ -1813,7 +1813,7 @@ set_parent(&devine_lu_linvega, &hundred_rabbits);
 // set_icon(&devine_lu_linvega, "M150,60 l0,180 M180,60 l0,180 l0,-60 a30,-30 0 0,1 30,-30 l30,0 M120,60 l0,180 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0");
 add_text(&devine_lu_linvega, "<b>Devine Lu Linvega</b> is composing " SENDNAME(audio_path, "experimental electronic music") ", illustrating the " SENDNAME(visual_path, "frozen wastelands of a fictional world") ", and developing " SENDNAME(research_path, "esoteric software") ".");
 add_text(&devine_lu_linvega, "Since 2006, Devine has been populating this " SENDNAME(about_path, "wiki") " with notes on various topics, including on " SEND(language_path) ", " SEND(lifestyle_path) " and " SEND(nutrition_path) ". You can learn more about their <b>related interests</b> in the " SEND(mirrors_path) ", and in the " SEND(directory_path) ".");
-add_text(&devine_lu_linvega, "They currently live aboard a " SENDNAME(pino_path, "sailboat") ", somewhere along the foggy coast of " SEND(japan_path) ". You can follow their position " LINKNAME("http://100r.co/live", "here") ", or learn more about offgrid living " LINKNAME("https://100r.co/pages/knowledge.html", "here") ".");
+add_text(&devine_lu_linvega, "They currently live aboard a " SENDNAME(pino_path, "sailboat") ", somewhere along the foggy coast of " SEND(japan_path) ". You can follow their position " LINKNAME("http://100r.co/live", "here") ", or learn more about offgrid living " LINKNAME("https://100r.co/site/knowledge.html", "here") ".");
 add_text(&devine_lu_linvega, "Get in touch via email at <b>aliceffekt@gmail.com</b>, or<br />on the fediverse at <b><a href='http://merveilles.town/@neauoire' target='_blank' rel='noreferrer' class='external '>merveilles.town/@neauoire</a></b>.");
 add_quote(&devine_lu_linvega, "To flee is Life,<br />To linger, death.", "");
 
