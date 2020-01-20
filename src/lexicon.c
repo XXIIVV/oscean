@@ -2179,6 +2179,7 @@ add_quote(&ethics, "We're Solarpunks because the only other options are denial o
 add_dict(&ethics, &green_anarchism);
 add_dict(&ethics, &animal_rights);
 add_dict(&ethics, &adaptation);
+add_dict(&ethics, &recyclism);
 add_list(&ethics, &dark_mountaineers);
 add_list(&ethics, &solarpunk_knowledge);
 

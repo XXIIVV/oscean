@@ -251,7 +251,16 @@ add_word(&adaptation, "Solar Radiation Management", "Methods of reducing global 
 add_word(&adaptation, "Scientific Reticence", "A phenomenon where scientists failed to emphasize many the more dramatic results of the study of global warming over concerns of reception.");
 add_word(&adaptation, "Fossil Capitalism", "A theory suggesting the modern economy is actually just a system that runs on fossil fuel.");
 add_word(&adaptation, "Tragedy of the Commons", "A situation in a shared-resource system where individual users, acting independently according to their own self-interest, behave contrary to the common good of all users by depleting or spoiling the shared resource through their collective action.");
- 
+
+Dict recyclism = create_dict("recyclism");
+add_word(&recyclism, "Electronics right to repair", "A government legislation intended to allow consumers the ability to repair and modify their own electronics, where otherwise the manufacturer of such devices require the consumer to use only their offered services.");
+add_word(&recyclism, "Obsolescence of desirability", "When designers change the styling of products so customers will purchase products more frequently due to the decrease in the perceived desirability of unfashionable items.");
+add_word(&recyclism, "Obsolescence of function", "When an item is produced to break down or otherwise become non-functional in an abnormally short period of time.");
+add_word(&recyclism, "Obsolescence of compatibility", "When a product becomes obsolete by altering the system in which it is used in such a way as to make its continued use difficult. Common examples of planned systemic obsolescence include not accommodating forward compatibility in software.");
+add_word(&recyclism, "Pseudo-obsolescence of desirability", "When planned obsolescence appears to introduce innovative changes into a product, but in reality does not, often forcibly outfashioning an otherwise-useful product.");
+add_word(&recyclism, "Non-user-replaceable batteries", "Some products, such as mobile phones, laptops, and electric toothbrushes, contain batteries that are not replaceable by the end-user after they have worn down, therefore leaving an aging battery trapped inside the device.");
+add_word(&recyclism, "Phoebus cartel", "The cartel conveniently lowered operational costs and worked to standardize the life expectancy of light bulbs at 1,000 hours, down from 2,500 hours, and raised prices without fear of competition. ");
+
 Dict beliefs = create_dict("beliefs");
 add_word(&beliefs, "Belief", "The mental state in which an individual holds a proposition to be true.");
 add_word(&beliefs, "Priors", "The beliefs an agent holds regarding a fact, hypothesis or consequence, before being presented with evidence.");
@@ -658,6 +667,7 @@ Dict reading_list_2020 = create_dict("reading list 2020");
 add_word(&reading_list_2020, "6502 Assembly Programming Language", "Mike Smith");
 add_word(&reading_list_2020, "The Elements of Computing Systems", "Noam Nisan and Shimon Schocken");
 add_word(&reading_list_2020, "Made to break", "Giles Slade");
+add_word(&reading_list_2020, "Wandering Island", "Kenji Tsuruta");
 
 Dict macbook_workstation = create_dict("macbook workstation");
 add_word(&macbook_workstation,"System", "MacBook Pro Retina, 13\". 2014");
@@ -838,5 +848,3 @@ add_item(&inventory_items, "Davis Basic Rigging Knife");
 add_item(&inventory_items, "Lawson MII Key holder");
 add_item(&inventory_items, "Amazon Kindle Paperwhite");
 add_item(&inventory_items, "DuxtioRFID Blocking Wallet");
-
-
