@@ -5,7 +5,9 @@ add_word(&dictionary, "Rationality", "Characteristic of thinking and acting opti
 add_word(&dictionary, "Parsimony", "Refers to the quality of economy or frugality in the use of resources.");
 add_word(&dictionary, "Epistemology", "A theory of knowledge, especially with regard to its methods, validity, and scope, and the distinction between justified belief and opinion.");
 add_word(&dictionary, "Lateralus", "The affliction of illusion of inescapable cyclicality. Example: The failure to recognize one's growth, inability to dream of unprecedented things, ceding to self-reinforcing systems, being jaded to hope, waiting for nonexistent chickens to hatch from nonexistent eggs.");
- 
+
+// Technology
+
 Dict principles = create_dict("principles");
 add_word(&principles, "Occam's Razor", "When several theories are able to explain the same observations, Occam's razor suggests the one making the fewest assumptions.");
 add_word(&principles, "Kolmogorov complexity", "The length of the shortest possible program to output a given object.");
@@ -665,7 +667,7 @@ add_word(&reading_list_2019, "La Société du spectacle", "Guy Debord");
 
 Dict reading_list_2020 = create_dict("reading list 2020");
 add_word(&reading_list_2020, "6502 Assembly Programming Language", "Mike Smith");
-add_word(&reading_list_2020, "The Elements of Computing Systems", "Noam Nisan and Shimon Schocken");
+add_word(&reading_list_2020, "Elements of Computing Systems", "Noam Nisan & Shimon Schocken");
 add_word(&reading_list_2020, "Made to break", "Giles Slade");
 add_word(&reading_list_2020, "Wandering Island", "Kenji Tsuruta");
 

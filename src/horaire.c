@@ -1,4 +1,6 @@
 add_event(&japan, "20D09", 0, "Return to Japan");
+add_log(&assembly, "20B06", 233);
+add_log(&ethics, "20B05", 336);
 add_log(&assembly, "20B04", 237);
 add_log(&pedestrian_paradise, "20B03", 277);
 add_log(&russian, "20B02", 335);
@@ -35,7 +37,7 @@ add_diary(&oquonie, "19Y09", 346, "Aboard Pino", 623);
 add_log(&oscean, "19Y08", 358);
 add_log(&horaire, "19Y07", 348);
 add_log(&lietal, "19Y06", 317);
-add_log(&oscean, "19Y03", 377);
+add_diary(&technology, "19Y03", 377, "Paper Computer", 653);
 add_event(&azolla, "19Y02", 196, "ReactBerlin, Berlin");
 add_event(&germany, "19Y01", 0, "Travel to Berlin");
 add_log(&enfer, "19X14", 149);
