@@ -1,7 +1,11 @@
-#include <ctype.h>
-#include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include <ctype.h>
+#include <stdio.h>
+#include <time.h>
+#include <math.h>
+
+#include "helpers.c"
 
 #define STR_BUF_LEN 64
 #define LOGS_BUFFER 512
@@ -258,39 +262,6 @@ void add_log(Term *term, char *date, int code) {
 }
 
 // Tools
-
-void to_lowercase(char *str, char *target, size_t tsize) {
-  for (size_t i = 0; i < tsize; i++) {
-    target[i] = str[i];
-    if (target[i] == '\0') {
-      break;
-    }
-    if (target[i] == ' ') {
-      target[i] = '_';
-    } else {
-      target[i] = tolower(target[i]);
-    }
-  }
-  target[tsize - 1] = '\0';
-}
-
-int index_of(int a[], int num_elements, int value) {
-  for (int i = 0; i < num_elements; i++) {
-    if (a[i] == value) {
-      return (value);
-    }
-  }
-  return (-1);
-}
-
-bool file_exists(char *filename) {
-  FILE *file = fopen(filename, "r");
-  if (file != NULL) {
-    fclose(file);
-    return true;
-  }
-  return false;
-}
 
 void scan_pict_next() {
   for (int i = 1; i < 999; ++i) {
@@ -598,6 +569,11 @@ int main(void) {
   }
 
   scan_pict_next();
+
+  debug_time();
+
+  printf("%d\n", arvelie_to_doty("20Y11"));
+  printf("%s\n", get_arvelie());
 
   return (0);
 }
