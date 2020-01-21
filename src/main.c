@@ -55,6 +55,7 @@ typedef struct Term {
   int lists_len;
 
   char *name;
+  char *path;
   char *bref;
   char *icon;
 
@@ -134,7 +135,17 @@ void add_item(List *list, char *item) {
   list->items_len++;  
 }
 
-Term create_term(char *name, char *bref) {
+void set_parent(Term *term, Term *parent) {
+  if(parent->children_len > TERM_CHILDREN_BUFFER-1){
+    printf("Reached TERM_CHILDREN_BUFFER\n");
+    return;
+  }
+  term->parent = parent;
+  parent->children[parent->children_len] = term;
+  parent->children_len++;
+}
+
+Term create_term(Term *parent, char *name, char *bref) {
   Term t;
   t.isPortal = false;
   t.isAlbum = false;
@@ -150,36 +161,31 @@ Term create_term(char *name, char *bref) {
   t.bref = bref;
   t.icon = "";
 
-  t.parent = NULL;
+  t.parent = parent;
+
+  char path[STR_BUF_LEN];
+  to_lowercase(name, path, STR_BUF_LEN);
+  t.path = path;
+
   return t;
 }
 
-Term create_portal(char *name, char *bref) {
-  Term t = create_term(name, bref);
+Term create_portal(Term *parent, char *name, char *bref) {
+  Term t = create_term(parent, name, bref);
   t.isPortal = true;
   return t;
 }
 
-Term create_album(char *name, char *bref) {
-  Term t = create_term(name, bref);
+Term create_album(Term *parent, char *name, char *bref) {
+  Term t = create_term(parent, name, bref);
   t.isAlbum = true;
   return t;
 }
 
-Term create_index(char *name, char *bref) {
-  Term t = create_term(name, bref);
+Term create_index(Term *parent, char *name, char *bref) {
+  Term t = create_term(parent, name, bref);
   t.isIndex = true;
   return t;
-}
-
-void set_parent(Term *term, Term *parent) {
-  if(parent->children_len > TERM_CHILDREN_BUFFER-1){
-    printf("Reached TERM_CHILDREN_BUFFER\n");
-    return;
-  }
-  term->parent = parent;
-  parent->children[parent->children_len] = term;
-  parent->children_len++;
 }
 
 void add_body(Term *term, char *text, char *tag, char *meta) {
@@ -351,6 +357,9 @@ void build_banner(FILE *f, Term *term, bool caption){
 }
 
 void build_nav(FILE *f, Term *term){
+  if(term->parent == NULL){ printf("Missing parent for %s\n", term->name); return; }
+  if(term->parent->parent == NULL){ printf("Missing parent for %s\n", term->parent->name); return; }
+
   fputs("<nav>", f);
   if(term->parent->parent->name == term->parent->name){
     build_nav_part(f, term->parent->parent, term);
@@ -562,7 +571,19 @@ int main(void) {
 
   int lexicon_len = sizeof lexicon / sizeof lexicon[0];
 
-  printf("Lexicon: %d entries\n", lexicon_len);
+  // Parent Terms
+  for (int i = 0; i < lexicon_len; ++i) {
+    Term *t = lexicon[i];
+    if(t->parent && t->parent->children_len < TERM_CHILDREN_BUFFER){
+      t->parent->children[t->parent->children_len] = t;
+      t->parent->children_len++;  
+    }
+    else{
+      printf("Could not parent: %s\n", t->name);
+      t->parent = &home;
+    }
+  }
+
 
   for (int i = 0; i < lexicon_len; ++i) {
     build_page(lexicon[i], &all_logs);
@@ -575,5 +596,7 @@ int main(void) {
   printf("%d\n", arvelie_to_doty("20Y11"));
   printf("%s\n", get_arvelie());
 
+  printf("Lexicon: %d entries\n", lexicon_len);
+  
   return (0);
 }

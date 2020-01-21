@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='author' content='Devine Lu Linvega'><meta name='description' content='The Nataniev Library.'/><meta name='keywords' content='Aliceffekt, Devine Lu Linvega, Lietal, Oquonie, Verreciel, Nataniev, Oscean, Solarpunk' /><meta name='license' content='name=BY-NC-SA(4.0), url=https://creativecommons.org/licenses/by-nc-sa/4.0/'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width, initial-scale=1.0'><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/x-icon' href='../media/services/favicon.ico' /><title>XXIIVV — assembly</title></head><body><header><a id='logo' href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV'></a></header><nav><ul><li><a href='notebook.html'>notebook</a></li><li><a href='nataniev.html'>nataniev</a></li><li><a href='tools.html'>tools</a></li><li><a href='hardware.html'>hardware/</a></li><li><a href='neauismetica.html'>neauismetica</a></li><li><a href='mirrors.html'>mirrors</a></li><li><a href='documentation.html'>documentation</a></li><li><a href='language.html'>language</a></li></ul><ul><li><a href='raspberry.html'>raspberry</a></li><li><a href='assembly.html'>assembly/</a></li><li><a href='microbit.html'>microbit</a></li><li><a href='playground.html'>playground</a></li><li><a href='norns.html'>norns</a></li><li><a href='monome.html'>monome</a></li></ul><ul></ul></nav><main><figure><img src='../media/diary/7.jpg' alt='Famicom Keyboard picture'/><figcaption>20A01 — Famicom Keyboard</figcaption></figure><h2>Assembly(6502) is the language used to program the famicom microprocessor.</h2><p>This page is a collection of notes on the basics of 6502 assembly, assembled from various guides and tutorial..</p><h3>Basics</h3>
+<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='author' content='Devine Lu Linvega'><meta name='description' content='The Nataniev Library.'/><meta name='keywords' content='Aliceffekt, Devine Lu Linvega, Lietal, Oquonie, Verreciel, Nataniev, Oscean, Solarpunk' /><meta name='license' content='name=BY-NC-SA(4.0), url=https://creativecommons.org/licenses/by-nc-sa/4.0/'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width, initial-scale=1.0'><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/x-icon' href='../media/services/favicon.ico' /><title>XXIIVV — assembly</title></head><body><header><a id='logo' href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV'></a></header><nav><ul><li><a href='nataniev.html'>nataniev</a></li><li><a href='tools.html'>tools</a></li><li><a href='hardware.html'>hardware/</a></li><li><a href='neauismetica.html'>neauismetica</a></li><li><a href='mirrors.html'>mirrors</a></li><li><a href='documentation.html'>documentation</a></li><li><a href='language.html'>language</a></li><li><a href='notebook.html'>notebook</a></li></ul><ul><li><a href='raspberry.html'>raspberry</a></li><li><a href='assembly.html'>assembly/</a></li><li><a href='microbit.html'>microbit</a></li><li><a href='playground.html'>playground</a></li><li><a href='norns.html'>norns</a></li><li><a href='monome.html'>monome</a></li></ul><ul></ul></nav><main><figure><img src='../media/diary/7.jpg' alt='Famicom Keyboard picture'/><figcaption>20A01 — Famicom Keyboard</figcaption></figure><h2>Assembly(6502) is the language used to program the famicom microprocessor.</h2><p>This page is a collection of notes on the basics of 6502 assembly, assembled from various guides and tutorial..</p><h3>Basics</h3>
 
 <ul>
   <li><b>Bit</b>: The smallest unit in computers. It is either a 1 or a 0.</li>
@@ -38,15 +38,15 @@
 <p>The 6502 has 9 major(13 in total) addressing modes, or ways of accessing memory.</p>
 
 <table border='1'>
-  <tr><th>Immediate</th><td>#aa</td><td>The value given is a number to be used immediately by the instruction.  For example, LDA #$99 loads the value $99 into the accumulator.</td></tr>
-  <tr><th>Absolute</th><td>aaaa</td><td>The value given is the address (16-bits) of a memory location that contains the 8-bit value to be used.  For example, STA $3E32 stores the present value of the accumulator in memory location $3E32.</td></tr>
-  <tr><th>Zero Page</th><td>aa</td><td>The first 256 memory locations ($0000-00FF) are called "zero page".  The next 256 instructions ($0100-01FF) are page 1, etc.  Instructions making use of the zero page save memory by not using an extra $00 to indicate the high part of the address.</td></tr>
-  <tr><th>Implied</th><td></td><td>Many instructions are only one byte in length and do not reference memory. These are said to be using implied addressing. For example, CLC, DEX & TYA.</td></tr>
-  <tr><th>Indirect Absolute</th><td>(aaaa)</td><td>Only used by JMP (JuMP).  It takes the given address and uses it as a pointer to the low part of a 16-bit address in memory, then jumps to that address.  For example, JMP ($2345) or, jump to the address in $2345 low and $2346 high</td></tr>
-  <tr><th>Absolute Indexed,X/Y</th><td>aaaa,X</td><td>The final address is found by taking the given address as a base and adding the current value of the X or Y register to it as an offset.  So, LDA $F453,X  where X contains 3 Load the accumulator with the contents of address $F453 + 3 = $F456.</td></tr>
-  <tr><th>Zero Page Indexed,X/Y</th><td>aa,X</td><td>Same as Absolute Indexed but the given address is in the zero page thereby saving a byte of memory.</td></tr>
-  <tr><th>Indexed Indirect</th><td>(aa,X)</td><td>Find the 16-bit address starting at the given location plus the current X register.  The value is the contents of that address.  For example, LDA ($B4,X)  where X contains 6 gives an address of $B4 + 6 = $BA.  If $BA and $BB contain $12 and $EE respectively, then the final address is $EE12.  The value at location $EE12 is put in the accumulator.</td></tr>
-  <tr><th>Indirect Indexed</th><td>(aa),Y</td><td>Find the 16-bit address contained in the given location ( and the one following).  Add to that address the contents of the Y register. Fetch the value stored at that address.  For example, LDA ($B4),Y  where Y contains 6 If $B4 contains $EE and $B5 contains $12 then the value at memory location $12EE + Y (6) = $12F4 is fetched and put in the accumulator.</td></tr>
+  <tr><td width='125'>Immediate</td><td>#aa</td><td>The value given is a number to be used immediately by the instruction.  For example, LDA #$99 loads the value $99 into the accumulator.</td></tr>
+  <tr><td>Absolute</td><td>aaaa</td><td>The value given is the address (16-bits) of a memory location that contains the 8-bit value to be used.  For example, STA $3E32 stores the present value of the accumulator in memory location $3E32.</td></tr>
+  <tr><td>Zero Page</td><td>aa</td><td>The first 256 memory locations ($0000-00FF) are called "zero page".  The next 256 instructions ($0100-01FF) are page 1, etc.  Instructions making use of the zero page save memory by not using an extra $00 to indicate the high part of the address.</td></tr>
+  <tr><td>Implied</td><td></td><td>Many instructions are only one byte in length and do not reference memory. These are said to be using implied addressing. For example, CLC, DEX & TYA.</td></tr>
+  <tr><td>Indirect Absolute</td><td>(aaaa)</td><td>Only used by JMP (JuMP).  It takes the given address and uses it as a pointer to the low part of a 16-bit address in memory, then jumps to that address.  For example, JMP ($2345) or, jump to the address in $2345 low and $2346 high</td></tr>
+  <tr><td>Absolute Indexed,X/Y</td><td>aaaa,X</td><td>The final address is found by taking the given address as a base and adding the current value of the X or Y register to it as an offset.  So, LDA $F453,X  where X contains 3 Load the accumulator with the contents of address $F453 + 3 = $F456.</td></tr>
+  <tr><td>Zero Page Indexed,X/Y</td><td>aa,X</td><td>Same as Absolute Indexed but the given address is in the zero page thereby saving a byte of memory.</td></tr>
+  <tr><td>Indexed Indirect</td><td>(aa,X)</td><td>Find the 16-bit address starting at the given location plus the current X register.  The value is the contents of that address.  For example, LDA ($B4,X)  where X contains 6 gives an address of $B4 + 6 = $BA.  If $BA and $BB contain $12 and $EE respectively, then the final address is $EE12.  The value at location $EE12 is put in the accumulator.</td></tr>
+  <tr><td>Indirect Indexed</td><td>(aa),Y</td><td>Find the 16-bit address contained in the given location ( and the one following).  Add to that address the contents of the Y register. Fetch the value stored at that address.  For example, LDA ($B4),Y  where Y contains 6 If $B4 contains $EE and $B5 contains $12 then the value at memory location $12EE + Y (6) = $12F4 is fetched and put in the accumulator.</td></tr>
 </table>
 
 <h3>6502 Processor Overview</h3>
@@ -124,9 +124,9 @@ MyFunction:        ; loads FF into accumulator
 
 <h3>Common Opcodes</h3>
 
-<h4>Load/Store opcodes</h4>
-
 <table border='1'>
+  <tr><th colspan="2">Load/Store opcodes</th></tr>
+
   <tr><td width='100'>LDA #$0A</td><td>LoaD the value 0A into the accumulator A. The number part of the opcode can be a value or an address. If the value is zero, the zero flag will be set.</td></tr>
   <tr><td>LDX $0000</td><td>LoaD the value at address $0000 into the index register X. If the value is zero, the zero flag will be set.</td></tr>
   <tr><td>LDY #$FF </td><td>LoaD the value $FF into the index register Y. If the value is zero, the zero flag will be set.</td></tr>
@@ -137,11 +137,9 @@ MyFunction:        ; loads FF into accumulator
   <tr><td>TAY      </td><td>Transfer A into Y. If the value is zero, the zero flag will be set.</td></tr>
   <tr><td>TXA      </td><td>Transfer X into A. If the value is zero, the zero flag will be set.</td></tr>
   <tr><td>TYA      </td><td>Transfer Y into A. If the value is zero, the zero flag will be set.</td></tr>
-</table>
 
-<h4>Math opcodes</h4>
+  <tr><th colspan="2">Math opcodes</th></tr>
 
-<table border='1'>
   <tr><td width='100'>ADC #$01 </td><td>ADd with Carry. A = A + $01 + carry. If the result is zero, the zero flag will be set</td></tr>
   <tr><td>SBC #$80 </td><td>SuBtract with Carry. A = A - $80 - (1 - carry). If the result is zero, the zero flag will be set</td></tr>
   <tr><td>CLC      </td><td>CLear Carry flag in status register. Usually this should be done before ADC</td></tr>
@@ -154,19 +152,15 @@ MyFunction:        ; loads FF into accumulator
   <tr><td>DEX      </td><td>DEcrement X. If the result is zero, the zero flag will be set</td></tr>
   <tr><td>ASL A    </td><td>Arithmetic Shift Left. Shift all bits one position to the left. This is a multiply by 2. If the result is zero, the zero flag will be set</td></tr>
   <tr><td>LSR $6000</td><td>Logical Shift Right. Shift all bits one position to the right. This is a divide by 2. If the result is zero, the zero flag will be set</td></tr>
-</table>
 
-<h4>Comparison opcodes</h4>
+  <tr><th colspan="2">Comparison opcodes</th></tr>
 
-<table border='1'>
   <tr><td width='100'>CMP #$01 </td><td>CoMPare A to the value $01. This actually does a subtract, but does not keep the result. Instead you check the status register to check for equal, . Less than, or greater than</td></tr>
   <tr><td>CPX $0050</td><td>ComPare X to the value at address $0050</td></tr>
   <tr><td>CPY #$FF </td><td>ComPare Y to the value $FF</td></tr>
-</table>
 
-<h4>Control Flow opcodes</h4>
-
-<table border='1'>
+  <tr><th colspan="2">Control-Flow opcodes</th></tr>
+  
   <tr><td width='100'>JMP $8000</td><td>JuMP to $8000, continue running code there</td></tr>
   <tr><td>BEQ $FF00</td><td>Branch if EQual, contnue running code there. First you would do a CMP, which clears or sets the zero flag. Then the BEQ will check the zero flag. If zero is set (values were equal) the code jumps to $FF00 and runs there. If zero is clear (values not equal) there is no jump, runs next instruction</td></tr>
   <tr><td>BNE $FF00</td><td>Branch if Not Equal - opposite above, jump is made when zero flag is clear</td></tr>
