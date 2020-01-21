@@ -22,16 +22,6 @@
 #define hundred_rabbits_path "hundred_rabbits"
 #define drownspire_path "drownspire"
 #define merure_path "merure"
-#define vambits_path "vambits"
-#define pino_path "pino"
-#define grimgrains_path "grimgrains"
-#define illustration_path "illustration"
-#define beldam_records_path "beldam_records"
-#define ten_axitecture_path "ten_axitecture"
-#define miniscopie_path "miniscopie"
-#define ramiel_path "ramiel"
-#define eschatolor_path "eschatolor"
-#define looking_glace_path "looking_glace"
 #define verreciel_soundtrack_path "verreciel_soundtrack"
 #define getapan_728k_path "getapan_728k"
 #define azolla_path "azolla"
@@ -1460,115 +1450,87 @@ Term macro = create_album(&photography, "macro", "The Macro album contains vario
 // set_icon(&macro, "M90,210 L90,210 L210,90 M150,90 A60,60 0 0,1 210,150 A-60,60 0 0,1 150,210 A-60,-60 0 0,1 90,150 A60,-60 0 0,1 150,90 Z");
 
 Term personal = create_album(&photography, "personal", "The Personal album contain various memories.");
-// set_icon(&personal, "M90,210 L90,210 L210,90 M150,90 A60,60 0 0,1 210,150 A-60,60 0 0,1 150,210 A-60,-60 0 0,1 90,150 A60,-60 0 0,1 150,90 Z");
 
 Term film = create_album(&photography, "film", "Color Film photography diary of the life aboard Pino.");
-// set_icon(&film, "M90,210 L90,210 L210,90 M150,90 A60,60 0 0,1 210,150 A-60,60 0 0,1 150,210 A-60,-60 0 0,1 90,150 A60,-60 0 0,1 150,90 Z");
 add_text(&film, "This album will be periodically updated with shots taken with the " SENDNAME(camera_path, "250 Jaher") " Voigtländer.");
 add_text(&film, "A " SEND(black_path) " and white album is also maintained.");
 
 Term black = create_album(&photography, "black", "Black and White film photography diary of the life aboard Pino.");
-// set_icon(&black, "M90,210 L90,210 L210,90 M150,90 A60,60 0 0,1 210,150 A-60,60 0 0,1 150,210 A-60,-60 0 0,1 90,150 A60,-60 0 0,1 150,90 Z");
 add_text(&black, "This album will be updated periodically, shot with the " SENDNAME(camera_path, "250 Jaher") " Voigtländer.");
 add_text(&black, "A color film photography album can be found " SENDNAME(film_path, "here") ".");
 
 Term infrared = create_album(&photography, "infrared", "The Infrared photographs were taken with a modified Nikon camera.");
-// set_icon(&infrared, "M90,210 L90,210 L210,90 M150,90 A60,60 0 0,1 210,150 A-60,60 0 0,1 150,210 A-60,-60 0 0,1 90,150 A60,-60 0 0,1 150,90 Z");
 
 Term travel = create_portal(&photography, "travel", "Travel diaries around the world.");
-// set_icon(&travel, "M90,210 L90,210 L210,90 M150,90 A60,60 0 0,1 210,150 A-60,60 0 0,1 150,210 A-60,-60 0 0,1 90,150 A60,-60 0 0,1 150,90 Z");
 
 Term austria = create_album(&travel, "austria", "Trip to Austria, in September of 2015, for Ars Electronica.");
-// set_icon(&austria, "M90,210 L90,210 L210,90 M150,90 A60,60 0 0,1 210,150 A-60,60 0 0,1 150,210 A-60,-60 0 0,1 90,150 A60,-60 0 0,1 150,90 Z");
 
 Term netherlands = create_album(&travel, "netherlands", "Trip to Netherlands in 2015 for Indievelopment.");
-// set_icon(&netherlands, "M90,210 L90,210 L210,90 M150,90 A60,60 0 0,1 210,150 A-60,60 0 0,1 150,210 A-60,-60 0 0,1 90,150 A60,-60 0 0,1 150,90 Z");
 
 Term japan = create_portal(&travel, "japan", "A variety of diary entries written throughout trips to Japan.");
-// set_icon(&japan, "M60,90 L60,90 L240,90 M150,60 L150,60 L150,240 M150,90 Q150,150 60,210 M150,90 Q150,150 240,210 M105,210 L105,210 L195,210");
 add_quote(&japan, "Let's never come here again 'cos it would never be as much fun.", "Charlotte, Lost in Translation");
 
 Term minamiise = create_album(&japan, "minamiise", "We sailed to Minamiise in the spring of 2019, from Shizuoka.");
-// set_icon(&minamiise, "M60,90 L60,90 L240,90 M150,60 L150,60 L150,240 M150,90 Q150,150 60,210 M150,90 Q150,150 240,210 M105,210 L105,210 L195,210");
 add_text(&minamiise, "Damp forest roads, misty mountains and ghost towns.");
 
 Term shizuoka = create_album(&japan, "shizuoka", "We sailed to Shizuoka in the late winter of 2019, from Ogasawara.");
-// set_icon(&shizuoka, "M60,90 L60,90 L240,90 M150,60 L150,60 L150,240 M150,90 Q150,150 60,210 M150,90 Q150,150 240,210 M105,210 L105,210 L195,210");
 add_text(&shizuoka, "We moved to <a href='#shizuoka' data-goto='shizuoka' target='_self' class='local '>Shizuoka</a> which offers the most beautiful sight of " SEND(fuji_path) ".");
 
 Term ogasawara = create_album(&japan, "ogasawara", "We sailed to Ogasawara in the late winter of 2019, from Fiji.");
-// set_icon(&ogasawara, "M60,90 L60,90 L240,90 M150,60 L150,60 L150,240 M150,90 Q150,150 60,210 M150,90 Q150,150 240,210 M105,210 L105,210 L195,210");
 add_text(&ogasawara, "We sailed into the <b>Futami arbor</b> on our way to " SENDNAME(japan_path, "Osaka") " from the " SEND(marshall_islands_path) ".");
 add_text(&ogasawara, "The island of Chichijima is one of the most beautiful place I have had the chance of spending time at, it exists at the intersection of my favourite climate and " SENDNAME(nutrition_path, "foods") ". We spent our time there " SENDNAME(bike_path, "cycling") " up and down the coastal slopes, and cooking delicious meals from our favourite Japanese ingredients.");
 add_header(&ogasawara, "Video");
 add_html(&ogasawara, MODYOUTUBE("ueTCjpNXing"));
 
 Term yokohama = create_album(&japan, "yokohama", "We cycled to Yokohama, from Tokyo.");
-// set_icon(&yokohama, "M60,90 L60,90 L240,90 M150,60 L150,60 L150,240 M150,90 Q150,150 60,210 M150,90 Q150,150 240,210 M105,210 L105,210 L195,210");
 
 Term fuji = create_album(&japan, "fuji", "Our trip up Mount Fuji, Japan.");
-// set_icon(&fuji, "M60,90 L60,90 L240,90 M150,60 L150,60 L150,240 M150,90 Q150,150 60,210 M150,90 Q150,150 240,210 M105,210 L105,210 L195,210");
 add_text(&fuji, "We climbed it at night, and arrived at the top for sunrise.");
 add_link(&fuji, "wikipedia", "https://en.wikipedia.org/wiki/Mount_Fuji");
 
 Term osaka = create_album(&japan, "osaka", "We traveled to Osaka in 2010 to attend the 1H1D music festival, and returned in 2019.");
-// set_icon(&osaka, "M60,90 L60,90 L240,90 M150,60 L150,60 L150,240 M150,90 Q150,150 60,210 M150,90 Q150,150 240,210 M105,210 L105,210 L195,210");
 
 Term tokyo = create_album(&japan, "tokyo", "Unforgettable time in Tokyo between 2010 and 2012.");
-// set_icon(&tokyo, "M60,90 L60,90 L240,90 M150,60 L150,60 L150,240 M150,90 Q150,150 60,210 M150,90 Q150,150 240,210 M105,210 L105,210 L195,210");
 
 Term fiji = create_album(&travel, "fiji", "We sailed to Fiji from New Zealand, aboard Pino.");
-// set_icon(&fiji, "M90,210 L90,210 L210,90 M150,90 A60,60 0 0,1 210,150 A-60,60 0 0,1 150,210 A-60,-60 0 0,1 90,150 A60,-60 0 0,1 150,90 Z");
 add_text(&fiji, "We lived by the towns of " LINKNAME("https://en.wikipedia.org/wiki/Savusavu", "Savusavu") ", " LINKNAME("https://en.wikipedia.org/wiki/Lami,_Fiji", "Lami") " and " LINKNAME("https://en.wikipedia.org/wiki/Vuda_Point", "Vuda") " for the Summer of 2018.");
 add_text(&fiji, "We stopped in <b>Fiji</b> on our way to " SEND(japan_path) " from " SEND(new_zealand_path) ", living off watermelon and bittermelon, breadfruit and passionfruit. It felt great to finally be pointing North, after heading west throughout our " SEND(marquesas_path) " Ocean crossing.");
 
 Term marquesas = create_album(&travel, "marquesas", "Travel pictures from our crossing of the South Pacific Ocean, from Mexico to the Marquesas.");
-// set_icon(&marquesas, "M60,150 L60,150 L150,150 M195,72.1 L195,72.1 L150,150 M195,227.9 L195,227.9 L150,150");
 add_text(&marquesas, "Some of the first pictures taken after " SENDNAME(the_sublime_path, "sailing across") " the South Pacific Ocean from " SEND(mexico_path) " to the " LINKNAME("https://en.wikipedia.org/wiki/Marquesas_Islands", "Marquesas Islands") ".");
 add_text(&marquesas, "We then proceeded toward " SEND(niue_path) " island.");
 add_link(&marquesas, "trip", "http://100r.co");
 
 Term marshall_islands = create_album(&travel, "marshall islands", "We sailed to the Marshall Islands from Fiji, aboard Pino.");
-// set_icon(&marshall_islands, "M90,210 L90,210 L210,90 M150,90 A60,60 0 0,1 210,150 A-60,60 0 0,1 150,210 A-60,-60 0 0,1 90,150 A60,-60 0 0,1 150,90 Z");
 add_text(&marshall_islands, "We lived in <b>Majuro</b> for a few weeks waiting for a weather window to would allow us to sail " SENDNAME(japan_path, "north") ".");
 
 Term niue = create_album(&travel, "niue", "That time we sailed to the gorgeous coral shores of the country of Niue.");
-// set_icon(&niue, "M60,150 L60,150 L150,150 M195,72.1 L195,72.1 L150,150 M195,227.9 L195,227.9 L150,150");
 add_text(&niue, "We reached the " LINKNAME("https://en.wikipedia.org/wiki/Niue", "incredible island") " of " SEND(niue_path) " in July of 2017, on our way across the " SEND(marquesas_path) " Ocean.");
 add_text(&niue, "We anchored by the pier, and explored its canyons and chasms for a week, before proceeding toward " SEND(new_zealand_path) ".");
 add_link(&niue, "wikipedia", "https://en.wikipedia.org/wiki/Niue");
 
 Term czech = create_album(&travel, "czech", "Trip to Czech Republic in 2011.");
-// set_icon(&czech, "M60,150 L60,150 L150,150 M195,72.1 L195,72.1 L150,150 M195,227.9 L195,227.9 L150,150");
 add_text(&czech, "Back in " SENDNAME(calendar_path, "2011") ", I traveled alone and spent a few days with friends in " LINKNAME("https://en.wikipedia.org/wiki/Prague", "Prague") " and nearby.");
 
 Term france = create_album(&travel, "france", "That time I played a show in Paris, France.");
-// set_icon(&france, "M90,210 L90,210 L210,90 M150,90 A60,60 0 0,1 210,150 A-60,60 0 0,1 150,210 A-60,-60 0 0,1 90,150 A60,-60 0 0,1 150,90 Z");
 
 Term the_sublime = create_album(&travel, "the sublime", "The Sublime, are various pictures taken at sea aboard Pino.");
-// set_icon(&the_sublime, "M60,150 L60,150 L150,150 M195,72.1 L195,72.1 L150,150 M195,227.9 L195,227.9 L150,150");
 
 Term new_zealand = create_album(&travel, "new zealand", "That time we lived in New Zealand.");
-// set_icon(&new_zealand, "M90,210 L90,210 L210,90 M150,90 A60,60 0 0,1 210,150 A-60,60 0 0,1 150,210 A-60,-60 0 0,1 90,150 A60,-60 0 0,1 150,90 Z");
 add_text(&new_zealand, "Most of our <b>New Zealand</b> pictures were taken on " SEND(film_path) ".");
 add_text(&new_zealand, "We sailed to New Zealand aboard " SEND(pino_path) " in 2016, from " LINKNAME("https://en.wikipedia.org/wiki/Tonga", "Tonga") ", on our way to " SEND(japan_path) ", during our " SEND(marquesas_path) " circumnavigation. We were moored in Whangarei for 8 months.");
 
 Term america = create_album(&travel, "america", "Various landscapes taken around America.");
-// set_icon(&america, "M90,210 L90,210 L210,90 M150,90 A60,60 0 0,1 210,150 A-60,60 0 0,1 150,210 A-60,-60 0 0,1 90,150 A60,-60 0 0,1 150,90 Z");
 add_text(&america, "Some taken while in a 52 hours train ride during " LINKNAME("http://trainjam.com", "Train Jam") " in 2015, from Chicago; others taken when we " SENDNAME(pino_path, "sailed") " into the San Francisco Bay from Vancouver.");
 
 Term germany = create_album(&travel, "germany", "That time I played a show in Berlin, Germany.");
-// set_icon(&germany, "M90,210 L90,210 L210,90 M150,90 A60,60 0 0,1 210,150 A-60,60 0 0,1 150,210 A-60,-60 0 0,1 90,150 A60,-60 0 0,1 150,90 Z");
 add_text(&germany, "We first went to " SEND(germany_path) " for the Amaze festival, and I later returned for the React Berlin conference and a livecoding show.");
 
 Term canada = create_album(&travel, "canada", "Despite being from there, Canada has become a travel destination to me.");
-// set_icon(&canada, "M90,210 L90,210 L210,90 M150,90 A60,60 0 0,1 210,150 A-60,60 0 0,1 150,210 A-60,-60 0 0,1 90,150 A60,-60 0 0,1 150,90 Z");
 
 Term mexico = create_album(&travel, "mexico", "That time we lived in Mexico.");
-// set_icon(&mexico, "M60,150 L60,150 L150,150 M195,72.1 L195,72.1 L150,150 M195,227.9 L195,227.9 L150,150");
 
 Term devine_lu_linvega = create_term(&hundred_rabbits, "devine lu linvega", "Devine Lu Linvega is a generalist.");
-// set_icon(&devine_lu_linvega, "M150,60 l0,180 M180,60 l0,180 l0,-60 a30,-30 0 0,1 30,-30 l30,0 M120,60 l0,180 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0");
 add_text(&devine_lu_linvega, "<b>Devine Lu Linvega</b> is composing " SENDNAME(audio_path, "experimental electronic music") ", illustrating the " SENDNAME(visual_path, "frozen wastelands of a fictional world") ", and developing " SENDNAME(research_path, "esoteric software") ".");
 add_text(&devine_lu_linvega, "Since 2006, Devine has been populating this " SENDNAME(about_path, "wiki") " with notes on various topics, including on " SEND(language_path) ", " SEND(lifestyle_path) " and " SEND(nutrition_path) ". You can learn more about their <b>related interests</b> in the " SEND(mirrors_path) ", and in the " SEND(directory_path) ".");
 add_text(&devine_lu_linvega, "They currently live aboard a " SENDNAME(pino_path, "sailboat") ", somewhere along the foggy coast of " SEND(japan_path) ". You can follow their position " LINKNAME("http://100r.co/live", "here") ", or learn more about offgrid living " LINKNAME("https://100r.co/site/knowledge.html", "here") ".");
@@ -1576,11 +1538,9 @@ add_text(&devine_lu_linvega, "Get in touch via email at <b>aliceffekt@gmail.com<
 add_quote(&devine_lu_linvega, "To flee is Life,<br />To linger, death.", "");
 
 Term lifestyle = create_index(&devine_lu_linvega, "lifestyle", "The collection of diary entries on Lifestyle.");
-// set_icon(&lifestyle, "M150,60 l0,180 M180,60 l0,180 l0,-60 a30,-30 0 0,1 30,-30 l30,0 M120,60 l0,180 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0");
 add_text(&lifestyle, "I rarely blog, but I've collected here a handful of <b>long-form posts</b> on various topics. ");
 
 Term aesthetics = create_term(&lifestyle, "aesthetics", "The Aesthetics diaries.");
-// set_icon(&aesthetics, "M150,60 l0,180 M180,60 l0,180 l0,-60 a30,-30 0 0,1 30,-30 l30,0 M120,60 l0,180 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0");
 add_text(&aesthetics, "I have aligned my life toward a singular design, the <b>acceleration of Arts & Science</b>.");
 add_text(&aesthetics, "The analysis of " SENDNAME(horaire_path, "personal statistics") " recorded through <b>daily journaling</b>, revealed " SEND(travel_path) " to convert into the most inspiration hours. I have then steered my creative work toward facilitating opportunities to travel.");
 add_text(&aesthetics, "Multi-tasking revealed itself to have a negative impact on my productivity. Working within the confines of a single medium, would convert into long periods of lesser creativity and intermittent productivity. Living at any one place over a period of a year showed a decay in inspiration. Leaving school, learning to play music, moving abroad — showed an improvement in the realization of <i >Arts & Sciences</i>.");
@@ -1592,7 +1552,6 @@ add_text(&aesthetics, "When a day ends before its task was completed, the day wa
 add_text(&aesthetics, "I do not get out of bed until I have chosen a <i >task to complete</i> & and a <i >lesson to learn</i>, and I do not go to sleep until I have logged the results. The tasks are selected in the following order: I first address the problems that slow me down, the things I find lacking in life and the answers to questions that occupy the idle mind.");
 
 Term nomad = create_term(&lifestyle, "nomad", "The Nomad diaries.");
-// set_icon(&nomad, "M150,60 l0,180 M180,60 l0,180 l0,-60 a30,-30 0 0,1 30,-30 l30,0 M120,60 l0,180 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0");
 add_text(&nomad, "My first encounter with a Nomad was during my stay in " SENDNAME(czech_path, "Prague") ", as <i >Santiago</i>, I had just met my <b>Fulcanelli</b>.");
 add_text(&nomad, "There was a time in my life when I may have felt homesick. But for now, Home was but a vague concept that existed out there, <i >forever fleeting</i>.");
 add_text(&nomad, "An office is no place a multi-disciplinarist, and " SEND(japan_path) " was where I last fought this loosing battle. My desk, not the medium onto which I would acquire the skills I longed for.");
@@ -1608,7 +1567,6 @@ add_text(&nomad, "You learnt how to fix sails, repair a toilet, create electroni
 add_text(&nomad, "We have seen every sunset and almost every sunrise, we have sailed with dolphins, we have climbed mountains on desert islands, and we have met the most amazing people.");
 
 Term nutrition = create_term(&lifestyle, "nutrition", "The Nutrition diaries.");
-// set_icon(&nutrition, "M150,60 l0,180 M180,60 l0,180 l0,-60 a30,-30 0 0,1 30,-30 l30,0 M120,60 l0,180 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0");
 add_text(&nutrition, "The function of proteins is to be used for tissue growth and repair, but when carbohydrates and calories are lacking, proteins can be consumed for fuel.");
 add_text(&nutrition, "The human body's own proteins are constantly being broken down into <b>amino acids</b> and used throughout its systems.");
 add_text(&nutrition, "The human body is mostly made of proteins, and proteins are made of amino acids - permutations of carbon, oxygen, hydrogen, nitrogen and sometimes sulphur. There are 22 amino acids in total and all but 9 can be synthesized, the <b>Essential Amino Acids</b>.");
