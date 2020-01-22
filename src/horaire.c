@@ -1,4 +1,5 @@
 add_event(&japan, "20D09", 0, "Return to Japan");
+add_log(&assembly, "20B08", 326);
 add_log(&hundred_rabbits, "20B07", 346);
 add_log(&assembly, "20B06", 233);
 add_log(&ethics, "20B05", 336);

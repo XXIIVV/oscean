@@ -166,6 +166,57 @@ MyFunction:        ; loads FF into accumulator
   <tr><td>BNE $FF00</td><td>Branch if Not Equal - opposite above, jump is made when zero flag is clear</td></tr>
 </table>
 
+<h3>Compare</h3>
+
+<p>The compare instructions set or clear three of the status flags (Carry, Zero, and Negative) that can be tested with branch instructions, without altering the contents of the operand. There are three types of compare instructions: </p>
+
+<table border="1">
+  <tr><td align="center">Instruction</td><td align="center">Description</td></tr>
+  <tr><td>CMP</td><td><u>C</u>o<u>mp</u>are Memory and Accumulator</td></tr>
+  <tr><td>CPX</td><td><u>C</u>om<u>p</u>are Memory and Index<u>X</u></td></tr> 
+  <tr><td>CPY</td><td><u>C</u>om<u>p</u>are Memory and Index <u>Y</u></td></tr>
+</table>
+
+<p>The CMP instruction supports eight different addressing modes, the same ones supported by the ADC and SBC instructions. Since the X and Y registers function primarily as counters and indexes, the CPX and CPY instructions do not require this elaborate addressing capability and operate with just three addressing modes (immediate, absolute, and zero page). </p>
+
+<p>The compare instructions subtract (without carry) an immediate value or the contents of a memory location from the addressed register, but do not save the result in the register. The only indications of the results are the states of the three status flags: Negative (N), Zero (Z), and Carry (C). The combination of these three flags indicate whether the register contents are less than, equal to (the same as), or greater than the operand "data" (the immediate value or contents of the addressed memory location. The table below summarizes the result indicators for the compare instructions. </p>
+
+<table border="1">
+  <tr><td>Compare Result</td>         <td>N</td><td>Z</td><td>C</td></tr>
+  <tr><td>A, X, or Y &lt; Memory</td> <td>*</td><td>0</td><td>0</td></tr>
+  <tr><td>A, X, or Y = Memory</td>    <td>0</td><td>1</td><td>1</td></tr>
+  <tr><td>A, X, or Y &gt; Memory</td> <td>*</td><td>0</td><td>1</td></tr>
+</table>
+
+<p>The compare instructions serve only one purpose; they provide information that can be tested by a subsequent branch instruction. For example, to branch if the contents of a register are less than an immediate or memory value, you would follow the compare instruction with a Branch on Carry Clear (BCC) instruction, as shown by the following: </p>
+
+<h3>Comparing Memory to the Accumulator</h3>
+
+<pre>
+        CMP  $20     ;Accumulator less than location $20?
+        BCC  THERE
+HERE                 ;No, continue execution here.
+        .
+        .
+        .
+THERE                ;Execute this if Accumulator is less than location $20.
+        .
+        .
+        .
+</pre>
+
+<h3>Use of Branch Instructions with Compare</h3>
+
+<table border="1">
+  <tr><td rowspan="2" align="center">To Branch If</td><td colspan="2" align="center">Follow compare instruction with</td></tr>
+  <tr><td>For unsigned numbers</td><td>For signed numbers</td></tr>
+  <tr><td>Register is less than data</td><td>BCC  THERE</td><td>BMI  THERE</td></tr>
+  <tr><td>Register is equal to data</td><td>BEQ  THERE</td><td>BEQ  THERE</td></tr>
+  <tr><td>Register is greater than data</td><td>BEQ  HERE<br>BCS  THERE</td><td>BEQ  HERE<br>BPL  THERE</td></tr>
+  <tr><td>Register is less than or equal to data</td><td>BCC  THERE<br>BEQ  THERE</td><td>BMI THERE<br>BEQ THERE</td></tr>
+  <tr><td>Register is greater than or equal to data</td><td>BCS  THERE</td><td>BPL  THERE</td></tr>
+</table>
+
 <h3>Controller Ports</h3>
 
 <p>The controllers are accessed through memory port addresses $4016 and $4017. First you have to write the value $01 then the value $00 to port $4016. This tells the controllers to latch the current button positions. Then you read from $4016 for first player or $4017 for second player. The buttons are sent one at a time, in bit 0. If bit 0 is 0, the button is not pressed. If bit 0 is 1, the button is pressed.</p>
@@ -271,4 +322,4 @@ LDA $4017     ; player 2 - Right
     <td data-nes="0x3E" style="background:rgb(0,0,0);">3E</td>
     <td data-nes="0x3F" style="background:rgb(0,0,0);">3F</td>
   </tr>
-</table> <ul><li><a href='https://github.com/neauoire/linux-notebook/tree/master/6502' class='external'>notes</a></li></ul><p><i>Last update on <a href='https://github.com/xxiivv/oscean' target='_blank' class='external'>20B06</a>.</i></p><ul></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0' target='_blank'><img src='../media/icon/cc.svg' alt='by-nc-sa' width='30'/></a> <a href='http://webring.xxiivv.com/' target='_blank' rel='noreferrer'><img src='../media/icon/rotonde.svg' alt='webring' width='30'/></a> <a href='https://merveilles.town/@neauoire' target='_blank'><img src='../media/icon/merveilles.svg' alt='Merveilles' width='30'/></a> <a href='https://github.com/neauoire' target='_blank'><img src='../media/icon/github.png' alt='github' width='30'/></a> <span><a href='devine_lu_linvega.html' target='_self'>Devine Lu Linvega</a> © 2020 — <a href='about.html' target='_self'>BY-NC-SA 4.0</a></span></footer></body></html>
+</table> <ul><li><a href='https://github.com/neauoire/linux-notebook/tree/master/6502' class='external'>notes</a></li></ul><p><i>Last update on <a href='https://github.com/xxiivv/oscean' target='_blank' class='external'>20B08</a>.</i></p><ul></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0' target='_blank'><img src='../media/icon/cc.svg' alt='by-nc-sa' width='30'/></a> <a href='http://webring.xxiivv.com/' target='_blank' rel='noreferrer'><img src='../media/icon/rotonde.svg' alt='webring' width='30'/></a> <a href='https://merveilles.town/@neauoire' target='_blank'><img src='../media/icon/merveilles.svg' alt='Merveilles' width='30'/></a> <a href='https://github.com/neauoire' target='_blank'><img src='../media/icon/github.png' alt='github' width='30'/></a> <span><a href='devine_lu_linvega.html' target='_self'>Devine Lu Linvega</a> © 2020 — <a href='about.html' target='_self'>BY-NC-SA 4.0</a></span></footer></body></html>
