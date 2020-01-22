@@ -1,4 +1,5 @@
 add_event(&japan, "20D09", 0, "Return to Japan");
+add_log(&hundred_rabbits, "20B07", 346);
 add_log(&assembly, "20B06", 233);
 add_log(&ethics, "20B05", 336);
 add_log(&assembly, "20B04", 237);
@@ -1730,7 +1731,7 @@ add_log(&oscean, "15B11", 345);
 add_diary(&alphavetist, "15B10", 345, "3.0", 295);
 add_log(&dew, "15B09", 343);
 add_log(&bifurcan, "15B08", 343);
-add_diary(&ledoliel, "15B07", 347, "2.1", 223);
+add_diary(&ledoliel, "15B07", 347, "2.1", 224);
 add_log(&paradise, "15B06", 347);
 add_diary(&oquonie, "15B05", 347, "Nephtaline wandering the Necomedres", 292);
 add_log(&hiversaires, "15B04", 345);

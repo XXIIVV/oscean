@@ -1,3 +1,5 @@
+// Macros
+
 #define LINK(link_id) "<a href='"link_id"' class='external' target='_blank'>"link_id"</a>"
 #define LINKNAME(linkname_id, linkname_name) "<a href='"linkname_id"' class='external' target='_blank'>"linkname_name"</a>"
 #define SEND(send_id) "<a href='" send_id ".html'>" send_id "</a>"
@@ -7,10 +9,11 @@
 #define MODYOUTUBE(youtube_id) "<iframe width='100%' height='380' src='https://www.youtube.com/embed/"youtube_id"?rel=0' style='max-width:700px' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe>"
 #define MODFRAME(frame_id) "<iframe width='100%' height='380' src='"frame_id"' style='border:0' allowfullscreen></iframe>"
 
+// Terms
+
 Term home = create_term(NULL, "home", "");
 
 Term audio = create_portal(&home, "audio", "The Audio portal hosts various soundtrack, records and live projects.");
-add_quote(&audio, "Music is the space between the notes.", "Claude Debussy");
 
 Term visual = create_portal(&home, "visual", "The Visual hosts design and interaction projects.");
 
@@ -26,7 +29,6 @@ add_text(&about, "This type of website is a often referred to as a \"memex\", a 
 add_quote(&about, "Consider a future device, a sort of mechanized private library in which an individual stores all his books, records, and communications, and which may be consulted with exceeding speed and flexibility. It is an enlarged intimate supplement to his memory.", "Vannevar Bush, As We May Think");
 add_link(&about, "source files", "https://github.com/XXIIVV/Oscean");
 add_link(&about, "rss feed", "https://wiki.xxiivv.com/links/rss.xml");
-add_link(&about, "rss validation", "https://validator.w3.org/feed/check.cgi?url=https%3A//wiki.xxiivv.com/links/rss.xml");
 add_link(&about, "activitypub", "https://bots.tinysubversions.com/u/neauoire/");
 
 Term license = create_term(&about, "license", "The License for code and assets.");
@@ -309,25 +311,6 @@ add_link(&oscean, "live", "https://wiki.xxiivv.com");
 
 Term horaire = create_term(&nataniev, "horaire", "Horaire is a time-tracking tool.");
 add_text(&horaire, "<b>Horaire</b> is a time-tracking engine designed to record and host daily activity logs. A log is recorded at the end of the day, and contains 3 values.");
-// add_list(&horaire, "The <b>Sector</b> <code >Sh</code>, either " SEND("audio") ", " SEND("visual") ", or " SEND("research") ", is the general sector of the task.");
-// add_list(&horaire, "The <b>Concrete Hour</b> <code >Ch</code> represents a value of concrete output, or index of progress toward the release of a project — where 1 indicates an introverted task like documentation, or planning, and 9 indicates an extroverted task like giving a talk, or releasing a project.");
-// add_list(&horaire, "The <b>Focus Hour</b> <code >Fh</code> is an index of attention for the day's task — where 1 indicates that almost no time was invested in the task, and 9 indicates that most of the available time was invested in the task.");
-add_text(&horaire, "<b>General Productivity</b> <code >Ph</code> is not seen an a net positive, but as a value that speaks of how reflective a project is, or a value that indicates how much time was spent on planning, against time spent on user-facing assets. Certain types of project will naturally have a high index of productivity, while others will not.");
-add_text(&horaire, "Productivity might also shift during a project's lifetime as it goes from a prototype(low concrete output), to a full release with its media assets(high concrete output) and through the periods of maintenance(back to low concrete output) that follows.");
-// add_code(&horaire, "Planning(4ch) / for 7fh = 0.57ph");
-// add_code(&horaire, "Performance(9ch) / for 3fh = 3ph");
-add_text(&horaire, "A <b>task name</b> can be generated from the intersection of <code >Ch</code> and <code >Fh</code>. For example, the code 238, can be converted into 8fh, for storyboard task.");
-// add_table(&horaire, "1* | <b>Audio</b> | 2* | <b>Visual</b> | 3* | <b>Research</b>");
-// add_table(&horaire, "10 | idle             | 20 | idle              | 30 | idle");
-// add_table(&horaire, "11 | session          | 21 | screening         | 31 | exploration");
-// add_table(&horaire, "12 | audio experiment | 22 | visual experiment | 32 | code experiment");
-// add_table(&horaire, "13 | rehearsal        | 23 | storyboard        | 33 | maintenance");
-// add_table(&horaire, "14 | draft            | 24 | sketch            | 34 | planning");
-// add_table(&horaire, "15 | composition      | 25 | editing           | 35 | prototype");
-// add_table(&horaire, "16 | sound design     | 26 | graphic design    | 36 | interaction design");
-// add_table(&horaire, "17 | mastering        | 27 | rendering         | 37 | updating");
-// add_table(&horaire, "18 | audio release    | 28 | visual release    | 38 | software");
-// add_table(&horaire, "19 | performance      | 29 | showcase          | 39 | talk");
 add_text(&horaire, "You can learn more about the " SENDNAME("oscean", "related tools") ", and " SENDNAME("about", "related projects") ", to the entire " SEND("nataniev") " ecosystem. For additional questions, contact " SEND("devine lu linvega") "");
 add_quote(&horaire, "<b>Effectiveness</b>, is doing the right thing.<br><b>Efficiency</b>, is doing it the right way.", NULL);
 
@@ -685,7 +668,7 @@ add_link(&monome, "rack forum", "https://llllllll.co/t/using-a-grid-as-drum-rack
 Term mobile = create_portal(&visual, "mobile", "The Mobile collection is both mobile tools and games.");
 add_text(&mobile, "As of <b>March 2019</b>, these applications are no longer maintained.");
 
-Term bifurcan = create_term(&mobile, "bifurcan", "Bifurcan is a watchface.");
+Term bifurcan = create_album(&mobile, "bifurcan", "Bifurcan is a watchface.");
 add_text(&bifurcan, "Every second, <b>The Labyrinth</b> reorganize itself to display the time in twists and turns.");
 add_text(&bifurcan, "It takes a little practice to be able to see the patterns in the lines. Clicking on the screen will unveil the time as seen in this " LINKNAME("https://www.youtube.com/watch?v=HzXIJpzPB6c", "video") ".");
 add_text(&bifurcan, "If you have a " LINKNAME("https://getpebble.com", "Pebble Watch") ", you can download it as a " LINKNAME("http://www.mypebblefaces.com/apps/10183/7055/", "watchface") ", the Pebble C script was written by Chase Colburn and is also available on " LINKNAME("https://github.com/chasecolburn/line-maze", "Github") ". The screensaver version was done by " LINKNAME("http://tekgo.org", "Tekgo") " and was also added to the source code. Named after a " LINKNAME("http://en.wikipedia.org/wiki/The_Garden_of_Forking_Paths", "Borges short") ".");
@@ -694,44 +677,44 @@ add_link(&bifurcan, "itunes", "https://itunes.apple.com/ca/app/bifurcan/id737264
 add_link(&bifurcan, "sources", "https://github.com/Echorridoors/Bifurcan");
 add_link(&bifurcan, "pebble", "http://www.mypebblefaces.com/apps/10183/7055/");
 
-Term keyboard_468 = create_term(&mobile, "keyboard 468", "Keyboard 468 was a 18-keys keyboard.");
+Term keyboard_468 = create_album(&mobile, "keyboard 468", "Keyboard 468 was a 18-keys keyboard.");
 add_text(&keyboard_468, "The letters are <b>sorted by frequency</b> in the English language, and their likeliness to follow the last input character.");
 add_text(&keyboard_468, "The purpose of this experimental keyboard is to have a keyboard displaying large letters, making it so you only ever need to <b>type using the two rows at the top</b>, maximizing the space and allowing for big large letters. The hidden letters are accessible through the <i >alt</i> key, alongside symbols and numbers.");
 add_text(&keyboard_468, "As of March 2019, This application is no longer maintained. <br />This project was superseded by the " SENDNAME("juni", "Juni Layout") ".");
 add_link(&keyboard_468, "itunes", "https://itunes.apple.com/ca/app/468-keyboard/id954698999");
 add_link(&keyboard_468, "sources", "https://github.com/Echorridoors/Keyboard468");
 
-Term alphavetist = create_term(&mobile, "alphavetist", "Alphavetist is an alphabet learning tool.");
+Term alphavetist = create_album(&mobile, "alphavetist", "Alphavetist is an alphabet learning tool.");
 add_text(&alphavetist, "Currently included are the Hebrew, " SENDNAME("russian", "Cyrillic") ", Korean, Inuktitut, Greek, Morse and " SEND("japanese") " alphabets.");
 add_text(&alphavetist, "As of March 2019, This application is no longer maintained.");
 add_link(&alphavetist, "itunes", "https://itunes.apple.com/ca/app/hahapapa/id689193147");
 add_link(&alphavetist, "sources", "https://github.com/Echorridoors/alphavetist");
 
-Term vocavularist = create_term(&mobile, "vocavularist", "Vocavularist, is a vocabulary learning tool.");
+Term vocavularist = create_album(&mobile, "vocavularist", "Vocavularist, is a vocabulary learning tool.");
 add_text(&vocavularist, "<b>Vocavularist</b> contains the 600 first kanji, 600 simple Russian words and 800 simple korean expressions.");
 add_text(&vocavularist, "As of March 2019, This application is no longer maintained.");
 add_link(&vocavularist, "itunes", "https://itunes.apple.com/us/app/nijuniju/id686266543");
 add_link(&vocavularist, "sources", "https://github.com/Echorridoors/Vocavularist");
 
-Term rafinograde = create_term(&mobile, "rafinograde", "Rafinograde was a drawing tool.");
+Term rafinograde = create_album(&mobile, "rafinograde", "Rafinograde was a drawing tool.");
 add_text(&rafinograde, "<b>Rafinograde</b> was superseded by " SEND("dotgrid") " for Desktop platforms.");
 add_text(&rafinograde, "As of March 2019, This application is no longer maintained.");
 add_link(&rafinograde, "itunes", "https://itunes.apple.com/us/app/rafinograde/id951781579");
 add_link(&rafinograde, "sources", "https://github.com/Echorridoors/Rafinograde");
 
-Term noirca = create_term(&mobile, "noirca", "Noirca is a monochromatic camera tool.");
+Term noirca = create_album(&mobile, "noirca", "Noirca is a monochromatic camera tool.");
 add_text(&noirca, "<b>Noirca</b> has one purpose, to launch quickly and render the photos with a softly washed out B&W film quality.");
 add_text(&noirca, "As of March 2019, This application is no longer maintained.");
 add_link(&noirca, "itunes", "https://itunes.apple.com/us/app/noirca/id893715212");
 add_link(&noirca, "sources", "https://github.com/Echorridoors/noirca");
 
-Term dew = create_term(&mobile, "dew", "Dew is an alarm/timer.");
+Term dew = create_album(&mobile, "dew", "Dew is an alarm/timer.");
 add_text(&dew, "The application will then  wake you with a soft white noise tone that will gradually bring you back to reality.");
 add_text(&dew, "As of March 2019, This application is no longer maintained.");
 add_link(&dew, "itunes", "https://itunes.apple.com/ca/app/dew/id954020907");
 add_link(&dew, "sources", "https://github.com/Echorridoors/dew");
 
-Term ledoliel = create_term(&mobile, "ledoliel", "Ledoliel is a dating-sim game.");
+Term ledoliel = create_album(&mobile, "ledoliel", "Ledoliel is a dating-sim game.");
 add_text(&ledoliel, "In <b>Ledoliel</b>, one must try and figure out what topics their guests might want to discuss, gift they might want to recieve and, places they may like to be <i >touched</i>.");
 add_text(&ledoliel, "As of March 2019, This application is no longer maintained.");
 add_link(&ledoliel, "itunes", "https://itunes.apple.com/us/app/ledoliel/id891693763");
@@ -765,14 +748,14 @@ Term cyanosis_fever = create_term(&unity, "cyanosis fever", "Cyanosis Fever was 
 // set_icon(&cyanosis_fever, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
 add_text(&cyanosis_fever, "If you start to foam, close the game.");
 
-Term donsol = create_term(&games, "donsol", "Donsol is a dungeon-crawler card game.");
+Term donsol = create_album(&games, "donsol", "Donsol is a dungeon-crawler card game.");
 add_text(&donsol, "<b>Donsol</b>, designed by " LINKNAME("https://twitter.com/johneternal", "John Eternal") ", is a card game about exploring a dungeon of 54 playing cards.");
 add_html(&donsol, MODITCHIO("109936"));
 add_link(&donsol, "itch", "https://hundredrabbits.itch.io/donsol");
 add_link(&donsol, "video", "https://www.youtube.com/watch?v=GNoZrr56GqA");
 add_link(&donsol, "sources", "https://github.com/hundredrabbits/Donsol");
 
-Term hiversaires = create_term(&games, "hiversaires", "Hiversaires is a textless point-n-click game.");
+Term hiversaires = create_album(&games, "hiversaires", "Hiversaires is a textless point-n-click game.");
 // set_icon(&hiversaires, "M60,60 L60,60 L60,240 M150,60 L150,60 L150,240 M240,60 L240,60 L240,240 M60,195 A45,-45 0 0,1 105,150 A45,45 0 0,1 150,195 A45,-45 0 0,1 195,150 A45,45 0 0,1 240,195");
 add_text(&hiversaires, "<b>Hiversaires</b> is the first part of a series of textless experimental projects, that also includes the isometric adventure game " SEND("oquonie") ".");
 add_html(&hiversaires, MODITCHIO("225445"));
@@ -780,7 +763,7 @@ add_text(&hiversaires, "The dark world of Hiversaires features an original Alice
 add_link(&hiversaires, "itch", "http://hundredrabbits.itch.io/Hiversaires");
 add_link(&hiversaires, "itunes", "https://itunes.apple.com/au/app/hiversaires/id630992348");
 
-Term purgateus = create_term(&games, "purgateus", "Purgateus is a video game remix of Proteus.");
+Term purgateus = create_album(&games, "purgateus", "Purgateus is a video game remix of Proteus.");
 // set_icon(&purgateus, "M60,210 L60,210 L240,210 M60,210 L60,210 L150,60 L240,210");
 add_text(&purgateus, "This video game remix behave like " LINKNAME("https://en.wikipedia.org/wiki/Proteus_", "Proteus") ", but looks and " SENDNAME("purgateus_soundtrack", "sounds") " different.");
 add_text(&purgateus, "Learn more about the project on " LINKNAME("http://venuspatrol.com/purgateus/", "Venus Patrol") ", the remix was inspired from a tweet by " LINKNAME("https://twitter.com/whatisian/status/468819959859007488", "Ian Snyder") "");
@@ -796,7 +779,7 @@ add_link(&purgateus, "soundtrack", "https://aliceffekt.bandcamp.com/album/purgat
 
 Term collegiennes = create_portal(&software, "collegiennes", "The Collegiennes collective is a game jam team.");
 
-Term diluvium = create_term(&collegiennes, "diluvium", "Diluvium was a multiplayer typing tactics game.");
+Term diluvium = create_album(&collegiennes, "diluvium", "Diluvium was a multiplayer typing tactics game.");
 add_text(&diluvium, "This is a multiplayer typing tactics game where you incarnate an animal summoner.");
 add_text(&diluvium, "Created by Henk Boom, " LINKNAME("http://dom2d.com", "Dominique Ferland") ", " LINKNAME("http://theinstructionlimit.com/", "Renaud Bedard") " and Devine Lu Linvega, " SEND("diluvium") " was first showcased at the " LINKNAME("https://www.facebook.com/events/447362851940595/", "Indies Meetup") " in june of 2012.");
 add_text(&diluvium, "You must type, quickly and intelligently, sequences of animal names to counter and destroy your opponent.");
@@ -805,7 +788,7 @@ add_text(&diluvium, "The game will <i >most likely</i> let you summon any animal
 add_link(&diluvium, "youtube", "http://youtu.be/z7NNBzNXncw");
 add_link(&diluvium, "sources", "https://github.com/Collegiennes/diluvium");
 
-Term volkenessen = create_term(&collegiennes, "volkenessen", "Volkenessen is a multiplayer physics-based fighting game.");
+Term volkenessen = create_album(&collegiennes, "volkenessen", "Volkenessen is a multiplayer physics-based fighting game.");
 add_text(&volkenessen, "Players start with 9 attached items on their back, and the goal is to strip the other player of their items.");
 add_text(&volkenessen, "When items are removed, they clutter up the playing area, making it even more chaotic and hilarious. The washing machine and sink in the background can also fall and bounce around!");
 add_text(&volkenessen, "Winning game of the Montreal edition of the Global Game Jam 2012, Volkenessen is a 2D Fighting game developed by " LINKNAME("http://theinstructionlimit.com/", "Renaud Bedard") " and myself.");
@@ -814,13 +797,13 @@ add_text(&volkenessen, "To hit the other player, you need to get close to him by
 add_link(&volkenessen, "download", "http://theinstructionlimit.com/volkenssen-global-game-jam-2012");
 add_link(&volkenessen, "sources", "https://github.com/Collegiennes/volkenessen");
 
-Term waiting_for_horus = create_term(&unity, "waiting for horus", "Waiting For Horus was a fast paced multiplayer arena type 3rd person shooter.");
+Term waiting_for_horus = create_album(&unity, "waiting for horus", "Waiting For Horus was a fast paced multiplayer arena type 3rd person shooter.");
 add_text(&waiting_for_horus, "It was originally created by " LINKNAME("http://theinstructionlimit.com", "Renaud Bedard") " and I as a weekend project to play with friends over IRC.");
 add_html(&waiting_for_horus, MODYOUTUBE("2tSoZ-jd6cA"));
 add_text(&waiting_for_horus, "I have very fond memories of building and playing this amazing project with friends. " LINKNAME("https://mangadrive.bandcamp.com", "Mangadrive") " created some amazing music for the project.");
 add_link(&waiting_for_horus, "sources", "http://github.com/merveilles/WaitingForHorus");
 
-Term pico3 = create_term(&collegiennes, "pico3", "Pico3 is a colour-based 3D puzzler.");
+Term pico3 = create_album(&collegiennes, "pico3", "Pico3 is a colour-based 3D puzzler.");
 add_text(&pico3, "It was created in collaboration with " LINKNAME("http://theinstructionlimit.com/", "Renaud Bedard") ".");
 add_text(&pico3, "Also check out " SEND("pico_battle") ".");
 add_link(&pico3, "win", "http://theinstructionlimit.com/collegiennes/pico_windows.zip");
@@ -1143,23 +1126,19 @@ add_text(&andes, "<b>Andes</b> was already present on " SEND("dinaisth") " when 
 add_text(&andes, "Prior to their arrival, a structure bearing their markings had been errected in " SEND("laeisth") ", known as the " SEND("andes_castel") ", suggesting an external manipulation of the " SEND("soies") ".");
 
 Term yajnev = create_term(&characters, "yajnev", "Yajnev's death engulfed Vetetrandes in an opaque impenetrable lock.");
-// set_icon(&yajnev, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&yajnev, "Yajnev is a <i >Local-type</i> " SENDNAME("actors", "actor") ", meaning that its acting was mainly spacial, and only briefly temporal.");
 add_text(&yajnev, "Its nervous imprint of local space could steer events locally, as well as affect time.");
 add_text(&yajnev, "The space, and time, surrounding its body was animated by " SEND("yajnev") "'s reflexion and thoughts. The effect of the Immigrats approaching " SEND("dinaisth") " might have caused the collapse, as it may have had an effect similar to that of a foreign body injecting itself in the network of dimensional nerves.");
 
 Term paradichlorisse = create_term(&characters, "paradichlorisse", "Paradichlorisse is a machine that speaks Nohlxeserre.");
-// set_icon(&paradichlorisse, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&paradichlorisse, "Its purpose is unknown, but it was observed reciting stories in a fashion that ressembled the navigation of the " SEND("soies") ".");
 add_text(&paradichlorisse, "Upon reaching its location, one would infinitely collapse as they would begin experiencing <i >every life and every death</i> for ever, recited in the " SENDNAME("nohlxeserre", "speech") " of the infinite being.");
 add_text(&paradichlorisse, "<i >When Paradichlorisse spoke of silence, silence fell.</i>");
 
 Term photography = create_portal(&visual, "photography", "The Photography Portal collects various albums over multiple mediums.");
-// set_icon(&photography, "M90,210 L90,210 L210,90 M150,90 A60,60 0 0,1 210,150 A-60,60 0 0,1 150,210 A-60,-60 0 0,1 90,150 A60,-60 0 0,1 150,90 Z");
 add_text(&photography, "View the list of " SEND("camera") " equipment.");
 
 Term macro = create_album(&photography, "macro", "The Macro album contains various shots from up close.");
-// set_icon(&macro, "M90,210 L90,210 L210,90 M150,90 A60,60 0 0,1 210,150 A-60,60 0 0,1 150,210 A-60,-60 0 0,1 90,150 A60,-60 0 0,1 150,90 Z");
 
 Term personal = create_album(&photography, "personal", "The Personal album contain various memories.");
 
@@ -1294,7 +1273,6 @@ add_link(&nutrition, "vegan health", "https://veganhealth.org/daily-needs/");
 add_link(&nutrition, "low-cost meals plans", "https://www.vrg.org/journal/vj2006issue2/2006_issue2_mealplans.php");
 
 Term routine = create_term(&lifestyle, "routine", "The Routine and habits diaries.");
-// set_icon(&routine, "M150,60 l0,180 M180,60 l0,180 l0,-60 a30,-30 0 0,1 30,-30 l30,0 M120,60 l0,180 l0,-60 a-30,-30 0 0,0 -30,-30 l-30,0");
 add_text(&routine, "A <b>typical day</b> usually begins at around 6:00am.");
 add_text(&routine, "I tend to try and <b>keep my eyes shut</b> until I have mentally drafted a " SENDNAME("aesthetics", "rough plan") " of the things I will want to have done by the end of that day. I then rise to grind coffee — I usually ever <b>only drink one cup</b> per day.");
 add_text(&routine, "Before even email or chat, I immediately set off to complete the task I have planned eye-closedly. I know to have about 3 hours of undisturbed flow before the distraction surrounding lunch-time pulls me away from the work. My daily goal is to complete, <b>at least, single task a day</b>, the daily task is devised in a way that it should take about 3 hours to complete — Or between " LINKNAME("https://en.wikipedia.org/wiki/Pomodoro_Technique", "4 to 5 pomodoros") ".");

@@ -44,9 +44,9 @@ typedef struct List {
 } List;
 
 typedef struct Term {
-  bool isPortal;
-  bool isAlbum;
-  bool isIndex;
+  bool is_portal;
+  bool is_album;
+  bool is_index;
 
   int children_len;
   int body_len;
@@ -135,21 +135,11 @@ void add_item(List *list, char *item) {
   list->items_len++;  
 }
 
-void set_parent(Term *term, Term *parent) {
-  if(parent->children_len > TERM_CHILDREN_BUFFER-1){
-    printf("Reached TERM_CHILDREN_BUFFER\n");
-    return;
-  }
-  term->parent = parent;
-  parent->children[parent->children_len] = term;
-  parent->children_len++;
-}
-
 Term create_term(Term *parent, char *name, char *bref) {
   Term t;
-  t.isPortal = false;
-  t.isAlbum = false;
-  t.isIndex = false;
+  t.is_portal = false;
+  t.is_album = false;
+  t.is_index = false;
 
   t.children_len = 0;
   t.body_len = 0;
@@ -172,19 +162,19 @@ Term create_term(Term *parent, char *name, char *bref) {
 
 Term create_portal(Term *parent, char *name, char *bref) {
   Term t = create_term(parent, name, bref);
-  t.isPortal = true;
+  t.is_portal = true;
   return t;
 }
 
 Term create_album(Term *parent, char *name, char *bref) {
   Term t = create_term(parent, name, bref);
-  t.isAlbum = true;
+  t.is_album = true;
   return t;
 }
 
 Term create_index(Term *parent, char *name, char *bref) {
   Term t = create_term(parent, name, bref);
-  t.isIndex = true;
+  t.is_index = true;
   return t;
 }
 
@@ -434,7 +424,7 @@ void build_include(FILE *f, Term *term){
 }
 
 void build_index(FILE *f, Term *term){
-  if(term->isIndex != true){ return; }
+  if(term->is_index != true){ return; }
 
   for (int k = 0; k < term->children_len; ++k) {
     char child_filename[STR_BUF_LEN];
@@ -447,7 +437,7 @@ void build_index(FILE *f, Term *term){
 }
 
 void build_portal(FILE *f, Term *term){
-  if(term->isPortal != true){ return; }
+  if(term->is_portal != true){ return; }
 
   for (int k = 0; k < term->children_len; ++k) {
     build_term_pict(f, term->children[k], true);
@@ -455,7 +445,7 @@ void build_portal(FILE *f, Term *term){
 }
 
 void build_album(FILE *f, Term *term){
-  if(term->isAlbum != true){ return; }
+  if(term->is_album != true){ return; }
 
   Log *header_log = find_last_diary(term);
   for (int i = 0; i < all_logs.len; ++i) {
@@ -584,19 +574,16 @@ int main(void) {
     }
   }
 
-
   for (int i = 0; i < lexicon_len; ++i) {
     build_page(lexicon[i], &all_logs);
   }
 
   scan_pict_next();
 
-  debug_time();
-
-  printf("%d\n", arvelie_to_doty("20Y11"));
-  printf("%s\n", get_arvelie());
+  get_arvelie();
 
   printf("Lexicon: %d entries\n", lexicon_len);
-  
+  printf("Horaire: %d entries\n", all_logs.len);
+
   return (0);
 }

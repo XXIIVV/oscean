@@ -16,10 +16,10 @@ void to_lowercase(char *str, char *target, size_t tsize) {
 int index_of(int a[], int num_elements, int value) {
   for (int i = 0; i < num_elements; i++) {
     if (a[i] == value) {
-      return (value);
+      return value;
     }
   }
-  return (-1);
+  return -1;
 }
 
 bool file_exists(char *filename) {
@@ -34,17 +34,13 @@ bool file_exists(char *filename) {
 int get_doty(int year, int month, int day) {
   int i = 0, daymon = 0, dayday = 0;
   int mth[13] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-
   if ((year % 4) || ((year % 100) && (year % 400))) {
     mth[3] = mth[3] + 1;
   }
-
   for (i = 0; i < month; i++) {
     daymon += mth[i];
   }
-
   dayday = day;
-
   return (daymon + dayday);
 }
 
@@ -61,14 +57,16 @@ char * doty_to_arvelie(int doty){
   int d = doty % 14;
   int i = floor(doty/14);
   char *m = months[i];
+
+  printf("Date is: %d%s%d\n",20, m, d);
   return "";
 }
 
-char * get_arvelie(){
+char *get_arvelie() {
   int year, month, day;
   time_t now;
   time(&now);
-  printf("Today is : %s", ctime(&now));
+  printf("Time is: %s", ctime(&now));
   struct tm *local = localtime(&now);
 
   year = local->tm_year + 1900;
@@ -78,11 +76,11 @@ char * get_arvelie(){
   return doty_to_arvelie(get_doty(year, month, day));
 }
 
-void debug_time(){
+void debug_time() {
   int year, month, day;
   time_t now;
   time(&now);
-  printf("Today is : %s", ctime(&now));
+  printf("Today is: %s", ctime(&now));
   struct tm *local = localtime(&now);
 
   year = local->tm_year + 1900;
@@ -92,4 +90,3 @@ void debug_time(){
   printf("Date is: %02d/%02d/%d\n", year, month, day);
   printf("Day of the year is: %d\n", get_doty(year, month, day));
 }
-
