@@ -88,7 +88,10 @@ typedef struct Journal {
 Journal all_logs;
 
 void add_journal_log(Journal *journal, Term *term, char *date, int code, char *name, int pict, bool is_event){
-  if(journal->len > JOURNAL_BUFFER){ return; }
+  if(journal->len >= JOURNAL_BUFFER){ 
+    printf("Reached journal buffer\n"); 
+    return; 
+  }
   Log log;
   log.term = term;
   log.date = date;
@@ -110,7 +113,7 @@ Dict create_dict(char *name) {
 }
 
 void add_word(Dict *dict, char *key, char *value) {
-  if(dict->words_len > DICT_BUFFER-1){ 
+  if(dict->words_len >= DICT_BUFFER){ 
     printf("Reached DICT_BUFFER\n");
     return;
   }
@@ -127,7 +130,7 @@ List create_list(char *name) {
 }
 
 void add_item(List *list, char *item) {
-  if(list->items_len > LIST_BUFFER-1){ 
+  if(list->items_len >= LIST_BUFFER){ 
     printf("Reached LIST_BUFFER\n");
     return;
   }
@@ -179,7 +182,7 @@ Term create_index(Term *parent, char *name, char *bref) {
 }
 
 void add_body(Term *term, char *text, char *tag, char *meta) {
-  if (term->body_len > TERM_BODY_BUFFER - 1) {
+  if (term->body_len >= TERM_BODY_BUFFER) {
     printf("Reached TERM_BODY_BUFFER\n");
     return;
   }
@@ -210,7 +213,7 @@ void add_quote(Term *term, char *text, char *source) {
 }
 
 void add_dict(Term *term, Dict *dict){
-  if(term->dicts_len > TERM_DICT_BUFFER-1){ 
+  if(term->dicts_len >= TERM_DICT_BUFFER){ 
     printf("Reached TERM_DICT_BUFFER\n");
     return;
   }
@@ -219,7 +222,7 @@ void add_dict(Term *term, Dict *dict){
 }
 
 void add_list(Term *term, List *list){
-  if(term->dicts_len > TERM_LIST_BUFFER-1){ 
+  if(term->dicts_len >= TERM_LIST_BUFFER){ 
     printf("Reached TERM_LIST_BUFFER\n");
     return;
   }
@@ -228,7 +231,7 @@ void add_list(Term *term, List *list){
 }
 
 void add_link(Term *term, char *name, char *url) {
-  if(term->links_len > TERM_LINK_BUFFER-1){
+  if(term->links_len >= TERM_LINK_BUFFER){
     printf("Reached TERM_LINK_BUFFER\n");
     return;
   }
@@ -554,6 +557,38 @@ void build_page(Term *term, Journal *journal) {
   fclose(f);
 }
 
+void build_rss(Journal *logs){
+  FILE *f = fopen("../links/rss.xml", "w");
+
+  fputs("<?xml version='1.0' encoding='UTF-8' ?><rss version='2.0' xmlns:dc='http://purl.org/dc/elements/1.1/'>", f);
+  fputs("<channel>\n", f);
+  fputs("<title>XXIIVV — Oscean</title>\n", f);
+  fputs("<link><![CDATA[https://wiki.xxiivv.com/Journal]]></link>\n", f);
+  fputs("<description>The Nataniev Library</description>\n", f);
+
+  // for (int i = 0; i < blog->pages_len; ++i) {
+  //   Page *page = blog->pages[i];
+  //   if(!page->date){ printf("Missing date for %s\n", page->name); continue; }
+  //   char filename[STR_BUF_LEN];
+  //   to_lowercase(page->name, filename, STR_BUF_LEN);
+  //   char filepath[STR_BUF_LEN];
+  //   snprintf(filepath, STR_BUF_LEN, "https://100r.co/site/%s.html", filename);
+  //   fputs("<item>\n", f);
+  //   fprintf(f, "  <title>%s</title>\n", page->name);
+  //   fprintf(f, "  <link>%s</link>\n", filepath);
+  //   fprintf(f, "  <guid isPermaLink='false'>%s</guid>\n", filename);
+  //   fprintf(f, "  <pubDate>%s 00:00:00 GMT</pubDate>\n", page->date);
+  //   fputs("  <dc:creator><![CDATA[Rekka Bellum]]></dc:creator>\n", f);
+  //   fputs("  <description>\n", f);
+  //   fprintf(f, "<![CDATA[%s<p><a href='%s'>Continue Reading</a></p>]]>\n", page->parts_descriptions[0], filepath);
+  //   fputs("  </description>\n", f);
+  //   fputs("</item>\n", f);
+  // }
+  fputs("</channel>", f);
+  fputs("</rss>", f);
+  fclose(f);
+}
+
 int main(void) {
   #include "glossary.c"
   #include "lexicon.c"
@@ -578,12 +613,17 @@ int main(void) {
     build_page(lexicon[i], &all_logs);
   }
 
+  build_rss(&all_logs);
+
   scan_pict_next();
 
   get_arvelie();
+  future_time();
 
   printf("Lexicon: %d entries\n", lexicon_len);
   printf("Horaire: %d entries\n", all_logs.len);
 
   return (0);
 }
+
+
