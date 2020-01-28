@@ -76,24 +76,25 @@
 
 <h3>Backgrounds</h3>
 
-<p>To make graphics on the screen you must write graphic data to the PPU memory, but you can't write directly to PPU memory, you have to use PPU ports $2006 and $2007. By using $2006 you declare the address of PPU memory then by using $2007 you write the desired value to that address, PPU Memory addresses are 16bit starting from $0000 ~ $3FFF (4KB). So you need to write twice to $2006 to declare it's address, the first write declares high byte of address, the second write declares the low byte of address.</p>
+<p>To make graphics on the screen you must write graphic data to the PPU memory, but you can't write directly to PPU memory, you have to use PPU ports $2006 and $2007. By using $2006 you declare the address of PPU memory then by using $2007 you write the desired value to that address, PPU Memory addresses are 16bit starting from $0000~$3FFF(0000-1fff = tiles & 2000-23ff = nametable 0).</p>
+
+<table border='1'>
+  <tr><td>Hex</td><td>high byte($4A)</td><td>low byte($0F)</td></tr>
+  <tr><td>$4A0F</td><td>01001010</td><td>00001111</td></tr>
+</table>
+
+<p>So you need to write twice to $2006 to declare it's address, the first write declares high byte of address, the second write declares the low byte of address. Each time you write a value to $2007, the PPU address is automatically adjusted to the next address, so you don't need to declare the PPU address with $2006 for sequential PPU memory addresses.</p>
 
 <pre>
-  LDA #$20   ; y
+  LDA #$20   ; high byte
   STA $2006
-  LDA #$00   ; x
+  LDA #$00   ; low byte
   STA $2006
   LDA #$04   ; sprite-id
   STA $2007
 </pre>
 
-<p>Each time you write a value to $2007, the PPU address is automatically adjusted to the next address, so you don't need to declare the PPU address with $2006 for sequential PPU memory addresses. Calculate at what address to draw it: $2000 plus 32 times the vertical position of the tile (in 8-pixel units) plus the horizontal position of the tile (in 8-pixel units), write the high byte of the address to $2006: this is usually values $20 to $23, and write the low byte of the address to $2006. In other words, calculate the tile offset (TileY * 32 + TileX) and then add the base address. This will give you a pointer you can use to access any part of the map.</p>
-
-<table border='1'>
-  <tr><td>Hex</td><td>high byte</td><td>low byte</td></tr>
-  <tr><td>$4A0F</td><td>01001010</td><td>00001111</td></tr>
-</table>
-
+<p> Calculate at what address to draw it: $2000 plus 32 times the vertical position of the tile (in 8-pixel units) plus the horizontal position of the tile (in 8-pixel units), write the high byte of the address to $2006: this is usually values $20 to $23, and write the low byte of the address to $2006. In other words, calculate the tile offset (TileY * 32 + TileX) and then add the base address. This will give you a pointer you can use to access any part of the map.</p>
 
 <h3>Directives</h3>
 
