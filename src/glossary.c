@@ -579,6 +579,7 @@ add_word(&comics, "風の谷のナウシカ", "宮崎駿. 1982");
 add_word(&comics, "おやすみプンプン", "浅野いにお. 2007");
 add_word(&comics, "うずまき", "伊藤潤二. 1998");
 add_word(&comics, "Duck, Death and the Tulip", "Wolf Erlbruch. 2007");
+add_word(&comics, "Wandering Island", "Kenji Tsuruta");
  
 Dict videogames = create_dict("videogames");
 add_word(&videogames, "Eve Online", "CCP Games. 2003");

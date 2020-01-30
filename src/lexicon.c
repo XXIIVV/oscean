@@ -8,10 +8,12 @@
 #define MODBANDCAMP(bandcamp_id) "<iframe style='border: 0; width: 600px; height: 274px;' src='https://bandcamp.com/EmbeddedPlayer/album="bandcamp_id"/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/' seamless></iframe>"
 #define MODYOUTUBE(youtube_id) "<iframe width='100%' height='380' src='https://www.youtube.com/embed/"youtube_id"?rel=0' style='max-width:700px' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe>"
 #define MODFRAME(frame_id) "<iframe width='100%' height='380' src='"frame_id"' style='border:0' allowfullscreen></iframe>"
+#define IMAGE(name) "<img src='../media/identity/" name "'/>"
 
 // Terms
 
 Term home = create_term(NULL, "home", "");
+add_html(&home, IMAGE("orb.png"));
 
 Term audio = create_portal(&home, "audio", "The Audio portal hosts various soundtrack, records and live projects.");
 

@@ -1,8 +1,6 @@
 # Oscean
 
-This is the repository for the [Oscean wiki](http://wiki.xxiivv.com/), see the [on-site documentation](http://wiki.xxiivv.com/About) for more up-to-date details. Oscean is a _static site_ written in [C99](https://en.wikipedia.org/wiki/C99).
-
-The Master Branch is the **live version**.
+This is the repository for the [Oscean wiki](http://wiki.xxiivv.com/), see the [on-site documentation](http://wiki.xxiivv.com/About) for more up-to-date details. Oscean is a _static site_ written in [C99](https://en.wikipedia.org/wiki/C99). The Master Branch is the **live version**.
 
 ## Build
 

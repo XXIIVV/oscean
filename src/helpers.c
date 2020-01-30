@@ -104,5 +104,5 @@ void future_time() {
   str_time.tm_isdst = 0;
 
   time_of_day = mktime(&str_time);
-  printf(ctime(&time_of_day));
+  // printf(ctime(&time_of_day));
 }

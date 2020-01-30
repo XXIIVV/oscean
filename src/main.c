@@ -266,7 +266,7 @@ void scan_pict_next() {
   for (int i = 1; i < 999; ++i) {
     int index = index_of(pict_used, pict_used_len, i);
     if(index < 0){
-      printf("Next available pict: %d\n", i);
+      printf("Next Id: %d\n", i);
       return;
     }
   }
@@ -614,6 +614,7 @@ int main(void) {
   }
 
   build_rss(&all_logs);
+  printf("========\n");
 
   scan_pict_next();
 
