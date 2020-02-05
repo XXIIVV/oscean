@@ -1,4 +1,6 @@
 add_event(&japan, "20D09", 0, "Return to Japan");
+add_log(&assembly, "20C04", 245);
+add_log(&assembly, "20C03", 245);
 add_event(&nasu, "20C06", 296, "Nasu Release");
 add_diary(&nasu, "20C05", 276, "Nasu Interface", 319);
 add_log(&hundred_rabbits, "20C04", 327);
