@@ -670,7 +670,7 @@ add_link(&instrument, "sources", "http://github.com/hundredrabbits/Instrument");
 
 Term assembly = create_term(&hardware, "assembly", "Assembly(6502) is the language used to program the famicom microprocessor.");
 add_text(&assembly, "This page is a collection of notes on the basics of 6502 assembly, assembled from various guides and tutorial..");
-add_link(&assembly, "notes", "https://github.com/neauoire/linux-notebook/tree/master/6502");
+add_link(&assembly, "famicom cookbook", "https://github.com/hundredrabbits/Famicom-Cookbook");
 
 Term microbit = create_term(&hardware, "microbit", "The Microbit is a small educational micro-controller from BBC.");
 add_text(&microbit, "Here's a list of <b>simple projects & sources</b> for the <a href='#microbit' data-goto='microbit' target='_self' class='local '>Microbit</a>. The Microbit is an excellent toy to learn to code and create electronics projects.");
