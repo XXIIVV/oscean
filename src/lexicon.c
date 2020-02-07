@@ -14,6 +14,7 @@
 
 Term home = create_term(NULL, "home", "");
 add_html(&home, IMAGE("orb.png"));
+add_text(&home, "See " SENDNAME("tracker", "recent changes") ".");
 
 Term audio = create_portal(&home, "audio", "The Audio portal hosts various soundtrack, records and live projects.");
 
@@ -21,19 +22,18 @@ Term visual = create_portal(&home, "visual", "The Visual hosts design and intera
 
 Term research = create_portal(&home, "research", "The Research hosts philosophy and linguistics projects.");
 
-Term about = create_term(&home, "about", "This wiki is a digital playground and personal logging system.");
-add_text(&about, "The aim of this wiki is to build a form of <b>personal assistant</b> to help with the management of a vast repository of recorded statistics which includes daily logs, notes on personal projects and curated pages of general knowledge.");
-add_text(&about, SENDNAME("oscean", "Oscean") " is written in " LINKNAME("https://en.wikipedia.org/wiki/C99", "C99") ", and designed to operate on low-powered devices. It is built in a flexbile style to adapt to my needs as they change, and to " SENDNAME("longtermism", "technology as it evolves") ".");
-add_text(&about, "Each part of this project should aim to persist across technological <b>Long Term</b>, not one part of it should rely on heavy dependencies. — Every function should be <b>specific</b>, <b>unobfuscated</b>, and each one carefully chosen against general-purpose libraries, frameworks or wasteful foreign entities.");
+Term about = create_album(&home, "about", "This wiki is a digital playground and personal logging system.");
+add_text(&about, "The aim of this wiki is to build a form of <b>personal assistant</b> to help with the management of a vast repository of recorded statistics which includes " SENDNAME("tracker", "daily logs") ", notes on " SENDNAME("journal", "various projects") " and " SENDNAME("mirrors", "curated pages of general knowledge") ".");
+add_text(&about, SENDNAME("oscean", "Oscean") " is written in " LINKNAME("https://en.wikipedia.org/wiki/C99", "C99") ", and designed to operate on " SENDNAME("hardware", "low-power devices") ". It is built to adapt to my needs as they change, and to " SENDNAME("longtermism", "technology as it evolves") ".");
+add_text(&about, "Each part of this project should aim to persist across " SENDNAME("longtermism", "Technological Long Term") ", not one part of it should rely on heavy dependencies. — Every function should be <b>specific</b>, <b>unobfuscated</b>, and each one carefully chosen against general-purpose libraries, frameworks or wasteful foreign entities.");
 add_text(&about, "Using this tool should be <b>frictionless and undisruptive</b>, its formats and subsequent products versionable, re-purposable, interpretable and text-editable. Only through <b>open sources, open standards, human-readable formats</b> and their independencies, might they survive this fleeting age of self-destructing informatics.");
 add_text(&about, "These attributes should not only be <b>perceptible in its design</b>, <br />but deeply <b>rooted in its code</b>.");
 add_text(&about, "This type of website is a often referred to as a \"memex\", a kind of archive and mirror of everything that one has done, that one has learnt. It's a living document that outlines where one has been, and a tool that advises where one could go.");
 add_quote(&about, "Consider a future device, a sort of mechanized private library in which an individual stores all his books, records, and communications, and which may be consulted with exceeding speed and flexibility. It is an enlarged intimate supplement to his memory.", "Vannevar Bush, As We May Think");
 add_header(&about, "License");
-add_text(&about, "The license applies to all the <b>documented projects, the projects themselves and their assets</b>.");
-add_text(&about, "The " LINKNAME("http://github.com/XXIIVV/Oscean", "platform code") " is under the <code >MIT License</code>.<br />The " LINKNAME("https://creativecommons.org/licenses/by-nc-sa/4.0/", "assets and text content") " is under the <code >BY-NC-SA4.0 License</code>.");
-add_text(&about, "You are free to: <b>Share</b>: copy and redistribute the material in any medium or format. <b>Adapt</b>: remix, transform, and build upon the material.");
-add_text(&about, "Under the following terms: <b>Attribution</b>: You must give appropriate credit. <b>NonCommercial</b>: You may not use the material for commercial purposes. <b>ShareAlike</b>: You must distribute your contributions under the same license.");
+add_text(&about, "The license applies to all the <b>documented projects, the projects themselves and their assets</b>. The " LINKNAME("http://github.com/XXIIVV/Oscean", "platform code") " is under the <b>MIT License</b>. The " LINKNAME("https://creativecommons.org/licenses/by-nc-sa/4.0/", "assets and text content") " is under the <b>BY-NC-SA4.0 License</b>.");
+add_text(&about, "<i>You are free to</i>: <b>Share</b>: copy and redistribute the material in any medium or format. <b>Adapt</b>: remix, transform, and build upon the material.");
+add_text(&about, "<i>Under the following terms</i>: <b>Attribution</b>: You must give appropriate credit. <b>NonCommercial</b>: You may not use the material for commercial purposes. <b>ShareAlike</b>: You must distribute your contributions under the same license.");
 add_text(&about, "If you have any <b>question or feedback</b>, please submit a " LINKNAME("https://github.com/XXIIVV/Oscean/issues/new", "bug report") ".");
 add_link(&about, "source files", "https://github.com/XXIIVV/Oscean");
 add_link(&about, "rss feed", "https://wiki.xxiivv.com/links/rss.xml");
@@ -158,7 +158,7 @@ add_link(&azolla, "sources", "https://github.com/neauoire/alicef");
 add_link(&azolla, "live", "https://beldamrecords.bandcamp.com/album/azolla");
 add_link(&azolla, "video", "https://www.youtube.com/watch?v=9FPrPgOQqZg");
 
-Term malice = create_term(&audio, "malice", "Malice, GAII or 害意, tells the earlier tales of Neonev as she crossed the Kanikule ocean.");
+Term malice = create_portal(&audio, "malice", "Malice, GAII or 害意, tells the earlier tales of Neonev as she crossed the Kanikule ocean.");
 add_text(&malice, "The Malice logo was designed by " LINKNAME("http://visualscream.net", "Jan Vranovský") ".");
 add_link(&malice, "bandcamp", "https://gaii.bandcamp.com/");
 
@@ -343,12 +343,12 @@ Term nataniev_time = create_index(&nataniev, "time", "Documentation on the diffe
 add_html(&nataniev_time, MODFRAME("https://clock.xxiivv.com"));
 
 Term neralie = create_term(&nataniev_time, "neralie", "Neralie is a decimal time format.");
-add_text(&neralie, "This <b>decimal clock</b> has two groups of 3 digits, called the <i >beat</i> & the <i >pulse</i>. A beat contains 1000 pulses, and equivalent to <b>86.4 seconds</b>.");
+add_text(&neralie, "The <b>Neralie clock</b> has two groups of 3 digits, called the <i >beat</i> & the <i >pulse</i>. A beat contains 1000 pulses, and equivalent to <b>86.4 seconds</b>.");
 add_html(&neralie, "<ul><li><b>6:00</b> 250:000</li><li><b>12:00</b> 500:000</li><li><b>18:00</b> 750:000</li></ul>");
 add_link(&neralie, "view online", "https://clock.xxiivv.com");
 
 Term arvelie = create_term(&nataniev_time, "arvelie", "Arvelie is an alphabetic date format.");
-add_text(&arvelie, "The Arvelie " SENDNAME("calendar", "Calendar") " has <b>26 months</b> of <b>14 days</b> each.");
+add_text(&arvelie, "The <b>Arvelie calendar</b> has <b>26 months</b> of <b>14 days</b> each.");
 add_text(&arvelie, "Each month has <b>2 weeks</b> of <b>7 days</b>, and each month's name is one of the 26 letters of the alphabet. The 365th day of the year is the <i >Year Day</i>(+01), preceded by the <i >Leap Day</i>(+02) on leap years.");
 add_html(&arvelie, "<ul><li><b>02A01</b> 2002-01-01</li><li><b>01D07</b> 2001-02-18</li><li><b>13B12</b> 2013-01-26</li><li><b>02E07</b> 2002-03-04</li><li><b>24C01</b> 2024-01-29</li><li><b>03+01</b> 2003-12-31</li></ul>");
 add_link(&arvelie, "library", "https://github.com/XXIIVV/Oscean/blob/master/scripts/lib/arvelie.js");
@@ -402,7 +402,7 @@ add_link(&orca, "demo", "https://twitter.com/neauoire/status/1064738259077554176
 
 Term juni = create_album(&orca, "juni", "Juni one-handed chorded keyboard.");
 add_text(&juni, "The <b>Juni Layout</b> is a 12-keys " LINKNAME("https://en.wikipedia.org/wiki/Chorded_keyboard", "chorded keyboard") ".");
-add_text(&juni, "The " SEND("keyboard") " model is " LINKNAME("https://learn.pimoroni.com/keybow", "Pimoroni's Keybow") ", the <code >.lua</code> layout is available on " LINKNAME("https://github.com/neauoire/Juni", "Github") ". It was designed to be used with the " SEND("orca") " livecoding environment, but has most common keys and controls, making it a versatile and portable single-handed keyboard.");
+add_text(&juni, "The " SEND("keyboard") " model is " LINKNAME("https://learn.pimoroni.com/keybow", "Pimoroni's Keybow") ", the <code>.lua</code> layout is available on " LINKNAME("https://github.com/neauoire/Juni", "Github") ". It was designed to be used with the " SEND("orca") " livecoding environment, but has most common keys and controls, making it a versatile and portable single-handed keyboard.");
 add_html(&juni, MODYOUTUBE("cgBvWsM3Z7g"));
 add_link(&juni, "sources", "https://github.com/neauoire/Juni");
 
@@ -544,7 +544,7 @@ add_link(&paradise, "live", "https://hundredrabbits.github.io/Paradise/");
 
 Term maeve = create_term(&paradise, "maeve", "Maeve is an automated Paradise vessel");
 add_text(&maeve, "Traveling across the " SEND("nataniev") " landscapes, <b>Maeve</b> is a service bot.");
-add_text(&maeve, "You can get help from Maeve within " SEND("oscean") " by typing <code >~</code> in the search bar, to see a list of available commads, type <code >~help</code>.");
+add_text(&maeve, "You can get help from Maeve within " SEND("oscean") " by typing <code>~</code> in the search bar, to see a list of available commads, type <code>~help</code>.");
 
 Term parade = create_term(&paradise, "parade", "Parade is an experimental operating system inspired from Paradise.");
 add_text(&parade, "The <b>Parade</b> is an experimental operating system using " SEND("paradise") " as a <i >filesystem</i>.");
@@ -579,7 +579,7 @@ Term raspberry = create_portal(&hardware, "raspberry", "The Raspberry is a small
 add_text(&raspberry, "The <b>Raspberry Pi</b> is a small inexpensive single-board computer.");
 add_text(&raspberry, "To get started with a new device, download " LINKNAME("https://www.raspberrypi.org/downloads/raspbian/", "Raspbian Lite") ", and use " LINKNAME("https://etcher.io", "Etcher") " to flash the SD card.");
 add_header(&raspberry, "SSH");
-add_text(&raspberry, "You can use <code >ssh</code> to input commands and <b>remotely control the device</b>, follow these steps to get started.");
+add_text(&raspberry, "You can use <code>ssh</code> to input commands and <b>remotely control the device</b>, follow these steps to get started.");
 // add_code(&raspberry, "touch /Volumes/boot/ssh <comment># Enable SSH</comment>");
 // add_code(&raspberry, "touch /Volumes/boot/wpa_supplicant.conf <comment># Auto-connect to wifi</comment>");
 add_header(&raspberry, "Setup Wifi");
@@ -593,7 +593,7 @@ add_text(&raspberry, "Input your wireless network details to enable the device t
 // add_code(&raspberry, "psk=\"network_password\"");
 // add_code(&raspberry, "}");
 add_header(&raspberry, "Connect");
-add_text(&raspberry, "When <code >ssh</code> has been activated and the wifi details updated, the device should become discoverable.");
+add_text(&raspberry, "When <code>ssh</code> has been activated and the wifi details updated, the device should become discoverable.");
 // add_code(&raspberry, "ping raspberrypi.local <comment># Find its IP address</comment>");
 // add_code(&raspberry, "ssh pi@192.168.1.73 <comment># Use password \"<b>raspberry</b>\"</comment>");
 // add_code(&raspberry, "sudo raspi-config <comment># <b>Interface/SSH</b> & <b>Advanced/Expand FS</b></comment>");
@@ -602,11 +602,11 @@ add_text(&raspberry, "When <code >ssh</code> has been activated and the wifi det
 // add_code(&raspberry, "passwd <comment># Change Password</comment>");
 // add_code(&raspberry, "sudo reboot");
 add_header(&raspberry, "Gadget Mode");
-add_text(&raspberry, "Gadget mode allows to <b>SSH</b> into a " SENDNAME("raspberry", "Raspberry Pi Zero") " device via USB. Begin by <b>enabling ssh</b>, by adding <code >/Volumes/boot/ssh</code> to the SD Card. Activate <b>gadget mode</b> , allowing the device to be discovered and controlled via USB.");
+add_text(&raspberry, "Gadget mode allows to <b>SSH</b> into a " SENDNAME("raspberry", "Raspberry Pi Zero") " device via USB. Begin by <b>enabling ssh</b>, by adding <code>/Volumes/boot/ssh</code> to the SD Card. Activate <b>gadget mode</b> , allowing the device to be discovered and controlled via USB.");
 // add_code(&raspberry, "dtoverlay=dwc2 <comment># Append to config.txt</comment>");
 // add_code(&raspberry, "modules-load=dwc2,g_ether <comment># Append to cmdline.txt, or after rootwait</comment>");
 add_header(&raspberry, "Basics");
-add_text(&raspberry, "Make sure everything is up-to-date and install <code >git</code>.");
+add_text(&raspberry, "Make sure everything is up-to-date and install <code>git</code>.");
 // add_code(&raspberry, "sudo apt-get update");
 // add_code(&raspberry, "sudo apt-get dist-upgrade");
 // add_code(&raspberry, "sudo apt-get install git");
@@ -1009,7 +1009,7 @@ add_link(&thousand_rooms, "sources", "http://github.com/hundredrabbits/Thousand-
 
 Term wallpapers = create_album(&illustration, "wallpapers", "Collection of Wallpapers related to Nataniev and Horaire.");
 
-Term neauismetica = create_term(&research, "neauismetica", "The Neauismetica is a series of notes on the fiction of Dinaisth.");
+Term neauismetica = create_index(&research, "neauismetica", "The Neauismetica is a series of notes on the fiction of Dinaisth.");
 add_text(&neauismetica, "The tales of the <b>Neauismetica</b> unfold on a minuscule " SENDNAME("dinaisth", "celestial object") ", where three " SENDNAME("characters", "Immortals") " dwell.");
 add_text(&neauismetica, "Originally written in French, \"<b>Les Récits De Dinaisth</b>\" begins when most things have ended, on the surface of a Satellite where the remaining immortals have gathered, and are looking up at the <b>lightless skies</b>.");
 add_text(&neauismetica, "This series of disjointed " SENDNAME("neon_hermetism", "concepts") ", " SEND("characters") " and " SENDNAME("dinaisth", "places") " are the connecting thread that lives through " SEND("aliceffekt") "'s music, " SENDNAME("devine lu linvega", "Devine") "'s " SENDNAME("illustration", "illustrations") ", and are the culture behind the " SEND("lietal") " Language.");
@@ -1328,9 +1328,11 @@ Term journal = create_term(&devine_lu_linvega, "journal", "The Journal shows rec
 add_link(&journal, "rss feed", "https://wiki.xxiivv.com/links/rss.xml");
 
 Term tracker = create_term(&journal, "tracker", "The Tracker shows latest changes of the journal.");
+add_text(&tracker, "This wiki uses the " SENDNAME("Arvelie", "Arvelie time format") ", find today's date and learn more about the time formats " SENDNAME("time", "here") ". To see a list of past and upcoming events, see the " SEND("calendar") ".");
 add_link(&tracker, "rss feed", "https://wiki.xxiivv.com/links/rss.xml");
 
 Term calendar = create_term(&journal, "calendar", "The Calendar shows upcoming and past events of the journal.");
+add_text(&calendar, "This wiki uses the " SENDNAME("Arvelie", "Arvelie time format") ", find today's date and learn more about the time formats " SENDNAME("time", "here") ". To see a list of recent changes to the wiki, see the " SEND("tracker") ".");
 add_link(&calendar, "rss feed", "https://wiki.xxiivv.com/links/rss.xml");
 
 Term inventory = create_portal(&devine_lu_linvega, "inventory", "The collection of technical details on the Inventory.");
@@ -1631,7 +1633,7 @@ add_text(&the_sartre_mechanism, "I stared in silent awe, at the busy mechanical 
 add_text(&the_sartre_mechanism, "Written by " LINKNAME("https://twitter.com/voidshaper", "Voidshaper") " & " SENDNAME("devine lu linvega", "Neauoire") ".");
 
 Term talk = create_term(&notebook, "talk", "For when I Talk in public.");
-add_text(&talk, "Often gravitating around the topics of " SEND("nataniev") ", " SEND("oscean") " and " SEND("horaire") ", the <code >/Talk</code> is used mainly as a marker for Live events.");
+add_text(&talk, "Often gravitating around the topics of " SEND("nataniev") ", " SEND("oscean") " and " SEND("horaire") ", the <code>/Talk</code> is used mainly as a marker for Live events.");
 add_link(&talk, "sources", "https://github.com/neauoire/Talk-Amaze");
 
 Term systems = create_term(&notebook, "systems", "Various experimental writing and numerical Systems.");
