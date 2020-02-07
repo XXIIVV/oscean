@@ -21,24 +21,30 @@ Term visual = create_portal(&home, "visual", "The Visual hosts design and intera
 
 Term research = create_portal(&home, "research", "The Research hosts philosophy and linguistics projects.");
 
-Term about = create_index(&home, "about", "This wiki is a digital playground and personal logging system.");
+Term about = create_term(&home, "about", "This wiki is a digital playground and personal logging system.");
 add_text(&about, "The aim of this wiki is to build a form of <b>personal assistant</b> to help with the management of a vast repository of recorded statistics which includes daily logs, notes on personal projects and curated pages of general knowledge.");
 add_text(&about, SENDNAME("oscean", "Oscean") " is written in " LINKNAME("https://en.wikipedia.org/wiki/C99", "C99") ", and designed to operate on low-powered devices. It is built in a flexbile style to adapt to my needs as they change, and to " SENDNAME("longtermism", "technology as it evolves") ".");
 add_text(&about, "Each part of this project should aim to persist across technological <b>Long Term</b>, not one part of it should rely on heavy dependencies. — Every function should be <b>specific</b>, <b>unobfuscated</b>, and each one carefully chosen against general-purpose libraries, frameworks or wasteful foreign entities.");
 add_text(&about, "Using this tool should be <b>frictionless and undisruptive</b>, its formats and subsequent products versionable, re-purposable, interpretable and text-editable. Only through <b>open sources, open standards, human-readable formats</b> and their independencies, might they survive this fleeting age of self-destructing informatics.");
 add_text(&about, "These attributes should not only be <b>perceptible in its design</b>, <br />but deeply <b>rooted in its code</b>.");
-add_text(&about, "This type of website is a often referred to as a \"memex\", a kind of archive and mirror of everything that one has done, and everything that has learnt. It's a living document that outlines where you have been, and a tool that advises where you are going.");
+add_text(&about, "This type of website is a often referred to as a \"memex\", a kind of archive and mirror of everything that one has done, that one has learnt. It's a living document that outlines where one has been, and a tool that advises where one could go.");
 add_quote(&about, "Consider a future device, a sort of mechanized private library in which an individual stores all his books, records, and communications, and which may be consulted with exceeding speed and flexibility. It is an enlarged intimate supplement to his memory.", "Vannevar Bush, As We May Think");
+add_header(&about, "License");
+add_text(&about, "The license applies to all the <b>documented projects, the projects themselves and their assets</b>.");
+add_text(&about, "The " LINKNAME("http://github.com/XXIIVV/Oscean", "platform code") " is under the <code >MIT License</code>.<br />The " LINKNAME("https://creativecommons.org/licenses/by-nc-sa/4.0/", "assets and text content") " is under the <code >BY-NC-SA4.0 License</code>.");
+add_text(&about, "You are free to: <b>Share</b>: copy and redistribute the material in any medium or format. <b>Adapt</b>: remix, transform, and build upon the material.");
+add_text(&about, "Under the following terms: <b>Attribution</b>: You must give appropriate credit. <b>NonCommercial</b>: You may not use the material for commercial purposes. <b>ShareAlike</b>: You must distribute your contributions under the same license.");
+add_text(&about, "If you have any <b>question or feedback</b>, please submit a " LINKNAME("https://github.com/XXIIVV/Oscean/issues/new", "bug report") ".");
 add_link(&about, "source files", "https://github.com/XXIIVV/Oscean");
 add_link(&about, "rss feed", "https://wiki.xxiivv.com/links/rss.xml");
 add_link(&about, "activitypub", "https://bots.tinysubversions.com/u/neauoire/");
 
-Term license = create_term(&about, "license", "The License for code and assets.");
-add_text(&license, "The license applies to all the <b>documented projects, the projects themselves and their assets</b>.");
-add_text(&license, "The " LINKNAME("http://github.com/XXIIVV/Oscean", "platform code") " is under the <code >MIT License</code>.<br />The " LINKNAME("https://creativecommons.org/licenses/by-nc-sa/4.0/", "assets and text content") " is under the <code >BY-NC-SA4.0 License</code>.");
-add_text(&license, "You are free to: <b>Share</b>: copy and redistribute the material in any medium or format. <b>Adapt</b>: remix, transform, and build upon the material.");
-add_text(&license, "Under the following terms: <b>Attribution</b>: You must give appropriate credit. <b>NonCommercial</b>: You may not use the material for commercial purposes. <b>ShareAlike</b>: You must distribute your contributions under the same license.");
-add_text(&license, "If you have any <b>question or feedback</b>, please submit a " LINKNAME("https://github.com/XXIIVV/Oscean/issues/new", "bug report") ".");
+Term grimgrains = create_album(&research, "grimgrains", "Grimgrains is the Hundred Rabbits food and cooking resources site.");
+add_text(&grimgrains, "Started in the fall of 2014, the goal of the site is to document interesting " SENDNAME("nutrition", "foods") " and " SEND("lifestyle") " experiments.");
+add_text(&grimgrains, "A collection of notes on cooking tools is also maintained " LINKNAME("https://grimgrains.com/Tools", "here") ".");
+add_link(&grimgrains, "twitter", "https://twitter.com/grimgrains");
+add_link(&grimgrains, "live", "https://grimgrains.com");
+add_link(&grimgrains, "sources", "https://github.com/hundredrabbits/Grimgrains");
 
 Term notebook = create_portal(&research, "notebook", "From the Notebook.");
 add_text(&notebook, "The <b>Notebook</b> is a collection of scribbles on various topics that have yet to find themselves permanently included in the " SENDNAME("oscean", "wiki") ".");
@@ -53,7 +59,7 @@ Term aliceffekt = create_portal(&audio, "aliceffekt", "Aliceffekt, is an audio p
 add_text(&aliceffekt, "A travel across the fictional worlds of the " SEND("neauismetica") " where every album is a sort of travel diary across the " SEND("dinaisth") " landscape.");
 add_link(&aliceffekt, "bandcamp", "https://aliceffekt.bandcamp.com");
 
-Term hundred_rabbits = create_album(&home, "hundred rabbits", "Hundred Rabbits is a design studio on a sailboat.");
+Term hundred_rabbits = create_album(&about, "hundred rabbits", "Hundred Rabbits is a design studio on a sailboat.");
 add_text(&hundred_rabbits, "This partnership is host to interactive projects like " SEND("oquonie") ", " SEND("grimgrains") " and " LINKNAME("https://www.youtube.com/channel/UCzdg4pZb-viC3EdA1zxRl4A?view_as=subscriber", "travel diaries") ".");
 add_text(&hundred_rabbits, "The name <i >Hundred Rabbits</i> comes from the name of the sailboat in the Japanese animated show " LINKNAME("http://ergoproxy.wikia.com/wiki/Dead_Calm_", "Ergo proxy") ", while the sailboat's name " SEND("pino") " comes from that of an android sailor from that same show.");
 add_link(&hundred_rabbits, "patreon", "https://patreon.com/100");
@@ -78,13 +84,6 @@ add_text(&wiktopher, "Together, they learn the innumerable ways of the world, tr
 add_text(&wiktopher, "The novel is written <i >entirely without genders</i>, and will be released as audiobooks, ebooks and paperbacks.");
 add_link(&wiktopher, "read online", "http://wiktopher.kokorobot.ca");
 add_link(&wiktopher, "about the author", "https://twitter.com/RekkaBell");
-
-Term grimgrains = create_album(&hundred_rabbits, "grimgrains", "Grimgrains is the Hundred Rabbits food and cooking resources site.");
-add_text(&grimgrains, "Started in the fall of 2014, the goal of the site is to document interesting " SENDNAME("nutrition", "foods") " and " SEND("lifestyle") " experiments.");
-add_text(&grimgrains, "A collection of notes on cooking tools is also maintained " LINKNAME("https://grimgrains.com/Tools", "here") ".");
-add_link(&grimgrains, "twitter", "https://twitter.com/grimgrains");
-add_link(&grimgrains, "live", "https://grimgrains.com");
-add_link(&grimgrains, "sources", "https://github.com/hundredrabbits/Grimgrains");
 
 Term drownspire = create_portal(&hundred_rabbits, "drownspire", "Drownspire was the name of an online store founded with Rekka Bellum, back in 2009.");
 add_text(&drownspire, "Our goals then, fueled what is now " SENDNAME("hundred_rabbits", "hundred rabbits") ". We distributed the " SEND("vambits") " designer toys and published the " SEND("merure") " books.");
@@ -389,7 +388,7 @@ add_quote(&tools, "What I cannot create, I do not understand", "Richard Feynman"
 add_link(&tools, "itch", "http://hundredrabbits.itch.io/");
 add_link(&tools, "sources", "http://github.com/hundredrabbits");
 
-Term orca = create_term(&tools, "orca", "Orca is a livecoding playground.");
+Term orca = create_album(&tools, "orca", "Orca is a livecoding playground.");
 add_text(&orca, "Orca uses an <b>esoteric programming language</b> designed to quickly create procedural sequencers, in which every letter of the alphabet is an operation, where lowercase letters operate on bang, uppercase letters operate each frame.");
 add_text(&orca, "The " LINKNAME("https://github.com/hundredrabbits/Orca", "application") " is capable of communicating with audio & visual softwares via " LINKNAME("https://github.com/hundredrabbits/Orca/blob/master/WORKSHOP.md", "MIDI, OSC & UDP") ".");
 add_html(&orca, MODITCHIO("225814"));
@@ -401,13 +400,13 @@ add_link(&orca, "live", "https://hundredrabbits.github.io/Orca");
 add_link(&orca, "community", "https://hundredrabbits.itch.io/Orca/community");
 add_link(&orca, "demo", "https://twitter.com/neauoire/status/1064738259077554176");
 
-Term juni = create_term(&orca, "juni", "Juni one-handed chorded keyboard.");
+Term juni = create_album(&orca, "juni", "Juni one-handed chorded keyboard.");
 add_text(&juni, "The <b>Juni Layout</b> is a 12-keys " LINKNAME("https://en.wikipedia.org/wiki/Chorded_keyboard", "chorded keyboard") ".");
 add_text(&juni, "The " SEND("keyboard") " model is " LINKNAME("https://learn.pimoroni.com/keybow", "Pimoroni's Keybow") ", the <code >.lua</code> layout is available on " LINKNAME("https://github.com/neauoire/Juni", "Github") ". It was designed to be used with the " SEND("orca") " livecoding environment, but has most common keys and controls, making it a versatile and portable single-handed keyboard.");
 add_html(&juni, MODYOUTUBE("cgBvWsM3Z7g"));
 add_link(&juni, "sources", "https://github.com/neauoire/Juni");
 
-Term pilot = create_term(&orca, "pilot", "Pilot is a mini synthesiser.");
+Term pilot = create_album(&orca, "pilot", "Pilot is a mini synthesiser.");
 add_text(&pilot, "<b>Pilot</b> is a <b>mini synthetiser</b> designed to be used with " SEND("orca") " via UDP.");
 add_text(&pilot, "Pilot features <b>16 voices, and 8 audio effects</b>, each operatable with their own set of commands, and their own FFT visualiser. The complete operation guide can be seen " LINKNAME("https://github.com/Hundredrabbits/Pilot", "here") ".");
 add_text(&pilot, "If you need <b>help</b>, visit the " LINKNAME("https://talk.lurk.org/channel/orca", "chatroom") " or the " LINKNAME("https://llllllll.co/t/orca-live-coding-tool/17689", "forum") ".");
@@ -416,7 +415,7 @@ add_link(&pilot, "builds", "http://hundredrabbits.itch.io/Pilot");
 add_link(&pilot, "sources", "https://github.com/neauoire/Pilot");
 add_link(&pilot, "demo", "https://twitter.com/neauoire/status/1114770190552653824");
 
-Term ronin = create_term(&tools, "ronin", "Ronin is an procedural graphics tool.");
+Term ronin = create_album(&tools, "ronin", "Ronin is an procedural graphics tool.");
 add_text(&ronin, "Ronin is a <b>procedural graphics tool</b> designed to automate simple graphical tasks, like resizing, cropping, coloring, and generating algorithmic images. It interprets a minimal " LINKNAME("https://en.wikipedia.org/wiki/Lisp_(programming_language)", "dialect of LISP") ", look at these " LINKNAME("https://github.com/hundredrabbits/Ronin/tree/master/examples", "examples") " to better understand how this all works.");
 add_text(&ronin, "The library updates is constantly revealing new applications to Ronin, you can see the list of available functions " LINKNAME("https://github.com/hundredrabbits/Ronin#library", "here") ". The iconography of " SEND("nataniev") " has been created with both " SEND("ronin") " and " SEND("dotgrid") ".");
 add_html(&ronin, MODITCHIO("194632"));
@@ -426,7 +425,7 @@ add_link(&ronin, "builds", "http://hundredrabbits.itch.io/Ronin");
 add_link(&ronin, "live", "https://hundredrabbits.github.io/Ronin");
 add_link(&ronin, "community", "https://hundredrabbits.itch.io/Ronin/community");
 
-Term dotgrid = create_term(&tools, "dotgrid", "Dotgrid is a vector graphics tool.");
+Term dotgrid = create_album(&tools, "dotgrid", "Dotgrid is a vector graphics tool.");
 add_text(&dotgrid, "Dotgrid is a <b>grid-based vector drawing software</b> designed to create logos, icons and type. It supports layers, the full SVG specs and additional effects such as mirroring and radial drawing. Dotgrid exports to both PNG and SVG files.");
 add_text(&dotgrid, "The " LINKNAME("https://github.com/hundredrabbits/Dotgrid", "application") " was initially created for internal use, and later made available as a free and " LINKNAME("https://github.com/hundredrabbits/Dotgrid", "open source") " software.");
 add_html(&dotgrid, MODITCHIO("190851"));
@@ -437,7 +436,7 @@ add_link(&dotgrid, "builds", "http://hundredrabbits.itch.io/Dotgrid");
 add_link(&dotgrid, "live", "https://hundredrabbits.github.io/Dotgrid");
 add_link(&dotgrid, "community", "https://hundredrabbits.itch.io/Dotgrid/community");
 
-Term left = create_term(&tools, "left", "Left is a plaintext editor.");
+Term left = create_album(&tools, "left", "Left is a plaintext editor.");
 add_text(&left, "Left is <b>distractionless plaintext editor</b> designed to quickly navigate between segments of an essay, or multiple documents. It features an auto-complete, synonyms suggestions, writing statistics, markup-based navigation and a speed-reader.");
 add_text(&left, "The " LINKNAME("https://github.com/hundredrabbits/Left", "application") " was initially created to help " SEND("rekka") " with the writing of the upcoming novel " SEND("wiktopher") ", and later made available as a free and " LINKNAME("https://github.com/hundredrabbits/Left", "open source") " software.");
 add_html(&left, MODITCHIO("173127"));
@@ -447,13 +446,14 @@ add_link(&left, "download", "http://hundredrabbits.itch.io/Left");
 add_link(&left, "sources", "https://github.com/hundredrabbits/Left");
 add_link(&left, "community", "https://hundredrabbits.itch.io/left/community");
 
-Term nasu = create_term(&tools, "nasu", "Nasu is a spritesheet and nametable editor.");
+Term nasu = create_album(&tools, "nasu", "Nasu is a spritesheet and nametable editor.");
 add_text(&nasu, "Nasu is a spritesheet and nametable editor created to help us design and assemble the assets of our famicom games. It can import and export both .chr spritesheets and .asm nametables.");
 add_text(&nasu, "The " LINKNAME("https://github.com/hundredrabbits/Nasu", "application") " was initially created to help us with the porting of " SEND("Donsol") " to the Famicom, and was later made available as a free and " LINKNAME("https://github.com/hundredrabbits/Nasu", "open source") " software.");
 add_html(&nasu, MODITCHIO("560470"));
 add_text(&nasu, "Learn more by reading the " LINKNAME("https://100r.co/site/nasu.html", "manual") ". If you need <b>help</b>, visit the " LINKNAME("https://hundredrabbits.itch.io/nasu/community", "Community") ".");
 add_link(&nasu, "download", "http://hundredrabbits.itch.io/Nasu");
 add_link(&nasu, "sources", "https://github.com/hundredrabbits/Nasu");
+add_link(&orca, "live", "https://hundredrabbits.github.io/Nasu");
 add_link(&nasu, "community", "https://hundredrabbits.itch.io/nasu/community");
 
 Term utilities = create_term(&software, "utilities", "The Utilities are a collection of little tools created solve specific problems.");
@@ -690,7 +690,7 @@ Term norns = create_term(&hardware, "norns", "The Norns is an open-source DSP co
 add_text(&norns, "I currently maintain a <b>programming tutorial guide</b> for the " SEND("norns") ", which can be found " LINKNAME("https://llllllll.co/t/norns-tutorial/23241", "here") ". You can also find a version of " SEND("orca") " for the Norns " LINKNAME("https://llllllll.co/t/orca/22492", "here") ".");
 add_link(&norns, "tutorial", "https://llllllll.co/t/norns-tutorial/23241");
 
-Term monome = create_term(&hardware, "monome", "The Monome is an open-source controller, each of its 128 keys can light up between 16 levels of brightness.");
+Term monome = create_album(&hardware, "monome", "The Monome is an open-source controller, each of its 128 keys can light up between 16 levels of brightness.");
 add_text(&monome, "I presently use the device for audio & visual experiments under the " SEND("alicef") " alias, ultimately I would like to carry the " SEND("monome") " and the " SEND("norns") " along with me on stage during events.");
 add_text(&monome, "I created a handful of scripts for the device, such as the implementations for the " LINKNAME("https://github.com/neauoire/linn", "Linnstrument Keyboard layout") ", and " LINKNAME("https://github.com/neauoire/rack", "Ableton Drum Rack layout") ".");
 add_link(&monome, "website", "https://monome.org/");
@@ -1253,7 +1253,7 @@ Term canada = create_album(&travel, "canada", "Despite being from there, Canada 
 
 Term mexico = create_album(&travel, "mexico", "That time we lived in Mexico.");
 
-Term devine_lu_linvega = create_term(&hundred_rabbits, "devine lu linvega", "Devine Lu Linvega is a generalist.");
+Term devine_lu_linvega = create_term(&about, "devine lu linvega", "Devine Lu Linvega is a generalist.");
 add_text(&devine_lu_linvega, "<b>Devine Lu Linvega</b> is composing " SENDNAME("audio", "experimental electronic music") ", illustrating the " SENDNAME("visual", "frozen wastelands of a fictional world") ", and developing " SENDNAME("research", "esoteric software") ".");
 add_text(&devine_lu_linvega, "Since 2006, Devine has been populating this " SENDNAME("about", "wiki") " with notes on various topics, including on " SEND("language") ", " SEND("lifestyle") " and " SEND("nutrition") ". You can learn more about their <b>related interests</b> in the " SEND("mirrors") ", and in the " SEND("directory") ".");
 add_text(&devine_lu_linvega, "They currently live aboard a " SENDNAME("pino", "sailboat") ", somewhere along the foggy coast of " SEND("japan") ". You can follow their position " LINKNAME("http://100r.co/live", "here") ", or learn more about offgrid living " LINKNAME("https://100r.co/site/knowledge.html", "here") ".");
@@ -1327,10 +1327,10 @@ add_text(&longtermism, "Is there a way to create and distribute software and ele
 Term journal = create_term(&devine_lu_linvega, "journal", "The Journal shows recent activity.");
 add_link(&journal, "rss feed", "https://wiki.xxiivv.com/links/rss.xml");
 
-Term tracker = create_term(&journal, "tracker", "The Tracker shows issues and balance.");
+Term tracker = create_term(&journal, "tracker", "The Tracker shows latest changes of the journal.");
 add_link(&tracker, "rss feed", "https://wiki.xxiivv.com/links/rss.xml");
 
-Term calendar = create_term(&journal, "calendar", "The Calendar shows upcoming and past events.");
+Term calendar = create_term(&journal, "calendar", "The Calendar shows upcoming and past events of the journal.");
 add_link(&calendar, "rss feed", "https://wiki.xxiivv.com/links/rss.xml");
 
 Term inventory = create_portal(&devine_lu_linvega, "inventory", "The collection of technical details on the Inventory.");
@@ -1711,4 +1711,4 @@ add_link(&japanese, "sci.lang.japan", "http://rut.org/~wmaton/www/pub/jap.guide.
 
 Term russian = create_term(&language, "russian", "The Russian page is a collection of Russian study notes.");
 
-Term *lexicon[] = { &home, &audio, &visual, &research, &about, &license, &tracker, &journal, &calendar, &dodecae, &efli, &alicef, &aliceffekt, &es_gulf_sunflowers, &damoiseau_canalx, &the_sixth_season, &hex_hive_necklace, &victorian_punch, &rekka, &wiktopher, &hundred_rabbits, &drownspire, &merure, &vambits, &pino, &grimgrains, &illustration, &beldam_records, &ten_axitecture, &miniscopie, &ramiel, &eschatolor, &looking_glace, &verreciel_soundtrack, &getapan_728k, &azolla, &malice, &collected_works, &markl, &verreciel, &modernista, &nereid, &beauty, &serventines, &polygore, &pearls, &occulter, &oquonie, &oquonie_guide, &camilare, &babelium, &physical, &polygonoscopy, &methascope, &kaleidoscope, &hypervoid, &brane, &astratas, &ar_moire, &nervous, &artwork, &sketchbook, &flactals, &old_cities, &lard_shader, &ring_of_scales, &neauismetic, &vetetrandes_lettres, &from_saharaphorest, &ehrivevnv_studies, &yajnev_studies, &telekinetic, &telekinesis, &software, &nataniev, &oscean, &indental, &tablatal, &lain, &runic, &horaire, &nataniev_time, &neralie, &arvelie, &webring, &merveilles, &rotonde, &riven, &tools, &orca, &juni, &pilot, &ronin, &dotgrid, &left, &nasu, &utilities, &noodle, &enfer, &paradise, &maeve, &parade, &games, &hardware, &raspberry, &media_station, &radio_station, &framboisedorf, &weather_station, &instrument, &assembly, &microbit, &playground, &norns, &monome, &mobile, &bifurcan, &keyboard_468, &alphavetist, &vocavularist, &rafinograde, &noirca, &dew, &ledoliel, &automatons, &the_will_the_wisp, &dictionarism, &glossolaliarium, &advent_v, &unity, &siseon, &zjeveni, &drypoint, &valentinel_hopes, &cenote, &cyanosis_fever, &donsol, &hiversaires, &purgateus, &collegiennes, &diluvium, &volkenessen, &waiting_for_horus, &marabu, &pico3, &pico_battle, &spagettini_scale, &spool_holder, &laeisthic, &children_of_bramble, &known_magye, &extended_sleep, &duomic, &opal_inquisitors, &portalion, &dei_dain, &habitants_du_soleil, &lives, &shikanokoa_vs_1h1d, &pedestrian_paradise, &nor_let_the_fools, &to_the_aeons_hell, &vermillionth, &time_alloy, &demo, &superworker, &supervisitor, &soundtrack, &oquonie_soundtrack, &rabbits_soundtrack, &purgateus_soundtrack, &noon_guest, &remix, &typography, &vast, &defraction_optics, &thousand_rooms, &wallpapers, &neauismetica, &neon_hermetism, &feu, &actors, &ehrivevnv, &soies, &longest_end, &soies_machine, &soies_injection, &neausea, &nohlxeserre, &dinaisth, &kanikule, &vetetrandes, &laeisth, &andes_castel, &duomo, &neau, &dilitriel, &aitasla, &characters, &rlionn, &neonev, &andes, &yajnev, &paradichlorisse, &photography, &macro, &personal, &film, &black, &infrared, &travel, &the_sublime, &japan, &minamiise, &shizuoka, &ogasawara, &yokohama, &fuji, &osaka, &tokyo, &fiji, &marquesas, &marshall_islands, &niue, &mexico, &france, &new_zealand, &america, &canada, &germany, &austria, &czech, &netherlands, &lifestyle, &aesthetics, &nomad, &nutrition, &routine, &longtermism, &inventory, &everyday, &skate, &bike, &studio, &computer, &plan9, &camera, &keyboard, &directory, &bookmarks, &readings, &goals, &death, &faqs, &audio_faqs, &visual_faqs, &research_faqs, &lifestyle_faqs, &mirrors, &wisdom, &action, &inaction, &knowledge, &programming, &design, &work, &writing, &health, &ethics, &technology, &ascetism, &discourse, &vegan, &morals, &documentation, &quotes, &language, &english, &notebook, &the_sartre_mechanism, &talk, &systems, &vedic, &needles, &shorthand, &unreleased, &blindfolk, &milavrega, &devine_lu_linvega, &first_wave, &regionsteam_snowdays, &downtemperature, &blam, &vert_kirlian_theatre, &ann_yozora_saint, &nether_esper_inserts, &otoroutes_miniatures, &idyllic_miners, &lietal, &japanese, &russian };
+Term *lexicon[] = { &home, &audio, &visual, &research, &about, &tracker, &journal, &calendar, &dodecae, &efli, &alicef, &aliceffekt, &es_gulf_sunflowers, &damoiseau_canalx, &the_sixth_season, &hex_hive_necklace, &victorian_punch, &rekka, &wiktopher, &hundred_rabbits, &drownspire, &merure, &vambits, &pino, &illustration, &beldam_records, &ten_axitecture, &miniscopie, &ramiel, &eschatolor, &looking_glace, &verreciel_soundtrack, &getapan_728k, &azolla, &malice, &collected_works, &markl, &verreciel, &modernista, &nereid, &beauty, &serventines, &polygore, &pearls, &occulter, &oquonie, &oquonie_guide, &camilare, &babelium, &physical, &polygonoscopy, &methascope, &kaleidoscope, &hypervoid, &brane, &astratas, &ar_moire, &nervous, &artwork, &sketchbook, &flactals, &old_cities, &lard_shader, &ring_of_scales, &neauismetic, &vetetrandes_lettres, &from_saharaphorest, &ehrivevnv_studies, &yajnev_studies, &telekinetic, &telekinesis, &software, &nataniev, &oscean, &indental, &tablatal, &lain, &runic, &horaire, &nataniev_time, &neralie, &arvelie, &webring, &merveilles, &rotonde, &riven, &tools, &orca, &juni, &pilot, &ronin, &dotgrid, &left, &nasu, &utilities, &noodle, &enfer, &paradise, &maeve, &parade, &games, &hardware, &raspberry, &media_station, &radio_station, &framboisedorf, &weather_station, &instrument, &assembly, &microbit, &playground, &norns, &monome, &mobile, &bifurcan, &keyboard_468, &alphavetist, &vocavularist, &rafinograde, &noirca, &dew, &ledoliel, &automatons, &the_will_the_wisp, &dictionarism, &glossolaliarium, &advent_v, &unity, &siseon, &zjeveni, &drypoint, &valentinel_hopes, &cenote, &cyanosis_fever, &donsol, &hiversaires, &purgateus, &collegiennes, &diluvium, &volkenessen, &waiting_for_horus, &marabu, &pico3, &pico_battle, &spagettini_scale, &spool_holder, &laeisthic, &children_of_bramble, &known_magye, &extended_sleep, &duomic, &opal_inquisitors, &portalion, &dei_dain, &habitants_du_soleil, &lives, &shikanokoa_vs_1h1d, &pedestrian_paradise, &nor_let_the_fools, &to_the_aeons_hell, &vermillionth, &time_alloy, &demo, &superworker, &supervisitor, &soundtrack, &oquonie_soundtrack, &rabbits_soundtrack, &purgateus_soundtrack, &noon_guest, &remix, &typography, &vast, &defraction_optics, &thousand_rooms, &wallpapers, &neauismetica, &neon_hermetism, &feu, &actors, &ehrivevnv, &soies, &longest_end, &soies_machine, &soies_injection, &neausea, &nohlxeserre, &dinaisth, &kanikule, &vetetrandes, &laeisth, &andes_castel, &duomo, &neau, &dilitriel, &aitasla, &characters, &rlionn, &neonev, &andes, &yajnev, &paradichlorisse, &photography, &macro, &personal, &film, &black, &infrared, &travel, &the_sublime, &japan, &minamiise, &shizuoka, &ogasawara, &yokohama, &fuji, &osaka, &tokyo, &fiji, &marquesas, &marshall_islands, &niue, &mexico, &france, &new_zealand, &america, &canada, &germany, &austria, &czech, &netherlands, &lifestyle, &aesthetics, &nomad, &nutrition, &routine, &longtermism, &inventory, &everyday, &skate, &bike, &studio, &computer, &plan9, &camera, &keyboard, &directory, &bookmarks, &readings, &goals, &death, &faqs, &audio_faqs, &visual_faqs, &research_faqs, &lifestyle_faqs, &mirrors, &wisdom, &action, &inaction, &knowledge, &programming, &design, &work, &writing, &health, &ethics, &technology, &ascetism, &discourse, &vegan, &morals, &documentation, &quotes, &language, &english, &grimgrains, &notebook, &the_sartre_mechanism, &talk, &systems, &vedic, &needles, &shorthand, &unreleased, &blindfolk, &milavrega, &devine_lu_linvega, &first_wave, &regionsteam_snowdays, &downtemperature, &blam, &vert_kirlian_theatre, &ann_yozora_saint, &nether_esper_inserts, &otoroutes_miniatures, &idyllic_miners, &lietal, &japanese, &russian };

@@ -16,10 +16,29 @@ void to_lowercase(char *str, char *target, size_t tsize) {
 int index_of(int a[], int num_elements, int value) {
   for (int i = 0; i < num_elements; i++) {
     if (a[i] == value) {
-      return value;
+      return i;
     }
   }
   return -1;
+}
+
+int index_of_string(char *a[], int num_elements, char *value) {
+  for (int i = 0; i < num_elements; i++) {
+    if (strcmp(a[i], value) == 0) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+int extract_year(char *date){
+  char c1 = date[0];
+  char c2 = date[1];
+  char s[] = "45";
+  s[0] = c1;
+  s[1] = c2;
+  int num = atoi(s);
+  return num;
 }
 
 bool file_exists(char *filename) {
@@ -52,13 +71,15 @@ int arvelie_to_doty(char *date) {
   return (m * 14) + d;
 }
 
-char * doty_to_arvelie(int doty){
-  char *months[] = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
+char *doty_to_arvelie(int doty) {
+  char *months[] = {"A", "B", "C", "D", "E", "F", "G", "H", "I",
+                    "J", "K", "L", "M", "N", "O", "P", "Q", "R",
+                    "S", "T", "U", "V", "W", "X", "Y", "Z"};
   int d = doty % 14;
-  int i = floor(doty/14);
+  int i = floor(doty / 14);
   char *m = months[i];
 
-  printf("Date is: %d%s%d\n",20, m, d);
+  printf("Date is: %d%s%d\n", 20, m, d);
   return "";
 }
 
@@ -95,7 +116,7 @@ void future_time() {
   struct tm str_time;
   time_t time_of_day;
 
-  str_time.tm_year = 2012-1900;
+  str_time.tm_year = 2012 - 1900;
   str_time.tm_mon = 6;
   str_time.tm_mday = 5;
   str_time.tm_hour = 10;

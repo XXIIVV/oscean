@@ -113,13 +113,13 @@ Dict create_dict(char *name) {
 }
 
 void add_word(Dict *dict, char *key, char *value) {
-  if(dict->words_len >= DICT_BUFFER){ 
+  if (dict->words_len >= DICT_BUFFER) {
     printf("Reached DICT_BUFFER\n");
     return;
   }
   dict->keys[dict->words_len] = key;
   dict->values[dict->words_len] = value;
-  dict->words_len++;  
+  dict->words_len++;
 }
 
 List create_list(char *name) {
@@ -130,12 +130,12 @@ List create_list(char *name) {
 }
 
 void add_item(List *list, char *item) {
-  if(list->items_len >= LIST_BUFFER){ 
+  if (list->items_len >= LIST_BUFFER) {
     printf("Reached LIST_BUFFER\n");
     return;
   }
   list->items[list->items_len] = item;
-  list->items_len++;  
+  list->items_len++;
 }
 
 Term create_term(Term *parent, char *name, char *bref) {
@@ -192,28 +192,20 @@ void add_body(Term *term, char *text, char *tag, char *meta) {
   term->body_len++;
 }
 
-void add_html(Term *term, char *text) {
-  add_body(term, text, "div", NULL);
-}
+void add_html(Term *term, char *text) { add_body(term, text, "div", NULL); }
 
-void add_text(Term *term, char *text) {
-  add_body(term, text, "p", NULL);
-}
+void add_text(Term *term, char *text) { add_body(term, text, "p", NULL); }
 
-void add_header(Term *term, char *text) {
-  add_body(term, text, "h3", NULL);
-}
+void add_header(Term *term, char *text) { add_body(term, text, "h3", NULL); }
 
-void add_subheader(Term *term, char *text) {
-  add_body(term, text, "h4", NULL);
-}
+void add_subheader(Term *term, char *text) { add_body(term, text, "h4", NULL); }
 
 void add_quote(Term *term, char *text, char *source) {
   add_body(term, text, "q", source);
 }
 
-void add_dict(Term *term, Dict *dict){
-  if(term->dicts_len >= TERM_DICT_BUFFER){ 
+void add_dict(Term *term, Dict *dict) {
+  if (term->dicts_len >= TERM_DICT_BUFFER) {
     printf("Reached TERM_DICT_BUFFER\n");
     return;
   }
@@ -221,8 +213,8 @@ void add_dict(Term *term, Dict *dict){
   term->dicts_len++;
 }
 
-void add_list(Term *term, List *list){
-  if(term->dicts_len >= TERM_LIST_BUFFER){ 
+void add_list(Term *term, List *list) {
+  if (term->dicts_len >= TERM_LIST_BUFFER) {
     printf("Reached TERM_LIST_BUFFER\n");
     return;
   }
@@ -231,7 +223,7 @@ void add_list(Term *term, List *list){
 }
 
 void add_link(Term *term, char *name, char *url) {
-  if(term->links_len >= TERM_LINK_BUFFER){
+  if (term->links_len >= TERM_LINK_BUFFER) {
     printf("Reached TERM_LINK_BUFFER\n");
     return;
   }
@@ -265,18 +257,22 @@ void add_log(Term *term, char *date, int code) {
 void scan_pict_next() {
   for (int i = 1; i < 999; ++i) {
     int index = index_of(pict_used, pict_used_len, i);
-    if(index < 0){
+    if (index < 0) {
       printf("Next Id: %d\n", i);
       return;
     }
   }
 }
 
-Log *find_last_diary(Term *term){
+Log *find_last_diary(Term *term) {
   for (int i = 0; i < all_logs.len; ++i) {
     Log *l = &all_logs.logs[i];
-    if(l->term != term){ continue; }
-    if(l->pict < 1){ continue; }
+    if (l->term != term) {
+      continue;
+    }
+    if (l->pict < 1) {
+      continue;
+    }
     return l;
   }
   return NULL;
@@ -469,19 +465,39 @@ void build_links(FILE *f, Term *term){
 }
 
 void build_horaire(FILE *f, Term *term){
+  int len = 0;
+  int events_len = 0;
+
+  for (int i = 0; i < all_logs.len; ++i) {
+    Log *l = &all_logs.logs[i];
+    if (l->term != term && l->term->parent != term) { continue; }
+    if (l->is_event == true) { events_len += 1; }
+    // int log_ch = (l->code / 10) % 10;
+    // int log_fh = l->code % 10;
+    len += 1;
+  }
+
+  if (len < 2) {
+    return;
+  }
+
   for (int i = 0; i < all_logs.len; ++i) {
     Log *l = &all_logs.logs[i];
     if(l->term != term){ continue; }
-    fprintf(f, "<p><i>Last update on <a href='https://github.com/xxiivv/oscean' target='_blank' class='external'>%s</a>.</i></p>", l->date);  
+    fprintf(f, "<p><i>Last update on <a href='tracker.html'>%s</a>, edited %d times.</i></p>", l->date, len);  
     break;
   }
 
+  if (events_len < 1) {
+    return;
+  }
+  
   fputs("<ul>", f);
   for (int i = 0; i < all_logs.len; ++i) {
-    Log l = all_logs.logs[i];
-    if(l.term != term){ continue; }
-    if(l.is_event != true){ continue; }
-    fprintf(f, "<li>%s — %s</li>", l.date, l.name);
+    Log *l = &all_logs.logs[i];
+    if(l->term != term && l->term->parent != term){ continue; }
+    if(l->is_event != true){ continue; }
+    fprintf(f, "<li>%s — %s</li>", l->date, l->name);
   }
   fputs("</ul>", f);
 }
@@ -489,21 +505,57 @@ void build_horaire(FILE *f, Term *term){
 void build_special_calendar(FILE *f, Term *term, Journal *journal){
   if(strcmp(term->name, "calendar") != 0){ return; }
 
+  int last_year = 0;
   fputs("<ul>", f);
   for (int i = 0; i < journal->len; ++i) {
     if(journal->logs[i].is_event != true){ continue; }
-    fprintf(f, "<li>%s - %s</li>", journal->logs[i].date, journal->logs[i].name);  
+
+    if(last_year != extract_year(journal->logs[i].date)){
+      fprintf(f, "</ul><ul>", extract_year(journal->logs[i].date));
+    }
+
+    char filename[STR_BUF_LEN];
+    to_lowercase(journal->logs[i].term->name, filename, STR_BUF_LEN);
+
+    fprintf(f, "<li><a href='%s.html'>%s</a> %s</li>", filename, journal->logs[i].date, journal->logs[i].name);  
+    last_year = extract_year(journal->logs[i].date);
   }
   fputs("</ul>", f);
 }
 
-// void build_special_tracker(FILE *f, Term *term){
-//   if(strcmp(term->name, "tracker") != 0){ return; }
+void build_special_tracker(FILE *f, Term *term, Journal *journal) {
+  if (strcmp(term->name, "tracker") != 0) {
+    return;
+  }
 
-// }
+  int known_id = 0;
+  char *known[999] = {};
+  int last_year = 0;
 
-void build_special_journal(FILE *f, Term *term, Journal *journal){
-  if(strcmp(term->name, "journal") != 0){ return; }
+  fputs("<ul>", f);
+  for (int i = 0; i < journal->len; ++i) {
+    if (index_of_string(known, known_id, journal->logs[i].term->name) > -1) {
+      continue;
+    } 
+    if(last_year != extract_year(journal->logs[i].date)){
+      fprintf(f, "</ul><ul>", extract_year(journal->logs[i].date));
+    }
+
+    char filename[STR_BUF_LEN];
+    to_lowercase(journal->logs[i].term->name, filename, STR_BUF_LEN);
+
+    fprintf(f, "<li><a href='%s.html'>%s</a> — last update %s</li>", filename, journal->logs[i].term->name, journal->logs[i].date);
+    last_year = extract_year(journal->logs[i].date);
+    known[known_id] = journal->logs[i].term->name;
+    known_id++;
+  }
+  fputs("</ul>", f);
+}
+
+void build_special_journal(FILE *f, Term *term, Journal *journal) {
+  if (strcmp(term->name, "journal") != 0) {
+    return;
+  }
 
   int count = 0;
   for (int i = 0; i < journal->len; ++i) {
@@ -547,7 +599,7 @@ void build_page(Term *term, Journal *journal) {
   build_horaire(f, term);
 
   build_special_calendar(f, term, journal);
-  // build_special_tracker(f, term);
+  build_special_tracker(f, term, journal);
   build_special_journal(f, term, journal);
 
   fputs("</main>", f);

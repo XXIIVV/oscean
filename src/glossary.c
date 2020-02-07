@@ -60,7 +60,8 @@ add_word(&psychology_lexicon, "Priming", "Psychological phenomenon that consists
 add_word(&psychology_lexicon, "Confabulation", "Remembering something that never actually happened.");
 add_word(&psychology_lexicon, "Salience", "The perceptual quality by which an observable thing stands out relative to its environment.");
 add_word(&psychology_lexicon, "Method of loci", "A method of memory enhancement which uses visualizations with the use of spatial memory to quickly and efficiently recall information.");
- 
+add_word(&psychology_lexicon, "Hedonic Treadmill", "The tendency of humans to quickly return to a relatively stable level of happiness despite major positive or negative events life changes. As a person makes more money, expectations and desires rise in tandem, which results in no permanent gain in happiness.");
+
 Dict personalities = create_dict("personalities");
 add_word(&personalities, "Extraversion Introversion", "Represents the source and direction of a person’s energy expression. An extravert’s source and direction of energy expression is mainly in the external world, while an introvert has a source of energy mainly in their own internal world.");
 add_word(&personalities, "Sensing Intuition", "Represents the method by which someone perceives information. Sensing means that a person mainly believes information they receive directly from the external world. Intuition means that a person believes mainly information they receive from the internal or imaginative world.");
@@ -73,8 +74,6 @@ add_word(&sociology, "Effective Altruism", "A philosophy and social movement tha
 add_word(&sociology, "Utilitarianism", "A moral philosophy that says that what matters is the sum of everyone's well-being, or the \"greatest good for the greatest number\".");
 add_word(&sociology, "Hedonism", "A moral philosophy that says that the highest goal is to maximize pleasure(esp. pleasure minus pain), or that the only things that are good or bad are concious states.");
 add_word(&sociology, "Altruism", "Actions undertaken for the benefit of other people. Example: If you do something to feel good about helping people, or even to be a better person in some spiritual sense, it isn't truly altruism.");
-add_word(&sociology, "Hedonic Treadmill", "A tendency of humans to quickly return to a relatively stable level of happiness despite major positive or negative events or life changes.");
-add_word(&sociology, "Hedonistic Imperative", "The Hedonistic Imperative outlines how genetic engineering and nanotechnology will abolish suffering in all sentient life.");
 add_word(&sociology, "Longtermism", "A design philosophy to build products for the long term.");
 add_word(&sociology, "The Veil Of Ignorance", "Imagine yourself behind a veil of ignorance. Behind this veil, you know nothing of yourself and your natural abilities, position in society, sex, race, nationality, or individual tastes. Behind such a veil of ignorance all individuals are simply specified as rational, free, and morally equal beings. Although you could never actually eliminate all of your personal biases and prejudices, you would need to take steps at least to minimize them.");
 add_word(&sociology, "Behavioral sink", "A term used to describe the collapse in behavior(stress, alienation, hostility, sexual perversion, parental incompetence, and rabid violence) which resulted from overcrowdedness in an experiment on mice, drawing parallels with societal collapse found in the human Megalopolis.");
@@ -386,6 +385,7 @@ add_word(&technology_links, "Sustainable Web", "https://sustainablewebmanifesto.
 add_word(&technology_links, "Local First Software", "https://www.inkandswitch.com/local-first.html");
 add_word(&technology_links, "Paper Phone", "http://specialprojects.studio/project/paper-phone");
 add_word(&technology_links, "LOT2046", "https://www.lot2046.com");
+add_word(&technology_links, "mnmllist", "https://mnmll.ist/");
  
 Dict hardware_links = create_dict("hardware links");
 add_word(&hardware_links, "Fairphone", "https://fairphone.com/en");
@@ -592,6 +592,8 @@ add_word(&videogames, "Journey", "ThatGameCompany. 2012");
 add_word(&videogames, "MDK", "Shiny. 1997");
 add_word(&videogames, "Riven", "Cyan Interactive. 1997");
  
+// Readings
+
 Dict reading_list_2016 = create_dict("reading list 2016");
 add_word(&reading_list_2016, "Seraffyn's Oriental Adventure", "Lin & Larry Pardey");
 add_word(&reading_list_2016, "Guns, Germs & Steel", "Jared M. Diamond");
@@ -674,6 +676,7 @@ add_word(&reading_list_2020, "6502 Assembly Programming Language", "Mike Smith")
 add_word(&reading_list_2020, "Elements of Computing Systems", "Noam Nisan & Shimon Schocken");
 add_word(&reading_list_2020, "Made to break", "Giles Slade");
 add_word(&reading_list_2020, "Wandering Island", "Kenji Tsuruta");
+add_word(&reading_list_2020, "Nouvelles pensées échevelées", "Stanislaw Jerzy Lec");
 
 Dict macbook_workstation = create_dict("macbook workstation");
 add_word(&macbook_workstation,"System", "MacBook Pro Retina, 13\". 2014");
