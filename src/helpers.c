@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 void to_lowercase(char *str, char *target, size_t tsize) {
   for (size_t i = 0; i < tsize; i++) {
     target[i] = str[i];
@@ -112,9 +114,8 @@ void debug_time() {
   printf("Day of the year is: %d\n", get_doty(year, month, day));
 }
 
-void future_time() {
+time_t future_time() {
   struct tm str_time;
-  time_t time_of_day;
 
   str_time.tm_year = 2012 - 1900;
   str_time.tm_mon = 6;
@@ -124,6 +125,5 @@ void future_time() {
   str_time.tm_sec = 5;
   str_time.tm_isdst = 0;
 
-  time_of_day = mktime(&str_time);
-  // printf(ctime(&time_of_day));
+  return mktime(&str_time);
 }

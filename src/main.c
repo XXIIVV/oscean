@@ -511,7 +511,7 @@ void build_special_calendar(FILE *f, Term *term, Journal *journal){
     if(journal->logs[i].is_event != true){ continue; }
 
     if(last_year != extract_year(journal->logs[i].date)){
-      fprintf(f, "</ul><ul>", extract_year(journal->logs[i].date));
+      fprintf(f, "</ul><ul>");
     }
 
     char filename[STR_BUF_LEN];
@@ -529,7 +529,7 @@ void build_special_tracker(FILE *f, Term *term, Journal *journal) {
   }
 
   int known_id = 0;
-  char *known[999] = {};
+  char *known[999];
   int last_year = 0;
 
   fputs("<ul>", f);
@@ -538,7 +538,7 @@ void build_special_tracker(FILE *f, Term *term, Journal *journal) {
       continue;
     } 
     if(last_year != extract_year(journal->logs[i].date)){
-      fprintf(f, "</ul><ul>", extract_year(journal->logs[i].date));
+      fprintf(f, "</ul><ul>");
     }
 
     char filename[STR_BUF_LEN];
@@ -609,7 +609,7 @@ void build_page(Term *term, Journal *journal) {
   fclose(f);
 }
 
-void build_rss(Journal *logs){
+void build_rss(){ // time_t
   FILE *f = fopen("../links/rss.xml", "w");
 
   fputs("<?xml version='1.0' encoding='UTF-8' ?><rss version='2.0' xmlns:dc='http://purl.org/dc/elements/1.1/'>", f);
