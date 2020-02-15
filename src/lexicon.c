@@ -393,7 +393,7 @@ add_quote(&orca, "Each letter of the alphabet is an operation, uppercase letters
 add_link(&orca, "sources", "https://github.com/hundredrabbits/Orca");
 add_link(&orca, "builds", "http://hundredrabbits.itch.io/Orca");
 add_link(&orca, "live", "https://hundredrabbits.github.io/Orca");
-add_link(&orca, "community", "https://hundredrabbits.itch.io/Orca/community");
+add_link(&orca, "chatroom", "https://chat.toplap.org/channel/orca");
 add_link(&orca, "demo", "https://twitter.com/neauoire/status/1064738259077554176");
 
 Term juni = create_album(&orca, "juni", "Juni one-handed chorded keyboard.");
@@ -449,7 +449,7 @@ add_html(&nasu, MODITCHIO("560470"));
 add_text(&nasu, "Learn more by reading the " LINKNAME("https://100r.co/site/nasu.html", "manual") ". If you need <b>help</b>, visit the " LINKNAME("https://hundredrabbits.itch.io/nasu/community", "Community") ".");
 add_link(&nasu, "download", "http://hundredrabbits.itch.io/Nasu");
 add_link(&nasu, "sources", "https://github.com/hundredrabbits/Nasu");
-add_link(&orca, "live", "https://hundredrabbits.github.io/Nasu");
+add_link(&nasu, "live", "https://hundredrabbits.github.io/Nasu");
 add_link(&nasu, "community", "https://hundredrabbits.itch.io/nasu/community");
 
 Term utilities = create_index(&visual, "utilities", "The Utilities are a collection of little tools created solve specific problems.");
