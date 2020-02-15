@@ -301,8 +301,8 @@ add_text(&nataniev, "<b>Nataniev</b> is a collection of free and open-source sof
 
 Term oscean = create_index(&nataniev, "oscean", "Oscean is a flat-file wiki engine.");
 add_text(&oscean, "<b>Oscean</b> is a static wiki engine written entirely in" LINKNAME("https://en.wikipedia.org/wiki/C99", "C99") ", designed to be deployed from " SENDNAME("raspberry", "low-power devices") " with " LINKNAME("https://en.wikipedia.org/wiki/GNU_Compiler_Collection", "gcc") " as its only dependecy. The engine has grown into a collection of tools, including the time tracking software " SEND("horaire") ", as well as the time formats " SEND("neralie") " & " SEND("arvelie") ".");
-add_text(&oscean, "The generated files use no javascript, are optimized for screen-readers and terminal browsers, the entire CSS content of the entire site should be under 1kb.");
-add_text(&oscean, "The software architecture is inspired by " SEND("longtermism") ".");
+add_text(&oscean, "The wiki and related tools are designed to be used offline first, so the content is generally accessed and edited locally, there are no offsite queries for critical resources.");
+add_text(&oscean, "The generated files use no javascript, are optimized for screen-readers and terminal browsers, the entire CSS content of the entire site should be under 1kb. The software architecture is inspired by " SEND("longtermism") ".");
 add_link(&oscean, "sources", "https://github.com/XXIIVV/Oscean");
 add_link(&oscean, "live", "https://wiki.xxiivv.com");
 

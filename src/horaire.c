@@ -1,4 +1,5 @@
 add_event(&japan, "20D09", 0, "Travel to Minamiise, Japan");
+add_log(&oscean, "20D03", 321);
 add_event(&orca, "20C12", 396, "Orca Workshop Mila, Montreal");
 add_log(&nasu, "20C11", 356);
 add_log(&oscean, "20C10", 335);

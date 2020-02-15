@@ -395,6 +395,7 @@ add_word(&hardware_links, "Pinebook", "https://pine64.org/pinebook");
 add_word(&hardware_links, "Starlabs", "https://ca.starlabs.systems");
 add_word(&hardware_links, "System76", "https://system76.com");
 add_word(&hardware_links, "Blloc Phone", "https://www.blloc.com");
+add_word(&hardware_links, "Curta Calculator", "http://www.vcalc.net/cu.htm");
  
 Dict operating_system_links = create_dict("operating system links");
 add_word(&operating_system_links, "FreeBSD", "https://wiki.freebsd.org/FreeBSD/arm/Raspberry%20Pi");
