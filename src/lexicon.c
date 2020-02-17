@@ -8,12 +8,12 @@
 #define MODBANDCAMP(bandcamp_id) "<iframe style='border: 0; width: 600px; height: 274px;' src='https://bandcamp.com/EmbeddedPlayer/album="bandcamp_id"/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/' seamless></iframe>"
 #define MODYOUTUBE(youtube_id) "<iframe width='100%' height='380' src='https://www.youtube.com/embed/"youtube_id"?rel=0' style='max-width:700px' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe>"
 #define MODFRAME(frame_id) "<iframe width='100%' height='380' src='"frame_id"' style='border:0' allowfullscreen></iframe>"
-#define IMAGE(name) "<img src='../media/identity/" name "'/>"
+#define IMAGE(folder, name) "<img src='../media/" folder "/" name "'/>"
 
 // Terms
 
 Term home = create_term(NULL, "home", "");
-add_html(&home, IMAGE("orb.png"));
+add_html(&home, IMAGE("identity", "orb.png"));
 add_text(&home, "See " SENDNAME("tracker", "recent changes") ".");
 
 Term audio = create_portal(&home, "audio", "The Audio portal hosts various soundtrack, records and live projects.");
@@ -458,24 +458,22 @@ add_text(&utilities, "A collection of small applications that don't quite have a
 Term noodle = create_term(&utilities, "noodle", "Noodle is a sketching tool.");
 add_text(&noodle, "Noodle is a <b>pixel drawing tool</b> based on the " LINKNAME("https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm", "Bresenham algorithm") ". You can use it directly in your browser " LINKNAME("https://hundredrabbits.github.io/Noodle/", "here") ".");
 add_text(&noodle, "Noodle is the first in a series of image processing tools, exploring the concept of " LINKNAME("https://brandur.org/small-sharp-tools", "Small Sharp Tools") " for graphical tasks, as an alternative take to the general purpose software " SEND("ronin") ".");
-add_text(&noodle, "The companion " LINKNAME("https://hundredrabbits.github.io/Poodle/", "scene tool") " is designed to create perspective guide lines with the noodle Bresenham look.");
-add_text(&noodle, "The companion " LINKNAME("https://hundredrabbits.github.io/Moogle/", "cropping tool") " is designed to handle all resizing and cropping tasks, instead of adding these features directly into Noodle.");
+add_html(&noodle, MODYOUTUBE("zvO5JRF47bc"));
+add_text(&noodle, "The companion " LINKNAME("https://hundredrabbits.github.io/Poodle/", "scene tool") " is designed to create perspective guide lines with the noodle Bresenham look. The companion " LINKNAME("https://hundredrabbits.github.io/Moogle/", "cropping tool") " is designed to handle all resizing and cropping tasks, instead of adding these features directly into Noodle.");
 add_text(&noodle, "You can see a collection of drawings created with this tool " LINKNAME("https://neauoire.github.io/neauismea/", "here") ".");
 add_link(&noodle, "sources", "https://github.com/hundredrabbits/Noodle");
 add_link(&noodle, "live", "https://hundredrabbits.github.io/Noodle");
 add_link(&noodle, "inktober 2019", "https://neauoire.github.io/neauismea");
 
 Term enfer = create_term(&utilities, "enfer", "Enfer is a virtual synthetiser.");
-// set_icon(&enfer, "M60,60 a60,60 0 0,1 60,60 l0,120 M180,240 l0,-120 a60,-60 0 0,1 60,-60");
 add_text(&enfer, "<b>Enfer</b> is a web-based sampler and synthetiser designed to be used with " SEND("orca") ", it is the tool that created the sound for the " SEND("azolla") " tracks.");
 add_text(&enfer, "The sampler is meant to be used with the " LINKNAME("https://www.akaipro.com/lpd8-lpd8", "Akai LPD8") " midi controller while livecoding, its interface is reflecting the state of the knobs on the controller.");
+add_html(&enfer, MODYOUTUBE("iYEUthDpYbQ"));
 add_link(&enfer, "sources", "https://github.com/neauoire/Enfer");
 
 Term games = create_portal(&visual, "games", "The Games are a collection of experimental interactive projects.");
-// set_icon(&games, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
 
 Term markl = create_term(&games, "markl", "Markl is a TAIBA game. In Development.");
-// set_icon(&markl, "M105,150 L150,240  M195,150 L150,240  M150,60 L60,240  M150,60 L240,240");
 add_text(&markl, "<b>Markl</b> is a game in which players must " LINKNAME("https://twitter.com/hundredrabbits/status/916842882677358592", "program") " their character's fighting style, to face various opponents in a battle happening too fast for humans to compete.");
 add_text(&markl, "There are 4 characters to choose from, with unique attributes and stats, allowing for varied loadouts and combat styles.");
 add_text(&markl, "The game will be released as " SENDNAME("hundred_rabbits", "hundred rabbits") " in the fall of 2019, for all desktop platforms. The game supersedes the " SEND("blindfolk") " project.");
@@ -1633,20 +1631,20 @@ Term talk = create_term(&notebook, "talk", "For when I Talk in public.");
 add_text(&talk, "Often gravitating around the topics of " SEND("nataniev") ", " SEND("oscean") " and " SEND("horaire") ", the <code>/Talk</code> is used mainly as a marker for Live events.");
 add_link(&talk, "sources", "https://github.com/neauoire/Talk-Amaze");
 
-Term systems = create_term(&notebook, "systems", "Various experimental writing and numerical Systems.");
+Term systems = create_index(&notebook, "systems", "Various experimental writing and numerical Systems.");
 
 Term vedic = create_term(&systems, "vedic", "The Vedic multiplication table is a very elegant and visual way to multiply.");
 add_text(&vedic, "To find the result, draw lines for each individual numbers, where each number intersects the other's perpendicularly and <b>count the number of intersections</b>.");
-// add_generic/vedic.svg(&vedic, "undefined");
+add_html(&vedic, IMAGE("generic", "vedic.svg"));
 
 Term needles = create_term(&systems, "needles", "Needles are glyphs of which the intersection count is equal to the value of the character.");
 add_text(&needles, "The glyphs are not used into any specific project, but are available here as a reference of a meaningful numeric glyph system.");
-// add_generic/needles.svg(&needles, "undefined");
+add_html(&needles, IMAGE("generic", "needles.svg"));
 
 Term shorthand = create_term(&systems, "shorthand", "Shorthand is a calligraphy style developed to take faster notes.");
 add_text(&shorthand, "I played with different ideas and this is the system that worked best for me. It's a mixture of already existing shorthand systems that fits my writing style.");
-// add_generic/shorthand.svg(&shorthand, "undefined");
 add_text(&shorthand, "Simple enough, now most letters are transformed into a single stroke shape that flows and combines to form shorter words, that can be written faster.");
+add_html(&shorthand, IMAGE("generic", "shorthand.svg"));
 
 Term marabu = create_term(&unreleased, "marabu", "Marabu is a music tool.");
 add_text(&marabu, "<b>Marabu</b> is cross-platform tracker-type composition tool and synthesizer.");
