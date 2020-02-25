@@ -1185,7 +1185,7 @@ Term japan = create_portal(&travel, "japan", "A variety of diary entries written
 add_quote(&japan, "Let's never come here again 'cos it would never be as much fun.", "Charlotte, Lost in Translation");
 
 Term minamiise = create_album(&japan, "minamiise", "We sailed to Minamiise in the spring of 2019, from Shizuoka.");
-add_text(&minamiise, "Damp forest roads, misty mountains and ghost towns.");
+add_text(&minamiise, "Go to the last train station, take the bus and get off at the last stop, walk to the end of town and proceed into the forest. When the forest ends and you find yourself on the shore, you will have arrived.");
 
 Term shizuoka = create_album(&japan, "shizuoka", "We sailed to Shizuoka in the late winter of 2019, from Ogasawara.");
 add_text(&shizuoka, "We moved to <a href='#shizuoka' data-goto='shizuoka' target='_self' class='local '>Shizuoka</a> which offers the most beautiful sight of " SEND("fuji") ".");
