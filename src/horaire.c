@@ -1,5 +1,6 @@
-add_log(&pino, "20E01", 226);
-add_log(&pino, "20D14", 326);
+add_log(&donsol, "20E02", 366);
+add_log(&pino, "20E01", 225);
+add_log(&pino, "20D14", 324);
 add_event(&japan, "20D09", 0, "Travel to Minamiise, Japan");
 add_log(&oscean, "20D03", 321);
 add_event(&orca, "20C12", 396, "Orca Workshop Mila, Montreal");
