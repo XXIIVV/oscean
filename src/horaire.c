@@ -1,4 +1,5 @@
-add_log(&donsol, "20E02", 366);
+add_log(&donsol, "20E03", 345);
+add_log(&donsol, "20E02", 266);
 add_log(&pino, "20E01", 225);
 add_log(&pino, "20D14", 324);
 add_event(&japan, "20D09", 0, "Travel to Minamiise, Japan");
