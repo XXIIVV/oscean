@@ -34,7 +34,7 @@ add_header(&about, "License");
 add_text(&about, "The license applies to all the <b>documented projects, the projects themselves and their assets</b>. The " LINKNAME("http://github.com/XXIIVV/Oscean", "platform code") " is under the <b>MIT License</b>. The " LINKNAME("https://creativecommons.org/licenses/by-nc-sa/4.0/", "assets and text content") " is under the <b>BY-NC-SA4.0 License</b>.");
 add_text(&about, "<i>You are free to</i>: <b>Share</b>: copy and redistribute the material in any medium or format. <b>Adapt</b>: remix, transform, and build upon the material.");
 add_text(&about, "<i>Under the following terms</i>: <b>Attribution</b>: You must give appropriate credit. <b>NonCommercial</b>: You may not use the material for commercial purposes. <b>ShareAlike</b>: You must distribute your contributions under the same license.");
-add_text(&about, "If you have any <b>question or feedback</b>, please submit a " LINKNAME("https://github.com/XXIIVV/Oscean/issues/new", "bug report") ".");
+add_text(&about, "If you have any <b>question or feedback</b>, please submit a " LINKNAME("https://github.com/XXIIVV/Oscean/issues/new", "bug report") ". You can learn more about the " SENDNAME("oscean", "related tools") " by visiting the " SEND("nataniev") " portal, or by reading the " SEND("faqs") ". For additional informations, contact " SENDNAME("devine_lu_linvega", "Devine Lu Linvega") ".");
 add_link(&about, "source files", "https://github.com/XXIIVV/Oscean");
 add_link(&about, "rss feed", "https://wiki.xxiivv.com/links/rss.xml");
 add_link(&about, "activitypub", "https://bots.tinysubversions.com/u/neauoire/");
@@ -54,7 +54,7 @@ add_link(&aliceffekt, "bandcamp", "https://aliceffekt.bandcamp.com");
 
 Term hundred_rabbits = create_album(&about, "hundred rabbits", "Hundred Rabbits is a design studio on a sailboat.");
 add_text(&hundred_rabbits, "This partnership is host to interactive projects like " SEND("oquonie") ", " SEND("grimgrains") " and " LINKNAME("https://www.youtube.com/channel/UCzdg4pZb-viC3EdA1zxRl4A?view_as=subscriber", "travel diaries") ".");
-add_text(&hundred_rabbits, "The name <i >Hundred Rabbits</i> comes from the name of the sailboat in the Japanese animated show " LINKNAME("http://ergoproxy.wikia.com/wiki/Dead_Calm_", "Ergo proxy") ", while the sailboat's name " SEND("pino") " comes from that of an android sailor from that same show.");
+add_text(&hundred_rabbits, "The name <i>Hundred Rabbits</i> comes from the name of the sailboat in the Japanese animated show " LINKNAME("http://ergoproxy.wikia.com/wiki/Dead_Calm_", "Ergo proxy") ", while the sailboat's name " SEND("pino") " comes from that of an android sailor from that same show.");
 add_link(&hundred_rabbits, "patreon", "https://patreon.com/100");
 add_link(&hundred_rabbits, "twitter", "https://twitter.com/hundredrabbits");
 
@@ -81,7 +81,7 @@ add_link(&grimgrains, "sources", "https://github.com/hundredrabbits/Grimgrains")
 Term wiktopher = create_term(&hundred_rabbits, "wiktopher", "Wiktopher is Rekka's upcoming travel novel.");
 add_text(&wiktopher, "<b>Wiktopher</b> tells the travel stories of Lupin, who fell from one of the three great cities erected on the backs of desert walkers; and Eka, a creature of wonder and of seemingly, infinite kindness and curiosity.");
 add_text(&wiktopher, "Together, they learn the innumerable ways of the world, traversing deserts and villages, meeting their inhabitants and discovering their customs.");
-add_text(&wiktopher, "The novel is written <i >entirely without genders</i>, and will be released as audiobooks, ebooks and paperbacks.");
+add_text(&wiktopher, "The novel is written <i>entirely without genders</i>, and will be released as audiobooks, ebooks and paperbacks.");
 add_link(&wiktopher, "read online", "http://wiktopher.kokorobot.ca");
 add_link(&wiktopher, "about the author", "https://twitter.com/RekkaBell");
 
@@ -145,7 +145,7 @@ add_html(&verreciel_soundtrack, MODBANDCAMP("453554387"));
 add_link(&verreciel_soundtrack, "bandcamp", "https://aliceffekt.bandcamp.com/album/verreciel");
 
 Term getapan_728k = create_term(&beldam_records, "getapan 728k", "Getapan 728k is a Beldam Records release, by 死サイコロ.");
-add_text(&getapan_728k, "This new release explores a region of frigid dubs yet uncharted by " SEND("beldam_records") ". Not much is known about 死サイコロ, their name is <i >Shi Seikoro</i>, or <b>Death Dice</b>.");
+add_text(&getapan_728k, "This new release explores a region of frigid dubs yet uncharted by " SEND("beldam_records") ". Not much is known about 死サイコロ, their name is <i>Shi Seikoro</i>, or <b>Death Dice</b>.");
 add_html(&getapan_728k, MODBANDCAMP("1677022414"));
 add_link(&getapan_728k, "bandcamp", "https://beldamrecords.bandcamp.com/album/728k");
 
@@ -236,9 +236,9 @@ add_link(&ring_of_scales, "download", "http://www.thingiverse.com/thing:19152");
 Term neauismetic = create_portal(&aliceffekt, "neauismetic", "The Neauismetic albums are audio diaries from the early ages of the Neauismetica.");
 
 Term vetetrandes_lettres = create_term(&neauismetic, "vetetrandes lettres", "Vetetrandes Lettres's songs sings of the first ages of Dinaisth on the island of Vetetrandes.");
-add_text(&vetetrandes_lettres, "While the album begins in Vetetrandes, it moves to the shores of " SEND("dilitriel") " and turns its attention across " SEND("kanikule") " and toward the <i >Es</i>'Gulf of <i >Eaurison</i>.");
-add_text(&vetetrandes_lettres, "The album includes 4 edited tracks from the " SEND("es_gulf_sunflowers") " release. The <i >Ver'Tale</i> extension is a hint to a location of <i >Whiinders</i>, close to the visited <i >Vert Kirlian Theatre</i>.");
-add_text(&vetetrandes_lettres, "The album begins with a track about " SEND("yajnev") ", the composition is based on his trip near the white trees of the <i >Oasis</i> and the <i >Children of Brambles</i>.");
+add_text(&vetetrandes_lettres, "While the album begins in Vetetrandes, it moves to the shores of " SEND("dilitriel") " and turns its attention across " SEND("kanikule") " and toward the <i>Es</i>'Gulf of <i>Eaurison</i>.");
+add_text(&vetetrandes_lettres, "The album includes 4 edited tracks from the " SEND("es_gulf_sunflowers") " release. The <i>Ver'Tale</i> extension is a hint to a location of <i>Whiinders</i>, close to the visited <i>Vert Kirlian Theatre</i>.");
+add_text(&vetetrandes_lettres, "The album begins with a track about " SEND("yajnev") ", the composition is based on his trip near the white trees of the <i>Oasis</i> and the <i>Children of Brambles</i>.");
 add_text(&vetetrandes_lettres, "The album is part of " SEND("aliceffekt") "'s " SEND("neauismetic") " albums.");
 add_link(&vetetrandes_lettres, "bandcamp", "http://aliceffekt.bandcamp.com/album/vetetrandes-lettres-perdues");
 
@@ -250,7 +250,7 @@ add_link(&from_saharaphorest, "bandcamp", "http://aliceffekt.bandcamp.com/album/
 
 Term ehrivevnv_studies = create_term(&neauismetic, "ehrivevnv studies", "The Ehrivevnv Studies is an album exploring the Dinaisth region surroudning Andes' office.");
 add_text(&ehrivevnv_studies, "The album was composed for and performed at <b>Blip Festival Tokyo</b> on October 21st 2012 and reissued on april 15th 2013.");
-add_text(&ehrivevnv_studies, "The track names contains encrypted " SENDNAME("lietal", "Traumae") ". The first track is decrypted into \"Simkin Kamsi\" and can be translated to <i >Time Structure</i>, refering to " SENDNAME("paradise", "The Library of Sand") ". The second track, \"Xomsinsom Kim " SEND("yajnev") "\", can be translated to <i >Yajnev's Curse</i> and refers to the short <b>Yajnev's Thoughts</b>. The third track is titled \"Ko Sokamxi\" which simply means <i >The Impossible Exploration</i>.");
+add_text(&ehrivevnv_studies, "The track names contains encrypted " SENDNAME("lietal", "Traumae") ". The first track is decrypted into \"Simkin Kamsi\" and can be translated to <i>Time Structure</i>, refering to " SENDNAME("paradise", "The Library of Sand") ". The second track, \"Xomsinsom Kim " SEND("yajnev") "\", can be translated to <i>Yajnev's Curse</i> and refers to the short <b>Yajnev's Thoughts</b>. The third track is titled \"Ko Sokamxi\" which simply means <i>The Impossible Exploration</i>.");
 add_html(&ehrivevnv_studies, MODBANDCAMP("2576083659"));
 add_link(&ehrivevnv_studies, "bandcamp", "https://aliceffekt.bandcamp.com/album/the-ehrivevnv-studies-reissue");
 
@@ -300,8 +300,8 @@ Term nataniev = create_portal(&research, "nataniev", "The Nataniev ecosystem is 
 add_text(&nataniev, "<b>Nataniev</b> is a collection of free and open-source software following a singular design " SENDNAME("about", "philosophy") ", and " SENDNAME("aesthetics", "aesthetic") ".");
 
 Term oscean = create_index(&nataniev, "oscean", "Oscean is a flat-file wiki engine.");
-add_text(&oscean, "<b>Oscean</b> is a static wiki engine written entirely in" LINKNAME("https://en.wikipedia.org/wiki/C99", "C99") ", designed to be deployed from " SENDNAME("raspberry", "low-power devices") " with " LINKNAME("https://en.wikipedia.org/wiki/GNU_Compiler_Collection", "gcc") " as its only dependecy. The engine has grown into a collection of tools, including the time tracking software " SEND("horaire") ", as well as the time formats " SEND("neralie") " & " SEND("arvelie") ".");
-add_text(&oscean, "The wiki and related tools are designed to be used offline first, so the content is generally accessed and edited locally, there are no offsite queries for critical resources.");
+add_text(&oscean, "<b>Oscean</b> is a static wiki engine written entirely in " LINKNAME("https://en.wikipedia.org/wiki/C99", "C99") ", designed to be deployed from " SENDNAME("raspberry", "low-power devices") " with " LINKNAME("https://en.wikipedia.org/wiki/GNU_Compiler_Collection", "gcc") " as its only dependecy. The engine has grown into a collection of tools, including the time tracking software " SEND("horaire") ", as well as the time formats " SEND("neralie") " & " SEND("arvelie") ".");
+add_text(&oscean, "The wiki and related tools are designed to be used " SENDNAME("about", "offline first") ", so the content is generally accessed and edited locally, there are no offsite queries for critical resources.");
 add_text(&oscean, "The generated files use no javascript, are optimized for screen-readers and terminal browsers, the entire CSS content of the entire site should be under 1kb. The software architecture is inspired by " SEND("longtermism") ".");
 add_link(&oscean, "sources", "https://github.com/XXIIVV/Oscean");
 add_link(&oscean, "live", "https://wiki.xxiivv.com");
@@ -331,21 +331,19 @@ add_text(&runic, "Runic is a first-order templating language operating on an arr
 add_html(&runic, "<pre>* Header\n& Paragraph\n- List Element 1\n- List Element 2\n| table | row1\n| table | row2\n# <comment>-- CODE BLOCK</comment>\n> <comment>-- HTML BLOCK</comment>\nλ <comment>-- {(link \"LAIN\")} BLOCK</comment>\n</pre>");
 
 Term horaire = create_term(&nataniev, "horaire", "Horaire is a time-tracking tool.");
-add_text(&horaire, "<b>Horaire</b> is a time-tracking engine designed to record and host daily activity logs. A log is recorded at the end of the day, and contains 3 values.");
-add_text(&horaire, "You can learn more about the " SENDNAME("oscean", "related tools") ", and " SENDNAME("about", "related projects") ", to the entire " SEND("nataniev") " ecosystem. For additional questions, contact " SEND("devine lu linvega") "");
-add_quote(&horaire, "<b>Effectiveness</b>, is doing the right thing.<br><b>Efficiency</b>, is doing it the right way.", NULL);
+add_text(&horaire, "<b>Horaire</b> is a time-tracking engine designed to record and host daily activity logs. A log is recorded at the " SENDNAME("routine", "end of the day") ", and contains 3 values.");
 
 Term nataniev_time = create_index(&nataniev, "time", "Documentation on the different Time formats.");
 add_html(&nataniev_time, MODFRAME("https://clock.xxiivv.com"));
 
 Term neralie = create_term(&nataniev_time, "neralie", "Neralie is a decimal time format.");
-add_text(&neralie, "The <b>Neralie clock</b> has two groups of 3 digits, called the <i >beat</i> & the <i >pulse</i>. A beat contains 1000 pulses, and equivalent to <b>86.4 seconds</b>.");
+add_text(&neralie, "The <b>Neralie clock</b> has two groups of 3 digits, called the <i>beat</i> & the <i>pulse</i>. A beat contains 1000 pulses, and equivalent to <b>86.4 seconds</b>.");
 add_html(&neralie, "<ul><li><b>6:00</b> 250:000</li><li><b>12:00</b> 500:000</li><li><b>18:00</b> 750:000</li></ul>");
 add_link(&neralie, "view online", "https://clock.xxiivv.com");
 
 Term arvelie = create_term(&nataniev_time, "arvelie", "Arvelie is an alphabetic date format.");
 add_text(&arvelie, "The <b>Arvelie calendar</b> has <b>26 months</b> of <b>14 days</b> each.");
-add_text(&arvelie, "Each month has <b>2 weeks</b> of <b>7 days</b>, and each month's name is one of the 26 letters of the alphabet. The 365th day of the year is the <i >Year Day</i>(+01), preceded by the <i >Leap Day</i>(+02) on leap years.");
+add_text(&arvelie, "Each month has <b>2 weeks</b> of <b>7 days</b>, and each month's name is one of the 26 letters of the alphabet. The 365th day of the year is the <i>Year Day</i>(+01), preceded by the <i>Leap Day</i>(+02) on leap years.");
 add_html(&arvelie, "<ul><li><b>02A01</b> 2002-01-01</li><li><b>01D07</b> 2001-02-18</li><li><b>13B12</b> 2013-01-26</li><li><b>02E07</b> 2002-03-04</li><li><b>24C01</b> 2024-01-29</li><li><b>03+01</b> 2003-12-31</li></ul>");
 add_link(&arvelie, "library", "https://github.com/XXIIVV/Oscean/blob/master/scripts/lib/arvelie.js");
 
@@ -488,7 +486,7 @@ add_text(&oquonie, "A big inspiration for this project was the short story \"A t
 add_html(&oquonie, MODITCHIO("23183"));
 add_text(&oquonie, "Back in 2013, we both had full-time jobs in different studios in Tokyo, we worked on Oquonie after work, and on weekends, for a total of 6 months. You can learn more about the development of the project " LINKNAME("https://100r.co/site/oquonie.html", "here") ".");
 // add_quote(&oquonie, "Find help in the " SEND(oquonie_guide_path) ".", "undefinedFind help in the {(__link "Oquonie Guide")}.");
-// add_text(&oquonie, "Oquonie features an original " SENDNAME(oquonie_soundtrack_path, "soundtrack") " and was best described as <i ><a href='http://killscreendaily.com/articles/oquonie-maze-worth-entering/' target='_blank' rel='noreferrer' class='external '>Animal Crossing in a K-Hole</a></i>.", "undefined");
+// add_text(&oquonie, "Oquonie features an original " SENDNAME(oquonie_soundtrack_path, "soundtrack") " and was best described as <i><a href='http://killscreendaily.com/articles/oquonie-maze-worth-entering/' target='_blank' rel='noreferrer' class='external '>Animal Crossing in a K-Hole</a></i>.", "undefined");
 add_link(&oquonie, "builds", "https://hundredrabbits.itch.io/oquonie");
 add_link(&oquonie, "sources", "https://github.com/hundredrabbits/oquonie");
 
@@ -541,7 +539,7 @@ add_text(&maeve, "Traveling across the " SEND("nataniev") " landscapes, <b>Maeve
 add_text(&maeve, "You can get help from Maeve within " SEND("oscean") " by typing <code>~</code> in the search bar, to see a list of available commads, type <code>~help</code>.");
 
 Term parade = create_term(&paradise, "parade", "Parade is an experimental operating system inspired from Paradise.");
-add_text(&parade, "The <b>Parade</b> is an experimental operating system using " SEND("paradise") " as a <i >filesystem</i>.");
+add_text(&parade, "The <b>Parade</b> is an experimental operating system using " SEND("paradise") " as a <i>filesystem</i>.");
 add_header(&parade, "Primitives");
 // add_table(&parade, "create | become | enter | leave");
 // add_table(&parade, "look   | take   | drop  | move");
@@ -549,19 +547,19 @@ add_header(&parade, "Primitives");
 add_text(&parade, "The goal of this project is to distribute a lightweight operating system that would serve a environment able to " LINKNAME("https://twitter.com/neauoire/status/1042644335689261058", "navigate the file system") ", run code and exchange content with other " SEND("parade") " instances, via the basic primitives.");
 // add_code(&parade, "create a machine");
 // add_code(&parade, "> |");
-add_text(&parade, "There are no \"users\", \"files\" or \"applications\", in this operating system, everything is an operable \"vessel\". A <b>vessel</b> is an <i >object</i> that can act onto other vessels, it has its own permissions. Users are not different from applications or files. A <i >user</i>, is a vessel being acted upon, possibly containing other vessels. A <i >file</i> is an inert vessel, that has no applicable actions to itself but may contain text data accessible via the primitives.");
+add_text(&parade, "There are no \"users\", \"files\" or \"applications\", in this operating system, everything is an operable \"vessel\". A <b>vessel</b> is an <i>object</i> that can act onto other vessels, it has its own permissions. Users are not different from applications or files. A <i>user</i>, is a vessel being acted upon, possibly containing other vessels. A <i>file</i> is an inert vessel, that has no applicable actions to itself but may contain text data accessible via the primitives.");
 // add_code(&parade, "enter the machine");
 // add_code(&parade, "> |");
-add_text(&parade, "A new vessel responds to the basic primitives, and visible vessels might append to that list with actions of their own. The vessel format serves endpoints that responds to actions. For instance, an telephone vessel, might respond to the action <i >call</i>, as in the command \"call Alice\".");
-add_text(&parade, "There is no linear hierarchy tree, instead vessels can be within themselves or each other, or even organized in the shape of a loop. Pockets of space can be hosts to vessels existing around a common purpose, or carried around inside another vessel as you would a tool-belt or an inventory, giving the acting vessel, or <i >user</i>, additional actions appended to the list of primitives.");
+add_text(&parade, "A new vessel responds to the basic primitives, and visible vessels might append to that list with actions of their own. The vessel format serves endpoints that responds to actions. For instance, an telephone vessel, might respond to the action <i>call</i>, as in the command \"call Alice\".");
+add_text(&parade, "There is no linear hierarchy tree, instead vessels can be within themselves or each other, or even organized in the shape of a loop. Pockets of space can be hosts to vessels existing around a common purpose, or carried around inside another vessel as you would a tool-belt or an inventory, giving the acting vessel, or <i>user</i>, additional actions appended to the list of primitives.");
 // add_code(&parade, "become the machine");
 // add_code(&parade, "> |");
-add_text(&parade, "One of the goals of this operating system is to be <b>fully operable by voice</b>, think <i >screenless computing</i>. The navigation is designed to be used via simple text commands, there would be nothing quite like windows. Vessels could display passive content when in sight, allowing to create a form of procedural user interface, but the system itself does not have a concept of windows, like you would in a typical graphical operating system with a wm.");
+add_text(&parade, "One of the goals of this operating system is to be <b>fully operable by voice</b>, think <i>screenless computing</i>. The navigation is designed to be used via simple text commands, there would be nothing quite like windows. Vessels could display passive content when in sight, allowing to create a form of procedural user interface, but the system itself does not have a concept of windows, like you would in a typical graphical operating system with a wm.");
 add_text(&parade, "While the navigation of the system can be done by voice alone, the terminal, when presented on a screen, begins with a <b>prompt</b>, to which can be appended a <b>history of responses</b>, or even a <b>display area for graphics</b> when a vessel is serving a game or a movie.");
 // add_code(&parade, "use the machine");
 // add_code(&parade, "> |");
-add_text(&parade, "At its core the system should be <b>single-threaded</b>, and operate a single frame, or a <i >state</i>, of the world at a time. While passive responses of visible vessels might allow for a kind of oversight, the user experience as a terminal, and down to its functioning should not allow for multi-tasking.");
-add_text(&parade, "The creation of application vessels, think for instance a <i >drawing application</i>, would be built with the LISP dialect of Parade, which is itself built with that same language. — Making the entire operating system existing it inself as a vessel, editable, changeable, operable and navigable.");
+add_text(&parade, "At its core the system should be <b>single-threaded</b>, and operate a single frame, or a <i>state</i>, of the world at a time. While passive responses of visible vessels might allow for a kind of oversight, the user experience as a terminal, and down to its functioning should not allow for multi-tasking.");
+add_text(&parade, "The creation of application vessels, think for instance a <i>drawing application</i>, would be built with the LISP dialect of Parade, which is itself built with that same language. — Making the entire operating system existing it inself as a vessel, editable, changeable, operable and navigable.");
 // add_code(&parade, "warp to the lobby@29:03:25:76");
 // add_code(&parade, "> |");
 add_text(&parade, "A <b>Network of Parade systems</b> would be traversible(read-only) by an acting vessel. The Parade's typical behaviours for moving about will persist onto the remote systems so, a vessel can move, enter, use remote vessels and suggest changes to the host world as commits — All the while, respecting the host's vessel permissions. For instance, a vessel might make itself usable by a visiting vessel, but will not let itself be moved or altered.");
@@ -705,7 +703,7 @@ add_link(&bifurcan, "pebble", "http://www.mypebblefaces.com/apps/10183/7055/");
 
 Term keyboard_468 = create_album(&mobile, "keyboard 468", "Keyboard 468 was a 18-keys keyboard.");
 add_text(&keyboard_468, "The letters are <b>sorted by frequency</b> in the English language, and their likeliness to follow the last input character.");
-add_text(&keyboard_468, "The purpose of this experimental keyboard is to have a keyboard displaying large letters, making it so you only ever need to <b>type using the two rows at the top</b>, maximizing the space and allowing for big large letters. The hidden letters are accessible through the <i >alt</i> key, alongside symbols and numbers.");
+add_text(&keyboard_468, "The purpose of this experimental keyboard is to have a keyboard displaying large letters, making it so you only ever need to <b>type using the two rows at the top</b>, maximizing the space and allowing for big large letters. The hidden letters are accessible through the <i>alt</i> key, alongside symbols and numbers.");
 add_text(&keyboard_468, "As of March 2019, This application is no longer maintained. <br />This project was superseded by the " SENDNAME("juni", "Juni Layout") ".");
 add_link(&keyboard_468, "itunes", "https://itunes.apple.com/ca/app/468-keyboard/id954698999");
 add_link(&keyboard_468, "sources", "https://github.com/Echorridoors/Keyboard468");
@@ -741,7 +739,7 @@ add_link(&dew, "itunes", "https://itunes.apple.com/ca/app/dew/id954020907");
 add_link(&dew, "sources", "https://github.com/Echorridoors/dew");
 
 Term ledoliel = create_album(&mobile, "ledoliel", "Ledoliel is a dating-sim game.");
-add_text(&ledoliel, "In <b>Ledoliel</b>, one must try and figure out what topics their guests might want to discuss, gift they might want to recieve and, places they may like to be <i >touched</i>.");
+add_text(&ledoliel, "In <b>Ledoliel</b>, one must try and figure out what topics their guests might want to discuss, gift they might want to recieve and, places they may like to be <i>touched</i>.");
 add_text(&ledoliel, "As of March 2019, This application is no longer maintained.");
 add_link(&ledoliel, "itunes", "https://itunes.apple.com/us/app/ledoliel/id891693763");
 add_link(&ledoliel, "sources", "https://github.com/Echorridoors/Ledoliel");
@@ -812,7 +810,7 @@ add_text(&diluvium, "This is a multiplayer typing tactics game where you incarna
 add_text(&diluvium, "Created by Henk Boom, " LINKNAME("http://dom2d.com", "Dominique Ferland") ", " LINKNAME("http://theinstructionlimit.com/", "Renaud Bedard") " and Devine Lu Linvega, " SEND("diluvium") " was first showcased at the " LINKNAME("https://www.facebook.com/events/447362851940595/", "Indies Meetup") " in june of 2012.");
 add_text(&diluvium, "You must type, quickly and intelligently, sequences of animal names to counter and destroy your opponent.");
 add_html(&diluvium, MODYOUTUBE("z7NNBzNXncw"));
-add_text(&diluvium, "The game will <i >most likely</i> let you summon any animal you can think of, choose wisely for each animal has it's own speed, power and intelligence stats.");
+add_text(&diluvium, "The game will <i>most likely</i> let you summon any animal you can think of, choose wisely for each animal has it's own speed, power and intelligence stats.");
 add_link(&diluvium, "youtube", "http://youtu.be/z7NNBzNXncw");
 add_link(&diluvium, "sources", "https://github.com/Collegiennes/diluvium");
 
@@ -886,8 +884,8 @@ add_html(&opal_inquisitors, MODBANDCAMP("1049304423"));
 add_link(&opal_inquisitors, "bandcamp", "https://aliceffekt.bandcamp.com/album/the-opal-inquisitors");
 
 Term portalion = create_term(&duomic, "portalion", "Portalion is an album where Neonev leaves Duomo to explore the shores of Laeisth.");
-add_text(&portalion, "On a foggy night of the <i >Sixth Season</i>, embarking on one of the vessels of the <i >Septechoes</i> in the desert of <i >Clionn</i>.");
-add_text(&portalion, "" SEND("neonev") " sails toward <i >Whiinders</i> to see its <i >Immortal Birds</i> once more.");
+add_text(&portalion, "On a foggy night of the <i>Sixth Season</i>, embarking on one of the vessels of the <i>Septechoes</i> in the desert of <i>Clionn</i>.");
+add_text(&portalion, "" SEND("neonev") " sails toward <i>Whiinders</i> to see its <i>Immortal Birds</i> once more.");
 add_html(&portalion, MODBANDCAMP("1367389203"));
 add_link(&portalion, "bandcamp", "https://aliceffekt.bandcamp.com/album/portalion");
 
@@ -911,7 +909,7 @@ Term shikanokoa_vs_1h1d = create_term(&lives, "shikanokoa vs 1h1d", "Shikanokoa 
 add_text(&shikanokoa_vs_1h1d, "It was recorded in Osaka at the event of the same name.");
 
 Term pedestrian_paradise = create_term(&lives, "pedestrian paradise", "Pedestrian Paradise is an album made from various bits and pieces of unreleased material.");
-add_text(&pedestrian_paradise, "It was recorded live at the <i >Piknik Electronic</i> event in Montreal.");
+add_text(&pedestrian_paradise, "It was recorded live at the <i>Piknik Electronic</i> event in Montreal.");
 add_html(&pedestrian_paradise, MODBANDCAMP("1545290997"));
 
 Term nor_let_the_fools = create_term(&lives, "nor let the fools", "Nor Let The Fools created from unreleased materials.");
@@ -933,7 +931,7 @@ Term time_alloy = create_term(&polygonoscopy, "time alloy", "The Time Alloy is a
 Term demo = create_portal(&aliceffekt, "demo", "The Demo albums are created with specific pieces of hardwares.");
 
 Term superworker = create_term(&demo, "superworker", "Superworker is an album created with the PO-24.");
-add_text(&superworker, "The album contains 3 tracks created from <i >over 80 sessions</i>, arranged into chiptune experiments.");
+add_text(&superworker, "The album contains 3 tracks created from <i>over 80 sessions</i>, arranged into chiptune experiments.");
 add_text(&superworker, "Due to the lack of power during the 4 weeks long " SENDNAME("marquesas", "ocean crossing") ", the pocket battery powered synth proved to be the perfect composition tool. The tracks also include spoken words from " LINKNAME("https://en.wikipedia.org/wiki/Alan_Watts", "Alan Watts") ".");
 add_html(&superworker, MODBANDCAMP("610742154"));
 add_link(&superworker, "bandcamp", "https://aliceffekt.bandcamp.com/album/superworker");
@@ -946,7 +944,7 @@ add_link(&supervisitor, "itunes", "https://itunes.apple.com/ca/album/supervisito
 
 Term dodecae = create_term(&supervisitor, "dodecae", "The Dodecae was a collaboration with the BentoMiso co-working space.");
 add_text(&dodecae, "Presented live experimental music from " LINKNAME("http://tympanikaudio.com/releases/ta025", "Adversary") ", " LINKNAME("https://ilkae.bandcamp.com", "Ilkae") ", " LINKNAME("https://dualryan.bandcamp.com", "Dualryan") " and " LINKNAME("https://aliceffekt.bandcamp.com", "Aliceffekt") " alongside the visualists " LINKNAME("http://theinstructionlimit.com", "Nonante") " and " LINKNAME("http://www.pocaille.com", "Melesul3") "");
-add_text(&dodecae, "The event was following the yearly " LINKNAME("https://bentomiso.com/bit-bazaar-winter-market-2014/", "Bit Bazzar") " market on <i >December 6th, 2014</i>.");
+add_text(&dodecae, "The event was following the yearly " LINKNAME("https://bentomiso.com/bit-bazaar-winter-market-2014/", "Bit Bazzar") " market on <i>December 6th, 2014</i>.");
 add_link(&dodecae, "event", "https://www.facebook.com/events/558238014277230/?fref=ts");
 
 Term soundtrack = create_portal(&aliceffekt, "soundtrack", "The Soundtrack collection contains various scores written for Software projects.");
@@ -985,7 +983,7 @@ add_text(&typography, "This font collection can be used freely on your projects.
 add_link(&typography, "sources", "https://github.com/neauoire/Font-Collection");
 
 Term vast = create_album(&physical, "vast", "Vast is the first book of Elodie Lareine, a manual of procedural imagery.");
-add_text(&vast, "I recently found myself illustrating " SENDNAME("miniscopie", "Elodie") "'s abstract book \"<i >Vast - the perfect, the circular, the subjugated</i>\".");
+add_text(&vast, "I recently found myself illustrating " SENDNAME("miniscopie", "Elodie") "'s abstract book \"<i>Vast - the perfect, the circular, the subjugated</i>\".");
 add_text(&vast, "A strangely perfect nonsensical coffee table curiosity that grabbed me from the moment I heard of its ties with some of the same Borgesian concepts that have also been exploring lately.");
 add_text(&vast, "I have created a series of ink fractals to ornate the book's preface, table of content and cover.");
 add_html(&vast, MODITCHIO("23341"));
@@ -998,7 +996,7 @@ add_link(&defraction_optics, "itch", "https://reine.itch.io/defractions");
 Term thousand_rooms = create_album(&physical, "thousand rooms", "Thousand Rooms is a visual novel.");
 add_text(&thousand_rooms, "" SEND("thousand_rooms") " was created in collaboration with illustrator " SENDNAME("rekka", "Rekka Bellum") ", following the behaviours of four characters and a room");
 add_html(&thousand_rooms, MODITCHIO("146658"));
-add_text(&thousand_rooms, "I have written this book with the hopes of creating a sort of <i >Borges for children</i>, in which the reader follows a bat, a cat, an owl and a fox who try and make sense of this " SENDNAME("paradise", "simple system") ".");
+add_text(&thousand_rooms, "I have written this book with the hopes of creating a sort of <i>Borges for children</i>, in which the reader follows a bat, a cat, an owl and a fox who try and make sense of this " SENDNAME("paradise", "simple system") ".");
 add_text(&thousand_rooms, "The book also encourages to try and understand the rules, and plan unsuggested avenues. We are releasing the book in English, French, Russian, Japanese & " SEND("lietal") ".");
 add_link(&thousand_rooms, "itcho", "https://hundredrabbits.itch.io/thousand-rooms");
 add_link(&thousand_rooms, "sources", "http://github.com/hundredrabbits/Thousand-Rooms/graphs/contributors");
@@ -1024,14 +1022,14 @@ add_html(&damoiseau_canalx, MODBANDCAMP("743341250"));
 add_link(&damoiseau_canalx, "bandcamp", "https://aliceffekt.bandcamp.com/album/damoiseau-canalx");
 
 Term the_sixth_season = create_term(&neauismetic, "the sixth season", "The Sixth Season sings the Neauismetic tales of the establishment of the Oasis by Rlionn.");
-add_text(&the_sixth_season, "<i >Whiinders</i> and the likes, a glorious beginning in " SEND("laeisth") ".");
+add_text(&the_sixth_season, "<i>Whiinders</i> and the likes, a glorious beginning in " SEND("laeisth") ".");
 add_text(&the_sixth_season, "This album established the sound that " SEND("aliceffekt") " decided to persue for the " SEND("neauismetic") " releases.");
 add_link(&the_sixth_season, "bandcamp", "http://aliceffekt.bandcamp.com/album/orchestrate-the-sixth-season");
 
 Term neon_hermetism = create_portal(&neauismetica, "neon hermetism", "Neon Hermetism is a collection of general Neauismetic concepts.");
 add_text(&neon_hermetism, "The <b>Neon Hermetic</b> concepts are the foundations to understanding the " SEND("neauismetica") ", its characters and their purpose.");
 add_text(&neon_hermetism, "<b>Science has long since ended</b>, and has been replaced by the art of operating " SENDNAME("actors", "teleogic constructors") ", machines capable of looking across timelines and moving themselves toward the longest lasting " SENDNAME("soies", "Occurence") ".");
-add_text(&neon_hermetism, "<i >Beyond the computing beautiful, <br />sleeps languages of impossible meanings.</i>");
+add_text(&neon_hermetism, "<i>Beyond the computing beautiful, <br />sleeps languages of impossible meanings.</i>");
 
 Term feu = create_term(&neon_hermetism, "feu", "The Feu era is known as the era of time which began at the End Of Science.");
 add_text(&feu, "From the moment " SENDNAME("actors", "Teleogic Constructors") " began altering the " SENDNAME("soies", "Courses of Time") " and will events into happening, traditional rational intelligence and curiosity were then seen as no more than crafts, or relics of a older time.");
@@ -1039,7 +1037,7 @@ add_text(&feu, "As per <b>Neon Hermetism</b>, the whole dimensionality of Time i
 
 Term actors = create_term(&neon_hermetism, "actors", "The Actors are beings unaffected by determinism, that have free will.");
 // set_icon(&actors, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
-add_text(&actors, "Their name \"<i >actor</i>\" comes from their ability to actually <b>act</b>, outside of the will of " SENDNAME("mirrors", "determinism") ".");
+add_text(&actors, "Their name \"<i>actor</i>\" comes from their ability to actually <b>act</b>, outside of the will of " SENDNAME("mirrors", "determinism") ".");
 add_text(&actors, "Natural Actors, or anomalies, were found to have existed before the " SEND("feu") ", but the True Age of Actors came about with the synthesis of the first Actor by " SEND("neonev") " and the Immigrants.");
 add_text(&actors, "The first synthesized " SENDNAME("actors", "actor") " was tasked to position itself into the " SEND("longest_end") ", meaning that it would effectively take control of all things, and of all of time, to steer the sequence of events allowing itself to exist within the " SENDNAME("longest_end", "longest lasting possible timeline") " of the computing occurrence.");
 add_text(&actors, "Actors have no names, and their number is unknown, it is possible that multiple actors, or multiple instances of the same actor, are competing for the " SENDNAME("soies", "Longest End") ".");
@@ -1068,7 +1066,7 @@ add_text(&longest_end, "The " SEND("actors") "' goal is to steer the occurring c
 // add_list(&longest_end, "<b>The Impossibilities</b>: The entirety of all potential spacetime. The impossibilities stores the events banned from happening, compressing the possible events.");
 // add_list(&longest_end, "<b>The Possibilies</b>: The possible spacetime storages the events allowed by " SENDNAME("mirrors", "determinism") ", condensing into the occuring.");
 // add_list(&longest_end, "<b>The Occuring</b>: While it is not technically allowed to traverse between possible and occuring space, the " SEND("soies") " model allow to manipulate the possible space by forcing events to occur outside of the resolving spacetime.");
-// add_list(&longest_end, "<b>The Longest End</b>, or <i >resolving spacetime</i>: It is the surviving spacetime, its finality, the destination and meeting space of " SEND("actors") ".");
+// add_list(&longest_end, "<b>The Longest End</b>, or <i>resolving spacetime</i>: It is the surviving spacetime, its finality, the destination and meeting space of " SEND("actors") ".");
 
 Term soies_machine = create_term(&soies, "soies machine", "The Soies Machine was the last machine.");
 add_text(&soies_machine, "The <b>Soies Machine</b> is a kind of clock, with needles rotating around each available axis of space, at the fastest allowed speed by the " SENDNAME("soies", "Occurence") ".");
@@ -1083,14 +1081,14 @@ add_text(&soies_injection, "The " SEND("andes_castel") " found in " SEND("laeist
 Term neausea = create_term(&neon_hermetism, "neausea", "The Neausea is a sickness manifested in beings who knows their Soies position.");
 add_text(&neausea, "" SEND("actors") " and beings such as " SEND("paradichlorisse") ", can carry it. A weaker form can be contracted when one is in contact with " SEND("nohlxeserre") " languages.");
 add_text(&neausea, "The experience of <b>Neausea</b>, by the afflicted, would at first seem like one can travel through time. But the subject's impression of time-traveling is due to their focus shifting across possible sequences of events.");
-add_text(&neausea, "To the observer, the subject would simply collapse, by the time the body would hit the ground, the subject's mental gaze would have traveled across different possible timelines, but would have in the process <i >lost the track of Time</i> — Effectively extracting themself from the " SENDNAME("soies", "Occurring") ".");
+add_text(&neausea, "To the observer, the subject would simply collapse, by the time the body would hit the ground, the subject's mental gaze would have traveled across different possible timelines, but would have in the process <i>lost the track of Time</i> — Effectively extracting themself from the " SENDNAME("soies", "Occurring") ".");
 add_text(&neausea, "" SEND("andes") " is the only character known to have survived an encounter with the " SEND("nohlxeserre") " Languages. The fossilized mountains of corpses by the sides of " SEND("paradichlorisse") " are a testament of the ones who have tried to look at Time and perished.");
-add_text(&neausea, "<i >In debt are are my impossible selves, <br />for all the horrible days.</i>");
+add_text(&neausea, "<i>In debt are are my impossible selves, <br />for all the horrible days.</i>");
 
 Term nohlxeserre = create_term(&neausea, "nohlxeserre", "Nohlxeserre is an hypothetical language from the Neauismetica.");
 add_text(&nohlxeserre, "<b>Nohlxeserre</b> is a language that delivers a richer and more precise rendition of its meaning than actual experience.");
 add_text(&nohlxeserre, "The richness and detail of experiencing an event, pales in comparison to having it recited – Effictively inducing the symptoms of " SEND("neausea") ", stasis, and ultimately death.");
-add_text(&nohlxeserre, "The Nohlxeserre Language is the language of the " SEND("actors") ". Andes, as opposed to " SEND("neonev") ", did not found itself on " SEND("dinaisth") " looking for " SEND("actors") ", but for " SEND("paradichlorisse") ". Whom Andes says \"<i >Speaks the language of the birds</i>\".");
+add_text(&nohlxeserre, "The Nohlxeserre Language is the language of the " SEND("actors") ". Andes, as opposed to " SEND("neonev") ", did not found itself on " SEND("dinaisth") " looking for " SEND("actors") ", but for " SEND("paradichlorisse") ". Whom Andes says \"<i>Speaks the language of the birds</i>\".");
 // add_quote(&nohlxeserre, "When " SEND("paradichlorisse") " spoke of silence, silence fell.", "undefinedWhen {(__link "Paradichlorisse")} spoke of silence, silence fell.");
 
 Term dinaisth = create_portal(&neauismetica, "dinaisth", "Dinaisth is the name of the Satellite onto which unfolds the events of the Neauismetica.");
@@ -1153,14 +1151,14 @@ add_text(&andes, "<b>Andes</b> was already present on " SEND("dinaisth") " when 
 add_text(&andes, "Prior to their arrival, a structure bearing their markings had been errected in " SEND("laeisth") ", known as the " SEND("andes_castel") ", suggesting an external manipulation of the " SEND("soies") ".");
 
 Term yajnev = create_term(&characters, "yajnev", "Yajnev's death engulfed Vetetrandes in an opaque impenetrable lock.");
-add_text(&yajnev, "Yajnev is a <i >Local-type</i> " SENDNAME("actors", "actor") ", meaning that its acting was mainly spacial, and only briefly temporal.");
+add_text(&yajnev, "Yajnev is a <i>Local-type</i> " SENDNAME("actors", "actor") ", meaning that its acting was mainly spacial, and only briefly temporal.");
 add_text(&yajnev, "Its nervous imprint of local space could steer events locally, as well as affect time.");
 add_text(&yajnev, "The space, and time, surrounding its body was animated by " SEND("yajnev") "'s reflexion and thoughts. The effect of the Immigrats approaching " SEND("dinaisth") " might have caused the collapse, as it may have had an effect similar to that of a foreign body injecting itself in the network of dimensional nerves.");
 
 Term paradichlorisse = create_term(&characters, "paradichlorisse", "Paradichlorisse is a machine that speaks Nohlxeserre.");
 add_text(&paradichlorisse, "Its purpose is unknown, but it was observed reciting stories in a fashion that ressembled the navigation of the " SEND("soies") ".");
-add_text(&paradichlorisse, "Upon reaching its location, one would infinitely collapse as they would begin experiencing <i >every life and every death</i> for ever, recited in the " SENDNAME("nohlxeserre", "speech") " of the infinite being.");
-add_text(&paradichlorisse, "<i >When Paradichlorisse spoke of silence, silence fell.</i>");
+add_text(&paradichlorisse, "Upon reaching its location, one would infinitely collapse as they would begin experiencing <i>every life and every death</i> for ever, recited in the " SENDNAME("nohlxeserre", "speech") " of the infinite being.");
+add_text(&paradichlorisse, "<i>When Paradichlorisse spoke of silence, silence fell.</i>");
 
 Term photography = create_portal(&visual, "photography", "The Photography Portal collects various albums over multiple mediums.");
 add_text(&photography, "View the list of " SEND("camera") " equipment.");
@@ -1253,51 +1251,31 @@ add_text(&devine_lu_linvega, "<b>Devine Lu Linvega</b> is composing " SENDNAME("
 add_text(&devine_lu_linvega, "Since 2006, Devine has been populating this " SENDNAME("about", "wiki") " with notes on various topics, including on " SEND("language") ", " SEND("lifestyle") " and " SEND("nutrition") ". You can learn more about their <b>related interests</b> in the " SEND("mirrors") ", and in the " SEND("directory") ".");
 add_text(&devine_lu_linvega, "They currently live aboard a " SENDNAME("pino", "sailboat") ", somewhere along the foggy coast of " SEND("japan") ". You can follow their position " LINKNAME("http://100r.co/live", "here") ", or learn more about offgrid living " LINKNAME("https://100r.co/site/knowledge.html", "here") ".");
 add_text(&devine_lu_linvega, "Get in touch via email at <b>aliceffekt@gmail.com</b>, or<br />on the fediverse at <b><a href='http://merveilles.town/@neauoire' target='_blank' rel='noreferrer' class='external '>merveilles.town/@neauoire</a></b>.");
-add_quote(&devine_lu_linvega, "To flee is Life,<br />To linger, death.", "");
+add_quote(&devine_lu_linvega, "To flee is Life,<br />To linger, " SEND("death") ".", NULL);
 
 Term lifestyle = create_index(&devine_lu_linvega, "lifestyle", "The collection of diary entries on Lifestyle.");
-add_text(&lifestyle, "I rarely blog, but I've collected here a handful of <b>long-form posts</b> on various topics. ");
+add_text(&lifestyle, "I rarely find myself blogging, but from time to time, I will write a long-form reply to someone on a forum, I've collected these entries here. You can find more collected questions & answers in the " SEND("faqs") ".");
 
 Term aesthetics = create_term(&lifestyle, "aesthetics", "The Aesthetics diaries.");
 add_text(&aesthetics, "I have aligned my life toward a singular design, the <b>acceleration of Arts & Science</b>.");
-add_text(&aesthetics, "The analysis of " SENDNAME("horaire", "personal statistics") " recorded through <b>daily journaling</b>, revealed " SEND("travel") " to convert into the most inspiration hours. I have then steered my creative work toward facilitating opportunities to travel.");
-add_text(&aesthetics, "Multi-tasking revealed itself to have a negative impact on my productivity. Working within the confines of a single medium, would convert into long periods of lesser creativity and intermittent productivity. Living at any one place over a period of a year showed a decay in inspiration. Leaving school, learning to play music, moving abroad — showed an improvement in the realization of <i >Arts & Sciences</i>.");
+add_text(&aesthetics, "The analysis of " SENDNAME("horaire", "personal statistics") " recorded through " SENDNAME("routine", "daily journaling") ", revealed that " SEND("travel") " converts into the most " SENDNAME("horaire", "hours of inspiration") ". From this insight, I have oriented my creative work toward facilitating opportunities to travel.");
+add_text(&aesthetics, "Multi-tasking revealed itself to have a negative impact on my productivity. Working within the confines of a single medium, would convert into long periods of lesser creativity and intermittent productivity. Living at any one place over a period of a year showed a decay in inspiration. Leaving school, learning to play music, moving abroad — showed an improvement in the realization of <i>Arts & Sciences</i>.");
 add_text(&aesthetics, "Automating work always converted to higher long-term output than attempts at brute force. Building specific " SEND("tools") " mostly returned higher performance than " SENDNAME("about", "learning general purpose tools") ".");
-add_quote(&aesthetics, "Optimizing toward the <b>need for less revenue</b> has yielded better results than optimizing toward the generation of more.", "DLL");
-add_text(&aesthetics, "Remaining immobile in moments of doubts and planning, always converted into better output, against acting impulsively and making possible accidental steps away from the acceleration of <i >Arts & Sciences</i>.");
-add_text(&aesthetics, "I have kept " SENDNAME("journal", "journals") " recording oscillation in flux of <b>Efficiency</b> and <b>Effectiveness</b>, and used this data to optimize and steer moods of productivity. Each day has a singular task assigned, connected to a specific medium, suggested from previous optimal patterns of productivity.");
-add_text(&aesthetics, "When a day ends before its task was completed, the day was a planning failure; and the task is broken down into smaller tasks, each assigned to one day. When the task is completed before mid-day, the day is also a planning failure.");
-add_text(&aesthetics, "I do not get out of bed until I have chosen a <i >task to complete</i> & and a <i >lesson to learn</i>, and I do not go to sleep until I have logged the results. The tasks are selected in the following order: I first address the problems that slow me down, the things I find lacking in life and the answers to questions that occupy the idle mind.");
+add_quote(&aesthetics, "Optimizing toward the <b>need for less revenue</b> has yielded better results than optimizing toward the generation of more.", NULL);
+add_text(&aesthetics, "Remaining immobile in moments of doubts and planning, always converted into better output, against acting impulsively and making possible accidental steps away from the acceleration of <i>Arts & Sciences</i>.");
+add_text(&aesthetics, "I have kept " SENDNAME("journal", "journals") " recording the oscillation of <b>Efficiency</b> and <b>Effectiveness</b>, and used this data to optimize and navigate my own personal tempers of productivity. Based on previously recorded patterns, I assign to myself each day a single task to complete. The task is chosen specifically to utilize the optimal amount of available stamina.");
+add_text(&aesthetics, "When a workday ends before the daily task is completed, the day was a planning failure; and the task is broken down into smaller tasks, each assigned to one day. When a task is completed too early, the day is also a planning failure.");
+add_text(&aesthetics, "I do not get out of bed until I have chosen a task to complete & and a lesson to learn, and I do not go to sleep until I have " SENDNAME("routine", "logged the results") ". The tasks are selected in the following order: I first address the problems that slow me down, the things I find lacking in my life and the answers to questions that occupies my mind.");
 
 Term nomad = create_term(&lifestyle, "nomad", "The Nomad diaries.");
-add_text(&nomad, "My first encounter with a Nomad was during my stay in " SENDNAME("czech", "Prague") ", as <i >Santiago</i>, I had just met my <b>Fulcanelli</b>.");
-add_text(&nomad, "There was a time in my life when I may have felt homesick. But for now, Home was but a vague concept that existed out there, <i >forever fleeting</i>.");
-add_text(&nomad, "An office is no place a multi-disciplinarist, and " SEND("japan") " was where I last fought this loosing battle. My desk, not the medium onto which I would acquire the skills I longed for.");
-add_text(&nomad, "The suffocating curiousity of wanting to know how different my life might be, had gotten worse than the daily frictions of my current situation. The decision of living aboard a " SENDNAME("pino", "float home") " was not picked amongst other equally enticing ideas, for it was, at the time, the only solution that would align with what I wanted in life.");
-add_text(&nomad, "The monthly rent of our beachside Tokyo appartment was of about 1.5K$, and transitioning from it, to a sailboat, implicated some serious downsizing. The way we looked at it was that, within 3 years, our 20K$ sailboat would be paid at the rate of 600$ per month — Or that by cutting the costs of our current living situation in half, we could be both \"home owners\" and keep our traveling options open.");
-add_quote(&nomad, "Will you trade the proximity to friends and family in exchange for your independence?", "DLL");
-add_text(&nomad, "To think that, at the time, the most heart-breaking things to let go of were instruments, old consoles, books and some camera equipment — When the truly hard things to let go of would be the habitual bath, tap water and reliable internet connection.");
-add_text(&nomad, "Everything costs more than expected, takes longer than expected and Amazon doesn't deliver to your " SENDNAME("marquesas", "desert island") ". Surely you did not do all this travel for the travel alone, you had passions, habits and goals when you left.");
-add_text(&nomad, "The wind rocks the habitat sideways, keeping you up at night. But at least, you get to spend your day writing. You forget about tap water, don't mind the warm water from the plastic jugs, you wonder why people take showers every day, and time away from social networks really does make you feel better.");
-add_quote(&nomad, "Being nomad is trading the things you think you care about, for things you didn't know existed.", "DLL");
-add_text(&nomad, "Suddenly, it's business as usual. You get back to building things, only now, when you look outside, the upmost gorgeous sunset precedes the darkest of night.");
-add_text(&nomad, "You learnt how to fix sails, repair a toilet, create electronic systems, maintain an engine — Even to live without a fridge and power.");
-add_text(&nomad, "We have seen every sunset and almost every sunrise, we have sailed with dolphins, we have climbed mountains on desert islands, and we have met the most amazing people.");
-
-Term nutrition = create_term(&lifestyle, "nutrition", "The Nutrition diaries.");
-add_text(&nutrition, "The function of proteins is to be used for tissue growth and repair, but when carbohydrates and calories are lacking, proteins can be consumed for fuel.");
-add_text(&nutrition, "The human body's own proteins are constantly being broken down into <b>amino acids</b> and used throughout its systems.");
-add_text(&nutrition, "The human body is mostly made of proteins, and proteins are made of amino acids - permutations of carbon, oxygen, hydrogen, nitrogen and sometimes sulphur. There are 22 amino acids in total and all but 9 can be synthesized, the <b>Essential Amino Acids</b>.");
-add_text(&nutrition, "To be used for growth and repair, a protein needs have access to the full sequence of required essential amino acids. If an essential amino acid is missing, the unusable remaining amino acids are broken down into fats or sugars.");
-add_text(&nutrition, "Examples of foods with essential amino acid content of at least 70% of a complete protein(see <i >Limiting Amino Acids</i>) are oats, garbanzo beans, sunflower seeds, buckwheat, red/white/black beans, rice, peanuts and pumpkin seeds.");
-add_quote(&nutrition, "There are a few things in life that are as transformative and transhumanistic as " SEND("nutrition") ".", "DLL");
-add_text(&nutrition, "There are also high-quality proteins in green beans, swiss chard, broccoli, mustard greens, asparagus and potatoes but in lesser quantity.");
-add_text(&nutrition, "Soy products have within them 100% of a complete protein, or the correct ratio of essential amino acids for the body to use in tissue growth and repair.");
-add_text(&nutrition, "The high-quality protein foods can be made whole by combining with other ingredients, but the basic optimal combinations is <b>Beans with grains, nuts or seeds</b>.");
-add_quote(&nutrition, "The doctor of the future will give no medicine, but will instruct his patient in the care of the human frame in diet and in the cause and prevention of diseases.", "Thomas Edison, 1903");
-add_link(&nutrition, "wikiversity", "https://en.wikiversity.org/wiki/Should_we_go_vegan%3F");
-add_link(&nutrition, "vegan health", "https://veganhealth.org/daily-needs/");
-add_link(&nutrition, "low-cost meals plans", "https://www.vrg.org/journal/vj2006issue2/2006_issue2_mealplans.php");
+add_text(&nomad, "My first encounter with a <i>sailing nomad</i> was during my stay in " SENDNAME("czech", "Prague") ". There was a time when I may have felt homesick, but for now, <i>Home</i> was becoming an increasingly vague concept shedding the little meaning it might have once held.");
+add_text(&nomad, "The monthly rent of our beach-side appartment in " SEND("tokyo") " was of about 1.75K$, and transitioning from it, to a sailboat, implicated some serious downsizing. The way we looked at it was that, within 3 years, our 20K$ sailboat would be paid at the rate of 600$ per month — Or that by halving the costs of our current living situation, we could become both \"homeowners\" while keeping our traveling options open.");
+add_text(&nomad, "To think that, at the time, the harder things to let go of were instruments, old consoles, books and some camera equipment — When the truly hard things to let go of would be the habitual bath, tap water and reliable internet connection. ");
+add_text(&nomad, "But surely I did not do all this travel for the travel alone, I must have had passions, habits and goals before I left — Everything that used to define me is beginning to feel increasingly like distractions, simulations to protect me from truly experiencing anything. I had never let myself feel cold, I had never let myself feel hungry.");
+add_text(&nomad, "The wind rocks the ship sideways, keeping me up at night, but all I can feel is that humbling sense of being present and part of nature. I have long forgotten about tap water, don't mind the warm water from the plastic jugs, I began to wonder why people even feel the need to take showers every day, and time away from social networks really does make me feel better.");
+add_quote(&nomad, "I traded the things I thought I cared about, for things I didn't know existed.", NULL);
+add_text(&nomad, "Eventually, I got back to building things, I learned how to fix sails, repair a toilet, create electronic systems, maintain an engine — Even to live without power.");
+add_text(&nomad, "We have seen every sunset and almost every sunrise, we have sailed with dolphins, we have climbed mountains on deserted islands, and we have met the most amazing people. When it is our time to go, we will have no regrets, for we were fortunate to have seen more than most.");
 
 Term routine = create_album(&lifestyle, "routine", "Notes on Routine and Habits.");
 add_text(&routine, "A <b>typical day</b> usually begins at around 6:00am.");
@@ -1305,19 +1283,34 @@ add_text(&routine, "I tend to try and <b>keep my eyes shut</b> until I have ment
 add_text(&routine, "I immediately set off to complete the task I planned in bed. I know to have about 3 hours of undisturbed flow before the distraction surrounding lunch-time pulls me away from the work. My goal for each day, is to complete <b>a single task</b> that should take about 3 hours to complete — Or between " LINKNAME("https://en.wikipedia.org/wiki/Pomodoro_Technique", "4 to 5 pomodoros") ".");
 add_text(&routine, "After the last pomodoro, I usually <b>cook for a half-hour</b>, and then <b>eat for a half-hour</b>, and then <b>walk for a half-hour</b>, to fully leave the haze of the <i>flowstate</i>. The afternoon is spent doing maintenance, superficial work and experiments. But mostly, the afternoon is spent reading and learning. The goal is to build a catalog of exciting things to wake up to the next day and to experiment with.");
 add_text(&routine, "The superficial work that I do involves replying to blogs & forums, editing wikipedia entries, doing maintenance to various repositories, answering emails and so on..");
-add_text(&routine, "The day ends with <b>journaling for a half-hour</b> at which point I record the task done, and the " SENDNAME("mirrors", "lessons learnt") ". Before sleeping, I usually <b>read for a half-hour</b>, I go to bed with a " SENDNAME("readings", "book") ", and a highlighter pen. I overline the things I want to keep for a later use, or to revisit.");
+add_text(&routine, "The day ends with <b>journaling for a half-hour</b> at which point I record the task done, and the " SENDNAME("mirrors", "lessons learned") ". Before sleeping, I usually <b>read for a half-hour</b>, I go to bed with a " SENDNAME("readings", "book") ", and a highlighter pen. I overline the things I want to keep for a later use, or to revisit.");
 add_link(&routine, "full interview", "https://interfacelovers.com/interviews/devine-lu-linvega");
 
 Term longtermism = create_term(&lifestyle, "longtermism", "Notes on Longtermism and sustainability.");
 add_text(&longtermism, "In an age of disposable smart devices and unrepairable electronics, there are few topics that occupy my mind as much as <b>solutioning for technological resilience</b>.");
-add_text(&longtermism, SENDNAME("pino", "Living aboard a sailboat") ", away from reliable internet connectivity and outside of delivery networks, encourages us at " SENDNAME("hundred_rabbits", "Hundred Rabbits") ", to consider ways with which we can strenghten the toolset onto which we rely, to reflect on novel ways to simplify the systems that we use, and to optimize toward more environmentally councious practices.");
-add_text(&longtermism, "We must abandon 3-in-1 packages, bloated always-online services and general planned obsolesce, and establish practices of recyclism, minimum viable products, small-sharp modular utilities. We see smart and resilience as opposing attributes to a device, smart is inherantly contrary to a single purpose tool, and thus incompatible with longtermism.");
-add_text(&longtermism, "Our focus over the past year has gradually shifted toward open-source software and modular(combinable) electronics. Looking back, we are proud of the open-source tools that we created, enabling a handful of people to exit subscription services, and inscrutable closed-source utilities. Moving forward, we are thinking more and more about hardware, or at least software that resides closer to the metal.");
-add_text(&longtermism, "I periodically find myself thinking about operating systems, or more specifically the interaction design of OSes. I attempting to tackle the difficult UX challenges of that space, unrealizing that my failure to solve these issues might very well come from the simple fact that the purpose of operating systems is to enable multi-tasking, multi-tasking that I try to erradicate from my daily life, making these these issues deeply unsolvable and my love for sharp tools and OSes ireconcilable.");
-add_text(&longtermism, "Sometimes I wonder if we shouldn't re-orient our focus onto things that can run on small low-power open-source single-purpose boards, but I also consider the impact of pushing for the purchase and production more electronics as problematic; perhaps creating software targetting old hardware might be what I'm looking for.");
+add_text(&longtermism, SENDNAME("pino", "Living aboard a sailboat") ", away from reliable internet connectivity and outside of delivery networks, encourages us at " SENDNAME("hundred_rabbits", "Hundred Rabbits") ", to consider ways with which we can strenghten the toolset onto which we rely, to reflect on novel ways to simplify the systems that we use, and to optimize toward more environmentally conscious practices.");
+add_text(&longtermism, "We must abandon 3-in-1 packages, bloated always-online services and general planned obsolesce, and establish practices of recyclism, minimum viable products, small-sharp modular utilities. We see smart and resilience as opposing attributes to a device, smart is inherently contrary to a single purpose tool, and thus incompatible with longtermism.");
+add_text(&longtermism, "Our focus over the past years has gradually shifted toward open-source software and modular(combinable) electronics. Looking back, we are proud of the open-source tools that we created, enabling a handful of people to exit subscription services, and inscrutable closed-source utilities. Moving forward, we are thinking more and more about hardware, or at least software that resides closer to the metal.");
+add_text(&longtermism, "I periodically find myself thinking about operating systems, or more specifically the interaction design of OSes. In attempting to tackle the difficult UX challenges of that space, unrealizing that my failure to solve these issues might very well come from the simple fact that the purpose of operating systems is to enable multi-tasking, multi-tasking that I try to eradicate from my daily life, making these issues deeply unsolvable and my love for sharp tools and OSes irreconcilable.");
+add_text(&longtermism, "Sometimes I wonder if we shouldn't re-orient our focus onto things that can run on small low-power open-source single-purpose boards, but I also consider the impact of pushing for the purchase and production more electronics as problematic; perhaps creating software targeting old hardware might be what I'm looking for.");
 add_text(&longtermism, "Despite all this, I dream of a line of simple electronics, each one designed for a single purpose. Or even for things beyond the realm of electronics, like a kit bicyle with all its superfluousities removed.");
-add_text(&longtermism, "My dream sailboat has no diesel engine, no fuel outboard and no lead acid battery storage, but instead a compressed air engine with its compression stored in diving tanks, a bike crank powered compressor, a hydro generator pump, and a dynamo to charge our low-power electronics. The only crutial electronic systems connected to the house tanks would be the AIS transceiver, the VHF radio, a basic chartplotter and habitat lighting. Our work and entertainment electronics, like our laptops and cameras, would run off solar charging a minimal array of LiPo batteries.");
+add_text(&longtermism, "My dream sailboat has no diesel engine, no fuel outboard and no lead acid battery storage, but instead a compressed air engine with its compression stored in diving tanks, a bike crank powered compressor, a hydro generator pump, and a dynamo to charge our low-power electronics. The only crucial electronic systems connected to the house tanks would be the AIS transceiver, the VHF radio, a basic chartplotter and habitat lighting. Our work and entertainment electronics, like our laptops and cameras, would run off solar charging a minimal array of LiPo batteries.");
 add_text(&longtermism, "Is there a way to create and distribute software and electronics in a way that is environmentally conscious? perhaps " LINKNAME("https://en.wikipedia.org/wiki/Degrowth", "not") ".");
+
+Term nutrition = create_term(&lifestyle, "nutrition", "The Nutrition diaries.");
+add_text(&nutrition, "The function of proteins is to be used for tissue growth and repair, but when carbohydrates and calories are lacking, proteins can be consumed for fuel.");
+add_text(&nutrition, "The human body's own proteins are constantly being broken down into <b>amino acids</b> and used throughout its systems.");
+add_text(&nutrition, "The human body is mostly made of proteins, and proteins are made of amino acids - permutations of carbon, oxygen, hydrogen, nitrogen and sometimes sulphur. There are 22 amino acids in total and all but 9 can be synthesized, the <b>Essential Amino Acids</b>.");
+add_text(&nutrition, "To be used for growth and repair, a protein needs have access to the full sequence of required essential amino acids. If an essential amino acid is missing, the unusable remaining amino acids are broken down into fats or sugars.");
+add_text(&nutrition, "Examples of foods with essential amino acid content of at least 70% of a complete protein(see <i>Limiting Amino Acids</i>) are oats, garbanzo beans, sunflower seeds, buckwheat, red/white/black beans, rice, peanuts and pumpkin seeds.");
+add_quote(&nutrition, "There are a few things in life that are as transformative and transhumanistic as " SEND("nutrition") ".", NULL);
+add_text(&nutrition, "There are also high-quality proteins in green beans, swiss chard, broccoli, mustard greens, asparagus and potatoes but in lesser quantity.");
+add_text(&nutrition, "Soy products have within them 100% of a complete protein, or the correct ratio of essential amino acids for the body to use in tissue growth and repair.");
+add_text(&nutrition, "The high-quality protein foods can be made whole by combining with other ingredients, but the basic optimal combinations is <b>Beans with grains, nuts or seeds</b>.");
+add_quote(&nutrition, "The doctor of the future will give no medicine, but will instruct his patient in the care of the human frame in diet and in the cause and prevention of diseases.", "Thomas Edison, 1903");
+add_link(&nutrition, "wikiversity", "https://en.wikiversity.org/wiki/Should_we_go_vegan%3F");
+add_link(&nutrition, "vegan health", "https://veganhealth.org/daily-needs/");
+add_link(&nutrition, "low-cost meals plans", "https://www.vrg.org/journal/vj2006issue2/2006_issue2_mealplans.php");
 
 Term journal = create_term(&devine_lu_linvega, "journal", "The Journal shows recent activity.");
 add_link(&journal, "rss feed", "https://wiki.xxiivv.com/links/rss.xml");
@@ -1505,7 +1498,7 @@ add_text(&wisdom, "To be a philosopher is not merely to have subtle thoughts, bu
 add_quote(&wisdom, "There are two wisdoms: the first inclines to " SEND("action") ", the second to " SEND("inaction") ".", "Stanislaw Lem, Cyberiada");
 
 Term action = create_term(&wisdom, "action", "A collection of notes in regard to Action.");
-add_text(&action, "<b>Ahimsa</b>, or <i >Cause no injury, do no harm</i>, is a Buddhist concept referred to as nonviolence, and it applies to all living beings—including all animals.");
+add_text(&action, "<b>Ahimsa</b>, or <i>Cause no injury, do no harm</i>, is a Buddhist concept referred to as nonviolence, and it applies to all living beings—including all animals.");
 add_quote(&action, "Be mindful of impermanence.<br /> Be careful of idleness.", "Unknown");
 add_list(&action, &action_wisdom);
 
@@ -1648,14 +1641,14 @@ add_html(&shorthand, IMAGE("generic", "shorthand.svg"));
 
 Term marabu = create_term(&unreleased, "marabu", "Marabu is a music tool.");
 add_text(&marabu, "<b>Marabu</b> is cross-platform tracker-type composition tool and synthesizer.");
-add_text(&marabu, "Marabu was original built as a fork to the opensource <i >Soundbox</i>, and is meant to be an improvement on functionalities and design.");
+add_text(&marabu, "Marabu was original built as a fork to the opensource <i>Soundbox</i>, and is meant to be an improvement on functionalities and design.");
 add_html(&marabu, MODITCHIO("173813"));
 add_text(&marabu, "You can view the complete " LINKNAME("https://github.com/hundredrabbits/Marabu", "Manual") " on Github. ");
 add_link(&marabu, "download", "http://hundredrabbits.itch.io/Marabu");
 add_link(&marabu, "sources", "https://github.com/neauoire/Marabu");
 
 Term babelium = create_term(&unreleased, "babelium", "Babelium is a roguelike set in the Borges' Library of Babel.");
-add_text(&babelium, "Begin by finding the <i >guide</i>(<b>g</b>), in every second hexagon, the guide will tell you things to look for. If you find yourself to be walking rather slowly, find the closet in which you can sleep standing up.");
+add_text(&babelium, "Begin by finding the <i>guide</i>(<b>g</b>), in every second hexagon, the guide will tell you things to look for. If you find yourself to be walking rather slowly, find the closet in which you can sleep standing up.");
 add_link(&babelium, "sources", "https://github.com/Echorridoors/Babelium");
 
 Term modernista = create_term(&unreleased, "modernista", "Modernista is a series of 4 prints inspired from American Modernism.");
@@ -1675,7 +1668,7 @@ Term regionsteam_snowdays = create_term(&first_wave, "regionsteam snowdays", "Re
 add_text(&regionsteam_snowdays, "Incomplete.");
 
 Term downtemperature = create_term(&first_wave, "downtemperature", "Downtemperature is the first Aliceffekt EP.");
-add_text(&downtemperature, "Released originally as three albums <i >First Air & Last Aid</i>, <i >Goneplains</i> and <i >Downtemperature</i>, the three albums were consolidated into a single release in 2017.");
+add_text(&downtemperature, "Released originally as three albums <i>First Air & Last Aid</i>, <i>Goneplains</i> and <i>Downtemperature</i>, the three albums were consolidated into a single release in 2017.");
 
 Term blam = create_term(&first_wave, "blam", "Blam is an improvisational album created as a live performance, that ultimately fell through.");
 add_text(&blam, "This album is the precursor to " SEND("damoiseau_canalx") ", it was never performed live as it was intended, but recorded later in the car ride back.");
@@ -1706,4 +1699,56 @@ add_link(&japanese, "sci.lang.japan", "http://rut.org/~wmaton/www/pub/jap.guide.
 
 Term russian = create_term(&language, "russian", "The Russian page is a collection of Russian study notes.");
 
-Term *lexicon[] = { &home, &audio, &visual, &research, &about, &tracker, &journal, &calendar, &dodecae, &efli, &alicef, &aliceffekt, &es_gulf_sunflowers, &damoiseau_canalx, &the_sixth_season, &hex_hive_necklace, &victorian_punch, &rekka, &wiktopher, &hundred_rabbits, &drownspire, &merure, &vambits, &pino, &illustration, &beldam_records, &ten_axitecture, &miniscopie, &ramiel, &eschatolor, &looking_glace, &verreciel_soundtrack, &getapan_728k, &azolla, &malice, &collected_works, &markl, &verreciel, &modernista, &nereid, &beauty, &serventines, &polygore, &pearls, &occulter, &oquonie, &oquonie_guide, &camilare, &babelium, &physical, &polygonoscopy, &methascope, &kaleidoscope, &hypervoid, &brane, &astratas, &ar_moire, &nervous, &artwork, &sketchbook, &flactals, &old_cities, &lard_shader, &ring_of_scales, &vetetrandes_lettres, &from_saharaphorest, &ehrivevnv_studies, &yajnev_studies, &telekinetic, &telekinesis, &nataniev, &oscean, &indental, &tablatal, &lain, &runic, &horaire, &nataniev_time, &arvelie, &neralie, &webring, &merveilles, &rotonde, &riven, &tools, &orca, &juni, &pilot, &ronin, &dotgrid, &left, &nasu, &utilities, &noodle, &enfer, &paradise, &maeve, &parade, &games, &hardware, &raspberry, &media_station, &radio_station, &framboisedorf, &weather_station, &instrument, &assembly, &microbit, &playground, &norns, &monome, &mobile, &bifurcan, &keyboard_468, &alphavetist, &vocavularist, &rafinograde, &noirca, &dew, &ledoliel, &automatons, &the_will_the_wisp, &dictionarism, &glossolaliarium, &advent_v, &unity, &siseon, &zjeveni, &drypoint, &valentinel_hopes, &cenote, &cyanosis_fever, &donsol, &hiversaires, &purgateus, &collegiennes, &diluvium, &volkenessen, &waiting_for_horus, &marabu, &pico3, &pico_battle, &spagettini_scale, &spool_holder, &laeisthic, &children_of_bramble, &known_magye, &extended_sleep, &duomic, &neauismetic, &opal_inquisitors, &portalion, &dei_dain, &habitants_du_soleil, &lives, &shikanokoa_vs_1h1d, &pedestrian_paradise, &nor_let_the_fools, &to_the_aeons_hell, &vermillionth, &time_alloy, &demo, &superworker, &supervisitor, &soundtrack, &oquonie_soundtrack, &rabbits_soundtrack, &purgateus_soundtrack, &noon_guest, &remix, &typography, &vast, &defraction_optics, &thousand_rooms, &wallpapers, &neauismetica, &neon_hermetism, &feu, &actors, &ehrivevnv, &soies, &longest_end, &soies_machine, &soies_injection, &neausea, &nohlxeserre, &dinaisth, &kanikule, &vetetrandes, &laeisth, &andes_castel, &duomo, &neau, &dilitriel, &aitasla, &characters, &rlionn, &neonev, &andes, &yajnev, &paradichlorisse, &photography, &macro, &personal, &film, &black, &infrared, &travel, &the_sublime, &japan, &minamiise, &shizuoka, &ogasawara, &yokohama, &fuji, &osaka, &tokyo, &fiji, &marquesas, &marshall_islands, &niue, &mexico, &france, &new_zealand, &america, &canada, &germany, &austria, &czech, &netherlands, &lifestyle, &aesthetics, &nomad, &nutrition, &routine, &longtermism, &inventory, &everyday, &skate, &bike, &studio, &computer, &plan9, &camera, &keyboard, &directory, &bookmarks, &readings, &goals, &death, &faqs, &audio_faqs, &visual_faqs, &research_faqs, &lifestyle_faqs, &mirrors, &wisdom, &action, &inaction, &knowledge, &programming, &design, &work, &writing, &health, &ethics, &technology, &ascetism, &discourse, &vegan, &morals, &documentation, &quotes, &language, &english, &grimgrains, &notebook, &the_sartre_mechanism, &talk, &systems, &vedic, &needles, &shorthand, &unreleased, &blindfolk, &milavrega, &devine_lu_linvega, &first_wave, &regionsteam_snowdays, &downtemperature, &blam, &vert_kirlian_theatre, &ann_yozora_saint, &nether_esper_inserts, &otoroutes_miniatures, &idyllic_miners, &lietal, &japanese, &russian };
+Term *lexicon[] = { 
+  &home, &audio, &visual, &research, &about, &tracker, &journal, &calendar, 
+  &dodecae, &efli, &alicef, &aliceffekt, &es_gulf_sunflowers, &damoiseau_canalx, 
+  &the_sixth_season, &hex_hive_necklace, &victorian_punch, &rekka, &wiktopher, 
+  &hundred_rabbits, &drownspire, &merure, &vambits, &pino, &illustration, 
+  &beldam_records, &ten_axitecture, &miniscopie, &ramiel, &eschatolor, 
+  &looking_glace, &verreciel_soundtrack, &getapan_728k, &azolla, &malice, 
+  &collected_works, &markl, &verreciel, &modernista, &nereid, &beauty, 
+  &serventines, &polygore, &pearls, &occulter, &oquonie, &oquonie_guide, 
+  &camilare, &babelium, &physical, &polygonoscopy, &methascope, &kaleidoscope, 
+  &hypervoid, &brane, &astratas, &ar_moire, &nervous, &artwork, &sketchbook, 
+  &flactals, &old_cities, &lard_shader, &ring_of_scales, &vetetrandes_lettres, 
+  &from_saharaphorest, &ehrivevnv_studies, &yajnev_studies, &telekinetic, 
+  &telekinesis, &nataniev, &oscean, &indental, &tablatal, &lain, &runic, 
+  &horaire, &nataniev_time, &arvelie, &neralie, &webring, &merveilles, 
+  &rotonde, &riven, &tools, &orca, &juni, &pilot, &ronin, &dotgrid, &left, 
+  &nasu, &utilities, &noodle, &enfer, &paradise, &maeve, &parade, &games, 
+  &hardware, &raspberry, &media_station, &radio_station, &framboisedorf, 
+  &weather_station, &instrument, &assembly, &microbit, &playground, &norns, 
+  &monome, &mobile, &bifurcan, &keyboard_468, &alphavetist, &vocavularist, 
+  &rafinograde, &noirca, &dew, &ledoliel, &automatons, &the_will_the_wisp, 
+  &dictionarism, &glossolaliarium, &advent_v, &unity, &siseon, &zjeveni, 
+  &drypoint, &valentinel_hopes, &cenote, &cyanosis_fever, &donsol, &hiversaires, 
+  &purgateus, &collegiennes, &diluvium, &volkenessen, &waiting_for_horus, 
+  &marabu, &pico3, &pico_battle, &spagettini_scale, &spool_holder, 
+  &laeisthic, &children_of_bramble, &known_magye, &extended_sleep, 
+  &duomic, &neauismetic, &opal_inquisitors, &portalion, &dei_dain, 
+  &habitants_du_soleil, &lives, &shikanokoa_vs_1h1d, &pedestrian_paradise, 
+  &nor_let_the_fools, &to_the_aeons_hell, &vermillionth, &time_alloy, &demo, 
+  &superworker, &supervisitor, &soundtrack, &oquonie_soundtrack, 
+  &rabbits_soundtrack, &purgateus_soundtrack, &noon_guest, &remix, &typography, 
+  &vast, &defraction_optics, &thousand_rooms, &wallpapers, &neauismetica, 
+  &neon_hermetism, &feu, &actors, &ehrivevnv, &soies, &longest_end, 
+  &soies_machine, &soies_injection, &neausea, &nohlxeserre, &dinaisth, 
+  &kanikule, &vetetrandes, &laeisth, &andes_castel, &duomo, &neau, &dilitriel, 
+  &aitasla, &characters, &rlionn, &neonev, &andes, &yajnev, &paradichlorisse, 
+  &photography, &macro, &personal, &film, &black, &infrared, &travel, 
+  &the_sublime, &japan, &minamiise, &shizuoka, &ogasawara, &yokohama, &fuji, 
+  &osaka, &tokyo, &fiji, &marquesas, &marshall_islands, &niue, &mexico, &france, 
+  &new_zealand, &america, &canada, &germany, &austria, &czech, &netherlands, 
+  &lifestyle, &aesthetics, &nomad, &routine, &longtermism, &nutrition, 
+  &inventory, &everyday, &skate, &bike, &studio, &computer, &plan9, &camera, 
+  &keyboard, &directory, &bookmarks, &readings, &goals, &death, &faqs, 
+  &audio_faqs, &visual_faqs, &research_faqs, &lifestyle_faqs, &mirrors, &wisdom, 
+  &action, &inaction, &knowledge, &programming, &design, &work, &writing, 
+  &health, &ethics, &technology, &ascetism, &discourse, &vegan, &morals, 
+  &documentation, &quotes, &language, &english, &grimgrains, &notebook, 
+  &the_sartre_mechanism, &talk, &systems, &vedic, &needles, &shorthand,
+  &unreleased, &blindfolk, &milavrega, &devine_lu_linvega, &first_wave, 
+  &regionsteam_snowdays, &downtemperature, &blam, &vert_kirlian_theatre, 
+  &ann_yozora_saint, &nether_esper_inserts, &otoroutes_miniatures, 
+  &idyllic_miners, &lietal, &japanese, &russian 
+};

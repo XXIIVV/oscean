@@ -81,7 +81,7 @@ char *doty_to_arvelie(int doty) {
   int i = floor(doty / 14);
   char *m = months[i];
 
-  printf("Date is: %d%s%d\n", 20, m, d);
+  printf("Date is: %d%s%02d\n", 20, m, d);
   return "";
 }
 
