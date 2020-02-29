@@ -511,10 +511,10 @@ add_word(&general_knowledge_links, "Chorded Keyboard", "https://software-lab.de/
 add_word(&general_knowledge_links, "How to Make Sense of Any Mess", "http://www.howtomakesenseofanymess.com");
  
 Dict software_links = create_dict("software links");
-add_word(&software_links, "Micro Text Editor", "https://micro-editor.github.io");
 add_word(&software_links, "Fish Shell", "https://fishshell.com");
-add_word(&software_links, "NNN File Manager", "https://github.com/jarun/nnn");
+add_word(&software_links, "Micro Text Editor", "https://micro-editor.github.io");
 add_word(&software_links, "Cmus Audio Player", "http://cmus.github.io");
+add_word(&software_links, "NNN File Manager", "https://github.com/jarun/nnn");
 add_word(&software_links, "Spreadsheet Calculator", "https://github.com/andmarti1424/sc-im");
 add_word(&software_links, "Kdenlive Video Editor", "https://kdenlive.org/en");
 add_word(&software_links, "Krita Digital Painting", "https://krita.org/en");
@@ -522,7 +522,6 @@ add_word(&software_links, "Blender 3d Editor", "https://www.blender.org");
 add_word(&software_links, "Next Web Browser", "https://github.com/atlas-engineer/next");
 add_word(&software_links, "Ardour Audio Recording", "https://ardour.org");
 add_word(&software_links, "Cozy Audiobook Player", "https://cozy.geigi.de");
-add_word(&software_links, "Sunvox Synthesizer", "https://www.warmplace.ru/soft/sunvox");
  
 Dict books = create_dict("books");
 add_word(&books, "Le Matin Des Magiciens", "L. Pauwels & J. Bergier. 1960");

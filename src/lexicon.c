@@ -1346,8 +1346,8 @@ add_dict(&studio, &studio_workstation);
 // add_code(&studio, "Calibrate: Bypass + B footswitches for two seconds.");
 
 Term computer = create_album(&inventory, "computer", "Technical details on my current Computer setup.");
-add_text(&computer, "I presently use a <b>Apple Macbook Pro</b> with the " LINKNAME("https://elementary.io", "ElementaryOS") " Linux operating system. I also frequently use various " SENDNAME("raspberry", "Raspberry Pi") " devices as servers and utilities.");
-add_text(&computer, "My <b>Laptop Computer</b> is an old MacBook Pro with an even older Wacom Tablet. I use it mainly for <b>front-end work</b>, be it layouts, websites, movies and " SEND("games") ".");
+add_text(&computer, "I presently use an <b>Apple Macbook Pro</b> with the " LINKNAME("https://elementary.io", "Elementary") " GNU/Linux operating system. I also occasionally use " SEND("plan9") "(9front) across various " SENDNAME("raspberry", "Raspberry Pi") " devices as servers or utilities.");
+add_text(&computer, "I also use a " SENDNAME("keyboard", "mechanical keyboard") " and an old Intuos 3 Wacom tablet. To learn more about which audio equipment I use, see the " SEND("studio") ".");
 add_dict(&computer, &macbook_workstation);
 add_dict(&computer, &software_links);
 add_link(&computer, "usesthis", "https://usesthis.com/interviews/devine.lu.linvega/");
