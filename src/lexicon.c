@@ -1008,7 +1008,7 @@ add_text(&neauismetica, "The tales of the <b>Neauismetica</b> unfold on a minusc
 add_text(&neauismetica, "Originally written in French, \"<b>Les Récits De Dinaisth</b>\" begins when most things have ended, on the surface of a Satellite where the remaining immortals have gathered, and are looking up at the <b>lightless skies</b>.");
 add_text(&neauismetica, "This series of disjointed " SENDNAME("neon_hermetism", "concepts") ", " SEND("characters") " and " SENDNAME("dinaisth", "places") " are the connecting thread that lives through " SEND("aliceffekt") "'s music, " SENDNAME("devine lu linvega", "Devine") "'s " SENDNAME("illustration", "illustrations") ", and are the culture behind the " SEND("lietal") " Language.");
 add_quote(&neauismetica, "Immortals speak not with words, but wait for things to happen, and merely point at them.", "Coralinev");
-add_html(&neauismetica, "<center><img src='../media/identity/seal.png' width='200'/></center>");
+add_html(&neauismetica, "<center><img src='../media/identity/crest.png' width='200'/></center>");
 
 Term es_gulf_sunflowers = create_term(&neauismetic, "es gulf sunflowers", "Es Gulf Sunflowers is a Neauismetic album.");
 add_text(&es_gulf_sunflowers, "It remembers the sunken fields of " SENDNAME("dinaisth", "Es") ", the underwater gate, and the vast ocean terrace with its display of sunflowers.");
@@ -1114,7 +1114,7 @@ add_text(&andes_castel, "Injected into " SEND("dinaisth") " by " SEND("andes") "
 add_text(&andes_castel, "While its intricate networks of ornate tunnels and decorated halls appear to suggest its creation to be the result of artificial construction —  It was found by the " SENDNAME("neon_hermetism", "Neon Hermetists") " to have come into being from the natural sway of the " SENDNAME("kanikule", "ocean") ", erosion and accumulation of debris, across a long period of time.");
 add_text(&andes_castel, "When looking North from the " SENDNAME("laeisth", "Oasis") ", three High Towers, connected by bridges, are visible above the horizon. Its very existence suggest an " SENDNAME("soies_injection", "injection") " into the " SEND("soies") ".");
 add_text(&andes_castel, "The bridge connecting the center, and highest, Tower(B) to the rightmost one(C)(when observed from the Oasis) has been sectioned. A silhouette of the Castel can be seen on the " SEND("neauismetica") " sigil.");
-add_html(&andes_castel, "<center><img src='../media/identity/seal.png'/></center>");
+add_html(&andes_castel, "<center><img src='../media/identity/crest.png'/></center>");
 add_text(&andes_castel, "The buildings have been mostly left vacant, except from the occasional visit of the " SENDNAME("rlionn", "Rlionns") ".");
 
 Term duomo = create_term(&dinaisth, "duomo", "Duomo covers most of the northern hemisphere of Dinaisth.");
@@ -1322,6 +1322,9 @@ add_link(&tracker, "rss feed", "https://wiki.xxiivv.com/links/rss.xml");
 Term calendar = create_term(&journal, "calendar", "The Calendar shows upcoming and past events of the journal.");
 add_text(&calendar, "This wiki uses the " SENDNAME("arvelie", "Arvelie time format") ", find today's date and learn more about the time formats " SENDNAME("time", "here") ". To see a list of recent changes to the wiki, see the " SEND("tracker") ".");
 add_link(&calendar, "rss feed", "https://wiki.xxiivv.com/links/rss.xml");
+
+Term identity = create_term(&journal, "identity", "Various notes on the visual choices made for the Nataniev projects.");
+add_text(&identity, "Additional details can be found in the " SEND("faqs") ".");
 
 Term inventory = create_portal(&devine_lu_linvega, "inventory", "The collection of technical details on the Inventory.");
 add_text(&inventory, "Some of the items I carry around with me in my " SENDNAME("travel", "travels") ".");
@@ -1741,7 +1744,7 @@ Term *lexicon[] = {
   &new_zealand, &america, &canada, &germany, &austria, &czech, &netherlands, 
   &lifestyle, &aesthetics, &nomad, &routine, &longtermism, &nutrition, 
   &inventory, &everyday, &skate, &bike, &studio, &computer, &plan9, &camera, 
-  &keyboard, &directory, &bookmarks, &readings, &goals, &death, &faqs, 
+  &keyboard, &directory, &bookmarks, &readings, &goals, &identity, &death, &faqs, 
   &audio_faqs, &visual_faqs, &research_faqs, &lifestyle_faqs, &mirrors, &wisdom, 
   &action, &inaction, &knowledge, &programming, &design, &work, &writing, 
   &health, &ethics, &technology, &ascetism, &discourse, &vegan, &morals, 
