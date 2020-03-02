@@ -383,11 +383,11 @@ add_link(&tools, "itch", "http://hundredrabbits.itch.io/");
 add_link(&tools, "sources", "http://github.com/hundredrabbits");
 
 Term orca = create_album(&tools, "orca", "Orca is a livecoding playground.");
-add_text(&orca, "Orca is a two-dimensional " LINKNAME("https://esolangs.org/wiki/Esoteric_programming_language", "esoteric programming language") " in which every letter of the alphabet is an operator, where lowercase letters operate on bang, uppercase letters operate each frame. This livecoding language is designed to procedurally generate " LINKNAME("https://github.com/hundredrabbits/orca#midi", "MIDI, UDP or OSC") " messages.");
+add_text(&orca, "Orca is a two-dimensional " LINKNAME("https://esolangs.org/wiki/Esoteric_programming_language", "esoteric programming language") " in which <b>every letter of the alphabet is an operator</b>, where lowercase letters operate on bang, uppercase letters operate each frame. This livecoding language is designed to procedurally generate " LINKNAME("https://github.com/hundredrabbits/orca#midi", "MIDI, UDP or OSC") " messages.");
 add_text(&orca, "Orca operates on a base of 36 increments, operators will convert alphanumeric values into values ranging from 0 to 36. Special characters are used to handle platform and client specific interactions.");
 add_html(&orca, MODITCHIO("225814"));
 add_text(&orca, "You can find a <b>portable and lightweight version</b> of Orca " LINKNAME("https://github.com/hundredrabbits/orca-c", "here") ", and a version  for the " SEND("norns") " " LINKNAME("https://llllllll.co/t/orca/22492", "here") ". Learn more by reading the " LINKNAME("https://github.com/Hundredrabbits/Orca", "manual") ", or have a look at a " LINKNAME("https://www.youtube.com/watch?v=RaI_TuISSJE", "tutorial video") ". If you need <b>help</b>, visit the " LINKNAME("https://talk.lurk.org/channel/orca", "chatroom") " or the " LINKNAME("https://llllllll.co/t/orca-live-coding-tool/17689", "forum") ". Orca was featured on the Future Of Coding podcast, you can listen to the full episode " LINKNAME("https://futureofcoding.org/episodes/045", "here") ".");
-add_quote(&orca, "Each letter of the alphabet is an operation, uppercase letters operate each frame, lowercase letters operate on bang.", NULL);
+add_quote(&orca, "Orca is a wildly unique visual programming tool. It's also an inky black and seafoam green alphabet soup, pulsating to some species of broody electronic industrial throb.", "Ivan Reese, The Future Of Coding");
 add_link(&orca, "sources", "https://github.com/hundredrabbits/Orca");
 add_link(&orca, "builds", "http://hundredrabbits.itch.io/Orca");
 add_link(&orca, "live", "https://hundredrabbits.github.io/Orca");
@@ -1624,7 +1624,7 @@ add_text(&the_sartre_mechanism, "My friend held a minuscule weight above the tin
 add_text(&the_sartre_mechanism, "I stared in silent awe, at the busy mechanical concerto playing its own requiem. The arms eventually began to unbuilding the core, growing forever weakly as it dismantled the remaining components, moving them back into the box. This obscene ritual of disembowelment and exposé on pointlessness ended as the tiny arms and the weight had fallen back into the toolbox.");
 add_text(&the_sartre_mechanism, "Written by " LINKNAME("https://twitter.com/voidshaper", "Voidshaper") " & " SENDNAME("devine lu linvega", "Neauoire") ".");
 
-Term talk = create_term(&notebook, "talk", "For when I Talk in public.");
+Term talk = create_album(&notebook, "talk", "For when I Talk in public.");
 add_text(&talk, "Often gravitating around the topics of " SEND("nataniev") ", " SEND("oscean") " and " SEND("horaire") ", the <code>/Talk</code> is used mainly as a marker for Live events.");
 add_link(&talk, "sources", "https://github.com/neauoire/Talk-Amaze");
 
