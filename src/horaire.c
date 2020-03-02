@@ -1,3 +1,4 @@
+add_log(&donsol, "20E05", 345);
 add_log(&nomad, "20E04", 345);
 add_log(&donsol, "20E03", 345);
 add_log(&donsol, "20E02", 266);

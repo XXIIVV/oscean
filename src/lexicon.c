@@ -383,16 +383,17 @@ add_link(&tools, "itch", "http://hundredrabbits.itch.io/");
 add_link(&tools, "sources", "http://github.com/hundredrabbits");
 
 Term orca = create_album(&tools, "orca", "Orca is a livecoding playground.");
-add_text(&orca, "Orca uses an <b>esoteric programming language</b> designed to quickly create procedural sequencers, in which every letter of the alphabet is an operation, where lowercase letters operate on bang, uppercase letters operate each frame.");
-add_text(&orca, "The " LINKNAME("https://github.com/hundredrabbits/Orca", "application") " is capable of communicating with audio & visual softwares via " LINKNAME("https://github.com/hundredrabbits/Orca/blob/master/WORKSHOP.md", "MIDI, OSC & UDP") ".");
+add_text(&orca, "Orca is a two-dimensional " LINKNAME("https://esolangs.org/wiki/Esoteric_programming_language", "esoteric programming language") " in which every letter of the alphabet is an operator, where lowercase letters operate on bang, uppercase letters operate each frame. This livecoding language is designed to procedurally generate " LINKNAME("https://github.com/hundredrabbits/orca#midi", "MIDI, UDP or OSC") " messages.");
+add_text(&orca, "Orca operates on a base of 36 increments, operators will convert alphanumeric values into values ranging from 0 to 36. Special characters are used to handle platform and client specific interactions.");
 add_html(&orca, MODITCHIO("225814"));
-add_text(&orca, "You can find a <b>portable and lightweight version</b> of Orca " LINKNAME("https://github.com/hundredrabbits/orca-c", "here") ", and a version  for the " SEND("norns") " " LINKNAME("https://llllllll.co/t/orca/22492", "here") ". Learn more by reading the " LINKNAME("https://github.com/Hundredrabbits/Orca", "manual") ", or have a look at a " LINKNAME("https://www.youtube.com/watch?v=RaI_TuISSJE", "tutorial video") ". If you need <b>help</b>, visit the " LINKNAME("https://talk.lurk.org/channel/orca", "chatroom") " or the " LINKNAME("https://llllllll.co/t/orca-live-coding-tool/17689", "forum") ".");
-add_quote(&orca, "Each letter of the alphabet is an operation, uppercase letters operate each frame, lowercase letters operate on bang.", "Orca");
+add_text(&orca, "You can find a <b>portable and lightweight version</b> of Orca " LINKNAME("https://github.com/hundredrabbits/orca-c", "here") ", and a version  for the " SEND("norns") " " LINKNAME("https://llllllll.co/t/orca/22492", "here") ". Learn more by reading the " LINKNAME("https://github.com/Hundredrabbits/Orca", "manual") ", or have a look at a " LINKNAME("https://www.youtube.com/watch?v=RaI_TuISSJE", "tutorial video") ". If you need <b>help</b>, visit the " LINKNAME("https://talk.lurk.org/channel/orca", "chatroom") " or the " LINKNAME("https://llllllll.co/t/orca-live-coding-tool/17689", "forum") ". Orca was featured on the Future Of Coding podcast, you can listen to the full episode " LINKNAME("https://futureofcoding.org/episodes/045", "here") ".");
+add_quote(&orca, "Each letter of the alphabet is an operation, uppercase letters operate each frame, lowercase letters operate on bang.", NULL);
 add_link(&orca, "sources", "https://github.com/hundredrabbits/Orca");
 add_link(&orca, "builds", "http://hundredrabbits.itch.io/Orca");
 add_link(&orca, "live", "https://hundredrabbits.github.io/Orca");
+add_link(&orca, "esolang wiki", "https://esolangs.org/wiki/Orca");
 add_link(&orca, "chatroom", "https://chat.toplap.org/channel/orca");
-add_link(&orca, "demo", "https://twitter.com/neauoire/status/1064738259077554176");
+add_link(&orca, "forum", "https://llllllll.co/t/orca/22492");
 
 Term juni = create_album(&orca, "juni", "Juni one-handed chorded keyboard.");
 add_text(&juni, "The <b>Juni Layout</b> is a 12-keys " LINKNAME("https://en.wikipedia.org/wiki/Chorded_keyboard", "chorded keyboard") ".");
