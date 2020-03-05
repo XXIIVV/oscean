@@ -121,6 +121,7 @@ add_word(&groupthink_biases, "Homogeneity bias", "Tendency of people to see memb
 add_word(&groupthink_biases, "Shared information bias", "Tendency for group members to spend more time and energy discussing information that all members are already familiar with (i.e., shared information), and less time and energy discussing information that only some members are aware of.");
 add_word(&groupthink_biases, "Bandwagon fallacy", "Assuming that an idea has merit simply because many people believe it or practice it.");
 add_word(&groupthink_biases, "Abilene paradox", "When a group of people collectively decide on a course of action that is counter to the preferences of many or all of the individuals in the group.");
+add_word(&groupthink_biases, "Mind Killing", "Refers to a set of techniques by which an entity or a system manipulates people to act in its own interests. It does this by killing their ability to act in their own interests.");
  
 Dict effects = create_dict("effects");
 add_word(&effects, "Ambiguity effect", "Tendency to avoid options for which missing information makes the probability seem \"unknown\".");
