@@ -679,6 +679,7 @@ add_word(&reading_list_2020, "Made to break", "Giles Slade");
 add_word(&reading_list_2020, "Wandering Island", "Kenji Tsuruta");
 add_word(&reading_list_2020, "Nouvelles pensées échevelées", "Stanislaw Jerzy Lec");
 add_word(&reading_list_2020, "How to Live Safely in a Science Fictional Universe", "Charles Yu");
+add_word(&reading_list_2020, "Dracula", "Bram Stoker");
 
 Dict macbook_workstation = create_dict("macbook workstation");
 add_word(&macbook_workstation,"System", "MacBook Pro Retina, 13\". 2014");

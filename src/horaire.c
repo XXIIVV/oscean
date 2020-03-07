@@ -1,3 +1,4 @@
+add_log(&donsol, "20E11", 237);
 add_log(&hundred_rabbits, "20E10", 278);
 add_log(&hundred_rabbits, "20E09", 177);
 add_log(&donsol, "20E08", 337);
