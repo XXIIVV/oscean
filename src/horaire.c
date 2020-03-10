@@ -1,3 +1,5 @@
+add_event(&alicef, "20F12", 199, "Eulerroom Equinox, Livesteam");
+add_log(&donsol, "20E13", 324);
 add_log(&donsol, "20E12", 327);
 add_log(&donsol, "20E11", 267);
 add_log(&hundred_rabbits, "20E10", 278);

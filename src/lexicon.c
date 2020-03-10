@@ -43,9 +43,9 @@ Term notebook = create_portal(&research, "notebook", "From the Notebook.");
 add_text(&notebook, "The <b>Notebook</b> is a collection of scribbles on various topics that have yet to find themselves permanently included in the " SENDNAME("oscean", "wiki") ".");
 add_text(&notebook, "Are you looking for the " SEND("sketchbook") "?");
 
-Term alicef = create_term(&audio, "alicef", "Alicef, is an livecoding audio/visual project built around Orca.");
-add_text(&alicef, "<b>Alicef</b> is a fragment of time taken from " SEND("aliceffekt") "'s diary, exploring " SENDNAME("dinaisth", "similar spaces") ", but focusing on the aesthetics of pattern & repetition.");
-add_text(&alicef, "There are currently no complete releases available for the <b>Alicef</b> project, only a handful of " LINKNAME("https://www.youtube.com/watch?v=hQXa6TkSeH0", "demos") " and the " SEND("azolla") " release.");
+Term alicef = create_index(&audio, "alicef", "Alicef, is an livecoding audio/visual project built around Orca.");
+add_text(&alicef, "<b>Alicef</b> is a fragment of " SEND("aliceffekt") "'s diary, exploring " SENDNAME("dinaisth", "similar spaces") ", but focusing on the aesthetics of pattern & repetition.");
+add_text(&alicef, "This livecoding project uses a combination of " SEND("orca") " and " SEND("enfer")", and is created to be mostly a performance project, there are currently no releases available for the <b>Alicef</b> project, only a handful of " LINKNAME("https://www.youtube.com/watch?v=hQXa6TkSeH0", "demos") ".");
 add_html(&alicef, MODYOUTUBE("hQXa6TkSeH0"));
 
 Term aliceffekt = create_index(&audio, "aliceffekt", "Aliceffekt, is an audio project following the adventures of Neonev across Dinaisth.");
@@ -149,9 +149,8 @@ add_text(&getapan_728k, "This new release explores a region of frigid dubs yet u
 add_html(&getapan_728k, MODBANDCAMP("1677022414"));
 add_link(&getapan_728k, "bandcamp", "https://beldamrecords.bandcamp.com/album/728k");
 
-Term azolla = create_term(&beldam_records, "azolla", "Azolla is a Beldam Records release, by Alicef.");
+Term azolla = create_term(&alicef, "azolla", "Azolla is a Beldam Records release, by Alicef.");
 add_text(&azolla, "" SEND("azolla") " is a research project involving composition and development, with the purpose of creating a catalog of works written entirely using " SENDNAME("tools", "homebrew tools") " like " SEND("orca") " and " SEND("enfer") ".");
-add_text(&azolla, "The previous performances include Berlin(ReactBerlin), Amsterdam(JSNation) and Sheffield(Algorave).");
 add_text(&azolla, "The track can be downloaded " LINKNAME("https://aliceffekt.bandcamp.com/album/Azolla", "here") ".");
 add_html(&azolla, MODYOUTUBE("9FPrPgOQqZg"));
 add_link(&azolla, "sources", "https://github.com/neauoire/alicef");
