@@ -77,7 +77,7 @@ char *doty_to_arvelie(int doty) {
   char *months[] = {"A", "B", "C", "D", "E", "F", "G", "H", "I",
                     "J", "K", "L", "M", "N", "O", "P", "Q", "R",
                     "S", "T", "U", "V", "W", "X", "Y", "Z"};
-  int d = doty % 14;
+  int d = (doty % 14) + 1;
   int i = floor(doty / 14);
   char *m = months[i];
 
