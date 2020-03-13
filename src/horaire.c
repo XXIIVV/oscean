@@ -1,5 +1,6 @@
 add_event(&alicef, "20F12", 199, "Eulerroom Equinox, Livesteam");
-add_log(&pino, "20F02", 328);
+add_log(&donsol, "20F03", 325);
+add_diary(&pino, "20F02", 328, "In Minamiise", 401);
 add_log(&donsol, "20F01", 257);
 add_log(&donsol, "20E14", 316);
 add_log(&donsol, "20E13", 324);
