@@ -1246,7 +1246,7 @@ add_log(&collected_works, "16N14", 179);
 add_log(&the_will_the_wisp, "16N13", 354);
 add_log(&pino, "16N12", 279);
 add_diary(&pino, "16N11", 319, "Workstation Aboard Pino", 493);
-add_event(&pino, "16N09", 299, "Sail to Seattle");
+add_event(&america, "16N09", 299, "Sail to Seattle");
 add_diary(&language, "16N08", 275, "The Voynich", 113);
 add_diary(&pearls, "16N07", 245, "Pearl", 143);
 add_log(&portalion, "16N06", 165);
