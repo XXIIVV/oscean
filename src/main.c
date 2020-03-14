@@ -467,13 +467,15 @@ void build_links(FILE *f, Term *term){
 void build_horaire(FILE *f, Term *term){
   int len = 0;
   int events_len = 0;
+  int ch = 0;
+  int fh = 0;
 
   for (int i = 0; i < all_logs.len; ++i) {
     Log *l = &all_logs.logs[i];
     if (l->term != term && l->term->parent != term) { continue; }
     if (l->is_event == true) { events_len += 1; }
-    // int log_ch = (l->code / 10) % 10;
-    // int log_fh = l->code % 10;
+    ch += (l->code / 10) % 10;
+    fh += l->code % 10;
     len += 1;
   }
 
@@ -484,7 +486,7 @@ void build_horaire(FILE *f, Term *term){
   for (int i = 0; i < all_logs.len; ++i) {
     Log *l = &all_logs.logs[i];
     if(l->term != term){ continue; }
-    fprintf(f, "<p><i>Last update on <a href='tracker.html'>%s</a>, edited %d times.</i></p>", l->date, len);  
+    fprintf(f, "<p><i>Last update on <a href='tracker.html'>%s</a>, edited %d times.</i> +%d/%dfh</p>", l->date, len, ch, fh);  
     break;
   }
 

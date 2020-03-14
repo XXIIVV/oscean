@@ -318,7 +318,7 @@ add_link(&tablatal, "parser", "https://github.com/XXIIVV/Libraries/blob/master/s
 add_link(&tablatal, "syntax highlight", "https://github.com/XXIIVV/Libraries/blob/master/tools/tbtl.sublime-syntax");
 
 Term lain = create_term(&oscean, "lain", "Lain is a LISP dialect used as a templating and scripting engine. ");
-add_text(&lain, "The Lain " LINKNAME("https://github.com/XXIIVV/Libraries/blob/master/scripts/lain.js", "parser") " used to exist at the core of " SEND("Oscean") " before the migrationg to a fully static website, but it can still be found in various projects of the " SENDNAME("Nataniev", "Nataniev ecosystem") ", such as in the " SEND("Ronin") " and " SEND("Paradise") " applications. The parser takes a " LINKNAME("https://github.com/XXIIVV/Libraries/blob/master/scripts/lain.library.js", "Lain Library") ".");
+add_text(&lain, "The Lain " LINKNAME("https://github.com/XXIIVV/Libraries/blob/master/scripts/lain.js", "parser") " used to exist at the core of " SEND("oscean") " before the migrationg to a fully static website, but it can still be found in various projects of the " SENDNAME("Nataniev", "Nataniev ecosystem") ", such as in the " SEND("ronin") " and " SEND("paradise") " applications. The parser takes a " LINKNAME("https://github.com/XXIIVV/Libraries/blob/master/scripts/lain.library.js", "Lain Library") ".");
 add_header(&lain, "Templating With Lain");
 add_html(&lain, "<pre>(link \"home\")                             {(link \"home\")}\n(link \"home\" \"local\")                     {(link \"home\" \"local\")}\n(link \"https://github.com/\")              {(link \"https://github.com/\")}\n(link \"https://github.com/\" \"external\")   {(link \"https://github.com/\" \"external\")}\n(bold \"bold\")                             {(bold \"bold\")}\n(ital \"italic\")                           {(ital \"italic\")}\n(bold (link \"home\" \"bold link\"))          {(bold (link \"home\" \"bold link\"))}\n</pre>");
 add_header(&lain, "Programming With Lain");
@@ -442,7 +442,7 @@ add_link(&left, "community", "https://hundredrabbits.itch.io/left/community");
 
 Term nasu = create_album(&tools, "nasu", "Nasu is a spritesheet and nametable editor.");
 add_text(&nasu, "Nasu is a spritesheet and nametable editor created to help us design and assemble the assets of our famicom games. It can import and export both .chr spritesheets and .asm nametables.");
-add_text(&nasu, "The " LINKNAME("https://github.com/hundredrabbits/Nasu", "application") " was initially created to help us with the porting of " SEND("Donsol") " to the Famicom, and was later made available as a free and " LINKNAME("https://github.com/hundredrabbits/Nasu", "open source") " software.");
+add_text(&nasu, "The " LINKNAME("https://github.com/hundredrabbits/Nasu", "application") " was initially created to help us with the porting of " SEND("donsol") " to the Famicom, and was later made available as a free and " LINKNAME("https://github.com/hundredrabbits/Nasu", "open source") " software.");
 add_html(&nasu, MODITCHIO("560470"));
 add_text(&nasu, "Learn more by reading the " LINKNAME("https://100r.co/site/nasu.html", "manual") ". If you need <b>help</b>, visit the " LINKNAME("https://hundredrabbits.itch.io/nasu/community", "Community") ".");
 add_link(&nasu, "download", "http://hundredrabbits.itch.io/Nasu");
@@ -780,6 +780,13 @@ add_html(&donsol, MODITCHIO("109936"));
 add_link(&donsol, "itch", "https://hundredrabbits.itch.io/donsol");
 add_link(&donsol, "video", "https://www.youtube.com/watch?v=GNoZrr56GqA");
 add_link(&donsol, "sources", "https://github.com/hundredrabbits/Donsol");
+
+Term donsol_famicom = create_album(&donsol, "donsol famicom", "Donsol Famicom is a port of the dungeon-crawler card game for the classic Nintendo.");
+add_text(&donsol_famicom, "<b>Donsol</b> is a " SENDNAME("donsol", "dungeon crawler card game") " played with a standard deck of 54 playing cards. The game was programmed entirely in " SENDNAME("Assembly", "6502 assembly")", the art assets were created by " SEND("rekka") ", the game was designed by John Eternal and the ROM will released by " SEND("hundred rabbits") ". ");
+add_text(&donsol_famicom, "The game should be released in the " SENDNAME("calendar", "spring of 2020") ". A cartridge release is being considered, " LINKNAME("https://www.patreon.com/100", "stay tuned") " for more updates.");
+add_link(&donsol_famicom, "itch", "https://hundredrabbits.itch.io/donsol");
+add_link(&donsol_famicom, "video", "https://www.youtube.com/watch?v=GNoZrr56GqA");
+add_link(&donsol_famicom, "sources", "https://github.com/hundredrabbits/Donsol");
 
 Term hiversaires = create_album(&games, "hiversaires", "Hiversaires is a textless point-n-click game.");
 // set_icon(&hiversaires, "M60,60 L60,60 L60,240 M150,60 L150,60 L150,240 M240,60 L240,60 L240,240 M60,195 A45,-45 0 0,1 105,150 A45,45 0 0,1 150,195 A45,-45 0 0,1 195,150 A45,45 0 0,1 240,195");
@@ -1131,7 +1138,7 @@ add_text(&aitasla, "Folk stories, from " SEND("dinaisth") ", about the satellite
 add_text(&aitasla, "The " SEND("aitasla") " object is rumoured to be the location of the " SEND("hiversaires") " station.");
 
 Term characters = create_index(&neauismetica, "characters", "Characters are a selection of resident Immortals of Dinaisth.");
-add_text(&characters, "While some happened to find themselves on " SEND("dinaisth") " for various reasons unrelated to the " SEND("Ehrivevnv") ", the " SEND("neauismetica") " focuses on the handful few that worked directly with or alongside the " SENDNAME("neon hermetism", "neon hermetists") ".");
+add_text(&characters, "While some happened to find themselves on " SEND("dinaisth") " for various reasons unrelated to the " SEND("ehrivevnv") ", the " SEND("neauismetica") " focuses on the handful few that worked directly with or alongside the " SENDNAME("neon hermetism", "neon hermetists") ".");
 add_text(&characters, "The name comes from the " SEND("nohlxeserre") ", which is also known as <b>The Language Of The Birds</b>.");
 
 Term rlionn = create_term(&characters, "rlionn", "Rlionn is a being who periodically manifest itself on Laeisth.");
@@ -1726,7 +1733,7 @@ Term *lexicon[] = {
   &dictionarism, &glossolaliarium, &advent_v, &unity, &siseon, &zjeveni, 
   &drypoint, &valentinel_hopes, &cenote, &cyanosis_fever, &donsol, &hiversaires, 
   &purgateus, &collegiennes, &diluvium, &volkenessen, &waiting_for_horus, 
-  &marabu, &pico3, &pico_battle, &spagettini_scale, &spool_holder, 
+  &marabu, &pico3, &pico_battle, &spagettini_scale, &spool_holder, &donsol_famicom, 
   &laeisthic, &children_of_bramble, &known_magye, &extended_sleep, 
   &duomic, &neauismetic, &opal_inquisitors, &portalion, &dei_dain, 
   &habitants_du_soleil, &lives, &shikanokoa_vs_1h1d, &pedestrian_paradise, 
