@@ -1,4 +1,7 @@
 add_event(&alicef, "20F12", 199, "Eulerroom Equinox, Livesteam");
+add_log(&donsol_famicom, "20F05", 337);
+add_log(&assembly, "20F05", 326);
+add_log(&assembly, "20F04", 215);
 add_diary(&donsol_famicom, "20F03", 325, "Famicom AV to C1084 Monitor", 474);
 add_diary(&pino, "20F02", 328, "In Minamiise", 401);
 add_log(&donsol_famicom, "20F01", 257);
