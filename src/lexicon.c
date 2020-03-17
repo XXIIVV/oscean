@@ -660,10 +660,6 @@ add_text(&instrument, "Its original purpose was to help with night sailing where
 // add_list(&instrument, "Vesper Marine " LINKNAME("https://www2.vespermarine.com/xb8000-ais-transponder", "XB-8000 AIS Transponder") "");
 add_link(&instrument, "sources", "http://github.com/hundredrabbits/Instrument");
 
-Term assembly = create_term(&hardware, "assembly", "Assembly(6502) is the language used to program the famicom microprocessor.");
-add_text(&assembly, "This page is a collection of notes on the basics of 6502 assembly, assembled from various guides and tutorial..");
-add_link(&assembly, "famicom cookbook", "https://github.com/hundredrabbits/Famicom-Cookbook");
-
 Term microbit = create_term(&hardware, "microbit", "The Microbit is a small educational micro-controller from BBC.");
 add_text(&microbit, "Here's a list of <b>simple projects & sources</b> for the <a href='#microbit' data-goto='microbit' target='_self' class='local '>Microbit</a>. The Microbit is an excellent toy to learn to code and create electronics projects.");
 add_link(&microbit, "official site", "https://microbit.org/");
@@ -1613,7 +1609,7 @@ add_header(&quotes, "God Eternally Geometrizes");
 add_quote(&quotes, "They did not know it was impossible, <br />so they did it.", "Mark Twain");
 add_quote(&quotes, "No limiting qualities are to be attributed to the <b>Absolute</b>. ", "Plutarch, Convivalium Disputationum libri novem");
 
-Term language = create_portal(&research, "language", "Various Language notes on natural and synthetic languages.");
+Term language = create_portal(&research, "language", "Various Language notes on natural, synthetic and programming languages.");
 add_text(&language, "Welcome to the <b>Language Portal</b>.");
 add_text(&language, "The goal of these pages is to host a few resources, summaries and notes from my own language studies. ");
 add_quote(&language, "Kolik jazyků znáš, <br />tolikrát jsi člověkem.", "Tomáš Garrigue Masaryk");
@@ -1621,6 +1617,12 @@ add_link(&language, "koseki-091450", "http://glyphwiki.org/wiki/koseki-091450");
 add_link(&language, "unicode u+21dc9", "https://www.unicode.org/cgi-bin/GetUnihanData.pl?codepoint=U%2B21DC9");
 
 Term english = create_term(&language, "english", "Assorted notes on the English language.");
+
+Term assembly = create_term(&language, "assembly", "Assembly(6502) is the language used to program the famicom microprocessor.");
+add_text(&assembly, "This page is a collection of notes on the basics of 6502 assembly, assembled from various guides and tutorial. Understanding these notes require prior understanding of " SENDNAME("binary", "binary numbers") ".");
+add_link(&assembly, "famicom cookbook", "https://github.com/hundredrabbits/Famicom-Cookbook");
+
+Term binary = create_term(&language, "binary", "Binary numbers are a base 2 numeral system.");
 
 Term the_sartre_mechanism = create_term(&notebook, "the sartre mechanism", "The The Sartre Mechanism short.");
 add_text(&the_sartre_mechanism, "It was the first day of the winter when a friend invited me to witness the completion of a recent project.");
@@ -1727,7 +1729,7 @@ Term *lexicon[] = {
   &rotonde, &riven, &tools, &orca, &juni, &pilot, &ronin, &dotgrid, &left, 
   &nasu, &utilities, &noodle, &enfer, &paradise, &maeve, &parade, &games, 
   &hardware, &raspberry, &media_station, &radio_station, &framboisedorf, 
-  &weather_station, &instrument, &assembly, &microbit, &playground, &norns, 
+  &weather_station, &instrument, &microbit, &playground, &norns, 
   &monome, &mobile, &bifurcan, &keyboard_468, &alphavetist, &vocavularist, 
   &rafinograde, &noirca, &dew, &ledoliel, &automatons, &the_will_the_wisp, 
   &dictionarism, &glossolaliarium, &advent_v, &unity, &siseon, &zjeveni, 
@@ -1760,5 +1762,5 @@ Term *lexicon[] = {
   &unreleased, &blindfolk, &milavrega, &devine_lu_linvega, &first_wave, 
   &regionsteam_snowdays, &downtemperature, &blam, &vert_kirlian_theatre, 
   &ann_yozora_saint, &nether_esper_inserts, &otoroutes_miniatures, 
-  &idyllic_miners, &lietal, &japanese, &russian 
+  &idyllic_miners, &lietal, &japanese, &russian, &assembly, &binary
 };

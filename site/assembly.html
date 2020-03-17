@@ -1,14 +1,4 @@
-<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='author' content='Devine Lu Linvega'><meta name='description' content='The Nataniev Library.'/><meta name='keywords' content='Aliceffekt, Devine Lu Linvega, Lietal, Oquonie, Verreciel, Nataniev, Oscean, Solarpunk' /><meta name='license' content='name=BY-NC-SA(4.0), url=https://creativecommons.org/licenses/by-nc-sa/4.0/'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width, initial-scale=1.0'><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/x-icon' href='../media/services/favicon.ico' /><title>XXIIVV — assembly</title></head><body><header><a id='logo' href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV'></a></header><nav><ul><li><a href='nataniev.html'>nataniev</a></li><li><a href='tools.html'>tools</a></li><li><a href='hardware.html'>hardware/</a></li><li><a href='neauismetica.html'>neauismetica</a></li><li><a href='mirrors.html'>mirrors</a></li><li><a href='language.html'>language</a></li><li><a href='notebook.html'>notebook</a></li></ul><ul><li><a href='raspberry.html'>raspberry</a></li><li><a href='assembly.html'>assembly/</a></li><li><a href='microbit.html'>microbit</a></li><li><a href='playground.html'>playground</a></li><li><a href='norns.html'>norns</a></li><li><a href='monome.html'>monome</a></li></ul><ul></ul></nav><main><figure><img src='../media/diary/7.jpg' alt='Famicom Keyboard picture'/><figcaption>20A01 — Famicom Keyboard</figcaption></figure><h2>Assembly(6502) is the language used to program the famicom microprocessor.</h2><p>This page is a collection of notes on the basics of 6502 assembly, assembled from various guides and tutorial..</p><h3>Basics</h3>
-
-<ul>
-  <li><b>Bit</b>: The smallest unit in computers. It is either a 1 or a 0.</li>
-  <li><b>Nibble</b>: Half a byte, or 4 bites. </li>
-  <li><b>Byte</b>: 8 bits together form one byte, a number from 0 to 255.  Bits in the byte are numbered starting from the right at 0.</li>
-  <li><b>Short</b>: Two bytes put together is 16 bits, forming a number from 0 to 65535. The low byte is the rightmost eight bits.</li>
-  <li><b>Hex Number</b>: A HEX number consisting of 4 numbers is 16-bit.</li>
-</ul>  
-
-<h3>Registers</h3>
+<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='author' content='Devine Lu Linvega'><meta name='description' content='The Nataniev Library.'/><meta name='keywords' content='Aliceffekt, Devine Lu Linvega, Lietal, Oquonie, Verreciel, Nataniev, Oscean, Solarpunk' /><meta name='license' content='name=BY-NC-SA(4.0), url=https://creativecommons.org/licenses/by-nc-sa/4.0/'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width, initial-scale=1.0'><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/x-icon' href='../media/services/favicon.ico' /><title>XXIIVV — assembly</title></head><body><header><a id='logo' href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV'></a></header><nav><ul><li><a href='nataniev.html'>nataniev</a></li><li><a href='tools.html'>tools</a></li><li><a href='hardware.html'>hardware</a></li><li><a href='neauismetica.html'>neauismetica</a></li><li><a href='mirrors.html'>mirrors</a></li><li><a href='language.html'>language/</a></li><li><a href='notebook.html'>notebook</a></li></ul><ul><li><a href='english.html'>english</a></li><li><a href='lietal.html'>lietal</a></li><li><a href='japanese.html'>japanese</a></li><li><a href='russian.html'>russian</a></li><li><a href='assembly.html'>assembly/</a></li><li><a href='binary.html'>binary</a></li></ul><ul></ul></nav><main><figure><img src='../media/diary/7.jpg' alt='Famicom Keyboard picture'/><figcaption>20A01 — Famicom Keyboard</figcaption></figure><h2>Assembly(6502) is the language used to program the famicom microprocessor.</h2><p>This page is a collection of notes on the basics of 6502 assembly, assembled from various guides and tutorial. Understanding these notes require prior understanding of <a href='binary.html'>binary numbers</a>.</p><h3>Registers</h3>
 
 <p>The 6502 handles data in its registers, each of which holds one byte(8-bits) of data. There are a total of three general use and two special purpose registers:</p>
 <p><b>Note:</b> When you use X it adds the value of X to the memory address and uses the 16-bit value at that address to do the write. Whereas when you use Y it adds the value of Y to the address stored in the memory address it's reading from instead. 6502 is little-endian, so $0200 is stored as $00 $02 in memory.</p>
@@ -236,36 +226,12 @@ THERE:
 <h3>Controller Ports</h3>
 
 <p>The controllers are accessed through memory port addresses $4016 and $4017. First you have to write the value $01 then the value $00 to port $4016. This tells the controllers to latch the current button positions. Then you read from $4016 for first player or $4017 for second player. The buttons are sent one at a time, in bit 0. If bit 0 is 0, the button is not pressed. If bit 0 is 1, the button is pressed.</p>
+
 <p>Button status for each controller is returned in the following order: A, B, Select, Start, Up, Down, Left, Right.</p>
 
-<pre>
-LDA #$01
-STA $4016
-LDA #$00
-STA $4016     ; tell both the controllers to latch buttons
+<h3>Palette Codes</h3>
 
-LDA $4016     ; player 1 - A(1)
-LDA $4016     ; player 1 - B(2)
-LDA $4016     ; player 1 - Select(4)
-LDA $4016     ; player 1 - Start(8)
-LDA $4016     ; player 1 - Up(16)
-LDA $4016     ; player 1 - Down(32)
-LDA $4016     ; player 1 - Left(64)
-LDA $4016     ; player 1 - Right(128)
-
-LDA $4017     ; player 2 - A
-LDA $4017     ; player 2 - B
-LDA $4017     ; player 2 - Select
-LDA $4017     ; player 2 - Start
-LDA $4017     ; player 2 - Up
-LDA $4017     ; player 2 - Down
-LDA $4017     ; player 2 - Left
-LDA $4017     ; player 2 - Right
-</pre>
-
-<h3>Nes Palette Codes</h3>
-
-<table border="1" cellpadding="5">
+<table border="1">
   <tr>
     <td data-nes="0x00" style="background:rgb(124,124,124);">00</td>
     <td data-nes="0x01" style="background:rgb(0,0,252);">01</td>
@@ -338,4 +304,4 @@ LDA $4017     ; player 2 - Right
     <td data-nes="0x3E" style="background:rgb(0,0,0);">3E</td>
     <td data-nes="0x3F" style="background:rgb(0,0,0);">3F</td>
   </tr>
-</table> <ul><li><a href='https://github.com/hundredrabbits/Famicom-Cookbook' class='external'>famicom cookbook</a></li></ul><p><i>Last update on <a href='tracker.html'>20F05</a>, edited 13 times.</i> +26/66fh</p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0' target='_blank'><img src='../media/icon/cc.svg' alt='by-nc-sa' width='30'/></a> <a href='http://webring.xxiivv.com/' target='_blank' rel='noreferrer'><img src='../media/icon/rotonde.svg' alt='webring' width='30'/></a> <a href='https://merveilles.town/@neauoire' target='_blank'><img src='../media/icon/merveilles.svg' alt='Merveilles' width='30'/></a> <a href='https://github.com/neauoire' target='_blank'><img src='../media/icon/github.png' alt='github' width='30'/></a> <span><a href='devine_lu_linvega.html' target='_self'>Devine Lu Linvega</a> © 2020 — <a href='about.html' target='_self'>BY-NC-SA 4.0</a></span></footer></body></html>
+</table> <ul><li><a href='https://github.com/hundredrabbits/Famicom-Cookbook' class='external'>famicom cookbook</a></li></ul><p><i>Last update on <a href='tracker.html'>20F07</a>, edited 14 times.</i> +26/72fh</p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0' target='_blank'><img src='../media/icon/cc.svg' alt='by-nc-sa' width='30'/></a> <a href='http://webring.xxiivv.com/' target='_blank' rel='noreferrer'><img src='../media/icon/rotonde.svg' alt='webring' width='30'/></a> <a href='https://merveilles.town/@neauoire' target='_blank'><img src='../media/icon/merveilles.svg' alt='Merveilles' width='30'/></a> <a href='https://github.com/neauoire' target='_blank'><img src='../media/icon/github.png' alt='github' width='30'/></a> <span><a href='devine_lu_linvega.html' target='_self'>Devine Lu Linvega</a> © 2020 — <a href='about.html' target='_self'>BY-NC-SA 4.0</a></span></footer></body></html>
