@@ -18,6 +18,7 @@
 #define TERM_LOGS_BUFFER 340
 #define TERM_CHILDREN_BUFFER 16
 #define JOURNAL_BUFFER 8192
+#define TRACKER_BUFFER 512
 
 int pict_used_len = 0;
 int pict_used[999];
@@ -89,7 +90,7 @@ Journal all_logs;
 
 void add_journal_log(Journal *journal, Term *term, char *date, int code, char *name, int pict, bool is_event){
   if(journal->len >= JOURNAL_BUFFER){ 
-    printf("Reached journal buffer\n"); 
+    printf("Error: Reached journal buffer\n"); 
     return; 
   }
   Log log;
@@ -114,7 +115,7 @@ Dict create_dict(char *name) {
 
 void add_word(Dict *dict, char *key, char *value) {
   if (dict->words_len >= DICT_BUFFER) {
-    printf("Reached DICT_BUFFER\n");
+    printf("Error: Reached DICT_BUFFER\n");
     return;
   }
   dict->keys[dict->words_len] = key;
@@ -183,7 +184,7 @@ Term create_index(Term *parent, char *name, char *bref) {
 
 void add_body(Term *term, char *text, char *tag, char *meta) {
   if (term->body_len >= TERM_BODY_BUFFER) {
-    printf("Reached TERM_BODY_BUFFER\n");
+    printf("Error: Reached TERM_BODY_BUFFER\n");
     return;
   }
   term->body_text[term->body_len] = text;
@@ -206,7 +207,7 @@ void add_quote(Term *term, char *text, char *source) {
 
 void add_dict(Term *term, Dict *dict) {
   if (term->dicts_len >= TERM_DICT_BUFFER) {
-    printf("Reached TERM_DICT_BUFFER\n");
+    printf("Error: Reached TERM_DICT_BUFFER\n");
     return;
   }
   term->dicts[term->dicts_len] = dict;
@@ -215,7 +216,7 @@ void add_dict(Term *term, Dict *dict) {
 
 void add_list(Term *term, List *list) {
   if (term->dicts_len >= TERM_LIST_BUFFER) {
-    printf("Reached TERM_LIST_BUFFER\n");
+    printf("Error: Reached TERM_LIST_BUFFER\n");
     return;
   }
   term->lists[term->lists_len] = list;
@@ -224,7 +225,7 @@ void add_list(Term *term, List *list) {
 
 void add_link(Term *term, char *name, char *url) {
   if (term->links_len >= TERM_LINK_BUFFER) {
-    printf("Reached TERM_LINK_BUFFER\n");
+    printf("Error: Reached TERM_LINK_BUFFER\n");
     return;
   }
   term->links_names[term->links_len] = name;
@@ -299,7 +300,7 @@ void build_pict(FILE *f, int pict, char *host, char *name, bool caption, char *l
 void build_term_pict(FILE *f, Term *term, bool caption){
   Log *log = find_last_diary(term);
   if(log == NULL){
-    printf("Missing portal log for: %s\n", term->name);
+    // printf("Missing portal log for: %s\n", term->name);
     return;
   }
   char filename[STR_BUF_LEN];
@@ -409,7 +410,7 @@ void build_include(FILE *f, Term *term){
   FILE *fp = fopen(filepath, "r");
   if(fp == NULL){ return; }
 
-  printf("Including: %s(%s)\n", term->name, filepath);
+  // printf("Including: %s(%s)\n", term->name, filepath);
 
   for (;;) {
     size_t sz = fread(buffer, 1, sizeof(buffer), fp);
@@ -531,7 +532,7 @@ void build_special_tracker(FILE *f, Term *term, Journal *journal) {
   }
 
   int known_id = 0;
-  char *known[999];
+  char *known[TRACKER_BUFFER];
   int last_year = 0;
 
   fputs("<ul>", f);
@@ -539,6 +540,10 @@ void build_special_tracker(FILE *f, Term *term, Journal *journal) {
     if (index_of_string(known, known_id, journal->logs[i].term->name) > -1) {
       continue;
     } 
+    if(known_id >= TRACKER_BUFFER){ 
+      printf("Error: Reached tracker buffer\n"); 
+      break; 
+    }
     if(last_year != extract_year(journal->logs[i].date)){
       fprintf(f, "</ul><ul>");
     }
@@ -566,6 +571,43 @@ void build_special_journal(FILE *f, Term *term, Journal *journal) {
     build_log_pict(f, &journal->logs[i], true);
     count++;
   }
+}
+
+void build_special_now(FILE *f, Term *term, Journal *journal) {
+  if (strcmp(term->name, "now") != 0) {
+    return;
+  }
+
+  int range = 14*4;
+  int projects_len = 0;
+  float projects_value[200];
+  char *projects_name[200];
+  float sum_value = 0;
+
+  for (int i = 0; i < range; ++i) {
+    if(journal->logs[i].code % 10 < 1){
+      continue;
+    }
+    int index = index_of_string(projects_name, projects_len, journal->logs[i].term->name);
+    if (index < 0) {
+      projects_name[projects_len] = journal->logs[i].term->name;
+      projects_value[projects_len] = 0;
+      projects_len++;
+    } 
+    projects_value[projects_len-1] += journal->logs[i].code % 10;
+    sum_value += journal->logs[i].code % 10;
+  }
+
+  fputs("<h3>Current Projects</h3>", f);
+  fprintf(f, "<p>Distribution of %.0f hours over %d projects during the previous %d days.</p>", sum_value, projects_len, range);
+
+  fputs("<ul style='columns:2'>", f);
+  for (int i = 0; i < projects_len; ++i) {
+    char filename[STR_BUF_LEN];
+    to_lowercase(projects_name[i], filename, STR_BUF_LEN);
+    fprintf(f, "<li><a href='%s.html'>%s</a> %.2f&#37;</li>", filename, projects_name[i], (projects_value[i]/sum_value) * 100);
+  }
+  fputs("</ul>", f);
 }
 
 void build_page(Term *term, Journal *journal) {
@@ -603,6 +645,7 @@ void build_page(Term *term, Journal *journal) {
   build_special_calendar(f, term, journal);
   build_special_tracker(f, term, journal);
   build_special_journal(f, term, journal);
+  build_special_now(f, term, journal);
 
   fputs("</main>", f);
 

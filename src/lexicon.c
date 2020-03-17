@@ -1329,6 +1329,8 @@ add_link(&calendar, "rss feed", "https://wiki.xxiivv.com/links/rss.xml");
 Term identity = create_term(&journal, "identity", "Various notes on the visual choices made for the Nataniev projects.");
 add_text(&identity, "Additional details can be found in the " SEND("faqs") ".");
 
+Term now = create_term(&journal, "now", "The /now page shows infographics of current activity.");
+
 Term inventory = create_portal(&devine_lu_linvega, "inventory", "The collection of technical details on the Inventory.");
 add_text(&inventory, "Some of the items I carry around with me in my " SENDNAME("travel", "travels") ".");
 
@@ -1761,6 +1763,6 @@ Term *lexicon[] = {
   &the_sartre_mechanism, &talk, &systems, &vedic, &needles, &shorthand,
   &unreleased, &blindfolk, &milavrega, &devine_lu_linvega, &first_wave, 
   &regionsteam_snowdays, &downtemperature, &blam, &vert_kirlian_theatre, 
-  &ann_yozora_saint, &nether_esper_inserts, &otoroutes_miniatures, 
+  &ann_yozora_saint, &nether_esper_inserts, &otoroutes_miniatures, &now,
   &idyllic_miners, &lietal, &japanese, &russian, &assembly, &binary
 };

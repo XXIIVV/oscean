@@ -1,4 +1,4 @@
-add_event(&alicef, "20F12", 199, "Eulerroom Equinox, Livesteam");
+add_event(&alicef, "20F12", 190, "Eulerroom Equinox, Livesteam");
 add_log(&assembly, "20F07", 316);
 add_log(&donsol_famicom, "20F06", 337);
 add_log(&assembly, "20F05", 316);
@@ -21,7 +21,7 @@ add_log(&donsol_famicom, "20E03", 345);
 add_log(&donsol_famicom, "20E02", 266);
 add_log(&pino, "20E01", 225);
 add_log(&pino, "20D14", 324);
-add_event(&japan, "20D09", 0, "Travel to Minamiise, Japan");
+add_event(&japan, "20D09", 257, "Travel to Minamiise, Japan");
 add_log(&oscean, "20D03", 321);
 add_event(&orca, "20C12", 396, "Orca Workshop Mila, Montreal");
 add_log(&nasu, "20C11", 356);
