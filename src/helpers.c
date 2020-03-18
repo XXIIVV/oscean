@@ -33,7 +33,7 @@ int index_of_string(char *a[], int num_elements, char *value) {
   return -1;
 }
 
-int extract_year(char *date){
+int extract_year(char *date) {
   char c1 = date[0];
   char c2 = date[1];
   char s[] = "45";
@@ -85,8 +85,9 @@ char *doty_to_arvelie(int doty) {
   return "";
 }
 
-char *doty_to_greg(int doty){
-  int day, month = 0, months[13] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
+char *doty_to_greg(int doty) {
+  int day, month = 0, months[13] = {0,   31,  59,  90,  120, 151, 181,
+                                    212, 243, 273, 304, 334, 365};
   while (months[month] < doty) {
     month++;
   }
@@ -95,12 +96,11 @@ char *doty_to_greg(int doty){
   return "";
 }
 
-char *arvelie_to_greg(char *arvelie){
+char *arvelie_to_greg(char *arvelie) {
   int doty = arvelie_to_doty(arvelie);
   char *greg = doty_to_greg(doty);
   return greg;
 }
-
 
 char *get_arvelie() {
   int year, month, day;

@@ -1,4 +1,5 @@
 add_event(&alicef, "20F12", 190, "Eulerroom Equinox, Livesteam");
+add_log(&oscean, "20F08", 375);
 add_log(&assembly, "20F07", 316);
 add_log(&donsol_famicom, "20F06", 337);
 add_log(&assembly, "20F05", 316);

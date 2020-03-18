@@ -792,8 +792,6 @@ int main(void) {
   get_arvelie();
   future_time();
 
-  printf("20M14 = %s\n", arvelie_to_greg("20M14"));
-
 //
 
   printf("Lexicon: %d entries\n", lexicon_len);
