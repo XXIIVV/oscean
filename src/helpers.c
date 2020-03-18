@@ -85,6 +85,23 @@ char *doty_to_arvelie(int doty) {
   return "";
 }
 
+char *doty_to_greg(int doty){
+  int day, month = 0, months[13] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
+  while (months[month] < doty) {
+    month++;
+  }
+  day = doty - months[month - 1];
+  printf("%d/%d/%d\n", 2020, month, day);
+  return "";
+}
+
+char *arvelie_to_greg(char *arvelie){
+  int doty = arvelie_to_doty(arvelie);
+  char *greg = doty_to_greg(doty);
+  return greg;
+}
+
+
 char *get_arvelie() {
   int year, month, day;
   time_t now;

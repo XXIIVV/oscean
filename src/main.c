@@ -578,7 +578,7 @@ void build_special_now(FILE *f, Term *term, Journal *journal) {
     return;
   }
 
-  int range = 14*4;
+  int range = 14 * 4;
 
   // Previous range
   int past_projects_len = 0;
@@ -588,16 +588,18 @@ void build_special_now(FILE *f, Term *term, Journal *journal) {
 
   for (int i = 0; i < range; ++i) {
     int past_index = i + range;
-    if(journal->logs[past_index].code % 10 < 1){
+    if (journal->logs[past_index].code % 10 < 1) {
       continue;
     }
     int index = index_of_string(past_projects_name, past_projects_len, journal->logs[past_index].term->name);
     if (index < 0) {
-      past_projects_name[past_projects_len] = journal->logs[past_index].term->name;
+      past_projects_name[past_projects_len] =
+          journal->logs[past_index].term->name;
       past_projects_value[past_projects_len] = 0;
       past_projects_len++;
-    } 
-    past_projects_value[past_projects_len-1] += journal->logs[past_index].code % 10;
+    }
+    past_projects_value[past_projects_len - 1] +=
+        journal->logs[past_index].code % 10;
     past_sum_value += journal->logs[past_index].code % 10;
   }
 
@@ -608,7 +610,7 @@ void build_special_now(FILE *f, Term *term, Journal *journal) {
   float sum_value = 0;
 
   for (int i = 0; i < range; ++i) {
-    if(journal->logs[i].code % 10 < 1){
+    if (journal->logs[i].code % 10 < 1) {
       continue;
     }
     int index = index_of_string(projects_name, projects_len, journal->logs[i].term->name);
@@ -616,8 +618,8 @@ void build_special_now(FILE *f, Term *term, Journal *journal) {
       projects_name[projects_len] = journal->logs[i].term->name;
       projects_value[projects_len] = 0;
       projects_len++;
-    } 
-    projects_value[projects_len-1] += journal->logs[i].code % 10;
+    }
+    projects_value[projects_len - 1] += journal->logs[i].code % 10;
     sum_value += journal->logs[i].code % 10;
   }
 
@@ -650,7 +652,6 @@ void build_special_now(FILE *f, Term *term, Journal *journal) {
     }
   }
   fputs("</ul>", f);
-  printf("%f\n", test_sum);
 }
 
 void build_page(Term *term, Journal *journal) {
@@ -700,7 +701,8 @@ void build_page(Term *term, Journal *journal) {
 void build_rss(){ // time_t
   FILE *f = fopen("../links/rss.xml", "w");
 
-  fputs("<?xml version='1.0' encoding='UTF-8' ?><rss version='2.0' xmlns:dc='http://purl.org/dc/elements/1.1/'>", f);
+  fputs("<?xml version='1.0' encoding='UTF-8' ?>", f);
+  fputs("<rss version='2.0' xmlns:dc='http://purl.org/dc/elements/1.1/'>", f);
   fputs("<channel>\n", f);
   fputs("<title>XXIIVV — Oscean</title>\n", f);
   fputs("<link><![CDATA[https://wiki.xxiivv.com/Journal]]></link>\n", f);
@@ -729,6 +731,34 @@ void build_rss(){ // time_t
   fclose(f);
 }
 
+void build_twtxt(Journal *journal){
+  FILE *f = fopen("../links/twtxt.txt", "w");
+  fputs("hello there", f);
+
+  for (int i = 0; i < journal->len; ++i) {
+    // printf("%s\n", journal->logs[i].date);
+    // if (index_of_string(known, known_id, journal->logs[i].term->name) > -1) {
+    //   continue;
+    // } 
+    // if(known_id >= TRACKER_BUFFER){ 
+    //   printf("Error: Reached tracker buffer\n"); 
+    //   break; 
+    // }
+    // if(last_year != extract_year(journal->logs[i].date)){
+    //   fprintf(f, "</ul><ul>");
+    // }
+
+    // char filename[STR_BUF_LEN];
+    // to_lowercase(journal->logs[i].term->name, filename, STR_BUF_LEN);
+
+    // fprintf(f, "<li><a href='%s.html'>%s</a> — last update %s</li>", filename, journal->logs[i].term->name, journal->logs[i].date);
+    // last_year = extract_year(journal->logs[i].date);
+    // known[known_id] = journal->logs[i].term->name;
+    // known_id++;
+  }
+  fclose(f);
+}
+
 int main(void) {
   #include "glossary.c"
   #include "lexicon.c"
@@ -754,12 +784,17 @@ int main(void) {
   }
 
   build_rss(&all_logs);
+  build_twtxt(&all_logs);
   printf("========\n");
 
   scan_pict_next();
 
   get_arvelie();
   future_time();
+
+  printf("20M14 = %s\n", arvelie_to_greg("20M14"));
+
+//
 
   printf("Lexicon: %d entries\n", lexicon_len);
   printf("Horaire: %d entries\n", all_logs.len);
