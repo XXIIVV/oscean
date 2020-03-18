@@ -1319,7 +1319,7 @@ Term journal = create_term(&devine_lu_linvega, "journal", "The Journal shows rec
 add_link(&journal, "rss feed", "https://wiki.xxiivv.com/links/rss.xml");
 
 Term tracker = create_term(&journal, "tracker", "The Tracker shows latest changes of the journal.");
-add_text(&tracker, "This wiki uses the " SENDNAME("arvelie", "Arvelie time format") ", find today's date and learn more about the time formats " SENDNAME("time", "here") ". To see a list of past and upcoming events, see the " SEND("calendar") ".");
+add_text(&tracker, "This wiki uses the " SENDNAME("arvelie", "Arvelie time format") ", find today's date and learn more about the time formats " SENDNAME("time", "here") ". Visit the " SEND("calendar") " to see the list of past and upcoming events, or check out the " SENDNAME("now", "/now page") " to find active project.");
 add_link(&tracker, "rss feed", "https://wiki.xxiivv.com/links/rss.xml");
 
 Term calendar = create_term(&journal, "calendar", "The Calendar shows upcoming and past events of the journal.");
@@ -1330,6 +1330,7 @@ Term identity = create_term(&journal, "identity", "Various notes on the visual c
 add_text(&identity, "Additional details can be found in the " SEND("faqs") ".");
 
 Term now = create_term(&journal, "now", "The /now page shows infographics of current activity.");
+add_text(&now, "The history of project activity is recorded with the " SENDNAME("horaire", "horaire time-tracker") ", to find the complete history of activity, visit the " SEND("tracker") ".");
 
 Term inventory = create_portal(&devine_lu_linvega, "inventory", "The collection of technical details on the Inventory.");
 add_text(&inventory, "Some of the items I carry around with me in my " SENDNAME("travel", "travels") ".");
