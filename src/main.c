@@ -581,26 +581,25 @@ void build_special_now(FILE *f, Term *term, Journal *journal) {
   int range = 14 * 4;
 
   // Previous range
-  int past_projects_len = 0;
-  float past_projects_value[range];
-  char *past_projects_name[range];
+  int past_len = 0;
+  float past_value[range];
+  char *past_name[range];
   float past_sum_value = 0;
 
   for (int i = 0; i < range; ++i) {
     int past_index = i + range;
-    if (journal->logs[past_index].code % 10 < 1) {
+    Log l = journal->logs[past_index];
+    if (l.code % 10 < 1) {
       continue;
     }
-    int index = index_of_string(past_projects_name, past_projects_len, journal->logs[past_index].term->name);
+    int index = index_of_string(past_name, past_len, l.term->name);
     if (index < 0) {
-      past_projects_name[past_projects_len] =
-          journal->logs[past_index].term->name;
-      past_projects_value[past_projects_len] = 0;
-      past_projects_len++;
+      past_name[past_len] = l.term->name;
+      past_value[past_len] = 0;
+      past_len++;
     }
-    past_projects_value[past_projects_len - 1] +=
-        journal->logs[past_index].code % 10;
-    past_sum_value += journal->logs[past_index].code % 10;
+    past_value[past_len - 1] += l.code % 10;
+    past_sum_value += l.code % 10;
   }
 
   // Recent range
@@ -610,22 +609,21 @@ void build_special_now(FILE *f, Term *term, Journal *journal) {
   float sum_value = 0;
 
   for (int i = 0; i < range; ++i) {
-    if (journal->logs[i].code % 10 < 1) {
+    Log l = journal->logs[i];
+    if (l.code % 10 < 1) {
       continue;
     }
-    int index = index_of_string(projects_name, projects_len, journal->logs[i].term->name);
+    int index = index_of_string(projects_name, projects_len, l.term->name);
     if (index < 0) {
-      projects_name[projects_len] = journal->logs[i].term->name;
+      projects_name[projects_len] = l.term->name;
       projects_value[projects_len] = 0;
       projects_len++;
     }
-    projects_value[projects_len - 1] += journal->logs[i].code % 10;
-    sum_value += journal->logs[i].code % 10;
+    projects_value[projects_len - 1] += l.code % 10;
+    sum_value += l.code % 10;
   }
 
-  // Print
-  fputs("<h3>Current Projects</h3>", f);
-  fprintf(f, "<p>Distribution of <b>%.0f hours over %d projects</b>, a change of %.0f hours and %d projects since the previous period of %d days.</p>", sum_value, projects_len, sum_value-past_sum_value, projects_len-past_projects_len, range);
+  fprintf(f, "<p>Distribution of <b>%.0f hours over %d projects</b>, a change of %.0f hours and %d projects since the previous period of %d days.</p>", sum_value, projects_len, sum_value-past_sum_value, projects_len-past_len, range);
 
   float test_sum = 0;
   fputs("<ul style='columns:2'>", f);
@@ -634,14 +632,13 @@ void build_special_now(FILE *f, Term *term, Journal *journal) {
     to_lowercase(projects_name[i], filename, STR_BUF_LEN);
     float ratio = (projects_value[i]/sum_value) * 100;
     // Find difference
-    int past_index = index_of_string(past_projects_name, past_projects_len, projects_name[i]);
+    int past_index = index_of_string(past_name, past_len, projects_name[i]);
     if(past_index >= 0){
-      int past_value = past_projects_value[past_index];
-      float past_ratio = (past_value/past_sum_value)*100;
+      float past_ratio = (past_value[past_index]/past_sum_value)*100;
       float diff = ratio-past_ratio;
       test_sum += diff;
       if(diff > 0){
-        fprintf(f, "<li><a href='%s.html'>%s</a> %.2f&#37; <i style='color:green'>+%.1f&#37;</i></li>", filename, projects_name[i], ratio, diff);
+        fprintf(f, "<li><a href='%s.html'>%s</a> %.2f&#37; <i style='color:#42ae92'>+%.1f&#37;</i></li>", filename, projects_name[i], ratio, diff);
       }
       else{
         fprintf(f, "<li><a href='%s.html'>%s</a> %.2f&#37; <i style='color:red'>%.1f&#37;</i></li>", filename, projects_name[i], ratio, diff);
