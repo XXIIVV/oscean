@@ -1,5 +1,6 @@
 add_event(&alicef, "20F12", 190, "Eulerroom Equinox, Livesteam");
-add_log(&assembly, "20F09", 316);
+add_log(&alicef, "20F10", 156);
+add_log(&enfer, "20F09", 127);
 add_log(&oscean, "20F08", 375);
 add_diary(&binary, "20F07", 316, "Acorn BBC Micro Logo displayed on Famicom", 363);
 add_log(&donsol_famicom, "20F06", 337);
