@@ -1,4 +1,5 @@
 add_event(&alicef, "20F12", 190, "Eulerroom Equinox, Livesteam");
+add_log(&alicef, "20F11", 167);
 add_log(&alicef, "20F10", 156);
 add_log(&enfer, "20F09", 127);
 add_log(&oscean, "20F08", 375);

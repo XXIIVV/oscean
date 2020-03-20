@@ -645,7 +645,7 @@ void build_special_now(FILE *f, Term *term, Journal *journal) {
       }
     }
     else{
-      fprintf(f, "<li><a href='%s.html'>%s</a></li>", filename, projects_name[i]);
+      fprintf(f, "<li><a href='%s.html'>%s</a> %.2f&#37;</li>", filename, projects_name[i], ratio);
     }
   }
   fputs("</ul>", f);
