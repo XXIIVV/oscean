@@ -233,16 +233,27 @@ void add_link(Term *term, char *name, char *url) {
   term->links_len++;
 }
 
-void add_event_diary(Term *term, char *date, int code, char *name, int pict) {
-  add_journal_log(&all_logs, term, date, code, name, pict, true);
+void record_pict(int pict){
+  // check if it already exists
+  for (int i = 1; i < pict_used_len; ++i) {
+    if(pict == pict_used[i]){
+      printf("Error: Duplicate id: %d\n", pict);
+      return;
+    }
+  }
+
   pict_used[pict_used_len] = pict;
   pict_used_len++;
 }
 
+void add_event_diary(Term *term, char *date, int code, char *name, int pict) {
+  add_journal_log(&all_logs, term, date, code, name, pict, true);
+  record_pict(pict);
+}
+
 void add_diary(Term *term, char *date, int code, char *name, int pict) {
   add_journal_log(&all_logs, term, date, code, name, pict, false);
-  pict_used[pict_used_len] = pict;
-  pict_used_len++;
+  record_pict(pict);
 }
 
 void add_event(Term *term, char *date, int code, char *name) {
