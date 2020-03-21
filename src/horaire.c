@@ -1917,7 +1917,7 @@ add_log(&mobile, "14R07", 356);
 add_log(&mobile, "14R06", 357);
 add_log(&mobile, "14R05", 356);
 add_log(&mobile, "14R04", 356);
-add_event_diary(&damoiseau_canalx, "14R03", 189, "Damoiseau & Canalx Release", 245);
+add_event_diary(&damoiseau_canalx, "14R03", 189, "Damoiseau et Canalx Release", 245);
 add_log(&damoiseau_canalx, "14R02", 279);
 add_log(&damoiseau_canalx, "14R01", 169);
 add_log(&damoiseau_canalx, "14Q14", 166);
