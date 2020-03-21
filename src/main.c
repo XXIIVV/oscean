@@ -255,16 +255,6 @@ void add_log(Term *term, char *date, int code) {
 
 // Tools
 
-void scan_pict_next() {
-  for (int i = 1; i < 999; ++i) {
-    int index = index_of(pict_used, pict_used_len, i);
-    if (index < 0) {
-      printf("Next Id: %d\n", i);
-      return;
-    }
-  }
-}
-
 Log *find_last_diary(Term *term) {
   for (int i = 0; i < all_logs.len; ++i) {
     Log *l = &all_logs.logs[i];
@@ -695,7 +685,7 @@ void build_page(Term *term, Journal *journal) {
   fclose(f);
 }
 
-void build_rss(){ // time_t
+void build_rss(Journal *journal) {
   FILE *f = fopen("../links/rss.xml", "w");
 
   fputs("<?xml version='1.0' encoding='UTF-8' ?>", f);
@@ -705,24 +695,32 @@ void build_rss(){ // time_t
   fputs("<link><![CDATA[https://wiki.xxiivv.com/Journal]]></link>\n", f);
   fputs("<description>The Nataniev Library</description>\n", f);
 
-  // for (int i = 0; i < blog->pages_len; ++i) {
-  //   Page *page = blog->pages[i];
-  //   if(!page->date){ printf("Missing date for %s\n", page->name); continue; }
-  //   char filename[STR_BUF_LEN];
-  //   to_lowercase(page->name, filename, STR_BUF_LEN);
-  //   char filepath[STR_BUF_LEN];
-  //   snprintf(filepath, STR_BUF_LEN, "https://100r.co/site/%s.html", filename);
-  //   fputs("<item>\n", f);
-  //   fprintf(f, "  <title>%s</title>\n", page->name);
-  //   fprintf(f, "  <link>%s</link>\n", filepath);
-  //   fprintf(f, "  <guid isPermaLink='false'>%s</guid>\n", filename);
-  //   fprintf(f, "  <pubDate>%s 00:00:00 GMT</pubDate>\n", page->date);
-  //   fputs("  <dc:creator><![CDATA[Rekka Bellum]]></dc:creator>\n", f);
-  //   fputs("  <description>\n", f);
-  //   fprintf(f, "<![CDATA[%s<p><a href='%s'>Continue Reading</a></p>]]>\n", page->parts_descriptions[0], filepath);
-  //   fputs("  </description>\n", f);
-  //   fputs("</item>\n", f);
-  // }
+  for (int i = 0; i < journal->len; ++i) {
+    Log l = journal->logs[i];
+    if (l.pict == 0) {
+      continue;
+    }
+
+    char filename[STR_BUF_LEN];
+    to_lowercase(l.term->name, filename, STR_BUF_LEN);
+
+    fputs("<item>\n", f);
+    fprintf(f, "  <title>%s</title>\n", l.name);
+    fprintf(f, "  <link>https://wiki.xxiivv.com/site/%s.html</link>\n", filename);
+    fprintf(f, "  <guid isPermaLink='false'>%d</guid>\n", l.pict);
+    fputs("  <pubDate>", f);
+    fputs_rfc2822(f, l.date);
+    fputs("</pubDate>\n", f);
+    fputs("  <dc:creator><![CDATA[Devine Lu Linvega]]></dc:creator>\n", f);
+    fputs("  <description>\n", f);
+    fputs("<![CDATA[", f);
+    fprintf(f, "<img src='https://wiki.xxiivv.com/media/diary/%d.jpg'/>\n", l.pict);
+    fprintf(f, "<p>%s<br/><br/><a href='https://wiki.xxiivv.com/site/%s.html'>%s</a></p>", l.term->bref, filename, l.term->name);
+    fputs("]]>\n", f);
+    fputs("  </description>\n", f);
+    fputs("</item>\n", f);
+  }
+
   fputs("</channel>", f);
   fputs("</rss>", f);
   fclose(f);
@@ -733,25 +731,6 @@ void build_twtxt(Journal *journal){
   fputs("hello there", f);
 
   for (int i = 0; i < journal->len; ++i) {
-    // printf("%s\n", journal->logs[i].date);
-    // if (index_of_string(known, known_id, journal->logs[i].term->name) > -1) {
-    //   continue;
-    // } 
-    // if(known_id >= TRACKER_BUFFER){ 
-    //   printf("Error: Reached tracker buffer\n"); 
-    //   break; 
-    // }
-    // if(last_year != extract_year(journal->logs[i].date)){
-    //   fprintf(f, "</ul><ul>");
-    // }
-
-    // char filename[STR_BUF_LEN];
-    // to_lowercase(journal->logs[i].term->name, filename, STR_BUF_LEN);
-
-    // fprintf(f, "<li><a href='%s.html'>%s</a> — last update %s</li>", filename, journal->logs[i].term->name, journal->logs[i].date);
-    // last_year = extract_year(journal->logs[i].date);
-    // known[known_id] = journal->logs[i].term->name;
-    // known_id++;
   }
   fclose(f);
 }
@@ -784,12 +763,17 @@ int main(void) {
   build_twtxt(&all_logs);
   printf("========\n");
 
-  scan_pict_next();
-
   get_arvelie();
-  future_time();
 
-//
+  // Debugs
+
+  for (int i = 1; i < 999; ++i) {
+    int index = index_of(pict_used, pict_used_len, i);
+    if (index < 0) {
+      printf("Next id: #%d\n", i);
+      break;
+    }
+  }
 
   printf("Lexicon: %d entries\n", lexicon_len);
   printf("Horaire: %d entries\n", all_logs.len);

@@ -1,4 +1,4 @@
-#include <stdlib.h>
+// 
 
 void to_lowercase(char *str, char *target, size_t tsize) {
   for (size_t i = 0; i < tsize; i++) {
@@ -13,6 +13,15 @@ void to_lowercase(char *str, char *target, size_t tsize) {
     }
   }
   target[tsize - 1] = '\0';
+}
+
+bool file_exists(char *filename) {
+  FILE *file = fopen(filename, "r");
+  if (file != NULL) {
+    fclose(file);
+    return true;
+  }
+  return false;
 }
 
 int index_of(int a[], int num_elements, int value) {
@@ -33,26 +42,35 @@ int index_of_string(char *a[], int num_elements, char *value) {
   return -1;
 }
 
-int extract_year(char *date) {
-  char c1 = date[0];
-  char c2 = date[1];
-  char s[] = "45";
-  s[0] = c1;
-  s[1] = c2;
-  int num = atoi(s);
-  return num;
-}
+// Arvelie
 
-bool file_exists(char *filename) {
-  FILE *file = fopen(filename, "r");
-  if (file != NULL) {
-    fclose(file);
-    return true;
+int extract_year(char *arvelie) {
+  int result = 0, i = 0;
+  for (i = 0; i < 2; i++) {
+    result = result * 10 + (arvelie[i] - '0');
   }
-  return false;
+  return result;
 }
 
-int get_doty(int year, int month, int day) {
+int doty_to_month(int doty) {
+  int month = 0,
+      months[13] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
+  while (months[month] < doty) {
+    month++;
+  }
+  return month;
+}
+
+int doty_to_day(int doty) {
+  int month = 0,
+      months[13] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
+  while (months[month] < doty) {
+    month++;
+  }
+  return doty - months[month - 1];
+}
+
+int ymd_to_doty(int year, int month, int day) {
   int i = 0, daymon = 0, dayday = 0;
   int mth[13] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
   if ((year % 4) || ((year % 100) && (year % 400))) {
@@ -70,13 +88,14 @@ int arvelie_to_doty(char *date) {
   int d1 = date[3] - '0';
   int d2 = date[4] - '0';
   int d = (d1 * 10) + d2;
-  return (m * 14) + d;
+  int doty = (m * 14) + d;
+  return doty == -307 ? 364 : doty;
 }
 
 char *doty_to_arvelie(int doty) {
   char *months[] = {"A", "B", "C", "D", "E", "F", "G", "H", "I",
                     "J", "K", "L", "M", "N", "O", "P", "Q", "R",
-                    "S", "T", "U", "V", "W", "X", "Y", "Z"};
+                    "S", "T", "U", "V", "W", "X", "Y", "Z", "+"};
   int d = (doty % 14) + 1;
   int i = floor(doty / 14);
   char *m = months[i];
@@ -98,8 +117,7 @@ char *doty_to_greg(int doty) {
 
 char *arvelie_to_greg(char *arvelie) {
   int doty = arvelie_to_doty(arvelie);
-  char *greg = doty_to_greg(doty);
-  return greg;
+  return doty_to_greg(doty);
 }
 
 char *get_arvelie() {
@@ -113,34 +131,28 @@ char *get_arvelie() {
   month = local->tm_mon + 1;
   day = local->tm_mday;
 
-  return doty_to_arvelie(get_doty(year, month, day));
+  return doty_to_arvelie(ymd_to_doty(year, month, day));
 }
 
-void debug_time() {
-  int year, month, day;
-  time_t now;
-  time(&now);
-  printf("Today is: %s", ctime(&now));
-  struct tm *local = localtime(&now);
+void fputs_rfc2822(FILE *f, char *arvelie) {
+  int doty = arvelie_to_doty(arvelie);
+  int year = extract_year(arvelie);
+  int month = doty_to_month(doty);
+  int day = doty_to_day(doty);
 
-  year = local->tm_year + 1900;
-  month = local->tm_mon + 1;
-  day = local->tm_mday;
-
-  printf("Date is: %02d/%02d/%d\n", year, month, day);
-  printf("Day of the year is: %d\n", get_doty(year, month, day));
-}
-
-time_t future_time() {
+  char rfc_2822[40];
   struct tm str_time;
 
-  str_time.tm_year = 2012 - 1900;
-  str_time.tm_mon = 6;
-  str_time.tm_mday = 5;
-  str_time.tm_hour = 10;
-  str_time.tm_min = 3;
-  str_time.tm_sec = 5;
+  str_time.tm_year = (2000 + year) - 1900;
+  str_time.tm_mon = month;
+  str_time.tm_mday = day;
+  str_time.tm_hour = 0;
+  str_time.tm_min = 0;
+  str_time.tm_sec = 0;
   str_time.tm_isdst = 0;
 
-  return mktime(&str_time);
+  time_t current = mktime(&str_time);
+
+  strftime(rfc_2822, sizeof(rfc_2822), "%a, %d %b %Y %T %z", localtime(&current));
+  fprintf(f, "%s", rfc_2822);
 }
