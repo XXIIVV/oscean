@@ -1,4 +1,13 @@
-// 
+//
+
+bool is_char_alphanum(char ch) {
+  int is_num = ch >= '0' && ch <= '9';
+  int is_alpha = (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
+  if (!is_alpha && !is_num) {
+    return false;
+  }
+  return true;
+}
 
 void to_lowercase(char *str, char *target, size_t tsize) {
   for (size_t i = 0; i < tsize; i++) {
@@ -6,13 +15,25 @@ void to_lowercase(char *str, char *target, size_t tsize) {
     if (target[i] == '\0') {
       break;
     }
-    if (target[i] == ' ') {
-      target[i] = '_';
-    } else {
-      target[i] = tolower(target[i]);
-    }
+    target[i] = tolower(target[i]);
   }
   target[tsize - 1] = '\0';
+}
+
+void to_filename(char *str, char *mod) {
+  int len = strlen(str) + 1;
+  for (int i = 0; i < len; i++) {
+    mod[i] = str[i];
+    if (mod[i] == '\0') {
+      break;
+    }
+    if (!is_char_alphanum(mod[i])) {
+      mod[i] = '_';
+    } else {
+      mod[i] = tolower(mod[i]);
+    }
+  }
+  mod[len - 1] = '\0';
 }
 
 bool file_exists(char *filename) {
@@ -22,6 +43,20 @@ bool file_exists(char *filename) {
     return true;
   }
   return false;
+}
+
+bool is_alphanum(char *str) {
+  int len = strlen(str);
+  for (int i = 0; i < len; i++) {
+    char ch = str[i];
+    int is_num = ch >= '0' && ch <= '9';
+    int is_alpha = (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
+    int is_space = ch == ' ';
+    if (!is_alpha && !is_num && !is_space) {
+      return false;
+    }
+  }
+  return true;
 }
 
 int index_of(int a[], int num_elements, int value) {

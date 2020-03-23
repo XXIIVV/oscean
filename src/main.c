@@ -132,7 +132,7 @@ List create_list(char *name) {
 
 void add_item(List *list, char *item) {
   if (list->items_len >= LIST_BUFFER) {
-    printf("Reached LIST_BUFFER\n");
+    printf("Error: Reached LIST_BUFFER\n");
     return;
   }
   list->items[list->items_len] = item;
@@ -151,6 +151,9 @@ Term create_term(Term *parent, char *name, char *bref) {
   t.dicts_len = 0;
   t.lists_len = 0;
 
+  if (!is_alphanum(name)) {
+    printf("Error: \"%s\" is not alphanumeric\n", name);
+  }
   t.name = name;
   t.bref = bref;
   t.icon = "";
@@ -158,7 +161,7 @@ Term create_term(Term *parent, char *name, char *bref) {
   t.parent = parent;
 
   char path[STR_BUF_LEN];
-  to_lowercase(name, path, STR_BUF_LEN);
+  to_filename(name, path);
   t.path = path;
 
   return t;
@@ -305,7 +308,7 @@ void build_term_pict(FILE *f, Term *term, bool caption){
     return;
   }
   char filename[STR_BUF_LEN];
-  to_lowercase(term->name, filename, STR_BUF_LEN);
+  to_filename(term->name, filename);
   build_pict(f, log->pict, term->name, term->bref, caption, filename);
 }
 
@@ -326,7 +329,7 @@ void build_nav_part(FILE *f, Term *term, Term *target){
   fputs("<ul>", f);
   for (int i = 0; i < term->children_len; ++i) {
     char child_filename[STR_BUF_LEN];
-    to_lowercase(term->children[i]->name, child_filename, STR_BUF_LEN);
+    to_filename(term->children[i]->name, child_filename);
     if(term->children[i]->name == target->name){
       fprintf(f, "<li><a href='%s.html'>%s/</a></li>", child_filename, term->children[i]->name);
     }
@@ -396,7 +399,7 @@ void build_listing(FILE *f, Term *term){
 
 void build_include(FILE *f, Term *term){
   char filename[STR_BUF_LEN];
-  to_lowercase(term->name, filename, STR_BUF_LEN);
+  to_filename(term->name, filename);
   char filepath[STR_BUF_LEN];
 
   int result = snprintf(filepath, sizeof filepath, "inc/%s.htm", filename);
@@ -429,7 +432,7 @@ void build_index(FILE *f, Term *term){
 
   for (int k = 0; k < term->children_len; ++k) {
     char child_filename[STR_BUF_LEN];
-    to_lowercase(term->children[k]->name, child_filename, STR_BUF_LEN);
+    to_filename(term->children[k]->name, child_filename);
     fprintf(f, "<h3><a href='%s.html'>%s</a></h3>", child_filename, term->children[k]->name);
     build_body_part(f, term->children[k]);
     build_dictionary(f, term->children[k]);
@@ -519,7 +522,7 @@ void build_special_calendar(FILE *f, Term *term, Journal *journal){
     }
 
     char filename[STR_BUF_LEN];
-    to_lowercase(journal->logs[i].term->name, filename, STR_BUF_LEN);
+    to_filename(journal->logs[i].term->name, filename);
 
     fprintf(f, "<li><a href='%s.html'>%s</a> %s</li>", filename, journal->logs[i].date, journal->logs[i].name);  
     last_year = extract_year(journal->logs[i].date);
@@ -550,7 +553,7 @@ void build_special_tracker(FILE *f, Term *term, Journal *journal) {
     }
 
     char filename[STR_BUF_LEN];
-    to_lowercase(journal->logs[i].term->name, filename, STR_BUF_LEN);
+    to_filename(journal->logs[i].term->name, filename);
 
     fprintf(f, "<li><a href='%s.html'>%s</a> — last update %s</li>", filename, journal->logs[i].term->name, journal->logs[i].date);
     last_year = extract_year(journal->logs[i].date);
@@ -630,7 +633,7 @@ void build_special_now(FILE *f, Term *term, Journal *journal) {
   fputs("<ul style='columns:2'>", f);
   for (int i = 0; i < projects_len; ++i) {
     char filename[STR_BUF_LEN];
-    to_lowercase(projects_name[i], filename, STR_BUF_LEN);
+    to_filename(projects_name[i], filename);
     float ratio = (projects_value[i]/sum_value) * 100;
     // Find difference
     int past_index = index_of_string(past_name, past_len, projects_name[i]);
@@ -654,7 +657,7 @@ void build_special_now(FILE *f, Term *term, Journal *journal) {
 
 void build_page(Term *term, Journal *journal) {
   char filename[STR_BUF_LEN];
-  to_lowercase(term->name, filename, STR_BUF_LEN);
+  to_filename(term->name, filename);
   char filepath[STR_BUF_LEN];
 
   int result = snprintf(filepath, sizeof filepath, "../site/%s.html", filename);
@@ -713,7 +716,7 @@ void build_rss(Journal *journal) {
     }
 
     char filename[STR_BUF_LEN];
-    to_lowercase(l.term->name, filename, STR_BUF_LEN);
+    to_filename(l.term->name, filename);
 
     fputs("<item>\n", f);
     fprintf(f, "  <title>%s</title>\n", l.name);
