@@ -318,7 +318,7 @@ add_link(&tablatal, "parser", "https://github.com/XXIIVV/Libraries/blob/master/s
 add_link(&tablatal, "syntax highlight", "https://github.com/XXIIVV/Libraries/blob/master/tools/tbtl.sublime-syntax");
 
 Term lain = create_term(&oscean, "lain", "Lain is a LISP dialect used as a templating and scripting engine. ");
-add_text(&lain, "The Lain " LINKNAME("https://github.com/XXIIVV/Libraries/blob/master/scripts/lain.js", "parser") " used to exist at the core of " SEND("oscean") " before the migrationg to a fully static website, but it can still be found in various projects of the " SENDNAME("Nataniev", "Nataniev ecosystem") ", such as in the " SEND("ronin") " and " SEND("paradise") " applications. The parser takes a " LINKNAME("https://github.com/XXIIVV/Libraries/blob/master/scripts/lain.library.js", "Lain Library") ".");
+add_text(&lain, "The Lain " LINKNAME("https://github.com/XXIIVV/Libraries/blob/master/scripts/lain.js", "parser") " used to exist at the core of " SEND("oscean") " before the migrationg to a fully static website, but it can still be found in various projects of the " SENDNAME("nataniev", "Nataniev ecosystem") ", such as in the " SEND("ronin") " and " SEND("paradise") " applications. The parser takes a " LINKNAME("https://github.com/XXIIVV/Libraries/blob/master/scripts/lain.library.js", "Lain Library") ".");
 add_header(&lain, "Templating With Lain");
 add_html(&lain, "<pre>(link \"home\")                             {(link \"home\")}\n(link \"home\" \"local\")                     {(link \"home\" \"local\")}\n(link \"https://github.com/\")              {(link \"https://github.com/\")}\n(link \"https://github.com/\" \"external\")   {(link \"https://github.com/\" \"external\")}\n(bold \"bold\")                             {(bold \"bold\")}\n(ital \"italic\")                           {(ital \"italic\")}\n(bold (link \"home\" \"bold link\"))          {(bold (link \"home\" \"bold link\"))}\n</pre>");
 add_header(&lain, "Programming With Lain");
@@ -479,7 +479,6 @@ add_text(&markl, "<b>TAIBA</b>: Tactical AI Battle Arena");
 add_link(&markl, "sources", "https://github.com/hundredrabbits/Markl");
 
 Term oquonie = create_term(&games, "oquonie", "Oquonie is a textless isometric puzzle game.");
-// set_icon(&oquonie, "M45,60 l210,0 M45,240 l210,0 M255,60 a-15,15 0 0,0 -15,15 a-15,-15 0 0,0 -15,-15 M75,60 a-15,15 0 0,0 -15,15 a-15,-15 0 0,0 -15,-15 M255,240 a-15,-15 0 0,1 -15,-15 a-15,15 0 0,1 -15,15 M75,240 a-15,-15 0 0,1 -15,-15 a-15,15 0 0,1 -15,15 M60,75 l0,150 M240,75 l0,150 M60,150 l180,0");
 add_text(&oquonie, "You must make your way through a seemingly endless succession of rooms. You will not be alone. Your incarnations will have the help of <b>bizaroid</b> characters that speak an " SENDNAME("camilare", "an obscure language") ".");
 add_text(&oquonie, "We made Oquonie while living in " SEND("japan") ". The game was our first collaborative project as " SENDNAME("hundred_rabbits", "hundred rabbits") ", and a reflection of our experience navigating a new country, with language as a recurent obstacle. Oquonie is about being lost in a foreign space.");
 add_text(&oquonie, "A big inspiration for this project was the short story \"A town without streets\" by Junji Ito, about a city of endless interconnecting houses and rooms, where privacy is non-existent. To preserve the little privacy they do have, the townspeople wear masks.");
@@ -491,7 +490,6 @@ add_link(&oquonie, "builds", "https://hundredrabbits.itch.io/oquonie");
 add_link(&oquonie, "sources", "https://github.com/hundredrabbits/oquonie");
 
 Term oquonie_guide = create_term(&oquonie, "oquonie guide", "This Oquonie Guide is aimed at players who have gone past the loop of character changes.");
-// set_icon(&oquonie_guide, "M45,60 l210,0 M45,240 l210,0 M255,60 a-15,15 0 0,0 -15,15 a-15,-15 0 0,0 -15,-15 M75,60 a-15,15 0 0,0 -15,15 a-15,-15 0 0,0 -15,-15 M255,240 a-15,-15 0 0,1 -15,-15 a-15,15 0 0,1 -15,15 M75,240 a-15,-15 0 0,1 -15,-15 a-15,15 0 0,1 -15,15 M60,75 l0,150 M240,75 l0,150 M60,150 l180,0");
 add_text(&oquonie_guide, "This guide is meant to be a spoiler-free list of tips to help you proceed through " SEND("oquonie") ".");
 add_text(&oquonie_guide, "If you have not yet found the <b>first pillar</b> keep playing, for your only task at the moment is to find sequences of three matching tokens.");
 add_text(&oquonie_guide, "A <b>red pillar</b> appeared next to one of the town's gates. What do? In your travels, you have met a small spiky ramen-eating character, speaking to him as each character will have him spawn in town and give you a <b>token</b> based on which character that you are. You need his help, so make sure that you have found him in each of the worlds.");
