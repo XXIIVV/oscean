@@ -88,20 +88,21 @@ int extract_year(char *arvelie) {
 }
 
 int doty_to_month(int doty) {
-  int month = 0,
-      months[13] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
+  int month = 0;
+  int months[13] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
   while (months[month] < doty) {
     month++;
   }
-  return month;
+  return month-1;
 }
 
 int doty_to_day(int doty) {
-  int month = 0,
-      months[13] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
+  int month = 0;
+  int months[13] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
   while (months[month] < doty) {
     month++;
   }
+  // printf("%d %d\n", doty, month - 1);
   return doty - months[month - 1];
 }
 

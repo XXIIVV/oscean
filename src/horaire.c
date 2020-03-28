@@ -1,3 +1,4 @@
+add_log(&arvelie, "20G04", 345);
 add_log(&pino, "20G03", 324);
 add_log(&ronin, "20G02", 337);
 add_log(&noodle, "20G01", 248);
