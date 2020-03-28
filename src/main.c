@@ -537,8 +537,6 @@ void build_special_tracker(FILE *f, Term *term, Journal *journal) {
     return;
   }
 
-  fputs_graph_daily(f, journal);
-
   int known_id = 0;
   char *known[TRACKER_BUFFER];
   int last_year = 20;
@@ -586,6 +584,8 @@ void build_special_now(FILE *f, Term *term, Journal *journal) {
     return;
   }
 
+  fputs_graph_daily(f, journal);
+  
   int range = 14 * 4;
 
   // Previous range

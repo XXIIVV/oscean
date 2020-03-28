@@ -24,7 +24,7 @@ void fputs_graph_daily(FILE *f, Journal *journal) {
   for (int doty = 0; doty < 365; ++doty) {
     int x = (doty /7) * (size+1);
     int y = (doty % 7) * (size+1);
-    int sector = segs[doty]/100;
+    int sector = segs[364-doty]/100;
     fprintf(f, "<rect x='%d' y='%d' rx='2' ry='2' width='%d' height='%d' class='sector%d'/>", x, y, size, size, sector);
   }
 
