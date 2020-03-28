@@ -4,7 +4,7 @@ add_log(&ronin, "20G02", 337);
 add_log(&noodle, "20G01", 248);
 add_diary(&nasu, "20F14", 357, "Nasu running in Surf", 72);
 add_log(&pino, "20F13", 324);
-add_event(&alicef, "20F12", 190, "Eulerroom Equinox, Livesteam");
+add_event(&alicef, "20F12", 198, "Eulerroom Equinox, Livesteam");
 add_log(&alicef, "20F11", 167);
 add_log(&alicef, "20F10", 156);
 add_log(&enfer, "20F09", 127);
