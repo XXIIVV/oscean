@@ -102,7 +102,6 @@ int doty_to_day(int doty) {
   while (months[month] < doty) {
     month++;
   }
-  // printf("%d %d\n", doty, month - 1);
   return doty - months[month - 1];
 }
 

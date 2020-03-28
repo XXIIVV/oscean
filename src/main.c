@@ -553,7 +553,6 @@ void build_special_tracker(FILE *f, Term *term, Journal *journal) {
       break; 
     }
     if(last_year != extract_year(journal->logs[i].date)){
-      printf("%d %d\n", last_year, extract_year(journal->logs[i].date));
       fprintf(f, "</ul><ul>");
     }
 

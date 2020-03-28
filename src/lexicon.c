@@ -1317,7 +1317,7 @@ Term journal = create_term(&devine_lu_linvega, "journal", "The Journal shows rec
 add_link(&journal, "rss feed", "https://wiki.xxiivv.com/links/rss.xml");
 
 Term tracker = create_term(&journal, "tracker", "The Tracker shows latest changes of the journal.");
-add_text(&tracker, "This wiki uses the " SENDNAME("arvelie", "Arvelie time format") ", find today's date and learn more about the time formats " SENDNAME("time", "here") ". Visit the " SEND("calendar") " to see the list of past and upcoming events, or check out the " SENDNAME("now", "/now page") " to find active project.");
+add_text(&tracker, "This wiki uses the " SENDNAME("arvelie", "Arvelie time format") ", find today's date and learn more about the time formats " SENDNAME("time", "here") ". Visit the " SEND("calendar") " to see the list of past and upcoming events, or check out the " SENDNAME("now", "/now page") " to find active projects.");
 add_link(&tracker, "rss feed", "https://wiki.xxiivv.com/links/rss.xml");
 
 Term calendar = create_term(&journal, "calendar", "The Calendar shows upcoming and past events of the journal.");
