@@ -93,7 +93,7 @@ int doty_to_month(int doty) {
   while (months[month] < doty) {
     month++;
   }
-  return month-1;
+  return month - 1;
 }
 
 int doty_to_day(int doty) {
@@ -126,6 +126,34 @@ int arvelie_to_doty(char *date) {
   int d = (d1 * 10) + d2;
   int doty = (m * 14) + d;
   return doty == -307 ? 364 : doty;
+}
+
+int get_doty() {
+  int year, month, day;
+  time_t now;
+  time(&now);
+  struct tm *local = localtime(&now);
+  year = local->tm_year + 1900;
+  month = local->tm_mon + 1;
+  day = local->tm_mday;
+  return ymd_to_doty(year, month, day);
+}
+
+int get_year() {
+  time_t now;
+  time(&now);
+  struct tm *local = localtime(&now);
+  return local->tm_year + 1900;
+}
+
+int offset_from_arvelie(char *arvelie) {
+  int past_year = extract_year(arvelie);
+  int past_doty = arvelie_to_doty(arvelie);
+  int past_id = (past_year * 365) + past_doty;
+  int current_year = get_year();
+  int current_doty = get_doty();
+  int current_id = ((current_year % 2000) * 365) + current_doty;
+  return current_id - past_id;
 }
 
 char *doty_to_arvelie(int doty) {
@@ -189,6 +217,7 @@ void fputs_rfc2822(FILE *f, char *arvelie) {
 
   time_t current = mktime(&str_time);
 
-  strftime(rfc_2822, sizeof(rfc_2822), "%a, %d %b %Y %T %z", localtime(&current));
+  strftime(rfc_2822, sizeof(rfc_2822), "%a, %d %b %Y %T %z",
+           localtime(&current));
   fprintf(f, "%s", rfc_2822);
 }

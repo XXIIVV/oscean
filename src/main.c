@@ -86,6 +86,8 @@ typedef struct Journal {
   Log logs[JOURNAL_BUFFER];
 } Journal;
 
+#include "graph.c"
+
 Journal all_logs;
 
 void add_journal_log(Journal *journal, Term *term, char *date, int code, char *name, int pict, bool is_event){
@@ -535,9 +537,11 @@ void build_special_tracker(FILE *f, Term *term, Journal *journal) {
     return;
   }
 
+  fputs_graph_daily(f, journal);
+
   int known_id = 0;
   char *known[TRACKER_BUFFER];
-  int last_year = 0;
+  int last_year = 20;
 
   fputs("<ul>", f);
   for (int i = 0; i < journal->len; ++i) {
@@ -549,6 +553,7 @@ void build_special_tracker(FILE *f, Term *term, Journal *journal) {
       break; 
     }
     if(last_year != extract_year(journal->logs[i].date)){
+      printf("%d %d\n", last_year, extract_year(journal->logs[i].date));
       fprintf(f, "</ul><ul>");
     }
 
