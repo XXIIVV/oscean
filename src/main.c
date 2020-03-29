@@ -5,7 +5,6 @@
 #include <time.h>
 #include <math.h>
 
-#include "helpers.c"
 
 #define STR_BUF_LEN 64
 #define LOGS_BUFFER 512
@@ -86,9 +85,10 @@ typedef struct Journal {
   Log logs[JOURNAL_BUFFER];
 } Journal;
 
-#include "graph.c"
-
 Journal all_logs;
+
+#include "helpers.c"
+#include "graph.c"
 
 void add_journal_log(Journal *journal, Term *term, char *date, int code, char *name, int pict, bool is_event){
   if(journal->len >= JOURNAL_BUFFER){ 

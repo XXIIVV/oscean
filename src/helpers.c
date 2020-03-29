@@ -77,6 +77,18 @@ int index_of_string(char *a[], int num_elements, char *value) {
   return -1;
 }
 
+float find_average(int a[]) {
+  int sum = 0;
+  for (int i = 0; i < 52; ++i) {
+    sum += a[i];
+  }
+  return sum / 52;
+}
+
+float clamp(float v, float min, float max) {
+  return v > max ? max : v < min ? min : v;
+}
+
 // Arvelie
 
 int extract_year(char *arvelie) {
@@ -219,4 +231,24 @@ void fputs_rfc2822(FILE *f, char *arvelie) {
   strftime(rfc_2822, sizeof(rfc_2822), "%a, %d %b %Y %T %z",
            localtime(&current));
   fprintf(f, "%s", rfc_2822);
+}
+
+// Horaire
+
+void select_moment(Journal *journal, int history[], int from, int to) {
+  for (int i = 0; i < to; ++i) {
+    history[i] = 0;
+  }
+
+  for (int i = 0; i < journal->len; ++i) {
+    Log l = journal->logs[i];
+    int offset = offset_from_arvelie(l.date);
+    if (offset < from) {
+      continue;
+    }
+    if (offset > to) {
+      break;
+    }
+    history[offset] = l.code % 10;
+  }
 }
