@@ -125,7 +125,7 @@ void fputs_graph_burn(FILE *f, Journal *journal) {
     // phase shift
     float x = i * (s+1);
     if(phase == 1){
-      fprintf(f, "<line x1='%f' y1='42' x2='%f' y2='100' style='fill:none;stroke:#55a69a;stroke-width:2;stroke-linejoin:round'/>", x, x);    
+      fprintf(f, "<line x1='%f' y1='42' x2='%f' y2='100' style='fill:none;stroke:#42ae92;stroke-width:2;stroke-linejoin:round'/>", x, x);    
     }
     else if(phase == -1){
       fprintf(f, "<line x1='%f' y1='0' x2='%f' y2='42' style='fill:none;stroke:red;stroke-width:1.5;stroke-linejoin:round'/>", x, x);  

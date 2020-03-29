@@ -584,7 +584,6 @@ void build_special_now(FILE *f, Term *term, Journal *journal) {
     return;
   }
 
-  fputs_graph_daily(f, journal);
   fputs_graph_burn(f, journal);
   
   int range = 14 * 4;

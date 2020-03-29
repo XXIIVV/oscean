@@ -1,4 +1,4 @@
-add_log(&oscean, "20G05", 267);
+add_log(&oscean, "20G05", 268);
 add_log(&horaire, "20G04", 345);
 add_log(&pino, "20G03", 327);
 add_log(&ronin, "20G02", 337);
