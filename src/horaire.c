@@ -1,3 +1,4 @@
+add_log(&donsol_famicom, "20G07", 336);
 add_event(&donsol_famicom, "20G06", 278, "Donsol Famicom Release");
 add_log(&oscean, "20G05", 268);
 add_log(&horaire, "20G04", 345);
