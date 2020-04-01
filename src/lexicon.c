@@ -1618,6 +1618,9 @@ add_link(&assembly, "famicom cookbook", "https://github.com/hundredrabbits/Famic
 
 Term binary = create_term(&language, "binary", "Binary numbers are a base 2 numeral system.");
 
+Term hypertalk = create_term(&language, "hypertalk", "Hypertalk is the programming language used in the mac software Hypercard.");
+add_link(&hypertalk, "tutorial guide", "https://opus.uleth.ca/bitstream/handle/10133/856/Christmas_Kevin_G.pdf");
+
 Term the_sartre_mechanism = create_term(&notebook, "the sartre mechanism", "The The Sartre Mechanism short.");
 add_text(&the_sartre_mechanism, "It was the first day of the winter when a friend invited me to witness the completion of a recent project.");
 add_text(&the_sartre_mechanism, "Crouched over a heap of cogs, she did not look over as I hung my snow-covered coat on something that, by the look of it, might very well be a time machine. A distracted gaze turned for a moment, perhaps to make sure that I did not break anything as I navigated the busy studio.");
@@ -1756,5 +1759,5 @@ Term *lexicon[] = {
   &unreleased, &blindfolk, &milavrega, &devine_lu_linvega, &first_wave, 
   &regionsteam_snowdays, &downtemperature, &blam, &vert_kirlian_theatre, 
   &ann_yozora_saint, &nether_esper_inserts, &otoroutes_miniatures, &now,
-  &idyllic_miners, &lietal, &japanese, &russian, &assembly, &binary
+  &idyllic_miners, &lietal, &japanese, &russian, &assembly, &hypertalk, &binary
 };

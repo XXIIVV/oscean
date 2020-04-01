@@ -1,3 +1,4 @@
+add_log(&hypertalk, "20G08", 348);
 add_log(&donsol_famicom, "20G08", 346);
 add_log(&donsol_famicom, "20G07", 337);
 add_event(&donsol_famicom, "20G06", 278, "Donsol Famicom Release");
