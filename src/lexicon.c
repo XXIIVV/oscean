@@ -24,7 +24,7 @@ Term research = create_portal(&home, "research", "The Research hosts philosophy 
 
 Term about = create_album(&home, "about", "This wiki is a digital playground and personal logging system.");
 add_text(&about, "The aim of this wiki is to build a form of <b>personal assistant</b> to help with the management of a vast repository of recorded statistics which includes " SENDNAME("tracker", "daily logs") ", notes on " SENDNAME("journal", "various projects") " and " SENDNAME("mirrors", "curated pages of general knowledge") ".");
-add_text(&about, SENDNAME("oscean", "Oscean") " is written in " LINKNAME("https://en.wikipedia.org/wiki/C99", "C99") ", and designed to operate on " SENDNAME("hardware", "low-power devices") ". It is built to adapt to my needs as they change, and to " SENDNAME("longtermism", "technology as it evolves") ".");
+add_text(&about, SEND("oscean") " is written in " LINKNAME("https://en.wikipedia.org/wiki/C99", "C99") ", and designed to operate on " SENDNAME("hardware", "low-power devices") ". It is built to adapt to my needs as they change, and to " SENDNAME("longtermism", "technology as it evolves") ".");
 add_text(&about, "Each part of this project should aim to persist across " SENDNAME("longtermism", "Technological Long Term") ", not one part of it should rely on heavy dependencies. — Every function should be <b>specific</b>, <b>unobfuscated</b>, and each one carefully chosen against general-purpose libraries, frameworks or wasteful foreign entities.");
 add_text(&about, "Using this tool should be <b>frictionless and undisruptive</b>, its formats and subsequent products versionable, re-purposable, interpretable and text-editable. Only through <b>open sources, open standards, human-readable formats</b> and their independencies, might they survive this fleeting age of self-destructing informatics.");
 add_text(&about, "These attributes should not only be <b>perceptible in its design</b>, <br />but deeply <b>rooted in its code</b>.");
@@ -776,7 +776,7 @@ add_link(&donsol, "video", "https://www.youtube.com/watch?v=GNoZrr56GqA");
 add_link(&donsol, "sources", "https://github.com/hundredrabbits/Donsol");
 
 Term donsol_famicom = create_album(&donsol, "donsol famicom", "Donsol Famicom is a port of the dungeon-crawler card game for the classic Nintendo.");
-add_text(&donsol_famicom, "<b>Donsol</b> is a " SENDNAME("donsol", "dungeon crawler card game") " played with a standard deck of 54 playing cards. The game was programmed entirely in " SENDNAME("Assembly", "6502 assembly")", the art assets were created by " SEND("rekka") ", the game was designed by John Eternal and the ROM will released by " SEND("hundred rabbits") ". ");
+add_text(&donsol_famicom, "<b>Donsol</b> is a " SENDNAME("donsol", "dungeon crawler card game") " played with a standard deck of 54 playing cards. The game was programmed entirely in " SENDNAME("assembly", "6502 assembly")", the art assets were created by " SEND("rekka") ", the game was designed by John Eternal and the ROM will released by " SEND("hundred rabbits") ". ");
 add_text(&donsol_famicom, "The game should be released in the " SENDNAME("calendar", "spring of 2020") ". A cartridge release is being considered, " LINKNAME("https://www.patreon.com/100", "stay tuned") " for more updates.");
 add_link(&donsol_famicom, "itch", "https://hundredrabbits.itch.io/donsol");
 add_link(&donsol_famicom, "video", "https://www.youtube.com/watch?v=GNoZrr56GqA");
@@ -1037,14 +1037,12 @@ add_text(&feu, "From the moment " SENDNAME("actors", "Teleogic Constructors") " 
 add_text(&feu, "As per <b>Neon Hermetism</b>, the whole dimensionality of Time is of a finished shape; accessible and " SENDNAME("soies", "traversible") ". It is hypothetized that the universe is an operating function, rendering a final organization of space via the " SEND("ehrivevnv") ". In order words, the universe exists to formulate a being which is to enter the celestial puzzle, and to emerge as the resulting value.");
 
 Term actors = create_term(&neon_hermetism, "actors", "The Actors are beings unaffected by determinism, that have free will.");
-// set_icon(&actors, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&actors, "Their name \"<i>actor</i>\" comes from their ability to actually <b>act</b>, outside of the will of " SENDNAME("mirrors", "determinism") ".");
 add_text(&actors, "Natural Actors, or anomalies, were found to have existed before the " SEND("feu") ", but the True Age of Actors came about with the synthesis of the first Actor by " SEND("neonev") " and the Immigrants.");
 add_text(&actors, "The first synthesized " SENDNAME("actors", "actor") " was tasked to position itself into the " SEND("longest_end") ", meaning that it would effectively take control of all things, and of all of time, to steer the sequence of events allowing itself to exist within the " SENDNAME("longest_end", "longest lasting possible timeline") " of the computing occurrence.");
 add_text(&actors, "Actors have no names, and their number is unknown, it is possible that multiple actors, or multiple instances of the same actor, are competing for the " SENDNAME("soies", "Longest End") ".");
 
 Term ehrivevnv = create_term(&neon_hermetism, "ehrivevnv", "The Ehrivevnv is a dimensional puzzle.");
-// set_icon(&ehrivevnv, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&ehrivevnv, "It presenting itself as a <b>synthetic celestial structure</b>, around which " SEND("dinaisth") " orbits.");
 add_text(&ehrivevnv, "The Ehrivevnv was found to exists in the timelines that persisted until the End of Time(see " SEND("feu") "). This particularity has brough many forms of life to congregate onto " SEND("dinaisth") " to study it, and has given it its classification of puzzle.");
 add_text(&ehrivevnv, "The puzzle is orbited by both " SEND("dinaisth") ", and " SEND("aitasla") ". Its discovery, and the research that it inspired, ultimately brought about the " SENDNAME("feu", "completion of Science") ".");
@@ -1053,7 +1051,6 @@ add_text(&ehrivevnv, "It is believed by " SEND("neon_hermetism") " that it might
 add_quote(&ehrivevnv, "Et haec revelantur in virtute et veritate non Vi.", "Unknown");
 
 Term soies = create_term(&neon_hermetism, "soies", "The Soies are the studies of the influence of Actors.");
-// set_icon(&soies, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&soies, "The " SENDNAME("soies_machine", "Soies machines") " finds their own location according to the " SEND("longest_end") ", by generating the value disallowed to exist withinin the currently renderer occuring.");
 add_text(&soies, "It allows for the study of unexisting events, to align the Occuring with the neighboring optimal possible worlds.");
 add_text(&soies, "In other words, by generating the first events outside of the renderable, or Possible World, the " SEND("actors") " steer themselves inside and outside of the possible and impossible chain of events, granting themselves access to various normaly impossible actions.");
@@ -1061,7 +1058,6 @@ add_html(&soies, "<center><img src='../media/identity/soies.png' width='200'/></
 add_text(&soies, "This line of research is tied to the discovery of the " SEND("ehrivevnv") " as the resolve of the puzzle only exists within the " SEND("longest_end") ".");
 
 Term longest_end = create_term(&soies, "longest end", "The Longest End is the succeeding occurence.");
-// set_icon(&longest_end, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&longest_end, "The <b>Longest End</b> is the longest surviving occurrence amongst the inifities of other timelines.");
 add_text(&longest_end, "The " SEND("actors") "' goal is to steer the occurring chain of events to exist within the longest lasting instance of the universe.");
 // add_list(&longest_end, "<b>The Impossibilities</b>: The entirety of all potential spacetime. The impossibilities stores the events banned from happening, compressing the possible events.");
@@ -1136,17 +1132,14 @@ add_text(&characters, "While some happened to find themselves on " SEND("dinaist
 add_text(&characters, "The name comes from the " SEND("nohlxeserre") ", which is also known as <b>The Language Of The Birds</b>.");
 
 Term rlionn = create_term(&characters, "rlionn", "Rlionn is a being who periodically manifest itself on Laeisth.");
-// set_icon(&rlionn, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&rlionn, "Rlionn is not a single individual but a trait that manifests itself as a collective state of mind for the inhabitant of the Oasis.");
 add_text(&rlionn, "Spoken-of in tales and songs, the story of her children are sung in the album " SEND("children_of_bramble") " and illustrated in the " SENDNAME("laeisth", "The Rlionn Oasis") " short.");
 
 Term neonev = create_term(&characters, "neonev", "Neonev is a daughter of Rlionn.");
-// set_icon(&neonev, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&neonev, "While most of " SEND("rlionn") "'s Children do not stray far from the Oasis, one has left the desert of " SEND("laeisth") " to travel " SEND("dinaisth") ".");
 add_text(&neonev, "<b>Neonev</b> has crossed " SEND("kanikule") " during the " SENDNAME("feu", "first season") ".");
 
 Term andes = create_term(&characters, "andes", "Andes immigrated through a Soies Injection.");
-// set_icon(&andes, "M60,150 L60,150 L240,150 M60,240 A90,-90 0 0,0 150,150 A90,90 0 0,0 240,240 M150,60 L150,60 L150,120");
 add_text(&andes, "Shortly before the " SENDNAME("feu", "first season") " and brought along tools to study the " SEND("ehrivevnv") ".");
 add_text(&andes, "<b>Andes</b> was already present on " SEND("dinaisth") " when " SEND("neonev") " and the other immigrants arrived, the role of Andes in the " SENDNAME("yajnev", "Yajnev Collapse") " is unknown, but his arrival coincides with the destruction of " SEND("vetetrandes") ".");
 add_text(&andes, "Prior to their arrival, a structure bearing their markings had been errected in " SEND("laeisth") ", known as the " SEND("andes_castel") ", suggesting an external manipulation of the " SEND("soies") ".");
