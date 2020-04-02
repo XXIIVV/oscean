@@ -1,4 +1,5 @@
-add_diary(&hypertalk, "20G08", 348, "From the Hyperjam", 655);
+add_diary(&hypertalk, "20G09", 238, "Neauismetica Stack II", 655);
+add_diary(&hypertalk, "20G08", 348, "Neauismetica Stack I", 656);
 add_log(&donsol_famicom, "20G08", 346);
 add_log(&donsol_famicom, "20G07", 337);
 add_event(&donsol_famicom, "20G06", 278, "Donsol Famicom Release");

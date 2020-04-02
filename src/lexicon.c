@@ -1618,8 +1618,9 @@ add_link(&assembly, "famicom cookbook", "https://github.com/hundredrabbits/Famic
 
 Term binary = create_term(&language, "binary", "Binary numbers are a base 2 numeral system.");
 
-Term hypertalk = create_term(&language, "hypertalk", "Hypertalk is the programming language used in the mac software Hypercard.");
+Term hypertalk = create_album(&language, "hypertalk", "Hypertalk is the programming language used in the mac software Hypercard.");
 add_link(&hypertalk, "tutorial guide", "https://opus.uleth.ca/bitstream/handle/10133/856/Christmas_Kevin_G.pdf");
+add_link(&hypertalk, "tutorial video", "https://www.youtube.com/watch?v=LVq67vYyAqo");
 
 Term the_sartre_mechanism = create_term(&notebook, "the sartre mechanism", "The The Sartre Mechanism short.");
 add_text(&the_sartre_mechanism, "It was the first day of the winter when a friend invited me to witness the completion of a recent project.");
