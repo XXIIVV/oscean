@@ -466,7 +466,7 @@ void build_album(FILE *f, Term *term){
 void build_links(FILE *f, Term *term){
   fputs("<ul>", f);
   for (int i = 0; i < term->links_len; ++i) {
-    fprintf(f, "<li><a href='%s' class='external'>%s</a></li>", term->links_urls[i], term->links_names[i]);
+    fprintf(f, "<li><a href='%s' class='external' target='_blank'>%s</a></li>", term->links_urls[i], term->links_names[i]);
   }
   fputs("</ul>", f);
 }

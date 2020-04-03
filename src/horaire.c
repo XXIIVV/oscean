@@ -1,3 +1,4 @@
+add_log(&hypertalk, "20G10", 357);
 add_diary(&hypertalk, "20G09", 238, "Neauismetica Stack II", 655);
 add_diary(&hypertalk, "20G08", 348, "Neauismetica Stack I", 656);
 add_log(&donsol_famicom, "20G08", 346);
