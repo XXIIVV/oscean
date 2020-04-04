@@ -6,7 +6,7 @@
 #include <math.h>
 
 
-#define STR_BUF_LEN 64
+#define STR_BUF_LEN 128
 #define LOGS_BUFFER 512
 #define DICT_BUFFER 46
 #define LIST_BUFFER 46
