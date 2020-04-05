@@ -354,13 +354,14 @@ add_quote(&webring, "The internet is a utility world for me now. It is efficient
 add_link(&webring, "sources", "https://github.com/XXIIVV/webring");
 add_link(&webring, "jump in", "https://webring.xxiivv.com/#random");
 
-Term merveilles = create_term(&webring, "merveilles", "Merveilles is a community of artists and developers.");
+Term merveilles = create_album(&webring, "merveilles", "Merveilles is a community of artists and developers.");
 add_text(&merveilles, "The <b>Merveilles community</b> is an informal group of artists and developers seeking augmentation through the arts of engineering and design.");
 add_text(&merveilles, "Maybe it's a movement, I'm not sure. It might be that we all grew up with similar influences, yet it might not. Sometimes I think it's a style of going about art, but again, it also applies to musician and programmers. But when we see each other, we know.");
-add_link(&merveilles, "on sources", "https://github.com/Merveilles");
+add_text(&merveilles, "During the first weekend of 2020, Merveilles hosted the " LINKNAME("https://merveilles.town/web/timelines/tag/Hyperjam", "Hyperjam") ", an interactive art jam designed to learn the " LINKNAME("https://en.wikipedia.org/wiki/HyperCard", "Hypercard") " software and its programming language " SEND("hypertalk") ".");
 add_link(&merveilles, "on mastodon", "http://merveilles.town");
+add_link(&merveilles, "on github", "https://github.com/Merveilles");
 
-Term rotonde = create_term(&webring, "rotonde", "Rotonde was a decentralized social network.");
+Term rotonde = create_album(&webring, "rotonde", "Rotonde was a decentralized social network.");
 add_text(&rotonde, "It is a commonly agreed upon specifications of a JSON object shared between " LINKNAME("https://github.com/Rotonde", "members of the network") ", its current incarnation is the " SEND("webring") "'s " LINKNAME("https://webring.xxiivv.com/hallway.html", "Hallway") ".");
 add_text(&rotonde, "<b>Nobody owns the network, it never goes offline</b>, there are no servers and no central authority. All content is editable, versionable, hosted on your own computer and seeded by anyone who wish to follow your portal.");
 add_link(&rotonde, "sources", "https://github.com/Rotonde");
@@ -1241,7 +1242,7 @@ Term canada = create_album(&travel, "canada", "Despite being from there, Canada 
 Term mexico = create_album(&travel, "mexico", "That time we lived in Mexico.");
 
 Term devine_lu_linvega = create_term(&about, "devine lu linvega", "Devine Lu Linvega is a generalist.");
-add_text(&devine_lu_linvega, "<b>Devine Lu Linvega</b> is composing " SENDNAME("audio", "experimental electronic music") ", illustrating the " SENDNAME("visual", "frozen wastelands of a fictional world") ", and developing " SENDNAME("research", "esoteric software") ".");
+add_text(&devine_lu_linvega, "<b>Devine Lu Linvega</b> is composing " SENDNAME("audio", "experimental music") ", illustrating a " SENDNAME("visual", "fictional world") ", and developing " SENDNAME("research", "esoteric software") ".");
 add_text(&devine_lu_linvega, "Since 2006, Devine has been populating this " SENDNAME("about", "wiki") " with notes on various topics, including on " SEND("language") ", " SEND("lifestyle") " and " SEND("nutrition") ". You can learn more about their <b>related interests</b> in the " SEND("mirrors") ", and in the " SEND("directory") ".");
 add_text(&devine_lu_linvega, "They currently live aboard a " SENDNAME("pino", "sailboat") ", somewhere along the foggy coast of " SEND("japan") ". You can follow their position " LINKNAME("http://100r.co/live", "here") ", or learn more about offgrid living " LINKNAME("https://100r.co/site/off_the_grid.html", "here") ".");
 add_text(&devine_lu_linvega, "Get in touch via email at <b>aliceffekt@gmail.com</b>, or<br />on the fediverse at <b><a href='http://merveilles.town/@neauoire' target='_blank' rel='noreferrer' class='external '>merveilles.town/@neauoire</a></b>.");
@@ -1343,11 +1344,15 @@ add_dict(&studio, &studio_workstation);
 // add_code(&studio, "Calibrate: Bypass + B footswitches for two seconds.");
 
 Term computer = create_album(&inventory, "computer", "Technical details on my current Computer setup.");
-add_text(&computer, "I presently use an <b>Apple Macbook Pro</b> with the " LINKNAME("https://elementary.io", "Elementary") " GNU/Linux operating system. I also occasionally use " SEND("plan9") "(9front) across various " SENDNAME("raspberry", "Raspberry Pi") " devices as servers or utilities.");
+add_text(&computer, "I presently use an <b>Apple Macbook Pro</b> with the " LINKNAME("https://elementary.io", "Elementary") " GNU/Linux operating system. I also occasionally use " SEND("plan9") " and " SEND("macintosh")" for various experimental projects.");
 add_text(&computer, "I also use a " SENDNAME("keyboard", "mechanical keyboard") " and an old Intuos 3 Wacom tablet. To learn more about which audio equipment I use, see the " SEND("studio") ".");
 add_dict(&computer, &macbook_workstation);
 add_dict(&computer, &software_links);
 add_link(&computer, "usesthis", "https://usesthis.com/interviews/devine.lu.linvega/");
+
+Term macintosh = create_album(&computer, "macintosh", "Notes and links related to the Macintosh II computer.");
+add_text(&macintosh, "The " LINKNAME("https://en.wikipedia.org/wiki/Macintosh_II", "Macintosh II") " computer used the excellent OS7 operating system, supporting great software like " SENDNAME("hypertalk", "Hypercard") ".");
+add_link(&macintosh, "Mini vMac", "https://www.gryphel.com/c/minivmac/");
 
 Term plan9 = create_album(&computer, "plan9", "Notes and links related to the Plan9 operating system.");
 add_quote(&plan9, "An argument for simplicity and clarity.", "Rob Pike");
@@ -1750,7 +1755,7 @@ Term *lexicon[] = {
   &the_sublime, &japan, &minamiise, &shizuoka, &ogasawara, &yokohama, &fuji, 
   &osaka, &tokyo, &fiji, &marquesas, &marshall_islands, &niue, &mexico, &france, 
   &new_zealand, &america, &canada, &germany, &austria, &czech, &netherlands, 
-  &lifestyle, &aesthetics, &nomad, &routine, &longtermism, &nutrition, 
+  &lifestyle, &aesthetics, &nomad, &routine, &longtermism, &nutrition, &macintosh, 
   &inventory, &everyday, &skate, &bike, &studio, &computer, &plan9, &camera, 
   &keyboard, &directory, &bookmarks, &readings, &goals, &identity, &death, &faqs, 
   &audio_faqs, &visual_faqs, &research_faqs, &lifestyle_faqs, &mirrors, &wisdom, 
@@ -1761,5 +1766,5 @@ Term *lexicon[] = {
   &unreleased, &blindfolk, &milavrega, &devine_lu_linvega, &first_wave, 
   &regionsteam_snowdays, &downtemperature, &blam, &vert_kirlian_theatre, 
   &ann_yozora_saint, &nether_esper_inserts, &otoroutes_miniatures, &now,
-  &idyllic_miners, &lietal, &japanese, &russian, &assembly, &hypertalk, &binary
+  &idyllic_miners, &lietal, &japanese, &russian, &binary, &assembly, &hypertalk
 };

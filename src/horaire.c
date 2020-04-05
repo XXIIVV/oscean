@@ -1,4 +1,6 @@
-add_log(&hypertalk, "20G11", 268);
+add_log(&hypertalk, "20G13", 268);
+add_log(&hypertalk, "20G12", 268);
+add_event(&merveilles, "20G11", 268, "Merveilles HyperCard Jam");
 add_diary(&hypertalk, "20G10", 257, "Neauismetica Stack III", 655);
 add_diary(&hypertalk, "20G09", 238, "Neauismetica Stack II", 657);
 add_diary(&hypertalk, "20G08", 348, "Neauismetica Stack I", 656);
@@ -128,7 +130,7 @@ add_log(&dotgrid, "19W02", 275);
 add_log(&orca, "19W01", 346);
 add_log(&orca, "19V14", 348);
 add_log(&enfer, "19V13", 148);
-add_log(&dotgrid, "19V13", 346);
+add_diary(&macintosh, "19V13", 254, "Neauismetica on Macintosh", 658);
 add_log(&ronin, "19V12", 346);
 add_diary(&keyboard, "19V11", 248, "OLKB Hi-pro mod Planck 6", 626);
 add_diary(&assembly, "19V10", 248, "OPN2 Cartridge", 625);
