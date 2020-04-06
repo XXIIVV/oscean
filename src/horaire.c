@@ -1,3 +1,5 @@
+add_log(&pino, "20H01", 336);
+add_log(&pino, "20G14", 337);
 add_log(&hypertalk, "20G13", 268);
 add_log(&hypertalk, "20G12", 268);
 add_event(&merveilles, "20G11", 268, "Merveilles HyperCard Jam");

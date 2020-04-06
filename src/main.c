@@ -47,6 +47,7 @@ typedef struct Term {
   bool is_portal;
   bool is_album;
   bool is_index;
+  bool is_inc;
 
   int children_len;
   int body_len;
@@ -146,6 +147,7 @@ Term create_term(Term *parent, char *name, char *bref) {
   t.is_portal = false;
   t.is_album = false;
   t.is_index = false;
+  t.is_inc = false;
 
   t.children_len = 0;
   t.body_len = 0;
@@ -417,6 +419,7 @@ void build_include(FILE *f, Term *term){
   if(fp == NULL){ return; }
 
   // printf("Including: %s(%s)\n", term->name, filepath);
+  term->is_inc = true;
 
   for (;;) {
     size_t sz = fread(buffer, 1, sizeof(buffer), fp);
@@ -493,7 +496,13 @@ void build_horaire(FILE *f, Term *term){
   for (int i = 0; i < all_logs.len; ++i) {
     Log *l = &all_logs.logs[i];
     if(l->term != term){ continue; }
-    fprintf(f, "<p><i>Last update on <a href='tracker.html'>%s</a>, edited %d times.</i> +%d/%dfh</p>", l->date, len, ch, fh);  
+    fprintf(f, "<p>");
+    fprintf(f, "<i>Last update on <a href='tracker.html'>%s</a>, edited %d times. +%d/%dfh</i>", l->date, len, ch, fh);
+    // display edit link for included pages
+    if(l->term->is_inc){ 
+      fprintf(f, "<br />Found a mistake? Submit <a href='https://github.com/XXIIVV/Oscean/edit/master/src/inc/%s.htm' class='external' target='_blank'>edit</a> to page.", l->term->name);
+    }
+    fprintf(f, "</p>");
     break;
   }
 
