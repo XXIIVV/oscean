@@ -22,7 +22,7 @@
 int pict_used_len = 0;
 int pict_used[999];
 
-char *html_head = "<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='author' content='Devine Lu Linvega'><meta name='description' content='The Nataniev Library.'/><meta name='keywords' content='Aliceffekt, Devine Lu Linvega, Lietal, Oquonie, Verreciel, Nataniev, Oscean, Solarpunk' /><meta name='license' content='name=BY-NC-SA(4.0), url=https://creativecommons.org/licenses/by-nc-sa/4.0/'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width, initial-scale=1.0'><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/x-icon' href='../media/services/favicon.ico' /><title>XXIIVV — %s</title></head><body>";
+char *html_head = "<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='author' content='Devine Lu Linvega'><meta name='description' content='%s'/><meta name='keywords' content='Aliceffekt, Devine Lu Linvega, Lietal, Oquonie, Verreciel, Nataniev, Oscean, Solarpunk' /><meta name='license' content='name=BY-NC-SA(4.0), url=https://creativecommons.org/licenses/by-nc-sa/4.0/'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width, initial-scale=1.0'><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV — %s</title></head><body>";
 
 char *html_header = "<header><a id='logo' href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV'></a></header>";
 
@@ -156,7 +156,11 @@ Term create_term(Term *parent, char *name, char *bref) {
   t.lists_len = 0;
 
   if (!is_alphanum(name)) {
-    printf("Error: \"%s\" is not alphanumeric\n", name);
+    printf("Error: \"%s\"(name) is not alphanumeric\n", name);
+  }
+
+  if (!is_plaintext(bref)) {
+    printf("Error: \"%s\"(bref) is not plaintext\n", name);
   }
   t.name = name;
   t.bref = bref;
@@ -500,7 +504,7 @@ void build_horaire(FILE *f, Term *term){
     fprintf(f, "<i>Last update on <a href='tracker.html'>%s</a>, edited %d times. +%d/%dfh</i>", l->date, len, ch, fh);
     // display edit link for included pages
     if(l->term->is_inc){ 
-      fprintf(f, "<br />Found a mistake? Submit <a href='https://github.com/XXIIVV/Oscean/edit/master/src/inc/%s.htm' class='external' target='_blank'>edit</a> to page.", l->term->name);
+      fprintf(f, "<br />Found a mistake? Submit an <a href='https://github.com/XXIIVV/Oscean/edit/master/src/inc/%s.htm' class='external' target='_blank'>edit</a> to %s.", l->term->name, l->term->name);
     }
     fprintf(f, "</p>");
     break;
@@ -686,7 +690,7 @@ void build_page(Term *term, Journal *journal) {
   snprintf(filepath, STR_BUF_LEN, "../site/%s.html", filename);
   FILE *f = fopen(filepath, "w");
 
-  fprintf(f, html_head, term->name);
+  fprintf(f, html_head, term->bref, term->name);
   fputs(html_header, f);
   build_nav(f, term);
   

@@ -51,7 +51,21 @@ bool is_alphanum(char *str) {
     char ch = str[i];
     int is_num = ch >= '0' && ch <= '9';
     int is_alpha = (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
-    int is_space = ch == ' ';
+    int is_space = (ch == ' ');
+    if (!is_alpha && !is_num && !is_space) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool is_plaintext(char *str) {
+  int len = strlen(str);
+  for (int i = 0; i < len; i++) {
+    char ch = str[i];
+    int is_num = ch >= '0' && ch <= '9';
+    int is_alpha = (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
+    int is_space = (ch == ' ' || ch == '_' || ch == '.' || ch == ',' || ch == '-');
     if (!is_alpha && !is_num && !is_space) {
       return false;
     }

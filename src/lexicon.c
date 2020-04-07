@@ -43,7 +43,7 @@ Term notebook = create_portal(&research, "notebook", "From the Notebook.");
 add_text(&notebook, "The <b>Notebook</b> is a collection of scribbles on various topics that have yet to find themselves permanently included in the " SENDNAME("oscean", "wiki") ".");
 add_text(&notebook, "Are you looking for the " SEND("sketchbook") "?");
 
-Term alicef = create_index(&audio, "alicef", "Alicef, is an livecoding audio/visual project built around Orca.");
+Term alicef = create_index(&audio, "alicef", "Alicef, is an livecoding audio and visual project built around Orca.");
 add_text(&alicef, "<b>Alicef</b> is a fragment of " SEND("aliceffekt") "'s diary, exploring " SENDNAME("dinaisth", "similar spaces") ", but focusing on the aesthetics of pattern & repetition.");
 add_text(&alicef, "This livecoding project uses a combination of " SEND("orca") " and " SEND("enfer")", and is created to be mostly a performance project, there are currently no releases available for the <b>Alicef</b> project, only a handful of " LINKNAME("https://www.youtube.com/watch?v=hQXa6TkSeH0", "demos") ".");
 add_html(&alicef, MODYOUTUBE("hQXa6TkSeH0"));
@@ -78,7 +78,7 @@ add_link(&grimgrains, "twitter", "https://twitter.com/grimgrains");
 add_link(&grimgrains, "live", "https://grimgrains.com");
 add_link(&grimgrains, "sources", "https://github.com/hundredrabbits/Grimgrains");
 
-Term wiktopher = create_term(&hundred_rabbits, "wiktopher", "Wiktopher is Rekka's upcoming travel novel.");
+Term wiktopher = create_term(&hundred_rabbits, "wiktopher", "Wiktopher is an upcoming travel novel by Rekka Bellum.");
 add_text(&wiktopher, "<b>Wiktopher</b> tells the travel stories of Lupin, who fell from one of the three great cities erected on the backs of desert walkers; and Eka, a creature of wonder and of seemingly, infinite kindness and curiosity.");
 add_text(&wiktopher, "Together, they learn the innumerable ways of the world, traversing deserts and villages, meeting their inhabitants and discovering their customs.");
 add_text(&wiktopher, "The novel is written <i>entirely without genders</i>, and will be released as audiobooks, ebooks and paperbacks.");
@@ -124,15 +124,15 @@ add_html(&ramiel, MODBANDCAMP("2641389031"));
 add_link(&ramiel, "bandcamp", "https://beldamrecords.bandcamp.com/album/ramiel");
 add_link(&ramiel, "itunes", "https://itunes.apple.com/us/album/ramiel-ep/id958562173");
 
-Term eschatolor = create_term(&beldam_records, "eschatolor", "Eschatolor is a Beldam Records release, by Катя Тевелизион.");
+Term eschatolor = create_term(&beldam_records, "eschatolor", "Eschatolor is an ambient Beldam Records release that was recorded over the FM airwaves.");
 add_text(&eschatolor, "Written by Катя Тевелизион, this album was inspired from Russian number stations.");
 add_html(&eschatolor, MODBANDCAMP("4198794205"));
 add_text(&eschatolor, "It was recorded playing through the FM band, from the " SEND("elfi") " 103.0Mhz pirate radio station in Montreal, giving it its texture and warmth.");
 add_link(&eschatolor, "bandcamp", "https://tevelision.bandcamp.com/album/eschatolor");
 add_link(&eschatolor, "itunes", "https://itunes.apple.com/ca/album/eschatolor/id1000241341");
 
-Term efli = create_term(&eschatolor, "efli", "Efli, 103.0FM, was a pirate radio broadcast, available from Montreal's Plateau area, between 22:00 and 6:00.");
-add_text(&efli, "The radio started broadcasting on May 20th, 2015 and stopped transmitting on December 20th. It played various permutations of the " SEND("eschatolor") " album.");
+Term efli = create_term(&eschatolor, "efli", "Efli, 103.0FM, was a pirate radio broadcast, available from Montreal downtown area.");
+add_text(&efli, "The radio started broadcasting on May 20th 2015, between 22:00 and 6:00, and stopped transmitting on December 20th. It played various permutations of the " SEND("eschatolor") " album.");
 
 Term looking_glace = create_term(&beldam_records, "looking glace", "Looking Glace is a Beldam Records release, by Reine.");
 add_text(&looking_glace, "Painting a harsher, and more complete picture of her acoustic universe where the liquid sounds and suffocating vocoder are incessantly present.");
@@ -144,7 +144,7 @@ Term verreciel_soundtrack = create_term(&beldam_records, "verreciel soundtrack",
 add_html(&verreciel_soundtrack, MODBANDCAMP("453554387"));
 add_link(&verreciel_soundtrack, "bandcamp", "https://aliceffekt.bandcamp.com/album/verreciel");
 
-Term getapan_728k = create_term(&beldam_records, "getapan 728k", "Getapan 728k is a Beldam Records release, by 死サイコロ.");
+Term getapan_728k = create_term(&beldam_records, "getapan 728k", "Getapan 728k is a Beldam Records release.");
 add_text(&getapan_728k, "This new release explores a region of frigid dubs yet uncharted by " SEND("beldam_records") ". Not much is known about 死サイコロ, their name is <i>Shi Seikoro</i>, or <b>Death Dice</b>.");
 add_html(&getapan_728k, MODBANDCAMP("1677022414"));
 add_link(&getapan_728k, "bandcamp", "https://beldamrecords.bandcamp.com/album/728k");
@@ -157,8 +157,8 @@ add_link(&azolla, "sources", "https://github.com/neauoire/alicef");
 add_link(&azolla, "live", "https://beldamrecords.bandcamp.com/album/azolla");
 add_link(&azolla, "video", "https://www.youtube.com/watch?v=9FPrPgOQqZg");
 
-Term malice = create_portal(&audio, "malice", "Malice, GAII or 害意, tells the earlier tales of Neonev as she crossed the Kanikule ocean.");
-add_text(&malice, "The Malice logo was designed by " LINKNAME("http://visualscream.net", "Jan Vranovský") ".");
+Term malice = create_portal(&audio, "malice", "Malice tells the earlier tales of Neonev as she crossed the Kanikule ocean.");
+add_text(&malice, "The Malice logo(害意) was designed by " LINKNAME("http://visualscream.net", "Jan Vranovský") ".");
 add_link(&malice, "bandcamp", "https://gaii.bandcamp.com/");
 
 Term collected_works = create_term(&malice, "collected works", "Collected Works between 2008 and 2015, written as Malice.");
@@ -205,7 +205,7 @@ add_text(&hypervoid, "The  pieces were selected to be on the cover of the second
 Term brane = create_album(&polygonoscopy, "brane", "Brane are digital fabrics.");
 add_text(&brane, "This " SENDNAME("polygonoscopy", "Polygonoscopic") " collection of large " SENDNAME("nervous", "Nervous Systems") " was exposed at the MIGS gallery on november 10th 2014.");
 
-Term astratas = create_album(&polygonoscopy, "astratas", "The Astratas topologic maps oscillate to Serventines's Polygonoscopic frequencies.");
+Term astratas = create_album(&polygonoscopy, "astratas", "The Astratas topology oscillates to Polygonoscopic frequencies.");
 add_quote(&astratas, "The Art of Cartography attained such Perfection that the map of a single Province occupied the entirety of a City, and the map of the Empire, the entirety of a Province.", "Jorge Luis Borges, On Rigor in Science");
 
 Term ar_moire = create_album(&polygonoscopy, "ar moire", "The Ar Moire diagrams are Polygonoscopic sounds.");
@@ -234,7 +234,7 @@ add_link(&ring_of_scales, "download", "http://www.thingiverse.com/thing:19152");
 
 Term neauismetic = create_portal(&aliceffekt, "neauismetic", "The Neauismetic albums are audio diaries from the early ages of the Neauismetica.");
 
-Term vetetrandes_lettres = create_term(&neauismetic, "vetetrandes lettres", "Vetetrandes Lettres's songs sings of the first ages of Dinaisth on the island of Vetetrandes.");
+Term vetetrandes_lettres = create_term(&neauismetic, "vetetrandes lettres", "Vetetrandes Lettres sings of the first age of Dinaisth on the island of Vetetrandes.");
 add_text(&vetetrandes_lettres, "While the album begins in Vetetrandes, it moves to the shores of " SEND("dilitriel") " and turns its attention across " SEND("kanikule") " and toward the <i>Es</i>'Gulf of <i>Eaurison</i>.");
 add_text(&vetetrandes_lettres, "The album includes 4 edited tracks from the " SEND("es_gulf_sunflowers") " release. The <i>Ver'Tale</i> extension is a hint to a location of <i>Whiinders</i>, close to the visited <i>Vert Kirlian Theatre</i>.");
 add_text(&vetetrandes_lettres, "The album begins with a track about " SEND("yajnev") ", the composition is based on his trip near the white trees of the <i>Oasis</i> and the <i>Children of Brambles</i>.");
@@ -247,13 +247,13 @@ add_text(&from_saharaphorest, "This release is related to " SEND("vert_kirlian_t
 add_html(&from_saharaphorest, MODBANDCAMP("1013227503"));
 add_link(&from_saharaphorest, "bandcamp", "http://aliceffekt.bandcamp.com/album/19th-month-from-saharaphorest-to-duomo");
 
-Term ehrivevnv_studies = create_term(&neauismetic, "ehrivevnv studies", "The Ehrivevnv Studies is an album exploring the Dinaisth region surroudning Andes' office.");
+Term ehrivevnv_studies = create_term(&neauismetic, "ehrivevnv studies", "The Ehrivevnv Studies is an album exploring the Dinaisth region surrounding the offices of Andes.");
 add_text(&ehrivevnv_studies, "The album was composed for and performed at <b>Blip Festival Tokyo</b> on October 21st 2012 and reissued on april 15th 2013.");
 add_text(&ehrivevnv_studies, "The track names contains encrypted " SENDNAME("lietal", "Traumae") ". The first track is decrypted into \"Simkin Kamsi\" and can be translated to <i>Time Structure</i>, refering to " SENDNAME("paradise", "The Library of Sand") ". The second track, \"Xomsinsom Kim " SEND("yajnev") "\", can be translated to <i>Yajnev's Curse</i> and refers to the short <b>Yajnev's Thoughts</b>. The third track is titled \"Ko Sokamxi\" which simply means <i>The Impossible Exploration</i>.");
 add_html(&ehrivevnv_studies, MODBANDCAMP("2576083659"));
 add_link(&ehrivevnv_studies, "bandcamp", "https://aliceffekt.bandcamp.com/album/the-ehrivevnv-studies-reissue");
 
-Term yajnev_studies = create_term(&neauismetic, "yajnev studies", "The Yajnev Studies is an upcoming album exploring Yajnev' sector Vetetrandes.");
+Term yajnev_studies = create_term(&neauismetic, "yajnev studies", "The Yajnev Studies is an upcoming album exploring the Yajnev sector of Vetetrandes.");
 add_text(&yajnev_studies, "The album is entirely written in " SEND("orca") " and is designed to be performed as a livecoding installation, more details shortly.");
 
 Term telekinetic = create_portal(&neauismetic, "telekinetic", "Telekinetic is a Laeisthic concept album performed live with the Leap Motion controller.");
@@ -346,7 +346,7 @@ add_text(&arvelie, "Each month has <b>2 weeks</b> of <b>7 days</b>, and each mon
 add_html(&arvelie, "<ul><li><b>02A01</b> 2002-01-01</li><li><b>01D07</b> 2001-02-18</li><li><b>13B12</b> 2013-01-26</li><li><b>02E07</b> 2002-03-04</li><li><b>24C01</b> 2024-01-29</li><li><b>03+01</b> 2003-12-31</li></ul>");
 add_link(&arvelie, "library", "https://github.com/XXIIVV/Oscean/blob/master/scripts/lib/arvelie.js");
 
-Term webring = create_term(&nataniev, "webring", "The Webring, like it's the 2000s.");
+Term webring = create_term(&nataniev, "webring", "The Webring, like we are in the 2000s.");
 add_text(&webring, "The <b>webring</b> is a directory of neighbor websites and portfolios.");
 add_text(&webring, "This is an attempt to <b>inspire artists and developers to create and maintain their own personal website</b>, and share traffic organically among each other. The ring's aim is to promote the creation of hand crafted diaries, wikis, bookmarks and portfolios.");
 add_text(&webring, "You can view the full directory " LINKNAME("https://webring.xxiivv.com/", "here") ", or more info on how to join the network " LINKNAME("https://github.com/XXIIVV/webring", "here") ". To navigate the webring, start " LINKNAME("http://webring.xxiivv.com/#random", "here") ". The webring also operates as a decentralized forum based on " LINKNAME("https://github.com/buckket/twtxt", "twtxt") ", see the " LINKNAME("https://webring.xxiivv.com/hallway.html", "Hallway") ".");
@@ -459,7 +459,7 @@ add_text(&noodle, "Noodle is a <b>pixel drawing tool</b> based on the " LINKNAME
 add_text(&noodle, "Noodle is the first in a series of image processing tools, exploring the concept of " LINKNAME("https://brandur.org/small-sharp-tools", "Small Sharp Tools") " for graphical tasks, as an alternative take to the general purpose software " SEND("ronin") ".");
 add_html(&noodle, MODYOUTUBE("zvO5JRF47bc"));
 add_text(&noodle, "The companion " LINKNAME("https://hundredrabbits.github.io/Poodle/", "scene tool") " is designed to create perspective guide lines with the noodle Bresenham look. The companion " LINKNAME("https://hundredrabbits.github.io/Moogle/", "cropping tool") " is designed to handle all resizing and cropping tasks, instead of adding these features directly into Noodle.");
-add_text(&noodle, "You can see a collection of drawings created with this tool " LINKNAME("https://neauoire.github.io/neauismea/", "here") ".");
+add_text(&noodle, "Noodle works exceptionally well with the " SEND("macintosh") " application " SENDNAME("hypertalk", "hypercard") ", you can find a collection of drawings created with it " LINKNAME("https://neauoire.github.io/neauismea/", "here") ".");
 add_link(&noodle, "sources", "https://github.com/hundredrabbits/Noodle");
 add_link(&noodle, "live", "https://hundredrabbits.github.io/Noodle");
 add_link(&noodle, "inktober 2019", "https://neauoire.github.io/neauismea");
@@ -650,7 +650,7 @@ add_text(&weather_station, "Its purpose is to display a simple reading of the ch
 // add_list(&weather_station, "Pimoroni's " LINKNAME("https://shop.pimoroni.com/products/phat-diffuser", "Diffuser") "");
 add_link(&weather_station, "sources", "https://github.com/hundredrabbits/weather-station");
 
-Term instrument = create_term(&raspberry, "instrument", "The Instrument is Pino's sailing computer.");
+Term instrument = create_term(&raspberry, "instrument", "The Instrument is the sailing computer inside Pino");
 // set_icon(&instrument, "M75,90 L75,90 L225,90 M105,90 A-15,15 0 0,0 90,105 A0,120 0 0,0 90,225 A15,15 0 0,0 105,240 A-30,0 0 0,0 75,240 A15,-15 0 0,0 90,225 A0,-120 0 0,0 90,105 A-15,-15 0 0,0 75,90 M195,90 A15,15 0 0,1 210,105 A0,120 0 0,1 210,225 A-15,15 0 0,1 195,240 A30,0 0 0,1 225,240 A-15,-15 0 0,1 210,225 A0,-120 0 0,1 210,105 A15,-15 0 0,1 225,90");
 add_text(&instrument, "The application displays various data about the course, speed, location and time.");
 add_text(&instrument, "Its original purpose was to help with night sailing where the compass and some of our sailing instruments were hard to see.");
@@ -727,7 +727,7 @@ add_text(&noirca, "As of March 2019, This application is no longer maintained.")
 add_link(&noirca, "itunes", "https://itunes.apple.com/us/app/noirca/id893715212");
 add_link(&noirca, "sources", "https://github.com/Echorridoors/noirca");
 
-Term dew = create_album(&mobile, "dew", "Dew is an alarm/timer.");
+Term dew = create_album(&mobile, "dew", "Dew was an alarm and timer application for iOS.");
 add_text(&dew, "The application will then  wake you with a soft white noise tone that will gradually bring you back to reality.");
 add_text(&dew, "As of March 2019, This application is no longer maintained.");
 add_link(&dew, "itunes", "https://itunes.apple.com/ca/app/dew/id954020907");
@@ -878,7 +878,7 @@ add_text(&extended_sleep, "This single is the third part of the " SEND("laeisthi
 add_html(&extended_sleep, MODBANDCAMP("2987872258"));
 add_link(&extended_sleep, "bandcamp", "https://aliceffekt.bandcamp.com/album/extended-sleep");
 
-Term duomic = create_portal(&aliceffekt, "duomic", "The Duomic albums are Neauismetic records of Neonev's travel from Duomo to Dilitriel.");
+Term duomic = create_portal(&aliceffekt, "duomic", "The Duomic albums are Neauismetic records of the travels of Neonev, from Duomo to Dilitriel.");
 
 Term opal_inquisitors = create_term(&duomic, "opal inquisitors", "The Opal Inquisitors is the first Duomic album.");
 add_text(&opal_inquisitors, "These recordings are taken aboard the " SEND("vermillionth") " tunneler, traveling up the spires of " SEND("duomo") ", where " SEND("neonev") " departs from central " SEND("dinaisth") " and head through the " SENDNAME("dei_dain", "Dei Dain Canals") ".");
@@ -932,13 +932,13 @@ Term time_alloy = create_term(&polygonoscopy, "time alloy", "The Time Alloy is a
 
 Term demo = create_portal(&aliceffekt, "demo", "The Demo albums are created with specific pieces of hardwares.");
 
-Term superworker = create_term(&demo, "superworker", "Superworker is an album created with the PO-24.");
+Term superworker = create_term(&demo, "superworker", "Superworker is an album created with the PO24.");
 add_text(&superworker, "The album contains 3 tracks created from <i>over 80 sessions</i>, arranged into chiptune experiments.");
 add_text(&superworker, "Due to the lack of power during the 4 weeks long " SENDNAME("marquesas", "ocean crossing") ", the pocket battery powered synth proved to be the perfect composition tool. The tracks also include spoken words from " LINKNAME("https://en.wikipedia.org/wiki/Alan_Watts", "Alan Watts") ".");
 add_html(&superworker, MODBANDCAMP("610742154"));
 add_link(&superworker, "bandcamp", "https://aliceffekt.bandcamp.com/album/superworker");
 
-Term supervisitor = create_term(&demo, "supervisitor", "Supervisitor is a concept album created with Arturia's Microbrute synthetiser.");
+Term supervisitor = create_term(&demo, "supervisitor", "Supervisitor is a concept album created with the Microbrute synthetiser by Arturia.");
 add_text(&supervisitor, "The album was released during the event " SEND("dodecae") " in <b>Toronto</b>.");
 add_html(&supervisitor, MODBANDCAMP("3564075825"));
 add_link(&supervisitor, "bandcamp", "https://aliceffekt.bandcamp.com/album/supervisitor");
@@ -1145,7 +1145,7 @@ add_text(&andes, "Shortly before the " SENDNAME("feu", "first season") " and bro
 add_text(&andes, "<b>Andes</b> was already present on " SEND("dinaisth") " when " SEND("neonev") " and the other immigrants arrived, the role of Andes in the " SENDNAME("yajnev", "Yajnev Collapse") " is unknown, but his arrival coincides with the destruction of " SEND("vetetrandes") ".");
 add_text(&andes, "Prior to their arrival, a structure bearing their markings had been errected in " SEND("laeisth") ", known as the " SEND("andes_castel") ", suggesting an external manipulation of the " SEND("soies") ".");
 
-Term yajnev = create_term(&characters, "yajnev", "Yajnev's death engulfed Vetetrandes in an opaque impenetrable lock.");
+Term yajnev = create_term(&characters, "yajnev", "The death of Yajnev engulfed Vetetrandes in an opaque impenetrable lock.");
 add_text(&yajnev, "Yajnev is a <i>Local-type</i> " SENDNAME("actors", "actor") ", meaning that its acting was mainly spacial, and only briefly temporal.");
 add_text(&yajnev, "Its nervous imprint of local space could steer events locally, as well as affect time.");
 add_text(&yajnev, "The space, and time, surrounding its body was animated by " SEND("yajnev") "'s reflexion and thoughts. The effect of the Immigrats approaching " SEND("dinaisth") " might have caused the collapse, as it may have had an effect similar to that of a foreign body injecting itself in the network of dimensional nerves.");
@@ -1321,7 +1321,7 @@ add_link(&calendar, "rss feed", "https://wiki.xxiivv.com/links/rss.xml");
 Term identity = create_term(&journal, "identity", "Various notes on the visual choices made for the Nataniev projects.");
 add_text(&identity, "Additional details can be found in the " SEND("faqs") ".");
 
-Term now = create_term(&journal, "now", "The /now page shows infographics of current activity.");
+Term now = create_term(&journal, "now", "The now page shows infographics of current activity.");
 add_text(&now, "The history of project activity is recorded with the " SENDNAME("horaire", "horaire time-tracker") ", to find the complete history of activity, visit the " SEND("tracker") ".");
 
 Term inventory = create_portal(&devine_lu_linvega, "inventory", "The collection of technical details on the Inventory.");
@@ -1617,7 +1617,7 @@ add_link(&language, "unicode u+21dc9", "https://www.unicode.org/cgi-bin/GetUniha
 
 Term english = create_term(&language, "english", "Assorted notes on the English language.");
 
-Term assembly = create_term(&language, "assembly", "Assembly(6502) is the language used to program the famicom microprocessor.");
+Term assembly = create_term(&language, "assembly", "6502 Assembly is the language used to program the famicom microprocessor.");
 add_text(&assembly, "This page is a collection of notes on the basics of 6502 assembly, assembled from various guides and tutorial. Understanding these notes require prior understanding of " SENDNAME("binary", "binary numbers") ".");
 add_link(&assembly, "famicom cookbook", "https://github.com/hundredrabbits/Famicom-Cookbook");
 
@@ -1663,7 +1663,7 @@ add_text(&marabu, "You can view the complete " LINKNAME("https://github.com/hund
 add_link(&marabu, "download", "http://hundredrabbits.itch.io/Marabu");
 add_link(&marabu, "sources", "https://github.com/neauoire/Marabu");
 
-Term babelium = create_term(&unreleased, "babelium", "Babelium is a roguelike set in the Borges' Library of Babel.");
+Term babelium = create_term(&unreleased, "babelium", "Babelium is a roguelike set in the Library of Babel, written by Borges.");
 add_text(&babelium, "Begin by finding the <i>guide</i>(<b>g</b>), in every second hexagon, the guide will tell you things to look for. If you find yourself to be walking rather slowly, find the closet in which you can sleep standing up.");
 add_link(&babelium, "sources", "https://github.com/Echorridoors/Babelium");
 
@@ -1675,7 +1675,7 @@ add_text(&blindfolk, "The scripts contained a series of attacks, moves and block
 add_text(&blindfolk, "It was first created in the span of 48 hours for " LINKNAME("http://globalgamejam.org", "Global Game Jam 2016") ". The game was very popular for the days after its release, but soon became too time-consuming to maintain and keep alive, and was turned off a few days later. This design was revisited and lives on as part of the upcoming game " SEND("markl") ".");
 add_link(&blindfolk, "sources", "https://github.com/XXIIVV/vessel.blindfolk");
 
-Term milavrega = create_term(&unreleased, "milavrega", "Milavrega was a mobile game happening in someone's lost phone.");
+Term milavrega = create_term(&unreleased, "milavrega", "Milavrega was an experimental iOS game happening on a lost mobile phone.");
 add_text(&milavrega, "You must try and find your way through the folders, emails and contacts to decipher the enigma of the phone's owner.");
 
 Term first_wave = create_portal(&aliceffekt, "first wave", "The First Wave contains material mostly unrelated to the Neauismetica and proto-Aliceffekt.");
@@ -1694,7 +1694,7 @@ add_link(&blam, "bandcamp", "https://aliceffekt.bandcamp.com/album/blam-le-passa
 Term vert_kirlian_theatre = create_term(&first_wave, "vert kirlian theatre", "The Vert Kirlian Theatre was created during on a long train ride, on the Yamanote line, during my first trip to Tokyo.");
 add_text(&vert_kirlian_theatre, "This release inspired the creation of " SEND("from_saharaphorest") ".");
 
-Term ann_yozora_saint = create_term(&first_wave, "ann yozora saint", "Ann Yozora Saint was originally released as two albums, Ann Yozora Saint and Lu's Floral Funeralis, they were consolidated into a single release in 2017.");
+Term ann_yozora_saint = create_term(&first_wave, "ann yozora saint", "Ann Yozora Saint was originally released as two albums, Ann Yozora Saint and Lu Floral Funeralis, they were consolidated into a single release in 2017.");
 add_text(&ann_yozora_saint, "Incomplete.");
 add_link(&ann_yozora_saint, "bandcamp", "https://aliceffekt.bandcamp.com/album/ann-yozora-saint");
 
