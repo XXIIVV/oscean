@@ -568,39 +568,7 @@ Term hardware = create_portal(&research, "hardware", "A handful of experimental 
 
 Term raspberry = create_portal(&hardware, "raspberry", "The Raspberry is a small inexpensive single-board computer.");
 add_text(&raspberry, "The <b>Raspberry Pi</b> is a small inexpensive single-board computer.");
-add_text(&raspberry, "To get started with a new device, download " LINKNAME("https://www.raspberrypi.org/downloads/raspbian/", "Raspbian Lite") ", and use " LINKNAME("https://etcher.io", "Etcher") " to flash the SD card.");
-add_header(&raspberry, "SSH");
-add_text(&raspberry, "You can use <code>ssh</code> to input commands and <b>remotely control the device</b>, follow these steps to get started.");
-// add_code(&raspberry, "touch /Volumes/boot/ssh <comment># Enable SSH</comment>");
-// add_code(&raspberry, "touch /Volumes/boot/wpa_supplicant.conf <comment># Auto-connect to wifi</comment>");
-add_header(&raspberry, "Setup Wifi");
-add_text(&raspberry, "Input your wireless network details to enable the device to <b>automatically connect to the network</b> when available.");
-// add_code(&raspberry, "<comment># nano /Volumes/boot/wpa_supplicant.conf</comment>");
-// add_code(&raspberry, "country=CA");
-// add_code(&raspberry, "ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev");
-// add_code(&raspberry, "update_config=1");
-// add_code(&raspberry, "network={");
-// add_code(&raspberry, "ssid=\"network_name\"");
-// add_code(&raspberry, "psk=\"network_password\"");
-// add_code(&raspberry, "}");
-add_header(&raspberry, "Connect");
-add_text(&raspberry, "When <code>ssh</code> has been activated and the wifi details updated, the device should become discoverable.");
-// add_code(&raspberry, "ping raspberrypi.local <comment># Find its IP address</comment>");
-// add_code(&raspberry, "ssh pi@192.168.1.73 <comment># Use password \"<b>raspberry</b>\"</comment>");
-// add_code(&raspberry, "sudo raspi-config <comment># <b>Interface/SSH</b> & <b>Advanced/Expand FS</b></comment>");
-// add_code(&raspberry, "sudo nano /etc/hostname <comment># Rename</comment>");
-// add_code(&raspberry, "sudo nano /etc/hosts <comment># Rename</comment>");
-// add_code(&raspberry, "passwd <comment># Change Password</comment>");
-// add_code(&raspberry, "sudo reboot");
-add_header(&raspberry, "Gadget Mode");
-add_text(&raspberry, "Gadget mode allows to <b>SSH</b> into a " SENDNAME("raspberry", "Raspberry Pi Zero") " device via USB. Begin by <b>enabling ssh</b>, by adding <code>/Volumes/boot/ssh</code> to the SD Card. Activate <b>gadget mode</b> , allowing the device to be discovered and controlled via USB.");
-// add_code(&raspberry, "dtoverlay=dwc2 <comment># Append to config.txt</comment>");
-// add_code(&raspberry, "modules-load=dwc2,g_ether <comment># Append to cmdline.txt, or after rootwait</comment>");
-add_header(&raspberry, "Basics");
-add_text(&raspberry, "Make sure everything is up-to-date and install <code>git</code>.");
-// add_code(&raspberry, "sudo apt-get update");
-// add_code(&raspberry, "sudo apt-get dist-upgrade");
-// add_code(&raspberry, "sudo apt-get install git");
+
 
 Term media_station = create_term(&raspberry, "media station", "The Media Station aboard Pino.");
 // set_icon(&media_station, "M75,90 L75,90 L225,90 M105,90 A-15,15 0 0,0 90,105 A0,120 0 0,0 90,225 A15,15 0 0,0 105,240 A-30,0 0 0,0 75,240 A15,-15 0 0,0 90,225 A0,-120 0 0,0 90,105 A-15,-15 0 0,0 75,90 M195,90 A15,15 0 0,1 210,105 A0,120 0 0,1 210,225 A-15,15 0 0,1 195,240 A30,0 0 0,1 225,240 A-15,-15 0 0,1 210,225 A0,-120 0 0,1 210,105 A15,-15 0 0,1 225,90");
@@ -683,6 +651,10 @@ add_text(&monome, "I created a handful of scripts for the device, such as the im
 add_link(&monome, "website", "https://monome.org/");
 add_link(&monome, "linn forum", "https://llllllll.co/t/using-a-grid-as-linnstrument/23637");
 add_link(&monome, "rack forum", "https://llllllll.co/t/using-a-grid-as-drum-rack/23932");
+
+Term famicom = create_album(&hardware, "famicom", "The famicom is an 8bit video game console by Nintendo.");
+add_text(&famicom, "The famicom notes were created during the production of the NES release of " SEND("donsol")", to learn more about programming for the console, see " SEND("assembly") ".");
+add_link(&famicom, "famicom cookbook", "https://github.com/hundredrabbits/Famicom-Cookbook");
 
 Term mobile = create_portal(&visual, "mobile", "The Mobile collection is both mobile tools and games.");
 add_text(&mobile, "As of <b>March 2019</b>, these applications are no longer maintained.");
@@ -777,7 +749,7 @@ add_link(&donsol, "video", "https://www.youtube.com/watch?v=GNoZrr56GqA");
 add_link(&donsol, "sources", "https://github.com/hundredrabbits/Donsol");
 
 Term donsol_famicom = create_album(&donsol, "donsol famicom", "Donsol Famicom is a port of the dungeon-crawler card game for the classic Nintendo.");
-add_text(&donsol_famicom, "<b>Donsol</b> is a " SENDNAME("donsol", "dungeon crawler card game") " played with a standard deck of 54 playing cards. The game was programmed entirely in " SENDNAME("assembly", "6502 assembly")", the art assets were created by " SEND("rekka") ", the game was designed by John Eternal and the ROM will released by " SEND("hundred rabbits") ". ");
+add_text(&donsol_famicom, "<b>Donsol</b> is a " SENDNAME("donsol", "dungeon crawler card game") " played with a standard deck of 54 playing cards. The game was programmed entirely in " SENDNAME("assembly", "6502 assembly")", the art assets were created by " SEND("rekka") ", the game was designed by John Eternal and the " SEND("famicom") " rom will be released by " SEND("hundred rabbits") ". ");
 add_text(&donsol_famicom, "The game should be released in the " SENDNAME("calendar", "spring of 2020") ". A cartridge release is being considered, " LINKNAME("https://www.patreon.com/100", "stay tuned") " for more updates.");
 add_link(&donsol_famicom, "itch", "https://hundredrabbits.itch.io/donsol");
 add_link(&donsol_famicom, "video", "https://www.youtube.com/watch?v=GNoZrr56GqA");
@@ -1733,8 +1705,8 @@ Term *lexicon[] = {
   &rotonde, &riven, &tools, &orca, &juni, &pilot, &ronin, &dotgrid, &left, 
   &nasu, &utilities, &noodle, &enfer, &paradise, &maeve, &parade, &games, 
   &hardware, &raspberry, &media_station, &radio_station, &framboisedorf, 
-  &weather_station, &instrument, &microbit, &playground, &norns, 
-  &monome, &mobile, &bifurcan, &keyboard_468, &alphavetist, &vocavularist, 
+  &weather_station, &instrument, &microbit, &playground, &norns, &monome,
+  &famicom, &mobile, &bifurcan, &keyboard_468, &alphavetist, &vocavularist, 
   &rafinograde, &noirca, &dew, &ledoliel, &automatons, &the_will_the_wisp, 
   &dictionarism, &glossolaliarium, &advent_v, &unity, &siseon, &zjeveni, 
   &drypoint, &valentinel_hopes, &cenote, &cyanosis_fever, &donsol, &hiversaires, 

@@ -1,0 +1,140 @@
+<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='author' content='Devine Lu Linvega'><meta name='description' content='The famicom is an 8bit video game console by Nintendo.'/><meta name='keywords' content='Aliceffekt, Devine Lu Linvega, Lietal, Oquonie, Verreciel, Nataniev, Oscean, Solarpunk' /><meta name='license' content='name=BY-NC-SA(4.0), url=https://creativecommons.org/licenses/by-nc-sa/4.0/'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width, initial-scale=1.0'><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV — famicom</title></head><body><header><a id='logo' href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV'></a></header><nav><ul><li><a href='nataniev.html'>nataniev</a></li><li><a href='tools.html'>tools</a></li><li><a href='hardware.html'>hardware/</a></li><li><a href='neauismetica.html'>neauismetica</a></li><li><a href='mirrors.html'>mirrors</a></li><li><a href='language.html'>language</a></li><li><a href='notebook.html'>notebook</a></li></ul><ul><li><a href='raspberry.html'>raspberry</a></li><li><a href='microbit.html'>microbit</a></li><li><a href='playground.html'>playground</a></li><li><a href='norns.html'>norns</a></li><li><a href='monome.html'>monome</a></li><li><a href='famicom.html'>famicom/</a></li></ul><ul></ul></nav><main><figure><img src='../media/diary/7.jpg' alt='Famicom Keyboard picture'/><figcaption>20A01 — Famicom Keyboard</figcaption></figure><h2>The famicom is an 8bit video game console by Nintendo.</h2><p>The famicom notes were created during the production of the NES release of <a href='donsol.html'>donsol</a>, to learn more about programming for the console, see <a href='assembly.html'>assembly</a>.</p>
+<h3>NES System Architecture</h3>
+
+<p>The NES screen resolution is 256x240. </p>
+<ul>
+  <li><b>ROM</b>: Read Only Memory, holds data that cannot be changed. This is where the game code or graphics is stored on the cart..</li>
+  <li><b>RAM</b>: Random Access Memory, holds data that can be read and written. When power is removed, the chip is erased. A battery can be used to keep power and data valid..</li>
+  <li><b>PRG</b>: Program memory, the code for the game.</li>
+  <li><b>CHR</b>: Character memory, the data for graphics.</li>
+  <li><b>CPU</b>: Central Processing Unit, the main processor chip.</li>
+  <li><b>PPU</b>: Picture Processing Unit, the graphics chip.</li>
+  <li><b>APU</b>: Audio Processing Unit, the sound chip inside the CPU.</li>
+</ul>
+
+<h3>6502 Processor Overview</h3>
+
+<table border='1'>
+  <tr><td>$0000-0800</td><td colspan='2'>Internal RAM, 2KB chip in the NES</td></tr>
+  <tr><td rowspan='10'>$2000-2007</td><td colspan='2'>PPU access ports</td></tr>
+  <tr><td>$2000</td><td>PPUCTRL</td></tr>
+  <tr><td>$2001</td><td>PPUMASK</td></tr>
+  <tr><td>$2002</td><td>PPUSTATUS</td></tr>
+  <tr><td>$2003</td><td>SPRADDR</td></tr>
+  <tr><td>$2005</td><td>PPUSCROLL</td></tr>
+  <tr><td>$2006</td><td>PPUADDR</td></tr>
+  <tr><td>$2007</td><td>PPUDATA</td></tr>
+  <tr><td rowspan='6'>$4000-4017</td><td colspan='2'>Audio and controller access ports</td></tr>
+  <tr><td>$4014</td><td>SPRDMA</td></tr>
+  <tr><td>$4015</td><td>SNDCHN</td></tr>
+  <tr><td>$4016</td><td>JOY1</td></tr>
+  <tr><td>$4017</td><td>JOY2</td></tr>
+  <tr><td>$6000-7FFF</td><td colspan='2'>Optional WRAM inside the game cart</td></tr>
+  <tr><td>$8000-FFFF</td><td colspan='2'>Game cart ROM</td></tr>
+</table>
+
+<h3>Backgrounds</h3>
+
+<p>To make graphics on the screen you must write graphic data to the PPU memory, but you can't write directly to PPU memory, you have to use PPU ports $2006 and $2007. By using $2006 you declare the address of PPU memory then by using $2007 you write the desired value to that address, PPU Memory addresses are 16bit starting from $0000~$3FFF(0000-1fff = tiles & 2000-23ff = nametable 0).</p>
+
+<table border='1'>
+  <tr><td>Hex</td><td>high byte($4A)</td><td>low byte($0F)</td></tr>
+  <tr><td>$4A0F</td><td>01001010</td><td>00001111</td></tr>
+</table>
+
+<p>So you need to write twice to $2006 to declare it's address, the first write declares high byte of address, the second write declares the low byte of address. Each time you write a value to $2007, the PPU address is automatically adjusted to the next address, so you don't need to declare the PPU address with $2006 for sequential PPU memory addresses.</p>
+
+<pre>
+  LDA #$20   ; high byte
+  STA $2006
+  LDA #$00   ; low byte
+  STA $2006
+  LDA #$04   ; sprite-id
+  STA $2007
+</pre>
+
+<p> Calculate at what address to draw it: $2000 plus 32 times the vertical position of the tile (in 8-pixel units) plus the horizontal position of the tile (in 8-pixel units), write the high byte of the address to $2006: this is usually values $20 to $23, and write the low byte of the address to $2006. In other words, calculate the tile offset (TileY * 32 + TileX) and then add the base address. This will give you a pointer you can use to access any part of the map.</p>
+
+
+<h3>Controller Ports</h3>
+
+<p>The controllers are accessed through memory port addresses $4016 and $4017. First you have to write the value $01 then the value $00 to port $4016. This tells the controllers to latch the current button positions. Then you read from $4016 for first player or $4017 for second player. The buttons are sent one at a time, in bit 0. If bit 0 is 0, the button is not pressed. If bit 0 is 1, the button is pressed.</p>
+
+<p>Button status for each controller is returned in the following order: A, B, Select, Start, Up, Down, Left, Right.</p>
+
+<h3>Palette Codes</h3>
+
+<table border="1">
+  <tr>
+    <td data-nes="0x00" style="background:rgb(124,124,124);">00</td>
+    <td data-nes="0x01" style="background:rgb(0,0,252);">01</td>
+    <td data-nes="0x02" style="background:rgb(0,0,188);">02</td>
+    <td data-nes="0x03" style="background:rgb(68,40,188);">03</td>
+    <td data-nes="0x04" style="background:rgb(148,0,132);">04</td>
+    <td data-nes="0x05" style="background:rgb(168,0,32);">05</td>
+    <td data-nes="0x06" style="background:rgb(168,16,0);">06</td>
+    <td data-nes="0x07" style="background:rgb(136,20,0);">07</td>
+    <td data-nes="0x08" style="background:rgb(80,48,0);">08</td>
+    <td data-nes="0x09" style="background:rgb(0,120,0);">09</td>
+    <td data-nes="0x0A" style="background:rgb(0,104,0);">0A</td>
+    <td data-nes="0x0B" style="background:rgb(0,88,0);">0B</td>
+    <td data-nes="0x0C" style="background:rgb(0,64,88);">0C</td>
+    <td data-nes="0x0D" style="background:rgb(0,0,0);">0D</td>
+    <td data-nes="0x0E" style="background:rgb(0,0,0);">0E</td>
+    <td data-nes="0x0F" style="background:rgb(0,0,0);">0F</td>
+  </tr>
+  <tr>
+    <td data-nes="0x10" style="background:rgb(188,188,188);">10</td>
+    <td data-nes="0x11" style="background:rgb(0,120,248);">11</td>
+    <td data-nes="0x12" style="background:rgb(0,88,248);">12</td>
+    <td data-nes="0x13" style="background:rgb(104,68,252);">13</td>
+    <td data-nes="0x14" style="background:rgb(216,0,204);">14</td>
+    <td data-nes="0x15" style="background:rgb(228,0,88);">15</td>
+    <td data-nes="0x16" style="background:rgb(248,56,0);">16</td>
+    <td data-nes="0x17" style="background:rgb(228,92,16);">17</td>
+    <td data-nes="0x18" style="background:rgb(172,124,0);">18</td>
+    <td data-nes="0x19" style="background:rgb(0,184,0);">19</td>
+    <td data-nes="0x1A" style="background:rgb(0,168,0);">1A</td>
+    <td data-nes="0x1B" style="background:rgb(0,168,68);">1B</td>
+    <td data-nes="0x1C" style="background:rgb(0,136,136);">1C</td>
+    <td data-nes="0x1D" style="background:rgb(0,0,0);">1D</td>
+    <td data-nes="0x1E" style="background:rgb(0,0,0);">1E</td>
+    <td data-nes="0x1F" style="background:rgb(0,0,0);">1F</td>
+  </tr>
+  <tr>
+    <td data-nes="0x20" style="background:rgb(248,248,248);">20</td>
+    <td data-nes="0x21" style="background:rgb(60,188,252);">21</td>
+    <td data-nes="0x22" style="background:rgb(104,136,252);">22</td>
+    <td data-nes="0x23" style="background:rgb(152,120,248);">23</td>
+    <td data-nes="0x24" style="background:rgb(248,120,248);">24</td>
+    <td data-nes="0x25" style="background:rgb(248,88,152);">25</td>
+    <td data-nes="0x26" style="background:rgb(248,120,88);">26</td>
+    <td data-nes="0x27" style="background:rgb(252,160,68);">27</td>
+    <td data-nes="0x28" style="background:rgb(248,184,0);">28</td>
+    <td data-nes="0x29" style="background:rgb(184,248,24);">29</td>
+    <td data-nes="0x2A" style="background:rgb(88,216,84);">2A</td>
+    <td data-nes="0x2B" style="background:rgb(88,248,152);">2B</td>
+    <td data-nes="0x2C" style="background:rgb(0,232,216);">2C</td>
+    <td data-nes="0x2D" style="background:rgb(120,120,120);">2D</td>
+    <td data-nes="0x2E" style="background:rgb(0,0,0);">2E</td>
+    <td data-nes="0x2F" style="background:rgb(0,0,0);">2F</td>
+  </tr>
+  <tr>
+    <td data-nes="0x30" style="background:rgb(252,252,252);">30</td>
+    <td data-nes="0x31" style="background:rgb(164,228,252);">31</td>
+    <td data-nes="0x32" style="background:rgb(184,184,248);">32</td>
+    <td data-nes="0x33" style="background:rgb(216,184,248);">33</td>
+    <td data-nes="0x34" style="background:rgb(248,184,248);">34</td>
+    <td data-nes="0x35" style="background:rgb(248,164,192);">35</td>
+    <td data-nes="0x36" style="background:rgb(240,208,176);">36</td>
+    <td data-nes="0x37" style="background:rgb(252,224,168);">37</td>
+    <td data-nes="0x38" style="background:rgb(248,216,120);">38</td>
+    <td data-nes="0x39" style="background:rgb(216,248,120);">39</td>
+    <td data-nes="0x3A" style="background:rgb(184,248,184);">3A</td>
+    <td data-nes="0x3B" style="background:rgb(184,248,216);">3B</td>
+    <td data-nes="0x3C" style="background:rgb(0,252,252);">3C</td>
+    <td data-nes="0x3D" style="background:rgb(216,216,216);">3D</td>
+    <td data-nes="0x3E" style="background:rgb(0,0,0);">3E</td>
+    <td data-nes="0x3F" style="background:rgb(0,0,0);">3F</td>
+  </tr>
+</table> <figure><img src='../media/diary/625.jpg' alt='OPN2 Cartridge picture'/><figcaption>19V10 — OPN2 Cartridge</figcaption></figure><ul><li><a href='https://github.com/hundredrabbits/Famicom-Cookbook' class='external' target='_blank'>famicom cookbook</a></li></ul><p><i>Last update on <a href='tracker.html'>20H02</a>, edited 3 times. +8/18fh</i><br />Found a mistake? Submit an <a href='https://github.com/XXIIVV/Oscean/edit/master/src/inc/famicom.htm' class='external' target='_blank'>edit</a> to famicom.</p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0' target='_blank'><img src='../media/icon/cc.svg' alt='by-nc-sa' width='30'/></a> <a href='http://webring.xxiivv.com/' target='_blank' rel='noreferrer'><img src='../media/icon/rotonde.svg' alt='webring' width='30'/></a> <a href='https://merveilles.town/@neauoire' target='_blank'><img src='../media/icon/merveilles.svg' alt='Merveilles' width='30'/></a> <a href='https://github.com/neauoire' target='_blank'><img src='../media/icon/github.png' alt='github' width='30'/></a> <span><a href='devine_lu_linvega.html' target='_self'>Devine Lu Linvega</a> © 2020 — <a href='about.html' target='_self'>BY-NC-SA 4.0</a></span></footer></body></html>
