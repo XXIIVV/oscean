@@ -539,92 +539,39 @@ add_text(&maeve, "You can get help from Maeve within " SEND("oscean") " by typin
 
 Term parade = create_term(&paradise, "parade", "Parade is an experimental operating system inspired from Paradise.");
 add_text(&parade, "The <b>Parade</b> is an experimental operating system using " SEND("paradise") " as a <i>filesystem</i>.");
-add_header(&parade, "Primitives");
-// add_table(&parade, "create | become | enter | leave");
-// add_table(&parade, "look   | take   | drop  | move");
-// add_table(&parade, "learn  | warp   | use   | edit");
-add_text(&parade, "The goal of this project is to distribute a lightweight operating system that would serve a environment able to " LINKNAME("https://twitter.com/neauoire/status/1042644335689261058", "navigate the file system") ", run code and exchange content with other " SEND("parade") " instances, via the basic primitives.");
-// add_code(&parade, "create a machine");
-// add_code(&parade, "> |");
-add_text(&parade, "There are no \"users\", \"files\" or \"applications\", in this operating system, everything is an operable \"vessel\". A <b>vessel</b> is an <i>object</i> that can act onto other vessels, it has its own permissions. Users are not different from applications or files. A <i>user</i>, is a vessel being acted upon, possibly containing other vessels. A <i>file</i> is an inert vessel, that has no applicable actions to itself but may contain text data accessible via the primitives.");
-// add_code(&parade, "enter the machine");
-// add_code(&parade, "> |");
-add_text(&parade, "A new vessel responds to the basic primitives, and visible vessels might append to that list with actions of their own. The vessel format serves endpoints that responds to actions. For instance, an telephone vessel, might respond to the action <i>call</i>, as in the command \"call Alice\".");
-add_text(&parade, "There is no linear hierarchy tree, instead vessels can be within themselves or each other, or even organized in the shape of a loop. Pockets of space can be hosts to vessels existing around a common purpose, or carried around inside another vessel as you would a tool-belt or an inventory, giving the acting vessel, or <i>user</i>, additional actions appended to the list of primitives.");
-// add_code(&parade, "become the machine");
-// add_code(&parade, "> |");
-add_text(&parade, "One of the goals of this operating system is to be <b>fully operable by voice</b>, think <i>screenless computing</i>. The navigation is designed to be used via simple text commands, there would be nothing quite like windows. Vessels could display passive content when in sight, allowing to create a form of procedural user interface, but the system itself does not have a concept of windows, like you would in a typical graphical operating system with a wm.");
-add_text(&parade, "While the navigation of the system can be done by voice alone, the terminal, when presented on a screen, begins with a <b>prompt</b>, to which can be appended a <b>history of responses</b>, or even a <b>display area for graphics</b> when a vessel is serving a game or a movie.");
-// add_code(&parade, "use the machine");
-// add_code(&parade, "> |");
-add_text(&parade, "At its core the system should be <b>single-threaded</b>, and operate a single frame, or a <i>state</i>, of the world at a time. While passive responses of visible vessels might allow for a kind of oversight, the user experience as a terminal, and down to its functioning should not allow for multi-tasking.");
-add_text(&parade, "The creation of application vessels, think for instance a <i>drawing application</i>, would be built with the LISP dialect of Parade, which is itself built with that same language. — Making the entire operating system existing it inself as a vessel, editable, changeable, operable and navigable.");
-// add_code(&parade, "warp to the lobby@29:03:25:76");
-// add_code(&parade, "> |");
-add_text(&parade, "A <b>Network of Parade systems</b> would be traversible(read-only) by an acting vessel. The Parade's typical behaviours for moving about will persist onto the remote systems so, a vessel can move, enter, use remote vessels and suggest changes to the host world as commits — All the while, respecting the host's vessel permissions. For instance, a vessel might make itself usable by a visiting vessel, but will not let itself be moved or altered.");
-add_text(&parade, "<i>For a working preview of Parade, <br />try the cli version of " SEND("paradise") " available " LINKNAME("https://github.com/hundredrabbits/Paradise/#cli", "here") ".</i>");
 
 Term hardware = create_portal(&research, "hardware", "A handful of experimental projects on small Hardware.");
 
 Term raspberry = create_portal(&hardware, "raspberry", "The Raspberry is a small inexpensive single-board computer.");
 add_text(&raspberry, "The <b>Raspberry Pi</b> is a small inexpensive single-board computer.");
 
-
 Term media_station = create_term(&raspberry, "media station", "The Media Station aboard Pino.");
-// set_icon(&media_station, "M75,90 L75,90 L225,90 M105,90 A-15,15 0 0,0 90,105 A0,120 0 0,0 90,225 A15,15 0 0,0 105,240 A-30,0 0 0,0 75,240 A15,-15 0 0,0 90,225 A0,-120 0 0,0 90,105 A-15,-15 0 0,0 75,90 M195,90 A15,15 0 0,1 210,105 A0,120 0 0,1 210,225 A-15,15 0 0,1 195,240 A30,0 0 0,1 225,240 A-15,-15 0 0,1 210,225 A0,-120 0 0,1 210,105 A15,-15 0 0,1 225,90");
 add_text(&media_station, "Our " SEND("media_station") " is a " LINKNAME("http://osmc.tv", "OSMC") " powered " SENDNAME("raspberry", "Raspberry Pi") ".");
 add_text(&media_station, "OSMC is a <b>fast and beautiful operating system</b> for the RPi board, it instantly gets media from our external drives, and streams audio to our " SEND("radio_station") " via Airplay.");
 add_text(&media_station, "Setting up OSMC is extremly simple, one simply needs to burn a SD Card with the " LINKNAME("https://osmc.tv/download/", "latest Build") ", it installs itself upon boot and is usable in matters of seconds on the Raspberry Pi 3B+. This can be operated solely by touch, and requires no keyboard.");
-// add_list(&media_station, "" LINKNAME("https://www.raspberrypi.org", "Raspberry Pi") ", model 3B+.");
-// add_list(&media_station, "" LINKNAME("https://www.raspberrypi.org/products/raspberry-pi-touch-display/", "Raspberry Pi Touch") ", 7 inch screen(800x480).");
-// add_list(&media_station, "" LINKNAME("http://smarticase.com", "SmartiPi Touch Case") ".");
-// add_list(&media_station, "16GB SD Card");
 add_link(&media_station, "osmc", "http://osmc.tv");
 
 Term radio_station = create_term(&raspberry, "radio station", "The Radio Station aboard Pino.");
-// set_icon(&radio_station, "M75,90 L75,90 L225,90 M105,90 A-15,15 0 0,0 90,105 A0,120 0 0,0 90,225 A15,15 0 0,0 105,240 A-30,0 0 0,0 75,240 A15,-15 0 0,0 90,225 A0,-120 0 0,0 90,105 A-15,-15 0 0,0 75,90 M195,90 A15,15 0 0,1 210,105 A0,120 0 0,1 210,225 A-15,15 0 0,1 195,240 A30,0 0 0,1 225,240 A-15,-15 0 0,1 210,225 A0,-120 0 0,1 210,105 A15,-15 0 0,1 225,90");
 add_text(&radio_station, "Our " SENDNAME("pino", "sailboat") "'s speakers are connected via " LINKNAME("https://www.apple.com/airplay/", "Airplay") " through Pimoroni's " LINKNAME("https://learn.pimoroni.com/tutorial/sandyj/streaming-airplay-to-your-pi", "Phat Beat") " for " SEND("raspberry") ".");
 add_text(&radio_station, "The hat has two speaker-wire outputs, making a cheap and powerful stereo. We share this device among our " SEND("media_station") " and phones.");
-// add_list(&radio_station, "" LINKNAME("https://www.raspberrypi.org", "Raspberry Pi") ", model Zero W 1.1.");
-// add_list(&radio_station, "" LINKNAME("https://shop.pimoroni.com/products/phat-beat", "Pimoroni's pHat Beat") "");
-// add_list(&radio_station, "" LINKNAME("https://shop.pimoroni.com/products/pogo-a-go-go-solderless-gpio-pogo-pins", "Pimoroni's Pogo Pins") "");
-// add_list(&radio_station, "4x Brass Spacers, Screws & Bolts");
-// add_list(&radio_station, "8GB SD Card");
 add_link(&radio_station, "guide", "https://learn.pimoroni.com/tutorial/sandyj/streaming-airplay-to-your-pi");
 
 Term framboisedorf = create_term(&raspberry, "framboisedorf", "Overview of the Framboisedorf toy piano.");
-// set_icon(&framboisedorf, "M75,90 L75,90 L225,90 M105,90 A-15,15 0 0,0 90,105 A0,120 0 0,0 90,225 A15,15 0 0,0 105,240 A-30,0 0 0,0 75,240 A15,-15 0 0,0 90,225 A0,-120 0 0,0 90,105 A-15,-15 0 0,0 75,90 M195,90 A15,15 0 0,1 210,105 A0,120 0 0,1 210,225 A-15,15 0 0,1 195,240 A30,0 0 0,1 225,240 A-15,-15 0 0,1 210,225 A0,-120 0 0,1 210,105 A15,-15 0 0,1 225,90");
 add_text(&framboisedorf, "A hackable toy piano to play " LINKNAME("https://twitter.com/neauoire/status/1029498719811424256", "muzzak") " on rainy days.");
 add_text(&framboisedorf, "Features 6 synth & 1 drum instruments, 5 octaves, and automated arpgeggios. Connect to a speaker and play. Read the full guide on " LINKNAME("https://github.com/neauoire/Framboisedorf.local", "Github") ", or watch a " LINKNAME("https://youtu.be/U8q_yZ3XEKU", "demo video") ".");
-// add_list(&framboisedorf, "" LINKNAME("https://www.raspberrypi.org", "Raspberry Pi 3B+") "");
-// add_list(&framboisedorf, "" LINKNAME("https://shop.pimoroni.com/products/piano-hat", "Pimoroni's Piano Hat") "");
-// add_list(&framboisedorf, "" LINKNAME("https://shop.pimoroni.com/products/pibow-coupe-for-raspberry-pi-3-b-plus", "PiBow") " Case");
-// add_list(&framboisedorf, "4 x M2.5 Standoffs");
 add_link(&framboisedorf, "sources", "https://github.com/neauoire/Framboisedorf");
 add_link(&framboisedorf, "guide", "https://learn.pimoroni.com/tutorial/piano-hat/getting-started-with-piano-hat");
 add_link(&framboisedorf, "projects", "https://github.com/pimoroni/Piano-HAT");
 add_link(&framboisedorf, "youtube", "https://youtu.be/U8q_yZ3XEKU");
 
 Term weather_station = create_term(&raspberry, "weather station", "The documentation for the Weather Station aboard Pino.");
-// set_icon(&weather_station, "M75,90 L75,90 L225,90 M105,90 A-15,15 0 0,0 90,105 A0,120 0 0,0 90,225 A15,15 0 0,0 105,240 A-30,0 0 0,0 75,240 A15,-15 0 0,0 90,225 A0,-120 0 0,0 90,105 A-15,-15 0 0,0 75,90 M195,90 A15,15 0 0,1 210,105 A0,120 0 0,1 210,225 A-15,15 0 0,1 195,240 A30,0 0 0,1 225,240 A-15,-15 0 0,1 210,225 A0,-120 0 0,1 210,105 A15,-15 0 0,1 225,90");
 add_text(&weather_station, "Our " SENDNAME("pino", "sailboat") "'s " SEND("weather_station") " is a simple solderless " SEND("raspberry") " project.");
 add_text(&weather_station, "Its purpose is to display a simple reading of the changes in barometric pressure to monitor the onset of stormy weather.");
-// add_list(&weather_station, "Raspberry Pi <b>Zero 1.3</b>");
-// add_list(&weather_station, "Samsung's <b>EVO+ Micro SD</b>");
-// add_list(&weather_station, "Pimoroni's " LINKNAME("https://shop.pimoroni.com/products/mini-black-hat-hack3r", "Black Hat Hacker") "");
-// add_list(&weather_station, "Pimoroni's " LINKNAME("https://shop.pimoroni.com/products/enviro-phat", "Enviro pHat") "");
-// add_list(&weather_station, "Pimoroni's " LINKNAME("https://shop.pimoroni.com/products/scroll-phat-hd", "ScrollHD pHat") "");
-// add_list(&weather_station, "Pimoroni's " LINKNAME("https://shop.pimoroni.com/products/gpio-hammer-header", "Hammer Header Female") " X 2");
-// add_list(&weather_station, "Pimoroni's " LINKNAME("https://shop.pimoroni.com/products/phat-diffuser", "Diffuser") "");
 add_link(&weather_station, "sources", "https://github.com/hundredrabbits/weather-station");
 
 Term instrument = create_term(&raspberry, "instrument", "The Instrument is the sailing computer inside Pino");
-// set_icon(&instrument, "M75,90 L75,90 L225,90 M105,90 A-15,15 0 0,0 90,105 A0,120 0 0,0 90,225 A15,15 0 0,0 105,240 A-30,0 0 0,0 75,240 A15,-15 0 0,0 90,225 A0,-120 0 0,0 90,105 A-15,-15 0 0,0 75,90 M195,90 A15,15 0 0,1 210,105 A0,120 0 0,1 210,225 A-15,15 0 0,1 195,240 A30,0 0 0,1 225,240 A-15,-15 0 0,1 210,225 A0,-120 0 0,1 210,105 A15,-15 0 0,1 225,90");
 add_text(&instrument, "The application displays various data about the course, speed, location and time.");
 add_text(&instrument, "Its original purpose was to help with night sailing where the compass and some of our sailing instruments were hard to see.");
-// add_list(&instrument, "Raspberry Pi <b>Zero W</b>");
-// add_list(&instrument, "Pimoroni's " LINKNAME("https://github.com/pimoroni/inky-phat", "Inky pHat") "");
-// add_list(&instrument, "Vesper Marine " LINKNAME("https://www2.vespermarine.com/xb8000-ais-transponder", "XB-8000 AIS Transponder") "");
 add_link(&instrument, "sources", "http://github.com/hundredrabbits/Instrument");
 
 Term microbit = create_term(&hardware, "microbit", "The Microbit is a small educational micro-controller from BBC.");
@@ -727,18 +674,11 @@ add_text(&drypoint, "See if you can get to the blue door. Read about Drypoint on
 
 Term valentinel_hopes = create_term(&unity, "valentinel hopes", "Valentinel Hopes is a platformer inspired from parkour and trance music.");
 add_text(&valentinel_hopes, "The game has no music, you are invited to listen to your own.");
-// add_list(&valentinel_hopes, "Typical FPS control except for the mouse direction.");
-// add_list(&valentinel_hopes, "Take a break sometime.");
-// add_list(&valentinel_hopes, "Try going through the game while looking backward.");
 
 Term cenote = create_term(&unity, "cenote", "Cenote is an experimental platformer inspired by Underwater Base Jumping.");
 add_text(&cenote, "The goal is to reach a small red planet with the highest amount of points left. Cenote is the spiritual prequel of " SEND("zjeveni") ".");
-// add_list(&cenote, "The air is only depleting when you are sinking.");
-// add_list(&cenote, "Each time you stop, your drop speed is reseted, so the least stops the faster you reach the bottom.");
-// add_list(&cenote, "Press R at any time to go back to the beginning.");
 
 Term cyanosis_fever = create_term(&unity, "cyanosis fever", "Cyanosis Fever was an abstract world of static to get lost into.");
-// set_icon(&cyanosis_fever, "M90.0,90.0 L90.0,90.0 L150.0,150.0 L90.0,210.0 M210.0,90.0 L210.0,90.0 L210.0,210.0");
 add_text(&cyanosis_fever, "If you start to foam, close the game.");
 
 Term donsol = create_album(&games, "donsol", "Donsol is a dungeon-crawler card game.");
@@ -756,7 +696,6 @@ add_link(&donsol_famicom, "video", "https://www.youtube.com/watch?v=GNoZrr56GqA"
 add_link(&donsol_famicom, "sources", "https://github.com/hundredrabbits/Donsol");
 
 Term hiversaires = create_album(&games, "hiversaires", "Hiversaires is a textless point-n-click game.");
-// set_icon(&hiversaires, "M60,60 L60,60 L60,240 M150,60 L150,60 L150,240 M240,60 L240,60 L240,240 M60,195 A45,-45 0 0,1 105,150 A45,45 0 0,1 150,195 A45,-45 0 0,1 195,150 A45,45 0 0,1 240,195");
 add_text(&hiversaires, "<b>Hiversaires</b> is the first part of a series of textless experimental projects, that also includes the isometric adventure game " SEND("oquonie") ".");
 add_html(&hiversaires, MODITCHIO("225445"));
 add_text(&hiversaires, "The dark world of Hiversaires features an original Aliceffekt " LINKNAME("https://aliceffekt.bandcamp.com/album/hiversaires-soundtrack", "soundtrack") " to lure you through its entangled corridors. The game was originally released on iOS platforms, and re-released on all desktop platforms in 2018, thanks to " LINKNAME("http://twitter.com/rezmason/status/964277430176309248", "Jeremy Sachs") " who also ported " SEND("verreciel") ".");
@@ -764,7 +703,6 @@ add_link(&hiversaires, "itch", "http://hundredrabbits.itch.io/Hiversaires");
 add_link(&hiversaires, "itunes", "https://itunes.apple.com/au/app/hiversaires/id630992348");
 
 Term purgateus = create_album(&games, "purgateus", "Purgateus is a video game remix of Proteus.");
-// set_icon(&purgateus, "M60,210 L60,210 L240,210 M60,210 L60,210 L150,60 L240,210");
 add_text(&purgateus, "This video game remix behave like " LINKNAME("https://en.wikipedia.org/wiki/Proteus_", "Proteus") ", but looks and " SENDNAME("purgateus_soundtrack", "sounds") " different.");
 add_text(&purgateus, "Learn more about the project on " LINKNAME("http://venuspatrol.com/purgateus/", "Venus Patrol") ", the remix was inspired from a tweet by " LINKNAME("https://twitter.com/whatisian/status/468819959859007488", "Ian Snyder") "");
 add_html(&purgateus, MODBANDCAMP("3667464517"));
