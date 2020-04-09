@@ -1,17 +1,18 @@
 #!/bin/bash
 
-echo "cleanup.."
+echo "Build Cleanup.."
 
 rm ../site/*
 
-echo "building.."
+echo "Build Starting.."
+ts=$(date +%s%N)
 
 cc -std=c99 -DDEBUG -Wall -Wpedantic -Wshadow -Wextra -Werror=implicit-int -Werror=incompatible-pointer-types -Werror=int-conversion -g -Og -fsanitize=address -fsanitize=undefined main.c -o main
 
-echo "running.."
+echo "Build Running.."
 
 ./main
 
-echo "finish.."
+tt=$((($(date +%s%N) - $ts)/1000000)) ; echo "Build Completed in $tt ms"
 
 rm ./main
