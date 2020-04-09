@@ -52,10 +52,8 @@ typedef struct Term {
   int lists_len;
   char *name;
   char *bref;
+  char *body;
   struct Term *parent;
-  char *body_text[TERM_BODY_BUFFER];
-  char *body_meta[TERM_BODY_BUFFER];
-  char *body_tags[TERM_BODY_BUFFER];
   char *links_names[TERM_LINK_BUFFER];
   char *links_urls[TERM_LINK_BUFFER];
   struct Term *children[TERM_CHILDREN_BUFFER];
@@ -133,7 +131,7 @@ void add_item(List *list, char *item) {
   list->items_len++;
 }
 
-Term create_term(Term *parent, char *name, char *bref) {
+Term create_term(Term *parent, char *name, char *bref, char *body) {
   Term t;
   t.is_portal = false;
   t.is_album = false;
@@ -141,7 +139,6 @@ Term create_term(Term *parent, char *name, char *bref) {
   t.is_inc = false;
 
   t.children_len = 0;
-  t.body_len = 0;
   t.links_len = 0;
   t.dicts_len = 0;
   t.lists_len = 0;
@@ -155,50 +152,28 @@ Term create_term(Term *parent, char *name, char *bref) {
   }
   t.name = name;
   t.bref = bref;
+  t.body = body;
   t.parent = parent;
 
   return t;
 }
 
-Term create_portal(Term *parent, char *name, char *bref) {
-  Term t = create_term(parent, name, bref);
+Term create_portal(Term *parent, char *name, char *bref, char *body) {
+  Term t = create_term(parent, name, bref, body);
   t.is_portal = true;
   return t;
 }
 
-Term create_album(Term *parent, char *name, char *bref) {
-  Term t = create_term(parent, name, bref);
+Term create_album(Term *parent, char *name, char *bref, char *body) {
+  Term t = create_term(parent, name, bref, body);
   t.is_album = true;
   return t;
 }
 
-Term create_index(Term *parent, char *name, char *bref) {
-  Term t = create_term(parent, name, bref);
+Term create_index(Term *parent, char *name, char *bref, char *body) {
+  Term t = create_term(parent, name, bref, body);
   t.is_index = true;
   return t;
-}
-
-void add_body(Term *term, char *text, char *tag, char *meta) {
-  if (term->body_len >= TERM_BODY_BUFFER) {
-    printf("Error: Reached TERM_BODY_BUFFER\n");
-    return;
-  }
-  term->body_text[term->body_len] = text;
-  term->body_tags[term->body_len] = tag;
-  term->body_meta[term->body_len] = meta;
-  term->body_len++;
-}
-
-void add_html(Term *term, char *text) { add_body(term, text, "div", NULL); }
-
-void add_text(Term *term, char *text) { add_body(term, text, "p", NULL); }
-
-void add_header(Term *term, char *text) { add_body(term, text, "h3", NULL); }
-
-void add_subheader(Term *term, char *text) { add_body(term, text, "h4", NULL); }
-
-void add_quote(Term *term, char *text, char *source) {
-  add_body(term, text, "q", source);
 }
 
 void add_dict(Term *term, Dict *dict) {
@@ -310,11 +285,8 @@ void build_log_pict(FILE *f, Log *log, bool caption){
 }
 
 void build_body_part(FILE *f, Term *term){
-  for (int i = 0; i < term->body_len; ++i) {
-    fprintf(f, "<%s>%s</%s>", term->body_tags[i], term->body_text[i], term->body_tags[i]);
-    if(term->body_meta[i] != NULL){
-      fprintf(f, "<h5>— %s</h5>", term->body_meta[i]);
-    }
+  if(term->body){
+    fprintf(f, "%s", term->body);
   }
 }
 
@@ -690,12 +662,10 @@ void build_page(Term *term, Journal *journal) {
   build_album(f, term);
   build_links(f, term);
   build_horaire(f, term);
-
   build_special_calendar(f, term, journal);
   build_special_tracker(f, term, journal);
   build_special_journal(f, term, journal);
   build_special_now(f, term, journal);
-
   fputs("</main>", f);
 
   fputs(html_footer, f);
@@ -787,7 +757,7 @@ int main(void) {
 
   printf("Building extras..\n");
   build_rss(&all_logs);
-  // print_debug();
+  print_debug();
 
   printf("Lexicon: %d entries\n", lexicon_len);
   printf("Horaire: %d entries\n", all_logs.len);

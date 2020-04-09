@@ -1,4 +1,4 @@
-add_log(&oscean, "20H03", 324);
+add_log(&oscean, "20H03", 318);
 add_log(&famicom, "20H02", 335);
 add_log(&pino, "20H01", 336);
 add_log(&pino, "20G14", 337);

@@ -862,3 +862,15 @@ add_item(&inventory_items, "Davis Basic Rigging Knife");
 add_item(&inventory_items, "Lawson MII Key holder");
 add_item(&inventory_items, "Amazon Kindle Paperwhite");
 add_item(&inventory_items, "DuxtioRFID Blocking Wallet");
+
+
+
+//
+
+// add_header(&noon_guest, "Tracklist");
+// add_code(&noon_guest, "<b>Noon Guest</b>: Pyre(Special Ver.)");
+// add_code(&noon_guest, "<b>Hoon Vest</b>: Miasma Part I & part 2");
+// add_code(&noon_guest, "<b>Loom Rest</b>: Mountains Part I & Part 2");
+// add_code(&noon_guest, "<b>Womb Nest</b>: Town, Forest & Edge Of Town");
+// add_code(&noon_guest, "<b>Tomb Pest</b>: Sewers, Tomb, Bone Cave & Spider's Lair");
+// add_code(&noon_guest, "<b>Moon Quest </b>: Pyre(Normal Ver.), Puzzle Room, Cathedral & Labyrinth");
