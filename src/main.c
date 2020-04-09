@@ -5,19 +5,16 @@
 #include <time.h>
 #include <math.h>
 
-
 #define STR_BUF_LEN 128
-#define LOGS_BUFFER 512
 #define DICT_BUFFER 46
 #define LIST_BUFFER 46
 #define TERM_DICT_BUFFER 16
 #define TERM_LIST_BUFFER 16
 #define TERM_BODY_BUFFER 24
 #define TERM_LINK_BUFFER 8
-#define TERM_LOGS_BUFFER 340
 #define TERM_CHILDREN_BUFFER 16
-#define JOURNAL_BUFFER 8192
-#define TRACKER_BUFFER 512
+#define JOURNAL_BUFFER 4000
+#define LEXICON_BUFFER 512
 
 int pict_used_len = 0;
 int pict_used[999];
@@ -48,20 +45,14 @@ typedef struct Term {
   bool is_album;
   bool is_index;
   bool is_inc;
-
   int children_len;
   int body_len;
   int links_len;
   int dicts_len;
   int lists_len;
-
   char *name;
-  char *path;
   char *bref;
-  char *icon;
-
   struct Term *parent;
-
   char *body_text[TERM_BODY_BUFFER];
   char *body_meta[TERM_BODY_BUFFER];
   char *body_tags[TERM_BODY_BUFFER];
@@ -164,13 +155,7 @@ Term create_term(Term *parent, char *name, char *bref) {
   }
   t.name = name;
   t.bref = bref;
-  t.icon = "";
-
   t.parent = parent;
-
-  char path[STR_BUF_LEN];
-  to_filename(name, path);
-  t.path = path;
 
   return t;
 }
@@ -553,7 +538,7 @@ void build_special_tracker(FILE *f, Term *term, Journal *journal) {
   fputs_graph_daily(f, journal);
 
   int known_id = 0;
-  char *known[TRACKER_BUFFER];
+  char *known[LEXICON_BUFFER];
   int last_year = 20;
 
   fputs("<ul>", f);
@@ -561,7 +546,7 @@ void build_special_tracker(FILE *f, Term *term, Journal *journal) {
     if (index_of_string(known, known_id, journal->logs[i].term->name) > -1) {
       continue;
     } 
-    if(known_id >= TRACKER_BUFFER){ 
+    if(known_id >= LEXICON_BUFFER){ 
       printf("Error: Reached tracker buffer\n"); 
       break; 
     }
@@ -759,47 +744,12 @@ void build_rss(Journal *journal) {
   fclose(f);
 }
 
-void build_twtxt(Journal *journal){
-  FILE *f = fopen("../links/twtxt.txt", "w");
-  fputs("hello there", f);
-
-  for (int i = 0; i < journal->len; ++i) {
-  }
-  fclose(f);
-}
-
-int main(void) {
-  #include "glossary.c"
-  #include "lexicon.c"
-  #include "horaire.c"
-
-  int lexicon_len = sizeof lexicon / sizeof lexicon[0];
-
-  // Parent Terms
-  for (int i = 0; i < lexicon_len; ++i) {
-    Term *t = lexicon[i];
-    if(t->parent && t->parent->children_len < TERM_CHILDREN_BUFFER){
-      t->parent->children[t->parent->children_len] = t;
-      t->parent->children_len++;  
-    }
-    else{
-      printf("Could not parent: %s\n", t->name);
-      t->parent = &home;
-    }
-  }
-
-  for (int i = 0; i < lexicon_len; ++i) {
-    build_page(lexicon[i], &all_logs);
-  }
-
-  build_rss(&all_logs);
-  build_twtxt(&all_logs);
+void print_debug(){
   printf("========\n");
+  print_greg_now();
+  print_arvelie_now();
 
-  get_arvelie();
-
-  // Debugs
-
+  // Find next Id:
   for (int i = 1; i < 999; ++i) {
     int index = index_of(pict_used, pict_used_len, i);
     if (index < 0) {
@@ -807,6 +757,37 @@ int main(void) {
       break;
     }
   }
+}
+
+int main(void) {
+  #include "database/glossary.c"
+  #include "database/lexicon.c"
+  #include "database/horaire.c"
+
+  int lexicon_len = sizeof lexicon / sizeof lexicon[0];
+
+  // Parent Terms
+  printf("Parenting %d terms..\n", lexicon_len);
+  for (int i = 0; i < lexicon_len; ++i) {
+    Term *t = lexicon[i];
+    if(t->parent && t->parent->children_len < TERM_CHILDREN_BUFFER){
+      t->parent->children[t->parent->children_len] = t;
+      t->parent->children_len++;  
+    }
+    else {
+      printf("Error: Could not parent %s\n", t->name);
+      t->parent = &home;
+    }
+  }
+
+  printf("Building %d pages..\n", lexicon_len);
+  for (int i = 0; i < lexicon_len; ++i) {
+    build_page(lexicon[i], &all_logs);
+  }
+
+  printf("Building extras..\n");
+  build_rss(&all_logs);
+  // print_debug();
 
   printf("Lexicon: %d entries\n", lexicon_len);
   printf("Horaire: %d entries\n", all_logs.len);

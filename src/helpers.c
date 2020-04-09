@@ -65,7 +65,8 @@ bool is_plaintext(char *str) {
     char ch = str[i];
     int is_num = ch >= '0' && ch <= '9';
     int is_alpha = (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
-    int is_space = (ch == ' ' || ch == '_' || ch == '.' || ch == ',' || ch == '-');
+    int is_space =
+        (ch == ' ' || ch == '_' || ch == '.' || ch == ',' || ch == '-');
     if (!is_alpha && !is_num && !is_space) {
       return false;
     }
@@ -181,18 +182,6 @@ int offset_from_arvelie(char *arvelie) {
   return current_id - past_id;
 }
 
-char *doty_to_arvelie(int doty) {
-  char *months[] = {"A", "B", "C", "D", "E", "F", "G", "H", "I",
-                    "J", "K", "L", "M", "N", "O", "P", "Q", "R",
-                    "S", "T", "U", "V", "W", "X", "Y", "Z", "+"};
-  int d = (doty % 14) + 1;
-  int i = floor(doty / 14);
-  char *m = months[i];
-
-  printf("Date is: %d%s%02d\n", 20, m, d);
-  return "";
-}
-
 char *doty_to_greg(int doty) {
   int day, month = 0, months[13] = {0,   31,  59,  90,  120, 151, 181,
                                     212, 243, 273, 304, 334, 365};
@@ -207,20 +196,6 @@ char *doty_to_greg(int doty) {
 char *arvelie_to_greg(char *arvelie) {
   int doty = arvelie_to_doty(arvelie);
   return doty_to_greg(doty);
-}
-
-char *get_arvelie() {
-  int year, month, day;
-  time_t now;
-  time(&now);
-  printf("Time is: %s", ctime(&now));
-  struct tm *local = localtime(&now);
-
-  year = local->tm_year + 1900;
-  month = local->tm_mon + 1;
-  day = local->tm_mday;
-
-  return doty_to_arvelie(ymd_to_doty(year, month, day));
 }
 
 void fputs_rfc2822(FILE *f, char *arvelie) {
@@ -245,6 +220,31 @@ void fputs_rfc2822(FILE *f, char *arvelie) {
   strftime(rfc_2822, sizeof(rfc_2822), "%a, %d %b %Y %T %z",
            localtime(&current));
   fprintf(f, "%s", rfc_2822);
+}
+
+void print_greg_now() {
+  time_t now;
+  time(&now);
+  printf("Time is: %s", ctime(&now));
+}
+
+void print_arvelie_now() {
+  time_t now;
+  time(&now);
+  struct tm *local = localtime(&now);
+
+  int year, month, day;
+  year = local->tm_year + 1900;
+  month = local->tm_mon + 1;
+  day = local->tm_mday;
+  int doty = ymd_to_doty(year, month, day);
+  char *months[] = {"A", "B", "C", "D", "E", "F", "G", "H", "I",
+                    "J", "K", "L", "M", "N", "O", "P", "Q", "R",
+                    "S", "T", "U", "V", "W", "X", "Y", "Z", "+"};
+  int d = (doty % 14) + 1;
+  int i = floor(doty / 14);
+  char *m = months[i];
+  printf("Date is: %d%s%02d\n", 20, m, d);
 }
 
 // Horaire
