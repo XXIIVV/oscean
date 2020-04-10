@@ -1284,17 +1284,16 @@ Term death = create_term(&journal, "death", "The Death Progress Bar.",
 add_link(&death, "le soleil est noir", "https://www.youtube.com/watch?v=MtFeMT5Uugc");
 
 Term faqs = create_index(&devine_lu_linvega, "faqs", "Answers to the frequently asked questions, Faqs.", 
-  "<p>This is a work in progress, I'm currently building this page. Come back later.</p>"
-  "<p>This collection of questions and answers come from various interviews taken over the years, many of them are archived " LINKNAME("https://gist.github.com/neauoire", "here") ".</p>");
+  "<p>This is a living document, I'm constantly updating this page with new questions and updated answers. This collection of questions and answers come from various interviews taken over the years, many of them are archived " LINKNAME("https://gist.github.com/neauoire", "here") ".</p>");
 add_link(&faqs, "archives", "https://gist.github.com/neauoire");
 
 Term audio_faqs = create_term(&faqs, "audio faqs", "", 
   "<h4>What inspired you to play music?</h4>"
-  "<p>I stumbled on the idea of writing my own music at a chiptune concert, I realized at that moment that I could write music with non-traditional and custom-made instruments.</p>"
+  "<p>I knew that I should want to write my own music when I was at a chiptune concert, I realized at that moment that I could write music with non-traditional and custom-made instruments.</p>"
   "<h4>When were you first introduced to chiptune music?</h4>"
   "<p>At the Gamma Festival in Montreal, Bubblyfish was the first performing chiptune act that I ever saw.</p>"
   "<h4>What kind of music do you play and why?</h4>"
-  "<p>I tend to navigate the space between ambient and industrial music, I write starkly contrasted rhythmic music as I find it best to describe the environments visited in the songs.</p>"
+  "<p>I tend to navigate the space between ambient and industrial music, I write starkly contrasted rhythmic music as I find it best to describe the environments explored in the songs.</p>"
   "<h4>What themes are you trying to uncover in your music?</h4>"
   "<p>Most of the music I write as " SEND("aliceffekt") " is about a character's travels across the frigid scapes of this fictional world called the " SEND("neauismetica") ", on this foreign planet called " SEND("dinaisth") ".</p>"
   "<h4>Why did you decide to accompany your music with visuals?</h4>"
@@ -1314,13 +1313,13 @@ Term audio_faqs = create_term(&faqs, "audio faqs", "",
 
 Term visual_faqs = create_term(&faqs, "visual faqs", "", 
   "<h4>Which creative discipline did you begin with, and how did you shift to other mediums?</h4>"
-  "<p>At first, I stumbled onto photo manipulation. From DeviantArt, to Raster and to Depthcore, I was moving from working with photos, to drawing, and eventually modeling. While I enjoyed visual arts, I felt that to keep sharpening the rendition of the worlds I was drawing, I needed to add a new dimension and so I began writing soundtracks to the pictures, and eventually putting all of it together in the form of websites, and games.</p>"
+  "<p>At first, I stumbled onto photo manipulation. From DeviantArt, to Raster and to " LINKNAME("http://www.depthcore.com","Depthcore") ", I was moving from working with photos, to drawing, and eventually modeling. While I enjoyed visual arts, I felt that to keep sharpening the rendition of the worlds I was drawing, I needed to add a new dimension and so I began writing soundtracks to the pictures, and eventually putting all of it together in the form of websites, and games.</p>"
   "<h4>What is the meaning of the glyph in your avatar?</h4>"
   "<p>It is an old rendition of the character for blue, found in the the Shuowen Jiezi, the character dictionary written by Xu Shen, 100 CE. This particular glyph has probably never been used outside of paleography. I found it to be very beautiful, and the word \"blue\" has a special meaning in the stories from which my handle \"neauoire\" comes from.</p>"
   "<h4>What is the significance of your neck tattoo?</h4>"
   "<p>My tattoo is three dots in the shape of a triangle, or at an equal distance from each other, it signifies audio, visual and research. I call this arrangement \"trisight\", it's a reminder that, being a generalist, I must constantly pull from these 3 mediums in order to create complete works.</p>"
   "<h4>Where does your name come from?</h4>"
-  "<p>I began using the name online around 2005, Devine Lu Linvega comes from Davine Lu Linvega of the series \"Blame\", by Tsutomu Nihei, which was very influential to me at the time.</p>"
+  "<p>I began using the name online around 2005, Devine Lu Linvega comes from Davine Lu Linvega of the series " LINKNAME("https://en.wikipedia.org/wiki/Blame!", "Blame") ", by Tsutomu Nihei, which was very influential to me at the time.</p>"
   "<h4>Why did you choose that name?</h4>"
   "<p>I had been looking for a name that did <b>not</b> represent who I was, but instead who I would like to become. I wanted something that would serve as a reminder to put curiousity above power, that did not lock myself in the past, but would force me forward toward that ideal.</p>"
   "<h4>Who is Davine Lu Linvega in the book?</h4>"
@@ -1338,19 +1337,20 @@ Term research_faqs = create_term(&faqs, "research faqs", "",
 
 Term lifestyle_faqs = create_term(&faqs, "lifestyle faqs", "", 
   "<h4>What is your background?</h4>"
-  "<p>I was first interested in illustration and motion graphics. I soon started writing music to complement these pictures, and finally I began implementing interaction and turn these designs into games, websites and tools.</p>"
+  "<p>I was born in March of 1986. I was a notoriously distracted student in high school, I tried attending a few art classes in college before realizing that it was not the right environment to learn the things I was interested into. </p>"
+  "<p>I was first interested in illustration and motion graphics. I soon started writing music to complement the pictures and animations, and finally I began implementing interaction and turn these multimedia pieces into games, websites and tools.</p>"
   "<h4>Where do you work?</h4>"
-  "<p>I work at a small research studio aboard a sailboat, called Hundred Rabbits, where we do experiments in resilience and self-reliance using low-tech solutions.</p>"
+  "<p>I work at a small research studio aboard a sailboat, called " SEND("hundred rabbits") ", where we do experiments in resilience and self-reliance using " LINKNAME("https://100r.co/site/philosophy.html", "low-tech solutions") ".</p>"
   "<h4>What do you do during the daytime?</h4>"
-  "<p>The ways in which I spend my time varies wildly from day to day, but mostly experimental research, my interests include alternative ways to store power and minimum viable solutions for technological tooling.</p>"
+  "<p>The ways in which I spend my time varies wildly from day to day, but mostly experimental research, my interests include alternative ways to store power and minimum viable solutions for " SENDNAME("longtermism", "technological tooling") ".</p>"
   "<h4>What is your routine?</h4>"
-  "<p>I go to bed choosing one thing to accomplish the next day, I wake up to tackle this singular task. I tend to work only in the morning, get everything done before lunch. The afternoons, I spend mostly reading and learning things to help me solve the next day's task. I usually wake up with the sun, and sleep soon after sunset.</p>"
+  "<p>I go to bed choosing one thing to accomplish the next day, I wake up to tackle this " SENDNAME("routine", "singular task") ". I tend to work only in the morning, get everything done before lunch. The afternoons, I spend mostly reading and learning things to help me solve the next day's task. I usually wake up with the sun, and sleep soon after sunset.</p>"
   "<h4>Where do you go to get inspired?</h4>"
   "<p>I share a " SENDNAME("merveilles", "small forum") " with a few online friends and whenever I am looking for a new favourite thing, or some help — I know I can find it there. Everyone should build a small network, a place where they can feel comfortable to experiment, show works-in-progress and exchange on the topics of art and science in a safe place among like-minded people.</p>"
   "<h4>Why do you think people should travel more?</h4>"
-  "<p>I found traveling to be a good catalyst toward learning new languages, for developing an interest in foreign cultures and ultimately for building empathy, curiosity and creativity.</p>"
+  "<p>I found " SEND("travel") " to be a good catalyst toward learning " SENDNAME("language", "new languages") ", for developing an interest in foreign cultures and ultimately for building empathy, curiosity and creativity.</p>"
   "<h4>How do you draw the line between what is published, and what stays private?</h4>"
-  "<p>Working behind an avatar and living online through a proxy name offers a good healthy distance between the work and the self. The Devine Lu Linvega project focuses on making explicit the reflections, and techniques for the creative process. My intimate life, my health, my friends and family are outside of the scope of this project.</p>");
+  "<p>Working " SENDNAME("identity", "behind an avatar") " and living online through a proxy name offers a good healthy distance between the work and the self. The Devine Lu Linvega project focuses on making explicit the reflections, and techniques for the creative process. My intimate life, my health, my friends and family are outside of the scope of this project.</p>");
 
 Term mirrors = create_portal(&research, "mirrors", "The collection of Mirrors.", 
   "<p>The <b>mirrors</b> are collected notes on the topics of " SEND("knowledge") " and " SEND("wisdom") ".</p."
