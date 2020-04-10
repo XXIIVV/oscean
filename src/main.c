@@ -269,9 +269,9 @@ void build_pict(FILE *f, int pict, char *host, char *name, bool caption, char *l
   fputs("</figure>", f);
 }
 
-void build_term_pict(FILE *f, Term *term, bool caption){
+void build_term_pict(FILE *f, Term *term, bool caption) {
   Log *log = find_last_diary(term);
-  if(log == NULL){
+  if (log == NULL) {
     // printf("Missing portal log for: %s\n", term->name);
     return;
   }
@@ -280,12 +280,12 @@ void build_term_pict(FILE *f, Term *term, bool caption){
   build_pict(f, log->pict, term->name, term->bref, caption, filename);
 }
 
-void build_log_pict(FILE *f, Log *log, bool caption){
+void build_log_pict(FILE *f, Log *log, bool caption) {
   build_pict(f, log->pict, log->date, log->name, caption, NULL);
 }
 
-void build_body_part(FILE *f, Term *term){
-  if(term->body){
+void build_body_part(FILE *f, Term *term) {
+  if (term->body) {
     fprintf(f, "%s", term->body);
   }
 }
@@ -406,23 +406,33 @@ void build_index(FILE *f, Term *term){
   }
 }
 
-void build_portal(FILE *f, Term *term){
-  if(term->is_portal != true){ return; }
+void build_portal(FILE *f, Term *term) {
+  if (term->is_portal != true) {
+    return;
+  }
 
   for (int k = 0; k < term->children_len; ++k) {
     build_term_pict(f, term->children[k], true);
   }
 }
 
-void build_album(FILE *f, Term *term){
-  if(term->is_album != true){ return; }
+void build_album(FILE *f, Term *term) {
+  if (term->is_album != true) {
+    return;
+  }
 
   Log *header_log = find_last_diary(term);
   for (int i = 0; i < all_logs.len; ++i) {
     Log l = all_logs.logs[i];
-    if(l.term != term){ continue; }
-    if(l.pict < 1){ continue; }
-    if(l.pict == header_log->pict){ continue; }
+    if (l.term != term) {
+      continue;
+    }
+    if (l.pict < 1) {
+      continue;
+    }
+    if (l.pict == header_log->pict) {
+      continue;
+    }
     build_log_pict(f, &l, true);
   }
 }
