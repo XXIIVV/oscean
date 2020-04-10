@@ -199,8 +199,16 @@ char *arvelie_to_greg(char *arvelie) {
 }
 
 void fputs_rfc2822(FILE *f, char *arvelie) {
-  int doty = arvelie_to_doty(arvelie);
-  int year = extract_year(arvelie);
+  int doty, year;
+  if(arvelie != NULL){
+    doty = arvelie_to_doty(arvelie);
+    year = extract_year(arvelie);
+  }
+  else{
+    doty = get_doty();
+    year = get_year();
+  }
+  
   int month = doty_to_month(doty);
   int day = doty_to_day(doty);
 

@@ -36,7 +36,6 @@ void fputs_graph_burn(FILE *f, Journal *journal) {
   int segs[52];
 
   // The Arvelie calendar has 26 months of 14 days each.
-
   // Blank out array
   for (int i = 0; i < 52; ++i) {
     segs[i] = 0;
@@ -79,7 +78,7 @@ void fputs_graph_burn(FILE *f, Journal *journal) {
   int w = (s + 1) * 52;
 
   fprintf(f, "<figure>");
-  fprintf(f, "<svg width='%d' height='%d' xmlns='http://www.w3.org/2000/svg' class='burn' style='border: 1px solid;'>", w, (s+1) * 7);
+  fprintf(f, "<svg width='%d' height='%d' xmlns='http://www.w3.org/2000/svg' class='burn' style='border: 1.5px solid;'>", w, (s+1) * 7);
 
   // Middle
   fprintf(f, "<line x1='0' y1='42' x2='700' y2='42' style='fill:none;stroke:black;stroke-width:1;stroke-linejoin:round;stroke-dasharray:0,2; stroke-linecap:round'/>");

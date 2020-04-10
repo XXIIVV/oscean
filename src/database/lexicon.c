@@ -1256,11 +1256,11 @@ add_dict(&bookmarks, &software_links);
 
 Term readings = create_term(&directory, "readings", "The Readings is a curated list of books.", 
   "<p>For a list of all time favourites, see " SEND("directory") ".</p>");
-add_dict(&readings, &reading_list_2020);
-add_dict(&readings, &reading_list_2019);
-add_dict(&readings, &reading_list_2018);
-add_dict(&readings, &reading_list_2017);
-add_dict(&readings, &reading_list_2016);
+add_dict(&readings, &readlist_2020);
+add_dict(&readings, &readlist_2019);
+add_dict(&readings, &readlist_2018);
+add_dict(&readings, &readlist_2017);
+add_dict(&readings, &readlist_2016);
 
 Term goals = create_album(&devine_lu_linvega, "goals", "A list of general Goals.", 
   "<p><b>Internal</b> are goals dealing with personal growth, and <b>external</b>, as having an effect on the outside world.</p>"
@@ -1467,6 +1467,8 @@ add_link(&hypertalk, "tutorial guide", "https://opus.uleth.ca/bitstream/handle/1
 add_link(&hypertalk, "tutorial video", "https://www.youtube.com/watch?v=LVq67vYyAqo");
 add_link(&hypertalk, "tips and tricks", "http://www.jaedworks.com/hypercard/HT-Masters/scripting.html");
 
+Term unix = create_album(&language, "unix", "Unix is a family of computer operating systems that derive from the original AT&T Unix.", NULL);
+
 Term the_sartre_mechanism = create_term(&notebook, "the sartre mechanism", "The The Sartre Mechanism short.",
   "<p>It was the first day of the winter when a friend invited me to witness the completion of a recent project.</p>"
   "<p>Crouched over a heap of cogs, she did not look over as I hung my snow-covered coat on something that, by the look of it, might very well be a time machine. A distracted gaze turned for a moment, perhaps to make sure that I did not break anything as I navigated the busy studio.</p>"
@@ -1600,5 +1602,6 @@ Term *lexicon[] = {
   &unreleased, &blindfolk, &milavrega, &devine_lu_linvega, &first_wave, 
   &regionsteam_snowdays, &downtemperature, &blam, &vert_kirlian_theatre, 
   &ann_yozora_saint, &nether_esper_inserts, &otoroutes_miniatures, &now,
-  &idyllic_miners, &lietal, &japanese, &russian, &binary, &assembly, &hypertalk
+  &idyllic_miners, &lietal, &japanese, &russian, &binary, &assembly, &hypertalk,
+  &unix
 };

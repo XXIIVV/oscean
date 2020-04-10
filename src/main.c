@@ -639,6 +639,10 @@ void build_special_now(FILE *f, Term *term, Journal *journal) {
     }
   }
   fputs("</ul>", f);
+
+  time_t now;
+  time(&now);
+  fprintf(f, "<p>Last generated on %s(Japan).</p>", ctime(&now));
 }
 
 void build_page(Term *term, Journal *journal) {
