@@ -25,7 +25,7 @@ Term research = create_portal(&home, "research", "The Research hosts philosophy 
 
 Term about = create_album(&home, "about", "This wiki is a digital playground and personal logging system.", 
   "<p>The aim of this wiki is to build a form of <b>personal assistant</b> to help with the management of a vast repository of recorded statistics which includes " SENDNAME("tracker", "daily logs") ", notes on " SENDNAME("journal", "various projects") " and " SENDNAME("mirrors", "curated pages of general knowledge") ".</p>"
-  SEND("oscean") " is written in " LINKNAME("https://en.wikipedia.org/wiki/C99", "C99") ", and designed to operate on " SENDNAME("hardware", "low-power devices") ". It is built to adapt to my needs as they change, and to " SENDNAME("longtermism", "technology as it evolves") "."
+  "<p>" SEND("oscean") " is written in " LINKNAME("https://en.wikipedia.org/wiki/C99", "C99") ", and designed to operate on " SENDNAME("hardware", "low-power devices") ". It is built to adapt to my needs as they change, and to " SENDNAME("longtermism", "technology as it evolves") ".</p>"
   "<p>Each part of this project should aim to persist across " SENDNAME("longtermism", "Technological Long Term") ", not one part of it should rely on heavy dependencies. — Every function should be <b>specific</b>, <b>unobfuscated</b>, and each one carefully chosen against general-purpose libraries, frameworks or wasteful foreign entities.</p>"
   "<p>Using this tool should be <b>frictionless and undisruptive</b>, its formats and subsequent products versionable, re-purposable, interpretable and text-editable. Only through <b>open sources, open standards, human-readable formats</b> and their independencies, might they survive this fleeting age of self-destructing informatics.</p>"
   "<p>These attributes should not only be <b>perceptible in its design</b>, <br />but deeply <b>rooted in its code</b>.</p>"
@@ -1069,7 +1069,7 @@ Term marquesas = create_album(&travel, "marquesas", "Travel pictures from our cr
 add_link(&marquesas, "trip", "http://100r.co");
 
 Term marshall_islands = create_album(&travel, "marshall islands", "We sailed to the Marshall Islands from Fiji, aboard Pino.", 
-  "We lived in <b>Majuro</b> for a few weeks waiting for a weather window to would allow us to sail " SENDNAME("japan", "north") ".");
+  "<p>We lived in <b>Majuro</b> for a few weeks waiting for a weather window to would allow us to sail " SENDNAME("japan", "north") ".</p>");
 
 Term niue = create_album(&travel, "niue", "That time we sailed to the gorgeous coral shores of the country of Niue.", 
   "<p>We reached the " LINKNAME("https://en.wikipedia.org/wiki/Niue", "incredible island") " of " SEND("niue") " in July of 2017, on our way across the " SEND("marquesas") " Ocean.</p>"
@@ -1171,7 +1171,7 @@ Term journal = create_term(&devine_lu_linvega, "journal", "The Journal shows rec
 add_link(&journal, "rss feed", "https://wiki.xxiivv.com/links/rss.xml");
 
 Term tracker = create_term(&journal, "tracker", "The Tracker shows latest changes of the journal.", 
-  "This wiki uses the " SENDNAME("arvelie", "Arvelie time format") ", find today's date and learn more about the time formats " SENDNAME("time", "here") ". Visit the " SEND("calendar") " to see the list of past and upcoming events, or check out the " SENDNAME("now", "/now page") " to find active projects.");
+  "<p>This wiki uses the " SENDNAME("arvelie", "Arvelie time format") ", find today's date and learn more about the time formats " SENDNAME("time", "here") ". Visit the " SEND("calendar") " to see the list of past and upcoming events, or check out the " SENDNAME("now", "/now page") " to find active projects.</p>");
 add_link(&tracker, "rss feed", "https://wiki.xxiivv.com/links/rss.xml");
 
 Term calendar = create_term(&journal, "calendar", "The Calendar shows upcoming and past events of the journal.", 
@@ -1179,19 +1179,19 @@ Term calendar = create_term(&journal, "calendar", "The Calendar shows upcoming a
 add_link(&calendar, "rss feed", "https://wiki.xxiivv.com/links/rss.xml");
 
 Term identity = create_term(&journal, "identity", "Various notes on the visual choices made for the Nataniev projects.", 
-  "Additional details can be found in the " SEND("faqs") ".");
+  "<p>Additional details can be found in the " SEND("faqs") ".</p>");
 
 Term now = create_term(&journal, "now", "The now page shows infographics of current activity.", 
-  "The history of project activity is recorded with the " SENDNAME("horaire", "horaire time-tracker") ", to find the complete history of activity, visit the " SEND("tracker") ".");
+  "<p>The history of project activity is recorded with the " SENDNAME("horaire", "horaire time-tracker") ", to find the complete history of activity, visit the " SEND("tracker") ".</p>");
 
 Term inventory = create_portal(&devine_lu_linvega, "inventory", "The collection of technical details on the Inventory.", 
-  "Some of the items I carry around with me in my " SENDNAME("travel", "travels") ".");
+  "<p>Some of the items I carry around with me in my " SENDNAME("travel", "travels") ".</p>");
 
 Term everyday = create_album(&inventory, "everyday", "Everyday items found in my bag or pockets.", NULL);
 add_list(&everyday, &inventory_items);
 
 Term skate = create_album(&inventory, "skate", "The Skate specs.", 
-  "For when the sun is just about to set, and when the road is that perfect kind of slick, we carry a little " LINKNAME("https://www.pennyskateboards.com/us/blackout-27.html", "skateboard") " with us on " SEND("pino") ". We have the 68cm board, with the 59mm wheels.");
+  "<p>For when the sun is just about to set, and when the road is that perfect kind of slick, we carry a little " LINKNAME("https://www.pennyskateboards.com/us/blackout-27.html", "skateboard") " with us on " SEND("pino") ". We have the 68cm board, with the 59mm wheels.</p>");
 
 Term bike = create_album(&inventory, "bike", "The Bike specs.", 
   "<p>That <b>bike</b> that I've carried all over the world during my " SENDNAME("travel", "Travels") ".</p>"
