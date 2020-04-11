@@ -1469,6 +1469,9 @@ add_link(&hypertalk, "tips and tricks", "http://www.jaedworks.com/hypercard/HT-M
 
 Term unix = create_album(&language, "unix", "Unix is a family of computer operating systems that derive from the original AT&T Unix.", NULL);
 
+Term pascal = create_album(&language, "pascal", "Pascal is an imperative and procedural programming language designed for teaching students structured programming", 
+  "<p>My main interest in the pascal language is the building applications on the " SEND("macintosh") " using " LINKNAME("https://qiita.com/ht_deko/items/cd245180363e1911afa7", "THINK PASCAL 4.5d4") ".</p>");
+
 Term the_sartre_mechanism = create_term(&notebook, "the sartre mechanism", "The The Sartre Mechanism short.",
   "<p>It was the first day of the winter when a friend invited me to witness the completion of a recent project.</p>"
   "<p>Crouched over a heap of cogs, she did not look over as I hung my snow-covered coat on something that, by the look of it, might very well be a time machine. A distracted gaze turned for a moment, perhaps to make sure that I did not break anything as I navigated the busy studio.</p>"
@@ -1603,5 +1606,5 @@ Term *lexicon[] = {
   &regionsteam_snowdays, &downtemperature, &blam, &vert_kirlian_theatre, 
   &ann_yozora_saint, &nether_esper_inserts, &otoroutes_miniatures, &now,
   &idyllic_miners, &lietal, &japanese, &russian, &binary, &assembly, &hypertalk,
-  &unix
+  &pascal, &unix
 };

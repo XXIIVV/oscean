@@ -687,6 +687,7 @@ add_word(&readlist_2020, "How to Live Safely in a Science Fictional Universe", "
 add_word(&readlist_2020, "Dracula", "Bram Stoker");
 add_word(&readlist_2020, "Des choses cachées depuis la fondation du monde", "René Girard");
 add_word(&readlist_2020, "Tamata et l'alliance", "Bernard Moitessier");
+add_word(&readlist_2020, "The Invisible Computer", "Donald A. Norman");
 
 Dict macbook_workstation = create_dict("macbook workstation");
 add_word(&macbook_workstation,"System", "MacBook Pro Retina, 13\". 2014");
