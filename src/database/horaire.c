@@ -1,3 +1,5 @@
+add_log(&pascal, "20H06", 327);
+add_log(&pascal, "20H05", 328);
 add_log(&hundred_rabbits, "20H04", 158);
 add_log(&oscean, "20H03", 318);
 add_log(&famicom, "20H02", 335);

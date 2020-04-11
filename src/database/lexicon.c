@@ -1471,6 +1471,7 @@ Term unix = create_album(&language, "unix", "Unix is a family of computer operat
 
 Term pascal = create_album(&language, "pascal", "Pascal is an imperative and procedural programming language designed for teaching students structured programming", 
   "<p>My main interest in the pascal language is the building applications on the " SEND("macintosh") " using " LINKNAME("https://qiita.com/ht_deko/items/cd245180363e1911afa7", "THINK PASCAL 4.5d4") ".</p>");
+add_link(&pascal, "user manual", "https://archive.org/details/THINKPascalUserManual1991/mode/2up");
 
 Term the_sartre_mechanism = create_term(&notebook, "the sartre mechanism", "The The Sartre Mechanism short.",
   "<p>It was the first day of the winter when a friend invited me to witness the completion of a recent project.</p>"
