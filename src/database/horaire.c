@@ -1,4 +1,4 @@
-add_log(&pascal, "20H06", 327);
+add_diary(&pascal, "20H06", 327, "Spiral Pattern", 661);
 add_log(&pascal, "20H05", 328);
 add_log(&hundred_rabbits, "20H04", 158);
 add_log(&oscean, "20H03", 318);

@@ -1210,9 +1210,18 @@ add_dict(&computer, &macbook_workstation);
 add_dict(&computer, &software_links);
 add_link(&computer, "usesthis", "https://usesthis.com/interviews/devine.lu.linvega/");
 
-Term macintosh = create_album(&computer, "macintosh", "Notes and links related to the Macintosh II computer.", 
+Term macintosh = create_portal(&computer, "macintosh", "Notes and links related to the Macintosh II computer.", 
   "<p>The " LINKNAME("https://en.wikipedia.org/wiki/Macintosh_II", "Macintosh II") " computer used the excellent OS7 operating system, supporting great software like " SENDNAME("hypertalk", "Hypercard") ".</p>");
 add_link(&macintosh, "Mini vMac", "https://www.gryphel.com/c/minivmac/");
+
+Term hypertalk = create_album(&macintosh, "hypertalk", "Hypertalk is the programming language used in the mac software Hypercard.", NULL);
+add_link(&hypertalk, "tutorial guide", "https://opus.uleth.ca/bitstream/handle/10133/856/Christmas_Kevin_G.pdf");
+add_link(&hypertalk, "tutorial video", "https://www.youtube.com/watch?v=LVq67vYyAqo");
+add_link(&hypertalk, "tips and tricks", "http://www.jaedworks.com/hypercard/HT-Masters/scripting.html");
+
+Term pascal = create_album(&macintosh, "pascal", "Pascal is an imperative and procedural programming language designed for teaching students structured programming", 
+  "<p>My main interest in the pascal language is the building applications on the " SEND("macintosh") " using " LINKNAME("https://qiita.com/ht_deko/items/cd245180363e1911afa7", "THINK PASCAL 4.5d4") ".</p>");
+add_link(&pascal, "user manual", "https://archive.org/details/THINKPascalUserManual1991/mode/2up");
 
 Term plan9 = create_album(&computer, "plan9", "Notes and links related to the Plan9 operating system.", 
   QUOTE("An argument for simplicity and clarity.", "Rob Pike"));
@@ -1462,16 +1471,7 @@ add_link(&assembly, "famicom cookbook", "https://github.com/hundredrabbits/Famic
 
 Term binary = create_term(&language, "binary", "Binary numbers are a base 2 numeral system.", NULL);
 
-Term hypertalk = create_album(&language, "hypertalk", "Hypertalk is the programming language used in the mac software Hypercard.", NULL);
-add_link(&hypertalk, "tutorial guide", "https://opus.uleth.ca/bitstream/handle/10133/856/Christmas_Kevin_G.pdf");
-add_link(&hypertalk, "tutorial video", "https://www.youtube.com/watch?v=LVq67vYyAqo");
-add_link(&hypertalk, "tips and tricks", "http://www.jaedworks.com/hypercard/HT-Masters/scripting.html");
-
 Term unix = create_album(&language, "unix", "Unix is a family of computer operating systems that derive from the original AT&T Unix.", NULL);
-
-Term pascal = create_album(&language, "pascal", "Pascal is an imperative and procedural programming language designed for teaching students structured programming", 
-  "<p>My main interest in the pascal language is the building applications on the " SEND("macintosh") " using " LINKNAME("https://qiita.com/ht_deko/items/cd245180363e1911afa7", "THINK PASCAL 4.5d4") ".</p>");
-add_link(&pascal, "user manual", "https://archive.org/details/THINKPascalUserManual1991/mode/2up");
 
 Term the_sartre_mechanism = create_term(&notebook, "the sartre mechanism", "The The Sartre Mechanism short.",
   "<p>It was the first day of the winter when a friend invited me to witness the completion of a recent project.</p>"
