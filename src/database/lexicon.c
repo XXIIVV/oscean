@@ -1220,7 +1220,8 @@ add_link(&hypertalk, "tutorial video", "https://www.youtube.com/watch?v=LVq67vYy
 add_link(&hypertalk, "tips and tricks", "http://www.jaedworks.com/hypercard/HT-Masters/scripting.html");
 
 Term pascal = create_album(&macintosh, "pascal", "Pascal is an imperative and procedural programming language designed for teaching students structured programming", 
-  "<p>My main interest in the pascal language is the building applications on the " SEND("macintosh") " using " LINKNAME("https://qiita.com/ht_deko/items/cd245180363e1911afa7", "THINK PASCAL 4.5d4") ".</p>");
+  "<p>My main interest in the language is application building and experimental programming on the " SEND("macintosh") " using the " LINKNAME("https://qiita.com/ht_deko/items/cd245180363e1911afa7", "THINK PASCAL 4.5d4") " compiler.</p>");
+add_link(&pascal, "pascal central", "http://pascal-central.com");
 add_link(&pascal, "user manual", "https://archive.org/details/THINKPascalUserManual1991/mode/2up");
 
 Term plan9 = create_album(&computer, "plan9", "Notes and links related to the Plan9 operating system.", 

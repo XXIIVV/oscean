@@ -566,11 +566,12 @@ add_word(&albums, "顕信の一撃", "友川カズキ. 2002");
 add_word(&albums, "Noise Of The New", "Seven Ark. 2005");
 add_word(&albums, "人間まがい", "山崎ハコ. 1979");
 add_word(&albums, "Le Soleil Noir", "Barbara. 1970");
-add_word(&albums, "Ariettes Oubliées", "Les Discrets. 2012");
+add_word(&albums, "Pleasure", "Sixth June. 2013");
 add_word(&albums, "Il y a", "夢中夢. 2008");
 add_word(&albums, "星のひとみ", "黒百合姉妹. 1999");
 add_word(&albums, "田園に死す", "J.A.シーザー. 2002");
 add_word(&albums, "François", "Desireless. 1989");
+add_word(&albums, "Zenith", "Molly Nilsson. 2015");
 add_word(&albums, "Head over Heels", "Cocteau Twins. 1983");
  
 Dict comics = create_dict("comics");
