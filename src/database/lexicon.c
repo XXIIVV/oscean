@@ -1211,7 +1211,7 @@ add_dict(&computer, &software_links);
 add_link(&computer, "usesthis", "https://usesthis.com/interviews/devine.lu.linvega/");
 
 Term macintosh = create_portal(&computer, "macintosh", "Notes and links related to the Macintosh II computer.", 
-  "<p>The " LINKNAME("https://en.wikipedia.org/wiki/Macintosh_II", "Macintosh II") " computer used the excellent OS7 operating system, supporting great software like " SENDNAME("hypertalk", "Hypercard") ".</p>");
+  "<p>The " LINKNAME("https://en.wikipedia.org/wiki/Macintosh_II", "Macintosh II") " computer used the excellent OS7 operating system, supporting great software such as " SENDNAME("hypertalk", "Hypercard") ", and " SENDNAME("pascal", "THINK Pascal") ".</p>");
 add_link(&macintosh, "Mini vMac", "https://www.gryphel.com/c/minivmac/");
 
 Term hypertalk = create_album(&macintosh, "hypertalk", "Hypertalk is the programming language used in the mac software Hypercard.", NULL);
@@ -1219,8 +1219,8 @@ add_link(&hypertalk, "tutorial guide", "https://opus.uleth.ca/bitstream/handle/1
 add_link(&hypertalk, "tutorial video", "https://www.youtube.com/watch?v=LVq67vYyAqo");
 add_link(&hypertalk, "tips and tricks", "http://www.jaedworks.com/hypercard/HT-Masters/scripting.html");
 
-Term pascal = create_album(&macintosh, "pascal", "Pascal is an imperative and procedural programming language designed for teaching students structured programming", 
-  "<p>My main interest in the language is application building and experimental programming on the " SEND("macintosh") " using the " LINKNAME("https://qiita.com/ht_deko/items/cd245180363e1911afa7", "THINK PASCAL 4.5d4") " compiler.</p>");
+Term pascal = create_album(&macintosh, "pascal", "Pascal is an imperative and procedural programming language designed for teaching students structured programming.", 
+  "<p>My main interest in the language is building little " SEND("macintosh") " applications, and generally exploring the " LINKNAME("https://qiita.com/ht_deko/items/cd245180363e1911afa7", "THINK PASCAL 4.5d4") " compiler.</p>");
 add_link(&pascal, "pascal central", "http://pascal-central.com");
 add_link(&pascal, "user manual", "https://archive.org/details/THINKPascalUserManual1991/mode/2up");
 
