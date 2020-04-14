@@ -1,3 +1,4 @@
+add_log(&pascal, "20H08", 213);
 add_log(&pascal, "20H07", 228);
 add_diary(&pascal, "20H06", 327, "Spiral Pattern", 661);
 add_log(&pascal, "20H05", 328);
