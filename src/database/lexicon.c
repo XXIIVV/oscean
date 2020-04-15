@@ -1,15 +1,16 @@
 // Macros
 
-#define LINK(link_id) "<a href='"link_id"' class='external' target='_blank'>"link_id"</a>"
-#define LINKNAME(linkname_id, linkname_name) "<a href='"linkname_id"' class='external' target='_blank'>"linkname_name"</a>"
+#define LINK(link_id) "<a href='" link_id "' class='external' target='_blank'>"link_id"</a>"
+#define LINKNAME(linkname_id, linkname_name) "<a href='" linkname_id "' class='external' target='_blank'>"linkname_name"</a>"
 #define SEND(send_id) "<a href='" send_id ".html'>" send_id "</a>"
 #define SENDNAME(sendname_id, sendname_text) "<a href='" sendname_id ".html'>" sendname_text "</a>"
 #define IMAGE(folder, name) "<img src='../media/" folder "/" name "'/>"
 #define QUOTE(text, source) "<q>" text "</q><h5>—" source "</h5>"
-#define MODITCHIO(itchio_id) "<iframe frameborder='0' src='https://itch.io/embed/"itchio_id"?link_color=000000' width='600' height='167'></iframe>"
-#define MODBANDCAMP(bandcamp_id) "<iframe style='border: 0; width: 600px; height: 274px;' src='https://bandcamp.com/EmbeddedPlayer/album="bandcamp_id"/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/' seamless></iframe>"
-#define MODYOUTUBE(youtube_id) "<iframe width='100%' height='380' src='https://www.youtube.com/embed/"youtube_id"?rel=0' style='max-width:700px' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe>"
-#define MODFRAME(frame_id) "<iframe width='100%' height='380' src='"frame_id"' style='border:0' allowfullscreen></iframe>"
+#define MODITCHIO(itchio_id) "<iframe frameborder='0' src='https://itch.io/embed/" itchio_id "?link_color=000000' width='600' height='167'></iframe>"
+#define MODBANDCAMP(bandcamp_id) "<iframe style='border: 0; width: 600px; height: 274px;' src='https://bandcamp.com/EmbeddedPlayer/album=" bandcamp_id "/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/' seamless></iframe>"
+#define MODYOUTUBE(youtube_id) "<iframe width='100%' height='380' src='https://www.youtube.com/embed/" youtube_id "?rel=0' style='max-width:700px' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe>"
+#define MODFRAME(frame_id) "<iframe width='100%' height='380' src='" frame_id "' style='border:0' allowfullscreen></iframe>"
+#define REDIRECT(target) "<meta http-equiv='refresh' content='2; url=" target ".html' /><p>In a hurry? Click <a href='" target ".html'>here</a>.</p>"
 
 // Terms
 
@@ -1560,8 +1561,8 @@ Term russian = create_term(&language, "russian", "The Russian page is a collecti
 
 // Redirects
 
-Term software = create_term(&tracker,"software", "Traveling toward software, please hold..","<meta http-equiv='refresh' content='2; url=tools.html' />");
-Term workstation = create_term(&tracker,"workstation", "Traveling toward workstation, please hold..","<meta http-equiv='refresh' content='2; url=computer.html' />");
+Term software = create_term(&tracker,"software", "Traveling toward software, please hold..", REDIRECT("tools"));
+Term workstation = create_term(&tracker,"workstation", "Traveling toward workstation, please hold..", REDIRECT("computer"));
 
 Term *lexicon[] = { 
   &home, &audio, &visual, &research, &about, &tracker, &journal, &calendar, 
