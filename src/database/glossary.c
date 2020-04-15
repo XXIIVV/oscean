@@ -521,8 +521,8 @@ add_word(&software_links, "Spreadsheet Calculator", "https://github.com/andmarti
 add_word(&software_links, "Krita Digital Painting", "https://krita.org/en");
 add_word(&software_links, "Blender 3d Editor", "https://www.blender.org");
 add_word(&software_links, "Surf Browser", "https://surf.suckless.org");
-add_word(&software_links, "Ardour Audio Recording", "https://ardour.org");
 add_word(&software_links, "Cozy Audiobook Player", "https://cozy.geigi.de");
+add_word(&software_links, "Macintosh Emulator", "https://www.gryphel.com");
  
 Dict books = create_dict("books");
 add_word(&books, "Le Matin Des Magiciens", "L. Pauwels & J. Bergier. 1960");
