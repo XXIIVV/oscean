@@ -187,6 +187,11 @@ Term create_index(Term *parent, char *name, char *bref, char *body) {
   return t;
 }
 
+Term create_redirect(Term *parent, Term *redirect) {
+  Term t = create_term(parent, redirect->name, "Redirect", "<p>hey there</p>");
+  return t;
+}
+
 void add_dict(Term *term, Dict *dict) {
   if (term->dicts_len >= TERM_DICT_BUFFER) {
     printf("Error: Reached TERM_DICT_BUFFER\n");

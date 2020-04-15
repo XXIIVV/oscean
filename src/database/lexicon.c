@@ -1203,7 +1203,7 @@ add_dict(&studio, &studio_workstation);
 // add_code(&studio, "Factory Reset: A + B while plugging in the power.");
 // add_code(&studio, "Calibrate: Bypass + B footswitches for two seconds.");
 
-Term computer = create_album(&inventory, "computer", "Technical details on my current Computer setup>", 
+Term computer = create_album(&inventory, "computer", "Technical details on my current Computer setup.", 
   "<p>I presently use an <b>Apple Macbook Pro</b> with the " LINKNAME("https://elementary.io", "Elementary") " GNU/Linux operating system. I also occasionally use " SEND("plan9") " and " SEND("macintosh")" for various experimental projects.</p>"
   "<p>I also use a " SENDNAME("keyboard", "mechanical keyboard") " and an old Intuos 3 Wacom tablet. To learn more about which audio equipment I use, see the " SEND("studio") ".</p>");
 add_dict(&computer, &macbook_workstation);
@@ -1474,7 +1474,7 @@ add_link(&assembly, "famicom cookbook", "https://github.com/hundredrabbits/Famic
 
 Term binary = create_term(&language, "binary", "Binary numbers are a base 2 numeral system.", NULL);
 
-Term unix = create_album(&language, "unix", "Unix is a family of computer operating systems that derive from the original AT&T Unix.", NULL);
+Term unix = create_album(&language, "unix", "Unix is a family of computer operating systems that derive from the original Unix from Bell Labs.", NULL);
 
 Term the_sartre_mechanism = create_term(&notebook, "the sartre mechanism", "The The Sartre Mechanism short.",
   "<p>It was the first day of the winter when a friend invited me to witness the completion of a recent project.</p>"
@@ -1558,6 +1558,11 @@ add_link(&japanese, "sci.lang.japan", "http://rut.org/~wmaton/www/pub/jap.guide.
 
 Term russian = create_term(&language, "russian", "The Russian page is a collection of Russian study notes.", NULL);
 
+// Redirects
+
+Term software = create_term(&tracker,"software", "Traveling toward software, please hold..","<meta http-equiv='refresh' content='2; url=tools.html' />");
+Term workstation = create_term(&tracker,"workstation", "Traveling toward workstation, please hold..","<meta http-equiv='refresh' content='2; url=computer.html' />");
+
 Term *lexicon[] = { 
   &home, &audio, &visual, &research, &about, &tracker, &journal, &calendar, 
   &dodecae, &efli, &alicef, &aliceffekt, &es_gulf_sunflowers, &damoiseau_canalx, 
@@ -1610,5 +1615,5 @@ Term *lexicon[] = {
   &regionsteam_snowdays, &downtemperature, &blam, &vert_kirlian_theatre, 
   &ann_yozora_saint, &nether_esper_inserts, &otoroutes_miniatures, &now,
   &idyllic_miners, &lietal, &japanese, &russian, &binary, &assembly, &hypertalk,
-  &pascal, &unix
+  &pascal, &unix, &software, &workstation
 };

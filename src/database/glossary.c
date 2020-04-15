@@ -598,6 +598,7 @@ add_word(&videogames, "Riven", "Cyan Interactive. 1997");
 
 Dict watchlist_2020 = create_dict("watch list 2020");
 add_word(&watchlist_2020, "Future Boy Conan", "Hayao Miyazaki");
+add_word(&watchlist_2020, "Yokohama Kaidashi Kikou", "Hitoshi Ashinano");
 
 // Readings
 
