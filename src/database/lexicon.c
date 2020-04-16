@@ -357,8 +357,8 @@ add_link(&webring, "sources", "https://github.com/XXIIVV/webring");
 add_link(&webring, "jump in", "https://webring.xxiivv.com/#random");
 
 Term merveilles = create_album(&webring, "merveilles", "Merveilles is a community of artists and developers.", 
-  "<p>Merveilles is a community project aimed at the establishment of new ways of speaking, seeing and organizing information. — A culture that seeks augmentation through the arts of engineering and design.</p>"
-  "<p>Maybe it's a movement, I'm not sure. It might be that we all grew up with similar influences, yet it might not. Sometimes I think it's a style of going about art, but again, it also applies to musician and programmers. But when we see each other, we know.</p>"
+  "<p>Merveilles is a community project aimed at the establishment of new ways of speaking, seeing and organizing information. — A culture that seeks augmentation through the arts of <b>engineering & design</b>.</p>"
+  "<p>Maybe it's a movement, I'm not sure. It might be that we all grew up with similar influences, yet it might not; but when we see each other, <i>we know</i>.</p>"
   "<p>During the first weekend of 2020, Merveilles hosted the " LINKNAME("https://merveilles.town/web/timelines/tag/Hyperjam", "Hyperjam") ", an interactive art jam designed to learn the " LINKNAME("https://en.wikipedia.org/wiki/HyperCard", "Hypercard") " software and its programming language " SEND("hypertalk") ".</p>");
 add_link(&merveilles, "on mastodon", "http://merveilles.town");
 add_link(&merveilles, "on github", "https://github.com/Merveilles");
