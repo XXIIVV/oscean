@@ -1213,6 +1213,7 @@ add_link(&computer, "usesthis", "https://usesthis.com/interviews/devine.lu.linve
 
 Term macintosh = create_portal(&computer, "macintosh", "Notes and links related to the Macintosh II computer.", 
   "<p>The " LINKNAME("https://en.wikipedia.org/wiki/Macintosh_II", "Macintosh II") " computer used the excellent OS7 operating system, supporting great software such as " SENDNAME("hypertalk", "Hypercard") ", and " SENDNAME("pascal", "THINK Pascal") ".</p>");
+add_dict(&macintosh, &macintosh_software);
 add_link(&macintosh, "Mini vMac", "https://www.gryphel.com/c/minivmac/");
 add_link(&macintosh, "macintosh cookbook", "https://github.com/hundredrabbits/Macintosh-Cookbook");
 

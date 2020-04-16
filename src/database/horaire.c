@@ -1,4 +1,4 @@
-add_log(&pascal, "20H09", 235);
+add_log(&famicom, "20H09", 235);
 add_log(&pascal, "20H08", 213);
 add_log(&pascal, "20H07", 228);
 add_diary(&pascal, "20H06", 327, "Spiral Pattern", 661);
@@ -9,7 +9,7 @@ add_log(&famicom, "20H02", 335);
 add_log(&pino, "20H01", 336);
 add_log(&pino, "20G14", 337);
 add_log(&hypertalk, "20G13", 268);
-add_log(&hypertalk, "20G12", 268);
+add_log(&macintosh, "20G12", 268);
 add_event(&merveilles, "20G11", 268, "Merveilles HyperCard Jam");
 add_diary(&hypertalk, "20G10", 257, "Neauismetica Stack III", 655);
 add_diary(&hypertalk, "20G09", 238, "Neauismetica Stack II", 657);

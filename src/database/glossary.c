@@ -523,7 +523,13 @@ add_word(&software_links, "Blender 3d Editor", "https://www.blender.org");
 add_word(&software_links, "Surf Browser", "https://surf.suckless.org");
 add_word(&software_links, "Cozy Audiobook Player", "https://cozy.geigi.de");
 add_word(&software_links, "Macintosh Emulator", "https://www.gryphel.com");
- 
+
+Dict macintosh_software = create_dict("macintosh software");
+add_word(&macintosh_software, "Hypercard", "https://en.wikipedia.org/wiki/HyperCard");
+add_word(&macintosh_software, "Think Pascal", "http://www.think-pascal.org");
+add_word(&macintosh_software, "MacPaint", "https://en.wikipedia.org/wiki/MacPaint");
+add_word(&macintosh_software, "Grypher", "https://www.gryphel.com");
+
 Dict books = create_dict("books");
 add_word(&books, "Le Matin Des Magiciens", "L. Pauwels & J. Bergier. 1960");
 add_word(&books, "Le Città Invisibili", "Italo Calvino. 1972");
@@ -870,8 +876,7 @@ add_item(&inventory_items, "Davis Basic Rigging Knife");
 add_item(&inventory_items, "Lawson MII Key holder");
 add_item(&inventory_items, "Amazon Kindle Paperwhite");
 add_item(&inventory_items, "DuxtioRFID Blocking Wallet");
-
-
+add_item(&inventory_items, "Sailrite Stitching Awl");
 
 //
 
