@@ -338,7 +338,7 @@ Term nataniev_time = create_index(&nataniev, "time", "Documentation on the diffe
   MODFRAME("https://clock.xxiivv.com"));
 
 Term neralie = create_term(&nataniev_time, "neralie", "Neralie is a decimal time format.", 
-  "<p>The <b>Neralie clock</b> has two groups of 3 digits, called the <i>beat</i> & the <i>pulse</i>. A beat contains 1000 pulses, and equivalent to <b>86.4 seconds</b>.</p>"
+  "<p>The <b>Neralie clock</b> has two groups of 3 digits, called the <i>beat</i> & the <i>pulse</i>. A beat contains 1000 pulses, and equivalent to <b>86.4 seconds</b>. A day is 1000 beats, or a million pulses. A pomodoro of 20 beats, is equivalent to 28 minutes 48 seconds.</p>"
   "<ul><li><b>6:00</b> 250:000</li><li><b>12:00</b> 500:000</li><li><b>18:00</b> 750:000</li></ul>");
 add_link(&neralie, "view online", "https://clock.xxiivv.com");
 
