@@ -1,3 +1,5 @@
+add_log(&neralie, "20H11", 337);
+add_log(&pino, "20H10", 226);
 add_log(&famicom, "20H09", 235);
 add_log(&pascal, "20H08", 213);
 add_log(&pascal, "20H07", 228);
