@@ -1041,14 +1041,16 @@ Term japan = create_portal(&travel, "japan", "A variety of diary entries written
   QUOTE("Let's never come here again 'cos it would never be as much fun.", "Charlotte, Lost in Translation"));
 
 Term minamiise = create_album(&japan, "minamiise", "We sailed to Minamiise in the spring of 2019, from Shizuoka.", 
-  "<p>Go to the last train station, take the bus and get off at the last stop, walk to the end of town and proceed into the forest. When the forest ends and you find yourself on the shore, you will have arrived.</p>");
+  "<p>Go to the last train station, take the bus and get off at the last stop, walk to the end of town and proceed into the forest. When the forest ends and you find yourself on the shore, you will have arrived.</p>"
+  QUOTE("There are no trains in Minamiise.", "Wikipedia"));
 
 Term shizuoka = create_album(&japan, "shizuoka", "We sailed to Shizuoka in the late winter of 2019, from Ogasawara.", 
-  "<p>We moved to <a href='#shizuoka' data-goto='shizuoka' target='_self' class='local '>Shizuoka</a> which offers the most beautiful sight of " SEND("fuji") ".</p>");
+  "<p>We sailed to " SEND("shizuoka") ", from " SEND("ogasawara") ", which offered the most beautiful sight of " SENDNAME("fuji", "Mount Fuji") ".</p>");
 
 Term ogasawara = create_album(&japan, "ogasawara", "We sailed to Ogasawara in the late winter of 2019, from Fiji.", 
-  "<p>We sailed into the <b>Futami arbor</b> on our way to " SENDNAME("japan", "Osaka") " from the " SEND("marshall_islands") ".</p>"
+  "<p>We sailed into the " LINKNAME("https://en.wikipedia.org/wiki/Bonin_Islands", "Futami arbor") " on our way to " SENDNAME("japan", "Osaka") " from the " SENDNAME("marshall_islands", "marshall islands") ".</p>"
   "<p>The island of Chichijima is one of the most beautiful place I have had the chance of spending time at, it exists at the intersection of my favourite climate and " SENDNAME("nutrition", "foods") ". We spent our time there " SENDNAME("bike", "cycling") " up and down the coastal slopes, and cooking delicious meals from our favourite Japanese ingredients.</p>"
+  "<p>Reaching the Japanese island marked the completion of a " SENDNAME("goals", "dream of mine") ".</p>"
   MODYOUTUBE("ueTCjpNXing"));
 
 Term yokohama = create_album(&japan, "yokohama", "We cycled to Yokohama, from Tokyo.", NULL);
@@ -1154,7 +1156,7 @@ Term longtermism = create_term(&lifestyle, "longtermism", "Notes on Longtermism 
   "<p>My dream sailboat has no diesel engine, no fuel outboard and no lead acid battery storage, but instead a compressed air engine with its compression stored in diving tanks, a bike crank powered compressor, a hydro generator pump, and a dynamo to charge our low-power electronics. The only crucial electronic systems connected to the house tanks would be the AIS transceiver, the VHF radio, a basic chartplotter and habitat lighting. Our work and entertainment electronics, like our laptops and cameras, would run off solar charging a minimal array of LiPo batteries.</p>"
   "<p>Is there a way to create and distribute software and electronics in a way that is environmentally conscious? perhaps " LINKNAME("https://en.wikipedia.org/wiki/Degrowth", "not") ".</p>");
 
-Term nutrition = create_term(&lifestyle, "nutrition", "The Nutrition diaries.", 
+Term nutrition = create_album(&lifestyle, "nutrition", "The Nutrition diaries.", 
   "<p>The function of proteins is to be used for tissue growth and repair, but when carbohydrates and calories are lacking, proteins can be consumed for fuel.</p>"
   "<p>The human body's own proteins are constantly being broken down into <b>amino acids</b> and used throughout its systems.</p>"
   "<p>The human body is mostly made of proteins, and proteins are made of amino acids - permutations of carbon, oxygen, hydrogen, nitrogen and sometimes sulphur. There are 22 amino acids in total and all but 9 can be synthesized, the <b>Essential Amino Acids</b>.</p>"
