@@ -4,16 +4,22 @@
 
 <p>A project should include the <code>Runtime.lib</code> library containing all standard Pascal routines such as <code>writeln</code> and <code>sqrt</code>. The <code>interface.lib</code> library contains the <i>glue code</i> for the all Macintosh Toolbox. Since routines from these two libraries are commonly used in almost all Pascal programs on the Macintosh, they are automatically included in the project file.</p>
 
+<h3>Styleguide</h3>
+
+<p>The standard adopted by the Mac Primer concerns the naming of PROCEDURES, FUNCTIONS, and variables. PROCEDURES and FUNCTIONS, always start with an upper-case letter. Each new word within a name should also start with an upper-case letter. For example, GetNewWindow or SeekSpindle are fine FUNCTION and PROCEDURE names; badPrcName isn't. Variables always start with a lower-case letter. Global variables(variables accessible to your entire program) should start with a lowercase "g". Use variable names like firstEmployee and currentTime.
+Use global names like gCurrentWindow and gDone. The use of variable names such as glk and swpCk7 is discouraged.</p>
+
 <pre>
-program Hello;
+program Example;
 
   {Comment}
 
   var
-  name: string;
+    name: String;
 
 begin
 
+  ShowText;
   name := 'alice';
   if (name = 'alice') then
     writeln('The name is alice.')
@@ -32,19 +38,16 @@ end.
 <pre>
 program ExampleProcedure;
 
-  procedure Tri (x, y, side: integer);
-  begin
-  MoveTo(x, y);
-  LineTo(x + side, y);
-  LineTo(x + side div 2, Round(y + Side / Sqrt(2)));
-  LineTo(x, y);
-  end;
+ procedure DrawLine (x1, y1, x2, y2: INTEGER);
+ begin
+  moveto(x1, y1);
+  lineto(x2, y2);
+ end;
 
 begin
 
-  Tri(10, 10, 100);
-  Tri(40, 40, 80);
-  Tri(80, 85, 180);
+ ShowDrawing;
+ DrawLine(20, 20, 100, 100);
 
 end.
 </pre>
@@ -56,14 +59,15 @@ end.
 <pre>
 program ExampleFunction;
 
-  function add (a, b: integer): integer;
-  begin
+ function Add (a, b: INTEGER): INTEGER;
+ begin
   add := a + b;
-  end;
+ end;
 
 begin
 
-  writeln('5+6=', add(5, 6));
+ ShowText;
+ writeln('5+6=', Add(5, 6));
 
 end.
 </pre>
@@ -73,52 +77,55 @@ end.
 <p>An Object is a special kind of record that contains fields like a record; however, unlike records, objects contain procedures and functions as part of the object. These procedures and functions are held as pointers to the methods associated with the object's type.</p>
 
 <pre>
-program Example;
+program ExampleType;
 
-  type
+ type
   Rectangle = object
-  width, height: integer;
-  end;
-  var
+    width, height: INTEGER;
+   end;
+
+ var
   r1: Rectangle;
 
 begin
 
-  new(r1);
-  r1.width := 12;
-  r1.height := 34;
-  writeln('The rect is ', r1.width, 'x', r1.height);
+ ShowText;
+ New(r1);
+ r1.width := 12;
+ r1.height := 34;
+ Writeln('The rect is ', r1.width : 2, 'x', r1.height : 2);
 
-  end.
+end.
 </pre>
 
 <h3>Creating a type with a method</h3>
 
 <pre>
-program Example;
+program ExampleMethod;
 
-  type
+ type
   Rectangle = object
-  width, height: integer;
-  procedure setwidth (w: integer);
-  end;
+    width, height: INTEGER;
+    procedure setwidth (w: INTEGER);
+   end;
 
-  var
+ var
   r1: Rectangle;
 
-  procedure Rectangle.setwidth (w: integer);
-  begin
+ procedure Rectangle.setwidth (w: INTEGER);
+ begin
   width := w;
-  end;
+ end;
 
 begin
 
-  new(r1);
-  r1.width := 12;
-  r1.height := 34;
-  writeln('The rect was ', r1.width, ' x ', r1.height);
-  r1.setWidth(56);
-  writeln('The rect is now ', r1.width, ' x ', r1.height);
+ ShowText;
+ New(r1);
+ r1.width := 12;
+ r1.height := 34;
+ Writeln('The rect was ', r1.width : 2, ' x ', r1.height : 2);
+ r1.setWidth(56);
+ Writeln('The rect is now ', r1.width : 2, ' x ', r1.height : 2);
 
 end.
 </pre>
@@ -126,27 +133,28 @@ end.
 <h3>Console Program</h3>
 
 <pre>
-program Greetings;
+program ExampleConsole;
 
-  const
+ const
   message = ' Welcome to the world of Pascal ';
 
-  type
+ type
   name = string;
 
-  var
+ var
   firstname, surname: name;
 
 begin
 
-  writeln('Please enter your first name: ');
-  readln(firstname);
+ ShowText;
+ Writeln('Please enter your first name: ');
+ Readln(firstname);
 
-  writeln('Please enter your surname: ');
-  readln(surname);
+ Writeln('Please enter your surname: ');
+ Readln(surname);
 
-  writeln;
-  writeln(message, ' ', firstname, ' ', surname);
+ Writeln;
+ Writeln(message, ' ', firstname, ' ', surname);
 
 end.
 </pre>
@@ -154,28 +162,24 @@ end.
 <h3>GUI Program</h3>
 
 <pre>
-program Test;
+program ExampleGUI;
 
-  var
+ var
   w: WindowPtr; {A window to draw in}
   r: Rect; {The bounding box of the window}
 
 begin
 
-  {Create the window}
-  SetRect(r, 50, 50, 200, 100);
-  w := NewWindow(nil, r, '', true, plainDBox, WindowPtr(-1), false, 0);
+ SetRect(r, 50, 50, 200, 100);
+ w := NewWindow(nil, r, '', true, plainDBox, WindowPtr(-1), false, 0);
+ SetPort(w);
 
-  {Make it the current drawing port}
-  SetPort(w);
+ MoveTo(5, 20);
+ DrawString('Hello world!');
 
-  {Draw a string!}
-  MoveTo(5, 20);
-  DrawString('Hello world!');
-
-  {Wait for a mouse-click, then stop.}
-  while not Button do
-  ;
+ while not Button do
+  begin
+  end;
 
 end.
 </pre>
@@ -351,18 +355,18 @@ program EulerSpiral;
 
  var
   wx, wy, wa: real;
-  i: integer;
+  i: INTEGER;
 
- procedure lineAngle;
+ procedure DrawLineAngle;
   var
-   t: real;
+   t: REAL;
  begin
-  moveTo(round(wx), round(wy));
+  MoveTo(round(wx), round(wy));
   t := wa * PI / 180;
   wx := wx + l * cos(t);
   wy := wy + l * sin(t);
   wa := wa + (i * a);
-  lineTo(round(wx), round(wy));
+  LineTo(round(wx), round(wy));
  end;
 
 begin
@@ -370,9 +374,10 @@ begin
  wx := 100;
  wy := 300;
  i := 0;
- showDrawing;
+
+ ShowDrawing;
  repeat
-  lineAngle;
+  DrawLineAngle;
   i := i + 1;
  until i > 20000;
 
@@ -481,8 +486,8 @@ end.
 
 <table border='1'>
   <tr><td>Writeln('text')</td><td>Prints  text to the Text Window and moves cursor to next line.</td></tr>
-  <tr><td>Writeln(integer)</td><td>Prints  integer in the Text Window and moves cursor to next line.</td></tr>
-  <tr><td>Writeln(integer : d )</td><td>Prints  integer in the Text Window using at least  d spaces and then moves cursor to next line.</td></tr>
+  <tr><td>Writeln(INTEGER)</td><td>Prints  INTEGER in the Text Window and moves cursor to next line.</td></tr>
+  <tr><td>Writeln(INTEGER : d )</td><td>Prints  INTEGER in the Text Window using at least  d spaces and then moves cursor to next line.</td></tr>
   <tr><td>Write('text')</td><td>Prints  text to the Text Window but does not move cursor to next line.</td></tr>
   <tr><td>WriteDraw('text')</td><td>Prints  text to the Drawing Window, starting at the CP.  The CP is left at the lower right corner of the last character drawn.</td></tr>
 </table>
@@ -491,7 +496,7 @@ end.
 
 <table border='1'>
   <tr><td><i>Type</i></td><td><i>Records</i></td></tr>
-  <tr><td>Rect</td><td>left, top, right, bottom : integer</td></tr>
+  <tr><td>Rect</td><td>left, top, right, bottom : INTEGER</td></tr>
   <tr><td>Point</td><td>h, v : intege</td></tr>
 </table>
 
@@ -505,3 +510,11 @@ end.
   <tr><td>Pt2Rect( pt1, pt2 : Point; dstRect : Rect);</td><td>Make rectangle with  pt1 and  pt2 as corners</td></tr>
   <tr><td>PtInRect(pt:Point; r : Rect) : BOOLEAN;</td><td>Determine if pt is in the rectangle r.</td></tr>
 </table>
+
+<h3>Going Further</h3>
+
+<p>The absolute best books on THINK Pascal are: </p>
+<ul>
+  <li><b>Macintosh Pascal Programming Primer</b>, Dave Mark & Cartwright Reed</li>
+  <li><b>Programming in Macintosh and Think Pascal</b>, Richard A. Rink & Vance B. Wisenbaker</li>
+</ul>
