@@ -1,10 +1,10 @@
-add_log(&pascal, "20H12", 238);
+add_diary(&pascal, "20H12", 238, "Spiral Pattern", 661);
 add_log(&neralie, "20H11", 337);
 add_log(&pino, "20H10", 226);
 add_log(&famicom, "20H09", 235);
 add_log(&pascal, "20H08", 213);
 add_log(&pascal, "20H07", 228);
-add_diary(&pascal, "20H06", 326, "Spiral Pattern", 661);
+add_diary(&pascal, "20H06", 326, "Entaloneralie System 7", 662);
 add_log(&pascal, "20H05", 328);
 add_log(&hundred_rabbits, "20H04", 158);
 add_log(&oscean, "20H03", 318);
