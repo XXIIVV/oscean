@@ -1198,8 +1198,8 @@ Term skate = create_album(&inventory, "skate", "The Skate specs.",
   "<p>For when the sun is just about to set, and when the road is that perfect kind of slick, we carry a little " LINKNAME("https://www.pennyskateboards.com/us/blackout-27.html", "skateboard") " with us on " SEND("pino") ". We have the 68cm board, with the 59mm wheels.</p>");
 
 Term bike = create_album(&inventory, "bike", "The Bike specs.", 
-  "<p>That <b>bike</b> that I've carried all over the world during my " SENDNAME("travel", "Travels") ".</p>"
-  "<p>We have somehow managed to fit two large track bikes inside of " SEND("pino") ". My bike is the Trek District S(2014), with a 48/15(3.2) ratio, my lock is the Abus Foldable, the tires are 700x25C(200g) and the tubes 700x18-25C with 48mm valves.</p>");
+  "<p>The bike that I presently carry aboard our sailboat " SEND("pino") ", it has been modified quite a bit, notably that its bolts and nuts have been replaced with 316 marine-grade stainless steel to sustain some salt water spray.</p>"
+  "<p>This is the <b>Trek District S</b>(2014), with a travel ratio of 48/15(3.2), the tires are 700x25C(200g) and the tubes 700x18-25C with 48mm valves. I chose the aluminum wheel because it can be installed with an ilan key alone, it is made entirely of aluminum so it does not rust as much as the other less resilient lighter wheels I had. My lock is the Abus Foldable.</p>");
 
 Term studio = create_album(&inventory, "studio", "The Studio equipment.",
   "<p>While the " SEND("aliceffekt") " sounds were mostly sampled from the " LINKNAME("https://www.arturia.com/microbrute/overview", "Microbrute") ", the " SEND("alicef") " sounds came from the " LINKNAME("https://www.eltamusic.com/polivoks-mini", "Поливокс") ".</p>");
