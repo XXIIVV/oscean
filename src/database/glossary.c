@@ -387,6 +387,7 @@ add_word(&technology_links, "Local First Software", "https://www.inkandswitch.co
 add_word(&technology_links, "Paper Phone", "http://specialprojects.studio/project/paper-phone");
 add_word(&technology_links, "LOT2046", "https://www.lot2046.com");
 add_word(&technology_links, "mnmllist", "https://mnmll.ist/");
+add_word(&technology_links, "folklore", "https://www.folklore.org");
  
 Dict hardware_links = create_dict("hardware links");
 add_word(&hardware_links, "Fairphone", "https://fairphone.com/en");
