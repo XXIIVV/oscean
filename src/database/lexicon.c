@@ -470,6 +470,9 @@ Term enfer = create_term(&utilities, "enfer", "Enfer is a virtual synthetiser.",
   MODYOUTUBE("iYEUthDpYbQ"));
 add_link(&enfer, "sources", "https://github.com/neauoire/Enfer");
 
+Term zoe_format = create_term(&utilities, "zoe format", "The zoe format is a simple encoding of binary image data.", 
+  "<p>The file format was designed to store uncompressed pixel data for " SEND("binary") " images, more specifically to help move " SEND("noodle") " pictures from and to the " SEND("macintosh") " system.</p>");
+
 Term games = create_portal(&visual, "games", "The Games are a collection of experimental interactive projects.", NULL);
 
 Term markl = create_term(&games, "markl", "Markl is a TAIBA game. In Development.", 
@@ -1593,7 +1596,7 @@ Term *lexicon[] = {
   &drypoint, &valentinel_hopes, &cenote, &cyanosis_fever, &donsol, &hiversaires, 
   &purgateus, &collegiennes, &diluvium, &volkenessen, &waiting_for_horus, 
   &marabu, &pico3, &pico_battle, &spagettini_scale, &spool_holder, &donsol_famicom, 
-  &laeisthic, &children_of_bramble, &known_magye, &extended_sleep, 
+  &laeisthic, &children_of_bramble, &known_magye, &extended_sleep, &zoe_format,
   &duomic, &neauismetic, &opal_inquisitors, &portalion, &dei_dain, 
   &habitants_du_soleil, &lives, &shikanokoa_vs_1h1d, &pedestrian_paradise, 
   &nor_let_the_fools, &to_the_aeons_hell, &vermillionth, &time_alloy, &demo, 
