@@ -1,6 +1,6 @@
-<p>The content of the file contains only a series of octets representing pixels, it does does not feature any details about the picture size, every sequence of 4 pixels, is encoded into its hexadecimal value and the picture size is always expected to be a square. When the length of the zoe data is not a square, it is rounded up and read as a truncated square based on its length, so a 30 bytes file will be expanded to 16x16(32 bytes). </p>
+<p>The content of the file contains only a series of bits representing pixels, it does does include any extra information about the picture, every sequence of 4 pixels, is encoded into its hexadecimal value and the picture size is always expected to be a square. When the length of the zoe data is not a square, it is rounded up and read as a truncated square based on its length, so a 30 bytes file will be expanded to 16x16(32 bytes). </p>
 
-<p>The following 4x4 picture data is encoded as <code>A3C5</code>.</p>
+<p>The following 4x4 picture data is encoded as <code>a3c5</code>.</p>
 
 <table border='1'>
   <tr><td class='wb'>1</td><td class='bw'>0</td><td class='wb'>1</td><td class='bw'>0</td></tr>
@@ -9,7 +9,7 @@
   <tr><td class='bw'>0</td><td class='wb'>1</td><td class='bw'>0</td><td class='wb'>1</td></tr>
 </table>
 
-<p>The 16 pixels are represented as <code>A3C5</code>.</p>
+<p>The series of 16 pixels are represented linearly as follows:</p>
 
 <table border='1'>
   <tr><td colspan='4'>A</td><td colspan='4'>3</td><td colspan='4'>C</td><td colspan='4'>5</td></tr>
@@ -52,18 +52,19 @@ c000 0101 ffff fe02 8000 0304 8000 028c
 </pre></td>
   </tr>
 
-
 </table>
 
 <h3>Javascript Implementation</h3>
 
-<p>The implementation used in <a href='noodle.htm'>Noodle</a>.</p>
+<p>The implementation used in <a href='noodle.html'>Noodle</a>.</p>
 
 <pre>
-this.pack = (ctx,w,h) => {
+// Convert context to
+
+function zoeRead (ctx, w, h, x, y) {
   const size = w > h ? w : h
-  const byteArray = new Uint8Array((size*size) / 8)
-  const data = ctx.getImageData(0, 0, w, h).data
+  const byteArray = new Uint8Array((size * size) / 8)
+  const data = ctx.getImageData(x || 0, y || 0, w, h).data
   const vals = [128, 64, 32, 16, 8, 4, 2, 1]
   for (var i = 0, n = data.length; i < n; i += 4) {
     const key = Math.floor(i / 32)
@@ -74,7 +75,21 @@ this.pack = (ctx,w,h) => {
   return byteArray
 }
 
-// Returns the luminance of a color.
+function zoeWrite (ctx, byteArray) {
+  const size = Math.floor(Math.sqrt(byteArray.length * 8))
+  const vals = [128, 64, 32, 16, 8, 4, 2, 1]
+  for (var y = 0; y < size; y++) {
+    for (var x = 0; x < size; x++) {
+      const key = x + (y * size)
+      const byte = byteArray[Math.floor(key / 8)]
+      const mask = vals[key % 8]
+      ctx.fillStyle = (byte & mask) !== 0 ? 'black' : 'white'
+      ctx.fillRect(x, y, 1, 1)
+    }
+  }
+}
+
+// Find the luminance of a color.
 
 function lum (pixel) {
   return Math.floor(0.2126 * pixel[0] + 0.7152 * pixel[1] + 0.0722 * pixel[2])
