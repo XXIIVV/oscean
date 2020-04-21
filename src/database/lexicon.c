@@ -459,7 +459,8 @@ Term noodle = create_term(&utilities, "noodle", "Noodle is a sketching tool.",
   "<p>Noodle is the first in a series of image processing tools, exploring the concept of " LINKNAME("https://brandur.org/small-sharp-tools", "Small Sharp Tools") " for graphical tasks, as an alternative take to the general purpose software " SEND("ronin") ".</p>"
   MODYOUTUBE("zvO5JRF47bc")
   "<p>The companion " LINKNAME("https://hundredrabbits.github.io/Poodle/", "scene tool") " is designed to create perspective guide lines with the noodle Bresenham look. The companion " LINKNAME("https://hundredrabbits.github.io/Moogle/", "cropping tool") " is designed to handle all resizing and cropping tasks, instead of adding these features directly into Noodle.</p>"
-  "<p>Noodle works exceptionally well with the " SEND("macintosh") " application " SENDNAME("hypertalk", "hypercard") ", you can find a collection of drawings created with it " LINKNAME("https://neauoire.github.io/neauismea/", "here") ".</p>");
+  "<p>Noodle works exceptionally well with the " SEND("macintosh") " application " SENDNAME("hypertalk", "hypercard") ", you can find a collection of drawings created with it " LINKNAME("https://neauoire.github.io/neauismea/", "here") ".</p>"
+  "<p>Learn more about the " SENDNAME("zoe_format", ".zoe file format") ".</p>");
 add_link(&noodle, "sources", "https://github.com/hundredrabbits/Noodle");
 add_link(&noodle, "live", "https://hundredrabbits.github.io/Noodle");
 add_link(&noodle, "inktober 2019", "https://neauoire.github.io/neauismea");
