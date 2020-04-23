@@ -1,15 +1,13 @@
 <h3>Header</h3>
 
-<p>In a zoe file, the <b>first 6 bytes are the header</b>, followed by the bitmap data representing every pixel. The width and height of the image are stored in the 5th and 6th bytes as factors of 8, and the maximum image size is 2032x2032. For example, the hexadecimal values $1234 are equivalent to a size of 144x416. </p>
+<p>In a zoe file, the <b>first 4 bytes are the header</b>, followed by the bitmap data representing every pixel. The width of the image is stored in the 4th byte as factor of 8, and the maximum image width is 2032. For example, a picture with a size of 512x342, will have the following header: </p>
 
 <table border='1'>
-  <tr><td>5a</td><td>Z</td><td rowspan='4'>Magic number</td></tr>
+  <tr><td>5a</td><td>Z</td><td rowspan='3'>Magic number</td></tr>
   <tr><td>4f</td><td>O</td></tr>
   <tr><td>45</td><td>E</td></tr>
-  <tr><td>00</td><td>0</td></tr>
-  <tr><td>08</td><td>w</td><td rowspan='2'>Image Size</td></tr>
-  <tr><td>10</td><td>h</td></tr>
-  <tr><td>..</td><td colspan='2'>bitmap data</td></tr>
+  <tr><td>40</td><td>w</td><td>Image Size</td></tr>
+  <tr><td colspan='2'>..</td><td colspan='2'>bitmap data</td></tr>
 </table>
 
 <h3>Body</h3>
@@ -42,29 +40,29 @@
   <tr>
     <td><img src='../media/generic/zoe.example1.gif'/></td>
     <td><pre>
-5a4f 4500 0404 ffff ffff 807f ffff 807f
-ffff 807f ffff 807f ffff 807f 807f 887e
-001f 887c 000f 8878 0007 8078 3f07 8070
-7f83 8070 ffc3 8070 e1c3 8070 e1c3 8070
-01c3 8070 03c3 8070 0783 8070 0f03 8070
-1e03 8070 1c03 87f0 1c03 81f0 0003 81f0
-1c07 81f0 1c07 81f0 1c0f 81e0 001f 8f80
-007f 81ff ffff 81ff ffff 81ff ffff 81ff
-ffff ffff ffff 
+5a4f 4504 ffff ffff 807f ffff 807f ffff
+807f ffff 807f ffff 807f 807f 887e 001f
+887c 000f 8878 0007 8078 3f07 8070 7f83
+8070 ffc3 8070 e1c3 8070 e1c3 8070 01c3
+8070 03c3 8070 0783 8070 0f03 8070 1e03
+8070 1c03 87f0 1c03 81f0 0003 81f0 1c07
+81f0 1c07 81f0 1c0f 81e0 001f 8f80 007f
+81ff ffff 81ff ffff 81ff ffff 81ff ffff
+ffff ffff 
 </pre></td>
   </tr>
   <tr>
     <td><img src='../media/generic/zoe.example2.gif'/></td>
     <td><pre>
-5a4f 4500 0404 0c3f ffff 1440 0002 2480
-0004 4500 0008 87ff fff0 8e00 0028 9fff
-ffc4 a000 0082 c000 0101 ffff fe02 8000
-0304 8000 028c 8000 0254 8929 2224 8aaa
-a204 8aaa a204 8929 2204 8000 0204 8000
-0204 8a4a 4204 8aaa a204 8aaa a204 8a4a
-4204 8000 0204 8000 0204 8491 2208 8aaa
-a210 8aaa a220 8491 2240 8000 0280 8000
-0300 ffff fe00 
+5a4f 4504 0c3f ffff 1440 0002 2480 0004
+4500 0008 87ff fff0 8e00 0028 9fff ffc4
+a000 0082 c000 0101 ffff fe02 8000 0304
+8000 028c 8000 0254 8929 2224 8aaa a204
+8aaa a204 8929 2204 8000 0204 8000 0204
+8a4a 4204 8aaa a204 8aaa a204 8a4a 4204
+8000 0204 8000 0204 8491 2208 8aaa a210
+8aaa a220 8491 2240 8000 0280 8000 0300
+ffff fe00 
 </pre></td>
   </tr>
 
@@ -77,33 +75,28 @@ a210 8aaa a220 8491 2240 8000 0280 8000
 <pre>
 // Convert context to
 
-function zoeRead (ctx, w, h, x, y, pad = 6) {
-  const head = [90, 79, 69, 0, Math.floor(w / 8), Math.floor(h / 8)]
+function zoeRead (ctx, w, h, x, y, pad = 4) {
+  const head = [90, 79, 69, Math.floor(w / 8)]
   const body = new Uint8Array(pad + (w * h) / 8)
   const data = ctx.getImageData(x || 0, y || 0, w, h).data
   const vals = [128, 64, 32, 16, 8, 4, 2, 1]
   for (let i = 0, n = data.length; i < n; i += 4) {
     const key = pad + Math.floor(i / 32)
-    const val = vals[(i / 4) % 8]
     const rgb = [data[i], data[i + 1], data[i + 2]]
-    body[key] += val * (lum(rgb) < 127 ? 1 : 0)
+    body[key] += vals[(i / 4) % 8] * (lum(rgb) < 127 ? 1 : 0)
   }
   head.forEach((e, i) => { body[i] = e })
   return body
 }
 
-function zoeWrite (ctx, byteArray, pad = 6) {
-  const w = byteArray[pad - 2] * 8
-  const h = byteArray[pad - 1] * 8
+function zoeWrite (ctx, byteArray, pad = 4) {
+  const w = byteArray[pad - 1] * 8
   const vals = [128, 64, 32, 16, 8, 4, 2, 1]
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      const key = x + (y * w)
-      const byte = byteArray[pad + Math.floor(key / 8)]
-      const mask = vals[key % 8]
-      ctx.fillStyle = (byte & mask) !== 0 ? 'black' : 'white'
-      ctx.fillRect(x, y, 1, 1)
-    }
+  for (let i = pad; i < byteArray.length * 8; i++) {
+    const byte = byteArray[pad + Math.floor((i-pad) / 8)]
+    const mask = vals[(i-pad) % 8]
+    ctx.fillStyle = (byte & mask) !== 0 ? 'black' : 'white'
+    ctx.fillRect((i-pad) % w, Math.floor((i-pad)/w), 1, 1)
   }
 }
 
