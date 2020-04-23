@@ -110,7 +110,47 @@ function lum (pixel) {
 
 <h3>Pascal Implementation</h3>
 
-<p>TODO</p>
+<p>The full THINK Pascal project can be found <a href='https://github.com/hundredrabbits/Macintosh-Cookbook/tree/master/projects/ZoeViewer' target='_blank' class='external'>here</a>.</p>
+
+<pre>
+procedure DrawFile (contents: Ptr; fileSize: Longint);
+  var
+   bmap: BitMap;
+   headerPtr: ^Longint;
+   header: Longint;
+   width, height: Integer;
+   viewer: Rect;
+ begin
+  bmap.baseAddr := nil;
+  headerPtr := Pointer(contents);
+  header := headerPtr^;
+  if BitAnd(header, $FFFFFF00) <> $5a4f4500 then
+   begin
+    WriteLn('Header mismatch');
+    CleanupAndHalt;
+   end;
+  width := Integer(BitAnd(header, $000000FF));
+  if width = 0 then
+   begin
+    WriteLn('Zero width');
+    CleanupAndHalt;
+   end;
+  height := (fileSize - 4) div width;
+  if height = 0 then
+   begin
+    WriteLn('Zero height');
+    CleanupAndHalt;
+   end;
+  ShowDrawing;
+  SetRect(bmap.bounds, 0, 0, width * 8, height);
+  SetRect(viewer, 60, 60, width * 8 + 15, height + 75);
+  SetDrawingRect(viewer);
+  bmap.rowBytes := width;
+  bmap.baseAddr := Pointer(Longint(contents) + 4);
+  CopyBits(bmap, thePort^.portBits, bmap.bounds, bmap.bounds, srcCopy, nil);
+  Cleanup;
+ end;
+</pre>
 
 <h3>Ansi C Implementation</h3>
 
