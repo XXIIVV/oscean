@@ -472,7 +472,7 @@ Term enfer = create_term(&utilities, "enfer", "Enfer is a virtual synthetiser.",
 add_link(&enfer, "sources", "https://github.com/neauoire/Enfer");
 
 Term zoe_format = create_term(&utilities, "zoe format", "A zoe file is a bitmap containing the pixels of a binary picture.", 
-  "<p>The format was chosen as to make it easy to read and write uncompressed pixel data for " SEND("binary") " images, more specifically to help move " SEND("noodle") " pictures from and to the " SEND("macintosh") " system.</p>");
+  "<p>The format was designed to make it easier to read and write uncompressed pixel data for " SEND("binary") " images, more specifically to help move " SEND("noodle") " pictures from and to the " SEND("macintosh") " system.</p>");
 
 Term games = create_portal(&visual, "games", "The Games are a collection of experimental interactive projects.", NULL);
 
