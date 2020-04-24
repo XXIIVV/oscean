@@ -36,7 +36,9 @@ Term about = create_album(&home, "about", "This wiki is a digital playground and
   "<p>The license applies to all the <b>documented projects, the projects themselves and their assets</b>. The " LINKNAME("http://github.com/XXIIVV/Oscean", "platform code") " is under the <b>MIT License</b>. The " LINKNAME("https://creativecommons.org/licenses/by-nc-sa/4.0/", "assets and text content") " is under the <b>BY-NC-SA4.0 License</b>.</p>"
   "<p><i>You are free to</i>: <b>Share</b>: copy and redistribute the material in any medium or format. <b>Adapt</b>: remix, transform, and build upon the material.</p>"
   "<p><i>Under the following terms</i>: <b>Attribution</b>: You must give appropriate credit. <b>NonCommercial</b>: You may not use the material for commercial purposes. <b>ShareAlike</b>: You must distribute your contributions under the same license.</p>"
-  "<p>If you have any <b>question or feedback</b>, please submit a " LINKNAME("https://github.com/XXIIVV/Oscean/issues/new", "bug report") ". You can learn more about the " SENDNAME("oscean", "related tools") " by visiting the " SEND("nataniev") " portal, or by reading the " SEND("faqs") ". For additional informations, contact " SENDNAME("devine_lu_linvega", "Devine Lu Linvega") ".</p>");
+  "<p>You can learn more about the " SENDNAME("oscean", "related tools") " by visiting the " SEND("nataniev") " portal, or by reading the " SEND("faqs") ". You can download a copy of the entire website content and sources as a " LINKNAME("https://github.com/XXIIVV/Oscean/archive/master.zip", ".zip") ".</p>"
+  "<p>If you have any <b>question or feedback</b>, please submit a " LINKNAME("https://github.com/XXIIVV/Oscean/issues/new", "bug report") ", for any additional informations, contact " SENDNAME("devine_lu_linvega", "Devine Lu Linvega") ". </p>"
+  );
 add_link(&about, "source files", "https://github.com/XXIIVV/Oscean");
 add_link(&about, "rss feed", "https://wiki.xxiivv.com/links/rss.xml");
 add_link(&about, "activitypub", "https://bots.tinysubversions.com/u/neauoire/");

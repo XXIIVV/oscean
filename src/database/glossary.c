@@ -527,9 +527,9 @@ add_word(&software_links, "Macintosh Emulator", "https://www.gryphel.com");
 
 Dict macintosh_software = create_dict("macintosh software");
 add_word(&macintosh_software, "Hypercard", "https://en.wikipedia.org/wiki/HyperCard");
-add_word(&macintosh_software, "Think Pascal", "http://www.think-pascal.org");
+add_word(&macintosh_software, "THINK Pascal", "http://www.think-pascal.org");
 add_word(&macintosh_software, "MacPaint", "https://en.wikipedia.org/wiki/MacPaint");
-add_word(&macintosh_software, "Grypher", "https://www.gryphel.com");
+add_word(&macintosh_software, "HexEdit", "https://www.gryphel.com/c/sw/progtool/hexedit/index.html");
 
 Dict books = create_dict("books");
 add_word(&books, "Le Matin Des Magiciens", "L. Pauwels & J. Bergier. 1960");
@@ -700,6 +700,7 @@ add_word(&readlist_2020, "Frankenstein", "Mary Shelley");
 add_word(&readlist_2020, "Macintosh Pascal Programming Primer", "Dave Mark & Cartwright Reed");
 add_word(&readlist_2020, "Programming in Macintosh and Think Pascal", "Richard A. Rink & Vance B. Wisenbaker");
 add_word(&readlist_2020, "The Invisible Computer", "Donald A. Norman");
+add_word(&readlist_2020, "The Unix-Haters Handbook", "Simson Garfinkel, Daniel Weise, Steven Strassmann");
 
 Dict macbook_workstation = create_dict("macbook workstation");
 add_word(&macbook_workstation,"System", "MacBook Pro Retina, 13\". 2014");
