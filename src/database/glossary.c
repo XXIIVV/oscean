@@ -873,16 +873,23 @@ add_item(&three_gates, "At the first gate, ask yourself, is it <b>true</b>.");
 add_item(&three_gates, "At the second gate ask, is it <b>necessary</b>.");
 add_item(&three_gates, "At the third gate ask, is it <b>kind</b>.");
 
-List inventory_items = create_list("inventory items");
-add_item(&inventory_items, "Staedtler Pigment Liner 0.3-2.0mm");
-add_item(&inventory_items, "MUJI A5 Dotgrid");
-add_item(&inventory_items, "Gerber Shard");
-add_item(&inventory_items, "Gerber Remix Tactical");
-add_item(&inventory_items, "Davis Basic Rigging Knife");
-add_item(&inventory_items, "Lawson MII Key holder");
-add_item(&inventory_items, "Amazon Kindle Paperwhite");
-add_item(&inventory_items, "DuxtioRFID Blocking Wallet");
-add_item(&inventory_items, "Sailrite Stitching Awl");
+List everyday_items = create_list("everyday items");
+add_item(&everyday_items, "Staedtler Pigment Liner 0.3-2.0mm");
+add_item(&everyday_items, "MUJI A5 Dotgrid");
+add_item(&everyday_items, "Gerber Shard");
+add_item(&everyday_items, "Gerber Remix Tactical");
+add_item(&everyday_items, "Lawson MII Key holder");
+add_item(&everyday_items, "Amazon Kindle Paperwhite");
+add_item(&everyday_items, "DuxtioRFID Blocking Wallet");
+
+List equipment_items = create_list("equipment items");
+add_item(&equipment_items, "Sailrite stitching awl");
+add_item(&equipment_items, "Unibody vegetable cleaver");
+add_item(&equipment_items, "Stainless steel moka pot");
+add_item(&equipment_items, "Tawashi scrubber");
+add_item(&equipment_items, "Davis basic rigging knife");
+add_item(&equipment_items, "Unibody nigiri scissors");
+add_item(&equipment_items, "Cast iron pan");
 
 //
 
