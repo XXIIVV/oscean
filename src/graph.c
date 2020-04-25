@@ -101,14 +101,14 @@ void fputs_graph_burn(FILE *f, Journal *journal) {
   fprintf(f, "L%d,%d ", w, (-20 * -phase) + 42); 
   fprintf(f, "' style='fill:none;stroke:#ddd;stroke-width:1;stroke-linejoin:round'/>");
 
-  // Polyline bleed
+  // bleed
   fprintf(f, "<path d='");
   for (int i = 0; i < 52; ++i) {
     int x = i * (s+1) + (s/2);
     int y = clamp_int(bleed[i], -36, 36) + 42;
     fprintf(f, "M%d,%d L%d,%d ", x, 42, x, y);    
   }
-  fprintf(f, "' style='fill:none;stroke:black;stroke-width:11;stroke-linejoin:round'/>");
+  fprintf(f, "' style='fill:none;stroke:black;stroke-width:12'/>");
 
   for (int i = 0; i < 52; ++i) {
     if(i == 0){ continue; }
@@ -119,27 +119,10 @@ void fputs_graph_burn(FILE *f, Journal *journal) {
     // phase shift
     int x = i * (s+1);
     if(phase == 1){
-      fprintf(f, "<line x1='%d' y1='42' x2='%d' y2='100' style='fill:none;stroke:#42ae92;stroke-width:1;stroke-linejoin:round'/>", x, x);    
+      fprintf(f, "<polyline points='%d %d %d %d %d %d' style='fill:black;stroke:none'/>", x, 84-5, x+5, 84, x-5, 84);    
     }
     else if(phase == -1){
-      fprintf(f, "<line x1='%d' y1='0' x2='%d' y2='42' style='fill:none;stroke:red;stroke-width:1;stroke-linejoin:round'/>", x, x);  
-    }
-    last_phase_pos = x;
-  }
-
-  for (int i = 0; i < 52; ++i) {
-    if(i == 0){ continue; }
-    if(bleed[i-1] > 0 && bleed[i] > 0){ continue; }
-    if(bleed[i-1] < 0 && bleed[i] < 0){ continue; }
-    if(bleed[i-1] < 0 && bleed[i] > 0){ phase = 1; }
-    if(bleed[i-1] > 0 && bleed[i] < 0){ phase = -1; }
-    // phase shift
-    int x = i * (s+1);
-    if(phase == 1){
-      fprintf(f, "<circle cx='%d' cy='42' r='2' style='fill:#55a69a;stroke:0'/>", x);  
-    }
-    else if(phase == -1){
-      fprintf(f, "<circle cx='%d' cy='42' r='2' style='fill:red;stroke:0'/>", x);  
+      fprintf(f, "<polyline points='%d %d %d %d %d %d' style='fill:black;stroke:none'/>", x, 5, x+5, 0, x-5, 0);  
     }
     last_phase_pos = x;
   }
