@@ -751,6 +751,12 @@ void print_debug(){
       printf("Next id: #%d\n", i);
       break;
     }
+    // Check if photo exists
+    char photopath[30];
+    snprintf(photopath, 30, "../media/diary/%d.jpg", i);
+    if(!file_exists(photopath)){
+      printf("Error: Missing photo %d.jpg\n", i);
+    }
   }
 }
 
