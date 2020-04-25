@@ -749,12 +749,13 @@ void export_logs(Journal *journal) {
     to_filename(l.term->name, filename);
 
     if (l.pict) {
-      fprintf(f, "%-5s%s%-3d %-20s %-3d %-30s \n", l.date,
+      fprintf(f, "%-5s %s%-3d %-20s %-3d %-30s \n", l.date,
               l.is_event ? "+" : "-", l.code, l.term->name, l.pict,
               l.name ? l.name : "");
     } else {
-      fprintf(f, "%-5s%s%-3d %-20s     %-30s\n", l.date, l.is_event ? "+" : "-",
-              l.code, l.term->name, l.name ? l.name : "");
+      fprintf(f, "%-5s %s%-3d %-20s     %-30s\n", l.date,
+              l.is_event ? "+" : "-", l.code, l.term->name,
+              l.name ? l.name : "");
     }
   }
   fclose(f);

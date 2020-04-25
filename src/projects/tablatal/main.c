@@ -1,18 +1,16 @@
-#include <stdbool.h>
-#include <string.h>
 #include <ctype.h>
+#include <stdbool.h>
 #include <stdio.h>
-#include <time.h>
-#include <math.h>
-
-#include "tablatal.c"
+#include <stdlib.h>
+#include <string.h>
 
 typedef struct Log {
-  char term[30];
-  char date[5];
+  char date[6];
+  char rune[1];
   int code;
-  char name[30];
+  char term[20];
   int pict;
+  char name[30];
   bool is_event;
 } Log;
 
@@ -23,39 +21,56 @@ typedef struct Journal {
 
 Journal all_logs;
 
-void substr(char *s, char *t, int from, int to) { 
-  strncpy(t, s + from, to); 
+void substr(char *s, char *t, int from, int to) { strncpy(t, s + from, to); }
+
+char *trimstr(char *str) {
+  char *end;
+  while (isspace((unsigned char)*str)) str++;
+  if (*str == 0) return str;
+  end = str + strlen(str) - 1;
+  while (end > str && isspace((unsigned char)*end)) end--;
+  end[1] = '\0';
+  return str;
 }
 
-void parseTablatal(FILE *fp) {
+void parseTablatal(FILE *fp, Journal *journal) {
   int bufferLength = 255;
   char line[bufferLength];
-  int lineNumber = 0;
-
   while (fgets(line, bufferLength, fp)) {
-    char subbuff2[20];
-    substr(line, subbuff2, 10, 20);
-    printf("%s\n", subbuff2);
-
-    Log log;
-
-    substr(line, log.date, 0, 5);
-    substr(line, log.term, 10, 20);
-    // substr(line, log.name, 0, 5);
-
-    // substr(line, log.code, 0, 5);
-    // substr(line, log.pixt, 0, 5);
-
-    // log.is_event = false;
-    all_logs.logs[all_logs.len] = log;
-    all_logs.len++;
-
-    lineNumber++;
+    trimstr(line);
+    if (strlen(line) < 16) {
+      continue;
+    }
+    Log *l = &journal->logs[journal->len];
+    // Date
+    substr(line, l->date, 0, 5);
+    // Rune
+    substr(line, l->rune, 6, 1);
+    l->is_event = !strcmp(l->rune, "+");
+    // Code
+    char codebuff[4];
+    substr(line, codebuff, 7, 3);
+    l->code = atoi(codebuff);
+    // Term
+    substr(line, l->term, 11, 20);
+    trimstr(l->term);
+    // Pict
+    if (strlen(line) >= 35) {
+      char pictbuff[4];
+      substr(line, pictbuff, 32, 3);
+      l->pict = atoi(pictbuff);
+    }
+    // Name
+    if (strlen(line) >= 38) {
+      substr(line, l->name, 36, 20);
+      trimstr(l->name);
+    }
+    journal->len++;
   }
 }
 
-int main(int argc, char* argv[]) {
-  FILE* file;
+int main(int argc, char *argv[]) {
+  FILE *file;
   if (argc == 1)
     file = fopen("../../database/horaire.tbtl", "r");
   else
@@ -64,7 +79,15 @@ int main(int argc, char* argv[]) {
     printf("EOPEN\n");
     return 1;
   }
-  parseTablatal(file);
+
+  parseTablatal(file, &all_logs);
+
+  for (int i = 0; i < all_logs.len; ++i) {
+    Log l = all_logs.logs[i];
+    printf("%s | %s | %d | %s | %d | %s\n", l.date, l.rune, l.code, l.term,
+           l.pict, l.name);
+  }
+
   fclose(file);
   return 0;
 }
