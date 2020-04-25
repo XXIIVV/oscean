@@ -1,3 +1,4 @@
+add_log(&zoe_format, "20I05", 236);
 add_log(&pascal, "20I04", 327);
 add_log(&zoe_format, "20I03", 268);
 add_log(&pascal, "20I02", 325);

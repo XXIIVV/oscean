@@ -421,6 +421,7 @@ add_word(&plan9_links, "Plan9 OCaml", "http://mirtchovski.com/p9/ocaml");
 add_word(&plan9_links, "Plan9 Window Manager", "https://github.com/zv/9Problems");
 add_word(&plan9_links, "Acme Screencast", "https://research.swtch.com/acme");
 add_word(&plan9_links, "Acme Readme", "http://acme.cat-v.org/readme");
+add_word(&plan9_links, "Werc Docs", "http://werc.cat-v.org");
  
 Dict programming_links = create_dict("programming links");
 add_word(&programming_links, "Bell Labs", "http://doc.cat-v.org/bell_labs");
