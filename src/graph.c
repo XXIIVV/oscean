@@ -5,7 +5,7 @@ void fputs_graph_daily(FILE *f, Journal *journal) {
   select_moment(journal, moment, 0, 364);
 
   // Draw
-  int w = 16;
+  int w = 11;
   int h = 8;
   fprintf(f, "<figure>");
   fprintf(f, "<svg width='%d' height='%d' xmlns='http://www.w3.org/2000/svg'>",

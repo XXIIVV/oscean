@@ -739,6 +739,27 @@ void build_rss(Journal *journal) {
   fclose(f);
 }
 
+void export_logs(Journal *journal) {
+  FILE *f = fopen("database/horaire.tbtl", "w");
+
+  for (int i = 0; i < journal->len; ++i) {
+    Log l = journal->logs[i];
+
+    char filename[STR_BUF_LEN];
+    to_filename(l.term->name, filename);
+
+    if (l.pict) {
+      fprintf(f, "%-5s%s%-3d %-20s %-3d %-30s \n", l.date,
+              l.is_event ? "+" : "-", l.code, l.term->name, l.pict,
+              l.name ? l.name : "");
+    } else {
+      fprintf(f, "%-5s%s%-3d %-20s     %-30s\n", l.date, l.is_event ? "+" : "-",
+              l.code, l.term->name, l.name ? l.name : "");
+    }
+  }
+  fclose(f);
+}
+
 void print_debug(){
   print_greg_now();
   print_arvelie_now();
@@ -788,11 +809,10 @@ int main(void) {
   printf("Building extras..\n");
   build_rss(&all_logs);
   print_debug();
+  export_logs(&all_logs);
 
   printf("Lexicon: %d entries\n", lexicon_len);
   printf("Horaire: %d entries\n", all_logs.len);
 
   return (0);
 }
-
-
