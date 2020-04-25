@@ -740,7 +740,6 @@ void build_rss(Journal *journal) {
 }
 
 void print_debug(){
-  printf("========\n");
   print_greg_now();
   print_arvelie_now();
 
