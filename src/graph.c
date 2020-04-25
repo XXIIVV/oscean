@@ -1,27 +1,26 @@
 // You cannot be that which you observe
 
 void fputs_graph_daily(FILE *f, Journal *journal) {
-  char *colors[] = {"#dddddd", "#72dec2", "#6bd0b8", "#64c2ae", "#5cb4a4",
-                    "#55a69a", "#4e988f", "#478a85", "#3f7c7b", "#386e71"};
+  char *colors[] = {"#fff", "#eee", "#ddd", "#bbb", "#999",
+                    "#666", "#444", "#222", "#111", "#000"};
 
   int moment[365];
   select_moment(journal, moment, 0, 364);
 
   // Draw
-  int s = 11;
+  int w = 16;
+  int h = 8;
   fprintf(f, "<figure>");
   fprintf(f, "<svg width='%d' height='%d' xmlns='http://www.w3.org/2000/svg'>",
-          (s + 1) * 52, (s + 1) * 7);
+          w * 52, h * 7);
 
   for (int doty = 0; doty < 365; ++doty) {
-    int x = (doty / 7) * (s + 1);
-    int y = (doty % 7) * (s + 1);
+    int x = (doty / 7) * w;
+    int y = (doty % 7) * h;
     int value = moment[364 - doty];
     char *color = colors[value];
-    fprintf(
-        f,
-        "<rect x='%d' y='%d' rx='2' ry='2' width='%d' height='%d' fill='%s'/>",
-        x, y, s, s, color);
+    fprintf(f, "<rect x='%d' y='%d' width='%d' height='%d' fill='black'/>", x,
+            y, w, clamp_int(round(h * value / 10), 1, h));
   }
 
   fprintf(f, "</svg>");

@@ -104,6 +104,10 @@ float clamp(float v, float min, float max) {
   return v > max ? max : v < min ? min : v;
 }
 
+int clamp_int(int v, int min, int max) {
+  return v > max ? max : v < min ? min : v;
+}
+
 // Arvelie
 
 int extract_year(char *arvelie) {
