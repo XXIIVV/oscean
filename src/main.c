@@ -798,6 +798,9 @@ int main(int argc, char *argv[]) {
   int pict_used[999];
   for (int i = 0; i < all_logs.len; ++i) {
     Log *l = &all_logs.logs[i];
+    if(l->code < 1){
+      printf("Error: Empty code %s\n", l->date);
+    }
     if (l->pict > 0) {
       pict_used[pict_used_len] = l->pict;
       pict_used_len++;
