@@ -92,6 +92,18 @@ int index_of_string(char *a[], int num_elements, char *value) {
   return -1;
 }
 
+void substr(char *s, char *t, int from, int to) { strncpy(t, s + from, to); }
+
+char *trimstr(char *str) {
+  char *end;
+  while (isspace((unsigned char)*str)) str++;
+  if (*str == 0) return str;
+  end = str + strlen(str) - 1;
+  while (end > str && isspace((unsigned char)*end)) end--;
+  end[1] = '\0';
+  return str;
+}
+
 float find_average(int a[]) {
   int sum = 0;
   for (int i = 0; i < 52; ++i) {
@@ -256,7 +268,7 @@ void print_arvelie_now() {
   int d = (doty % 14) + 1;
   int i = floor(doty / 14);
   char *m = months[i];
-  printf("Date is: %d%s%02d\n", 20, m, d);
+  printf("%d%s%02d\n", 20, m, d);
 }
 
 // Horaire

@@ -1,7 +1,8 @@
+#include <stdio.h>
+#include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
 #include <ctype.h>
-#include <stdio.h>
 #include <time.h>
 #include <math.h>
 
@@ -15,9 +16,6 @@
 #define TERM_CHILDREN_BUFFER 16
 #define JOURNAL_BUFFER 4000
 #define LEXICON_BUFFER 512
-
-int pict_used_len = 0;
-int pict_used[999];
 
 char *html_head = "<!DOCTYPE html><html lang='en'><head>"
   "<meta charset='utf-8'>"
@@ -73,39 +71,25 @@ typedef struct Term {
 } Term;
 
 typedef struct Log {
-  Term *term;
-  char *date;
+  char date[6];
+  char rune[1];
   int code;
-  char *name;
+  char host[21];
   int pict;
+  char name[30];
   bool is_event;
+  Term *term;
 } Log;
 
 typedef struct Journal {
   int len;
-  Log logs[JOURNAL_BUFFER];
+  Log logs[4000];
 } Journal;
 
 Journal all_logs;
 
 #include "helpers.c"
 #include "graph.c"
-
-void add_journal_log(Journal *journal, Term *term, char *date, int code, char *name, int pict, bool is_event){
-  if(journal->len >= JOURNAL_BUFFER){ 
-    printf("Error: Reached journal buffer\n"); 
-    return; 
-  }
-  Log log;
-  log.term = term;
-  log.date = date;
-  log.code = code;
-  log.name = name;
-  log.pict = pict;
-  log.is_event = is_event;
-  journal->logs[journal->len] = log;
-  journal->len++;
-}
 
 // Creators/Setters
 
@@ -213,37 +197,6 @@ void add_link(Term *term, char *name, char *url) {
   term->links_names[term->links_len] = name;
   term->links_urls[term->links_len] = url;
   term->links_len++;
-}
-
-void record_pict(int pict){
-  // check if it already exists
-  for (int i = 1; i < pict_used_len; ++i) {
-    if(pict == pict_used[i]){
-      printf("Error: Duplicate id: %d\n", pict);
-      return;
-    }
-  }
-
-  pict_used[pict_used_len] = pict;
-  pict_used_len++;
-}
-
-void add_event_diary(Term *term, char *date, int code, char *name, int pict) {
-  add_journal_log(&all_logs, term, date, code, name, pict, true);
-  record_pict(pict);
-}
-
-void add_diary(Term *term, char *date, int code, char *name, int pict) {
-  add_journal_log(&all_logs, term, date, code, name, pict, false);
-  record_pict(pict);
-}
-
-void add_event(Term *term, char *date, int code, char *name) {
-  add_journal_log(&all_logs, term, date, code, name, 0, true);
-}
-
-void add_log(Term *term, char *date, int code) {
-  add_journal_log(&all_logs, term, date, code, NULL, 0, false);
 }
 
 // Tools
@@ -739,81 +692,132 @@ void build_rss(Journal *journal) {
   fclose(f);
 }
 
-void export_logs(Journal *journal) {
-  FILE *f = fopen("database/horaire.tbtl", "w");
-
-  for (int i = 0; i < journal->len; ++i) {
-    Log l = journal->logs[i];
-
-    char filename[STR_BUF_LEN];
-    to_filename(l.term->name, filename);
-
-    if (l.pict) {
-      fprintf(f, "%-5s %s%-3d %-20s %-3d %-30s \n", l.date,
-              l.is_event ? "+" : "-", l.code, l.term->name, l.pict,
-              l.name ? l.name : "");
-    } else {
-      fprintf(f, "%-5s %s%-3d %-20s     %-30s\n", l.date,
-              l.is_event ? "+" : "-", l.code, l.term->name,
-              l.name ? l.name : "");
+void parseTablatal(FILE *fp, Journal *journal) {
+  int bufferLength = 255;
+  char line[bufferLength];
+  while (fgets(line, bufferLength, fp)) {
+    trimstr(line);
+    if (strlen(line) < 16) {
+      continue;
     }
-  }
-  fclose(f);
-}
-
-void print_debug(){
-  print_greg_now();
-  print_arvelie_now();
-
-  // Find next Id:
-  for (int i = 1; i < 999; ++i) {
-    int index = index_of(pict_used, pict_used_len, i);
-    if (index < 0) {
-      printf("Next id: #%d\n", i);
-      break;
+    Log *l = &journal->logs[journal->len];
+    // Date
+    substr(line, l->date, 0, 5);
+    // Rune
+    substr(line, l->rune, 6, 1);
+    l->is_event = !strcmp(l->rune, "+");
+    // Code
+    char codebuff[4];
+    substr(line, codebuff, 7, 3);
+    l->code = atoi(codebuff);
+    // Term
+    substr(line, l->host, 11, 21);
+    trimstr(l->host);
+    // Pict
+    if (strlen(line) >= 35) {
+      char pictbuff[4];
+      substr(line, pictbuff, 32, 3);
+      l->pict = atoi(pictbuff);
     }
-    // Check if photo exists
-    char photopath[30];
-    snprintf(photopath, 30, "../media/diary/%d.jpg", i);
-    if(!file_exists(photopath)){
-      printf("Error: Missing photo %d.jpg\n", i);
+    // Name
+    if (strlen(line) >= 38) {
+      substr(line, l->name, 36, 20);
+      trimstr(l->name);
     }
+    journal->len++;
   }
 }
 
-int main(void) {
-  #include "database/glossary.c"
-  #include "database/lexicon.c"
-  #include "database/horaire.c"
+int main(int argc, char *argv[]) {
+  if (argc < 2) {
+    printf("ERR: Missing lexicon file\n");
+    return 0;
+  }
+  if (argc < 3) {
+    printf("ERR: Missing journal file\n");
+    return 0;
+  }
+
+#include "database/glossary.c"
+#include "database/lexicon.c"
 
   int lexicon_len = sizeof lexicon / sizeof lexicon[0];
 
+  // Loading journal
+  FILE *horaire_tbtl = fopen(argv[2], "r");
+  if (horaire_tbtl) {
+    printf("Parsing journal..\n");
+    parseTablatal(horaire_tbtl, &all_logs);
+  }
+  fclose(horaire_tbtl);
+
+  // Parenting journal entries
+  printf("Parenting journal(%d entries)..\n", all_logs.len);
+  for (int i = 0; i < all_logs.len; ++i) {
+    Log *l = &all_logs.logs[i];
+    l->term = NULL;
+    for (int j = 0; j < lexicon_len; ++j) {
+      Term *t = lexicon[j];
+      if (!strcmp(l->host, t->name)) {
+        l->term = t;
+        break;
+      }
+    }
+    if (!l->term) {
+      printf("ERR: Unknown log host %s\n", l->host);
+      return 0;
+    }
+  }
+
   // Parent Terms
-  printf("Parenting %d terms..\n", lexicon_len);
+  printf("Parenting lexicon (%d entires)..\n", lexicon_len);
   for (int i = 0; i < lexicon_len; ++i) {
     Term *t = lexicon[i];
-    if(t->parent && t->parent->children_len < TERM_CHILDREN_BUFFER){
+    if (t->parent && t->parent->children_len < TERM_CHILDREN_BUFFER) {
       t->parent->children[t->parent->children_len] = t;
-      t->parent->children_len++;  
-    }
-    else {
+      t->parent->children_len++;
+    } else {
       printf("Error: Could not parent %s\n", t->name);
       t->parent = &home;
     }
   }
 
+  // Build pages
   printf("Building %d pages..\n", lexicon_len);
   for (int i = 0; i < lexicon_len; ++i) {
     build_page(lexicon[i], &all_logs);
   }
 
+  // Build extras
   printf("Building extras..\n");
   build_rss(&all_logs);
-  print_debug();
-  export_logs(&all_logs);
 
-  printf("Lexicon: %d entries\n", lexicon_len);
-  printf("Horaire: %d entries\n", all_logs.len);
+  // Final checkups
+  printf("Checkup..\n");
+  int pict_used_len = 0;
+  int pict_used[999];
+  for (int i = 0; i < all_logs.len; ++i) {
+    Log *l = &all_logs.logs[i];
+    if (l->pict > 0) {
+      pict_used[pict_used_len] = l->pict;
+      pict_used_len++;
+    }
+  }
+  for (int i = 1; i < 999; ++i) {
+    int index = index_of(pict_used, pict_used_len, i);
+    if (index < 0) {
+      printf("PICT#%d is available.\n", i);
+      break;
+    }
+    // Check if photo exists
+    char pictpath[30];
+    snprintf(pictpath, 30, "../media/diary/%d.jpg", i);
+    if (!file_exists(pictpath)) {
+      printf("Error: Missing photo %d.jpg\n", i);
+    }
+  }
+
+  print_arvelie_now();
 
   return (0);
 }
