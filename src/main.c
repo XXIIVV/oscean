@@ -730,11 +730,21 @@ void parseTablatal(FILE *fp, Journal *journal) {
 
 int main(int argc, char *argv[]) {
   if (argc < 2) {
-    printf("ERR: Missing lexicon file\n");
+    printf("ERR: Missing lexicon argument\n");
     return 0;
   }
   if (argc < 3) {
-    printf("ERR: Missing journal file\n");
+    printf("ERR: Missing journal argument\n");
+    return 0;
+  }
+  FILE *lexicon_ndtl = fopen(argv[1], "r");
+  if (!lexicon_ndtl) {
+    printf("ERR: Missing %s\n", argv[1]);
+    return 0;
+  }
+  FILE *horaire_tbtl = fopen(argv[2], "r");
+  if (!horaire_tbtl) {
+    printf("ERR: Missing %s\n", argv[2]);
     return 0;
   }
 
@@ -744,11 +754,12 @@ int main(int argc, char *argv[]) {
   int lexicon_len = sizeof lexicon / sizeof lexicon[0];
 
   // Loading journal
-  FILE *horaire_tbtl = fopen(argv[2], "r");
-  if (horaire_tbtl) {
-    printf("Parsing journal..\n");
-    parseTablatal(horaire_tbtl, &all_logs);
-  }
+  printf("Parsing %s..\n", argv[1]);
+  // parseIndental(lexicon_ndtl, &all_terms);
+  fclose(lexicon_ndtl);
+
+  printf("Parsing %s..\n", argv[2]);
+  parseTablatal(horaire_tbtl, &all_logs);
   fclose(horaire_tbtl);
 
   // Parenting journal entries
