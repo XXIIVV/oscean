@@ -4,13 +4,11 @@ void fputs_graph_daily(FILE *f, Journal *journal) {
   int moment[365];
   select_moment(journal, moment, 0, 364);
 
-  // Draw
   int w = 11;
   int h = 8;
   fprintf(f, "<figure>");
   fprintf(f, "<svg width='%d' height='%d' xmlns='http://www.w3.org/2000/svg'>",
           w * 52, h * 7);
-
   for (int doty = 0; doty < 365; ++doty) {
     int x = (doty / 7) * w;
     int y = (doty % 7) * h;
@@ -18,7 +16,6 @@ void fputs_graph_daily(FILE *f, Journal *journal) {
     fprintf(f, "<rect x='%d' y='%d' width='%d' height='%d' fill='black'/>", x,
             y, w, clamp_int(round(h * value / 10), 1, h));
   }
-
   fprintf(f, "</svg>");
   fprintf(
       f, "<figcaption>Fig. Daily Activity for the past 365 days.</figcaption>");

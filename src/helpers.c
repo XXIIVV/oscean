@@ -1,4 +1,4 @@
-//
+// Strings
 
 bool is_char_alphanum(char ch) {
   int is_num = ch >= '0' && ch <= '9';
@@ -103,6 +103,8 @@ char *trimstr(char *str) {
   end[1] = '\0';
   return str;
 }
+
+// Numbers
 
 float find_average(int a[]) {
   int sum = 0;
@@ -216,21 +218,17 @@ char *arvelie_to_greg(char *arvelie) {
 
 void fputs_rfc2822(FILE *f, char *arvelie) {
   int doty, year;
-  if(arvelie != NULL){
+  if (arvelie != NULL) {
     doty = arvelie_to_doty(arvelie);
     year = extract_year(arvelie);
-  }
-  else{
+  } else {
     doty = get_doty();
     year = get_year();
   }
-  
   int month = doty_to_month(doty);
   int day = doty_to_day(doty);
-
   char rfc_2822[40];
   struct tm str_time;
-
   str_time.tm_year = (2000 + year) - 1900;
   str_time.tm_mon = month;
   str_time.tm_mday = day;
@@ -238,9 +236,7 @@ void fputs_rfc2822(FILE *f, char *arvelie) {
   str_time.tm_min = 0;
   str_time.tm_sec = 0;
   str_time.tm_isdst = 0;
-
   time_t current = mktime(&str_time);
-
   strftime(rfc_2822, sizeof(rfc_2822), "%a, %d %b %Y %T %z",
            localtime(&current));
   fprintf(f, "%s", rfc_2822);
@@ -256,7 +252,6 @@ void print_arvelie_now() {
   time_t now;
   time(&now);
   struct tm *local = localtime(&now);
-
   int year, month, day;
   year = local->tm_year + 1900;
   month = local->tm_mon + 1;
@@ -277,7 +272,6 @@ void select_moment(Journal *journal, int history[], int from, int to) {
   for (int i = 0; i < to; ++i) {
     history[i] = 0;
   }
-
   for (int i = 0; i < journal->len; ++i) {
     Log l = journal->logs[i];
     int offset = offset_from_arvelie(l.date);
