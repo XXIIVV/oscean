@@ -882,14 +882,14 @@ add_item(&everyday_items, "Lawson MII Key holder");
 add_item(&everyday_items, "Amazon Kindle Paperwhite");
 add_item(&everyday_items, "DuxtioRFID Blocking Wallet");
 
-List equipment_items = create_list("equipment items");
-add_item(&equipment_items, "Sailrite stitching awl");
-add_item(&equipment_items, "Unibody vegetable cleaver");
-add_item(&equipment_items, "Stainless steel moka pot");
-add_item(&equipment_items, "Tawashi scrubber");
-add_item(&equipment_items, "Davis basic rigging knife");
-add_item(&equipment_items, "Unibody nigiri scissors");
-add_item(&equipment_items, "Cast iron pan");
+List essentials_items = create_list("essentials items");
+add_item(&essentials_items, "Sailrite stitching awl");
+add_item(&essentials_items, "Unibody vegetable cleaver");
+add_item(&essentials_items, "Stainless steel moka pot");
+add_item(&essentials_items, "Tawashi scrubber");
+add_item(&essentials_items, "Davis basic rigging knife");
+add_item(&essentials_items, "Unibody nigiri scissors");
+add_item(&essentials_items, "Cast iron pan");
 
 //
 

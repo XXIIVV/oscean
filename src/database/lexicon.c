@@ -1200,9 +1200,9 @@ Term inventory = create_portal(&devine_lu_linvega, "inventory", "The collection 
 Term everyday = create_album(&inventory, "everyday", "Everyday items found in my bag or pockets.", NULL);
 add_list(&everyday, &everyday_items);
 
-Term equipment = create_album(&inventory, "equipment", "Most practical cooking and repair tools.", 
+Term essentials = create_album(&inventory, "essentials", "Most practical cooking and repair tools.", 
   "<p>Here are some of my favourite items aboard " SEND("pino") ".</p>");
-add_list(&equipment, &equipment_items);
+add_list(&essentials, &essentials_items);
 
 Term skate = create_album(&inventory, "skate", "The Skate specs.", 
   "<p>For when the sun is just about to set, and when the road is that perfect kind of slick, we carry a little " LINKNAME("https://www.pennyskateboards.com/us/blackout-27.html", "skateboard") " with us on " SEND("pino") ". We have the 68cm board, with the 59mm wheels.</p>");
@@ -1614,7 +1614,7 @@ Term *lexicon[] = {
   &soies_machine, &soies_injection, &neausea, &nohlxeserre, &dinaisth, 
   &kanikule, &vetetrandes, &laeisth, &andes_castel, &duomo, &neau, &dilitriel, 
   &aitasla, &characters, &rlionn, &neonev, &andes, &yajnev, &paradichlorisse, 
-  &photography, &macro, &personal, &film, &black, &infrared, &travel, &equipment,
+  &photography, &macro, &personal, &film, &black, &infrared, &travel, &essentials,
   &the_sublime, &japan, &minamiise, &shizuoka, &ogasawara, &yokohama, &fuji, 
   &osaka, &tokyo, &fiji, &marquesas, &marshall_islands, &niue, &mexico, &france, 
   &new_zealand, &america, &canada, &germany, &austria, &czech, &netherlands, 
