@@ -92,7 +92,9 @@ int index_of_string(char *a[], int num_elements, char *value) {
   return -1;
 }
 
-void substr(char *s, char *t, int from, int to) { strncpy(t, s + from, to); }
+void substr(char *src, char *dest, int from, int to) { 
+  memcpy(dest, src + from, to); 
+}
 
 char *trimstr(char *str) {
   char *end;
@@ -102,6 +104,24 @@ char *trimstr(char *str) {
   while (end > str && isspace((unsigned char)*end)) end--;
   end[1] = '\0';
   return str;
+}
+
+void print_tokens(char *s) {
+  printf("input: %s\n", s);
+  char *start = s;
+  char *end = s;
+  while (*s) {
+    if (*s == '(')
+      start = s;
+    else if (*s == ')')
+      end = s;
+    if (start < end && *start) {
+      *end = 0;
+      printf("token: %s\n", start + 1);
+      start = s = end;
+    }
+    s++;
+  }
 }
 
 // Numbers
@@ -264,23 +284,4 @@ void print_arvelie_now() {
   int i = floor(doty / 14);
   char *m = months[i];
   printf("%d%s%02d\n", 20, m, d);
-}
-
-// Horaire
-
-void select_moment(Journal *journal, int history[], int from, int to) {
-  for (int i = 0; i < to; ++i) {
-    history[i] = 0;
-  }
-  for (int i = 0; i < journal->len; ++i) {
-    Log l = journal->logs[i];
-    int offset = offset_from_arvelie(l.date);
-    if (offset < from) {
-      continue;
-    }
-    if (offset > to) {
-      break;
-    }
-    history[offset] = l.code % 10;
-  }
 }

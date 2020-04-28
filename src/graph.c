@@ -1,5 +1,23 @@
 // You cannot be that which you observe
 
+void select_moment(Journal *journal, int history[], int from, int to) {
+  for (int i = 0; i < to; ++i) {
+    history[i] = 0;
+  }
+  for (int i = 0; i < journal->len; ++i) {
+    Log l = journal->logs[i];
+    int offset = offset_from_arvelie(l.date);
+    if (offset < from) {
+      continue;
+    }
+    if (offset > to) {
+      break;
+    }
+    history[offset] = l.code % 10;
+  }
+}
+
+
 void fputs_graph_daily(FILE *f, Journal *journal) {
   int moment[365];
   select_moment(journal, moment, 0, 364);
