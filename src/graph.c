@@ -1,47 +1,5 @@
 // You cannot be that which you observe
 
-void select_moment(Journal *journal, int history[], int from, int to) {
-  for (int i = 0; i < to; ++i) {
-    history[i] = 0;
-  }
-  for (int i = 0; i < journal->len; ++i) {
-    Log l = journal->logs[i];
-    int offset = offset_from_arvelie(l.date);
-    if (offset < from) {
-      continue;
-    }
-    if (offset > to) {
-      break;
-    }
-    history[offset] = l.code % 10;
-  }
-}
-
-
-void fputs_graph_daily(FILE *f, Journal *journal) {
-  int moment[365];
-  select_moment(journal, moment, 0, 364);
-
-  int w = 11;
-  int h = 8;
-  fprintf(f, "<figure>");
-  fprintf(f, "<svg width='%d' height='%d' xmlns='http://www.w3.org/2000/svg'>",
-          w * 52, h * 7);
-  for (int doty = 0; doty < 365; ++doty) {
-    int x = (doty / 7) * w;
-    int y = (doty % 7) * h;
-    int value = moment[364 - doty];
-    fprintf(f, "<rect x='%d' y='%d' width='%d' height='%d' fill='black'/>", x,
-            y, w, clamp_int(round(h * value / 10), 1, h));
-  }
-  fprintf(f, "</svg>");
-  fprintf(
-      f, "<figcaption>Fig. Daily Activity for the past 365 days.</figcaption>");
-  fprintf(f, "</figure>");
-}
-
-//
-
 void fputs_graph_burn(FILE *f, Journal *journal) {
   int segs[52];
 
