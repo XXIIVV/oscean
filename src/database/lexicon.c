@@ -1187,6 +1187,15 @@ add_link(&calendar, "rss feed", "https://wiki.xxiivv.com/links/rss.xml");
 Term identity = create_term(&journal, "identity", "Various notes on the visual choices made for the Nataniev projects.", 
   "<p>Additional details can be found in the " SEND("faqs") ".</p>");
 
+Term meta = create_term(&journal, "meta", "Various notes on the wiki itself.", 
+  "<h3>Templating</h3>"
+  "<table border='1'>"
+  "<tr><td>{hundred_rabbits}</td><td>send unnamed</td></tr>"
+  "<tr><td>{https://wiki.xxiivv.com}</td><td>link unnamed</td></tr>"
+  "<tr><td>{hundred_rabbits send description}</td><td>send named</td></tr>"
+  "<tr><td>{https://wiki.xxiivv.com link description}</td><td>link named</td></tr>"
+  "</table>");
+
 Term now = create_term(&journal, "now", "The now page shows infographics of current activity.", 
   "<p>The history of project activity is recorded with the " SENDNAME("horaire", "horaire time-tracker") ", to find the complete history of activity, visit the " SEND("tracker") ".</p>");
 
@@ -1618,7 +1627,7 @@ Term *lexicon[] = {
   &inventory, &everyday, &skate, &bike, &studio, &computer, &plan9, &camera, 
   &keyboard, &directory, &bookmarks, &readings, &goals, &identity, &death, &faqs, 
   &audio_faqs, &visual_faqs, &research_faqs, &lifestyle_faqs, &mirrors, &wisdom, 
-  &action, &inaction, &knowledge, &programming, &design, &work, &writing, 
+  &action, &inaction, &knowledge, &programming, &design, &work, &writing, &meta, 
   &health, &ethics, &technology, &ascetism, &discourse, &vegan, &morals, 
   &documentation, &quotes, &language, &english, &grimgrains, &notebook, 
   &the_sartre_mechanism, &talk, &systems, &vedic, &needles, &shorthand,

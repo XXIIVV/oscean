@@ -232,19 +232,33 @@ void fputs_templated_seg(FILE *f, char *str) {
     target_len++;
   }
   target[target_len] = '\0';
+  // Print
   if (!has_name) {
     if (!is_url(target)) {
-      printf("send(unnamed)%s\n", target);
+      char filename[STR_BUF_LEN];
+      to_filename(target, filename);
+      fprintf(f, "<a href='%s.html'>%s</a>", filename, target);
     } else {
-      printf("link(unnamed)%s\n", target);
+      fprintf(f, "<a href='%s' class='external' target='_blank'>%s</a>", target,
+              target);
     }
     return;
   }
   // Make name
+  char name[255];
+  int name_len = 0;
+  for (int i = target_len + 2; i < len - 1; i++) {
+    name[name_len] = str[i];
+    name_len++;
+  }
+  name[name_len] = '\0';
   if (!is_url(target)) {
-    printf("send(named)%s\n", target);
+    char filename[STR_BUF_LEN];
+    to_filename(target, filename);
+    fprintf(f, "<a href='%s.html'>%s</a>", filename, name);
   } else {
-    printf("link(named)%s\n", target);
+    fprintf(f, "<a href='%s' class='external' target='_blank'>%s</a>", target,
+            name);
   }
 }
 
