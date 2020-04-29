@@ -34,6 +34,17 @@ void to_lowercase(char *str, char *target, size_t tsize) {
   target[tsize - 1] = '\0';
 }
 
+void to_uppercase(char *str, char *target, size_t tsize) {
+  for (size_t i = 0; i < tsize; i++) {
+    target[i] = str[i];
+    if (target[i] == '\0') {
+      break;
+    }
+    target[i] = toupper(target[i]);
+  }
+  target[tsize - 1] = '\0';
+}
+
 void to_filename(char *str, char *mod) {
   int len = strlen(str) + 1;
   for (int i = 0; i < len; i++) {

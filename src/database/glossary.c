@@ -730,7 +730,6 @@ add_word(&pino_details, "Hull Material", "Fiberglass");
 add_word(&pino_details, "Keel", "Fin");
 
 Dict rare_tracks = create_dict("rare tracks");
-
 add_word(&rare_tracks, "Aliceffekt - Glenda's Travels", "ChipsynthMD, Toy Company 2019");
 add_word(&rare_tracks, "Comaduster - Winter Eyes(Aliceffekt Remix)", "Tympanik Audio 2013");
 add_word(&rare_tracks, "Veroníque - Fisherman II(Aliceffekt Remix)", "2013");
@@ -743,6 +742,91 @@ add_word(&rare_tracks, "Iszoloscope - Dumachus Junction Feat. Aliceffekt", "Beyo
 add_word(&rare_tracks, "Aliceffekt - Laeis 7th Passage E.th", "Kinetik Festival Volume 3, Artoffact 2010");
 add_word(&rare_tracks, "Stray - Does it really matter(Aliceffekt Remix)", "2009");
 add_word(&rare_tracks, "Perfection Plastic - Bad Girls(Aliceffekt Remix)", "2009");
+
+
+
+
+
+Dict * all_dicts[] = {
+  &dictionary,
+  &principles,
+  &spacetime,
+  &aeropunk,
+  &linguistics,
+  &psychology_lexicon,
+  &personalities,
+  &sociology,
+  &biases,
+  &groupthink_biases,
+  &effects,
+  &fallacies,
+  &illusions,
+  &philosophy,
+  &green_anarchism,
+  &animal_rights,
+  &adaptation,
+  &recyclism,
+  &beliefs,
+  &arguments,
+  &responses,
+  &buddhism,
+  &dark_patterns,
+  &development,
+  &unix_primitives,
+  &celestial_navigation,
+  &jisho_sailing,
+  &jisho_vegan,
+  &technology_links,
+  &hardware_links,
+  &operating_system_links,
+  &plan9_links,
+  &programming_links,
+  &solarpunk_links,
+  &personal_wiki_links,
+  &wiki_links,
+  &podcast_links,
+  &blog_links,
+  &entries_links,
+  &collapsology_links,
+  &general_knowledge_links,
+  &software_links,
+  &macintosh_software,
+  &books,
+  &movies,
+  &albums,
+  &comics,
+  &videogames,
+  &watchlist_2020,
+  &readlist_2016,
+  &readlist_2017,
+  &readlist_2018,
+  &readlist_2019,
+  &readlist_2020,
+  &macbook_workstation,
+  &studio_workstation,
+  &pino_details,
+  &rare_tracks
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+///////////////////////////////////////////////////
 
 List programming_knowledge = create_list("programming knowledge");
 add_item(&programming_knowledge, "The freedom <b>to run</b> the program as you wish, for any purpose.");
@@ -900,3 +984,23 @@ add_item(&essentials_items, "Cast iron pan");
 // add_code(&noon_guest, "<b>Womb Nest</b>: Town, Forest & Edge Of Town");
 // add_code(&noon_guest, "<b>Tomb Pest</b>: Sewers, Tomb, Bone Cave & Spider's Lair");
 // add_code(&noon_guest, "<b>Moon Quest </b>: Pyre(Normal Ver.), Puzzle Room, Cathedral & Labyrinth");
+
+List * all_lists[] = {
+  &programming_knowledge, 
+  &programming_practices, 
+  &design_knowledge, 
+  &design_pragnanz, 
+  &work_knowledge, 
+  &work_habits, 
+  &work_charisma, 
+  &writing_knowledge, 
+  &health_knowledge, 
+  &health_breathing, 
+  &dark_mountaineers, 
+  &solarpunk_knowledge, 
+  &action_wisdom, 
+  &inaction_wisdom, 
+  &three_gates, 
+  &everyday_items, 
+  &essentials_items
+};

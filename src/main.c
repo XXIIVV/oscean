@@ -264,8 +264,8 @@ void fputs_templated_seg(FILE *f, char *str) {
 
 void fputs_templated(FILE *f, char *str) {
   int len = strlen(str);
-  int froms[20];
-  int tos[20];
+  int froms[50];
+  int tos[50];
   int segs_len = 0;
   int from = 0;
   for (int i = 1; i < len - 1; i++) {
@@ -771,45 +771,12 @@ void build_rss(Journal *journal) {
   fclose(f);
 }
 
-void build_lexicon(Term *lexicon[], int lexicon_len) {
-  FILE *f = fopen("database/lexicon.ndtl", "w");
-
-  for (int i = 0; i < lexicon_len; ++i) {
-    fprintf(f, "%s\n", lexicon[i]->name);
-    fprintf(f, "  unde : %s\n", lexicon[i]->parent->name);
-    fprintf(f, "  bref : %s\n", lexicon[i]->bref);
-    fprintf(f, "  body : %s\n", lexicon[i]->body);
-    if (lexicon[i]->links_len > 0) {
-      fputs("  links\n", f);
-    }
-    for (int j = 0; j < lexicon[i]->links_len; ++j) {
-      fprintf(f, "    %s : %s\n", lexicon[i]->links_names[j],
-              lexicon[i]->links_urls[j]);
-    }
-    if (lexicon[i]->dicts_len > 0) {
-      fputs("  dicts\n", f);
-    }
-    for (int j = 0; j < lexicon[i]->dicts_len; ++j) {
-      fprintf(f, "    %s\n", lexicon[i]->dicts[j]->name);
-    }
-    if (lexicon[i]->lists_len > 0) {
-      fputs("  lists\n", f);
-    }
-    for (int j = 0; j < lexicon[i]->lists_len; ++j) {
-      fprintf(f, "    %s\n", lexicon[i]->lists[j]->name);
-    }
-    fputs("\n", f);
-  }
-
-  fclose(f);
-}
-
 void parseTablatal(FILE *fp, Journal *journal) {
   int bufferLength = 255;
   char line[bufferLength];
   while (fgets(line, bufferLength, fp)) {
     trimstr(line);
-    if (strlen(line) < 16) {
+    if (strlen(line) < 16 || line[0] == ';') {
       continue;
     }
     Log *l = &journal->logs[journal->len];
@@ -914,7 +881,6 @@ int main(int argc, char *argv[]) {
   // Build extras
   printf("Building extras..\n");
   build_rss(&all_logs);
-  build_lexicon(lexicon, lexicon_len);
 
   // Final checkups
   printf("Checkup..\n");

@@ -1,22 +1,39 @@
 // Macros
 
-#define LINK(link_id) "<a href='" link_id "' class='external' target='_blank'>"link_id"</a>"
-#define LINKNAME(linkname_id, linkname_name) "<a href='" linkname_id "' class='external' target='_blank'>"linkname_name"</a>"
-#define SEND(send_id) "<a href='" send_id ".html'>" send_id "</a>"
-#define SENDNAME(sendname_id, sendname_text) "<a href='" sendname_id ".html'>" sendname_text "</a>"
+#define LINK(link_id) "{" link_id "}"
+#define LINKNAME(linkname_id, linkname_name) "{" linkname_id " " linkname_name"}"
+#define SEND(send_id) "{" send_id "}"
+#define SENDNAME(sendname_id, sendname_text) "{" sendname_id " " sendname_text "}"
 #define IMAGE(folder, name) "<img src='../media/" folder "/" name "'/>"
 #define QUOTE(text, source) "<q>" text "</q><h5>—" source "</h5>"
-#define MODITCHIO(itchio_id) "<iframe frameborder='0' src='https://itch.io/embed/" itchio_id "?link_color=000000' width='600' height='167'></iframe>"
-#define MODBANDCAMP(bandcamp_id) "<iframe style='border: 0; width: 600px; height: 274px;' src='https://bandcamp.com/EmbeddedPlayer/album=" bandcamp_id "/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/' seamless></iframe>"
-#define MODYOUTUBE(youtube_id) "<iframe width='100%' height='380' src='https://www.youtube.com/embed/" youtube_id "?rel=0' style='max-width:700px' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe>"
+#define MODITCHIO(itchio_id) "\n    {^itchio " itchio_id "}\n    "
+#define MODBANDCAMP(bandcamp_id) "\n    {^bandcamp " bandcamp_id "}\n    "
+#define MODYOUTUBE(youtube_id) "\n    {^youtube " youtube_id "}\n    "
+#define REDIRECT(target) "\n    {^redirect " target "}\n    "
 #define MODFRAME(frame_id) "<iframe width='100%' height='380' src='" frame_id "' style='border:0' allowfullscreen></iframe>"
-#define REDIRECT(target) "<meta http-equiv='refresh' content='2; url=" target ".html' /><p>In a hurry? Click <a href='" target ".html'>here</a>.</p>"
+
+
+
+// #define LINK(link_id) "<a href='" link_id "' class='external' target='_blank'>"link_id"</a>"
+// #define LINKNAME(linkname_id, linkname_name) "<a href='" linkname_id "' class='external' target='_blank'>"linkname_name"</a>"
+// #define SEND(send_id) "<a href='" send_id ".html'>" send_id "</a>"
+// #define SENDNAME(sendname_id, sendname_text) "<a href='" sendname_id ".html'>" sendname_text "</a>"
+// #define IMAGE(folder, name) "<img src='../media/" folder "/" name "'/>"
+// #define QUOTE(text, source) "<q>" text "</q><h5>—" source "</h5>"
+// #define MODITCHIO(itchio_id) "<iframe frameborder='0' src='https://itch.io/embed/" itchio_id "?link_color=000000' width='600' height='167'></iframe>"
+// #define MODBANDCAMP(bandcamp_id) "<iframe style='border: 0; width: 600px; height: 274px;' src='https://bandcamp.com/EmbeddedPlayer/album=" bandcamp_id "/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/' seamless></iframe>"
+// #define MODYOUTUBE(youtube_id) "<iframe width='100%' height='380' src='https://www.youtube.com/embed/" youtube_id "?rel=0' style='max-width:700px' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe>"
+// #define MODFRAME(frame_id) "<iframe width='100%' height='380' src='" frame_id "' style='border:0' allowfullscreen></iframe>"
+// #define REDIRECT(target) "<meta http-equiv='refresh' content='2; url=" target ".html' /><p>In a hurry? Click <a href='" target ".html'>here</a>.</p>"
+
+
+
 
 // Terms
 
 Term home = create_term(NULL, "home", "", 
   IMAGE("identity", "orb.png")
-  "<p>See " SENDNAME("tracker", "recent changes") ".</p>");
+  "<p>See {tracker recent changes}.</p>");
 
 Term audio = create_portal(&home, "audio", "The Audio portal hosts various soundtrack, records and live projects.", NULL);
 
@@ -26,7 +43,7 @@ Term research = create_portal(&home, "research", "The Research hosts philosophy 
 
 Term about = create_album(&home, "about", "This wiki is a digital playground and personal logging system.", 
   "<p>The aim of this wiki is to build a form of <b>personal assistant</b> to help with the management of a vast repository of recorded statistics which includes " SENDNAME("tracker", "daily logs") ", notes on " SENDNAME("journal", "various projects") " and " SENDNAME("mirrors", "curated pages of general knowledge") ".</p>"
-  "<p>" SEND("oscean") " is written in " LINKNAME("https://en.wikipedia.org/wiki/C99", "C99") ", and designed to operate on " SENDNAME("hardware", "low-power devices") ". It is built to adapt to my needs as they change, and to " SENDNAME("longtermism", "technology as it evolves") ".</p>"
+  "<p>{Oscean} is written in {https://en.wikipedia.org/wiki/C99 C99}, and designed to operate on " SENDNAME("hardware", "low-power devices") ". It is built to adapt to my needs as they change, and to " SENDNAME("longtermism", "technology as it evolves") ".</p>"
   "<p>Each part of this project should aim to persist across " SENDNAME("longtermism", "Technological Long Term") ", not one part of it should rely on heavy dependencies. — Every function should be <b>specific</b>, <b>unobfuscated</b>, and each one carefully chosen against general-purpose libraries, frameworks or wasteful foreign entities.</p>"
   "<p>Using this tool should be <b>frictionless and undisruptive</b>, its formats and subsequent products versionable, re-purposable, interpretable and text-editable. Only through <b>open sources, open standards, human-readable formats</b> and their independencies, might they survive this fleeting age of self-destructing informatics.</p>"
   "<p>These attributes should not only be <b>perceptible in its design</b>, <br />but deeply <b>rooted in its code</b>.</p>"
