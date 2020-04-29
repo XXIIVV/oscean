@@ -11,7 +11,7 @@ cc -std=c99 -DDEBUG -Wall -Wpedantic -Wshadow -Wextra -Werror=implicit-int -Werr
 
 echo "Build Running.."
 
-./main '../database/glossary.ndtl'
+./main '../../database/glossary.ndtl'
 
 tt=$((($(date +%s%N) - $ts)/1000000)) ; echo "Build Completed in $tt ms"
 

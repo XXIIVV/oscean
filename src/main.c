@@ -772,11 +772,12 @@ void build_rss(Journal *journal) {
 }
 
 void parseTablatal(FILE *fp, Journal *journal) {
-  int bufferLength = 255;
+  int bufferLength = 1000;
   char line[bufferLength];
   while (fgets(line, bufferLength, fp)) {
     trimstr(line);
-    if (strlen(line) < 16 || line[0] == ';') {
+    int len = strlen(line);
+    if (len < 16 || line[0] == ';') {
       continue;
     }
     Log *l = &journal->logs[journal->len];
@@ -793,13 +794,13 @@ void parseTablatal(FILE *fp, Journal *journal) {
     substr(line, l->host, 11, 21);
     trimstr(l->host);
     // Pict
-    if (strlen(line) >= 35) {
+    if (len >= 35) {
       char pictbuff[4];
       substr(line, pictbuff, 32, 3);
       l->pict = atoi(pictbuff);
     }
     // Name
-    if (strlen(line) >= 38) {
+    if (len >= 38) {
       substr(line, l->name, 36, 30);
       trimstr(l->name);
     }

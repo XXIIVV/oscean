@@ -6,17 +6,19 @@
 #include <string.h>
 #include <time.h>
 
-typedef struct Term {
-  char name[21];
+#include "../../helpers.c"
+
+typedef struct List {
+  char name[40];
   char members[1];
-} Term;
+} List;
 
-typedef struct Lexicon {
+typedef struct Glossary {
   int len;
-  Term terms[4000];
-} Lexicon;
+  List lists[4000];
+} Glossary;
 
-Lexicon all_terms;
+Glossary all_lists;
 
 int countLeadingSpaces(char *str) {
   int len = strlen(str) + 1;
@@ -28,11 +30,26 @@ int countLeadingSpaces(char *str) {
   return -1;
 }
 
-void parseIndental(FILE *fp, Lexicon *lexicon) {
-  int bufferLength = 255;
+void parseIndental(FILE *fp, Glossary *glossary) {
+  int bufferLength = 1000;
   char line[bufferLength];
+  List *prev;
   while (fgets(line, bufferLength, fp)) {
-    printf("%d:%s", countLeadingSpaces(line), line);
+    int pad = countLeadingSpaces(line);
+    int len = strlen(line);
+    if (len < 4 || line[0] == ';') {
+      continue;
+    }
+    List *l = &glossary->lists[glossary->len];
+    if (pad == 0) {
+      substr(line, l->name, 0, len);
+      glossary->len++;
+    }
+  }
+
+  // Printing
+  for (int i = 0; i < glossary->len; i++) {
+    printf("%s\n", glossary->lists[i].name);
   }
 }
 
@@ -42,16 +59,16 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
-  FILE *lexicon_ndtl = fopen(argv[1], "r");
-  if (!lexicon_ndtl) {
+  FILE *glossary_ndtl = fopen(argv[1], "r");
+  if (!glossary_ndtl) {
     printf("ERR: Missing %s\n", argv[1]);
     return 0;
   }
 
   // Loading journal
   printf("Parsing %s..\n", argv[1]);
-  parseIndental(lexicon_ndtl, &all_terms);
-  fclose(lexicon_ndtl);
+  parseIndental(glossary_ndtl, &all_lists);
+  fclose(glossary_ndtl);
 
   return (0);
 }
