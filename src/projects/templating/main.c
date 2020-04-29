@@ -8,7 +8,9 @@
 
 #include "../../helpers.c"
 
-void puts_templated_seg(char *str) { printf("templated: %s\n", str); }
+void puts_templated_seg(char *str) { 
+  printf("templated: %s\n", str); 
+}
 
 void puts_templated(char *str) {
   int len = strlen(str);

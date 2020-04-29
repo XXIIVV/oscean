@@ -9,6 +9,20 @@ bool is_char_alphanum(char ch) {
   return true;
 }
 
+bool is_url(char *str) {
+  return str[0] == 'h' && str[1] == 't' && str[2] == 't' && str[3] == 'p';
+}
+
+bool is_templated(char *str) {
+  int len = strlen(str);
+  for (int i = 0; i < len; i++) {
+    if (str[i] == '{') {
+      return true;
+    }
+  }
+  return false;
+}
+
 void to_lowercase(char *str, char *target, size_t tsize) {
   for (size_t i = 0; i < tsize; i++) {
     target[i] = str[i];
@@ -92,8 +106,8 @@ int index_of_string(char *a[], int num_elements, char *value) {
   return -1;
 }
 
-void substr(char *src, char *dest, int from, int to) { 
-  memcpy(dest, src + from, to); 
+void substr(char *src, char *dest, int from, int to) {
+  memcpy(dest, src + from, to);
 }
 
 char *trimstr(char *str) {

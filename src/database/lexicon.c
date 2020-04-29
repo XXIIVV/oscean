@@ -162,7 +162,7 @@ add_link(&azolla, "live", "https://beldamrecords.bandcamp.com/album/azolla");
 add_link(&azolla, "video", "https://www.youtube.com/watch?v=9FPrPgOQqZg");
 
 Term malice = create_portal(&audio, "malice", "Malice tells the earlier tales of Neonev as she crossed the Kanikule ocean.", 
-   "<p>The Malice logo(害意) was designed by " LINKNAME("http://visualscream.net", "Jan Vranovský") ".</p>");
+   "<p>The Malice logo(害意) was designed by {http://visualscream.net Jan Vranovský}.</p>");
 add_link(&malice, "bandcamp", "https://gaii.bandcamp.com/");
 
 Term collected_works = create_term(&malice, "collected works", "Collected Works between 2008 and 2015, written as Malice.", 
@@ -321,17 +321,12 @@ Term tablatal = create_term(&oscean, "tablatal", "Tablatal is a list-type databa
 add_link(&tablatal, "parser", "https://github.com/XXIIVV/Libraries/blob/master/scripts/tablatal.js");
 add_link(&tablatal, "syntax highlight", "https://github.com/XXIIVV/Libraries/blob/master/tools/tbtl.sublime-syntax");
 
-Term lain = create_term(&oscean, "lain", "Lain is a LISP dialect used as a templating and scripting engine. ",
-  "<p>The Lain " LINKNAME("https://github.com/XXIIVV/Libraries/blob/master/scripts/lain.js", "parser") " used to exist at the core of " SEND("oscean") " before the migrationg to a fully static website, but it can still be found in various projects of the " SENDNAME("nataniev", "Nataniev ecosystem") ", such as in the " SEND("ronin") " and " SEND("paradise") " applications. The parser takes a " LINKNAME("https://github.com/XXIIVV/Libraries/blob/master/scripts/lain.library.js", "Lain Library") ".</p>"
-  "<h3>Templating With Lain</h3>"
-  "<pre>(link \"home\")                             {(link \"home\")}\n(link \"home\" \"local\")                     {(link \"home\" \"local\")}\n(link \"https://github.com/\")              {(link \"https://github.com/\")}\n(link \"https://github.com/\" \"external\")   {(link \"https://github.com/\" \"external\")}\n(bold \"bold\")                             {(bold \"bold\")}\n(ital \"italic\")                           {(ital \"italic\")}\n(bold (link \"home\" \"bold link\"))          {(bold (link \"home\" \"bold link\"))}\n</pre>"
-  "<h3>Programming With Lain</h3>"
-  "<pre>(add (sub 5 3) 2)                         ; Basic Math\n(λ (a b c) (concat a b c))                ; Lambda\n(def obj:foo \"bar\")                       ; Creating object\n(obj:foo)                                 ; Reading object parameters\n(def _sidebar (dom:create \"sidebar\"))     ; Creating DOM elements\n</pre>");
+Term lain = create_term(&oscean, "lain", "Lain is a LISP dialect used as a templating and scripting engine. ", "<p>The Lain parser used to exist at the core of {Oscean} before the migrationg to a fully static website, but it can still be found in various projects of the {Nataniev}, such as in the {Ronin} and {Paradise} applications.</p>");  
 add_link(&lain, "parser", "https://github.com/XXIIVV/Libraries/blob/master/scripts/lib/lain.js");
 
 Term runic = create_term(&oscean, "runic", "Runic is a templating format.", 
   "<p>Runic is a first-order templating language operating on an array of lines, Where line is prefixed by a rune, giving a sense of the data being handled. The Runic parser takes a " LINKNAME("https://github.com/XXIIVV/Libraries/blob/master/scripts/runic.library.js", "Runic Library") ".</p>"
-  "<pre>* Header\n& Paragraph\n- List Element 1\n- List Element 2\n| table | row1\n| table | row2\n# <comment>-- CODE BLOCK</comment>\n> <comment>-- HTML BLOCK</comment>\nλ <comment>-- {(link \"LAIN\")} BLOCK</comment>\n</pre>");
+  "<pre>* Header\n& Paragraph\n- List Element 1\n- List Element 2\n| table | row1\n| table | row2\n# <comment>-- CODE BLOCK</comment>\n> <comment>-- HTML BLOCK</comment>\nλ <comment>-- (link \"LAIN\") BLOCK</comment>\n</pre>");
 
 Term horaire = create_term(&nataniev, "horaire", "Horaire is a time-tracking tool.", 
   "<p><b>Horaire</b> is a time-tracking engine designed to record and host daily activity logs. A log is recorded at the " SENDNAME("routine", "end of the day") ", and contains 3 values.</p>");
@@ -341,7 +336,7 @@ Term nataniev_time = create_index(&nataniev, "time", "Documentation on the diffe
 
 Term neralie = create_album(&nataniev_time, "neralie", "Neralie is a decimal time format.", 
   "<p>The <b>Neralie clock</b> has two groups of 3 digits, called the <i>beat</i> & the <i>pulse</i>. A beat contains 1000 pulses, and equivalent to <b>86.4 seconds</b>. A day is 1000 beats, or a million pulses. A pomodoro of 20 beats, is equivalent to 28 minutes 48 seconds.</p>"
-  "<p>Neralie time is similar to the " LINKNAME("https://en.wikipedia.org/wiki/Swatch_Internet_Time", "Swatch Internet Time") " decimal clock, but uses 6 decimal points and a rectangular watchface. You can find a " SEND("pascal") " implementation for " SEND("macintosh") ", in the " LINKNAME("https://github.com/XXIIVV/Clock/tree/master/pascal", "clock repository") ".</p>"
+  "<p>Neralie time is similar to the {https://en.wikipedia.org/wiki/Swatch_Internet_Time Swatch Internet Time} decimal clock, but uses 6 decimal points and a rectangular watchface. You can find a " SEND("pascal") " implementation for " SEND("macintosh") ", in the " LINKNAME("https://github.com/XXIIVV/Clock/tree/master/pascal", "clock repository") ".</p>"
   "<ul><li><b>6:00</b> 250:000</li><li><b>12:00</b> 500:000</li><li><b>18:00</b> 750:000</li></ul>");
 add_link(&neralie, "view online", "https://clock.xxiivv.com");
 

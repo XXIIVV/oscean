@@ -215,6 +215,69 @@ Log *find_last_diary(Term *term) {
   return NULL;
 }
 
+// Templater
+
+void fputs_templated_seg(FILE *f, char *str) {
+  bool has_name = false;
+  int len = strlen(str);
+  // Make target
+  char target[255];
+  int target_len = 0;
+  for (int i = 1; i < len - 1; i++) {
+    if (str[i] == ' ') {
+      has_name = true;
+      break;
+    }
+    target[target_len] = str[i];
+    target_len++;
+  }
+  target[target_len] = '\0';
+  if (!has_name) {
+    if (!is_url(target)) {
+      printf("send(unnamed)%s\n", target);
+    } else {
+      printf("link(unnamed)%s\n", target);
+    }
+    return;
+  }
+  // Make name
+  if (!is_url(target)) {
+    printf("send(named)%s\n", target);
+  } else {
+    printf("link(named)%s\n", target);
+  }
+}
+
+void fputs_templated(FILE *f, char *str) {
+  int len = strlen(str);
+  int froms[20];
+  int tos[20];
+  int segs_len = 0;
+  int from = 0;
+  for (int i = 1; i < len - 1; i++) {
+    if (str[i] == '{' || str[i - 1] == '}') {
+      froms[segs_len] = from;
+      tos[segs_len] = i;
+      segs_len += 1;
+      from = i;
+    }
+  }
+  froms[segs_len] = from;
+  tos[segs_len] = len;
+  segs_len += 1;
+  for (int i = 0; i < segs_len; ++i) {
+    int buffer_len = tos[i] - froms[i];
+    char buffer[len + 500];
+    substr(str, buffer, froms[i], buffer_len);
+    buffer[buffer_len] = '\0';
+    if (buffer[0] == '{') {
+      fputs_templated_seg(f, buffer);
+    } else {
+      fputs(buffer, f);
+    }
+  }
+}
+
 // Build(parts)
 
 void build_pict(FILE *f, int pict, char *host, char *name, bool caption, char *link) {
@@ -250,7 +313,11 @@ void build_log_pict(FILE *f, Log *log, bool caption) {
 
 void build_body_part(FILE *f, Term *term) {
   if (term->body) {
-    fprintf(f, "%s", term->body);
+    if(is_templated(term->body)){
+      fputs_templated(f, term->body);  
+    }else{
+      fputs(term->body, f);
+    }
   }
 }
 
@@ -752,7 +819,7 @@ void parseTablatal(FILE *fp, Journal *journal) {
     }
     // Name
     if (strlen(line) >= 38) {
-      substr(line, l->name, 36, 20);
+      substr(line, l->name, 36, 30);
       trimstr(l->name);
     }
     journal->len++;
