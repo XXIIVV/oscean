@@ -772,7 +772,7 @@ void build_rss(Journal *journal) {
 }
 
 void parseTablatal(FILE *fp, Journal *journal) {
-  int bufferLength = 1000;
+  int bufferLength = 255;
   char line[bufferLength];
   while (fgets(line, bufferLength, fp)) {
     trimstr(line);

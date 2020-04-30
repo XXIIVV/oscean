@@ -10,7 +10,8 @@
 
 typedef struct List {
   char name[40];
-  char members[1];
+  char items[100][1000];
+  int items_len;
 } List;
 
 typedef struct Glossary {
@@ -33,23 +34,32 @@ int countLeadingSpaces(char *str) {
 void parseIndental(FILE *fp, Glossary *glossary) {
   int bufferLength = 1000;
   char line[bufferLength];
-  List *prev;
   while (fgets(line, bufferLength, fp)) {
     int pad = countLeadingSpaces(line);
+    trimstr(line);
     int len = strlen(line);
     if (len < 4 || line[0] == ';') {
       continue;
     }
-    List *l = &glossary->lists[glossary->len];
     if (pad == 0) {
+      List *l = &glossary->lists[glossary->len];
       substr(line, l->name, 0, len);
       glossary->len++;
+    }
+
+    if (pad == 2) {
+      List *l = &glossary->lists[glossary->len - 1];
+      substr(line, l->items[l->items_len], 2, len);
+      l->items_len++;
     }
   }
 
   // Printing
   for (int i = 0; i < glossary->len; i++) {
     printf("%s\n", glossary->lists[i].name);
+    for (int j = 0; j < glossary->lists[i].items_len; j++) {
+      printf("> %s\n", &glossary->lists[i].items[j]);
+    }
   }
 }
 

@@ -117,6 +117,16 @@ int index_of_string(char *a[], int num_elements, char *value) {
   return -1;
 }
 
+int index_of_char(char *str, char target) {
+  int len = strlen(str);
+  for (int i = 0; i < len; i++) {
+    if (str[i] == target) {
+      return i;
+    }
+  }
+  return -1;
+}
+
 void substr(char *src, char *dest, int from, int to) {
   memcpy(dest, src + from, to);
 }
