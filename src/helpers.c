@@ -140,6 +140,7 @@ int countLeadingSpaces(char *str) {
 
 void substr(char *src, char *dest, int from, int to) {
   memcpy(dest, src + from, to);
+  dest[to] = '\0';
 }
 
 char *trimstr(char *str) {

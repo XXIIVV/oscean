@@ -64,11 +64,11 @@ typedef struct Term {
   char type[20];
   char body[20][1000];
   int body_len;
+  char link_keys[20][20];
+  char link_vals[20][100];
+  int link_len;
   char list[20][512];
   int list_len;
-  char link_keys[20];
-  char link_vals[100];
-  int link_len;
   struct Term *parent;
   struct Term *children[20];
   int children_len;
@@ -417,13 +417,11 @@ void build_album(FILE *f, Term *term) {
 }
 
 void build_links(FILE *f, Term *term){
-  if(term->link_len < 0){ return; }
-  // printf("%s -> %d\n", term->name, term->link_len);
+  if(term->link_len < 1){ return; }
   fputs("<ul>", f);
-  // TODO
-  // for (int i = 0; i < term->link_len; ++i) {
-  //   fprintf(f, "<li><a href='%s' class='external' target='_blank'>%s</a></li>", "hello", term->link_vals[i]);
-  // }
+  for (int i = 0; i < term->link_len; ++i) {
+    fprintf(f, "<li><a href='%s' class='external' target='_blank'>%s</a></li>", term->link_vals[i], term->link_keys[i]);
+  }
   fputs("</ul>", f);
 }
 
@@ -725,7 +723,6 @@ void parseGlossaryTable(FILE *fp, Glossary *glossary) {
         substr(line, l->keys[l->pairs_len], 2, key_len);
         int val_len = len - key_len - 5;
         substr(line, l->vals[l->pairs_len], key_len + 5, val_len);
-        l->vals[l->pairs_len][val_len] = '\0';
         l->pairs_len++;
       } else {
         substr(line, l->items[l->items_len], 2, len);
@@ -771,19 +768,15 @@ void parseLexiconTable(FILE *fp, Lexicon *lexicon) {
       Term *t = &lexicon->terms[lexicon->len - 1];
       // Body
       if (catch_body) {
-        char bodybuff[1000];
-        substr(line, bodybuff, 4, len - 4);
-        bodybuff[len - 4] = '\0';
-        memcpy(&t->body[t->body_len], bodybuff, strlen(bodybuff));
+        substr(line, t->body[t->body_len], 4, len - 4);
         t->body_len++;
       }
       // Link
       if (catch_link) {
-        int key_len = index_of_char(line, ':') - 3;
-        substr(line, &t->link_keys[t->link_len], 2, key_len);
+        int key_len = index_of_char(line, ':') - 5;
+        substr(line, t->link_keys[t->link_len], 4, key_len);
         int val_len = len - key_len - 5;
-        substr(line, &t->link_vals[t->link_len], key_len + 5, val_len);
-        // t->link_vals[t->link_len][val_len] = '\0';
+        substr(line, t->link_vals[t->link_len], key_len + 7, val_len);
         t->link_len++;
       }
       // List
