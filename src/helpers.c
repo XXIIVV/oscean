@@ -23,15 +23,16 @@ bool is_templated(char *str) {
   return false;
 }
 
-void to_lowercase(char *str, char *target, size_t tsize) {
-  for (size_t i = 0; i < tsize; i++) {
-    target[i] = str[i];
-    if (target[i] == '\0') {
+void to_lowercase(char *src, char *dest) {
+  int len = strlen(src) + 1;
+  for (int i = 0; i < len; i++) {
+    dest[i] = src[i];
+    if (dest[i] == '\0') {
       break;
     }
-    target[i] = tolower(target[i]);
+    dest[i] = tolower(dest[i]);
   }
-  target[tsize - 1] = '\0';
+  dest[len - 1] = '\0';
 }
 
 void to_uppercase(char *str, char *target, size_t tsize) {
@@ -121,6 +122,16 @@ int index_of_char(char *str, char target) {
   int len = strlen(str);
   for (int i = 0; i < len; i++) {
     if (str[i] == target) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+int countLeadingSpaces(char *str) {
+  int len = strlen(str) + 1;
+  for (int i = 0; i < len; i++) {
+    if (str[i] != ' ') {
       return i;
     }
   }

@@ -32,42 +32,48 @@ char *html_head = "<!DOCTYPE html><html lang='en'><head>"
 
 char *html_header = "<header><a id='logo' href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV'></a></header>";
 
-char *html_footer = "<footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0' target='_blank'>""<img src='../media/icon/cc.svg' alt='by-nc-sa' width='30'/></a> <a href='http://webring.xxiivv.com/' target='_blank' rel='noreferrer'><img src='../media/icon/rotonde.svg' alt='webring' width='30'/></a> <a href='https://merveilles.town/@neauoire' target='_blank'><img src='../media/icon/merveilles.svg' alt='Merveilles' width='30'/></a> <a href='https://github.com/neauoire' target='_blank'><img src='../media/icon/github.png' alt='github' width='30'/></a> <span><a href='devine_lu_linvega.html' target='_self'>Devine Lu Linvega</a> © 2020 — <a href='about.html' target='_self'>BY-NC-SA 4.0</a></span></footer></body></html>";
+char *html_footer =
+    "<footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0' "
+    "target='_blank'>"
+    "<img src='../media/icon/cc.svg' alt='by-nc-sa' width='30'/></a> <a "
+    "href='http://webring.xxiivv.com/' target='_blank' rel='noreferrer'><img "
+    "src='../media/icon/rotonde.svg' alt='webring' width='30'/></a> <a "
+    "href='https://merveilles.town/@neauoire' target='_blank'><img "
+    "src='../media/icon/merveilles.svg' alt='Merveilles' width='30'/></a> <a "
+    "href='https://github.com/neauoire' target='_blank'><img "
+    "src='../media/icon/github.png' alt='github' width='30'/></a> <span><a "
+    "href='devine_lu_linvega.html' target='_self'>Devine Lu Linvega</a> © 2020 "
+    "— <a href='about.html' target='_self'>BY-NC-SA "
+    "4.0</a></span></footer></body></html>";
 
 // Types
 
-typedef struct Dict {
-  char *name;
-  int words_len;
-  char *keys[DICT_BUFFER];
-  char *values[DICT_BUFFER];
-} Dict;
-
 typedef struct List {
-  char *name;
+  char name[40];
+  char keys[100][100];
+  char vals[100][500];
+  char pairs_len;
+  char items[100][1000];
   int items_len;
-  char *items[LIST_BUFFER];
 } List;
 
 typedef struct Term {
-  bool is_portal;
-  bool is_album;
-  bool is_index;
-  bool is_inc;
-  int children_len;
+  char name[21];
+  char host[21];
+  char bref[500];
+  char type[20];
+  char body[20][1000];
   int body_len;
-  int links_len;
-  int dicts_len;
-  int lists_len;
-  char *name;
-  char *bref;
-  char *body;
+  char list[20][512];
+  int list_len;
+  char link_keys[20];
+  char link_vals[100];
+  int link_len;
   struct Term *parent;
-  char *links_names[TERM_LINK_BUFFER];
-  char *links_urls[TERM_LINK_BUFFER];
-  struct Term *children[TERM_CHILDREN_BUFFER];
-  Dict *dicts[TERM_DICT_BUFFER];
-  List *lists[TERM_LIST_BUFFER];
+  struct Term *children[20];
+  int children_len;
+  List *docs[20];
+  int docs_len;
 } Term;
 
 typedef struct Log {
@@ -81,125 +87,49 @@ typedef struct Log {
   Term *term;
 } Log;
 
+typedef struct Glossary {
+  int len;
+  List lists[4000];
+} Glossary;
+
+typedef struct Lexicon {
+  int len;
+  Term terms[400];
+} Lexicon;
+
 typedef struct Journal {
   int len;
   Log logs[4000];
 } Journal;
 
+Glossary all_lists;
+Lexicon all_terms;
 Journal all_logs;
 
 #include "helpers.c"
 #include "graph.c"
 
-// Creators/Setters
+// Special helpers
 
-Dict create_dict(char *name) {
-  Dict d;
-  d.name = name;
-  d.words_len = 0;
-  return d;
-}
-
-void add_word(Dict *dict, char *key, char *value) {
-  if (dict->words_len >= DICT_BUFFER) {
-    printf("Error: Reached DICT_BUFFER\n");
-    return;
+List *find_list(Glossary *glossary, char *name) {
+  for (int i = 0; i < glossary->len; ++i) {
+    List *l = &glossary->lists[i];
+    if (!strcmp(name, l->name)) {
+      return l;
+    }
   }
-  dict->keys[dict->words_len] = key;
-  dict->values[dict->words_len] = value;
-  dict->words_len++;
+  return NULL;
 }
 
-List create_list(char *name) {
-  List l;
-  l.name = name;
-  l.items_len = 0;
-  return l;
-}
-
-void add_item(List *list, char *item) {
-  if (list->items_len >= LIST_BUFFER) {
-    printf("Error: Reached LIST_BUFFER\n");
-    return;
+Term *find_term(Lexicon *lexicon, char *name) {
+  for (int i = 0; i < lexicon->len; ++i) {
+    Term *t = &lexicon->terms[i];
+    if (!strcmp(name, t->name)) {
+      return t;
+    }
   }
-  list->items[list->items_len] = item;
-  list->items_len++;
+  return NULL;
 }
-
-Term create_term(Term *parent, char *name, char *bref, char *body) {
-  Term t;
-  t.is_portal = false;
-  t.is_album = false;
-  t.is_index = false;
-  t.is_inc = false;
-
-  t.children_len = 0;
-  t.links_len = 0;
-  t.dicts_len = 0;
-  t.lists_len = 0;
-
-  if (!is_alphanum(name)) {
-    printf("Error: \"%s\"(name) is not alphanumeric\n", name);
-  }
-
-  if (!is_plaintext(bref)) {
-    printf("Error: \"%s\"(bref) is not plaintext\n", name);
-  }
-  t.name = name;
-  t.bref = bref;
-  t.body = body;
-  t.parent = parent;
-
-  return t;
-}
-
-Term create_portal(Term *parent, char *name, char *bref, char *body) {
-  Term t = create_term(parent, name, bref, body);
-  t.is_portal = true;
-  return t;
-}
-
-Term create_album(Term *parent, char *name, char *bref, char *body) {
-  Term t = create_term(parent, name, bref, body);
-  t.is_album = true;
-  return t;
-}
-
-Term create_index(Term *parent, char *name, char *bref, char *body) {
-  Term t = create_term(parent, name, bref, body);
-  t.is_index = true;
-  return t;
-}
-
-void add_dict(Term *term, Dict *dict) {
-  if (term->dicts_len >= TERM_DICT_BUFFER) {
-    printf("Error: Reached TERM_DICT_BUFFER\n");
-    return;
-  }
-  term->dicts[term->dicts_len] = dict;
-  term->dicts_len++;
-}
-
-void add_list(Term *term, List *list) {
-  if (term->dicts_len >= TERM_LIST_BUFFER) {
-    printf("Error: Reached TERM_LIST_BUFFER\n");
-    return;
-  }
-  term->lists[term->lists_len] = list;
-  term->lists_len++;
-}
-
-void add_link(Term *term, char *name, char *url) {
-  if (term->links_len >= TERM_LINK_BUFFER) {
-    printf("Error: Reached TERM_LINK_BUFFER\n");
-    return;
-  }
-  term->links_names[term->links_len] = name;
-  term->links_urls[term->links_len] = url;
-  term->links_len++;
-}
-
-// Tools
 
 Log *find_last_diary(Term *term) {
   for (int i = 0; i < all_logs.len; ++i) {
@@ -214,6 +144,7 @@ Log *find_last_diary(Term *term) {
   }
   return NULL;
 }
+
 
 // Templater
 
@@ -326,11 +257,11 @@ void build_log_pict(FILE *f, Log *log, bool caption) {
 }
 
 void build_body_part(FILE *f, Term *term) {
-  if (term->body) {
-    if(is_templated(term->body)){
-      fputs_templated(f, term->body);  
-    }else{
-      fputs(term->body, f);
+  for (int i = 0; i < term->body_len; ++i) {
+    if (is_templated(term->body[i])) {
+      fputs_templated(f, term->body[i]);
+    } else {
+      fputs(term->body[i], f);
     }
   }
 }
@@ -385,23 +316,16 @@ void build_body(FILE *f, Term *term){
   build_body_part(f, term);
 }
 
-void build_dictionary(FILE *f, Term *term){
-  for (int i = 0; i < term->dicts_len; ++i) {
-    fprintf(f, "<h3>%s</h3>", term->dicts[i]->name);
-    fputs("<ul>", f);
-    for (int j = 0; j < term->dicts[i]->words_len; ++j) {
-      fprintf(f, "<li><b>%s</b>: %s</li>", term->dicts[i]->keys[j], term->dicts[i]->values[j]);
-    }
-    fputs("</ul>", f);
-  }
-}
-
 void build_listing(FILE *f, Term *term){
-  for (int i = 0; i < term->lists_len; ++i) {
-    fprintf(f, "<h3>%s</h3>", term->lists[i]->name);
+  for (int i = 0; i < term->docs_len; ++i) {
+    List *l = term->docs[i];
+    fprintf(f, "<h3>%s</h3>", l->name);
     fputs("<ul>", f);
-    for (int j = 0; j < term->lists[i]->items_len; ++j) {
-      fprintf(f, "<li>%s</li>", term->lists[i]->items[j]);
+    for (int j = 0; j < l->pairs_len; ++j) {
+      fprintf(f, "<li><b>%s</b>: %s</li>", l->keys[j], l->vals[j]);
+    }
+    for (int j = 0; j < l->items_len; ++j) {
+      fprintf(f, "<li>%s</li>", l->items[j]);
     }
     fputs("</ul>", f);
   }
@@ -424,9 +348,6 @@ void build_include(FILE *f, Term *term){
   FILE *fp = fopen(filepath, "r");
   if(fp == NULL){ return; }
 
-  // printf("Including: %s(%s)\n", term->name, filepath);
-  term->is_inc = true;
-
   for (;;) {
     size_t sz = fread(buffer, 1, sizeof(buffer), fp);
     if (sz) {
@@ -435,34 +356,34 @@ void build_include(FILE *f, Term *term){
       break;
     }
   }   
+
+  fprintf(f, "<p>Found a mistake? Submit an <a href='https://github.com/XXIIVV/Oscean/edit/master/src/inc/%s.htm' class='external' target='_blank'>edit</a> to %s.</p>", term->name, term->name);
   fclose(fp);
 }
 
 void build_index(FILE *f, Term *term){
-  if(term->is_index != true){ return; }
+  if(strcmp(term->type, "index") != 0){ return; }
 
   for (int k = 0; k < term->children_len; ++k) {
     char child_filename[STR_BUF_LEN];
     to_filename(term->children[k]->name, child_filename);
     fprintf(f, "<h3><a href='%s.html'>%s</a></h3>", child_filename, term->children[k]->name);
     build_body_part(f, term->children[k]);
-    build_dictionary(f, term->children[k]);
     build_listing(f, term->children[k]);
   }
 }
 
 void build_portal(FILE *f, Term *term) {
-  if (term->is_portal != true) {
+  if (strcmp(term->type, "portal") != 0) {
     return;
   }
-
   for (int k = 0; k < term->children_len; ++k) {
     build_term_pict(f, term->children[k], true);
   }
 }
 
 void build_album(FILE *f, Term *term) {
-  if (term->is_album != true) {
+  if (strcmp(term->name, "album") != 0) {
     return;
   }
 
@@ -483,10 +404,13 @@ void build_album(FILE *f, Term *term) {
 }
 
 void build_links(FILE *f, Term *term){
+  if(term->link_len < 0){ return; }
+  printf("%s -> %d\n", term->name, term->link_len);
   fputs("<ul>", f);
-  for (int i = 0; i < term->links_len; ++i) {
-    fprintf(f, "<li><a href='%s' class='external' target='_blank'>%s</a></li>", term->links_urls[i], term->links_names[i]);
-  }
+  // TODO
+  // for (int i = 0; i < term->link_len; ++i) {
+  //   fprintf(f, "<li><a href='%s' class='external' target='_blank'>%s</a></li>", "hello", term->link_vals[i]);
+  // }
   fputs("</ul>", f);
 }
 
@@ -514,10 +438,6 @@ void build_horaire(FILE *f, Term *term){
     if(l->term != term){ continue; }
     fprintf(f, "<p>");
     fprintf(f, "<i>Last update on <a href='tracker.html'>%s</a>, edited %d times. +%d/%dfh</i>", l->date, len, ch, fh);
-    // display edit link for included pages
-    if(l->term->is_inc){ 
-      fprintf(f, "<br />Found a mistake? Submit an <a href='https://github.com/XXIIVV/Oscean/edit/master/src/inc/%s.htm' class='external' target='_blank'>edit</a> to %s.", l->term->name, l->term->name);
-    }
     fprintf(f, "</p>");
     break;
   }
@@ -712,7 +632,6 @@ void build_page(Term *term, Journal *journal) {
   build_banner(f, term, true);
   build_body(f, term);
   build_include(f, term);
-  build_dictionary(f, term);
   build_listing(f, term);
   build_index(f, term);
   build_portal(f, term);
@@ -771,7 +690,105 @@ void build_rss(Journal *journal) {
   fclose(f);
 }
 
-void parseTablatal(FILE *fp, Journal *journal) {
+void parseGlossaryTable(FILE *fp, Glossary *glossary) {
+  int bufferLength = 600;
+  char line[bufferLength];
+  while (fgets(line, bufferLength, fp)) {
+    int pad = countLeadingSpaces(line);
+    trimstr(line);
+    int len = strlen(line);
+    if (len < 3 || line[0] == ';') {
+      continue;
+    }
+    if (pad == 0) {
+      List *l = &glossary->lists[glossary->len];
+      substr(line, l->name, 0, len);
+      to_lowercase(l->name, l->name);
+      glossary->len++;
+    }
+    else if (pad == 2) {
+      List *l = &glossary->lists[glossary->len - 1];
+      if (strstr(line, " : ") != NULL) {
+        int key_len = index_of_char(line, ':') - 3;
+        substr(line, l->keys[l->pairs_len], 2, key_len);
+        int val_len = len - key_len - 5;
+        substr(line, l->vals[l->pairs_len], key_len + 5, val_len);
+        l->vals[l->pairs_len][val_len] = '\0';        
+        l->pairs_len++;
+      } else {
+        substr(line, l->items[l->items_len], 2, len);
+        l->items_len++;
+      }
+    }
+  }
+}
+
+void parseLexiconTable(FILE *fp, Lexicon *lexicon) {
+  int bufferLength = 1000;
+  char line[bufferLength];
+  bool catch_body = false;
+  bool catch_link = false;
+  bool catch_list = false;
+  while (fgets(line, bufferLength, fp)) {
+    int pad = countLeadingSpaces(line);
+    trimstr(line);
+    int len = strlen(line);
+    if (len < 3 || line[0] == ';') {
+      continue;
+    }
+    if (pad == 0) {
+      Term *t = &lexicon->terms[lexicon->len];
+      substr(line, t->name, 0, len);
+      to_lowercase(t->name, t->name);
+      lexicon->len++;
+    }
+    else if (pad == 2) {
+      Term *t = &lexicon->terms[lexicon->len - 1];
+      if (strstr(line, "HOST : ") != NULL) {
+        substr(line, t->host, 9, len - 9);
+      }
+      if (strstr(line, "BREF : ") != NULL) {
+        substr(line, t->bref, 9, len - 9);
+      }
+      if (strstr(line, "TYPE : ") != NULL) {
+        substr(line, t->type, 9, len - 9);
+      }
+      catch_body = strstr(line, "BODY") != NULL ? true : false;
+      catch_link = strstr(line, "LINK") != NULL ? true : false;
+      catch_list = strstr(line, "LIST") != NULL ? true : false;
+    }
+    else if (pad == 4) {
+      Term *t = &lexicon->terms[lexicon->len - 1];
+      // Body
+      if (catch_body) {
+        char bodybuff[1000];
+        substr(line, bodybuff, 4, len - 4);
+        bodybuff[len - 4] = '\0';
+        memcpy(&t->body[t->body_len], bodybuff, strlen(bodybuff));
+        t->body_len++;
+      }
+      // Link
+      if (catch_link) {
+
+        int key_len = index_of_char(line, ':') - 3;
+        substr(line, &t->link_keys[t->link_len], 2, key_len);
+        int val_len = len - key_len - 5;
+        substr(line, &t->link_vals[t->link_len], key_len + 5, val_len);
+
+        // t->link_vals[t->link_len][val_len] = '\0';        
+        t->link_len++;
+
+      }
+      // List
+      if (catch_list) {
+        substr(line, t->list[t->list_len], 4, len - 4);
+        t->list_len++;
+      }
+    }
+  }
+}
+
+void parseHoraireTable(FILE *fp, Journal *journal) {
   int bufferLength = 255;
   char line[bufferLength];
   while (fgets(line, bufferLength, fp)) {
@@ -808,75 +825,72 @@ void parseTablatal(FILE *fp, Journal *journal) {
   }
 }
 
-int main(int argc, char *argv[]) {
-  if (argc < 2) {
-    printf("ERR: Missing lexicon argument\n");
-    return 0;
-  }
-  if (argc < 3) {
-    printf("ERR: Missing journal argument\n");
-    return 0;
-  }
-  FILE *lexicon_ndtl = fopen(argv[1], "r");
-  if (!lexicon_ndtl) {
-    printf("ERR: Missing %s\n", argv[1]);
-    return 0;
-  }
-  FILE *horaire_tbtl = fopen(argv[2], "r");
-  if (!horaire_tbtl) {
-    printf("ERR: Missing %s\n", argv[2]);
-    return 0;
-  }
+int main() {
+  FILE *glossary_ndtl = fopen("database/glossary.ndtl", "r");
+  FILE *lexicon_ndtl = fopen("database/lexicon.ndtl", "r");
+  FILE *horaire_tbtl = fopen("database/horaire.tbtl", "r");
 
-#include "database/glossary.c"
-#include "database/lexicon.c"
+  // Parsing glossary
+  printf("Parsing glossary..\n");
+  parseGlossaryTable(glossary_ndtl, &all_lists);
+  fclose(glossary_ndtl);
 
-  int lexicon_len = sizeof lexicon / sizeof lexicon[0];
-
-  // Loading journal
-  printf("Parsing %s..\n", argv[1]);
-  // parseIndental(lexicon_ndtl, &all_terms);
+  // Parsing lexicon
+  printf("Parsing lexicon..\n");
+  parseLexiconTable(lexicon_ndtl, &all_terms);
   fclose(lexicon_ndtl);
 
-  printf("Parsing %s..\n", argv[2]);
-  parseTablatal(horaire_tbtl, &all_logs);
+  // Parsing journal
+  printf("Parsing journal..\n");
+  parseHoraireTable(horaire_tbtl, &all_logs);
   fclose(horaire_tbtl);
 
-  // Parenting journal entries
   printf("Parenting journal(%d entries)..\n", all_logs.len);
   for (int i = 0; i < all_logs.len; ++i) {
     Log *l = &all_logs.logs[i];
-    l->term = NULL;
-    for (int j = 0; j < lexicon_len; ++j) {
-      Term *t = lexicon[j];
-      if (!strcmp(l->host, t->name)) {
-        l->term = t;
-        break;
-      }
-    }
+    l->term = find_term(&all_terms, l->host);
     if (!l->term) {
       printf("ERR: Unknown log host %s\n", l->host);
-      return 0;
     }
   }
 
-  // Parent Terms
-  printf("Parenting lexicon (%d entires)..\n", lexicon_len);
-  for (int i = 0; i < lexicon_len; ++i) {
-    Term *t = lexicon[i];
-    if (t->parent && t->parent->children_len < TERM_CHILDREN_BUFFER) {
-      t->parent->children[t->parent->children_len] = t;
-      t->parent->children_len++;
-    } else {
-      printf("Error: Could not parent %s\n", t->name);
-      t->parent = &home;
+  printf("Parenting lexicon (%d entries)..\n", all_terms.len);
+  for (int i = 0; i < all_terms.len; ++i) {
+    Term *t = &all_terms.terms[i];
+    t->parent = find_term(&all_terms, t->host);
+    if(!t->parent){
+      printf("ERR: Unknown term host %s\n", t->host);
+    }
+    t->parent->children[t->parent->children_len] = t;
+    t->parent->children_len++;
+  }
+
+  printf("Parenting glossary (%d entries)..\n", all_lists.len);
+  for (int i = 0; i < all_terms.len; ++i) {
+    Term *t = &all_terms.terms[i];
+    for (int j = 0; j < t->list_len; ++j) {
+      List * l = find_list(&all_lists, t->list[j]);
+      t->docs[t->docs_len] = l;
+      t->docs_len++;
     }
   }
+
+
+    // 
+    // printf("%s -> %s\n", term->name, l->name);
+    // List *l = find_list(&all_lists, )
+    // printf("%s\n", term->list[i].name);
+    // fprintf(f, "<h3>%s</h3>", term->lists[i]->name);
+    // fputs("<ul>", f);
+    // for (int j = 0; j < term->lists[i]->items_len; ++j) {
+    //   fprintf(f, "<li>%s</li>", term->lists[i]->items[j]);
+    // }
+    // fputs("</ul>", f);
 
   // Build pages
-  printf("Building %d pages..\n", lexicon_len);
-  for (int i = 0; i < lexicon_len; ++i) {
-    build_page(lexicon[i], &all_logs);
+  printf("Building %d pages..\n", all_terms.len);
+  for (int i = 0; i < all_terms.len; ++i) {
+    build_page(&all_terms.terms[i], &all_logs);
   }
 
   // Build extras

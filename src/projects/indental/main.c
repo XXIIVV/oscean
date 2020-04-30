@@ -8,32 +8,36 @@
 
 #include "../../helpers.c"
 
-typedef struct List {
-  char name[40];
-  char items[100][1000];
-  int items_len;
-} List;
+typedef struct Term {
+  char name[20];
+  char host[20];
+  char bref[500];
+  char type[20];
+  //
+  char body[20][1000];
+  int body_len;
+  //
+  char list[20][512];
+  int list_len;
+  //
+  char link_keys[20];
+  char link_vals[100];
+  int link_len;
+} Term;
 
-typedef struct Glossary {
+typedef struct TermTable {
   int len;
-  List lists[4000];
-} Glossary;
+  Term entries[400];
+} TermTable;
 
-Glossary all_lists;
+TermTable all_terms;
 
-int countLeadingSpaces(char *str) {
-  int len = strlen(str) + 1;
-  for (int i = 0; i < len; i++) {
-    if (str[i] != ' ') {
-      return i;
-    }
-  }
-  return -1;
-}
-
-void parseIndental(FILE *fp, Glossary *glossary) {
+void parseLexicon(FILE *fp, TermTable *table) {
   int bufferLength = 1000;
   char line[bufferLength];
+  bool catch_body = false;
+  bool catch_link = false;
+  bool catch_list = false;
   while (fgets(line, bufferLength, fp)) {
     int pad = countLeadingSpaces(line);
     trimstr(line);
@@ -42,26 +46,56 @@ void parseIndental(FILE *fp, Glossary *glossary) {
       continue;
     }
     if (pad == 0) {
-      List *l = &glossary->lists[glossary->len];
-      substr(line, l->name, 0, len);
-      glossary->len++;
+      Term *t = &table->entries[table->len];
+      substr(line, t->name, 0, len);
+      to_lowercase(t->name, t->name);
+      table->len++;
     }
     if (pad == 2) {
-      if (strstr(line, ' : ') != NULL) {
-        printf("%s\n", line);
+      Term *t = &table->entries[table->len - 1];
+      if (strstr(line, "HOST : ") != NULL) {
+        substr(line, t->host, 9, len - 9);
       }
-
-      List *l = &glossary->lists[glossary->len - 1];
-      substr(line, l->items[l->items_len], 2, len);
-      l->items_len++;
+      if (strstr(line, "TYPE : ") != NULL) {
+        substr(line, t->host, 9, len - 9);
+      }
+      catch_body = strstr(line, "BODY") != NULL ? true : false;
+      catch_link = strstr(line, "LINK") != NULL ? true : false;
+      catch_list = strstr(line, "LIST") != NULL ? true : false;
     }
-  }
-
-  // Printing
-  for (int i = 0; i < glossary->len; i++) {
-    printf("%s\n", glossary->lists[i].name);
-    for (int j = 0; j < glossary->lists[i].items_len; j++) {
-      printf("> %s\n", &glossary->lists[i].items[j]);
+    if (pad == 4) {
+      Term *t = &table->entries[table->len - 1];
+      // Body
+      if (catch_body) {
+        char bodybuff[1000];
+        substr(line, bodybuff, 4, len - 4);
+        bodybuff[len - 4] = '\0';
+        memcpy(&t->body[t->body_len], bodybuff, strlen(bodybuff));
+        t->body_len++;
+      }
+      // Link
+      if (catch_link) {
+        char keybuff[40];
+        char valbuff[150];
+        int key_len = index_of_char(line, ':') - 5;
+        substr(line, keybuff, 4, key_len);
+        keybuff[key_len] = '\0';
+        int val_len = len - key_len;
+        substr(line, valbuff, key_len + 7, val_len);
+        valbuff[val_len] = '\0';
+        memcpy(&t->link_keys[t->link_len], keybuff, strlen(keybuff));
+        memcpy(&t->link_vals[t->link_len], valbuff, strlen(valbuff));
+        t->link_len++;
+      }
+      // List
+      if (catch_list) {
+        char listbuff[255];
+        substr(line, listbuff, 4, len - 4);
+        listbuff[len - 4] = '\0';
+        memcpy(&t->body[t->body_len], listbuff, strlen(listbuff));
+        t->body_len++;
+        printf("%s\n", listbuff);
+      }
     }
   }
 }
@@ -72,16 +106,16 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
-  FILE *glossary_ndtl = fopen(argv[1], "r");
-  if (!glossary_ndtl) {
+  FILE *lexicon_ndtl = fopen(argv[1], "r");
+  if (!lexicon_ndtl) {
     printf("ERR: Missing %s\n", argv[1]);
     return 0;
   }
 
   // Loading journal
   printf("Parsing %s..\n", argv[1]);
-  parseIndental(glossary_ndtl, &all_lists);
-  fclose(glossary_ndtl);
+  parseLexicon(lexicon_ndtl, &all_terms);
+  fclose(lexicon_ndtl);
 
   return (0);
 }
