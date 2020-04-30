@@ -148,6 +148,33 @@ Log *find_last_diary(Term *term) {
 
 // Templater
 
+void fputs_templated_mod(FILE *f, char *str){
+  if (strstr(str, "^itchio") != NULL) {
+    char buff[255];
+    substr(str, buff, 9, strlen(str) - 10);
+    fprintf(f, "<iframe frameborder='0' src='https://itch.io/embed/%s?link_color=000000' width='600' height='167'></iframe>", buff);
+  }
+  else if (strstr(str, "^bandcamp") != NULL) {
+    char buff[255];
+    substr(str, buff, 11, strlen(str) - 12);
+    fprintf(f, "<iframe style='border: 0; width: 600px; height: 274px;' src='https://bandcamp.com/EmbeddedPlayer/album=%s/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/' seamless></iframe>", buff);
+  }
+  else if (strstr(str, "^youtube") != NULL) {
+    char buff[255];
+    substr(str, buff, 10, strlen(str) - 11);
+    fprintf(f, "<iframe width='600' height='380' src='https://www.youtube.com/embed/%s?rel=0' style='max-width:700px' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe>", buff);
+  }
+  else if (strstr(str, "^redirect") != NULL) {
+    char buff[255];
+    substr(str, buff, 10, strlen(str) - 11);
+    to_filename(buff, buff);
+    fprintf(f, "<meta http-equiv='refresh' content='2; url=%s.html' /><p>In a hurry? Travel to <a href='%s.html'>%s</a>.</p>", buff, buff, buff);
+  }
+  else{
+    printf("Error: Missing template mod: %s\n", str);
+  }  
+}
+
 void fputs_templated_seg(FILE *f, char *str) {
   bool has_name = false;
   int len = strlen(str);
@@ -216,7 +243,13 @@ void fputs_templated(FILE *f, char *str) {
     substr(str, buffer, froms[i], buffer_len);
     buffer[buffer_len] = '\0';
     if (buffer[0] == '{') {
-      fputs_templated_seg(f, buffer);
+      if(buffer[1]=='^'){
+        fputs_templated_mod(f, buffer);
+      }
+      else{
+        fputs_templated_seg(f, buffer);
+      }
+      
     } else {
       fputs(buffer, f);
     }
