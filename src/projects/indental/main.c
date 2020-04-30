@@ -46,8 +46,11 @@ void parseIndental(FILE *fp, Glossary *glossary) {
       substr(line, l->name, 0, len);
       glossary->len++;
     }
-
     if (pad == 2) {
+      if (strstr(line, ' : ') != NULL) {
+        printf("%s\n", line);
+      }
+
       List *l = &glossary->lists[glossary->len - 1];
       substr(line, l->items[l->items_len], 2, len);
       l->items_len++;
