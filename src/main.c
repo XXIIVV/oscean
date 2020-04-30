@@ -270,6 +270,9 @@ void build_nav_part(FILE *f, Term *term, Term *target) {
   for (int i = 0; i < term->children_len; ++i) {
     char child_filename[STR_BUF_LEN];
     to_filename(term->children[i]->name, child_filename);
+    if (term->children[i]->name == term->name) {
+      continue;  // Paradox
+    }
     if (term->children[i]->name == target->name) {
       fprintf(f, "<li><a href='%s.html'>%s/</a></li>", child_filename,
               term->children[i]->name);
@@ -760,7 +763,6 @@ void parseLexiconTable(FILE *fp, Lexicon *lexicon) {
       }
       if (strstr(line, "TYPE : ") != NULL) {
         substr(line, t->type, 9, len - 9);
-        printf("%s -> %s\n", t->name, t->type);
       }
       catch_body = strstr(line, "BODY") != NULL ? true : false;
       catch_link = strstr(line, "LINK") != NULL ? true : false;
@@ -781,7 +783,6 @@ void parseLexiconTable(FILE *fp, Lexicon *lexicon) {
         substr(line, &t->link_keys[t->link_len], 2, key_len);
         int val_len = len - key_len - 5;
         substr(line, &t->link_vals[t->link_len], key_len + 5, val_len);
-
         // t->link_vals[t->link_len][val_len] = '\0';
         t->link_len++;
       }
@@ -868,7 +869,7 @@ int main() {
       printf("ERR: Unknown term host %s\n", t->host);
     }
     t->parent->children[t->parent->children_len] = t;
-    t->parent->children_len++;
+    t->parent->children_len++;  
   }
 
   printf("Parenting glossary (%d entries)..\n", all_lists.len);
