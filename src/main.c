@@ -228,12 +228,11 @@ void fputs_templated(FILE *f, char *str) {
 void build_pict(FILE *f, int pict, char *host, char *name, bool caption, char *link) {
   fputs("<figure>", f);
   fprintf(f, "<img src='../media/diary/%d.jpg' alt='%s picture'/>", pict, name);
-  if(caption){
+  if (caption) {
     fputs("<figcaption>", f);
-    if(link){
+    if (link) {
       fprintf(f, "<a href='%s.html'>%s</a> — %s", link, host, name);
-    }
-    else{
+    } else {
       fprintf(f, "%s — %s", host, name);
     }
     fputs("</figcaption>", f);
@@ -266,16 +265,17 @@ void build_body_part(FILE *f, Term *term) {
   }
 }
 
-void build_nav_part(FILE *f, Term *term, Term *target){
+void build_nav_part(FILE *f, Term *term, Term *target) {
   fputs("<ul>", f);
   for (int i = 0; i < term->children_len; ++i) {
     char child_filename[STR_BUF_LEN];
     to_filename(term->children[i]->name, child_filename);
-    if(term->children[i]->name == target->name){
-      fprintf(f, "<li><a href='%s.html'>%s/</a></li>", child_filename, term->children[i]->name);
-    }
-    else{
-      fprintf(f, "<li><a href='%s.html'>%s</a></li>", child_filename, term->children[i]->name);  
+    if (term->children[i]->name == target->name) {
+      fprintf(f, "<li><a href='%s.html'>%s/</a></li>", child_filename,
+              term->children[i]->name);
+    } else {
+      fprintf(f, "<li><a href='%s.html'>%s</a></li>", child_filename,
+              term->children[i]->name);
     }
   }
   fputs("</ul>", f);
@@ -283,40 +283,47 @@ void build_nav_part(FILE *f, Term *term, Term *target){
 
 // Build
 
-void build_banner(FILE *f, Term *term, bool caption){
+void build_banner(FILE *f, Term *term, bool caption) {
   Log *l = find_last_diary(term);
 
-  if(!l){ return; }
+  if (!l) {
+    return;
+  }
 
   build_log_pict(f, l, caption);
 }
 
-void build_nav(FILE *f, Term *term){
-  if(term->parent == NULL){ printf("Missing parent for %s\n", term->name); return; }
-  if(term->parent->parent == NULL){ printf("Missing parent for %s\n", term->parent->name); return; }
+void build_nav(FILE *f, Term *term) {
+  if (term->parent == NULL) {
+    printf("Missing parent for %s\n", term->name);
+    return;
+  }
+  if (term->parent->parent == NULL) {
+    printf("Missing parent for %s\n", term->parent->name);
+    return;
+  }
 
   fputs("<nav>", f);
-  if(term->parent->parent->name == term->parent->name){
+  if (term->parent->parent->name == term->parent->name) {
     build_nav_part(f, term->parent->parent, term);
-  }
-  else{
+  } else {
     build_nav_part(f, term->parent->parent, term->parent);
   }
-  if(term->parent->parent->name != term->parent->name){
+  if (term->parent->parent->name != term->parent->name) {
     build_nav_part(f, term->parent, term);
   }
-  if(term->parent->name != term->name){
+  if (term->parent->name != term->name) {
     build_nav_part(f, term, term);
   }
   fputs("</nav>", f);
 }
 
-void build_body(FILE *f, Term *term){
+void build_body(FILE *f, Term *term) {
   fprintf(f, "<h2>%s</h2>", term->bref);
   build_body_part(f, term);
 }
 
-void build_listing(FILE *f, Term *term){
+void build_listing(FILE *f, Term *term) {
   for (int i = 0; i < term->docs_len; ++i) {
     List *l = term->docs[i];
     fprintf(f, "<h3>%s</h3>", l->name);
@@ -361,13 +368,16 @@ void build_include(FILE *f, Term *term){
   fclose(fp);
 }
 
-void build_index(FILE *f, Term *term){
-  if(strcmp(term->type, "index") != 0){ return; }
+void build_index(FILE *f, Term *term) {
+  if (strcmp(term->type, "index") != 0) {
+    return;
+  }
 
   for (int k = 0; k < term->children_len; ++k) {
     char child_filename[STR_BUF_LEN];
     to_filename(term->children[k]->name, child_filename);
-    fprintf(f, "<h3><a href='%s.html'>%s</a></h3>", child_filename, term->children[k]->name);
+    fprintf(f, "<h3><a href='%s.html'>%s</a></h3>", child_filename,
+            term->children[k]->name);
     build_body_part(f, term->children[k]);
     build_listing(f, term->children[k]);
   }
@@ -383,7 +393,7 @@ void build_portal(FILE *f, Term *term) {
 }
 
 void build_album(FILE *f, Term *term) {
-  if (strcmp(term->name, "album") != 0) {
+  if (strcmp(term->type, "album") != 0) {
     return;
   }
 
@@ -405,7 +415,7 @@ void build_album(FILE *f, Term *term) {
 
 void build_links(FILE *f, Term *term){
   if(term->link_len < 0){ return; }
-  printf("%s -> %d\n", term->name, term->link_len);
+  // printf("%s -> %d\n", term->name, term->link_len);
   fputs("<ul>", f);
   // TODO
   // for (int i = 0; i < term->link_len; ++i) {
@@ -705,15 +715,14 @@ void parseGlossaryTable(FILE *fp, Glossary *glossary) {
       substr(line, l->name, 0, len);
       to_lowercase(l->name, l->name);
       glossary->len++;
-    }
-    else if (pad == 2) {
+    } else if (pad == 2) {
       List *l = &glossary->lists[glossary->len - 1];
       if (strstr(line, " : ") != NULL) {
         int key_len = index_of_char(line, ':') - 3;
         substr(line, l->keys[l->pairs_len], 2, key_len);
         int val_len = len - key_len - 5;
         substr(line, l->vals[l->pairs_len], key_len + 5, val_len);
-        l->vals[l->pairs_len][val_len] = '\0';        
+        l->vals[l->pairs_len][val_len] = '\0';
         l->pairs_len++;
       } else {
         substr(line, l->items[l->items_len], 2, len);
@@ -741,8 +750,7 @@ void parseLexiconTable(FILE *fp, Lexicon *lexicon) {
       substr(line, t->name, 0, len);
       to_lowercase(t->name, t->name);
       lexicon->len++;
-    }
-    else if (pad == 2) {
+    } else if (pad == 2) {
       Term *t = &lexicon->terms[lexicon->len - 1];
       if (strstr(line, "HOST : ") != NULL) {
         substr(line, t->host, 9, len - 9);
@@ -752,12 +760,12 @@ void parseLexiconTable(FILE *fp, Lexicon *lexicon) {
       }
       if (strstr(line, "TYPE : ") != NULL) {
         substr(line, t->type, 9, len - 9);
+        printf("%s -> %s\n", t->name, t->type);
       }
       catch_body = strstr(line, "BODY") != NULL ? true : false;
       catch_link = strstr(line, "LINK") != NULL ? true : false;
       catch_list = strstr(line, "LIST") != NULL ? true : false;
-    }
-    else if (pad == 4) {
+    } else if (pad == 4) {
       Term *t = &lexicon->terms[lexicon->len - 1];
       // Body
       if (catch_body) {
@@ -769,15 +777,13 @@ void parseLexiconTable(FILE *fp, Lexicon *lexicon) {
       }
       // Link
       if (catch_link) {
-
         int key_len = index_of_char(line, ':') - 3;
         substr(line, &t->link_keys[t->link_len], 2, key_len);
         int val_len = len - key_len - 5;
         substr(line, &t->link_vals[t->link_len], key_len + 5, val_len);
 
-        // t->link_vals[t->link_len][val_len] = '\0';        
+        // t->link_vals[t->link_len][val_len] = '\0';
         t->link_len++;
-
       }
       // List
       if (catch_list) {
@@ -874,18 +880,6 @@ int main() {
       t->docs_len++;
     }
   }
-
-
-    // 
-    // printf("%s -> %s\n", term->name, l->name);
-    // List *l = find_list(&all_lists, )
-    // printf("%s\n", term->list[i].name);
-    // fprintf(f, "<h3>%s</h3>", term->lists[i]->name);
-    // fputs("<ul>", f);
-    // for (int j = 0; j < term->lists[i]->items_len; ++j) {
-    //   fprintf(f, "<li>%s</li>", term->lists[i]->items[j]);
-    // }
-    // fputs("</ul>", f);
 
   // Build pages
   printf("Building %d pages..\n", all_terms.len);
