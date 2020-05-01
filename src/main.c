@@ -122,9 +122,13 @@ List *find_list(Glossary *glossary, char *name) {
 }
 
 Term *find_term(Lexicon *lexicon, char *name) {
+  char formatted[strlen(name)];
+  substr(name, formatted, 0, strlen(name));
+  to_lowercase(formatted, formatted);
+  to_alphanum(formatted, formatted);
   for (int i = 0; i < lexicon->len; ++i) {
     Term *t = &lexicon->terms[i];
-    if (!strcmp(name, t->name)) {
+    if (!strcmp(formatted, t->name)) {
       return t;
     }
   }
@@ -171,7 +175,7 @@ void fputs_templated_mod(FILE *f, char *str){
   }
   else{
     printf("Error: Missing template mod: %s\n", str);
-  }  
+  }
 }
 
 void fputs_templated_seg(FILE *f, char *str) {
@@ -192,12 +196,16 @@ void fputs_templated_seg(FILE *f, char *str) {
   // Print
   if (!has_name) {
     if (!is_url(target)) {
-      char filename[STR_BUF_LEN];
-      to_filename(target, filename);
-      fprintf(f, "<a href='%s.html'>%s</a>", filename, target);
+      if (!find_term(&all_terms, target)) {
+        fprintf(f, "<b style='background:red'>{%s}</b>", target);
+        printf("Error: Broken send(%s) in %s\n", target, str);
+      } else {
+        char filename[STR_BUF_LEN];
+        to_filename(target, filename);
+        fprintf(f, "<a href='%s.html'>%s</a>", filename, target);
+      }
     } else {
-      fprintf(f, "<a href='%s' class='external' target='_blank'>%s</a>", target,
-              target);
+      fprintf(f, "<a href='%s' class='external' target='_blank'>%s</a>", target, target);
     }
     return;
   }
@@ -210,12 +218,17 @@ void fputs_templated_seg(FILE *f, char *str) {
   }
   name[name_len] = '\0';
   if (!is_url(target)) {
-    char filename[STR_BUF_LEN];
-    to_filename(target, filename);
-    fprintf(f, "<a href='%s.html'>%s</a>", filename, name);
+    if (!find_term(&all_terms, target)) {
+      fprintf(f, "<b style='background:red'>{%s}</b>", target);
+      printf("Error: Broken send(%s) in %s\n", target, str);
+    } else {
+      char filename[STR_BUF_LEN];
+      to_filename(target, filename);
+      fprintf(f, "<a href='%s.html'>%s</a>", filename, name);
+    }
+
   } else {
-    fprintf(f, "<a href='%s' class='external' target='_blank'>%s</a>", target,
-            name);
+    fprintf(f, "<a href='%s' class='external' target='_blank'>%s</a>", target, name);
   }
 }
 

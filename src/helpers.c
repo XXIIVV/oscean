@@ -35,6 +35,22 @@ void to_lowercase(char *src, char *dest) {
   dest[len - 1] = '\0';
 }
 
+void to_alphanum(char *src, char *dest) {
+  int len = strlen(src) + 1;
+  for (int i = 0; i < len; i++) {
+    dest[i] = src[i];
+    if (dest[i] == '\0') {
+      break;
+    }
+    if (!is_char_alphanum(dest[i])) {
+      dest[i] = ' ';
+    } else {
+      dest[i] = tolower(dest[i]);
+    }
+  }
+  dest[len - 1] = '\0';
+}
+
 void to_uppercase(char *str, char *target, size_t tsize) {
   for (size_t i = 0; i < tsize; i++) {
     target[i] = str[i];
