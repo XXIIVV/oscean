@@ -89,17 +89,17 @@ typedef struct Log {
 
 typedef struct Glossary {
   int len;
-  List lists[4000];
+  List lists[100];
 } Glossary;
 
 typedef struct Lexicon {
   int len;
-  Term terms[400];
+  Term terms[350];
 } Lexicon;
 
 typedef struct Journal {
   int len;
-  Log logs[4000];
+  Log logs[3500];
 } Journal;
 
 Glossary all_lists;
@@ -144,7 +144,6 @@ Log *find_last_diary(Term *term) {
   }
   return NULL;
 }
-
 
 // Templater
 
@@ -822,12 +821,16 @@ void parseLexiconTable(FILE *fp, Lexicon *lexicon) {
 }
 
 void parseHoraireTable(FILE *fp, Journal *journal) {
-  int bufferLength = 255;
+  int bufferLength = 73;
   char line[bufferLength];
   while (fgets(line, bufferLength, fp)) {
     trimstr(line);
     int len = strlen(line);
     if (len < 16 || line[0] == ';') {
+      continue;
+    }
+    if (len > 72) {
+      printf("Error: Entry is too long %s\n", line);
       continue;
     }
     Log *l = &journal->logs[journal->len];
