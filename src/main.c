@@ -82,7 +82,7 @@ typedef struct Log {
   int code;
   char host[21];
   int pict;
-  char name[30];
+  char name[35];
   bool is_event;
   Term *term;
 } Log;
