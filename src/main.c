@@ -49,25 +49,25 @@ char *html_footer =
 // Types
 
 typedef struct List {
-  char name[40];
+  char name[31];
   char keys[100][100];
   char vals[100][500];
   char pairs_len;
-  char items[100][1000];
+  char items[100][500];
   int items_len;
 } List;
 
 typedef struct Term {
   char name[21];
   char host[21];
-  char bref[500];
-  char type[20];
-  char body[20][1000];
+  char bref[200];
+  char type[21];
+  char body[30][750];
   int body_len;
   char link_keys[20][20];
   char link_vals[20][100];
   int link_len;
-  char list[20][512];
+  char list[20][31];
   int list_len;
   struct Term *parent;
   struct Term *children[20];
@@ -82,7 +82,7 @@ typedef struct Log {
   int code;
   char host[21];
   int pict;
-  char name[35];
+  char name[31];
   bool is_event;
   Term *term;
 } Log;
@@ -734,13 +734,17 @@ void build_rss(Journal *journal) {
 }
 
 void parseGlossaryTable(FILE *fp, Glossary *glossary) {
-  int bufferLength = 600;
+  int bufferLength = 500;
   char line[bufferLength];
   while (fgets(line, bufferLength, fp)) {
     int pad = countLeadingSpaces(line);
     trimstr(line);
     int len = strlen(line);
     if (len < 3 || line[0] == ';') {
+      continue;
+    }
+    if (len > 400) {
+      printf("Error: Line is too long(%d characters) %s\n", len, line);
       continue;
     }
     if (pad == 0) {
@@ -775,6 +779,10 @@ void parseLexiconTable(FILE *fp, Lexicon *lexicon) {
     trimstr(line);
     int len = strlen(line);
     if (len < 3 || line[0] == ';') {
+      continue;
+    }
+    if(len > 750){
+      printf("Error: Line is too long(%d characters): %s \n", len, line);  
       continue;
     }
     if (pad == 0) {
@@ -821,7 +829,7 @@ void parseLexiconTable(FILE *fp, Lexicon *lexicon) {
 }
 
 void parseHoraireTable(FILE *fp, Journal *journal) {
-  int bufferLength = 73;
+  int bufferLength = 72;
   char line[bufferLength];
   while (fgets(line, bufferLength, fp)) {
     trimstr(line);
