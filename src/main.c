@@ -169,7 +169,7 @@ void fputs_templated_mod(FILE *f, char *str){
   }
   else if (strstr(str, "^redirect") != NULL) {
     char buff[255];
-    substr(str, buff, 10, strlen(str) - 11);
+    substr(str, buff, 11, strlen(str) - 12);
     to_filename(buff, buff);
     fprintf(f, "<meta http-equiv='refresh' content='2; url=%s.html' /><p>In a hurry? Travel to <a href='%s.html'>%s</a>.</p>", buff, buff, buff);
   }
