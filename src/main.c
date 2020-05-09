@@ -52,7 +52,7 @@ typedef struct List {
   char name[31];
   char keys[100][100];
   char vals[100][500];
-  char pairs_len;
+  int pairs_len;
   char items[100][500];
   int items_len;
 } List;
@@ -794,8 +794,8 @@ void parseLexiconTable(FILE *fp, Lexicon *lexicon) {
     if (len < 3 || line[0] == ';') {
       continue;
     }
-    if(len > 750){
-      printf("Error: Line is too long(%d characters): %s \n", len, line);  
+    if (len > 750) {
+      printf("Error: Line is too long(%d characters): %s \n", len, line);
       continue;
     }
     if (pad == 0) {
@@ -915,18 +915,18 @@ int main() {
   for (int i = 0; i < all_terms.len; ++i) {
     Term *t = &all_terms.terms[i];
     t->parent = find_term(&all_terms, t->host);
-    if(!t->parent){
+    if (!t->parent) {
       printf("ERR: Unknown term host %s\n", t->host);
     }
     t->parent->children[t->parent->children_len] = t;
-    t->parent->children_len++;  
+    t->parent->children_len++;
   }
 
   printf("Parenting glossary (%d entries)..\n", all_lists.len);
   for (int i = 0; i < all_terms.len; ++i) {
     Term *t = &all_terms.terms[i];
     for (int j = 0; j < t->list_len; ++j) {
-      List * l = find_list(&all_lists, t->list[j]);
+      List *l = find_list(&all_lists, t->list[j]);
       t->docs[t->docs_len] = l;
       t->docs_len++;
     }
