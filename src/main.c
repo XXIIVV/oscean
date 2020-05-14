@@ -664,6 +664,32 @@ void build_special_now(FILE *f, Term *term, Journal *journal) {
   fprintf(f, "<p>Last generated on %s(Japan).</p>", ctime(&now));
 }
 
+void print_term_details(FILE *f, Term *term, int depth) {
+  depth += 1;
+  char filename[STR_BUF_LEN];
+  to_filename(term->name, filename);
+  fprintf(f, "<li><a href='%s.html'>%s</a></li>", filename, term->name);
+  if (term->children_len < 1) {
+    return;
+  }
+  fputs("<ul>", f);
+  for (int i = 0; i < term->children_len; ++i) {
+    if (strcmp(term->children[i]->name, term->name) != 0) {
+      print_term_details(f, term->children[i], depth);
+    }
+  }
+  fputs("</ul>", f);
+}
+
+void build_special_index(FILE *f, Term *term) {
+  if (strcmp(term->name, "index") != 0) {
+    return;
+  }
+  fputs("<ul>", f);
+  print_term_details(f, &all_terms.terms[0], 0);
+  fputs("</ul>", f);
+}
+
 void build_page(Term *term, Journal *journal) {
   char filename[STR_BUF_LEN];
   to_filename(term->name, filename);
@@ -698,6 +724,7 @@ void build_page(Term *term, Journal *journal) {
   build_special_tracker(f, term, journal);
   build_special_journal(f, term, journal);
   build_special_now(f, term, journal);
+  build_special_index(f, term);
   fputs("</main>", f);
 
   fputs(html_footer, f);
@@ -882,7 +909,7 @@ void parseHoraireTable(FILE *fp, Journal *journal) {
   }
 }
 
-int main() {
+void parse() {
   FILE *glossary_ndtl = fopen("database/glossary.ndtl", "r");
   FILE *lexicon_ndtl = fopen("database/lexicon.ndtl", "r");
   FILE *horaire_tbtl = fopen("database/horaire.tbtl", "r");
@@ -901,7 +928,9 @@ int main() {
   printf("Parsing journal..\n");
   parseHoraireTable(horaire_tbtl, &all_logs);
   fclose(horaire_tbtl);
+}
 
+void link() {
   printf("Parenting journal(%d entries)..\n", all_logs.len);
   for (int i = 0; i < all_logs.len; ++i) {
     Log *l = &all_logs.logs[i];
@@ -931,7 +960,9 @@ int main() {
       t->docs_len++;
     }
   }
+}
 
+void build() {
   // Build pages
   printf("Building %d pages..\n", all_terms.len);
   for (int i = 0; i < all_terms.len; ++i) {
@@ -939,10 +970,11 @@ int main() {
   }
 
   // Build extras
-  printf("Building extras..\n");
+  printf("Building 1 extras..\n");
   build_rss(&all_logs);
+}
 
-  // Final checkups
+void check() {
   printf("Checkup..\n");
   int pict_used_len = 0;
   int pict_used[999];
@@ -969,8 +1001,25 @@ int main() {
       printf("Error: Missing photo %d.jpg\n", i);
     }
   }
+}
 
+int main() {
   print_arvelie_now();
+
+  clock_t start, end;
+  double cpu_time_used;
+
+  start = clock();
+
+  parse();
+  link();
+  build();
+  check();
+
+  end = clock();
+  cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
+
+  printf("Build time: %.2fms\n", cpu_time_used * 1000);
 
   return (0);
 }

@@ -13,6 +13,6 @@ echo "Build Running.."
 
 ./main
 
-tt=$((($(date +%s%N) - $ts)/1000000)) ; echo "Build Completed in $tt ms"
+tt=$((($(date +%s%N) - $ts)/1000000)) ; echo "Completed in $tt ms"
 
 rm ./main
