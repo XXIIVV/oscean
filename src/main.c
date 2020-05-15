@@ -991,7 +991,7 @@ void check() {
   for (int i = 1; i < 999; ++i) {
     int index = index_of(pict_used, pict_used_len, i);
     if (index < 0) {
-      printf("PICT#%d is available.\n", i);
+      printf("Next available diary id: %d\n", i);
       break;
     }
     // Check if photo exists
@@ -1019,7 +1019,7 @@ int main() {
   end = clock();
   cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
 
-  printf("Build time: %.2fms\n", cpu_time_used * 1000);
+  printf("Generated in: %.2fms\n", cpu_time_used * 1000);
 
   return (0);
 }
