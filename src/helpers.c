@@ -23,6 +23,44 @@ bool is_templated(char *str) {
   return false;
 }
 
+bool file_exists(char *filename) {
+  FILE *file = fopen(filename, "r");
+  if (file != NULL) {
+    fclose(file);
+    return true;
+  }
+  return false;
+}
+
+bool is_alphanum(char *str) {
+  int len = strlen(str);
+  for (int i = 0; i < len; i++) {
+    char ch = str[i];
+    int is_num = ch >= '0' && ch <= '9';
+    int is_alpha = (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
+    int is_space = (ch == ' ');
+    if (!is_alpha && !is_num && !is_space) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool is_plaintext(char *str) {
+  int len = strlen(str);
+  for (int i = 0; i < len; i++) {
+    char ch = str[i];
+    int is_num = ch >= '0' && ch <= '9';
+    int is_alpha = (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
+    int is_space =
+        (ch == ' ' || ch == '_' || ch == '.' || ch == ',' || ch == '-');
+    if (!is_alpha && !is_num && !is_space) {
+      return false;
+    }
+  }
+  return true;
+}
+
 void to_lowercase(char *src, char *dest) {
   int len = strlen(src) + 1;
   for (int i = 0; i < len; i++) {
@@ -78,45 +116,7 @@ void to_filename(char *str, char *mod) {
   mod[len - 1] = '\0';
 }
 
-bool file_exists(char *filename) {
-  FILE *file = fopen(filename, "r");
-  if (file != NULL) {
-    fclose(file);
-    return true;
-  }
-  return false;
-}
-
-bool is_alphanum(char *str) {
-  int len = strlen(str);
-  for (int i = 0; i < len; i++) {
-    char ch = str[i];
-    int is_num = ch >= '0' && ch <= '9';
-    int is_alpha = (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
-    int is_space = (ch == ' ');
-    if (!is_alpha && !is_num && !is_space) {
-      return false;
-    }
-  }
-  return true;
-}
-
-bool is_plaintext(char *str) {
-  int len = strlen(str);
-  for (int i = 0; i < len; i++) {
-    char ch = str[i];
-    int is_num = ch >= '0' && ch <= '9';
-    int is_alpha = (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
-    int is_space =
-        (ch == ' ' || ch == '_' || ch == '.' || ch == ',' || ch == '-');
-    if (!is_alpha && !is_num && !is_space) {
-      return false;
-    }
-  }
-  return true;
-}
-
-int index_of(int a[], int num_elements, int value) {
+int index_of_int(int a[], int num_elements, int value) {
   for (int i = 0; i < num_elements; i++) {
     if (a[i] == value) {
       return i;
@@ -172,24 +172,6 @@ char *trimstr(char *str) {
   return str;
 }
 
-void print_tokens(char *s) {
-  printf("input: %s\n", s);
-  char *start = s;
-  char *end = s;
-  while (*s) {
-    if (*s == '(')
-      start = s;
-    else if (*s == ')')
-      end = s;
-    if (start < end && *start) {
-      *end = 0;
-      printf("token: %s\n", start + 1);
-      start = s = end;
-    }
-    s++;
-  }
-}
-
 // Numbers
 
 float find_average(int a[]) {
@@ -200,7 +182,7 @@ float find_average(int a[]) {
   return sum / 52;
 }
 
-float clamp(float v, float min, float max) {
+float clamp_float(float v, float min, float max) {
   return v > max ? max : v < min ? min : v;
 }
 
@@ -236,43 +218,9 @@ int doty_to_day(int doty) {
   return doty - months[month - 1];
 }
 
-int get_doty() {
-  int year, month, day;
-  time_t now;
-  time(&now);
-  struct tm *local = localtime(&now);
-  year = local->tm_year + 1900;
-  month = local->tm_mon + 1;
-  day = local->tm_mday;
-  return ymd_to_doty(year, month, day);
-}
-
-int get_year() {
-  time_t now;
-  time(&now);
-  struct tm *local = localtime(&now);
-  return local->tm_year + 1900;
-}
-
-int offset_from_arvelie(char *arvelie) {
-  int past_year = extract_year(arvelie);
-  int past_doty = arvelie_to_doty(arvelie);
-  int past_id = (past_year * 365) + past_doty;
-  int current_year = get_year();
-  int current_doty = get_doty();
-  int current_id = ((current_year % 2000) * 365) + current_doty;
-  return current_id - past_id;
-}
-
 void fputs_rfc2822(FILE *f, char *arvelie) {
-  int doty, year;
-  if (arvelie != NULL) {
-    doty = arvelie_to_doty(arvelie);
-    year = extract_year(arvelie);
-  } else {
-    doty = get_doty();
-    year = get_year();
-  }
+  int doty = arvelie_to_doty(arvelie);
+  int year = extract_year(arvelie);
   int month = doty_to_month(doty);
   int day = doty_to_day(doty);
   char rfc_2822[40];
@@ -288,4 +236,9 @@ void fputs_rfc2822(FILE *f, char *arvelie) {
   strftime(rfc_2822, sizeof(rfc_2822), "%a, %d %b %Y %T %z",
            localtime(&current));
   fprintf(f, "%s", rfc_2822);
+}
+
+float clock_since(clock_t start) {
+  double cpu_time_used = ((double)(clock() - start)) / CLOCKS_PER_SEC;
+  return cpu_time_used * 1000;
 }

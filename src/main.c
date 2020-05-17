@@ -8,6 +8,8 @@
 
 #include "projects/arvelie/arvelie.c"
 
+#include "helpers.c"
+
 #define STR_BUF_LEN 128
 #define DICT_BUFFER 46
 #define LIST_BUFFER 46
@@ -107,9 +109,6 @@ typedef struct Journal {
 Glossary all_lists;
 Lexicon all_terms;
 Journal all_logs;
-
-#include "helpers.c"
-#include "graph.c"
 
 // Special helpers
 
@@ -617,8 +616,6 @@ void build_special_now(FILE *f, Term *term, Journal *journal) {
   if (strcmp(term->name, "now") != 0) {
     return;
   }
-
-  fputs_graph_burn(f, journal);
   
   int range = 14 * 4;
 
@@ -944,20 +941,18 @@ void parseHoraireTable(FILE *fp, Journal *journal) {
 }
 
 void parse() {
+  printf("Parsing..\n");
   FILE *glossary_ndtl = fopen("database/glossary.ndtl", "r");
   FILE *lexicon_ndtl = fopen("database/lexicon.ndtl", "r");
   FILE *horaire_tbtl = fopen("database/horaire.tbtl", "r");
-
   // Parsing glossary
   printf("Parsing glossary..\n");
   parseGlossaryTable(glossary_ndtl, &all_lists);
   fclose(glossary_ndtl);
-
   // Parsing lexicon
   printf("Parsing lexicon..\n");
   parseLexiconTable(lexicon_ndtl, &all_terms);
   fclose(lexicon_ndtl);
-
   // Parsing journal
   printf("Parsing journal..\n");
   parseHoraireTable(horaire_tbtl, &all_logs);
@@ -965,6 +960,7 @@ void parse() {
 }
 
 void link() {
+  printf("Linking..\n");
   printf("Parenting journal(%d entries)..\n", all_logs.len);
   for (int i = 0; i < all_logs.len; ++i) {
     Log *l = &all_logs.logs[i];
@@ -997,6 +993,7 @@ void link() {
 }
 
 void build() {
+  printf("Building..\n");
   // Build pages
   printf("Building %d pages..\n", all_terms.len);
   for (int i = 0; i < all_terms.len; ++i) {
@@ -1009,13 +1006,13 @@ void build() {
 }
 
 void check() {
-  printf("Checkup..\n");
+  printf("Checking..\n");
   int pict_used_len = 0;
   int pict_used[999];
   for (int i = 0; i < all_logs.len; ++i) {
     Log *l = &all_logs.logs[i];
     if (l->code < 1) {
-      printf("Error: Empty code %s\n", l->date);
+      printf("Warning: Empty code %s\n", l->date);
     }
     if (l->pict > 0) {
       pict_used[pict_used_len] = l->pict;
@@ -1023,9 +1020,9 @@ void check() {
     }
   }
   for (int i = 1; i < 999; ++i) {
-    int index = index_of(pict_used, pict_used_len, i);
+    int index = index_of_int(pict_used, pict_used_len, i);
     if (index < 0) {
-      printf("Next available diary id: %d\n", i);
+      printf("Next diary id: %d\n", i);
       break;
     }
     // Check if photo exists
@@ -1035,23 +1032,28 @@ void check() {
       printf("Error: Missing photo %d.jpg\n", i);
     }
   }
+  printf("Current Date: ");
+  print_arvelie();
 }
 
 int main() {
-  clock_t start, end;
-  double cpu_time_used;
+  clock_t start;
 
   start = clock();
-
   parse();
+  printf("Parsed in: %.2fms\n\n", clock_since(start));
+
+  start = clock();
   link();
+  printf("Linked in: %.2fms\n\n", clock_since(start));
+
+  start = clock();
   build();
+  printf("Built in: %.2fms\n\n", clock_since(start));
+
+  start = clock();
   check();
-
-  end = clock();
-  cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
-
-  printf("Generated in: %.2fms\n", cpu_time_used * 1000);
+  printf("Checked in: %.2fms\n\n", clock_since(start));
 
   return (0);
 }
