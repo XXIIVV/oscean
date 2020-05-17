@@ -512,6 +512,37 @@ void build_horaire(FILE *f, Term *term){
   fputs("</ul>", f);
 }
 
+void build_special_home(FILE *f, Term *term, Journal *journal) {
+  if (strcmp(term->name, "home") != 0) {
+    return;
+  }
+
+  bool found_events = false;
+  for (int i = 0; i < 5; ++i) {
+    if (journal->logs[i].is_event == true) {
+      found_events = true;
+      break;
+    }
+  }
+
+  if (!found_events) {
+    return;
+  }
+
+  fputs("<h2>Events</h2>", f);
+  fputs("<ul>", f);
+  for (int i = 0; i < 5; ++i) {
+    if (journal->logs[i].is_event != true) {
+      continue;
+    }
+    char filename[STR_BUF_LEN];
+    to_filename(journal->logs[i].term->name, filename);
+    fprintf(f, "<li><a href='%s.html'>%s</a> %s</li>", filename,
+            journal->logs[i].date, journal->logs[i].name);
+  }
+  fputs("</ul>", f);
+}
+
 void build_special_calendar(FILE *f, Term *term, Journal *journal){
   if(strcmp(term->name, "calendar") != 0){ return; }
 
@@ -720,6 +751,7 @@ void build_page(Term *term, Journal *journal) {
   build_album(f, term);
   build_links(f, term);
   build_horaire(f, term);
+  build_special_home(f, term, journal);
   build_special_calendar(f, term, journal);
   build_special_tracker(f, term, journal);
   build_special_journal(f, term, journal);
