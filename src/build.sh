@@ -15,3 +15,5 @@ echo "Build Running.."
 echo "Build Final Cleanup.."
 
 rm ./main
+
+./projects/arvelie/arvelie

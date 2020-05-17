@@ -236,28 +236,6 @@ int doty_to_day(int doty) {
   return doty - months[month - 1];
 }
 
-int ymd_to_doty(int year, int month, int day) {
-  int i = 0, daymon = 0, dayday = 0;
-  int mth[13] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-  if ((year % 4) || ((year % 100) && (year % 400))) {
-    mth[3] = mth[3] + 1;
-  }
-  for (i = 0; i < month; i++) {
-    daymon += mth[i];
-  }
-  dayday = day;
-  return (daymon + dayday);
-}
-
-int arvelie_to_doty(char *date) {
-  int m = date[2] - 'A';
-  int d1 = date[3] - '0';
-  int d2 = date[4] - '0';
-  int d = (d1 * 10) + d2;
-  int doty = (m * 14) + d;
-  return doty == -307 ? 364 : doty;
-}
-
 int get_doty() {
   int year, month, day;
   time_t now;
@@ -286,22 +264,6 @@ int offset_from_arvelie(char *arvelie) {
   return current_id - past_id;
 }
 
-char *doty_to_greg(int doty) {
-  int day, month = 0, months[13] = {0,   31,  59,  90,  120, 151, 181,
-                                    212, 243, 273, 304, 334, 365};
-  while (months[month] < doty) {
-    month++;
-  }
-  day = doty - months[month - 1];
-  printf("%d/%d/%d\n", 2020, month, day);
-  return "";
-}
-
-char *arvelie_to_greg(char *arvelie) {
-  int doty = arvelie_to_doty(arvelie);
-  return doty_to_greg(doty);
-}
-
 void fputs_rfc2822(FILE *f, char *arvelie) {
   int doty, year;
   if (arvelie != NULL) {
@@ -326,28 +288,4 @@ void fputs_rfc2822(FILE *f, char *arvelie) {
   strftime(rfc_2822, sizeof(rfc_2822), "%a, %d %b %Y %T %z",
            localtime(&current));
   fprintf(f, "%s", rfc_2822);
-}
-
-void print_greg_now() {
-  time_t now;
-  time(&now);
-  printf("Time is: %s", ctime(&now));
-}
-
-void print_arvelie_now() {
-  time_t now;
-  time(&now);
-  struct tm *local = localtime(&now);
-  int year, month, day;
-  year = local->tm_year + 1900;
-  month = local->tm_mon + 1;
-  day = local->tm_mday;
-  int doty = ymd_to_doty(year, month, day);
-  char *months[] = {"A", "B", "C", "D", "E", "F", "G", "H", "I",
-                    "J", "K", "L", "M", "N", "O", "P", "Q", "R",
-                    "S", "T", "U", "V", "W", "X", "Y", "Z", "+"};
-  int d = (doty % 14) + 1;
-  int i = floor(doty / 14);
-  char *m = months[i];
-  printf("%d%s%02d\n", 20, m, d);
 }

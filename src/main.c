@@ -6,6 +6,8 @@
 #include <time.h>
 #include <math.h>
 
+#include "projects/arvelie/arvelie.c"
+
 #define STR_BUF_LEN 128
 #define DICT_BUFFER 46
 #define LIST_BUFFER 46
@@ -1036,8 +1038,6 @@ void check() {
 }
 
 int main() {
-  print_arvelie_now();
-
   clock_t start, end;
   double cpu_time_used;
 

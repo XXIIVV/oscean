@@ -1,6 +1,4 @@
 #include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
@@ -14,7 +12,26 @@ int ymd_to_doty(int year, int month, int day) {
     daymon += mth[i];
   }
   dayday = day;
-  return (daymon + dayday);
+  return (daymon + dayday) - 1;
+}
+
+int arvelie_to_doty(char *date) {
+  int m = date[2] - 'A';
+  int d1 = date[3] - '0';
+  int d2 = date[4] - '0';
+  int d = (d1 * 10) + d2;
+  int doty = (m * 14) + d;
+  return doty == -307 ? 364 : doty;
+}
+
+void print_ymdstr_from_doty(int doty) {
+  int day, month = 0, months[13] = {0,   31,  59,  90,  120, 151, 181,
+                                    212, 243, 273, 304, 334, 365};
+  while (months[month] < doty) {
+    month++;
+  }
+  day = doty - months[month - 1];
+  printf("%04d-%02d-%02d\n", 2020, month, day);
 }
 
 void print_arvelie_from_doty(int doty) {
@@ -49,17 +66,12 @@ void print_arvelie_from_ymdstr(char *date) {
   print_arvelie_from_doty(ymd_to_doty(atoi(year), atoi(month), atoi(day)));
 }
 
+void print_ymdstr_from_arvelie(char *date) {
+  print_ymdstr_from_doty(arvelie_to_doty(date));
+}
+
 void print_arvelie() {
   time_t now;
   time(&now);
   print_arvelie_from_time(now);
-}
-
-int main(int argc, char *argv[]) {
-  if (argc > 1) {
-    print_arvelie_from_ymdstr(argv[1]);
-  } else {
-    print_arvelie();
-  }
-  return 0;
 }
