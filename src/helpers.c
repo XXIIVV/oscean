@@ -1,5 +1,3 @@
-// Strings
-
 bool is_char_alphanum(char ch) {
   int is_num = ch >= '0' && ch <= '9';
   int is_alpha = (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
@@ -14,8 +12,9 @@ bool is_url(char *str) {
 }
 
 bool is_templated(char *str) {
-  int len = strlen(str);
-  for (int i = 0; i < len; i++) {
+  int i, len;
+  len = strlen(str);
+  for (i = 0; i < len; i++) {
     if (str[i] == '{') {
       return true;
     }
@@ -33,8 +32,9 @@ bool file_exists(char *filename) {
 }
 
 bool is_alphanum(char *str) {
-  int len = strlen(str);
-  for (int i = 0; i < len; i++) {
+  int i, len;
+  len = strlen(str);
+  for (i = 0; i < len; i++) {
     char ch = str[i];
     int is_num = ch >= '0' && ch <= '9';
     int is_alpha = (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
@@ -47,8 +47,9 @@ bool is_alphanum(char *str) {
 }
 
 bool is_plaintext(char *str) {
-  int len = strlen(str);
-  for (int i = 0; i < len; i++) {
+  int i, len;
+  len = strlen(str);
+  for (i = 0; i < len; i++) {
     char ch = str[i];
     int is_num = ch >= '0' && ch <= '9';
     int is_alpha = (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
@@ -62,8 +63,9 @@ bool is_plaintext(char *str) {
 }
 
 void to_lowercase(char *src, char *dest) {
-  int len = strlen(src) + 1;
-  for (int i = 0; i < len; i++) {
+  int i, len;
+  len = strlen(src) + 1;
+  for (i = 0; i < len; i++) {
     dest[i] = src[i];
     if (dest[i] == '\0') {
       break;
@@ -74,8 +76,9 @@ void to_lowercase(char *src, char *dest) {
 }
 
 void to_alphanum(char *src, char *dest) {
-  int len = strlen(src) + 1;
-  for (int i = 0; i < len; i++) {
+  int i, len;
+  len = strlen(src) + 1;
+  for (i = 0; i < len; i++) {
     dest[i] = src[i];
     if (dest[i] == '\0') {
       break;
@@ -89,20 +92,23 @@ void to_alphanum(char *src, char *dest) {
   dest[len - 1] = '\0';
 }
 
-void to_uppercase(char *str, char *target, size_t tsize) {
-  for (size_t i = 0; i < tsize; i++) {
+void to_uppercase(char *str, char *target, int size) {
+  int i;
+  for (i = 0; i < size; i++) {
     target[i] = str[i];
     if (target[i] == '\0') {
       break;
     }
     target[i] = toupper(target[i]);
   }
-  target[tsize - 1] = '\0';
+  target[size - 1] = '\0';
 }
 
 void to_filename(char *str, char *mod) {
-  int len = strlen(str) + 1;
-  for (int i = 0; i < len; i++) {
+  int i;
+  int len;
+  len = strlen(str) + 1;
+  for (i = 0; i < len; i++) {
     mod[i] = str[i];
     if (mod[i] == '\0') {
       break;
@@ -117,7 +123,8 @@ void to_filename(char *str, char *mod) {
 }
 
 int index_of_int(int a[], int num_elements, int value) {
-  for (int i = 0; i < num_elements; i++) {
+  int i;
+  for (i = 0; i < num_elements; i++) {
     if (a[i] == value) {
       return i;
     }
@@ -126,7 +133,8 @@ int index_of_int(int a[], int num_elements, int value) {
 }
 
 int index_of_string(char *a[], int num_elements, char *value) {
-  for (int i = 0; i < num_elements; i++) {
+  int i;
+  for (i = 0; i < num_elements; i++) {
     if (strcmp(a[i], value) == 0) {
       return i;
     }
@@ -135,8 +143,9 @@ int index_of_string(char *a[], int num_elements, char *value) {
 }
 
 int index_of_char(char *str, char target) {
-  int len = strlen(str);
-  for (int i = 0; i < len; i++) {
+  int i, len;
+  len = strlen(str);
+  for (i = 0; i < len; i++) {
     if (str[i] == target) {
       return i;
     }
@@ -145,8 +154,9 @@ int index_of_char(char *str, char target) {
 }
 
 int countLeadingSpaces(char *str) {
-  int len = strlen(str) + 1;
-  for (int i = 0; i < len; i++) {
+  int i, len;
+  len = strlen(str) + 1;
+  for (i = 0; i < len; i++) {
     if (str[i] != ' ') {
       return i;
     }
@@ -172,11 +182,10 @@ char *trimstr(char *str) {
   return str;
 }
 
-// Numbers
-
 float find_average(int a[]) {
-  int sum = 0;
-  for (int i = 0; i < 52; ++i) {
+  int i, sum;
+  sum = 0;
+  for (i = 0; i < 52; ++i) {
     sum += a[i];
   }
   return sum / 52;
@@ -189,8 +198,6 @@ float clamp_float(float v, float min, float max) {
 int clamp_int(int v, int min, int max) {
   return v > max ? max : v < min ? min : v;
 }
-
-// Arvelie
 
 int extract_year(char *arvelie) {
   int result = 0, i = 0;
@@ -219,6 +226,7 @@ int doty_to_day(int doty) {
 }
 
 void fputs_rfc2822(FILE *f, char *arvelie) {
+  time_t current;
   int doty = arvelie_to_doty(arvelie);
   int year = extract_year(arvelie);
   int month = doty_to_month(doty);
@@ -232,8 +240,8 @@ void fputs_rfc2822(FILE *f, char *arvelie) {
   str_time.tm_min = 0;
   str_time.tm_sec = 0;
   str_time.tm_isdst = 0;
-  time_t current = mktime(&str_time);
-  strftime(rfc_2822, sizeof(rfc_2822), "%a, %d %b %Y %T %z",
+  current = mktime(&str_time);
+  strftime(rfc_2822, sizeof(rfc_2822), "%a, %d %b %Y 00:00:00 +0900",
            localtime(&current));
   fprintf(f, "%s", rfc_2822);
 }

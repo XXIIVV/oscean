@@ -55,12 +55,12 @@ void print_arvelie_from_time(time_t t) {
 
 void print_arvelie_from_ymdstr(char *date) {
   char year[5];
+  char month[3];
+  char day[3];
   memcpy(year, date, 4);
   year[4] = '\0';
-  char month[3];
   memcpy(month, date + 5, 2);
   month[2] = '\0';
-  char day[3];
   memcpy(day, date + 8, 2);
   day[2] = '\0';
   print_arvelie_from_doty(ymd_to_doty(atoi(year), atoi(month), atoi(day)));
