@@ -10,7 +10,7 @@
 
 #include "helpers.c"
 
-#define STR_BUF_LEN 128
+#define STR_BUF_LEN 255
 #define DICT_BUFFER 46
 #define LIST_BUFFER 46
 #define TERM_DICT_BUFFER 16
@@ -20,6 +20,7 @@
 #define TERM_CHILDREN_BUFFER 16
 #define JOURNAL_BUFFER 4000
 #define LEXICON_BUFFER 512
+#define LOGS_RANGE 56
 
 char *html_head = "<!DOCTYPE html><html lang='en'><head>"
   "<meta charset='utf-8'>"
@@ -123,7 +124,7 @@ List *find_list(Glossary *glossary, char *name) {
 }
 
 Term *find_term(Lexicon *lexicon, char *name) {
-  char formatted[strlen(name)];
+  char formatted[STR_BUF_LEN];
   substr(name, formatted, 0, strlen(name));
   to_lowercase(formatted, formatted);
   to_alphanum(formatted, formatted);
@@ -154,22 +155,22 @@ Log *find_last_diary(Term *term) {
 
 void fputs_templated_mod(FILE *f, char *str){
   if (strstr(str, "^itchio") != NULL) {
-    char buff[255];
+    char buff[STR_BUF_LEN];
     substr(str, buff, 9, strlen(str) - 10);
     fprintf(f, "<iframe frameborder='0' src='https://itch.io/embed/%s?link_color=000000' width='600' height='167'></iframe>", buff);
   }
   else if (strstr(str, "^bandcamp") != NULL) {
-    char buff[255];
+    char buff[STR_BUF_LEN];
     substr(str, buff, 11, strlen(str) - 12);
     fprintf(f, "<iframe style='border: 0; width: 600px; height: 274px;' src='https://bandcamp.com/EmbeddedPlayer/album=%s/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/' seamless></iframe>", buff);
   }
   else if (strstr(str, "^youtube") != NULL) {
-    char buff[255];
+    char buff[STR_BUF_LEN];
     substr(str, buff, 10, strlen(str) - 11);
     fprintf(f, "<iframe width='600' height='380' src='https://www.youtube.com/embed/%s?rel=0' style='max-width:700px' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe>", buff);
   }
   else if (strstr(str, "^redirect") != NULL) {
-    char buff[255];
+    char buff[STR_BUF_LEN];
     substr(str, buff, 11, strlen(str) - 12);
     to_filename(buff, buff);
     fprintf(f, "<meta http-equiv='refresh' content='2; url=%s.html' /><p>In a hurry? Travel to <a href='%s.html'>%s</a>.</p>", buff, buff, buff);
@@ -183,7 +184,7 @@ void fputs_templated_seg(FILE *f, char *str) {
   bool has_name = false;
   int len = strlen(str);
   // Make target
-  char target[255];
+  char target[STR_BUF_LEN];
   int target_len = 0;
   for (int i = 1; i < len - 1; i++) {
     if (str[i] == ' ') {
@@ -211,7 +212,7 @@ void fputs_templated_seg(FILE *f, char *str) {
     return;
   }
   // Make name
-  char name[255];
+  char name[STR_BUF_LEN];
   int name_len = 0;
   for (int i = target_len + 2; i < len - 1; i++) {
     name[name_len] = str[i];
@@ -252,17 +253,19 @@ void fputs_templated(FILE *f, char *str) {
   segs_len += 1;
   for (int i = 0; i < segs_len; ++i) {
     int buffer_len = tos[i] - froms[i];
-    char buffer[len + 500];
+    if(buffer_len > STR_BUF_LEN){
+      printf("Template segment is too long: %s\n", str);
+      abort();
+    }
+    char buffer[STR_BUF_LEN];
     substr(str, buffer, froms[i], buffer_len);
     buffer[buffer_len] = '\0';
     if (buffer[0] == '{') {
-      if(buffer[1]=='^'){
+      if (buffer[1] == '^') {
         fputs_templated_mod(f, buffer);
-      }
-      else{
+      } else {
         fputs_templated_seg(f, buffer);
       }
-      
     } else {
       fputs(buffer, f);
     }
@@ -617,16 +620,15 @@ void build_special_now(FILE *f, Term *term, Journal *journal) {
     return;
   }
   
-  int range = 14 * 4;
 
   // Previous range
   int past_len = 0;
-  float past_value[range];
-  char *past_name[range];
+  float past_value[LOGS_RANGE];
+  char *past_name[LOGS_RANGE];
   float past_sum_value = 0;
 
-  for (int i = 0; i < range; ++i) {
-    int past_index = i + range;
+  for (int i = 0; i < LOGS_RANGE; ++i) {
+    int past_index = i + LOGS_RANGE;
     Log l = journal->logs[past_index];
     if (l.code % 10 < 1) {
       continue;
@@ -643,11 +645,11 @@ void build_special_now(FILE *f, Term *term, Journal *journal) {
 
   // Recent range
   int projects_len = 0;
-  float projects_value[range];
-  char *projects_name[range];
+  float projects_value[LOGS_RANGE];
+  char *projects_name[LOGS_RANGE];
   float sum_value = 0;
 
-  for (int i = 0; i < range; ++i) {
+  for (int i = 0; i < LOGS_RANGE; ++i) {
     Log l = journal->logs[i];
     if (l.code % 10 < 1) {
       continue;
@@ -662,7 +664,7 @@ void build_special_now(FILE *f, Term *term, Journal *journal) {
     sum_value += l.code % 10;
   }
 
-  fprintf(f, "<p>Distribution of <b>%.0f hours over %d projects</b>, a change of %.0f hours and %d projects since the previous period of %d days.</p>", sum_value, projects_len, sum_value-past_sum_value, projects_len-past_len, range);
+  fprintf(f, "<p>Distribution of <b>%.0f hours over %d projects</b>, a change of %.0f hours and %d projects since the previous period of %d days.</p>", sum_value, projects_len, sum_value-past_sum_value, projects_len-past_len, LOGS_RANGE);
 
   float test_sum = 0;
   fputs("<ul style='columns:2'>", f);
@@ -733,7 +735,14 @@ void build_page(Term *term, Journal *journal) {
     return;
   }
 
-  snprintf(filepath, STR_BUF_LEN, "../site/%s.html", filename);
+  result = snprintf(filepath, STR_BUF_LEN, "../site/%s.html", filename);
+  is_valid = result > 0 && (size_t)result < sizeof filename;
+
+  if (result < 0 || result > STR_BUF_LEN - 1) {
+    printf("Invalid filename: %s\n", filename);
+    return;    
+  }
+
   FILE *f = fopen(filepath, "w");
 
   fprintf(f, html_head, term->bref, term->name);
@@ -805,9 +814,8 @@ void build_rss(Journal *journal) {
 }
 
 void parseGlossaryTable(FILE *fp, Glossary *glossary) {
-  int bufferLength = 500;
-  char line[bufferLength];
-  while (fgets(line, bufferLength, fp)) {
+  char line[512];
+  while (fgets(line, 512, fp)) {
     int pad = countLeadingSpaces(line);
     trimstr(line);
     int len = strlen(line);
@@ -840,12 +848,11 @@ void parseGlossaryTable(FILE *fp, Glossary *glossary) {
 }
 
 void parseLexiconTable(FILE *fp, Lexicon *lexicon) {
-  int bufferLength = 1000;
-  char line[bufferLength];
+  char line[1024];
   bool catch_body = false;
   bool catch_link = false;
   bool catch_list = false;
-  while (fgets(line, bufferLength, fp)) {
+  while (fgets(line, 1024, fp)) {
     int pad = countLeadingSpaces(line);
     trimstr(line);
     int len = strlen(line);
@@ -900,9 +907,8 @@ void parseLexiconTable(FILE *fp, Lexicon *lexicon) {
 }
 
 void parseHoraireTable(FILE *fp, Journal *journal) {
-  int bufferLength = 72;
-  char line[bufferLength];
-  while (fgets(line, bufferLength, fp)) {
+  char line[STR_BUF_LEN];
+  while (fgets(line, STR_BUF_LEN, fp)) {
     trimstr(line);
     int len = strlen(line);
     if (len < 16 || line[0] == ';') {
