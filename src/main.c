@@ -521,12 +521,13 @@ void build_horaire(FILE *f, Term *term){
 void build_special_home(FILE *f, Term *term, Journal *journal) {
   int i;
   char filename[STR_BUF_LEN];
+  bool found_events;
 
   if (strcmp(term->name, "home") != 0) {
     return;
   }
 
-  bool found_events = false;
+  found_events = false;
   for (i = 0; i < 5; ++i) {
     if (journal->logs[i].is_event == true) {
       found_events = true;
