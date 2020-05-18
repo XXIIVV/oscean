@@ -1004,11 +1004,10 @@ void build() {
 }
 
 void check() {
-  /*
   int pict_used_len;
   int pict_used[999];
   int i;
-  char pictpath[64];
+  pict_used_len = 0;
   printf("Checking..\n");
   for (i = 0; i < all_logs.len; ++i) {
     Log *l = &all_logs.logs[i];
@@ -1026,14 +1025,9 @@ void check() {
       printf("Next diary id: %d\n", i);
       break;
     }
-    snprintf(pictpath, 64, "../media/diary/%d.jpg", i);
-    if (!file_exists(pictpath)) {
-      printf("Error: Missing photo %d.jpg\n", i);
-    }
   }
   printf("Current Date: ");
   print_arvelie();
-    */
 }
 
 int main() {
