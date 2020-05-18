@@ -8,7 +8,15 @@ The Master Branch is the **live version**.
 
 ```
 cd src/
-./build
+time ./build.sh
+```
+
+### Haste
+
+Oscean can be compiled with the [Tiny C Compiler](https://bellard.org/tcc/) in about 7 milliseconds.
+
+```
+tcc main.c -o main
 ```
 
 ## Twtxt

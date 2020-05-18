@@ -39,7 +39,7 @@ void print_arvelie_from_doty(int doty) {
                     "J", "K", "L", "M", "N", "O", "P", "Q", "R",
                     "S", "T", "U", "V", "W", "X", "Y", "Z", "+"};
   int d = (doty % 14) + 1;
-  int i = floor(doty / 14);
+  int i = doty / 14;
   char *m = months[i];
   printf("%d%s%02d\n", 20, m, d);
 }
