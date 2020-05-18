@@ -23,15 +23,17 @@
 #define LOGS_RANGE 56
 
 char *html_head = "<!DOCTYPE html><html lang='en'><head>"
-  "<meta charset='utf-8'>"
-  "<meta name='description' content='%s'/>"
-  "<meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' />"
-  "<link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' />"
-  "<link rel='stylesheet' type='text/css' href='../links/main.css'>"
-  "<link rel='shortcut icon' type='image/png' href='../media/services/icon.png'>"
-  "<title>XXIIVV — %s</title></head><body>";
+    "<meta charset='utf-8'>"
+    "<meta name='description' content='%s'/>"
+    "<meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' />"
+    "<link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' />"
+    "<link rel='stylesheet' type='text/css' href='../links/main.css'>"
+    "<link rel='shortcut icon' type='image/png' href='../media/services/icon.png'>"
+    "<title>XXIIVV — %s</title></head><body>";
 
-char *html_header = "<header><a id='logo' href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV'></a></header>";
+char *html_header = "<header>"
+    "<a id='logo' href='home.html'>"
+    "<img src='../media/icon/logo.svg' alt='XXIIVV'></a></header>";
 
 char *html_footer =
     "<footer>"
@@ -151,7 +153,23 @@ Log *find_last_diary(Term *term) {
   return NULL;
 }
 
-void fputs_templated_mod(FILE *f, char *str){
+void fputs_templated_link(FILE *f, char *target, char *name) {
+  if (!is_url(target)) {
+    if (!find_term(&all_terms, target)) {
+      fprintf(f, "<b style='background:red'>{%s}</b>", target);
+      printf("Error: Broken send(%s:%s)\n", target, name);
+    } else {
+      char filename[STR_BUF_LEN];
+      to_filename(target, filename);
+      fprintf(f, "<a href='%s.html'>%s</a>", filename, name);
+    }
+  } else {
+    fprintf(f, "<a href='%s' class='external' target='_blank'>%s</a>", target,
+            name);
+  }
+}
+
+void fputs_templated_mod(FILE *f, char *str) {
   if (strstr(str, "^itchio") != NULL) {
     char buff[STR_BUF_LEN];
     substr(str, buff, 9, strlen(str) - 10);
@@ -180,12 +198,12 @@ void fputs_templated_mod(FILE *f, char *str){
 
 void fputs_templated_seg(FILE *f, char *str) {
   int i;
-  char name[STR_BUF_LEN];
-  bool has_name = false;
   int len = strlen(str);
-  int name_len;
-  char target[STR_BUF_LEN];
+  int name_len = 0;
   int target_len = 0;
+  bool has_name = false;
+  char name[STR_BUF_LEN];
+  char target[STR_BUF_LEN];
   for (i = 1; i < len - 1; i++) {
     if (str[i] == ' ') {
       has_name = true;
@@ -195,44 +213,13 @@ void fputs_templated_seg(FILE *f, char *str) {
     target_len++;
   }
   target[target_len] = '\0';
-
-  if (!has_name) {
-    if (!is_url(target)) {
-      if (!find_term(&all_terms, target)) {
-        fprintf(f, "<b style='background:red'>{%s}</b>", target);
-        printf("Error: Broken send(%s) in %s\n", target, str);
-      } else {
-        char filename[STR_BUF_LEN];
-        to_filename(target, filename);
-        fprintf(f, "<a href='%s.html'>%s</a>", filename, target);
-      }
-    } else {
-      fprintf(f, "<a href='%s' class='external' target='_blank'>%s</a>", target,
-              target);
-    }
-    return;
-  }
-
   name_len = 0;
   for (i = target_len + 2; i < len - 1; i++) {
     name[name_len] = str[i];
     name_len++;
   }
   name[name_len] = '\0';
-  if (!is_url(target)) {
-    if (!find_term(&all_terms, target)) {
-      fprintf(f, "<b style='background:red'>{%s}</b>", target);
-      printf("Error: Broken send(%s) in %s\n", target, str);
-    } else {
-      char filename[STR_BUF_LEN];
-      to_filename(target, filename);
-      fprintf(f, "<a href='%s.html'>%s</a>", filename, name);
-    }
-
-  } else {
-    fprintf(f, "<a href='%s' class='external' target='_blank'>%s</a>", target,
-            name);
-  }
+  fputs_templated_link(f, target, has_name ? name : target);
 }
 
 void fputs_templated(FILE *f, char *str) {
