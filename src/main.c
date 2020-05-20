@@ -10,6 +10,7 @@
 
 #include "helpers.c"
 
+#define KEY_BUF_LEN 32
 #define STR_BUF_LEN 255
 #define DICT_BUFFER 46
 #define LIST_BUFFER 46
@@ -55,7 +56,7 @@ char *html_footer =
     "</footer></body></html>";
 
 typedef struct List {
-  char name[31];
+  char name[KEY_BUF_LEN];
   char keys[100][100];
   char vals[100][500];
   int pairs_len;
@@ -64,13 +65,13 @@ typedef struct List {
 } List;
 
 typedef struct Term {
-  char name[21];
+  char name[KEY_BUF_LEN];
   char host[21];
   char bref[200];
-  char type[21];
+  char type[KEY_BUF_LEN];
   char body[30][750];
   int body_len;
-  char link_keys[20][20];
+  char link_keys[20][KEY_BUF_LEN];
   char link_vals[20][100];
   int link_len;
   char list[20][31];
@@ -86,9 +87,9 @@ typedef struct Log {
   char date[6];
   char rune[1];
   int code;
-  char host[21];
+  char host[KEY_BUF_LEN];
   int pict;
-  char name[31];
+  char name[KEY_BUF_LEN];
   bool is_event;
   Term *term;
 } Log;
