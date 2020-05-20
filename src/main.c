@@ -125,13 +125,11 @@ List *find_list(Glossary *glossary, char *name) {
 
 Term *find_term(Lexicon *lexicon, char *name) {
   int i;
-  char formatted[STR_BUF_LEN];
-  substr(name, formatted, 0, strlen(name));
-  to_lowercase(formatted, formatted);
-  to_alphanum(formatted, formatted);
+  char buffer[STR_BUF_LEN];
+  to_alphanum(name, buffer);
   for (i = 0; i < lexicon->len; ++i) {
     Term *t = &lexicon->terms[i];
-    if (!strcmp(formatted, t->name)) {
+    if (!strcmp(buffer, t->name)) {
       return t;
     }
   }
@@ -142,10 +140,7 @@ Log *find_last_diary(Term *term) {
   int i;
   for (i = 0; i < all_logs.len; ++i) {
     Log *l = &all_logs.logs[i];
-    if (l->term != term) {
-      continue;
-    }
-    if (l->pict < 1) {
+    if (l->term != term || l->pict < 1) {
       continue;
     }
     return l;
@@ -324,12 +319,9 @@ void build_nav_part(FILE *f, Term *term, Term *target) {
 
 void build_banner(FILE *f, Term *term, bool caption) {
   Log *l = find_last_diary(term);
-
-  if (!l) {
-    return;
+  if (l) {
+    build_log_pict(f, l, caption);
   }
-
-  build_log_pict(f, l, caption);
 }
 
 void build_nav(FILE *f, Term *term) {
@@ -341,7 +333,6 @@ void build_nav(FILE *f, Term *term) {
     printf("Missing parent for %s\n", term->parent->name);
     return;
   }
-
   fputs("<nav>", f);
   if (term->parent->parent->name == term->parent->name) {
     build_nav_part(f, term->parent->parent, term);
@@ -404,12 +395,11 @@ void build_include(FILE *f, Term *term){
 
 void build_index(FILE *f, Term *term) {
   int i;
-  char child_filename[STR_BUF_LEN];
   if (strcmp(term->type, "index") != 0) {
     return;
   }
-
   for (i = 0; i < term->children_len; ++i) {
+    char child_filename[STR_BUF_LEN];
     to_filename(term->children[i]->name, child_filename);
     fprintf(f, "<h3><a href='%s.html'>%s</a></h3>", child_filename,
             term->children[i]->name);
@@ -430,15 +420,13 @@ void build_portal(FILE *f, Term *term) {
 
 void build_album(FILE *f, Term *term) {
   int i;
-  Log l;
   Log *header_log;
   if (strcmp(term->type, "album") != 0) {
     return;
   }
-
   header_log = find_last_diary(term);
   for (i = 0; i < all_logs.len; ++i) {
-    l = all_logs.logs[i];
+    Log l = all_logs.logs[i];
     if (l.term != term) {
       continue;
     }
@@ -463,12 +451,11 @@ void build_links(FILE *f, Term *term){
 }
 
 void build_horaire(FILE *f, Term *term){
+  int i;
   int len = 0;
   int events_len = 0;
   int ch = 0;
   int fh = 0;
-  int i;
-
   for (i = 0; i < all_logs.len; ++i) {
     Log *l = &all_logs.logs[i];
     if (l->term != term && l->term->parent != term) { continue; }
@@ -477,11 +464,10 @@ void build_horaire(FILE *f, Term *term){
     fh += l->code % 10;
     len += 1;
   }
-
+  /* Updated */
   if (len < 2) {
     return;
   }
-
   for (i = 0; i < all_logs.len; ++i) {
     Log *l = &all_logs.logs[i];
     if(l->term != term){ continue; }
@@ -490,11 +476,10 @@ void build_horaire(FILE *f, Term *term){
     fprintf(f, "</p>");
     break;
   }
-
+  /* Events */
   if (events_len < 1) {
     return;
   }
-  
   fputs("<ul>", f);
   for (i = 0; i < all_logs.len; ++i) {
     Log *l = &all_logs.logs[i];
@@ -507,13 +492,10 @@ void build_horaire(FILE *f, Term *term){
 
 void build_special_home(FILE *f, Term *term, Journal *journal) {
   int i;
-  char filename[STR_BUF_LEN];
   bool found_events;
-
   if (strcmp(term->name, "home") != 0) {
     return;
   }
-
   found_events = false;
   for (i = 0; i < 5; ++i) {
     if (journal->logs[i].is_event == true) {
@@ -521,14 +503,14 @@ void build_special_home(FILE *f, Term *term, Journal *journal) {
       break;
     }
   }
-
   if (!found_events) {
     return;
   }
-
+  /* Events */
   fputs("<h2>Events</h2>", f);
   fputs("<ul>", f);
   for (i = 0; i < 5; ++i) {
+    char filename[STR_BUF_LEN];
     if (journal->logs[i].is_event != true) {
       continue;
     }
@@ -539,22 +521,19 @@ void build_special_home(FILE *f, Term *term, Journal *journal) {
   fputs("</ul>", f);
 }
 
-void build_special_calendar(FILE *f, Term *term, Journal *journal){
-  char filename[STR_BUF_LEN];
-  int last_year;
+void build_special_calendar(FILE *f, Term *term, Journal *journal){  
   int i;
+  int last_year;
   if(strcmp(term->name, "calendar") != 0){ return; }
   last_year = 0;
   fputs("<ul>", f);
   for (i = 0; i < journal->len; ++i) {
+    char filename[STR_BUF_LEN];
     if(journal->logs[i].is_event != true){ continue; }
-
     if(last_year != extract_year(journal->logs[i].date)){
       fprintf(f, "</ul><ul>");
     }
-
     to_filename(journal->logs[i].term->name, filename);
-
     fprintf(f, "<li><a href='%s.html'>%s</a> %s</li>", filename, journal->logs[i].date, journal->logs[i].name);  
     last_year = extract_year(journal->logs[i].date);
   }
@@ -562,20 +541,18 @@ void build_special_calendar(FILE *f, Term *term, Journal *journal){
 }
 
 void build_special_tracker(FILE *f, Term *term, Journal *journal) {
-  char filename[STR_BUF_LEN];
-  char *known[LEXICON_BUFFER];
   int i;
   int known_id;
   int last_year;
   if (strcmp(term->name, "tracker") != 0) {
     return;
   }
-
   known_id = 0;
   last_year = 20;
-
   fputs("<ul>", f);
   for (i = 0; i < journal->len; ++i) {
+    char filename[STR_BUF_LEN];
+    char *known[LEXICON_BUFFER];
     if (index_of_string(known, known_id, journal->logs[i].term->name) > -1) {
       continue;
     } 
@@ -598,8 +575,8 @@ void build_special_tracker(FILE *f, Term *term, Journal *journal) {
 }
 
 void build_special_journal(FILE *f, Term *term, Journal *journal) {
-  int count;
   int i;
+  int count;
   if (strcmp(term->name, "journal") != 0) {
     return;
   }
@@ -754,9 +731,7 @@ void build_page(Term *term, Journal *journal) {
 }
 
 void build_rss(Journal *journal) {
-  char filename[STR_BUF_LEN];
   int i;
-  Log l;
   FILE *f = fopen("../links/rss.xml", "w");
   fputs("<?xml version='1.0' encoding='UTF-8' ?>", f);
   fputs("<rss version='2.0' xmlns:dc='http://purl.org/dc/elements/1.1/'>", f);
@@ -765,7 +740,8 @@ void build_rss(Journal *journal) {
   fputs("<link><![CDATA[https://wiki.xxiivv.com/Journal]]></link>\n", f);
   fputs("<description>The Nataniev Library</description>\n", f);
   for (i = 0; i < journal->len; ++i) {
-    l = journal->logs[i];
+    char filename[STR_BUF_LEN];
+    Log l = journal->logs[i];
     if (l.pict == 0) {
       continue;
     }
@@ -957,7 +933,6 @@ void link() {
       printf("ERR: Unknown log host %s\n", l->host);
     }
   }
-
   printf("Parenting lexicon (%d entries)..\n", all_terms.len);
   for (i = 0; i < all_terms.len; ++i) {
     Term *t = &all_terms.terms[i];
@@ -968,7 +943,6 @@ void link() {
     t->parent->children[t->parent->children_len] = t;
     t->parent->children_len++;
   }
-
   printf("Parenting glossary (%d entries)..\n", all_lists.len);
   for (i = 0; i < all_terms.len; ++i) {
     Term *t = &all_terms.terms[i];
@@ -1020,22 +994,17 @@ void check() {
 
 int main() {
   clock_t start;
-
   start = clock();
   parse();
   printf("Parsed in: %.2fms\n\n", clock_since(start));
-
   start = clock();
   link();
   printf("Linked in: %.2fms\n\n", clock_since(start));
-
   start = clock();
   build();
   printf("Built in: %.2fms\n\n", clock_since(start));
-
   start = clock();
   check();
   printf("Checked in: %.2fms\n\n", clock_since(start));
-
   return (0);
 }

@@ -12,8 +12,8 @@ bool is_url(char *str) {
 }
 
 bool is_templated(char *str) {
-  int i, len;
-  len = strlen(str);
+  int i;
+  int len = strlen(str);
   for (i = 0; i < len; i++) {
     if (str[i] == '{') {
       return true;
@@ -32,8 +32,8 @@ bool file_exists(char *filename) {
 }
 
 bool is_alphanum(char *str) {
-  int i, len;
-  len = strlen(str);
+  int i;
+  int len = strlen(str);
   for (i = 0; i < len; i++) {
     char ch = str[i];
     int is_num = ch >= '0' && ch <= '9';
@@ -47,8 +47,8 @@ bool is_alphanum(char *str) {
 }
 
 bool is_plaintext(char *str) {
-  int i, len;
-  len = strlen(str);
+  int i;
+  int len = strlen(str);
   for (i = 0; i < len; i++) {
     char ch = str[i];
     int is_num = ch >= '0' && ch <= '9';
@@ -63,8 +63,8 @@ bool is_plaintext(char *str) {
 }
 
 void to_lowercase(char *src, char *dest) {
-  int i, len;
-  len = strlen(src) + 1;
+  int i;
+  int len = strlen(src) + 1;
   for (i = 0; i < len; i++) {
     dest[i] = src[i];
     if (dest[i] == '\0') {
@@ -76,8 +76,8 @@ void to_lowercase(char *src, char *dest) {
 }
 
 void to_alphanum(char *src, char *dest) {
-  int i, len;
-  len = strlen(src) + 1;
+  int i;
+  int len = strlen(src) + 1;
   for (i = 0; i < len; i++) {
     dest[i] = src[i];
     if (dest[i] == '\0') {
@@ -106,8 +106,7 @@ void to_uppercase(char *str, char *target, int size) {
 
 void to_filename(char *str, char *mod) {
   int i;
-  int len;
-  len = strlen(str) + 1;
+  int len = strlen(str) + 1;
   for (i = 0; i < len; i++) {
     mod[i] = str[i];
     if (mod[i] == '\0') {
@@ -143,8 +142,8 @@ int index_of_string(char *a[], int num_elements, char *value) {
 }
 
 int index_of_char(char *str, char target) {
-  int i, len;
-  len = strlen(str);
+  int i;
+  int len = strlen(str);
   for (i = 0; i < len; i++) {
     if (str[i] == target) {
       return i;
@@ -154,8 +153,8 @@ int index_of_char(char *str, char target) {
 }
 
 int countLeadingSpaces(char *str) {
-  int i, len;
-  len = strlen(str) + 1;
+  int i;
+  int len = strlen(str) + 1;
   for (i = 0; i < len; i++) {
     if (str[i] != ' ') {
       return i;
@@ -183,8 +182,8 @@ char *trimstr(char *str) {
 }
 
 float find_average(int a[]) {
-  int i, sum;
-  sum = 0;
+  int i;
+  int sum = 0;
   for (i = 0; i < 52; ++i) {
     sum += a[i];
   }
