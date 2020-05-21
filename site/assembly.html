@@ -1,4 +1,65 @@
-<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='description' content='6502 Assembly is the language used to program the famicom microprocessor.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV — assembly</title></head><body><header><a id='logo' href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV'></a></header><nav><ul><li><a href='nataniev.html'>nataniev</a></li><li><a href='tools.html'>tools</a></li><li><a href='hardware.html'>hardware</a></li><li><a href='neauismetica.html'>neauismetica</a></li><li><a href='mirrors.html'>mirrors</a></li><li><a href='language.html'>language/</a></li><li><a href='notebook.html'>notebook</a></li></ul><ul><li><a href='english.html'>english</a></li><li><a href='lietal.html'>lietal</a></li><li><a href='japanese.html'>japanese</a></li><li><a href='russian.html'>russian</a></li><li><a href='binary.html'>binary</a></li><li><a href='assembly.html'>assembly/</a></li><li><a href='unix.html'>unix</a></li></ul><ul></ul></nav><main><figure><img src='../media/diary/363.jpg' alt='Acorn BBC Micro Logo on Famico picture'/><figcaption>20F07 — Acorn BBC Micro Logo on Famico</figcaption></figure><h2>6502 Assembly is the language used to program the famicom microprocessor.</h2><p>This page is a collection of notes on the basics of 6502 assembly, assembled from various guides and tutorial. Understanding these notes require prior understanding of <a href='binary.html'>binary numbers</a>.</p><h3>Registers</h3>
+<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='description' content='6502 Assembly is the language used to program the famicom microprocessor.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV — assembly</title></head><body><header><a id='logo' href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV'></a></header><nav><ul><li><a href='nataniev.html'>nataniev</a></li><li><a href='tools.html'>tools</a></li><li><a href='hardware.html'>hardware</a></li><li><a href='neauismetica.html'>neauismetica</a></li><li><a href='mirrors.html'>mirrors</a></li><li><a href='language.html'>language/</a></li><li><a href='notebook.html'>notebook</a></li></ul><ul><li><a href='english.html'>english</a></li><li><a href='lietal.html'>lietal</a></li><li><a href='japanese.html'>japanese</a></li><li><a href='russian.html'>russian</a></li><li><a href='binary.html'>binary</a></li><li><a href='assembly.html'>assembly/</a></li><li><a href='unix.html'>unix</a></li></ul><ul></ul></nav><main><figure><img src='../media/diary/363.jpg' alt='Acorn BBC Micro Logo on Famico picture'/><figcaption>20F07 — Acorn BBC Micro Logo on Famico</figcaption></figure><h2>6502 Assembly is the language used to program the famicom microprocessor.</h2><p>This page is a collection of notes on the basics of 6502 assembly, assembled from various guides and tutorial. Prior to learning assembly, I would recommend building a basic understanding of <a href='binary.html'>binary numbers</a>.</p><h3>Lexicon</h3>
+
+<p><b>Directives</b> are commands you send to the assembler to do things like locating code in memory. They start with . and are indented. This sample directive tells the assembler to put the code starting at memory location $8000, which is inside the game ROM area. <b>Labels</b> are aligned to the far left and have a : at the end. The label is just something you use to organize your code and make it easier to read. The assembler translates the label into an address. </p>
+
+<p><b>Opcodes</b> are the instructions that the processor will run, and are indented like the directives. In this sample, JMP is the opcode that tells the processor to jump to the MyFunction label. <b>Operands</b> are additional information for the opcode. Opcodes have between one and three operands. In this example the #$FF is the operand:</p>
+
+<p>Comments are to help you understand in English what the code is doing. When you write code and come back later, the comments will save you. You do not need a comment on every line, but should have enough to explain what is happening. Comments start with a ; and are completely ignored by the assembler. They can be put anywhere horizontally, but are usually spaced beyond the long lines.</p>
+
+<pre>
+  .org $8000
+MyFunction:                    ; A comment
+  LDA #$FF
+  JMP MyFunction
+</pre>
+
+<h3>Styleguide</h3>
+
+<p>Major comments are prefixed with two semi-colons, and minor comments are found at the end of a line on the 32nd column if available. Variables and subroutines are lowercase, constants and vectors are uppercase, and routines are capitalized.</p>
+
+<pre>
+;; Variables
+
+  .enum $0000                  ; Zero Page variables
+pos_x                   .dsb 1
+pos_y                   .dsb 1
+  .ende
+
+;; Constants
+
+SPRITE_Y            .equ $0200
+SPRITE_X            .equ $0203
+
+RESET:
+  NOP
+
+Forever:
+  JMP Forever
+
+NMI:
+  RTI
+
+;; Routines
+
+CheckCollision: 
+  LDA pos_y
+  CMP #$88                     ; Floor is at 32y
+  BCC @done
+  LDA #$88
+  STA pos_y
+@done:
+  RTS
+
+;; Vectors
+
+  .pad $FFFA
+  .dw NMI
+  .dw RESET
+  .dw 0
+  .incbin "src/sprite.chr"
+</pre>
+
+<h3>Registers</h3>
 
 <p>The 6502 handles data in its registers, each of which holds one byte(8-bits) of data. There are a total of three general use and two special purpose registers:</p>
 <p><b>Note:</b> When you use X it adds the value of X to the memory address and uses the 16-bit value at that address to do the write. Whereas when you use Y it adds the value of Y to the address stored in the memory address it's reading from instead. 6502 is little-endian, so $0200 is stored as $00 $02 in memory.</p>
@@ -26,55 +87,6 @@
   <tr><td>Indexed Indirect</td><td>(aa,X)</td><td>Find the 16-bit address starting at the given location plus the current X register.  The value is the contents of that address.  For example, LDA ($B4,X)  where X contains 6 gives an address of $B4 + 6 = $BA.  If $BA and $BB contain $12 and $EE respectively, then the final address is $EE12.  The value at location $EE12 is put in the accumulator.</td></tr>
   <tr><td>Indirect Indexed</td><td>(aa),Y</td><td>Find the 16-bit address contained in the given location ( and the one following).  Add to that address the contents of the Y register. Fetch the value stored at that address.  For example, LDA ($B4),Y  where Y contains 6 If $B4 contains $EE and $B5 contains $12 then the value at memory location $12EE + Y (6) = $12F4 is fetched and put in the accumulator.</td></tr>
 </table>
-
-<h3>Directives</h3>
-
-<p>Directives are commands you send to the assembler to do things like locating code in memory. They start with . and are indented. This sample directive tells the assembler to put the code starting at memory location $8000, which is inside the game ROM area:</p>
-
-<pre>
-  .org $8000
-</pre>
-
-<h3>Labels</h3>
-
-<p>The label is aligned to the far left and has a : at the end. The label is just something you use to organize your code and make it easier to read. The assembler translates the label into an address. Sample label:</p>
-
-<pre>
-  .org $8000
-MyFunction:
-</pre>
-
-<h3>Opcodes</h3>
-
-<p>The opcode is the instruction that the processor will run, and is indented like the directives. In this sample, JMP is the opcode that tells the processor to jump to the MyFunction label:</p>
-
-<pre>
-  .org $8000
-MyFunction:
-  JMP MyFunction
-</pre>
-
-<h3>Operands</h3>
-
-<p>The operands are additional information for the opcode. Opcodes have between one and three operands. In this example the #$FF is the operand:</p>
-
-<pre>
-  .org $8000
-MyFunction:
-  LDA #$FF
-  JMP MyFunction
-</pre>
-
-<h3>Comments</h3>
-
-<p>Comments are to help you understand in English what the code is doing. When you write code and come back later, the comments will save you. You do not need a comment on every line, but should have enough to explain what is happening. Comments start with a ; and are completely ignored by the assembler. They can be put anywhere horizontally, but are usually spaced beyond the long lines.</p>
-
-<pre>
-  .org $8000
-MyFunction:        ; loads FF into accumulator
-  LDA #$FF
-  JMP MyFunction
-</pre>
 
 <h3>Common Opcodes</h3>
 
@@ -165,4 +177,4 @@ THERE:
   <tr><td>Register is greater than data</td><td>BEQ  HERE<br>BCS  THERE</td><td>BEQ  HERE<br>BPL  THERE</td></tr>
   <tr><td>Register is less than or equal to data</td><td>BCC  THERE<br>BEQ  THERE</td><td>BMI THERE<br>BEQ THERE</td></tr>
   <tr><td>Register is greater than or equal to data</td><td>BCS  THERE</td><td>BPL  THERE</td></tr>
-</table><p>Found a mistake? Submit an <a href='https://github.com/XXIIVV/Oscean/edit/master/src/inc/assembly.htm' class='external' target='_blank'>edit</a> to assembly.</p><ul><li><a href='https://git.sr.ht/~rabbits/famicom_cookbook' class='external' target='_blank'>famicom cookbook</a></li></ul><p><i>Last update on <a href='tracker.html'>20F07</a>, edited 12 times. +21/56fh</i></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
+</table><p>Found a mistake? Submit an <a href='https://github.com/XXIIVV/Oscean/edit/master/src/inc/assembly.htm' class='external' target='_blank'>edit</a> to assembly.</p><ul><li><a href='https://git.sr.ht/~rabbits/famicom_cookbook' class='external' target='_blank'>famicom cookbook</a></li></ul><p><i>Last update on <a href='tracker.html'>20K02</a>, edited 13 times. +24/60fh</i></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
