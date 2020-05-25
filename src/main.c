@@ -33,8 +33,7 @@ char *html_head = "<!DOCTYPE html><html lang='en'><head>"
     "<title>XXIIVV — %s</title></head><body>";
 
 char *html_header = "<header>"
-    "<a id='logo' href='home.html'>"
-    "<img src='../media/icon/logo.svg' alt='XXIIVV'></a></header>";
+    "<a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV'></a></header>";
 
 char *html_footer =
     "<footer>"
