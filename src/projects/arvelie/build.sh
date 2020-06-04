@@ -1,8 +1,13 @@
 #!/bin/bash
 
-cc -std=c99 -DDEBUG -Wall -Wpedantic -Wshadow -Wextra -Werror=implicit-int -Werror=incompatible-pointer-types -Werror=int-conversion -Wvla -g -Og -fsanitize=address -fsanitize=undefined main.c -o arvelie
+# cc -std=c99 -DDEBUG -Wall -Wpedantic -Wshadow -Wextra -Werror=implicit-int -Werror=incompatible-pointer-types -Werror=int-conversion -Wvla -g -Og -fsanitize=address -fsanitize=undefined main.c -o arvelie
 
-echo "today:"
+clang-format -i arvelie.c
+clang-format -i main.c
+
+tcc main.c -o arvelie
+
+echo "now:"
 ./arvelie
 
 ./arvelie 02A01
