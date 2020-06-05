@@ -1,10 +1,10 @@
+#include <ctype.h>
+#include <math.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include <string.h>
-#include <ctype.h>
 #include <time.h>
-#include <math.h>
 
 #include "projects/arvelie/arvelie.c"
 
@@ -23,17 +23,22 @@
 #define LEXICON_BUFFER 512
 #define LOGS_RANGE 56
 
-char *html_head = "<!DOCTYPE html><html lang='en'><head>"
+char *html_head =
+    "<!DOCTYPE html><html lang='en'><head>"
     "<meta charset='utf-8'>"
     "<meta name='description' content='%s'/>"
-    "<meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' />"
-    "<link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' />"
+    "<meta name='thumbnail' "
+    "content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' />"
+    "<link rel='alternate' type='application/rss+xml' title='RSS Feed' "
+    "href='../links/rss.xml' />"
     "<link rel='stylesheet' type='text/css' href='../links/main.css'>"
-    "<link rel='shortcut icon' type='image/png' href='../media/services/icon.png'>"
+    "<link rel='shortcut icon' type='image/png' "
+    "href='../media/services/icon.png'>"
     "<title>XXIIVV — %s</title></head><body>";
 
 char *html_header = "<header>"
-    "<a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV'></a></header>";
+                    "<a href='home.html'><img src='../media/icon/logo.svg' "
+                    "alt='XXIIVV'></a></header>";
 
 char *html_footer =
     "<footer>"
@@ -168,25 +173,38 @@ void fputs_templated_mod(FILE *f, char *str) {
   if (strstr(str, "^itchio") != NULL) {
     char buff[STR_BUF_LEN];
     substr(str, buff, 9, strlen(str) - 10);
-    fprintf(f, "<iframe frameborder='0' src='https://itch.io/embed/%s?link_color=000000' width='600' height='167'></iframe>", buff);
-  }
-  else if (strstr(str, "^bandcamp") != NULL) {
+    fprintf(f,
+            "<iframe frameborder='0' "
+            "src='https://itch.io/embed/%s?link_color=000000' width='600' "
+            "height='167'></iframe>",
+            buff);
+  } else if (strstr(str, "^bandcamp") != NULL) {
     char buff[STR_BUF_LEN];
     substr(str, buff, 11, strlen(str) - 12);
-    fprintf(f, "<iframe style='border: 0; width: 600px; height: 274px;' src='https://bandcamp.com/EmbeddedPlayer/album=%s/size=large/bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/' seamless></iframe>", buff);
-  }
-  else if (strstr(str, "^youtube") != NULL) {
+    fprintf(f,
+            "<iframe style='border: 0; width: 600px; height: 274px;' "
+            "src='https://bandcamp.com/EmbeddedPlayer/album=%s/size=large/"
+            "bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/' "
+            "seamless></iframe>",
+            buff);
+  } else if (strstr(str, "^youtube") != NULL) {
     char buff[STR_BUF_LEN];
     substr(str, buff, 10, strlen(str) - 11);
-    fprintf(f, "<iframe width='600' height='380' src='https://www.youtube.com/embed/%s?rel=0' style='max-width:700px' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe>", buff);
-  }
-  else if (strstr(str, "^redirect") != NULL) {
+    fprintf(f,
+            "<iframe width='600' height='380' "
+            "src='https://www.youtube.com/embed/%s?rel=0' "
+            "style='max-width:700px' frameborder='0' allow='autoplay; "
+            "encrypted-media' allowfullscreen></iframe>",
+            buff);
+  } else if (strstr(str, "^redirect") != NULL) {
     char buff[STR_BUF_LEN];
     substr(str, buff, 11, strlen(str) - 12);
     to_filename(buff, buff);
-    fprintf(f, "<meta http-equiv='refresh' content='2; url=%s.html' /><p>In a hurry? Travel to <a href='%s.html'>%s</a>.</p>", buff, buff, buff);
-  }
-  else{
+    fprintf(f,
+            "<meta http-equiv='refresh' content='2; url=%s.html' /><p>In a "
+            "hurry? Travel to <a href='%s.html'>%s</a>.</p>",
+            buff, buff, buff);
+  } else {
     printf("Error: Missing template mod: %s\n", str);
   }
 }
@@ -257,7 +275,8 @@ void fputs_templated(FILE *f, char *str) {
   }
 }
 
-void build_pict(FILE *f, int pict, char *host, char *name, bool caption, char *link) {
+void build_pict(FILE *f, int pict, char *host, char *name, bool caption,
+                char *link) {
   fputs("<figure>", f);
   fprintf(f, "<img src='../media/diary/%d.jpg' alt='%s picture'/>", pict, name);
   if (caption) {
@@ -369,7 +388,7 @@ void build_listing(FILE *f, Term *term) {
   }
 }
 
-void build_include(FILE *f, Term *term){
+void build_include(FILE *f, Term *term) {
   char buffer[4096];
   char filename[STR_BUF_LEN];
   char filepath[STR_BUF_LEN];
@@ -380,7 +399,9 @@ void build_include(FILE *f, Term *term){
   strcat(filepath, filename);
   strcat(filepath, ".htm\0");
   fp = fopen(filepath, "r");
-  if(fp == NULL){ return; }
+  if (fp == NULL) {
+    return;
+  }
   for (;;) {
     size_t sz = fread(buffer, 1, sizeof(buffer), fp);
     if (sz) {
@@ -388,8 +409,12 @@ void build_include(FILE *f, Term *term){
     } else if (feof(fp) || ferror(fp)) {
       break;
     }
-  }   
-  fprintf(f, "<p>Found a mistake? Submit an <a href='https://github.com/XXIIVV/Oscean/edit/master/src/inc/%s.htm' class='external' target='_blank'>edit</a> to %s.</p>", term->name, term->name);
+  }
+  fprintf(f,
+          "<p>Found a mistake? Submit an <a "
+          "href='https://github.com/XXIIVV/Oscean/edit/master/src/inc/%s.htm' "
+          "class='external' target='_blank'>edit</a> to %s.</p>",
+          term->name, term->name);
   fclose(fp);
 }
 
@@ -440,17 +465,20 @@ void build_album(FILE *f, Term *term) {
   }
 }
 
-void build_links(FILE *f, Term *term){
+void build_links(FILE *f, Term *term) {
   int i;
-  if(term->link_len < 1){ return; }
+  if (term->link_len < 1) {
+    return;
+  }
   fputs("<ul>", f);
   for (i = 0; i < term->link_len; ++i) {
-    fprintf(f, "<li><a href='%s' class='external' target='_blank'>%s</a></li>", term->link_vals[i], term->link_keys[i]);
+    fprintf(f, "<li><a href='%s' class='external' target='_blank'>%s</a></li>",
+            term->link_vals[i], term->link_keys[i]);
   }
   fputs("</ul>", f);
 }
 
-void build_horaire(FILE *f, Term *term){
+void build_horaire(FILE *f, Term *term) {
   int i;
   int len = 0;
   int events_len = 0;
@@ -458,8 +486,12 @@ void build_horaire(FILE *f, Term *term){
   int fh = 0;
   for (i = 0; i < all_logs.len; ++i) {
     Log *l = &all_logs.logs[i];
-    if (l->term != term && l->term->parent != term) { continue; }
-    if (l->is_event == true) { events_len += 1; }
+    if (l->term != term && l->term->parent != term) {
+      continue;
+    }
+    if (l->is_event == true) {
+      events_len += 1;
+    }
     ch += (l->code / 10) % 10;
     fh += l->code % 10;
     len += 1;
@@ -470,9 +502,14 @@ void build_horaire(FILE *f, Term *term){
   }
   for (i = 0; i < all_logs.len; ++i) {
     Log *l = &all_logs.logs[i];
-    if(l->term != term){ continue; }
+    if (l->term != term) {
+      continue;
+    }
     fprintf(f, "<p>");
-    fprintf(f, "<i>Last update on <a href='tracker.html'>%s</a>, edited %d times. +%d/%dfh</i>", l->date, len, ch, fh);
+    fprintf(f,
+            "<i>Last update on <a href='tracker.html'>%s</a>, edited %d times. "
+            "+%d/%dfh</i>",
+            l->date, len, ch, fh);
     fprintf(f, "</p>");
     break;
   }
@@ -483,8 +520,12 @@ void build_horaire(FILE *f, Term *term){
   fputs("<ul>", f);
   for (i = 0; i < all_logs.len; ++i) {
     Log *l = &all_logs.logs[i];
-    if(l->term != term && l->term->parent != term){ continue; }
-    if(l->is_event != true){ continue; }
+    if (l->term != term && l->term->parent != term) {
+      continue;
+    }
+    if (l->is_event != true) {
+      continue;
+    }
     fprintf(f, "<li>%s — %s</li>", l->date, l->name);
   }
   fputs("</ul>", f);
@@ -521,20 +562,25 @@ void build_special_home(FILE *f, Term *term, Journal *journal) {
   fputs("</ul>", f);
 }
 
-void build_special_calendar(FILE *f, Term *term, Journal *journal){  
+void build_special_calendar(FILE *f, Term *term, Journal *journal) {
   int i;
   int last_year;
-  if(strcmp(term->name, "calendar") != 0){ return; }
+  if (strcmp(term->name, "calendar") != 0) {
+    return;
+  }
   last_year = 0;
   fputs("<ul>", f);
   for (i = 0; i < journal->len; ++i) {
     char filename[STR_BUF_LEN];
-    if(journal->logs[i].is_event != true){ continue; }
-    if(last_year != extract_year(journal->logs[i].date)){
+    if (journal->logs[i].is_event != true) {
+      continue;
+    }
+    if (last_year != extract_year(journal->logs[i].date)) {
       fprintf(f, "</ul><ul>");
     }
     to_filename(journal->logs[i].term->name, filename);
-    fprintf(f, "<li><a href='%s.html'>%s</a> %s</li>", filename, journal->logs[i].date, journal->logs[i].name);  
+    fprintf(f, "<li><a href='%s.html'>%s</a> %s</li>", filename,
+            journal->logs[i].date, journal->logs[i].name);
     last_year = extract_year(journal->logs[i].date);
   }
   fputs("</ul>", f);
@@ -555,18 +601,19 @@ void build_special_tracker(FILE *f, Term *term, Journal *journal) {
     char *known[LEXICON_BUFFER];
     if (index_of_string(known, known_id, journal->logs[i].term->name) > -1) {
       continue;
-    } 
-    if(known_id >= LEXICON_BUFFER){ 
-      printf("Error: Reached tracker buffer\n"); 
-      break; 
     }
-    if(last_year != extract_year(journal->logs[i].date)){
+    if (known_id >= LEXICON_BUFFER) {
+      printf("Error: Reached tracker buffer\n");
+      break;
+    }
+    if (last_year != extract_year(journal->logs[i].date)) {
       fprintf(f, "</ul><ul>");
     }
 
     to_filename(journal->logs[i].term->name, filename);
 
-    fprintf(f, "<li><a href='%s.html'>%s</a> — last update %s</li>", filename, journal->logs[i].term->name, journal->logs[i].date);
+    fprintf(f, "<li><a href='%s.html'>%s</a> — last update %s</li>", filename,
+            journal->logs[i].term->name, journal->logs[i].date);
     last_year = extract_year(journal->logs[i].date);
     known[known_id] = journal->logs[i].term->name;
     known_id++;
@@ -582,8 +629,12 @@ void build_special_journal(FILE *f, Term *term, Journal *journal) {
   }
   count = 0;
   for (i = 0; i < journal->len; ++i) {
-    if(count > 20){ break; }
-    if(journal->logs[i].pict == 0){ continue; }
+    if (count > 20) {
+      break;
+    }
+    if (journal->logs[i].pict == 0) {
+      continue;
+    }
     build_log_pict(f, &journal->logs[i], true);
     count++;
   }
@@ -641,27 +692,37 @@ void build_special_now(FILE *f, Term *term, Journal *journal) {
     sum_value += l.code % 10;
   }
 
-  fprintf(f, "<p>Distribution of <b>%.0f hours over %d projects</b>, a change of %.0f hours and %d projects since the previous period of %d days.</p>", sum_value, projects_len, sum_value-past_sum_value, projects_len-past_len, LOGS_RANGE);
+  fprintf(
+      f,
+      "<p>Distribution of <b>%.0f hours over %d projects</b>, a change of %.0f "
+      "hours and %d projects since the previous period of %d days.</p>",
+      sum_value, projects_len, sum_value - past_sum_value,
+      projects_len - past_len, LOGS_RANGE);
 
   test_sum = 0;
   fputs("<ul style='columns:2'>", f);
   for (i = 0; i < projects_len; ++i) {
     to_filename(projects_name[i], filename);
-    ratio = (projects_value[i]/sum_value) * 100;
+    ratio = (projects_value[i] / sum_value) * 100;
     past_index = index_of_string(past_name, past_len, projects_name[i]);
-    if(past_index >= 0){
-      float past_ratio = (past_value[past_index]/past_sum_value)*100;
-      float diff = ratio-past_ratio;
+    if (past_index >= 0) {
+      float past_ratio = (past_value[past_index] / past_sum_value) * 100;
+      float diff = ratio - past_ratio;
       test_sum += diff;
-      if(diff > 0){
-        fprintf(f, "<li><a href='%s.html'>%s</a> %.2f&#37; <i style='color:#42ae92'>+%.1f&#37;</i></li>", filename, projects_name[i], ratio, diff);
+      if (diff > 0) {
+        fprintf(f,
+                "<li><a href='%s.html'>%s</a> %.2f&#37; <i "
+                "style='color:#42ae92'>+%.1f&#37;</i></li>",
+                filename, projects_name[i], ratio, diff);
+      } else {
+        fprintf(f,
+                "<li><a href='%s.html'>%s</a> %.2f&#37; <i "
+                "style='color:red'>%.1f&#37;</i></li>",
+                filename, projects_name[i], ratio, diff);
       }
-      else{
-        fprintf(f, "<li><a href='%s.html'>%s</a> %.2f&#37; <i style='color:red'>%.1f&#37;</i></li>", filename, projects_name[i], ratio, diff);
-      }
-    }
-    else{
-      fprintf(f, "<li><a href='%s.html'>%s</a> %.2f&#37;</li>", filename, projects_name[i], ratio);
+    } else {
+      fprintf(f, "<li><a href='%s.html'>%s</a> %.2f&#37;</li>", filename,
+              projects_name[i], ratio);
     }
   }
   fputs("</ul>", f);
@@ -748,7 +809,8 @@ void build_rss(Journal *journal) {
     to_filename(l.term->name, filename);
     fputs("<item>\n", f);
     fprintf(f, "  <title>%s</title>\n", l.name);
-    fprintf(f, "  <link>https://wiki.xxiivv.com/site/%s.html</link>\n", filename);
+    fprintf(f, "  <link>https://wiki.xxiivv.com/site/%s.html</link>\n",
+            filename);
     fprintf(f, "  <guid isPermaLink='false'>%d</guid>\n", l.pict);
     fputs("  <pubDate>", f);
     fputs_rfc2822(f, l.date);
@@ -756,8 +818,12 @@ void build_rss(Journal *journal) {
     fputs("  <dc:creator><![CDATA[Devine Lu Linvega]]></dc:creator>\n", f);
     fputs("  <description>\n", f);
     fputs("<![CDATA[", f);
-    fprintf(f, "<img src='https://wiki.xxiivv.com/media/diary/%d.jpg'/>\n", l.pict);
-    fprintf(f, "<p>%s<br/><br/><a href='https://wiki.xxiivv.com/site/%s.html'>%s</a></p>", l.term->bref, filename, l.term->name);
+    fprintf(f, "<img src='https://wiki.xxiivv.com/media/diary/%d.jpg'/>\n",
+            l.pict);
+    fprintf(f,
+            "<p>%s<br/><br/><a "
+            "href='https://wiki.xxiivv.com/site/%s.html'>%s</a></p>",
+            l.term->bref, filename, l.term->name);
     fputs("]]>\n", f);
     fputs("  </description>\n", f);
     fputs("</item>\n", f);
@@ -767,7 +833,7 @@ void build_rss(Journal *journal) {
   fclose(f);
 }
 
-FILE * parseGlossaryTable(FILE *fp, Glossary *glossary) {
+FILE *parseGlossaryTable(FILE *fp, Glossary *glossary) {
   int key_len;
   int val_len;
   int len;
@@ -806,7 +872,7 @@ FILE * parseGlossaryTable(FILE *fp, Glossary *glossary) {
   return fp;
 }
 
-FILE * parseLexiconTable(FILE *fp, Lexicon *lexicon) {
+FILE *parseLexiconTable(FILE *fp, Lexicon *lexicon) {
   char line[1024];
   int key_len;
   int val_len;
@@ -869,7 +935,7 @@ FILE * parseLexiconTable(FILE *fp, Lexicon *lexicon) {
   return fp;
 }
 
-FILE * parseHoraireTable(FILE *fp, Journal *journal) {
+FILE *parseHoraireTable(FILE *fp, Journal *journal) {
   int len;
   char line[STR_BUF_LEN];
   char codebuff[4];

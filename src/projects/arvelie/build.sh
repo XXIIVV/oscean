@@ -5,23 +5,17 @@
 clang-format -i arvelie.c
 clang-format -i main.c
 
-tcc main.c -o arvelie
+tcc -Wall main.c -o arvelie
 
-echo "now:"
+echo "now"
 ./arvelie
 
-./arvelie 02A01
-./arvelie 2002-01-01
-./arvelie 01D07
-./arvelie 2001-02-18
-./arvelie 13B12
-./arvelie 2013-01-26
-./arvelie 02E07
-./arvelie 2002-03-04
-./arvelie 24C01
-./arvelie 2024-01-29
-./arvelie 03+01
-./arvelie 2003-12-31
+./arvelie 1986-03-22
+./arvelie 20Q13
 
-echo "error:"
-./arvelie 2020-04-03423
+echo "error: misformated"
+./arvelie '2020-04-03423'
+echo "error: unknown month"
+./arvelie '20$10'
+echo "error: unknown month"
+./arvelie '20A15'

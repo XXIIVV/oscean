@@ -5,9 +5,9 @@
 clang-format -i neralie.c
 clang-format -i main.c
 
-tcc main.c -o neralie
+tcc -Wall main.c -o neralie
 
-echo "today:"
+echo "now:"
 ./neralie
 
 ./neralie 12:34:56
