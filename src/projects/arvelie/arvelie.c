@@ -28,6 +28,10 @@ void print_ymdstr_from_doty(int doty) {
   while (months[month] < doty) {
     month++;
   }
+  if (month < 1) {
+    printf("Error: Unknown Month\n");
+    exit(0);
+  }
   day = doty - months[month - 1];
   printf("%04d-%02d-%02d\n", 2020, month, day);
 }
