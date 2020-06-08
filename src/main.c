@@ -943,7 +943,7 @@ FILE *parseHoraireTable(FILE *fp, Journal *journal) {
   while (fgets(line, STR_BUF_LEN, fp)) {
     trimstr(line);
     len = strlen(line);
-    if (len < 16 || line[0] == ';') {
+    if (len < 14 || line[0] == ';') {
       continue;
     }
     if (len > 72) {
