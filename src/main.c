@@ -66,6 +66,7 @@ typedef struct List {
   int pairs_len;
   char items[100][500];
   int items_len;
+  int links_len;
 } List;
 
 typedef struct Term {
@@ -73,6 +74,8 @@ typedef struct Term {
   char host[21];
   char bref[200];
   char type[KEY_BUF_LEN];
+  char date_from[6];
+  char date_last[6];
   char body[30][750];
   int body_len;
   char link_keys[20][KEY_BUF_LEN];
@@ -85,6 +88,8 @@ typedef struct Term {
   int children_len;
   List *docs[20];
   int docs_len;
+  struct Term *incoming[30];
+  int incoming_len;
 } Term;
 
 typedef struct Log {
@@ -153,126 +158,22 @@ Log *find_last_diary(Term *term) {
   return NULL;
 }
 
-void fputs_templated_link(FILE *f, char *target, char *name) {
-  if (!is_url(target)) {
-    if (!find_term(&all_terms, target)) {
-      fprintf(f, "<b style='background:red'>{%s}</b>", target);
-      printf("Error: Broken send(%s:%s)\n", target, name);
-    } else {
-      char filename[STR_BUF_LEN];
-      to_filename(target, filename);
-      fprintf(f, "<a href='%s.html'>%s</a>", filename, name);
-    }
+void register_incoming(Term *src, char *dest) {
+  Term *host = find_term(&all_terms, dest);
+  if (host) {
+    host->incoming[host->incoming_len] = src;
+    host->incoming_len++;
   } else {
-    fprintf(f, "<a href='%s' class='external' target='_blank'>%s</a>", target,
-            name);
+    printf("Warning: Unknown incoming(%s)\n", dest);
   }
 }
 
-void fputs_templated_mod(FILE *f, char *str) {
-  if (strstr(str, "^itchio") != NULL) {
-    char buff[STR_BUF_LEN];
-    substr(str, buff, 9, strlen(str) - 10);
-    fprintf(f,
-            "<iframe frameborder='0' "
-            "src='https://itch.io/embed/%s?link_color=000000' width='600' "
-            "height='167'></iframe>",
-            buff);
-  } else if (strstr(str, "^bandcamp") != NULL) {
-    char buff[STR_BUF_LEN];
-    substr(str, buff, 11, strlen(str) - 12);
-    fprintf(f,
-            "<iframe style='border: 0; width: 600px; height: 274px;' "
-            "src='https://bandcamp.com/EmbeddedPlayer/album=%s/size=large/"
-            "bgcol=ffffff/linkcol=333333/artwork=small/transparent=true/' "
-            "seamless></iframe>",
-            buff);
-  } else if (strstr(str, "^youtube") != NULL) {
-    char buff[STR_BUF_LEN];
-    substr(str, buff, 10, strlen(str) - 11);
-    fprintf(f,
-            "<iframe width='600' height='380' "
-            "src='https://www.youtube.com/embed/%s?rel=0' "
-            "style='max-width:700px' frameborder='0' allow='autoplay; "
-            "encrypted-media' allowfullscreen></iframe>",
-            buff);
-  } else if (strstr(str, "^redirect") != NULL) {
-    char buff[STR_BUF_LEN];
-    substr(str, buff, 11, strlen(str) - 12);
-    to_filename(buff, buff);
-    fprintf(f,
-            "<meta http-equiv='refresh' content='2; url=%s.html' /><p>In a "
-            "hurry? Travel to <a href='%s.html'>%s</a>.</p>",
-            buff, buff, buff);
-  } else {
-    printf("Error: Missing template mod: %s\n", str);
-  }
-}
-
-void fputs_templated_seg(FILE *f, char *str) {
-  int i;
-  int len = strlen(str);
-  int name_len = 0;
-  int target_len = 0;
-  bool has_name = false;
-  char name[STR_BUF_LEN];
-  char target[STR_BUF_LEN];
-  for (i = 1; i < len - 1; i++) {
-    if (str[i] == ' ') {
-      has_name = true;
-      break;
-    }
-    target[target_len] = str[i];
-    target_len++;
-  }
-  target[target_len] = '\0';
-  name_len = 0;
-  for (i = target_len + 2; i < len - 1; i++) {
-    name[name_len] = str[i];
-    name_len++;
-  }
-  name[name_len] = '\0';
-  fputs_templated_link(f, target, has_name ? name : target);
-}
-
-void fputs_templated(FILE *f, char *str) {
-  int i;
-  int buffer_len;
-  int len = strlen(str);
-  int froms[50];
-  int tos[50];
-  int segs_len = 0;
-  int from = 0;
-  char buffer[STR_BUF_LEN];
-  for (i = 1; i < len - 1; i++) {
-    if (str[i] == '{' || str[i - 1] == '}') {
-      froms[segs_len] = from;
-      tos[segs_len] = i;
-      segs_len += 1;
-      from = i;
-    }
-  }
-  froms[segs_len] = from;
-  tos[segs_len] = len;
-  segs_len += 1;
-  for (i = 0; i < segs_len; ++i) {
-    buffer_len = tos[i] - froms[i];
-    if (buffer_len > STR_BUF_LEN) {
-      printf("Template segment is too long: %s\n", str);
-      abort();
-    }
-    substr(str, buffer, froms[i], buffer_len);
-    buffer[buffer_len] = '\0';
-    if (buffer[0] == '{') {
-      if (buffer[1] == '^') {
-        fputs_templated_mod(f, buffer);
-      } else {
-        fputs_templated_seg(f, buffer);
-      }
-    } else {
-      fputs(buffer, f);
-    }
-  }
+void build_lifeline(FILE *f, Term *term) {
+  fputs("<code style='float:right; font-size:80%'>", f);
+  fputs_lifeline(f, arvelie_to_epoch("06I04"), get_epoch(),
+                 arvelie_to_epoch(term->date_from),
+                 arvelie_to_epoch(term->date_last), 6);
+  fputs("</code>", f);
 }
 
 void build_pict(FILE *f, int pict, char *host, char *name, bool caption,
@@ -308,11 +209,7 @@ void build_log_pict(FILE *f, Log *log, bool caption) {
 void build_body_part(FILE *f, Term *term) {
   int i;
   for (i = 0; i < term->body_len; ++i) {
-    if (is_templated(term->body[i])) {
-      fputs_templated(f, term->body[i]);
-    } else {
-      fputs(term->body[i], f);
-    }
+    fputs(term->body[i], f);
   }
 }
 
@@ -345,11 +242,11 @@ void build_banner(FILE *f, Term *term, bool caption) {
 
 void build_nav(FILE *f, Term *term) {
   if (term->parent == NULL) {
-    printf("Missing parent for %s\n", term->name);
+    printf("Warning: Missing parent for %s\n", term->name);
     return;
   }
   if (term->parent->parent == NULL) {
-    printf("Missing parent for %s\n", term->parent->name);
+    printf("Warning: Missing parent for %s\n", term->parent->name);
     return;
   }
   fputs("<nav>", f);
@@ -413,7 +310,7 @@ void build_include(FILE *f, Term *term) {
   fprintf(f,
           "<p>Found a mistake? Submit an <a "
           "href='https://github.com/XXIIVV/Oscean/edit/master/src/inc/%s.htm' "
-          "class='external' target='_blank'>edit</a> to %s.</p>",
+          " target='_blank'>edit</a> to %s.</p>",
           term->name, term->name);
   fclose(fp);
 }
@@ -472,10 +369,25 @@ void build_links(FILE *f, Term *term) {
   }
   fputs("<ul>", f);
   for (i = 0; i < term->link_len; ++i) {
-    fprintf(f, "<li><a href='%s' class='external' target='_blank'>%s</a></li>",
+    fprintf(f, "<li><a href='%s' target='_blank'>%s</a></li>",
             term->link_vals[i], term->link_keys[i]);
   }
   fputs("</ul>", f);
+}
+
+void build_incoming(FILE *f, Term *term) {
+  int i;
+  char filename[STR_BUF_LEN];
+  if (term->incoming_len < 1) {
+    return;
+  }
+  fputs("<p>", f);
+  fprintf(f, "<i>incoming(%d)</i>: \n", term->incoming_len);
+  for (i = 0; i < term->incoming_len; ++i) {
+    to_filename(term->incoming[i]->name, filename);
+    fprintf(f, "<a href='%s.html'>%s</a> ", filename, term->incoming[i]->name);
+  }
+  fputs("</p>", f);
 }
 
 void build_horaire(FILE *f, Term *term) {
@@ -490,29 +402,25 @@ void build_horaire(FILE *f, Term *term) {
       continue;
     }
     if (l->is_event == true) {
-      events_len += 1;
+      events_len++;
     }
     ch += (l->code / 10) % 10;
     fh += l->code % 10;
-    len += 1;
+    len++;
   }
   /* Updated */
-  if (len < 2) {
+  if (len < 2 || strlen(term->date_last) == 0) {
     return;
   }
-  for (i = 0; i < all_logs.len; ++i) {
-    Log *l = &all_logs.logs[i];
-    if (l->term != term) {
-      continue;
-    }
-    fprintf(f, "<p>");
-    fprintf(f,
-            "<i>Last update on <a href='tracker.html'>%s</a>, edited %d times. "
-            "+%d/%dfh</i>",
-            l->date, len, ch, fh);
-    fprintf(f, "</p>");
-    break;
-  }
+  fputs("<p>", f);
+  fprintf(f,
+          "<i>"
+          "Last update on <a href='tracker.html'>%s</a>, edited %d times. "
+          "+%d/%dfh"
+          "</i>",
+          term->date_last, len, ch, fh);
+  build_lifeline(f, term);
+  fputs("</p>", f);
   /* Events */
   if (events_len < 1) {
     return;
@@ -547,7 +455,6 @@ void build_special_home(FILE *f, Term *term, Journal *journal) {
   if (!found_events) {
     return;
   }
-  /* Events */
   fputs("<h2>Events</h2>", f);
   fputs("<ul>", f);
   for (i = 0; i < 5; ++i) {
@@ -603,17 +510,19 @@ void build_special_tracker(FILE *f, Term *term, Journal *journal) {
       continue;
     }
     if (known_id >= LEXICON_BUFFER) {
-      printf("Error: Reached tracker buffer\n");
+      printf("Warning: Reached tracker buffer\n");
       break;
     }
     if (last_year != extract_year(journal->logs[i].date)) {
       fprintf(f, "</ul><ul>");
     }
-
     to_filename(journal->logs[i].term->name, filename);
-
-    fprintf(f, "<li><a href='%s.html'>%s</a> — last update %s</li>", filename,
+    fputs("<li>", f);
+    fprintf(f, "<a href='%s.html'>%s</a> — last update %s", filename,
             journal->logs[i].term->name, journal->logs[i].date);
+    build_lifeline(f, journal->logs[i].term);
+    fputs("</li>", f);
+
     last_year = extract_year(journal->logs[i].date);
     known[known_id] = journal->logs[i].term->name;
     known_id++;
@@ -657,7 +566,6 @@ void build_special_now(FILE *f, Term *term, Journal *journal) {
   int i;
   Log l;
   int index;
-
   if (strcmp(term->name, "now") != 0) {
     return;
   }
@@ -695,7 +603,7 @@ void build_special_now(FILE *f, Term *term, Journal *journal) {
   fprintf(
       f,
       "<p>Distribution of <b>%.0f hours over %d projects</b>, a change of %.0f "
-      "hours and %d projects since the previous period of %d days.</p>",
+      "hours and %d projects since the prevratioious period of %d days.</p>",
       sum_value, projects_len, sum_value - past_sum_value,
       projects_len - past_len, LOGS_RANGE);
 
@@ -705,25 +613,20 @@ void build_special_now(FILE *f, Term *term, Journal *journal) {
     to_filename(projects_name[i], filename);
     ratio = (projects_value[i] / sum_value) * 100;
     past_index = index_of_string(past_name, past_len, projects_name[i]);
+    fputs("<li>", f);
+    fprintf(f, "<a href='%s.html'>%s</a> %.2f&#37; ", filename,
+            projects_name[i], ratio);
     if (past_index >= 0) {
       float past_ratio = (past_value[past_index] / past_sum_value) * 100;
       float diff = ratio - past_ratio;
       test_sum += diff;
       if (diff > 0) {
-        fprintf(f,
-                "<li><a href='%s.html'>%s</a> %.2f&#37; <i "
-                "style='color:#42ae92'>+%.1f&#37;</i></li>",
-                filename, projects_name[i], ratio, diff);
+        fprintf(f, "<i style='color:#42ae92'>+%.1f&#37;</i>", diff);
       } else {
-        fprintf(f,
-                "<li><a href='%s.html'>%s</a> %.2f&#37; <i "
-                "style='color:red'>%.1f&#37;</i></li>",
-                filename, projects_name[i], ratio, diff);
+        fprintf(f, "<i style='color:red'>%.1f&#37;</i>", diff);
       }
-    } else {
-      fprintf(f, "<li><a href='%s.html'>%s</a> %.2f&#37;</li>", filename,
-              projects_name[i], ratio);
     }
+    fputs("</li>", f);
   }
   fputs("</ul>", f);
   time(&now);
@@ -733,7 +636,7 @@ void build_special_now(FILE *f, Term *term, Journal *journal) {
 void print_term_details(FILE *f, Term *term, int depth) {
   int i;
   char filename[STR_BUF_LEN];
-  depth += 1;
+  depth++;
   to_filename(term->name, filename);
   fprintf(f, "<li><a href='%s.html'>%s</a></li>", filename, term->name);
   if (term->children_len < 1) {
@@ -779,6 +682,7 @@ void build_page(Term *term, Journal *journal) {
   build_portal(f, term);
   build_album(f, term);
   build_links(f, term);
+  build_incoming(f, term);
   build_horaire(f, term);
   build_special_home(f, term, journal);
   build_special_calendar(f, term, journal);
@@ -833,27 +737,26 @@ void build_rss(Journal *journal) {
   fclose(f);
 }
 
-FILE *parseGlossaryTable(FILE *fp, Glossary *glossary) {
+FILE *parse_glossary(FILE *fp, Glossary *glossary) {
   int key_len;
   int val_len;
-  int len;
-  int pad;
+  int len, pad, count = 0;
   char line[512];
   while (fgets(line, 512, fp)) {
-    pad = countLeadingSpaces(line);
+    pad = count_leading_spaces(line);
     trimstr(line);
     len = strlen(line);
     if (len < 3 || line[0] == ';') {
       continue;
     }
     if (len > 400) {
-      printf("Error: Line is too long(%d characters) %s\n", len, line);
+      printf("Warning: Line is too long(%d characters) %s\n", len, line);
       continue;
     }
     if (pad == 0) {
       List *l = &glossary->lists[glossary->len];
       substr(line, l->name, 0, len);
-      to_lowercase(l->name, l->name);
+      lcstr(l->name);
       glossary->len++;
     } else if (pad == 2) {
       List *l = &glossary->lists[glossary->len - 1];
@@ -868,33 +771,35 @@ FILE *parseGlossaryTable(FILE *fp, Glossary *glossary) {
         l->items_len++;
       }
     }
+    count++;
   }
+  printf("(%d lines) ", count);
   return fp;
 }
 
-FILE *parseLexiconTable(FILE *fp, Lexicon *lexicon) {
+FILE *parse_lexicon(FILE *fp, Lexicon *lexicon) {
   char line[1024];
   int key_len;
   int val_len;
-  int len;
+  int len, count = 0;
   bool catch_body = false;
   bool catch_link = false;
   bool catch_list = false;
   while (fgets(line, 1024, fp)) {
-    int pad = countLeadingSpaces(line);
+    int pad = count_leading_spaces(line);
     trimstr(line);
     len = strlen(line);
     if (len < 3 || line[0] == ';') {
       continue;
     }
     if (len > 750) {
-      printf("Error: Line is too long(%d characters): %s \n", len, line);
+      printf("Warning: Line is too long(%d characters): %s \n", len, line);
       continue;
     }
     if (pad == 0) {
       Term *t = &lexicon->terms[lexicon->len];
       substr(line, t->name, 0, len);
-      to_lowercase(t->name, t->name);
+      lcstr(t->name);
       lexicon->len++;
     } else if (pad == 2) {
       Term *t = &lexicon->terms[lexicon->len - 1];
@@ -931,12 +836,14 @@ FILE *parseLexiconTable(FILE *fp, Lexicon *lexicon) {
         t->list_len++;
       }
     }
+    count++;
   }
+  printf("(%d lines) ", count);
   return fp;
 }
 
-FILE *parseHoraireTable(FILE *fp, Journal *journal) {
-  int len;
+FILE *parse_horaire(FILE *fp, Journal *journal) {
+  int len, count = 0;
   char line[STR_BUF_LEN];
   char codebuff[4];
   Log *l;
@@ -947,7 +854,7 @@ FILE *parseHoraireTable(FILE *fp, Journal *journal) {
       continue;
     }
     if (len > 72) {
-      printf("Error: Entry is too long %s\n", line);
+      printf("Warning: Entry is too long %s\n", line);
       continue;
     }
     l = &journal->logs[journal->len];
@@ -974,60 +881,206 @@ FILE *parseHoraireTable(FILE *fp, Journal *journal) {
       trimstr(l->name);
     }
     journal->len++;
+    count++;
   }
+  printf("(%d lines) ", count);
   return fp;
 }
 
 void parse() {
-  printf("Parsing..\n");
-  printf("Parsing glossary..\n");
-  fclose(parseGlossaryTable(fopen("database/glossary.ndtl", "r"), &all_lists));
-  printf("Parsing lexicon..\n");
-  fclose(parseLexiconTable(fopen("database/lexicon.ndtl", "r"), &all_terms));
-  printf("Parsing journal..\n");
-  fclose(parseHoraireTable(fopen("database/horaire.tbtl", "r"), &all_logs));
+  printf("Parsing  | ");
+  printf("glossary");
+  fclose(parse_glossary(fopen("database/glossary.ndtl", "r"), &all_lists));
+  printf("lexicon");
+  fclose(parse_lexicon(fopen("database/lexicon.ndtl", "r"), &all_terms));
+  printf("horaire");
+  fclose(parse_horaire(fopen("database/horaire.tbtl", "r"), &all_logs));
 }
 
 void link() {
   int i, j;
-  printf("Linking..\n");
-  printf("Parenting journal(%d entries)..\n", all_logs.len);
+  printf("Linking  | ");
+  printf("journal(%d entries) ", all_logs.len);
   for (i = 0; i < all_logs.len; ++i) {
     Log *l = &all_logs.logs[i];
     l->term = find_term(&all_terms, l->host);
     if (!l->term) {
-      printf("ERR: Unknown log host %s\n", l->host);
+      printf("Warning: Unknown log host %s\n", l->host);
+    } else {
+      if (strlen(l->term->date_last) == 0) {
+        cpystr(l->date, l->term->date_last);
+      }
+      cpystr(l->date, l->term->date_from);
     }
   }
-  printf("Parenting lexicon (%d entries)..\n", all_terms.len);
+  printf("lexicon(%d entries) ", all_terms.len);
   for (i = 0; i < all_terms.len; ++i) {
     Term *t = &all_terms.terms[i];
     t->parent = find_term(&all_terms, t->host);
     if (!t->parent) {
-      printf("ERR: Unknown term host %s\n", t->host);
+      printf("Warning: Unknown term host %s\n", t->host);
     }
     t->parent->children[t->parent->children_len] = t;
     t->parent->children_len++;
   }
-  printf("Parenting glossary (%d entries)..\n", all_lists.len);
+  printf("glossary(%d entries) ", all_lists.len);
   for (i = 0; i < all_terms.len; ++i) {
     Term *t = &all_terms.terms[i];
     for (j = 0; j < t->list_len; ++j) {
       List *l = find_list(&all_lists, t->list[j]);
+      if (!l) {
+        printf("Warning: Unknwon list \"%s\" for %s\n", t->list[j], t->name);
+        continue;
+      }
       t->docs[t->docs_len] = l;
       t->docs_len++;
+      l->links_len++;
     }
   }
 }
 
+void template_mods(char *src, char *dest) {
+  int split = index_of_char(src, ' ');
+  char target[256];
+  substr(src, target, split + 1, strlen(src) - split - 2);
+  /* create new string */
+  dest[0] = '\0';
+  if (strstr(src, "^itchio") != NULL) {
+    strcat(dest, "<iframe frameborder='0' src='https://itch.io/embed/");
+    strcat(dest, target);
+    strcat(dest, "?link_color=000000' width='600' height='167'></iframe>");
+  } else if (strstr(src, "^bandcamp") != NULL) {
+    strcat(dest, "<iframe style='border: 0; width: 600px; height: 274px;' ");
+    strcat(dest, "src='https://bandcamp.com/EmbeddedPlayer/album=");
+    strcat(dest, target);
+    strcat(dest, "/size=large/bgcol=ffffff/linkcol=333333/artwork=small' ");
+    strcat(dest, "seamless></iframe>");
+  } else if (strstr(src, "^youtube") != NULL) {
+    strcat(dest, "<iframe width='600' height='380' ");
+    strcat(dest, "src='https://www.youtube.com/embed/");
+    strcat(dest, target);
+    strcat(dest, "?rel=0' style='max-width:700px' frameborder='0' ");
+    strcat(dest, "allow='autoplay; encrypted-media' allowfullscreen></iframe>");
+  } else if (strstr(src, "^redirect") != NULL) {
+    strcat(dest, "<meta http-equiv='refresh' content='2; url=");
+    strcat(dest, target);
+    strcat(dest, ".html' />");
+    strcat(dest, "<p>In a hurry? Travel to <a href='");
+    strcat(dest, target);
+    strcat(dest, ".html'>");
+    strcat(dest, target);
+    strcat(dest, "</a>.</p>");
+  } else {
+    printf("Warning: Missing template mod: %s\n", src);
+  }
+}
+
+void template_link(char *src, char *dest) {
+  int split = index_of_char(src, ' ');
+  char target[256], name[256];
+  /* find target and name */
+  if (split == -1) {
+    substr(src, target, 1, strlen(src) - 2);
+    cpystr(target, name);
+  } else {
+    substr(src, target, 1, split - 1);
+    substr(src, name, split + 1, strlen(src) - split - 2);
+  }
+  /* create new string */
+  dest[0] = '\0';
+  if (is_url(target)) {
+    strcat(dest, "<a href='");
+    strcat(dest, target);
+    strcat(dest, "' target='_blank'>");
+    strcat(dest, name);
+    strcat(dest, "</a>");
+  } else {
+    if (!find_term(&all_terms, target)) {
+      printf("Warning: Unknown link(%s:%s)\n", target, name);
+      strcat(dest, target);
+    } else {
+      strcat(dest, "<a href='");
+      to_filename(target, target);
+      strcat(dest, target);
+      strcat(dest, ".html'>");
+      strcat(dest, name);
+      strcat(dest, "</a>");
+    }
+  }
+}
+
+void template_seg(Term *term, char *src) {
+  bool recording = false;
+  char buffer[512], fw[512], full[512], res[1024], templated[1024];
+  int i, len = strlen(src);
+  cpystr(src, res);
+  for (i = 0; i < len; ++i) {
+    char c = src[i];
+    if (c == '}') {
+      recording = false;
+      /* capture full template */
+      substr(src, full, i - strlen(buffer) - 1, strlen(buffer) + 2);
+      if (full[1] == '^') {
+        template_mods(full, templated);
+      } else {
+        template_link(full, templated);
+      }
+      replacesubstr(res, res, full, templated);
+      /* save incoming */
+      firstword(buffer, fw);
+      if (!is_url(fw) && fw[0] != '^') {
+        register_incoming(term, fw);
+      }
+    }
+    if (recording) {
+      chrcat(buffer, c);
+    }
+    if (c == '{') {
+      recording = true;
+      buffer[0] = '\0';
+    }
+  }
+  cpystr(res, src);
+}
+
+bool req_template(char *str) {
+  int i, open = 0, shut = 0, len = strlen(str);
+  for (i = 0; i < len; i++) {
+    if (str[i] == '{') {
+      open++;
+    } else if (str[i] == '}') {
+      shut++;
+    }
+  }
+  if (open != shut) {
+    printf("Warning: Templating mismatch: %s(%d/%d)\n", str, open, shut);
+  }
+  return open > 0 && shut > 0;
+}
+
+void template() {
+  int i, j, count = 0;
+  printf("Template | ");
+  for (i = 0; i < all_terms.len; ++i) {
+    Term *term = &all_terms.terms[i];
+    for (j = 0; j < term->body_len; ++j) {
+      if (req_template(term->body[j])) {
+        template_seg(term, term->body[j]);
+        count++;
+      }
+    }
+  }
+  printf("%d strings", count);
+}
+
 void build() {
   int i;
-  printf("Building..\n");
-  printf("Building %d pages..\n", all_terms.len);
+  printf("Building | ");
+  printf("%d pages ", all_terms.len);
   for (i = 0; i < all_terms.len; ++i) {
     build_page(&all_terms.terms[i], &all_logs);
   }
-  printf("Building 1 extras..\n");
+  printf("1 feed ");
   build_rss(&all_logs);
 }
 
@@ -1036,7 +1089,8 @@ void check() {
   int pict_used[999];
   int i;
   pict_used_len = 0;
-  printf("Checking..\n");
+  printf("Checking | ");
+  /* Find invalid logs */
   for (i = 0; i < all_logs.len; ++i) {
     Log *l = &all_logs.logs[i];
     if (l->code < 1) {
@@ -1047,30 +1101,44 @@ void check() {
       pict_used_len++;
     }
   }
+  /* Find unlinked lists */
+  for (i = 0; i < all_lists.len; ++i) {
+    List *l = &all_lists.lists[i];
+    if (l->links_len < 1) {
+      printf("Warning: Unlinked list \"%s\"\n", l->name);
+    }
+  }
+  /* Find next available diary id */
   for (i = 1; i < 999; ++i) {
     int index = index_of_int(pict_used, pict_used_len, i);
     if (index < 0) {
-      printf("Next diary id: %d\n", i);
+      printf("Completed at #%d ", i);
       break;
     }
   }
-  printf("Current Date: ");
-  print_arvelie();
 }
 
 int main() {
   clock_t start;
+
+  printf("Today    | ");
+  print_arvelie();
+
   start = clock();
   parse();
-  printf("Parsed in: %.2fms\n\n", clock_since(start));
+  printf("[%.2fms]\n", clock_since(start));
   start = clock();
   link();
-  printf("Linked in: %.2fms\n\n", clock_since(start));
+  printf("[%.2fms]\n", clock_since(start));
+  start = clock();
+  template();
+  printf("[%.2fms]\n", clock_since(start));
   start = clock();
   build();
-  printf("Built in: %.2fms\n\n", clock_since(start));
+  printf("[%.2fms]\n", clock_since(start));
   start = clock();
   check();
-  printf("Checked in: %.2fms\n\n", clock_since(start));
+  printf("[%.2fms]\n", clock_since(start));
+
   return (0);
 }

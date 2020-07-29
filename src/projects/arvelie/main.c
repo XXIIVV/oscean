@@ -10,7 +10,8 @@ int main(int argc, char *argv[]) {
     } else if (strlen(argv[1]) == 5) {
       print_ymdstr_from_arvelie(argv[1]);
     } else {
-      printf("Error: Misformatted Date(YYYY-MM-DD)\n");
+      printf("Error: Misformatted Input\n");
+      exit(0);
     }
   } else {
     print_arvelie();
