@@ -1,5 +1,9 @@
 #!/bin/bash
 
+clang-format -i main.c
+clang-format -i helpers.c
+
+
 cc -std=c89 -DDEBUG -Wall -Wpedantic -Wshadow -Wextra -Werror=implicit-int -Werror=incompatible-pointer-types -Werror=int-conversion -Wvla -g -Og -fsanitize=address -fsanitize=undefined main.c -o main
 
 # tcc -Wall main.c -o main
