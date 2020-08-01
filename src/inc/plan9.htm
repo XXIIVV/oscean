@@ -1,51 +1,4 @@
-<h3>Installation</h3>
-
-<p>Create 2gb disk image. </p>
-
-<pre>qemu-img create -f qcow2 plan9.qcow2.img 2G</pre>
-
-<p>Launch <a href='http://9front.org/iso/' class='external' target='_blank'>image</a>, you might want to use <code>qemu-system-i386</code>, if <code>qemu</code> is not found.</p>
-
-<pre>qemu-system-i386 -hda plan9.qcow2.img -cdrom 9front.iso -boot d</pre>
-
-<p>Installation Prompts:</p>
-
-<ul>
-  <li><b>partition</b>: <code>sdC0</code></li>
-  <li><b>mdr</b>: <code>y</code></li>
-  <li><b>storage</b>: <code>/dev/sdD0/data</code>(type exit)</li>
-  <li><b>boot method</b>: <code>plan9</code></li>
-  <li><b>master boot record</b>: <code>y</code></li>
-</ul>
-
-<p>When the installation is done, type <code>inst/start</code>, and then boot plan9.</p>
-
-<h3>Booting</h3>
-
-<p>Any question? See you on <a href='https://9p.io/wiki/plan9/IRC/index.html' class='external' target='_blank'>irc</a>.</p>
-
-<pre>qemu-system-i386 -hda plan9.qcow2.img -cdrom 9front.iso -boot d -vga std -m 768 -net nic -net user -usbdevice tablet</pre>
-
-<h3>Networking</h3>
-
-<pre>
-ndb/dns # start the dns resolver
-ip/ipconfig # configure interfaces and get ip address with dhcp
-ip/ping google.com # check internet connection
-</pre>
-
-<pre>
-webfs # start a filesystem that handle urls
-abaco 'http://google.com/search?q=plan9'
-</pre>
-
-<h3>Basics</h3>
-
-<p>Middle clicking on a word or some selected text *executes* that command. Right-clicking on a file can potentially open up a new window, depending on which program is registered to handle the file type. You can close windows by right-clicking on an empty spot on the desktop, choose Delete and then right click on the window.</p>
-
-<table>
-  <tr><th>Snarf(copy)</th><td>To snarf some text you select it using the mouse and middle-button click on the snarf command text at the top of this window.</td></tr>
-</table>
+<h3>Rio</h3>
 
 <p>Rio is the name of the windowing system. To draw a new window on the screen you can right-click on an empty spot on the desktop and choose "New." You will see that the mouse cursor changes to a plus. Moving windows around doesn't work like with other systems. Since there's no window title bar at the top, you can't left-click and drag it around. Instead, you can right-click and drag using the border of the window. The mouse cursor turns into a box shape in the process. Alternatively, there is a Move option when you right-click on the desktop that allows you to right-click and drag anywhere on a window to move it around.</p>
 
@@ -53,12 +6,61 @@ abaco 'http://google.com/search?q=plan9'
 
 <p>Sometimes it can be useful to record what's on your screen. For example, you can use screen shots for documentation. Also, providing a view of an error can help others to diagnose the problem. You can take a shot of the whole screen quite easily in a raw image format like this.</p>
 
+<table border='1'>
+  <tr><th>cat /dev/screen | topng &gt; screen.png</th><td>To capture the entire screen</td></tr>
+  <tr><th>cat /dev/window | topng &gt; window.png</th><td>To capture only the current window</td></tr>
+</table>
+
+<h3>Acme</h3>
+
+<p>Middle clicking on a word or some selected text *executes* that command. Right-clicking on a file can potentially open up a new window, depending on which program is registered to handle the file type. You can close windows by right-clicking on an empty spot on the desktop, choose Delete and then right click on the window.</p>
+
+<table border='1'>
+  <tr><th>Newcol</th><td>create a new column of windows</td></tr>
+  <tr><th>Delcol</th><td>delete a column</td></tr>
+  <tr><th>New</th><td>create a new window (edit it’s tag to be a file name and you would be creating a new file; you would need to click on “Put” to put the file in the file system).</td></tr>
+  <tr><th>Put</th><td>write the body to disk. The file is the one named in the tag.</td></tr>
+  <tr><th>Get</th><td>refresh the body (e.g. if it’s a directory, reread it and show it).</td></tr>
+  <tr><th>Snarf</th><td>What other window systems call “Copy”.</td></tr>
+  <tr><th>Paste</th><td>Can you guess it?</td></tr>
+  <tr><th>Exit</th><td>exit acme</td></tr>
+</table>
+
+<h3>Simple Plan 9 C Example</h3>
+
 <pre>
-cat /dev/screen &gt; /tmp/shot.pic # take screenshot
-window page /tmp/shot.pic # see the file
-sleep 10; cat /dev/screen &gt; /tmp/shot.pic # with delay
-cat /dev/screen | topng &gt; /tmp/shot.png # small file
-ls -l /tmp/shot.png /tmp/shot.pic # display pic as png</pre>
+#include &lt;u.h&gt;
+#include &lt;libc.h&gt;
+
+void
+main()
+{
+  print("hello, world\n");
+  exits(0);
+}
+</pre>
+
+<h3>Compilers</h3>
+
+<p>To convert source to an executable binary is a two-step process. First run the compiler, <code>5c</code>, on the source, say <code>file.c</code>, to generate an object file <code>file.5</code>. Then run the loader, <code>5l</code>, to generate an executable <code>5.out</code> that may be run(on an ARM machine):</p>
+
+<pre>
+2c file.c
+2l file.2 # Or, 2l file file.2
+2.out
+</pre>
+
+<p>The loader automatically links with whatever libraries the program needs, usually including the standard C library as defined by <code>libc.h</code>. The compiler does not generate an executable automatically; the output of the compiler must be given to the loader. Since most compilation is done under the control of mk, this is rarely an inconvenience.</p>
+
+<table border='1'>
+  <tr><td>SPARC</td><td>kc</td><td>kl</td><td>ka</td></tr>
+  <tr><td>PowerPC</td><td>qc</td><td>ql</td><td>qa</td></tr>
+  <tr><td>MIPS</td><td>vc</td><td>vl</td><td>va</td></tr>
+  <tr><td>ARM</td><td>5c</td>td><td>5l</td><td>5a</td></tr>
+  <tr><td>AMD64</td><td>6c</td>td><td>6l</td><td>6a</td></tr>
+  <tr><td>Intel</td><td>386</td>td><td>8c</td><td>8l</td></tr>
+  <tr><td>PowerPC64bits</td><td>64</td><td>9c</td><td>9l</td></tr>
+</table>
 
 <h3>Themeing</h3>
 
@@ -76,148 +78,17 @@ mk install</pre>
 
 <h2>Raspberry Pi</h2>
 
-<p>Richard Miller distributes a pre-installed disk image for the <a href='https://www.raspberrypi.org/forums/viewtopic.php?f=80&t=210855&sid=d8c8f13ac97ccadf119e38781f495776' target='_blank'>raspberry pi with wifi support</a>.</p>
+<p>Richard Miller distributes a pre-installed disk image for the <a href='https://www.raspberrypi.org/forums/viewtopic.php?f=80&t=210855&sid=d8c8f13ac97ccadf119e38781f495776' target='_blank'>raspberry pi with wifi support</a>. To compile applications for the Raspberry Pi, use the ARM compiler/linker <code>2c</code> and <code>2l</code>. To access the content of a USB stick, type <code>usbfat:</code>, and cd to the directory displayed.</p>
+
+<h3>Networking</h3>
 
 <pre>
-# Find the name of your SD Card
-fdisk -l 
-# Replace sdc with your SD Card id
-mkfs.vfat -n 'PLAN9' -I /dev/sdc 
-# Download Plan9
-wget -O - https://9p.io/sources/contrib/miller/9pi.img.gz
-# Unzip it
-gunzip 9pi.img.gz
-# Unmount SD Card so you can write
-umount /dev/sdc1
-dd bs=4M of=/dev/sdc status=progress
+ndb/dns # start the dns resolver
+ip/ipconfig # configure interfaces and get ip address with dhcp
+ip/ping google.com # check internet connection
 </pre>
-
-<h2>Abaco</h2>
 
 <pre>
 webfs # start a filesystem that handle urls
 abaco 'http://google.com/search?q=plan9'
-</pre>
-
-<h3>Graphical Example</h3>
-
-<pre>
-/*
- * Ball - a first attempt at Plan 9 graphics programming
- * Author:  nspool
- * Date:  2013-02-19
- * Licence: MIT
- * /
-
-/* Build with '8c -FTVw ball.c && 8l -o ball ball.8' */
-
-#include <draw.h>
-#include <event.h>
-#include <libc.h>
-#include <u.h>
-
-void moveball(void);
-void initball(void);
-
-Image *ball;
-
-Point p;
-
-/* Menus */
-char *buttons[] = {"exit", 0};
-Menu menu = {buttons};
-
-/* Radius of ball */
-int r = 20;
-int borderWidth = 4;
-
-/* Change direction of ball if collision
- * else move the ball and draw to screen
- * The new ball image draws over the previous image
- * so there is no need to redraw the whole screen */
-
-void moveball() {
-  static Point bp = {6, 6}; /* Ball Position */
-  static double Δi = 4, Δj = 4;
-
-  /* Collision detection */
-  if (bp.x > p.x - (r * 3) || bp.x < -r)
-    Δi = Δi * -1;
-  if (bp.y > p.y - (r * 3) || bp.y < -r)
-    Δj = Δj * -1;
-
-  /* Increment ball position */
-  bp.x = bp.x + Δi;
-  bp.y = bp.y + Δj;
-
-  draw(screen, rectaddpt(screen->r, bp), ball, nil, ZP);
-}
-
-/* Graphics library requires this function */
-
-void eresized(int new) {
-  if (new &&getwindow(display, Refnone) < 0)
-    sysfatal("can't reattach to window");
-
-  /* Store new screen coordinates for collision detection */
-  p = Pt(Dx(screen->r), Dy(screen->r));
-
-  /* Draw the background DWhite */
-  draw(screen, insetrect(screen->r, borderWidth),
-       allocimage(display, Rect(0, 0, 1, 1), screen->chan, 1, DWhite), nil, ZP);
-}
-
-/* Draw red ball inside a square of white background
- * When ball is drawn at new position, background will
- * blot out the previous image */
-
-void initball() {
-  Image *brush;
-  brush = allocimage(display, Rect(0, 0, 1, 1), CMAP8, 1, DRed);
-  ball = allocimage(display, (Rectangle){(Point){0, 0}, (Point){r * 4, r * 4}},
-                    screen->chan, 0, DWhite);
-  fillellipse(ball, (Point){r * 2, r * 2}, r, r, brush, ZP);
-}
-
-void main(int argc, char *argv[]) {
-  USED(argc, argv);
-
-  Event ev;
-  int e, timer;
-
-  /* Initiate graphics and mouse */
-  if (initdraw(nil, nil, "bouncing ball demo") < 0)
-    sysfatal("initdraw failed: %r");
-
-  einit(Emouse);
-
-  /* Start our timer
-   * move the ball every 5 milliseconds
-   * unless there is an Emouse event */
-
-  timer = etimer(0, 5);
-
-  /* Simulate a resize event to draw the background
-   * and acquire the screen dimensions */
-
-  eresized(0);
-
-  initball();
-
-  /* Main event loop */
-
-  for (;;) {
-    e = event(&ev);
-
-    /* If there is a mouse event, the rightmost button
-     * pressed and the first menu option selected
-     * then exit.. */
-
-    if ((e == Emouse) && (ev.mouse.buttons & 4) &&
-        (emenuhit(3, &ev.mouse, &menu) == 0))
-      exits(nil);
-    else if (e == timer)
-      moveball();
-  }
-}
 </pre>
