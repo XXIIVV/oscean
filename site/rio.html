@@ -1,0 +1,81 @@
+<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='description' content='Notes on the Plan9 interface and tools.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV — rio</title></head><body><header><a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV'></a></header><nav><ul><li><a href='plan9.html'>plan9/</a></li><li><a href='linux.html'>linux</a></li><li><a href='ansi_c.html'>ansi c</a></li></ul><ul><li><a href='rio.html'>rio/</a></li><li><a href='acme.html'>acme</a></li><li><a href='plan9_c.html'>plan9 c</a></li></ul><ul></ul></nav><main><figure><img src='../media/diary/720.jpg' alt='Customizing Rio picture'/><figcaption>20P03 — Customizing Rio</figcaption></figure><h2>Notes on the Plan9 interface and tools.</h2><p>Rio is the name of the windowing system. To draw a new window on the screen you can right-click on an empty spot on the desktop and choose New You will see that the mouse cursor changes to a plus.</p><p>Moving windows around doesn't work like with other systems. Since there's no window title bar at the top, you can't left-click and drag it around. Instead, you can right-click and drag using the border of the window. The mouse cursor turns into a box shape in the process. Alternatively, there is a Move option when you right-click on the desktop that allows you to right-click and drag anywhere on a window to move it around.</p><h3>Screencapture</h3>
+
+<p>Sometimes it can be useful to record what's on your screen. For example, you can use screen shots for documentation. Also, providing a view of an error can help others to diagnose the problem. You can take a shot of the whole screen quite easily in a raw image format like this.</p>
+
+<table border='1'>
+  <tr><th>cat /dev/screen | topng &gt; screen.png</th><td>To capture the entire screen</td></tr>
+  <tr><th>cat /dev/window | topng &gt; window.png</th><td>To capture only the current window</td></tr>
+</table>
+
+<h3>Wallpaper Support</h3>
+
+<p>To add wallpaper support to Rio, you want to edit the rio file <code>/sys/src/cmd/rio/data.c</code>, within the <code>iconinit</code> function, you can draw a graphic to the background image by adding the following code. In this example, the graphic is stored at the location defined with <code>open()</code>, feel free to change it.</p>
+
+<pre>
+int fd;
+Image *bimg = nil;
+fd = open("/usr/glenda/lib/wallpaper", OREAD);
+if(fd >= 0){
+	bimg = readimage(display, fd, 0);
+	close(fd);
+}
+if(bimg){
+	background = allocimage(display, Rect(0, 0, Dx(bimg->r), Dy(bimg->r)), RGB24, 1, 0x000000FF);
+	draw(background, background->r, bimg, 0, bimg->r.min);
+}
+else
+	fprint(2, "iconinit: %r\n");
+</pre>
+
+<p>The file format should be in Plan 9's native raw file format, to convert any jpg into this format, use: </p>
+
+<pre>jpg -9t wallpaper.jpg > wallpaper</pre>
+
+<p>Whenever you make changes to the rio source files, you can recompile it with the following code, note that if you are using an Intel386 device, you will get 8.out.</p>
+
+<pre>
+mk # Will create a 5.out file
+5.out # To launch rio, test your changes
+mv 5.out /bin/rio # Install your changes permanently
+</pre>
+
+<h3>Rio Theme</h3>
+
+<p>My current theme for rio can be installed by modifying the <code>/sys/src/cmd/rio/wind.c</code> file and adding the following lines in the <code>wmk</code> function:</p>
+
+<pre>
+if(cols[0] == nil){
+	grey = allocimage(display, Rect(0,0,1,1), CMAP8, 1, 0x555555FF);
+	darkgrey = allocimage(display, Rect(0,0,1,1), CMAP8, 1, 0x333333FF);
+	cols[BACK] = display->white;
+	cols[HIGH] = allocimage(display, Rect(0,0,1,1), screen->chan, 1, 0x72DEC2FF);
+	/* halftone */
+	cols[BORD] = allocimage(display, Rect(0,0,2,2), CMAP8, 1, 0x000000FF);
+	draw(cols[BORD], Rect(1,1,2,2), display->white, nil, ZP);
+	draw(cols[BORD], Rect(0,0,1,1), display->white, nil, ZP);
+	cols[TEXT] = display->black;
+	cols[HTEXT] = display->white;
+	titlecol = allocimage(display, Rect(0,0,1,1), CMAP8, 1, 0x000000FF);
+	lighttitlecol = allocimage(display, Rect(0,0,1,1), CMAP8, 1, 0x000000FF);
+	holdcol = allocimage(display, Rect(0,0,1,1), CMAP8, 1, 0x00FF00FF);
+	lightholdcol = allocimage(display, Rect(0,0,1,1), CMAP8, 1, 0xCCCCCCFF);
+	paleholdcol = allocimage(display, Rect(0,0,1,1), CMAP8, 1, 0x888888FF);
+}
+</pre>
+
+<p>I don't like that the scrollbar touches the side of the window, to fix that, you can modify the <code>wscrdraw</code> function in the <code>/sys/src/cmd/rio/scrl.c</code> file, and change the following lines:</p>
+
+<pre>
+if(!eqrect(r2, w->lastsr)){
+	w->lastsr = r2;
+	/* move r1, r2 to (0,0) to avoid clipping */
+	r2 = rectsubpt(r2, r1.min);
+	r1 = rectsubpt(r1, r1.min);
+	draw(b, r1, w->cols[BORD], nil, ZP);
+	r2.max.x = r2.max.x+1;
+	draw(b, r2, w->cols[TEXT], nil, ZP);
+	r2.min.x = r2.max.x-1;
+	draw(b, r2, w->cols[BORD], nil, ZP);
+	draw(w->i, r, b, nil, Pt(0, r1.min.y));
+}
+</pre><p>Found a mistake? Submit an <a href='https://github.com/XXIIVV/Oscean/edit/master/src/inc/rio.htm'  target='_blank'>edit</a> to rio.</p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>

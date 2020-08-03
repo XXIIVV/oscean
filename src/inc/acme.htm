@@ -1,0 +1,85 @@
+<table border='1'>
+  <tr><th>Newcol</th><td>create a new column of windows</td></tr>
+  <tr><th>Delcol</th><td>delete a column</td></tr>
+  <tr><th>New</th><td>create a new window (edit it’s tag to be a file name and you would be creating a new file; you would need to click on “Put” to put the file in the file system).</td></tr>
+  <tr><th>Put</th><td>write the body to disk. The file is the one named in the tag.</td></tr>
+  <tr><th>Get</th><td>refresh the body (e.g. if it’s a directory, reread it and show it).</td></tr>
+  <tr><th>Snarf</th><td>What other window systems call “Copy”.</td></tr>
+  <tr><th>Paste</th><td>Can you guess it?</td></tr>
+  <tr><th>Font</th><td>Toggles between the monospace and default font</td></tr>
+  <tr><th>Exit</th><td>exit acme</td></tr>
+</table>
+
+<p>Clicking mouse3 on selected text can do various operations: </p>
+<ul>
+  <li>If the text names an existing window, acme moves the mouse cursor to the selected text in the body of that window. If the text names an existing file with no associated window, acme loads the file into a new window and moves the mouse there. If the text is a file name contained in angle brackets, acme loads the indicated include file from the directory appropriate to the suffix of the file name of the window holding the text.</li>
+  <li>If the text begins with a colon, it is taken to be an address, in the style of sam(1), within the body of the window containing the text. The address is evaluated, the resulting text highlighted, and the mouse moved to it. Thus, in acme, one must type :/regexp or :127 not just /regexp or 127.</li>
+  <li>If the text is a file name followed by a colon and an address, acme loads the file and evaluates the address. For example, clicking button 3 anywhere in the text file.c:27 will open file.c, select line 27, and put the mouse at the beginning of the line. The rules about Error files, directories, and so on all combine to make this an efficient way to investigate errors from compilers, etc.</li>
+  <li>If the text is not an address or file, it is taken to be literal text, which is then searched for in the body of the window in which button 3 was clicked. If a match is found, it is selected and the mouse is moved there. Thus, to search for occurrences of a word in a file, just click button 3 on the word. Because of the rule of using the selection as the button 3 action, subsequent clicks will find subsequent occurrences without moving the mouse. </li>
+</ul>
+
+<h3>Acme Theme</h3>
+
+<p>My current theme for acme can be installed by modifying the <code>/sys/src/cmd/acme/acme.c</code> file and adding the following lines in the <code>iconinit</code> function:</p>
+
+<pre>
+void
+iconinit(void)
+{
+  Rectangle r;
+  Image *tmp;
+
+  /* Blue */ 
+  tagcols[BACK] = display->white;
+  tagcols[HIGH] = allocimage(display, Rect(0,0,1,1), screen->chan, 1, 0x72DEC2FF);
+  tagcols[BORD] = allocimage(display, Rect(0,0,1,1), screen->chan, 1, 0x72DEC2FF);
+  tagcols[TEXT] = display->black;
+  tagcols[HTEXT] = display->white;
+
+  /* Yellow */
+  textcols[BACK] = allocimagemix(display, DPaleyellow, DWhite);
+  textcols[HIGH] = allocimage(display, Rect(0,0,1,1), screen->chan, 1, 0x72DEC2FF);
+  /* Halftone */
+  textcols[BORD] = allocimage(display, Rect(0,0,2,2), CMAP8, 1, 0x000000FF);
+  draw(textcols[BORD], Rect(1,1,2,2), display->white, nil, ZP);
+  draw(textcols[BORD], Rect(0,0,1,1), display->white, nil, ZP);
+  textcols[TEXT] = display->black;
+  textcols[HTEXT] = display->black;
+
+  if(button){
+    freeimage(button);
+    freeimage(modbutton);
+    freeimage(colbutton);
+  }
+  /* Button */
+  r = Rect(0, 0, Scrollwid, font->height+1);
+  button = allocimage(display, r, screen->chan, 0, DNofill);
+  draw(button, r, tagcols[BORD], nil, r.min);
+  r.max.x -= 4;
+  fillellipse(button, (Point){r.min.x + 5, r.min.y + 7}, 3, 3, display->white, ZP);
+  /* Mod Button */
+  r = button->r;
+  modbutton = allocimage(display, r, screen->chan, 0, DNofill);
+  draw(modbutton, r, tagcols[BORD], nil, r.min);
+  r = insetrect(r, 2);
+  fillellipse(modbutton, (Point){r.min.x + 3, r.min.y + 5}, 3, 3, display->black, ZP);
+  r = button->r;
+  colbutton = allocimage(display, Rect(0,0,1,1), screen->chan, 1, 0x72DEC2FF);
+  but2col = allocimage(display, r, screen->chan, 1, 0xAA0000FF);
+  but3col = allocimage(display, r, screen->chan, 1, 0x006600FF);
+}
+</pre>
+
+<p>I don't like that the scrollbar touches the side of the window, to fix that, you can modify the <code>textscrdraw</code> function in the <code>/sys/src/cmd/acme/scrl.c</code> file, and change the following lines:</p>
+
+<pre>
+if(!eqrect(r2, t->lastsr)){
+  t->lastsr = r2;
+  draw(b, r1, t->cols[BORD], nil, ZP);
+  r2.max.x = r2.max.x+1;
+  draw(b, r2, t->cols[TEXT], nil, ZP);
+  r2.min.x = r2.max.x-1;
+  draw(b, r2, t->cols[BORD], nil, ZP);
+  draw(t->b, r, b, nil, Pt(0, r1.min.y));
+}
+</pre>
