@@ -1,6 +1,5 @@
 #include <ctype.h>
 #include <math.h>
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -382,7 +381,7 @@ void build_incoming(FILE *f, Term *term) {
     return;
   }
   fputs("<p>", f);
-  fprintf(f, "<i>incoming(%d)</i>: \n", term->incoming_len);
+  fprintf(f, "<i>incoming(%d)</i>: ", term->incoming_len);
   for (i = 0; i < term->incoming_len; ++i) {
     to_filename(term->incoming[i]->name, filename);
     fprintf(f, "<a href='%s.html'>%s</a> ", filename, term->incoming[i]->name);
@@ -812,9 +811,9 @@ FILE *parse_lexicon(FILE *fp, Lexicon *lexicon) {
       if (strstr(line, "TYPE : ") != NULL) {
         substr(line, t->type, 9, len - 9);
       }
-      catch_body = strstr(line, "BODY") != NULL ? true : false;
-      catch_link = strstr(line, "LINK") != NULL ? true : false;
-      catch_list = strstr(line, "LIST") != NULL ? true : false;
+      catch_body = strstr(line, "BODY") != NULL;
+      catch_link = strstr(line, "LINK") != NULL;
+      catch_list = strstr(line, "LIST") != NULL;
     } else if (pad == 4) {
       Term *t = &lexicon->terms[lexicon->len - 1];
       /* Body */

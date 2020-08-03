@@ -1,0 +1,201 @@
+<h3>Plan 9 GUI Example</h3>
+
+<pre>
+#include &lt;u.h&gt;
+#include &lt;libc.h&gt;
+#include &lt;draw.h&gt;
+#include &lt;thread.h&gt;
+#include &lt;event.h&gt;
+
+void
+eresized(int new)
+{
+  Rectangle r;
+  r = screen->r;
+  if(new && getwindow(display, Refnone) < 0)
+    fprint(2,"can't reattach to window");
+  draw(screen, screen->r, display->white, nil, ZP);
+}
+
+void
+main(int argc, char **argv)
+{
+  Mouse m;
+  Image *red, *blue;
+  initdraw(0,0,0);
+  eresized(0);
+  einit(Emouse);
+  red = allocimagemix(display, DRed, DRed);
+  blue = allocimagemix(display, DBlue, DBlue);
+  for(;;){
+    m = emouse();
+    if(m.buttons & 4)
+      break;
+    if(m.buttons & 1){
+      fillellipse(screen, m.xy, 5, 5, red, ZP);
+      do m=emouse(); while(m.buttons & 1);
+      fillellipse(screen, m.xy, 5, 5, blue, ZP);
+      continue;
+    }
+    draw(screen, rectaddpt(Rect(0,0,2,2), m.xy), display->black, nil, ZP);
+  }
+}
+</pre>
+
+<h3>Plan 9 GUI Menu Example</h3>
+
+<pre>
+#include &lt;u.h&gt;
+#include &lt;libc.h&gt;
+#include &lt;draw.h&gt;
+#include &lt;thread.h&gt;
+#include &lt;event.h&gt;
+
+char *buttons[] = {"Option1", "Option2", "Option3", "Exit", 0};
+Menu menu = {buttons};
+Point p;
+
+void
+eresized(int new)
+{
+  Rectangle r;
+  r = screen->r;
+  if(new && getwindow(display, Refnone) < 0)
+    fprint(2,"can't reattach to window");
+  draw(screen, screen->r, display->white, nil, ZP);
+}
+
+void 
+main(int argc, char *argv[]) 
+{
+	USED(argc, argv);
+	Event ev;
+	int e, timer;
+	if (initdraw(nil, nil, "bouncing ball demo") < 0)
+		sysfatal("initdraw failed: %r");
+	einit(Emouse);
+	eresized(0);
+	for (;;) {
+		e = event(&ev);
+		if ((e == Emouse) && (ev.mouse.buttons & 4)){
+			if(emenuhit(3, &ev.mouse, &menu) == 0)
+				print("Pressed Option 1");
+			if(emenuhit(3, &ev.mouse, &menu) == 1)
+				print("Pressed Option 2");
+			if(emenuhit(3, &ev.mouse, &menu) == 2)
+				print("Pressed Option 3");
+			if(emenuhit(3, &ev.mouse, &menu) == 3)
+				exits(nil);
+		}
+	}
+}
+</pre>
+
+<h3>Rio Wallpaper Support</h3>
+
+<p>To add wallpaper support to Rio, you want to edit the rio file <code>/sys/src/cmd/rio/data.c</code>, within the <code>iconinit</code> function, you can draw a graphic to the background image by adding the following code. In this example, the graphic is stored at the location defined with <code>open()</code>, feel free to change it.</p>
+
+<pre>
+int fd;
+Image *bimg = nil;
+fd = open("/usr/glenda/lib/wallpaper", OREAD);
+if(fd >= 0){
+	bimg = readimage(display, fd, 0);
+	close(fd);
+}
+if(bimg){
+	background = allocimage(display, Rect(0, 0, Dx(bimg->r), Dy(bimg->r)), RGB24, 1, 0x000000FF);
+	draw(background, background->r, bimg, 0, bimg->r.min);
+}
+else
+	fprint(2, "iconinit: %r\n");
+</pre>
+
+<p>The file format should be in Plan 9's native raw file format, to convert any jpg into this format, use: </p>
+
+<pre>jpg -9t wallpaper.jpg > wallpaper</pre>
+
+<p>Whenever you make changes to the rio source files, you can recompile it with the following code, note that if you are using an Intel386 device, you will get 8.out.</p>
+
+<pre>
+mk # Will create a 5.out file
+5.out # To launch rio, test your changes
+mv 5.out /bin/rio # Install your changes permanently
+</pre>
+
+<h3>Rio Theme</h3>
+
+<p>My current theme for rio can be installed by modifying the <code>/sys/src/cmd/rio/wind.c</code> file and adding the following lines in the <code>wmk</code> function:</p>
+
+<pre>
+if(cols[0] == nil){
+	grey = allocimage(display, Rect(0,0,1,1), CMAP8, 1, 0x555555FF);
+	darkgrey = allocimage(display, Rect(0,0,1,1), CMAP8, 1, 0x333333FF);
+	cols[BACK] = display->white;
+	cols[HIGH] = allocimage(display, Rect(0,0,1,1), CMAP8, 1, 0x111111FF);
+	/* create halftone */
+	cols[BORD] = allocimage(display, Rect(0,0,2,2), CMAP8, 1, 0x000000FF);
+	draw(cols[BORD], Rect(1,1,2,2), display->white, nil, ZP);
+	draw(cols[BORD], Rect(0,0,1,1), display->white, nil, ZP);
+	cols[TEXT] = display->black;
+	cols[HTEXT] = display->white;
+	titlecol = allocimage(display, Rect(0,0,1,1), CMAP8, 1, 0xCCCCCCFF);
+	lighttitlecol = allocimage(display, Rect(0,0,1,1), CMAP8, 1, 0x000000FF);
+	holdcol = allocimage(display, Rect(0,0,1,1), CMAP8, 1, 0x00FF00FF);
+	lightholdcol = allocimage(display, Rect(0,0,1,1), CMAP8, 1, 0xCCCCCCFF);
+	paleholdcol = allocimage(display, Rect(0,0,1,1), CMAP8, 1, 0x888888FF);
+}
+</pre>
+
+<p>I don't like that the scrollbar touches the side of the window, to fix that, you can modify the <code>wscrdraw</code> function in the <code>/sys/src/cmd/rio/scrl.c</code> file, and change the following lines:</p>
+
+<pre>
+if(!eqrect(r2, w->lastsr)){
+	w->lastsr = r2;
+	/* move r1, r2 to (0,0) to avoid clipping */
+	r2 = rectsubpt(r2, r1.min);
+	r1 = rectsubpt(r1, r1.min);
+	draw(b, r1, w->cols[BORD], nil, ZP);
+	r2.max.x = r2.max.x+1;
+	draw(b, r2, w->cols[BORD], nil, ZP);
+	r2.min.x = r2.max.x-1;
+	draw(b, r2, w->cols[BORD], nil, ZP);
+	draw(w->i, r, b, nil, Pt(0, r1.min.y));
+}
+</pre>
+
+<h3>Bresenham Line Algorithm</h3>
+
+<pre>
+void
+pixel(int x, int y)
+{
+	Point from, to;
+	Rectangle r;
+
+	r.min.x = x;
+	r.min.y = y;
+	r.max.x = x + 1;
+	r.max.y = y + 1;
+	draw(screen, r, display->black, nil, ZP);
+}
+
+void lineb(int x0, int y0, int x1, int y1)
+{
+	int dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
+	int dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+	int err = dx + dy, e2;
+	for(;;){
+		pixel(x0,y0);
+		if(x0 == x1 && y0 == y1) break;
+		e2 = 2 * err;
+		if(e2 >= dy) { err += dy; x0 += sx; }
+		if(e2 <= dx) { err += dx; y0 += sy; }
+	}
+}
+
+/* Usage */
+
+lineb(screen->r.min.x, screen->r.min.y, screen->r.max.x, screen->r.max.y);
+</pre>
+
