@@ -132,33 +132,24 @@ main(int argc, char *argv[])
 
 <pre>
 void
-pixel(int x, int y)
+pixel(Image *dst, int x, int y, Image *src, Point sp)
 {
-  Point from, to;
-  Rectangle r;
-
-  r.min.x = x;
-  r.min.y = y;
-  r.max.x = x + 1;
-  r.max.y = y + 1;
-  draw(screen, r, display->black, nil, ZP);
+	draw(dst,(Rectangle){(Point){x,y}, (Point){x+1,y+1}}, src, nil, sp);
 }
 
-void lineb(int x0, int y0, int x1, int y1)
+void 
+lineb(Image *dst, Point p0, Point p1, Image *src, Point sp) 
 {
-  int dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
-  int dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
-  int err = dx + dy, e2;
-  for(;;){
-    pixel(x0,y0);
-    if(x0 == x1 && y0 == y1) break;
-    e2 = 2 * err;
-    if(e2 >= dy) { err += dy; x0 += sx; }
-    if(e2 <= dx) { err += dx; y0 += sy; }
-  }
+	int dx = abs(p1.x - p0.x), sx = p0.x < p1.x ? 1 : -1;
+	int dy = -abs(p1.y - p0.y), sy = p0.y < p1.y ? 1 : -1;
+	int err = dx + dy, e2;
+	for(;;){
+		pixel(dst, p0.x,p0.y, src, sp);
+		if(p0.x == p1.x && p0.y == p1.y) break;
+		e2 = 2 * err;
+		if(e2 >= dy) { err += dy; p0.x += sx; }
+		if(e2 <= dx) { err += dx; p0.y += sy; }
+	}
 }
-
-/* Usage */
-
-lineb(screen->r.min.x, screen->r.min.y, screen->r.max.x, screen->r.max.y);
-</pre><p>Found a mistake? Submit an <a href='https://github.com/XXIIVV/Oscean/edit/master/src/inc/plan9 c.htm'  target='_blank'>edit</a> to plan9 c.</p><h3>plan9 development links</h3><ul><li><b>Intro to C Programming on Plan 9</b>: http://doc.cat-v.org/plan_9/programming/c_programming_in_plan_9</li><li><b>Intro to Graphics on Plan 9</b>: http://blog.postnix.pw/2018/09/21/0/</li><li><b>Interface Tutorial</b>: https://github.com/nspool/hello-plan9</li><li><b>Graphics Docs</b>: http://man.postnix.pw/9front/2/graphics</li><li><b>Draw Docs</b>: http://man.postnix.pw/9front/2/draw</li><li><b>Audio</b>: http://nopenopenope.net/posts/audio</li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
+</pre>
+<p>Found a mistake? Submit an <a href='https://github.com/XXIIVV/Oscean/edit/master/src/inc/plan9 c.htm'  target='_blank'>edit</a> to plan9 c.</p><h3>plan9 development links</h3><ul><li><b>Intro to C Programming on Plan 9</b>: http://doc.cat-v.org/plan_9/programming/c_programming_in_plan_9</li><li><b>Intro to Graphics on Plan 9</b>: http://blog.postnix.pw/2018/09/21/0/</li><li><b>Interface Tutorial</b>: https://github.com/nspool/hello-plan9</li><li><b>Graphics Docs</b>: http://man.postnix.pw/9front/2/graphics</li><li><b>Draw Docs</b>: http://man.postnix.pw/9front/2/draw</li><li><b>Audio</b>: http://nopenopenope.net/posts/audio</li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
