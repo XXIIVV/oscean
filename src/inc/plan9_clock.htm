@@ -1,0 +1,126 @@
+<pre>
+#include &lt;u.h&gt;
+#include &lt;libc.h&gt;
+#include &lt;draw.h&gt;
+#include &lt;event.h&gt;
+
+Image *secclr;
+
+Point
+circlept(Point c, int r, int degrees)
+{
+	double rad;
+	rad = (double) degrees * PI/180.0;
+	c.x += cos(rad)*r;
+	c.y -= sin(rad)*r;
+	return c;
+}
+
+void
+pixel(Image *dst, Point p, Image *src, Point sp)
+{
+	draw(dst,(Rectangle){p, (Point){p.x+1,p.y+1}}, src, nil, sp);
+}
+
+void lineb(Image *dst, Point p0, Point p1, Image *src, Point sp) 
+{
+	int dx = abs(p1.x - p0.x), sx = p0.x < p1.x ? 1 : -1;
+	int dy = -abs(p1.y - p0.y), sy = p0.y < p1.y ? 1 : -1;
+	int err = dx + dy, e2;
+	for(;;){
+		pixel(dst, p0, src, sp);
+		if(p0.x == p1.x && p0.y == p1.y) break;
+		e2 = 2 * err;
+		if(e2 >= dy) { err += dy; p0.x += sx; }
+		if(e2 <= dx) { err += dx; p0.y += sy; }
+	}
+}
+
+void
+redraw(Image *screen)
+{
+	static int tm, ntm;
+	static Rectangle r;
+	static Point c;
+	static int rad;
+	static Image *im;
+	int i;
+	int anghr, angmin, angsec, angsecrev;
+	static Tm tms;
+	static Tm ntms;
+
+	ntm = time(0);
+	if(ntm == tm && eqrect(screen->r, r))
+		return;
+
+	ntms = *localtime(ntm);
+	anghr = 90-(ntms.hour*5 + ntms.min/12)*6;
+	angmin = 90-ntms.min*6;
+	angsec = 90-ntms.sec*6;
+	angsecrev = 270-ntms.sec*6;
+
+	tm = ntm;
+	tms = ntms;
+	r = screen->r;
+	c = divpt(addpt(r.min, r.max), 2);
+	rad = Dx(r) < Dy(r) ? Dx(r) : Dy(r);
+	rad /= 2;
+	rad -= 20;
+
+	draw(screen, screen->r, display->black, nil, ZP);
+	for(i=0; i<60; i++){
+		lineb(screen, circlept(c, (i+5) % 5 == 0 ? rad*0.85 : rad*0.9, i*(360/60)), circlept(c, rad, i*(360/60)), display->white, ZP);
+	}
+	
+	lineb(screen, c, circlept(c, (rad*3)/4, angmin), display->white, ZP);
+	lineb(screen, c, circlept(c, rad/2, anghr), display->white, ZP);
+	lineb(screen, c, circlept(c, (rad*4)/5, angsec), secclr, ZP);
+	lineb(screen, c, circlept(c, (rad)/5, angsecrev), secclr, ZP);
+	fillellipse(screen, c, 2, 2, secclr, ZP);
+	flushimage(display, 1);
+}
+
+void
+eresized(int new)
+{
+	if(new && getwindow(display, Refnone) < 0)
+		fprint(2,"can't reattach to window");
+	redraw(screen);
+}
+
+void
+main(int, char**)
+{
+	Event e;
+	Mouse m;
+	Menu menu;
+	char *mstr[] = {"exit", 0};
+	int key, timer;
+	int t;
+
+	if (initdraw(0, 0, "clock") < 0)
+		sysfatal("initdraw failed");
+
+	secclr = allocimagemix(display, DRed, DRed);
+	redraw(screen);
+
+	einit(Emouse);
+	t = 1000;
+	timer = etimer(0, t);
+
+	menu.item = mstr;
+	menu.lasthit = 0;
+	for(;;) {
+		key = event(&e);
+		if(key == Emouse) {
+			m = e.mouse;
+			if(m.buttons & 4) {
+				if(emenuhit(3, &m, &menu) == 0)
+					exits(0);
+			}
+		} else if(key == timer) {
+			redraw(screen);
+		}
+	}	
+}
+</pre>
