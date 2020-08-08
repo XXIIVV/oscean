@@ -35,120 +35,123 @@ main()
   <tr><td>PowerPC64bits</td><td>9c</td><td>9l</td><td>9a</td></tr>
 </table>
 
-<h3>Plan 9 GUI Example</h3>
+<h3>Plan 9 Mouse Example</h3>
 
 <pre>
 #include &lt;u.h&gt;
 #include &lt;libc.h&gt;
 #include &lt;draw.h&gt;
-#include &lt;thread.h&gt;
 #include &lt;event.h&gt;
+#include &lt;keyboard.h&gt;
 
-void
-eresized(int new)
-{
-  Rectangle r;
-  r = screen->r;
-  if(new && getwindow(display, Refnone) < 0)
-    fprint(2,"can't reattach to window");
-  draw(screen, screen->r, display->white, nil, ZP);
+void eresized(int new) {
+	if (new &&getwindow(display, Refnone) < 0)
+		sysfatal("can't reattach to window");
 }
 
-void
-main(int argc, char **argv)
-{
-  Mouse m;
-  Image *red, *blue;
-  initdraw(0,0,0);
-  eresized(0);
-  einit(Emouse);
-  red = allocimagemix(display, DRed, DRed);
-  blue = allocimagemix(display, DBlue, DBlue);
-  for(;;){
-    m = emouse();
-    if(m.buttons & 4)
-      break;
-    if(m.buttons & 1){
-      fillellipse(screen, m.xy, 5, 5, red, ZP);
-      do m=emouse(); while(m.buttons & 1);
-      fillellipse(screen, m.xy, 5, 5, blue, ZP);
-      continue;
-    }
-    draw(screen, rectaddpt(Rect(0,0,2,2), m.xy), display->black, nil, ZP);
-  }
+void main(int argc, char *argv[]) {
+	USED(argc, argv);
+
+	Mouse m;
+	Point prevm;
+	initdraw(0,0,"Example: Mouse");
+	eresized(0);
+	einit(Emouse);
+
+	/* Main loop */
+	for(;;){
+		m = emouse();
+		if(m.buttons & 4)
+			break;
+		if(m.buttons & 1){
+			line(screen,
+				prevm.x == -1 ? m.xy : prevm,
+				m.xy, Enddisc, Enddisc, 1, display->black, ZP);
+			prevm = m.xy;
+		}
+		else{
+			prevm = Pt(-1,-1);
+		}
+	}
 }
 </pre>
 
-<h3>Plan 9 GUI Menu Example</h3>
+<h3>Plan 9 Keyboard Example</h3>
 
 <pre>
 #include &lt;u.h&gt;
 #include &lt;libc.h&gt;
 #include &lt;draw.h&gt;
-#include &lt;thread.h&gt;
+#include &lt;event.h&gt;
+#include &lt;keyboard.h&gt;
+
+void eresized(int new) {
+	if (new &&getwindow(display, Refnone) < 0)
+		sysfatal("can't reattach to window");
+}
+
+void main(int argc, char *argv[]) {
+	USED(argc, argv);
+
+	Event ev;
+	int e;
+	initdraw(0,0,0);
+	eresized(0);
+	einit(Ekeyboard);
+
+	/* Main loop */
+	for (;;) {
+  		e = event(&ev);
+		if(e == Ekeyboard){
+			print("key: %d\n", ev.kbdc);
+			/* Break on escape */
+			if(ev.kbdc == 27){
+				print("Escaped\n");
+				break;
+			}
+		}
+	}
+}
+</pre>
+
+<h3>Plan 9 Menu Example</h3>
+
+<pre>
+#include &lt;u.h&gt;
+#include &lt;libc.h&gt;
+#include &lt;draw.h&gt;
 #include &lt;event.h&gt;
 
 char *buttons[] = {"Option1", "Option2", "Option3", "Exit", 0};
 Menu menu = {buttons};
-Point p;
 
-void
-eresized(int new)
-{
-  Rectangle r;
-  r = screen->r;
-  if(new && getwindow(display, Refnone) < 0)
-    fprint(2,"can't reattach to window");
-  draw(screen, screen->r, display->white, nil, ZP);
+void eresized(int new) {
+	if (new &&getwindow(display, Refnone) < 0)
+		sysfatal("can't reattach to window");
 }
 
-void 
-main(int argc, char *argv[]) 
-{
-  USED(argc, argv);
-  Event ev;
-  int e, timer;
-  if (initdraw(nil, nil, "bouncing ball demo") < 0)
-    sysfatal("initdraw failed: %r");
-  einit(Emouse);
-  eresized(0);
-  for (;;) {
-    e = event(&ev);
-    if ((e == Emouse) && (ev.mouse.buttons & 4)){
-      if(emenuhit(3, &ev.mouse, &menu) == 0)
-        print("Pressed Option 1");
-      if(emenuhit(3, &ev.mouse, &menu) == 1)
-        print("Pressed Option 2");
-      if(emenuhit(3, &ev.mouse, &menu) == 2)
-        print("Pressed Option 3");
-      if(emenuhit(3, &ev.mouse, &menu) == 3)
-        exits(nil);
-    }
-  }
-}
-</pre>
+void main(int argc, char *argv[]) {
+	USED(argc, argv);
 
-<h3>Bresenham Line Algorithm</h3>
+	Event ev;
+	int e;
+	initdraw(0,0,"Example: Menu");
+	eresized(0);
+	einit(Emouse);
 
-<pre>
-void
-pixel(Image *dst, int x, int y, Image *src, Point sp)
-{
-	draw(dst, Rect(x, y, x + 1, y + 1), src, nil, sp);
-}
-
-void 
-lineb(Image *dst, Point p0, Point p1, Image *src, Point sp) 
-{
-	int dx = abs(p1.x - p0.x), sx = p0.x < p1.x ? 1 : -1;
-	int dy = -abs(p1.y - p0.y), sy = p0.y < p1.y ? 1 : -1;
-	int err = dx + dy, e2;
-	for(;;){
-		pixel(dst, p0.x,p0.y, src, sp);
-		if(p0.x == p1.x && p0.y == p1.y) break;
-		e2 = 2 * err;
-		if(e2 >= dy) { err += dy; p0.x += sx; }
-		if(e2 <= dx) { err += dx; p0.y += sy; }
+	/* Main event loop */
+	for (;;) {
+  		e = event(&ev);
+  		if ((e == Emouse) && (ev.mouse.buttons & 4)){
+			if(emenuhit(3, &ev.mouse, &menu) == 0)
+				print("Pressed Option 1");
+			if(emenuhit(3, &ev.mouse, &menu) == 1)
+				print("Pressed Option 2");
+			if(emenuhit(3, &ev.mouse, &menu) == 2)
+				print("Pressed Option 3");
+			if(emenuhit(3, &ev.mouse, &menu) == 3)
+				exits(nil);
+    		}
 	}
 }
 </pre>
