@@ -886,7 +886,7 @@ FILE *parse_horaire(FILE *fp, Journal *journal) {
   return fp;
 }
 
-void parse() {
+void parse(void) {
   printf("Parsing  | ");
   printf("glossary");
   fclose(parse_glossary(fopen("database/glossary.ndtl", "r"), &all_lists));
@@ -896,7 +896,7 @@ void parse() {
   fclose(parse_horaire(fopen("database/horaire.tbtl", "r"), &all_logs));
 }
 
-void link() {
+void link(void) {
   int i, j;
   printf("Linking  | ");
   printf("journal(%d entries) ", all_logs.len);
@@ -1057,7 +1057,7 @@ bool req_template(char *str) {
   return open > 0 && shut > 0;
 }
 
-void template() {
+void template(void) {
   int i, j, count = 0;
   printf("Template | ");
   for (i = 0; i < all_terms.len; ++i) {
@@ -1072,7 +1072,7 @@ void template() {
   printf("%d strings", count);
 }
 
-void build() {
+void build(void) {
   int i;
   printf("Building | ");
   printf("%d pages ", all_terms.len);
@@ -1083,7 +1083,7 @@ void build() {
   build_rss(&all_logs);
 }
 
-void check() {
+void check(void) {
   int pict_used_len;
   int pict_used[999];
   int i;
@@ -1117,7 +1117,7 @@ void check() {
   }
 }
 
-int main() {
+int main(void) {
   clock_t start;
 
   printf("Today    | ");
