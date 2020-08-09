@@ -5,8 +5,6 @@
 #include &lt;thread.h&gt;
 #include &lt;u.h&gt;
 
-/* ARM : 5c moogle.c && 5l -o moogle moogle.5 && moogle */
-
 Point center;
 Image *clrx, *clry, *clrz;
 
@@ -68,10 +66,14 @@ vertexadd(Vertex *a, Vertex *b) {
 /* geometry */
 
 double
-rad2deg(double rad) { return rad * (180 / PI); }
+rad2deg(double rad) { 
+  return rad * (180 / PI); 
+}
 
 double
-deg2rad(double deg) { return deg * (PI / 180); }
+deg2rad(double deg) { 
+  return deg * (PI / 180); 
+}
 
 double
 ptangledeg(Point2d a, Point2d b) {
@@ -141,7 +143,8 @@ rotverx(Vertex *o, Vertex *v, double angle) {
   v->z = r.y;
 }
 
-void rotvery(Vertex *o, Vertex *v, double angle) {
+void 
+rotvery(Vertex *o, Vertex *v, double angle) {
   Point2d r = rotpt(Pt2d(o->x, o->z), Pt2d(v->x, v->z), angle);
   v->x = r.x;
   v->z = r.y;
@@ -255,6 +258,20 @@ project(Vertex v) {
 }
 
 void
+widget(Scene scene, double pitch, double yaw, double roll) {
+  Vertex c = Ver(0, 0, 0);
+  Vertex x = Ver(5, 0, 0);
+  Vertex y = Ver(0, 5, 0);
+  Vertex z = Ver(0, 0, 5);
+  rotver(&scene.origin, &x, pitch, yaw, roll);
+  rotver(&scene.origin, &y, pitch, yaw, roll);
+  rotver(&scene.origin, &z, pitch, yaw, roll);
+  lineb(screen, project(c), project(x), clrx, screen->r.min);
+  lineb(screen, project(c), project(y), clry, screen->r.min);
+  lineb(screen, project(c), project(z), clrz, screen->r.min);
+}
+
+void
 render(Scene scene, double pitch, double yaw, double roll) {
   /* Each mesh */
   for (int i = 0; i < scene.len; i++) {
@@ -269,17 +286,7 @@ render(Scene scene, double pitch, double yaw, double roll) {
       lineb(screen, project(a), project(b), display->black, screen->r.min);
     }
   }
-  /* Axis*/
-  Vertex c = Ver(0, 0, 0);
-  Vertex x = Ver(5, 0, 0);
-  Vertex y = Ver(0, 5, 0);
-  Vertex z = Ver(0, 0, 5);
-  rotver(&scene.origin, &x, pitch, yaw, roll);
-  rotver(&scene.origin, &y, pitch, yaw, roll);
-  rotver(&scene.origin, &z, pitch, yaw, roll);
-  lineb(screen, project(c), project(x), clrx, screen->r.min);
-  lineb(screen, project(c), project(y), clry, screen->r.min);
-  lineb(screen, project(c), project(z), clrz, screen->r.min);
+  widget(scene, pitch, yaw, roll);
 }
 
 void
