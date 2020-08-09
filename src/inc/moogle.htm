@@ -1,0 +1,321 @@
+<pre>
+#include &lt;draw.h&gt;
+#include &lt;event.h&gt;
+#include &lt;libc.h&gt;
+#include &lt;thread.h&gt;
+#include &lt;u.h&gt;
+
+/* ARM : 5c moogle.c && 5l -o moogle moogle.5 && moogle */
+
+Point center;
+Image *clrx, *clry, *clrz;
+
+typedef struct {
+  double x;
+  double y;
+} Point2d;
+
+typedef struct {
+  double x;
+  double y;
+  double z;
+} Vertex;
+
+typedef struct {
+  int a;
+  int b;
+} Edge;
+
+typedef struct {
+  Vertex position;
+  Vertex vertices[20];
+  int vertices_len;
+  Edge edges[20];
+  int edges_len;
+} Mesh;
+
+typedef struct {
+  Vertex origin;
+  Mesh meshes[20];
+  int len;
+} Scene;
+
+/* helpers */
+
+Point2d 
+Pt2d(double x, double y) {
+  return (Point2d){x, y};
+}
+
+Vertex 
+Ver(double x, double y, double z) { 
+  return (Vertex){x, y, z}; 
+}
+
+Scene 
+Sc(double x, double y, double z) {
+  Scene s;
+  s.origin = Ver(x, y, z);
+  s.len = 0;
+  return s;
+}
+
+Vertex 
+vertexadd(Vertex *a, Vertex *b) {
+  return Ver(a->x + b->x, a->y + b->y, a->z + b->z);
+}
+
+/* geometry */
+
+double
+rad2deg(double rad) { return rad * (180 / PI); }
+
+double
+deg2rad(double deg) { return deg * (PI / 180); }
+
+double
+ptangledeg(Point2d a, Point2d b) {
+  double theta = atan2(b.y - a.y, b.x - a.x);
+  return rad2deg(theta);
+}
+
+double
+ptangle(Point2d a, Point2d b) { return atan2(b.y - a.y, b.x - a.x); }
+
+double
+ptdistance(Point2d a, Point2d b) {
+  double x = a.x - b.x;
+  double y = a.y - b.y;
+  return sqrt(x * x + y * y);
+}
+
+Point2d
+rotpt(Point2d center, Point2d p0, double deg) {
+  double rot = ptangle(center, p0) + deg2rad(deg);
+  double r = ptdistance(center, p0);
+  return Pt2d(center.x + r * cos(rot), center.y + r * sin(rot));
+}
+
+/* scene */
+
+void
+print_vertex(Vertex *vertex) {
+  print("[%d,%d,%d]\n", vertex->x, vertex->y, vertex->z);
+}
+
+void
+set_vertex(Vertex *vertex, double x, double y, double z) {
+  vertex->x = x;
+  vertex->y = y;
+  vertex->z = z;
+}
+
+void
+add_vertex(Mesh *mesh, double x, double y, double z) {
+  set_vertex(&mesh->vertices[mesh->vertices_len], x, y, z);
+  mesh->vertices_len++;
+}
+
+void
+set_edge(Edge *edge, int v0, int v1) {
+  edge->a = v0;
+  edge->b = v1;
+}
+
+void
+add_edge(Mesh *mesh, int v0, int v1) {
+  set_edge(&mesh->edges[mesh->edges_len], v0, v1);
+  mesh->edges_len++;
+}
+
+void
+set_mesh(Scene *scene, Mesh mesh) {
+  scene->meshes[scene->len] = mesh;
+  scene->len++;
+}
+
+void
+rotverx(Vertex *o, Vertex *v, double angle) {
+  Point2d r = rotpt(Pt2d(o->y, o->z), Pt2d(v->y, v->z), angle);
+  v->y = r.x;
+  v->z = r.y;
+}
+
+void rotvery(Vertex *o, Vertex *v, double angle) {
+  Point2d r = rotpt(Pt2d(o->x, o->z), Pt2d(v->x, v->z), angle);
+  v->x = r.x;
+  v->z = r.y;
+}
+
+void
+rotverz(Vertex *o, Vertex *v, double angle) {
+  Point2d r = rotpt(Pt2d(o->x, o->y), Pt2d(v->x, v->y), angle);
+  v->x = r.x;
+  v->y = r.y;
+}
+
+void
+rotver(Vertex *o, Vertex *v, double pitch, double yaw, double roll) {
+  rotverx(o, v, pitch);
+  rotvery(o, v, yaw);
+  rotverz(o, v, roll);
+}
+
+void
+rotatex(Mesh *mesh, double angle) {
+  for (int i = 0; i < mesh->vertices_len; i++) {
+    rotverx(&mesh->position, &mesh->vertices[i], angle);
+  }
+}
+
+void
+rotatey(Mesh *mesh, double angle) {
+  for (int i = 0; i < mesh->vertices_len; i++) {
+    rotvery(&mesh->position, &mesh->vertices[i], angle);
+  }
+}
+
+void
+rotatez(Mesh *mesh, double angle) {
+  for (int i = 0; i < mesh->vertices_len; i++) {
+    rotverz(&mesh->position, &mesh->vertices[i], angle);
+  }
+}
+
+void
+rotate(Mesh *mesh, double x, double y, double z) {
+  rotatex(mesh, x);
+  rotatey(mesh, y);
+  rotatez(mesh, z);
+}
+
+void
+add_box(Scene *scene, double x, double y, double z, double width,
+             double height, double depth) {
+  Mesh m1 = scene->meshes[scene->len];
+  add_vertex(&m1, width, height, depth);
+  add_vertex(&m1, -width, height, depth);
+  add_vertex(&m1, -width, height, -depth);
+  add_vertex(&m1, width, height, -depth);
+  add_vertex(&m1, width, -height, depth);
+  add_vertex(&m1, -width, -height, depth);
+  add_vertex(&m1, -width, -height, -depth);
+  add_vertex(&m1, width, -height, -depth);
+  add_edge(&m1, 0, 1);
+  add_edge(&m1, 1, 2);
+  add_edge(&m1, 2, 3);
+  add_edge(&m1, 3, 0);
+  add_edge(&m1, 4, 5);
+  add_edge(&m1, 5, 6);
+  add_edge(&m1, 6, 7);
+  add_edge(&m1, 7, 4);
+  add_edge(&m1, 0, 4);
+  add_edge(&m1, 1, 5);
+  add_edge(&m1, 2, 6);
+  add_edge(&m1, 3, 7);
+  m1.position.x = x;
+  m1.position.y = y;
+  m1.position.z = z;
+  set_mesh(scene, m1);
+}
+
+/* Draw */
+
+void
+lineb(Image *dst, Point p0, Point p1, Image *src, Point sp) {
+  double dx = abs(p1.x - p0.x), sx = p0.x < p1.x ? 1 : -1;
+  double dy = -abs(p1.y - p0.y), sy = p0.y < p1.y ? 1 : -1;
+  double err = dx + dy, e2;
+  for (;;) {
+    draw(dst, Rect(p0.x, p0.y, p0.x + 1, p0.y + 1), src, nil, ZP);
+    if (p0.x == p1.x && p0.y == p1.y)
+      break;
+    e2 = 2 * err;
+    if (e2 >= dy) {
+      err += dy;
+      p0.x += sx;
+    }
+    if (e2 <= dx) {
+      err += dx;
+      p0.y += sy;
+    }
+  }
+}
+
+Point
+projectiso(Vertex v) {
+  double zoom = 5;
+  return Pt(center.x + zoom * v.x, center.y + zoom * v.y);
+}
+
+Point
+project(Vertex v) {
+  double r = 300 / (v.z + 50);
+  return Pt(center.x + r * v.x, center.y + r * v.y);
+}
+
+void
+render(Scene scene, double pitch, double yaw, double roll) {
+  /* Each mesh */
+  for (int i = 0; i < scene.len; i++) {
+    Mesh mesh = scene.meshes[i];
+    /* Each edge */
+    for (int j = 0; j < mesh.edges_len; j++) {
+      Edge *edge = &mesh.edges[j];
+      Vertex a = vertexadd(&mesh.vertices[edge->a], &mesh.position);
+      Vertex b = vertexadd(&mesh.vertices[edge->b], &mesh.position);
+      rotver(&scene.origin, &a, pitch, yaw, roll);
+      rotver(&scene.origin, &b, pitch, yaw, roll);
+      lineb(screen, project(a), project(b), display->black, screen->r.min);
+    }
+  }
+  /* Axis*/
+  Vertex c = Ver(0, 0, 0);
+  Vertex x = Ver(5, 0, 0);
+  Vertex y = Ver(0, 5, 0);
+  Vertex z = Ver(0, 0, 5);
+  rotver(&scene.origin, &x, pitch, yaw, roll);
+  rotver(&scene.origin, &y, pitch, yaw, roll);
+  rotver(&scene.origin, &z, pitch, yaw, roll);
+  lineb(screen, project(c), project(x), clrx, screen->r.min);
+  lineb(screen, project(c), project(y), clry, screen->r.min);
+  lineb(screen, project(c), project(z), clrz, screen->r.min);
+}
+
+void
+eresized(int new) {
+  if (new &&getwindow(display, Refnone) < 0)
+    fprint(2, "can't reattach to window");
+  draw(screen, screen->r, display->white, nil, ZP);
+}
+
+void
+main(int argc, char **argv) {
+  Mouse m;
+
+  initdraw(0, 0, "Moogle");
+  eresized(0);
+  einit(Emouse);
+
+  center.x = screen->r.min.x + (screen->r.max.x - screen->r.min.x) / 2;
+  center.y = screen->r.min.y + (screen->r.max.y - screen->r.min.y) / 2;
+  clrx = allocimage(display, Rect(0, 0, 1, 1), screen->chan, 1, 0x72DEC2FF);
+  clry = allocimage(display, Rect(0, 0, 1, 1), screen->chan, 1, 0xFF0000FF);
+  clrz = allocimage(display, Rect(0, 0, 1, 1), screen->chan, 1, 0xAAAAAAFF);
+
+  Scene s1 = Sc(0, 0, 0);
+  add_box(&s1, 0, 0, 0, 10, 10, 10);
+  add_box(&s1, 20, 0, 0, 10, 10, 10);
+  add_box(&s1, 40, 0, 0, 10, 10, 10);
+  add_box(&s1, 60, 0, 0, 10, 10, 10);
+  render(s1, 35, 35, 35);
+
+  /* Break on mouse3 */
+  for (;;) {
+    m = emouse();
+    if (m.buttons & 4)
+      break;
+  }
+}
+
+</pre>
