@@ -1,7 +1,4 @@
-typedef enum {
-  false,
-  true
-} bool;
+typedef enum { false, true } bool;
 
 bool is_char_alphanum(char ch) {
   int is_num = ch >= '0' && ch <= '9';
