@@ -5,6 +5,8 @@
 #include &lt;event.h&gt;
 #include &lt;thread.h&gt;
 
+/* 5c moogle.c && 5l -o moogle moogle.5 */
+
 Point center;
 Image *clrx, *clry, *clrz;
 
@@ -17,7 +19,7 @@ typedef struct {
 	double x;
 	double y;
 	double z;
-} Vertex;
+} Point3d;
 
 typedef struct {
 	int a;
@@ -25,16 +27,16 @@ typedef struct {
 } Edge;
 
 typedef struct {
-	Vertex position;
-	Vertex vertices[20];
+	Point3d position;
+	Point3d vertices[20];
 	int vertices_len;
 	Edge edges[20];
 	int edges_len;
 } Mesh;
 
 typedef struct {
-	Vertex origin;
-	Mesh meshes[20];
+	Point3d origin;
+	Mesh meshes[100];
 	int len;
 } Scene;
 
@@ -45,22 +47,22 @@ Pt2d(double x, double y) {
 	return (Point2d){x, y};
 }
 
-Vertex 
-Ver(double x, double y, double z) { 
-	return (Vertex){x, y, z}; 
+Point3d 
+Pt3d(double x, double y, double z) { 
+	return (Point3d){x, y, z}; 
 }
 
 Scene 
 Sc(double x, double y, double z) {
 	Scene s;
-	s.origin = Ver(x, y, z);
+	s.origin = Pt3d(x, y, z);
 	s.len = 0;
 	return s;
 }
 
-Vertex 
-vertexadd(Vertex *a, Vertex *b) {
-	return Ver(a->x + b->x, a->y + b->y, a->z + b->z);
+Point3d 
+pt3dadd(Point3d *a, Point3d *b) {
+	return Pt3d(a->x + b->x, a->y + b->y, a->z + b->z);
 }
 
 /* geometry */
@@ -103,12 +105,7 @@ rotpt(Point2d center, Point2d p0, double deg) {
 /* scene */
 
 void
-print_vertex(Vertex *vertex) {
-	print("[%d,%d,%d]\n", vertex->x, vertex->y, vertex->z);
-}
-
-void
-set_vertex(Vertex *vertex, double x, double y, double z) {
+set_vertex(Point3d *vertex, double x, double y, double z) {
 	vertex->x = x;
 	vertex->y = y;
 	vertex->z = z;
@@ -139,28 +136,28 @@ set_mesh(Scene *scene, Mesh mesh) {
 }
 
 void
-rotverx(Vertex *o, Vertex *v, double angle) {
+rotverx(Point3d *o, Point3d *v, double angle) {
 	Point2d r = rotpt(Pt2d(o->y, o->z), Pt2d(v->y, v->z), angle);
 	v->y = r.x;
 	v->z = r.y;
 }
 
 void 
-rotvery(Vertex *o, Vertex *v, double angle) {
+rotvery(Point3d *o, Point3d *v, double angle) {
 	Point2d r = rotpt(Pt2d(o->x, o->z), Pt2d(v->x, v->z), angle);
 	v->x = r.x;
 	v->z = r.y;
 }
 
 void
-rotverz(Vertex *o, Vertex *v, double angle) {
+rotverz(Point3d *o, Point3d *v, double angle) {
 	Point2d r = rotpt(Pt2d(o->x, o->y), Pt2d(v->x, v->y), angle);
 	v->x = r.x;
 	v->y = r.y;
 }
 
 void
-rotver(Vertex *o, Vertex *v, double pitch, double yaw, double roll) {
+rotver(Point3d *o, Point3d *v, double pitch, double yaw, double roll) {
 	rotverx(o, v, pitch);
 	rotvery(o, v, yaw);
 	rotverz(o, v, roll);
@@ -194,6 +191,22 @@ rotate(Mesh *mesh, double x, double y, double z) {
 	rotatez(mesh, z);
 }
 
+/* Primitives */
+
+void
+add_circle(Scene *scene, double x, double y, double z, double radius, int segments)
+{
+	Mesh m1 = scene->meshes[scene->len];
+	for(int i = 0; i < segments; i++){
+		add_vertex(&m1, 
+			x+radius*cos(2*PI*i/segments), y, 
+			z+radius*sin(2*PI*i/segments));
+		add_edge(&m1, i, (i+1)%segments);
+	}
+	m1.position = Pt3d(x,y,z);
+	set_mesh(scene, m1);
+}
+
 void
 add_box(Scene *scene, double x, double y, double z, double width,
 						 double height, double depth) {
@@ -218,9 +231,7 @@ add_box(Scene *scene, double x, double y, double z, double width,
 	add_edge(&m1, 1, 5);
 	add_edge(&m1, 2, 6);
 	add_edge(&m1, 3, 7);
-	m1.position.x = x;
-	m1.position.y = y;
-	m1.position.z = z;
+	m1.position = Pt3d(x,y,z);
 	set_mesh(scene, m1);
 }
 
@@ -248,41 +259,51 @@ lineb(Image *dst, Point p0, Point p1, Image *src, Point sp) {
 }
 
 Point
-projectiso(Vertex v) {
+projectiso(Point3d v) {
 	double zoom = 5;
 	return Pt(center.x + zoom * v.x, center.y + zoom * v.y);
 }
 
 Point
-project(Vertex v) {
+project(Point3d v) {
 	double r = 300 / (v.z + 50);
 	return Pt(center.x + r * v.x, center.y + r * v.y);
 }
 
 void
 widget(Scene scene, double pitch, double yaw, double roll) {
-	Vertex c = Ver(0, 0, 0);
-	Vertex x = Ver(5, 0, 0);
-	Vertex y = Ver(0, 5, 0);
-	Vertex z = Ver(0, 0, 5);
+	Point3d c = Pt3d(0, 0, 0);
+	Point3d x = Pt3d(5, 0, 0);
+	Point3d y = Pt3d(0, 5, 0);
+	Point3d z = Pt3d(0, 0, 5);
 	rotver(&scene.origin, &x, pitch, yaw, roll);
 	rotver(&scene.origin, &y, pitch, yaw, roll);
 	rotver(&scene.origin, &z, pitch, yaw, roll);
 	lineb(screen, project(c), project(x), clrx, screen->r.min);
 	lineb(screen, project(c), project(y), clry, screen->r.min);
 	lineb(screen, project(c), project(z), clrz, screen->r.min);
+	string(screen, 
+		addpt(screen->r.min, Pt(10,10)), 
+		display->black, ZP, display->defaultfont, "perspective");
+	string(screen, 
+		addpt(screen->r.min, Pt(10,25)), 
+		clrx, ZP, display->defaultfont, "x");
+	string(screen, 
+		addpt(screen->r.min, Pt(20,25)), 
+		clry, ZP, display->defaultfont, "y");
+	string(screen, 
+		addpt(screen->r.min, Pt(30,25)), 
+		clrz, ZP, display->defaultfont, "z");
 }
 
 void
 render(Scene scene, double pitch, double yaw, double roll) {
-	/* Each mesh */
 	for (int i = 0; i < scene.len; i++) {
 		Mesh mesh = scene.meshes[i];
-		/* Each edge */
 		for (int j = 0; j < mesh.edges_len; j++) {
 			Edge *edge = &mesh.edges[j];
-			Vertex a = vertexadd(&mesh.vertices[edge->a], &mesh.position);
-			Vertex b = vertexadd(&mesh.vertices[edge->b], &mesh.position);
+			Point3d a = pt3dadd(&mesh.vertices[edge->a], &mesh.position);
+			Point3d b = pt3dadd(&mesh.vertices[edge->b], &mesh.position);
 			rotver(&scene.origin, &a, pitch, yaw, roll);
 			rotver(&scene.origin, &b, pitch, yaw, roll);
 			lineb(screen, project(a), project(b), display->black, screen->r.min);
@@ -313,11 +334,9 @@ main(int argc, char **argv) {
 	clrz = allocimage(display, Rect(0, 0, 1, 1), screen->chan, 1, 0xAAAAAAFF);
 
 	Scene s1 = Sc(0, 0, 0);
+	add_circle(&s1, 0, 0, 0, 10, 20);
 	add_box(&s1, 0, 0, 0, 10, 10, 10);
-	add_box(&s1, 20, 0, 0, 10, 10, 10);
-	add_box(&s1, 40, 0, 0, 10, 10, 10);
-	add_box(&s1, 60, 0, 0, 10, 10, 10);
-	render(s1, 35, 35, 35);
+	render(s1, 35, 25, 15);
 
 	/* Break on mouse3 */
 	for (;;) {
