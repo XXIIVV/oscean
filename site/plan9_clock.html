@@ -1,4 +1,21 @@
-<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='description' content='Updated the look of the plan9 clock.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV — plan9 clock</title></head><body><header><a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV'></a></header><nav><ul><li><a href='plan9.html'>plan9/</a></li><li><a href='linux.html'>linux</a></li><li><a href='ansi_c.html'>ansi c</a></li></ul><ul><li><a href='rio.html'>rio</a></li><li><a href='acme.html'>acme</a></li><li><a href='plan9_c.html'>plan9 c</a></li><li><a href='plan9_clock.html'>plan9 clock/</a></li></ul><ul></ul></nav><main><figure><img src='../media/diary/723.jpg' alt='Not into babyblue picture'/><figcaption>20P06 — Not into babyblue</figcaption></figure><h2>Updated the look of the plan9 clock.</h2><p>I wasn't <i>really</i> into the whole baby blue clock, also in it not displaying seconds, so I've fixed it up a bit. It now displays each second on the clockface, and use hairline thin lines drawn through the Bresenham algorithm.</p><pre>
+<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='description' content='Updated the look of the plan9 clock.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV — plan9 clock</title></head><body><header><a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV'></a></header><nav><ul><li><a href='plan9.html'>plan9/</a></li><li><a href='linux.html'>linux</a></li><li><a href='ansi_c.html'>ansi c</a></li></ul><ul><li><a href='rio.html'>rio</a></li><li><a href='acme.html'>acme</a></li><li><a href='plan9_c.html'>plan9 c</a></li><li><a href='plan9_clock.html'>plan9 clock/</a></li></ul><ul></ul></nav><main><figure><img src='../media/diary/723.jpg' alt='Not into babyblue picture'/><figcaption>20P06 — Not into babyblue</figcaption></figure><h2>Updated the look of the plan9 clock.</h2><p>I wasn't <i>really</i> into the whole baby blue clock, also in it not displaying seconds, so I've fixed it up a bit. It now displays each second on the clockface, and use hairline thin lines drawn through the Bresenham algorithm.</p><h3>Installation</h3>
+
+<p>Compile this source with the compiler for your platform, if you are using an ARM device:</p>
+
+<pre>5c clock.c && 5l -o clock clock.c</pre>
+
+<p>If you want to install globally, copy the source into <code>/sys/src/cmd/clock.c</code> and type <code>mk install</code> inside of <code>/sys/src/cmd</code>, to recompile all the applications found in the cmd directory.</p>
+
+<pre>
+acme /sys/src/cmd/clock.c
+cd /sys/src/cmd
+mk install
+mk clean
+</pre>
+
+<h3>Source</h3>
+
+<pre>
 #include &lt;u.h&gt;
 #include &lt;libc.h&gt;
 #include &lt;draw.h&gt;
@@ -44,37 +61,69 @@ redraw(Image *screen)
 	static Point c;
 	static int rad;
 	static Image *im;
-	int i;
-	int anghr, angmin, angsec, angsecrev;
-	static Tm tms;
-	static Tm ntms;
 
-	ntm = time(0);
-	if(ntm == tm && eqrect(screen->r, r))
-		return;
+Image *secclr;
 
-	ntms = *localtime(ntm);
-	anghr = 90-(ntms.hour*5 + ntms.min/12)*6;
-	angmin = 90-ntms.min*6;
-	angsec = 90-ntms.sec*6;
-	angsecrev = 270-ntms.sec*6;
+Point
+circlept(Point c, int r, int degrees)
+{
+	double rad = (double) degrees * PI/180.0;
 
-	tm = ntm;
-	tms = ntms;
-	r = screen->r;
-	c = divpt(addpt(r.min, r.max), 2);
-	rad = Dx(r) < Dy(r) ? Dx(r) : Dy(r);
-	rad /= 2;
-	rad -= 20;
+	c.x += cos(rad)*r;
+	c.y -= sin(rad)*r;
+	return c;
+}
+
+void 
+lineb(Image *dst, Point p0, Point p1, Image *src, Point sp) 
+{
+	int dx = abs(p1.x - p0.x), sx = p0.x < p1.x ? 1 : -1;
+	int dy = -abs(p1.y - p0.y), sy = p0.y < p1.y ? 1 : -1;
+	int err = dx + dy, e2;
+
+	for(;;){
+		draw(screen, Rect(p0.x, p0.y, p0.x+1,p0.y+1), src, nil, ZP);
+		if(p0.x == p1.x && p0.y == p1.y) break;
+		e2 = 2 * err;
+		if(e2 >= dy) { err += dy; p0.x += sx; }
+		if(e2 <= dx) { err += dx; p0.y += sy; }
+	}
+}
+
+void
+redrawface(Image *screen)
+{
+	Rectangle r = screen->r;
+	Point c = divpt(addpt(r.min, r.max), 2);
+	int rad = ((Dx(r) < Dy(r) ? Dx(r) : Dy(r))/2)-20;
 
 	draw(screen, screen->r, display->black, nil, ZP);
-	for(i=0; i<60; i++){
-		lineb(screen, circlept(c, (i+5) % 5 == 0 ? rad*0.85 : rad*0.9, i*(360/60)), circlept(c, rad, i*(360/60)), display->white, ZP);
+	for(int i=0; i<60; i++){
+		int len = i % 15 == 0 ? rad *0.8 : i % 5 == 0 ? rad *0.85 : rad*0.9;
+		lineb(screen, 
+			circlept(c, len, i*6), 
+			circlept(c, rad, i*6), 
+			display->white, ZP);
 	}
-	
+}
+
+void
+redrawtime(Image *screen)
+{
+	Tm tms = *localtime(time(0));
+	int anghr = 90-(tms.hour*5 + tms.min/12)*6;
+	int angmin = 90-tms.min*6;
+	int angsec = 90-tms.sec*6;
+	int angsecrev = 270-tms.sec*6;
+	Rectangle r = screen->r;
+	Point c = divpt(addpt(r.min, r.max), 2);
+	int rad = ((Dx(r) < Dy(r) ? Dx(r) : Dy(r))/2)-20;
+	int limit = (rad*4)/5;
+
+	fillellipse(screen, c, limit, limit, display->black, ZP);
 	lineb(screen, c, circlept(c, (rad*3)/4, angmin), display->white, ZP);
 	lineb(screen, c, circlept(c, rad/2, anghr), display->white, ZP);
-	lineb(screen, c, circlept(c, (rad*4)/5, angsec), secclr, ZP);
+	lineb(screen, c, circlept(c, limit-1, angsec), secclr, ZP);
 	lineb(screen, c, circlept(c, (rad)/5, angsecrev), secclr, ZP);
 	fillellipse(screen, c, 2, 2, secclr, ZP);
 	flushimage(display, 1);
@@ -85,7 +134,8 @@ eresized(int new)
 {
 	if(new && getwindow(display, Refnone) < 0)
 		fprint(2,"can't reattach to window");
-	redraw(screen);
+	redrawface(screen);
+	redrawtime(screen);
 }
 
 void
@@ -95,21 +145,21 @@ main(int, char**)
 	Mouse m;
 	Menu menu;
 	char *mstr[] = {"exit", 0};
-	int key, timer;
-	int t;
+	int key, timer, t;
 
 	if (initdraw(0, 0, "clock") < 0)
 		sysfatal("initdraw failed");
 
 	secclr = allocimagemix(display, DRed, DRed);
-	redraw(screen);
 
+	eresized(0);
 	einit(Emouse);
+
 	t = 1000;
 	timer = etimer(0, t);
-
 	menu.item = mstr;
 	menu.lasthit = 0;
+
 	for(;;) {
 		key = event(&e);
 		if(key == Emouse) {
@@ -119,8 +169,9 @@ main(int, char**)
 					exits(0);
 			}
 		} else if(key == timer) {
-			redraw(screen);
+			redrawtime(screen);
 		}
 	}	
 }
-</pre><p>Found a mistake? Submit an <a href='https://github.com/XXIIVV/Oscean/edit/master/src/inc/plan9 clock.htm'  target='_blank'>edit</a> to plan9 clock.</p><p><i>incoming(1)</i>: <a href='plan9_c.html'>plan9 c</a> </p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
+</pre>
+<p>Found a mistake? Submit an <a href='https://github.com/XXIIVV/Oscean/edit/master/src/inc/plan9 clock.htm'  target='_blank'>edit</a> to plan9 clock.</p><p><i>incoming(1)</i>: <a href='plan9_c.html'>plan9 c</a> </p><p><i>Last update on <a href='tracker.html'>20P14</a>, edited 2 times. +9/13fh</i><code style='float:right; font-size:80%'>○○○○○●</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
