@@ -22,6 +22,7 @@ mk clean
 #include &lt;event.h&gt;
 
 Image *secclr;
+int pad = 20;
 
 Point
 circlept(Point c, int r, int degrees)
@@ -54,16 +55,32 @@ redrawface(Image *screen)
 {
 	Rectangle r = screen->r;
 	Point c = divpt(addpt(r.min, r.max), 2);
-	int rad = ((Dx(r) < Dy(r) ? Dx(r) : Dy(r))/2)-20;
+	int rad = ((Dx(r) < Dy(r) ? Dx(r) : Dy(r))/2)-pad;
 
 	draw(screen, screen->r, display->black, nil, ZP);
 	for(int i=0; i<60; i++){
-		int len = i % 15 == 0 ? rad *0.8 : i % 5 == 0 ? rad *0.85 : rad*0.9;
+		int len = i % 15 == 0 ? rad-pad : i % 5 == 0 ? rad-pad/2 : rad-pad/3;
 		lineb(screen, 
 			circlept(c, len, i*6), 
 			circlept(c, rad, i*6), 
 			display->white, ZP);
 	}
+}
+
+void
+redrawdial(Image *screen, Tm tms)
+{
+	char dial[9];
+	Rectangle r = screen->r;
+	Point o = addpt(r.min, Pt(pad, pad));
+	static Point dials;
+	static Rectangle dialr;
+
+	sprint(dial, "%02d:%02d:%02d", tms.hour, tms.min, tms.sec);
+	dials = stringsize(display->defaultfont, dial);
+	dialr = (Rectangle){o, addpt(o, dials)};
+	draw(screen, dialr, display->black, nil, ZP);
+	string(screen, o, display->white, ZP, display->defaultfont, dial);
 }
 
 void
@@ -76,15 +93,15 @@ redrawtime(Image *screen)
 	int angsecrev = 270-tms.sec*6;
 	Rectangle r = screen->r;
 	Point c = divpt(addpt(r.min, r.max), 2);
-	int rad = ((Dx(r) < Dy(r) ? Dx(r) : Dy(r))/2)-20;
-	int limit = (rad*4)/5;
+	int rad = ((Dx(r) < Dy(r) ? Dx(r) : Dy(r))/2)-pad;
 
-	fillellipse(screen, c, limit, limit, display->black, ZP);
-	lineb(screen, c, circlept(c, (rad*3)/4, angmin), display->white, ZP);
-	lineb(screen, c, circlept(c, rad/2, anghr), display->white, ZP);
-	lineb(screen, c, circlept(c, limit-1, angsec), secclr, ZP);
-	lineb(screen, c, circlept(c, (rad)/5, angsecrev), secclr, ZP);
+	fillellipse(screen, c, rad-pad, rad-pad, display->black, ZP);
+	lineb(screen, c, circlept(c, rad-pad*3, anghr), display->white, ZP);
+	lineb(screen, c, circlept(c, rad-pad*2, angmin), display->white, ZP);
+	lineb(screen, c, circlept(c, rad-pad-1, angsec), secclr, ZP);
+	lineb(screen, c, circlept(c, pad, angsecrev), secclr, ZP);
 	fillellipse(screen, c, 2, 2, secclr, ZP);
+	redrawdial(screen, tms);
 	flushimage(display, 1);
 }
 
@@ -104,7 +121,7 @@ main(int, char**)
 	Mouse m;
 	Menu menu;
 	char *mstr[] = {"exit", 0};
-	int key, timer, t;
+	int key, timer, t = 1000;
 
 	if (initdraw(0, 0, "clock") < 0)
 		sysfatal("initdraw failed");
@@ -113,8 +130,6 @@ main(int, char**)
 
 	eresized(0);
 	einit(Emouse);
-
-	t = 1000;
 	timer = etimer(0, t);
 	menu.item = mstr;
 	menu.lasthit = 0;
