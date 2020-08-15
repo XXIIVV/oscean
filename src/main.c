@@ -602,7 +602,7 @@ void build_special_now(FILE *f, Term *term, Journal *journal) {
   fprintf(
       f,
       "<p>Distribution of <b>%.0f hours over %d projects</b>, a change of %.0f "
-      "hours and %d projects since the prevratioious period of %d days.</p>",
+      "hours and %d projects since the previous period of %d days.</p>",
       sum_value, projects_len, sum_value - past_sum_value,
       projects_len - past_len, LOGS_RANGE);
 
