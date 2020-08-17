@@ -71,16 +71,20 @@ void
 redrawdial(Image *screen, Tm tms)
 {
 	Rectangle r = screen->r;
+	int width = (r.max.x - r.min.x) - 2 * pad;
+	int height = (r.max.y - r.min.y) - 2 * pad;
 	Point o = addpt(r.min, Pt(pad, pad));
 	char dial[9];
 	static Point dials;
 	static Rectangle dialr;
-
-	sprint(dial, "%02d:%02d:%02d", tms.hour, tms.min, tms.sec);
-	dials = stringsize(display->defaultfont, dial);
-	dialr = (Rectangle){o, addpt(o, dials)};
-	draw(screen, dialr, display->black, nil, ZP);
-	string(screen, o, display->white, ZP, display->defaultfont, dial);
+	
+	if (height > width + 2 * pad) {
+		sprint(dial, "%02d:%02d:%02d", tms.hour, tms.min, tms.sec);
+		dials = stringsize(display->defaultfont, dial);
+		dialr = (Rectangle){o, addpt(o, dials)};
+		draw(screen, dialr, display->black, nil, ZP);
+		string(screen, o, display->white, ZP, display->defaultfont, dial);
+	}
 }
 
 void

@@ -1,0 +1,401 @@
+<h3>Installation</h3>
+
+<p>Compile this source with the compiler for your platform, if you are using an ARM device:</p>
+
+<pre>5c color.c && 5l -o color color.c</pre>
+
+<p>Color is probably not a great name, so feel free to call it something else.</p>
+
+<h3>Source</h3>
+
+<pre>
+#include &lt;u.h&gt;
+#include &lt;libc.h&gt;
+#include &lt;draw.h&gt;
+#include &lt;event.h&gt;
+
+/* Conversion */
+
+typedef struct RgbColor {
+	unsigned char r;
+	unsigned char g;
+	unsigned char b;
+}
+RgbColor;
+
+typedef struct HsvColor {
+	unsigned char h;
+	unsigned char s;
+	unsigned char v;
+}
+HsvColor;
+
+static HsvColor selection;
+
+double
+ptangle(Point a, Point b) 
+{
+	return atan2(b.y - a.y, b.x - a.x);
+}
+
+double
+ptdistance(Point a, Point b) 
+{
+	int x = a.x - b.x;
+	int y = a.y - b.y;
+
+	return sqrt(x * x + y * y);
+}
+
+Point
+circlept(Point c, int r, int degrees) 
+{
+	double rad = (double) degrees * PI / 180.0;
+
+	c.x += cos(rad) * r;
+	c.y -= sin(rad) * r;
+	return c;
+}
+
+Point
+getcenter(Rectangle r) 
+{
+	return divpt(addpt(r.min, r.max), 2);
+}
+
+int
+within(Point p, Rectangle r) 
+{
+	return p.x > r.min.x && p.x < r.max.x && p.y > r.min.y && p.y < r.max.y;
+}
+
+RgbColor
+hsv2rgb(HsvColor hsv) 
+{
+	RgbColor rgb;
+	unsigned char region, remainder, p, q, t;
+
+	if (hsv.s == 0) {
+		rgb.r = hsv.v;
+		rgb.g = hsv.v;
+		rgb.b = hsv.v;
+		return rgb;
+	}
+	region = hsv.h / 43;
+	remainder = (hsv.h - (region * 43)) * 6;
+	p = (hsv.v * (255 - hsv.s)) >> 8;
+	q = (hsv.v * (255 - ((hsv.s * remainder) >> 8))) >> 8;
+	t = (hsv.v * (255 - ((hsv.s * (255 - remainder)) >> 8))) >> 8;
+	switch (region) {
+	case 0:
+		rgb.r = hsv.v;
+		rgb.g = t;
+		rgb.b = p;
+		break;
+	case 1:
+		rgb.r = q;
+		rgb.g = hsv.v;
+		rgb.b = p;
+		break;
+	case 2:
+		rgb.r = p;
+		rgb.g = hsv.v;
+		rgb.b = t;
+		break;
+	case 3:
+		rgb.r = p;
+		rgb.g = q;
+		rgb.b = hsv.v;
+		break;
+	case 4:
+		rgb.r = t;
+		rgb.g = p;
+		rgb.b = hsv.v;
+		break;
+	default:
+		rgb.r = hsv.v;
+		rgb.g = p;
+		rgb.b = q;
+		break;
+	}
+	return rgb;
+}
+
+HsvColor
+rgb2hsv(RgbColor rgb) 
+{
+	HsvColor hsv;
+	unsigned char rgbMin, rgbMax;
+
+	rgbMin = rgb.r < rgb.g ? (rgb.r < rgb.b ? rgb.r : rgb.b) : (rgb.g < rgb.b ? rgb.g : rgb.b);
+	rgbMax = rgb.r > rgb.g ? (rgb.r > rgb.b ? rgb.r : rgb.b) : (rgb.g > rgb.b ? rgb.g : rgb.b);
+	hsv.v = rgbMax;
+	if (hsv.v == 0) {
+		hsv.h = 0;
+		hsv.s = 0;
+		return hsv;
+	}
+	hsv.s = 255 * (double)(rgbMax - rgbMin) / hsv.v;
+	if (hsv.s == 0) {
+		hsv.h = 0;
+		return hsv;
+	}
+	if (rgbMax == rgb.r)
+		hsv.h = 0 + 43 * (rgb.g - rgb.b) / (rgbMax - rgbMin);
+	else if (rgbMax == rgb.g)
+		hsv.h = 85 + 43 * (rgb.b - rgb.r) / (rgbMax - rgbMin);
+	else
+		hsv.h = 171 + 43 * (rgb.r - rgb.g) / (rgbMax - rgbMin);
+	return hsv;
+}
+
+unsigned int
+rgb2hex(RgbColor clr) 
+{
+	return ((clr.r & 0xFF) << 24) + ((clr.g & 0xFF) << 16) + ((clr.b & 0xFF) << 8) + (255 & 0xFF);
+}
+
+unsigned int
+hsv2hex(HsvColor hsvclr) 
+{
+	return rgb2hex(hsv2rgb(hsvclr));
+}
+
+/* Defaults */
+
+void lineb(Image * dst, Point p0, Point p1, Image * src, Point sp) 
+{
+	int dx = abs(p1.x - p0.x), sx = p0.x < p1.x ? 1 : -1;
+	int dy = -abs(p1.y - p0.y), sy = p0.y < p1.y ? 1 : -1;
+	int err = dx + dy, e2;
+
+	for (;;) {
+		draw(dst, Rect(p0.x, p0.y, p0.x + 1, p0.y + 1), src, nil, sp);
+		if (p0.x == p1.x && p0.y == p1.y) break;
+		e2 = 2 * err;
+		if (e2 >= dy) {
+			err += dy;
+			p0.x += sx;
+		}
+		if (e2 <= dx) {
+			err += dx;
+			p0.y += sy;
+		}
+	}
+}
+
+unsigned int
+gradeint(int a, int b, double ratio) 
+{
+	return (a * ratio) + (b * (1 - ratio));
+}
+
+Point
+gradept(Point a, Point b, double ratio) 
+{
+	return Pt(
+		gradeint(a.x, b.x, ratio), 
+		gradeint(a.y, b.y, ratio));
+}
+
+unsigned int
+gradecolor(HsvColor a, HsvColor b, double ratio) 
+{
+	HsvColor clr = (HsvColor) {
+		gradeint(a.h, b.h, ratio),
+			gradeint(a.s, b.s, ratio),
+			gradeint(a.v, b.v, ratio)
+	};
+
+	return hsv2hex(clr);
+}
+
+void
+gradeline(Image * dst, Point p0, Point p1, HsvColor clr0, HsvColor clr1, int segs, Point sp) 
+{
+	for (int i = 0; i < segs; i++) {
+		double ratio = (double) i / segs;
+		Image * clrimg = allocimage(display, Rect(0, 0, 1, 1), RGBA32, 1,
+			gradecolor(clr0, clr1, ratio));
+		lineb(screen,
+			gradept(p0, p1, ratio),
+			gradept(p0, p1, (double)(i + 1) / segs), clrimg, ZP);
+		freeimage(clrimg);
+	}
+}
+
+void
+redraw(void) 
+{
+	Rectangle r = screen -> r;
+	Point center = getcenter(r);
+	int pad = 20;
+	int width = (r.max.x - r.min.x) - 2 * pad;
+	int height = (r.max.y - r.min.y) - 2 * pad;
+	int radius = ((Dx(r) < Dy(r) ? Dx(r) : Dy(r)) / 2) - pad;
+
+	/* draw ring */
+	fillellipse(screen, center, radius + pad, radius + pad, display -> black, ZP);
+	for (int i = 0; i < 180; i++) {
+		Point p0 = circlept(center, radius, i * 2);
+		Point p1 = circlept(center, radius, (i + 1) * 2);
+		unsigned int angle = ptangle(center, p0) / PI / 2 * 255;
+		int hexclr = hsv2hex((HsvColor) {
+			angle,
+			255,
+			255
+		});
+		Image * imgclr = allocimage(display, Rect(0, 0, 1, 1), RGBA32, 1, hexclr);
+		lineb(screen, p0, p1, imgclr, ZP);
+		freeimage(imgclr);
+	}
+
+	/* draw selection */
+	RgbColor selrgb = hsv2rgb(selection);
+	HsvColor selhue = (HsvColor) {
+		selection.h, 255, 255
+	};
+	unsigned int selhex = rgb2hex(selrgb);
+
+	Image * selclr = allocimage(display, Rect(0, 0, 1, 1), RGBA32, 1, selhex);
+	Image * selhueclr = allocimage(display, Rect(0, 0, 1, 1), RGBA32, 1, hsv2hex(selhue));
+
+	/* draw hue */
+	double angle = (selection.h / 255.0) * -360.0;
+	Point huepos = circlept(center, radius, angle);
+	fillellipse(screen, huepos, 2, 2, selhueclr, ZP);
+
+	/* draw sat */
+	double distance = (selection.s / 255.0) * radius;
+	Point satpos = circlept(center, distance, angle);
+	ellipse(screen, center, distance, distance, 0, selclr, ZP);
+	fillellipse(screen, satpos, 2, 2, selclr, ZP);
+	gradeline(screen, huepos, satpos, selhue, selection, 8, ZP);
+
+	/* collapse if window is horizontal */
+	if (height > width + 2 * pad) {
+		Rectangle sliderect = Rect(r.min.x, r.max.y - pad * 2, r.max.x, r.max.y - pad);
+		draw(screen, sliderect, display -> black, nil, ZP);
+		gradeline(screen,
+			addpt(sliderect.min, Pt(pad, pad / 2)),
+			addpt(sliderect.max, Pt(-pad, -pad / 2)),
+			(HsvColor) {
+				selection.h, selection.s, 0
+			},
+			(HsvColor) {
+				selection.h, selection.s, 255
+			}, 16, ZP);
+		Point valpos = addpt(sliderect.min, Pt((selection.v / 255.0) * width + pad, pad / 2));
+		fillellipse(screen, valpos, 2, 2, selclr, ZP);
+	}
+
+	/* header */
+	char hexstr[16];
+	char rgbstr[12];
+	sprint(hexstr, "#%02ux%02ux%02ux",
+		(selhex >> 24) & 0xFF,
+		(selhex >> 16) & 0xFF,
+		(selhex >> 8) & 0xFF);
+	sprint(rgbstr, "%ud,%ud,%ud",
+		selrgb.r,
+		selrgb.g,
+		selrgb.b);
+	Point hexstrsize = stringsize(display -> defaultfont, hexstr);
+	Point rgbstrsize = stringsize(display -> defaultfont, rgbstr);
+
+	/* collapse if window is horizontal */
+	if (height > width + 2 * pad) {
+		Rectangle clearrect = (Rectangle) {
+			addpt(screen -> r.min, Pt(pad, pad)),
+				addpt(screen -> r.min, Pt(radius * 2 + pad, pad + rgbstrsize.y))
+		};
+		draw(screen, clearrect, display -> black, nil, ZP);
+		string(screen,
+			addpt(screen -> r.min, Pt(pad, pad)),
+			display -> white, ZP, display -> defaultfont, hexstr);
+		if (hexstrsize.x + rgbstrsize.x < width)
+			string(screen,
+				Pt(screen -> r.max.x - pad - rgbstrsize.x, screen -> r.min.y + pad),
+				selclr, ZP, display -> defaultfont, rgbstr);
+	}
+
+	/* cleanup */
+	flushimage(display, 1);
+	freeimage(selclr);
+	freeimage(selhueclr);
+}
+
+void
+touch(Point m) 
+{
+	Rectangle r = screen -> r;
+	Point center = getcenter(r);
+	int pad = 20;
+	int radius = ((Dx(r) < Dy(r) ? Dx(r) : Dy(r)) / 2) - pad;
+
+	if (ptdistance(center, m) > radius) {
+		int width = (r.max.x - r.min.x) - pad * 2;
+		Rectangle sliderect = Rect(r.min.x, r.max.y - pad * 2, r.max.x, r.max.y);
+		if (within(m, sliderect)) {
+			int touchx = m.x - screen -> r.min.x - pad;
+			double ratio = touchx / (double) width;
+			selection.v = ratio > 1 ? 255.0 : ratio < 0 ? 0 : ratio * 255.0;
+		} else {
+			double angle = ptangle(center, m);
+			selection.h = (int)(angle / PI / 2 * 255) % 255;
+		}
+	} else {
+		double distance = ptdistance(center, m);
+		selection.s = (distance / radius) * 255.0;
+	}
+	redraw();
+}
+
+void
+eresized(int new) 
+{
+	if (new && getwindow(display, Refnone) < 0)
+		fprint(2, "can't reattach to window");
+	draw(screen, screen -> r, display -> black, nil, ZP);
+	redraw();
+}
+
+void
+main(int argc, char ** argv) 
+{
+	Event e;
+	Mouse m;
+	Menu menu;
+	char * mstr[] = {"exit", 0};
+	int key;
+
+	if (initdraw(0, 0, "Color") < 0)
+		sysfatal("initdraw failed");
+
+	eresized(0);
+	einit(Emouse);
+	menu.item = mstr;
+	menu.lasthit = 0;
+	
+	/* initial color */
+	selection.h = 110;
+	selection.s = 120;
+	selection.v = 220;
+
+	redraw();
+
+	/* Break on mouse3 */
+	for (;;) {
+		key = event( & e);
+		if (key == Emouse) {
+			m = e.mouse;
+			if (m.buttons & 4) {
+				if (emenuhit(3, & m, & menu) == 0)
+					exits(0);
+			} else if (m.buttons & 1) {
+				touch(m.xy);
+			}
+		}
+	}
+}
+</pre>
