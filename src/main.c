@@ -308,9 +308,9 @@ void build_include(FILE *f, Term *term) {
   }
   fprintf(f,
           "<p>Found a mistake? Submit an <a "
-          "href='https://github.com/XXIIVV/Oscean/edit/master/src/inc/%s.htm' "
+          "href='https://github.com/XXIIVV/oscean/blob/master/src/inc/%s.htm' "
           " target='_blank'>edit</a> to %s.</p>",
-          term->name, term->name);
+          filename, term->name);
   fclose(fp);
 }
 
