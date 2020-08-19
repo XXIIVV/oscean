@@ -77,20 +77,21 @@ redraw(Image *dst)
 	lineb(view, center, circlept(center, range*0.1, angsecrev), secclr, ZP);
 	fillellipse(view, center, 2, 2, secclr, ZP);
 	
-	/* collapse when hor window */
+	/* collapse when horizontal window */
 	if (size.y > size.x + 2 * pad) {
+		/* time */
 		char timestr[9];
-		char datestr[30];
-		sprint(timestr, "%02d:%02d:%02d", tms.hour, tms.min, tms.sec);
+		snprint(timestr, sizeof(timestr), "%02d:%02d:%02d", tms.hour, tms.min, tms.sec);
 		Point timesize = stringsize(display->defaultfont, timestr);
 		Point timept = Pt(pad, pad);
 		static Rectangle dialr;
-
-		sprint(datestr, "%s", ctime(time(0)));
+		/* date */
+		char datestr[30];
+		snprint(datestr, sizeof(datestr), "%s", ctime(time(0)));
 		datestr[10] = '\0';
 		Point datesize = stringsize(display->defaultfont, datestr);
 		Point datept = Pt(size.x-datesize.x-pad, pad);
-
+		/* draw */
 		draw(view, 
 			(Rectangle){ timept, addpt(timept, Pt(size.x-pad*2, 0))}, 
 			display->black, nil, ZP);
