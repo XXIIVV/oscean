@@ -21,16 +21,13 @@ mk clean
 #include &lt;draw.h&gt;
 #include &lt;event.h&gt;
 
-Image *secclr;
-int pad = 20;
-
 Point
 circlept(Point c, int r, int degrees)
 {
-	double rad = (double) degrees * PI/180.0;
+	double rad = (double) degrees * PI / 180.0;
 
-	c.x += cos(rad)*r;
-	c.y -= sin(rad)*r;
+	c.x += cos(rad) * r;
+	c.y -= sin(rad) * r;
 	return c;
 }
 
@@ -42,7 +39,7 @@ lineb(Image *dst, Point p0, Point p1, Image *src, Point sp)
 	int err = dx + dy, e2;
 
 	for(;;){
-		draw(screen, Rect(p0.x, p0.y, p0.x+1,p0.y+1), src, nil, ZP);
+		draw(dst, Rect(p0.x, p0.y, p0.x + 1,p0.y + 1), src, nil, ZP);
 		if(p0.x == p1.x && p0.y == p1.y) break;
 		e2 = 2 * err;
 		if(e2 >= dy) { err += dy; p0.x += sx; }
@@ -51,63 +48,61 @@ lineb(Image *dst, Point p0, Point p1, Image *src, Point sp)
 }
 
 void
-redrawface(Image *screen)
+redraw(Image *dst)
 {
-	Rectangle r = screen->r;
-	Point c = divpt(addpt(r.min, r.max), 2);
-	int rad = ((Dx(r) < Dy(r) ? Dx(r) : Dy(r))/2)-pad;
+	Point size = subpt(screen->r.max, screen->r.min);
+	Point center = divpt(size, 2);
+	Rectangle frame = (Rectangle){ Pt(0,0), size};
+	int pad = 20;
+	int rad = ((size.x < size.y ? size.x : size.y)/2)-pad;
+	int range = rad-pad;
+	Image *view = allocimage(display, frame, screen->chan, 1, 0x000000FF);
+	Image *secclr = allocimagemix(display, DRed, DRed);
 
-	draw(screen, screen->r, display->black, nil, ZP);
 	for(int i=0; i<60; i++){
-		int len = i % 15 == 0 ? rad-pad : i % 5 == 0 ? rad-pad/2 : rad-pad/3;
-		lineb(screen, 
-			circlept(c, len, i*6), 
-			circlept(c, rad, i*6), 
-			display->white, ZP);
+		int len = i % 15 == 0 ? range : i % 5 == 0 ? rad-pad/2 : rad-pad/3;
+		lineb(view, circlept(center, len, i*6), circlept(center, rad, i*6), display->white, ZP);
 	}
-}
 
-void
-redrawdial(Image *screen, Tm tms)
-{
-	Rectangle r = screen->r;
-	int width = (r.max.x - r.min.x) - 2 * pad;
-	int height = (r.max.y - r.min.y) - 2 * pad;
-	Point o = addpt(r.min, Pt(pad, pad));
-	char dial[9];
-	static Point dials;
-	static Rectangle dialr;
-	
-	if (height > width + 2 * pad) {
-		sprint(dial, "%02d:%02d:%02d", tms.hour, tms.min, tms.sec);
-		dials = stringsize(display->defaultfont, dial);
-		dialr = (Rectangle){o, addpt(o, dials)};
-		draw(screen, dialr, display->black, nil, ZP);
-		string(screen, o, display->white, ZP, display->defaultfont, dial);
-	}
-}
-
-void
-redrawtime(Image *screen)
-{
 	Tm tms = *localtime(time(0));
 	int anghr = 90-(tms.hour*5 + tms.min/12)*6;
 	int angmin = 90-tms.min*6;
 	int angsec = 90-tms.sec*6;
 	int angsecrev = 270-tms.sec*6;
-	Rectangle r = screen->r;
-	Point c = divpt(addpt(r.min, r.max), 2);
-	int rad = ((Dx(r) < Dy(r) ? Dx(r) : Dy(r))/2)-pad;
-	int range = rad-pad;
 
-	fillellipse(screen, c, rad-pad, rad-pad, display->black, ZP);
-	lineb(screen, c, circlept(c, range*0.7, anghr), display->white, ZP);
-	lineb(screen, c, circlept(c, range-2, angmin), display->white, ZP);
-	lineb(screen, c, circlept(c, range-2, angsec), secclr, ZP);
-	lineb(screen, c, circlept(c, range*0.1, angsecrev), secclr, ZP);
-	fillellipse(screen, c, 2, 2, secclr, ZP);
-	redrawdial(screen, tms);
+	fillellipse(view, center, rad-pad, rad-pad, display->black, ZP);
+	lineb(view, center, circlept(center, range*0.7, anghr), display->white, ZP);
+	lineb(view, center, circlept(center, range-2, angmin), display->white, ZP);
+	lineb(view, center, circlept(center, range-2, angsec), secclr, ZP);
+	lineb(view, center, circlept(center, range*0.1, angsecrev), secclr, ZP);
+	fillellipse(view, center, 2, 2, secclr, ZP);
+	
+	/* collapse when hor window */
+	if (size.y > size.x + 2 * pad) {
+		char timestr[9];
+		char datestr[30];
+		sprint(timestr, "%02d:%02d:%02d", tms.hour, tms.min, tms.sec);
+		Point timesize = stringsize(display->defaultfont, timestr);
+		Point timept = Pt(pad, pad);
+		static Rectangle dialr;
+
+		sprint(datestr, "%s", ctime(time(0)));
+		datestr[10] = '\0';
+		Point datesize = stringsize(display->defaultfont, datestr);
+		Point datept = Pt(size.x-datesize.x-pad, pad);
+
+		draw(view, 
+			(Rectangle){ timept, addpt(timept, Pt(size.x-pad*2, 0))}, 
+			display->black, nil, ZP);
+		string(view, timept, display->white, ZP, display->defaultfont, timestr);
+		if(timesize.x+datesize.x < size.x-pad-pad)
+			string(view, datept, display->white, ZP, display->defaultfont, datestr);
+	}
+
+	draw(dst, screen->r, view, nil, ZP);
 	flushimage(display, 1);
+	freeimage(secclr);
+	freeimage(view);
 }
 
 void
@@ -115,8 +110,7 @@ eresized(int new)
 {
 	if(new && getwindow(display, Refnone) < 0)
 		fprint(2,"can't reattach to window");
-	redrawface(screen);
-	redrawtime(screen);
+	redraw(screen);
 }
 
 void
@@ -130,8 +124,6 @@ main(int, char**)
 
 	if (initdraw(0, 0, "clock") < 0)
 		sysfatal("initdraw failed");
-
-	secclr = allocimagemix(display, DRed, DRed);
 
 	eresized(0);
 	einit(Emouse);
@@ -148,7 +140,7 @@ main(int, char**)
 					exits(0);
 			}
 		} else if(key == timer) {
-			redrawtime(screen);
+			redraw(screen);
 		}
 	}	
 }
