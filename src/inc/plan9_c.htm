@@ -124,37 +124,76 @@ void main(int argc, char *argv[]) {
 #include &lt;draw.h&gt;
 #include &lt;event.h&gt;
 
-char *buttons[] = {"Option1", "Option2", "Option3", "Exit", 0};
-Menu menu = {buttons};
+char *options1[] = {"Middle Click", "", "Paste", "Snarf", "Exit", 0};
+char *options2[] = {"Right Click", "","Option3", "Option4", "Exit", 0};
+
+Menu middlemenu = {options1};
+Menu rightmenu = {options2};
 
 void 
-eresized(int new) {
+eresized(int new) 
+{
 	if (new &&getwindow(display, Refnone) < 0)
 		sysfatal("can't reattach to window");
 }
 
-void main(int argc, char *argv[]) {
+void
+dopaste(void)
+{
+	int f;
+	if((f = open("/dev/snarf", OREAD)) >= 0){
+		char body[30];
+		read(f, body, 30);
+		print("Paste: %s\n", body);
+		close(f);
+	}
+}
+
+void
+dosnarf(void)
+{
+	int f;
+	if((f = open("/dev/snarf", OWRITE)) >= 0){
+		char *body = "some text";
+		write(f, body, strlen(body));
+		print("Snarf: %s\n", body);
+		close(f);
+	}
+}
+
+void 
+main(int argc, char *argv[]) 
+{
 	USED(argc, argv);
 
 	Event ev;
 	int e;
+
 	initdraw(0,0,"Example: Menu");
 	eresized(0);
 	einit(Emouse);
-
-	/* Main loop */
+	
+	/* Main event loop */
 	for (;;) {
   		e = event(&ev);
-  		if ((e == Emouse) && (ev.mouse.buttons & 4)){
-			if(emenuhit(3, &ev.mouse, &menu) == 0)
-				print("Pressed Option 1");
-			if(emenuhit(3, &ev.mouse, &menu) == 1)
-				print("Pressed Option 2");
-			if(emenuhit(3, &ev.mouse, &menu) == 2)
-				print("Pressed Option 3");
-			if(emenuhit(3, &ev.mouse, &menu) == 3)
+		/* Middle Click */
+		if((e == Emouse) && (ev.mouse.buttons & 3)){ 
+			if(emenuhit(2, &ev.mouse, &middlemenu) == 2)
+				dopaste();	
+			if(emenuhit(2, &ev.mouse, &middlemenu) == 3)
+				dosnarf();
+			if(emenuhit(2, &ev.mouse, &middlemenu) == 4)
 				exits(nil);
-    		}
+		}
+		/* Right Click */
+		else if((e == Emouse) && (ev.mouse.buttons & 4)){
+			if(emenuhit(3, &ev.mouse, &rightmenu) == 2)
+				print("Pressed Option 3\n");
+			if(emenuhit(3, &ev.mouse, &rightmenu) == 3)
+				print("Pressed Option 4\n");
+			if(emenuhit(3, &ev.mouse, &rightmenu) == 4)
+				exits(nil);
+		}
 	}
 }
 </pre>
