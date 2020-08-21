@@ -6,10 +6,6 @@
 #include &lt;thread.h&gt;
 
 /* 5c moogle.c && 5l -o moogle moogle.5 */
-
-Point center;
-Image *clrx, *clry, *clrz;
-
 typedef struct {
 	double x;
 	double y;
@@ -28,32 +24,62 @@ typedef struct {
 
 typedef struct {
 	Point3d position;
-	Point3d vertices[20];
-	int vertices_len;
-	Edge edges[20];
-	int edges_len;
+	Point3d vertices[128];
+	int verticeslen;
+	Edge edges[128];
+	int edgeslen;
 } Mesh;
 
 typedef struct {
 	Point3d origin;
-	Mesh meshes[100];
+	Mesh meshes[128];
 	int len;
 } Scene;
+
+typedef enum {
+	ISOMETRIC,
+	PERSPECTIVE
+} Projection;
+
+typedef struct {
+	double pitch;
+	double yaw;
+	double roll;
+	Projection projection;
+} Camera;
+
+Scene scn;
+Camera cam;
+Point center;
+Image *clrx, *clry, *clrz;
 
 /* helpers */
 
 Point2d 
-Pt2d(double x, double y) {
+Pt2d(double x, double y) 
+{
 	return (Point2d){x, y};
 }
 
 Point3d 
-Pt3d(double x, double y, double z) { 
+Pt3d(double x, double y, double z) 
+{ 
 	return (Point3d){x, y, z}; 
 }
 
+Mesh
+Ms3d(double x, double y, double z)
+{
+	Mesh m;
+	m.position = Pt3d(x, y, z);
+	m.verticeslen = 0;
+	m.edgeslen = 0;
+	return m;
+}
+
 Scene 
-Sc(double x, double y, double z) {
+Sc3d(double x, double y, double z) 
+{
 	Scene s;
 	s.origin = Pt3d(x, y, z);
 	s.len = 0;
@@ -61,42 +87,55 @@ Sc(double x, double y, double z) {
 }
 
 Point3d 
-pt3dadd(Point3d *a, Point3d *b) {
+addpt3d(Point3d *a, Point3d *b) 
+{
 	return Pt3d(a->x + b->x, a->y + b->y, a->z + b->z);
+}
+
+Camera
+Cm(double pitch, double yaw, double roll) 
+{
+	return (Camera){pitch, yaw, roll, PERSPECTIVE};
 }
 
 /* geometry */
 
 double
-rad2deg(double rad) { 
+rad2deg(double rad) 
+{ 
 	return rad * (180 / PI); 
 }
 
 double
-deg2rad(double deg) { 
+deg2rad(double deg) 
+{ 
 	return deg * (PI / 180); 
 }
 
 double
-ptangledeg(Point2d a, Point2d b) {
+ptangledeg(Point2d a, Point2d b) 
+{
 	double theta = atan2(b.y - a.y, b.x - a.x);
 	return rad2deg(theta);
 }
 
 double
-ptangle(Point2d a, Point2d b) { 
+ptangle(Point2d a, Point2d b) 
+{ 
 	return atan2(b.y - a.y, b.x - a.x); 
 }
 
 double
-ptdistance(Point2d a, Point2d b) {
+ptdistance(Point2d a, Point2d b) 
+{
 	double x = a.x - b.x;
 	double y = a.y - b.y;
 	return sqrt(x * x + y * y);
 }
 
 Point2d
-rotpt(Point2d center, Point2d p0, double deg) {
+rotpt(Point2d center, Point2d p0, double deg) 
+{
 	double rot = ptangle(center, p0) + deg2rad(deg);
 	double r = ptdistance(center, p0);
 	return Pt2d(center.x + r * cos(rot), center.y + r * sin(rot));
@@ -105,140 +144,221 @@ rotpt(Point2d center, Point2d p0, double deg) {
 /* scene */
 
 void
-set_vertex(Point3d *vertex, double x, double y, double z) {
+setvertex(Point3d *vertex, double x, double y, double z) 
+{
 	vertex->x = x;
 	vertex->y = y;
 	vertex->z = z;
 }
 
 void
-add_vertex(Mesh *mesh, double x, double y, double z) {
-	set_vertex(&mesh->vertices[mesh->vertices_len], x, y, z);
-	mesh->vertices_len++;
+addvertex(Mesh *mesh, double x, double y, double z) 
+{
+	setvertex(&mesh->vertices[mesh->verticeslen], x, y, z);
+	mesh->verticeslen++;
 }
 
 void
-set_edge(Edge *edge, int v0, int v1) {
+setedge(Edge *edge, int v0, int v1) 
+{
 	edge->a = v0;
 	edge->b = v1;
 }
 
 void
-add_edge(Mesh *mesh, int v0, int v1) {
-	set_edge(&mesh->edges[mesh->edges_len], v0, v1);
-	mesh->edges_len++;
+addedge(Mesh *mesh, int v0, int v1) 
+{
+	setedge(&mesh->edges[mesh->edgeslen], v0, v1);
+	mesh->edgeslen++;
 }
 
 void
-set_mesh(Scene *scene, Mesh mesh) {
-	scene->meshes[scene->len] = mesh;
-	scene->len++;
+addmesh(Scene *scn, Mesh mesh) 
+{
+	scn->meshes[scn->len] = mesh;
+	scn->len++;
 }
 
 void
-rotverx(Point3d *o, Point3d *v, double angle) {
+rotverx(Point3d *o, Point3d *v, double angle) 
+{
 	Point2d r = rotpt(Pt2d(o->y, o->z), Pt2d(v->y, v->z), angle);
 	v->y = r.x;
 	v->z = r.y;
 }
 
 void 
-rotvery(Point3d *o, Point3d *v, double angle) {
+rotvery(Point3d *o, Point3d *v, double angle) 
+{
 	Point2d r = rotpt(Pt2d(o->x, o->z), Pt2d(v->x, v->z), angle);
 	v->x = r.x;
 	v->z = r.y;
 }
 
 void
-rotverz(Point3d *o, Point3d *v, double angle) {
+rotverz(Point3d *o, Point3d *v, double angle) 
+{
 	Point2d r = rotpt(Pt2d(o->x, o->y), Pt2d(v->x, v->y), angle);
 	v->x = r.x;
 	v->y = r.y;
 }
 
 void
-rotver(Point3d *o, Point3d *v, double pitch, double yaw, double roll) {
+rotver(Point3d *o, Point3d *v, double pitch, double yaw, double roll) 
+{
 	rotverx(o, v, pitch);
 	rotvery(o, v, yaw);
 	rotverz(o, v, roll);
 }
 
 void
-rotatex(Mesh *mesh, double angle) {
-	for (int i = 0; i < mesh->vertices_len; i++) {
+rotatex(Mesh *mesh, double angle) 
+{
+	for (int i = 0; i < mesh->verticeslen; i++) {
 		rotverx(&mesh->position, &mesh->vertices[i], angle);
 	}
 }
 
 void
-rotatey(Mesh *mesh, double angle) {
-	for (int i = 0; i < mesh->vertices_len; i++) {
+rotatey(Mesh *mesh, double angle) 
+{
+	for (int i = 0; i < mesh->verticeslen; i++) {
 		rotvery(&mesh->position, &mesh->vertices[i], angle);
 	}
 }
 
 void
-rotatez(Mesh *mesh, double angle) {
-	for (int i = 0; i < mesh->vertices_len; i++) {
+rotatez(Mesh *mesh, double angle) 
+{
+	for (int i = 0; i < mesh->verticeslen; i++) {
 		rotverz(&mesh->position, &mesh->vertices[i], angle);
 	}
 }
 
 void
-rotate(Mesh *mesh, double x, double y, double z) {
+rotate(Mesh *mesh, double x, double y, double z) 
+{
 	rotatex(mesh, x);
 	rotatey(mesh, y);
 	rotatez(mesh, z);
 }
 
-/* Primitives */
+/* Effects */
 
 void
-add_circle(Scene *scene, double x, double y, double z, double radius, int segments)
+extrude(Mesh *dst, double depth)
 {
-	Mesh m1 = scene->meshes[scene->len];
-	for(int i = 0; i < segments; i++){
-		add_vertex(&m1, 
-			x + radius * cos(2 * PI * i / segments), y, 
-			z + radius * sin(2 * PI * i / segments));
-		add_edge(&m1, i, (i + 1)%segments);
+	int vl = dst->verticeslen;
+	int el = dst->edgeslen;
+	for(int i = 0; i < vl; i++){
+		addvertex(dst, 
+			dst->vertices[i].x, 
+			dst->vertices[i].y, 
+			dst->vertices[i].z+depth);
+		addedge(dst, i, i+vl); 
 	}
-	m1.position = Pt3d(x, y, z);
-	set_mesh(scene, m1);
+	for(int i = 0; i < el; i++){
+		addedge(dst, 
+			dst->edges[i].a+vl,
+			dst->edges[i].b+vl);
+	}
 }
 
 void
-add_box(Scene *scene, double x, double y, double z, double width,
-						 double height, double depth) {
-	Mesh m1 = scene->meshes[scene->len];
-	add_vertex(&m1, width, height, depth);
-	add_vertex(&m1, -width, height, depth);
-	add_vertex(&m1, -width, height, -depth);
-	add_vertex(&m1, width, height, -depth);
-	add_vertex(&m1, width, -height, depth);
-	add_vertex(&m1, -width, -height, depth);
-	add_vertex(&m1, -width, -height, -depth);
-	add_vertex(&m1, width, -height, -depth);
-	add_edge(&m1, 0, 1);
-	add_edge(&m1, 1, 2);
-	add_edge(&m1, 2, 3);
-	add_edge(&m1, 3, 0);
-	add_edge(&m1, 4, 5);
-	add_edge(&m1, 5, 6);
-	add_edge(&m1, 6, 7);
-	add_edge(&m1, 7, 4);
-	add_edge(&m1, 0, 4);
-	add_edge(&m1, 1, 5);
-	add_edge(&m1, 2, 6);
-	add_edge(&m1, 3, 7);
-	m1.position = Pt3d(x,y,z);
-	set_mesh(scene, m1);
+symmetry(Mesh *dst, double x, double y, double z)
+{
+	int limit = dst->verticeslen;
+	for(int i = 0; i < limit; i++){
+		addvertex(dst, 
+			dst->vertices[i].x*x, 
+			dst->vertices[i].y*y, 
+			dst->vertices[i].z*z);
+	}
+	int limitb = dst->edgeslen;
+	for(int i = 0; i < limitb; i++){
+		addedge(dst, 
+			limitb+1+dst->edges[i].a,
+			limitb+1+dst->edges[i].b);
+	}
+}
+
+/* Primitives */
+
+void
+addpoly(Mesh *dst, double x, double y, double z, double radius, int segments)
+{
+	int offset = dst->verticeslen;
+	for(int i = 0; i < segments; i++){
+		addvertex(dst, 
+			x+radius*cos(2*PI*i/segments),
+			y+radius*sin(2*PI*i/segments), 
+			z);
+		addedge(dst, offset+i, offset+(i+1)%segments);
+	}
+}
+
+void
+addpath(Scene *scn, double x, double y, double z, int verticeslen, Point3d vertices, ...)
+{
+	va_list args;
+	va_start(args, verticeslen);
+	Mesh m = Ms3d(x, y, z);
+	for(int i = 0; i < verticeslen; i++){
+		Point3d v = va_arg(args, Point3d);
+		addvertex(&m, v.x, v.y, v.z);
+		if(i < verticeslen-1)
+			addedge(&m, i, i+1);
+	}
+	va_end(args);
+	addmesh(scn, m);
+}
+
+void
+addpolygon(Scene *scn, double x, double y, double z, double radius, int segments)
+{
+	Mesh dst = Ms3d(x, y, z);
+	addpoly(&dst, x, y, z, radius, segments);
+	addmesh(scn, dst);
+}
+
+void
+addpyramid(Scene *scene, double x, double y, double z, double radius, int segments, double depth)
+{
+	Mesh dst = Ms3d(x, y, z);
+	addpoly(&dst, x, y, z, radius, segments);
+	addvertex(&dst, x, y, z+depth);
+	for(int i = 0; i < segments; i++) {
+		addedge(&dst, i, segments);
+	}
+	addmesh(scene, dst);
+}
+
+void
+addfrustum(Scene *scene, double x, double y, double z, double radius, int segments, double depth, double mod)
+{
+	Mesh dst = Ms3d(x, y, z);
+	addpoly(&dst, x, y, z, radius, segments);
+	addpoly(&dst, x, y, z+depth, radius*mod, segments);
+	for(int i = 0; i < segments; i++){
+		addedge(&dst, i, segments+i);
+	}
+	addmesh(scene, dst);
+}
+
+void
+addprism(Scene *scene, double x, double y, double z, double radius, int segments, double depth)
+{
+	Mesh dst = Ms3d(x, y, z);
+	addpoly(&dst, x, y, z, radius, segments);
+	extrude(&dst, depth);
+	addmesh(scene, dst);
 }
 
 /* Draw */
 
 void
-lineb(Image *dst, Point p0, Point p1, Image *src, Point sp) {
+lineb(Image *dst, Point p0, Point p1, Image *src, Point sp) 
+{
 	double dx = abs(p1.x - p0.x), sx = p0.x < p1.x ? 1 : -1;
 	double dy = -abs(p1.y - p0.y), sy = p0.y < p1.y ? 1 : -1;
 	double err = dx + dy, e2;
@@ -259,90 +379,160 @@ lineb(Image *dst, Point p0, Point p1, Image *src, Point sp) {
 }
 
 Point
-projectiso(Point3d v) {
-	double zoom = 5;
-	return Pt(center.x + zoom * v.x, center.y + zoom * v.y);
-}
-
-Point
-project(Point3d v) {
+project(Camera *cam, Point3d v) 
+{
+	if(cam->projection == ISOMETRIC){
+		return Pt(center.x + 5 * v.x, center.y + 5 * v.y);
+	}
 	double r = 300 / (v.z + 50);
 	return Pt(center.x + r * v.x, center.y + r * v.y);
 }
 
 void
-widget(Scene scene, double pitch, double yaw, double roll) {
+widget(Scene *scn, Camera *cam) 
+{
 	Point3d c = Pt3d(0, 0, 0);
 	Point3d x = Pt3d(5, 0, 0);
 	Point3d y = Pt3d(0, 5, 0);
 	Point3d z = Pt3d(0, 0, 5);
-	rotver(&scene.origin, &x, pitch, yaw, roll);
-	rotver(&scene.origin, &y, pitch, yaw, roll);
-	rotver(&scene.origin, &z, pitch, yaw, roll);
-	lineb(screen, project(c), project(x), clrx, screen->r.min);
-	lineb(screen, project(c), project(y), clry, screen->r.min);
-	lineb(screen, project(c), project(z), clrz, screen->r.min);
+	rotver(&scn->origin, &x, cam->pitch, cam->yaw, cam->roll);
+	rotver(&scn->origin, &y, cam->pitch, cam->yaw, cam->roll);
+	rotver(&scn->origin, &z, cam->pitch, cam->yaw, cam->roll);
+	lineb(screen, project(cam, c), project(cam, x), clrx, screen->r.min);
+	lineb(screen, project(cam, c), project(cam, y), clry, screen->r.min);
+	lineb(screen, project(cam, c), project(cam, z), clrz, screen->r.min);
 	string(screen, 
 		addpt(screen->r.min, Pt(10,10)), 
-		display->black, ZP, display->defaultfont, "perspective");
+		display->black, ZP, display->defaultfont, 
+		cam->projection == ISOMETRIC ? "isometric" : "perspective");
+
+	char bufx[30], bufy[30], bufz[30];
+	snprint(bufx, strlen(bufx), "%d", (int)cam->pitch % 360);
+	snprint(bufy, strlen(bufy), "%d", (int)cam->yaw % 360);
+	snprint(bufz, strlen(bufz), "%d", (int)cam->roll % 360);
 	string(screen, 
-		addpt(screen->r.min, Pt(10,25)), 
-		clrx, ZP, display->defaultfont, "x");
+		addpt(screen->r.min, Pt(10,30)), 
+		clrx, ZP, display->defaultfont, bufx);
 	string(screen, 
-		addpt(screen->r.min, Pt(20,25)), 
-		clry, ZP, display->defaultfont, "y");
+		addpt(screen->r.min, Pt(50,30)), 
+		clry, ZP, display->defaultfont, bufy);
 	string(screen, 
-		addpt(screen->r.min, Pt(30,25)), 
-		clrz, ZP, display->defaultfont, "z");
+		addpt(screen->r.min, Pt(90,30)), 
+		clrz, ZP, display->defaultfont, bufz);
 }
 
 void
-render(Scene scene, double pitch, double yaw, double roll) {
-	for (int i = 0; i < scene.len; i++) {
-		Mesh mesh = scene.meshes[i];
-		for (int j = 0; j < mesh.edges_len; j++) {
-			Edge *edge = &mesh.edges[j];
-			Point3d a = pt3dadd(&mesh.vertices[edge->a], &mesh.position);
-			Point3d b = pt3dadd(&mesh.vertices[edge->b], &mesh.position);
-			rotver(&scene.origin, &a, pitch, yaw, roll);
-			rotver(&scene.origin, &b, pitch, yaw, roll);
-			lineb(screen, project(a), project(b), display->black, screen->r.min);
+render(Scene *scn, Camera *cam) 
+{
+	draw(screen, screen->r, display->white, nil, ZP);
+	for (int i = 0; i < scn->len; i++) {
+		Mesh *mesh = &scn->meshes[i];
+		for (int j = 0; j < mesh->edgeslen; j++) {
+			Edge *edge = &mesh->edges[j];
+			Point3d a = addpt3d(&mesh->vertices[edge->a], &mesh->position);
+			Point3d b = addpt3d(&mesh->vertices[edge->b], &mesh->position);
+			rotver(&scn->origin, &a, cam->pitch, cam->yaw, cam->roll);
+			rotver(&scn->origin, &b, cam->pitch, cam->yaw, cam->roll);
+			lineb(screen, project(cam, a), project(cam, b), display->black, screen->r.min);
 		}
 	}
-	widget(scene, pitch, yaw, roll);
+	widget(scn, cam);
+	flushimage(display, 1);
 }
 
 void
-eresized(int new) {
+orient(Scene *scn, Camera *cam, double pitch, double yaw, double roll)
+{
+	cam->pitch = pitch;
+	cam->yaw = yaw;
+	cam->roll = roll;
+	render(scn, cam);
+}
+
+void
+orbit(Scene *scn, Camera *cam, Point drag)
+{
+	cam->pitch -= drag.y/3.0;
+	cam->yaw -= drag.x/3.0;
+	render(scn, cam);
+}
+
+void
+toggleprojection(Scene *scn, Camera *cam)
+{
+	cam->projection = cam->projection == ISOMETRIC ? PERSPECTIVE : ISOMETRIC;
+	render(scn, cam);
+}
+
+void
+eresized(int new) 
+{
 	if (new &&getwindow(display, Refnone) < 0)
 		fprint(2, "can't reattach to window");
 	draw(screen, screen->r, display->white, nil, ZP);
+	center.x = screen->r.min.x + (screen->r.max.x - screen->r.min.x) / 2;
+	center.y = screen->r.min.y + (screen->r.max.y - screen->r.min.y) / 2;
 }
 
 void
-main(int argc, char **argv) {
+main(int argc, char **argv) 
+{
+	USED(argc, argv);
+
+	Event ev;
+	int e;
 	Mouse m;
+	Point drag;
+	char *options[] = {"Projection", "Front", "Top", "Exit", 0};
+	Menu menu = {options};
 
 	initdraw(0, 0, "Moogle");
 	eresized(0);
 	einit(Emouse);
 
-	center.x = screen->r.min.x + (screen->r.max.x - screen->r.min.x) / 2;
-	center.y = screen->r.min.y + (screen->r.max.y - screen->r.min.y) / 2;
 	clrx = allocimage(display, Rect(0, 0, 1, 1), screen->chan, 1, 0x72DEC2FF);
 	clry = allocimage(display, Rect(0, 0, 1, 1), screen->chan, 1, 0xFF0000FF);
 	clrz = allocimage(display, Rect(0, 0, 1, 1), screen->chan, 1, 0xAAAAAAFF);
 
-	Scene s1 = Sc(0, 0, 0);
-	add_circle(&s1, 0, 0, 0, 10, 20);
-	add_box(&s1, 0, 0, 0, 10, 10, 10);
-	render(s1, 35, 25, 15);
+	Scene scn = Sc3d(0, 0, 0);
+	Camera cam = Cm(120, 20, 0);
 
-	/* Break on mouse3 */
+	addpolygon(&scn, 0, 0, 0, 7.5, 16);
+	addpolygon(&scn, 0, 0, 0, 7.5, 16);
+	addpolygon(&scn, 0, 0, 0, 7.5, 16);
+	addprism(&scn, 0, 0, -3.5, 10, 4, 15);
+	rotatey(&scn.meshes[1], 90);
+	rotatex(&scn.meshes[2], 90);
+
+/* Primitives
+	addpolygon(&scn, 0, -10, 0, 5, 20);
+	addpyramid(&scn, 0, -5, 0, 5, 20, 5);
+	addfrustum(&scn, 0, 0, 0, 5, 20, 5, 0.25);
+	addprism(&scn, 0, -5, 0, 5, 20, 5);
+*/
+
+	render(&scn, &cam);
+
 	for (;;) {
+		e = event(&ev);
+		if((e == Emouse) && (ev.mouse.buttons & 4)) {
+			if(emenuhit(3, &ev.mouse, &menu) == 0)
+				toggleprojection(&scn, &cam);	
+			if(emenuhit(3, &ev.mouse, &menu) == 1)
+				orient(&scn, &cam, 180, 0, 0);	
+			if(emenuhit(3, &ev.mouse, &menu) == 2)
+				orient(&scn, &cam, -90, 0, 0);	
+			if(emenuhit(3, &ev.mouse, &menu) == 3)
+				exits(nil);	
+		}
 		m = emouse();
-		if (m.buttons & 4)
-			break;
+		if(m.buttons & 1){
+			drag = m.xy;
+			while(m.buttons & 1) {
+				m=emouse();
+				orbit(&scn, &cam, subpt(m.xy, drag)); 
+			}
+		}
 	}
 }
 </pre>
