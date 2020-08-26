@@ -208,12 +208,12 @@ void fputs_lifeline(FILE *f, int limit_from, int limit_to, int range_from,
   for (i = 0; i < len; i++) {
     float epoch = (i / f_len) * (limit_to - limit_from) + limit_from;
     if (epoch > range_from && !init) {
-      fputs("●", f);
+      fputs("+", f);
       init = true;
     } else if (epoch >= range_from && epoch <= range_to) {
-      fputs("●", f);
+      fputs("+", f);
     } else {
-      fputs("○", f);
+      fputs("-", f);
     }
   }
 }
