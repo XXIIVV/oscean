@@ -21,7 +21,7 @@ tcc main.c -o main
 
 ## Twtxt
 
-[twtxt](https://github.com/buckket/twtxt) is a format specification for self-hosted flat file based microblogging, you can find my feed [here](https://raw.githubusercontent.com/XXIIVV/Oscean/master/twtxt.txt). Oscean is part of the [webring's Hallway](https://webring.xxiivv.com/hallway.html) decentralized forum.
+[twtxt](https://github.com/buckket/twtxt) is a format specification for self-hosted flat file based microblogging, you can find my feed [here](https://raw.githubusercontent.com/XXIIVV/Oscean/master/twtxt.txt). 
 
 The command line operation to append to the twtxt.txt file:
 
