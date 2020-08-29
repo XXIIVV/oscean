@@ -1,6 +1,6 @@
 # Oscean
 
-This is the repository for the [Oscean wiki](http://wiki.xxiivv.com/), see the [on-site documentation](http://wiki.xxiivv.com/About) for more up-to-date details. Oscean is a _static site_ written in [ANSI C](https://en.wikipedia.org/wiki/ANSI_C) designed to be built with Plan9's `pcc` compiler. The database tables are in the human-readable plaintext [ndtl](https://wiki.xxiivv.com/site/indental.html)/[tbtl](https://wiki.xxiivv.com/site/tablatal.html). The lexicon body uses a [simple markup language](https://wiki.xxiivv.com/site/meta.html).
+This is the repository for the [Oscean wiki](http://wiki.xxiivv.com/), see the [on-site documentation](http://wiki.xxiivv.com/About) for more up-to-date details. Oscean is a _static site_ written in [ANSI C](https://en.wikipedia.org/wiki/ANSI_C), the database tables are in the human-readable plaintext [ndtl](https://wiki.xxiivv.com/site/indental.html)/[tbtl](https://wiki.xxiivv.com/site/tablatal.html). The lexicon body uses a [simple markup language](https://wiki.xxiivv.com/site/meta.html).
 
 The Master Branch is the **live version**.
 
@@ -13,10 +13,11 @@ time ./build.sh
 
 ### Haste
 
-Oscean can be compiled with the [Tiny C Compiler](https://bellard.org/tcc/) in about 7 milliseconds.
+Oscean can be compiled with the [Tiny C Compiler](https://bellard.org/tcc/), and Plan9's [POSIX Compiler](http://doc.cat-v.org/plan_9/4th_edition/papers/ape) in about 100 milliseconds on a Raspberry Pi.
 
 ```
 tcc main.c -o main
+pcc main.c -o main
 ```
 
 ## Twtxt
