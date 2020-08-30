@@ -41,7 +41,7 @@ void print_neralie_from_time(time_t t) {
   print_neralie_from_sec(hms_to_sec(hour, min, sec));
 }
 
-void print_neralie() {
+void print_neralie(void) {
   time_t now;
   time(&now);
   print_neralie_from_time(now);

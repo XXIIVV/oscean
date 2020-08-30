@@ -54,7 +54,7 @@ int arvelie_to_epoch(char *date){
   return arvelie_to_doty(date) + (y*365);
 }
 
-int get_epoch(){
+int get_epoch(void){
   int y,m,d;
   time_t now;
   struct tm *local;
@@ -148,7 +148,7 @@ void print_ymdstr_from_arvelie(char *date) {
   print_ymdstr_from_doty(y, arvelie_to_doty(date));
 }
 
-void print_arvelie() {
+void print_arvelie(void) {
   time_t now;
   time(&now);
   print_arvelie_from_time(now);
