@@ -10,14 +10,9 @@
 
 #define KEY_BUF_LEN 32
 #define STR_BUF_LEN 255
-#define DICT_BUFFER 46
-#define LIST_BUFFER 46
 #define TERM_DICT_BUFFER 16
 #define TERM_LIST_BUFFER 16
 #define TERM_BODY_BUFFER 24
-#define TERM_LINK_BUFFER 8
-#define TERM_CHILDREN_BUFFER 16
-#define JOURNAL_BUFFER 4000
 #define LEXICON_BUFFER 512
 #define LOGS_RANGE 56
 
@@ -40,14 +35,14 @@ typedef struct Term {
 	char date_last[6];
 	char body[30][750];
 	int body_len;
+	struct Term* parent;
+	struct Term* children[20];
+	int children_len;
 	char link_keys[20][KEY_BUF_LEN];
 	char link_vals[20][100];
 	int link_len;
 	char list[20][31];
 	int list_len;
-	struct Term* parent;
-	struct Term* children[20];
-	int children_len;
 	List* docs[20];
 	int docs_len;
 	struct Term* incoming[30];
@@ -819,7 +814,7 @@ parse_glossary(FILE* fp, Glossary* glossary)
 		pad = count_leading_spaces(line);
 		trimstr(line);
 		len = strlen(line);
-		if(len < 3 || line[0] == ';') {
+		if(len < 4 || line[0] == ';') {
 			continue;
 		}
 		if(len > 400) {
@@ -1034,9 +1029,15 @@ link(void)
 void
 template_mods(char* src, char* dest)
 {
-	int split = indexchr(src, ' ');
-	char target[256];
+	int split, targetsplit;
+	char target[256], params[256];
+	split = indexchr(src, ' ');
 	substr(src, target, split + 1, strlen(src) - split - 2);
+	targetsplit = indexchr(target, ' ');
+	if(targetsplit > 0) {
+		substr(target, params, targetsplit + 1, strlen(target) - targetsplit - 1);
+		substr(src, target, split + 1, targetsplit);
+	}
 	/* create new string */
 	dest[0] = '\0';
 	if(strstr(src, "^itchio") != NULL) {
@@ -1060,6 +1061,18 @@ template_mods(char* src, char* dest)
 		strcat(dest, ".html'>");
 		strcat(dest, target);
 		strcat(dest, "</a>.</p>");
+	} else if(strstr(src, "^img") != NULL) {
+		if(targetsplit > 0) {
+			strcat(dest, "<img src='../media/");
+			strcat(dest, target);
+			strcat(dest, "' width='");
+			strcat(dest, params);
+			strcat(dest, "'/>");
+		} else {
+			strcat(dest, "<img src='../media/");
+			strcat(dest, target);
+			strcat(dest, "'/>");
+		}
 	} else {
 		printf("Warning: Missing template mod: %s\n", src);
 	}
