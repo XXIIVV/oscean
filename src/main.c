@@ -702,23 +702,15 @@ build_page(Term* term, Journal* journal)
 	           "<head>"
 	           "<meta charset='utf-8'>"
 	           "<meta name='description' content='%s'/>"
-	           "<meta name='thumbnail' "
-	           "content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' />"
-	           "<link rel='alternate' type='application/rss+xml' title='RSS Feed' "
-	           "href='../links/rss.xml' />"
+	           "<meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' />"
+	           "<link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' />"
 	           "<link rel='stylesheet' type='text/css' href='../links/main.css'>"
-	           "<link rel='shortcut icon' type='image/png' "
-	           "href='../media/services/icon.png'>"
+	           "<link rel='shortcut icon' type='image/png' href='../media/services/icon.png'>"
 	           "<title>XXIIVV — %s</title>"
 	           "</head>"
 	           "<body>",
 	        term->bref, term->name);
-	fputs("<header>"
-	      "<a href='home.html'>"
-	      "<img src='../media/icon/logo.svg' alt='XXIIVV'>"
-	      "</a>"
-	      "</header>",
-	      f);
+	fputs("<header><a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV'></a></header>", f);
 	build_nav(f, term);
 	fputs("<main>", f);
 	build_banner(f, term, true);
@@ -763,13 +755,24 @@ void
 build_rss(Journal* journal)
 {
 	int i;
+	time_t now;
 	FILE* f = fopen("../links/rss.xml", "w");
-	fputs("<?xml version='1.0' encoding='UTF-8' ?>", f);
-	fputs("<rss version='2.0' xmlns:dc='http://purl.org/dc/elements/1.1/'>", f);
+	fputs("<?xml version='1.0' encoding='UTF-8' ?>\n", f);
+	fputs("<rss version='2.0' xmlns:dc='http://purl.org/dc/elements/1.1/'>\n", f);
 	fputs("<channel>\n", f);
-	fputs("<title>XXIIVV — Oscean</title>\n", f);
-	fputs("<link><![CDATA[https://wiki.xxiivv.com/Journal]]></link>\n", f);
+	fputs("<title>XXIIVV</title>\n", f);
+	fputs("<link>https://wiki.xxiivv.com/Journal</link>\n", f);
 	fputs("<description>The Nataniev Library</description>\n", f);
+	/* Date */
+	fputs("<lastBuildDate>", f);
+	fputs_rfc2822(f, time(&now));
+	fputs("</lastBuildDate>\n", f);
+	/* Image */
+	fputs("<image>\n", f);
+	fputs("  <url>https://wiki.xxiivv.com/media/services/rss.jpg</url>\n", f);
+	fputs("  <title>The Nataniev Library</title>\n", f);
+	fputs("  <link>https://wiki.xxiivv.com/Journal</link>\n", f);
+	fputs("</image>\n", f);
 	for(i = 0; i < journal->len; ++i) {
 		char filename[STR_BUF_LEN];
 		Log l = journal->logs[i];
@@ -783,7 +786,7 @@ build_rss(Journal* journal)
 		        filename);
 		fprintf(f, "  <guid isPermaLink='false'>%d</guid>\n", l.pict);
 		fputs("  <pubDate>", f);
-		fputs_rfc2822(f, l.date);
+		fputs_rfc2822(f, arvelie_to_time(l.date));
 		fputs("</pubDate>\n", f);
 		fputs("  <dc:creator><![CDATA[Devine Lu Linvega]]></dc:creator>\n", f);
 		fputs("  <description>\n", f);
@@ -791,8 +794,7 @@ build_rss(Journal* journal)
 		fprintf(f, "<img src='https://wiki.xxiivv.com/media/diary/%d.jpg'/>\n",
 		        l.pict);
 		fprintf(f,
-		        "<p>%s<br/><br/><a "
-		        "href='https://wiki.xxiivv.com/site/%s.html'>%s</a></p>",
+		        "<p>%s<br/><br/><a href='https://wiki.xxiivv.com/site/%s.html'>%s</a></p>",
 		        l.term->bref, filename, l.term->name);
 		fputs("]]>\n", f);
 		fputs("  </description>\n", f);

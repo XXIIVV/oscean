@@ -246,24 +246,9 @@ fputs_lifeline(FILE* f, int limit_from, int limit_to, int range_from,
 }
 
 void
-fputs_rfc2822(FILE* f, char* arvelie)
+fputs_rfc2822(FILE* f, time_t t)
 {
-	time_t current;
-	int doty = arvelie_to_doty(arvelie);
-	int year = extract_year(arvelie);
-	int month = doty_to_month(doty);
-	int day = doty_to_day(doty);
 	char rfc_2822[40];
-	struct tm str_time;
-	str_time.tm_year = (2000 + year) - 1900;
-	str_time.tm_mon = month;
-	str_time.tm_mday = day;
-	str_time.tm_hour = 0;
-	str_time.tm_min = 0;
-	str_time.tm_sec = 0;
-	str_time.tm_isdst = 0;
-	current = mktime(&str_time);
-	strftime(rfc_2822, sizeof(rfc_2822), "%a, %d %b %Y 00:00:00 +0900",
-	         localtime(&current));
+	strftime(rfc_2822, sizeof(rfc_2822), "%a, %d %b %Y 00:00:00 +0900", localtime(&t));
 	fprintf(f, "%s", rfc_2822);
 }
