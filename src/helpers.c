@@ -225,6 +225,14 @@ clock_since(clock_t start)
 	return cpu_time_used * 1000;
 }
 
+char*
+nowstr(void)
+{
+	time_t now;
+	time(&now);
+	return ctime(&now);
+}
+
 void
 fputs_lifeline(FILE* f, int limit_from, int limit_to, int range_from,
                int range_to, int len)

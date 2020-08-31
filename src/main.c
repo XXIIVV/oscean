@@ -451,13 +451,10 @@ build_horaire(FILE* f, Term* term)
 }
 
 void
-build_special_home(FILE* f, Term* term, Journal* journal)
+build_special_home(FILE* f, Journal* journal)
 {
 	int i;
 	bool found_events;
-	if(strcmp(term->name, "home") != 0) {
-		return;
-	}
 	found_events = false;
 	for(i = 0; i < 5; ++i) {
 		if(journal->logs[i].is_event == true) {
@@ -483,14 +480,10 @@ build_special_home(FILE* f, Term* term, Journal* journal)
 }
 
 void
-build_special_calendar(FILE* f, Term* term, Journal* journal)
+build_special_calendar(FILE* f, Journal* journal)
 {
 	int i;
-	int last_year;
-	if(strcmp(term->name, "calendar") != 0) {
-		return;
-	}
-	last_year = 0;
+	int last_year = 0;
 	fputs("<ul>", f);
 	for(i = 0; i < journal->len; ++i) {
 		char filename[STR_BUF_LEN];
@@ -509,16 +502,11 @@ build_special_calendar(FILE* f, Term* term, Journal* journal)
 }
 
 void
-build_special_tracker(FILE* f, Term* term, Journal* journal)
+build_special_tracker(FILE* f, Journal* journal)
 {
 	int i;
-	int known_id;
-	int last_year;
-	if(strcmp(term->name, "tracker") != 0) {
-		return;
-	}
-	known_id = 0;
-	last_year = 20;
+	int known_id = 0;
+	int last_year = 20;
 	fputs("<ul>", f);
 	for(i = 0; i < journal->len; ++i) {
 		char filename[STR_BUF_LEN];
@@ -548,14 +536,9 @@ build_special_tracker(FILE* f, Term* term, Journal* journal)
 }
 
 void
-build_special_journal(FILE* f, Term* term, Journal* journal)
+build_special_journal(FILE* f, Journal* journal)
 {
-	int i;
-	int count;
-	if(strcmp(term->name, "journal") != 0) {
-		return;
-	}
-	count = 0;
+	int i, count = 0;
 	for(i = 0; i < journal->len; ++i) {
 		if(count > 20) {
 			break;
@@ -569,47 +552,20 @@ build_special_journal(FILE* f, Term* term, Journal* journal)
 }
 
 void
-build_special_now(FILE* f, Term* term, Journal* journal)
+build_special_now(FILE* f, Journal* journal)
 {
-	time_t now;
-	int past_len = 0;
-	float past_value[LOGS_RANGE];
-	char* past_name[LOGS_RANGE];
-	float past_sum_value = 0;
-	char filename[STR_BUF_LEN];
-	int projects_len = 0;
-	float projects_value[LOGS_RANGE];
-	char* projects_name[LOGS_RANGE];
-	float sum_value = 0;
-	float test_sum;
-	float ratio;
-	int past_index;
-	int i;
+	int i, offset, epoch, index = 0, projects_len = 0;
 	Log l;
-	int index;
-	if(strcmp(term->name, "now") != 0) {
-		return;
-	}
-	for(i = 0; i < LOGS_RANGE; ++i) {
-		past_index = i + LOGS_RANGE;
-		l = journal->logs[past_index];
-		if(l.code % 10 < 1) {
-			continue;
-		}
-		index = index_of_string(past_name, past_len, l.term->name);
-		if(index < 0) {
-			past_name[past_len] = l.term->name;
-			past_value[past_len] = 0;
-			past_len++;
-		}
-		past_value[past_len - 1] += l.code % 10;
-		past_sum_value += l.code % 10;
-	}
-
+	char filename[STR_BUF_LEN];
+	char* projects_name[LOGS_RANGE];
+	double projects_value[LOGS_RANGE];
+	double sum_value = 0;
+	epoch = get_epoch();
 	for(i = 0; i < LOGS_RANGE; ++i) {
 		l = journal->logs[i];
-		if(l.code % 10 < 1) {
-			continue;
+		offset = epoch - arvelie_to_epoch(l.date);
+		if(offset > LOGS_RANGE) {
+			break;
 		}
 		index = index_of_string(projects_name, projects_len, l.term->name);
 		if(index < 0) {
@@ -620,38 +576,22 @@ build_special_now(FILE* f, Term* term, Journal* journal)
 		projects_value[projects_len - 1] += l.code % 10;
 		sum_value += l.code % 10;
 	}
-
 	fprintf(
 	    f,
-	    "<p>Distribution of <b>%.0f hours over %d projects</b>, a change of %.0f "
-	    "hours and %d projects since the previous period of %d days.</p>",
-	    sum_value, projects_len, sum_value - past_sum_value,
-	    projects_len - past_len, LOGS_RANGE);
-
-	test_sum = 0;
+	    "<p>Distribution of <b>%.0f hours for %d projects</b>, over the past %d days, for an average of %.2f hours per day and %.2f hours per project.</p>",
+	    sum_value, projects_len, LOGS_RANGE, sum_value / LOGS_RANGE, sum_value / projects_len);
 	fputs("<ul style='columns:2'>", f);
 	for(i = 0; i < projects_len; ++i) {
 		filenamestr(projects_name[i], filename);
-		ratio = (projects_value[i] / sum_value) * 100;
-		past_index = index_of_string(past_name, past_len, projects_name[i]);
 		fputs("<li>", f);
-		fprintf(f, "<a href='%s.html'>%s</a> %.2f&#37; ", filename,
-		        projects_name[i], ratio);
-		if(past_index >= 0) {
-			float past_ratio = (past_value[past_index] / past_sum_value) * 100;
-			float diff = ratio - past_ratio;
-			test_sum += diff;
-			if(diff > 0) {
-				fprintf(f, "<i style='color:#42ae92'>+%.1f&#37;</i>", diff);
-			} else {
-				fprintf(f, "<i style='color:red'>%.1f&#37;</i>", diff);
-			}
-		}
+		fprintf(f, "<a href='%s.html'>%s</a> %.2f&#37; ",
+		        filename,
+		        projects_name[i],
+		        projects_value[i] / sum_value * 100);
 		fputs("</li>", f);
 	}
 	fputs("</ul>", f);
-	time(&now);
-	fprintf(f, "<p>Last generated on %s(Japan).</p>", ctime(&now));
+	fprintf(f, "<p>Last generated on %s(Victoria, Canada).</p>", nowstr());
 }
 
 void
@@ -720,15 +660,22 @@ build_page(Term* term, Journal* journal)
 	build_index(f, term);
 	build_portal(f, term);
 	build_album(f, term);
+	if(strcmp(term->name, "now") == 0) {
+		build_special_now(f, journal);
+	} else if(strcmp(term->name, "home") == 0) {
+		build_special_home(f, journal);
+	} else if(strcmp(term->name, "calendar") == 0) {
+		build_special_calendar(f, journal);
+	} else if(strcmp(term->name, "tracker") == 0) {
+		build_special_tracker(f, journal);
+	} else if(strcmp(term->name, "journal") == 0) {
+		build_special_journal(f, journal);
+	} else if(strcmp(term->name, "index") == 0) {
+		build_special_index(f, term);
+	}
 	build_links(f, term);
 	build_incoming(f, term);
 	build_horaire(f, term);
-	build_special_home(f, term, journal);
-	build_special_calendar(f, term, journal);
-	build_special_tracker(f, term, journal);
-	build_special_journal(f, term, journal);
-	build_special_now(f, term, journal);
-	build_special_index(f, term);
 	fputs("</main>", f);
 	fputs("<footer>"
 	      "<a href='https://creativecommons.org/licenses/by-nc-sa/4.0'>"
