@@ -554,7 +554,7 @@ build_special_journal(FILE* f, Journal* journal)
 void
 build_special_now(FILE* f, Journal* journal)
 {
-	int i, offset, epoch, index = 0, projects_len = 0;
+	int i, epoch, index = 0, projects_len = 0;
 	Log l;
 	char filename[STR_BUF_LEN];
 	char* projects_name[LOGS_RANGE];
@@ -563,17 +563,17 @@ build_special_now(FILE* f, Journal* journal)
 	epoch = get_epoch();
 	for(i = 0; i < LOGS_RANGE; ++i) {
 		l = journal->logs[i];
-		offset = epoch - arvelie_to_epoch(l.date);
-		if(offset > LOGS_RANGE) {
+		if(epoch - arvelie_to_epoch(l.date) > LOGS_RANGE) {
 			break;
 		}
 		index = index_of_string(projects_name, projects_len, l.term->name);
 		if(index < 0) {
-			projects_name[projects_len] = l.term->name;
-			projects_value[projects_len] = 0;
+			index = projects_len;
+			projects_name[index] = l.term->name;
+			projects_value[index] = 0;
 			projects_len++;
 		}
-		projects_value[projects_len - 1] += l.code % 10;
+		projects_value[index] += l.code % 10;
 		sum_value += l.code % 10;
 	}
 	fprintf(
