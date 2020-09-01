@@ -1,19 +1,10 @@
-<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='description' content='A simple HSV color picker for Plan9.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV — plan9 color</title></head><body><header><a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV'></a></header><nav><ul><li><a href='plan9.html'>plan9/</a></li><li><a href='linux.html'>linux</a></li><li><a href='ansi_c.html'>ansi c</a></li></ul><ul><li><a href='rio.html'>rio</a></li><li><a href='acme.html'>acme</a></li><li><a href='plan9_c.html'>plan9 c</a></li><li><a href='plan9_clock.html'>plan9 clock</a></li><li><a href='plan9_color.html'>plan9 color/</a></li></ul><ul></ul></nav><main><figure><img src='../media/diary/515.jpg' alt='Color Picker picture'/><figcaption>20Q04 — Color Picker</figcaption></figure><h2>A simple HSV color picker for Plan9.</h2><p>Just a simple color picker utility written in <a href='plan9_c.html'>Plan9 C</a>, following the style of the <a href='plan9_clock.html'>Plan9 Clock</a>. Alternatively, you can use <a href='https://git.sr.ht/~ft/picker' target='_blank'>Sigrid's Color Picker</a> for <a href='http://9front.org/' target='_blank'>9Front</a> if you want to use something made by someone who knows what they're doing.</p><h3>Installation</h3>
+#include <u.h>
+#include <libc.h>
+#include <draw.h>
+#include <thread.h>
+#include <event.h>
 
-<p>Compile this source with the compiler for your platform, if you are using an ARM device:</p>
-
-<pre>5c color.c && 5l -o color color.c</pre>
-
-<p>Color is probably not a great name, so try calling it something else so it doesn't conflict with something else.</p>
-
-<h3>Source</h3>
-
-<pre>
-#include &lt;u.h&gt;
-#include &lt;libc.h&gt;
-#include &lt;draw.h&gt;
-#include &lt;thread.h&gt;
-#include &lt;event.h&gt;
+/* ARM : 5c color.c && 5l -o color color.5 */
 
 /* Conversion */
 
@@ -438,4 +429,3 @@ main(int argc, char** argv)
 		}
 	}
 }
-</pre><p>Found a mistake? Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/plan9_color.htm' target='_blank'>edit</a> to plan9 color.</p><ul><li><a href='https://git.sr.ht/~ft/picker' target='_blank'>Another Color Picker</a></li></ul><p><i>incoming(1)</i>: <a href='plan9_clock.html'>plan9 clock</a> </p><p><i>Last update on <a href='tracker.html'>20Q04</a>, edited 3 times. +16/16fh</i><code style='float:right; font-size:80%'>-----+</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
