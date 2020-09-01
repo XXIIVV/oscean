@@ -43,37 +43,36 @@ main(void)
 #include &lt;draw.h&gt;
 #include &lt;event.h&gt;
 
-void 
-eresized(int new) 
+void
+eresized(int new)
 {
-	if (new &&getwindow(display, Refnone) < 0)
+	if(new&& getwindow(display, Refnone) < 0)
 		sysfatal("can't reattach to window");
 }
 
-void 
-main(int argc, char *argv[]) 
+void
+main(int argc, char* argv[])
 {
 	USED(argc, argv);
 
 	Mouse m;
 	Point prevm;
-	initdraw(0,0,"Example: Mouse");
+	initdraw(0, 0, "Example: Mouse");
 	eresized(0);
 	einit(Emouse);
 
 	/* Main loop */
-	for(;;){
+	for(;;) {
 		m = emouse();
 		if(m.buttons & 4)
 			break;
-		if(m.buttons & 1){
+		if(m.buttons & 1) {
 			line(screen,
-				prevm.x == -1 ? m.xy : prevm,
-				m.xy, Enddisc, Enddisc, 1, display->black, ZP);
+			     prevm.x == -1 ? m.xy : prevm,
+			     m.xy, Enddisc, Enddisc, 1, display->black, ZP);
 			prevm = m.xy;
-		}
-		else{
-			prevm = Pt(-1,-1);
+		} else {
+			prevm = Pt(-1, -1);
 		}
 	}
 }
@@ -88,31 +87,31 @@ main(int argc, char *argv[])
 #include &lt;event.h&gt;
 #include &lt;keyboard.h&gt;
 
-void 
-eresized(int new) 
+void
+eresized(int new)
 {
-	if (new &&getwindow(display, Refnone) < 0)
+	if(new&& getwindow(display, Refnone) < 0)
 		sysfatal("can't reattach to window");
 }
 
-void 
-main(int argc, char *argv[]) 
+void
+main(int argc, char* argv[])
 {
 	USED(argc, argv);
 
 	Event ev;
 	int e;
-	initdraw(0,0,"Example: Keyboard");
+	initdraw(0, 0, "Example: Keyboard");
 	eresized(0);
 	einit(Ekeyboard);
 
 	/* Main loop */
-	for (;;) {
-  		e = event(&ev);
-		if(e == Ekeyboard){
+	for(;;) {
+		e = event(&ev);
+		if(e == Ekeyboard) {
 			print("key: %d\n", ev.kbdc);
 			/* Break on escape */
-			if(ev.kbdc == 27){
+			if(ev.kbdc == 27) {
 				print("Escaped\n");
 				break;
 			}
@@ -129,16 +128,16 @@ main(int argc, char *argv[])
 #include &lt;draw.h&gt;
 #include &lt;event.h&gt;
 
-char *options1[] = {"Middle Click", "", "Paste", "Snarf", "Exit", 0};
-char *options2[] = {"Right Click", "","Option3", "Option4", "Exit", 0};
+char* options1[] = {"Middle Click", "", "Paste", "Snarf", "Exit", 0};
+char* options2[] = {"Right Click", "", "Option3", "Option4", "Exit", 0};
 
 Menu middlemenu = {options1};
 Menu rightmenu = {options2};
 
-void 
-eresized(int new) 
+void
+eresized(int new)
 {
-	if (new &&getwindow(display, Refnone) < 0)
+	if(new&& getwindow(display, Refnone) < 0)
 		sysfatal("can't reattach to window");
 }
 
@@ -146,7 +145,7 @@ void
 dopaste(void)
 {
 	int f;
-	if((f = open("/dev/snarf", OREAD)) >= 0){
+	if((f = open("/dev/snarf", OREAD)) >= 0) {
 		char body[30];
 		read(f, body, 30);
 		print("Paste: %s\n", body);
@@ -158,40 +157,40 @@ void
 dosnarf(void)
 {
 	int f;
-	if((f = open("/dev/snarf", OWRITE)) >= 0){
-		char *body = "some text";
+	if((f = open("/dev/snarf", OWRITE)) >= 0) {
+		char* body = "some text";
 		write(f, body, strlen(body));
 		print("Snarf: %s\n", body);
 		close(f);
 	}
 }
 
-void 
-main(int argc, char *argv[]) 
+void
+main(int argc, char* argv[])
 {
 	USED(argc, argv);
 
 	Event ev;
 	int e;
 
-	initdraw(0,0,"Example: Menu");
+	initdraw(0, 0, "Example: Menu");
 	eresized(0);
 	einit(Emouse);
-	
+
 	/* Main event loop */
-	for (;;) {
-  		e = event(&ev);
+	for(;;) {
+		e = event(&ev);
 		/* Middle Click */
-		if((e == Emouse) && (ev.mouse.buttons & 3)){ 
+		if((e == Emouse) && (ev.mouse.buttons & 3)) {
 			if(emenuhit(2, &ev.mouse, &middlemenu) == 2)
-				dopaste();	
+				dopaste();
 			if(emenuhit(2, &ev.mouse, &middlemenu) == 3)
 				dosnarf();
 			if(emenuhit(2, &ev.mouse, &middlemenu) == 4)
 				exits(nil);
 		}
 		/* Right Click */
-		else if((e == Emouse) && (ev.mouse.buttons & 4)){
+		else if((e == Emouse) && (ev.mouse.buttons & 4)) {
 			if(emenuhit(3, &ev.mouse, &rightmenu) == 2)
 				print("Pressed Option 3\n");
 			if(emenuhit(3, &ev.mouse, &rightmenu) == 3)
@@ -211,21 +210,21 @@ main(int argc, char *argv[])
 #include &lt;draw.h&gt;
 #include &lt;event.h&gt;
 
-void 
-eresized(int new) 
+void
+eresized(int new)
 {
-	if (new &&getwindow(display, Refnone) < 0)
+	if(new&& getwindow(display, Refnone) < 0)
 		sysfatal("can't reattach to window");
 }
 
 void
-main(int argc, char **argv)
+main(int argc, char** argv)
 {
 	Mouse m;
 	Point o;
 	int pad, size;
 
-	initdraw(0,0,"Example: Primitives");
+	initdraw(0, 0, "Example: Primitives");
 	eresized(0);
 	einit(Emouse);
 
@@ -233,51 +232,51 @@ main(int argc, char **argv)
 	size = 100;
 	o = screen->r.min;
 
-	draw(screen, 
-		Rect(o.x+pad, o.y+pad, o.x+pad+size, o.y+pad+size), 
-		display->black, nil, ZP);
-	string(screen, 
-		Pt(o.x+pad, o.y+pad+size), 
-		display->black, ZP, display->defaultfont, "draw");
+	draw(screen,
+	     Rect(o.x + pad, o.y + pad, o.x + pad + size, o.y + pad + size),
+	     display->black, nil, ZP);
+	string(screen,
+	       Pt(o.x + pad, o.y + pad + size),
+	       display->black, ZP, display->defaultfont, "draw");
 
-	fillellipse(screen, 
-		Pt(o.x+pad+size*1.5, o.y+pad+size/2), 
-		size/2,size/2, display->black, ZP);
-	string(screen, 
-		Pt(o.x+pad+size, o.y+pad+size), 
-		display->black, ZP, display->defaultfont, "fillellipse");
+	fillellipse(screen,
+	            Pt(o.x + pad + size * 1.5, o.y + pad + size / 2),
+	            size / 2, size / 2, display->black, ZP);
+	string(screen,
+	       Pt(o.x + pad + size, o.y + pad + size),
+	       display->black, ZP, display->defaultfont, "fillellipse");
 
-	fillarc(screen, 
-		Pt(o.x+pad+size*2, o.y+pad+size), 
-		size, size, display->black, ZP, 0, 90);
-	string(screen, 
-		Pt(o.x+pad+size*2, o.y+pad+size), 
-		display->black, ZP, display->defaultfont, "fillarc");
+	fillarc(screen,
+	        Pt(o.x + pad + size * 2, o.y + pad + size),
+	        size, size, display->black, ZP, 0, 90);
+	string(screen,
+	       Pt(o.x + pad + size * 2, o.y + pad + size),
+	       display->black, ZP, display->defaultfont, "fillarc");
 
-	line(screen, 
-		Pt(o.x+pad, o.y+pad*2+size), 
-		Pt(o.x+pad+size, o.y+pad*2+size*2), 
-		Endsquare, Endsquare, 0, display->black, ZP);
-	string(screen, 
-		Pt(o.x+pad, o.y+pad*2+size*2), 
-		display->black, ZP, display->defaultfont, "line");
+	line(screen,
+	     Pt(o.x + pad, o.y + pad * 2 + size),
+	     Pt(o.x + pad + size, o.y + pad * 2 + size * 2),
+	     Endsquare, Endsquare, 0, display->black, ZP);
+	string(screen,
+	       Pt(o.x + pad, o.y + pad * 2 + size * 2),
+	       display->black, ZP, display->defaultfont, "line");
 
-	ellipse(screen, 
-		Pt(o.x+pad+size*1.5, o.y+pad*2+size*1.5), 
-		50, 50, 0, display->black, ZP);
-	string(screen, 
-		Pt(o.x+pad+size, o.y+pad*2+size*2), 
-		display->black, ZP, display->defaultfont, "ellipse");
+	ellipse(screen,
+	        Pt(o.x + pad + size * 1.5, o.y + pad * 2 + size * 1.5),
+	        50, 50, 0, display->black, ZP);
+	string(screen,
+	       Pt(o.x + pad + size, o.y + pad * 2 + size * 2),
+	       display->black, ZP, display->defaultfont, "ellipse");
 
-	arc(screen, 
-		Pt(o.x+pad+size*2, o.y+pad*2+size*2), 
-		size, size, 0, display->black, ZP, 1, 90);
-	string(screen, 
-		Pt(o.x+pad+size*2, o.y+pad*2+size*2), 
-		display->black, ZP, display->defaultfont, "arc");
+	arc(screen,
+	    Pt(o.x + pad + size * 2, o.y + pad * 2 + size * 2),
+	    size, size, 0, display->black, ZP, 1, 90);
+	string(screen,
+	       Pt(o.x + pad + size * 2, o.y + pad * 2 + size * 2),
+	       display->black, ZP, display->defaultfont, "arc");
 
 	/* Main loop */
-	for(;;){
+	for(;;) {
 		m = emouse();
 		if(m.buttons & 4)
 			break;

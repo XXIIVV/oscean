@@ -24,61 +24,68 @@ mk clean
 Point
 circlept(Point c, int r, int degrees)
 {
-	double rad = (double) degrees * PI / 180.0;
+	double rad = (double)degrees * PI / 180.0;
 
 	c.x += cos(rad) * r;
 	c.y -= sin(rad) * r;
 	return c;
 }
 
-void 
-lineb(Image *dst, Point p0, Point p1, Image *src, Point sp) 
+void
+lineb(Image* dst, Point p0, Point p1, Image* src, Point sp)
 {
 	int dx = abs(p1.x - p0.x), sx = p0.x < p1.x ? 1 : -1;
 	int dy = -abs(p1.y - p0.y), sy = p0.y < p1.y ? 1 : -1;
 	int err = dx + dy, e2;
 
-	for(;;){
-		draw(dst, Rect(p0.x, p0.y, p0.x + 1,p0.y + 1), src, nil, ZP);
-		if(p0.x == p1.x && p0.y == p1.y) break;
+	for(;;) {
+		draw(dst, Rect(p0.x, p0.y, p0.x + 1, p0.y + 1), src, nil, ZP);
+		if(p0.x == p1.x && p0.y == p1.y)
+			break;
 		e2 = 2 * err;
-		if(e2 >= dy) { err += dy; p0.x += sx; }
-		if(e2 <= dx) { err += dx; p0.y += sy; }
+		if(e2 >= dy) {
+			err += dy;
+			p0.x += sx;
+		}
+		if(e2 <= dx) {
+			err += dx;
+			p0.y += sy;
+		}
 	}
 }
 
 void
-redraw(Image *dst)
+redraw(Image* dst)
 {
 	Point size = subpt(screen->r.max, screen->r.min);
 	Point center = divpt(size, 2);
-	Rectangle frame = (Rectangle){ Pt(0,0), size};
+	Rectangle frame = (Rectangle){Pt(0, 0), size};
 	int pad = 20;
-	int rad = ((size.x < size.y ? size.x : size.y)/2)-pad;
-	int range = rad-pad;
-	Image *view = allocimage(display, frame, screen->chan, 1, 0x000000FF);
-	Image *secclr = allocimagemix(display, DRed, DRed);
+	int rad = ((size.x < size.y ? size.x : size.y) / 2) - pad;
+	int range = rad - pad;
+	Image* view = allocimage(display, frame, screen->chan, 1, 0x000000FF);
+	Image* secclr = allocimagemix(display, DRed, DRed);
 
-	for(int i=0; i<60; i++){
-		int len = i % 15 == 0 ? range : i % 5 == 0 ? rad-pad/2 : rad-pad/3;
-		lineb(view, circlept(center, len, i*6), circlept(center, rad, i*6), display->white, ZP);
+	for(int i = 0; i < 60; i++) {
+		int len = i % 15 == 0 ? range : i % 5 == 0 ? rad - pad / 2 : rad - pad / 3;
+		lineb(view, circlept(center, len, i * 6), circlept(center, rad, i * 6), display->white, ZP);
 	}
 
 	Tm tms = *localtime(time(0));
-	int anghr = 90-(tms.hour*5 + tms.min/12)*6;
-	int angmin = 90-tms.min*6;
-	int angsec = 90-tms.sec*6;
-	int angsecrev = 270-tms.sec*6;
+	int anghr = 90 - (tms.hour * 5 + tms.min / 12) * 6;
+	int angmin = 90 - tms.min * 6;
+	int angsec = 90 - tms.sec * 6;
+	int angsecrev = 270 - tms.sec * 6;
 
-	fillellipse(view, center, rad-pad, rad-pad, display->black, ZP);
-	lineb(view, center, circlept(center, range*0.7, anghr), display->white, ZP);
-	lineb(view, center, circlept(center, range-2, angmin), display->white, ZP);
-	lineb(view, center, circlept(center, range-2, angsec), secclr, ZP);
-	lineb(view, center, circlept(center, range*0.1, angsecrev), secclr, ZP);
+	fillellipse(view, center, rad - pad, rad - pad, display->black, ZP);
+	lineb(view, center, circlept(center, range * 0.7, anghr), display->white, ZP);
+	lineb(view, center, circlept(center, range - 2, angmin), display->white, ZP);
+	lineb(view, center, circlept(center, range - 2, angsec), secclr, ZP);
+	lineb(view, center, circlept(center, range * 0.1, angsecrev), secclr, ZP);
 	fillellipse(view, center, 2, 2, secclr, ZP);
-	
+
 	/* collapse when horizontal window */
-	if (size.y > size.x + 2 * pad) {
+	if(size.y > size.x + 2 * pad) {
 		/* time */
 		char timestr[9];
 		snprint(timestr, sizeof(timestr), "%02d:%02d:%02d", tms.hour, tms.min, tms.sec);
@@ -90,13 +97,13 @@ redraw(Image *dst)
 		snprint(datestr, sizeof(datestr), "%s", ctime(time(0)));
 		datestr[10] = '\0';
 		Point datesize = stringsize(display->defaultfont, datestr);
-		Point datept = Pt(size.x-datesize.x-pad, pad);
+		Point datept = Pt(size.x - datesize.x - pad, pad);
 		/* draw */
-		draw(view, 
-			(Rectangle){ timept, addpt(timept, Pt(size.x-pad*2, 0))}, 
-			display->black, nil, ZP);
+		draw(view,
+		     (Rectangle){timept, addpt(timept, Pt(size.x - pad * 2, 0))},
+		     display->black, nil, ZP);
 		string(view, timept, display->white, ZP, display->defaultfont, timestr);
-		if(timesize.x+datesize.x < size.x-pad-pad)
+		if(timesize.x + datesize.x < size.x - pad - pad)
 			string(view, datept, display->white, ZP, display->defaultfont, datestr);
 	}
 
@@ -109,8 +116,8 @@ redraw(Image *dst)
 void
 eresized(int new)
 {
-	if(new && getwindow(display, Refnone) < 0)
-		fprint(2,"can't reattach to window");
+	if(new&& getwindow(display, Refnone) < 0)
+		fprint(2, "can't reattach to window");
 	redraw(screen);
 }
 
@@ -120,10 +127,10 @@ main(int, char**)
 	Event e;
 	Mouse m;
 	Menu menu;
-	char *mstr[] = {"exit", 0};
+	char* mstr[] = {"exit", 0};
 	int key, timer, t = 1000;
 
-	if (initdraw(0, 0, "clock") < 0)
+	if(initdraw(0, 0, "clock") < 0)
 		sysfatal("initdraw failed");
 
 	eresized(0);
@@ -143,7 +150,7 @@ main(int, char**)
 		} else if(key == timer) {
 			redraw(screen);
 		}
-	}	
+	}
 }
 </pre>
 <p>Found a mistake? Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/plan9_clock.htm' target='_blank'>edit</a> to plan9 clock.</p><p><i>incoming(2)</i>: <a href='plan9_c.html'>plan9 c</a> <a href='plan9_color.html'>plan9 color</a> </p><p><i>Last update on <a href='tracker.html'>20Q01</a>, edited 3 times. +12/19fh</i><code style='float:right; font-size:80%'>-----+</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
