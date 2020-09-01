@@ -71,6 +71,30 @@ indexchr(char* str, char target)
 	return -1;
 }
 
+int
+strint(char* str)
+{
+	int num = 0, i = 0;
+	while(str[i] && (str[i] >= '0' && str[i] <= '9')) {
+		num = num * 10 + (str[i] - '0');
+		i++;
+	}
+	return num;
+}
+
+int
+substrint(char* str, int from, int len)
+{
+	int num = 0, i = 0;
+	while(str[i] && (str[i] >= '0' && str[i] <= '9')) {
+		if(i >= from && i < from + len) {
+			num = num * 10 + (str[i] - '0');
+		}
+		i++;
+	}
+	return num;
+}
+
 bool
 isurlstr(char* str)
 {

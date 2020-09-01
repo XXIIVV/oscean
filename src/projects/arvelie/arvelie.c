@@ -1,6 +1,51 @@
-#include <math.h>
-#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <ctype.h>
 #include <time.h>
+#include <math.h>
+
+#include "arvelie.h"
+
+/* helpers */
+
+int
+ymd_to_doty(int y, int m, int d)
+{
+	int i = 0, daymon = 0, dayday = 0;
+	int months[13] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+	if((y % 4) || ((y % 100) && (y % 400))) {
+		months[3] = months[3] + 1;
+	}
+	for(i = 0; i < m; i++) {
+		daymon += months[i];
+	}
+	dayday = d;
+	return (daymon + dayday) - 1;
+}
+
+int
+doty_to_month(int doty)
+{
+	int month = 0;
+	int months[13] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
+	while(months[month] < doty) {
+		month++;
+	}
+	return month - 1;
+}
+
+int
+doty_to_day(int doty)
+{
+	int month = 0;
+	int months[13] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
+	while(months[month] < doty) {
+		month++;
+	}
+	return doty - months[month - 1];
+}
+
+/* validators */
 
 int
 is_valid_arvelie(char* date)
@@ -33,20 +78,7 @@ is_valid_ymdstr(char* date)
 	return 1;
 }
 
-int
-ymd_to_doty(int y, int m, int d)
-{
-	int i = 0, daymon = 0, dayday = 0;
-	int months[13] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-	if((y % 4) || ((y % 100) && (y % 400))) {
-		months[3] = months[3] + 1;
-	}
-	for(i = 0; i < m; i++) {
-		daymon += months[i];
-	}
-	dayday = d;
-	return (daymon + dayday) - 1;
-}
+/* converters */
 
 int
 arvelie_to_doty(char* date)
@@ -64,6 +96,24 @@ arvelie_to_epoch(char* date)
 	return arvelie_to_doty(date) + (y * 365);
 }
 
+time_t
+arvelie_to_time(char* arvelie)
+{
+	int doty = arvelie_to_doty(arvelie);
+	int year = (arvelie[0] - '0') * 10 + (arvelie[1] - '0');
+	int month = doty_to_month(doty);
+	int day = doty_to_day(doty);
+	struct tm str_time;
+	str_time.tm_year = (2000 + year) - 1900;
+	str_time.tm_mon = month;
+	str_time.tm_mday = day;
+	str_time.tm_hour = 0;
+	str_time.tm_min = 0;
+	str_time.tm_sec = 0;
+	str_time.tm_isdst = 0;
+	return mktime(&str_time);
+}
+
 int
 get_epoch(void)
 {
@@ -78,41 +128,7 @@ get_epoch(void)
 	return (y % 100) * 365 + ymd_to_doty(y, m, d);
 }
 
-/* TODO: Cleanup */
-
-int
-extract_year(char* arvelie)
-{
-	int result = 0, i = 0;
-	for(i = 0; i < 2; i++) {
-		result = result * 10 + (arvelie[i] - '0');
-	}
-	return result;
-}
-
-int
-doty_to_month(int doty)
-{
-	int month = 0;
-	int months[13] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
-	while(months[month] < doty) {
-		month++;
-	}
-	return month - 1;
-}
-
-int
-doty_to_day(int doty)
-{
-	int month = 0;
-	int months[13] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
-	while(months[month] < doty) {
-		month++;
-	}
-	return doty - months[month - 1];
-}
-
-/* Prints */
+/* printers */
 
 void
 print_ymdstr_from_doty(int y, int doty)
@@ -173,24 +189,6 @@ print_ymdstr_from_arvelie(char* date)
 		exit(0);
 	}
 	print_ymdstr_from_doty(y, arvelie_to_doty(date));
-}
-
-time_t
-arvelie_to_time(char* arvelie)
-{
-	int doty = arvelie_to_doty(arvelie);
-	int year = extract_year(arvelie);
-	int month = doty_to_month(doty);
-	int day = doty_to_day(doty);
-	struct tm str_time;
-	str_time.tm_year = (2000 + year) - 1900;
-	str_time.tm_mon = month;
-	str_time.tm_mday = day;
-	str_time.tm_hour = 0;
-	str_time.tm_min = 0;
-	str_time.tm_sec = 0;
-	str_time.tm_isdst = 0;
-	return mktime(&str_time);
 }
 
 void

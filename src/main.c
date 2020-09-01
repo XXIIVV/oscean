@@ -1,10 +1,10 @@
-#include <ctype.h>
-#include <math.h>
-#include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <ctype.h>
 #include <time.h>
+#include <math.h>
 
-#include "projects/arvelie/arvelie.c"
+#include "projects/arvelie/arvelie.h"
 
 #include "helpers.c"
 
@@ -15,6 +15,7 @@
 #define TERM_BODY_BUFFER 24
 #define LEXICON_BUFFER 512
 #define LOGS_RANGE 56
+#define DOMAIN "https://wiki.xxiivv.com/"
 
 typedef struct List {
 	char name[KEY_BUF_LEN];
@@ -41,11 +42,11 @@ typedef struct Term {
 	char link_keys[20][KEY_BUF_LEN];
 	char link_vals[20][100];
 	int link_len;
-	char list[20][31];
+	char list[20][KEY_BUF_LEN];
 	int list_len;
 	List* docs[20];
 	int docs_len;
-	struct Term* incoming[30];
+	struct Term* incoming[KEY_BUF_LEN];
 	int incoming_len;
 } Term;
 
@@ -119,6 +120,20 @@ find_last_diary(Term* term)
 		return l;
 	}
 	return NULL;
+}
+
+FILE*
+getfile(char* dir, char* name, char* ext, char* op)
+{
+	char filename[STR_BUF_LEN];
+	char filepath[STR_BUF_LEN];
+	filenamestr(name, filename);
+	filepath[0] = '\0';
+	strcat(filepath, dir);
+	strcat(filepath, filename);
+	strcat(filepath, ext);
+	strcat(filepath, "\0");
+	return fopen(filepath, op);
 }
 
 void
@@ -289,14 +304,8 @@ build_include(FILE* f, Term* term)
 {
 	char buffer[4096];
 	char filename[STR_BUF_LEN];
-	char filepath[STR_BUF_LEN];
-	FILE* fp;
+	FILE* fp = getfile("inc/", term->name, ".htm", "r");
 	filenamestr(term->name, filename);
-	filepath[0] = '\0';
-	strcat(filepath, "inc/");
-	strcat(filepath, filename);
-	strcat(filepath, ".htm\0");
-	fp = fopen(filepath, "r");
 	if(fp == NULL) {
 		return;
 	}
@@ -490,13 +499,13 @@ build_special_calendar(FILE* f, Journal* journal)
 		if(journal->logs[i].is_event != true) {
 			continue;
 		}
-		if(last_year != extract_year(journal->logs[i].date)) {
+		if(last_year != substrint(journal->logs[i].date, 0, 2)) {
 			fprintf(f, "</ul><ul>");
 		}
 		filenamestr(journal->logs[i].term->name, filename);
 		fprintf(f, "<li><a href='%s.html'>%s</a> %s</li>", filename,
 		        journal->logs[i].date, journal->logs[i].name);
-		last_year = extract_year(journal->logs[i].date);
+		last_year = substrint(journal->logs[i].date, 0, 2);
 	}
 	fputs("</ul>", f);
 }
@@ -518,7 +527,7 @@ build_special_tracker(FILE* f, Journal* journal)
 			printf("Warning: Reached tracker buffer\n");
 			break;
 		}
-		if(last_year != extract_year(journal->logs[i].date)) {
+		if(last_year != substrint(journal->logs[i].date, 0, 2)) {
 			fprintf(f, "</ul><ul>");
 		}
 		filenamestr(journal->logs[i].term->name, filename);
@@ -528,7 +537,7 @@ build_special_tracker(FILE* f, Journal* journal)
 		build_lifeline(f, journal->logs[i].term);
 		fputs("</li>", f);
 
-		last_year = extract_year(journal->logs[i].date);
+		last_year = substrint(journal->logs[i].date, 0, 2);
 		known[known_id] = journal->logs[i].term->name;
 		known_id++;
 	}
@@ -626,23 +635,14 @@ build_special_index(FILE* f, Term* term)
 }
 
 void
-build_page(Term* term, Journal* journal)
+build_page(FILE* f, Term* term, Journal* journal)
 {
-	FILE* f;
-	char filename[STR_BUF_LEN];
-	char filepath[STR_BUF_LEN];
-	filenamestr(term->name, filename);
-	filepath[0] = '\0';
-	strcat(filepath, "../site/");
-	strcat(filepath, filename);
-	strcat(filepath, ".html\0");
-	f = fopen(filepath, "w");
 	fprintf(f, "<!DOCTYPE html>"
 	           "<html lang='en'>"
 	           "<head>"
 	           "<meta charset='utf-8'>"
 	           "<meta name='description' content='%s'/>"
-	           "<meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' />"
+	           "<meta name='thumbnail' content='" DOMAIN "media/services/thumbnail.jpg' />"
 	           "<link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' />"
 	           "<link rel='stylesheet' type='text/css' href='../links/main.css'>"
 	           "<link rel='shortcut icon' type='image/png' href='../media/services/icon.png'>"
@@ -699,16 +699,15 @@ build_page(Term* term, Journal* journal)
 }
 
 void
-build_rss(Journal* journal)
+build_rss(FILE* f, Journal* journal)
 {
 	int i;
 	time_t now;
-	FILE* f = fopen("../links/rss.xml", "w");
 	fputs("<?xml version='1.0' encoding='UTF-8' ?>\n", f);
 	fputs("<rss version='2.0' xmlns:dc='http://purl.org/dc/elements/1.1/'>\n", f);
 	fputs("<channel>\n", f);
 	fputs("<title>XXIIVV</title>\n", f);
-	fputs("<link>https://wiki.xxiivv.com/Journal</link>\n", f);
+	fputs("<link>" DOMAIN " Journal</link>\n", f);
 	fputs("<description>The Nataniev Library</description>\n", f);
 	/* Date */
 	fputs("<lastBuildDate>", f);
@@ -716,9 +715,9 @@ build_rss(Journal* journal)
 	fputs("</lastBuildDate>\n", f);
 	/* Image */
 	fputs("<image>\n", f);
-	fputs("  <url>https://wiki.xxiivv.com/media/services/rss.jpg</url>\n", f);
+	fputs("  <url>" DOMAIN "media/services/rss.jpg</url>\n", f);
 	fputs("  <title>The Nataniev Library</title>\n", f);
-	fputs("  <link>https://wiki.xxiivv.com/Journal</link>\n", f);
+	fputs("  <link>" DOMAIN "Journal</link>\n", f);
 	fputs("</image>\n", f);
 	for(i = 0; i < journal->len; ++i) {
 		char filename[STR_BUF_LEN];
@@ -729,8 +728,7 @@ build_rss(Journal* journal)
 		filenamestr(l.term->name, filename);
 		fputs("<item>\n", f);
 		fprintf(f, "  <title>%s</title>\n", l.name);
-		fprintf(f, "  <link>https://wiki.xxiivv.com/site/%s.html</link>\n",
-		        filename);
+		fprintf(f, "  <link>" DOMAIN "site/%s.html</link>\n", filename);
 		fprintf(f, "  <guid isPermaLink='false'>%d</guid>\n", l.pict);
 		fputs("  <pubDate>", f);
 		fputs_rfc2822(f, arvelie_to_time(l.date));
@@ -738,11 +736,8 @@ build_rss(Journal* journal)
 		fputs("  <dc:creator><![CDATA[Devine Lu Linvega]]></dc:creator>\n", f);
 		fputs("  <description>\n", f);
 		fputs("<![CDATA[", f);
-		fprintf(f, "<img src='https://wiki.xxiivv.com/media/diary/%d.jpg'/>\n",
-		        l.pict);
-		fprintf(f,
-		        "<p>%s<br/><br/><a href='https://wiki.xxiivv.com/site/%s.html'>%s</a></p>",
-		        l.term->bref, filename, l.term->name);
+		fprintf(f, "<img src='" DOMAIN "media/diary/%d.jpg'/>\n", l.pict);
+		fprintf(f, "<p>%s<br/><br/><a href='" DOMAIN "site/%s.html'>%s</a></p>", l.term->bref, filename, l.term->name);
 		fputs("]]>\n", f);
 		fputs("  </description>\n", f);
 		fputs("</item>\n", f);
@@ -759,6 +754,10 @@ parse_glossary(FILE* fp, Glossary* glossary)
 	int val_len;
 	int len, pad, count = 0;
 	char line[512];
+	if(fp == NULL) {
+		printf("Error: Could not open glossary\n");
+		exit(0);
+	}
 	while(fgets(line, 512, fp)) {
 		pad = count_leading_spaces(line);
 		trimstr(line);
@@ -807,6 +806,10 @@ parse_lexicon(FILE* fp, Lexicon* lexicon)
 	bool catch_body = false;
 	bool catch_link = false;
 	bool catch_list = false;
+	if(fp == NULL) {
+		printf("Error: Could not open lexicon\n");
+		exit(0);
+	}
 	while(fgets(line, 1024, fp)) {
 		int pad = count_leading_spaces(line);
 		trimstr(line);
@@ -874,6 +877,10 @@ parse_horaire(FILE* fp, Journal* journal)
 	char line[STR_BUF_LEN];
 	char codebuff[4];
 	Log* l;
+	if(fp == NULL) {
+		printf("Error: Could not open horaire\n");
+		exit(0);
+	}
 	while(fgets(line, STR_BUF_LEN, fp)) {
 		trimstr(line);
 		len = strlen(line);
@@ -1137,14 +1144,25 @@ void template(void)
 void
 build(void)
 {
+	FILE* f;
 	int i;
 	printf("Building | ");
 	printf("%d pages ", all_terms.len);
 	for(i = 0; i < all_terms.len; ++i) {
-		build_page(&all_terms.terms[i], &all_logs);
+		f = getfile("../site/", all_terms.terms[i].name, ".html", "w");
+		if(f == NULL) {
+			printf("Error: Could not open file(page).\n");
+			exit(0);
+		}
+		build_page(f, &all_terms.terms[i], &all_logs);
 	}
 	printf("1 feed ");
-	build_rss(&all_logs);
+	f = fopen("../links/rss.xml", "w");
+	if(f == NULL) {
+		printf("Error: Could not open file(feed).\n");
+		exit(0);
+	}
+	build_rss(f, &all_logs);
 }
 
 void
