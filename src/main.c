@@ -3,6 +3,7 @@
 #include <ctype.h>
 #include <time.h>
 #include <math.h>
+#include <string.h>
 
 #include "projects/arvelie/arvelie.h"
 

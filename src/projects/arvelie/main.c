@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "arvelie.c"
+#include "arvelie.h"
 
 int
 main(int argc, char* argv[])
