@@ -1,0 +1,63 @@
+<h3>Instructions</h3>
+
+<table border='1'>
+	<tr><td>0x0</td><td>BRK</td><td>Break</td></tr>
+	<tr><td>0x1</td><td>JMP</td><td>Jump to position</td></tr>
+	<tr><td>0x2</td><td>JEQ</td><td>Jump to position, when carry</td></tr>
+	<tr><td>0x3</td><td>JNE</td><td>Jump to position, when not carry</td></tr>
+	<tr><td>0x4</td><td>RME</td><td>Store in register from addr in memory</td></tr>
+	<tr><td>0x5</td><td>RVA</td><td>Store in register from value</td></tr>
+	<tr><td>0x6</td><td>MRE</td><td>Store in memory from register at value</td></tr>
+	<tr><td>0x7</td><td>MVA</td><td>Store in memory from value at register</td></tr>
+	<tr><td>0x8</td><td>ADD</td><td>Add value to register</td></tr>
+	<tr><td>0x9</td><td>SUB</td><td>Substract value from register</td></tr>
+	<tr><td>0xA</td><td>EQU</td><td>Compare, set carry when equal</td></tr>
+	<tr><td>0xB</td><td>LES</td><td>Compare, set carry when less than</td></tr>
+	<tr><td>0xC</td><td>CLC</td><td>Clear carry</td></tr>
+	<tr><td>0xD</td><td>TEL</td><td>Store in register from register id</td></tr>
+	<tr><td>0xE</td><td>SEL</td><td>Select register</td></tr>
+	<tr><td>0xF</td><td>NOP</td><td>Do nothing</td></tr>
+</table>
+
+<h3>Example</h3>
+
+<pre>
+; constants
+
+~rate #01
+
+; variables
+
+=var1
+=var2
+
+; program 
+
+:label
+	SEL #00
+	RVA #09
+	SEL #01
+	RVA #09
+
+:example1           ; example conditional
+	NOP
+	SEL #00
+	EQU #01         ; check if r0 is equal to r1
+	JEQ there       ; if equal, goto There
+:here
+	MRE var1        ; write in addr$01
+	JMP example2
+:there
+	MRE var2        ; write in addr$02
+	JMP example2
+
+:example2           ; example loop
+	NOP
+	RVA #02
+	SEL #01         ; select r1
+:loop
+	EQU #00         ; set flag if r0 = r15
+	SUB rate        ; subtract r0 by rate
+	JNE loop        ; goto loop if not equal
+	BRK
+</pre>
