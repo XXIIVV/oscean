@@ -1,4 +1,8 @@
-<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='description' content='Gyo is a tiny imaginary computer programmable with its own assembly language.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV — gyo</title></head><body><header><a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV'></a></header><nav><ul><li><a href='illustration.html'>illustration</a></li><li><a href='physical.html'>physical</a></li><li><a href='utilities.html'>utilities/</a></li><li><a href='games.html'>games</a></li><li><a href='mobile.html'>mobile</a></li><li><a href='automatons.html'>automatons</a></li><li><a href='photography.html'>photography</a></li><li><a href='unreleased.html'>unreleased</a></li></ul><ul><li><a href='noodle.html'>noodle</a></li><li><a href='graf3dscene.html'>graf3dscene</a></li><li><a href='moogle.html'>moogle</a></li><li><a href='gyo.html'>gyo/</a></li><li><a href='lin6.html'>lin6</a></li><li><a href='chr9.html'>chr9</a></li><li><a href='nespaint.html'>nespaint</a></li><li><a href='enfer.html'>enfer</a></li><li><a href='zoe_format.html'>zoe format</a></li></ul><ul></ul></nav><main><h2>Gyo is a tiny imaginary computer programmable with its own assembly language.</h2><p>Gyo was designed as an experiment to explore a system with a minimal instruction sets. The computer has 16 registers, 256 memory addresses, 16 opcodes, the <a href='assembly.html'>assembler</a> syntax supports <code>~constants</code>, <code>=variables</code> and <code>:labels</code>. The entire system and assembler is written in less than 400 lines of <a href='ansi_c.html'>ANSI C</a> code.</p><img src='../media/generic/gyo.jpg' width='200'/><h3>Instructions</h3>
+<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='description' content='Gyo is a tiny imaginary computer programmable with its own assembly language.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV — gyo</title></head><body><header><a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV'></a></header><nav><ul><li><a href='illustration.html'>illustration</a></li><li><a href='physical.html'>physical</a></li><li><a href='utilities.html'>utilities/</a></li><li><a href='games.html'>games</a></li><li><a href='mobile.html'>mobile</a></li><li><a href='automatons.html'>automatons</a></li><li><a href='photography.html'>photography</a></li><li><a href='unreleased.html'>unreleased</a></li></ul><ul><li><a href='noodle.html'>noodle</a></li><li><a href='graf3dscene.html'>graf3dscene</a></li><li><a href='moogle.html'>moogle</a></li><li><a href='gyo.html'>gyo/</a></li><li><a href='lin6.html'>lin6</a></li><li><a href='chr9.html'>chr9</a></li><li><a href='nespaint.html'>nespaint</a></li><li><a href='enfer.html'>enfer</a></li><li><a href='zoe_format.html'>zoe format</a></li></ul><ul></ul></nav><main><h2>Gyo is a tiny imaginary computer programmable with its own assembly language.</h2><p>Gyo was designed as an experiment to explore a system with a minimal instruction sets. The computer has 16 registers, 256 memory addresses, 16 opcodes, the <a href='assembly.html'>assembler</a> syntax supports <code>~constants</code>, <code>=variables</code> and <code>:labels</code>. The entire system and assembler is written in less than 400 lines of <a href='ansi_c.html'>ANSI C</a> code.</p><img src='../media/generic/gyo.jpg' width='200'/><p>The cpu does not have access to reading the rom itself, so the loaded rom needs to copy the data to the memory.</p>
+
+<h3>Instructions</h3>
+
+<p>Each instruction uses 4-bits for the operation, 4-bits for the addressing mode and 8-bits for the address. </p>
 
 <table border='1'>
 	<tr><td>0x0</td><td>BRK</td><td>Break</td></tr>
@@ -17,6 +21,13 @@
 	<tr><td>0xD</td><td>TEL</td><td>Store in register from register id</td></tr>
 	<tr><td>0xE</td><td>SEL</td><td>Select register</td></tr>
 	<tr><td>0xF</td><td>NOP</td><td>Do nothing</td></tr>
+</table>
+
+<p>The <b>addressing mode</b> bit is typically used to form a 12-bits address or to differenciate between a number, the value of a register and the value of an address in memory.</p>
+
+<table border='1'>
+	<tr><th>opcode</th><th>mode</th><th colspan="2">address</th><td>result</td></tr>
+	<tr><td>0</td><td>0</td><td>0</td><td>0</td><td>BRK</td></tr>
 </table>
 
 <h3>Gyo ASM</h3>
@@ -44,7 +55,7 @@
 
 <p>The following example demonstrate how to do a conditional jump.</p>
 <pre>
-SEL #00
+	SEL #00
 	EQU #01         ; check if r0 is equal to r1
 	JEQ there       ; if equal, goto There
 :here
@@ -65,4 +76,29 @@ SEL #00
 	SUB #01        ; subtract r0 by rate
 	JNE loop        ; goto loop if not equal
 	BRK
-</pre><p>Found a mistake? Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/gyo.htm' target='_blank'>edit</a> to gyo.</p><ul><li><a href='https://git.sr.ht/~rabbits/gyo' target='_blank'>sources</a></li></ul><p><i>incoming(1)</i>: <a href='assembly.html'>assembly</a> </p><p><i>Last update on <a href='tracker.html'>20R09</a>, edited 3 times. +15/23fh</i><code style='float:right; font-size:80%'>-----+</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
+</pre>
+
+<h3>Status Flags</h3>
+
+<p>The status register is distributed as follows, it shares the same byte as the register selector. The <b>halt</b> flag is used by the BRK instruction is stops the cpu, the <b>zero</b> flag is used for conditional instructions(EQU/LES/JEQ/JNE), the <b>carry</b> flag is set when a SUB/ADD instruction carries over the 8bit range and the <b>traps</b> flag is set when the pointer should be sent to the traps location(in IO operations). 
+</p>
+
+<pre>
+T C Z H
+| | | +---- Halt
+| | +------ Zero
+| +-------- Carry
++---------- Traps
+</pre>
+
+<p>The carry flag is triggered when a ADD or SUB operation goes over the range of a char.</p>
+
+<pre>
+	SEL #00 ; select ,0
+	RVA #FE ; store #EF
+	ADD #02 ; add #02 carry flag is now 1
+	CLC     ; clear flag
+	RVA #00 ; store #01
+	SUB #02 ; sub #02 carry flag is now 1
+	CLC     ; clear flag
+</pre><p>Found a mistake? Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/gyo.htm' target='_blank'>edit</a> to gyo.</p><ul><li><a href='https://git.sr.ht/~rabbits/gyo' target='_blank'>sources</a></li><li><a href='https://www.eeweb.com/building-a-4-bit-computer-the-instruction-set' target='_blank'>4bit computer</a></li></ul><p><i>incoming(1)</i>: <a href='assembly.html'>assembly</a> </p><p><i>Last update on <a href='tracker.html'>20R01</a>, edited 4 times. +21/29fh</i><code style='float:right; font-size:80%'>-----+</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
