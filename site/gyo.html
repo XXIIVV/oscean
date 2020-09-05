@@ -21,12 +21,13 @@
 	<tr><td>0xF</td><td>NOP</td><td>Do nothing</td></tr>
 </table>
 
-<p>The <b>addressing mode</b> bit is typically used to form a 12-bits address or to differenciate between a number, the value of a register and the value of an address in memory.</p>
+<p>There are 3 principal addressing modes:</p>
 
 <table border='1'>
-	<tr><th>opcode</th><th>mode</th><th colspan="2">address</th><td>result</td></tr>
-	<tr><td>0</td><td>0</td><td>0</td><td>0</td><td>BRK</td></tr>
-	<tr><td>9</td><td>2</td><td>E</td><td>F</td><td>SUB #EF,2</td></tr>
+	<tr><th>instruction</th><th>result</th></tr>
+	<tr><td><code>EQU #00</code></td><td>the raw value</td></tr>
+	<tr><td><code>EQU $EF</code></td><td>the value at address #EF in memory.</td></tr>
+	<tr><td><code>EQU [e]</code></td><td>the value of the 15th register</td></tr>
 </table>
 
 <h3>Gyo ASM</h3>
@@ -47,7 +48,7 @@
 
 :label
 	SEL #00
-	RVA #09,3
+	RVA $02
 </pre>
 
 <h3>Conditional</h3>
@@ -55,7 +56,7 @@
 <p>The following example demonstrate how to do a conditional jump.</p>
 <pre>
 	SEL #00
-	EQU #01         ; check if r0 is equal to r1
+	EQU [1]         ; check if r0 is equal to r1
 	JEQ there       ; if equal, goto There
 :here
 	MRE var1        ; write in addr$01
@@ -71,16 +72,15 @@
 	RVA #02
 	SEL #01         ; select r1
 :loop
-	EQU #00         ; set flag if r0 = r15
-	SUB #01        ; subtract r0 by rate
+	EQU [0]         ; set flag if r0 = r15
+	SUB #01         ; subtract r0 by rate
 	JNE loop        ; goto loop if not equal
 	BRK
 </pre>
 
-<h3>Status Flags</h3>
+<h3>Status Register</h3>
 
-<p>The status register is distributed as follows, it shares the same byte as the register selector. The <b>halt</b> flag is used by the BRK instruction is stops the cpu, the <b>zero</b> flag is used for conditional instructions(EQU/LES/JEQ/JNE), the <b>carry</b> flag is set when a SUB/ADD instruction carries over the 8bit range and the <b>traps</b> flag is set when the pointer should be sent to the traps location(in IO operations). 
-</p>
+<p>The status register is distributed as follows, it shares the same byte as the register selector. The **halt** flag is used by the BRK instruction is stops the cpu, the **zero** flag is used for conditional instructions(EQU/LES/JEQ/JNE), the **carry** flag is set when a SUB/ADD instruction carries over the 8bit range and the **traps** flag is set when the pointer should be sent to the traps location(in IO operations).</p>
 
 <pre>
 T C Z H
