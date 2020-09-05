@@ -1,0 +1,49 @@
+%YAML 1.2
+---
+# See http://www.sublimetext.com/docs/3/syntax.html
+name: Indental
+scopeName: ndtl.
+fileTypes: [ndtl]
+file_extensions:
+  - ndtl
+scope: source.ndtl
+
+contexts:
+  # The prototype context is prepended to all contexts but those setting
+  # meta_include_prototype: false.
+  prototype:
+    - include: comments
+
+  main:
+    # The main context is the initial starting point of our syntax.
+    # Include other contexts from here (or specify them directly).
+    - include: keywords
+    - include: numbers
+    - include: strings
+
+  keywords:
+
+    - match: '\s:\s'
+      scope: string.control
+      pop: true
+
+    - match: '~'
+      scope: string.control.tome
+      pop: true
+
+  strings:
+        # Line starting in all caps
+    - match: '^[A-Z0-9_]+\b.*'
+      push:
+        - meta_scope: keyword.control.tome
+        - match: '$\n?'
+          pop: true
+
+  comments:
+    # Comments begin with a '//' and finish at the end of the line.
+    - match: ';\s'
+      scope: punctuation.definition.comment.tome
+      push:
+        - meta_scope: comment.line.double-slash.tome
+        - match: $\n?
+          pop: true
