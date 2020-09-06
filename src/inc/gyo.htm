@@ -1,24 +1,24 @@
 <h3>Instructions</h3>
 
-<p>Each instruction uses 4-bits for the operation, 4-bits for the addressing mode and 8-bits for the address. The instructions are written directly into the RAM and read from the memory, the program can be modified as it is running.</p>
+<p>Each instruction uses 4-bits for the operation, 4-bits for the addressing mode and 8-bits for the address. The instructions are written directly into the RAM and read from the memory, the program can be modified as it is running. Programs are loaded directly into memory to create procedural self-modifiable programs.</p>
 
 <table border='1'>
 	<tr><td>0x0</td><td>BRK</td><td>Break</td></tr>
-	<tr><td>0x1</td><td>JMP</td><td>Jump to position</td></tr>
-	<tr><td>0x2</td><td>JEQ</td><td>Jump to position, when <i>zeroflag</i></td></tr>
-	<tr><td>0x3</td><td>JNE</td><td>Jump to position, when not <i>zeroflag</i></td></tr>
-	<tr><td>0x4</td><td>RME</td><td>Store in register from addr in memory</td></tr>
-	<tr><td>0x5</td><td>RVA</td><td>Store in register from value</td></tr>
-	<tr><td>0x6</td><td>MRE</td><td>Store in memory from register at value</td></tr>
-	<tr><td>0x7</td><td>MVA</td><td>Store in memory from value at register</td></tr>
+	<tr><td>0x1</td><td>JMP</td><td>Jump to position in memory</td></tr>
+	<tr><td>0x2</td><td>JCA</td><td>Jump to position in memory, when <i>carryflag</i></td></tr>
+	<tr><td>0x3</td><td>JZE</td><td>Jump to position in memory, when not <i>zeroflag</i></td></tr>
+	<tr><td>0x4</td><td>PEK</td><td>Read status</td></tr>
+	<tr><td>0x5</td><td>POK</td><td>Write status</td></tr>
+	<tr><td>0x6</td><td>GET</td><td>Store in register</td></tr>
+	<tr><td>0x7</td><td>PUT</td><td>Store in memory</td></tr>
 	<tr><td>0x8</td><td>ADD</td><td>Add value to register, set <i>carryflag</i> when overflow</td></tr>
 	<tr><td>0x9</td><td>SUB</td><td>Substract value from register, set <i>carryflag</i> when overflow</td></tr>
 	<tr><td>0xA</td><td>EQU</td><td>Compare register with value, set <i>zeroflag</i> when equal</td></tr>
 	<tr><td>0xB</td><td>LES</td><td>Compare register with value, set <i>zeroflag</i> when less than</td></tr>
-	<tr><td>0xC</td><td>CLC</td><td>Clear carry</td></tr>
-	<tr><td>0xD</td><td>TEL</td><td>Store in register from register id</td></tr>
-	<tr><td>0xE</td><td>SEL</td><td>Select register</td></tr>
-	<tr><td>0xF</td><td>NOP</td><td>Do nothing</td></tr>
+	<tr><td>0xC</td><td>AND</td><td>Bitwise AND operator</td></tr>
+	<tr><td>0xD</td><td>XOR</td><td>Bitwise XOR operator</td></tr>
+	<tr><td>0xE</td><td>ROL</td><td>Bitwise rotate left</td></tr>
+	<tr><td>0xF</td><td>ROR</td><td>Bitwise rotate right</td></tr>
 </table>
 
 <p>There are 3 principal addressing modes:</p>
@@ -29,6 +29,8 @@
 	<tr><td><code>EQU $EF</code></td><td>the value at address #EF in memory.</td></tr>
 	<tr><td><code>EQU [e]</code></td><td>the value of the 15th register</td></tr>
 </table>
+
+<p>Registers are used by reading and writing to the status using a combination of bitwise operators, to quickly select the 3rd register and set all flags to 0, use <code>POK #02</code>.</p>
 
 <h3>Gyo ASM</h3>
 
@@ -47,40 +49,41 @@
 ; program 
 
 :label
-	SEL #00
-	RVA $02
+	GET $02
+	PUT #03
+	BRK
 </pre>
 
 <h3>Conditional</h3>
 
 <p>The following example demonstrate how to do a conditional jump.</p>
 <pre>
-	SEL #00
-	EQU [1]         ; check if r0 is equal to r1
-	JEQ there       ; if equal, goto There
+	GET #EF         ; load #EF in register
+	EQU #EF         ; set zeroflag if register is equal to #EF
+	JZE there       ; if equal, goto There
 :here
-	MRE var1        ; write in addr$01
+	PUT #10         ; write in memory at #10
 	BRK
 :there
-	MRE var2        ; write in addr$02
+	PUT #20         ; write in memory at #20
 	BRK	
 </pre>
 
 <h3>Loop</h3>
 
 <pre>
-	RVA #02
-	SEL #01         ; select r1
 :loop
-	EQU [0]         ; set flag if r0 = r15
-	SUB #01         ; subtract r0 by rate
-	JNE loop        ; goto loop if not equal
+	ADD #01
+	EQU #0f
+	JZE end
+	JMP loop
+:end
 	BRK
 </pre>
 
 <h3>Status Register</h3>
 
-<p>The status register is distributed as follows, it shares the same byte as the register selector. The **halt** flag is used by the BRK instruction is stops the cpu, the **zero** flag is used for conditional instructions(EQU/LES/JEQ/JNE), the **carry** flag is set when a SUB/ADD instruction carries over the 8bit range and the **traps** flag is set when the pointer should be sent to the traps location(in IO operations).</p>
+<p>The status register is distributed as follows, it shares the same byte as the register selector. The <b>halt</b> flag is used by the BRK instruction is stops the cpu, the <b>zero</b> flag is used for logic instructions, the <b>carry</b> flag is set when an instruction carries over the 8bit range and the <b>traps</b> flag is set when the pointer should be sent to the traps location(in IO operations).</p>
 
 <pre>
 T C Z H
@@ -93,11 +96,9 @@ T C Z H
 <p>The carry flag is triggered when a ADD or SUB operation goes over the range of a char.</p>
 
 <pre>
-	SEL #00 ; select ,0
-	RVA #FE ; store #EF
+	GET #FE ; store #EF
 	ADD #02 ; add #02 carry flag is now 1
-	CLC     ; clear flag
-	RVA #00 ; store #01
-	SUB #02 ; sub #02 carry flag is now 1
-	CLC     ; clear flag
+	PEK     ; store status in register
+	XOR #04 ; check if carry bit
+	EQU #00 ; set zeroflag if true
 </pre>
