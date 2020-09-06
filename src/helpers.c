@@ -98,7 +98,7 @@ substrint(char* str, int from, int len)
 bool
 isurlstr(char* str)
 {
-	return indexstr(str, "://") >= 0;
+	return indexstr(str, "://") >= 0 || indexstr(str, "./") >= 0;
 }
 
 void
