@@ -1,0 +1,84 @@
+<p>Forth reads from left to right, spaces are separators, when you wish to quit, type <code>BYE</code>.</p>
+
+<pre>
+1 . 2 . 3 . 
+1 2 3 
+BYE
+</pre>
+
+<p>A stack is a way of managing data. With a stack, data is added to and taken from the "top", as with a stack of dishes. The acronym for this is LIFO: <i>Last In First Out</i>. The top of the stack is called TOS. If there's no TOS, the stack is empty. To inspect the stack, use <code>.S</code></p>
+
+<pre>
+10 ; 20 ; 30
+.S
+30 20 10  OK
+DROP
+.S
+20 10  OK
+BYE
+</pre>
+
+<p>The dictionary comes with the Forth system. The programmer writes a program by adding to the dictionary words defined in terms of words in the dictionary. As a rule, Forth finds a word by starting with the most recently defined word and working backwards. If two or more words in the dictionary have the same name, Forth will find the most recently defined and be satisfied. </p>
+
+<p>A colon definition starts with the Forth word <code>:</code> and ends with the Forth word <code>;</code>.</p>
+
+<pre>
+: HELLO ." Hi! " ;  
+HELLO
+Hi!  OK
+</pre>
+
+<p>Because in Forth data is passed implicitly, it is considered insane to define a word without documenting what data it takes from the stack and what data it returns to the stack. The canonical way of doing this is to use the Forth word <code>(</code> which tells the system to ignore what follows up to and including the next <code>)</code>. Expectations ("before") and results ("after") are separated by --. The resulting ( before -- after ) is a "stack-effect comment".</p>
+
+<pre>
+\ Return square of n
+: SQUARED DUP * ;
+5 SQUARED .
+25
+</pre>
+
+<p>Forth reads from left to right, there is no operator precedence.</p>
+
+<pre>
+\ 2 + 3
+2 3 +
+\ (2 + 3) + (2 + 3)
+2 3 + +
+\ 1 + (2 * 3)
+2 3 * 1 +
+\ (1 + 2) * 3
+1 2 + 3 *
+</pre>
+
+<p>You program in Forth by teaching a machine new actions that you and the machine know by name. Each new action is a novel arrangement of known actions, perhaps mixing in some data. By being added to the dictionary the new action can be used to teach still newer actions.</p>
+
+<pre>
+: SQUARED  ( n -- n**2 )  DUP * ;
+: CUBED  ( n -- n**3 )  DUP SQUARED * ;
+: 4TH  ( n -- n**4 )  SQUARED SQUARED ;
+</pre>
+
+<h3>Logic</h3>
+
+<p>To define TRUE/FALSE:</p>
+
+<pre>
+\ CONSTANT defines a word that always returns the same value
+0 CONSTANT FALSE
+FALSE .
+
+\ = returns a true flag if the top two stack items are equal
+FALSE FALSE = CONSTANT TRUE
+TRUE .
+
+: EVEN?  ( n -- )  2 MOD IF ." odd" ELSE ." even" THEN ;
+</pre>
+
+<h3>Loops</h3>
+
+<pre>
+: STAR [CHAR] * EMIT ;
+: STARS 0 DO STAR LOOP CR ;
+10 STARS
+**********
+</pre>
