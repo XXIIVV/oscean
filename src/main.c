@@ -1024,11 +1024,11 @@ template_mods(char* src, char* dest)
 			strcat(dest, target);
 			strcat(dest, "' width='");
 			strcat(dest, params);
-			strcat(dest, "'/>");
+			strcat(dest, "'/>&nbsp;");
 		} else {
 			strcat(dest, "<img src='../media/");
 			strcat(dest, target);
-			strcat(dest, "'/>");
+			strcat(dest, "'/>&nbsp;");
 		}
 	} else {
 		printf("Warning: Missing template mod: %s\n", src);
