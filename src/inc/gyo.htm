@@ -26,8 +26,9 @@
 <table border='1'>
 	<tr><th>instruction</th><th>result</th></tr>
 	<tr><td><code>EQU #00</code></td><td>the raw value</td></tr>
-	<tr><td><code>EQU $EF</code></td><td>the value at address #EF in memory.</td></tr>
+	<tr><td><code>EQU $EF</code></td><td>the value at address #EF in memory</td></tr>
 	<tr><td><code>EQU [e]</code></td><td>the value of the 15th register</td></tr>
+	<tr><td><code>EQU {e}</code></td><td>the value at the address of the 15th register</td></tr>
 </table>
 
 <p>Registers are used by reading and writing to the status using a combination of bitwise operators, to quickly select the 3rd register and set all flags to 0, use <code>POK #02</code>.</p>
@@ -104,4 +105,29 @@ T C Z H
 	GET      ; Read character from stdin
 	PUT [0]  ; Write character to stdout
 	POK #00  ; Set traps flag OFF 
+</pre>
+
+<h3>Hello World</h3>
+
+<pre>
+	POK #20   ; select r2
+	GET hello ; store location of :hello
+:loop
+	POK #00   ; select r0
+	GET [1]   ; get value of r1
+	ADD [2]   ; add value of r2
+	POK #08   ; set traps flag
+	PUT {0}   ; stdout value of memory[r0]
+	POK #10   ; select r1, remove traps
+	ADD #01   ; add 1
+	EQU #06   ; set zeroflag if == 6
+	JZE end   ; end if true
+	JMP loop  ; repeat
+:end
+	BRK
+
+:hello
+	#48 #65
+	#6C #6C
+	#6F #0A
 </pre>

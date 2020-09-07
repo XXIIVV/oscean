@@ -26,8 +26,9 @@
 <table border='1'>
 	<tr><th>instruction</th><th>result</th></tr>
 	<tr><td><code>EQU #00</code></td><td>the raw value</td></tr>
-	<tr><td><code>EQU $EF</code></td><td>the value at address #EF in memory.</td></tr>
+	<tr><td><code>EQU $EF</code></td><td>the value at address #EF in memory</td></tr>
 	<tr><td><code>EQU [e]</code></td><td>the value of the 15th register</td></tr>
+	<tr><td><code>EQU {e}</code></td><td>the value at the address of the 15th register</td></tr>
 </table>
 
 <p>Registers are used by reading and writing to the status using a combination of bitwise operators, to quickly select the 3rd register and set all flags to 0, use <code>POK #02</code>.</p>
@@ -105,4 +106,28 @@ T C Z H
 	PUT [0]  ; Write character to stdout
 	POK #00  ; Set traps flag OFF 
 </pre>
-<p>Found a mistake? Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/gyo.htm' target='_blank'>edit</a> to gyo.</p><ul><li><a href='https://git.sr.ht/~rabbits/gyo' target='_blank'>sources</a></li><li><a href='https://www.eeweb.com/building-a-4-bit-computer-the-instruction-set' target='_blank'>4bit computer</a></li></ul><p><i>incoming(1)</i>: <a href='assembly.html'>assembly</a> </p><p><i>Last update on <a href='tracker.html'>20R11</a>, edited 5 times. +25/34fh</i><code style='float:right; font-size:80%'>-----+</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
+
+<h3>Hello World</h3>
+
+<pre>
+	POK #20   ; select r2
+	GET hello ; store location of :hello
+:loop
+	POK #00   ; select r0
+	GET [1]   ; get value of r1
+	ADD [2]   ; add value of r2
+	POK #08   ; set traps flag
+	PUT {0}   ; stdout value of memory[r0]
+	POK #10   ; select r1, remove traps
+	ADD #01   ; add 1
+	EQU #06   ; set zeroflag if == 6
+	JZE end   ; end if true
+	JMP loop  ; repeat
+:end
+	BRK
+
+:hello
+	#48 #65
+	#6C #6C
+	#6F #0A
+</pre><p>Found a mistake? Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/gyo.htm' target='_blank'>edit</a> to gyo.</p><ul><li><a href='https://git.sr.ht/~rabbits/gyo' target='_blank'>sources</a></li><li><a href='https://www.eeweb.com/building-a-4-bit-computer-the-instruction-set' target='_blank'>4bit computer</a></li></ul><p><i>incoming(1)</i>: <a href='assembly.html'>assembly</a> </p><p><i>Last update on <a href='tracker.html'>20R11</a>, edited 5 times. +25/34fh</i><code style='float:right; font-size:80%'>-----+</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
