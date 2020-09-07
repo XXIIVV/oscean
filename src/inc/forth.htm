@@ -1,30 +1,42 @@
 <h3>Basics</h3>
 
-<p>Forth reads from left to right, spaces are separators, when you wish to quit, type <code>BYE</code>.</p>
+<p>Forth reads from left to right, spaces are separators, when you wish to quit, type <code>BYE</code>. A stack is a way of managing data. With a stack, data is added to and taken from the "top", as with a stack of dishes. The acronym for this is LIFO: <i>Last In First Out</i>.</p>
+
+<p>To inspect the stack, type <code>.S</code></p>
 
 <pre>
-1 . 2 . 3 . 
-1 2 3 
+10 ; 20 ; 30 ; .S
+30 20 10  OK
+DROP ; .S
+20 10  OK
 BYE
 </pre>
 
-<p>A stack is a way of managing data. With a stack, data is added to and taken from the "top", as with a stack of dishes. The acronym for this is LIFO: <i>Last In First Out</i>. The top of the stack is called TOS. If there's no TOS, the stack is empty. To inspect the stack, use <code>.S</code></p>
+<h3>Reverse Polish Notation</h3>
+
+<p>In <a href='https://mathworld.wolfram.com/ReversePolishNotation.html' target='_blank'>Reverse Polish Notation</a>, the <b>operators follow their operands</b>; for instance, one would write <code>3 4 +</code> rather than <code>3 + 4</code>. If there are multiple operations, operators are given immediately after their second operands. The expression written <code>(5 + 10) * 3</code> in conventional notation would be written <code>3 10 5 + *</code> in reverse Polish notation.</p>
+
+<table border='1'>
+	<tr><th>3</th><th>10</th><th>5</th><th>+</th><th>*</th></tr>
+	<tr><td rowspan='3'>3</td><td>10</td><td>5</td><td>15</td><td rowspan='3'>45</td></tr>
+	<tr><td rowspan='2'>3</td><td>10</td><td rowspan='2'>3</td></tr>
+	<tr><td>3</td></tr>
+</table>
+
+<p>Forth reads from left to right, there is no operator precedence.</p>
 
 <pre>
-10 ; 20 ; 30
-.S
-30 20 10  OK
-DROP
-.S
-20 10  OK
-BYE
+2 3 4 + *       \ (3 + 4) * 2
+2 3 4 * +       \ (3 * 4) + 2
+2 3 * 4 +       \ (2 * 3) + 4
+5 6 + 7 *       \ (5 + 6) * 7
 </pre>
 
 <h3>Words</h3>
 
 <p>The dictionary comes with the Forth system. The programmer writes a program by adding to the dictionary words defined in terms of words in the dictionary. As a rule, Forth finds a word by starting with the most recently defined word and working backwards. If two or more words in the dictionary have the same name, Forth will find the most recently defined and be satisfied. </p>
 
-<p>A colon definition starts with the Forth word <code>:</code> and ends with the Forth word <code>;</code>.</p>
+<p>A colon definition starts with the Forth word <code>:</code></p>
 
 <pre>
 : HELLO ." Hi! " ;  
@@ -39,19 +51,6 @@ Hi!  OK
 : SQUARED DUP * ;
 5 SQUARED .
 25
-</pre>
-
-<p>Forth reads from left to right, there is no operator precedence.</p>
-
-<pre>
-\ 2 + 3
-2 3 +
-\ (2 + 3) + (2 + 3)
-2 3 + +
-\ 1 + (2 * 3)
-2 3 * 1 +
-\ (1 + 2) * 3
-1 2 + 3 *
 </pre>
 
 <p>You program in Forth by teaching a machine new actions that you and the machine know by name. Each new action is a novel arrangement of known actions, perhaps mixing in some data. By being added to the dictionary the new action can be used to teach still newer actions.</p>
