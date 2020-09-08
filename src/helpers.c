@@ -2,27 +2,27 @@ typedef enum { false,
 	       true } bool;
 
 bool
-isalphachr(char ch)
+isalphachr(char c)
 {
-	return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
+	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
 }
 
 bool
-isnumchr(char ch)
+isnumchr(char c)
 {
-	return ch >= '0' && ch <= '9';
+	return c >= '0' && c <= '9';
 }
 
 bool
-isspacechr(char ch)
+isspacechr(char c)
 {
-	return ch == ' ';
+	return c == ' ' || c == '\t' || c == '\n' || c == '\r';
 }
 
 bool
-isalphanumchr(char ch)
+isalphanumchr(char c)
 {
-	return !isalphachr(ch) && !isnumchr(ch) && !isspacechr(ch) ? false : true;
+	return !isalphachr(c) && !isnumchr(c) && !isspacechr(c) ? false : true;
 }
 
 bool
@@ -135,12 +135,24 @@ cpystr(char* src, char* dest)
 	dest[len] = '\0';
 }
 
+int
+lcchr(int c)
+{
+	return c >= 'A' && c <= 'Z' ? c + ('a' - 'A') : c;
+}
+
+char
+ucchr(char c)
+{
+	return c >= 'a' && c <= 'z' ? c - ('a' - 'A') : c;
+}
+
 void
 ucstr(char* dest)
 {
 	int i, len = strlen(dest);
 	for(i = 0; i < len; i++) {
-		dest[i] = toupper(dest[i]);
+		dest[i] = ucchr(dest[i]);
 	}
 }
 
@@ -149,7 +161,7 @@ lcstr(char* dest)
 {
 	int i, len = strlen(dest);
 	for(i = 0; i < len; i++) {
-		dest[i] = tolower(dest[i]);
+		dest[i] = lcchr(dest[i]);
 	}
 }
 
@@ -157,12 +169,12 @@ char*
 trimstr(char* str)
 {
 	char* end;
-	while(isspace((unsigned char)*str))
+	while(isspacechr((unsigned char)*str))
 		str++;
 	if(*str == 0)
 		return str;
 	end = str + strlen(str) - 1;
-	while(end > str && isspace((unsigned char)*end))
+	while(end > str && isspacechr((unsigned char)*end))
 		end--;
 	end[1] = '\0';
 	return str;
@@ -181,7 +193,7 @@ alphanumstr(char* src, char* dest)
 		if(!isalphanumchr(dest[i])) {
 			dest[i] = ' ';
 		} else {
-			dest[i] = tolower(dest[i]);
+			dest[i] = lcchr(dest[i]);
 		}
 	}
 	dest[len - 1] = '\0';
@@ -200,7 +212,7 @@ filenamestr(char* str, char* mod)
 		if(!isalphachr(mod[i]) && !isnumchr(mod[i])) {
 			mod[i] = '_';
 		} else {
-			mod[i] = tolower(mod[i]);
+			mod[i] = lcchr(mod[i]);
 		}
 	}
 	mod[len - 1] = '\0';
