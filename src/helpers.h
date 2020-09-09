@@ -2,19 +2,19 @@ typedef enum { false,
 	       true } bool;
 
 int
-cspa(char c)
+cisp(char c)
 {
 	return c == ' ' || c == '\t' || c == '\n' || c == '\r';
 }
 
 int
-calp(char c)
+cial(char c)
 {
 	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
 }
 
 int
-cnum(char c)
+cinu(char c)
 {
 	return c >= '0' && c <= '9';
 }
@@ -34,7 +34,7 @@ cuca(char c)
 int
 cans(char c)
 {
-	return calp(c) || cnum(c) || cspa(c);
+	return cial(c) || cinu(c) || cisp(c);
 }
 
 int
@@ -106,12 +106,12 @@ char*
 strm(char* s)
 {
 	char* end;
-	while(cspa(*s))
+	while(cisp(*s))
 		s++;
 	if(*s == 0)
 		return s;
-	end = s + strlen(s) - 1;
-	while(end > s && cspa(*end))
+	end = s + slen(s) - 1;
+	while(end > s && cisp(*end))
 		end--;
 	end[1] = '\0';
 	return s;
@@ -120,7 +120,7 @@ strm(char* s)
 int
 spos(char* a, char* b)
 {
-	int i, j, alen = strlen(a), blen = strlen(b);
+	int i, j, alen = slen(a), blen = slen(b);
 	for(i = 0; i < alen; i++) {
 		for(j = 0; j < blen; j++) {
 			if(a[i + j] == '\0')
@@ -132,6 +132,17 @@ spos(char* a, char* b)
 		}
 	}
 	return -1;
+}
+
+int
+sint(char* s)
+{
+	int num = 0, i = 0;
+	while(s[i] && cinu(s[i])) {
+		num = num * 10 + (s[i] - '0');
+		i++;
+	}
+	return num;
 }
 
 int
@@ -157,17 +168,6 @@ sstr(char* src, char* dest, int from, int to)
 }
 
 /* old */
-
-int
-strint(char* str)
-{
-	int num = 0, i = 0;
-	while(str[i] && (str[i] >= '0' && str[i] <= '9')) {
-		num = num * 10 + (str[i] - '0');
-		i++;
-	}
-	return num;
-}
 
 int
 substrint(char* str, int from, int len)
@@ -196,7 +196,7 @@ swapstr(char* src, char* dest, char* a, char* b)
 	if(index < 0)
 		return;
 	substr(src, head, 0, index);
-	substr(src, tail, index + strlen(a), strlen(src) - index - strlen(a));
+	substr(src, tail, index + slen(a), slen(src) - index - slen(a));
 	dest[0] = '\0';
 	strcat(dest, head);
 	strcat(dest, b);
@@ -207,12 +207,12 @@ void
 filenamestr(char* str, char* mod)
 {
 	int i;
-	int len = strlen(str) + 1;
+	int len = slen(str) + 1;
 	for(i = 0; i < len; i++) {
 		mod[i] = str[i];
 		if(mod[i] == '\0')
 			break;
-		if(!calp(mod[i]) && !cnum(mod[i]))
+		if(!cial(mod[i]) && !cinu(mod[i]))
 			mod[i] = '_';
 		else
 			mod[i] = clca(mod[i]);
@@ -227,15 +227,14 @@ firstword(char* src, char* dest)
 	if(until > -1)
 		substr(src, dest, 0, until);
 	else
-		substr(src, dest, 0, strlen(src));
+		substr(src, dest, 0, slen(src));
 }
 
 int
 count_leading_spaces(char* str)
 {
 	int i;
-	int len = strlen(str) + 1;
-	for(i = 0; i < len; i++)
+	for(i = 0; i < slen(str) + 1; i++)
 		if(str[i] != ' ')
 			return i;
 	return -1;
