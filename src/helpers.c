@@ -44,15 +44,12 @@ indexstr(char* a, char* b)
 	int i, j, alen = strlen(a), blen = strlen(b);
 	for(i = 0; i < alen; i++) {
 		for(j = 0; j < blen; j++) {
-			if(a[i + j] == '\0') {
+			if(a[i + j] == '\0')
 				return -1;
-			}
-			if(a[i + j] != b[j]) {
+			if(a[i + j] != b[j])
 				break;
-			}
-			if(j == blen - 1) {
+			if(j == blen - 1)
 				return i;
-			}
 		}
 	}
 	return -1;
@@ -62,12 +59,9 @@ int
 indexchr(char* str, char target)
 {
 	int i;
-	int len = strlen(str);
-	for(i = 0; i < len; i++) {
-		if(str[i] == target) {
+	for(i = 0; i < (int)strlen(str); i++)
+		if(str[i] == target)
 			return i;
-		}
-	}
 	return -1;
 }
 
@@ -87,9 +81,8 @@ substrint(char* str, int from, int len)
 {
 	int num = 0, i = 0;
 	while(str[i] && (str[i] >= '0' && str[i] <= '9')) {
-		if(i >= from && i < from + len) {
+		if(i >= from && i < from + len)
 			num = num * 10 + (str[i] - '0');
-		}
 		i++;
 	}
 	return num;
@@ -113,9 +106,8 @@ swapstr(char* src, char* dest, char* a, char* b)
 {
 	char head[1024], tail[1024];
 	int index = indexstr(src, a);
-	if(index < 0) {
+	if(index < 0)
 		return;
-	}
 	substr(src, head, 0, index);
 	substr(src, tail, index + strlen(a), strlen(src) - index - strlen(a));
 	dest[0] = '\0';
@@ -127,11 +119,9 @@ swapstr(char* src, char* dest, char* a, char* b)
 void
 cpystr(char* src, char* dest)
 {
-	int i;
-	int len = strlen(src);
-	for(i = 0; i < len; i++) {
+	int i, len = strlen(src);
+	for(i = 0; i < len; i++)
 		dest[i] = src[i];
-	}
 	dest[len] = '\0';
 }
 
@@ -150,19 +140,17 @@ ucchr(char c)
 void
 ucstr(char* dest)
 {
-	int i, len = strlen(dest);
-	for(i = 0; i < len; i++) {
+	int i;
+	for(i = 0; i < (int)strlen(dest); i++)
 		dest[i] = ucchr(dest[i]);
-	}
 }
 
 void
 lcstr(char* dest)
 {
-	int i, len = strlen(dest);
-	for(i = 0; i < len; i++) {
+	int i;
+	for(i = 0; i < (int)strlen(dest); i++)
 		dest[i] = lcchr(dest[i]);
-	}
 }
 
 char*
@@ -187,14 +175,12 @@ alphanumstr(char* src, char* dest)
 	int len = strlen(src) + 1;
 	for(i = 0; i < len; i++) {
 		dest[i] = src[i];
-		if(dest[i] == '\0') {
+		if(dest[i] == '\0')
 			break;
-		}
-		if(!isalphanumchr(dest[i])) {
+		if(!isalphanumchr(dest[i]))
 			dest[i] = ' ';
-		} else {
+		else
 			dest[i] = lcchr(dest[i]);
-		}
 	}
 	dest[len - 1] = '\0';
 }
@@ -206,14 +192,12 @@ filenamestr(char* str, char* mod)
 	int len = strlen(str) + 1;
 	for(i = 0; i < len; i++) {
 		mod[i] = str[i];
-		if(mod[i] == '\0') {
+		if(mod[i] == '\0')
 			break;
-		}
-		if(!isalphachr(mod[i]) && !isnumchr(mod[i])) {
+		if(!isalphachr(mod[i]) && !isnumchr(mod[i]))
 			mod[i] = '_';
-		} else {
+		else
 			mod[i] = lcchr(mod[i]);
-		}
 	}
 	mod[len - 1] = '\0';
 }
@@ -222,11 +206,10 @@ void
 firstword(char* src, char* dest)
 {
 	int until = indexchr(src, ' ');
-	if(until > -1) {
+	if(until > -1)
 		substr(src, dest, 0, until);
-	} else {
+	else
 		substr(src, dest, 0, strlen(src));
-	}
 }
 
 int
@@ -234,11 +217,9 @@ count_leading_spaces(char* str)
 {
 	int i;
 	int len = strlen(str) + 1;
-	for(i = 0; i < len; i++) {
-		if(str[i] != ' ') {
+	for(i = 0; i < len; i++)
+		if(str[i] != ' ')
 			return i;
-		}
-	}
 	return -1;
 }
 
@@ -246,11 +227,9 @@ int
 index_of_string(char* a[], int num_elements, char* value)
 {
 	int i;
-	for(i = 0; i < num_elements; i++) {
-		if(strcmp(a[i], value) == 0) {
+	for(i = 0; i < num_elements; i++)
+		if(strcmp(a[i], value) == 0)
 			return i;
-		}
-	}
 	return -1;
 }
 
@@ -281,11 +260,10 @@ fputs_lifeline(FILE* f, int limit_from, int limit_to, int range_from,
 		if(epoch > range_from && !init) {
 			fputs("+", f);
 			init = true;
-		} else if(epoch >= range_from && epoch <= range_to) {
+		} else if(epoch >= range_from && epoch <= range_to)
 			fputs("+", f);
-		} else {
+		else
 			fputs("-", f);
-		}
 	}
 }
 
