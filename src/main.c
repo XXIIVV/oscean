@@ -499,7 +499,7 @@ build_special_tracker(FILE* f, Journal* journal)
 	for(i = 0; i < journal->len; ++i) {
 		char filename[STR_BUF_LEN];
 		char* known[LEXICON_BUFFER];
-		if(index_of_string(known, known_id, journal->logs[i].term->name) > -1)
+		if(sfin(known, known_id, journal->logs[i].term->name) > -1)
 			continue;
 		if(known_id >= LEXICON_BUFFER) {
 			printf("Warning: Reached tracker buffer\n");
@@ -549,7 +549,7 @@ build_special_now(FILE* f, Journal* journal)
 		l = journal->logs[i];
 		if(epoch - arvelie_to_epoch(l.date) > LOGS_RANGE)
 			break;
-		index = index_of_string(projects_name, projects_len, l.term->name);
+		index = sfin(projects_name, projects_len, l.term->name);
 		if(index < 0) {
 			index = projects_len;
 			projects_name[index] = l.term->name;

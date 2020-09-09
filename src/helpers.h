@@ -241,7 +241,7 @@ count_leading_spaces(char* str)
 }
 
 int
-index_of_string(char* a[], int num_elements, char* value)
+sfin(char* a[], int num_elements, char* value)
 {
 	int i;
 	for(i = 0; i < num_elements; i++)
