@@ -6,7 +6,7 @@
 
 #include "projects/arvelie/arvelie.h"
 
-#include "helpers.c"
+#include "helpers.h"
 
 #define KEY_BUF_LEN 32
 #define STR_BUF_LEN 255
@@ -52,7 +52,7 @@ typedef struct Term {
 
 typedef struct Log {
 	char date[6];
-	char rune[1];
+	char rune;
 	int code;
 	char host[KEY_BUF_LEN];
 	int pict;
@@ -96,11 +96,11 @@ Term*
 find_term(Lexicon* lexicon, char* name)
 {
 	int i;
-	char buffer[STR_BUF_LEN];
-	alphanumstr(name, buffer);
+	slca(name);
+	scsw(name, '_', ' ');
 	for(i = 0; i < lexicon->len; ++i) {
 		Term* t = &lexicon->terms[i];
-		if(!strcmp(buffer, t->name))
+		if(!strcmp(name, t->name))
 			return t;
 	}
 	return NULL;
@@ -309,7 +309,7 @@ void
 build_index(FILE* f, Term* term)
 {
 	int i;
-	if(strcmp(term->type, "index") != 0)
+	if(!scmp(term->type, "index"))
 		return;
 	for(i = 0; i < term->children_len; ++i) {
 		char child_filename[STR_BUF_LEN];
@@ -325,7 +325,7 @@ void
 build_portal(FILE* f, Term* term)
 {
 	int i;
-	if(strcmp(term->type, "portal") != 0)
+	if(!scmp(term->type, "portal"))
 		return;
 	for(i = 0; i < term->children_len; ++i)
 		build_term_pict(f, term->children[i], true);
@@ -336,7 +336,7 @@ build_album(FILE* f, Term* term)
 {
 	int i;
 	Log* header_log;
-	if(strcmp(term->type, "album") != 0)
+	if(!scmp(term->type, "album"))
 		return;
 	header_log = find_last_diary(term);
 	for(i = 0; i < all_logs.len; ++i) {
@@ -399,7 +399,7 @@ build_horaire(FILE* f, Term* term)
 		len++;
 	}
 	/* Updated */
-	if(len < 2 || strlen(term->date_last) == 0)
+	if(len < 2 || slen(term->date_last) == 0)
 		return;
 	fputs("<p>", f);
 	fprintf(f,
@@ -437,7 +437,7 @@ print_term_details(FILE* f, Term* term, int depth)
 		return;
 	fputs("<ul>", f);
 	for(i = 0; i < term->children_len; ++i) {
-		if(strcmp(term->children[i]->name, term->name) != 0)
+		if(!scmp(term->children[i]->name, term->name))
 			print_term_details(f, term->children[i], depth);
 	}
 	fputs("</ul>", f);
@@ -581,7 +581,7 @@ build_special_now(FILE* f, Journal* journal)
 void
 build_special_index(FILE* f, Term* term)
 {
-	if(strcmp(term->name, "index") != 0)
+	if(!scmp(term->name, "index"))
 		return;
 	fputs("<ul>", f);
 	print_term_details(f, &all_terms.terms[0], 0);
@@ -614,17 +614,17 @@ build_page(FILE* f, Term* term, Journal* journal)
 	build_index(f, term);
 	build_portal(f, term);
 	build_album(f, term);
-	if(strcmp(term->name, "now") == 0)
+	if(scmp(term->name, "now"))
 		build_special_now(f, journal);
-	else if(strcmp(term->name, "home") == 0)
+	else if(scmp(term->name, "home"))
 		build_special_home(f, journal);
-	else if(strcmp(term->name, "calendar") == 0)
+	else if(scmp(term->name, "calendar"))
 		build_special_calendar(f, journal);
-	else if(strcmp(term->name, "tracker") == 0)
+	else if(scmp(term->name, "tracker"))
 		build_special_tracker(f, journal);
-	else if(strcmp(term->name, "journal") == 0)
+	else if(scmp(term->name, "journal"))
 		build_special_journal(f, journal);
-	else if(strcmp(term->name, "index") == 0)
+	else if(scmp(term->name, "index"))
 		build_special_index(f, term);
 	build_links(f, term);
 	build_incoming(f, term);
@@ -712,8 +712,8 @@ parse_glossary(FILE* fp, Glossary* glossary)
 	}
 	while(fgets(line, 512, fp)) {
 		pad = count_leading_spaces(line);
-		trimstr(line);
-		len = strlen(line);
+		strm(line);
+		len = slen(line);
 		if(len < 4 || line[0] == ';')
 			continue;
 		if(len > 400) {
@@ -723,15 +723,15 @@ parse_glossary(FILE* fp, Glossary* glossary)
 		if(pad == 0) {
 			List* l = &glossary->lists[glossary->len];
 			substr(line, l->name, 0, len);
-			if(!isalphanumstr(l->name)) {
+			if(!sans(l->name)) {
 				printf("Warning: %s is not alphanum\n", l->name);
 			}
-			lcstr(l->name);
+			slca(l->name);
 			glossary->len++;
 		} else if(pad == 2) {
 			List* l = &glossary->lists[glossary->len - 1];
 			if(strstr(line, " : ") != NULL) {
-				key_len = indexchr(line, ':') - 3;
+				key_len = cpos(line, ':') - 3;
 				substr(line, l->keys[l->pairs_len], 2, key_len);
 				val_len = len - key_len - 5;
 				substr(line, l->vals[l->pairs_len], key_len + 5, val_len);
@@ -763,8 +763,8 @@ parse_lexicon(FILE* fp, Lexicon* lexicon)
 	}
 	while(fgets(line, 1024, fp)) {
 		int pad = count_leading_spaces(line);
-		trimstr(line);
-		len = strlen(line);
+		strm(line);
+		len = slen(line);
 		if(len < 3 || line[0] == ';')
 			continue;
 		if(len > 750) {
@@ -774,9 +774,9 @@ parse_lexicon(FILE* fp, Lexicon* lexicon)
 		if(pad == 0) {
 			Term* t = &lexicon->terms[lexicon->len];
 			substr(line, t->name, 0, len);
-			if(!isalphanumstr(t->name))
+			if(!sans(t->name))
 				printf("Warning: %s is not alphanum\n", t->name);
-			lcstr(t->name);
+			slca(t->name);
 			lexicon->len++;
 		} else if(pad == 2) {
 			Term* t = &lexicon->terms[lexicon->len - 1];
@@ -798,7 +798,7 @@ parse_lexicon(FILE* fp, Lexicon* lexicon)
 			}
 			/* Link */
 			if(catch_link) {
-				key_len = indexchr(line, ':') - 5;
+				key_len = cpos(line, ':') - 5;
 				substr(line, t->link_keys[t->link_len], 4, key_len);
 				val_len = len - key_len - 5;
 				substr(line, t->link_vals[t->link_len], key_len + 7, val_len);
@@ -828,8 +828,8 @@ parse_horaire(FILE* fp, Journal* journal)
 		exit(0);
 	}
 	while(fgets(line, STR_BUF_LEN, fp)) {
-		trimstr(line);
-		len = strlen(line);
+		strm(line);
+		len = slen(line);
 		if(len < 14 || line[0] == ';')
 			continue;
 		if(len > 72) {
@@ -840,15 +840,15 @@ parse_horaire(FILE* fp, Journal* journal)
 		/* Date */
 		substr(line, l->date, 0, 5);
 		/* Rune */
-		substr(line, l->rune, 6, 1);
-		l->is_event = !strcmp(l->rune, "+");
+		l->rune = line[6];
+		l->is_event = l->rune == '+';
 		/* Code */
 		substr(line, codebuff, 7, 3);
 		l->code = atoi(codebuff);
 		/* Term */
 		substr(line, l->host, 11, 21);
-		trimstr(l->host);
-		if(!isalphanumstr(l->host))
+		strm(l->host);
+		if(!sans(l->host))
 			printf("Warning: %s is not alphanum\n", l->host);
 		/* Pict */
 		if(len >= 35) {
@@ -859,7 +859,7 @@ parse_horaire(FILE* fp, Journal* journal)
 		/* Name */
 		if(len >= 38) {
 			substr(line, l->name, 36, 30);
-			trimstr(l->name);
+			strm(l->name);
 		}
 		journal->len++;
 		count++;
@@ -893,9 +893,9 @@ link(void)
 			printf("Error: Unknown log host %s\n", l->host);
 			exit(0);
 		} else {
-			if(strlen(l->term->date_last) == 0)
-				cpystr(l->date, l->term->date_last);
-			cpystr(l->date, l->term->date_from);
+			if(slen(l->term->date_last) == 0)
+				scpy(l->date, l->term->date_last);
+			scpy(l->date, l->term->date_from);
 		}
 	}
 	printf("lexicon(%d entries) ", all_terms.len);
@@ -930,11 +930,11 @@ template_mods(char* src, char* dest)
 {
 	int split, targetsplit;
 	char target[256], params[256];
-	split = indexchr(src, ' ');
-	substr(src, target, split + 1, strlen(src) - split - 2);
-	targetsplit = indexchr(target, ' ');
+	split = cpos(src, ' ');
+	substr(src, target, split + 1, slen(src) - split - 2);
+	targetsplit = cpos(target, ' ');
 	if(targetsplit > 0) {
-		substr(target, params, targetsplit + 1, strlen(target) - targetsplit - 1);
+		substr(target, params, targetsplit + 1, slen(target) - targetsplit - 1);
 		substr(src, target, split + 1, targetsplit);
 	}
 	/* create new string */
@@ -979,19 +979,19 @@ template_mods(char* src, char* dest)
 void
 template_link(char* src, char* dest)
 {
-	int split = indexchr(src, ' ');
+	int split = cpos(src, ' ');
 	char target[256], name[256];
 	/* find target and name */
 	if(split == -1) {
-		substr(src, target, 1, strlen(src) - 2);
-		cpystr(target, name);
+		substr(src, target, 1, slen(src) - 2);
+		scpy(target, name);
 	} else {
 		substr(src, target, 1, split - 1);
-		substr(src, name, split + 1, strlen(src) - split - 2);
+		substr(src, name, split + 1, slen(src) - split - 2);
 	}
 	/* create new string */
 	dest[0] = '\0';
-	if(isurlstr(target)) {
+	if(surl(target)) {
 		strcat(dest, "<a href='");
 		strcat(dest, target);
 		strcat(dest, "' target='_blank'>");
@@ -1018,13 +1018,13 @@ template_seg(Term* term, char* src)
 	bool recording = false;
 	char buffer[512], fw[512], full[512], res[1024], templated[1024];
 	int i, len;
-	cpystr(src, res);
-	for(i = 0; i < (int)strlen(src); ++i) {
+	scpy(src, res);
+	for(i = 0; i < (int)slen(src); ++i) {
 		char c = src[i];
 		if(c == '}') {
 			recording = false;
 			/* capture full template */
-			substr(src, full, i - strlen(buffer) - 1, strlen(buffer) + 2);
+			substr(src, full, i - slen(buffer) - 1, slen(buffer) + 2);
 			if(full[1] == '^')
 				template_mods(full, templated);
 			else
@@ -1032,11 +1032,11 @@ template_seg(Term* term, char* src)
 			swapstr(res, res, full, templated);
 			/* save incoming */
 			firstword(buffer, fw);
-			if(!isurlstr(fw) && fw[0] != '^')
+			if(!surl(fw) && fw[0] != '^')
 				register_incoming(term, fw);
 		}
 		if(recording) {
-			len = strlen(buffer);
+			len = slen(buffer);
 			buffer[len] = c;
 			buffer[len + 1] = '\0';
 		}
@@ -1045,14 +1045,14 @@ template_seg(Term* term, char* src)
 			buffer[0] = '\0';
 		}
 	}
-	cpystr(res, src);
+	scpy(res, src);
 }
 
 bool
 req_template(char* str)
 {
 	int i, open = 0, shut = 0;
-	for(i = 0; i < (int)strlen(str); i++) {
+	for(i = 0; i < (int)slen(str); i++) {
 		if(str[i] == '{')
 			open++;
 		else if(str[i] == '}')

@@ -1,45 +1,124 @@
 typedef enum { false,
 	       true } bool;
 
-bool
-isalphachr(char c)
-{
-	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
-}
-
-bool
-isnumchr(char c)
-{
-	return c >= '0' && c <= '9';
-}
-
-bool
-isspacechr(char c)
+int
+cspa(char c)
 {
 	return c == ' ' || c == '\t' || c == '\n' || c == '\r';
 }
 
-bool
-isalphanumchr(char c)
+int
+calp(char c)
 {
-	return !isalphachr(c) && !isnumchr(c) && !isspacechr(c) ? false : true;
-}
-
-bool
-isalphanumstr(char* src)
-{
-	int i;
-	for(i = 0; i < (int)strlen(src); i++) {
-		if(!isalphanumchr(src[i])) {
-			printf("%c\n", src[i]);
-			return false;
-		}
-	}
-	return true;
+	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
 }
 
 int
-indexstr(char* a, char* b)
+cnum(char c)
+{
+	return c >= '0' && c <= '9';
+}
+
+int
+clca(int c)
+{
+	return c >= 'A' && c <= 'Z' ? c + ('a' - 'A') : c;
+}
+
+int
+cuca(char c)
+{
+	return c >= 'a' && c <= 'z' ? c - ('a' - 'A') : c;
+}
+
+int
+cans(char c)
+{
+	return calp(c) || cnum(c) || cspa(c);
+}
+
+int
+slen(char* s)
+{
+	int n = 0;
+	while(s[n] != '\0' && s[++n])
+		;
+	return n;
+}
+
+int
+cpos(char* s, char c)
+{
+	int i;
+	for(i = 0; i < slen(s); i++)
+		if(s[i] == c)
+			return i;
+	return -1;
+}
+
+void
+suca(char* s)
+{
+	int i;
+	for(i = 0; i < slen(s); i++)
+		s[i] = cuca(s[i]);
+}
+
+void
+slca(char* s)
+{
+	int i;
+	for(i = 0; i < slen(s); i++)
+		s[i] = clca(s[i]);
+}
+
+void
+scsw(char* s, char a, char b)
+{
+	int i;
+	for(i = 0; i < slen(s); i++)
+		s[i] = s[i] == a ? b : s[i];
+}
+
+int
+scmp(char* a, char* b)
+{
+	int i, l = slen(a);
+	if(l != slen(b))
+		return 0;
+	for(i = 0; i < l; ++i)
+		if(a[i] != b[i])
+			return 0;
+	return 1;
+}
+
+int
+sans(char* s)
+{
+	int i;
+	for(i = 0; i < slen(s); i++)
+		if(!cans(s[i]))
+			return 0;
+	return 1;
+}
+
+char*
+strm(char* s)
+{
+	char* end;
+	while(cspa(*s))
+		s++;
+	if(*s == 0)
+		return s;
+	end = s + strlen(s) - 1;
+	while(end > s && cspa(*end))
+		end--;
+	end[1] = '\0';
+	return s;
+}
+
+int
+spos(char* a, char* b)
 {
 	int i, j, alen = strlen(a), blen = strlen(b);
 	for(i = 0; i < alen; i++) {
@@ -56,14 +135,28 @@ indexstr(char* a, char* b)
 }
 
 int
-indexchr(char* str, char target)
+surl(char* s)
 {
-	int i;
-	for(i = 0; i < (int)strlen(str); i++)
-		if(str[i] == target)
-			return i;
-	return -1;
+	return spos(s, "://") >= 0 || spos(s, "./") >= 0;
 }
+
+void
+scpy(char* src, char* dest)
+{
+	int i, len = slen(src);
+	for(i = 0; i < len; i++)
+		dest[i] = src[i];
+	dest[len] = '\0';
+}
+
+void
+sstr(char* src, char* dest, int from, int to)
+{
+	memcpy(dest, src + from, to);
+	dest[to] = '\0';
+}
+
+/* old */
 
 int
 strint(char* str)
@@ -88,12 +181,6 @@ substrint(char* str, int from, int len)
 	return num;
 }
 
-bool
-isurlstr(char* str)
-{
-	return indexstr(str, "://") >= 0 || indexstr(str, "./") >= 0;
-}
-
 void
 substr(char* src, char* dest, int from, int to)
 {
@@ -105,7 +192,7 @@ void
 swapstr(char* src, char* dest, char* a, char* b)
 {
 	char head[1024], tail[1024];
-	int index = indexstr(src, a);
+	int index = spos(src, a);
 	if(index < 0)
 		return;
 	substr(src, head, 0, index);
@@ -117,75 +204,6 @@ swapstr(char* src, char* dest, char* a, char* b)
 }
 
 void
-cpystr(char* src, char* dest)
-{
-	int i, len = strlen(src);
-	for(i = 0; i < len; i++)
-		dest[i] = src[i];
-	dest[len] = '\0';
-}
-
-int
-lcchr(int c)
-{
-	return c >= 'A' && c <= 'Z' ? c + ('a' - 'A') : c;
-}
-
-char
-ucchr(char c)
-{
-	return c >= 'a' && c <= 'z' ? c - ('a' - 'A') : c;
-}
-
-void
-ucstr(char* dest)
-{
-	int i;
-	for(i = 0; i < (int)strlen(dest); i++)
-		dest[i] = ucchr(dest[i]);
-}
-
-void
-lcstr(char* dest)
-{
-	int i;
-	for(i = 0; i < (int)strlen(dest); i++)
-		dest[i] = lcchr(dest[i]);
-}
-
-char*
-trimstr(char* str)
-{
-	char* end;
-	while(isspacechr((unsigned char)*str))
-		str++;
-	if(*str == 0)
-		return str;
-	end = str + strlen(str) - 1;
-	while(end > str && isspacechr((unsigned char)*end))
-		end--;
-	end[1] = '\0';
-	return str;
-}
-
-void
-alphanumstr(char* src, char* dest)
-{
-	int i;
-	int len = strlen(src) + 1;
-	for(i = 0; i < len; i++) {
-		dest[i] = src[i];
-		if(dest[i] == '\0')
-			break;
-		if(!isalphanumchr(dest[i]))
-			dest[i] = ' ';
-		else
-			dest[i] = lcchr(dest[i]);
-	}
-	dest[len - 1] = '\0';
-}
-
-void
 filenamestr(char* str, char* mod)
 {
 	int i;
@@ -194,10 +212,10 @@ filenamestr(char* str, char* mod)
 		mod[i] = str[i];
 		if(mod[i] == '\0')
 			break;
-		if(!isalphachr(mod[i]) && !isnumchr(mod[i]))
+		if(!calp(mod[i]) && !cnum(mod[i]))
 			mod[i] = '_';
 		else
-			mod[i] = lcchr(mod[i]);
+			mod[i] = clca(mod[i]);
 	}
 	mod[len - 1] = '\0';
 }
@@ -205,7 +223,7 @@ filenamestr(char* str, char* mod)
 void
 firstword(char* src, char* dest)
 {
-	int until = indexchr(src, ' ');
+	int until = cpos(src, ' ');
 	if(until > -1)
 		substr(src, dest, 0, until);
 	else
@@ -228,7 +246,7 @@ index_of_string(char* a[], int num_elements, char* value)
 {
 	int i;
 	for(i = 0; i < num_elements; i++)
-		if(strcmp(a[i], value) == 0)
+		if(scmp(a[i], value))
 			return i;
 	return -1;
 }
