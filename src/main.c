@@ -13,6 +13,7 @@
 #define LEXICON_BUFFER 512
 #define LOGS_RANGE 56
 #define DOMAIN "https://wiki.xxiivv.com/"
+#define REPOPATH "https://github.com/XXIIVV/oscean/blob/master/src/inc/"
 
 typedef struct List {
 	char name[KEY_BUF_LEN];
@@ -297,7 +298,7 @@ build_include(FILE* f, Term* term)
 			break;
 	}
 	fprintf(f,
-	        "<p>Found a mistake? Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/%s.htm' target='_blank'>edit</a> to %s.</p>",
+	        "<p>Found a mistake? Submit an <a href='" REPOPATH "%s.htm' target='_blank'>edit</a> to %s.</p>",
 	        filename, term->name);
 	fclose(fp);
 }
