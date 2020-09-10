@@ -1,11 +1,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
-#include <string.h>
-
-#include "projects/arvelie/arvelie.h"
 
 #include "helpers.h"
+#include "projects/arvelie/arvelie.h"
 
 #define KEY_BUF_LEN 32
 #define STR_BUF_LEN 255
@@ -85,7 +83,7 @@ find_list(Glossary* glossary, char* name)
 	int i;
 	for(i = 0; i < glossary->len; ++i) {
 		List* l = &glossary->lists[i];
-		if(!strcmp(name, l->name))
+		if(scmp(name, l->name))
 			return l;
 	}
 	return NULL;
@@ -99,7 +97,7 @@ find_term(Lexicon* lexicon, char* name)
 	scsw(name, '_', ' ');
 	for(i = 0; i < lexicon->len; ++i) {
 		Term* t = &lexicon->terms[i];
-		if(!strcmp(name, t->name))
+		if(scmp(name, t->name))
 			return t;
 	}
 	return NULL;
@@ -125,10 +123,10 @@ getfile(char* dir, char* name, char* ext, char* op)
 	char filepath[STR_BUF_LEN];
 	filenamestr(name, filename);
 	filepath[0] = '\0';
-	strcat(filepath, dir);
-	strcat(filepath, filename);
-	strcat(filepath, ext);
-	strcat(filepath, "\0");
+	scat(filepath, dir);
+	scat(filepath, filename);
+	scat(filepath, ext);
+	scat(filepath, "\0");
 	return fopen(filepath, op);
 }
 
@@ -499,7 +497,7 @@ build_special_tracker(FILE* f, Journal* journal)
 	for(i = 0; i < journal->len; ++i) {
 		char filename[STR_BUF_LEN];
 		char* known[LEXICON_BUFFER];
-		if(sfin(known, known_id, journal->logs[i].term->name) > -1)
+		if(afnd(known, known_id, journal->logs[i].term->name) > -1)
 			continue;
 		if(known_id >= LEXICON_BUFFER) {
 			printf("Warning: Reached tracker buffer\n");
@@ -549,7 +547,7 @@ build_special_now(FILE* f, Journal* journal)
 		l = journal->logs[i];
 		if(epoch - arvelie_to_epoch(l.date) > LOGS_RANGE)
 			break;
-		index = sfin(projects_name, projects_len, l.term->name);
+		index = afnd(projects_name, projects_len, l.term->name);
 		if(index < 0) {
 			index = projects_len;
 			projects_name[index] = l.term->name;
@@ -721,7 +719,7 @@ parse_glossary(FILE* fp, Glossary* glossary)
 		}
 		if(pad == 0) {
 			List* l = &glossary->lists[glossary->len];
-			substr(line, l->name, 0, len);
+			sstr(line, l->name, 0, len);
 			if(!sans(l->name)) {
 				printf("Warning: %s is not alphanum\n", l->name);
 			}
@@ -729,14 +727,14 @@ parse_glossary(FILE* fp, Glossary* glossary)
 			glossary->len++;
 		} else if(pad == 2) {
 			List* l = &glossary->lists[glossary->len - 1];
-			if(strstr(line, " : ") != NULL) {
+			if(spos(line, " : ") >= 0) {
 				key_len = cpos(line, ':') - 3;
-				substr(line, l->keys[l->pairs_len], 2, key_len);
+				sstr(line, l->keys[l->pairs_len], 2, key_len);
 				val_len = len - key_len - 5;
-				substr(line, l->vals[l->pairs_len], key_len + 5, val_len);
+				sstr(line, l->vals[l->pairs_len], key_len + 5, val_len);
 				l->pairs_len++;
 			} else {
-				substr(line, l->items[l->items_len], 2, len);
+				sstr(line, l->items[l->items_len], 2, len);
 				l->items_len++;
 			}
 		}
@@ -772,40 +770,40 @@ parse_lexicon(FILE* fp, Lexicon* lexicon)
 		}
 		if(pad == 0) {
 			Term* t = &lexicon->terms[lexicon->len];
-			substr(line, t->name, 0, len);
+			sstr(line, t->name, 0, len);
 			if(!sans(t->name))
 				printf("Warning: %s is not alphanum\n", t->name);
 			slca(t->name);
 			lexicon->len++;
 		} else if(pad == 2) {
 			Term* t = &lexicon->terms[lexicon->len - 1];
-			if(strstr(line, "HOST : ") != NULL)
-				substr(line, t->host, 9, len - 9);
-			if(strstr(line, "BREF : ") != NULL)
-				substr(line, t->bref, 9, len - 9);
-			if(strstr(line, "TYPE : ") != NULL)
-				substr(line, t->type, 9, len - 9);
-			catch_body = strstr(line, "BODY") != NULL;
-			catch_link = strstr(line, "LINK") != NULL;
-			catch_list = strstr(line, "LIST") != NULL;
+			if(spos(line, "HOST : ") >= 0)
+				sstr(line, t->host, 9, len - 9);
+			if(spos(line, "BREF : ") >= 0)
+				sstr(line, t->bref, 9, len - 9);
+			if(spos(line, "TYPE : ") >= 0)
+				sstr(line, t->type, 9, len - 9);
+			catch_body = spos(line, "BODY") >= 0;
+			catch_link = spos(line, "LINK") >= 0;
+			catch_list = spos(line, "LIST") >= 0;
 		} else if(pad == 4) {
 			Term* t = &lexicon->terms[lexicon->len - 1];
 			/* Body */
 			if(catch_body) {
-				substr(line, t->body[t->body_len], 4, len - 4);
+				sstr(line, t->body[t->body_len], 4, len - 4);
 				t->body_len++;
 			}
 			/* Link */
 			if(catch_link) {
 				key_len = cpos(line, ':') - 5;
-				substr(line, t->link_keys[t->link_len], 4, key_len);
+				sstr(line, t->link_keys[t->link_len], 4, key_len);
 				val_len = len - key_len - 5;
-				substr(line, t->link_vals[t->link_len], key_len + 7, val_len);
+				sstr(line, t->link_vals[t->link_len], key_len + 7, val_len);
 				t->link_len++;
 			}
 			/* List */
 			if(catch_list) {
-				substr(line, t->list[t->list_len], 4, len - 4);
+				sstr(line, t->list[t->list_len], 4, len - 4);
 				t->list_len++;
 			}
 		}
@@ -837,27 +835,27 @@ parse_horaire(FILE* fp, Journal* journal)
 		}
 		l = &journal->logs[journal->len];
 		/* Date */
-		substr(line, l->date, 0, 5);
+		sstr(line, l->date, 0, 5);
 		/* Rune */
 		l->rune = line[6];
 		l->is_event = l->rune == '+';
 		/* Code */
-		substr(line, codebuff, 7, 3);
+		sstr(line, codebuff, 7, 3);
 		l->code = atoi(codebuff);
 		/* Term */
-		substr(line, l->host, 11, 21);
+		sstr(line, l->host, 11, 21);
 		strm(l->host);
 		if(!sans(l->host))
 			printf("Warning: %s is not alphanum\n", l->host);
 		/* Pict */
 		if(len >= 35) {
 			char pictbuff[4];
-			substr(line, pictbuff, 32, 3);
+			sstr(line, pictbuff, 32, 3);
 			l->pict = atoi(pictbuff);
 		}
 		/* Name */
 		if(len >= 38) {
-			substr(line, l->name, 36, 30);
+			sstr(line, l->name, 36, 30);
 			strm(l->name);
 		}
 		journal->len++;
@@ -930,46 +928,46 @@ template_mods(char* src, char* dest)
 	int split, targetsplit;
 	char target[256], params[256];
 	split = cpos(src, ' ');
-	substr(src, target, split + 1, slen(src) - split - 2);
+	sstr(src, target, split + 1, slen(src) - split - 2);
 	targetsplit = cpos(target, ' ');
 	if(targetsplit > 0) {
-		substr(target, params, targetsplit + 1, slen(target) - targetsplit - 1);
-		substr(src, target, split + 1, targetsplit);
+		sstr(target, params, targetsplit + 1, slen(target) - targetsplit - 1);
+		sstr(src, target, split + 1, targetsplit);
 	}
 	/* create new string */
 	dest[0] = '\0';
-	if(strstr(src, "^itchio") != NULL) {
-		strcat(dest, "<iframe frameborder='0' src='https://itch.io/embed/");
-		strcat(dest, target);
-		strcat(dest, "?link_color=000000' width='600' height='167'></iframe>");
-	} else if(strstr(src, "^bandcamp") != NULL) {
-		strcat(dest, "<iframe style='border: 0; width: 600px; height: 274px;' src='https://bandcamp.com/EmbeddedPlayer/album=");
-		strcat(dest, target);
-		strcat(dest, "/size=large/bgcol=ffffff/linkcol=333333/artwork=small' seamless></iframe>");
-	} else if(strstr(src, "^youtube") != NULL) {
-		strcat(dest, "<iframe width='600' height='380' src='https://www.youtube.com/embed/");
-		strcat(dest, target);
-		strcat(dest, "?rel=0' style='max-width:700px' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe>");
-	} else if(strstr(src, "^redirect") != NULL) {
-		strcat(dest, "<meta http-equiv='refresh' content='2; url=");
-		strcat(dest, target);
-		strcat(dest, ".html' />");
-		strcat(dest, "<p>In a hurry? Travel to <a href='");
-		strcat(dest, target);
-		strcat(dest, ".html'>");
-		strcat(dest, target);
-		strcat(dest, "</a>.</p>");
-	} else if(strstr(src, "^img") != NULL) {
+	if(spos(src, "^itchio") >= 0) {
+		scat(dest, "<iframe frameborder='0' src='https://itch.io/embed/");
+		scat(dest, target);
+		scat(dest, "?link_color=000000' width='600' height='167'></iframe>");
+	} else if(spos(src, "^bandcamp") >= 0) {
+		scat(dest, "<iframe style='border: 0; width: 600px; height: 274px;' src='https://bandcamp.com/EmbeddedPlayer/album=");
+		scat(dest, target);
+		scat(dest, "/size=large/bgcol=ffffff/linkcol=333333/artwork=small' seamless></iframe>");
+	} else if(spos(src, "^youtube") >= 0) {
+		scat(dest, "<iframe width='600' height='380' src='https://www.youtube.com/embed/");
+		scat(dest, target);
+		scat(dest, "?rel=0' style='max-width:700px' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe>");
+	} else if(spos(src, "^redirect") >= 0) {
+		scat(dest, "<meta http-equiv='refresh' content='2; url=");
+		scat(dest, target);
+		scat(dest, ".html' />");
+		scat(dest, "<p>In a hurry? Travel to <a href='");
+		scat(dest, target);
+		scat(dest, ".html'>");
+		scat(dest, target);
+		scat(dest, "</a>.</p>");
+	} else if(spos(src, "^img") >= 0) {
 		if(targetsplit > 0) {
-			strcat(dest, "<img src='../media/");
-			strcat(dest, target);
-			strcat(dest, "' width='");
-			strcat(dest, params);
-			strcat(dest, "'/>&nbsp;");
+			scat(dest, "<img src='../media/");
+			scat(dest, target);
+			scat(dest, "' width='");
+			scat(dest, params);
+			scat(dest, "'/>&nbsp;");
 		} else {
-			strcat(dest, "<img src='../media/");
-			strcat(dest, target);
-			strcat(dest, "'/>&nbsp;");
+			scat(dest, "<img src='../media/");
+			scat(dest, target);
+			scat(dest, "'/>&nbsp;");
 		}
 	} else
 		printf("Warning: Missing template mod: %s\n", src);
@@ -982,31 +980,31 @@ template_link(char* src, char* dest)
 	char target[256], name[256];
 	/* find target and name */
 	if(split == -1) {
-		substr(src, target, 1, slen(src) - 2);
+		sstr(src, target, 1, slen(src) - 2);
 		scpy(target, name);
 	} else {
-		substr(src, target, 1, split - 1);
-		substr(src, name, split + 1, slen(src) - split - 2);
+		sstr(src, target, 1, split - 1);
+		sstr(src, name, split + 1, slen(src) - split - 2);
 	}
 	/* create new string */
 	dest[0] = '\0';
 	if(surl(target)) {
-		strcat(dest, "<a href='");
-		strcat(dest, target);
-		strcat(dest, "' target='_blank'>");
-		strcat(dest, name);
-		strcat(dest, "</a>");
+		scat(dest, "<a href='");
+		scat(dest, target);
+		scat(dest, "' target='_blank'>");
+		scat(dest, name);
+		scat(dest, "</a>");
 	} else {
 		if(!find_term(&all_terms, target)) {
 			printf("Warning: Unknown link(%s:%s)\n", target, name);
-			strcat(dest, target);
+			scat(dest, target);
 		} else {
-			strcat(dest, "<a href='");
+			scat(dest, "<a href='");
 			filenamestr(target, target);
-			strcat(dest, target);
-			strcat(dest, ".html'>");
-			strcat(dest, name);
-			strcat(dest, "</a>");
+			scat(dest, target);
+			scat(dest, ".html'>");
+			scat(dest, name);
+			scat(dest, "</a>");
 		}
 	}
 }
@@ -1023,7 +1021,7 @@ template_seg(Term* term, char* src)
 		if(c == '}') {
 			recording = false;
 			/* capture full template */
-			substr(src, full, i - slen(buffer) - 1, slen(buffer) + 2);
+			sstr(src, full, i - slen(buffer) - 1, slen(buffer) + 2);
 			if(full[1] == '^')
 				template_mods(full, templated);
 			else

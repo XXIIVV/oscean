@@ -45,7 +45,7 @@ is_valid_arvelie(char* date)
 	int y = ((date[0] - '0') * 10) + date[1] - '0';
 	int m = date[2] - 'A';
 	int d = ((date[3] - '0') * 10) + date[4] - '0';
-	if(strlen(date) != 5) {
+	if(slen(date) != 5) {
 		return 0;
 	}
 	if(y < 0 || y > 99 || m < 0 || m > 26 || d < 0 || d > 14) {
@@ -61,7 +61,7 @@ is_valid_ymdstr(char* date)
 	        (date[2] - '0') * 10 + date[3] - '0';
 	int m = (date[5] - '0') * 10 + date[6] - '0';
 	int d = (date[8] - '0') * 10 + date[9] - '0';
-	if(strlen(date) != 10) {
+	if(slen(date) != 10) {
 		return 0;
 	}
 	if(y < 0 || y > 9999 || m < 0 || m > 12 || d < 0 || d > 31) {

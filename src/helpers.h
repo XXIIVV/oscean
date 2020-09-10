@@ -163,8 +163,31 @@ scpy(char* src, char* dest)
 void
 sstr(char* src, char* dest, int from, int to)
 {
-	memcpy(dest, src + from, to);
+	int i;
+	char *a = (char*)src + from, *b = (char*)dest;
+	for(i = 0; i < to; i++)
+		b[i] = a[i];
 	dest[to] = '\0';
+}
+
+int
+afnd(char* src[], int len, char* val)
+{
+	int i;
+	for(i = 0; i < len; i++)
+		if(scmp(src[i], val))
+			return i;
+	return -1;
+}
+
+char*
+scat(char* dest, const char* src)
+{
+	char* ptr = dest + slen(dest);
+	while(*src != '\0')
+		*ptr++ = *src++;
+	*ptr = '\0';
+	return dest;
 }
 
 /* old */
@@ -182,42 +205,26 @@ substrint(char* str, int from, int len)
 }
 
 void
-substr(char* src, char* dest, int from, int to)
-{
-	memcpy(dest, src + from, to);
-	dest[to] = '\0';
-}
-
-void
 swapstr(char* src, char* dest, char* a, char* b)
 {
 	char head[1024], tail[1024];
 	int index = spos(src, a);
 	if(index < 0)
 		return;
-	substr(src, head, 0, index);
-	substr(src, tail, index + slen(a), slen(src) - index - slen(a));
+	sstr(src, head, 0, index);
+	sstr(src, tail, index + slen(a), slen(src) - index - slen(a));
 	dest[0] = '\0';
-	strcat(dest, head);
-	strcat(dest, b);
-	strcat(dest, tail);
+	scat(dest, head);
+	scat(dest, b);
+	scat(dest, tail);
 }
 
 void
 filenamestr(char* str, char* mod)
 {
-	int i;
-	int len = slen(str) + 1;
-	for(i = 0; i < len; i++) {
-		mod[i] = str[i];
-		if(mod[i] == '\0')
-			break;
-		if(!cial(mod[i]) && !cinu(mod[i]))
-			mod[i] = '_';
-		else
-			mod[i] = clca(mod[i]);
-	}
-	mod[len - 1] = '\0';
+	scpy(str, mod);
+	slca(mod);
+	scsw(mod, ' ', '_');
 }
 
 void
@@ -225,9 +232,9 @@ firstword(char* src, char* dest)
 {
 	int until = cpos(src, ' ');
 	if(until > -1)
-		substr(src, dest, 0, until);
+		sstr(src, dest, 0, until);
 	else
-		substr(src, dest, 0, slen(src));
+		sstr(src, dest, 0, slen(src));
 }
 
 int
@@ -236,16 +243,6 @@ count_leading_spaces(char* str)
 	int i;
 	for(i = 0; i < slen(str) + 1; i++)
 		if(str[i] != ' ')
-			return i;
-	return -1;
-}
-
-int
-sfin(char* a[], int num_elements, char* value)
-{
-	int i;
-	for(i = 0; i < num_elements; i++)
-		if(scmp(a[i], value))
 			return i;
 	return -1;
 }
