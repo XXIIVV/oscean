@@ -565,7 +565,6 @@ build_page(FILE* f, Term* term, Journal* journal)
 	build_banner(f, term, 1);
 	build_body(f, term);
 	build_include(f, term);
-	build_list(f, term);
 	/* templated pages */
 	if(scmp(term->type, "portal"))
 		build_portal(f, term);
@@ -586,6 +585,7 @@ build_page(FILE* f, Term* term, Journal* journal)
 		build_special_journal(f, journal);
 	else if(scmp(term->name, "index"))
 		build_special_index(f);
+	build_list(f, term);
 	build_links(f, term);
 	build_incoming(f, term);
 	build_horaire(f, term);
