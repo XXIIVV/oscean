@@ -1,6 +1,3 @@
-typedef enum { false,
-	       true } bool;
-
 int
 cisp(char c)
 {
@@ -56,28 +53,31 @@ cpos(char* s, char c)
 	return -1;
 }
 
-void
+char*
 suca(char* s)
 {
 	int i;
 	for(i = 0; i < slen(s); i++)
 		s[i] = cuca(s[i]);
+	return s;
 }
 
-void
+char*
 slca(char* s)
 {
 	int i;
 	for(i = 0; i < slen(s); i++)
 		s[i] = clca(s[i]);
+	return s;
 }
 
-void
+char*
 scsw(char* s, char a, char b)
 {
 	int i;
 	for(i = 0; i < slen(s); i++)
 		s[i] = s[i] == a ? b : s[i];
+	return s;
 }
 
 int
@@ -135,10 +135,10 @@ spos(char* a, char* b)
 }
 
 int
-sint(char* s)
+sint(char* s, int len)
 {
 	int num = 0, i = 0;
-	while(s[i] && cinu(s[i])) {
+	while(s[i] && cinu(s[i]) && i < len) {
 		num = num * 10 + (s[i] - '0');
 		i++;
 	}
@@ -191,18 +191,6 @@ scat(char* dest, const char* src)
 
 /* old */
 
-int
-substrint(char* str, int from, int len)
-{
-	int num = 0, i = 0;
-	while(str[i] && (str[i] >= '0' && str[i] <= '9')) {
-		if(i >= from && i < from + len)
-			num = num * 10 + (str[i] - '0');
-		i++;
-	}
-	return num;
-}
-
 void
 swapstr(char* src, char* dest, char* a, char* b)
 {
@@ -222,8 +210,7 @@ void
 filenamestr(char* str, char* mod)
 {
 	scpy(str, mod);
-	slca(mod);
-	scsw(mod, ' ', '_');
+	scsw(slca(mod), ' ', '_');
 }
 
 void
@@ -234,16 +221,6 @@ firstword(char* src, char* dest)
 		sstr(src, dest, 0, until);
 	else
 		sstr(src, dest, 0, slen(src));
-}
-
-int
-count_leading_spaces(char* str)
-{
-	int i;
-	for(i = 0; i < slen(str) + 1; i++)
-		if(str[i] != ' ')
-			return i;
-	return -1;
 }
 
 float
@@ -259,25 +236,6 @@ nowstr(void)
 	time_t now;
 	time(&now);
 	return ctime(&now);
-}
-
-void
-fputs_lifeline(FILE* f, int limit_from, int limit_to, int range_from,
-               int range_to, int len)
-{
-	int i;
-	float f_len = len - 1;
-	bool init = false;
-	for(i = 0; i < len; i++) {
-		float epoch = (i / f_len) * (limit_to - limit_from) + limit_from;
-		if(epoch > range_from && !init) {
-			fputs("+", f);
-			init = true;
-		} else if(epoch >= range_from && epoch <= range_to)
-			fputs("+", f);
-		else
-			fputs("-", f);
-	}
 }
 
 void
