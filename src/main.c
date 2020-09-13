@@ -170,7 +170,7 @@ build_pict(FILE* f, int pict, char* host, char* name, bool caption,
            char* link)
 {
 	fputs("<figure>", f);
-	fprintf(f, "<img src='../media/diary/%d.jpg' alt='%s picture'/>", pict, name);
+	fprintf(f, "<img src='../media/diary/%d.jpg' alt='%s picture' width='900'/>", pict, name);
 	if(caption) {
 		fputs("<figcaption>", f);
 		if(link)
@@ -602,7 +602,7 @@ build_page(FILE* f, Term* term, Journal* journal)
 	           "</head>"
 	           "<body>",
 	        term->bref, term->name);
-	fputs("<header><a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV'></a></header>", f);
+	fputs("<header><a href='home.html'><img src='../media/identity/xiv28.gif' alt='XXIIVV' height='29'></a></header>", f);
 	build_nav(f, term);
 	fputs("<main>", f);
 	build_banner(f, term, true);
@@ -628,24 +628,14 @@ build_page(FILE* f, Term* term, Journal* journal)
 	build_incoming(f, term);
 	build_horaire(f, term);
 	fputs("</main>", f);
-	fputs("<footer>"
-	      "<a href='https://creativecommons.org/licenses/by-nc-sa/4.0'>"
-	      "<img src='../media/icon/cc.svg'/></a>"
-	      "<a href='http://webring.xxiivv.com/'>"
-	      "<img src='../media/icon/rotonde.svg'/>"
-	      "</a>"
-	      "<a href='https://merveilles.town/@neauoire'>"
-	      "<img src='../media/icon/merveilles.svg'/>"
-	      "</a>"
-	      "<a href='https://github.com/neauoire'>"
-	      "<img src='../media/icon/github.png' alt='github'/>"
-	      "</a>"
-	      "<span>"
-	      "<a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 "
-	      "— <a href='about.html'>BY-NC-SA 4.0</a>"
-	      "</span>"
-	      "</footer></body></html>",
-	      f);
+	fputs("<footer>", f);
+	fputs("<a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a>", f);
+	fputs("<a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a>", f);
+	fputs("<a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a>", f);
+	fputs("<a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a>", f);
+	fputs("<span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span>", f);
+	fputs("</footer>", f);
+	fputs("</body></html>", f);
 	fclose(f);
 }
 
