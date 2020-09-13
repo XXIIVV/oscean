@@ -207,13 +207,6 @@ swapstr(char* src, char* dest, char* a, char* b)
 }
 
 void
-filenamestr(char* str, char* mod)
-{
-	scpy(str, mod);
-	scsw(slca(mod), ' ', '_');
-}
-
-void
 firstword(char* src, char* dest)
 {
 	int until = cpos(src, ' ');

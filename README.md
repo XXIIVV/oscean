@@ -13,7 +13,7 @@ time ./build.sh
 
 ### Haste
 
-Oscean can be compiled with the [Tiny C Compiler](https://bellard.org/tcc/), and Plan9's [POSIX Compiler](http://doc.cat-v.org/plan_9/4th_edition/papers/ape) in about 100 milliseconds on a Raspberry Pi.
+Oscean can be compiled with the [Tiny C Compiler](https://bellard.org/tcc/), and Plan9's [POSIX Compiler](http://doc.cat-v.org/plan_9/4th_edition/papers/ape) in about 200 milliseconds on a Raspberry Pi.
 
 ```
 tcc main.c -o main

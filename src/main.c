@@ -498,8 +498,7 @@ build_special_now(FILE* f, Journal* journal)
 {
 	int i, epoch, index = 0, projects_len = 0;
 	Log l;
-	char filename[STR_BUF_LEN];
-	char* projects_name[LOGS_RANGE];
+	char *projects_name[LOGS_RANGE], *projects_filename[LOGS_RANGE];
 	double projects_value[LOGS_RANGE];
 	double sum_value = 0;
 	epoch = get_epoch();
@@ -511,6 +510,7 @@ build_special_now(FILE* f, Journal* journal)
 		if(index < 0) {
 			index = projects_len;
 			projects_name[index] = l.term->name;
+			projects_filename[index] = l.term->filename;
 			projects_value[index] = 0;
 			projects_len++;
 		}
@@ -523,10 +523,9 @@ build_special_now(FILE* f, Journal* journal)
 	    sum_value, projects_len, LOGS_RANGE, sum_value / LOGS_RANGE, sum_value / projects_len);
 	fputs("<ul style='columns:2'>", f);
 	for(i = 0; i < projects_len; ++i) {
-		filenamestr(projects_name[i], filename);
 		fputs("<li>", f);
 		fprintf(f, "<a href='%s.html'>%s</a> %.2f&#37; ",
-		        filename,
+		        projects_filename[i],
 		        projects_name[i],
 		        projects_value[i] / sum_value * 100);
 		fputs("</li>", f);
@@ -924,20 +923,16 @@ template_link(char* src, char* dest)
 		scat(dest, name);
 		scat(dest, "</a>");
 	} else {
-		if(!find_term(&all_terms, target)) {
-			printf("Warning: Unknown link(%s:%s)\n", target, name);
-			scat(dest, target);
-		} else {
-			scat(dest, "<a href='");
-			filenamestr(target, target);
-			scat(dest, target);
-			scat(dest, ".html'>");
-			scat(dest, name);
-			scat(dest, "</a>");
-		}
+		Term* t = find_term(&all_terms, target);
+		if(!t)
+			error("Unknown link", target);
+		scat(dest, "<a href='");
+		scat(dest, t->filename);
+		scat(dest, ".html'>");
+		scat(dest, name);
+		scat(dest, "</a>");
 	}
 }
-
 void
 template_seg(Term* term, char* src)
 {
