@@ -1,0 +1,281 @@
+<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='description' content='Themes are standard for interface themes used in various software.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV — themes</title></head><body><header><a href='home.html'><img src='../media/identity/xiv28.gif' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='tools.html'>tools</a></li><li><a href='utilities.html'>utilities/</a></li><li><a href='games.html'>games</a></li><li><a href='mobile.html'>mobile</a></li><li><a href='automatons.html'>automatons</a></li></ul><ul><li><a href='noodle.html'>noodle</a></li><li><a href='moogle.html'>moogle</a></li><li><a href='graf3dscene.html'>graf3dscene</a></li><li><a href='themes.html'>themes/</a></li><li><a href='lin6.html'>lin6</a></li><li><a href='chr9.html'>chr9</a></li><li><a href='nespaint.html'>nespaint</a></li><li><a href='enfer.html'>enfer</a></li><li><a href='zoe_format.html'>zoe format</a></li></ul><ul></ul></nav><main><h2>Themes are standard for interface themes used in various software.</h2><p>A theme file is a plain-text <code>.svg</code> source which includes 9 colors, the reason for using a svg file as source is that on most operating system, a preview of the theme color will be generated via the file manager.</p><p>Applications supporting the themes ecosystem include <a href='orca.html'>Orca</a>, <a href='left.html'>Left</a>, <a href='nasu.html'>Nasu</a>, <a href='dotgrid.html'>Dotgrid</a> and <a href='https://github.com/hundredrabbits/themes' target='_blank'>many more</a>.</p><h3>Plan9</h3>
+
+<p>Below is the <a href='plan9.html'>Plan9</a> implementation, the stdout is a sequence of 9 hex strings. Usage is simply <code>themes9 ../themes/apollo.svg</code></p>
+
+<pre>
+#include &lt;u.h&gt;
+#include &lt;libc.h&gt;
+#include &lt;draw.h&gt;
+#include &lt;event.h&gt;
+
+#define BUFLEN 1024
+
+long theme[9];
+Image *bg,
+    *f_high, *f_med, *f_low, *f_inv,
+    *b_high, *b_med, *b_low, *b_inv;
+
+int
+slen(char* s)
+{
+	int n = 0;
+	while(s[n] != '\0' && s[++n])
+		;
+	return n;
+}
+
+char*
+sstr(char* src, char* dest, int from, int to)
+{
+	int i;
+	char *a = (char*)src + from, *b = (char*)dest;
+	for(i = 0; i < to; i++)
+		b[i] = a[i];
+	dest[to] = '\0';
+	return dest;
+}
+
+unsigned char
+chex(char c)
+{
+	if(c >= 'a' && c <= 'f')
+		return 10 + c - 'a';
+	if(c >= 'A' && c <= 'F')
+		return 10 + c - 'A';
+	return (c - '0') & 0xF;
+}
+
+unsigned long
+shex(char* s)
+{
+	int i, n = 0, l = slen(s);
+	for(i = 0; i < l; ++i)
+		n |= (chex(s[i]) << ((l - i - 1) * 4));
+	return n;
+}
+
+void
+parse(int fd)
+{
+	int i, id = 0;
+	char buf[BUFLEN], hexs[8];
+
+	read(fd, buf, BUFLEN);
+
+	for(i = 0; i < BUFLEN; ++i) {
+		if(buf[i] != '#')
+			continue;
+		print("#%s ", sstr(buf, hexs, i + 1, 6));
+		theme[id] = (shex(hexs) << 8) + 255;
+		id++;
+	}
+
+	if(id != 9)
+		print("Invalid theme");
+
+	close(fd);
+
+	bg = allocimage(display, Rect(0, 0, 1, 1), RGB24, 1, theme[0]);
+	f_high = allocimage(display, Rect(0, 0, 1, 1), RGB24, 1, theme[1]);
+	f_med = allocimage(display, Rect(0, 0, 1, 1), RGB24, 1, theme[2]);
+	f_low = allocimage(display, Rect(0, 0, 1, 1), RGB24, 1, theme[3]);
+	f_inv = allocimage(display, Rect(0, 0, 1, 1), RGB24, 1, theme[4]);
+	b_high = allocimage(display, Rect(0, 0, 1, 1), RGB24, 1, theme[5]);
+	b_med = allocimage(display, Rect(0, 0, 1, 1), RGB24, 1, theme[6]);
+	b_low = allocimage(display, Rect(0, 0, 1, 1), RGB24, 1, theme[7]);
+	b_inv = allocimage(display, Rect(0, 0, 1, 1), RGB24, 1, theme[8]);
+}
+
+void
+redraw(Image* dst)
+{
+	int size = 20;
+	Point s = subpt(screen->r.max, screen->r.min);
+	Point c = divpt(s, 2);
+	Point m = addpt(screen->r.min, c);
+	Point o = addpt(m, (Point){-size * 4, -size * 2});
+	draw(screen, screen->r, bg, nil, ZP);
+
+	fillellipse(screen,
+	            addpt(o, (Point){size, size}),
+	            size, size, f_high, ZP);
+	fillellipse(screen,
+	            addpt(o, (Point){size * 3, size}),
+	            size, size, f_med, ZP);
+	fillellipse(screen,
+	            addpt(o, (Point){size * 5, size}),
+	            size, size, f_low, ZP);
+	fillellipse(screen,
+	            addpt(o, (Point){size * 7, size}),
+	            size, size, f_inv, ZP);
+	fillellipse(screen,
+	            addpt(o, (Point){size, size * 3}),
+	            size, size, b_high, ZP);
+	fillellipse(screen,
+	            addpt(o, (Point){size * 3, size * 3}),
+	            size, size, b_med, ZP);
+	fillellipse(screen,
+	            addpt(o, (Point){size * 5, size * 3}),
+	            size, size, b_low, ZP);
+	fillellipse(screen,
+	            addpt(o, (Point){size * 7, size * 3}),
+	            size, size, b_inv, ZP);
+}
+
+void
+eresized(int new)
+{
+	Rectangle r;
+	r = screen->r;
+	if(new&& getwindow(display, Refnone) < 0)
+		fprint(2, "can't reattach to window");
+	redraw(screen);
+}
+
+void
+main(int argc, char** argv)
+{
+	int fd;
+	Mouse m;
+
+	initdraw(0, 0, "Themes");
+
+	if(argc == 1)
+		fd = 0;
+	else if((fd = open(argv[1], OREAD)) < 0)
+		perror(argv[1]);
+	parse(fd);
+
+	eresized(0);
+	einit(Emouse);
+
+	/* Break on mouse3 */
+	for(;;) {
+		m = emouse();
+		if(m.buttons & 4)
+			break;
+	}
+}
+</pre>
+
+<h3>ANSI C Implementation</h3>
+
+<pre>
+#include &lt;stdio.h&gt;
+
+#define BUFLEN 256
+
+int
+slen(char* s)
+{
+	int n = 0;
+	while(s[n] != '\0' && s[++n])
+		;
+	return n;
+}
+
+int
+cpos(char* s, char c)
+{
+	int i;
+	for(i = 0; i < slen(s); i++)
+		if(s[i] == c)
+			return i;
+	return -1;
+}
+
+char*
+sstr(char* src, char* dest, int from, int to)
+{
+	int i;
+	char *a = (char*)src + from, *b = (char*)dest;
+	for(i = 0; i < to; i++)
+		b[i] = a[i];
+	dest[to] = '\0';
+	return dest;
+}
+
+unsigned char
+chex(char c)
+{
+	if(c >= 'a' && c <= 'f')
+		return 10 + c - 'a';
+	if(c >= 'A' && c <= 'F')
+		return 10 + c - 'A';
+	return (c - '0') & 0xF;
+}
+
+unsigned long
+shex(char* s)
+{
+	int i, n = 0, l = slen(s);
+	for(i = 0; i < l; ++i)
+		n |= (chex(s[i]) << ((l - i - 1) * 4));
+	return n;
+}
+
+int
+error(char* name)
+{
+	printf("Error: %s\n", name);
+	return 0;
+}
+
+int
+scmp(char* a, char* b)
+{
+	int i, l = slen(a);
+	if(l != slen(b))
+		return 0;
+	for(i = 0; i < l; ++i)
+		if(a[i] != b[i])
+			return 0;
+	return 1;
+}
+
+char*
+scat(char* dest, const char* src)
+{
+	char* ptr = dest + slen(dest);
+	while(*src != '\0')
+		*ptr++ = *src++;
+	*ptr = '\0';
+	return dest;
+}
+
+int
+parse(FILE* f)
+{
+	int i, id = 0;
+	long theme[9];
+	char line[BUFLEN], hexs[BUFLEN];
+	while(fgets(line, BUFLEN, f)) {
+		int split = cpos(line, '#');
+		if(split < 0 || id > 9)
+			continue;
+		sstr(line, hexs, split, 7);
+		printf("%s ", hexs);
+		theme[id] = shex(hexs + 1);
+		id++;
+	}
+	if(id != 9)
+		return error("Invalid theme");
+	for(i = 0; i < 9; ++i) {
+		printf("%ld ", theme[i]);
+	}
+	return 1;
+}
+
+int
+main(int argc, char* argv[])
+{
+	FILE* input;
+	if(argc == 2) {
+		input = fopen(argv[1], "rb");
+		if(input == NULL)
+			return error("Invalid input.\n");
+	} else
+		input = stdin;
+	return parse(input);
+}
+</pre><p>Found a mistake? Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/themes.htm' target='_blank'>edit</a> to themes.</p><ul><li><a href='https://github.com/hundredrabbits/themes' target='_blank'>sources</a></li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
