@@ -163,7 +163,7 @@ build_lifeline(FILE* f, Term* term)
 	int init = 0;
 	fputs("<code style='float:right; font-size:80%'>", f);
 	for(i = 0; i < 6; i++) {
-		float epoch = (i / 5.0) * (limit_to - limit_from) + limit_from;
+		double epoch = (i / 5.0) * (limit_to - limit_from) + limit_from;
 		if(epoch > range_from && !init) {
 			fputs("+", f);
 			init = 1;
@@ -499,8 +499,7 @@ build_special_now(FILE* f, Journal* journal)
 	int i, epoch, index = 0, projects_len = 0;
 	Log l;
 	char *projects_name[LOGS_RANGE], *projects_filename[LOGS_RANGE];
-	double projects_value[LOGS_RANGE];
-	double sum_value = 0;
+	double sum_value = 0, projects_value[LOGS_RANGE], max_value = 0;
 	epoch = get_epoch();
 	for(i = 0; i < LOGS_RANGE; ++i) {
 		l = journal->logs[i];
@@ -517,9 +516,21 @@ build_special_now(FILE* f, Journal* journal)
 		projects_value[index] += l.code % 10;
 		sum_value += l.code % 10;
 	}
+	/* find most active with a photo */
+	for(i = 0; i < projects_len; ++i) {
+		if(find_last_diary(find_term(&all_terms, projects_name[i])) && projects_value[i] > max_value)
+			max_value = projects_value[i];
+	}
+
+	for(i = 0; i < projects_len; ++i) {
+		if(projects_value[i] != max_value)
+			continue;
+		build_log_pict(f, find_last_diary(find_term(&all_terms, projects_name[i])), 1);
+	}
+
 	fprintf(
 	    f,
-	    "<p>Distribution of <b>%.0f hours for %d projects</b>, over the past %d days, for an average of %.2f hours per day and %.2f hours per project.</p>",
+	    "<p>This data shows the distribution of <b>%.0f hours over %d projects</b>, recorded during the last %d days, for an average of %.1f work hours per day and %.1f work hours per project.</p>",
 	    sum_value, projects_len, LOGS_RANGE, sum_value / LOGS_RANGE, sum_value / projects_len);
 	fputs("<ul style='columns:2'>", f);
 	for(i = 0; i < projects_len; ++i) {
