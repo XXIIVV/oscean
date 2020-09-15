@@ -250,5 +250,5 @@ fputs_rfc3339(FILE* f, time_t t)
 	fprintf(f, "%04d-%02d-%02dT%02d:%02d:%02d%c%02d:%02d",
 	        tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,
 	        tm->tm_hour, tm->tm_min, tm->tm_sec,
-	        '-', 3600 * 6, 0);
+	        '+', 1, 0);
 }
