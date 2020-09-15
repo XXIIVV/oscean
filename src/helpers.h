@@ -151,15 +151,16 @@ surl(char* s)
 	return spos(s, "://") >= 0 || spos(s, "./") >= 0;
 }
 
-void
+char*
 scpy(char* src, char* dest)
 {
 	int i = 0;
 	while((dest[i] = src[i]) != '\0')
 		i++;
+	return dest;
 }
 
-void
+char*
 sstr(char* src, char* dest, int from, int to)
 {
 	int i;
@@ -167,6 +168,7 @@ sstr(char* src, char* dest, int from, int to)
 	for(i = 0; i < to; i++)
 		b[i] = a[i];
 	dest[to] = '\0';
+	return dest;
 }
 
 int
@@ -237,4 +239,16 @@ fputs_rfc2822(FILE* f, time_t t)
 	char rfc_2822[40];
 	strftime(rfc_2822, sizeof(rfc_2822), "%a, %d %b %Y 00:00:00 +0900", localtime(&t));
 	fprintf(f, "%s", rfc_2822);
+}
+
+void
+fputs_rfc3339(FILE* f, time_t t)
+{
+	struct tm* tm;
+	if((tm = localtime(&t)) == NULL)
+		return;
+	fprintf(f, "%04d-%02d-%02dT%02d:%02d:%02d%c%02d:%02d",
+	        tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,
+	        tm->tm_hour, tm->tm_min, tm->tm_sec,
+	        '-', 3600 * 6, 0);
 }

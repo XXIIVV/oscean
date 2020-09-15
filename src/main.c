@@ -60,7 +60,6 @@ typedef struct Log {
 	char host[KEY_BUF_LEN];
 	int pict;
 	char name[LOG_BUF_LEN];
-	int is_event;
 	Term* term;
 } Log;
 
@@ -106,8 +105,7 @@ Term*
 find_term(Lexicon* lexicon, char* name)
 {
 	int i;
-	slca(name);
-	scsw(name, '_', ' ');
+	scsw(slca(name), '_', ' ');
 	for(i = 0; i < lexicon->len; ++i) {
 		Term* t = &lexicon->terms[i];
 		if(scmp(name, t->name))
@@ -368,7 +366,7 @@ build_horaire(FILE* f, Term* term)
 		Log* l = &all_logs.logs[i];
 		if(l->term != term && l->term->parent != term)
 			continue;
-		if(l->is_event)
+		if(l->rune == '+')
 			events_len++;
 		ch += (l->code / 10) % 10;
 		fh += l->code % 10;
@@ -388,7 +386,7 @@ build_horaire(FILE* f, Term* term)
 	fputs("<ul>", f);
 	for(i = 0; i < all_logs.len; ++i) {
 		Log* l = &all_logs.logs[i];
-		if(!l->is_event)
+		if(l->rune != '+')
 			continue;
 		if(l->term != term && l->term->parent != term)
 			continue;
@@ -417,7 +415,7 @@ build_special_home(FILE* f, Journal* journal)
 {
 	int i, events = 0;
 	for(i = 0; i < 5; ++i) {
-		if(journal->logs[i].is_event) {
+		if(journal->logs[i].rune == '+') {
 			events = 1;
 			break;
 		}
@@ -427,7 +425,7 @@ build_special_home(FILE* f, Journal* journal)
 	fputs("<h2>Events</h2>", f);
 	fputs("<ul>", f);
 	for(i = 0; i < 5; ++i) {
-		if(!journal->logs[i].is_event)
+		if(journal->logs[i].rune != '+')
 			continue;
 		fprintf(f, "<li><a href='%s.html'>%s</a> %s</li>", journal->logs[i].term->filename,
 		        journal->logs[i].date, journal->logs[i].name);
@@ -441,7 +439,7 @@ build_special_calendar(FILE* f, Journal* journal)
 	int i, last_year = 0;
 	fputs("<ul>", f);
 	for(i = 0; i < journal->len; ++i) {
-		if(!journal->logs[i].is_event)
+		if(journal->logs[i].rune != '+')
 			continue;
 		if(last_year != sint(journal->logs[i].date, 2))
 			fprintf(f, "</ul><ul>");
@@ -657,6 +655,20 @@ build_rss(FILE* f, Journal* journal)
 	fclose(f);
 }
 
+void
+build_twtxt(FILE* f, Journal* journal)
+{
+	int i;
+	for(i = 0; i < journal->len; ++i) {
+		Log l = journal->logs[i];
+		if(l.rune != '+')
+			continue;
+		fputs_rfc3339(f, arvelie_to_time(l.date));
+		fprintf(f, "\t%s | " DOMAIN "%s\n", l.name, l.term->filename);
+	}
+	fclose(f);
+}
+
 FILE*
 parse_glossary(FILE* fp, Glossary* glossary)
 {
@@ -786,7 +798,6 @@ parse_horaire(FILE* fp, Journal* journal)
 		sstr(line, l->date, 0, 5);
 		/* Rune */
 		l->rune = line[6];
-		l->is_event = l->rune == '+';
 		/* Code */
 		l->code = sint(line + 7, 3);
 		/* Term */
@@ -1024,11 +1035,15 @@ build(void)
 			error("Could not open file", all_terms.terms[i].name);
 		build_page(f, &all_terms.terms[i], &all_logs);
 	}
-	printf("1 feed ");
+	printf("2 feeds ");
 	f = fopen("../links/rss.xml", "w");
 	if(f == NULL)
 		error("Could not open file", "rss.xml");
 	build_rss(f, &all_logs);
+	f = fopen("../links/tw.txt", "w");
+	if(f == NULL)
+		error("Could not open file", "tw.txt");
+	build_twtxt(f, &all_logs);
 }
 
 void

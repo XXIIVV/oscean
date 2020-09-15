@@ -22,13 +22,7 @@ pcc main.c -o main
 
 ## Twtxt
 
-[twtxt](https://github.com/buckket/twtxt) is a format specification for self-hosted flat file based microblogging, you can find my feed [here](https://raw.githubusercontent.com/XXIIVV/Oscean/master/twtxt.txt). 
-
-The command line operation to append to the twtxt.txt file:
-
-```
-echo -e "`date +%FT%T%:z`\tMESSAGE!" >> twtxt.txt
-```
+[twtxt](https://github.com/buckket/twtxt) is a format specification for self-hosted flat file based microblogging, you can find the generated feed [here](https://wiki.xxiivv.com/links/tw.txt). 
 
 ## Extras
 
