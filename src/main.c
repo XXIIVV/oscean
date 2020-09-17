@@ -494,49 +494,51 @@ build_special_journal(FILE* f, Journal* journal)
 void
 build_special_now(FILE* f, Journal* journal)
 {
-	int i, epoch, index = 0, projects_len = 0;
-	Log l;
-	char *projects_name[LOGS_RANGE], *projects_filename[LOGS_RANGE];
-	double sum_value = 0, projects_value[LOGS_RANGE], max_value = 0;
+	int i, epoch, projects_len = 0;
+	char *pname[LOGS_RANGE], *pfname[LOGS_RANGE];
+	double sum_value = 0, pval[LOGS_RANGE], pmaxval = 0;
 	epoch = get_epoch();
 	for(i = 0; i < LOGS_RANGE; ++i) {
-		l = journal->logs[i];
+		int index = 0;
+		Log l = journal->logs[i];
 		if(epoch - arvelie_to_epoch(l.date) > LOGS_RANGE)
 			break;
-		index = afnd(projects_name, projects_len, l.term->name);
+		index = afnd(pname, projects_len, l.term->name);
 		if(index < 0) {
 			index = projects_len;
-			projects_name[index] = l.term->name;
-			projects_filename[index] = l.term->filename;
-			projects_value[index] = 0;
+			pname[index] = l.term->name;
+			pfname[index] = l.term->filename;
+			pval[index] = 0;
 			projects_len++;
 		}
-		projects_value[index] += l.code % 10;
+		pval[index] += l.code % 10;
 		sum_value += l.code % 10;
 	}
 	/* find most active with a photo */
 	for(i = 0; i < projects_len; ++i) {
-		if(find_last_diary(find_term(&all_terms, projects_name[i])) && projects_value[i] > max_value)
-			max_value = projects_value[i];
+		if(find_last_diary(find_term(&all_terms, pname[i])) && pval[i] > pmaxval)
+			pmaxval = pval[i];
 	}
-
 	for(i = 0; i < projects_len; ++i) {
-		if(projects_value[i] != max_value)
+		if(pval[i] != pmaxval)
 			continue;
-		build_log_pict(f, find_last_diary(find_term(&all_terms, projects_name[i])), 1);
+		build_log_pict(f, find_last_diary(find_term(&all_terms, pname[i])), 1);
 	}
-
 	fprintf(
 	    f,
-	    "<p>This data shows the distribution of <b>%.0f hours over %d projects</b>, recorded during the last %d days, for an average of %.1f work hours per day and %.1f work hours per project.</p>",
-	    sum_value, projects_len, LOGS_RANGE, sum_value / LOGS_RANGE, sum_value / projects_len);
+	    "<p>This data shows the distribution of <b>%.0f hours over %d projects</b>, "
+	    "recorded during the last %d days, for an average of %.1f work hours per day "
+	    "and %.1f work hours per project.</p>",
+	    sum_value, projects_len,
+	    LOGS_RANGE, sum_value / LOGS_RANGE,
+	    sum_value / projects_len);
 	fputs("<ul style='columns:2'>", f);
 	for(i = 0; i < projects_len; ++i) {
 		fputs("<li>", f);
 		fprintf(f, "<a href='%s.html'>%s</a> %.2f&#37; ",
-		        projects_filename[i],
-		        projects_name[i],
-		        projects_value[i] / sum_value * 100);
+		        pfname[i],
+		        pname[i],
+		        pval[i] / sum_value * 100);
 		fputs("</li>", f);
 	}
 	fputs("</ul>", f);
@@ -1049,20 +1051,13 @@ build(void)
 void
 check(void)
 {
-	int pict_used_len;
-	int pict_used[999];
-	int i;
-	pict_used_len = 0;
+	int i, j, found;
 	printf("Checking | ");
 	/* Find invalid logs */
 	for(i = 0; i < all_logs.len; ++i) {
 		Log* l = &all_logs.logs[i];
 		if(l->code < 1)
 			printf("Warning: Empty code %s\n", l->date);
-		if(l->pict > 0) {
-			pict_used[pict_used_len] = l->pict;
-			pict_used_len++;
-		}
 	}
 	/* Find unlinked lists */
 	for(i = 0; i < all_lists.len; ++i) {
@@ -1072,12 +1067,13 @@ check(void)
 	}
 	/* Find next available diary id */
 	for(i = 1; i < 999; ++i) {
-		int j;
-		for(j = 0; j < pict_used_len; j++) {
-			if(pict_used[j] == i && j < 0) {
-				printf("Completed at #%d ", i);
-				break;
-			}
+		found = 0;
+		for(j = 0; j < all_logs.len; j++)
+			if(all_logs.logs[j].pict == i || found)
+				found = 1;
+		if(!found) {
+			printf("Available<#%d>", i);
+			break;
 		}
 	}
 }
