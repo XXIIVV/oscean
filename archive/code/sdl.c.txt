@@ -1,0 +1,55 @@
+#include <SDL2/SDL.h>
+#include <stdio.h>
+
+int
+error(char* msg, const char* err)
+{
+	printf("Error %s: %s\n", msg, err);
+	return 1;
+}
+
+int
+main()
+{
+	SDL_Window* window = NULL;
+	SDL_Surface* surface = NULL;
+	SDL_Surface* image = NULL;
+
+	if(SDL_Init(SDL_INIT_VIDEO) < 0)
+		return error("init", SDL_GetError());
+
+	window = SDL_CreateWindow("Blank Window",
+	                          SDL_WINDOWPOS_UNDEFINED,
+	                          SDL_WINDOWPOS_UNDEFINED,
+	                          640,
+	                          480,
+	                          SDL_WINDOW_SHOWN);
+
+	if(window == NULL)
+		return error("window", SDL_GetError());
+
+	surface = SDL_GetWindowSurface(window);
+	SDL_FillRect(surface, NULL,
+	             SDL_MapRGB(surface->format, 0x72, 0xDE, 0xC2));
+
+	/* Display an image */
+	image = SDL_LoadBMP("hello_world.bmp");
+
+	if(image != NULL)
+		return error("image", SDL_GetError());
+
+	SDL_BlitSurface(image, NULL, surface, NULL);
+
+	/* Draw canvas */
+	SDL_UpdateWindowSurface(window);
+	SDL_Delay(2000);
+
+	/* close */
+	SDL_FreeSurface(surface);
+	surface = NULL;
+	SDL_DestroyWindow(window);
+	window = NULL;
+	SDL_Quit();
+
+	return 0;
+}

@@ -1,12 +1,3 @@
-<h3>Compile</h3>
-
-<p>To convert source to an executable binary one uses a compiler. My compiler of choice is <a href='https://bellard.org/tcc/' target='_blank'>tcc</a>, but generally speaking <code>gcc</code> is what most toolchains will use on <a href='linux.html'>Linux</a>.</p>
-
-<pre>
-cc -Wall -o main main.c
-tcc -Wall struct.c -o struct
-</pre>
-
 <h3>Example File</h3>
 
 <pre>
@@ -88,6 +79,71 @@ main()
   }
   return 0;
 }
+</pre>
+
+<h3>SDL</h3>
+
+<pre>cc demo.c -I/usr/local/include -L/usr/local/lib -lSDL2 -o demo</pre>
+
+<p>To compile the following example, place a <code>graphic.bmp</code> file in the same location as the c file, or remove the image block.</p>
+
+<pre>
+#include &lt;SDL2/SDL.h&gt;
+#include &lt;stdio.h&gt;
+
+int
+error(char* msg, const char* err)
+{
+  printf("Error %s: %s\n", msg, err);
+  return 1;
+}
+
+int
+main()
+{
+  SDL_Window* window = NULL;
+  SDL_Surface* surface = NULL;
+  SDL_Surface* image = NULL;
+
+  if(SDL_Init(SDL_INIT_VIDEO) < 0)
+    return error("init", SDL_GetError());
+
+  window = SDL_CreateWindow("Blank Window",
+                            SDL_WINDOWPOS_UNDEFINED,
+                            SDL_WINDOWPOS_UNDEFINED,
+                            640,
+                            480,
+                            SDL_WINDOW_SHOWN);
+
+  if(window == NULL)
+    return error("window", SDL_GetError());
+
+  surface = SDL_GetWindowSurface(window);
+  SDL_FillRect(surface, NULL,
+               SDL_MapRGB(surface->format, 0x72, 0xDE, 0xC2));
+
+  /* Display an image */
+  image = SDL_LoadBMP("graphic.bmp");
+
+  if(image == NULL)
+    return error("image", SDL_GetError());
+
+  SDL_BlitSurface(image, NULL, surface, NULL);
+
+  /* Draw canvas */
+  SDL_UpdateWindowSurface(window);
+  SDL_Delay(2000);
+
+  /* close */
+  SDL_FreeSurface(surface);
+  surface = NULL;
+  SDL_DestroyWindow(window);
+  window = NULL;
+  SDL_Quit();
+
+  return 0;
+}
+
 </pre>
 
 <h3>Misc</h3>
