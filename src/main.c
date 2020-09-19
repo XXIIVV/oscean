@@ -230,7 +230,7 @@ fpmodule(FILE* f, char* s)
 		int split2 = cpos(target, ' ');
 		if(split2 > 0) {
 			char param[256], value[256];
-			sstr(target, param, 1, split2 - 1);
+			sstr(target, param, 0, split2);
 			sstr(target, value, split2 + 1, slen(target) - split2);
 			fprintf(f, "<img src='../media/%s' width='%s'/>&nbsp;", param, value);
 		} else
