@@ -187,11 +187,111 @@ build_log_pict(FILE* f, Log* l, int caption)
 }
 
 void
-build_body_part(FILE* f, Term* t)
+fplink(FILE* f, Lexicon* lex, char* s)
+{
+	int split = cpos(s, ' ');
+	char target[256], name[256];
+	/* find target and name */
+	if(split == -1) {
+		sstr(s, target, 0, slen(s));
+		scpy(target, name);
+	} else {
+		sstr(s, target, 0, split);
+		sstr(s, name, split + 1, slen(s) - split);
+	}
+	/* output */
+	if(surl(target)) {
+		fprintf(f, "<a href='%s' target='_blank'>%s</a>", target, name);
+	} else {
+		Term* t = findterm(lex, target);
+		if(!t)
+			error("Unknown link", target);
+		fprintf(f, "<a href='%s.html'>%s</a>", t->filename, name);
+	}
+}
+
+void
+fpmodule(FILE* f, char* s)
+{
+	int split = cpos(s, ' ');
+	char cmd[256], target[256];
+	sstr(s, cmd, 1, split - 1);
+	sstr(s, target, split + 1, slen(s) - split);
+
+	if(scmp(cmd, "itchio"))
+		fprintf(f, "<iframe frameborder='0' src='https://itch.io/embed/%s?link_color=000000' width='600' height='167'></iframe>", target);
+	else if(scmp(cmd, "bandcamp"))
+		fprintf(f, "<iframe style='border: 0; width: 600px; height: 274px;' src='https://bandcamp.com/EmbeddedPlayer/album=%s/size=large/bgcol=ffffff/linkcol=333333/artwork=small' seamless></iframe>", target);
+	else if(scmp(cmd, "youtube")) {
+		fprintf(f, "<iframe width='600' height='380' src='https://www.youtube.com/embed/%s?rel=0' style='max-width:700px' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe>", target);
+	} else if(scmp(cmd, "redirect")) {
+		fprintf(f, "<meta http-equiv='refresh' content='2; url=%s.html'/><p>In a hurry? Travel to <a href='%s.html'>%s</a>.</p>", target, target, target);
+	} else if(scmp(cmd, "img")) {
+		int split2 = cpos(target, ' ');
+		if(split2 > 0) {
+			char param[256], value[256];
+			sstr(target, param, 1, split2 - 1);
+			sstr(target, value, split2 + 1, slen(target) - split2);
+			fprintf(f, "<img src='../media/%s' width='%s'/>&nbsp;", param, value);
+		} else
+			fprintf(f, "<img src='../media/%s'/>&nbsp;", target);
+	} else if(scmp(cmd, "src")) {
+		char c;
+		FILE* fp = getfile("../archive/src/", target, ".txt", "r");
+		if(fp == NULL)
+			error("Missing src include ", target);
+		fputs("<figure>", f);
+		fputs("<pre>", f);
+		while((c = fgetc(fp)) != EOF) {
+			if(c == '<')
+				fputs("&lt;", f);
+			else if(c == '>')
+				fputs("&gt;", f);
+			else
+				fputc(c, f);
+		}
+		fputs("</pre>", f);
+		fprintf(f, "<figcaption><a href='../archive/src/%s.txt'>%s</a></figcaption>\n", target, target);
+		fputs("</figure>", f);
+	} else
+		printf("Warning: Missing template mod: %s\n", s);
+}
+
+void
+ftemplate(FILE* f, Lexicon* lex, char* s)
+{
+	int i, capture = 0;
+	char buf[STR_BUF_LEN];
+	buf[0] = '\0';
+	for(i = 0; i < slen(s); ++i) {
+		char c = s[i];
+		if(c == '}') {
+			capture = 0;
+			if(buf[0] == '^')
+				fpmodule(f, buf);
+			else
+				fplink(f, lex, buf);
+		}
+		if(capture) {
+			if(slen(buf) < STR_BUF_LEN - 1)
+				ccat(buf, c);
+			else
+				error("template too long", s);
+		} else if(c != '{' && c != '}')
+			fputc(c, f);
+		if(c == '{') {
+			capture = 1;
+			buf[0] = '\0';
+		}
+	}
+}
+
+void
+build_body_part(FILE* f, Lexicon* lex, Term* t)
 {
 	int i;
 	for(i = 0; i < t->body_len; ++i)
-		fputs(t->body[i], f);
+		ftemplate(f, lex, t->body[i]);
 }
 
 void
@@ -238,10 +338,10 @@ build_nav(FILE* f, Term* t)
 }
 
 void
-build_body(FILE* f, Term* t)
+build_body(FILE* f, Lexicon* lex, Term* t)
 {
 	fprintf(f, "<h2>%s</h2>", t->bref);
-	build_body_part(f, t);
+	build_body_part(f, lex, t);
 }
 
 void
@@ -284,13 +384,13 @@ build_include(FILE* f, Term* t)
 }
 
 void
-build_index(FILE* f, Term* t)
+build_index(FILE* f, Lexicon* lex, Term* t)
 {
 	int i;
 	for(i = 0; i < t->children_len; ++i) {
 		Term* child = t->children[i];
 		fprintf(f, "<h3><a href='%s.html'>%s</a></h3>", child->filename, child->name);
-		build_body_part(f, child);
+		build_body_part(f, lex, child);
 		build_list(f, child);
 	}
 }
@@ -564,7 +664,7 @@ build_page(FILE* f, Lexicon* lex, Term* t, Journal* jou)
 	build_nav(f, t);
 	fputs("<main>", f);
 	build_banner(f, jou, t, 1);
-	build_body(f, t);
+	build_body(f, lex, t);
 	build_include(f, t);
 	/* templated pages */
 	if(scmp(t->type, "portal"))
@@ -572,7 +672,7 @@ build_page(FILE* f, Lexicon* lex, Term* t, Journal* jou)
 	else if(scmp(t->type, "album"))
 		build_album(f, jou, t);
 	else if(scmp(t->type, "index"))
-		build_index(f, t);
+		build_index(f, lex, t);
 	/* special pages */
 	if(scmp(t->name, "now"))
 		build_special_now(f, lex, jou);
@@ -859,156 +959,6 @@ link(Glossary* glo, Lexicon* lex, Journal* jou)
 }
 
 void
-template_mods(char* src, char* dest)
-{
-	int split, targetsplit;
-	char target[256], params[256];
-	split = cpos(src, ' ');
-	sstr(src, target, split + 1, slen(src) - split - 2);
-	targetsplit = cpos(target, ' ');
-	if(targetsplit > 0) {
-		sstr(target, params, targetsplit + 1, slen(target) - targetsplit - 1);
-		sstr(src, target, split + 1, targetsplit);
-	}
-	/* create new string */
-	dest[0] = '\0';
-	if(spos(src, "^itchio") >= 0) {
-		scat(dest, "<iframe frameborder='0' src='https://itch.io/embed/");
-		scat(dest, target);
-		scat(dest, "?link_color=000000' width='600' height='167'></iframe>");
-	} else if(spos(src, "^bandcamp") >= 0) {
-		scat(dest, "<iframe style='border: 0; width: 600px; height: 274px;' src='https://bandcamp.com/EmbeddedPlayer/album=");
-		scat(dest, target);
-		scat(dest, "/size=large/bgcol=ffffff/linkcol=333333/artwork=small' seamless></iframe>");
-	} else if(spos(src, "^youtube") >= 0) {
-		scat(dest, "<iframe width='600' height='380' src='https://www.youtube.com/embed/");
-		scat(dest, target);
-		scat(dest, "?rel=0' style='max-width:700px' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe>");
-	} else if(spos(src, "^redirect") >= 0) {
-		scat(dest, "<meta http-equiv='refresh' content='2; url=");
-		scat(dest, target);
-		scat(dest, ".html' />");
-		scat(dest, "<p>In a hurry? Travel to <a href='");
-		scat(dest, target);
-		scat(dest, ".html'>");
-		scat(dest, target);
-		scat(dest, "</a>.</p>");
-	} else if(spos(src, "^img") >= 0) {
-		if(targetsplit > 0) {
-			scat(dest, "<img src='../media/");
-			scat(dest, target);
-			scat(dest, "' width='");
-			scat(dest, params);
-			scat(dest, "'/>&nbsp;");
-		} else {
-			scat(dest, "<img src='../media/");
-			scat(dest, target);
-			scat(dest, "'/>&nbsp;");
-		}
-	} else
-		printf("Warning: Missing template mod: %s\n", src);
-}
-
-void
-template_link(Lexicon* lex, char* src, char* dest)
-{
-	int split = cpos(src, ' ');
-	char target[256], name[256];
-	/* find target and name */
-	if(split == -1) {
-		sstr(src, target, 1, slen(src) - 2);
-		scpy(target, name);
-	} else {
-		sstr(src, target, 1, split - 1);
-		sstr(src, name, split + 1, slen(src) - split - 2);
-	}
-	/* create new string */
-	dest[0] = '\0';
-	if(surl(target)) {
-		scat(dest, "<a href='");
-		scat(dest, target);
-		scat(dest, "' target='_blank'>");
-		scat(dest, name);
-		scat(dest, "</a>");
-	} else {
-		Term* t = findterm(lex, target);
-		if(!t)
-			error("Unknown link", target);
-		scat(dest, "<a href='");
-		scat(dest, t->filename);
-		scat(dest, ".html'>");
-		scat(dest, name);
-		scat(dest, "</a>");
-	}
-}
-void
-template_seg(Lexicon* lex, Term* t, char* src)
-{
-	int recording = 0;
-	char buffer[512], fw[512], full[512], res[1024], templated[1024];
-	int i, len;
-	scpy(src, res);
-	for(i = 0; i < (int)slen(src); ++i) {
-		char c = src[i];
-		if(c == '}') {
-			recording = 0;
-			/* capture full template */
-			sstr(src, full, i - slen(buffer) - 1, slen(buffer) + 2);
-			if(full[1] == '^')
-				template_mods(full, templated);
-			else
-				template_link(lex, full, templated);
-			swapstr(res, res, full, templated);
-			/* save incoming */
-			firstword(buffer, fw);
-			if(!surl(fw) && fw[0] != '^')
-				register_incoming(lex, t, fw);
-		}
-		if(recording) {
-			len = slen(buffer);
-			buffer[len] = c;
-			buffer[len + 1] = '\0';
-		}
-		if(c == '{') {
-			recording = 1;
-			buffer[0] = '\0';
-		}
-	}
-	scpy(res, src);
-}
-
-int
-req_template(char* str)
-{
-	int i, open = 0, shut = 0;
-	for(i = 0; i < (int)slen(str); i++) {
-		if(str[i] == '{')
-			open++;
-		else if(str[i] == '}')
-			shut++;
-	}
-	if(open != shut)
-		printf("Warning: Templating mismatch: %s(%d/%d)\n", str, open, shut);
-	return open > 0 && shut > 0;
-}
-
-void template(Lexicon* lex)
-{
-	int i, j, count = 0;
-	printf("Template | ");
-	for(i = 0; i < lex->len; ++i) {
-		Term* t = &lex->terms[i];
-		for(j = 0; j < t->body_len; ++j) {
-			if(req_template(t->body[j])) {
-				template_seg(lex, t, t->body[j]);
-				count++;
-			}
-		}
-	}
-	printf("%d strings", count);
-}
-
-void
 build(Lexicon* lex, Journal* jou)
 {
 	FILE* f;
@@ -1079,9 +1029,6 @@ main(void)
 	printf("[%.2fms]\n", clock_since(start));
 	start = clock();
 	link(&all_lists, &all_terms, &all_logs);
-	printf("[%.2fms]\n", clock_since(start));
-	start = clock();
-	template(&all_terms);
 	printf("[%.2fms]\n", clock_since(start));
 	start = clock();
 	build(&all_terms, &all_logs);

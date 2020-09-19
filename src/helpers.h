@@ -192,6 +192,15 @@ afnd(char* src[], int len, char* val)
 }
 
 char*
+ccat(char* dest, char c)
+{
+	int len = slen(dest);
+	dest[len] = c;
+	dest[len + 1] = '\0';
+	return dest;
+}
+
+char*
 scat(char* dest, const char* src)
 {
 	char* ptr = dest + slen(dest);

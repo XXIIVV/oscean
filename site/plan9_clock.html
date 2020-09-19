@@ -1,22 +1,4 @@
-<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='description' content='Updated the look of the Plan9 clock.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV — plan9 clock</title></head><body><header><a href='home.html'><img src='../media/identity/xiv28.gif' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='plan9.html'>plan9/</a></li><li><a href='linux.html'>linux</a></li><li><a href='ansi_c.html'>ansi c</a></li></ul><ul><li><a href='rio.html'>rio</a></li><li><a href='acme.html'>acme</a></li><li><a href='plan9_c.html'>plan9 c</a></li><li><a href='plan9_clock.html'>plan9 clock/</a></li><li><a href='plan9_color.html'>plan9 color</a></li></ul><ul></ul></nav><main><figure><img src='../media/diary/723.jpg' alt='Not into babyblue picture' width='900'/><figcaption>20P06 — Not into babyblue</figcaption></figure><h2>Updated the look of the Plan9 clock.</h2><p>I wasn't <i>really</i> into the whole baby blue clock, also in it not displaying seconds, so I've fixed it up a bit. It now displays each second on the clockface, and use hairline thin lines drawn through the Bresenham algorithm. The style is designed to align with the <a href='plan9_color.html'>Plan9 Color Picker</a>. This project is a good simple demonstration of <a href='plan9_c.html'>Plan9 C</a>.</p><h3>Installation</h3>
-
-<p>Compile this source with the compiler for your platform, if you are using an ARM device:</p>
-
-<pre>5c clock.c && 5l -o clock clock.c</pre>
-
-<p>If you want to install globally, copy the source into <code>/sys/src/cmd/clock.c</code> and type <code>mk install</code> inside of <code>/sys/src/cmd</code>, to recompile all the applications found in the cmd directory.</p>
-
-<pre>
-acme /sys/src/cmd/clock.c
-cd /sys/src/cmd
-mk install
-mk clean
-</pre>
-
-<h3>Source</h3>
-
-<pre>
-#include &lt;u.h&gt;
+<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='description' content='Updated the look of the Plan9 clock.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV — plan9 clock</title></head><body><header><a href='home.html'><img src='../media/identity/xiv28.gif' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='plan9.html'>plan9/</a></li><li><a href='linux.html'>linux</a></li><li><a href='ansi_c.html'>ansi c</a></li></ul><ul><li><a href='rio.html'>rio</a></li><li><a href='acme.html'>acme</a></li><li><a href='plan9_c.html'>plan9 c</a></li><li><a href='plan9_clock.html'>plan9 clock/</a></li><li><a href='plan9_color.html'>plan9 color</a></li></ul><ul></ul></nav><main><figure><img src='../media/diary/723.jpg' alt='Not into babyblue picture' width='900'/><figcaption>20P06 — Not into babyblue</figcaption></figure><h2>Updated the look of the Plan9 clock.</h2><p>I wasn't <i>really</i> into the whole baby blue clock, also in it not displaying seconds, so I've fixed it up a bit. It now displays each second on the clockface, and use hairline thin lines drawn through the Bresenham algorithm. The style is designed to align with the <a href='plan9_color.html'>Plan9 Color Picker</a>. This project is a good simple demonstration of <a href='plan9_c.html'>Plan9 C</a>.</p><figure><pre>#include &lt;u.h&gt;
 #include &lt;libc.h&gt;
 #include &lt;draw.h&gt;
 #include &lt;event.h&gt;
@@ -34,8 +16,8 @@ circlept(Point c, int r, int degrees)
 void
 lineb(Image* dst, Point p0, Point p1, Image* src, Point sp)
 {
-	int dx = abs(p1.x - p0.x), sx = p0.x < p1.x ? 1 : -1;
-	int dy = -abs(p1.y - p0.y), sy = p0.y < p1.y ? 1 : -1;
+	int dx = abs(p1.x - p0.x), sx = p0.x &lt; p1.x ? 1 : -1;
+	int dy = -abs(p1.y - p0.y), sy = p0.y &lt; p1.y ? 1 : -1;
 	int err = dx + dy, e2;
 
 	for(;;) {
@@ -43,11 +25,11 @@ lineb(Image* dst, Point p0, Point p1, Image* src, Point sp)
 		if(p0.x == p1.x && p0.y == p1.y)
 			break;
 		e2 = 2 * err;
-		if(e2 >= dy) {
+		if(e2 &gt;= dy) {
 			err += dy;
 			p0.x += sx;
 		}
-		if(e2 <= dx) {
+		if(e2 &lt;= dx) {
 			err += dx;
 			p0.y += sy;
 		}
@@ -57,18 +39,18 @@ lineb(Image* dst, Point p0, Point p1, Image* src, Point sp)
 void
 redraw(Image* dst)
 {
-	Point size = subpt(screen->r.max, screen->r.min);
+	Point size = subpt(screen-&gt;r.max, screen-&gt;r.min);
 	Point center = divpt(size, 2);
 	Rectangle frame = (Rectangle){Pt(0, 0), size};
 	int pad = 20;
-	int rad = ((size.x < size.y ? size.x : size.y) / 2) - pad;
+	int rad = ((size.x &lt; size.y ? size.x : size.y) / 2) - pad;
 	int range = rad - pad;
-	Image* view = allocimage(display, frame, screen->chan, 1, 0x000000FF);
+	Image* view = allocimage(display, frame, screen-&gt;chan, 1, 0x000000FF);
 	Image* secclr = allocimagemix(display, DRed, DRed);
 
-	for(int i = 0; i < 60; i++) {
+	for(int i = 0; i &lt; 60; i++) {
 		int len = i % 15 == 0 ? range : i % 5 == 0 ? rad - pad / 2 : rad - pad / 3;
-		lineb(view, circlept(center, len, i * 6), circlept(center, rad, i * 6), display->white, ZP);
+		lineb(view, circlept(center, len, i * 6), circlept(center, rad, i * 6), display-&gt;white, ZP);
 	}
 
 	Tm tms = *localtime(time(0));
@@ -77,36 +59,36 @@ redraw(Image* dst)
 	int angsec = 90 - tms.sec * 6;
 	int angsecrev = 270 - tms.sec * 6;
 
-	fillellipse(view, center, rad - pad, rad - pad, display->black, ZP);
-	lineb(view, center, circlept(center, range * 0.7, anghr), display->white, ZP);
-	lineb(view, center, circlept(center, range - 2, angmin), display->white, ZP);
+	fillellipse(view, center, rad - pad, rad - pad, display-&gt;black, ZP);
+	lineb(view, center, circlept(center, range * 0.7, anghr), display-&gt;white, ZP);
+	lineb(view, center, circlept(center, range - 2, angmin), display-&gt;white, ZP);
 	lineb(view, center, circlept(center, range - 2, angsec), secclr, ZP);
 	lineb(view, center, circlept(center, range * 0.1, angsecrev), secclr, ZP);
 	fillellipse(view, center, 2, 2, secclr, ZP);
 
 	/* collapse when horizontal window */
-	if(size.y > size.x + 2 * pad) {
+	if(size.y &gt; size.x + 2 * pad) {
 		/* time */
 		char timestr[9];
 		snprint(timestr, sizeof(timestr), "%02d:%02d:%02d", tms.hour, tms.min, tms.sec);
-		Point timesize = stringsize(display->defaultfont, timestr);
+		Point timesize = stringsize(display-&gt;defaultfont, timestr);
 		Point timept = Pt(pad, pad);
 		/* date */
 		char datestr[30];
 		snprint(datestr, sizeof(datestr), "%s", ctime(time(0)));
 		datestr[10] = '\0';
-		Point datesize = stringsize(display->defaultfont, datestr);
+		Point datesize = stringsize(display-&gt;defaultfont, datestr);
 		Point datept = Pt(size.x - datesize.x - pad, pad);
 		/* draw */
 		draw(view,
 		     (Rectangle){timept, addpt(timept, Pt(size.x - pad * 2, 0))},
-		     display->black, nil, ZP);
-		string(view, timept, display->white, ZP, display->defaultfont, timestr);
-		if(timesize.x + datesize.x < size.x - pad - pad)
-			string(view, datept, display->white, ZP, display->defaultfont, datestr);
+		     display-&gt;black, nil, ZP);
+		string(view, timept, display-&gt;white, ZP, display-&gt;defaultfont, timestr);
+		if(timesize.x + datesize.x &lt; size.x - pad - pad)
+			string(view, datept, display-&gt;white, ZP, display-&gt;defaultfont, datestr);
 	}
 
-	draw(dst, screen->r, view, nil, ZP);
+	draw(dst, screen-&gt;r, view, nil, ZP);
 	flushimage(display, 1);
 	freeimage(secclr);
 	freeimage(view);
@@ -115,7 +97,7 @@ redraw(Image* dst)
 void
 eresized(int new)
 {
-	if(new&& getwindow(display, Refnone) < 0)
+	if(new&& getwindow(display, Refnone) &lt; 0)
 		fprint(2, "can't reattach to window");
 	redraw(screen);
 }
@@ -131,7 +113,7 @@ main(int argc, char* argv[])
 	char* mstr[] = {"exit", 0};
 	int key, timer, t = 1000;
 
-	if(initdraw(0, 0, "clock") < 0)
+	if(initdraw(0, 0, "clock") &lt; 0)
 		sysfatal("initdraw failed");
 
 	eresized(0);
@@ -152,6 +134,18 @@ main(int argc, char* argv[])
 			redraw(screen);
 		}
 	}
-}
-</pre>
-<p>Found a mistake? Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/plan9_clock.htm' target='_blank'>edit</a> to plan9 clock.</p><p><i>incoming(2)</i>: <a href='plan9_c.html'>plan9 c</a> <a href='plan9_color.html'>plan9 color</a> </p><p><i>Last update on <a href='tracker.html'>20Q01</a>, edited 3 times. +12/19fh</i><code style='float:right; font-size:80%'>-----+</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
+}</pre><figcaption><a href='../archive/src/clock9.c.txt'>clock9.c</a></figcaption>
+</figure><h3>Installation</h3>
+
+<p>Compile this source with the compiler for your platform, if you are using an ARM device:</p>
+
+<pre>5c clock.c && 5l -o clock clock.c</pre>
+
+<p>If you want to install globally, copy the source into <code>/sys/src/cmd/clock.c</code> and type <code>mk install</code> inside of <code>/sys/src/cmd</code>, to recompile all the applications found in the cmd directory.</p>
+
+<pre>
+acme /sys/src/cmd/clock.c
+cd /sys/src/cmd
+mk install
+mk clean
+</pre><p>Found a mistake? Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/plan9_clock.htm' target='_blank'>edit</a> to plan9 clock.</p><p><i>Last update on <a href='tracker.html'>20Q01</a>, edited 3 times. +12/19fh</i><code style='float:right; font-size:80%'>-----+</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
