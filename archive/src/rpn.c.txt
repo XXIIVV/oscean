@@ -1,0 +1,136 @@
+#include <stdio.h>
+
+typedef struct Stack {
+	unsigned short data[255];
+	unsigned short len;
+} Stack;
+
+/* helpers */
+
+int
+cinu(char c)
+{
+	return c >= '0' && c <= '9';
+}
+
+int
+slen(char* s)
+{
+	int n = 0;
+	while(s[n] != '\0' && s[++n])
+		;
+	return n;
+}
+
+int
+sinu(char* s)
+{
+	int i;
+	for(i = 0; i < slen(s); ++i)
+		if(!cinu(s[i]))
+			return 0;
+	return 1;
+}
+
+int
+sint(char* s)
+{
+	int i = 0, num = 0;
+	while(s[i] && cinu(s[i])) {
+		num = num * 10 + (s[i] - '0');
+		i++;
+	}
+	return num;
+}
+
+int
+scmp(char* a, char* b)
+{
+	int i, l = slen(a);
+	if(l != slen(b))
+		return 0;
+	for(i = 0; i < l; ++i)
+		if(a[i] != b[i])
+			return 0;
+	return 1;
+}
+
+/* rpn */
+
+int
+push(Stack* s, int v)
+{
+	if(s->len >= 255)
+		return 1;
+	s->data[s->len++] = v;
+	return 0;
+}
+
+int
+pop(Stack* s)
+{
+	return s->data[--s->len];
+}
+
+/* ops */
+
+int
+add(Stack* s)
+{
+	if(s->len < 2)
+		return 1;
+	push(s, pop(s) + pop(s));
+	return 0;
+}
+
+int
+sub(Stack* s)
+{
+	if(s->len < 2)
+		return 1;
+	push(s, pop(s) - pop(s));
+	return 0;
+}
+
+int
+mul(Stack* s)
+{
+	if(s->len < 2)
+		return 1;
+	push(s, pop(s) * pop(s));
+	return 0;
+}
+
+int
+div(Stack* s)
+{
+	if(s->len < 2)
+		return 1;
+	push(s, pop(s) / pop(s));
+	return 0;
+}
+
+int
+main(int argc, char** argv)
+{
+	int i = 1, err = 0;
+	Stack s;
+	for(i = 1; i < argc; i++) {
+		if(sinu(argv[i]))
+			err = push(&s, sint(argv[i]));
+		else if(scmp(argv[i], "add"))
+			err = add(&s);
+		else if(scmp(argv[i], "sub"))
+			err = sub(&s);
+		else if(scmp(argv[i], "mul"))
+			err = mul(&s);
+		else if(scmp(argv[i], "div"))
+			err = div(&s);
+		if(err) {
+			printf("Stack underflow: %s:%d\n", argv[i], pop(&s));
+			return 1;
+		}
+	}
+	printf("Result: %d\n", pop(&s));
+	return 0;
+}
