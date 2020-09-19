@@ -23,7 +23,7 @@
 
 typedef struct List {
 	char name[KEY_BUF_LEN];
-	char keys[LIST_ITEMS][KEY_BUF_LEN];
+	char keys[LIST_ITEMS][64];
 	char vals[LIST_ITEMS][STR_BUF_LEN];
 	int len;
 	int routes;
