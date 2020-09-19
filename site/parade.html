@@ -42,18 +42,18 @@ cisp(char c)
 unsigned char
 chex(char c)
 {
-	if(c &gt;= 'a' && c &lt;= 'f')
+	if(c &gt;= 'a' &amp;&amp; c &lt;= 'f')
 		return 10 + c - 'a';
-	if(c &gt;= 'A' && c &lt;= 'F')
+	if(c &gt;= 'A' &amp;&amp; c &lt;= 'F')
 		return 10 + c - 'A';
-	return (c - '0') & 0xF;
+	return (c - '0') &amp; 0xF;
 }
 
 int
 slen(char* s)
 {
 	int n = 0;
-	while(s[n] != '\0' && s[++n])
+	while(s[n] != '\0' &amp;&amp; s[++n])
 		;
 	return n;
 }
@@ -108,7 +108,7 @@ strm(char* s)
 	if(*s == 0)
 		return s;
 	end = s + slen(s) - 1;
-	while(end &gt; s && cisp(*end))
+	while(end &gt; s &amp;&amp; cisp(*end))
 		end--;
 	end[1] = '\0';
 	return s;
@@ -172,7 +172,7 @@ rune(Vessel* v)
 Vessel*
 addvessel(Parade* p, Vessel* v, char* name)
 {
-	Vessel* nv = &p-&gt;vessels[p-&gt;len];
+	Vessel* nv = &amp;p-&gt;vessels[p-&gt;len];
 	nv-&gt;id = p-&gt;len;
 	nv-&gt;owner = v ? v : nv;
 	nv-&gt;parent = v ? v-&gt;parent : nv;
@@ -187,10 +187,10 @@ findvisible(Parade* p, Vessel* v, char* name)
 	int i;
 	char* n = spor(name, ' ') + 1;
 	for(i = 0; i &lt; p-&gt;len; ++i) {
-		if(!isvisible(v, &p-&gt;vessels[i]))
+		if(!isvisible(v, &amp;p-&gt;vessels[i]))
 			continue;
 		if(scmp(p-&gt;vessels[i].name, n))
-			return &p-&gt;vessels[i];
+			return &amp;p-&gt;vessels[i];
 	}
 	return NULL;
 }
@@ -201,12 +201,12 @@ findinventory(Parade* p, Vessel* v, char* name)
 	int i;
 	char* n = spor(name, ' ') + 1;
 	for(i = 0; i &lt; p-&gt;len; ++i) {
-		if(&p-&gt;vessels[i] == v)
+		if(&amp;p-&gt;vessels[i] == v)
 			continue;
 		if(p-&gt;vessels[i].parent != v)
 			continue;
 		if(scmp(p-&gt;vessels[i].name, n))
-			return &p-&gt;vessels[i];
+			return &amp;p-&gt;vessels[i];
 	}
 
 	return NULL;
@@ -219,7 +219,7 @@ findany(Parade* p, char* name)
 	char* n = spor(name, ' ') + 1;
 	for(i = 0; i &lt; p-&gt;len; ++i)
 		if(scmp(p-&gt;vessels[i].name, n))
-			return &p-&gt;vessels[i];
+			return &amp;p-&gt;vessels[i];
 	return NULL;
 }
 
@@ -358,8 +358,8 @@ lookvessel(Parade* p)
 	if(slen(guest-&gt;parent-&gt;note) &gt; 2)
 		printf("%s\n", guest-&gt;parent-&gt;note);
 	for(i = 0; i &lt; p-&gt;len; ++i)
-		if(isvisible(guest, &p-&gt;vessels[i]))
-			printf("- %s%c\n", p-&gt;vessels[i].name, rune(&p-&gt;vessels[i]));
+		if(isvisible(guest, &amp;p-&gt;vessels[i]))
+			printf("- %s%c\n", p-&gt;vessels[i].name, rune(&amp;p-&gt;vessels[i]));
 }
 
 /* Parade */
@@ -416,8 +416,8 @@ Vessel*
 spawn(Parade* p)
 {
 	addvessel(p, NULL, "library");
-	addvessel(p, &p-&gt;vessels[0], "ghost");
-	return &p-&gt;vessels[1];
+	addvessel(p, &amp;p-&gt;vessels[0], "ghost");
+	return &amp;p-&gt;vessels[1];
 }
 
 int
@@ -425,12 +425,12 @@ parse(Parade* p, char* line, int id)
 {
 	int split = cpos(line, '|');
 	int len = slen(line);
-	Vessel* nv = &p-&gt;vessels[id];
+	Vessel* nv = &amp;p-&gt;vessels[id];
 	if(len &lt; 22 || split &lt; 0 || line[0] == ';')
 		return 0;
 	nv-&gt;id = id;
-	nv-&gt;owner = &p-&gt;vessels[shex(line, 2)];
-	nv-&gt;parent = &p-&gt;vessels[shex(line + 2, 2)];
+	nv-&gt;owner = &amp;p-&gt;vessels[shex(line, 2)];
+	nv-&gt;parent = &amp;p-&gt;vessels[shex(line + 2, 2)];
 	strm(sstr(line, nv-&gt;name, 5, NAMELEN));
 	if(split &gt; 23)
 		sstr(line, nv-&gt;note, 21, split - 22);
@@ -491,9 +491,9 @@ answer(Parade* p, char* input)
 	}
 	if(scmp(action, "@quit"))
 		return 0;
-	if(scmp(action, "@save") && slen(value) &gt; 3)
+	if(scmp(action, "@save") &amp;&amp; slen(value) &gt; 3)
 		return save(p, spor(input, ' ') + 1);
-	if(scmp(action, "@load") && slen(value) &gt; 3)
+	if(scmp(action, "@load") &amp;&amp; slen(value) &gt; 3)
 		return load(p, spor(input, ' ') + 1);
 	act(p, action, value);
 	return 1;
@@ -527,13 +527,13 @@ main(int argc, char** argv)
 {
 	Parade parade;
 	parade.len = 0;
-	guest = spawn(&parade);
+	guest = spawn(&amp;parade);
 	if(argc == 2)
-		load(&parade, argv[1]);
+		load(&amp;parade, argv[1]);
 	printf("A %s%c appeared in the %s%c.\n",
 	       guest-&gt;name, rune(guest),
 	       guest-&gt;parent-&gt;name, rune(guest-&gt;parent));
-	while(listen(&parade))
+	while(listen(&amp;parade))
 		;
 	return 0;
 }

@@ -248,6 +248,8 @@ fpmodule(FILE* f, char* s)
 				fputs("&lt;", f);
 			else if(c == '>')
 				fputs("&gt;", f);
+			else if(c == '&')
+				fputs("&amp;", f);
 			else
 				fputc(c, f);
 			if(c == '\n')

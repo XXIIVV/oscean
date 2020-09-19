@@ -50,7 +50,7 @@ getcenter(Rectangle r)
 int
 within(Point p, Rectangle r)
 {
-	return p.x &gt; r.min.x && p.x &lt; r.max.x && p.y &gt; r.min.y && p.y &lt; r.max.y;
+	return p.x &gt; r.min.x &amp;&amp; p.x &lt; r.max.x &amp;&amp; p.y &gt; r.min.y &amp;&amp; p.y &lt; r.max.y;
 }
 
 RgbColor
@@ -133,7 +133,7 @@ rgb2hsv(RgbColor rgb)
 unsigned int
 rgb2hex(RgbColor clr)
 {
-	return ((clr.r & 0xFF) &lt;&lt; 24) + ((clr.g & 0xFF) &lt;&lt; 16) + ((clr.b & 0xFF) &lt;&lt; 8) + (255 & 0xFF);
+	return ((clr.r &amp; 0xFF) &lt;&lt; 24) + ((clr.g &amp; 0xFF) &lt;&lt; 16) + ((clr.b &amp; 0xFF) &lt;&lt; 8) + (255 &amp; 0xFF);
 }
 
 unsigned int
@@ -153,7 +153,7 @@ lineb(Image* dst, Point p0, Point p1, Image* src, Point sp)
 
 	for(;;) {
 		draw(dst, Rect(p0.x, p0.y, p0.x + 1, p0.y + 1), src, nil, sp);
-		if(p0.x == p1.x && p0.y == p1.y)
+		if(p0.x == p1.x &amp;&amp; p0.y == p1.y)
 			break;
 		e2 = 2 * err;
 		if(e2 &gt;= dy) {
@@ -263,9 +263,9 @@ redraw(Image* dst)
 	char hexstr[16];
 	char rgbstr[12];
 	snprint(hexstr, sizeof(hexstr), "#%02ux%02ux%02ux",
-	        (selhex &gt;&gt; 24) & 0xFF,
-	        (selhex &gt;&gt; 16) & 0xFF,
-	        (selhex &gt;&gt; 8) & 0xFF);
+	        (selhex &gt;&gt; 24) &amp; 0xFF,
+	        (selhex &gt;&gt; 16) &amp; 0xFF,
+	        (selhex &gt;&gt; 8) &amp; 0xFF);
 	snprint(rgbstr, sizeof(rgbstr), "%ud,%ud,%ud",
 	        selrgb.r,
 	        selrgb.g,
@@ -332,8 +332,8 @@ touch(Point m)
 int
 hex2int(char a, char b)
 {
-	a = (a &lt;= '9') ? a - '0' : (a & 0x7) + 9;
-	b = (b &lt;= '9') ? b - '0' : (b & 0x7) + 9;
+	a = (a &lt;= '9') ? a - '0' : (a &amp; 0x7) + 9;
+	b = (b &lt;= '9') ? b - '0' : (b &amp; 0x7) + 9;
 	return (a &lt;&lt; 4) + b;
 }
 
@@ -364,9 +364,9 @@ dosnarf(void)
 		unsigned int selhex = rgb2hex(hsv2rgb(selection));
 		char hexstr[16];
 		snprint(hexstr, sizeof(hexstr), "#%02ux%02ux%02ux",
-		        (selhex &gt;&gt; 24) & 0xFF,
-		        (selhex &gt;&gt; 16) & 0xFF,
-		        (selhex &gt;&gt; 8) & 0xFF);
+		        (selhex &gt;&gt; 24) &amp; 0xFF,
+		        (selhex &gt;&gt; 16) &amp; 0xFF,
+		        (selhex &gt;&gt; 8) &amp; 0xFF);
 		write(f, hexstr, strlen(hexstr));
 		close(f);
 	}
@@ -374,7 +374,7 @@ dosnarf(void)
 void
 eresized(int new)
 {
-	if(new&& getwindow(display, Refnone) &lt; 0)
+	if(new&amp;&amp; getwindow(display, Refnone) &lt; 0)
 		fprint(2, "can't reattach to window");
 	draw(screen, screen-&gt;r, display-&gt;black, nil, ZP);
 	redraw(screen);
@@ -408,17 +408,17 @@ main(int argc, char* argv[])
 
 	/* Break on mouse3 */
 	for(;;) {
-		key = event(&e);
+		key = event(&amp;e);
 		if(key == Emouse) {
 			m = e.mouse;
-			if(m.buttons & 4) {
-				if(emenuhit(3, &m, &menu) == 0)
+			if(m.buttons &amp; 4) {
+				if(emenuhit(3, &amp;m, &amp;menu) == 0)
 					dosnarf();
-				if(emenuhit(3, &m, &menu) == 1)
+				if(emenuhit(3, &amp;m, &amp;menu) == 1)
 					dopaste();
-				if(emenuhit(3, &m, &menu) == 2)
+				if(emenuhit(3, &amp;m, &amp;menu) == 2)
 					exits(0);
-			} else if(m.buttons & 1) {
+			} else if(m.buttons &amp; 1) {
 				touch(m.xy);
 			}
 		}
