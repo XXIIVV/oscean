@@ -236,6 +236,7 @@ fpmodule(FILE* f, char* s)
 		} else
 			fprintf(f, "<img src='../media/%s'/>&nbsp;", target);
 	} else if(scmp(cmd, "src")) {
+		int lines = 0;
 		char c;
 		FILE* fp = getfile("../archive/src/", target, ".txt", "r");
 		if(fp == NULL)
@@ -249,9 +250,11 @@ fpmodule(FILE* f, char* s)
 				fputs("&gt;", f);
 			else
 				fputc(c, f);
+			if(c == '\n')
+				lines++;
 		}
 		fputs("</pre>", f);
-		fprintf(f, "<figcaption><a href='../archive/src/%s.txt'>%s</a></figcaption>\n", target, target);
+		fprintf(f, "<figcaption><a href='../archive/src/%s.txt'>%s</a> %d lines</figcaption>\n", target, target, lines);
 		fputs("</figure>", f);
 	} else
 		printf("Warning: Missing template mod: %s\n", s);
@@ -703,7 +706,7 @@ build_page(FILE* f, Lexicon* lex, Term* t, Journal* jou)
 }
 
 void
-build_rss(FILE* f, Journal* journal)
+fprss(FILE* f, Journal* journal)
 {
 	int i;
 	time_t now;
@@ -749,7 +752,7 @@ build_rss(FILE* f, Journal* journal)
 }
 
 void
-build_twtxt(FILE* f, Journal* journal)
+fptwtxt(FILE* f, Journal* journal)
 {
 	int i;
 	for(i = 0; i < journal->len; ++i) {
@@ -802,15 +805,12 @@ parse_glossary(FILE* fp, Glossary* glossary)
 FILE*
 parse_lexicon(FILE* fp, Lexicon* lexicon)
 {
-	int key_len, val_len, len, depth, count = 0, catch_body = 0, catch_link = 0, catch_list = 0;
+	int key_len, val_len, len, count = 0, catch_body = 0, catch_link = 0, catch_list = 0;
 	char line[1024];
 	if(fp == NULL)
 		error("Could not open", "lexicon");
 	while(fgets(line, 1024, fp)) {
-		/* get depth */
-		for(depth = 0; depth < slen(line) + 1; depth++)
-			if(line[depth] != ' ')
-				break;
+		int depth = cpad(line, ' ');
 		strm(line);
 		len = slen(line);
 		if(len < 3 || line[0] == ';')
@@ -975,11 +975,11 @@ build(Lexicon* lex, Journal* jou)
 	f = fopen("../links/rss.xml", "w");
 	if(f == NULL)
 		error("Could not open file", "rss.xml");
-	build_rss(f, jou);
+	fprss(f, jou);
 	f = fopen("../links/tw.txt", "w");
 	if(f == NULL)
 		error("Could not open file", "tw.txt");
-	build_twtxt(f, jou);
+	fptwtxt(f, jou);
 }
 
 void

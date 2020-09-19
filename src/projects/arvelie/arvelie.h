@@ -122,7 +122,7 @@ get_epoch(void)
 
 /* printers */
 
-void
+int
 print_ymdstr_from_doty(int y, int doty)
 {
 	int d, m = 0, months[13] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
@@ -131,10 +131,11 @@ print_ymdstr_from_doty(int y, int doty)
 	}
 	if(m < 1) {
 		printf("Error: Unknown Month\n");
-		exit(0);
+		return 1;
 	}
 	d = doty - months[m - 1];
 	printf("%04d-%02d-%02d\n", y, m, d);
+	return 0;
 }
 
 void
@@ -158,7 +159,7 @@ print_arvelie_from_time(time_t t)
 	print_arvelie_from_doty(y, ymd_to_doty(y, m, d));
 }
 
-void
+int
 print_arvelie_from_ymdstr(char* date)
 {
 	int y = (date[0] - '0') * 1000 + (date[1] - '0') * 100 +
@@ -167,20 +168,22 @@ print_arvelie_from_ymdstr(char* date)
 	int d = (date[8] - '0') * 10 + date[9] - '0';
 	if(!is_valid_ymdstr(date)) {
 		printf("Error: Invalid YYYY-MM-DD date\n");
-		exit(0);
+		return 1;
 	}
 	print_arvelie_from_doty(y, ymd_to_doty(y, m, d));
+	return 0;
 }
 
-void
+int
 print_ymdstr_from_arvelie(char* date)
 {
 	int y = ((date[0] - '0') * 10 + date[1] - '0') + 2000;
 	if(!is_valid_arvelie(date)) {
 		printf("Error: Invalid arvelie date\n");
-		exit(0);
+		return 1;
 	}
 	print_ymdstr_from_doty(y, arvelie_to_doty(date));
+	return 0;
 }
 
 void

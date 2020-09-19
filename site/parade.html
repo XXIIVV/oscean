@@ -1,58 +1,541 @@
-<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='description' content='Parade is an experimental filesystem inspired from Paradise.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV — parade</title></head><body><header><a href='home.html'><img src='../media/identity/xiv28.gif' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='orca.html'>orca</a></li><li><a href='gyo.html'>gyo</a></li><li><a href='paradise.html'>paradise/</a></li></ul><ul><li><a href='maeve.html'>maeve</a></li><li><a href='parade.html'>parade/</a></li></ul><ul></ul></nav><main><h2>Parade is an experimental filesystem inspired from Paradise.</h2><p>In <b>Paradise</b>, you are but a force acting upon places, objects, words — vessels. Parade is a subset of the <a href='paradise.html'>Paradise</a> interactive fiction engine designed explicitly to explore the possible interactions available within the primitives. A minimal implementation of Parade, written in <a href='ansi_c.html'>ANSI C</a>, is available <a href='https://git.sr.ht/~rabbits/parade' target='_blank'>here</a>.</p><q>I have always imagined that <b>Paradise</b> will be a kind of library.</q><h5>—Jorge Luis Borges</h5><h3>Primitives</h3>
+<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='description' content='Parade is a minimal implementation of Paradise.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV — parade</title></head><body><header><a href='home.html'><img src='../media/identity/xiv28.gif' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='orca.html'>orca</a></li><li><a href='gyo.html'>gyo</a></li><li><a href='paradise.html'>paradise/</a></li></ul><ul><li><a href='maeve.html'>maeve</a></li><li><a href='parade.html'>parade/</a></li></ul><ul></ul></nav><main><h2>Parade is a minimal implementation of Paradise.</h2><p>In <b>Paradise</b>, you are but a force acting upon places, objects, words — vessels. Parade is a subset of the <a href='paradise.html'>Paradise</a> interactive fiction engine designed explicitly to explore the possible interactions available within the primitives. </p><q>I have always imagined that <b>Paradise</b> will be a kind of library.</q><h5>—Jorge Luis Borges</h5><figure><pre>#include &lt;stdio.h&gt;
 
-<table border='1'>
-  <tr><td>create </td><td>become </td><td>enter      </td><td>leave</td></tr>
-  <tr><td>take   </td><td>drop   </td><td>warp       </td><td>transform</td></tr>
-  <tr><td>note   </td><td>program</td><td>use        </td><td>look*</td></tr>
-</table>
+#define NAMELEN 16
+#define TEXTLEN 256
+#define BUFLEN 512
 
-<img src='../media/generic/parade.learn.png' width="300">
+typedef struct Vessel {
+	char id;
+	struct Vessel* owner;
+	struct Vessel* parent;
+	char name[NAMELEN];
+	char note[TEXTLEN];
+	char prog[TEXTLEN];
+} Vessel;
 
-<p>The goal of this project is to build a lightweight computing environment able to navigate a hierarchy of <i>vessels</i>, run code and exchange content with other Parade instances, via the basic primitives.
+typedef struct Parade {
+	Vessel vessels[256];
+	int len;
+} Parade;
 
-<pre>
-create a machine
-> |
-</pre>
+char* actions[12] = {
+    "create", "become", "enter", "leave",
+    "take", "drop", "warp", "transform",
+    "note", "program", "use", ""};
 
-<img src='../media/generic/parade.create.png' width="300">
+Vessel* guest;
 
-<p>There are no "users", "files" or "applications", in this filesystem, everything is an operable <i>vessel</i>. A <b>vessel</b> is an <i>object</i> that can act onto other vessels, it has its own permissions. Users are not different from applications or files. A <i>user</i>, is a vessel being acted upon, possibly containing other vessels. A <i>file</i> is an inert vessel, that has no applicable actions to itself but may contain text data accessible via the primitives.</p>
+/* helpers */
 
-<pre>
-enter the machine
-> |
-</pre>
+int
+imin(int a, int b)
+{
+	return a &lt; b ? a : b;
+}
 
-<img src='../media/generic/parade.program.png' width="300">
+int
+cisp(char c)
+{
+	return c == ' ' || c == '\t' || c == '\n' || c == '\r';
+}
 
-<p>A new vessel responds to the basic primitives, and visible vessels might append to that list with actions of their own. The vessel format serves endpoints that responds to actions. For instance, an telephone vessel, might respond to the action <i>call</i>, as in the command "call Alice".</p>
-<p>There is no linear hierarchy tree, instead vessels can be within themselves or each other, or even organized in the shape of a loop. Pockets of space can be hosts to vessels existing around a common purpose, or carried around inside another vessel as you would a tool-belt or an inventory, giving the acting vessel, or <i>user</i>, additional actions appended to the list of primitives.</p>
+unsigned char
+chex(char c)
+{
+	if(c &gt;= 'a' && c &lt;= 'f')
+		return 10 + c - 'a';
+	if(c &gt;= 'A' && c &lt;= 'F')
+		return 10 + c - 'A';
+	return (c - '0') & 0xF;
+}
 
-<pre>
-become the machine
-> |
-</pre>
+int
+slen(char* s)
+{
+	int n = 0;
+	while(s[n] != '\0' && s[++n])
+		;
+	return n;
+}
 
-<img src='../media/generic/parade.use.png' width="300">
+unsigned char
+shex(char* s, int len)
+{
+	int i, n = 0;
+	for(i = 0; i &lt; len; ++i)
+		n |= (chex(s[i]) &lt;&lt; ((len - i - 1) * 4));
+	return n;
+}
 
-<p>One of the goals of this operating system is to be <b>fully operable by voice</b>, think <i>screenless computing</i>. The navigation is designed to be used via simple text commands, there would be nothing quite like windows. Vessels could display passive content when in sight, allowing to create a form of procedural user interface, but the system itself does not have a concept of windows, like you would in a typical graphical operating system with a wm.</p>
-<p>While the navigation of the system can be done by voice alone, the terminal, when presented on a screen, begins with a <b>prompt</b>, to which can be appended a <b>history of responses</b>, or even a <b>display area for graphics</b> when a vessel is serving a game or a movie.</p>
+int
+cpos(char* s, char c)
+{
+	int i;
+	for(i = 0; i &lt; slen(s); i++)
+		if(s[i] == c)
+			return i;
+	return -1;
+}
 
-<pre>
-use the machine
-> |
-</pre>
+char*
+spor(char* s, int c)
+{
+	int i;
+	for(i = slen(s); i &gt;= 0; --i)
+		if(s[i] == c)
+			return s + i;
+	return s - 1;
+}
 
-<img src='../media/generic/parade.trigger.png' width="300">
+int
+scmp(char* a, char* b)
+{
+	int i, l = slen(a);
+	if(l != slen(b))
+		return 0;
+	for(i = 0; i &lt; l; ++i)
+		if(a[i] != b[i])
+			return 0;
+	return 1;
+}
 
-<p>At its core the system should be <b>single-threaded</b>, and operate a single frame, or a <i>state</i>, of the world at a time. While passive responses of visible vessels might allow for a kind of oversight, the user experience as a terminal, and down to its functioning should not allow for multi-tasking.</p>
-<p>The creation of application vessels, think for instance a <i>drawing application</i>, would be built with the LISP dialect of Parade, which is itself built with that same language. — Making the entire operating system existing it inself as a vessel, editable, changeable, operable and navigable.</p>
+char*
+strm(char* s)
+{
+	char* end;
+	while(cisp(*s))
+		s++;
+	if(*s == 0)
+		return s;
+	end = s + slen(s) - 1;
+	while(end &gt; s && cisp(*end))
+		end--;
+	end[1] = '\0';
+	return s;
+}
 
-<pre>
-warp to the lobby@29:03:25:76
-> |
-</pre>
+int
+afnd(char* src[], int len, char* val)
+{
+	int i;
+	for(i = 0; i &lt; len; i++)
+		if(scmp(src[i], val))
+			return i;
+	return -1;
+}
 
-<p>A <b>Network of Parade systems</b> would be traversible(read-only) by an acting vessel. The Parade's typical behaviours for moving about will persist onto the remote systems so, a vessel can move, enter, use remote vessels and suggest changes to the host world as commits — All the while, respecting the host's vessel permissions. For instance, a vessel might make itself usable by a visiting vessel, but will not let itself be moved or altered.</p>
-<p>Found a mistake? Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/parade.htm' target='_blank'>edit</a> to parade.</p><ul><li><a href='https://git.sr.ht/~rabbits/parade' target='_blank'>sources</a></li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
+char*
+sstr(char* src, char* dest, int from, int to)
+{
+	int i;
+	char *a = (char*)src + from, *b = (char*)dest;
+	for(i = 0; i &lt; to; i++)
+		b[i] = a[i];
+	dest[to] = '\0';
+	return dest;
+}
+
+/* Parade */
+
+int
+isvisible(Vessel* g, Vessel* v)
+{
+	if(g-&gt;parent != v-&gt;parent)
+		return 0;
+	if(g-&gt;parent == v)
+		return 0;
+	if(g == v)
+		return 0;
+	return 1;
+}
+
+int
+isparadox(Vessel* v)
+{
+	return v-&gt;parent == v;
+}
+
+char
+rune(Vessel* v)
+{
+	if(isparadox(v))
+		return '^';
+	if(slen(v-&gt;note) &gt; 0)
+		return '*';
+	if(slen(v-&gt;prog) &gt; 0)
+		return '+';
+	if(v-&gt;owner == guest)
+		return '~';
+	return 0;
+}
+
+Vessel*
+addvessel(Parade* p, Vessel* v, char* name)
+{
+	Vessel* nv = &p-&gt;vessels[p-&gt;len];
+	nv-&gt;id = p-&gt;len;
+	nv-&gt;owner = v ? v : nv;
+	nv-&gt;parent = v ? v-&gt;parent : nv;
+	sstr(name, nv-&gt;name, 0, imin(slen(name), NAMELEN - 1));
+	p-&gt;len++;
+	return nv;
+}
+
+Vessel*
+findvisible(Parade* p, Vessel* v, char* name)
+{
+	int i;
+	char* n = spor(name, ' ') + 1;
+	for(i = 0; i &lt; p-&gt;len; ++i) {
+		if(!isvisible(v, &p-&gt;vessels[i]))
+			continue;
+		if(scmp(p-&gt;vessels[i].name, n))
+			return &p-&gt;vessels[i];
+	}
+	return NULL;
+}
+
+Vessel*
+findinventory(Parade* p, Vessel* v, char* name)
+{
+	int i;
+	char* n = spor(name, ' ') + 1;
+	for(i = 0; i &lt; p-&gt;len; ++i) {
+		if(&p-&gt;vessels[i] == v)
+			continue;
+		if(p-&gt;vessels[i].parent != v)
+			continue;
+		if(scmp(p-&gt;vessels[i].name, n))
+			return &p-&gt;vessels[i];
+	}
+
+	return NULL;
+}
+
+Vessel*
+findany(Parade* p, char* name)
+{
+	int i;
+	char* n = spor(name, ' ') + 1;
+	for(i = 0; i &lt; p-&gt;len; ++i)
+		if(scmp(p-&gt;vessels[i].name, n))
+			return &p-&gt;vessels[i];
+	return NULL;
+}
+
+/* Actions */
+
+void
+createvessel(Parade* p, char* val)
+{
+	Vessel* v;
+	if(findany(p, val) || slen(val) &lt; 4 || p-&gt;len &gt; 255)
+		printf("You cannot create the %s.\n", val);
+	else {
+		v = addvessel(p, guest, spor(val, ' ') + 1);
+		printf("You created the %s%c.\n", v-&gt;name, rune(v));
+	}
+}
+
+void
+becomevessel(Parade* p, char* val)
+{
+	Vessel* v = findany(p, val);
+	if(!v)
+		printf("You do not see the %s.\n", val);
+	else {
+		guest = v;
+		printf("You became the %s%c.\n", v-&gt;name, rune(v));
+	}
+}
+
+void
+entervessel(Parade* p, char* val)
+{
+	Vessel* v = findvisible(p, guest, val);
+	if(!v)
+		printf("You do not see the %s.\n", val);
+	else {
+		guest-&gt;parent = v;
+		printf("You entered the %s%c.\n", v-&gt;name, rune(v));
+	}
+}
+
+void
+leavevessel(void)
+{
+	Vessel* v = guest-&gt;parent;
+	if(v == v-&gt;parent)
+		printf("You cannot leave the %s%c.\n", v-&gt;name, rune(v));
+	else {
+		printf("You left the %s%c.\n", v-&gt;name, rune(v));
+		guest-&gt;parent = v-&gt;parent;
+	}
+}
+
+void
+takevessel(Parade* p, char* val)
+{
+	Vessel* v = findvisible(p, guest, val);
+	if(!v)
+		printf("You do not see the %s.\n", val);
+	else {
+		v-&gt;parent = guest;
+		printf("You took the %s%c.\n", v-&gt;name, rune(v));
+	}
+}
+
+void
+dropvessel(Parade* p, char* val)
+{
+	Vessel* v = findinventory(p, guest, val);
+	if(!v)
+		printf("You do not carry the %s.\n", val);
+	else {
+		v-&gt;parent = guest-&gt;parent-&gt;parent;
+		printf("You dropped the %s%c.\n", v-&gt;name, rune(v));
+	}
+}
+
+void
+warpvessel(Parade* p, char* val)
+{
+	Vessel* v = findany(p, val);
+	if(!v)
+		printf("You cannot warp to the %s.\n", val);
+	else {
+		guest-&gt;parent = v;
+		printf("You warped to the %s%c.\n", v-&gt;name, rune(v));
+	}
+}
+
+void
+transformvessel(Parade* p, char* val)
+{
+	char* name = spor(val, ' ') + 1;
+	if(findany(p, name) || slen(name) &lt; 3)
+		printf("You cannot transform into the %s.\n", name);
+	else {
+		sstr(name, guest-&gt;name, 0, imin(slen(name), TEXTLEN - 1));
+		printf("You transformed into the %s%c.\n", guest-&gt;name, rune(guest));
+	}
+}
+
+void
+notevessel(char* val)
+{
+	Vessel* v = guest-&gt;parent;
+	if(slen(val) &lt; 1)
+		printf("You remove the note of the %s%c.\n", v-&gt;name, rune(v));
+	else {
+		sstr(val, v-&gt;note, 0, imin(slen(val), TEXTLEN - 1));
+		printf("You added a note to the %s%c.\n", v-&gt;name, rune(v));
+	}
+}
+
+void
+programvessel(char* val)
+{
+	Vessel* v = guest-&gt;parent;
+	if(slen(val) &lt; 1)
+		printf("You remove the program of the %s%c.\n", v-&gt;name, rune(v));
+	else {
+		sstr(val, v-&gt;prog, 0, imin(slen(val), TEXTLEN - 1));
+		printf("You programmed the %s%c.\n", v-&gt;name, rune(v));
+	}
+}
+
+void
+lookvessel(Parade* p)
+{
+	int i;
+	if(isparadox(guest))
+		printf("You are the %s%c.\n", guest-&gt;name, rune(guest));
+	else
+		printf("You are the %s%c in the %s%c.\n",
+		       guest-&gt;name, rune(guest),
+		       guest-&gt;parent-&gt;name, rune(guest-&gt;parent));
+	if(slen(guest-&gt;parent-&gt;note) &gt; 2)
+		printf("%s\n", guest-&gt;parent-&gt;note);
+	for(i = 0; i &lt; p-&gt;len; ++i)
+		if(isvisible(guest, &p-&gt;vessels[i]))
+			printf("- %s%c\n", p-&gt;vessels[i].name, rune(&p-&gt;vessels[i]));
+}
+
+/* Parade */
+
+int usevessel(Parade* p, char* val);
+
+void
+act(Parade* p, char* cmd, char* val)
+{
+	switch(afnd(actions, 12, cmd)) {
+	case 0x0:
+		createvessel(p, val);
+		break;
+	case 0x1:
+		becomevessel(p, val);
+		break;
+	case 0x2:
+		entervessel(p, val);
+		break;
+	case 0x3:
+		leavevessel();
+		break;
+	case 0x4:
+		takevessel(p, val);
+		break;
+	case 0x5:
+		dropvessel(p, val);
+		break;
+	case 0x6:
+		warpvessel(p, val);
+		break;
+	case 0x7:
+		transformvessel(p, val);
+		break;
+	case 0x8:
+		notevessel(val);
+		break;
+	case 0x9:
+		programvessel(val);
+		break;
+	case 0xA:
+		usevessel(p, val);
+		break;
+	case 0xB:
+		lookvessel(p);
+		break;
+	default:
+		printf("Unknown action: %s.\n", cmd);
+		break;
+	}
+}
+
+Vessel*
+spawn(Parade* p)
+{
+	addvessel(p, NULL, "library");
+	addvessel(p, &p-&gt;vessels[0], "ghost");
+	return &p-&gt;vessels[1];
+}
+
+int
+parse(Parade* p, char* line, int id)
+{
+	int split = cpos(line, '|');
+	int len = slen(line);
+	Vessel* nv = &p-&gt;vessels[id];
+	if(len &lt; 22 || split &lt; 0 || line[0] == ';')
+		return 0;
+	nv-&gt;id = id;
+	nv-&gt;owner = &p-&gt;vessels[shex(line, 2)];
+	nv-&gt;parent = &p-&gt;vessels[shex(line + 2, 2)];
+	strm(sstr(line, nv-&gt;name, 5, NAMELEN));
+	if(split &gt; 23)
+		sstr(line, nv-&gt;note, 21, split - 22);
+	if(len - split &gt; 3)
+		sstr(line, nv-&gt;prog, split + 2, len - split - 3);
+	return 1;
+}
+
+int
+save(Parade* p, char* filename)
+{
+	int i;
+	FILE* f = fopen(filename, "w");
+	for(i = 0; i &lt; p-&gt;len; ++i)
+		fprintf(f, "%02x%02x %-15s %s | %s\n",
+		        p-&gt;vessels[i].owner-&gt;id,
+		        p-&gt;vessels[i].parent-&gt;id,
+		        p-&gt;vessels[i].name,
+		        p-&gt;vessels[i].note,
+		        p-&gt;vessels[i].prog);
+	fclose(f);
+	return 1;
+}
+
+int
+load(Parade* p, char* filename)
+{
+	char line[BUFLEN];
+	FILE* f = fopen(filename, "r");
+	if(f == NULL)
+		return 1;
+	p-&gt;len = 0;
+	while(fgets(line, BUFLEN, f)) {
+		if(parse(p, line, p-&gt;len))
+			p-&gt;len++;
+	}
+	return 1;
+}
+
+int
+answer(Parade* p, char* input)
+{
+	int split = cpos(input, ' ');
+	char action[NAMELEN], value[TEXTLEN];
+	if(cpos(input, '|') &gt;= 0)
+		return 1;
+	if(split &gt;= 0) {
+		sstr(input, action, 0, split);
+		sstr(input, value, split + 1,
+		     imin(slen(input) - split, TEXTLEN - 1));
+	} else if(slen(input) &lt; 2) {
+		action[0] = '\0';
+		value[0] = '\0';
+	} else if(slen(input) &gt;= 0) {
+		sstr(input, action, 0,
+		     imin(slen(input), NAMELEN - 1));
+		value[0] = '\0';
+	}
+	if(scmp(action, "@quit"))
+		return 0;
+	if(scmp(action, "@save") && slen(value) &gt; 3)
+		return save(p, spor(input, ' ') + 1);
+	if(scmp(action, "@load") && slen(value) &gt; 3)
+		return load(p, spor(input, ' ') + 1);
+	act(p, action, value);
+	return 1;
+}
+
+int
+usevessel(Parade* p, char* val)
+{
+	Vessel* v = findvisible(p, guest, val);
+	if(!v)
+		printf("You do not see %s.\n", val);
+	else if(slen(v-&gt;prog) &lt; 2)
+		printf("You cannot use %s%c.\n", val, rune(v));
+	else
+		answer(p, v-&gt;prog);
+	return 0;
+}
+
+int
+listen(Parade* p)
+{
+	char input[TEXTLEN];
+	printf("&gt; ");
+	if(fgets(input, TEXTLEN, stdin))
+		return answer(p, strm(input));
+	return 0;
+}
+
+int
+main(int argc, char** argv)
+{
+	Parade parade;
+	parade.len = 0;
+	guest = spawn(&parade);
+	if(argc == 2)
+		load(&parade, argv[1]);
+	printf("A %s%c appeared in the %s%c.\n",
+	       guest-&gt;name, rune(guest),
+	       guest-&gt;parent-&gt;name, rune(guest-&gt;parent));
+	while(listen(&parade))
+		;
+	return 0;
+}
+</pre><figcaption><a href='../archive/src/parade.c.txt'>parade.c</a> 539 lines</figcaption>
+</figure><ul><li><a href='https://git.sr.ht/~rabbits/parade' target='_blank'>sources</a></li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
