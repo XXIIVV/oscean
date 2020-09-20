@@ -50,6 +50,7 @@ typedef struct Term {
 	int docs_len;
 	struct Term* incoming[KEY_BUF_LEN];
 	int incoming_len;
+	int outgoing_len;
 } Term;
 
 typedef struct Log {
@@ -201,6 +202,7 @@ fplink(FILE* f, Lexicon* lex, Term* t, char* s)
 		else {
 			tt->incoming[tt->incoming_len] = t;
 			tt->incoming_len++;
+			t->outgoing_len++;
 		}
 	}
 }
@@ -1013,8 +1015,12 @@ check(Lexicon* lex, Glossary* glo, Journal* jou)
 	for(i = 0; i < lex->len; ++i) {
 		Term* t = &lex->terms[i];
 		sends += t->incoming_len;
-		if(t->incoming_len < 1)
+		if(t->incoming_len < 1 && t->outgoing_len < 1)
+			printf("Warning: \"%s\" unlinked \n", t->name);
+		else if(t->incoming_len < 1)
 			printf("Warning: \"%s\" orphaned \n", t->name);
+		else if(t->outgoing_len < 1)
+			printf("Warning: \"%s\" dead-end \n", t->name);
 	}
 	printf("sends(%d incomings) ", sends);
 }
