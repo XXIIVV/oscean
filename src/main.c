@@ -131,17 +131,6 @@ getfile(char* dir, char* filename, char* ext, char* op)
 }
 
 void
-register_incoming(Lexicon* lex, Term* src, char* dest)
-{
-	Term* host = findterm(lex, dest);
-	if(host) {
-		host->incoming[host->incoming_len] = src;
-		host->incoming_len++;
-	} else
-		error("Unknown incoming", dest);
-}
-
-void
 build_lifeline(FILE* f, Term* t)
 {
 	int limit_from = arvelie_to_epoch("06I04");
@@ -187,7 +176,7 @@ build_log_pict(FILE* f, Log* l, int caption)
 }
 
 void
-fplink(FILE* f, Lexicon* lex, char* s)
+fplink(FILE* f, Lexicon* lex, Term* t, char* s)
 {
 	int split = cpos(s, ' ');
 	char target[256], name[256];
@@ -201,12 +190,18 @@ fplink(FILE* f, Lexicon* lex, char* s)
 	}
 	/* output */
 	if(surl(target)) {
-		fprintf(f, "<a href='%s' target='_blank'>%s</a>", target, name);
+		if(f != NULL)
+			fprintf(f, "<a href='%s' target='_blank'>%s</a>", target, name);
 	} else {
-		Term* t = findterm(lex, target);
-		if(!t)
+		Term* tt = findterm(lex, target);
+		if(!tt)
 			error("Unknown link", target);
-		fprintf(f, "<a href='%s.html'>%s</a>", t->filename, name);
+		if(f != NULL)
+			fprintf(f, "<a href='%s.html'>%s</a>", tt->filename, name);
+		else {
+			tt->incoming[tt->incoming_len] = t;
+			tt->incoming_len++;
+		}
 	}
 }
 
@@ -263,7 +258,7 @@ fpmodule(FILE* f, char* s)
 }
 
 void
-ftemplate(FILE* f, Lexicon* lex, char* s)
+ftemplate(FILE* f, Lexicon* lex, Term* t, char* s)
 {
 	int i, capture = 0;
 	char buf[STR_BUF_LEN];
@@ -272,17 +267,17 @@ ftemplate(FILE* f, Lexicon* lex, char* s)
 		char c = s[i];
 		if(c == '}') {
 			capture = 0;
-			if(buf[0] == '^')
+			if(buf[0] == '^' && f != NULL)
 				fpmodule(f, buf);
-			else
-				fplink(f, lex, buf);
+			else if(buf[0] != '^')
+				fplink(f, lex, t, buf);
 		}
 		if(capture) {
 			if(slen(buf) < STR_BUF_LEN - 1)
 				ccat(buf, c);
 			else
 				error("template too long", s);
-		} else if(c != '{' && c != '}')
+		} else if(c != '{' && c != '}' && f != NULL)
 			fputc(c, f);
 		if(c == '{') {
 			capture = 1;
@@ -296,7 +291,7 @@ build_body_part(FILE* f, Lexicon* lex, Term* t)
 {
 	int i;
 	for(i = 0; i < t->body_len; ++i)
-		ftemplate(f, lex, t->body[i]);
+		ftemplate(f, lex, t, t->body[i]);
 }
 
 void
@@ -940,6 +935,8 @@ link(Glossary* glo, Lexicon* lex, Journal* jou)
 	printf("lexicon(%d entries) ", lex->len);
 	for(i = 0; i < lex->len; ++i) {
 		Term* t = &lex->terms[i];
+		for(j = 0; j < t->body_len; ++j)
+			ftemplate(NULL, lex, t, t->body[j]);
 		t->parent = findterm(lex, t->host);
 		if(!t->parent)
 			error("Unknown term host", t->host);
@@ -985,9 +982,9 @@ build(Lexicon* lex, Journal* jou)
 }
 
 void
-check(Glossary* glo, Journal* jou)
+check(Lexicon* lex, Glossary* glo, Journal* jou)
 {
-	int i, j, found;
+	int i, j, found = 0, sends = 0;
 	printf("Checking | ");
 	/* Find invalid logs */
 	for(i = 0; i < jou->len; ++i) {
@@ -1008,10 +1005,18 @@ check(Glossary* glo, Journal* jou)
 			if(jou->logs[j].pict == i || found)
 				found = 1;
 		if(!found) {
-			printf("Available<#%d>", i);
+			printf("Available(#%d) ", i);
 			break;
 		}
 	}
+	/* Find unlinked pages */
+	for(i = 0; i < lex->len; ++i) {
+		Term* t = &lex->terms[i];
+		sends += t->incoming_len;
+		if(t->incoming_len < 1)
+			printf("Warning: \"%s\" orphaned \n", t->name);
+	}
+	printf("sends(%d incomings) ", sends);
 }
 
 Lexicon all_terms;
@@ -1036,7 +1041,7 @@ main(void)
 	build(&all_terms, &all_logs);
 	printf("[%.2fms]\n", clock_since(start));
 	start = clock();
-	check(&all_lists, &all_logs);
+	check(&all_terms, &all_lists, &all_logs);
 	printf("[%.2fms]\n", clock_since(start));
 
 	return (0);
