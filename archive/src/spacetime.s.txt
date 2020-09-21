@@ -1,0 +1,651 @@
+;; header
+
+	.db "NES", $1a ; identification of the iNES header
+	.db 1 ; number of 16KB PRG-ROM pages
+	.db $01 ; number of 8KB CHR-ROM pages
+	.db $70|%0001 ; mapper 7
+	.dsb $09, $00 ; clear the remaining bytes
+	.fillvalue $FF ; Sets all unused space in rom to value $FF
+	.org $C000
+
+;; constants
+
+PPUCTRL             .equ $2000 
+PPUMASK             .equ $2001 
+PPUSTATUS           .equ $2002 
+SPRADDR             .equ $2003 
+PPUSCROLL           .equ $2005 
+PPUADDR             .equ $2006 
+PPUDATA             .equ $2007 
+APUCH1VOL           .equ $4000 ; APU
+APUCH1SWP           .equ $4001 ; APU
+APUCH1FRQ           .equ $4002 ; APU
+APUCH1LEN           .equ $4003 ; APU
+APUCH2VOL           .equ $4004 ; APU
+APUCH2SWP           .equ $4005 ; APU
+APUCH2FRQ           .equ $4006 ; APU
+APUCH2LEN           .equ $4007 ; APU
+APUCH3CNT           .equ $4008 ; APU
+APUCH3SWP           .equ $4009 ; APU
+APUCH3FRQ           .equ $400a ; APU
+APUCH3LEN           .equ $400b ; APU
+APUCH4VOL           .equ $400c ; APU
+APUCH4SWP           .equ $400d ; APU
+APUCH4FRQ           .equ $400e ; APU
+APUCH4LEN           .equ $400f ; APU
+SPRDMA              .equ $4014 
+APUCTRL             .equ $4015 
+JOY1                .equ $4016 
+JOY2                .equ $4017 
+BUTTON_RIGHT        .equ #$01 
+BUTTON_LEFT         .equ #$02 
+BUTTON_DOWN         .equ #$04 
+BUTTON_UP           .equ #$08 
+BUTTON_START        .equ #$10 
+BUTTON_SELECT       .equ #$20 
+BUTTON_B            .equ #$40 
+BUTTON_A            .equ #$80 
+
+;; variables
+
+	.enum $0000
+position                .dsb 1 
+cursor                  .dsb 1 
+note                    .dsb 1 
+marker                  .dsb 1 
+btndown                 .dsb 1 
+btnlast                 .dsb 1 
+btnqueue                .dsb 1 
+rate                    .dsb 1 
+timer                   .dsb 1 
+seed                    .dsb 1 
+	.ende 
+
+;; reset
+
+RESET:
+	SEI                          ; disable IRQs
+	CLD                          ; disable decimal mode
+	LDX #$40
+	STX $4017                    ; disable APU frame IRQ
+	LDX #$FF
+	TXS                          ; set up stack
+	INX                          ; now X = 0
+	STX PPUCTRL                  ; disable NMI
+	STX PPUMASK                  ; disable rendering
+	STX $4010                    ; disable DMC IRQs
+
+Vblankwait1: ; First wait for vblank
+	BIT PPUSTATUS
+	BPL Vblankwait1
+
+Clrmem:
+	LDA #$00
+	STA $0000, x
+	STA $0100, x
+	STA $0300, x
+	STA $0400, x
+	STA $0500, x
+	STA $0600, x
+	STA $0700, x
+	LDA #$FE
+	STA $0200, x                 ; move sprites off screen
+	INX 
+	BNE Clrmem
+
+Vblankwait2: ; Second wait for vblank
+	BIT PPUSTATUS
+	BPL Vblankwait2
+
+;; setup phase
+
+SetupPalettes:
+	LDA PPUSTATUS
+	LDA #$3F
+	STA PPUADDR
+	LDA #$00
+	STA PPUADDR
+	LDX #$00
+@loop:
+	LDA Palettes, x
+	STA PPUDATA
+	INX 
+	CPX #$20
+	BNE @loop
+
+SetupAttributes:
+	LDA PPUSTATUS
+	LDA #$23
+	STA PPUADDR
+	LDA #$C0
+	STA PPUADDR
+	LDX #$00
+@loop:
+	LDA #$00
+	STA PPUDATA
+	INX 
+	CPX #$40
+	BNE @loop
+
+SetupSequence:
+	LDX #$00
+@loop:
+	LDA $00                      ; set entire sequence to "+"
+	STA $10,x                    ; store on zeropage second row
+	INX 
+	CPX #$10
+	BNE @loop
+
+SetupVariables:
+	LDA #$08
+	STA rate                     ; default rate = 08
+	LDA #$20
+	STA note                     ; default note = C
+	LDA #$05
+	STA marker
+
+SetupAudio:
+	LDY #$0f                     ; init $4000-4013
+@loop:
+	LDA ApuStates,y
+	STA $4000,y
+	DEY 
+	BPL @loop
+	LDA #$0f                     ; skip over $4014 (OAMDMA)
+	STA $4015
+	LDA #$40
+	STA $4017
+
+SetupInterface:
+@cursor:
+	LDA #$88
+	STA $0200                    ; set tile.y pos
+	LDA #$02
+	STA $0201                    ; set tile.id
+	LDA #$00
+	STA $0202                    ; set tile.attribute
+@marker:
+	LDA #$88
+	STA $0204                    ; set tile.y pos
+	LDA #$03
+	STA $0205                    ; set tile.id
+	LDA #$00
+	STA $0206                    ; set tile.attribute
+
+EnableSprites:
+	LDA #%10000000               ; enableNMI sprites0 background0
+	STA PPUCTRL
+	LDA #%00011110               ; sprites background noclip
+	STA PPUMASK
+
+;; main phase
+
+MAIN:
+	LDA btnqueue
+@style1:
+	CMP BUTTON_LEFT
+	BEQ MoveLeft
+	CMP BUTTON_RIGHT
+	BEQ MoveRight
+	CMP BUTTON_UP
+	BEQ MoveUp
+	CMP BUTTON_DOWN
+	BEQ MoveDown
+@style2:
+	CMP BUTTON_SELECT
+	BEQ ResetSequence
+	CMP BUTTON_START
+	BEQ MoveMarker
+	CMP BUTTON_A
+	BEQ MoveUp
+	CMP BUTTON_B
+	BEQ MoveDown
+	JMP MAIN                     ; infinite loop
+
+;; General functions
+
+MoveLeft:
+	DEC cursor
+	LDA cursor
+	CMP #$ff
+	BNE @done                    ; when equal skip
+	LDA #$0f                     ; wrap around
+	STA cursor
+@done:
+	JMP MoveEnd
+
+MoveRight:
+	INC cursor
+	LDA cursor
+	CMP #$10
+	BCC @done                    ; when greaterthan skip
+	LDA #$00                     ; wrap around
+	STA cursor
+@done:
+	JMP MoveEnd
+
+MoveDown:
+	LDX cursor
+	DEC $10,x
+	LDA $10,x
+	CMP #$ff                     ; when equal skip
+	BNE @done                    ; wrap around
+	LDA #$07
+	STA $10,x
+@done:
+	JMP MoveEnd
+
+MoveUp:
+	LDX cursor
+	INC $10,x
+	LDA $10,x
+	CMP #$08                     ; when greaterthan skip
+	BCC @done                    ; wrap around
+	LDA #$00
+	STA $10,x
+@done:
+	JMP MoveEnd
+
+MoveMarker:
+	LDA cursor
+	STA marker
+	STA RedrawInterface
+	JMP MoveEnd
+
+ResetSequence:
+	LDX #$00
+@loop:
+	LDA #$01                     ; set entire sequence to "+"
+	STA $10,x                    ; store on zeropage second row
+	INX 
+	CPX #$10
+	BNE @loop
+	JMP MoveEnd
+
+MoveEnd:
+	LDA #$00
+	STA btnqueue
+	STA RedrawTimeline
+	JMP MAIN
+
+;; interface
+
+RedrawTimeline:
+	LDX #$00
+@loop:
+	LDA #$22                     ; sprite v pos
+	STA PPUADDR
+	TXA                          ; sprite x pos
+	STA PPUADDR
+	LDA #$10, x                  ; find selection
+	CLC 
+	ADC #$10
+	CPX cursor                   ; if cursor
+	BNE @continue
+	CLC 
+	ADC #$08                     ; then, highlight
+@continue:
+	STA PPUDATA                  ; sprite id
+	INX 
+	CPX #$10
+	BNE @loop
+	RTS 
+
+RedrawInterface:
+	LDA PPUSTATUS
+@selection:
+	LDA cursor
+	CLC 
+	ADC #$20
+	LDX #$40
+	LDY #$22
+	STY PPUADDR
+	STX PPUADDR
+	STA PPUDATA
+@marker:
+	LDA marker
+	CLC 
+	ADC #$20
+	LDX #$41
+	LDY #$22
+	STY PPUADDR
+	STX PPUADDR
+	STA PPUDATA
+@position:
+	LDA position
+	CLC 
+	ADC #$20
+	LDX #$42
+	LDY #$22
+	STY PPUADDR
+	STX PPUADDR
+	STA PPUDATA
+@rate:
+	LDA rate
+	CLC 
+	ADC #$20
+	LDX #$43
+	LDY #$22
+	STY PPUADDR
+	STX PPUADDR
+	STA PPUDATA
+@sprites:
+	LDA position
+	ASL 
+	ASL 
+	ASL 
+	CLC 
+	ADC #$40
+	STA $0203                    ; set tile.x pos
+	LDA marker
+	ASL 
+	ASL 
+	ASL 
+	CLC 
+	ADC #$40
+	STA $0207                    ; set tile.x pos
+@done:
+	RTS 
+
+IncNote:
+	INC note
+	LDA note
+	CMP #$48
+	BNE @done
+	LDA #$00                     ; when reached end
+	STA note                     ; reset note
+@done:
+	RTS 
+
+DecNote:
+	DEC note
+	LDA note
+	CMP #$ff
+	BNE @done
+	LDA #$47
+	STA note
+@done:
+	RTS 
+
+PlaySnare:
+	LDA #<$3f8
+	STA APUCH4LEN
+	LDA #>$3f8
+	STA APUCH4FRQ
+	LDA #%11000100
+	STA APUCH4VOL
+	RTS 
+
+;; operators
+
+DoInc:
+	LDX #$00
+@loop:
+	JSR IncNote
+	CPX marker
+	INX 
+	BCC @loop
+	JMP DoOperationEnd
+
+DoDec:
+	LDX #$00
+@loop:
+	JSR DecNote
+	CPX marker
+	INX 
+	BCC @loop
+	JMP DoOperationEnd
+
+DoTop:
+	LDA #$24
+	STA note
+	JMP DoOperationEnd
+
+DoBottom:
+	LDA #$00
+	STA note
+	JMP DoOperationEnd
+
+DoRandomNote:
+	LDA seed
+@loop:
+	SEC 
+	SBC #$48
+	CMP #$48
+	BCS @loop
+	STA note
+	INC seed
+	JSR PlaySnare
+	JMP DoOperationEnd
+
+DoIncMetro:
+	INC rate
+	LDA rate
+	CMP #$0c
+	BCC @done
+	LDA #$01
+	STA rate
+@done:
+	JMP DoOperationEnd
+
+DoDecMetro:
+	DEC rate
+	LDA rate
+	CMP #$00
+	BNE @done
+	LDA #$0c
+	STA rate
+@done:
+	JMP DoOperationEnd
+
+DoRandomPosition:
+	LDA marker
+	STA position
+	JMP DoOperationEnd
+
+DoOperation:
+	LDX position
+	LDA $10,x
+	CMP #$00                     ;
+	BEQ DoInc
+	CMP #$01
+	BEQ DoDec
+	CMP #$02
+	BEQ DoBottom
+	CMP #$03
+	BEQ DoTop
+	CMP #$04
+	BEQ DoRandomNote
+	CMP #$05
+	BEQ DoIncMetro
+	CMP #$06
+	BEQ DoDecMetro
+	CMP #$07
+	BEQ DoRandomPosition
+
+DoOperationEnd: ; return from operations
+	RTS 
+
+DoSound:
+	LDX note
+@ch1:
+	LDA NotesHi,x
+	STA APUCH1LEN
+	LDA NotesLo,x
+	STA APUCH1FRQ
+	LDY position
+	STY APUCH1SWP
+@ch2:
+	LDA NotesHi,x
+	STA APUCH2LEN
+	LDA NotesLo,x
+	STA APUCH2FRQ
+	LDY marker
+	STY APUCH2SWP
+@ch3:
+	LDA NotesHi,x
+	STA APUCH3LEN
+	LDA NotesLo,x
+	STA APUCH3FRQ
+	LDY timer
+	STY APUCH3SWP
+	RTS 
+
+;; nmi phase
+
+NMI: ;
+
+ReadJoy:
+	LDA #$01
+	STA JOY1                     ; start reading
+	STA btndown
+	LSR a
+	STA JOY1
+@loop:
+	LDA JOY1
+	LSR a
+	ROL btndown
+	BCC @loop
+
+SaveJoy:
+	LDA btndown
+	CMP btnlast
+	BEQ @done
+	STA btnlast
+	CMP #$00
+	BEQ @done
+	STA btnqueue
+@done:
+	LDA #$00
+	STA SPRADDR
+	LDA #$02
+	STA $4014
+
+RunTimer:
+	INC seed
+	INC timer
+	LDA timer
+	CMP rate                     ; check if timer has reached rate
+	BNE @done                    ; skip if timer is less than rate
+	LDA #$00
+	STA timer                    ; reset timer
+	JSR DoOperation
+	JSR DoSound
+	INC position
+	LDA position
+	CMP #$10                     ; check if position has reached 16
+	BNE @done
+	LDA #$00
+	STA position
+@done:
+
+Cleanup:
+	JSR RedrawTimeline
+	JSR RedrawInterface
+	LDA PPUSTATUS
+	LDA #$c0                     ; shift background to center
+	STA PPUSCROLL
+	LDA #$00
+	STA PPUSCROLL
+	RTI                          ; return from interrupt
+
+;; tables
+
+	.org $E000
+
+Palettes: ;
+	.db $0F,$3B,$16,$30, $3B,$3B,$0F,$0F, $0F,$3B,$0F,$0F, $0F,$3B,$0F,$0F
+	.db $0F,$3B,$16,$3B, $0F,$3B,$0F,$0F, $0F,$0F,$0F,$0F, $0F,$0F,$0F,$0F
+
+ApuStates:
+	.db #%10100111,$08,$00,$00
+	.db #%00011101,$08,$00,$00
+	.db #%01011101,$08,$00,$00
+	.db #%01011011,$08,$00,$00
+
+NotesHi:
+	.db $07,$07,$07,$06,$06,$05,$05,$05,$05,$04,$04,$04
+	.db $03,$03,$03,$03,$03,$02,$02,$02,$02,$02,$02,$02
+	.db $01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01
+	.db $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.db $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.db $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+
+NotesLo:
+	.db $f1,$7f,$13,$ad,$4d,$f3,$9d,$4c,$00,$b8,$74,$34
+	.db $f8,$bf,$89,$56,$26,$f9,$ce,$a6,$80,$5c,$3a,$1a
+	.db $fb,$df,$c4,$ab,$93,$7c,$67,$52,$3f,$2d,$1c,$0c
+	.db $fd,$ef,$e1,$d5,$c9,$bd,$b3,$a9,$9f,$96,$8e,$86
+	.db $7e,$77,$70,$6a,$64,$5e,$59,$54,$4f,$4b,$46,$42
+	.db $3f,$3b,$38,$34,$31,$2f,$2c,$29,$27,$25,$23,$21
+
+;; Vectors
+
+	.pad $FFFA
+	.dw NMI
+	.dw RESET
+	.dw 0
+
+;; Sprites
+
+	.db $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.db $fe,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.db $00,$00,$00,$00,$00,$00,$00,$00,$fe,$00,$00,$00,$00,$00,$00,$00
+	.db $fe,$00,$00,$00,$00,$00,$00,$00,$fe,$00,$00,$00,$00,$00,$00,$00
+	.db $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.db $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.db $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.db $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.db $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.db $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.db $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.db $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.db $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.db $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.db $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.db $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.db $10,$10,$10,$fe,$10,$10,$10,$00,$10,$10,$10,$fe,$10,$10,$10,$00
+	.db $00,$00,$00,$fe,$00,$00,$00,$00,$00,$00,$00,$fe,$00,$00,$00,$00
+	.db $04,$08,$10,$20,$10,$08,$04,$00,$04,$08,$10,$20,$10,$08,$04,$00
+	.db $20,$10,$08,$04,$08,$10,$20,$00,$20,$10,$08,$04,$08,$10,$20,$00
+	.db $10,$54,$28,$c6,$28,$54,$10,$00,$10,$54,$28,$c6,$28,$54,$10,$00
+	.db $ec,$92,$92,$92,$92,$92,$92,$00,$ec,$92,$92,$92,$92,$92,$92,$00
+	.db $92,$92,$92,$92,$92,$92,$ec,$00,$92,$92,$92,$92,$92,$92,$ec,$00
+	.db $10,$28,$44,$82,$44,$28,$10,$00,$10,$28,$44,$82,$44,$28,$10,$00
+	.db $10,$10,$10,$fe,$10,$10,$10,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.db $00,$00,$00,$fe,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.db $04,$08,$10,$20,$10,$08,$04,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.db $20,$10,$08,$04,$08,$10,$20,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.db $10,$54,$28,$c6,$28,$54,$10,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.db $ec,$92,$92,$92,$92,$92,$92,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.db $92,$92,$92,$92,$92,$92,$ec,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.db $10,$28,$44,$82,$44,$28,$10,$00,$00,$00,$00,$00,$00,$00,$00,$00
+	.db $7c,$82,$82,$82,$82,$82,$7c,$00,$7c,$82,$82,$82,$82,$82,$7c,$00
+	.db $10,$30,$10,$10,$10,$10,$38,$00,$10,$30,$10,$10,$10,$10,$38,$00
+	.db $7c,$82,$02,$7c,$80,$80,$fe,$00,$7c,$82,$02,$7c,$80,$80,$fe,$00
+	.db $7c,$82,$02,$1c,$02,$82,$7c,$00,$7c,$82,$02,$1c,$02,$82,$7c,$00
+	.db $22,$42,$82,$fe,$02,$02,$02,$00,$22,$42,$82,$fe,$02,$02,$02,$00
+	.db $fe,$80,$80,$7c,$02,$82,$7c,$00,$fe,$80,$80,$7c,$02,$82,$7c,$00
+	.db $7c,$82,$80,$fc,$82,$82,$7c,$00,$7c,$82,$80,$fc,$82,$82,$7c,$00
+	.db $7c,$82,$04,$08,$10,$20,$40,$00,$7c,$82,$04,$08,$10,$20,$40,$00
+	.db $7c,$82,$82,$7c,$82,$82,$7c,$00,$7c,$82,$82,$7c,$82,$82,$7c,$00
+	.db $7c,$82,$82,$7e,$02,$02,$02,$00,$7c,$82,$82,$7e,$02,$02,$02,$00
+	.db $7c,$82,$82,$fe,$82,$82,$82,$00,$7c,$82,$82,$fe,$82,$82,$82,$00
+	.db $fc,$82,$82,$fc,$82,$82,$fc,$00,$fc,$82,$82,$fc,$82,$82,$fc,$00
+	.db $3c,$42,$80,$80,$80,$42,$3c,$00,$3c,$42,$80,$80,$80,$42,$3c,$00
+	.db $f8,$84,$82,$82,$82,$84,$f8,$00,$f8,$84,$82,$82,$82,$84,$f8,$00
+	.db $7e,$80,$80,$f0,$80,$80,$7e,$00,$7e,$80,$80,$f0,$80,$80,$7e,$00
+	.db $7e,$80,$80,$f0,$80,$80,$80,$00,$7e,$80,$80,$f0,$80,$80,$80,$00
+	.db $3c,$42,$80,$80,$80,$42,$3c,$00,$3c,$42,$80,$80,$80,$42,$3c,$00
+	.db $34,$4a,$84,$80,$80,$42,$3c,$00,$34,$4a,$84,$80,$80,$42,$3c,$00
+	.db $f8,$84,$82,$82,$82,$84,$f8,$00,$f8,$84,$82,$82,$82,$84,$f8,$00
+	.db $f4,$8a,$84,$82,$82,$84,$f8,$00,$f4,$8a,$84,$82,$82,$84,$f8,$00
+	.db $7e,$80,$80,$f0,$80,$80,$7e,$00,$7e,$80,$80,$f0,$80,$80,$7e,$00
+	.db $7e,$80,$80,$f0,$80,$80,$80,$00,$7e,$80,$80,$f0,$80,$80,$80,$00
+	.db $74,$8a,$84,$f0,$80,$80,$80,$00,$74,$8a,$84,$f0,$80,$80,$80,$00
+	.db $7e,$80,$80,$9c,$82,$82,$7c,$00,$7e,$80,$80,$9c,$82,$82,$7c,$00
+	.db $74,$8a,$84,$98,$82,$82,$7c,$00,$74,$8a,$84,$98,$82,$82,$7c,$00
+	.db $7c,$82,$82,$fe,$82,$82,$82,$00,$7c,$82,$82,$fe,$82,$82,$82,$00
+	.db $74,$8a,$84,$fa,$82,$82,$82,$00,$74,$8a,$84,$fa,$82,$82,$82,$00
+	.db $fc,$82,$82,$fc,$82,$82,$fc,$00,$fc,$82,$82,$fc,$82,$82,$fc,$00
+	.dsw 3624,$0000
