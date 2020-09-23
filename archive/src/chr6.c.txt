@@ -77,6 +77,10 @@ redraw(void)
 				draw(pixels, id, color);
 				id++;
 			}
+	SDL_UpdateTexture(gTexture, NULL, pixels, WIDTH * sizeof(uint32_t));
+	SDL_RenderClear(gRenderer);
+	SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);
+	SDL_RenderPresent(gRenderer);
 }
 
 void
@@ -106,7 +110,7 @@ edit(Brush* b)
 {
 	Point p1;
 	setpt(&p1, b->pos.x - PAD, b->pos.y - PAD);
-	if(p1.x < 0 || p1.y < 0 || p1.x > 8 * 16 * ZOOM || p1.y > 8 * 16 * ZOOM)
+	if(p1.x < 0 || p1.y < 0 || p1.x > 128 * ZOOM || p1.y > 128 * ZOOM)
 		return;
 	write(
 	    p1.x / (8 * ZOOM),
@@ -124,7 +128,7 @@ erase(Brush* b)
 	int i, id;
 	Point p1;
 	setpt(&p1, b->pos.x - PAD, b->pos.y - PAD);
-	if(p1.x < 0 || p1.y < 0 || p1.x > 8 * 16 * ZOOM || p1.y > 8 * 16 * ZOOM)
+	if(p1.x < 0 || p1.y < 0 || p1.x > 128 * ZOOM || p1.y > 128 * ZOOM)
 		return;
 	id = (p1.x / (8 * ZOOM)) + (p1.y / (8 * ZOOM)) * 16;
 	for(i = 0; i < 8; ++i) {
@@ -296,8 +300,6 @@ main(int argc, char** argv)
 		if(tick < ticknext)
 			SDL_Delay(ticknext - tick);
 		ticknext = tick + (1000 / FPS);
-		SDL_UpdateTexture(gTexture, NULL,
-		                  pixels, WIDTH * sizeof(uint32_t));
 		while(SDL_PollEvent(&event) != 0) {
 			if(event.type == SDL_MOUSEBUTTONUP ||
 			   event.type == SDL_MOUSEBUTTONDOWN ||
@@ -306,9 +308,6 @@ main(int argc, char** argv)
 			} else if(event.type == SDL_KEYDOWN)
 				keyhandler(&event, &brush);
 		}
-		SDL_RenderClear(gRenderer);
-		SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);
-		SDL_RenderPresent(gRenderer);
 	}
 	quit();
 	return 0;

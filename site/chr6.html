@@ -77,6 +77,10 @@ redraw(void)
 				draw(pixels, id, color);
 				id++;
 			}
+	SDL_UpdateTexture(gTexture, NULL, pixels, WIDTH * sizeof(uint32_t));
+	SDL_RenderClear(gRenderer);
+	SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);
+	SDL_RenderPresent(gRenderer);
 }
 
 void
@@ -106,7 +110,7 @@ edit(Brush* b)
 {
 	Point p1;
 	setpt(&amp;p1, b-&gt;pos.x - PAD, b-&gt;pos.y - PAD);
-	if(p1.x &lt; 0 || p1.y &lt; 0 || p1.x &gt; 8 * 16 * ZOOM || p1.y &gt; 8 * 16 * ZOOM)
+	if(p1.x &lt; 0 || p1.y &lt; 0 || p1.x &gt; 128 * ZOOM || p1.y &gt; 128 * ZOOM)
 		return;
 	write(
 	    p1.x / (8 * ZOOM),
@@ -124,7 +128,7 @@ erase(Brush* b)
 	int i, id;
 	Point p1;
 	setpt(&amp;p1, b-&gt;pos.x - PAD, b-&gt;pos.y - PAD);
-	if(p1.x &lt; 0 || p1.y &lt; 0 || p1.x &gt; 8 * 16 * ZOOM || p1.y &gt; 8 * 16 * ZOOM)
+	if(p1.x &lt; 0 || p1.y &lt; 0 || p1.x &gt; 128 * ZOOM || p1.y &gt; 128 * ZOOM)
 		return;
 	id = (p1.x / (8 * ZOOM)) + (p1.y / (8 * ZOOM)) * 16;
 	for(i = 0; i &lt; 8; ++i) {
@@ -296,8 +300,6 @@ main(int argc, char** argv)
 		if(tick &lt; ticknext)
 			SDL_Delay(ticknext - tick);
 		ticknext = tick + (1000 / FPS);
-		SDL_UpdateTexture(gTexture, NULL,
-		                  pixels, WIDTH * sizeof(uint32_t));
 		while(SDL_PollEvent(&amp;event) != 0) {
 			if(event.type == SDL_MOUSEBUTTONUP ||
 			   event.type == SDL_MOUSEBUTTONDOWN ||
@@ -306,12 +308,9 @@ main(int argc, char** argv)
 			} else if(event.type == SDL_KEYDOWN)
 				keyhandler(&amp;event, &amp;brush);
 		}
-		SDL_RenderClear(gRenderer);
-		SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);
-		SDL_RenderPresent(gRenderer);
 	}
 	quit();
 	return 0;
 }
-</pre><figcaption><a href='../archive/src/chr6.c.txt'>chr6.c</a> 315 lines</figcaption>
+</pre><figcaption><a href='../archive/src/chr6.c.txt'>chr6.c</a> 314 lines</figcaption>
 </figure><ul><li><a href='https://git.sr.ht/~rabbits/chr6' target='_blank'>source</a></li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
