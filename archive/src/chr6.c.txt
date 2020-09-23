@@ -1,0 +1,315 @@
+#include <SDL2/SDL.h>
+#include <stdio.h>
+
+#define PAD 32
+#define ZOOM 4
+#define color1 0x000000
+#define color2 0x72DEC2
+#define color3 0xFFFFFF
+#define color4 0x444444
+#define color0 0x111111
+
+typedef struct Point {
+	int x;
+	int y;
+} Point;
+
+typedef struct Brush {
+	int color;
+	int down;
+	Point pos;
+} Brush;
+
+unsigned char buffer[4096];
+int colors[] = {color1, color2, color3, color4, color0};
+int WIDTH = 128 * ZOOM + PAD * 2;
+int HEIGHT = 128 * ZOOM + PAD * 2;
+int FPS = 30;
+int GUIDES = 1;
+SDL_Window* gWindow = NULL;
+SDL_Renderer* gRenderer = NULL;
+SDL_Texture* gTexture = NULL;
+uint32_t* pixels;
+
+Point*
+setpt(Point* p, int x, int y)
+{
+	p->x = x;
+	p->y = y;
+	return p;
+}
+
+void
+pixel(uint32_t* dst, Point p, int c)
+{
+	int x, y;
+	p.x = (p.x * ZOOM) + PAD;
+	p.y = (p.y * ZOOM) + PAD;
+	for(x = 0; x < ZOOM; ++x)
+		for(y = 0; y < ZOOM; ++y)
+			dst[(p.y + y) * WIDTH + (p.x + x)] = c;
+}
+
+void
+draw(uint32_t* dst, int id, int color)
+{
+	int ti = id / 64;
+	int px = (ti / 256) * 128;
+	int tx = (ti % 16) * 8;
+	int ty = ((ti / 16) * 8) % 128;
+	int odd = (ti + (ti / 16 + 2)) % 2 == 0;
+	Point p;
+	p.x = px + tx + (id % 8);
+	p.y = ty + ((id % 64) / 8);
+	pixel(dst, p, colors[GUIDES && odd && color == 0 ? 4 : color]);
+}
+
+void
+redraw(void)
+{
+	int b, i, j, id = 0, ch1, ch2, color;
+	for(b = 0; b < 4096; b += 16)
+		for(i = 0; i < 8; i++)
+			for(j = 7; j >= 0; j--) {
+				ch1 = buffer[b + i];
+				ch2 = buffer[b + i + 8];
+				color = ((ch1 >> j) & 0x1) + (((ch2 >> j) & 0x1) << 1);
+				draw(pixels, id, color);
+				id++;
+			}
+}
+
+void
+write(int tx, int ty, int px, int py, int color)
+{
+	int id = tx + ty * 16;
+	int row = py + id * 16;
+	if(id > 255)
+		return;
+	if(color == 0) {
+		buffer[row] &= ~(1UL << (7 - px));
+		buffer[row + 8] &= ~(1UL << (7 - px));
+	} else if(color == 2) {
+		buffer[row] |= 1UL << (7 - px);
+		buffer[row + 8] &= ~(1UL << (7 - px));
+	} else if(color == 1) {
+		buffer[row] &= ~(1UL << (7 - px));
+		buffer[row + 8] |= 1UL << (7 - px);
+	} else if(color == 3) {
+		buffer[row] |= 1UL << (7 - px);
+		buffer[row + 8] |= 1UL << (7 - px);
+	}
+}
+
+void
+edit(Brush* b)
+{
+	Point p1;
+	setpt(&p1, b->pos.x - PAD, b->pos.y - PAD);
+	if(p1.x < 0 || p1.y < 0 || p1.x > 8 * 16 * ZOOM || p1.y > 8 * 16 * ZOOM)
+		return;
+	write(
+	    p1.x / (8 * ZOOM),
+	    p1.y / (8 * ZOOM),
+	    (p1.x / ZOOM) % 8,
+	    (p1.y / ZOOM) % 8,
+	    b->color);
+	SDL_SetWindowTitle(gWindow, "chr6*");
+	redraw();
+}
+
+void
+erase(Brush* b)
+{
+	int i, id;
+	Point p1;
+	setpt(&p1, b->pos.x - PAD, b->pos.y - PAD);
+	if(p1.x < 0 || p1.y < 0 || p1.x > 8 * 16 * ZOOM || p1.y > 8 * 16 * ZOOM)
+		return;
+	id = (p1.x / (8 * ZOOM)) + (p1.y / (8 * ZOOM)) * 16;
+	for(i = 0; i < 8; ++i) {
+		buffer[(id * 16) + i] = 0x00;
+		buffer[(id * 16) + i + 8] = 0x00;
+	}
+	SDL_SetWindowTitle(gWindow, "chr6*");
+	redraw();
+}
+
+void
+save(void)
+{
+	fwrite(buffer, sizeof(buffer), 1,
+	       fopen("output.chr", "wb"));
+	SDL_SetWindowTitle(gWindow, "chr6");
+}
+
+int
+error(char* msg, const char* err)
+{
+	printf("Error %s: %s\n", msg, err);
+	return 0;
+}
+
+void
+quit(void)
+{
+	free(pixels);
+	SDL_DestroyTexture(gTexture);
+	gTexture = NULL;
+	SDL_DestroyRenderer(gRenderer);
+	gRenderer = NULL;
+	SDL_DestroyWindow(gWindow);
+	gWindow = NULL;
+	SDL_Quit();
+	exit(0);
+}
+
+void
+mousehandler(SDL_Event* event, Brush* b)
+{
+	switch(event->type) {
+	case SDL_MOUSEBUTTONUP:
+		if(event->button.button == SDL_BUTTON_LEFT)
+			b->down = 0;
+		if(event->button.button == SDL_BUTTON_RIGHT)
+			erase(b);
+		break;
+	case SDL_MOUSEBUTTONDOWN:
+		if(event->button.button == SDL_BUTTON_LEFT)
+			b->down = 1;
+	case SDL_MOUSEMOTION:
+		if(b->down) {
+			setpt(&b->pos, event->motion.x, event->motion.y);
+			edit(b);
+		}
+		break;
+	}
+}
+
+void
+keyhandler(SDL_Event* event, Brush* b)
+{
+	switch(event->key.keysym.sym) {
+	case SDLK_ESCAPE:
+		quit();
+		break;
+	case SDLK_e:
+		save();
+		break;
+	case SDLK_h:
+		GUIDES = !GUIDES;
+		redraw();
+		break;
+	case SDLK_1:
+		b->color = 0;
+		break;
+	case SDLK_2:
+		b->color = 1;
+		break;
+	case SDLK_3:
+		b->color = 2;
+		break;
+	case SDLK_4:
+		b->color = 3;
+		break;
+	}
+}
+
+int
+load(char* path)
+{
+	FILE* f = fopen(path, "rb");
+	if(f == NULL)
+		return error("Load", "Invalid input file");
+	if(!fread(buffer, sizeof(buffer), 1, f))
+		return error("Load", "Invalid file size");
+	redraw();
+	return 1;
+}
+
+void
+create(void)
+{
+	int i;
+	for(i = 0; i < 4096; ++i)
+		buffer[i] = 0x00;
+	redraw();
+}
+
+int
+init(void)
+{
+	int i, j;
+	if(SDL_Init(SDL_INIT_VIDEO) < 0)
+		return error("init", SDL_GetError());
+	gWindow = SDL_CreateWindow("chr66",
+	                           SDL_WINDOWPOS_UNDEFINED,
+	                           SDL_WINDOWPOS_UNDEFINED,
+	                           WIDTH,
+	                           HEIGHT,
+	                           SDL_WINDOW_SHOWN);
+	if(gWindow == NULL)
+		return error("window", SDL_GetError());
+	gRenderer = SDL_CreateRenderer(gWindow, -1, 0);
+	if(gRenderer == NULL)
+		return error("renderer", SDL_GetError());
+	gTexture = SDL_CreateTexture(gRenderer,
+	                             SDL_PIXELFORMAT_ARGB8888,
+	                             SDL_TEXTUREACCESS_STATIC,
+	                             WIDTH,
+	                             HEIGHT);
+	if(gTexture == NULL)
+		return error("texture", SDL_GetError());
+	pixels = (uint32_t*)malloc(WIDTH * HEIGHT * sizeof(uint32_t));
+	if(pixels == NULL)
+		return error("pixels", "failed to allocate memory");
+	for(i = 0; i < HEIGHT; i++)
+		for(j = 0; j < WIDTH; j++)
+			pixels[i * WIDTH + j] = 0x000000;
+	return 1;
+}
+
+int
+main(int argc, char** argv)
+{
+	int ticknext = 0;
+	Brush brush;
+	brush.color = 1;
+
+	if(!init())
+		return error("SDL", "failure");
+
+	/* IO */
+
+	if(argc > 1)
+		load(argv[1]);
+	else
+		create();
+
+	/* main loop */
+
+	while(1) {
+		int tick = SDL_GetTicks();
+		SDL_Event event;
+		if(event.type == SDL_QUIT)
+			quit();
+		if(tick < ticknext)
+			SDL_Delay(ticknext - tick);
+		ticknext = tick + (1000 / FPS);
+		SDL_UpdateTexture(gTexture, NULL,
+		                  pixels, WIDTH * sizeof(uint32_t));
+		while(SDL_PollEvent(&event) != 0) {
+			if(event.type == SDL_MOUSEBUTTONUP ||
+			   event.type == SDL_MOUSEBUTTONDOWN ||
+			   event.type == SDL_MOUSEMOTION) {
+				mousehandler(&event, &brush);
+			} else if(event.type == SDL_KEYDOWN)
+				keyhandler(&event, &brush);
+		}
+		SDL_RenderClear(gRenderer);
+		SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);
+		SDL_RenderPresent(gRenderer);
+	}
+	quit();
+	return 0;
+}
