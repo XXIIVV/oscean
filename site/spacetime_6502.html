@@ -1,85 +1,86 @@
-<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='description' content='Spacetime is a weird function sequencer.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV — spacetime 6502</title></head><body><header><a href='home.html'><img src='../media/identity/xiv28.gif' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='binary.html'>binary</a></li><li><a href='assembly.html'>assembly/</a></li><li><a href='forth.html'>forth</a></li><li><a href='pascal.html'>pascal</a></li><li><a href='hypertalk.html'>hypertalk</a></li><li><a href='unix.html'>unix</a></li><li><a href='postscript.html'>postscript</a></li></ul><ul><li><a href='spacetime_6502.html'>spacetime 6502/</a></li></ul><ul></ul></nav><main><figure><img src='../media/diary/734.jpg' alt='Spacetime 6502 picture' width='900'/><figcaption>20R02 — Spacetime 6502</figcaption></figure><h2>Spacetime is a weird function sequencer.</h2><p>This is a <a href='famicom.html'>Famicom</a> port of <a href='https://monome.org/docs/norns/study-3/' target='_blank'>Study 3</a> for the <a href='norns.html'>Norns</a>, written in <a href='assembly.html'>6502 assembly</a>.</p><p>It plays a note on each step, ach step is a symbol for an action. It has 8 operators, I’ve added a snare hit to the random note operator for fun, and all operations wrap-around, since it only runs on 4 octaves.</p><h3>Source</h3><pre>./asm6 cart.asm cart.nes</pre><p>The source is written for the <a href='https://wiki.nesdev.com/w/index.php/Tools' target='_blank'>asm6</a> assembler, in the <a href='lin6.html'>Lin6</a> style.</p><figure><pre>;; header
+<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='description' content='Spacetime is a weird function sequencer.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV — spacetime 6502</title></head><body><header><a href='home.html'><img src='../media/identity/xiv28.gif' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='binary.html'>binary</a></li><li><a href='assembly.html'>assembly/</a></li><li><a href='forth.html'>forth</a></li><li><a href='pascal.html'>pascal</a></li><li><a href='hypertalk.html'>hypertalk</a></li><li><a href='unix.html'>unix</a></li><li><a href='postscript.html'>postscript</a></li></ul><ul><li><a href='spacetime_6502.html'>spacetime 6502/</a></li></ul><ul></ul></nav><main><figure><img src='../media/diary/734.jpg' alt='Spacetime 6502 picture' width='900'/><figcaption>20R02 — Spacetime 6502</figcaption></figure><h2>Spacetime is a weird function sequencer.</h2><p>This is a <a href='famicom.html'>Famicom</a> port of <a href='https://monome.org/docs/norns/study-3/' target='_blank'>Study 3</a> for the <a href='norns.html'>Norns</a>, written in <a href='assembly.html'>6502 assembly</a>.</p><p>It plays a note on each step, ach step is a symbol for an action. It has 8 operators, I’ve added a snare hit to the random note operator for fun, and all operations wrap-around, since it only runs on 4 octaves.</p><h3>Source</h3><pre>./asm6 cart.asm cart.nes</pre><p>The source is written for the <a href='https://wiki.nesdev.com/w/index.php/Tools' target='_blank'>asm6</a> assembler, in the <a href='lin6.html'>Lin6</a> style.</p><figure><pre>
+;; header
 
 	.db "NES", $1a ; identification of the iNES header
 	.db 1 ; number of 16KB PRG-ROM pages
 	.db $01 ; number of 8KB CHR-ROM pages
-	.db $70|%0001 ; mapper 7
-	.dsb $09, $00 ; clear the remaining bytes
+	.db $00 ; NROM
+	.dsb $09,$00 ; clear the remaining bytes
 	.fillvalue $FF ; Sets all unused space in rom to value $FF
 	.org $C000
 
 ;; constants
 
-PPUCTRL             .equ $2000 
-PPUMASK             .equ $2001 
-PPUSTATUS           .equ $2002 
-SPRADDR             .equ $2003 
-PPUSCROLL           .equ $2005 
-PPUADDR             .equ $2006 
-PPUDATA             .equ $2007 
-APUCH1VOL           .equ $4000 ; APU
-APUCH1SWP           .equ $4001 ; APU
-APUCH1FRQ           .equ $4002 ; APU
-APUCH1LEN           .equ $4003 ; APU
-APUCH2VOL           .equ $4004 ; APU
-APUCH2SWP           .equ $4005 ; APU
-APUCH2FRQ           .equ $4006 ; APU
-APUCH2LEN           .equ $4007 ; APU
-APUCH3CNT           .equ $4008 ; APU
-APUCH3SWP           .equ $4009 ; APU
-APUCH3FRQ           .equ $400a ; APU
-APUCH3LEN           .equ $400b ; APU
-APUCH4VOL           .equ $400c ; APU
-APUCH4SWP           .equ $400d ; APU
-APUCH4FRQ           .equ $400e ; APU
-APUCH4LEN           .equ $400f ; APU
-SPRDMA              .equ $4014 
-APUCTRL             .equ $4015 
-JOY1                .equ $4016 
-JOY2                .equ $4017 
-BUTTON_RIGHT        .equ #$01 
-BUTTON_LEFT         .equ #$02 
-BUTTON_DOWN         .equ #$04 
-BUTTON_UP           .equ #$08 
-BUTTON_START        .equ #$10 
-BUTTON_SELECT       .equ #$20 
-BUTTON_B            .equ #$40 
-BUTTON_A            .equ #$80 
+	PPUCTRL                 .equ $2000 
+	PPUMASK                 .equ $2001 
+	PPUSTATUS               .equ $2002 
+	SPRADDR                 .equ $2003 
+	PPUSCROLL               .equ $2005 
+	PPUADDR                 .equ $2006 
+	PPUDATA                 .equ $2007 
+	APUCH1VOL               .equ $4000 ; APU
+	APUCH1SWP               .equ $4001 ; APU
+	APUCH1FRQ               .equ $4002 ; APU
+	APUCH1LEN               .equ $4003 ; APU
+	APUCH2VOL               .equ $4004 ; APU
+	APUCH2SWP               .equ $4005 ; APU
+	APUCH2FRQ               .equ $4006 ; APU
+	APUCH2LEN               .equ $4007 ; APU
+	APUCH3CNT               .equ $4008 ; APU
+	APUCH3SWP               .equ $4009 ; APU
+	APUCH3FRQ               .equ $400a ; APU
+	APUCH3LEN               .equ $400b ; APU
+	APUCH4VOL               .equ $400c ; APU
+	APUCH4SWP               .equ $400d ; APU
+	APUCH4FRQ               .equ $400e ; APU
+	APUCH4LEN               .equ $400f ; APU
+	SPRDMA                  .equ $4014 
+	APUCTRL                 .equ $4015 
+	JOY1                    .equ $4016 
+	JOY2                    .equ $4017 
+	BUTTON_RIGHT            .equ #$01  
+	BUTTON_LEFT             .equ #$02  
+	BUTTON_DOWN             .equ #$04  
+	BUTTON_UP               .equ #$08  
+	BUTTON_START            .equ #$10  
+	BUTTON_SELECT           .equ #$20  
+	BUTTON_B                .equ #$40  
+	BUTTON_A                .equ #$80  
 
 ;; variables
 
 	.enum $0000
-position                .dsb 1 
-cursor                  .dsb 1 
-note                    .dsb 1 
-marker                  .dsb 1 
-btndown                 .dsb 1 
-btnlast                 .dsb 1 
-btnqueue                .dsb 1 
-rate                    .dsb 1 
-timer                   .dsb 1 
-seed                    .dsb 1 
+	position                .dsb 1
+	cursor                  .dsb 1
+	note                    .dsb 1
+	marker                  .dsb 1
+	btndown                 .dsb 1
+	btnlast                 .dsb 1
+	btnqueue                .dsb 1
+	rate                    .dsb 1
+	timer                   .dsb 1
+	seed                    .dsb 1
 	.ende 
 
 ;; reset
 
-RESET:
-	SEI                          ; disable IRQs
-	CLD                          ; disable decimal mode
+RESET: 
+	SEI                                ; disable IRQs
+	CLD                                ; disable decimal mode
 	LDX #$40
-	STX $4017                    ; disable APU frame IRQ
+	STX $4017                          ; disable APU frame IRQ
 	LDX #$FF
-	TXS                          ; set up stack
-	INX                          ; now X = 0
-	STX PPUCTRL                  ; disable NMI
-	STX PPUMASK                  ; disable rendering
-	STX $4010                    ; disable DMC IRQs
+	TXS                                ; set up stack
+	INX                                ; now X = 0
+	STX PPUCTRL                        ; disable NMI
+	STX PPUMASK                        ; disable rendering
+	STX $4010                          ; disable DMC IRQs
 
 Vblankwait1: ; First wait for vblank
 	BIT PPUSTATUS
 	BPL Vblankwait1
 
-Clrmem:
+Clrmem: 
 	LDA #$00
 	STA $0000, x
 	STA $0100, x
@@ -89,7 +90,7 @@ Clrmem:
 	STA $0600, x
 	STA $0700, x
 	LDA #$FE
-	STA $0200, x                 ; move sprites off screen
+	STA $0200, x                       ; move sprites off screen
 	INX 
 	BNE Clrmem
 
@@ -99,90 +100,90 @@ Vblankwait2: ; Second wait for vblank
 
 ;; setup phase
 
-SetupPalettes:
+SetupPalettes: 
 	LDA PPUSTATUS
 	LDA #$3F
 	STA PPUADDR
 	LDA #$00
 	STA PPUADDR
 	LDX #$00
-@loop:
+@loop: 
 	LDA Palettes, x
 	STA PPUDATA
 	INX 
 	CPX #$20
 	BNE @loop
 
-SetupAttributes:
+SetupAttributes: 
 	LDA PPUSTATUS
 	LDA #$23
 	STA PPUADDR
 	LDA #$C0
 	STA PPUADDR
 	LDX #$00
-@loop:
+@loop: 
 	LDA #$00
 	STA PPUDATA
 	INX 
 	CPX #$40
 	BNE @loop
 
-SetupSequence:
+SetupSequence: 
 	LDX #$00
-@loop:
-	LDA $00                      ; set entire sequence to "+"
-	STA $10,x                    ; store on zeropage second row
+@loop: 
+	LDA $00                            ; set entire sequence to "+"
+	STA $10,x                          ; store on zeropage second row
 	INX 
 	CPX #$10
 	BNE @loop
 
-SetupVariables:
+SetupVariables: 
 	LDA #$08
-	STA rate                     ; default rate = 08
+	STA rate                           ; default rate = 08
 	LDA #$20
-	STA note                     ; default note = C
+	STA note                           ; default note = C
 	LDA #$05
 	STA marker
 
-SetupAudio:
-	LDY #$0f                     ; init $4000-4013
-@loop:
+SetupAudio: 
+	LDY #$0f                           ; init $4000-4013
+@loop: 
 	LDA ApuStates,y
 	STA $4000,y
 	DEY 
 	BPL @loop
-	LDA #$0f                     ; skip over $4014 (OAMDMA)
+	LDA #$0f                           ; skip over $4014 (OAMDMA)
 	STA $4015
 	LDA #$40
 	STA $4017
 
-SetupInterface:
-@cursor:
+SetupInterface: 
+@cursor: 
 	LDA #$88
-	STA $0200                    ; set tile.y pos
+	STA $0200                          ; set tile.y pos
 	LDA #$02
-	STA $0201                    ; set tile.id
+	STA $0201                          ; set tile.id
 	LDA #$00
-	STA $0202                    ; set tile.attribute
-@marker:
+	STA $0202                          ; set tile.attribute
+@marker: 
 	LDA #$88
-	STA $0204                    ; set tile.y pos
+	STA $0204                          ; set tile.y pos
 	LDA #$03
-	STA $0205                    ; set tile.id
+	STA $0205                          ; set tile.id
 	LDA #$00
-	STA $0206                    ; set tile.attribute
+	STA $0206                          ; set tile.attribute
 
-EnableSprites:
-	LDA #%10000000               ; enableNMI sprites0 background0
+EnableSprites: 
+	LDA #%10000000                     ; enableNMI sprites0 background0
 	STA PPUCTRL
-	LDA #%00011110               ; sprites background noclip
+	LDA #%00011110                     ; sprites background noclip
 	STA PPUMASK
 
 ;; main phase
 
-MAIN:
+MAIN: 
 	LDA btnqueue
-@style1:
+@style1: 
 	CMP BUTTON_LEFT
 	BEQ MoveLeft
 	CMP BUTTON_RIGHT
@@ -191,7 +192,7 @@ MAIN:
 	BEQ MoveUp
 	CMP BUTTON_DOWN
 	BEQ MoveDown
-@style2:
+@style2: 
 	CMP BUTTON_SELECT
 	BEQ ResetSequence
 	CMP BUTTON_START
@@ -200,69 +201,69 @@ MAIN:
 	BEQ MoveUp
 	CMP BUTTON_B
 	BEQ MoveDown
-	JMP MAIN                     ; infinite loop
+	JMP MAIN                           ; infinite loop
 
 ;; General functions
 
-MoveLeft:
+MoveLeft: 
 	DEC cursor
 	LDA cursor
 	CMP #$ff
-	BNE @done                    ; when equal skip
-	LDA #$0f                     ; wrap around
+	BNE @done                          ; when equal skip
+	LDA #$0f                           ; wrap around
 	STA cursor
-@done:
+@done: 
 	JMP MoveEnd
 
-MoveRight:
+MoveRight: 
 	INC cursor
 	LDA cursor
 	CMP #$10
-	BCC @done                    ; when greaterthan skip
-	LDA #$00                     ; wrap around
+	BCC @done                          ; when greaterthan skip
+	LDA #$00                           ; wrap around
 	STA cursor
-@done:
+@done: 
 	JMP MoveEnd
 
-MoveDown:
+MoveDown: 
 	LDX cursor
 	DEC $10,x
 	LDA $10,x
-	CMP #$ff                     ; when equal skip
-	BNE @done                    ; wrap around
+	CMP #$ff                           ; when equal skip
+	BNE @done                          ; wrap around
 	LDA #$07
 	STA $10,x
-@done:
+@done: 
 	JMP MoveEnd
 
-MoveUp:
+MoveUp: 
 	LDX cursor
 	INC $10,x
 	LDA $10,x
-	CMP #$08                     ; when greaterthan skip
-	BCC @done                    ; wrap around
+	CMP #$08                           ; when greaterthan skip
+	BCC @done                          ; wrap around
 	LDA #$00
 	STA $10,x
-@done:
+@done: 
 	JMP MoveEnd
 
-MoveMarker:
+MoveMarker: 
 	LDA cursor
 	STA marker
 	STA RedrawInterface
 	JMP MoveEnd
 
-ResetSequence:
+ResetSequence: 
 	LDX #$00
-@loop:
-	LDA #$01                     ; set entire sequence to "+"
-	STA $10,x                    ; store on zeropage second row
+@loop: 
+	LDA #$01                           ; set entire sequence to "+"
+	STA $10,x                          ; store on zeropage second row
 	INX 
 	CPX #$10
 	BNE @loop
 	JMP MoveEnd
 
-MoveEnd:
+MoveEnd: 
 	LDA #$00
 	STA btnqueue
 	STA RedrawTimeline
@@ -270,30 +271,30 @@ MoveEnd:
 
 ;; interface
 
-RedrawTimeline:
+RedrawTimeline: 
 	LDX #$00
-@loop:
-	LDA #$22                     ; sprite v pos
+@loop: 
+	LDA #$22                           ; sprite v pos
 	STA PPUADDR
-	TXA                          ; sprite x pos
+	TXA                                ; sprite x pos
 	STA PPUADDR
-	LDA #$10, x                  ; find selection
+	LDA #$10, x                        ; find selection
 	CLC 
 	ADC #$10
-	CPX cursor                   ; if cursor
+	CPX cursor                         ; if cursor
 	BNE @continue
 	CLC 
-	ADC #$08                     ; then, highlight
-@continue:
-	STA PPUDATA                  ; sprite id
+	ADC #$08                           ; then, highlight
+@continue: 
+	STA PPUDATA                        ; sprite id
 	INX 
 	CPX #$10
 	BNE @loop
 	RTS 
 
-RedrawInterface:
+RedrawInterface: 
 	LDA PPUSTATUS
-@selection:
+@selection: 
 	LDA cursor
 	CLC 
 	ADC #$20
@@ -302,7 +303,7 @@ RedrawInterface:
 	STY PPUADDR
 	STX PPUADDR
 	STA PPUDATA
-@marker:
+@marker: 
 	LDA marker
 	CLC 
 	ADC #$20
@@ -311,7 +312,7 @@ RedrawInterface:
 	STY PPUADDR
 	STX PPUADDR
 	STA PPUDATA
-@position:
+@position: 
 	LDA position
 	CLC 
 	ADC #$20
@@ -320,7 +321,7 @@ RedrawInterface:
 	STY PPUADDR
 	STX PPUADDR
 	STA PPUDATA
-@rate:
+@rate: 
 	LDA rate
 	CLC 
 	ADC #$20
@@ -329,45 +330,45 @@ RedrawInterface:
 	STY PPUADDR
 	STX PPUADDR
 	STA PPUDATA
-@sprites:
+@sprites: 
 	LDA position
 	ASL 
 	ASL 
 	ASL 
 	CLC 
 	ADC #$40
-	STA $0203                    ; set tile.x pos
+	STA $0203                          ; set tile.x pos
 	LDA marker
 	ASL 
 	ASL 
 	ASL 
 	CLC 
 	ADC #$40
-	STA $0207                    ; set tile.x pos
-@done:
+	STA $0207                          ; set tile.x pos
+@done: 
 	RTS 
 
-IncNote:
+IncNote: 
 	INC note
 	LDA note
 	CMP #$48
 	BNE @done
-	LDA #$00                     ; when reached end
-	STA note                     ; reset note
-@done:
+	LDA #$00                           ; when reached end
+	STA note                           ; reset note
+@done: 
 	RTS 
 
-DecNote:
+DecNote: 
 	DEC note
 	LDA note
 	CMP #$ff
 	BNE @done
 	LDA #$47
 	STA note
-@done:
+@done: 
 	RTS 
 
-PlaySnare:
+PlaySnare: 
 	LDA #&lt;$3f8
 	STA APUCH4LEN
 	LDA #&gt;$3f8
@@ -378,37 +379,37 @@ PlaySnare:
 
 ;; operators
 
-DoInc:
+DoInc: 
 	LDX #$00
-@loop:
+@loop: 
 	JSR IncNote
 	CPX marker
 	INX 
 	BCC @loop
 	JMP DoOperationEnd
 
-DoDec:
+DoDec: 
 	LDX #$00
-@loop:
+@loop: 
 	JSR DecNote
 	CPX marker
 	INX 
 	BCC @loop
 	JMP DoOperationEnd
 
-DoTop:
+DoTop: 
 	LDA #$24
 	STA note
 	JMP DoOperationEnd
 
-DoBottom:
+DoBottom: 
 	LDA #$00
 	STA note
 	JMP DoOperationEnd
 
-DoRandomNote:
+DoRandomNote: 
 	LDA seed
-@loop:
+@loop: 
 	SEC 
 	SBC #$48
 	CMP #$48
@@ -418,35 +419,35 @@ DoRandomNote:
 	JSR PlaySnare
 	JMP DoOperationEnd
 
-DoIncMetro:
+DoIncMetro: 
 	INC rate
 	LDA rate
 	CMP #$0c
 	BCC @done
 	LDA #$01
 	STA rate
-@done:
+@done: 
 	JMP DoOperationEnd
 
-DoDecMetro:
+DoDecMetro: 
 	DEC rate
 	LDA rate
 	CMP #$00
 	BNE @done
 	LDA #$0c
 	STA rate
-@done:
+@done: 
 	JMP DoOperationEnd
 
-DoRandomPosition:
+DoRandomPosition: 
 	LDA marker
 	STA position
 	JMP DoOperationEnd
 
-DoOperation:
+DoOperation: 
 	LDX position
 	LDA $10,x
-	CMP #$00                     ;
+	CMP #$00
 	BEQ DoInc
 	CMP #$01
 	BEQ DoDec
@@ -466,23 +467,23 @@ DoOperation:
 DoOperationEnd: ; return from operations
 	RTS 
 
-DoSound:
+DoSound: 
 	LDX note
-@ch1:
+@ch1: 
 	LDA NotesHi,x
 	STA APUCH1LEN
 	LDA NotesLo,x
 	STA APUCH1FRQ
 	LDY position
 	STY APUCH1SWP
-@ch2:
+@ch2: 
 	LDA NotesHi,x
 	STA APUCH2LEN
 	LDA NotesLo,x
 	STA APUCH2FRQ
 	LDY marker
 	STY APUCH2SWP
-@ch3:
+@ch3: 
 	LDA NotesHi,x
 	STA APUCH3LEN
 	LDA NotesLo,x
@@ -495,19 +496,19 @@ DoSound:
 
 NMI: ;
 
-ReadJoy:
+ReadJoy: 
 	LDA #$01
-	STA JOY1                     ; start reading
+	STA JOY1                           ; start reading
 	STA btndown
 	LSR a
 	STA JOY1
-@loop:
+@loop: 
 	LDA JOY1
 	LSR a
 	ROL btndown
 	BCC @loop
 
-SaveJoy:
+SaveJoy: 
 	LDA btndown
 	CMP btnlast
 	BEQ @done
@@ -515,39 +516,39 @@ SaveJoy:
 	CMP #$00
 	BEQ @done
 	STA btnqueue
-@done:
+@done: 
 	LDA #$00
 	STA SPRADDR
 	LDA #$02
 	STA $4014
 
-RunTimer:
+RunTimer: 
 	INC seed
 	INC timer
 	LDA timer
-	CMP rate                     ; check if timer has reached rate
-	BNE @done                    ; skip if timer is less than rate
+	CMP rate                           ; check if timer has reached rate
+	BNE @done                          ; skip if timer is less than rate
 	LDA #$00
-	STA timer                    ; reset timer
+	STA timer                          ; reset timer
 	JSR DoOperation
 	JSR DoSound
 	INC position
 	LDA position
-	CMP #$10                     ; check if position has reached 16
+	CMP #$10                           ; check if position has reached 16
 	BNE @done
 	LDA #$00
 	STA position
-@done:
+@done: 
 
-Cleanup:
+Cleanup: 
 	JSR RedrawTimeline
 	JSR RedrawInterface
 	LDA PPUSTATUS
-	LDA #$c0                     ; shift background to center
+	LDA #$c0                           ; shift background to center
 	STA PPUSCROLL
 	LDA #$00
 	STA PPUSCROLL
-	RTI                          ; return from interrupt
+	RTI                                ; return from interrupt
 
 ;; tables
 
@@ -557,13 +558,13 @@ Palettes: ;
 	.db $0F,$3B,$16,$30, $3B,$3B,$0F,$0F, $0F,$3B,$0F,$0F, $0F,$3B,$0F,$0F
 	.db $0F,$3B,$16,$3B, $0F,$3B,$0F,$0F, $0F,$0F,$0F,$0F, $0F,$0F,$0F,$0F
 
-ApuStates:
+ApuStates: 
 	.db #%10100111,$08,$00,$00
 	.db #%00011101,$08,$00,$00
 	.db #%01011101,$08,$00,$00
 	.db #%01011011,$08,$00,$00
 
-NotesHi:
+NotesHi: 
 	.db $07,$07,$07,$06,$06,$05,$05,$05,$05,$04,$04,$04
 	.db $03,$03,$03,$03,$03,$02,$02,$02,$02,$02,$02,$02
 	.db $01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01
@@ -571,7 +572,7 @@ NotesHi:
 	.db $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
 	.db $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
 
-NotesLo:
+NotesLo: 
 	.db $f1,$7f,$13,$ad,$4d,$f3,$9d,$4c,$00,$b8,$74,$34
 	.db $f8,$bf,$89,$56,$26,$f9,$ce,$a6,$80,$5c,$3a,$1a
 	.db $fb,$df,$c4,$ab,$93,$7c,$67,$52,$3f,$2d,$1c,$0c
@@ -649,5 +650,5 @@ NotesLo:
 	.db $74,$8a,$84,$fa,$82,$82,$82,$00,$74,$8a,$84,$fa,$82,$82,$82,$00
 	.db $fc,$82,$82,$fc,$82,$82,$fc,$00,$fc,$82,$82,$fc,$82,$82,$fc,$00
 	.dsw 3624,$0000
-</pre><figcaption><a href='../archive/src/spacetime.s.txt'>spacetime.s</a> 651 lines</figcaption>
+</pre><figcaption><a href='../archive/src/spacetime.s.txt'>spacetime.s</a> 652 lines</figcaption>
 </figure><ul><li><a href='https://llllllll.co/t/spacetime-6502/35807' target='_blank'>forum</a></li><li><a href='https://git.sr.ht/~rabbits/spacetime/' target='_blank'>source</a></li></ul><p><i>incoming(2)</i>: <a href='lin6.html'>lin6</a> <a href='assembly.html'>assembly</a> </p><p><i>Last update on <a href='tracker.html'>20R03</a>, edited 2 times. +2/6fh</i><code style='float:right; font-size:80%'>-----+</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
