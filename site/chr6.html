@@ -139,19 +139,42 @@ erase(Brush* b)
 	redraw();
 }
 
-void
-save(void)
-{
-	fwrite(buffer, sizeof(buffer), 1,
-	       fopen("output.chr", "wb"));
-	SDL_SetWindowTitle(gWindow, "chr6");
-}
-
 int
 error(char* msg, const char* err)
 {
 	printf("Error %s: %s\n", msg, err);
 	return 0;
+}
+
+void
+create(void)
+{
+	int i;
+	for(i = 0; i &lt; 4096; ++i)
+		buffer[i] = 0x00;
+	redraw();
+}
+
+void
+save(void)
+{
+	FILE* f = fopen("output.chr", "wb");
+	if(!fwrite(buffer, sizeof(buffer), 1, f))
+		error("Save", "Invalid output file");
+	fclose(f);
+	SDL_SetWindowTitle(gWindow, "chr6");
+}
+
+void
+load(char* path)
+{
+	FILE* f = fopen(path, "rb");
+	if(f == NULL)
+		error("Load", "Invalid input file");
+	if(!fread(buffer, sizeof(buffer), 1, f))
+		error("Load", "Invalid file size");
+	fclose(f);
+	redraw();
 }
 
 void
@@ -169,14 +192,16 @@ quit(void)
 }
 
 void
-mousehandler(SDL_Event* event, Brush* b)
+domouse(SDL_Event* event, Brush* b)
 {
 	switch(event-&gt;type) {
 	case SDL_MOUSEBUTTONUP:
 		if(event-&gt;button.button == SDL_BUTTON_LEFT)
 			b-&gt;down = 0;
-		if(event-&gt;button.button == SDL_BUTTON_RIGHT)
+		if(event-&gt;button.button == SDL_BUTTON_RIGHT) {
+			setpt(&amp;b-&gt;pos, event-&gt;motion.x, event-&gt;motion.y);
 			erase(b);
+		}
 		break;
 	case SDL_MOUSEBUTTONDOWN:
 		if(event-&gt;button.button == SDL_BUTTON_LEFT)
@@ -191,7 +216,7 @@ mousehandler(SDL_Event* event, Brush* b)
 }
 
 void
-keyhandler(SDL_Event* event, Brush* b)
+dokey(SDL_Event* event, Brush* b)
 {
 	switch(event-&gt;key.keysym.sym) {
 	case SDLK_ESCAPE:
@@ -217,27 +242,6 @@ keyhandler(SDL_Event* event, Brush* b)
 		b-&gt;color = 3;
 		break;
 	}
-}
-
-int
-load(char* path)
-{
-	FILE* f = fopen(path, "rb");
-	if(f == NULL)
-		return error("Load", "Invalid input file");
-	if(!fread(buffer, sizeof(buffer), 1, f))
-		return error("Load", "Invalid file size");
-	redraw();
-	return 1;
-}
-
-void
-create(void)
-{
-	int i;
-	for(i = 0; i &lt; 4096; ++i)
-		buffer[i] = 0x00;
-	redraw();
 }
 
 int
@@ -304,15 +308,15 @@ main(int argc, char** argv)
 			if(event.type == SDL_MOUSEBUTTONUP ||
 			   event.type == SDL_MOUSEBUTTONDOWN ||
 			   event.type == SDL_MOUSEMOTION) {
-				mousehandler(&amp;event, &amp;brush);
+				domouse(&amp;event, &amp;brush);
 			} else if(event.type == SDL_KEYDOWN)
-				keyhandler(&amp;event, &amp;brush);
+				dokey(&amp;event, &amp;brush);
 		}
 	}
 	quit();
 	return 0;
 }
-</pre><figcaption><a href='../archive/src/chr6.c.txt'>chr6.c</a> 314 lines</figcaption>
+</pre><figcaption><a href='../archive/src/chr6.c.txt'>chr6.c</a> 318 lines</figcaption>
 </figure><h3>Plan9(libdraw)</h3><p>The following code targets the <a href='plan9.html'>Plan9</a> operating system.</p><figure><pre>#include &lt;u.h&gt;
 #include &lt;libc.h&gt;
 #include &lt;draw.h&gt;
