@@ -649,19 +649,19 @@ build_special_index(FILE* f, Lexicon* lex)
 void
 build_page(FILE* f, Lexicon* lex, Term* t, Journal* jou)
 {
-	fprintf(f, "<!DOCTYPE html>"
-	           "<html lang='en'>"
-	           "<head>"
-	           "<meta charset='utf-8'>"
+	fputs("<!DOCTYPE html><html lang='en'>", f);
+	fputs("</head>", f);
+	fprintf(f, "<meta charset='utf-8'>"
 	           "<meta name='description' content='%s'/>"
 	           "<meta name='thumbnail' content='" DOMAIN "media/services/thumbnail.jpg' />"
+	           "<meta name='viewport' content='width=device-width,initial-scale=1'>"
 	           "<link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' />"
 	           "<link rel='stylesheet' type='text/css' href='../links/main.css'>"
 	           "<link rel='shortcut icon' type='image/png' href='../media/services/icon.png'>"
-	           "<title>" NAME " — %s</title>"
-	           "</head>"
-	           "<body>",
+	           "<title>" NAME " — %s</title>",
 	        t->bref, t->name);
+	fputs("</head>", f);
+	fputs("<body>", f);
 	fputs("<header><a href='home.html'><img src='../media/identity/xiv28.gif' alt='" NAME "' height='29'></a></header>", f);
 	build_nav(f, t);
 	fputs("<main>", f);
