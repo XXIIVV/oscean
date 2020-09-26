@@ -3,7 +3,7 @@
 
 #define HOR 32
 #define VER 16
-#define PAD 16
+#define PAD 8
 #define ZOOM 4
 #define color1 0x000000
 #define color2 0x72DEC2
@@ -13,20 +13,15 @@
 
 #define SZ (HOR * VER * 16)
 
-typedef struct Point {
-	int x;
-	int y;
-} Point;
-
 typedef struct Brush {
+	int x, y;
+	int px, py;
+	int mode;
+	int size;
 	int color;
 	int down;
 	int edit;
-	int mode;
-	int size;
 	int erase;
-	Point pos;
-	Point prev;
 } Brush;
 
 char* modes[] = {
@@ -39,7 +34,7 @@ char* modes[] = {
     "exes",
     "fixe"};
 
-unsigned char buffer[SZ];
+unsigned char chrbuf[SZ];
 int colors[] = {color1, color2, color3, color4, color0};
 int WIDTH = 8 * HOR + PAD * 2;
 int HEIGHT = 8 * VER + PAD * 2;
@@ -50,53 +45,33 @@ SDL_Renderer* gRenderer = NULL;
 SDL_Texture* gTexture = NULL;
 uint32_t* pixels;
 
-Point*
-setpt(Point* p, int x, int y)
-{
-	p->x = x;
-	p->y = y;
-	return p;
-}
-
 int
-inspt(Point* p, int w, int h)
+distance(int ax, int ay, int bx, int by)
 {
-	return p->x >= 0 && p->y >= 0 && p->x < w && p->y < h;
-}
-
-int
-dispt(Point* a, Point* b)
-{
-	return (b->x - a->x) * (b->x - a->x) + (b->y - a->y) * (b->y - a->y);
+	return (bx - ax) * (bx - ax) + (by - ay) * (by - ay);
 }
 
 void
-pixel(uint32_t* dst, int x, int y, int c)
-{
-	dst[(y + PAD) * WIDTH + (x + PAD)] = c;
-}
-
-void
-draw(uint32_t* dst, int id, int color)
+edit(uint32_t* dst, int id, int color)
 {
 	int ti = id / 64;
 	int odd = (ti + (ti / HOR + 2)) % 2 == 0;
 	int px = (ti / (HOR * VER)) * (8 * HOR) + (ti % HOR) * 8 + (id % 8);
 	int py = ((ti / HOR) * 8) + ((id % 64) / 8);
-	pixel(dst, px, py, colors[GUIDES && odd && color == 0 ? 4 : color]);
+	dst[(py + PAD) * WIDTH + (px + PAD)] = colors[GUIDES && odd && color == 0 ? 4 : color];
 }
 
 void
 redraw(uint32_t* dst)
 {
-	int b, i, j, id = 0, ch1, ch2, color;
+	int b, i, j, id = 0;
 	for(b = 0; b < SZ; b += 16)
 		for(i = 0; i < 8; i++)
 			for(j = 7; j >= 0; j--) {
-				ch1 = buffer[b + i];
-				ch2 = buffer[b + i + 8];
-				color = ((ch1 >> j) & 0x1) + (((ch2 >> j) & 0x1) << 1);
-				draw(dst, id, color);
+				int ch1 = chrbuf[b + i];
+				int ch2 = chrbuf[b + i + 8];
+				int color = ((ch1 >> j) & 0x1) + (((ch2 >> j) & 0x1) << 1);
+				edit(dst, id, color);
 				id++;
 			}
 	SDL_UpdateTexture(gTexture, NULL, dst, WIDTH * sizeof(uint32_t));
@@ -106,39 +81,43 @@ redraw(uint32_t* dst)
 }
 
 int
+row(int x, int y)
+{
+	return (y % 8) + ((x / 8 + y / 8 * HOR) * 16);
+}
+
+int
 get(int x, int y)
 {
 	int ch1, ch2;
-	int id = (x / 8) + (y / 8) * HOR;
-	int row = (y % 8) + (id * 16);
+	int r = row(x, y);
 	int px = x % 8;
-	if(row < 0 || row > SZ - 8)
+	if(r < 0 || r > SZ - 8)
 		return 0;
-	ch1 = (buffer[row] >> (7 - px)) & 1;
-	ch2 = (buffer[row + 8] >> (7 - px)) & 1;
+	ch1 = (chrbuf[r] >> (7 - px)) & 1;
+	ch2 = (chrbuf[r + 8] >> (7 - px)) & 1;
 	return ch1 && !ch2 ? 1 : !ch1 && ch2 ? 2 : ch1 && ch2 ? 3 : 0;
 }
 
 void
 put(int x, int y, int color)
 {
-	int id = (x / 8) + (y / 8) * HOR;
-	int row = (y % 8) + (id * 16);
+	int r = row(x, y);
 	int px = x % 8;
-	if(x < 0 || y < 0 || x > 8 * HOR || y > 8 * VER || row > SZ - 8)
+	if(x < 0 || y < 0 || x > 8 * HOR || y > 8 * VER || r > SZ - 8)
 		return;
 	if(color == 0) {
-		buffer[row] &= ~(1UL << (7 - px));
-		buffer[row + 8] &= ~(1UL << (7 - px));
+		chrbuf[r] &= ~(1UL << (7 - px));
+		chrbuf[r + 8] &= ~(1UL << (7 - px));
 	} else if(color == 2) {
-		buffer[row] |= 1UL << (7 - px);
-		buffer[row + 8] &= ~(1UL << (7 - px));
+		chrbuf[r] |= 1UL << (7 - px);
+		chrbuf[r + 8] &= ~(1UL << (7 - px));
 	} else if(color == 1) {
-		buffer[row] &= ~(1UL << (7 - px));
-		buffer[row + 8] |= 1UL << (7 - px);
+		chrbuf[r] &= ~(1UL << (7 - px));
+		chrbuf[r + 8] |= 1UL << (7 - px);
 	} else if(color == 3) {
-		buffer[row] |= 1UL << (7 - px);
-		buffer[row + 8] |= 1UL << (7 - px);
+		chrbuf[r] |= 1UL << (7 - px);
+		chrbuf[r + 8] |= 1UL << (7 - px);
 	}
 }
 
@@ -180,53 +159,38 @@ patt(int x, int y, int mode, int size)
 }
 
 void
-fill(int mode, int size, Point p0, int color)
+fill(int x, int y, int mode, int size, int color)
 {
-	int x, y;
-	Point p;
-	for(x = -size / 2; x < size; ++x)
-		for(y = -size / 2; y < size; ++y) {
-			setpt(&p, p0.x + x, p0.y + y);
-			if(patt(p.x, p.y, mode, size) && dispt(&p0, &p) < size)
-				put(p.x, p.y, color);
-		}
+	int ox, oy;
+	for(ox = x - (size / 2); ox < x + size; ++ox)
+		for(oy = y - (size / 2); oy < y + size; ++oy)
+			if(mode == 7 && jagg(ox, oy))
+				put(ox, oy, 0);
+			else if(patt(ox, oy, mode, size) && distance(x, y, ox, oy) < size)
+				put(ox, oy, color);
 	redraw(pixels);
 }
 
 void
-line(Point* p0, Point* p1, int color)
+line(int ax, int ay, int bx, int by, int color)
 {
-	int dx = abs(p1->x - p0->x), sx = p0->x < p1->x ? 1 : -1;
-	int dy = -abs(p1->y - p0->y), sy = p0->y < p1->y ? 1 : -1;
+	int dx = abs(bx - ax), sx = ax < bx ? 1 : -1;
+	int dy = -abs(by - ay), sy = ay < by ? 1 : -1;
 	int err = dx + dy, e2;
 	for(;;) {
-		put(p0->x, p0->y, color);
-		if(p0->x == p1->x && p0->y == p1->y)
+		put(ax, ay, color);
+		if(ax == bx && ay == by)
 			break;
 		e2 = 2 * err;
 		if(e2 >= dy) {
 			err += dy;
-			p0->x += sx;
+			ax += sx;
 		}
 		if(e2 <= dx) {
 			err += dx;
-			p0->y += sy;
+			ay += sy;
 		}
 	}
-	redraw(pixels);
-}
-
-void
-fixe(int size, Point p0)
-{
-	int x, y;
-	Point p;
-	for(x = -size / 2; x < size; ++x)
-		for(y = -size / 2; y < size; ++y) {
-			setpt(&p, p0.x + x, p0.y + y);
-			if(jagg(p.x, p.y))
-				put(p.x, p.y, 0);
-		}
 	redraw(pixels);
 }
 
@@ -257,7 +221,7 @@ create(void)
 {
 	int i;
 	for(i = 0; i < SZ; ++i)
-		buffer[i] = 0x00;
+		chrbuf[i] = 0x00;
 	redraw(pixels);
 }
 
@@ -265,7 +229,7 @@ void
 save(Brush* b)
 {
 	FILE* f = fopen("export.chr", "wb");
-	if(!fwrite(buffer, sizeof(buffer), 1, f))
+	if(!fwrite(chrbuf, sizeof(chrbuf), 1, f))
 		error("Save", "Invalid output file");
 	fclose(f);
 	b->edit = 0;
@@ -277,7 +241,7 @@ load(char* path)
 	FILE* f = fopen(path, "rb");
 	if(f == NULL)
 		error("Load", "Invalid input file");
-	if(!fread(buffer, sizeof(buffer), 1, f))
+	if(!fread(chrbuf, sizeof(chrbuf), 1, f))
 		error("Load", "Invalid input size");
 	fclose(f);
 	redraw(pixels);
@@ -319,7 +283,8 @@ domouse(SDL_Event* event, Brush* b)
 	case SDL_MOUSEBUTTONUP:
 		if(event->button.button == SDL_BUTTON_LEFT) {
 			b->down = 0;
-			setpt(&b->prev, 0, 0);
+			b->px = 0;
+			b->py = 0;
 		}
 		if(event->button.button == SDL_BUTTON_RIGHT)
 			b->erase = 0;
@@ -329,24 +294,21 @@ domouse(SDL_Event* event, Brush* b)
 	case SDL_MOUSEBUTTONDOWN:
 		if(event->button.button == SDL_BUTTON_LEFT) {
 			b->down = 1;
-			setpt(&b->prev,
-			      (event->motion.x - (PAD * ZOOM)) / ZOOM,
-			      (event->motion.y - (PAD * ZOOM)) / ZOOM);
+			b->px = (event->motion.x - (PAD * ZOOM)) / ZOOM;
+			b->py = (event->motion.y - (PAD * ZOOM)) / ZOOM;
 		}
 		if(event->button.button == SDL_BUTTON_RIGHT)
 			b->erase = 1;
 	case SDL_MOUSEMOTION:
 		if(b->down) {
-			setpt(&b->pos,
-			      (event->motion.x - (PAD * ZOOM)) / ZOOM,
-			      (event->motion.y - (PAD * ZOOM)) / ZOOM);
+			b->x = (event->motion.x - (PAD * ZOOM)) / ZOOM;
+			b->y = (event->motion.y - (PAD * ZOOM)) / ZOOM;
 			if(b->mode == 0)
-				line(&b->prev, &b->pos, b->erase ? 0 : b->color);
-			else if(b->mode == 7)
-				fixe(b->size, b->pos);
+				line(b->px, b->py, b->x, b->y, b->erase ? 0 : b->color);
 			else
-				fill(b->mode, b->size, b->pos, b->erase ? 0 : b->color);
-			setpt(&b->prev, b->pos.x, b->pos.y);
+				fill(b->x, b->y, b->mode, b->size, b->erase ? 0 : b->color);
+			b->px = b->x;
+			b->py = b->y;
 		}
 		break;
 	}
