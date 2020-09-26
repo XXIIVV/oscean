@@ -3,7 +3,7 @@
 
 #define HOR 32
 #define VER 16
-#define PAD 32
+#define PAD 16
 #define ZOOM 4
 #define color1 0x000000
 #define color2 0x72DEC2
@@ -11,7 +11,7 @@
 #define color4 0x444444
 #define color0 0x111111
 
-#define SZ HOR* VER * 16
+#define SZ (HOR * VER * 16)
 
 typedef struct Point {
 	int x;
@@ -36,12 +36,13 @@ char* modes[] = {
     "full",
     "hori",
     "veri",
-    "exes"};
+    "exes",
+    "fixe"};
 
 unsigned char buffer[SZ];
 int colors[] = {color1, color2, color3, color4, color0};
-int WIDTH = 8 * HOR * ZOOM + PAD * 2;
-int HEIGHT = 8 * VER * ZOOM + PAD * 2;
+int WIDTH = 8 * HOR + PAD * 2;
+int HEIGHT = 8 * VER + PAD * 2;
 int FPS = 30;
 int GUIDES = 1;
 SDL_Window* gWindow = NULL;
@@ -72,10 +73,7 @@ dispt(Point* a, Point* b)
 void
 pixel(uint32_t* dst, int x, int y, int c)
 {
-	int h, v;
-	for(h = 0; h &lt; ZOOM; ++h)
-		for(v = 0; v &lt; ZOOM; ++v)
-			dst[((y * ZOOM) + PAD + v) * WIDTH + ((x * ZOOM) + PAD + h)] = c;
+	dst[(y + PAD) * WIDTH + (x + PAD)] = c;
 }
 
 void
@@ -107,12 +105,27 @@ redraw(uint32_t* dst)
 	SDL_RenderPresent(gRenderer);
 }
 
-void
-write(int tx, int ty, int px, int py, int color)
+int
+get(int x, int y)
 {
-	int id = tx + ty * HOR;
-	int row = py + (id * 16);
-	if(row &gt; SZ - 8)
+	int ch1, ch2;
+	int id = (x / 8) + (y / 8) * HOR;
+	int row = (y % 8) + (id * 16);
+	int px = x % 8;
+	if(row &lt; 0 || row &gt; SZ - 8)
+		return 0;
+	ch1 = (buffer[row] &gt;&gt; (7 - px)) &amp; 1;
+	ch2 = (buffer[row + 8] &gt;&gt; (7 - px)) &amp; 1;
+	return ch1 &amp;&amp; !ch2 ? 1 : !ch1 &amp;&amp; ch2 ? 2 : ch1 &amp;&amp; ch2 ? 3 : 0;
+}
+
+void
+put(int x, int y, int color)
+{
+	int id = (x / 8) + (y / 8) * HOR;
+	int row = (y % 8) + (id * 16);
+	int px = x % 8;
+	if(x &lt; 0 || y &lt; 0 || x &gt; 8 * HOR || y &gt; 8 * VER || row &gt; SZ - 8)
 		return;
 	if(color == 0) {
 		buffer[row] &amp;= ~(1UL &lt;&lt; (7 - px));
@@ -129,12 +142,23 @@ write(int tx, int ty, int px, int py, int color)
 	}
 }
 
-void
-edit(int x, int y, int color)
+int
+jagg(int x, int y)
 {
-	if(x &lt; 0 || y &lt; 0 || x &gt; 8 * HOR || y &gt; 8 * VER)
-		return;
-	write(x / 8, y / 8, x % 8, y % 8, color);
+	int n = get(x, y + 1);
+	int e = get(x + 1, y);
+	int s = get(x, y - 1);
+	int w = get(x - 1, y);
+	int h = get(x, y);
+	if(h == n &amp;&amp; h == e &amp;&amp; h != s &amp;&amp; h != w)
+		return 1;
+	if(h == e &amp;&amp; h == s &amp;&amp; h != w &amp;&amp; h != n)
+		return 1;
+	if(h == s &amp;&amp; h == w &amp;&amp; h != n &amp;&amp; h != e)
+		return 1;
+	if(h == w &amp;&amp; h == n &amp;&amp; h != e &amp;&amp; h != s)
+		return 1;
+	return 0;
 }
 
 int
@@ -156,7 +180,7 @@ patt(int x, int y, int mode, int size)
 }
 
 void
-fill(Brush* b, int mode, int size, Point p0, int color)
+fill(int mode, int size, Point p0, int color)
 {
 	int x, y;
 	Point p;
@@ -164,9 +188,8 @@ fill(Brush* b, int mode, int size, Point p0, int color)
 		for(y = -size / 2; y &lt; size; ++y) {
 			setpt(&amp;p, p0.x + x, p0.y + y);
 			if(patt(p.x, p.y, mode, size) &amp;&amp; dispt(&amp;p0, &amp;p) &lt; size)
-				edit(p.x, p.y, color);
+				put(p.x, p.y, color);
 		}
-	b-&gt;edit = 1;
 	redraw(pixels);
 }
 
@@ -177,7 +200,7 @@ line(Point* p0, Point* p1, int color)
 	int dy = -abs(p1-&gt;y - p0-&gt;y), sy = p0-&gt;y &lt; p1-&gt;y ? 1 : -1;
 	int err = dx + dy, e2;
 	for(;;) {
-		edit(p0-&gt;x, p0-&gt;y, color);
+		put(p0-&gt;x, p0-&gt;y, color);
 		if(p0-&gt;x == p1-&gt;x &amp;&amp; p0-&gt;y == p1-&gt;y)
 			break;
 		e2 = 2 * err;
@@ -190,6 +213,20 @@ line(Point* p0, Point* p1, int color)
 			p0-&gt;y += sy;
 		}
 	}
+	redraw(pixels);
+}
+
+void
+fixe(int size, Point p0)
+{
+	int x, y;
+	Point p;
+	for(x = -size / 2; x &lt; size; ++x)
+		for(y = -size / 2; y &lt; size; ++y) {
+			setpt(&amp;p, p0.x + x, p0.y + y);
+			if(jagg(p.x, p.y))
+				put(p.x, p.y, 0);
+		}
 	redraw(pixels);
 }
 
@@ -293,20 +330,22 @@ domouse(SDL_Event* event, Brush* b)
 		if(event-&gt;button.button == SDL_BUTTON_LEFT) {
 			b-&gt;down = 1;
 			setpt(&amp;b-&gt;prev,
-			      (event-&gt;motion.x - PAD) / ZOOM,
-			      (event-&gt;motion.y - PAD) / ZOOM);
+			      (event-&gt;motion.x - (PAD * ZOOM)) / ZOOM,
+			      (event-&gt;motion.y - (PAD * ZOOM)) / ZOOM);
 		}
 		if(event-&gt;button.button == SDL_BUTTON_RIGHT)
 			b-&gt;erase = 1;
 	case SDL_MOUSEMOTION:
 		if(b-&gt;down) {
 			setpt(&amp;b-&gt;pos,
-			      (event-&gt;motion.x - PAD) / ZOOM,
-			      (event-&gt;motion.y - PAD) / ZOOM);
+			      (event-&gt;motion.x - (PAD * ZOOM)) / ZOOM,
+			      (event-&gt;motion.y - (PAD * ZOOM)) / ZOOM);
 			if(b-&gt;mode == 0)
 				line(&amp;b-&gt;prev, &amp;b-&gt;pos, b-&gt;erase ? 0 : b-&gt;color);
+			else if(b-&gt;mode == 7)
+				fixe(b-&gt;size, b-&gt;pos);
 			else
-				fill(b, b-&gt;mode, b-&gt;size, b-&gt;pos, b-&gt;erase ? 0 : b-&gt;color);
+				fill(b-&gt;mode, b-&gt;size, b-&gt;pos, b-&gt;erase ? 0 : b-&gt;color);
 			setpt(&amp;b-&gt;prev, b-&gt;pos.x, b-&gt;pos.y);
 		}
 		break;
@@ -335,6 +374,9 @@ dokey(SDL_Event* event, Brush* b)
 		break;
 	case SDLK_n:
 		create();
+		break;
+	case SDLK_BACKQUOTE:
+		b-&gt;mode = 7;
 		break;
 	case SDLK_1:
 		b-&gt;mode = 0;
@@ -378,8 +420,8 @@ init(void)
 	gWindow = SDL_CreateWindow("nasu",
 	                           SDL_WINDOWPOS_UNDEFINED,
 	                           SDL_WINDOWPOS_UNDEFINED,
-	                           WIDTH,
-	                           HEIGHT,
+	                           WIDTH * ZOOM,
+	                           HEIGHT * ZOOM,
 	                           SDL_WINDOW_SHOWN);
 	if(gWindow == NULL)
 		return error("Window", SDL_GetError());
@@ -442,5 +484,5 @@ main(int argc, char** argv)
 	quit();
 	return 0;
 }
-</pre><figcaption><a href='../archive/src/nasu.c.txt'>nasu.c</a> 444 lines</figcaption>
-</figure><ul><li><a href='https://git.sr.ht/~rabbits/chr6' target='_blank'>source</a></li><li><a href='https://hundredrabbits.github.io/Nasu' target='_blank'>live</a></li></ul><p><i>incoming(5)</i>: <a href='neauismetica.html'>neauismetica</a> <a href='moogle.html'>moogle</a> <a href='graf3dscene.html'>graf3dscene</a> <a href='themes.html'>themes</a> <a href='chr_format.html'>chr format</a> </p><p><i>Last update on <a href='tracker.html'>20S14</a>, edited 22 times. +99/136fh</i><code style='float:right; font-size:80%'>-----+</code></p><ul><li>20C06 — Nasu Release</li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
+</pre><figcaption><a href='../archive/src/nasu.c.txt'>nasu.c</a> 486 lines</figcaption>
+</figure><ul><li><a href='https://git.sr.ht/~rabbits/chr6' target='_blank'>source</a></li><li><a href='https://hundredrabbits.github.io/Nasu' target='_blank'>live</a></li></ul><p><i>incoming(5)</i>: <a href='neauismetica.html'>neauismetica</a> <a href='moogle.html'>moogle</a> <a href='graf3dscene.html'>graf3dscene</a> <a href='themes.html'>themes</a> <a href='chr_format.html'>chr format</a> </p><p><i>Last update on <a href='tracker.html'>20T04</a>, edited 25 times. +113/158fh</i><code style='float:right; font-size:80%'>-----+</code></p><ul><li>20C06 — Nasu Release</li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
