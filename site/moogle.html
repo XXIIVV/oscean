@@ -104,7 +104,7 @@ Ms3d(double x, double y, double z)
 	m.position = Pt3d(x, y, z);
 	m.verticeslen = 0;
 	m.edgeslen = 0;
-	m.color = 2;
+	m.color = 1;
 	return m;
 }
 
@@ -240,38 +240,6 @@ rotver(Point3d* o, Point3d* v, double pitch, double yaw, double roll)
 	rotverz(o, v, roll);
 }
 
-void
-rotatex(Mesh* m, double angle)
-{
-	int i;
-	for(i = 0; i &lt; m-&gt;verticeslen; i++)
-		rotverx(&amp;m-&gt;position, &amp;m-&gt;vertices[i], angle);
-}
-
-void
-rotatey(Mesh* m, double angle)
-{
-	int i;
-	for(i = 0; i &lt; m-&gt;verticeslen; i++)
-		rotvery(&amp;m-&gt;position, &amp;m-&gt;vertices[i], angle);
-}
-
-void
-rotatez(Mesh* m, double angle)
-{
-	int i;
-	for(i = 0; i &lt; m-&gt;verticeslen; i++)
-		rotverz(&amp;m-&gt;position, &amp;m-&gt;vertices[i], angle);
-}
-
-void
-rotate(Mesh* m, double x, double y, double z)
-{
-	rotatex(m, x);
-	rotatey(m, y);
-	rotatez(m, z);
-}
-
 Point3d
 addpt3d(Point3d* a, Point3d* b)
 {
@@ -289,6 +257,21 @@ project(Camera* c, Point3d v)
 }
 
 /* transforms */
+
+void
+rotate(Mesh* m, double pitch, double yaw, double roll)
+{
+	int i;
+	if(pitch != 0)
+		for(i = 0; i &lt; m-&gt;verticeslen; i++)
+			rotverx(&amp;m-&gt;position, &amp;m-&gt;vertices[i], pitch);
+	if(yaw != 0)
+		for(i = 0; i &lt; m-&gt;verticeslen; i++)
+			rotvery(&amp;m-&gt;position, &amp;m-&gt;vertices[i], yaw);
+	if(roll != 0)
+		for(i = 0; i &lt; m-&gt;verticeslen; i++)
+			rotverz(&amp;m-&gt;position, &amp;m-&gt;vertices[i], roll);
+}
 
 void
 extrude(Mesh* m, double depth)
@@ -326,55 +309,55 @@ symmetry(Mesh* m, double x, double y, double z)
 /* Shapes */
 
 void
-addpoly(Mesh* m, double x, double y, double z, double radius, int segments)
+addpoly(Mesh* m, double x, double y, double z, double radius, int segs)
 {
 	int i, offset = m-&gt;verticeslen;
-	for(i = 0; i &lt; segments; i++) {
+	for(i = 0; i &lt; segs; i++) {
 		addvertex(m,
-		          x + radius * cos(2 * PI * i / segments),
-		          y + radius * sin(2 * PI * i / segments),
+		          x + radius * cos(2 * PI * i / segs),
+		          y + radius * sin(2 * PI * i / segs),
 		          z);
-		addedge(m, offset + i, offset + (i + 1) % segments);
+		addedge(m, offset + i, offset + (i + 1) % segs);
 	}
 }
 
 void
-addpolygon(Scene* s, double x, double y, double z, double radius, int segments)
+addpolygon(Scene* s, double x, double y, double z, double radius, int segs)
 {
 	Mesh m = Ms3d(x, y, z);
-	addpoly(&amp;m, x, y, z, radius, segments);
+	addpoly(&amp;m, x, y, z, radius, segs);
 	addmesh(s, m);
 }
 
 void
-addpyramid(Scene* s, double x, double y, double z, double radius, int segments, double depth)
+addpyramid(Scene* s, double x, double y, double z, double radius, int segs, double depth)
 {
 	int i;
 	Mesh m = Ms3d(x, y, z);
-	addpoly(&amp;m, x, y, z - depth / 2, radius, segments);
+	addpoly(&amp;m, x, y, z - depth / 2, radius, segs);
 	addvertex(&amp;m, x, y, z + depth / 2);
-	for(i = 0; i &lt; segments; i++)
-		addedge(&amp;m, i, segments);
+	for(i = 0; i &lt; segs; i++)
+		addedge(&amp;m, i, segs);
 	addmesh(s, m);
 }
 
 void
-addfrustum(Scene* s, double x, double y, double z, double radius, int segments, double depth, double mod)
+addfrustum(Scene* s, double x, double y, double z, double radius, int segs, double depth, double mod)
 {
 	int i;
 	Mesh m = Ms3d(x, y, z);
-	addpoly(&amp;m, x, y, z - depth / 2, radius, segments);
-	addpoly(&amp;m, x, y, z + depth / 2, radius * mod, segments);
-	for(i = 0; i &lt; segments; i++)
-		addedge(&amp;m, i, segments + i);
+	addpoly(&amp;m, x, y, z - depth / 2, radius, segs);
+	addpoly(&amp;m, x, y, z + depth / 2, radius * mod, segs);
+	for(i = 0; i &lt; segs; i++)
+		addedge(&amp;m, i, segs + i);
 	addmesh(s, m);
 }
 
 void
-addprism(Scene* s, double x, double y, double z, double radius, int segments, double depth)
+addprism(Scene* s, double x, double y, double z, double radius, int segs, double depth)
 {
 	Mesh m = Ms3d(x, y, z);
-	addpoly(&amp;m, x, y, z - depth / 2, radius, segments);
+	addpoly(&amp;m, x, y, z - depth / 2, radius, segs);
 	extrude(&amp;m, depth);
 	addmesh(s, m);
 }
@@ -649,7 +632,7 @@ main(int argc, char** argv)
 
 	addfrustum(&amp;scn, 0, 0, 0, 12, 8, 10, 0.5);
 	addprism(&amp;scn, 0, 0, 0, 12, 8, 10);
-	scn.meshes[1].color = 1;
+	scn.meshes[1].color = 2;
 
 	newchr();
 	render(&amp;scn, &amp;cam);
@@ -669,5 +652,40 @@ main(int argc, char** argv)
 	quit();
 	return 0;
 }
-</pre><figcaption><a href='../archive/src/moogle.c.txt'>moogle.c</a> 671 lines</figcaption>
-</figure><p>Moogle was first written on <a href='plan9.html'>Plan9</a>, the original <a href='plan9_c.html'>Plan9 C</a> implementation is available <a href='../archive/src/moogle9.c.txt' target='_blank'>here</a>.</p><figure><img src='../media/diary/728.jpg' alt='Moogle Spheroid picture' width='900'/><figcaption>20P01 — Moogle Spheroid</figcaption></figure><p><i>incoming(5)</i>: <a href='neauismetica.html'>neauismetica</a> <a href='graf3dscene.html'>graf3dscene</a> <a href='nasu.html'>nasu</a> <a href='defunct.html'>defunct</a> <a href='identity.html'>identity</a> </p><p><i>Last update on <a href='tracker.html'>20T04</a>, edited 5 times. +29/36fh</i><code style='float:right; font-size:80%'>-----+</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
+</pre><figcaption><a href='../archive/src/moogle.c.txt'>moogle.c</a> 654 lines</figcaption>
+</figure><p>Moogle was first written on <a href='plan9.html'>Plan9</a>, the original <a href='plan9_c.html'>Plan9 C</a> implementation is available <a href='../archive/src/moogle9.c.txt' target='_blank'>here</a>.</p><h3>Extra shapes</h3>
+
+<pre>
+void
+addbox(Scene* s, double x, double y, double z, double width, double height, double depth)
+{
+	int i;
+	Mesh m = Ms3d(x, y, z);
+	addvertex(&m, width / 2, height / 2, -depth / 2);
+	addvertex(&m, -width / 2, height / 2, -depth / 2);
+	addvertex(&m, -width / 2, -height / 2, -depth / 2);
+	addvertex(&m, width / 2, -height / 2, -depth / 2);
+	for(i = 0; i < 4; i++)
+		addedge(&m, i, (i + 1) % 4);
+	extrude(&m, depth);
+	addmesh(s, m);
+}
+
+void
+addgrid(Scene* s, double x, double y, double z, double width, double height, double xsegs, double ysegs)
+{
+	int ix, iy;
+	Mesh m = Ms3d(x, y, z);
+	for(ix = 0; ix < xsegs + 1; ix++) {
+		addvertex(&m, ix * (width / xsegs) - width / 2, height / 2, 0);
+		addvertex(&m, ix * (width / xsegs) - width / 2, -height / 2, 0);
+		addedge(&m, ix * 2, ix * 2 + 1);
+	}
+	for(iy = 0; iy < ysegs + 1; iy++) {
+		addvertex(&m, width / 2, iy * (height / ysegs) - height / 2, 0);
+		addvertex(&m, -width / 2, iy * (height / ysegs) - height / 2, 0);
+		addedge(&m, ix * 2 + iy * 2, ix * 2 + iy * 2 + 1);
+	}
+	addmesh(s, m);
+}
+</pre><p>Found a mistake? Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/moogle.htm' target='_blank'>edit</a> to moogle.</p><figure><img src='../media/diary/728.jpg' alt='Moogle Spheroid picture' width='900'/><figcaption>20P01 — Moogle Spheroid</figcaption></figure><p><i>incoming(5)</i>: <a href='neauismetica.html'>neauismetica</a> <a href='graf3dscene.html'>graf3dscene</a> <a href='nasu.html'>nasu</a> <a href='defunct.html'>defunct</a> <a href='identity.html'>identity</a> </p><p><i>Last update on <a href='tracker.html'>20T04</a>, edited 5 times. +29/36fh</i><code style='float:right; font-size:80%'>-----+</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>

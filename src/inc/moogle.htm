@@ -1,0 +1,36 @@
+<h3>Extra shapes</h3>
+
+<pre>
+void
+addbox(Scene* s, double x, double y, double z, double width, double height, double depth)
+{
+	int i;
+	Mesh m = Ms3d(x, y, z);
+	addvertex(&m, width / 2, height / 2, -depth / 2);
+	addvertex(&m, -width / 2, height / 2, -depth / 2);
+	addvertex(&m, -width / 2, -height / 2, -depth / 2);
+	addvertex(&m, width / 2, -height / 2, -depth / 2);
+	for(i = 0; i < 4; i++)
+		addedge(&m, i, (i + 1) % 4);
+	extrude(&m, depth);
+	addmesh(s, m);
+}
+
+void
+addgrid(Scene* s, double x, double y, double z, double width, double height, double xsegs, double ysegs)
+{
+	int ix, iy;
+	Mesh m = Ms3d(x, y, z);
+	for(ix = 0; ix < xsegs + 1; ix++) {
+		addvertex(&m, ix * (width / xsegs) - width / 2, height / 2, 0);
+		addvertex(&m, ix * (width / xsegs) - width / 2, -height / 2, 0);
+		addedge(&m, ix * 2, ix * 2 + 1);
+	}
+	for(iy = 0; iy < ysegs + 1; iy++) {
+		addvertex(&m, width / 2, iy * (height / ysegs) - height / 2, 0);
+		addvertex(&m, -width / 2, iy * (height / ysegs) - height / 2, 0);
+		addedge(&m, ix * 2 + iy * 2, ix * 2 + iy * 2 + 1);
+	}
+	addmesh(s, m);
+}
+</pre>
