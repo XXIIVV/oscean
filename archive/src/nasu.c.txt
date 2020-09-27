@@ -1,7 +1,7 @@
 #include <SDL2/SDL.h>
 #include <stdio.h>
 
-#define HOR 16
+#define HOR 32
 #define VER 16
 #define PAD 8
 #define ZOOM 4
@@ -45,52 +45,27 @@ SDL_Renderer* gRenderer = NULL;
 SDL_Texture* gTexture = NULL;
 uint32_t* pixels;
 
+/* helpers */
+
 int
 distance(int ax, int ay, int bx, int by)
 {
 	return (bx - ax) * (bx - ax) + (by - ay) * (by - ay);
 }
 
-void
-edit(uint32_t* dst, int id, int color)
-{
-	int ti = id / 64;
-	int odd = (ti + (ti / HOR + 2)) % 2 == 0;
-	int px = (ti / (HOR * VER)) * (8 * HOR) + (ti % HOR) * 8 + (id % 8);
-	int py = ((ti / HOR) * 8) + ((id % 64) / 8);
-	dst[(py + PAD) * WIDTH + (px + PAD)] = colors[GUIDES && odd && color == 0 ? 4 : color];
-}
-
-void
-redraw(uint32_t* dst)
-{
-	int b, i, j, id = 0;
-	for(b = 0; b < SZ; b += 16)
-		for(i = 0; i < 8; i++)
-			for(j = 7; j >= 0; j--) {
-				int ch1 = chrbuf[b + i];
-				int ch2 = chrbuf[b + i + 8];
-				int color = ((ch1 >> j) & 0x1) + (((ch2 >> j) & 0x1) << 1);
-				edit(dst, id, color);
-				id++;
-			}
-	SDL_UpdateTexture(gTexture, NULL, dst, WIDTH * sizeof(uint32_t));
-	SDL_RenderClear(gRenderer);
-	SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);
-	SDL_RenderPresent(gRenderer);
-}
+/* chr */
 
 int
-row(int x, int y)
+rowchr(int x, int y)
 {
 	return (y % 8) + ((x / 8 + y / 8 * HOR) * 16);
 }
 
 int
-get(int x, int y)
+getchr(int x, int y)
 {
 	int ch1, ch2;
-	int r = row(x, y);
+	int r = rowchr(x, y);
 	int px = x % 8;
 	if(r < 0 || r > SZ - 8)
 		return 0;
@@ -100,9 +75,9 @@ get(int x, int y)
 }
 
 void
-put(int x, int y, int color)
+putchr(int x, int y, int color)
 {
-	int r = row(x, y);
+	int r = rowchr(x, y);
 	int px = x % 8;
 	if(x < 0 || y < 0 || x > 8 * HOR || y > 8 * VER || r > SZ - 8)
 		return;
@@ -121,14 +96,22 @@ put(int x, int y, int color)
 	}
 }
 
+void
+newchr(void)
+{
+	int i;
+	for(i = 0; i < SZ; ++i)
+		chrbuf[i] = 0x00;
+}
+
 int
 jagg(int x, int y)
 {
-	int n = get(x, y + 1);
-	int e = get(x + 1, y);
-	int s = get(x, y - 1);
-	int w = get(x - 1, y);
-	int h = get(x, y);
+	int n = getchr(x, y + 1);
+	int e = getchr(x + 1, y);
+	int s = getchr(x, y - 1);
+	int w = getchr(x - 1, y);
+	int h = getchr(x, y);
 	if(h == n && h == e && h != s && h != w)
 		return 1;
 	if(h == e && h == s && h != w && h != n)
@@ -165,10 +148,9 @@ fill(int x, int y, int mode, int size, int color)
 	for(ox = x - (size / 2); ox < x + size; ++ox)
 		for(oy = y - (size / 2); oy < y + size; ++oy)
 			if(mode == 7 && jagg(ox, oy))
-				put(ox, oy, 0);
+				putchr(ox, oy, 0);
 			else if(patt(ox, oy, mode, size) && distance(x, y, ox, oy) < size)
-				put(ox, oy, color);
-	redraw(pixels);
+				putchr(ox, oy, color);
 }
 
 void
@@ -178,7 +160,7 @@ line(int ax, int ay, int bx, int by, int color)
 	int dy = -abs(by - ay), sy = ay < by ? 1 : -1;
 	int err = dx + dy, e2;
 	for(;;) {
-		put(ax, ay, color);
+		putchr(ax, ay, color);
 		if(ax == bx && ay == by)
 			break;
 		e2 = 2 * err;
@@ -191,7 +173,31 @@ line(int ax, int ay, int bx, int by, int color)
 			ay += sy;
 		}
 	}
-	redraw(pixels);
+}
+
+/* draw */
+
+void
+draw(uint32_t* dst)
+{
+	int b, i, j, id = 0;
+	for(b = 0; b < SZ; b += 16)
+		for(i = 0; i < 8; i++)
+			for(j = 7; j >= 0; j--) {
+				int ch1 = chrbuf[b + i];
+				int ch2 = chrbuf[b + i + 8];
+				int color = ((ch1 >> j) & 0x1) + (((ch2 >> j) & 0x1) << 1);
+				int ti = id / 64;
+				int odd = (ti + (ti / HOR + 2)) % 2 == 0;
+				int px = (ti / (HOR * VER)) * (8 * HOR) + (ti % HOR) * 8 + (id % 8);
+				int py = ((ti / HOR) * 8) + ((id % 64) / 8);
+				dst[(py + PAD) * WIDTH + (px + PAD)] = colors[GUIDES && odd && color == 0 ? 4 : color];
+				id++;
+			}
+	SDL_UpdateTexture(gTexture, NULL, dst, WIDTH * sizeof(uint32_t));
+	SDL_RenderClear(gRenderer);
+	SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);
+	SDL_RenderPresent(gRenderer);
 }
 
 void
@@ -209,30 +215,13 @@ update(Brush* b)
 	SDL_SetWindowTitle(gWindow, title);
 }
 
+/* options */
+
 int
 error(char* msg, const char* err)
 {
 	printf("Error %s: %s\n", msg, err);
 	return 0;
-}
-
-void
-create(void)
-{
-	int i;
-	for(i = 0; i < SZ; ++i)
-		chrbuf[i] = 0x00;
-	redraw(pixels);
-}
-
-void
-tochr(Brush* b)
-{
-	FILE* f = fopen("export.chr", "wb");
-	if(!fwrite(chrbuf, sizeof(chrbuf), 1, f))
-		error("Save", "Invalid output file");
-	fclose(f);
-	b->edit = 0;
 }
 
 void
@@ -244,7 +233,16 @@ load(char* path)
 	if(!fread(chrbuf, sizeof(chrbuf), 1, f))
 		error("Load", "Invalid input size");
 	fclose(f);
-	redraw(pixels);
+}
+
+void
+tochr(Brush* b)
+{
+	FILE* f = fopen("nasu-export.chr", "wb");
+	if(!fwrite(chrbuf, sizeof(chrbuf), 1, f))
+		error("Save", "Invalid output file");
+	fclose(f);
+	b->edit = 0;
 }
 
 void
@@ -252,13 +250,13 @@ tobmp(void)
 {
 	SDL_Surface* surface = SDL_GetWindowSurface(gWindow);
 	GUIDES = 0;
-	redraw(pixels);
+	draw(pixels);
 	SDL_RenderReadPixels(gRenderer,
 	                     NULL,
 	                     SDL_PIXELFORMAT_ARGB8888,
 	                     surface->pixels,
 	                     surface->pitch);
-	SDL_SaveBMP(surface, "render.bmp");
+	SDL_SaveBMP(surface, "nasu-render.bmp");
 	SDL_FreeSurface(surface);
 }
 
@@ -307,6 +305,7 @@ domouse(SDL_Event* event, Brush* b)
 				line(b->px, b->py, b->x, b->y, b->erase ? 0 : b->color);
 			else
 				fill(b->x, b->y, b->mode, b->size, b->erase ? 0 : b->color);
+			draw(pixels);
 			b->px = b->x;
 			b->py = b->y;
 		}
@@ -332,10 +331,10 @@ dokey(SDL_Event* event, Brush* b)
 		break;
 	case SDLK_h:
 		GUIDES = !GUIDES;
-		redraw(pixels);
+		draw(pixels);
 		break;
 	case SDLK_n:
-		create();
+		newchr();
 		break;
 	case SDLK_BACKQUOTE:
 		b->mode = 7;
@@ -423,7 +422,8 @@ main(int argc, char** argv)
 	if(argc > 1)
 		load(argv[1]);
 	else
-		create();
+		newchr();
+	draw(pixels);
 	update(&brush);
 
 	while(1) {

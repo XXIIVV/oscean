@@ -6,11 +6,11 @@
 #define VER 16
 #define PAD 8
 #define ZOOM 4
-#define color1 0xFFFFFF
-#define color2 0x000000
-#define color3 0x72DEC2
-#define color4 0xAAAAAA
-#define color0 0xEFEFEF
+#define color1 0x000000
+#define color2 0x72DEC2
+#define color3 0xFFFFFF
+#define color4 0x444444
+#define color0 0x111111
 
 #define SZ (HOR * VER * 16)
 #define PI 3.14159265358979323846
@@ -66,6 +66,8 @@ SDL_Window* gWindow = NULL;
 SDL_Renderer* gRenderer = NULL;
 SDL_Texture* gTexture = NULL;
 uint32_t* pixels;
+
+/* helpers */
 
 Point
 Pt(int x, int y)
@@ -286,6 +288,8 @@ project(Camera* c, Point3d v)
 	return Pt(WIDTH / 2 + r * v.x, HEIGHT / 2 + r * v.y);
 }
 
+/* transforms */
+
 void
 extrude(Mesh* m, double depth)
 {
@@ -318,6 +322,8 @@ symmetry(Mesh* m, double x, double y, double z)
 		        el + 1 + m-&gt;edges[i].a,
 		        el + 1 + m-&gt;edges[i].b);
 }
+
+/* Shapes */
 
 void
 addpoly(Mesh* m, double x, double y, double z, double radius, int segments)
@@ -373,29 +379,18 @@ addprism(Scene* s, double x, double y, double z, double radius, int segments, do
 	addmesh(s, m);
 }
 
+/* chr */
+
 int
-row(int x, int y)
+rowchr(int x, int y)
 {
 	return (y % 8) + ((x / 8 + y / 8 * HOR) * 16);
 }
 
-int
-get(int x, int y)
-{
-	int ch1, ch2;
-	int r = row(x, y);
-	int px = x % 8;
-	if(r &lt; 0 || r &gt; SZ - 8)
-		return 0;
-	ch1 = (chrbuf[r] &gt;&gt; (7 - px)) &amp; 1;
-	ch2 = (chrbuf[r + 8] &gt;&gt; (7 - px)) &amp; 1;
-	return ch1 &amp;&amp; !ch2 ? 1 : !ch1 &amp;&amp; ch2 ? 2 : ch1 &amp;&amp; ch2 ? 3 : 0;
-}
-
 void
-put(int x, int y, int color)
+putchr(int x, int y, int color)
 {
-	int r = row(x, y);
+	int r = rowchr(x, y);
 	int px = x % 8;
 	if(x &lt; 0 || y &lt; 0 || x &gt; 8 * HOR || y &gt; 8 * VER || r &gt; SZ - 8)
 		return;
@@ -415,13 +410,21 @@ put(int x, int y, int color)
 }
 
 void
+newchr(void)
+{
+	int i;
+	for(i = 0; i &lt; SZ; ++i)
+		chrbuf[i] = 0x00;
+}
+
+void
 line(Point p0, Point p1, int color)
 {
 	double dx = abs(p1.x - p0.x), sx = p0.x &lt; p1.x ? 1 : -1;
 	double dy = -abs(p1.y - p0.y), sy = p0.y &lt; p1.y ? 1 : -1;
 	double err = dx + dy, e2;
 	for(;;) {
-		put(p0.x, p0.y, color);
+		putchr(p0.x, p0.y, color);
 		if(p0.x == p1.x &amp;&amp; p0.y == p1.y)
 			break;
 		e2 = 2 * err;
@@ -436,18 +439,10 @@ line(Point p0, Point p1, int color)
 	}
 }
 
-void
-edit(uint32_t* dst, int id, int color)
-{
-	int ti = id / 64;
-	int odd = (ti + (ti / HOR + 2)) % 2 == 0;
-	int px = (ti / (HOR * VER)) * (8 * HOR) + (ti % HOR) * 8 + (id % 8);
-	int py = ((ti / HOR) * 8) + ((id % 64) / 8);
-	dst[(py + PAD) * WIDTH + (px + PAD)] = colors[GUIDES &amp;&amp; odd &amp;&amp; color == 0 ? 4 : color];
-}
+/* draw */
 
 void
-redraw(uint32_t* dst)
+draw(uint32_t* dst)
 {
 	int b, i, j, id = 0;
 	for(b = 0; b &lt; SZ; b += 16)
@@ -456,7 +451,11 @@ redraw(uint32_t* dst)
 				int ch1 = chrbuf[b + i];
 				int ch2 = chrbuf[b + i + 8];
 				int color = ((ch1 &gt;&gt; j) &amp; 0x1) + (((ch2 &gt;&gt; j) &amp; 0x1) &lt;&lt; 1);
-				edit(dst, id, color);
+				int ti = id / 64;
+				int odd = (ti + (ti / HOR + 2)) % 2 == 0;
+				int px = (ti / (HOR * VER)) * (8 * HOR) + (ti % HOR) * 8 + (id % 8);
+				int py = ((ti / HOR) * 8) + ((id % 64) / 8);
+				dst[(py + PAD) * WIDTH + (px + PAD)] = colors[GUIDES &amp;&amp; odd &amp;&amp; color == 0 ? 4 : color];
 				id++;
 			}
 	SDL_UpdateTexture(gTexture, NULL, dst, WIDTH * sizeof(uint32_t));
@@ -469,7 +468,7 @@ void
 render(Scene* s, Camera* c)
 {
 	int i, j;
-	clear();
+	newchr();
 	for(i = 0; i &lt; s-&gt;len; i++) {
 		Mesh* mesh = &amp;s-&gt;meshes[i];
 		for(j = 0; j &lt; mesh-&gt;edgeslen; j++) {
@@ -481,7 +480,7 @@ render(Scene* s, Camera* c)
 			line(project(c, a), project(c, b), mesh-&gt;color);
 		}
 	}
-	redraw(pixels);
+	draw(pixels);
 }
 
 void
@@ -527,14 +526,6 @@ error(char* msg, const char* err)
 }
 
 void
-clear(void)
-{
-	int i;
-	for(i = 0; i &lt; SZ; ++i)
-		chrbuf[i] = 0x00;
-}
-
-void
 tochr()
 {
 	FILE* f = fopen("export.chr", "wb");
@@ -548,7 +539,7 @@ tobmp(void)
 {
 	SDL_Surface* surface = SDL_GetWindowSurface(gWindow);
 	GUIDES = 0;
-	redraw(pixels);
+	draw(pixels);
 	SDL_RenderReadPixels(gRenderer,
 	                     NULL,
 	                     SDL_PIXELFORMAT_ARGB8888,
@@ -590,7 +581,7 @@ dokey(SDL_Event* event)
 		break;
 	case SDLK_h:
 		GUIDES = !GUIDES;
-		redraw(pixels);
+		draw(pixels);
 		break;
 	case SDLK_w:
 		cam.pitch += 3.0;
@@ -660,7 +651,7 @@ main(int argc, char** argv)
 	addprism(&amp;scn, 0, 0, 0, 12, 8, 10);
 	scn.meshes[1].color = 1;
 
-	clear();
+	newchr();
 	render(&amp;scn, &amp;cam);
 
 	while(1) {
@@ -671,13 +662,12 @@ main(int argc, char** argv)
 		if(tick &lt; ticknext)
 			SDL_Delay(ticknext - tick);
 		ticknext = tick + (1000 / FPS);
-		while(SDL_PollEvent(&amp;event) != 0) {
+		while(SDL_PollEvent(&amp;event) != 0)
 			if(event.type == SDL_KEYDOWN)
 				dokey(&amp;event);
-		}
 	}
 	quit();
 	return 0;
 }
-</pre><figcaption><a href='../archive/src/moogle.c.txt'>moogle.c</a> 681 lines</figcaption>
+</pre><figcaption><a href='../archive/src/moogle.c.txt'>moogle.c</a> 671 lines</figcaption>
 </figure><p>Moogle was first written on <a href='plan9.html'>Plan9</a>, the original <a href='plan9_c.html'>Plan9 C</a> implementation is available <a href='../archive/src/moogle9.c.txt' target='_blank'>here</a>.</p><figure><img src='../media/diary/728.jpg' alt='Moogle Spheroid picture' width='900'/><figcaption>20P01 — Moogle Spheroid</figcaption></figure><p><i>incoming(5)</i>: <a href='neauismetica.html'>neauismetica</a> <a href='graf3dscene.html'>graf3dscene</a> <a href='nasu.html'>nasu</a> <a href='defunct.html'>defunct</a> <a href='identity.html'>identity</a> </p><p><i>Last update on <a href='tracker.html'>20T04</a>, edited 5 times. +29/36fh</i><code style='float:right; font-size:80%'>-----+</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>

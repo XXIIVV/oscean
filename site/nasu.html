@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang='en'></head><meta charset='utf-8'><meta name='description' content='Nasu is chr spritesheet editor.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV — nasu</title></head><body><header><a href='home.html'><img src='../media/identity/xiv28.gif' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='tools.html'>tools/</a></li><li><a href='utilities.html'>utilities</a></li><li><a href='games.html'>games</a></li><li><a href='mobile.html'>mobile</a></li><li><a href='automatons.html'>automatons</a></li></ul><ul><li><a href='ronin.html'>ronin</a></li><li><a href='dotgrid.html'>dotgrid</a></li><li><a href='left.html'>left</a></li><li><a href='nasu.html'>nasu/</a></li><li><a href='moogle.html'>moogle</a></li></ul><ul></ul></nav><main><h2>Nasu is chr spritesheet editor.</h2><p>Nasu is a spritesheet editor created to help design and assemble assets for <a href='famicom.html'>Famicom</a> games. It can import and export into the <a href='chr_format.html'>.chr format</a>.</p><p>The application was initially created to help us with the porting of <a href='donsol.html'>Donsol</a> to the Famicom, and was later made available for everyone to use. It has since evolved to include the features of the drawing software <i>Noodle</i>. It is currently used to create both Famicom projects such as <a href='spacetime_6502.html'>spacetime</a>, and the 1bit illustrations of the <a href='neauismetica.html'>Neauismetica</a>. </p><p>Nasu was the first in a series of image creation tools, exploring the concept of <a href='https://brandur.org/small-sharp-tools' target='_blank'>Small Sharp Tools</a> for graphical tasks, and was designed to be compatible with <a href='moogle.html'>Moogle</a>.</p><iframe width='600' height='380' src='https://www.youtube.com/embed/zvO5JRF47bc?rel=0' style='max-width:700px' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe><h3>nasu.c</h3><p>To control the window size and default colors, edit the values defined at the top of the file itself. Press , <code>E</code> to export a <code>.chr</code> file, press <code>R</code> to render a <code>.bmp</code> file, and press <code>h</code> to toggle tile guides. To learn more, visit the <a href='https://git.sr.ht/~rabbits/nasu' target='_blank'>repository</a>.</p><pre>sudo apt-get install libsdl2-dev</pre><p>The following code is a single-file implementation written in 450 lines of <a href='ansi_c.html'>ANSI C</a>, the only dependecy is <a href='https://www.libsdl.org' target='_blank'>SDL2</a>.</p><pre>cc -std=c89 -Wall nasu.c -I/usr/local/include -L/usr/local/lib -lSDL2 -o nasu</pre><figure><pre>#include &lt;SDL2/SDL.h&gt;
 #include &lt;stdio.h&gt;
 
-#define HOR 16
+#define HOR 32
 #define VER 16
 #define PAD 8
 #define ZOOM 4
@@ -45,52 +45,27 @@ SDL_Renderer* gRenderer = NULL;
 SDL_Texture* gTexture = NULL;
 uint32_t* pixels;
 
+/* helpers */
+
 int
 distance(int ax, int ay, int bx, int by)
 {
 	return (bx - ax) * (bx - ax) + (by - ay) * (by - ay);
 }
 
-void
-edit(uint32_t* dst, int id, int color)
-{
-	int ti = id / 64;
-	int odd = (ti + (ti / HOR + 2)) % 2 == 0;
-	int px = (ti / (HOR * VER)) * (8 * HOR) + (ti % HOR) * 8 + (id % 8);
-	int py = ((ti / HOR) * 8) + ((id % 64) / 8);
-	dst[(py + PAD) * WIDTH + (px + PAD)] = colors[GUIDES &amp;&amp; odd &amp;&amp; color == 0 ? 4 : color];
-}
-
-void
-redraw(uint32_t* dst)
-{
-	int b, i, j, id = 0;
-	for(b = 0; b &lt; SZ; b += 16)
-		for(i = 0; i &lt; 8; i++)
-			for(j = 7; j &gt;= 0; j--) {
-				int ch1 = chrbuf[b + i];
-				int ch2 = chrbuf[b + i + 8];
-				int color = ((ch1 &gt;&gt; j) &amp; 0x1) + (((ch2 &gt;&gt; j) &amp; 0x1) &lt;&lt; 1);
-				edit(dst, id, color);
-				id++;
-			}
-	SDL_UpdateTexture(gTexture, NULL, dst, WIDTH * sizeof(uint32_t));
-	SDL_RenderClear(gRenderer);
-	SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);
-	SDL_RenderPresent(gRenderer);
-}
+/* chr */
 
 int
-row(int x, int y)
+rowchr(int x, int y)
 {
 	return (y % 8) + ((x / 8 + y / 8 * HOR) * 16);
 }
 
 int
-get(int x, int y)
+getchr(int x, int y)
 {
 	int ch1, ch2;
-	int r = row(x, y);
+	int r = rowchr(x, y);
 	int px = x % 8;
 	if(r &lt; 0 || r &gt; SZ - 8)
 		return 0;
@@ -100,9 +75,9 @@ get(int x, int y)
 }
 
 void
-put(int x, int y, int color)
+putchr(int x, int y, int color)
 {
-	int r = row(x, y);
+	int r = rowchr(x, y);
 	int px = x % 8;
 	if(x &lt; 0 || y &lt; 0 || x &gt; 8 * HOR || y &gt; 8 * VER || r &gt; SZ - 8)
 		return;
@@ -121,14 +96,22 @@ put(int x, int y, int color)
 	}
 }
 
+void
+newchr(void)
+{
+	int i;
+	for(i = 0; i &lt; SZ; ++i)
+		chrbuf[i] = 0x00;
+}
+
 int
 jagg(int x, int y)
 {
-	int n = get(x, y + 1);
-	int e = get(x + 1, y);
-	int s = get(x, y - 1);
-	int w = get(x - 1, y);
-	int h = get(x, y);
+	int n = getchr(x, y + 1);
+	int e = getchr(x + 1, y);
+	int s = getchr(x, y - 1);
+	int w = getchr(x - 1, y);
+	int h = getchr(x, y);
 	if(h == n &amp;&amp; h == e &amp;&amp; h != s &amp;&amp; h != w)
 		return 1;
 	if(h == e &amp;&amp; h == s &amp;&amp; h != w &amp;&amp; h != n)
@@ -165,10 +148,9 @@ fill(int x, int y, int mode, int size, int color)
 	for(ox = x - (size / 2); ox &lt; x + size; ++ox)
 		for(oy = y - (size / 2); oy &lt; y + size; ++oy)
 			if(mode == 7 &amp;&amp; jagg(ox, oy))
-				put(ox, oy, 0);
+				putchr(ox, oy, 0);
 			else if(patt(ox, oy, mode, size) &amp;&amp; distance(x, y, ox, oy) &lt; size)
-				put(ox, oy, color);
-	redraw(pixels);
+				putchr(ox, oy, color);
 }
 
 void
@@ -178,7 +160,7 @@ line(int ax, int ay, int bx, int by, int color)
 	int dy = -abs(by - ay), sy = ay &lt; by ? 1 : -1;
 	int err = dx + dy, e2;
 	for(;;) {
-		put(ax, ay, color);
+		putchr(ax, ay, color);
 		if(ax == bx &amp;&amp; ay == by)
 			break;
 		e2 = 2 * err;
@@ -191,7 +173,31 @@ line(int ax, int ay, int bx, int by, int color)
 			ay += sy;
 		}
 	}
-	redraw(pixels);
+}
+
+/* draw */
+
+void
+draw(uint32_t* dst)
+{
+	int b, i, j, id = 0;
+	for(b = 0; b &lt; SZ; b += 16)
+		for(i = 0; i &lt; 8; i++)
+			for(j = 7; j &gt;= 0; j--) {
+				int ch1 = chrbuf[b + i];
+				int ch2 = chrbuf[b + i + 8];
+				int color = ((ch1 &gt;&gt; j) &amp; 0x1) + (((ch2 &gt;&gt; j) &amp; 0x1) &lt;&lt; 1);
+				int ti = id / 64;
+				int odd = (ti + (ti / HOR + 2)) % 2 == 0;
+				int px = (ti / (HOR * VER)) * (8 * HOR) + (ti % HOR) * 8 + (id % 8);
+				int py = ((ti / HOR) * 8) + ((id % 64) / 8);
+				dst[(py + PAD) * WIDTH + (px + PAD)] = colors[GUIDES &amp;&amp; odd &amp;&amp; color == 0 ? 4 : color];
+				id++;
+			}
+	SDL_UpdateTexture(gTexture, NULL, dst, WIDTH * sizeof(uint32_t));
+	SDL_RenderClear(gRenderer);
+	SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);
+	SDL_RenderPresent(gRenderer);
 }
 
 void
@@ -209,30 +215,13 @@ update(Brush* b)
 	SDL_SetWindowTitle(gWindow, title);
 }
 
+/* options */
+
 int
 error(char* msg, const char* err)
 {
 	printf("Error %s: %s\n", msg, err);
 	return 0;
-}
-
-void
-create(void)
-{
-	int i;
-	for(i = 0; i &lt; SZ; ++i)
-		chrbuf[i] = 0x00;
-	redraw(pixels);
-}
-
-void
-tochr(Brush* b)
-{
-	FILE* f = fopen("export.chr", "wb");
-	if(!fwrite(chrbuf, sizeof(chrbuf), 1, f))
-		error("Save", "Invalid output file");
-	fclose(f);
-	b-&gt;edit = 0;
 }
 
 void
@@ -244,7 +233,16 @@ load(char* path)
 	if(!fread(chrbuf, sizeof(chrbuf), 1, f))
 		error("Load", "Invalid input size");
 	fclose(f);
-	redraw(pixels);
+}
+
+void
+tochr(Brush* b)
+{
+	FILE* f = fopen("nasu-export.chr", "wb");
+	if(!fwrite(chrbuf, sizeof(chrbuf), 1, f))
+		error("Save", "Invalid output file");
+	fclose(f);
+	b-&gt;edit = 0;
 }
 
 void
@@ -252,13 +250,13 @@ tobmp(void)
 {
 	SDL_Surface* surface = SDL_GetWindowSurface(gWindow);
 	GUIDES = 0;
-	redraw(pixels);
+	draw(pixels);
 	SDL_RenderReadPixels(gRenderer,
 	                     NULL,
 	                     SDL_PIXELFORMAT_ARGB8888,
 	                     surface-&gt;pixels,
 	                     surface-&gt;pitch);
-	SDL_SaveBMP(surface, "render.bmp");
+	SDL_SaveBMP(surface, "nasu-render.bmp");
 	SDL_FreeSurface(surface);
 }
 
@@ -307,6 +305,7 @@ domouse(SDL_Event* event, Brush* b)
 				line(b-&gt;px, b-&gt;py, b-&gt;x, b-&gt;y, b-&gt;erase ? 0 : b-&gt;color);
 			else
 				fill(b-&gt;x, b-&gt;y, b-&gt;mode, b-&gt;size, b-&gt;erase ? 0 : b-&gt;color);
+			draw(pixels);
 			b-&gt;px = b-&gt;x;
 			b-&gt;py = b-&gt;y;
 		}
@@ -332,10 +331,10 @@ dokey(SDL_Event* event, Brush* b)
 		break;
 	case SDLK_h:
 		GUIDES = !GUIDES;
-		redraw(pixels);
+		draw(pixels);
 		break;
 	case SDLK_n:
-		create();
+		newchr();
 		break;
 	case SDLK_BACKQUOTE:
 		b-&gt;mode = 7;
@@ -423,7 +422,8 @@ main(int argc, char** argv)
 	if(argc &gt; 1)
 		load(argv[1]);
 	else
-		create();
+		newchr();
+	draw(pixels);
 	update(&amp;brush);
 
 	while(1) {
@@ -447,4 +447,4 @@ main(int argc, char** argv)
 	return 0;
 }
 </pre><figcaption><a href='../archive/src/nasu.c.txt'>nasu.c</a> 448 lines</figcaption>
-</figure><ul><li><a href='https://git.sr.ht/~rabbits/chr6' target='_blank'>source</a></li><li><a href='https://hundredrabbits.github.io/Nasu' target='_blank'>live</a></li></ul><p><i>incoming(6)</i>: <a href='neauismetica.html'>neauismetica</a> <a href='graf3dscene.html'>graf3dscene</a> <a href='themes.html'>themes</a> <a href='moogle.html'>moogle</a> <a href='chr_format.html'>chr format</a> <a href='identity.html'>identity</a> </p><p><i>Last update on <a href='tracker.html'>20T03</a>, edited 24 times. +107/151fh</i><code style='float:right; font-size:80%'>-----+</code></p><ul><li>20C06 — Nasu Release</li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
+</figure><ul><li><a href='https://git.sr.ht/~rabbits/chr6' target='_blank'>source</a></li><li><a href='https://hundredrabbits.github.io/Nasu' target='_blank'>live</a></li></ul><p><i>incoming(6)</i>: <a href='neauismetica.html'>neauismetica</a> <a href='graf3dscene.html'>graf3dscene</a> <a href='themes.html'>themes</a> <a href='moogle.html'>moogle</a> <a href='chr_format.html'>chr format</a> <a href='identity.html'>identity</a> </p><p><i>Last update on <a href='tracker.html'>20T05</a>, edited 25 times. +113/159fh</i><code style='float:right; font-size:80%'>-----+</code></p><ul><li>20C06 — Nasu Release</li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
