@@ -1,33 +1,40 @@
-#include <u.h>
-#include <libc.h>
-#include <draw.h>
-#include <event.h>
-#include <thread.h>
+#include <SDL2/SDL.h>
+#include <stdio.h>
+#include <math.h>
 
-/* 5c moogle.c && 5l -o moogle moogle.5 */
+#define HOR 16
+#define VER 16
+#define PAD 8
+#define ZOOM 4
+#define color1 0xFFFFFF
+#define color2 0x000000
+#define color3 0x72DEC2
+#define color4 0xAAAAAA
+#define color0 0xEFEFEF
+
+#define SZ (HOR * VER * 16)
+#define PI 3.14159265358979323846
 
 typedef struct {
-	double x;
-	double y;
+	int x, y;
+} Point;
+
+typedef struct {
+	double x, y;
 } Point2d;
 
 typedef struct {
-	double x;
-	double y;
-	double z;
+	double x, y, z;
 } Point3d;
 
 typedef struct {
-	int a;
-	int b;
+	int a, b;
 } Edge;
 
 typedef struct {
-	Point3d position;
-	Point3d vertices[128];
-	int verticeslen;
+	Point3d position, vertices[128];
 	Edge edges[128];
-	int edgeslen;
+	int verticeslen, edgeslen, color;
 } Mesh;
 
 typedef struct {
@@ -42,29 +49,50 @@ typedef enum {
 } Projection;
 
 typedef struct {
-	double pitch;
-	double yaw;
-	double roll;
 	Projection projection;
+	double pitch, yaw, roll;
 } Camera;
 
 Scene scn;
 Camera cam;
-Point center;
-Image *clrx, *clry, *clrz;
 
-/* helpers */
+unsigned char chrbuf[SZ];
+int colors[] = {color1, color2, color3, color4, color0};
+int WIDTH = 8 * HOR + PAD * 2;
+int HEIGHT = 8 * VER + PAD * 2;
+int FPS = 30;
+int GUIDES = 0;
+SDL_Window* gWindow = NULL;
+SDL_Renderer* gRenderer = NULL;
+SDL_Texture* gTexture = NULL;
+uint32_t* pixels;
+
+Point
+Pt(int x, int y)
+{
+	Point p;
+	p.x = x;
+	p.y = y;
+	return p;
+}
 
 Point2d
 Pt2d(double x, double y)
 {
-	return (Point2d){x, y};
+	Point2d p;
+	p.x = x;
+	p.y = y;
+	return p;
 }
 
 Point3d
 Pt3d(double x, double y, double z)
 {
-	return (Point3d){x, y, z};
+	Point3d p;
+	p.x = x;
+	p.y = y;
+	p.z = z;
+	return p;
 }
 
 Mesh
@@ -74,6 +102,7 @@ Ms3d(double x, double y, double z)
 	m.position = Pt3d(x, y, z);
 	m.verticeslen = 0;
 	m.edgeslen = 0;
+	m.color = 2;
 	return m;
 }
 
@@ -89,7 +118,12 @@ Sc3d(double x, double y, double z)
 Camera
 Cm3d(double pitch, double yaw, double roll)
 {
-	return (Camera){pitch, yaw, roll, PERSPECTIVE};
+	Camera c;
+	c.pitch = pitch;
+	c.yaw = yaw;
+	c.roll = roll;
+	c.projection = PERSPECTIVE;
+	return c;
 }
 
 /* geometry */
@@ -109,8 +143,7 @@ deg2rad(double deg)
 double
 ptangledeg(Point2d a, Point2d b)
 {
-	double theta = atan2(b.y - a.y, b.x - a.x);
-	return rad2deg(theta);
+	return rad2deg(atan2(b.y - a.y, b.x - a.x));
 }
 
 double
@@ -128,49 +161,49 @@ ptdistance(Point2d a, Point2d b)
 }
 
 Point2d
-rotpt(Point2d center, Point2d p0, double deg)
+rotpt(Point2d c, Point2d p0, double deg)
 {
-	double rot = ptangle(center, p0) + deg2rad(deg);
-	double r = ptdistance(center, p0);
-	return Pt2d(center.x + r * cos(rot), center.y + r * sin(rot));
+	double rot = ptangle(c, p0) + deg2rad(deg);
+	double r = ptdistance(c, p0);
+	return Pt2d(c.x + r * cos(rot), c.y + r * sin(rot));
 }
 
 /* scene */
 
 void
-setvertex(Point3d* vertex, double x, double y, double z)
+setvertex(Point3d* v, double x, double y, double z)
 {
-	vertex->x = x;
-	vertex->y = y;
-	vertex->z = z;
+	v->x = x;
+	v->y = y;
+	v->z = z;
 }
 
 void
-addvertex(Mesh* mesh, double x, double y, double z)
+addvertex(Mesh* m, double x, double y, double z)
 {
-	setvertex(&mesh->vertices[mesh->verticeslen], x, y, z);
-	mesh->verticeslen++;
+	setvertex(&m->vertices[m->verticeslen], x, y, z);
+	m->verticeslen++;
 }
 
 void
-setedge(Edge* edge, int v0, int v1)
+setedge(Edge* e, int v0, int v1)
 {
-	edge->a = v0;
-	edge->b = v1;
+	e->a = v0;
+	e->b = v1;
 }
 
 void
-addedge(Mesh* mesh, int v0, int v1)
+addedge(Mesh* m, int v0, int v1)
 {
-	setedge(&mesh->edges[mesh->edgeslen], v0, v1);
-	mesh->edgeslen++;
+	setedge(&m->edges[m->edgeslen], v0, v1);
+	m->edgeslen++;
 }
 
 void
-addmesh(Scene* scn, Mesh mesh)
+addmesh(Scene* s, Mesh m)
 {
-	scn->meshes[scn->len] = mesh;
-	scn->len++;
+	s->meshes[s->len] = m;
+	s->len++;
 }
 
 void
@@ -206,35 +239,35 @@ rotver(Point3d* o, Point3d* v, double pitch, double yaw, double roll)
 }
 
 void
-rotatex(Mesh* mesh, double angle)
+rotatex(Mesh* m, double angle)
 {
-	for(int i = 0; i < mesh->verticeslen; i++) {
-		rotverx(&mesh->position, &mesh->vertices[i], angle);
-	}
+	int i;
+	for(i = 0; i < m->verticeslen; i++)
+		rotverx(&m->position, &m->vertices[i], angle);
 }
 
 void
-rotatey(Mesh* mesh, double angle)
+rotatey(Mesh* m, double angle)
 {
-	for(int i = 0; i < mesh->verticeslen; i++) {
-		rotvery(&mesh->position, &mesh->vertices[i], angle);
-	}
+	int i;
+	for(i = 0; i < m->verticeslen; i++)
+		rotvery(&m->position, &m->vertices[i], angle);
 }
 
 void
-rotatez(Mesh* mesh, double angle)
+rotatez(Mesh* m, double angle)
 {
-	for(int i = 0; i < mesh->verticeslen; i++) {
-		rotverz(&mesh->position, &mesh->vertices[i], angle);
-	}
+	int i;
+	for(i = 0; i < m->verticeslen; i++)
+		rotverz(&m->position, &m->vertices[i], angle);
 }
 
 void
-rotate(Mesh* mesh, double x, double y, double z)
+rotate(Mesh* m, double x, double y, double z)
 {
-	rotatex(mesh, x);
-	rotatey(mesh, y);
-	rotatez(mesh, z);
+	rotatex(m, x);
+	rotatey(m, y);
+	rotatez(m, z);
 }
 
 Point3d
@@ -243,16 +276,152 @@ addpt3d(Point3d* a, Point3d* b)
 	return Pt3d(a->x + b->x, a->y + b->y, a->z + b->z);
 }
 
-/* Draw */
+Point
+project(Camera* c, Point3d v)
+{
+	double r;
+	if(c->projection == ISOMETRIC)
+		return Pt(WIDTH / 2 * v.x, HEIGHT / 2 * v.y);
+	r = 300 / (v.z + 50);
+	return Pt(WIDTH / 2 + r * v.x, HEIGHT / 2 + r * v.y);
+}
 
 void
-lineb(Image* dst, Point p0, Point p1, Image* src, Point sp)
+extrude(Mesh* m, double depth)
+{
+	int i, vl = m->verticeslen, el = m->edgeslen;
+	for(i = 0; i < vl; i++) {
+		addvertex(m,
+		          m->vertices[i].x,
+		          m->vertices[i].y,
+		          m->vertices[i].z + depth);
+		addedge(m, i, i + vl);
+	}
+	for(i = 0; i < el; i++)
+		addedge(m,
+		        m->edges[i].a + vl,
+		        m->edges[i].b + vl);
+}
+
+void
+symmetry(Mesh* m, double x, double y, double z)
+{
+	int i, el, vl = m->verticeslen;
+	for(i = 0; i < vl; i++)
+		addvertex(m,
+		          m->vertices[i].x * x,
+		          m->vertices[i].y * y,
+		          m->vertices[i].z * z);
+	el = m->edgeslen;
+	for(i = 0; i < el; i++)
+		addedge(m,
+		        el + 1 + m->edges[i].a,
+		        el + 1 + m->edges[i].b);
+}
+
+void
+addpoly(Mesh* m, double x, double y, double z, double radius, int segments)
+{
+	int i, offset = m->verticeslen;
+	for(i = 0; i < segments; i++) {
+		addvertex(m,
+		          x + radius * cos(2 * PI * i / segments),
+		          y + radius * sin(2 * PI * i / segments),
+		          z);
+		addedge(m, offset + i, offset + (i + 1) % segments);
+	}
+}
+
+void
+addpolygon(Scene* s, double x, double y, double z, double radius, int segments)
+{
+	Mesh m = Ms3d(x, y, z);
+	addpoly(&m, x, y, z, radius, segments);
+	addmesh(s, m);
+}
+
+void
+addpyramid(Scene* s, double x, double y, double z, double radius, int segments, double depth)
+{
+	int i;
+	Mesh m = Ms3d(x, y, z);
+	addpoly(&m, x, y, z - depth / 2, radius, segments);
+	addvertex(&m, x, y, z + depth / 2);
+	for(i = 0; i < segments; i++)
+		addedge(&m, i, segments);
+	addmesh(s, m);
+}
+
+void
+addfrustum(Scene* s, double x, double y, double z, double radius, int segments, double depth, double mod)
+{
+	int i;
+	Mesh m = Ms3d(x, y, z);
+	addpoly(&m, x, y, z - depth / 2, radius, segments);
+	addpoly(&m, x, y, z + depth / 2, radius * mod, segments);
+	for(i = 0; i < segments; i++)
+		addedge(&m, i, segments + i);
+	addmesh(s, m);
+}
+
+void
+addprism(Scene* s, double x, double y, double z, double radius, int segments, double depth)
+{
+	Mesh m = Ms3d(x, y, z);
+	addpoly(&m, x, y, z - depth / 2, radius, segments);
+	extrude(&m, depth);
+	addmesh(s, m);
+}
+
+int
+row(int x, int y)
+{
+	return (y % 8) + ((x / 8 + y / 8 * HOR) * 16);
+}
+
+int
+get(int x, int y)
+{
+	int ch1, ch2;
+	int r = row(x, y);
+	int px = x % 8;
+	if(r < 0 || r > SZ - 8)
+		return 0;
+	ch1 = (chrbuf[r] >> (7 - px)) & 1;
+	ch2 = (chrbuf[r + 8] >> (7 - px)) & 1;
+	return ch1 && !ch2 ? 1 : !ch1 && ch2 ? 2 : ch1 && ch2 ? 3 : 0;
+}
+
+void
+put(int x, int y, int color)
+{
+	int r = row(x, y);
+	int px = x % 8;
+	if(x < 0 || y < 0 || x > 8 * HOR || y > 8 * VER || r > SZ - 8)
+		return;
+	if(color == 0) {
+		chrbuf[r] &= ~(1UL << (7 - px));
+		chrbuf[r + 8] &= ~(1UL << (7 - px));
+	} else if(color == 2) {
+		chrbuf[r] |= 1UL << (7 - px);
+		chrbuf[r + 8] &= ~(1UL << (7 - px));
+	} else if(color == 1) {
+		chrbuf[r] &= ~(1UL << (7 - px));
+		chrbuf[r + 8] |= 1UL << (7 - px);
+	} else if(color == 3) {
+		chrbuf[r] |= 1UL << (7 - px);
+		chrbuf[r + 8] |= 1UL << (7 - px);
+	}
+}
+
+void
+line(Point p0, Point p1, int color)
 {
 	double dx = abs(p1.x - p0.x), sx = p0.x < p1.x ? 1 : -1;
 	double dy = -abs(p1.y - p0.y), sy = p0.y < p1.y ? 1 : -1;
 	double err = dx + dy, e2;
 	for(;;) {
-		draw(dst, Rect(p0.x, p0.y, p0.x + 1, p0.y + 1), src, nil, ZP);
+		put(p0.x, p0.y, color);
 		if(p0.x == p1.x && p0.y == p1.y)
 			break;
 		e2 = 2 * err;
@@ -267,260 +436,243 @@ lineb(Image* dst, Point p0, Point p1, Image* src, Point sp)
 	}
 }
 
-Point
-project(Camera* cam, Point3d v)
+void
+edit(uint32_t* dst, int id, int color)
 {
-	if(cam->projection == ISOMETRIC) {
-		return Pt(center.x + 5 * v.x, center.y + 5 * v.y);
-	}
-	double r = 300 / (v.z + 50);
-	return Pt(center.x + r * v.x, center.y + r * v.y);
+	int ti = id / 64;
+	int odd = (ti + (ti / HOR + 2)) % 2 == 0;
+	int px = (ti / (HOR * VER)) * (8 * HOR) + (ti % HOR) * 8 + (id % 8);
+	int py = ((ti / HOR) * 8) + ((id % 64) / 8);
+	dst[(py + PAD) * WIDTH + (px + PAD)] = colors[GUIDES && odd && color == 0 ? 4 : color];
 }
 
 void
-widget(Scene* scn, Camera* cam)
+redraw(uint32_t* dst)
 {
-	Point3d c = Pt3d(0, 0, 0);
-	Point3d x = Pt3d(5, 0, 0);
-	Point3d y = Pt3d(0, 5, 0);
-	Point3d z = Pt3d(0, 0, 5);
-	rotver(&scn->origin, &x, cam->pitch, cam->yaw, cam->roll);
-	rotver(&scn->origin, &y, cam->pitch, cam->yaw, cam->roll);
-	rotver(&scn->origin, &z, cam->pitch, cam->yaw, cam->roll);
-	lineb(screen, project(cam, c), project(cam, x), clrx, screen->r.min);
-	lineb(screen, project(cam, c), project(cam, y), clry, screen->r.min);
-	lineb(screen, project(cam, c), project(cam, z), clrz, screen->r.min);
-	string(screen,
-	       addpt(screen->r.min, Pt(10, 10)),
-	       display->black, ZP, display->defaultfont,
-	       cam->projection == ISOMETRIC ? "isometric" : "perspective");
-
-	char bufx[30], bufy[30], bufz[30];
-	snprint(bufx, strlen(bufx), "%d", (int)cam->pitch % 360);
-	snprint(bufy, strlen(bufy), "%d", (int)cam->yaw % 360);
-	snprint(bufz, strlen(bufz), "%d", (int)cam->roll % 360);
-	string(screen,
-	       addpt(screen->r.min, Pt(10, 30)),
-	       clrx, ZP, display->defaultfont, bufx);
-	string(screen,
-	       addpt(screen->r.min, Pt(50, 30)),
-	       clry, ZP, display->defaultfont, bufy);
-	string(screen,
-	       addpt(screen->r.min, Pt(90, 30)),
-	       clrz, ZP, display->defaultfont, bufz);
+	int b, i, j, id = 0;
+	for(b = 0; b < SZ; b += 16)
+		for(i = 0; i < 8; i++)
+			for(j = 7; j >= 0; j--) {
+				int ch1 = chrbuf[b + i];
+				int ch2 = chrbuf[b + i + 8];
+				int color = ((ch1 >> j) & 0x1) + (((ch2 >> j) & 0x1) << 1);
+				edit(dst, id, color);
+				id++;
+			}
+	SDL_UpdateTexture(gTexture, NULL, dst, WIDTH * sizeof(uint32_t));
+	SDL_RenderClear(gRenderer);
+	SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);
+	SDL_RenderPresent(gRenderer);
 }
 
 void
-render(Scene* scn, Camera* cam)
+render(Scene* s, Camera* c)
 {
-	draw(screen, screen->r, display->white, nil, ZP);
-	for(int i = 0; i < scn->len; i++) {
-		Mesh* mesh = &scn->meshes[i];
-		for(int j = 0; j < mesh->edgeslen; j++) {
+	int i, j;
+	clear();
+	for(i = 0; i < s->len; i++) {
+		Mesh* mesh = &s->meshes[i];
+		for(j = 0; j < mesh->edgeslen; j++) {
 			Edge* edge = &mesh->edges[j];
 			Point3d a = addpt3d(&mesh->vertices[edge->a], &mesh->position);
 			Point3d b = addpt3d(&mesh->vertices[edge->b], &mesh->position);
-			rotver(&scn->origin, &a, cam->pitch, cam->yaw, cam->roll);
-			rotver(&scn->origin, &b, cam->pitch, cam->yaw, cam->roll);
-			lineb(screen, project(cam, a), project(cam, b), display->black, screen->r.min);
+			rotver(&s->origin, &a, c->pitch, c->yaw, c->roll);
+			rotver(&s->origin, &b, c->pitch, c->yaw, c->roll);
+			line(project(c, a), project(c, b), mesh->color);
 		}
 	}
-	widget(scn, cam);
-	flushimage(display, 1);
+	redraw(pixels);
 }
 
 void
-orient(Scene* scn, Camera* cam, double pitch, double yaw, double roll)
+orient(Scene* s, Camera* c, double pitch, double yaw, double roll)
 {
-	cam->pitch = pitch;
-	cam->yaw = yaw;
-	cam->roll = roll;
-	render(scn, cam);
+	c->pitch = pitch;
+	c->yaw = yaw;
+	c->roll = roll;
+	render(s, c);
 }
 
 void
-orbit(Scene* scn, Camera* cam, Point drag)
+orbit(Scene* s, Camera* c, Point drag)
 {
-	cam->pitch -= drag.y / 3.0;
-	cam->yaw -= drag.x / 3.0;
-	render(scn, cam);
+	c->pitch -= drag.y / 3.0;
+	c->yaw -= drag.x / 3.0;
+	render(s, c);
 }
 
 void
-toggleprojection(Scene* scn, Camera* cam)
+toggleprojection(Scene* s, Camera* c)
 {
-	cam->projection = cam->projection == ISOMETRIC ? PERSPECTIVE : ISOMETRIC;
-	render(scn, cam);
+	c->projection = c->projection == ISOMETRIC ? PERSPECTIVE : ISOMETRIC;
+	render(s, c);
 }
 
 void
-eresized(int new)
+update(void)
 {
-	if(new&& getwindow(display, Refnone) < 0)
-		fprint(2, "can't reattach to window");
-	draw(screen, screen->r, display->white, nil, ZP);
-	center.x = screen->r.min.x + (screen->r.max.x - screen->r.min.x) / 2;
-	center.y = screen->r.min.y + (screen->r.max.y - screen->r.min.y) / 2;
+	char title[512];
+	snprintf(title, 512, "moogle [%d:%dx%d]",
+	         HOR,
+	         VER,
+	         ZOOM);
+	SDL_SetWindowTitle(gWindow, title);
+}
+
+int
+error(char* msg, const char* err)
+{
+	printf("Error %s: %s\n", msg, err);
+	return 0;
 }
 
 void
+clear(void)
+{
+	int i;
+	for(i = 0; i < SZ; ++i)
+		chrbuf[i] = 0x00;
+}
+
+void
+tochr()
+{
+	FILE* f = fopen("export.chr", "wb");
+	if(!fwrite(chrbuf, sizeof(chrbuf), 1, f))
+		error("Save", "Invalid output file");
+	fclose(f);
+}
+
+void
+tobmp(void)
+{
+	SDL_Surface* surface = SDL_GetWindowSurface(gWindow);
+	GUIDES = 0;
+	redraw(pixels);
+	SDL_RenderReadPixels(gRenderer,
+	                     NULL,
+	                     SDL_PIXELFORMAT_ARGB8888,
+	                     surface->pixels,
+	                     surface->pitch);
+	SDL_SaveBMP(surface, "render.bmp");
+	SDL_FreeSurface(surface);
+}
+
+void
+quit(void)
+{
+	free(pixels);
+	SDL_DestroyTexture(gTexture);
+	gTexture = NULL;
+	SDL_DestroyRenderer(gRenderer);
+	gRenderer = NULL;
+	SDL_DestroyWindow(gWindow);
+	gWindow = NULL;
+	SDL_Quit();
+	exit(0);
+}
+
+void
+dokey(SDL_Event* event)
+{
+	switch(event->key.keysym.sym) {
+	case SDLK_ESCAPE:
+		quit();
+		break;
+	case SDLK_e:
+		tochr();
+		break;
+	case SDLK_r:
+		tobmp();
+		break;
+	case SDLK_h:
+		GUIDES = !GUIDES;
+		redraw(pixels);
+		break;
+	case SDLK_w:
+		cam.pitch += 3.0;
+		render(&scn, &cam);
+		break;
+	case SDLK_a:
+		cam.yaw -= 3.0;
+		render(&scn, &cam);
+		break;
+	case SDLK_s:
+		cam.pitch -= 3.0;
+		render(&scn, &cam);
+		break;
+	case SDLK_d:
+		cam.yaw += 3.0;
+		render(&scn, &cam);
+		break;
+	}
+	update();
+}
+
+int
+init(void)
+{
+	int i, j;
+	if(SDL_Init(SDL_INIT_VIDEO) < 0)
+		return error("Init", SDL_GetError());
+	gWindow = SDL_CreateWindow("moogle",
+	                           SDL_WINDOWPOS_UNDEFINED,
+	                           SDL_WINDOWPOS_UNDEFINED,
+	                           WIDTH * ZOOM,
+	                           HEIGHT * ZOOM,
+	                           SDL_WINDOW_SHOWN);
+	if(gWindow == NULL)
+		return error("Window", SDL_GetError());
+	gRenderer = SDL_CreateRenderer(gWindow, -1, 0);
+	if(gRenderer == NULL)
+		return error("Renderer", SDL_GetError());
+	gTexture = SDL_CreateTexture(gRenderer,
+	                             SDL_PIXELFORMAT_ARGB8888,
+	                             SDL_TEXTUREACCESS_STATIC,
+	                             WIDTH,
+	                             HEIGHT);
+	if(gTexture == NULL)
+		return error("Texture", SDL_GetError());
+	pixels = (uint32_t*)malloc(WIDTH * HEIGHT * sizeof(uint32_t));
+	if(pixels == NULL)
+		return error("Pixels", "Failed to allocate memory");
+	for(i = 0; i < HEIGHT; i++)
+		for(j = 0; j < WIDTH; j++)
+			pixels[i * WIDTH + j] = color1;
+	return 1;
+}
+
+int
 main(int argc, char** argv)
 {
-	USED(argc, argv);
+	int ticknext = 0;
 
-	Event ev;
-	int e;
-	Mouse m;
-	Point drag;
-	char* options[] = {"Projection", "Front", "Top", "Exit", 0};
-	Menu menu = {options};
+	scn = Sc3d(0, 0, 0);
+	cam = Cm3d(120, 20, 0);
 
-	initdraw(0, 0, "Moogle");
-	eresized(0);
-	einit(Emouse);
+	if(!init())
+		return error("Init", "Failure");
 
-	clrx = allocimage(display, Rect(0, 0, 1, 1), screen->chan, 1, 0x72DEC2FF);
-	clry = allocimage(display, Rect(0, 0, 1, 1), screen->chan, 1, 0xFF0000FF);
-	clrz = allocimage(display, Rect(0, 0, 1, 1), screen->chan, 1, 0xAAAAAAFF);
+	addfrustum(&scn, 0, 0, 0, 12, 8, 10, 0.5);
+	addprism(&scn, 0, 0, 0, 12, 8, 10);
+	scn.meshes[1].color = 1;
 
-	Scene scn = Sc3d(0, 0, 0);
-	Camera cam = Cm3d(120, 20, 0);
-
-	/* Requires primitives fns */
-	addpolygon(&scn, 0, 0, 0, 12, 24);
-
+	clear();
 	render(&scn, &cam);
 
-	for(;;) {
-		e = event(&ev);
-		if((e == Emouse) && (ev.mouse.buttons & 4)) {
-			if(emenuhit(3, &ev.mouse, &menu) == 0)
-				toggleprojection(&scn, &cam);
-			if(emenuhit(3, &ev.mouse, &menu) == 1)
-				orient(&scn, &cam, 180, 0, 0);
-			if(emenuhit(3, &ev.mouse, &menu) == 2)
-				orient(&scn, &cam, -90, 0, 0);
-			if(emenuhit(3, &ev.mouse, &menu) == 3)
-				exits(nil);
-		}
-		m = emouse();
-		if(m.buttons & 1) {
-			drag = m.xy;
-			while(m.buttons & 1) {
-				m = emouse();
-				orbit(&scn, &cam, subpt(m.xy, drag));
-			}
+	while(1) {
+		int tick = SDL_GetTicks();
+		SDL_Event event;
+		if(event.type == SDL_QUIT)
+			quit();
+		if(tick < ticknext)
+			SDL_Delay(ticknext - tick);
+		ticknext = tick + (1000 / FPS);
+		while(SDL_PollEvent(&event) != 0) {
+			if(event.type == SDL_KEYDOWN)
+				dokey(&event);
 		}
 	}
-}
-
-Transforms
-
-void
-extrude(Mesh* dst, double depth)
-{
-	int vl = dst->verticeslen;
-	int el = dst->edgeslen;
-	for(int i = 0; i < vl; i++) {
-		addvertex(dst,
-		          dst->vertices[i].x,
-		          dst->vertices[i].y,
-		          dst->vertices[i].z + depth);
-		addedge(dst, i, i + vl);
-	}
-	for(int i = 0; i < el; i++) {
-		addedge(dst,
-		        dst->edges[i].a + vl,
-		        dst->edges[i].b + vl);
-	}
-}
-
-void
-symmetry(Mesh* dst, double x, double y, double z)
-{
-	int limit = dst->verticeslen;
-	for(int i = 0; i < limit; i++) {
-		addvertex(dst,
-		          dst->vertices[i].x * x,
-		          dst->vertices[i].y * y,
-		          dst->vertices[i].z * z);
-	}
-	int limitb = dst->edgeslen;
-	for(int i = 0; i < limitb; i++) {
-		addedge(dst,
-		        limitb + 1 + dst->edges[i].a,
-		        limitb + 1 + dst->edges[i].b);
-	}
-}
-
-Primitives
-
-void
-addpoly(Mesh* dst, double x, double y, double z, double radius, int segments)
-{
-	int offset = dst->verticeslen;
-	for(int i = 0; i < segments; i++) {
-		addvertex(dst,
-		          x + radius * cos(2 * PI * i / segments),
-		          y + radius * sin(2 * PI * i / segments),
-		          z);
-		addedge(dst, offset + i, offset + (i + 1) % segments);
-	}
-}
-
-void
-addpath(Scene* scn, double x, double y, double z, int verticeslen, Point3d vertices, ...)
-{
-	va_list args;
-	va_start(args, verticeslen);
-	Mesh m = Ms3d(x, y, z);
-	for(int i = 0; i < verticeslen; i++) {
-		Point3d v = va_arg(args, Point3d);
-		addvertex(&m, v.x, v.y, v.z);
-		if(i < verticeslen - 1)
-			addedge(&m, i, i + 1);
-	}
-	va_end(args);
-	addmesh(scn, m);
-}
-
-void
-addpolygon(Scene* scn, double x, double y, double z, double radius, int segments)
-{
-	Mesh dst = Ms3d(x, y, z);
-	addpoly(&dst, x, y, z, radius, segments);
-	addmesh(scn, dst);
-}
-
-void
-addpyramid(Scene* scene, double x, double y, double z, double radius, int segments, double depth)
-{
-	Mesh dst = Ms3d(x, y, z);
-	addpoly(&dst, x, y, z - depth / 2, radius, segments);
-	addvertex(&dst, x, y, z + depth / 2);
-	for(int i = 0; i < segments; i++) {
-		addedge(&dst, i, segments);
-	}
-	addmesh(scene, dst);
-}
-
-void
-addfrustum(Scene* scene, double x, double y, double z, double radius, int segments, double depth, double mod)
-{
-	Mesh dst = Ms3d(x, y, z);
-	addpoly(&dst, x, y, z - depth / 2, radius, segments);
-	addpoly(&dst, x, y, z + depth / 2, radius * mod, segments);
-	for(int i = 0; i < segments; i++) {
-		addedge(&dst, i, segments + i);
-	}
-	addmesh(scene, dst);
-}
-
-void
-addprism(Scene* scene, double x, double y, double z, double radius, int segments, double depth)
-{
-	Mesh dst = Ms3d(x, y, z);
-	addpoly(&dst, x, y, z - depth / 2, radius, segments);
-	extrude(&dst, depth);
-	addmesh(scene, dst);
+	quit();
+	return 0;
 }

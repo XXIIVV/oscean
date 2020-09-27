@@ -1,7 +1,7 @@
 #include <SDL2/SDL.h>
 #include <stdio.h>
 
-#define HOR 32
+#define HOR 16
 #define VER 16
 #define PAD 8
 #define ZOOM 4
@@ -39,7 +39,7 @@ int colors[] = {color1, color2, color3, color4, color0};
 int WIDTH = 8 * HOR + PAD * 2;
 int HEIGHT = 8 * VER + PAD * 2;
 int FPS = 30;
-int GUIDES = 1;
+int GUIDES = 0;
 SDL_Window* gWindow = NULL;
 SDL_Renderer* gRenderer = NULL;
 SDL_Texture* gTexture = NULL;
@@ -198,7 +198,7 @@ void
 update(Brush* b)
 {
 	char title[512];
-	snprintf(title, 512, "%s%dc%d [%d:%dx%d]%c",
+	snprintf(title, 512, "nasu %s%dc%d [%d:%dx%d]%c",
 	         modes[b->mode],
 	         b->size,
 	         b->color,
@@ -226,7 +226,7 @@ create(void)
 }
 
 void
-save(Brush* b)
+tochr(Brush* b)
 {
 	FILE* f = fopen("export.chr", "wb");
 	if(!fwrite(chrbuf, sizeof(chrbuf), 1, f))
@@ -248,7 +248,7 @@ load(char* path)
 }
 
 void
-render(void)
+tobmp(void)
 {
 	SDL_Surface* surface = SDL_GetWindowSurface(gWindow);
 	GUIDES = 0;
@@ -322,10 +322,10 @@ dokey(SDL_Event* event, Brush* b)
 		quit();
 		break;
 	case SDLK_e:
-		save(b);
+		tochr(b);
 		break;
 	case SDLK_r:
-		render();
+		tobmp();
 		break;
 	case SDLK_TAB:
 		b->color = b->color > 2 ? 0 : b->color + 1;
