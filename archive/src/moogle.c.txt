@@ -494,7 +494,8 @@ void
 update(void)
 {
 	char title[512];
-	snprintf(title, 512, "moogle [%d:%dx%d]",
+	snprintf(title, 512, "moogle %s [%d:%dx%d]",
+	         cam.projection == PERSPECTIVE ? "per" : "iso",
 	         HOR,
 	         VER,
 	         ZOOM);
@@ -635,18 +636,19 @@ main(int argc, char** argv)
 	scn.meshes[1].color = 2;
 
 	newchr();
+	update();
 	render(&scn, &cam);
 
 	while(1) {
 		int tick = SDL_GetTicks();
 		SDL_Event event;
-		if(event.type == SDL_QUIT)
-			quit();
 		if(tick < ticknext)
 			SDL_Delay(ticknext - tick);
 		ticknext = tick + (1000 / FPS);
 		while(SDL_PollEvent(&event) != 0)
-			if(event.type == SDL_KEYDOWN)
+			if(event.type == SDL_QUIT)
+				quit();
+			else if(event.type == SDL_KEYDOWN)
 				dokey(&event);
 	}
 	quit();
