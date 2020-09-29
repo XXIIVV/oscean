@@ -163,87 +163,95 @@ ptdistance(Point2d a, Point2d b)
 }
 
 Point2d
-rotpt(Point2d c, Point2d p0, double deg)
+rotpt2d(Point2d c, Point2d p0, double deg)
 {
-	double rot = ptangle(c, p0) + deg2rad(deg);
+	double a = ptangle(c, p0) + deg2rad(deg);
 	double r = ptdistance(c, p0);
-	return Pt2d(c.x + r * cos(rot), c.y + r * sin(rot));
-}
-
-/* scene */
-
-void
-setvertex(Point3d* v, double x, double y, double z)
-{
-	v->x = x;
-	v->y = y;
-	v->z = z;
-}
-
-void
-addvertex(Mesh* m, double x, double y, double z)
-{
-	setvertex(&m->vertices[m->verticeslen], x, y, z);
-	m->verticeslen++;
-}
-
-void
-setedge(Edge* e, int v0, int v1)
-{
-	e->a = v0;
-	e->b = v1;
-}
-
-void
-addedge(Mesh* m, int v0, int v1)
-{
-	setedge(&m->edges[m->edgeslen], v0, v1);
-	m->edgeslen++;
-}
-
-void
-addmesh(Scene* s, Mesh m)
-{
-	s->meshes[s->len] = m;
-	s->len++;
-}
-
-void
-rotverx(Point3d* o, Point3d* v, double angle)
-{
-	Point2d r = rotpt(Pt2d(o->y, o->z), Pt2d(v->y, v->z), angle);
-	v->y = r.x;
-	v->z = r.y;
-}
-
-void
-rotvery(Point3d* o, Point3d* v, double angle)
-{
-	Point2d r = rotpt(Pt2d(o->x, o->z), Pt2d(v->x, v->z), angle);
-	v->x = r.x;
-	v->z = r.y;
-}
-
-void
-rotverz(Point3d* o, Point3d* v, double angle)
-{
-	Point2d r = rotpt(Pt2d(o->x, o->y), Pt2d(v->x, v->y), angle);
-	v->x = r.x;
-	v->y = r.y;
-}
-
-void
-rotver(Point3d* o, Point3d* v, double pitch, double yaw, double roll)
-{
-	rotverx(o, v, pitch);
-	rotvery(o, v, yaw);
-	rotverz(o, v, roll);
+	return Pt2d(c.x + r * cos(a), c.y + r * sin(a));
 }
 
 Point3d
 addpt3d(Point3d* a, Point3d* b)
 {
 	return Pt3d(a->x + b->x, a->y + b->y, a->z + b->z);
+}
+
+/* scene */
+
+Point3d*
+setvertex(Point3d* v, double x, double y, double z)
+{
+	v->x = x;
+	v->y = y;
+	v->z = z;
+	return v;
+}
+
+Point3d*
+addvertex(Mesh* m, double x, double y, double z)
+{
+	return setvertex(&m->vertices[m->verticeslen++], x, y, z);
+}
+
+Edge*
+setedge(Edge* e, int v0, int v1)
+{
+	e->a = v0;
+	e->b = v1;
+	return e;
+}
+
+Edge*
+addedge(Mesh* m, int v0, int v1)
+{
+	return setedge(&m->edges[m->edgeslen++], v0, v1);
+}
+
+Mesh*
+addmesh(Scene* s, Mesh m)
+{
+	s->meshes[s->len] = m;
+	s->len++;
+	return &s->meshes[s->len - 1];
+}
+
+Point3d*
+rotverx(Point3d* o, Point3d* v, double angle)
+{
+	Point2d r = rotpt2d(Pt2d(o->y, o->z), Pt2d(v->y, v->z), angle);
+	v->y = r.x;
+	v->z = r.y;
+	return v;
+}
+
+Point3d*
+rotvery(Point3d* o, Point3d* v, double angle)
+{
+	Point2d r = rotpt2d(Pt2d(o->x, o->z), Pt2d(v->x, v->z), angle);
+	v->x = r.x;
+	v->z = r.y;
+	return v;
+}
+
+Point3d*
+rotverz(Point3d* o, Point3d* v, double angle)
+{
+	Point2d r = rotpt2d(Pt2d(o->x, o->y), Pt2d(v->x, v->y), angle);
+	v->x = r.x;
+	v->y = r.y;
+	return v;
+}
+
+Point3d*
+rotvertex(Point3d* o, Point3d* v, double pitch, double yaw, double roll)
+{
+	if(pitch)
+		rotverx(o, v, pitch);
+	if(yaw)
+		rotvery(o, v, yaw);
+	if(roll)
+		rotverz(o, v, roll);
+	return v;
 }
 
 Point
@@ -258,22 +266,40 @@ project(Camera* c, Point3d v)
 
 /* transforms */
 
-void
+Mesh*
+translate(Mesh* m, double x, double y, double z)
+{
+	int i;
+	for(i = 0; i < m->verticeslen; i++)
+		setvertex(&m->vertices[i],
+		          m->vertices[i].x + x,
+		          m->vertices[i].y + y,
+		          m->vertices[i].z + z);
+	return m;
+}
+
+Mesh*
+scale(Mesh* m, double x, double y, double z)
+{
+	int i;
+	for(i = 0; i < m->verticeslen; i++)
+		setvertex(&m->vertices[i],
+		          m->vertices[i].x * x,
+		          m->vertices[i].y * y,
+		          m->vertices[i].z * z);
+	return m;
+}
+
+Mesh*
 rotate(Mesh* m, double pitch, double yaw, double roll)
 {
 	int i;
-	if(pitch != 0)
-		for(i = 0; i < m->verticeslen; i++)
-			rotverx(&m->position, &m->vertices[i], pitch);
-	if(yaw != 0)
-		for(i = 0; i < m->verticeslen; i++)
-			rotvery(&m->position, &m->vertices[i], yaw);
-	if(roll != 0)
-		for(i = 0; i < m->verticeslen; i++)
-			rotverz(&m->position, &m->vertices[i], roll);
+	for(i = 0; i < m->verticeslen; i++)
+		rotvertex(&m->position, &m->vertices[i], pitch, yaw, roll);
+	return m;
 }
 
-void
+Mesh*
 extrude(Mesh* m, double depth)
 {
 	int i, vl = m->verticeslen, el = m->edgeslen;
@@ -288,9 +314,10 @@ extrude(Mesh* m, double depth)
 		addedge(m,
 		        m->edges[i].a + vl,
 		        m->edges[i].b + vl);
+	return m;
 }
 
-void
+Mesh*
 symmetry(Mesh* m, double x, double y, double z)
 {
 	int i, el, vl = m->verticeslen;
@@ -304,11 +331,12 @@ symmetry(Mesh* m, double x, double y, double z)
 		addedge(m,
 		        el + 1 + m->edges[i].a,
 		        el + 1 + m->edges[i].b);
+	return m;
 }
 
 /* Shapes */
 
-void
+Mesh*
 addpoly(Mesh* m, double x, double y, double z, double radius, int segs)
 {
 	int i, offset = m->verticeslen;
@@ -319,47 +347,48 @@ addpoly(Mesh* m, double x, double y, double z, double radius, int segs)
 		          z);
 		addedge(m, offset + i, offset + (i + 1) % segs);
 	}
+	return m;
 }
 
-void
-addpolygon(Scene* s, double x, double y, double z, double radius, int segs)
+Mesh*
+addpolygon(Scene* s, double radius, int segs)
 {
-	Mesh m = Ms3d(x, y, z);
-	addpoly(&m, x, y, z, radius, segs);
-	addmesh(s, m);
+	Mesh m = Ms3d(0, 0, 0);
+	addpoly(&m, 0, 0, 0, radius, segs);
+	return addmesh(s, m);
 }
 
-void
-addpyramid(Scene* s, double x, double y, double z, double radius, int segs, double depth)
+Mesh*
+addpyramid(Scene* s, double radius, int segs, double depth)
 {
 	int i;
-	Mesh m = Ms3d(x, y, z);
-	addpoly(&m, x, y, z - depth / 2, radius, segs);
-	addvertex(&m, x, y, z + depth / 2);
+	Mesh m = Ms3d(0, 0, 0);
+	addpoly(&m, 0, 0, depth / 2, radius, segs);
+	addvertex(&m, 0, 0, -depth / 2);
 	for(i = 0; i < segs; i++)
 		addedge(&m, i, segs);
-	addmesh(s, m);
+	return addmesh(s, m);
 }
 
-void
-addfrustum(Scene* s, double x, double y, double z, double radius, int segs, double depth, double mod)
+Mesh*
+addfrustum(Scene* s, double radius, int segs, double depth, double mod)
 {
 	int i;
-	Mesh m = Ms3d(x, y, z);
-	addpoly(&m, x, y, z - depth / 2, radius, segs);
-	addpoly(&m, x, y, z + depth / 2, radius * mod, segs);
+	Mesh m = Ms3d(0, 0, 0);
+	addpoly(&m, 0, 0, depth / 2, radius, segs);
+	addpoly(&m, 0, 0, -depth / 2, radius * mod, segs);
 	for(i = 0; i < segs; i++)
 		addedge(&m, i, segs + i);
-	addmesh(s, m);
+	return addmesh(s, m);
 }
 
-void
-addprism(Scene* s, double x, double y, double z, double radius, int segs, double depth)
+Mesh*
+addprism(Scene* s, double radius, int segs, double depth)
 {
-	Mesh m = Ms3d(x, y, z);
-	addpoly(&m, x, y, z - depth / 2, radius, segs);
+	Mesh m = Ms3d(0, 0, 0);
+	addpoly(&m, 0, 0, -depth / 2, radius, segs);
 	extrude(&m, depth);
-	addmesh(s, m);
+	return addmesh(s, m);
 }
 
 /* chr */
@@ -458,8 +487,8 @@ render(Scene* s, Camera* c)
 			Edge* edge = &mesh->edges[j];
 			Point3d a = addpt3d(&mesh->vertices[edge->a], &mesh->position);
 			Point3d b = addpt3d(&mesh->vertices[edge->b], &mesh->position);
-			rotver(&s->origin, &a, c->pitch, c->yaw, c->roll);
-			rotver(&s->origin, &b, c->pitch, c->yaw, c->roll);
+			rotvertex(&s->origin, &a, c->pitch, c->yaw, c->roll);
+			rotvertex(&s->origin, &b, c->pitch, c->yaw, c->roll);
 			line(project(c, a), project(c, b), mesh->color);
 		}
 	}
@@ -631,8 +660,8 @@ main(int argc, char** argv)
 	if(!init())
 		return error("Init", "Failure");
 
-	addfrustum(&scn, 0, 0, 0, 12, 8, 10, 0.5);
-	addprism(&scn, 0, 0, 0, 12, 8, 10);
+	addfrustum(&scn, 12, 8, 10, 0.5);
+	addprism(&scn, 12, 8, 10);
 	scn.meshes[1].color = 2;
 
 	newchr();
