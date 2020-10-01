@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang='en'></head><meta charset='utf-8'><meta name='description' content='Moogle is a 3D wireframe toolkit.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV — moogle</title></head><body><header><a href='home.html'><img src='../media/identity/xiv28.gif' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='tools.html'>tools/</a></li><li><a href='utilities.html'>utilities</a></li><li><a href='games.html'>games</a></li><li><a href='mobile.html'>mobile</a></li><li><a href='automatons.html'>automatons</a></li></ul><ul><li><a href='ronin.html'>ronin</a></li><li><a href='dotgrid.html'>dotgrid</a></li><li><a href='left.html'>left</a></li><li><a href='nasu.html'>nasu</a></li><li><a href='moogle.html'>moogle/</a></li></ul><ul></ul></nav><main><figure><img src='../media/diary/727.jpg' alt='Pitch Yaw Roll picture' width='900'/><figcaption>20P12 — Pitch Yaw Roll</figcaption></figure><h2>Moogle is a 3D wireframe toolkit.</h2><p>Moogle is a minimal <b>3D wireframe tool</b> designed to be used alongside its companion tool <a href='nasu.html'>Nasu</a>. It offers a handful of basic geometry drawing functions, it was written in <a href='ansi_c.html'>ANSI C</a>, and was inspired by <a href='graf3dscene.html'>Graf3DScene</a>.</p><p>Both Moogle and Nasu exports to the <a href='chr_format.html'>chr format</a>.</p><h3>moogle.c</h3><p>To control the window size and default colors, edit the values defined at the top of the file itself. Press , <code>E</code> to export a <code>.chr</code> file, press <code>R</code> to render a <code>.bmp</code> file, and press <code>h</code> to toggle tile guides. To learn more, visit the <a href='https://git.sr.ht/~rabbits/moogle' target='_blank'>repository</a>.</p><pre>sudo apt-get install libsdl2-dev</pre><p>The following code is a single-file implementation written in 700 lines of <a href='ansi_c.html'>ANSI C</a>, the only dependecy is <a href='https://www.libsdl.org' target='_blank'>SDL2</a>.</p><pre>cc -std=c89 -Wall moogle.c -I/usr/local/include -L/usr/local/lib -lSDL2 -lm -o moogle</pre><figure><pre>#include &lt;SDL2/SDL.h&gt;
+<!DOCTYPE html><html lang='en'></head><meta charset='utf-8'><meta name='description' content='Moogle is a 3D wireframe toolkit.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV — moogle</title></head><body><header><a href='home.html'><img src='../media/identity/xiv28.gif' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='tools.html'>tools/</a></li><li><a href='utilities.html'>utilities</a></li><li><a href='games.html'>games</a></li><li><a href='unreleased.html'>unreleased</a></li></ul><ul><li><a href='ronin.html'>ronin</a></li><li><a href='dotgrid.html'>dotgrid</a></li><li><a href='left.html'>left</a></li><li><a href='nasu.html'>nasu</a></li><li><a href='moogle.html'>moogle/</a></li></ul><ul></ul></nav><main><figure><img src='../media/diary/727.jpg' alt='Pitch Yaw Roll picture' width='900'/><figcaption>20P12 — Pitch Yaw Roll</figcaption></figure><h2>Moogle is a 3D wireframe toolkit.</h2><p>Moogle is a minimal <b>3D wireframe tool</b> designed to be used alongside its companion tool <a href='nasu.html'>Nasu</a>. It offers a handful of basic geometry drawing functions, it was written in <a href='ansi_c.html'>ANSI C</a>, and was inspired by <a href='graf3dscene.html'>Graf3DScene</a>.</p><p>Both Moogle and Nasu exports to the <a href='chr_format.html'>chr format</a>.</p><h3>moogle.c</h3><p>To control the window size and default colors, edit the values defined at the top of the file itself. Press , <code>E</code> to export a <code>.chr</code> file, press <code>R</code> to render a <code>.bmp</code> file, and press <code>h</code> to toggle tile guides. To learn more, visit the <a href='https://git.sr.ht/~rabbits/moogle' target='_blank'>repository</a>.</p><pre>sudo apt-get install libsdl2-dev</pre><p>The following code is a single-file implementation written in 700 lines of <a href='ansi_c.html'>ANSI C</a>, the only dependecy is <a href='https://www.libsdl.org' target='_blank'>SDL2</a>.</p><pre>cc -std=c89 -Wall moogle.c -I/usr/local/include -L/usr/local/lib -lSDL2 -lm -o moogle</pre><figure><pre>#include &lt;SDL2/SDL.h&gt;
 #include &lt;stdio.h&gt;
 #include &lt;math.h&gt;
 
@@ -50,7 +50,7 @@ typedef enum {
 
 typedef struct {
 	Projection projection;
-	double pitch, yaw, roll;
+	double pitch, yaw, roll, range;
 } Camera;
 
 Scene scn;
@@ -125,6 +125,7 @@ Cm3d(double pitch, double yaw, double roll)
 	c.yaw = yaw;
 	c.roll = roll;
 	c.projection = PERSPECTIVE;
+	c.range = 50;
 	return c;
 }
 
@@ -259,8 +260,8 @@ project(Camera* c, Point3d v)
 {
 	double r;
 	if(c-&gt;projection == ISOMETRIC)
-		return Pt((WIDTH / 2) + v.x * 5, (HEIGHT / 2) + v.y * 5);
-	r = 300 / (v.z + 50);
+		return Pt((WIDTH / 2) + v.x * (10 - c-&gt;range / 10), (HEIGHT / 2) + v.y * (10 - c-&gt;range / 10));
+	r = 200 / (v.z + c-&gt;range);
 	return Pt(WIDTH / 2 + r * v.x, HEIGHT / 2 + r * v.y);
 }
 
@@ -371,12 +372,12 @@ addpyramid(Scene* s, double radius, int segs, double depth)
 }
 
 Mesh*
-addfrustum(Scene* s, double radius, int segs, double depth, double mod)
+addfrustum(Scene* s, double radius, int segs, double depth, double cap)
 {
 	int i;
 	Mesh m = Ms3d(0, 0, 0);
 	addpoly(&amp;m, 0, 0, depth / 2, radius, segs);
-	addpoly(&amp;m, 0, 0, -depth / 2, radius * mod, segs);
+	addpoly(&amp;m, 0, 0, -depth / 2, cap, segs);
 	for(i = 0; i &lt; segs; i++)
 		addedge(&amp;m, i, segs + i);
 	return addmesh(s, m);
@@ -523,7 +524,11 @@ void
 update(void)
 {
 	char title[512];
-	snprintf(title, 512, "moogle %s [%d:%dx%d]",
+	snprintf(title, 512, "moogle %d'%d'%d %dz %s [%d:%dx%d]",
+	         (int)cam.pitch,
+	         (int)cam.yaw,
+	         (int)cam.roll,
+	         (int)cam.range,
 	         cam.projection == PERSPECTIVE ? "per" : "iso",
 	         HOR,
 	         VER,
@@ -612,6 +617,14 @@ dokey(SDL_Event* event)
 		cam.yaw += 3.0;
 		render(&amp;scn, &amp;cam);
 		break;
+	case SDLK_z:
+		cam.range += cam.range &lt; 90 ? 1 : 0;
+		render(&amp;scn, &amp;cam);
+		break;
+	case SDLK_x:
+		cam.range -= cam.range &gt; 3 ? 1 : 0;
+		render(&amp;scn, &amp;cam);
+		break;
 	}
 	update();
 }
@@ -660,7 +673,7 @@ main(int argc, char** argv)
 	if(!init())
 		return error("Init", "Failure");
 
-	addfrustum(&amp;scn, 12, 8, 10, 0.5);
+	addfrustum(&amp;scn, 12, 8, 10, 8);
 	addprism(&amp;scn, 12, 8, 10);
 	scn.meshes[1].color = 2;
 
@@ -683,7 +696,7 @@ main(int argc, char** argv)
 	quit();
 	return 0;
 }
-</pre><figcaption><a href='../archive/src/moogle.c.txt'>moogle.c</a> 685 lines</figcaption>
+</pre><figcaption><a href='../archive/src/moogle.c.txt'>moogle.c</a> 698 lines</figcaption>
 </figure><h3>Structures</h3><p>Here's some additional primitives that I use to build scenes in Moogle.</p><figure><pre>void
 addbox(Scene* s, double x, double y, double z, double width, double height, double depth)
 {

@@ -50,7 +50,7 @@ typedef enum {
 
 typedef struct {
 	Projection projection;
-	double pitch, yaw, roll;
+	double pitch, yaw, roll, range;
 } Camera;
 
 Scene scn;
@@ -125,6 +125,7 @@ Cm3d(double pitch, double yaw, double roll)
 	c.yaw = yaw;
 	c.roll = roll;
 	c.projection = PERSPECTIVE;
+	c.range = 50;
 	return c;
 }
 
@@ -259,8 +260,8 @@ project(Camera* c, Point3d v)
 {
 	double r;
 	if(c->projection == ISOMETRIC)
-		return Pt((WIDTH / 2) + v.x * 5, (HEIGHT / 2) + v.y * 5);
-	r = 300 / (v.z + 50);
+		return Pt((WIDTH / 2) + v.x * (10 - c->range / 10), (HEIGHT / 2) + v.y * (10 - c->range / 10));
+	r = 200 / (v.z + c->range);
 	return Pt(WIDTH / 2 + r * v.x, HEIGHT / 2 + r * v.y);
 }
 
@@ -371,12 +372,12 @@ addpyramid(Scene* s, double radius, int segs, double depth)
 }
 
 Mesh*
-addfrustum(Scene* s, double radius, int segs, double depth, double mod)
+addfrustum(Scene* s, double radius, int segs, double depth, double cap)
 {
 	int i;
 	Mesh m = Ms3d(0, 0, 0);
 	addpoly(&m, 0, 0, depth / 2, radius, segs);
-	addpoly(&m, 0, 0, -depth / 2, radius * mod, segs);
+	addpoly(&m, 0, 0, -depth / 2, cap, segs);
 	for(i = 0; i < segs; i++)
 		addedge(&m, i, segs + i);
 	return addmesh(s, m);
@@ -523,7 +524,11 @@ void
 update(void)
 {
 	char title[512];
-	snprintf(title, 512, "moogle %s [%d:%dx%d]",
+	snprintf(title, 512, "moogle %d'%d'%d %dz %s [%d:%dx%d]",
+	         (int)cam.pitch,
+	         (int)cam.yaw,
+	         (int)cam.roll,
+	         (int)cam.range,
 	         cam.projection == PERSPECTIVE ? "per" : "iso",
 	         HOR,
 	         VER,
@@ -612,6 +617,14 @@ dokey(SDL_Event* event)
 		cam.yaw += 3.0;
 		render(&scn, &cam);
 		break;
+	case SDLK_z:
+		cam.range += cam.range < 90 ? 1 : 0;
+		render(&scn, &cam);
+		break;
+	case SDLK_x:
+		cam.range -= cam.range > 3 ? 1 : 0;
+		render(&scn, &cam);
+		break;
 	}
 	update();
 }
@@ -660,7 +673,7 @@ main(int argc, char** argv)
 	if(!init())
 		return error("Init", "Failure");
 
-	addfrustum(&scn, 12, 8, 10, 0.5);
+	addfrustum(&scn, 12, 8, 10, 8);
 	addprism(&scn, 12, 8, 10);
 	scn.meshes[1].color = 2;
 

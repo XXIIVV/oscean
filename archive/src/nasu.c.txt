@@ -290,13 +290,21 @@ domouse(SDL_Event* event, Brush* b)
 		update(b);
 		break;
 	case SDL_MOUSEBUTTONDOWN:
-		if(event->button.button == SDL_BUTTON_LEFT) {
+		if(event->button.button == SDL_BUTTON_LEFT)
 			b->down = 1;
-			b->px = (event->motion.x - (PAD * ZOOM)) / ZOOM;
-			b->py = (event->motion.y - (PAD * ZOOM)) / ZOOM;
-		}
 		if(event->button.button == SDL_BUTTON_RIGHT)
 			b->erase = 1;
+		if(event->button.button == SDL_BUTTON_MIDDLE) {
+			b->erase = 0;
+			if(b->px != 0 && b->py != 0) {
+				b->x = (event->motion.x - (PAD * ZOOM)) / ZOOM;
+				b->y = (event->motion.y - (PAD * ZOOM)) / ZOOM;
+				line(b->px, b->py, b->x, b->y, b->erase ? 0 : b->color);
+				draw(pixels);
+			}
+		}
+		b->px = (event->motion.x - (PAD * ZOOM)) / ZOOM;
+		b->py = (event->motion.y - (PAD * ZOOM)) / ZOOM;
 	case SDL_MOUSEMOTION:
 		if(b->down) {
 			b->x = (event->motion.x - (PAD * ZOOM)) / ZOOM;
@@ -335,6 +343,7 @@ dokey(SDL_Event* event, Brush* b)
 		break;
 	case SDLK_n:
 		newchr();
+		draw(pixels);
 		break;
 	case SDLK_BACKQUOTE:
 		b->mode = 7;

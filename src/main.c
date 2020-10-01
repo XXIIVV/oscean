@@ -1015,6 +1015,7 @@ check(Lexicon* lex, Glossary* glo, Journal* jou)
 	for(i = 0; i < lex->len; ++i) {
 		Term* t = &lex->terms[i];
 		sends += t->incoming_len;
+		continue; /* remove to display */
 		if(t->incoming_len < 1 && t->outgoing_len < 1)
 			printf("Warning: \"%s\" unlinked \n", t->name);
 		else if(t->incoming_len < 1)
