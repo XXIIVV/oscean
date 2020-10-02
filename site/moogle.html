@@ -697,11 +697,12 @@ main(int argc, char** argv)
 	return 0;
 }
 </pre><figcaption><a href='../archive/src/moogle.c.txt'>moogle.c</a> 698 lines</figcaption>
-</figure><h3>Structures</h3><p>Here's some additional primitives that I use to build scenes in Moogle.</p><figure><pre>void
-addbox(Scene* s, double x, double y, double z, double width, double height, double depth)
+</figure><h3>Structures</h3><p>Here's some additional primitives that I use to build scenes in Moogle.</p><figure><pre>
+Mesh*
+addbox(Scene* s, double width, double height, double depth)
 {
 	int i;
-	Mesh m = Ms3d(x, y, z);
+	Mesh m = Ms3d(0, 0, 0);
 	addvertex(&amp;m, width / 2, height / 2, -depth / 2);
 	addvertex(&amp;m, -width / 2, height / 2, -depth / 2);
 	addvertex(&amp;m, -width / 2, -height / 2, -depth / 2);
@@ -709,14 +710,14 @@ addbox(Scene* s, double x, double y, double z, double width, double height, doub
 	for(i = 0; i &lt; 4; i++)
 		addedge(&amp;m, i, (i + 1) % 4);
 	extrude(&amp;m, depth);
-	addmesh(s, m);
+	return addmesh(s, m);
 }
 
-void
-addplane(Scene* s, double x, double y, double z, double width, double height, double xsegs, double ysegs)
+Mesh*
+addplane(Scene* s, double width, double height, double xsegs, double ysegs)
 {
 	int ix, iy;
-	Mesh m = Ms3d(x, y, z);
+	Mesh m = Ms3d(0, 0, 0);
 	for(ix = 0; ix &lt; xsegs + 1; ix++) {
 		addvertex(&amp;m, ix * (width / xsegs) - width / 2, height / 2, 0);
 		addvertex(&amp;m, ix * (width / xsegs) - width / 2, -height / 2, 0);
@@ -727,6 +728,24 @@ addplane(Scene* s, double x, double y, double z, double width, double height, do
 		addvertex(&amp;m, -width / 2, iy * (height / ysegs) - height / 2, 0);
 		addedge(&amp;m, ix * 2 + iy * 2, ix * 2 + iy * 2 + 1);
 	}
-	addmesh(s, m);
-}</pre><figcaption><a href='../archive/src/moogle-structures.c.txt'>moogle-structures.c</a> 31 lines</figcaption>
+	return addmesh(s, m);
+}
+
+Mesh*
+addarc(Scene* s, double radius, double segs, double angle)
+{
+	int i;
+	double arc = angle / 360;
+	Mesh m = Ms3d(0, 0, 0);
+	for(i = 0; i &lt; segs + 1; i++) {
+		addvertex(&amp;m,
+		          radius * cos(2 * PI * i * arc / segs),
+		          radius * sin(2 * PI * i * arc / segs),
+		          0);
+		if(i &lt; segs)
+			addedge(&amp;m, i, i + 1);
+	}
+	return addmesh(s, m);
+}
+</pre><figcaption><a href='../archive/src/moogle-structures.c.txt'>moogle-structures.c</a> 50 lines</figcaption>
 </figure><p>Moogle was first written on <a href='plan9.html'>Plan9</a>, the original <a href='plan9_c.html'>Plan9 C</a> implementation is available <a href='../archive/src/moogle9.c.txt' target='_blank'>here</a>.</p><figure><img src='../media/diary/728.jpg' alt='Moogle Spheroid picture' width='900'/><figcaption>20P01 — Moogle Spheroid</figcaption></figure><p><i>incoming(5)</i>: <a href='neauismetica.html'>neauismetica</a> <a href='graf3dscene.html'>graf3dscene</a> <a href='nasu.html'>nasu</a> <a href='defunct.html'>defunct</a> <a href='identity.html'>identity</a> </p><p><i>Last update on <a href='tracker.html'>20T04</a>, edited 5 times. +29/36fh</i><code style='float:right; font-size:80%'>-----+</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
