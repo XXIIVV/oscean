@@ -243,6 +243,117 @@ addpt3d(Point3d* a, Point3d* b)
 	return Pt3d(a->x + b->x, a->y + b->y, a->z + b->z);
 }
 
+/* Transforms */
+
+void
+extrude(Mesh* dst, double depth)
+{
+	int vl = dst->verticeslen;
+	int el = dst->edgeslen;
+	for(int i = 0; i < vl; i++) {
+		addvertex(dst,
+		          dst->vertices[i].x,
+		          dst->vertices[i].y,
+		          dst->vertices[i].z + depth);
+		addedge(dst, i, i + vl);
+	}
+	for(int i = 0; i < el; i++) {
+		addedge(dst,
+		        dst->edges[i].a + vl,
+		        dst->edges[i].b + vl);
+	}
+}
+
+void
+symmetry(Mesh* dst, double x, double y, double z)
+{
+	int limit = dst->verticeslen;
+	for(int i = 0; i < limit; i++) {
+		addvertex(dst,
+		          dst->vertices[i].x * x,
+		          dst->vertices[i].y * y,
+		          dst->vertices[i].z * z);
+	}
+	int limitb = dst->edgeslen;
+	for(int i = 0; i < limitb; i++) {
+		addedge(dst,
+		        limitb + 1 + dst->edges[i].a,
+		        limitb + 1 + dst->edges[i].b);
+	}
+}
+
+/* Primitives */
+
+void
+addpoly(Mesh* dst, double x, double y, double z, double radius, int segments)
+{
+	int offset = dst->verticeslen;
+	for(int i = 0; i < segments; i++) {
+		addvertex(dst,
+		          x + radius * cos(2 * PI * i / segments),
+		          y + radius * sin(2 * PI * i / segments),
+		          z);
+		addedge(dst, offset + i, offset + (i + 1) % segments);
+	}
+}
+
+void
+addpath(Scene* scn, double x, double y, double z, int verticeslen, Point3d vertices, ...)
+{
+	va_list args;
+	va_start(args, verticeslen);
+	Mesh m = Ms3d(x, y, z);
+	for(int i = 0; i < verticeslen; i++) {
+		Point3d v = va_arg(args, Point3d);
+		addvertex(&m, v.x, v.y, v.z);
+		if(i < verticeslen - 1)
+			addedge(&m, i, i + 1);
+	}
+	va_end(args);
+	addmesh(scn, m);
+}
+
+void
+addpolygon(Scene* scn, double x, double y, double z, double radius, int segments)
+{
+	Mesh dst = Ms3d(x, y, z);
+	addpoly(&dst, x, y, z, radius, segments);
+	addmesh(scn, dst);
+}
+
+void
+addpyramid(Scene* scene, double x, double y, double z, double radius, int segments, double depth)
+{
+	Mesh dst = Ms3d(x, y, z);
+	addpoly(&dst, x, y, z - depth / 2, radius, segments);
+	addvertex(&dst, x, y, z + depth / 2);
+	for(int i = 0; i < segments; i++) {
+		addedge(&dst, i, segments);
+	}
+	addmesh(scene, dst);
+}
+
+void
+addfrustum(Scene* scene, double x, double y, double z, double radius, int segments, double depth, double mod)
+{
+	Mesh dst = Ms3d(x, y, z);
+	addpoly(&dst, x, y, z - depth / 2, radius, segments);
+	addpoly(&dst, x, y, z + depth / 2, radius * mod, segments);
+	for(int i = 0; i < segments; i++) {
+		addedge(&dst, i, segments + i);
+	}
+	addmesh(scene, dst);
+}
+
+void
+addprism(Scene* scene, double x, double y, double z, double radius, int segments, double depth)
+{
+	Mesh dst = Ms3d(x, y, z);
+	addpoly(&dst, x, y, z - depth / 2, radius, segments);
+	extrude(&dst, depth);
+	addmesh(scene, dst);
+}
+
 /* Draw */
 
 void
@@ -412,115 +523,4 @@ main(int argc, char** argv)
 			}
 		}
 	}
-}
-
-Transforms
-
-void
-extrude(Mesh* dst, double depth)
-{
-	int vl = dst->verticeslen;
-	int el = dst->edgeslen;
-	for(int i = 0; i < vl; i++) {
-		addvertex(dst,
-		          dst->vertices[i].x,
-		          dst->vertices[i].y,
-		          dst->vertices[i].z + depth);
-		addedge(dst, i, i + vl);
-	}
-	for(int i = 0; i < el; i++) {
-		addedge(dst,
-		        dst->edges[i].a + vl,
-		        dst->edges[i].b + vl);
-	}
-}
-
-void
-symmetry(Mesh* dst, double x, double y, double z)
-{
-	int limit = dst->verticeslen;
-	for(int i = 0; i < limit; i++) {
-		addvertex(dst,
-		          dst->vertices[i].x * x,
-		          dst->vertices[i].y * y,
-		          dst->vertices[i].z * z);
-	}
-	int limitb = dst->edgeslen;
-	for(int i = 0; i < limitb; i++) {
-		addedge(dst,
-		        limitb + 1 + dst->edges[i].a,
-		        limitb + 1 + dst->edges[i].b);
-	}
-}
-
-Primitives
-
-void
-addpoly(Mesh* dst, double x, double y, double z, double radius, int segments)
-{
-	int offset = dst->verticeslen;
-	for(int i = 0; i < segments; i++) {
-		addvertex(dst,
-		          x + radius * cos(2 * PI * i / segments),
-		          y + radius * sin(2 * PI * i / segments),
-		          z);
-		addedge(dst, offset + i, offset + (i + 1) % segments);
-	}
-}
-
-void
-addpath(Scene* scn, double x, double y, double z, int verticeslen, Point3d vertices, ...)
-{
-	va_list args;
-	va_start(args, verticeslen);
-	Mesh m = Ms3d(x, y, z);
-	for(int i = 0; i < verticeslen; i++) {
-		Point3d v = va_arg(args, Point3d);
-		addvertex(&m, v.x, v.y, v.z);
-		if(i < verticeslen - 1)
-			addedge(&m, i, i + 1);
-	}
-	va_end(args);
-	addmesh(scn, m);
-}
-
-void
-addpolygon(Scene* scn, double x, double y, double z, double radius, int segments)
-{
-	Mesh dst = Ms3d(x, y, z);
-	addpoly(&dst, x, y, z, radius, segments);
-	addmesh(scn, dst);
-}
-
-void
-addpyramid(Scene* scene, double x, double y, double z, double radius, int segments, double depth)
-{
-	Mesh dst = Ms3d(x, y, z);
-	addpoly(&dst, x, y, z - depth / 2, radius, segments);
-	addvertex(&dst, x, y, z + depth / 2);
-	for(int i = 0; i < segments; i++) {
-		addedge(&dst, i, segments);
-	}
-	addmesh(scene, dst);
-}
-
-void
-addfrustum(Scene* scene, double x, double y, double z, double radius, int segments, double depth, double mod)
-{
-	Mesh dst = Ms3d(x, y, z);
-	addpoly(&dst, x, y, z - depth / 2, radius, segments);
-	addpoly(&dst, x, y, z + depth / 2, radius * mod, segments);
-	for(int i = 0; i < segments; i++) {
-		addedge(&dst, i, segments + i);
-	}
-	addmesh(scene, dst);
-}
-
-void
-addprism(Scene* scene, double x, double y, double z, double radius, int segments, double depth)
-{
-	Mesh dst = Ms3d(x, y, z);
-	addpoly(&dst, x, y, z - depth / 2, radius, segments);
-	extrude(&dst, depth);
-	addmesh(scene, dst);
 }
