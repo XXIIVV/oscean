@@ -493,7 +493,8 @@ print_term_details(FILE* f, Term* t, int depth)
 {
 	int i;
 	depth++;
-	fprintf(f, "<li><a href='%s.html'>%s</a></li>", t->filename, t->name);
+	fprintf(f, "<li><a href='%s.html'>%s</a> <i>%s</i></li>", t->filename, t->name,
+	        t->incoming_len < 1 ? "orphan " : t->outgoing_len < 1 ? "deadend " : "");
 	if(t->children_len < 1)
 		return;
 	fputs("<ul>", f);
@@ -639,8 +640,18 @@ build_special_now(FILE* f, Lexicon* lex, Journal* jou)
 }
 
 void
-build_special_index(FILE* f, Lexicon* lex)
+build_special_index(FILE* f, Lexicon* lex, Journal* jou)
 {
+	int i, sends = 0, orphans = 0, deadends = 0;
+	for(i = 0; i < lex->len; ++i) {
+		Term* t = &lex->terms[i];
+		sends += t->incoming_len;
+		if(t->incoming_len < 1)
+			orphans++;
+		if(t->outgoing_len < 1)
+			deadends++;
+	}
+	fprintf(f, "<p>This wiki hosts %d journal logs recorded on %d lexicon terms, connected by %d inbound links. It is a living document in which %d orphans and %d deadends still remain.</p>", jou->len, lex->len, sends, orphans, deadends);
 	fputs("<ul>", f);
 	print_term_details(f, &lex->terms[0], 0);
 	fputs("</ul>", f);
@@ -687,7 +698,7 @@ build_page(FILE* f, Lexicon* lex, Term* t, Journal* jou)
 	else if(scmp(t->name, "journal"))
 		build_special_journal(f, jou);
 	else if(scmp(t->name, "index"))
-		build_special_index(f, lex);
+		build_special_index(f, lex, jou);
 	build_list(f, t);
 	build_links(f, t);
 	build_incoming(f, t);
@@ -984,9 +995,9 @@ build(Lexicon* lex, Journal* jou)
 }
 
 void
-check(Lexicon* lex, Glossary* glo, Journal* jou)
+check(Glossary* glo, Journal* jou)
 {
-	int i, j, found = 0, sends = 0;
+	int i, j, found = 0;
 	printf("Checking | ");
 	/* Find invalid logs */
 	for(i = 0; i < jou->len; ++i) {
@@ -1011,19 +1022,6 @@ check(Lexicon* lex, Glossary* glo, Journal* jou)
 			break;
 		}
 	}
-	/* Find unlinked pages */
-	for(i = 0; i < lex->len; ++i) {
-		Term* t = &lex->terms[i];
-		sends += t->incoming_len;
-		continue; /* remove to display */
-		if(t->incoming_len < 1 && t->outgoing_len < 1)
-			printf("Warning: \"%s\" unlinked \n", t->name);
-		else if(t->incoming_len < 1)
-			printf("Warning: \"%s\" orphaned \n", t->name);
-		else if(t->outgoing_len < 1)
-			printf("Warning: \"%s\" dead-end \n", t->name);
-	}
-	printf("sends(%d incomings) ", sends);
 }
 
 Lexicon all_terms;
@@ -1048,7 +1046,7 @@ main(void)
 	build(&all_terms, &all_logs);
 	printf("[%.2fms]\n", clock_since(start));
 	start = clock();
-	check(&all_terms, &all_lists, &all_logs);
+	check(&all_lists, &all_logs);
 	printf("[%.2fms]\n", clock_since(start));
 
 	return (0);
