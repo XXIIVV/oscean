@@ -32,14 +32,14 @@ typedef struct {
 } Edge;
 
 typedef struct {
-	Point3d position, vertices[128];
-	Edge edges[128];
+	Point3d position, vertices[512];
+	Edge edges[512];
 	int verticeslen, edgeslen, color;
 } Mesh;
 
 typedef struct {
 	Point3d origin;
-	Mesh meshes[128];
+	Mesh meshes[512];
 	int len;
 } Scene;
 
@@ -697,8 +697,7 @@ main(int argc, char** argv)
 	return 0;
 }
 </pre><figcaption><a href='../archive/src/moogle.c.txt'>moogle.c</a> 698 lines</figcaption>
-</figure><h3>Structures</h3><p>Here's some additional primitives that I use to build scenes in Moogle.</p><figure><pre>
-Mesh*
+</figure><h3>Structures</h3><p>Here's some additional primitives that I use to build scenes in Moogle.</p><figure><pre>Mesh*
 addbox(Scene* s, double width, double height, double depth)
 {
 	int i;
@@ -747,5 +746,28 @@ addarc(Scene* s, double radius, double segs, double angle)
 	}
 	return addmesh(s, m);
 }
-</pre><figcaption><a href='../archive/src/moogle-structures.c.txt'>moogle-structures.c</a> 50 lines</figcaption>
+
+Mesh*
+addsphere(Scene* s, double radius, double xsegs, double zsegs)
+{
+	int i;
+	Mesh m = Ms3d(0, 0, 0);
+	for(i = 1; i &lt; zsegs + 1; i++)
+		addpoly(&amp;m, 0, 0,
+		        radius * cos(PI * i / zsegs),
+		        radius * sin(PI * i / zsegs),
+		        xsegs);
+	return addmesh(s, m);
+}
+
+Mesh*
+addline(Scene* s, double ax, double ay, double az, double bx, double by, double bz)
+{
+	Mesh m = Ms3d(0, 0, 0);
+	addvertex(&amp;m, ax, ay, az);
+	addvertex(&amp;m, bx, by, bz);
+	addedge(&amp;m, 0, 1);
+	return addmesh(s, m);
+}
+</pre><figcaption><a href='../archive/src/moogle-structures.c.txt'>moogle-structures.c</a> 72 lines</figcaption>
 </figure><p>Moogle was first written on <a href='plan9.html'>Plan9</a>, the original <a href='plan9_c.html'>Plan9 C</a> implementation is available <a href='../archive/src/moogle9.c.txt' target='_blank'>here</a>.</p><figure><img src='../media/diary/728.jpg' alt='Moogle Spheroid picture' width='900'/><figcaption>20P01 — Moogle Spheroid</figcaption></figure><p><i>incoming(5)</i>: <a href='neauismetica.html'>neauismetica</a> <a href='graf3dscene.html'>graf3dscene</a> <a href='nasu.html'>nasu</a> <a href='defunct.html'>defunct</a> <a href='identity.html'>identity</a> </p><p><i>Last update on <a href='tracker.html'>20T04</a>, edited 5 times. +29/36fh</i><code style='float:right; font-size:80%'>-----+</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
