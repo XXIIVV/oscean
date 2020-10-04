@@ -597,6 +597,8 @@ build_special_now(FILE* f, Lexicon* lex, Journal* jou)
 		Log l = jou->logs[i];
 		if(epoch - arvelie_to_epoch(l.date) > LOGS_RANGE)
 			break;
+		if(l.code % 10 < 1)
+			continue;
 		index = afnd(pname, projects_len, l.term->name);
 		if(index < 0) {
 			index = projects_len;
