@@ -5,12 +5,16 @@
 #define HOR 32
 #define VER 16
 #define PAD 8
-#define ZOOM 4
+#define ZOOM 3
 #define color1 0x000000
 #define color2 0x72DEC2
 #define color3 0xFFFFFF
 #define color4 0x444444
 #define color0 0x111111
+
+#define VLIMIT 128
+#define ELIMIT 128
+#define MLIMIT 128
 
 #define SZ (HOR * VER * 16)
 #define PI 3.14159265358979323846
@@ -32,14 +36,14 @@ typedef struct {
 } Edge;
 
 typedef struct {
-	Point3d position, vertices[512];
-	Edge edges[512];
+	Point3d position, vertices[VLIMIT];
+	Edge edges[ELIMIT];
 	int verticeslen, edgeslen, color;
 } Mesh;
 
 typedef struct {
 	Point3d origin;
-	Mesh meshes[512];
+	Mesh meshes[MLIMIT];
 	int len;
 } Scene;
 
@@ -191,6 +195,10 @@ setvertex(Point3d* v, double x, double y, double z)
 Point3d*
 addvertex(Mesh* m, double x, double y, double z)
 {
+	if(m->verticeslen == VLIMIT) {
+		printf("Warning: Reached vertex limit\n");
+		return NULL;
+	}
 	return setvertex(&m->vertices[m->verticeslen++], x, y, z);
 }
 
@@ -205,12 +213,20 @@ setedge(Edge* e, int v0, int v1)
 Edge*
 addedge(Mesh* m, int v0, int v1)
 {
+	if(m->edgeslen == VLIMIT) {
+		printf("Warning: Reached edge limit\n");
+		return NULL;
+	}
 	return setedge(&m->edges[m->edgeslen++], v0, v1);
 }
 
 Mesh*
 addmesh(Scene* s, Mesh m)
 {
+	if(s->len == MLIMIT) {
+		printf("Warning: Reached mesh limit\n");
+		return NULL;
+	}
 	s->meshes[s->len] = m;
 	s->len++;
 	return &s->meshes[s->len - 1];
@@ -297,6 +313,13 @@ rotate(Mesh* m, double pitch, double yaw, double roll)
 	int i;
 	for(i = 0; i < m->verticeslen; i++)
 		rotvertex(&m->position, &m->vertices[i], pitch, yaw, roll);
+	return m;
+}
+
+Mesh*
+color(Mesh* m, int color)
+{
+	m->color = color;
 	return m;
 }
 
@@ -478,6 +501,20 @@ draw(uint32_t* dst)
 }
 
 void
+debug(void)
+{
+	printf("%d'%d'%d:%d %c [%d:%dx%d]\n",
+	       (int)cam.pitch,
+	       (int)cam.yaw,
+	       (int)cam.roll,
+	       (int)cam.range,
+	       cam.projection == PERSPECTIVE ? 'p' : 'i',
+	       HOR,
+	       VER,
+	       ZOOM);
+}
+
+void
 render(Scene* s, Camera* c)
 {
 	int i, j;
@@ -490,12 +527,14 @@ render(Scene* s, Camera* c)
 			Point3d b = addpt3d(&mesh->vertices[edge->b], &mesh->position);
 			rotvertex(&s->origin, &a, c->pitch, c->yaw, c->roll);
 			rotvertex(&s->origin, &b, c->pitch, c->yaw, c->roll);
-			addpt3d(&s->origin, &a);
-			addpt3d(&s->origin, &b);
-			line(project(c, a), project(c, b), mesh->color);
+			line(
+			    project(c, addpt3d(&s->origin, &a)),
+			    project(c, addpt3d(&s->origin, &b)),
+			    mesh->color);
 		}
 	}
 	draw(pixels);
+	debug();
 }
 
 void
@@ -508,34 +547,10 @@ orient(Scene* s, Camera* c, double pitch, double yaw, double roll)
 }
 
 void
-orbit(Scene* s, Camera* c, Point drag)
-{
-	c->pitch -= drag.y / 3.0;
-	c->yaw -= drag.x / 3.0;
-	render(s, c);
-}
-
-void
 toggleprojection(Scene* s, Camera* c)
 {
 	c->projection = c->projection == ISOMETRIC ? PERSPECTIVE : ISOMETRIC;
 	render(s, c);
-}
-
-void
-update(void)
-{
-	char title[512];
-	snprintf(title, 512, "moogle %d'%d'%d %dz %s [%d:%dx%d]",
-	         (int)cam.pitch,
-	         (int)cam.yaw,
-	         (int)cam.roll,
-	         (int)cam.range,
-	         cam.projection == PERSPECTIVE ? "per" : "iso",
-	         HOR,
-	         VER,
-	         ZOOM);
-	SDL_SetWindowTitle(gWindow, title);
 }
 
 int
@@ -603,18 +618,22 @@ dokey(SDL_Event* event)
 		GUIDES = !GUIDES;
 		draw(pixels);
 		break;
+	case SDLK_UP:
 	case SDLK_w:
 		cam.pitch += 3.0;
 		render(&scn, &cam);
 		break;
+	case SDLK_LEFT:
 	case SDLK_a:
 		cam.yaw -= 3.0;
 		render(&scn, &cam);
 		break;
+	case SDLK_DOWN:
 	case SDLK_s:
 		cam.pitch -= 3.0;
 		render(&scn, &cam);
 		break;
+	case SDLK_RIGHT:
 	case SDLK_d:
 		cam.yaw += 3.0;
 		render(&scn, &cam);
@@ -628,7 +647,6 @@ dokey(SDL_Event* event)
 		render(&scn, &cam);
 		break;
 	}
-	update();
 }
 
 int
@@ -637,7 +655,7 @@ init(void)
 	int i, j;
 	if(SDL_Init(SDL_INIT_VIDEO) < 0)
 		return error("Init", SDL_GetError());
-	gWindow = SDL_CreateWindow("moogle",
+	gWindow = SDL_CreateWindow("Moogle",
 	                           SDL_WINDOWPOS_UNDEFINED,
 	                           SDL_WINDOWPOS_UNDEFINED,
 	                           WIDTH * ZOOM,
@@ -665,7 +683,7 @@ init(void)
 }
 
 int
-main(int argc, char** argv)
+main(void)
 {
 	int ticknext = 0;
 
@@ -676,11 +694,10 @@ main(int argc, char** argv)
 		return error("Init", "Failure");
 
 	addfrustum(&scn, 12, 8, 10, 8);
-	addprism(&scn, 12, 8, 10);
-	scn.meshes[1].color = 2;
+	color(
+	    addprism(&scn, 12, 8, 10), 2);
 
 	newchr();
-	update();
 	render(&scn, &cam);
 
 	while(1) {
