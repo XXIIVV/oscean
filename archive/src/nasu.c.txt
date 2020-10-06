@@ -53,6 +53,28 @@ distance(int ax, int ay, int bx, int by)
 	return (bx - ax) * (bx - ax) + (by - ay) * (by - ay);
 }
 
+int
+spos(char* s, char* ss)
+{
+	int a = 0, b = 0;
+	while(s[a] != '\0') {
+		if(s[a] == ss[b]) {
+			if(ss[b + 1] == '\0')
+				return a - b;
+			b++;
+		} else
+			b = 0;
+		a++;
+	}
+	return -1;
+}
+
+int
+getclr(int r, int g, int b)
+{
+	return r && g && b && r == g && g == b ? 1 : r > g && r > b ? 2 : g > r && g > b ? 3 : 0;
+}
+
 /* chr */
 
 int
@@ -226,13 +248,30 @@ error(char* msg, const char* err)
 }
 
 void
-load(char* path)
+loadchr(char* path)
 {
 	FILE* f = fopen(path, "rb");
 	if(f == NULL)
 		error("Load", "Invalid input file");
 	if(!fread(chrbuf, sizeof(chrbuf), 1, f))
 		error("Load", "Invalid input size");
+	fclose(f);
+}
+
+void
+loadbmp(char* path)
+{
+	FILE* f = fopen(path, "rb");
+	int i, width = HOR * 8, height = VER * 8, size = 3 * width * height;
+	unsigned char header[54];
+	unsigned char data[4096 * 256];
+	if(!fread(header, sizeof(unsigned char), 54, f))
+		error("Load", "Invalid bmp header");
+	if(!fread(data, sizeof(unsigned char), size, f))
+		error("Load", "Invalid bmp body");
+	for(i = 0; i < size; i += 3)
+		putchr((i / 3) % width, height - (i / 3) / width - 1,
+		       getclr(data[i + 2], data[i + 1], data[i]));
 	fclose(f);
 }
 
@@ -430,10 +469,13 @@ main(int argc, char** argv)
 	if(!init())
 		return error("Init", "Failure");
 
-	if(argc > 1)
-		load(argv[1]);
+	if(argc > 1 && spos(argv[1], ".bmp") > -1)
+		loadbmp(argv[1]);
+	else if(argc > 1 && spos(argv[1], ".chr") > -1)
+		loadchr(argv[1]);
 	else
 		newchr();
+
 	draw(pixels);
 	update(&brush);
 

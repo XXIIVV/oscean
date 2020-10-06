@@ -128,18 +128,17 @@ strm(char* s)
 }
 
 int
-spos(char* a, char* b)
+spos(char* s, char* ss)
 {
-	int i, j, alen = slen(a), blen = slen(b);
-	for(i = 0; i < alen; i++) {
-		for(j = 0; j < blen; j++) {
-			if(a[i + j] == '\0')
-				return -1;
-			if(a[i + j] != b[j])
-				break;
-			if(j == blen - 1)
-				return i;
-		}
+	int a = 0, b = 0;
+	while(s[a] != '\0') {
+		if(s[a] == ss[b]) {
+			if(ss[b + 1] == '\0')
+				return a - b;
+			b++;
+		} else
+			b = 0;
+		a++;
 	}
 	return -1;
 }
@@ -158,27 +157,27 @@ sint(char* s, int len)
 int
 surl(char* s)
 {
-	return spos(s, "://") >= 0 || spos(s, "./") >= 0;
+	return spos(s, "://") >= 0 || spos(s, "../") >= 0;
 }
 
 char*
-scpy(char* src, char* dest)
+scpy(char* src, char* dst)
 {
 	int i = 0;
-	while((dest[i] = src[i]) != '\0')
+	while((dst[i] = src[i]) != '\0')
 		i++;
-	return dest;
+	return dst;
 }
 
 char*
-sstr(char* src, char* dest, int from, int to)
+sstr(char* src, char* dst, int from, int to)
 {
 	int i;
-	char *a = (char*)src + from, *b = (char*)dest;
+	char *a = (char*)src + from, *b = (char*)dst;
 	for(i = 0; i < to; i++)
 		b[i] = a[i];
-	dest[to] = '\0';
-	return dest;
+	dst[to] = '\0';
+	return dst;
 }
 
 int
@@ -192,28 +191,28 @@ afnd(char* src[], int len, char* val)
 }
 
 char*
-ccat(char* dest, char c)
+ccat(char* dst, char c)
 {
-	int len = slen(dest);
-	dest[len] = c;
-	dest[len + 1] = '\0';
-	return dest;
+	int len = slen(dst);
+	dst[len] = c;
+	dst[len + 1] = '\0';
+	return dst;
 }
 
 char*
-scat(char* dest, const char* src)
+scat(char* dst, const char* src)
 {
-	char* ptr = dest + slen(dest);
+	char* ptr = dst + slen(dst);
 	while(*src != '\0')
 		*ptr++ = *src++;
 	*ptr = '\0';
-	return dest;
+	return dst;
 }
 
 /* old */
 
 void
-swapstr(char* src, char* dest, char* a, char* b)
+swapstr(char* src, char* dst, char* a, char* b)
 {
 	char head[1024], tail[1024];
 	int index = spos(src, a);
@@ -221,20 +220,20 @@ swapstr(char* src, char* dest, char* a, char* b)
 		return;
 	sstr(src, head, 0, index);
 	sstr(src, tail, index + slen(a), slen(src) - index - slen(a));
-	dest[0] = '\0';
-	scat(dest, head);
-	scat(dest, b);
-	scat(dest, tail);
+	dst[0] = '\0';
+	scat(dst, head);
+	scat(dst, b);
+	scat(dst, tail);
 }
 
 void
-firstword(char* src, char* dest)
+firstword(char* src, char* dst)
 {
 	int until = cpos(src, ' ');
 	if(until > -1)
-		sstr(src, dest, 0, until);
+		sstr(src, dst, 0, until);
 	else
-		sstr(src, dest, 0, slen(src));
+		sstr(src, dst, 0, slen(src));
 }
 
 float

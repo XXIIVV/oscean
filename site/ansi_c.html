@@ -34,7 +34,40 @@ int main(int argc, char** argv) {
 
 	return 0;
 }</pre><figcaption><a href='../archive/src/ansic_basics.c.txt'>ansic_basics.c</a> 35 lines</figcaption>
-</figure><h3>Include</h3><p>Generally, projects will include <code>.h</code> files which in turn will include their own <code>.c</code> files. The following form is used for system header files. It searches for a file named <code>file</code> in a standard list of system directories. </p><pre>#include &lt;file&gt;</pre><p>The following form is used for header files of your own program. It searches for a file named <code>folder/file.h</code> in the directory containing the current file. </p><pre>#include "folder/file.h"</pre><h3>Data Types</h3>
+</figure><h3>Include</h3><p>Generally, projects will include <code>.h</code> files which in turn will include their own <code>.c</code> files. The following form is used for system header files. It searches for a file named <code>file</code> in a standard list of system directories. </p><pre>#include &lt;file&gt;</pre><p>The following form is used for header files of your own program. It searches for a file named <code>folder/file.h</code> in the directory containing the current file. </p><pre>#include "folder/file.h"</pre><h3>Midi</h3><pre>cc -std=c89 -Wall midi.c -o midi</pre><p>Play note <code>G</code> with velocity of <code>64</code>.</p><figure><pre>#include &lt;linux/soundcard.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;fcntl.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+int
+error(char* msg, const char* err)
+{
+	printf("Error %s: %s\n", msg, err);
+	return 0;
+}
+
+int
+main(void)
+{
+	char* device = "/dev/midi2";
+	unsigned char g_on[3] = {0x90, 0x43, 0x40};
+	unsigned char g_off[3] = {0x80, 0x43, 0x00};
+	int f = open(device, O_WRONLY, 0);
+	if(f &lt; 0)
+		return error("Unknown", device);
+	printf("Note ON\n");
+	if(!write(f, g_on, sizeof(g_on)))
+		return error("Note", "ON");
+	sleep(2);
+	printf("Note OFF\n");
+	if(!write(f, g_off, sizeof(g_off)))
+		return error("Note", "OFF");
+	close(f);
+	return 0;
+}
+</pre><figcaption><a href='../archive/src/ansic_midi.c.txt'>ansic_midi.c</a> 32 lines</figcaption>
+</figure><h3>Data Types</h3>
 
 <table border='1'>
   <tr><td>char</td><td>0xff</td><td>0-255</td></tr>
@@ -144,4 +177,4 @@ main()
 
 <pre>
 printf("|%-10s|", "Hello");
-</pre><p>Found a mistake? Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/ansi_c.htm' target='_blank'>edit</a> to ansi c.</p><ul><li><a href='https://ftrv.se/3' target='_blank'>Sigrid on C</a></li><li><a href='https://aiju.de/misc/c-style' target='_blank'>Aiju on C</a></li></ul><p><i>incoming(8)</i>: <a href='about.html'>about</a> <a href='oscean.html'>oscean</a> <a href='nasu.html'>nasu</a> <a href='moogle.html'>moogle</a> <a href='moogle.html'>moogle</a> <a href='gyo.html'>gyo</a> <a href='chr_format.html'>chr format</a> <a href='plan9_c.html'>plan9 c</a> </p><p><i>Last update on <a href='tracker.html'>20S10</a>, edited 2 times. +6/14fh</i><code style='float:right; font-size:80%'>-----+</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
+</pre><p>Found a mistake? Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/ansi_c.htm' target='_blank'>edit</a> to ansi c.</p><ul><li><a href='https://ftrv.se/3' target='_blank'>Sigrid on C</a></li><li><a href='https://aiju.de/misc/c-style' target='_blank'>Aiju on C</a></li></ul><p><i>incoming(8)</i>: <a href='about.html'>about</a> <a href='oscean.html'>oscean</a> <a href='nasu.html'>nasu</a> <a href='moogle.html'>moogle</a> <a href='moogle.html'>moogle</a> <a href='gyo.html'>gyo</a> <a href='chr_format.html'>chr format</a> <a href='plan9_c.html'>plan9 c</a> </p><p><i>Last update on <a href='tracker.html'>20T13</a>, edited 3 times. +10/17fh</i><code style='float:right; font-size:80%'>-----+</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
