@@ -501,14 +501,14 @@ draw(uint32_t* dst)
 }
 
 void
-debug(void)
+update(void)
 {
-	printf("%d'%d'%d:%d %c [%d:%dx%d]\n",
+	printf("%s %d'%d'%d:%d [%d:%dx%d]\n",
+	       cam.projection == PERSPECTIVE ? "perspective" : "isometric",
 	       (int)cam.pitch,
 	       (int)cam.yaw,
 	       (int)cam.roll,
 	       (int)cam.range,
-	       cam.projection == PERSPECTIVE ? 'p' : 'i',
 	       HOR,
 	       VER,
 	       ZOOM);
@@ -534,7 +534,7 @@ render(Scene* s, Camera* c)
 		}
 	}
 	draw(pixels);
-	debug();
+	update();
 }
 
 void
@@ -563,7 +563,7 @@ error(char* msg, const char* err)
 void
 tochr()
 {
-	FILE* f = fopen("export.chr", "wb");
+	FILE* f = fopen("moogle-export.chr", "wb");
 	if(!fwrite(chrbuf, sizeof(chrbuf), 1, f))
 		error("Save", "Invalid output file");
 	fclose(f);
@@ -580,7 +580,7 @@ tobmp(void)
 	                     SDL_PIXELFORMAT_ARGB8888,
 	                     surface->pixels,
 	                     surface->pitch);
-	SDL_SaveBMP(surface, "render.bmp");
+	SDL_SaveBMP(surface, "moogle-render.bmp");
 	SDL_FreeSurface(surface);
 }
 

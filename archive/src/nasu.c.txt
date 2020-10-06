@@ -4,7 +4,7 @@
 #define HOR 32
 #define VER 16
 #define PAD 8
-#define ZOOM 4
+#define ZOOM 3
 #define color1 0x000000
 #define color2 0x72DEC2
 #define color3 0xFFFFFF
@@ -203,16 +203,17 @@ draw(uint32_t* dst)
 void
 update(Brush* b)
 {
-	char title[512];
-	snprintf(title, 512, "nasu %s%dc%d [%d:%dx%d]%c",
-	         modes[b->mode],
-	         b->size,
-	         b->color,
-	         HOR,
-	         VER,
-	         ZOOM,
-	         b->edit ? '*' : ' ');
-	SDL_SetWindowTitle(gWindow, title);
+	if(b->edit)
+		SDL_SetWindowTitle(gWindow, "Nasu*");
+	else
+		SDL_SetWindowTitle(gWindow, "Nasu");
+	printf("%s %d:%d [%d:%dx%d]\n",
+	       modes[b->mode],
+	       b->size,
+	       b->color,
+	       HOR,
+	       VER,
+	       ZOOM);
 }
 
 /* options */
@@ -305,6 +306,7 @@ domouse(SDL_Event* event, Brush* b)
 		}
 		b->px = (event->motion.x - (PAD * ZOOM)) / ZOOM;
 		b->py = (event->motion.y - (PAD * ZOOM)) / ZOOM;
+		break;
 	case SDL_MOUSEMOTION:
 		if(b->down) {
 			b->x = (event->motion.x - (PAD * ZOOM)) / ZOOM;
@@ -387,7 +389,7 @@ init(void)
 	int i, j;
 	if(SDL_Init(SDL_INIT_VIDEO) < 0)
 		return error("Init", SDL_GetError());
-	gWindow = SDL_CreateWindow("nasu",
+	gWindow = SDL_CreateWindow("Nasu",
 	                           SDL_WINDOWPOS_UNDEFINED,
 	                           SDL_WINDOWPOS_UNDEFINED,
 	                           WIDTH * ZOOM,
