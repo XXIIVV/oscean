@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
 
@@ -78,11 +77,11 @@ typedef struct Journal {
 	Log logs[3500];
 } Journal;
 
-void
+int
 error(char* msg, char* val)
 {
 	printf("Error: %s(%s)\n", msg, val);
-	exit(0);
+	return 0;
 }
 
 List*
@@ -619,6 +618,7 @@ build_special_now(FILE* f, Lexicon* lex, Journal* jou)
 		if(pval[i] != pmaxval)
 			continue;
 		build_log_pict(f, finddiary(jou, findterm(lex, pname[i])), 1);
+		break;
 	}
 	fprintf(
 	    f,
