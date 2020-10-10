@@ -5,7 +5,7 @@
 #define HOR 32
 #define VER 16
 #define PAD 8
-#define ZOOM 3
+#define ZOOM 2
 #define color1 0x000000
 #define color2 0x72DEC2
 #define color3 0xFFFFFF
@@ -65,7 +65,7 @@ int colors[] = {color1, color2, color3, color4, color0};
 int WIDTH = 8 * HOR + PAD * 2;
 int HEIGHT = 8 * VER + PAD * 2;
 int FPS = 30;
-int GUIDES = 0;
+int GUIDES = 1;
 SDL_Window* gWindow = NULL;
 SDL_Renderer* gRenderer = NULL;
 SDL_Texture* gTexture = NULL;
@@ -488,10 +488,9 @@ draw(uint32_t* dst)
 				int ch2 = chrbuf[b + i + 8];
 				int color = ((ch1 &gt;&gt; j) &amp; 0x1) + (((ch2 &gt;&gt; j) &amp; 0x1) &lt;&lt; 1);
 				int ti = id / 64;
-				int odd = (ti + (ti / HOR + 2)) % 2 == 0;
 				int px = (ti / (HOR * VER)) * (8 * HOR) + (ti % HOR) * 8 + (id % 8);
 				int py = ((ti / HOR) * 8) + ((id % 64) / 8);
-				dst[(py + PAD) * WIDTH + (px + PAD)] = colors[GUIDES &amp;&amp; odd &amp;&amp; color == 0 ? 4 : color];
+				dst[(py + PAD) * WIDTH + (px + PAD)] = colors[color];
 				id++;
 			}
 	SDL_UpdateTexture(gTexture, NULL, dst, WIDTH * sizeof(uint32_t));
@@ -515,24 +514,38 @@ update(void)
 }
 
 void
+widget(Scene* s, Camera* c)
+{
+	Point3d a = Pt3d(0, 0, 0), x = Pt3d(5, 0, 0), y = Pt3d(0, 5, 0), z = Pt3d(0, 0, 5);
+	rotvertex(&amp;s-&gt;origin, &amp;x, c-&gt;pitch, c-&gt;yaw, c-&gt;roll);
+	rotvertex(&amp;s-&gt;origin, &amp;y, c-&gt;pitch, c-&gt;yaw, c-&gt;roll);
+	rotvertex(&amp;s-&gt;origin, &amp;z, c-&gt;pitch, c-&gt;yaw, c-&gt;roll);
+	line(project(c, a), project(c, x), 1);
+	line(project(c, a), project(c, y), 2);
+	line(project(c, a), project(c, z), 3);
+}
+
+void
 render(Scene* s, Camera* c)
 {
 	int i, j;
 	newchr();
 	for(i = 0; i &lt; s-&gt;len; i++) {
-		Mesh* mesh = &amp;s-&gt;meshes[i];
-		for(j = 0; j &lt; mesh-&gt;edgeslen; j++) {
-			Edge* edge = &amp;mesh-&gt;edges[j];
-			Point3d a = addpt3d(&amp;mesh-&gt;vertices[edge-&gt;a], &amp;mesh-&gt;position);
-			Point3d b = addpt3d(&amp;mesh-&gt;vertices[edge-&gt;b], &amp;mesh-&gt;position);
+		Mesh* m = &amp;s-&gt;meshes[i];
+		for(j = 0; j &lt; m-&gt;edgeslen; j++) {
+			Edge* edge = &amp;m-&gt;edges[j];
+			Point3d a = addpt3d(&amp;m-&gt;vertices[edge-&gt;a], &amp;m-&gt;position);
+			Point3d b = addpt3d(&amp;m-&gt;vertices[edge-&gt;b], &amp;m-&gt;position);
 			rotvertex(&amp;s-&gt;origin, &amp;a, c-&gt;pitch, c-&gt;yaw, c-&gt;roll);
 			rotvertex(&amp;s-&gt;origin, &amp;b, c-&gt;pitch, c-&gt;yaw, c-&gt;roll);
 			line(
 			    project(c, addpt3d(&amp;s-&gt;origin, &amp;a)),
 			    project(c, addpt3d(&amp;s-&gt;origin, &amp;b)),
-			    mesh-&gt;color);
+			    m-&gt;color);
 		}
 	}
+	if(GUIDES)
+		widget(s, c);
 	draw(pixels);
 	update();
 }
@@ -616,7 +629,7 @@ dokey(SDL_Event* event)
 		break;
 	case SDLK_h:
 		GUIDES = !GUIDES;
-		draw(pixels);
+		render(&amp;scn, &amp;cam);
 		break;
 	case SDLK_UP:
 	case SDLK_w:
@@ -624,6 +637,9 @@ dokey(SDL_Event* event)
 		render(&amp;scn, &amp;cam);
 		break;
 	case SDLK_LEFT:
+		cam.roll -= 3.0;
+		render(&amp;scn, &amp;cam);
+		break;
 	case SDLK_a:
 		cam.yaw -= 3.0;
 		render(&amp;scn, &amp;cam);
@@ -634,6 +650,9 @@ dokey(SDL_Event* event)
 		render(&amp;scn, &amp;cam);
 		break;
 	case SDLK_RIGHT:
+		cam.roll += 3.0;
+		render(&amp;scn, &amp;cam);
+		break;
 	case SDLK_d:
 		cam.yaw += 3.0;
 		render(&amp;scn, &amp;cam);
@@ -711,11 +730,14 @@ main(void)
 				quit();
 			else if(event.type == SDL_KEYDOWN)
 				dokey(&amp;event);
+			else if(event.type == SDL_WINDOWEVENT)
+				if(event.window.event == SDL_WINDOWEVENT_EXPOSED)
+					draw(pixels);
 	}
 	quit();
 	return 0;
 }
-</pre><figcaption><a href='../archive/src/moogle.c.txt'>moogle.c</a> 717 lines</figcaption>
+</pre><figcaption><a href='../archive/src/moogle.c.txt'>moogle.c</a> 739 lines</figcaption>
 </figure><h3>Structures</h3><p>Here's some additional primitives that I use to build scenes in Moogle.</p><figure><pre>Mesh*
 addbox(Scene* s, double width, double height, double depth)
 {
@@ -789,4 +811,4 @@ addline(Scene* s, double ax, double ay, double az, double bx, double by, double 
 	return addmesh(s, m);
 }
 </pre><figcaption><a href='../archive/src/moogle-structures.c.txt'>moogle-structures.c</a> 72 lines</figcaption>
-</figure><p>Moogle was first written on <a href='plan9.html'>Plan9</a>, the original <a href='plan9_c.html'>Plan9 C</a> implementation is available <a href='../archive/src/moogle9.c.txt' target='_blank'>here</a>.</p><figure><img src='../media/diary/728.jpg' alt='Moogle Spheroid picture' width='900'/><figcaption>20P01 — Moogle Spheroid</figcaption></figure><ul><li><a href='https://git.sr.ht/~rabbits/moogle' target='_blank'>sources</a></li></ul><p><i>incoming(5)</i>: <a href='neauismetica.html'>neauismetica</a> <a href='graf3dscene.html'>graf3dscene</a> <a href='nasu.html'>nasu</a> <a href='defunct.html'>defunct</a> <a href='identity.html'>identity</a> </p><p><i>Last update on <a href='tracker.html'>20T10</a>, edited 7 times. +37/46fh</i><code style='float:right; font-size:80%'>-----+</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
+</figure><p>Moogle was first written on <a href='plan9.html'>Plan9</a>, the original <a href='plan9_c.html'>Plan9 C</a> implementation is available <a href='../archive/src/moogle9.c.txt' target='_blank'>here</a>.</p><figure><img src='../media/diary/728.jpg' alt='Moogle Spheroid picture' width='900'/><figcaption>20P01 — Moogle Spheroid</figcaption></figure><ul><li><a href='https://git.sr.ht/~rabbits/moogle' target='_blank'>sources</a></li></ul><p><i>incoming(5)</i>: <a href='neauismetica.html'>neauismetica</a> <a href='graf3dscene.html'>graf3dscene</a> <a href='nasu.html'>nasu</a> <a href='defunct.html'>defunct</a> <a href='identity.html'>identity</a> </p><p><i>Last update on <a href='tracker.html'>20U03</a>, edited 8 times. +41/52fh</i><code style='float:right; font-size:80%'>-----+</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
