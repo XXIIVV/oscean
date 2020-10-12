@@ -20,8 +20,8 @@ typedef enum {
 	LINE,
 	ARC,
 	BEZIER,
-	ELLIPSE,
-	RECT
+	RECTANGLE,
+	ELLIPSE
 } LineType;
 
 typedef struct {
@@ -41,6 +41,7 @@ typedef struct {
 
 Path2d stack;
 Shape2d shape;
+Point2d* selection;
 
 unsigned char chrbuf[SZ];
 int colors[] = {color1, color2, color3, color4, color0};
@@ -48,8 +49,7 @@ int WIDTH = 8 * HOR + PAD * 2;
 int HEIGHT = 8 * VER + PAD * 2;
 int FPS = 30;
 int GUIDES = 1;
-int CLAMP = 1;
-int COLOR = 1;
+int COLOR = 3;
 SDL_Window* gWindow = NULL;
 SDL_Renderer* gRenderer = NULL;
 SDL_Texture* gTexture = NULL;
@@ -57,18 +57,78 @@ uint32_t* pixels;
 
 /* helpers */
 
+Point2d
+Pt2d(int x, int y)
+{
+	Point2d p;
+	p.x = x;
+	p.y = y;
+	return p;
+}
+
+Point2d
+clampt(Point2d p, int step)
+{
+	p.x = abs((p.x + step / 2) / step) * step;
+	p.y = abs((p.y + step / 2) / step) * step;
+	return p;
+}
+
 int
 equpt(Point2d* a, Point2d* b)
 {
 	return a->x == b->x && a->y == b->y;
 }
 
-double
-distancept(Point2d* a, Point2d* b)
+int
+slen(char* s)
 {
-	double x = a->x - b->x;
-	double y = a->y - b->y;
-	return sqrt(x * x + y * y);
+	int n = 0;
+	while(s[n] != '\0' && s[++n])
+		;
+	return n;
+}
+
+int
+scmp(char* a, char* b)
+{
+	int i, l = slen(a);
+	if(l != slen(b))
+		return 0;
+	for(i = 0; i < l; ++i)
+		if(a[i] != b[i])
+			return 0;
+	return 1;
+}
+
+int
+cpos(char* s, char c)
+{
+	int i;
+	for(i = 0; i < slen(s); i++)
+		if(s[i] == c)
+			return i;
+	return -1;
+}
+
+int
+sint(char* s, int len)
+{
+	int num = 0, i = 0;
+	while(s[i] && i < len && (s[i] >= '0' && s[i] <= '9')) {
+		num = num * 10 + (s[i] - '0');
+		i++;
+	}
+	return num;
+}
+
+Point2d
+strpt(char* s)
+{
+	int c = cpos(s, ',');
+	return Pt2d(
+	    sint(s, c),
+	    sint(s + c + 1, slen(s) - c - 1));
 }
 
 /* chr */
@@ -82,34 +142,32 @@ rowchr(int x, int y)
 int
 getchr(int x, int y)
 {
-	int ch1, ch2;
-	int r = rowchr(x, y);
-	int px = x % 8;
+	int r = rowchr(x, y), px = 7 - (x % 8), ch1, ch2;
 	if(r < 0 || r > SZ - 8)
 		return 0;
-	ch1 = (chrbuf[r] >> (7 - px)) & 1;
-	ch2 = (chrbuf[r + 8] >> (7 - px)) & 1;
+	ch1 = (chrbuf[r] >> px) & 1;
+	ch2 = (chrbuf[r + 8] >> px) & 1;
 	return ch1 && !ch2 ? 1 : !ch1 && ch2 ? 2 : ch1 && ch2 ? 3 : 0;
 }
 
 void
 putchr(int x, int y, int color)
 {
-	int r = rowchr(x, y), px = x % 8;
+	int r = rowchr(x, y), px = 7 - (x % 8);
 	if(x < 0 || y < 0 || x > 8 * HOR || y > 8 * VER || r > SZ - 8)
 		return;
 	if(color == 0) {
-		chrbuf[r] &= ~(1UL << (7 - px));
-		chrbuf[r + 8] &= ~(1UL << (7 - px));
+		chrbuf[r] &= ~(1UL << px);
+		chrbuf[r + 8] &= ~(1UL << px);
 	} else if(color == 2) {
-		chrbuf[r] |= 1UL << (7 - px);
-		chrbuf[r + 8] &= ~(1UL << (7 - px));
+		chrbuf[r] |= 1UL << px;
+		chrbuf[r + 8] &= ~(1UL << px);
 	} else if(color == 1) {
-		chrbuf[r] &= ~(1UL << (7 - px));
-		chrbuf[r + 8] |= 1UL << (7 - px);
+		chrbuf[r] &= ~(1UL << px);
+		chrbuf[r + 8] |= 1UL << px;
 	} else if(color == 3) {
-		chrbuf[r] |= 1UL << (7 - px);
-		chrbuf[r + 8] |= 1UL << (7 - px);
+		chrbuf[r] |= 1UL << px;
+		chrbuf[r + 8] |= 1UL << px;
 	}
 }
 
@@ -122,16 +180,7 @@ newchr(void)
 }
 
 void
-mark(int ax, int ay, int color)
-{
-	putchr(ax + 1, ay, color);
-	putchr(ax - 1, ay, color);
-	putchr(ax, ay + 1, color);
-	putchr(ax, ay - 1, color);
-}
-
-void
-line(int x0, int y0, int x1, int y1, int color)
+lineto(int x0, int y0, int x1, int y1, int color)
 {
 	int dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
 	int dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
@@ -153,52 +202,7 @@ line(int x0, int y0, int x1, int y1, int color)
 }
 
 void
-arc(int x0, int y0, int x1, int y1, int color)
-{
-	/* TODO */
-	int a = abs(x1 - x0), b = abs(y1 - y0), b1 = b & 1;
-	double dx = 4 * (1 - a) * b * b, dy = 4 * (b1 + 1) * a * a;
-	double err = dx + dy + b1 * a * a, e2;
-	if(x0 > x1) {
-		x0 = x1;
-		x1 += a;
-	}
-	if(y0 > y1)
-		y0 = y1;
-	y0 += (b + 1) / 2;
-	y1 = y0 - b1;
-	a *= 8 * a;
-	b1 = 8 * b * b;
-	do {
-		/* putchr(x1, y0, color); */ /* 2 */
-		/* putchr(x0, y0, color); */ /* 3 */
-		putchr(x0, y1, color); /* 4 */
-		/* putchr(x1, y1, color); */ /* 1 */
-		e2 = 2 * err;
-		if(e2 <= dy) {
-			y0++;
-			y1--;
-			err += dy += a;
-		}
-		if(e2 >= dx || 2 * err > dy) {
-			x0++;
-			x1--;
-			err += dx += b1;
-		}
-	} while(x0 <= x1);
-}
-
-void
-rect(int x0, int y0, int x1, int y1, int color)
-{
-	line(x0, y0, x1, y0, color);
-	line(x1, y0, x1, y1, color);
-	line(x1, y1, x0, y1, color);
-	line(x0, y1, x0, y0, color);
-}
-
-void
-ellipse(int x0, int y0, int x1, int y1, int color)
+ellipse(int x0, int y0, int x1, int y1, int cadran, int color)
 {
 	int a = abs(x1 - x0), b = abs(y1 - y0), b1 = b & 1;
 	double dx = 4 * (1 - a) * b * b, dy = 4 * (b1 + 1) * a * a;
@@ -216,10 +220,14 @@ ellipse(int x0, int y0, int x1, int y1, int color)
 	a *= 8 * a;
 	b1 = 8 * b * b;
 	do {
-		putchr(x1, y0, color);
-		putchr(x0, y0, color);
-		putchr(x0, y1, color);
-		putchr(x1, y1, color);
+		if(cadran == -1 || cadran == 1)
+			putchr(x1, y0, color);
+		if(cadran == -1 || cadran == 2)
+			putchr(x0, y0, color);
+		if(cadran == -1 || cadran == 3)
+			putchr(x0, y1, color);
+		if(cadran == -1 || cadran == 0)
+			putchr(x1, y1, color);
 		e2 = 2 * err;
 		if(e2 <= dy) {
 			y0++;
@@ -235,7 +243,57 @@ ellipse(int x0, int y0, int x1, int y1, int color)
 }
 
 void
-bezier(int x0, int y0, int x1, int y1, int x2, int y2, int color)
+arcto(int x0, int y0, int x1, int y1, int x2, int y2, int color)
+{
+	int cadran, col = (y1 - y0) * (x2 - x1) - (y2 - y1) * (x1 - x0);
+	x1 = x2;
+	y1 = y2;
+	if(x2 > x0 && y2 > y0) {
+		if(col < 0) {
+			x0 = x0 - (x2 - x0);
+			y1 = y2 + (y2 - y0);
+			cadran = 0;
+		} else {
+			y0 = y0 - (y2 - y0);
+			x1 = x2 + (x2 - x0);
+			cadran = 2;
+		}
+	} else if(x2 < x0 && y2 > y0) {
+		if(col < 0) {
+			y0 = y0 - (y2 - y0);
+			x1 = x2 + (x2 - x0);
+			cadran = 1;
+		} else {
+			x0 = x0 - (x2 - x0);
+			y1 = y2 + (y2 - y0);
+			cadran = 3;
+		}
+	} else if(x2 < x0 && y2 < y0) {
+		if(col < 0) {
+			x0 = x0 - (x2 - x0);
+			y1 = y2 + (y2 - y0);
+			cadran = 2;
+		} else {
+			y0 = y0 - (y2 - y0);
+			x1 = x2 + (x2 - x0);
+			cadran = 0;
+		}
+	} else {
+		if(col < 0) {
+			y0 = y0 - (y2 - y0);
+			x1 = x2 + (x2 - x0);
+			cadran = 3;
+		} else {
+			x0 = x0 - (x2 - x0);
+			y1 = y2 + (y2 - y0);
+			cadran = 1;
+		}
+	}
+	ellipse(x0, y0, x1, y1, cadran, color);
+}
+
+void
+bezierto(int x0, int y0, int x1, int y1, int x2, int y2, int color)
 {
 	int sx = x2 - x1, sy = y2 - y1;
 	long xx = x0 - x1, yy = y0 - y1, xy;
@@ -285,7 +343,25 @@ bezier(int x0, int y0, int x1, int y1, int x2, int y2, int color)
 			}
 		} while(dy < dx);
 	}
-	line(x0, y0, x2, y2, color);
+	lineto(x0, y0, x2, y2, color);
+}
+
+void
+rectangle(int x0, int y0, int x1, int y1, int color)
+{
+	lineto(x0, y0, x0, y1, color);
+	lineto(x0, y1, x1, y1, color);
+	lineto(x1, y1, x1, y0, color);
+	lineto(x1, y0, x0, y0, color);
+}
+
+void
+mark(int ax, int ay, int r, int color)
+{
+	lineto(ax, ay - r, ax + r, ay, color);
+	lineto(ax + r, ay, ax, ay + r, color);
+	lineto(ax, ay + r, ax - r, ay, color);
+	lineto(ax - r, ay, ax, ay - r, color);
 }
 
 /* draw */
@@ -334,23 +410,30 @@ update(void)
 }
 
 void
-renderpath(Path2d* path)
+renderpath(Path2d* path, int guides)
 {
 	int j;
+	/* Draw control points */
+	for(j = 0; j < path->len; ++j)
+		if(guides)
+			mark(path->points[j].x, path->points[j].y, 2, 1);
+	/* Draw paths */
 	for(j = 0; j < path->len; ++j) {
 		if(j < path->len - 1) {
 			if(path->type == LINE)
-				line(path->points[j].x, path->points[j].y, path->points[j + 1].x, path->points[j + 1].y, path->color);
-			if(path->type == ARC)
-				arc(path->points[j].x, path->points[j].y, path->points[j + 1].x, path->points[j + 1].y, path->color);
-			if(path->type == ELLIPSE)
-				ellipse(path->points[j].x, path->points[j].y, path->points[j + 1].x, path->points[j + 1].y, path->color);
-			if(path->type == RECT)
-				rect(path->points[j].x, path->points[j].y, path->points[j + 1].x, path->points[j + 1].y, path->color);
+				lineto(path->points[j].x, path->points[j].y, path->points[j + 1].x, path->points[j + 1].y, path->color);
+			else if(path->type == RECTANGLE)
+				rectangle(path->points[j].x, path->points[j].y, path->points[j + 1].x, path->points[j + 1].y, path->color);
+			else if(path->type == ELLIPSE)
+				ellipse(path->points[j].x, path->points[j].y, path->points[j + 1].x, path->points[j + 1].y, -1, path->color);
 		}
-		if(j < path->len - 2 && path->type == BEZIER) {
-			bezier(path->points[j].x, path->points[j].y, path->points[j + 1].x, path->points[j + 1].y, path->points[j + 2].x, path->points[j + 2].y, path->color);
-			j++;
+		if(j < path->len - 2) {
+			if(path->type == ARC)
+				arcto(path->points[j].x, path->points[j].y, path->points[j + 1].x, path->points[j + 1].y, path->points[j + 2].x, path->points[j + 2].y, path->color);
+			else if(path->type == BEZIER)
+				bezierto(path->points[j].x, path->points[j].y, path->points[j + 1].x, path->points[j + 1].y, path->points[j + 2].x, path->points[j + 2].y, path->color);
+			if(path->type == ARC || path->type == BEZIER)
+				j++;
 		}
 	}
 }
@@ -362,15 +445,15 @@ render(void)
 	newchr();
 	/* draw shape */
 	for(i = 0; i < shape.len; i++) {
-		renderpath(&shape.paths[i]);
+		renderpath(&shape.paths[i], GUIDES && i == shape.len - 1);
 	}
 	/* draw stack */
 	for(j = 0; j < stack.len; ++j) {
 		mark(stack.points[j].x,
 		     stack.points[j].y,
-		     3);
+		     2, 1);
 		if(j < stack.len - 1)
-			line(stack.points[j].x, stack.points[j].y, stack.points[j + 1].x, stack.points[j + 1].y, 3);
+			lineto(stack.points[j].x, stack.points[j].y, stack.points[j + 1].x, stack.points[j + 1].y, 1);
 	}
 	draw(pixels);
 }
@@ -378,18 +461,36 @@ render(void)
 /* options */
 
 void
-addpoint(int x, int y)
+addpoint(Point2d touch)
 {
-	Point2d p;
-	p.x = CLAMP ? abs((x + 4) / 8) * 8 : x;
-	p.y = CLAMP ? abs((y + 4) / 8) * 8 : y;
-	if(stack.len > 0 && equpt(&p, &stack.points[stack.len - 1])) {
-		printf("Overlap\n");
+	if(stack.len > 0 && equpt(&touch, &stack.points[stack.len - 1]))
 		return;
-	}
-	stack.points[stack.len] = p;
-	printf("%d,%d ", p.x, p.y);
+	stack.points[stack.len] = touch;
 	stack.len++;
+	render();
+}
+
+void
+selectpoint(Point2d* touch)
+{
+	int i, j;
+	selection = NULL;
+	for(i = 0; i < shape.len; ++i) {
+		Path2d* p = &shape.paths[i];
+		for(j = 0; j < p->len; ++j)
+			if(equpt(touch, &p->points[j]))
+				selection = &p->points[j];
+	}
+}
+
+void
+dragpoint(Point2d* touch)
+{
+	if(equpt(touch, selection))
+		return;
+	selection->x = touch->x;
+	selection->y = touch->y;
+	stack.len = 0;
 	render();
 }
 
@@ -414,10 +515,10 @@ clear(void)
 int
 cancast(LineType type)
 {
-	if(type == LINE || type == ELLIPSE) {
+	if(type == LINE || type == RECTANGLE || type == ELLIPSE) {
 		if(stack.len > 1)
 			return 1;
-	} else if(type == BEZIER || type == ARC)
+	} else if(type == ARC || type == BEZIER)
 		if(stack.len > 2)
 			return 1;
 	return 0;
@@ -426,16 +527,13 @@ cancast(LineType type)
 void
 cast(LineType type)
 {
-	if(!cancast(type)) {
-		printf("CANNOT CAST\n");
+	if(!cancast(type))
 		return;
-	}
 	copypath(&stack, &shape.paths[shape.len]);
 	shape.paths[shape.len].color = COLOR;
 	shape.paths[shape.len].type = type;
 	shape.len++;
 	stack.len = 0;
-	printf("%s\n", type == LINE ? "line" : type == ARC ? "arc" : type == RECT ? "rect" : type == ELLIPSE ? "ellipse" : "bezier");
 	render();
 }
 
@@ -452,6 +550,24 @@ error(char* msg, const char* err)
 {
 	printf("Error %s: %s\n", msg, err);
 	return 0;
+}
+
+void
+totxt(void)
+{
+	int i, j, c = -1;
+	FILE* f = fopen("dotgrid-shape.txt", "w");
+	for(i = 0; i < shape.len; ++i) {
+		Path2d* p = &shape.paths[i];
+		if(c != p->color) {
+			fprintf(f, "%d setcolor\n", p->color);
+			c = p->color;
+		}
+		for(j = 0; j < p->len; ++j)
+			fprintf(f, "%d,%d ", p->points[j].x, p->points[j].y);
+		fprintf(f, "%s\n", p->type == LINE ? "lineto" : p->type == ARC ? "arcto" : p->type == RECTANGLE ? "rectangle" : p->type == ELLIPSE ? "ellipse" : "bezierto");
+	}
+	fclose(f);
 }
 
 void
@@ -479,6 +595,50 @@ tobmp(void)
 }
 
 void
+loadtxt(char* path)
+{
+	FILE* f = fopen(path, "r");
+	char line[256];
+	int opslen = 0, oplen = 0, i;
+	char ops[2048][32];
+	/* load */
+	while(fgets(line, 256, f)) {
+		if(line[0] == ';')
+			continue;
+		i = 0;
+		while(line[i]) {
+			if(line[i] == ' ' || line[i] == '\n' || line[i] == '\0') {
+				oplen = 0;
+				opslen++;
+			} else {
+				ops[opslen][oplen++] = line[i];
+				ops[opslen][oplen] = '\0';
+			}
+			i++;
+		}
+	}
+	/* parse */
+	for(i = 0; i < opslen; ++i) {
+		printf("%s\n", ops[i]);
+		if(cpos(ops[i], ',') >= 0)
+			addpoint(strpt(ops[i]));
+		else if(i > 0 && scmp(ops[i], "setcolor"))
+			COLOR = sint(ops[i - 1], 1);
+		else if(scmp(ops[i], "lineto"))
+			cast(LINE);
+		else if(scmp(ops[i], "arcto"))
+			cast(ARC);
+		else if(scmp(ops[i], "bezierto"))
+			cast(BEZIER);
+		else if(scmp(ops[i], "rectangle"))
+			cast(RECTANGLE);
+		else if(scmp(ops[i], "ellipse"))
+			cast(ELLIPSE);
+	}
+	fclose(f);
+}
+
+void
 quit(void)
 {
 	free(pixels);
@@ -495,14 +655,21 @@ quit(void)
 void
 domouse(SDL_Event* event)
 {
+	Point2d touch = clampt(
+	    Pt2d(
+	        (event->motion.x - (PAD * ZOOM)) / ZOOM,
+	        (event->motion.y - (PAD * ZOOM)) / ZOOM),
+	    8);
 	switch(event->type) {
 	case SDL_MOUSEBUTTONUP:
-		addpoint(
-		    (event->motion.x - (PAD * ZOOM)) / ZOOM,
-		    (event->motion.y - (PAD * ZOOM)) / ZOOM);
+		if(selection && !equpt(&touch, selection))
+			dragpoint(&touch);
+		else
+			addpoint(touch);
+		selection = NULL;
 		break;
 	case SDL_MOUSEBUTTONDOWN:
-
+		selectpoint(&touch);
 		break;
 	case SDL_MOUSEMOTION:
 		break;
@@ -517,6 +684,7 @@ dokey(SDL_Event* event)
 		clear();
 		break;
 	case SDLK_BACKSPACE:
+		stack.len = 0;
 		erase();
 		break;
 	case SDLK_e:
@@ -524,6 +692,9 @@ dokey(SDL_Event* event)
 		break;
 	case SDLK_r:
 		tobmp();
+		break;
+	case SDLK_t:
+		totxt();
 		break;
 	case SDLK_a:
 		cast(LINE);
@@ -535,10 +706,10 @@ dokey(SDL_Event* event)
 		cast(BEZIER);
 		break;
 	case SDLK_f:
-		cast(ELLIPSE);
+		cast(RECTANGLE);
 		break;
 	case SDLK_g:
-		cast(RECT);
+		cast(ELLIPSE);
 		break;
 	case SDLK_1:
 		COLOR = 1;
@@ -553,7 +724,7 @@ dokey(SDL_Event* event)
 		break;
 	case SDLK_h:
 		GUIDES = !GUIDES;
-		draw(pixels);
+		render();
 		break;
 	case SDLK_n:
 		newchr();
@@ -599,7 +770,7 @@ init(void)
 }
 
 int
-main(void)
+main(int argc, char* argv[])
 {
 	int ticknext = 0;
 
@@ -607,6 +778,9 @@ main(void)
 		return error("Init", "Failure");
 
 	newchr();
+
+	if(argc > 1)
+		loadtxt(argv[1]);
 
 	draw(pixels);
 	update();
