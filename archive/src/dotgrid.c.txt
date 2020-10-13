@@ -17,6 +17,7 @@
 #define PI 3.14159265358979323846
 
 typedef enum {
+	POINT,
 	LINE,
 	ARC,
 	BEZIER,
@@ -180,7 +181,7 @@ newchr(void)
 }
 
 void
-lineto(int x0, int y0, int x1, int y1, int color)
+line(int x0, int y0, int x1, int y1, int color)
 {
 	int dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
 	int dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
@@ -243,7 +244,7 @@ ellipse(int x0, int y0, int x1, int y1, int cadran, int color)
 }
 
 void
-arcto(int x0, int y0, int x1, int y1, int x2, int y2, int color)
+arc(int x0, int y0, int x1, int y1, int x2, int y2, int color)
 {
 	int cadran, col = (y1 - y0) * (x2 - x1) - (y2 - y1) * (x1 - x0);
 	x1 = x2;
@@ -293,7 +294,7 @@ arcto(int x0, int y0, int x1, int y1, int x2, int y2, int color)
 }
 
 void
-bezierto(int x0, int y0, int x1, int y1, int x2, int y2, int color)
+bezier(int x0, int y0, int x1, int y1, int x2, int y2, int color)
 {
 	int sx = x2 - x1, sy = y2 - y1;
 	long xx = x0 - x1, yy = y0 - y1, xy;
@@ -343,25 +344,25 @@ bezierto(int x0, int y0, int x1, int y1, int x2, int y2, int color)
 			}
 		} while(dy < dx);
 	}
-	lineto(x0, y0, x2, y2, color);
+	line(x0, y0, x2, y2, color);
 }
 
 void
 rectangle(int x0, int y0, int x1, int y1, int color)
 {
-	lineto(x0, y0, x0, y1, color);
-	lineto(x0, y1, x1, y1, color);
-	lineto(x1, y1, x1, y0, color);
-	lineto(x1, y0, x0, y0, color);
+	line(x0, y0, x0, y1, color);
+	line(x0, y1, x1, y1, color);
+	line(x1, y1, x1, y0, color);
+	line(x1, y0, x0, y0, color);
 }
 
 void
 mark(int ax, int ay, int r, int color)
 {
-	lineto(ax, ay - r, ax + r, ay, color);
-	lineto(ax + r, ay, ax, ay + r, color);
-	lineto(ax, ay + r, ax - r, ay, color);
-	lineto(ax - r, ay, ax, ay - r, color);
+	line(ax, ay - r, ax + r, ay, color);
+	line(ax + r, ay, ax, ay + r, color);
+	line(ax, ay + r, ax - r, ay, color);
+	line(ax - r, ay, ax, ay - r, color);
 }
 
 /* draw */
@@ -421,7 +422,7 @@ renderpath(Path2d* path, int guides)
 	for(j = 0; j < path->len; ++j) {
 		if(j < path->len - 1) {
 			if(path->type == LINE)
-				lineto(path->points[j].x, path->points[j].y, path->points[j + 1].x, path->points[j + 1].y, path->color);
+				line(path->points[j].x, path->points[j].y, path->points[j + 1].x, path->points[j + 1].y, path->color);
 			else if(path->type == RECTANGLE)
 				rectangle(path->points[j].x, path->points[j].y, path->points[j + 1].x, path->points[j + 1].y, path->color);
 			else if(path->type == ELLIPSE)
@@ -429,12 +430,14 @@ renderpath(Path2d* path, int guides)
 		}
 		if(j < path->len - 2) {
 			if(path->type == ARC)
-				arcto(path->points[j].x, path->points[j].y, path->points[j + 1].x, path->points[j + 1].y, path->points[j + 2].x, path->points[j + 2].y, path->color);
+				arc(path->points[j].x, path->points[j].y, path->points[j + 1].x, path->points[j + 1].y, path->points[j + 2].x, path->points[j + 2].y, path->color);
 			else if(path->type == BEZIER)
-				bezierto(path->points[j].x, path->points[j].y, path->points[j + 1].x, path->points[j + 1].y, path->points[j + 2].x, path->points[j + 2].y, path->color);
+				bezier(path->points[j].x, path->points[j].y, path->points[j + 1].x, path->points[j + 1].y, path->points[j + 2].x, path->points[j + 2].y, path->color);
 			if(path->type == ARC || path->type == BEZIER)
 				j++;
 		}
+		if(path->type == POINT)
+			putchr(path->points[j].x, path->points[j].y, path->color);
 	}
 }
 
@@ -453,7 +456,7 @@ render(void)
 		     stack.points[j].y,
 		     2, 1);
 		if(j < stack.len - 1)
-			lineto(stack.points[j].x, stack.points[j].y, stack.points[j + 1].x, stack.points[j + 1].y, 1);
+			line(stack.points[j].x, stack.points[j].y, stack.points[j + 1].x, stack.points[j + 1].y, 1);
 	}
 	draw(pixels);
 }
@@ -515,7 +518,9 @@ clear(void)
 int
 cancast(LineType type)
 {
-	if(type == LINE || type == RECTANGLE || type == ELLIPSE) {
+	if(type == POINT)
+		return 1;
+	else if(type == LINE || type == RECTANGLE || type == ELLIPSE) {
 		if(stack.len > 1)
 			return 1;
 	} else if(type == ARC || type == BEZIER)
@@ -565,7 +570,7 @@ totxt(void)
 		}
 		for(j = 0; j < p->len; ++j)
 			fprintf(f, "%d,%d ", p->points[j].x, p->points[j].y);
-		fprintf(f, "%s\n", p->type == LINE ? "lineto" : p->type == ARC ? "arcto" : p->type == RECTANGLE ? "rectangle" : p->type == ELLIPSE ? "ellipse" : "bezierto");
+		fprintf(f, "%s\n", p->type == POINT ? "point" : p->type == LINE ? "line" : p->type == ARC ? "arc" : p->type == RECTANGLE ? "rectangle" : p->type == ELLIPSE ? "ellipse" : "bezier");
 	}
 	fclose(f);
 }
@@ -624,12 +629,14 @@ loadtxt(char* path)
 			addpoint(strpt(ops[i]));
 		else if(i > 0 && scmp(ops[i], "setcolor"))
 			COLOR = sint(ops[i - 1], 1);
-		else if(scmp(ops[i], "lineto"))
+		else if(scmp(ops[i], "line"))
 			cast(LINE);
-		else if(scmp(ops[i], "arcto"))
+		else if(scmp(ops[i], "arc"))
 			cast(ARC);
-		else if(scmp(ops[i], "bezierto"))
+		else if(scmp(ops[i], "bezier"))
 			cast(BEZIER);
+		else if(scmp(ops[i], "point"))
+			cast(POINT);
 		else if(scmp(ops[i], "rectangle"))
 			cast(RECTANGLE);
 		else if(scmp(ops[i], "ellipse"))
@@ -705,10 +712,13 @@ dokey(SDL_Event* event)
 	case SDLK_d:
 		cast(BEZIER);
 		break;
-	case SDLK_f:
+	case SDLK_z:
+		cast(POINT);
+		break;
+	case SDLK_x:
 		cast(RECTANGLE);
 		break;
-	case SDLK_g:
+	case SDLK_c:
 		cast(ELLIPSE);
 		break;
 	case SDLK_1:
