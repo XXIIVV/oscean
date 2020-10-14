@@ -603,44 +603,40 @@ void
 loadtxt(char* path)
 {
 	FILE* f = fopen(path, "r");
-	char line[256];
-	int opslen = 0, oplen = 0, i;
-	char ops[2048][32];
-	/* load */
+	char line[256], query[256];
+	int i = 0, querylen = 0, setting = 0;
 	while(fgets(line, 256, f)) {
 		if(line[0] == ';')
 			continue;
 		i = 0;
 		while(line[i]) {
 			if(line[i] == ' ' || line[i] == '\n' || line[i] == '\0') {
-				oplen = 0;
-				opslen++;
+				if(cpos(query, ',') &gt;= 0)
+					addpoint(strpt(query));
+				else if(i &gt; 0 &amp;&amp; scmp(query, "setcolor"))
+					COLOR = setting &lt; 0 ? 0 : setting &gt; 3 ? 3 : setting;
+				else if(scmp(query, "line"))
+					cast(LINE);
+				else if(scmp(query, "arc"))
+					cast(ARC);
+				else if(scmp(query, "bezier"))
+					cast(BEZIER);
+				else if(scmp(query, "point"))
+					cast(POINT);
+				else if(scmp(query, "rectangle"))
+					cast(RECTANGLE);
+				else if(scmp(query, "ellipse"))
+					cast(ELLIPSE);
+				else if(slen(query) == 1)
+					setting = query[0] - '0';
+				querylen = 0;
+				query[0] = '\0';
 			} else {
-				ops[opslen][oplen++] = line[i];
-				ops[opslen][oplen] = '\0';
+				query[querylen++] = line[i];
+				query[querylen] = '\0';
 			}
 			i++;
 		}
-	}
-	/* parse */
-	for(i = 0; i &lt; opslen; ++i) {
-		printf("%s\n", ops[i]);
-		if(cpos(ops[i], ',') &gt;= 0)
-			addpoint(strpt(ops[i]));
-		else if(i &gt; 0 &amp;&amp; scmp(ops[i], "setcolor"))
-			COLOR = sint(ops[i - 1], 1);
-		else if(scmp(ops[i], "line"))
-			cast(LINE);
-		else if(scmp(ops[i], "arc"))
-			cast(ARC);
-		else if(scmp(ops[i], "bezier"))
-			cast(BEZIER);
-		else if(scmp(ops[i], "point"))
-			cast(POINT);
-		else if(scmp(ops[i], "rectangle"))
-			cast(RECTANGLE);
-		else if(scmp(ops[i], "ellipse"))
-			cast(ELLIPSE);
 	}
 	fclose(f);
 }
@@ -818,5 +814,5 @@ main(int argc, char* argv[])
 	quit();
 	return 0;
 }
-</pre><figcaption><a href='../archive/src/dotgrid.c.txt'>dotgrid.c</a> 820 lines</figcaption>
+</pre><figcaption><a href='../archive/src/dotgrid.c.txt'>dotgrid.c</a> 816 lines</figcaption>
 </figure><figure><img src='../media/diary/508.jpg' alt='Working away from snow picture' width='900'/><figcaption>17Z11 — Working away from snow</figcaption></figure><figure><img src='../media/diary/385.jpg' alt='General improvements picture' width='900'/><figcaption>17W08 — General improvements</figcaption></figure><figure><img src='../media/diary/368.jpg' alt='Dotless Dotgrid Interface picture' width='900'/><figcaption>17W01 — Dotless Dotgrid Interface</figcaption></figure><ul><li><a href='https://git.sr.ht/~rabbits/dotgrid' target='_blank'>sources</a></li><li><a href='http://hundredrabbits.itch.io/Dotgrid' target='_blank'>builds</a></li><li><a href='https://hundredrabbits.github.io/Dotgrid' target='_blank'>live</a></li><li><a href='https://hundredrabbits.itch.io/Dotgrid/community' target='_blank'>community</a></li></ul><p><i>incoming(5)</i>: <a href='themes.html'>themes</a> <a href='ronin.html'>ronin</a> <a href='rafinograde.html'>rafinograde</a> <a href='postscript.html'>postscript</a> <a href='identity.html'>identity</a> </p><p><i>Last update on <a href='tracker.html'>20U05</a>, edited 43 times. +190/264fh</i><code style='float:right; font-size:80%'>----+-</code></p><ul><li>18A12 — Dotgrid Release</li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
