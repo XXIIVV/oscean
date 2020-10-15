@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang='en'></head><meta charset='utf-8'><meta name='description' content='Dotgrid is a vector graphics tool.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV — dotgrid</title></head><body><header><a href='home.html'><img src='../media/identity/xiv28.gif' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='tools.html'>tools/</a></li><li><a href='utilities.html'>utilities</a></li><li><a href='games.html'>games</a></li><li><a href='unreleased.html'>unreleased</a></li></ul><ul><li><a href='ronin.html'>ronin</a></li><li><a href='left.html'>left</a></li><li><a href='dotgrid.html'>dotgrid/</a></li><li><a href='nasu.html'>nasu</a></li><li><a href='moogle.html'>moogle</a></li></ul><ul></ul></nav><main><figure><img src='../media/diary/536.jpg' alt='Improved the look and feel picture' width='900'/><figcaption>18J04 — Improved the look and feel</figcaption></figure><h2>Dotgrid is a vector graphics tool.</h2><p>Dotgrid is a <b>grid-based vector drawing software</b> designed to create logos, icons and type. The present version uses a simple scripting language inspired from <a href='postscript.html'>Postscript</a>, and is designed to export <a href='chr_format.html'>.chr</a> and .bmp files. The syntax supports <code>setcolor</code>, <code>point</code>, <code>line</code>, <code>arc</code>, <code>bezier</code>, <code>rect</code> and <code>ellipse</code>.</p><figure><img src='../media/generic/dotgrid-leon.gif'/>&nbsp;<figcaption>—Quadtree by <a href='https://merveilles.town/web/statuses/105033976049801234' target='_blank'>Leon</a></figcaption></figure><h3>dotgrid.c</h3><p>The following code is a single-file implementation written in a few lines of <a href='ansi_c.html'>ANSI C</a>, the only dependecy is <a href='https://www.libsdl.org' target='_blank'>SDL2</a>. It uses a syntax for its source files similar to that of <a href='postscript.html'>Postscript</a>. It is meant to be used along-side <a href='nasu.html'>nasu</a> and <a href='moogle.html'>moogle</a>. Read the manual <a href='https://git.sr.ht/~rabbits/dotgrid' target='_blank'>here</a>.</p><pre>cc dotgrid.c -std=c89 -Os -DNDEBUG -g0 -s -Wall -L/usr/local/lib -lSDL2 -lm -o dotgrid</pre><figure><pre>#include &lt;SDL2/SDL.h&gt;
+<!DOCTYPE html><html lang='en'></head><meta charset='utf-8'><meta name='description' content='Dotgrid is a vector graphics tool.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV — dotgrid</title></head><body><header><a href='home.html'><img src='../media/identity/xiv28.gif' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='tools.html'>tools/</a></li><li><a href='utilities.html'>utilities</a></li><li><a href='games.html'>games</a></li><li><a href='unreleased.html'>unreleased</a></li></ul><ul><li><a href='ronin.html'>ronin</a></li><li><a href='left.html'>left</a></li><li><a href='dotgrid.html'>dotgrid/</a></li><li><a href='nasu.html'>nasu</a></li><li><a href='moogle.html'>moogle</a></li></ul><ul></ul></nav><main><figure><img src='../media/diary/536.jpg' alt='Improved the look and feel picture' width='900'/><figcaption>18J04 — Improved the look and feel</figcaption></figure><h2>Dotgrid is a vector graphics tool.</h2><p>Dotgrid is a <b>grid-based vector drawing software</b> designed to create logos, icons and type. The present version uses a simple scripting language inspired from <a href='postscript.html'>Postscript</a>, and is designed to export <a href='chr_format.html'>.chr</a> and .bmp files. The syntax supports <code>setcolor</code>, <code>point</code>, <code>line</code>, <code>arc</code>, <code>bezier</code>, <code>rect</code> and <code>ellipse</code>.</p><figure><img src='../media/generic/dotgrid-eye.gif'/>&nbsp;<figcaption>—Iris, in Dotgrid</figcaption></figure><h3>dotgrid.c</h3><p>The following code is a single-file implementation written in a few lines of <a href='ansi_c.html'>ANSI C</a>, the only dependecy is <a href='https://www.libsdl.org' target='_blank'>SDL2</a>. It uses a syntax for its source files similar to that of <a href='postscript.html'>Postscript</a>. It is meant to be used along-side <a href='nasu.html'>nasu</a> and <a href='moogle.html'>moogle</a>. Read the manual <a href='https://git.sr.ht/~rabbits/dotgrid' target='_blank'>here</a>.</p><pre>cc dotgrid.c -std=c89 -Os -DNDEBUG -g0 -s -Wall -L/usr/local/lib -lSDL2 -lm -o dotgrid</pre><figure><pre>#include &lt;SDL2/SDL.h&gt;
 #include &lt;stdio.h&gt;
 #include &lt;math.h&gt;
 
@@ -121,15 +121,6 @@ sint(char* s, int len)
 		i++;
 	}
 	return num;
-}
-
-Point2d
-strpt(char* s)
-{
-	int c = cpos(s, ',');
-	return Pt2d(
-	    sint(s, c),
-	    sint(s + c + 1, slen(s) - c - 1));
 }
 
 /* chr */
@@ -357,7 +348,7 @@ rectangle(int x0, int y0, int x1, int y1, int color)
 }
 
 void
-mark(int ax, int ay, int r, int color)
+handle(int ax, int ay, int r, int color)
 {
 	line(ax, ay - r, ax + r, ay, color);
 	line(ax + r, ay, ax, ay + r, color);
@@ -417,7 +408,7 @@ renderpath(Path2d* path, int guides)
 	/* Draw control points */
 	for(j = 0; j &lt; path-&gt;len; ++j)
 		if(guides)
-			mark(path-&gt;points[j].x, path-&gt;points[j].y, 2, 1);
+			handle(path-&gt;points[j].x, path-&gt;points[j].y, 2, 1);
 	/* Draw paths */
 	for(j = 0; j &lt; path-&gt;len; ++j) {
 		if(j &lt; path-&gt;len - 1) {
@@ -452,9 +443,9 @@ render(void)
 	}
 	/* draw stack */
 	for(j = 0; j &lt; stack.len; ++j) {
-		mark(stack.points[j].x,
-		     stack.points[j].y,
-		     2, 1);
+		handle(stack.points[j].x,
+		       stack.points[j].y,
+		       2, 1);
 		if(j &lt; stack.len - 1)
 			line(stack.points[j].x, stack.points[j].y, stack.points[j + 1].x, stack.points[j + 1].y, 1);
 	}
@@ -508,13 +499,6 @@ copypath(Path2d* src, Path2d* dst)
 	}
 }
 
-void
-clear(void)
-{
-	stack.len = 0;
-	render();
-}
-
 int
 cancast(LineType type)
 {
@@ -539,14 +523,6 @@ cast(LineType type)
 	shape.paths[shape.len].type = type;
 	shape.len++;
 	stack.len = 0;
-	render();
-}
-
-void
-erase(void)
-{
-	if(shape.len &gt; 0)
-		shape.len--;
 	render();
 }
 
@@ -600,19 +576,23 @@ tobmp(void)
 }
 
 void
-loadtxt(char* path)
+loadtxt(FILE* f)
 {
-	FILE* f = fopen(path, "r");
 	char line[256], query[256];
 	int i = 0, querylen = 0, setting = 0;
+	if(!f)
+		return;
 	while(fgets(line, 256, f)) {
 		if(line[0] == ';')
 			continue;
 		i = 0;
 		while(line[i]) {
 			if(line[i] == ' ' || line[i] == '\n' || line[i] == '\0') {
-				if(cpos(query, ',') &gt;= 0)
-					addpoint(strpt(query));
+				int c = cpos(query, ',');
+				if(c &gt;= 0)
+					addpoint(Pt2d(
+					    sint(query, c),
+					    sint(query + c + 1, slen(query) - c - 1)));
 				else if(i &gt; 0 &amp;&amp; scmp(query, "setcolor"))
 					COLOR = setting &lt; 0 ? 0 : setting &gt; 3 ? 3 : setting;
 				else if(scmp(query, "line"))
@@ -684,11 +664,14 @@ dokey(SDL_Event* event)
 {
 	switch(event-&gt;key.keysym.sym) {
 	case SDLK_ESCAPE:
-		clear();
+		stack.len = 0;
+		render();
 		break;
 	case SDLK_BACKSPACE:
 		stack.len = 0;
-		erase();
+		if(shape.len &gt; 0)
+			shape.len--;
+		render();
 		break;
 	case SDLK_e:
 		tochr();
@@ -784,10 +767,8 @@ main(int argc, char* argv[])
 		return error("Init", "Failure");
 
 	newchr();
-
 	if(argc &gt; 1)
-		loadtxt(argv[1]);
-
+		loadtxt(fopen(argv[1], "r"));
 	draw(pixels);
 	update();
 
@@ -814,5 +795,5 @@ main(int argc, char* argv[])
 	quit();
 	return 0;
 }
-</pre><figcaption><a href='../archive/src/dotgrid.c.txt'>dotgrid.c</a> 816 lines</figcaption>
+</pre><figcaption><a href='../archive/src/dotgrid.c.txt'>dotgrid.c</a> 797 lines</figcaption>
 </figure><figure><img src='../media/diary/508.jpg' alt='Working away from snow picture' width='900'/><figcaption>17Z11 — Working away from snow</figcaption></figure><figure><img src='../media/diary/385.jpg' alt='General improvements picture' width='900'/><figcaption>17W08 — General improvements</figcaption></figure><figure><img src='../media/diary/368.jpg' alt='Dotless Dotgrid Interface picture' width='900'/><figcaption>17W01 — Dotless Dotgrid Interface</figcaption></figure><ul><li><a href='https://git.sr.ht/~rabbits/dotgrid' target='_blank'>sources</a></li><li><a href='http://hundredrabbits.itch.io/Dotgrid' target='_blank'>builds</a></li><li><a href='https://hundredrabbits.github.io/Dotgrid' target='_blank'>live</a></li><li><a href='https://hundredrabbits.itch.io/Dotgrid/community' target='_blank'>community</a></li></ul><p><i>incoming(5)</i>: <a href='themes.html'>themes</a> <a href='ronin.html'>ronin</a> <a href='rafinograde.html'>rafinograde</a> <a href='postscript.html'>postscript</a> <a href='identity.html'>identity</a> </p><p><i>Last update on <a href='tracker.html'>20U05</a>, edited 43 times. +190/264fh</i><code style='float:right; font-size:80%'>----+-</code></p><ul><li>18A12 — Dotgrid Release</li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
