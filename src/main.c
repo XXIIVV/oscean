@@ -376,26 +376,21 @@ fpinclude(FILE* f, Term* t)
 }
 
 void
-fpindex(FILE* f, Lexicon* lex, Term* t)
-{
-	int i;
-	for(i = 0; i < t->children_len; ++i) {
-		Term* child = t->children[i];
-		fprintf(f, "<h3><a href='%s.html'>%s</a></h3>", child->filename, child->name);
-		fpbodypart(f, lex, child);
-		fplist(f, child);
-	}
-}
-
-void
-fpportal(FILE* f, Journal* jou, Term* t)
+fpportal(FILE* f, Lexicon* lex, Journal* jou, Term* t, int pict, int text)
 {
 	int i;
 	for(i = 0; i < t->children_len; ++i) {
 		Term* c = t->children[i];
-		Log* l = finddiary(jou, c);
-		if(l != NULL)
-			fppict(f, l->pict, c->name, c->bref, 1, c->filename);
+		if(pict) {
+			Log* l = finddiary(jou, c);
+			if(l != NULL)
+				fppict(f, l->pict, c->name, c->bref, 1, c->filename);
+		}
+		if(text) {
+			fprintf(f, "<h2><a href='%s.html'>%s</a></h2>", c->filename, c->name);
+			fpbodypart(f, lex, c);
+			fplist(f, c);
+		}
 	}
 }
 
@@ -475,23 +470,7 @@ fphoraire(FILE* f, Journal* jou, Term* t)
 }
 
 void
-print_term_details(FILE* f, Term* t, int depth)
-{
-	int i;
-	depth++;
-	fprintf(f, "<li><a href='%s.html'>%s</a> <i>%s</i></li>", t->filename, t->name,
-	        t->incoming_len < 1 ? "orphan " : t->outgoing_len < 1 ? "deadend " : "");
-	if(t->children_len < 1)
-		return;
-	fputs("<ul>", f);
-	for(i = 0; i < t->children_len; ++i)
-		if(!scmp(t->children[i]->name, t->name))
-			print_term_details(f, t->children[i], depth);
-	fputs("</ul>", f);
-}
-
-void
-fpspecial_home(FILE* f, Journal* journal)
+fphome(FILE* f, Journal* journal)
 {
 	int i, events = 0;
 	for(i = 0; i < 5; ++i) {
@@ -514,7 +493,7 @@ fpspecial_home(FILE* f, Journal* journal)
 }
 
 void
-fpspecial_calendar(FILE* f, Journal* journal)
+fpcalendar(FILE* f, Journal* journal)
 {
 	int i, last_year = 0;
 	fputs("<ul>", f);
@@ -531,7 +510,7 @@ fpspecial_calendar(FILE* f, Journal* journal)
 }
 
 void
-fpspecial_tracker(FILE* f, Journal* journal)
+fptracker(FILE* f, Journal* journal)
 {
 	int i, known_id = 0, last_year = 20;
 	fputs("<ul>", f);
@@ -558,7 +537,7 @@ fpspecial_tracker(FILE* f, Journal* journal)
 }
 
 void
-fpspecial_journal(FILE* f, Journal* journal)
+fpjournal(FILE* f, Journal* journal)
 {
 	int i, count = 0;
 	for(i = 0; i < journal->len; ++i) {
@@ -572,7 +551,7 @@ fpspecial_journal(FILE* f, Journal* journal)
 }
 
 void
-fpspecial_now(FILE* f, Lexicon* lex, Journal* jou)
+fpnow(FILE* f, Lexicon* lex, Journal* jou)
 {
 	int i, epoch, projects_len = 0;
 	char *pname[LOGS_RANGE], *pfname[LOGS_RANGE];
@@ -629,6 +608,22 @@ fpspecial_now(FILE* f, Lexicon* lex, Journal* jou)
 }
 
 void
+print_term_details(FILE* f, Term* t, int depth)
+{
+	int i;
+	depth++;
+	fprintf(f, "<li><a href='%s.html'>%s</a> <i>%s</i></li>", t->filename, t->name,
+	        t->incoming_len < 1 ? "orphan " : t->outgoing_len < 1 ? "deadend " : "");
+	if(t->children_len < 1)
+		return;
+	fputs("<ul>", f);
+	for(i = 0; i < t->children_len; ++i)
+		if(!scmp(t->children[i]->name, t->name))
+			print_term_details(f, t->children[i], depth);
+	fputs("</ul>", f);
+}
+
+void
 fpspecial_index(FILE* f, Lexicon* lex, Journal* jou)
 {
 	int i, sends = 0, orphans = 0, deadends = 0;
@@ -670,24 +665,26 @@ fphtml(FILE* f, Lexicon* lex, Term* t, Journal* jou)
 	fpinclude(f, t);
 	/* templated pages */
 	if(t->type) {
-		if(scmp(t->type, "portal"))
-			fpportal(f, jou, t);
+		if(scmp(t->type, "pict_portal"))
+			fpportal(f, lex, jou, t, 1, 0);
+		else if(scmp(t->type, "text_portal"))
+			fpportal(f, lex, jou, t, 0, 1);
 		else if(scmp(t->type, "album"))
 			fpalbum(f, jou, t);
-		else if(scmp(t->type, "index"))
-			fpindex(f, lex, t);
+		else
+			error("Unknown template", t->type);
 	}
 	/* special pages */
 	if(scmp(t->name, "now"))
-		fpspecial_now(f, lex, jou);
+		fpnow(f, lex, jou);
 	else if(scmp(t->name, "home"))
-		fpspecial_home(f, jou);
+		fphome(f, jou);
 	else if(scmp(t->name, "calendar"))
-		fpspecial_calendar(f, jou);
+		fpcalendar(f, jou);
 	else if(scmp(t->name, "tracker"))
-		fpspecial_tracker(f, jou);
+		fptracker(f, jou);
 	else if(scmp(t->name, "journal"))
-		fpspecial_journal(f, jou);
+		fpjournal(f, jou);
 	else if(scmp(t->name, "index"))
 		fpspecial_index(f, lex, jou);
 	fplist(f, t);
@@ -707,7 +704,7 @@ fphtml(FILE* f, Lexicon* lex, Term* t, Journal* jou)
 }
 
 void
-fprss(FILE* f, Journal* journal)
+fprss(FILE* f, Journal* jou)
 {
 	int i;
 	time_t now;
@@ -727,8 +724,8 @@ fprss(FILE* f, Journal* journal)
 	fputs("  <title>The Nataniev Library</title>\n", f);
 	fputs("  <link>" DOMAIN "Journal</link>\n", f);
 	fputs("</image>\n", f);
-	for(i = 0; i < journal->len; ++i) {
-		Log l = journal->logs[i];
+	for(i = 0; i < jou->len; ++i) {
+		Log l = jou->logs[i];
 		if(l.pict == 0)
 			continue;
 		fputs("<item>\n", f);
@@ -786,16 +783,16 @@ parse_glossary(FILE* fp, Glossary* glossary)
 		if(depth == 0) {
 			l = &glossary->lists[glossary->len++];
 			slca(sstr(line, buf, 0, len));
-			l->name = addword(&b1, buf);
+			l->name = push(&b1, buf);
 		} else if(depth == 2) {
 			if(l->len >= 64)
 				error("Reached list item limit", l->name);
 			split = cpos(line, ':');
 			if(split < 0)
-				l->vals[l->len] = addword(&b1, sstr(line, buf, 2, len + 2));
+				l->vals[l->len] = push(&b1, sstr(line, buf, 2, len + 2));
 			else {
-				l->keys[l->len] = addword(&b1, sstr(line, buf, 2, split - 3));
-				l->vals[l->len] = addword(&b1, sstr(line, buf, split + 2, len - split));
+				l->keys[l->len] = push(&b1, sstr(line, buf, 2, split - 3));
+				l->vals[l->len] = push(&b1, sstr(line, buf, split + 2, len - split));
 			}
 			l->len++;
 		}
@@ -824,17 +821,20 @@ parse_lexicon(FILE* fp, Lexicon* lexicon)
 			Term* t = &lexicon->terms[lexicon->len];
 			if(!sans(line))
 				error("Lexicon key is not alphanum", line);
-			t->name = addword(&b1, slca(sstr(line, buf, 0, len)));
-			t->filename = addword(&b1, scsw(slca(sstr(line, buf, 0, len)), ' ', '_'));
+			t->name = push(&b1, slca(sstr(line, buf, 0, len)));
+			t->filename = push(&b1, scsw(slca(sstr(line, buf, 0, len)), ' ', '_'));
+			t->body_len = 0;
+			t->list_len = 0;
+			t->incoming_len = 0;
 			lexicon->len++;
 		} else if(depth == 2) {
 			Term* t = &lexicon->terms[lexicon->len - 1];
 			if(spos(line, "HOST : ") >= 0)
-				t->host = addword(&b1, sstr(line, buf, 9, len - 9));
+				t->host = push(&b1, sstr(line, buf, 9, len - 9));
 			if(spos(line, "BREF : ") >= 0)
-				t->bref = addword(&b1, sstr(line, buf, 9, len - 9));
+				t->bref = push(&b1, sstr(line, buf, 9, len - 9));
 			if(spos(line, "TYPE : ") >= 0)
-				t->type = addword(&b1, sstr(line, buf, 9, len - 9));
+				t->type = push(&b1, sstr(line, buf, 9, len - 9));
 			catch_body = spos(line, "BODY") >= 0;
 			catch_link = spos(line, "LINK") >= 0;
 			catch_list = spos(line, "LIST") >= 0;
@@ -842,17 +842,19 @@ parse_lexicon(FILE* fp, Lexicon* lexicon)
 			Term* t = &lexicon->terms[lexicon->len - 1];
 			/* Body */
 			if(catch_body)
-				t->body[t->body_len++] = addword(&b1, sstr(line, buf, 4, len - 4));
+				t->body[t->body_len++] = push(&b1, sstr(line, buf, 4, len - 4));
 			/* Link */
-			if(catch_link) {
+			else if(catch_link) {
 				key_len = cpos(line, ':') - 5;
-				t->link.keys[t->link.len] = addword(&b1, sstr(line, buf, 4, key_len));
+				t->link.keys[t->link.len] = push(&b1, sstr(line, buf, 4, key_len));
 				val_len = len - key_len - 5;
-				t->link.vals[t->link.len++] = addword(&b1, sstr(line, buf, key_len + 7, val_len));
+				t->link.vals[t->link.len++] = push(&b1, sstr(line, buf, key_len + 7, val_len));
 			}
 			/* List */
-			if(catch_list)
-				t->list[t->list_len++] = addword(&b1, sstr(line, buf, 4, len - 4));
+			else if(catch_list)
+				t->list[t->list_len++] = push(&b1, sstr(line, buf, 4, len - 4));
+			else
+				error("Invalid line", line);
 		}
 		count++;
 	}
@@ -877,13 +879,13 @@ parse_horaire(FILE* fp, Journal* journal)
 			error("Log is too long", line);
 		l = &journal->logs[journal->len];
 		/* Date */
-		l->date = addword(&b1, sstr(line, buf, 0, 5));
+		l->date = push(&b1, sstr(line, buf, 0, 5));
 		/* Rune */
 		l->rune = line[6];
 		/* Code */
 		l->code = sint(line + 7, 3);
 		/* Term */
-		l->host = addword(&b1, strm(sstr(line, buf, 11, 21)));
+		l->host = push(&b1, strm(sstr(line, buf, 11, 21)));
 		if(!sans(l->host))
 			printf("Warning: %s is not alphanum\n", l->host);
 		/* Pict */
@@ -891,7 +893,7 @@ parse_horaire(FILE* fp, Journal* journal)
 			l->pict = sint(line + 32, 3);
 		/* Name */
 		if(len >= 38)
-			l->name = addword(&b1, strm(sstr(line, buf, 36, 72)));
+			l->name = push(&b1, strm(sstr(line, buf, 36, 72)));
 		journal->len++;
 		count++;
 	}
@@ -925,8 +927,8 @@ link(Glossary* glo, Lexicon* lex, Journal* jou)
 			error("Unknown log host", l->host);
 		else {
 			if(!l->term->date_last)
-				l->term->date_last = addword(&b1, scpy(l->date, buf));
-			l->term->date_from = addword(&b1, scpy(l->date, buf));
+				l->term->date_last = push(&b1, scpy(l->date, buf));
+			l->term->date_from = push(&b1, scpy(l->date, buf));
 		}
 	}
 	printf("lexicon(%d entries) ", lex->len);
@@ -1012,16 +1014,15 @@ check(Glossary* glo, Lexicon* lex, Journal* jou)
 	}
 }
 
-Lexicon all_terms;
-Glossary all_lists;
-Journal all_logs;
-
 int
 main(void)
 {
+	Glossary all_lists;
+	Lexicon all_terms;
+	Journal all_logs;
 	clock_t start;
 
-	b1 = initblock();
+	b1 = alloc();
 
 	printf("Today    | ");
 	print_arvelie();
@@ -1039,6 +1040,5 @@ main(void)
 	check(&all_lists, &all_terms, &all_logs);
 	printf("[%.2fms]\n", clock_since(start));
 	printf("%d/%d characters in memory\n", b1.len, limit);
-
 	return 0;
 }

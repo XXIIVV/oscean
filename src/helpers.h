@@ -273,7 +273,7 @@ fputs_rfc3339(FILE* f, time_t t)
 
 /* Block */
 
-#define limit 4096 * 128
+#define limit 4096 * 96
 
 typedef struct Block {
 	char data[limit];
@@ -281,7 +281,7 @@ typedef struct Block {
 } Block;
 
 Block
-initblock()
+alloc()
 {
 	Block b;
 	b.len = 0;
@@ -290,7 +290,7 @@ initblock()
 }
 
 char*
-addword(Block* b, char* s)
+push(Block* b, char* s)
 {
 	int i = 0, o = b->len;
 	while(s[i] != '\0')
