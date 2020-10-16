@@ -347,7 +347,7 @@ build_list(FILE* f, Term* t)
 		fprintf(f, "<h3>%s</h3>", l->name);
 		fputs("<ul>", f);
 		for(j = 0; j < l->len; ++j)
-			if(l->keys[j] && l->keys[j][0] == '\0')
+			if(!l->keys[j])
 				fprintf(f, "<li>%s</li>", l->vals[j]);
 			else if(surl(l->vals[j]))
 				fprintf(f, "<li><a href='%s'>%s</a></li>", l->vals[j], l->keys[j]);
