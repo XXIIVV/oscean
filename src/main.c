@@ -748,7 +748,7 @@ fprss(FILE* f, Journal* journal)
 		fputs("  <description>\n", f);
 		fputs("<![CDATA[", f);
 		fprintf(f, "<img src='" DOMAIN "media/diary/%d.jpg'/>\n", l.pict);
-		fprintf(f, "<p>%s<br/><br/><a href='" DOMAIN "site/%s.html'>%s</a></p>", l.term->bref, l.term->filename, l.term->name);
+		fprintf(f, "<p>%s<br/><br/><a href='" DOMAIN "site/%s.html'>%s</a></p>", l.term->bref ? l.term->bref : "", l.term->filename, l.term->name);
 		fputs("]]>\n", f);
 		fputs("  </description>\n", f);
 		fputs("</item>\n", f);
@@ -1042,5 +1042,5 @@ main(void)
 	printf("[%.2fms]\n", clock_since(start));
 	printf("%d/%d characters in memory\n", b1.len, limit);
 
-	return (0);
+	return 0;
 }
