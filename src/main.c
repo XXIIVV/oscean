@@ -4,16 +4,9 @@
 #include "helpers.h"
 #include "projects/arvelie/arvelie.h"
 
-#define KEY_BUF_LEN 32
 #define STR_BUF_LEN 255
-#define LOG_BUF_LEN 64
-#define TERM_DICT_BUFFER 16
-#define TERM_LIST_BUFFER 16
-#define TERM_BODY_BUFFER 24
 #define LEXICON_BUFFER 512
 #define LOGS_RANGE 56
-
-#define LIST_ITEMS 50
 
 #define NAME "XXIIVV"
 #define DOMAIN "https://wiki.xxiivv.com/"
@@ -21,25 +14,25 @@
 #define REPOPATH "https://github.com/XXIIVV/oscean/blob/master/src/inc/"
 
 typedef struct List {
-	char name[KEY_BUF_LEN];
-	char keys[LIST_ITEMS][64];
-	char vals[LIST_ITEMS][STR_BUF_LEN];
+	char* name;
+	char* keys[64];
+	char* vals[64];
 	int len;
 	int routes;
 } List;
 
 typedef struct Term {
-	char name[KEY_BUF_LEN];
-	char host[KEY_BUF_LEN];
-	char bref[STR_BUF_LEN];
-	char type[KEY_BUF_LEN];
-	char body[30][750];
+	char* name;
+	char* host;
+	char* bref;
+	char* type;
+	char* body[30];
 	int body_len;
 	struct List link;
-	char list[20][KEY_BUF_LEN];
+	char* list[20];
 	int list_len;
 	/* generated */
-	char filename[KEY_BUF_LEN];
+	char* filename;
 	char date_from[6];
 	char date_last[6];
 	struct Term* parent;
@@ -47,34 +40,34 @@ typedef struct Term {
 	int children_len;
 	struct List* docs[20];
 	int docs_len;
-	struct Term* incoming[KEY_BUF_LEN];
+	struct Term* incoming[32];
 	int incoming_len;
 	int outgoing_len;
 } Term;
 
 typedef struct Log {
-	char date[6];
+	Term* term;
+	char* date;
+	char* host;
+	char* name;
 	char rune;
 	int code;
-	char host[KEY_BUF_LEN];
 	int pict;
-	char name[LOG_BUF_LEN];
-	Term* term;
 } Log;
 
 typedef struct Glossary {
-	int len;
 	List lists[100];
+	int len;
 } Glossary;
 
 typedef struct Lexicon {
-	int len;
 	Term terms[350];
+	int len;
 } Lexicon;
 
 typedef struct Journal {
-	int len;
 	Log logs[3500];
+	int len;
 } Journal;
 
 int
@@ -354,7 +347,7 @@ build_list(FILE* f, Term* t)
 		fprintf(f, "<h3>%s</h3>", l->name);
 		fputs("<ul>", f);
 		for(j = 0; j < l->len; ++j)
-			if(l->keys[j][0] == '\0')
+			if(l->keys[j] && l->keys[j][0] == '\0')
 				fprintf(f, "<li>%s</li>", l->vals[j]);
 			else if(surl(l->vals[j]))
 				fprintf(f, "<li><a href='%s'>%s</a></li>", l->vals[j], l->keys[j]);
@@ -682,12 +675,14 @@ build_page(FILE* f, Lexicon* lex, Term* t, Journal* jou)
 	build_body(f, lex, t);
 	build_include(f, t);
 	/* templated pages */
-	if(scmp(t->type, "portal"))
-		build_portal(f, jou, t);
-	else if(scmp(t->type, "album"))
-		build_album(f, jou, t);
-	else if(scmp(t->type, "index"))
-		build_index(f, lex, t);
+	if(t->type) {
+		if(scmp(t->type, "portal"))
+			build_portal(f, jou, t);
+		else if(scmp(t->type, "album"))
+			build_album(f, jou, t);
+		else if(scmp(t->type, "index"))
+			build_index(f, lex, t);
+	}
 	/* special pages */
 	if(scmp(t->name, "now"))
 		build_special_now(f, lex, jou);
@@ -777,11 +772,13 @@ fptwtxt(FILE* f, Journal* journal)
 	fclose(f);
 }
 
+Block b1;
+
 FILE*
 parse_glossary(FILE* fp, Glossary* glossary)
 {
 	int len, depth, count = 0, split = 0;
-	char line[512];
+	char line[512], buf[1024];
 	List* l = &glossary->lists[glossary->len];
 	if(fp == NULL)
 		error("Could not open", "glossary");
@@ -794,17 +791,18 @@ parse_glossary(FILE* fp, Glossary* glossary)
 			error("Line is too long", line);
 		if(depth == 0) {
 			l = &glossary->lists[glossary->len];
-			slca(sstr(line, l->name, 0, len));
+			slca(sstr(line, buf, 0, len));
+			l->name = addword(&b1, buf);
 			glossary->len++;
 		} else if(depth == 2) {
-			if(l->len >= LIST_ITEMS)
+			if(l->len >= 64)
 				error("Reached list item limit", l->name);
 			split = cpos(line, ':');
 			if(split < 0)
-				sstr(line, l->vals[l->len], 2, len + 2);
+				l->vals[l->len] = addword(&b1, sstr(line, buf, 2, len + 2));
 			else {
-				sstr(line, l->keys[l->len], 2, split - 3);
-				sstr(line, l->vals[l->len], split + 2, len - split);
+				l->keys[l->len] = addword(&b1, sstr(line, buf, 2, split - 3));
+				l->vals[l->len] = addword(&b1, sstr(line, buf, split + 2, len - split));
 			}
 			l->len++;
 		}
@@ -818,7 +816,7 @@ FILE*
 parse_lexicon(FILE* fp, Lexicon* lexicon)
 {
 	int key_len, val_len, len, count = 0, catch_body = 0, catch_link = 0, catch_list = 0;
-	char line[1024];
+	char line[1024], buf[1024];
 	if(fp == NULL)
 		error("Could not open", "lexicon");
 	while(fgets(line, 1024, fp)) {
@@ -833,42 +831,35 @@ parse_lexicon(FILE* fp, Lexicon* lexicon)
 			Term* t = &lexicon->terms[lexicon->len];
 			if(!sans(line))
 				error("Lexicon key is not alphanum", line);
-			sstr(line, t->name, 0, len);
-			sstr(line, t->filename, 0, len);
-			slca(t->name);
-			scsw(slca(t->filename), ' ', '_');
+			t->name = addword(&b1, slca(sstr(line, buf, 0, len)));
+			t->filename = addword(&b1, scsw(slca(sstr(line, buf, 0, len)), ' ', '_'));
 			lexicon->len++;
 		} else if(depth == 2) {
 			Term* t = &lexicon->terms[lexicon->len - 1];
 			if(spos(line, "HOST : ") >= 0)
-				sstr(line, t->host, 9, len - 9);
+				t->host = addword(&b1, sstr(line, buf, 9, len - 9));
 			if(spos(line, "BREF : ") >= 0)
-				sstr(line, t->bref, 9, len - 9);
+				t->bref = addword(&b1, sstr(line, buf, 9, len - 9));
 			if(spos(line, "TYPE : ") >= 0)
-				sstr(line, t->type, 9, len - 9);
+				t->type = addword(&b1, sstr(line, buf, 9, len - 9));
 			catch_body = spos(line, "BODY") >= 0;
 			catch_link = spos(line, "LINK") >= 0;
 			catch_list = spos(line, "LIST") >= 0;
 		} else if(depth == 4) {
 			Term* t = &lexicon->terms[lexicon->len - 1];
 			/* Body */
-			if(catch_body) {
-				sstr(line, t->body[t->body_len], 4, len - 4);
-				t->body_len++;
-			}
+			if(catch_body)
+				t->body[t->body_len++] = addword(&b1, sstr(line, buf, 4, len - 4));
 			/* Link */
 			if(catch_link) {
 				key_len = cpos(line, ':') - 5;
-				sstr(line, t->link.keys[t->link.len], 4, key_len);
+				t->link.keys[t->link.len] = addword(&b1, sstr(line, buf, 4, key_len));
 				val_len = len - key_len - 5;
-				sstr(line, t->link.vals[t->link.len], key_len + 7, val_len);
-				t->link.len++;
+				t->link.vals[t->link.len++] = addword(&b1, sstr(line, buf, key_len + 7, val_len));
 			}
 			/* List */
-			if(catch_list) {
-				sstr(line, t->list[t->list_len], 4, len - 4);
-				t->list_len++;
-			}
+			if(catch_list)
+				t->list[t->list_len++] = addword(&b1, sstr(line, buf, 4, len - 4));
 		}
 		count++;
 	}
@@ -880,7 +871,7 @@ FILE*
 parse_horaire(FILE* fp, Journal* journal)
 {
 	int len, count = 0;
-	char line[256];
+	char line[256], buf[1024];
 	if(fp == NULL)
 		error("Could not open", "horaire");
 	while(fgets(line, 256, fp)) {
@@ -893,24 +884,21 @@ parse_horaire(FILE* fp, Journal* journal)
 			error("Log is too long", line);
 		l = &journal->logs[journal->len];
 		/* Date */
-		sstr(line, l->date, 0, 5);
+		l->date = addword(&b1, sstr(line, buf, 0, 5));
 		/* Rune */
 		l->rune = line[6];
 		/* Code */
 		l->code = sint(line + 7, 3);
 		/* Term */
-		sstr(line, l->host, 11, 21);
-		strm(l->host);
+		l->host = addword(&b1, strm(sstr(line, buf, 11, 21)));
 		if(!sans(l->host))
 			printf("Warning: %s is not alphanum\n", l->host);
 		/* Pict */
 		if(len >= 35)
 			l->pict = sint(line + 32, 3);
 		/* Name */
-		if(len >= 38) {
-			sstr(line, l->name, 36, LOG_BUF_LEN);
-			strm(l->name);
-		}
+		if(len >= 38)
+			l->name = addword(&b1, strm(sstr(line, buf, 36, 64)));
 		journal->len++;
 		count++;
 	}
@@ -1035,6 +1023,8 @@ main(void)
 {
 	clock_t start;
 
+	b1 = initblock();
+
 	printf("Today    | ");
 	print_arvelie();
 
@@ -1050,6 +1040,7 @@ main(void)
 	start = clock();
 	check(&all_lists, &all_logs);
 	printf("[%.2fms]\n", clock_since(start));
+	printf("%d/%d characters in memory\n", b1.len, limit);
 
 	return (0);
 }

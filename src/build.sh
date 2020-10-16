@@ -12,8 +12,8 @@ cc -std=c89 -DDEBUG -Wall -Wpedantic -Wshadow -Wextra -Werror=implicit-int -Werr
 # Plan9
 # pcc main.c -o main
 
-rm ../site/*
+rm -f ../site/*
 
 ./main
 
-rm ./main
+rm -f ./main
