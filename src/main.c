@@ -4,8 +4,10 @@
 #include "helpers.h"
 #include "projects/arvelie/arvelie.h"
 
+#define GLOMEM 100
+#define LEXMEM 500
+#define HORMEM 3500
 #define STR_BUF_LEN 255
-#define LEXICON_BUFFER 512
 #define LOGS_RANGE 56
 
 #define NAME "XXIIVV"
@@ -56,17 +58,17 @@ typedef struct Log {
 } Log;
 
 typedef struct Glossary {
-	List lists[100];
+	List lists[GLOMEM];
 	int len;
 } Glossary;
 
 typedef struct Lexicon {
-	Term terms[350];
+	Term terms[LEXMEM];
 	int len;
 } Lexicon;
 
 typedef struct Journal {
-	Log logs[3500];
+	Log logs[HORMEM];
 	int len;
 } Journal;
 
@@ -470,11 +472,11 @@ fphoraire(FILE* f, Journal* jou, Term* t)
 }
 
 void
-fphome(FILE* f, Journal* journal)
+fphome(FILE* f, Journal* jou)
 {
 	int i, events = 0;
 	for(i = 0; i < 5; ++i) {
-		if(journal->logs[i].rune == '+') {
+		if(jou->logs[i].rune == '+') {
 			events = 1;
 			break;
 		}
@@ -484,68 +486,64 @@ fphome(FILE* f, Journal* journal)
 	fputs("<h2>Events</h2>", f);
 	fputs("<ul>", f);
 	for(i = 0; i < 5; ++i) {
-		if(journal->logs[i].rune != '+')
+		if(jou->logs[i].rune != '+')
 			continue;
-		fprintf(f, "<li><a href='%s.html'>%s</a> %s</li>", journal->logs[i].term->filename,
-		        journal->logs[i].date, journal->logs[i].name);
+		fprintf(f, "<li><a href='%s.html'>%s</a> %s</li>", jou->logs[i].term->filename,
+		        jou->logs[i].date, jou->logs[i].name);
 	}
 	fputs("</ul>", f);
 }
 
 void
-fpcalendar(FILE* f, Journal* journal)
+fpcalendar(FILE* f, Journal* jou)
 {
 	int i, last_year = 0;
 	fputs("<ul>", f);
-	for(i = 0; i < journal->len; ++i) {
-		if(journal->logs[i].rune != '+')
+	for(i = 0; i < jou->len; ++i) {
+		if(jou->logs[i].rune != '+')
 			continue;
-		if(last_year != sint(journal->logs[i].date, 2))
+		if(last_year != sint(jou->logs[i].date, 2))
 			fprintf(f, "</ul><ul>");
-		fprintf(f, "<li><a href='%s.html'>%s</a> %s</li>", journal->logs[i].term->filename,
-		        journal->logs[i].date, journal->logs[i].name);
-		last_year = sint(journal->logs[i].date, 2);
+		fprintf(f, "<li><a href='%s.html'>%s</a> %s</li>", jou->logs[i].term->filename,
+		        jou->logs[i].date, jou->logs[i].name);
+		last_year = sint(jou->logs[i].date, 2);
 	}
 	fputs("</ul>", f);
 }
 
 void
-fptracker(FILE* f, Journal* journal)
+fptracker(FILE* f, Journal* jou)
 {
+	char* known[LEXMEM];
 	int i, known_id = 0, last_year = 20;
 	fputs("<ul>", f);
-	for(i = 0; i < journal->len; ++i) {
-		char* known[LEXICON_BUFFER];
-		if(afnd(known, known_id, journal->logs[i].term->name) > -1)
+	for(i = 0; i < jou->len; ++i) {
+		if(afnd(known, known_id, jou->logs[i].term->name) > -1)
 			continue;
-		if(known_id >= LEXICON_BUFFER) {
-			printf("Warning: Reached tracker buffer\n");
-			break;
-		}
-		if(last_year != sint(journal->logs[i].date, 2))
+		if(last_year != sint(jou->logs[i].date, 2))
 			fprintf(f, "</ul><ul>");
 		fputs("<li>", f);
-		fprintf(f, "<a href='%s.html'>%s</a> — last update %s", journal->logs[i].term->filename,
-		        journal->logs[i].term->name, journal->logs[i].date);
-		fplifeline(f, journal->logs[i].term);
+		fprintf(f, "<a href='%s.html'>%s</a> — last update %s", jou->logs[i].term->filename,
+		        jou->logs[i].term->name, jou->logs[i].date);
+		fplifeline(f, jou->logs[i].term);
 		fputs("</li>", f);
-		last_year = sint(journal->logs[i].date, 2);
-		known[known_id] = journal->logs[i].term->name;
+		last_year = sint(jou->logs[i].date, 2);
+		known[known_id] = jou->logs[i].term->name;
 		known_id++;
 	}
 	fputs("</ul>", f);
 }
 
 void
-fpjournal(FILE* f, Journal* journal)
+fpjournal(FILE* f, Journal* jou)
 {
 	int i, count = 0;
-	for(i = 0; i < journal->len; ++i) {
+	for(i = 0; i < jou->len; ++i) {
 		if(count > 20)
 			break;
-		if(journal->logs[i].pict == 0)
+		if(jou->logs[i].pict == 0)
 			continue;
-		fplogpict(f, &journal->logs[i], 1);
+		fplogpict(f, &jou->logs[i], 1);
 		count++;
 	}
 }
@@ -750,11 +748,11 @@ fprss(FILE* f, Journal* jou)
 }
 
 void
-fptwtxt(FILE* f, Journal* journal)
+fptwtxt(FILE* f, Journal* jou)
 {
 	int i;
-	for(i = 0; i < journal->len; ++i) {
-		Log l = journal->logs[i];
+	for(i = 0; i < jou->len; ++i) {
+		Log l = jou->logs[i];
 		if(l.rune != '+')
 			continue;
 		fputs_rfc3339(f, arvelie_to_time(l.date));
@@ -766,11 +764,11 @@ fptwtxt(FILE* f, Journal* journal)
 Block b1;
 
 FILE*
-parse_glossary(FILE* fp, Glossary* glossary)
+parse_glossary(FILE* fp, Glossary* glo)
 {
 	int len, depth, count = 0, split = 0;
 	char line[512], buf[1024];
-	List* l = &glossary->lists[glossary->len];
+	List* l = &glo->lists[glo->len];
 	if(fp == NULL)
 		error("Could not open", "glossary");
 	while(fgets(line, 512, fp)) {
@@ -778,12 +776,15 @@ parse_glossary(FILE* fp, Glossary* glossary)
 		len = slen(strm(line));
 		if(len < 4 || line[0] == ';')
 			continue;
+		if(glo->len >= GLOMEM)
+			error("Increase memory", "glossary");
 		if(len > 400)
 			error("Line is too long", line);
 		if(depth == 0) {
-			l = &glossary->lists[glossary->len++];
+			l = &glo->lists[glo->len++];
 			slca(sstr(line, buf, 0, len));
 			l->name = push(&b1, buf);
+			l->len = 0;
 		} else if(depth == 2) {
 			if(l->len >= 64)
 				error("Reached list item limit", l->name);
@@ -803,7 +804,7 @@ parse_glossary(FILE* fp, Glossary* glossary)
 }
 
 FILE*
-parse_lexicon(FILE* fp, Lexicon* lexicon)
+parse_lexicon(FILE* fp, Lexicon* lex)
 {
 	int key_len, val_len, len, count = 0, catch_body = 0, catch_link = 0, catch_list = 0;
 	char line[1024], buf[1024];
@@ -815,20 +816,23 @@ parse_lexicon(FILE* fp, Lexicon* lexicon)
 		len = slen(line);
 		if(len < 3 || line[0] == ';')
 			continue;
+		if(lex->len >= LEXMEM)
+			error("Increase memory", "Lexicon");
 		if(len > 750)
 			error("Line is too long", line);
 		if(depth == 0) {
-			Term* t = &lexicon->terms[lexicon->len];
+			Term* t = &lex->terms[lex->len];
 			if(!sans(line))
 				error("Lexicon key is not alphanum", line);
 			t->name = push(&b1, slca(sstr(line, buf, 0, len)));
 			t->filename = push(&b1, scsw(slca(sstr(line, buf, 0, len)), ' ', '_'));
 			t->body_len = 0;
+			t->docs_len = 0;
 			t->list_len = 0;
 			t->incoming_len = 0;
-			lexicon->len++;
+			lex->len++;
 		} else if(depth == 2) {
-			Term* t = &lexicon->terms[lexicon->len - 1];
+			Term* t = &lex->terms[lex->len - 1];
 			if(spos(line, "HOST : ") >= 0)
 				t->host = push(&b1, sstr(line, buf, 9, len - 9));
 			if(spos(line, "BREF : ") >= 0)
@@ -839,7 +843,7 @@ parse_lexicon(FILE* fp, Lexicon* lexicon)
 			catch_link = spos(line, "LINK") >= 0;
 			catch_list = spos(line, "LIST") >= 0;
 		} else if(depth == 4) {
-			Term* t = &lexicon->terms[lexicon->len - 1];
+			Term* t = &lex->terms[lex->len - 1];
 			/* Body */
 			if(catch_body)
 				t->body[t->body_len++] = push(&b1, sstr(line, buf, 4, len - 4));
@@ -863,7 +867,7 @@ parse_lexicon(FILE* fp, Lexicon* lexicon)
 }
 
 FILE*
-parse_horaire(FILE* fp, Journal* journal)
+parse_horaire(FILE* fp, Journal* jou)
 {
 	int len, count = 0;
 	char line[256], buf[1024];
@@ -875,9 +879,11 @@ parse_horaire(FILE* fp, Journal* journal)
 		len = slen(line);
 		if(len < 14 || line[0] == ';')
 			continue;
+		if(jou->len >= HORMEM)
+			error("Increase memory", "Horaire");
 		if(len > 80)
 			error("Log is too long", line);
-		l = &journal->logs[journal->len];
+		l = &jou->logs[jou->len];
 		/* Date */
 		l->date = push(&b1, sstr(line, buf, 0, 5));
 		/* Rune */
@@ -894,7 +900,7 @@ parse_horaire(FILE* fp, Journal* journal)
 		/* Name */
 		if(len >= 38)
 			l->name = push(&b1, strm(sstr(line, buf, 36, 72)));
-		journal->len++;
+		jou->len++;
 		count++;
 	}
 	printf("(%d lines) ", count);
@@ -1022,6 +1028,10 @@ main(void)
 	Journal all_logs;
 	clock_t start;
 
+	all_lists.len = 0;
+	all_terms.len = 0;
+	all_logs.len = 0;
+
 	b1 = alloc();
 
 	printf("Today    | ");
@@ -1039,6 +1049,8 @@ main(void)
 	start = clock();
 	check(&all_lists, &all_terms, &all_logs);
 	printf("[%.2fms]\n", clock_since(start));
+
 	printf("%d/%d characters in memory\n", b1.len, limit);
+
 	return 0;
 }
