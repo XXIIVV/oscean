@@ -270,31 +270,3 @@ fputs_rfc3339(FILE* f, time_t t)
 	        tm->tm_hour, tm->tm_min, tm->tm_sec,
 	        '-', 7, 0); /* Vancouver GMT-7*/
 }
-
-/* Block */
-
-#define limit 4096 * 96
-
-typedef struct Block {
-	char data[limit];
-	int len;
-} Block;
-
-Block
-alloc()
-{
-	Block b;
-	b.len = 0;
-	b.data[0] = '\0';
-	return b;
-}
-
-char*
-push(Block* b, char* s)
-{
-	int i = 0, o = b->len;
-	while(s[i] != '\0')
-		b->data[b->len++] = s[i++];
-	b->data[b->len++] = '\0';
-	return &b->data[o];
-}
