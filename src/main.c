@@ -604,6 +604,8 @@ fpnow(FILE* f, Lexicon* lex, Journal* jou)
 	int i, epoch, projects_len = 0;
 	char *pname[LOGS_RANGE], *pfname[LOGS_RANGE];
 	double sum_value = 0, pval[LOGS_RANGE], pmaxval = 0;
+	time_t now;
+	time(&now);
 	epoch = get_epoch();
 	for(i = 0; i < LOGS_RANGE; ++i) {
 		int index = 0;
@@ -652,7 +654,7 @@ fpnow(FILE* f, Lexicon* lex, Journal* jou)
 		fputs("</li>", f);
 	}
 	fputs("</ul>", f);
-	fprintf(f, "<p>Last generated on %s(" LOCATION ").</p>", nowstr());
+	fprintf(f, "<p>Last generated on %s(" LOCATION ").</p>", ctime(&now));
 }
 
 void
@@ -764,7 +766,7 @@ fprss(FILE* f, Journal* jou)
 	fputs("<description>The Nataniev Library</description>\n", f);
 	/* Date */
 	fputs("<lastBuildDate>", f);
-	fputs_rfc2822(f, time(&now));
+	fpRFC2822(f, time(&now));
 	fputs("</lastBuildDate>\n", f);
 	/* Image */
 	fputs("<image>\n", f);
@@ -781,7 +783,7 @@ fprss(FILE* f, Journal* jou)
 		fprintf(f, "  <link>" DOMAIN "site/%s.html</link>\n", l.term->filename);
 		fprintf(f, "  <guid isPermaLink='false'>%d</guid>\n", l.pict);
 		fputs("  <pubDate>", f);
-		fputs_rfc2822(f, arvelie_to_time(l.date));
+		fpRFC2822(f, arvelie_to_time(l.date));
 		fputs("</pubDate>\n", f);
 		fputs("  <dc:creator><![CDATA[Devine Lu Linvega]]></dc:creator>\n", f);
 		fputs("  <description>\n", f);
@@ -805,7 +807,7 @@ fptwtxt(FILE* f, Journal* jou)
 		Log l = jou->logs[i];
 		if(l.rune != '+')
 			continue;
-		fputs_rfc3339(f, arvelie_to_time(l.date));
+		fpRFC3339(f, arvelie_to_time(l.date));
 		fprintf(f, "\t%s | " DOMAIN "%s\n", l.name, l.term->filename);
 	}
 	fclose(f);
@@ -1063,16 +1065,16 @@ main(void)
 
 	start = clock();
 	parse(&all_lists, &all_terms, &all_logs);
-	printf("[%.2fms]\n", clock_since(start));
+	printf("[%.2fms]\n", clockoffset(start));
 	start = clock();
 	link(&all_lists, &all_terms, &all_logs);
-	printf("[%.2fms]\n", clock_since(start));
+	printf("[%.2fms]\n", clockoffset(start));
 	start = clock();
 	build(&all_terms, &all_logs);
-	printf("[%.2fms]\n", clock_since(start));
+	printf("[%.2fms]\n", clockoffset(start));
 	start = clock();
 	check(&all_lists, &all_terms, &all_logs);
-	printf("[%.2fms]\n", clock_since(start));
+	printf("[%.2fms]\n", clockoffset(start));
 
 	printf("%d/%d characters in memory\n", b1->len, STRMEM);
 

@@ -37,20 +37,19 @@ cans(char c)
 int
 slen(char* s)
 {
-	int n = 0;
-	while(s[n] != '\0' && s[++n])
+	int i = 0;
+	while(s[i] != '\0' && s[++i])
 		;
-	return n;
+	return i;
 }
 
 int
 cpad(char* s, char c)
 {
 	int i = 0;
-	for(i = 0; i < slen(s) + 1; i++)
-		if(s[i] != c)
-			return i;
-	return 0;
+	while(s[i] == c && s[i] != '\0' && s[++i])
+		;
+	return i;
 }
 
 int
@@ -211,62 +210,35 @@ scat(char* dst, const char* src)
 
 /* old */
 
-void
-swapstr(char* src, char* dst, char* a, char* b)
-{
-	char head[1024], tail[1024];
-	int index = spos(src, a);
-	if(index < 0)
-		return;
-	sstr(src, head, 0, index);
-	sstr(src, tail, index + slen(a), slen(src) - index - slen(a));
-	dst[0] = '\0';
-	scat(dst, head);
-	scat(dst, b);
-	scat(dst, tail);
-}
-
-void
-firstword(char* src, char* dst)
-{
-	int until = cpos(src, ' ');
-	if(until > -1)
-		sstr(src, dst, 0, until);
-	else
-		sstr(src, dst, 0, slen(src));
-}
-
 float
-clock_since(clock_t start)
+clockoffset(clock_t start)
 {
-	double cpu_time_used = ((double)(clock() - start)) / CLOCKS_PER_SEC;
-	return cpu_time_used * 1000;
-}
-
-char*
-nowstr(void)
-{
-	time_t now;
-	time(&now);
-	return ctime(&now);
+	return (((double)(clock() - start)) / CLOCKS_PER_SEC) * 1000;
 }
 
 void
-fputs_rfc2822(FILE* f, time_t t)
+fpRFC2822(FILE* f, time_t t)
 {
-	char rfc_2822[40];
-	strftime(rfc_2822, sizeof(rfc_2822), "%a, %d %b %Y 00:00:00 +0900", localtime(&t));
-	fprintf(f, "%s", rfc_2822);
+	struct tm* tm = localtime(&t);
+	char* days[7] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+	char* months[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+	fprintf(f, "%s, %02d %s %d 00:00:00 +0900",
+	        days[tm->tm_wday],
+	        tm->tm_mday,
+	        months[tm->tm_mon],
+	        tm->tm_year + 1900);
 }
 
 void
-fputs_rfc3339(FILE* f, time_t t)
+fpRFC3339(FILE* f, time_t t)
 {
-	struct tm* tm;
-	if((tm = localtime(&t)) == NULL)
-		return;
+	struct tm* tm = localtime(&t);
 	fprintf(f, "%04d-%02d-%02dT%02d:%02d:%02d%c%02d:%02d",
-	        tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,
-	        tm->tm_hour, tm->tm_min, tm->tm_sec,
+	        tm->tm_year + 1900,
+	        tm->tm_mon + 1,
+	        tm->tm_mday,
+	        tm->tm_hour,
+	        tm->tm_min,
+	        tm->tm_sec,
 	        '-', 7, 0); /* Vancouver GMT-7*/
 }
