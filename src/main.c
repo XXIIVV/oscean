@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <time.h>
 
 #include "helpers.h"
@@ -813,10 +812,8 @@ fptwtxt(FILE* f, Journal* jou)
 	fclose(f);
 }
 
-Block* b1;
-
 FILE*
-parse_glossary(FILE* fp, Glossary* glo)
+parse_glossary(FILE* fp, Block* block, Glossary* glo)
 {
 	int len, depth, count = 0, split = 0;
 	char line[512], buf[1024];
@@ -833,16 +830,16 @@ parse_glossary(FILE* fp, Glossary* glo)
 		if(len > 400)
 			error("Line is too long", line);
 		if(depth == 0) {
-			l = inilist(&glo->lists[glo->len++], push(b1, sstr(line, buf, 0, len)));
+			l = inilist(&glo->lists[glo->len++], push(block, sstr(line, buf, 0, len)));
 		} else if(depth == 2) {
 			if(l->len >= 64)
 				error("Reached list item limit", l->name);
 			split = cpos(line, ':');
 			if(split < 0)
-				l->vals[l->len] = push(b1, sstr(line, buf, 2, len + 2));
+				l->vals[l->len] = push(block, sstr(line, buf, 2, len + 2));
 			else {
-				l->keys[l->len] = push(b1, sstr(line, buf, 2, split - 3));
-				l->vals[l->len] = push(b1, sstr(line, buf, split + 2, len - split));
+				l->keys[l->len] = push(block, sstr(line, buf, 2, split - 3));
+				l->vals[l->len] = push(block, sstr(line, buf, split + 2, len - split));
 			}
 			l->len++;
 		}
@@ -853,7 +850,7 @@ parse_glossary(FILE* fp, Glossary* glo)
 }
 
 FILE*
-parse_lexicon(FILE* fp, Glossary* glo, Lexicon* lex)
+parse_lexicon(FILE* fp, Block* block, Glossary* glo, Lexicon* lex)
 {
 	int key_len, val_len, len, count = 0, catch_body = 0, catch_link = 0, catch_list = 0;
 	char line[1024], buf[1024];
@@ -871,30 +868,30 @@ parse_lexicon(FILE* fp, Glossary* glo, Lexicon* lex)
 		if(len > 750)
 			error("Line is too long", line);
 		if(depth == 0) {
-			t = initerm(&lex->terms[lex->len++], push(b1, sstr(line, buf, 0, len)));
+			t = initerm(&lex->terms[lex->len++], push(block, sstr(line, buf, 0, len)));
 			if(!sans(line))
 				error("Lexicon key is not alphanum", line);
-			t->filename = push(b1, scsw(slca(sstr(line, buf, 0, len)), ' ', '_'));
+			t->filename = push(block, scsw(slca(sstr(line, buf, 0, len)), ' ', '_'));
 		} else if(depth == 2) {
 			if(spos(line, "HOST : ") >= 0)
-				t->host = push(b1, sstr(line, buf, 9, len - 9));
+				t->host = push(block, sstr(line, buf, 9, len - 9));
 			if(spos(line, "BREF : ") >= 0)
-				t->bref = push(b1, sstr(line, buf, 9, len - 9));
+				t->bref = push(block, sstr(line, buf, 9, len - 9));
 			if(spos(line, "TYPE : ") >= 0)
-				t->type = push(b1, sstr(line, buf, 9, len - 9));
+				t->type = push(block, sstr(line, buf, 9, len - 9));
 			catch_body = spos(line, "BODY") >= 0;
 			catch_link = spos(line, "LINK") >= 0;
 			catch_list = spos(line, "LIST") >= 0;
 		} else if(depth == 4) {
 			/* Body */
 			if(catch_body)
-				t->body[t->body_len++] = push(b1, sstr(line, buf, 4, len - 4));
+				t->body[t->body_len++] = push(block, sstr(line, buf, 4, len - 4));
 			/* Link */
 			else if(catch_link) {
 				key_len = cpos(line, ':') - 5;
-				t->link.keys[t->link.len] = push(b1, sstr(line, buf, 4, key_len));
+				t->link.keys[t->link.len] = push(block, sstr(line, buf, 4, key_len));
 				val_len = len - key_len - 5;
-				t->link.vals[t->link.len++] = push(b1, sstr(line, buf, key_len + 7, val_len));
+				t->link.vals[t->link.len++] = push(block, sstr(line, buf, key_len + 7, val_len));
 			}
 			/* List */
 			else if(catch_list) {
@@ -914,7 +911,7 @@ parse_lexicon(FILE* fp, Glossary* glo, Lexicon* lex)
 }
 
 FILE*
-parse_horaire(FILE* fp, Lexicon* lex, Journal* jou)
+parse_horaire(FILE* fp, Block* block, Lexicon* lex, Journal* jou)
 {
 	int len, count = 0;
 	char line[256], buf[1024];
@@ -930,7 +927,7 @@ parse_horaire(FILE* fp, Lexicon* lex, Journal* jou)
 			error("Increase memory", "Horaire");
 		if(len > 80)
 			error("Log is too long", line);
-		l = inilog(&jou->logs[jou->len++], push(b1, sstr(line, buf, 0, 5)));
+		l = inilog(&jou->logs[jou->len++], push(block, sstr(line, buf, 0, 5)));
 		l->rune = line[6];
 		l->code = sint(line + 7, 3);
 		l->term = findterm(lex, strm(sstr(line, buf, 11, 21)));
@@ -939,7 +936,7 @@ parse_horaire(FILE* fp, Lexicon* lex, Journal* jou)
 		if(len >= 35)
 			l->pict = sint(line + 32, 3);
 		if(len >= 38)
-			l->name = push(b1, strm(sstr(line, buf, 36, 72)));
+			l->name = push(block, strm(sstr(line, buf, 36, 72)));
 		count++;
 	}
 	printf("(%d lines) ", count);
@@ -947,19 +944,19 @@ parse_horaire(FILE* fp, Lexicon* lex, Journal* jou)
 }
 
 void
-parse(Glossary* glo, Lexicon* lex, Journal* jou)
+parse(Block* block, Glossary* glo, Lexicon* lex, Journal* jou)
 {
 	printf("Parsing  | ");
 	printf("glossary");
-	fclose(parse_glossary(fopen("database/glossary.ndtl", "r"), glo));
+	fclose(parse_glossary(fopen("database/glossary.ndtl", "r"), block, glo));
 	printf("lexicon");
-	fclose(parse_lexicon(fopen("database/lexicon.ndtl", "r"), glo, lex));
+	fclose(parse_lexicon(fopen("database/lexicon.ndtl", "r"), block, glo, lex));
 	printf("horaire");
-	fclose(parse_horaire(fopen("database/horaire.tbtl", "r"), lex, jou));
+	fclose(parse_horaire(fopen("database/horaire.tbtl", "r"), block, lex, jou));
 }
 
 void
-link(Glossary* glo, Lexicon* lex, Journal* jou)
+link(Block* block, Glossary* glo, Lexicon* lex, Journal* jou)
 {
 	int i, j;
 	char buf[6];
@@ -968,8 +965,8 @@ link(Glossary* glo, Lexicon* lex, Journal* jou)
 	for(i = 0; i < jou->len; ++i) {
 		Log* l = &jou->logs[i];
 		if(!l->term->date_last)
-			l->term->date_last = push(b1, scpy(l->date, buf));
-		l->term->date_from = push(b1, scpy(l->date, buf));
+			l->term->date_last = push(block, scpy(l->date, buf));
+		l->term->date_from = push(block, scpy(l->date, buf));
 	}
 	printf("lexicon(%d entries) ", lex->len);
 	for(i = 0; i < lex->len; ++i) {
@@ -1047,6 +1044,8 @@ check(Glossary* glo, Lexicon* lex, Journal* jou)
 int
 main(void)
 {
+	Block block;
+
 	Glossary all_lists;
 	Lexicon all_terms;
 	Journal all_logs;
@@ -1056,18 +1055,17 @@ main(void)
 	all_terms.len = 0;
 	all_logs.len = 0;
 
-	b1 = malloc(sizeof(Block));
-	b1->len = 0;
-	b1->data[0] = '\0';
+	block.len = 0;
+	block.data[0] = '\0';
 
 	printf("Today    | ");
 	print_arvelie();
 
 	start = clock();
-	parse(&all_lists, &all_terms, &all_logs);
+	parse(&block, &all_lists, &all_terms, &all_logs);
 	printf("[%.2fms]\n", clockoffset(start));
 	start = clock();
-	link(&all_lists, &all_terms, &all_logs);
+	link(&block, &all_lists, &all_terms, &all_logs);
 	printf("[%.2fms]\n", clockoffset(start));
 	start = clock();
 	build(&all_terms, &all_logs);
@@ -1076,7 +1074,7 @@ main(void)
 	check(&all_lists, &all_terms, &all_logs);
 	printf("[%.2fms]\n", clockoffset(start));
 
-	printf("%d/%d characters in memory\n", b1->len, STRMEM);
+	printf("%d/%d characters in memory\n", block.len, STRMEM);
 
 	return 0;
 }

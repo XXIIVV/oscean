@@ -35,15 +35,6 @@ cans(char c)
 }
 
 int
-slen(char* s)
-{
-	int i = 0;
-	while(s[i] != '\0' && s[++i])
-		;
-	return i;
-}
-
-int
 cpad(char* s, char c)
 {
 	int i = 0;
@@ -55,11 +46,20 @@ cpad(char* s, char c)
 int
 cpos(char* s, char c)
 {
-	int i;
-	for(i = 0; i < slen(s); i++)
-		if(s[i] == c)
-			return i;
+	int i = 0;
+	while(s[i] != '\0' && s[i])
+		if(s[i++] == c)
+			return i - 1;
 	return -1;
+}
+
+int
+slen(char* s)
+{
+	int i = 0;
+	while(s[i] != '\0' && s[++i])
+		;
+	return i;
 }
 
 char*
