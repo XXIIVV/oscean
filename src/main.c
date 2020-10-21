@@ -872,7 +872,7 @@ parse_lexicon(FILE* fp, Block* block, Glossary* glo, Lexicon* lex)
 			if(!sans(line))
 				error("Lexicon key is not alphanum", line);
 			t->filename = push(block, scsw(slca(sstr(line, buf, 0, len)), ' ', '_'));
-		} else if(depth == 2) {
+		} else if(depth == 2 && len > 4) {
 			if(spos(line, "HOST : ") >= 0)
 				t->host = push(block, sstr(line, buf, 9, len - 9));
 			if(spos(line, "BREF : ") >= 0)
@@ -882,7 +882,7 @@ parse_lexicon(FILE* fp, Block* block, Glossary* glo, Lexicon* lex)
 			catch_body = spos(line, "BODY") >= 0;
 			catch_link = spos(line, "LINK") >= 0;
 			catch_list = spos(line, "LIST") >= 0;
-		} else if(depth == 4) {
+		} else if(depth == 4 && len > 6) {
 			/* Body */
 			if(catch_body)
 				t->body[t->body_len++] = push(block, sstr(line, buf, 4, len - 4));
