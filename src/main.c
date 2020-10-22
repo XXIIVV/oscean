@@ -39,10 +39,10 @@ typedef struct Term {
 	char* host;
 	char* bref;
 	char* type;
-	char* body[ITEMS];
 	char* filename;
 	char* date_from;
 	char* date_last;
+	char* body[ITEMS];
 	struct List link;
 	struct Term* parent;
 	struct Term* children[ITEMS];
@@ -249,10 +249,13 @@ fplink(FILE* f, Lexicon* lex, Term* t, char* s)
 	}
 }
 
-void
-fplist(FILE* f, List* l)
+int
+fpinclist(FILE* f, Glossary* glo, char* target)
 {
 	int j;
+	List* l = findlist(glo, target);
+	if(!l)
+		return error("Unknown list", target);
 	fprintf(f, "<h3>%s</h3>", l->name);
 	fputs("<ul>", f);
 	for(j = 0; j < l->len; ++j)
@@ -264,6 +267,35 @@ fplist(FILE* f, List* l)
 			fprintf(f, "<li><b>%s</b>: %s</li>", l->keys[j], l->vals[j]);
 	fputs("</ul>", f);
 	l->routes++;
+	return 1;
+}
+
+int
+fpincsource(FILE* f, char* target)
+{
+	int lines = 0;
+	char c;
+	FILE* fp = getfile("../archive/src/", target, ".txt", "r");
+	if(fp == NULL)
+		return error("Missing src include ", target);
+	fputs("<figure>", f);
+	fputs("<pre>", f);
+	while((c = fgetc(fp)) != EOF) {
+		if(c == '<')
+			fputs("&lt;", f);
+		else if(c == '>')
+			fputs("&gt;", f);
+		else if(c == '&')
+			fputs("&amp;", f);
+		else
+			fputc(c, f);
+		if(c == '\n')
+			lines++;
+	}
+	fputs("</pre>", f);
+	fprintf(f, "<figcaption><a href='../archive/src/%s.txt'>%s</a> %d lines</figcaption>\n", target, target, lines);
+	fputs("</figure>", f);
+	return 1;
 }
 
 void
@@ -282,11 +314,9 @@ fpmodule(FILE* f, Glossary* glo, char* s)
 	else if(scmp(cmd, "redirect"))
 		fprintf(f, "<meta http-equiv='refresh' content='2; url=%s.html'/><p>In a hurry? Travel to <a href='%s.html'>%s</a>.</p>", target, target, target);
 	else if(scmp(cmd, "list")) {
-		List* l = findlist(glo, target);
-		if(!l)
-			error("Unknown list", target);
-		else
-			fplist(f, l);
+		fpinclist(f, glo, target);
+	} else if(scmp(cmd, "src")) {
+		fpincsource(f, target);
 	} else if(scmp(cmd, "img")) {
 		int split2 = cpos(target, ' ');
 		if(split2 > 0) {
@@ -296,35 +326,12 @@ fpmodule(FILE* f, Glossary* glo, char* s)
 			fprintf(f, "<img src='../media/%s' width='%s'/>&nbsp;", param, value);
 		} else
 			fprintf(f, "<img src='../media/%s'/>&nbsp;", target);
-	} else if(scmp(cmd, "src")) {
-		int lines = 0;
-		char c;
-		FILE* fp = getfile("../archive/src/", target, ".txt", "r");
-		if(fp == NULL)
-			error("Missing src include ", target);
-		fputs("<figure>", f);
-		fputs("<pre>", f);
-		while((c = fgetc(fp)) != EOF) {
-			if(c == '<')
-				fputs("&lt;", f);
-			else if(c == '>')
-				fputs("&gt;", f);
-			else if(c == '&')
-				fputs("&amp;", f);
-			else
-				fputc(c, f);
-			if(c == '\n')
-				lines++;
-		}
-		fputs("</pre>", f);
-		fprintf(f, "<figcaption><a href='../archive/src/%s.txt'>%s</a> %d lines</figcaption>\n", target, target, lines);
-		fputs("</figure>", f);
 	} else
 		printf("Warning: Missing template mod: %s\n", s);
 }
 
 void
-ftemplate(FILE* f, Glossary* glo, Lexicon* lex, Term* t, char* s)
+fptemplate(FILE* f, Glossary* glo, Lexicon* lex, Term* t, char* s)
 {
 	int i, capture = 0;
 	char buf[1024];
@@ -354,7 +361,7 @@ fpbodypart(FILE* f, Glossary* glo, Lexicon* lex, Term* t)
 {
 	int i;
 	for(i = 0; i < t->body_len; ++i)
-		ftemplate(f, glo, lex, t, t->body[i]);
+		fptemplate(f, glo, lex, t, t->body[i]);
 }
 
 void
@@ -811,23 +818,21 @@ fptwtxt(FILE* f, Journal* jou)
 	fclose(f);
 }
 
-FILE*
+int
 parse_glossary(FILE* fp, Block* block, Glossary* glo)
 {
 	int len, depth, count = 0, split = 0;
 	char line[512], buf[1024];
 	List* l = &glo->lists[glo->len];
-	if(fp == NULL)
-		error("Could not open", "glossary");
 	while(fgets(line, 512, fp)) {
 		depth = cpad(line, ' ');
 		len = slen(strm(line));
 		if(len < 4 || line[0] == ';')
 			continue;
 		if(glo->len >= GLOMEM)
-			error("Increase memory", "glossary");
+			return error("Increase memory", "glossary");
 		if(len > 400)
-			error("Line is too long", line);
+			return error("Line is too long", line);
 		if(depth == 0) {
 			l = inilist(&glo->lists[glo->len++], push(block, sstr(line, buf, 0, len)));
 		} else if(depth == 2) {
@@ -845,17 +850,15 @@ parse_glossary(FILE* fp, Block* block, Glossary* glo)
 		count++;
 	}
 	printf("(%d lines) ", count);
-	return fp;
+	return 1;
 }
 
-FILE*
+int
 parse_lexicon(FILE* fp, Block* block, Lexicon* lex)
 {
 	int key_len, val_len, len, count = 0, catch_body = 0, catch_link = 0;
 	char line[1024], buf[1024];
 	Term* t = &lex->terms[lex->len];
-	if(fp == NULL)
-		error("Could not open", "lexicon");
 	while(fgets(line, 1024, fp)) {
 		int depth = cpad(line, ' ');
 		strm(line);
@@ -863,13 +866,13 @@ parse_lexicon(FILE* fp, Block* block, Lexicon* lex)
 		if(len < 3 || line[0] == ';')
 			continue;
 		if(lex->len >= LEXMEM)
-			error("Increase memory", "Lexicon");
+			return error("Increase memory", "Lexicon");
 		if(len > 750)
-			error("Line is too long", line);
+			return error("Line is too long", line);
 		if(depth == 0) {
 			t = initerm(&lex->terms[lex->len++], push(block, sstr(line, buf, 0, len)));
 			if(!sans(line))
-				error("Lexicon key is not alphanum", line);
+				return error("Lexicon key is not alphanum", line);
 			t->filename = push(block, scsw(slca(sstr(line, buf, 0, len)), ' ', '_'));
 		} else if(depth == 2 && len > 4) {
 			if(spos(line, "HOST : ") >= 0)
@@ -896,32 +899,30 @@ parse_lexicon(FILE* fp, Block* block, Lexicon* lex)
 		count++;
 	}
 	printf("(%d lines) ", count);
-	return fp;
+	return 1;
 }
 
-FILE*
+int
 parse_horaire(FILE* fp, Block* block, Lexicon* lex, Journal* jou)
 {
 	int len, count = 0;
 	char line[256], buf[1024];
 	Log* l = &jou->logs[jou->len];
-	if(fp == NULL)
-		error("Could not open", "horaire");
 	while(fgets(line, 256, fp)) {
 		strm(line);
 		len = slen(line);
 		if(len < 14 || line[0] == ';')
 			continue;
 		if(jou->len >= HORMEM)
-			error("Increase memory", "Horaire");
+			return error("Increase memory", "Horaire");
 		if(len > 80)
-			error("Log is too long", line);
+			return error("Log is too long", line);
 		l = inilog(&jou->logs[jou->len++], push(block, sstr(line, buf, 0, 5)));
 		l->rune = line[6];
 		l->code = sint(line + 7, 3);
 		l->term = findterm(lex, strm(sstr(line, buf, 11, 21)));
 		if(!l->term)
-			error("Unknown log term", line);
+			return error("Unknown log term", line);
 		if(len >= 35)
 			l->pict = sint(line + 32, 3);
 		if(len >= 38)
@@ -929,22 +930,38 @@ parse_horaire(FILE* fp, Block* block, Lexicon* lex, Journal* jou)
 		count++;
 	}
 	printf("(%d lines) ", count);
-	return fp;
+	return 1;
 }
 
-void
+int
 parse(Block* block, Glossary* glo, Lexicon* lex, Journal* jou)
 {
+	FILE* fglo = fopen("database/glossary.ndtl", "r");
+	FILE* flex = fopen("database/lexicon.ndtl", "r");
+	FILE* fhor = fopen("database/horaire.tbtl", "r");
 	printf("Parsing  | ");
 	printf("glossary");
-	fclose(parse_glossary(fopen("database/glossary.ndtl", "r"), block, glo));
+	if(!fglo || !parse_glossary(fglo, block, glo)) {
+		fclose(fglo);
+		return error("Parsing", "Glossary");
+	}
 	printf("lexicon");
-	fclose(parse_lexicon(fopen("database/lexicon.ndtl", "r"), block, lex));
+	if(!flex || !parse_lexicon(flex, block, lex)) {
+		fclose(flex);
+		return error("Parsing", "Lexicon");
+	}
 	printf("horaire");
-	fclose(parse_horaire(fopen("database/horaire.tbtl", "r"), block, lex, jou));
+	if(!fhor || !parse_horaire(fhor, block, lex, jou)) {
+		fclose(fhor);
+		return error("Parsing", "Horaire");
+	}
+	fclose(fglo);
+	fclose(flex);
+	fclose(fhor);
+	return 1;
 }
 
-void
+int
 link(Block* block, Glossary* glo, Lexicon* lex, Journal* jou)
 {
 	int i, j;
@@ -955,22 +972,27 @@ link(Block* block, Glossary* glo, Lexicon* lex, Journal* jou)
 		Log* l = &jou->logs[i];
 		if(!l->term->date_last)
 			l->term->date_last = push(block, scpy(l->date, buf));
+		if(l->code < 1)
+			return error("Empty code", l->date);
 		l->term->date_from = push(block, scpy(l->date, buf));
 	}
 	printf("lexicon(%d entries) ", lex->len);
 	for(i = 0; i < lex->len; ++i) {
 		Term* t = &lex->terms[i];
 		for(j = 0; j < t->body_len; ++j)
-			ftemplate(NULL, glo, lex, t, t->body[j]);
+			fptemplate(NULL, glo, lex, t, t->body[j]);
 		t->parent = findterm(lex, t->host);
 		if(!t->parent)
-			error("Unknown term host", t->host);
+			return error("Missing parent", t->host);
+		if(!t->bref)
+			return error("Missing bref", t->name);
 		t->parent->children[t->parent->children_len++] = t;
 	}
 	printf("glossary(%d entries) ", glo->len);
+	return 1;
 }
 
-void
+int
 build(Glossary* glo, Lexicon* lex, Journal* jou)
 {
 	FILE* f;
@@ -980,37 +1002,26 @@ build(Glossary* glo, Lexicon* lex, Journal* jou)
 	for(i = 0; i < lex->len; ++i) {
 		f = getfile("../site/", lex->terms[i].filename, ".html", "w");
 		if(f == NULL)
-			error("Could not open file", lex->terms[i].name);
+			return error("Could not open file", lex->terms[i].name);
 		fphtml(f, glo, lex, &lex->terms[i], jou);
 	}
 	printf("2 feeds ");
 	f = fopen("../links/rss.xml", "w");
 	if(f == NULL)
-		error("Could not open file", "rss.xml");
+		return error("Could not open file", "rss.xml");
 	fprss(f, jou);
 	f = fopen("../links/tw.txt", "w");
 	if(f == NULL)
-		error("Could not open file", "tw.txt");
+		return error("Could not open file", "tw.txt");
 	fptwtxt(f, jou);
+	return 1;
 }
 
 void
-check(Glossary* glo, Lexicon* lex, Journal* jou)
+check(Glossary* glo, Journal* jou)
 {
 	int i, j, found = 0;
 	printf("Checking | ");
-	/* Find incomplete terms */
-	for(i = 0; i < lex->len; ++i) {
-		Term* t = &lex->terms[i];
-		if(!t->bref)
-			printf("Warning: Empty bref %s\n", t->name);
-	}
-	/* Find invalid logs */
-	for(i = 0; i < jou->len; ++i) {
-		Log* l = &jou->logs[i];
-		if(l->code < 1)
-			printf("Warning: Empty code %s\n", l->date);
-	}
 	/* Find unlinked lists */
 	for(i = 0; i < glo->len; ++i) {
 		List* l = &glo->lists[i];
@@ -1034,7 +1045,6 @@ int
 main(void)
 {
 	Block block;
-
 	Glossary all_lists;
 	Lexicon all_terms;
 	Journal all_logs;
@@ -1051,16 +1061,22 @@ main(void)
 	print_arvelie();
 
 	start = clock();
-	parse(&block, &all_lists, &all_terms, &all_logs);
+	if(!parse(&block, &all_lists, &all_terms, &all_logs))
+		return error("Failure", "Parsing");
 	printf("[%.2fms]\n", clockoffset(start));
+
 	start = clock();
-	link(&block, &all_lists, &all_terms, &all_logs);
+	if(!link(&block, &all_lists, &all_terms, &all_logs))
+		return error("Failure", "Linking");
 	printf("[%.2fms]\n", clockoffset(start));
+
 	start = clock();
-	build(&all_lists, &all_terms, &all_logs);
+	if(!build(&all_lists, &all_terms, &all_logs))
+		return error("Failure", "Building");
 	printf("[%.2fms]\n", clockoffset(start));
+
 	start = clock();
-	check(&all_lists, &all_terms, &all_logs);
+	check(&all_lists, &all_logs);
 	printf("[%.2fms]\n", clockoffset(start));
 
 	printf("%d/%d characters in memory\n", block.len, STRMEM);
