@@ -32,7 +32,6 @@ typedef struct List {
 
 typedef struct Term {
 	int body_len;
-	int lists_len;
 	int children_len;
 	int incoming_len;
 	int outgoing_len;
@@ -47,7 +46,6 @@ typedef struct Term {
 	struct List link;
 	struct Term* parent;
 	struct Term* children[ITEMS];
-	struct List* lists[ITEMS];
 	struct Term* incoming[ITEMS];
 } Term;
 
@@ -121,7 +119,6 @@ Term*
 initerm(Term* t, char* name)
 {
 	t->body_len = 0;
-	t->lists_len = 0;
 	t->children_len = 0;
 	t->incoming_len = 0;
 	t->outgoing_len = 0;
@@ -253,7 +250,24 @@ fplink(FILE* f, Lexicon* lex, Term* t, char* s)
 }
 
 void
-fpmodule(FILE* f, char* s)
+fplist(FILE* f, List* l)
+{
+	int j;
+	fprintf(f, "<h3>%s</h3>", l->name);
+	fputs("<ul>", f);
+	for(j = 0; j < l->len; ++j)
+		if(!l->keys[j])
+			fprintf(f, "<li>%s</li>", l->vals[j]);
+		else if(surl(l->vals[j]))
+			fprintf(f, "<li><a href='%s'>%s</a></li>", l->vals[j], l->keys[j]);
+		else
+			fprintf(f, "<li><b>%s</b>: %s</li>", l->keys[j], l->vals[j]);
+	fputs("</ul>", f);
+	l->routes++;
+}
+
+void
+fpmodule(FILE* f, Glossary* glo, char* s)
 {
 	int split = cpos(s, ' ');
 	char cmd[256], target[256];
@@ -263,10 +277,16 @@ fpmodule(FILE* f, char* s)
 		fprintf(f, "<iframe frameborder='0' src='https://itch.io/embed/%s?link_color=000000' width='624' height='167'></iframe>", target);
 	else if(scmp(cmd, "bandcamp"))
 		fprintf(f, "<iframe style='border: 0; width: 624px; height: 274px;' src='https://bandcamp.com/EmbeddedPlayer/album=%s/size=large/bgcol=ffffff/linkcol=333333/artwork=small' seamless></iframe>", target);
-	else if(scmp(cmd, "youtube")) {
+	else if(scmp(cmd, "youtube"))
 		fprintf(f, "<iframe width='624' height='380' src='https://www.youtube.com/embed/%s?rel=0' style='max-width:700px' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe>", target);
-	} else if(scmp(cmd, "redirect")) {
+	else if(scmp(cmd, "redirect"))
 		fprintf(f, "<meta http-equiv='refresh' content='2; url=%s.html'/><p>In a hurry? Travel to <a href='%s.html'>%s</a>.</p>", target, target, target);
+	else if(scmp(cmd, "list")) {
+		List* l = findlist(glo, target);
+		if(!l)
+			error("Unknown list", target);
+		else
+			fplist(f, l);
 	} else if(scmp(cmd, "img")) {
 		int split2 = cpos(target, ' ');
 		if(split2 > 0) {
@@ -304,7 +324,7 @@ fpmodule(FILE* f, char* s)
 }
 
 void
-ftemplate(FILE* f, Lexicon* lex, Term* t, char* s)
+ftemplate(FILE* f, Glossary* glo, Lexicon* lex, Term* t, char* s)
 {
 	int i, capture = 0;
 	char buf[1024];
@@ -314,7 +334,7 @@ ftemplate(FILE* f, Lexicon* lex, Term* t, char* s)
 		if(c == '}') {
 			capture = 0;
 			if(buf[0] == '^' && f != NULL)
-				fpmodule(f, buf);
+				fpmodule(f, glo, buf);
 			else if(buf[0] != '^')
 				fplink(f, lex, t, buf);
 		}
@@ -330,11 +350,11 @@ ftemplate(FILE* f, Lexicon* lex, Term* t, char* s)
 }
 
 void
-fpbodypart(FILE* f, Lexicon* lex, Term* t)
+fpbodypart(FILE* f, Glossary* glo, Lexicon* lex, Term* t)
 {
 	int i;
 	for(i = 0; i < t->body_len; ++i)
-		ftemplate(f, lex, t, t->body[i]);
+		ftemplate(f, glo, lex, t, t->body[i]);
 }
 
 void
@@ -381,29 +401,10 @@ fpnav(FILE* f, Term* t)
 }
 
 void
-fpbody(FILE* f, Lexicon* lex, Term* t)
+fpbody(FILE* f, Glossary* glo, Lexicon* lex, Term* t)
 {
 	fprintf(f, "<h2>%s</h2>", t->bref);
-	fpbodypart(f, lex, t);
-}
-
-void
-fplist(FILE* f, Term* t)
-{
-	int i, j;
-	for(i = 0; i < t->lists_len; ++i) {
-		List* l = t->lists[i];
-		fprintf(f, "<h3>%s</h3>", l->name);
-		fputs("<ul>", f);
-		for(j = 0; j < l->len; ++j)
-			if(!l->keys[j])
-				fprintf(f, "<li>%s</li>", l->vals[j]);
-			else if(surl(l->vals[j]))
-				fprintf(f, "<li><a href='%s'>%s</a></li>", l->vals[j], l->keys[j]);
-			else
-				fprintf(f, "<li><b>%s</b>: %s</li>", l->keys[j], l->vals[j]);
-		fputs("</ul>", f);
-	}
+	fpbodypart(f, glo, lex, t);
 }
 
 void
@@ -427,7 +428,7 @@ fpinclude(FILE* f, Term* t)
 }
 
 void
-fpportal(FILE* f, Lexicon* lex, Journal* jou, Term* t, int pict, int text)
+fpportal(FILE* f, Glossary* glo, Lexicon* lex, Journal* jou, Term* t, int pict, int text)
 {
 	int i;
 	for(i = 0; i < t->children_len; ++i) {
@@ -439,8 +440,7 @@ fpportal(FILE* f, Lexicon* lex, Journal* jou, Term* t, int pict, int text)
 		}
 		if(text) {
 			fprintf(f, "<h2><a href='%s.html'>%s</a></h2>", c->filename, c->name);
-			fpbodypart(f, lex, c);
-			fplist(f, c);
+			fpbodypart(f, glo, lex, c);
 		}
 	}
 }
@@ -691,7 +691,7 @@ fpindex(FILE* f, Lexicon* lex, Journal* jou)
 }
 
 void
-fphtml(FILE* f, Lexicon* lex, Term* t, Journal* jou)
+fphtml(FILE* f, Glossary* glo, Lexicon* lex, Term* t, Journal* jou)
 {
 	fputs("<!DOCTYPE html><html lang='en'>", f);
 	fputs("</head>", f);
@@ -710,14 +710,14 @@ fphtml(FILE* f, Lexicon* lex, Term* t, Journal* jou)
 	fpnav(f, t);
 	fputs("<main>", f);
 	fpbanner(f, jou, t, 1);
-	fpbody(f, lex, t);
+	fpbody(f, glo, lex, t);
 	fpinclude(f, t);
 	/* templated pages */
 	if(t->type) {
 		if(scmp(t->type, "pict_portal"))
-			fpportal(f, lex, jou, t, 1, 0);
+			fpportal(f, glo, lex, jou, t, 1, 0);
 		else if(scmp(t->type, "text_portal"))
-			fpportal(f, lex, jou, t, 0, 1);
+			fpportal(f, glo, lex, jou, t, 0, 1);
 		else if(scmp(t->type, "album"))
 			fpalbum(f, jou, t);
 		else
@@ -736,7 +736,6 @@ fphtml(FILE* f, Lexicon* lex, Term* t, Journal* jou)
 		fpjournal(f, jou);
 	else if(scmp(t->name, "index"))
 		fpindex(f, lex, jou);
-	fplist(f, t);
 	fplinks(f, t);
 	fpincoming(f, t);
 	fphoraire(f, jou, t);
@@ -850,9 +849,9 @@ parse_glossary(FILE* fp, Block* block, Glossary* glo)
 }
 
 FILE*
-parse_lexicon(FILE* fp, Block* block, Glossary* glo, Lexicon* lex)
+parse_lexicon(FILE* fp, Block* block, Lexicon* lex)
 {
-	int key_len, val_len, len, count = 0, catch_body = 0, catch_link = 0, catch_list = 0;
+	int key_len, val_len, len, count = 0, catch_body = 0, catch_link = 0;
 	char line[1024], buf[1024];
 	Term* t = &lex->terms[lex->len];
 	if(fp == NULL)
@@ -881,7 +880,6 @@ parse_lexicon(FILE* fp, Block* block, Glossary* glo, Lexicon* lex)
 				t->type = push(block, sstr(line, buf, 9, len - 9));
 			catch_body = spos(line, "BODY") >= 0;
 			catch_link = spos(line, "LINK") >= 0;
-			catch_list = spos(line, "LIST") >= 0;
 		} else if(depth == 4 && len > 6) {
 			/* Body */
 			if(catch_body)
@@ -892,15 +890,6 @@ parse_lexicon(FILE* fp, Block* block, Glossary* glo, Lexicon* lex)
 				t->link.keys[t->link.len] = push(block, sstr(line, buf, 4, key_len));
 				val_len = len - key_len - 5;
 				t->link.vals[t->link.len++] = push(block, sstr(line, buf, key_len + 7, val_len));
-			}
-			/* List */
-			else if(catch_list) {
-				List* l = findlist(glo, sstr(line, buf, 4, len - 4));
-				if(l) {
-					t->lists[t->lists_len++] = l;
-					l->routes++;
-				} else
-					error("Unknown list:", line);
 			} else
 				error("Invalid line", line);
 		}
@@ -950,7 +939,7 @@ parse(Block* block, Glossary* glo, Lexicon* lex, Journal* jou)
 	printf("glossary");
 	fclose(parse_glossary(fopen("database/glossary.ndtl", "r"), block, glo));
 	printf("lexicon");
-	fclose(parse_lexicon(fopen("database/lexicon.ndtl", "r"), block, glo, lex));
+	fclose(parse_lexicon(fopen("database/lexicon.ndtl", "r"), block, lex));
 	printf("horaire");
 	fclose(parse_horaire(fopen("database/horaire.tbtl", "r"), block, lex, jou));
 }
@@ -972,7 +961,7 @@ link(Block* block, Glossary* glo, Lexicon* lex, Journal* jou)
 	for(i = 0; i < lex->len; ++i) {
 		Term* t = &lex->terms[i];
 		for(j = 0; j < t->body_len; ++j)
-			ftemplate(NULL, lex, t, t->body[j]);
+			ftemplate(NULL, glo, lex, t, t->body[j]);
 		t->parent = findterm(lex, t->host);
 		if(!t->parent)
 			error("Unknown term host", t->host);
@@ -982,7 +971,7 @@ link(Block* block, Glossary* glo, Lexicon* lex, Journal* jou)
 }
 
 void
-build(Lexicon* lex, Journal* jou)
+build(Glossary* glo, Lexicon* lex, Journal* jou)
 {
 	FILE* f;
 	int i;
@@ -992,7 +981,7 @@ build(Lexicon* lex, Journal* jou)
 		f = getfile("../site/", lex->terms[i].filename, ".html", "w");
 		if(f == NULL)
 			error("Could not open file", lex->terms[i].name);
-		fphtml(f, lex, &lex->terms[i], jou);
+		fphtml(f, glo, lex, &lex->terms[i], jou);
 	}
 	printf("2 feeds ");
 	f = fopen("../links/rss.xml", "w");
@@ -1068,7 +1057,7 @@ main(void)
 	link(&block, &all_lists, &all_terms, &all_logs);
 	printf("[%.2fms]\n", clockoffset(start));
 	start = clock();
-	build(&all_terms, &all_logs);
+	build(&all_lists, &all_terms, &all_logs);
 	printf("[%.2fms]\n", clockoffset(start));
 	start = clock();
 	check(&all_lists, &all_terms, &all_logs);
