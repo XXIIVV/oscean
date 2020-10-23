@@ -15,7 +15,7 @@
 #define NAME "XXIIVV"
 #define DOMAIN "https://wiki.xxiivv.com/"
 #define LOCATION "Victoria, Canada"
-#define REPOPATH "https://github.com/XXIIVV/oscean/blob/master/src/inc/"
+#define REPOPATH "https://github.com/XXIIVV/oscean/blob/master/src/"
 
 typedef struct Block {
 	int len;
@@ -250,7 +250,7 @@ fplink(FILE *f, Lexicon *lex, Term *t, char *s)
 }
 
 int
-fpinclist(FILE *f, Glossary *glo, char *target)
+fplist(FILE *f, Glossary *glo, char *target)
 {
 	int j;
 	List *l = findlist(glo, target);
@@ -271,29 +271,30 @@ fpinclist(FILE *f, Glossary *glo, char *target)
 }
 
 int
-fpincsource(FILE *f, char *target)
+fpinclude(FILE *f, char *target, int code)
 {
 	int lines = 0;
 	char c;
-	FILE *fp = getfile("../archive/src/", target, ".txt", "r");
+	char *folder = code ? "inc/code/" : "inc/html/";
+	char *ext = code ? ".txt" : ".htm";
+	FILE *fp = getfile(folder, target, ext, "r");
 	if(fp == NULL)
-		return error("Missing src include ", target);
+		return 0;
 	fputs("<figure>", f);
-	fputs("<pre>", f);
+	if(code)
+		fputs("<pre>", f);
 	while((c = fgetc(fp)) != EOF) {
-		if(c == '<')
-			fputs("&lt;", f);
-		else if(c == '>')
-			fputs("&gt;", f);
-		else if(c == '&')
-			fputs("&amp;", f);
+		if(code)
+			fputcent(f, c);
 		else
 			fputc(c, f);
 		if(c == '\n')
 			lines++;
 	}
-	fputs("</pre>", f);
-	fprintf(f, "<figcaption><a href='../archive/src/%s.txt'>%s</a> %d lines</figcaption>\n", target, target, lines);
+	fclose(fp);
+	if(code)
+		fputs("</pre>", f);
+	fprintf(f, "<figcaption>&mdash; Found a mistake? Submit an <a href='" REPOPATH "%s%s%s' target='_blank'>edit</a> to <a href='../src/%s%s%s'>%s%s</a>(%d lines)</figcaption>\n", folder, target, ext, folder, target, ext, target, ext, lines);
 	fputs("</figure>", f);
 	return 1;
 }
@@ -314,9 +315,11 @@ fpmodule(FILE *f, Glossary *glo, char *s)
 	else if(scmp(cmd, "redirect"))
 		fprintf(f, "<meta http-equiv='refresh' content='2; url=%s.html'/><p>In a hurry? Travel to <a href='%s.html'>%s</a>.</p>", target, target, target);
 	else if(scmp(cmd, "list")) {
-		fpinclist(f, glo, target);
-	} else if(scmp(cmd, "src")) {
-		fpincsource(f, target);
+		fplist(f, glo, target);
+	} else if(scmp(cmd, "text")) {
+		fpinclude(f, target, 1);
+	} else if(scmp(cmd, "html")) {
+		fpinclude(f, target, 0);
 	} else if(scmp(cmd, "img")) {
 		int split2 = cpos(target, ' ');
 		if(split2 > 0) {
@@ -412,27 +415,6 @@ fpbody(FILE *f, Glossary *glo, Lexicon *lex, Term *t)
 {
 	fprintf(f, "<h2>%s</h2>", t->bref);
 	fpbodypart(f, glo, lex, t);
-}
-
-void
-fpinclude(FILE *f, Term *t)
-{
-	char buffer[4096];
-	FILE *fp = getfile("inc/", t->filename, ".htm", "r");
-	if(fp == NULL)
-		return;
-	for(;;) {
-		size_t sz = fread(buffer, 1, sizeof(buffer), fp);
-		if(sz)
-			fwrite(buffer, 1, sz, f);
-		else if(feof(fp) || ferror(fp))
-			break;
-	}
-	fprintf(f,
-		"<p>Found a mistake? Submit an <a href='" REPOPATH "%s.htm' target='_blank'>edit</a> to %s.</p>",
-		t->filename,
-		t->name);
-	fclose(fp);
 }
 
 void
@@ -713,7 +695,7 @@ fphtml(FILE *f, Glossary *glo, Lexicon *lex, Term *t, Journal *jou)
 	fputs("<main>", f);
 	fpbanner(f, jou, t, 1);
 	fpbody(f, glo, lex, t);
-	fpinclude(f, t);
+	fpinclude(f, t->filename, 0);
 	/* templated pages */
 	if(t->type) {
 		if(scmp(t->type, "pict_portal"))
