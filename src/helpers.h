@@ -35,7 +35,7 @@ cans(char c)
 }
 
 int
-cpad(char* s, char c)
+cpad(char *s, char c)
 {
 	int i = 0;
 	while(s[i] == c && s[i] != '\0' && s[++i])
@@ -44,7 +44,7 @@ cpad(char* s, char c)
 }
 
 int
-cpos(char* s, char c)
+cpos(char *s, char c)
 {
 	int i = 0;
 	while(s[i] != '\0' && s[i])
@@ -54,7 +54,7 @@ cpos(char* s, char c)
 }
 
 int
-slen(char* s)
+slen(char *s)
 {
 	int i = 0;
 	while(s[i] != '\0' && s[++i])
@@ -62,8 +62,8 @@ slen(char* s)
 	return i;
 }
 
-char*
-suca(char* s)
+char *
+suca(char *s)
 {
 	int i;
 	for(i = 0; i < slen(s); i++)
@@ -71,8 +71,8 @@ suca(char* s)
 	return s;
 }
 
-char*
-slca(char* s)
+char *
+slca(char *s)
 {
 	int i;
 	for(i = 0; i < slen(s); i++)
@@ -80,8 +80,8 @@ slca(char* s)
 	return s;
 }
 
-char*
-scsw(char* s, char a, char b)
+char *
+scsw(char *s, char a, char b)
 {
 	int i;
 	for(i = 0; i < slen(s); i++)
@@ -90,7 +90,7 @@ scsw(char* s, char a, char b)
 }
 
 int
-scmp(char* a, char* b)
+scmp(char *a, char *b)
 {
 	int i, l = slen(a);
 	if(l != slen(b))
@@ -102,7 +102,7 @@ scmp(char* a, char* b)
 }
 
 int
-sans(char* s)
+sans(char *s)
 {
 	int i;
 	for(i = 0; i < slen(s); i++)
@@ -111,10 +111,10 @@ sans(char* s)
 	return 1;
 }
 
-char*
-strm(char* s)
+char *
+strm(char *s)
 {
-	char* end;
+	char *end;
 	while(cisp(*s))
 		s++;
 	if(*s == 0)
@@ -127,7 +127,7 @@ strm(char* s)
 }
 
 int
-spos(char* s, char* ss)
+spos(char *s, char *ss)
 {
 	int a = 0, b = 0;
 	while(s[a] != '\0') {
@@ -143,7 +143,7 @@ spos(char* s, char* ss)
 }
 
 int
-sint(char* s, int len)
+sint(char *s, int len)
 {
 	int num = 0, i = 0;
 	while(s[i] && cinu(s[i]) && i < len) {
@@ -154,13 +154,13 @@ sint(char* s, int len)
 }
 
 int
-surl(char* s)
+surl(char *s)
 {
 	return spos(s, "://") >= 0 || spos(s, "../") >= 0;
 }
 
-char*
-scpy(char* src, char* dst)
+char *
+scpy(char *src, char *dst)
 {
 	int i = 0;
 	while((dst[i] = src[i]) != '\0')
@@ -168,11 +168,11 @@ scpy(char* src, char* dst)
 	return dst;
 }
 
-char*
-sstr(char* src, char* dst, int from, int to)
+char *
+sstr(char *src, char *dst, int from, int to)
 {
 	int i;
-	char *a = (char*)src + from, *b = (char*)dst;
+	char *a = (char *)src + from, *b = (char *)dst;
 	for(i = 0; i < to; i++)
 		b[i] = a[i];
 	dst[to] = '\0';
@@ -180,7 +180,7 @@ sstr(char* src, char* dst, int from, int to)
 }
 
 int
-afnd(char* src[], int len, char* val)
+afnd(char *src[], int len, char *val)
 {
 	int i;
 	for(i = 0; i < len; i++)
@@ -189,8 +189,8 @@ afnd(char* src[], int len, char* val)
 	return -1;
 }
 
-char*
-ccat(char* dst, char c)
+char *
+ccat(char *dst, char c)
 {
 	int len = slen(dst);
 	dst[len] = c;
@@ -198,10 +198,10 @@ ccat(char* dst, char c)
 	return dst;
 }
 
-char*
-scat(char* dst, const char* src)
+char *
+scat(char *dst, const char *src)
 {
-	char* ptr = dst + slen(dst);
+	char *ptr = dst + slen(dst);
 	while(*src != '\0')
 		*ptr++ = *src++;
 	*ptr = '\0';
@@ -217,28 +217,17 @@ clockoffset(clock_t start)
 }
 
 void
-fpRFC2822(FILE* f, time_t t)
+fpRFC2822(FILE *f, time_t t)
 {
-	struct tm* tm = localtime(&t);
-	char* days[7] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
-	char* months[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
-	fprintf(f, "%s, %02d %s %d 00:00:00 +0900",
-	        days[tm->tm_wday],
-	        tm->tm_mday,
-	        months[tm->tm_mon],
-	        tm->tm_year + 1900);
+	struct tm *tm = localtime(&t);
+	char *days[7] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+	char *months[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+	fprintf(f, "%s, %02d %s %d 00:00:00 +0900", days[tm->tm_wday], tm->tm_mday, months[tm->tm_mon], tm->tm_year + 1900);
 }
 
 void
-fpRFC3339(FILE* f, time_t t)
+fpRFC3339(FILE *f, time_t t)
 {
-	struct tm* tm = localtime(&t);
-	fprintf(f, "%04d-%02d-%02dT%02d:%02d:%02d%c%02d:%02d",
-	        tm->tm_year + 1900,
-	        tm->tm_mon + 1,
-	        tm->tm_mday,
-	        tm->tm_hour,
-	        tm->tm_min,
-	        tm->tm_sec,
-	        '-', 7, 0); /* Vancouver GMT-7*/
+	struct tm *tm = localtime(&t);
+	fprintf(f, "%04d-%02d-%02dT%02d:%02d:%02d%c%02d:%02d", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec, '-', 7, 0); /* Vancouver GMT-7*/
 }

@@ -25,9 +25,9 @@ typedef struct Block {
 typedef struct List {
 	int len;
 	int routes;
-	char* name;
-	char* keys[ITEMS];
-	char* vals[ITEMS];
+	char *name;
+	char *keys[ITEMS];
+	char *vals[ITEMS];
 } List;
 
 typedef struct Term {
@@ -35,27 +35,27 @@ typedef struct Term {
 	int children_len;
 	int incoming_len;
 	int outgoing_len;
-	char* name;
-	char* host;
-	char* bref;
-	char* type;
-	char* filename;
-	char* date_from;
-	char* date_last;
-	char* body[ITEMS];
+	char *name;
+	char *host;
+	char *bref;
+	char *type;
+	char *filename;
+	char *date_from;
+	char *date_last;
+	char *body[ITEMS];
 	struct List link;
-	struct Term* parent;
-	struct Term* children[ITEMS];
-	struct Term* incoming[ITEMS];
+	struct Term *parent;
+	struct Term *children[ITEMS];
+	struct Term *incoming[ITEMS];
 } Term;
 
 typedef struct Log {
 	int code;
 	int pict;
-	char* date;
-	char* name;
+	char *date;
+	char *name;
 	char rune;
-	Term* term;
+	Term *term;
 } Log;
 
 typedef struct Glossary {
@@ -74,7 +74,7 @@ typedef struct Journal {
 } Journal;
 
 int
-error(char* msg, char* val)
+error(char *msg, char *val)
 {
 	printf("Error: %s(%s)\n", msg, val);
 	return 0;
@@ -82,8 +82,8 @@ error(char* msg, char* val)
 
 /* Block */
 
-char*
-push(Block* b, char* s)
+char *
+push(Block *b, char *s)
 {
 	int i = 0, o = b->len;
 	while(s[i] != '\0')
@@ -94,8 +94,8 @@ push(Block* b, char* s)
 
 /* List */
 
-List*
-inilist(List* l, char* name)
+List *
+inilist(List *l, char *name)
 {
 	l->len = 0;
 	l->routes = 0;
@@ -103,8 +103,8 @@ inilist(List* l, char* name)
 	return l;
 }
 
-List*
-findlist(Glossary* glo, char* name)
+List *
+findlist(Glossary *glo, char *name)
 {
 	int i;
 	for(i = 0; i < glo->len; ++i)
@@ -115,8 +115,8 @@ findlist(Glossary* glo, char* name)
 
 /* Term */
 
-Term*
-initerm(Term* t, char* name)
+Term *
+initerm(Term *t, char *name)
 {
 	t->body_len = 0;
 	t->children_len = 0;
@@ -126,8 +126,8 @@ initerm(Term* t, char* name)
 	return t;
 }
 
-Term*
-findterm(Lexicon* lex, char* name)
+Term *
+findterm(Lexicon *lex, char *name)
 {
 	int i;
 	scsw(slca(name), '_', ' ');
@@ -139,8 +139,8 @@ findterm(Lexicon* lex, char* name)
 
 /* Log */
 
-Log*
-inilog(Log* l, char* date)
+Log *
+inilog(Log *l, char *date)
 {
 	l->code = 0;
 	l->pict = 0;
@@ -148,12 +148,12 @@ inilog(Log* l, char* date)
 	return l;
 }
 
-Log*
-finddiary(Journal* jou, Term* t)
+Log *
+finddiary(Journal *jou, Term *t)
 {
 	int i;
 	for(i = 0; i < jou->len; ++i) {
-		Log* l = &jou->logs[i];
+		Log *l = &jou->logs[i];
 		if(l->term == t && l->pict > 0)
 			return l;
 	}
@@ -162,8 +162,8 @@ finddiary(Journal* jou, Term* t)
 
 /* File */
 
-FILE*
-getfile(char* dir, char* filename, char* ext, char* op)
+FILE *
+getfile(char *dir, char *filename, char *ext, char *op)
 {
 	char filepath[1024];
 	filepath[0] = '\0';
@@ -177,7 +177,7 @@ getfile(char* dir, char* filename, char* ext, char* op)
 /* File Print */
 
 void
-fplifeline(FILE* f, Term* t)
+fplifeline(FILE *f, Term *t)
 {
 	int limit_from = arvelie_to_epoch("06I04");
 	int limit_to = get_epoch();
@@ -199,7 +199,7 @@ fplifeline(FILE* f, Term* t)
 }
 
 void
-fppict(FILE* f, int pict, char* host, char* name, int caption, char* link)
+fppict(FILE *f, int pict, char *host, char *name, int caption, char *link)
 {
 	fputs("<figure>", f);
 	fprintf(f, "<img src='../media/diary/%d.jpg' alt='%s picture' width='900'/>", pict, name);
@@ -215,13 +215,13 @@ fppict(FILE* f, int pict, char* host, char* name, int caption, char* link)
 }
 
 void
-fplogpict(FILE* f, Log* l, int caption)
+fplogpict(FILE *f, Log *l, int caption)
 {
 	fppict(f, l->pict, l->date, l->name, caption, NULL);
 }
 
 void
-fplink(FILE* f, Lexicon* lex, Term* t, char* s)
+fplink(FILE *f, Lexicon *lex, Term *t, char *s)
 {
 	int split = cpos(s, ' ');
 	char target[256], name[256];
@@ -237,7 +237,7 @@ fplink(FILE* f, Lexicon* lex, Term* t, char* s)
 		if(f != NULL)
 			fprintf(f, "<a href='%s' target='_blank'>%s</a>", target, name);
 	} else {
-		Term* tt = findterm(lex, target);
+		Term *tt = findterm(lex, target);
 		if(!tt)
 			error("Unknown link", target);
 		if(f != NULL)
@@ -250,10 +250,10 @@ fplink(FILE* f, Lexicon* lex, Term* t, char* s)
 }
 
 int
-fpinclist(FILE* f, Glossary* glo, char* target)
+fpinclist(FILE *f, Glossary *glo, char *target)
 {
 	int j;
-	List* l = findlist(glo, target);
+	List *l = findlist(glo, target);
 	if(!l)
 		return error("Unknown list", target);
 	fprintf(f, "<h3>%s</h3>", l->name);
@@ -271,11 +271,11 @@ fpinclist(FILE* f, Glossary* glo, char* target)
 }
 
 int
-fpincsource(FILE* f, char* target)
+fpincsource(FILE *f, char *target)
 {
 	int lines = 0;
 	char c;
-	FILE* fp = getfile("../archive/src/", target, ".txt", "r");
+	FILE *fp = getfile("../archive/src/", target, ".txt", "r");
 	if(fp == NULL)
 		return error("Missing src include ", target);
 	fputs("<figure>", f);
@@ -299,7 +299,7 @@ fpincsource(FILE* f, char* target)
 }
 
 void
-fpmodule(FILE* f, Glossary* glo, char* s)
+fpmodule(FILE *f, Glossary *glo, char *s)
 {
 	int split = cpos(s, ' ');
 	char cmd[256], target[256];
@@ -331,7 +331,7 @@ fpmodule(FILE* f, Glossary* glo, char* s)
 }
 
 void
-fptemplate(FILE* f, Glossary* glo, Lexicon* lex, Term* t, char* s)
+fptemplate(FILE *f, Glossary *glo, Lexicon *lex, Term *t, char *s)
 {
 	int i, capture = 0;
 	char buf[1024];
@@ -357,7 +357,7 @@ fptemplate(FILE* f, Glossary* glo, Lexicon* lex, Term* t, char* s)
 }
 
 void
-fpbodypart(FILE* f, Glossary* glo, Lexicon* lex, Term* t)
+fpbodypart(FILE *f, Glossary *glo, Lexicon *lex, Term *t)
 {
 	int i;
 	for(i = 0; i < t->body_len; ++i)
@@ -365,15 +365,15 @@ fpbodypart(FILE* f, Glossary* glo, Lexicon* lex, Term* t)
 }
 
 void
-fpbanner(FILE* f, Journal* jou, Term* t, int caption)
+fpbanner(FILE *f, Journal *jou, Term *t, int caption)
 {
-	Log* l = finddiary(jou, t);
+	Log *l = finddiary(jou, t);
 	if(l)
 		fplogpict(f, l, caption);
 }
 
 void
-fpnavpart(FILE* f, Term* t, Term* target)
+fpnavpart(FILE *f, Term *t, Term *target)
 {
 	int i;
 	fputs("<ul>", f);
@@ -389,7 +389,7 @@ fpnavpart(FILE* f, Term* t, Term* target)
 }
 
 void
-fpnav(FILE* f, Term* t)
+fpnav(FILE *f, Term *t)
 {
 	if(t->parent == NULL)
 		error("Missing parent", t->name);
@@ -408,17 +408,17 @@ fpnav(FILE* f, Term* t)
 }
 
 void
-fpbody(FILE* f, Glossary* glo, Lexicon* lex, Term* t)
+fpbody(FILE *f, Glossary *glo, Lexicon *lex, Term *t)
 {
 	fprintf(f, "<h2>%s</h2>", t->bref);
 	fpbodypart(f, glo, lex, t);
 }
 
 void
-fpinclude(FILE* f, Term* t)
+fpinclude(FILE *f, Term *t)
 {
 	char buffer[4096];
-	FILE* fp = getfile("inc/", t->filename, ".htm", "r");
+	FILE *fp = getfile("inc/", t->filename, ".htm", "r");
 	if(fp == NULL)
 		return;
 	for(;;) {
@@ -429,19 +429,20 @@ fpinclude(FILE* f, Term* t)
 			break;
 	}
 	fprintf(f,
-	        "<p>Found a mistake? Submit an <a href='" REPOPATH "%s.htm' target='_blank'>edit</a> to %s.</p>",
-	        t->filename, t->name);
+		"<p>Found a mistake? Submit an <a href='" REPOPATH "%s.htm' target='_blank'>edit</a> to %s.</p>",
+		t->filename,
+		t->name);
 	fclose(fp);
 }
 
 void
-fpportal(FILE* f, Glossary* glo, Lexicon* lex, Journal* jou, Term* t, int pict, int text)
+fpportal(FILE *f, Glossary *glo, Lexicon *lex, Journal *jou, Term *t, int pict, int text)
 {
 	int i;
 	for(i = 0; i < t->children_len; ++i) {
-		Term* c = t->children[i];
+		Term *c = t->children[i];
 		if(pict) {
-			Log* l = finddiary(jou, c);
+			Log *l = finddiary(jou, c);
 			if(l != NULL)
 				fppict(f, l->pict, c->name, c->bref, 1, c->filename);
 		}
@@ -453,7 +454,7 @@ fpportal(FILE* f, Glossary* glo, Lexicon* lex, Journal* jou, Term* t, int pict, 
 }
 
 void
-fpalbum(FILE* f, Journal* jou, Term* t)
+fpalbum(FILE *f, Journal *jou, Term *t)
 {
 	int i;
 	for(i = 0; i < jou->len; ++i) {
@@ -465,20 +466,19 @@ fpalbum(FILE* f, Journal* jou, Term* t)
 }
 
 void
-fplinks(FILE* f, Term* t)
+fplinks(FILE *f, Term *t)
 {
 	int i;
 	if(t->link.len < 1)
 		return;
 	fputs("<ul>", f);
 	for(i = 0; i < t->link.len; ++i)
-		fprintf(f, "<li><a href='%s' target='_blank'>%s</a></li>",
-		        t->link.vals[i], t->link.keys[i]);
+		fprintf(f, "<li><a href='%s' target='_blank'>%s</a></li>", t->link.vals[i], t->link.keys[i]);
 	fputs("</ul>", f);
 }
 
 void
-fpincoming(FILE* f, Term* t)
+fpincoming(FILE *f, Term *t)
 {
 	int i;
 	if(t->incoming_len < 1)
@@ -491,11 +491,11 @@ fpincoming(FILE* f, Term* t)
 }
 
 void
-fphoraire(FILE* f, Journal* jou, Term* t)
+fphoraire(FILE *f, Journal *jou, Term *t)
 {
 	int i, len = 0, events_len = 0, ch = 0, fh = 0;
 	for(i = 0; i < jou->len; ++i) {
-		Log* l = &jou->logs[i];
+		Log *l = &jou->logs[i];
 		if(l->term != t && l->term->parent != t)
 			continue;
 		if(l->rune == '+')
@@ -508,8 +508,7 @@ fphoraire(FILE* f, Journal* jou, Term* t)
 	if(len < 2 || !t->date_last)
 		return;
 	fputs("<p>", f);
-	fprintf(f, "<i>Last update on <a href='tracker.html'>%s</a>, edited %d times. +%d/%dfh</i>",
-	        t->date_last, len, ch, fh);
+	fprintf(f, "<i>Last update on <a href='tracker.html'>%s</a>, edited %d times. +%d/%dfh</i>", t->date_last, len, ch, fh);
 	fplifeline(f, t);
 	fputs("</p>", f);
 	/* Events */
@@ -517,7 +516,7 @@ fphoraire(FILE* f, Journal* jou, Term* t)
 		return;
 	fputs("<ul>", f);
 	for(i = 0; i < jou->len; ++i) {
-		Log* l = &jou->logs[i];
+		Log *l = &jou->logs[i];
 		if(l->rune != '+')
 			continue;
 		if(l->term != t && l->term->parent != t)
@@ -528,7 +527,7 @@ fphoraire(FILE* f, Journal* jou, Term* t)
 }
 
 void
-fphome(FILE* f, Journal* jou)
+fphome(FILE *f, Journal *jou)
 {
 	int i, events = 0;
 	for(i = 0; i < 5; ++i) {
@@ -544,14 +543,13 @@ fphome(FILE* f, Journal* jou)
 	for(i = 0; i < 5; ++i) {
 		if(jou->logs[i].rune != '+')
 			continue;
-		fprintf(f, "<li><a href='%s.html'>%s</a> %s</li>", jou->logs[i].term->filename,
-		        jou->logs[i].date, jou->logs[i].name);
+		fprintf(f, "<li><a href='%s.html'>%s</a> %s</li>", jou->logs[i].term->filename, jou->logs[i].date, jou->logs[i].name);
 	}
 	fputs("</ul>", f);
 }
 
 void
-fpcalendar(FILE* f, Journal* jou)
+fpcalendar(FILE *f, Journal *jou)
 {
 	int i, last_year = 0;
 	fputs("<ul>", f);
@@ -560,17 +558,16 @@ fpcalendar(FILE* f, Journal* jou)
 			continue;
 		if(last_year != sint(jou->logs[i].date, 2))
 			fprintf(f, "</ul><ul>");
-		fprintf(f, "<li><a href='%s.html'>%s</a> %s</li>", jou->logs[i].term->filename,
-		        jou->logs[i].date, jou->logs[i].name);
+		fprintf(f, "<li><a href='%s.html'>%s</a> %s</li>", jou->logs[i].term->filename, jou->logs[i].date, jou->logs[i].name);
 		last_year = sint(jou->logs[i].date, 2);
 	}
 	fputs("</ul>", f);
 }
 
 void
-fptracker(FILE* f, Journal* jou)
+fptracker(FILE *f, Journal *jou)
 {
-	char* known[LEXMEM];
+	char *known[LEXMEM];
 	int i, known_id = 0, last_year = 20;
 	fputs("<ul>", f);
 	for(i = 0; i < jou->len; ++i) {
@@ -579,8 +576,7 @@ fptracker(FILE* f, Journal* jou)
 		if(last_year != sint(jou->logs[i].date, 2))
 			fprintf(f, "</ul><ul>");
 		fputs("<li>", f);
-		fprintf(f, "<a href='%s.html'>%s</a> — last update %s", jou->logs[i].term->filename,
-		        jou->logs[i].term->name, jou->logs[i].date);
+		fprintf(f, "<a href='%s.html'>%s</a> — last update %s", jou->logs[i].term->filename, jou->logs[i].term->name, jou->logs[i].date);
 		fplifeline(f, jou->logs[i].term);
 		fputs("</li>", f);
 		last_year = sint(jou->logs[i].date, 2);
@@ -591,7 +587,7 @@ fptracker(FILE* f, Journal* jou)
 }
 
 void
-fpjournal(FILE* f, Journal* jou)
+fpjournal(FILE *f, Journal *jou)
 {
 	int i, count = 0;
 	for(i = 0; i < jou->len; ++i) {
@@ -605,7 +601,7 @@ fpjournal(FILE* f, Journal* jou)
 }
 
 void
-fpnow(FILE* f, Lexicon* lex, Journal* jou)
+fpnow(FILE *f, Lexicon *lex, Journal *jou)
 {
 	int i, epoch, projects_len = 0;
 	char *pname[LOGS_RANGE], *pfname[LOGS_RANGE];
@@ -643,20 +639,19 @@ fpnow(FILE* f, Lexicon* lex, Journal* jou)
 		break;
 	}
 	fprintf(
-	    f,
-	    "<p>This data shows the distribution of <b>%.0f hours over %d projects</b>, "
-	    "recorded during the last %d days, for an average of %.1f work hours per day "
-	    "and %.1f work hours per project.</p>",
-	    sum_value, projects_len,
-	    LOGS_RANGE, sum_value / LOGS_RANGE,
-	    sum_value / projects_len);
+		f,
+		"<p>This data shows the distribution of <b>%.0f hours over %d projects</b>, "
+		"recorded during the last %d days, for an average of %.1f work hours per day "
+		"and %.1f work hours per project.</p>",
+		sum_value,
+		projects_len,
+		LOGS_RANGE,
+		sum_value / LOGS_RANGE,
+		sum_value / projects_len);
 	fputs("<ul style='columns:2'>", f);
 	for(i = 0; i < projects_len; ++i) {
 		fputs("<li>", f);
-		fprintf(f, "<a href='%s.html'>%s</a> %.2f&#37; ",
-		        pfname[i],
-		        pname[i],
-		        pval[i] / sum_value * 100);
+		fprintf(f, "<a href='%s.html'>%s</a> %.2f&#37; ", pfname[i], pname[i], pval[i] / sum_value * 100);
 		fputs("</li>", f);
 	}
 	fputs("</ul>", f);
@@ -664,12 +659,11 @@ fpnow(FILE* f, Lexicon* lex, Journal* jou)
 }
 
 void
-fpdetails(FILE* f, Term* t, int depth)
+fpdetails(FILE *f, Term *t, int depth)
 {
 	int i;
 	depth++;
-	fprintf(f, "<li><a href='%s.html'>%s</a> <i>%s</i></li>", t->filename, t->name,
-	        t->incoming_len < 1 ? "orphan " : t->outgoing_len < 1 ? "deadend " : "");
+	fprintf(f, "<li><a href='%s.html'>%s</a> <i>%s</i></li>", t->filename, t->name, t->incoming_len < 1 ? "orphan " : t->outgoing_len < 1 ? "deadend " : "");
 	if(t->children_len < 1)
 		return;
 	fputs("<ul>", f);
@@ -680,11 +674,11 @@ fpdetails(FILE* f, Term* t, int depth)
 }
 
 void
-fpindex(FILE* f, Lexicon* lex, Journal* jou)
+fpindex(FILE *f, Lexicon *lex, Journal *jou)
 {
 	int i, sends = 0, orphans = 0, deadends = 0;
 	for(i = 0; i < lex->len; ++i) {
-		Term* t = &lex->terms[i];
+		Term *t = &lex->terms[i];
 		sends += t->incoming_len;
 		if(t->incoming_len < 1)
 			orphans++;
@@ -698,19 +692,20 @@ fpindex(FILE* f, Lexicon* lex, Journal* jou)
 }
 
 void
-fphtml(FILE* f, Glossary* glo, Lexicon* lex, Term* t, Journal* jou)
+fphtml(FILE *f, Glossary *glo, Lexicon *lex, Term *t, Journal *jou)
 {
 	fputs("<!DOCTYPE html><html lang='en'>", f);
 	fputs("</head>", f);
 	fprintf(f, "<meta charset='utf-8'>"
-	           "<meta name='description' content='%s'/>"
-	           "<meta name='thumbnail' content='" DOMAIN "media/services/thumbnail.jpg' />"
-	           "<meta name='viewport' content='width=device-width,initial-scale=1'>"
-	           "<link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' />"
-	           "<link rel='stylesheet' type='text/css' href='../links/main.css'>"
-	           "<link rel='shortcut icon' type='image/png' href='../media/services/icon.png'>"
-	           "<title>" NAME " — %s</title>",
-	        t->bref, t->name);
+			   "<meta name='description' content='%s'/>"
+			   "<meta name='thumbnail' content='" DOMAIN "media/services/thumbnail.jpg' />"
+			   "<meta name='viewport' content='width=device-width,initial-scale=1'>"
+			   "<link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' />"
+			   "<link rel='stylesheet' type='text/css' href='../links/main.css'>"
+			   "<link rel='shortcut icon' type='image/png' href='../media/services/icon.png'>"
+			   "<title>" NAME " — %s</title>",
+		t->bref,
+		t->name);
 	fputs("</head>", f);
 	fputs("<body>", f);
 	fputs("<header><a href='home.html'><img src='../media/services/logo.png' alt='" NAME "' height='29'></a></header>", f);
@@ -759,7 +754,7 @@ fphtml(FILE* f, Glossary* glo, Lexicon* lex, Term* t, Journal* jou)
 }
 
 void
-fprss(FILE* f, Journal* jou)
+fprss(FILE *f, Journal *jou)
 {
 	int i;
 	time_t now;
@@ -805,7 +800,7 @@ fprss(FILE* f, Journal* jou)
 }
 
 void
-fptwtxt(FILE* f, Journal* jou)
+fptwtxt(FILE *f, Journal *jou)
 {
 	int i;
 	for(i = 0; i < jou->len; ++i) {
@@ -819,11 +814,11 @@ fptwtxt(FILE* f, Journal* jou)
 }
 
 int
-parse_glossary(FILE* fp, Block* block, Glossary* glo)
+parse_glossary(FILE *fp, Block *block, Glossary *glo)
 {
 	int len, depth, count = 0, split = 0;
 	char line[512], buf[1024];
-	List* l = &glo->lists[glo->len];
+	List *l = &glo->lists[glo->len];
 	while(fgets(line, 512, fp)) {
 		depth = cpad(line, ' ');
 		len = slen(strm(line));
@@ -854,11 +849,11 @@ parse_glossary(FILE* fp, Block* block, Glossary* glo)
 }
 
 int
-parse_lexicon(FILE* fp, Block* block, Lexicon* lex)
+parse_lexicon(FILE *fp, Block *block, Lexicon *lex)
 {
 	int key_len, val_len, len, count = 0, catch_body = 0, catch_link = 0;
 	char line[1024], buf[1024];
-	Term* t = &lex->terms[lex->len];
+	Term *t = &lex->terms[lex->len];
 	while(fgets(line, 1024, fp)) {
 		int depth = cpad(line, ' ');
 		strm(line);
@@ -903,11 +898,11 @@ parse_lexicon(FILE* fp, Block* block, Lexicon* lex)
 }
 
 int
-parse_horaire(FILE* fp, Block* block, Lexicon* lex, Journal* jou)
+parse_horaire(FILE *fp, Block *block, Lexicon *lex, Journal *jou)
 {
 	int len, count = 0;
 	char line[256], buf[1024];
-	Log* l = &jou->logs[jou->len];
+	Log *l = &jou->logs[jou->len];
 	while(fgets(line, 256, fp)) {
 		strm(line);
 		len = slen(line);
@@ -934,11 +929,11 @@ parse_horaire(FILE* fp, Block* block, Lexicon* lex, Journal* jou)
 }
 
 int
-parse(Block* block, Glossary* glo, Lexicon* lex, Journal* jou)
+parse(Block *block, Glossary *glo, Lexicon *lex, Journal *jou)
 {
-	FILE* fglo = fopen("database/glossary.ndtl", "r");
-	FILE* flex = fopen("database/lexicon.ndtl", "r");
-	FILE* fhor = fopen("database/horaire.tbtl", "r");
+	FILE *fglo = fopen("database/glossary.ndtl", "r");
+	FILE *flex = fopen("database/lexicon.ndtl", "r");
+	FILE *fhor = fopen("database/horaire.tbtl", "r");
 	printf("Parsing  | ");
 	printf("glossary");
 	if(!fglo || !parse_glossary(fglo, block, glo)) {
@@ -962,14 +957,14 @@ parse(Block* block, Glossary* glo, Lexicon* lex, Journal* jou)
 }
 
 int
-link(Block* block, Glossary* glo, Lexicon* lex, Journal* jou)
+link(Block *block, Glossary *glo, Lexicon *lex, Journal *jou)
 {
 	int i, j;
 	char buf[6];
 	printf("Linking  | ");
 	printf("journal(%d entries) ", jou->len);
 	for(i = 0; i < jou->len; ++i) {
-		Log* l = &jou->logs[i];
+		Log *l = &jou->logs[i];
 		if(!l->term->date_last)
 			l->term->date_last = push(block, scpy(l->date, buf));
 		if(l->code < 1)
@@ -978,7 +973,7 @@ link(Block* block, Glossary* glo, Lexicon* lex, Journal* jou)
 	}
 	printf("lexicon(%d entries) ", lex->len);
 	for(i = 0; i < lex->len; ++i) {
-		Term* t = &lex->terms[i];
+		Term *t = &lex->terms[i];
 		for(j = 0; j < t->body_len; ++j)
 			fptemplate(NULL, glo, lex, t, t->body[j]);
 		t->parent = findterm(lex, t->host);
@@ -993,9 +988,9 @@ link(Block* block, Glossary* glo, Lexicon* lex, Journal* jou)
 }
 
 int
-build(Glossary* glo, Lexicon* lex, Journal* jou)
+build(Glossary *glo, Lexicon *lex, Journal *jou)
 {
-	FILE* f;
+	FILE *f;
 	int i;
 	printf("Building | ");
 	printf("%d pages ", lex->len);
@@ -1018,13 +1013,13 @@ build(Glossary* glo, Lexicon* lex, Journal* jou)
 }
 
 void
-check(Glossary* glo, Journal* jou)
+check(Glossary *glo, Journal *jou)
 {
 	int i, j, found = 0;
 	printf("Checking | ");
 	/* Find unlinked lists */
 	for(i = 0; i < glo->len; ++i) {
-		List* l = &glo->lists[i];
+		List *l = &glo->lists[i];
 		if(l->routes < 1)
 			printf("Warning: Unused list \"%s\"\n", l->name);
 	}
