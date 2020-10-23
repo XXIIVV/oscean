@@ -271,20 +271,20 @@ fplist(FILE *f, Glossary *glo, char *target)
 }
 
 int
-fpinclude(FILE *f, char *target, int code)
+fpinclude(FILE *f, char *target, int text)
 {
 	int lines = 0;
 	char c;
-	char *folder = code ? "inc/code/" : "inc/html/";
-	char *ext = code ? ".txt" : ".htm";
+	char *folder = text ? "inc/text/" : "inc/html/";
+	char *ext = text ? ".txt" : ".htm";
 	FILE *fp = getfile(folder, target, ext, "r");
 	if(fp == NULL)
 		return 0;
 	fputs("<figure>", f);
-	if(code)
+	if(text)
 		fputs("<pre>", f);
 	while((c = fgetc(fp)) != EOF) {
-		if(code)
+		if(text)
 			fputcent(f, c);
 		else
 			fputc(c, f);
@@ -292,7 +292,7 @@ fpinclude(FILE *f, char *target, int code)
 			lines++;
 	}
 	fclose(fp);
-	if(code)
+	if(text)
 		fputs("</pre>", f);
 	fprintf(f, "<figcaption>&mdash; Found a mistake? Submit an <a href='" REPOPATH "%s%s%s' target='_blank'>edit</a> to <a href='../src/%s%s%s'>%s%s</a>(%d lines)</figcaption>\n", folder, target, ext, folder, target, ext, target, ext, lines);
 	fputs("</figure>", f);
