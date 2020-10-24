@@ -92,13 +92,11 @@ scsw(char *s, char a, char b)
 int
 scmp(char *a, char *b)
 {
-	int i, l = slen(a);
-	if(l != slen(b))
-		return 0;
-	for(i = 0; i < l; ++i)
-		if(a[i] != b[i])
-			return 0;
-	return 1;
+	int i = 0;
+	while(a[i] == b[i])
+		if(a[i++] == '\0')
+			return 1;
+	return 0;
 }
 
 int

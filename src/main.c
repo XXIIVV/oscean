@@ -744,7 +744,7 @@ fprss(FILE *f, Journal *jou)
 	fputs("<rss version='2.0' xmlns:dc='http://purl.org/dc/elements/1.1/'>\n", f);
 	fputs("<channel>\n", f);
 	fputs("<title>" NAME "</title>\n", f);
-	fputs("<link>" DOMAIN " Journal</link>\n", f);
+	fputs("<link>" DOMAIN "Journal</link>\n", f);
 	fputs("<description>The Nataniev Library</description>\n", f);
 	/* Date */
 	fputs("<lastBuildDate>", f);
