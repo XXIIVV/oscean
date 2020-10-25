@@ -86,7 +86,7 @@ char *
 push(Block *b, char *s)
 {
 	int i = 0, o = b->len;
-	while(s[i] != '\0')
+	while(s[i])
 		b->data[b->len++] = s[i++];
 	b->data[b->len++] = '\0';
 	return &b->data[o];

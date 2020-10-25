@@ -38,7 +38,7 @@ int
 cpad(char *s, char c)
 {
 	int i = 0;
-	while(s[i] == c && s[i] != '\0' && s[++i])
+	while(s[i] == c && s[i] && s[++i])
 		;
 	return i;
 }
@@ -47,7 +47,7 @@ int
 cpos(char *s, char c)
 {
 	int i = 0;
-	while(s[i] != '\0' && s[i])
+	while(s[i] && s[i])
 		if(s[i++] == c)
 			return i - 1;
 	return -1;
@@ -57,7 +57,7 @@ int
 slen(char *s)
 {
 	int i = 0;
-	while(s[i] != '\0' && s[++i])
+	while(s[i] && s[++i])
 		;
 	return i;
 }
@@ -94,7 +94,7 @@ scmp(char *a, char *b)
 {
 	int i = 0;
 	while(a[i] == b[i])
-		if(a[i++] == '\0')
+		if(!a[i++])
 			return 1;
 	return 0;
 }
@@ -128,9 +128,9 @@ int
 spos(char *s, char *ss)
 {
 	int a = 0, b = 0;
-	while(s[a] != '\0') {
+	while(s[a]) {
 		if(s[a] == ss[b]) {
-			if(ss[b + 1] == '\0')
+			if(!ss[b + 1])
 				return a - b;
 			b++;
 		} else
@@ -161,7 +161,7 @@ char *
 scpy(char *src, char *dst)
 {
 	int i = 0;
-	while((dst[i] = src[i]) != '\0')
+	while((dst[i] = src[i]))
 		i++;
 	return dst;
 }
@@ -200,7 +200,7 @@ char *
 scat(char *dst, const char *src)
 {
 	char *ptr = dst + slen(dst);
-	while(*src != '\0')
+	while(*src)
 		*ptr++ = *src++;
 	*ptr = '\0';
 	return dst;

@@ -1,9 +1,17 @@
 <!DOCTYPE html><html lang='en'></head><meta charset='utf-8'><meta name='description' content='In Reverse Polish Notation, the operators follow their operands.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV — reverse polish</title></head><body><header><a href='home.html'><img src='../media/services/logo.png' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='binary.html'>binary</a></li><li><a href='assembly.html'>assembly</a></li><li><a href='forth.html'>forth/</a></li><li><a href='pascal.html'>pascal</a></li><li><a href='hypertalk.html'>hypertalk</a></li><li><a href='unix.html'>unix</a></li><li><a href='postscript.html'>postscript</a></li></ul><ul><li><a href='reverse_polish.html'>reverse polish/</a></li></ul><ul></ul></nav><main><h2>In Reverse Polish Notation, the operators follow their operands.</h2><p>For instance, one would write <code>3 4 +</code> rather than <code>3 + 4</code>. If there are multiple operations, operators are given immediately after their second operands. The expression written <code>(5 + 10) * 3</code> in conventional notation would be written <code>3 10 5 + *</code> in reverse Polish notation.</p><table border='1'><tr><td><i>operation</i></td><th>3</th><th>10</th><th>5</th><th>+</th><th>*</th></tr><tr><td rowspan='3'><i>stack</i></td><td rowspan='3'>3</td><td>10</td><td>5</td><td>15</td><td rowspan='3'>45</td></tr><tr><td rowspan='2'>3</td><td>10</td><td rowspan='2'>3</td></tr><tr><td>3</td></tr></table><p>The automatic stack permits the automatic storage of intermediate results for use later: this key feature is what permits RPN calculators to easily evaluate expressions of arbitrary complexity: they do not have limits on the complexity of expression they can evaluate.</p><p>Brackets and parentheses are unnecessary: the user simply performs calculations in the order that is required, letting the automatic stack store intermediate results on the fly for later use. Likewise, there is no requirement for the precedence rules required in infix notation.</p><p>In RPN calculators, no equals key is required to force computation to occur. To learn more about a programming language using RPN at its core, see <a href='forth.html'>Forth</a>.</p><h3>Simple ANSI C implementation</h3><pre>./rpn 2 3 4 5 add mul sub 5 div <i># 45</i></pre><figure><pre>#include &lt;stdio.h&gt;
 
+#define SSZ 256
+#define QSZ 32
+
 typedef struct Stack {
-	short data[255];
-	unsigned short len;
+	short data[SSZ];
+	int len;
 } Stack;
+
+typedef struct Query {
+	char data[QSZ];
+	int len;
+} Query;
 
 /* helpers */
 
@@ -17,9 +25,9 @@ int
 sinu(char *s)
 {
 	int i = 0;
-	if(s[0] == '\0')
+	if(!s[0])
 		return 0;
-	while(s[i] != '\0')
+	while(s[i])
 		if(!cinu(s[i++]))
 			return 0;
 	return 1;
@@ -39,20 +47,33 @@ scmp(char *a, char *b)
 {
 	int i = 0;
 	while(a[i] == b[i])
-		if(a[i++] == '\0')
+		if(!a[i++])
 			return 1;
 	return 0;
 }
 
+void
+init(Query *s)
+{
+	s-&gt;data[0] = '\0';
+	s-&gt;len = 0;
+}
+
+void
+append(Query *s, char c)
+{
+	if(s-&gt;len &lt; QSZ)
+		s-&gt;data[s-&gt;len++] = c;
+	s-&gt;data[s-&gt;len] = '\0';
+}
+
 /* rpn */
 
-int
+void
 push(Stack *s, int v)
 {
-	if(s-&gt;len &gt;= 255)
-		return 1;
-	s-&gt;data[s-&gt;len++] = v;
-	return 0;
+	if(s-&gt;len &lt; SSZ)
+		s-&gt;data[s-&gt;len++] = v;
 }
 
 int
@@ -66,101 +87,59 @@ print(Stack *s)
 {
 	int i;
 	for(i = 0; i &lt; s-&gt;len; ++i)
-		printf(" %d |", s-&gt;data[i]);
+		printf("| %d ", s-&gt;data[i]);
 	printf("\n");
 }
 
 /* ops */
 
-int
-add(Stack *s)
-{
-	if(s-&gt;len &lt; 2)
-		return 1;
-	push(s, pop(s) + pop(s));
-	return 0;
-}
-
-int
-sub(Stack *s)
-{
-	if(s-&gt;len &lt; 2)
-		return 1;
-	push(s, pop(s) - pop(s));
-	return 0;
-}
-
-int
-mul(Stack *s)
-{
-	if(s-&gt;len &lt; 2)
-		return 1;
-	push(s, pop(s) * pop(s));
-	return 0;
-}
-
-int
-div(Stack *s)
-{
-	if(s-&gt;len &lt; 2)
-		return 1;
-	push(s, pop(s) / pop(s));
-	return 0;
-}
-
-int
-run(Stack *s, char *q)
-{
-	int err = 0;
-	if(sinu(q))
-		err = push(s, sint(q));
-	else if(scmp(q, "add") || q[0] == '+')
-		err = add(s);
-	else if(scmp(q, "sub") || q[0] == '-')
-		err = sub(s);
-	else if(scmp(q, "mul") || q[0] == '*')
-		err = mul(s);
-	else if(scmp(q, "div") || q[0] == '/')
-		err = div(s);
-	if(err) {
-		printf("Stack underflow: %s:%d\n", q, pop(s));
-		return 1;
-	}
-	print(s);
-	return 0;
-}
-
 void
-load(FILE *f, Stack *s)
+request(Stack *s, char *qd)
 {
-	char c, q[256];
-	int i, qlen;
-	if(!f)
-		return;
-	qlen = 0;
-	while((c = fgetc(f)) != EOF) {
-		if(c == ' ' || c == '\n' || c == '\0') {
-			run(s, q);
-			qlen = 0;
-			q[0] = '\0';
-		} else {
-			q[qlen++] = c;
-			q[qlen] = '\0';
-		}
-		i++;
-	}
-	fclose(f);
+	if(!qd[0])
+		print(s);
+	else if(sinu(qd)) {
+		if(s-&gt;len &gt;= SSZ)
+			printf("Stack overflow at: %s(%d)\n", qd, s-&gt;len);
+		else
+			push(s, sint(qd));
+	} else if(s-&gt;len &gt; 1) {
+		if(scmp(qd, "add") || qd[0] == '+')
+			push(s, pop(s) + pop(s));
+		else if(scmp(qd, "sub") || qd[0] == '-')
+			push(s, pop(s) - pop(s));
+		else if(scmp(qd, "mul") || qd[0] == '*')
+			push(s, pop(s) * pop(s));
+		else if(scmp(qd, "div") || qd[0] == '/')
+			push(s, pop(s) / pop(s));
+		print(s);
+	} else
+		printf("Stack underflow at: %s(%d)\n", qd, s-&gt;len);
 }
 
 int
-main(int argc, char **argv)
+run(Stack *s)
+{
+	char c;
+	Query q;
+	init(&amp;q);
+	while((c = fgetc(stdin)) != EOF) {
+		if(c == ' ' || c == '\n' || !c) {
+			request(s, q.data);
+			init(&amp;q);
+		} else
+			append(&amp;q, c);
+	}
+	return 0;
+}
+
+int
+main()
 {
 	Stack s;
-	if(argc &lt; 2)
-		return 0;
-	load(fopen(argv[1], "r"), &amp;s);
-	printf("Result: %d\n", pop(&amp;s));
+	s.len = 0;
+	while(run(&amp;s))
+		;
 	return 0;
-}
-</pre><figcaption>&mdash; Found a mistake? Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/rpn.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/rpn.c.txt'>rpn.c.txt</a>(164 lines)</figcaption>
+}</pre><figcaption>&mdash; Found a mistake? Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/rpn.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/rpn.c.txt'>rpn.c.txt</a>(143 lines)</figcaption>
 </figure><p><i>incoming(2)</i>: <a href='forth.html'>forth</a> <a href='postscript.html'>postscript</a> </p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
