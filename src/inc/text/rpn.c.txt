@@ -3,8 +3,13 @@
 #define SSZ 256
 #define QSZ 32
 
+typedef struct Fraction {
+	short num;
+	short den;
+} Fraction;
+
 typedef struct Stack {
-	short data[SSZ];
+	Fraction data[SSZ];
 	int len;
 } Stack;
 
@@ -52,6 +57,14 @@ scmp(char *a, char *b)
 	return 0;
 }
 
+int
+gcd(int a, int b)
+{
+	if(b == 0)
+		return a;
+	return gcd(b, a % b);
+}
+
 void
 init(Query *s)
 {
@@ -70,13 +83,17 @@ append(Query *s, char c)
 /* rpn */
 
 void
-push(Stack *s, int v)
+push(Stack *s, int num, int den)
 {
-	if(s->len < SSZ)
-		s->data[s->len++] = v;
+	if(s->len < SSZ) {
+		int d = gcd(num, den);
+		s->data[s->len].num = num / d;
+		s->data[s->len++].den = den / d;
+	} else
+		printf("Stack overflow\n");
 }
 
-int
+Fraction
 pop(Stack *s)
 {
 	return s->data[--s->len];
@@ -86,8 +103,14 @@ void
 print(Stack *s)
 {
 	int i;
-	for(i = 0; i < s->len; ++i)
-		printf("| %d ", s->data[i]);
+	if(s->len < 1)
+		return;
+	for(i = 0; i < s->len; ++i) {
+		if(s->data[i].den != 1)
+			printf("%d/%d ", s->data[i].num, s->data[i].den);
+		else
+			printf("%d ", s->data[i].num);
+	}
 	printf("\n");
 }
 
@@ -96,23 +119,37 @@ print(Stack *s)
 void
 request(Stack *s, char *qd)
 {
-	if(!qd[0])
+	if(qd[0] == ' ' || qd[0] == '.' || qd[0] == '\0')
 		print(s);
 	else if(sinu(qd)) {
 		if(s->len >= SSZ)
 			printf("Stack overflow at: %s(%d)\n", qd, s->len);
 		else
-			push(s, sint(qd));
+			push(s, sint(qd), 1);
+	} else if(scmp(qd, "pop") || qd[0] == '!') {
+		if(s->len <= 0)
+			printf("Stack underflow at: %s(%d)\n", qd, s->len);
+		else
+			pop(s);
 	} else if(s->len > 1) {
+		Fraction b = pop(s);
+		Fraction a = pop(s);
 		if(scmp(qd, "add") || qd[0] == '+')
-			push(s, pop(s) + pop(s));
+			push(s, (a.num * b.den) + (a.den * b.num), a.den * b.den);
 		else if(scmp(qd, "sub") || qd[0] == '-')
-			push(s, pop(s) - pop(s));
+			push(s, (a.num * b.den) - (a.den * b.num), a.den * b.den);
 		else if(scmp(qd, "mul") || qd[0] == '*')
-			push(s, pop(s) * pop(s));
+			push(s, a.num * b.num, a.den * b.den);
 		else if(scmp(qd, "div") || qd[0] == '/')
-			push(s, pop(s) / pop(s));
-		print(s);
+			push(s, a.num * b.den, a.den * b.num);
+		else if(scmp(qd, "swp") || qd[0] == '~') {
+			push(s, b.num, b.den);
+			push(s, a.num, a.den);
+		} else {
+			printf("Unknown operation at: %s(%d)\n", qd, s->len);
+			push(s, a.num, a.den);
+			push(s, b.num, b.den);
+		}
 	} else
 		printf("Stack underflow at: %s(%d)\n", qd, s->len);
 }
@@ -140,5 +177,6 @@ main()
 	s.len = 0;
 	while(run(&s))
 		;
+	print(&s);
 	return 0;
 }
