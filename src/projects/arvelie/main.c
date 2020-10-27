@@ -19,6 +19,8 @@ main(int argc, char* argv[])
 			print_arvelie_from_ymdstr(argv[1]);
 		else if(slen(argv[1]) == 5)
 			print_ymdstr_from_arvelie(argv[1]);
+		else if(slen(argv[1]) == 7)
+			print_ymdstr_from_full_arvelie(argv[1]);
 		else {
 			return error("Misformatted Input", "");
 		}
