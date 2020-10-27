@@ -55,6 +55,22 @@ is_valid_arvelie(char* date)
 }
 
 int
+is_full_valid_arvelie(char* date)
+{
+	int y = (date[0] - '0') * 1000 + (date[1] - '0') * 100 +
+	        (date[2] - '0') * 10 + date[3] - '0';
+	int m = date[4] - 'A';
+	int d = ((date[5] - '0') * 10) + date[6] - '0';
+	if(slen(date) != 7) {
+		return 0;
+	}
+	if(y < 0 || y > 9999 || m < 0 || m > 26 || d < 0 || d > 14) {
+		return 0;
+	}
+	return 1;
+}
+
+int
 is_valid_ymdstr(char* date)
 {
 	int y = (date[0] - '0') * 1000 + (date[1] - '0') * 100 +
@@ -77,6 +93,15 @@ arvelie_to_doty(char* date)
 {
 	int m = date[2] - 'A';
 	int d = ((date[3] - '0') * 10) + date[4] - '0';
+	int doty = (m * 14) + d;
+	return doty == -307 ? 364 : doty;
+}
+
+int
+full_arvelie_to_doty(char* date)
+{
+	int m = date[4] - 'A';
+	int d = ((date[5] - '0') * 10) + date[6] - '0';
 	int doty = (m * 14) + d;
 	return doty == -307 ? 364 : doty;
 }
@@ -146,7 +171,11 @@ print_arvelie_from_doty(int y, int doty)
 	                  "S", "T", "U", "V", "W", "X", "Y", "Z", "+"};
 	int d = (doty % 14) + 1;
 	char* m = months[doty / 14];
-	printf("%d%s%02d\n", y % 100, m, d);
+	if(y >= 2000 && y < 3000) {
+		printf("%d%s%02d\n", y % 100, m, d);
+	} else {
+		printf("%d%s%02d\n", y, m, d);
+	}
 }
 
 void
@@ -183,6 +212,18 @@ print_ymdstr_from_arvelie(char* date)
 		return 1;
 	}
 	print_ymdstr_from_doty(y, arvelie_to_doty(date));
+	return 0;
+}
+
+print_ymdstr_from_full_arvelie(char* date)
+{
+	int y = (date[0] - '0') * 1000 + (date[1] - '0') * 100 +
+	        (date[2] - '0') * 10 + date[3] - '0';
+	if(!is_full_valid_arvelie(date)) {
+		printf("Error: Invalid arvelie date\n");
+		return 1;
+	}
+	print_ymdstr_from_doty(y, full_arvelie_to_doty(date));
 	return 0;
 }
 

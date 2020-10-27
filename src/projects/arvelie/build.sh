@@ -8,8 +8,10 @@ cc -std=c89 -DDEBUG -Wall -Wpedantic -Wshadow -Wextra -Werror=implicit-int -Werr
 
 echo "Valid:"
 ./arvelie
+./arvelie 2020-10-27
 ./arvelie 1986-03-22
 ./arvelie 19Q13
+./arvelie 1919Q13
 
 echo "Errors:"
 ./arvelie 2020-04-AG
