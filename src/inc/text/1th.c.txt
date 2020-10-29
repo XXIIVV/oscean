@@ -1,0 +1,288 @@
+#include <stdio.h>
+
+typedef struct Fraction {
+	int num;
+	int den;
+} Fraction;
+
+typedef struct Stack {
+	Fraction dict[256];
+	Fraction data[256];
+	int len;
+	int flag;
+} Stack;
+
+typedef struct Query {
+	char data[32];
+	int len;
+} Query;
+
+/* helpers */
+
+int
+cinu(char c)
+{
+	return c >= '0' && c <= '9';
+}
+
+int
+sinu(char *s)
+{
+	int i = 0;
+	if(!s[0])
+		return 0;
+	while(s[i])
+		if(!cinu(s[i++]))
+			return 0;
+	return 1;
+}
+
+int
+sint(char *s)
+{
+	int i = 0, num = 0;
+	while(s[i] && cinu(s[i]))
+		num = num * 10 + (s[i++] - '0');
+	return num;
+}
+
+int
+scmp(char *a, char *b)
+{
+	int i = 0;
+	while(a[i] == b[i])
+		if(!a[i++])
+			return 1;
+	return 0;
+}
+
+int
+gcd(int a, int b)
+{
+	if(b == 0)
+		return a;
+	return gcd(b, a % b);
+}
+
+void
+init(Query *s)
+{
+	s->data[0] = '\0';
+	s->len = 0;
+}
+
+void
+append(Query *s, char c)
+{
+	if(s->len < 32)
+		s->data[s->len++] = c;
+	s->data[s->len] = '\0';
+}
+
+/* rpn */
+
+int
+error(char *err)
+{
+	printf("Error: %s\n", err);
+	return 0;
+}
+
+int
+trypop(Stack *s, int len)
+{
+	int err = s->len - len < 0;
+	if(err)
+		error("Stack underflow");
+	return !err;
+}
+
+int
+trypush(Stack *s, int len)
+{
+	int err = s->len + len >= 256;
+	if(err)
+		error("Stack overflow");
+	return !err;
+}
+
+int
+tryget(Stack *s, int offset)
+{
+	int err = s->len - offset < 0;
+	if(err)
+		error("Stack overflow");
+	return !err;
+}
+
+Fraction
+pop(Stack *s)
+{
+	return s->data[--s->len];
+}
+
+Fraction *
+push(Stack *s, Fraction f)
+{
+	s->data[s->len] = f;
+	return &s->data[s->len++];
+}
+
+Fraction *
+get(Stack *s, int offset)
+{
+	return &s->data[s->len - offset];
+}
+
+Fraction *
+store(Stack *s, int key, Fraction f)
+{
+	s->dict[key % 256] = f;
+	return &s->dict[key];
+}
+
+Fraction
+Frac(int num, int den)
+{
+	Fraction f;
+	int d = gcd(num, den);
+	f.num = num / d;
+	f.den = den / d;
+	return f;
+}
+
+void
+print(Stack *s, int format)
+{
+	int i;
+	if(s->len < 1)
+		return;
+	for(i = 0; i < s->len; ++i) {
+		Fraction *f = &s->data[i];
+		if(format == 1)
+			printf("%f ", f->num / (double)f->den);
+		else if(format == 2 && f->num > f->den)
+			printf("%d&%d/%d ", f->num / f->den, f->num % f->den, f->den);
+		else if(f->den != 1)
+			printf("%d/%d ", f->num, f->den);
+		else
+			printf("%d ", f->num);
+	}
+	printf("\n");
+}
+
+/* ops */
+
+void
+request(Stack *s, char *qd)
+{
+	if((qd[0] == ':' || scmp(qd, "esc")))
+		s->flag += 2;
+	else if((qd[0] == ';' || scmp(qd, "end")))
+		s->flag -= s->flag > 0 ? 2 : 0;
+	else if(s->flag)
+		return;
+	/* print */
+	if(!qd[0] || qd[0] == ' ' || qd[0] == '.')
+		print(s, 0);
+	else if(qd[0] == ',')
+		print(s, 1);
+	else if(qd[0] == '_')
+		print(s, 2);
+	/* dict */
+	else if(qd[0] == '[' && qd[1] && trypop(s, 1))
+		store(s, qd[1], pop(s));
+	else if(qd[0] == '{' && qd[1] && trypush(s, 1))
+		push(s, s->dict[(int)qd[1]]);
+	/* stack */
+	else if(sinu(qd) && trypush(s, 1))
+		push(s, Frac(sint(qd), 1));
+	else if(scmp(qd, "pop") && trypop(s, 1))
+		pop(s);
+	else if(scmp(qd, "clr"))
+		s->len = 0;
+	else if(scmp(qd, "dup") && trypop(s, 1) && trypush(s, 1)) {
+		Fraction b = pop(s);
+		push(s, Frac(b.num, b.den));
+		push(s, Frac(b.num, b.den));
+	} else if(scmp(qd, "vid") && trypop(s, 1) && trypush(s, 1)) {
+		Fraction b = pop(s);
+		push(s, Frac(b.num, 1));
+		push(s, Frac(b.den, 1));
+	} else if(scmp(qd, "swp") && trypop(s, 2)) {
+		Fraction b = pop(s);
+		Fraction a = pop(s);
+		push(s, Frac(b.num, b.den));
+		push(s, Frac(a.num, a.den));
+		/* math */
+	} else if((qd[0] == '+' || scmp(qd, "add")) && trypop(s, 2)) {
+		Fraction b = pop(s);
+		Fraction a = pop(s);
+		push(s, Frac((a.num * b.den) + (a.den * b.num), a.den * b.den));
+	} else if((qd[0] == '-' || scmp(qd, "sub")) && trypop(s, 2)) {
+		Fraction b = pop(s);
+		Fraction a = pop(s);
+		push(s, Frac((a.num * b.den) - (a.den * b.num), a.den * b.den));
+	} else if((qd[0] == '*' || scmp(qd, "mul")) && trypop(s, 2)) {
+		Fraction b = pop(s);
+		Fraction a = pop(s);
+		push(s, Frac(a.num * b.num, a.den * b.den));
+	} else if((qd[0] == '/' || scmp(qd, "div")) && trypop(s, 2)) {
+		Fraction b = pop(s);
+		Fraction a = pop(s);
+		push(s, Frac(a.num * b.den, a.den * b.num));
+	} else if((qd[0] == '%' || scmp(qd, "mod")) && trypop(s, 2)) {
+		Fraction b = pop(s);
+		Fraction a = pop(s);
+		push(s, Frac((a.num * b.den) % (a.den * b.num), a.den * b.den));
+	} else if((qd[0] == '~' || scmp(qd, "inv")) && trypop(s, 1)) {
+		Fraction b = pop(s);
+		push(s, Frac(b.den, b.num));
+		/* Logic */
+	} else if((qd[0] == '=' || scmp(qd, "beq")) && tryget(s, 2)) {
+		Fraction *b = get(s, 1);
+		Fraction *a = get(s, 2);
+		s->flag += (b->den * a->num != a->den * b->num) * 2;
+	} else if((qd[0] == '!' || scmp(qd, "bne")) && tryget(s, 2)) {
+		Fraction *b = get(s, 1);
+		Fraction *a = get(s, 2);
+		s->flag += (b->den * a->num == a->den * b->num) * 2;
+	} else if((qd[0] == '>' || scmp(qd, "bgt")) && tryget(s, 2)) {
+		Fraction *b = get(s, 1);
+		Fraction *a = get(s, 2);
+		s->flag += (b->den * a->num < a->den * b->num) * 2;
+	} else if((qd[0] == '<' || scmp(qd, "blt")) && tryget(s, 2)) {
+		Fraction *b = get(s, 1);
+		Fraction *a = get(s, 2);
+		s->flag += (b->den * a->num > a->den * b->num) * 2;
+	}
+}
+
+int
+run(Stack *s)
+{
+	char c;
+	Query q;
+	init(&q);
+	while((c = fgetc(stdin)) != EOF) {
+		if(c == ' ' || c == '\n' || !c) {
+			request(s, q.data);
+			init(&q);
+		} else
+			append(&q, c);
+	}
+	return 0;
+}
+
+Stack s;
+
+int
+main()
+{
+	s.len = 0;
+	s.flag = 0;
+	while(run(&s))
+		;
+	print(&s, 0);
+	return 0;
+}
