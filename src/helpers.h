@@ -250,5 +250,5 @@ marble(int year, int month, int day)
 	birth.tm_year = year - 1900;
 	birth.tm_mon = month - 1;
 	birth.tm_mday = day;
-	return ((time(NULL) / 86400) - (mktime(&birth) / 86400)) / 7;
+	return (((time(NULL) - mktime(&birth)) / 86400)) / 7;
 }
