@@ -294,7 +294,7 @@ fpinclude(FILE *f, char *target, int text)
 	fclose(fp);
 	if(text)
 		fputs("</pre>", f);
-	fprintf(f, "<figcaption>&mdash; Found a mistake? Submit an <a href='" REPOPATH "%s%s%s' target='_blank'>edit</a> to <a href='../src/%s%s%s'>%s%s</a>(%d lines)</figcaption>\n", folder, target, ext, folder, target, ext, target, ext, lines);
+	fprintf(f, "<figcaption>&mdash; Submit an <a href='" REPOPATH "%s%s%s' target='_blank'>edit</a> to <a href='../src/%s%s%s'>%s%s</a>(%d lines)</figcaption>\n", folder, target, ext, folder, target, ext, target, ext, lines);
 	fputs("</figure>", f);
 	return 1;
 }
@@ -1026,6 +1026,7 @@ main(void)
 	Lexicon all_terms;
 	Journal all_logs;
 	clock_t start;
+	int death = marble(1986, 3, 22);
 
 	all_lists.len = 0;
 	all_terms.len = 0;
@@ -1034,7 +1035,7 @@ main(void)
 	block.len = 0;
 	block.data[0] = '\0';
 
-	printf("Today    | ");
+	printf("Today    | Marble #%d(%.2f%%) ", death, (death / (double)3900) * 100);
 	print_arvelie();
 
 	start = clock();
