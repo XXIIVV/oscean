@@ -26,7 +26,7 @@ cc -std=c89 -DDEBUG -Wall -Wpedantic -Wshadow -Wuninitialized -Wextra -Werror=im
 # valgrind ./oscean
 
 # Build Size
-echo "$(du -b ./oscean | cut -f1) bytes written"
+# echo "$(du -b ./oscean | cut -f1) bytes written"
 
 # Run
 ./oscean

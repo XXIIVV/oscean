@@ -16,6 +16,16 @@ ymd_to_doty(int y, int m, int d)
 }
 
 int
+time_to_doty(time_t *t)
+{
+	struct tm* local = localtime(t);
+	int y = local->tm_year + 1900;
+	int m = local->tm_mon + 1;
+	int d = local->tm_mday;
+	return ymd_to_doty(y, m, d);
+}
+
+int
 doty_to_month(int doty)
 {
 	int month = 0;
@@ -81,13 +91,6 @@ arvelie_to_doty(char* date)
 	return doty == -307 ? 364 : doty;
 }
 
-int
-arvelie_to_epoch(char* date)
-{
-	int y = ((date[0] - '0') * 10) + date[1] - '0';
-	return arvelie_to_doty(date) + (y * 365);
-}
-
 time_t
 arvelie_to_time(char* arvelie)
 {
@@ -107,17 +110,16 @@ arvelie_to_time(char* arvelie)
 }
 
 int
-get_epoch(void)
+arvelie_to_offset(char *arvelie)
 {
-	int y, m, d;
+	return (int)arvelie_to_time(arvelie)/86400;
+}
+
+int
+get_offset(void){
 	time_t now;
-	struct tm* local;
 	time(&now);
-	local = localtime(&now);
-	y = local->tm_year + 1900;
-	m = local->tm_mon + 1;
-	d = local->tm_mday;
-	return (y % 100) * 365 + ymd_to_doty(y, m, d);
+	return (int)now/86400;
 }
 
 /* printers */
@@ -146,7 +148,7 @@ print_arvelie_from_doty(int y, int doty)
 	                  "S", "T", "U", "V", "W", "X", "Y", "Z", "+"};
 	int d = (doty % 14) + 1;
 	char* m = months[doty / 14];
-	printf("%d%s%02d\n", y % 100, m, d);
+	printf("%d%s%02d", y % 100, m, d);
 }
 
 void
