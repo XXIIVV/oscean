@@ -808,8 +808,9 @@ parse_glossary(FILE *fp, Block *block, Glossary *glo)
 	char line[512], buf[1024];
 	List *l = &glo->lists[glo->len];
 	while(fgets(line, 512, fp)) {
-		depth = cpad(line, ' ');
+		depth = cpad(line, '\t');
 		len = slen(strm(line));
+		count++;
 		if(len < 4 || line[0] == ';')
 			continue;
 		if(glo->len >= GLOMEM)
@@ -818,19 +819,18 @@ parse_glossary(FILE *fp, Block *block, Glossary *glo)
 			return error("Line is too long", line);
 		if(depth == 0) {
 			l = _list(&glo->lists[glo->len++], push(block, sstr(line, buf, 0, len)));
-		} else if(depth == 2) {
+		} else if(depth == 1) {
 			if(l->len >= 64)
 				error("Reached list item limit", l->name);
 			split = cpos(line, ':');
 			if(split < 0)
-				l->vals[l->len] = push(block, sstr(line, buf, 2, len + 2));
+				l->vals[l->len] = push(block, sstr(line, buf, 1, len + 1));
 			else {
-				l->keys[l->len] = push(block, sstr(line, buf, 2, split - 3));
+				l->keys[l->len] = push(block, sstr(line, buf, 1, split - 2));
 				l->vals[l->len] = push(block, sstr(line, buf, split + 2, len - split));
 			}
 			l->len++;
 		}
-		count++;
 	}
 	printf(":%d ", count);
 	return 1;
@@ -843,9 +843,10 @@ parse_lexicon(FILE *fp, Block *block, Lexicon *lex)
 	char line[1024], buf[1024];
 	Term *t = &lex->terms[lex->len];
 	while(fgets(line, 1024, fp)) {
-		int depth = cpad(line, ' ');
+		int depth = cpad(line, '\t');
 		strm(line);
 		len = slen(line);
+		count++;
 		if(len < 3 || line[0] == ';')
 			continue;
 		if(lex->len >= LEXMEM)
@@ -857,29 +858,29 @@ parse_lexicon(FILE *fp, Block *block, Lexicon *lex)
 			if(!sans(line))
 				return error("Lexicon key is not alphanum", line);
 			t->filename = push(block, scsw(slca(sstr(line, buf, 0, len)), ' ', '_'));
-		} else if(depth == 2 && len > 4) {
+		} else if(depth == 1 && len > 2) {
 			if(spos(line, "HOST : ") >= 0)
-				t->host = push(block, sstr(line, buf, 9, len - 9));
+				t->host = push(block, sstr(line, buf, 8, len - 8));
 			if(spos(line, "BREF : ") >= 0)
-				t->bref = push(block, sstr(line, buf, 9, len - 9));
+				t->bref = push(block, sstr(line, buf, 8, len - 8));
 			if(spos(line, "TYPE : ") >= 0)
-				t->type = push(block, sstr(line, buf, 9, len - 9));
+				t->type = push(block, sstr(line, buf, 8, len - 8));
 			catch_body = spos(line, "BODY") >= 0;
 			catch_link = spos(line, "LINK") >= 0;
-		} else if(depth == 4 && len > 6) {
+		} else if(depth == 2 && len > 3) {
 			/* Body */
 			if(catch_body)
-				t->body[t->body_len++] = push(block, sstr(line, buf, 4, len - 4));
+				t->body[t->body_len++] = push(block, sstr(line, buf, 2, len - 2));
 			/* Link */
 			else if(catch_link) {
-				key_len = cpos(line, ':') - 5;
-				t->link.keys[t->link.len] = push(block, sstr(line, buf, 4, key_len));
-				val_len = len - key_len - 5;
-				t->link.vals[t->link.len++] = push(block, sstr(line, buf, key_len + 7, val_len));
+				key_len = cpos(line, ':') - 3;
+				t->link.keys[t->link.len] = push(block, sstr(line, buf, 2, key_len));
+				val_len = len - key_len - 3;
+				t->link.vals[t->link.len++] = push(block, sstr(line, buf, key_len + 5, val_len));
 			} else
 				error("Invalid line", line);
-		}
-		count++;
+		} else
+			error("Invalid line", line);
 	}
 	printf(":%d ", count);
 	return 1;
@@ -893,6 +894,7 @@ parse_journal(FILE *fp, Block *block, Lexicon *lex, Journal *jou)
 	Log *l = &jou->logs[jou->len];
 	while(fgets(line, 256, fp)) {
 		len = slen(strm(line));
+		count++;
 		if(len < 14 || line[0] == ';')
 			continue;
 		if(jou->len >= HORMEM)
@@ -909,7 +911,6 @@ parse_journal(FILE *fp, Block *block, Lexicon *lex, Journal *jou)
 			l->pict = sint(line + 32, 3);
 		if(len >= 38)
 			l->name = push(block, strm(sstr(line, buf, 36, 72)));
-		count++;
 	}
 	printf(":%d ", count);
 	return 1;
