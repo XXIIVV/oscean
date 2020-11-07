@@ -88,7 +88,7 @@ arvelie_to_doty(char* date)
 	int m = date[2] - 'A';
 	int d = ((date[3] - '0') * 10) + date[4] - '0';
 	int doty = (m * 14) + d;
-	return doty == -307 ? 364 : doty;
+	return doty == -307 ? 364 : doty == -306 ? 265 : doty;
 }
 
 time_t
