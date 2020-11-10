@@ -695,7 +695,7 @@ fphtml(FILE *f, Glossary *glo, Lexicon *lex, Term *t, Journal *jou)
 		t->name);
 	fputs("</head>", f);
 	fputs("<body>", f);
-	fputs("<header><a href='home.html'><img src='../media/services/logo.png' alt='" NAME "' height='29'></a></header>", f);
+	fputs("<header><a href='home.html'><img src='../media/icon/logo.svg' alt='" NAME "' height='29'></a></header>", f);
 	fpnav(f, t);
 	fputs("<main>", f);
 	fpbanner(f, jou, t, 1);
