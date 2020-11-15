@@ -84,6 +84,13 @@ error(char *msg, char *val)
 	return 0;
 }
 
+int
+errorid(char *msg, char *val, int id)
+{
+	printf("Error: %s:%d(%s)\n", msg, id, val);
+	return 0;
+}
+
 /* Block */
 
 char *
@@ -877,9 +884,9 @@ parse_lexicon(FILE *fp, Block *block, Lexicon *lex)
 				val_len = len - key_len - 3;
 				t->link.vals[t->link.len++] = push(block, sstr(line, buf, key_len + 5, val_len));
 			} else
-				error("Invalid line", line);
+				return errorid("Invalid line", line, count);
 		} else
-			error("Invalid line", line);
+			return errorid("Invalid line", line, count);
 	}
 	printf(":%d ", count);
 	return 1;
