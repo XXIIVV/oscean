@@ -1,3 +1,100 @@
+<h3>Compile</h3>
+
+<p>To convert source to an executable binary one uses a compiler. My compiler of choice is {https://bellard.org/tcc tcc}, but more generally <code>gcc</code> is what most toolchains will use on {Linux}.</p>
+
+<pre>cc -Wall -o main main.c</pre>
+
+<pre>
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;math.h&gt;
+
+int count = 10;
+
+int add_together(int x, int y) {
+  int result = x + y;
+  return result;
+}
+
+typedef struct {
+  int x;
+  int y;
+  int z;
+} point;
+
+void print_point(point point) {
+  printf("the point is: (%d,%d,%d)\n",point.x,point.y,point.z);
+}
+
+int main(int argc, char** argv) {
+  point p;
+  p.x = 2;
+  p.y = 3;
+  p.z = 4;
+
+  float length = sqrt(p.x * p.x + p.y * p.y);
+
+  printf("float: %.6f\n", length);
+  printf("int: %d\n", p.z);
+
+  print_point(p);
+
+  return 0;
+}
+</pre>
+
+<h3>Include</h3>
+
+<p>Generally, projects will include <code>.h</code> files which in turn will include their own <code>.c</code> files. The following form is used for system header files. It searches for a file named <code>file</code> in a standard list of system directories. </p>
+
+<pre>#include &lt;file&gt;</pre>
+
+<p>The following form is used for header files of your own program. It searches for a file named <code>folder/file.h</code> in the directory containing the current file. </p>
+
+<pre>#include "folder/file.h"</pre>
+
+<h3>Midi</h3>
+
+<pre>cc -std=c89 -Wall midi.c -o midi</pre>
+
+<p>Play note <code>G</code> with velocity of <code>64</code>.</p>
+
+<pre>
+#include &lt;linux/soundcard.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;fcntl.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+int
+error(char* msg, const char* err)
+{
+  printf("Error %s: %s\n", msg, err);
+  return 0;
+}
+
+int
+main(void)
+{
+  char* device = "/dev/midi2";
+  unsigned char g_on[3] = {0x90, 0x43, 0x40};
+  unsigned char g_off[3] = {0x80, 0x43, 0x00};
+  int f = open(device, O_WRONLY, 0);
+  if(f < 0)
+    return error("Unknown", device);
+  printf("Note ON\n");
+  if(!write(f, g_on, sizeof(g_on)))
+    return error("Note", "ON");
+  sleep(2);
+  printf("Note OFF\n");
+  if(!write(f, g_off, sizeof(g_off)))
+    return error("Note", "OFF");
+  close(f);
+  return 0;
+}
+
+</pre>
+
 <h3>Data Types</h3>
 
 <table border='1'>
