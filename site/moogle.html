@@ -66,10 +66,10 @@ int WIDTH = 8 * HOR + PAD * 2;
 int HEIGHT = 8 * VER + PAD * 2;
 int FPS = 30;
 int GUIDES = 1;
-SDL_Window* gWindow = NULL;
-SDL_Renderer* gRenderer = NULL;
-SDL_Texture* gTexture = NULL;
-uint32_t* pixels;
+SDL_Window *gWindow = NULL;
+SDL_Renderer *gRenderer = NULL;
+SDL_Texture *gTexture = NULL;
+uint32_t *pixels;
 
 /* helpers */
 
@@ -176,15 +176,15 @@ rotpt2d(Point2d c, Point2d p0, double deg)
 }
 
 Point3d
-addpt3d(Point3d* a, Point3d* b)
+addpt3d(Point3d *a, Point3d *b)
 {
 	return Pt3d(a-&gt;x + b-&gt;x, a-&gt;y + b-&gt;y, a-&gt;z + b-&gt;z);
 }
 
 /* scene */
 
-Point3d*
-setvertex(Point3d* v, double x, double y, double z)
+Point3d *
+setvertex(Point3d *v, double x, double y, double z)
 {
 	v-&gt;x = x;
 	v-&gt;y = y;
@@ -192,8 +192,8 @@ setvertex(Point3d* v, double x, double y, double z)
 	return v;
 }
 
-Point3d*
-addvertex(Mesh* m, double x, double y, double z)
+Point3d *
+addvertex(Mesh *m, double x, double y, double z)
 {
 	if(m-&gt;verticeslen == VLIMIT) {
 		printf("Warning: Reached vertex limit\n");
@@ -202,16 +202,16 @@ addvertex(Mesh* m, double x, double y, double z)
 	return setvertex(&amp;m-&gt;vertices[m-&gt;verticeslen++], x, y, z);
 }
 
-Edge*
-setedge(Edge* e, int v0, int v1)
+Edge *
+setedge(Edge *e, int v0, int v1)
 {
 	e-&gt;a = v0;
 	e-&gt;b = v1;
 	return e;
 }
 
-Edge*
-addedge(Mesh* m, int v0, int v1)
+Edge *
+addedge(Mesh *m, int v0, int v1)
 {
 	if(m-&gt;edgeslen == VLIMIT) {
 		printf("Warning: Reached edge limit\n");
@@ -220,8 +220,8 @@ addedge(Mesh* m, int v0, int v1)
 	return setedge(&amp;m-&gt;edges[m-&gt;edgeslen++], v0, v1);
 }
 
-Mesh*
-addmesh(Scene* s, Mesh m)
+Mesh *
+addmesh(Scene *s, Mesh m)
 {
 	if(s-&gt;len == MLIMIT) {
 		printf("Warning: Reached mesh limit\n");
@@ -232,8 +232,8 @@ addmesh(Scene* s, Mesh m)
 	return &amp;s-&gt;meshes[s-&gt;len - 1];
 }
 
-Point3d*
-rotverx(Point3d* o, Point3d* v, double angle)
+Point3d *
+rotverx(Point3d *o, Point3d *v, double angle)
 {
 	Point2d r = rotpt2d(Pt2d(o-&gt;y, o-&gt;z), Pt2d(v-&gt;y, v-&gt;z), angle);
 	v-&gt;y = r.x;
@@ -241,8 +241,8 @@ rotverx(Point3d* o, Point3d* v, double angle)
 	return v;
 }
 
-Point3d*
-rotvery(Point3d* o, Point3d* v, double angle)
+Point3d *
+rotvery(Point3d *o, Point3d *v, double angle)
 {
 	Point2d r = rotpt2d(Pt2d(o-&gt;x, o-&gt;z), Pt2d(v-&gt;x, v-&gt;z), angle);
 	v-&gt;x = r.x;
@@ -250,8 +250,8 @@ rotvery(Point3d* o, Point3d* v, double angle)
 	return v;
 }
 
-Point3d*
-rotverz(Point3d* o, Point3d* v, double angle)
+Point3d *
+rotverz(Point3d *o, Point3d *v, double angle)
 {
 	Point2d r = rotpt2d(Pt2d(o-&gt;x, o-&gt;y), Pt2d(v-&gt;x, v-&gt;y), angle);
 	v-&gt;x = r.x;
@@ -259,8 +259,8 @@ rotverz(Point3d* o, Point3d* v, double angle)
 	return v;
 }
 
-Point3d*
-rotvertex(Point3d* o, Point3d* v, double pitch, double yaw, double roll)
+Point3d *
+rotvertex(Point3d *o, Point3d *v, double pitch, double yaw, double roll)
 {
 	if(pitch)
 		rotverx(o, v, pitch);
@@ -272,7 +272,7 @@ rotvertex(Point3d* o, Point3d* v, double pitch, double yaw, double roll)
 }
 
 Point
-project(Camera* c, Point3d v)
+project(Camera *c, Point3d v)
 {
 	double r;
 	if(c-&gt;projection == ISOMETRIC)
@@ -283,32 +283,32 @@ project(Camera* c, Point3d v)
 
 /* transforms */
 
-Mesh*
-translate(Mesh* m, double x, double y, double z)
+Mesh *
+translate(Mesh *m, double x, double y, double z)
 {
 	int i;
 	for(i = 0; i &lt; m-&gt;verticeslen; i++)
 		setvertex(&amp;m-&gt;vertices[i],
-		          m-&gt;vertices[i].x + x,
-		          m-&gt;vertices[i].y + y,
-		          m-&gt;vertices[i].z + z);
+			m-&gt;vertices[i].x + x,
+			m-&gt;vertices[i].y + y,
+			m-&gt;vertices[i].z + z);
 	return m;
 }
 
-Mesh*
-scale(Mesh* m, double x, double y, double z)
+Mesh *
+scale(Mesh *m, double x, double y, double z)
 {
 	int i;
 	for(i = 0; i &lt; m-&gt;verticeslen; i++)
 		setvertex(&amp;m-&gt;vertices[i],
-		          m-&gt;vertices[i].x * x,
-		          m-&gt;vertices[i].y * y,
-		          m-&gt;vertices[i].z * z);
+			m-&gt;vertices[i].x * x,
+			m-&gt;vertices[i].y * y,
+			m-&gt;vertices[i].z * z);
 	return m;
 }
 
-Mesh*
-rotate(Mesh* m, double pitch, double yaw, double roll)
+Mesh *
+rotate(Mesh *m, double pitch, double yaw, double roll)
 {
 	int i;
 	for(i = 0; i &lt; m-&gt;verticeslen; i++)
@@ -316,74 +316,74 @@ rotate(Mesh* m, double pitch, double yaw, double roll)
 	return m;
 }
 
-Mesh*
-color(Mesh* m, int color)
+Mesh *
+color(Mesh *m, int color)
 {
 	m-&gt;color = color;
 	return m;
 }
 
-Mesh*
-extrude(Mesh* m, double depth)
+Mesh *
+extrude(Mesh *m, double depth)
 {
 	int i, vl = m-&gt;verticeslen, el = m-&gt;edgeslen;
 	for(i = 0; i &lt; vl; i++) {
 		addvertex(m,
-		          m-&gt;vertices[i].x,
-		          m-&gt;vertices[i].y,
-		          m-&gt;vertices[i].z + depth);
+			m-&gt;vertices[i].x,
+			m-&gt;vertices[i].y,
+			m-&gt;vertices[i].z + depth);
 		addedge(m, i, i + vl);
 	}
 	for(i = 0; i &lt; el; i++)
 		addedge(m,
-		        m-&gt;edges[i].a + vl,
-		        m-&gt;edges[i].b + vl);
+			m-&gt;edges[i].a + vl,
+			m-&gt;edges[i].b + vl);
 	return m;
 }
 
-Mesh*
-symmetry(Mesh* m, double x, double y, double z)
+Mesh *
+symmetry(Mesh *m, double x, double y, double z)
 {
 	int i, el, vl = m-&gt;verticeslen;
 	for(i = 0; i &lt; vl; i++)
 		addvertex(m,
-		          m-&gt;vertices[i].x * x,
-		          m-&gt;vertices[i].y * y,
-		          m-&gt;vertices[i].z * z);
+			m-&gt;vertices[i].x * x,
+			m-&gt;vertices[i].y * y,
+			m-&gt;vertices[i].z * z);
 	el = m-&gt;edgeslen;
 	for(i = 0; i &lt; el; i++)
 		addedge(m,
-		        el + 1 + m-&gt;edges[i].a,
-		        el + 1 + m-&gt;edges[i].b);
+			el + 1 + m-&gt;edges[i].a,
+			el + 1 + m-&gt;edges[i].b);
 	return m;
 }
 
 /* Shapes */
 
-Mesh*
-addpoly(Mesh* m, double x, double y, double z, double radius, int segs)
+Mesh *
+addpoly(Mesh *m, double x, double y, double z, double radius, int segs)
 {
 	int i, offset = m-&gt;verticeslen;
 	for(i = 0; i &lt; segs; i++) {
 		addvertex(m,
-		          x + radius * cos(2 * PI * i / segs),
-		          y + radius * sin(2 * PI * i / segs),
-		          z);
+			x + radius * cos(2 * PI * i / segs),
+			y + radius * sin(2 * PI * i / segs),
+			z);
 		addedge(m, offset + i, offset + (i + 1) % segs);
 	}
 	return m;
 }
 
-Mesh*
-addpolygon(Scene* s, double radius, int segs)
+Mesh *
+addpolygon(Scene *s, double radius, int segs)
 {
 	Mesh m = Ms3d(0, 0, 0);
 	addpoly(&amp;m, 0, 0, 0, radius, segs);
 	return addmesh(s, m);
 }
 
-Mesh*
-addpyramid(Scene* s, double radius, int segs, double depth)
+Mesh *
+addpyramid(Scene *s, double radius, int segs, double depth)
 {
 	int i;
 	Mesh m = Ms3d(0, 0, 0);
@@ -394,8 +394,8 @@ addpyramid(Scene* s, double radius, int segs, double depth)
 	return addmesh(s, m);
 }
 
-Mesh*
-addfrustum(Scene* s, double radius, int segs, double depth, double cap)
+Mesh *
+addfrustum(Scene *s, double radius, int segs, double depth, double cap)
 {
 	int i;
 	Mesh m = Ms3d(0, 0, 0);
@@ -406,8 +406,8 @@ addfrustum(Scene* s, double radius, int segs, double depth, double cap)
 	return addmesh(s, m);
 }
 
-Mesh*
-addprism(Scene* s, double radius, int segs, double depth)
+Mesh *
+addprism(Scene *s, double radius, int segs, double depth)
 {
 	Mesh m = Ms3d(0, 0, 0);
 	addpoly(&amp;m, 0, 0, -depth / 2, radius, segs);
@@ -478,7 +478,7 @@ line(Point p0, Point p1, int color)
 /* draw */
 
 void
-draw(uint32_t* dst)
+draw(uint32_t *dst)
 {
 	int b, i, j, id = 0;
 	for(b = 0; b &lt; SZ; b += 16)
@@ -503,18 +503,18 @@ void
 update(void)
 {
 	printf("%s %d'%d'%d:%d [%d:%dx%d]\n",
-	       cam.projection == PERSPECTIVE ? "perspective" : "isometric",
-	       (int)cam.pitch,
-	       (int)cam.yaw,
-	       (int)cam.roll,
-	       (int)cam.range,
-	       HOR,
-	       VER,
-	       ZOOM);
+		cam.projection == PERSPECTIVE ? "perspective" : "isometric",
+		(int)cam.pitch,
+		(int)cam.yaw,
+		(int)cam.roll,
+		(int)cam.range,
+		HOR,
+		VER,
+		ZOOM);
 }
 
 void
-widget(Scene* s, Camera* c)
+widget(Scene *s, Camera *c)
 {
 	Point3d a = Pt3d(0, 0, 0), x = Pt3d(5, 0, 0), y = Pt3d(0, 5, 0), z = Pt3d(0, 0, 5);
 	rotvertex(&amp;s-&gt;origin, &amp;x, c-&gt;pitch, c-&gt;yaw, c-&gt;roll);
@@ -526,22 +526,22 @@ widget(Scene* s, Camera* c)
 }
 
 void
-render(Scene* s, Camera* c)
+render(Scene *s, Camera *c)
 {
 	int i, j;
 	newchr();
 	for(i = 0; i &lt; s-&gt;len; i++) {
-		Mesh* m = &amp;s-&gt;meshes[i];
+		Mesh *m = &amp;s-&gt;meshes[i];
 		for(j = 0; j &lt; m-&gt;edgeslen; j++) {
-			Edge* edge = &amp;m-&gt;edges[j];
+			Edge *edge = &amp;m-&gt;edges[j];
 			Point3d a = addpt3d(&amp;m-&gt;vertices[edge-&gt;a], &amp;m-&gt;position);
 			Point3d b = addpt3d(&amp;m-&gt;vertices[edge-&gt;b], &amp;m-&gt;position);
 			rotvertex(&amp;s-&gt;origin, &amp;a, c-&gt;pitch, c-&gt;yaw, c-&gt;roll);
 			rotvertex(&amp;s-&gt;origin, &amp;b, c-&gt;pitch, c-&gt;yaw, c-&gt;roll);
 			line(
-			    project(c, addpt3d(&amp;s-&gt;origin, &amp;a)),
-			    project(c, addpt3d(&amp;s-&gt;origin, &amp;b)),
-			    m-&gt;color);
+				project(c, addpt3d(&amp;s-&gt;origin, &amp;a)),
+				project(c, addpt3d(&amp;s-&gt;origin, &amp;b)),
+				m-&gt;color);
 		}
 	}
 	if(GUIDES)
@@ -551,7 +551,7 @@ render(Scene* s, Camera* c)
 }
 
 void
-orient(Scene* s, Camera* c, double pitch, double yaw, double roll)
+orient(Scene *s, Camera *c, double pitch, double yaw, double roll)
 {
 	c-&gt;pitch = pitch;
 	c-&gt;yaw = yaw;
@@ -560,14 +560,14 @@ orient(Scene* s, Camera* c, double pitch, double yaw, double roll)
 }
 
 void
-toggleprojection(Scene* s, Camera* c)
+toggleprojection(Scene *s, Camera *c)
 {
 	c-&gt;projection = c-&gt;projection == ISOMETRIC ? PERSPECTIVE : ISOMETRIC;
 	render(s, c);
 }
 
 int
-error(char* msg, const char* err)
+error(char *msg, const char *err)
 {
 	printf("Error %s: %s\n", msg, err);
 	return 0;
@@ -576,7 +576,7 @@ error(char* msg, const char* err)
 void
 tochr()
 {
-	FILE* f = fopen("moogle-export.chr", "wb");
+	FILE *f = fopen("moogle-export.chr", "wb");
 	if(!fwrite(chrbuf, sizeof(chrbuf), 1, f))
 		error("Save", "Invalid output file");
 	fclose(f);
@@ -585,14 +585,14 @@ tochr()
 void
 tobmp(void)
 {
-	SDL_Surface* surface = SDL_GetWindowSurface(gWindow);
+	SDL_Surface *surface = SDL_GetWindowSurface(gWindow);
 	GUIDES = 0;
 	draw(pixels);
 	SDL_RenderReadPixels(gRenderer,
-	                     NULL,
-	                     SDL_PIXELFORMAT_ARGB8888,
-	                     surface-&gt;pixels,
-	                     surface-&gt;pitch);
+		NULL,
+		SDL_PIXELFORMAT_ARGB8888,
+		surface-&gt;pixels,
+		surface-&gt;pitch);
 	SDL_SaveBMP(surface, "moogle-render.bmp");
 	SDL_FreeSurface(surface);
 }
@@ -612,21 +612,13 @@ quit(void)
 }
 
 void
-dokey(SDL_Event* event)
+dokey(SDL_Event *event)
 {
 	switch(event-&gt;key.keysym.sym) {
-	case SDLK_ESCAPE:
-		quit();
-		break;
-	case SDLK_TAB:
-		toggleprojection(&amp;scn, &amp;cam);
-		break;
-	case SDLK_e:
-		tochr();
-		break;
-	case SDLK_r:
-		tobmp();
-		break;
+	case SDLK_ESCAPE: quit(); break;
+	case SDLK_TAB: toggleprojection(&amp;scn, &amp;cam); break;
+	case SDLK_e: tochr(); break;
+	case SDLK_r: tobmp(); break;
 	case SDLK_h:
 		GUIDES = !GUIDES;
 		render(&amp;scn, &amp;cam);
@@ -675,24 +667,24 @@ init(void)
 	if(SDL_Init(SDL_INIT_VIDEO) &lt; 0)
 		return error("Init", SDL_GetError());
 	gWindow = SDL_CreateWindow("Moogle",
-	                           SDL_WINDOWPOS_UNDEFINED,
-	                           SDL_WINDOWPOS_UNDEFINED,
-	                           WIDTH * ZOOM,
-	                           HEIGHT * ZOOM,
-	                           SDL_WINDOW_SHOWN);
+		SDL_WINDOWPOS_UNDEFINED,
+		SDL_WINDOWPOS_UNDEFINED,
+		WIDTH * ZOOM,
+		HEIGHT * ZOOM,
+		SDL_WINDOW_SHOWN);
 	if(gWindow == NULL)
 		return error("Window", SDL_GetError());
 	gRenderer = SDL_CreateRenderer(gWindow, -1, 0);
 	if(gRenderer == NULL)
 		return error("Renderer", SDL_GetError());
 	gTexture = SDL_CreateTexture(gRenderer,
-	                             SDL_PIXELFORMAT_ARGB8888,
-	                             SDL_TEXTUREACCESS_STATIC,
-	                             WIDTH,
-	                             HEIGHT);
+		SDL_PIXELFORMAT_ARGB8888,
+		SDL_TEXTUREACCESS_STATIC,
+		WIDTH,
+		HEIGHT);
 	if(gTexture == NULL)
 		return error("Texture", SDL_GetError());
-	pixels = (uint32_t*)malloc(WIDTH * HEIGHT * sizeof(uint32_t));
+	pixels = (uint32_t *)malloc(WIDTH * HEIGHT * sizeof(uint32_t));
 	if(pixels == NULL)
 		return error("Pixels", "Failed to allocate memory");
 	for(i = 0; i &lt; HEIGHT; i++)
@@ -714,7 +706,7 @@ main(void)
 
 	addfrustum(&amp;scn, 12, 8, 10, 8);
 	color(
-	    addprism(&amp;scn, 12, 8, 10), 2);
+		addprism(&amp;scn, 12, 8, 10), 2);
 
 	newchr();
 	render(&amp;scn, &amp;cam);
@@ -737,7 +729,7 @@ main(void)
 	quit();
 	return 0;
 }
-</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/moogle.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/moogle.c.txt'>moogle.c.txt</a>(739 lines)</figcaption>
+</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/moogle.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/moogle.c.txt'>moogle.c.txt</a>(731 lines)</figcaption>
 </figure><h3>Structures</h3><p>Here's some additional primitives that I use to build scenes in Moogle.</p><figure><pre>Mesh*
 addbox(Scene* s, double width, double height, double depth)
 {

@@ -24,15 +24,15 @@ typedef struct Brush {
 	int erase;
 } Brush;
 
-char* modes[] = {
-    "line",
-    "tone",
-    "bold",
-    "full",
-    "hori",
-    "veri",
-    "exes",
-    "fixe"};
+char *modes[] = {
+	"line",
+	"tone",
+	"bold",
+	"full",
+	"hori",
+	"veri",
+	"exes",
+	"fixe"};
 
 unsigned char chrbuf[SZ];
 int colors[] = {color1, color2, color3, color4, color0};
@@ -40,10 +40,10 @@ int WIDTH = 8 * HOR + PAD * 2;
 int HEIGHT = 8 * VER + PAD * 2;
 int FPS = 30;
 int GUIDES = 0;
-SDL_Window* gWindow = NULL;
-SDL_Renderer* gRenderer = NULL;
-SDL_Texture* gTexture = NULL;
-uint32_t* pixels;
+SDL_Window *gWindow = NULL;
+SDL_Renderer *gRenderer = NULL;
+SDL_Texture *gTexture = NULL;
+uint32_t *pixels;
 
 /* helpers */
 
@@ -54,7 +54,7 @@ distance(int ax, int ay, int bx, int by)
 }
 
 int
-spos(char* s, char* ss)
+spos(char *s, char *ss)
 {
 	int a = 0, b = 0;
 	while(s[a] != '\0') {
@@ -200,7 +200,7 @@ line(int ax, int ay, int bx, int by, int color)
 /* draw */
 
 void
-draw(uint32_t* dst)
+draw(uint32_t *dst)
 {
 	int b, i, j, id = 0;
 	for(b = 0; b &lt; SZ; b += 16)
@@ -223,34 +223,34 @@ draw(uint32_t* dst)
 }
 
 void
-update(Brush* b)
+update(Brush *b)
 {
 	if(b-&gt;edit)
 		SDL_SetWindowTitle(gWindow, "Nasu*");
 	else
 		SDL_SetWindowTitle(gWindow, "Nasu");
 	printf("%s %d:%d [%d:%dx%d]\n",
-	       modes[b-&gt;mode],
-	       b-&gt;size,
-	       b-&gt;color,
-	       HOR,
-	       VER,
-	       ZOOM);
+		modes[b-&gt;mode],
+		b-&gt;size,
+		b-&gt;color,
+		HOR,
+		VER,
+		ZOOM);
 }
 
 /* options */
 
 int
-error(char* msg, const char* err)
+error(char *msg, const char *err)
 {
 	printf("Error %s: %s\n", msg, err);
 	return 0;
 }
 
 void
-loadchr(char* path)
+loadchr(char *path)
 {
-	FILE* f = fopen(path, "rb");
+	FILE *f = fopen(path, "rb");
 	if(f == NULL)
 		error("Load", "Invalid input file");
 	if(!fread(chrbuf, sizeof(chrbuf), 1, f))
@@ -259,9 +259,9 @@ loadchr(char* path)
 }
 
 void
-loadbmp(char* path)
+loadbmp(char *path)
 {
-	FILE* f = fopen(path, "rb");
+	FILE *f = fopen(path, "rb");
 	int i, width = HOR * 8, height = VER * 8, size = 3 * width * height;
 	unsigned char header[54];
 	unsigned char data[4096 * 256];
@@ -270,15 +270,14 @@ loadbmp(char* path)
 	if(!fread(data, sizeof(unsigned char), size, f))
 		error("Load", "Invalid bmp body");
 	for(i = 0; i &lt; size; i += 3)
-		putchr((i / 3) % width, height - (i / 3) / width - 1,
-		       getclr(data[i + 2], data[i + 1], data[i]));
+		putchr((i / 3) % width, height - (i / 3) / width - 1, getclr(data[i + 2], data[i + 1], data[i]));
 	fclose(f);
 }
 
 void
-tochr(Brush* b)
+tochr(Brush *b)
 {
-	FILE* f = fopen("nasu-export.chr", "wb");
+	FILE *f = fopen("nasu-export.chr", "wb");
 	if(!fwrite(chrbuf, sizeof(chrbuf), 1, f))
 		error("Save", "Invalid output file");
 	fclose(f);
@@ -288,14 +287,14 @@ tochr(Brush* b)
 void
 tobmp(void)
 {
-	SDL_Surface* surface = SDL_GetWindowSurface(gWindow);
+	SDL_Surface *surface = SDL_GetWindowSurface(gWindow);
 	GUIDES = 0;
 	draw(pixels);
 	SDL_RenderReadPixels(gRenderer,
-	                     NULL,
-	                     SDL_PIXELFORMAT_ARGB8888,
-	                     surface-&gt;pixels,
-	                     surface-&gt;pitch);
+		NULL,
+		SDL_PIXELFORMAT_ARGB8888,
+		surface-&gt;pixels,
+		surface-&gt;pitch);
 	SDL_SaveBMP(surface, "nasu-render.bmp");
 	SDL_FreeSurface(surface);
 }
@@ -315,7 +314,7 @@ quit(void)
 }
 
 void
-domouse(SDL_Event* event, Brush* b)
+domouse(SDL_Event *event, Brush *b)
 {
 	switch(event-&gt;type) {
 	case SDL_MOUSEBUTTONUP:
@@ -345,7 +344,6 @@ domouse(SDL_Event* event, Brush* b)
 		}
 		b-&gt;px = (event-&gt;motion.x - (PAD * ZOOM)) / ZOOM;
 		b-&gt;py = (event-&gt;motion.y - (PAD * ZOOM)) / ZOOM;
-		break;
 	case SDL_MOUSEMOTION:
 		if(b-&gt;down) {
 			b-&gt;x = (event-&gt;motion.x - (PAD * ZOOM)) / ZOOM;
@@ -363,21 +361,21 @@ domouse(SDL_Event* event, Brush* b)
 }
 
 void
-dokey(SDL_Event* event, Brush* b)
+dokey(SDL_Event *event, Brush *b)
 {
 	switch(event-&gt;key.keysym.sym) {
-	case SDLK_ESCAPE:
-		quit();
-		break;
-	case SDLK_e:
-		tochr(b);
-		break;
-	case SDLK_r:
-		tobmp();
-		break;
-	case SDLK_TAB:
-		b-&gt;color = b-&gt;color &gt; 2 ? 0 : b-&gt;color + 1;
-		break;
+	case SDLK_ESCAPE: quit(); break;
+	case SDLK_e: tochr(b); break;
+	case SDLK_r: tobmp(); break;
+	case SDLK_TAB: b-&gt;color = b-&gt;color &gt; 2 ? 0 : b-&gt;color + 1; break;
+	case SDLK_BACKQUOTE: b-&gt;mode = 7; break;
+	case SDLK_1: b-&gt;mode = 0; break;
+	case SDLK_2: b-&gt;mode = 1; break;
+	case SDLK_3: b-&gt;mode = 2; break;
+	case SDLK_4: b-&gt;mode = 3; break;
+	case SDLK_5: b-&gt;mode = 4; break;
+	case SDLK_6: b-&gt;mode = 5; break;
+	case SDLK_7: b-&gt;mode = 6; break;
 	case SDLK_h:
 		GUIDES = !GUIDES;
 		draw(pixels);
@@ -385,30 +383,6 @@ dokey(SDL_Event* event, Brush* b)
 	case SDLK_n:
 		newchr();
 		draw(pixels);
-		break;
-	case SDLK_BACKQUOTE:
-		b-&gt;mode = 7;
-		break;
-	case SDLK_1:
-		b-&gt;mode = 0;
-		break;
-	case SDLK_2:
-		b-&gt;mode = 1;
-		break;
-	case SDLK_3:
-		b-&gt;mode = 2;
-		break;
-	case SDLK_4:
-		b-&gt;mode = 3;
-		break;
-	case SDLK_5:
-		b-&gt;mode = 4;
-		break;
-	case SDLK_6:
-		b-&gt;mode = 5;
-		break;
-	case SDLK_7:
-		b-&gt;mode = 6;
 		break;
 	case SDLK_z:
 		if(b-&gt;size &gt; 1)
@@ -429,24 +403,24 @@ init(void)
 	if(SDL_Init(SDL_INIT_VIDEO) &lt; 0)
 		return error("Init", SDL_GetError());
 	gWindow = SDL_CreateWindow("Nasu",
-	                           SDL_WINDOWPOS_UNDEFINED,
-	                           SDL_WINDOWPOS_UNDEFINED,
-	                           WIDTH * ZOOM,
-	                           HEIGHT * ZOOM,
-	                           SDL_WINDOW_SHOWN);
+		SDL_WINDOWPOS_UNDEFINED,
+		SDL_WINDOWPOS_UNDEFINED,
+		WIDTH * ZOOM,
+		HEIGHT * ZOOM,
+		SDL_WINDOW_SHOWN);
 	if(gWindow == NULL)
 		return error("Window", SDL_GetError());
 	gRenderer = SDL_CreateRenderer(gWindow, -1, 0);
 	if(gRenderer == NULL)
 		return error("Renderer", SDL_GetError());
 	gTexture = SDL_CreateTexture(gRenderer,
-	                             SDL_PIXELFORMAT_ARGB8888,
-	                             SDL_TEXTUREACCESS_STATIC,
-	                             WIDTH,
-	                             HEIGHT);
+		SDL_PIXELFORMAT_ARGB8888,
+		SDL_TEXTUREACCESS_STATIC,
+		WIDTH,
+		HEIGHT);
 	if(gTexture == NULL)
 		return error("Texture", SDL_GetError());
-	pixels = (uint32_t*)malloc(WIDTH * HEIGHT * sizeof(uint32_t));
+	pixels = (uint32_t *)malloc(WIDTH * HEIGHT * sizeof(uint32_t));
 	if(pixels == NULL)
 		return error("Pixels", "Failed to allocate memory");
 	for(i = 0; i &lt; HEIGHT; i++)
@@ -456,7 +430,7 @@ init(void)
 }
 
 int
-main(int argc, char** argv)
+main(int argc, char **argv)
 {
 	int ticknext = 0;
 	Brush brush;
@@ -464,7 +438,7 @@ main(int argc, char** argv)
 	brush.color = 1;
 	brush.edit = 0;
 	brush.size = 10;
-	brush.mode = 2;
+	brush.mode = 0;
 
 	if(!init())
 		return error("Init", "Failure");
@@ -489,8 +463,8 @@ main(int argc, char** argv)
 			if(event.type == SDL_QUIT)
 				quit();
 			else if(event.type == SDL_MOUSEBUTTONUP ||
-			        event.type == SDL_MOUSEBUTTONDOWN ||
-			        event.type == SDL_MOUSEMOTION) {
+					event.type == SDL_MOUSEBUTTONDOWN ||
+					event.type == SDL_MOUSEMOTION) {
 				domouse(&amp;event, &amp;brush);
 			} else if(event.type == SDL_KEYDOWN)
 				dokey(&amp;event, &amp;brush);
@@ -502,5 +476,5 @@ main(int argc, char** argv)
 	quit();
 	return 0;
 }
-</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/nasu.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/nasu.c.txt'>nasu.c.txt</a>(504 lines)</figcaption>
+</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/nasu.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/nasu.c.txt'>nasu.c.txt</a>(478 lines)</figcaption>
 </figure><ul><li><a href='https://git.sr.ht/~rabbits/nasu' target='_blank'>sources</a></li><li><a href='https://hundredrabbits.github.io/Nasu' target='_blank'>browser version</a></li></ul><p><i>incoming(8)</i>: <a href='neauismetica.html'>neauismetica</a> <a href='graf3dscene.html'>graf3dscene</a> <a href='themes.html'>themes</a> <a href='dotgrid.html'>dotgrid</a> <a href='moogle.html'>moogle</a> <a href='chr_format.html'>chr format</a> <a href='computer.html'>computer</a> <a href='identity.html'>identity</a> </p><p><i>Last update on <a href='tracker.html'>20T05</a>, edited 25 times. +113/159fh</i><code style='float:right; font-size:80%'>-----+</code></p><ul><li>20C06 — Nasu Release</li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
