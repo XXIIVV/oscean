@@ -2,6 +2,17 @@
 #include <stdio.h>
 #include <math.h>
 
+/* 
+Copyright (c) 2020 Devine Lu Linvega
+
+Permission to use, copy, modify, and distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE.
+*/
+
 #define HOR 32
 #define VER 16
 #define PAD 8
@@ -36,15 +47,15 @@ typedef struct {
 } Edge;
 
 typedef struct {
+	int verticeslen, edgeslen, color;
 	Point3d position, vertices[VLIMIT];
 	Edge edges[ELIMIT];
-	int verticeslen, edgeslen, color;
 } Mesh;
 
 typedef struct {
+	int len;
 	Point3d origin;
 	Mesh meshes[MLIMIT];
-	int len;
 } Scene;
 
 typedef enum {
@@ -53,23 +64,22 @@ typedef enum {
 } Projection;
 
 typedef struct {
-	Projection projection;
 	double pitch, yaw, roll, range;
+	Projection projection;
 } Camera;
 
-Scene scn;
-Camera cam;
-
-unsigned char chrbuf[SZ];
 int colors[] = {color1, color2, color3, color4, color0};
 int WIDTH = 8 * HOR + PAD * 2;
 int HEIGHT = 8 * VER + PAD * 2;
-int FPS = 30;
-int GUIDES = 1;
+int FPS = 30, GUIDES = 1;
 SDL_Window *gWindow = NULL;
 SDL_Renderer *gRenderer = NULL;
 SDL_Texture *gTexture = NULL;
-uint32_t *pixels;
+Uint32 *pixels;
+unsigned char chrbuf[SZ];
+
+Scene scn;
+Camera cam;
 
 /* helpers */
 
@@ -162,9 +172,7 @@ ptangle(Point2d a, Point2d b)
 double
 ptdistance(Point2d a, Point2d b)
 {
-	double x = a.x - b.x;
-	double y = a.y - b.y;
-	return sqrt(x * x + y * y);
+	return sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
 }
 
 Point2d
@@ -276,7 +284,9 @@ project(Camera *c, Point3d v)
 {
 	double r;
 	if(c->projection == ISOMETRIC)
-		return Pt((WIDTH / 2) + v.x * (10 - c->range / 10), (HEIGHT / 2) + v.y * (10 - c->range / 10));
+		return Pt(
+			(WIDTH / 2) + v.x * (10 - c->range / 10),
+			(HEIGHT / 2) + v.y * (10 - c->range / 10));
 	r = 200 / (v.z + c->range);
 	return Pt(WIDTH / 2 + r * v.x, HEIGHT / 2 + r * v.y);
 }
@@ -426,11 +436,10 @@ rowchr(int x, int y)
 void
 putchr(int x, int y, int color)
 {
-	int r = rowchr(x, y);
-	int px = x % 8;
-	if(x < 0 || y < 0 || x > 8 * HOR || y > 8 * VER || r > SZ - 8)
+	int r = rowchr(x, y), px = x % 8;
+	if(r < 0 || r > SZ - 8)
 		return;
-	if(color == 0) {
+	if(!color) {
 		chrbuf[r] &= ~(1UL << (7 - px));
 		chrbuf[r + 8] &= ~(1UL << (7 - px));
 	} else if(color == 2) {
@@ -478,7 +487,7 @@ line(Point p0, Point p1, int color)
 /* draw */
 
 void
-draw(uint32_t *dst)
+draw(Uint32 *dst)
 {
 	int b, i, j, id = 0;
 	for(b = 0; b < SZ; b += 16)
@@ -493,24 +502,10 @@ draw(uint32_t *dst)
 				dst[(py + PAD) * WIDTH + (px + PAD)] = colors[color];
 				id++;
 			}
-	SDL_UpdateTexture(gTexture, NULL, dst, WIDTH * sizeof(uint32_t));
+	SDL_UpdateTexture(gTexture, NULL, dst, WIDTH * sizeof(Uint32));
 	SDL_RenderClear(gRenderer);
 	SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);
 	SDL_RenderPresent(gRenderer);
-}
-
-void
-update(void)
-{
-	printf("%s %d'%d'%d:%d [%d:%dx%d]\n",
-		cam.projection == PERSPECTIVE ? "perspective" : "isometric",
-		(int)cam.pitch,
-		(int)cam.yaw,
-		(int)cam.roll,
-		(int)cam.range,
-		HOR,
-		VER,
-		ZOOM);
 }
 
 void
@@ -547,7 +542,6 @@ render(Scene *s, Camera *c)
 	if(GUIDES)
 		widget(s, c);
 	draw(pixels);
-	update();
 }
 
 void
@@ -559,13 +553,6 @@ orient(Scene *s, Camera *c, double pitch, double yaw, double roll)
 	render(s, c);
 }
 
-void
-toggleprojection(Scene *s, Camera *c)
-{
-	c->projection = c->projection == ISOMETRIC ? PERSPECTIVE : ISOMETRIC;
-	render(s, c);
-}
-
 int
 error(char *msg, const char *err)
 {
@@ -574,16 +561,61 @@ error(char *msg, const char *err)
 }
 
 void
-tochr()
+toggleprojection(Scene *s, Camera *c)
+{
+	c->projection = c->projection == ISOMETRIC ? PERSPECTIVE : ISOMETRIC;
+	render(s, c);
+}
+
+void
+toggleguides(void)
+{
+	GUIDES = !GUIDES;
+	render(&scn, &cam);
+}
+
+void
+modpitch(int mod)
+{
+	cam.pitch += mod;
+	render(&scn, &cam);
+}
+
+void
+modyaw(int mod)
+{
+	cam.yaw += mod;
+	render(&scn, &cam);
+}
+
+void
+modroll(int mod)
+{
+	cam.roll += mod;
+	render(&scn, &cam);
+}
+
+void
+modrange(int mod)
+{
+	int res = cam.range + mod;
+	if(res > 0 && res < 90)
+		cam.range = res;
+	render(&scn, &cam);
+}
+
+void
+exportchr()
 {
 	FILE *f = fopen("moogle-export.chr", "wb");
 	if(!fwrite(chrbuf, sizeof(chrbuf), 1, f))
 		error("Save", "Invalid output file");
 	fclose(f);
+	puts("Exported moogle-export.chr");
 }
 
 void
-tobmp(void)
+renderbmp(void)
 {
 	SDL_Surface *surface = SDL_GetWindowSurface(gWindow);
 	GUIDES = 0;
@@ -595,6 +627,7 @@ tobmp(void)
 		surface->pitch);
 	SDL_SaveBMP(surface, "moogle-render.bmp");
 	SDL_FreeSurface(surface);
+	puts("Rendered moogle-render.bmp");
 }
 
 void
@@ -615,48 +648,20 @@ void
 dokey(SDL_Event *event)
 {
 	switch(event->key.keysym.sym) {
-	case SDLK_ESCAPE: quit(); break;
 	case SDLK_TAB: toggleprojection(&scn, &cam); break;
-	case SDLK_e: tochr(); break;
-	case SDLK_r: tobmp(); break;
-	case SDLK_h:
-		GUIDES = !GUIDES;
-		render(&scn, &cam);
-		break;
+	case SDLK_e: exportchr(); break;
+	case SDLK_r: renderbmp(); break;
+	case SDLK_h: toggleguides(); break;
 	case SDLK_UP:
-	case SDLK_w:
-		cam.pitch += 3.0;
-		render(&scn, &cam);
-		break;
-	case SDLK_LEFT:
-		cam.roll -= 3.0;
-		render(&scn, &cam);
-		break;
-	case SDLK_a:
-		cam.yaw -= 3.0;
-		render(&scn, &cam);
-		break;
+	case SDLK_w: modpitch(3.0); break;
+	case SDLK_LEFT: modroll(-3.0); break;
+	case SDLK_a: modyaw(-3.0); break;
 	case SDLK_DOWN:
-	case SDLK_s:
-		cam.pitch -= 3.0;
-		render(&scn, &cam);
-		break;
-	case SDLK_RIGHT:
-		cam.roll += 3.0;
-		render(&scn, &cam);
-		break;
-	case SDLK_d:
-		cam.yaw += 3.0;
-		render(&scn, &cam);
-		break;
-	case SDLK_z:
-		cam.range += cam.range < 90 ? 1 : 0;
-		render(&scn, &cam);
-		break;
-	case SDLK_x:
-		cam.range -= cam.range > 3 ? 1 : 0;
-		render(&scn, &cam);
-		break;
+	case SDLK_s: modpitch(-3.0); break;
+	case SDLK_RIGHT: modroll(-3.0); break;
+	case SDLK_d: modyaw(3.0); break;
+	case SDLK_z: modrange(3.0); break;
+	case SDLK_x: modrange(-3.0); break;
 	}
 }
 
@@ -684,7 +689,7 @@ init(void)
 		HEIGHT);
 	if(gTexture == NULL)
 		return error("Texture", SDL_GetError());
-	pixels = (uint32_t *)malloc(WIDTH * HEIGHT * sizeof(uint32_t));
+	pixels = (Uint32 *)malloc(WIDTH * HEIGHT * sizeof(Uint32));
 	if(pixels == NULL)
 		return error("Pixels", "Failed to allocate memory");
 	for(i = 0; i < HEIGHT; i++)
@@ -705,8 +710,7 @@ main(void)
 		return error("Init", "Failure");
 
 	addfrustum(&scn, 12, 8, 10, 8);
-	color(
-		addprism(&scn, 12, 8, 10), 2);
+	color(addprism(&scn, 12, 8, 10), 2);
 
 	newchr();
 	render(&scn, &cam);
