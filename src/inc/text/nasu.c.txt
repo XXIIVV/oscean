@@ -1,6 +1,17 @@
 #include <SDL2/SDL.h>
 #include <stdio.h>
 
+/* 
+Copyright (c) 2020 Devine Lu Linvega
+
+Permission to use, copy, modify, and distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE.
+*/
+
 #define HOR 32
 #define VER 16
 #define PAD 8
@@ -14,36 +25,23 @@
 #define SZ (HOR * VER * 16)
 
 typedef struct Brush {
-	int x, y;
-	int px, py;
-	int mode;
-	int size;
-	int color;
-	int down;
-	int edit;
-	int erase;
+	int x, y, px, py;
+	int mode, size, color;
+	int down, edit, erase;
 } Brush;
 
-char *modes[] = {
-	"line",
-	"tone",
-	"bold",
-	"full",
-	"hori",
-	"veri",
-	"exes",
-	"fixe"};
-
-unsigned char chrbuf[SZ];
 int colors[] = {color1, color2, color3, color4, color0};
 int WIDTH = 8 * HOR + PAD * 2;
 int HEIGHT = 8 * VER + PAD * 2;
-int FPS = 30;
-int GUIDES = 0;
-SDL_Window *gWindow = NULL;
-SDL_Renderer *gRenderer = NULL;
-SDL_Texture *gTexture = NULL;
-uint32_t *pixels;
+int FPS = 30, GUIDES = 1;
+
+unsigned char chrbuf[SZ];
+SDL_Window *gWindow;
+SDL_Renderer *gRenderer;
+SDL_Texture *gTexture;
+Uint32 *pixels;
+
+Brush brush;
 
 /* helpers */
 
@@ -99,11 +97,10 @@ getchr(int x, int y)
 void
 putchr(int x, int y, int color)
 {
-	int r = rowchr(x, y);
-	int px = x % 8;
-	if(x < 0 || y < 0 || x > 8 * HOR || y > 8 * VER || r > SZ - 8)
+	int r = rowchr(x, y), px = x % 8;
+	if(r < 0 || r > SZ - 8)
 		return;
-	if(color == 0) {
+	if(!color) {
 		chrbuf[r] &= ~(1UL << (7 - px));
 		chrbuf[r + 8] &= ~(1UL << (7 - px));
 	} else if(color == 2) {
@@ -200,42 +197,33 @@ line(int ax, int ay, int bx, int by, int color)
 /* draw */
 
 void
-draw(uint32_t *dst)
+drawchr(Uint32 *dst, int x, int y, int id)
 {
-	int b, i, j, id = 0;
-	for(b = 0; b < SZ; b += 16)
-		for(i = 0; i < 8; i++)
-			for(j = 7; j >= 0; j--) {
-				int ch1 = chrbuf[b + i];
-				int ch2 = chrbuf[b + i + 8];
-				int color = ((ch1 >> j) & 0x1) + (((ch2 >> j) & 0x1) << 1);
-				int ti = id / 64;
-				int odd = (ti + (ti / HOR + 2)) % 2 == 0;
-				int px = (ti / (HOR * VER)) * (8 * HOR) + (ti % HOR) * 8 + (id % 8);
-				int py = ((ti / HOR) * 8) + ((id % 64) / 8);
-				dst[(py + PAD) * WIDTH + (px + PAD)] = colors[GUIDES && odd && color == 0 ? 4 : color];
-				id++;
-			}
-	SDL_UpdateTexture(gTexture, NULL, dst, WIDTH * sizeof(uint32_t));
-	SDL_RenderClear(gRenderer);
-	SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);
-	SDL_RenderPresent(gRenderer);
+	int v, h, offset = id * 16;
+	for(v = 0; v < 8; v++)
+		for(h = 0; h < 8; h++) {
+			int px = (x * 8) + (8 - h);
+			int py = (y * 8) + v;
+			int ch1 = chrbuf[offset + v];
+			int ch2 = chrbuf[offset + v + 8];
+			int clr = ((ch1 >> h) & 0x1) + (((ch2 >> h) & 0x1) << 1);
+			int key = (py + PAD) * WIDTH + (px + PAD);
+			int guides = GUIDES && !clr && (x + y) % 2;
+			dst[key] = colors[guides ? 4 : clr];
+		}
 }
 
 void
-update(Brush *b)
+draw(Uint32 *dst)
 {
-	if(b->edit)
-		SDL_SetWindowTitle(gWindow, "Nasu*");
-	else
-		SDL_SetWindowTitle(gWindow, "Nasu");
-	printf("%s %d:%d [%d:%dx%d]\n",
-		modes[b->mode],
-		b->size,
-		b->color,
-		HOR,
-		VER,
-		ZOOM);
+	int x, y;
+	for(y = 0; y < VER; ++y)
+		for(x = 0; x < HOR; ++x)
+			drawchr(dst, x, y, x + y * HOR);
+	SDL_UpdateTexture(gTexture, NULL, dst, WIDTH * sizeof(Uint32));
+	SDL_RenderClear(gRenderer);
+	SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);
+	SDL_RenderPresent(gRenderer);
 }
 
 /* options */
@@ -245,6 +233,72 @@ error(char *msg, const char *err)
 {
 	printf("Error %s: %s\n", msg, err);
 	return 0;
+}
+
+void
+setcolor(Brush *b, int c)
+{
+	b->color = c;
+	printf("Set Color %d\n", b->color);
+}
+
+void
+setmode(Brush *b, int m)
+{
+	b->mode = m;
+	printf("Set Mode %d\n", b->mode);
+}
+
+void
+modsize(Brush *b, int mod)
+{
+	int res = b->size + mod;
+	if(res > 0 && res < 30)
+		b->size = res;
+	printf("Set Size %d\n", b->size);
+}
+
+void
+toggleguide(void)
+{
+	GUIDES = !GUIDES;
+	draw(pixels);
+	printf("%s Guides\n", GUIDES ? "Show" : "Hide");
+}
+
+void
+destroy(void)
+{
+	newchr();
+	draw(pixels);
+	puts("Destroy");
+}
+
+void
+exportchr(Brush *b)
+{
+	FILE *f = fopen("nasu-export.chr", "wb");
+	if(!fwrite(chrbuf, sizeof(chrbuf), 1, f))
+		error("Save", "Invalid output file");
+	fclose(f);
+	b->edit = 0;
+	puts("Exported nasu-export.chr");
+}
+
+void
+renderbmp(void)
+{
+	SDL_Surface *surface = SDL_GetWindowSurface(gWindow);
+	GUIDES = 0;
+	draw(pixels);
+	SDL_RenderReadPixels(gRenderer,
+		NULL,
+		SDL_PIXELFORMAT_ARGB8888,
+		surface->pixels,
+		surface->pitch);
+	SDL_SaveBMP(surface, "nasu-render.bmp");
+	SDL_FreeSurface(surface);
+	puts("Rendered nasu-render.bmp");
 }
 
 void
@@ -269,34 +323,11 @@ loadbmp(char *path)
 		error("Load", "Invalid bmp header");
 	if(!fread(data, sizeof(unsigned char), size, f))
 		error("Load", "Invalid bmp body");
-	for(i = 0; i < size; i += 3)
-		putchr((i / 3) % width, height - (i / 3) / width - 1, getclr(data[i + 2], data[i + 1], data[i]));
+	for(i = 0; i < size; i += 3) {
+		int x = (i / 3) % width, y = height - (i / 3) / width - 1;
+		putchr(x, y, getclr(data[i + 2], data[i + 1], data[i]));
+	}
 	fclose(f);
-}
-
-void
-tochr(Brush *b)
-{
-	FILE *f = fopen("nasu-export.chr", "wb");
-	if(!fwrite(chrbuf, sizeof(chrbuf), 1, f))
-		error("Save", "Invalid output file");
-	fclose(f);
-	b->edit = 0;
-}
-
-void
-tobmp(void)
-{
-	SDL_Surface *surface = SDL_GetWindowSurface(gWindow);
-	GUIDES = 0;
-	draw(pixels);
-	SDL_RenderReadPixels(gRenderer,
-		NULL,
-		SDL_PIXELFORMAT_ARGB8888,
-		surface->pixels,
-		surface->pitch);
-	SDL_SaveBMP(surface, "nasu-render.bmp");
-	SDL_FreeSurface(surface);
 }
 
 void
@@ -326,11 +357,11 @@ domouse(SDL_Event *event, Brush *b)
 		if(event->button.button == SDL_BUTTON_RIGHT)
 			b->erase = 0;
 		b->edit = 1;
-		update(b);
 		break;
 	case SDL_MOUSEBUTTONDOWN:
-		if(event->button.button == SDL_BUTTON_LEFT)
+		if(event->button.button == SDL_BUTTON_LEFT) {
 			b->down = 1;
+		}
 		if(event->button.button == SDL_BUTTON_RIGHT)
 			b->erase = 1;
 		if(event->button.button == SDL_BUTTON_MIDDLE) {
@@ -344,11 +375,16 @@ domouse(SDL_Event *event, Brush *b)
 		}
 		b->px = (event->motion.x - (PAD * ZOOM)) / ZOOM;
 		b->py = (event->motion.y - (PAD * ZOOM)) / ZOOM;
+		if(b->down) {
+			putchr(b->px, b->py, b->color);
+			draw(pixels);
+		}
+		break;
 	case SDL_MOUSEMOTION:
 		if(b->down) {
 			b->x = (event->motion.x - (PAD * ZOOM)) / ZOOM;
 			b->y = (event->motion.y - (PAD * ZOOM)) / ZOOM;
-			if(b->mode == 0)
+			if(!b->mode)
 				line(b->px, b->py, b->x, b->y, b->erase ? 0 : b->color);
 			else
 				fill(b->x, b->y, b->mode, b->size, b->erase ? 0 : b->color);
@@ -364,36 +400,25 @@ void
 dokey(SDL_Event *event, Brush *b)
 {
 	switch(event->key.keysym.sym) {
-	case SDLK_ESCAPE: quit(); break;
-	case SDLK_e: tochr(b); break;
-	case SDLK_r: tobmp(); break;
-	case SDLK_TAB: b->color = b->color > 2 ? 0 : b->color + 1; break;
-	case SDLK_BACKQUOTE: b->mode = 7; break;
-	case SDLK_1: b->mode = 0; break;
-	case SDLK_2: b->mode = 1; break;
-	case SDLK_3: b->mode = 2; break;
-	case SDLK_4: b->mode = 3; break;
-	case SDLK_5: b->mode = 4; break;
-	case SDLK_6: b->mode = 5; break;
-	case SDLK_7: b->mode = 6; break;
-	case SDLK_h:
-		GUIDES = !GUIDES;
-		draw(pixels);
-		break;
-	case SDLK_n:
-		newchr();
-		draw(pixels);
-		break;
-	case SDLK_z:
-		if(b->size > 1)
-			b->size -= 1;
-		break;
-	case SDLK_x:
-		if(b->size < 30)
-			b->size += 1;
-		break;
+	case SDLK_1: setmode(b, 0); break;
+	case SDLK_2: setmode(b, 1); break;
+	case SDLK_3: setmode(b, 2); break;
+	case SDLK_4: setmode(b, 3); break;
+	case SDLK_5: setmode(b, 4); break;
+	case SDLK_6: setmode(b, 5); break;
+	case SDLK_7: setmode(b, 6); break;
+	case SDLK_e: exportchr(b); break;
+	case SDLK_r: renderbmp(); break;
+	case SDLK_a: setcolor(b, 0); break;
+	case SDLK_s: setcolor(b, 1); break;
+	case SDLK_d: setcolor(b, 2); break;
+	case SDLK_f: setcolor(b, 3); break;
+	case SDLK_h: toggleguide(); break;
+	case SDLK_z: modsize(b, -1); break;
+	case SDLK_x: modsize(b, 1); break;
+	case SDLK_c: setmode(b, 7); break;
+	case SDLK_n: destroy(); break;
 	}
-	update(b);
 }
 
 int
@@ -420,7 +445,7 @@ init(void)
 		HEIGHT);
 	if(gTexture == NULL)
 		return error("Texture", SDL_GetError());
-	pixels = (uint32_t *)malloc(WIDTH * HEIGHT * sizeof(uint32_t));
+	pixels = (Uint32 *)malloc(WIDTH * HEIGHT * sizeof(Uint32));
 	if(pixels == NULL)
 		return error("Pixels", "Failed to allocate memory");
 	for(i = 0; i < HEIGHT; i++)
@@ -433,11 +458,12 @@ int
 main(int argc, char **argv)
 {
 	int ticknext = 0;
-	Brush brush;
+
+	brush.erase = 0;
 	brush.down = 0;
 	brush.color = 1;
 	brush.edit = 0;
-	brush.size = 10;
+	brush.size = 8;
 	brush.mode = 0;
 
 	if(!init())
@@ -451,7 +477,6 @@ main(int argc, char **argv)
 		newchr();
 
 	draw(pixels);
-	update(&brush);
 
 	while(1) {
 		int tick = SDL_GetTicks();

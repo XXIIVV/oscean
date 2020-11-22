@@ -450,6 +450,7 @@ fpportal(FILE *f, Glossary *glo, Lexicon *lex, Journal *jou, Term *t, int pict, 
 		}
 		if(text) {
 			fprintf(f, "<h2><a href='%s.html'>%s</a></h2>", tc->filename, tc->name);
+			fprintf(f, "<h4>%s</h4>", tc->bref);
 			fpbodypart(f, glo, lex, tc);
 		}
 	}

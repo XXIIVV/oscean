@@ -1,20 +1,28 @@
-<!DOCTYPE html><html lang='en'></head><meta charset='utf-8'><meta name='description' content='1th, or Firth, is a potsfix calculator designed to operate on ration numbers.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV — firth</title></head><body><header><a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='language.html'>language</a></li><li><a href='programming.html'>programming</a></li><li><a href='systems.html'>systems/</a></li><li><a href='hardware.html'>hardware</a></li><li><a href='mirrors.html'>mirrors</a></li><li><a href='notebook.html'>notebook</a></li></ul><ul><li><a href='orca.html'>orca</a></li><li><a href='firth.html'>firth/</a></li><li><a href='gyo.html'>gyo</a></li><li><a href='noton.html'>noton</a></li><li><a href='paradise.html'>paradise</a></li></ul><ul></ul></nav><main><h2>1th, or Firth, is a potsfix calculator designed to operate on ration numbers.</h2><p>First is a stack based <a href='reverse_polish.html'>rpn</a> calculator, created to be an improved version of <a href='unix.html'>Unix</a>'s <a href='https://en.wikipedia.org/wiki/Dc_(computer_program)' target='_blank'>dc</a> written in simple <a href='ansi_c.html'>ANSI C</a>. It supports most basic math operations, variables, and basic branching.</p><h3>Examples</h3><p>The following example, will print the result <code>3&1/6</code>.</p><pre>clr 11 4 div 5 12 div add _</pre><p>To print the decimal value of a fraction.</p><pre>clr 22 7 div 1 791 div sub ,</pre><p>To get the <code>min()</code> and <code>max()</code> of two numbers.</p><pre>clr 4 8 < pop end .<br />clr 4 8 < swp pop end .</pre><p>To get the <code>floor()</code> of a fraction.</p><pre>clr 17 4 div dup 1 mod sub .</pre><h3>1th.c</h3><figure><pre>#include &lt;stdio.h&gt;
+<!DOCTYPE html><html lang='en'></head><meta charset='utf-8'><meta name='description' content='1th, or Firth, is a potsfix calculator designed to operate on ration numbers.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV — firth</title></head><body><header><a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='language.html'>language</a></li><li><a href='programming.html'>programming</a></li><li><a href='systems.html'>systems/</a></li><li><a href='hardware.html'>hardware</a></li><li><a href='mirrors.html'>mirrors</a></li><li><a href='notebook.html'>notebook</a></li></ul><ul><li><a href='orca.html'>orca</a></li><li><a href='firth.html'>firth/</a></li><li><a href='gyo.html'>gyo</a></li><li><a href='noton.html'>noton</a></li><li><a href='paradise.html'>paradise</a></li></ul><ul></ul></nav><main><h2>1th, or Firth, is a potsfix calculator designed to operate on ration numbers.</h2><p>First is a stack based <a href='reverse_polish.html'>rpn</a> calculator, created to be an improved version of <a href='unix.html'>Unix</a>'s <a href='https://en.wikipedia.org/wiki/Dc_(computer_program)' target='_blank'>dc</a> written in simple <a href='ansi_c.html'>ANSI C</a>. It supports most basic math operations, variables, and basic branching.</p><h3>Examples</h3><p>The following example, will print the mixed fraction <code>3&1/6</code>.</p><pre>clr 11 4 div 5 12 div add mix</pre><p>To print the decimal value of a fraction.</p><pre>clr 22 7 div 1 791 div sub dec</pre><p>To get the <code>min()</code> and <code>max()</code> of two numbers.</p><pre>clr 4 8 < pop end .<br />clr 4 8 < swp pop end .</pre><p>To get the <code>floor()</code> of a fraction.</p><pre>clr 17 4 div dup 1 mod sub .</pre><h3>1th.c</h3><figure><pre>#include &lt;stdio.h&gt;
+
+/* 
+Copyright (c) 2020 Devine Lu Linvega
+
+Permission to use, copy, modify, and distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE.
+*/
 
 typedef struct Fraction {
-	int num;
-	int den;
+	int num, den;
 } Fraction;
 
 typedef struct Stack {
-	Fraction dict[256];
+	int flag, len;
 	Fraction data[256];
-	int len;
-	int flag;
 } Stack;
 
 typedef struct Query {
-	char data[32];
 	int len;
+	char data[64];
 } Query;
 
 /* helpers */
@@ -74,7 +82,7 @@ init(Query *s)
 void
 append(Query *s, char c)
 {
-	if(s-&gt;len &lt; 32)
+	if(s-&gt;len &lt; 64)
 		s-&gt;data[s-&gt;len++] = c;
 	s-&gt;data[s-&gt;len] = '\0';
 }
@@ -134,13 +142,6 @@ get(Stack *s, int offset)
 	return &amp;s-&gt;data[s-&gt;len - offset];
 }
 
-Fraction *
-store(Stack *s, int key, Fraction f)
-{
-	s-&gt;dict[key % 256] = f;
-	return &amp;s-&gt;dict[key];
-}
-
 Fraction
 Frac(int num, int den)
 {
@@ -185,15 +186,10 @@ request(Stack *s, char *qd)
 	/* print */
 	if(!qd[0] || qd[0] == ' ' || qd[0] == '.')
 		print(s, 0);
-	else if(qd[0] == ',')
+	else if(qd[0] == ',' || scmp(qd, "dec"))
 		print(s, 1);
-	else if(qd[0] == '_')
+	else if(qd[0] == '_' || scmp(qd, "mix"))
 		print(s, 2);
-	/* dict */
-	else if(qd[0] == '[' &amp;&amp; qd[1] &amp;&amp; trypop(s, 1))
-		store(s, qd[1], pop(s));
-	else if(qd[0] == '{' &amp;&amp; qd[1] &amp;&amp; trypush(s, 1))
-		push(s, s-&gt;dict[(int)qd[1]]);
 	/* stack */
 	else if(sinu(qd) &amp;&amp; trypush(s, 1))
 		push(s, Frac(sint(qd), 1));
@@ -214,7 +210,7 @@ request(Stack *s, char *qd)
 		Fraction a = pop(s);
 		push(s, Frac(b.num, b.den));
 		push(s, Frac(a.num, a.den));
-		/* math */
+		/* arithmetic */
 	} else if((qd[0] == '+' || scmp(qd, "add")) &amp;&amp; trypop(s, 2)) {
 		Fraction b = pop(s);
 		Fraction a = pop(s);
@@ -274,11 +270,10 @@ run(Stack *s)
 	return 0;
 }
 
-Stack s;
-
 int
 main()
 {
+	Stack s;
 	s.len = 0;
 	s.flag = 0;
 	while(run(&amp;s))
@@ -286,5 +281,5 @@ main()
 	print(&amp;s, 0);
 	return 0;
 }
-</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/1th.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/1th.c.txt'>1th.c.txt</a>(288 lines)</figcaption>
+</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/1th.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/1th.c.txt'>1th.c.txt</a>(283 lines)</figcaption>
 </figure><ul><li><a href='https://git.sr.ht/~rabbits/firth' target='_blank'>sources</a></li></ul><p><i>incoming(2)</i>: <a href='computer.html'>computer</a> <a href='reverse_polish.html'>reverse polish</a> </p><p><i>Last update on <a href='tracker.html'>20V07</a>, edited 5 times. +18/21fh</i><code style='float:right; font-size:80%'>-----+</code></p><ul><li>20V07 — Firth Release</li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
