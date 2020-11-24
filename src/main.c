@@ -403,6 +403,8 @@ fpnavpart(FILE *f, Term *t, Term *target)
 		Term *tc = t->children[i];
 		if(tc->name == t->name)
 			continue; /* Paradox */
+		if(tc->type && scmp(tc->type, "hidden"))
+			continue;
 		if(tc->name == target->name)
 			fprintf(f, "<li><a href='%s.html'>%s/</a></li>", tc->filename, tc->name);
 		else
@@ -717,7 +719,7 @@ fphtml(FILE *f, Glossary *glo, Lexicon *lex, Term *t, Journal *jou)
 			fpportal(f, glo, lex, jou, t, 0, 1);
 		else if(scmp(t->type, "album"))
 			fpalbum(f, jou, t);
-		else
+		else if(!scmp(t->type, "hidden"))
 			error("Unknown template", t->type);
 	}
 	/* special pages */
