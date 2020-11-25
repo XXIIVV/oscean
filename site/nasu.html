@@ -27,7 +27,7 @@ WITH REGARD TO THIS SOFTWARE.
 typedef struct Brush {
 	int x, y, px, py;
 	int mode, size, color;
-	int down, edit, erase;
+	int down, erase;
 } Brush;
 
 int colors[] = {color1, color2, color3, color4, color0};
@@ -281,7 +281,6 @@ exportchr(Brush *b)
 	if(!fwrite(chrbuf, sizeof(chrbuf), 1, f))
 		error("Save", "Invalid output file");
 	fclose(f);
-	b-&gt;edit = 0;
 	puts("Exported nasu-export.chr");
 }
 
@@ -349,19 +348,14 @@ domouse(SDL_Event *event, Brush *b)
 {
 	switch(event-&gt;type) {
 	case SDL_MOUSEBUTTONUP:
-		if(event-&gt;button.button == SDL_BUTTON_LEFT) {
+		if(event-&gt;button.button == SDL_BUTTON_LEFT)
 			b-&gt;down = 0;
-			b-&gt;px = 0;
-			b-&gt;py = 0;
-		}
 		if(event-&gt;button.button == SDL_BUTTON_RIGHT)
 			b-&gt;erase = 0;
-		b-&gt;edit = 1;
 		break;
 	case SDL_MOUSEBUTTONDOWN:
-		if(event-&gt;button.button == SDL_BUTTON_LEFT) {
+		if(event-&gt;button.button == SDL_BUTTON_LEFT)
 			b-&gt;down = 1;
-		}
 		if(event-&gt;button.button == SDL_BUTTON_RIGHT)
 			b-&gt;erase = 1;
 		if(event-&gt;button.button == SDL_BUTTON_MIDDLE) {
@@ -369,14 +363,14 @@ domouse(SDL_Event *event, Brush *b)
 			if(b-&gt;px != 0 &amp;&amp; b-&gt;py != 0) {
 				b-&gt;x = (event-&gt;motion.x - (PAD * ZOOM)) / ZOOM;
 				b-&gt;y = (event-&gt;motion.y - (PAD * ZOOM)) / ZOOM;
-				line(b-&gt;px, b-&gt;py, b-&gt;x, b-&gt;y, b-&gt;erase ? 0 : b-&gt;color);
+				line(b-&gt;px - 1, b-&gt;py, b-&gt;x, b-&gt;y, b-&gt;erase ? 0 : b-&gt;color);
 				draw(pixels);
 			}
 		}
 		b-&gt;px = (event-&gt;motion.x - (PAD * ZOOM)) / ZOOM;
 		b-&gt;py = (event-&gt;motion.y - (PAD * ZOOM)) / ZOOM;
 		if(b-&gt;down) {
-			putchr(b-&gt;px, b-&gt;py, b-&gt;color);
+			putchr(b-&gt;px - 1, b-&gt;py, b-&gt;erase ? 0 : b-&gt;color);
 			draw(pixels);
 		}
 		break;
@@ -385,9 +379,9 @@ domouse(SDL_Event *event, Brush *b)
 			b-&gt;x = (event-&gt;motion.x - (PAD * ZOOM)) / ZOOM;
 			b-&gt;y = (event-&gt;motion.y - (PAD * ZOOM)) / ZOOM;
 			if(!b-&gt;mode)
-				line(b-&gt;px, b-&gt;py, b-&gt;x, b-&gt;y, b-&gt;erase ? 0 : b-&gt;color);
+				line(b-&gt;px - 1, b-&gt;py, b-&gt;x - 1, b-&gt;y, b-&gt;erase ? 0 : b-&gt;color);
 			else
-				fill(b-&gt;x, b-&gt;y, b-&gt;mode, b-&gt;size, b-&gt;erase ? 0 : b-&gt;color);
+				fill(b-&gt;x - 1, b-&gt;y, b-&gt;mode, b-&gt;size, b-&gt;erase ? 0 : b-&gt;color);
 			draw(pixels);
 			b-&gt;px = b-&gt;x;
 			b-&gt;py = b-&gt;y;
@@ -462,7 +456,6 @@ main(int argc, char **argv)
 	brush.erase = 0;
 	brush.down = 0;
 	brush.color = 1;
-	brush.edit = 0;
 	brush.size = 8;
 	brush.mode = 0;
 
@@ -501,5 +494,5 @@ main(int argc, char **argv)
 	quit();
 	return 0;
 }
-</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/nasu.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/nasu.c.txt'>nasu.c.txt</a>(503 lines)</figcaption>
+</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/nasu.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/nasu.c.txt'>nasu.c.txt</a>(496 lines)</figcaption>
 </figure><ul><li><a href='https://git.sr.ht/~rabbits/nasu' target='_blank'>sources</a></li><li><a href='https://hundredrabbits.github.io/Nasu' target='_blank'>browser version</a></li></ul><p><i>incoming(8)</i>: <a href='neauismetica.html'>neauismetica</a> <a href='graf3dscene.html'>graf3dscene</a> <a href='themes.html'>themes</a> <a href='dotgrid.html'>dotgrid</a> <a href='moogle.html'>moogle</a> <a href='chr_format.html'>chr format</a> <a href='computer.html'>computer</a> <a href='identity.html'>identity</a> </p><p><i>Last update on <a href='tracker.html'>20X05</a>, edited 26 times. +115/167fh</i><code style='float:right; font-size:80%'>-----+</code></p><ul><li>20C06 — Nasu Release</li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>

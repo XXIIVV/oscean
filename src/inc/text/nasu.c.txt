@@ -27,7 +27,7 @@ WITH REGARD TO THIS SOFTWARE.
 typedef struct Brush {
 	int x, y, px, py;
 	int mode, size, color;
-	int down, edit, erase;
+	int down, erase;
 } Brush;
 
 int colors[] = {color1, color2, color3, color4, color0};
@@ -281,7 +281,6 @@ exportchr(Brush *b)
 	if(!fwrite(chrbuf, sizeof(chrbuf), 1, f))
 		error("Save", "Invalid output file");
 	fclose(f);
-	b->edit = 0;
 	puts("Exported nasu-export.chr");
 }
 
@@ -349,19 +348,14 @@ domouse(SDL_Event *event, Brush *b)
 {
 	switch(event->type) {
 	case SDL_MOUSEBUTTONUP:
-		if(event->button.button == SDL_BUTTON_LEFT) {
+		if(event->button.button == SDL_BUTTON_LEFT)
 			b->down = 0;
-			b->px = 0;
-			b->py = 0;
-		}
 		if(event->button.button == SDL_BUTTON_RIGHT)
 			b->erase = 0;
-		b->edit = 1;
 		break;
 	case SDL_MOUSEBUTTONDOWN:
-		if(event->button.button == SDL_BUTTON_LEFT) {
+		if(event->button.button == SDL_BUTTON_LEFT)
 			b->down = 1;
-		}
 		if(event->button.button == SDL_BUTTON_RIGHT)
 			b->erase = 1;
 		if(event->button.button == SDL_BUTTON_MIDDLE) {
@@ -369,14 +363,14 @@ domouse(SDL_Event *event, Brush *b)
 			if(b->px != 0 && b->py != 0) {
 				b->x = (event->motion.x - (PAD * ZOOM)) / ZOOM;
 				b->y = (event->motion.y - (PAD * ZOOM)) / ZOOM;
-				line(b->px, b->py, b->x, b->y, b->erase ? 0 : b->color);
+				line(b->px - 1, b->py, b->x, b->y, b->erase ? 0 : b->color);
 				draw(pixels);
 			}
 		}
 		b->px = (event->motion.x - (PAD * ZOOM)) / ZOOM;
 		b->py = (event->motion.y - (PAD * ZOOM)) / ZOOM;
 		if(b->down) {
-			putchr(b->px, b->py, b->color);
+			putchr(b->px - 1, b->py, b->erase ? 0 : b->color);
 			draw(pixels);
 		}
 		break;
@@ -385,9 +379,9 @@ domouse(SDL_Event *event, Brush *b)
 			b->x = (event->motion.x - (PAD * ZOOM)) / ZOOM;
 			b->y = (event->motion.y - (PAD * ZOOM)) / ZOOM;
 			if(!b->mode)
-				line(b->px, b->py, b->x, b->y, b->erase ? 0 : b->color);
+				line(b->px - 1, b->py, b->x - 1, b->y, b->erase ? 0 : b->color);
 			else
-				fill(b->x, b->y, b->mode, b->size, b->erase ? 0 : b->color);
+				fill(b->x - 1, b->y, b->mode, b->size, b->erase ? 0 : b->color);
 			draw(pixels);
 			b->px = b->x;
 			b->py = b->y;
@@ -462,7 +456,6 @@ main(int argc, char **argv)
 	brush.erase = 0;
 	brush.down = 0;
 	brush.color = 1;
-	brush.edit = 0;
 	brush.size = 8;
 	brush.mode = 0;
 
