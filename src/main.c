@@ -445,6 +445,8 @@ fpportal(FILE *f, Glossary *glo, Lexicon *lex, Journal *jou, Term *t, int pict, 
 	int i;
 	for(i = 0; i < t->children_len; ++i) {
 		Term *tc = t->children[i];
+		if(tc->type && scmp(tc->type, "hidden"))
+			continue;
 		if(pict) {
 			Log *l = finddiary(jou, tc);
 			if(l)
