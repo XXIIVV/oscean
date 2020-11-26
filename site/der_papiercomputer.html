@@ -1,0 +1,92 @@
+<!DOCTYPE html><html lang='en'></head><meta charset='utf-8'><meta name='description' content='The design for a simple portable computer that only requires matches, a pen and a piece of paper.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV — der papiercomputer</title></head><body><header><a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='paper_computing.html'>paper computing/</a></li><li><a href='fluidics.html'>fluidics</a></li></ul><ul><li><a href='der_papiercomputer.html'>der papiercomputer/</a></li></ul><ul></ul></nav><main><h2>The design for a simple portable computer that only requires matches, a pen and a piece of paper.</h2><p>The computer consists of a sheet of paper that contains both the program as well as a number of data registers and some matches that will be used to represent the contents of the data registers. This is a modified and extended edition of the <a href='https://en.wikipedia.org/wiki/WDR_paper_computer' target='_blank'>papiercomputer</a> by Wolfgang Back and Ulrich Rohde.</p><figure><table border='1' width='100%'>
+	<tr><th colspan='2'>Commands</th><th colspan='2'>Registers</th></tr>
+	<tr><td width='10'>00</td><td></td><td rowspan='2' width='10'>R0</td><td rowspan='2'></td></tr>
+	<tr><td>01</td><td></td></tr>
+	<tr><td>02</td><td></td><td rowspan='2'>R1</td><td rowspan='2'></td></tr>
+	<tr><td>03</td><td></td></tr>
+	<tr><td>04</td><td></td><td rowspan='2'>R2</td><td rowspan='2'></td></tr>
+	<tr><td>05</td><td></td></tr>
+	<tr><td>06</td><td></td><td rowspan='2'>R3</td><td rowspan='2'></td></tr>
+	<tr><td>07</td><td></td></tr>
+	<tr><td>08</td><td></td><td rowspan='2'>R4</td><td rowspan='2'></td></tr>
+	<tr><td>09</td><td></td></tr>
+	<tr><td>0A</td><td></td><td rowspan='2'>R5</td><td rowspan='2'></td></tr>
+	<tr><td>0B</td><td></td></tr>
+	<tr><td>0C</td><td></td><td rowspan='2'>R6</td><td rowspan='2'></td></tr>
+	<tr><td>0D</td><td></td></tr>
+	<tr><td>0E</td><td></td><td rowspan='2'>R7</td><td rowspan='2'></td></tr>
+	<tr><td>0F</td><td></td></tr>
+</table>
+
+<p>To begin, the pen, representing the program counter, is positioned at the line <code>00</code> of a program. The instruction in that line is then processed by the user by either moving the pen(program counter), adding/removing a match from a data register or by checking if a data register has become “empty”(zeroed).</p>
+
+<h3>Operations</h3>
+
+<p>This very rudimentary instruction set will not allow to write sophisticated applications, but will teach about the use of commands to program, mnemonics to write up commands in a short code similarly to assembly language instructions and introduce the concepts of registers</p>
+
+<ul>
+	<li><code>END</code> Aborts the execution of your program, so that you can examine the contents of your data registers.</li>
+	<li><code>SKP R#</code> Checks if the data register R# is zero(contains no matches). If it is zero, the program counter is increased by 2, otherwise the program counter is increased only by 1.</li>
+	<li><code>JMP ##</code> Sets the program counter to line number ##, “jump” to line ## in your program.</li>
+	<li><code>ADD R#</code> Adds one match to the contents of the data register R# and increases the program counter by 1.</li>
+	<li><code>SUB R#</code> Removes one match from the contents of the data register R# and increases the program counter by 1.</li>
+</ul>
+
+<h3>Punched card</h3>
+
+<p>To encode a program into a 8-bits <a href='https://en.wikipedia.org/wiki/Punched_card' target='_blank'>punched card</a>, we will be using 3 bits of space to encode the operation, which leaves 5 bits for the value. A program has at most 8 possible operations, the WDR Computer only uses 5 operations, leaving 3 unused.</p>
+
+<table border='1'>
+	<tr><th colspan='3'>binary</th><th>operation</th></tr>
+	<tr><td>0</td><td>0</td><td>0</td><td>END</td></tr>
+	<tr><td>0</td><td>0</td><td style='background:#000;color:#fff'>1</td><td>SKP</td></tr>
+	<tr><td>0</td><td style='background:#000;color:#fff'>1</td><td>0</td><td>JMP</td></tr>
+	<tr><td>0</td><td style='background:#000;color:#fff'>1</td><td style='background:#000;color:#fff'>1</td><td>ADD</td></tr>
+	<tr><td style='background:#000;color:#fff'>1</td><td>0</td><td>0</td><td>SUB</td></tr>
+	<tr style='background:#eee'><td style='background:#000;color:#fff'>1</td><td>0</td><td style='background:#000;color:#fff'>1</td><td><i>unused</i></td></tr>
+	<tr style='background:#eee'><td style='background:#000;color:#fff'>1</td><td style='background:#000;color:#fff'>1</td><td>0</td><td><i>unused</i></td></tr>
+	<tr style='background:#eee'><td style='background:#000;color:#fff'>1</td><td style='background:#000;color:#fff'>1</td><td style='background:#000;color:#fff'>1</td><td><i>unused</i></td></tr>
+</table>
+
+<p>The following program subtracts from <code>R1</code> and adds to <code>R0</code> until the value of <code>R1</code> is zero. The result of the addition of <code>R0</code> and <code>R1</code> will be stored in <code>R0</code>.</p>
+
+<table border='1'>
+	<tr><th>line</th><th colspan='3'>operation</th><th colspan='5'>value</th><th>operation</th><th>hex</th></tr>
+	<tr><td>00</td><td>0</td><td style='background:#000;color:#fff'>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td style='background:#000;color:#fff'>1</td><td style='background:#000;color:#fff'>1</td><td>JMP 03</td><td>$43</td></tr>
+	<tr><td>01</td><td>0</td><td style='background:#000;color:#fff'>1</td><td style='background:#000;color:#fff'>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>ADD R0</td><td>$60</td></tr>
+	<tr><td>02</td><td style='background:#000;color:#fff'>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td style='background:#000;color:#fff'>1</td><td>0</td><td>SUB R1</td><td>$82</td></tr>
+	<tr><td>03</td><td>0</td><td>0</td><td style='background:#000;color:#fff'>1</td><td>0</td><td>0</td><td>0</td><td style='background:#000;color:#fff'>1</td><td>0</td><td>SKP R1</td><td>$22</td></tr>
+	<tr><td>04</td><td>0</td><td style='background:#000;color:#fff'>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td style='background:#000;color:#fff'>1</td><td>JMP 01</td><td>$41</td></tr>
+	<tr><td>05</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>END</td><td>$00</td></tr>
+</table>
+
+<p>The binary expression of the operation and value of the previous program can be encoded vertically as the following punched card:</p>
+
+<pre style='border:2px solid black; border-radius: 8px'>
+    v   v   v   v   v   v    
+            •                
+    •   •           •        
+        •       •            
+                             
+                             
+                             
+    •       •   •            
+    •               •        
+</pre>
+
+<h3>Ref. 5-bits Table</h3>
+
+<p>The following table show the binary table for 32 addressable lines of a program.</p>
+
+<table border='1'>
+  <tr><td>00</td><td>00000</td><td>08</td><td>01000</td><td>10</td><td>100000</td><td>18</td><td>11000</td></tr>
+  <tr><td>01</td><td>00001</td><td>09</td><td>01001</td><td>11</td><td>100001</td><td>19</td><td>11001</td></tr>
+  <tr><td>02</td><td>00010</td><td>0A</td><td>01010</td><td>12</td><td>100010</td><td>1A</td><td>11010</td></tr>
+  <tr><td>03</td><td>00011</td><td>0B</td><td>01011</td><td>13</td><td>100011</td><td>1B</td><td>11011</td></tr>
+  <tr><td>04</td><td>00000</td><td>0C</td><td>01100</td><td>14</td><td>100000</td><td>1C</td><td>11100</td></tr>
+  <tr><td>05</td><td>00001</td><td>0D</td><td>01101</td><td>15</td><td>100001</td><td>1D</td><td>11101</td></tr>
+  <tr><td>06</td><td>00010</td><td>0E</td><td>01110</td><td>16</td><td>100010</td><td>1E</td><td>11110</td></tr>
+  <tr><td>07</td><td>00011</td><td>0F</td><td>01111</td><td>17</td><td>100011</td><td>1F</td><td>11111</td></tr>
+</table>
+<figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/der_papiercomputer.htm' target='_blank'>edit</a> to <a href='../src/inc/html/der_papiercomputer.htm'>der_papiercomputer.htm</a>(90 lines)</figcaption>
+</figure></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
