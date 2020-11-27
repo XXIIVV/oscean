@@ -1,0 +1,212 @@
+#include <stdio.h>
+#include <time.h>
+
+/* 
+Copyright (c) 2020 Devine Lu Linvega
+
+Permission to use, copy, modify, and distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE.
+*/
+
+#define EVENTMAX 512
+
+typedef struct Event {
+	int y, m, d;
+	char name[64];
+} Event;
+
+typedef struct Calendar {
+	int y, m, d, len;
+	Event events[EVENTMAX];
+} Calendar;
+
+int
+slen(char *s)
+{
+	int i = 0;
+	while(s[i] && s[++i])
+		;
+	return i;
+}
+
+int
+sint(char *s, int len)
+{
+	int num = 0, i = 0;
+	while(i < len && s[i] && s[i] >= '0' && s[i] <= '9') {
+		num = num * 10 + (s[i] - '0');
+		i++;
+	}
+	return num;
+}
+
+char *
+scpy(char *src, char *dst, int len)
+{
+	int i = 0;
+	while(src[i] && src[i] != '\n' && (dst[i] = src[i]) && i < len - 1)
+		i++;
+	dst[i] = '\0';
+	return dst;
+}
+
+int
+daysmonth(int y, int m)
+{
+	if(m == 1 || m == 3 || m == 5 || m == 7 || m == 8 || m == 10 || m == 12)
+		return 31;
+	else if((m == 2) && ((y % 400 == 0) || (y % 4 == 0 && y % 100 != 0)))
+		return 29;
+	else if(m == 2)
+		return 28;
+	else
+		return 30;
+	return 0;
+}
+
+int
+dayweek(int y, int m, int d)
+{
+	int t[] = {0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4};
+	y -= m < 3;
+	return (y + y / 4 - y / 100 + y / 400 + t[m - 1] + d) % 7;
+}
+
+void
+setevent(Calendar *c, int y, int m, int d, char *name)
+{
+	Event *e = &c->events[c->len++];
+	scpy(name, e->name, 64);
+	e->y = y;
+	e->m = m;
+	e->d = d;
+}
+
+Event *
+getevent(Calendar *c, int y, int m, int d)
+{
+	int i;
+	for(i = 0; i < c->len; i++) {
+		Event *e = &c->events[i];
+		if(e->y == y && e->m == m && e->d == d)
+			return e;
+	}
+	return NULL;
+}
+
+void
+printevents(Calendar *c)
+{
+	int i, y, m, d, l = c->m;
+	y = c->y;
+	m = c->m;
+	d = c->d;
+	for(i = 0; i < 90; i++) {
+		Event *e = getevent(c, y, m, d);
+		if(e) {
+			if(l != m)
+				printf("\n");
+			if(i == 0)
+				printf(" Today        ");
+			else if(i == 1)
+				printf(" Tomorrow     ");
+			else
+				printf(" In %02d days   ", i);
+			printf("%s\n", e->name);
+			l = m;
+		}
+		d++;
+		if(d > daysmonth(y, m)) {
+			d = 1;
+			m++;
+			if(m > 12) {
+				m = 1;
+				y++;
+			}
+		}
+	}
+	printf("\n");
+}
+
+void
+printcalendar(Calendar *c)
+{
+	int i;
+	int dw = dayweek(c->y, c->m, 1);
+	int dm = daysmonth(c->y, c->m);
+	switch(c->m) {
+	case 1: printf(" Jan %d", c->y); break;
+	case 2: printf(" Feb %d", c->y); break;
+	case 3: printf(" Mar %d", c->y); break;
+	case 4: printf(" Apr %d", c->y); break;
+	case 5: printf(" May %d", c->y); break;
+	case 6: printf(" Jun %d", c->y); break;
+	case 7: printf(" Jul %d", c->y); break;
+	case 8: printf(" Aug %d", c->y); break;
+	case 9: printf(" Sep %d", c->y); break;
+	case 10: printf(" Oct %d", c->y); break;
+	case 11: printf(" Nov %d", c->y); break;
+	case 12: printf(" Dec %d", c->y); break;
+	default: printf(" --- %d", c->y);
+	}
+	printf("\n Su  Mo  Tu  We  Th  Fr  Sa ");
+	for(i = 0; i <= 35; i++) {
+		int d = i - dw + 1;
+		if(i % 7 == 0)
+			printf("\n");
+		if(d == c->d)
+			printf("<%2d>", d);
+		else if(getevent(c, c->y, c->m, d))
+			printf("[%2d]", d);
+		else if(d > 0 && d <= dm)
+			printf(" %2d ", d);
+		else
+			printf("     ");
+	}
+	printf("\n");
+}
+
+void
+loadevents(FILE *f, Calendar *c)
+{
+	char line[256];
+	if(!f)
+		return;
+	while(fgets(line, 256, f)) {
+		if(line[0] == ';')
+			continue;
+		if(slen(line) < 9)
+			continue;
+		if(c->len >= EVENTMAX)
+			break;
+		setevent(c,
+			line[0] == '*' ? c->y : sint(line, 4),
+			line[5] == '*' ? c->m : sint(line + 4, 2),
+			line[7] == '*' ? c->d : sint(line + 6, 2),
+			line + 9);
+	}
+	fclose(f);
+}
+
+int
+main(int argc, char *argv[])
+{
+	Calendar cal;
+	time_t t;
+	struct tm *local;
+	time(&t);
+	local = localtime(&t);
+	cal.y = local->tm_year + 1900;
+	cal.m = local->tm_mon + 1;
+	cal.d = local->tm_mday;
+	cal.len = 0;
+	if(argc > 1)
+		loadevents(fopen(argv[1], "r"), &cal);
+	printcalendar(&cal);
+	printevents(&cal);
+	return 0;
+}

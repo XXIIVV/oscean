@@ -1,1 +1,508 @@
-<!DOCTYPE html><html lang='en'></head><meta charset='utf-8'><meta name='description' content='The Utilities are a collection of little tools created solve specific problems.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV — utilities</title></head><body><header><a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='illustration.html'>illustration</a></li><li><a href='software.html'>software/</a></li><li><a href='photography.html'>photography</a></li><li><a href='physical.html'>physical</a></li></ul><ul><li><a href='tools.html'>tools</a></li><li><a href='utilities.html'>utilities/</a></li><li><a href='games.html'>games</a></li><li><a href='unreleased.html'>unreleased</a></li></ul><ul><li><a href='graf3dscene.html'>graf3dscene</a></li><li><a href='themes.html'>themes</a></li><li><a href='nespaint.html'>nespaint</a></li></ul></nav><main><h2>The Utilities are a collection of little tools created solve specific problems.</h2><p>A collection of small applications that don't quite have a place in the wiki just yet.</p><figure><img src='../media/diary/555.jpg' alt='Graf3DScene is a 3D wireframe toolkit for Macintosh. picture' width='900'/><figcaption><a href='graf3dscene.html'>graf3dscene</a> — Graf3DScene is a 3D wireframe toolkit for Macintosh.</figcaption></figure><figure><img src='../media/diary/705.jpg' alt='NesPaint is a drawing program for the Famicom. picture' width='900'/><figcaption><a href='nespaint.html'>nespaint</a> — NesPaint is a drawing program for the Famicom.</figcaption></figure></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
+<!DOCTYPE html><html lang='en'></head><meta charset='utf-8'><meta name='description' content='The Utilities are a collection of little tools created solve specific problems.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV — utilities</title></head><body><header><a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='illustration.html'>illustration</a></li><li><a href='software.html'>software/</a></li><li><a href='photography.html'>photography</a></li><li><a href='physical.html'>physical</a></li></ul><ul><li><a href='tools.html'>tools</a></li><li><a href='utilities.html'>utilities/</a></li><li><a href='games.html'>games</a></li><li><a href='unreleased.html'>unreleased</a></li></ul><ul><li><a href='firth.html'>firth</a></li><li><a href='seconth.html'>seconth</a></li></ul></nav><main><h2>The Utilities are a collection of little tools created solve specific problems.</h2><p>A collection of small applications that don't quite have a place in the wiki just yet.</p><h2><a href='firth.html'>firth</a></h2><h4>Firth, or 1th, is a postfix calculator for fractions.</h4><p>Firth is a stack based <a href='reverse_polish.html'>rpn</a> calculator, created to be an improved version of <a href='unix.html'>Unix</a>'s <a href='https://en.wikipedia.org/wiki/Dc_(computer_program)' target='_blank'>dc</a>, written in <a href='ansi_c.html'>ANSI C</a>. It supports most basic math operations, variables, and basic branching.</p><h3>Examples</h3><p>The following example, will print the mixed fraction <code>3&1/6</code>.</p><pre>clr 11 4 div 5 12 div add mix</pre><p>To print the decimal value of a fraction.</p><pre>clr 22 7 div 1 791 div sub dec</pre><p>To get the <code>min()</code> and <code>max()</code> of two numbers.</p><pre>clr 4 8 < pop end .<br />clr 4 8 < swp pop end .</pre><p>To get the <code>floor()</code> of a fraction.</p><pre>clr 17 4 div dup 1 mod sub .</pre><h3>1th.c</h3><figure><pre>#include &lt;stdio.h&gt;
+
+/* 
+Copyright (c) 2020 Devine Lu Linvega
+
+Permission to use, copy, modify, and distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE.
+*/
+
+typedef struct Fraction {
+	int num, den;
+} Fraction;
+
+typedef struct Stack {
+	int flag, len;
+	Fraction data[256];
+} Stack;
+
+typedef struct Query {
+	int len;
+	char data[64];
+} Query;
+
+/* helpers */
+
+int
+cinu(char c)
+{
+	return c &gt;= '0' &amp;&amp; c &lt;= '9';
+}
+
+int
+sinu(char *s)
+{
+	int i = 0;
+	if(!s[0])
+		return 0;
+	while(s[i])
+		if(!cinu(s[i++]))
+			return 0;
+	return 1;
+}
+
+int
+sint(char *s)
+{
+	int i = 0, num = 0;
+	while(s[i] &amp;&amp; cinu(s[i]))
+		num = num * 10 + (s[i++] - '0');
+	return num;
+}
+
+int
+scmp(char *a, char *b)
+{
+	int i = 0;
+	while(a[i] == b[i])
+		if(!a[i++])
+			return 1;
+	return 0;
+}
+
+int
+gcd(int a, int b)
+{
+	if(b == 0)
+		return a;
+	return gcd(b, a % b);
+}
+
+void
+init(Query *s)
+{
+	s-&gt;data[0] = '\0';
+	s-&gt;len = 0;
+}
+
+void
+append(Query *s, char c)
+{
+	if(s-&gt;len &lt; 64)
+		s-&gt;data[s-&gt;len++] = c;
+	s-&gt;data[s-&gt;len] = '\0';
+}
+
+/* rpn */
+
+int
+error(char *err, char *msg)
+{
+	printf("%s Error: %s\n", err, msg);
+	return 0;
+}
+
+int
+trypop(Stack *s, int len)
+{
+	int err = s-&gt;len - len &lt; 0;
+	if(err)
+		error("Stack", "underflow");
+	return !err;
+}
+
+int
+trypush(Stack *s, int len)
+{
+	int err = s-&gt;len + len &gt;= 256;
+	if(err)
+		error("Stack", "overflow");
+	return !err;
+}
+
+int
+tryget(Stack *s, int offset)
+{
+	int err = s-&gt;len - offset &lt; 0;
+	if(err)
+		error("Stack", "overflow");
+	return !err;
+}
+
+Fraction
+pop(Stack *s)
+{
+	return s-&gt;data[--s-&gt;len];
+}
+
+Fraction *
+push(Stack *s, Fraction f)
+{
+	s-&gt;data[s-&gt;len] = f;
+	return &amp;s-&gt;data[s-&gt;len++];
+}
+
+Fraction *
+get(Stack *s, int offset)
+{
+	return &amp;s-&gt;data[s-&gt;len - offset - 1];
+}
+
+Fraction
+Frac(int num, int den)
+{
+	Fraction f;
+	int d = gcd(num, den);
+	f.num = num / d;
+	f.den = den / d;
+	return f;
+}
+
+void
+print(Stack *s, int format)
+{
+	int i;
+	if(s-&gt;len &lt; 1)
+		return;
+	for(i = 0; i &lt; s-&gt;len; ++i) {
+		Fraction *f = &amp;s-&gt;data[i];
+		if(format == 1)
+			printf("%f ", f-&gt;num / (double)f-&gt;den);
+		else if(format == 2 &amp;&amp; f-&gt;num &gt; f-&gt;den)
+			printf("%d&amp;%d/%d ", f-&gt;num / f-&gt;den, f-&gt;num % f-&gt;den, f-&gt;den);
+		else if(f-&gt;den != 1)
+			printf("%d/%d ", f-&gt;num, f-&gt;den);
+		else
+			printf("%d ", f-&gt;num);
+	}
+	printf("\n");
+}
+
+/* ops */
+
+int
+request(Stack *s, char *qd)
+{
+	if((qd[0] == '(' || scmp(qd, "esc")))
+		s-&gt;flag += 2;
+	else if((qd[0] == ')' || scmp(qd, "end")))
+		s-&gt;flag -= s-&gt;flag &gt; 0 ? 2 : 0;
+	else if(s-&gt;flag)
+		return 1;
+	else if(!qd[0] || qd[0] == ' ' || qd[0] == '.')
+		print(s, 0);
+	else if(qd[0] == ',' || scmp(qd, "dec"))
+		print(s, 1);
+	else if(qd[0] == '_' || scmp(qd, "mix"))
+		print(s, 2);
+	/* stack */
+	else if(sinu(qd) &amp;&amp; trypush(s, 1))
+		push(s, Frac(sint(qd), 1));
+	else if(scmp(qd, "pop") &amp;&amp; trypop(s, 1))
+		pop(s);
+	else if(scmp(qd, "clr"))
+		s-&gt;len = 0;
+	else if(scmp(qd, "swp") &amp;&amp; trypop(s, 2)) {
+		Fraction b = pop(s);
+		Fraction a = pop(s);
+		push(s, Frac(b.num, b.den));
+		push(s, Frac(a.num, a.den));
+	} else if(scmp(qd, "dup") &amp;&amp; trypop(s, 1) &amp;&amp; trypush(s, 1)) {
+		Fraction *f = get(s, 0);
+		push(s, Frac(f-&gt;num, f-&gt;den));
+	} else if(scmp(qd, "ovr") &amp;&amp; trypop(s, 2) &amp;&amp; trypush(s, 1)) {
+		Fraction *f = get(s, 1);
+		push(s, Frac(f-&gt;num, f-&gt;den));
+	} else if(scmp(qd, "rot") &amp;&amp; trypop(s, 3)) {
+		Fraction c = pop(s);
+		Fraction b = pop(s);
+		Fraction a = pop(s);
+		push(s, Frac(b.num, b.den));
+		push(s, Frac(c.num, c.den));
+		push(s, Frac(a.num, a.den));
+		/* arithmetic */
+	} else if((qd[0] == '+' || scmp(qd, "add")) &amp;&amp; trypop(s, 2)) {
+		Fraction b = pop(s);
+		Fraction a = pop(s);
+		push(s, Frac((a.num * b.den) + (a.den * b.num), a.den * b.den));
+	} else if((qd[0] == '-' || scmp(qd, "sub")) &amp;&amp; trypop(s, 2)) {
+		Fraction b = pop(s);
+		Fraction a = pop(s);
+		push(s, Frac((a.num * b.den) - (a.den * b.num), a.den * b.den));
+	} else if((qd[0] == '*' || scmp(qd, "mul")) &amp;&amp; trypop(s, 2)) {
+		Fraction b = pop(s);
+		Fraction a = pop(s);
+		push(s, Frac(a.num * b.num, a.den * b.den));
+	} else if((qd[0] == '/' || scmp(qd, "div")) &amp;&amp; trypop(s, 2)) {
+		Fraction b = pop(s);
+		Fraction a = pop(s);
+		push(s, Frac(a.num * b.den, a.den * b.num));
+	} else if((qd[0] == '%' || scmp(qd, "mod")) &amp;&amp; trypop(s, 2)) {
+		Fraction b = pop(s);
+		Fraction a = pop(s);
+		push(s, Frac((a.num * b.den) % (a.den * b.num), a.den * b.den));
+	} else if((scmp(qd, "inv")) &amp;&amp; trypop(s, 1)) {
+		Fraction f = pop(s);
+		push(s, Frac(f.den, f.num));
+	} else if(scmp(qd, "vid") &amp;&amp; trypop(s, 1) &amp;&amp; trypush(s, 1)) {
+		Fraction f = pop(s);
+		push(s, Frac(f.num, 1));
+		push(s, Frac(f.den, 1));
+		/* Logic */
+	} else if((qd[0] == '=' || scmp(qd, "beq")) &amp;&amp; tryget(s, 2)) {
+		Fraction *b = get(s, 0);
+		Fraction *a = get(s, 1);
+		s-&gt;flag += (b-&gt;den * a-&gt;num != a-&gt;den * b-&gt;num) * 2;
+	} else if((qd[0] == '!' || scmp(qd, "bne")) &amp;&amp; tryget(s, 2)) {
+		Fraction *b = get(s, 0);
+		Fraction *a = get(s, 1);
+		s-&gt;flag += (b-&gt;den * a-&gt;num == a-&gt;den * b-&gt;num) * 2;
+	} else if((qd[0] == '&gt;' || scmp(qd, "bgt")) &amp;&amp; tryget(s, 2)) {
+		Fraction *b = get(s, 0);
+		Fraction *a = get(s, 1);
+		s-&gt;flag += (b-&gt;den * a-&gt;num &lt; a-&gt;den * b-&gt;num) * 2;
+	} else if((qd[0] == '&lt;' || scmp(qd, "blt")) &amp;&amp; tryget(s, 2)) {
+		Fraction *b = get(s, 0);
+		Fraction *a = get(s, 1);
+		s-&gt;flag += (b-&gt;den * a-&gt;num &gt; a-&gt;den * b-&gt;num) * 2;
+	} else if(qd)
+		return error("Command", qd);
+	return 1;
+}
+
+int
+run(Stack *s)
+{
+	char c;
+	Query q;
+	init(&amp;q);
+	while((c = fgetc(stdin)) != EOF) {
+		if(c == ' ' || c == '\n' || !c) {
+			request(s, q.data);
+			init(&amp;q);
+		} else
+			append(&amp;q, c);
+	}
+	return 0;
+}
+
+int
+main()
+{
+	Stack s;
+	s.len = 0;
+	s.flag = 0;
+	while(run(&amp;s))
+		;
+	print(&amp;s, 0);
+	return 0;
+}
+</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/1th.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/1th.c.txt'>1th.c.txt</a>(293 lines)</figcaption>
+</figure><h2><a href='seconth.html'>seconth</a></h2><h4>Seconth, or 2th, is a plain-text calendar with events.</h4><p>Second is a calendar utility created to overlay events on pages of the gregorian calendar, written in <a href='ansi_c.html'>ANSI C</a>.</p><h3>Event Format</h3><p>The events are stored in text files in the format: </p><pre>20201126 Sailing trip to Port Townsend</pre><h3>2th.c</h3><figure><pre>#include &lt;stdio.h&gt;
+#include &lt;time.h&gt;
+
+/* 
+Copyright (c) 2020 Devine Lu Linvega
+
+Permission to use, copy, modify, and distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE.
+*/
+
+#define EVENTMAX 512
+
+typedef struct Event {
+	int y, m, d;
+	char name[64];
+} Event;
+
+typedef struct Calendar {
+	int y, m, d, len;
+	Event events[EVENTMAX];
+} Calendar;
+
+int
+slen(char *s)
+{
+	int i = 0;
+	while(s[i] &amp;&amp; s[++i])
+		;
+	return i;
+}
+
+int
+sint(char *s, int len)
+{
+	int num = 0, i = 0;
+	while(i &lt; len &amp;&amp; s[i] &amp;&amp; s[i] &gt;= '0' &amp;&amp; s[i] &lt;= '9') {
+		num = num * 10 + (s[i] - '0');
+		i++;
+	}
+	return num;
+}
+
+char *
+scpy(char *src, char *dst, int len)
+{
+	int i = 0;
+	while(src[i] &amp;&amp; src[i] != '\n' &amp;&amp; (dst[i] = src[i]) &amp;&amp; i &lt; len - 1)
+		i++;
+	dst[i] = '\0';
+	return dst;
+}
+
+int
+daysmonth(int y, int m)
+{
+	if(m == 1 || m == 3 || m == 5 || m == 7 || m == 8 || m == 10 || m == 12)
+		return 31;
+	else if((m == 2) &amp;&amp; ((y % 400 == 0) || (y % 4 == 0 &amp;&amp; y % 100 != 0)))
+		return 29;
+	else if(m == 2)
+		return 28;
+	else
+		return 30;
+	return 0;
+}
+
+int
+dayweek(int y, int m, int d)
+{
+	int t[] = {0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4};
+	y -= m &lt; 3;
+	return (y + y / 4 - y / 100 + y / 400 + t[m - 1] + d) % 7;
+}
+
+void
+setevent(Calendar *c, int y, int m, int d, char *name)
+{
+	Event *e = &amp;c-&gt;events[c-&gt;len++];
+	scpy(name, e-&gt;name, 64);
+	e-&gt;y = y;
+	e-&gt;m = m;
+	e-&gt;d = d;
+}
+
+Event *
+getevent(Calendar *c, int y, int m, int d)
+{
+	int i;
+	for(i = 0; i &lt; c-&gt;len; i++) {
+		Event *e = &amp;c-&gt;events[i];
+		if(e-&gt;y == y &amp;&amp; e-&gt;m == m &amp;&amp; e-&gt;d == d)
+			return e;
+	}
+	return NULL;
+}
+
+void
+printevents(Calendar *c)
+{
+	int i, y, m, d, l = c-&gt;m;
+	y = c-&gt;y;
+	m = c-&gt;m;
+	d = c-&gt;d;
+	for(i = 0; i &lt; 90; i++) {
+		Event *e = getevent(c, y, m, d);
+		if(e) {
+			if(l != m)
+				printf("\n");
+			if(i == 0)
+				printf(" Today        ");
+			else if(i == 1)
+				printf(" Tomorrow     ");
+			else
+				printf(" In %02d days   ", i);
+			printf("%s\n", e-&gt;name);
+			l = m;
+		}
+		d++;
+		if(d &gt; daysmonth(y, m)) {
+			d = 1;
+			m++;
+			if(m &gt; 12) {
+				m = 1;
+				y++;
+			}
+		}
+	}
+	printf("\n");
+}
+
+void
+printcalendar(Calendar *c)
+{
+	int i;
+	int dw = dayweek(c-&gt;y, c-&gt;m, 1);
+	int dm = daysmonth(c-&gt;y, c-&gt;m);
+	switch(c-&gt;m) {
+	case 1: printf(" Jan %d", c-&gt;y); break;
+	case 2: printf(" Feb %d", c-&gt;y); break;
+	case 3: printf(" Mar %d", c-&gt;y); break;
+	case 4: printf(" Apr %d", c-&gt;y); break;
+	case 5: printf(" May %d", c-&gt;y); break;
+	case 6: printf(" Jun %d", c-&gt;y); break;
+	case 7: printf(" Jul %d", c-&gt;y); break;
+	case 8: printf(" Aug %d", c-&gt;y); break;
+	case 9: printf(" Sep %d", c-&gt;y); break;
+	case 10: printf(" Oct %d", c-&gt;y); break;
+	case 11: printf(" Nov %d", c-&gt;y); break;
+	case 12: printf(" Dec %d", c-&gt;y); break;
+	default: printf(" --- %d", c-&gt;y);
+	}
+	printf("\n Su  Mo  Tu  We  Th  Fr  Sa ");
+	for(i = 0; i &lt;= 35; i++) {
+		int d = i - dw + 1;
+		if(i % 7 == 0)
+			printf("\n");
+		if(d == c-&gt;d)
+			printf("&lt;%2d&gt;", d);
+		else if(getevent(c, c-&gt;y, c-&gt;m, d))
+			printf("[%2d]", d);
+		else if(d &gt; 0 &amp;&amp; d &lt;= dm)
+			printf(" %2d ", d);
+		else
+			printf("     ");
+	}
+	printf("\n");
+}
+
+void
+loadevents(FILE *f, Calendar *c)
+{
+	char line[256];
+	if(!f)
+		return;
+	while(fgets(line, 256, f)) {
+		if(line[0] == ';')
+			continue;
+		if(slen(line) &lt; 9)
+			continue;
+		if(c-&gt;len &gt;= EVENTMAX)
+			break;
+		setevent(c,
+			line[0] == '*' ? c-&gt;y : sint(line, 4),
+			line[5] == '*' ? c-&gt;m : sint(line + 4, 2),
+			line[7] == '*' ? c-&gt;d : sint(line + 6, 2),
+			line + 9);
+	}
+	fclose(f);
+}
+
+int
+main(int argc, char *argv[])
+{
+	Calendar cal;
+	time_t t;
+	struct tm *local;
+	time(&amp;t);
+	local = localtime(&amp;t);
+	cal.y = local-&gt;tm_year + 1900;
+	cal.m = local-&gt;tm_mon + 1;
+	cal.d = local-&gt;tm_mday;
+	cal.len = 0;
+	if(argc &gt; 1)
+		loadevents(fopen(argv[1], "r"), &amp;cal);
+	printcalendar(&amp;cal);
+	printevents(&amp;cal);
+	return 0;
+}
+</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/2th.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/2th.c.txt'>2th.c.txt</a>(212 lines)</figcaption>
+</figure></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>

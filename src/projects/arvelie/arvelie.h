@@ -22,6 +22,7 @@ time_to_doty(time_t *t)
 	int y = local->tm_year + 1900;
 	int m = local->tm_mon + 1;
 	int d = local->tm_mday;
+	printf("DOTY : %d - %d\n", ymd_to_doty(y, m, d), local->tm_yday);
 	return ymd_to_doty(y, m, d);
 }
 
