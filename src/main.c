@@ -660,7 +660,9 @@ void
 fpdetails(FILE *f, Term *t, int depth)
 {
 	int i;
-	fprintf(f, "<li><a href='%s.html'>%s</a> <i>%s</i></li>", t->filename, t->name, t->body_len < 1 ? "stub" : t->incoming_len < 1 ? "orphan " : t->outgoing_len < 1 ? "deadend " : "");
+	fprintf(f, "<li><a href='%s.html'>%s</a> <i>%s</i></li>", t->filename, t->name, t->body_len < 1 ? "stub" : t->incoming_len < 1 ? "orphan "
+																										   : t->outgoing_len < 1   ? "deadend "
+																																   : "");
 	if(t->children_len < 1)
 		return;
 	fputs("<ul>", f);
