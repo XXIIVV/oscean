@@ -17,12 +17,11 @@ WITH REGARD TO THIS SOFTWARE.
 #define HOR 32
 #define VER 16
 #define PAD 8
-#define ZOOM 2
-#define color1 0xeeeeee
-#define color2 0x000000
-#define color3 0xcccccc
+#define color1 0x000000
+#define color2 0xffffff
+#define color3 0x777777
 #define color4 0x72dec2
-#define color0 0xdd5555
+#define color0 0xffb545
 
 #define GATEMAX 128
 #define WIREMAX 256
@@ -74,6 +73,7 @@ typedef struct Brush {
 
 int WIDTH = 8 * HOR + PAD * 2;
 int HEIGHT = 8 * VER + PAD * 2;
+int ZOOM = 2;
 SDL_Window *gWindow = NULL;
 SDL_Renderer *gRenderer = NULL;
 SDL_Texture *gTexture = NULL;
@@ -107,7 +107,8 @@ Pt2d(int x, int y)
 int
 polarcolor(int polarity)
 {
-	return polarity == 1 ? color4 : !polarity ? color0 : color3;
+	return polarity == 1 ? color4 : !polarity ? color0
+											  : color3;
 }
 
 /* Midi */
@@ -285,7 +286,9 @@ addgate(Noton *n, GateType type, int polarity, Point2d pos)
 	g->inlen = 0;
 	g->outlen = 0;
 	g->type = type;
-	g->pos = pos;
+	setpt2d(&g->pos,
+		abs((pos.x + 4) / 8) * 8,
+		abs((pos.y + 4) / 8) * 8);
 	printf("Add gate #%d \n", g->id);
 	return g;
 }
@@ -408,6 +411,15 @@ drawwire(Uint32 *dst, Wire *w, int color)
 }
 
 void
+drawguides(Uint32 *dst, int step)
+{
+	int x, y;
+	for(x = 1; x < HOR; x++)
+		for(y = 1; y < VER; y++)
+			pixel(dst, x * step, y * step, color3);
+}
+
+void
 clear(Uint32 *dst)
 {
 	int i, j;
@@ -421,6 +433,7 @@ redraw(Uint32 *dst, Brush *b)
 {
 	int i;
 	clear(dst);
+	drawguides(dst, 16);
 	for(i = 0; i < noton.glen; i++)
 		drawgate(dst, &noton.gates[i]);
 	for(i = 0; i < noton.wlen; i++)
@@ -463,14 +476,14 @@ setup(Noton *n)
 	int i, j;
 	int sharps[12] = {0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0};
 	for(i = 0; i < INPUTMAX; ++i) {
-		int x = i % 2 == 0 ? 20 : 27;
-		n->inputs[i] = addgate(n, INPUT, 0, Pt2d(x, 24 + i * 7));
+		int x = i % 2 == 0 ? 32 : 24;
+		n->inputs[i] = addgate(n, INPUT, 0, Pt2d(x, 24 + i * 8));
 		n->inputs[i]->locked = 1;
 	}
 	for(i = 0; i < CHANNELS; ++i) {
 		for(j = 0; j < OUTPUTMAX; ++j) {
-			int x = WIDTH - (j % 2 == 0 ? 47 : 40) - (i * 14);
-			n->outputs[j] = addgate(n, OUTPUT, 0, Pt2d(x, 24 + j * 7));
+			int x = WIDTH - (j % 2 == 0 ? 48 : 40) - (i * 16);
+			n->outputs[j] = addgate(n, OUTPUT, 0, Pt2d(x, 24 + j * 8));
 			n->outputs[j]->locked = 1;
 			n->outputs[j]->note = j + ((i % 3) * 24);
 			n->outputs[j]->channel = i;
@@ -488,6 +501,15 @@ error(char *msg, const char *err)
 {
 	printf("Error %s: %s\n", msg, err);
 	return 0;
+}
+
+void
+modzoom(int mod)
+{
+	if((mod > 0 && ZOOM < 4) || (mod < 0 && ZOOM > 1)) {
+		ZOOM += mod;
+		SDL_SetWindowSize(gWindow, WIDTH * ZOOM, HEIGHT * ZOOM);
+	}
 }
 
 void
@@ -551,7 +573,10 @@ void
 dokey(Noton *n, SDL_Event *event)
 {
 	switch(event->key.keysym.sym) {
-	case SDLK_ESCAPE: quit(); break;
+	case SDLK_EQUALS:
+	case SDLK_PLUS: modzoom(1); break;
+	case SDLK_UNDERSCORE:
+	case SDLK_MINUS: modzoom(-1); break;
 	case SDLK_BACKSPACE: destroy(n); break;
 	case SDLK_SPACE: pause(n); break;
 	case SDLK_UP: modoct(n, 1); break;

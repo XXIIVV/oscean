@@ -15,7 +15,6 @@ WITH REGARD TO THIS SOFTWARE.
 #define HOR 32
 #define VER 16
 #define PAD 8
-#define ZOOM 2
 #define color1 0x000000
 #define color2 0x72DEC2
 #define color3 0xFFFFFF
@@ -33,7 +32,7 @@ typedef struct Brush {
 int colors[] = {color1, color2, color3, color4, color0};
 int WIDTH = 8 * HOR + PAD * 2;
 int HEIGHT = 8 * VER + PAD * 2;
-int FPS = 30, GUIDES = 1;
+int FPS = 30, GUIDES = 1, ZOOM = 2;
 
 unsigned char chrbuf[SZ];
 SDL_Window *gWindow;
@@ -70,7 +69,9 @@ spos(char *s, char *ss)
 int
 getclr(int r, int g, int b)
 {
-	return r && g && b && r == g && g == b ? 1 : r > g && r > b ? 2 : g > r && g > b ? 3 : 0;
+	return r && g && b && r == g && g == b ? 1 : r > g && r > b ? 2
+											 : g > r && g > b   ? 3
+																: 0;
 }
 
 /* chr */
@@ -91,7 +92,9 @@ getchr(int x, int y)
 		return 0;
 	ch1 = (chrbuf[r] >> (7 - px)) & 1;
 	ch2 = (chrbuf[r + 8] >> (7 - px)) & 1;
-	return ch1 && !ch2 ? 1 : !ch1 && ch2 ? 2 : ch1 && ch2 ? 3 : 0;
+	return ch1 && !ch2 ? 1 : !ch1 && ch2 ? 2
+						 : ch1 && ch2    ? 3
+										 : 0;
 }
 
 void
@@ -233,6 +236,15 @@ error(char *msg, const char *err)
 {
 	printf("Error %s: %s\n", msg, err);
 	return 0;
+}
+
+void
+modzoom(int mod)
+{
+	if((mod > 0 && ZOOM < 4) || (mod < 0 && ZOOM > 1))
+		ZOOM += mod;
+	SDL_SetWindowSize(gWindow, WIDTH * ZOOM, HEIGHT * ZOOM);
+	draw(pixels);
 }
 
 void
@@ -394,6 +406,10 @@ void
 dokey(SDL_Event *event, Brush *b)
 {
 	switch(event->key.keysym.sym) {
+	case SDLK_EQUALS:
+	case SDLK_PLUS: modzoom(1); break;
+	case SDLK_UNDERSCORE:
+	case SDLK_MINUS: modzoom(-1); break;
 	case SDLK_1: setmode(b, 0); break;
 	case SDLK_2: setmode(b, 1); break;
 	case SDLK_3: setmode(b, 2); break;

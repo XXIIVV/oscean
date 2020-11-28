@@ -15,7 +15,6 @@ WITH REGARD TO THIS SOFTWARE.
 #define HOR 32
 #define VER 16
 #define PAD 8
-#define ZOOM 2
 #define color1 0x000000
 #define color2 0x72DEC2
 #define color3 0xFFFFFF
@@ -33,7 +32,7 @@ typedef struct Brush {
 int colors[] = {color1, color2, color3, color4, color0};
 int WIDTH = 8 * HOR + PAD * 2;
 int HEIGHT = 8 * VER + PAD * 2;
-int FPS = 30, GUIDES = 1;
+int FPS = 30, GUIDES = 1, ZOOM = 2;
 
 unsigned char chrbuf[SZ];
 SDL_Window *gWindow;
@@ -70,7 +69,9 @@ spos(char *s, char *ss)
 int
 getclr(int r, int g, int b)
 {
-	return r &amp;&amp; g &amp;&amp; b &amp;&amp; r == g &amp;&amp; g == b ? 1 : r &gt; g &amp;&amp; r &gt; b ? 2 : g &gt; r &amp;&amp; g &gt; b ? 3 : 0;
+	return r &amp;&amp; g &amp;&amp; b &amp;&amp; r == g &amp;&amp; g == b ? 1 : r &gt; g &amp;&amp; r &gt; b ? 2
+											 : g &gt; r &amp;&amp; g &gt; b   ? 3
+																: 0;
 }
 
 /* chr */
@@ -91,7 +92,9 @@ getchr(int x, int y)
 		return 0;
 	ch1 = (chrbuf[r] &gt;&gt; (7 - px)) &amp; 1;
 	ch2 = (chrbuf[r + 8] &gt;&gt; (7 - px)) &amp; 1;
-	return ch1 &amp;&amp; !ch2 ? 1 : !ch1 &amp;&amp; ch2 ? 2 : ch1 &amp;&amp; ch2 ? 3 : 0;
+	return ch1 &amp;&amp; !ch2 ? 1 : !ch1 &amp;&amp; ch2 ? 2
+						 : ch1 &amp;&amp; ch2    ? 3
+										 : 0;
 }
 
 void
@@ -233,6 +236,15 @@ error(char *msg, const char *err)
 {
 	printf("Error %s: %s\n", msg, err);
 	return 0;
+}
+
+void
+modzoom(int mod)
+{
+	if((mod &gt; 0 &amp;&amp; ZOOM &lt; 4) || (mod &lt; 0 &amp;&amp; ZOOM &gt; 1))
+		ZOOM += mod;
+	SDL_SetWindowSize(gWindow, WIDTH * ZOOM, HEIGHT * ZOOM);
+	draw(pixels);
 }
 
 void
@@ -394,6 +406,10 @@ void
 dokey(SDL_Event *event, Brush *b)
 {
 	switch(event-&gt;key.keysym.sym) {
+	case SDLK_EQUALS:
+	case SDLK_PLUS: modzoom(1); break;
+	case SDLK_UNDERSCORE:
+	case SDLK_MINUS: modzoom(-1); break;
 	case SDLK_1: setmode(b, 0); break;
 	case SDLK_2: setmode(b, 1); break;
 	case SDLK_3: setmode(b, 2); break;
@@ -494,5 +510,5 @@ main(int argc, char **argv)
 	quit();
 	return 0;
 }
-</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/nasu.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/nasu.c.txt'>nasu.c.txt</a>(496 lines)</figcaption>
-</figure><ul><li><a href='https://git.sr.ht/~rabbits/nasu' target='_blank'>sources</a></li><li><a href='https://hundredrabbits.github.io/Nasu' target='_blank'>browser version</a></li></ul><p><i>incoming(8)</i>: <a href='neauismetica.html'>neauismetica</a> <a href='graf3dscene.html'>graf3dscene</a> <a href='themes.html'>themes</a> <a href='dotgrid.html'>dotgrid</a> <a href='moogle.html'>moogle</a> <a href='chr_format.html'>chr format</a> <a href='computer.html'>computer</a> <a href='identity.html'>identity</a> </p><p><i>Last update on <a href='tracker.html'>20X05</a>, edited 26 times. +115/167fh</i><code style='float:right; font-size:80%'>-----+</code></p><ul><li>20C06 — Nasu Release</li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
+</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/nasu.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/nasu.c.txt'>nasu.c.txt</a>(512 lines)</figcaption>
+</figure><ul><li><a href='https://git.sr.ht/~rabbits/nasu' target='_blank'>sources</a></li><li><a href='https://hundredrabbits.github.io/Nasu' target='_blank'>browser version</a></li></ul><p><i>incoming(9)</i>: <a href='neauismetica.html'>neauismetica</a> <a href='graf3dscene.html'>graf3dscene</a> <a href='themes.html'>themes</a> <a href='dotgrid.html'>dotgrid</a> <a href='moogle.html'>moogle</a> <a href='chr_format.html'>chr format</a> <a href='donsol_famicom.html'>donsol famicom</a> <a href='computer.html'>computer</a> <a href='identity.html'>identity</a> </p><p><i>Last update on <a href='tracker.html'>20X05</a>, edited 26 times. +115/167fh</i><code style='float:right; font-size:80%'>-----+</code></p><ul><li>20C06 — Nasu Release</li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>

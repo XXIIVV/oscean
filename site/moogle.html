@@ -16,7 +16,6 @@ WITH REGARD TO THIS SOFTWARE.
 #define HOR 32
 #define VER 16
 #define PAD 8
-#define ZOOM 2
 #define color1 0x000000
 #define color2 0x72DEC2
 #define color3 0xFFFFFF
@@ -29,6 +28,16 @@ WITH REGARD TO THIS SOFTWARE.
 
 #define SZ (HOR * VER * 16)
 #define PI 3.14159265358979323846
+
+unsigned char chrbuf[SZ];
+int colors[] = {color1, color2, color3, color4, color0};
+int WIDTH = 8 * HOR + PAD * 2;
+int HEIGHT = 8 * VER + PAD * 2;
+int FPS = 30, GUIDES = 1, ZOOM = 2;
+SDL_Window *gWindow = NULL;
+SDL_Renderer *gRenderer = NULL;
+SDL_Texture *gTexture = NULL;
+Uint32 *pixels;
 
 typedef struct {
 	int x, y;
@@ -67,16 +76,6 @@ typedef struct {
 	double pitch, yaw, roll, range;
 	Projection projection;
 } Camera;
-
-int colors[] = {color1, color2, color3, color4, color0};
-int WIDTH = 8 * HOR + PAD * 2;
-int HEIGHT = 8 * VER + PAD * 2;
-int FPS = 30, GUIDES = 1;
-SDL_Window *gWindow = NULL;
-SDL_Renderer *gRenderer = NULL;
-SDL_Texture *gTexture = NULL;
-Uint32 *pixels;
-unsigned char chrbuf[SZ];
 
 Scene scn;
 Camera cam;
@@ -553,11 +552,22 @@ orient(Scene *s, Camera *c, double pitch, double yaw, double roll)
 	render(s, c);
 }
 
+/* options */
+
 int
 error(char *msg, const char *err)
 {
 	printf("Error %s: %s\n", msg, err);
 	return 0;
+}
+
+void
+modzoom(int mod)
+{
+	if((mod &gt; 0 &amp;&amp; ZOOM &lt; 4) || (mod &lt; 0 &amp;&amp; ZOOM &gt; 1))
+		ZOOM += mod;
+	SDL_SetWindowSize(gWindow, WIDTH * ZOOM, HEIGHT * ZOOM);
+	render(&amp;scn, &amp;cam);
 }
 
 void
@@ -648,6 +658,10 @@ void
 dokey(SDL_Event *event)
 {
 	switch(event-&gt;key.keysym.sym) {
+	case SDLK_EQUALS:
+	case SDLK_PLUS: modzoom(1); break;
+	case SDLK_UNDERSCORE:
+	case SDLK_MINUS: modzoom(-1); break;
 	case SDLK_TAB: toggleprojection(&amp;scn, &amp;cam); break;
 	case SDLK_e: exportchr(); break;
 	case SDLK_r: renderbmp(); break;
@@ -733,7 +747,7 @@ main(void)
 	quit();
 	return 0;
 }
-</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/moogle.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/moogle.c.txt'>moogle.c.txt</a>(735 lines)</figcaption>
+</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/moogle.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/moogle.c.txt'>moogle.c.txt</a>(749 lines)</figcaption>
 </figure><h3>Structures</h3><p>Here's some additional primitives that I use to build scenes in Moogle.</p><figure><pre>Mesh*
 addbox(Scene* s, double width, double height, double depth)
 {

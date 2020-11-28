@@ -7,7 +7,7 @@
 #define STRMEM 4096 * 96
 #define GLOMEM 100
 #define LEXMEM 500
-#define HORMEM 3500
+#define HORMEM 4000
 #define ITEMS 64
 
 #define LOGS_RANGE 56
