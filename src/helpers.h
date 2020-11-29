@@ -144,10 +144,8 @@ int
 sint(char *s, int len)
 {
 	int num = 0, i = 0;
-	while(s[i] && cinu(s[i]) && i < len) {
-		num = num * 10 + (s[i] - '0');
-		i++;
-	}
+	while(s[i] && i < len && (s[i] >= '0' && s[i] <= '9'))
+		num = num * 10 + (s[i++] - '0');
 	return num;
 }
 
