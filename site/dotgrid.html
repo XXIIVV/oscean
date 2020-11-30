@@ -15,11 +15,6 @@ WITH REGARD TO THIS SOFTWARE.
 #define HOR 32
 #define VER 16
 #define PAD 8
-#define color1 0x000000
-#define color2 0x72DEC2
-#define color3 0xFFFFFF
-#define color4 0x444444
-#define color0 0xffb545
 
 #define PLIMIT 256
 #define SZ (HOR * VER * 16)
@@ -49,19 +44,28 @@ typedef struct {
 	Path2d paths[PLIMIT];
 } Shape2d;
 
+typedef struct Icon {
+	unsigned short data[8];
+} Icon;
+
 Path2d stack;
 Shape2d shape;
 Point2d *selection;
 int active = 0;
 
-int colors[] = {color1, color2, color3, color4, color0};
+int theme[] = {0x000000, 0x72DEC2, 0xFFFFFF, 0x444444, 0xffb545};
 int WIDTH = 8 * HOR + PAD * 2;
-int HEIGHT = 8 * VER + PAD * 2;
+int HEIGHT = 8 * (VER + 2) + PAD * 2;
 int FPS = 30, GUIDES = 1, COLOR = 3, ZOOM = 2;
 SDL_Window *gWindow = NULL;
 SDL_Renderer *gRenderer = NULL;
 SDL_Texture *gTexture = NULL;
 Uint32 *pixels;
+
+/* Icons */
+
+unsigned char icon0[] = {0x38, 0x7c, 0xfe, 0xfe, 0xfe, 0x7c, 0x38, 0x00};
+unsigned char icon1[] = {0x38, 0x44, 0x82, 0x82, 0x82, 0x44, 0x38, 0x00};
 
 /* helpers */
 
@@ -135,6 +139,25 @@ sint(char *s, int len)
 	return num;
 }
 
+unsigned char
+chex(char c)
+{
+	if(c &gt;= 'a' &amp;&amp; c &lt;= 'f')
+		return 10 + c - 'a';
+	if(c &gt;= 'A' &amp;&amp; c &lt;= 'F')
+		return 10 + c - 'A';
+	return (c - '0') &amp; 0xF;
+}
+
+int
+shex(char *s, int len)
+{
+	int i, n = 0;
+	for(i = 0; i &lt; len; ++i)
+		n |= (chex(s[i]) &lt;&lt; ((len - i - 1) * 4));
+	return n;
+}
+
 /* draw */
 
 void
@@ -143,13 +166,13 @@ clear(Uint32 *dst)
 	int i, j;
 	for(i = 0; i &lt; HEIGHT; i++)
 		for(j = 0; j &lt; WIDTH; j++)
-			dst[i * WIDTH + j] = color1;
+			dst[i * WIDTH + j] = theme[0];
 }
 
 void
 pixel(Uint32 *dst, int x, int y, int color)
 {
-	if(x &gt;= 0 &amp;&amp; x &lt; WIDTH * 2 &amp;&amp; y &gt;= 0 &amp;&amp; y &lt; HEIGHT * 2)
+	if(x &gt;= 0 &amp;&amp; x &lt; WIDTH - 8 &amp;&amp; y &gt;= 0 &amp;&amp; y &lt; HEIGHT - 8)
 		dst[(y + PAD) * WIDTH + (x + PAD)] = color;
 }
 
@@ -348,26 +371,26 @@ drawpath(Uint32 *dst, Path2d *path, int guides)
 		if(j &lt; path-&gt;len - 1) {
 			Point2d *b = &amp;path-&gt;points[j + 1];
 			if(path-&gt;type == LINE)
-				line(dst, a-&gt;x, a-&gt;y, b-&gt;x, b-&gt;y, colors[path-&gt;color]);
+				line(dst, a-&gt;x, a-&gt;y, b-&gt;x, b-&gt;y, theme[path-&gt;color]);
 			else if(path-&gt;type == RECTANGLE)
-				rectangle(dst, a-&gt;x, a-&gt;y, b-&gt;x, b-&gt;y, colors[path-&gt;color]);
+				rectangle(dst, a-&gt;x, a-&gt;y, b-&gt;x, b-&gt;y, theme[path-&gt;color]);
 			else if(path-&gt;type == ELLIPSE)
-				ellipse(dst, a-&gt;x, a-&gt;y, b-&gt;x, b-&gt;y, -1, colors[path-&gt;color]);
+				ellipse(dst, a-&gt;x, a-&gt;y, b-&gt;x, b-&gt;y, -1, theme[path-&gt;color]);
 		}
 		if(j &lt; path-&gt;len - 2) {
 			Point2d *b = &amp;path-&gt;points[j + 1];
 			Point2d *c = &amp;path-&gt;points[j + 2];
 			if(path-&gt;type == ARC)
-				arc(dst, a-&gt;x, a-&gt;y, b-&gt;x, b-&gt;y, c-&gt;x, c-&gt;y, colors[path-&gt;color]);
+				arc(dst, a-&gt;x, a-&gt;y, b-&gt;x, b-&gt;y, c-&gt;x, c-&gt;y, theme[path-&gt;color]);
 			else if(path-&gt;type == BEZIER)
-				bezier(dst, a-&gt;x, a-&gt;y, b-&gt;x, b-&gt;y, c-&gt;x, c-&gt;y, colors[path-&gt;color]);
+				bezier(dst, a-&gt;x, a-&gt;y, b-&gt;x, b-&gt;y, c-&gt;x, c-&gt;y, theme[path-&gt;color]);
 			if(path-&gt;type == ARC || path-&gt;type == BEZIER)
 				j++;
 		}
 		if(path-&gt;type == POINT)
-			pixel(dst, a-&gt;x, a-&gt;y, colors[path-&gt;color]);
+			pixel(dst, a-&gt;x, a-&gt;y, theme[path-&gt;color]);
 		if(guides)
-			handle(dst, a-&gt;x, a-&gt;y, 2, color0);
+			handle(dst, a-&gt;x, a-&gt;y, 2, theme[4]);
 	}
 }
 
@@ -377,7 +400,28 @@ drawguides(Uint32 *dst, int step)
 	int x, y;
 	for(x = 1; x &lt; HOR; x++)
 		for(y = 1; y &lt; VER; y++)
-			pixel(dst, x * step, y * step, x % 4 == 0 &amp;&amp; y % 4 == 0 ? color3 : color4);
+			pixel(dst, x * step, y * step, x % 4 == 0 &amp;&amp; y % 4 == 0 ? theme[2] : theme[3]);
+}
+
+void
+drawicon(Uint32 *dst, int x, int y, unsigned char *icon, int color)
+{
+	int v, h;
+	for(v = 0; v &lt; 8; v++)
+		for(h = 0; h &lt; 8; h++) {
+			int c = theme[(icon[v] &gt;&gt; h) &amp; 0x1];
+			pixel(dst, x + h, y + v, c ? color : theme[0]);
+		}
+}
+
+void
+drawui(Uint32 *dst)
+{
+	int clr = active &gt;= 0 ? shape.paths[active].color : 1;
+	int x, y, left = PAD, bottom = VER * 8;
+	drawicon(dst, left, bottom, clr == 1 ? icon1 : icon0, theme[1]);
+	drawicon(dst, PAD + 8, bottom, clr == 2 ? icon1 : icon0, theme[2]);
+	drawicon(dst, PAD + 16, bottom, clr == 3 ? icon1 : icon0, theme[3]);
 }
 
 void
@@ -393,12 +437,13 @@ redraw(Uint32 *dst)
 	/* draw stack */
 	for(i = 0; i &lt; stack.len; ++i) {
 		Point2d *a = &amp;stack.points[i];
-		handle(dst, a-&gt;x, a-&gt;y, 2, color0);
+		handle(dst, a-&gt;x, a-&gt;y, 2, theme[4]);
 		if(i &lt; stack.len - 1) {
 			Point2d *b = &amp;stack.points[i + 1];
-			line(dst, a-&gt;x, a-&gt;y, b-&gt;x, b-&gt;y, color0);
+			line(dst, a-&gt;x, a-&gt;y, b-&gt;x, b-&gt;y, theme[4]);
 		}
 	}
+	drawui(dst);
 	SDL_UpdateTexture(gTexture, NULL, dst, WIDTH * sizeof(Uint32));
 	SDL_RenderClear(gRenderer);
 	SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);
@@ -492,8 +537,9 @@ cast(LineType type)
 void
 erase(void)
 {
-	stack.len = 0;
-	if(shape.len &gt; 0)
+	if(stack.len &gt; 0)
+		stack.len = 0;
+	else if(shape.len &gt; 0)
 		shape.len--;
 	cancel();
 }
@@ -509,7 +555,10 @@ destroy(void)
 void
 setcolor(int c)
 {
+	if(active &gt;= 0)
+		shape.paths[active].color = c;
 	COLOR = c;
+	redraw(pixels);
 	printf("Selected Color %d\n", c);
 }
 
@@ -610,6 +659,36 @@ loadtxt(FILE *f)
 }
 
 void
+loadtheme(FILE *f)
+{
+	int id = 0;
+	char line[256];
+	if(!f)
+		return;
+	while(fgets(line, 256, f)) {
+		int i = 0;
+		while(line[i++]) {
+			if(line[i] != '#')
+				continue;
+			if(id == 0 || id &gt; 4)
+				theme[id &gt; 4 ? id - 4 : 0] = shex(line + i + 1, 6);
+			id++;
+		}
+	}
+	fclose(f);
+}
+
+void
+selectoption(int option)
+{
+	switch(option) {
+	case 0: setcolor(1); break;
+	case 1: setcolor(2); break;
+	case 2: setcolor(3); break;
+	}
+}
+
+void
 quit(void)
 {
 	free(pixels);
@@ -626,22 +705,28 @@ quit(void)
 void
 domouse(SDL_Event *event)
 {
-	Point2d touch = Pt2d(
-		(event-&gt;motion.x - (PAD * ZOOM)) / ZOOM,
-		(event-&gt;motion.y - (PAD * ZOOM)) / ZOOM);
-	setpt2d(&amp;touch,
+	Point2d clamped, touch = Pt2d(
+						 (event-&gt;motion.x - (PAD * ZOOM)) / ZOOM,
+						 (event-&gt;motion.y - (PAD * ZOOM)) / ZOOM);
+	setpt2d(&amp;clamped, touch.x, touch.y);
+	setpt2d(&amp;clamped,
 		abs((touch.x + 8 / 2) / 8) * 8,
 		abs((touch.y + 8 / 2) / 8) * 8);
 	switch(event-&gt;type) {
 	case SDL_MOUSEBUTTONUP:
-		if(selection &amp;&amp; !equpt2d(&amp;touch, selection))
-			dragpoint(&amp;touch);
-		else
-			addpoint(touch);
+		if(clamped.y &gt;= VER * 8)
+			; /* interface */
+		else if(selection &amp;&amp; !equpt2d(&amp;clamped, selection))
+			dragpoint(&amp;clamped);
+		else if(active == shape.len - 1)
+			addpoint(clamped);
 		selection = NULL;
 		break;
 	case SDL_MOUSEBUTTONDOWN:
-		selectpoint(&amp;touch);
+		if(clamped.y &gt;= VER * 8)
+			selectoption(abs(touch.x / 8) - 1);
+		else
+			selectpoint(&amp;clamped);
 		break;
 	case SDL_MOUSEMOTION:
 		break;
@@ -712,6 +797,8 @@ main(int argc, char *argv[])
 	if(!init())
 		return error("Init", "Failure");
 
+	loadtheme(fopen("theme.svg", "r"));
+
 	if(argc &gt; 1)
 		loadtxt(fopen(argv[1], "r"));
 	cancel();
@@ -739,5 +826,5 @@ main(int argc, char *argv[])
 	quit();
 	return 0;
 }
-</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/dotgrid.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/dotgrid.c.txt'>dotgrid.c.txt</a>(741 lines)</figcaption>
+</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/dotgrid.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/dotgrid.c.txt'>dotgrid.c.txt</a>(828 lines)</figcaption>
 </figure><figure><img src='../media/diary/508.jpg' alt='Working away from snow picture' width='900'/><figcaption>17Z11 — Working away from snow</figcaption></figure><figure><img src='../media/diary/385.jpg' alt='General improvements picture' width='900'/><figcaption>17W08 — General improvements</figcaption></figure><figure><img src='../media/diary/368.jpg' alt='Dotless Dotgrid Interface picture' width='900'/><figcaption>17W01 — Dotless Dotgrid Interface</figcaption></figure><ul><li><a href='https://git.sr.ht/~rabbits/dotgrid' target='_blank'>sources</a></li><li><a href='http://hundredrabbits.itch.io/Dotgrid' target='_blank'>builds</a></li><li><a href='https://hundredrabbits.github.io/Dotgrid' target='_blank'>live</a></li><li><a href='https://hundredrabbits.itch.io/Dotgrid/community' target='_blank'>community</a></li></ul><p><i>incoming(6)</i>: <a href='themes.html'>themes</a> <a href='ronin.html'>ronin</a> <a href='rafinograde.html'>rafinograde</a> <a href='computer.html'>computer</a> <a href='postscript.html'>postscript</a> <a href='identity.html'>identity</a> </p><p><i>Last update on <a href='tracker.html'>20X11</a>, edited 46 times. +200/282fh</i><code style='float:right; font-size:80%'>----++</code></p><ul><li>18A12 — Dotgrid Release</li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>

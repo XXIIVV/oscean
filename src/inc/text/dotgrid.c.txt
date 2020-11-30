@@ -15,11 +15,6 @@ WITH REGARD TO THIS SOFTWARE.
 #define HOR 32
 #define VER 16
 #define PAD 8
-#define color1 0x000000
-#define color2 0x72DEC2
-#define color3 0xFFFFFF
-#define color4 0x444444
-#define color0 0xffb545
 
 #define PLIMIT 256
 #define SZ (HOR * VER * 16)
@@ -49,19 +44,28 @@ typedef struct {
 	Path2d paths[PLIMIT];
 } Shape2d;
 
+typedef struct Icon {
+	unsigned short data[8];
+} Icon;
+
 Path2d stack;
 Shape2d shape;
 Point2d *selection;
 int active = 0;
 
-int colors[] = {color1, color2, color3, color4, color0};
+int theme[] = {0x000000, 0x72DEC2, 0xFFFFFF, 0x444444, 0xffb545};
 int WIDTH = 8 * HOR + PAD * 2;
-int HEIGHT = 8 * VER + PAD * 2;
+int HEIGHT = 8 * (VER + 2) + PAD * 2;
 int FPS = 30, GUIDES = 1, COLOR = 3, ZOOM = 2;
 SDL_Window *gWindow = NULL;
 SDL_Renderer *gRenderer = NULL;
 SDL_Texture *gTexture = NULL;
 Uint32 *pixels;
+
+/* Icons */
+
+unsigned char icon0[] = {0x38, 0x7c, 0xfe, 0xfe, 0xfe, 0x7c, 0x38, 0x00};
+unsigned char icon1[] = {0x38, 0x44, 0x82, 0x82, 0x82, 0x44, 0x38, 0x00};
 
 /* helpers */
 
@@ -135,6 +139,25 @@ sint(char *s, int len)
 	return num;
 }
 
+unsigned char
+chex(char c)
+{
+	if(c >= 'a' && c <= 'f')
+		return 10 + c - 'a';
+	if(c >= 'A' && c <= 'F')
+		return 10 + c - 'A';
+	return (c - '0') & 0xF;
+}
+
+int
+shex(char *s, int len)
+{
+	int i, n = 0;
+	for(i = 0; i < len; ++i)
+		n |= (chex(s[i]) << ((len - i - 1) * 4));
+	return n;
+}
+
 /* draw */
 
 void
@@ -143,13 +166,13 @@ clear(Uint32 *dst)
 	int i, j;
 	for(i = 0; i < HEIGHT; i++)
 		for(j = 0; j < WIDTH; j++)
-			dst[i * WIDTH + j] = color1;
+			dst[i * WIDTH + j] = theme[0];
 }
 
 void
 pixel(Uint32 *dst, int x, int y, int color)
 {
-	if(x >= 0 && x < WIDTH * 2 && y >= 0 && y < HEIGHT * 2)
+	if(x >= 0 && x < WIDTH - 8 && y >= 0 && y < HEIGHT - 8)
 		dst[(y + PAD) * WIDTH + (x + PAD)] = color;
 }
 
@@ -348,26 +371,26 @@ drawpath(Uint32 *dst, Path2d *path, int guides)
 		if(j < path->len - 1) {
 			Point2d *b = &path->points[j + 1];
 			if(path->type == LINE)
-				line(dst, a->x, a->y, b->x, b->y, colors[path->color]);
+				line(dst, a->x, a->y, b->x, b->y, theme[path->color]);
 			else if(path->type == RECTANGLE)
-				rectangle(dst, a->x, a->y, b->x, b->y, colors[path->color]);
+				rectangle(dst, a->x, a->y, b->x, b->y, theme[path->color]);
 			else if(path->type == ELLIPSE)
-				ellipse(dst, a->x, a->y, b->x, b->y, -1, colors[path->color]);
+				ellipse(dst, a->x, a->y, b->x, b->y, -1, theme[path->color]);
 		}
 		if(j < path->len - 2) {
 			Point2d *b = &path->points[j + 1];
 			Point2d *c = &path->points[j + 2];
 			if(path->type == ARC)
-				arc(dst, a->x, a->y, b->x, b->y, c->x, c->y, colors[path->color]);
+				arc(dst, a->x, a->y, b->x, b->y, c->x, c->y, theme[path->color]);
 			else if(path->type == BEZIER)
-				bezier(dst, a->x, a->y, b->x, b->y, c->x, c->y, colors[path->color]);
+				bezier(dst, a->x, a->y, b->x, b->y, c->x, c->y, theme[path->color]);
 			if(path->type == ARC || path->type == BEZIER)
 				j++;
 		}
 		if(path->type == POINT)
-			pixel(dst, a->x, a->y, colors[path->color]);
+			pixel(dst, a->x, a->y, theme[path->color]);
 		if(guides)
-			handle(dst, a->x, a->y, 2, color0);
+			handle(dst, a->x, a->y, 2, theme[4]);
 	}
 }
 
@@ -377,7 +400,28 @@ drawguides(Uint32 *dst, int step)
 	int x, y;
 	for(x = 1; x < HOR; x++)
 		for(y = 1; y < VER; y++)
-			pixel(dst, x * step, y * step, x % 4 == 0 && y % 4 == 0 ? color3 : color4);
+			pixel(dst, x * step, y * step, x % 4 == 0 && y % 4 == 0 ? theme[2] : theme[3]);
+}
+
+void
+drawicon(Uint32 *dst, int x, int y, unsigned char *icon, int color)
+{
+	int v, h;
+	for(v = 0; v < 8; v++)
+		for(h = 0; h < 8; h++) {
+			int c = theme[(icon[v] >> h) & 0x1];
+			pixel(dst, x + h, y + v, c ? color : theme[0]);
+		}
+}
+
+void
+drawui(Uint32 *dst)
+{
+	int clr = active >= 0 ? shape.paths[active].color : 1;
+	int x, y, left = PAD, bottom = VER * 8;
+	drawicon(dst, left, bottom, clr == 1 ? icon1 : icon0, theme[1]);
+	drawicon(dst, PAD + 8, bottom, clr == 2 ? icon1 : icon0, theme[2]);
+	drawicon(dst, PAD + 16, bottom, clr == 3 ? icon1 : icon0, theme[3]);
 }
 
 void
@@ -393,12 +437,13 @@ redraw(Uint32 *dst)
 	/* draw stack */
 	for(i = 0; i < stack.len; ++i) {
 		Point2d *a = &stack.points[i];
-		handle(dst, a->x, a->y, 2, color0);
+		handle(dst, a->x, a->y, 2, theme[4]);
 		if(i < stack.len - 1) {
 			Point2d *b = &stack.points[i + 1];
-			line(dst, a->x, a->y, b->x, b->y, color0);
+			line(dst, a->x, a->y, b->x, b->y, theme[4]);
 		}
 	}
+	drawui(dst);
 	SDL_UpdateTexture(gTexture, NULL, dst, WIDTH * sizeof(Uint32));
 	SDL_RenderClear(gRenderer);
 	SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);
@@ -492,8 +537,9 @@ cast(LineType type)
 void
 erase(void)
 {
-	stack.len = 0;
-	if(shape.len > 0)
+	if(stack.len > 0)
+		stack.len = 0;
+	else if(shape.len > 0)
 		shape.len--;
 	cancel();
 }
@@ -509,7 +555,10 @@ destroy(void)
 void
 setcolor(int c)
 {
+	if(active >= 0)
+		shape.paths[active].color = c;
 	COLOR = c;
+	redraw(pixels);
 	printf("Selected Color %d\n", c);
 }
 
@@ -610,6 +659,36 @@ loadtxt(FILE *f)
 }
 
 void
+loadtheme(FILE *f)
+{
+	int id = 0;
+	char line[256];
+	if(!f)
+		return;
+	while(fgets(line, 256, f)) {
+		int i = 0;
+		while(line[i++]) {
+			if(line[i] != '#')
+				continue;
+			if(id == 0 || id > 4)
+				theme[id > 4 ? id - 4 : 0] = shex(line + i + 1, 6);
+			id++;
+		}
+	}
+	fclose(f);
+}
+
+void
+selectoption(int option)
+{
+	switch(option) {
+	case 0: setcolor(1); break;
+	case 1: setcolor(2); break;
+	case 2: setcolor(3); break;
+	}
+}
+
+void
 quit(void)
 {
 	free(pixels);
@@ -626,22 +705,28 @@ quit(void)
 void
 domouse(SDL_Event *event)
 {
-	Point2d touch = Pt2d(
-		(event->motion.x - (PAD * ZOOM)) / ZOOM,
-		(event->motion.y - (PAD * ZOOM)) / ZOOM);
-	setpt2d(&touch,
+	Point2d clamped, touch = Pt2d(
+						 (event->motion.x - (PAD * ZOOM)) / ZOOM,
+						 (event->motion.y - (PAD * ZOOM)) / ZOOM);
+	setpt2d(&clamped, touch.x, touch.y);
+	setpt2d(&clamped,
 		abs((touch.x + 8 / 2) / 8) * 8,
 		abs((touch.y + 8 / 2) / 8) * 8);
 	switch(event->type) {
 	case SDL_MOUSEBUTTONUP:
-		if(selection && !equpt2d(&touch, selection))
-			dragpoint(&touch);
-		else
-			addpoint(touch);
+		if(clamped.y >= VER * 8)
+			; /* interface */
+		else if(selection && !equpt2d(&clamped, selection))
+			dragpoint(&clamped);
+		else if(active == shape.len - 1)
+			addpoint(clamped);
 		selection = NULL;
 		break;
 	case SDL_MOUSEBUTTONDOWN:
-		selectpoint(&touch);
+		if(clamped.y >= VER * 8)
+			selectoption(abs(touch.x / 8) - 1);
+		else
+			selectpoint(&clamped);
 		break;
 	case SDL_MOUSEMOTION:
 		break;
@@ -711,6 +796,8 @@ main(int argc, char *argv[])
 
 	if(!init())
 		return error("Init", "Failure");
+
+	loadtheme(fopen("theme.svg", "r"));
 
 	if(argc > 1)
 		loadtxt(fopen(argv[1], "r"));

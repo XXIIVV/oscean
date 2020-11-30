@@ -167,36 +167,14 @@ main(int argc, char** argv)
 }</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/themes9.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/themes9.c.txt'>themes9.c.txt</a>(152 lines)</figcaption>
 </figure><h3>POSIX Filter</h3><p>The follow utility prints the 9 colors to stdout.</p><figure><pre>#include &lt;stdio.h&gt;
 
-#define BUFLEN 256
-
 int
-slen(char* s)
+cpos(char *s, char c)
 {
-	int n = 0;
-	while(s[n] != '\0' &amp;&amp; s[++n])
-		;
-	return n;
-}
-
-int
-cpos(char* s, char c)
-{
-	int i;
-	for(i = 0; i &lt; slen(s); i++)
-		if(s[i] == c)
-			return i;
+	int i = 0;
+	while(s[i])
+		if(s[i++] == c)
+			return i - 1;
 	return -1;
-}
-
-char*
-sstr(char* src, char* dest, int from, int to)
-{
-	int i;
-	char *a = (char*)src + from, *b = (char*)dest;
-	for(i = 0; i &lt; to; i++)
-		b[i] = a[i];
-	dest[to] = '\0';
-	return dest;
 }
 
 unsigned char
@@ -209,49 +187,59 @@ chex(char c)
 	return (c - '0') &amp; 0xF;
 }
 
-unsigned long
-shex(char* s)
+int
+shex(char *s, int len)
 {
-	int i, n = 0, l = slen(s);
-	for(i = 0; i &lt; l; ++i)
-		n |= (chex(s[i]) &lt;&lt; ((l - i - 1) * 4));
+	int i, n = 0;
+	for(i = 0; i &lt; len; ++i)
+		n |= (chex(s[i]) &lt;&lt; ((len - i - 1) * 4));
 	return n;
 }
 
+char *
+sstr(char *src, char *dst, int from, int to)
+{
+	int i;
+	char *a = (char *)src + from, *b = (char *)dst;
+	for(i = 0; i &lt; to; i++)
+		b[i] = a[i];
+	dst[to] = '\0';
+	return dst;
+}
+
 int
-error(char* name)
+error(char *name)
 {
 	printf("Error: %s\n", name);
 	return 0;
 }
 
 int
-parse(FILE* f)
+parse(FILE *f)
 {
 	int i, id = 0;
 	long theme[9];
-	char line[BUFLEN], hexs[BUFLEN];
-	while(fgets(line, BUFLEN, f)) {
+	char line[256], hexs[9][7];
+	while(fgets(line, 256, f)) {
 		int split = cpos(line, '#');
-		if(split &lt; 0 || id &gt; 9)
-			continue;
-		sstr(line, hexs, split, 7);
-		printf("%s ", hexs);
-		theme[id] = shex(hexs + 1);
-		id++;
+		if(split &gt;= 0) {
+			sstr(line + split + 1, hexs[id], 0, 6);
+			theme[id++] = shex(line + split + 1, 6);
+		}
+		if(id &gt;= 9)
+			break;
 	}
 	if(id != 9)
 		return error("Invalid theme");
-	for(i = 0; i &lt; 9; ++i) {
-		printf("%ld ", theme[i]);
-	}
+	for(i = 0; i &lt; 9; ++i)
+		printf("#%s = %ld\n", hexs[i], theme[i]);
 	return 1;
 }
 
 int
-main(int argc, char* argv[])
+main(int argc, char *argv[])
 {
-	FILE* input;
+	FILE *input;
 	if(argc == 2) {
 		input = fopen(argv[1], "rb");
 		if(input == NULL)
@@ -259,5 +247,6 @@ main(int argc, char* argv[])
 	} else
 		input = stdin;
 	return parse(input);
-}</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/themes.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/themes.c.txt'>themes.c.txt</a>(94 lines)</figcaption>
+}
+</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/themes.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/themes.c.txt'>themes.c.txt</a>(83 lines)</figcaption>
 </figure><ul><li><a href='https://github.com/hundredrabbits/themes' target='_blank'>sources</a></li><li><a href='https://ftrv.se/14' target='_blank'>theming 9front</a></li></ul><p><i>incoming(2)</i>: <a href='ronin.html'>ronin</a> <a href='left.html'>left</a> </p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
