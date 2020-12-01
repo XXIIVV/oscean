@@ -44,10 +44,8 @@ unsigned char icon1[] = {0x38, 0x44, 0x82, 0x82, 0x82, 0x44, 0x38, 0x00};
 unsigned char icon2[] = {0x02, 0x02, 0x04, 0x38, 0x40, 0x80, 0x80, 0x00};
 unsigned char icon3[] = {0x88, 0x00, 0x22, 0x00, 0x88, 0x00, 0x22, 0x00};
 unsigned char icon4[] = {0xaa, 0x54, 0xaa, 0x54, 0xaa, 0x54, 0xaa, 0x00};
-unsigned char icon5[] = {0x38, 0x7c, 0xfe, 0xfe, 0xfe, 0x7c, 0x38, 0x00};
-unsigned char icon6[] = {0xfa, 0x00, 0x00, 0xf6, 0x00, 0x00, 0xee, 0x00};
-unsigned char icon7[] = {0x92, 0x92, 0x92, 0x12, 0x82, 0x90, 0x92, 0x00};
-unsigned char icon8[] = {0x92, 0x54, 0x00, 0xc6, 0x00, 0x54, 0x92, 0x00};
+unsigned char icon5[] = {0x38, 0x7c, 0xee, 0xd6, 0xee, 0x7c, 0x38, 0x00};
+unsigned char icon6[] = {0x44, 0xba, 0x44, 0x44, 0x44, 0xba, 0x44, 0x00};
 
 /* helpers */
 
@@ -55,22 +53,6 @@ int
 distance(int ax, int ay, int bx, int by)
 {
 	return (bx - ax) * (bx - ax) + (by - ay) * (by - ay);
-}
-
-int
-spos(char *s, char *ss)
-{
-	int a = 0, b = 0;
-	while(s[a] != '\0') {
-		if(s[a] == ss[b]) {
-			if(ss[b + 1] == '\0')
-				return a - b;
-			b++;
-		} else
-			b = 0;
-		a++;
-	}
-	return -1;
 }
 
 unsigned char
@@ -92,14 +74,6 @@ shex(char *s, int len)
 	return n;
 }
 
-int
-getclr(int r, int g, int b)
-{
-	return r && g && b && r == g && g == b ? 1 : r > g && r > b ? 2
-											 : g > r && g > b   ? 3
-																: 0;
-}
-
 /* chr */
 
 void
@@ -119,25 +93,27 @@ rowchr(int x, int y)
 int
 getchr(int x, int y)
 {
-	int ch1, ch2;
-	int r = rowchr(x, y);
-	int px = x % 8;
+	int ch1, ch2, r = rowchr(x, y);
 	if(r < 0 || r > SZ - 8)
 		return 0;
-	ch1 = (chrbuf[r] >> (7 - px)) & 1;
-	ch2 = (chrbuf[r + 8] >> (7 - px)) & 1;
-	return ch1 && !ch2 ? 1 : !ch1 && ch2 ? 2
-						 : ch1 && ch2    ? 3
-										 : 0;
+	ch1 = (chrbuf[r] >> (7 - x % 8)) & 1;
+	ch2 = (chrbuf[r + 8] >> (7 - x % 8)) & 1;
+	if(ch1 && !ch2)
+		return 1;
+	if(!ch1 && ch2)
+		return 2;
+	if(ch1 && ch2)
+		return 3;
+	return 0;
 }
 
 void
 putchr(int x, int y, int color)
 {
 	int r = rowchr(x, y), px = x % 8;
-	if(x < 0 || x > HOR * 8)
+	if(x < 0 || x >= HOR * 8)
 		return;
-	if(y < 0 || y > VER * 8)
+	if(y < 0 || y >= VER * 8)
 		return;
 	if(!color) {
 		chrbuf[r] &= ~(1UL << (7 - px));
@@ -174,7 +150,7 @@ jagg(int x, int y)
 }
 
 int
-patt(int x, int y, int mode, int size)
+patt(int x, int y, int mode)
 {
 	if(mode == 1)
 		return ((x + y) % 4) == 0 && ((y - x) % 4) == 0;
@@ -182,12 +158,6 @@ patt(int x, int y, int mode, int size)
 		return ((x + y) % 2) == 0 && ((y - x) % 2) == 0;
 	if(mode == 3)
 		return 1;
-	if(mode == 4)
-		return y % size == 0;
-	if(mode == 5)
-		return x % size == 0;
-	if(mode == 6)
-		return (x + y) % size == 0 || (x - y) % size == 0;
 	return 0;
 }
 
@@ -197,9 +167,11 @@ fill(int x, int y, int mode, int size, int color)
 	int ox, oy;
 	for(ox = x - (size / 2); ox < x + size; ++ox)
 		for(oy = y - (size / 2); oy < y + size; ++oy)
-			if(mode == 7 && jagg(ox, oy))
+			if(distance(x, y, ox, oy) > size)
+				continue;
+			else if(mode == 4 && jagg(ox, oy))
 				putchr(ox, oy, 0);
-			else if(patt(ox, oy, mode, size) && distance(x, y, ox, oy) < size)
+			else if(patt(ox, oy, mode))
 				putchr(ox, oy, color);
 }
 
@@ -230,10 +202,10 @@ line(int ax, int ay, int bx, int by, int color)
 void
 clear(Uint32 *dst)
 {
-	int i, j;
-	for(i = 0; i < HEIGHT; i++)
-		for(j = 0; j < WIDTH; j++)
-			dst[i * WIDTH + j] = theme[0];
+	int v, h;
+	for(v = 0; v < HEIGHT; v++)
+		for(h = 0; h < WIDTH; h++)
+			dst[v * WIDTH + h] = theme[0];
 }
 
 void
@@ -265,7 +237,7 @@ drawicon(Uint32 *dst, int x, int y, unsigned char *icon, int color)
 	int v, h;
 	for(v = 0; v < 8; v++)
 		for(h = 0; h < 8; h++) {
-			int c = theme[(icon[v] >> h) & 0x1];
+			int c = theme[(icon[v] >> (8 - h)) & 0x1];
 			pixel(dst, x + h, y + v, c ? color : theme[0]);
 		}
 }
@@ -282,8 +254,6 @@ drawui(Uint32 *dst)
 	drawicon(dst, 6 * 8, bottom, icon4, theme[brush.mode == 2 ? 2 : 3]);
 	drawicon(dst, 7 * 8, bottom, icon5, theme[brush.mode == 3 ? 2 : 3]);
 	drawicon(dst, 8 * 8, bottom, icon6, theme[brush.mode == 4 ? 2 : 3]);
-	drawicon(dst, 9 * 8, bottom, icon7, theme[brush.mode == 5 ? 2 : 3]);
-	drawicon(dst, 10 * 8, bottom, icon8, theme[brush.mode == 7 ? 2 : 3]);
 }
 
 void
@@ -362,7 +332,7 @@ destroy(void)
 }
 
 void
-exportchr(Brush *b)
+exportchr(void)
 {
 	FILE *f = fopen("nasu-export.chr", "wb");
 	if(!fwrite(chrbuf, sizeof(chrbuf), 1, f))
@@ -375,44 +345,25 @@ void
 renderbmp(void)
 {
 	SDL_Surface *surface = SDL_GetWindowSurface(gWindow);
-	GUIDES = 0;
-	redraw(pixels);
 	SDL_RenderReadPixels(gRenderer,
 		NULL,
 		SDL_PIXELFORMAT_ARGB8888,
 		surface->pixels,
 		surface->pitch);
-	SDL_SaveBMP(surface, "nasu-render.bmp");
+	if(SDL_SaveBMP(surface, "nasu-render.bmp"))
+		printf("SDL_SaveBMP failed: %s\n", SDL_GetError());
+	else
+		puts("Rendered nasu-render.bmp");
 	SDL_FreeSurface(surface);
-	puts("Rendered nasu-render.bmp");
 }
 
 void
-loadchr(char *path)
+loadchr(FILE *f)
 {
-	FILE *f = fopen(path, "rb");
-	if(f == NULL)
+	if(!f)
 		error("Load", "Invalid input file");
 	if(!fread(chrbuf, sizeof(chrbuf), 1, f))
 		error("Load", "Invalid input size");
-	fclose(f);
-}
-
-void
-loadbmp(char *path)
-{
-	FILE *f = fopen(path, "rb");
-	int i, width = HOR * 8, height = VER * 8, size = 3 * width * height;
-	unsigned char header[54];
-	unsigned char data[4096 * 256];
-	if(!fread(header, sizeof(unsigned char), 54, f))
-		error("Load", "Invalid bmp header");
-	if(!fread(data, sizeof(unsigned char), size, f))
-		error("Load", "Invalid bmp body");
-	for(i = 0; i < size; i += 3) {
-		int x = (i / 3) % width, y = height - (i / 3) / width - 1;
-		putchr(x, y, getclr(data[i + 2], data[i + 1], data[i]));
-	}
 	fclose(f);
 }
 
@@ -448,8 +399,6 @@ selectoption(int option)
 	case 6: setmode(&brush, 2); break;
 	case 7: setmode(&brush, 3); break;
 	case 8: setmode(&brush, 4); break;
-	case 9: setmode(&brush, 5); break;
-	case 10: setmode(&brush, 7); break;
 	}
 }
 
@@ -495,7 +444,7 @@ domouse(SDL_Event *event, Brush *b)
 		b->py = (event->motion.y - (PAD * ZOOM)) / ZOOM;
 		if(b->py >= VER * 8)
 			selectoption(abs(b->px / 8));
-		if(b->down) {
+		if(b->down && b->mode == 0) {
 			putchr(b->px - 1, b->py, b->erase ? 0 : b->color);
 			redraw(pixels);
 		}
@@ -524,23 +473,20 @@ dokey(SDL_Event *event, Brush *b)
 	case SDLK_PLUS: modzoom(1); break;
 	case SDLK_UNDERSCORE:
 	case SDLK_MINUS: modzoom(-1); break;
-	case SDLK_1: setmode(b, 0); break;
-	case SDLK_2: setmode(b, 1); break;
-	case SDLK_3: setmode(b, 2); break;
-	case SDLK_4: setmode(b, 3); break;
-	case SDLK_5: setmode(b, 4); break;
-	case SDLK_6: setmode(b, 5); break;
-	case SDLK_7: setmode(b, 6); break;
-	case SDLK_e: exportchr(b); break;
+	case SDLK_1: setcolor(b, 1); break;
+	case SDLK_2: setcolor(b, 2); break;
+	case SDLK_3: setcolor(b, 3); break;
+	case SDLK_4: setcolor(b, 0); break;
+	case SDLK_e: exportchr(); break;
 	case SDLK_r: renderbmp(); break;
-	case SDLK_a: setcolor(b, 0); break;
-	case SDLK_s: setcolor(b, 1); break;
-	case SDLK_d: setcolor(b, 2); break;
-	case SDLK_f: setcolor(b, 3); break;
+	case SDLK_a: setmode(b, 0); break;
+	case SDLK_s: setmode(b, 1); break;
+	case SDLK_d: setmode(b, 2); break;
+	case SDLK_f: setmode(b, 3); break;
+	case SDLK_g: setmode(b, 4); break;
 	case SDLK_h: toggleguide(); break;
 	case SDLK_z: modsize(b, -1); break;
 	case SDLK_x: modsize(b, 1); break;
-	case SDLK_c: setmode(b, 7); break;
 	case SDLK_n: destroy(); break;
 	}
 }
@@ -579,27 +525,18 @@ int
 main(int argc, char **argv)
 {
 	int ticknext = 0;
-
 	brush.erase = 0;
 	brush.down = 0;
 	brush.color = 1;
 	brush.size = 8;
 	brush.mode = 0;
-
 	if(!init())
 		return error("Init", "Failure");
-
 	loadtheme(fopen("theme.svg", "r"));
-
-	if(argc > 1 && spos(argv[1], ".bmp") > -1)
-		loadbmp(argv[1]);
-	else if(argc > 1 && spos(argv[1], ".chr") > -1)
-		loadchr(argv[1]);
-	else
-		newchr();
-
+	newchr();
+	if(argc > 1)
+		loadchr(fopen(argv[1], "r"));
 	redraw(pixels);
-
 	while(1) {
 		int tick = SDL_GetTicks();
 		SDL_Event event;
