@@ -15,8 +15,9 @@ WITH REGARD TO THIS SOFTWARE.
 #define HOR 32
 #define VER 16
 #define PAD 8
-
 #define SZ (HOR * VER * 16)
+
+typedef unsigned char Uint8;
 
 typedef struct Brush {
 	int x, y, px, py;
@@ -24,28 +25,33 @@ typedef struct Brush {
 	int down, erase;
 } Brush;
 
-int theme[] = {0x000000, 0x72DEC2, 0xFFFFFF, 0x444444, 0x111111};
 int WIDTH = 8 * HOR + PAD * 2;
 int HEIGHT = 8 * (VER + 2) + PAD * 2;
 int FPS = 30, GUIDES = 1, ZOOM = 2;
 
-unsigned char chrbuf[SZ];
+Brush brush;
+
+Uint32 theme[] = {
+	0x000000,
+	0x72DEC2,
+	0xFFFFFF,
+	0x444444,
+	0x111111};
+
+Uint8 icons[7][8] = {
+	{0x38, 0x7c, 0xfe, 0xfe, 0xfe, 0x7c, 0x38, 0x00},
+	{0x38, 0x44, 0x82, 0x82, 0x82, 0x44, 0x38, 0x00},
+	{0x02, 0x02, 0x04, 0x38, 0x40, 0x80, 0x80, 0x00},
+	{0x88, 0x00, 0x22, 0x00, 0x88, 0x00, 0x22, 0x00},
+	{0xaa, 0x54, 0xaa, 0x54, 0xaa, 0x54, 0xaa, 0x00},
+	{0x38, 0x7c, 0xee, 0xd6, 0xee, 0x7c, 0x38, 0x00},
+	{0x44, 0xba, 0x44, 0x44, 0x44, 0xba, 0x44, 0x00}};
+
+Uint8 chrbuf[SZ];
 SDL_Window *gWindow;
 SDL_Renderer *gRenderer;
 SDL_Texture *gTexture;
 Uint32 *pixels;
-
-Brush brush;
-
-/* Icons */
-
-unsigned char icon0[] = {0x38, 0x7c, 0xfe, 0xfe, 0xfe, 0x7c, 0x38, 0x00};
-unsigned char icon1[] = {0x38, 0x44, 0x82, 0x82, 0x82, 0x44, 0x38, 0x00};
-unsigned char icon2[] = {0x02, 0x02, 0x04, 0x38, 0x40, 0x80, 0x80, 0x00};
-unsigned char icon3[] = {0x88, 0x00, 0x22, 0x00, 0x88, 0x00, 0x22, 0x00};
-unsigned char icon4[] = {0xaa, 0x54, 0xaa, 0x54, 0xaa, 0x54, 0xaa, 0x00};
-unsigned char icon5[] = {0x38, 0x7c, 0xee, 0xd6, 0xee, 0x7c, 0x38, 0x00};
-unsigned char icon6[] = {0x44, 0xba, 0x44, 0x44, 0x44, 0xba, 0x44, 0x00};
 
 /* helpers */
 
@@ -55,7 +61,7 @@ distance(int ax, int ay, int bx, int by)
 	return (bx - ax) * (bx - ax) + (by - ay) * (by - ay);
 }
 
-unsigned char
+Uint8
 chex(char c)
 {
 	if(c >= 'a' && c <= 'f')
@@ -110,24 +116,19 @@ getchr(int x, int y)
 void
 putchr(int x, int y, int color)
 {
-	int r = rowchr(x, y), px = x % 8;
+	int row = rowchr(x, y), col = x % 8;
 	if(x < 0 || x >= HOR * 8)
 		return;
 	if(y < 0 || y >= VER * 8)
 		return;
-	if(!color) {
-		chrbuf[r] &= ~(1UL << (7 - px));
-		chrbuf[r + 8] &= ~(1UL << (7 - px));
-	} else if(color == 1) {
-		chrbuf[r] |= 1UL << (7 - px);
-		chrbuf[r + 8] &= ~(1UL << (7 - px));
-	} else if(color == 2) {
-		chrbuf[r] &= ~(1UL << (7 - px));
-		chrbuf[r + 8] |= 1UL << (7 - px);
-	} else if(color == 3) {
-		chrbuf[r] |= 1UL << (7 - px);
-		chrbuf[r + 8] |= 1UL << (7 - px);
-	}
+	if(color == 0 || color == 2)
+		chrbuf[row] &= ~(1UL << (7 - col));
+	else
+		chrbuf[row] |= 1UL << (7 - col);
+	if(color == 0 || color == 1)
+		chrbuf[row + 8] &= ~(1UL << (7 - col));
+	else
+		chrbuf[row + 8] |= 1UL << (7 - col);
 }
 
 int
@@ -209,10 +210,10 @@ clear(Uint32 *dst)
 }
 
 void
-pixel(Uint32 *dst, int x, int y, int color)
+putpixel(Uint32 *dst, int x, int y, int color)
 {
 	if(x >= 0 && x < WIDTH - 8 && y >= 0 && y < HEIGHT - 8)
-		dst[(y + PAD) * WIDTH + (x + PAD)] = color;
+		dst[(y + PAD) * WIDTH + (x + PAD)] = theme[color];
 }
 
 void
@@ -227,18 +228,18 @@ drawchr(Uint32 *dst, int x, int y, int id)
 			int ch2 = chrbuf[offset + v + 8];
 			int clr = ((ch1 >> h) & 0x1) + (((ch2 >> h) & 0x1) << 1);
 			int guides = GUIDES && !clr && (x + y) % 2;
-			pixel(dst, px, py, theme[guides ? 4 : clr]);
+			putpixel(dst, px, py, guides ? 4 : clr);
 		}
 }
 
 void
-drawicon(Uint32 *dst, int x, int y, unsigned char *icon, int color)
+drawicon(Uint32 *dst, int x, int y, Uint8 *icon, int color)
 {
 	int v, h;
 	for(v = 0; v < 8; v++)
 		for(h = 0; h < 8; h++) {
-			int c = theme[(icon[v] >> (8 - h)) & 0x1];
-			pixel(dst, x + h, y + v, c ? color : theme[0]);
+			int c = (icon[v] >> (8 - h)) & 0x1;
+			putpixel(dst, x + h, y + v, c ? color : 0);
 		}
 }
 
@@ -246,14 +247,14 @@ void
 drawui(Uint32 *dst)
 {
 	int bottom = VER * 8 + 8;
-	drawicon(dst, 0, bottom, brush.color == 1 ? icon1 : icon0, theme[1]);
-	drawicon(dst, 8, bottom, brush.color == 2 ? icon1 : icon0, theme[2]);
-	drawicon(dst, 16, bottom, brush.color == 3 ? icon1 : icon0, theme[3]);
-	drawicon(dst, 4 * 8, bottom, icon2, theme[brush.mode == 0 ? 2 : 3]);
-	drawicon(dst, 5 * 8, bottom, icon3, theme[brush.mode == 1 ? 2 : 3]);
-	drawicon(dst, 6 * 8, bottom, icon4, theme[brush.mode == 2 ? 2 : 3]);
-	drawicon(dst, 7 * 8, bottom, icon5, theme[brush.mode == 3 ? 2 : 3]);
-	drawicon(dst, 8 * 8, bottom, icon6, theme[brush.mode == 4 ? 2 : 3]);
+	drawicon(dst, 0, bottom, brush.color == 1 ? icons[1] : icons[0], 1);
+	drawicon(dst, 8, bottom, brush.color == 2 ? icons[1] : icons[0], 2);
+	drawicon(dst, 16, bottom, brush.color == 3 ? icons[1] : icons[0], 3);
+	drawicon(dst, 4 * 8, bottom, icons[2], brush.mode == 0 ? 2 : 3);
+	drawicon(dst, 5 * 8, bottom, icons[3], brush.mode == 1 ? 2 : 3);
+	drawicon(dst, 6 * 8, bottom, icons[4], brush.mode == 2 ? 2 : 3);
+	drawicon(dst, 7 * 8, bottom, icons[5], brush.mode == 3 ? 2 : 3);
+	drawicon(dst, 8 * 8, bottom, icons[6], brush.mode == 4 ? 2 : 3);
 }
 
 void
@@ -528,7 +529,7 @@ main(int argc, char **argv)
 	brush.erase = 0;
 	brush.down = 0;
 	brush.color = 1;
-	brush.size = 8;
+	brush.size = 10;
 	brush.mode = 0;
 	if(!init())
 		return error("Init", "Failure");

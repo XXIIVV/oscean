@@ -23,10 +23,17 @@ WITH REGARD TO THIS SOFTWARE.
 #define SZ (HOR * VER * 16)
 #define PI 3.14159265358979323846
 
-int theme[] = {0x000000, 0x72DEC2, 0xFFFFFF, 0x444444, 0xffb545};
 int WIDTH = 8 * HOR + PAD * 2;
 int HEIGHT = 8 * VER + PAD * 2;
 int FPS = 30, GUIDES = 1, ZOOM = 2;
+
+Uint32 theme[] = {
+	0x000000,
+	0x72DEC2,
+	0xFFFFFF,
+	0x444444,
+	0xffb545};
+
 SDL_Window *gWindow = NULL;
 SDL_Renderer *gRenderer = NULL;
 SDL_Texture *gTexture = NULL;
@@ -154,13 +161,17 @@ shex(char *s, int len)
 	return n;
 }
 
-/* geometry */
-
-double
-rad2deg(double rad)
+int
+colortheme(Uint32 hex)
 {
-	return rad * (180 / PI);
+	int i = 0;
+	for(i = 0; i < 5; ++i)
+		if(theme[i] == hex)
+			return i;
+	return 0;
 }
+
+/* geometry */
 
 double
 deg2rad(double deg)
@@ -168,48 +179,30 @@ deg2rad(double deg)
 	return deg * (PI / 180);
 }
 
-double
-ptangledeg(Point2d a, Point2d b)
-{
-	return rad2deg(atan2(b.y - a.y, b.x - a.x));
-}
-
-double
-ptangle(Point2d a, Point2d b)
-{
-	return atan2(b.y - a.y, b.x - a.x);
-}
-
-double
-ptdistance(Point2d a, Point2d b)
-{
-	return sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
-}
-
-Point2d
-rotpt2d(Point2d c, Point2d p0, double deg)
-{
-	double a = ptangle(c, p0) + deg2rad(deg);
-	double r = ptdistance(c, p0);
-	return Pt2d(c.x + r * cos(a), c.y + r * sin(a));
-}
-
-Point3d
-addpt3d(Point3d *a, Point3d *b)
-{
-	return Pt3d(a->x + b->x, a->y + b->y, a->z + b->z);
-}
-
-/* scene */
-
 Point3d *
-setvertex(Point3d *v, double x, double y, double z)
+set3d(Point3d *v, double x, double y, double z)
 {
 	v->x = x;
 	v->y = y;
 	v->z = z;
 	return v;
 }
+
+Point2d
+rot2d(Point2d a, Point2d b, double deg)
+{
+	double angle = atan2(b.y - a.y, b.x - a.x) + deg2rad(deg);
+	double r = sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
+	return Pt2d(a.x + r * cos(angle), a.y + r * sin(angle));
+}
+
+Point3d
+add3d(Point3d *a, Point3d *b)
+{
+	return Pt3d(a->x + b->x, a->y + b->y, a->z + b->z);
+}
+
+/* scene */
 
 Point3d *
 addvertex(Mesh *m, double x, double y, double z)
@@ -218,7 +211,7 @@ addvertex(Mesh *m, double x, double y, double z)
 		printf("Warning: Reached vertex limit\n");
 		return NULL;
 	}
-	return setvertex(&m->vertices[m->verticeslen++], x, y, z);
+	return set3d(&m->vertices[m->verticeslen++], x, y, z);
 }
 
 Edge *
@@ -254,17 +247,17 @@ Point3d *
 rotvertex(Point3d *o, Point3d *v, double pitch, double yaw, double roll)
 {
 	if(pitch) {
-		Point2d r = rotpt2d(Pt2d(o->y, o->z), Pt2d(v->y, v->z), pitch);
+		Point2d r = rot2d(Pt2d(o->y, o->z), Pt2d(v->y, v->z), pitch);
 		v->y = r.x;
 		v->z = r.y;
 	}
 	if(yaw) {
-		Point2d r = rotpt2d(Pt2d(o->x, o->z), Pt2d(v->x, v->z), yaw);
+		Point2d r = rot2d(Pt2d(o->x, o->z), Pt2d(v->x, v->z), yaw);
 		v->x = r.x;
 		v->z = r.y;
 	}
 	if(roll) {
-		Point2d r = rotpt2d(Pt2d(o->x, o->y), Pt2d(v->x, v->y), roll);
+		Point2d r = rot2d(Pt2d(o->x, o->y), Pt2d(v->x, v->y), roll);
 		v->x = r.x;
 		v->y = r.y;
 	}
@@ -290,7 +283,7 @@ translate(Mesh *m, double x, double y, double z)
 {
 	int i;
 	for(i = 0; i < m->verticeslen; i++)
-		setvertex(&m->vertices[i],
+		set3d(&m->vertices[i],
 			m->vertices[i].x + x,
 			m->vertices[i].y + y,
 			m->vertices[i].z + z);
@@ -302,7 +295,7 @@ scale(Mesh *m, double x, double y, double z)
 {
 	int i;
 	for(i = 0; i < m->verticeslen; i++)
-		setvertex(&m->vertices[i],
+		set3d(&m->vertices[i],
 			m->vertices[i].x * x,
 			m->vertices[i].y * y,
 			m->vertices[i].z * z);
@@ -428,11 +421,23 @@ clear(Uint32 *dst)
 			dst[i * WIDTH + j] = theme[0];
 }
 
-void
-pixel(Uint32 *dst, int x, int y, int color)
+int
+keypixel(int x, int y)
 {
-	if(x >= 0 && x < WIDTH * 2 && y >= 0 && y < HEIGHT * 2)
-		dst[(y + PAD) * WIDTH + (x + PAD)] = theme[color];
+	return (y + PAD) * WIDTH + (x + PAD);
+}
+
+int
+getpixel(Uint32 *dst, int x, int y)
+{
+	return dst[keypixel(x, y)];
+}
+
+void
+putpixel(Uint32 *dst, int x, int y, int color)
+{
+	if(x >= 0 && x < WIDTH - 8 && y >= 0 && y < HEIGHT - 8)
+		dst[keypixel(x, y)] = theme[color];
 }
 
 void
@@ -442,7 +447,7 @@ line(Uint32 *dst, Point p0, Point p1, int color)
 	double dy = -abs(p1.y - p0.y), sy = p0.y < p1.y ? 1 : -1;
 	double err = dx + dy, e2;
 	for(;;) {
-		pixel(dst, p0.x, p0.y, color);
+		putpixel(dst, p0.x, p0.y, color);
 		if(p0.x == p1.x && p0.y == p1.y)
 			break;
 		e2 = 2 * err;
@@ -478,13 +483,13 @@ redraw(Uint32 *dst)
 		Mesh *m = &scn.meshes[i];
 		for(j = 0; j < m->edgeslen; j++) {
 			Edge *edge = &m->edges[j];
-			Point3d a = addpt3d(&m->vertices[edge->a], &m->position);
-			Point3d b = addpt3d(&m->vertices[edge->b], &m->position);
+			Point3d a = add3d(&m->vertices[edge->a], &m->position);
+			Point3d b = add3d(&m->vertices[edge->b], &m->position);
 			rotvertex(&scn.origin, &a, cam.pitch, cam.yaw, cam.roll);
 			rotvertex(&scn.origin, &b, cam.pitch, cam.yaw, cam.roll);
 			line(dst,
-				project(&cam, addpt3d(&scn.origin, &a)),
-				project(&cam, addpt3d(&scn.origin, &b)),
+				project(&cam, add3d(&scn.origin, &a)),
+				project(&cam, add3d(&scn.origin, &b)),
 				m->color);
 		}
 	}
@@ -515,16 +520,16 @@ modzoom(int mod)
 }
 
 void
-toggleprojection(Scene *s, Camera *c)
+toggleprojection(Camera *c)
 {
 	c->projection = c->projection == ISOMETRIC ? PERSPECTIVE : ISOMETRIC;
 	redraw(pixels);
 }
 
 void
-toggleguides(void)
+setguides(int v)
 {
-	GUIDES = !GUIDES;
+	GUIDES = v;
 	redraw(pixels);
 }
 
@@ -559,19 +564,56 @@ modrange(int mod)
 }
 
 void
+putchr(Uint8 *chrbuf, int row, int col, int color)
+{
+	if(row < 0 || row > SZ - 8)
+		return;
+	if(color == 0 || color == 2)
+		chrbuf[row] &= ~(1UL << (7 - col));
+	else
+		chrbuf[row] |= 1UL << (7 - col);
+	if(color == 0 || color == 1)
+		chrbuf[row + 8] &= ~(1UL << (7 - col));
+	else
+		chrbuf[row + 8] |= 1UL << (7 - col);
+}
+
+void
+exportchr(void)
+{
+	int h, v, x, y;
+	Uint8 chrbuf[SZ];
+	FILE *f = fopen("dotgrid-export.chr", "wb");
+	setguides(0);
+	for(v = 0; v < VER; ++v)
+		for(h = 0; h < HOR; ++h)
+			for(y = 0; y < 8; ++y)
+				for(x = 0; x < 8; ++x)
+					putchr(chrbuf,
+						y + (h + v * HOR) * 16,
+						x,
+						colortheme(getpixel(pixels, h * 8 + x, v * 8 + y)));
+	if(!fwrite(chrbuf, sizeof(chrbuf), 1, f))
+		error("Save", "Invalid output file");
+	fclose(f);
+	puts("Exported dotgrid-export.chr");
+}
+
+void
 renderbmp(void)
 {
 	SDL_Surface *surface = SDL_GetWindowSurface(gWindow);
-	GUIDES = 0;
-	redraw(pixels);
+	setguides(0);
 	SDL_RenderReadPixels(gRenderer,
 		NULL,
 		SDL_PIXELFORMAT_ARGB8888,
 		surface->pixels,
 		surface->pitch);
-	SDL_SaveBMP(surface, "moogle-render.bmp");
+	if(SDL_SaveBMP(surface, "moogle-render.bmp"))
+		printf("SDL_SaveBMP failed: %s\n", SDL_GetError());
+	else
+		puts("Rendered moogle-render.bmp");
 	SDL_FreeSurface(surface);
-	puts("Rendered moogle-render.bmp");
 }
 
 void
@@ -616,9 +658,10 @@ dokey(SDL_Event *event)
 	case SDLK_PLUS: modzoom(1); break;
 	case SDLK_UNDERSCORE:
 	case SDLK_MINUS: modzoom(-1); break;
-	case SDLK_TAB: toggleprojection(&scn, &cam); break;
+	case SDLK_TAB: toggleprojection(&cam); break;
+	case SDLK_e: exportchr(); break;
 	case SDLK_r: renderbmp(); break;
-	case SDLK_h: toggleguides(); break;
+	case SDLK_h: setguides(!GUIDES); break;
 	case SDLK_UP:
 	case SDLK_w: modpitch(3.0); break;
 	case SDLK_LEFT: modroll(-3.0); break;
@@ -666,20 +709,14 @@ int
 main(void)
 {
 	int ticknext = 0;
-
 	scn = Sc3d(0, 0, 0);
 	cam = Cm3d(120, 20, 0);
-
 	if(!init())
 		return error("Init", "Failure");
-
 	loadtheme(fopen("theme.svg", "r"));
-
 	addfrustum(&scn, 12, 8, 10, 8);
-	color(addprism(&scn, 12, 8, 10), 4);
-
+	color(addprism(&scn, 12, 8, 10), 2);
 	redraw(pixels);
-
 	while(1) {
 		int tick = SDL_GetTicks();
 		SDL_Event event;

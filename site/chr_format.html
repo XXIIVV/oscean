@@ -1,1 +1,71 @@
-<!DOCTYPE html><html lang='en'></head><meta charset='utf-8'><meta name='description' content='Character Memory format of Famicom roms spritesheets.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV — chr format</title></head><body><header><a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='raspberry.html'>raspberry</a></li><li><a href='microbit.html'>microbit</a></li><li><a href='reform.html'>reform</a></li><li><a href='playground.html'>playground</a></li><li><a href='norns.html'>norns</a></li><li><a href='monome.html'>monome</a></li><li><a href='macintosh.html'>macintosh</a></li><li><a href='famicom.html'>famicom/</a></li></ul><ul><li><a href='chr_format.html'>chr format/</a></li><li><a href='lin6.html'>lin6</a></li></ul><ul></ul></nav><main><figure><img src='../media/diary/726.jpg' alt='Mario and Donsol sprites picture' width='900'/><figcaption>20P11 — Mario and Donsol sprites</figcaption></figure><h2>Character Memory format of Famicom roms spritesheets.</h2><p>The chr file format contains a series of bits equivalent to pixels for each tile in the spreadsheet of a rom. A chr tile is 8x8 pixels, the data for each tile is made up of 128 bits, where the first 64 bits are the first color, the next 64 bits the second color, and where the colors overlap result in the third color, for a total of 4 colors including the background.</p><pre>0000 1e3f 3f3f 3f1e 78fc fcfc fc78 0000</pre><p>For a simple editor and <a href='ansi_c.html'>ANSI C</a> implementation, see <a href='nasu.html'>Nasu</a>.</p><p><i>incoming(4)</i>: <a href='dotgrid.html'>dotgrid</a> <a href='nasu.html'>nasu</a> <a href='moogle.html'>moogle</a> <a href='meta.html'>meta</a> </p><p><i>Last update on <a href='tracker.html'>20P11</a>, edited 5 times. +24/32fh</i><code style='float:right; font-size:80%'>-----+</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
+<!DOCTYPE html><html lang='en'></head><meta charset='utf-8'><meta name='description' content='Character Memory format of Famicom roms spritesheets.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV — chr format</title></head><body><header><a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='raspberry.html'>raspberry</a></li><li><a href='microbit.html'>microbit</a></li><li><a href='reform.html'>reform</a></li><li><a href='playground.html'>playground</a></li><li><a href='norns.html'>norns</a></li><li><a href='monome.html'>monome</a></li><li><a href='macintosh.html'>macintosh</a></li><li><a href='famicom.html'>famicom/</a></li></ul><ul><li><a href='chr_format.html'>chr format/</a></li><li><a href='lin6.html'>lin6</a></li></ul><ul></ul></nav><main><figure><img src='../media/diary/726.jpg' alt='Mario and Donsol sprites picture' width='900'/><figcaption>20P11 — Mario and Donsol sprites</figcaption></figure><h2>Character Memory format of Famicom roms spritesheets.</h2><p>The chr file format contains a series of bits equivalent to pixels for each tile in the spreadsheet of a rom. A chr tile is 8x8 pixels, the data for each tile is made up of 128 bits, where the first 64 bits are the first color, the next 64 bits the second color, and where the colors overlap result in the third color, for a total of 4 colors including the background.</p><pre>0000 1e3f 3f3f 3f1e 78fc fcfc fc78 0000</pre><p>For a simple editor and <a href='ansi_c.html'>ANSI C</a> implementation, see <a href='nasu.html'>Nasu</a>.</p><figure><h3>C Integration</h3>
+
+<pre>
+typedef unsigned char Uint8;
+Uint8 chrbuf[HOR * VER * 16];
+fread(chrbuf, sizeof(chrbuf), 1, f)
+fwrite(chrbuf, sizeof(chrbuf), 1, f)
+</pre>
+
+<h3>Read/Write</h3>
+
+<pre>
+void
+putchr(Uint8 *chrbuf, int row, int col, int color)
+{
+	if(row < 0 || row > SZ - 8)
+		return;
+	if(color == 0 || color == 2)
+		chrbuf[row] &= ~(1UL << (7 - col));
+	else
+		chrbuf[row] |= 1UL << (7 - col);
+	if(color == 0 || color == 1)
+		chrbuf[row + 8] &= ~(1UL << (7 - col));
+	else
+		chrbuf[row + 8] |= 1UL << (7 - col);
+}
+
+void
+exportchr(void)
+{
+	int h, v, x, y;
+	Uint8 chrbuf[SZ];
+	FILE *f = fopen("export.chr", "wb");
+	for(v = 0; v < VER; ++v)
+		for(h = 0; h < HOR; ++h)
+			for(y = 0; y < 8; ++y)
+				for(x = 0; x < 8; ++x)
+					putchr(chrbuf,
+						y + (h + v * HOR) * 16,
+						x,
+						colortheme(getpixel(pixels, h * 8 + x, v * 8 + y)));
+	if(!fwrite(chrbuf, sizeof(chrbuf), 1, f))
+		error("Save", "Export failure");
+	fclose(f);
+	puts("Export complete");
+}
+</pre>
+
+<h3>Writing an icon</h3>
+
+<p>Icons are 8x8 monochrome bit maps, or half of a chr.</p>
+
+<pre>
+Uint8 icon[8] = {0x38, 0x7c, 0xfe, 0xfe, 0xfe, 0x7c, 0x38, 0x00};
+</pre>
+
+<p>Icons can be drawn like: </p>
+
+<pre>
+void
+drawicon(Uint32 *dst, int x, int y, Uint8 *icon, int color)
+{
+	int v, h;
+	for(v = 0; v < 8; v++)
+		for(h = 0; h < 8; h++) {
+			int c = (icon[v] >> (8 - h)) & 0x1;
+			putpixel(dst, x + h, y + v, c ? color : 0);
+		}
+}
+</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/chr_format.htm' target='_blank'>edit</a> to <a href='../src/inc/html/chr_format.htm'>chr_format.htm</a>(69 lines)</figcaption>
+</figure><p><i>incoming(4)</i>: <a href='dotgrid.html'>dotgrid</a> <a href='nasu.html'>nasu</a> <a href='moogle.html'>moogle</a> <a href='meta.html'>meta</a> </p><p><i>Last update on <a href='tracker.html'>20P11</a>, edited 5 times. +24/32fh</i><code style='float:right; font-size:80%'>-----+</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
