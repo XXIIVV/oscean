@@ -295,7 +295,7 @@ setcolor(Brush *b, int c)
 {
 	b->color = c;
 	redraw(pixels);
-	printf("Set Color %d\n", b->color);
+	printf("Set Color: %d\n", b->color);
 }
 
 void
@@ -303,7 +303,7 @@ setmode(Brush *b, int m)
 {
 	b->mode = m;
 	redraw(pixels);
-	printf("Set Mode %d\n", b->mode);
+	printf("Set Mode: %d\n", b->mode);
 }
 
 void
@@ -313,15 +313,15 @@ modsize(Brush *b, int mod)
 	if(res > 0 && res < 30)
 		b->size = res;
 	redraw(pixels);
-	printf("Set Size %d\n", b->size);
+	printf("Set Size: %d\n", b->size);
 }
 
 void
-toggleguide(void)
+setguides(int v)
 {
-	GUIDES = !GUIDES;
+	GUIDES = v;
 	redraw(pixels);
-	printf("%s Guides\n", GUIDES ? "Show" : "Hide");
+	printf("Set Guide: %s \n", GUIDES ? "Show" : "Hide");
 }
 
 void
@@ -332,17 +332,18 @@ destroy(void)
 	puts("Destroy");
 }
 
-void
+int
 exportchr(void)
 {
 	FILE *f = fopen("nasu-export.chr", "wb");
 	if(!fwrite(chrbuf, sizeof(chrbuf), 1, f))
-		error("Save", "Invalid output file");
+		return error("Export", "Failure");
 	fclose(f);
-	puts("Exported nasu-export.chr");
+	puts("Export: nasu-export.chr");
+	return 1;
 }
 
-void
+int
 renderbmp(void)
 {
 	SDL_Surface *surface = SDL_GetWindowSurface(gWindow);
@@ -352,20 +353,22 @@ renderbmp(void)
 		surface->pixels,
 		surface->pitch);
 	if(SDL_SaveBMP(surface, "nasu-render.bmp"))
-		printf("SDL_SaveBMP failed: %s\n", SDL_GetError());
-	else
-		puts("Rendered nasu-render.bmp");
+		return error("Render", "Failed");
+	puts("Render: nasu-render.bmp");
 	SDL_FreeSurface(surface);
+	return 1;
 }
 
-void
+int
 loadchr(FILE *f)
 {
 	if(!f)
-		error("Load", "Invalid input file");
+		return error("Load", "Invalid input file");
 	if(!fread(chrbuf, sizeof(chrbuf), 1, f))
-		error("Load", "Invalid input size");
+		return error("Load", "Invalid input size");
+	puts("Load: Complete");
 	fclose(f);
+	return 1;
 }
 
 void
@@ -385,6 +388,7 @@ loadtheme(FILE *f)
 			id++;
 		}
 	}
+	puts("Theme: Complete");
 	fclose(f);
 }
 
@@ -485,7 +489,7 @@ dokey(SDL_Event *event, Brush *b)
 	case SDLK_d: setmode(b, 2); break;
 	case SDLK_f: setmode(b, 3); break;
 	case SDLK_g: setmode(b, 4); break;
-	case SDLK_h: toggleguide(); break;
+	case SDLK_h: setguides(!GUIDES); break;
 	case SDLK_z: modsize(b, -1); break;
 	case SDLK_x: modsize(b, 1); break;
 	case SDLK_n: destroy(); break;

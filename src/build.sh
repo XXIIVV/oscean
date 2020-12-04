@@ -2,7 +2,6 @@
 
 # Lint
 clang-format -i main.c
-clang-format -i helpers.h
 
 # Cleanup
 rm -f ./oscean

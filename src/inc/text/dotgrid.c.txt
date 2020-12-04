@@ -1,5 +1,6 @@
 #include <SDL2/SDL.h>
 #include <stdio.h>
+#include <math.h>
 
 /* 
 Copyright (c) 2020 Devine Lu Linvega
@@ -25,7 +26,7 @@ typedef struct {
 
 typedef struct {
 	int color, selection;
-	Point2d *touch;
+	Point2d *touch, origin;
 } Brush;
 
 typedef enum {
@@ -34,7 +35,8 @@ typedef enum {
 	ARC,
 	BEZIER,
 	RECTANGLE,
-	ELLIPSE
+	ELLIPSE,
+	TRANSLATE
 } LineType;
 
 typedef struct {
@@ -65,12 +67,15 @@ Uint32 theme[] = {
 	0x444444,
 	0xffb545};
 
-Uint8 icons[5][8] = {
+Uint8 icons[8][8] = {
 	{0x38, 0x7c, 0xfe, 0xfe, 0xfe, 0x7c, 0x38, 0x00},
 	{0x38, 0x44, 0x82, 0x82, 0x82, 0x44, 0x38, 0x00},
 	{0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x00},
 	{0x06, 0x18, 0x20, 0x40, 0x40, 0x80, 0x80, 0x00},
-	{0x02, 0x02, 0x04, 0x38, 0x40, 0x80, 0x80, 0x00}};
+	{0x02, 0x02, 0x04, 0x38, 0x40, 0x80, 0x80, 0x00},
+	{0xfe, 0x82, 0x82, 0x82, 0x82, 0x82, 0xfe, 0x00},
+	{0x1e, 0x06, 0x0a, 0x12, 0x20, 0x40, 0x80, 0x00},
+	{0x06, 0x18, 0x22, 0x40, 0x42, 0x80, 0xaa, 0x00}};
 
 SDL_Window *gWindow = NULL;
 SDL_Renderer *gRenderer = NULL;
@@ -109,6 +114,12 @@ mag2d(Point2d *a, int step)
 	return setpt2d(a,
 		abs((a->x + step / 2) / step) * step,
 		abs((a->y + step / 2) / step) * step);
+}
+
+Point2d
+add2d(Point2d *a, Point2d *b)
+{
+	return Pt2d(a->x + b->x, a->y + b->y);
 }
 
 int
@@ -188,6 +199,8 @@ cancast(LineType type)
 	else if(type == ARC && stack.len >= 3)
 		return 1;
 	else if(type == BEZIER && stack.len >= 3 && stack.len % 2 == 1)
+		return 1;
+	else if(type == TRANSLATE && stack.len >= 2)
 		return 1;
 	return 0;
 }
@@ -368,6 +381,16 @@ handle(Uint32 *dst, int x0, int y0, int r, int color)
 }
 
 void
+arrow(Uint32 *dst, int x0, int y0, int x1, int y1, int color)
+{
+	int Par = 8;
+	double slopy = atan2((y1 - y0), (x1 - x0)), cosy = cos(slopy), siny = sin(slopy);
+	line(dst, x1, y1, x0, y0, color);
+	line(dst, x1, y1, x1 + (int)(-Par * cosy - (Par / 2.0 * siny)), y1 + (int)(-Par * siny + (Par / 2.0 * cosy)), color);
+	line(dst, x1, y1, x1 + (int)(-Par * cosy + (Par / 2.0 * siny)), y1 - (int)(Par / 2.0 * cosy + Par * siny), color);
+}
+
+void
 bezier(Uint32 *dst, int x0, int y0, int x1, int y1, int x2, int y2, int color)
 {
 	int i, segs = 8;
@@ -385,30 +408,41 @@ void
 drawpath(Uint32 *dst, Path2d *path, int guides)
 {
 	int j;
+	/* Draw translation */
+	if(path->len > 0 && GUIDES && (brush.origin.x != 0 || brush.origin.y != 0)) {
+		Point2d offset = add2d(&path->points[0], &brush.origin);
+		arrow(dst, path->points[0].x, path->points[0].y, offset.x, offset.y, 3);
+		handle(dst, path->points[0].x, path->points[0].y, 4, 3);
+	}
 	/* Draw paths */
 	for(j = 0; j < path->len; ++j) {
-		Point2d *a = &path->points[j];
+		Point2d a = add2d(&path->points[j], &brush.origin);
 		if(j < path->len - 1) {
-			Point2d *b = &path->points[j + 1];
+			Point2d b = add2d(&path->points[j + 1], &brush.origin);
 			if(path->type == LINE)
-				line(dst, a->x, a->y, b->x, b->y, path->color);
+				line(dst, a.x, a.y, b.x, b.y, path->color);
 			else if(path->type == RECTANGLE)
-				rectangle(dst, a->x, a->y, b->x, b->y, path->color);
+				rectangle(dst, a.x, a.y, b.x, b.y, path->color);
 			else if(path->type == ELLIPSE)
-				ellipse(dst, a->x, a->y, b->x, b->y, -1, path->color);
+				ellipse(dst, a.x, a.y, b.x, b.y, -1, path->color);
+			else if(path->type == TRANSLATE) {
+				setpt2d(&brush.origin, brush.origin.x + b.x - a.x, brush.origin.y + b.y - a.y);
+				if(GUIDES)
+					arrow(dst, a.x, a.y, b.x, b.y, 4);
+			}
 		}
 		if(j < path->len - 2) {
-			Point2d *b = &path->points[j + 1];
-			Point2d *c = &path->points[j + 2];
+			Point2d b = add2d(&path->points[j + 1], &brush.origin);
+			Point2d c = add2d(&path->points[j + 2], &brush.origin);
 			if(path->type == ARC)
-				arc(dst, a->x, a->y, b->x, b->y, c->x, c->y, path->color);
+				arc(dst, a.x, a.y, b.x, b.y, c.x, c.y, path->color);
 			else if(path->type == BEZIER)
-				bezier(dst, a->x, a->y, b->x, b->y, c->x, c->y, path->color);
+				bezier(dst, a.x, a.y, b.x, b.y, c.x, c.y, path->color);
 			if(path->type == ARC || path->type == BEZIER)
 				j++;
 		}
 		if(path->type == POINT)
-			putpixel(dst, a->x, a->y, path->color);
+			putpixel(dst, a.x, a.y, path->color);
 	}
 	for(j = 0; j < path->len; ++j)
 		if(guides)
@@ -451,6 +485,9 @@ drawui(Uint32 *dst)
 	drawicon(dst, 4 * 8, bottom, icons[2], cancast(LINE) ? 2 : 3);
 	drawicon(dst, 5 * 8, bottom, icons[3], cancast(ARC) ? 2 : 3);
 	drawicon(dst, 6 * 8, bottom, icons[4], cancast(BEZIER) ? 2 : 3);
+	drawicon(dst, 7 * 8, bottom, icons[5], cancast(RECTANGLE) ? 2 : 3);
+	drawicon(dst, 8 * 8, bottom, icons[1], cancast(ELLIPSE) ? 2 : 3);
+	drawicon(dst, 10 * 8, bottom, icons[6], cancast(TRANSLATE) ? 2 : 3);
 }
 
 void
@@ -458,6 +495,7 @@ redraw(Uint32 *dst)
 {
 	int i;
 	clear(dst);
+	setpt2d(&brush.origin, 0, 0);
 	if(GUIDES)
 		drawguides(dst, 16);
 	/* draw shape */
@@ -498,13 +536,13 @@ modzoom(int mod)
 }
 
 void
-addpoint(Point2d touch)
+addpoint(Point2d p)
 {
-	if(stack.len > 0 && equ2d(&touch, &stack.points[stack.len - 1]))
+	if(stack.len > 0 && equ2d(&p, &stack.points[stack.len - 1]))
 		return;
-	if(!inbounds(touch.x, touch.y))
+	if(!inbounds(p.x, p.y))
 		return;
-	stack.points[stack.len++] = touch;
+	stack.points[stack.len++] = p;
 	redraw(pixels);
 }
 
@@ -652,13 +690,14 @@ savetxt(void)
 {
 	int i, j, c = -1;
 	FILE *f = fopen("dotgrid-shape.txt", "w");
-	char *names[6] = {
+	char *names[] = {
 		"point",
 		"line",
 		"arc",
 		"bezier",
 		"rectangle",
-		"ellipse"};
+		"ellipse",
+		"translate"};
 	for(i = 0; i < shape.len; ++i) {
 		Path2d *p = &shape.paths[i];
 		if(c != p->color) {
@@ -705,6 +744,8 @@ loadtxt(FILE *f)
 					cast(RECTANGLE);
 				else if(scmp(query, "ellipse"))
 					cast(ELLIPSE);
+				else if(scmp(query, "translate"))
+					cast(TRANSLATE);
 				else if(slen(query) == 1)
 					setting = query[0] - '0';
 				querylen = 0;
@@ -749,6 +790,9 @@ selectoption(int option)
 	case 4: cast(LINE); break;
 	case 5: cast(ARC); break;
 	case 6: cast(BEZIER); break;
+	case 7: cast(RECTANGLE); break;
+	case 8: cast(ELLIPSE); break;
+	case 10: cast(TRANSLATE); break;
 	}
 }
 
@@ -807,19 +851,20 @@ dokey(SDL_Event *event)
 	case SDLK_MINUS: modzoom(-1); break;
 	case SDLK_ESCAPE: cancel(); break;
 	case SDLK_BACKSPACE: erase(); break;
+	case SDLK_1: setcolor(1); break;
+	case SDLK_2: setcolor(2); break;
+	case SDLK_3: setcolor(3); break;
 	case SDLK_e: exportchr(); break;
 	case SDLK_r: renderbmp(); break;
 	case SDLK_t: savetxt(); break;
 	case SDLK_a: cast(LINE); break;
 	case SDLK_s: cast(ARC); break;
 	case SDLK_d: cast(BEZIER); break;
+	case SDLK_h: setguides(!GUIDES); break;
 	case SDLK_z: cast(POINT); break;
 	case SDLK_x: cast(RECTANGLE); break;
 	case SDLK_c: cast(ELLIPSE); break;
-	case SDLK_1: setcolor(1); break;
-	case SDLK_2: setcolor(2); break;
-	case SDLK_3: setcolor(3); break;
-	case SDLK_h: setguides(!GUIDES); break;
+	case SDLK_v: cast(TRANSLATE); break;
 	case SDLK_n: destroy(); break;
 	}
 }

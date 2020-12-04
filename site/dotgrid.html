@@ -1,5 +1,6 @@
 <!DOCTYPE html><html lang='en'></head><meta charset='utf-8'><meta name='description' content='Dotgrid is a vector graphics tool.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV — dotgrid</title></head><body><header><a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='tools.html'>tools/</a></li><li><a href='utilities.html'>utilities</a></li><li><a href='games.html'>games</a></li><li><a href='unreleased.html'>unreleased</a></li></ul><ul><li><a href='ronin.html'>ronin</a></li><li><a href='left.html'>left</a></li><li><a href='dotgrid.html'>dotgrid/</a></li><li><a href='nasu.html'>nasu</a></li><li><a href='moogle.html'>moogle</a></li></ul><ul></ul></nav><main><figure><img src='../media/diary/536.jpg' alt='Improved the look and feel picture' width='900'/><figcaption>18J04 — Improved the look and feel</figcaption></figure><h2>Dotgrid is a vector graphics tool.</h2><p>Dotgrid is a <b>grid-based vector drawing software</b> designed to create logos, icons and type. The present version uses a simple scripting language inspired from <a href='postscript.html'>Postscript</a>, and is designed to export <a href='chr_format.html'>.chr</a> and .bmp files. The syntax supports <code>setcolor</code>, <code>point</code>, <code>line</code>, <code>arc</code>, <code>bezier</code>, <code>rect</code> and <code>ellipse</code>.</p><h3>dotgrid.c</h3><p>The following code is a single-file implementation written in a few lines of <a href='ansi_c.html'>ANSI C</a>, the only dependecy is <a href='https://www.libsdl.org' target='_blank'>SDL2</a>. It uses a syntax for its source files similar to that of <a href='postscript.html'>Postscript</a>. It is meant to be used along-side <a href='nasu.html'>nasu</a> and <a href='moogle.html'>moogle</a>. Read the manual <a href='https://git.sr.ht/~rabbits/dotgrid' target='_blank'>here</a>.</p><pre>cc dotgrid.c -std=c89 -Os -DNDEBUG -g0 -s -Wall -L/usr/local/lib -lSDL2 -lm -o dotgrid</pre><figure><pre>#include &lt;SDL2/SDL.h&gt;
 #include &lt;stdio.h&gt;
+#include &lt;math.h&gt;
 
 /* 
 Copyright (c) 2020 Devine Lu Linvega
@@ -25,7 +26,7 @@ typedef struct {
 
 typedef struct {
 	int color, selection;
-	Point2d *touch;
+	Point2d *touch, origin;
 } Brush;
 
 typedef enum {
@@ -34,7 +35,8 @@ typedef enum {
 	ARC,
 	BEZIER,
 	RECTANGLE,
-	ELLIPSE
+	ELLIPSE,
+	TRANSLATE
 } LineType;
 
 typedef struct {
@@ -65,12 +67,15 @@ Uint32 theme[] = {
 	0x444444,
 	0xffb545};
 
-Uint8 icons[5][8] = {
+Uint8 icons[8][8] = {
 	{0x38, 0x7c, 0xfe, 0xfe, 0xfe, 0x7c, 0x38, 0x00},
 	{0x38, 0x44, 0x82, 0x82, 0x82, 0x44, 0x38, 0x00},
 	{0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x00},
 	{0x06, 0x18, 0x20, 0x40, 0x40, 0x80, 0x80, 0x00},
-	{0x02, 0x02, 0x04, 0x38, 0x40, 0x80, 0x80, 0x00}};
+	{0x02, 0x02, 0x04, 0x38, 0x40, 0x80, 0x80, 0x00},
+	{0xfe, 0x82, 0x82, 0x82, 0x82, 0x82, 0xfe, 0x00},
+	{0x1e, 0x06, 0x0a, 0x12, 0x20, 0x40, 0x80, 0x00},
+	{0x06, 0x18, 0x22, 0x40, 0x42, 0x80, 0xaa, 0x00}};
 
 SDL_Window *gWindow = NULL;
 SDL_Renderer *gRenderer = NULL;
@@ -109,6 +114,12 @@ mag2d(Point2d *a, int step)
 	return setpt2d(a,
 		abs((a-&gt;x + step / 2) / step) * step,
 		abs((a-&gt;y + step / 2) / step) * step);
+}
+
+Point2d
+add2d(Point2d *a, Point2d *b)
+{
+	return Pt2d(a-&gt;x + b-&gt;x, a-&gt;y + b-&gt;y);
 }
 
 int
@@ -188,6 +199,8 @@ cancast(LineType type)
 	else if(type == ARC &amp;&amp; stack.len &gt;= 3)
 		return 1;
 	else if(type == BEZIER &amp;&amp; stack.len &gt;= 3 &amp;&amp; stack.len % 2 == 1)
+		return 1;
+	else if(type == TRANSLATE &amp;&amp; stack.len &gt;= 2)
 		return 1;
 	return 0;
 }
@@ -368,6 +381,16 @@ handle(Uint32 *dst, int x0, int y0, int r, int color)
 }
 
 void
+arrow(Uint32 *dst, int x0, int y0, int x1, int y1, int color)
+{
+	int Par = 8;
+	double slopy = atan2((y1 - y0), (x1 - x0)), cosy = cos(slopy), siny = sin(slopy);
+	line(dst, x1, y1, x0, y0, color);
+	line(dst, x1, y1, x1 + (int)(-Par * cosy - (Par / 2.0 * siny)), y1 + (int)(-Par * siny + (Par / 2.0 * cosy)), color);
+	line(dst, x1, y1, x1 + (int)(-Par * cosy + (Par / 2.0 * siny)), y1 - (int)(Par / 2.0 * cosy + Par * siny), color);
+}
+
+void
 bezier(Uint32 *dst, int x0, int y0, int x1, int y1, int x2, int y2, int color)
 {
 	int i, segs = 8;
@@ -385,30 +408,41 @@ void
 drawpath(Uint32 *dst, Path2d *path, int guides)
 {
 	int j;
+	/* Draw translation */
+	if(path-&gt;len &gt; 0 &amp;&amp; GUIDES &amp;&amp; (brush.origin.x != 0 || brush.origin.y != 0)) {
+		Point2d offset = add2d(&amp;path-&gt;points[0], &amp;brush.origin);
+		arrow(dst, path-&gt;points[0].x, path-&gt;points[0].y, offset.x, offset.y, 3);
+		handle(dst, path-&gt;points[0].x, path-&gt;points[0].y, 4, 3);
+	}
 	/* Draw paths */
 	for(j = 0; j &lt; path-&gt;len; ++j) {
-		Point2d *a = &amp;path-&gt;points[j];
+		Point2d a = add2d(&amp;path-&gt;points[j], &amp;brush.origin);
 		if(j &lt; path-&gt;len - 1) {
-			Point2d *b = &amp;path-&gt;points[j + 1];
+			Point2d b = add2d(&amp;path-&gt;points[j + 1], &amp;brush.origin);
 			if(path-&gt;type == LINE)
-				line(dst, a-&gt;x, a-&gt;y, b-&gt;x, b-&gt;y, path-&gt;color);
+				line(dst, a.x, a.y, b.x, b.y, path-&gt;color);
 			else if(path-&gt;type == RECTANGLE)
-				rectangle(dst, a-&gt;x, a-&gt;y, b-&gt;x, b-&gt;y, path-&gt;color);
+				rectangle(dst, a.x, a.y, b.x, b.y, path-&gt;color);
 			else if(path-&gt;type == ELLIPSE)
-				ellipse(dst, a-&gt;x, a-&gt;y, b-&gt;x, b-&gt;y, -1, path-&gt;color);
+				ellipse(dst, a.x, a.y, b.x, b.y, -1, path-&gt;color);
+			else if(path-&gt;type == TRANSLATE) {
+				setpt2d(&amp;brush.origin, brush.origin.x + b.x - a.x, brush.origin.y + b.y - a.y);
+				if(GUIDES)
+					arrow(dst, a.x, a.y, b.x, b.y, 4);
+			}
 		}
 		if(j &lt; path-&gt;len - 2) {
-			Point2d *b = &amp;path-&gt;points[j + 1];
-			Point2d *c = &amp;path-&gt;points[j + 2];
+			Point2d b = add2d(&amp;path-&gt;points[j + 1], &amp;brush.origin);
+			Point2d c = add2d(&amp;path-&gt;points[j + 2], &amp;brush.origin);
 			if(path-&gt;type == ARC)
-				arc(dst, a-&gt;x, a-&gt;y, b-&gt;x, b-&gt;y, c-&gt;x, c-&gt;y, path-&gt;color);
+				arc(dst, a.x, a.y, b.x, b.y, c.x, c.y, path-&gt;color);
 			else if(path-&gt;type == BEZIER)
-				bezier(dst, a-&gt;x, a-&gt;y, b-&gt;x, b-&gt;y, c-&gt;x, c-&gt;y, path-&gt;color);
+				bezier(dst, a.x, a.y, b.x, b.y, c.x, c.y, path-&gt;color);
 			if(path-&gt;type == ARC || path-&gt;type == BEZIER)
 				j++;
 		}
 		if(path-&gt;type == POINT)
-			putpixel(dst, a-&gt;x, a-&gt;y, path-&gt;color);
+			putpixel(dst, a.x, a.y, path-&gt;color);
 	}
 	for(j = 0; j &lt; path-&gt;len; ++j)
 		if(guides)
@@ -451,6 +485,9 @@ drawui(Uint32 *dst)
 	drawicon(dst, 4 * 8, bottom, icons[2], cancast(LINE) ? 2 : 3);
 	drawicon(dst, 5 * 8, bottom, icons[3], cancast(ARC) ? 2 : 3);
 	drawicon(dst, 6 * 8, bottom, icons[4], cancast(BEZIER) ? 2 : 3);
+	drawicon(dst, 7 * 8, bottom, icons[5], cancast(RECTANGLE) ? 2 : 3);
+	drawicon(dst, 8 * 8, bottom, icons[1], cancast(ELLIPSE) ? 2 : 3);
+	drawicon(dst, 10 * 8, bottom, icons[6], cancast(TRANSLATE) ? 2 : 3);
 }
 
 void
@@ -458,6 +495,7 @@ redraw(Uint32 *dst)
 {
 	int i;
 	clear(dst);
+	setpt2d(&amp;brush.origin, 0, 0);
 	if(GUIDES)
 		drawguides(dst, 16);
 	/* draw shape */
@@ -498,13 +536,13 @@ modzoom(int mod)
 }
 
 void
-addpoint(Point2d touch)
+addpoint(Point2d p)
 {
-	if(stack.len &gt; 0 &amp;&amp; equ2d(&amp;touch, &amp;stack.points[stack.len - 1]))
+	if(stack.len &gt; 0 &amp;&amp; equ2d(&amp;p, &amp;stack.points[stack.len - 1]))
 		return;
-	if(!inbounds(touch.x, touch.y))
+	if(!inbounds(p.x, p.y))
 		return;
-	stack.points[stack.len++] = touch;
+	stack.points[stack.len++] = p;
 	redraw(pixels);
 }
 
@@ -652,13 +690,14 @@ savetxt(void)
 {
 	int i, j, c = -1;
 	FILE *f = fopen("dotgrid-shape.txt", "w");
-	char *names[6] = {
+	char *names[] = {
 		"point",
 		"line",
 		"arc",
 		"bezier",
 		"rectangle",
-		"ellipse"};
+		"ellipse",
+		"translate"};
 	for(i = 0; i &lt; shape.len; ++i) {
 		Path2d *p = &amp;shape.paths[i];
 		if(c != p-&gt;color) {
@@ -705,6 +744,8 @@ loadtxt(FILE *f)
 					cast(RECTANGLE);
 				else if(scmp(query, "ellipse"))
 					cast(ELLIPSE);
+				else if(scmp(query, "translate"))
+					cast(TRANSLATE);
 				else if(slen(query) == 1)
 					setting = query[0] - '0';
 				querylen = 0;
@@ -749,6 +790,9 @@ selectoption(int option)
 	case 4: cast(LINE); break;
 	case 5: cast(ARC); break;
 	case 6: cast(BEZIER); break;
+	case 7: cast(RECTANGLE); break;
+	case 8: cast(ELLIPSE); break;
+	case 10: cast(TRANSLATE); break;
 	}
 }
 
@@ -807,19 +851,20 @@ dokey(SDL_Event *event)
 	case SDLK_MINUS: modzoom(-1); break;
 	case SDLK_ESCAPE: cancel(); break;
 	case SDLK_BACKSPACE: erase(); break;
+	case SDLK_1: setcolor(1); break;
+	case SDLK_2: setcolor(2); break;
+	case SDLK_3: setcolor(3); break;
 	case SDLK_e: exportchr(); break;
 	case SDLK_r: renderbmp(); break;
 	case SDLK_t: savetxt(); break;
 	case SDLK_a: cast(LINE); break;
 	case SDLK_s: cast(ARC); break;
 	case SDLK_d: cast(BEZIER); break;
+	case SDLK_h: setguides(!GUIDES); break;
 	case SDLK_z: cast(POINT); break;
 	case SDLK_x: cast(RECTANGLE); break;
 	case SDLK_c: cast(ELLIPSE); break;
-	case SDLK_1: setcolor(1); break;
-	case SDLK_2: setcolor(2); break;
-	case SDLK_3: setcolor(3); break;
-	case SDLK_h: setguides(!GUIDES); break;
+	case SDLK_v: cast(TRANSLATE); break;
 	case SDLK_n: destroy(); break;
 	}
 }
@@ -887,5 +932,5 @@ main(int argc, char *argv[])
 	quit();
 	return 0;
 }
-</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/dotgrid.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/dotgrid.c.txt'>dotgrid.c.txt</a>(889 lines)</figcaption>
-</figure><figure><img src='../media/diary/508.jpg' alt='Working away from snow picture' width='900'/><figcaption>17Z11 — Working away from snow</figcaption></figure><figure><img src='../media/diary/385.jpg' alt='General improvements picture' width='900'/><figcaption>17W08 — General improvements</figcaption></figure><figure><img src='../media/diary/368.jpg' alt='Dotless Dotgrid Interface picture' width='900'/><figcaption>17W01 — Dotless Dotgrid Interface</figcaption></figure><ul><li><a href='https://git.sr.ht/~rabbits/dotgrid' target='_blank'>sources</a></li><li><a href='http://hundredrabbits.itch.io/Dotgrid' target='_blank'>builds</a></li><li><a href='https://hundredrabbits.github.io/Dotgrid' target='_blank'>live</a></li><li><a href='https://hundredrabbits.itch.io/Dotgrid/community' target='_blank'>community</a></li></ul><p><i>incoming(6)</i>: <a href='themes.html'>themes</a> <a href='ronin.html'>ronin</a> <a href='rafinograde.html'>rafinograde</a> <a href='computer.html'>computer</a> <a href='postscript.html'>postscript</a> <a href='identity.html'>identity</a> </p><p><i>Last update on <a href='tracker.html'>20X13</a>, edited 47 times. +207/287fh</i><code style='float:right; font-size:80%'>----++</code></p><ul><li>18A12 — Dotgrid Release</li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
+</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/dotgrid.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/dotgrid.c.txt'>dotgrid.c.txt</a>(934 lines)</figcaption>
+</figure><figure><img src='../media/diary/508.jpg' alt='Working away from snow picture' width='900'/><figcaption>17Z11 — Working away from snow</figcaption></figure><figure><img src='../media/diary/385.jpg' alt='General improvements picture' width='900'/><figcaption>17W08 — General improvements</figcaption></figure><figure><img src='../media/diary/368.jpg' alt='Dotless Dotgrid Interface picture' width='900'/><figcaption>17W01 — Dotless Dotgrid Interface</figcaption></figure><ul><li><a href='https://git.sr.ht/~rabbits/dotgrid' target='_blank'>sources</a></li><li><a href='http://hundredrabbits.itch.io/Dotgrid' target='_blank'>builds</a></li><li><a href='https://hundredrabbits.github.io/Dotgrid' target='_blank'>live</a></li><li><a href='https://hundredrabbits.itch.io/Dotgrid/community' target='_blank'>community</a></li></ul><p><i>incoming(6)</i>: <a href='themes.html'>themes</a> <a href='ronin.html'>ronin</a> <a href='rafinograde.html'>rafinograde</a> <a href='computer.html'>computer</a> <a href='postscript.html'>postscript</a> <a href='identity.html'>identity</a> </p><p><i>Last update on <a href='tracker.html'>20X13</a>, edited 47 times. +207/287fh</i><code style='float:right; font-size:80%'>----+-</code></p><ul><li>18A12 — Dotgrid Release</li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>

@@ -295,7 +295,7 @@ setcolor(Brush *b, int c)
 {
 	b-&gt;color = c;
 	redraw(pixels);
-	printf("Set Color %d\n", b-&gt;color);
+	printf("Set Color: %d\n", b-&gt;color);
 }
 
 void
@@ -303,7 +303,7 @@ setmode(Brush *b, int m)
 {
 	b-&gt;mode = m;
 	redraw(pixels);
-	printf("Set Mode %d\n", b-&gt;mode);
+	printf("Set Mode: %d\n", b-&gt;mode);
 }
 
 void
@@ -313,15 +313,15 @@ modsize(Brush *b, int mod)
 	if(res &gt; 0 &amp;&amp; res &lt; 30)
 		b-&gt;size = res;
 	redraw(pixels);
-	printf("Set Size %d\n", b-&gt;size);
+	printf("Set Size: %d\n", b-&gt;size);
 }
 
 void
-toggleguide(void)
+setguides(int v)
 {
-	GUIDES = !GUIDES;
+	GUIDES = v;
 	redraw(pixels);
-	printf("%s Guides\n", GUIDES ? "Show" : "Hide");
+	printf("Set Guide: %s \n", GUIDES ? "Show" : "Hide");
 }
 
 void
@@ -332,17 +332,18 @@ destroy(void)
 	puts("Destroy");
 }
 
-void
+int
 exportchr(void)
 {
 	FILE *f = fopen("nasu-export.chr", "wb");
 	if(!fwrite(chrbuf, sizeof(chrbuf), 1, f))
-		error("Save", "Invalid output file");
+		return error("Export", "Failure");
 	fclose(f);
-	puts("Exported nasu-export.chr");
+	puts("Export: nasu-export.chr");
+	return 1;
 }
 
-void
+int
 renderbmp(void)
 {
 	SDL_Surface *surface = SDL_GetWindowSurface(gWindow);
@@ -352,20 +353,22 @@ renderbmp(void)
 		surface-&gt;pixels,
 		surface-&gt;pitch);
 	if(SDL_SaveBMP(surface, "nasu-render.bmp"))
-		printf("SDL_SaveBMP failed: %s\n", SDL_GetError());
-	else
-		puts("Rendered nasu-render.bmp");
+		return error("Render", "Failed");
+	puts("Render: nasu-render.bmp");
 	SDL_FreeSurface(surface);
+	return 1;
 }
 
-void
+int
 loadchr(FILE *f)
 {
 	if(!f)
-		error("Load", "Invalid input file");
+		return error("Load", "Invalid input file");
 	if(!fread(chrbuf, sizeof(chrbuf), 1, f))
-		error("Load", "Invalid input size");
+		return error("Load", "Invalid input size");
+	puts("Load: Complete");
 	fclose(f);
+	return 1;
 }
 
 void
@@ -385,6 +388,7 @@ loadtheme(FILE *f)
 			id++;
 		}
 	}
+	puts("Theme: Complete");
 	fclose(f);
 }
 
@@ -485,7 +489,7 @@ dokey(SDL_Event *event, Brush *b)
 	case SDLK_d: setmode(b, 2); break;
 	case SDLK_f: setmode(b, 3); break;
 	case SDLK_g: setmode(b, 4); break;
-	case SDLK_h: toggleguide(); break;
+	case SDLK_h: setguides(!GUIDES); break;
 	case SDLK_z: modsize(b, -1); break;
 	case SDLK_x: modsize(b, 1); break;
 	case SDLK_n: destroy(); break;
@@ -561,5 +565,5 @@ main(int argc, char **argv)
 	quit();
 	return 0;
 }
-</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/nasu.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/nasu.c.txt'>nasu.c.txt</a>(563 lines)</figcaption>
+</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/nasu.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/nasu.c.txt'>nasu.c.txt</a>(567 lines)</figcaption>
 </figure><ul><li><a href='https://git.sr.ht/~rabbits/nasu' target='_blank'>sources</a></li><li><a href='https://hundredrabbits.github.io/Nasu' target='_blank'>browser version</a></li></ul><p><i>incoming(9)</i>: <a href='neauismetica.html'>neauismetica</a> <a href='graf3dscene.html'>graf3dscene</a> <a href='themes.html'>themes</a> <a href='dotgrid.html'>dotgrid</a> <a href='moogle.html'>moogle</a> <a href='chr_format.html'>chr format</a> <a href='donsol_famicom.html'>donsol famicom</a> <a href='computer.html'>computer</a> <a href='identity.html'>identity</a> </p><p><i>Last update on <a href='tracker.html'>20X12</a>, edited 27 times. +118/172fh</i><code style='float:right; font-size:80%'>-----+</code></p><ul><li>20C06 — Nasu Release</li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>

@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <time.h>
 
-#include "helpers.h"
+#include "projects/standard/standard.h"
 #include "projects/arvelie/arvelie.h"
 
 #define STRMEM 4096 * 96
@@ -9,8 +9,6 @@
 #define LEXMEM 500
 #define HORMEM 4000
 #define ITEMS 64
-
-#define LOGS_RANGE 56
 
 #define NAME "XXIIVV"
 #define DOMAIN "https://wiki.xxiivv.com/"
@@ -23,11 +21,8 @@ typedef struct Block {
 } Block;
 
 typedef struct List {
-	int len;
-	int routes;
-	char *name;
-	char *keys[ITEMS];
-	char *vals[ITEMS];
+	int len, routes;
+	char *name, *keys[ITEMS], *vals[ITEMS];
 } List;
 
 typedef struct Term {
@@ -54,11 +49,8 @@ typedef struct Term {
 } Term;
 
 typedef struct Log {
-	int code;
-	int pict;
-	char rune;
-	char *date;
-	char *name;
+	int code, pict;
+	char rune, *date, *name;
 	Term *term;
 } Log;
 
@@ -106,7 +98,7 @@ push(Block *b, char *s)
 /* List */
 
 List *
-_list(List *l, char *name)
+makelist(List *l, char *name)
 {
 	l->len = 0;
 	l->routes = 0;
@@ -127,7 +119,7 @@ findlist(Glossary *glo, char *name)
 /* Term */
 
 Term *
-_term(Term *t, char *name)
+maketerm(Term *t, char *name)
 {
 	t->body_len = 0;
 	t->children_len = 0;
@@ -155,7 +147,7 @@ findterm(Lexicon *lex, char *name)
 /* Log */
 
 Log *
-_log(Log *l, char *date)
+makelog(Log *l, char *date)
 {
 	l->code = 0;
 	l->pict = 0;
@@ -185,6 +177,50 @@ getfile(char *dir, char *filename, char *ext, char *op)
 	scat(filepath, ext);
 	scat(filepath, "\0");
 	return fopen(filepath, op);
+}
+
+/* Etcs */
+
+float
+clockoffset(clock_t start)
+{
+	return (((double)(clock() - start)) / CLOCKS_PER_SEC) * 1000;
+}
+
+void
+fpRFC2822(FILE *f, time_t t)
+{
+	struct tm *tm = localtime(&t);
+	char *days[7] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+	char *months[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+	fprintf(f, "%s, %02d %s %d 00:00:00 +0900", days[tm->tm_wday], tm->tm_mday, months[tm->tm_mon], tm->tm_year + 1900);
+}
+
+void
+fpRFC3339(FILE *f, time_t t)
+{
+	struct tm *tm = localtime(&t);
+	fprintf(f,
+		"%04d-%02d-%02dT%02d:%02d:%02d%c%02d:%02d",
+		tm->tm_year + 1900,
+		tm->tm_mon + 1,
+		tm->tm_mday,
+		tm->tm_hour,
+		tm->tm_min,
+		tm->tm_sec,
+		'-',
+		7, /* Vancouver GMT-7*/
+		0);
+}
+
+int
+marble(int year, int month, int day)
+{
+	struct tm birth;
+	birth.tm_year = year - 1900;
+	birth.tm_mon = month - 1;
+	birth.tm_mday = day;
+	return (time(NULL) - mktime(&birth)) / 604800;
 }
 
 /* File Print */
@@ -233,9 +269,9 @@ fplogpict(FILE *f, Log *l, int caption)
 }
 
 void
-fplink(FILE *f, Lexicon *lex, Term *t, char *s)
+fptemplatelink(FILE *f, Lexicon *lex, Term *t, char *s)
 {
-	int split = cpos(s, ' ');
+	int split = scin(s, ' ');
 	char target[256], name[256];
 	/* find target and name */
 	if(split == -1)
@@ -321,7 +357,7 @@ fpinclude(FILE *f, char *target, int text)
 void
 fpmodule(FILE *f, Glossary *glo, char *s)
 {
-	int split = cpos(s, ' ');
+	int split = scin(s, ' ');
 	char cmd[256], target[256];
 	sstr(s, cmd, 1, split - 1);
 	sstr(s, target, split + 1, slen(s) - split);
@@ -340,7 +376,7 @@ fpmodule(FILE *f, Glossary *glo, char *s)
 	} else if(scmp(cmd, "html")) {
 		fpinclude(f, target, 0);
 	} else if(scmp(cmd, "img")) {
-		int split2 = cpos(target, ' ');
+		int split2 = scin(target, ' ');
 		if(split2 > 0) {
 			char param[256], value[256];
 			sstr(target, param, 0, split2);
@@ -365,7 +401,7 @@ fptemplate(FILE *f, Glossary *glo, Lexicon *lex, Term *t, char *s)
 			if(buf[0] == '^' && f)
 				fpmodule(f, glo, buf);
 			else if(buf[0] != '^')
-				fplink(f, lex, t, buf);
+				fptemplatelink(f, lex, t, buf);
 		}
 		if(capture)
 			ccat(buf, c);
@@ -553,7 +589,7 @@ fpcalendar(FILE *f, Journal *jou)
 		if(jou->logs[i].rune != '+')
 			continue;
 		if(last_year != sint(jou->logs[i].date, 2))
-			fprintf(f, "</ul><ul>");
+			fputs("</ul><ul>", f);
 		fprintf(f, "<li><a href='%s.html'>%s</a> %s</li>", jou->logs[i].term->filename, jou->logs[i].date, jou->logs[i].name);
 		last_year = sint(jou->logs[i].date, 2);
 	}
@@ -573,7 +609,7 @@ fptracker(FILE *f, Journal *jou)
 		if(afnd(known, known_id, l->term->name) > -1)
 			continue;
 		if(last_year != sint(l->date, 2))
-			fprintf(f, "</ul><ul>");
+			fputs("</ul><ul>", f);
 		fputs("<li>", f);
 		fprintf(f, "<a href='%s.html'>%s</a> — last update %s", l->term->filename, l->term->name, l->date);
 		fplifeline(f, l->term);
@@ -603,14 +639,14 @@ void
 fpnow(FILE *f, Lexicon *lex, Journal *jou)
 {
 	int i, projects_len = 0;
-	char *pname[LOGS_RANGE], *pfname[LOGS_RANGE];
-	double sum_value = 0, pval[LOGS_RANGE], pmaxval = 0;
+	char *pname[56], *pfname[56];
+	double sum_value = 0, pval[56], pmaxval = 0;
 	time_t now;
 	time(&now);
-	for(i = 0; i < LOGS_RANGE; ++i) {
+	for(i = 0; i < 56; ++i) {
 		int index = 0;
 		Log l = jou->logs[i];
-		if(arvelie_to_offset(l.date) < LOGS_RANGE)
+		if(arvelie_to_offset(l.date) < 56)
 			break;
 		if(l.code % 10 < 1)
 			continue;
@@ -643,8 +679,8 @@ fpnow(FILE *f, Lexicon *lex, Journal *jou)
 		"and %.1f work hours per project.</p>",
 		sum_value,
 		projects_len,
-		LOGS_RANGE,
-		sum_value / LOGS_RANGE,
+		56,
+		sum_value / 56,
 		sum_value / projects_len);
 	fputs("<ul style='columns:2'>", f);
 	for(i = 0; i < projects_len; ++i) {
@@ -821,21 +857,21 @@ parse_glossary(FILE *fp, Block *block, Glossary *glo)
 	char line[512], buf[1024];
 	List *l = &glo->lists[glo->len];
 	while(fgets(line, 512, fp)) {
-		depth = cpad(line, '\t');
+		depth = spad(line, '\t');
 		len = slen(strm(line));
 		count++;
 		if(len < 4 || line[0] == ';')
 			continue;
 		if(glo->len >= GLOMEM)
-			return error("Increase memory", "glossary");
+			return errorid("Increase memory", "glossary", glo->len);
 		if(len > 400)
-			return error("Line is too long", line);
-		if(depth == 0) {
-			l = _list(&glo->lists[glo->len++], push(block, sstr(line, buf, 0, len)));
-		} else if(depth == 1) {
+			return errorid("Line is too long", line, len);
+		if(depth == 0)
+			l = makelist(&glo->lists[glo->len++], push(block, sstr(line, buf, 0, len)));
+		else if(depth == 1) {
 			if(l->len >= 64)
-				error("Reached list item limit", l->name);
-			split = cpos(line, ':');
+				errorid("Reached list item limit", l->name, l->len);
+			split = scin(line, ':');
 			if(split < 0)
 				l->vals[l->len] = push(block, sstr(line, buf, 1, len + 1));
 			else {
@@ -856,37 +892,37 @@ parse_lexicon(FILE *fp, Block *block, Lexicon *lex)
 	char line[1024], buf[1024];
 	Term *t = &lex->terms[lex->len];
 	while(fgets(line, 1024, fp)) {
-		int depth = cpad(line, '\t');
+		int depth = spad(line, '\t');
 		strm(line);
 		len = slen(line);
 		count++;
 		if(len < 3 || line[0] == ';')
 			continue;
 		if(lex->len >= LEXMEM)
-			return error("Increase memory", "Lexicon");
+			return errorid("Increase memory", "Lexicon", lex->len);
 		if(len > 750)
-			return error("Line is too long", line);
+			return errorid("Line is too long", line, len);
 		if(depth == 0) {
-			t = _term(&lex->terms[lex->len++], push(block, sstr(line, buf, 0, len)));
-			if(!sans(line))
+			t = maketerm(&lex->terms[lex->len++], push(block, sstr(line, buf, 0, len)));
+			if(!sian(line))
 				return error("Lexicon key is not alphanum", line);
 			t->filename = push(block, scsw(slca(sstr(line, buf, 0, len)), ' ', '_'));
 		} else if(depth == 1 && len > 2) {
-			if(spos(line, "HOST : ") >= 0)
+			if(ssin(line, "HOST : ") >= 0)
 				t->host = push(block, sstr(line, buf, 8, len - 8));
-			if(spos(line, "BREF : ") >= 0)
+			if(ssin(line, "BREF : ") >= 0)
 				t->bref = push(block, sstr(line, buf, 8, len - 8));
-			if(spos(line, "TYPE : ") >= 0)
+			if(ssin(line, "TYPE : ") >= 0)
 				t->type = push(block, sstr(line, buf, 8, len - 8));
-			catch_body = spos(line, "BODY") >= 0;
-			catch_link = spos(line, "LINK") >= 0;
+			catch_body = ssin(line, "BODY") >= 0;
+			catch_link = ssin(line, "LINK") >= 0;
 		} else if(depth == 2 && len > 3) {
 			/* Body */
 			if(catch_body)
 				t->body[t->body_len++] = push(block, sstr(line, buf, 2, len - 2));
 			/* Link */
 			else if(catch_link) {
-				key_len = cpos(line, ':') - 3;
+				key_len = scin(line, ':') - 3;
 				t->link.keys[t->link.len] = push(block, sstr(line, buf, 2, key_len));
 				val_len = len - key_len - 3;
 				t->link.vals[t->link.len++] = push(block, sstr(line, buf, key_len + 5, val_len));
@@ -911,10 +947,10 @@ parse_journal(FILE *fp, Block *block, Lexicon *lex, Journal *jou)
 		if(len < 14 || line[0] == ';')
 			continue;
 		if(jou->len >= HORMEM)
-			return error("Increase memory", "Horaire");
+			return errorid("Increase memory", "Horaire", jou->len);
 		if(len > 80)
-			return error("Log is too long", line);
-		l = _log(&jou->logs[jou->len++], push(block, sstr(line, buf, 0, 5)));
+			return errorid("Log is too long", line, len);
+		l = makelog(&jou->logs[jou->len++], push(block, sstr(line, buf, 0, 5)));
 		l->rune = line[6];
 		l->code = sint(line + 7, 3);
 		l->term = findterm(lex, strm(sstr(line, buf, 11, 21)));
