@@ -12,11 +12,11 @@ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
 WITH REGARD TO THIS SOFTWARE.
 */
 
-#define EVENTMAX 512
+#define EVENTMAX 1024
 
 typedef struct Event {
 	int y, m, d;
-	char name[64];
+	char name[256];
 } Event;
 
 typedef struct Calendar {
@@ -24,11 +24,13 @@ typedef struct Calendar {
 	Event events[EVENTMAX];
 } Calendar;
 
+char *months[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+
 int
 slen(char *s)
 {
 	int i = 0;
-	while(s[i] && s[++i])
+	while(s[++i])
 		;
 	return i;
 }
@@ -36,21 +38,20 @@ slen(char *s)
 int
 sint(char *s, int len)
 {
-	int num = 0, i = 0;
+	int n = 0, i = 0;
 	while(i < len && s[i] && s[i] >= '0' && s[i] <= '9') {
-		num = num * 10 + (s[i] - '0');
+		n = n * 10 + (s[i] - '0');
 		i++;
 	}
-	return num;
+	return n;
 }
 
 char *
 scpy(char *src, char *dst, int len)
 {
 	int i = 0;
-	while(src[i] && src[i] != '\n' && (dst[i] = src[i]) && i < len - 1)
+	while(i < len - 1 && (dst[i] = src[i]))
 		i++;
-	dst[i] = '\0';
 	return dst;
 }
 
@@ -80,7 +81,7 @@ void
 setevent(Calendar *c, int y, int m, int d, char *name)
 {
 	Event *e = &c->events[c->len++];
-	scpy(name, e->name, 64);
+	scpy(name, e->name, slen(name));
 	e->y = y;
 	e->m = m;
 	e->d = d;
@@ -99,24 +100,21 @@ getevent(Calendar *c, int y, int m, int d)
 }
 
 void
-printevents(Calendar *c)
+printevents(Calendar *c, int y, int m, int d)
 {
-	int i, y, m, d, l = c->m;
-	y = c->y;
-	m = c->m;
-	d = c->d;
+	int i, l = c->m;
 	for(i = 0; i < 90; i++) {
 		Event *e = getevent(c, y, m, d);
 		if(e) {
 			if(l != m)
-				printf("\n");
+				puts("");
 			if(i == 0)
 				printf(" Today        ");
 			else if(i == 1)
 				printf(" Tomorrow     ");
 			else
 				printf(" In %02d days   ", i);
-			printf("%s\n", e->name);
+			puts(e->name);
 			l = m;
 		}
 		d++;
@@ -129,7 +127,7 @@ printevents(Calendar *c)
 			}
 		}
 	}
-	printf("\n");
+	puts("");
 }
 
 void
@@ -138,26 +136,12 @@ printcalendar(Calendar *c)
 	int i;
 	int dw = dayweek(c->y, c->m, 1);
 	int dm = daysmonth(c->y, c->m);
-	switch(c->m) {
-	case 1: printf(" Jan %d", c->y); break;
-	case 2: printf(" Feb %d", c->y); break;
-	case 3: printf(" Mar %d", c->y); break;
-	case 4: printf(" Apr %d", c->y); break;
-	case 5: printf(" May %d", c->y); break;
-	case 6: printf(" Jun %d", c->y); break;
-	case 7: printf(" Jul %d", c->y); break;
-	case 8: printf(" Aug %d", c->y); break;
-	case 9: printf(" Sep %d", c->y); break;
-	case 10: printf(" Oct %d", c->y); break;
-	case 11: printf(" Nov %d", c->y); break;
-	case 12: printf(" Dec %d", c->y); break;
-	default: printf(" --- %d", c->y);
-	}
-	printf("\n Su  Mo  Tu  We  Th  Fr  Sa ");
+	printf(" %s %d\n", months[c->m - 1], c->y);
+	printf(" Su  Mo  Tu  We  Th  Fr  Sa ");
 	for(i = 0; i <= 35; i++) {
 		int d = i - dw + 1;
 		if(i % 7 == 0)
-			printf("\n");
+			puts("");
 		if(d == c->d)
 			printf("<%2d>", d);
 		else if(getevent(c, c->y, c->m, d))
@@ -165,9 +149,9 @@ printcalendar(Calendar *c)
 		else if(d > 0 && d <= dm)
 			printf(" %2d ", d);
 		else
-			printf("     ");
+			printf("    ");
 	}
-	printf("\n");
+	puts("");
 }
 
 void
@@ -177,9 +161,7 @@ loadevents(FILE *f, Calendar *c)
 	if(!f)
 		return;
 	while(fgets(line, 256, f)) {
-		if(line[0] == ';')
-			continue;
-		if(slen(line) < 9)
+		if(line[0] == ';' || slen(line) < 12)
 			continue;
 		if(c->len >= EVENTMAX)
 			break;
@@ -192,21 +174,25 @@ loadevents(FILE *f, Calendar *c)
 	fclose(f);
 }
 
-int
-main(int argc, char *argv[])
+void
+init(Calendar *cal)
 {
-	Calendar cal;
 	time_t t;
 	struct tm *local;
 	time(&t);
 	local = localtime(&t);
-	cal.y = local->tm_year + 1900;
-	cal.m = local->tm_mon + 1;
-	cal.d = local->tm_mday;
-	cal.len = 0;
-	if(argc > 1)
-		loadevents(fopen(argv[1], "r"), &cal);
+	cal->y = local->tm_year + 1900;
+	cal->m = local->tm_mon + 1;
+	cal->d = local->tm_mday;
+}
+
+int
+main(int argc, char *argv[])
+{
+	Calendar cal;
+	init(&cal);
+	loadevents(fopen(argc > 1 ? argv[1] : "calendar", "r"), &cal);
 	printcalendar(&cal);
-	printevents(&cal);
+	printevents(&cal, cal.y, cal.m, cal.d);
 	return 0;
 }
