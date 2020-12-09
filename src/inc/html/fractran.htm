@@ -1,0 +1,93 @@
+<p>Any number that can't be divided by any other number, apart from itself and one, is prime. Since primes can't be divided, we can think of them as the DNA of other numbers. In Fractran, each prime is a register and their exponent is their value. The <b>state of the program</b> is held as a single number, whose prime factorization holds these registers(2, 3, 5, 7, 11, 13, 17, ..). </p>
+
+<table border='1'>
+	<tr><th>state</th><th colspan='4'>registers</th></tr>
+	<tr><th></th><th>r2</th><th>r3</th><th>r5</th><th>r7</th></tr>
+	<tr><th>1008</th><td>4</td><td>2</td><td></td><td>1</td></tr>
+</table>
+
+<p>If the program state is 1008(2⁴ × 3² × 7), var2 has the value 4, var3 has the value 2, var7 has the value 1, and all other variables are unassigned.</p>
+
+<h3>A Program</h3>
+
+<p><b>A program is a set of fractions</b>, the input is a single composite number, which is also the state of the program. We run each fraction in order, in terms of our current value. If multiplying it with that fraction gives us an integer, we multiply it and start again at the beginning of the list. We stop when there are no more fractions that will give us an integer result, or make it to the end of the list.</p>
+
+<table border='1'>
+	<tr><th>adder program</th></tr>
+	<tr><td>3</td></tr>
+	<tr><td>2</td></tr>
+</table>
+
+<p>For example, to run the <b>Adder program</b>(<code>3/2</code>), we will take the state of our program. If multiplying it by this fraction will give us an integer, we will do so. Otherwise, we will stop and consider the program complete. We will do this repeatedly until we can no longer produce an integer with this method.</p>
+
+<p>Let's add 4 and 2, We will store the values in registers 2 and 3. Our starting state is therefore 2⁴ × 3², or 144. For each step of the program, we will multiply our state with the program(144 x 3/2 = 216, 216 x 3/2 = 324, ..) until our our working value is odd(729), we have exhausted the program; it can no longer be divided by 2 and result in an integer.</p>
+
+<table border='1'>
+	<tr><th>state</th><th colspan='2'>registers</th></tr>
+	<tr><th></th><th>r2</th><th>r3</th></tr>
+	<tr><th>144</th><td>4</td><td>2</td></tr>
+	<tr><th>216</th><td>3</td><td>3</td></tr>
+	<tr><th>324</th><td>2</td><td>4</td></tr>
+	<tr><th>486</th><td>1</td><td>5</td></tr>
+	<tr><th>729</th><td>0</td><td>6</td></tr>
+</table>
+
+<p>Let's have a look at the multiplication program.</p>
+
+<table border='1'>
+	<tr><th colspan='6'>multiplication program</th></tr>
+	<tr><td>385</td><td>13</td><td>1</td><td>3</td><td>7</td><td>1</td></tr>
+	<tr><td>13</td><td>21</td><td>7</td><td>11</td><td>2</td><td>3</td></tr>
+</table>
+
+<p>We can expose the following primes, giving us six variables, the primes 2, 3, 5, 7, 11, and 13. This program takes two inputs, r2 and r3, and places the product in r5.</p>
+
+<table border='1'>
+	<tr><th colspan='6'>multiplication program</th></tr>
+	<tr><td>r5 x r7 x r11</td><td>13</td><td>1</td><td>3</td><td>7</td><td>1</td></tr>
+	<tr><td>13</td><td>r3 x r7</td><td>7</td><td>11</td><td>2</td><td>3</td></tr>
+</table>
+
+<p>That means starting with 2² × 3⁴, which is 324. If we succeed, the result will be 5⁸, or 390625. Let's consider what will happen when we run our input(324) through this series of fractions. In the first fraction, if the number is cleanly divisible by 13, the variables 7, 11, and 5 will all be incremented. Think of this as the reverse of what we did in the adder, but for three variables at once. For the second fraction, both the variables r3 and r7 would need to be matched.</p>
+
+<pre>
+324 × 385 / 13 = NOT AN INTEGER (AS NOT DIVISIBLE BY 13), SKIPPING....
+324 × 13 / 21 = NOT INT...
+324 × 1 / 7 = NOT INT...
+324 × 3 / 11 = NOT INT...
+324 × 7 / 2 = 1134 INT, GO BACK
+1134 × 385 / 13 = NOT INT...
+1134 × 13 / 21 = 702 INT, GO BACK
+702 × 385 / 13 = 2079 INT, GO BACK
+2079 x 385 / 13 = NOT INT...
+2079 x 13 / 21 = 1287 INT, GO BACK
+1287 x 385 / 13 = 1287 INT, DONE
+</pre>
+
+<h3>Tools</h3>
+
+<p>A simple <a href='ansi_c'>C</a> function to print the exponential factors of a number, or the value stored in the registers.</p>
+
+<pre>
+void
+printregisters(int num)
+{
+	int fac = 2;
+	while(num > 1) {
+		if(num % fac == 0) {
+			int pow = 1;
+			printf("%d^", fac);
+			num /= fac;
+			while(!(num % fac)) {
+				num /= fac;
+				pow++;
+			}
+			printf("%d", pow);
+			if(num != 1)
+				putchar(' ');
+		} else
+			fac++;
+	}
+	puts("");
+}
+</pre>
