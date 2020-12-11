@@ -15,9 +15,11 @@
 
 <p>A fractran operation is a positive fraction, each fraction represents an instruction that tests one or more registers, represented by the prime factors of its denominator. The Fractran computer goes through each fraction in order, in terms of our current accumulator value.</p>
 
-<img src='../media/refs/fractran.adder2.jpg' width='160px'/>
+<img src='../media/refs/fractran.adder1.jpg' width='140px'/>
 
-<p>For example, to run the <i>adder operation</i>(<code>2/3</code>), we will take the state of the accumulator. If multiplying it by this fraction will give us an integer, we will do so and start again at the beginning of the program. Otherwise, we will stop and consider the program complete. We will do this repeatedly until we can no longer produce an integer with this method. </p>
+<pre>18(2<sup>1</sup> × 3<sup>2</sup>) <b>2/3</b> = 8(2<sup>3</sup>) <i>addition</i></pre>
+
+<p>To run the <i>adder operation</i>(<code>2/3</code>), we will take the state of the accumulator. If multiplying it by this fraction will give us an integer, we will do so and start again at the beginning of the program. Otherwise, we will stop and consider the program complete. We will do this repeatedly until we can no longer produce an integer with this method. </p>
 
 <table border='1'>
 	<tr><th rowspan='2'>steps</th><th rowspan='2'>state</th><th colspan='2'>registers</th></tr>
@@ -27,50 +29,78 @@
 	<tr><td>3</td><th>8</th><td>3</td><td></td><td>8 × 2/3 = 16/3</td><td>NOT INT, END</td></tr>
 </table>
 
-<p>To add the values 1 and 2, we will store the values in registers 2 and 3, our starting state is therefore 18(2<sup>1</sup> × 3<sup>2</sup>). For each step of the program, we will multiply our state with the program(18 × 2/3 = 12, 12 × 2/3 = 8, ..) until our our working value cannot be reduced to a whole number(16/3), we have exhausted the program. Alternatively, the program <code>3/2</code> will do the same operation but store the result in the register 3.</p>
+<p>To add the values 1 and 2, we will store the values in registers 2 and 3, our starting state is therefore 18(2<sup>1</sup> × 3<sup>2</sup>).</p>
+
+<p>For each step of the program, we will multiply our state with the program(18 × 2/3 = 12, 12 × 2/3 = 8, ..) until our our working value cannot be reduced to a whole number(16/3), we have exhausted the program. Alternatively, the program <code>3/2</code> will do the same operation but store the result in the register 3. </p>
+
+<pre>576(2<sup>6</sup> × 3<sup>2</sup>) <b>1/6</b> = 16(2<sup>4</sup>) <i>subtraction</i></pre>
+
+<p>To run the <i>subtracter operation</i>(<code>1/6</code>), or (1<sup>1</sup>/(2<sup>1</sup> × 3<sup>1</sup>)), we can deconstruct it into the following pseudo-code.</p>
+
+<pre>
+if(r2 >= 1 && r3 >= 1){ 
+	r2 -= 1; 
+	r3 -= 1; 
+	r2 += 1/2;
+	return;
+}</pre>
 
 <p>Operations become more readable when broken down into their primes. We can think of every prime number as having a register which can take on non-negative integer values. Each fraction is an instruction that operates on some of the registers.</p>
 
 <table border='1'>
 	<tr>
 		<th>2/3</th>
-		<th>9/2</th>
+		<th>15/256</th>
 		<th>21/20</th>
 	</tr>
 	<tr>
-		<td>(2<sup>1</sup>)/(3<sup>1</sup>)</td>
-		<td>(3<sup>2</sup>)/(2<sup>1</sup>)</td>
-		<td>(3<sup>1</sup> × 7<sup>1</sup>)/(2<sup>2</sup> × 5<sup>1</sup>)</td>
+		<td>(<span class='numreg'>2</span><sup class='numval'>1</sup>)/(<span class='denreg'>3</span><sup class='denval'>1</sup>)</td>
+		<td>(<span class='numreg'>3</span><sup class='numval'>1</sup> × <span class='numreg'>5</span><sup class='numval'>1</sup>)/(<span class='denreg'>2</span><sup class='denval'>6</sup>)</td>
+		<td>(<span class='numreg'>3</span><sup class='numval'>1</sup> × <span class='numreg'>7</span><sup class='numval'>1</sup>)/(<span class='denreg'>2</span><sup class='denval'>2</sup> × <span class='denreg'>5</span><sup class='denval'>1</sup>)</td>
 	</tr>
 	<tr>
 		<td>
 <pre>
-if(r3 >= 1){ 
-	r3 -= 1;
-	r2 += 1;
+if(<span class='denreg'>r3</span> >= <span class='denval'>1</span>){ 
+	<span class='denreg'>r3</span> -= <span class='denval'>1</span>;
+	<span class='numreg'>r2</span> += <span class='numval'>1</span>;
 	return;
 }</pre>
 		</td>
 		<td>
 <pre>
-if(r2 >= 1){ 
-	r2 -= 1;
-	r3 += 2;
+if(<span class='denreg'>r2</span> >= <span class='denval'>6</span>){ 
+	<span class='denreg'>r2</span> -= <span class='denval'>6</span>;
+	<span class='numreg'>r3</span> += <span class='numval'>1</span>;
+	<span class='numreg'>r5</span> += <span class='numval'>1</span>;
 	return;
 }</pre>
 		</td>
 		<td>
 <pre>
-if(r2 >= 2 && r5 >= 1){ 
-	r2 -= 2; r5 -= 1; 
-	r3 += 1; r7 += 1;
+if(<span class='denreg'>r2</span> >= <span class='denval'>2</span> && <span class='denreg'>r5</span> >= <span class='denval'>1</span>){ 
+	<span class='denreg'>r2</span> -= <span class='denval'>2</span>; 
+	<span class='denreg'>r5</span> -= <span class='denval'>1</span>; 
+	<span class='numreg'>r3</span> += <span class='numval'>1</span>; 
+	<span class='numreg'>r7</span> += <span class='numval'>1</span>;
 	return;
 }</pre>
 		</td>
 	</tr>
 </table>
 
+<style>
+	.numreg { background:pink }
+	.numval { background:#ffdee4 }
+	.denreg { background:#72dec2 }
+	.denval { background:#ffd18c }
+</style>
+
 <p>You can interpret a fraction as saying if the current value of each register is greater than or equal to the the value specified by the denominator, you subtract from the registers all of the values in the denominator, add all the values specified in the numerator, and then jump back to the first instruction. Otherwise, if any register is less than the value specified in the denominator, continue to the next fraction.</p>
+
+<h3>The Programs</h3>
+
+<img src='../media/refs/fractran.adder2.jpg' width='160px'/>
 
 <h3>Tools</h3>
 
@@ -98,5 +128,5 @@ printregisters(int num)
 	}
 }
 </pre>
-<figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/fractran.htm' target='_blank'>edit</a> to <a href='../src/inc/html/fractran.htm'>fractran.htm</a>(100 lines)</figcaption>
-</figure><ul><li><a href='https://git.sr.ht/~rabbits/fractran' target='_blank'>Fractran Interpreter(C89)</a></li><li><a href='https://esoteric.codes/blog/an-intro-to-fractran' target='_blank'>Intro to Fractran</a></li><li><a href='https://esolangs.org/wiki/Fractran' target='_blank'>Article on Esolang</a></li><li><a href='https://esolangs.org/wiki/Collatz_function' target='_blank'>Collatz function</a></li></ul><p><i>incoming(1)</i>: <a href='firth.html'>firth</a> </p><p><i>Last update on <a href='tracker.html'>20Y09</a>, edited 3 times. +9/24fh</i><code style='float:right; font-size:80%'>------</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
+<figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/fractran.htm' target='_blank'>edit</a> to <a href='../src/inc/html/fractran.htm'>fractran.htm</a>(130 lines)</figcaption>
+</figure><ul><li><a href='https://git.sr.ht/~rabbits/fractran' target='_blank'>Fractran Interpreter(C89)</a></li><li><a href='https://esoteric.codes/blog/an-intro-to-fractran' target='_blank'>Intro to Fractran</a></li><li><a href='https://esolangs.org/wiki/Fractran' target='_blank'>Article on Esolang</a></li><li><a href='https://esolangs.org/wiki/Collatz_function' target='_blank'>Collatz function</a></li><li><a href='https://en.wikipedia.org/wiki/Register_machine' target='_blank'>Register Machine</a></li><li><a href='https://en.wikipedia.org/wiki/One-instruction_set_computer' target='_blank'>OISC</a></li></ul><p><i>incoming(1)</i>: <a href='firth.html'>firth</a> </p><p><i>Last update on <a href='tracker.html'>20Y10</a>, edited 4 times. +14/31fh</i><code style='float:right; font-size:80%'>------</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
