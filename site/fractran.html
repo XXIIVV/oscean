@@ -4,8 +4,9 @@
 	<tr><th>state</th><th colspan='4'>registers</th></tr>
 	<tr><th></th><th>r2</th><th>r3</th><th>r5</th><th>r7</th></tr>
 	<tr><th>6</th><td>1</td><td>1</td><td></td><td></td></tr>
-	<tr><th>35</th><td></td><td></td><td>1</td><td>1</td></tr>
+	<tr><th>18</th><td>1</td><td>2</td><td></td><td></td></tr>
 	<tr><th>1008</th><td>4</td><td>2</td><td></td><td>1</td></tr>
+	<tr><th>5402250</th><td>1</td><td>2</td><td>3</td><td>4</td></tr>
 </table>
 
 <p>If the program state is 1008(2⁴ × 3² × 7), r2 has the value 4, r3 has the value 2, r7 has the value 1, and all other registers are unassigned. </p>
@@ -14,27 +15,58 @@
 
 <p><b>A program is a set of fractions</b>, the input is a single composite number, which is also the state of the program. We run each fraction in order, in terms of our current value. If multiplying it with that fraction gives us an integer, we multiply it and start again at the beginning of the list. We stop when there are no more fractions that will give us an integer result, or make it to the end of the list.</p>
 
-<table border='1'>
-	<tr><th>adder program</th></tr>
-	<tr><td>3</td></tr>
-	<tr><td>2</td></tr>
-</table>
+<img src='../media/refs/fractran.adder2.jpg' width='160px'/>
 
-<p>For example, to run the <b>Adder program</b>(<code>3/2</code>), we will take the state of our program. If multiplying it by this fraction will give us an integer, we will do so. Otherwise, we will stop and consider the program complete. We will do this repeatedly until we can no longer produce an integer with this method.</p>
-
-<p>Let's add 4 and 2, We will store the values in registers 2 and 3. Our starting state is therefore 2⁴ × 3², or 144. For each step of the program, we will multiply our state with the program(144 x 3/2 = 216, 216 x 3/2 = 324, ..) until our our working value is odd(729), we have exhausted the program; it can no longer be divided by 2 and result in an integer.</p>
+<p>For example, to run the <b>Adder program</b>(<code>2/3</code>), we will take the state of our program. If multiplying it by this fraction will give us an integer, we will do so. Otherwise, we will stop and consider the program complete. We will do this repeatedly until we can no longer produce an integer with this method. Alternatively, the program <code>3/2</code> will do the same operation but store the result in the registers 3.</p>
 
 <table border='1'>
-	<tr><th>state</th><th colspan='2'>registers</th></tr>
-	<tr><th></th><th>r2</th><th>r3</th></tr>
-	<tr><th>144</th><td>4</td><td>2</td></tr>
-	<tr><th>216</th><td>3</td><td>3</td></tr>
-	<tr><th>324</th><td>2</td><td>4</td></tr>
-	<tr><th>486</th><td>1</td><td>5</td></tr>
-	<tr><th>729</th><td>0</td><td>6</td></tr>
+	<tr><th rowspan='2'>steps</th><th rowspan='2'>state</th><th colspan='2'>registers</th></tr>
+	<tr><th>r2</th><th>r3</th></tr>
+	<tr><td>1</td><th>18</th><td>1</td><td>2</td><td>18 × 2/3 = 12/1</td><td>INT, RESTART</td></tr>
+	<tr><td>2</td><th>12</th><td>2</td><td>1</td><td>12 × 2/3 = 8/1</td><td>INT, RESTART</td></tr>
+	<tr><td>3</td><th>8</th><td>3</td><td></td><td>8 × 2/3 = 16/3</td><td>NOT INT, END</td></tr>
 </table>
+
+<p>Let's add 1 and 2, We will store the values in registers 2 and 3. Our starting state is therefore 18. For each step of the program, we will multiply our state with the program(18 x 2/3 = 12, 12 x 2/3 = 8, ..) until our our working value is odd(16/3), we have exhausted the program; it can no longer be divided by 2 and result in an integer(8).</p>
+
+<h3>Structure</h3>
+
+<p>Operations become more readable when broken down into their primes. Multiplying two numbers is the same as adding the counts of each prime factors, and division is the same as subtracting the counts. We can think of every prime number as having a register which can take on non-negative integer values. Each fraction is an instruction that operates on some of the registers.</p>
+
+<table border='1'>
+	<tr><th colspan='2'>9/2</th><th colspan='2'>1/5</th><th colspan='2'>5/3</th></tr>
+	<tr>
+		<td>r2=0<br/>r3=2<br/>r5=0</td><td>r2=1<br/>r3=0<br/>r5=0</td>
+		<td>r2=0<br/>r3=0<br/>r5=0</td><td>r2=0<br/>r3=0<br/>r5=1</td>
+		<td>r2=0<br/>r3=0<br/>r5=1</td><td>r2=0<br/>r3=1<br/>r5=0</td>
+	</tr>
+</table>
+
+<p>You can interpret a fraction as saying if the current value of each register is greater than or equal to the the value specified by the denominator (the number of times the prime for that register divides the denominator), you subtract from the registers all of the values in the denominator, add all the values specified in the numerator (the number of times the prime for each register divides the numerator), and then jump back to the first instruction. Otherwise, if any register is less than the value specified in the denominator, continue to the next fraction.</p>
+
+<pre>
+;; If the register corresponding to the prime number 2 
+;; is greater or equal to 1
+if reg[2] >= 1
+  ;; Decrement it by 1 and increment the register 
+  ;; corresponding to 3 by 2. 
+  reg[2] = reg[2] - 1
+  reg[3] = reg[3] + 2
+  goto the beginning of the program
+;; Otherwise continue with the rest of the program.
+</pre>
 
 <!--
+
+ For example, the fraction 9/2 can be translated into the following pseudocode:
+
+
+
+Although programming Fractran is still difficult, this technique suddenly makes writing Fizzbuzz in Fractran tractable.
+
+
+
+
 <p>Let's have a look at the multiplication program.</p>
 
 <table border='1'>
@@ -93,5 +125,5 @@ printregisters(int num)
 	}
 }
 </pre>
-<figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/fractran.htm' target='_blank'>edit</a> to <a href='../src/inc/html/fractran.htm'>fractran.htm</a>(95 lines)</figcaption>
+<figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/fractran.htm' target='_blank'>edit</a> to <a href='../src/inc/html/fractran.htm'>fractran.htm</a>(127 lines)</figcaption>
 </figure><ul><li><a href='https://git.sr.ht/~rabbits/fractran' target='_blank'>Fractran Interpreter(C89)</a></li><li><a href='https://esoteric.codes/blog/an-intro-to-fractran' target='_blank'>Intro to Fractran</a></li><li><a href='https://esolangs.org/wiki/Fractran' target='_blank'>Article on Esolang</a></li><li><a href='https://esolangs.org/wiki/Collatz_function' target='_blank'>Collatz function</a></li></ul><p><i>Last update on <a href='tracker.html'>20Y09</a>, edited 3 times. +9/24fh</i><code style='float:right; font-size:80%'>------</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
