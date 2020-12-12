@@ -111,12 +111,13 @@ if(<span class='denreg'>r2</span> >= <span class='denval'>2</span> && <span clas
 
 <pre>126(2<sup>1</sup> × 3<sup>2</sup> × 7<sup>1</sup>) <b>7/11 715/14 935/21 1/7 2/13 3/17</b> = 2250(2<sup>1</sup> × 3<sup>2</sup> × 5<sup>3</sup>)</pre>
 
-<h3>Interpreter</h3>
-
-<p>A simple Fractran interpreter, written in <a href='ansi_c'>ANSI C</a>, showing the value in the registers as it steps through the program.</p>
-
-<pre>
-#include &lt;stdio.h&gt;
+<style>
+	.numreg { background:pink }
+	.numval { background:#ffdee4 }
+	.denreg { background:#72dec2 }
+	.denval { background:#ffd18c }
+</style><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/fractran_guide.htm' target='_blank'>edit</a> to <a href='../src/inc/html/fractran_guide.htm'>fractran_guide.htm</a>(118 lines)</figcaption>
+</figure><h3>Interpreter</h3><p>A simple Fractran interpreter, written in <a href='ansi_c'>ANSI C</a>, showing the value in the registers as it steps through the program.</p><figure><pre>#include &lt;stdio.h&gt;
 
 /* 
 Copyright (c) 2020 Devine Lu Linvega
@@ -159,9 +160,9 @@ Frac(unsigned int num, unsigned int den)
 void
 printstate(Machine *m)
 {
-	unsigned int fac = 2, num = m->acc.num;
+	unsigned int fac = 2, num = m-&gt;acc.num;
 	printf("[%d] ", num);
-	while(num > 1) {
+	while(num &gt; 1) {
 		if(num % fac == 0) {
 			unsigned int pow = 1;
 			printf("r%02u=", fac);
@@ -183,17 +184,17 @@ void
 run(Machine *m)
 {
 	int i = 0, steps = 0;
-	while(i < m->len && m->acc.num) {
-		Fraction res, *f = &m->program[i++];
-		res = Frac(m->acc.num * f->num, m->acc.den * f->den);
+	while(i &lt; m-&gt;len &amp;&amp; m-&gt;acc.num) {
+		Fraction res, *f = &amp;m-&gt;program[i++];
+		res = Frac(m-&gt;acc.num * f-&gt;num, m-&gt;acc.den * f-&gt;den);
 		printf("%u × %u/%u = %u/%u \n",
-			m->acc.num,
-			f->num,
-			f->den,
+			m-&gt;acc.num,
+			f-&gt;num,
+			f-&gt;den,
 			res.num,
 			res.den);
 		if(res.den == 1) {
-			m->acc = res;
+			m-&gt;acc = res;
 			printstate(m);
 			i = 0;
 		}
@@ -209,13 +210,13 @@ void
 push(Machine *m, char *w)
 {
 	Fraction f;
-	if(!m->acc.den) {
-		if(sscanf(w, "%u", &m->acc.num) > 0)
-			m->acc.den = 1;
+	if(!m-&gt;acc.den) {
+		if(sscanf(w, "%u", &amp;m-&gt;acc.num) &gt; 0)
+			m-&gt;acc.den = 1;
 		return;
 	}
-	if(sscanf(w, "%u/%u", &f.num, &f.den) > 0)
-		m->program[m->len++] = f;
+	if(sscanf(w, "%u/%u", &amp;f.num, &amp;f.den) &gt; 0)
+		m-&gt;program[m-&gt;len++] = f;
 }
 
 Machine m;
@@ -229,22 +230,15 @@ main(void)
 		if(c == ' ' || c == '\n') {
 			word[len] = '\0';
 			len = 0;
-			push(&m, word);
+			push(&amp;m, word);
 		} else
 			word[len++] = c;
 		if(c == '\n')
 			break;
 	}
-	printstate(&m);
-	run(&m);
+	printstate(&amp;m);
+	run(&amp;m);
 	return 0;
 }
-</pre>
-
-<style>
-	.numreg { background:pink }
-	.numval { background:#ffdee4 }
-	.denreg { background:#72dec2 }
-	.denval { background:#ffd18c }
-</style><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/fractran.htm' target='_blank'>edit</a> to <a href='../src/inc/html/fractran.htm'>fractran.htm</a>(248 lines)</figcaption>
-</figure><ul><li><a href='https://git.sr.ht/~rabbits/fractran' target='_blank'>Fractran Interpreter(C89)</a></li><li><a href='https://tjwei.github.io/Fractran' target='_blank'>Fractran Interpreter(Web)</a></li><li><a href='https://esoteric.codes/blog/an-intro-to-fractran' target='_blank'>Intro to Fractran</a></li><li><a href='https://esolangs.org/wiki/Fractran' target='_blank'>Article on Esolang</a></li><li><a href='https://esolangs.org/wiki/Collatz_function' target='_blank'>Collatz function</a></li><li><a href='https://en.wikipedia.org/wiki/Register_machine' target='_blank'>Register Machine</a></li><li><a href='https://en.wikipedia.org/wiki/One-instruction_set_computer' target='_blank'>OISC</a></li></ul><p><i>incoming(1)</i>: <a href='firth.html'>firth</a> </p><p><i>Last update on <a href='tracker.html'>20Y11</a>, edited 5 times. +18/37fh</i><code style='float:right; font-size:80%'>------</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
+</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/fractran.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/fractran.c.txt'>fractran.c.txt</a>(123 lines)</figcaption>
+</figure><q>A common man marvels at uncommon things; a wise man marvels at the commonplace.</q><h5>—Confucius</h5><ul><li><a href='https://git.sr.ht/~rabbits/fractran' target='_blank'>Fractran Interpreter(C89)</a></li><li><a href='https://tjwei.github.io/Fractran' target='_blank'>Fractran Interpreter(Web)</a></li><li><a href='https://esoteric.codes/blog/an-intro-to-fractran' target='_blank'>Intro to Fractran</a></li><li><a href='https://esolangs.org/wiki/Fractran' target='_blank'>Article on Esolang</a></li><li><a href='https://esolangs.org/wiki/Collatz_function' target='_blank'>Collatz function</a></li><li><a href='https://en.wikipedia.org/wiki/Register_machine' target='_blank'>Register Machine</a></li><li><a href='https://en.wikipedia.org/wiki/One-instruction_set_computer' target='_blank'>OISC</a></li></ul><p><i>incoming(1)</i>: <a href='firth.html'>firth</a> </p><p><i>Last update on <a href='tracker.html'>20Y11</a>, edited 5 times. +18/37fh</i><code style='float:right; font-size:80%'>------</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>

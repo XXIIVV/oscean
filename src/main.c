@@ -319,15 +319,19 @@ fplist(FILE *f, Glossary *glo, char *target)
 }
 
 int
-fpinclude(FILE *f, char *target, int text)
+fpinclude(FILE *f, char *target, int text, int req)
 {
 	int lines = 0;
 	char c;
 	char *folder = text ? "inc/text/" : "inc/html/";
 	char *ext = text ? ".txt" : ".htm";
 	FILE *fp = getfile(folder, target, ext, "r");
-	if(!fp)
-		return 0;
+	if(!fp) {
+		if(req)
+			return error("Missing include", target);
+		else
+			return 0;
+	}
 	fputs("<figure>", f);
 	if(text)
 		fputs("<pre>", f);
@@ -372,9 +376,9 @@ fpmodule(FILE *f, Glossary *glo, char *s)
 	else if(scmp(cmd, "list")) {
 		fplist(f, glo, target);
 	} else if(scmp(cmd, "text")) {
-		fpinclude(f, target, 1);
+		fpinclude(f, target, 1, 1);
 	} else if(scmp(cmd, "html")) {
-		fpinclude(f, target, 0);
+		fpinclude(f, target, 0, 1);
 	} else if(scmp(cmd, "img")) {
 		int split2 = scin(target, ' ');
 		if(split2 > 0) {
@@ -750,7 +754,7 @@ fphtml(FILE *f, Glossary *glo, Lexicon *lex, Term *t, Journal *jou)
 	fputs("<main>", f);
 	fpbanner(f, jou, t, 1);
 	fpbody(f, glo, lex, t);
-	fpinclude(f, t->filename, 0);
+	fpinclude(f, t->filename, 0, 0);
 	/* templated pages */
 	if(t->type) {
 		if(scmp(t->type, "pict_portal"))
