@@ -13,11 +13,11 @@
 
 <h3>The Operators</h3>
 
-<p>A fractran operation is a positive fraction, each fraction represents an instruction that tests one or more registers, represented by the prime factors of its denominator. The Fractran computer goes through each fraction in order, in terms of our current accumulator value.</p>
-
 <img src='../media/refs/fractran.adder1.jpg' width='140px'/>
 
-<pre>18(2<sup>1</sup> × 3<sup>2</sup>) <b>2/3</b> = 8(2<sup>3</sup>) <i>addition</i></pre>
+<p>A fractran operation is a positive fraction, each fraction represents an instruction that tests one or more registers, represented by the prime factors of its denominator. The Fractran computer goes through each fraction in order, in terms of our current accumulator value.</p>
+
+<pre>18(2<sup>1</sup> × 3<sup>2</sup>) <b>2/3</b> = 8(2<sup>3</sup>) <i>addition r2+r3->r2</i></pre>
 
 <p>To run the <i>adder operation</i>(<code>2/3</code>), we will take the state of the accumulator. If multiplying it by this fraction will give us an integer, we will do so and start again at the beginning of the program. Otherwise, we will stop and consider the program complete. We will do this repeatedly until we can no longer produce an integer with this method. </p>
 
@@ -33,7 +33,7 @@
 
 <p>For each step of the program, we will multiply our state with the program(18 × 2/3 = 12, 12 × 2/3 = 8, ..) until our our working value cannot be reduced to a whole number(16/3), we have exhausted the program. Alternatively, the program <code>3/2</code> will do the same operation but store the result in the register 3. </p>
 
-<pre>576(2<sup>6</sup> × 3<sup>2</sup>) <b>1/6</b> = 16(2<sup>4</sup>) <i>subtraction</i></pre>
+<pre>576(2<sup>6</sup> × 3<sup>2</sup>) <b>1/6</b> = 16(2<sup>4</sup>) <i>subtraction r2-r3->r2</i></pre>
 
 <p>Operations become more readable when broken down into their primes. We can think of every prime number as having a register which can take on non-negative integer values. Each fraction is an instruction that operates on some of the registers.</p>
 
@@ -79,18 +79,37 @@ if(<span class='denreg'>r2</span> >= <span class='denval'>2</span> && <span clas
 	</tr>
 </table>
 
-<style>
-	.numreg { background:pink }
-	.numval { background:#ffdee4 }
-	.denreg { background:#72dec2 }
-	.denval { background:#ffd18c }
-</style>
-
 <p>You can interpret a fraction as saying if the current value of each register is greater than or equal to the the value specified by the denominator, you subtract from the registers all of the values in the denominator, add all the values specified in the numerator, and then jump back to the first instruction. Otherwise, if any register is less than the value specified in the denominator, continue to the next fraction.</p>
 
 <h3>The Programs</h3>
 
 <img src='../media/refs/fractran.adder2.jpg' width='160px'/>
+
+<p>Let's consider an adder program similar from the one above(<code>2/3</code>) but which writes to a third register. The following program first moves the content in r2 to r3, and then the content of r3 to r5.</p>
+
+<pre>18(2<sup>1</sup> × 3<sup>2</sup>) <b>3/2 5/3</b> = 125(5<sup>3</sup>) <i>addition r2+r3->r5(9 steps)</i></pre>
+
+<p>Alternatively, a faster way to do this would be to directly move powers of 2 over to 5, then powers of 3.</p>
+
+<pre>18(2<sup>1</sup> × 3<sup>2</sup>) <b>5/2 5/3</b> = 125(5<sup>3</sup>) <i>addition r2+r3->r5(7 steps)</i></pre>
+
+<p>Each of the 7 steps of this last program looks like: </p>
+
+<pre>
+18 5/2 5/3           [18]  r2=01 r3=02
+------------------   -----------------
+18 × 5/2 = 45/1      [45]  r3=02 r5=01
+45 × 5/2 = 225/2 
+45 × 5/3 = 75/1      [75]  r3=01 r5=02
+75 × 5/2 = 375/2 
+75 × 5/3 = 125/1     [125] r5=03
+125 × 5/2 = 625/2 
+125 × 5/3 = 625/3    [125] r5=03
+</pre>
+
+<p>Both of these programs are destructive, meaning that they drain the registers of their original values. We can make (<code>2/3</code>) less destructive with (<code>10/3</code>) by storing a copy of r3 in r5. And we can create a non-destructive adder but this requires coming in with the program with the flag r7 set: </p>
+
+<pre>126(2<sup>1</sup> × 3<sup>2</sup> × 7<sup>1</sup>) <b>7/11 715/14 935/21 1/7 2/13 3/17</b> = 2250(2<sup>1</sup> × 3<sup>2</sup> × 5<sup>3</sup>)</pre>
 
 <h3>Interpreter</h3>
 
@@ -163,7 +182,7 @@ printstate(Machine *m)
 void
 run(Machine *m)
 {
-	int i = 0;
+	int i = 0, steps = 0;
 	while(i < m->len && m->acc.num) {
 		Fraction res, *f = &m->program[i++];
 		res = Frac(m->acc.num * f->num, m->acc.den * f->den);
@@ -178,6 +197,11 @@ run(Machine *m)
 			printstate(m);
 			i = 0;
 		}
+		steps++;
+	}
+	if(steps) {
+		printstate(m);
+		printf("Completed in %d steps.\n", steps);
 	}
 }
 
@@ -213,9 +237,14 @@ main(void)
 	}
 	printstate(&m);
 	run(&m);
-	printstate(&m);
 	return 0;
 }
 </pre>
-<figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/fractran.htm' target='_blank'>edit</a> to <a href='../src/inc/html/fractran.htm'>fractran.htm</a>(219 lines)</figcaption>
-</figure><ul><li><a href='https://git.sr.ht/~rabbits/fractran' target='_blank'>Fractran Interpreter(C89)</a></li><li><a href='https://esoteric.codes/blog/an-intro-to-fractran' target='_blank'>Intro to Fractran</a></li><li><a href='https://esolangs.org/wiki/Fractran' target='_blank'>Article on Esolang</a></li><li><a href='https://esolangs.org/wiki/Collatz_function' target='_blank'>Collatz function</a></li><li><a href='https://en.wikipedia.org/wiki/Register_machine' target='_blank'>Register Machine</a></li><li><a href='https://en.wikipedia.org/wiki/One-instruction_set_computer' target='_blank'>OISC</a></li></ul><p><i>incoming(1)</i>: <a href='firth.html'>firth</a> </p><p><i>Last update on <a href='tracker.html'>20Y10</a>, edited 4 times. +14/31fh</i><code style='float:right; font-size:80%'>------</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
+
+<style>
+	.numreg { background:pink }
+	.numval { background:#ffdee4 }
+	.denreg { background:#72dec2 }
+	.denval { background:#ffd18c }
+</style><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/fractran.htm' target='_blank'>edit</a> to <a href='../src/inc/html/fractran.htm'>fractran.htm</a>(248 lines)</figcaption>
+</figure><ul><li><a href='https://git.sr.ht/~rabbits/fractran' target='_blank'>Fractran Interpreter(C89)</a></li><li><a href='https://tjwei.github.io/Fractran' target='_blank'>Fractran Interpreter(Web)</a></li><li><a href='https://esoteric.codes/blog/an-intro-to-fractran' target='_blank'>Intro to Fractran</a></li><li><a href='https://esolangs.org/wiki/Fractran' target='_blank'>Article on Esolang</a></li><li><a href='https://esolangs.org/wiki/Collatz_function' target='_blank'>Collatz function</a></li><li><a href='https://en.wikipedia.org/wiki/Register_machine' target='_blank'>Register Machine</a></li><li><a href='https://en.wikipedia.org/wiki/One-instruction_set_computer' target='_blank'>OISC</a></li></ul><p><i>incoming(1)</i>: <a href='firth.html'>firth</a> </p><p><i>Last update on <a href='tracker.html'>20Y11</a>, edited 5 times. +18/37fh</i><code style='float:right; font-size:80%'>------</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
