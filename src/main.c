@@ -373,13 +373,13 @@ fpmodule(FILE *f, Glossary *glo, char *s)
 		fprintf(f, "<iframe width='624' height='380' src='https://www.youtube.com/embed/%s?rel=0' style='max-width:700px' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe>", target);
 	else if(scmp(cmd, "redirect"))
 		fprintf(f, "<meta http-equiv='refresh' content='2; url=%s.html'/><p>In a hurry? Travel to <a href='%s.html'>%s</a>.</p>", target, target, target);
-	else if(scmp(cmd, "list")) {
+	else if(scmp(cmd, "list"))
 		fplist(f, glo, target);
-	} else if(scmp(cmd, "text")) {
+	else if(scmp(cmd, "text"))
 		fpinclude(f, target, 1, 1);
-	} else if(scmp(cmd, "html")) {
+	else if(scmp(cmd, "html"))
 		fpinclude(f, target, 0, 1);
-	} else if(scmp(cmd, "img")) {
+	else if(scmp(cmd, "img")) {
 		int split2 = scin(target, ' ');
 		if(split2 > 0) {
 			char param[256], value[256];
@@ -444,6 +444,8 @@ fpnavpart(FILE *f, Term *t, Term *target)
 		if(tc->name == t->name)
 			continue; /* Paradox */
 		if(tc->type && scmp(tc->type, "hidden"))
+			continue;
+		if(tc->type && scmp(tc->type, "alias"))
 			continue;
 		if(tc->name == target->name)
 			fprintf(f, "<li><a href='%s.html'>%s/</a></li>", tc->filename, tc->name);
@@ -735,6 +737,9 @@ fpindex(FILE *f, Lexicon *lex, Journal *jou)
 void
 fphtml(FILE *f, Glossary *glo, Lexicon *lex, Term *t, Journal *jou)
 {
+	Term *alias = NULL;
+	if(t->type && scmp(t->type, "alias"))
+		alias = findterm(lex, t->host);
 	fputs("<!DOCTYPE html><html lang='en'>", f);
 	fputs("</head>", f);
 	fprintf(f, "<meta charset='utf-8'>"
@@ -750,23 +755,23 @@ fphtml(FILE *f, Glossary *glo, Lexicon *lex, Term *t, Journal *jou)
 	fputs("</head>", f);
 	fputs("<body>", f);
 	fputs("<header><a href='home.html'><img src='../media/icon/logo.svg' alt='" NAME "' height='29'></a></header>", f);
-	fpnav(f, t);
+	fpnav(f, alias ? alias : t);
 	fputs("<main>", f);
-	fpbanner(f, jou, t, 1);
-	fpbody(f, glo, lex, t);
-	fpinclude(f, t->filename, 0, 0);
-	/* templated pages */
+	fpbanner(f, jou, alias ? alias : t, 1);
+	fpbody(f, glo, lex, alias ? alias : t);
+	fpinclude(f, alias ? alias->filename : t->filename, 0, 0);
 	if(t->type) {
 		if(scmp(t->type, "pict_portal"))
-			fpportal(f, glo, lex, jou, t, 1, 0);
+			fpportal(f, glo, lex, jou, alias ? alias : t, 1, 0);
 		else if(scmp(t->type, "text_portal"))
-			fpportal(f, glo, lex, jou, t, 0, 1);
+			fpportal(f, glo, lex, jou, alias ? alias : t, 0, 1);
 		else if(scmp(t->type, "album"))
-			fpalbum(f, jou, t);
+			fpalbum(f, jou, alias ? alias : t);
+		else if(scmp(t->type, "alias"))
+			fprintf(f, "<p>Redirected to <b>%s</b>, from <a href='%s'>%s</a>.</p>", alias->name, t->filename, t->name);
 		else if(!scmp(t->type, "hidden"))
 			error("Unknown template", t->type);
 	}
-	/* special pages */
 	if(scmp(t->name, "now"))
 		fpnow(f, lex, jou);
 	else if(scmp(t->name, "home"))
@@ -779,9 +784,9 @@ fphtml(FILE *f, Glossary *glo, Lexicon *lex, Term *t, Journal *jou)
 		fpjournal(f, jou);
 	else if(scmp(t->name, "index"))
 		fpindex(f, lex, jou);
-	fplinks(f, t);
-	fpincoming(f, t);
-	fphoraire(f, jou, t);
+	fplinks(f, alias ? alias : t);
+	fpincoming(f, alias ? alias : t);
+	fphoraire(f, jou, alias ? alias : t);
 	fputs("</main>", f);
 	fputs("<footer>", f);
 	fputs("<a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a>", f);
@@ -1012,7 +1017,7 @@ link(Block *block, Glossary *glo, Lexicon *lex, Journal *jou)
 		t->parent = findterm(lex, t->host);
 		if(!t->parent)
 			return error("Missing parent", t->host);
-		if(!t->bref)
+		if(!t->bref && !t->type)
 			return error("Missing bref", t->name);
 		t->parent->children[t->parent->children_len++] = t;
 	}
