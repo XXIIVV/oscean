@@ -768,7 +768,7 @@ fphtml(FILE *f, Glossary *glo, Lexicon *lex, Term *t, Journal *jou)
 		else if(scmp(t->type, "album"))
 			fpalbum(f, jou, alias ? alias : t);
 		else if(scmp(t->type, "alias"))
-			fprintf(f, "<p>Redirected to <b>%s</b>, from <a href='%s'>%s</a>.</p>", alias->name, t->filename, t->name);
+			fprintf(f, "<p>Redirected to <a href='%s.html'>%s</a>, from <b>%s</b>.</p>", alias->filename, alias->name, t->name);
 		else if(!scmp(t->type, "hidden"))
 			error("Unknown template", t->type);
 	}
