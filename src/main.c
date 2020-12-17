@@ -144,6 +144,22 @@ findterm(Lexicon *lex, char *name)
 	return NULL;
 }
 
+char *
+statusterm(Term *t)
+{
+	if(t->type && scmp(t->type, "alias"))
+		return "alias";
+	if(t->body_len < 1)
+		return "stub";
+	if(t->incoming_len < 1)
+		return "orphan";
+	if(t->outgoing_len < 1)
+		return "deadend";
+	if(t->logs_len < 2)
+		return "article";
+	return "";
+}
+
 /* Log */
 
 Log *
@@ -435,7 +451,7 @@ fpbanner(FILE *f, Journal *jou, Term *t, int caption)
 }
 
 void
-fpnavpart(FILE *f, Term *t, Term *target)
+fpnavsub(FILE *f, Term *t, Term *target)
 {
 	int i;
 	fputs("<ul>", f);
@@ -464,13 +480,13 @@ fpnav(FILE *f, Term *t)
 		error("Missing parent", t->parent->name);
 	fputs("<nav>", f);
 	if(t->parent->parent->name == t->parent->name)
-		fpnavpart(f, t->parent->parent, t);
+		fpnavsub(f, t->parent->parent, t);
 	else
-		fpnavpart(f, t->parent->parent, t->parent);
+		fpnavsub(f, t->parent->parent, t->parent);
 	if(t->parent->parent->name != t->parent->name)
-		fpnavpart(f, t->parent, t);
+		fpnavsub(f, t->parent, t);
 	if(t->parent->name != t->name)
-		fpnavpart(f, t, t);
+		fpnavsub(f, t, t);
 	fputs("</nav>", f);
 }
 
@@ -546,7 +562,7 @@ fphoraire(FILE *f, Journal *jou, Term *t)
 	if(t->logs_len < 2 || !t->date_last)
 		return;
 	fputs("<p>", f);
-	fprintf(f, "<i>Last update on <a href='tracker.html'>%s</a>, edited %d times. +%d/%dfh</i>", t->date_last, t->logs_len, t->ch, t->fh);
+	fprintf(f, "<i>Last update on <a href='tracker.html'>%s</a>, edited %d times. +%d/%dfh <b>%s</b></i> ", t->date_last, t->logs_len, t->ch, t->fh, statusterm(t));
 	fplifeline(f, t);
 	fputs("</p>", f);
 	/* Events */
@@ -699,18 +715,16 @@ fpnow(FILE *f, Lexicon *lex, Journal *jou)
 }
 
 void
-fpdetails(FILE *f, Term *t, int depth)
+fpindexsub(FILE *f, Term *t, int depth)
 {
 	int i;
-	fprintf(f, "<li><a href='%s.html'>%s</a> <i>%s</i></li>", t->filename, t->name, t->body_len < 1 ? "stub" : t->incoming_len < 1 ? "orphan "
-																										   : t->outgoing_len < 1   ? "deadend "
-																																   : "");
+	fprintf(f, "<li><a href='%s.html'>%s</a> <i>%s</i></li>", t->filename, t->name, statusterm(t));
 	if(t->children_len < 1)
 		return;
 	fputs("<ul>", f);
 	for(i = 0; i < t->children_len; ++i)
 		if(!scmp(t->children[i]->name, t->name))
-			fpdetails(f, t->children[i], depth++);
+			fpindexsub(f, t->children[i], depth++);
 	fputs("</ul>", f);
 }
 
@@ -730,7 +744,7 @@ fpindex(FILE *f, Lexicon *lex, Journal *jou)
 	}
 	fprintf(f, "<p>This wiki hosts %d journal logs recorded on %d lexicon terms, connected by %d inbound links. It is a living document in which %d stubs, %d orphans and %d deadends still remain.</p>", jou->len, lex->len, sends, stubs, orphans, deadends);
 	fputs("<ul>", f);
-	fpdetails(f, &lex->terms[0], 0);
+	fpindexsub(f, &lex->terms[0], 0);
 	fputs("</ul>", f);
 }
 
