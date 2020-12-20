@@ -1,0 +1,55 @@
+typedef struct {
+	Point2d a, b;
+} Line2d;
+
+double
+slope2d(Line2d l0)
+{
+	if(l0.a.x - l0.b.x == 0.0)
+		return 0;
+	return (l0.a.y - l0.b.y) / (l0.a.x - l0.b.x);
+}
+
+Point2d
+normal2d(Line2d l0)
+{
+	Point2d normal = Pt2d(l0.a.y - l0.b.y, l0.b.x - l0.a.x);
+	double normalLength = sqrt(normal.x * normal.x + normal.y * normal.y);
+	normal.x /= normalLength;
+	normal.y /= normalLength;
+	return normal;
+}
+
+double
+parallel2d(Line2d l0, Line2d l1)
+{
+	return slope2d(l0) == slope2d(l1);
+}
+
+int
+intersect2d(Line2d l0, Line2d l1, Point2d *p0)
+{
+	double den, ua, ub;
+	if((l0.a.x == l0.b.x && l0.a.y == l0.b.y))
+		return 0;
+	if((l1.a.x == l1.b.x && l1.a.y == l1.b.y))
+		return 0;
+	den = ((l1.b.y - l1.a.y) * (l0.b.x - l0.a.x) - (l1.b.x - l1.a.x) * (l0.b.y - l0.a.y));
+	if(den == 0)
+		return 0;
+	ua = ((l1.b.x - l1.a.x) * (l0.a.y - l1.a.y) - (l1.b.y - l1.a.y) * (l0.a.x - l1.a.x)) / den;
+	ub = ((l0.b.x - l0.a.x) * (l0.a.y - l1.a.y) - (l0.b.y - l0.a.y) * (l0.a.x - l1.a.x)) / den;
+	if(ua < 0 || ua > 1 || ub < 0 || ub > 1)
+		return 0;
+	p0->x = l0.a.x + ua * (l0.b.x - l0.a.x);
+	p0->y = l0.a.y + ua * (l0.b.y - l0.a.y);
+	return 1;
+}
+
+void
+extend2d(Line2d l0, Point2d *p0, int len)
+{
+	double lenAB = sqrt(pow(l0.a.x - l0.b.x, 2.0) + pow(l0.a.y - l0.b.y, 2.0));
+	p0->x = l0.b.x + (l0.b.x - l0.a.x) / lenAB * len;
+	p0->y = l0.b.y + (l0.b.y - l0.a.y) / lenAB * len;
+}

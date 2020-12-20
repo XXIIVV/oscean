@@ -1,0 +1,109 @@
+<!DOCTYPE html><html lang='en'></head><meta charset='utf-8'><meta name='description' content='Geometry is the study of space in relation with distance, shape, size, and position of figures.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV — geometry</title></head><body><header><a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='audio.html'>audio</a></li><li><a href='visual.html'>visual</a></li><li><a href='research.html'>research/</a></li><li><a href='about.html'>about</a></li></ul><ul><li><a href='arithmetic.html'>arithmetic</a></li><li><a href='geometry.html'>geometry/</a></li><li><a href='language.html'>language</a></li><li><a href='computation.html'>computation</a></li><li><a href='hardware.html'>hardware</a></li><li><a href='mirrors.html'>mirrors</a></li><li><a href='notebook.html'>notebook</a></li></ul><ul></ul></nav><main><h2>Geometry is the study of space in relation with distance, shape, size, and position of figures.</h2><h3>Point2d.c</h3><figure><pre>typedef struct {
+	int x, y;
+} Point2d;
+
+Point2d *
+setpt2d(Point2d *p, int x, int y)
+{
+	p-&gt;x = x;
+	p-&gt;y = y;
+	return p;
+}
+
+Point2d
+Pt2d(int x, int y)
+{
+	Point2d p;
+	setpt2d(&amp;p, x, y);
+	return p;
+}
+
+Point2d
+mid2d(Point2d a, Point2d b, int seg, int segs)
+{
+	return Pt2d(
+		a.x + ((b.x - a.x) / (double)segs) * seg,
+		a.y + ((b.y - a.y) / (double)segs) * seg);
+}
+
+Point2d *
+mag2d(Point2d *a, int step)
+{
+	return setpt2d(a,
+		abs(a-&gt;x / step) * step,
+		abs(a-&gt;y / step) * step);
+}
+
+int
+equ2d(Point2d *a, Point2d *b)
+{
+	return a-&gt;x == b-&gt;x &amp;&amp; a-&gt;y == b-&gt;y;
+}
+
+int
+distance2d(Point2d p0, Point2d p1)
+{
+	double a = p0.x - p1.x, b = p0.x - p1.x;
+	return sqrt(a * a + b * b);
+}
+</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/point2d.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/point2d.c.txt'>point2d.c.txt</a>(48 lines)</figcaption>
+</figure><h3>Line2d.c</h3><figure><pre>typedef struct {
+	Point2d a, b;
+} Line2d;
+
+double
+slope2d(Line2d l0)
+{
+	if(l0.a.x - l0.b.x == 0.0)
+		return 0;
+	return (l0.a.y - l0.b.y) / (l0.a.x - l0.b.x);
+}
+
+Point2d
+normal2d(Line2d l0)
+{
+	Point2d normal = Pt2d(l0.a.y - l0.b.y, l0.b.x - l0.a.x);
+	double normalLength = sqrt(normal.x * normal.x + normal.y * normal.y);
+	normal.x /= normalLength;
+	normal.y /= normalLength;
+	return normal;
+}
+
+double
+parallel2d(Line2d l0, Line2d l1)
+{
+	return slope2d(l0) == slope2d(l1);
+}
+
+int
+intersect2d(Line2d l0, Line2d l1, Point2d *p0)
+{
+	double den, ua, ub;
+	if((l0.a.x == l0.b.x &amp;&amp; l0.a.y == l0.b.y))
+		return 0;
+	if((l1.a.x == l1.b.x &amp;&amp; l1.a.y == l1.b.y))
+		return 0;
+	den = ((l1.b.y - l1.a.y) * (l0.b.x - l0.a.x) - (l1.b.x - l1.a.x) * (l0.b.y - l0.a.y));
+	if(den == 0)
+		return 0;
+	ua = ((l1.b.x - l1.a.x) * (l0.a.y - l1.a.y) - (l1.b.y - l1.a.y) * (l0.a.x - l1.a.x)) / den;
+	ub = ((l0.b.x - l0.a.x) * (l0.a.y - l1.a.y) - (l0.b.y - l0.a.y) * (l0.a.x - l1.a.x)) / den;
+	if(ua &lt; 0 || ua &gt; 1 || ub &lt; 0 || ub &gt; 1)
+		return 0;
+	p0-&gt;x = l0.a.x + ua * (l0.b.x - l0.a.x);
+	p0-&gt;y = l0.a.y + ua * (l0.b.y - l0.a.y);
+	return 1;
+}
+
+void
+extend2d(Line2d l0, Point2d *p0, int len)
+{
+	double lenAB = sqrt(pow(l0.a.x - l0.b.x, 2.0) + pow(l0.a.y - l0.b.y, 2.0));
+	p0-&gt;x = l0.b.x + (l0.b.x - l0.a.x) / lenAB * len;
+	p0-&gt;y = l0.b.y + (l0.b.y - l0.a.y) / lenAB * len;
+}</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/line2d.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/line2d.c.txt'>line2d.c.txt</a>(54 lines)</figcaption>
+</figure><figure><h3>Parallel</h3>
+
+<p>The slope of the first line is m1=(y<sup>2</sup>−y<sup>1</sup>)/(x<sup>2</sup>−x<sup>1</sup>) and the slope of the second is m2=(y<sup>4</sup>−y<sup>3</sup>)/(x<sup>4</sup>−x<sup>3</sup>). The lines are parallel if and only if m1=m2.</p>
+<figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/geometry.htm' target='_blank'>edit</a> to <a href='../src/inc/html/geometry.htm'>geometry.htm</a>(3 lines)</figcaption>
+</figure><ul><li><a href='http://paulbourke.net/geometry/pointlineplane/' target='_blank'>Paul Bourke</a></li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
