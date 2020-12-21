@@ -28,10 +28,6 @@ WITH REGARD TO THIS SOFTWARE.
 #define VIEWSIDE Pt3d(90, 90, 0)
 
 typedef struct {
-	int x, y;
-} Point;
-
-typedef struct {
 	double x, y;
 } Point2d;
 
@@ -76,10 +72,10 @@ Camera cam;
 
 Uint32 theme[] = {
 	0x000000,
-	0x72DEC2,
 	0xFFFFFF,
-	0x444444,
-	0xffb545};
+	0xffb545,
+	0x72DEC2,
+	0x444444};
 
 Uint8 icons[][8] = {
 	{0x10, 0x28, 0x44, 0x92, 0x44, 0x28, 0x10, 0x00},
@@ -94,15 +90,6 @@ SDL_Texture *gTexture = NULL;
 Uint32 *pixels;
 
 /* helpers */
-
-Point
-Pt(int x, int y)
-{
-	Point p;
-	p.x = x;
-	p.y = y;
-	return p;
-}
 
 Point2d
 Pt2d(double x, double y)
@@ -289,18 +276,6 @@ addmesh(Scene *s, Mesh m)
 	return &s->meshes[s->len - 1];
 }
 
-Point
-project(Camera *c, Point3d v)
-{
-	double r;
-	if(c->projection == ISOMETRIC)
-		return Pt(
-			(WIDTH / 2) + v.x * (10 - c->range / 10),
-			(HEIGHT / 2) + v.y * (10 - c->range / 10));
-	r = 200 / (v.z + c->range);
-	return Pt(WIDTH / 2 + r * v.x, HEIGHT / 2 + r * v.y);
-}
-
 /* transforms */
 
 Mesh *
@@ -330,13 +305,6 @@ rotate(Mesh *m, double pitch, double yaw, double roll)
 	int i;
 	for(i = 0; i < m->verticeslen; i++)
 		rotpt3d(&m->position, &m->vertices[i], pitch, yaw, roll);
-	return m;
-}
-
-Mesh *
-color(Mesh *m, int color)
-{
-	m->color = color;
 	return m;
 }
 
@@ -372,6 +340,13 @@ symmetry(Mesh *m, double x, double y, double z)
 		addedge(m,
 			el + 1 + m->edges[i].a,
 			el + 1 + m->edges[i].b);
+	return m;
+}
+
+Mesh *
+color(Mesh *m, int color)
+{
+	m->color = color;
 	return m;
 }
 
@@ -463,14 +438,14 @@ putpixel(Uint32 *dst, int x, int y, int color)
 }
 
 void
-line(Uint32 *dst, Point p0, Point p1, int color)
+line(Uint32 *dst, Point2d p0, Point2d p1, int color)
 {
-	double dx = abs(p1.x - p0.x), sx = p0.x < p1.x ? 1 : -1;
-	double dy = -abs(p1.y - p0.y), sy = p0.y < p1.y ? 1 : -1;
+	double dx = abs((int)p1.x - (int)p0.x), sx = (int)p0.x < (int)p1.x ? 1 : -1;
+	double dy = -abs((int)p1.y - (int)p0.y), sy = (int)p0.y < (int)p1.y ? 1 : -1;
 	double err = dx + dy, e2;
 	for(;;) {
-		putpixel(dst, p0.x, p0.y, color);
-		if(p0.x == p1.x && p0.y == p1.y)
+		putpixel(dst, (int)p0.x, (int)p0.y, color);
+		if((int)p0.x == (int)p1.x && (int)p0.y == (int)p1.y)
 			break;
 		e2 = 2 * err;
 		if(e2 >= dy) {
@@ -499,10 +474,22 @@ void
 drawui(Uint32 *dst)
 {
 	int bottom = VER * 8 + 8;
-	drawicon(dst, 0 * 8, bottom, icons[0], equpt3d(cam.rotation, VIEWFRONT) ? 1 : 3);
-	drawicon(dst, 1 * 8, bottom, icons[1], equpt3d(cam.rotation, VIEWTOP) ? 1 : 3);
-	drawicon(dst, 2 * 8, bottom, icons[2], equpt3d(cam.rotation, VIEWSIDE) ? 1 : 3);
+	drawicon(dst, 0 * 8, bottom, icons[0], equpt3d(cam.rotation, VIEWFRONT) ? 1 : 4);
+	drawicon(dst, 1 * 8, bottom, icons[1], equpt3d(cam.rotation, VIEWTOP) ? 1 : 4);
+	drawicon(dst, 2 * 8, bottom, icons[2], equpt3d(cam.rotation, VIEWSIDE) ? 1 : 4);
 	drawicon(dst, 4 * 8, bottom, icons[cam.projection == ISOMETRIC ? 4 : 3], 1);
+}
+
+Point2d
+project(Camera *c, Point3d v)
+{
+	double r;
+	if(c->projection == ISOMETRIC)
+		return Pt2d(
+			(WIDTH / 2) + v.x * (10 - c->range / 10),
+			(HEIGHT / 2) + v.y * (10 - c->range / 10));
+	r = 200 / (v.z + c->range);
+	return Pt2d(WIDTH / 2 + r * v.x, HEIGHT / 2 + r * v.y);
 }
 
 void
@@ -591,6 +578,7 @@ modrange(int mod)
 void
 selectoption(int option)
 {
+	printf("%d\n", option);
 	switch(option) {
 	case 0: setpt3d(&cam.trotation, VIEWFRONT.x, VIEWFRONT.y, VIEWFRONT.z); break;
 	case 1: setpt3d(&cam.trotation, VIEWTOP.x, VIEWTOP.y, VIEWTOP.z); break;
@@ -619,7 +607,7 @@ exportchr(void)
 {
 	int h, v, x, y;
 	Uint8 chrbuf[SZ];
-	FILE *f = fopen("dotgrid-export.chr", "wb");
+	FILE *f = fopen("moogle-export.chr", "wb");
 	setguides(0);
 	for(v = 0; v < VER; ++v)
 		for(h = 0; h < HOR; ++h)
@@ -632,7 +620,7 @@ exportchr(void)
 	if(!fwrite(chrbuf, sizeof(chrbuf), 1, f))
 		error("Save", "Invalid output file");
 	fclose(f);
-	puts("Exported dotgrid-export.chr");
+	puts("Exported moogle-export.chr");
 }
 
 void
@@ -661,12 +649,10 @@ loadtheme(FILE *f)
 		return;
 	while(fgets(line, 256, f)) {
 		int i = 0;
-		while(line[i++]) {
+		while(line[i++] && id < 5) {
 			if(line[i] != '#')
 				continue;
-			if(id == 0 || id > 4)
-				theme[id > 4 ? id - 4 : 0] = shex(line + i + 1, 6);
-			id++;
+			theme[id++] = shex(line + i + 1, 6);
 		}
 	}
 	fclose(f);
@@ -689,15 +675,12 @@ quit(void)
 void
 domouse(SDL_Event *event)
 {
-	Point2d touch = Pt2d(
-		(event->motion.x - (PAD * ZOOM)) / ZOOM,
-		(event->motion.y - (PAD * ZOOM)) / ZOOM);
 	switch(event->type) {
 	case SDL_MOUSEBUTTONUP:
 		break;
 	case SDL_MOUSEBUTTONDOWN:
-		if((int)touch.y >= VER * 8 + 8)
-			selectoption((int)touch.x / 8);
+		if(event->motion.y / ZOOM / 8 == VER + 2)
+			selectoption(event->motion.x / ZOOM / 8 - 1);
 		break;
 	case SDL_MOUSEMOTION:
 		break;
@@ -808,8 +791,9 @@ main(void)
 		return error("Init", "Failure");
 	loadtheme(fopen("theme.svg", "r"));
 
-	addfrustum(&scn, 12, 8, 10, 8);
-	color(addprism(&scn, 12, 8, 10), 2);
+	color(addfrustum(&scn, 12, 8, 10, 8), 4);
+	color(addprism(&scn, 12, 8, 10), 3);
+	color(addpolygon(&scn, 14, 16), 2);
 
 	redraw(pixels);
 
