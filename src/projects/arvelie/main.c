@@ -23,7 +23,7 @@ main(int argc, char* argv[])
 			return error("Misformatted Input", "");
 		}
 	} else {
-		print_arvelie();
+		parvelie();
 	}
 	return 0;
 }

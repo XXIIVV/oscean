@@ -1120,7 +1120,7 @@ main(void)
 	block.len = 0;
 	block.data[0] = '\0';
 
-	print_arvelie();
+	parvelie();
 	printf("    | Marble #%d(%.2f%%)\n", death, (death / (double)3900) * 100);
 
 	start = clock();

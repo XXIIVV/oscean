@@ -190,9 +190,14 @@ print_ymdstr_from_arvelie(char* date)
 }
 
 void
-print_arvelie(void)
+parvelie(void)
 {
 	time_t now;
+	struct tm *local;
 	time(&now);
-	print_arvelie_from_time(now);
+	local = localtime(&now);
+	printf("%02d%c%02d",
+		local->tm_year % 100,
+		'A' + local->tm_yday / 14,
+		local->tm_yday % 14);
 }
