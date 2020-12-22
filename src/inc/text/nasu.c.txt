@@ -33,10 +33,10 @@ Brush brush;
 
 Uint32 theme[] = {
 	0x000000,
-	0x72DEC2,
 	0xFFFFFF,
-	0x444444,
-	0x111111};
+	0x72DEC2,
+	0x999999,
+	0x333333};
 
 Uint8 icons[7][8] = {
 	{0x38, 0x7c, 0xfe, 0xfe, 0xfe, 0x7c, 0x38, 0x00},
@@ -250,11 +250,11 @@ drawui(Uint32 *dst)
 	drawicon(dst, 0, bottom, brush.color == 1 ? icons[1] : icons[0], 1);
 	drawicon(dst, 8, bottom, brush.color == 2 ? icons[1] : icons[0], 2);
 	drawicon(dst, 16, bottom, brush.color == 3 ? icons[1] : icons[0], 3);
-	drawicon(dst, 4 * 8, bottom, icons[2], brush.mode == 0 ? 2 : 3);
-	drawicon(dst, 5 * 8, bottom, icons[3], brush.mode == 1 ? 2 : 3);
-	drawicon(dst, 6 * 8, bottom, icons[4], brush.mode == 2 ? 2 : 3);
-	drawicon(dst, 7 * 8, bottom, icons[5], brush.mode == 3 ? 2 : 3);
-	drawicon(dst, 8 * 8, bottom, icons[6], brush.mode == 4 ? 2 : 3);
+	drawicon(dst, 4 * 8, bottom, icons[2], brush.mode == 0 ? 1 : 2);
+	drawicon(dst, 5 * 8, bottom, icons[3], brush.mode == 1 ? 1 : 2);
+	drawicon(dst, 6 * 8, bottom, icons[4], brush.mode == 2 ? 1 : 2);
+	drawicon(dst, 7 * 8, bottom, icons[5], brush.mode == 3 ? 1 : 2);
+	drawicon(dst, 8 * 8, bottom, icons[6], brush.mode == 4 ? 1 : 2);
 }
 
 void
@@ -380,15 +380,11 @@ loadtheme(FILE *f)
 		return;
 	while(fgets(line, 256, f)) {
 		int i = 0;
-		while(line[i++]) {
-			if(line[i] != '#')
-				continue;
-			if(id == 0 || id > 4)
-				theme[id > 4 ? id - 4 : 0] = shex(line + i + 1, 6);
-			id++;
+		while(line[i++] && id < 5) {
+			if(line[i] == '#')
+				theme[id++] = shex(line + i + 1, 6);
 		}
 	}
-	puts("Theme: Complete");
 	fclose(f);
 }
 
@@ -447,8 +443,8 @@ domouse(SDL_Event *event, Brush *b)
 		}
 		b->px = (event->motion.x - (PAD * ZOOM)) / ZOOM;
 		b->py = (event->motion.y - (PAD * ZOOM)) / ZOOM;
-		if(b->py >= VER * 8)
-			selectoption(abs(b->px / 8));
+		if(event->motion.y / ZOOM / 8 == VER + 2)
+			selectoption(event->motion.x / ZOOM / 8 - 1);
 		if(b->down && b->mode == 0) {
 			putchr(b->px - 1, b->py, b->erase ? 0 : b->color);
 			redraw(pixels);
@@ -553,9 +549,9 @@ main(int argc, char **argv)
 				quit();
 			else if(event.type == SDL_MOUSEBUTTONUP ||
 					event.type == SDL_MOUSEBUTTONDOWN ||
-					event.type == SDL_MOUSEMOTION) {
+					event.type == SDL_MOUSEMOTION)
 				domouse(&event, &brush);
-			} else if(event.type == SDL_KEYDOWN)
+			else if(event.type == SDL_KEYDOWN)
 				dokey(&event, &brush);
 			else if(event.type == SDL_WINDOWEVENT)
 				if(event.window.event == SDL_WINDOWEVENT_EXPOSED)

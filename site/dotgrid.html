@@ -62,10 +62,10 @@ int FPS = 30, GUIDES = 1, ZOOM = 2;
 
 Uint32 theme[] = {
 	0x000000,
-	0x72DEC2,
 	0xFFFFFF,
-	0x444444,
-	0xffb545};
+	0x72DEC2,
+	0x999999,
+	0x333333};
 
 Uint8 icons[8][8] = {
 	{0x38, 0x7c, 0xfe, 0xfe, 0xfe, 0x7c, 0x38, 0x00},
@@ -446,7 +446,7 @@ drawpath(Uint32 *dst, Path2d *path, int guides)
 	}
 	for(j = 0; j &lt; path-&gt;len; ++j)
 		if(guides)
-			handle(dst, path-&gt;points[j].x, path-&gt;points[j].y, 2, 4);
+			handle(dst, path-&gt;points[j].x, path-&gt;points[j].y, 2, path-&gt;color + 1);
 }
 
 void
@@ -456,11 +456,11 @@ drawguides(Uint32 *dst, int step)
 	for(x = 2; x &lt; WIDTH - 16; x++)
 		for(y = 2; y &lt; HEIGHT - 32; y++)
 			if(x % (step * 2) == y % (step * 2) &amp;&amp; x % (step * 2) == 0)
-				putpixel(dst, x, y, 2);
+				putpixel(dst, x, y, 3);
 			else if(x % step == 0 &amp;&amp; y % 2 == 0)
-				putpixel(dst, x, y, 3);
+				putpixel(dst, x, y, 4);
 			else if(y % step == 0 &amp;&amp; x % 2 == 0)
-				putpixel(dst, x, y, 3);
+				putpixel(dst, x, y, 4);
 }
 
 void
@@ -479,9 +479,9 @@ drawui(Uint32 *dst)
 {
 	int clr = brush.selection &gt;= 0 ? shape.paths[brush.selection].color : 1;
 	int bottom = VER * 8 + 8;
-	drawicon(dst, 0, bottom, clr == 1 ? icons[1] : icons[0], 1);
-	drawicon(dst, 1 * 8, bottom, clr == 2 ? icons[1] : icons[0], 2);
-	drawicon(dst, 2 * 8, bottom, clr == 3 ? icons[1] : icons[0], 3);
+	drawicon(dst, 0, bottom, icons[clr == 1 ? 1 : 0], 1);
+	drawicon(dst, 1 * 8, bottom, icons[clr == 2 ? 1 : 0], 2);
+	drawicon(dst, 2 * 8, bottom, icons[clr == 3 ? 1 : 0], 3);
 	drawicon(dst, 4 * 8, bottom, icons[2], cancast(LINE) ? 2 : 3);
 	drawicon(dst, 5 * 8, bottom, icons[3], cancast(ARC) ? 2 : 3);
 	drawicon(dst, 6 * 8, bottom, icons[4], cancast(BEZIER) ? 2 : 3);
@@ -504,7 +504,7 @@ redraw(Uint32 *dst)
 	/* draw stack */
 	for(i = 0; i &lt; stack.len; ++i) {
 		Point2d *a = &amp;stack.points[i];
-		handle(dst, a-&gt;x, a-&gt;y, 2, 4);
+		handle(dst, a-&gt;x, a-&gt;y, 2, brush.color + 1);
 		if(i &lt; stack.len - 1) {
 			Point2d *b = &amp;stack.points[i + 1];
 			line(dst, a-&gt;x, a-&gt;y, b-&gt;x, b-&gt;y, 4);
@@ -769,12 +769,9 @@ loadtheme(FILE *f)
 		return;
 	while(fgets(line, 256, f)) {
 		int i = 0;
-		while(line[i++]) {
-			if(line[i] != '#')
-				continue;
-			if(id == 0 || id &gt; 4)
-				theme[id &gt; 4 ? id - 4 : 0] = shex(line + i + 1, 6);
-			id++;
+		while(line[i++] &amp;&amp; id &lt; 5) {
+			if(line[i] == '#')
+				theme[id++] = shex(line + i + 1, 6);
 		}
 	}
 	fclose(f);
@@ -829,8 +826,8 @@ domouse(SDL_Event *event)
 		brush.touch = NULL;
 		break;
 	case SDL_MOUSEBUTTONDOWN:
-		if(magnet.y &gt;= VER * 8 + 8)
-			selectoption(abs(touch.x / 8));
+		if(event-&gt;motion.y / ZOOM / 8 == VER + 2)
+			selectoption(event-&gt;motion.x / ZOOM / 8 - 1);
 		else
 			selectpoint(&amp;magnet);
 		break;
@@ -909,6 +906,7 @@ main(int argc, char *argv[])
 	if(argc &gt; 1)
 		loadtxt(fopen(argv[1], "r"));
 	cancel();
+	setcolor(1);
 	while(1) {
 		int tick = SDL_GetTicks();
 		SDL_Event event;
@@ -920,9 +918,9 @@ main(int argc, char *argv[])
 				quit();
 			else if(event.type == SDL_MOUSEBUTTONUP ||
 					event.type == SDL_MOUSEBUTTONDOWN ||
-					event.type == SDL_MOUSEMOTION) {
+					event.type == SDL_MOUSEMOTION)
 				domouse(&amp;event);
-			} else if(event.type == SDL_KEYDOWN)
+			else if(event.type == SDL_KEYDOWN)
 				dokey(&amp;event);
 			else if(event.type == SDL_WINDOWEVENT)
 				if(event.window.event == SDL_WINDOWEVENT_EXPOSED)
@@ -932,5 +930,5 @@ main(int argc, char *argv[])
 	quit();
 	return 0;
 }
-</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/dotgrid.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/dotgrid.c.txt'>dotgrid.c.txt</a>(934 lines)</figcaption>
-</figure><figure><img src='../media/diary/508.jpg' alt='Working away from snow picture' width='900'/><figcaption>17Z11 — Working away from snow</figcaption></figure><figure><img src='../media/diary/385.jpg' alt='General improvements picture' width='900'/><figcaption>17W08 — General improvements</figcaption></figure><figure><img src='../media/diary/368.jpg' alt='Dotless Dotgrid Interface picture' width='900'/><figcaption>17W01 — Dotless Dotgrid Interface</figcaption></figure><ul><li><a href='https://git.sr.ht/~rabbits/dotgrid' target='_blank'>sources</a></li><li><a href='http://hundredrabbits.itch.io/Dotgrid' target='_blank'>builds</a></li><li><a href='https://hundredrabbits.github.io/Dotgrid' target='_blank'>live</a></li><li><a href='https://hundredrabbits.itch.io/Dotgrid/community' target='_blank'>community</a></li></ul><p><i>incoming(6)</i>: <a href='themes.html'>themes</a> <a href='ronin.html'>ronin</a> <a href='rafinograde.html'>rafinograde</a> <a href='computer.html'>computer</a> <a href='postscript.html'>postscript</a> <a href='identity.html'>identity</a> </p><p><i>Last update on <a href='tracker.html'>20X13</a>, edited 47 times. +207/287fh <b></b></i> <code style='float:right; font-size:80%'>----+-</code></p><ul><li>18A12 — Dotgrid Release</li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
+</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/dotgrid.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/dotgrid.c.txt'>dotgrid.c.txt</a>(932 lines)</figcaption>
+</figure><figure><img src='../media/diary/508.jpg' alt='Working away from snow picture' width='900'/><figcaption>17Z11 — Working away from snow</figcaption></figure><figure><img src='../media/diary/385.jpg' alt='General improvements picture' width='900'/><figcaption>17W08 — General improvements</figcaption></figure><figure><img src='../media/diary/368.jpg' alt='Dotless Dotgrid Interface picture' width='900'/><figcaption>17W01 — Dotless Dotgrid Interface</figcaption></figure><ul><li><a href='https://git.sr.ht/~rabbits/dotgrid' target='_blank'>sources</a></li><li><a href='http://hundredrabbits.itch.io/Dotgrid' target='_blank'>builds</a></li><li><a href='https://hundredrabbits.github.io/Dotgrid' target='_blank'>live</a></li><li><a href='https://hundredrabbits.itch.io/Dotgrid/community' target='_blank'>community</a></li></ul><p><i>incoming(6)</i>: <a href='themes.html'>themes</a> <a href='ronin.html'>ronin</a> <a href='rafinograde.html'>rafinograde</a> <a href='computer.html'>computer</a> <a href='postscript.html'>postscript</a> <a href='identity.html'>identity</a> </p><p><i>Last update on <a href='tracker.html'>20Z06</a>, edited 48 times. +213/291fh <b></b></i> <code style='float:right; font-size:80%'>----++</code></p><ul><li>18A12 — Dotgrid Release</li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>

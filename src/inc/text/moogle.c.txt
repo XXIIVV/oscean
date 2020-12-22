@@ -440,21 +440,23 @@ putpixel(Uint32 *dst, int x, int y, int color)
 void
 line(Uint32 *dst, Point2d p0, Point2d p1, int color)
 {
-	double dx = abs((int)p1.x - (int)p0.x), sx = (int)p0.x < (int)p1.x ? 1 : -1;
-	double dy = -abs((int)p1.y - (int)p0.y), sy = (int)p0.y < (int)p1.y ? 1 : -1;
-	double err = dx + dy, e2;
+	int p0x = (int)p0.x, p0y = (int)p0.y;
+	int p1x = (int)p1.x, p1y = (int)p1.y;
+	int dx = abs(p1x - p0x), sx = p0x < p1x ? 1 : -1;
+	int dy = -abs(p1y - p0y), sy = p0y < p1y ? 1 : -1;
+	int err = dx + dy, e2;
 	for(;;) {
-		putpixel(dst, (int)p0.x, (int)p0.y, color);
-		if((int)p0.x == (int)p1.x && (int)p0.y == (int)p1.y)
+		putpixel(dst, p0x, p0y, color);
+		if(p0x == p1x && p0y == p1y)
 			break;
 		e2 = 2 * err;
 		if(e2 >= dy) {
 			err += dy;
-			p0.x += sx;
+			p0x += sx;
 		}
 		if(e2 <= dx) {
 			err += dx;
-			p0.y += sy;
+			p0y += sy;
 		}
 	}
 }
@@ -474,9 +476,9 @@ void
 drawui(Uint32 *dst)
 {
 	int bottom = VER * 8 + 8;
-	drawicon(dst, 0 * 8, bottom, icons[0], equpt3d(cam.rotation, VIEWFRONT) ? 1 : 4);
-	drawicon(dst, 1 * 8, bottom, icons[1], equpt3d(cam.rotation, VIEWTOP) ? 1 : 4);
-	drawicon(dst, 2 * 8, bottom, icons[2], equpt3d(cam.rotation, VIEWSIDE) ? 1 : 4);
+	drawicon(dst, 0 * 8, bottom, icons[0], equpt3d(cam.rotation, VIEWFRONT) ? 1 : 2);
+	drawicon(dst, 1 * 8, bottom, icons[1], equpt3d(cam.rotation, VIEWTOP) ? 1 : 2);
+	drawicon(dst, 2 * 8, bottom, icons[2], equpt3d(cam.rotation, VIEWSIDE) ? 1 : 2);
 	drawicon(dst, 4 * 8, bottom, icons[cam.projection == ISOMETRIC ? 4 : 3], 1);
 }
 
@@ -578,7 +580,6 @@ modrange(int mod)
 void
 selectoption(int option)
 {
-	printf("%d\n", option);
 	switch(option) {
 	case 0: setpt3d(&cam.trotation, VIEWFRONT.x, VIEWFRONT.y, VIEWFRONT.z); break;
 	case 1: setpt3d(&cam.trotation, VIEWTOP.x, VIEWTOP.y, VIEWTOP.z); break;
@@ -791,9 +792,9 @@ main(void)
 		return error("Init", "Failure");
 	loadtheme(fopen("theme.svg", "r"));
 
-	color(addfrustum(&scn, 12, 8, 10, 8), 4);
-	color(addprism(&scn, 12, 8, 10), 3);
-	color(addpolygon(&scn, 14, 16), 2);
+	color(addfrustum(&scn, 12, 8, 10, 8), 3);
+	color(addprism(&scn, 12, 8, 10), 2);
+	addpolygon(&scn, 14, 16);
 
 	redraw(pixels);
 

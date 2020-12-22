@@ -62,10 +62,10 @@ int FPS = 30, GUIDES = 1, ZOOM = 2;
 
 Uint32 theme[] = {
 	0x000000,
-	0x72DEC2,
 	0xFFFFFF,
-	0x444444,
-	0xffb545};
+	0x72DEC2,
+	0x999999,
+	0x333333};
 
 Uint8 icons[8][8] = {
 	{0x38, 0x7c, 0xfe, 0xfe, 0xfe, 0x7c, 0x38, 0x00},
@@ -446,7 +446,7 @@ drawpath(Uint32 *dst, Path2d *path, int guides)
 	}
 	for(j = 0; j < path->len; ++j)
 		if(guides)
-			handle(dst, path->points[j].x, path->points[j].y, 2, 4);
+			handle(dst, path->points[j].x, path->points[j].y, 2, path->color + 1);
 }
 
 void
@@ -456,11 +456,11 @@ drawguides(Uint32 *dst, int step)
 	for(x = 2; x < WIDTH - 16; x++)
 		for(y = 2; y < HEIGHT - 32; y++)
 			if(x % (step * 2) == y % (step * 2) && x % (step * 2) == 0)
-				putpixel(dst, x, y, 2);
+				putpixel(dst, x, y, 3);
 			else if(x % step == 0 && y % 2 == 0)
-				putpixel(dst, x, y, 3);
+				putpixel(dst, x, y, 4);
 			else if(y % step == 0 && x % 2 == 0)
-				putpixel(dst, x, y, 3);
+				putpixel(dst, x, y, 4);
 }
 
 void
@@ -479,9 +479,9 @@ drawui(Uint32 *dst)
 {
 	int clr = brush.selection >= 0 ? shape.paths[brush.selection].color : 1;
 	int bottom = VER * 8 + 8;
-	drawicon(dst, 0, bottom, clr == 1 ? icons[1] : icons[0], 1);
-	drawicon(dst, 1 * 8, bottom, clr == 2 ? icons[1] : icons[0], 2);
-	drawicon(dst, 2 * 8, bottom, clr == 3 ? icons[1] : icons[0], 3);
+	drawicon(dst, 0, bottom, icons[clr == 1 ? 1 : 0], 1);
+	drawicon(dst, 1 * 8, bottom, icons[clr == 2 ? 1 : 0], 2);
+	drawicon(dst, 2 * 8, bottom, icons[clr == 3 ? 1 : 0], 3);
 	drawicon(dst, 4 * 8, bottom, icons[2], cancast(LINE) ? 2 : 3);
 	drawicon(dst, 5 * 8, bottom, icons[3], cancast(ARC) ? 2 : 3);
 	drawicon(dst, 6 * 8, bottom, icons[4], cancast(BEZIER) ? 2 : 3);
@@ -504,7 +504,7 @@ redraw(Uint32 *dst)
 	/* draw stack */
 	for(i = 0; i < stack.len; ++i) {
 		Point2d *a = &stack.points[i];
-		handle(dst, a->x, a->y, 2, 4);
+		handle(dst, a->x, a->y, 2, brush.color + 1);
 		if(i < stack.len - 1) {
 			Point2d *b = &stack.points[i + 1];
 			line(dst, a->x, a->y, b->x, b->y, 4);
@@ -769,12 +769,9 @@ loadtheme(FILE *f)
 		return;
 	while(fgets(line, 256, f)) {
 		int i = 0;
-		while(line[i++]) {
-			if(line[i] != '#')
-				continue;
-			if(id == 0 || id > 4)
-				theme[id > 4 ? id - 4 : 0] = shex(line + i + 1, 6);
-			id++;
+		while(line[i++] && id < 5) {
+			if(line[i] == '#')
+				theme[id++] = shex(line + i + 1, 6);
 		}
 	}
 	fclose(f);
@@ -829,8 +826,8 @@ domouse(SDL_Event *event)
 		brush.touch = NULL;
 		break;
 	case SDL_MOUSEBUTTONDOWN:
-		if(magnet.y >= VER * 8 + 8)
-			selectoption(abs(touch.x / 8));
+		if(event->motion.y / ZOOM / 8 == VER + 2)
+			selectoption(event->motion.x / ZOOM / 8 - 1);
 		else
 			selectpoint(&magnet);
 		break;
@@ -909,6 +906,7 @@ main(int argc, char *argv[])
 	if(argc > 1)
 		loadtxt(fopen(argv[1], "r"));
 	cancel();
+	setcolor(1);
 	while(1) {
 		int tick = SDL_GetTicks();
 		SDL_Event event;
@@ -920,9 +918,9 @@ main(int argc, char *argv[])
 				quit();
 			else if(event.type == SDL_MOUSEBUTTONUP ||
 					event.type == SDL_MOUSEBUTTONDOWN ||
-					event.type == SDL_MOUSEMOTION) {
+					event.type == SDL_MOUSEMOTION)
 				domouse(&event);
-			} else if(event.type == SDL_KEYDOWN)
+			else if(event.type == SDL_KEYDOWN)
 				dokey(&event);
 			else if(event.type == SDL_WINDOWEVENT)
 				if(event.window.event == SDL_WINDOWEVENT_EXPOSED)

@@ -33,10 +33,10 @@ Brush brush;
 
 Uint32 theme[] = {
 	0x000000,
-	0x72DEC2,
 	0xFFFFFF,
-	0x444444,
-	0x111111};
+	0x72DEC2,
+	0x999999,
+	0x333333};
 
 Uint8 icons[7][8] = {
 	{0x38, 0x7c, 0xfe, 0xfe, 0xfe, 0x7c, 0x38, 0x00},
@@ -250,11 +250,11 @@ drawui(Uint32 *dst)
 	drawicon(dst, 0, bottom, brush.color == 1 ? icons[1] : icons[0], 1);
 	drawicon(dst, 8, bottom, brush.color == 2 ? icons[1] : icons[0], 2);
 	drawicon(dst, 16, bottom, brush.color == 3 ? icons[1] : icons[0], 3);
-	drawicon(dst, 4 * 8, bottom, icons[2], brush.mode == 0 ? 2 : 3);
-	drawicon(dst, 5 * 8, bottom, icons[3], brush.mode == 1 ? 2 : 3);
-	drawicon(dst, 6 * 8, bottom, icons[4], brush.mode == 2 ? 2 : 3);
-	drawicon(dst, 7 * 8, bottom, icons[5], brush.mode == 3 ? 2 : 3);
-	drawicon(dst, 8 * 8, bottom, icons[6], brush.mode == 4 ? 2 : 3);
+	drawicon(dst, 4 * 8, bottom, icons[2], brush.mode == 0 ? 1 : 2);
+	drawicon(dst, 5 * 8, bottom, icons[3], brush.mode == 1 ? 1 : 2);
+	drawicon(dst, 6 * 8, bottom, icons[4], brush.mode == 2 ? 1 : 2);
+	drawicon(dst, 7 * 8, bottom, icons[5], brush.mode == 3 ? 1 : 2);
+	drawicon(dst, 8 * 8, bottom, icons[6], brush.mode == 4 ? 1 : 2);
 }
 
 void
@@ -380,15 +380,11 @@ loadtheme(FILE *f)
 		return;
 	while(fgets(line, 256, f)) {
 		int i = 0;
-		while(line[i++]) {
-			if(line[i] != '#')
-				continue;
-			if(id == 0 || id &gt; 4)
-				theme[id &gt; 4 ? id - 4 : 0] = shex(line + i + 1, 6);
-			id++;
+		while(line[i++] &amp;&amp; id &lt; 5) {
+			if(line[i] == '#')
+				theme[id++] = shex(line + i + 1, 6);
 		}
 	}
-	puts("Theme: Complete");
 	fclose(f);
 }
 
@@ -447,8 +443,8 @@ domouse(SDL_Event *event, Brush *b)
 		}
 		b-&gt;px = (event-&gt;motion.x - (PAD * ZOOM)) / ZOOM;
 		b-&gt;py = (event-&gt;motion.y - (PAD * ZOOM)) / ZOOM;
-		if(b-&gt;py &gt;= VER * 8)
-			selectoption(abs(b-&gt;px / 8));
+		if(event-&gt;motion.y / ZOOM / 8 == VER + 2)
+			selectoption(event-&gt;motion.x / ZOOM / 8 - 1);
 		if(b-&gt;down &amp;&amp; b-&gt;mode == 0) {
 			putchr(b-&gt;px - 1, b-&gt;py, b-&gt;erase ? 0 : b-&gt;color);
 			redraw(pixels);
@@ -553,9 +549,9 @@ main(int argc, char **argv)
 				quit();
 			else if(event.type == SDL_MOUSEBUTTONUP ||
 					event.type == SDL_MOUSEBUTTONDOWN ||
-					event.type == SDL_MOUSEMOTION) {
+					event.type == SDL_MOUSEMOTION)
 				domouse(&amp;event, &amp;brush);
-			} else if(event.type == SDL_KEYDOWN)
+			else if(event.type == SDL_KEYDOWN)
 				dokey(&amp;event, &amp;brush);
 			else if(event.type == SDL_WINDOWEVENT)
 				if(event.window.event == SDL_WINDOWEVENT_EXPOSED)
@@ -565,5 +561,5 @@ main(int argc, char **argv)
 	quit();
 	return 0;
 }
-</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/nasu.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/nasu.c.txt'>nasu.c.txt</a>(567 lines)</figcaption>
+</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/nasu.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/nasu.c.txt'>nasu.c.txt</a>(563 lines)</figcaption>
 </figure><p>Redirected to <a href='nasu.html'>nasu</a>, from <b>noodle</b>.</p><ul><li><a href='https://git.sr.ht/~rabbits/nasu' target='_blank'>sources</a></li><li><a href='https://hundredrabbits.github.io/Nasu' target='_blank'>browser version</a></li></ul><p><i>incoming(9)</i>: <a href='neauismetica.html'>neauismetica</a> <a href='graf3dscene.html'>graf3dscene</a> <a href='themes.html'>themes</a> <a href='dotgrid.html'>dotgrid</a> <a href='moogle.html'>moogle</a> <a href='chr_format.html'>chr format</a> <a href='donsol_famicom.html'>donsol famicom</a> <a href='computer.html'>computer</a> <a href='identity.html'>identity</a> </p><p><i>Last update on <a href='tracker.html'>20X12</a>, edited 27 times. +118/172fh <b></b></i> <code style='float:right; font-size:80%'>-----+</code></p><ul><li>20C06 — Nasu Release</li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
