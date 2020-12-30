@@ -47,6 +47,7 @@ typedef struct {
 
 typedef struct {
 	int len;
+	Point3d position, scale, rotation;
 	Mesh meshes[MLIMIT];
 } Scene;
 
@@ -104,7 +105,7 @@ Pt2d(double x, double y)
 }
 
 Point3d *
-setpt3d(Point3d *v, double x, double y, double z)
+set3d(Point3d *v, double x, double y, double z)
 {
 	v-&gt;x = x;
 	v-&gt;y = y;
@@ -116,7 +117,7 @@ Point3d
 Pt3d(double x, double y, double z)
 {
 	Point3d p;
-	setpt3d(&amp;p, x, y, z);
+	set3d(&amp;p, x, y, z);
 	return p;
 }
 
@@ -124,7 +125,7 @@ Mesh
 Ms3d(double x, double y, double z)
 {
 	Mesh m;
-	m.position = Pt3d(x, y, z);
+	set3d(&amp;m.position, x, y, z);
 	m.verticeslen = 0;
 	m.edgeslen = 0;
 	return m;
@@ -135,6 +136,9 @@ Sc3d(void)
 {
 	Scene s;
 	s.len = 0;
+	set3d(&amp;s.position, 0, 0, 0);
+	set3d(&amp;s.scale, 1, 1, 1);
+	set3d(&amp;s.rotation, 0, 0, 0);
 	return s;
 }
 
@@ -142,8 +146,8 @@ Camera
 Cm3d(double pitch, double yaw, double roll)
 {
 	Camera c;
-	setpt3d(&amp;c.rotation, pitch, yaw, roll);
-	setpt3d(&amp;c.trotation, pitch, yaw, roll);
+	set3d(&amp;c.rotation, pitch, yaw, roll);
+	set3d(&amp;c.trotation, pitch, yaw, roll);
 	c.projection = PERSPECTIVE;
 	c.range = 50;
 	return c;
@@ -190,16 +194,11 @@ interpolate(double a, double b, double speed, double range)
 	return a;
 }
 
-double
-deg2rad(double deg)
-{
-	return deg * (PI / 180);
-}
-
 Point2d
-rotpt2d(Point2d a, Point2d b, double deg)
+rot2d(Point2d a, Point2d b, double deg)
 {
-	double angle = atan2(b.y - a.y, b.x - a.x) + deg2rad(deg);
+	double radian = deg * (PI / 180);
+	double angle = atan2(b.y - a.y, b.x - a.x) + radian;
 	double r = sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
 	return Pt2d(a.x + r * cos(angle), a.y + r * sin(angle));
 }
@@ -213,7 +212,7 @@ equpt3d(Point3d p0, Point3d p1)
 Point3d *
 addpt3d(Point3d *p, double x, double y, double z)
 {
-	return setpt3d(p, p-&gt;x + x, p-&gt;y + y, p-&gt;z + z);
+	return set3d(p, p-&gt;x + x, p-&gt;y + y, p-&gt;z + z);
 }
 
 Point3d
@@ -222,37 +221,62 @@ add3d(Point3d *a, Point3d *b)
 	return Pt3d(a-&gt;x + b-&gt;x, a-&gt;y + b-&gt;y, a-&gt;z + b-&gt;z);
 }
 
-Point3d *
-rotpt3d(Point3d *v, Point3d *o, double pitch, double yaw, double roll)
+Point3d
+mul3d(Point3d *a, Point3d *b)
 {
-	if(pitch) {
-		Point2d r = rotpt2d(Pt2d(o-&gt;y, o-&gt;z), Pt2d(v-&gt;y, v-&gt;z), pitch);
-		v-&gt;y = r.x;
-		v-&gt;z = r.y;
-	}
-	if(yaw) {
-		Point2d r = rotpt2d(Pt2d(o-&gt;x, o-&gt;z), Pt2d(v-&gt;x, v-&gt;z), yaw);
-		v-&gt;x = r.x;
-		v-&gt;z = r.y;
-	}
-	if(roll) {
-		Point2d r = rotpt2d(Pt2d(o-&gt;x, o-&gt;y), Pt2d(v-&gt;x, v-&gt;y), roll);
-		v-&gt;x = r.x;
-		v-&gt;y = r.y;
-	}
-	return v;
+	return Pt3d(a-&gt;x * b-&gt;x, a-&gt;y * b-&gt;y, a-&gt;z * b-&gt;z);
 }
 
 /* scene */
 
 Point3d *
+translate3d(Point3d *p, Point3d *t)
+{
+	*p = add3d(p, t);
+	return p;
+}
+
+Point3d *
+scale3d(Point3d *p, Point3d *t)
+{
+	*p = mul3d(p, t);
+	return p;
+}
+
+Point3d *
+rotate3d(Point3d *p, Point3d *o, Point3d *t)
+{
+	if(t-&gt;x) {
+		Point2d r = rot2d(Pt2d(o-&gt;y, o-&gt;z), Pt2d(p-&gt;y, p-&gt;z), t-&gt;x);
+		p-&gt;y = r.x;
+		p-&gt;z = r.y;
+	}
+	if(t-&gt;y) {
+		Point2d r = rot2d(Pt2d(o-&gt;x, o-&gt;z), Pt2d(p-&gt;x, p-&gt;z), t-&gt;y);
+		p-&gt;x = r.x;
+		p-&gt;z = r.y;
+	}
+	if(t-&gt;z) {
+		Point2d r = rot2d(Pt2d(o-&gt;x, o-&gt;y), Pt2d(p-&gt;x, p-&gt;y), t-&gt;z);
+		p-&gt;x = r.x;
+		p-&gt;y = r.y;
+	}
+	return p;
+}
+
+Point3d *
 addvertex(Mesh *m, double x, double y, double z)
 {
+	Point3d *p;
 	if(m-&gt;verticeslen == VLIMIT) {
 		printf("Warning: Reached vertex limit\n");
 		return NULL;
 	}
-	return setpt3d(&amp;m-&gt;vertices[m-&gt;verticeslen++], x, y, z);
+	p = set3d(&amp;m-&gt;vertices[m-&gt;verticeslen++], x, y, z);
+	translate3d(p, &amp;scn.position);
+	scale3d(p, &amp;scn.scale);
+	rotate3d(p, &amp;scn.position, &amp;scn.rotation);
+	return p;
 }
 
 Edge *
@@ -285,8 +309,9 @@ Mesh *
 translate(Mesh *m, double x, double y, double z)
 {
 	int i;
+	Point3d t = Pt3d(x, y, z);
 	for(i = 0; i &lt; m-&gt;verticeslen; i++)
-		addpt3d(&amp;m-&gt;vertices[i], x, y, z);
+		translate3d(&amp;m-&gt;vertices[i], &amp;t);
 	return m;
 }
 
@@ -294,11 +319,9 @@ Mesh *
 scale(Mesh *m, double x, double y, double z)
 {
 	int i;
+	Point3d t = Pt3d(x, y, z);
 	for(i = 0; i &lt; m-&gt;verticeslen; i++)
-		setpt3d(&amp;m-&gt;vertices[i],
-			m-&gt;vertices[i].x * x,
-			m-&gt;vertices[i].y * y,
-			m-&gt;vertices[i].z * z);
+		scale3d(&amp;m-&gt;vertices[i], &amp;t);
 	return m;
 }
 
@@ -306,8 +329,9 @@ Mesh *
 rotate(Mesh *m, double pitch, double yaw, double roll)
 {
 	int i;
+	Point3d t = Pt3d(pitch, yaw, roll);
 	for(i = 0; i &lt; m-&gt;verticeslen; i++)
-		rotpt3d(&amp;m-&gt;vertices[i], &amp;m-&gt;position, pitch, yaw, roll);
+		rotate3d(&amp;m-&gt;vertices[i], &amp;m-&gt;position, &amp;t);
 	return m;
 }
 
@@ -401,22 +425,16 @@ clear(Uint32 *dst)
 }
 
 int
-keypixel(int x, int y)
-{
-	return (y + PAD) * WIDTH + (x + PAD);
-}
-
-int
 getpixel(Uint32 *dst, int x, int y)
 {
-	return dst[keypixel(x, y)];
+	return dst[(y + PAD) * WIDTH + (x + PAD)];
 }
 
 void
 putpixel(Uint32 *dst, int x, int y, int color)
 {
 	if(x &gt;= 0 &amp;&amp; x &lt; WIDTH - 8 &amp;&amp; y &gt;= 0 &amp;&amp; y &lt; HEIGHT - 8)
-		dst[keypixel(x, y)] = theme[color];
+		dst[(y + PAD) * WIDTH + (x + PAD)] = theme[color];
 }
 
 void
@@ -488,8 +506,8 @@ redraw(Uint32 *dst)
 			Edge *edge = &amp;m-&gt;edges[j];
 			Point3d a = add3d(&amp;m-&gt;vertices[edge-&gt;a], &amp;m-&gt;position);
 			Point3d b = add3d(&amp;m-&gt;vertices[edge-&gt;b], &amp;m-&gt;position);
-			rotpt3d(&amp;a, &amp;cam.origin, cam.rotation.x, cam.rotation.y, cam.rotation.z);
-			rotpt3d(&amp;b, &amp;cam.origin, cam.rotation.x, cam.rotation.y, cam.rotation.z);
+			rotate3d(&amp;a, &amp;cam.origin, &amp;cam.rotation);
+			rotate3d(&amp;b, &amp;cam.origin, &amp;cam.rotation);
 			line(dst,
 				project(&amp;cam, add3d(&amp;cam.origin, &amp;a)),
 				project(&amp;cam, add3d(&amp;cam.origin, &amp;b)),
@@ -512,15 +530,36 @@ error(char *msg, const char *err)
 	return 0;
 }
 
+Scene *
+moveto(Scene *s, double x, double y, double z)
+{
+	set3d(&amp;s-&gt;position, x, y, z);
+	return s;
+}
+
+Scene *
+scaleto(Scene *s, double x, double y, double z)
+{
+	set3d(&amp;s-&gt;scale, x, y, z);
+	return s;
+}
+
+Scene *
+rotateto(Scene *s, double x, double y, double z)
+{
+	set3d(&amp;s-&gt;rotation, x, y, z);
+	return s;
+}
+
 void
 update(Camera *c, double speed)
 {
 	if(!equpt3d(c-&gt;rotation, c-&gt;trotation) || !equpt3d(c-&gt;origin, c-&gt;torigin)) {
-		setpt3d(&amp;c-&gt;rotation,
+		set3d(&amp;c-&gt;rotation,
 			interpolate(c-&gt;rotation.x, c-&gt;trotation.x, speed, 1),
 			interpolate(c-&gt;rotation.y, c-&gt;trotation.y, speed, 1),
 			interpolate(c-&gt;rotation.z, c-&gt;trotation.z, speed, 1));
-		setpt3d(&amp;c-&gt;origin,
+		set3d(&amp;c-&gt;origin,
 			interpolate(c-&gt;origin.x, c-&gt;torigin.x, speed, 1),
 			interpolate(c-&gt;origin.y, c-&gt;torigin.y, speed, 1),
 			interpolate(c-&gt;origin.z, c-&gt;torigin.z, speed, 1));
@@ -564,9 +603,9 @@ void
 selectoption(int option)
 {
 	switch(option) {
-	case 0: setpt3d(&amp;cam.trotation, VIEWFRONT.x, VIEWFRONT.y, VIEWFRONT.z); break;
-	case 1: setpt3d(&amp;cam.trotation, VIEWTOP.x, VIEWTOP.y, VIEWTOP.z); break;
-	case 2: setpt3d(&amp;cam.trotation, VIEWSIDE.x, VIEWSIDE.y, VIEWSIDE.z); break;
+	case 0: set3d(&amp;cam.trotation, VIEWFRONT.x, VIEWFRONT.y, VIEWFRONT.z); break;
+	case 1: set3d(&amp;cam.trotation, VIEWTOP.x, VIEWTOP.y, VIEWTOP.z); break;
+	case 2: set3d(&amp;cam.trotation, VIEWSIDE.x, VIEWSIDE.y, VIEWSIDE.z); break;
 	case 4: toggleprojection(&amp;cam); break;
 	case 5: setguides(!GUIDES); break;
 	}
@@ -597,11 +636,12 @@ exportchr(void)
 	for(v = 0; v &lt; VER; ++v)
 		for(h = 0; h &lt; HOR; ++h)
 			for(y = 0; y &lt; 8; ++y)
-				for(x = 0; x &lt; 8; ++x)
-					putchr(chrbuf,
-						y + (h + v * HOR) * 16,
-						x,
-						colortheme(getpixel(pixels, h * 8 + x, v * 8 + y)));
+				for(x = 0; x &lt; 8; ++x) {
+					int row = y + (h + v * HOR) * 16;
+					int col = x;
+					int clr = pixels[(v * 8 + y + PAD) * WIDTH + (h * 8 + x + PAD)];
+					putchr(chrbuf, row, col, colortheme(clr));
+				}
 	if(!fwrite(chrbuf, sizeof(chrbuf), 1, f))
 		error("Save", "Invalid output file");
 	fclose(f);
@@ -682,9 +722,9 @@ dokey(SDL_Event *event)
 	case SDLK_UNDERSCORE:
 	case SDLK_MINUS: modzoom(-1); break;
 	case SDLK_TAB: toggleprojection(&amp;cam); break;
-	case SDLK_1: setpt3d(&amp;cam.trotation, VIEWFRONT.x, VIEWFRONT.y, VIEWFRONT.z); break;
-	case SDLK_2: setpt3d(&amp;cam.trotation, VIEWTOP.x, VIEWTOP.y, VIEWTOP.z); break;
-	case SDLK_3: setpt3d(&amp;cam.trotation, VIEWSIDE.x, VIEWSIDE.y, VIEWSIDE.z); break;
+	case SDLK_1: set3d(&amp;cam.trotation, VIEWFRONT.x, VIEWFRONT.y, VIEWFRONT.z); break;
+	case SDLK_2: set3d(&amp;cam.trotation, VIEWTOP.x, VIEWTOP.y, VIEWTOP.z); break;
+	case SDLK_3: set3d(&amp;cam.trotation, VIEWSIDE.x, VIEWSIDE.y, VIEWSIDE.z); break;
 	case SDLK_e: exportchr(); break;
 	case SDLK_r: renderbmp(); break;
 	case SDLK_h: setguides(!GUIDES); break;
@@ -717,8 +757,8 @@ dokey(SDL_Event *event)
 			addpt3d(&amp;cam.trotation, 0, 3.0, 0);
 		break;
 	case SDLK_f:
-		setpt3d(&amp;cam.torigin, 0, 0, 0);
-		setpt3d(&amp;cam.trotation, VIEWFRONT.x, VIEWFRONT.y, VIEWFRONT.z);
+		set3d(&amp;cam.torigin, 0, 0, 0);
+		set3d(&amp;cam.trotation, VIEWFRONT.x, VIEWFRONT.y, VIEWFRONT.z);
 		break;
 	case SDLK_z:
 		if(shift)
@@ -774,24 +814,24 @@ main(void)
 
 	scn = Sc3d();
 	cam = Cm3d(180, 20, 0);
+
 	if(!init())
 		return error("Init", "Failure");
 	loadtheme(fopen("theme.svg", "r"));
 
-	/* umbrella */
-	for(i = 0; i &lt; 5; ++i)
-		rotate(addarc(&amp;umbrella, 10, 8, 180, 2), 0, 45 * i, 0);
-	rotate(&amp;umbrella, 90, 0, 0);
+	/* Umbrella */
+	for(i = 0; i &lt; 5; ++i) {
+		addarc(&amp;umbrella, 10, 8, 180, 2);
+		rotateto(&amp;scn, 0, 45 * i, 0);
+	}
+	rotateto(&amp;scn, 90, 0, 0);
 	addpoly(&amp;umbrella, 10, 8, 1);
-	scale(&amp;umbrella, 1, 1, 0.6);
+	translate(scale(&amp;umbrella, 1, 0.6, 1), 0, 2, 0);
 	addline(&amp;umbrella, Pt3d(0, 0, -10), Pt3d(0, 0, 8), 1);
-	translate(&amp;umbrella, 2, 0, 10);
-	rotate(&amp;umbrella, 90, 0, 0);
+	rotateto(moveto(&amp;scn, 0, -8, 2), 90, 90, 90);
 	addarc(&amp;umbrella, 2, 8, 180, 2);
-	rotate(&amp;umbrella, 180, 0, 0);
-	translate(&amp;umbrella, -2, -6, 0);
-	addmesh(&amp;scn, umbrella);
 
+	addmesh(&amp;scn, umbrella);
 	redraw(pixels);
 
 	while(1) {
@@ -818,5 +858,5 @@ main(void)
 	quit();
 	return 0;
 }
-</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/moogle.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/moogle.c.txt'>moogle.c.txt</a>(820 lines)</figcaption>
-</figure><figure><img src='../media/diary/728.jpg' alt='Moogle Spheroid picture' width='900'/><figcaption>20P01 — Moogle Spheroid</figcaption></figure><ul><li><a href='https://git.sr.ht/~rabbits/moogle' target='_blank'>sources</a></li></ul><p><i>incoming(8)</i>: <a href='neauismetica.html'>neauismetica</a> <a href='graf3dscene.html'>graf3dscene</a> <a href='dotgrid.html'>dotgrid</a> <a href='nasu.html'>nasu</a> <a href='computer.html'>computer</a> <a href='defunct.html'>defunct</a> <a href='meta.html'>meta</a> <a href='identity.html'>identity</a> </p><p><i>Last update on <a href='tracker.html'>20Z13</a>, edited 14 times. +67/84fh <b></b></i> <code style='float:right; font-size:80%'>-----+</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
+</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/moogle.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/moogle.c.txt'>moogle.c.txt</a>(860 lines)</figcaption>
+</figure><figure><img src='../media/diary/728.jpg' alt='Moogle Spheroid picture' width='900'/><figcaption>20P01 — Moogle Spheroid</figcaption></figure><ul><li><a href='https://git.sr.ht/~rabbits/moogle' target='_blank'>sources</a></li></ul><p><i>incoming(8)</i>: <a href='neauismetica.html'>neauismetica</a> <a href='graf3dscene.html'>graf3dscene</a> <a href='dotgrid.html'>dotgrid</a> <a href='nasu.html'>nasu</a> <a href='computer.html'>computer</a> <a href='defunct.html'>defunct</a> <a href='meta.html'>meta</a> <a href='identity.html'>identity</a> </p><p><i>Last update on <a href='tracker.html'>20Z14</a>, edited 15 times. +72/90fh <b></b></i> <code style='float:right; font-size:80%'>-----+</code></p><ul><li>20T04 — Moogle Release</li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>

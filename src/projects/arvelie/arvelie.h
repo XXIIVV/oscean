@@ -198,6 +198,6 @@ parvelie(void)
 	local = localtime(&now);
 	printf("%02d%c%02d",
 		local->tm_year % 100,
-		'A' + local->tm_yday / 14,
+		local->tm_yday >= 364 ? '+' : 'A' + local->tm_yday / 14,
 		local->tm_yday % 14);
 }

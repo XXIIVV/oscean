@@ -47,6 +47,7 @@ typedef struct {
 
 typedef struct {
 	int len;
+	Point3d position, scale, rotation;
 	Mesh meshes[MLIMIT];
 } Scene;
 
@@ -104,7 +105,7 @@ Pt2d(double x, double y)
 }
 
 Point3d *
-setpt3d(Point3d *v, double x, double y, double z)
+set3d(Point3d *v, double x, double y, double z)
 {
 	v->x = x;
 	v->y = y;
@@ -116,7 +117,7 @@ Point3d
 Pt3d(double x, double y, double z)
 {
 	Point3d p;
-	setpt3d(&p, x, y, z);
+	set3d(&p, x, y, z);
 	return p;
 }
 
@@ -124,7 +125,7 @@ Mesh
 Ms3d(double x, double y, double z)
 {
 	Mesh m;
-	m.position = Pt3d(x, y, z);
+	set3d(&m.position, x, y, z);
 	m.verticeslen = 0;
 	m.edgeslen = 0;
 	return m;
@@ -135,6 +136,9 @@ Sc3d(void)
 {
 	Scene s;
 	s.len = 0;
+	set3d(&s.position, 0, 0, 0);
+	set3d(&s.scale, 1, 1, 1);
+	set3d(&s.rotation, 0, 0, 0);
 	return s;
 }
 
@@ -142,8 +146,8 @@ Camera
 Cm3d(double pitch, double yaw, double roll)
 {
 	Camera c;
-	setpt3d(&c.rotation, pitch, yaw, roll);
-	setpt3d(&c.trotation, pitch, yaw, roll);
+	set3d(&c.rotation, pitch, yaw, roll);
+	set3d(&c.trotation, pitch, yaw, roll);
 	c.projection = PERSPECTIVE;
 	c.range = 50;
 	return c;
@@ -190,16 +194,11 @@ interpolate(double a, double b, double speed, double range)
 	return a;
 }
 
-double
-deg2rad(double deg)
-{
-	return deg * (PI / 180);
-}
-
 Point2d
-rotpt2d(Point2d a, Point2d b, double deg)
+rot2d(Point2d a, Point2d b, double deg)
 {
-	double angle = atan2(b.y - a.y, b.x - a.x) + deg2rad(deg);
+	double radian = deg * (PI / 180);
+	double angle = atan2(b.y - a.y, b.x - a.x) + radian;
 	double r = sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
 	return Pt2d(a.x + r * cos(angle), a.y + r * sin(angle));
 }
@@ -213,7 +212,7 @@ equpt3d(Point3d p0, Point3d p1)
 Point3d *
 addpt3d(Point3d *p, double x, double y, double z)
 {
-	return setpt3d(p, p->x + x, p->y + y, p->z + z);
+	return set3d(p, p->x + x, p->y + y, p->z + z);
 }
 
 Point3d
@@ -222,37 +221,62 @@ add3d(Point3d *a, Point3d *b)
 	return Pt3d(a->x + b->x, a->y + b->y, a->z + b->z);
 }
 
-Point3d *
-rotpt3d(Point3d *v, Point3d *o, double pitch, double yaw, double roll)
+Point3d
+mul3d(Point3d *a, Point3d *b)
 {
-	if(pitch) {
-		Point2d r = rotpt2d(Pt2d(o->y, o->z), Pt2d(v->y, v->z), pitch);
-		v->y = r.x;
-		v->z = r.y;
-	}
-	if(yaw) {
-		Point2d r = rotpt2d(Pt2d(o->x, o->z), Pt2d(v->x, v->z), yaw);
-		v->x = r.x;
-		v->z = r.y;
-	}
-	if(roll) {
-		Point2d r = rotpt2d(Pt2d(o->x, o->y), Pt2d(v->x, v->y), roll);
-		v->x = r.x;
-		v->y = r.y;
-	}
-	return v;
+	return Pt3d(a->x * b->x, a->y * b->y, a->z * b->z);
 }
 
 /* scene */
 
 Point3d *
+translate3d(Point3d *p, Point3d *t)
+{
+	*p = add3d(p, t);
+	return p;
+}
+
+Point3d *
+scale3d(Point3d *p, Point3d *t)
+{
+	*p = mul3d(p, t);
+	return p;
+}
+
+Point3d *
+rotate3d(Point3d *p, Point3d *o, Point3d *t)
+{
+	if(t->x) {
+		Point2d r = rot2d(Pt2d(o->y, o->z), Pt2d(p->y, p->z), t->x);
+		p->y = r.x;
+		p->z = r.y;
+	}
+	if(t->y) {
+		Point2d r = rot2d(Pt2d(o->x, o->z), Pt2d(p->x, p->z), t->y);
+		p->x = r.x;
+		p->z = r.y;
+	}
+	if(t->z) {
+		Point2d r = rot2d(Pt2d(o->x, o->y), Pt2d(p->x, p->y), t->z);
+		p->x = r.x;
+		p->y = r.y;
+	}
+	return p;
+}
+
+Point3d *
 addvertex(Mesh *m, double x, double y, double z)
 {
+	Point3d *p;
 	if(m->verticeslen == VLIMIT) {
 		printf("Warning: Reached vertex limit\n");
 		return NULL;
 	}
-	return setpt3d(&m->vertices[m->verticeslen++], x, y, z);
+	p = set3d(&m->vertices[m->verticeslen++], x, y, z);
+	translate3d(p, &scn.position);
+	scale3d(p, &scn.scale);
+	rotate3d(p, &scn.position, &scn.rotation);
+	return p;
 }
 
 Edge *
@@ -285,8 +309,9 @@ Mesh *
 translate(Mesh *m, double x, double y, double z)
 {
 	int i;
+	Point3d t = Pt3d(x, y, z);
 	for(i = 0; i < m->verticeslen; i++)
-		addpt3d(&m->vertices[i], x, y, z);
+		translate3d(&m->vertices[i], &t);
 	return m;
 }
 
@@ -294,11 +319,9 @@ Mesh *
 scale(Mesh *m, double x, double y, double z)
 {
 	int i;
+	Point3d t = Pt3d(x, y, z);
 	for(i = 0; i < m->verticeslen; i++)
-		setpt3d(&m->vertices[i],
-			m->vertices[i].x * x,
-			m->vertices[i].y * y,
-			m->vertices[i].z * z);
+		scale3d(&m->vertices[i], &t);
 	return m;
 }
 
@@ -306,8 +329,9 @@ Mesh *
 rotate(Mesh *m, double pitch, double yaw, double roll)
 {
 	int i;
+	Point3d t = Pt3d(pitch, yaw, roll);
 	for(i = 0; i < m->verticeslen; i++)
-		rotpt3d(&m->vertices[i], &m->position, pitch, yaw, roll);
+		rotate3d(&m->vertices[i], &m->position, &t);
 	return m;
 }
 
@@ -401,22 +425,16 @@ clear(Uint32 *dst)
 }
 
 int
-keypixel(int x, int y)
-{
-	return (y + PAD) * WIDTH + (x + PAD);
-}
-
-int
 getpixel(Uint32 *dst, int x, int y)
 {
-	return dst[keypixel(x, y)];
+	return dst[(y + PAD) * WIDTH + (x + PAD)];
 }
 
 void
 putpixel(Uint32 *dst, int x, int y, int color)
 {
 	if(x >= 0 && x < WIDTH - 8 && y >= 0 && y < HEIGHT - 8)
-		dst[keypixel(x, y)] = theme[color];
+		dst[(y + PAD) * WIDTH + (x + PAD)] = theme[color];
 }
 
 void
@@ -488,8 +506,8 @@ redraw(Uint32 *dst)
 			Edge *edge = &m->edges[j];
 			Point3d a = add3d(&m->vertices[edge->a], &m->position);
 			Point3d b = add3d(&m->vertices[edge->b], &m->position);
-			rotpt3d(&a, &cam.origin, cam.rotation.x, cam.rotation.y, cam.rotation.z);
-			rotpt3d(&b, &cam.origin, cam.rotation.x, cam.rotation.y, cam.rotation.z);
+			rotate3d(&a, &cam.origin, &cam.rotation);
+			rotate3d(&b, &cam.origin, &cam.rotation);
 			line(dst,
 				project(&cam, add3d(&cam.origin, &a)),
 				project(&cam, add3d(&cam.origin, &b)),
@@ -512,15 +530,36 @@ error(char *msg, const char *err)
 	return 0;
 }
 
+Scene *
+moveto(Scene *s, double x, double y, double z)
+{
+	set3d(&s->position, x, y, z);
+	return s;
+}
+
+Scene *
+scaleto(Scene *s, double x, double y, double z)
+{
+	set3d(&s->scale, x, y, z);
+	return s;
+}
+
+Scene *
+rotateto(Scene *s, double x, double y, double z)
+{
+	set3d(&s->rotation, x, y, z);
+	return s;
+}
+
 void
 update(Camera *c, double speed)
 {
 	if(!equpt3d(c->rotation, c->trotation) || !equpt3d(c->origin, c->torigin)) {
-		setpt3d(&c->rotation,
+		set3d(&c->rotation,
 			interpolate(c->rotation.x, c->trotation.x, speed, 1),
 			interpolate(c->rotation.y, c->trotation.y, speed, 1),
 			interpolate(c->rotation.z, c->trotation.z, speed, 1));
-		setpt3d(&c->origin,
+		set3d(&c->origin,
 			interpolate(c->origin.x, c->torigin.x, speed, 1),
 			interpolate(c->origin.y, c->torigin.y, speed, 1),
 			interpolate(c->origin.z, c->torigin.z, speed, 1));
@@ -564,9 +603,9 @@ void
 selectoption(int option)
 {
 	switch(option) {
-	case 0: setpt3d(&cam.trotation, VIEWFRONT.x, VIEWFRONT.y, VIEWFRONT.z); break;
-	case 1: setpt3d(&cam.trotation, VIEWTOP.x, VIEWTOP.y, VIEWTOP.z); break;
-	case 2: setpt3d(&cam.trotation, VIEWSIDE.x, VIEWSIDE.y, VIEWSIDE.z); break;
+	case 0: set3d(&cam.trotation, VIEWFRONT.x, VIEWFRONT.y, VIEWFRONT.z); break;
+	case 1: set3d(&cam.trotation, VIEWTOP.x, VIEWTOP.y, VIEWTOP.z); break;
+	case 2: set3d(&cam.trotation, VIEWSIDE.x, VIEWSIDE.y, VIEWSIDE.z); break;
 	case 4: toggleprojection(&cam); break;
 	case 5: setguides(!GUIDES); break;
 	}
@@ -597,11 +636,12 @@ exportchr(void)
 	for(v = 0; v < VER; ++v)
 		for(h = 0; h < HOR; ++h)
 			for(y = 0; y < 8; ++y)
-				for(x = 0; x < 8; ++x)
-					putchr(chrbuf,
-						y + (h + v * HOR) * 16,
-						x,
-						colortheme(getpixel(pixels, h * 8 + x, v * 8 + y)));
+				for(x = 0; x < 8; ++x) {
+					int row = y + (h + v * HOR) * 16;
+					int col = x;
+					int clr = pixels[(v * 8 + y + PAD) * WIDTH + (h * 8 + x + PAD)];
+					putchr(chrbuf, row, col, colortheme(clr));
+				}
 	if(!fwrite(chrbuf, sizeof(chrbuf), 1, f))
 		error("Save", "Invalid output file");
 	fclose(f);
@@ -682,9 +722,9 @@ dokey(SDL_Event *event)
 	case SDLK_UNDERSCORE:
 	case SDLK_MINUS: modzoom(-1); break;
 	case SDLK_TAB: toggleprojection(&cam); break;
-	case SDLK_1: setpt3d(&cam.trotation, VIEWFRONT.x, VIEWFRONT.y, VIEWFRONT.z); break;
-	case SDLK_2: setpt3d(&cam.trotation, VIEWTOP.x, VIEWTOP.y, VIEWTOP.z); break;
-	case SDLK_3: setpt3d(&cam.trotation, VIEWSIDE.x, VIEWSIDE.y, VIEWSIDE.z); break;
+	case SDLK_1: set3d(&cam.trotation, VIEWFRONT.x, VIEWFRONT.y, VIEWFRONT.z); break;
+	case SDLK_2: set3d(&cam.trotation, VIEWTOP.x, VIEWTOP.y, VIEWTOP.z); break;
+	case SDLK_3: set3d(&cam.trotation, VIEWSIDE.x, VIEWSIDE.y, VIEWSIDE.z); break;
 	case SDLK_e: exportchr(); break;
 	case SDLK_r: renderbmp(); break;
 	case SDLK_h: setguides(!GUIDES); break;
@@ -717,8 +757,8 @@ dokey(SDL_Event *event)
 			addpt3d(&cam.trotation, 0, 3.0, 0);
 		break;
 	case SDLK_f:
-		setpt3d(&cam.torigin, 0, 0, 0);
-		setpt3d(&cam.trotation, VIEWFRONT.x, VIEWFRONT.y, VIEWFRONT.z);
+		set3d(&cam.torigin, 0, 0, 0);
+		set3d(&cam.trotation, VIEWFRONT.x, VIEWFRONT.y, VIEWFRONT.z);
 		break;
 	case SDLK_z:
 		if(shift)
@@ -774,24 +814,24 @@ main(void)
 
 	scn = Sc3d();
 	cam = Cm3d(180, 20, 0);
+
 	if(!init())
 		return error("Init", "Failure");
 	loadtheme(fopen("theme.svg", "r"));
 
-	/* umbrella */
-	for(i = 0; i < 5; ++i)
-		rotate(addarc(&umbrella, 10, 8, 180, 2), 0, 45 * i, 0);
-	rotate(&umbrella, 90, 0, 0);
+	/* Umbrella */
+	for(i = 0; i < 5; ++i) {
+		addarc(&umbrella, 10, 8, 180, 2);
+		rotateto(&scn, 0, 45 * i, 0);
+	}
+	rotateto(&scn, 90, 0, 0);
 	addpoly(&umbrella, 10, 8, 1);
-	scale(&umbrella, 1, 1, 0.6);
+	translate(scale(&umbrella, 1, 0.6, 1), 0, 2, 0);
 	addline(&umbrella, Pt3d(0, 0, -10), Pt3d(0, 0, 8), 1);
-	translate(&umbrella, 2, 0, 10);
-	rotate(&umbrella, 90, 0, 0);
+	rotateto(moveto(&scn, 0, -8, 2), 90, 90, 90);
 	addarc(&umbrella, 2, 8, 180, 2);
-	rotate(&umbrella, 180, 0, 0);
-	translate(&umbrella, -2, -6, 0);
-	addmesh(&scn, umbrella);
 
+	addmesh(&scn, umbrella);
 	redraw(pixels);
 
 	while(1) {
