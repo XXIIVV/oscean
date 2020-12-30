@@ -36,11 +36,11 @@ typedef struct {
 } Point3d;
 
 typedef struct {
-	int a, b;
+	int a, b, color;
 } Edge;
 
 typedef struct {
-	int verticeslen, edgeslen, color;
+	int verticeslen, edgeslen;
 	Point3d position, vertices[VLIMIT];
 	Edge edges[ELIMIT];
 } Mesh;
@@ -127,7 +127,6 @@ Ms3d(double x, double y, double z)
 	m.position = Pt3d(x, y, z);
 	m.verticeslen = 0;
 	m.edgeslen = 0;
-	m.color = 1;
 	return m;
 }
 
@@ -224,7 +223,7 @@ add3d(Point3d *a, Point3d *b)
 }
 
 Point3d *
-rotpt3d(Point3d *o, Point3d *v, double pitch, double yaw, double roll)
+rotpt3d(Point3d *v, Point3d *o, double pitch, double yaw, double roll)
 {
 	if(pitch) {
 		Point2d r = rotpt2d(Pt2d(o->y, o->z), Pt2d(v->y, v->z), pitch);
@@ -257,7 +256,7 @@ addvertex(Mesh *m, double x, double y, double z)
 }
 
 Edge *
-addedge(Mesh *m, int v0, int v1)
+addedge(Mesh *m, int v0, int v1, int color)
 {
 	if(m->edgeslen == ELIMIT) {
 		printf("Warning: Reached edge limit\n");
@@ -265,6 +264,7 @@ addedge(Mesh *m, int v0, int v1)
 	}
 	m->edges[m->edgeslen].a = v0;
 	m->edges[m->edgeslen].b = v1;
+	m->edges[m->edgeslen].color = color;
 	return &m->edges[m->edgeslen++];
 }
 
@@ -307,12 +307,12 @@ rotate(Mesh *m, double pitch, double yaw, double roll)
 {
 	int i;
 	for(i = 0; i < m->verticeslen; i++)
-		rotpt3d(&m->position, &m->vertices[i], pitch, yaw, roll);
+		rotpt3d(&m->vertices[i], &m->position, pitch, yaw, roll);
 	return m;
 }
 
 Mesh *
-extrude(Mesh *m, double depth)
+extrude(Mesh *m, double depth, int color)
 {
 	int i, vl = m->verticeslen, el = m->edgeslen;
 	for(i = 0; i < vl; i++) {
@@ -320,17 +320,18 @@ extrude(Mesh *m, double depth)
 			m->vertices[i].x,
 			m->vertices[i].y,
 			m->vertices[i].z + depth);
-		addedge(m, i, i + vl);
+		addedge(m, i, i + vl, 1);
 	}
 	for(i = 0; i < el; i++)
 		addedge(m,
 			m->edges[i].a + vl,
-			m->edges[i].b + vl);
+			m->edges[i].b + vl,
+			color);
 	return m;
 }
 
 Mesh *
-symmetry(Mesh *m, double x, double y, double z)
+symmetry(Mesh *m, double x, double y, double z, int color)
 {
 	int i, el, vl = m->verticeslen;
 	for(i = 0; i < vl; i++)
@@ -342,72 +343,50 @@ symmetry(Mesh *m, double x, double y, double z)
 	for(i = 0; i < el; i++)
 		addedge(m,
 			el + 1 + m->edges[i].a,
-			el + 1 + m->edges[i].b);
-	return m;
-}
-
-Mesh *
-color(Mesh *m, int color)
-{
-	m->color = color;
+			el + 1 + m->edges[i].b,
+			color);
 	return m;
 }
 
 /* Shapes */
 
 Mesh *
-addpoly(Mesh *m, double x, double y, double z, double radius, int segs)
+addline(Mesh *m, Point3d a, Point3d b, int color)
+{
+	addvertex(m, a.x, a.y, a.z);
+	addvertex(m, b.x, b.y, b.z);
+	addedge(m, m->verticeslen - 2, m->verticeslen - 1, color);
+	return m;
+}
+
+Mesh *
+addarc(Mesh *m, double radius, double segs, double angle, int color)
 {
 	int i, offset = m->verticeslen;
-	for(i = 0; i < segs; i++) {
+	double arc = angle / 360;
+	for(i = 0; i < segs + 1; i++) {
 		addvertex(m,
-			x + radius * cos(2 * PI * i / segs),
-			y + radius * sin(2 * PI * i / segs),
-			z);
-		addedge(m, offset + i, offset + (i + 1) % segs);
+			radius * cos(2 * PI * i * arc / segs),
+			radius * sin(2 * PI * i * arc / segs),
+			0);
+		if(i < segs)
+			addedge(m, offset + i, offset + i + 1, color);
 	}
 	return m;
 }
 
 Mesh *
-addpolygon(Scene *s, double radius, int segs)
+addpoly(Mesh *m, double radius, int segs, int color)
 {
-	Mesh m = Ms3d(0, 0, 0);
-	addpoly(&m, 0, 0, 0, radius, segs);
-	return addmesh(s, m);
-}
-
-Mesh *
-addpyramid(Scene *s, double radius, int segs, double depth)
-{
-	int i;
-	Mesh m = Ms3d(0, 0, 0);
-	addpoly(&m, 0, 0, depth / 2, radius, segs);
-	addvertex(&m, 0, 0, -depth / 2);
-	for(i = 0; i < segs; i++)
-		addedge(&m, i, segs);
-	return addmesh(s, m);
-}
-
-Mesh *
-addfrustum(Scene *s, double radius, int segs, double depth, double cap)
-{
-	int i;
-	Mesh m = Ms3d(0, 0, 0);
-	addpoly(&m, 0, 0, depth / 2, radius, segs);
-	addpoly(&m, 0, 0, -depth / 2, cap, segs);
-	for(i = 0; i < segs; i++)
-		addedge(&m, i, segs + i);
-	return addmesh(s, m);
-}
-
-Mesh *
-addprism(Scene *s, double radius, int segs, double depth)
-{
-	Mesh m = Ms3d(0, 0, 0);
-	addpoly(&m, 0, 0, -depth / 2, radius, segs);
-	extrude(&m, depth);
-	return addmesh(s, m);
+	int i, offset = m->verticeslen;
+	for(i = 0; i < segs; i++) {
+		addvertex(m,
+			radius * cos(2 * PI * i / segs),
+			radius * sin(2 * PI * i / segs),
+			0);
+		addedge(m, offset + i, offset + (i + 1) % segs, color);
+	}
+	return m;
 }
 
 /* draw */
@@ -509,12 +488,12 @@ redraw(Uint32 *dst)
 			Edge *edge = &m->edges[j];
 			Point3d a = add3d(&m->vertices[edge->a], &m->position);
 			Point3d b = add3d(&m->vertices[edge->b], &m->position);
-			rotpt3d(&cam.origin, &a, cam.rotation.x, cam.rotation.y, cam.rotation.z);
-			rotpt3d(&cam.origin, &b, cam.rotation.x, cam.rotation.y, cam.rotation.z);
+			rotpt3d(&a, &cam.origin, cam.rotation.x, cam.rotation.y, cam.rotation.z);
+			rotpt3d(&b, &cam.origin, cam.rotation.x, cam.rotation.y, cam.rotation.z);
 			line(dst,
 				project(&cam, add3d(&cam.origin, &a)),
 				project(&cam, add3d(&cam.origin, &b)),
-				m->color);
+				edge->color);
 		}
 	}
 	drawui(dst);
@@ -712,28 +691,28 @@ dokey(SDL_Event *event)
 	case SDLK_UP:
 	case SDLK_w:
 		if(shift)
-			addpt3d(&cam.torigin, 0, 5, 0);
+			addpt3d(&cam.torigin, 0, 2.5, 0);
 		else
 			addpt3d(&cam.trotation, 5, 0, 0);
 		break;
 	case SDLK_LEFT:
 	case SDLK_a:
 		if(shift)
-			addpt3d(&cam.torigin, 5, 0, 0);
+			addpt3d(&cam.torigin, 2.5, 0, 0);
 		else
 			addpt3d(&cam.trotation, 0, -5, 0);
 		break;
 	case SDLK_DOWN:
 	case SDLK_s:
 		if(shift)
-			addpt3d(&cam.torigin, 0, -5, 0);
+			addpt3d(&cam.torigin, 0, -2.5, 0);
 		else
 			addpt3d(&cam.trotation, -5, 0, 0);
 		break;
 	case SDLK_RIGHT:
 	case SDLK_d:
 		if(shift)
-			addpt3d(&cam.torigin, -5, 0, 0);
+			addpt3d(&cam.torigin, -2.5, 0, 0);
 		else
 			addpt3d(&cam.trotation, 0, 3.0, 0);
 		break;
@@ -743,13 +722,13 @@ dokey(SDL_Event *event)
 		break;
 	case SDLK_z:
 		if(shift)
-			addpt3d(&cam.torigin, 0, 0, 5);
+			addpt3d(&cam.torigin, 0, 0, 2.5);
 		else
 			modrange(3.0);
 		break;
 	case SDLK_x:
 		if(shift)
-			addpt3d(&cam.torigin, 0, 0, -5);
+			addpt3d(&cam.torigin, 0, 0, -2.5);
 		else
 			modrange(-3.0);
 		break;
@@ -790,16 +769,28 @@ init(void)
 int
 main(void)
 {
-	int ticknext = 0;
+	int i, ticknext = 0;
+	Mesh umbrella = Ms3d(0, 0, 0);
+
 	scn = Sc3d();
 	cam = Cm3d(180, 20, 0);
 	if(!init())
 		return error("Init", "Failure");
 	loadtheme(fopen("theme.svg", "r"));
 
-	color(addfrustum(&scn, 12, 8, 10, 8), 4);
-	color(addprism(&scn, 12, 8, 10), 3);
-	color(addpolygon(&scn, 14, 16), 2);
+	/* umbrella */
+	for(i = 0; i < 5; ++i)
+		rotate(addarc(&umbrella, 10, 8, 180, 2), 0, 45 * i, 0);
+	rotate(&umbrella, 90, 0, 0);
+	addpoly(&umbrella, 10, 8, 1);
+	scale(&umbrella, 1, 1, 0.6);
+	addline(&umbrella, Pt3d(0, 0, -10), Pt3d(0, 0, 8), 1);
+	translate(&umbrella, 2, 0, 10);
+	rotate(&umbrella, 90, 0, 0);
+	addarc(&umbrella, 2, 8, 180, 2);
+	rotate(&umbrella, 180, 0, 0);
+	translate(&umbrella, -2, -6, 0);
+	addmesh(&scn, umbrella);
 
 	redraw(pixels);
 

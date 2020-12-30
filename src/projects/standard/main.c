@@ -18,6 +18,7 @@ test(char *name, int a, int b)
 int
 main(int argc, char *argv[])
 {
+	char buf[200] = "test";
 	char a[] = "abcdef123";
 	char b[] = "ABCDEF123";
 
@@ -30,5 +31,9 @@ main(int argc, char *argv[])
 	test("sihx", sihx("ff00ee"), 1);
 	test("sihx", sihx("ff0"), 0);
 	test("sihx", sihx("ffa0zq"), 0);
+
+	sapp(buf, a);
+	sapp(buf, b);
+	printf("((%s))\n", buf);
 	return 0;
 }

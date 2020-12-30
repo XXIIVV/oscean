@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang='en'></head><meta charset='utf-8'><meta name='description' content='Moogle is a 3D wireframe toolkit.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV — moogle</title></head><body><header><a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='tools.html'>tools/</a></li><li><a href='utilities.html'>utilities</a></li><li><a href='games.html'>games</a></li><li><a href='unreleased.html'>unreleased</a></li></ul><ul><li><a href='ronin.html'>ronin</a></li><li><a href='left.html'>left</a></li><li><a href='dotgrid.html'>dotgrid</a></li><li><a href='nasu.html'>nasu</a></li><li><a href='moogle.html'>moogle/</a></li></ul><ul><li><a href='graf3dscene.html'>graf3dscene</a></li></ul></nav><main><figure><img src='../media/diary/727.jpg' alt='Pitch Yaw Roll picture' width='900'/><figcaption>20P12 — Pitch Yaw Roll</figcaption></figure><h2>Moogle is a 3D wireframe toolkit.</h2><p>Moogle is a minimal <b>3D wireframe tool</b> designed to be used alongside its companion tool <a href='nasu.html'>Nasu</a>, both can export to the <a href='chr_format.html'>chr_format</a>. It offers a handful of basic geometry drawing functions, it was written in <a href='ansi_c.html'>ANSI C</a>, and was inspired by <a href='graf3dscene.html'>Graf3DScene</a>.</p><p>Moogle was first written on <a href='plan9.html'>Plan9</a>, the original <a href='plan9_c.html'>Plan9 C</a> implementation is available <a href='../src/inc/text/moogle9.c.txt' target='_blank'>here</a>.</p><h3>moogle.c</h3><p>To control the window size and default colors, edit the values defined at the top of the file itself. Press , <code>E</code> to export a <code>.chr</code> file, and press <code>R</code> to render a <code>.bmp</code> file. To learn more, visit the <a href='https://git.sr.ht/~rabbits/moogle' target='_blank'>repository</a>.</p><pre>cc -std=c89 -Wall moogle.c -L/usr/local/lib -lSDL2 -lm -o moogle</pre><p>The following code is a single-file implementation written in 700 lines of <a href='ansi_c.html'>ANSI C</a>, the only dependecy is <a href='https://www.libsdl.org' target='_blank'>SDL2</a>.</p><figure><pre>#include &lt;SDL2/SDL.h&gt;
+<!DOCTYPE html><html lang='en'></head><meta charset='utf-8'><meta name='description' content='Moogle is a 3D wireframe toolkit.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV — moogle</title></head><body><header><a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='tools.html'>tools/</a></li><li><a href='utilities.html'>utilities</a></li><li><a href='games.html'>games</a></li><li><a href='unreleased.html'>unreleased</a></li></ul><ul><li><a href='ronin.html'>ronin</a></li><li><a href='left.html'>left</a></li><li><a href='dotgrid.html'>dotgrid</a></li><li><a href='nasu.html'>nasu</a></li><li><a href='moogle.html'>moogle/</a></li></ul><ul><li><a href='graf3dscene.html'>graf3dscene</a></li></ul></nav><main><figure><img src='../media/diary/727.jpg' alt='Pitch Yaw Roll picture' width='900'/><figcaption>20P12 — Pitch Yaw Roll</figcaption></figure><h2>Moogle is a 3D wireframe toolkit.</h2><p>Moogle is a minimal <b>3D wireframe tool</b> designed to be used alongside its companion tool <a href='nasu.html'>Nasu</a>, both can export to the <a href='chr_format.html'>chr_format</a>. It offers a handful of basic geometry drawing functions, it was written in <a href='ansi_c.html'>ANSI C</a>, and was inspired by <a href='graf3dscene.html'>Graf3DScene</a>.</p><p>Moogle was first written on <a href='plan9.html'>Plan9</a>, the original <a href='plan9_c.html'>Plan9 C</a> implementation is available <a href='../src/inc/text/moogle9.c.txt' target='_blank'>here</a>.</p><h3>moogle.c</h3><p>To control the window size and default colors, edit the values defined at the top of the file itself. Press , <code>E</code> to export a <code>.chr</code> file, and press <code>R</code> to render a <code>.bmp</code> file. To learn more, visit the <a href='https://git.sr.ht/~rabbits/moogle' target='_blank'>repository</a>.</p><pre>cc -std=c89 -Wall moogle.c -L/usr/local/lib -lSDL2 -lm -o moogle</pre><p>The following code is a single-file implementation written in <a href='ansi_c.html'>ANSI C</a>, the only dependecy is <a href='https://www.libsdl.org' target='_blank'>SDL2</a>.</p><figure><pre>#include &lt;SDL2/SDL.h&gt;
 #include &lt;stdio.h&gt;
 #include &lt;math.h&gt;
 
@@ -36,11 +36,11 @@ typedef struct {
 } Point3d;
 
 typedef struct {
-	int a, b;
+	int a, b, color;
 } Edge;
 
 typedef struct {
-	int verticeslen, edgeslen, color;
+	int verticeslen, edgeslen;
 	Point3d position, vertices[VLIMIT];
 	Edge edges[ELIMIT];
 } Mesh;
@@ -127,7 +127,6 @@ Ms3d(double x, double y, double z)
 	m.position = Pt3d(x, y, z);
 	m.verticeslen = 0;
 	m.edgeslen = 0;
-	m.color = 1;
 	return m;
 }
 
@@ -224,7 +223,7 @@ add3d(Point3d *a, Point3d *b)
 }
 
 Point3d *
-rotpt3d(Point3d *o, Point3d *v, double pitch, double yaw, double roll)
+rotpt3d(Point3d *v, Point3d *o, double pitch, double yaw, double roll)
 {
 	if(pitch) {
 		Point2d r = rotpt2d(Pt2d(o-&gt;y, o-&gt;z), Pt2d(v-&gt;y, v-&gt;z), pitch);
@@ -257,7 +256,7 @@ addvertex(Mesh *m, double x, double y, double z)
 }
 
 Edge *
-addedge(Mesh *m, int v0, int v1)
+addedge(Mesh *m, int v0, int v1, int color)
 {
 	if(m-&gt;edgeslen == ELIMIT) {
 		printf("Warning: Reached edge limit\n");
@@ -265,6 +264,7 @@ addedge(Mesh *m, int v0, int v1)
 	}
 	m-&gt;edges[m-&gt;edgeslen].a = v0;
 	m-&gt;edges[m-&gt;edgeslen].b = v1;
+	m-&gt;edges[m-&gt;edgeslen].color = color;
 	return &amp;m-&gt;edges[m-&gt;edgeslen++];
 }
 
@@ -307,12 +307,12 @@ rotate(Mesh *m, double pitch, double yaw, double roll)
 {
 	int i;
 	for(i = 0; i &lt; m-&gt;verticeslen; i++)
-		rotpt3d(&amp;m-&gt;position, &amp;m-&gt;vertices[i], pitch, yaw, roll);
+		rotpt3d(&amp;m-&gt;vertices[i], &amp;m-&gt;position, pitch, yaw, roll);
 	return m;
 }
 
 Mesh *
-extrude(Mesh *m, double depth)
+extrude(Mesh *m, double depth, int color)
 {
 	int i, vl = m-&gt;verticeslen, el = m-&gt;edgeslen;
 	for(i = 0; i &lt; vl; i++) {
@@ -320,17 +320,18 @@ extrude(Mesh *m, double depth)
 			m-&gt;vertices[i].x,
 			m-&gt;vertices[i].y,
 			m-&gt;vertices[i].z + depth);
-		addedge(m, i, i + vl);
+		addedge(m, i, i + vl, 1);
 	}
 	for(i = 0; i &lt; el; i++)
 		addedge(m,
 			m-&gt;edges[i].a + vl,
-			m-&gt;edges[i].b + vl);
+			m-&gt;edges[i].b + vl,
+			color);
 	return m;
 }
 
 Mesh *
-symmetry(Mesh *m, double x, double y, double z)
+symmetry(Mesh *m, double x, double y, double z, int color)
 {
 	int i, el, vl = m-&gt;verticeslen;
 	for(i = 0; i &lt; vl; i++)
@@ -342,72 +343,50 @@ symmetry(Mesh *m, double x, double y, double z)
 	for(i = 0; i &lt; el; i++)
 		addedge(m,
 			el + 1 + m-&gt;edges[i].a,
-			el + 1 + m-&gt;edges[i].b);
-	return m;
-}
-
-Mesh *
-color(Mesh *m, int color)
-{
-	m-&gt;color = color;
+			el + 1 + m-&gt;edges[i].b,
+			color);
 	return m;
 }
 
 /* Shapes */
 
 Mesh *
-addpoly(Mesh *m, double x, double y, double z, double radius, int segs)
+addline(Mesh *m, Point3d a, Point3d b, int color)
+{
+	addvertex(m, a.x, a.y, a.z);
+	addvertex(m, b.x, b.y, b.z);
+	addedge(m, m-&gt;verticeslen - 2, m-&gt;verticeslen - 1, color);
+	return m;
+}
+
+Mesh *
+addarc(Mesh *m, double radius, double segs, double angle, int color)
 {
 	int i, offset = m-&gt;verticeslen;
-	for(i = 0; i &lt; segs; i++) {
+	double arc = angle / 360;
+	for(i = 0; i &lt; segs + 1; i++) {
 		addvertex(m,
-			x + radius * cos(2 * PI * i / segs),
-			y + radius * sin(2 * PI * i / segs),
-			z);
-		addedge(m, offset + i, offset + (i + 1) % segs);
+			radius * cos(2 * PI * i * arc / segs),
+			radius * sin(2 * PI * i * arc / segs),
+			0);
+		if(i &lt; segs)
+			addedge(m, offset + i, offset + i + 1, color);
 	}
 	return m;
 }
 
 Mesh *
-addpolygon(Scene *s, double radius, int segs)
+addpoly(Mesh *m, double radius, int segs, int color)
 {
-	Mesh m = Ms3d(0, 0, 0);
-	addpoly(&amp;m, 0, 0, 0, radius, segs);
-	return addmesh(s, m);
-}
-
-Mesh *
-addpyramid(Scene *s, double radius, int segs, double depth)
-{
-	int i;
-	Mesh m = Ms3d(0, 0, 0);
-	addpoly(&amp;m, 0, 0, depth / 2, radius, segs);
-	addvertex(&amp;m, 0, 0, -depth / 2);
-	for(i = 0; i &lt; segs; i++)
-		addedge(&amp;m, i, segs);
-	return addmesh(s, m);
-}
-
-Mesh *
-addfrustum(Scene *s, double radius, int segs, double depth, double cap)
-{
-	int i;
-	Mesh m = Ms3d(0, 0, 0);
-	addpoly(&amp;m, 0, 0, depth / 2, radius, segs);
-	addpoly(&amp;m, 0, 0, -depth / 2, cap, segs);
-	for(i = 0; i &lt; segs; i++)
-		addedge(&amp;m, i, segs + i);
-	return addmesh(s, m);
-}
-
-Mesh *
-addprism(Scene *s, double radius, int segs, double depth)
-{
-	Mesh m = Ms3d(0, 0, 0);
-	addpoly(&amp;m, 0, 0, -depth / 2, radius, segs);
-	extrude(&amp;m, depth);
-	return addmesh(s, m);
+	int i, offset = m-&gt;verticeslen;
+	for(i = 0; i &lt; segs; i++) {
+		addvertex(m,
+			radius * cos(2 * PI * i / segs),
+			radius * sin(2 * PI * i / segs),
+			0);
+		addedge(m, offset + i, offset + (i + 1) % segs, color);
+	}
+	return m;
 }
 
 /* draw */
@@ -509,12 +488,12 @@ redraw(Uint32 *dst)
 			Edge *edge = &amp;m-&gt;edges[j];
 			Point3d a = add3d(&amp;m-&gt;vertices[edge-&gt;a], &amp;m-&gt;position);
 			Point3d b = add3d(&amp;m-&gt;vertices[edge-&gt;b], &amp;m-&gt;position);
-			rotpt3d(&amp;cam.origin, &amp;a, cam.rotation.x, cam.rotation.y, cam.rotation.z);
-			rotpt3d(&amp;cam.origin, &amp;b, cam.rotation.x, cam.rotation.y, cam.rotation.z);
+			rotpt3d(&amp;a, &amp;cam.origin, cam.rotation.x, cam.rotation.y, cam.rotation.z);
+			rotpt3d(&amp;b, &amp;cam.origin, cam.rotation.x, cam.rotation.y, cam.rotation.z);
 			line(dst,
 				project(&amp;cam, add3d(&amp;cam.origin, &amp;a)),
 				project(&amp;cam, add3d(&amp;cam.origin, &amp;b)),
-				m-&gt;color);
+				edge-&gt;color);
 		}
 	}
 	drawui(dst);
@@ -712,28 +691,28 @@ dokey(SDL_Event *event)
 	case SDLK_UP:
 	case SDLK_w:
 		if(shift)
-			addpt3d(&amp;cam.torigin, 0, 5, 0);
+			addpt3d(&amp;cam.torigin, 0, 2.5, 0);
 		else
 			addpt3d(&amp;cam.trotation, 5, 0, 0);
 		break;
 	case SDLK_LEFT:
 	case SDLK_a:
 		if(shift)
-			addpt3d(&amp;cam.torigin, 5, 0, 0);
+			addpt3d(&amp;cam.torigin, 2.5, 0, 0);
 		else
 			addpt3d(&amp;cam.trotation, 0, -5, 0);
 		break;
 	case SDLK_DOWN:
 	case SDLK_s:
 		if(shift)
-			addpt3d(&amp;cam.torigin, 0, -5, 0);
+			addpt3d(&amp;cam.torigin, 0, -2.5, 0);
 		else
 			addpt3d(&amp;cam.trotation, -5, 0, 0);
 		break;
 	case SDLK_RIGHT:
 	case SDLK_d:
 		if(shift)
-			addpt3d(&amp;cam.torigin, -5, 0, 0);
+			addpt3d(&amp;cam.torigin, -2.5, 0, 0);
 		else
 			addpt3d(&amp;cam.trotation, 0, 3.0, 0);
 		break;
@@ -743,13 +722,13 @@ dokey(SDL_Event *event)
 		break;
 	case SDLK_z:
 		if(shift)
-			addpt3d(&amp;cam.torigin, 0, 0, 5);
+			addpt3d(&amp;cam.torigin, 0, 0, 2.5);
 		else
 			modrange(3.0);
 		break;
 	case SDLK_x:
 		if(shift)
-			addpt3d(&amp;cam.torigin, 0, 0, -5);
+			addpt3d(&amp;cam.torigin, 0, 0, -2.5);
 		else
 			modrange(-3.0);
 		break;
@@ -790,16 +769,28 @@ init(void)
 int
 main(void)
 {
-	int ticknext = 0;
+	int i, ticknext = 0;
+	Mesh umbrella = Ms3d(0, 0, 0);
+
 	scn = Sc3d();
 	cam = Cm3d(180, 20, 0);
 	if(!init())
 		return error("Init", "Failure");
 	loadtheme(fopen("theme.svg", "r"));
 
-	color(addfrustum(&amp;scn, 12, 8, 10, 8), 4);
-	color(addprism(&amp;scn, 12, 8, 10), 3);
-	color(addpolygon(&amp;scn, 14, 16), 2);
+	/* umbrella */
+	for(i = 0; i &lt; 5; ++i)
+		rotate(addarc(&amp;umbrella, 10, 8, 180, 2), 0, 45 * i, 0);
+	rotate(&amp;umbrella, 90, 0, 0);
+	addpoly(&amp;umbrella, 10, 8, 1);
+	scale(&amp;umbrella, 1, 1, 0.6);
+	addline(&amp;umbrella, Pt3d(0, 0, -10), Pt3d(0, 0, 8), 1);
+	translate(&amp;umbrella, 2, 0, 10);
+	rotate(&amp;umbrella, 90, 0, 0);
+	addarc(&amp;umbrella, 2, 8, 180, 2);
+	rotate(&amp;umbrella, 180, 0, 0);
+	translate(&amp;umbrella, -2, -6, 0);
+	addmesh(&amp;scn, umbrella);
 
 	redraw(pixels);
 
@@ -827,525 +818,5 @@ main(void)
 	quit();
 	return 0;
 }
-</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/moogle.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/moogle.c.txt'>moogle.c.txt</a>(829 lines)</figcaption>
-</figure><h3>basics.c</h3><p>Here's some additional primitives that I use to build scenes in Moogle.</p><figure><pre>Mesh*
-addbox(Scene* s, double width, double height, double depth)
-{
-	int i;
-	Mesh m = Ms3d(0, 0, 0);
-	addvertex(&amp;m, width / 2, height / 2, -depth / 2);
-	addvertex(&amp;m, -width / 2, height / 2, -depth / 2);
-	addvertex(&amp;m, -width / 2, -height / 2, -depth / 2);
-	addvertex(&amp;m, width / 2, -height / 2, -depth / 2);
-	for(i = 0; i &lt; 4; i++)
-		addedge(&amp;m, i, (i + 1) % 4);
-	extrude(&amp;m, depth);
-	return addmesh(s, m);
-}
-
-Mesh*
-addplane(Scene* s, double width, double height, double xsegs, double ysegs)
-{
-	int ix, iy;
-	Mesh m = Ms3d(0, 0, 0);
-	for(ix = 0; ix &lt; xsegs + 1; ix++) {
-		addvertex(&amp;m, ix * (width / xsegs) - width / 2, height / 2, 0);
-		addvertex(&amp;m, ix * (width / xsegs) - width / 2, -height / 2, 0);
-		addedge(&amp;m, ix * 2, ix * 2 + 1);
-	}
-	for(iy = 0; iy &lt; ysegs + 1; iy++) {
-		addvertex(&amp;m, width / 2, iy * (height / ysegs) - height / 2, 0);
-		addvertex(&amp;m, -width / 2, iy * (height / ysegs) - height / 2, 0);
-		addedge(&amp;m, ix * 2 + iy * 2, ix * 2 + iy * 2 + 1);
-	}
-	return addmesh(s, m);
-}
-
-Mesh*
-addarc(Scene* s, double radius, double segs, double angle)
-{
-	int i;
-	double arc = angle / 360;
-	Mesh m = Ms3d(0, 0, 0);
-	for(i = 0; i &lt; segs + 1; i++) {
-		addvertex(&amp;m,
-		          radius * cos(2 * PI * i * arc / segs),
-		          radius * sin(2 * PI * i * arc / segs),
-		          0);
-		if(i &lt; segs)
-			addedge(&amp;m, i, i + 1);
-	}
-	return addmesh(s, m);
-}
-
-Mesh*
-addsphere(Scene* s, double radius, double xsegs, double zsegs)
-{
-	int i;
-	Mesh m = Ms3d(0, 0, 0);
-	for(i = 1; i &lt; zsegs + 1; i++)
-		addpoly(&amp;m, 0, 0,
-		        radius * cos(PI * i / zsegs),
-		        radius * sin(PI * i / zsegs),
-		        xsegs);
-	return addmesh(s, m);
-}
-
-Mesh*
-addline(Scene* s, double ax, double ay, double az, double bx, double by, double bz)
-{
-	Mesh m = Ms3d(0, 0, 0);
-	addvertex(&amp;m, ax, ay, az);
-	addvertex(&amp;m, bx, by, bz);
-	addedge(&amp;m, 0, 1);
-	return addmesh(s, m);
-}</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/moogle-basics.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/moogle-basics.c.txt'>moogle-basics.c.txt</a>(71 lines)</figcaption>
-</figure><h3>label.c</h3><p>Here's some additional primitives that I use to build scenes in Moogle.</p><figure><pre>double
-addletter(Mesh *m, char c, Point2d *o)
-{
-	int i = m-&gt;verticeslen;
-	switch(c) {
-	case '\n':
-		o-&gt;x = 0;
-		o-&gt;y -= 1.5;
-		return 0;
-		break;
-	case 'a':
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 0, 0.5, 0);
-		addvertex(m, o-&gt;x + 1, 0.5, 0);
-		addedge(m, i + 0, i + 1);
-		addedge(m, i + 1, i + 2);
-		addedge(m, i + 2, i + 3);
-		addedge(m, i + 4, i + 5);
-		break;
-	case 'b':
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0.5, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0.5, 0);
-		addedge(m, i + 0, i + 1);
-		addedge(m, i + 1, i + 2);
-		addedge(m, i + 2, i + 3);
-		addedge(m, i + 3, i + 0);
-		addedge(m, i + 4, i + 5);
-		break;
-	case 'c':
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 1, 0);
-		addedge(m, i + 0, i + 1);
-		addedge(m, i + 1, i + 2);
-		addedge(m, i + 2, i + 3);
-		break;
-	case 'd':
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 0.5, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0.5, 0);
-		addedge(m, i + 0, i + 1);
-		addedge(m, i + 1, i + 2);
-		addedge(m, i + 2, i + 3);
-		addedge(m, i + 3, i + 4);
-		addedge(m, i + 4, i + 0);
-		break;
-	case 'e':
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0.5, 0);
-		addvertex(m, o-&gt;x + 0.5, o-&gt;y + 0.5, 0);
-		addedge(m, i + 0, i + 1);
-		addedge(m, i + 1, i + 2);
-		addedge(m, i + 2, i + 3);
-		addedge(m, i + 4, i + 5);
-		break;
-	case 'f':
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0.5, 0);
-		addvertex(m, o-&gt;x + 0.5, o-&gt;y + 0.5, 0);
-		addedge(m, i + 0, i + 1);
-		addedge(m, i + 1, i + 2);
-		addedge(m, i + 3, i + 4);
-		break;
-	case 'g':
-		addvertex(m, o-&gt;x + 0.5, o-&gt;y + 0.5, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0.5, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 1, 0);
-		addedge(m, i + 0, i + 1);
-		addedge(m, i + 1, i + 2);
-		addedge(m, i + 2, i + 3);
-		addedge(m, i + 3, i + 4);
-		addedge(m, i + 4, i + 5);
-		break;
-	case 'h':
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0.5, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0.5, 0);
-		addedge(m, i + 0, i + 1);
-		addedge(m, i + 2, i + 3);
-		addedge(m, i + 4, i + 5);
-		break;
-	case 'i':
-		addvertex(m, o-&gt;x + 0.5, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 0.5, o-&gt;y + 1, 0);
-		addedge(m, i + 0, i + 1);
-		break;
-	case 'j':
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0.5, 0);
-		addvertex(m, o-&gt;x + 0.5, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 1, 0);
-		addedge(m, i + 0, i + 1);
-		addedge(m, i + 1, i + 2);
-		addedge(m, i + 2, i + 3);
-		addedge(m, i + 3, i + 4);
-		break;
-	case 'k':
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0.5, 0);
-		addvertex(m, o-&gt;x + 0.5, o-&gt;y + 0.5, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 1, 0);
-		addedge(m, i + 0, i + 1);
-		addedge(m, i + 2, i + 3);
-		addedge(m, i + 3, i + 4);
-		addedge(m, i + 3, i + 5);
-		break;
-	case 'l':
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0, 0);
-		addedge(m, i + 0, i + 1);
-		addedge(m, i + 1, i + 2);
-		break;
-	case 'm':
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 0.5, o-&gt;y + 0.5, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0, 0);
-		addedge(m, i + 0, i + 1);
-		addedge(m, i + 1, i + 2);
-		addedge(m, i + 2, i + 3);
-		addedge(m, i + 3, i + 4);
-		break;
-	case 'n':
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 1, 0);
-		addedge(m, i + 0, i + 1);
-		addedge(m, i + 1, i + 2);
-		addedge(m, i + 2, i + 3);
-		break;
-	case 'o':
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0, 0);
-		addedge(m, i + 0, i + 1);
-		addedge(m, i + 1, i + 2);
-		addedge(m, i + 2, i + 3);
-		addedge(m, i + 3, i + 0);
-		break;
-	case 'p':
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0.5, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0.5, 0);
-		addedge(m, i + 0, i + 1);
-		addedge(m, i + 1, i + 2);
-		addedge(m, i + 2, i + 3);
-		addedge(m, i + 3, i + 4);
-		break;
-	case 'q':
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 0.5, o-&gt;y + 0.5, 0);
-		addedge(m, i + 0, i + 1);
-		addedge(m, i + 1, i + 2);
-		addedge(m, i + 2, i + 3);
-		addedge(m, i + 3, i + 0);
-		addedge(m, i + 3, i + 4);
-		break;
-	case 'r':
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0.5, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0.5, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y, 0);
-		addedge(m, i + 0, i + 1);
-		addedge(m, i + 1, i + 2);
-		addedge(m, i + 2, i + 3);
-		addedge(m, i + 3, i + 4);
-		addedge(m, i + 4, i + 5);
-		break;
-	case 's':
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0.5, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0.5, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 1, 0);
-		addedge(m, i + 0, i + 1);
-		addedge(m, i + 1, i + 2);
-		addedge(m, i + 2, i + 3);
-		addedge(m, i + 3, i + 4);
-		addedge(m, i + 4, i + 5);
-		break;
-	case 't':
-		addvertex(m, o-&gt;x + 0.5, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 0.5, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 1, 0);
-		addedge(m, i + 0, i + 1);
-		addedge(m, i + 2, i + 3);
-		break;
-	case 'u':
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 0.5, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0.5, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 1, 0);
-		addedge(m, i + 0, i + 1);
-		addedge(m, i + 1, i + 2);
-		addedge(m, i + 2, i + 3);
-		addedge(m, i + 4, i + 5);
-		break;
-	case 'v':
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 0.5, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 1, 0);
-		addedge(m, i + 0, i + 1);
-		addedge(m, i + 1, i + 2);
-		break;
-	case 'w':
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 0.5, o-&gt;y + 0.5, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 1, 0);
-		addedge(m, i + 0, i + 1);
-		addedge(m, i + 1, i + 2);
-		addedge(m, i + 2, i + 3);
-		addedge(m, i + 3, i + 4);
-		break;
-	case 'x':
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0, 0);
-		addedge(m, i + 0, i + 1);
-		addedge(m, i + 2, i + 3);
-		break;
-	case 'y':
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 0.5, o-&gt;y + 0.5, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 0.5, o-&gt;y + 0, 0);
-		addedge(m, i + 0, i + 1);
-		addedge(m, i + 1, i + 2);
-		addedge(m, i + 1, i + 3);
-		break;
-	case 'z':
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 1, 0);
-		addedge(m, i + 0, i + 1);
-		addedge(m, i + 1, i + 2);
-		addedge(m, i + 2, i + 3);
-		break;
-	case '0':
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0, 0);
-		addedge(m, i + 0, i + 1);
-		addedge(m, i + 1, i + 2);
-		addedge(m, i + 2, i + 3);
-		addedge(m, i + 3, i + 0);
-		addedge(m, i + 0, i + 2);
-		break;
-	case '1':
-		addvertex(m, o-&gt;x + 0.5, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 0.5, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0.5, 0);
-		addedge(m, i + 0, i + 1);
-		addedge(m, i + 1, i + 2);
-		break;
-	case '2':
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0.5, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 1, 0);
-		addedge(m, i + 0, i + 1);
-		addedge(m, i + 1, i + 2);
-		addedge(m, i + 2, i + 3);
-		addedge(m, i + 3, i + 4);
-		break;
-	case '3':
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 0.5, o-&gt;y + 0.5, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0.5, 0);
-		addedge(m, i + 0, i + 1);
-		addedge(m, i + 1, i + 2);
-		addedge(m, i + 2, i + 3);
-		addedge(m, i + 4, i + 5);
-		break;
-	case '4':
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0.5, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0.5, 0);
-		addvertex(m, o-&gt;x + 0.5, o-&gt;y + 1, 0);
-		addedge(m, i + 0, i + 1);
-		addedge(m, i + 2, i + 3);
-		addedge(m, i + 3, i + 4);
-		break;
-	case '5':
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0.5, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0.5, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 1, 0);
-		addedge(m, i + 0, i + 1);
-		addedge(m, i + 1, i + 2);
-		addedge(m, i + 2, i + 3);
-		addedge(m, i + 3, i + 4);
-		addedge(m, i + 4, i + 5);
-		break;
-	case '6':
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0.5, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0.5, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 1, 0);
-		addedge(m, i + 0, i + 1);
-		addedge(m, i + 1, i + 2);
-		addedge(m, i + 2, i + 3);
-		addedge(m, i + 3, i + 4);
-		break;
-	case '7':
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 1, 0);
-		addedge(m, i + 0, i + 1);
-		addedge(m, i + 1, i + 2);
-		break;
-	case '8':
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0.5, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0.5, 0);
-		addedge(m, i + 0, i + 1);
-		addedge(m, i + 1, i + 2);
-		addedge(m, i + 2, i + 3);
-		addedge(m, i + 3, i + 0);
-		addedge(m, i + 4, i + 5);
-		break;
-	case '9':
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0.5, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0.5, 0);
-		addedge(m, i + 0, i + 1);
-		addedge(m, i + 1, i + 2);
-		addedge(m, i + 2, i + 3);
-		addedge(m, i + 3, i + 4);
-		break;
-	case '_':
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0, 0);
-		addedge(m, i + 0, i + 1);
-		break;
-	case '-':
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0.5, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0.5, 0);
-		addedge(m, i + 0, i + 1);
-		break;
-	case '+':
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0.5, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0.5, 0);
-		addvertex(m, o-&gt;x + 0.5, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 0.5, o-&gt;y + 1, 0);
-		addedge(m, i + 0, i + 1);
-		addedge(m, i + 2, i + 3);
-		break;
-	case '&lt;':
-		addvertex(m, o-&gt;x + 0.75, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 0.25, o-&gt;y + 0.5, 0);
-		addvertex(m, o-&gt;x + 0.75, o-&gt;y + 1, 0);
-		addedge(m, i + 0, i + 1);
-		addedge(m, i + 1, i + 2);
-		break;
-	case '&gt;':
-		addvertex(m, o-&gt;x + 0.25, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 0.75, o-&gt;y + 0.5, 0);
-		addvertex(m, o-&gt;x + 0.25, o-&gt;y + 1, 0);
-		addedge(m, i + 0, i + 1);
-		addedge(m, i + 1, i + 2);
-		break;
-	case ' ':
-		break;
-	default:
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 0, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 1, 0);
-		addvertex(m, o-&gt;x + 1, o-&gt;y + 0, 0);
-		addvertex(m, o-&gt;x + 0.5, o-&gt;y + 0.5, 0);
-		addedge(m, i + 0, i + 1);
-		addedge(m, i + 1, i + 2);
-		addedge(m, i + 2, i + 3);
-		addedge(m, i + 3, i + 0);
-		addedge(m, i + 1, i + 3);
-		addedge(m, i + 0, i + 2);
-	}
-	return 1.25;
-}
-
-Mesh *
-addlabel(Scene *s, char *text)
-{
-	int i = 0;
-	Point2d offset = Pt2d(0, 0);
-	char c;
-	Mesh m = Ms3d(0, 0, 0);
-	while((c = text[i++]))
-		offset.x += addletter(&amp;m, c, &amp;offset);
-	return addmesh(s, m);
-}
-</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/moogle-label.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/moogle-label.c.txt'>moogle-label.c.txt</a>(447 lines)</figcaption>
-</figure><figure><img src='../media/diary/728.jpg' alt='Moogle Spheroid picture' width='900'/><figcaption>20P01 — Moogle Spheroid</figcaption></figure><ul><li><a href='https://git.sr.ht/~rabbits/moogle' target='_blank'>sources</a></li></ul><p><i>incoming(8)</i>: <a href='neauismetica.html'>neauismetica</a> <a href='graf3dscene.html'>graf3dscene</a> <a href='dotgrid.html'>dotgrid</a> <a href='nasu.html'>nasu</a> <a href='computer.html'>computer</a> <a href='defunct.html'>defunct</a> <a href='meta.html'>meta</a> <a href='identity.html'>identity</a> </p><p><i>Last update on <a href='tracker.html'>20Z04</a>, edited 13 times. +62/76fh <b></b></i> <code style='float:right; font-size:80%'>-----+</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
+</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/moogle.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/moogle.c.txt'>moogle.c.txt</a>(820 lines)</figcaption>
+</figure><figure><img src='../media/diary/728.jpg' alt='Moogle Spheroid picture' width='900'/><figcaption>20P01 — Moogle Spheroid</figcaption></figure><ul><li><a href='https://git.sr.ht/~rabbits/moogle' target='_blank'>sources</a></li></ul><p><i>incoming(8)</i>: <a href='neauismetica.html'>neauismetica</a> <a href='graf3dscene.html'>graf3dscene</a> <a href='dotgrid.html'>dotgrid</a> <a href='nasu.html'>nasu</a> <a href='computer.html'>computer</a> <a href='defunct.html'>defunct</a> <a href='meta.html'>meta</a> <a href='identity.html'>identity</a> </p><p><i>Last update on <a href='tracker.html'>20Z13</a>, edited 14 times. +67/84fh <b></b></i> <code style='float:right; font-size:80%'>-----+</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
