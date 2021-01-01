@@ -3,6 +3,8 @@
 clang-format -i arvelie.h
 clang-format -i main.c
 
+rm -f ./arvelie
+
 cc -std=c89 -DDEBUG -Wall -Wpedantic -Wshadow -Wextra -Werror=implicit-int -Werror=incompatible-pointer-types -Werror=int-conversion -Wvla -g -Og -fsanitize=address -fsanitize=undefined main.c -o arvelie
 # tcc -Wall main.c -o arvelie
 

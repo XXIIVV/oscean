@@ -245,18 +245,16 @@ marble(int year, int month, int day)
 void
 fplifeline(FILE *f, Journal *jou, Term *t)
 {
-	int limit_from = arveliedays("06I04");
-	int limit_to = arveliedays(jou->logs[0].date);
-	int range_from = arveliedays(t->date_from);
-	int range_to = arveliedays(t->date_last);
-	int i, init = 0, period = (limit_to - limit_from) / 5;
+	int limit_from = arveliedays(jou->logs[jou->len - 1].date);
+	int limit_to = arveliedays(jou->logs[0].date) - limit_from;
+	int range_from = arveliedays(t->date_from) - limit_from;
+	int range_to = arveliedays(t->date_last) - limit_from;
+	int i, period = (limit_to - limit_from) / 5;
+	int a = range_from / period, b = range_to / period;
 	fputs("<code style='float:right; font-size:80%'>", f);
 	for(i = 0; i < 6; i++) {
-		int moment = i * period + limit_from;
-		if(moment >= range_from && !init++)
-			fputs("+", f);
-		else if(moment >= range_from && moment <= range_to)
-			fputs("+", f);
+		if(i >= a && i <= b)
+			fputs("|", f);
 		else
 			fputs("-", f);
 	}
@@ -844,7 +842,7 @@ fprss(FILE *f, Journal *jou)
 		fprintf(f, "  <link>" DOMAIN "site/%s.html</link>\n", l.term->filename);
 		fprintf(f, "  <guid isPermaLink='false'>%d</guid>\n", l.pict);
 		fputs("  <pubDate>", f);
-		fpRFC2822(f, arvelie_to_time(EPOCH, l.date));
+		fpRFC2822(f, arvelietime(EPOCH, l.date));
 		fputs("</pubDate>\n", f);
 		fputs("  <dc:creator><![CDATA[Devine Lu Linvega]]></dc:creator>\n", f);
 		fputs("  <description>\n", f);
@@ -868,7 +866,7 @@ fptwtxt(FILE *f, Journal *jou)
 		Log l = jou->logs[i];
 		if(l.rune != '+')
 			continue;
-		fpRFC3339(f, arvelie_to_time(EPOCH, l.date));
+		fpRFC3339(f, arvelietime(EPOCH, l.date));
 		fprintf(f, "\t%s | " DOMAIN "%s\n", l.name, l.term->filename);
 	}
 	fclose(f);
