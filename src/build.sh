@@ -2,6 +2,7 @@
 
 # Lint
 clang-format -i main.c
+clang-format -i projects/arvelie/arvelie.h
 
 # Cleanup
 rm -f ./oscean

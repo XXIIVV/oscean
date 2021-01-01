@@ -9,6 +9,7 @@
 #define LEXMEM 500
 #define HORMEM 4000
 #define ITEMS 64
+#define EPOCH 2006
 
 #define NAME "XXIIVV"
 #define DOMAIN "https://wiki.xxiivv.com/"
@@ -242,12 +243,12 @@ marble(int year, int month, int day)
 /* File Print */
 
 void
-fplifeline(FILE *f, Term *t)
+fplifeline(FILE *f, Journal *jou, Term *t)
 {
-	int limit_from = arvelie_to_offset("06I04");
-	int limit_to = get_offset();
-	int range_from = arvelie_to_offset(t->date_from);
-	int range_to = arvelie_to_offset(t->date_last);
+	int limit_from = arveliedays("06I04");
+	int limit_to = arveliedays(jou->logs[0].date);
+	int range_from = arveliedays(t->date_from);
+	int range_to = arveliedays(t->date_last);
 	int i, init = 0, period = (limit_to - limit_from) / 5;
 	fputs("<code style='float:right; font-size:80%'>", f);
 	for(i = 0; i < 6; i++) {
@@ -563,7 +564,7 @@ fphoraire(FILE *f, Journal *jou, Term *t)
 		return;
 	fputs("<p>", f);
 	fprintf(f, "<i>Last update on <a href='tracker.html'>%s</a>, edited %d times. +%d/%dfh <b>%s</b></i> ", t->date_last, t->logs_len, t->ch, t->fh, statusterm(t));
-	fplifeline(f, t);
+	fplifeline(f, jou, t);
 	fputs("</p>", f);
 	/* Events */
 	if(t->events_len < 1)
@@ -622,11 +623,11 @@ void
 fptracker(FILE *f, Journal *jou)
 {
 	char *known[LEXMEM];
-	int i, known_id = 0, last_year = 20, offset = get_offset();
+	int i, known_id = 0, last_year = 20, offset = arveliedays(jou->logs[0].date);
 	fputs("<ul>", f);
 	for(i = 0; i < jou->len; ++i) {
 		Log *l = &jou->logs[i];
-		if(offset - arvelie_to_offset(l->date) < 0)
+		if(offset - arveliedays(l->date) < 0)
 			continue;
 		if(afnd(known, known_id, l->term->name) > -1)
 			continue;
@@ -634,7 +635,7 @@ fptracker(FILE *f, Journal *jou)
 			fputs("</ul><ul>", f);
 		fputs("<li>", f);
 		fprintf(f, "<a href='%s.html'>%s</a> — last update %s", l->term->filename, l->term->name, l->date);
-		fplifeline(f, l->term);
+		fplifeline(f, jou, l->term);
 		fputs("</li>", f);
 		last_year = sint(l->date, 2);
 		known[known_id] = l->term->name;
@@ -668,7 +669,7 @@ fpnow(FILE *f, Lexicon *lex, Journal *jou)
 	for(i = 0; i < 56; ++i) {
 		int index = 0;
 		Log l = jou->logs[i];
-		if(arvelie_to_offset(l.date) < 56)
+		if(arveliedays(l.date) < 56)
 			break;
 		if(l.code % 10 < 1)
 			continue;
@@ -843,7 +844,7 @@ fprss(FILE *f, Journal *jou)
 		fprintf(f, "  <link>" DOMAIN "site/%s.html</link>\n", l.term->filename);
 		fprintf(f, "  <guid isPermaLink='false'>%d</guid>\n", l.pict);
 		fputs("  <pubDate>", f);
-		fpRFC2822(f, arvelie_to_time(l.date));
+		fpRFC2822(f, arvelie_to_time(EPOCH, l.date));
 		fputs("</pubDate>\n", f);
 		fputs("  <dc:creator><![CDATA[Devine Lu Linvega]]></dc:creator>\n", f);
 		fputs("  <description>\n", f);
@@ -867,7 +868,7 @@ fptwtxt(FILE *f, Journal *jou)
 		Log l = jou->logs[i];
 		if(l.rune != '+')
 			continue;
-		fpRFC3339(f, arvelie_to_time(l.date));
+		fpRFC3339(f, arvelie_to_time(EPOCH, l.date));
 		fprintf(f, "\t%s | " DOMAIN "%s\n", l.name, l.term->filename);
 	}
 	fclose(f);
@@ -1120,7 +1121,7 @@ main(void)
 	block.len = 0;
 	block.data[0] = '\0';
 
-	parvelie();
+	parvelie(EPOCH);
 	printf("    | Marble #%d(%.2f%%)\n", death, (death / (double)3900) * 100);
 
 	start = clock();

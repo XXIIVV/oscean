@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang='en'></head><meta charset='utf-8'><meta name='description' content='Moogle is a 3D wireframe toolkit.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV — moogle</title></head><body><header><a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='tools.html'>tools/</a></li><li><a href='utilities.html'>utilities</a></li><li><a href='games.html'>games</a></li><li><a href='unreleased.html'>unreleased</a></li></ul><ul><li><a href='ronin.html'>ronin</a></li><li><a href='left.html'>left</a></li><li><a href='dotgrid.html'>dotgrid</a></li><li><a href='nasu.html'>nasu</a></li><li><a href='moogle.html'>moogle/</a></li></ul><ul><li><a href='graf3dscene.html'>graf3dscene</a></li></ul></nav><main><figure><img src='../media/diary/727.jpg' alt='Pitch Yaw Roll picture' width='900'/><figcaption>20P12 — Pitch Yaw Roll</figcaption></figure><h2>Moogle is a 3D wireframe toolkit.</h2><p>Moogle is a minimal <b>3D wireframe tool</b> designed to be used alongside its companion tool <a href='nasu.html'>Nasu</a>, both can export to the <a href='chr_format.html'>chr_format</a>. It offers a handful of basic geometry drawing functions, it was written in <a href='ansi_c.html'>ANSI C</a>, and was inspired by <a href='graf3dscene.html'>Graf3DScene</a>.</p><p>Moogle was first written on <a href='plan9.html'>Plan9</a>, the original <a href='plan9_c.html'>Plan9 C</a> implementation is available <a href='../src/inc/text/moogle9.c.txt' target='_blank'>here</a>.</p><h3>moogle.c</h3><p>To control the window size and default colors, edit the values defined at the top of the file itself. Press , <code>E</code> to export a <code>.chr</code> file, and press <code>R</code> to render a <code>.bmp</code> file. To learn more, visit the <a href='https://git.sr.ht/~rabbits/moogle' target='_blank'>repository</a>.</p><pre>cc -std=c89 -Wall moogle.c -L/usr/local/lib -lSDL2 -lm -o moogle</pre><p>The following code is a single-file implementation written in <a href='ansi_c.html'>ANSI C</a>, the only dependecy is <a href='https://www.libsdl.org' target='_blank'>SDL2</a>.</p><figure><pre>#include &lt;SDL2/SDL.h&gt;
+<!DOCTYPE html><html lang='en'></head><meta charset='utf-8'><meta name='description' content='Moogle is a 3D wireframe toolkit.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV — moogle</title></head><body><header><a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='tools.html'>tools/</a></li><li><a href='utilities.html'>utilities</a></li><li><a href='games.html'>games</a></li><li><a href='unreleased.html'>unreleased</a></li></ul><ul><li><a href='ronin.html'>ronin</a></li><li><a href='left.html'>left</a></li><li><a href='dotgrid.html'>dotgrid</a></li><li><a href='nasu.html'>nasu</a></li><li><a href='moogle.html'>moogle/</a></li></ul><ul><li><a href='graf3dscene.html'>graf3dscene</a></li></ul></nav><main><figure><img src='../media/diary/727.jpg' alt='Pitch Yaw Roll picture' width='900'/><figcaption>14P11 — Pitch Yaw Roll</figcaption></figure><h2>Moogle is a 3D wireframe toolkit.</h2><p>Moogle is a minimal <b>3D wireframe tool</b> designed to be used alongside its companion tool <a href='nasu.html'>Nasu</a>, both can export to the <a href='chr_format.html'>chr_format</a>. It offers a handful of basic geometry drawing functions, it was written in <a href='ansi_c.html'>ANSI C</a>, and was inspired by <a href='graf3dscene.html'>Graf3DScene</a>.</p><p>Moogle was first written on <a href='plan9.html'>Plan9</a>, the original <a href='plan9_c.html'>Plan9 C</a> implementation is available <a href='../src/inc/text/moogle9.c.txt' target='_blank'>here</a>.</p><h3>moogle.c</h3><p>To control the window size and default colors, edit the values defined at the top of the file itself. Press , <code>E</code> to export a <code>.chr</code> file, and press <code>R</code> to render a <code>.bmp</code> file. To learn more, visit the <a href='https://git.sr.ht/~rabbits/moogle' target='_blank'>repository</a>.</p><pre>cc -std=c89 -Wall moogle.c -L/usr/local/lib -lSDL2 -lm -o moogle</pre><p>The following code is a single-file implementation written in <a href='ansi_c.html'>ANSI C</a>, the only dependecy is <a href='https://www.libsdl.org' target='_blank'>SDL2</a>.</p><figure><pre>#include &lt;SDL2/SDL.h&gt;
 #include &lt;stdio.h&gt;
 #include &lt;math.h&gt;
 
@@ -36,7 +36,8 @@ typedef struct {
 } Point3d;
 
 typedef struct {
-	int a, b, color;
+	int color;
+	Point3d *a, *b;
 } Edge;
 
 typedef struct {
@@ -153,25 +154,6 @@ Cm3d(double pitch, double yaw, double roll)
 	return c;
 }
 
-unsigned char
-chex(char c)
-{
-	if(c &gt;= 'a' &amp;&amp; c &lt;= 'f')
-		return 10 + c - 'a';
-	if(c &gt;= 'A' &amp;&amp; c &lt;= 'F')
-		return 10 + c - 'A';
-	return (c - '0') &amp; 0xF;
-}
-
-int
-shex(char *s, int len)
-{
-	int i, n = 0;
-	for(i = 0; i &lt; len; ++i)
-		n |= (chex(s[i]) &lt;&lt; ((len - i - 1) * 4));
-	return n;
-}
-
 int
 colortheme(Uint32 hex)
 {
@@ -280,14 +262,14 @@ addvertex(Mesh *m, double x, double y, double z)
 }
 
 Edge *
-addedge(Mesh *m, int v0, int v1, int color)
+addedge(Mesh *m, Point3d *a, Point3d *b, int color)
 {
 	if(m-&gt;edgeslen == ELIMIT) {
 		printf("Warning: Reached edge limit\n");
 		return NULL;
 	}
-	m-&gt;edges[m-&gt;edgeslen].a = v0;
-	m-&gt;edges[m-&gt;edgeslen].b = v1;
+	m-&gt;edges[m-&gt;edgeslen].a = a;
+	m-&gt;edges[m-&gt;edgeslen].b = b;
 	m-&gt;edges[m-&gt;edgeslen].color = color;
 	return &amp;m-&gt;edges[m-&gt;edgeslen++];
 }
@@ -335,82 +317,37 @@ rotate(Mesh *m, double pitch, double yaw, double roll)
 	return m;
 }
 
-Mesh *
-extrude(Mesh *m, double depth, int color)
-{
-	int i, vl = m-&gt;verticeslen, el = m-&gt;edgeslen;
-	for(i = 0; i &lt; vl; i++) {
-		addvertex(m,
-			m-&gt;vertices[i].x,
-			m-&gt;vertices[i].y,
-			m-&gt;vertices[i].z + depth);
-		addedge(m, i, i + vl, 1);
-	}
-	for(i = 0; i &lt; el; i++)
-		addedge(m,
-			m-&gt;edges[i].a + vl,
-			m-&gt;edges[i].b + vl,
-			color);
-	return m;
-}
-
-Mesh *
-symmetry(Mesh *m, double x, double y, double z, int color)
-{
-	int i, el, vl = m-&gt;verticeslen;
-	for(i = 0; i &lt; vl; i++)
-		addvertex(m,
-			m-&gt;vertices[i].x * x,
-			m-&gt;vertices[i].y * y,
-			m-&gt;vertices[i].z * z);
-	el = m-&gt;edgeslen;
-	for(i = 0; i &lt; el; i++)
-		addedge(m,
-			el + 1 + m-&gt;edges[i].a,
-			el + 1 + m-&gt;edges[i].b,
-			color);
-	return m;
-}
-
 /* Shapes */
 
 Mesh *
 addline(Mesh *m, Point3d a, Point3d b, int color)
 {
-	addvertex(m, a.x, a.y, a.z);
-	addvertex(m, b.x, b.y, b.z);
-	addedge(m, m-&gt;verticeslen - 2, m-&gt;verticeslen - 1, color);
+	addedge(m,
+		addvertex(m, a.x, a.y, a.z),
+		addvertex(m, b.x, b.y, b.z),
+		color);
 	return m;
 }
 
 Mesh *
 addarc(Mesh *m, double radius, double segs, double angle, int color)
 {
-	int i, offset = m-&gt;verticeslen;
-	double arc = angle / 360;
+	int i;
+	double arc = 2 * PI * angle / 360 / segs;
+	Point3d *a, *b;
 	for(i = 0; i &lt; segs + 1; i++) {
-		addvertex(m,
-			radius * cos(2 * PI * i * arc / segs),
-			radius * sin(2 * PI * i * arc / segs),
-			0);
-		if(i &lt; segs)
-			addedge(m, offset + i, offset + i + 1, color);
+		a = addvertex(m, radius * cos(i * arc), radius * sin(i * arc), 0);
+		if(i &gt; 0)
+			addedge(m, a, b, color);
+		b = a;
 	}
 	return m;
 }
 
 Mesh *
-addpoly(Mesh *m, double radius, int segs, int color)
+addpolygon(Mesh *m, double radius, int segs, int color)
 {
-	int i, offset = m-&gt;verticeslen;
-	for(i = 0; i &lt; segs; i++) {
-		addvertex(m,
-			radius * cos(2 * PI * i / segs),
-			radius * sin(2 * PI * i / segs),
-			0);
-		addedge(m, offset + i, offset + (i + 1) % segs, color);
-	}
-	return m;
+	return addarc(m, radius, segs, 360, color);
 }
 
 /* draw */
@@ -504,8 +441,8 @@ redraw(Uint32 *dst)
 		Mesh *m = &amp;scn.meshes[i];
 		for(j = 0; j &lt; m-&gt;edgeslen; j++) {
 			Edge *edge = &amp;m-&gt;edges[j];
-			Point3d a = add3d(&amp;m-&gt;vertices[edge-&gt;a], &amp;m-&gt;position);
-			Point3d b = add3d(&amp;m-&gt;vertices[edge-&gt;b], &amp;m-&gt;position);
+			Point3d a = add3d(edge-&gt;a, &amp;m-&gt;position);
+			Point3d b = add3d(edge-&gt;b, &amp;m-&gt;position);
 			rotate3d(&amp;a, &amp;cam.origin, &amp;cam.rotation);
 			rotate3d(&amp;b, &amp;cam.origin, &amp;cam.rotation);
 			line(dst,
@@ -666,24 +603,6 @@ renderbmp(void)
 }
 
 void
-loadtheme(FILE *f)
-{
-	int id = 0;
-	char line[256];
-	if(!f)
-		return;
-	while(fgets(line, 256, f)) {
-		int i = 0;
-		while(line[i++] &amp;&amp; id &lt; 5) {
-			if(line[i] != '#')
-				continue;
-			theme[id++] = shex(line + i + 1, 6);
-		}
-	}
-	fclose(f);
-}
-
-void
 quit(void)
 {
 	free(pixels);
@@ -817,7 +736,6 @@ main(void)
 
 	if(!init())
 		return error("Init", "Failure");
-	loadtheme(fopen("theme.svg", "r"));
 
 	/* Umbrella */
 	for(i = 0; i &lt; 5; ++i) {
@@ -825,7 +743,7 @@ main(void)
 		rotateto(&amp;scn, 0, 45 * i, 0);
 	}
 	rotateto(&amp;scn, 90, 0, 0);
-	addpoly(&amp;umbrella, 10, 8, 1);
+	addpolygon(&amp;umbrella, 10, 8, 1);
 	translate(scale(&amp;umbrella, 1, 0.6, 1), 0, 2, 0);
 	addline(&amp;umbrella, Pt3d(0, 0, -10), Pt3d(0, 0, 8), 1);
 	rotateto(moveto(&amp;scn, 0, -8, 2), 90, 90, 90);
@@ -858,5 +776,5 @@ main(void)
 	quit();
 	return 0;
 }
-</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/moogle.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/moogle.c.txt'>moogle.c.txt</a>(860 lines)</figcaption>
-</figure><figure><img src='../media/diary/728.jpg' alt='Moogle Spheroid picture' width='900'/><figcaption>20P01 — Moogle Spheroid</figcaption></figure><ul><li><a href='https://git.sr.ht/~rabbits/moogle' target='_blank'>sources</a></li></ul><p><i>incoming(8)</i>: <a href='neauismetica.html'>neauismetica</a> <a href='graf3dscene.html'>graf3dscene</a> <a href='dotgrid.html'>dotgrid</a> <a href='nasu.html'>nasu</a> <a href='computer.html'>computer</a> <a href='defunct.html'>defunct</a> <a href='meta.html'>meta</a> <a href='identity.html'>identity</a> </p><p><i>Last update on <a href='tracker.html'>20Z14</a>, edited 15 times. +72/90fh <b></b></i> <code style='float:right; font-size:80%'>-----+</code></p><ul><li>20T04 — Moogle Release</li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
+</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/moogle.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/moogle.c.txt'>moogle.c.txt</a>(778 lines)</figcaption>
+</figure><figure><img src='../media/diary/728.jpg' alt='Moogle Spheroid picture' width='900'/><figcaption>14P00 — Moogle Spheroid</figcaption></figure><ul><li><a href='https://git.sr.ht/~rabbits/moogle' target='_blank'>sources</a></li></ul><p><i>incoming(8)</i>: <a href='neauismetica.html'>neauismetica</a> <a href='graf3dscene.html'>graf3dscene</a> <a href='dotgrid.html'>dotgrid</a> <a href='nasu.html'>nasu</a> <a href='computer.html'>computer</a> <a href='defunct.html'>defunct</a> <a href='meta.html'>meta</a> <a href='identity.html'>identity</a> </p><p><i>Last update on <a href='tracker.html'>14Z13</a>, edited 15 times. +72/90fh <b></b></i> <code style='float:right; font-size:80%'>-----+</code></p><ul><li>14T03 — Moogle Release</li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>

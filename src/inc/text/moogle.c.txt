@@ -36,7 +36,8 @@ typedef struct {
 } Point3d;
 
 typedef struct {
-	int a, b, color;
+	int color;
+	Point3d *a, *b;
 } Edge;
 
 typedef struct {
@@ -153,25 +154,6 @@ Cm3d(double pitch, double yaw, double roll)
 	return c;
 }
 
-unsigned char
-chex(char c)
-{
-	if(c >= 'a' && c <= 'f')
-		return 10 + c - 'a';
-	if(c >= 'A' && c <= 'F')
-		return 10 + c - 'A';
-	return (c - '0') & 0xF;
-}
-
-int
-shex(char *s, int len)
-{
-	int i, n = 0;
-	for(i = 0; i < len; ++i)
-		n |= (chex(s[i]) << ((len - i - 1) * 4));
-	return n;
-}
-
 int
 colortheme(Uint32 hex)
 {
@@ -280,14 +262,14 @@ addvertex(Mesh *m, double x, double y, double z)
 }
 
 Edge *
-addedge(Mesh *m, int v0, int v1, int color)
+addedge(Mesh *m, Point3d *a, Point3d *b, int color)
 {
 	if(m->edgeslen == ELIMIT) {
 		printf("Warning: Reached edge limit\n");
 		return NULL;
 	}
-	m->edges[m->edgeslen].a = v0;
-	m->edges[m->edgeslen].b = v1;
+	m->edges[m->edgeslen].a = a;
+	m->edges[m->edgeslen].b = b;
 	m->edges[m->edgeslen].color = color;
 	return &m->edges[m->edgeslen++];
 }
@@ -335,82 +317,37 @@ rotate(Mesh *m, double pitch, double yaw, double roll)
 	return m;
 }
 
-Mesh *
-extrude(Mesh *m, double depth, int color)
-{
-	int i, vl = m->verticeslen, el = m->edgeslen;
-	for(i = 0; i < vl; i++) {
-		addvertex(m,
-			m->vertices[i].x,
-			m->vertices[i].y,
-			m->vertices[i].z + depth);
-		addedge(m, i, i + vl, 1);
-	}
-	for(i = 0; i < el; i++)
-		addedge(m,
-			m->edges[i].a + vl,
-			m->edges[i].b + vl,
-			color);
-	return m;
-}
-
-Mesh *
-symmetry(Mesh *m, double x, double y, double z, int color)
-{
-	int i, el, vl = m->verticeslen;
-	for(i = 0; i < vl; i++)
-		addvertex(m,
-			m->vertices[i].x * x,
-			m->vertices[i].y * y,
-			m->vertices[i].z * z);
-	el = m->edgeslen;
-	for(i = 0; i < el; i++)
-		addedge(m,
-			el + 1 + m->edges[i].a,
-			el + 1 + m->edges[i].b,
-			color);
-	return m;
-}
-
 /* Shapes */
 
 Mesh *
 addline(Mesh *m, Point3d a, Point3d b, int color)
 {
-	addvertex(m, a.x, a.y, a.z);
-	addvertex(m, b.x, b.y, b.z);
-	addedge(m, m->verticeslen - 2, m->verticeslen - 1, color);
+	addedge(m,
+		addvertex(m, a.x, a.y, a.z),
+		addvertex(m, b.x, b.y, b.z),
+		color);
 	return m;
 }
 
 Mesh *
 addarc(Mesh *m, double radius, double segs, double angle, int color)
 {
-	int i, offset = m->verticeslen;
-	double arc = angle / 360;
+	int i;
+	double arc = 2 * PI * angle / 360 / segs;
+	Point3d *a, *b;
 	for(i = 0; i < segs + 1; i++) {
-		addvertex(m,
-			radius * cos(2 * PI * i * arc / segs),
-			radius * sin(2 * PI * i * arc / segs),
-			0);
-		if(i < segs)
-			addedge(m, offset + i, offset + i + 1, color);
+		a = addvertex(m, radius * cos(i * arc), radius * sin(i * arc), 0);
+		if(i > 0)
+			addedge(m, a, b, color);
+		b = a;
 	}
 	return m;
 }
 
 Mesh *
-addpoly(Mesh *m, double radius, int segs, int color)
+addpolygon(Mesh *m, double radius, int segs, int color)
 {
-	int i, offset = m->verticeslen;
-	for(i = 0; i < segs; i++) {
-		addvertex(m,
-			radius * cos(2 * PI * i / segs),
-			radius * sin(2 * PI * i / segs),
-			0);
-		addedge(m, offset + i, offset + (i + 1) % segs, color);
-	}
-	return m;
+	return addarc(m, radius, segs, 360, color);
 }
 
 /* draw */
@@ -504,8 +441,8 @@ redraw(Uint32 *dst)
 		Mesh *m = &scn.meshes[i];
 		for(j = 0; j < m->edgeslen; j++) {
 			Edge *edge = &m->edges[j];
-			Point3d a = add3d(&m->vertices[edge->a], &m->position);
-			Point3d b = add3d(&m->vertices[edge->b], &m->position);
+			Point3d a = add3d(edge->a, &m->position);
+			Point3d b = add3d(edge->b, &m->position);
 			rotate3d(&a, &cam.origin, &cam.rotation);
 			rotate3d(&b, &cam.origin, &cam.rotation);
 			line(dst,
@@ -666,24 +603,6 @@ renderbmp(void)
 }
 
 void
-loadtheme(FILE *f)
-{
-	int id = 0;
-	char line[256];
-	if(!f)
-		return;
-	while(fgets(line, 256, f)) {
-		int i = 0;
-		while(line[i++] && id < 5) {
-			if(line[i] != '#')
-				continue;
-			theme[id++] = shex(line + i + 1, 6);
-		}
-	}
-	fclose(f);
-}
-
-void
 quit(void)
 {
 	free(pixels);
@@ -817,7 +736,6 @@ main(void)
 
 	if(!init())
 		return error("Init", "Failure");
-	loadtheme(fopen("theme.svg", "r"));
 
 	/* Umbrella */
 	for(i = 0; i < 5; ++i) {
@@ -825,7 +743,7 @@ main(void)
 		rotateto(&scn, 0, 45 * i, 0);
 	}
 	rotateto(&scn, 90, 0, 0);
-	addpoly(&umbrella, 10, 8, 1);
+	addpolygon(&umbrella, 10, 8, 1);
 	translate(scale(&umbrella, 1, 0.6, 1), 0, 2, 0);
 	addline(&umbrella, Pt3d(0, 0, -10), Pt3d(0, 0, 8), 1);
 	rotateto(moveto(&scn, 0, -8, 2), 90, 90, 90);
