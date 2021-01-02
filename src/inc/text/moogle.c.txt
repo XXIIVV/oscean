@@ -246,19 +246,50 @@ rotate3d(Point3d *p, Point3d *o, Point3d *t)
 	return p;
 }
 
+Scene *
+moveto(Scene *s, double x, double y, double z)
+{
+	set3d(&s->position, x, y, z);
+	return s;
+}
+
+Scene *
+scaleto(Scene *s, double x, double y, double z)
+{
+	set3d(&s->scale, x, y, z);
+	return s;
+}
+
+Scene *
+rotateto(Scene *s, double x, double y, double z)
+{
+	set3d(&s->rotation, x, y, z);
+	return s;
+}
+
+Scene *
+reset(Scene *s)
+{
+	moveto(scaleto(rotateto(s, 0, 0, 0), 1, 1, 1), 0, 0, 0);
+	return s;
+}
+
 Point3d *
 addvertex(Mesh *m, double x, double y, double z)
 {
-	Point3d *p;
+	int i;
+	Point3d v = Pt3d(x, y, z);
 	if(m->verticeslen == VLIMIT) {
 		printf("Warning: Reached vertex limit\n");
 		return NULL;
 	}
-	p = set3d(&m->vertices[m->verticeslen++], x, y, z);
-	translate3d(p, &scn.position);
-	scale3d(p, &scn.scale);
-	rotate3d(p, &scn.position, &scn.rotation);
-	return p;
+	translate3d(&v, &scn.position);
+	scale3d(&v, &scn.scale);
+	rotate3d(&v, &scn.position, &scn.rotation);
+	for(i = 0; i < m->verticeslen; ++i)
+		if(equpt3d(m->vertices[i], v))
+			return &m->vertices[i];
+	return set3d(&m->vertices[m->verticeslen++], v.x, v.y, v.z);
 }
 
 Edge *
@@ -275,14 +306,13 @@ addedge(Mesh *m, Point3d *a, Point3d *b, int color)
 }
 
 Mesh *
-addmesh(Scene *s, Mesh m)
+addmesh(Scene *s)
 {
 	if(s->len == MLIMIT) {
 		printf("Warning: Reached mesh limit\n");
 		return NULL;
 	}
-	s->meshes[s->len++] = m;
-	return &s->meshes[s->len - 1];
+	return &s->meshes[s->len++];
 }
 
 /* transforms */
@@ -317,15 +347,42 @@ rotate(Mesh *m, double pitch, double yaw, double roll)
 	return m;
 }
 
-/* Shapes */
+Mesh *
+extrude(Mesh *m, Point3d t, int color)
+{
+	int i, j, vl = m->verticeslen, el = m->edgeslen;
+	for(i = 0; i < vl; i++) {
+		Point3d *a = &m->vertices[i];
+		addedge(m, &m->vertices[i], addvertex(m, a->x + t.x, a->y + t.y, a->z + t.z), color);
+	}
+	for(i = 0; i < el; i++) {
+		Edge *e0 = &m->edges[i];
+		Edge *e1 = addedge(m, e0->a, e0->b, e0->color);
+		for(j = 0; j < vl; j++) {
+			if(e0->a == &m->vertices[j])
+				e1->a = &m->vertices[vl + j];
+			else if(e0->b == &m->vertices[j])
+				e1->b = &m->vertices[vl + j];
+		}
+	}
+	return m;
+}
+
+/* Primitives */
+
+Mesh *
+addpoly(Mesh *m, int a, int b, int c, int color)
+{
+	addedge(m, &m->vertices[a], &m->vertices[b], color);
+	addedge(m, &m->vertices[b], &m->vertices[c], color);
+	addedge(m, &m->vertices[c], &m->vertices[a], color);
+	return m;
+}
 
 Mesh *
 addline(Mesh *m, Point3d a, Point3d b, int color)
 {
-	addedge(m,
-		addvertex(m, a.x, a.y, a.z),
-		addvertex(m, b.x, b.y, b.z),
-		color);
+	addedge(m, addvertex(m, a.x, a.y, a.z), addvertex(m, b.x, b.y, b.z), color);
 	return m;
 }
 
@@ -334,20 +391,142 @@ addarc(Mesh *m, double radius, double segs, double angle, int color)
 {
 	int i;
 	double arc = 2 * PI * angle / 360 / segs;
-	Point3d *a, *b;
+	Point3d b;
 	for(i = 0; i < segs + 1; i++) {
-		a = addvertex(m, radius * cos(i * arc), radius * sin(i * arc), 0);
+		Point3d a = Pt3d(radius * cos(i * arc), radius * sin(i * arc), 0);
 		if(i > 0)
-			addedge(m, a, b, color);
+			addline(m, a, b, color);
 		b = a;
 	}
 	return m;
 }
 
 Mesh *
-addpolygon(Mesh *m, double radius, int segs, int color)
+addshape(Mesh *m, double radius, int segs, int color)
 {
 	return addarc(m, radius, segs, 360, color);
+}
+
+/* Primitives */
+
+Mesh *
+createfrustum(Scene *s, double radius, int segs, double depth, double cap, int color)
+{
+	int i;
+	Mesh *m = addmesh(s);
+	addshape(m, cap, segs, color);
+	translate(m, 0, 0, depth);
+	addshape(m, radius, segs, color);
+	for(i = 0; i < segs + 1; i++)
+		addedge(m, &m->vertices[i], &m->vertices[segs + i + 1], color);
+	return m;
+}
+
+Mesh *
+createpyramid(Scene *s, double radius, int segs, double depth, int color)
+{
+	int i;
+	Mesh *m = addmesh(s);
+	Point3d *p = addvertex(m, 0, 0, depth);
+	addshape(m, radius, segs, color);
+	for(i = 0; i < segs + 1; i++)
+		addedge(m, &m->vertices[i], p, color);
+	return m;
+}
+
+Mesh *
+createprism(Scene *s, double radius, int segs, double depth, int color)
+{
+	return createfrustum(s, radius, segs, depth, radius, color);
+}
+
+Mesh *
+createplane(Scene *s, double width, double height, double xsegs, double ysegs, int color)
+{
+	int ix, iy;
+	Mesh *m = addmesh(s);
+	for(ix = 0; ix < xsegs + 1; ix++)
+		addline(m,
+			Pt3d(ix * (width / xsegs) - width / 2, height / 2, 0),
+			Pt3d(ix * (width / xsegs) - width / 2, -height / 2, 0),
+			color);
+	for(iy = 0; iy < ysegs + 1; iy++)
+		addline(m,
+			Pt3d(width / 2, iy * (height / ysegs) - height / 2, 0),
+			Pt3d(-width / 2, iy * (height / ysegs) - height / 2, 0),
+			color);
+	return m;
+}
+
+Mesh *
+createbox(Scene *s, double width, double height, double depth, int color)
+{
+	int i;
+	Mesh *m = createplane(s, width, height, 1, 1, color);
+	extrude(m, Pt3d(0, 0, depth), color);
+	return m;
+}
+
+Mesh *
+createicosaedron(Scene *s, double radius, int color)
+{
+	int i;
+	Mesh *m = addmesh(s);
+	double t = (1.0 + sqrt(5.0)) / 2.0;
+	addvertex(m, -1, t, 0);
+	addvertex(m, 1, t, 0);
+	addvertex(m, -1, -t, 0);
+	addvertex(m, 1, -t, 0);
+	addvertex(m, 0, -1, t);
+	addvertex(m, 0, 1, t);
+	addvertex(m, 0, -1, -t);
+	addvertex(m, 0, 1, -t);
+	addvertex(m, t, 0, -1);
+	addvertex(m, t, 0, 1);
+	addvertex(m, -t, 0, -1);
+	addvertex(m, -t, 0, 1);
+	addpoly(m, 0, 11, 5, 3); /* - */
+	addpoly(m, 0, 5, 1, 3);
+	addpoly(m, 0, 1, 7, 3);
+	addpoly(m, 0, 7, 10, 3);
+	addpoly(m, 0, 10, 11, 3);
+	addpoly(m, 1, 5, 9, 3); /* - */
+	addpoly(m, 5, 11, 4, 3);
+	addpoly(m, 11, 10, 2, 3);
+	addpoly(m, 10, 7, 6, 3);
+	addpoly(m, 7, 1, 8, 3);
+	addpoly(m, 3, 9, 4, 3); /* - */
+	addpoly(m, 3, 4, 2, 3);
+	addpoly(m, 3, 2, 6, 3);
+	addpoly(m, 3, 6, 8, 3);
+	addpoly(m, 3, 8, 9, 3);
+	addpoly(m, 4, 9, 5, 3); /* - */
+	addpoly(m, 2, 4, 11, 3);
+	addpoly(m, 6, 2, 10, 3);
+	addpoly(m, 8, 6, 7, 3);
+	addpoly(m, 9, 8, 1, 3);
+	scale(m, radius / 2, radius / 2, radius / 2);
+	return m;
+}
+
+Mesh *
+createumbrella(Scene *s)
+{
+	int i;
+	Mesh *umbrella = addmesh(s);
+	reset(s);
+	for(i = 0; i < 5; ++i) {
+		addarc(umbrella, 10, 8, 180, 2);
+		rotateto(s, 0, 45 * i, 0);
+	}
+	rotateto(s, 90, 0, 0);
+	addshape(umbrella, 10, 8, 1);
+	translate(scale(umbrella, 1, 0.6, 1), 0, 2, 0);
+	addline(umbrella, Pt3d(0, 0, -10), Pt3d(0, 0, 8), 1);
+	rotateto(moveto(s, 0, -8, 2), 90, 90, 90);
+	addarc(umbrella, 2, 8, 180, 2);
+	reset(s);
+	return umbrella;
 }
 
 /* draw */
@@ -465,27 +644,6 @@ error(char *msg, const char *err)
 {
 	printf("Error %s: %s\n", msg, err);
 	return 0;
-}
-
-Scene *
-moveto(Scene *s, double x, double y, double z)
-{
-	set3d(&s->position, x, y, z);
-	return s;
-}
-
-Scene *
-scaleto(Scene *s, double x, double y, double z)
-{
-	set3d(&s->scale, x, y, z);
-	return s;
-}
-
-Scene *
-rotateto(Scene *s, double x, double y, double z)
-{
-	set3d(&s->rotation, x, y, z);
-	return s;
 }
 
 void
@@ -728,30 +886,13 @@ init(void)
 int
 main(void)
 {
-	int i, ticknext = 0;
-	Mesh umbrella = Ms3d(0, 0, 0);
-
+	int ticknext = 0;
 	scn = Sc3d();
 	cam = Cm3d(180, 20, 0);
-
 	if(!init())
 		return error("Init", "Failure");
-
-	/* Umbrella */
-	for(i = 0; i < 5; ++i) {
-		addarc(&umbrella, 10, 8, 180, 2);
-		rotateto(&scn, 0, 45 * i, 0);
-	}
-	rotateto(&scn, 90, 0, 0);
-	addpolygon(&umbrella, 10, 8, 1);
-	translate(scale(&umbrella, 1, 0.6, 1), 0, 2, 0);
-	addline(&umbrella, Pt3d(0, 0, -10), Pt3d(0, 0, 8), 1);
-	rotateto(moveto(&scn, 0, -8, 2), 90, 90, 90);
-	addarc(&umbrella, 2, 8, 180, 2);
-
-	addmesh(&scn, umbrella);
+	createumbrella(&scn);
 	redraw(pixels);
-
 	while(1) {
 		int tick = SDL_GetTicks();
 		SDL_Event event;

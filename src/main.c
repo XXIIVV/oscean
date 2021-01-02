@@ -173,12 +173,15 @@ makelog(Log *l, char *date)
 }
 
 Log *
-finddiary(Journal *jou, Term *t)
+finddiary(Journal *jou, Term *t, int deep)
 {
 	int i;
 	for(i = 0; i < jou->len; ++i)
 		if(jou->logs[i].term == t && jou->logs[i].pict > 0)
 			return &jou->logs[i];
+	if(deep)
+		for(i = 0; i < t->children_len; ++i)
+			return finddiary(jou, t->children[i], 0);
 	return NULL;
 }
 
@@ -444,7 +447,7 @@ fpbodypart(FILE *f, Glossary *glo, Lexicon *lex, Term *t)
 void
 fpbanner(FILE *f, Journal *jou, Term *t, int caption)
 {
-	Log *l = finddiary(jou, t);
+	Log *l = finddiary(jou, t, 0);
 	if(l)
 		fplogpict(f, l, caption);
 }
@@ -505,7 +508,7 @@ fpportal(FILE *f, Glossary *glo, Lexicon *lex, Journal *jou, Term *t, int pict, 
 		if(tc->type && scmp(tc->type, "hidden"))
 			continue;
 		if(pict) {
-			Log *l = finddiary(jou, tc);
+			Log *l = finddiary(jou, tc, 1);
 			if(l)
 				fppict(f, l->pict, tc->name, tc->bref, 1, tc->filename);
 		}
@@ -523,7 +526,7 @@ fpalbum(FILE *f, Journal *jou, Term *t)
 	int i;
 	for(i = 0; i < jou->len; ++i) {
 		Log l = jou->logs[i];
-		if(l.term != t || l.pict < 1 || l.pict == finddiary(jou, t)->pict)
+		if(l.term != t || l.pict < 1 || l.pict == finddiary(jou, t, 0)->pict)
 			continue;
 		fplogpict(f, &l, 1);
 	}
@@ -684,13 +687,13 @@ fpnow(FILE *f, Lexicon *lex, Journal *jou)
 	}
 	/* find most active with a photo */
 	for(i = 0; i < projects_len; ++i) {
-		if(finddiary(jou, findterm(lex, pname[i])) && pval[i] > pmaxval)
+		if(finddiary(jou, findterm(lex, pname[i]), 0) && pval[i] > pmaxval)
 			pmaxval = pval[i];
 	}
 	for(i = 0; i < projects_len; ++i) {
 		if(pval[i] != pmaxval)
 			continue;
-		fplogpict(f, finddiary(jou, findterm(lex, pname[i])), 1);
+		fplogpict(f, finddiary(jou, findterm(lex, pname[i]), 0), 1);
 		break;
 	}
 	fprintf(
@@ -1102,22 +1105,16 @@ check(Glossary *glo, Journal *jou)
 	}
 }
 
+Block block;
+Glossary all_lists;
+Lexicon all_terms;
+Journal all_logs;
+clock_t start;
+
 int
 main(void)
 {
-	Block block;
-	Glossary all_lists;
-	Lexicon all_terms;
-	Journal all_logs;
-	clock_t start;
 	int death = marble(1986, 3, 22);
-
-	all_lists.len = 0;
-	all_terms.len = 0;
-	all_logs.len = 0;
-
-	block.len = 0;
-	block.data[0] = '\0';
 
 	parvelie(EPOCH);
 	printf("    | Marble #%d(%.2f%%)\n", death, (death / (double)3900) * 100);
