@@ -757,7 +757,7 @@ fphtml(FILE *f, Glossary *glo, Lexicon *lex, Term *t, Journal *jou)
 	if(t->type && scmp(t->type, "alias"))
 		alias = findterm(lex, t->host);
 	fputs("<!DOCTYPE html><html lang='en'>", f);
-	fputs("</head>", f);
+	fputs("<head>", f);
 	fprintf(f, "<meta charset='utf-8'>"
 			   "<meta name='description' content='%s'/>"
 			   "<meta name='thumbnail' content='" DOMAIN "media/services/thumbnail.jpg' />"
