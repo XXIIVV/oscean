@@ -272,9 +272,9 @@ fppict(FILE *f, int pict, char *host, char *name, int caption, char *link)
 	if(caption) {
 		fputs("<figcaption>", f);
 		if(link)
-			fprintf(f, "<a href='%s.html'>%s</a> — %s", link, host, name);
+			fprintf(f, "<a href='%s.html'>%s</a> &mdash; %s", link, host, name);
 		else
-			fprintf(f, "%s — %s", host, name);
+			fprintf(f, "%s &mdash; %s", host, name);
 		fputs("</figcaption>", f);
 	}
 	fputs("</figure>", f);
@@ -577,7 +577,7 @@ fphoraire(FILE *f, Journal *jou, Term *t)
 			continue;
 		if(l->term != t && l->term->parent != t)
 			continue;
-		fprintf(f, "<li>%s — %s</li>", l->date, l->name);
+		fprintf(f, "<li>%s &mdash; %s</li>", l->date, l->name);
 	}
 	fputs("</ul>", f);
 }
@@ -635,7 +635,7 @@ fptracker(FILE *f, Journal *jou)
 		if(last_year != sint(l->date, 2))
 			fputs("</ul><ul>", f);
 		fputs("<li>", f);
-		fprintf(f, "<a href='%s.html'>%s</a> — last update %s", l->term->filename, l->term->name, l->date);
+		fprintf(f, "<a href='%s.html'>%s</a> &mdash; last update %s", l->term->filename, l->term->name, l->date);
 		fplifeline(f, jou, l->term);
 		fputs("</li>", f);
 		last_year = sint(l->date, 2);
@@ -765,7 +765,7 @@ fphtml(FILE *f, Glossary *glo, Lexicon *lex, Term *t, Journal *jou)
 			   "<link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' />"
 			   "<link rel='stylesheet' type='text/css' href='../links/main.css'>"
 			   "<link rel='shortcut icon' type='image/png' href='../media/services/icon.png'>"
-			   "<title>" NAME " — %s</title>",
+			   "<title>" NAME " &mdash; %s</title>",
 		t->bref,
 		t->name);
 	fputs("</head>", f);
@@ -809,7 +809,7 @@ fphtml(FILE *f, Glossary *glo, Lexicon *lex, Term *t, Journal *jou)
 	fputs("<a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a>", f);
 	fputs("<a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a>", f);
 	fputs("<a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a>", f);
-	fputs("<span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> © 2020 — <a href='about.html'>BY-NC-SA 4.0</a></span>", f);
+	fputs("<span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2020 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span>", f);
 	fputs("</footer>", f);
 	fputs("</body></html>", f);
 	fclose(f);
