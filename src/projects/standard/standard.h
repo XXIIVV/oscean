@@ -99,11 +99,12 @@ scmp(char *a, char *b)
 /* string copy */
 
 char *
-scpy(char *src, char *dst)
+scpy(char *src, char *dst, int len)
 {
 	int i = 0;
-	while((dst[i] = src[i]))
+	while((dst[i] = src[i]) && i < len)
 		i++;
+	dst[i + 1] = '\0';
 	return dst;
 }
 

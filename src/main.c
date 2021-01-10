@@ -293,7 +293,7 @@ fptemplatelink(FILE *f, Lexicon *lex, Term *t, char *s)
 	char target[256], name[256];
 	/* find target and name */
 	if(split == -1)
-		scpy(sstr(s, target, 0, slen(s)), name);
+		scpy(sstr(s, target, 0, slen(s)), name, 256);
 	else {
 		sstr(s, target, 0, split);
 		sstr(s, name, split + 1, slen(s) - split);
@@ -1022,7 +1022,7 @@ int
 link(Block *block, Glossary *glo, Lexicon *lex, Journal *jou)
 {
 	int i, j;
-	char buf[6];
+	char buf[7];
 	printf("Linking  | ");
 	printf("glossary:%d ", glo->len);
 	printf("lexicon:%d ", lex->len);
@@ -1048,10 +1048,10 @@ link(Block *block, Glossary *glo, Lexicon *lex, Journal *jou)
 			l->term->parent->events_len++;
 		}
 		if(!l->term->date_last)
-			l->term->date_last = push(block, scpy(l->date, buf));
+			l->term->date_last = push(block, scpy(l->date, buf, 6));
 		if(l->code < 1)
 			return error("Empty code", l->date);
-		l->term->date_from = push(block, scpy(l->date, buf));
+		l->term->date_from = push(block, scpy(l->date, buf, 6));
 	}
 	return 1;
 }
