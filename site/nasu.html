@@ -25,14 +25,14 @@ typedef struct {
 } Document;
 
 typedef struct Brush {
-	int x, y, px, py;
+	int x, y, px, py, vx, vy;
 	int mode, size, color;
 	int down, erase;
 } Brush;
 
 int WIDTH = 8 * HOR + 8 * PAD * 2;
 int HEIGHT = 8 * (VER + 2) + 8 * PAD * 2;
-int FPS = 30, GUIDES = 1, ZOOM = 2;
+int FPS = 30, GUIDES = 1, BIGPIXEL = 0, ZOOM = 2;
 
 Document doc;
 Brush brush;
@@ -52,6 +52,8 @@ Uint8 icons[][8] = {
 	{0xaa, 0x54, 0xaa, 0x54, 0xaa, 0x54, 0xaa, 0x00},
 	{0x38, 0x7c, 0xee, 0xd6, 0xee, 0x7c, 0x38, 0x00},
 	{0x44, 0xba, 0x44, 0x44, 0x44, 0xba, 0x44, 0x00},
+	{0xaa, 0x00, 0xaa, 0x00, 0xaa, 0x00, 0xaa, 0x00},
+	{0xee, 0xaa, 0xee, 0x00, 0xee, 0xaa, 0xee, 0x00},
 	{0x00, 0x00, 0x00, 0x82, 0x44, 0x38, 0x00, 0x00}, /* eye open */
 	{0x00, 0x38, 0x44, 0x92, 0x28, 0x10, 0x00, 0x00}  /* eye closed */
 };
@@ -77,6 +79,18 @@ int
 distance(int ax, int ay, int bx, int by)
 {
 	return (bx - ax) * (bx - ax) + (by - ay) * (by - ay);
+}
+
+int
+screenpos(int pos, int offset)
+{
+	pos -= (PAD * 8 * ZOOM);
+	pos /= ZOOM;
+	if(BIGPIXEL) {
+		pos /= 8;
+		pos += offset;
+	}
+	return pos;
 }
 
 Uint8
@@ -238,8 +252,20 @@ drawchr(Uint32 *dst, int x, int y, int id)
 			int ch2 = doc.data[offset + v + 8];
 			int clr = ((ch1 &gt;&gt; h) &amp; 0x1) + (((ch2 &gt;&gt; h) &amp; 0x1) &lt;&lt; 1);
 			int guides = GUIDES &amp;&amp; !clr &amp;&amp; (x + y) % 2;
-			putpixel(dst, px, py, guides ? 4 : clr);
+			putpixel(dst, px - 1, py, guides ? 4 : clr);
 		}
+}
+
+void
+drawbigchr(Uint32 *dst, int x, int y, int id)
+{
+	int v, h;
+	for(v = 0; v &lt; 8; v++)
+		for(h = 0; h &lt; 8; h++)
+			putpixel(dst,
+				x * 8 + h,
+				y * 8 + v,
+				id == 0 &amp;&amp; GUIDES &amp;&amp; (x + y) % 2 ? 4 : id);
 }
 
 void
@@ -265,7 +291,8 @@ drawui(Uint32 *dst)
 	drawicon(dst, 6 * 8, bottom, icons[4], brush.mode == 2 ? 1 : 2, 0);
 	drawicon(dst, 7 * 8, bottom, icons[5], brush.mode == 3 ? 1 : 2, 0);
 	drawicon(dst, 8 * 8, bottom, icons[6], brush.mode == 4 ? 1 : 2, 0);
-	drawicon(dst, 10 * 8, bottom, icons[GUIDES ? 8 : 7], GUIDES ? 1 : 2, 0);
+	drawicon(dst, 10 * 8, bottom, icons[BIGPIXEL ? 7 : 8], BIGPIXEL ? 1 : 2, 0);
+	drawicon(dst, 11 * 8, bottom, icons[GUIDES ? 10 : 9], GUIDES ? 1 : 2, 0);
 }
 
 void
@@ -276,7 +303,11 @@ redraw(Uint32 *dst)
 	drawui(dst);
 	for(y = 0; y &lt; VER; ++y)
 		for(x = 0; x &lt; HOR; ++x)
-			drawchr(dst, x, y, x + y * HOR);
+			if(BIGPIXEL) {
+				if(x + brush.vx &lt; HOR * 8 &amp;&amp; y + brush.vy &lt; VER * 8)
+					drawbigchr(dst, x, y, getchr(x + brush.vx, y + brush.vy));
+			} else
+				drawchr(dst, x, y, x + y * HOR);
 	SDL_UpdateTexture(gTexture, NULL, dst, WIDTH * sizeof(Uint32));
 	SDL_RenderClear(gRenderer);
 	SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);
@@ -318,6 +349,13 @@ setmode(Brush *b, int m)
 }
 
 void
+setbigmode(int m)
+{
+	BIGPIXEL = m;
+	redraw(pixels);
+}
+
+void
 modsize(Brush *b, int mod)
 {
 	int res = b-&gt;size + mod;
@@ -349,7 +387,7 @@ newchr(void)
 int
 savechr(void)
 {
-	FILE *f = fopen(doc.name, "wb");
+	FILE *f = fopen(doc.name, "w");
 	if(!fwrite(doc.data, sizeof(doc.data), 1, f))
 		return error("Export", "Failure");
 	fclose(f);
@@ -368,6 +406,7 @@ openchr(char *name)
 	scpy(name, doc.name, 256);
 	fclose(f);
 	printf("Load: %s\n", doc.name);
+	redraw(pixels);
 	return 1;
 }
 
@@ -416,7 +455,8 @@ selectoption(int option)
 	case 6: setmode(&amp;brush, 2); break;
 	case 7: setmode(&amp;brush, 3); break;
 	case 8: setmode(&amp;brush, 4); break;
-	case 10: setguides(!GUIDES); break;
+	case 10: setbigmode(!BIGPIXEL); break;
+	case 11: setguides(!GUIDES); break;
 	}
 }
 
@@ -456,27 +496,31 @@ domouse(SDL_Event *event)
 		if(event-&gt;button.button == SDL_BUTTON_MIDDLE) {
 			brush.erase = 0;
 			if(brush.px != 0 &amp;&amp; brush.py != 0) {
-				brush.x = (event-&gt;motion.x - (PAD * 8 * ZOOM)) / ZOOM;
-				brush.y = (event-&gt;motion.y - (PAD * 8 * ZOOM)) / ZOOM;
-				line(brush.px - 1, brush.py, brush.x, brush.y, brush.erase ? 0 : brush.color);
+				brush.x = screenpos(event-&gt;motion.x, brush.vx);
+				brush.y = screenpos(event-&gt;motion.y, brush.vy);
+				line(brush.px, brush.py, brush.x, brush.y, brush.erase ? 0 : brush.color);
 				redraw(pixels);
 			}
 		}
-		brush.px = (event-&gt;motion.x - (PAD * 8 * ZOOM)) / ZOOM;
-		brush.py = (event-&gt;motion.y - (PAD * 8 * ZOOM)) / ZOOM;
+		brush.px = screenpos(event-&gt;motion.x, brush.vx);
+		brush.py = screenpos(event-&gt;motion.y, brush.vy);
 		if(brush.down &amp;&amp; brush.mode == 0) {
-			putchr(brush.px - 1, brush.py, brush.erase ? 0 : brush.color);
+			if(!BIGPIXEL) {
+				brush.vx = (brush.px / 8) * 8;
+				brush.vy = (brush.py / 8) * 8;
+			}
+			putchr(brush.px, brush.py, brush.erase ? 0 : brush.color);
 			redraw(pixels);
 		}
 		break;
 	case SDL_MOUSEMOTION:
 		if(brush.down) {
-			brush.x = (event-&gt;motion.x - (PAD * 8 * ZOOM)) / ZOOM;
-			brush.y = (event-&gt;motion.y - (PAD * 8 * ZOOM)) / ZOOM;
+			brush.x = screenpos(event-&gt;motion.x, brush.vx);
+			brush.y = screenpos(event-&gt;motion.y, brush.vy);
 			if(!brush.mode)
-				line(brush.px - 1, brush.py, brush.x - 1, brush.y, brush.erase ? 0 : brush.color);
+				line(brush.px, brush.py, brush.x, brush.y, brush.erase ? 0 : brush.color);
 			else
-				fill(brush.x - 1, brush.y, brush.mode, brush.size, brush.erase ? 0 : brush.color);
+				fill(brush.x, brush.y, brush.mode, brush.size, brush.erase ? 0 : brush.color);
 			redraw(pixels);
 			brush.px = brush.x;
 			brush.py = brush.y;
@@ -506,6 +550,10 @@ dokey(SDL_Event *event)
 	case SDLK_3: setcolor(&amp;brush, 3); break;
 	case SDLK_4: setcolor(&amp;brush, 0); break;
 	case SDLK_a: setmode(&amp;brush, 0); break;
+	case SDLK_r:
+		if(ctrl)
+			openchr(doc.name);
+		break;
 	case SDLK_s:
 		if(ctrl &amp;&amp; shift)
 			renderbmp();
@@ -520,6 +568,10 @@ dokey(SDL_Event *event)
 	case SDLK_h:
 		if(ctrl)
 			setguides(!GUIDES);
+		break;
+	case SDLK_b:
+		if(ctrl)
+			setbigmode(!BIGPIXEL);
 		break;
 	case SDLK_z: modsize(&amp;brush, -1); break;
 	case SDLK_x: modsize(&amp;brush, 1); break;
@@ -569,7 +621,7 @@ main(int argc, char **argv)
 	if(!init())
 		return error("Init", "Failure");
 	loadtheme(fopen("theme.svg", "r"));
-	if(argc &gt; 1 &amp;&amp; !openchr(argv[1]))
+	if(argc &lt; 2 || !openchr(argv[1]))
 		newchr();
 	redraw(pixels);
 	while(1) {
@@ -595,5 +647,5 @@ main(int argc, char **argv)
 	quit();
 	return 0;
 }
-</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/nasu.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/nasu.c.txt'>nasu.c.txt</a>(597 lines)</figcaption>
-</figure><ul><li><a href='https://git.sr.ht/~rabbits/nasu' target='_blank'>sources</a></li><li><a href='https://hundredrabbits.github.io/Nasu' target='_blank'>browser version</a></li></ul><p><i>incoming(9)</i>: <a href='neauismetica.html'>neauismetica</a> <a href='graf3dscene.html'>graf3dscene</a> <a href='themes.html'>themes</a> <a href='dotgrid.html'>dotgrid</a> <a href='moogle.html'>moogle</a> <a href='chr_format.html'>chr format</a> <a href='donsol_famicom.html'>donsol famicom</a> <a href='computer.html'>computer</a> <a href='identity.html'>identity</a> </p><p><i>Last update on <a href='tracker.html'>14X11</a>, edited 27 times. +118/172fh <b></b></i> <code style='float:right; font-size:80%'>----||</code></p><ul><li>14C05 &mdash; Nasu Release</li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2020 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
+</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/nasu.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/nasu.c.txt'>nasu.c.txt</a>(649 lines)</figcaption>
+</figure><ul><li><a href='https://git.sr.ht/~rabbits/nasu' target='_blank'>sources</a></li><li><a href='https://hundredrabbits.github.io/Nasu' target='_blank'>browser version</a></li></ul><p><i>incoming(9)</i>: <a href='neauismetica.html'>neauismetica</a> <a href='graf3dscene.html'>graf3dscene</a> <a href='themes.html'>themes</a> <a href='dotgrid.html'>dotgrid</a> <a href='moogle.html'>moogle</a> <a href='chr_format.html'>chr format</a> <a href='donsol_famicom.html'>donsol famicom</a> <a href='computer.html'>computer</a> <a href='identity.html'>identity</a> </p><p><i>Last update on <a href='tracker.html'>15A10</a>, edited 28 times. +121/178fh <b></b></i> <code style='float:right; font-size:80%'>----||</code></p><ul><li>14C05 &mdash; Nasu Release</li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2020 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
