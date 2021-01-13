@@ -69,7 +69,7 @@ char *
 scpy(char *src, char *dst, int len)
 {
 	int i = 0;
-	while((dst[i] = src[i]) &amp;&amp; i &lt; len)
+	while((dst[i] = src[i]) &amp;&amp; i &lt; len - 2)
 		i++;
 	dst[i + 1] = '\0';
 	return dst;
@@ -91,25 +91,6 @@ screenpos(int pos, int offset)
 		pos += offset;
 	}
 	return pos;
-}
-
-Uint8
-chex(char c)
-{
-	if(c &gt;= 'a' &amp;&amp; c &lt;= 'f')
-		return 10 + c - 'a';
-	if(c &gt;= 'A' &amp;&amp; c &lt;= 'F')
-		return 10 + c - 'A';
-	return (c - '0') &amp; 0xF;
-}
-
-int
-shex(char *s, int len)
-{
-	int i, n = 0;
-	for(i = 0; i &lt; len; ++i)
-		n |= (chex(s[i]) &lt;&lt; ((len - i - 1) * 4));
-	return n;
 }
 
 /* chr */
@@ -324,53 +305,18 @@ error(char *msg, const char *err)
 }
 
 void
-modzoom(int mod)
+setmode(int *i, int v)
 {
-	if((mod &gt; 0 &amp;&amp; ZOOM &lt; 5) || (mod &lt; 0 &amp;&amp; ZOOM &gt; 1)) {
-		ZOOM += mod;
-		SDL_SetWindowSize(gWindow, WIDTH * ZOOM, HEIGHT * ZOOM);
-	}
-}
-
-void
-setcolor(Brush *b, int c)
-{
-	b-&gt;color = c;
-	redraw(pixels);
-	printf("Set Color: %d\n", b-&gt;color);
-}
-
-void
-setmode(Brush *b, int m)
-{
-	b-&gt;mode = m;
-	redraw(pixels);
-	printf("Set Mode: %d\n", b-&gt;mode);
-}
-
-void
-setbigmode(int m)
-{
-	BIGPIXEL = m;
+	*i = v;
 	redraw(pixels);
 }
 
 void
-modsize(Brush *b, int mod)
+setrange(int *i, int v, int min, int max)
 {
-	int res = b-&gt;size + mod;
-	if(res &gt; 0 &amp;&amp; res &lt; 30)
-		b-&gt;size = res;
+	*i = v &lt; min ? min : v &gt; max ? max
+								 : v;
 	redraw(pixels);
-	printf("Set Size: %d\n", b-&gt;size);
-}
-
-void
-setguides(int v)
-{
-	GUIDES = v;
-	redraw(pixels);
-	printf("Set Guide: %s \n", GUIDES ? "Show" : "Hide");
 }
 
 void
@@ -427,36 +373,19 @@ renderbmp(void)
 }
 
 void
-loadtheme(FILE *f)
-{
-	int id = 0;
-	char line[256];
-	if(!f)
-		return;
-	while(fgets(line, 256, f)) {
-		int i = 0;
-		while(line[i++] &amp;&amp; id &lt; 5) {
-			if(line[i] == '#')
-				theme[id++] = shex(line + i + 1, 6);
-		}
-	}
-	fclose(f);
-}
-
-void
 selectoption(int option)
 {
 	switch(option) {
-	case 0: setcolor(&amp;brush, 1); break;
-	case 1: setcolor(&amp;brush, 2); break;
-	case 2: setcolor(&amp;brush, 3); break;
-	case 4: setmode(&amp;brush, 0); break;
-	case 5: setmode(&amp;brush, 1); break;
-	case 6: setmode(&amp;brush, 2); break;
-	case 7: setmode(&amp;brush, 3); break;
-	case 8: setmode(&amp;brush, 4); break;
-	case 10: setbigmode(!BIGPIXEL); break;
-	case 11: setguides(!GUIDES); break;
+	case 0: setmode(&amp;brush.color, 1); break;
+	case 1: setmode(&amp;brush.color, 2); break;
+	case 2: setmode(&amp;brush.color, 3); break;
+	case 4: setmode(&amp;brush.mode, 0); break;
+	case 5: setmode(&amp;brush.mode, 1); break;
+	case 6: setmode(&amp;brush.mode, 2); break;
+	case 7: setmode(&amp;brush.mode, 3); break;
+	case 8: setmode(&amp;brush.mode, 4); break;
+	case 10: setmode(&amp;BIGPIXEL, !BIGPIXEL); break;
+	case 11: setmode(&amp;GUIDES, !GUIDES); break;
 	}
 }
 
@@ -504,11 +433,11 @@ domouse(SDL_Event *event)
 		}
 		brush.px = screenpos(event-&gt;motion.x, brush.vx);
 		brush.py = screenpos(event-&gt;motion.y, brush.vy);
+		if(!BIGPIXEL) {
+			brush.vx = (brush.px / 8) * 8;
+			brush.vy = (brush.py / 8) * 8;
+		}
 		if(brush.down &amp;&amp; brush.mode == 0) {
-			if(!BIGPIXEL) {
-				brush.vx = (brush.px / 8) * 8;
-				brush.vy = (brush.py / 8) * 8;
-			}
 			putchr(brush.px, brush.py, brush.erase ? 0 : brush.color);
 			redraw(pixels);
 		}
@@ -534,51 +463,29 @@ dokey(SDL_Event *event)
 {
 	int shift = SDL_GetModState() &amp; KMOD_LSHIFT || SDL_GetModState() &amp; KMOD_RSHIFT;
 	int ctrl = SDL_GetModState() &amp; KMOD_LCTRL || SDL_GetModState() &amp; KMOD_RCTRL;
-	switch(event-&gt;key.keysym.sym) {
-	case SDLK_EQUALS:
-	case SDLK_PLUS:
-		if(ctrl)
-			modzoom(1);
-		break;
-	case SDLK_UNDERSCORE:
-	case SDLK_MINUS:
-		if(ctrl)
-			modzoom(-1);
-		break;
-	case SDLK_1: setcolor(&amp;brush, 1); break;
-	case SDLK_2: setcolor(&amp;brush, 2); break;
-	case SDLK_3: setcolor(&amp;brush, 3); break;
-	case SDLK_4: setcolor(&amp;brush, 0); break;
-	case SDLK_a: setmode(&amp;brush, 0); break;
-	case SDLK_r:
-		if(ctrl)
-			openchr(doc.name);
-		break;
-	case SDLK_s:
-		if(ctrl &amp;&amp; shift)
-			renderbmp();
-		else if(ctrl)
-			savechr();
-		else
-			setmode(&amp;brush, 1);
-		break;
-	case SDLK_d: setmode(&amp;brush, 2); break;
-	case SDLK_f: setmode(&amp;brush, 3); break;
-	case SDLK_g: setmode(&amp;brush, 4); break;
-	case SDLK_h:
-		if(ctrl)
-			setguides(!GUIDES);
-		break;
-	case SDLK_b:
-		if(ctrl)
-			setbigmode(!BIGPIXEL);
-		break;
-	case SDLK_z: modsize(&amp;brush, -1); break;
-	case SDLK_x: modsize(&amp;brush, 1); break;
-	case SDLK_n:
-		if(ctrl)
-			newchr();
-		break;
+	if(ctrl) {
+		switch(event-&gt;key.keysym.sym) {
+		/* Generic */
+		case SDLK_n: newchr(); break;
+		case SDLK_r: openchr(doc.name); break;
+		case SDLK_s: shift ? renderbmp() : savechr(); break;
+		case SDLK_h: setmode(&amp;GUIDES, !GUIDES); break;
+		}
+	} else {
+		switch(event-&gt;key.keysym.sym) {
+		case SDLK_1: setmode(&amp;brush.color, 1); break;
+		case SDLK_2: setmode(&amp;brush.color, 2); break;
+		case SDLK_3: setmode(&amp;brush.color, 3); break;
+		case SDLK_4: setmode(&amp;brush.color, 0); break;
+		case SDLK_a: setmode(&amp;brush.mode, 0); break;
+		case SDLK_s: setmode(&amp;brush.mode, 1); break;
+		case SDLK_d: setmode(&amp;brush.mode, 2); break;
+		case SDLK_f: setmode(&amp;brush.mode, 3); break;
+		case SDLK_g: setmode(&amp;brush.mode, 4); break;
+		case SDLK_b: setmode(&amp;BIGPIXEL, !BIGPIXEL); break;
+		case SDLK_z: setrange(&amp;brush.size, brush.size - 1, 1, 30); break;
+		case SDLK_x: setrange(&amp;brush.size, brush.size + 1, 1, 30); break;
+		}
 	}
 }
 
@@ -620,7 +527,6 @@ main(int argc, char **argv)
 	brush.size = 10;
 	if(!init())
 		return error("Init", "Failure");
-	loadtheme(fopen("theme.svg", "r"));
 	if(argc &lt; 2 || !openchr(argv[1]))
 		newchr();
 	redraw(pixels);
@@ -647,5 +553,5 @@ main(int argc, char **argv)
 	quit();
 	return 0;
 }
-</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/nasu.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/nasu.c.txt'>nasu.c.txt</a>(649 lines)</figcaption>
+</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/nasu.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/nasu.c.txt'>nasu.c.txt</a>(555 lines)</figcaption>
 </figure><p>Redirected to <a href='nasu.html'>nasu</a>, from <b>noodle</b>.</p><ul><li><a href='https://git.sr.ht/~rabbits/nasu' target='_blank'>sources</a></li><li><a href='https://hundredrabbits.github.io/Nasu' target='_blank'>browser version</a></li></ul><p><i>incoming(9)</i>: <a href='neauismetica.html'>neauismetica</a> <a href='graf3dscene.html'>graf3dscene</a> <a href='themes.html'>themes</a> <a href='dotgrid.html'>dotgrid</a> <a href='moogle.html'>moogle</a> <a href='chr_format.html'>chr format</a> <a href='donsol_famicom.html'>donsol famicom</a> <a href='computer.html'>computer</a> <a href='identity.html'>identity</a> </p><p><i>Last update on <a href='tracker.html'>15A10</a>, edited 28 times. +121/178fh <b></b></i> <code style='float:right; font-size:80%'>----||</code></p><ul><li>14C05 &mdash; Nasu Release</li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
