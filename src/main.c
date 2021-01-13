@@ -809,7 +809,7 @@ fphtml(FILE *f, Glossary *glo, Lexicon *lex, Term *t, Journal *jou)
 	fputs("<a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a>", f);
 	fputs("<a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a>", f);
 	fputs("<a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a>", f);
-	fputs("<span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2020 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span>", f);
+	fputs("<span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span>", f);
 	fputs("</footer>", f);
 	fputs("</body></html>", f);
 	fclose(f);
