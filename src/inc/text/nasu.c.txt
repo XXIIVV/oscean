@@ -20,6 +20,7 @@ WITH REGARD TO THIS SOFTWARE.
 typedef unsigned char Uint8;
 
 typedef struct {
+	int unsaved;
 	char name[256];
 	Uint8 data[SZ];
 } Document;
@@ -55,7 +56,8 @@ Uint8 icons[][8] = {
 	{0xaa, 0x00, 0xaa, 0x00, 0xaa, 0x00, 0xaa, 0x00}, /* view:grid */
 	{0xee, 0x92, 0x82, 0x54, 0x82, 0x92, 0xee, 0x00}, /* view:bigpixels */
 	{0x00, 0x00, 0x00, 0x82, 0x44, 0x38, 0x00, 0x00}, /* eye open */
-	{0x00, 0x38, 0x44, 0x92, 0x28, 0x10, 0x00, 0x00}  /* eye closed */
+	{0x00, 0x38, 0x44, 0x92, 0x28, 0x10, 0x00, 0x00}, /* eye closed */
+	{0x10, 0x54, 0x28, 0xc6, 0x28, 0x54, 0x10, 0x00}  /* unsaved */
 };
 
 SDL_Window *gWindow;
@@ -138,6 +140,7 @@ putchr(int x, int y, int color)
 		doc.data[row + 8] &= ~(1UL << (7 - col));
 	else
 		doc.data[row + 8] |= 1UL << (7 - col);
+	doc.unsaved = 1;
 }
 
 int
@@ -278,6 +281,7 @@ drawui(Uint32 *dst)
 	drawicon(dst, 8 * 8, bottom, icons[6], brush.mode == 4 ? 1 : 2, 0);
 	drawicon(dst, 10 * 8, bottom, icons[BIGPIXEL ? 7 : 8], BIGPIXEL ? 1 : 2, 0);
 	drawicon(dst, 11 * 8, bottom, icons[GUIDES ? 10 : 9], GUIDES ? 1 : 2, 0);
+	drawicon(dst, (HOR - 1) * 8, bottom, icons[11], doc.unsaved ? 2 : 3, 0); /* save state */
 }
 
 void
@@ -321,6 +325,7 @@ makedoc(Document *d, char *name)
 	int i;
 	for(i = 0; i < SZ; ++i)
 		d->data[i] = 0x00;
+	d->unsaved = 0;
 	scpy(name, d->name, 256);
 	printf("Made: %s\n", d->name);
 	redraw(pixels);
@@ -332,9 +337,11 @@ savedoc(Document *d, char *name)
 	FILE *f = fopen(name, "w");
 	if(!fwrite(d->data, sizeof(d->data), 1, f))
 		return error("Save", "Failure");
+	d->unsaved = 0;
 	scpy(name, d->name, 256);
 	fclose(f);
 	printf("Saved: %s\n", d->name);
+	redraw(pixels);
 	return 1;
 }
 
@@ -346,6 +353,7 @@ opendoc(Document *d, char *name)
 		return error("Load", "Invalid input file");
 	if(!fread(doc.data, sizeof(doc.data), 1, f))
 		return error("Load", "Invalid input size");
+	d->unsaved = 0;
 	scpy(name, doc.name, 256);
 	fclose(f);
 	printf("Load: %s\n", doc.name);
@@ -383,6 +391,7 @@ selectoption(int option)
 	case 8: setmode(&brush.mode, 4); break;
 	case 10: setmode(&BIGPIXEL, !BIGPIXEL); break;
 	case 11: setmode(&GUIDES, !GUIDES); break;
+	case HOR - 1: savedoc(&doc, doc.name); break;
 	}
 }
 

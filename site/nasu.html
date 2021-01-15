@@ -20,6 +20,7 @@ WITH REGARD TO THIS SOFTWARE.
 typedef unsigned char Uint8;
 
 typedef struct {
+	int unsaved;
 	char name[256];
 	Uint8 data[SZ];
 } Document;
@@ -55,7 +56,8 @@ Uint8 icons[][8] = {
 	{0xaa, 0x00, 0xaa, 0x00, 0xaa, 0x00, 0xaa, 0x00}, /* view:grid */
 	{0xee, 0x92, 0x82, 0x54, 0x82, 0x92, 0xee, 0x00}, /* view:bigpixels */
 	{0x00, 0x00, 0x00, 0x82, 0x44, 0x38, 0x00, 0x00}, /* eye open */
-	{0x00, 0x38, 0x44, 0x92, 0x28, 0x10, 0x00, 0x00}  /* eye closed */
+	{0x00, 0x38, 0x44, 0x92, 0x28, 0x10, 0x00, 0x00}, /* eye closed */
+	{0x10, 0x54, 0x28, 0xc6, 0x28, 0x54, 0x10, 0x00}  /* unsaved */
 };
 
 SDL_Window *gWindow;
@@ -138,6 +140,7 @@ putchr(int x, int y, int color)
 		doc.data[row + 8] &amp;= ~(1UL &lt;&lt; (7 - col));
 	else
 		doc.data[row + 8] |= 1UL &lt;&lt; (7 - col);
+	doc.unsaved = 1;
 }
 
 int
@@ -278,6 +281,7 @@ drawui(Uint32 *dst)
 	drawicon(dst, 8 * 8, bottom, icons[6], brush.mode == 4 ? 1 : 2, 0);
 	drawicon(dst, 10 * 8, bottom, icons[BIGPIXEL ? 7 : 8], BIGPIXEL ? 1 : 2, 0);
 	drawicon(dst, 11 * 8, bottom, icons[GUIDES ? 10 : 9], GUIDES ? 1 : 2, 0);
+	drawicon(dst, (HOR - 1) * 8, bottom, icons[11], doc.unsaved ? 2 : 3, 0); /* save state */
 }
 
 void
@@ -321,6 +325,7 @@ makedoc(Document *d, char *name)
 	int i;
 	for(i = 0; i &lt; SZ; ++i)
 		d-&gt;data[i] = 0x00;
+	d-&gt;unsaved = 0;
 	scpy(name, d-&gt;name, 256);
 	printf("Made: %s\n", d-&gt;name);
 	redraw(pixels);
@@ -332,9 +337,11 @@ savedoc(Document *d, char *name)
 	FILE *f = fopen(name, "w");
 	if(!fwrite(d-&gt;data, sizeof(d-&gt;data), 1, f))
 		return error("Save", "Failure");
+	d-&gt;unsaved = 0;
 	scpy(name, d-&gt;name, 256);
 	fclose(f);
 	printf("Saved: %s\n", d-&gt;name);
+	redraw(pixels);
 	return 1;
 }
 
@@ -346,6 +353,7 @@ opendoc(Document *d, char *name)
 		return error("Load", "Invalid input file");
 	if(!fread(doc.data, sizeof(doc.data), 1, f))
 		return error("Load", "Invalid input size");
+	d-&gt;unsaved = 0;
 	scpy(name, doc.name, 256);
 	fclose(f);
 	printf("Load: %s\n", doc.name);
@@ -383,6 +391,7 @@ selectoption(int option)
 	case 8: setmode(&amp;brush.mode, 4); break;
 	case 10: setmode(&amp;BIGPIXEL, !BIGPIXEL); break;
 	case 11: setmode(&amp;GUIDES, !GUIDES); break;
+	case HOR - 1: savedoc(&amp;doc, doc.name); break;
 	}
 }
 
@@ -545,5 +554,5 @@ main(int argc, char **argv)
 	quit();
 	return 0;
 }
-</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/nasu.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/nasu.c.txt'>nasu.c.txt</a>(547 lines)</figcaption>
+</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/nasu.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/nasu.c.txt'>nasu.c.txt</a>(556 lines)</figcaption>
 </figure><ul><li><a href='https://git.sr.ht/~rabbits/nasu' target='_blank'>sources</a></li><li><a href='https://hundredrabbits.github.io/Nasu' target='_blank'>browser version</a></li></ul><p><i>incoming(10)</i>: <a href='neauismetica.html'>neauismetica</a> <a href='graf3dscene.html'>graf3dscene</a> <a href='themes.html'>themes</a> <a href='dotgrid.html'>dotgrid</a> <a href='moogle.html'>moogle</a> <a href='left.html'>left</a> <a href='chr_format.html'>chr format</a> <a href='donsol_famicom.html'>donsol famicom</a> <a href='computer.html'>computer</a> <a href='identity.html'>identity</a> </p><p><i>Last update on <a href='tracker.html'>15A10</a>, edited 28 times. +121/178fh <b></b></i> <code style='float:right; font-size:80%'>----||</code></p><ul><li>14S13 &mdash; Nasu Desktop Release</li><li>14C05 &mdash; Nasu Web Release</li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>

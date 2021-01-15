@@ -849,26 +849,27 @@ void
 drawui(Uint32 *dst)
 {
 	int i, n = 0, bottom = VER * 8 + 8;
-	/* CURSOR */
+	/* cursor */
 	drawicon(dst, 0 * 8, bottom, font[cursor.x % 36], 1, 0);
 	drawicon(dst, 1 * 8, bottom, font[68], 1, 0);
 	drawicon(dst, 2 * 8, bottom, font[cursor.y % 36], 1, 0);
 	drawicon(dst, 3 * 8, bottom, icons[2], cursor.w > 1 || cursor.h > 1 ? 4 : 3, 0);
-	/* FRAME */
+	/* frame */
 	drawicon(dst, 5 * 8, bottom, font[(doc.grid.f / 1296) % 36], 1, 0);
 	drawicon(dst, 6 * 8, bottom, font[(doc.grid.f / 36) % 36], 1, 0);
 	drawicon(dst, 7 * 8, bottom, font[doc.grid.f % 36], 1, 0);
 	drawicon(dst, 8 * 8, bottom, icons[PAUSE ? 1 : 0], (doc.grid.f - 1) % 8 == 0 ? 2 : 3, 0);
-	/* SPEED */
+	/* speed */
 	drawicon(dst, 10 * 8, bottom, font[(BPM / 100) % 10], 1, 0);
 	drawicon(dst, 11 * 8, bottom, font[(BPM / 10) % 10], 1, 0);
 	drawicon(dst, 12 * 8, bottom, font[BPM % 10], 1, 0);
+	/* io */
 	for(i = 0; i < VOICES; ++i)
 		if(voices[i].length)
 			n++;
 	drawicon(dst, 13 * 8, bottom, n > 0 ? icons[2 + clamp(n, 0, 6)] : font[70], 2, 0);
+	/* generics */
 	drawicon(dst, 15 * 8, bottom, icons[GUIDES ? 10 : 9], GUIDES ? 1 : 2, 0);
-	/* saved state */
 	drawicon(dst, (HOR - 1) * 8, bottom, icons[11], doc.unsaved ? 2 : 3, 0);
 }
 
