@@ -313,7 +313,7 @@ error(char *msg, const char *err)
 }
 
 void
-setmode(int *i, int v)
+savemode(int *i, int v)
 {
 	*i = v;
 	redraw(pixels);
@@ -381,16 +381,16 @@ void
 selectoption(int option)
 {
 	switch(option) {
-	case 0: setmode(&amp;brush.color, 1); break;
-	case 1: setmode(&amp;brush.color, 2); break;
-	case 2: setmode(&amp;brush.color, 3); break;
-	case 4: setmode(&amp;brush.mode, 0); break;
-	case 5: setmode(&amp;brush.mode, 1); break;
-	case 6: setmode(&amp;brush.mode, 2); break;
-	case 7: setmode(&amp;brush.mode, 3); break;
-	case 8: setmode(&amp;brush.mode, 4); break;
-	case 10: setmode(&amp;BIGPIXEL, !BIGPIXEL); break;
-	case 11: setmode(&amp;GUIDES, !GUIDES); break;
+	case 0: savemode(&amp;brush.color, 1); break;
+	case 1: savemode(&amp;brush.color, 2); break;
+	case 2: savemode(&amp;brush.color, 3); break;
+	case 4: savemode(&amp;brush.mode, 0); break;
+	case 5: savemode(&amp;brush.mode, 1); break;
+	case 6: savemode(&amp;brush.mode, 2); break;
+	case 7: savemode(&amp;brush.mode, 3); break;
+	case 8: savemode(&amp;brush.mode, 4); break;
+	case 10: savemode(&amp;BIGPIXEL, !BIGPIXEL); break;
+	case 11: savemode(&amp;GUIDES, !GUIDES); break;
 	case HOR - 1: savedoc(&amp;doc, doc.name); break;
 	}
 }
@@ -471,22 +471,22 @@ dokey(SDL_Event *event)
 		case SDLK_n: makedoc(&amp;doc, "untitled.chr"); break;
 		case SDLK_r: opendoc(&amp;doc, doc.name); break;
 		case SDLK_s: shift ? savebmp() : savedoc(&amp;doc, doc.name); break;
-		case SDLK_h: setmode(&amp;GUIDES, !GUIDES); break;
+		case SDLK_h: savemode(&amp;GUIDES, !GUIDES); break;
 		}
 	} else {
 		switch(event-&gt;key.keysym.sym) {
-		case SDLK_1: setmode(&amp;brush.color, 1); break;
-		case SDLK_2: setmode(&amp;brush.color, 2); break;
-		case SDLK_3: setmode(&amp;brush.color, 3); break;
-		case SDLK_4: setmode(&amp;brush.color, 0); break;
-		case SDLK_a: setmode(&amp;brush.mode, 0); break;
-		case SDLK_s: setmode(&amp;brush.mode, 1); break;
-		case SDLK_d: setmode(&amp;brush.mode, 2); break;
-		case SDLK_f: setmode(&amp;brush.mode, 3); break;
-		case SDLK_g: setmode(&amp;brush.mode, 4); break;
-		case SDLK_b: setmode(&amp;BIGPIXEL, !BIGPIXEL); break;
-		case SDLK_z: setmode(&amp;brush.size, brush.size + (brush.size &gt; 1 ? -1 : 0)); break;
-		case SDLK_x: setmode(&amp;brush.size, brush.size + (brush.size &lt; 30 ? 1 : 0)); break;
+		case SDLK_1: savemode(&amp;brush.color, 1); break;
+		case SDLK_2: savemode(&amp;brush.color, 2); break;
+		case SDLK_3: savemode(&amp;brush.color, 3); break;
+		case SDLK_4: savemode(&amp;brush.color, 0); break;
+		case SDLK_a: savemode(&amp;brush.mode, 0); break;
+		case SDLK_s: savemode(&amp;brush.mode, 1); break;
+		case SDLK_d: savemode(&amp;brush.mode, 2); break;
+		case SDLK_f: savemode(&amp;brush.mode, 3); break;
+		case SDLK_g: savemode(&amp;brush.mode, 4); break;
+		case SDLK_b: savemode(&amp;BIGPIXEL, !BIGPIXEL); break;
+		case SDLK_z: savemode(&amp;brush.size, brush.size + (brush.size &gt; 1 ? -1 : 0)); break;
+		case SDLK_x: savemode(&amp;brush.size, brush.size + (brush.size &lt; 30 ? 1 : 0)); break;
 		}
 	}
 }
@@ -529,7 +529,10 @@ main(int argc, char **argv)
 	brush.size = 10;
 	if(!init())
 		return error("Init", "Failure");
-	if(argc &lt; 2 || !opendoc(&amp;doc, argv[1]))
+	if(argc &gt; 1) {
+		if(!opendoc(&amp;doc, argv[1]))
+			makedoc(&amp;doc, argv[1]);
+	} else
 		makedoc(&amp;doc, "untitled.chr");
 	while(1) {
 		int tick = SDL_GetTicks();
@@ -554,5 +557,5 @@ main(int argc, char **argv)
 	quit();
 	return 0;
 }
-</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/nasu.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/nasu.c.txt'>nasu.c.txt</a>(556 lines)</figcaption>
+</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/nasu.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/nasu.c.txt'>nasu.c.txt</a>(559 lines)</figcaption>
 </figure><p>Redirected to <a href='nasu.html'>nasu</a>, from <b>noodle</b>.</p><ul><li><a href='https://git.sr.ht/~rabbits/nasu' target='_blank'>sources</a></li><li><a href='https://hundredrabbits.github.io/Nasu' target='_blank'>browser version</a></li></ul><p><i>incoming(10)</i>: <a href='neauismetica.html'>neauismetica</a> <a href='graf3dscene.html'>graf3dscene</a> <a href='themes.html'>themes</a> <a href='dotgrid.html'>dotgrid</a> <a href='moogle.html'>moogle</a> <a href='left.html'>left</a> <a href='chr_format.html'>chr format</a> <a href='donsol_famicom.html'>donsol famicom</a> <a href='computer.html'>computer</a> <a href='identity.html'>identity</a> </p><p><i>Last update on <a href='tracker.html'>15A10</a>, edited 28 times. +121/178fh <b></b></i> <code style='float:right; font-size:80%'>----||</code></p><ul><li>14S13 &mdash; Nasu Desktop Release</li><li>14C05 &mdash; Nasu Web Release</li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>

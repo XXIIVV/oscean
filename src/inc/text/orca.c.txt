@@ -16,7 +16,7 @@ WITH REGARD TO THIS SOFTWARE.
 
 #define HOR 32
 #define VER 16
-#define PAD 1
+#define PAD 2
 #define VOICES 16
 #define DEVICE 0
 
@@ -759,7 +759,7 @@ initframe(Grid *g)
 		g->type[i] = 0;
 	}
 	for(i = 0; i < 36; ++i)
-		g->var[i] = '\0';
+		g->var[i] = '.';
 }
 
 int
@@ -1061,7 +1061,7 @@ reset(void)
 }
 
 void
-setmode(int *i, int v)
+savemode(int *i, int v)
 {
 	*i = v;
 	redraw(pixels);
@@ -1116,7 +1116,7 @@ selectoption(int option)
 		PAUSE = 1;
 		frame();
 		break;
-	case 15: setmode(&GUIDES, !GUIDES); break;
+	case 15: savemode(&GUIDES, !GUIDES); break;
 	case HOR - 1: savedoc(&doc, doc.name); break;
 	}
 }
@@ -1189,23 +1189,23 @@ moveclip(Rect2d *r, char *c, int x, int y)
 void
 domouse(SDL_Event *event)
 {
-	int cx = event->motion.x / ZOOM / 8;
-	int cy = event->motion.y / ZOOM / 8;
+	int cx = event->motion.x / ZOOM / 8 - PAD;
+	int cy = event->motion.y / ZOOM / 8 - PAD;
 	switch(event->type) {
 	case SDL_MOUSEBUTTONUP:
 		DOWN = 0;
 		break;
 	case SDL_MOUSEBUTTONDOWN:
 		if(cy == VER + 2)
-			selectoption(cx - 1);
+			selectoption(cx);
 		else {
-			select(cx - 1, cy - 1, 1, 1);
+			select(cx, cy, 1, 1);
 			DOWN = 1;
 		}
 		break;
 	case SDL_MOUSEMOTION:
 		if(DOWN)
-			select(cursor.x, cursor.y, cx - cursor.x, cy - cursor.y);
+			select(cursor.x, cursor.y, cx + 1 - cursor.x, cy + 1 - cursor.y);
 		break;
 	}
 }
@@ -1221,9 +1221,9 @@ dokey(SDL_Event *event)
 		case SDLK_n: makedoc(&doc, "untitled.orca"); break;
 		case SDLK_r: opendoc(&doc, doc.name); break;
 		case SDLK_s: savedoc(&doc, doc.name); break;
-		case SDLK_h: setmode(&GUIDES, !GUIDES); break;
+		case SDLK_h: savemode(&GUIDES, !GUIDES); break;
 		/* Edit */
-		case SDLK_i: setmode(&MODE, !MODE); break;
+		case SDLK_i: savemode(&MODE, !MODE); break;
 		case SDLK_a: select(0, 0, doc.grid.w, doc.grid.h); break;
 		case SDLK_x: cutclip(&cursor, clip); break;
 		case SDLK_c: copyclip(&cursor, clip); break;
@@ -1237,13 +1237,13 @@ dokey(SDL_Event *event)
 	} else {
 		switch(event->key.keysym.sym) {
 		case SDLK_ESCAPE: reset(); break;
-		case SDLK_PAGEUP: setmode(&BPM, BPM + 1); break;
-		case SDLK_PAGEDOWN: setmode(&BPM, BPM - 1); break;
+		case SDLK_PAGEUP: savemode(&BPM, BPM + 1); break;
+		case SDLK_PAGEDOWN: savemode(&BPM, BPM - 1); break;
 		case SDLK_UP: shift ? scale(0, -1) : move(0, -1); break;
 		case SDLK_DOWN: shift ? scale(0, 1) : move(0, 1); break;
 		case SDLK_LEFT: shift ? scale(-1, 0) : move(-1, 0); break;
 		case SDLK_RIGHT: shift ? scale(1, 0) : move(1, 0); break;
-		case SDLK_SPACE: setmode(&PAUSE, !PAUSE); break;
+		case SDLK_SPACE: savemode(&PAUSE, !PAUSE); break;
 		case SDLK_BACKSPACE: insert('.'); break;
 		}
 	}

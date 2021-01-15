@@ -313,7 +313,7 @@ error(char *msg, const char *err)
 }
 
 void
-setmode(int *i, int v)
+savemode(int *i, int v)
 {
 	*i = v;
 	redraw(pixels);
@@ -381,16 +381,16 @@ void
 selectoption(int option)
 {
 	switch(option) {
-	case 0: setmode(&brush.color, 1); break;
-	case 1: setmode(&brush.color, 2); break;
-	case 2: setmode(&brush.color, 3); break;
-	case 4: setmode(&brush.mode, 0); break;
-	case 5: setmode(&brush.mode, 1); break;
-	case 6: setmode(&brush.mode, 2); break;
-	case 7: setmode(&brush.mode, 3); break;
-	case 8: setmode(&brush.mode, 4); break;
-	case 10: setmode(&BIGPIXEL, !BIGPIXEL); break;
-	case 11: setmode(&GUIDES, !GUIDES); break;
+	case 0: savemode(&brush.color, 1); break;
+	case 1: savemode(&brush.color, 2); break;
+	case 2: savemode(&brush.color, 3); break;
+	case 4: savemode(&brush.mode, 0); break;
+	case 5: savemode(&brush.mode, 1); break;
+	case 6: savemode(&brush.mode, 2); break;
+	case 7: savemode(&brush.mode, 3); break;
+	case 8: savemode(&brush.mode, 4); break;
+	case 10: savemode(&BIGPIXEL, !BIGPIXEL); break;
+	case 11: savemode(&GUIDES, !GUIDES); break;
 	case HOR - 1: savedoc(&doc, doc.name); break;
 	}
 }
@@ -471,22 +471,22 @@ dokey(SDL_Event *event)
 		case SDLK_n: makedoc(&doc, "untitled.chr"); break;
 		case SDLK_r: opendoc(&doc, doc.name); break;
 		case SDLK_s: shift ? savebmp() : savedoc(&doc, doc.name); break;
-		case SDLK_h: setmode(&GUIDES, !GUIDES); break;
+		case SDLK_h: savemode(&GUIDES, !GUIDES); break;
 		}
 	} else {
 		switch(event->key.keysym.sym) {
-		case SDLK_1: setmode(&brush.color, 1); break;
-		case SDLK_2: setmode(&brush.color, 2); break;
-		case SDLK_3: setmode(&brush.color, 3); break;
-		case SDLK_4: setmode(&brush.color, 0); break;
-		case SDLK_a: setmode(&brush.mode, 0); break;
-		case SDLK_s: setmode(&brush.mode, 1); break;
-		case SDLK_d: setmode(&brush.mode, 2); break;
-		case SDLK_f: setmode(&brush.mode, 3); break;
-		case SDLK_g: setmode(&brush.mode, 4); break;
-		case SDLK_b: setmode(&BIGPIXEL, !BIGPIXEL); break;
-		case SDLK_z: setmode(&brush.size, brush.size + (brush.size > 1 ? -1 : 0)); break;
-		case SDLK_x: setmode(&brush.size, brush.size + (brush.size < 30 ? 1 : 0)); break;
+		case SDLK_1: savemode(&brush.color, 1); break;
+		case SDLK_2: savemode(&brush.color, 2); break;
+		case SDLK_3: savemode(&brush.color, 3); break;
+		case SDLK_4: savemode(&brush.color, 0); break;
+		case SDLK_a: savemode(&brush.mode, 0); break;
+		case SDLK_s: savemode(&brush.mode, 1); break;
+		case SDLK_d: savemode(&brush.mode, 2); break;
+		case SDLK_f: savemode(&brush.mode, 3); break;
+		case SDLK_g: savemode(&brush.mode, 4); break;
+		case SDLK_b: savemode(&BIGPIXEL, !BIGPIXEL); break;
+		case SDLK_z: savemode(&brush.size, brush.size + (brush.size > 1 ? -1 : 0)); break;
+		case SDLK_x: savemode(&brush.size, brush.size + (brush.size < 30 ? 1 : 0)); break;
 		}
 	}
 }
@@ -529,7 +529,10 @@ main(int argc, char **argv)
 	brush.size = 10;
 	if(!init())
 		return error("Init", "Failure");
-	if(argc < 2 || !opendoc(&doc, argv[1]))
+	if(argc > 1) {
+		if(!opendoc(&doc, argv[1]))
+			makedoc(&doc, argv[1]);
+	} else
 		makedoc(&doc, "untitled.chr");
 	while(1) {
 		int tick = SDL_GetTicks();

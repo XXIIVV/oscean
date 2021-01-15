@@ -20,7 +20,7 @@ WITH REGARD TO THIS SOFTWARE.
 #define TEXTSZ 2048 * 32
 
 typedef struct {
-	int tlen, clen;
+	int unsaved, tlen, clen;
 	char name[256], *text, *clip;
 } Document;
 
@@ -57,7 +57,8 @@ Uint8 icons[][8] = {
 	{0x28, 0x14, 0x28, 0x14, 0x28, 0x14, 0x28, 0x14}, /* scroll:bg */
 	{0x3c, 0x3c, 0x3c, 0x3c, 0x3c, 0x3c, 0x3c, 0x3c}, /* scroll:fg */
 	{0x00, 0x00, 0x00, 0x82, 0x44, 0x38, 0x00, 0x00}, /* eye open */
-	{0x00, 0x38, 0x44, 0x92, 0x28, 0x10, 0x00, 0x00}  /* eye closed */
+	{0x00, 0x38, 0x44, 0x92, 0x28, 0x10, 0x00, 0x00}, /* eye closed */
+	{0x10, 0x54, 0x28, 0xc6, 0x28, 0x54, 0x10, 0x00}  /* unsaved */
 };
 
 Uint8 font[][8] = {
@@ -232,6 +233,7 @@ popblock(Range s)
 	for(i = s.from; i &lt; doc.tlen; ++i)
 		doc.text[i] = doc.text[clamp(i + len, 0, TEXTSZ - 1)];
 	doc.tlen -= len;
+	doc.unsaved = 1;
 }
 
 void
@@ -245,6 +247,7 @@ pushblock(Range s, char *src)
 	for(i = 0; i &lt; len; ++i)
 		doc.text[s.from + i] = src[i];
 	doc.tlen += len;
+	doc.unsaved = 1;
 }
 
 void
@@ -256,6 +259,7 @@ popchar(int p)
 	for(i = p; i &lt; doc.tlen; ++i)
 		doc.text[i] = doc.text[i + 1];
 	doc.tlen--;
+	doc.unsaved = 1;
 }
 
 void
@@ -268,6 +272,7 @@ pushchar(int p, char c)
 		doc.text[i] = doc.text[i - 1];
 	doc.text[p] = c;
 	doc.tlen++;
+	doc.unsaved = 1;
 }
 
 int
@@ -388,6 +393,7 @@ drawui(Uint32 *dst)
 {
 	int bottom = VER * 8 + 8;
 	drawicon(dst, 8 * 0, bottom, icons[GUIDES ? 7 : 6], GUIDES ? 1 : 2, 0);
+	drawicon(dst, (HOR - 1) * 8, bottom, icons[8], doc.unsaved ? 2 : 3, 0);
 }
 
 Uint8 *
@@ -612,18 +618,10 @@ modcase(Range s, int mod)
 }
 
 void
-setmode(int *i, int v)
+savemode(int *i, int v)
 {
 	*i = v;
 	redraw(pixels);
-}
-
-void
-selectoption(int option)
-{
-	switch(option) {
-	case 0: setmode(&amp;GUIDES, !GUIDES); break;
-	}
 }
 
 void
@@ -632,6 +630,7 @@ makedoc(Document *d, char *name)
 	d-&gt;text = (char *)malloc(TEXTSZ);
 	d-&gt;text[0] = '\0';
 	d-&gt;tlen = 0;
+	d-&gt;unsaved = 0;
 	scpy(name, d-&gt;name, 256);
 	printf("Make: %s\n", d-&gt;name);
 	setselection(0, -1);
@@ -644,9 +643,11 @@ savedoc(Document *d, char *name)
 	FILE *f = fopen(name, "w");
 	for(i = 0; i &lt; d-&gt;tlen; ++i)
 		fputc(d-&gt;text[i], f);
+	d-&gt;unsaved = 0;
 	scpy(name, d-&gt;name, 256);
 	fclose(f);
 	printf("Saved: %s\n", d-&gt;name);
+	redraw(pixels);
 	return 1;
 }
 
@@ -671,11 +672,21 @@ opendoc(Document *d, char *name)
 		}
 	}
 	d-&gt;text[d-&gt;tlen] = '\0';
+	d-&gt;unsaved = 0;
 	scpy(name, d-&gt;name, 256);
 	printf("Loaded: %s\n", d-&gt;name);
 	fclose(f);
 	setselection(0, -1);
 	return 1;
+}
+
+void
+selectoption(int option)
+{
+	switch(option) {
+	case 0: savemode(&amp;GUIDES, !GUIDES); break;
+	case HOR - 1: savedoc(&amp;doc, doc.name); break;
+	}
 }
 
 void
@@ -749,7 +760,7 @@ dokey(SDL_Event *event)
 		case SDLK_n: makedoc(&amp;doc, "untitled.txt"); break;
 		case SDLK_r: opendoc(&amp;doc, doc.name); break;
 		case SDLK_s: savedoc(&amp;doc, doc.name); break;
-		case SDLK_h: setmode(&amp;GUIDES, !GUIDES); break;
+		case SDLK_h: savemode(&amp;GUIDES, !GUIDES); break;
 		/* Edit */
 		case SDLK_x: docut(doc.text, sel); break;
 		case SDLK_c: docopy(doc.text, sel); break;
@@ -863,7 +874,10 @@ main(int argc, char *argv[])
 	int ticknext = 0;
 	if(!init())
 		return error("Init", "Failure");
-	if(argc &lt; 2 || !opendoc(&amp;doc, argv[1]))
+	if(argc &gt; 1) {
+		if(!opendoc(&amp;doc, argv[1]))
+			makedoc(&amp;doc, argv[1]);
+	} else
 		makedoc(&amp;doc, "untitled.txt");
 	while(1) {
 		int tick = SDL_GetTicks();
@@ -890,5 +904,5 @@ main(int argc, char *argv[])
 	quit();
 	return 0;
 }
-</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/left.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/left.c.txt'>left.c.txt</a>(892 lines)</figcaption>
+</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/left.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/left.c.txt'>left.c.txt</a>(906 lines)</figcaption>
 </figure><figure><img src='../media/diary/499.jpg' alt='Original Writing Layout picture' width='900'/><figcaption>11X04 &mdash; Original Writing Layout</figcaption></figure><figure><img src='../media/diary/240.jpg' alt='Left Screencapture picture' width='900'/><figcaption>11R07 &mdash; Left Screencapture</figcaption></figure><figure><img src='../media/diary/208.jpg' alt='Tooling picture' width='900'/><figcaption>11P10 &mdash; Tooling</figcaption></figure><ul><li><a href='http://hundredrabbits.itch.io/Left' target='_blank'>download</a></li><li><a href='https://github.com/hundredrabbits/Left' target='_blank'>sources</a></li><li><a href='https://hundredrabbits.itch.io/left/community' target='_blank'>community</a></li></ul><p><i>incoming(2)</i>: <a href='themes.html'>themes</a> <a href='computer.html'>computer</a> </p><p><i>Last update on <a href='tracker.html'>15A09</a>, edited 28 times. +120/174fh <b></b></i> <code style='float:right; font-size:80%'>---|||</code></p><ul><li>15A09 &mdash; Left Desktop Release</li><li>11R08 &mdash; Left Web Release</li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>

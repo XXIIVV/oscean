@@ -20,7 +20,7 @@ WITH REGARD TO THIS SOFTWARE.
 #define TEXTSZ 2048 * 32
 
 typedef struct {
-	int tlen, clen;
+	int unsaved, tlen, clen;
 	char name[256], *text, *clip;
 } Document;
 
@@ -57,7 +57,8 @@ Uint8 icons[][8] = {
 	{0x28, 0x14, 0x28, 0x14, 0x28, 0x14, 0x28, 0x14}, /* scroll:bg */
 	{0x3c, 0x3c, 0x3c, 0x3c, 0x3c, 0x3c, 0x3c, 0x3c}, /* scroll:fg */
 	{0x00, 0x00, 0x00, 0x82, 0x44, 0x38, 0x00, 0x00}, /* eye open */
-	{0x00, 0x38, 0x44, 0x92, 0x28, 0x10, 0x00, 0x00}  /* eye closed */
+	{0x00, 0x38, 0x44, 0x92, 0x28, 0x10, 0x00, 0x00}, /* eye closed */
+	{0x10, 0x54, 0x28, 0xc6, 0x28, 0x54, 0x10, 0x00}  /* unsaved */
 };
 
 Uint8 font[][8] = {
@@ -232,6 +233,7 @@ popblock(Range s)
 	for(i = s.from; i < doc.tlen; ++i)
 		doc.text[i] = doc.text[clamp(i + len, 0, TEXTSZ - 1)];
 	doc.tlen -= len;
+	doc.unsaved = 1;
 }
 
 void
@@ -245,6 +247,7 @@ pushblock(Range s, char *src)
 	for(i = 0; i < len; ++i)
 		doc.text[s.from + i] = src[i];
 	doc.tlen += len;
+	doc.unsaved = 1;
 }
 
 void
@@ -256,6 +259,7 @@ popchar(int p)
 	for(i = p; i < doc.tlen; ++i)
 		doc.text[i] = doc.text[i + 1];
 	doc.tlen--;
+	doc.unsaved = 1;
 }
 
 void
@@ -268,6 +272,7 @@ pushchar(int p, char c)
 		doc.text[i] = doc.text[i - 1];
 	doc.text[p] = c;
 	doc.tlen++;
+	doc.unsaved = 1;
 }
 
 int
@@ -388,6 +393,7 @@ drawui(Uint32 *dst)
 {
 	int bottom = VER * 8 + 8;
 	drawicon(dst, 8 * 0, bottom, icons[GUIDES ? 7 : 6], GUIDES ? 1 : 2, 0);
+	drawicon(dst, (HOR - 1) * 8, bottom, icons[8], doc.unsaved ? 2 : 3, 0);
 }
 
 Uint8 *
@@ -612,18 +618,10 @@ modcase(Range s, int mod)
 }
 
 void
-setmode(int *i, int v)
+savemode(int *i, int v)
 {
 	*i = v;
 	redraw(pixels);
-}
-
-void
-selectoption(int option)
-{
-	switch(option) {
-	case 0: setmode(&GUIDES, !GUIDES); break;
-	}
 }
 
 void
@@ -632,6 +630,7 @@ makedoc(Document *d, char *name)
 	d->text = (char *)malloc(TEXTSZ);
 	d->text[0] = '\0';
 	d->tlen = 0;
+	d->unsaved = 0;
 	scpy(name, d->name, 256);
 	printf("Make: %s\n", d->name);
 	setselection(0, -1);
@@ -644,9 +643,11 @@ savedoc(Document *d, char *name)
 	FILE *f = fopen(name, "w");
 	for(i = 0; i < d->tlen; ++i)
 		fputc(d->text[i], f);
+	d->unsaved = 0;
 	scpy(name, d->name, 256);
 	fclose(f);
 	printf("Saved: %s\n", d->name);
+	redraw(pixels);
 	return 1;
 }
 
@@ -671,11 +672,21 @@ opendoc(Document *d, char *name)
 		}
 	}
 	d->text[d->tlen] = '\0';
+	d->unsaved = 0;
 	scpy(name, d->name, 256);
 	printf("Loaded: %s\n", d->name);
 	fclose(f);
 	setselection(0, -1);
 	return 1;
+}
+
+void
+selectoption(int option)
+{
+	switch(option) {
+	case 0: savemode(&GUIDES, !GUIDES); break;
+	case HOR - 1: savedoc(&doc, doc.name); break;
+	}
 }
 
 void
@@ -749,7 +760,7 @@ dokey(SDL_Event *event)
 		case SDLK_n: makedoc(&doc, "untitled.txt"); break;
 		case SDLK_r: opendoc(&doc, doc.name); break;
 		case SDLK_s: savedoc(&doc, doc.name); break;
-		case SDLK_h: setmode(&GUIDES, !GUIDES); break;
+		case SDLK_h: savemode(&GUIDES, !GUIDES); break;
 		/* Edit */
 		case SDLK_x: docut(doc.text, sel); break;
 		case SDLK_c: docopy(doc.text, sel); break;
@@ -863,7 +874,10 @@ main(int argc, char *argv[])
 	int ticknext = 0;
 	if(!init())
 		return error("Init", "Failure");
-	if(argc < 2 || !opendoc(&doc, argv[1]))
+	if(argc > 1) {
+		if(!opendoc(&doc, argv[1]))
+			makedoc(&doc, argv[1]);
+	} else
 		makedoc(&doc, "untitled.txt");
 	while(1) {
 		int tick = SDL_GetTicks();
