@@ -17,7 +17,7 @@ WITH REGARD TO THIS SOFTWARE.
 #define PAD 2
 #define SZ (HOR * VER * 16)
 
-#define TEXTSZ 2048 * 32
+#define TEXTSZ 2048 * 64
 
 typedef struct {
 	int unsaved, tlen, clen;
@@ -39,8 +39,6 @@ int FPS = 30, GUIDES = 1, ZOOM = 2, DOWN = 0, RULER = 60;
 Document doc;
 Range sel;
 Point2d view;
-
-/* interface */
 
 Uint32 theme[] = {
 	0x000000,
@@ -163,7 +161,7 @@ SDL_Renderer *gRenderer = NULL;
 SDL_Texture *gTexture = NULL;
 Uint32 *pixels;
 
-/* helpers */
+#pragma mark - HELPERS
 
 int
 clamp(int val, int min, int max)
@@ -223,6 +221,17 @@ ssin(char *s, char *ss)
 	}
 	return -1;
 }
+
+Range
+Sel(int from, int to)
+{
+	Range s;
+	s.from = from;
+	s.to = to;
+	return s;
+}
+
+#pragma mark - IO
 
 void
 popblock(Range s)
@@ -350,16 +359,7 @@ prevword(int i)
 	return 0;
 }
 
-Range
-Sel(int from, int to)
-{
-	Range s;
-	s.from = from;
-	s.to = to;
-	return s;
-}
-
-/* draw */
+#pragma mark - DRAW
 
 void
 clear(Uint32 *dst)
@@ -371,7 +371,7 @@ clear(Uint32 *dst)
 }
 
 void
-putpixel(Uint32 *dst, int x, int y, int color)
+setpixel(Uint32 *dst, int x, int y, int color)
 {
 	if(x >= 0 && x < WIDTH - 8 && y >= 0 && y < HEIGHT - 8)
 		dst[(y + 8 * PAD) * WIDTH + (x + 8 * PAD)] = theme[color];
@@ -384,7 +384,7 @@ drawicon(Uint32 *dst, int x, int y, Uint8 *icon, int fg, int bg)
 	for(v = 0; v < 8; v++)
 		for(h = 0; h < 8; h++) {
 			int clr = (icon[v] >> (7 - h)) & 0x1;
-			putpixel(dst, x + h, y + v, clr == 1 ? fg : bg);
+			setpixel(dst, x + h, y + v, clr == 1 ? fg : bg);
 		}
 }
 
@@ -474,7 +474,7 @@ redraw(Uint32 *dst)
 	SDL_RenderPresent(gRenderer);
 }
 
-/* options */
+#pragma mark - OPTIONS
 
 int
 error(char *msg, const char *err)
@@ -543,6 +543,7 @@ docut(char *src, Range r)
 void
 dopaste(Range s)
 {
+	popblock(sel);
 	pushblock(s, doc.clip);
 	setselection(s.from + slen(doc.clip), -1);
 }
@@ -703,6 +704,8 @@ quit(void)
 	SDL_Quit();
 	exit(0);
 }
+
+#pragma mark - TRIGGERS
 
 void
 domouse(SDL_Event *event)
