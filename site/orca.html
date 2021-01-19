@@ -452,14 +452,10 @@ clmp(int val, int min, int max)
 	return (val &gt;= min) ? (val &lt;= max) ? val : max : min;
 }
 
-char *
-scpy(char *src, char *dst, int len)
+int
+cisp(char c)
 {
-	int i = 0;
-	while((dst[i] = src[i]) &amp;&amp; i &lt; len - 2)
-		i++;
-	dst[i + 1] = '\0';
-	return dst;
+	return c == '.' || c == ':' || c == '#' || c == '*';
 }
 
 char
@@ -474,13 +470,37 @@ cchr(int v, char c)
 int
 cb36(char c)
 {
+	if(c &gt;= '0' &amp;&amp; c &lt;= '9')
+		return c - '0';
 	if(c &gt;= 'A' &amp;&amp; c &lt;= 'Z')
 		return c - 'A' + 10;
 	if(c &gt;= 'a' &amp;&amp; c &lt;= 'z')
 		return c - 'a' + 10;
-	if(c &gt;= '0' &amp;&amp; c &lt;= '9')
-		return c - '0';
 	return 0;
+}
+
+char
+cuca(char c)
+{
+	return c &gt;= 'a' &amp;&amp; c &lt;= 'z' ? 'A' + c - 'a' : c;
+}
+
+char
+clca(char c)
+{
+	return c &gt;= 'A' &amp;&amp; c &lt;= 'Z' ? 'a' + c - 'A' : c;
+}
+
+char
+cinc(char c)
+{
+	return !cisp(c) ? cchr(cb36(c) + 1, c) : c;
+}
+
+char
+cdec(char c)
+{
+	return !cisp(c) ? cchr(cb36(c) - 1, c) : c;
 }
 
 int
@@ -492,11 +512,7 @@ validposition(Grid *g, int x, int y)
 int
 validcharacter(char c)
 {
-	if(cb36(c) || c == '0')
-		return 1;
-	if(c == '.' || c == ':' || c == '#' || c == '*')
-		return 1;
-	return 0;
+	return cb36(c) || c == '0' || cisp(c);
 }
 
 int
@@ -509,6 +525,16 @@ ctbl(char c)
 	uc = sharp ? c - 'a' + 'A' : c;
 	deg = uc &lt;= 'B' ? 'G' - 'B' + uc - 'A' : uc - 'C';
 	return deg / 7 * 12 + notes[deg % 7] + sharp;
+}
+
+char *
+scpy(char *src, char *dst, int len)
+{
+	int i = 0;
+	while((dst[i] = src[i]) &amp;&amp; i &lt; len - 2)
+		i++;
+	dst[i + 1] = '\0';
+	return dst;
 }
 
 #pragma mark - IO
@@ -971,12 +997,8 @@ opz(Grid *g, int x, int y, char c)
 	int mod;
 	if(!rate_)
 		rate_ = 1;
-	if(val_ &lt;= target_ - rate_)
-		mod = rate_;
-	else if(val_ &gt;= target_ + rate_)
-		mod = -rate;
-	else
-		mod = target_ - val_;
+	mod = val_ &lt;= target_ - rate_ ? rate_ : val_ &gt;= target_ + rate_ ? -rate_
+																	: target_ - val_;
 	setport(g, x, y + 1, cchr(val_ + mod, target));
 	(void)c;
 }
@@ -994,11 +1016,9 @@ opcomment(Grid *g, int x, int y)
 }
 
 void
-opspecial(Grid *g, int x, int y)
+opmidi(Grid *g, int x, int y)
 {
 	int chn, oct, nte, vel, len;
-	if(getport(g, x, y, 1) != ':')
-		return;
 	chn = cb36(getport(g, x + 1, y, 1));
 	if(chn == '.')
 		return;
@@ -1006,7 +1026,7 @@ opspecial(Grid *g, int x, int y)
 	if(oct == '.')
 		return;
 	nte = getport(g, x + 3, y, 1);
-	if(nte == '.')
+	if(cisp(nte))
 		return;
 	vel = getport(g, x + 4, y, 1);
 	if(vel == '.')
@@ -1019,14 +1039,15 @@ opspecial(Grid *g, int x, int y)
 			clmp(cb36(vel), 0, 36),
 			clmp(cb36(len), 1, 36));
 		settype(g, x, y, 3);
-	}
+	} else
+		settype(g, x, y, 2);
 }
 
 void
 operate(Grid *g, int x, int y, char c)
 {
 	settype(g, x, y, 3);
-	switch(c &gt;= 'A' &amp;&amp; c &lt;= 'Z' ? c + ('a' - 'A') : c) {
+	switch(clca(c)) {
 	case 'a': opa(g, x, y, c); break;
 	case 'b': opb(g, x, y, c); break;
 	case 'c': opc(g, x, y, c); break;
@@ -1055,7 +1076,8 @@ operate(Grid *g, int x, int y, char c)
 	case 'z': opz(g, x, y, c); break;
 	case '*': setcell(g, x, y, '.'); break;
 	case '#': opcomment(g, x, y); break;
-	default: opspecial(g, x, y);
+	case ':': opmidi(g, x, y); break;
+	default: printf("Unknown operator[%d,%d]: %c\n", x, y, c);
 	}
 }
 
@@ -1193,7 +1215,7 @@ redraw(Uint32 *dst)
 			int t = gettype(&amp;doc.grid, x, y);
 			Uint8 *letter = font[getfont(x, y, getcell(&amp;doc.grid, x, y), t, sel)];
 			int fg = 0, bg = 0;
-			if(sel) {
+			if((sel &amp;&amp; !MODE) || (sel &amp;&amp; MODE &amp;&amp; doc.grid.f % 2)) {
 				fg = 0;
 				bg = 4;
 			} else {
@@ -1276,6 +1298,16 @@ savedoc(Document *d, char *name)
 	scpy(name, d-&gt;name, 256);
 	redraw(pixels);
 	printf("Saved: %s\n", name);
+}
+
+void
+transform(Rect2d *r, char (*fn)(char))
+{
+	int x, y;
+	for(y = 0; y &lt; r-&gt;h; ++y)
+		for(x = 0; x &lt; r-&gt;w; ++x)
+			setcell(&amp;doc.grid, r-&gt;x + x, r-&gt;y + y, fn(getcell(&amp;doc.grid, r-&gt;x + x, r-&gt;y + y)));
+	redraw(pixels);
 }
 
 void
@@ -1475,6 +1507,10 @@ dokey(SDL_Event *event)
 		case SDLK_x: cutclip(&amp;cursor, clip); break;
 		case SDLK_c: copyclip(&amp;cursor, clip); break;
 		case SDLK_v: pasteclip(&amp;cursor, clip, shift); break;
+		case SDLK_u: transform(&amp;cursor, cuca); break;
+		case SDLK_l: transform(&amp;cursor, clca); break;
+		case SDLK_LEFTBRACKET: transform(&amp;cursor, cinc); break;
+		case SDLK_RIGHTBRACKET: transform(&amp;cursor, cdec); break;
 		case SDLK_UP: moveclip(&amp;cursor, clip, 0, -1, alt); break;
 		case SDLK_DOWN: moveclip(&amp;cursor, clip, 0, 1, alt); break;
 		case SDLK_LEFT: moveclip(&amp;cursor, clip, -1, 0, alt); break;
@@ -1490,8 +1526,15 @@ dokey(SDL_Event *event)
 		case SDLK_DOWN: shift ? scale(0, 1, alt) : move(0, 1, alt); break;
 		case SDLK_LEFT: shift ? scale(-1, 0, alt) : move(-1, 0, alt); break;
 		case SDLK_RIGHT: shift ? scale(1, 0, alt) : move(1, 0, alt); break;
-		case SDLK_SPACE: setoption(&amp;PAUSE, !PAUSE); break;
-		case SDLK_BACKSPACE: insert('.'); break;
+		case SDLK_SPACE:
+			if(!MODE)
+				setoption(&amp;PAUSE, !PAUSE);
+			break;
+		case SDLK_BACKSPACE:
+			insert('.');
+			if(MODE)
+				move(-2, 0, alt);
+			break;
 		}
 	}
 }
@@ -1581,5 +1624,5 @@ main(int argc, char *argv[])
 	quit();
 	return 0;
 }
-</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/orca.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/orca.c.txt'>orca.c.txt</a>(1294 lines)</figcaption>
-</figure><figure><img src='../media/diary/140.jpg' alt='Orca Type picture' width='900'/><figcaption>12X03 &mdash; Orca Type</figcaption></figure><figure><img src='../media/diary/4.jpg' alt='Orca Glyphs picture' width='900'/><figcaption>09Z11 &mdash; Orca Glyphs</figcaption></figure><figure><img src='../media/diary/356.jpg' alt='Orca Machine picture' width='900'/><figcaption>07R11 &mdash; Orca Machine</figcaption></figure><ul><li><a href='https://git.sr.ht/~rabbits/orca-toy' target='_blank'>desktop version</a></li><li><a href='https://git.sr.ht/~rabbits/orca' target='_blank'>terminal version</a></li><li><a href='https://hundredrabbits.github.io/Orca' target='_blank'>browser version</a></li><li><a href='https://llllllll.co/t/orca/22492' target='_blank'>norns version</a></li></ul><p><i>incoming(10)</i>: <a href='alicef.html'>alicef</a> <a href='azolla.html'>azolla</a> <a href='themes.html'>themes</a> <a href='yajnev_studies.html'>yajnev studies</a> <a href='pilot.html'>pilot</a> <a href='enfer.html'>enfer</a> <a href='nasu.html'>nasu</a> <a href='norns.html'>norns</a> <a href='computer.html'>computer</a> <a href='juni.html'>juni</a> </p><p><i>Last update on <a href='tracker.html'>15B02</a>, edited 123 times. +557/731fh <b></b></i> <code style='float:right; font-size:80%'>-|||||</code></p><ul><li>14C11 &mdash; Orca Workshop Mila, Montreal</li><li>13V03 &mdash; Orca Workshop Foolab, Montreal</li><li>13J12 &mdash; Orca Workshop Algomech, Sheffield</li><li>12W13 &mdash; Orca Release</li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
+</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/orca.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/orca.c.txt'>orca.c.txt</a>(1337 lines)</figcaption>
+</figure><figure><img src='../media/diary/140.jpg' alt='Orca Type picture' width='900'/><figcaption>12X03 &mdash; Orca Type</figcaption></figure><figure><img src='../media/diary/4.jpg' alt='Orca Glyphs picture' width='900'/><figcaption>09Z11 &mdash; Orca Glyphs</figcaption></figure><figure><img src='../media/diary/356.jpg' alt='Orca Machine picture' width='900'/><figcaption>07R11 &mdash; Orca Machine</figcaption></figure><ul><li><a href='https://git.sr.ht/~rabbits/orca-toy' target='_blank'>desktop version</a></li><li><a href='https://git.sr.ht/~rabbits/orca' target='_blank'>terminal version</a></li><li><a href='https://hundredrabbits.github.io/Orca' target='_blank'>browser version</a></li><li><a href='https://llllllll.co/t/orca/22492' target='_blank'>norns version</a></li></ul><p><i>incoming(10)</i>: <a href='alicef.html'>alicef</a> <a href='azolla.html'>azolla</a> <a href='themes.html'>themes</a> <a href='yajnev_studies.html'>yajnev studies</a> <a href='pilot.html'>pilot</a> <a href='enfer.html'>enfer</a> <a href='nasu.html'>nasu</a> <a href='norns.html'>norns</a> <a href='computer.html'>computer</a> <a href='juni.html'>juni</a> </p><p><i>Last update on <a href='tracker.html'>15B04</a>, edited 124 times. +561/736fh <b></b></i> <code style='float:right; font-size:80%'>-|||||</code></p><ul><li>14C11 &mdash; Orca Workshop Mila, Montreal</li><li>13V03 &mdash; Orca Workshop Foolab, Montreal</li><li>13J12 &mdash; Orca Workshop Algomech, Sheffield</li><li>12W13 &mdash; Orca Release</li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>

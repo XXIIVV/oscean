@@ -1,9 +1,6 @@
 #include <stdio.h>
 #include <time.h>
 
-#include "projects/standard/standard.h"
-#include "projects/arvelie/arvelie.h"
-
 #define STRMEM 4096 * 96
 #define GLOMEM 100
 #define LEXMEM 500
@@ -70,6 +67,215 @@ typedef struct Journal {
 	Log logs[HORMEM];
 } Journal;
 
+#pragma mark - Helpers
+
+int
+cisp(char c) /* char is space */
+{
+	return c == ' ' || c == '\t' || c == '\n' || c == '\r';
+}
+
+int
+cial(char c) /* char is alpha */
+{
+	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
+}
+
+int
+cinu(char c) /* char is num */
+{
+	return c >= '0' && c <= '9';
+}
+
+int
+clca(int c) /* char to lowercase */
+{
+	return c >= 'A' && c <= 'Z' ? c + ('a' - 'A') : c;
+}
+
+int
+cuca(char c) /* char to uppercase */
+{
+	return c >= 'a' && c <= 'z' ? c - ('a' - 'A') : c;
+}
+
+int
+spad(char *s, char c) /* string count padding */
+{
+	int i = 0;
+	while(s[i] && s[i] == c && s[++i])
+		;
+	return i;
+}
+
+int
+slen(char *s) /* string length */
+{
+	int i = 0;
+	while(s[i] && s[++i])
+		;
+	return i;
+}
+
+char *
+suca(char *s) /* string to uppercase */
+{
+	int i = 0;
+	char c;
+	while((c = s[i]))
+		s[i++] = cuca(c);
+	return s;
+}
+
+char *
+slca(char *s) /* string to lowercase */
+{
+	int i = 0;
+	char c;
+	while((c = s[i]))
+		s[i++] = clca(c);
+	return s;
+}
+
+int
+scmp(char *a, char *b) /* string compare */
+{
+	int i = 0;
+	while(a[i] == b[i])
+		if(!a[i++])
+			return 1;
+	return 0;
+}
+
+char *
+scpy(char *src, char *dst, int len) /* string copy */
+{
+	int i = 0;
+	while((dst[i] = src[i]) && i < len - 2)
+		i++;
+	dst[i + 1] = '\0';
+	return dst;
+}
+
+int
+sint(char *s, int len) /* string to num */
+{
+	int n = 0, i = 0;
+	while(s[i] && i < len && (s[i] >= '0' && s[i] <= '9'))
+		n = n * 10 + (s[i++] - '0');
+	return n;
+}
+
+char *
+scsw(char *s, char a, char b) /* string char swap */
+{
+	int i = 0;
+	char c;
+	while((c = s[i]))
+		s[i++] = c == a ? b : c;
+	return s;
+}
+
+int
+sian(char *s) /* string is alphanum */
+{
+	int i = 0;
+	char c;
+	while((c = s[i++]))
+		if(!cial(c) && !cinu(c) && !cisp(c))
+			return 0;
+	return 1;
+}
+
+int
+scin(char *s, char c) /* string char index */
+{
+	int i = 0;
+	while(s[i])
+		if(s[i++] == c)
+			return i - 1;
+	return -1;
+}
+
+int
+ssin(char *s, char *ss) /* string substring index */
+{
+	int a = 0, b = 0;
+	while(s[a]) {
+		if(s[a] == ss[b]) {
+			if(!ss[b + 1])
+				return a - b;
+			b++;
+		} else
+			b = 0;
+		a++;
+	}
+	return -1;
+}
+
+char *
+strm(char *s)
+{
+	char *end;
+	while(cisp(*s))
+		s++;
+	if(*s == 0)
+		return s;
+	end = s + slen(s) - 1;
+	while(end > s && cisp(*end))
+		end--;
+	end[1] = '\0';
+	return s;
+}
+
+int
+surl(char *s) /* string is url */
+{
+	return ssin(s, "://") >= 0 || ssin(s, "../") >= 0;
+}
+
+char *
+sstr(char *src, char *dst, int from, int to)
+{
+	int i;
+	char *a = (char *)src + from, *b = (char *)dst;
+	for(i = 0; i < to; i++)
+		b[i] = a[i];
+	dst[to] = '\0';
+	return dst;
+}
+
+int
+afnd(char *src[], int len, char *val) /* TODO: remove */
+{
+	int i;
+	for(i = 0; i < len; i++)
+		if(scmp(src[i], val))
+			return i;
+	return -1;
+}
+
+char *
+ccat(char *dst, char c) /* TODO: remove */
+{
+	int len = slen(dst);
+	dst[len] = c;
+	dst[len + 1] = '\0';
+	return dst;
+}
+
+char *
+scat(char *dst, const char *src)
+{
+	char *ptr = dst + slen(dst);
+	while(*src)
+		*ptr++ = *src++;
+	*ptr = '\0';
+	return dst;
+}
+
+#pragma mark - Core
+
 int
 error(char *msg, char *val)
 {
@@ -84,7 +290,7 @@ errorid(char *msg, char *val, int id)
 	return 0;
 }
 
-/* Block */
+#pragma mark - Block
 
 char *
 push(Block *b, char *s)
@@ -96,7 +302,7 @@ push(Block *b, char *s)
 	return &b->data[o];
 }
 
-/* List */
+#pragma mark - List
 
 List *
 makelist(List *l, char *name)
@@ -117,7 +323,7 @@ findlist(Glossary *glo, char *name)
 	return NULL;
 }
 
-/* Term */
+#pragma mark - Term
 
 Term *
 maketerm(Term *t, char *name)
@@ -161,7 +367,7 @@ statusterm(Term *t)
 	return "";
 }
 
-/* Log */
+#pragma mark - Log
 
 Log *
 makelog(Log *l, char *date)
@@ -185,7 +391,7 @@ finddiary(Journal *jou, Term *t, int deep)
 	return NULL;
 }
 
-/* File */
+#pragma mark - File
 
 FILE *
 getfile(char *dir, char *filename, char *ext, char *op)
@@ -199,7 +405,7 @@ getfile(char *dir, char *filename, char *ext, char *op)
 	return fopen(filepath, op);
 }
 
-/* Etcs */
+#pragma mark - Time
 
 float
 clockoffset(clock_t start)
@@ -213,7 +419,12 @@ fpRFC2822(FILE *f, time_t t)
 	struct tm *tm = localtime(&t);
 	char *days[7] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 	char *months[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
-	fprintf(f, "%s, %02d %s %d 00:00:00 +0900", days[tm->tm_wday], tm->tm_mday, months[tm->tm_mon], tm->tm_year + 1900);
+	fprintf(f,
+		"%s, %02d %s %d 00:00:00 +0900",
+		days[tm->tm_wday],
+		tm->tm_mday,
+		months[tm->tm_mon],
+		tm->tm_year + 1900);
 }
 
 void
@@ -233,17 +444,71 @@ fpRFC3339(FILE *f, time_t t)
 		0);
 }
 
-int
-marble(int year, int month, int day)
+time_t
+ymdstrtime(int y, int m, int d)
 {
-	struct tm birth;
-	birth.tm_year = year - 1900;
-	birth.tm_mon = month - 1;
-	birth.tm_mday = day;
-	return (time(NULL) - mktime(&birth)) / 604800;
+	struct tm stime;
+	stime.tm_year = y - 1900;
+	stime.tm_mday = d;
+	stime.tm_mon = m;
+	stime.tm_hour = 0;
+	stime.tm_min = 0;
+	stime.tm_sec = 1;
+	stime.tm_isdst = -1;
+	return mktime(&stime);
 }
 
-/* File Print */
+int
+arveliedays(char *date)
+{
+	int year = (date[0] - '0') * 10 + (date[1] - '0');
+	int dotm = ((date[3] - '0') * 10) + date[4] - '0';
+	int moty = date[2] == '+' ? 26 : date[2] - 'A';
+	return year * 365 + moty * 14 + dotm;
+}
+
+void
+parvelie(int epoch)
+{
+	time_t now;
+	struct tm *local;
+	time(&now);
+	local = localtime(&now);
+	printf("%02d%c%02d",
+		(1900 + local->tm_year - epoch) % 100,
+		local->tm_yday >= 364 ? '+' : 'A' + local->tm_yday / 14,
+		local->tm_yday % 14);
+}
+
+time_t
+dotytime(int y, int doty)
+{
+	int months[13] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+	int m = 0;
+	int d = 0;
+	int yd = 0;
+	if((y % 4) || ((y % 100) && (y % 400)))
+		months[1] = months[1] + 1;
+	for(m = 0; m < 12; ++m) {
+		yd += months[m];
+		d = months[m] - (yd - doty);
+		if(yd > doty)
+			break;
+	}
+	return ymdstrtime(y, m, d);
+}
+
+time_t
+arvelietime(int epoch, char *date)
+{
+	int year = epoch + (date[0] - '0') * 10 + (date[1] - '0');
+	int dotm = ((date[3] - '0') * 10) + date[4] - '0';
+	int moty = date[2] == '+' ? 26 : date[2] - 'A';
+	int doty = moty * 14 + dotm;
+	return dotytime(year, doty);
+}
+
+#pragma mark - Fprint
 
 void
 fplifeline(FILE *f, Journal *jou, Term *t)
@@ -558,18 +823,9 @@ fpincoming(FILE *f, Term *t)
 }
 
 void
-fphoraire(FILE *f, Journal *jou, Term *t)
+fpevents(FILE *f, Journal *jou, Term *t)
 {
 	int i;
-	if(t->logs_len < 2 || !t->date_last)
-		return;
-	fputs("<p>", f);
-	fprintf(f, "<i>Last update on <a href='tracker.html'>%s</a>, edited %d times. +%d/%dfh <b>%s</b></i> ", t->date_last, t->logs_len, t->ch, t->fh, statusterm(t));
-	fplifeline(f, jou, t);
-	fputs("</p>", f);
-	/* Events */
-	if(t->events_len < 1)
-		return;
 	fputs("<ul>", f);
 	for(i = 0; i < jou->len; ++i) {
 		Log *l = &jou->logs[i];
@@ -580,6 +836,25 @@ fphoraire(FILE *f, Journal *jou, Term *t)
 		fprintf(f, "<li>%s &mdash; %s</li>", l->date, l->name);
 	}
 	fputs("</ul>", f);
+}
+
+void
+fphoraire(FILE *f, Journal *jou, Term *t)
+{
+	if(t->logs_len < 2 || !t->date_last)
+		return;
+	fputs("<p>", f);
+	fprintf(f,
+		"<i>Last update on <a href='tracker.html'>%s</a>, edited %d times. +%d/%dfh <b>%s</b></i> ",
+		t->date_last,
+		t->logs_len,
+		t->ch,
+		t->fh,
+		statusterm(t));
+	fplifeline(f, jou, t);
+	fputs("</p>", f);
+	if(t->events_len)
+		fpevents(f, jou, t);
 }
 
 void
@@ -875,6 +1150,8 @@ fptwtxt(FILE *f, Journal *jou)
 	fclose(f);
 }
 
+#pragma mark - Parse
+
 int
 parse_glossary(FILE *fp, Block *block, Glossary *glo)
 {
@@ -1114,10 +1391,8 @@ clock_t start;
 int
 main(void)
 {
-	int death = marble(1986, 3, 22);
-
 	parvelie(EPOCH);
-	printf("    | Marble #%d(%.2f%%)\n", death, (death / (double)3900) * 100);
+	puts("");
 
 	start = clock();
 	if(!parse(&block, &all_lists, &all_terms, &all_logs))
