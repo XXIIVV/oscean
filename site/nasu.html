@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='description' content='Nasu is a pixel editor.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV &mdash; nasu</title></head><body><header><a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='tools.html'>tools/</a></li><li><a href='utilities.html'>utilities</a></li><li><a href='games.html'>games</a></li><li><a href='mobile.html'>mobile</a></li><li><a href='unreleased.html'>unreleased</a></li></ul><ul><li><a href='nasu.html'>nasu/</a></li><li><a href='dotgrid.html'>dotgrid</a></li><li><a href='ronin.html'>ronin</a></li><li><a href='moogle.html'>moogle</a></li><li><a href='left.html'>left</a></li></ul><ul></ul></nav><main><figure><img src='../media/diary/719.jpg' alt='Nasu Web Release picture' width='900'/><figcaption>14C05 &mdash; Nasu Web Release</figcaption></figure><h2>Nasu is a pixel editor.</h2><p>Nasu is a spritesheet editor created to help with the design of assets for <a href='famicom.html'>Famicom</a> games, such as <a href='donsol_famicom.html'>Donsol</a>. It can import and export the <a href='chr_format.html'>.chr format</a>.</p><p>It is currently used in the creation of Famicom projects such as <a href='spacetime_6502.html'>spacetime</a>, the 1bit illustrations of the <a href='neauismetica.html'>Neauismetica</a> and the interface design of all the ecosystem <a href='tools.html'>tools</a>, including <a href='orca.html'>Orca</a>.</p><iframe width='624' height='380' src='https://www.youtube.com/embed/zvO5JRF47bc?rel=0' style='max-width:700px' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe><h3>nasu.c</h3><p>To learn more, see the complete manual in the <a href='https://git.sr.ht/~rabbits/nasu' target='_blank'>repository</a>.</p><pre>cc nasu.c -std=c89 -Os -DNDEBUG -g0 -s -Wall -L/usr/local/lib -lSDL2 -o nasu</pre><p>The following code is a single-file implementation written <a href='ansi_c.html'>ANSI C</a> with <a href='https://www.libsdl.org' target='_blank'>SDL2</a> as its only dependecy.</p><figure><pre>#include &lt;SDL2/SDL.h&gt;
+<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='description' content='Nasu is a pixel editor.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV &mdash; nasu</title></head><body><header><a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='tools.html'>tools/</a></li><li><a href='utilities.html'>utilities</a></li><li><a href='games.html'>games</a></li><li><a href='mobile.html'>mobile</a></li><li><a href='unreleased.html'>unreleased</a></li></ul><ul><li><a href='nasu.html'>nasu/</a></li><li><a href='dito.html'>dito</a></li><li><a href='dotgrid.html'>dotgrid</a></li><li><a href='ronin.html'>ronin</a></li><li><a href='moogle.html'>moogle</a></li><li><a href='left.html'>left</a></li></ul><ul></ul></nav><main><figure><img src='../media/diary/719.jpg' alt='Nasu Web Release picture' width='900'/><figcaption>14C05 &mdash; Nasu Web Release</figcaption></figure><h2>Nasu is a pixel editor.</h2><p>Nasu is a spritesheet editor created to help with the design of assets for <a href='famicom.html'>Famicom</a> games, such as <a href='donsol_famicom.html'>Donsol</a>. It can import and export the <a href='chr_format.html'>.chr format</a>, to import a bmp, see <a href='dito.html'>Dito</a>.</p><p>It is currently used in the creation of Famicom projects such as <a href='spacetime_6502.html'>spacetime</a>, the 1bit illustrations of the <a href='neauismetica.html'>Neauismetica</a> and the interface design of all the ecosystem <a href='tools.html'>tools</a>, including <a href='orca.html'>Orca</a>.</p><iframe width='624' height='380' src='https://www.youtube.com/embed/zvO5JRF47bc?rel=0' style='max-width:700px' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe><h3>nasu.c</h3><p>To learn more, see the complete manual in the <a href='https://git.sr.ht/~rabbits/nasu' target='_blank'>repository</a>.</p><pre>cc nasu.c -std=c89 -Os -DNDEBUG -g0 -s -Wall -L/usr/local/lib -lSDL2 -o nasu</pre><p>The following code is a single-file implementation written <a href='ansi_c.html'>ANSI C</a> with <a href='https://www.libsdl.org' target='_blank'>SDL2</a> as its only dependecy.</p><figure><pre>#include &lt;SDL2/SDL.h&gt;
 #include &lt;stdio.h&gt;
 
 /* 
@@ -244,16 +244,36 @@ drawchr(Uint32 *dst, int x, int y, int id)
 		}
 }
 
+int
+bigchrguides(int x, int y, int h, int v)
+{
+	if(!GUIDES)
+		return 0;
+	/* horizontal guides */
+	if(x % 8 == 0 &amp;&amp; h == 0 &amp;&amp; x &gt; 0)
+		return 1;
+	if(h == 0 &amp;&amp; v % 2 == 0 &amp;&amp; x &gt; 0)
+		return 1;
+	/* vertical guides */
+	if(y % 8 == 0 &amp;&amp; v == 0 &amp;&amp; y &gt; 0)
+		return 1;
+	if(v == 0 &amp;&amp; h % 2 == 0 &amp;&amp; y &gt; 0)
+		return 1;
+	return 0;
+}
+
 void
 drawbigchr(Uint32 *dst, int x, int y, int id)
 {
 	int v, h;
 	for(v = 0; v &lt; 8; v++)
-		for(h = 0; h &lt; 8; h++)
+		for(h = 0; h &lt; 8; h++) {
+			int guides = bigchrguides(brush.vx + x, brush.vy + y, h, v);
 			putpixel(dst,
 				x * 8 + h,
 				y * 8 + v,
-				id == 0 &amp;&amp; GUIDES &amp;&amp; (x + y) % 2 ? 4 : id);
+				guides &amp;&amp; id == 0 ? 4 : id);
+		}
 }
 
 void
@@ -351,14 +371,21 @@ opendoc(Document *d, char *name)
 	FILE *f = fopen(name, "r");
 	if(!f)
 		return error("Load", "Invalid input file");
-	if(!fread(doc.data, sizeof(doc.data), 1, f))
-		return error("Load", "Invalid input size");
+	fread(doc.data, sizeof(doc.data), 1, f);
 	d-&gt;unsaved = 0;
 	scpy(name, doc.name, 256);
 	fclose(f);
-	printf("Load: %s\n", doc.name);
+	printf("Loaded: %s\n", doc.name);
 	redraw(pixels);
 	return 1;
+}
+
+void
+lookat(int x, int y)
+{
+	brush.vx = clamp(x, 0, WIDTH - HOR - 2 * PAD * 8);
+	brush.vy = clamp(y, 0, HEIGHT - VER - 3 * PAD * 8);
+	redraw(pixels);
 }
 
 int
@@ -435,8 +462,7 @@ domouse(SDL_Event *event)
 		brush.px = screenpos(event-&gt;motion.x, brush.vx);
 		brush.py = screenpos(event-&gt;motion.y, brush.vy);
 		if(!BIGPIXEL) {
-			brush.vx = clamp((brush.px / 8) * 8, 0, WIDTH - HOR - 2 * PAD * 8);
-			brush.vy = clamp((brush.py / 8) * 8, 0, HEIGHT - VER - 3 * PAD * 8);
+			lookat((brush.px / 8) * 8, (brush.py / 8) * 8);
 		}
 		if(brush.down) {
 			if(brush.mode == 0)
@@ -489,6 +515,11 @@ dokey(SDL_Event *event)
 		case SDLK_b: savemode(&amp;BIGPIXEL, !BIGPIXEL); break;
 		case SDLK_z: savemode(&amp;brush.size, brush.size + (brush.size &gt; 1 ? -1 : 0)); break;
 		case SDLK_x: savemode(&amp;brush.size, brush.size + (brush.size &lt; 30 ? 1 : 0)); break;
+
+		case SDLK_UP: lookat(brush.vx, brush.vy - 1); break;
+		case SDLK_DOWN: lookat(brush.vx, brush.vy + 1); break;
+		case SDLK_LEFT: lookat(brush.vx - 1, brush.vy); break;
+		case SDLK_RIGHT: lookat(brush.vx + 1, brush.vy); break;
 		}
 	}
 }
@@ -559,5 +590,5 @@ main(int argc, char **argv)
 	quit();
 	return 0;
 }
-</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/nasu.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/nasu.c.txt'>nasu.c.txt</a>(561 lines)</figcaption>
-</figure><ul><li><a href='https://git.sr.ht/~rabbits/nasu' target='_blank'>sources</a></li><li><a href='https://hundredrabbits.github.io/Nasu' target='_blank'>browser version</a></li></ul><p><i>incoming(10)</i>: <a href='neauismetica.html'>neauismetica</a> <a href='graf3dscene.html'>graf3dscene</a> <a href='themes.html'>themes</a> <a href='dotgrid.html'>dotgrid</a> <a href='moogle.html'>moogle</a> <a href='left.html'>left</a> <a href='chr_format.html'>chr format</a> <a href='donsol_famicom.html'>donsol famicom</a> <a href='computer.html'>computer</a> <a href='identity.html'>identity</a> </p><p><i>Last update on <a href='tracker.html'>15A10</a>, edited 28 times. +121/178fh <b></b></i> <code style='float:right; font-size:80%'>----||</code></p><ul><li>14S13 &mdash; Nasu Desktop Release</li><li>14C05 &mdash; Nasu Web Release</li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
+</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/nasu.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/nasu.c.txt'>nasu.c.txt</a>(592 lines)</figcaption>
+</figure><ul><li><a href='https://git.sr.ht/~rabbits/nasu' target='_blank'>sources</a></li><li><a href='https://hundredrabbits.github.io/Nasu' target='_blank'>browser version</a></li></ul><p><i>incoming(11)</i>: <a href='neauismetica.html'>neauismetica</a> <a href='graf3dscene.html'>graf3dscene</a> <a href='themes.html'>themes</a> <a href='dito.html'>dito</a> <a href='dotgrid.html'>dotgrid</a> <a href='moogle.html'>moogle</a> <a href='left.html'>left</a> <a href='chr_format.html'>chr format</a> <a href='donsol_famicom.html'>donsol famicom</a> <a href='computer.html'>computer</a> <a href='identity.html'>identity</a> </p><p><i>Last update on <a href='tracker.html'>15A10</a>, edited 28 times. +121/178fh <b></b></i> <code style='float:right; font-size:80%'>----||</code></p><ul><li>14S13 &mdash; Nasu Desktop Release</li><li>14C05 &mdash; Nasu Web Release</li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>

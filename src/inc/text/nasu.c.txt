@@ -244,16 +244,36 @@ drawchr(Uint32 *dst, int x, int y, int id)
 		}
 }
 
+int
+bigchrguides(int x, int y, int h, int v)
+{
+	if(!GUIDES)
+		return 0;
+	/* horizontal guides */
+	if(x % 8 == 0 && h == 0 && x > 0)
+		return 1;
+	if(h == 0 && v % 2 == 0 && x > 0)
+		return 1;
+	/* vertical guides */
+	if(y % 8 == 0 && v == 0 && y > 0)
+		return 1;
+	if(v == 0 && h % 2 == 0 && y > 0)
+		return 1;
+	return 0;
+}
+
 void
 drawbigchr(Uint32 *dst, int x, int y, int id)
 {
 	int v, h;
 	for(v = 0; v < 8; v++)
-		for(h = 0; h < 8; h++)
+		for(h = 0; h < 8; h++) {
+			int guides = bigchrguides(brush.vx + x, brush.vy + y, h, v);
 			putpixel(dst,
 				x * 8 + h,
 				y * 8 + v,
-				id == 0 && GUIDES && (x + y) % 2 ? 4 : id);
+				guides && id == 0 ? 4 : id);
+		}
 }
 
 void
@@ -351,14 +371,21 @@ opendoc(Document *d, char *name)
 	FILE *f = fopen(name, "r");
 	if(!f)
 		return error("Load", "Invalid input file");
-	if(!fread(doc.data, sizeof(doc.data), 1, f))
-		return error("Load", "Invalid input size");
+	fread(doc.data, sizeof(doc.data), 1, f);
 	d->unsaved = 0;
 	scpy(name, doc.name, 256);
 	fclose(f);
-	printf("Load: %s\n", doc.name);
+	printf("Loaded: %s\n", doc.name);
 	redraw(pixels);
 	return 1;
+}
+
+void
+lookat(int x, int y)
+{
+	brush.vx = clamp(x, 0, WIDTH - HOR - 2 * PAD * 8);
+	brush.vy = clamp(y, 0, HEIGHT - VER - 3 * PAD * 8);
+	redraw(pixels);
 }
 
 int
@@ -435,8 +462,7 @@ domouse(SDL_Event *event)
 		brush.px = screenpos(event->motion.x, brush.vx);
 		brush.py = screenpos(event->motion.y, brush.vy);
 		if(!BIGPIXEL) {
-			brush.vx = clamp((brush.px / 8) * 8, 0, WIDTH - HOR - 2 * PAD * 8);
-			brush.vy = clamp((brush.py / 8) * 8, 0, HEIGHT - VER - 3 * PAD * 8);
+			lookat((brush.px / 8) * 8, (brush.py / 8) * 8);
 		}
 		if(brush.down) {
 			if(brush.mode == 0)
@@ -489,6 +515,11 @@ dokey(SDL_Event *event)
 		case SDLK_b: savemode(&BIGPIXEL, !BIGPIXEL); break;
 		case SDLK_z: savemode(&brush.size, brush.size + (brush.size > 1 ? -1 : 0)); break;
 		case SDLK_x: savemode(&brush.size, brush.size + (brush.size < 30 ? 1 : 0)); break;
+
+		case SDLK_UP: lookat(brush.vx, brush.vy - 1); break;
+		case SDLK_DOWN: lookat(brush.vx, brush.vy + 1); break;
+		case SDLK_LEFT: lookat(brush.vx - 1, brush.vy); break;
+		case SDLK_RIGHT: lookat(brush.vx + 1, brush.vy); break;
 		}
 	}
 }
