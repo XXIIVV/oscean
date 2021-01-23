@@ -29,6 +29,7 @@ typedef struct Brush {
 	int x, y, px, py, vx, vy;
 	int mode, size, color;
 	int down, erase;
+	Uint8 clip[16];
 } Brush;
 
 int WIDTH = 8 * HOR + 8 * PAD * 2;
@@ -55,6 +56,8 @@ Uint8 icons[][8] = {
 	{0x44, 0xba, 0x44, 0x44, 0x44, 0xba, 0x44, 0x00}, /* brush:cleanup */
 	{0xaa, 0x00, 0xaa, 0x00, 0xaa, 0x00, 0xaa, 0x00}, /* view:grid */
 	{0xee, 0x92, 0x82, 0x54, 0x82, 0x92, 0xee, 0x00}, /* view:bigpixels */
+	{0x80, 0xc0, 0xe0, 0xf0, 0xf8, 0xe0, 0x10, 0x00}, /* clip:blank */
+	{0x82, 0xc5, 0xe2, 0xf0, 0xf8, 0xe0, 0x10, 0x00}, /* clip:active */
 	{0x00, 0x00, 0x00, 0x82, 0x44, 0x38, 0x00, 0x00}, /* eye open */
 	{0x00, 0x38, 0x44, 0x92, 0x28, 0x10, 0x00, 0x00}, /* eye closed */
 	{0x10, 0x54, 0x28, 0xc6, 0x28, 0x54, 0x10, 0x00}  /* unsaved */
@@ -99,6 +102,16 @@ screenpos(int pos, int offset)
 		pos += offset;
 	}
 	return pos;
+}
+
+int
+hasclip(void)
+{
+	int i;
+	for(i = 0; i < 16; ++i)
+		if(brush.clip[i])
+			return 1;
+	return 0;
 }
 
 #pragma mark - CHR HANDLERS
@@ -299,9 +312,10 @@ drawui(Uint32 *dst)
 	drawicon(dst, 6 * 8, bottom, icons[4], brush.mode == 2 ? 1 : 2, 0);
 	drawicon(dst, 7 * 8, bottom, icons[5], brush.mode == 3 ? 1 : 2, 0);
 	drawicon(dst, 8 * 8, bottom, icons[6], brush.mode == 4 ? 1 : 2, 0);
-	drawicon(dst, 10 * 8, bottom, icons[BIGPIXEL ? 7 : 8], BIGPIXEL ? 1 : 2, 0);
-	drawicon(dst, 11 * 8, bottom, icons[GUIDES ? 10 : 9], GUIDES ? 1 : 2, 0);
-	drawicon(dst, (HOR - 1) * 8, bottom, icons[11], doc.unsaved ? 2 : 3, 0); /* save state */
+	drawicon(dst, 10 * 8, bottom, icons[hasclip() ? 10 : 9], brush.mode == 5 ? 1 : 2, 0);
+	drawicon(dst, 12 * 8, bottom, icons[BIGPIXEL ? 8 : 7], BIGPIXEL ? 1 : 2, 0);
+	drawicon(dst, 13 * 8, bottom, icons[GUIDES ? 12 : 11], GUIDES ? 1 : 2, 0);
+	drawicon(dst, (HOR - 1) * 8, bottom, icons[13], doc.unsaved ? 2 : 3, 0); /* save state */
 }
 
 void
@@ -388,6 +402,37 @@ lookat(int x, int y)
 	redraw(pixels);
 }
 
+void
+clearclip(Uint8 *clip)
+{
+	int i;
+	for(i = 0; i < 16; ++i)
+		clip[i] = 0;
+	redraw(pixels);
+}
+
+void
+copyclip(Uint8 *clip, int id)
+{
+	int i;
+	if(id < 0 || id >= HOR * VER)
+		return;
+	for(i = 0; i < 16; ++i)
+		clip[i] = doc.data[(id * 16) + i];
+	redraw(pixels);
+}
+
+void
+pasteclip(Uint8 *clip, int id)
+{
+	int i;
+	if(id < 0 || id >= HOR * VER)
+		return;
+	for(i = 0; i < 16; ++i)
+		doc.data[(id * 16) + i] = clip[i];
+	clearclip(clip);
+}
+
 int
 savebmp(void)
 {
@@ -416,8 +461,9 @@ selectoption(int option)
 	case 6: savemode(&brush.mode, 2); break;
 	case 7: savemode(&brush.mode, 3); break;
 	case 8: savemode(&brush.mode, 4); break;
-	case 10: savemode(&BIGPIXEL, !BIGPIXEL); break;
-	case 11: savemode(&GUIDES, !GUIDES); break;
+	case 10: savemode(&brush.mode, 5); break;
+	case 12: savemode(&BIGPIXEL, !BIGPIXEL); break;
+	case 13: savemode(&GUIDES, !GUIDES); break;
 	case HOR - 1: savedoc(&doc, doc.name); break;
 	}
 }
@@ -441,6 +487,8 @@ quit(void)
 void
 domouse(SDL_Event *event)
 {
+	int ctrl = SDL_GetModState() & KMOD_LCTRL || SDL_GetModState() & KMOD_RCTRL;
+
 	switch(event->type) {
 	case SDL_MOUSEBUTTONUP:
 		if(event->button.button == SDL_BUTTON_LEFT)
@@ -461,10 +509,16 @@ domouse(SDL_Event *event)
 			line(brush.px, brush.py, screenpos(event->motion.x, brush.vx), screenpos(event->motion.y, brush.vy), brush.erase ? 0 : brush.color);
 		brush.px = screenpos(event->motion.x, brush.vx);
 		brush.py = screenpos(event->motion.y, brush.vy);
-		if(!BIGPIXEL) {
+		if(!BIGPIXEL)
 			lookat((brush.px / 8) * 8, (brush.py / 8) * 8);
-		}
-		if(brush.down) {
+		if(brush.mode == 5) {
+			if(event->button.button == SDL_BUTTON_LEFT && hasclip())
+				pasteclip(brush.clip, brush.px / 8 + brush.py / 8 * HOR);
+			else
+				copyclip(brush.clip, brush.px / 8 + brush.py / 8 * HOR);
+		} else if(ctrl)
+			savemode(&brush.color, getchr(brush.px, brush.py));
+		else if(brush.down) {
 			if(brush.mode == 0)
 				putchr(brush.px, brush.py, brush.erase ? 0 : brush.color);
 			else
@@ -476,7 +530,9 @@ domouse(SDL_Event *event)
 		if(brush.down) {
 			brush.x = screenpos(event->motion.x, brush.vx);
 			brush.y = screenpos(event->motion.y, brush.vy);
-			if(!brush.mode)
+			if(ctrl) /* color picker */
+				savemode(&brush.color, getchr(brush.px, brush.py));
+			else if(!brush.mode)
 				line(brush.px, brush.py, brush.x, brush.y, brush.erase ? 0 : brush.color);
 			else
 				fill(brush.x, brush.y, brush.mode, brush.size, brush.erase ? 0 : brush.color);
@@ -515,11 +571,14 @@ dokey(SDL_Event *event)
 		case SDLK_b: savemode(&BIGPIXEL, !BIGPIXEL); break;
 		case SDLK_z: savemode(&brush.size, brush.size + (brush.size > 1 ? -1 : 0)); break;
 		case SDLK_x: savemode(&brush.size, brush.size + (brush.size < 30 ? 1 : 0)); break;
-
 		case SDLK_UP: lookat(brush.vx, brush.vy - 1); break;
 		case SDLK_DOWN: lookat(brush.vx, brush.vy + 1); break;
 		case SDLK_LEFT: lookat(brush.vx - 1, brush.vy); break;
 		case SDLK_RIGHT: lookat(brush.vx + 1, brush.vy); break;
+		case SDLK_ESCAPE:
+			savemode(&brush.mode, 0);
+			clearclip(brush.clip);
+			break;
 		}
 	}
 }
