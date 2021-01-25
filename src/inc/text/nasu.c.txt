@@ -54,8 +54,8 @@ Uint8 icons[][8] = {
 	{0xaa, 0x54, 0xaa, 0x54, 0xaa, 0x54, 0xaa, 0x00}, /* brush:pattern2 */
 	{0x88, 0x00, 0x22, 0x00, 0x88, 0x00, 0x22, 0x00}, /* brush:pattern4 */
 	{0x44, 0xba, 0x44, 0x44, 0x44, 0xba, 0x44, 0x00}, /* brush:cleanup */
-	{0xaa, 0x00, 0xaa, 0x00, 0xaa, 0x00, 0xaa, 0x00}, /* view:grid */
-	{0xee, 0x92, 0x82, 0x54, 0x82, 0x92, 0xee, 0x00}, /* view:bigpixels */
+	{0x30, 0x48, 0x84, 0x84, 0x48, 0x34, 0x02, 0x00}, /* view:grid */
+	{0x32, 0x45, 0x82, 0x84, 0x48, 0x34, 0x02, 0x00}, /* view:bigpixels */
 	{0x80, 0xc0, 0xe0, 0xf0, 0xf8, 0xe0, 0x10, 0x00}, /* clip:blank */
 	{0x82, 0xc5, 0xe2, 0xf0, 0xf8, 0xe0, 0x10, 0x00}, /* clip:active */
 	{0x00, 0x00, 0x00, 0x82, 0x44, 0x38, 0x00, 0x00}, /* eye open */
@@ -242,18 +242,27 @@ putpixel(Uint32 *dst, int x, int y, int color)
 }
 
 void
-drawchr(Uint32 *dst, int x, int y, int id)
+drawchr(Uint32 *dst, int x, int y, Uint8 *sprite)
 {
-	int v, h, offset = id * 16;
+	int v, h;
 	for(v = 0; v < 8; v++)
 		for(h = 0; h < 8; h++) {
-			int px = (x * 8) + (8 - h);
-			int py = (y * 8) + v;
-			int ch1 = doc.data[offset + v];
-			int ch2 = doc.data[offset + v + 8];
-			int clr = ((ch1 >> h) & 0x1) + (((ch2 >> h) & 0x1) << 1);
-			int guides = GUIDES && !clr && (x + y) % 2;
-			putpixel(dst, px - 1, py, guides ? 4 : clr);
+			int ch1 = ((sprite[v] >> h) & 0x1);
+			int ch2 = (((sprite[v + 8] >> h) & 0x1) << 1);
+			int clr = ch1 + ch2;
+			int guides = GUIDES && !clr && ((x + y) / 8) % 2;
+			putpixel(dst, x + 7 - h, y + v, guides ? 4 : clr);
+		}
+}
+
+void
+drawicn(Uint32 *dst, int x, int y, Uint8 *sprite, int fg, int bg)
+{
+	int v, h;
+	for(v = 0; v < 8; v++)
+		for(h = 0; h < 8; h++) {
+			int ch1 = (sprite[v] >> (7 - h)) & 0x1;
+			putpixel(dst, x + h, y + v, ch1 ? fg : bg);
 		}
 }
 
@@ -290,32 +299,21 @@ drawbigchr(Uint32 *dst, int x, int y, int id)
 }
 
 void
-drawicon(Uint32 *dst, int x, int y, Uint8 *icon, int fg, int bg)
-{
-	int v, h;
-	for(v = 0; v < 8; v++)
-		for(h = 0; h < 8; h++) {
-			int clr = (icon[v] >> (7 - h)) & 0x1;
-			putpixel(dst, x + h, y + v, clr == 1 ? fg : bg);
-		}
-}
-
-void
 drawui(Uint32 *dst)
 {
 	int bottom = VER * 8 + 8;
-	drawicon(dst, 0, bottom, brush.color == 1 ? icons[1] : icons[0], 1, 0);
-	drawicon(dst, 8, bottom, brush.color == 2 ? icons[1] : icons[0], 2, 0);
-	drawicon(dst, 16, bottom, brush.color == 3 ? icons[1] : icons[0], 3, 0);
-	drawicon(dst, 4 * 8, bottom, icons[2], brush.mode == 0 ? 1 : 2, 0);
-	drawicon(dst, 5 * 8, bottom, icons[3], brush.mode == 1 ? 1 : 2, 0);
-	drawicon(dst, 6 * 8, bottom, icons[4], brush.mode == 2 ? 1 : 2, 0);
-	drawicon(dst, 7 * 8, bottom, icons[5], brush.mode == 3 ? 1 : 2, 0);
-	drawicon(dst, 8 * 8, bottom, icons[6], brush.mode == 4 ? 1 : 2, 0);
-	drawicon(dst, 10 * 8, bottom, icons[hasclip() ? 10 : 9], brush.mode == 5 ? 1 : 2, 0);
-	drawicon(dst, 12 * 8, bottom, icons[BIGPIXEL ? 8 : 7], BIGPIXEL ? 1 : 2, 0);
-	drawicon(dst, 13 * 8, bottom, icons[GUIDES ? 12 : 11], GUIDES ? 1 : 2, 0);
-	drawicon(dst, (HOR - 1) * 8, bottom, icons[13], doc.unsaved ? 2 : 3, 0); /* save state */
+	drawicn(dst, 0, bottom, brush.color == 1 ? icons[1] : icons[0], 1, 0);
+	drawicn(dst, 8, bottom, brush.color == 2 ? icons[1] : icons[0], 2, 0);
+	drawicn(dst, 16, bottom, brush.color == 3 ? icons[1] : icons[0], 3, 0);
+	drawicn(dst, 4 * 8, bottom, icons[2], brush.mode == 0 ? 1 : 2, 0);
+	drawicn(dst, 5 * 8, bottom, icons[3], brush.mode == 1 ? 1 : 2, 0);
+	drawicn(dst, 6 * 8, bottom, icons[4], brush.mode == 2 ? 1 : 2, 0);
+	drawicn(dst, 7 * 8, bottom, icons[5], brush.mode == 3 ? 1 : 2, 0);
+	drawicn(dst, 8 * 8, bottom, icons[6], brush.mode == 4 ? 1 : 2, 0);
+	drawicn(dst, 10 * 8, bottom, icons[hasclip() ? 10 : 9], brush.mode == 5 ? 1 : 2, 0);
+	drawicn(dst, 11 * 8, bottom, icons[BIGPIXEL ? 8 : 7], brush.mode == 6 ? 1 : 2, 0);
+	drawicn(dst, 13 * 8, bottom, icons[GUIDES ? 12 : 11], GUIDES ? 1 : 2, 0);
+	drawicn(dst, (HOR - 1) * 8, bottom, icons[13], doc.unsaved ? 2 : 3, 0); /* save state */
 }
 
 void
@@ -330,7 +328,7 @@ redraw(Uint32 *dst)
 				if(x + brush.vx < HOR * 8 && y + brush.vy < VER * 8)
 					drawbigchr(dst, x, y, getchr(x + brush.vx, y + brush.vy));
 			} else
-				drawchr(dst, x, y, x + y * HOR);
+				drawchr(dst, x * 8, y * 8, &doc.data[(x + y * HOR) * 16]);
 	SDL_UpdateTexture(gTexture, NULL, dst, WIDTH * sizeof(Uint32));
 	SDL_RenderClear(gRenderer);
 	SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);
@@ -436,9 +434,10 @@ pasteclip(Uint8 *clip, int id)
 int
 savebmp(void)
 {
+	SDL_Rect rect = {0, 0, WIDTH * ZOOM, HEIGHT * ZOOM};
 	SDL_Surface *surface = SDL_GetWindowSurface(gWindow);
 	SDL_RenderReadPixels(gRenderer,
-		NULL,
+		&rect,
 		SDL_PIXELFORMAT_ARGB8888,
 		surface->pixels,
 		surface->pitch);
@@ -462,7 +461,7 @@ selectoption(int option)
 	case 7: savemode(&brush.mode, 3); break;
 	case 8: savemode(&brush.mode, 4); break;
 	case 10: savemode(&brush.mode, 5); break;
-	case 12: savemode(&BIGPIXEL, !BIGPIXEL); break;
+	case 11: savemode(&brush.mode, 6); break;
 	case 13: savemode(&GUIDES, !GUIDES); break;
 	case HOR - 1: savedoc(&doc, doc.name); break;
 	}
@@ -516,7 +515,9 @@ domouse(SDL_Event *event)
 				pasteclip(brush.clip, brush.px / 8 + brush.py / 8 * HOR);
 			else
 				copyclip(brush.clip, brush.px / 8 + brush.py / 8 * HOR);
-		} else if(ctrl)
+		} else if(brush.mode == 6)
+			BIGPIXEL = !BIGPIXEL;
+		else if(ctrl)
 			savemode(&brush.color, getchr(brush.px, brush.py));
 		else if(brush.down) {
 			if(brush.mode == 0)
@@ -568,7 +569,8 @@ dokey(SDL_Event *event)
 		case SDLK_d: savemode(&brush.mode, 2); break;
 		case SDLK_f: savemode(&brush.mode, 3); break;
 		case SDLK_g: savemode(&brush.mode, 4); break;
-		case SDLK_b: savemode(&BIGPIXEL, !BIGPIXEL); break;
+		case SDLK_c: savemode(&brush.mode, 5); break;
+		case SDLK_b: savemode(&brush.mode, 6); break;
 		case SDLK_z: savemode(&brush.size, brush.size + (brush.size > 1 ? -1 : 0)); break;
 		case SDLK_x: savemode(&brush.size, brush.size + (brush.size < 30 ? 1 : 0)); break;
 		case SDLK_UP: lookat(brush.vx, brush.vy - 1); break;

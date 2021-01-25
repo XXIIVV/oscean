@@ -15,7 +15,7 @@ WITH REGARD TO THIS SOFTWARE.
 #define HOR 32
 #define VER 16
 #define PAD 2
-#define SZ 1024 * 48
+#define SZ 512 * 16
 
 typedef unsigned char Uint8;
 
@@ -27,11 +27,12 @@ typedef struct {
 
 typedef struct Brush {
 	int x, y, i, swap, view;
+	Uint8 clip;
 } Cursor;
 
 int WIDTH = 8 * HOR + 8 * PAD * 2;
 int HEIGHT = 8 * (VER + 2) + 8 * PAD * 2;
-int FPS = 30, GUIDES = 1, VIEWCHR = 1, ZOOM = 2;
+int FPS = 30, GUIDES = 1, ZOOM = 2;
 
 Document doc;
 Cursor cursor;
@@ -360,17 +361,14 @@ putpixel(Uint32 *dst, int x, int y, int color)
 }
 
 void
-drawchr(Uint32 *dst, int x, int y, int id)
+drawchr(Uint32 *dst, int x, int y, Uint8 *icon)
 {
-	int v, h, offset = id * 16;
+	int v, h;
 	for(v = 0; v < 8; v++)
 		for(h = 0; h < 8; h++) {
-			int px = (x * 8) + (8 - h);
-			int py = (y * 8) + v;
-			int ch1 = doc.data[offset + v];
-			int ch2 = doc.data[offset + v + 8];
-			int clr = ((ch1 >> h) & 0x1) + (((ch2 >> h) & 0x1) << 1);
-			putpixel(dst, px - 1, py, clr);
+			int ch1 = ((icon[v] >> h) & 0x1);
+			int ch2 = (((icon[v + 8] >> h) & 0x1) << 1);
+			putpixel(dst, x + 7 - h, y + v, ch1 + ch2);
 		}
 }
 
@@ -380,8 +378,8 @@ drawicon(Uint32 *dst, int x, int y, Uint8 *icon, int fg, int bg)
 	int v, h;
 	for(v = 0; v < 8; v++)
 		for(h = 0; h < 8; h++) {
-			int clr = (icon[v] >> (7 - h)) & 0x1;
-			putpixel(dst, x + h, y + v, clr == 1 ? fg : bg);
+			int ch1 = (icon[v] >> (7 - h)) & 0x1;
+			putpixel(dst, x + h, y + v, ch1 == 1 ? fg : bg);
 		}
 }
 
@@ -393,7 +391,6 @@ drawui(Uint32 *dst)
 	drawicon(dst, 1 * 8, bottom, icons[4], 2, 0);
 	drawicon(dst, 2 * 8, bottom, icons[5], 2, 0);
 	drawicon(dst, 3 * 8, bottom, icons[6], 2, 0);
-	drawicon(dst, 5 * 8, bottom, icons[VIEWCHR ? 8 : 7], VIEWCHR ? 1 : 2, 0);
 	drawicon(dst, 6 * 8, bottom, icons[GUIDES ? 12 : 11], GUIDES ? 1 : 2, 0);
 	drawicon(dst, (HOR - 1) * 8, bottom, icons[13], doc.unsaved ? 2 : 3, 0);
 }
@@ -409,54 +406,35 @@ gethexfont(int v)
 }
 
 void
-drawdefault(Uint32 *dst)
+drawline(Uint32 *dst, int y, int id)
 {
-	int i;
-	for(i = 0; i < VER * 8; ++i) {
-		int id = (cursor.view * 8) + i;
-		int x = (i % 8) * 2 + ((i % 8) / 2);
-		int y = i / 8;
-		int a = gethexfont(doc.data[id] >> 4 & 0xf);
-		int b = gethexfont(doc.data[id] & 0xf);
-		int c = doc.data[id];
-		int sel = cursor.i == id;
-		int linesel = GUIDES && cursor.y - cursor.view == y;
-		drawicon(dst, x * 8, y * 8, font[a], sel ? 0 : linesel + 1, sel ? 2 : 0);
-		drawicon(dst, x * 8 + 8, y * 8, font[b], sel ? 0 : linesel + 1, sel ? 2 : 0);
-		drawicon(dst, (19 + (i % 8)) * 8 + 8, y * 8, c ? font[c] : icons[2], c ? 1 : 3, 0);
-		if(i % 8 == 0)
-			drawicon(dst, 29 * 8, y * 8, &doc.data[id], 1, 0);
-		if(i % 16 == 0)
-			drawchr(dst, 31, y, id / 16);
+	int b = 0;
+	if(id >= SZ)
+		return;
+	for(b = 0; b < 8; ++b) {
+		int x = b * 2 + ((b % 8) / 2);
+		int k = id + b;
+		int b0 = gethexfont(doc.data[k] >> 4 & 0xf);
+		int b1 = gethexfont(doc.data[k] & 0xf);
+		int bc = doc.data[k];
+		int sel = cursor.i == k;
+		int linesel = GUIDES && cursor.y == id / 8;
+		drawicon(dst, x * 8, y, font[b0], sel ? 0 : linesel + 1, sel ? 2 : 0);
+		drawicon(dst, x * 8 + 8, y, font[b1], sel ? 0 : linesel + 1, sel ? 2 : 0);
+		drawicon(dst, (19 + (k % 8)) * 8 + 8, y, bc ? font[bc] : icons[2], bc ? 1 : 3, 0);
 	}
-}
-
-void
-drawalternate(Uint32 *dst)
-{
-	int i;
-	for(i = 0; i < VER * 8; ++i) {
-		int id = (cursor.view * 8) + i;
-		int x = (i % 8) * 2 + (i % 8);
-		int y = i / 8;
-		int a = gethexfont(doc.data[id] >> 4 & 0xf);
-		int b = gethexfont(doc.data[id] & 0xf);
-		int c = doc.data[id];
-		int sel = cursor.i == id;
-		drawicon(dst, x * 8, y * 8, font[a], sel ? 0 : 1, sel ? 2 : 0);
-		drawicon(dst, x * 8 + 8, y * 8, font[b], sel ? 0 : 1, sel ? 2 : 0);
-		drawicon(dst, (23 + (i % 8)) * 8 + 8, y * 8, c ? font[c] : icons[2], c ? 1 : 3, 0);
-	}
+	drawicon(dst, 29 * 8, y, &doc.data[id], 1, 0);
+	if(id % 16 == 0)
+		drawchr(dst, 31 * 8, y, &doc.data[id]);
 }
 
 void
 redraw(Uint32 *dst)
 {
+	int y;
 	clear(dst);
-	if(VIEWCHR)
-		drawdefault(dst);
-	else
-		drawalternate(dst);
+	for(y = 0; y < VER; ++y)
+		drawline(dst, y * 8, (cursor.view + y) * 8);
 	drawui(dst);
 	SDL_UpdateTexture(gTexture, NULL, dst, WIDTH * sizeof(Uint32));
 	SDL_RenderClear(gRenderer);
@@ -521,11 +499,68 @@ opendoc(Document *d, char *name)
 	return 1;
 }
 
+int
+printdoc(Document *d)
+{
+	int i;
+	FILE *f = fopen("exed-output.c", "w");
+	fprintf(f, "{");
+	for(i = 0; i < SZ; ++i) {
+		if(i > 0 && i % 16 == 0)
+			fprintf(f, "},\n{");
+		fprintf(f, "0x%02x", doc.data[i]);
+		if(i % 16 < 15)
+			fprintf(f, ", ");
+	}
+	fprintf(f, "}");
+	fclose(f);
+	puts("Saved exed-output.c");
+	return 1;
+}
+
+int
+printline(Document *d, int id)
+{
+	int i;
+	FILE *f = fopen("exed-output-selection.c", "w");
+	fprintf(f, "{");
+	for(i = 0; i < 8; ++i) {
+		fprintf(f, "0x%02x", doc.data[id + i]);
+		if(i % 8 < 7)
+			fprintf(f, ", ");
+	}
+	fprintf(f, "}");
+	fclose(f);
+	puts("Saved exed-output-selection.c");
+	return 1;
+}
+
+void
+copyclip(int i)
+{
+	cursor.clip = doc.data[i];
+}
+
+void
+pasteclip(int i)
+{
+	doc.data[i] = cursor.clip;
+	redraw(pixels);
+}
+
+void
+cutclip(int i)
+{
+	copyclip(i);
+	doc.data[i] = 0x00;
+	redraw(pixels);
+}
+
 void
 select(int x, int y)
 {
 	cursor.x = clamp(x, 0, 7);
-	cursor.y = clamp(y, 0, SZ);
+	cursor.y = clamp(y, 0, SZ / 8 - 1);
 	cursor.i = cursor.x % 8 + (cursor.y * 8);
 	if(cursor.y >= cursor.view + VER)
 		cursor.view = clamp(cursor.y - VER + 1, 0, SZ - 4);
@@ -580,7 +615,6 @@ selectoption(int option)
 		doc.data[cursor.i] = doc.data[cursor.i] >> 2;
 		redraw(pixels);
 		break;
-	case 5: savemode(&VIEWCHR, !VIEWCHR); break;
 	case 6: savemode(&GUIDES, !GUIDES); break;
 	case HOR - 1: savedoc(&doc, doc.name); break;
 	}
@@ -644,6 +678,7 @@ domouse(SDL_Event *event)
 void
 dokey(SDL_Event *event)
 {
+	int shift = SDL_GetModState() & KMOD_LSHIFT || SDL_GetModState() & KMOD_RSHIFT;
 	int ctrl = SDL_GetModState() & KMOD_LCTRL || SDL_GetModState() & KMOD_RCTRL;
 	if(ctrl) {
 		switch(event->key.keysym.sym) {
@@ -651,6 +686,10 @@ dokey(SDL_Event *event)
 		case SDLK_n: makedoc(&doc, "untitled.chr"); break;
 		case SDLK_r: opendoc(&doc, doc.name); break;
 		case SDLK_s: savedoc(&doc, doc.name); break;
+		case SDLK_x: cutclip(cursor.i); break;
+		case SDLK_c: copyclip(cursor.i); break;
+		case SDLK_v: pasteclip(cursor.i); break;
+		case SDLK_p: shift ? printline(&doc, cursor.y * 8) : printdoc(&doc); break;
 		case SDLK_h: savemode(&GUIDES, !GUIDES); break;
 		case SDLK_UP: transform(cursor.i, doincr); break;
 		case SDLK_DOWN: transform(cursor.i, dodecr); break;
@@ -685,6 +724,12 @@ dotext(SDL_Event *event)
 		if(c >= 'a' && c <= 'f')
 			insert(c - 'a' + 10);
 	}
+}
+
+void
+dowheel(SDL_Event *event)
+{
+	select(cursor.x, cursor.y - event->wheel.y);
 }
 
 int
@@ -741,6 +786,7 @@ main(int argc, char **argv)
 			case SDL_MOUSEBUTTONUP:
 			case SDL_MOUSEBUTTONDOWN:
 			case SDL_MOUSEMOTION: domouse(&event); break;
+			case SDL_MOUSEWHEEL: dowheel(&event); break;
 			case SDL_TEXTINPUT: dotext(&event); break;
 			case SDL_KEYDOWN: dokey(&event); break;
 			case SDL_WINDOWEVENT:
