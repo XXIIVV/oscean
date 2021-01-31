@@ -1,0 +1,45 @@
+<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='description' content='Uxn is a 8-bit virtual stack machine.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV &mdash; uxn</title></head><body><header><a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='paper_computing.html'>paper computing</a></li><li><a href='programming.html'>programming</a></li><li><a href='virtual_machines.html'>virtual machines/</a></li><li><a href='fluidics.html'>fluidics</a></li></ul><ul><li><a href='orca.html'>orca</a></li><li><a href='gyo.html'>gyo</a></li><li><a href='uxn.html'>uxn/</a></li><li><a href='noton.html'>noton</a></li><li><a href='paradise.html'>paradise</a></li></ul><ul></ul></nav><main><h2>Uxn is a 8-bit virtual stack machine.</h2><p>Uxn is currently under development, the goal of the project is to create a virtual machine viable to port the <a href='tools.html'>tools</a> onto, and release projects as roms. The design of the VM is inspired by <a href='firth.html'>Firth</a> and <a href='gyo.html'>Gyo</a>, the assembly syntax uses <a href='reverse_polish.html'>Reverse Polish Notation</a>.</p><figure><h3>Status Register</h3>
+
+<p>The status register is distributed as follows, it shares the same byte as the register selector. The <b>halt</b> flag is used by the BRK instruction is stops the cpu, the <b>zero</b> flag is used for logic instructions, the <b>carry</b> flag is set when an instruction carries over the 8bit range and the <b>traps</b> flag is set when the pointer should be sent to the traps location(in IO operations).</p>
+
+<pre>
+T C Z H
+| | | +---- Halt  0x01
+| | +------ Zero  0x02
+| +-------- Carry 0x04
++---------- Traps 0x08
+</pre>
+
+<h2>Opcodes</h2>
+
+<p>There are 32 opcodes, each opcode occupies 5 bits of a byte, the remaining 3 are used to sel the addressing mode.</p>
+
+<table border='1'>
+	<tr><td colspan='3'>addressing</td><td colspan='5'>opcode</td></tr>
+	<tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+</table>
+
+<table border='1'>
+	<tr><th>0x00</th><td>BRK</td><td></td><th>0x08</th><td>JMP</td><td>a</td><th>0x10</th><td>AND</td><td>a b</td><th>0x18</th><td>LDR</td><td></td></tr>
+	<tr><th>0x01</th><td>LIT</td><td></td><th>0x09</th><td>JSR</td><td>a</td><th>0x11</th><td>ORA</td><td>a b</td><th>0x19</th><td>STR</td><td>a</td></tr>
+	<tr><th>0x02</th><td>---</td><td></td><th>0x0a</th><td>JEQ</td><td>a</td><th>0x12</th><td>ROL</td><td>a</td><th>0x1a</th><td>L16</td><td></td></tr>
+	<tr><th>0x03</th><td>POP</td><td>a</td><th>0x0b</th><td>RTS</td><td></td><th>0x13</th><td>ROR</td><td>a</td><th>0x1b</th><td>S16</td><td>a b</td></tr>
+	<tr><th>0x04</th><td>DUP</td><td>a</td><th>0x0c</th><td>EQU</td><td>zf</td><th>0x14</th><td>ADD</td><td>a b</td><th>0x1c</th><td>IOA</td><td>---</td></tr>
+	<tr><th>0x05</th><td>SWP</td><td>a b</td><th>0x0d</th><td>NEQ</td><td>zf</td><th>0x15</th><td>SUB</td><td>a b</td><th>0x1d</th><td>IOB</td><td>---</td></tr>
+	<tr><th>0x06</th><td>OVR</td><td>a b c</td><th>0x0e</th><td>LTH</td><td>zf</td><th>0x16</th><td>MUL</td><td>a b</td><th>0x1e</th><td>IOC</td><td>---</td></tr>
+	<tr><th>0x07</th><td>ROT</td><td>a b c</td><th>0x0f</th><td>GTH</td><td>zf</td><th>0x17</th><td>DIV</td><td>a b</td><th>0x1f</th><td>IOD</td><td>---</td></tr>
+</table>
+
+<h2>Uxmasm</h2>
+
+<h3>Literal mode</h3>
+<p>Each operation is 1 byte(8 bits). To differenciate operations from numbers, the <code>LIT</code> opcode gives a length of bytes to remain in literal mode and the length is decremented as the memory pointer moves through the following bytes until it escapes literal mode.</p>
+
+<pre>
+[ 1 2 3 ] add add &lt; stack = 6&gt;
+</pre>
+
+<h3>Return Stack</h3>
+
+<p>The CPU can tunnel through 256 subroutines and find its way back with the return stack, the opcodes to jump into to a subroutine are <code>JSR</code> and <code>JEQ</code> the opcode to leave a subroutine is <code>RTS</code>.</p><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/uxn.htm' target='_blank'>edit</a> to <a href='../src/inc/html/uxn.htm'>uxn.htm</a>(43 lines)</figcaption>
+</figure><ul><li><a href='https://git.sr.ht/~rabbits/uxn' target='_blank'>sources</a></li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
