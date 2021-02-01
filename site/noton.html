@@ -16,12 +16,10 @@ WITH REGARD TO THIS SOFTWARE.
 
 #define HOR 32
 #define VER 16
-#define PAD 8
-#define color1 0x000000
-#define color2 0xffffff
-#define color3 0x777777
-#define color4 0x72dec2
-#define color0 0xffb545
+#define PAD 2
+#define SZ (HOR * VER * 16)
+
+typedef unsigned char Uint8;
 
 #define GATEMAX 128
 #define WIREMAX 256
@@ -30,7 +28,7 @@ WITH REGARD TO THIS SOFTWARE.
 #define INPUTMAX 12
 #define OUTPUTMAX 12
 
-#define CHANNELS 4
+#define CHANNELS 6
 #define DEVICE 0
 
 typedef enum {
@@ -71,16 +69,37 @@ typedef struct Brush {
 	Wire wire;
 } Brush;
 
-int WIDTH = 8 * HOR + PAD * 2;
-int HEIGHT = 8 * VER + PAD * 2;
-int ZOOM = 2;
+int WIDTH = 8 * HOR + 8 * PAD * 2;
+int HEIGHT = 8 * (VER + 2) + 8 * PAD * 2;
+int ZOOM = 2, GUIDES = 1;
+
+Noton noton;
+Brush brush;
+
+Uint32 theme[] = {
+	0x000000,
+	0xffb545,
+	0x72DEC2,
+	0xffffff,
+	0x222222};
+
+Uint8 icons[][8] = {
+	{0x38, 0x7c, 0xee, 0xd6, 0xee, 0x7c, 0x38, 0x00}, /* gate:input */
+	{0x38, 0x44, 0x92, 0xaa, 0x92, 0x44, 0x38, 0x00}, /* gate:output */
+	{0x38, 0x44, 0x82, 0x92, 0x82, 0x44, 0x38, 0x00}, /* gate:output-sharp */
+	{0x38, 0x7c, 0xfe, 0xfe, 0xfe, 0x7c, 0x38, 0x00}, /* gate:binary */
+	{0x10, 0x00, 0x10, 0xaa, 0x10, 0x00, 0x10, 0x00}, /* guide */
+	{0x00, 0x00, 0x00, 0x82, 0x44, 0x38, 0x00, 0x00}, /* eye open */
+	{0x00, 0x38, 0x44, 0x92, 0x28, 0x10, 0x00, 0x00}, /* eye closed */
+	{0x10, 0x54, 0x28, 0xc6, 0x28, 0x54, 0x10, 0x00}  /* unsaved */
+};
+
 SDL_Window *gWindow = NULL;
 SDL_Renderer *gRenderer = NULL;
 SDL_Texture *gTexture = NULL;
 Uint32 *pixels;
-Noton noton;
 
-/* generics */
+#pragma mark - Helpers
 
 int
 distance(Point2d a, Point2d b)
@@ -96,6 +115,12 @@ setpt2d(Point2d *p, int x, int y)
 	return p;
 }
 
+Point2d *
+clamp2d(Point2d *p, int step)
+{
+	return setpt2d(p, p-&gt;x / step * step, p-&gt;y / step * step);
+}
+
 Point2d
 Pt2d(int x, int y)
 {
@@ -104,14 +129,7 @@ Pt2d(int x, int y)
 	return p;
 }
 
-int
-polarcolor(int polarity)
-{
-	return polarity == 1 ? color4 : !polarity ? color0
-											  : color3;
-}
-
-/* Midi */
+#pragma mark - Midi
 
 void
 initmidi(void)
@@ -133,7 +151,7 @@ playmidi(int channel, int octave, int note, int z)
 		Pm_Message(0x90 + channel, (octave * 12) + note, z ? 100 : 0));
 }
 
-/* Helpers */
+#pragma mark - Generics
 
 Gate *
 nearestgate(Noton *n, Point2d pos)
@@ -142,6 +160,18 @@ nearestgate(Noton *n, Point2d pos)
 	for(i = 0; i &lt; n-&gt;glen; ++i) {
 		Gate *g = &amp;n-&gt;gates[i];
 		if(distance(pos, g-&gt;pos) &lt; 50)
+			return g;
+	}
+	return NULL;
+}
+
+Gate *
+gateat(Noton *n, Point2d pos)
+{
+	int i;
+	for(i = 0; i &lt; n-&gt;glen; ++i) {
+		Gate *g = &amp;n-&gt;gates[i];
+		if(pos.x == g-&gt;pos.x &amp;&amp; pos.y == g-&gt;pos.y)
 			return g;
 	}
 	return NULL;
@@ -206,7 +236,7 @@ flex(Wire *w)
 	w-&gt;flex--;
 }
 
-/* Options */
+#pragma mark - Options
 
 void
 selchan(Noton *n, int channel)
@@ -239,7 +269,7 @@ pause(Noton *n)
 }
 
 void
-destroy(Noton *n)
+reset(Noton *n)
 {
 	int i, locked = 0;
 	for(i = 0; i &lt; n-&gt;wlen; i++)
@@ -286,9 +316,7 @@ addgate(Noton *n, GateType type, int polarity, Point2d pos)
 	g-&gt;inlen = 0;
 	g-&gt;outlen = 0;
 	g-&gt;type = type;
-	setpt2d(&amp;g-&gt;pos,
-		abs((pos.x + 4) / 8) * 8,
-		abs((pos.y + 4) / 8) * 8);
+	setpt2d(&amp;g-&gt;pos, pos.x, pos.y);
 	printf("Add gate #%d \n", g-&gt;id);
 	return g;
 }
@@ -313,7 +341,7 @@ beginwire(Brush *b)
 	Point2d *p = gate ? &amp;gate-&gt;pos : &amp;b-&gt;pos;
 	b-&gt;wire.polarity = gate ? gate-&gt;polarity : -1;
 	b-&gt;wire.len = 0;
-	setpt2d(&amp;b-&gt;wire.points[b-&gt;wire.len++], p-&gt;x, p-&gt;y);
+	setpt2d(&amp;b-&gt;wire.points[b-&gt;wire.len++], p-&gt;x + 4, p-&gt;y + 4);
 	return 1;
 }
 
@@ -329,6 +357,7 @@ endwire(Brush *b)
 {
 	Wire *newwire;
 	Gate *gatefrom, *gateto;
+	Point2d offset = Pt2d(b-&gt;pos.x - 4, b-&gt;pos.y - 4);
 	if(b-&gt;wire.len &lt; 1)
 		return abandon(b);
 	gatefrom = nearestgate(&amp;noton, b-&gt;wire.points[0]);
@@ -336,12 +365,12 @@ endwire(Brush *b)
 		return abandon(b);
 	if(gatefrom-&gt;type == OUTPUT)
 		return abandon(b);
-	gateto = nearestgate(&amp;noton, b-&gt;pos);
+	gateto = nearestgate(&amp;noton, offset);
 	if(!gateto || gateto-&gt;inlen &gt;= PORTMAX)
 		return abandon(b);
 	if(gateto-&gt;type == INPUT || gatefrom == gateto)
 		return abandon(b);
-	setpt2d(&amp;b-&gt;pos, gateto-&gt;pos.x, gateto-&gt;pos.y);
+	setpt2d(&amp;b-&gt;pos, gateto-&gt;pos.x + 4, gateto-&gt;pos.y + 4);
 	extendwire(b);
 	newwire = addwire(&amp;noton, &amp;b-&gt;wire, gatefrom, gateto);
 	gatefrom-&gt;outputs[gatefrom-&gt;outlen++] = newwire;
@@ -349,13 +378,13 @@ endwire(Brush *b)
 	return abandon(b);
 }
 
-/* draw */
+#pragma mark - Draw
 
 void
-pixel(Uint32 *dst, int x, int y, int color)
+putpixel(Uint32 *dst, int x, int y, int color)
 {
-	if(x &gt;= 0 &amp;&amp; x &lt; WIDTH - PAD * 2 &amp;&amp; y &gt;= 0 &amp;&amp; y &lt; HEIGHT - PAD * 2)
-		dst[(y + PAD) * WIDTH + (x + PAD)] = color;
+	if(x &gt;= 0 &amp;&amp; x &lt; WIDTH - 8 &amp;&amp; y &gt;= 0 &amp;&amp; y &lt; HEIGHT - 8)
+		dst[(y + PAD * 8) * WIDTH + (x + PAD * 8)] = theme[color];
 }
 
 void
@@ -365,7 +394,7 @@ line(Uint32 *dst, int ax, int ay, int bx, int by, int color)
 	int dy = -abs(by - ay), sy = ay &lt; by ? 1 : -1;
 	int err = dx + dy, e2;
 	for(;;) {
-		pixel(dst, ax, ay, color);
+		putpixel(dst, ax, ay, color);
 		if(ax == bx &amp;&amp; ay == by)
 			break;
 		e2 = 2 * err;
@@ -381,20 +410,33 @@ line(Uint32 *dst, int ax, int ay, int bx, int by, int color)
 }
 
 void
+drawicn(Uint32 *dst, int x, int y, Uint8 *sprite, int fg, int bg)
+{
+	int v, h;
+	for(v = 0; v &lt; 8; v++)
+		for(h = 0; h &lt; 8; h++) {
+			int ch1 = (sprite[v] &gt;&gt; (7 - h)) &amp; 0x1;
+			putpixel(dst, x + h, y + v, ch1 ? fg : bg);
+		}
+}
+
+void
 drawgate(Uint32 *dst, Gate *g)
 {
-	int x, y, r = 8, d = r * 2;
-	for(y = 0; y &lt; d; ++y)
-		for(x = 0; x &lt; d; ++x)
-			if(distance(Pt2d(g-&gt;pos.x, g-&gt;pos.y), Pt2d(g-&gt;pos.x - r + x, g-&gt;pos.y - r + y)) &lt; 18)
-				pixel(dst, g-&gt;pos.x - r + x, g-&gt;pos.y - r + y, polarcolor(g-&gt;polarity));
-	if(g-&gt;type == OUTPUT) {
-		pixel(dst, g-&gt;pos.x - 1, g-&gt;pos.y, g-&gt;sharp ? color2 : color1);
-		pixel(dst, g-&gt;pos.x + 1, g-&gt;pos.y, g-&gt;sharp ? color2 : color1);
-		pixel(dst, g-&gt;pos.x, g-&gt;pos.y - 1, g-&gt;sharp ? color2 : color1);
-		pixel(dst, g-&gt;pos.x, g-&gt;pos.y + 1, g-&gt;sharp ? color2 : color1);
-	} else if(g-&gt;type != POOL)
-		pixel(dst, g-&gt;pos.x, g-&gt;pos.y, color1);
+	switch(g-&gt;type) {
+	case OUTPUT:
+		drawicn(dst, g-&gt;pos.x, g-&gt;pos.y, icons[1 + g-&gt;sharp], g-&gt;polarity + 1 + g-&gt;sharp + 1, 0);
+		break;
+	case INPUT:
+		drawicn(dst, g-&gt;pos.x, g-&gt;pos.y, icons[0], g-&gt;polarity + 1, 0);
+		break;
+	case POOL:
+		drawicn(dst, g-&gt;pos.x, g-&gt;pos.y, icons[3], g-&gt;polarity + 1, 0);
+		break;
+	case BASIC:
+		drawicn(dst, g-&gt;pos.x, g-&gt;pos.y, icons[3], g-&gt;polarity &lt; 0 ? 3 : g-&gt;polarity + 1, 0);
+		break;
+	}
 }
 
 void
@@ -406,17 +448,25 @@ drawwire(Uint32 *dst, Wire *w, int color)
 	for(i = 0; i &lt; w-&gt;len - 1; i++) {
 		Point2d *p1 = &amp;w-&gt;points[i];
 		Point2d *p2 = &amp;w-&gt;points[i + 1];
-		line(dst, p1-&gt;x, p1-&gt;y, p2-&gt;x, p2-&gt;y, (int)(noton.frame / 3) % w-&gt;len != i ? polarcolor(w-&gt;polarity) : color);
+		line(dst, p1-&gt;x, p1-&gt;y, p2-&gt;x, p2-&gt;y, w-&gt;polarity == -1 ? 4 : (int)(noton.frame / 3) % w-&gt;len != i ? w-&gt;polarity + 1
+																										   : color);
 	}
 }
 
 void
-drawguides(Uint32 *dst, int step)
+drawguides(Uint32 *dst)
 {
 	int x, y;
-	for(x = 1; x &lt; HOR; x++)
-		for(y = 1; y &lt; VER; y++)
-			pixel(dst, x * step, y * step, color3);
+	for(x = 0; x &lt; HOR; x++)
+		for(y = 0; y &lt; VER; y++)
+			drawicn(dst, x * 8, y * 8, icons[4], 4, 0);
+}
+
+void
+drawui(Uint32 *dst)
+{
+	int bottom = VER * 8 + 8;
+	drawicn(dst, 0 * 8, bottom, icons[GUIDES ? 6 : 5], GUIDES ? 1 : 2, 0);
 }
 
 void
@@ -425,20 +475,22 @@ clear(Uint32 *dst)
 	int i, j;
 	for(i = 0; i &lt; HEIGHT; i++)
 		for(j = 0; j &lt; WIDTH; j++)
-			dst[i * WIDTH + j] = color1;
+			dst[i * WIDTH + j] = theme[0];
 }
 
 void
-redraw(Uint32 *dst, Brush *b)
+redraw(Uint32 *dst)
 {
 	int i;
 	clear(dst);
-	drawguides(dst, 16);
+	if(GUIDES)
+		drawguides(dst);
 	for(i = 0; i &lt; noton.glen; i++)
 		drawgate(dst, &amp;noton.gates[i]);
 	for(i = 0; i &lt; noton.wlen; i++)
-		drawwire(dst, &amp;noton.wires[i], color2);
-	drawwire(dst, &amp;b-&gt;wire, color3);
+		drawwire(dst, &amp;noton.wires[i], 3);
+	drawwire(dst, &amp;brush.wire, 3);
+	drawui(dst);
 	SDL_UpdateTexture(gTexture, NULL, dst, WIDTH * sizeof(Uint32));
 	SDL_RenderClear(gRenderer);
 	SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);
@@ -446,6 +498,21 @@ redraw(Uint32 *dst, Brush *b)
 }
 
 /* operation */
+
+void
+savemode(int *i, int v)
+{
+	*i = v;
+	redraw(pixels);
+}
+
+void
+selectoption(int option)
+{
+	switch(option) {
+	case 0: savemode(&amp;GUIDES, !GUIDES); break;
+	}
+}
 
 void
 run(Noton *n)
@@ -476,14 +543,14 @@ setup(Noton *n)
 	int i, j;
 	int sharps[12] = {0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0};
 	for(i = 0; i &lt; INPUTMAX; ++i) {
-		int x = i % 2 == 0 ? 32 : 24;
-		n-&gt;inputs[i] = addgate(n, INPUT, 0, Pt2d(x, 24 + i * 8));
+		int x = i % 2 == 0 ? 16 : 8;
+		n-&gt;inputs[i] = addgate(n, INPUT, 0, Pt2d(x, 16 + i * 8));
 		n-&gt;inputs[i]-&gt;locked = 1;
 	}
 	for(i = 0; i &lt; CHANNELS; ++i) {
 		for(j = 0; j &lt; OUTPUTMAX; ++j) {
-			int x = WIDTH - (j % 2 == 0 ? 48 : 40) - (i * 16);
-			n-&gt;outputs[j] = addgate(n, OUTPUT, 0, Pt2d(x, 24 + j * 8));
+			int x = HOR * 8 - (j % 2 == 0 ? 24 : 16) - (i * 16);
+			n-&gt;outputs[j] = addgate(n, OUTPUT, 0, Pt2d(x, 16 + j * 8));
 			n-&gt;outputs[j]-&gt;locked = 1;
 			n-&gt;outputs[j]-&gt;note = j + ((i % 3) * 24);
 			n-&gt;outputs[j]-&gt;channel = i;
@@ -527,71 +594,75 @@ quit(void)
 	exit(0);
 }
 
+#pragma mark - Triggers
+
 void
-domouse(SDL_Event *event, Brush *b)
+domouse(SDL_Event *event)
 {
+	setpt2d(&amp;brush.pos,
+		(event-&gt;motion.x - (PAD * 8 * ZOOM)) / ZOOM,
+		(event-&gt;motion.y - (PAD * 8 * ZOOM)) / ZOOM);
 	switch(event-&gt;type) {
 	case SDL_MOUSEBUTTONDOWN:
-		setpt2d(&amp;b-&gt;pos,
-			(event-&gt;motion.x - (PAD * ZOOM)) / ZOOM,
-			(event-&gt;motion.y - (PAD * ZOOM)) / ZOOM);
+		if(event-&gt;motion.y / ZOOM / 8 - PAD == VER + 1) {
+			selectoption(event-&gt;motion.x / ZOOM / 8 - PAD);
+			break;
+		}
 		if(event-&gt;button.button == SDL_BUTTON_RIGHT)
 			break;
-		b-&gt;down = 1;
-		if(beginwire(b))
-			redraw(pixels, b);
+		brush.down = 1;
+		if(beginwire(&amp;brush))
+			redraw(pixels);
 		break;
 	case SDL_MOUSEMOTION:
 		if(event-&gt;button.button == SDL_BUTTON_RIGHT)
 			break;
-		if(b-&gt;down) {
-			setpt2d(&amp;b-&gt;pos,
-				(event-&gt;motion.x - (PAD * ZOOM)) / ZOOM,
-				(event-&gt;motion.y - (PAD * ZOOM)) / ZOOM);
-			if(extendwire(b))
-				redraw(pixels, b);
+		if(brush.down) {
+			if(extendwire(&amp;brush))
+				redraw(pixels);
 		}
 		break;
 	case SDL_MOUSEBUTTONUP:
-		setpt2d(&amp;b-&gt;pos,
-			(event-&gt;motion.x - (PAD * ZOOM)) / ZOOM,
-			(event-&gt;motion.y - (PAD * ZOOM)) / ZOOM);
 		if(event-&gt;button.button == SDL_BUTTON_RIGHT) {
-			if(!nearestgate(&amp;noton, b-&gt;pos))
-				addgate(&amp;noton, BASIC, -1, b-&gt;pos);
-			redraw(pixels, b);
+			if(brush.pos.x &lt; 24 || brush.pos.x &gt; HOR * 8 - 72)
+				return;
+			if(brush.pos.x &gt; HOR * 8 || brush.pos.y &gt; VER * 8)
+				return;
+			if(!gateat(&amp;noton, *clamp2d(&amp;brush.pos, 8)))
+				addgate(&amp;noton, BASIC, -1, *clamp2d(&amp;brush.pos, 8));
+			redraw(pixels);
 			break;
 		}
-		b-&gt;down = 0;
-		if(endwire(b))
-			redraw(pixels, b);
+		brush.down = 0;
+		if(endwire(&amp;brush))
+			redraw(pixels);
 		break;
 	}
 }
 
 void
-dokey(Noton *n, SDL_Event *event)
+dokey(SDL_Event *event)
 {
 	switch(event-&gt;key.keysym.sym) {
 	case SDLK_EQUALS:
 	case SDLK_PLUS: modzoom(1); break;
 	case SDLK_UNDERSCORE:
 	case SDLK_MINUS: modzoom(-1); break;
-	case SDLK_BACKSPACE: destroy(n); break;
-	case SDLK_SPACE: pause(n); break;
-	case SDLK_UP: modoct(n, 1); break;
-	case SDLK_DOWN: modoct(n, -1); break;
-	case SDLK_LEFT: modspeed(n, 5); break;
-	case SDLK_RIGHT: modspeed(n, -5); break;
-	case SDLK_1: selchan(n, 0); break;
-	case SDLK_2: selchan(n, 1); break;
-	case SDLK_3: selchan(n, 2); break;
-	case SDLK_4: selchan(n, 3); break;
-	case SDLK_5: selchan(n, 4); break;
-	case SDLK_6: selchan(n, 5); break;
-	case SDLK_7: selchan(n, 6); break;
-	case SDLK_8: selchan(n, 7); break;
-	case SDLK_9: selchan(n, 8); break;
+	case SDLK_BACKSPACE: reset(&amp;noton); break;
+	case SDLK_SPACE: pause(&amp;noton); break;
+	case SDLK_UP: modoct(&amp;noton, 1); break;
+	case SDLK_DOWN: modoct(&amp;noton, -1); break;
+	case SDLK_LEFT: modspeed(&amp;noton, 5); break;
+	case SDLK_RIGHT: modspeed(&amp;noton, -5); break;
+	case SDLK_1: selchan(&amp;noton, 0); break;
+	case SDLK_2: selchan(&amp;noton, 1); break;
+	case SDLK_3: selchan(&amp;noton, 2); break;
+	case SDLK_4: selchan(&amp;noton, 3); break;
+	case SDLK_5: selchan(&amp;noton, 4); break;
+	case SDLK_6: selchan(&amp;noton, 5); break;
+	case SDLK_7: selchan(&amp;noton, 6); break;
+	case SDLK_8: selchan(&amp;noton, 7); break;
+	case SDLK_9: selchan(&amp;noton, 8); break;
 	}
 }
 
@@ -633,10 +704,6 @@ main(int argc, char **argv)
 	Uint32 endtime = 0;
 	Uint32 delta = 0;
 
-	Brush brush;
-	brush.down = 0;
-	brush.wire.len = 0;
-
 	noton.alive = 1;
 	noton.speed = 40;
 	noton.channel = 0;
@@ -659,23 +726,22 @@ main(int argc, char **argv)
 
 		if(noton.alive) {
 			run(&amp;noton);
-			redraw(pixels, &amp;brush);
+			redraw(pixels);
 		}
 
 		while(SDL_PollEvent(&amp;event) != 0) {
-			if(event.type == SDL_QUIT)
-				quit();
-			else if(event.type == SDL_MOUSEBUTTONUP ||
-					event.type == SDL_MOUSEBUTTONDOWN ||
-					event.type == SDL_MOUSEMOTION) {
-				domouse(&amp;event, &amp;brush);
-			} else if(event.type == SDL_KEYDOWN)
-				dokey(&amp;noton, &amp;event);
-			else if(event.type == SDL_WINDOWEVENT)
+			switch(event.type) {
+			case SDL_QUIT: quit(); break;
+			case SDL_MOUSEBUTTONUP:
+			case SDL_MOUSEBUTTONDOWN:
+			case SDL_MOUSEMOTION: domouse(&amp;event); break;
+			case SDL_KEYDOWN: dokey(&amp;event); break;
+			case SDL_WINDOWEVENT:
 				if(event.window.event == SDL_WINDOWEVENT_EXPOSED)
-					redraw(pixels, &amp;brush);
+					redraw(pixels);
+				break;
+			}
 		}
-
 		begintime = endtime;
 		endtime = SDL_GetTicks();
 	}
@@ -684,7 +750,7 @@ main(int argc, char **argv)
 	(void)argv;
 	return 0;
 }
-</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/noton.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/noton.c.txt'>noton.c.txt</a>(686 lines)</figcaption>
+</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/noton.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/noton.c.txt'>noton.c.txt</a>(752 lines)</figcaption>
 </figure><figure><h3>Sequencing</h3>
 
 <p>For example, if we wanted to play C3 every 2nd and 6th note, every 8 bars. We can combine two tracker nodes.</p>
@@ -697,4 +763,4 @@ main(int argc, char **argv)
 </table>
 
 <img src='../media/generic/noton.logic.jpg'/><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/noton.htm' target='_blank'>edit</a> to <a href='../src/inc/html/noton.htm'>noton.htm</a>(11 lines)</figcaption>
-</figure><ul><li><a href='https://git.sr.ht/~rabbits/noton' target='_blank'>sources</a></li><li><a href='https://llllllll.co/t/noton-livedrawing-tool/38429' target='_blank'>forum</a></li></ul><p><i>incoming(3)</i>: <a href='alicef.html'>alicef</a> <a href='riven.html'>riven</a> <a href='binary.html'>binary</a> </p><p><i>Last update on <a href='tracker.html'>14X03</a>, edited 6 times. +25/34fh <b></b></i> <code style='float:right; font-size:80%'>-----|</code></p><ul><li>14X02 &mdash; Noton Release</li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
+</figure><ul><li><a href='https://git.sr.ht/~rabbits/noton' target='_blank'>sources</a></li><li><a href='https://llllllll.co/t/noton-livedrawing-tool/38429' target='_blank'>forum</a></li></ul><p><i>incoming(3)</i>: <a href='alicef.html'>alicef</a> <a href='riven.html'>riven</a> <a href='binary.html'>binary</a> </p><p><i>Last update on <a href='tracker.html'>15C01</a>, edited 7 times. +29/42fh <b></b></i> <code style='float:right; font-size:80%'>-----|</code></p><ul><li>14X02 &mdash; Noton Release</li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
