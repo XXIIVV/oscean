@@ -19,21 +19,23 @@ T C Z H
 	<tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
 </table>
 
-<table border='1'>
+<table border='1' width='700'>
 	<tr><th>0x00</th><td>BRK</td><td></td><th>0x08</th><td>JMP</td><td>a</td><th>0x10</th><td>AND</td><td>a b</td><th>0x18</th><td>LDR</td><td></td></tr>
-	<tr><th>0x01</th><td>LIT</td><td></td><th>0x09</th><td>JSR</td><td>a</td><th>0x11</th><td>ORA</td><td>a b</td><th>0x19</th><td>STR</td><td>a</td></tr>
-	<tr><th>0x02</th><td>---</td><td></td><th>0x0a</th><td>JEQ</td><td>a</td><th>0x12</th><td>ROL</td><td>a</td><th>0x1a</th><td>L16</td><td></td></tr>
-	<tr><th>0x03</th><td>POP</td><td>a</td><th>0x0b</th><td>RTS</td><td></td><th>0x13</th><td>ROR</td><td>a</td><th>0x1b</th><td>S16</td><td>a b</td></tr>
+	<tr><th>0x01</th><td>RTS</td><td>rs</td><th>0x09</th><td>JSR</td><td>a rs</td><th>0x11</th><td>ORA</td><td>a b</td><th>0x19</th><td>STR</td><td>a</td></tr>
+	<tr><th>0x02</th><td>LIT</td><td>lc</td><th>0x0a</th><td>JMQ</td><td>a zf</td><th>0x12</th><td>ROL</td><td>a</td><th>0x1a</th><td>L16</td><td></td></tr>
+	<tr><th>0x03</th><td>POP</td><td>a</td><th>0x0b</th><td>JSQ</td><td>a rs zf</td><th>0x13</th><td>ROR</td><td>a</td><th>0x1b</th><td>S16</td><td>a b</td></tr>
 	<tr><th>0x04</th><td>DUP</td><td>a</td><th>0x0c</th><td>EQU</td><td>zf</td><th>0x14</th><td>ADD</td><td>a b</td><th>0x1c</th><td>IOA</td><td>---</td></tr>
 	<tr><th>0x05</th><td>SWP</td><td>a b</td><th>0x0d</th><td>NEQ</td><td>zf</td><th>0x15</th><td>SUB</td><td>a b</td><th>0x1d</th><td>IOB</td><td>---</td></tr>
 	<tr><th>0x06</th><td>OVR</td><td>a b c</td><th>0x0e</th><td>LTH</td><td>zf</td><th>0x16</th><td>MUL</td><td>a b</td><th>0x1e</th><td>IOC</td><td>---</td></tr>
 	<tr><th>0x07</th><td>ROT</td><td>a b c</td><th>0x0f</th><td>GTH</td><td>zf</td><th>0x17</th><td>DIV</td><td>a b</td><th>0x1f</th><td>IOD</td><td>---</td></tr>
 </table>
 
+<p><code>zf</code> stands for <i>zeroflag</i>, <code>lc</code> for <i>literal counter</i>, <code>rs</code> for <i>return stack</i>.</p>
+
 <h2>Uxmasm</h2>
 
 <h3>Literal mode</h3>
-<p>Each operation is 1 byte(8 bits). To differenciate operations from numbers, the <code>LIT</code> opcode gives a length of bytes to remain in literal mode and the length is decremented as the memory pointer moves through the following bytes until it escapes literal mode.</p>
+<p>Each operation is 1 byte(8 bits). To differenciate operations from numbers, the <code>LIX</code> opcode gives a length of bytes to remain in literal mode and the length is decremented as the memory pointer moves through the following bytes until it escapes literal mode. The <code>LI1</code> opcode is used to send only 1 literal.</p>
 
 <pre>
 [ 1 2 3 ] add add &lt; stack = 6&gt;
@@ -41,5 +43,5 @@ T C Z H
 
 <h3>Return Stack</h3>
 
-<p>The CPU can tunnel through 256 subroutines and find its way back with the return stack, the opcodes to jump into to a subroutine are <code>JSR</code> and <code>JEQ</code> the opcode to leave a subroutine is <code>RTS</code>.</p><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/uxn.htm' target='_blank'>edit</a> to <a href='../src/inc/html/uxn.htm'>uxn.htm</a>(43 lines)</figcaption>
+<p>The CPU can tunnel through 256 subroutines and find its way back with the return stack, the opcodes to jump into to a subroutine are <code>JSR</code> and <code>JEQ</code> the opcode to leave a subroutine is <code>RTS</code>.</p><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/uxn.htm' target='_blank'>edit</a> to <a href='../src/inc/html/uxn.htm'>uxn.htm</a>(45 lines)</figcaption>
 </figure><ul><li><a href='https://git.sr.ht/~rabbits/uxn' target='_blank'>sources</a></li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>

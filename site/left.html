@@ -371,20 +371,20 @@ clear(Uint32 *dst)
 }
 
 void
-setpixel(Uint32 *dst, int x, int y, int color)
+putpixel(Uint32 *dst, int x, int y, int color)
 {
 	if(x &gt;= 0 &amp;&amp; x &lt; WIDTH - 8 &amp;&amp; y &gt;= 0 &amp;&amp; y &lt; HEIGHT - 8)
-		dst[(y + 8 * PAD) * WIDTH + (x + 8 * PAD)] = theme[color];
+		dst[(y + PAD * 8) * WIDTH + (x + PAD * 8)] = theme[color];
 }
 
 void
-drawicon(Uint32 *dst, int x, int y, Uint8 *icon, int fg, int bg)
+drawicn(Uint32 *dst, int x, int y, Uint8 *sprite, int fg, int bg)
 {
 	int v, h;
 	for(v = 0; v &lt; 8; v++)
 		for(h = 0; h &lt; 8; h++) {
-			int clr = (icon[v] &gt;&gt; (7 - h)) &amp; 0x1;
-			setpixel(dst, x + h, y + v, clr == 1 ? fg : bg);
+			int ch1 = (sprite[v] &gt;&gt; (7 - h)) &amp; 0x1;
+			putpixel(dst, x + h, y + v, ch1 ? fg : bg);
 		}
 }
 
@@ -392,12 +392,12 @@ void
 drawui(Uint32 *dst)
 {
 	int bottom = VER * 8 + 8;
-	drawicon(dst, 8 * 0, bottom, icons[GUIDES ? 7 : 6], GUIDES ? 1 : 2, 0);
-	drawicon(dst, (HOR - 1) * 8, bottom, icons[8], doc.unsaved ? 2 : 3, 0);
+	drawicn(dst, 8 * 0, bottom, icons[GUIDES ? 7 : 6], GUIDES ? 1 : 2, 0);
+	drawicn(dst, (HOR - 1) * 8, bottom, icons[8], doc.unsaved ? 2 : 3, 0);
 }
 
 Uint8 *
-geticon(char c)
+geticn(char c)
 {
 	if(c &lt; 0) /* unknown */
 		return icons[1];
@@ -434,10 +434,10 @@ drawbody(Uint32 *dst)
 			cmtline = 1;
 		if(x - view.x &gt;= 0 &amp;&amp; x - view.x - 1 &lt; HOR - 6 &amp;&amp; line &gt;= view.y &amp;&amp; line &lt; VER + view.y) {
 			int selected = i &gt;= sel.from &amp;&amp; i &lt;= sel.to;
-			drawicon(dst,
+			drawicn(dst,
 				(x + numpad - view.x) * 8,
 				(line - view.y) * 8,
-				geticon(c),
+				geticn(c),
 				getfg(c, cmtline, cmtblock, selected),
 				selected ? 2 : 0);
 		}
@@ -464,14 +464,14 @@ drawdecor(Uint32 *dst)
 	for(y = 0; y &lt; VER; ++y) {
 		int lineid = y + view.y;
 		/* scrollbar */
-		drawicon(dst, HOR * 8 - 7, y * 8, icons[lpos == y || (y &gt;= lfa &amp;&amp; y &lt; lfb) ? 5 : 4], lpos == y ? 1 : 4, 0);
+		drawicn(dst, HOR * 8 - 7, y * 8, icons[lpos == y || (y &gt;= lfa &amp;&amp; y &lt; lfb) ? 5 : 4], lpos == y ? 1 : 4, 0);
 		/* ruler */
 		if(GUIDES)
-			drawicon(dst, (RULER - view.x) * 8, y * 8, icons[0], 4, 0);
+			drawicn(dst, (RULER - view.x) * 8, y * 8, icons[0], 4, 0);
 		/* line number */
-		drawicon(dst, 0 * 8, y * 8, geticon(lineid &lt; 100 || lineid &gt; lmax ? '.' : '0' + ((lineid / 100) % 10)), lineid == at ? 2 : 3, 0);
-		drawicon(dst, 1 * 8, y * 8, geticon(lineid &lt; 10 || lineid &gt; lmax ? '.' : '0' + ((lineid / 10) % 10)), lineid == at ? 2 : 3, 0);
-		drawicon(dst, 2 * 8, y * 8, geticon(lineid &gt; lmax ? '.' : '0' + (lineid % 10)), lineid == at ? 2 : 3, 0);
+		drawicn(dst, 0 * 8, y * 8, geticn(lineid &lt; 100 || lineid &gt; lmax ? '.' : '0' + ((lineid / 100) % 10)), lineid == at ? 2 : 3, 0);
+		drawicn(dst, 1 * 8, y * 8, geticn(lineid &lt; 10 || lineid &gt; lmax ? '.' : '0' + ((lineid / 10) % 10)), lineid == at ? 2 : 3, 0);
+		drawicn(dst, 2 * 8, y * 8, geticn(lineid &gt; lmax ? '.' : '0' + (lineid % 10)), lineid == at ? 2 : 3, 0);
 	}
 }
 
@@ -495,6 +495,13 @@ error(char *msg, const char *err)
 {
 	printf("Error %s: %s\n", msg, err);
 	return 0;
+}
+
+void
+setoption(int *i, int v)
+{
+	*i = v;
+	redraw(pixels);
 }
 
 void
@@ -557,7 +564,8 @@ docut(char *src, Range r)
 void
 dopaste(Range s)
 {
-	popblock(sel);
+	if(sel.from != sel.to)
+		popblock(sel);
 	pushblock(s, doc.clip);
 	setselection(s.from + slen(doc.clip), -1);
 }
@@ -629,13 +637,6 @@ modcase(Range s, int mod)
 		else if(mod &lt; 0 &amp;&amp; c &gt;= 'A' &amp;&amp; c &lt;= 'Z')
 			doc.text[i] = c - 'A' + 'a';
 	}
-	redraw(pixels);
-}
-
-void
-setoption(int *i, int v)
-{
-	*i = v;
 	redraw(pixels);
 }
 
@@ -918,5 +919,5 @@ main(int argc, char *argv[])
 	quit();
 	return 0;
 }
-</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/left.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/left.c.txt'>left.c.txt</a>(920 lines)</figcaption>
+</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/left.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/left.c.txt'>left.c.txt</a>(921 lines)</figcaption>
 </figure><figure><img src='../media/diary/499.jpg' alt='Original Writing Layout picture' width='900'/><figcaption>11X04 &mdash; Original Writing Layout</figcaption></figure><figure><img src='../media/diary/240.jpg' alt='Left Screencapture picture' width='900'/><figcaption>11R07 &mdash; Left Screencapture</figcaption></figure><figure><img src='../media/diary/208.jpg' alt='Tooling picture' width='900'/><figcaption>11P10 &mdash; Tooling</figcaption></figure><ul><li><a href='http://hundredrabbits.itch.io/Left' target='_blank'>download</a></li><li><a href='https://github.com/hundredrabbits/Left' target='_blank'>sources</a></li><li><a href='https://hundredrabbits.itch.io/left/community' target='_blank'>community</a></li></ul><p><i>incoming(2)</i>: <a href='themes.html'>themes</a> <a href='computer.html'>computer</a> </p><p><i>Last update on <a href='tracker.html'>15A09</a>, edited 28 times. +120/174fh <b></b></i> <code style='float:right; font-size:80%'>---|||</code></p><ul><li>15A09 &mdash; Left Desktop Release</li><li>11R08 &mdash; Left Web Release</li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
