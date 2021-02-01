@@ -12,7 +12,7 @@ T C Z H
 
 <h2>Opcodes</h2>
 
-<p>There are 32 opcodes, each opcode occupies 5 bits of a byte, the remaining 3 are used to sel the addressing mode.</p>
+<p>There are 32 opcodes, each opcode occupies 5 bits of a byte, the remaining 3 are used to select the addressing mode of the values in the stack.</p>
 
 <table border='1'>
 	<tr><td colspan='3'>addressing</td><td colspan='5'>opcode</td></tr>
@@ -34,11 +34,31 @@ T C Z H
 
 <h2>Uxmasm</h2>
 
-<h3>Literal mode</h3>
-<p>Each operation is 1 byte(8 bits). To differenciate operations from numbers, the <code>LIX</code> opcode gives a length of bytes to remain in literal mode and the length is decremented as the memory pointer moves through the following bytes until it escapes literal mode. The <code>LI1</code> opcode is used to send only 1 literal.</p>
+<p>Here is an example of the assembly language where <code>0x02</code> and <code>0x03</code> are added the stack, and added to each other - The resulting value on the stack is compared against <code>0x05</code> and jumps to the label <code>here</code> if is it.</p>
 
 <pre>
-[ 1 2 3 ] add add &lt; stack = 6&gt;
++03 +02    ADD 
++05        EQU
+
+.there     JMQ
+
+:here
+  < when not equal >
+  +ee
+  BRK
+
+:there
+  < when is equal >
+  +ff
+  BRK
+</pre>
+
+<h3>Literal mode</h3>
+<p>Each operation is 1 byte(8 bits). To differenciate operations from numbers, the <code>LIT</code> opcode toggles the literal mode for the operation that follows it.</p>
+
+<pre>
++12 < pushes 0x12 to the stack >
+-34 < pushes 0xCC to the stack >
 </pre>
 
 <h3>Return Stack</h3>
