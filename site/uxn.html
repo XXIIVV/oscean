@@ -1,4 +1,16 @@
-<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='description' content='Uxn is a 8-bit virtual stack machine.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV &mdash; uxn</title></head><body><header><a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='paper_computing.html'>paper computing</a></li><li><a href='programming.html'>programming</a></li><li><a href='virtual_machines.html'>virtual machines/</a></li><li><a href='fluidics.html'>fluidics</a></li></ul><ul><li><a href='orca.html'>orca</a></li><li><a href='gyo.html'>gyo</a></li><li><a href='uxn.html'>uxn/</a></li><li><a href='noton.html'>noton</a></li><li><a href='paradise.html'>paradise</a></li></ul><ul></ul></nav><main><h2>Uxn is a 8-bit virtual stack machine.</h2><p>Uxn is currently under development, the goal of the project is to create a virtual machine viable to port the <a href='tools.html'>tools</a> onto, and release projects as roms. The design of the VM is inspired by <a href='firth.html'>Firth</a> and <a href='gyo.html'>Gyo</a>, the <a href='assembly.html'>assembly</a> syntax uses <a href='reverse_polish.html'>Reverse Polish Notation</a>.</p><img src='../media/generic/uxn.jpg' width='200'/>&nbsp;<figure><h3>Status Register</h3>
+<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='description' content='Uxn is a 8-bit virtual stack machine.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV &mdash; uxn</title></head><body><header><a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='paper_computing.html'>paper computing</a></li><li><a href='programming.html'>programming</a></li><li><a href='virtual_machines.html'>virtual machines/</a></li><li><a href='fluidics.html'>fluidics</a></li></ul><ul><li><a href='orca.html'>orca</a></li><li><a href='gyo.html'>gyo</a></li><li><a href='uxn.html'>uxn/</a></li><li><a href='noton.html'>noton</a></li><li><a href='paradise.html'>paradise</a></li></ul><ul></ul></nav><main><h2>Uxn is a 8-bit virtual stack machine.</h2><p>Uxn is currently under development, the goal of the project is to create a virtual machine viable to port the <a href='tools.html'>tools</a> onto, and release projects as roms. The design of the VM is inspired by <a href='firth.html'>Firth</a> and <a href='gyo.html'>Gyo</a>, the <a href='assembly.html'>assembly</a> syntax uses <a href='reverse_polish.html'>Reverse Polish Notation</a>.</p><img src='../media/generic/uxn.jpg' width='200'/>&nbsp;<figure><h3>Memory</h3>
+
+<table border='1'>
+	<tr><th rowspan='3'>Core</th><td>Program Counter</td><td>1 short</td></tr>
+	<tr><td>Literal Counter</td><td>1 byte</td></tr>
+	<tr><td>Status Register</td><td>1 byte</td></tr>
+	<tr><th rowspan='2'>Stacks</th><td>Working Stack</td><td>256 bytes</td></tr>
+	<tr><td>Return Stack</td><td>256 bytes</td></tr>
+	<tr><th rowspan='2'>Memory</th><td>ROM</td><td>65536 bytes</td></tr>
+	<tr><td>RAM</td><td>65536 bytes</td></tr>
+</table>
+
+<h3>Status Register</h3>
 
 <p>The status register is distributed as follows, it shares the same byte as the register selector. The <b>halt</b> flag is used by the BRK instruction is stops the cpu, the <b>zero</b> flag is used for logic instructions, the <b>carry</b> flag is set when an instruction carries over the 8bit range and the <b>traps</b> flag is set when the pointer should be sent to the traps location(in IO operations).</p>
 
@@ -11,6 +23,10 @@ T C Z H
 </pre>
 
 <p>Each operation above <code>0x10</code> will reset the <i>zero flag</i>.</p>
+
+<h3>Return Stack</h3>
+
+<p>The CPU can tunnel through 256 subroutines and find its way back with the return stack, the opcodes to jump into to a subroutine are <code>JSR</code> and <code>JEQ</code> the opcode to leave a subroutine is <code>RTS</code>.</p>
 
 <h2>Opcodes</h2>
 
@@ -36,36 +52,33 @@ T C Z H
 
 <h2>Uxmasm</h2>
 
-<p>Here is an example of the assembly language where <code>0x02</code> and <code>0x03</code> are added the stack, and added to each other - The resulting value on the stack is compared against <code>0x05</code> and jumps to the label <code>here</code> if is it.</p>
+<p>Here is an example of the assembly language where <code>0x03</code> and <code>0x02</code> are added the stack, and added to each other - The resulting value on the stack is compared against <code>0x05</code> and jumps to the label <code>here</code> if is it.</p>
 
 <pre>
 < conditionals >
 
-0302	ADD 
-05		EQU
+0302    ADD 
+05      EQU
 
-.there	JMQ
+.there  JMQ
 
 :here
-	< when not equal >
-	ee
-	BRK
+        < when not equal >
+        ee
+        BRK
 
 :there
-	< when is equal >
-	ff
-	BRK
+        < when is equal >
+        ff
+        BRK
 </pre>
 
 <h3>Literal mode</h3>
 <p>Each operation is 1 byte(8 bits). To differenciate operations from numbers, the <code>LIT</code> opcode toggles the literal mode for the operation that follows it.</p>
 
 <pre>
-+12 < pushes 0x12 to the stack >
--34 < pushes 0xCC to the stack >
+12 < pushes 0x12 to the stack >
+abcd < pushes 0xAB and 0xCD to the stack >
 </pre>
-
-<h3>Return Stack</h3>
-
-<p>The CPU can tunnel through 256 subroutines and find its way back with the return stack, the opcodes to jump into to a subroutine are <code>JSR</code> and <code>JEQ</code> the opcode to leave a subroutine is <code>RTS</code>.</p><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/uxn.htm' target='_blank'>edit</a> to <a href='../src/inc/html/uxn.htm'>uxn.htm</a>(69 lines)</figcaption>
-</figure><ul><li><a href='https://git.sr.ht/~rabbits/uxn' target='_blank'>sources</a></li></ul><p><i>Last update on <a href='tracker.html'>15C03</a>, edited 2 times. +7/15fh <b>orphan</b></i> <code style='float:right; font-size:80%'>-----|</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
+<figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/uxn.htm' target='_blank'>edit</a> to <a href='../src/inc/html/uxn.htm'>uxn.htm</a>(82 lines)</figcaption>
+</figure><ul><li><a href='https://git.sr.ht/~rabbits/uxn' target='_blank'>sources</a></li></ul><p><i>Last update on <a href='tracker.html'>15C04</a>, edited 3 times. +13/22fh <b>orphan</b></i> <code style='float:right; font-size:80%'>-----|</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>

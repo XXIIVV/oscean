@@ -1,3 +1,15 @@
+<h3>Memory</h3>
+
+<table border='1'>
+	<tr><th rowspan='3'>Core</th><td>Program Counter</td><td>1 short</td></tr>
+	<tr><td>Literal Counter</td><td>1 byte</td></tr>
+	<tr><td>Status Register</td><td>1 byte</td></tr>
+	<tr><th rowspan='2'>Stacks</th><td>Working Stack</td><td>256 bytes</td></tr>
+	<tr><td>Return Stack</td><td>256 bytes</td></tr>
+	<tr><th rowspan='2'>Memory</th><td>ROM</td><td>65536 bytes</td></tr>
+	<tr><td>RAM</td><td>65536 bytes</td></tr>
+</table>
+
 <h3>Status Register</h3>
 
 <p>The status register is distributed as follows, it shares the same byte as the register selector. The <b>halt</b> flag is used by the BRK instruction is stops the cpu, the <b>zero</b> flag is used for logic instructions, the <b>carry</b> flag is set when an instruction carries over the 8bit range and the <b>traps</b> flag is set when the pointer should be sent to the traps location(in IO operations).</p>
@@ -11,6 +23,10 @@ T C Z H
 </pre>
 
 <p>Each operation above <code>0x10</code> will reset the <i>zero flag</i>.</p>
+
+<h3>Return Stack</h3>
+
+<p>The CPU can tunnel through 256 subroutines and find its way back with the return stack, the opcodes to jump into to a subroutine are <code>JSR</code> and <code>JEQ</code> the opcode to leave a subroutine is <code>RTS</code>.</p>
 
 <h2>Opcodes</h2>
 
@@ -36,35 +52,31 @@ T C Z H
 
 <h2>Uxmasm</h2>
 
-<p>Here is an example of the assembly language where <code>0x02</code> and <code>0x03</code> are added the stack, and added to each other - The resulting value on the stack is compared against <code>0x05</code> and jumps to the label <code>here</code> if is it.</p>
+<p>Here is an example of the assembly language where <code>0x03</code> and <code>0x02</code> are added the stack, and added to each other - The resulting value on the stack is compared against <code>0x05</code> and jumps to the label <code>here</code> if is it.</p>
 
 <pre>
 < conditionals >
 
-0302	ADD 
-05		EQU
+0302    ADD 
+05      EQU
 
-.there	JMQ
+.there  JMQ
 
 :here
-	< when not equal >
-	ee
-	BRK
+        < when not equal >
+        ee
+        BRK
 
 :there
-	< when is equal >
-	ff
-	BRK
+        < when is equal >
+        ff
+        BRK
 </pre>
 
 <h3>Literal mode</h3>
 <p>Each operation is 1 byte(8 bits). To differenciate operations from numbers, the <code>LIT</code> opcode toggles the literal mode for the operation that follows it.</p>
 
 <pre>
-+12 < pushes 0x12 to the stack >
--34 < pushes 0xCC to the stack >
+12 < pushes 0x12 to the stack >
+abcd < pushes 0xAB and 0xCD to the stack >
 </pre>
-
-<h3>Return Stack</h3>
-
-<p>The CPU can tunnel through 256 subroutines and find its way back with the return stack, the opcodes to jump into to a subroutine are <code>JSR</code> and <code>JEQ</code> the opcode to leave a subroutine is <code>RTS</code>.</p>
