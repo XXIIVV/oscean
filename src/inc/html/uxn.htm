@@ -67,11 +67,12 @@ T C Z H
 <p>Here is an example of the assembly language where <code>0x03</code> and <code>0x02</code> are added the stack, and added to each other - The resulting value on the stack is compared against <code>0x05</code> and jumps to the label <code>here</code> if is it.</p>
 
 <pre>
-;value ( alloc zero-page variable )
+;value ( alloc a zero-page variable )
 
 @0010 ( start at page 1 )
 
-,there [ ,0a ,05 GTH ] JMC
+,03 ,02 ADD ,05 EQU 
+,there ROT JMC
 
 :here
 	( when not equal )
@@ -85,9 +86,11 @@ T C Z H
 </pre>
 
 <h3>Literal mode</h3>
-<p>Each operation is 1 byte(8 bits). To differenciate operations from numbers, the <code>LIT</code> opcode toggles the literal mode for the operation that follows it.</p>
+<p>Each operation is 1 byte(8 bits). To differenciate operations from numbers, the <code>LIT</code>(<code>0x02</code>) opcode toggles the literal mode for a length of time based dictated by the value of the byte follows it.</p>
 
-<pre>
-12 < pushes 0x12 to the stack >
-abcd < pushes 0xAB and 0xCD to the stack >
-</pre>
+<table border='1'>
+	<tr><th><code>,12</code></th><td><code>0x02 0x01 0x12</code></td></tr>
+	<tr><th><code>.23</code></th><td><code>0x23</code></td></tr>
+	<tr><th><code>,abcd</code></th><td><code>0x02 0x02 0xab 0xcd</code></td></tr>
+	<tr><th><code>.abcd</code></th><td><code>0xab 0xcd</code></td></tr>
+</table>
