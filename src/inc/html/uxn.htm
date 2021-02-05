@@ -67,22 +67,29 @@ T C Z H
 <p>Here is an example of the assembly language where <code>0x03</code> and <code>0x02</code> are added the stack, and added to each other - The resulting value on the stack is compared against <code>0x05</code> and jumps to the label <code>here</code> if is it.</p>
 
 <pre>
-;value ( alloc a zero-page variable )
+( hello world )
 
-@0010 ( start at page 1 )
+;iterator
+:dev1r FFF0
+:dev1w FFF1
 
-,03 ,02 ADD ,05 EQU 
-,there ROT JMC
+|0100 @RESET
 
-:here
-	( when not equal )
-	,ee
-	BRK
+"hello
 
-:there
-	( when is equal )
-	,ff
-	BRK
+@loop
+	,dev1w STR
+	,iterator LDR
+	,01 ADD
+	,iterator STR 
+	,iterator LDR
+	,05 NEQ ,loop ROT JSC
+
+BRK ( RESET )
+
+|c000 @FRAME BRK 
+|d000 @ERROR BRK 
+|FFFA .RESET .FRAME .ERROR
 </pre>
 
 <h3>Literal mode</h3>
