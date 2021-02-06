@@ -383,18 +383,6 @@ drawicon(Uint32 *dst, int x, int y, Uint8 *icon, int fg, int bg)
 		}
 }
 
-void
-drawui(Uint32 *dst)
-{
-	int bottom = VER * 8 + 8;
-	drawicon(dst, 0 * 8, bottom, icons[3], 2, 0);
-	drawicon(dst, 1 * 8, bottom, icons[4], 2, 0);
-	drawicon(dst, 2 * 8, bottom, icons[5], 2, 0);
-	drawicon(dst, 3 * 8, bottom, icons[6], 2, 0);
-	drawicon(dst, 6 * 8, bottom, icons[GUIDES ? 12 : 11], GUIDES ? 1 : 2, 0);
-	drawicon(dst, (HOR - 1) * 8, bottom, icons[13], doc.unsaved ? 2 : 3, 0);
-}
-
 int
 gethexfont(int v)
 {
@@ -403,6 +391,22 @@ gethexfont(int v)
 	if(v >= 10 && v <= 15)
 		return 55 + v;
 	return 46;
+}
+
+void
+drawui(Uint32 *dst)
+{
+	int bottom = VER * 8 + 8;
+	drawicon(dst, 0 * 8, bottom, icons[3], 2, 0);
+	drawicon(dst, 1 * 8, bottom, icons[4], 2, 0);
+	drawicon(dst, 2 * 8, bottom, icons[5], 2, 0);
+	drawicon(dst, 3 * 8, bottom, icons[6], 2, 0);
+	drawicon(dst, 5 * 8, bottom, icons[GUIDES ? 12 : 11], GUIDES ? 1 : 2, 0);
+	drawicon(dst, (HOR - 1) * 8, bottom, icons[13], doc.unsaved ? 2 : 3, 0);
+	drawicon(dst, 15 * 8, bottom, font[gethexfont((cursor.i >> 12) & 0xf)], 3, 0);
+	drawicon(dst, 16 * 8, bottom, font[gethexfont((cursor.i >> 8) & 0xf)], 3, 0);
+	drawicon(dst, 17 * 8, bottom, font[gethexfont((cursor.i >> 4) & 0xf)], 3, 0);
+	drawicon(dst, 18 * 8, bottom, font[gethexfont(cursor.i & 0xf)], 3, 0);
 }
 
 void
@@ -419,8 +423,9 @@ drawline(Uint32 *dst, int y, int id)
 		int bc = doc.data[k];
 		int sel = cursor.i == k;
 		int linesel = GUIDES && cursor.y == id / 8;
-		drawicon(dst, x * 8, y, font[b0], sel ? 0 : linesel + 1, sel ? 2 : 0);
-		drawicon(dst, x * 8 + 8, y, font[b1], sel ? 0 : linesel + 1, sel ? 2 : 0);
+		int pagesel = id % 256 == 0;
+		drawicon(dst, x * 8, y, font[b0], sel ? 0 : linesel + pagesel + 1, sel ? 2 : 0);
+		drawicon(dst, x * 8 + 8, y, font[b1], sel ? 0 : linesel + pagesel + 1, sel ? 2 : 0);
 		drawicon(dst, (19 + (k % 8)) * 8 + 8, y, bc ? font[bc] : icons[2], bc ? 1 : 3, 0);
 	}
 	drawicon(dst, 29 * 8, y, &doc.data[id], 1, 0);
@@ -615,7 +620,7 @@ selectoption(int option)
 		doc.data[cursor.i] = doc.data[cursor.i] >> 2;
 		redraw(pixels);
 		break;
-	case 6: savemode(&GUIDES, !GUIDES); break;
+	case 5: savemode(&GUIDES, !GUIDES); break;
 	case HOR - 1: savedoc(&doc, doc.name); break;
 	}
 }
