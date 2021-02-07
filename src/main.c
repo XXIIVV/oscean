@@ -69,210 +69,33 @@ typedef struct Journal {
 
 #pragma mark - Helpers
 
-int
-cisp(char c) /* char is space */
-{
-	return c == ' ' || c == '\t' || c == '\n' || c == '\r';
-}
+/* clang-format off */
 
-int
-cial(char c) /* char is alpha */
-{
-	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
-}
+int   cisp(char c) { return c == ' ' || c == '\t' || c == '\n' || c == '\r'; } /* char is space */
+int   cial(char c) { return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'); } /* char is alpha */
+int   cinu(char c) { return c >= '0' && c <= '9'; } /* char is num */
+char  clca(char c) { return c >= 'A' && c <= 'Z' ? c + ('a' - 'A') : c; } /* char to lowercase */
+char  cuca(char c) { return c >= 'a' && c <= 'z' ? c - ('a' - 'A') : c; } /* char to uppercase */
+int   spad(char *s, char c) { int i = 0; while(s[i] && s[i] == c && s[++i]) { ; } return i; } /* string count padding */
+int   slen(char *s) { int i = 0; while(s[i] && s[++i]) { ; } return i; } /* string length */
+char *st__(char *s, char (*fn)(char)) { int i = 0; char c; while((c = s[i])) s[i++] = fn(c); return s; }
+char *stuc(char *s) { return st__(s, cuca); } /* string to uppercase */
+char *stlc(char *s) { return st__(s, clca); } /* string to lowercase */
+char *scpy(char *src, char *dst, int len) { int i = 0; while((dst[i] = src[i]) && i < len - 2) i++; dst[i + 1] = '\0'; return dst; } /* string copy */
+int   scmp(char *a, char *b) { int i = 0; while(a[i] == b[i]) if(!a[i++]) return 1; return 0; } /* string compare */
+int   sint(char *s, int len) { int n = 0, i = 0; while(s[i] && i < len && (s[i] >= '0' && s[i] <= '9')) n = n * 10 + (s[i++] - '0'); return n; } /* string to num */
+char *scsw(char *s, char a, char b) { int i = 0; char c; while((c = s[i])) s[i++] = c == a ? b : c; return s; } /* string char swap */
+int   sian(char *s) { int i = 0; char c; while((c = s[i++])) if(!cial(c) && !cinu(c) && !cisp(c)) return 0; return 1; } /* string is alphanum */
+int   scin(char *s, char c) { int i = 0; while(s[i]) if(s[i++] == c) return i - 1; return -1; } /* string char index */
+char *scat(char *dst, const char *src) { char *ptr = dst + slen(dst); while(*src) *ptr++ = *src++; *ptr = '\0'; return dst; } /* string cat */
+int   ssin(char *s, char *ss) { int a = 0, b = 0; while(s[a]) { if(s[a] == ss[b]) { if(!ss[b + 1]) return a - b; b++; } else b = 0; a++; } return -1; } /* string substring index */
+char *strm(char *s) { char *end; while(cisp(*s)) s++; if(*s == 0) return s; end = s + slen(s) - 1; while(end > s && cisp(*end)) end--; end[1] = '\0'; return s; }
+int   surl(char *s) { return ssin(s, "://") >= 0 || ssin(s, "../") >= 0; } /* string is url */
+char *sstr(char *src, char *dst, int from, int to) { int i; char *a = (char *)src + from, *b = (char *)dst; for(i = 0; i < to; i++) b[i] = a[i]; dst[to] = '\0'; return dst; }
+int   afnd(char *src[], int len, char *val) { int i; for(i = 0; i < len; i++) if(scmp(src[i], val)) return i; return -1; }
+char *ccat(char *dst, char c) { int len = slen(dst); dst[len] = c; dst[len + 1] = '\0'; return dst; }
 
-int
-cinu(char c) /* char is num */
-{
-	return c >= '0' && c <= '9';
-}
-
-int
-clca(int c) /* char to lowercase */
-{
-	return c >= 'A' && c <= 'Z' ? c + ('a' - 'A') : c;
-}
-
-int
-cuca(char c) /* char to uppercase */
-{
-	return c >= 'a' && c <= 'z' ? c - ('a' - 'A') : c;
-}
-
-int
-spad(char *s, char c) /* string count padding */
-{
-	int i = 0;
-	while(s[i] && s[i] == c && s[++i])
-		;
-	return i;
-}
-
-int
-slen(char *s) /* string length */
-{
-	int i = 0;
-	while(s[i] && s[++i])
-		;
-	return i;
-}
-
-char *
-suca(char *s) /* string to uppercase */
-{
-	int i = 0;
-	char c;
-	while((c = s[i]))
-		s[i++] = cuca(c);
-	return s;
-}
-
-char *
-slca(char *s) /* string to lowercase */
-{
-	int i = 0;
-	char c;
-	while((c = s[i]))
-		s[i++] = clca(c);
-	return s;
-}
-
-int
-scmp(char *a, char *b) /* string compare */
-{
-	int i = 0;
-	while(a[i] == b[i])
-		if(!a[i++])
-			return 1;
-	return 0;
-}
-
-char *
-scpy(char *src, char *dst, int len) /* string copy */
-{
-	int i = 0;
-	while((dst[i] = src[i]) && i < len - 2)
-		i++;
-	dst[i + 1] = '\0';
-	return dst;
-}
-
-int
-sint(char *s, int len) /* string to num */
-{
-	int n = 0, i = 0;
-	while(s[i] && i < len && (s[i] >= '0' && s[i] <= '9'))
-		n = n * 10 + (s[i++] - '0');
-	return n;
-}
-
-char *
-scsw(char *s, char a, char b) /* string char swap */
-{
-	int i = 0;
-	char c;
-	while((c = s[i]))
-		s[i++] = c == a ? b : c;
-	return s;
-}
-
-int
-sian(char *s) /* string is alphanum */
-{
-	int i = 0;
-	char c;
-	while((c = s[i++]))
-		if(!cial(c) && !cinu(c) && !cisp(c))
-			return 0;
-	return 1;
-}
-
-int
-scin(char *s, char c) /* string char index */
-{
-	int i = 0;
-	while(s[i])
-		if(s[i++] == c)
-			return i - 1;
-	return -1;
-}
-
-int
-ssin(char *s, char *ss) /* string substring index */
-{
-	int a = 0, b = 0;
-	while(s[a]) {
-		if(s[a] == ss[b]) {
-			if(!ss[b + 1])
-				return a - b;
-			b++;
-		} else
-			b = 0;
-		a++;
-	}
-	return -1;
-}
-
-char *
-strm(char *s)
-{
-	char *end;
-	while(cisp(*s))
-		s++;
-	if(*s == 0)
-		return s;
-	end = s + slen(s) - 1;
-	while(end > s && cisp(*end))
-		end--;
-	end[1] = '\0';
-	return s;
-}
-
-int
-surl(char *s) /* string is url */
-{
-	return ssin(s, "://") >= 0 || ssin(s, "../") >= 0;
-}
-
-char *
-sstr(char *src, char *dst, int from, int to)
-{
-	int i;
-	char *a = (char *)src + from, *b = (char *)dst;
-	for(i = 0; i < to; i++)
-		b[i] = a[i];
-	dst[to] = '\0';
-	return dst;
-}
-
-int
-afnd(char *src[], int len, char *val) /* TODO: remove */
-{
-	int i;
-	for(i = 0; i < len; i++)
-		if(scmp(src[i], val))
-			return i;
-	return -1;
-}
-
-char *
-ccat(char *dst, char c) /* TODO: remove */
-{
-	int len = slen(dst);
-	dst[len] = c;
-	dst[len + 1] = '\0';
-	return dst;
-}
-
-char *
-scat(char *dst, const char *src)
-{
-	char *ptr = dst + slen(dst);
-	while(*src)
-		*ptr++ = *src++;
-	*ptr = '\0';
-	return dst;
-}
+/* clang-format on */
 
 #pragma mark - Core
 
@@ -309,7 +132,7 @@ makelist(List *l, char *name)
 {
 	l->len = 0;
 	l->routes = 0;
-	l->name = slca(name);
+	l->name = stlc(name);
 	return l;
 }
 
@@ -336,7 +159,7 @@ maketerm(Term *t, char *name)
 	t->events_len = 0;
 	t->ch = 0;
 	t->fh = 0;
-	t->name = slca(name);
+	t->name = stlc(name);
 	return t;
 }
 
@@ -344,7 +167,7 @@ Term *
 findterm(Lexicon *lex, char *name)
 {
 	int i;
-	scsw(slca(name), '_', ' ');
+	scsw(stlc(name), '_', ' ');
 	for(i = 0; i < lex->len; ++i)
 		if(scmp(name, lex->terms[i].name))
 			return &lex->terms[i];
@@ -354,16 +177,11 @@ findterm(Lexicon *lex, char *name)
 char *
 statusterm(Term *t)
 {
-	if(t->type && scmp(t->type, "alias"))
-		return "alias";
-	if(t->body_len < 1)
-		return "stub";
-	if(t->incoming_len < 1)
-		return "orphan";
-	if(t->outgoing_len < 1)
-		return "deadend";
-	if(t->logs_len < 2)
-		return "article";
+	if(t->type && scmp(t->type, "alias")) return "alias";
+	if(t->body_len < 1) return "stub";
+	if(t->incoming_len < 1) return "orphan";
+	if(t->outgoing_len < 1) return "deadend";
+	if(t->logs_len < 2) return "article";
 	return "";
 }
 
@@ -520,12 +338,8 @@ fplifeline(FILE *f, Journal *jou, Term *t)
 	int i, period = (limit_to - limit_from) / 5;
 	int a = range_from / period, b = range_to / period;
 	fputs("<code style='float:right; font-size:80%'>", f);
-	for(i = 0; i < 6; i++) {
-		if(i >= a && i <= b)
-			fputs("|", f);
-		else
-			fputs("-", f);
-	}
+	for(i = 0; i < 6; i++)
+		fputs(i >= a && i <= b ? "|" : "-", f);
 	fputs("</code>", f);
 }
 
@@ -1012,12 +826,9 @@ fpindex(FILE *f, Lexicon *lex, Journal *jou)
 	for(i = 0; i < lex->len; ++i) {
 		Term *t = &lex->terms[i];
 		sends += t->incoming_len;
-		if(t->body_len < 1)
-			stubs++;
-		if(t->incoming_len < 1)
-			orphans++;
-		if(t->outgoing_len < 1)
-			deadends++;
+		if(t->body_len < 1) stubs++;
+		if(t->incoming_len < 1) orphans++;
+		if(t->outgoing_len < 1) deadends++;
 	}
 	fprintf(f, "<p>This wiki hosts %d journal logs recorded on %d lexicon terms, connected by %d inbound links. It is a living document in which %d stubs, %d orphans and %d deadends still remain.</p>", jou->len, lex->len, sends, stubs, orphans, deadends);
 	fputs("<ul>", f);
@@ -1208,7 +1019,7 @@ parse_lexicon(FILE *fp, Block *block, Lexicon *lex)
 			t = maketerm(&lex->terms[lex->len++], push(block, sstr(line, buf, 0, len)));
 			if(!sian(line))
 				return error("Lexicon key is not alphanum", line);
-			t->filename = push(block, scsw(slca(sstr(line, buf, 0, len)), ' ', '_'));
+			t->filename = push(block, scsw(stlc(sstr(line, buf, 0, len)), ' ', '_'));
 		} else if(depth == 1 && len > 2) {
 			if(ssin(line, "HOST : ") >= 0)
 				t->host = push(block, sstr(line, buf, 8, len - 8));

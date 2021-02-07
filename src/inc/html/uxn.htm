@@ -75,17 +75,26 @@ T C Z H
 
 |0100 @RESET
 
-"hello
+@word1 "hello_word ( len: 0x0b )
 
 @loop
-	,dev1w STR
+	,dev1w STR ( write to stdout )
+	,incr JSU ( increment itr )
+	,word1 ,strlen JSU ( get strlen )
+	NEQ ,loop ROT JSC ( loop != strlen )
+
+BRK
+
+@strlen
+	,0001 ADD^ PEK
+	RTS
+
+@incr
 	,iterator LDR
 	,01 ADD
 	,iterator STR 
 	,iterator LDR
-	,05 NEQ ,loop ROT JSC
-
-BRK ( RESET )
+	RTS
 
 |c000 @FRAME BRK 
 |d000 @ERROR BRK 
