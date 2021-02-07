@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='description' content='Uxn is a 8-bit virtual stack machine.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV &mdash; uxn</title></head><body><header><a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='paper_computing.html'>paper computing</a></li><li><a href='programming.html'>programming</a></li><li><a href='virtual_machines.html'>virtual machines/</a></li><li><a href='fluidics.html'>fluidics</a></li></ul><ul><li><a href='orca.html'>orca</a></li><li><a href='gyo.html'>gyo</a></li><li><a href='uxn.html'>uxn/</a></li><li><a href='noton.html'>noton</a></li><li><a href='paradise.html'>paradise</a></li></ul><ul></ul></nav><main><figure><img src='../media/diary/739.jpg' alt='Uxn Sticker picture' width='900'/><figcaption>15C06 &mdash; Uxn Sticker</figcaption></figure><h2>Uxn is a 8-bit virtual stack machine.</h2><p>Uxn is currently under development, the goal of the project is to create a virtual machine viable to port the <a href='tools.html'>tools</a> onto, and release projects as roms. The design of the VM is inspired by <a href='firth.html'>Firth</a> and <a href='gyo.html'>Gyo</a>, the <a href='assembly.html'>assembly</a> syntax uses <a href='reverse_polish.html'>Reverse Polish Notation</a>.</p><img src='../media/generic/uxn.jpg' width='200'/>&nbsp;<figure><h3>Memory</h3>
+<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='description' content='Uxn is a 8-bit virtual stack machine.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV &mdash; uxn</title></head><body><header><a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='paper_computing.html'>paper computing</a></li><li><a href='programming.html'>programming</a></li><li><a href='virtual_machines.html'>virtual machines/</a></li><li><a href='fluidics.html'>fluidics</a></li></ul><ul><li><a href='orca.html'>orca</a></li><li><a href='gyo.html'>gyo</a></li><li><a href='uxn.html'>uxn/</a></li><li><a href='noton.html'>noton</a></li><li><a href='paradise.html'>paradise</a></li></ul><ul></ul></nav><main><figure><img src='../media/diary/739.jpg' alt='Uxn Sticker picture' width='900'/><figcaption>15C06 &mdash; Uxn Sticker</figcaption></figure><h2>Uxn is a 8-bit virtual stack machine.</h2><p>The goal of the project is to create a viable virtual machine to release the <a href='tools.html'>tools</a> as roms for. The design of the VM is inspired by <a href='firth.html'>Firth</a> and <a href='gyo.html'>Gyo</a>, the <a href='assembly.html'>assembly</a> syntax uses the <a href='reverse_polish.html'>postfix notation</a>.</p><p>Uxn is currently under development.</p><img src='../media/generic/uxn.jpg' width='200'/>&nbsp;<figure><h3>Memory</h3>
 
 <table border='1'>
 	<tr><th rowspan='3'>Core</th><td>Program Counter</td><td>1 short</td></tr>
@@ -12,13 +12,13 @@
 
 <h3>Status Register</h3>
 
-<p>The status register is distributed as follows, it shares the same byte as the register selector. The <b>halt</b> flag is used by the BRK instruction is stops the cpu, the <b>short</b> flag is used for 16 operations, the <b>carry</b> flag is set when an instruction carries over the 8bit range and the <b>traps</b> flag is set when the pointer should be sent to the traps location(in IO operations).</p>
+<p>The status register is distributed as follows, it shares the same byte as the register selector. The <b>halt</b> flag is used by the BRK instruction is stops the cpu, the <b>short</b> flag is used for 16 operations, the <b>carry</b> flag is set when an instruction carries over the 8bit range and the <b>sign</b> flag is set when the operator should use signed integers.</p>
 
 <pre>
 T C S H
 | | | +---- Halt  0x01
 | | +------ Short 0x02
-| +-------- Carry 0x04
+| +-------- Sign  0x04
 +---------- Traps 0x08
 </pre>
 
@@ -31,8 +31,8 @@ T C S H
 <p>There are 32 opcodes, each opcode occupies 5 bits of a byte, the remaining 3 are used to select the addressing mode of the values in the stack.</p>
 
 <table border='1'>
-	<tr><td colspan='3'>addressing</td><td colspan='5'>opcode</td></tr>
-	<tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+	<tr><td colspan='3'>modes</td><td colspan='5'>opcode</td></tr>
+	<tr><td>unused</td><td>sign</td><td>short</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
 </table>
 
 <p>Opcodes pointing to addresses in memory pull 16-bits from the stack at a time, and are represented like <code>[a b]</code>, where the a and b bytes are combined into a short. For example, <code>[0xAB 0xCD]</code> points to the memory address <code>0xABCD</code>.</p>
@@ -58,7 +58,7 @@ T C S H
 	<tr><th>0x0f</th><td><code>---</code></td><td></td><td></td>             <th>0x1f</th><td><code>GTH</code></td><td>a b</td><td>c</td></tr>
 </table>
 
-<p><code>sf</code> stands for <i>sflag</i>, <code>lc</code> for <i>literal counter</i>, <code>rs</code> for <i>return stack</i>, <code>mp</code> stands for <i>memroy pointer</i>.</p>
+<p><code>sf</code> stands for <i>sflag</i>, <code>lc</code> for <i>literal counter</i>, <code>rs</code> for <i>return stack</i>, <code>mp</code> stands for <i>memory pointer</i>.</p>
 
 <h2>Uxmasm</h2>
 
@@ -84,24 +84,21 @@ T C S H
 BRK
 
 @strlen
-	,0001 ADD^ PEK
-	RTS
+	,0001 ADD^ LDR
+	RTU
 
 @incr
 	,iterator LDR
 	,01 ADD
 	,iterator STR 
 	,iterator LDR
-	RTS
+	RTU
 
 |c000 @FRAME BRK 
 |d000 @ERROR BRK 
 |FFFA .RESET .FRAME .ERROR
 </pre>
 
-<table border='1'>
-	<tr><th><code>ADD^</code></th><td>Sets sf(16-bits mode)</td><td>,1234 ,0001 ADD^ -> 1235</td></tr>
-</table>
 
 <h3>Literal mode</h3>
 <p>Each operation is 1 byte(8 bits). To differenciate operations from numbers, the <code>LIT</code>(<code>0x02</code>) opcode toggles the literal mode for a length of time based dictated by the value of the byte follows it.</p>
@@ -111,5 +108,15 @@ BRK
 	<tr><th><code>.23</code></th><td><code>0x23</code></td></tr>
 	<tr><th><code>,abcd</code></th><td><code>0x02 0x02 0xab 0xcd</code></td></tr>
 	<tr><th><code>.abcd</code></th><td><code>0xab 0xcd</code></td></tr>
-</table><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/uxn.htm' target='_blank'>edit</a> to <a href='../src/inc/html/uxn.htm'>uxn.htm</a>(113 lines)</figcaption>
-</figure><ul><li><a href='https://git.sr.ht/~rabbits/uxn' target='_blank'>sources</a></li></ul><p><i>Last update on <a href='tracker.html'>15C07</a>, edited 5 times. +22/35fh <b>orphan</b></i> <code style='float:right; font-size:80%'>-----|</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
+</table>
+
+<h3>Short mode</h3>
+<p>Stack and arithmetic operations can be used on 16-bits at a time(2 bytes), by using the short-mode, like <code>SWP^</code>.</p>
+
+<table border='1'>
+	<tr><th>Stack</th><th>Operation</th></tr>
+	<tr><td><code>0x12 0x34 0x56 0x78</code></td><td>SWP^</td></tr>
+	<tr><td><code>0x56 0x78 0x12 0x34</code></td><td>ADD^</td></tr>
+	<tr><td><code>0x68 0xac</code></td><td></td></tr>
+</table><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/uxn.htm' target='_blank'>edit</a> to <a href='../src/inc/html/uxn.htm'>uxn.htm</a>(120 lines)</figcaption>
+</figure><ul><li><a href='https://git.sr.ht/~rabbits/uxn' target='_blank'>sources</a></li></ul><p><i>incoming(2)</i>: <a href='tools.html'>tools</a> <a href='gyo.html'>gyo</a> </p><p><i>Last update on <a href='tracker.html'>15C09</a>, edited 6 times. +27/41fh <b></b></i> <code style='float:right; font-size:80%'>-----|</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
