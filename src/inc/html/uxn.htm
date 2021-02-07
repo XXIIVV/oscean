@@ -12,17 +12,15 @@
 
 <h3>Status Register</h3>
 
-<p>The status register is distributed as follows, it shares the same byte as the register selector. The <b>halt</b> flag is used by the BRK instruction is stops the cpu, the <b>zero</b> flag is used for logic instructions, the <b>carry</b> flag is set when an instruction carries over the 8bit range and the <b>traps</b> flag is set when the pointer should be sent to the traps location(in IO operations).</p>
+<p>The status register is distributed as follows, it shares the same byte as the register selector. The <b>halt</b> flag is used by the BRK instruction is stops the cpu, the <b>short</b> flag is used for 16 operations, the <b>carry</b> flag is set when an instruction carries over the 8bit range and the <b>traps</b> flag is set when the pointer should be sent to the traps location(in IO operations).</p>
 
 <pre>
-T C Z H
+T C S H
 | | | +---- Halt  0x01
-| | +------ Zero  0x02
+| | +------ Short 0x02
 | +-------- Carry 0x04
 +---------- Traps 0x08
 </pre>
-
-<p>Each operation above <code>0x10</code> will reset the <i>zero flag</i>.</p>
 
 <h3>Return Stack</h3>
 
@@ -60,7 +58,7 @@ T C Z H
 	<tr><th>0x0f</th><td><code>GTH</code></td><td>a b</td><td>c</td>        <th>0x1f</th><td><code>---</code></td><td></td><td></td></tr>
 </table>
 
-<p><code>zf</code> stands for <i>zeroflag</i>, <code>lc</code> for <i>literal counter</i>, <code>rs</code> for <i>return stack</i>, <code>mp</code> stands for <i>memroy pointer</i>.</p>
+<p><code>sf</code> stands for <i>sflag</i>, <code>lc</code> for <i>literal counter</i>, <code>rs</code> for <i>return stack</i>, <code>mp</code> stands for <i>memroy pointer</i>.</p>
 
 <h2>Uxmasm</h2>
 
@@ -100,6 +98,10 @@ BRK
 |d000 @ERROR BRK 
 |FFFA .RESET .FRAME .ERROR
 </pre>
+
+<table border='1'>
+	<tr><th><code>ADD^</code></th><td>Sets sf(16-bits mode)</td><td>,1234 ,0001 ADD^ -> 1235</td></tr>
+</table>
 
 <h3>Literal mode</h3>
 <p>Each operation is 1 byte(8 bits). To differenciate operations from numbers, the <code>LIT</code>(<code>0x02</code>) opcode toggles the literal mode for a length of time based dictated by the value of the byte follows it.</p>
