@@ -43,8 +43,8 @@ T C S H
 	<tr><th>0x01</th><td><code>LIT</code></td><td></td><td>lc</td>           <th>0x11</th><td><code>DUP</code></td><td>a</td><td>a a</td></tr>
 	<tr><th>0x02</th><td><code>---</code></td><td></td><td></td>             <th>0x12</th><td><code>SWP</code></td><td>a b</td><td>b a</td></tr>
 	<tr><th>0x03</th><td><code>---</code></td><td></td><td></td>             <th>0x13</th><td><code>OVR</code></td><td>a b c</td><td>a b a</td></tr>
-	<tr><th>0x04</th><td><code>---</code></td><td></td><td></td>             <th>0x14</th><td><code>ROT</code></td><td>a b c</td><td>b c a</td></tr>
-	<tr><th>0x05</th><td><code>---</code></td><td></td><td></td>             <th>0x15</th><td><code>AND</code></td><td>a b</td><td>c</td></tr>
+	<tr><th>0x04</th><td><code>IOR</code></td><td>a b</td><td>c</td>         <th>0x14</th><td><code>ROT</code></td><td>a b c</td><td>b c a</td></tr>
+	<tr><th>0x05</th><td><code>IOW</code></td><td>a b</td><td></td>          <th>0x15</th><td><code>AND</code></td><td>a b</td><td>c</td></tr>
 	<tr><th>0x06</th><td><code>LDR</code></td><td>[a b]</td><td>c</td>       <th>0x16</th><td><code>ORA</code></td><td>a b</td><td>c</td></tr>
 	<tr><th>0x07</th><td><code>STR</code></td><td>a [b c]</td><td></td>      <th>0x17</th><td><code>ROL</code></td><td>a b</td><td>c</td></tr>
 	<tr><td></td><th colspan='3'>Logic</th><td></td>                         <th colspan='3'>Arithmetic^</th></tr>
@@ -68,15 +68,13 @@ T C S H
 ( hello world )
 
 ;iterator
-:dev1r FFF0
-:dev1w FFF1
 
 |0100 @RESET
 
-@word1 "hello_word ( len: 0x0b )
+@word1 "hello_world ( len: 0x0b )
 
 @loop
-	,dev1w STR ( write to stdout )
+	,00 IOW ( write to device#0 )
 	,incr JSR ( increment itr )
 	,word1 ,strlen JSR ( get strlen )
 	NEQ ,loop ROT JSR? ( loop != strlen )
