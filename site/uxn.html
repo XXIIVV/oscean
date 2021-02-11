@@ -76,32 +76,28 @@ T C S H
 <p>Here is an example of the assembly language that prints <code>hello world</code> to stdout.</p>
 
 <pre>
-( hello world )
+( a comment )
 
-;iterator
+:dev/w fff9 ( const named dev/w with value 0xfff9 )
+;i 1 ( var iterator, length 1 byte )
 
 |0100 @RESET
 
-@word1 "hello_world ( len: 0x0b )
+	,00 ,dev/w STR ( set dev/write to console ) 
 
-@loop
-	,00 IOW ( write to device#0 )
-	,incr JSR ( increment itr )
-	,word1 ,strlen JSR ( get strlen )
-	NEQ ,loop ROT JSR? ( loop != strlen )
+	@word1 "hello_world ( len: 0x0b )
+
+	@loop
+		IOW ( write to device#0 )
+		,incr JSR ( increment itr )
+		,i LDR ( a = i )
+		,word1 ,strlen JSR ( b = string length )
+		NEQ ,loop ROT JSR? ( a != b ? loop )
 
 BRK
 
-@strlen
-	,0001 ADD^ LDR
-	RTS
-
-@incr
-	,iterator LDR
-	,01 ADD
-	,iterator STR 
-	,iterator LDR
-	RTS
+@strlen ,0001 ADD^ LDR RTS
+@incr ,i LDR ,01 ADD ,i STR RTS
 
 |c000 @FRAME BRK 
 |d000 @ERROR BRK 
@@ -177,5 +173,5 @@ BRK
 |c000 @FRAME BRK 
 |d000 @ERROR BRK 
 |FFFA .RESET .FRAME .ERROR
-</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/uxn.htm' target='_blank'>edit</a> to <a href='../src/inc/html/uxn.htm'>uxn.htm</a>(179 lines)</figcaption>
+</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/uxn.htm' target='_blank'>edit</a> to <a href='../src/inc/html/uxn.htm'>uxn.htm</a>(175 lines)</figcaption>
 </figure><ul><li><a href='https://git.sr.ht/~rabbits/uxn' target='_blank'>sources</a></li></ul><p><i>incoming(2)</i>: <a href='tools.html'>tools</a> <a href='gyo.html'>gyo</a> </p><p><i>Last update on <a href='tracker.html'>15C12</a>, edited 8 times. +36/56fh <b></b></i> <code style='float:right; font-size:80%'>-----|</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>

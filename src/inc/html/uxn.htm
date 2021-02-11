@@ -76,32 +76,28 @@ T C S H
 <p>Here is an example of the assembly language that prints <code>hello world</code> to stdout.</p>
 
 <pre>
-( hello world )
+( a comment )
 
-;iterator
+:dev/w fff9 ( const named dev/w with value 0xfff9 )
+;i 1 ( var iterator, length 1 byte )
 
 |0100 @RESET
 
-@word1 "hello_world ( len: 0x0b )
+	,00 ,dev/w STR ( set dev/write to console ) 
 
-@loop
-	,00 IOW ( write to device#0 )
-	,incr JSR ( increment itr )
-	,word1 ,strlen JSR ( get strlen )
-	NEQ ,loop ROT JSR? ( loop != strlen )
+	@word1 "hello_world ( len: 0x0b )
+
+	@loop
+		IOW ( write to device#0 )
+		,incr JSR ( increment itr )
+		,i LDR ( a = i )
+		,word1 ,strlen JSR ( b = string length )
+		NEQ ,loop ROT JSR? ( a != b ? loop )
 
 BRK
 
-@strlen
-	,0001 ADD^ LDR
-	RTS
-
-@incr
-	,iterator LDR
-	,01 ADD
-	,iterator STR 
-	,iterator LDR
-	RTS
+@strlen ,0001 ADD^ LDR RTS
+@incr ,i LDR ,01 ADD ,i STR RTS
 
 |c000 @FRAME BRK 
 |d000 @ERROR BRK 
