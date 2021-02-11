@@ -1,13 +1,12 @@
-<h3>Memory</h3>
+<h2>Memory</h2>
 
 <table border='1'>
 	<tr><th rowspan='3'>Core</th><td>Program Counter</td><td>1 short</td></tr>
 	<tr><td>Literal Counter</td><td>1 byte</td></tr>
 	<tr><td>Status Register</td><td>1 byte</td></tr>
 	<tr><th rowspan='2'>Stacks</th><td>Working Stack</td><td>256 bytes</td></tr>
-	<tr><td>Return Stack</td><td>256 bytes</td></tr>
-	<tr><th rowspan='2'>Memory</th><td>ROM</td><td>65536 bytes</td></tr>
-	<tr><td>RAM</td><td>65536 bytes</td></tr>
+	<tr><td>Return Stack</td><td>256 shorts</td></tr>
+	<tr><th>Memory</th><td>RAM</td><td>65536 bytes</td></tr>
 </table>
 
 <h3>Status Register</h3>
@@ -22,9 +21,21 @@ T C S H
 +---------- Cond  0x08
 </pre>
 
+<h3>Special Addresses</h3>
+
+<p>Addresses at the end of the memory are used to keep various entry points into the program. The reset vector is run once, the frame vector is run each frame, and the error vector is run once when an error has occured.</p>
+
+<table border='1'>
+	<tr><th rowspan="2">Ports</th><td><code>fff8</code></td><td>Input Device</td></tr>
+	<tr><td><code>fff9</code></td><td>Output Device</td></tr>
+	<tr><th rowspan="3">Vectors</th><td><code>fffa-fffb</code></td><td>Reset</td></tr>
+	<tr><td><code>fffc-fffd</code></td><td>Frame</td></tr>
+	<tr><td><code>fffe-ffff</code></td><td>Error</td></tr>
+</table>
+
 <h3>Return Stack</h3>
 
-<p>The CPU can tunnel through 256 subroutines and find its way back with the return stack, the opcodes to jump into to a subroutine are <code>JSR</code> and <code>JEQ</code> the opcode to leave a subroutine is <code>RTS</code>.</p>
+<p>The CPU can tunnel through 256 subroutines and find its way back with the return stack, the opcode to jump into to a subroutine is <code>JSR</code>, the opcode to return from a subroutine is <code>RTS</code>.</p>
 
 <h2>Opcodes</h2>
 
@@ -40,11 +51,11 @@ T C S H
 <table border='1'>
 	<tr><td></td><th colspan='3'>I/O</th><td></td>                      <th colspan='3'>Stack^</th></tr>
 	<tr><th>0x00</th><td><code>BRK</code></td><td></td><td></td>        <th>0x10</th><td><code>POP</code></td><td>a</td><td></td></tr>
-	<tr><th>0x01</th><td><code>---</code></td><td></td><td></td>        <th>0x11</th><td><code>DUP</code></td><td>a</td><td>a a</td></tr>
+	<tr><th>0x01</th><td><code>NOP</code></td><td></td><td></td>        <th>0x11</th><td><code>DUP</code></td><td>a</td><td>a a</td></tr>
 	<tr><th>0x02</th><td><code>LI1</code></td><td></td><td>lc</td>      <th>0x12</th><td><code>SWP</code></td><td>a b</td><td>b a</td></tr>
 	<tr><th>0x03</th><td><code>LIX</code></td><td></td><td>lc</td>      <th>0x13</th><td><code>OVR</code></td><td>a b c</td><td>a b a</td></tr>
-	<tr><th>0x04</th><td><code>IOR</code></td><td>a b</td><td>c</td>    <th>0x14</th><td><code>ROT</code></td><td>a b c</td><td>b c a</td></tr>
-	<tr><th>0x05</th><td><code>IOW</code></td><td>a b</td><td></td>     <th>0x15</th><td><code>AND</code></td><td>a b</td><td>c</td></tr>
+	<tr><th>0x04</th><td><code>IOR</code></td><td>a</td><td>b</td>      <th>0x14</th><td><code>ROT</code></td><td>a b c</td><td>b c a</td></tr>
+	<tr><th>0x05</th><td><code>IOW</code></td><td>a</td><td></td>       <th>0x15</th><td><code>AND</code></td><td>a b</td><td>c</td></tr>
 	<tr><th>0x06</th><td><code>LDR</code></td><td>[a b]</td><td>c</td>  <th>0x16</th><td><code>ORA</code></td><td>a b</td><td>c</td></tr>
 	<tr><th>0x07</th><td><code>STR</code></td><td>a [b c]</td><td></td> <th>0x17</th><td><code>ROL</code></td><td>a b</td><td>c</td></tr>
 	<tr><td></td><th colspan='3'>Logic</th><td></td>                    <th colspan='3'>Arithmetic^</th></tr>
@@ -109,7 +120,7 @@ BRK
 </table>
 
 <h3>Short mode</h3>
-<p>Stack and arithmetic operations can be used on 16-bits at a time(2 bytes), by using the <code>SHORT^</code> mode.</p>
+<p>Operations can be used on 16-bits at a time(2 bytes), by using the <code>SHORT^</code> mode.</p>
 
 <table border='1'>
 	<tr><th>Stack</th><th>Operation</th></tr>
@@ -132,4 +143,38 @@ BRK
 @there ( when greater )
 	,ff
 	BRK
+</pre>
+
+<h3>Devices</h3>
+
+<p>There is a maximum of 256 devices accessible to the two I/0 operators <code>IOR</code>(read) and <code>IOW</code>(write) used to interface with devices, such as the screen, the mouse, the keyboard, etc. To read or write from a specific device, the input port(fff8) and output port(fff9) bytes have to be assigned in memory.</p>
+
+<pre>
+( draw pixel )
+
+:dev/w fff9 ( keep write port in a const )
+;x 2
+;y 2
+
+|0100 @RESET
+	
+	( set dev/write to screen ) 
+
+	,01 ,dev/w STR 
+
+	,0020 ,x STR^ ( set x-pos )
+	,0030 ,y STR^ ( set y-pos )
+
+	( IOW will now send to screen ) 
+
+	,y LDR^ IOW^ ( y-pos )
+	,x LDR^ IOW^ ( x-pos )
+	,02 IOW ( color )
+	,01 IOW ( redraw )
+
+BRK
+
+|c000 @FRAME BRK 
+|d000 @ERROR BRK 
+|FFFA .RESET .FRAME .ERROR
 </pre>

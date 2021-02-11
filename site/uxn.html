@@ -1,13 +1,12 @@
-<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='description' content='Uxn is a 8-bit virtual stack machine.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV &mdash; uxn</title></head><body><header><a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='paper_computing.html'>paper computing</a></li><li><a href='programming.html'>programming</a></li><li><a href='virtual_machines.html'>virtual machines/</a></li><li><a href='fluidics.html'>fluidics</a></li></ul><ul><li><a href='orca.html'>orca</a></li><li><a href='gyo.html'>gyo</a></li><li><a href='uxn.html'>uxn/</a></li><li><a href='noton.html'>noton</a></li><li><a href='paradise.html'>paradise</a></li></ul><ul></ul></nav><main><figure><img src='../media/diary/739.jpg' alt='Uxn Sticker picture' width='900'/><figcaption>15C06 &mdash; Uxn Sticker</figcaption></figure><h2>Uxn is a 8-bit virtual stack machine.</h2><p>The goal of the project is to create a viable virtual machine to release the <a href='tools.html'>tools</a> as roms for. The design of the VM is inspired by <a href='firth.html'>Firth</a> and <a href='gyo.html'>Gyo</a>, the <a href='assembly.html'>assembly</a> syntax uses the <a href='reverse_polish.html'>postfix notation</a>.</p><p>Uxn is currently under development.</p><img src='../media/generic/uxn.jpg' width='200'/>&nbsp;<figure><h3>Memory</h3>
+<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='description' content='Uxn is a 8-bit virtual stack machine.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV &mdash; uxn</title></head><body><header><a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='paper_computing.html'>paper computing</a></li><li><a href='programming.html'>programming</a></li><li><a href='virtual_machines.html'>virtual machines/</a></li><li><a href='fluidics.html'>fluidics</a></li></ul><ul><li><a href='orca.html'>orca</a></li><li><a href='gyo.html'>gyo</a></li><li><a href='uxn.html'>uxn/</a></li><li><a href='noton.html'>noton</a></li><li><a href='paradise.html'>paradise</a></li></ul><ul></ul></nav><main><figure><img src='../media/diary/739.jpg' alt='Uxn Sticker picture' width='900'/><figcaption>15C06 &mdash; Uxn Sticker</figcaption></figure><h2>Uxn is a 8-bit virtual stack machine.</h2><p>The goal of the project is to create a viable virtual machine to release the <a href='tools.html'>tools</a> as roms for. The design of the VM is inspired by <a href='firth.html'>Firth</a> and <a href='gyo.html'>Gyo</a>, the <a href='assembly.html'>assembly</a> syntax uses the <a href='reverse_polish.html'>postfix notation</a>.</p><p>Uxn is currently under development.</p><img src='../media/generic/uxn.jpg' width='200'/>&nbsp;<figure><h2>Memory</h2>
 
 <table border='1'>
 	<tr><th rowspan='3'>Core</th><td>Program Counter</td><td>1 short</td></tr>
 	<tr><td>Literal Counter</td><td>1 byte</td></tr>
 	<tr><td>Status Register</td><td>1 byte</td></tr>
 	<tr><th rowspan='2'>Stacks</th><td>Working Stack</td><td>256 bytes</td></tr>
-	<tr><td>Return Stack</td><td>256 bytes</td></tr>
-	<tr><th rowspan='2'>Memory</th><td>ROM</td><td>65536 bytes</td></tr>
-	<tr><td>RAM</td><td>65536 bytes</td></tr>
+	<tr><td>Return Stack</td><td>256 shorts</td></tr>
+	<tr><th>Memory</th><td>RAM</td><td>65536 bytes</td></tr>
 </table>
 
 <h3>Status Register</h3>
@@ -22,9 +21,21 @@ T C S H
 +---------- Cond  0x08
 </pre>
 
+<h3>Special Addresses</h3>
+
+<p>Addresses at the end of the memory are used to keep various entry points into the program. The reset vector is run once, the frame vector is run each frame, and the error vector is run once when an error has occured.</p>
+
+<table border='1'>
+	<tr><th rowspan="2">Ports</th><td><code>fff8</code></td><td>Input Device</td></tr>
+	<tr><td><code>fff9</code></td><td>Output Device</td></tr>
+	<tr><th rowspan="3">Vectors</th><td><code>fffa-fffb</code></td><td>Reset</td></tr>
+	<tr><td><code>fffc-fffd</code></td><td>Frame</td></tr>
+	<tr><td><code>fffe-ffff</code></td><td>Error</td></tr>
+</table>
+
 <h3>Return Stack</h3>
 
-<p>The CPU can tunnel through 256 subroutines and find its way back with the return stack, the opcodes to jump into to a subroutine are <code>JSR</code> and <code>JEQ</code> the opcode to leave a subroutine is <code>RTS</code>.</p>
+<p>The CPU can tunnel through 256 subroutines and find its way back with the return stack, the opcode to jump into to a subroutine is <code>JSR</code>, the opcode to return from a subroutine is <code>RTS</code>.</p>
 
 <h2>Opcodes</h2>
 
@@ -40,11 +51,11 @@ T C S H
 <table border='1'>
 	<tr><td></td><th colspan='3'>I/O</th><td></td>                      <th colspan='3'>Stack^</th></tr>
 	<tr><th>0x00</th><td><code>BRK</code></td><td></td><td></td>        <th>0x10</th><td><code>POP</code></td><td>a</td><td></td></tr>
-	<tr><th>0x01</th><td><code>---</code></td><td></td><td></td>        <th>0x11</th><td><code>DUP</code></td><td>a</td><td>a a</td></tr>
+	<tr><th>0x01</th><td><code>NOP</code></td><td></td><td></td>        <th>0x11</th><td><code>DUP</code></td><td>a</td><td>a a</td></tr>
 	<tr><th>0x02</th><td><code>LI1</code></td><td></td><td>lc</td>      <th>0x12</th><td><code>SWP</code></td><td>a b</td><td>b a</td></tr>
 	<tr><th>0x03</th><td><code>LIX</code></td><td></td><td>lc</td>      <th>0x13</th><td><code>OVR</code></td><td>a b c</td><td>a b a</td></tr>
-	<tr><th>0x04</th><td><code>IOR</code></td><td>a b</td><td>c</td>    <th>0x14</th><td><code>ROT</code></td><td>a b c</td><td>b c a</td></tr>
-	<tr><th>0x05</th><td><code>IOW</code></td><td>a b</td><td></td>     <th>0x15</th><td><code>AND</code></td><td>a b</td><td>c</td></tr>
+	<tr><th>0x04</th><td><code>IOR</code></td><td>a</td><td>b</td>      <th>0x14</th><td><code>ROT</code></td><td>a b c</td><td>b c a</td></tr>
+	<tr><th>0x05</th><td><code>IOW</code></td><td>a</td><td></td>       <th>0x15</th><td><code>AND</code></td><td>a b</td><td>c</td></tr>
 	<tr><th>0x06</th><td><code>LDR</code></td><td>[a b]</td><td>c</td>  <th>0x16</th><td><code>ORA</code></td><td>a b</td><td>c</td></tr>
 	<tr><th>0x07</th><td><code>STR</code></td><td>a [b c]</td><td></td> <th>0x17</th><td><code>ROL</code></td><td>a b</td><td>c</td></tr>
 	<tr><td></td><th colspan='3'>Logic</th><td></td>                    <th colspan='3'>Arithmetic^</th></tr>
@@ -109,7 +120,7 @@ BRK
 </table>
 
 <h3>Short mode</h3>
-<p>Stack and arithmetic operations can be used on 16-bits at a time(2 bytes), by using the <code>SHORT^</code> mode.</p>
+<p>Operations can be used on 16-bits at a time(2 bytes), by using the <code>SHORT^</code> mode.</p>
 
 <table border='1'>
 	<tr><th>Stack</th><th>Operation</th></tr>
@@ -132,5 +143,39 @@ BRK
 @there ( when greater )
 	,ff
 	BRK
-</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/uxn.htm' target='_blank'>edit</a> to <a href='../src/inc/html/uxn.htm'>uxn.htm</a>(134 lines)</figcaption>
-</figure><ul><li><a href='https://git.sr.ht/~rabbits/uxn' target='_blank'>sources</a></li></ul><p><i>incoming(2)</i>: <a href='tools.html'>tools</a> <a href='gyo.html'>gyo</a> </p><p><i>Last update on <a href='tracker.html'>15C10</a>, edited 7 times. +31/48fh <b></b></i> <code style='float:right; font-size:80%'>-----|</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
+</pre>
+
+<h3>Devices</h3>
+
+<p>There is a maximum of 256 devices accessible to the two I/0 operators <code>IOR</code>(read) and <code>IOW</code>(write) used to interface with devices, such as the screen, the mouse, the keyboard, etc. To read or write from a specific device, the input port(fff8) and output port(fff9) bytes have to be assigned in memory.</p>
+
+<pre>
+( draw pixel )
+
+:dev/w fff9 ( keep write port in a const )
+;x 2
+;y 2
+
+|0100 @RESET
+	
+	( set dev/write to screen ) 
+
+	,01 ,dev/w STR 
+
+	,0020 ,x STR^ ( set x-pos )
+	,0030 ,y STR^ ( set y-pos )
+
+	( IOW will now send to screen ) 
+
+	,y LDR^ IOW^ ( y-pos )
+	,x LDR^ IOW^ ( x-pos )
+	,02 IOW ( color )
+	,01 IOW ( redraw )
+
+BRK
+
+|c000 @FRAME BRK 
+|d000 @ERROR BRK 
+|FFFA .RESET .FRAME .ERROR
+</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/uxn.htm' target='_blank'>edit</a> to <a href='../src/inc/html/uxn.htm'>uxn.htm</a>(179 lines)</figcaption>
+</figure><ul><li><a href='https://git.sr.ht/~rabbits/uxn' target='_blank'>sources</a></li></ul><p><i>incoming(2)</i>: <a href='tools.html'>tools</a> <a href='gyo.html'>gyo</a> </p><p><i>Last update on <a href='tracker.html'>15C12</a>, edited 8 times. +36/56fh <b></b></i> <code style='float:right; font-size:80%'>-----|</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
