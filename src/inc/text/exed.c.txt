@@ -368,9 +368,7 @@ drawchr(Uint32 *dst, int x, int y, Uint8 *sprite)
 		for(h = 0; h < 8; h++) {
 			int ch1 = ((sprite[v] >> h) & 0x1);
 			int ch2 = (((sprite[v + 8] >> h) & 0x1) << 1);
-			int clr = ch1 + ch2;
-			int guides = GUIDES && !clr && ((x + y) / 8) % 2;
-			putpixel(dst, x + 7 - h, y + v, guides ? 4 : clr);
+			putpixel(dst, x + 7 - h, y + v, ch1 + ch2);
 		}
 }
 

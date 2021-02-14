@@ -53,7 +53,7 @@ T C S H
 	<tr><th>0x00</th><td><code>BRK</code></td><td></td><td></td>        <th>0x10</th><td><code>POP</code></td><td>a</td><td></td></tr>
 	<tr><th>0x01</th><td><code>NOP</code></td><td></td><td></td>        <th>0x11</th><td><code>DUP</code></td><td>a</td><td>a a</td></tr>
 	<tr><th>0x02</th><td><code>LI1</code></td><td></td><td>lc</td>      <th>0x12</th><td><code>SWP</code></td><td>a b</td><td>b a</td></tr>
-	<tr><th>0x03</th><td><code>LIX</code></td><td></td><td>lc</td>      <th>0x13</th><td><code>OVR</code></td><td>a b c</td><td>a b a</td></tr>
+	<tr><th>0x03</th><td><code>---</code></td><td></td><td>lc</td>      <th>0x13</th><td><code>OVR</code></td><td>a b c</td><td>a b a</td></tr>
 	<tr><th>0x04</th><td><code>IOR</code></td><td>a</td><td>b</td>      <th>0x14</th><td><code>ROT</code></td><td>a b c</td><td>b c a</td></tr>
 	<tr><th>0x05</th><td><code>IOW</code></td><td>a</td><td></td>       <th>0x15</th><td><code>AND</code></td><td>a b</td><td>c</td></tr>
 	<tr><th>0x06</th><td><code>LDR</code></td><td>[a b]</td><td>c</td>  <th>0x16</th><td><code>ORA</code></td><td>a b</td><td>c</td></tr>
@@ -100,7 +100,7 @@ BRK
 </pre>
 
 <h3>Literal mode</h3>
-<p>Each operation is 1 byte(8 bits). To differentiate operations from numbers, the <code>LI1</code> opcode toggles the literal mode for a length of 1 tick, the <code>LIX</code> opcode toggles the literal mode for the number of ticks dictated by the value of the byte that follows it. For example, the assembly code <code>,abcd</code>, is equivalent to <code>LIX .02 .abcd</code>.</p>
+<p>Each operation is 1 byte(8 bits). To differentiate operations from numbers, the <code>LIT</code> opcode toggles the literal mode for a length of 1 evaluation, the 16-bits mode <code>LIT2</code> opcode toggles the literal mode for the length of 2 frames.</p>
 
 <table border='1'>
 	<tr><th><code>assembly</code></th><td><code>bytecode</code></td></tr>
@@ -111,28 +111,28 @@ BRK
 </table>
 
 <h3>Short mode</h3>
-<p>Operations can be used on 16-bits at a time(2 bytes), by using the <code>SHORT^</code> mode.</p>
+<p>Operations can be used on 16-bits at a time(2 bytes), by using the <code>SHORT2</code> mode.</p>
 
 <table border='1'>
 	<tr><th>Stack</th><th>Operation</th></tr>
-	<tr><td><code>0x12 0x34 0x56 0x78</code></td><td>SWP^</td></tr>
-	<tr><td><code>0x56 0x78 0x12 0x34</code></td><td>ADD^</td></tr>
+	<tr><td><code>0x12 0x34 0x56 0x78</code></td><td>SWP2</td></tr>
+	<tr><td><code>0x56 0x78 0x12 0x34</code></td><td>ADD2</td></tr>
 	<tr><td><code>0x68 0xac</code></td><td></td></tr>
 </table>
 
 <h3>Conditional mode</h3>
 <p>Every operation has the potential to conditionally operate by using the <code>COND?</code> mode, in the following branching example, the value <code>0xff</code> will be added to the stack if the first value is greater than the second, otherwise <code>0xee</code> will be added.</p>
-<p><code>ROT</code> is used to bring the result of <code>GTH</code> to the top of the stack, <code>POP^</code> is used after the conditional <code>JMP</code> to remove the address of the label <code>@there</code> that is left on the stack.</p>
+<p><code>ROT</code> is used to bring the result of <code>GTH</code> to the top of the stack, <code>POP2</code> is used after the conditional <code>JMP</code> to remove the address of the label <code>@there</code> that is left on the stack.</p>
 
 <pre>
-,06 ,05 GTH ,there ROT JMP? POP^
+#06 #05 GTH ,there ROT JMP? POP^
 
 @here ( when lesser or equal )
-	,ee
+	#ee
 	BRK
 
 @there ( when greater )
-	,ff
+	#ff
 	BRK
 </pre>
 
@@ -141,32 +141,40 @@ BRK
 <p>There is a maximum of 256 devices accessible to the two I/0 operators <code>IOR</code>(read) and <code>IOW</code>(write) used to interface with devices, such as the screen, the mouse, the keyboard, etc. To read or write from a specific device, the input port(fff8) and output port(fff9) bytes have to be assigned in memory.</p>
 
 <pre>
-( draw pixel )
+( screen )
 
-:dev/w fff9 ( keep write port in a const )
-;x 2
-;y 2
+:dev/r fff8 ( std read port )
+:dev/w fff9 ( std write port )
 
-|0100 @RESET
+;width 2 ;height 2
+
+|0100 @RESET 
 	
-	( set dev/write to screen ) 
+	( set read/write to dev/screen )
+	#01 DUP ,dev/r STR ,dev/w STR 
 
-	,01 ,dev/w STR 
+	( load screen size )
+	#00 IOR2 ,width STR2
+	#02 IOR2 ,height STR2
 
-	,0020 ,x STR^ ( set x-pos )
-	,0030 ,y STR^ ( set y-pos )
-
-	( IOW will now send to screen ) 
-
-	,y LDR^ IOW^ ( y-pos )
-	,x LDR^ IOW^ ( x-pos )
-	,02 IOW ( color )
-	,01 IOW ( redraw )
+	( draw pixel at screen center )
+	#0101 
+	,width LDR2 #0002 DIV2 
+	,height LDR2 #0002 DIV2 
+	,putpixel JSR
 
 BRK
 
-|c000 @FRAME BRK 
+|c000 @FRAME BRK
+
+@putpixel 
+	IOW2 ( y short )
+	IOW2 ( x short )
+	IOW ( color byte )
+	IOW ( redraw byte )
+	RTS
+
 |d000 @ERROR BRK 
 |FFFA .RESET .FRAME .ERROR
-</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/uxn.htm' target='_blank'>edit</a> to <a href='../src/inc/html/uxn.htm'>uxn.htm</a>(170 lines)</figcaption>
-</figure><ul><li><a href='https://git.sr.ht/~rabbits/uxn' target='_blank'>sources</a></li><li><a href='https://fabiensanglard.net/another_world_polygons' target='_blank'>polygons of another world</a></li></ul><p><i>incoming(2)</i>: <a href='tools.html'>tools</a> <a href='gyo.html'>gyo</a> </p><p><i>Last update on <a href='tracker.html'>15C13</a>, edited 9 times. +42/63fh <b></b></i> <code style='float:right; font-size:80%'>-----|</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
+</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/uxn.htm' target='_blank'>edit</a> to <a href='../src/inc/html/uxn.htm'>uxn.htm</a>(178 lines)</figcaption>
+</figure><ul><li><a href='https://git.sr.ht/~rabbits/uxn' target='_blank'>sources</a></li><li><a href='https://fabiensanglard.net/another_world_polygons' target='_blank'>polygons of another world</a></li></ul><p><i>incoming(2)</i>: <a href='tools.html'>tools</a> <a href='gyo.html'>gyo</a> </p><p><i>Last update on <a href='tracker.html'>15D02</a>, edited 10 times. +46/69fh <b></b></i> <code style='float:right; font-size:80%'>-----|</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
