@@ -76,31 +76,26 @@ T C S H
 <p>Here is an example of the assembly language that prints <code>hello world</code> to stdout.</p>
 
 <pre>
-( a comment )
+( comment )
 
-:dev/w fff9 ( const named dev/w with value 0xfff9 )
-;i 1 ( var iterator, length 1 byte )
+:dev/w fff9 ( const write port )
 
-|0100 @RESET
+|0100 @RESET 
 
-	,00 ,dev/w STR ( set dev/write to console ) 
-
-	@word1 "hello_world ( len: 0x0b )
-
+	#00 ,dev/w STR                           ( set dev/write to console ) 
+	,string                                  ( add string pointer to stack )
 	@loop
-		IOW ( write to device#0 )
-		,incr JSR ( increment itr )
-		,i LDR ( a = i )
-		,word1 ,strlen JSR ( b = string length )
-		NEQ ,loop ROT JSR? ( a != b ? loop )
+		DUP2 LDR IOW                         ( write pointer value to console )
+		#0001 ADD2                           ( increment string pointer )
+		DUP2 LDR #00 NEQ ,loop ROT JMP? POP2 ( while *ptr!=0 goto loop )
 
 BRK
 
-@strlen ,0001 ADD^ LDR RTS
-@incr ,i LDR ,01 ADD ,i STR RTS
+@string " Hello World "                      ( add string to memory )
 
-|c000 @FRAME BRK 
+|c000 @FRAME BRK
 |d000 @ERROR BRK 
+
 |FFFA .RESET .FRAME .ERROR
 </pre>
 

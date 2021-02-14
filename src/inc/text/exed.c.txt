@@ -361,25 +361,27 @@ putpixel(Uint32 *dst, int x, int y, int color)
 }
 
 void
-drawchr(Uint32 *dst, int x, int y, Uint8 *icon)
+drawchr(Uint32 *dst, int x, int y, Uint8 *sprite)
 {
 	int v, h;
 	for(v = 0; v < 8; v++)
 		for(h = 0; h < 8; h++) {
-			int ch1 = ((icon[v] >> h) & 0x1);
-			int ch2 = (((icon[v + 8] >> h) & 0x1) << 1);
-			putpixel(dst, x + 7 - h, y + v, ch1 + ch2);
+			int ch1 = ((sprite[v] >> h) & 0x1);
+			int ch2 = (((sprite[v + 8] >> h) & 0x1) << 1);
+			int clr = ch1 + ch2;
+			int guides = GUIDES && !clr && ((x + y) / 8) % 2;
+			putpixel(dst, x + 7 - h, y + v, guides ? 4 : clr);
 		}
 }
 
 void
-drawicon(Uint32 *dst, int x, int y, Uint8 *icon, int fg, int bg)
+drawicn(Uint32 *dst, int x, int y, Uint8 *sprite, int fg, int bg)
 {
 	int v, h;
 	for(v = 0; v < 8; v++)
 		for(h = 0; h < 8; h++) {
-			int ch1 = (icon[v] >> (7 - h)) & 0x1;
-			putpixel(dst, x + h, y + v, ch1 == 1 ? fg : bg);
+			int ch1 = (sprite[v] >> (7 - h)) & 0x1;
+			putpixel(dst, x + h, y + v, ch1 ? fg : bg);
 		}
 }
 
@@ -397,16 +399,16 @@ void
 drawui(Uint32 *dst)
 {
 	int bottom = VER * 8 + 8;
-	drawicon(dst, 0 * 8, bottom, icons[3], 2, 0);
-	drawicon(dst, 1 * 8, bottom, icons[4], 2, 0);
-	drawicon(dst, 2 * 8, bottom, icons[5], 2, 0);
-	drawicon(dst, 3 * 8, bottom, icons[6], 2, 0);
-	drawicon(dst, 5 * 8, bottom, icons[GUIDES ? 12 : 11], GUIDES ? 1 : 2, 0);
-	drawicon(dst, (HOR - 1) * 8, bottom, icons[13], doc.unsaved ? 2 : 3, 0);
-	drawicon(dst, 15 * 8, bottom, font[gethexfont((cursor.i >> 12) & 0xf)], 3, 0);
-	drawicon(dst, 16 * 8, bottom, font[gethexfont((cursor.i >> 8) & 0xf)], 3, 0);
-	drawicon(dst, 17 * 8, bottom, font[gethexfont((cursor.i >> 4) & 0xf)], 3, 0);
-	drawicon(dst, 18 * 8, bottom, font[gethexfont(cursor.i & 0xf)], 3, 0);
+	drawicn(dst, 0 * 8, bottom, icons[3], 2, 0);
+	drawicn(dst, 1 * 8, bottom, icons[4], 2, 0);
+	drawicn(dst, 2 * 8, bottom, icons[5], 2, 0);
+	drawicn(dst, 3 * 8, bottom, icons[6], 2, 0);
+	drawicn(dst, 5 * 8, bottom, icons[GUIDES ? 12 : 11], GUIDES ? 1 : 2, 0);
+	drawicn(dst, (HOR - 1) * 8, bottom, icons[13], doc.unsaved ? 2 : 3, 0);
+	drawicn(dst, 15 * 8, bottom, font[gethexfont((cursor.i >> 12) & 0xf)], 3, 0);
+	drawicn(dst, 16 * 8, bottom, font[gethexfont((cursor.i >> 8) & 0xf)], 3, 0);
+	drawicn(dst, 17 * 8, bottom, font[gethexfont((cursor.i >> 4) & 0xf)], 3, 0);
+	drawicn(dst, 18 * 8, bottom, font[gethexfont(cursor.i & 0xf)], 3, 0);
 }
 
 void
@@ -424,11 +426,11 @@ drawline(Uint32 *dst, int y, int id)
 		int sel = cursor.i == k;
 		int linesel = GUIDES && cursor.y == id / 8;
 		int pagesel = id % 256 == 0;
-		drawicon(dst, x * 8, y, font[b0], sel ? 0 : linesel + pagesel + 1, sel ? 2 : 0);
-		drawicon(dst, x * 8 + 8, y, font[b1], sel ? 0 : linesel + pagesel + 1, sel ? 2 : 0);
-		drawicon(dst, (19 + (k % 8)) * 8 + 8, y, bc ? font[bc] : icons[2], bc ? 1 : 3, 0);
+		drawicn(dst, x * 8, y, font[b0], sel ? 0 : linesel + pagesel + 1, sel ? 2 : 0);
+		drawicn(dst, x * 8 + 8, y, font[b1], sel ? 0 : linesel + pagesel + 1, sel ? 2 : 0);
+		drawicn(dst, (19 + (k % 8)) * 8 + 8, y, bc ? font[bc] : icons[2], bc ? 1 : 3, sel ? 4 : 0);
 	}
-	drawicon(dst, 29 * 8, y, &doc.data[id], 1, 0);
+	drawicn(dst, 29 * 8, y, &doc.data[id], 1, 0);
 	if(id % 16 == 0)
 		drawchr(dst, 31 * 8, y, &doc.data[id]);
 }
