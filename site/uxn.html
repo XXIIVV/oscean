@@ -51,8 +51,8 @@ T C S H
 <table border='1'>
 	<tr><td></td><th colspan='3'>I/O</th><td></td>                      <th colspan='3'>Stack^</th></tr>
 	<tr><th>0x00</th><td><code>BRK</code></td><td></td><td></td>        <th>0x10</th><td><code>POP</code></td><td>a</td><td></td></tr>
-	<tr><th>0x01</th><td><code>NOP</code></td><td></td><td></td>        <th>0x11</th><td><code>DUP</code></td><td>a</td><td>a a</td></tr>
-	<tr><th>0x02</th><td><code>LI1</code></td><td></td><td>lc</td>      <th>0x12</th><td><code>SWP</code></td><td>a b</td><td>b a</td></tr>
+	<tr><th>0x01</th><td><code>---</code></td><td></td><td></td>        <th>0x11</th><td><code>DUP</code></td><td>a</td><td>a a</td></tr>
+	<tr><th>0x02</th><td><code>LIT</code></td><td></td><td>lc</td>      <th>0x12</th><td><code>SWP</code></td><td>a b</td><td>b a</td></tr>
 	<tr><th>0x03</th><td><code>---</code></td><td></td><td>lc</td>      <th>0x13</th><td><code>OVR</code></td><td>a b c</td><td>a b a</td></tr>
 	<tr><th>0x04</th><td><code>IOR</code></td><td>a</td><td>b</td>      <th>0x14</th><td><code>ROT</code></td><td>a b c</td><td>b c a</td></tr>
 	<tr><th>0x05</th><td><code>IOW</code></td><td>a</td><td></td>       <th>0x15</th><td><code>AND</code></td><td>a b</td><td>c</td></tr>
@@ -82,7 +82,7 @@ T C S H
 
 |0100 @RESET 
 
-	#00 ,dev/w STR                           ( set dev/write to console ) 
+	#00 =dev/w ( set dev/write to sprite ) 
 	,string                                  ( add string pointer to stack )
 	@loop
 		DUP2 LDR IOW                         ( write pointer value to console )
@@ -106,7 +106,7 @@ BRK
 	<tr><th><code>assembly</code></th><td><code>bytecode</code></td></tr>
 	<tr><th><code>,12</code></th><td><code>0x02 0x12</code></td></tr>
 	<tr><th><code>.23</code></th><td><code>0x23</code></td></tr>
-	<tr><th><code>,abcd</code></th><td><code>0x03 0x02 0xab 0xcd</code></td></tr>
+	<tr><th><code>,abcd</code></th><td><code>0x22 0xab 0xcd</code></td></tr>
 	<tr><th><code>.abcd</code></th><td><code>0xab 0xcd</code></td></tr>
 </table>
 
@@ -140,6 +140,32 @@ BRK
 
 <p>There is a maximum of 256 devices accessible to the two I/0 operators <code>IOR</code>(read) and <code>IOW</code>(write) used to interface with devices, such as the screen, the mouse, the keyboard, etc. To read or write from a specific device, the input port(fff8) and output port(fff9) bytes have to be assigned in memory.</p>
 
+<table border='1'>
+	<tr><th rowspan='2' colspan='2'>Device</th><th colspan='2'>I/O</th></tr>
+	<tr><th>Read</th><th>Write</th></tr>
+	<tr><th>0</th><th>console</th><td><i>nil</i></td><td>char to stdout</td></tr>
+	<tr><th rowspan='6'>1</th><th rowspan='6'>screen</th><td>WIDTH(high)</td><td>Y(high)</td></tr>
+	<tr><td>WIDTH(low)</td><td>Y(low)</td></tr>
+	<tr><td>HEIGHT(high)</td><td>X(high)</td></tr>
+	<tr><td>HEIGHT(low)</td><td>X(low)</td></tr>
+	<tr><td rowspan="2"></td><td>color</td></tr>
+	<tr><td>redraw</td></tr>
+	<tr><th rowspan='7'>2</th><th rowspan='7'>sprite</th><td>WIDTH(high)</td><td>Y(high)</td></tr>
+	<tr><td>WIDTH(low)</td><td>Y(low)</td></tr>
+	<tr><td>HEIGHT(high)</td><td>X(high)</td></tr>
+	<tr><td>HEIGHT(low)</td><td>X(low)</td></tr>
+	<tr><td rowspan="3"></td><td>address(high)</td></tr>
+	<tr><td>address(low)</td></tr>
+	<tr><td>redraw</td></tr>
+	<tr><th>3</th><th>controller</th><td>button byte</td><td><i>nil</i></td></tr>
+	<tr><th>4</th><th>keyboard</th><td>key byte</td><td><i>nil</i></td></tr>
+	<tr><th rowspan='5'>5</th><th rowspan='5'>mouse</th><td>X(high)</td><td rowspan="5"><i>nil</i></td></tr>
+	<tr><td>X(low)</td></tr>
+	<tr><td>Y(high)</td></tr>
+	<tr><td>Y(low)</td></tr>
+	<tr><td>button byte</td></tr>
+</table>
+
 <pre>
 ( screen )
 
@@ -151,16 +177,16 @@ BRK
 |0100 @RESET 
 	
 	( set read/write to dev/screen )
-	#01 DUP ,dev/r STR ,dev/w STR 
+	#01 DUP =dev/r =dev/w 
 
 	( load screen size )
-	#00 IOR2 ,width STR2
-	#02 IOR2 ,height STR2
+	#00 IOR2 =width
+	#02 IOR2 =height
 
 	( draw pixel at screen center )
 	#0101 
-	,width LDR2 #0002 DIV2 
-	,height LDR2 #0002 DIV2 
+	~width #0002 DIV2 
+	~height #0002 DIV2 
 	,putpixel JSR
 
 BRK
@@ -176,5 +202,5 @@ BRK
 
 |d000 @ERROR BRK 
 |FFFA .RESET .FRAME .ERROR
-</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/uxn.htm' target='_blank'>edit</a> to <a href='../src/inc/html/uxn.htm'>uxn.htm</a>(178 lines)</figcaption>
-</figure><ul><li><a href='https://git.sr.ht/~rabbits/uxn' target='_blank'>sources</a></li><li><a href='https://fabiensanglard.net/another_world_polygons' target='_blank'>polygons of another world</a></li></ul><p><i>incoming(2)</i>: <a href='tools.html'>tools</a> <a href='gyo.html'>gyo</a> </p><p><i>Last update on <a href='tracker.html'>15D02</a>, edited 10 times. +46/69fh <b></b></i> <code style='float:right; font-size:80%'>-----|</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
+</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/uxn.htm' target='_blank'>edit</a> to <a href='../src/inc/html/uxn.htm'>uxn.htm</a>(204 lines)</figcaption>
+</figure><ul><li><a href='https://git.sr.ht/~rabbits/uxn' target='_blank'>sources</a></li><li><a href='https://fabiensanglard.net/another_world_polygons' target='_blank'>polygons of another world</a></li></ul><p><i>incoming(3)</i>: <a href='tools.html'>tools</a> <a href='gyo.html'>gyo</a> <a href='forth.html'>forth</a> </p><p><i>Last update on <a href='tracker.html'>15D02</a>, edited 10 times. +46/69fh <b></b></i> <code style='float:right; font-size:80%'>-----|</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
