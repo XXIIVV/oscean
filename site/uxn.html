@@ -83,26 +83,35 @@ T C S H
 <p>Here is an example of the assembly language that prints <code>hello world</code> to stdout.</p>
 
 <pre>
-( comment )
+( hello world )
 
 :dev/w fff9 ( const write port )
 
-|0100 @RESET 
+;x 2 ;y 2 ;color 1
 
-	#00 =dev/w ( set dev/write to sprite ) 
-	,string                                  ( add string pointer to stack )
-	@loop
-		DUP2 LDR IOW                         ( write pointer value to console )
-		#0001 ADD2                           ( increment string pointer )
-		DUP2 LDR #00 NEQ ,loop ROT JMP? POP2 ( while *ptr!=0 goto loop )
+|0100 @RESET 
+	
+	( set dev/write to console ) 
+	#00 =dev/w                                   
+	( print to console )
+	,text ,displaycli JSR
 
 BRK
 
-@string " Hello World "                      ( add string to memory )
+@displaycli
+	
+	@cliloop
+		DUP2 LDR IOW                             ( write pointer value to console )
+		#0001 ADD2                               ( increment string pointer )
+		DUP2 LDR #00 NEQ ,cliloop ROT JMP? POP2  ( while *ptr!=0 goto loop )
+RTS
 
-|c000 @FRAME BRK
-|d000 @ERROR BRK 
+@text " Hello World "                     ( add characters to memory )
 
+|c000 @FRAME
+|d000 @ERROR 
+
+|FFF0 [ f3f0 f30b f30a ] ( palette )
 |FFFA .RESET .FRAME .ERROR
 </pre>
 
@@ -132,7 +141,7 @@ BRK
 <p><code>ROT</code> is used to bring the result of <code>GTH</code> to the top of the stack, <code>POP2</code> is used after the conditional <code>JMP</code> to remove the address of the label <code>@there</code> that is left on the stack.</p>
 
 <pre>
-#06 #05 GTH ,there ROT JMP? POP^
+#06 #05 GTH ,there ROT JMP? POP2
 
 @here ( when lesser or equal )
 	#ee
@@ -189,35 +198,45 @@ BRK
 :dev/r fff8 ( std read port )
 :dev/w fff9 ( std write port )
 
-;width 2 ;height 2
+;centerx 2 ;centery 2 ;i 2
 
 |0100 @RESET 
 	
 	( set read/write to dev/screen )
 	#01 DUP =dev/r =dev/w 
 
-	( load screen size )
-	#00 IOR2 =width
-	#02 IOR2 =height
+	( find screen center )
+	#00 IOR2 #0002 DIV2 =centerx
+	#02 IOR2 #0002 DIV2 =centery
 
-	( draw pixel at screen center )
-	#0101 
-	~width #0002 DIV2 
-	~height #0002 DIV2 
-	,putpixel JSR
+	( draw hor line )
+	#0000 =i
+	@draw-hor
+		#03 ~i ~centery ,draw-pixel JSR
+		~i #0002 ADD2 =i ( increment )
+	~i #00 IOR2 LTH2 ,draw-hor ROT JMP? POP2
+
+	( draw ver line )
+	#0000 =i
+	@draw-ver
+		#03 ~centerx ~i ,draw-pixel JSR
+		~i #0002 ADD2 =i ( increment )
+	~i #02 IOR2 LTH2 ,draw-ver ROT JMP? POP2
+
+	( draw pixel in the middle )
+	#01 ~centerx ~centery ,draw-pixel JSR
 
 BRK
 
-|c000 @FRAME BRK
-
-@putpixel 
+@draw-pixel 
 	IOW2 ( y short )
 	IOW2 ( x short )
 	IOW ( color byte )
-	IOW ( redraw byte )
 	RTS
 
+|c000 @FRAME BRK
 |d000 @ERROR BRK 
-|FFFA .RESET .FRAME .ERROR
-</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/uxn.htm' target='_blank'>edit</a> to <a href='../src/inc/html/uxn.htm'>uxn.htm</a>(221 lines)</figcaption>
+|FFF0 [ f0ac f0bb f053 ] ( palette )
+|FFFA .RESET .FRAME .ERROR ( vectors )
+</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/uxn.htm' target='_blank'>edit</a> to <a href='../src/inc/html/uxn.htm'>uxn.htm</a>(240 lines)</figcaption>
 </figure><ul><li><a href='https://git.sr.ht/~rabbits/uxn' target='_blank'>sources</a></li><li><a href='https://fabiensanglard.net/another_world_polygons' target='_blank'>polygons of another world</a></li></ul><p><i>incoming(3)</i>: <a href='tools.html'>tools</a> <a href='gyo.html'>gyo</a> <a href='forth.html'>forth</a> </p><p><i>Last update on <a href='tracker.html'>15D04</a>, edited 11 times. +48/75fh <b></b></i> <code style='float:right; font-size:80%'>-----|</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
