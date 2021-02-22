@@ -192,51 +192,28 @@ RTS
 	<tr><td>0</td><td>1</td><td>2</td><td>3</td><td>0</td><td>1</td><td>2</td><td>3</td><td>0</td><td>1</td><td>2</td><td>3</td><td>0</td><td>1</td><td>2</td><td>3</td><td>0</td><td>1</td><td>2</td><td>3</td><td>0</td><td>1</td><td>2</td><td>3</td></tr>
 </table>
 
-<pre>
-( screen )
+<h3>Sprite Engine</h3>
 
-:dev/r fff8 ( std read port )
-:dev/w fff9 ( std write port )
+<p>Uxn's sprite device makes it easier to draw characters and icons to the screen by sending a memory address, a position and a color byte.</p>
 
-;centerx 2 ;centery 2 ;i 2
+<p>The sprite device's color byte defines the layer to draw on, the type of data to draw, and the colors to use.</p>
 
-|0100 @RESET 
-	
-	( set read/write to dev/screen )
-	#01 DUP =dev/r =dev/w 
+<table border='1'>
+	<tr><th colspan='3'>high nibble</th><th colspan='6'>low nibble(icn)</th></tr>
+	<tr><th>0</th><td>bg</td><td rowspan='2'>icn</td><th>0</th><td class='clr0' colspan='2'>0</td><th>8</th><td class='clr0'>0</td><td class='clr2'>2</td></tr></tr>
+	<tr><th>1</th><td>fg</td><th>1</th><td class='clr1'>1</td><td class='clr0'>0</td><th>9</th><td class='clr1'>1</td><td class='clr2'>2</td></tr></tr>
+	<tr><th>2</th><td>bg</td><td rowspan='2'>chr</td><th>2</th><td class='clr2'>2</td><td class='clr0'>0</td><th>a</th><td class='clr2' colspan='2'>2</td></tr></tr>
+	<tr><th>3</th><td>fg</td><th>3</th><td class='clr3'>3</td><td class='clr0'>0</td><th>b</th><td class='clr3'>3</td><td class='clr2'>2</td></tr></tr>
+	<tr><th>4</th><th></th><th></th><th>4</th><td class='clr0'>0</td><td class='clr1'>1</td><th>c</th><td class='clr0'>0</td><td class='clr3'>3</td></tr></tr>
+	<tr><th>5</th><th></th><th></th><th>5</th><td class='clr1' colspan='2'>1</td><th>d</th><td class='clr1'>1</td><td class='clr3'>3</td></tr></tr>
+	<tr><th>6</th><th></th><th></th><th>6</th><td class='clr2'>2</td><td class='clr1'>1</td><th>e</th><td class='clr2'>2</td><td class='clr3'>3</td></tr></tr>
+	<tr><th>7</th><th></th><th></th><th>7</th><td class='clr3'>3</td><td class='clr1'>1</td><th>f</th><td class='clr3' colspan='2'>3</td></tr></tr>
+</table>
 
-	( find screen center )
-	#00 IOR2 #0002 DIV2 =centerx
-	#02 IOR2 #0002 DIV2 =centery
-
-	( draw hor line )
-	#0000 =i
-	@draw-hor
-		#03 ~i ~centery ,draw-pixel JSR
-		~i #0002 ADD2 =i ( increment )
-	~i #00 IOR2 LTH2 ,draw-hor ROT JMP? POP2
-
-	( draw ver line )
-	#0000 =i
-	@draw-ver
-		#03 ~centerx ~i ,draw-pixel JSR
-		~i #0002 ADD2 =i ( increment )
-	~i #02 IOR2 LTH2 ,draw-ver ROT JMP? POP2
-
-	( draw pixel in the middle )
-	#01 ~centerx ~centery ,draw-pixel JSR
-
-BRK
-
-@draw-pixel 
-	IOW2 ( y short )
-	IOW2 ( x short )
-	IOW ( color byte )
-	RTS
-
-|c000 @FRAME BRK
-|d000 @ERROR BRK 
-|FFF0 [ f0ac f0bb f053 ] ( palette )
-|FFFA .RESET .FRAME .ERROR ( vectors )
-</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/uxn.htm' target='_blank'>edit</a> to <a href='../src/inc/html/uxn.htm'>uxn.htm</a>(240 lines)</figcaption>
-</figure><ul><li><a href='https://git.sr.ht/~rabbits/uxn' target='_blank'>sources</a></li><li><a href='https://fabiensanglard.net/another_world_polygons' target='_blank'>polygons of another world</a></li></ul><p><i>incoming(3)</i>: <a href='tools.html'>tools</a> <a href='gyo.html'>gyo</a> <a href='forth.html'>forth</a> </p><p><i>Last update on <a href='tracker.html'>15D04</a>, edited 11 times. +48/75fh <b></b></i> <code style='float:right; font-size:80%'>-----|</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
+<style>
+.clr0 { background:white; color:black; }
+.clr1 { background:black; color:white; }
+.clr2 { background:#72dec2; color:white; }
+.clr3 { background:#ff0000; color:black; }
+</style><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/uxn.htm' target='_blank'>edit</a> to <a href='../src/inc/html/uxn.htm'>uxn.htm</a>(217 lines)</figcaption>
+</figure><ul><li><a href='https://git.sr.ht/~rabbits/uxn' target='_blank'>sources</a></li><li><a href='https://fabiensanglard.net/another_world_polygons' target='_blank'>polygons of another world</a></li></ul><p><i>incoming(3)</i>: <a href='tools.html'>tools</a> <a href='gyo.html'>gyo</a> <a href='forth.html'>forth</a> </p><p><i>Last update on <a href='tracker.html'>15D09</a>, edited 13 times. +55/88fh <b></b></i> <code style='float:right; font-size:80%'>-----|</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
