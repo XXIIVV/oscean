@@ -87,26 +87,24 @@ T C S H
 
 :dev/w fff9 ( const write port )
 
-;x 2 ;y 2 ;color 1
-
 |0100 @RESET 
 	
-	( set dev/write to console ) 
-	#00 =dev/w                                   
-	( print to console )
-	,text ,displaycli JSR
+	#00 =dev/w ( set dev/write to console ) 
+	,text1 ,print-label JSR ( print to console )
 
 BRK
 
-@displaycli
-	
+@print-label ( text )
+
 	@cliloop
 		DUP2 LDR IOW                             ( write pointer value to console )
 		#0001 ADD2                               ( increment string pointer )
 		DUP2 LDR #00 NEQ ,cliloop ROT JMP? POP2  ( while *ptr!=0 goto loop )
-RTS
+	POP2
+		
+RTS                 
 
-@text " Hello World "                     ( add characters to memory )
+@text1 [ Hello World ] <1 .00 ( add text to memory, return 1 byte, add null byte )
 
 |c000 @FRAME
 |d000 @ERROR 

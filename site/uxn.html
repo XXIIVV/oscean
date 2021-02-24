@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='description' content='Uxn is a 8-bit virtual stack machine.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV &mdash; uxn</title></head><body><header><a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='paper_computing.html'>paper computing</a></li><li><a href='programming.html'>programming</a></li><li><a href='virtual_machines.html'>virtual machines/</a></li><li><a href='fluidics.html'>fluidics</a></li></ul><ul><li><a href='orca.html'>orca</a></li><li><a href='gyo.html'>gyo</a></li><li><a href='uxn.html'>uxn/</a></li><li><a href='noton.html'>noton</a></li><li><a href='paradise.html'>paradise</a></li></ul><ul></ul></nav><main><figure><img src='../media/diary/739.jpg' alt='Uxn Sticker picture' width='900'/><figcaption>15C06 &mdash; Uxn Sticker</figcaption></figure><h2>Uxn is a 8-bit virtual stack machine.</h2><p>The goal of the project is to create a portable virtual machine capable of hosting various <a href='tools.html'>tools</a> and <a href='games.html'>games</a>. Its design should have, at most, the complexity of the <a href='assembly.html'>6502</a>, and its assembly language be both human-readable, and allow for the creation of mouse and keyboard driven applications. The distribution of Uxn projects should be akin to downloading a rom for a console emulator.</p><p>The thin layer that is the "Uxn emulator" should be the only part of this project needing to be ported to make the device available on any new platform. For that reason, Uxn has to be designed with a focus on portability such that it welcomes anyone to try their hand at building their own implementation. The <a href='https://git.sr.ht/~rabbits/uxn' target='_blank'>current emulator</a> is 400 lines of C89 over SDL2 as only dependecy.</p><p>While the aim is to distribute assembled binaries, to respect the <a href='about.html'>philosophy</a> of the tool's ecosystem, the assembly sources should be packaged alongside the rom. Similarly to the emulator, the assembler should be extremely simplistic in its implementation as to not discourage re-implementations. The C89 assembler is also 400 lines with no dependencies.</p><img src='../media/generic/uxn.jpg' width='200'/>&nbsp;<figure><h2>Memory</h2>
+<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='description' content='Uxn is a 8-bit virtual stack machine.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV &mdash; uxn</title></head><body><header><a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='paper_computing.html'>paper computing</a></li><li><a href='programming.html'>programming</a></li><li><a href='virtual_machines.html'>virtual machines/</a></li><li><a href='fluidics.html'>fluidics</a></li></ul><ul><li><a href='orca.html'>orca</a></li><li><a href='gyo.html'>gyo</a></li><li><a href='uxn.html'>uxn/</a></li><li><a href='noton.html'>noton</a></li><li><a href='paradise.html'>paradise</a></li></ul><ul><li><a href='goki.html'>goki</a></li></ul></nav><main><figure><img src='../media/diary/739.jpg' alt='Uxn Sticker picture' width='900'/><figcaption>15C06 &mdash; Uxn Sticker</figcaption></figure><h2>Uxn is a 8-bit virtual stack machine.</h2><p>The goal of the project is to create a portable virtual machine capable of hosting various <a href='tools.html'>tools</a> and <a href='games.html'>games</a>. Its design should have, at most, the complexity of the <a href='assembly.html'>6502</a>, and its assembly language be both human-readable, and allow for the creation of mouse and keyboard driven applications. The distribution of Uxn projects should be akin to downloading a rom for a console emulator.</p><p>The thin layer that is the "Uxn emulator" should be the only part of this project needing to be ported to make the device available on any new platform. For that reason, Uxn has to be designed with a focus on portability such that it welcomes anyone to try their hand at building their own implementation. The <a href='https://git.sr.ht/~rabbits/uxn' target='_blank'>current emulator</a> is 400 lines of C89 over SDL2 as only dependecy.</p><p>While the aim is to distribute assembled binaries, to respect the <a href='about.html'>philosophy</a> of the tool's ecosystem, the assembly sources should be packaged alongside the rom. Similarly to the emulator, the assembler should be extremely simplistic in its implementation as to not discourage re-implementations. The C89 assembler is also 400 lines with no dependencies.</p><img src='../media/generic/uxn.jpg' width='200'/>&nbsp;<figure><h2>Memory</h2>
 
 <table border='1'>
 	<tr><th rowspan='4'>Core</th><td>Program Counter</td><td>1 short</td></tr>
@@ -87,26 +87,24 @@ T C S H
 
 :dev/w fff9 ( const write port )
 
-;x 2 ;y 2 ;color 1
-
 |0100 @RESET 
 	
-	( set dev/write to console ) 
-	#00 =dev/w                                   
-	( print to console )
-	,text ,displaycli JSR
+	#00 =dev/w ( set dev/write to console ) 
+	,text1 ,print-label JSR ( print to console )
 
 BRK
 
-@displaycli
-	
+@print-label ( text )
+
 	@cliloop
 		DUP2 LDR IOW                             ( write pointer value to console )
 		#0001 ADD2                               ( increment string pointer )
 		DUP2 LDR #00 NEQ ,cliloop ROT JMP? POP2  ( while *ptr!=0 goto loop )
-RTS
+	POP2
+		
+RTS                 
 
-@text " Hello World "                     ( add characters to memory )
+@text1 [ Hello World ] <1 .00 ( add text to memory, return 1 byte, add null byte )
 
 |c000 @FRAME
 |d000 @ERROR 
@@ -215,5 +213,5 @@ RTS
 .clr1 { background:black; color:white; }
 .clr2 { background:#72dec2; color:white; }
 .clr3 { background:#ff0000; color:black; }
-</style><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/uxn.htm' target='_blank'>edit</a> to <a href='../src/inc/html/uxn.htm'>uxn.htm</a>(217 lines)</figcaption>
-</figure><ul><li><a href='https://git.sr.ht/~rabbits/uxn' target='_blank'>sources</a></li><li><a href='https://fabiensanglard.net/another_world_polygons' target='_blank'>polygons of another world</a></li></ul><p><i>incoming(3)</i>: <a href='tools.html'>tools</a> <a href='gyo.html'>gyo</a> <a href='forth.html'>forth</a> </p><p><i>Last update on <a href='tracker.html'>15D09</a>, edited 13 times. +55/88fh <b></b></i> <code style='float:right; font-size:80%'>-----|</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
+</style><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/uxn.htm' target='_blank'>edit</a> to <a href='../src/inc/html/uxn.htm'>uxn.htm</a>(215 lines)</figcaption>
+</figure><figure><img src='../media/diary/742.jpg' alt='An operating system running on UxnVM. picture' width='900'/><figcaption><a href='goki.html'>goki</a> &mdash; An operating system running on UxnVM.</figcaption></figure><ul><li><a href='https://git.sr.ht/~rabbits/uxn' target='_blank'>sources</a></li><li><a href='https://fabiensanglard.net/another_world_polygons' target='_blank'>polygons of another world</a></li></ul><p><i>incoming(4)</i>: <a href='tools.html'>tools</a> <a href='gyo.html'>gyo</a> <a href='goki.html'>goki</a> <a href='forth.html'>forth</a> </p><p><i>Last update on <a href='tracker.html'>15D09</a>, edited 12 times. +53/82fh <b></b></i> <code style='float:right; font-size:80%'>-----|</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
