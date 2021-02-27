@@ -1,6 +1,11 @@
 #include <stdio.h>
 #include <time.h>
 
+/* 
+	Simple things should be simple, 
+	complex things should be possible. 
+*/
+
 #define STRMEM 4096 * 96
 #define GLOMEM 100
 #define LEXMEM 500

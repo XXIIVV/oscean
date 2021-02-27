@@ -12,7 +12,7 @@
 
 <h3>Status Register</h3>
 
-<p>The status register is distributed as follows, it shares the same byte as the register selector. The <b>halt</b> flag is used by the BRK instruction is stops the cpu, the <b>short</b> flag is used for 16 operations, the <b>cond</b> flag is set when an instruction requires a non-zero stack value to operate, and the <b>sign</b> flag is set when the operator should use signed integers.</p>
+<p>The status register is distributed as follows, it shares the same byte as the register selector. The <b>halt</b> flag is used by the BRK instruction is stops the cpu, the <b>short</b> flag is used for 16-bits operations, the <b>cond</b> flag is set when an instruction requires a non-zero stack value to operate, and the <b>sign</b> flag is set when the operator should use signed integers.</p>
 
 <pre>
 T C S H
@@ -85,11 +85,10 @@ T C S H
 <pre>
 ( hello world )
 
-:dev/w fff9 ( const write port )
+&Console { pad 8 stdio 1 }
 
 |0100 @RESET 
 	
-	#00 =dev/w ( set dev/write to console ) 
 	,text1 ,print-label JSR ( print to console )
 
 BRK
@@ -97,7 +96,7 @@ BRK
 @print-label ( text )
 
 	@cliloop
-		DUP2 LDR IOW                             ( write pointer value to console )
+		DUP2 LDR =dev/console.stdio              ( write pointer value to console )
 		#0001 ADD2                               ( increment string pointer )
 		DUP2 LDR #00 NEQ ,cliloop ROT JMP? POP2  ( while *ptr!=0 goto loop )
 	POP2
@@ -109,12 +108,14 @@ RTS
 |c000 @FRAME
 |d000 @ERROR 
 
+|FF00 ;dev/console Console
+
 |FFF0 [ f3f0 f30b f30a ] ( palette )
 |FFFA .RESET .FRAME .ERROR
 </pre>
 
 <h3>Literal mode</h3>
-<p>Each operation is 1 byte(8 bits). To differentiate operations from numbers, the <code>LIT</code> opcode toggles the literal mode for a length of 1 evaluation, the 16-bits mode <code>LIT2</code> opcode toggles the literal mode for the length of 2 frames.</p>
+<p>Each operation is 1 byte(8-bits). To differentiate operations from numbers, the <code>LIT</code> opcode toggles the literal mode for a length of 1 evaluation, the 16-bits mode <code>LIT2</code> opcode toggles the literal mode for the length of 2 frames.</p>
 
 <table border='1'>
 	<tr><th><code>assembly</code></th><td><code>bytecode</code></td></tr>
@@ -152,28 +153,27 @@ RTS
 
 <h2>Devices</h2>
 
-<p>There is a maximum of 256 devices accessible to the two I/0 operators <code>IOR</code>(read) and <code>IOW</code>(write) used to interface with devices, such as the screen, the mouse, the keyboard, etc. To read or write from a specific device, the input port(fff8) and output port(fff9) bytes have to be assigned in memory.</p>
+<p>There is a maximum of 8 devices accessible via the last page in memory, each device have 8 bytes to read from, and 8 bytes to write to. Devices are external systems to the Uxn code such as the screen, the mouse, the keyboard, etc. </p>
 
 <table border='1'>
 	<tr><th rowspan='2' colspan='2'>Device</th><th colspan='2'>I/O</th></tr>
 	<tr><th>Read</th><th>Write</th></tr>
-	<tr><th>0</th><th>console</th><td><i>nil</i></td><td>char to stdout</td></tr>
-	<tr><th rowspan='6'>1</th><th rowspan='6'>screen</th><td>WIDTH(high)</td><td>Y(high)</td></tr>
-	<tr><td>WIDTH(low)</td><td>Y(low)</td></tr>
-	<tr><td>HEIGHT(high)</td><td>X(high)</td></tr>
-	<tr><td>HEIGHT(low)</td><td>X(low)</td></tr>
-	<tr><td rowspan="2"></td><td>color</td></tr>
-	<tr><td>redraw</td></tr>
-	<tr><th rowspan='7'>2</th><th rowspan='7'>sprite</th><td>WIDTH(high)</td><td>Y(high)</td></tr>
-	<tr><td>WIDTH(low)</td><td>Y(low)</td></tr>
-	<tr><td>HEIGHT(high)</td><td>X(high)</td></tr>
-	<tr><td>HEIGHT(low)</td><td>X(low)</td></tr>
+	<tr><th><code>ff00</code></th><th>console</th><td><i>nil</i></td><td class='clr1'>stdout</td></tr>
+	<tr><th rowspan='5'><code>ff10</code></th><th rowspan='5'>screen</th><td>WIDTH(high)</td><td>X(high)</td></tr>
+	<tr><td>WIDTH(low)</td><td>X(low)</td></tr>
+	<tr><td>HEIGHT(high)</td><td>Y(high)</td></tr>
+	<tr><td>HEIGHT(low)</td><td>Y(low)</td></tr>
+	<tr><td></td><td class='clr1'>color</td></tr>
+	<tr><th rowspan='7'><code>ff20</code></th><th rowspan='7'>sprite</th><td>WIDTH(high)</td><td>X(high)</td></tr>
+	<tr><td>WIDTH(low)</td><td>X(low)</td></tr>
+	<tr><td>HEIGHT(high)</td><td>Y(high)</td></tr>
+	<tr><td>HEIGHT(low)</td><td>Y(low)</td></tr>
 	<tr><td rowspan="3"></td><td>address(high)</td></tr>
 	<tr><td>address(low)</td></tr>
-	<tr><td>redraw</td></tr>
-	<tr><th>3</th><th>controller</th><td>button byte</td><td><i>nil</i></td></tr>
-	<tr><th>4</th><th>keyboard</th><td>key byte</td><td><i>nil</i></td></tr>
-	<tr><th rowspan='5'>5</th><th rowspan='5'>mouse</th><td>X(high)</td><td rowspan="5"><i>nil</i></td></tr>
+	<tr><td class='clr1'>color</td></tr>
+	<tr><th><code>ff30</code></th><th>controller</th><td>buttons byte</td><td><i>nil</i></td></tr>
+	<tr><th><code>ff40</code></th><th>keyboard</th><td>key byte</td><td><i>nil</i></td></tr>
+	<tr><th rowspan='5'><code>ff50</code></th><th rowspan='5'>mouse</th><td>X(high)</td><td rowspan="5"><i>nil</i></td></tr>
 	<tr><td>X(low)</td></tr>
 	<tr><td>Y(high)</td></tr>
 	<tr><td>Y(low)</td></tr>
@@ -214,4 +214,4 @@ RTS
 .clr2 { background:#72dec2; color:white; }
 .clr3 { background:#ff0000; color:black; }
 </style><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/uxn.htm' target='_blank'>edit</a> to <a href='../src/inc/html/uxn.htm'>uxn.htm</a>(215 lines)</figcaption>
-</figure><figure><img src='../media/diary/742.jpg' alt='An operating system running on UxnVM. picture' width='900'/><figcaption><a href='goki.html'>goki</a> &mdash; An operating system running on UxnVM.</figcaption></figure><ul><li><a href='https://git.sr.ht/~rabbits/uxn' target='_blank'>sources</a></li><li><a href='https://fabiensanglard.net/another_world_polygons' target='_blank'>polygons of another world</a></li></ul><p><i>incoming(4)</i>: <a href='tools.html'>tools</a> <a href='gyo.html'>gyo</a> <a href='goki.html'>goki</a> <a href='forth.html'>forth</a> </p><p><i>Last update on <a href='tracker.html'>15D09</a>, edited 12 times. +53/82fh <b></b></i> <code style='float:right; font-size:80%'>-----|</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
+</figure><figure><img src='../media/diary/742.jpg' alt='An operating system running on UxnVM. picture' width='900'/><figcaption><a href='goki.html'>goki</a> &mdash; An operating system running on UxnVM.</figcaption></figure><ul><li><a href='https://git.sr.ht/~rabbits/uxn' target='_blank'>sources</a></li><li><a href='https://fabiensanglard.net/another_world_polygons' target='_blank'>polygons of another world</a></li></ul><p><i>incoming(4)</i>: <a href='tools.html'>tools</a> <a href='gyo.html'>gyo</a> <a href='goki.html'>goki</a> <a href='forth.html'>forth</a> </p><p><i>Last update on <a href='tracker.html'>15E00</a>, edited 13 times. +55/88fh <b></b></i> <code style='float:right; font-size:80%'>-----|</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
