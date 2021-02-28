@@ -22,24 +22,6 @@ T C S H
 +---------- Cond  0x08
 </pre>
 
-<h3>Special Addresses</h3>
-
-<p>Addresses at the end of the memory are used to keep various entry points into the program. The reset vector is run once, the frame vector is run each frame, and the error vector is run once when an error has occured.</p>
-
-<table border='1'>
-	<tr><th rowspan="6">Colors</th><td><code>fff0</code></td><td rowspan='2'>Red</td></tr>
-	<tr><td><code>fff1</code></td></tr>
-	<tr><td><code>fff2</code></td><td rowspan='2'>Green</td></tr>
-	<tr><td><code>fff3</code></td></tr>
-	<tr><td><code>fff4</code></td><td rowspan='2'>Blue</td></tr>
-	<tr><td><code>fff5</code></td></tr>
-	<tr><th rowspan="2">Reserved</th><td><code>fff8</code></td><td>---</td></tr>
-	<tr><td><code>fff9</code></td><td>---</td></tr>
-	<tr><th rowspan="3">Vectors</th><td><code>fffa-fffb</code></td><td>Reset</td></tr>
-	<tr><td><code>fffc-fffd</code></td><td>Frame</td></tr>
-	<tr><td><code>fffe-ffff</code></td><td>Error</td></tr>
-</table>
-
 <h3>Return Stack</h3>
 
 <p>The CPU can tunnel through 128 subroutines and find its way back with the return stack, the opcode to jump into to a subroutine is <code>JSR</code>, the opcode to return from a subroutine is <code>RTS</code>. An item on the work stack can be temporarily sent to the return stack with <code>WSR</code> and returned with <code>RSW</code>. Uxn will automatically keep a count of the items that were moved from one stack to the other, the program will halt if trying to return or jump to a subroutine before all the items transferered have been returned. </p>
@@ -110,8 +92,8 @@ RTS
 
 |FF00 ;dev/console Console
 
-|FFF0 [ f3f0 f30b f30a ] ( palette )
-|FFFA .RESET .FRAME .ERROR
+|FFF0 .RESET .FRAME .ERROR
+|FFF8 [ f3f0 f30b f30a ] ( palette )
 </pre>
 
 <h3>Literal mode</h3>
@@ -156,39 +138,25 @@ RTS
 <p>There is a maximum of 8 devices accessible via the last page in memory, each device have 8 bytes to read from, and 8 bytes to write to. Devices are external systems to the Uxn code such as the screen, the mouse, the keyboard, etc. </p>
 
 <table border='1'>
-	<tr><th rowspan='2' colspan='2'>Device</th><th colspan='2'>I/O</th></tr>
-	<tr><th>Read</th><th>Write</th></tr>
+	<tr><th rowspan='2' colspan='2'>device</th><th colspan='2'>i/o</th></tr>
+	<tr><th>read +0x00</th><th>write +0x08</th></tr>
 	<tr><th><code>ff00</code></th><th>console</th><td><i>nil</i></td><td class='clr1'>stdout</td></tr>
-	<tr><th rowspan='5'><code>ff10</code></th><th rowspan='5'>screen</th><td>WIDTH(high)</td><td>X(high)</td></tr>
-	<tr><td>WIDTH(low)</td><td>X(low)</td></tr>
-	<tr><td>HEIGHT(high)</td><td>Y(high)</td></tr>
-	<tr><td>HEIGHT(low)</td><td>Y(low)</td></tr>
+	<tr><th rowspan='3'><code>ff10</code></th><th rowspan='3'>screen</th><td>width*</td><td>x*</td></tr>
+	<tr><td>height*</td><td>y*</td></tr>
 	<tr><td></td><td class='clr1'>color</td></tr>
-	<tr><th rowspan='7'><code>ff20</code></th><th rowspan='7'>sprite</th><td>WIDTH(high)</td><td>X(high)</td></tr>
-	<tr><td>WIDTH(low)</td><td>X(low)</td></tr>
-	<tr><td>HEIGHT(high)</td><td>Y(high)</td></tr>
-	<tr><td>HEIGHT(low)</td><td>Y(low)</td></tr>
-	<tr><td rowspan="3"></td><td>address(high)</td></tr>
-	<tr><td>address(low)</td></tr>
-	<tr><td class='clr1'>color</td></tr>
+	<tr><th rowspan='4'><code>ff20</code></th><th rowspan='4'>sprite</th><td>width*</td><td>x*</td></tr>
+	<tr><td>height*</td><td>y*</td></tr>
+	<tr><td></td><td>address*</td></tr>
+	<tr><td></td><td class='clr1'>color</td></tr>
 	<tr><th><code>ff30</code></th><th>controller</th><td>buttons byte</td><td><i>nil</i></td></tr>
 	<tr><th><code>ff40</code></th><th>keyboard</th><td>key byte</td><td><i>nil</i></td></tr>
-	<tr><th rowspan='6'><code>ff50</code></th><th rowspan='6'>mouse</th><td>X(high)</td><td rowspan="6"><i>nil</i></td></tr>
-	<tr><td>X(low)</td></tr>
-	<tr><td>Y(high)</td></tr>
-	<tr><td>Y(low)</td></tr>
+	<tr><th rowspan='4'><code>ff50</code></th><th rowspan='4'>mouse</th><td>x*</td><td rowspan="4"><i>nil</i></td></tr>
+	<tr><td>y*</td></tr>
 	<tr><td>button byte</td></tr>
 	<tr><td>chord byte</td></tr>
-</table>
-
-<h3>Screen</h3>
-
-<p>The screen supports 4 colors at once, the colors are defined in the special addresses <code>fff0-fff5</code>.</p>
-
-<table border='1'>
-	<tr><th colspan='8'>Red</th><th colspan='8'>Green</th><th colspan='8'>Blue</th></tr>
-	<tr><td colspan='4'>fff0</td><td colspan='4'>fff1</td><td colspan='4'>fff2</td><td colspan='4'>fff3</td><td colspan='4'>fff4</td><td colspan='4'>fff5</td></tr>
-	<tr><td>0</td><td>1</td><td>2</td><td>3</td><td>0</td><td>1</td><td>2</td><td>3</td><td>0</td><td>1</td><td>2</td><td>3</td><td>0</td><td>1</td><td>2</td><td>3</td><td>0</td><td>1</td><td>2</td><td>3</td><td>0</td><td>1</td><td>2</td><td>3</td></tr>
+	<tr><th rowspan='4'><code>fff0</code></th><th rowspan='4'>system</th><td>reset*</td><td class='clr1'>red*</td></tr>
+	<tr><td>frame*</td><td class='clr1'>green*</td></tr>
+	<tr><td>error*</td><td class='clr1'>blue*</td></tr>
 </table>
 
 <h3>Sprite Engine</h3>
@@ -215,3 +183,5 @@ RTS
 .clr2 { background:#72dec2; color:white; }
 .clr3 { background:#ff0000; color:black; }
 </style>
+
+<img src='../media/identity/uxn64.png' />
