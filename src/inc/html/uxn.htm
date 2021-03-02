@@ -67,33 +67,37 @@ T C S H
 <pre>
 ( hello world )
 
-&Console { pad 8 stdio 1 }
+&Console { pad 8 char 1 byte 1 short 2 }
 
 |0100 @RESET 
 	
-	,text1 ,print-label JSR ( print to console )
+	,text1 ,print-label JSR
+	,text2 ,print-label JSR
+	#ab =dev/console.byte
+	#cdef =dev/console.short
 
 BRK
 
 @print-label ( text )
 
-	@cliloop
-		DUP2 LDR =dev/console.stdio              ( write pointer value to console )
+	@print-label-loop
+		DUP2 LDR =dev/console.char               ( write pointer value to console )
 		#0001 ADD2                               ( increment string pointer )
-		DUP2 LDR #00 NEQ ,cliloop ROT JMP? POP2  ( while *ptr!=0 goto loop )
+		DUP2 LDR #00 NEQ ,print-label-loop ROT JMP? POP2  ( while *ptr!=0 goto loop )
 	POP2
-		
+
 RTS                 
 
-@text1 [ Hello World ] <1 .00 ( add text to memory, return 1 byte, add null byte )
+@text1 [ Hello World 0a00 ] ( store text with a linebreak and null byte )
+@text2 [ Welcome to UxnVM 0a00 ]
 
 |c000 @FRAME
 |d000 @ERROR 
 
 |FF00 ;dev/console Console
 
-|FFF0 .RESET .FRAME .ERROR
-|FFF8 [ f3f0 f30b f30a ] ( palette )
+|FFF0 .RESET .FRAME .ERROR ( vectors )
+|FFF8 [ 13fd 1ef3 1bf2 ] ( palette )
 </pre>
 
 <h3>Literal mode</h3>
@@ -135,7 +139,7 @@ RTS
 
 <h2>Devices</h2>
 
-<p>There is a maximum of 8 devices accessible via the last page in memory, each device have 8 bytes to read from, and 8 bytes to write to. Devices are external systems to the Uxn code such as the screen, the mouse, the keyboard, etc. </p>
+<p>There is a maximum of 16 devices accessible via the last page in memory, each device have 8 bytes to read from, and 8 bytes to write to. Devices are external systems to the Uxn code such as the screen, the mouse, the keyboard, etc. </p>
 
 <table border='1'>
 	<tr><th rowspan='2' colspan='2'>device</th><th colspan='2'>i/o</th></tr>
@@ -157,6 +161,23 @@ RTS
 	<tr><th rowspan='4'><code>fff0</code></th><th rowspan='4'>system</th><td>reset*</td><td class='clr1'>red*</td></tr>
 	<tr><td>frame*</td><td class='clr1'>green*</td></tr>
 	<tr><td>error*</td><td class='clr1'>blue*</td></tr>
+</table>
+
+<h3>Controller</h3>
+
+<p>A device that works like a NES controller, each button is a bit from a single byte(<code>ff30</code>). To check if the up button is pressed:</p>
+
+<pre>
+,no-up ~dev/ctrl.buttons #f0 AND #10 NEQ JMP? POP2
+	( handle when up is pressed )
+@no-up
+</pre>
+
+<table border='1'>
+	<tr><td><code>0x01</code></td><td>Ctrl</td><td><code>0x10</code></td><td>Up</td></tr>
+	<tr><td><code>0x02</code></td><td>Alt</td><td><code>0x20</code></td><td>Down</td></tr>
+	<tr><td><code>0x04</code></td><td>Backspace</td><td><code>0x40</code></td><td>Left</td></tr>
+	<tr><td><code>0x08</code></td><td>Return</td><td><code>0x80</code></td><td>Right</td></tr>
 </table>
 
 <h3>Sprite Engine</h3>
