@@ -345,6 +345,24 @@ savedoc(Document *d, char *name)
 	return 1;
 }
 
+int
+saveicn(Document *d, char *name)
+{
+	int i;
+	FILE *f = fopen(name, "w");
+	Uint8 data[SZ / 2];
+	for(i = 0; i < SZ / 2; ++i)
+		data[i] = d->data[(i / 4) * 8 + (i % 8)];
+	if(!fwrite(data, sizeof(data), 1, f))
+		return error("Save", "Failure");
+	d->unsaved = 0;
+	scpy(name, d->name, 256);
+	fclose(f);
+	printf("Saved(icn): %s\n", d->name);
+	redraw(pixels);
+	return 1;
+}
+
 void
 setpicker(Point2d *picker, int x, int y)
 {
@@ -436,7 +454,7 @@ dokey(SDL_Event *event)
 	if(ctrl) {
 		switch(event->key.keysym.sym) {
 		/* Generic */
-		case SDLK_s: shift ? savebmp() : savedoc(&doc, doc.name); break;
+		case SDLK_s: shift ? saveicn(&doc, doc.name) : savedoc(&doc, doc.name); break;
 		case SDLK_h: savemode(&GUIDES, !GUIDES); break;
 		}
 	} else {

@@ -345,6 +345,24 @@ savedoc(Document *d, char *name)
 	return 1;
 }
 
+int
+saveicn(Document *d, char *name)
+{
+	int i;
+	FILE *f = fopen(name, "w");
+	Uint8 data[SZ / 2];
+	for(i = 0; i &lt; SZ / 2; ++i)
+		data[i] = d-&gt;data[(i / 4) * 8 + (i % 8)];
+	if(!fwrite(data, sizeof(data), 1, f))
+		return error("Save", "Failure");
+	d-&gt;unsaved = 0;
+	scpy(name, d-&gt;name, 256);
+	fclose(f);
+	printf("Saved(icn): %s\n", d-&gt;name);
+	redraw(pixels);
+	return 1;
+}
+
 void
 setpicker(Point2d *picker, int x, int y)
 {
@@ -436,7 +454,7 @@ dokey(SDL_Event *event)
 	if(ctrl) {
 		switch(event-&gt;key.keysym.sym) {
 		/* Generic */
-		case SDLK_s: shift ? savebmp() : savedoc(&amp;doc, doc.name); break;
+		case SDLK_s: shift ? saveicn(&amp;doc, doc.name) : savedoc(&amp;doc, doc.name); break;
 		case SDLK_h: savemode(&amp;GUIDES, !GUIDES); break;
 		}
 	} else {
@@ -515,5 +533,5 @@ main(int argc, char **argv)
 	quit();
 	return 0;
 }
-</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/dito.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/dito.c.txt'>dito.c.txt</a>(517 lines)</figcaption>
+</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/dito.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/dito.c.txt'>dito.c.txt</a>(535 lines)</figcaption>
 </figure><ul><li><a href='https://git.sr.ht/~rabbits/dito' target='_blank'>sources</a></li><li><a href='https://merveilles.town/web/statuses/105589734816667213' target='_blank'>thread</a></li></ul><p><i>incoming(2)</i>: <a href='nasu.html'>nasu</a> <a href='chr_format.html'>chr format</a> </p><p><i>Last update on <a href='tracker.html'>15B07</a>, edited 2 times. +9/14fh <b></b></i> <code style='float:right; font-size:80%'>-----|</code></p><ul><li>15B06 &mdash; Dito Desktop Release</li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
