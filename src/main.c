@@ -872,6 +872,8 @@ fphtml(FILE *f, Glossary *glo, Lexicon *lex, Term *t, Journal *jou)
 			fpportal(f, glo, lex, jou, alias ? alias : t, 1, 0);
 		else if(scmp(t->type, "text_portal"))
 			fpportal(f, glo, lex, jou, alias ? alias : t, 0, 1);
+		else if(scmp(t->type, "portal"))
+			fpportal(f, glo, lex, jou, alias ? alias : t, 1, 1);
 		else if(scmp(t->type, "album"))
 			fpalbum(f, jou, alias ? alias : t);
 		else if(scmp(t->type, "alias"))

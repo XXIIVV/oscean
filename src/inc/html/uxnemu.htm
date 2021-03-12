@@ -1,0 +1,69 @@
+<table border='1'>
+	<tr><th rowspan='2' colspan='2'>device</th><th colspan='2'>i/o</th></tr>
+	<tr><th>read 0x00</th><th>write 0x08</th></tr>
+	<tr><th><code>ff00</code></th><th>console</th><td><i>nil</i></td><td class='clr1'>stdout</td></tr>
+	<tr><th rowspan='3'><code>ff10</code></th><th rowspan='3'>screen</th><td>width*</td><td>x*</td></tr>
+	<tr><td>height*</td><td>y*</td></tr>
+	<tr><td></td><td class='clr1'>color</td></tr>
+	<tr><th rowspan='4'><code>ff20</code></th><th rowspan='4'>sprite</th><td>width*</td><td>x*</td></tr>
+	<tr><td>height*</td><td>y*</td></tr>
+	<tr><td></td><td>address*</td></tr>
+	<tr><td></td><td class='clr1'>color</td></tr>
+	<tr><th><code>ff30</code></th><th>controller</th><td>buttons byte</td><td><i>nil</i></td></tr>
+	<tr><th><code>ff40</code></th><th>keyboard</th><td>key byte</td><td><i>nil</i></td></tr>
+	<tr><th rowspan='4'><code>ff50</code></th><th rowspan='4'>mouse</th><td>x*</td><td rowspan="4"><i>nil</i></td></tr>
+	<tr><td>y*</td></tr>
+	<tr><td>button byte</td></tr>
+	<tr><td>chord byte</td></tr>
+	<tr><th rowspan='4'><code>ff60</code></th><th rowspan='4'>file</th><td rowspan="4"><i>nil</i></td><td>name*</td></tr>
+	<tr><td>length*</td></tr>
+	<tr><td class='clr1'>address(load)*</td></tr>
+	<tr><td class='clr1'>address(save)*</td></tr>
+	<tr><th rowspan='4'><code>fff0</code></th><th rowspan='4'>system</th><td>reset*</td><td class='clr1'>red*</td></tr>
+	<tr><td>frame*</td><td class='clr1'>green*</td></tr>
+	<tr><td>error*</td><td class='clr1'>blue*</td></tr>
+</table>
+
+<h3>Controller</h3>
+
+<p>A device that works like a NES controller, each button is a bit from a single byte(<code>ff30</code>). To check if the up button is pressed:</p>
+
+<pre>
+,no-up ~dev/ctrl.buttons #f0 AND #10 NEQ JMP? POP2
+	( handle when up is pressed )
+@no-up
+</pre>
+
+<table border='1'>
+	<tr><td><code>0x01</code></td><td>Ctrl</td><td><code>0x10</code></td><td>Up</td></tr>
+	<tr><td><code>0x02</code></td><td>Alt</td><td><code>0x20</code></td><td>Down</td></tr>
+	<tr><td><code>0x04</code></td><td>Backspace</td><td><code>0x40</code></td><td>Left</td></tr>
+	<tr><td><code>0x08</code></td><td>Return</td><td><code>0x80</code></td><td>Right</td></tr>
+</table>
+
+<h3>Sprite Engine</h3>
+
+<p>Uxn's sprite device makes it easier to draw characters and icons to the screen by sending a memory address, a position and a color byte.</p>
+
+<p>The sprite device's color byte defines the layer to draw on, the type of data to draw, and the colors to use.</p>
+
+<table border='1'>
+	<tr><th colspan='3'>high nibble</th><th colspan='6'>low nibble(icn)</th></tr>
+	<tr><th>0</th><td>bg</td><td rowspan='2'>icn</td><th>0</th><td class='clr0' colspan='2'>0</td><th>8</th><td class='clr0'>0</td><td class='clr2'>2</td></tr></tr>
+	<tr><th>1</th><td>fg</td><th>1</th><td class='clr1'>1</td><td class='clr0'>0</td><th>9</th><td class='clr1'>1</td><td class='clr2'>2</td></tr></tr>
+	<tr><th>2</th><td>bg</td><td rowspan='2'>chr</td><th>2</th><td class='clr2'>2</td><td class='clr0'>0</td><th>a</th><td class='clr2' colspan='2'>2</td></tr></tr>
+	<tr><th>3</th><td>fg</td><th>3</th><td class='clr3'>3</td><td class='clr0'>0</td><th>b</th><td class='clr3'>3</td><td class='clr2'>2</td></tr></tr>
+	<tr><th>4</th><th></th><th></th><th>4</th><td class='clr0'>0</td><td class='clr1'>1</td><th>c</th><td class='clr0'>0</td><td class='clr3'>3</td></tr></tr>
+	<tr><th>5</th><th></th><th></th><th>5</th><td class='clr1' colspan='2'>1</td><th>d</th><td class='clr1'>1</td><td class='clr3'>3</td></tr></tr>
+	<tr><th>6</th><th></th><th></th><th>6</th><td class='clr2'>2</td><td class='clr1'>1</td><th>e</th><td class='clr2'>2</td><td class='clr3'>3</td></tr></tr>
+	<tr><th>7</th><th></th><th></th><th>7</th><td class='clr3'>3</td><td class='clr1'>1</td><th>f</th><td class='clr3' colspan='2'>3</td></tr></tr>
+</table>
+
+<style>
+.clr0 { background:white; color:black; }
+.clr1 { background:black; color:white; }
+.clr2 { background:#72dec2; color:white; }
+.clr3 { background:#ff0000; color:black; }
+</style>
+
+<img src='../media/identity/uxn64.png' />
