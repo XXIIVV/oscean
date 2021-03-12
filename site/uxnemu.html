@@ -1,4 +1,34 @@
-<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='description' content='Uxnemu is a SDL emulator maintained by Hundred Rabbits.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV &mdash; uxnemu</title></head><body><header><a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='orca.html'>orca</a></li><li><a href='gyo.html'>gyo</a></li><li><a href='uxn.html'>uxn/</a></li><li><a href='noton.html'>noton</a></li><li><a href='paradise.html'>paradise</a></li></ul><ul><li><a href='uxambly.html'>uxambly</a></li><li><a href='uxnemu.html'>uxnemu/</a></li><li><a href='goki.html'>goki</a></li></ul><ul></ul></nav><main><h2>Uxnemu is a SDL emulator maintained by Hundred Rabbits.</h2><p>Devices are external systems to the Uxn code such as the screen, the mouse, the keyboard, etc. There is a maximum of 16 devices accessible via the last page in memory, each device have 8 bytes to read from, and 8 bytes to write to. </p><figure><table border='1'>
+<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='description' content='Uxnemu is a SDL emulator maintained by Hundred Rabbits.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV &mdash; uxnemu</title></head><body><header><a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='orca.html'>orca</a></li><li><a href='gyo.html'>gyo</a></li><li><a href='uxn.html'>uxn/</a></li><li><a href='noton.html'>noton</a></li><li><a href='paradise.html'>paradise</a></li></ul><ul><li><a href='uxambly.html'>uxambly</a></li><li><a href='uxnemu.html'>uxnemu/</a></li></ul><ul></ul></nav><main><h2>Uxnemu is a SDL emulator maintained by Hundred Rabbits.</h2><p>The thin layer that is the <a href='uxnemu.html'>Uxn emulator</a> is be the only part of this project needing to be ported to make the device available on a new platform. For that reason, Uxn was designed with a focus on portability such that it welcomes anyone to try their hand at building their own implementation. The <a href='https://git.sr.ht/~rabbits/uxn' target='_blank'>current emulator</a> is 400 lines of C89, with SDL2 as its only dependecy.</p><p>Devices are external systems to the Uxn code such as the screen, the mouse, the keyboard, etc. There is a maximum of 16 devices accessible via the last page in memory, each device have 8 bytes to read from, and 8 bytes to write to. </p><img src='../media/generic/uxn.comfy.png' width='250' style='margin: 0px auto;'/><figure><p>Devices are external systems to the Uxn code such as the screen, the mouse, the keyboard, etc. There is a maximum of 16 devices accessible via the last page in memory, each device have 8 bytes to read from, and 8 bytes to write to. </p>
+
+<h2>Memory</h2>
+
+<table border='1'>
+	<tr><th rowspan='4'>Core</th><td>Program Counter</td><td>1 short</td></tr>
+	<tr><td>Literal Counter</td><td>1 byte</td></tr>
+	<tr><td>Balance Counter</td><td>1 byte</td></tr>
+	<tr><td>Status Register</td><td>1 byte</td></tr>
+	<tr><th rowspan='2'>Stacks</th><td>Working Stack</td><td>256 bytes</td></tr>
+	<tr><td>Return Stack</td><td>256 bytes</td></tr>
+	<tr><th>Memory</th><td>RAM</td><td>65536 bytes</td></tr>
+</table>
+
+<h3>Status Register</h3>
+
+<p>The status register is distributed as follows, it shares the same byte as the register selector. The <b>halt</b> flag is used by the BRK instruction is stops the cpu, the <b>short</b> flag is used for 16-bits operations, the <b>cond</b> flag is set when an instruction requires a non-zero stack value to operate, and the <b>sign</b> flag is set when the operator should use signed integers.</p>
+
+<pre>
+T C S H
+| | | +---- Halt  0x01
+| | +------ Short 0x02
+| +-------- Sign  0x04
++---------- Cond  0x08
+</pre>
+
+<h3>Return Stack</h3>
+
+<p>The CPU can tunnel through 128 subroutines and find its way back with the return stack, the opcode to jump into to a subroutine is <code>JSR</code>, the opcode to return from a subroutine is <code>RTS</code>. An item on the work stack can be temporarily sent to the return stack with <code>WSR</code> and returned with <code>RSW</code>.</p>
+
+<table border='1'>
 	<tr><th rowspan='2' colspan='2'>device</th><th colspan='2'>i/o</th></tr>
 	<tr><th>read 0x00</th><th>write 0x08</th></tr>
 	<tr><th><code>ff00</code></th><th>console</th><td><i>nil</i></td><td class='clr1'>stdout</td></tr>
@@ -67,5 +97,5 @@
 </style>
 
 <img src='../media/identity/uxn64.png' />
-<figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/uxnemu.htm' target='_blank'>edit</a> to <a href='../src/inc/html/uxnemu.htm'>uxnemu.htm</a>(69 lines)</figcaption>
-</figure><ul><li><a href='https://git.sr.ht/~rabbits/uxn/tree/master/item/emulator.c' target='_blank'>emulator</a></li></ul><p><i>incoming(1)</i>: <a href='uxn.html'>uxn</a> </p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
+<figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/uxnemu.htm' target='_blank'>edit</a> to <a href='../src/inc/html/uxnemu.htm'>uxnemu.htm</a>(99 lines)</figcaption>
+</figure><ul><li><a href='https://git.sr.ht/~rabbits/uxn/tree/master/item/emulator.c' target='_blank'>emulator</a></li></ul><p><i>incoming(1)</i>: <a href='uxnemu.html'>uxnemu</a> </p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>

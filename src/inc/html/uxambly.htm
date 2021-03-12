@@ -1,3 +1,36 @@
+<h3>Opcodes</h3>
+
+<p>There are 32 opcodes, each opcode occupies 5 bits of a byte, the remaining 3 are used to select the addressing mode of the values in the stack.</p>
+
+<table border='1'>
+	<tr><td colspan='3'>mode</td><td colspan='5'>opcode</td></tr>
+	<tr><td>cond</td><td>sign</td><td>short</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+</table>
+
+<p>Opcodes pointing to an address in memory can pull 16-bits(2 bytes) from the stack at a time to form an address like <code>[a b]</code>, where the a and b bytes are combined. For example, <code>[0xAB 0xCD]</code> points to the memory address <code>0xABCD</code>. When used a single byte, these operators point to a relative address.</p>
+
+<table border='1'>
+	<tr><td></td><th colspan='3'>I/O</th><td></td>                      <th colspan='3'>Stack</th></tr>
+	<tr><th>0x00</th><td><code>BRK</code></td><td></td><td></td>        <th>0x10</th><td><code>POP</code></td><td>a</td><td></td></tr>
+	<tr><th>0x01</th><td><code>NOP</code></td><td></td><td></td>        <th>0x11</th><td><code>DUP</code></td><td>a</td><td>a a</td></tr>
+	<tr><th>0x02</th><td><code>LIT</code></td><td></td><td>lc</td>      <th>0x12</th><td><code>SWP</code></td><td>a b</td><td>b a</td></tr>
+	<tr><th>0x03</th><td><code>JMP</code></td><td>[a b]</td><td></td>   <th>0x13</th><td><code>OVR</code></td><td>a b c</td><td>a b a</td></tr>
+	<tr><th>0x04</th><td><code>JSR</code></td><td>[a b]</td><td>rs</td> <th>0x14</th><td><code>ROT</code></td><td>a b c</td><td>b c a</td></tr>
+	<tr><th>0x05</th><td><code>RTS</code></td><td></td><td>rs</td>      <th>0x15</th><td><code>---</code></td><td></td><td></td></tr>
+	<tr><th>0x06</th><td><code>LDR</code></td><td>[a b]</td><td>c</td>  <th>0x16</th><td><code>WSR</code></td><td>a</td><td>rs</td></tr>
+	<tr><th>0x07</th><td><code>STR</code></td><td>a [b c]</td><td></td> <th>0x17</th><td><code>RSW</code></td><td>rs</td><td>a</td></tr>
+	<tr><td></td><th colspan='3'>Logic</th><td></td>                    <th colspan='3'>Arithmetic</th></tr>
+	<tr><th>0x08</th><td><code>---</code></td><td></td><td></td>        <th>0x18</th><td><code>ADD</code></td><td>a b</td><td>c</td></tr>
+	<tr><th>0x09</th><td><code>---</code></td><td></td><td></td>        <th>0x19</th><td><code>SUB</code></td><td>a b</td><td>c</td></tr>
+	<tr><th>0x0a</th><td><code>---</code></td><td></td><td></td>        <th>0x1a</th><td><code>MUL</code></td><td>a b</td><td>c</td></tr>
+	<tr><th>0x0b</th><td><code>---</code></td><td></td><td></td>        <th>0x1b</th><td><code>DIV</code></td><td>a b</td><td>c</td></tr>
+	<tr><th>0x0c</th><td><code>AND</code></td><td>a b</td><td>c</td>    <th>0x1c</th><td><code>EQU</code></td><td>a b</td><td>c</td></tr>
+	<tr><th>0x0d</th><td><code>XOR</code></td><td>a b</td><td>c</td>    <th>0x1d</th><td><code>NEQ</code></td><td>a b</td><td>c</td></tr>
+	<tr><th>0x0e</th><td><code>ROL</code></td><td>a b</td><td>c</td>    <th>0x1e</th><td><code>LTH</code></td><td>a b</td><td>c</td></tr>
+	<tr><th>0x0f</th><td><code>ROR</code></td><td>a b</td><td>c</td>    <th>0x1f</th><td><code>GTH</code></td><td>a b</td><td>c</td></tr>
+</table>
+
+<p><code>lc</code> stands for <i>literal counter</i>, <code>rs</code> for <i>return stack</i>, <code>mp</code> stands for <i>memory pointer</i>.</p>
 
 <p>Here is an example of the assembly language that prints <code>hello world</code> to stdout. Uxambly has no reserved words besides the 32 opcodes, each element of the program has its own rune.</p>
 
@@ -37,7 +70,7 @@ RTS
 |FFF8 [ 13fd 1ef3 1bf2 ] ( palette )
 </pre>
 
-<h2>Runes</h2>
+<h3>Runes</h3>
 
 <table border='1'>
 	<tr><th colspan='2'>Define</th></tr>
@@ -62,7 +95,7 @@ RTS
 	<tr><td><code>[ 0123 abcd ]</code></td><td>write data to memory.</td></tr>
 </table>
 
-<h2>Operator modes</h2>
+<h3>Operator modes</h3>
 
 <ul>
 	<li><code>#1234 #0001 ADD2</code>, 16-bits operators have the short flag `2`.</li>
@@ -111,6 +144,10 @@ RTS
 <h3>Signed Mode</h3>
 
 <p>The short mode is commonly used to do relative jumps(<code>JMPS</code>), and signed comparisons.</p>
+
+<h3>Notes</h3>
+
+<p>While the aim is to distribute assembled binaries, to respect the {about philosophy} of the tool's ecosystem, the assembly, assembler and emulator sources are packaged alongside the roms. Similarly to the emulator, the assembler is extremely simple in its implementation as to not discourage re-implementations. The assembler is 400 lines of C89 with no dependencies.</p>
 
 <style>
 .clr0 { background:white; color:black; }
