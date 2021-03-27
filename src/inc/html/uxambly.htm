@@ -1,4 +1,4 @@
-<h3>Opcodes</h3>
+<h2>Opcodes</h2>
 
 <p>There are 32 opcodes, each opcode occupies 5 bits of a byte, the remaining 3 are used to select the addressing mode of the values in the stack.</p>
 
@@ -13,11 +13,11 @@
 	<tr><td></td><th colspan='3'>Stack</th><td></td>                                          <th colspan='3'>Memory</th></tr>
 	<tr><th>0x00</th><td><code class='op'>BRK</code> Break</td><td></td><td></td>             <th>0x10</th><td><code class='op'>PEK</code> LoadByte</td><td>[a]</td><td>b</td></tr>
 	<tr><th>0x01</th><td><code class='op'>NOP</code> Nothing</td><td></td><td></td>           <th>0x11</th><td><code class='op'>POK</code> StoreByte</td><td>a [b]</td><td></td></tr>
-	<tr><th>0x02</th><td><code class='op'>LIT</code> Literal</td><td></td><td>lc</td>         <th>0x12</th><td><code class='op'>LDR</code> LoadShort</td><td>[a b]</td><td>c</td></tr>
-	<tr><th>0x03</th><td><code class='op'>POP</code> Pop</td><td>a</td><td></td>              <th>0x13</th><td><code class='op'>STR</code> StoreShort</td><td>a [b c]</td><td></td></tr>
-	<tr><th>0x04</th><td><code class='op'>DUP</code> Duplicate</td><td>a</td><td>a a</td>     <th>0x14</th><td><code class='op'>JMP</code> Jump</td><td>[a b]</td><td></tr>
+	<tr><th>0x02</th><td><code class='op'>LIT</code> Literal</td><td></td><td>lc</td>         <th>0x12</th><td><code class='op'>LDR</code> LoadShort</td><td>[a]</td><td>c</td></tr>
+	<tr><th>0x03</th><td><code class='op'>POP</code> Pop</td><td>a</td><td></td>              <th>0x13</th><td><code class='op'>STR</code> StoreShort</td><td>a [b]</td><td></td></tr>
+	<tr><th>0x04</th><td><code class='op'>DUP</code> Duplicate</td><td>a</td><td>a a</td>     <th>0x14</th><td><code class='op'>JMP</code> Jump</td><td>[a]</td><td></tr>
 	<tr><th>0x05</th><td><code class='op'>SWP</code> Swap</td><td>a b</td><td>b a</td>        <th>0x15</th><td><code class='op'>JNZ</code> JumpCond</td><td>a [b]</td><td></td></tr>
-	<tr><th>0x06</th><td><code class='op'>OVR</code> Over</td><td>a b</td><td>a b a</td>      <th>0x16</th><td><code class='op'>JSR</code> JumpStash</td><td>[a b]</td><td>rs</td></tr>
+	<tr><th>0x06</th><td><code class='op'>OVR</code> Over</td><td>a b</td><td>a b a</td>      <th>0x16</th><td><code class='op'>JSR</code> JumpStash</td><td>[a]</td><td>rs</td></tr>
 	<tr><th>0x07</th><td><code class='op'>ROT</code> Rotate</td><td>a b c</td><td>b c a</td>  <th>0x17</th><td><code class='op'>STH</code> Stash</td><td>a</td><td>rs</td></tr>
 	<tr><td></td><th colspan='3'>Logic</th><td></td>                                          <th colspan='3'>Arithmetic</th></tr>
 	<tr><th>0x08</th><td><code class='op'>EQU</code> Equal</td><td>a b</td><td>c</td>         <th>0x18</th><td><code class='op'>ADD</code> Add</td><td>a b</td><td>c</td></tr>
@@ -43,6 +43,52 @@
 	<tr><th><code>,abcd</code></th><td><code>0x22 0xab 0xcd</code></td></tr>
 	<tr><th><code>.abcd</code></th><td><code>0xab 0xcd</code></td></tr>
 </table>
+
+<h2>Programming</h2>
+
+<p>Uxambly allows for basic control flow, here are some of them:</p>
+
+<table border='1'>
+	<tr><th>ForLoop</th><th>WhileLoop</th><th>Switch</th></tr>
+	<tr>
+		<td>
+<pre>
+#00 #0d
+$loop
+	( body ) 
+	SWP #01 ADD SWP
+	DUP2 LTH ^$loop JNZ
+POP2
+</pre>
+		</td>
+		<td>
+<pre>
+#00 #0d
+$while
+	( body )
+	DUP2 EQU ^$end JNZ
+	SWP #01 ADD SWP
+^$while JMP $end
+POP2
+</pre>
+		</td>
+		<td>
+<pre>
+#02 
+DUP #01 NEQ ^$b JNZ
+	( a ) 
+$b DUP #02 NEQ ^$c JNZ
+	( b ) 
+$c DUP #03 NEQ ^$default JNZ
+	( c ) 
+$default
+POP
+</pre>
+		</td>
+	</tr>
+
+</table>
+
 
 <p>Here is an example of the assembly language that prints <code>hello world</code> to stdout. Uxambly has no reserved words besides the 32 opcodes, each element of the program has its own rune.</p>
 
@@ -96,6 +142,7 @@ RTN
 	<tr><th colspan='2'>Program</th></tr>
 	<tr><td><code>.address</code></td><td>Push label address to memory.</td></tr>
 	<tr><td><code>,literal</code></td><td>Push label literal address to stack.</td></tr>
+	<tr><td><code>^literal</code></td><td>Push label literal relative address to stack.</td></tr>
 	<tr><td><code>#1a</code></td><td>Push a literal byte/short.</td></tr>
 	<tr><th colspan='2'>Helpers</th></tr>
 	<tr><td><code>=label</code></td><td>Equivalent to <code>,label STR</code>.</td></tr>
