@@ -1,9 +1,22 @@
 int
-marble(int year, int month, int day)
+dateoffset(int y, int m, int d)
 {
-	struct tm birth;
-	birth.tm_year = year - 1900;
-	birth.tm_mon = month - 1;
-	birth.tm_mday = day;
-	return (time(NULL) - mktime(&birth)) / 604800;
+	m = (m + 9) % 12;
+	y = y - m / 10;
+	return 365 * y + y / 4 - y / 100 + y / 400 + (m * 306 + 5) / 10 + (d - 1);
+}
+
+int
+todayoffset(void)
+{
+	time_t t = time(NULL);
+	struct tm tm = *localtime(&t);
+	return dateoffset(tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday);
+}
+
+void
+marble(int y, int m, int d)
+{
+	int offset = todayoffset() - dateoffset(y, m, d);
+	printf("Marble   | #%d(%.02f)\n", offset / 7, offset / 7 / 39.0);
 }

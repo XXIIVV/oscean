@@ -237,17 +237,18 @@ clockoffset(clock_t start)
 }
 
 void
-fpRFC2822(FILE *f, time_t t)
+fpRFC2822(FILE *f, time_t t, int time)
 {
 	struct tm *tm = localtime(&t);
 	char *days[7] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 	char *months[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 	fprintf(f,
-		"%s, %02d %s %d 00:00:00 +0900",
+		"%s, %02d %s %d%s",
 		days[tm->tm_wday],
 		tm->tm_mday,
 		months[tm->tm_mon],
-		tm->tm_year + 1900);
+		tm->tm_year + 1900,
+		time ? " 00:00:00 +0900" : "");
 }
 
 void
@@ -704,11 +705,14 @@ fpcalendar(FILE *f, Journal *jou)
 	int i, last_year = 0;
 	fputs("<ul>", f);
 	for(i = 0; i < jou->len; ++i) {
+		Log *l = &jou->logs[i];
 		if(jou->logs[i].rune != '+')
 			continue;
-		if(last_year != sint(jou->logs[i].date, 2))
+		if(last_year != sint(l->date, 2))
 			fputs("</ul><ul>", f);
-		fprintf(f, "<li><a href='%s.html'>%s</a> %s</li>", jou->logs[i].term->filename, jou->logs[i].date, jou->logs[i].name);
+		fprintf(f, "<li><a href='%s.html' title='", l->term->filename);
+		fpRFC2822(f, arvelietime(EPOCH, l->date), 0);
+		fprintf(f, "'>%s</a> %s</li>", l->date, l->name);
 		last_year = sint(jou->logs[i].date, 2);
 	}
 	fputs("</ul>", f);
@@ -921,7 +925,7 @@ fprss(FILE *f, Journal *jou)
 	fputs("<description>The Nataniev Library</description>\n", f);
 	/* Date */
 	fputs("<lastBuildDate>", f);
-	fpRFC2822(f, time(&now));
+	fpRFC2822(f, time(&now), 1);
 	fputs("</lastBuildDate>\n", f);
 	/* Image */
 	fputs("<image>\n", f);
@@ -938,7 +942,7 @@ fprss(FILE *f, Journal *jou)
 		fprintf(f, "  <link>" DOMAIN "site/%s.html</link>\n", l.term->filename);
 		fprintf(f, "  <guid isPermaLink='false'>%d</guid>\n", l.pict);
 		fputs("  <pubDate>", f);
-		fpRFC2822(f, arvelietime(EPOCH, l.date));
+		fpRFC2822(f, arvelietime(EPOCH, l.date), 1);
 		fputs("</pubDate>\n", f);
 		fputs("  <dc:creator><![CDATA[Devine Lu Linvega]]></dc:creator>\n", f);
 		fputs("  <description>\n", f);
