@@ -1,4 +1,46 @@
-<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='description' content='The MIDI table.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV &mdash; midi</title></head><body><header><a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='assembly.html'>assembly</a></li><li><a href='forth.html'>forth</a></li><li><a href='scheme.html'>scheme</a></li><li><a href='pascal.html'>pascal</a></li><li><a href='ansi_c.html'>ansi c/</a></li><li><a href='postscript.html'>postscript</a></li><li><a href='hypertalk.html'>hypertalk</a></li><li><a href='unix.html'>unix</a></li></ul><ul><li><a href='defunct.html'>defunct</a></li><li><a href='point2d.html'>point2d</a></li><li><a href='line2d.html'>line2d</a></li><li><a href='ascii.html'>ascii</a></li><li><a href='midi.html'>midi/</a></li></ul><ul></ul></nav><main><h2>The MIDI table.</h2><figure><table border="1">
+<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='description' content='The MIDI table.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV &mdash; midi</title></head><body><header><a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='assembly.html'>assembly</a></li><li><a href='forth.html'>forth</a></li><li><a href='scheme.html'>scheme</a></li><li><a href='pascal.html'>pascal</a></li><li><a href='ansi_c.html'>ansi c/</a></li><li><a href='postscript.html'>postscript</a></li><li><a href='hypertalk.html'>hypertalk</a></li><li><a href='unix.html'>unix</a></li></ul><ul><li><a href='defunct.html'>defunct</a></li><li><a href='point2d.html'>point2d</a></li><li><a href='line2d.html'>line2d</a></li><li><a href='ascii.html'>ascii</a></li><li><a href='midi.html'>midi/</a></li></ul><ul></ul></nav><main><h2>The MIDI table.</h2><figure><h3>midi.c</h3>
+
+<pre>cc -std=c89 -Wall midi.c -o midi</pre>
+
+<p>Play note <code>G</code> with velocity of <code>64</code>.</p>
+
+<pre>
+#include &lt;linux/soundcard.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;fcntl.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+int
+error(char* msg, const char* err)
+{
+  printf("Error %s: %s\n", msg, err);
+  return 0;
+}
+
+int
+main(void)
+{
+  char* device = "/dev/midi2";
+  unsigned char g_on[3] = {0x90, 0x43, 0x40};
+  unsigned char g_off[3] = {0x80, 0x43, 0x00};
+  int f = open(device, O_WRONLY, 0);
+  if(f < 0)
+    return error("Unknown", device);
+  printf("Note ON\n");
+  if(!write(f, g_on, sizeof(g_on)))
+    return error("Note", "ON");
+  sleep(2);
+  printf("Note OFF\n");
+  if(!write(f, g_off, sizeof(g_off)))
+    return error("Note", "OFF");
+  close(f);
+  return 0;
+}
+
+</pre>
+
+<table border="1">
 	<tr><th width="90px">MIDI Octave</th><th width="100px">MIDI Note Number</th><th width="100px">Note Name</th><th width="170px">Frequency Hz</th></tr>
 	<tr><td rowspan="8">9</td><td>127</td><td>G</td><td>12,543.8539514160</td></tr>
 	<tr><td>126</td><td>F<sup>#</sup>/G<sup>b</sup></td><td>11,839.8215267723</td></tr>
@@ -129,5 +171,5 @@
 	<tr><td>1</td><td>C<sup>#</sup>/D<sup>b</sup></td><td>8.6619572180</td></tr>
 	<tr><td>0</td><td>C</td><td>8.1757989156</td></tr>
 </table>
-<figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/midi.htm' target='_blank'>edit</a> to <a href='../src/inc/html/midi.htm'>midi.htm</a>(131 lines)</figcaption>
+<figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/midi.htm' target='_blank'>edit</a> to <a href='../src/inc/html/midi.htm'>midi.htm</a>(173 lines)</figcaption>
 </figure></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
