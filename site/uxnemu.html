@@ -1,94 +1,72 @@
-<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='description' content='Uxnemu is a SDL emulator maintained by Hundred Rabbits.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV &mdash; uxnemu</title></head><body><header><a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='orca.html'>orca</a></li><li><a href='gyo.html'>gyo</a></li><li><a href='uxn.html'>uxn/</a></li><li><a href='noton.html'>noton</a></li><li><a href='paradise.html'>paradise</a></li></ul><ul><li><a href='uxambly.html'>uxambly</a></li><li><a href='uxnemu.html'>uxnemu/</a></li><li><a href='roms.html'>roms</a></li></ul><ul></ul></nav><main><h2>Uxnemu is a SDL emulator maintained by Hundred Rabbits.</h2><p>The thin layer that is the <a href='uxn.html'>Uxn emulator</a> is be the only part of this project needing to be ported to make the device available on a new platform. For that reason, Uxn was designed with a focus on portability such that it welcomes anyone to try their hand at building their own implementation. The <a href='https://git.sr.ht/~rabbits/uxn' target='_blank'>current emulator</a> is 400 lines of C89, with SDL2 as its only dependecy.</p><img src='../media/generic/uxn.comfy.png' width='250' style='margin: 0px auto 30px'/><p>Devices are external systems to the Uxn code such as the screen, the mouse, the keyboard, etc. There is a maximum of 16 devices accessible via the last page in memory, each device have 8 bytes to read from, and 8 bytes to write to. </p><figure><p>Devices are external systems to the Uxn code such as the screen, the mouse, the keyboard, etc. There is a maximum of 16 devices accessible via the last page in memory, each device have 8 bytes to read from, and 8 bytes to write to. </p>
-
-<h2>Memory</h2>
-
-<table border='1'>
-	<tr><th rowspan='4'>Core</th><td>Program Counter</td><td>1 short</td></tr>
-	<tr><td>Literal Counter</td><td>1 byte</td></tr>
-	<tr><td>Balance Counter</td><td>1 byte</td></tr>
-	<tr><td>Status Register</td><td>1 byte</td></tr>
-	<tr><th rowspan='2'>Stacks</th><td>Working Stack</td><td>256 bytes</td></tr>
-	<tr><td>Return Stack</td><td>256 bytes</td></tr>
-	<tr><th>Memory</th><td>RAM</td><td>65536 bytes</td></tr>
-</table>
-
-<h3>Status Register</h3>
-
-<p>The status register is distributed as follows, it shares the same byte as the register selector. The <b>halt</b> flag is used by the BRK instruction is stops the cpu, the <b>short</b> flag is used for 16-bits operations, the <b>return</b> flag is set when an instruction targets the return stack, and the <b>cond</b> flag is set when the operator requires a logic flag from the stack.</p>
-
-<pre>
-T C S H
-| | | +---- Halt   0x01
-| | +------ Short  0x02
-| +-------- Return 0x04
-+---------- Cond   0x08
-</pre>
-
-<h3>Return Stack</h3>
-
-<p>The CPU can tunnel through 128 subroutines and find its way back with the return stack, the JSR opcode jumps while pushing a return address to the return-stack, the opcode to return from a subroutine is <code>JMPr</code>. An item on the work stack can be sent to the return stack with <code>STH</code>(stash) and returned with <code>STHr</code>. To learn more, see the <a href='uxambly.html'>Uxambly</a> documentation.</p>
+<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='description' content='Uxnemu is a SDL emulator maintained by Hundred Rabbits.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV &mdash; uxnemu</title></head><body><header><a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='orca.html'>orca</a></li><li><a href='gyo.html'>gyo</a></li><li><a href='uxn.html'>uxn/</a></li><li><a href='noton.html'>noton</a></li><li><a href='paradise.html'>paradise</a></li></ul><ul><li><a href='uxambly.html'>uxambly</a></li><li><a href='uxnemu.html'>uxnemu/</a></li><li><a href='roms.html'>roms</a></li></ul><ul></ul></nav><main><h2>Uxnemu is a SDL emulator maintained by Hundred Rabbits.</h2><p>The thin layer that is the <a href='uxn.html'>Uxn emulator</a> is be the only part of this project needing to be ported to make the device available on a new platform. For that reason, Uxn was designed with a focus on portability such that it welcomes anyone to try their hand at building their own implementation. The <a href='https://git.sr.ht/~rabbits/uxn' target='_blank'>current emulator</a> is 400 lines of C89, with SDL2 as its only dependecy.</p><img src='../media/generic/uxn.comfy.png' width='250' style='margin: 0px auto 30px'/><figure><p>Devices are external systems to the Uxn code such as the screen, the mouse, the keyboard, etc. There is a maximum of 16 devices accessible via the last page in memory, each device have 8 bytes to read from, and 8 bytes to write to. </p>
 
 <h2>Devices</h2>
 
-<table border='1'>
-	<tr><th rowspan='2' colspan='2'>device</th><th colspan='2'>i/o</th></tr>
-	<tr><th>read 0x00</th><th>write 0x08</th></tr>
-	<tr><th rowspan='4'><code>00</code></th><th rowspan='4'>console</th><td rowspan='4'><i>nil</i></td><td class='clr1'>char</td></tr>
-	<tr><td>byte</td></tr>
-	<tr><td>short*</td></tr>
-	<tr><td>string*</td></tr>
-	<tr><th rowspan='3'><code>10</code></th><th rowspan='3'>screen</th><td>width*</td><td>x*</td></tr>
-	<tr><td>height*</td><td>y*</td></tr>
-	<tr><td></td><td class='clr1'>color</td></tr>
-	<tr><th rowspan='4'><code>20</code></th><th rowspan='4'>sprite</th><td>width*</td><td>x*</td></tr>
-	<tr><td>height*</td><td>y*</td></tr>
-	<tr><td></td><td>address*</td></tr>
-	<tr><td></td><td class='clr1'>color</td></tr>
-	<tr><th><code>30</code></th><th>controller</th><td>player1 byte</td><td><i>nil</i></td></tr>
-	<tr><th><code>40</code></th><th>keyboard</th><td>key byte</td><td><i>nil</i></td></tr>
-	<tr><th rowspan='4'><code>50</code></th><th rowspan='4'>mouse</th><td>x*</td><td rowspan="4"><i>nil</i></td></tr>
-	<tr><td>y*</td></tr>
-	<tr><td>button byte</td></tr>
-	<tr><td>chord byte</td></tr>
-	<tr><th rowspan='4'><code>60</code></th><th rowspan='4'>file</th><td rowspan="4"><i>nil</i></td><td>name*</td></tr>
-	<tr><td>length*</td></tr>
-	<tr><td class='clr1'>address(load)*</td></tr>
-	<tr><td class='clr1'>address(save)*</td></tr>
-	<tr><th rowspan='8'><code>70</code></th><th rowspan='8'>audio</th><td rowspan="2">ch1asdr*</td><td>ch1vol</td></tr>
-	<tr><td class='clr1'>ch1pitch</td></tr>
-	<tr><td rowspan="2">ch2asdr*</td><td>ch2vol</td></tr>
-	<tr><td class='clr1'>ch2pitch</td></tr>
-	<tr><td rowspan="2">ch3asdr*</td><td>ch3vol</td></tr>
-	<tr><td class='clr1'>ch3pitch</td></tr>
-	<tr><td rowspan="2">ch4asdr*</td><td>ch4vol</td></tr>
-	<tr><td class='clr1'>ch4pitch</td></tr>
-	<tr><th rowspan='3'><code>80</code></th><th rowspan='3'>midi</th><td>devicer</td><td>devicew</td></tr>
-	<tr><td>byte1</td><td>byte1</td></tr>
-	<tr><td>byte2</td><td>byte2</td></tr>
-	<tr><th rowspan='8'><code>90</code></th><th rowspan='8'>datetime</th><td>year</td><td class='clr1'>refresh</td></tr>
-	<tr><td>month</td><td rowspan="7"></td></tr>
-	<tr><td>day</td></tr>
-	<tr><td>hour</td></tr>
-	<tr><td>minute</td></tr>
-	<tr><td>second</td></tr>
-	<tr><td>doty</td></tr>
-	<tr><td>dotw</td></tr>
-	<tr><th rowspan='4'><code>f0</code></th><th rowspan='4'>system</th><td>reset*</td><td class='clr1'>red*</td></tr>
-	<tr><td>frame*</td><td class='clr1'>green*</td></tr>
-	<tr><td>error*</td><td class='clr1'>blue*</td></tr>
+<p>An emulator implementation can choose which device to implement or to leave out, these are the suggested addresses and ports of the SDL emulator.</p>
+
+<table>
+	<tr>
+		<td>
+			<table border='1'>
+				<tr><th rowspan='2' colspan='2'>device</th><th colspan='2'>i/o</th></tr>
+				<tr><th>0x00</th><th>0x08</th></tr>
+				<tr><th rowspan='4'><code>00</code></th><th rowspan='4'>console</th><td rowspan='4'><i>nil</i></td><td class='clr1'>char</td></tr>
+				<tr><td>byte</td></tr>
+				<tr><td>short*</td></tr>
+				<tr><td>string*</td></tr>
+				<tr><th rowspan='3'><code>10</code></th><th rowspan='3'>screen</th><td>width*</td><td>x*</td></tr>
+				<tr><td>height*</td><td>y*</td></tr>
+				<tr><td></td><td class='clr1'>color</td></tr>
+				<tr><th rowspan='4'><code>20</code></th><th rowspan='4'>sprite</th><td>width*</td><td>x*</td></tr>
+				<tr><td>height*</td><td>y*</td></tr>
+				<tr><td></td><td>addr*</td></tr>
+				<tr><td></td><td class='clr1'>color</td></tr>
+				<tr><th><code>30</code></th><th>controller</th><td>player1</td><td><i>nil</i></td></tr>
+				<tr><th><code>40</code></th><th>keyboard</th><td>key</td><td><i>nil</i></td></tr>
+				<tr><th rowspan='4'><code>50</code></th><th rowspan='4'>mouse</th><td>x*</td><td rowspan="4"><i>nil</i></td></tr>
+				<tr><td>y*</td></tr>
+				<tr><td>button</td></tr>
+				<tr><td>chord</td></tr>
+				<tr><th rowspan='4'><code>60</code></th><th rowspan='4'>file</th><td rowspan="4"><i>nil</i></td><td>name*</td></tr>
+				<tr><td>length*</td></tr>
+				<tr><td class='clr1'>addr(r)*</td></tr>
+				<tr><td class='clr1'>addr(w)*</td></tr>
+				<tr><th rowspan='8'><code>70</code></th><th rowspan='8'>audio</th><td rowspan="2">ch1asdr*</td><td>ch1vol</td></tr>
+				<tr><td class='clr1'>ch1pitch</td></tr>
+				<tr><td rowspan="2">ch2asdr*</td><td>ch2vol</td></tr>
+				<tr><td class='clr1'>ch2pitch</td></tr>
+				<tr><td rowspan="2">ch3asdr*</td><td>ch3vol</td></tr>
+				<tr><td class='clr1'>ch3pitch</td></tr>
+				<tr><td rowspan="2">ch4asdr*</td><td>ch4vol</td></tr>
+				<tr><td class='clr1'>ch4pitch</td></tr>
+			</table>
+		</td>
+		<td>
+			<table border='1'>
+				<tr><th rowspan='2' colspan='2'>device</th><th colspan='2'>i/o</th></tr>
+				<tr><th>0x00</th><th>0x08</th></tr>
+				<tr><th rowspan='3'><code>80</code></th><th rowspan='3'>midi</th><td>devicer</td><td>devicew</td></tr>
+				<tr><td>byte1</td><td>byte1</td></tr>
+				<tr><td>byte2</td><td>byte2</td></tr>
+				<tr><th rowspan='8'><code>90</code></th><th rowspan='8'>datetime</th><td>year</td><td class='clr1'>refresh</td></tr>
+				<tr><td>month</td><td rowspan="7"></td></tr>
+				<tr><td>day</td></tr>
+				<tr><td>hour</td></tr>
+				<tr><td>minute</td></tr>
+				<tr><td>second</td></tr>
+				<tr><td>doty</td></tr>
+				<tr><td>dotw</td></tr>
+				<tr><th rowspan='4'><code>f0</code></th><th rowspan='4'>system</th><td rowspan="3"><i>nil</i></td><td class='clr1'>red*</td></tr>
+				<tr><td class='clr1'>green*</td></tr>
+				<tr><td class='clr1'>blue*</td></tr>
+			</table>
+		</td>
+	</tr>
 </table>
 
-year 2 month 1 day 1 hour 1 minute 1 second 1 dow 1 doy 2 isdst 1 get 1
+<h3>Controller Device</h3>
 
-<h3>Controller</h3>
-
-<p>A device that works like a NES controller, each button is a bit from a single byte(<code>ff30</code>). To check if the up button is pressed:</p>
-
-<pre>
-,no-up ~dev/ctrl.buttons #f0 AND #10 NEQ JMP? POP2
-	( handle when up is pressed )
-@no-up
-</pre>
+<p>This device works like a NES controller, each one of the 8 buttons is a bit from a single byte. To check if the up button is pressed:</p>
 
 <table border='1'>
 	<tr><td><code>0x01</code></td><td>Ctrl</td><td><code>0x10</code></td><td>Up</td></tr>
@@ -97,9 +75,9 @@ year 2 month 1 day 1 hour 1 minute 1 second 1 dow 1 doy 2 isdst 1 get 1
 	<tr><td><code>0x08</code></td><td>Return</td><td><code>0x80</code></td><td>Right</td></tr>
 </table>
 
-<h3>Sprite Engine</h3>
+<h3>Sprite Device</h3>
 
-<p>Uxn's sprite device makes it easier to draw characters and icons to the screen by sending a memory address, a position and a color byte.</p>
+<p>This device makes it easier to draw characters and icons to the screen by sending a memory address, a position and a color byte.</p>
 
 <p>The sprite device's color byte defines the layer to draw on, the type of data to draw, and the colors to use.</p>
 
@@ -107,15 +85,15 @@ year 2 month 1 day 1 hour 1 minute 1 second 1 dow 1 doy 2 isdst 1 get 1
 	<tr><th colspan='3'>high nibble</th><th colspan='6'>low nibble(icn)</th></tr>
 	<tr><th>0</th><td>bg</td><td rowspan='2'>icn</td><th>0</th><td class='clr0' colspan='2'>0</td><th>8</th><td class='clr0'>0</td><td class='clr2'>2</td></tr></tr>
 	<tr><th>1</th><td>fg</td><th>1</th><td class='clr1'>1</td><td class='clr0'>0</td><th>9</th><td class='clr1'>1</td><td class='clr2'>2</td></tr></tr>
-	<tr><th>2</th><td>bg</td><td rowspan='2'>chr</td><th>2</th><td class='clr2'>2</td><td class='clr0'>0</td><th>a</th><td class='clr2' colspan='2'>2</td></tr></tr>
+	<tr><th>2</th><td>bg</td><td rowspan='2'>icn</td><th>2</th><td class='clr2'>2</td><td class='clr0'>0</td><th>a</th><td class='clr2' colspan='2'>2</td></tr></tr>
 	<tr><th>3</th><td>fg</td><th>3</th><td class='clr3'>3</td><td class='clr0'>0</td><th>b</th><td class='clr3'>3</td><td class='clr2'>2</td></tr></tr>
-	<tr><th>4</th><th></th><th></th><th>4</th><td class='clr0'>0</td><td class='clr1'>1</td><th>c</th><td class='clr0'>0</td><td class='clr3'>3</td></tr></tr>
-	<tr><th>5</th><th></th><th></th><th>5</th><td class='clr1' colspan='2'>1</td><th>d</th><td class='clr1'>1</td><td class='clr3'>3</td></tr></tr>
-	<tr><th>6</th><th></th><th></th><th>6</th><td class='clr2'>2</td><td class='clr1'>1</td><th>e</th><td class='clr2'>2</td><td class='clr3'>3</td></tr></tr>
-	<tr><th>7</th><th></th><th></th><th>7</th><td class='clr3'>3</td><td class='clr1'>1</td><th>f</th><td class='clr3' colspan='2'>3</td></tr></tr>
+	<tr><th>4</th><td>bg</td><th></th><th>4</th><td class='clr0'>0</td><td class='clr1'>1</td><th>c</th><td class='clr0'>0</td><td class='clr3'>3</td></tr></tr>
+	<tr><th>5</th><td>fg</td><th></th><th>5</th><td class='clr1' colspan='2'>1</td><th>d</th><td class='clr1'>1</td><td class='clr3'>3</td></tr></tr>
+	<tr><th>6</th><td>bg</td><th></th><th>6</th><td class='clr2'>2</td><td class='clr1'>1</td><th>e</th><td class='clr2'>2</td><td class='clr3'>3</td></tr></tr>
+	<tr><th>7</th><td>fg</td><th></th><th>7</th><td class='clr3'>3</td><td class='clr1'>1</td><th>f</th><td class='clr3' colspan='2'>3</td></tr></tr>
 </table>
 
-<h3>Audio Engine</h3>
+<h3>Audio Device</h3>
 
 <p>More details shortly.</p>
 
@@ -127,5 +105,5 @@ year 2 month 1 day 1 hour 1 minute 1 second 1 dow 1 doy 2 isdst 1 get 1
 </style>
 
 <img src='../media/identity/uxn64.png' />
-<figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/uxnemu.htm' target='_blank'>edit</a> to <a href='../src/inc/html/uxnemu.htm'>uxnemu.htm</a>(129 lines)</figcaption>
+<figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/uxnemu.htm' target='_blank'>edit</a> to <a href='../src/inc/html/uxnemu.htm'>uxnemu.htm</a>(107 lines)</figcaption>
 </figure><ul><li><a href='https://git.sr.ht/~rabbits/uxn/tree/master/item/src/emulator.c' target='_blank'>emulator</a></li><li><a href='https://www.nayuki.io/page/band-limited-square-waves' target='_blank'>audio</a></li><li><a href='http://blargg.8bitalley.com/bl-synth/' target='_blank'>synthesis</a></li><li><a href='http://blargg.8bitalley.com/libs/ntsc.html#nes_ntsc' target='_blank'>artifacts</a></li></ul><p><i>incoming(1)</i>: <a href='uxn.html'>uxn</a> </p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
