@@ -1,13 +1,13 @@
 <!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='description' content='Uxambly is a programming language for the Uxn stack-machine.'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV &mdash; uxambly</title></head><body><header><a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='orca.html'>orca</a></li><li><a href='gyo.html'>gyo</a></li><li><a href='uxn.html'>uxn/</a></li><li><a href='noton.html'>noton</a></li><li><a href='paradise.html'>paradise</a></li></ul><ul><li><a href='uxambly.html'>uxambly/</a></li><li><a href='uxnemu.html'>uxnemu</a></li><li><a href='roms.html'>roms</a></li></ul><ul></ul></nav><main><h2>Uxambly is a programming language for the Uxn stack-machine.</h2><p>The <a href='uxn.html'>Uxn</a> cpu understands 8-bit machine code, and that code corresponds to operations and values used in programs. The programming language that turns source code into Uxn roms, is called <b>Uxambly</b>, it's a unique flavor of <a href='assembly.html'>assembly</a> designed for this special stack-machine.</p><img src='../media/generic/uxn.beet.png' width='150' style='float:left'/><p>Stack machine programming might look at bit odd, as it uses a <a href='reverse_polish.html'>postfix notation</a>, which means that operators are always found at the end of an operation. For instance, one would write <code>3 4 +</code> instead of <code>3 + 4</code>. The expression written <code>(5 + 10) * 3</code> in conventional notation would be written <code>3 10 5 + *</code> in reverse Polish notation.</p><hr style='border:0'/><figure><h2>Opcodes</h2>
 
-<p>There are 32 opcodes, each opcode occupies 5 bits of a byte, the remaining 3 are used to select the addressing mode of the values in the stack.</p>
+<p>There are 32 opcodes, each opcode occupies 5 bits of a byte, the remaining 3 are used to select modes of that opcode, modes are explained below.</p>
 
 <table border='1'>
 	<tr><td colspan='3'>mode</td><td colspan='5'>opcode</td></tr>
-	<tr><td>unused</td><td>return</td><td>short</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+	<tr><td><i>nil</i></td><td>return<code>[r]</code></td><td>short<code>[2]</code></td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
 </table>
 
-<p>Opcodes pointing to an address in memory can pull 16-bits(2 bytes) from the stack at a time to form an address like <code>[a b]</code>, where the a and b bytes are combined. For example, <code>[0xAB 0xCD]</code> points to the memory address <code>0xABCD</code>. When used a single byte, these operators point to a relative address.</p>
+<p>Opcodes using memory addresses can pop 2 bytes at once to form an absolute address, or a single one to create a relative address in the case of jump opcodes, or a the zero-page address in the case of peek/poke opcodes. For example, if <code>[0xAB 0xCD]</code> is present on the stack, it will be used by <code>JMP2</code> to point to the memory address <code>0xABCD</code>.</p>
 
 <table border='1' width='700'>
 	<tr><td></td><th colspan='3'>Stack</th><td></td>                                          <th colspan='3'>Memory</th></tr>
@@ -32,9 +32,39 @@
 
 <p><code>lc</code> stands for <i>literal counter</i>, <code>rs</code> for <i>return stack</i>.</p>
 
-<h3>Literals</h3>
+<img src='../media/generic/uxn.team.png' width='250' style='margin:0 auto 30px'/>
 
-<p>Each operation is 1 byte(8-bits). To differentiate operations from numbers, the <code class='op'>LIT</code> opcode (0x02) toggles the literal mode for a length of 1 evaluation, the 16-bits mode <code class='op'>LIT2</code> opcode (0x22) toggles the literal mode for a length of 2 evaluations.</p>
+<p>Modes are indicated by appending extra characters at the end of the opcode, for example, the 16-bit mode of the <code class='op'>ADD</code> opcode is <code class='op'>ADD2</code>, modes can also be combined, for example: <code class='op'>ADD2r</code>.</p>
+
+<p>The <b>return mode</b> makes it possible for any operator to operate on the return-stack directly, for that reason there is no return operation. For example, the JumpStash(<code class='op'>JSR</code>) operator pushes the program's address onto the return stash before jumping, to return to that address, the <code class='op'>JMPr</code> opcode is used, where instead of using the address on the working-stack, it takes its address directly from the return-stack.</p>
+
+<pre>
+#aa 
+,subroutine JSR2 <span class='comment'>( push addr to return-stack )</span>
+#cc
+
+BRK
+
+@subroutine
+	#bb
+	JMP2r <span class='comment'>( jump to addr in return-stack )</span>
+</pre>
+
+<p>The <b>short mode</b> allows for each operator to do 16-bits operations by pushing and popping the necessary extra items from the stack. In the case of jump opcodes(<code class='op'>JMP2</code>, <code class='op'>JSR2</code>, and <code class='op'>JNZ2</code>) the short mode operation jumps to an absolute address in memory. For the getters and setters(<code class='op'>PEK2</code>, <code class='op'>POK2</code>, <code class='op'>LDR2</code> and <code class='op'>STR2</code>) the short mode operation will point to an absolute address in memory.</p>
+
+<pre>
+#1234 #5678 ADD2 <span class='comment'>( add two shorts )</span>
+	#579b EQU2 <span class='comment'>( check if result is 0x579b )</span>
+
+#1234 #0002 MUL2 
+	#2468 EQU2
+
+#0101 EQU2 <span class='comment'>( test both comparisons )</span>
+</pre>
+
+<h2>Literals</h2>
+
+<p>The stack contains 8-bits values, to differentiate operations from literal numbers, the <code class='op'>LIT</code> opcode (0x02) will push the item in memory that follows it to the stack, the 16-bits mode <code class='op'>LIT2</code> opcode (0x22) will push the following two items.</p>
 
 <table border='1'>
 	<tr><th><code>assembly</code></th><td><code>bytecode</code></td></tr>
@@ -155,55 +185,20 @@ RTN
 	<tr><td><code>|0010</code></td><td>Move to position in the program.</td></tr>
 </table>
 
-<h3>Operator modes</h3>
-
-<p>Modes are used by appending the mode's rune to the end of the opcode, for example, the 16-bit mode of the <code class='op'>ADD</code> opcode is <code class='op'>ADD2</code>, modes can also be combined, for example: <code class='op'>ADD2r</code>.</p>
-
-<ul>
-	<li><code class='op'>POPr</code>, return-stack operators have the return flag <code class='op'>r</code>.</li>
-	<li><code class='op'>#1234 #0001 ADD2</code>, 16-bits operators have the short flag <code class='op'>2</code>.</li>
-</ul>
-
-<img src='../media/generic/uxn.team.png' width='250' style='margin:0 auto 30px'/>
-
-<p>The <b>return mode</b> makes it possible for any operator to operate on the return-stack directly, for that reason there is no return operation. For example, the JumpStash(<code class='op'>JSR</code>) operator pushes the program's address onto the return stash before jumping, to return to that address, the <code class='op'>JMPr</code> opcode is used, where instead of using the address on the working-stack, it takes its address directly from the return-stack.</p>
-
-<pre>
-#aa 
-,subroutine JSR2 ( push addr to return-stack )
-#cc
-
-BRK
-
-@subroutine
-	#bb
-	JMP2r ( jump to addr in return-stack )
-</pre>
-
-<p>Operations can be used on 16-bits at a time(2 bytes), by using the <code>SHORT2</code> mode. </p>
-
-<table border='1'>
-	<tr><th>Stack</th><th>Operation</th></tr>
-	<tr><td><code>0x12 0x34 0x56 0x78</code></td><td>SWP2</td></tr>
-	<tr><td><code>0x56 0x78 0x12 0x34</code></td><td>ADD2</td></tr>
-	<tr><td><code>0x68 0xac</code></td><td></td></tr>
-</table>
-
 <h2>Peek, Poke, Load, Save</h2>
 
 <p>This is the reference table for memory operators usage and their modification to the stack.</p>
 
 <table border='1'>
-	<tr><th colspan="5">8-bit mode</th></tr>
-	<tr><td><code>#ef PEK</code></td><td>-1</td><td>addr8</td><td>+1</td><td>value8</td></tr>
-	<tr><td><code>#ab #ef POK</code></td><td>-2</td><td>addr8 value8</td><td></td><td></td></tr>
-	<tr><td><code>#ef LDR</code></td><td>-1</td><td>addr8</td><td>+2</td><td>value16</td></tr>
-	<tr><td><code>#abcd #ef STR</code></td><td>-3</td><td>addr8 value16</td><td></td><td></td></tr>
-	<tr><th colspan="5">16-bit mode</th></tr>
-	<tr><td><code>#00ef PEK2</code></td><td>-2</td><td>addr16</td><td>+1</td><td>value8</td></tr>
-	<tr><td><code>#ab #00ef POK2</code></td><td>-3</td><td>addr16 value8</td><td></td><td></td></tr>
-	<tr><td><code>#00ef LDR2</code></td><td>-2</td><td>addr16</td><td>+2</td><td>value16</td></tr>
-	<tr><td><code>#abcd #00ef STR2</code></td><td>-4</td><td>addr16 value16</td><td></td><td></td></tr>
+	<tr><th>Opcode</th><th colspan="2">Pop</th><th colspan="2">Push</th></tr>
+	<tr><td><code><i>#ef</i> PEK</code></td><td>-1</td><td><i>addr8</i></td><td>+1</td><td>value8</td></tr>
+	<tr><td><code>#ab <i>#ef</i> POK</code></td><td>-2</td><td>value8 <i>addr8</i></td><td></td><td></td></tr>
+	<tr><td><code><i>#ef</i> LDR</code></td><td>-1</td><td><i>addr8</i></td><td>+2</td><td>value16</td></tr>
+	<tr><td><code>#abcd <i>#ef</i> STR</code></td><td>-3</td><td>value16 <i>addr8</i></td><td></td><td></td></tr>
+	<tr><td><code><i>#00ef</i> PEK2</code></td><td>-2</td><td><i>addr16</i></td><td>+1</td><td>value8</td></tr>
+	<tr><td><code>#ab <i>#00ef</i> POK2</code></td><td>-3</td><td>value8 <i>addr16</i></td><td></td><td></td></tr>
+	<tr><td><code><i>#00ef</i> LDR2</code></td><td>-2</td><td><i>addr16</i></td><td>+2</td><td>value16</td></tr>
+	<tr><td><code>#abcd <i>#00ef</i> STR2</code></td><td>-4</td><td>value16 <i>addr16</i></td><td></td><td></td></tr>
 </table>
 
 <h2>Library</h2>
@@ -228,8 +223,9 @@ BRK
 .clr2 { background:#72dec2; color:white; }
 .clr3 { background:#ff0000; color:black; }
 code.op { background: #ddd; color: black; font-size: smaller; display: inline-block; padding: 0px 2px; margin-right: 3px; }
+pre span.comment { color:#666; }
 </style>
 
 <img src='../media/identity/uxn64.png' />
-<figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/uxambly.htm' target='_blank'>edit</a> to <a href='../src/inc/html/uxambly.htm'>uxambly.htm</a>(233 lines)</figcaption>
+<figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/uxambly.htm' target='_blank'>edit</a> to <a href='../src/inc/html/uxambly.htm'>uxambly.htm</a>(229 lines)</figcaption>
 </figure><ul><li><a href='https://git.sr.ht/~rabbits/uxn/tree/master/item/src/assembler.c' target='_blank'>assembler</a></li></ul><p><i>incoming(3)</i>: <a href='uxn.html'>uxn</a> <a href='roms.html'>roms</a> <a href='noodle.html'>noodle</a> </p><p><i>Last update on <a href='tracker.html'>15G08</a>, edited 13 times. +51/85fh <b></b></i> <code style='float:right; font-size:80%'>-----|</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
