@@ -123,20 +123,15 @@ POP
 <p>Here is an example of the assembly language that prints <code>hello world</code> to stdout. Uxambly has no reserved words besides the 32 opcodes, each element of the program has its own rune.</p>
 
 <pre style='clear:both'>
-( hello world )
-
 %RTN { JMP2r }
 
 ( devices )
 
-|0100 ;Console { pad 8 char 1 byte 1 short 2 }
-|0200 ,RESET JMP2
-|0204 ,ERROR JMP2
-|0208 ,FRAME JMP2
+|0110 ;Console { vector 2 pad 6 char 1 byte 1 short 2 }
 
 ( program )
 
-@RESET 
+|0200
 	
 	,text1 ,print-label JSR2
 	,text2 ,print-label JSR2
@@ -157,9 +152,6 @@ RTN
 
 @text1 [ Welcome 20 to 20 UxnVM 0a00 ]
 @text2 [ Hello 20 World 0a00 ] 
-
-@FRAME BRK
-@ERROR BRK 
 </pre>
 
 <h3>Runes</h3>
@@ -190,7 +182,7 @@ RTN
 <p>This is the reference table for memory operators usage and their modification to the stack.</p>
 
 <table border='1'>
-	<tr><th>Opcode</th><th colspan="2">Pop</th><th colspan="2">Push</th></tr>
+	<tr><th>&nbsp;</th><th colspan="2">Pop</th><th colspan="2">Push</th></tr>
 	<tr><td><code><i>#ef</i> PEK</code></td><td>-1</td><td><i>addr8</i></td><td>+1</td><td>value8</td></tr>
 	<tr><td><code>#ab <i>#ef</i> POK</code></td><td>-2</td><td>value8 <i>addr8</i></td><td></td><td></td></tr>
 	<tr><td><code><i>#ef</i> LDR</code></td><td>-1</td><td><i>addr8</i></td><td>+2</td><td>value16</td></tr>
@@ -205,16 +197,13 @@ RTN
 
 <pre>
 %RTN   { JMP2r }
-%RTN?  { JMP2r? }
 %STEP8 { #0033 SFT2 }
-
+%MOD { DUP2 DIV MUL SUB }
+%ABS { DUP #07 SHR #ff SWP MUL? }
 %++ { #0001 ADD2 } %-- { #0001 SUB2 }
 %2/ { #0001 SFT2 } %2* { #0010 SFT2 }
 %8/ { #0003 SFT2 } %8* { #0030 SFT2 }
 %8- { #0008 SUB2 } %8+ { #0008 ADD2 }
-
-%ABS { DUP #07 SHR #ff SWP MUL? }
-%ABS2 { DUP2 #000f SFT2 #ffff SWP2 SWP POP MUL2? } 
 </pre>
 
 <style>
