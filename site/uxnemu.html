@@ -4,64 +4,66 @@
 
 <p>An emulator implementation can choose which device to implement or to leave out, these are the suggested addresses and ports of the SDL emulator.</p>
 
-<table>
-	<tr>
-		<td>
-			<table border='1'>
-				<tr><th rowspan='2' colspan='2'>device</th><th colspan='2'>i/o</th></tr>
-				<tr><th>0x00</th><th>0x08</th></tr>
-				<tr><th rowspan='4'><code>00</code></th><th rowspan='4'>console</th><td rowspan='4'><i>nil</i></td><td class='clr1'>char</td></tr>
-				<tr><td>byte</td></tr>
-				<tr><td>short*</td></tr>
-				<tr><td>string*</td></tr>
-				<tr><th rowspan='3'><code>10</code></th><th rowspan='3'>screen</th><td>width*</td><td>x*</td></tr>
-				<tr><td>height*</td><td>y*</td></tr>
-				<tr><td></td><td class='clr1'>color</td></tr>
-				<tr><th rowspan='4'><code>20</code></th><th rowspan='4'>sprite</th><td>width*</td><td>x*</td></tr>
-				<tr><td>height*</td><td>y*</td></tr>
-				<tr><td></td><td>addr*</td></tr>
-				<tr><td></td><td class='clr1'>color</td></tr>
-				<tr><th><code>30</code></th><th>controller</th><td>player1</td><td><i>nil</i></td></tr>
-				<tr><th><code>40</code></th><th>keyboard</th><td>key</td><td><i>nil</i></td></tr>
-				<tr><th rowspan='4'><code>50</code></th><th rowspan='4'>mouse</th><td>x*</td><td rowspan="4"><i>nil</i></td></tr>
-				<tr><td>y*</td></tr>
-				<tr><td>button</td></tr>
-				<tr><td>chord</td></tr>
-				<tr><th rowspan='4'><code>60</code></th><th rowspan='4'>file</th><td rowspan="4"><i>nil</i></td><td>name*</td></tr>
-				<tr><td>length*</td></tr>
-				<tr><td class='clr1'>addr(r)*</td></tr>
-				<tr><td class='clr1'>addr(w)*</td></tr>
-				<tr><th rowspan='8'><code>70</code></th><th rowspan='8'>audio</th><td rowspan="2">ch1asdr*</td><td>ch1vol</td></tr>
-				<tr><td class='clr1'>ch1pitch</td></tr>
-				<tr><td rowspan="2">ch2asdr*</td><td>ch2vol</td></tr>
-				<tr><td class='clr1'>ch2pitch</td></tr>
-				<tr><td rowspan="2">ch3asdr*</td><td>ch3vol</td></tr>
-				<tr><td class='clr1'>ch3pitch</td></tr>
-				<tr><td rowspan="2">ch4asdr*</td><td>ch4vol</td></tr>
-				<tr><td class='clr1'>ch4pitch</td></tr>
-			</table>
-		</td>
-		<td>
-			<table border='1'>
-				<tr><th rowspan='2' colspan='2'>device</th><th colspan='2'>i/o</th></tr>
-				<tr><th>0x00</th><th>0x08</th></tr>
-				<tr><th rowspan='3'><code>80</code></th><th rowspan='3'>midi</th><td>devicer</td><td>devicew</td></tr>
-				<tr><td>byte1</td><td>byte1</td></tr>
-				<tr><td>byte2</td><td>byte2</td></tr>
-				<tr><th rowspan='8'><code>90</code></th><th rowspan='8'>datetime</th><td>year</td><td class='clr1'>refresh</td></tr>
-				<tr><td>month</td><td rowspan="7"></td></tr>
-				<tr><td>day</td></tr>
-				<tr><td>hour</td></tr>
-				<tr><td>minute</td></tr>
-				<tr><td>second</td></tr>
-				<tr><td>doty</td></tr>
-				<tr><td>dotw</td></tr>
-				<tr><th rowspan='4'><code>f0</code></th><th rowspan='4'>system</th><td rowspan="3"><i>nil</i></td><td class='clr1'>red*</td></tr>
-				<tr><td class='clr1'>green*</td></tr>
-				<tr><td class='clr1'>blue*</td></tr>
-			</table>
-		</td>
-	</tr>
+<table border='1'>
+	<tr><th rowspan='2' colspan='2'>device</th><th colspan='2'>i/o</th><th rowspan="2">Notes</th></tr>
+	<tr><th>0x00</th><th>0x08</th></tr>
+
+	<tr><th rowspan='3'><code>0100</code></th><th rowspan='3'>system</th><td class='clr2'>vector*</td><td class='clr1'>red*</td><td rowspan="3">The system device's vector is automatically set by the emulator and is the first vector that is triggered in a program.</td></tr>
+	<tr><td rowspan="2"></td><td class='clr1'>green*</td></tr>
+	<tr><td class='clr1'>blue*</td></tr>
+
+	<tr><th rowspan='4'><code>0110</code></th><th rowspan='4'>console</th><td class='clr2'>vector*</td><td class='clr1'>char</td><td rowspan="4">The console's vector is currently unused.</td></tr>
+	<tr><td rowspan='3'></td><td>byte</td></tr>
+	<tr><td>short*</td></tr>
+	<tr><td>string*</td></tr>
+
+	<tr><th rowspan='3'><code>0120</code></th><th rowspan='3'>screen</th><td class='clr2'>vector*</td><td>x*</td><td rowspan="3">The screen device's vector is triggered 60 times per second, it is typically used to update pixels on the screen.</td></tr>
+	<tr><td>width*</td><td>y*</td></tr>
+	<tr><td>height*</td><td class='clr1'>color</td></tr>
+
+	<tr><th rowspan='4'><code>0130</code></th><th rowspan='4'>sprite</th><td>width*</td><td>x*</td><td rowspan="4">The sprite's vector is currently unused.</td></tr>
+	<tr><td>height*</td><td>y*</td></tr>
+	<tr><td rowspan="2"></td><td>addr*</td></tr>
+	<tr><td class='clr1'>color</td></tr>
+
+	<tr><th rowspan="5"><code>0140</code></th><th rowspan="5">controller</th><td class='clr2'>vector*</td><td rowspan="5"><i>nil</i></td><td rowspan="5">The controller device's vector is triggered each time a button is pressed or released.</td></tr>
+	<tr><td>player1</td></tr>
+	<tr><td>player2</td></tr>
+	<tr><td>player3</td></tr>
+	<tr><td>player4</td></tr>
+
+	<tr><th rowspan="2"><code>0150</code></th><th rowspan="2">keyboard</th><td class='clr2'>vector*</td><td rowspan="2"><i>nil</i></td><td rowspan="2">The keyboard device's vector is triggered each time a character is typed.</td></tr>
+	<tr><td>key</td></tr>
+
+	<tr><th rowspan='5'><code>0160</code></th><th rowspan='5'>mouse</th><td class='clr2'>vector*</td><td rowspan="5"><i>nil</i></td><td rowspan="5">The mouse device's vector is triggered each time the mouse moved, or a button was pressed or released.</td></tr>
+	<tr><td>x*</td></tr>
+	<tr><td>y*</td></tr>
+	<tr><td>state</td></tr>
+	<tr><td>chord</td></tr>
+
+	<tr><th rowspan='4'><code>0170</code></th><th rowspan='4'>file</th><td rowspan="4"><i>nil</i></td><td>name*</td><td rowspan="4">The console's vector is currently unused.</td></tr>
+	<tr><td>length*</td></tr>
+	<tr><td class='clr1'>addr(r)*</td></tr>
+	<tr><td class='clr1'>addr(w)*</td></tr>
+
+	<tr><th rowspan='6'><code>0180</code></th><th rowspan='6'>audio</th><td>wave*</td><td>volume</td><td rowspan="6">The audio's vector is currently unused.</td></tr>
+	<tr><td>envelope*</td><td>pitch</td></tr>
+	<tr><td rowspan="4"></td><td class='clr1'>play</td></tr>
+	<tr><td>value*</td></tr>
+	<tr><td class='clr1'>delay*</td></tr>
+	<tr><td class='clr1'>finish</td></tr>
+	
+	<tr><th rowspan='3'><code>0190</code></th><th rowspan='3'>midi</th><td>devicer</td><td>devicew</td><td rowspan="3">The midi's vector is currently unused.</td></tr>
+	<tr><td>byte1</td><td>byte1</td></tr>
+	<tr><td>byte2</td><td>byte2</td></tr>
+
+	<tr><th rowspan='7'><code>01a0</code></th><th rowspan='7'>datetime</th><td>year*</td><td>doty*</td><td rowspan="7">The datetime's vector is currently unused.</td></tr>
+	<tr><td>month</td><td>isdst</td></tr>
+	<tr><td>day</td><td class='clr1'>refresh</td></tr>
+	<tr><td>hour</td><td rowspan="4"></td></tr>
+	<tr><td>minute</td></tr>
+	<tr><td>second</td></tr>
+	<tr><td>dotw</td></tr>
 </table>
 
 <h3>Controller Device</h3>
@@ -95,15 +97,18 @@
 
 <h3>Audio Device</h3>
 
-<p>More details shortly.</p>
+<p>The Uxn synth multiplies two waveforms, defined by the wave and envelope vectors. In the main program, write the vectors, volume (left/right nibbles) and pitch (MIDI note number) to define the note, then the channel number to the play byte.</p>
+
+<p>In the wave and envelope vectors, write the value (amplitude) and delay shorts to define the next part of the waveform. A delay of <code>0x8000</code> in the wave vector represents half the note's period: in the envelope vector, it represents half a second. The waveform is linearly interpolated between pairs of values. During these vectors, the channel number used for the note can be read from the play byte.</p>
+
+<p>The wave and envelope vectors repeat until (a) no value/delay pairs are written to the device or (b) any value is written to the finish byte.</p>
 
 <style>
 .clr0 { background:white; color:black; }
 .clr1 { background:black; color:white; }
-.clr2 { background:#72dec2; color:white; }
+.clr2 { background:#72dec2; color:black; }
 .clr3 { background:#ff0000; color:black; }
 </style>
 
-<img src='../media/identity/uxn64.png' />
-<figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/uxnemu.htm' target='_blank'>edit</a> to <a href='../src/inc/html/uxnemu.htm'>uxnemu.htm</a>(107 lines)</figcaption>
+<img src='../media/identity/uxn64.png' /><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/uxnemu.htm' target='_blank'>edit</a> to <a href='../src/inc/html/uxnemu.htm'>uxnemu.htm</a>(112 lines)</figcaption>
 </figure><ul><li><a href='https://git.sr.ht/~rabbits/uxn/tree/master/item/src/emulator.c' target='_blank'>emulator</a></li><li><a href='https://www.nayuki.io/page/band-limited-square-waves' target='_blank'>audio</a></li><li><a href='http://blargg.8bitalley.com/bl-synth/' target='_blank'>synthesis</a></li><li><a href='http://blargg.8bitalley.com/libs/ntsc.html#nes_ntsc' target='_blank'>artifacts</a></li></ul><p><i>incoming(1)</i>: <a href='uxn.html'>uxn</a> </p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
