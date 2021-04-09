@@ -12,15 +12,22 @@
 	<tr><td rowspan="2"></td><td class='clr1'>green*</td></tr>
 	<tr><td class='clr1'>blue*</td></tr>
 
-	<tr><th rowspan='4'><code>0110</code></th><th rowspan='4'>console</th><td class='clr2'>vector*</td><td class='clr1'>char</td><td rowspan="4">The console's vector is currently unused.</td></tr>
-	<tr><td rowspan='3'></td><td>byte</td></tr>
-	<tr><td>short*</td></tr>
-	<tr><td>string*</td></tr>
+	<tr><th rowspan='4'><code>0110</code></th><th rowspan='4'>console</th><td class='clr3'>vector*</td><td class='clr1'>char</td><td rowspan="4">The console's vector is currently unused.</td></tr>
+	<tr><td rowspan='3'></td><td class='clr1'>byte</td></tr>
+	<tr><td class='clr1'>short*</td></tr>
+	<tr><td class='clr1'>string*</td></tr>
 
-	<tr><th rowspan='4'><code>0120</code></th><th rowspan='4'>screen</th><td class='clr2'>vector*</td><td>x*</td><td rowspan="4">The screen device's vector is triggered 60 times per second, it is typically used to update pixels on the screen.</td></tr>
+	<tr><th rowspan='4'><code>0120</code></th><th rowspan='4'><a href='#screen'>screen</a></th><td class='clr2'>vector*</td><td>x*</td><td rowspan="4">The screen device's vector is triggered 60 times per second, it is typically used to update pixels on the screen.</td></tr>
 	<tr><td>width*</td><td>y*</td></tr>
 	<tr><td>height*</td><td>addr*</td></tr>
 	<tr><td></td><td class='clr1'>color</td></tr>
+
+	<tr><th rowspan='6'><code>0130</code></th><th rowspan='6'><a href='#audio'>audio</a></th><td class='clr2'>wave*</td><td>volume</td><td rowspan="6">The APU multiplies two waveforms, defined by the wave and envelope vectors. In the main program, write the vectors, volume (left/right nibbles) and pitch (MIDI note number) to define the note, then the channel number to the play byte.</td></tr>
+	<tr><td class='clr2'>envelope*</td><td>pitch</td></tr>
+	<tr><td rowspan="4"></td><td class='clr1'>play</td></tr>
+	<tr><td>value*</td></tr>
+	<tr><td class='clr1'>delay*</td></tr>
+	<tr><td class='clr1'>finish</td></tr>
 
 	<tr><th rowspan="5"><code>0140</code></th><th rowspan="5">controller</th><td class='clr2'>vector*</td><td rowspan="5"><i>nil</i></td><td rowspan="5">The controller device's vector is triggered each time a button is pressed or released.</td></tr>
 	<tr><td>player1</td></tr>
@@ -41,13 +48,6 @@
 	<tr><td rowspan="3"></td><td>length*</td></tr>
 	<tr><td class='clr1'>addr(r)*</td></tr>
 	<tr><td class='clr1'>addr(w)*</td></tr>
-
-	<tr><th rowspan='6'><code>0180</code></th><th rowspan='6'>APU</th><td class='clr2'>wave*</td><td>volume</td><td rowspan="6">The APU multiplies two waveforms, defined by the wave and envelope vectors. In the main program, write the vectors, volume (left/right nibbles) and pitch (MIDI note number) to define the note, then the channel number to the play byte.</td></tr>
-	<tr><td class='clr2'>envelope*</td><td>pitch</td></tr>
-	<tr><td rowspan="4"></td><td class='clr1'>play</td></tr>
-	<tr><td>value*</td></tr>
-	<tr><td class='clr1'>delay*</td></tr>
-	<tr><td class='clr1'>finish</td></tr>
 	
 	<tr><th rowspan='4'><code>0190</code></th><th rowspan='4'>midi</th><td class='clr2'>vector*</td><td>devicew</td><td rowspan="4">The midi device's vector is triggered when a midi note is received.</td></tr>
 	<tr><td>devicer</td><td>byte1</td></tr>
@@ -63,22 +63,11 @@
 	<tr><td>dotw</td></tr>
 </table>
 
-<h3>Controller Device</h3>
-
-<p>This device works like a NES controller, each one of the 8 buttons is a bit from a single byte. To check if the up button is pressed:</p>
-
-<table border='1'>
-	<tr><td><code>0x01</code></td><td>Ctrl</td><td><code>0x10</code></td><td>Up</td></tr>
-	<tr><td><code>0x02</code></td><td>Alt</td><td><code>0x20</code></td><td>Down</td></tr>
-	<tr><td><code>0x04</code></td><td>Backspace</td><td><code>0x40</code></td><td>Left</td></tr>
-	<tr><td><code>0x08</code></td><td>Return</td><td><code>0x80</code></td><td>Right</td></tr>
-</table>
-
-<h3>Screen Device(PPU)</h3>
+<h3 id='screen'>Screen Device(PPU)</h3>
 
 <p>The screen device handles drawing pixels and sprites on the screen. The sprite device's color byte defines the layer to draw on, the type of data to draw, and the colors to use. The screen is made of two layers, to paint a pixel on the first layer, use the <code>#01</code>, to paint a pixel on the second layer, use the <code>#11</code>.</p>
 
-<p>The device can also draw multiple bytes at once, to paint a 1-bit 8x8 sprite on the first layer, use the <code>#21</code>, to paint a 1-bit 8x8 sprite on the second layer, use the <code>#31</code>. The blending mode 1, is demonstrated in the table below. To learn more about the sprite format, see <a href='chr_format.html'>.chr format</a>.</p>
+<p>The device can also draw multiple bytes at once by writing the address to a series of bytes in the screen's sprite address, to paint a 1-bit 8x8 sprite(8 bytes) on the first layer, use the <code>#21</code>, to paint a 1-bit 8x8 sprite on the second layer, use the <code>#31</code>. The blending mode 1, is demonstrated in the table below. To learn more about the sprite format, see <a href='chr_format.html'>.chr format</a>.</p>
 
 <table border='1'>
 	<tr><th colspan='3'>high nibble</th><th colspan='6'>low nibble</th></tr>
@@ -92,11 +81,22 @@
 	<tr><th>7</th><td>fg</td><th>7</th><td class='clr3'>3</td><td class='clr1'>1</td><th>f</th><td class='clr3' colspan='2'>3</td></tr></tr>
 </table>
 
-<h3>Audio Device(APU)</h3>
+<h3 id='audio'>Audio Device(APU)</h3>
 
 <p>In the wave and envelope vectors, write the value (amplitude) and delay shorts to define the next part of the waveform. A delay of <code>0x8000</code> in the wave vector represents half the note's period: in the envelope vector, it represents half a second. The waveform is linearly interpolated between pairs of values. During these vectors, the channel number used for the note can be read from the play byte.</p>
 
 <p>The wave and envelope vectors repeat until (a) no value/delay pairs are written to the device or (b) any value is written to the finish byte.</p>
+
+<h3>Controller Device</h3>
+
+<p>This device works like a NES controller, each one of the 8 buttons is a bit from a single byte. To check if the up button is pressed:</p>
+
+<table border='1'>
+	<tr><td><code>0x01</code></td><td>Ctrl</td><td><code>0x10</code></td><td>Up</td></tr>
+	<tr><td><code>0x02</code></td><td>Alt</td><td><code>0x20</code></td><td>Down</td></tr>
+	<tr><td><code>0x04</code></td><td>Backspace</td><td><code>0x40</code></td><td>Left</td></tr>
+	<tr><td><code>0x08</code></td><td>Return</td><td><code>0x80</code></td><td>Right</td></tr>
+</table>
 
 <style>
 .clr0 { background:white; color:black; }
