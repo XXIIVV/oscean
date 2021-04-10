@@ -54,20 +54,31 @@
 	<tr><td>byte1</td><td>byte2</td></tr>
 	<tr><td>byte2</td></tr>
 
-	<tr><th rowspan='7'><code>01a0</code></th><th rowspan='7'>datetime</th><td>year*</td><td>doty*</td><td rowspan="7">The datetime's vector is currently unused.</td></tr>
-	<tr><td>month</td><td>isdst</td></tr>
-	<tr><td>day</td><td class='clr1'>refresh</td></tr>
-	<tr><td>hour</td><td rowspan="4"></td></tr>
-	<tr><td>minute</td></tr>
-	<tr><td>second</td></tr>
-	<tr><td>dotw</td></tr>
+	<tr><th rowspan='4'><code>01a0</code></th><th rowspan='4'>datetime</th><td>yearh*</td><td class='clr1'>refresh</td><td rowspan="4">The datetime's vector is currently unused.</td></tr>
+	<tr><td>yearl*</td><td rowspan="3"></td></tr>
+	<tr><td>dayh*</td></tr>
+	<tr><td>dayl*</td></tr>
 </table>
 
 <h3 id='screen'>Screen Device(PPU)</h3>
 
-<p>The screen device handles drawing pixels and sprites on the screen. The sprite device's color byte defines the layer to draw on, the type of data to draw, and the colors to use. The screen is made of two layers, to paint a pixel on the first layer, use the <code>#01</code>, to paint a pixel on the second layer, use the <code>#11</code>. The first nibble is the layer and type of data to draw, the second nibble is the color(also called blending mode).</p>
+<table border='1'>
+	<tr><th rowspan="2">Buffers</th><td>background</td><td>64kb</td></tr>
+	<tr><td>foreground</td><td>64kb</td></tr>
+</table>
 
-<p>The device can also draw multiple bytes at once by writing the address to a series of bytes in the screen's sprite address, to paint a 1-bit 8x8 sprite(8 bytes) on the first layer, use the <code>#21</code>, to paint a 1-bit 8x8 sprite on the second layer, use the <code>#31</code>. The blending mode 1, is demonstrated in the table below. To learn more about the sprite format, see <a href='chr_format.html'>.chr format</a>.</p>
+<p>The screen device is made of two screen buffers, that are combined to form the pixels on the screen. The sprite device can be written to with a <code>x*</code>, <code>y*</code> and <code>color</code>.</p>
+<p>The <b>color byte</b> defines the layer to draw on, the type of data to draw, and the colors to use. To paint a pixel on the first layer, use the <code>#01</code>, to paint a pixel on the second layer, use the <code>#11</code>.</p>
+
+<pre>
+* * M L            D C B A            
+| | | +---- Layer  | | | +---- Blend   
+| | +------ Mode   | | +------ Blend   
+| +-------- Nil    | +-------- Blend  
++---------- Nil    +---------- Blend  
+</pre>
+
+<p>The device can also draw multiple bytes at once by writing the address* to a series of bytes in the screen's sprite address, to paint a 1-bit 8x8 sprite(8 bytes) on the first layer, use the <code>#21</code>, to paint a 1-bit 8x8 sprite on the second layer, use the <code>#31</code>. The blending mode 1, is demonstrated in the table below. To learn more about the sprite format, see <a href='chr_format.html'>.chr format</a>.</p>
 
 <table border='1'>
 	<tr><th colspan='3'>high nibble</th><th colspan='6'>low nibble</th></tr>
