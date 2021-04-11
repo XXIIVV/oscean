@@ -53,8 +53,8 @@ Uint32 theme[] = {
 Uint8 icons[][8] = {
 	{0x38, 0x7c, 0xfe, 0xfe, 0xfe, 0x7c, 0x38, 0x00}, /* color:full */
 	{0x00, 0x38, 0x7c, 0x7c, 0x7c, 0x38, 0x00, 0x00}, /* color:blank */
-	{0xfe, 0x82, 0x82, 0xfe, 0x82, 0x82, 0xfe, 0x00}, /* brush:colors2 */
-	{0xfe, 0x92, 0x92, 0xfe, 0x92, 0x92, 0xfe, 0x00}, /* brush:colors4 */
+	{0xfe, 0x82, 0x82, 0xfe, 0x82, 0x82, 0xfe, 0x00}, /* brush:1bit */
+	{0xfe, 0x92, 0x92, 0xfe, 0x92, 0x92, 0xfe, 0x00}, /* brush:2bit */
 	{0x18, 0x38, 0x18, 0x18, 0x18, 0x18, 0x7e, 0x00}, /* picker:1 */
 	{0x7c, 0xc6, 0x0e, 0x3c, 0x78, 0xe0, 0xfe, 0x00}, /* picker:2 */
 	{0x7e, 0x0c, 0x18, 0x3c, 0x06, 0xc6, 0x7c, 0x00}, /* picker:3 */
@@ -244,7 +244,7 @@ getpattern(int palette, int x, int y)
 }
 
 int
-getpalette(Uint32 clr, int x, int y)
+getpalette(Uint32 clr)
 {
 	Uint32 res = 0, dis = 999999;
 	int i;
@@ -282,7 +282,7 @@ redraw(Uint32 *dst)
 	SDL_LockSurface(image);
 	for(y = 0; y &lt; image-&gt;h; ++y) {
 		for(x = 0; x &lt; image-&gt;w; ++x) {
-			int palette = getpalette(getcolor(x, y), x, y);
+			int palette = getpalette(getcolor(x, y));
 			putchr(x, y, COLORS ? palette : getpattern(palette, x, y));
 		}
 	}
@@ -403,7 +403,7 @@ selectoption(int option)
 	switch(option) {
 	case 0: savemode(&amp;COLORS, !COLORS); break;
 	case 2: savemode(&amp;GUIDES, !GUIDES); break;
-	case HOR - 1: savedoc(&amp;doc, doc.name); break;
+	case HOR - 1: COLORS ? savedoc(&amp;doc, doc.name) : saveicn(&amp;doc, doc.name); break;
 	}
 }
 
@@ -440,7 +440,7 @@ domouse(SDL_Event *event)
 		DOWN = 1;
 		break;
 	case SDL_MOUSEMOTION:
-		if(DOWN &amp;&amp; selected)
+		if(selected)
 			setpicker(selected, event-&gt;motion.x / ZOOM - PAD * 8, event-&gt;motion.y / ZOOM - PAD * 8);
 		break;
 	}
@@ -460,6 +460,10 @@ dokey(SDL_Event *event)
 	} else {
 		switch(event-&gt;key.keysym.sym) {
 		case SDLK_SPACE: savemode(&amp;COLORS, !COLORS); break;
+		case SDLK_1: selected = &amp;pickers[0]; break;
+		case SDLK_2: selected = &amp;pickers[1]; break;
+		case SDLK_3: selected = &amp;pickers[2]; break;
+		case SDLK_4: selected = &amp;pickers[3]; break;
 		}
 	}
 }
@@ -533,5 +537,5 @@ main(int argc, char **argv)
 	quit();
 	return 0;
 }
-</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/dito.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/dito.c.txt'>dito.c.txt</a>(535 lines)</figcaption>
+</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/text/dito.c.txt' target='_blank'>edit</a> to <a href='../src/inc/text/dito.c.txt'>dito.c.txt</a>(539 lines)</figcaption>
 </figure><ul><li><a href='https://git.sr.ht/~rabbits/dito' target='_blank'>sources</a></li><li><a href='https://merveilles.town/web/statuses/105589734816667213' target='_blank'>thread</a></li></ul><p><i>incoming(1)</i>: <a href='chr_format.html'>chr format</a> </p><p><i>Last update on <a href='tracker.html'>15B07</a>, edited 2 times. +9/14fh <b></b></i> <code style='float:right; font-size:80%'>-----|</code></p><ul><li>15B06 &mdash; Dito Desktop Release</li></ul></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>

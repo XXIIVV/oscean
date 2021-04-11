@@ -34,7 +34,7 @@ typedef struct Brush {
 
 int WIDTH = 8 * HOR + 8 * PAD * 2;
 int HEIGHT = 8 * (VER + 2) + 8 * PAD * 2;
-int FPS = 30, GUIDES = 1, BIGPIXEL = 0, ZOOM = 2;
+int FPS = 30, GUIDES = 1, BIGPIXEL = 0, ZOOM = 2, COLORS = 1;
 
 Document doc;
 Brush brush;
@@ -47,6 +47,8 @@ Uint32 theme[] = {
 	0x222222};
 
 Uint8 icons[][8] = {
+	{0xfe, 0x82, 0x82, 0xfe, 0x82, 0x82, 0xfe, 0x00}, /* brush:1bit */
+	{0xfe, 0x92, 0x92, 0xfe, 0x92, 0x92, 0xfe, 0x00}, /* brush:2bit */
 	{0x38, 0x44, 0x82, 0x82, 0x82, 0x44, 0x38, 0x00}, /* color:blank */
 	{0x38, 0x7c, 0xfe, 0xfe, 0xfe, 0x7c, 0x38, 0x00}, /* color:full */
 	{0x02, 0x02, 0x04, 0x38, 0x40, 0x80, 0x80, 0x00}, /* brush:line */
@@ -285,7 +287,7 @@ bigchrguides(int x, int y, int h, int v)
 }
 
 void
-drawbigchr(Uint32 *dst, int x, int y, int id)
+drawbig(Uint32 *dst, int x, int y, int id)
 {
 	int v, h;
 	for(v = 0; v < 8; v++)
@@ -302,18 +304,19 @@ void
 drawui(Uint32 *dst)
 {
 	int bottom = VER * 8 + 8;
-	drawicn(dst, 0, bottom, brush.color == 1 ? icons[1] : icons[0], 1, 0);
-	drawicn(dst, 8, bottom, brush.color == 2 ? icons[1] : icons[0], 2, 0);
-	drawicn(dst, 16, bottom, brush.color == 3 ? icons[1] : icons[0], 3, 0);
-	drawicn(dst, 4 * 8, bottom, icons[2], brush.mode == 0 ? 1 : 2, 0);
-	drawicn(dst, 5 * 8, bottom, icons[3], brush.mode == 1 ? 1 : 2, 0);
-	drawicn(dst, 6 * 8, bottom, icons[4], brush.mode == 2 ? 1 : 2, 0);
-	drawicn(dst, 7 * 8, bottom, icons[5], brush.mode == 3 ? 1 : 2, 0);
-	drawicn(dst, 8 * 8, bottom, icons[6], brush.mode == 4 ? 1 : 2, 0);
-	drawicn(dst, 10 * 8, bottom, icons[hasclip() ? 10 : 9], brush.mode == 5 ? 1 : 2, 0);
-	drawicn(dst, 11 * 8, bottom, icons[BIGPIXEL ? 8 : 7], brush.mode == 6 ? 1 : 2, 0);
-	drawicn(dst, 13 * 8, bottom, icons[GUIDES ? 12 : 11], GUIDES ? 1 : 2, 0);
-	drawicn(dst, (HOR - 1) * 8, bottom, icons[13], doc.unsaved ? 2 : 3, 0); /* save state */
+	drawicn(dst, 0, bottom, icons[COLORS], 1, 0);
+	drawicn(dst, 0x10, bottom, brush.color == 1 ? icons[3] : icons[2], 1, 0);
+	drawicn(dst, 0x18, bottom, brush.color == 2 ? icons[3] : icons[2], 2, 0);
+	drawicn(dst, 0x20, bottom, brush.color == 3 ? icons[3] : icons[2], 3, 0);
+	drawicn(dst, 0x30, bottom, icons[4], brush.mode == 0 ? 1 : 2, 0);
+	drawicn(dst, 0x38, bottom, icons[5], brush.mode == 1 ? 1 : 2, 0);
+	drawicn(dst, 0x40, bottom, icons[6], brush.mode == 2 ? 1 : 2, 0);
+	drawicn(dst, 0x48, bottom, icons[7], brush.mode == 3 ? 1 : 2, 0);
+	drawicn(dst, 0x50, bottom, icons[8], brush.mode == 4 ? 1 : 2, 0);
+	drawicn(dst, 0x60, bottom, icons[hasclip() ? 12 : 11], brush.mode == 5 ? 1 : 2, 0);
+	drawicn(dst, 0x68, bottom, icons[BIGPIXEL ? 10 : 9], brush.mode == 6 ? 1 : 2, 0);
+	drawicn(dst, 0x78, bottom, icons[GUIDES ? 14 : 13], GUIDES ? 1 : 2, 0);
+	drawicn(dst, (HOR - 1) * 0x08, bottom, icons[15], doc.unsaved ? 2 : 3, 0); /* save state */
 }
 
 void
@@ -326,9 +329,13 @@ redraw(Uint32 *dst)
 		for(x = 0; x < HOR; ++x)
 			if(BIGPIXEL) {
 				if(x + brush.vx < HOR * 8 && y + brush.vy < VER * 8)
-					drawbigchr(dst, x, y, getchr(x + brush.vx, y + brush.vy));
-			} else
-				drawchr(dst, x * 8, y * 8, &doc.data[(x + y * HOR) * 16]);
+					drawbig(dst, x, y, getchr(x + brush.vx, y + brush.vy) % (COLORS ? 4 : 2));
+			} else {
+				if(COLORS)
+					drawchr(dst, x * 8, y * 8, &doc.data[(x + y * HOR) * 16]);
+				else
+					drawicn(dst, x * 8, y * 8, &doc.data[(x + y * HOR) * 16], 1, 0);
+			}
 	SDL_UpdateTexture(gTexture, NULL, dst, WIDTH * sizeof(Uint32));
 	SDL_RenderClear(gRenderer);
 	SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);
@@ -392,6 +399,21 @@ opendoc(Document *d, char *name)
 	return 1;
 }
 
+int
+savebmp(void)
+{
+	int w, h;
+	SDL_Surface *sshot;
+	SDL_GetRendererOutputSize(gRenderer, &w, &h);
+	w /= ZOOM;
+	h /= ZOOM;
+	sshot = SDL_CreateRGBSurfaceFrom(pixels, w, h, 8 * 4, w * 4, 0, 0, 0, 0);
+	SDL_SaveBMP(sshot, "screenshot.bmp");
+	printf("Rendered screenshot\n");
+	SDL_FreeSurface(sshot);
+	return 1;
+}
+
 void
 lookat(int x, int y)
 {
@@ -431,38 +453,22 @@ pasteclip(Uint8 *clip, int id)
 	clearclip(clip);
 }
 
-int
-savebmp(void)
-{
-	SDL_Rect rect = {0, 0, WIDTH * ZOOM, HEIGHT * ZOOM};
-	SDL_Surface *surface = SDL_GetWindowSurface(gWindow);
-	SDL_RenderReadPixels(gRenderer,
-		&rect,
-		SDL_PIXELFORMAT_ARGB8888,
-		surface->pixels,
-		surface->pitch);
-	if(SDL_SaveBMP(surface, "nasu-render.bmp"))
-		return error("Render", "Failed");
-	puts("Render: nasu-render.bmp");
-	SDL_FreeSurface(surface);
-	return 1;
-}
-
 void
 selectoption(int option)
 {
 	switch(option) {
-	case 0: savemode(&brush.color, 1); break;
-	case 1: savemode(&brush.color, 2); break;
-	case 2: savemode(&brush.color, 3); break;
-	case 4: savemode(&brush.mode, 0); break;
-	case 5: savemode(&brush.mode, 1); break;
-	case 6: savemode(&brush.mode, 2); break;
-	case 7: savemode(&brush.mode, 3); break;
-	case 8: savemode(&brush.mode, 4); break;
-	case 10: savemode(&brush.mode, 5); break;
-	case 11: savemode(&brush.mode, 6); break;
-	case 13: savemode(&GUIDES, !GUIDES); break;
+	case 0: savemode(&COLORS, !COLORS); break;
+	case 2: savemode(&brush.color, 1); break;
+	case 3: savemode(&brush.color, 2); break;
+	case 4: savemode(&brush.color, 3); break;
+	case 6: savemode(&brush.mode, 0); break;
+	case 7: savemode(&brush.mode, 1); break;
+	case 8: savemode(&brush.mode, 2); break;
+	case 9: savemode(&brush.mode, 3); break;
+	case 10: savemode(&brush.mode, 4); break;
+	case 12: savemode(&brush.mode, 5); break;
+	case 13: savemode(&brush.mode, 6); break;
+	case 15: savemode(&GUIDES, !GUIDES); break;
 	case HOR - 1: savedoc(&doc, doc.name); break;
 	}
 }
@@ -577,6 +583,7 @@ dokey(SDL_Event *event)
 		case SDLK_DOWN: lookat(brush.vx, brush.vy + 1); break;
 		case SDLK_LEFT: lookat(brush.vx - 1, brush.vy); break;
 		case SDLK_RIGHT: lookat(brush.vx + 1, brush.vy); break;
+		case SDLK_SPACE: savemode(&COLORS, !COLORS); break;
 		case SDLK_ESCAPE:
 			savemode(&brush.mode, 0);
 			clearclip(brush.clip);
