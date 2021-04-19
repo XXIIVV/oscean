@@ -12,8 +12,8 @@
 <table border='1' width='700'>
 	<tr><td></td><th colspan='3'>Stack</th><td></td>                                          <th colspan='3'>Memory</th></tr>
 	<tr><th>0x00</th><td><code class='op'>BRK</code> Break</td><td></td><td></td>             <th>0x10</th><td><code class='op'>PEK</code> LoadByte</td><td>[a]</td><td>b</td></tr>
-	<tr><th>0x01</th><td><code class='op'>NOP</code> Nothing</td><td></td><td></td>           <th>0x11</th><td><code class='op'>POK</code> StoreByte</td><td>a [b]</td><td></td></tr>
-	<tr><th>0x02</th><td><code class='op'>LIT</code> Literal</td><td></td><td>lc</td>         <th>0x12</th><td><code class='op'>LDR</code> LoadShort</td><td>[a]</td><td>c</td></tr>
+	<tr><th>0x01</th><td><code class='op'>LIT</code> Literal</td><td>-></td><td></td>         <th>0x11</th><td><code class='op'>POK</code> StoreByte</td><td>a [b]</td><td></td></tr>
+	<tr><th>0x02</th><td><code class='op'>IND</code> Indirect</td><td>-></td><td></td>        <th>0x12</th><td><code class='op'>LDR</code> LoadShort</td><td>[a]</td><td>c</td></tr>
 	<tr><th>0x03</th><td><code class='op'>POP</code> Pop</td><td>a</td><td></td>              <th>0x13</th><td><code class='op'>STR</code> StoreShort</td><td>a [b]</td><td></td></tr>
 	<tr><th>0x04</th><td><code class='op'>DUP</code> Duplicate</td><td>a</td><td>a a</td>     <th>0x14</th><td><code class='op'>JMP</code> Jump</td><td>[a]</td><td></tr>
 	<tr><th>0x05</th><td><code class='op'>SWP</code> Swap</td><td>a b</td><td>b a</td>        <th>0x15</th><td><code class='op'>JNZ</code> JumpCond</td><td>a [b]</td><td></td></tr>
@@ -26,11 +26,11 @@
 	<tr><th>0x0b</th><td><code class='op'>LTH</code> LesserThan</td><td>a b</td><td>c</td>    <th>0x1b</th><td><code class='op'>DIV</code> Divide</td><td>a b</td><td>c</td></tr>
 	<tr><th>0x0c</th><td><code class='op'>GTS</code> GreaterSign</td><td>as bs</td><td>c</td> <th>0x1c</th><td><code class='op'>AND</code> And</td><td>a b</td><td>c</td></tr>
 	<tr><th>0x0d</th><td><code class='op'>LTS</code> LesserSign</td><td>as bs</td><td>c</td>  <th>0x1d</th><td><code class='op'>ORA</code> Or</td><td>a b</td><td>c</td></tr>
-	<tr><th>0x0e</th><td><code class='op'>---</code> </td><td></td><td></td>                  <th>0x1e</th><td><code class='op'>EOR</code> ExclusiveOr</td><td>a b</td><td>c</td></tr>
-	<tr><th>0x0f</th><td><code class='op'>---</code> </td><td></td><td></td>                  <th>0x1f</th><td><code class='op'>SFT</code> Shift</td><td>a b</td><td>c</td></tr>
+	<tr><th>0x0e</th><td><code class='op'></code></td><td></td><td></td>                      <th>0x1e</th><td><code class='op'>EOR</code> ExclusiveOr</td><td>a b</td><td>c</td></tr>
+	<tr><th>0x0f</th><td><code class='op'></code></td><td></td><td></td>                      <th>0x1f</th><td><code class='op'>SFT</code> Shift</td><td>a b</td><td>c</td></tr>
 </table>
 
-<p><code>lc</code> stands for <i>literal counter</i>, <code>rs</code> for <i>return stack</i>.</p>
+<p><code>rs</code> for <i>return stack</i>.</p>
 
 <img src='../media/generic/uxn.team.png' width='250' style='margin:0 auto 30px'/>
 
@@ -62,16 +62,29 @@ BRK
 #0101 EQU2 <span class='comment'>( test both comparisons )</span>
 </pre>
 
-<h2>Literals</h2>
+<h2>Addressing</h2>
 
-<p>The stack contains 8-bits values, to differentiate operations from literal numbers, the <code class='op'>LIT</code> opcode (0x02) will push the item in memory that follows it to the stack, the 16-bits mode <code class='op'>LIT2</code> opcode (0x22) will push the following two items.</p>
+<p>The memory and stacks contains 8-bits values, to differentiate operations from literal numbers, the <code class='op'>LIT</code> opcode will push the following byte from memory onto the stack, the 16-bits mode <code class='op'>LIT2</code> opcode will push the following short. The <code class='op'>IND</code> opcode pushes to the stack, the value in memory found at the address defined in the following byte or short. The Uxn processor provides two ways in which literals can be created.</p>
+
+<ul>
+	<li><b>Immediate</b>, or literal, addressing allows to directly specify a byte or short constant.</li>
+	<li><b>Indirect</b> addressing allows to push a byte to the stack from an address in memory. </li>
+</ul>
+
+<p>For more flexbile transfer of data between the stacks and memory, there are 4 opcodes to read/write bytes and shorts:</p>
 
 <table border='1'>
-	<tr><th><code>assembly</code></th><td><code>bytecode</code></td></tr>
-	<tr><th><code>,12</code></th><td><code>0x02 0x12</code></td></tr>
-	<tr><th><code>.23</code></th><td><code>0x23</code></td></tr>
-	<tr><th><code>,abcd</code></th><td><code>0x22 0xab 0xcd</code></td></tr>
-	<tr><th><code>.abcd</code></th><td><code>0xab 0xcd</code></td></tr>
+
+	<tr><th></th><th>input</th><th>output</th><th>opcode</th></tr>
+	<tr><th rowspan="4">read</th><th rowspan="2">byte</th><th>byte</th><td><code>PEK</code></td></tr>
+	<tr><th>short</th><td><code>LDR</code></td></tr>
+	<tr><th rowspan="2">short</th><th>byte</th><td><code>PEK2</code></td></tr>
+	<tr><th>short</th><td><code>LDR2</code></td></tr>
+	<tr><th rowspan="4">write</th><th rowspan="2">byte</th><th>byte</th><td><code>POK</code></td></tr>
+	<tr><th>short</th><td><code>STR</code></td></tr>
+	<tr><th rowspan="2">short</th><th>byte</th><td><code>POK2</code></td></tr>
+	<tr><th>short</th><td><code>STR2</code></td></tr>
+
 </table>
 
 <h2>Programming</h2>
@@ -87,7 +100,7 @@ BRK
 $loop
 	( body ) 
 	SWP #01 ADD SWP
-	DUP2 LTH ^$loop JNZ
+	DUP2 LTH ;$loop JNZ
 POP2
 </pre>
 		</td>
@@ -96,20 +109,20 @@ POP2
 #00 #0d
 $while
 	( body )
-	DUP2 EQU ^$end JNZ
+	DUP2 EQU ;$end JNZ
 	SWP #01 ADD SWP
-^$while JMP $end
+;$while JMP $end
 POP2
 </pre>
 		</td>
 		<td>
 <pre>
 #02 
-DUP #01 NEQ ^$b JNZ
+DUP #01 NEQ ;$b JNZ
 	( a ) 
-$b DUP #02 NEQ ^$c JNZ
+$b DUP #02 NEQ ;$c JNZ
 	( b ) 
-$c DUP #03 NEQ ^$default JNZ
+$c DUP #03 NEQ ;$default JNZ
 	( c ) 
 $default
 POP
@@ -119,7 +132,6 @@ POP
 
 </table>
 
-
 <p>Here is an example of the assembly language that prints <code>hello world</code> to stdout. Uxambly has no reserved words besides the 32 opcodes, each element of the program has its own rune.</p>
 
 <pre style='clear:both'>
@@ -127,7 +139,7 @@ POP
 
 ( devices )
 
-|0110 ;Console { vector 2 pad 6 char 1 byte 1 short 2 }
+|0110 :Console { vector 2 pad 6 char 1 byte 1 short 2 string 2 }
 
 ( program )
 
@@ -145,7 +157,7 @@ BRK
 	$loop
 		( send ) DUP2 PEK2 =Console.char
 		( incr ) #0001 ADD2
-		( loop ) DUP2 PEK2 #00 NEQ ^$loop JNZ
+		( loop ) DUP2 PEK2 #00 NEQ ;$loop JNZ
 	POP2
 
 RTN    
@@ -160,37 +172,21 @@ RTN
 	<tr><th colspan='2'>Define</th></tr>
 	<tr><td><code>@label</code></td><td>Assign the current address to a label.</td></tr>
 	<tr><td><code>$sublabel</code></td><td>Assign the current address to a local label.</td></tr>
-	<tr><td><code>;variable { short 2 }</code></td><td>Assign an address to a label automatically.</td></tr>
+	<tr><td><code>:variable { short 2 }</code></td><td>Allocate the current address to a variable.</td></tr>
 	<tr><td><code>%macro { JMP2? POP2 }</code></td><td>Define a macro.</td></tr>
 	<tr><th colspan='2'>Program</th></tr>
-	<tr><td><code>.address</code></td><td>Push label address to memory.</td></tr>
-	<tr><td><code>,literal</code></td><td>Push label literal address to stack.</td></tr>
-	<tr><td><code>^literal</code></td><td>Push label literal relative address to stack.</td></tr>
+	<tr><td><code>,label</code></td><td>Push label absolute address to stack.</td></tr>
+	<tr><td><code>.label</code></td><td>Push label zero-page to memory.</td></tr>
+	<tr><td><code>;label</code></td><td>Push label relative address to stack.</td></tr>
 	<tr><td><code>#1a</code></td><td>Push a literal byte/short.</td></tr>
 	<tr><th colspan='2'>Helpers</th></tr>
-	<tr><td><code>=label</code></td><td>Equivalent to <code>,label STR</code>.</td></tr>
-	<tr><td><code>~label</code></td><td>Equivalent to <code>,label LDR2</code>.</td></tr>
+	<tr><td><code>=label</code></td><td>Equivalent to <code>,label POK/STR</code>.</td></tr>
+	<tr><td><code>~label</code></td><td>Equivalent to <code>,label POK/LDR</code>.</td></tr>
 	<tr><th colspan='2'>Blocks</th></tr>
 	<tr><td><code>( comment )</code></td><td>toggle parsing on/off.</td></tr>
 	<tr><td><code>[ 0123 abcd ]</code></td><td>write data to memory.</td></tr>
 	<tr><th colspan='2'>Others</th></tr>
 	<tr><td><code>|0010</code></td><td>Move to position in the program.</td></tr>
-</table>
-
-<h2>Peek, Poke, Load, Save</h2>
-
-<p>This is the reference table for memory operators usage and their modification to the stack.</p>
-
-<table border='1'>
-	<tr><th>&nbsp;</th><th colspan="2">Pop</th><th colspan="2">Push</th></tr>
-	<tr><td><code><i>#ef</i> PEK</code></td><td>-1</td><td><i>addr8</i></td><td>+1</td><td>value8</td></tr>
-	<tr><td><code>#ab <i>#ef</i> POK</code></td><td>-2</td><td>value8 <i>addr8</i></td><td></td><td></td></tr>
-	<tr><td><code><i>#ef</i> LDR</code></td><td>-1</td><td><i>addr8</i></td><td>+2</td><td>value16</td></tr>
-	<tr><td><code>#abcd <i>#ef</i> STR</code></td><td>-3</td><td>value16 <i>addr8</i></td><td></td><td></td></tr>
-	<tr><td><code><i>#00ef</i> PEK2</code></td><td>-2</td><td><i>addr16</i></td><td>+1</td><td>value8</td></tr>
-	<tr><td><code>#ab <i>#00ef</i> POK2</code></td><td>-3</td><td>value8 <i>addr16</i></td><td></td><td></td></tr>
-	<tr><td><code><i>#00ef</i> LDR2</code></td><td>-2</td><td><i>addr16</i></td><td>+2</td><td>value16</td></tr>
-	<tr><td><code>#abcd <i>#00ef</i> STR2</code></td><td>-4</td><td>value16 <i>addr16</i></td><td></td><td></td></tr>
 </table>
 
 <h2>Library</h2>
@@ -209,12 +205,12 @@ RTN
 <style>
 .clr0 { background:white; color:black; }
 .clr1 { background:black; color:white; }
-.clr2 { background:#72dec2; color:white; }
+.clr2 { background:#72dec2; color:black; }
 .clr3 { background:#ff0000; color:black; }
 code.op { background: #ddd; color: black; font-size: smaller; display: inline-block; padding: 0px 2px; margin-right: 3px; }
 pre span.comment { color:#666; }
 </style>
 
 <img src='../media/identity/uxn64.png' />
-<figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/uxambly.htm' target='_blank'>edit</a> to <a href='../src/inc/html/uxambly.htm'>uxambly.htm</a>(218 lines)</figcaption>
-</figure><ul><li><a href='https://git.sr.ht/~rabbits/uxn/tree/master/item/src/assembler.c' target='_blank'>assembler</a></li></ul><p><i>incoming(3)</i>: <a href='uxn.html'>uxn</a> <a href='roms.html'>roms</a> <a href='noodle.html'>noodle</a> </p><p><i>Last update on <a href='tracker.html'>15G06</a>, edited 12 times. +48/79fh <b></b></i> <code style='float:right; font-size:80%'>-----|</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
+<figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/uxambly.htm' target='_blank'>edit</a> to <a href='../src/inc/html/uxambly.htm'>uxambly.htm</a>(214 lines)</figcaption>
+</figure><ul><li><a href='https://git.sr.ht/~rabbits/uxn/tree/master/item/src/assembler.c' target='_blank'>assembler</a></li></ul><p><i>incoming(3)</i>: <a href='uxn.html'>uxn</a> <a href='roms.html'>roms</a> <a href='noodle.html'>noodle</a> </p><p><i>Last update on <a href='tracker.html'>15H08</a>, edited 14 times. +52/94fh <b></b></i> <code style='float:right; font-size:80%'>-----|</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
