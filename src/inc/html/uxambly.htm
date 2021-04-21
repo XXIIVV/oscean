@@ -26,19 +26,55 @@
 	<tr><th>0x0b</th><td><code class='op'>LTH</code> LesserThan</td><td>a b</td><td>c</td>    <th>0x1b</th><td><code class='op'>DIV</code> Divide</td><td>a b</td><td>c</td></tr>
 	<tr><th>0x0c</th><td><code class='op'>GTS</code> GreaterSign</td><td>as bs</td><td>c</td> <th>0x1c</th><td><code class='op'>AND</code> And</td><td>a b</td><td>c</td></tr>
 	<tr><th>0x0d</th><td><code class='op'>LTS</code> LesserSign</td><td>as bs</td><td>c</td>  <th>0x1d</th><td><code class='op'>ORA</code> Or</td><td>a b</td><td>c</td></tr>
-	<tr><th>0x0e</th><td><code class='op'>---</code></td><td></td><td></td>                   <th>0x1e</th><td><code class='op'>EOR</code> ExclusiveOr</td><td>a b</td><td>c</td></tr>
-	<tr><th>0x0f</th><td><code class='op'>---</code></td><td></td><td></td>                   <th>0x1f</th><td><code class='op'>SFT</code> Shift</td><td>a b</td><td>c</td></tr>
+	<tr><th>0x0e</th><td><code class='op'>IOR</code> I/O Read</td><td>a</td><td>b</td>        <th>0x1e</th><td><code class='op'>EOR</code> ExclusiveOr</td><td>a b</td><td>c</td></tr>
+	<tr><th>0x0f</th><td><code class='op'>IOW</code> I/O Write</td><td>a b</td><td></td>      <th>0x1f</th><td><code class='op'>SFT</code> Shift</td><td>a b</td><td>c</td></tr>
 </table>
 
-<p><code>rs</code> for <i>return stack</i>.</p>
+<p>Operator modes are indicated by appending extra characters at the end of the opcode, for example, the <i>short mode</i> for the <code class='op'>ADD</code> opcode is <code class='op'>ADD2</code>, modes can also be combined, for example: <code class='op'>ADD2r</code>.</p>
+
+<p>The <b>return mode</b> makes it possible for any operator to operate on the return-stack directly, for that reason there is no return operation. For example, the JumpStash(<code class='op'>JSR</code>) operator pushes the program's address onto the return stash before jumping, to return to that address, the <code class='op'>JMPr</code> opcode is used, where instead of using the address on the working-stack, it takes its address directly from the return-stack.</p>
+
+<p>The <b>short mode</b> allows for each operator to do 16-bits operations by pushing and popping the necessary extra items from the stack. In the case of jump opcodes(<code class='op'>JMP2</code>, <code class='op'>JSR2</code>, and <code class='op'>JNZ2</code>) the short mode operation jumps to an absolute address in memory. For the getters and setters(<code class='op'>PEK2</code>, <code class='op'>POK2</code>, <code class='op'>LDR2</code> and <code class='op'>STR2</code>) the short mode operation will point to an absolute address in memory.</p>
 
 <img src='../media/generic/uxn.team.png' width='250' style='margin:0 auto 30px'/>
+
+<h2>Programming</h2>
+
+<p>Here is an example of the assembly language that prints <code>hello world</code> to stdout. Uxambly has no reserved words besides the 32 opcodes, each element of the program has its own rune.</p>
+
+<pre style='clear:both'>
+|10 @Console    [ &pad $8 &char $1 ]
+
+( variables )
+
+|0000
+
+( program )
+
+|0100
+	
+	;hello-word ;print JSR2
+	
+BRK
+
+@print ( addr -- )
+	
+	&loop
+		( send ) DUP2 PEK2 .Console/char IOW
+		( incr ) #0001 ADD2
+		( loop ) DUP2 PEK2 #00 NEQ ,&loop JNZ
+	POP2
+
+JMP2r
+
+@hello-word [ 48 65 6c 6c 6f 20 57 6f 72 6c 64 21 ]
+</pre>
 
 <h2>Addressing</h2>
 
 <p>The memory and stacks contains 8-bits values, to differentiate operations from literal numbers, the <code class='op'>LIT</code> opcode will push the following byte from memory onto the stack, the 16-bits mode <code class='op'>LIT2</code> opcode will push the following short.</p>
 
-<p><b>Immediate</b>, or literal, addressing allows to directly specify a byte or short constant. <b>Deferred</b> addressing is a form of immediate addressing where the address of a label is put on the stack. </p>
+<p><b>Immediate</b>, or literal, addressing allows to directly specify a byte or short constant. <b>Deferred</b> addressing is a form of immediate addressing where the address of a label is put on the stack.</p>
 
 <table border='1'>
 	<tr><th></th><th colspan="2">Byte</th><th>Short</th></tr>
@@ -46,8 +82,6 @@
 	<tr><td rowspan="2"><i>Deferred</i></td><th>Zero-page</th><th>Relative</th><th>Absolute</th></tr>
 	<tr><td><code>.label</code></td><td><code>,label</code></td><td><code>;label</code></td></tr>
 </table>
-
-<h2>Programming</h2>
 
 <p>Uxambly allows for basic control flow, here are some of them:</p>
 
@@ -57,34 +91,34 @@
 		<td>
 <pre>
 #00 #0d
-$loop
+&loop
 	( body ) 
 	SWP #01 ADD SWP
-	DUP2 LTH ;$loop JNZ
+	DUP2 LTH ,&loop JNZ
 POP2
 </pre>
 		</td>
 		<td>
 <pre>
 #00 #0d
-$while
+&while
 	( body )
-	DUP2 EQU ;$end JNZ
+	DUP2 EQU ,&end JNZ
 	SWP #01 ADD SWP
-;$while JMP $end
+,&while JMP &end
 POP2
 </pre>
 		</td>
 		<td>
 <pre>
 #02 
-DUP #01 NEQ ;$b JNZ
+DUP #01 NEQ ,&b JNZ
 	( a ) 
-$b DUP #02 NEQ ;$c JNZ
+&b DUP #02 NEQ ,&c JNZ
 	( b ) 
-$c DUP #03 NEQ ;$default JNZ
+&c DUP #03 NEQ ,&default JNZ
 	( c ) 
-$default
+&default
 POP
 </pre>
 		</td>
@@ -92,99 +126,9 @@ POP
 
 </table>
 
-<p>Here is an example of the assembly language that prints <code>hello world</code> to stdout. Uxambly has no reserved words besides the 32 opcodes, each element of the program has its own rune.</p>
-
-<pre style='clear:both'>
-%RTN { JMP2r }
-
-( devices )
-
-|0110 :Console { vector 2 pad 6 char 1 byte 1 short 2 string 2 }
-
-( program )
-
-|0200
-	
-	,text1 ,print-label JSR2
-	,text2 ,print-label JSR2
-	#ab =Console.byte
-	#cdef =Console.short
-
-BRK
-
-@print-label ( text )
-	
-	$loop
-		( send ) DUP2 PEK2 =Console.char
-		( incr ) #0001 ADD2
-		( loop ) DUP2 PEK2 #00 NEQ ;$loop JNZ
-	POP2
-
-RTN    
-
-@text1 [ Welcome 20 to 20 UxnVM 0a00 ]
-@text2 [ Hello 20 World 0a00 ] 
-</pre>
-
-<h2>Operator Modes</h2>
-
-<p>Modes are indicated by appending extra characters at the end of the opcode, for example, the 16-bit mode of the <code class='op'>ADD</code> opcode is <code class='op'>ADD2</code>, modes can also be combined, for example: <code class='op'>ADD2r</code>.</p>
-
-<p>The <b>return mode</b> makes it possible for any operator to operate on the return-stack directly, for that reason there is no return operation. For example, the JumpStash(<code class='op'>JSR</code>) operator pushes the program's address onto the return stash before jumping, to return to that address, the <code class='op'>JMPr</code> opcode is used, where instead of using the address on the working-stack, it takes its address directly from the return-stack.</p>
-
-<pre>
-#aa 
-,subroutine JSR2 <span class='comment'>( jump, push addr* in return-stack )</span>
-#cc
-
-BRK
-
-@subroutine
-	#bb
-	JMP2r <span class='comment'>( jump, pop addr* in return-stack )</span>
-</pre>
-
-<p>The <b>short mode</b> allows for each operator to do 16-bits operations by pushing and popping the necessary extra items from the stack. In the case of jump opcodes(<code class='op'>JMP2</code>, <code class='op'>JSR2</code>, and <code class='op'>JNZ2</code>) the short mode operation jumps to an absolute address in memory. For the getters and setters(<code class='op'>PEK2</code>, <code class='op'>POK2</code>, <code class='op'>LDR2</code> and <code class='op'>STR2</code>) the short mode operation will point to an absolute address in memory.</p>
-
-<pre>
-#1234 #5678 ADD2 <span class='comment'>( add two shorts )</span>
-	#579b EQU2 <span class='comment'>( check if result is 0x579b )</span>
-
-#1234 #0002 MUL2 
-	#2468 EQU2
-
-#0101 EQU2 <span class='comment'>( test both comparisons )</span>
-</pre>
-
-<h3>Runes</h3>
-
-<table border='1'>
-	<tr><th colspan='4'>Labels</th></tr>
-	<tr><td><code>:variable { short 2 }</code></td><td>Assign memory allocation to a label.</td></tr>
-	<tr><td><code>.label</code></td><td>Push label zero-page address to stack.</td></tr>
-	<tr><td><code>,label</code></td><td>Push label relative address to stack.</td></tr>
-	<tr><td><code>;label</code></td><td>Push label absolute address to stack.</td></tr>
-	<tr><th colspan='2'>Define</th></tr>
-	<tr><td><code>@label</code></td><td>Assign the current address to a label.</td></tr>
-	<tr><td><code>$sublabel</code></td><td>Assign the current address to a local label.</td></tr>
-	<tr><td><code>%macro { JMP2 POPr }</code></td><td>Define a macro.</td></tr>
-	<tr><th colspan='2'>Program</th></tr>
-	<tr><td><code>#01ab</code></td><td>Push a literal byte or short to stack.</td></tr>
-	<tr><th colspan='2'>Helpers</th></tr>
-	<tr><td><code>=label</code></td><td>Equivalent to <code>,label POK/STR</code>.</td></tr>
-	<tr><td><code>~label</code></td><td>Equivalent to <code>,label POK/LDR</code>.</td></tr>
-	<tr><th colspan='2'>Blocks</th></tr>
-	<tr><td><code>( comment )</code></td><td>Toggle parsing on/off.</td></tr>
-	<tr><td><code>[ 0123 abcd ]</code></td><td>write data to memory.</td></tr>
-	<tr><th colspan='2'>Others</th></tr>
-	<tr><td><code>|0010</code></td><td>Move to position in the program.</td></tr>
-</table>
-
-
 <p>For more flexbile transfer of data between the stacks and memory, there are 4 opcodes to read/write bytes and shorts:</p>
 
 <table border='1'>
-
 	<tr><th></th><th>input</th><th>output</th><th>opcode</th></tr>
 	<tr><th rowspan="4">read</th><th rowspan="2">byte</th><th>byte</th><td><code>PEK</code></td></tr>
 	<tr><th>short</th><td><code>LDR</code></td></tr>
@@ -194,8 +138,8 @@ BRK
 	<tr><th>short</th><td><code>STR</code></td></tr>
 	<tr><th rowspan="2">short</th><th>byte</th><td><code>POK2</code></td></tr>
 	<tr><th>short</th><td><code>STR2</code></td></tr>
-
 </table>
+
 <h2>Library</h2>
 
 <pre>
