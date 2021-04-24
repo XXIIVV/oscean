@@ -40,7 +40,22 @@
 
 <h2>Programming</h2>
 
-<p>Here is an example of the assembly language that prints <code>Hello World!</code> to stdout. Uxambly has no reserved words besides the 32 opcodes, each element of the program has its own rune.</p>
+<p>Uxambly has no reserved words besides the 32 opcodes, each element of the program has its own rune. Comments are within parentheses, the curlies are used in the definition of macros, and the square brackets are ignored.</p>
+
+<table border='1'>
+	<tr><th colspan="4">Runes</th></tr>
+	<tr><td><code>%</code></td><td>macro-define</td>    <td><code>#</code></td><td>literal hex</td></tr>
+	<tr><td><code>|</code></td><td>pad(absolute)</td>    <td><code>.</code></td><td>literal addr(zero-page)</td></tr>
+	<tr><td><code>$</code></td><td>pad(relative)</td>    <td><code>,</code></td><td>literal addr(relative)</td></tr>
+	<tr><td><code>@</code></td><td>label-define</td>    <td><code>;</code></td><td>literal addr(absolute)</td></tr>
+	<tr><td><code>&</code></td><td>sublabel-define</td> <td><code>:</code></td><td>raw addr</td></tr>
+	<tr><td><code>/</code></td><td>sublabel spacer</td> <td><code>'</code></td><td>raw char</td></tr>
+	<tr><td></td><td></td><td><code>"</code></td><td>raw word</td></tr>
+</table>
+
+<p>In the following example, our program begins with <code>;hello-world</code> pushing the address of the <code>@hello-world</code> label to the top of the stack, followed by <code>;print</code> which pushes its address on top of that first label. Each address is 2 bytes long, and so our stack contains 4 bytes before the <code>JSR2</code> opcode.</p>
+
+<p>Next, <code>JSR2</code> consumes the address(or, two bytes) at the top of the stack and so we move to the subroutine <code>@print</code>, leaving the address of the <code>@hello-world</code> label on the stack. The first thing that happens is <code>DUP2 GET</code> copies it, and reads the value of the byte at that address, then we send it to the console device. We increment the value of the label, and start over until we reach the end of the text by hitting a byte that is equal to 0.</p>
 
 <pre style='clear:both'>
 ( dev/console )
@@ -71,17 +86,6 @@ RTN
 
 @hello-world [ "Hello 20 "World! ]
 </pre>
-
-<table border='1'>
-	<tr><th colspan="4">Runes</th></tr>
-	<tr><td><code>%</code></td><td>macro-define</td>    <td><code>#</code></td><td>literal hex</td></tr>
-	<tr><td><code>|</code></td><td>pad(absolute)</td>    <td><code>.</code></td><td>literal addr(zero-page)</td></tr>
-	<tr><td><code>$</code></td><td>pad(relative)</td>    <td><code>,</code></td><td>literal addr(relative)</td></tr>
-	<tr><td><code>@</code></td><td>label-define</td>    <td><code>;</code></td><td>literal addr(absolute)</td></tr>
-	<tr><td><code>&</code></td><td>sublabel-define</td> <td><code>:</code></td><td>raw addr</td></tr>
-	<tr><td><code>/</code></td><td>sublabel spacer</td> <td><code>'</code></td><td>raw char</td></tr>
-	<tr><td></td><td></td><td><code>"</code></td><td>raw word</td></tr>
-</table>
 
 <h2>Addressing</h2>
 
@@ -174,5 +178,5 @@ code.op { background: #ddd; color: black; font-size: smaller; display: inline-bl
 pre span.comment { color:#666; }
 </style>
 
-<img src='../media/identity/uxn64.png' /><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/uxambly.htm' target='_blank'>edit</a> to <a href='../src/inc/html/uxambly.htm'>uxambly.htm</a>(176 lines)</figcaption>
+<img src='../media/identity/uxn64.png' /><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/uxambly.htm' target='_blank'>edit</a> to <a href='../src/inc/html/uxambly.htm'>uxambly.htm</a>(180 lines)</figcaption>
 </figure><ul><li><a href='https://git.sr.ht/~rabbits/uxn/tree/master/item/src/assembler.c' target='_blank'>assembler</a></li></ul><p><i>incoming(4)</i>: <a href='uxn.html'>uxn</a> <a href='roms.html'>roms</a> <a href='noodle.html'>noodle</a> <a href='bifurcan.html'>bifurcan</a> </p><p><i>Last update on <a href='tracker.html'>15H10</a>, edited 16 times. +56/109fh <b></b></i> <code style='float:right; font-size:80%'>-----|</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
