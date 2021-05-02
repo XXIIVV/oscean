@@ -2,8 +2,7 @@
 #include <time.h>
 
 /* 
-	Simple things should be simple, 
-	complex things should be possible. 
+	Of Pastoral Internet
 */
 
 #define STRMEM 4096 * 96
