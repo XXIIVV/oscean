@@ -23,3 +23,56 @@ mandel(Uint32 *dst)
 	}
 }
 </pre>
+
+<h4>Mandelbrot without fixed point</h4>
+
+<p>See the complete <a href='https://paste.sr.ht/~rabbits/38646ab41e88d52db9a53cd9971c78af55e45fa0'>SDL2 source</a>.</p>
+
+<pre>mandel(-2.0 * NORM_FACT, -1.2 * NORM_FACT, 0.7 * NORM_FACT, 1.2 * NORM_FACT);</pre>
+
+<pre>
+typedef unsigned char Uint8;
+typedef signed char Sint8;
+typedef unsigned short Uint16;
+typedef signed short Sint16;
+
+#define NORM_BITS 8
+#define NORM_FACT ((Sint16)1 << NORM_BITS)
+
+Uint16 WIDTH = 600;
+Uint16 HEIGHT = 400;
+
+int
+iterate(Uint16 real0, Uint16 imag0)
+{
+	Uint8 i;
+	Sint16 realq, imagq, real = real0, imag = imag0;
+	for(i = 0; i < 255; i++) {
+		realq = (real * real) >> NORM_BITS;
+		imagq = (imag * imag) >> NORM_BITS;
+		if((realq + imagq) > (Sint16)4 * NORM_FACT)
+			break;
+		imag = ((real * imag) >> (NORM_BITS - 1)) + imag0;
+		real = realq - imagq + real0;
+	}
+	return i;
+}
+
+void
+mandel(Sint16 realmin, Sint16 imagmin, Sint16 realmax, Sint16 imagmax)
+{
+	Uint16 x, y,
+		deltareal = (realmax - realmin) / WIDTH,
+		deltaimag = (imagmax - imagmin) / HEIGHT,
+		real0 = realmin,
+		imag0;
+	for(x = 0; x < WIDTH; x++) {
+		imag0 = imagmax;
+		for(y = 0; y < HEIGHT; y++) {
+			putpixel(pixels, x, y, iterate(real0, imag0));
+			imag0 -= deltaimag;
+		}
+		real0 += deltareal;
+	}
+}
+</pre>
