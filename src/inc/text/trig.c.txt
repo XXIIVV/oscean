@@ -1,0 +1,259 @@
+#include <SDL2/SDL.h>
+#include <stdio.h>
+#include <math.h>
+
+/* 
+Copyright (c) 2020 Devine Lu Linvega
+
+Permission to use, copy, modify, and distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE.
+*/
+
+/* 
+
+cc -std=c89 -DDEBUG -Wall -Wno-unknown-pragmas -Wpedantic -Wshadow -Wextra -Werror=implicit-int -Werror=incompatible-pointer-types -Werror=int-conversion -Wvla -g -Og -fsanitize=address -fsanitize=undefined main.c -L/usr/local/lib -lSDL2 -lm -o main
+
+*/
+
+typedef unsigned char Uint8;
+typedef signed char Sint8;
+typedef unsigned short Uint16;
+typedef signed short Sint16;
+
+#define PI 3.14159265358979323846
+
+Uint16 WIDTH = 320;
+Uint16 HEIGHT = 240;
+Uint16 FPS = 30, ZOOM = 2;
+
+typedef struct {
+	int x, y;
+} Point2d;
+
+SDL_Window *gWindow;
+SDL_Renderer *gRenderer;
+SDL_Texture *gTexture;
+Uint32 *pixels;
+
+#pragma mark - HELPERS
+
+Point2d
+Pt2d(int x, int y)
+{
+	Point2d p;
+	p.x = x;
+	p.y = y;
+	return p;
+}
+
+Point2d
+PtCircle2d(Point2d c, double r, double angle)
+{
+	return Pt2d(
+		c.x + r * cos(angle),
+		c.y + r * sin(angle));
+}
+
+double
+distance(Point2d a, Point2d b)
+{
+	return sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
+}
+
+double
+angle(Point2d a, Point2d b)
+{
+	return atan2(b.y - a.y, b.x - a.x);
+}
+
+#pragma mark - DRAW
+
+void
+clear(Uint32 *dst)
+{
+	int v, h;
+	for(v = 0; v < HEIGHT; v++)
+		for(h = 0; h < WIDTH; h++)
+			dst[v * WIDTH + h] = 0xFFFFFF;
+}
+
+void
+pixel(Point2d p, Uint32 color)
+{
+	if(p.x >= 0 && p.x < WIDTH - 8 && p.y >= 0 && p.y < HEIGHT - 8)
+		pixels[(Uint32)(p.y * WIDTH + p.x)] = color;
+}
+
+void
+drawCircle(int xc, int yc, int x, int y, Uint32 color)
+{
+	pixel(Pt2d(xc + x, yc + y), color);
+	pixel(Pt2d(xc - x, yc + y), color);
+	pixel(Pt2d(xc + x, yc - y), color);
+	pixel(Pt2d(xc - x, yc - y), color);
+	pixel(Pt2d(xc + y, yc + x), color);
+	pixel(Pt2d(xc - y, yc + x), color);
+	pixel(Pt2d(xc + y, yc - x), color);
+	pixel(Pt2d(xc - y, yc - x), color);
+}
+
+void
+circle(int xc, int yc, int r, Uint32 color)
+{
+	int x = 0, y = r;
+	int d = 3 - 2 * r;
+	drawCircle(xc, yc, x, y, color);
+	while(y >= x) {
+		x++;
+		if(d > 0) {
+			y--;
+			d = d + 4 * (x - y) + 10;
+		} else
+			d = d + 4 * x + 6;
+		drawCircle(xc, yc, x, y, color);
+	}
+}
+
+void
+line(Point2d a, Point2d b, Uint32 color)
+{
+	int dx = abs(b.x - a.x), sx = a.x < b.x ? 1 : -1;
+	int dy = -abs(b.y - a.y), sy = a.y < b.y ? 1 : -1;
+	int err = dx + dy, e2;
+	for(;;) {
+		pixel(a, color);
+		if((int)a.x == (int)b.x && (int)a.y == (int)b.y)
+			break;
+		e2 = 2 * err;
+		if(e2 >= dy) {
+			err += dy;
+			a.x += sx;
+		}
+		if(e2 <= dx) {
+			err += dx;
+			a.y += sy;
+		}
+	}
+}
+
+void
+mark(Point2d p, double r, Uint32 color)
+{
+	line(Pt2d(p.x - r, p.y), Pt2d(p.x, p.y - r), color);
+	line(Pt2d(p.x, p.y - r), Pt2d(p.x + r, p.y), color);
+	line(Pt2d(p.x + r, p.y), Pt2d(p.x, p.y + r), color);
+	line(Pt2d(p.x, p.y + r), Pt2d(p.x - r, p.y), color);
+}
+
+void
+redraw(Uint32 *dst)
+{
+	Point2d pta = Pt2d(WIDTH / 2, HEIGHT / 2);
+	Point2d ptb = Pt2d(pta.x + 53, pta.y - 64);
+	Point2d ptc = Pt2d(ptb.x, pta.y);
+	Point2d ptd = PtCircle2d(pta, distance(pta, ptb) / 2, angle(ptb, pta) * 2);
+
+	line(pta, ptb, 0);
+	line(ptb, ptc, 0xFF0000);
+	line(ptc, pta, 0x72DEC2);
+	line(ptb, ptd, 0);
+	mark(pta, 2, 0);
+	mark(ptb, 2, 0);
+	mark(ptc, 2, 0);
+	mark(ptd, 2, 0);
+
+	circle(pta.x, pta.y, distance(pta, ptb), 0);
+	circle(ptb.x, ptb.y, distance(pta, ptb) / 2, 0);
+	circle(ptd.x, ptd.y, distance(pta, ptb) / 2, 0);
+
+	SDL_UpdateTexture(gTexture, NULL, dst, WIDTH * sizeof(Uint32));
+	SDL_RenderClear(gRenderer);
+	SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);
+	SDL_RenderPresent(gRenderer);
+}
+
+#pragma mark - OPTIONS
+
+int
+error(char *msg, const char *err)
+{
+	printf("Error %s: %s\n", msg, err);
+	return 0;
+}
+
+void
+quit(void)
+{
+	free(pixels);
+	SDL_DestroyTexture(gTexture);
+	gTexture = NULL;
+	SDL_DestroyRenderer(gRenderer);
+	gRenderer = NULL;
+	SDL_DestroyWindow(gWindow);
+	gWindow = NULL;
+	SDL_Quit();
+	exit(0);
+}
+
+#pragma mark - TRIGGERS
+
+int
+init(void)
+{
+	if(SDL_Init(SDL_INIT_VIDEO) < 0)
+		return error("Init", SDL_GetError());
+	gWindow = SDL_CreateWindow("Nasu",
+		SDL_WINDOWPOS_UNDEFINED,
+		SDL_WINDOWPOS_UNDEFINED,
+		WIDTH * ZOOM,
+		HEIGHT * ZOOM,
+		SDL_WINDOW_SHOWN);
+	if(gWindow == NULL)
+		return error("Window", SDL_GetError());
+	gRenderer = SDL_CreateRenderer(gWindow, -1, 0);
+	if(gRenderer == NULL)
+		return error("Renderer", SDL_GetError());
+	gTexture = SDL_CreateTexture(gRenderer,
+		SDL_PIXELFORMAT_ARGB8888,
+		SDL_TEXTUREACCESS_STATIC,
+		WIDTH,
+		HEIGHT);
+	if(gTexture == NULL)
+		return error("Texture", SDL_GetError());
+	pixels = (Uint32 *)malloc(WIDTH * HEIGHT * sizeof(Uint32));
+	if(pixels == NULL)
+		return error("Pixels", "Failed to allocate memory");
+	clear(pixels);
+	return 1;
+}
+
+int
+main(int argc, char **argv)
+{
+	int ticknext = 0;
+	if(!init())
+		return error("Init", "Failure");
+	redraw(pixels);
+	while(1) {
+		int tick = SDL_GetTicks();
+		SDL_Event event;
+		if(tick < ticknext)
+			SDL_Delay(ticknext - tick);
+		ticknext = tick + (1000 / FPS);
+		while(SDL_PollEvent(&event) != 0) {
+			switch(event.type) {
+			case SDL_QUIT: quit(); break;
+			case SDL_WINDOWEVENT:
+				if(event.window.event == SDL_WINDOWEVENT_EXPOSED)
+					redraw(pixels);
+				break;
+			}
+		}
+	}
+	quit();
+	return 0;
+}
