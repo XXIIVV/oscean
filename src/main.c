@@ -2,7 +2,7 @@
 #include <time.h>
 
 /* 
-	Of Pastoral Internet
+	To the Bequest Globe
 */
 
 #define STRMEM 4096 * 96

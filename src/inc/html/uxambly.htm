@@ -4,7 +4,7 @@
 
 <table border="1">
 	<tr><td colspan="3">mode</td><td colspan="5">opcode</td></tr>
-	<tr><td><i>nil</i></td><td>return</td><td>short</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+	<tr><td><i>keep</i></td><td><i>return</i></td><td><i>short</i></td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
 </table>
 
 <p>Operator modes are indicated by appending extra characters at the end of the opcode, for example, the <i>short mode</i> for the <code>ADD</code> opcode is <code>ADD2</code>, modes can also be combined, for example: <code>ADD2r</code>.</p>
@@ -30,7 +30,11 @@
 	<tr><th>0x0f</th><td><code class='op'>STH</code> Stash</td><td>a</td><td>rs</td>           <th>0x1f</th><td><code class='op'>SFT</code> Shift</td><td>a b</td><td>c</td></tr>
 </table>
 
-<p>The <b>short mode</b> allows for each operator to do 16-bits operations by pushing and popping the necessary extra items from the stack. In the case of jump opcodes(<code>JMP2</code>, <code>JSR2</code>, and <code>JCN2</code>) the short mode operation jumps to an absolute address in memory. For the getters and setters(<code>LDZ2</code>, <code>STZ2</code>, <code>GET2</code> and <code>PUT2</code>) the short mode operation indicates the size of the data to read/write.</p>
+<h3>Modes</h3>
+
+<p>The <b>keep mode</b> makes it possible for any operator to operate without consuming items from the stack and simply pushing the result on top.</p>
+
+<p>The <b>short mode</b> makes it possible for any operator to operate on 16-bits by pushing and popping the necessary extra items from the stack. In the case of jump opcodes(<code>JMP2</code>, <code>JSR2</code>, and <code>JCN2</code>) the short mode operation jumps to an absolute address in memory. For the getters and setters(<code>LDZ2</code>, <code>STZ2</code>, <code>GET2</code> and <code>PUT2</code>) the short mode operation indicates the size of the data to read/write.</p>
 
 <p>The <b>return mode</b> makes it possible for any operator to operate on the return-stack directly, for that reason there is no dedicated return opcode. For example, the JumpStash(<code>JSR</code>) operator pushes the program&#39;s address onto the return stash before jumping, to return to that address, the <code>JMP2r</code> opcode is used, where instead of using the address on the working-stack, it takes its address directly from the return-stack.</p>
 
@@ -76,9 +80,9 @@ BRK
 @print ( addr* -- )
 	
 	&loop
-		( send ) DUP2 GET .Console/char DEO
+		( send ) LDAk .Console/char DEO
 		( incr ) #0001 ADD2
-		( loop ) DUP2 GET #00 NEQ ,&loop JCN
+		( loop ) LDAk #00 NEQ ,&loop JCN
 	POP2
 
 RTN
@@ -114,7 +118,7 @@ RTN
 &amp;loop
 	( body ) 
 	SWP #01 ADD SWP
-	DUP2 LTH ,&amp;loop JCN
+	LTHk ,&amp;loop JCN
 POP2
 </pre>
 		</td>
