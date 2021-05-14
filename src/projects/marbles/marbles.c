@@ -27,22 +27,10 @@ todayoffset(void)
 void
 generate(FILE *f)
 {
-	int i, marble = (todayoffset() - dateoffset(1986, 3, 22)) / 7;
-	fprintf(f, "<table border='1'>");
-	fprintf(f, "<tr><th>%d marbles used</th><th>%d marbles left</th></tr>", marble, 3900 - marble);
-	fprintf(f, "<td><small><code>");
-	for(i = 0; i < 390; ++i) {
-		fprintf(f, "%c", 390 - i < marble / 10 ? 'o' : '.');
-		if(i % 39 == 38)
-			fprintf(f, "\n");
-	}
-	fprintf(f, "</code><small></td><td><small><code>");
-	for(i = 0; i < 390; ++i) {
-		fprintf(f, "%c", i > marble / 10 ? 'o' : '.');
-		if(i % 39 == 38)
-			fprintf(f, "\n");
-	}
-	fprintf(f, "</code><small></td></tr></table>");
+	int marble = (todayoffset() - dateoffset(1986, 3, 22)) / 7;
+	fprintf(f, "<table border='1' width='100%%'>");
+	fprintf(f, "<tr><th width='%0.2f%%' style='background:black; color:white'>%d marbles</th><th></th></tr>", (marble / 3900.0) * 100, marble);
+	fprintf(f, "</table>");
 	fclose(f);
 }
 
