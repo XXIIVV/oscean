@@ -7,12 +7,12 @@
 	<tr><td><i>keep</i></td><td><i>return</i></td><td><i>short</i></td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
 </table>
 
-<p>Operator modes are indicated by appending extra characters at the end of the opcode, for example, the <i>short mode</i> for the <code>ADD</code> opcode is <code>ADD2</code>, modes can also be combined, for example: <code>ADD2r</code>.</p>
+<p>Operator modes are indicated by appending extra characters at the end of the opcode, for example, the <i>short mode</i> for the <code class='op'>ADD</code> opcode is <code class='op'>ADD2</code>, modes can also be combined, for example: <code class='op'>ADD2r</code>.</p>
 
 <table border="1" width="700">
 	<tr><td></td><th colspan="3">Stack</th><td></td>                                           <th colspan="3">Memory</th></tr>
-	<tr><th>0x00</th><td><code class='op'>BRK</code> Break</td><td></td><td></td>              <th>0x10</th><td><code class='op'>LDZ</code> Load(zero-page)</td><td>a</td><td>[b]</td></tr>
-	<tr><th>0x01</th><td><code class='op'>LIT</code> Literal</td><td>++</td><td></td>          <th>0x11</th><td><code class='op'>STZ</code> Store(zero-page)</td><td>b a</td><td></td></tr>
+	<tr><th>0x00</th><td><code class='op'>BRK</code> Break</td><td></td><td></td>              <th>0x10</th><td><code class='op'>LDZ</code> LoadZeropage</td><td>a</td><td>[b]</td></tr>
+	<tr><th>0x01</th><td><code class='op'>LIT</code> Literal</td><td>++</td><td></td>          <th>0x11</th><td><code class='op'>STZ</code> StoreZeropage</td><td>b a</td><td></td></tr>
 	<tr><th>0x02</th><td><code class='op'>---</code> </td><td></td><td></td>                   <th>0x12</th><td><code class='op'>LDR</code> LoadRelative</td><td>a</td><td>[b]</td></tr>
 	<tr><th>0x03</th><td><code class='op'>POP</code> Pop</td><td>a</td><td></td>               <th>0x13</th><td><code class='op'>STR</code> StoreRelative</td><td>[b] a</td><td></td></tr>
 	<tr><th>0x04</th><td><code class='op'>DUP</code> Duplicate</td><td>a</td><td>a a</td>      <th>0x14</th><td><code class='op'>LDA</code> LoadAbsolute</td><td>a*</td><td>[b]</td></tr>
@@ -34,9 +34,9 @@
 
 <p>The <b>keep mode</b> makes it possible for any operator to operate without consuming items from the stack and simply pushing the result on top.</p>
 
-<p>The <b>short mode</b> makes it possible for any operator to operate on 16-bits by pushing and popping the necessary extra items from the stack. In the case of jump opcodes(<code>JMP2</code>, <code>JSR2</code>, and <code>JCN2</code>) the short mode operation jumps to an absolute address in memory. For the getters and setters(<code>LDZ2</code>, <code>STZ2</code>, <code>GET2</code> and <code>PUT2</code>) the short mode operation indicates the size of the data to read/write.</p>
+<p>The <b>short mode</b> makes it possible for any operator to operate on 16-bits by pushing and popping the necessary extra items from the stack. In the case of jump opcodes(<code class='op'>JMP2</code>, <code class='op'>JSR2</code>, and <code class='op'>JCN2</code>) the short mode operation jumps to an absolute address in memory. For the getters and setters, the short mode operation indicates the size of the data to read/write.</p>
 
-<p>The <b>return mode</b> makes it possible for any operator to operate on the return-stack directly, for that reason there is no dedicated return opcode. For example, the JumpStash(<code>JSR</code>) operator pushes the program&#39;s address onto the return stash before jumping, to return to that address, the <code>JMP2r</code> opcode is used, where instead of using the address on the working-stack, it takes its address directly from the return-stack.</p>
+<p>The <b>return mode</b> makes it possible for any operator to operate on the return-stack directly, for that reason there is no dedicated return opcode. For example, the JumpStash(<code class='op'>JSR</code>) operator pushes the program&#39;s address onto the return stash before jumping, to return to that address, the <code class='op'>JMP2r</code> opcode is used, where instead of using the address on the working-stack, it takes its address directly from the return-stack.</p>
 
 <img src="../media/generic/uxn.team.png" width="250" style="margin:0 auto 30px">
 
@@ -56,39 +56,38 @@
 </table>
 
 <h3>Example</h3>
-<p>In the following example, our program begins with <code>;hello-world</code> pushing the address of the <code>@hello-world</code> label to the top of the stack, followed by <code>;print</code> which pushes its address on top of that first label. Each address is 2 bytes long, and so our stack contains 4 bytes before the <code>JSR2</code> opcode.</p>
 
-<p>Next, <code>JSR2</code> consumes the address(or, two bytes) at the top of the stack and so we move to the subroutine <code>@print</code>, leaving the address of the <code>@hello-world</code> label on the stack. The first thing that happens is <code>DUP2 GET</code> copies it, and reads the value of the byte at that address, then we send it to the console device. We increment the value of the label, and start over until we reach the end of the text by hitting a byte that is equal to 0.</p>
+<p>In the following example, our program begins with <code class='op'>;hello-world</code> pushing the absolute address of the label <code class='op'>@hello-world</code> to the top of the stack. An absolute address is made of two bytes. We then assign the label <code class='op'>&loop</code> to this position of the program so we can return to it later.</p>
+
+<p>Next, the <code class='op'>LDAk</code> opcode takes two bytes at the top of the stack to form an absolute address, and loads the value in memory found at that address in memory, in this case, the <a href='ascii.html'>ascii value</a> of the letter H. That value is sent to the Console's port named <code class='op'>char(#18)</code> which prints that character to the terminal.</p>
+
+<p>Next, we increment the address found on top of the stack by 1, we use <code class='op'>#0001</code> and <code class='op'>ADD2</code> because we know the items on the stack to be an address made of two bytes. We load the incremented value, the <code class='op'>JCN</code> opcode will jump to the position of label <code class='op'>&loop</code> as long as the item before the address is not zero. We complete the program with <code class='op'>POP2</code> to remove the address on the stack, to keep the stack clean.</p>
 
 <pre style='clear:both'>
 ( dev/console )
 
-%RTN { JMP2r }
-
-( devices )
-
-|10 @Console    [ &pad $8 &char $1 ]
+|10 @Console [ &pad $8 &char ]
 
 ( init )
 
 |0100 ( -> )
 	
-	,hello-word 
+	;hello-word 
 
 	&loop
-		( send ) LDRk .Console/char DEO
-		( incr ) #01 ADD
-		( loop ) DUP ,&loop JCN
-	POP
+		( send ) LDAk .Console/char DEO
+		( incr ) #0001 ADD2
+		( loop ) LDAk ,&loop JCN
+	POP2
 	
 BRK
 
-@hello-word "hello 20 "World!
+@hello-word "Hello 20 "World!
 </pre>
 
 <h2>Addressing</h2>
 
-<p>The memory and stacks contains 8-bits values, to differentiate operations from literal numbers, the <code>LIT</code> opcode will push the following byte from memory onto the stack, the 16-bits mode <code>LIT2</code> opcode will push the following short.</p>
+<p>The memory and stacks contains 8-bits values, to differentiate operations from literal numbers, the <code class='op'>LIT</code> opcode will push the following byte from memory onto the stack, the 16-bits mode <code class='op'>LIT2</code> opcode will push the following short.</p>
 
 <p><b>Immediate</b>, or literal, addressing allows to directly specify a byte or short constant. <b>Deferred</b> addressing is a form of immediate addressing where the address of a label is put on the stack.</p>
 
@@ -151,9 +150,9 @@ POP
 .clr1 { background:black; color:white; }
 .clr2 { background:#72dec2; color:black; }
 .clr3 { background:#ff0000; color:black; }
-code.op { background: #ddd; color: black; font-size: smaller; display: inline-block; padding: 0px 2px; margin-right: 3px; }
+code.op { background: #000; color: white; font-size: smaller; display: inline-block; padding: 0px 6px; font-weight: bold; border-radius: 2px; line-height: 22px }
 pre span.comment { color:#666; }
 </style>
 
-<img src="../media/identity/uxn64.png"><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/uxambly.htm' target='_blank'>edit</a> to <a href='../src/inc/html/uxambly.htm'>uxambly.htm</a>(157 lines)</figcaption>
-</figure><ul><li><a href='https://git.sr.ht/~rabbits/uxn/tree/master/item/src/assembler.c' target='_blank'>assembler</a></li></ul><p><i>incoming(4)</i>: <a href='uxn.html'>uxn</a> <a href='roms.html'>roms</a> <a href='noodle.html'>noodle</a> <a href='bifurcan.html'>bifurcan</a> </p><p><i>Last update on <a href='tracker.html'>15J04</a>, edited 18 times. +62/123fh <b></b></i> <code style='float:right; font-size:80%'>-----|</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
+<img src="../media/identity/uxn64.png"><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/uxambly.htm' target='_blank'>edit</a> to <a href='../src/inc/html/uxambly.htm'>uxambly.htm</a>(156 lines)</figcaption>
+</figure><ul><li><a href='https://git.sr.ht/~rabbits/uxn/tree/master/item/src/assembler.c' target='_blank'>assembler</a></li></ul><p><i>incoming(4)</i>: <a href='uxn.html'>uxn</a> <a href='roms.html'>roms</a> <a href='noodle.html'>noodle</a> <a href='bifurcan.html'>bifurcan</a> </p><p><i>Last update on <a href='tracker.html'>15J08</a>, edited 19 times. +64/130fh <b></b></i> <code style='float:right; font-size:80%'>-----|</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
