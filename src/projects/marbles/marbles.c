@@ -25,12 +25,26 @@ todayoffset(void)
 }
 
 void
+fpgraph(FILE *f, int marble)
+{
+	int c, r;
+	fprintf(f, "<div style='font-size:12px; line-height:10px; whitespace:pre; font-family: monospace'>");
+	for(r = 0; r < 75; ++r) {
+		for(c = 0; c < 52; ++c)
+			fprintf(f, "%c", r * 52 + c > marble ? '.' : 'x');
+		fprintf(f, "<br/>");
+	}
+	fprintf(f, "</div>");
+}
+
+void
 generate(FILE *f)
 {
 	int marble = (todayoffset() - dateoffset(1986, 3, 22)) / 7;
 	fprintf(f, "<table border='1' width='100%%'>");
 	fprintf(f, "<tr><th width='%0.2f%%' style='background:black; color:white'>%d marbles</th><th></th></tr>", (marble / 3900.0) * 100, marble);
 	fprintf(f, "</table>");
+	fpgraph(f, marble);
 	fclose(f);
 }
 
