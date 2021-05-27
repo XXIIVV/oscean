@@ -2,7 +2,7 @@
 #include <time.h>
 
 /* 
-	To the Bequest Globe
+	The Bequest Globe
 */
 
 #define STRMEM 4096 * 96
