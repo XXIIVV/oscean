@@ -1,1 +1,161 @@
-<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='description' content='(null)'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV &mdash; uxambly</title></head><body><header><a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='fractran.html'>fractran</a></li><li><a href='gyo.html'>gyo</a></li><li><a href='uxn.html'>uxn/</a></li><li><a href='orca.html'>orca</a></li><li><a href='noton.html'>noton</a></li></ul><ul><li><a href='uxntal.html'>uxntal/</a></li><li><a href='uxnemu.html'>uxnemu</a></li></ul><ul></ul></nav><main><h2>Uxntal is a programming language for the Uxn stack-machine.</h2><p>The <a href='uxn.html'>Uxn</a> cpu understands 8-bit machine code, and that code corresponds to operations and values used in programs. The programming language that turns source code into Uxn roms, is called <b>Uxntal</b> or simply <i>Tal<i>, is a unique flavor of <a href='assembly.html'>assembly</a> designed for this special stack-machine.</p><img src='../media/generic/uxn.beet.png' width='150' style='float:left'/><p>Stack machine programming might look at bit odd, as it uses a <a href='reverse_polish.html'>postfix notation</a>, which means that operators are always found at the end of an operation. For instance, one would write <code>3 4 +</code> instead of <code>3 + 4</code>. The expression written <code>(5 + 10) * 3</code> in conventional notation would be written <code>3 10 5 + *</code> in reverse Polish notation.</p><hr style='border:0'/><p>Redirected to <a href='uxntal.html'>uxntal</a>, from <b>uxambly</b>.</p><ul><li><a href='https://git.sr.ht/~rabbits/uxn/tree/master/item/src/assembler.c' target='_blank'>C Assembler</a></li><li><a href='https://git.sr.ht/~rabbits/uxn/tree/master/item/projects/software/asma.usm' target='_blank'>Uxn Assembler</a></li></ul><p><i>incoming(4)</i>: <a href='roms.html'>roms</a> <a href='uxn.html'>uxn</a> <a href='noodle.html'>noodle</a> <a href='bifurcan.html'>bifurcan</a> </p><p><i>Last update on <a href='tracker.html'>15K07</a>, edited 21 times. +68/142fh <b></b></i> <code style='float:right; font-size:80%'>-----|</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
+<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='description' content='(null)'/><meta name='thumbnail' content='https://wiki.xxiivv.com/media/services/thumbnail.jpg' /><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='alternate' type='application/rss+xml' title='RSS Feed' href='../links/rss.xml' /><link rel='stylesheet' type='text/css' href='../links/main.css'><link rel='shortcut icon' type='image/png' href='../media/services/icon.png'><title>XXIIVV &mdash; uxambly</title></head><body><header><a href='home.html'><img src='../media/icon/logo.svg' alt='XXIIVV' height='29'></a></header><nav><ul><li><a href='fractran.html'>fractran</a></li><li><a href='gyo.html'>gyo</a></li><li><a href='uxn.html'>uxn/</a></li><li><a href='orca.html'>orca</a></li><li><a href='noton.html'>noton</a></li></ul><ul><li><a href='uxntal.html'>uxntal/</a></li><li><a href='uxnemu.html'>uxnemu</a></li></ul><ul></ul></nav><main><h2>Uxntal is a programming language for the Uxn stack-machine.</h2><p>The <a href='uxn.html'>Uxn</a> cpu understands 8-bit machine code, and that code corresponds to operations and values used in programs. The programming language that turns source code into Uxn roms, is called <b>Uxntal</b> or simply <i>Tal</i>, is a unique flavor of <a href='assembly.html'>assembly</a> designed for this special stack-machine.</p><img src='../media/generic/uxn.beet.png' width='150' style='float:left'/><p>Stack machine programming might look at bit odd, as it uses a <a href='reverse_polish.html'>postfix notation</a>, which means that operators are always found at the end of an operation. For instance, one would write <code>3 4 +</code> instead of <code>3 + 4</code>. The expression written <code>(5 + 10) * 3</code> in conventional notation would be written <code>3 10 5 + *</code> in reverse Polish notation.</p><hr style='border:0'/><figure><h2>Opcodes</h2>
+
+<p>There are 32 opcodes, each opcode occupies 5 bits of a byte, the remaining 3 are used to select modes of that opcode, modes are explained below.</p>
+
+<table border="1">
+	<tr><td colspan="3">mode</td><td colspan="5">opcode</td></tr>
+	<tr><td><i>keep</i></td><td><i>return</i></td><td><i>short</i></td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+</table>
+
+<p>Operator modes are indicated by appending extra characters at the end of the opcode, for example, the <i>short mode</i> for the <code class='op'>ADD</code> opcode is <code class='op'>ADD2</code>, modes can also be combined, for example: <code class='op'>ADD2r</code>.</p>
+
+<table border="1" width="700">
+	<tr><td></td><th colspan="3">Stack</th><td></td>                                           <th colspan="3">Memory</th></tr>
+	<tr><th>0x00</th><td><code class='op'>BRK</code> Break</td><td></td><td></td>              <th>0x10</th><td><code class='op'>LDZ</code> LoadZeropage</td><td>a</td><td>val</td></tr>
+	<tr><th>0x01</th><td><code class='op'>LIT</code> Literal</td><td>++</td><td></td>          <th>0x11</th><td><code class='op'>STZ</code> StoreZeropage</td><td>val a</td><td></td></tr>
+	<tr><th>0x02</th><td><code class='op'>---</code> </td><td></td><td></td>                   <th>0x12</th><td><code class='op'>LDR</code> LoadRelative</td><td>a</td><td>val</td></tr>
+	<tr><th>0x03</th><td><code class='op'>POP</code> Pop</td><td>a</td><td></td>               <th>0x13</th><td><code class='op'>STR</code> StoreRelative</td><td>val a</td><td></td></tr>
+	<tr><th>0x04</th><td><code class='op'>DUP</code> Duplicate</td><td>a</td><td>a a</td>      <th>0x14</th><td><code class='op'>LDA</code> LoadAbsolute</td><td>a*</td><td>val</td></tr>
+	<tr><th>0x05</th><td><code class='op'>SWP</code> Swap</td><td>a b</td><td>b a</td>         <th>0x15</th><td><code class='op'>STA</code> StoreAbsolute</td><td>val a*</td><td></td></tr>
+	<tr><th>0x06</th><td><code class='op'>OVR</code> Over</td><td>a b</td><td>a b a</td>       <th>0x16</th><td><code class='op'>DEI</code> Device In</td><td>a</td><td>val</td></tr>
+	<tr><th>0x07</th><td><code class='op'>ROT</code> Rotate</td><td>a b c</td><td>b c a</td>   <th>0x17</th><td><code class='op'>DEO</code> Device Out</td><td>val a</td><td></td></tr>
+	<tr><td></td><th colspan="3">Logic</th><td></td>                                           <th colspan="3">Arithmetic</th></tr>
+	<tr><th>0x08</th><td><code class='op'>EQU</code> Equal</td><td>a b</td><td>flag</td>       <th>0x18</th><td><code class='op'>ADD</code> Add</td><td>a b</td><td>res</td></tr>
+	<tr><th>0x09</th><td><code class='op'>NEQ</code> NotEqual</td><td>a b</td><td>flag</td>    <th>0x19</th><td><code class='op'>SUB</code> Subtract</td><td>a b</td><td>res</td></tr>
+	<tr><th>0x0a</th><td><code class='op'>GTH</code> GreaterThan</td><td>a b</td><td>flag</td> <th>0x1a</th><td><code class='op'>MUL</code> Multiply</td><td>a b</td><td>res</td></tr>
+	<tr><th>0x0b</th><td><code class='op'>LTH</code> LesserThan</td><td>a b</td><td>flag</td>  <th>0x1b</th><td><code class='op'>DIV</code> Divide</td><td>a b</td><td>res</td></tr>
+	<tr><th>0x0c</th><td><code class='op'>JMP</code> Jump</td><td>a</td><td></td>              <th>0x1c</th><td><code class='op'>AND</code> And</td><td>a b</td><td>res</td></tr>
+	<tr><th>0x0d</th><td><code class='op'>JCN</code> JumpCond</td><td>flag a</td><td></td>     <th>0x1d</th><td><code class='op'>ORA</code> Or</td><td>a b</td><td>res</td></tr>
+	<tr><th>0x0e</th><td><code class='op'>JSR</code> JumpStash</td><td>a</td><td>rs</td>       <th>0x1e</th><td><code class='op'>EOR</code> ExclusiveOr</td><td>a b</td><td>res</td></tr>
+	<tr><th>0x0f</th><td><code class='op'>STH</code> Stash</td><td>a</td><td>rs</td>           <th>0x1f</th><td><code class='op'>SFT</code> Shift</td><td>a b</td><td>res</td></tr>
+</table>
+
+<p style='font-size:small'>The jump operators will jump to a relative address in normal mode, and to an absolute address in <b>short mode</b>. All memory operators expect a single byte, except for the absolute operators expecting an absolute address. Shift in short mode is expecting a single byte. </p>
+
+
+<h3>Modes</h3>
+
+<p>The <b>keep mode</b> makes it possible for any operator to operate without consuming items from the stack and simply pushing the result on top.</p>
+
+<p>The <b>short mode</b> makes it possible for any operator to operate on 16-bits by pushing and popping the necessary extra items from the stack. In the case of jump opcodes(<code class='op'>JMP2</code>, <code class='op'>JSR2</code>, and <code class='op'>JCN2</code>) the short mode operation jumps to an absolute address in memory. For the getters and setters, the short mode operation indicates the size of the data to read/write.</p>
+
+<p>The <b>return mode</b> makes it possible for any operator to operate on the return-stack directly, for that reason there is no dedicated return opcode. For example, the JumpStash(<code class='op'>JSR</code>) operator pushes the program&#39;s address onto the return stash before jumping, to return to that address, the <code class='op'>JMP2r</code> opcode is used, where instead of using the address on the working-stack, it takes its address directly from the return-stack.</p>
+
+<img src="../media/generic/uxn.team.png" width="250" style="margin:0 auto 30px">
+
+<h2>Programming</h2>
+
+<p>Uxntal has no reserved words besides the 32 opcodes, each element of the program has its own rune. Comments are within parentheses, the curlies are used in the definition of macros, and the square brackets are ignored.</p>
+
+<table border="1">
+	<tr><th colspan="4">Runes</th></tr>
+	<tr><td><code>%</code></td><td>macro-define</td>    <td><code>#</code></td><td>literal hex</td></tr>
+	<tr><td><code>|</code></td><td>pad(absolute)</td>    <td><code>.</code></td><td>literal addr(zero-page)</td></tr>
+	<tr><td><code>$</code></td><td>pad(relative)</td>    <td><code>,</code></td><td>literal addr(relative)</td></tr>
+	<tr><td><code>@</code></td><td>label-define</td>    <td><code>;</code></td><td>literal addr(absolute)</td></tr>
+	<tr><td><code>&amp;</code></td><td>sublabel-define</td> <td><code>:</code></td><td>raw addr</td></tr>
+	<tr><td><code>/</code></td><td>sublabel spacer</td> <td><code>&#39;</code></td><td>raw char</td></tr>
+	<tr><td></td><td></td><td><code>&quot;</code></td><td>raw word</td></tr>
+</table>
+
+<h3>Example</h3>
+
+<p>In the following example, our program begins with <code class='op'>;hello-world</code> pushing the absolute address of the label <code class='op'>@hello-world</code> to the top of the stack. An absolute address is made of two bytes. We then assign the label <code class='op'>&loop</code> to this position of the program so we can return to it later.</p>
+
+<p>Next, the <code class='op'>LDAk</code> opcode takes two bytes at the top of the stack to form an absolute address, and loads the value in memory found at that address in memory, in this case, the <a href='ascii.html'>ascii value</a> of the letter H. That value is sent to the Console's port named <code class='op'>char(#18)</code> which prints that character to the terminal.</p>
+
+<p>Next, we increment the address found on top of the stack by 1, we use <code class='op'>#0001</code> and <code class='op'>ADD2</code> because we know the items on the stack to be an address made of two bytes. We load the incremented value, the <code class='op'>JCN</code> opcode will jump to the position of label <code class='op'>&loop</code> as long as the item before the address is not zero. We complete the program with <code class='op'>POP2</code> to remove the address on the stack, to keep the stack clean.</p>
+
+<pre style='clear:both'>
+( dev/console )
+
+|10 @Console [ &pad $8 &char ]
+
+( init )
+
+|0100 ( -> )
+	
+	;hello-word 
+
+	&loop
+		( send ) LDAk .Console/char DEO
+		( incr ) #0001 ADD2
+		( loop ) LDAk ,&loop JCN
+	POP2
+	
+BRK
+
+@hello-word "Hello 20 "World!
+</pre>
+
+<h2>Addressing</h2>
+
+<p>The memory and stacks contains 8-bits values, to differentiate operations from literal numbers, the <code class='op'>LIT</code> opcode will push the following byte from memory onto the stack, the 16-bits mode <code class='op'>LIT2</code> opcode will push the following short.</p>
+
+<p><b>Immediate</b>, or literal, addressing allows to directly specify a byte or short constant. <b>Deferred</b> addressing is a form of immediate addressing where the address of a label is put on the stack.</p>
+
+<table border="1">
+	<tr><th></th><th colspan="2">Byte</th><th colspan="2">Short</th></tr>
+	<tr><td><i>Immediate</i></td><td colspan="2"><code>#ab</code></td><td colspan="2"><code>#cdef</code></td></tr>
+	<tr><td rowspan="2"><i>Deferred</i></td><th>Zero-page</th><th>Relative</th><th colspan="2">Absolute</th></tr>
+	<tr><td><code>.label</code></td><td><code>,label</code></td><td colspan="2"><code>;label</code></td></tr>
+	<tr><td rowspan="2"><i>Raw</i></td><th>Byte</th><th>Char</th><th>Short</th><th>Absolute</th></tr>
+	<tr><td><code>ab</code></td><td><code>'Q</code></td><td><code>cdef</code></td><td><code>:label</code></td></tr>
+</table>
+
+<h2>Control flow</h2>
+
+<p>Uxntal allows for basic control flow, here are some of them:</p>
+
+<table border="1">
+	<tr><th>ForLoop</th><th>WhileLoop</th><th>Switch</th></tr>
+	<tr>
+		<td>
+<pre>
+#00 #0d
+&amp;loop
+	( body ) 
+	SWP #01 ADD SWP
+	LTHk ,&amp;loop JCN
+POP2
+</pre>
+		</td>
+		<td>
+<pre>
+#00 #0d
+&amp;while
+	( body )
+	DUP2 EQU ,&amp;end JCN
+	SWP #01 ADD SWP
+,&amp;while JMP &amp;end
+POP2
+</pre>
+		</td>
+		<td>
+<pre>
+#02 
+DUP #01 NEQ ,&amp;b JCN
+	( a ) 
+&amp;b DUP #02 NEQ ,&amp;c JCN
+	( b ) 
+&amp;c DUP #03 NEQ ,&amp;default JCN
+	( c ) 
+&amp;default
+POP
+</pre>
+		</td>
+	</tr>
+
+</table>
+
+<style>
+.clr0 { background:white; color:black; }
+.clr1 { background:black; color:white; }
+.clr2 { background:#72dec2; color:black; }
+.clr3 { background:#ff0000; color:black; }
+code.op { background: #000; color: white; font-size: smaller; display: inline-block; padding: 0px 6px; font-weight: bold; border-radius: 2px; line-height: 22px }
+pre span.comment { color:#666; }
+</style>
+
+<img src="../media/identity/uxn64.png"><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/uxntal.htm' target='_blank'>edit</a> to <a href='../src/inc/html/uxntal.htm'>uxntal.htm</a>(159 lines)</figcaption>
+</figure><p>Redirected to <a href='uxntal.html'>uxntal</a>, from <b>uxambly</b>.</p><ul><li><a href='https://git.sr.ht/~rabbits/uxn/tree/master/item/src/assembler.c' target='_blank'>C Assembler</a></li><li><a href='https://git.sr.ht/~rabbits/uxn/tree/master/item/projects/software/asma.usm' target='_blank'>Uxn Assembler</a></li></ul><p><i>incoming(4)</i>: <a href='roms.html'>roms</a> <a href='uxn.html'>uxn</a> <a href='noodle.html'>noodle</a> <a href='bifurcan.html'>bifurcan</a> </p><p><i>Last update on <a href='tracker.html'>15K07</a>, edited 21 times. +68/142fh <b></b></i> <code style='float:right; font-size:80%'>-----|</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
