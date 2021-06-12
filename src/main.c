@@ -389,12 +389,14 @@ fptemplatelink(FILE *f, Lexicon *lex, Term *t, char *s)
 	} else {
 		Term *tt = findterm(lex, target);
 		if(!tt)
-			error("Unknown link", target);
-		if(f)
-			fprintf(f, "<a href='%s.html'>%s</a>", tt->filename, name);
+			error("Redlink", t->name);
 		else {
-			tt->incoming[tt->incoming_len++] = t;
-			t->outgoing_len++;
+			if(f)
+				fprintf(f, "<a href='%s.html'>%s</a>", tt->filename, name);
+			else {
+				tt->incoming[tt->incoming_len++] = t;
+				t->outgoing_len++;
+			}
 		}
 	}
 }
