@@ -5,25 +5,27 @@
 #define BUFLEN 512
 
 typedef struct Vessel {
-	char id;
-	struct Vessel *owner;
-	struct Vessel *parent;
-	char name[NAMELEN];
-	char note[TEXTLEN];
-	char prog[TEXTLEN];
+	char id, name[NAMELEN], note[TEXTLEN], prog[TEXTLEN];
+	struct Vessel *owner, *parent;
 } Vessel;
 
 typedef struct Parade {
-	Vessel vessels[256];
 	int len;
+	Vessel vessels[256];
 } Parade;
 
+/* clang-format off */
+
 char *actions[12] = {
-	"create", "become", "enter", "leave", "take", "drop", "warp", "transform", "note", "program", "use", ""};
+	"create", "become",  "enter", "leave", 
+	"take",   "drop",    "warp",  "transform", 
+	"note",   "program", "use",   ""};
+
+/* clang-format on */
 
 Vessel *guest;
 
-/* helpers */
+#pragma mark - Helpers
 
 int
 imin(int a, int b)
@@ -131,7 +133,7 @@ sstr(char *src, char *dest, int from, int to)
 	return dest;
 }
 
-/* Parade */
+#pragma mark - Generics
 
 int
 isvisible(Vessel *g, Vessel *v)
@@ -219,7 +221,7 @@ findany(Parade *p, char *name)
 	return NULL;
 }
 
-/* Actions */
+#pragma mark - Actions
 
 void
 createvessel(Parade *p, char *val)
@@ -360,54 +362,30 @@ lookvessel(Parade *p)
 			printf("- %s%c\n", p->vessels[i].name, rune(&p->vessels[i]));
 }
 
-/* Parade */
+#pragma mark - Parade
 
 int usevessel(Parade *p, char *val);
 
 void
 act(Parade *p, char *cmd, char *val)
 {
+	/* clang-format off */
 	switch(afnd(actions, 12, cmd)) {
-	case 0x0:
-		createvessel(p, val);
-		break;
-	case 0x1:
-		becomevessel(p, val);
-		break;
-	case 0x2:
-		entervessel(p, val);
-		break;
-	case 0x3:
-		leavevessel();
-		break;
-	case 0x4:
-		takevessel(p, val);
-		break;
-	case 0x5:
-		dropvessel(p, val);
-		break;
-	case 0x6:
-		warpvessel(p, val);
-		break;
-	case 0x7:
-		transformvessel(p, val);
-		break;
-	case 0x8:
-		notevessel(val);
-		break;
-	case 0x9:
-		programvessel(val);
-		break;
-	case 0xA:
-		usevessel(p, val);
-		break;
-	case 0xB:
-		lookvessel(p);
-		break;
-	default:
-		printf("Unknown action: %s.\n", cmd);
-		break;
+	case 0x0: createvessel(p, val); break;
+	case 0x1: becomevessel(p, val); break;
+	case 0x2: entervessel(p, val); break;
+	case 0x3: leavevessel(); break;
+	case 0x4: takevessel(p, val); break;
+	case 0x5: dropvessel(p, val); break;
+	case 0x6: warpvessel(p, val); break;
+	case 0x7: transformvessel(p, val); break;
+	case 0x8: notevessel(val); break;
+	case 0x9: programvessel(val); break;
+	case 0xA: usevessel(p, val); break;
+	case 0xB: lookvessel(p); break;
+	default:  printf("Unknown action: %s.\n", cmd); break;
 	}
+	/* clang-format off */
 }
 
 Vessel *
