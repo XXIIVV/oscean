@@ -1182,7 +1182,7 @@ build(Glossary *glo, Lexicon *lex, Journal *jou)
 }
 
 void
-check(Glossary *glo, Journal *jou)
+check(Glossary *glo, Lexicon *lex, Journal *jou)
 {
 	int i, j, found = 0;
 	printf("Checking | ");
@@ -1191,6 +1191,16 @@ check(Glossary *glo, Journal *jou)
 		List *l = &glo->lists[i];
 		if(l->routes < 1)
 			printf("Warning: Unused list \"%s\"\n", l->name);
+	}
+	/* Find invisible photos */
+	for(i = 0; i < jou->len; ++i) {
+		Log *l = &jou->logs[i];
+		if(!l->pict)
+			continue;
+		if(l->term->type && scmp(l->term->type, "album"))
+			continue;
+		if(finddiary(jou, l->term, 0) != l)
+			printf("Warning: Pict #%d(%s) is invisible\n", l->pict, l->term->name);
 	}
 	/* Find next available diary id */
 	for(i = 1; i < 999; ++i) {
@@ -1233,7 +1243,7 @@ main(void)
 	printf("[%.2fms]\n", clockoffset(start));
 
 	start = clock();
-	check(&all_lists, &all_logs);
+	check(&all_lists, &all_terms, &all_logs);
 	printf("[%.2fms]\n", clockoffset(start));
 
 	printf("%d/%d characters in memory\n", block.len, STRMEM);
