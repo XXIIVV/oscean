@@ -2,21 +2,21 @@
 #include <string.h>
 
 void
-substr(char* src, char* dest, int from, int to)
+substr(char *src, char *dest, int from, int to)
 {
 	memcpy(dest, src + from, to);
 	dest[to] = '\0';
 }
 
 void
-lietal_dictionarystr(char* src, char* dest)
+lietal_dictionarystr(char *src, char *dest)
 {
 	int len = strlen(src);
 	substr(src, dest, 0, len);
 }
 
 void
-lietal_adultsegstr(char* src, char* dest)
+lietal_adultsegstr(char *src, char *dest)
 {
 	char c1 = src[0], v1 = src[1], c2 = src[2], v2 = src[3];
 	substr(src, dest, 0, 4);
@@ -33,35 +33,7 @@ lietal_adultsegstr(char* src, char* dest)
 }
 
 void
-lietal_casualsegstr(char* src, char* dest)
-{
-	char c1 = src[0], v1 = src[1], c2 = src[2], v2 = src[3];
-	substr(src, dest, 0, 4);
-	if(c1 == c2 && v1 == v2) {
-		dest[0] = v1;
-		dest[1] = c1;
-		dest[2] = 'e';
-		dest[3] = '\0';
-	} else if(c1 == c2) {
-		dest[0] = v1;
-		dest[1] = c1;
-		dest[2] = v2;
-		dest[3] = '\0';
-	} else if(v1 == v2) {
-		dest[0] = v1;
-		dest[1] = c1;
-		dest[2] = c2;
-		dest[3] = 'e';
-	} else {
-		dest[0] = v1;
-		dest[1] = c1;
-		dest[2] = c2;
-		dest[3] = v2;
-	}
-}
-
-void
-lietal_mixedsegstr(char* src, char* dest)
+lietal_casualsegstr(char *src, char *dest)
 {
 	char c1 = src[0], v1 = src[1], c2 = src[2], v2 = src[3];
 	substr(src, dest, 0, 4);
@@ -89,7 +61,7 @@ lietal_mixedsegstr(char* src, char* dest)
 }
 
 void
-lietal_formalsegstr(char* src, char* dest)
+lietal_formalsegstr(char *src, char *dest)
 {
 	char c1 = src[0], v1 = src[1], c2 = src[2], v2 = src[3];
 	substr(src, dest, 0, 4);
@@ -108,47 +80,16 @@ lietal_formalsegstr(char* src, char* dest)
 	}
 }
 
-void
-lietal_adultstr(char* src, char* dest)
-{
-	if(strlen(src) == 2) {
-		substr(src, dest, 0, 2);
-	} else if(strlen(src) == 4) {
-		lietal_adultsegstr(src, dest);
-	} else if(strlen(src) == 6) {
-		char seg1[3];
-		char seg2[5];
-		substr(src, seg1, 0, 2);
-		substr(src, seg2, 2, 4);
-		lietal_adultsegstr(seg2, seg2);
-		dest[0] = '\0';
-		strcat(dest, seg1);
-		strcat(dest, seg2);
-		dest[strlen(seg1) + strlen(seg2)] = '\0';
-	} else if(strlen(src) == 8) {
-		char seg1[5];
-		char seg2[5];
-		substr(src, seg1, 0, 4);
-		substr(src, seg2, 4, 4);
-		lietal_adultsegstr(seg1, seg1);
-		lietal_adultsegstr(seg2, seg2);
-		dest[0] = '\0';
-		strcat(dest, seg1);
-		strcat(dest, seg2);
-		dest[strlen(seg1) + strlen(seg2)] = '\0';
-	}
-}
-
-void
-lietal_casualstr(char* src, char* dest)
+char *
+lietal_casualstr(char *src, char *dest)
 {
 	if(strlen(src) == 2) {
 		dest[0] = src[1];
 		dest[1] = src[0];
 		dest[2] = '\0';
-	} else if(strlen(src) == 4) {
+	} else if(strlen(src) == 4)
 		lietal_casualsegstr(src, dest);
-	} else if(strlen(src) == 6) {
+	else if(strlen(src) == 6) {
 		char seg1[3];
 		char seg2[5];
 		substr(src, seg1, 0, 2);
@@ -172,51 +113,17 @@ lietal_casualstr(char* src, char* dest)
 		strcat(dest, seg2);
 		dest[strlen(seg1) + strlen(seg2)] = '\0';
 	}
+	return dest;
 }
 
-void
-lietal_mixedstr(char* src, char* dest)
+char *
+lietal_formalstr(char *src, char *dest)
 {
-	if(strlen(src) == 2) {
-		dest[0] = src[1];
-		dest[1] = src[0];
-		dest[2] = '\0';
-	} else if(strlen(src) == 4) {
-		lietal_mixedsegstr(src, dest);
-	} else if(strlen(src) == 6) {
-		char seg1[3];
-		char seg2[5];
-		substr(src, seg1, 0, 2);
-		substr(src, seg2, 2, 4);
-		seg1[0] = src[1];
-		seg1[1] = src[0];
-		lietal_mixedsegstr(seg2, seg2);
-		dest[0] = '\0';
-		strcat(dest, seg1);
-		strcat(dest, seg2);
-		dest[strlen(seg1) + strlen(seg2)] = '\0';
-	} else if(strlen(src) == 8) {
-		char seg1[5];
-		char seg2[5];
-		substr(src, seg1, 0, 4);
-		substr(src, seg2, 4, 4);
-		lietal_mixedsegstr(seg1, seg1);
-		lietal_mixedsegstr(seg2, seg2);
-		dest[0] = '\0';
-		strcat(dest, seg1);
-		strcat(dest, seg2);
-		dest[strlen(seg1) + strlen(seg2)] = '\0';
-	}
-}
-
-void
-lietal_formalstr(char* src, char* dest)
-{
-	if(strlen(src) == 2) {
+	if(strlen(src) == 2)
 		substr(src, dest, 0, 2);
-	} else if(strlen(src) == 4) {
+	else if(strlen(src) == 4)
 		lietal_formalsegstr(src, dest);
-	} else if(strlen(src) == 6) {
+	else if(strlen(src) == 6) {
 		char seg1[3];
 		char seg2[5];
 		substr(src, seg1, 0, 2);
@@ -238,4 +145,5 @@ lietal_formalstr(char* src, char* dest)
 		strcat(dest, seg2);
 		dest[strlen(seg1) + strlen(seg2)] = '\0';
 	}
+	return dest;
 }
