@@ -797,9 +797,9 @@ fpnow(FILE *f, Lexicon *lex, Journal *jou)
 	}
 	fprintf(
 		f,
-		"<p>This data shows the distribution of <b>%.0f hours over %d projects</b>, "
-		"recorded during the last %d days, for an average of %.1f work hours per day "
-		"and %.1f work hours per project.</p>",
+		"<p>This data shows the distribution of <b>%.0f<i>fh</i> over %d projects</b>, "
+		"recorded during the last %d days, for an average of %.1f focus hours per day "
+		"and %.1f focus hours per project.</p>",
 		sum_value,
 		projects_len,
 		56,
@@ -1182,7 +1182,7 @@ build(Glossary *glo, Lexicon *lex, Journal *jou)
 }
 
 void
-check(Glossary *glo, Lexicon *lex, Journal *jou)
+check(Glossary *glo, Journal *jou)
 {
 	int i, j, found = 0;
 	printf("Checking | ");
@@ -1243,7 +1243,7 @@ main(void)
 	printf("[%.2fms]\n", clockoffset(start));
 
 	start = clock();
-	check(&all_lists, &all_terms, &all_logs);
+	check(&all_lists, &all_logs);
 	printf("[%.2fms]\n", clockoffset(start));
 
 	printf("%d/%d characters in memory\n", block.len, STRMEM);
