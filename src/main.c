@@ -28,26 +28,10 @@ typedef struct List {
 } List;
 
 typedef struct Term {
-	int body_len;
-	int children_len;
-	int incoming_len;
-	int outgoing_len;
-	int logs_len;
-	int events_len;
-	int ch;
-	int fh;
-	char *name;
-	char *host;
-	char *bref;
-	char *type;
-	char *filename;
-	char *date_from;
-	char *date_last;
-	char *body[ITEMS];
+	int body_len, children_len, incoming_len, outgoing_len, logs_len, events_len, ch, fh;
+	char *name, *host, *bref, *type, *filename, *date_from, *date_last, *body[ITEMS];
+	struct Term *parent, *children[ITEMS], *incoming[ITEMS];
 	struct List link;
-	struct Term *parent;
-	struct Term *children[ITEMS];
-	struct Term *incoming[ITEMS];
 } Term;
 
 typedef struct Log {
@@ -850,6 +834,7 @@ void
 fphtml(FILE *f, Glossary *glo, Lexicon *lex, Term *t, Journal *jou)
 {
 	Term *alias = NULL;
+	Log *diary = finddiary(jou, t, 0);
 	if(t->type && scmp(t->type, "alias"))
 		alias = findterm(lex, t->host);
 	fputs("<!DOCTYPE html><html lang='en'>", f);
@@ -866,11 +851,15 @@ fphtml(FILE *f, Glossary *glo, Lexicon *lex, Term *t, Journal *jou)
 		t->name);
 	fprintf(f, "<meta property='og:title' content='" NAME " &mdash; %s'>"
 			   "<meta property='og:description' content='%s'>"
-			   "<meta property='og:image' content='" DOMAIN "media/services/rss.jpg'>"
-			   "<meta property='og:url' content='" DOMAIN "site/%s.html'>",
+			   "<meta property='og:url' content='" DOMAIN "site/%s.html'>"
+			   "<meta property='og:type' content='website' />",
 		t->name,
 		t->bref,
 		t->filename);
+	if(diary)
+		fprintf(f, "<meta property='og:image' content='" DOMAIN "media/diary/%d.jpg'>", diary->pict);
+	else
+		fprintf(f, "<meta property='og:image' content='" DOMAIN "media/services/rss.jpg'>");
 	fputs("</head>", f);
 	fputs("<body>", f);
 	fputs("<header><a href='home.html'><img src='../media/icon/logo.svg' alt='" NAME "' height='29'></a></header>", f);
