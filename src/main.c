@@ -864,6 +864,13 @@ fphtml(FILE *f, Glossary *glo, Lexicon *lex, Term *t, Journal *jou)
 			   "<title>" NAME " &mdash; %s</title>",
 		t->bref,
 		t->name);
+	fprintf(f, "<meta property='og:title' content='" NAME " &mdash; %s'>"
+			   "<meta property='og:description' content='%s'>"
+			   "<meta property='og:image' content='" DOMAIN "media/services/thumbnail.jpg'>"
+			   "<meta property='og:url' content='" DOMAIN "site/%s.html'>",
+		t->name,
+		t->bref,
+		t->filename);
 	fputs("</head>", f);
 	fputs("<body>", f);
 	fputs("<header><a href='home.html'><img src='../media/icon/logo.svg' alt='" NAME "' height='29'></a></header>", f);
