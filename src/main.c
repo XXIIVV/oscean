@@ -866,7 +866,7 @@ fphtml(FILE *f, Glossary *glo, Lexicon *lex, Term *t, Journal *jou)
 		t->name);
 	fprintf(f, "<meta property='og:title' content='" NAME " &mdash; %s'>"
 			   "<meta property='og:description' content='%s'>"
-			   "<meta property='og:image' content='" DOMAIN "media/services/thumbnail.jpg'>"
+			   "<meta property='og:image' content='" DOMAIN "media/services/rss.jpg'>"
 			   "<meta property='og:url' content='" DOMAIN "site/%s.html'>",
 		t->name,
 		t->bref,
