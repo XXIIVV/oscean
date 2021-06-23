@@ -441,7 +441,7 @@ fpinclude(FILE *f, char *target, int text, int req)
 	fclose(fp);
 	if(text)
 		fputs("</pre>", f);
-	fprintf(f, "<figcaption>&mdash; Submit an <a href='" REPOPATH "%s%s%s' target='_blank'>edit</a> to <a href='../src/%s%s%s'>%s%s</a>(%d lines)</figcaption>\n", folder, target, ext, folder, target, ext, target, ext, lines);
+	fprintf(f, "<figcaption>&mdash; Submit an <a href='" REPOPATH "%s%s%s' target='_blank'>edit</a> to <a href='../src/%s%s%s'>%s%s</a>(%d lines)</figcaption>", folder, target, ext, folder, target, ext, target, ext, lines);
 	fputs("</figure>", f);
 	return 1;
 }
