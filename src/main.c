@@ -59,42 +59,42 @@ typedef struct Journal {
 
 /* clang-format off */
 
-int   cisp(char c) { return c == ' ' || c == '\t' || c == '\n' || c == '\r'; } /* char is space */
-int   cial(char c) { return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'); } /* char is alpha */
-int   cinu(char c) { return c >= '0' && c <= '9'; } /* char is num */
-char  clca(char c) { return c >= 'A' && c <= 'Z' ? c + ('a' - 'A') : c; } /* char to lowercase */
-char  cuca(char c) { return c >= 'a' && c <= 'z' ? c - ('a' - 'A') : c; } /* char to uppercase */
-int   spad(char *s, char c) { int i = 0; while(s[i] && s[i] == c && s[++i]) { ; } return i; } /* string count padding */
-int   slen(char *s) { int i = 0; while(s[i] && s[++i]) { ; } return i; } /* string length */
-char *st__(char *s, char (*fn)(char)) { int i = 0; char c; while((c = s[i])) s[i++] = fn(c); return s; }
-char *stuc(char *s) { return st__(s, cuca); } /* string to uppercase */
-char *stlc(char *s) { return st__(s, clca); } /* string to lowercase */
-char *scpy(char *src, char *dst, int len) { int i = 0; while((dst[i] = src[i]) && i < len - 2) i++; dst[i + 1] = '\0'; return dst; } /* string copy */
-int   scmp(char *a, char *b) { int i = 0; while(a[i] == b[i]) if(!a[i++]) return 1; return 0; } /* string compare */
-int   sint(char *s, int len) { int n = 0, i = 0; while(s[i] && i < len && (s[i] >= '0' && s[i] <= '9')) n = n * 10 + (s[i++] - '0'); return n; } /* string to num */
-char *scsw(char *s, char a, char b) { int i = 0; char c; while((c = s[i])) s[i++] = c == a ? b : c; return s; } /* string char swap */
-int   sian(char *s) { int i = 0; char c; while((c = s[i++])) if(!cial(c) && !cinu(c) && !cisp(c)) return 0; return 1; } /* string is alphanum */
-int   scin(char *s, char c) { int i = 0; while(s[i]) if(s[i++] == c) return i - 1; return -1; } /* string char index */
-char *scat(char *dst, const char *src) { char *ptr = dst + slen(dst); while(*src) *ptr++ = *src++; *ptr = '\0'; return dst; } /* string cat */
-int   ssin(char *s, char *ss) { int a = 0, b = 0; while(s[a]) { if(s[a] == ss[b]) { if(!ss[b + 1]) return a - b; b++; } else b = 0; a++; } return -1; } /* string substring index */
-char *strm(char *s) { char *end; while(cisp(*s)) s++; if(*s == 0) return s; end = s + slen(s) - 1; while(end > s && cisp(*end)) end--; end[1] = '\0'; return s; }
-int   surl(char *s) { return ssin(s, "://") >= 0 || ssin(s, "../") >= 0; } /* string is url */
-char *sstr(char *src, char *dst, int from, int to) { int i; char *a = (char *)src + from, *b = (char *)dst; for(i = 0; i < to; i++) b[i] = a[i]; dst[to] = '\0'; return dst; }
-int   afnd(char *src[], int len, char *val) { int i; for(i = 0; i < len; i++) if(scmp(src[i], val)) return i; return -1; }
-char *ccat(char *dst, char c) { int len = slen(dst); dst[len] = c; dst[len + 1] = '\0'; return dst; }
+static int   cisp(char c) { return c == ' ' || c == '\t' || c == '\n' || c == '\r'; } /* char is space */
+static int   cial(char c) { return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'); } /* char is alpha */
+static int   cinu(char c) { return c >= '0' && c <= '9'; } /* char is num */
+static char  clca(char c) { return c >= 'A' && c <= 'Z' ? c + ('a' - 'A') : c; } /* char to lowercase */
+static char  cuca(char c) { return c >= 'a' && c <= 'z' ? c - ('a' - 'A') : c; } /* char to uppercase */
+static int   spad(char *s, char c) { int i = 0; while(s[i] && s[i] == c && s[++i]) { ; } return i; } /* string count padding */
+static int   slen(char *s) { int i = 0; while(s[i] && s[++i]) { ; } return i; } /* string length */
+static char *st__(char *s, char (*fn)(char)) { int i = 0; char c; while((c = s[i])) s[i++] = fn(c); return s; } /* util */
+static char *stuc(char *s) { return st__(s, cuca); } /* string to uppercase */
+static char *stlc(char *s) { return st__(s, clca); } /* string to lowercase */
+static char *scpy(char *src, char *dst, int len) { int i = 0; while((dst[i] = src[i]) && i < len - 2) i++; dst[i + 1] = '\0'; return dst; } /* string copy */
+static int   scmp(char *a, char *b) { int i = 0; while(a[i] == b[i]) if(!a[i++]) return 1; return 0; } /* string compare */
+static int   sint(char *s, int len) { int n = 0, i = 0; while(s[i] && i < len && (s[i] >= '0' && s[i] <= '9')) n = n * 10 + (s[i++] - '0'); return n; } /* string to num */
+static char *scsw(char *s, char a, char b) { int i = 0; char c; while((c = s[i])) s[i++] = c == a ? b : c; return s; } /* string char swap */
+static int   sian(char *s) { int i = 0; char c; while((c = s[i++])) if(!cial(c) && !cinu(c) && !cisp(c)) return 0; return 1; } /* string is alphanum */
+static int   scin(char *s, char c) { int i = 0; while(s[i]) if(s[i++] == c) return i - 1; return -1; } /* string char index */
+static char *scat(char *dst, const char *src) { char *ptr = dst + slen(dst); while(*src) *ptr++ = *src++; *ptr = '\0'; return dst; } /* string cat */
+static int   ssin(char *s, char *ss) { int a = 0, b = 0; while(s[a]) { if(s[a] == ss[b]) { if(!ss[b + 1]) return a - b; b++; } else b = 0; a++; } return -1; } /* string substring index */
+static char *strm(char *s) { char *end; while(cisp(*s)) s++; if(*s == 0) return s; end = s + slen(s) - 1; while(end > s && cisp(*end)) end--; end[1] = '\0'; return s; }
+static int   surl(char *s) { return ssin(s, "://") >= 0 || ssin(s, "../") >= 0; } /* string is url */
+static char *sstr(char *src, char *dst, int from, int to) { int i; char *a = (char *)src + from, *b = (char *)dst; for(i = 0; i < to; i++) b[i] = a[i]; dst[to] = '\0'; return dst; }
+static int   afnd(char *src[], int len, char *val) { int i; for(i = 0; i < len; i++) if(scmp(src[i], val)) return i; return -1; }
+static char *ccat(char *dst, char c) { int len = slen(dst); dst[len] = c; dst[len + 1] = '\0'; return dst; }
 
 /* clang-format on */
 
 #pragma mark - Core
 
-int
+static int
 error(char *msg, char *val)
 {
 	printf("Error: %s(%s)\n", msg, val);
 	return 0;
 }
 
-int
+static int
 errorid(char *msg, char *val, int id)
 {
 	printf("Error: %s:%d(%s)\n", msg, id, val);
@@ -103,7 +103,7 @@ errorid(char *msg, char *val, int id)
 
 #pragma mark - Block
 
-char *
+static char *
 push(Block *b, char *s)
 {
 	int i = 0, o = b->len;
@@ -115,7 +115,7 @@ push(Block *b, char *s)
 
 #pragma mark - List
 
-List *
+static List *
 makelist(List *l, char *name)
 {
 	l->len = 0;
@@ -124,7 +124,7 @@ makelist(List *l, char *name)
 	return l;
 }
 
-List *
+static List *
 findlist(Glossary *glo, char *name)
 {
 	int i;
@@ -136,7 +136,7 @@ findlist(Glossary *glo, char *name)
 
 #pragma mark - Term
 
-Term *
+static Term *
 maketerm(Term *t, char *name)
 {
 	t->body_len = 0;
@@ -151,7 +151,7 @@ maketerm(Term *t, char *name)
 	return t;
 }
 
-Term *
+static Term *
 findterm(Lexicon *lex, char *name)
 {
 	int i;
@@ -162,7 +162,7 @@ findterm(Lexicon *lex, char *name)
 	return NULL;
 }
 
-char *
+static char *
 statusterm(Term *t)
 {
 	if(t->type && scmp(t->type, "alias")) return "alias";
@@ -175,7 +175,7 @@ statusterm(Term *t)
 
 #pragma mark - Log
 
-Log *
+static Log *
 makelog(Log *l, char *date)
 {
 	l->code = 0;
@@ -184,7 +184,7 @@ makelog(Log *l, char *date)
 	return l;
 }
 
-Log *
+static Log *
 finddiary(Journal *jou, Term *t, int deep)
 {
 	int i;
@@ -199,7 +199,7 @@ finddiary(Journal *jou, Term *t, int deep)
 
 #pragma mark - File
 
-FILE *
+static FILE *
 getfile(char *dir, char *filename, char *ext, char *op)
 {
 	char filepath[1024];
@@ -213,13 +213,13 @@ getfile(char *dir, char *filename, char *ext, char *op)
 
 #pragma mark - Time
 
-float
+static float
 clockoffset(clock_t start)
 {
 	return (((double)(clock() - start)) / CLOCKS_PER_SEC) * 1000;
 }
 
-void
+static void
 fpRFC2822(FILE *f, time_t t, int time)
 {
 	struct tm *tm = localtime(&t);
@@ -234,7 +234,7 @@ fpRFC2822(FILE *f, time_t t, int time)
 		time ? " 00:00:00 +0900" : "");
 }
 
-void
+static void
 fpRFC3339(FILE *f, time_t t)
 {
 	struct tm *tm = localtime(&t);
@@ -251,7 +251,7 @@ fpRFC3339(FILE *f, time_t t)
 		0);
 }
 
-time_t
+static time_t
 ymdstrtime(int y, int m, int d)
 {
 	struct tm stime;
@@ -265,7 +265,7 @@ ymdstrtime(int y, int m, int d)
 	return mktime(&stime);
 }
 
-int
+static int
 arveliedays(char *date)
 {
 	int year = (date[0] - '0') * 10 + (date[1] - '0');
@@ -274,7 +274,7 @@ arveliedays(char *date)
 	return year * 365 + moty * 14 + dotm;
 }
 
-void
+static void
 parvelie(int epoch)
 {
 	time_t now;
@@ -287,7 +287,7 @@ parvelie(int epoch)
 		local->tm_yday % 14);
 }
 
-time_t
+static time_t
 dotytime(int y, int doty)
 {
 	int months[13] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
@@ -305,7 +305,7 @@ dotytime(int y, int doty)
 	return ymdstrtime(y, m, d);
 }
 
-time_t
+static time_t
 arvelietime(int epoch, char *date)
 {
 	int year = epoch + (date[0] - '0') * 10 + (date[1] - '0');
@@ -317,7 +317,7 @@ arvelietime(int epoch, char *date)
 
 #pragma mark - Fprint
 
-void
+static void
 fplifeline(FILE *f, Journal *jou, Term *t)
 {
 	int limit_from = arveliedays(jou->logs[jou->len - 1].date);
@@ -332,7 +332,7 @@ fplifeline(FILE *f, Journal *jou, Term *t)
 	fputs("</code>", f);
 }
 
-void
+static void
 fppict(FILE *f, int pict, char *host, char *name, int caption, char *link)
 {
 	fputs("<figure>", f);
@@ -348,13 +348,13 @@ fppict(FILE *f, int pict, char *host, char *name, int caption, char *link)
 	fputs("</figure>", f);
 }
 
-void
+static void
 fplogpict(FILE *f, Log *l, int caption)
 {
 	fppict(f, l->pict, l->date, l->name, caption, NULL);
 }
 
-void
+static void
 fptemplatelink(FILE *f, Lexicon *lex, Term *t, char *s)
 {
 	int split = scin(s, ' ');
@@ -385,7 +385,7 @@ fptemplatelink(FILE *f, Lexicon *lex, Term *t, char *s)
 	}
 }
 
-int
+static int
 fplist(FILE *f, Glossary *glo, char *target)
 {
 	int j;
@@ -406,7 +406,7 @@ fplist(FILE *f, Glossary *glo, char *target)
 	return 1;
 }
 
-int
+static int
 fpinclude(FILE *f, char *target, int text, int req)
 {
 	int lines = 0;
@@ -446,7 +446,7 @@ fpinclude(FILE *f, char *target, int text, int req)
 	return 1;
 }
 
-void
+static void
 fpmodule(FILE *f, Glossary *glo, char *s)
 {
 	int split = scin(s, ' ');
@@ -480,7 +480,7 @@ fpmodule(FILE *f, Glossary *glo, char *s)
 		printf("Warning: Missing template mod: %s\n", s);
 }
 
-void
+static void
 fptemplate(FILE *f, Glossary *glo, Lexicon *lex, Term *t, char *s)
 {
 	int i, capture = 0;
@@ -506,7 +506,7 @@ fptemplate(FILE *f, Glossary *glo, Lexicon *lex, Term *t, char *s)
 	}
 }
 
-void
+static void
 fpbodypart(FILE *f, Glossary *glo, Lexicon *lex, Term *t)
 {
 	int i;
@@ -514,7 +514,7 @@ fpbodypart(FILE *f, Glossary *glo, Lexicon *lex, Term *t)
 		fptemplate(f, glo, lex, t, t->body[i]);
 }
 
-void
+static void
 fpbanner(FILE *f, Journal *jou, Term *t, int caption)
 {
 	Log *l = finddiary(jou, t, 0);
@@ -522,7 +522,7 @@ fpbanner(FILE *f, Journal *jou, Term *t, int caption)
 		fplogpict(f, l, caption);
 }
 
-void
+static void
 fpnavsub(FILE *f, Term *t, Term *target)
 {
 	int i;
@@ -543,7 +543,7 @@ fpnavsub(FILE *f, Term *t, Term *target)
 	fputs("</ul>", f);
 }
 
-void
+static void
 fpnav(FILE *f, Term *t)
 {
 	if(!t->parent)
@@ -562,14 +562,14 @@ fpnav(FILE *f, Term *t)
 	fputs("</nav>", f);
 }
 
-void
+static void
 fpbody(FILE *f, Glossary *glo, Lexicon *lex, Term *t)
 {
 	fprintf(f, "<h2>%s</h2>", t->bref);
 	fpbodypart(f, glo, lex, t);
 }
 
-void
+static void
 fpportal(FILE *f, Glossary *glo, Lexicon *lex, Journal *jou, Term *t, int pict, int text)
 {
 	int i;
@@ -590,7 +590,7 @@ fpportal(FILE *f, Glossary *glo, Lexicon *lex, Journal *jou, Term *t, int pict, 
 	}
 }
 
-void
+static void
 fpalbum(FILE *f, Journal *jou, Term *t)
 {
 	int i;
@@ -602,7 +602,7 @@ fpalbum(FILE *f, Journal *jou, Term *t)
 	}
 }
 
-void
+static void
 fplinks(FILE *f, Term *t)
 {
 	int i;
@@ -614,7 +614,7 @@ fplinks(FILE *f, Term *t)
 	fputs("</ul>", f);
 }
 
-void
+static void
 fpincoming(FILE *f, Term *t)
 {
 	int i;
@@ -627,7 +627,7 @@ fpincoming(FILE *f, Term *t)
 	fputs("</p>", f);
 }
 
-void
+static void
 fpevents(FILE *f, Journal *jou, Term *t)
 {
 	int i;
@@ -643,7 +643,7 @@ fpevents(FILE *f, Journal *jou, Term *t)
 	fputs("</ul>", f);
 }
 
-void
+static void
 fphoraire(FILE *f, Journal *jou, Term *t)
 {
 	if(t->logs_len < 2 || !t->date_last)
@@ -662,7 +662,7 @@ fphoraire(FILE *f, Journal *jou, Term *t)
 		fpevents(f, jou, t);
 }
 
-void
+static void
 fphome(FILE *f, Journal *jou)
 {
 	int i, events = 0;
@@ -684,7 +684,7 @@ fphome(FILE *f, Journal *jou)
 	fputs("</ul>", f);
 }
 
-void
+static void
 fpcalendar(FILE *f, Journal *jou)
 {
 	int i, last_year = 0;
@@ -703,7 +703,7 @@ fpcalendar(FILE *f, Journal *jou)
 	fputs("</ul>", f);
 }
 
-void
+static void
 fptracker(FILE *f, Journal *jou)
 {
 	char *known[LEXMEM];
@@ -728,7 +728,7 @@ fptracker(FILE *f, Journal *jou)
 	fputs("</ul>", f);
 }
 
-void
+static void
 fpjournal(FILE *f, Journal *jou)
 {
 	int i, count = 0;
@@ -742,7 +742,7 @@ fpjournal(FILE *f, Journal *jou)
 	}
 }
 
-void
+static void
 fpnow(FILE *f, Lexicon *lex, Journal *jou)
 {
 	int i, projects_len = 0;
@@ -799,7 +799,7 @@ fpnow(FILE *f, Lexicon *lex, Journal *jou)
 	fprintf(f, "<p>Last generated on %s(" LOCATION ").</p>", ctime(&now));
 }
 
-void
+static void
 fpindexsub(FILE *f, Term *t, int depth)
 {
 	int i;
@@ -813,7 +813,7 @@ fpindexsub(FILE *f, Term *t, int depth)
 	fputs("</ul>", f);
 }
 
-void
+static void
 fpindex(FILE *f, Lexicon *lex, Journal *jou)
 {
 	int i, sends = 0, stubs = 0, orphans = 0, deadends = 0;
@@ -830,7 +830,7 @@ fpindex(FILE *f, Lexicon *lex, Journal *jou)
 	fputs("</ul>", f);
 }
 
-void
+static void
 fphtml(FILE *f, Glossary *glo, Lexicon *lex, Term *t, Journal *jou)
 {
 	Term *alias = NULL;
@@ -909,7 +909,7 @@ fphtml(FILE *f, Glossary *glo, Lexicon *lex, Term *t, Journal *jou)
 	fclose(f);
 }
 
-void
+static void
 fprss(FILE *f, Journal *jou)
 {
 	int i;
@@ -955,7 +955,7 @@ fprss(FILE *f, Journal *jou)
 	fclose(f);
 }
 
-void
+static void
 fptwtxt(FILE *f, Journal *jou)
 {
 	int i;
@@ -971,7 +971,7 @@ fptwtxt(FILE *f, Journal *jou)
 
 #pragma mark - Parse
 
-int
+static int
 parse_glossary(FILE *fp, Block *block, Glossary *glo)
 {
 	int len, depth, count = 0, split = 0;
@@ -1006,7 +1006,7 @@ parse_glossary(FILE *fp, Block *block, Glossary *glo)
 	return 1;
 }
 
-int
+static int
 parse_lexicon(FILE *fp, Block *block, Lexicon *lex)
 {
 	int key_len, val_len, len, count = 0, catch_body = 0, catch_link = 0;
@@ -1056,7 +1056,7 @@ parse_lexicon(FILE *fp, Block *block, Lexicon *lex)
 	return 1;
 }
 
-int
+static int
 parse_journal(FILE *fp, Block *block, Lexicon *lex, Journal *jou)
 {
 	int len, count = 0;
@@ -1086,7 +1086,7 @@ parse_journal(FILE *fp, Block *block, Lexicon *lex, Journal *jou)
 	return 1;
 }
 
-int
+static int
 parse(Block *block, Glossary *glo, Lexicon *lex, Journal *jou)
 {
 	FILE *fglo = fopen("database/glossary.ndtl", "r");
@@ -1114,7 +1114,7 @@ parse(Block *block, Glossary *glo, Lexicon *lex, Journal *jou)
 	return 1;
 }
 
-int
+static int
 link(Block *block, Glossary *glo, Lexicon *lex, Journal *jou)
 {
 	int i, j;
@@ -1152,7 +1152,7 @@ link(Block *block, Glossary *glo, Lexicon *lex, Journal *jou)
 	return 1;
 }
 
-int
+static int
 build(Glossary *glo, Lexicon *lex, Journal *jou)
 {
 	FILE *f;
@@ -1177,7 +1177,7 @@ build(Glossary *glo, Lexicon *lex, Journal *jou)
 	return 1;
 }
 
-void
+static void
 check(Glossary *glo, Journal *jou)
 {
 	int i, j, found = 0;
@@ -1211,11 +1211,11 @@ check(Glossary *glo, Journal *jou)
 	}
 }
 
-Block block;
-Glossary all_lists;
-Lexicon all_terms;
-Journal all_logs;
-clock_t start;
+static Block block;
+static Glossary all_lists;
+static Lexicon all_terms;
+static Journal all_logs;
+static clock_t start;
 
 int
 main(void)
