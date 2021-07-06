@@ -14,128 +14,34 @@ typedef struct Parade {
 	Vessel vessels[256];
 } Parade;
 
+Vessel *guest;
+
 /* clang-format off */
 
-char *actions[12] = {
+static char *actions[12] = {
 	"create", "become",  "enter", "leave", 
 	"take",   "drop",    "warp",  "transform", 
 	"note",   "program", "use",   ""};
 
-/* clang-format on */
-
-Vessel *guest;
-
 #pragma mark - Helpers
 
-int
-imin(int a, int b)
-{
-	return a < b ? a : b;
-}
+static unsigned char chex(char c) { if(c >= 'a' && c <= 'f') return 10 + c - 'a'; if(c >= 'A' && c <= 'F') return 10 + c - 'A'; return (c - '0') & 0xF; }
+static unsigned char shex(char *s, int len) { int i, n = 0; for(i = 0; i < len; ++i) n |= (chex(s[i]) << ((len - i - 1) * 4)); return n; }
+static int    imin(int a, int b) { return a < b ? a : b; }
+static int    cisp(char c) { return c == ' ' || c == '\t' || c == '\n' || c == '\r'; }
+static int    slen(char *s) { int n = 0; while(s[n] && s[++n]) ; return n; }
+static int    cpos(char *s, char c) { int i = 0; while(s[i] && s[i]) if(s[i++] == c) return i - 1; return -1; }
+static char * spor(char *s, int c) { int i; for(i = slen(s); i >= 0; --i) if(s[i] == c) return s + i; return s - 1; }
+static int    scmp(char *a, char *b) { int i = 0; while(a[i] == b[i]) if(!a[i++]) return 1; return 0; }
+static char * strm(char *s) { char *end; while(cisp(*s)) s++; if(*s == 0) return s; end = s + slen(s) - 1; while(end > s && cisp(*end)) end--; end[1] = '\0'; return s; }
+static int    afnd(char *src[], int len, char *val) { int i; for(i = 0; i < len; i++) if(scmp(src[i], val)) return i; return -1; }
+static char * sstr(char *src, char *dest, int from, int to) { int i; char *a = (char *)src + from, *b = (char *)dest; for(i = 0; i < to; i++) b[i] = a[i]; dest[to] = '\0'; return dest; }
 
-int
-cisp(char c)
-{
-	return c == ' ' || c == '\t' || c == '\n' || c == '\r';
-}
-
-unsigned char
-chex(char c)
-{
-	if(c >= 'a' && c <= 'f')
-		return 10 + c - 'a';
-	if(c >= 'A' && c <= 'F')
-		return 10 + c - 'A';
-	return (c - '0') & 0xF;
-}
-
-int
-slen(char *s)
-{
-	int n = 0;
-	while(s[n] && s[++n])
-		;
-	return n;
-}
-
-unsigned char
-shex(char *s, int len)
-{
-	int i, n = 0;
-	for(i = 0; i < len; ++i)
-		n |= (chex(s[i]) << ((len - i - 1) * 4));
-	return n;
-}
-
-int
-cpos(char *s, char c)
-{
-	int i = 0;
-	while(s[i] && s[i])
-		if(s[i++] == c)
-			return i - 1;
-	return -1;
-}
-
-char *
-spor(char *s, int c)
-{
-	int i;
-	for(i = slen(s); i >= 0; --i)
-		if(s[i] == c)
-			return s + i;
-	return s - 1;
-}
-
-int
-scmp(char *a, char *b)
-{
-	int i = 0;
-	while(a[i] == b[i])
-		if(!a[i++])
-			return 1;
-	return 0;
-}
-
-char *
-strm(char *s)
-{
-	char *end;
-	while(cisp(*s))
-		s++;
-	if(*s == 0)
-		return s;
-	end = s + slen(s) - 1;
-	while(end > s && cisp(*end))
-		end--;
-	end[1] = '\0';
-	return s;
-}
-
-int
-afnd(char *src[], int len, char *val)
-{
-	int i;
-	for(i = 0; i < len; i++)
-		if(scmp(src[i], val))
-			return i;
-	return -1;
-}
-
-char *
-sstr(char *src, char *dest, int from, int to)
-{
-	int i;
-	char *a = (char *)src + from, *b = (char *)dest;
-	for(i = 0; i < to; i++)
-		b[i] = a[i];
-	dest[to] = '\0';
-	return dest;
-}
+/* clang-format on */
 
 #pragma mark - Generics
 
-int
+static int
 isvisible(Vessel *g, Vessel *v)
 {
 	if(g->parent != v->parent)
@@ -147,13 +53,13 @@ isvisible(Vessel *g, Vessel *v)
 	return 1;
 }
 
-int
+static int
 isparadox(Vessel *v)
 {
 	return v->parent == v;
 }
 
-char
+static char
 rune(Vessel *v)
 {
 	if(isparadox(v))
@@ -167,7 +73,7 @@ rune(Vessel *v)
 	return 0;
 }
 
-Vessel *
+static Vessel *
 addvessel(Parade *p, Vessel *v, char *name)
 {
 	Vessel *nv = &p->vessels[p->len];
@@ -179,7 +85,7 @@ addvessel(Parade *p, Vessel *v, char *name)
 	return nv;
 }
 
-Vessel *
+static Vessel *
 findvisible(Parade *p, Vessel *v, char *name)
 {
 	int i;
@@ -193,7 +99,7 @@ findvisible(Parade *p, Vessel *v, char *name)
 	return NULL;
 }
 
-Vessel *
+static Vessel *
 findinventory(Parade *p, Vessel *v, char *name)
 {
 	int i;
@@ -210,7 +116,7 @@ findinventory(Parade *p, Vessel *v, char *name)
 	return NULL;
 }
 
-Vessel *
+static Vessel *
 findany(Parade *p, char *name)
 {
 	int i;
@@ -223,7 +129,7 @@ findany(Parade *p, char *name)
 
 #pragma mark - Actions
 
-void
+static void
 createvessel(Parade *p, char *val)
 {
 	Vessel *v;
@@ -235,7 +141,7 @@ createvessel(Parade *p, char *val)
 	}
 }
 
-void
+static void
 becomevessel(Parade *p, char *val)
 {
 	Vessel *v = findany(p, val);
@@ -247,7 +153,7 @@ becomevessel(Parade *p, char *val)
 	}
 }
 
-void
+static void
 entervessel(Parade *p, char *val)
 {
 	Vessel *v = findvisible(p, guest, val);
@@ -259,7 +165,7 @@ entervessel(Parade *p, char *val)
 	}
 }
 
-void
+static void
 leavevessel(void)
 {
 	Vessel *v = guest->parent;
@@ -271,7 +177,7 @@ leavevessel(void)
 	}
 }
 
-void
+static void
 takevessel(Parade *p, char *val)
 {
 	Vessel *v = findvisible(p, guest, val);
@@ -283,7 +189,7 @@ takevessel(Parade *p, char *val)
 	}
 }
 
-void
+static void
 dropvessel(Parade *p, char *val)
 {
 	Vessel *v = findinventory(p, guest, val);
@@ -295,7 +201,7 @@ dropvessel(Parade *p, char *val)
 	}
 }
 
-void
+static void
 warpvessel(Parade *p, char *val)
 {
 	Vessel *v = findany(p, val);
@@ -307,7 +213,7 @@ warpvessel(Parade *p, char *val)
 	}
 }
 
-void
+static void
 transformvessel(Parade *p, char *val)
 {
 	char *name = spor(val, ' ') + 1;
@@ -319,7 +225,7 @@ transformvessel(Parade *p, char *val)
 	}
 }
 
-void
+static void
 notevessel(char *val)
 {
 	Vessel *v = guest->parent;
@@ -331,7 +237,7 @@ notevessel(char *val)
 	}
 }
 
-void
+static void
 programvessel(char *val)
 {
 	Vessel *v = guest->parent;
@@ -343,7 +249,7 @@ programvessel(char *val)
 	}
 }
 
-void
+static void
 lookvessel(Parade *p)
 {
 	int i;
@@ -364,9 +270,9 @@ lookvessel(Parade *p)
 
 #pragma mark - Parade
 
-int usevessel(Parade *p, char *val);
+static int usevessel(Parade *p, char *val);
 
-void
+static void
 act(Parade *p, char *cmd, char *val)
 {
 	/* clang-format off */
@@ -388,7 +294,7 @@ act(Parade *p, char *cmd, char *val)
 	/* clang-format off */
 }
 
-Vessel *
+static Vessel *
 spawn(Parade *p)
 {
 	addvessel(p, NULL, "library");
@@ -396,7 +302,7 @@ spawn(Parade *p)
 	return &p->vessels[1];
 }
 
-int
+static int
 parse(Parade *p, char *line, int id)
 {
 	int split = cpos(line, '|');
@@ -415,18 +321,23 @@ parse(Parade *p, char *line, int id)
 	return 1;
 }
 
-int
+static int
 save(Parade *p, char *filename)
 {
 	int i;
 	FILE *f = fopen(filename, "w");
 	for(i = 0; i < p->len; ++i)
-		fprintf(f, "%02x%02x %-15s %s | %s\n", p->vessels[i].owner->id, p->vessels[i].parent->id, p->vessels[i].name, p->vessels[i].note, p->vessels[i].prog);
+		fprintf(f, "%02x%02x %-15s %s | %s\n", 
+			p->vessels[i].owner->id, 
+			p->vessels[i].parent->id, 
+			p->vessels[i].name, 
+			p->vessels[i].note, 
+			p->vessels[i].prog);
 	fclose(f);
 	return 1;
 }
 
-int
+static int
 load(Parade *p, char *filename)
 {
 	char line[BUFLEN];
@@ -441,7 +352,7 @@ load(Parade *p, char *filename)
 	return 1;
 }
 
-int
+static int
 answer(Parade *p, char *input)
 {
 	int split = cpos(input, ' ');
@@ -468,7 +379,7 @@ answer(Parade *p, char *input)
 	return 1;
 }
 
-int
+static int
 usevessel(Parade *p, char *val)
 {
 	Vessel *v = findvisible(p, guest, val);
@@ -481,7 +392,7 @@ usevessel(Parade *p, char *val)
 	return 0;
 }
 
-int
+static int
 listen(Parade *p)
 {
 	char input[TEXTLEN];
