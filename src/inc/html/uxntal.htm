@@ -1,13 +1,13 @@
 <h2>Opcodes</h2>
 
-<p>There are 32 opcodes, each opcode occupies 5 bits of a byte, the remaining 3 are used to select modes of that opcode, modes are explained below.</p>
+<p>There are 32 opcodes, each opcode occupies 5 bits of a byte, the remaining 3 bits are used for the modes of that opcode, modes are explained below.</p>
 
 <table border="1">
-	<tr><td colspan="3">mode</td><td colspan="5">opcode</td></tr>
-	<tr><td><i>keep</i></td><td><i>return</i></td><td><i>short</i></td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+	<tr><td><i>keep</i> <code class='op'>k</code></td><td><i>return</i> <code class='op'>r</code></td><td><i>short</i> <code class='op'>2</code></td><td colspan="5">opcode <code class='op'>BRK</code></td></tr>
+	<tr><td class='clr2'>0</td><td class='clr2'>0</td><td class='clr2'>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
 </table>
 
-<p>Operator modes are indicated by appending extra characters at the end of the opcode, for example, the <i>short mode</i> for the <code class='op'>ADD</code> opcode is <code class='op'>ADD2</code>, modes can also be combined, for example: <code class='op'>ADD2r</code>.</p>
+<p>Operator modes are indicated by appending extra characters at the end of the opcode, for example, the <i>short mode</i> for the <code class='op'>ADD</code> opcode is <code class='op'>ADD2</code>, modes can also be combined, for example: <code class='op'>ADD2kr</code>.</p>
 
 <table border="1" width="700">
 	<tr><td></td><th colspan="3">Stack</th><td></td>                                           <th colspan="3">Memory</th></tr>
@@ -32,12 +32,11 @@
 
 <p style='font-size:small'>The jump operators will jump to a relative address in normal mode, and to an absolute address in <b>short mode</b>. All memory operators expect a single byte, except for the absolute operators expecting an absolute address. Shift in short mode is expecting a single byte. </p>
 
-
 <h3>Modes</h3>
 
-<p>The <b>keep mode</b> makes it possible for any operator to operate without consuming items from the stack and simply pushing the result on top.</p>
+<p>The <b>keep mode</b> does not consume items from the stack, and pushes the result on top.</p>
 
-<p>The <b>short mode</b> makes it possible for any operator to operate on 16-bits by pushing and popping the necessary extra items from the stack. In the case of jump opcodes(<code class='op'>JMP2</code>, <code class='op'>JSR2</code>, and <code class='op'>JCN2</code>) the short mode operation jumps to an absolute address in memory. For the getters and setters, the short mode operation indicates the size of the data to read/write.</p>
+<p>The <b>short mode</b> consumes two bytes from the stack. In the case of jump opcodes(<code class='op'>JMP2</code>, <code class='op'>JSR2</code>, and <code class='op'>JCN2</code>) the short mode operation jumps to an absolute address in memory. For the getters and setters, the short mode operation indicates the size of the data to read/write.</p>
 
 <p>The <b>return mode</b> makes it possible for any operator to operate on the return-stack directly, for that reason there is no dedicated return opcode. For example, the JumpStash(<code class='op'>JSR</code>) operator pushes the program&#39;s address onto the return stash before jumping, to return to that address, the <code class='op'>JMP2r</code> opcode is used, where instead of using the address on the working-stack, it takes its address directly from the return-stack.</p>
 
@@ -45,14 +44,14 @@
 
 <h2>Programming</h2>
 
-<p>Uxntal has no reserved words besides the 32 opcodes, each element of the program has its own rune. Comments are within parentheses, the curlies are used in the definition of macros, and the square brackets are ignored.</p>
+<p>Uxntal has no reserved words besides the 32 opcodes, each element of the program has its own rune. Comments are within parentheses, curlies are used in the definition of macros, and the square brackets are ignored.</p>
 
 <table border="1">
 	<tr><th colspan="4">Runes</th></tr>
-	<tr><td><code>%</code></td><td>macro-define</td>    <td><code>#</code></td><td>literal hex</td></tr>
-	<tr><td><code>|</code></td><td>pad(absolute)</td>    <td><code>.</code></td><td>literal addr(zero-page)</td></tr>
-	<tr><td><code>$</code></td><td>pad(relative)</td>    <td><code>,</code></td><td>literal addr(relative)</td></tr>
-	<tr><td><code>@</code></td><td>label-define</td>    <td><code>;</code></td><td>literal addr(absolute)</td></tr>
+	<tr><td><code>%</code></td><td>macro-define</td><td><code>#</code></td><td>literal hex</td></tr>
+	<tr><td><code>|</code></td><td>pad(absolute)</td><td><code>.</code></td><td>literal addr(zero-page)</td></tr>
+	<tr><td><code>$</code></td><td>pad(relative)</td><td><code>,</code></td><td>literal addr(relative)</td></tr>
+	<tr><td><code>@</code></td><td>label-define</td><td><code>;</code></td><td>literal addr(absolute)</td></tr>
 	<tr><td><code>&amp;</code></td><td>sublabel-define</td> <td><code>:</code></td><td>raw addr</td></tr>
 	<tr><td><code>/</code></td><td>sublabel spacer</td> <td><code>&#39;</code></td><td>raw char</td></tr>
 	<tr><td></td><td></td><td><code>&quot;</code></td><td>raw word</td></tr>
@@ -60,11 +59,18 @@
 
 <h3>Example</h3>
 
-<p>In the following example, our program begins with <code class='op'>;hello-world</code> pushing the absolute address of the label <code class='op'>@hello-world</code> to the top of the stack. An absolute address is made of two bytes. We then assign the label <code class='op'>&loop</code> to this position of the program so we can return to it later.</p>
+<p>In the following example, our program begins with a padding to the address <code>#0018</code> with <code class='op'>|18</code>, followed by the definition of the <code class='op'>Console/write</code> label. From that point onward, the absolute or zero-page address of that label can be referenced by name. The <b>zero-page</b> is the name of the first 256 bytes in memory, the <code>0000-0100</code> range, it is typically used to store variables.</p>
 
-<p>Next, the <code class='op'>LDAk</code> opcode takes two bytes at the top of the stack to form an absolute address, and loads the value in memory found at that address in memory, in this case, the <a href='ascii.html'>ascii value</a> of the letter H. That value is sent to the Console's port named <code class='op'>char(#18)</code> which prints that character to the terminal.</p>
+<table border="1">
+	<tr><th>Zero-page</th><td>.Console/write</td><td><code>#18</code></td></tr>
+	<tr><th>Absolute</th><td>;Console/write</td><td><code>#0018</code></td></tr>
+</table>
 
-<p>Next, we increment the address found on top of the stack by 1, we use <code class='op'>#0001</code> and <code class='op'>ADD2</code> because we know the items on the stack to be an address made of two bytes. We load the incremented value, the <code class='op'>JCN</code> opcode will jump to the position of label <code class='op'>&loop</code> as long as the item before the address is not zero. We complete the program with <code class='op'>POP2</code> to remove the address on the stack, to keep the stack clean.</p>
+<p>Next, we pad to <code class='op'>|0100</code>, which is where the first page of memory ends, and where all Uxn programs begin. Our program begins by pushing to the stack, the absolute address of the label <code class='op'>hello-world</code>, which is defined at the end of the program and points to a series of characters. An absolute address is made of two bytes. We then assign the label <code class='op'>&loop</code> to this position of the program so we can return to it later.</p>
+
+<p>Next, the <code class='op'>LDAk</code> opcode takes two bytes at the top of the stack to form an absolute address, and loads the value in memory found at that address to the top of the stack, in this case, the <a href='ascii.html'>ascii value</a> of the letter H. That value is sent to the Console's port named <code class='op'>write</code><code>(#18)</code> which prints that character to the terminal.</p>
+
+<p>Next, we increment the absolute address found on top of the stack, we use <code class='op'>#0001</code> and <code class='op'>ADD2</code> because we know the items on the stack to be an address made of two bytes. We load the incremented value, the <code class='op'>JCN</code> opcode will jump to the position of label <code class='op'>&loop</code> as long as the item before the address is not zero. We complete the program with <code class='op'>POP2</code> to remove the address on the stack, to keep the stack clean.</p>
 
 <pre style='clear:both'>
 ( dev/console )
