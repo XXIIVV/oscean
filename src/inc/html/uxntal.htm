@@ -34,11 +34,17 @@
 
 <h3>Modes</h3>
 
-<p>The <b>keep mode</b> does not consume items from the stack, and pushes the result on top.</p>
+<p>By default, operators operate on bytes, notice how in the following example only the last two bytes <code>#45</code> and <code>#67</code> are added, even if there are two shorts on the stack.</p>
+<pre>#1234 #4567 ADD  <span style='color:#888; float:right'>12  34  <b style='color:black'>ac</b>  00  00  00  00  00</span></pre>
 
 <p>The <b>short mode</b> consumes two bytes from the stack. In the case of jump opcodes, the short-mode operation jumps to an absolute address in memory. For the memory accessing opcodes, the short mode operation indicates the size of the data to read and write.</p>
+<pre>#1234 #4567 ADD2 <span style='color:#888; float:right'><b style='color:black'>57  9b</b>  00  00  00  00  00  00</span></pre>
+
+<p>The <b>keep mode</b> does not consume items from the stack, and pushes the result on top. The following example adds the two shorts together, but does not consume them.</p>
+<pre>#1234 #4567 ADD2k <span style='color:#888; float:right'>12  34  45  67  <b style='color:black'>57  9b</b>  00  00</span></pre>
 
 <p>The <b>return mode</b> makes it possible for any operator to operate on the return-stack directly. For that reason, there is no dedicated return opcode. For example, the JumpStash(<code class='op'>JSR</code>) operator pushes the program's address onto the return stash before jumping, to return to that address, the <code class='op'>JMP2r</code> opcode is used, where instead of using the address on the working-stack, it takes its address from the return-stack.</p>
+<pre>#1234 #4567 STH ROT STH ADDr STHr <span style='color:#888; float:right'>34  45  <b style='color:black'>79</b>  00  00  00  00  00</span></pre>
 
 <img src="../media/generic/uxn.team.png" width="250" style="margin:0 auto 30px">
 
