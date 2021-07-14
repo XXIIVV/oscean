@@ -1075,8 +1075,10 @@ parse_journal(FILE *fp, Block *block, Lexicon *lex, Journal *jou)
 		l->rune = line[6];
 		l->code = sint(line + 7, 3);
 		l->term = findterm(lex, strm(sstr(line, buf, 11, 21)));
-		if(!l->term)
+		if(!l->term) {
+			printf("[%s]", line);
 			return error("Unknown log term", line);
+		}
 		if(len >= 35)
 			l->pict = sint(line + 32, 3);
 		if(len >= 38)
