@@ -63,11 +63,9 @@ static int   cisp(char c) { return c == ' ' || c == '\t' || c == '\n' || c == '\
 static int   cial(char c) { return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'); } /* char is alpha */
 static int   cinu(char c) { return c >= '0' && c <= '9'; } /* char is num */
 static char  clca(char c) { return c >= 'A' && c <= 'Z' ? c + ('a' - 'A') : c; } /* char to lowercase */
-static char  cuca(char c) { return c >= 'a' && c <= 'z' ? c - ('a' - 'A') : c; } /* char to uppercase */
 static int   spad(char *s, char c) { int i = 0; while(s[i] && s[i] == c && s[++i]) { ; } return i; } /* string count padding */
 static int   slen(char *s) { int i = 0; while(s[i] && s[++i]) { ; } return i; } /* string length */
 static char *st__(char *s, char (*fn)(char)) { int i = 0; char c; while((c = s[i])) s[i++] = fn(c); return s; } /* util */
-static char *stuc(char *s) { return st__(s, cuca); } /* string to uppercase */
 static char *stlc(char *s) { return st__(s, clca); } /* string to lowercase */
 static char *scpy(char *src, char *dst, int len) { int i = 0; while((dst[i] = src[i]) && i < len - 2) i++; dst[i + 1] = '\0'; return dst; } /* string copy */
 static int   scmp(char *a, char *b) { int i = 0; while(a[i] == b[i]) if(!a[i++]) return 1; return 0; } /* string compare */
