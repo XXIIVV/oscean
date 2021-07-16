@@ -1,0 +1,74 @@
+<h2>Generics</h2>
+
+<p>Shorthands for logic and arithmetic opcodes.</p>
+
+<pre>
+%+  { ADD }  %-  { SUB }  %*  { MUL }  %/  { DIV }
+%<  { LTH }  %>  { GTH }  %=  { EQU }  %!  { NEQ }
+%++ { ADD2 } %-- { SUB2 } %** { MUL2 } %// { DIV2 }
+%<< { LTH2 } %>> { GTH2 } %== { EQU2 } %!! { NEQ2 }
+</pre>
+
+<p>Converting data sizes</p>
+
+<pre>
+%TOS { #00 SWP } 
+%TOB { SWP POP }
+</pre>
+
+<h2>ASCII</h2>
+
+<p>To test for character types.</p>
+
+<pre>
+%IS-SPACER   { #21 < } ( char -- flag )
+%IS-LABEL    { STHk #40 = STHr #26 = #0000 !! } ( char -- flag )
+%IS-ALPHA-LC { STHk #60 > STHr #7b < #0101 == } ( char -- flag )
+%IS-ALPHA-UC { STHk #40 > STHr #5b < #0101 == } ( char -- flag )
+%IS-ALPHA    { DUP IS-ALPHA-UC SWP IS-ALPHA-LC #0000 !! } ( char -- flag )
+%IS-NUMBER   { STHk #2f > STHr #3a < #0101 == } ( char -- flag )
+%IS-ALPHANUM { DUP IS-ALPHA SWP IS-NUMBER #0000 !! } ( char -- flag )
+</pre>
+
+<h2>Debugger</h2>
+
+<p>To print the hex values of data.</p>
+
+<pre>
+%DEBUG  { ;print-hex JSR2 #0a .Console/write DEO }
+%DEBUG2 { SWP ;print-hex JSR2 ;print-hex JSR2 #0a .Console/write DEO }
+</pre>
+
+<pre>
+@print-hex ( value -- )
+	
+	STHk #04 SFT ,&parse JSR .Console/write DEO
+	STHr #0f AND ,&parse JSR .Console/write DEO
+	RTN
+	&parse ( value -- char )
+		DUP #09 GTH ,&above JCN #30 ADD RTN &above #09 SUB #60 ADD RTN
+
+RTN
+</pre>
+
+<h2>Geometry</h2>
+
+<pre>
+%SIZE-TO-RECT {
+	STH2 STH2 OVR2 STH2r ++ OVR2 STH2r ++
+} ( x y w h -- x1 y1 x2 y2 )
+</pre>
+
+<h2>Binary Opcodes</h2>
+
+<pre>
+%ROL { DUP #07 SFT SWP #10 SFT + }
+%ROR { DUP #70 SFT SWP #01 SFT + }
+</pre>
+
+<h2>Signed Opcodes</h2>
+
+<pre>
+%LTS2 { #8000 ++ SWP2 #8000 ++ >> }
+%GTS2 { #8000 ++ SWP2 #8000 ++ << }
+</pre>
