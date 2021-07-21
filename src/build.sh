@@ -26,7 +26,7 @@ fi
 
 # Pack database
 cat database/journal1115.tbtl database/journal0610.tbtl database/journal0005.tbtl > database/journal.tbtl
-cat database/meta.ndtl database/audio.ndtl database/visual.ndtl database/research.ndtl database/about.ndtl > database/lexicon.ndtl
+cat database/meta.ndtl database/audio.ndtl database/visual.ndtl database/research.ndtl database/about.ndtl database/neauismetica.ndtl database/mirrors.ndtl > database/lexicon.ndtl
 
 # Run
 ./bin/oscean
