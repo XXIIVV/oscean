@@ -75,7 +75,7 @@
 <img src='../media/generic/uxn.ppu.jpg' style='float:right' width='240' />
 
 <p>The screen device is made of two overlayed screen buffers, displaying 2-bits graphics in up to 4 colors. Drawing pixels to the screen is done by writing values to the screen's <code>x*</code>, <code>y*</code> and <code>color</code> ports of the screen device.</p>
-<p>The screen can also draw 8x8 sprites by writing an <code>addr*</code> which points to the <a href='chr_format.html'>sprite data</a> in memory. The <b>color byte</b> defines the layer to draw on, the type of data to draw, and the colors to use. </p>
+<p>The screen can also draw 8x8 sprites by writing an <code>addr*</code> which points to the <a href='chr_format.html'>sprite data</a> in memory. The <b>sprite byte</b> defines the layer to draw on, the type of data to draw, and the colors to use. </p>
 
 <pre>
 * * M L            D C B A            
@@ -85,18 +85,34 @@
 +---------- Flipy  +---------- Blend  
 </pre>
 
-<p>Sprites are 8x8 tiles, stored in memory as sequences of 8 bytes for a 1bpp sprite, and 16 bytes for a 2bpp sprite. For example, the color byte <code>#21</code> will paint a 1bpp sprite on the background with the first system color, and <code>#52</code> will paint a 2bpp sprite on the foreground with the second system color. </p>
+<p>Sprites are 8x8 tiles, stored in memory as sequences of 8 bytes for a 1bpp sprite, and 16 bytes for a 2bpp sprite. For example, the color byte <code>#01</code> will paint a 1bpp sprite on the background with the first system color, and <code>#32</code> will paint a 2bpp sprite on the foreground with the second system color. </p>
 
 <table border='1'>
-	<tr><th colspan='3'>high nibble</th><th colspan='6'>low nibble</th></tr>
-	<tr><th>0</th><td>bg</td><td rowspan='2'>single pixel</td> <th>0</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg0 fg0'><circle cx="10" cy="10" r="8"/></svg></td><th>8</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg2 fg0'><circle cx="10" cy="10" r="8"/></svg></td></tr>
-	<tr><th>1</th><td>fg</td>                                  <th>1</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg0 fg1'><circle cx="10" cy="10" r="8"/></svg></td><th>9</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg2 fg1'><circle cx="10" cy="10" r="8"/></svg></td></tr>
-	<tr><th>2</th><td>bg</td><td rowspan='2'>1bpp sprite</td>  <th>2</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg0 fg2'><circle cx="10" cy="10" r="8"/></svg></td><th>a</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg2 fg2'><circle cx="10" cy="10" r="8"/></svg></td></tr>
-	<tr><th>3</th><td>fg</td>                                  <th>3</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg0 fg3'><circle cx="10" cy="10" r="8"/></svg></td><th>b</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg2 fg3'><circle cx="10" cy="10" r="8"/></svg></td></tr>
-	<tr><th>4</th><td>bg</td><td rowspan='2'>2bpp sprite</td>  <th>4</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg1 fg0'><circle cx="10" cy="10" r="8"/></svg></td><th>c</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg3 fg0'><circle cx="10" cy="10" r="8"/></svg></td></tr>
-	<tr><th>5</th><td>fg</td>                                  <th>5</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg1 fg1'><circle cx="10" cy="10" r="8"/></svg></td><th>d</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg3 fg1'><circle cx="10" cy="10" r="8"/></svg></td></tr>
-	<tr><th>6</th><td colspan="2" rowspan="2"></td>            <th>6</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg1 fg2'><circle cx="10" cy="10" r="8"/></svg></td><th>e</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg3 fg2'><circle cx="10" cy="10" r="8"/></svg></td></tr>
-	<tr><th>7</th>                                             <th>7</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg1 fg3'><circle cx="10" cy="10" r="8"/></svg></td><th>f</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg3 fg3'><circle cx="10" cy="10" r="8"/></svg></td></tr>
+	<tr><th colspan='8'>Sprite Blending</th></tr>
+	<tr>
+		<th>0</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg0 fg0'><circle cx="10" cy="10" r="8"/></svg></td>
+		<th>4</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg1 fg0'><circle cx="10" cy="10" r="8"/></svg></td>
+		<th>8</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg2 fg0'><circle cx="10" cy="10" r="8"/></svg></td>
+		<th>c</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg3 fg0'><circle cx="10" cy="10" r="8"/></svg></td>
+	</tr>
+	<tr>
+		<th>1</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg0 fg1'><circle cx="10" cy="10" r="8"/></svg></td>
+		<th>5</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite fg1' style='background:#ccc'><circle cx="10" cy="10" r="8"/></svg></td>
+		<th>9</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg2 fg1'><circle cx="10" cy="10" r="8"/></svg></td><th>d</th>
+		<td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg3 fg1'><circle cx="10" cy="10" r="8"/></svg></td>
+	</tr>
+	<tr>
+		<th>2</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg0 fg2'><circle cx="10" cy="10" r="8"/></svg></td>
+		<th>6</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg1 fg2'><circle cx="10" cy="10" r="8"/></svg></td>
+		<th>a</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite fg2' style='background:#ccc'><circle cx="10" cy="10" r="8"/></svg></td>
+		<th>e</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg3 fg2'><circle cx="10" cy="10" r="8"/></svg></td>
+	</tr>
+	<tr>
+		<th>3</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg0 fg3'><circle cx="10" cy="10" r="8"/></svg></td>
+		<th>7</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg1 fg3'><circle cx="10" cy="10" r="8"/></svg></td>
+		<th>b</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg2 fg3'><circle cx="10" cy="10" r="8"/></svg></td><th>f</th>
+		<td><svg xmlns="http://www.w3.org/2000/svg" class='sprite fg3' style='background:#ccc'><circle cx="10" cy="10" r="8"/></svg></td>
+	</tr>
 </table>
 
 <p>Here's a <a href='uxntal.html'>Uxntal</a> routine to draw a 1-bit sprite at position <code>20,30</code>.</p>
@@ -172,4 +188,4 @@ svg.sprite { width:20px; height:20px; margin-bottom:0px }
 .fg3 { fill:#ff0000; }
 </style>
 
-<img src='../media/identity/uxn64.png' /><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/varvara.htm' target='_blank'>edit</a> to <a href='../src/inc/html/varvara.htm'>varvara.htm</a>(174 lines)</figcaption></figure><ul><li><a href='https://git.sr.ht/~rabbits/uxn/' target='_blank'>Uxn on Desktop</a></li><li><a href='https://github.com/aduros/webuxn' target='_blank'>Uxn on Browser</a></li><li><a href='https://git.badd10de.dev/uxngba/' target='_blank'>Uxn on Gameboy Advance</a></li><li><a href='https://github.com/asiekierka/uxnds' target='_blank'>Uxn on Nintendo DS</a></li><li><a href='https://github.com/ivodopiviz/uxnvita' target='_blank'>Uxn on PS Vita</a></li><li><a href='https://github.com/csboling/teluxn' target='_blank'>Uxn on Teletype</a></li><li><a href='https://git.sr.ht/~alderwick/pico-uxn-sharpdisplay' target='_blank'>Uxn on Pico Pi</a></li><li><a href='https://github.com/max22-/uxn-esp32' target='_blank'>Uxn on Esp32</a></li></ul><p><i>incoming(3)</i>: <a href='computer.html'>computer</a> <a href='ayatori.html'>ayatori</a> <a href='shim.html'>shim</a> </p><p><i>Last update on <a href='tracker.html'>15M13</a>, edited 12 times. +37/66fh <b></b></i> <code style='float:right; font-size:80%'>-----|</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
+<img src='../media/identity/uxn64.png' /><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/varvara.htm' target='_blank'>edit</a> to <a href='../src/inc/html/varvara.htm'>varvara.htm</a>(190 lines)</figcaption></figure><ul><li><a href='https://git.sr.ht/~rabbits/uxn/' target='_blank'>Uxn on Desktop</a></li><li><a href='https://github.com/aduros/webuxn' target='_blank'>Uxn on Browser</a></li><li><a href='https://git.badd10de.dev/uxngba/' target='_blank'>Uxn on Gameboy Advance</a></li><li><a href='https://github.com/asiekierka/uxnds' target='_blank'>Uxn on Nintendo DS</a></li><li><a href='https://github.com/ivodopiviz/uxnvita' target='_blank'>Uxn on PS Vita</a></li><li><a href='https://github.com/csboling/teluxn' target='_blank'>Uxn on Teletype</a></li><li><a href='https://git.sr.ht/~alderwick/pico-uxn-sharpdisplay' target='_blank'>Uxn on Pico Pi</a></li><li><a href='https://github.com/max22-/uxn-esp32' target='_blank'>Uxn on Esp32</a></li></ul><p><i>incoming(3)</i>: <a href='computer.html'>computer</a> <a href='ayatori.html'>ayatori</a> <a href='shim.html'>shim</a> </p><p><i>Last update on <a href='tracker.html'>15M13</a>, edited 12 times. +37/66fh <b></b></i> <code style='float:right; font-size:80%'>-----|</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
