@@ -16,7 +16,8 @@
 	<tr><th rowspan='4'><code>20</code></th><th rowspan='4'><a href='#screen'>screen</a></th><td class='bg2'>vector*</td><td>x*</td><td rowspan="4">The screen device's vector is triggered 60 times per second, it is typically used to update pixels on the screen.</td></tr>
 	<tr><td>width*</td><td>y*</td></tr>
 	<tr><td>height*</td><td>addr*</td></tr>
-	<tr><td></td><td class='bg1'>color</td></tr>
+	<tr><td colspan="2"></td><td class='bg1'>pixel</td></tr>
+	<tr><td class='bg1'>sprite</td></tr>
 
 	<tr><th rowspan='5'><code>30</code><br /><code>40</code><br /><code>50</code><br /><code>60</code></th><th rowspan='5'><a href='#audio'>audio</a></th><td>vector*</td><td>adsr*</td><td rowspan="5">The audio device vector is currently unused.</td></tr>
 	<tr><td>position*</td><td>length*</td></tr>
@@ -74,18 +75,17 @@
 
 <img src='../media/generic/uxn.ppu.jpg' style='float:right' width='240' />
 
-<p>The screen device is made of two overlayed screen buffers, displaying 2-bits graphics in up to 4 colors. Drawing pixels to the screen is done by writing values to the screen's <code>x*</code>, <code>y*</code> and <code>color</code> ports of the screen device.</p>
-<p>The screen can also draw 8x8 sprites by writing an <code>addr*</code> which points to the <a href='chr_format.html'>sprite data</a> in memory. The <b>sprite byte</b> defines the layer to draw on, the type of data to draw, and the colors to use. </p>
+<p>The screen device is made of two overlayed screen buffers, displaying 2-bits graphics in up to 4 colors. Drawing pixels to the screen is done by writing values to the screen's <code>x*</code>, <code>y*</code> and <code>pixel</code> ports of the screen device.</p>
 
 <pre>
-* * M L            D C B A            
-| | | +---- Layer  | | | +---- Blend   
-| | +------ Mode   | | +------ Blend   
-| +-------- Flipx  | +-------- Blend  
-+---------- Flipy  +---------- Blend  
+M L * *            D C B A            
+| | | +---- Flipx  | | | +---- Blend   
+| | +------ Flipy  | | +------ Blend   
+| +-------- Layer  | +-------- Blend  
++---------- Mode   +---------- Blend  
 </pre>
 
-<p>Sprites are 8x8 tiles, stored in memory as sequences of 8 bytes for a 1bpp sprite, and 16 bytes for a 2bpp sprite. For example, the color byte <code>#01</code> will paint a 1bpp sprite on the background with the first system color, and <code>#32</code> will paint a 2bpp sprite on the foreground with the second system color. </p>
+<p>The screen can also draw 8x8 sprites by writing an <code>addr*</code> which points to the <a href='chr_format.html'>sprite data</a> in memory. The <b>sprite byte</b> defines the layer to draw on, the type of data to draw, and the colors to use. </p>
 
 <table border='1'>
 	<tr><th colspan='8'>Sprite Blending</th></tr>
@@ -115,6 +115,12 @@
 	</tr>
 </table>
 
+<p>Sprites are 8x8 tiles, stored in memory as sequences of 8 bytes for a 1bpp sprite, and 16 bytes for a 2bpp sprite. For example, the color byte <code>#01</code> will paint a 1bpp sprite on the background with the first system color, and <code>#32</code> will paint a 2bpp sprite on the foreground with the second system color. </p>
+
+<p>The permutations of the sprite byte are as follow:</p>
+
+<img src='../media/generic/varvara.blending.png' style='margin:0px auto 15px; border:3px solid black; padding:15px' />
+
 <p>Here's a <a href='uxntal.html'>Uxntal</a> routine to draw a 1-bit sprite at position <code>20,30</code>.</p>
 
 <pre>
@@ -122,7 +128,7 @@
 	#0020 #28 DEO2
 	#0030 #2a DEO2
 	;sprite #2c DEO2
-	#21 #2e DEO
+	#01 #2f DEO
 RTN
 
 @sprite
@@ -188,4 +194,4 @@ svg.sprite { width:20px; height:20px; margin-bottom:0px }
 .fg3 { fill:#ff0000; }
 </style>
 
-<img src='../media/identity/uxn64.png' /><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/varvara.htm' target='_blank'>edit</a> to <a href='../src/inc/html/varvara.htm'>varvara.htm</a>(190 lines)</figcaption></figure><p>Redirected to <a href='varvara.html'>varvara</a>, from <b>uxnemu</b>.</p><ul><li><a href='https://git.sr.ht/~rabbits/uxn/' target='_blank'>Uxn on Desktop</a></li><li><a href='https://github.com/aduros/webuxn' target='_blank'>Uxn on Browser</a></li><li><a href='https://git.badd10de.dev/uxngba/' target='_blank'>Uxn on Gameboy Advance</a></li><li><a href='https://github.com/asiekierka/uxnds' target='_blank'>Uxn on Nintendo DS</a></li><li><a href='https://github.com/ivodopiviz/uxnvita' target='_blank'>Uxn on PS Vita</a></li><li><a href='https://github.com/csboling/teluxn' target='_blank'>Uxn on Teletype</a></li><li><a href='https://git.sr.ht/~alderwick/pico-uxn-sharpdisplay' target='_blank'>Uxn on Pico Pi</a></li><li><a href='https://github.com/max22-/uxn-esp32' target='_blank'>Uxn on Esp32</a></li></ul><p><i>incoming(3)</i>: <a href='computer.html'>computer</a> <a href='ayatori.html'>ayatori</a> <a href='shim.html'>shim</a> </p><p><i>Last update on <a href='tracker.html'>15M13</a>, edited 12 times. +37/66fh <b></b></i> <code style='float:right; font-size:80%'>-----|</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
+<img src='../media/identity/uxn64.png' /><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/varvara.htm' target='_blank'>edit</a> to <a href='../src/inc/html/varvara.htm'>varvara.htm</a>(196 lines)</figcaption></figure><p>Redirected to <a href='varvara.html'>varvara</a>, from <b>uxnemu</b>.</p><ul><li><a href='https://git.sr.ht/~rabbits/uxn/' target='_blank'>Uxn on Desktop</a></li><li><a href='https://github.com/aduros/webuxn' target='_blank'>Uxn on Browser</a></li><li><a href='https://git.badd10de.dev/uxngba/' target='_blank'>Uxn on Gameboy Advance</a></li><li><a href='https://github.com/asiekierka/uxnds' target='_blank'>Uxn on Nintendo DS</a></li><li><a href='https://github.com/ivodopiviz/uxnvita' target='_blank'>Uxn on PS Vita</a></li><li><a href='https://github.com/csboling/teluxn' target='_blank'>Uxn on Teletype</a></li><li><a href='https://git.sr.ht/~alderwick/pico-uxn-sharpdisplay' target='_blank'>Uxn on Pico Pi</a></li><li><a href='https://github.com/max22-/uxn-esp32' target='_blank'>Uxn on Esp32</a></li></ul><p><i>incoming(3)</i>: <a href='computer.html'>computer</a> <a href='ayatori.html'>ayatori</a> <a href='shim.html'>shim</a> </p><p><i>Last update on <a href='tracker.html'>15M13</a>, edited 12 times. +37/66fh <b></b></i> <code style='float:right; font-size:80%'>-----|</code></p></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
