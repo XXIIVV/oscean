@@ -636,7 +636,7 @@ fpevents(FILE *f, Journal *jou, Term *t)
 		Log *l = &jou->logs[i];
 		if(l->rune != '+')
 			continue;
-		if(l->term != t && l->term->parent != t)
+		if(l->term != t && l->term->parent != t && l->term->parent->parent != t)
 			continue;
 		fprintf(f, "<li>%s &mdash; %s</li>", l->date, l->name);
 	}
