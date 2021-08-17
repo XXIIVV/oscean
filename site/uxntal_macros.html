@@ -3,17 +3,32 @@
 <p>Shorthands for logic and arithmetic opcodes.</p>
 
 <pre>
-%+  { ADD }  %-  { SUB }  %*  { MUL }  %/  { DIV }
+%+  { ADD }  %-  { SUB } 
 %<  { LTH }  %>  { GTH }  %=  { EQU }  %!  { NEQ }
-%++ { ADD2 } %-- { SUB2 } %** { MUL2 } %// { DIV2 }
+%++ { ADD2 } %-- { SUB2 } 
 %<< { LTH2 } %>> { GTH2 } %== { EQU2 } %!! { NEQ2 }
 </pre>
 
-<p>Converting data sizes</p>
+<h3>Fast Arithmetic</h3>
 
 <pre>
-%TOS { #00 SWP } 
-%TOB { SWP POP }
+%2*  { #10 SFT } %2/  { #01 SFT }
+%4*  { #20 SFT } %4/  { #02 SFT }
+%8*  { #30 SFT } %8/  { #03 SFT }
+%10* { #40 SFT } %10/ { #04 SFT }
+%20* { #50 SFT } %20/ { #05 SFT }
+
+%2**  { #10 SFT2 } %2//  { #01 SFT2 }
+%4**  { #20 SFT2 } %4//  { #02 SFT2 }
+%8**  { #30 SFT2 } %8//  { #03 SFT2 }
+%10** { #40 SFT2 } %10// { #04 SFT2 }
+%20** { #50 SFT2 } %20// { #05 SFT2 }
+
+%2MOD    { #01 AND }
+%4MOD    { #03 AND }
+%8MOD    { #07 AND }
+%8MOD2   { #0007 AND2 }
+%100MOD2 { #00ff AND2 }
 </pre>
 
 <h2>ASCII</h2>
@@ -79,4 +94,76 @@ RTN
 <pre>
 %MOD  { DIVk MUL SUB }
 %MOD2 { DIV2k MUL2 SUB2 }
-</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/uxntal_macros.htm' target='_blank'>edit</a> to <a href='../src/inc/html/uxntal_macros.htm'>uxntal_macros.htm</a>(81 lines)</figcaption></figure></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
+</pre>
+
+<h2>Multiplication</h2>
+
+<p>By Alderwick</p>
+
+<pre>
+(
+    multiplying by different methods
+    each routine is tested with all possible inputs
+    00 00 ... ff ff
+    and the number of while(u->ram.ptr){} loops is counted
+    to obtain the average number of cycles per calculation
+)
+
+@multiply_by_lookup
+    ( all inputs -> outputs correct )
+    ( average cycles 26 )
+    SUBk ( a b a-b )
+    LIT2r :&table LITr 00 ( a b a-b / table* 00 )
+    STH ADD2kr LDAr ( a b / table* 00 a-b (a-b)^2/2 )
+    ANDk #01 AND ( a b sum / table* 00 a-b (a-b)^2/2 )
+    STHr SUB POPr ( a b sum / table* 00 )
+    SWP STH ADD2kr LDAr ( a sum / table* 00 b b^2/2 )
+    STHr ADD POPr ( a sum / table* 00 )
+    SWP STH ADD2r LDAr ( sum / a^2/2 )
+    STHr ADD
+RTN
+
+    &table
+    0000 0204 080c 1218 2028 323c 4854 6270 8090 a2b4 c8dc f208 2038 526c 88a4 c2e0
+    0020 4264 88ac d2f8 2048 729c c8f4 2250 80b0 e214 487c b2e8 2058 92cc 0844 82c0
+    0040 82c4 084c 92d8 2068 b2fc 4894 e230 80d0 2274 c81c 72c8 2078 d22c 88e4 42a0
+    0060 c224 88ec 52b8 2088 f25c c834 a210 80f0 62d4 48bc 32a8 2098 128c 0884 0280
+    0080 0284 088c 1298 20a8 32bc 48d4 62f0 8010 a234 c85c f288 20b8 52ec 8824 c260
+    00a0 42e4 882c d278 20c8 721c c874 22d0 8030 e294 48fc b268 20d8 924c 08c4 8240
+    00c0 8244 08cc 9258 20e8 b27c 4814 e2b0 8050 22f4 c89c 7248 20f8 d2ac 8864 4220
+    00e0 c2a4 886c 5238 2008 f2dc c8b4 a290 8070 6254 483c 3228 2018 120c 0804 0200
+
+@multiply_by_shifting
+    ( all inputs -> outputs correct )
+    ( average cycles 102.199 )
+    LTHk JMP SWP
+    LITr 00
+    STH ( a / sum b )
+    &loop
+    DUP #01 AND ,&accumulate JCN
+    &rest
+    #01 SFT LITr 10 SFTr ( a>>1 / sum b<<1 )
+    DUP ,&loop JCN
+    POP POPr STHr ( sum )
+RTN
+    &accumulate
+    STHkr ADDr STH ( a / sum+b b )
+    ,&rest JMP
+
+@multiply_by_adding
+    ( fails on N * 0 and N * 1 )
+    ( average cycles on working results 1146.47 )
+    SWP DUP STH2
+    #01
+    &loopz
+        STH2r ADDk NIP STH2
+        #01 ADD GTHk ,&loopz JCN
+    POP2 STHr POPr
+RTN
+
+@native_multiply
+    ( all inputs -> outputs correct )
+    ( average cycles 2 )
+    MUL
+RTN
+</pre><figcaption>&mdash; Submit an <a href='https://github.com/XXIIVV/oscean/blob/master/src/inc/html/uxntal_macros.htm' target='_blank'>edit</a> to <a href='../src/inc/html/uxntal_macros.htm'>uxntal_macros.htm</a>(168 lines)</figcaption></figure></main><footer><a href='https://creativecommons.org/licenses/by-nc-sa/4.0'><img src='../media/icon/cc.svg' width='30'/></a><a href='http://webring.xxiivv.com/'><img src='../media/icon/rotonde.svg' width='30'/></a><a href='https://merveilles.town/@neauoire'><img src='../media/icon/merveilles.svg' width='30'/></a><a href='https://github.com/neauoire'><img src='../media/icon/github.png' alt='github' width='30'/></a><span><a href='devine_lu_linvega.html'>Devine Lu Linvega</a> &copy; 2021 &mdash; <a href='about.html'>BY-NC-SA 4.0</a></span></footer></body></html>
