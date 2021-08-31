@@ -78,7 +78,7 @@ static int   ssin(char *s, char *ss) { int a = 0, b = 0; while(s[a]) { if(s[a] =
 static char *strm(char *s) { char *end; while(cisp(*s)) s++; if(*s == 0) return s; end = s + slen(s) - 1; while(end > s && cisp(*end)) end--; end[1] = '\0'; return s; }
 static int   surl(char *s) { return ssin(s, "://") >= 0 || ssin(s, "../") >= 0; } /* string is url */
 static char *sstr(char *src, char *dst, int from, int to) { int i; char *a = (char *)src + from, *b = (char *)dst; for(i = 0; i < to; i++) b[i] = a[i]; dst[to] = '\0'; return dst; }
-static int   afnd(char *src[], int len, char *val) { int i; for(i = 0; i < len; i++) if(scmp(src[i], val)) return i; return -1; }
+static int   afnd(char *src[], int len, char *val) { int i; for(i = 0; i < len; i++) if(scmp(src[i], val, 64)) return i; return -1; }
 static char *ccat(char *dst, char c) { int len = slen(dst); dst[len] = c; dst[len + 1] = '\0'; return dst; }
 
 /* clang-format on */
@@ -127,7 +127,7 @@ findlist(Glossary *glo, char *name)
 {
 	int i;
 	for(i = 0; i < glo->len; ++i)
-		if(scmp(name, glo->lists[i].name))
+		if(scmp(name, glo->lists[i].name, 64))
 			return &glo->lists[i];
 	return NULL;
 }
@@ -155,7 +155,7 @@ findterm(Lexicon *lex, char *name)
 	int i;
 	scsw(stlc(name), '_', ' ');
 	for(i = 0; i < lex->len; ++i)
-		if(scmp(name, lex->terms[i].name))
+		if(scmp(name, lex->terms[i].name, 64))
 			return &lex->terms[i];
 	return NULL;
 }
@@ -163,7 +163,7 @@ findterm(Lexicon *lex, char *name)
 static char *
 statusterm(Term *t)
 {
-	if(t->type && scmp(t->type, "alias")) return "alias";
+	if(t->type && scmp(t->type, "alias", 64)) return "alias";
 	if(t->body_len < 1) return "stub";
 	if(t->incoming_len < 1) return "orphan";
 	if(t->outgoing_len < 1) return "deadend";
@@ -453,21 +453,21 @@ fpmodule(FILE *f, Glossary *glo, char *s)
 	char cmd[256], target[256];
 	sstr(s, cmd, 1, split - 1);
 	sstr(s, target, split + 1, slen(s) - split);
-	if(scmp(cmd, "itchio"))
+	if(scmp(cmd, "itchio", 64))
 		fprintf(f, "<iframe frameborder='0' src='https://itch.io/embed/%s?link_color=000000' width='624' height='167'></iframe>", target);
-	else if(scmp(cmd, "bandcamp"))
+	else if(scmp(cmd, "bandcamp", 64))
 		fprintf(f, "<iframe style='border: 0; width: 624px; height: 274px;' src='https://bandcamp.com/EmbeddedPlayer/album=%s/size=large/bgcol=ffffff/linkcol=333333/artwork=small' seamless></iframe>", target);
-	else if(scmp(cmd, "youtube"))
+	else if(scmp(cmd, "youtube", 64))
 		fprintf(f, "<iframe width='624' height='380' src='https://www.youtube.com/embed/%s?rel=0' style='max-width:700px' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe>", target);
-	else if(scmp(cmd, "redirect"))
+	else if(scmp(cmd, "redirect", 64))
 		fprintf(f, "<meta http-equiv='refresh' content='2; url=%s.html'/><p>In a hurry? Travel to <a href='%s.html'>%s</a>.</p>", target, target, target);
-	else if(scmp(cmd, "list"))
+	else if(scmp(cmd, "list", 64))
 		fplist(f, glo, target);
-	else if(scmp(cmd, "text"))
+	else if(scmp(cmd, "text", 64))
 		fpinclude(f, target, 1, 1);
-	else if(scmp(cmd, "html"))
+	else if(scmp(cmd, "html", 64))
 		fpinclude(f, target, 0, 1);
-	else if(scmp(cmd, "img")) {
+	else if(scmp(cmd, "img", 64)) {
 		int split2 = scin(target, ' ');
 		if(split2 > 0) {
 			char param[256], value[256];
@@ -531,9 +531,9 @@ fpnavsub(FILE *f, Term *t, Term *target)
 		Term *tc = t->children[i];
 		if(tc->name == t->name)
 			continue; /* Paradox */
-		if(tc->type && scmp(tc->type, "hidden"))
+		if(tc->type && scmp(tc->type, "hidden", 64))
 			continue;
-		if(tc->type && scmp(tc->type, "alias"))
+		if(tc->type && scmp(tc->type, "alias", 64))
 			continue;
 		if(tc->name == target->name)
 			fprintf(f, "<li><a href='%s.html'>%s/</a></li>", tc->filename, tc->name);
@@ -575,7 +575,7 @@ fpportal(FILE *f, Glossary *glo, Lexicon *lex, Journal *jou, Term *t, int pict, 
 	int i;
 	for(i = 0; i < t->children_len; ++i) {
 		Term *tc = t->children[i];
-		if(tc->type && scmp(tc->type, "hidden"))
+		if(tc->type && scmp(tc->type, "hidden", 64))
 			continue;
 		if(pict) {
 			Log *l = finddiary(jou, tc, 1);
@@ -808,7 +808,7 @@ fpindexsub(FILE *f, Term *t, int depth)
 		return;
 	fputs("<ul>", f);
 	for(i = 0; i < t->children_len; ++i)
-		if(!scmp(t->children[i]->name, t->name))
+		if(!scmp(t->children[i]->name, t->name, 64))
 			fpindexsub(f, t->children[i], depth++);
 	fputs("</ul>", f);
 }
@@ -835,7 +835,7 @@ fphtml(FILE *f, Glossary *glo, Lexicon *lex, Term *t, Journal *jou)
 {
 	Term *alias = NULL;
 	Log *diary = finddiary(jou, t, 0);
-	if(t->type && scmp(t->type, "alias"))
+	if(t->type && scmp(t->type, "alias", 64))
 		alias = findterm(lex, t->host);
 	fputs("<!DOCTYPE html><html lang='en'>", f);
 	fputs("<head>", f);
@@ -869,30 +869,30 @@ fphtml(FILE *f, Glossary *glo, Lexicon *lex, Term *t, Journal *jou)
 	fpbody(f, glo, lex, alias ? alias : t);
 	fpinclude(f, alias ? alias->filename : t->filename, 0, 0);
 	if(t->type) {
-		if(scmp(t->type, "pict_portal"))
+		if(scmp(t->type, "pict_portal", 64))
 			fpportal(f, glo, lex, jou, alias ? alias : t, 1, 0);
-		else if(scmp(t->type, "text_portal"))
+		else if(scmp(t->type, "text_portal", 64))
 			fpportal(f, glo, lex, jou, alias ? alias : t, 0, 1);
-		else if(scmp(t->type, "portal"))
+		else if(scmp(t->type, "portal", 64))
 			fpportal(f, glo, lex, jou, alias ? alias : t, 1, 1);
-		else if(scmp(t->type, "album"))
+		else if(scmp(t->type, "album", 64))
 			fpalbum(f, jou, alias ? alias : t);
-		else if(scmp(t->type, "alias"))
+		else if(scmp(t->type, "alias", 64))
 			fprintf(f, "<p>Redirected to <a href='%s.html'>%s</a>, from <b>%s</b>.</p>", alias->filename, alias->name, t->name);
-		else if(!scmp(t->type, "hidden"))
+		else if(!scmp(t->type, "hidden", 64))
 			error("Unknown template", t->type);
 	}
-	if(scmp(t->name, "now"))
+	if(scmp(t->name, "now", 64))
 		fpnow(f, lex, jou);
-	else if(scmp(t->name, "home"))
+	else if(scmp(t->name, "home", 64))
 		fphome(f, jou);
-	else if(scmp(t->name, "calendar"))
+	else if(scmp(t->name, "calendar", 64))
 		fpcalendar(f, jou);
-	else if(scmp(t->name, "tracker"))
+	else if(scmp(t->name, "tracker", 64))
 		fptracker(f, jou);
-	else if(scmp(t->name, "journal"))
+	else if(scmp(t->name, "journal", 64))
 		fpjournal(f, jou);
-	else if(scmp(t->name, "index"))
+	else if(scmp(t->name, "index", 64))
 		fpindex(f, lex, jou);
 	fplinks(f, alias ? alias : t);
 	fpincoming(f, alias ? alias : t);
@@ -1195,7 +1195,7 @@ check(Glossary *glo, Journal *jou)
 		Log *l = &jou->logs[i];
 		if(!l->pict)
 			continue;
-		if(l->term->type && scmp(l->term->type, "album"))
+		if(l->term->type && scmp(l->term->type, "album", 64))
 			continue;
 		if(finddiary(jou, l->term, 0) != l)
 			printf("Warning: Pict #%d(%s) is invisible\n", l->pict, l->term->name);
