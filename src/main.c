@@ -405,12 +405,12 @@ fplist(FILE *f, Glossary *glo, char *target)
 }
 
 static int
-fpinclude(FILE *f, char *target, int text, int req)
+fpinclude(FILE *f, char *target, char *wrapper, int req)
 {
 	int lines = 0;
 	char c;
-	char *folder = text ? "inc/text/" : "inc/html/";
-	char *ext = text ? ".txt" : ".htm";
+	char *folder = !scmp(wrapper, "div", 4) ? "inc/text/" : "inc/html/";
+	char *ext = !scmp(wrapper, "div", 4) ? ".txt" : ".htm";
 	FILE *fp = getfile(folder, target, ext, "r");
 	if(!fp) {
 		if(req)
@@ -419,10 +419,11 @@ fpinclude(FILE *f, char *target, int text, int req)
 			return 0;
 	}
 	fputs("<figure>", f);
-	if(text)
-		fputs("<article>", f);
+	fprintf(f, "<%s>", wrapper);
 	while((c = fgetc(fp)) != EOF) {
-		if(text) {
+		if(scmp(wrapper, "div", 4))
+			fputc(c, f);
+		else {
 			if(c == '<')
 				fputs("&lt;", f);
 			else if(c == '>')
@@ -433,14 +434,12 @@ fpinclude(FILE *f, char *target, int text, int req)
 				fputs("<br />", f);
 			else
 				fputc(c, f);
-		} else
-			fputc(c, f);
+		}
 		if(c == '\n')
 			lines++;
 	}
 	fclose(fp);
-	if(text)
-		fputs("</article>", f);
+	fprintf(f, "</%s>", wrapper);
 	fprintf(f, "<figcaption>&mdash; Submit an <a href='" REPOPATH "%s%s%s' target='_blank'>edit</a> to <a href='../src/%s%s%s'>%s%s</a>(%d lines)</figcaption>", folder, target, ext, folder, target, ext, target, ext, lines);
 	fputs("</figure>", f);
 	return 1;
@@ -463,11 +462,13 @@ fpmodule(FILE *f, Glossary *glo, char *s)
 		fprintf(f, "<meta http-equiv='refresh' content='2; url=%s.html'/><p>In a hurry? Travel to <a href='%s.html'>%s</a>.</p>", target, target, target);
 	else if(scmp(cmd, "list", 64))
 		fplist(f, glo, target);
-	else if(scmp(cmd, "text", 64))
-		fpinclude(f, target, 1, 1);
-	else if(scmp(cmd, "html", 64))
-		fpinclude(f, target, 0, 1);
-	else if(scmp(cmd, "img", 64)) {
+	else if(scmp(cmd, "text", 5))
+		fpinclude(f, target, "article", 1);
+	else if(scmp(cmd, "code", 5))
+		fpinclude(f, target, "pre", 1);
+	else if(scmp(cmd, "html", 5))
+		fpinclude(f, target, "div", 1);
+	else if(scmp(cmd, "img", 4)) {
 		int split2 = scin(target, ' ');
 		if(split2 > 0) {
 			char param[256], value[256];
@@ -867,7 +868,7 @@ fphtml(FILE *f, Glossary *glo, Lexicon *lex, Term *t, Journal *jou)
 	fputs("<main>", f);
 	fpbanner(f, jou, alias ? alias : t, 1);
 	fpbody(f, glo, lex, alias ? alias : t);
-	fpinclude(f, alias ? alias->filename : t->filename, 0, 0);
+	fpinclude(f, alias ? alias->filename : t->filename, "div", 0);
 	if(t->type) {
 		if(scmp(t->type, "pict_portal", 64))
 			fpportal(f, glo, lex, jou, alias ? alias : t, 1, 0);
