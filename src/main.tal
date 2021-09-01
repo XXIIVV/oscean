@@ -1,0 +1,150 @@
+( a blank file )
+
+%+  { ADD } %-   { SUB }              %/   { DIV }  
+%<  { LTH } %>   { GTH }  %=  { EQU } %!   { NEQ } 
+%++ { ADD2 } %-- { SUB2 }              %// { DIV2 } 
+%<< { LTH2 } %>> { GTH2 } %== { EQU2 } %!! { NEQ2 }  
+
+%DEBUG  { ;print-hex JSR2 #0a .Console/write DEO }
+%DEBUG2 { SWP ;print-hex JSR2 ;print-hex JSR2 #0a .Console/write DEO }
+
+%RTN { JMP2r }
+%FILE { #4000 }
+%TREE { #8000 }
+
+( devices )
+
+|00 @System     [ &vector $2 &wst      $1 &rst    $1 &pad   $4 &r      $2 &g      $2 &b    $2 &debug  $1 &halt $1 ]
+|10 @Console    [ &vector $2 &read     $1 &pad    $5 &write $1 &error  $1 ]
+|a0 @File       [ &vector $2 &success  $2 &offset-hs $2 &offset-ls $2 &name   $2 &length $2 &load $2 &save   $2 ]
+|b0 @DateTime   [ &year   $2 &month    $1 &day    $1 &hour  $1 &minute $1 &second $1 &dotw $1 &doty   $2 &isdst $1 ]
+
+( variables )
+
+|0000
+
+( program )
+
+|0100 ( -> )
+
+	( create file )
+	#00 FILE STA
+
+	( create body )
+	;html-tag ;append-open-tag JSR2
+		;body-tag ;append-open-tag JSR2
+			;header-txt ;h1-tag ;append-wrap-text JSR2
+			;hello-uxn-txt ;p-tag ;append-wrap-text JSR2
+		;body-tag ;append-close-tag JSR2
+	;html-tag ;append-close-tag JSR2
+
+	( save file )
+	FILE ;slen JSR2 .File/length DEO2
+	;index-path     .File/name DEO2
+	FILE            .File/save DEO2
+
+	( end )
+	#01 .System/halt DEO
+	
+BRK
+
+@append-wrap-text ( string* tag* -- )
+
+	STH2k ;append-open-tag JSR2
+	;append-text JSR2
+	STH2r ;append-close-tag JSR2
+
+RTN
+
+@append-text ( string* -- )
+
+	FILE ;scat JSR2
+
+RTN
+
+@append-open-tag ( tag* -- )
+
+	STH2
+	LIT '< FILE ;ccat JSR2
+	STH2r FILE ;scat JSR2
+	LIT '> FILE ;ccat JSR2
+
+RTN
+
+@append-close-tag ( tag* -- )
+
+	STH2
+	LIT '< FILE ;ccat JSR2
+	LIT '/ FILE ;ccat JSR2
+	STH2r FILE ;scat JSR2
+	LIT '> FILE ;ccat JSR2
+
+RTN
+
+@ccat ( char dst* -- )
+	
+	#0001 --
+	&while
+		INC2 LDAk ,&while JCN
+	STH2k STA
+	#00 STH2r INC2 STA
+
+RTN
+
+@scat ( src* dst* -- )
+
+	DUP2 ,slen JSR ++ ,scpy JSR
+
+RTN
+
+@scpy ( src* dst* -- )
+
+	STH2 
+	DUP2
+	&while
+		SWP2k -- STH2kr ADD2 STH2
+		LDAk STH2r STA
+		INC2 LDAk ,&while JCN
+	SWP2 -- STH2r ADD2 
+	#00 ROT ROT STA
+
+RTN
+
+@slen ( addr* -- length* )
+
+	#0001 -- DUP2
+	&while
+		INC2 LDAk ,&while JCN
+	SWP2 --
+	#0001 --
+
+RTN
+
+@html-tag "html $1
+@body-tag "body $1
+@h1-tag "h1 $1
+@header-txt "header $1
+@p-tag "p $1
+@hello-uxn-txt "Hello 20 "Uxn! $1
+@index-path "index.html $1
+
+@print-hex ( value* -- )
+	
+	STHk #04 SFT ,&parse JSR .Console/write DEO
+	STHr #0f AND ,&parse JSR .Console/write DEO
+	RTN
+	&parse ( value -- char )
+		DUP #09 GTH ,&above JCN #30 ADD RTN &above #09 SUB #60 ADD RTN
+
+RTN
+
+@print-string ( addr* -- )
+	
+	#0001 --
+	&loop
+		INC2 LDAk .Console/write DEO 
+		LDAk ,&loop JCN
+	POP2
+	( linebreak ) #0a .Console/write DEO 
+
+RTN
