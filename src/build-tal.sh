@@ -1,4 +1,4 @@
 #!/bin/sh -e
 
-uxnasm main.tal oscean.rom
-uxncli oscean.rom
+uxnasm main.tal bin/oscean.rom
+uxncli bin/oscean.rom

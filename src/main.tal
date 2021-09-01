@@ -12,6 +12,10 @@
 %FILE { #4000 }
 %TREE { #8000 }
 
+%^< { ;append-open-tag JSR2 }
+%^> { ;append-close-tag JSR2 }
+%^<> { ;append-wrap-text JSR2 }
+
 ( devices )
 
 |00 @System     [ &vector $2 &wst      $1 &rst    $1 &pad   $4 &r      $2 &g      $2 &b    $2 &debug  $1 &halt $1 ]
@@ -27,32 +31,121 @@
 
 |0100 ( -> )
 
+	;build-page JSR2	
+
+	( end )
+	#01 .System/debug DEO
+	#01 .System/halt DEO
+	
+BRK
+
+@build-page ( -- )
+
 	( create file )
 	#00 FILE STA
 
+	;doctype FILE ;scat JSR2
 	( create body )
-	;html-tag ;append-open-tag JSR2
-		;body-tag ;append-open-tag JSR2
-			;header-txt ;h1-tag ;append-wrap-text JSR2
-			;hello-uxn-txt ;p-tag ;append-wrap-text JSR2
-		;body-tag ;append-close-tag JSR2
-	;html-tag ;append-close-tag JSR2
+	;html-tag ^<
+		( head )
+		;build-page-head JSR2
+		( body )
+		;body-tag ^<
+			;build-page-header JSR2
+			;build-page-nav JSR2
+			;build-page-main JSR2
+			;build-page-footer JSR2
+		;body-tag ^>
+	;html-tag ^>
 
 	( save file )
 	FILE ;slen JSR2 .File/length DEO2
 	;index-path     .File/name DEO2
 	FILE            .File/save DEO2
 
-	( end )
-	#01 .System/halt DEO
+RTN
+
+@build-page-head ( -- )
+
+	;head-tag ^<
+		;title-tag ^<
+			;title FILE ;scat JSR2
+		;title-tag ^>
+		( <link rel='stylesheet' type='text/css' href='../links/main.css'> )
+		LIT '< FILE ;ccat JSR2
+		;link-tag FILE ;scat JSR2
+			#20 FILE ;ccat JSR2
+			;stylesheet-txt ;rel-attr ;append-attr JSR2
+			#20 FILE ;ccat JSR2
+			;textcss-type ;type-attr ;append-attr JSR2
+			#20 FILE ;ccat JSR2
+			;css-path ;href-attr ;append-attr JSR2
+		;link-tag ^>
+	;head-tag ^>
+
+RTN
+
+@build-page-header ( -- )
+
+	;home-path ;append-link-tag JSR2
+		;logo-path ;logo-alt-txt ;append-img-tag JSR2
+	;a-tag ^>
+
+RTN
+
+@build-page-nav ( -- )
+
+	;nav-tag ^<
+
+	;nav-tag ^>
+
+RTN
+
+@build-page-main ( -- )
 	
-BRK
+	;main-tag ^<
+		;header-txt ;h1-tag ^<>
+		;hello-uxn-txt ;p-tag ^<>
+	;main-tag ^>
+
+RTN
+
+@build-page-footer ( -- )
+
+	;footer-tag ^<
+		;creativecommon-path ;append-link-external-tag JSR2
+			;creativecommon-icon-path ;creativecommon-alt-txt ;append-img-tag JSR2
+		;a-tag ^>
+		;webring-path ;append-link-external-tag JSR2
+			;webring-icon-path ;webring-alt-txt ;append-img-tag JSR2
+		;a-tag ^>
+		;merveilles-path ;append-link-external-tag JSR2
+			;merveilles-icon-path ;merveilles-alt-txt ;append-img-tag JSR2
+		;a-tag ^>
+		;span-tag ^<
+			;devinelulinvega-path ;append-link-tag JSR2
+				;devinelulinvega-txt FILE ;scat JSR2
+			;a-tag ^>
+			#20 FILE ;ccat JSR2
+			;copy-entity-txt FILE ;scat JSR2
+			#20 FILE ;ccat JSR2
+			;year-txt FILE ;scat JSR2
+			#20 FILE ;ccat JSR2
+			;mdash-entity-txt FILE ;scat JSR2
+			#20 FILE ;ccat JSR2
+			;about-path ;append-link-tag JSR2
+				;license-txt FILE ;scat JSR2
+			;a-tag ^>
+		;span-tag ^>
+	;footer-tag ^>
+
+RTN
 
 @append-wrap-text ( string* tag* -- )
 
-	STH2k ;append-open-tag JSR2
+	STH2k ^<
 	;append-text JSR2
-	STH2r ;append-close-tag JSR2
+	STH2r ^>
 
 RTN
 
@@ -80,6 +173,56 @@ RTN
 	LIT '> FILE ;ccat JSR2
 
 RTN
+
+@append-link-tag ( path* -- )
+
+	STH2
+	LIT '< FILE ;ccat JSR2
+	LIT 'a FILE ;ccat JSR2
+	#20 FILE ;ccat JSR2
+	STH2r ;href-attr ;append-attr JSR2
+	LIT '> FILE ;ccat JSR2
+
+RTN
+
+@append-link-external-tag ( path* -- )
+
+	STH2
+	LIT '< FILE ;ccat JSR2
+	LIT 'a FILE ;ccat JSR2
+	#20 FILE ;ccat JSR2
+	STH2r ;href-attr ;append-attr JSR2
+	#20 FILE ;ccat JSR2
+	;blank-target ;target-attr ;append-attr JSR2
+	LIT '> FILE ;ccat JSR2
+
+RTN
+
+@append-img-tag ( src* alt* -- )
+	
+	STH2 STH2
+	LIT '< FILE ;ccat JSR2
+	;img-tag FILE ;scat JSR2
+	#20 FILE ;ccat JSR2
+	STH2r ;src-attr ;append-attr JSR2
+	#20 FILE ;ccat JSR2
+	STH2r ;alt-attr ;append-attr JSR2
+	LIT '/ FILE ;ccat JSR2
+	LIT '> FILE ;ccat JSR2
+
+RTN
+
+@append-attr ( attr* body* -- )
+ 
+	FILE ;scat JSR2
+	LIT '= FILE ;ccat JSR2
+	LIT '" FILE ;ccat JSR2
+	FILE ;scat JSR2
+	LIT '" FILE ;ccat JSR2
+
+RTN
+
+( helpers )
 
 @ccat ( char dst* -- )
 	
@@ -120,14 +263,6 @@ RTN
 
 RTN
 
-@html-tag "html $1
-@body-tag "body $1
-@h1-tag "h1 $1
-@header-txt "header $1
-@p-tag "p $1
-@hello-uxn-txt "Hello 20 "Uxn! $1
-@index-path "index.html $1
-
 @print-hex ( value* -- )
 	
 	STHk #04 SFT ,&parse JSR .Console/write DEO
@@ -148,3 +283,59 @@ RTN
 	( linebreak ) #0a .Console/write DEO 
 
 RTN
+
+@title "XXIIVV $1
+
+@doctype "<!DOCTYPE 20 "html> $1
+@html-tag "html $1
+@head-tag "head $1
+@title-tag "title $1
+@body-tag "body $1
+@nav-tag "nav $1
+@main-tag "main $1
+@footer-tag "footer $1
+@h1-tag "h1 $1
+@img-tag "img $1
+@p-tag "p $1
+@a-tag "a $1
+@span-tag "span $1
+@link-tag "link $1
+
+@target-attr "target $1
+@src-attr "src $1
+@alt-attr "alt $1
+@href-attr "href $1
+@blank-target "_blank $1
+@rel-attr "rel $1
+@type-attr "type $1
+
+@textcss-type "text/css $1
+
+@logo-alt-txt "XXIIVV $1
+@header-txt "header $1
+@year-txt "2021 $1
+
+@index-path "../site-new/index.html $1
+@home-path "home.html $1
+@logo-path "../media/icon/logo.svg $1
+@hello-uxn-txt "Hello 20 "Uxn! $1
+@stylesheet-txt "stylesheet $1
+@css-path "../links/main.css $1
+
+@about-path "about.html $1
+@license-txt "BY-NC-SA 20 "4.0 $1
+@copy-entity-txt "copy; $1
+@mdash-entity-txt "mdash; $1
+
+@devinelulinvega-path "devine_lu_linvega.html $1
+@devinelulinvega-txt "Devine 20 "Lu 20 "Linvega $1
+
+@creativecommon-path "https://creativecommons.org/licenses/by-nc-sa/4.0 $1
+@creativecommon-icon-path "../media/icon/cc.svg $1
+@creativecommon-alt-txt "CreativeCommons $1
+@webring-path "http://webring.xxiivv.com/ $1
+@webring-icon-path "../media/icon/webring.svg $1
+@webring-alt-txt "Webring $1
+@merveilles-path "https://merveilles.town/@neauoire $1
+@merveilles-icon-path "../media/icon/merveilles.svg $1
+@merveilles-alt-txt "Merveilles $1
