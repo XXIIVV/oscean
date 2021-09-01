@@ -1,4 +1,4 @@
-( a blank file )
+( The Bequest Globe )
 
 %+  { ADD } %-   { SUB }              %/   { DIV }  
 %<  { LTH } %>   { GTH }  %=  { EQU } %!   { NEQ } 
@@ -31,6 +31,8 @@
 
 |0100 ( -> )
 
+	;load-tree JSR2
+
 	;build-page JSR2	
 
 	( end )
@@ -38,6 +40,17 @@
 	#01 .System/halt DEO
 	
 BRK
+
+@load-tree ( -- )
+
+	( load file )
+	#8000       .File/length DEO2
+	;tree-path  .File/name DEO2
+	TREE        .File/load DEO2
+
+	TREE ;print-string JSR2
+
+RTN
 
 @build-page ( -- )
 
@@ -68,11 +81,11 @@ RTN
 @build-page-head ( -- )
 
 	;head-tag ^<
+		;stylesheet-txt ;stylesheet-type ;stylesheet-path ;add-link-tag JSR2
+		;shortcuticon-txt ;shortcuticon-type ;shortcuticon-path ;add-link-tag JSR2
 		;title-tag ^<
 			;title FILE ;scat JSR2
 		;title-tag ^>
-		;stylesheet-txt ;stylesheet-type ;stylesheet-path ;add-link-tag JSR2
-		;shortcuticon-txt ;shortcuticon-type ;shortcuticon-path ;add-link-tag JSR2
 	;head-tag ^>
 
 RTN
@@ -320,6 +333,7 @@ RTN
 @header-txt "header $1
 @year-txt "2021 $1
 
+@tree-path "database/tree.tbtl $1
 @index-path "../site-new/index.html $1
 @home-path "home.html $1
 @logo-path "../media/icon/logo.svg $1
@@ -350,3 +364,5 @@ RTN
 @merveilles-path "https://merveilles.town/@neauoire $1
 @merveilles-icon-path "../media/icon/merveilles.svg $1
 @merveilles-alt-txt "Merveilles $1
+
+@tree
