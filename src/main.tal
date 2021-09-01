@@ -12,9 +12,9 @@
 %FILE { #4000 }
 %TREE { #8000 }
 
-%^< { ;append-open-tag JSR2 }
-%^> { ;append-close-tag JSR2 }
-%^<> { ;append-wrap-text JSR2 }
+%^< { ;add-open-tag JSR2 }
+%^> { ;add-close-tag JSR2 }
+%^<> { ;add-wrap-text JSR2 }
 
 ( devices )
 
@@ -71,24 +71,16 @@ RTN
 		;title-tag ^<
 			;title FILE ;scat JSR2
 		;title-tag ^>
-		( <link rel='stylesheet' type='text/css' href='../links/main.css'> )
-		LIT '< FILE ;ccat JSR2
-		;link-tag FILE ;scat JSR2
-			#20 FILE ;ccat JSR2
-			;stylesheet-txt ;rel-attr ;append-attr JSR2
-			#20 FILE ;ccat JSR2
-			;textcss-type ;type-attr ;append-attr JSR2
-			#20 FILE ;ccat JSR2
-			;css-path ;href-attr ;append-attr JSR2
-		;link-tag ^>
+		;stylesheet-txt ;stylesheet-type ;stylesheet-path ;add-link-tag JSR2
+		;shortcuticon-txt ;shortcuticon-type ;shortcuticon-path ;add-link-tag JSR2
 	;head-tag ^>
 
 RTN
 
 @build-page-header ( -- )
 
-	;home-path ;append-link-tag JSR2
-		;logo-path ;logo-alt-txt ;append-img-tag JSR2
+	;home-path ;add-a-tag JSR2
+		;logo-path ;logo-alt-txt ;add-img-tag JSR2
 	;a-tag ^>
 
 RTN
@@ -113,17 +105,17 @@ RTN
 @build-page-footer ( -- )
 
 	;footer-tag ^<
-		;creativecommon-path ;append-link-external-tag JSR2
-			;creativecommon-icon-path ;creativecommon-alt-txt ;append-img-tag JSR2
+		;creativecommon-path ;add-a-external-tag JSR2
+			;creativecommon-icon-path ;creativecommon-alt-txt ;add-img-tag JSR2
 		;a-tag ^>
-		;webring-path ;append-link-external-tag JSR2
-			;webring-icon-path ;webring-alt-txt ;append-img-tag JSR2
+		;webring-path ;add-a-external-tag JSR2
+			;webring-icon-path ;webring-alt-txt ;add-img-tag JSR2
 		;a-tag ^>
-		;merveilles-path ;append-link-external-tag JSR2
-			;merveilles-icon-path ;merveilles-alt-txt ;append-img-tag JSR2
+		;merveilles-path ;add-a-external-tag JSR2
+			;merveilles-icon-path ;merveilles-alt-txt ;add-img-tag JSR2
 		;a-tag ^>
 		;span-tag ^<
-			;devinelulinvega-path ;append-link-tag JSR2
+			;devinelulinvega-path ;add-a-tag JSR2
 				;devinelulinvega-txt FILE ;scat JSR2
 			;a-tag ^>
 			#20 FILE ;ccat JSR2
@@ -133,7 +125,7 @@ RTN
 			#20 FILE ;ccat JSR2
 			;mdash-entity-txt FILE ;scat JSR2
 			#20 FILE ;ccat JSR2
-			;about-path ;append-link-tag JSR2
+			;about-path ;add-a-tag JSR2
 				;license-txt FILE ;scat JSR2
 			;a-tag ^>
 		;span-tag ^>
@@ -141,21 +133,21 @@ RTN
 
 RTN
 
-@append-wrap-text ( string* tag* -- )
+@add-wrap-text ( string* tag* -- )
 
 	STH2k ^<
-	;append-text JSR2
+	;add-text JSR2
 	STH2r ^>
 
 RTN
 
-@append-text ( string* -- )
+@add-text ( string* -- )
 
 	FILE ;scat JSR2
 
 RTN
 
-@append-open-tag ( tag* -- )
+@add-open-tag ( tag* -- )
 
 	STH2
 	LIT '< FILE ;ccat JSR2
@@ -164,7 +156,7 @@ RTN
 
 RTN
 
-@append-close-tag ( tag* -- )
+@add-close-tag ( tag* -- )
 
 	STH2
 	LIT '< FILE ;ccat JSR2
@@ -174,45 +166,60 @@ RTN
 
 RTN
 
-@append-link-tag ( path* -- )
+@add-a-tag ( path* -- )
 
 	STH2
 	LIT '< FILE ;ccat JSR2
 	LIT 'a FILE ;ccat JSR2
 	#20 FILE ;ccat JSR2
-	STH2r ;href-attr ;append-attr JSR2
+	STH2r ;href-attr ;add-attr JSR2
 	LIT '> FILE ;ccat JSR2
 
 RTN
 
-@append-link-external-tag ( path* -- )
+@add-a-external-tag ( path* -- )
 
 	STH2
 	LIT '< FILE ;ccat JSR2
 	LIT 'a FILE ;ccat JSR2
 	#20 FILE ;ccat JSR2
-	STH2r ;href-attr ;append-attr JSR2
+	STH2r ;href-attr ;add-attr JSR2
 	#20 FILE ;ccat JSR2
-	;blank-target ;target-attr ;append-attr JSR2
+	;blank-target ;target-attr ;add-attr JSR2
 	LIT '> FILE ;ccat JSR2
 
 RTN
 
-@append-img-tag ( src* alt* -- )
+@add-img-tag ( src* alt* -- )
 	
 	STH2 STH2
 	LIT '< FILE ;ccat JSR2
 	;img-tag FILE ;scat JSR2
 	#20 FILE ;ccat JSR2
-	STH2r ;src-attr ;append-attr JSR2
+	STH2r ;src-attr ;add-attr JSR2
 	#20 FILE ;ccat JSR2
-	STH2r ;alt-attr ;append-attr JSR2
+	STH2r ;alt-attr ;add-attr JSR2
 	LIT '/ FILE ;ccat JSR2
 	LIT '> FILE ;ccat JSR2
 
 RTN
 
-@append-attr ( attr* body* -- )
+@add-link-tag ( rel* type* href* -- )
+	
+	LIT '< FILE ;ccat JSR2
+	;link-tag FILE ;scat JSR2
+		#20 FILE ;ccat JSR2
+		;href-attr ;add-attr JSR2
+		#20 FILE ;ccat JSR2
+		;type-attr ;add-attr JSR2
+		#20 FILE ;ccat JSR2
+		;rel-attr ;add-attr JSR2
+	LIT '/ FILE ;ccat JSR2
+	LIT '> FILE ;ccat JSR2
+
+RTN
+
+@add-attr ( attr* body* -- )
  
 	FILE ;scat JSR2
 	LIT '= FILE ;ccat JSR2
@@ -309,8 +316,6 @@ RTN
 @rel-attr "rel $1
 @type-attr "type $1
 
-@textcss-type "text/css $1
-
 @logo-alt-txt "XXIIVV $1
 @header-txt "header $1
 @year-txt "2021 $1
@@ -319,13 +324,19 @@ RTN
 @home-path "home.html $1
 @logo-path "../media/icon/logo.svg $1
 @hello-uxn-txt "Hello 20 "Uxn! $1
+
 @stylesheet-txt "stylesheet $1
-@css-path "../links/main.css $1
+@stylesheet-type "text/css $1
+@stylesheet-path "../links/main.css $1
+
+@shortcuticon-txt "shortcut 20 "icon $1
+@shortcuticon-type "image/png $1
+@shortcuticon-path "../media/services/icon.png $1
 
 @about-path "about.html $1
 @license-txt "BY-NC-SA 20 "4.0 $1
-@copy-entity-txt "copy; $1
-@mdash-entity-txt "mdash; $1
+@copy-entity-txt "&copy; $1
+@mdash-entity-txt "&mdash; $1
 
 @devinelulinvega-path "devine_lu_linvega.html $1
 @devinelulinvega-txt "Devine 20 "Lu 20 "Linvega $1
