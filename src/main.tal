@@ -10,7 +10,6 @@
 
 %RTN { JMP2r }
 %FILE { #4000 }
-%TREE { #8000 }
 
 %^< { ;add-open-tag JSR2 }
 %^> { ;add-close-tag JSR2 }
@@ -31,9 +30,13 @@
 
 |0100 ( -> )
 
-	;load-tree JSR2
+	( load file )
+	;tree/source .File/name DEO2
+	#4000        .File/length DEO2
+	;tree/data   .File/load DEO2
+	.File/success DEI2 ;tree/length STA2
 
-	;build-page JSR2	
+	;parse JSR2
 
 	( end )
 	#01 .System/debug DEO
@@ -41,18 +44,25 @@
 	
 BRK
 
-@load-tree ( -- )
+@parse ( -- )
 
-	( load file )
-	#8000       .File/length DEO2
-	;tree-path  .File/name DEO2
-	TREE        .File/load DEO2
-
-	TREE ;print-string JSR2
+	;tree/data 
+	( remove linebreaks )
+	DUP2 #0a #00 ;cswp JSR2
+	&while
+		( move to name ) #0002 ++ 
+		( build ) DUP2 ;build-page JSR2
+		( move to eol )  DUP2 ;slen JSR2 ++ INC2 
+		LDAk ,&while JCN
+	POP2
 
 RTN
 
-@build-page ( -- )
+( ---------------------------------- )
+
+@filepath $30
+
+@build-page ( name* -- )
 
 	( create file )
 	#00 FILE STA
@@ -71,9 +81,19 @@ RTN
 		;body-tag ^>
 	;html-tag ^>
 
+	POP2
+
+	( create filepath )
+	DUP2
+	#00 ;filepath STA
+	;output-path ;filepath ;scpy JSR2
+	( name* ) ;filepath ;scat JSR2
+	;html-ext ;scat JSR2
+	;filepath #20 LIT '_ ;cswp JSR2
+
 	( save file )
+	;filepath       .File/name DEO2
 	FILE ;slen JSR2 .File/length DEO2
-	;index-path     .File/name DEO2
 	FILE            .File/save DEO2
 
 RTN
@@ -242,6 +262,32 @@ RTN
 
 RTN
 
+( generics )
+
+@cswp ( string* a b -- )
+
+	STH STH
+	&while
+		LDAk STHkr NEQ ,&continue JCN
+			DUP2 OVRr STHr ROT ROT STA
+			&continue
+		INC2 LDAk ,&while JCN
+	POP2 POP2r
+
+RTN
+
+@next-char ( addr* char -- addr* )
+	
+	STH
+	&while
+		LDAk STHkr EQU ,&end JCN
+		LDAk #00 = ,&end JCN
+		INC2 LDAk ,&while
+	&end
+		POPr
+
+RTN
+
 ( helpers )
 
 @ccat ( char dst* -- )
@@ -251,6 +297,21 @@ RTN
 		INC2 LDAk ,&while JCN
 	STH2k STA
 	#00 STH2r INC2 STA
+
+RTN
+
+@chex ( char -- hex )
+	
+	DUPk #2f GTH SWP #3a LTH #0101 == ,&num JCN
+	DUPk #40 GTH SWP #47 LTH #0101 == ,&uca JCN
+	DUPk #60 GTH SWP #67 LTH #0101 == ,&lca JCN
+	POP #00 RTN
+	&num ( char -- hex )
+		LIT '0 - RTN
+	&uca ( char -- hex )
+		LIT 'A - #0a + RTN
+	&lca ( char -- hex )
+		LIT 'a - #0a + RTN
 
 RTN
 
@@ -304,6 +365,9 @@ RTN
 
 RTN
 
+@output-path "../site-new/ $1
+@html-ext ".html $1
+
 @title "XXIIVV $1
 
 @doctype "<!DOCTYPE 20 "html> $1
@@ -333,7 +397,6 @@ RTN
 @header-txt "header $1
 @year-txt "2021 $1
 
-@tree-path "database/tree.tbtl $1
 @index-path "../site-new/index.html $1
 @home-path "home.html $1
 @logo-path "../media/icon/logo.svg $1
@@ -365,4 +428,9 @@ RTN
 @merveilles-icon-path "../media/icon/merveilles.svg $1
 @merveilles-alt-txt "Merveilles $1
 
+@buff $100
+
 @tree
+	&source "database/tree.tbtl $1
+	&length $2
+	&data 

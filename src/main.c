@@ -1214,6 +1214,30 @@ check(Glossary *glo, Journal *jou)
 	}
 }
 
+static void
+fpsub(FILE *f, Term *t, int depth)
+{
+	int i, d = depth;
+	fprintf(f, "%1x %s\n", depth, t->name);
+	if(t->children_len < 1)
+		return;
+	d++;
+	for(i = 0; i < t->children_len; ++i)
+		if(!scmp(t->children[i]->name, t->name, 64))
+			fpsub(f, t->children[i], d);
+	d--;
+}
+
+void
+create_tree(Lexicon *lex)
+{
+	FILE *f = getfile("database/", "tree", ".tbtl", "w");
+	int i;
+
+	fpsub(f, &lex->terms[0], 0);
+	fclose(f);
+}
+
 static Block block;
 static Glossary all_lists;
 static Lexicon all_terms;
@@ -1246,6 +1270,8 @@ main(void)
 	printf("[%.2fms]\n", clockoffset(start));
 
 	printf("%d/%d characters in memory\n", block.len, STRMEM);
+
+	create_tree(&all_terms);
 
 	return 0;
 }
