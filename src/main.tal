@@ -46,7 +46,7 @@
 	DUP2 #0a #00 ;cswp JSR2
 
 	( ;test-page ;find-term JSR2 ;build-page JSR2 )
-	;parse JSR2
+	;parse JSR2 
 
 	( end )
 	#01 .System/debug DEO
@@ -54,7 +54,7 @@
 	
 BRK
 
-@test-page "audio $1 
+@test-page "aliceffekt $1 
 
 @parse ( tree/data* -- )
 
@@ -70,6 +70,10 @@ RTN
 ( ---------------------------------- )
 
 @build-page ( name* -- )
+
+	( keep a copy )
+	#00 ;&current STA
+	DUP2 ;&current ;scpy JSR2
 
 	( create file )
 	#00 FILE STA
@@ -94,6 +98,7 @@ RTN
 	FILE              .File/save DEO2
 
 RTN
+	&current $20
 
 @build-page-head ( name* -- name* )
 
@@ -113,9 +118,11 @@ RTN
 
 @build-page-header ( name* -- name* )
 
-	;home-path ;add-a-tag JSR2
-		;logo-path ;logo-alt-txt ;add-img-tag JSR2
-	;a-tag ^close
+	;header-tag ^open
+		;home-path ;add-a-tag JSR2
+			;logo-path ;logo-alt-txt ;add-img-tag JSR2
+		;a-tag ^close
+	;header-tag ^close
 
 RTN
 
@@ -291,9 +298,11 @@ RTN
 
 @add-local ( name* -- )
 
-	DUP2 ;to-filepath JSR2 ;add-a-tag JSR2
-	^s
-	;a-tag ^close
+	DUP2 ;build-page/current ;scmp JSR2 ,&no-link JCN
+	DUP2 ;to-filepath JSR2 ;add-a-tag JSR2 ^s ;a-tag ^close
+	RTN
+	&no-link
+	^s LIT '/ ^c
 
 RTN
 
@@ -446,6 +455,7 @@ RTN
 @head-tag "head $1
 @title-tag "title $1
 @body-tag "body $1
+@header-tag "header $1
 @nav-tag "nav $1
 @main-tag "main $1
 @footer-tag "footer $1
