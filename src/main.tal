@@ -39,7 +39,14 @@
 	;tree/data   .File/load DEO2
 	.File/success DEI2 ;tree/length STA2
 
-	;parse JSR2
+	;tree/data 
+	( remove linebreaks )
+	DUP2 #0a #00 ;cswp JSR2
+
+	;test-page ;find-term JSR2 ;build-page JSR2
+	( ;parse JSR2 )
+
+	POP2
 
 	( end )
 	#01 .System/debug DEO
@@ -47,15 +54,14 @@
 	
 BRK
 
-@parse ( -- )
+@test-page "aliceffekt $1 
 
-	;tree/data 
-	( remove linebreaks )
-	DUP2 #0a #00 ;cswp JSR2
+@parse ( tree/data* -- )
+
 	&while
 		( move to name ) #0002 ++ 
 		( build ) DUP2 ;build-page JSR2
-		( move to eol )  DUP2 ;slen JSR2 ++ INC2 
+		( move to eol ) DUP2 ;slen JSR2 ++ INC2 
 		LDAk ,&while JCN
 	POP2
 
@@ -126,7 +132,16 @@ RTN
 @build-page-nav ( name* -- name* )
 
 	;nav-tag ^open
-
+		( parents )
+		;ul-tag ^open
+		;ul-tag ^close
+		( siblings )
+		;ul-tag ^open
+			DUP2 ^s
+		;ul-tag ^close
+		( children )
+		;ul-tag ^open
+		;ul-tag ^close
 	;nav-tag ^close
 
 RTN
@@ -170,6 +185,24 @@ RTN
 	;footer-tag ^close
 
 RTN
+
+( tools )
+
+@find-term ( name* -- addr* )
+
+	STH2
+	;tree/data 
+	&while
+		( move to name ) #0002 ++ 
+		( test ) DUP2 STH2kr ;scmp JSR2 ,&end JCN
+		( move to eol ) DUP2 ;slen JSR2 ++ INC2 
+		LDAk ,&while JCN
+	&end
+	POP2r
+
+RTN
+
+( Web framework )
 
 @add-a-tag ( path* -- )
 
@@ -280,6 +313,19 @@ RTN
 
 RTN
 
+@scmp ( a* b* -- flag )
+
+	STH2 
+	&loop
+		LDAk LDAkr STHr #0000 !! ,&continue JCN
+			POP2 POP2r #01 RTN
+			&continue
+		INC2 LDAk INC2r LDAkr STHr 
+		EQU ,&loop JCN
+	POP2 POP2r #00
+
+RTN
+
 @scat ( src* dst* -- )
 
 	DUP2 ,slen JSR ++ ,scpy JSR
@@ -349,6 +395,8 @@ RTN
 @a-tag "a $1
 @span-tag "span $1
 @link-tag "link $1
+@ul-tag "ul $1
+@li-tag "li $1
 
 @target-attr "target $1
 @src-attr "src $1
