@@ -60,8 +60,6 @@ RTN
 
 ( ---------------------------------- )
 
-@filepath $30
-
 @build-page ( name* -- )
 
 	( create file )
@@ -81,36 +79,40 @@ RTN
 		;body-tag ^>
 	;html-tag ^>
 
-	POP2
-
 	( create filepath )
-	DUP2
-	#00 ;filepath STA
-	;output-path ;filepath ;scpy JSR2
-	( name* ) ;filepath ;scat JSR2
-	;html-ext ;scat JSR2
-	;filepath #20 LIT '_ ;cswp JSR2
+	#00 ;buff STA
+	;output-path ;buff ;scpy JSR2
+	DUP2 ;buff ;scat JSR2
+	;html-ext ;buff ;scat JSR2
+	;buff #20 LIT '_ ;cswp JSR2
 
 	( save file )
-	;filepath       .File/name DEO2
+	;buff       .File/name DEO2
 	FILE ;slen JSR2 .File/length DEO2
 	FILE            .File/save DEO2
 
+	( cleanup )
+	POP2
+
 RTN
 
-@build-page-head ( -- )
+@build-page-head ( name* -- name* )
 
 	;head-tag ^<
 		;stylesheet-txt ;stylesheet-type ;stylesheet-path ;add-link-tag JSR2
 		;shortcuticon-txt ;shortcuticon-type ;shortcuticon-path ;add-link-tag JSR2
 		;title-tag ^<
 			;title FILE ;scat JSR2
+			#20 FILE ;ccat JSR2
+			;mdash-entity-txt FILE ;scat JSR2
+			#20 FILE ;ccat JSR2
+			DUP2 FILE ;scat JSR2
 		;title-tag ^>
 	;head-tag ^>
 
 RTN
 
-@build-page-header ( -- )
+@build-page-header ( name* -- name* )
 
 	;home-path ;add-a-tag JSR2
 		;logo-path ;logo-alt-txt ;add-img-tag JSR2
@@ -118,7 +120,7 @@ RTN
 
 RTN
 
-@build-page-nav ( -- )
+@build-page-nav ( name* -- name* )
 
 	;nav-tag ^<
 
@@ -126,16 +128,16 @@ RTN
 
 RTN
 
-@build-page-main ( -- )
+@build-page-main ( name* -- name* )
 	
 	;main-tag ^<
-		;header-txt ;h1-tag ^<>
+		DUP2 ;h1-tag ^<>
 		;hello-uxn-txt ;p-tag ^<>
 	;main-tag ^>
 
 RTN
 
-@build-page-footer ( -- )
+@build-page-footer ( name* -- name* )
 
 	;footer-tag ^<
 		;creativecommon-path ;add-a-external-tag JSR2
