@@ -45,10 +45,8 @@
 	( remove linebreaks )
 	DUP2 #0a #00 ;cswp JSR2
 
-	;test-page ;find-term JSR2 ;build-page JSR2
-	( ;parse JSR2 )
-
-	POP2
+	( ;test-page ;find-term JSR2 ;build-page JSR2 )
+	;parse JSR2
 
 	( end )
 	#01 .System/debug DEO
@@ -56,7 +54,7 @@
 	
 BRK
 
-@test-page "uxn $1 
+@test-page "audio $1 
 
 @parse ( tree/data* -- )
 
@@ -90,20 +88,10 @@ RTN
 		;body-tag ^close
 	;html-tag ^close
 
-	( create filepath )
-	#00 ;buff STA
-	;output-path ;buff ;scpy JSR2
-	DUP2 ;buff ;scat JSR2
-	;html-ext ;buff ;scat JSR2
-	;buff #20 LIT '_ ;cswp JSR2
-
 	( save file )
-	;buff       .File/name DEO2
-	FILE ;slen JSR2 .File/length DEO2
-	FILE            .File/save DEO2
-
-	( cleanup )
-	POP2
+	;to-filepath JSR2 .File/name DEO2
+	FILE ;slen JSR2   .File/length DEO2
+	FILE              .File/save DEO2
 
 RTN
 
@@ -134,8 +122,15 @@ RTN
 @build-page-nav ( name* -- name* )
 
 	;nav-tag ^open
-		( parents ) DUP2 ;find-parent JSR2 ;find-parent JSR2 ,&children JSR POP2
-		( siblings ) DUP2 ;find-parent JSR2 ,&children JSR POP2
+		DUP2 GET-DEPTH #00 = ,&no-siblings JCN
+		( parents ) 
+		DUP2 GET-DEPTH #02 < ,&no-parents JCN
+			DUP2 ;find-parent JSR2 ;find-parent JSR2 ,&children JSR POP2
+			&no-parents
+		( siblings ) 
+		DUP2 GET-DEPTH #01 < ,&no-siblings JCN
+			DUP2 ;find-parent JSR2 ,&children JSR POP2
+			&no-siblings
 		( children ) ,&children JSR
 	;nav-tag ^close
 	RTN
@@ -149,7 +144,9 @@ RTN
 		&while
 			( stop at sibling ) LDAk ;chex JSR2 STHkr = ,&end JCN
 			( when depth+1 ) LDAk ;chex JSR2 STHkr INC NEQ ,&continue JCN
-				DUP2 #0002 ++ ;li-tag ^wrap
+				;li-tag ^open
+				DUP2 #0002 ++ ;add-local JSR2
+				;li-tag ^close
 				&continue
 			( move to eol ) #0002 ++ DUP2 ;slen JSR2 ++ INC2 
 			LDAk ,&while JCN
@@ -289,6 +286,25 @@ RTN
 	LIT '" ^c
 	^s
 	LIT '" ^c
+
+RTN
+
+@add-local ( name* -- )
+
+	DUP2 ;to-filepath JSR2 ;add-a-tag JSR2
+	^s
+	;a-tag ^close
+
+RTN
+
+@to-filepath ( name* -- filepath* )
+	
+	#00 ;buff STA
+	;output-path ;buff ;scpy JSR2
+	( name* ) ;buff ;scat JSR2
+	;html-ext ;buff ;scat JSR2
+	;buff #20 LIT '_ ;cswp JSR2
+	;buff
 
 RTN
 
