@@ -11,12 +11,14 @@
 %RTN { JMP2r }
 %FILE { #4000 }
 
-%^open { STH2 LIT '< ^c STH2r ^s LIT '> ^c }
-%^close { STH2 LIT '< ^c LIT '/ ^c STH2r ^s LIT '> ^c }
-%^wrap { STH2k ^open ^s STH2r ^close }
 %^s { FILE ;scat JSR2 }
 %^c { FILE ;ccat JSR2 }
 %^space { #20 ^c }
+%^open { STH2 LIT '< ^c STH2r ^s LIT '> ^c }
+%^close { STH2 LIT '< ^c LIT '/ ^c STH2r ^s LIT '> ^c }
+%^wrap { STH2k ^open ^s STH2r ^close }
+
+%GET-DEPTH { #0002 -- LDA ;chex JSR2 }
 
 ( devices )
 
@@ -54,7 +56,7 @@
 	
 BRK
 
-@test-page "aliceffekt $1 
+@test-page "uxn $1 
 
 @parse ( tree/data* -- )
 
@@ -132,17 +134,28 @@ RTN
 @build-page-nav ( name* -- name* )
 
 	;nav-tag ^open
-		( parents )
-		;ul-tag ^open
-		;ul-tag ^close
-		( siblings )
-		;ul-tag ^open
-			DUP2 ^s
-		;ul-tag ^close
-		( children )
-		;ul-tag ^open
-		;ul-tag ^close
+		( parents ) DUP2 ;find-parent JSR2 ;find-parent JSR2 ,&children JSR POP2
+		( siblings ) DUP2 ;find-parent JSR2 ,&children JSR POP2
+		( children ) ,&children JSR
 	;nav-tag ^close
+	RTN
+
+	&children ( name* -- name* )
+
+		;ul-tag ^open
+		DUP2
+		( stash depth ) DUP2 GET-DEPTH STH
+		( start after ) DUP2 ;slen JSR2 ++ INC2 
+		&while
+			( stop at sibling ) LDAk ;chex JSR2 STHkr = ,&end JCN
+			( when depth+1 ) LDAk ;chex JSR2 STHkr INC NEQ ,&continue JCN
+				DUP2 #0002 ++ ;li-tag ^wrap
+				&continue
+			( move to eol ) #0002 ++ DUP2 ;slen JSR2 ++ INC2 
+			LDAk ,&while JCN
+		&end
+		POP2 POPr
+		;ul-tag ^close
 
 RTN
 
@@ -188,7 +201,7 @@ RTN
 
 ( tools )
 
-@find-term ( name* -- addr* )
+@find-term ( name* -- term* )
 
 	STH2
 	;tree/data 
@@ -199,6 +212,25 @@ RTN
 		LDAk ,&while JCN
 	&end
 	POP2r
+
+RTN
+
+@find-parent ( term* -- parent* )
+
+	( rewind line )
+	#00 ;prev-char JSR2 
+
+	( stash depth ) INC2k LDA ;chex JSR2 #01 - STH
+
+	;tree/data SWP2
+	&loop
+		#0001 -- #00 ;prev-char JSR2 
+		INC2k LDA ;chex JSR2 STHkr ! ,&continue JCN
+			NIP2 POPr #0003 ++ RTN
+			&continue
+		LTH2k ,&loop JCN
+	POPr
+	#0002
 
 RTN
 
@@ -274,13 +306,25 @@ RTN
 
 RTN
 
+@prev-char ( addr* char -- addr* )
+	
+	STH
+	&while
+		LDAk STHkr = ,&end JCN
+		LDAk #00 = ,&end JCN
+		#0001 -- LDAk ,&while JCN
+	&end
+		POPr
+
+RTN
+
 @next-char ( addr* char -- addr* )
 	
 	STH
 	&while
-		LDAk STHkr EQU ,&end JCN
+		LDAk STHkr = ,&end JCN
 		LDAk #00 = ,&end JCN
-		INC2 LDAk ,&while
+		INC2 LDAk ,&while JCN
 	&end
 		POPr
 
@@ -442,6 +486,8 @@ RTN
 @merveilles-alt-txt "Merveilles $1
 
 @buff $100
+
+( pad ) $1
 
 @tree
 	&source "database/tree.tbtl $1
