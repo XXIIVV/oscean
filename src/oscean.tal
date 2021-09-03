@@ -9,6 +9,18 @@
 %DEBUG2 { SWP ;print-hex JSR2 ;print-hex JSR2 #0a .Console/write DEO }
 
 %RTN { JMP2r }
+%END { #0101 .System/debug DEO2 }
+
+%LEXICON { #1000 }
+%LEXICON-SIZE { #2000 }
+%DIARY { #3000 }
+%DIARY-SIZE { #5000 }
+
+( Map:
+	0x1000 - 0x3000 Lexicon
+	0x3000 - 0x8000 Diary
+ )
+
 %FILE { #8000 }
 
 %^s { FILE ;scat JSR2 }
@@ -35,29 +47,38 @@
 
 |0100 ( -> )
 
-	( load file )
-	;tree/source .File/name DEO2
-	#4000        .File/length DEO2
-	;tree/data   .File/load DEO2
-	.File/success DEI2 ;tree/length STA2
+	;load JSR2
 
-	;tree/data 
-	( remove linebreaks )
-	DUP2 #0a #00 ;cswp JSR2
-
+	LEXICON 
+	( remove linebreaks ) 
+	DUP2 #0a #00 ;cswp JSR2 
 	;parse JSR2
 
 	( ;focus-page ;find-term JSR2 ;build-page JSR2 )
 
-	( end )
-	#01 .System/debug DEO
-	#01 .System/halt DEO
+	END
 	
 BRK
 
 @focus-page "about $1
 
-@parse ( tree/data* -- )
+@load ( -- )
+
+	( load lexicon )
+	;lexicon-path .File/name DEO2
+	LEXICON-SIZE  .File/length DEO2
+	LEXICON       .File/load DEO2
+
+	( load diary )
+	;diary-path .File/name DEO2
+	DIARY-SIZE  .File/length DEO2
+	DIARY       .File/load DEO2
+
+	( TODO: error report )
+
+RTN
+
+@parse ( lexicon/data* -- )
 
 	&while
 		( move to name ) #0002 ++ 
@@ -226,7 +247,7 @@ RTN
 @find-term ( name* -- term* )
 
 	STH2
-	;tree/data 
+	LEXICON 
 	&while
 		( move to name ) #0002 ++ 
 		( test ) DUP2 STH2kr ;scmp JSR2 ,&end JCN
@@ -244,7 +265,7 @@ RTN
 
 	( stash depth ) INC2k LDA ;chex JSR2 #01 - STH
 
-	;tree/data SWP2
+	LEXICON SWP2
 	&loop
 		#0001 -- #00 ;prev-char JSR2 
 		INC2k LDA ;chex JSR2 STHkr ! ,&continue JCN
@@ -494,43 +515,36 @@ RTN
 
 @logo-alt-txt "XXIIVV $1
 @year-txt "2021 $1
+@stylesheet-txt "stylesheet $1
+@shortcuticon-txt "shortcut 20 "icon $1
+@license-txt "BY-NC-SA 20 "4.0 $1
+@copy-entity-txt "&copy; $1
+@mdash-entity-txt "&mdash; $1
+@devinelulinvega-txt "Devine 20 "Lu 20 "Linvega $1
+@creativecommon-alt-txt "CreativeCommons $1
+@webring-alt-txt "Webring $1
+@merveilles-alt-txt "Merveilles $1
 
+@lexicon-path "database/lexicon $1
+@diary-path "database/diary $1
 @input-path "content/ $1
 @output-path "../site/ $1
 @home-path "home.html $1
 @logo-path "../media/icon/logo.svg $1
-
-@stylesheet-txt "stylesheet $1
-@stylesheet-type "text/css $1
 @stylesheet-path "../links/main.css $1
-
-@shortcuticon-txt "shortcut 20 "icon $1
-@shortcuticon-type "image/png $1
 @shortcuticon-path "../media/services/icon.png $1
-
 @about-path "about.html $1
-@license-txt "BY-NC-SA 20 "4.0 $1
-@copy-entity-txt "&copy; $1
-@mdash-entity-txt "&mdash; $1
-
 @devinelulinvega-path "devine_lu_linvega.html $1
-@devinelulinvega-txt "Devine 20 "Lu 20 "Linvega $1
-
 @creativecommon-path "https://creativecommons.org/licenses/by-nc-sa/4.0 $1
 @creativecommon-icon-path "../media/icon/cc.svg $1
-@creativecommon-alt-txt "CreativeCommons $1
 @webring-path "http://webring.xxiivv.com/ $1
 @webring-icon-path "../media/icon/webring.svg $1
-@webring-alt-txt "Webring $1
 @merveilles-path "https://merveilles.town/@neauoire $1
 @merveilles-icon-path "../media/icon/merveilles.svg $1
-@merveilles-alt-txt "Merveilles $1
+
+@stylesheet-type "text/css $1
+@shortcuticon-type "image/png $1
 
 @buff $100
 
-( pad ) $1
-
-@tree
-	&source "database/tree.tbtl $1
-	&length $2
-	&data 
+|1000
