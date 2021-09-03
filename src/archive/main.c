@@ -1219,7 +1219,19 @@ static void
 fpsub(FILE *f, Term *t, int depth)
 {
 	int i, d = depth;
-	fprintf(f, "%1x %s\n", depth, t->name);
+	fprintf(f, "%1x%c%s\n", depth, (t->type && scmp(t->type, "text_portal", 64)) ? ':' : (t->type && scmp(t->type, "pict_portal", 64)) ? ';'
+			: (t->type && scmp(t->type, "album", 64))                                                                                  ? ','
+																																	   : ' ',
+		t->name);
+
+	/*
+
+	pict_portal
+text_portal
+portal
+album
+
+*/
 	if(t->children_len < 1)
 		return;
 	d++;
