@@ -1244,7 +1244,7 @@ create_content(Glossary *glo, Lexicon *lex)
 	for(i = 0; i < lex->len; ++i) {
 		FILE *f = getfile("content/", lex->terms[i].filename, ".htm", "w");
 		/* bref */
-		fprintf(f, "<p>%s</p>\n\n", lex->terms[i].bref);
+		fprintf(f, "<h2>%s</h2>\n\n", lex->terms[i].bref);
 
 		/* body */
 		fpbodypart(f, glo, lex, &lex->terms[i]);
