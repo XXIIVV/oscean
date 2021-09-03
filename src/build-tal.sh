@@ -1,7 +1,7 @@
 #!/bin/sh -e
 
-rm -rf ../site-new
-mkdir ../site-new
+rm -rf ../site
+mkdir ../site
 
 uxnasm main.tal bin/oscean.rom
 uxncli bin/oscean.rom

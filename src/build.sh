@@ -9,6 +9,9 @@ mkdir -p bin
 rm -rf ../site
 mkdir ../site
 
+rm -rf ./content
+mkdir ./content
+
 # Projects
 
 if [ "${1}" = '--projects' ]; 

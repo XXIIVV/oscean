@@ -390,15 +390,15 @@ fplist(FILE *f, Glossary *glo, char *target)
 	List *l = findlist(glo, target);
 	if(!l)
 		return error("Unknown list", target);
-	fprintf(f, "<h3>%s</h3>", l->name);
-	fputs("<ul>", f);
+	fprintf(f, "\n<h3>%s</h3>\n", l->name);
+	fputs("<ul>\n", f);
 	for(j = 0; j < l->len; ++j)
 		if(!l->keys[j])
-			fprintf(f, "<li>%s</li>", l->vals[j]);
+			fprintf(f, "	<li>%s</li>\n", l->vals[j]);
 		else if(surl(l->vals[j]))
-			fprintf(f, "<li><a href='%s'>%s</a></li>", l->vals[j], l->keys[j]);
+			fprintf(f, "	<li><a href='%s'>%s</a></li>\n", l->vals[j], l->keys[j]);
 		else
-			fprintf(f, "<li><b>%s</b>: %s</li>", l->keys[j], l->vals[j]);
+			fprintf(f, "	<li><b>%s</b>: %s</li>\n", l->keys[j], l->vals[j]);
 	fputs("</ul>", f);
 	l->routes++;
 	return 1;
@@ -418,8 +418,8 @@ fpinclude(FILE *f, char *target, char *wrapper, int req)
 		else
 			return 0;
 	}
-	fputs("<figure>", f);
-	fprintf(f, "<%s>", wrapper);
+	if(!scmp(wrapper, "div", 4))
+		fprintf(f, "<%s>", wrapper);
 	while((c = fgetc(fp)) != EOF) {
 		if(scmp(wrapper, "div", 4))
 			fputc(c, f);
@@ -439,9 +439,8 @@ fpinclude(FILE *f, char *target, char *wrapper, int req)
 			lines++;
 	}
 	fclose(fp);
-	fprintf(f, "</%s>", wrapper);
-	fprintf(f, "<figcaption>&mdash; Submit an <a href='" REPOPATH "%s%s%s' target='_blank'>edit</a> to <a href='../src/%s%s%s'>%s%s</a>(%d lines)</figcaption>", folder, target, ext, folder, target, ext, target, ext, lines);
-	fputs("</figure>", f);
+	if(!scmp(wrapper, "div", 4))
+		fprintf(f, "</%s>", wrapper);
 	return 1;
 }
 
@@ -511,8 +510,10 @@ static void
 fpbodypart(FILE *f, Glossary *glo, Lexicon *lex, Term *t)
 {
 	int i;
-	for(i = 0; i < t->body_len; ++i)
+	for(i = 0; i < t->body_len; ++i) {
 		fptemplate(f, glo, lex, t, t->body[i]);
+		fprintf(f, "\n");
+	}
 }
 
 static void
@@ -566,7 +567,7 @@ fpnav(FILE *f, Term *t)
 static void
 fpbody(FILE *f, Glossary *glo, Lexicon *lex, Term *t)
 {
-	fprintf(f, "<h2>%s</h2>", t->bref);
+	fprintf(f, "<h2>%s</h2>\n", t->bref);
 	fpbodypart(f, glo, lex, t);
 }
 
@@ -609,10 +610,10 @@ fplinks(FILE *f, Term *t)
 	int i;
 	if(t->link.len < 1)
 		return;
-	fputs("<ul>", f);
+	fputs("<ul>\n", f);
 	for(i = 0; i < t->link.len; ++i)
-		fprintf(f, "<li><a href='%s' target='_blank'>%s</a></li>", t->link.vals[i], t->link.keys[i]);
-	fputs("</ul>", f);
+		fprintf(f, "	<li><a href='%s' target='_blank'>%s</a></li>\n", t->link.vals[i], t->link.keys[i]);
+	fputs("</ul>\n\n", f);
 }
 
 static void
@@ -1232,10 +1233,30 @@ void
 create_tree(Lexicon *lex)
 {
 	FILE *f = getfile("database/", "tree", ".tbtl", "w");
-	int i;
-
 	fpsub(f, &lex->terms[0], 0);
 	fclose(f);
+}
+
+void
+create_content(Glossary *glo, Lexicon *lex)
+{
+	int i, j;
+	for(i = 0; i < lex->len; ++i) {
+		FILE *f = getfile("content/", lex->terms[i].filename, ".htm", "w");
+		/* bref */
+		fprintf(f, "<p>%s</p>\n\n", lex->terms[i].bref);
+
+		/* body */
+		fpbodypart(f, glo, lex, &lex->terms[i]);
+
+		fprintf(f, "\n");
+
+		fpinclude(f, lex->terms[i].filename, "div", 0);
+
+		fplinks(f, &lex->terms[i]);
+
+		fclose(f);
+	}
 }
 
 static Block block;
@@ -1272,6 +1293,7 @@ main(void)
 	printf("%d/%d characters in memory\n", block.len, STRMEM);
 
 	create_tree(&all_terms);
+	create_content(&all_lists, &all_terms);
 
 	return 0;
 }

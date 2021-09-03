@@ -9,7 +9,7 @@
 %DEBUG2 { SWP ;print-hex JSR2 ;print-hex JSR2 #0a .Console/write DEO }
 
 %RTN { JMP2r }
-%FILE { #4000 }
+%FILE { #8000 }
 
 %^s { FILE ;scat JSR2 }
 %^c { FILE ;ccat JSR2 }
@@ -45,7 +45,6 @@
 	( remove linebreaks )
 	DUP2 #0a #00 ;cswp JSR2
 
-	( ;test-page ;find-term JSR2 ;build-page JSR2 )
 	;parse JSR2 
 
 	( end )
@@ -53,8 +52,6 @@
 	#01 .System/halt DEO
 	
 BRK
-
-@test-page "aliceffekt $1 
 
 @parse ( tree/data* -- )
 
@@ -166,8 +163,25 @@ RTN
 @build-page-main ( name* -- name* )
 	
 	;main-tag ^open
-		DUP2 ;h1-tag ^wrap
-		;hello-uxn-txt ;p-tag ^wrap
+
+		( create include path )
+		#00 ;buff STA
+		;input-path ;buff ;scpy JSR2
+		DUP2 ;buff ;scat JSR2
+		;htm-ext ;buff ;scat JSR2
+		;buff #20 LIT '_ ;cswp JSR2
+
+		( find include position )
+		FILE DUP2 ;slen JSR2 ++ STH2
+
+		( write body )
+		;buff .File/name DEO2
+		#4000 .File/length DEO2
+		STH2kr .File/load DEO2
+
+		( close )
+		#00 STH2r .File/success DEI2 ++ STA
+
 	;main-tag ^close
 
 RTN
@@ -445,8 +459,8 @@ RTN
 
 RTN
 
-@output-path "../site-new/ $1
 @html-ext ".html $1
+@htm-ext ".htm $1
 
 @title "XXIIVV $1
 
@@ -459,9 +473,7 @@ RTN
 @nav-tag "nav $1
 @main-tag "main $1
 @footer-tag "footer $1
-@h1-tag "h1 $1
 @img-tag "img $1
-@p-tag "p $1
 @a-tag "a $1
 @span-tag "span $1
 @link-tag "link $1
@@ -477,13 +489,12 @@ RTN
 @type-attr "type $1
 
 @logo-alt-txt "XXIIVV $1
-@header-txt "header $1
 @year-txt "2021 $1
 
-@index-path "../site-new/index.html $1
+@input-path "content/ $1
+@output-path "../site/ $1
 @home-path "home.html $1
 @logo-path "../media/icon/logo.svg $1
-@hello-uxn-txt "Hello 20 "Uxn! $1
 
 @stylesheet-txt "stylesheet $1
 @stylesheet-type "text/css $1
