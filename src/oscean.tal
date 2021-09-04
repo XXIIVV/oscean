@@ -9,16 +9,18 @@
 %DEBUG2 { SWP ;print-hex JSR2 ;print-hex JSR2 #0a .Console/write DEO }
 
 %RTN { JMP2r }
-%END { #0101 .System/debug DEO2 }
+%HALT { #0101 .System/debug DEO2 }
 
 %LEXICON { #1000 }
 %LEXICON-SIZE { #2000 }
 %DIARY { #3000 }
 %DIARY-SIZE { #5000 }
+%INCLUDE-SIZE { #6000 }
 
 ( Map:
 	0x1000 - 0x3000 Lexicon
 	0x3000 - 0x8000 Diary
+	0x8000 - 0xffff Output
  )
 
 %FILE { #8000 }
@@ -53,7 +55,7 @@
 
 	( ;focus-page ;find-term JSR2 ;build-page JSR2 )
 
-	END
+	HALT
 	
 BRK
 
@@ -78,14 +80,37 @@ BRK
 RTN
 
 @build ( -- )
-
+	
+	#0000
 	LEXICON
 	&while
 		( move to name ) #0002 ++ 
+		( display )
+		( print count ) OVR2 SWP ;print-hex JSR2 ;print-hex JSR2 #0d .Console/write DEO
+		( incr count ) SWP2 INC2 SWP2
 		( build ) DUP2 ;build-page JSR2
 		( move to eol ) DUP2 ;slen JSR2 ++ INC2 
 		LDAk ,&while JCN
 	POP2
+	#0a .Console/write DEO 
+
+RTN
+
+@print-error ( name* msg* -- )
+	
+	SWP2 
+	#0001 --
+	&name-loop
+		INC2 LDAk .Console/write DEO 
+		LDAk ,&name-loop JCN
+	POP2
+	#20 .Console/write DEO 
+	#0001 --
+	&msg-loop
+		INC2 LDAk .Console/write DEO 
+		LDAk ,&msg-loop JCN
+	POP2
+	#0a .Console/write DEO 
 
 RTN
 
@@ -204,8 +229,12 @@ RTN
 
 		( write body )
 		;buff .File/name DEO2
-		#4000 .File/length DEO2
+		INCLUDE-SIZE .File/length DEO2
 		STH2kr .File/load DEO2
+
+		.File/success DEI2 INCLUDE-SIZE !! ,&continue JCN
+			DUP2 ;error-include-size ;print-error JSR2
+			&continue
 
 		( close )
 		#00 STH2r .File/success DEI2 ++ STA
@@ -539,7 +568,7 @@ RTN
 RTN
 
 @print-string ( addr* -- )
-	
+
 	#0001 --
 	&loop
 		INC2 LDAk .Console/write DEO 
@@ -610,6 +639,8 @@ RTN
 @webring-icon-path "../media/icon/webring.svg $1
 @merveilles-path "https://merveilles.town/@neauoire $1
 @merveilles-icon-path "../media/icon/merveilles.svg $1
+
+@error-include-size "--include_size_exceeded $1
 
 @stylesheet-type "text/css $1
 @shortcuticon-type "image/png $1
