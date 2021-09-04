@@ -11,14 +11,14 @@
 %RTN { JMP2r }
 %HALT { #0101 .System/debug DEO2 }
 
-%LEXICON { #1000 }
-%LEXICON-SIZE { #2000 }
+%LEXICON { #1800 }
+%LEXICON-SIZE { #1800 }
 %DIARY { #3000 }
 %DIARY-SIZE { #5000 }
 %INCLUDE-SIZE { #7000 }
 
 ( Map:
-	0x1000 - 0x3000 Lexicon
+	0x1800 - 0x3000 Lexicon
 	0x3000 - 0x8000 Diary
 	0x8000 - 0xffff Output
  )
@@ -59,7 +59,7 @@
 	
 BRK
 
-@focus-page "meta $1
+@focus-page "talk $1
 
 @load ( -- )
 	
@@ -73,6 +73,7 @@ BRK
 		( remove linebreaks ) LEXICON #0a #00 ;cswp JSR2 
 	RTN
 	&diary ( path* -- )
+		DIARY DIARY-SIZE ;mclr JSR2
 		( load diary )
 		.File/name DEO2
 		DIARY-SIZE  .File/length DEO2
@@ -219,50 +220,54 @@ RTN
 
 		( display picture )
 		;build-page-main-pict JSR2
-
-		( create include path )
-		#00 ;buff STA
-		;input-path ;buff ;scpy JSR2
-		DUP2 ;buff ;scat JSR2
-		;htm-ext ;buff ;scat JSR2
-		;buff #20 LIT '_ ;cswp JSR2
-
-		( find include position )
-		FILE DUP2 ;slen JSR2 ++ STH2
-
-		( write body )
-		;buff .File/name DEO2
-		INCLUDE-SIZE .File/length DEO2
-		STH2kr .File/load DEO2
-
-		.File/success DEI2 INCLUDE-SIZE !! ,&continue JCN
-			DUP2 ;error-include-size ;print-error JSR2
-			&continue
-
-		( close )
-		#00 STH2r .File/success DEI2 ++ STA
+		;build-page-main-body JSR2
+		;build-page-main-events JSR2
 
 	;main-tag ^close
 
 RTN
 
+@build-page-main-body ( name* -- name* )
+
+	( create include path )
+	#00 ;buff STA
+	;input-path ;buff ;scpy JSR2
+	DUP2 ;buff ;scat JSR2
+	;htm-ext ;buff ;scat JSR2
+	;buff #20 LIT '_ ;cswp JSR2
+
+	( find include position )
+	FILE DUP2 ;slen JSR2 ++ STH2
+
+	( write body )
+	;buff .File/name DEO2
+	INCLUDE-SIZE .File/length DEO2
+	STH2kr .File/load DEO2
+
+	.File/success DEI2 INCLUDE-SIZE !! ,&continue JCN
+		DUP2 ;error-include-size ;print-error JSR2
+		&continue
+
+	( close )
+	#00 STH2r .File/success DEI2 ++ STA
+
+RTN
+
 @build-page-main-pict ( name* -- name* )
 	
+	( load page2 )
 	;diary-path-page2 ;load/diary JSR2
-
 	DUP2 ;find-diary JSR2 
 
 	( load page1 )
 	DUP2 #0000 !! ,&page1 JCN
-		POP2
-		;diary-path-page1 ;load/diary JSR2
+		POP2 ;diary-path-page1 ;load/diary JSR2
 		DUP2 ;find-diary JSR2
 		&page1
 
 	( load page0 )
 	DUP2 #0000 !! ,&page0 JCN
-		POP2
-		;diary-path-page0 ;load/diary JSR2
+		POP2 ;diary-path-page0 ;load/diary JSR2
 		DUP2 ;find-diary JSR2
 		&page0
 
@@ -290,6 +295,38 @@ RTN
 		;figcaption-tag ^close
 	;figure-tag ^close
 	POP2r
+
+RTN
+
+@build-page-main-events ( name* -- name* )
+
+	;ul-tag ^open
+
+	;diary-path-page2 ;load/diary JSR2
+	;draw-events JSR2
+	;diary-path-page1 ;load/diary JSR2
+	;draw-events JSR2
+	;diary-path-page0 ;load/diary JSR2
+	;draw-events JSR2
+	
+	;ul-tag ^close
+
+RTN
+
+@draw-events ( name* -- name* )
+
+	STH2
+	DIARY 
+	&while
+		DUP2 #0005 ++ LDA LIT '+ ! ,&continue JCN 
+			DUP2 #000a ++ STH2kr SWP2 ;scmp-seg JSR2 #01 ! ,&continue JCN
+			( move to event name )
+			DUP2 #000a ++ STH2kr ;slen JSR2 ++ INC2 ;li-tag ^wrap
+			&continue
+		( move to eol ) DUP2 ;slen JSR2 ++ INC2 
+		LDAk ;&while JCN2
+	&end
+	POP2 STH2r
 
 RTN
 
@@ -325,6 +362,20 @@ RTN
 RTN
 
 ( tools )
+
+@find-term ( name* -- term* )
+
+	STH2
+	LEXICON 
+	&while
+		( move to name ) #0002 ++ 
+		( test ) DUP2 STH2kr ;scmp JSR2 ,&end JCN
+		( move to eol ) DUP2 ;slen JSR2 ++ INC2 
+		LDAk ,&while JCN
+	&end
+	POP2r
+
+RTN
 
 @find-diary ( name* -- diary* )
 
@@ -556,6 +607,16 @@ RTN
 
 RTN
 
+@mclr ( addr* length* -- )
+	
+	OVR2 ADD2 SWP2
+	&loop
+		DUP2 #00 ROT ROT STA
+		INC2 GTH2k ,&loop JCN
+	POP2 POP2
+
+RTN
+
 @print-hex ( value* -- )
 	
 	STHk #04 SFT ,&parse JSR .Console/write DEO
@@ -648,4 +709,4 @@ RTN
 
 @buff $100
 
-|2000
+|1800
