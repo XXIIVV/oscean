@@ -59,7 +59,12 @@
 	
 BRK
 
-@focus-page "orca $1
+@word1 "meta $1
+@word2 "beta $1
+@word3 "meta $1
+@word4 "meta-ball $1
+
+@focus-page "meta $1
 
 @load ( -- )
 	
@@ -74,6 +79,8 @@ BRK
 		( remove linebreaks ) LEXICON #0a #00 ;cswp JSR2 
 	RTN
 	&diary ( path* -- )
+		( clean memory )
+		DIARY DIARY-SIZE ;mclr JSR2
 		( load diary )
 		.File/name DEO2
 		DIARY-SIZE  .File/length DEO2
@@ -526,11 +533,14 @@ RTN
 
 	STH2 
 	&loop
-		LDAk LDAkr STHr #0000 !! ,&continue JCN
+		LDAk LDAkr STHr = ,&not-diff JCN
+			POP2 POP2r #00 RTN
+			&not-diff
+		LDAk LDAkr STHr #0000 !! ,&not-end JCN
 			POP2 POP2r #01 RTN
-			&continue
-		INC2 LDAk INC2r LDAkr STHr 
-		EQU ,&loop JCN
+			&not-end
+		INC2 INC2r
+		,&loop JMP
 	POP2 POP2r #00
 
 RTN
@@ -539,11 +549,14 @@ RTN
 
 	STH2 
 	&loop
+		LDAk LDAkr STHr = ,&not-diff JCN
+			POP2 POP2r #00 RTN
+			&not-diff
 		INC2k LDA #00 ! ,&continue JCN
 			POP2 POP2r #01 RTN
 			&continue
-		INC2 LDAk INC2r LDAkr STHr 
-		EQU ,&loop JCN
+		INC2 INC2r
+		,&loop JMP
 	POP2 POP2r #00
 
 RTN
@@ -574,6 +587,16 @@ RTN
 		INC2 LDAk ,&while JCN
 	SWP2 --
 	#0001 --
+
+RTN
+
+@mclr ( addr* length* -- )
+	
+	OVR2 ADD2 SWP2
+	&loop
+		DUP2 #00 ROT ROT STA
+		INC2 GTH2k ,&loop JCN
+	POP2 POP2
 
 RTN
 
