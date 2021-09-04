@@ -166,6 +166,8 @@ RTN
 	FILE ;slen JSR2   .File/length DEO2
 	FILE              .File/save DEO2
 
+	FILE ;check-page JSR2
+
 RTN
 
 @build-page-header ( name* -- name* )
@@ -404,6 +406,28 @@ RTN
 
 RTN
 
+@check-page ( page* -- )
+
+	( look for redlinks )
+	&while
+		DUP2 ;href-attr SWP2 ;scmp-seg JSR2 #00 = ,&continue JCN
+			( move to href ) #0006 ++ 
+			( strip relative ) LDAk [ LIT '. ] = ,&continue JCN
+			( strip jumps ) LDAk [ LIT '# ] = ,&continue JCN
+			( strip http* ) DUP2 ;http-txt SWP2 ;scmp-seg JSR2 ,&continue JCN
+			( filter ) DUP2 
+			;&buff #0030 ;mcpy JSR2
+			;&buff [ LIT '. ] #00 ;cswp JSR2
+			;&buff [ LIT '_ ] #20 ;cswp JSR2
+			( find term )
+			;&buff ;find-term JSR2 #0000 !! ,&continue JCN
+				;&buff ;error-broken-link ;print-error JSR2
+			&continue
+		INC2 LDAk ,&while JCN
+	POP2
+RTN
+	&buff $30
+
 ( tools )
 
 @find-term ( name* -- term* )
@@ -415,6 +439,7 @@ RTN
 		( test ) DUP2 STH2kr ;scmp JSR2 ,&end JCN
 		( move to eol ) DUP2 ;slen JSR2 ++ INC2 
 		LDAk ,&while JCN
+	POP2 #0000
 	&end
 	POP2r
 
@@ -668,6 +693,21 @@ RTN
 
 RTN
 
+@mcpy ( a* b* length* -- )
+	
+	STH2
+	,&b STR2 ,&a STR2
+	STH2r #0000
+	&loop
+		STH2k
+		,&a LDR2 STH2kr ++ LDA 
+		,&b LDR2 STH2r ++ STA
+		INC2 GTH2k ,&loop JCN
+	POP2 POP2
+
+RTN
+	&a $2 &b $2
+
 @print-hex ( value* -- )
 	
 	&short ( value* -- )
@@ -692,7 +732,6 @@ RTN
 		INC2 LDAk .Console/write DEO 
 		LDAk ,&loop JCN
 	POP2
-	#0a .Console/write DEO 
 
 RTN
 
@@ -739,6 +778,7 @@ RTN
 @webring-alt-txt "Webring $1
 @merveilles-alt-txt "Merveilles $1
 @uxn-alt-txt "Uxn 20 "Powered $1
+@http-txt "http $1
 
 @lexicon-path "database/lexicon $1
 @diary-path-page2 "database/diary2 $1
@@ -765,6 +805,7 @@ RTN
 @no-picture "000 $1
 
 @error-include-size "--include_size_exceeded $1
+@error-broken-link "--redlink $1
 
 @stylesheet-type "text/css $1
 @shortcuticon-type "image/png $1
