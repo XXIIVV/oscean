@@ -49,15 +49,15 @@
 
 	;load JSR2
 	
-	( ;parse JSR2 )
+	;build JSR2
 
-	;focus-page ;find-term JSR2 ;build-page JSR2
+	( ;focus-page ;find-term JSR2 ;build-page JSR2 )
 
 	END
 	
 BRK
 
-@focus-page "hypertalk $1
+@focus-page "azolla $1
 
 @load ( -- )
 
@@ -77,8 +77,9 @@ BRK
 
 RTN
 
-@parse ( lexicon/data* -- )
+@build ( -- )
 
+	LEXICON
 	&while
 		( move to name ) #0002 ++ 
 		( build ) DUP2 ;build-page JSR2
@@ -216,17 +217,30 @@ RTN
 @build-page-main-pict ( name* -- name* )
 
 	DUP2 ;find-diary JSR2 
+
+	( skip when no diaries )
+	DUP2 #0000 !! ,&continue JCN
+		POP2 RTN
+		&continue
+
 	( rewind ) #00 ;prev-char JSR2 INC2 
 	STH2
 
+	( create src* )
+	#00 ;buff STA
+	;media-diary-path ;buff ;scpy JSR2
+	STH2kr #0006 ++ LDAk ;buff ;ccat JSR2
+	INC2 LDAk ;buff ;ccat JSR2
+	INC2 LDA ;buff ;ccat JSR2
+	;jpg-ext ;buff ;scat JSR2
 
+	( html )
 	;figure-tag ^open
-		( image )
+		;buff STH2kr #000a ++ ;add-img-tag JSR2
 		;figcaption-tag ^open
 		DUP2 ;slen JSR2 STH2kr ++ #000a ++ ^s
 		;figcaption-tag ^close
 	;figure-tag ^close
-
 	POP2r
 
 RTN
@@ -283,14 +297,18 @@ RTN
 	STH2
 	DIARY 
 	&while
+		( skip events ) DUP2 #0006 ++ ;&blank SWP2 ;scmp-seg JSR2 ,&skip JCN
 		( move to name ) #000a ++
 		( test ) DUP2 STH2kr SWP2 ;scmp-seg JSR2 ,&end JCN
+		&skip
 		( move to eol ) DUP2 ;slen JSR2 ++ INC2 
 		LDAk ,&while JCN
+	POP2 #0000
 	&end
 	POP2r
 
 RTN
+	&blank "000 $1
 
 @find-parent ( term* -- parent* )
 
@@ -533,6 +551,7 @@ RTN
 
 @html-ext ".html $1
 @htm-ext ".htm $1
+@jpg-ext ".jpg $1
 
 @title "XXIIVV $1
 
@@ -580,6 +599,7 @@ RTN
 @output-path "../site/ $1
 @home-path "home.html $1
 @logo-path "../media/icon/logo.svg $1
+@media-diary-path "../media/diary/ $1
 @stylesheet-path "../links/main.css $1
 @shortcuticon-path "../media/services/icon.png $1
 @about-path "about.html $1
