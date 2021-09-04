@@ -5,8 +5,12 @@
 %++ { ADD2 } %-- { SUB2 }              %// { DIV2 } 
 %<< { LTH2 } %>> { GTH2 } %== { EQU2 } %!! { NEQ2 }  
 
+%1-- { #0001 -- }
+%2++ { INC2 INC2 }
+
 %DEBUG  { ;print-hex/byte JSR2 #0a .Console/write DEO }
 %DEBUG2 { ;print-hex/short JSR2 #0a .Console/write DEO }
+%PRINT { ;print-string JSR2 #0a .Console/write DEO }
 
 %RTN { JMP2r }
 %HALT { #0101 .System/debug DEO2 }
@@ -22,13 +26,14 @@
 %DIARY-SIZE { #5000 }
 %INCLUDE-SIZE { #7000 }
 %FILE { #8000 }
+%FILE-SIZE { #8000 }
 
 %^s { FILE ;scat JSR2 }
 %^c { FILE ;ccat JSR2 }
 %^space { #20 ^c }
-%^open { STH2 LIT '< ^c STH2r ^s LIT '> ^c }
-%^close { STH2 LIT '< ^c LIT '/ ^c STH2r ^s LIT '> ^c }
-%^wrap { STH2k ^open ^s STH2r ^close }
+%^< { STH2 LIT '< ^c STH2r ^s LIT '> ^c }
+%^> { STH2 LIT '< ^c LIT '/ ^c STH2r ^s LIT '> ^c }
+%^<> { STH2k ^< ^s STH2r ^> }
 
 %GET-DEPTH { #0002 -- LDA ;chex JSR2 }
 
@@ -53,7 +58,8 @@
 
 	;load JSR2
 	,focus-page LDR ,build-one JCN
-	,build-all JMP
+		,build-all JMP
+	HALT
 	
 BRK
 
@@ -71,14 +77,14 @@ BRK
 	#0000
 	LEXICON
 	&while
-		( move to name ) #0002 ++ 
+		( move to name ) 2++ 
 		( display )
 			( print count ) OVR2 ;print-hex/short JSR2 #0d .Console/write DEO
 			( incr count ) SWP2 INC2 SWP2
 		( build ) DUP2 ;build-page JSR2
 		( move to eol ) DUP2 ;slen JSR2 ++ INC2 
 		LDAk ,&while JCN
-	POP2
+	POP2 POP2
 	#0a .Console/write DEO 
 	HALT
 
@@ -109,13 +115,13 @@ RTN
 @print-error ( name* msg* -- )
 	
 	SWP2 
-	#0001 --
+	1--
 	&name-loop
 		INC2 LDAk .Console/write DEO 
 		LDAk ,&name-loop JCN
 	POP2
 	#20 .Console/write DEO 
-	#0001 --
+	1--
 	&msg-loop
 		INC2 LDAk .Console/write DEO 
 		LDAk ,&msg-loop JCN
@@ -133,21 +139,27 @@ RTN
 	DUP2 ;term/name ;scpy JSR2
 
 	( create file )
-	#00 FILE STA
+	FILE FILE-SIZE ;mclr JSR2
 
 	;doctype ^s
 	( create body )
-	;html-tag ^open
+	;html-tag ^<
 		( head )
-		;build-page-head JSR2
+		;head-tag ^<
+			;stylesheet-txt ;stylesheet-type ;stylesheet-path ;add-link-tag JSR2
+			;shortcuticon-txt ;shortcuticon-type ;shortcuticon-path ;add-link-tag JSR2
+			;title-tag ^<
+				;title ^s ^space ;mdash-entity-txt ^s ^space DUP2 ^s
+			;title-tag ^>
+		;head-tag ^>
 		( body )
-		;body-tag ^open
+		;body-tag ^<
 			;build-page-header JSR2
 			;build-page-nav JSR2
 			;build-page-main JSR2
 			;build-page-footer JSR2
-		;body-tag ^close
-	;html-tag ^close
+		;body-tag ^>
+	;html-tag ^>
 
 	( save file )
 	;to-filepath JSR2 .File/name DEO2
@@ -156,35 +168,19 @@ RTN
 
 RTN
 
-@build-page-head ( name* -- name* )
-
-	;head-tag ^open
-		;stylesheet-txt ;stylesheet-type ;stylesheet-path ;add-link-tag JSR2
-		;shortcuticon-txt ;shortcuticon-type ;shortcuticon-path ;add-link-tag JSR2
-		;title-tag ^open
-			;title ^s
-			^space
-			;mdash-entity-txt ^s
-			^space
-			DUP2 ^s
-		;title-tag ^close
-	;head-tag ^close
-
-RTN
-
 @build-page-header ( name* -- name* )
 
-	;header-tag ^open
+	;header-tag ^<
 		;home-path ;add-a-tag JSR2
 			;logo-path ;logo-alt-txt ;add-img-tag JSR2
-		;a-tag ^close
-	;header-tag ^close
+		;a-tag ^>
+	;header-tag ^>
 
 RTN
 
 @build-page-nav ( name* -- name* )
 
-	;nav-tag ^open
+	;nav-tag ^<
 		DUP2 GET-DEPTH #00 = ,&no-siblings JCN
 		( parents ) 
 		DUP2 GET-DEPTH #02 < ,&no-parents JCN
@@ -195,43 +191,43 @@ RTN
 			DUP2 ;find-parent JSR2 ,&children JSR POP2
 			&no-siblings
 		( children ) ,&children JSR
-	;nav-tag ^close
+	;nav-tag ^>
 	RTN
 
 	&children ( name* -- name* )
 
-		;ul-tag ^open
+		;ul-tag ^<
 		DUP2
 		( stash depth ) DUP2 GET-DEPTH STH
 		( start after ) DUP2 ;slen JSR2 ++ INC2 
 		&while
 			( stop at sibling ) LDAk ;chex JSR2 STHkr = ,&end JCN
 			( when depth+1 ) LDAk ;chex JSR2 STHkr INC NEQ ,&continue JCN
-				;li-tag ^open
-				DUP2 #0002 ++ ;add-local JSR2
-				;li-tag ^close
+				;li-tag ^<
+				DUP2 2++ ;add-local JSR2
+				;li-tag ^>
 				&continue
-			( move to eol ) #0002 ++ DUP2 ;slen JSR2 ++ INC2 
+			( move to eol ) 2++ DUP2 ;slen JSR2 ++ INC2 
 			LDAk ,&while JCN
 		&end
 		POP2 POPr
-		;ul-tag ^close
+		;ul-tag ^>
 
 RTN
 
 @build-page-main ( name* -- name* )
 	
-	;main-tag ^open
+	;main-tag ^<
 
 		( display picture )
 		;build-page-main-pict JSR2
 		;build-page-main-body JSR2
-		DUP2 #0001 -- LDA [ LIT ', ] ! ,&no-album JCN 
+		DUP2 1-- LDA [ LIT ', ] ! ,&no-album JCN 
 			;build-module-album JSR2
 			&no-album
 		;build-module-calendar JSR2
 
-	;main-tag ^close
+	;main-tag ^>
 
 RTN
 
@@ -301,14 +297,14 @@ RTN
 
 @build-module-calendar ( name* -- name* )
 
-	;ul-tag ^open
+	;ul-tag ^<
 		;diary-path-page2 ;load/diary JSR2 
 		,&append-li JSR
 		;diary-path-page1 ;load/diary JSR2 
 		,&append-li JSR
 		;diary-path-page0 ;load/diary JSR2 
 		,&append-li JSR
-	;ul-tag ^close
+	;ul-tag ^>
 
 	RTN
 
@@ -319,11 +315,10 @@ RTN
 			DUP2 #0005 ++ LDA [ LIT '+ ] ! ,&continue JCN 
 				DUP2 #000a ++ STH2kr SWP2 ;scmp-seg JSR2 #01 ! ,&continue JCN
 				( move to event name )
-				DUP2 #000a ++ STH2kr ;slen JSR2 ++ INC2 ;li-tag ^wrap
+				DUP2 #000a ++ STH2kr ;slen JSR2 ++ INC2 ;li-tag ^<>
 				&continue
 			( move to eol ) DUP2 ;slen JSR2 ++ INC2 
 			LDAk ;&while JCN2
-		&end
 		POP2 STH2r
 
 RTN
@@ -349,7 +344,6 @@ RTN
 			&continue
 			( move to eol ) DUP2 ;slen JSR2 ++ INC2 
 			LDAk ;&while JCN2
-		&end
 		POP2 STH2r
 
 RTN
@@ -367,32 +361,32 @@ RTN
 	;jpg-ext ;buff ;scat JSR2
 
 	( html )
-	;figure-tag ^open
+	;figure-tag ^<
 		;buff STH2kr #000a ++ ;add-img-tag JSR2
-		;figcaption-tag ^open
+		;figcaption-tag ^<
 		STH2kr #09 ;next-char JSR2 INC2 #09 ;next-char JSR2 INC2 ^s
-		;figcaption-tag ^close
-	;figure-tag ^close
+		;figcaption-tag ^>
+	;figure-tag ^>
 	POP2r
 
 RTN
 
 @build-page-footer ( name* -- name* )
 
-	;footer-tag ^open
+	;footer-tag ^<
 		;creativecommon-path ;add-a-external-tag JSR2
 			;creativecommon-icon-path ;creativecommon-alt-txt ;add-img-tag JSR2
-		;a-tag ^close
+		;a-tag ^>
 		;webring-path ;add-a-external-tag JSR2
 			;webring-icon-path ;webring-alt-txt ;add-img-tag JSR2
-		;a-tag ^close
+		;a-tag ^>
 		;merveilles-path ;add-a-external-tag JSR2
 			;merveilles-icon-path ;merveilles-alt-txt ;add-img-tag JSR2
-		;a-tag ^close
-		;span-tag ^open
+		;a-tag ^>
+		;span-tag ^<
 			;devinelulinvega-path ;add-a-tag JSR2
 				;devinelulinvega-txt ^s
-			;a-tag ^close
+			;a-tag ^>
 			^space
 			;copy-entity-txt ^s
 			^space
@@ -402,9 +396,9 @@ RTN
 			^space
 			;about-path ;add-a-tag JSR2
 				;license-txt ^s
-			;a-tag ^close
-		;span-tag ^close
-	;footer-tag ^close
+			;a-tag ^>
+		;span-tag ^>
+	;footer-tag ^>
 
 RTN
 
@@ -415,7 +409,7 @@ RTN
 	STH2
 	LEXICON 
 	&while
-		( move to name ) #0002 ++ 
+		( move to name ) 2++ 
 		( test ) DUP2 STH2kr ;scmp JSR2 ,&end JCN
 		( move to eol ) DUP2 ;slen JSR2 ++ INC2 
 		LDAk ,&while JCN
@@ -443,19 +437,16 @@ RTN
 
 @find-parent ( term* -- parent* )
 
-	( rewind line )
-	#00 ;prev-char JSR2 
-
+	( rewind line ) #00 ;prev-char JSR2 
 	( stash depth ) INC2k LDA ;chex JSR2 #01 - STH
-
 	LEXICON SWP2
 	&loop
-		#0001 -- #00 ;prev-char JSR2 
+		1-- #00 ;prev-char JSR2 
 		INC2k LDA ;chex JSR2 STHkr ! ,&continue JCN
 			NIP2 POPr #0003 ++ RTN
 			&continue
 		LTH2k ,&loop JCN
-	POPr
+	( pop depth ) POPr
 	#0002
 
 RTN
@@ -521,7 +512,7 @@ RTN
 @add-local ( name* -- )
 
 	DUP2 ;term/name ;scmp JSR2 ,&no-link JCN
-	DUP2 ;to-filepath JSR2 ;add-a-tag JSR2 ^s ;a-tag ^close
+	DUP2 ;to-filepath JSR2 ;add-a-tag JSR2 ^s ;a-tag ^>
 	RTN
 	&no-link
 		^s [ LIT '/ ] ^c
@@ -547,7 +538,7 @@ RTN
 	&while
 		LDAk STHkr = ,&end JCN
 		LDAk #00 = ,&end JCN
-		#0001 -- LDAk ,&while JCN
+		1-- LDAk ,&while JCN
 	&end
 		POPr
 
@@ -581,7 +572,7 @@ RTN
 
 @ccat ( char dst* -- )
 	
-	#0001 --
+	1--
 	&while
 		INC2 LDAk ,&while JCN
 	STH2k STA
@@ -647,27 +638,27 @@ RTN
 	STH2 
 	DUP2
 	&while
-		SWP2k -- STH2kr ADD2 STH2
+		SWP2k -- STH2kr ++ STH2
 		LDAk STH2r STA
 		INC2 LDAk ,&while JCN
-	SWP2 -- STH2r ADD2 
+	SWP2 -- STH2r ++ 
 	#00 ROT ROT STA
 
 RTN
 
 @slen ( addr* -- length* )
 
-	#0001 -- DUP2
+	1-- DUP2
 	&while
 		INC2 LDAk ,&while JCN
 	SWP2 --
-	#0001 --
+	1--
 
 RTN
 
 @mclr ( addr* length* -- )
 	
-	OVR2 ADD2 SWP2
+	OVR2 ++ SWP2
 	&loop
 		DUP2 #00 ROT ROT STA
 		INC2 GTH2k ,&loop JCN
@@ -688,18 +679,18 @@ RTN
 	STHr #0f AND ,&parse JSR .Console/write DEO
 	RTN
 	&parse ( value -- char )
-		DUP #09 GTH ,&above JCN #30 ADD RTN &above #09 SUB #60 ADD RTN
+		DUP #09 GTH ,&above JCN #30 + RTN &above #09 - #60 + RTN
 
 RTN
 
 @print-string ( addr* -- )
 
-	#0001 --
+	1--
 	&loop
 		INC2 LDAk .Console/write DEO 
 		LDAk ,&loop JCN
 	POP2
-	( linebreak ) #0a .Console/write DEO 
+	#0a .Console/write DEO 
 
 RTN
 
