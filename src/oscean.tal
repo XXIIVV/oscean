@@ -59,23 +59,27 @@
 	
 BRK
 
-@focus-page "azolla $1
+@focus-page "orca $1
 
 @load ( -- )
+	
+	;lexicon-path ,&lexicon JSR
 
-	( load lexicon )
-	;lexicon-path .File/name DEO2
-	LEXICON-SIZE  .File/length DEO2
-	LEXICON       .File/load DEO2
-
-	( remove linebreaks ) LEXICON #0a #00 ;cswp JSR2 
-
-	( load diary )
-	;diary-path .File/name DEO2
-	DIARY-SIZE  .File/length DEO2
-	DIARY       .File/load DEO2
-
-	( remove linebreaks ) DIARY #0a #00 ;cswp JSR2 
+	RTN
+	&lexicon ( path* -- )
+		( load lexicon )
+		.File/name DEO2
+		LEXICON-SIZE  .File/length DEO2
+		LEXICON       .File/load DEO2
+		( remove linebreaks ) LEXICON #0a #00 ;cswp JSR2 
+	RTN
+	&diary ( path* -- )
+		( load diary )
+		.File/name DEO2
+		DIARY-SIZE  .File/length DEO2
+		DIARY       .File/load DEO2
+		( remove linebreaks ) DIARY #0a #00 ;cswp JSR2 
+	RTN
 
 RTN
 
@@ -244,8 +248,17 @@ RTN
 RTN
 
 @build-page-main-pict ( name* -- name* )
+	
+	;diary-path-page2 ;load/diary JSR2
 
 	DUP2 ;find-diary JSR2 
+
+	( load page1 )
+	DUP2 #0000 !! ,&page1 JCN
+		POP2
+		;diary-path-page1 ;load/diary JSR2
+		DUP2 ;find-diary JSR2
+		&page1
 
 	( skip when no diaries )
 	DUP2 #0000 !! ,&continue JCN
@@ -623,7 +636,9 @@ RTN
 @merveilles-alt-txt "Merveilles $1
 
 @lexicon-path "database/lexicon $1
-@diary-path "database/diary2 $1
+@diary-path-page2 "database/diary2 $1
+@diary-path-page1 "database/diary1 $1
+@diary-path-page0 "database/diary0 $1
 @input-path "content/ $1
 @output-path "../site/ $1
 @home-path "home.html $1
@@ -647,4 +662,4 @@ RTN
 
 @buff $100
 
-|1000
+|2000
