@@ -48,19 +48,16 @@
 |0100 ( -> )
 
 	;load JSR2
+	
+	( ;parse JSR2 )
 
-	LEXICON 
-	( remove linebreaks ) 
-	DUP2 #0a #00 ;cswp JSR2 
-	;parse JSR2
-
-	( ;focus-page ;find-term JSR2 ;build-page JSR2 )
+	;focus-page ;find-term JSR2 ;build-page JSR2
 
 	END
 	
 BRK
 
-@focus-page "about $1
+@focus-page "hypertalk $1
 
 @load ( -- )
 
@@ -69,12 +66,14 @@ BRK
 	LEXICON-SIZE  .File/length DEO2
 	LEXICON       .File/load DEO2
 
+	( remove linebreaks ) LEXICON #0a #00 ;cswp JSR2 
+
 	( load diary )
 	;diary-path .File/name DEO2
 	DIARY-SIZE  .File/length DEO2
 	DIARY       .File/load DEO2
 
-	( TODO: error report )
+	( remove linebreaks ) DIARY #0a #00 ;cswp JSR2 
 
 RTN
 
@@ -189,6 +188,9 @@ RTN
 	
 	;main-tag ^open
 
+		( display picture )
+		;build-page-main-pict JSR2
+
 		( create include path )
 		#00 ;buff STA
 		;input-path ;buff ;scpy JSR2
@@ -208,6 +210,24 @@ RTN
 		#00 STH2r .File/success DEI2 ++ STA
 
 	;main-tag ^close
+
+RTN
+
+@build-page-main-pict ( name* -- name* )
+
+	DUP2 ;find-diary JSR2 
+	( rewind ) #00 ;prev-char JSR2 INC2 
+	STH2
+
+
+	;figure-tag ^open
+		( image )
+		;figcaption-tag ^open
+		DUP2 ;slen JSR2 STH2kr ++ #000a ++ ^s
+		;figcaption-tag ^close
+	;figure-tag ^close
+
+	POP2r
 
 RTN
 
@@ -251,6 +271,20 @@ RTN
 	&while
 		( move to name ) #0002 ++ 
 		( test ) DUP2 STH2kr ;scmp JSR2 ,&end JCN
+		( move to eol ) DUP2 ;slen JSR2 ++ INC2 
+		LDAk ,&while JCN
+	&end
+	POP2r
+
+RTN
+
+@find-diary ( name* -- diary* )
+
+	STH2
+	DIARY 
+	&while
+		( move to name ) #000a ++
+		( test ) DUP2 STH2kr SWP2 ;scmp-seg JSR2 ,&end JCN
 		( move to eol ) DUP2 ;slen JSR2 ++ INC2 
 		LDAk ,&while JCN
 	&end
@@ -434,6 +468,19 @@ RTN
 
 RTN
 
+@scmp-seg ( a* b* -- flag )
+
+	STH2 
+	&loop
+		INC2k LDA #00 ! ,&continue JCN
+			POP2 POP2r #01 RTN
+			&continue
+		INC2 LDAk INC2r LDAkr STHr 
+		EQU ,&loop JCN
+	POP2 POP2r #00
+
+RTN
+
 @scat ( src* dst* -- )
 
 	DUP2 ,slen JSR ++ ,scpy JSR
@@ -504,6 +551,8 @@ RTN
 @link-tag "link $1
 @ul-tag "ul $1
 @li-tag "li $1
+@figure-tag "figure $1
+@figcaption-tag "figcaption $1
 
 @target-attr "target $1
 @src-attr "src $1
