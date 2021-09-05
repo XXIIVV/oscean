@@ -40,6 +40,11 @@
 %^> { STH2 LIT '< ^c LIT '/ ^c STH2r ^s LIT '> ^c }
 %^<> { STH2k ^< ^s STH2r ^> }
 
+%PUTS { ;put/string JSR2 }
+%PUTC { ;put/char JSR2 }
+%PUTN { #00 ROT ROT STA }
+%RESUME { ;scap JSR2 }
+
 ( devices )
 
 |00 @System     [ &vector $2 &wst      $1 &rst    $1 &pad   $4 &r      $2 &g      $2 &b    $2 &debug  $1 &halt $1 ]
@@ -59,7 +64,7 @@
 ( program )
 
 |0100 ( -> )
-
+	
 	;load JSR2
 	,focus-page LDR ;build-one JCN2
 		;build-all JMP2
@@ -67,7 +72,12 @@
 	
 BRK
 
-@focus-page ( "about ) $1
+@str1 "hello $1
+@str2 "world $1
+
+@buffer $30
+
+@focus-page ( "uxntal ) $1
 
 @print-error ( name* msg* -- )
 	
@@ -523,17 +533,33 @@ RTN
 
 @add-link-tag ( rel* type* href* -- )
 	
-	[ LIT '< ] ^c
-	;link-tag ^s
-		;href-attr ;add-attr JSR2
-		;type-attr ;add-attr JSR2
-		;rel-attr ;add-attr JSR2
-	[ LIT '/ ] ^c
-	[ LIT '> ] ^c
+	FILE RESUME
+		[ LIT '< ] PUTC 
+		;link-tag PUTS PUTN
+			;href-attr ;add-attr2 JSR2
+			;type-attr ;add-attr2 JSR2
+			;rel-attr ;add-attr2 JSR2
+	FILE RESUME 
+		[ LIT '/ ] PUTC
+		[ LIT '> ] PUTC
+		PUTN
 
 RTN
 
-@add-attr ( attr* body* -- )
+@add-attr2 ( body* attr* -- addr )
+
+	FILE RESUME
+	 	#20 PUTC
+	 	SWP2 PUTS
+		[ LIT '= ] PUTC
+		[ LIT '" ] PUTC
+		SWP2 PUTS
+		[ LIT '" ] PUTC
+		PUTN
+
+RTN
+
+@add-attr ( body* attr* -- )
  	
  	^space
 	^s
@@ -547,7 +573,8 @@ RTN
 @add-local ( name* -- )
 
 	DUP2 ;term/name ;scmp JSR2 ,&no-link JCN
-	DUP2 ;to-filepath JSR2 ;add-a-tag JSR2 ^s ;a-tag ^>
+	DUP2 ;to-filepath JSR2 ;add-a-tag JSR2 
+	^s ;a-tag ^>
 	RTN
 	&no-link
 		^s [ LIT '/ ] ^c
@@ -556,13 +583,13 @@ RTN
 
 @to-filepath ( name* -- filepath* )
 	
-	;buff
-		;output-path ;put/string JSR2
-		SWP2 ;put/string JSR2
-		;html-ext ;put/string JSR2
-		( close ) #00 ROT ROT STA
-	;buff #20 [ LIT '_ ] ;cswp JSR2
-	;buff
+	;buff STH2k
+		;output-path PUTS
+		SWP2 PUTS
+		;html-ext PUTS
+		PUTN
+	STH2kr #20 [ LIT '_ ] ;cswp JSR2
+	STH2r
 
 RTN
 
@@ -718,6 +745,12 @@ RTN
 
 RTN
 	&a $2 &b $2
+
+@scap ( addr* -- addr* )
+
+	#0001 -- &eol INC2 LDAk ,&eol JCN
+
+RTN
 
 @put ( addr* string* -- addr* )
 
