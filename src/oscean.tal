@@ -116,7 +116,7 @@ RTN
 
 @build-one ( -> ) 
 
-	FILE [ ;focus-page ;find-term JSR2 ] ;build-page JSR2
+	;focus-page ;find-term JSR2 ;build-page JSR2
 	HALT
 
 BRK
@@ -128,7 +128,7 @@ BRK
 	&while
 		( move to name ) 2++ 
 		( display ) STH2kr PRINT-CR INC2r
-		( build ) DUP2 FILE SWP2 ,build-page JSR
+		( build ) DUP2 ,build-page JSR
 		( move to eol ) &eol INC2 LDAk ,&eol JCN INC2
 		LDAk ,&while JCN
 	POP2 POP2r
@@ -138,7 +138,7 @@ RTN
 
 ( ---------------------------------- )
 
-@build-page ( FILE* name* -- )
+@build-page ( name* -- )
 	
 	( cleanup )
 	( zero-page ) #0000 #0100 ;mclr JSR2
@@ -173,13 +173,10 @@ RTN
 	;html-tag ^>
 
 	( save file )
-	;to-filepath JSR2 .File/name DEO2
+	;to-output-path JSR2 .File/name DEO2
 	FILE ;slen JSR2   .File/length DEO2
 	FILE              .File/save DEO2
-
 	FILE ;check-page JSR2
-
-	POP2
 
 RTN
 
@@ -263,20 +260,10 @@ RTN
 
 @build-page-main-body ( name* -- name* )
 
-	( create include path )
-	#00 ;buff STA
-	;input-path ;buff ;scpy JSR2
-	DUP2 ;buff ;scat JSR2
-	;htm-ext ;buff ;scat JSR2
-	;buff #20 [ LIT '_ ] ;cswp JSR2
-
-	( find include position )
-	FILE DUP2 ;slen JSR2 ++ STH2
-
 	( write body )
-	;buff .File/name DEO2
+	DUP2 ;to-include-path JSR2 .File/name DEO2
 	INCLUDE-SIZE .File/length DEO2
-	STH2kr .File/load DEO2
+	FILE DUP2 ;slen JSR2 ++ STH2k .File/load DEO2
 
 	.File/success DEI2 INCLUDE-SIZE !! ,&continue JCN
 		DUP2 ;error-include-size ;print-error JSR2
@@ -543,21 +530,19 @@ RTN
 
 @add-attr ( body* attr* -- )
  	
- 	FILE RESUME
-	 	#20 PUTC
-	 	SWP2 PUTS
-		[ LIT '= ] PUTC
-		[ LIT '" ] PUTC
-		SWP2 PUTS
-		[ LIT '" ] PUTC
-		PUTN
+ 	^space
+	^s
+	[ LIT '= ] ^c
+	[ LIT '" ] ^c
+	^s
+	[ LIT '" ] ^c
 
 RTN
 
 @add-local ( name* -- )
 
 	DUP2 ;term/name ;scmp JSR2 ,&no-link JCN
-	DUP2 ;to-filepath JSR2 ;add-a-tag JSR2 
+	DUP2 ;to-output-path JSR2 ;add-a-tag JSR2 
 	^s ;a-tag ^>
 	RTN
 	&no-link
@@ -565,19 +550,27 @@ RTN
 
 RTN
 
-@to-filepath ( name* -- filepath* )
+@to-output-path ( name* -- filepath* )
 	
-	;buff STH2k
-		;output-path PUTS
-		SWP2 PUTS
-		;html-ext PUTS
-		PUTN
-	STH2kr #20 [ LIT '_ ] ;cswp JSR2
-	STH2r
+	#00 ;buff STA
+	;output-path ;buff ;scpy JSR2
+	( name* ) ;buff ;scat JSR2
+	;html-ext ;buff ;scat JSR2
+	;buff #20 [ LIT '_ ] ;cswp JSR2
+	;buff
 
 RTN
 
-	@path $30
+@to-include-path ( name* -- filepath* )
+
+	#00 ;buff STA
+	;input-path ;buff ;scpy JSR2
+	;buff ;scat JSR2
+	;htm-ext ;buff ;scat JSR2
+	;buff #20 [ LIT '_ ] ;cswp JSR2
+	;buff
+
+RTN
 
 ( generics )
 
