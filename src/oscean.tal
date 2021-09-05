@@ -11,6 +11,7 @@
 %DEBUG  { ;print-hex/byte JSR2 #0a .Console/write DEO }
 %DEBUG2 { ;print-hex/short JSR2 #0a .Console/write DEO }
 %PRINT { ;print-string JSR2 #0a .Console/write DEO }
+%PRINT-CR { ;print-hex/short JSR2 #0d .Console/write DEO }
 
 %RTN { JMP2r }
 %HALT { #0101 .System/debug DEO2 }
@@ -28,7 +29,9 @@
 %FILE { #8000 }
 %FILE-SIZE { #8000 }
 
-%GET-DEPTH { #0002 -- LDA ;chex JSR2 }
+%GET-DEPTH { DUP2 #0002 -- LDA ;chex JSR2 }
+%REMOVE-LINEBREAKS { #0a #00 ;cswp JSR2 }
+%REWIND { #00 ;prev-char JSR2 INC2 }
 
 %^s { FILE ;scat JSR2 }
 %^c { FILE ;ccat JSR2 }
@@ -58,60 +61,13 @@
 |0100 ( -> )
 
 	;load JSR2
-	,focus-page LDR ,build-one JCN
-		,build-all JMP
+	,focus-page LDR ;build-one JCN2
+		;build-all JMP2
 	HALT
 	
 BRK
 
 @focus-page ( "dotgrid ) $1
-
-@build-one ( -> ) 
-
-	;focus-page ;find-term JSR2 ;build-page JSR2 
-	HALT
-
-BRK
-
-@build-all ( -- )
-	
-	#0000
-	LEXICON
-	&while
-		( move to name ) 2++ 
-		( display )
-			( print count ) OVR2 ;print-hex/short JSR2 #0d .Console/write DEO
-			( incr count ) SWP2 INC2 SWP2
-		( build ) DUP2 ;build-page JSR2
-		( move to eol ) DUP2 ;slen JSR2 ++ INC2 
-		LDAk ,&while JCN
-	POP2 POP2
-	#0a .Console/write DEO 
-	HALT
-
-RTN
-
-@load ( -- )
-	
-	;lexicon-path ,&lexicon JSR
-	RTN
-	&lexicon ( path* -- )
-		( load lexicon )
-		.File/name DEO2
-		LEXICON-SIZE  .File/length DEO2
-		LEXICON       .File/load DEO2
-		( remove linebreaks ) LEXICON #0a #00 ;cswp JSR2 
-	RTN
-	&diary ( path* -- )
-		DIARY DIARY-SIZE ;mclr JSR2
-		( load diary )
-		.File/name DEO2
-		DIARY-SIZE  .File/length DEO2
-		DIARY       .File/load DEO2
-		( remove linebreaks ) DIARY #0a #00 ;cswp JSR2 
-	RTN
-
-RTN
 
 @print-error ( name* msg* -- )
 	
@@ -131,18 +87,65 @@ RTN
 
 RTN
 
+@load ( -- )
+	
+	;lexicon-path ,&lexicon JSR
+	RTN
+	&lexicon ( path* -- )
+		( load lexicon )
+		.File/name DEO2
+		LEXICON-SIZE  .File/length DEO2
+		LEXICON STH2k .File/load DEO2
+		STH2r REMOVE-LINEBREAKS
+	RTN
+	&diary ( path* -- )
+		DIARY DIARY-SIZE ;mclr JSR2
+		( load diary )
+		.File/name DEO2
+		DIARY-SIZE  .File/length DEO2
+		DIARY STH2k .File/load DEO2
+		STH2r REMOVE-LINEBREAKS
+	RTN
+
+RTN
+
+@build-one ( -> ) 
+
+	;focus-page ;find-term JSR2 ,build-page JSR2
+	HALT
+
+BRK
+
+@build-all ( -- )
+	
+	LIT2r 0000
+	LEXICON
+	&while
+		( move to name ) 2++ 
+		( display ) STH2kr PRINT-CR INC2r
+		( build ) DUP2 ,build-page JSR
+		( move to eol ) &eol INC2 LDAk ,&eol JCN INC2
+		LDAk ,&while JCN
+	POP2 POP2r
+	HALT
+
+RTN
+
+
 ( ---------------------------------- )
 
 @build-page ( name* -- )
 
-	( clear zero-page )
-	#0000 #0100 ;mclr JSR2
+	( cleanup )
+	( zero-page ) #0000 #0100 ;mclr JSR2
+	( output ) FILE FILE-SIZE ;mclr JSR2
+
 	( copy name )
 	DUP2 ;term/name ;scpy JSR2
 	( copy diary )
 	DUP2 ;find-diary JSR2
 	DUP2 #0000 == ,&continue JCN
-		( rewind ) #00 ;prev-char JSR2 INC2 
+		REWIND 
 		DUP2 ;term/diary #0050 ;mcpy JSR2
 		( copy pict )
 		;term/diary #0006 ++ LDAk ;term/pict ;ccat JSR2
@@ -150,9 +153,6 @@ RTN
 		INC2 LDA ;term/pict ;ccat JSR2
 		&continue
 	POP2
-
-	( create file )
-	FILE FILE-SIZE ;mclr JSR2
 
 	;doctype ^s
 	( create body )
@@ -182,6 +182,7 @@ RTN
 	;head-tag ^<
 		;stylesheet-txt ;stylesheet-type ;stylesheet-path ;add-link-tag JSR2
 		;shortcuticon-txt ;shortcuticon-type ;shortcuticon-path ;add-link-tag JSR2
+		( TODO: add og )
 		;title-tag ^<
 			;title-txt ^s ^space ;mdash-entity-txt ^s ^space DUP2 ^s
 		;title-tag ^>
@@ -202,13 +203,13 @@ RTN
 @build-page-nav ( name* -- name* )
 
 	;nav-tag ^<
-		DUP2 GET-DEPTH #00 = ,&no-siblings JCN
+		GET-DEPTH #00 = ,&no-siblings JCN
 		( parents ) 
-		DUP2 GET-DEPTH #02 < ,&no-parents JCN
+		GET-DEPTH #02 < ,&no-parents JCN
 			DUP2 ;find-parent JSR2 ;find-parent JSR2 ,&children JSR POP2
 			&no-parents
 		( siblings ) 
-		DUP2 GET-DEPTH #01 < ,&no-siblings JCN
+		GET-DEPTH #01 < ,&no-siblings JCN
 			DUP2 ;find-parent JSR2 ,&children JSR POP2
 			&no-siblings
 		( children ) ,&children JSR
@@ -219,7 +220,7 @@ RTN
 
 		;ul-tag ^<
 		DUP2
-		( stash depth ) DUP2 GET-DEPTH STH
+		( stash depth ) GET-DEPTH STH
 		( start after ) DUP2 ;slen JSR2 ++ INC2 
 		&while
 			( stop at sibling ) LDAk ;chex JSR2 STHkr = ,&end JCN
@@ -250,7 +251,6 @@ RTN
 			;build-module-album JSR2
 			&no-album
 		;build-module-calendar JSR2
-
 	;main-tag ^>
 
 RTN
@@ -471,8 +471,8 @@ RTN
 
 @find-parent ( term* -- parent* )
 
-	( rewind line ) #00 ;prev-char JSR2 
-	( stash depth ) INC2k LDA ;chex JSR2 #01 - STH
+	REWIND 
+	( stash depth ) LDAk ;chex JSR2 #01 - STH
 	LEXICON SWP2
 	&loop
 		1-- #00 ;prev-char JSR2 
