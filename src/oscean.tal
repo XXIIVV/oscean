@@ -72,11 +72,6 @@
 	
 BRK
 
-@str1 "hello $1
-@str2 "world $1
-
-@buffer $30
-
 @focus-page ( "uxntal ) $1
 
 @print-error ( name* msg* -- )
@@ -252,7 +247,7 @@ RTN
 	
 	;main-tag ^<
 		( picture )
-		;no-picture ;term/pict ;scmp-seg JSR2 ,&no-picture JCN
+		;term/pict LDA #00 = ,&no-picture JCN
 			;term/diary ;build-module-photo JSR2
 			&no-picture
 		( body )
@@ -520,7 +515,7 @@ RTN
 RTN
 
 @add-img-tag ( src* alt* -- )
-	
+
 	STH2 STH2
 	[ LIT '< ] ^c
 	;img-tag ^s
@@ -536,9 +531,9 @@ RTN
 	FILE RESUME
 		[ LIT '< ] PUTC 
 		;link-tag PUTS PUTN
-			;href-attr ;add-attr2 JSR2
-			;type-attr ;add-attr2 JSR2
-			;rel-attr ;add-attr2 JSR2
+			;href-attr ;add-attr JSR2
+			;type-attr ;add-attr JSR2
+			;rel-attr ;add-attr JSR2
 	FILE RESUME 
 		[ LIT '/ ] PUTC
 		[ LIT '> ] PUTC
@@ -546,9 +541,9 @@ RTN
 
 RTN
 
-@add-attr2 ( body* attr* -- addr )
-
-	FILE RESUME
+@add-attr ( body* attr* -- )
+ 	
+ 	FILE RESUME
 	 	#20 PUTC
 	 	SWP2 PUTS
 		[ LIT '= ] PUTC
@@ -556,17 +551,6 @@ RTN
 		SWP2 PUTS
 		[ LIT '" ] PUTC
 		PUTN
-
-RTN
-
-@add-attr ( body* attr* -- )
- 	
- 	^space
-	^s
-	[ LIT '= ] ^c
-	[ LIT '" ] ^c
-	^s
-	[ LIT '" ] ^c
 
 RTN
 
