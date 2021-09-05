@@ -28,14 +28,14 @@
 %FILE { #8000 }
 %FILE-SIZE { #8000 }
 
+%GET-DEPTH { #0002 -- LDA ;chex JSR2 }
+
 %^s { FILE ;scat JSR2 }
 %^c { FILE ;ccat JSR2 }
 %^space { #20 ^c }
 %^< { STH2 LIT '< ^c STH2r ^s LIT '> ^c }
 %^> { STH2 LIT '< ^c LIT '/ ^c STH2r ^s LIT '> ^c }
 %^<> { STH2k ^< ^s STH2r ^> }
-
-%GET-DEPTH { #0002 -- LDA ;chex JSR2 }
 
 ( devices )
 
@@ -49,8 +49,9 @@
 |0000 $2 
 
 @term
-	&name $20
+	&name $30
 	&pict $4
+	&diary $50
 
 ( program )
 
@@ -63,7 +64,7 @@
 	
 BRK
 
-@focus-page ( "directory ) $1
+@focus-page ( "dotgrid ) $1
 
 @build-one ( -> ) 
 
@@ -134,9 +135,23 @@ RTN
 
 @build-page ( name* -- )
 
-	( keep a copy )
+	( copy name )
 	#00 .term/name STZ
 	DUP2 ;term/name ;scpy JSR2
+
+	( copy diary )
+	#00 .term/diary STZ
+	DUP2 ;find-diary JSR2
+	DUP2 #0000 == ,&continue JCN
+		( rewind ) #00 ;prev-char JSR2 INC2 
+		DUP2 ;term/diary #0050 ;mcpy JSR2
+		( copy pict )
+		#00 .term/pict STZ
+		;term/diary #0006 ++ LDAk ;term/pict ;ccat JSR2
+		INC2 LDAk ;term/pict ;ccat JSR2
+		INC2 LDA ;term/pict ;ccat JSR2
+		&continue
+	POP2
 
 	( create file )
 	FILE FILE-SIZE ;mclr JSR2
@@ -145,13 +160,7 @@ RTN
 	( create body )
 	;html-tag ^<
 		( head )
-		;head-tag ^<
-			;stylesheet-txt ;stylesheet-type ;stylesheet-path ;add-link-tag JSR2
-			;shortcuticon-txt ;shortcuticon-type ;shortcuticon-path ;add-link-tag JSR2
-			;title-tag ^<
-				;title-txt ^s ^space ;mdash-entity-txt ^s ^space DUP2 ^s
-			;title-tag ^>
-		;head-tag ^>
+		;build-head JSR2
 		( body )
 		;body-tag ^<
 			;build-page-header JSR2
@@ -167,6 +176,18 @@ RTN
 	FILE              .File/save DEO2
 
 	FILE ;check-page JSR2
+
+RTN
+
+@build-head ( name* -- name* )
+
+	;head-tag ^<
+		;stylesheet-txt ;stylesheet-type ;stylesheet-path ;add-link-tag JSR2
+		;shortcuticon-txt ;shortcuticon-type ;shortcuticon-path ;add-link-tag JSR2
+		;title-tag ^<
+			;title-txt ^s ^space ;mdash-entity-txt ^s ^space DUP2 ^s
+		;title-tag ^>
+	;head-tag ^>
 
 RTN
 
@@ -220,10 +241,13 @@ RTN
 @build-page-main ( name* -- name* )
 	
 	;main-tag ^<
-
-		( display picture )
-		;build-page-main-pict JSR2
+		( picture )
+		;no-picture ;term/pict ;scmp-seg JSR2 ,&no-picture JCN
+			;term/diary ;build-module-photo JSR2
+			&no-picture
+		( body )
 		;build-page-main-body JSR2
+		( modules )
 		DUP2 1-- LDA [ LIT ', ] ! ,&no-album JCN 
 			;build-module-album JSR2
 			&no-album
@@ -259,44 +283,6 @@ RTN
 
 RTN
 
-@build-page-main-pict ( name* -- name* )
-	
-	( reset pict )
-	#0000 .term/pict STZ2
-	#00 .term/pict INC INC STZ
-
-	( load page2 )
-	;diary-path-page2 ;load/diary JSR2
-	DUP2 ;find-diary JSR2 
-
-	( load page1 )
-	DUP2 #0000 !! ,&page1 JCN
-		POP2 ;diary-path-page1 ;load/diary JSR2
-		DUP2 ;find-diary JSR2
-		&page1
-
-	( load page0 )
-	DUP2 #0000 !! ,&page0 JCN
-		POP2 ;diary-path-page0 ;load/diary JSR2
-		DUP2 ;find-diary JSR2
-		&page0
-
-	( skip when no diaries )
-	DUP2 #0000 !! ,&continue JCN
-		POP2 RTN
-		&continue
-
-	( rewind ) #00 ;prev-char JSR2 INC2 
-
-	( save pict )
-	DUP2 #0006 ++ LDAk ;term/pict ;ccat JSR2
-	INC2 LDAk ;term/pict ;ccat JSR2
-	INC2 LDA ;term/pict ;ccat JSR2
-
-	;build-module-photo JSR2
-
-RTN
-
 @build-module-calendar ( name* -- name* )
 
 	;ul-tag ^<
@@ -314,10 +300,17 @@ RTN
 		STH2
 		DIARY 
 		&while
-			DUP2 #0005 ++ LDA [ LIT '+ ] ! ,&continue JCN 
-				DUP2 #000a ++ STH2kr SWP2 ;scmp-seg JSR2 #01 ! ,&continue JCN
-				( move to event name )
-				DUP2 #000a ++ STH2kr ;slen JSR2 ++ INC2 ;li-tag ^<>
+			DUP2 #0005 ++ LDA [ LIT '+ ] ! ;&continue JCN2
+				DUP2 #000a ++ STH2kr SWP2 ;scmp-seg JSR2 #01 ! ;&continue JCN2
+				;li-tag ^<
+					( event date )
+					DUP2 ;buff STH2k #0005 ;mcpy JSR2 
+					#00 STH2kr #0005 ++ STA
+					STH2r ;b-tag ^<>
+					#20 ^c ;mdash-entity-txt ^s #20 ^c 
+					( event name )
+					DUP2 #000a ++ STH2kr ;slen JSR2 ++ INC2 ^s
+				;li-tag ^>
 				&continue
 			( move to eol ) DUP2 ;slen JSR2 ++ INC2 
 			LDAk ;&while JCN2
@@ -447,18 +440,34 @@ RTN
 
 @find-diary ( name* -- diary* )
 
-	STH2
-	DIARY 
-	&while
-		( skip events ) DUP2 #0006 ++ ;no-picture SWP2 ;scmp-seg JSR2 ,&skip JCN
-		( move to name ) #000a ++
-		( test ) DUP2 STH2kr SWP2 ;scmp-seg JSR2 ,&end JCN
-		&skip
-		( move to eol ) DUP2 ;slen JSR2 ++ INC2 
-		LDAk ,&while JCN
-	POP2 #0000
-	&end
-	POP2r
+	( load page2 )
+	;diary-path-page2 ;load/diary JSR2
+	;&search JSR2 
+	( load page1 )
+	DUP2 #0000 !! ,&page1 JCN
+		POP2 ;diary-path-page1 ;load/diary JSR2 
+		DUP2 ;&search JSR2
+		&page1
+	( load page0 )
+	DUP2 #0000 !! ,&page0 JCN
+		POP2 ;diary-path-page0 ;load/diary JSR2 
+		DUP2 ;&search JSR2
+		&page0
+	RTN
+
+	&search ( name* -- diary* )
+		STH2
+		DIARY 
+		&while
+			( skip events ) DUP2 #0006 ++ ;no-picture SWP2 ;scmp-seg JSR2 ,&skip JCN
+			( move to name ) #000a ++
+			( test ) DUP2 STH2kr SWP2 ;scmp-seg JSR2 ,&end JCN
+			&skip
+			( move to eol ) DUP2 ;slen JSR2 ++ INC2 
+			LDAk ,&while JCN
+		POP2 #0000
+		&end
+		POP2r
 
 RTN
 
@@ -748,14 +757,15 @@ RTN
 @body-tag "body $1
 @header-tag "header $1
 @nav-tag "nav $1
-@main-tag "main $1
 @footer-tag "footer $1
-@img-tag "img $1
-@a-tag "a $1
-@span-tag "span $1
-@link-tag "link $1
+@main-tag "main $1
 @ul-tag "ul $1
 @li-tag "li $1
+@a-tag "a $1
+@b-tag "b $1
+@img-tag "img $1
+@span-tag "span $1
+@link-tag "link $1
 @figure-tag "figure $1
 @figcaption-tag "figcaption $1
 
