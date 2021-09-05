@@ -67,7 +67,7 @@
 	
 BRK
 
-@focus-page ( "dotgrid ) $1
+@focus-page ( "about ) $1
 
 @print-error ( name* msg* -- )
 	
@@ -111,7 +111,7 @@ RTN
 
 @build-one ( -> ) 
 
-	;focus-page ;find-term JSR2 ,build-page JSR2
+	FILE [ ;focus-page ;find-term JSR2 ] ;build-page JSR2
 	HALT
 
 BRK
@@ -123,7 +123,7 @@ BRK
 	&while
 		( move to name ) 2++ 
 		( display ) STH2kr PRINT-CR INC2r
-		( build ) DUP2 ,build-page JSR
+		( build ) DUP2 FILE SWP2 ,build-page JSR
 		( move to eol ) &eol INC2 LDAk ,&eol JCN INC2
 		LDAk ,&while JCN
 	POP2 POP2r
@@ -131,11 +131,10 @@ BRK
 
 RTN
 
-
 ( ---------------------------------- )
 
-@build-page ( name* -- )
-
+@build-page ( FILE* name* -- )
+	
 	( cleanup )
 	( zero-page ) #0000 #0100 ;mclr JSR2
 	( output ) FILE FILE-SIZE ;mclr JSR2
@@ -175,9 +174,11 @@ RTN
 
 	FILE ;check-page JSR2
 
+	POP2
+
 RTN
 
-@build-head ( name* -- name* )
+@build-head ( FILE* name* -- name* )
 
 	;head-tag ^<
 		;stylesheet-txt ;stylesheet-type ;stylesheet-path ;add-link-tag JSR2
@@ -555,14 +556,17 @@ RTN
 
 @to-filepath ( name* -- filepath* )
 	
-	#00 ;buff STA
-	;output-path ;buff ;scpy JSR2
-	( name* ) ;buff ;scat JSR2
-	;html-ext ;buff ;scat JSR2
+	;buff
+		;output-path ;put/string JSR2
+		SWP2 ;put/string JSR2
+		;html-ext ;put/string JSR2
+		( close ) #00 ROT ROT STA
 	;buff #20 [ LIT '_ ] ;cswp JSR2
 	;buff
 
 RTN
+
+	@path $30
 
 ( generics )
 
@@ -714,6 +718,24 @@ RTN
 
 RTN
 	&a $2 &b $2
+
+@put ( addr* string* -- addr* )
+
+	&string ( addr* string* -- addr* )
+		&while
+			SWP2 STH2
+			LDAk STH2r ROT
+			,&char JSR 
+			SWP2 INC2 
+			LDAk ,&while JCN
+		POP2
+	RTN
+	&char ( addr* char -- addr* )
+		ROT ROT STH2k STA
+		STH2r INC2
+	RTN
+	
+RTN
 
 @print-hex ( value* -- )
 	
