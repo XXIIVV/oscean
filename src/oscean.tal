@@ -72,7 +72,7 @@
 	
 BRK
 
-@focus-page ( "uxntal ) $1
+@focus-page ( "black ) $1
 
 @print-error ( name* msg* -- )
 	
@@ -129,7 +129,7 @@ BRK
 		( move to name ) 2++ 
 		( display ) STH2kr PRINT-CR INC2r
 		( build ) DUP2 ,build-page JSR
-		( move to eol ) &eol INC2 LDAk ,&eol JCN INC2
+		( goto eol ) &eol INC2 LDAk ,&eol JCN INC2
 		LDAk ,&while JCN
 	POP2 POP2r
 	HALT
@@ -253,6 +253,13 @@ RTN
 		DUP2 1-- LDA [ LIT ', ] ! ,&no-album JCN 
 			;build-module-album JSR2
 			&no-album
+		( special pages )
+		DUP2 ;calendar-txt ;scmp JSR2 #00 = ,&no-calendar JCN
+			;build-special-calendar JSR2
+			&no-calendar
+		DUP2 ;journal-txt ;scmp JSR2 #00 = ,&no-journal JCN
+			;build-special-journal JSR2
+			&no-journal
 		;build-module-calendar JSR2
 	;main-tag ^>
 
@@ -274,6 +281,39 @@ RTN
 
 RTN
 
+@build-special-calendar ( -- )
+
+	;ul-tag ^<
+		;diary-path-page2 ;load/diary JSR2 
+		,&append-li JSR
+		;diary-path-page1 ;load/diary JSR2 
+		,&append-li JSR
+		;diary-path-page0 ;load/diary JSR2 
+		,&append-li JSR
+	;ul-tag ^>
+
+	RTN
+
+	&append-li ( name* -- name* )
+		DIARY 
+		&while
+			DUP2 #0005 ++ LDA [ LIT '+ ] ! ,&continue JCN
+				;li-tag ^<
+					DUP2 ;build-module-event JSR2
+				;li-tag ^>
+				&continue
+			( goto eol ) &eol INC2 LDAk ,&eol JCN INC2
+			LDAk ;&while JCN2
+		POP2
+
+RTN
+
+@build-special-journal ( -- )
+
+	#bb DEBUG
+
+RTN
+
 @build-module-calendar ( name* -- name* )
 
 	;ul-tag ^<
@@ -291,20 +331,14 @@ RTN
 		STH2
 		DIARY 
 		&while
-			DUP2 #0005 ++ LDA [ LIT '+ ] ! ;&continue JCN2
+			DUP2 #0005 ++ LDA [ LIT '+ ] ! ,&continue JCN
 				DUP2 #000a ++ STH2kr SWP2 ;scmp-seg JSR2 #01 ! ;&continue JCN2
 				;li-tag ^<
-					( event date )
-					DUP2 ;buff STH2k #0005 ;mcpy JSR2 
-					#00 STH2kr #0005 ++ STA
-					STH2r ;b-tag ^<>
-					#20 ^c ;mdash-entity-txt ^s #20 ^c 
-					( event name )
-					DUP2 #000a ++ STH2kr ;slen JSR2 ++ INC2 ^s
+					DUP2 ;build-module-event JSR2
 				;li-tag ^>
 				&continue
-			( move to eol ) DUP2 ;slen JSR2 ++ INC2 
-			LDAk ;&while JCN2
+			( goto eol ) &eol INC2 LDAk ,&eol JCN INC2
+			LDAk ,&while JCN
 		POP2 STH2r
 
 RTN
@@ -328,21 +362,27 @@ RTN
 			DUP2 #0006 ++ ;term/pict SWP2 ;scmp-seg JSR2 ,&continue JCN
 				DUP2 ;build-module-photo JSR2
 			&continue
-			( move to eol ) DUP2 ;slen JSR2 ++ INC2 
-			LDAk ;&while JCN2
+			( goto eol ) &eol INC2 LDAk ,&eol JCN INC2
+			LDAk ,&while JCN
 		POP2 STH2r
+
+RTN
+
+@build-module-event ( diary* -- )
+
+	( event date )
+	;buff STH2k #0005 ;mcpy JSR2 
+	#00 STH2kr #0005 ++ STA
+	STH2r ;b-tag ^<>
+	#20 ^c ;mdash-entity-txt ^s #20 ^c 
+	( event name )
+	DUP2 #09 ;next-char JSR2 INC2 #09 ;next-char JSR2 INC2 ^s
 
 RTN
 
 @build-module-photo ( diary* -- )
 
-	( create src* )
-	#00 ;buff STA
-	;media-diary-path ;buff ;scpy JSR2
-	DUP2 #0006 ++ LDAk ;buff ;ccat JSR2
-	INC2 LDAk ;buff ;ccat JSR2
-	INC2 LDA ;buff ;ccat JSR2
-	;jpg-ext ;buff ;scat JSR2
+	DUP2 ;to-diary-path JSR2
 
 	( move to title ) #09 ;next-char JSR2 INC2 #09 ;next-char JSR2 INC2 DUP2
 
@@ -569,6 +609,17 @@ RTN
 	;htm-ext ;buff ;scat JSR2
 	;buff #20 [ LIT '_ ] ;cswp JSR2
 	;buff
+
+RTN
+
+@to-diary-path ( diary* -- filepath* )
+	
+	#00 ;buff STA
+	;media-diary-path ;buff ;scpy JSR2
+	#0006 ++ LDAk ;buff ;ccat JSR2
+	INC2 LDAk ;buff ;ccat JSR2
+	INC2 LDA ;buff ;ccat JSR2
+	;jpg-ext ;buff ;scat JSR2
 
 RTN
 
@@ -818,6 +869,8 @@ RTN
 @merveilles-alt-txt "Merveilles $1
 @uxn-alt-txt "Uxn 20 "Powered $1
 @http-txt "http $1
+@calendar-txt "calendar $1
+@journal-txt "journal $1
 
 @lexicon-path "database/lexicon $1
 @diary-path-page2 "database/diary2 $1
