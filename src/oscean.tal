@@ -148,18 +148,17 @@ RTN
 	( zero-page ) #0000 #0100 ;mclr JSR2
 	( output ) FILE FILE-SIZE ;mclr JSR2
 
-	( copy name )
-	DUP2 ;term/name ;scpy JSR2
-
 	( term name limit )
-	;term/name ;slen JSR2 TERM-NAME-SIZE << ,&namelength-ok JCN
+	DUP2 ;slen JSR2 TERM-NAME-SIZE << ,&namelength-ok JCN
 		DUP2 ;error-term-name-limit ;print-error JSR2
 		&namelength-ok
 
-	( copy diary )
+	( fill name )
+	DUP2 ;term/name ;scpy JSR2
+
+	( fill diary )
 	DUP2 ;find-diary JSR2
 	DUP2 #0000 == ,&continue JCN
-		REWIND 
 		DUP2 ;term/diary #0050 ;mcpy JSR2
 		( copy pict )
 		;term/diary #0006 ++ LDAk ;term/pict ;ccat JSR2
@@ -409,12 +408,12 @@ RTN
 @build-module-event ( diary* -- )
 
 	( event date )
-	;buff STH2k #0005 ;mcpy JSR2 
-	#00 STH2kr #0005 ++ STA
-	STH2r ;code-tag ^<>
-	^space ;mdash-entity-txt ^s ^space 
-	( event name )
-	DUP2 #09 ;next-char JSR2 INC2 #09 ;next-char JSR2 INC2 ^s
+	( clip bound ) DUP2 #0005 ++ STH2
+	( clip start ) #00 STH2kr STA
+	( clip wrap ) ;code-tag ^<>
+	( clip restore ) [ LIT '+ ] STH2r STA
+	( event spacer ) ^space ;mdash-entity-txt ^s ^space 
+	( event name ) DUP2 #09 ;next-char JSR2 INC2 #09 ;next-char JSR2 INC2 ^s
 
 RTN
 
@@ -517,8 +516,7 @@ RTN
 		DIARY 
 		&while
 			( skip events ) DUP2 #0006 ++ ;no-picture SWP2 ;scmp-seg JSR2 ,&skip JCN
-			( move to name ) #000a ++
-			( test ) DUP2 STH2kr SWP2 ;scmp-seg JSR2 ,&end JCN
+			( test name ) DUP2 #000a ++ STH2kr SWP2 ;scmp-seg JSR2 ,&end JCN
 			&skip
 			( move to eol ) DUP2 ;slen JSR2 ++ INC2 
 			LDAk ,&while JCN
