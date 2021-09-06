@@ -16,19 +16,6 @@
 %RTN { JMP2r }
 %HALT { #0101 .System/debug DEO2 }
 
-( Map:
-	0x1800 - 0x3000 Lexicon
-	0x3000 - 0x8000 Diary
-	0x8000 - 0xffff Output )
-
-%LEXICON { #1800 }
-%LEXICON-SIZE { #1800 }
-%DIARY { #3000 }
-%DIARY-SIZE { #5000 }
-%INCLUDE-SIZE { #7000 }
-%FILE { #8000 }
-%FILE-SIZE { #8000 }
-
 %GET-DEPTH { DUP2 #0002 -- LDA ;chex JSR2 }
 %REMOVE-LINEBREAKS { #0a #00 ;cswp JSR2 }
 %REWIND { #00 ;prev-char JSR2 INC2 }
@@ -45,6 +32,21 @@
 %PUTN { #00 ROT ROT STA }
 %RESUME { ;scap JSR2 }
 
+( Map:
+	0x1800 - 0x3000 Lexicon
+	0x3000 - 0x8000 Diary
+	0x8000 - 0xffff Output )
+
+%TERM-NAME-SIZE { #0016 }
+
+%LEXICON { #1800 }
+%LEXICON-SIZE { #1800 }
+%DIARY { #3000 }
+%DIARY-SIZE { #5000 }
+%INCLUDE-SIZE { #7000 }
+%FILE { #8000 }
+%FILE-SIZE { #8000 }
+
 ( devices )
 
 |00 @System     [ &vector $2 &wst      $1 &rst    $1 &pad   $4 &r      $2 &g      $2 &b    $2 &debug  $1 &halt $1 ]
@@ -57,7 +59,7 @@
 |0000 $2 
 
 @term
-	&name $30
+	&name $16 ( term name limit )
 	&pict $4
 	&diary $4c
 
@@ -74,7 +76,7 @@
 	
 BRK
 
-@focus-page ( "now ) $1
+@focus-page ( "calendar ) $1
 
 @print-error ( name* msg* -- )
 	
@@ -148,6 +150,12 @@ RTN
 
 	( copy name )
 	DUP2 ;term/name ;scpy JSR2
+
+	( term name limit )
+	;term/name ;slen JSR2 TERM-NAME-SIZE << ,&namelength-ok JCN
+		DUP2 ;error-term-name-limit ;print-error JSR2
+		&namelength-ok
+
 	( copy diary )
 	DUP2 ;find-diary JSR2
 	DUP2 #0000 == ,&continue JCN
@@ -298,16 +306,24 @@ RTN
 	&append-li ( name* -- name* )
 		DIARY 
 		&while
-			DUP2 #0005 ++ LDA [ LIT '+ ] ! ,&continue JCN
+			DUP2 #0005 ++ LDA [ LIT '+ ] ! ;&continue JCN2
+				( break list on year change )
+				DUP2 INC2 LDA [ STHk ] ;&last LDA = ,&no-yearchange JCN
+					;ul-tag ^>
+					;ul-tag ^<
+					&no-yearchange
 				;li-tag ^<
 					DUP2 ;build-module-event JSR2
 				;li-tag ^>
+				( save last )
+				[ STHr ] ;&last STA
 				&continue
 			( goto eol ) &eol INC2 LDAk ,&eol JCN INC2
 			LDAk ;&while JCN2
 		POP2
 
 RTN
+	&last $1
 
 @build-special-journal ( -- )
 
@@ -878,6 +894,7 @@ RTN
 
 @error-include-size "--include_size_exceeded $1
 @error-broken-link "--redlink $1
+@error-term-name-limit "--term_name_size_exceeded $1
 
 @stylesheet-type "text/css $1
 @shortcuticon-type "image/png $1
