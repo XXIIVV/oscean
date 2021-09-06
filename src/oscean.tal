@@ -59,7 +59,9 @@
 @term
 	&name $30
 	&pict $4
-	&diary $50
+	&diary $4c
+
+@buff $40
 
 ( program )
 
@@ -72,7 +74,7 @@
 	
 BRK
 
-@focus-page ( "black ) $1
+@focus-page ( "about ) $1
 
 @print-error ( name* msg* -- )
 	
@@ -310,9 +312,30 @@ RTN
 
 @build-special-journal ( -- )
 
-	#bb DEBUG
+	#00 ;&limit STA
+	;diary-path-page2 ;load/diary JSR2 
+	,&append-figure JSR
+	;diary-path-page1 ;load/diary JSR2 
+	,&append-figure JSR
+	;diary-path-page0 ;load/diary JSR2 
+	,&append-figure JSR
+	RTN
+
+	&append-figure ( name* -- name* )
+		DIARY 
+		&while
+			;&limit LDA #20 > ,&end JCN
+			DUP2 #0006 ++ ;no-picture SWP2 ;scmp-seg JSR2 ,&continue JCN
+				DUP2 ;build-module-photo JSR2
+				;&limit LDA INC ;&limit STA
+			&continue
+			( goto eol ) &eol INC2 LDAk ,&eol JCN INC2
+			LDAk ,&while JCN
+		&end
+		POP2
 
 RTN
+	&limit $1
 
 @build-module-calendar ( name* -- name* )
 
@@ -374,27 +397,40 @@ RTN
 	;buff STH2k #0005 ;mcpy JSR2 
 	#00 STH2kr #0005 ++ STA
 	STH2r ;code-tag ^<>
-	#20 ^c ;mdash-entity-txt ^s #20 ^c 
+	^space ;mdash-entity-txt ^s ^space 
 	( event name )
 	DUP2 #09 ;next-char JSR2 INC2 #09 ;next-char JSR2 INC2 ^s
 
 RTN
 
 @build-module-photo ( diary* -- )
-
-	DUP2 ;to-diary-path JSR2
-
-	( move to title ) #09 ;next-char JSR2 INC2 #09 ;next-char JSR2 INC2 DUP2
-
+ 
 	( html )
 	;figure-tag ^<
-		;buff SWP2 ;add-img-tag JSR2
+		DUP2 ;to-diary-path JSR2 OVR2 #09 ;next-char JSR2 INC2 #09 ;next-char JSR2 INC2 ;add-img-tag JSR2
 		;figcaption-tag ^<
-		^s
+			DUP2 #000a ++ ;term/name SWP2 ;scmp-seg JSR2 ,&skip JCN
+				DUP2 ;extract-term JSR2 ;add-local JSR2 
+				^space ;mdash-entity-txt ^s ^space 
+				&skip
+			#09 ;next-char JSR2 INC2 #09 ;next-char JSR2 INC2 ^s 
 		;figcaption-tag ^>
 	;figure-tag ^>
 
 RTN
+
+@extract-term ( diary* -- term* )
+
+	#00 ;&buff STA
+	#000a ++ 
+	( src ) DUP2
+	( length ) DUP2 #09 ;next-char JSR2 SWP2 -- STH2k
+	( dst ) ;&buff SWP2 ;mcpy JSR2
+	#00 ;&buff STH2r ++ STA
+	;&buff
+
+RTN
+	&buff $30
 
 @build-page-footer ( name* -- name* )
 
@@ -621,6 +657,7 @@ RTN
 	INC2 LDAk ;buff ;ccat JSR2
 	INC2 LDA ;buff ;ccat JSR2
 	;jpg-ext ;buff ;scat JSR2
+	;buff
 
 RTN
 
@@ -902,7 +939,5 @@ RTN
 
 @stylesheet-type "text/css $1
 @shortcuticon-type "image/png $1
-
-@buff $100
 
 |1800
