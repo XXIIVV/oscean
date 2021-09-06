@@ -76,7 +76,7 @@
 	
 BRK
 
-@focus-page ( "calendar ) $1
+@focus-page ( "journal ) $1
 
 @print-error ( name* msg* -- )
 	
@@ -161,9 +161,11 @@ RTN
 	DUP2 #0000 == ,&continue JCN
 		DUP2 ;term/diary #0050 ;mcpy JSR2
 		( copy pict )
-		;term/diary #0006 ++ LDAk ;term/pict ;ccat JSR2
-		INC2 LDAk ;term/pict ;ccat JSR2
-		INC2 LDA ;term/pict ;ccat JSR2
+		DUP2 #0006 ++
+		( clip bound ) DUP2 #0003 ++ STH2
+		( clip start ) #00 STH2kr STA
+		( clip wrap ) ;term/pict ;scpy JSR2
+		( clip restore ) #09 STH2r STA
 		&continue
 	POP2
 
@@ -437,10 +439,10 @@ RTN
 
 	#00 ;&buff STA
 	#000a ++ 
-	( src ) DUP2
-	( length ) DUP2 #09 ;next-char JSR2 SWP2 -- STH2k
-	( dst ) ;&buff SWP2 ;mcpy JSR2
-	#00 ;&buff STH2r ++ STA
+	( clip bound ) DUP2 #09 ;next-char JSR2 STH2
+	( clip start ) #00 STH2kr STA
+	( clip wrap ) ;&buff ;scat JSR2
+	( clip restore ) #09 STH2r STA
 	;&buff
 
 RTN
@@ -630,9 +632,10 @@ RTN
 	#0006 ++
 	#00 ;buff STA
 	;media-diary-path ;buff ;scpy JSR2
-	LDAk ;buff ;ccat JSR2
-	INC2 LDAk ;buff ;ccat JSR2
-	INC2 LDA ;buff ;ccat JSR2
+	( clip bound ) DUP2 #0003 ++ STH2
+	( clip start ) #00 STH2kr STA
+	( clip wrap ) ;buff ;scat JSR2
+	( clip restore ) #09 STH2r STA
 	;jpg-ext ;buff ;scat JSR2
 	;buff
 
