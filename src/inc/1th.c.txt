@@ -1,0 +1,264 @@
+#include <stdio.h>
+
+/* 
+Copyright (c) 2020 Devine Lu Linvega
+
+Permission to use, copy, modify, and distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE.
+*/
+
+#define SZ 256
+
+typedef struct Fraction {
+	int num, den;
+} Fraction;
+
+typedef struct Stack {
+	Fraction data[SZ];
+	Fraction *pointer;
+} Stack;
+
+typedef enum {
+	STANDARD,
+	MIXED,
+	DECIMAL,
+	HEXADECIMAL,
+	BINARY
+} PrintMode;
+
+PrintMode MODE;
+
+#pragma mark - Helpers
+
+static int
+scmp(char *a, char *b)
+{
+	int i = 0;
+	while(a[i] == b[i])
+		if(!a[i++])
+			return 1;
+	return 0;
+}
+
+static int
+gcd(int a, int b)
+{
+	if(b == 0)
+		return a;
+	return gcd(b, a % b);
+}
+
+static void
+pbin(int n, unsigned int l)
+{
+	while(l) {
+		putchar(n & l ? '1' : '0');
+		l >>= 1;
+	}
+	putchar(' ');
+}
+
+#pragma mark - Calculator
+
+static int
+error(char *err, char *msg)
+{
+	printf("%s Error: %s\n", err, msg);
+	return 0;
+}
+
+static int
+trypop(Stack *s, int len)
+{
+	int err = s->pointer - len < s->data;
+	if(err)
+		error("Stack", "underflow");
+	return !err;
+}
+
+static int
+trypush(Stack *s, int len)
+{
+	int err = s->pointer + len >= s->data + SZ;
+	if(err)
+		error("Stack", "overflow");
+	return !err;
+}
+
+static Fraction
+pop(Stack *s)
+{
+	return *(s->pointer--);
+}
+
+static void
+push(Stack *s, Fraction f)
+{
+	*(++s->pointer) = f;
+}
+
+static Fraction *
+get(Stack *s, int offset)
+{
+	return s->pointer - offset;
+}
+
+static Fraction
+Frac(int num, int den)
+{
+	Fraction f;
+	int d = gcd(num, den);
+	f.num = num / d;
+	f.den = den / d;
+	return f;
+}
+
+static void
+print(Stack *s)
+{
+	Fraction *f = s->data;
+	while(f++ != s->pointer) {
+		if(MODE == DECIMAL)
+			printf("%f ", f->num / (double)f->den);
+		else if(MODE == MIXED && f->num > f->den)
+			printf("%d&%d/%d ", f->num / f->den, f->num % f->den, f->den);
+		else if(MODE == HEXADECIMAL)
+			printf("%08hX ", f->num);
+		else if(MODE == BINARY)
+			pbin(f->num, 1 << 7);
+		else if(f->den != 1)
+			printf("%d/%d ", f->num, f->den);
+		else
+			printf("%d ", f->num);
+	}
+	printf("\n");
+}
+
+#pragma mark - Operations
+
+static int
+interpret(Stack *s, char *word)
+{
+	int value;
+	if(!word[0] || word[0] == ' ' || word[0] == '.')
+		print(s);
+	else if(scmp(word, "std"))
+		MODE = STANDARD;
+	else if(scmp(word, "mix"))
+		MODE = MIXED;
+	else if(scmp(word, "dec"))
+		MODE = DECIMAL;
+	else if(scmp(word, "hex"))
+		MODE = HEXADECIMAL;
+	else if(scmp(word, "bin"))
+		MODE = BINARY;
+	else if(sscanf(word, "%d", &value) && trypush(s, 1))
+		push(s, Frac(value, 1));
+	/* stack */
+	else if(scmp(word, "pop") && trypop(s, 1))
+		pop(s);
+	else if(scmp(word, "clr"))
+		s->pointer = s->data;
+	else if(scmp(word, "swp") && trypop(s, 2)) {
+		Fraction b = pop(s);
+		Fraction a = pop(s);
+		push(s, Frac(b.num, b.den));
+		push(s, Frac(a.num, a.den));
+	} else if(scmp(word, "dup") && trypop(s, 1) && trypush(s, 1)) {
+		Fraction *f = get(s, 0);
+		push(s, Frac(f->num, f->den));
+	} else if(scmp(word, "ovr") && trypop(s, 2) && trypush(s, 1)) {
+		Fraction *f = get(s, 1);
+		push(s, Frac(f->num, f->den));
+	} else if(scmp(word, "rot") && trypop(s, 3)) {
+		Fraction c = pop(s);
+		Fraction b = pop(s);
+		Fraction a = pop(s);
+		push(s, Frac(b.num, b.den));
+		push(s, Frac(c.num, c.den));
+		push(s, Frac(a.num, a.den));
+		/* arithmetic */
+	} else if((word[0] == '+' || scmp(word, "add")) && trypop(s, 2)) {
+		Fraction b = pop(s);
+		Fraction a = pop(s);
+		push(s, Frac((a.num * b.den) + (a.den * b.num), a.den * b.den));
+	} else if((word[0] == '-' || scmp(word, "sub")) && trypop(s, 2)) {
+		Fraction b = pop(s);
+		Fraction a = pop(s);
+		push(s, Frac((a.num * b.den) - (a.den * b.num), a.den * b.den));
+	} else if((word[0] == '*' || scmp(word, "mul")) && trypop(s, 2)) {
+		Fraction b = pop(s);
+		Fraction a = pop(s);
+		push(s, Frac(a.num * b.num, a.den * b.den));
+	} else if((word[0] == '/' || scmp(word, "div")) && trypop(s, 2)) {
+		Fraction b = pop(s);
+		Fraction a = pop(s);
+		push(s, Frac(a.num * b.den, a.den * b.num));
+	} else if((word[0] == '%' || scmp(word, "mod")) && trypop(s, 2)) {
+		Fraction b = pop(s);
+		Fraction a = pop(s);
+		push(s, Frac((a.num * b.den) % (a.den * b.num), a.den * b.den));
+		/* bitwise */
+	} else if((word[0] == '&' || scmp(word, "and")) && trypop(s, 2)) {
+		Fraction b = pop(s);
+		Fraction a = pop(s);
+		push(s, Frac((a.num * b.den) & (a.den * b.num), a.den * b.den));
+	} else if((word[0] == '|' || scmp(word, "or")) && trypop(s, 2)) {
+		Fraction b = pop(s);
+		Fraction a = pop(s);
+		push(s, Frac((a.num * b.den) | (a.den * b.num), a.den * b.den));
+	} else if((word[0] == '^' || scmp(word, "xor")) && trypop(s, 2)) {
+		Fraction b = pop(s);
+		Fraction a = pop(s);
+		push(s, Frac((a.num * b.den) ^ (a.den * b.num), a.den * b.den));
+	} else if((scmp(word, "<<") || scmp(word, "rol")) && trypop(s, 2)) {
+		Fraction b = pop(s);
+		Fraction a = pop(s);
+		push(s, Frac((a.num * b.den) << (a.den * b.num), a.den * b.den));
+	} else if((scmp(word, ">>") || scmp(word, "ror")) && trypop(s, 2)) {
+		Fraction b = pop(s);
+		Fraction a = pop(s);
+		push(s, Frac((a.num * b.den) >> (a.den * b.num), a.den * b.den));
+		/* special */
+	} else if((scmp(word, "inv")) && trypop(s, 1)) {
+		Fraction f = pop(s);
+		push(s, Frac(f.den, f.num));
+	} else if(scmp(word, "vid") && trypop(s, 1) && trypush(s, 1)) {
+		Fraction f = pop(s);
+		push(s, Frac(f.num, 1));
+		push(s, Frac(f.den, 1));
+	} else if(word)
+		return error("Command", word);
+	return 1;
+}
+
+static int
+run(Stack *s)
+{
+	int len = 0;
+	char c, word[64];
+	while((c = fgetc(stdin)) != EOF) {
+		if(c == ' ' || c == '\n') {
+			word[len] = '\0';
+			len = 0;
+			interpret(s, word);
+		} else
+			word[len++] = c;
+	}
+	return 0;
+}
+
+int
+main(void)
+{
+	Stack s;
+	s.pointer = s.data;
+	while(run(&s))
+		;
+	print(&s);
+	return 0;
+}

@@ -1,0 +1,421 @@
+#include <stdio.h>
+
+#define NAMELEN 16
+#define TEXTLEN 256
+#define BUFLEN 512
+
+typedef struct Vessel {
+	char id, name[NAMELEN], note[TEXTLEN], prog[TEXTLEN];
+	struct Vessel *owner, *parent;
+} Vessel;
+
+typedef struct Parade {
+	int len;
+	Vessel vessels[256];
+} Parade;
+
+Vessel *guest;
+
+/* clang-format off */
+
+static char *actions[12] = {
+	"create", "become",  "enter", "leave", 
+	"take",   "drop",    "warp",  "transform", 
+	"note",   "program", "use",   ""};
+
+#pragma mark - Helpers
+
+static unsigned char chex(char c) { if(c >= 'a' && c <= 'f') return 10 + c - 'a'; if(c >= 'A' && c <= 'F') return 10 + c - 'A'; return (c - '0') & 0xF; }
+static unsigned char shex(char *s, int len) { int i, n = 0; for(i = 0; i < len; ++i) n |= (chex(s[i]) << ((len - i - 1) * 4)); return n; }
+static int    imin(int a, int b) { return a < b ? a : b; }
+static int    cisp(char c) { return c == ' ' || c == '\t' || c == '\n' || c == '\r'; }
+static int    slen(char *s) { int n = 0; while(s[n] && s[++n]) ; return n; }
+static int    cpos(char *s, char c) { int i = 0; while(s[i] && s[i]) if(s[i++] == c) return i - 1; return -1; }
+static char * spor(char *s, int c) { int i; for(i = slen(s); i >= 0; --i) if(s[i] == c) return s + i; return s - 1; }
+static int    scmp(char *a, char *b) { int i = 0; while(a[i] == b[i]) if(!a[i++]) return 1; return 0; }
+static char * strm(char *s) { char *end; while(cisp(*s)) s++; if(*s == 0) return s; end = s + slen(s) - 1; while(end > s && cisp(*end)) end--; end[1] = '\0'; return s; }
+static int    afnd(char *src[], int len, char *val) { int i; for(i = 0; i < len; i++) if(scmp(src[i], val)) return i; return -1; }
+static char * sstr(char *src, char *dest, int from, int to) { int i; char *a = (char *)src + from, *b = (char *)dest; for(i = 0; i < to; i++) b[i] = a[i]; dest[to] = '\0'; return dest; }
+
+/* clang-format on */
+
+#pragma mark - Generics
+
+static int
+isvisible(Vessel *g, Vessel *v)
+{
+	if(g->parent != v->parent)
+		return 0;
+	if(g->parent == v)
+		return 0;
+	if(g == v)
+		return 0;
+	return 1;
+}
+
+static int
+isparadox(Vessel *v)
+{
+	return v->parent == v;
+}
+
+static char
+rune(Vessel *v)
+{
+	if(isparadox(v))
+		return '^';
+	if(slen(v->note) > 0)
+		return '*';
+	if(slen(v->prog) > 0)
+		return '+';
+	if(v->owner == guest)
+		return '~';
+	return 0;
+}
+
+static Vessel *
+addvessel(Parade *p, Vessel *v, char *name)
+{
+	Vessel *nv = &p->vessels[p->len];
+	nv->id = p->len;
+	nv->owner = v ? v : nv;
+	nv->parent = v ? v->parent : nv;
+	sstr(name, nv->name, 0, imin(slen(name), NAMELEN - 1));
+	p->len++;
+	return nv;
+}
+
+static Vessel *
+findvisible(Parade *p, Vessel *v, char *name)
+{
+	int i;
+	char *n = spor(name, ' ') + 1;
+	for(i = 0; i < p->len; ++i) {
+		if(!isvisible(v, &p->vessels[i]))
+			continue;
+		if(scmp(p->vessels[i].name, n))
+			return &p->vessels[i];
+	}
+	return NULL;
+}
+
+static Vessel *
+findinventory(Parade *p, Vessel *v, char *name)
+{
+	int i;
+	char *n = spor(name, ' ') + 1;
+	for(i = 0; i < p->len; ++i) {
+		if(&p->vessels[i] == v)
+			continue;
+		if(p->vessels[i].parent != v)
+			continue;
+		if(scmp(p->vessels[i].name, n))
+			return &p->vessels[i];
+	}
+
+	return NULL;
+}
+
+static Vessel *
+findany(Parade *p, char *name)
+{
+	int i;
+	char *n = spor(name, ' ') + 1;
+	for(i = 0; i < p->len; ++i)
+		if(scmp(p->vessels[i].name, n))
+			return &p->vessels[i];
+	return NULL;
+}
+
+#pragma mark - Actions
+
+static void
+createvessel(Parade *p, char *val)
+{
+	Vessel *v;
+	if(findany(p, val) || slen(val) < 4 || p->len > 255)
+		printf("You cannot create the %s.\n", val);
+	else {
+		v = addvessel(p, guest, spor(val, ' ') + 1);
+		printf("You created the %s%c.\n", v->name, rune(v));
+	}
+}
+
+static void
+becomevessel(Parade *p, char *val)
+{
+	Vessel *v = findany(p, val);
+	if(!v)
+		printf("You do not see the %s.\n", val);
+	else {
+		guest = v;
+		printf("You became the %s%c.\n", v->name, rune(v));
+	}
+}
+
+static void
+entervessel(Parade *p, char *val)
+{
+	Vessel *v = findvisible(p, guest, val);
+	if(!v)
+		printf("You do not see the %s.\n", val);
+	else {
+		guest->parent = v;
+		printf("You entered the %s%c.\n", v->name, rune(v));
+	}
+}
+
+static void
+leavevessel(void)
+{
+	Vessel *v = guest->parent;
+	if(v == v->parent)
+		printf("You cannot leave the %s%c.\n", v->name, rune(v));
+	else {
+		printf("You left the %s%c.\n", v->name, rune(v));
+		guest->parent = v->parent;
+	}
+}
+
+static void
+takevessel(Parade *p, char *val)
+{
+	Vessel *v = findvisible(p, guest, val);
+	if(!v)
+		printf("You do not see the %s.\n", val);
+	else {
+		v->parent = guest;
+		printf("You took the %s%c.\n", v->name, rune(v));
+	}
+}
+
+static void
+dropvessel(Parade *p, char *val)
+{
+	Vessel *v = findinventory(p, guest, val);
+	if(!v)
+		printf("You do not carry the %s.\n", val);
+	else {
+		v->parent = guest->parent->parent;
+		printf("You dropped the %s%c.\n", v->name, rune(v));
+	}
+}
+
+static void
+warpvessel(Parade *p, char *val)
+{
+	Vessel *v = findany(p, val);
+	if(!v)
+		printf("You cannot warp to the %s.\n", val);
+	else {
+		guest->parent = v;
+		printf("You warped to the %s%c.\n", v->name, rune(v));
+	}
+}
+
+static void
+transformvessel(Parade *p, char *val)
+{
+	char *name = spor(val, ' ') + 1;
+	if(findany(p, name) || slen(name) < 3)
+		printf("You cannot transform into the %s.\n", name);
+	else {
+		sstr(name, guest->name, 0, imin(slen(name), TEXTLEN - 1));
+		printf("You transformed into the %s%c.\n", guest->name, rune(guest));
+	}
+}
+
+static void
+notevessel(char *val)
+{
+	Vessel *v = guest->parent;
+	if(slen(val) < 1)
+		printf("You remove the note of the %s%c.\n", v->name, rune(v));
+	else {
+		sstr(val, v->note, 0, imin(slen(val), TEXTLEN - 1));
+		printf("You added a note to the %s%c.\n", v->name, rune(v));
+	}
+}
+
+static void
+programvessel(char *val)
+{
+	Vessel *v = guest->parent;
+	if(slen(val) < 1)
+		printf("You remove the program of the %s%c.\n", v->name, rune(v));
+	else {
+		sstr(val, v->prog, 0, imin(slen(val), TEXTLEN - 1));
+		printf("You programmed the %s%c.\n", v->name, rune(v));
+	}
+}
+
+static void
+lookvessel(Parade *p)
+{
+	int i;
+	if(isparadox(guest))
+		printf("You are the %s%c.\n", guest->name, rune(guest));
+	else
+		printf("You are the %s%c in the %s%c.\n",
+			guest->name,
+			rune(guest),
+			guest->parent->name,
+			rune(guest->parent));
+	if(slen(guest->parent->note) > 2)
+		printf("%s\n", guest->parent->note);
+	for(i = 0; i < p->len; ++i)
+		if(isvisible(guest, &p->vessels[i]))
+			printf("- %s%c\n", p->vessels[i].name, rune(&p->vessels[i]));
+}
+
+#pragma mark - Parade
+
+static int usevessel(Parade *p, char *val);
+
+static void
+act(Parade *p, char *cmd, char *val)
+{
+	/* clang-format off */
+	switch(afnd(actions, 12, cmd)) {
+	case 0x0: createvessel(p, val); break;
+	case 0x1: becomevessel(p, val); break;
+	case 0x2: entervessel(p, val); break;
+	case 0x3: leavevessel(); break;
+	case 0x4: takevessel(p, val); break;
+	case 0x5: dropvessel(p, val); break;
+	case 0x6: warpvessel(p, val); break;
+	case 0x7: transformvessel(p, val); break;
+	case 0x8: notevessel(val); break;
+	case 0x9: programvessel(val); break;
+	case 0xA: usevessel(p, val); break;
+	case 0xB: lookvessel(p); break;
+	default:  printf("Unknown action: %s.\n", cmd); break;
+	}
+	/* clang-format off */
+}
+
+static Vessel *
+spawn(Parade *p)
+{
+	addvessel(p, NULL, "library");
+	addvessel(p, &p->vessels[0], "ghost");
+	return &p->vessels[1];
+}
+
+static int
+parse(Parade *p, char *line, int id)
+{
+	int split = cpos(line, '|');
+	int len = slen(line);
+	Vessel *nv = &p->vessels[id];
+	if(len < 22 || split < 0 || line[0] == ';')
+		return 0;
+	nv->id = id;
+	nv->owner = &p->vessels[shex(line, 2)];
+	nv->parent = &p->vessels[shex(line + 2, 2)];
+	strm(sstr(line, nv->name, 5, NAMELEN));
+	if(split > 23)
+		sstr(line, nv->note, 21, split - 22);
+	if(len - split > 3)
+		sstr(line, nv->prog, split + 2, len - split - 3);
+	return 1;
+}
+
+static int
+save(Parade *p, char *filename)
+{
+	int i;
+	FILE *f = fopen(filename, "w");
+	for(i = 0; i < p->len; ++i)
+		fprintf(f, "%02x%02x %-15s %s | %s\n", 
+			p->vessels[i].owner->id, 
+			p->vessels[i].parent->id, 
+			p->vessels[i].name, 
+			p->vessels[i].note, 
+			p->vessels[i].prog);
+	fclose(f);
+	return 1;
+}
+
+static int
+load(Parade *p, char *filename)
+{
+	char line[BUFLEN];
+	FILE *f = fopen(filename, "r");
+	if(f == NULL)
+		return 1;
+	p->len = 0;
+	while(fgets(line, BUFLEN, f)) {
+		if(parse(p, line, p->len))
+			p->len++;
+	}
+	return 1;
+}
+
+static int
+answer(Parade *p, char *input)
+{
+	int split = cpos(input, ' ');
+	char action[NAMELEN], value[TEXTLEN];
+	if(cpos(input, '|') >= 0)
+		return 1;
+	if(split >= 0) {
+		sstr(input, action, 0, split);
+		sstr(input, value, split + 1, imin(slen(input) - split, TEXTLEN - 1));
+	} else if(slen(input) < 2) {
+		action[0] = '\0';
+		value[0] = '\0';
+	} else if(slen(input) >= 0) {
+		sstr(input, action, 0, imin(slen(input), NAMELEN - 1));
+		value[0] = '\0';
+	}
+	if(scmp(action, "@quit"))
+		return 0;
+	if(scmp(action, "@save") && slen(value) > 3)
+		return save(p, spor(input, ' ') + 1);
+	if(scmp(action, "@load") && slen(value) > 3)
+		return load(p, spor(input, ' ') + 1);
+	act(p, action, value);
+	return 1;
+}
+
+static int
+usevessel(Parade *p, char *val)
+{
+	Vessel *v = findvisible(p, guest, val);
+	if(!v)
+		printf("You do not see %s.\n", val);
+	else if(slen(v->prog) < 2)
+		printf("You cannot use %s%c.\n", val, rune(v));
+	else
+		answer(p, v->prog);
+	return 0;
+}
+
+static int
+listen(Parade *p)
+{
+	char input[TEXTLEN];
+	printf("> ");
+	if(fgets(input, TEXTLEN, stdin))
+		return answer(p, strm(input));
+	return 0;
+}
+
+int
+main(int argc, char **argv)
+{
+	Parade parade;
+	parade.len = 0;
+	guest = spawn(&parade);
+	if(argc == 2)
+		load(&parade, argv[1]);
+	printf("A %s%c appeared in the %s%c.\n",
+		guest->name,
+		rune(guest),
+		guest->parent->name,
+		rune(guest->parent));
+	while(listen(&parade))
+		;
+	return 0;
+}

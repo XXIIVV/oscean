@@ -1,0 +1,978 @@
+#include <SDL2/SDL.h>
+#include <stdio.h>
+#include <math.h>
+
+/* 
+Copyright (c) 2020 Devine Lu Linvega
+
+Permission to use, copy, modify, and distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE.
+*/
+
+#define HOR 32
+#define VER 16
+#define PAD 2
+#define SZ (HOR * VER * 16)
+
+typedef unsigned char Uint8;
+
+typedef struct {
+	int unsaved;
+	char name[256];
+	Uint8 data[SZ];
+} Document;
+
+typedef struct {
+	int x, y;
+} Point2d;
+
+typedef struct {
+	int color, selection;
+	Point2d *touch, origin;
+} Brush;
+
+typedef enum {
+	POINT,
+	LINE,
+	ARC,
+	BEZIER,
+	RECTANGLE,
+	ELLIPSE,
+	TRANSLATE,
+	TRIANGLE
+} LineType;
+
+typedef struct {
+	int color, len;
+	Point2d points[256];
+	LineType type;
+} Path2d;
+
+typedef struct {
+	int len;
+	Path2d paths[256];
+} Shape2d;
+
+Document doc;
+Path2d stack;
+Shape2d shape;
+Brush brush;
+
+int WIDTH = 8 * HOR + 8 * PAD * 2;
+int HEIGHT = 8 * (VER + 2) + 8 * PAD * 2;
+int FPS = 30, GUIDES = 1, ZOOM = 2;
+
+Uint32 theme[] = {
+	0x000000,
+	0xFFFFFF,
+	0x72DEC2,
+	0x666666,
+	0x222222};
+
+Uint8 icons[][8] = {
+	{0x38, 0x7c, 0xfe, 0xfe, 0xfe, 0x7c, 0x38, 0x00},
+	{0x38, 0x44, 0x82, 0x82, 0x82, 0x44, 0x38, 0x00},
+	{0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x00},
+	{0x06, 0x18, 0x20, 0x40, 0x40, 0x80, 0x80, 0x00},
+	{0x02, 0x02, 0x04, 0x38, 0x40, 0x80, 0x80, 0x00},
+	{0xfe, 0x82, 0x82, 0x82, 0x82, 0x82, 0xfe, 0x00},
+	{0x1e, 0x06, 0x0a, 0x12, 0x20, 0x40, 0x80, 0x00},
+	{0x06, 0x18, 0x22, 0x40, 0x42, 0x80, 0xaa, 0x00},
+	{0x02, 0x06, 0x0e, 0x1e, 0x3e, 0x7e, 0xfe, 0x00}, /* triangle */
+	{0x00, 0x00, 0x00, 0x82, 0x44, 0x38, 0x00, 0x00}, /* eye open */
+	{0x00, 0x38, 0x44, 0x92, 0x28, 0x10, 0x00, 0x00}, /* eye closed */
+	{0x10, 0x54, 0x28, 0xc6, 0x28, 0x54, 0x10, 0x00}  /* unsaved */
+};
+
+SDL_Window *gWindow = NULL;
+SDL_Renderer *gRenderer = NULL;
+SDL_Texture *gTexture = NULL;
+Uint32 *pixels;
+
+#pragma mark - Helpers
+
+Point2d *
+setpt2d(Point2d *p, int x, int y)
+{
+	p->x = x;
+	p->y = y;
+	return p;
+}
+
+Point2d
+Pt2d(int x, int y)
+{
+	Point2d p;
+	setpt2d(&p, x, y);
+	return p;
+}
+
+Point2d
+mid2d(Point2d a, Point2d b, int seg, int segs)
+{
+	return Pt2d(
+		a.x + ((b.x - a.x) / (double)segs) * seg,
+		a.y + ((b.y - a.y) / (double)segs) * seg);
+}
+
+Point2d *
+mag2d(Point2d *a, int step)
+{
+	return setpt2d(a,
+		abs((a->x + step / 2) / step) * step,
+		abs((a->y + step / 2) / step) * step);
+}
+
+Point2d
+add2d(Point2d *a, Point2d *b)
+{
+	return Pt2d(a->x + b->x, a->y + b->y);
+}
+
+int
+equ2d(Point2d *a, Point2d *b)
+{
+	return a->x == b->x && a->y == b->y;
+}
+
+int
+cpos(char *s, char c)
+{
+	int i = 0;
+	while(s[i] && s[i])
+		if(s[i++] == c)
+			return i - 1;
+	return -1;
+}
+
+int
+slen(char *s)
+{
+	int i = 0;
+	while(s[i] && s[++i])
+		;
+	return i;
+}
+
+int
+scmp(char *a, char *b)
+{
+	int i = 0;
+	while(a[i] == b[i])
+		if(!a[i++])
+			return 1;
+	return 0;
+}
+
+char *
+scpy(char *src, char *dst, int len)
+{
+	int i = 0;
+	while((dst[i] = src[i]) && i < len - 2)
+		i++;
+	dst[i + 1] = '\0';
+	return dst;
+}
+
+int
+sint(char *s, int len)
+{
+	int num = 0, i = 0;
+	while(s[i] && i < len && (s[i] >= '0' && s[i] <= '9'))
+		num = num * 10 + (s[i++] - '0');
+	return num;
+}
+
+int
+cancast(LineType type)
+{
+	if(type == POINT && stack.len >= 1)
+		return 1;
+	else if(type == LINE && stack.len >= 2)
+		return 1;
+	else if(type == RECTANGLE && stack.len >= 2)
+		return 1;
+	else if(type == ELLIPSE && stack.len >= 2)
+		return 1;
+	else if(type == ARC && stack.len >= 3)
+		return 1;
+	else if(type == BEZIER && stack.len >= 3 && stack.len % 2 == 1)
+		return 1;
+	else if(type == TRANSLATE && stack.len >= 2)
+		return 1;
+	else if(type == TRIANGLE && stack.len >= 2)
+		return 1;
+	return 0;
+}
+
+int
+inbounds(int x, int y)
+{
+	return !(x < 0 || x > HOR * 8 || y < 0 || y > VER * 8);
+}
+
+int
+colortheme(Uint32 hex)
+{
+	int i = 0;
+	for(i = 0; i < 5; ++i)
+		if(theme[i] == hex)
+			return i;
+	return 0;
+}
+
+#pragma mark - Draw
+
+void
+clear(Uint32 *dst)
+{
+	int i, j;
+	for(i = 0; i < HEIGHT; i++)
+		for(j = 0; j < WIDTH; j++)
+			dst[i * WIDTH + j] = theme[0];
+}
+
+int
+keypixel(int x, int y)
+{
+	return (y + PAD * 8) * WIDTH + (x + PAD * 8);
+}
+
+int
+getpixel(Uint32 *dst, int x, int y)
+{
+	return dst[keypixel(x, y)];
+}
+
+void
+putpixel(Uint32 *dst, int x, int y, int color)
+{
+	if(x >= 0 && x < WIDTH - 8 && y >= 0 && y < HEIGHT - 8)
+		dst[(y + PAD * 8) * WIDTH + (x + PAD * 8)] = theme[color];
+}
+
+void
+line(Uint32 *dst, int ax, int ay, int bx, int by, int color)
+{
+	int dx = abs(bx - ax), sx = ax < bx ? 1 : -1;
+	int dy = -abs(by - ay), sy = ay < by ? 1 : -1;
+	int err = dx + dy, e2;
+	for(;;) {
+		putpixel(dst, ax, ay, color);
+		if(ax == bx && ay == by)
+			break;
+		e2 = 2 * err;
+		if(e2 >= dy) {
+			err += dy;
+			ax += sx;
+		}
+		if(e2 <= dx) {
+			err += dx;
+			ay += sy;
+		}
+	}
+}
+
+void
+ellipse(Uint32 *dst, int x0, int y0, int x1, int y1, int cadran, int color)
+{
+	int a = abs(x1 - x0), b = abs(y1 - y0), b1 = b & 1;
+	int dx = 4 * (1.0 - a) * b * b, dy = 4 * (b1 + 1) * a * a;
+	int err = dx + dy + b1 * a * a, e2;
+	if(x0 > x1) {
+		x0 = x1;
+		x1 += a;
+	}
+	if(y0 > y1)
+		y0 = y1;
+	y0 += (b + 1) >> 1;
+	y1 = y0 - b1;
+	a = 8 * a * a;
+	b1 = 8 * b * b;
+	do {
+		if(cadran == -1 || cadran == 1)
+			putpixel(dst, x1, y0, color);
+		if(cadran == -1 || cadran == 2)
+			putpixel(dst, x0, y0, color);
+		if(cadran == -1 || cadran == 3)
+			putpixel(dst, x0, y1, color);
+		if(cadran == -1 || cadran == 0)
+			putpixel(dst, x1, y1, color);
+		e2 = 2 * err;
+		if(e2 <= dy) {
+			y0++;
+			y1--;
+			err += dy += a;
+		}
+		if(e2 >= dx || 2 * err > dy) {
+			x0++;
+			x1--;
+			err += dx += b1;
+		}
+	} while(x0 <= x1);
+}
+
+void
+arc(Uint32 *dst, int x0, int y0, int x1, int y1, int x2, int y2, int color)
+{
+	int cadran, col = (y1 - y0) * (x2 - x1) - (y2 - y1) * (x1 - x0);
+	x1 = x2;
+	y1 = y2;
+	if(x2 > x0 && y2 > y0) {
+		if(col < 0) {
+			x0 = x0 - (x2 - x0);
+			y1 = y2 + (y2 - y0);
+			cadran = 0;
+		} else {
+			y0 = y0 - (y2 - y0);
+			x1 = x2 + (x2 - x0);
+			cadran = 2;
+		}
+	} else if(x2 < x0 && y2 > y0) {
+		if(col < 0) {
+			y0 = y0 - (y2 - y0);
+			x1 = x2 + (x2 - x0);
+			cadran = 1;
+		} else {
+			x0 = x0 - (x2 - x0);
+			y1 = y2 + (y2 - y0);
+			cadran = 3;
+		}
+	} else if(x2 < x0 && y2 < y0) {
+		if(col < 0) {
+			x0 = x0 - (x2 - x0);
+			y1 = y2 + (y2 - y0);
+			cadran = 2;
+		} else {
+			y0 = y0 - (y2 - y0);
+			x1 = x2 + (x2 - x0);
+			cadran = 0;
+		}
+	} else {
+		if(col < 0) {
+			y0 = y0 - (y2 - y0);
+			x1 = x2 + (x2 - x0);
+			cadran = 3;
+		} else {
+			x0 = x0 - (x2 - x0);
+			y1 = y2 + (y2 - y0);
+			cadran = 1;
+		}
+	}
+	ellipse(dst, x0, y0, x1, y1, cadran, color);
+}
+
+void
+rectangle(Uint32 *dst, int x0, int y0, int x1, int y1, int color)
+{
+	line(dst, x0, y0, x0, y1, color);
+	line(dst, x0, y1, x1, y1, color);
+	line(dst, x1, y1, x1, y0, color);
+	line(dst, x1, y0, x0, y0, color);
+}
+
+void
+handle(Uint32 *dst, int x0, int y0, int r, int color)
+{
+	line(dst, x0, y0 - r, x0 + r, y0, color);
+	line(dst, x0 + r, y0, x0, y0 + r, color);
+	line(dst, x0, y0 + r, x0 - r, y0, color);
+	line(dst, x0 - r, y0, x0, y0 - r, color);
+}
+
+int
+intri2d(Point2d p, Point2d p0, Point2d p1, Point2d p2)
+{
+	int a;
+	int s = p0.y * p2.x - p0.x * p2.y + (p2.y - p0.y) * p.x + (p0.x - p2.x) * p.y;
+	int t = p0.x * p1.y - p0.y * p1.x + (p0.y - p1.y) * p.x + (p1.x - p0.x) * p.y;
+	if((s < 0) != (t < 0))
+		return 0;
+	a = -p1.y * p2.x + p0.y * (p2.x - p1.x) + p0.x * (p1.y - p2.y) + p1.x * p2.y;
+	return a < 0 ? (s <= 0 && s + t >= a) : (s >= 0 && s + t <= a);
+}
+
+void
+triangle(Uint32 *dst, int x0, int y0, int x1, int y1, int x2, int y2, int color)
+{
+	int minx = (x0 <= x1 && x0 <= x2) ? x0 : (x1 <= x0 && x1 <= x2) ? x1
+																	: x2;
+	int miny = (y0 <= y1 && y0 <= y2) ? y0 : (y1 <= y0 && y1 <= y2) ? y1
+																	: y2;
+	int maxx = (x0 >= x1 && x0 >= x2) ? x0 : (x1 >= x0 && x1 >= x2) ? x1
+																	: x2;
+	int maxy = (y0 >= y1 && y0 >= y2) ? y0 : (y1 >= y0 && y1 >= y2) ? y1
+																	: y2;
+	int x, y;
+	for(y = miny; y < maxy; ++y)
+		for(x = minx; x < maxx; ++x)
+			if(intri2d(Pt2d(x, y), Pt2d(x0, y0), Pt2d(x1, y1), Pt2d(x2, y2)))
+				putpixel(dst, x, y, color);
+}
+
+void
+arrow(Uint32 *dst, int x0, int y0, int x1, int y1, int color)
+{
+	int Par = 8;
+	double slopy = atan2((y1 - y0), (x1 - x0)), cosy = cos(slopy), siny = sin(slopy);
+	line(dst, x1, y1, x0, y0, color);
+	line(dst, x1, y1, x1 + (int)(-Par * cosy - (Par / 2.0 * siny)), y1 + (int)(-Par * siny + (Par / 2.0 * cosy)), color);
+	line(dst, x1, y1, x1 + (int)(-Par * cosy + (Par / 2.0 * siny)), y1 - (int)(Par / 2.0 * cosy + Par * siny), color);
+}
+
+void
+bezier(Uint32 *dst, int x0, int y0, int x1, int y1, int x2, int y2, int color)
+{
+	int i, segs = 8;
+	Point2d prev = Pt2d(x0, y0);
+	for(i = 0; i <= segs; i++) {
+		Point2d a = mid2d(Pt2d(x0, y0), Pt2d(x1, y1), i, segs);
+		Point2d b = mid2d(Pt2d(x1, y1), Pt2d(x2, y2), i, segs);
+		Point2d c = mid2d(a, b, i, segs);
+		line(dst, prev.x, prev.y, c.x, c.y, color);
+		prev = c;
+	}
+}
+
+void
+drawpath(Uint32 *dst, Path2d *path, int guides)
+{
+	int j;
+	/* Draw translation */
+	if(path->len > 0 && GUIDES && (brush.origin.x != 0 || brush.origin.y != 0)) {
+		Point2d offset = add2d(&path->points[0], &brush.origin);
+		arrow(dst, path->points[0].x, path->points[0].y, offset.x, offset.y, 3);
+		handle(dst, path->points[0].x, path->points[0].y, 4, 3);
+	}
+	/* Draw paths */
+	for(j = 0; j < path->len; ++j) {
+		Point2d a = add2d(&path->points[j], &brush.origin);
+		if(j < path->len - 1) {
+			Point2d b = add2d(&path->points[j + 1], &brush.origin);
+			if(path->type == LINE)
+				line(dst, a.x, a.y, b.x, b.y, path->color);
+			else if(path->type == RECTANGLE)
+				rectangle(dst, a.x, a.y, b.x, b.y, path->color);
+			else if(path->type == ELLIPSE)
+				ellipse(dst, a.x, a.y, b.x, b.y, -1, path->color);
+			else if(path->type == TRANSLATE) {
+				setpt2d(&brush.origin, brush.origin.x + b.x - a.x, brush.origin.y + b.y - a.y);
+				if(GUIDES)
+					arrow(dst, a.x, a.y, b.x, b.y, 4);
+			}
+		}
+		if(j < path->len - 2) {
+			Point2d b = add2d(&path->points[j + 1], &brush.origin);
+			Point2d c = add2d(&path->points[j + 2], &brush.origin);
+			if(path->type == ARC)
+				arc(dst, a.x, a.y, b.x, b.y, c.x, c.y, path->color);
+			else if(path->type == BEZIER)
+				bezier(dst, a.x, a.y, b.x, b.y, c.x, c.y, path->color);
+			else if(path->type == TRIANGLE)
+				triangle(dst, a.x, a.y, b.x, b.y, c.x, c.y, path->color);
+			if(path->type == ARC || path->type == BEZIER)
+				j++;
+		}
+		if(path->type == POINT)
+			putpixel(dst, a.x, a.y, path->color);
+	}
+	for(j = 0; j < path->len; ++j)
+		if(guides)
+			handle(dst, path->points[j].x, path->points[j].y, 2, path->color + 1);
+}
+
+void
+drawguides(Uint32 *dst, int step)
+{
+	int x, y;
+	for(x = 2; x < HOR * 8; x++)
+		for(y = 2; y < VER * 8; y++)
+			if(x % (step * 2) == y % (step * 2) && x % (step * 2) == 0)
+				putpixel(dst, x, y, 3);
+			else if(x % step == 0 && y % 2 == 0)
+				putpixel(dst, x, y, 4);
+			else if(y % step == 0 && x % 2 == 0)
+				putpixel(dst, x, y, 4);
+}
+
+void
+drawicn(Uint32 *dst, int x, int y, Uint8 *sprite, int fg, int bg)
+{
+	int v, h;
+	for(v = 0; v < 8; v++)
+		for(h = 0; h < 8; h++) {
+			int ch1 = (sprite[v] >> (7 - h)) & 0x1;
+			putpixel(dst, x + h, y + v, ch1 ? fg : bg);
+		}
+}
+
+void
+drawui(Uint32 *dst)
+{
+	int clr = brush.selection >= 0 ? shape.paths[brush.selection].color : 1;
+	int bottom = VER * 8 + 8;
+	drawicn(dst, 0, bottom, icons[clr == 1 ? 1 : 0], 1, 0);
+	drawicn(dst, 1 * 8, bottom, icons[clr == 2 ? 1 : 0], 2, 0);
+	drawicn(dst, 2 * 8, bottom, icons[clr == 3 ? 1 : 0], 3, 0);
+	drawicn(dst, 4 * 8, bottom, icons[2], cancast(LINE) ? 2 : 3, 0);
+	drawicn(dst, 5 * 8, bottom, icons[3], cancast(ARC) ? 2 : 3, 0);
+	drawicn(dst, 6 * 8, bottom, icons[4], cancast(BEZIER) ? 2 : 3, 0);
+	drawicn(dst, 7 * 8, bottom, icons[5], cancast(RECTANGLE) ? 2 : 3, 0);
+	drawicn(dst, 8 * 8, bottom, icons[1], cancast(ELLIPSE) ? 2 : 3, 0);
+	drawicn(dst, 9 * 8, bottom, icons[8], cancast(TRIANGLE) ? 2 : 3, 0);
+	drawicn(dst, 12 * 8, bottom, icons[GUIDES ? 10 : 9], GUIDES ? 1 : 2, 0);
+	drawicn(dst, (HOR - 1) * 8, bottom, icons[11], doc.unsaved ? 2 : 3, 0); /* save state */
+}
+
+void
+redraw(Uint32 *dst)
+{
+	int i;
+	clear(dst);
+	setpt2d(&brush.origin, 0, 0);
+	if(GUIDES)
+		drawguides(dst, 16);
+	/* draw shape */
+	for(i = 0; i < shape.len; i++)
+		drawpath(dst, &shape.paths[i], GUIDES && brush.selection == i);
+	/* draw stack */
+	for(i = 0; i < stack.len; ++i) {
+		Point2d *a = &stack.points[i];
+		handle(dst, a->x, a->y, 2, brush.color + 1);
+		if(i < stack.len - 1) {
+			Point2d *b = &stack.points[i + 1];
+			line(dst, a->x, a->y, b->x, b->y, 4);
+		}
+	}
+	drawui(dst);
+	SDL_UpdateTexture(gTexture, NULL, dst, WIDTH * sizeof(Uint32));
+	SDL_RenderClear(gRenderer);
+	SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);
+	SDL_RenderPresent(gRenderer);
+}
+
+#pragma mark - Options
+
+int
+error(char *msg, const char *err)
+{
+	printf("Error %s: %s\n", msg, err);
+	return 0;
+}
+
+void
+savemode(int *i, int v)
+{
+	*i = v;
+	redraw(pixels);
+}
+
+void
+makedoc(Document *d, char *name)
+{
+	int i;
+	for(i = 0; i < SZ; ++i)
+		d->data[i] = 0x00;
+	d->unsaved = 0;
+	scpy(name, d->name, 256);
+	printf("Made: %s\n", d->name);
+	redraw(pixels);
+}
+
+int
+savedoc(Document *d, char *name)
+{
+	int i, j, c = -1;
+	FILE *f = fopen(name, "w");
+	char *names[] = {
+		"point",
+		"line",
+		"arc",
+		"bezier",
+		"rectangle",
+		"ellipse",
+		"translate"};
+	for(i = 0; i < shape.len; ++i) {
+		Path2d *p = &shape.paths[i];
+		if(c != p->color) {
+			fprintf(f, "%d setcolor\n", p->color);
+			c = p->color;
+		}
+		for(j = 0; j < p->len; ++j)
+			fprintf(f, "%d,%d ", p->points[j].x, p->points[j].y);
+		fprintf(f, "%s\n", names[(int)p->type]);
+	}
+	fclose(f);
+	d->unsaved = 0;
+	scpy(name, d->name, 256);
+	fclose(f);
+	printf("Saved: %s\n", d->name);
+	redraw(pixels);
+	return 1;
+}
+
+int
+opendoc(Document *d, char *name)
+{
+	FILE *f = fopen(name, "r");
+	if(!f)
+		return error("Load", "Invalid input file");
+	fread(doc.data, sizeof(doc.data), 1, f);
+	d->unsaved = 0;
+	scpy(name, doc.name, 256);
+	fclose(f);
+	printf("Loaded: %s\n", doc.name);
+	redraw(pixels);
+	return 1;
+}
+
+void
+putchr(Uint8 *chrbuf, int row, int col, int color)
+{
+	if(row < 0 || row > SZ - 8)
+		return;
+	if(color == 0 || color == 2)
+		chrbuf[row] &= ~(1UL << (7 - col));
+	else
+		chrbuf[row] |= 1UL << (7 - col);
+	if(color == 0 || color == 1)
+		chrbuf[row + 8] &= ~(1UL << (7 - col));
+	else
+		chrbuf[row + 8] |= 1UL << (7 - col);
+}
+
+int
+savechr(void)
+{
+	int h, v, x, y;
+	Uint8 chrbuf[SZ];
+	FILE *f = fopen("dotgrid-export.chr", "wb");
+	for(v = 0; v < VER; ++v)
+		for(h = 0; h < HOR; ++h)
+			for(y = 0; y < 8; ++y)
+				for(x = 0; x < 8; ++x)
+					putchr(chrbuf,
+						y + (h + v * HOR) * 16,
+						x,
+						colortheme(getpixel(pixels, h * 8 + x, v * 8 + y)));
+	if(!fwrite(chrbuf, sizeof(chrbuf), 1, f))
+		error("Save", "Invalid output file");
+	fclose(f);
+	puts("Exported dotgrid-export.chr");
+	return 1;
+}
+
+void
+modzoom(int mod)
+{
+	if((mod > 0 && ZOOM < 4) || (mod < 0 && ZOOM > 1)) {
+		ZOOM += mod;
+		SDL_SetWindowSize(gWindow, WIDTH * ZOOM, HEIGHT * ZOOM);
+	}
+}
+
+void
+addpoint(Point2d p)
+{
+	if(stack.len > 0 && equ2d(&p, &stack.points[stack.len - 1]))
+		return;
+	if(!inbounds(p.x, p.y))
+		return;
+	stack.points[stack.len++] = p;
+	redraw(pixels);
+}
+
+void
+selectpoint(Point2d *touch)
+{
+	int i, j;
+	brush.touch = NULL;
+	if(!inbounds(touch->x, touch->y))
+		return;
+	for(i = 0; i < shape.len; ++i) {
+		Path2d *p = &shape.paths[i];
+		for(j = 0; j < p->len; ++j)
+			if(equ2d(touch, &p->points[j])) {
+				brush.touch = &p->points[j];
+				brush.selection = i;
+				redraw(pixels);
+				break;
+			}
+	}
+}
+
+void
+dragpoint(Point2d *touch)
+{
+	if(equ2d(touch, brush.touch))
+		return;
+	if(!inbounds(touch->x, touch->y))
+		return;
+	setpt2d(brush.touch, touch->x, touch->y);
+	stack.len = 0;
+	redraw(pixels);
+}
+
+void
+cancel(void)
+{
+	brush.selection = shape.len - 1;
+	stack.len = 0;
+	redraw(pixels);
+}
+
+void
+cast(LineType type)
+{
+	int i;
+	if(!cancast(type))
+		return;
+	shape.paths[shape.len].len = stack.len;
+	for(i = 0; i < shape.paths[shape.len].len; ++i)
+		setpt2d(&shape.paths[shape.len].points[i], stack.points[i].x, stack.points[i].y);
+	shape.paths[shape.len].color = brush.color;
+	shape.paths[shape.len++].type = type;
+	cancel();
+}
+
+void
+erase(void)
+{
+	if(stack.len > 0)
+		stack.len = 0;
+	else if(shape.len > 0)
+		shape.len--;
+	cancel();
+}
+
+void
+destroy(void)
+{
+	shape.len = 0;
+	cancel();
+}
+
+void
+setcolor(int c)
+{
+	if(brush.selection >= 0)
+		shape.paths[brush.selection].color = c;
+	brush.color = c;
+	redraw(pixels);
+}
+
+void
+loadtxt(FILE *f)
+{
+	char line[256], query[256];
+	int i = 0, querylen = 0, setting = 0;
+	if(!f)
+		return;
+	while(fgets(line, 256, f)) {
+		if(line[0] == ';')
+			continue;
+		i = 0;
+		while(line[i]) {
+			if(line[i] == ' ' || line[i] == '\n' || !line[i]) {
+				int c = cpos(query, ',');
+				if(c >= 0)
+					addpoint(Pt2d(
+						sint(query, c),
+						sint(query + c + 1, slen(query) - c - 1)));
+				else if(i > 0 && scmp(query, "setcolor"))
+					brush.color = setting;
+				else if(scmp(query, "line"))
+					cast(LINE);
+				else if(scmp(query, "arc"))
+					cast(ARC);
+				else if(scmp(query, "bezier"))
+					cast(BEZIER);
+				else if(scmp(query, "point"))
+					cast(POINT);
+				else if(scmp(query, "rectangle"))
+					cast(RECTANGLE);
+				else if(scmp(query, "ellipse"))
+					cast(ELLIPSE);
+				else if(scmp(query, "translate"))
+					cast(TRANSLATE);
+				else if(slen(query) == 1)
+					setting = query[0] - '0';
+				querylen = 0;
+				query[0] = '\0';
+			} else {
+				query[querylen++] = line[i];
+				query[querylen] = '\0';
+			}
+			i++;
+		}
+	}
+	fclose(f);
+}
+
+void
+selectoption(int option)
+{
+	switch(option) {
+	case 0: setcolor(1); break;
+	case 1: setcolor(2); break;
+	case 2: setcolor(3); break;
+	case 4: cast(LINE); break;
+	case 5: cast(ARC); break;
+	case 6: cast(BEZIER); break;
+	case 7: cast(RECTANGLE); break;
+	case 8: cast(ELLIPSE); break;
+	case 9: cast(TRIANGLE); break;
+	case 12: savemode(&GUIDES, !GUIDES); break;
+	}
+}
+
+void
+quit(void)
+{
+	free(pixels);
+	SDL_DestroyTexture(gTexture);
+	gTexture = NULL;
+	SDL_DestroyRenderer(gRenderer);
+	gRenderer = NULL;
+	SDL_DestroyWindow(gWindow);
+	gWindow = NULL;
+	SDL_Quit();
+	exit(0);
+}
+
+#pragma mark - Triggers
+
+void
+domouse(SDL_Event *event)
+{
+	Point2d magnet;
+	Point2d touch = Pt2d(
+		(event->motion.x - (PAD * 8 * ZOOM)) / ZOOM,
+		(event->motion.y - (PAD * 8 * ZOOM)) / ZOOM);
+	mag2d(setpt2d(&magnet, touch.x, touch.y), 8);
+	switch(event->type) {
+	case SDL_MOUSEBUTTONUP:
+		if(magnet.y >= VER * 8 + 8)
+			; /* interface */
+		else if(brush.touch && !equ2d(&magnet, brush.touch))
+			dragpoint(&magnet);
+		else if(brush.selection == shape.len - 1)
+			addpoint(magnet);
+		brush.touch = NULL;
+		break;
+	case SDL_MOUSEBUTTONDOWN:
+		if(event->motion.y / ZOOM / 8 - PAD == VER + 1)
+			selectoption(event->motion.x / ZOOM / 8 - PAD);
+		else
+			selectpoint(&magnet);
+		break;
+	case SDL_MOUSEMOTION:
+		if(brush.touch && !equ2d(&magnet, brush.touch))
+			dragpoint(&touch);
+		break;
+	}
+}
+
+void
+dokey(SDL_Event *event)
+{
+	int shift = SDL_GetModState() & KMOD_LSHIFT || SDL_GetModState() & KMOD_RSHIFT;
+	int ctrl = SDL_GetModState() & KMOD_LCTRL || SDL_GetModState() & KMOD_RCTRL;
+	if(ctrl) {
+		switch(event->key.keysym.sym) {
+		/* Generic */
+		case SDLK_n: makedoc(&doc, "untitled.chr"); break;
+		case SDLK_r: opendoc(&doc, doc.name); break;
+		case SDLK_s: shift ? savechr() : savedoc(&doc, doc.name); break;
+		case SDLK_h: savemode(&GUIDES, !GUIDES); break;
+		}
+	} else {
+		switch(event->key.keysym.sym) {
+		case SDLK_EQUALS:
+		case SDLK_PLUS: modzoom(1); break;
+		case SDLK_UNDERSCORE:
+		case SDLK_MINUS: modzoom(-1); break;
+		case SDLK_ESCAPE: cancel(); break;
+		case SDLK_BACKSPACE: erase(); break;
+		case SDLK_1: setcolor(1); break;
+		case SDLK_2: setcolor(2); break;
+		case SDLK_3: setcolor(3); break;
+		case SDLK_a: cast(LINE); break;
+		case SDLK_s: cast(ARC); break;
+		case SDLK_d: cast(BEZIER); break;
+		case SDLK_z: cast(POINT); break;
+		case SDLK_x: cast(RECTANGLE); break;
+		case SDLK_c: cast(ELLIPSE); break;
+		case SDLK_v: cast(TRANSLATE); break;
+		case SDLK_t: cast(TRIANGLE); break;
+		}
+	}
+}
+
+int
+init(void)
+{
+	if(SDL_Init(SDL_INIT_VIDEO) < 0)
+		return error("Init", SDL_GetError());
+	gWindow = SDL_CreateWindow("Dotgrid",
+		SDL_WINDOWPOS_UNDEFINED,
+		SDL_WINDOWPOS_UNDEFINED,
+		WIDTH * ZOOM,
+		HEIGHT * ZOOM,
+		SDL_WINDOW_SHOWN);
+	if(gWindow == NULL)
+		return error("Window", SDL_GetError());
+	gRenderer = SDL_CreateRenderer(gWindow, -1, 0);
+	if(gRenderer == NULL)
+		return error("Renderer", SDL_GetError());
+	gTexture = SDL_CreateTexture(gRenderer,
+		SDL_PIXELFORMAT_ARGB8888,
+		SDL_TEXTUREACCESS_STATIC,
+		WIDTH,
+		HEIGHT);
+	if(gTexture == NULL)
+		return error("Texture", SDL_GetError());
+	pixels = (Uint32 *)malloc(WIDTH * HEIGHT * sizeof(Uint32));
+	if(pixels == NULL)
+		return error("Pixels", "Failed to allocate memory");
+	clear(pixels);
+	return 1;
+}
+
+int
+main(int argc, char *argv[])
+{
+	int ticknext = 0;
+	if(!init())
+		return error("Init", "Failure");
+	if(argc > 1)
+		loadtxt(fopen(argv[1], "r"));
+	cancel();
+	setcolor(1);
+	while(1) {
+		int tick = SDL_GetTicks();
+		SDL_Event event;
+		if(tick < ticknext)
+			SDL_Delay(ticknext - tick);
+		ticknext = tick + (1000 / FPS);
+		while(SDL_PollEvent(&event) != 0) {
+			switch(event.type) {
+			case SDL_QUIT: quit(); break;
+			case SDL_MOUSEBUTTONUP:
+			case SDL_MOUSEBUTTONDOWN:
+			case SDL_MOUSEMOTION: domouse(&event); break;
+			case SDL_KEYDOWN: dokey(&event); break;
+			case SDL_WINDOWEVENT:
+				if(event.window.event == SDL_WINDOWEVENT_EXPOSED)
+					redraw(pixels);
+				break;
+			}
+		}
+	}
+	quit();
+	return 0;
+}

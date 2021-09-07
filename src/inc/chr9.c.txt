@@ -1,0 +1,181 @@
+#include <u.h>
+#include <libc.h>
+#include <draw.h>
+#include <thread.h>
+#include <event.h>
+
+/* 5c chr9.c && 5l -o chr9 chr9.5 */
+
+enum
+{
+	Bufsz = 4*1024*1024,
+	pad = 20
+};
+
+char *buttons[] = {"1x", "2x", "3x", "Exit", 0};
+Menu menu = {buttons};
+static unsigned char *buf;
+static long sz;
+Image *clr1, *clr2, *clr3;
+Image *preview;
+int scale = 1;
+
+void
+pixel(Image *dst, int x, int y, int scale, Image *src, Point sp)
+{
+	draw(dst, 
+		Rect(x*scale,y*scale,(x+1)*scale,(y+1)*scale), 
+		src, nil, sp);
+}
+
+void
+paint(int id, int color, int scale)
+{
+	if(color == 0){ return; }
+	int ti = id / 64;
+	int px = (ti/256)*128;
+	int py = 0;
+	int tx = (ti % 16) * 8;
+	int ty = ((ti/16) * 8) % 128;
+	int x = (pad/scale)+px+tx+(id%8);
+	int y = (pad/scale)+py+ty+((id%64)/8);
+	if(color == 1)
+		pixel(preview, x,y,scale,clr1, ZP);
+	else if(color == 2)
+		pixel(preview, x,y,scale, clr2, ZP);
+	else if(color == 3)
+		pixel(preview, x,y,scale, clr3, ZP);
+}
+
+void
+update(int scale)
+{
+	int w = 16*16*scale+pad*2;
+	int h = 16*8*scale+pad*2;
+	int cw = screen->r.max.x - screen->r.min.x;
+	int ch = screen->r.max.y - screen->r.min.y;
+	Point origin = Pt(
+		screen->r.min.x + (cw-w)/2, 
+		screen->r.min.y + (ch-h)/2);
+	Rectangle r = (Rectangle){
+		origin, 
+		addpt(origin, Pt(w, h))};
+	draw(screen, r, preview, nil, ZP);
+}
+
+void
+reload(int scale)
+{
+	int b, i, j, id;
+	id = 0;
+	for (b = 0; b < sz; b += 16) {
+		for(i = 0; i < 8; i++){
+			for(j = 7; j >= 0; j--){
+				int ch1 = buf[b+i];
+				int ch2 = buf[b+i+8];
+				int color = ((ch1 >> j) & 0x1) + (((ch2 >> j) & 0x1) << 1);
+				paint(id, color, scale);
+				id++;
+			}
+		}
+	}
+	update(scale);
+}
+
+void
+eresized(int new)
+{
+	if(new && getwindow(display, Refnone) < 0)
+		fprint(2,"can't reattach to window");
+	draw(screen, screen->r, display->white, nil, ZP);
+	update(scale);
+}
+
+void
+rescale(int newscale)
+{
+	scale = newscale;
+	draw(screen, screen->r, display->white, nil, ZP);
+	draw(preview, 
+		Rect(0,0,16*16*scale+pad*2,16*8*scale+pad*2), 
+		display->black, nil, ZP);
+	reload(scale);
+}
+
+static int
+loadsprites(int fd)
+{
+	sz = read(fd, buf, Bufsz);
+	rescale(1); 
+	return sz < 1;
+}
+
+void
+main(int argc, char **argv)
+{
+	Mouse m;
+	int i, fd, res;
+	Event ev;
+	int e, timer;
+	
+	if ((buf = malloc(Bufsz)) == nil) {
+		perror("buf");
+		exits("buf");
+	}
+
+	initdraw(0,0,0);
+	eresized(0);
+	einit(Emouse);
+
+	/* Create colors */
+	clr1 = allocimage(display, Rect(0,0,1,1), screen->chan, 1, 0x72DEC2FF);
+	clr2 = allocimage(display, Rect(0,0,1,1), screen->chan, 1, 0xFFFFFFFF);
+	clr3 = allocimage(display, Rect(0,0,1,1), screen->chan, 1, 0x444444FF);
+
+	/* Preview size */
+	preview = allocimage(display, 
+		Rect(0,0,16*16*3+pad*2,16*8*3+pad*2), 
+		screen->chan, 1, 0xFF0000FF);
+
+	res = 0;
+	if (argc == 1) {
+		i = 1;
+		fd = 0;
+		goto dump;
+	}
+	for (i = 1; i < argc && res == 0; i++) {
+		if ((fd = open(argv[i], OREAD)) < 0) {
+			perror(argv[i]);
+			res = 1;
+		} else {
+			if (argc > 2) {
+				write(1, "hx ", 3);
+				write(1, argv[i], strlen(argv[i]));
+				write(1, "\n", 1);
+			}
+dump:
+			if ((res = loadsprites(fd)) != 0)
+				perror(argv[1]);
+			close(fd);
+		}
+	}
+
+	/* Menu */
+	for (;;) {
+  		e = event(&ev);
+  		if ((e == Emouse) && (ev.mouse.buttons & 4)){
+			if(emenuhit(3, &ev.mouse, &menu) == 0)
+				rescale(1);
+			if(emenuhit(3, &ev.mouse, &menu) == 1)
+				rescale(2);
+			if(emenuhit(3, &ev.mouse, &menu) == 2)
+				rescale(3);
+			if(emenuhit(3, &ev.mouse, &menu) == 3)
+				exits(nil);
+    		}
+	}
+
+	memset(buf, 0, Bufsz);
+	free(buf);
+	exits(res == 0 ? nil : "error");
+}

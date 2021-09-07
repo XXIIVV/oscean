@@ -15,6 +15,7 @@
 
 %RTN { JMP2r }
 %HALT { #0101 .System/debug DEO2 }
+%ERROR { ;error JMP2 }
 
 %GET-DEPTH { DUP2 #0002 -- LDA ;chex JSR2 }
 %REMOVE-LINEBREAKS { #0a #00 ;cswp JSR2 }
@@ -43,7 +44,6 @@
 %LEXICON-SIZE { #1800 }
 %DIARY { #3000 }
 %DIARY-SIZE { #5000 }
-%INCLUDE-SIZE { #7000 }
 %FILE { #8000 }
 %FILE-SIZE { #8000 }
 
@@ -76,9 +76,9 @@
 	
 BRK
 
-@focus-page ( "journal ) $1
+@focus-page ( "programming ) $1
 
-@print-error ( name* msg* -- )
+@error ( name* msg* -- )
 	
 	SWP2 
 	1--
@@ -93,6 +93,8 @@ BRK
 		LDAk ,&msg-loop JCN
 	POP2
 	#0a .Console/write DEO 
+
+	HALT
 
 RTN
 
@@ -150,7 +152,7 @@ RTN
 
 	( term name limit )
 	DUP2 ;slen JSR2 TERM-NAME-SIZE << ,&namelength-ok JCN
-		DUP2 ;error-term-name-limit ;print-error JSR2
+		;error-term-name-size ERROR
 		&namelength-ok
 
 	( fill name )
@@ -182,6 +184,11 @@ RTN
 			;build-page-footer JSR2
 		;body-tag ^>
 	;html-tag ^>
+
+	( check file )
+	FILE ;slen JSR2 FILE-SIZE << ,&size-ok JCN
+		;error-output-size ERROR
+		&size-ok
 
 	( save file )
 	;to-output-path JSR2 .File/name DEO2
@@ -243,7 +250,7 @@ RTN
 				DUP2 2++ ;add-local JSR2
 				;li-tag ^>
 				&continue
-			( move to eol ) 2++ DUP2 ;slen JSR2 ++ INC2 
+			( move to eol ) 2++ &eol INC2 LDAk ,&eol JCN INC2
 			LDAk ,&while JCN
 		&end
 		POP2 POPr
@@ -264,6 +271,12 @@ RTN
 		DUP2 1-- LDA [ LIT ', ] ! ,&no-album JCN 
 			;build-module-album JSR2
 			&no-album
+		DUP2 1-- LDA [ LIT '; ] ! ,&no-portal JCN 
+			;build-module-portal JSR2
+			&no-portal
+		DUP2 1-- LDA [ LIT ': ] ! ,&no-archive JCN 
+			;build-module-archive JSR2
+			&no-archive
 		( special pages )
 		DUP2 ;calendar-txt ;scmp JSR2 #00 = ,&no-calendar JCN
 			;build-special-calendar JSR2
@@ -278,14 +291,25 @@ RTN
 
 @build-page-main-body ( name* -- name* )
 
+	( max include size )
+	#8000 FILE DUP2 ;slen JSR2 ++ #8000 -- -- STH2k
+
+	#0000 !! ,&no-null JCN
+		;error-include-size ERROR
+		&no-null
+
 	( write body )
 	DUP2 ;to-include-path JSR2 .File/name DEO2
-	INCLUDE-SIZE .File/length DEO2
+	STH2kr .File/length DEO2
 	FILE DUP2 ;slen JSR2 ++ STH2k .File/load DEO2
 
-	.File/success DEI2 INCLUDE-SIZE !! ,&continue JCN
-		DUP2 ;error-include-size ;print-error JSR2
-		&continue
+	.File/success DEI2 SWP2r STH2r !! ,&no-cap JCN
+		;error-include-size ERROR
+		&no-cap
+
+	.File/success DEI2 #0000 !! ,&no-blank JCN
+		;error-include-missing ERROR
+		&no-blank
 
 	( close ) #00 STH2r .File/success DEI2 ++ STA
 
@@ -407,6 +431,43 @@ RTN
 
 RTN
 
+@build-module-portal ( name* -- name* )
+
+	( stash depth ) DUP2 GET-DEPTH STH
+	( start after ) DUP2 ;slen JSR2 ++ INC2 
+	&while
+		( stop at sibling ) LDAk ;chex JSR2 STHkr = ,&end JCN
+		( when depth+1 ) LDAk ;chex JSR2 STHkr INC NEQ ,&continue JCN
+			DUP2 2++ ;find-diary JSR2 DUP2 #0000 == ,&no-diary JCN
+				DUP2 ;build-module-photo JSR2
+				&no-diary
+				POP2
+			&continue
+		( move to eol ) 2++ &eol INC2 LDAk ,&eol JCN INC2
+		LDAk ,&while JCN
+	&end
+	POP2 POPr
+	;ul-tag ^>
+
+RTN
+
+@build-module-archive ( name* -- name* )
+
+	( stash depth ) DUP2 GET-DEPTH STH
+	( start after ) DUP2 ;slen JSR2 ++ INC2 
+	&while
+		( stop at sibling ) LDAk ;chex JSR2 STHkr = ,&end JCN
+		( when depth+1 ) LDAk ;chex JSR2 STHkr INC NEQ ,&continue JCN 
+			2++ 
+				;build-page-main-body JSR2
+			&continue
+		( move to eol ) 2++ &eol INC2 LDAk ,&eol JCN INC2
+		LDAk ,&while JCN
+	&end
+	POP2 POPr
+
+RTN
+
 @build-module-event ( diary* -- )
 
 	( event date )
@@ -472,7 +533,7 @@ RTN
 			;&buff [ LIT '_ ] #20 ;cswp JSR2
 			( find term )
 			;&buff ;find-term JSR2 #0000 !! ,&continue JCN
-				;&buff ;error-broken-link ;print-error JSR2
+				;&buff ;error-broken-link ERROR
 			&continue
 		INC2 LDAk ,&while JCN
 	POP2
@@ -488,7 +549,7 @@ RTN
 	&while
 		( move to name ) 2++ 
 		( test ) DUP2 STH2kr ;scmp JSR2 ,&end JCN
-		( move to eol ) DUP2 ;slen JSR2 ++ INC2 
+		( move to eol ) &eol INC2 LDAk ,&eol JCN INC2
 		LDAk ,&while JCN
 	POP2 #0000
 	&end
@@ -520,7 +581,7 @@ RTN
 			( skip events ) DUP2 #0006 ++ ;no-picture SWP2 ;scmp-seg JSR2 ,&skip JCN
 			( test name ) DUP2 #000a ++ STH2kr SWP2 ;scmp-seg JSR2 ,&end JCN
 			&skip
-			( move to eol ) DUP2 ;slen JSR2 ++ INC2 
+			( move to eol ) &eol INC2 LDAk ,&eol JCN INC2
 			LDAk ,&while JCN
 		POP2 #0000
 		&end
@@ -794,7 +855,7 @@ RTN
 
 @scap ( addr* -- addr* )
 
-	#0001 -- &eol INC2 LDAk ,&eol JCN
+	1-- &eol INC2 LDAk ,&eol JCN
 
 RTN
 
@@ -835,7 +896,7 @@ RTN
 
 @print-string ( addr* -- )
 
-	#0001 -- 
+	1-- 
 	&loop 
 		INC2 LDAk [ DUP .Console/write DEO ] ,&loop JCN 
 	POP2
@@ -845,8 +906,6 @@ RTN
 @html-ext ".html $1
 @htm-ext ".htm $1
 @jpg-ext ".jpg $1
-
-@title-txt "XXIIVV $1
 
 @doctype "<!DOCTYPE 20 "html> $1
 @html-tag "html $1
@@ -871,6 +930,7 @@ RTN
 @rel-attr "rel $1
 @type-attr "type $1
 
+@title-txt "XXIIVV $1
 @stylesheet-txt "stylesheet $1
 @shortcuticon-txt "shortcut 20 "icon $1
 @mdash-entity-txt "&mdash; $1
@@ -894,8 +954,10 @@ RTN
 @no-picture "000 $1
 
 @error-include-size "--include_size_exceeded $1
+@error-include-missing "include_missing $1
 @error-broken-link "--redlink $1
-@error-term-name-limit "--term_name_size_exceeded $1
+@error-term-name-size "--term_name_size_exceeded $1
+@error-output-size "--output_size_exceeded $1
 
 @stylesheet-type "text/css $1
 @shortcuticon-type "image/png $1
