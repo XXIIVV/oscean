@@ -76,7 +76,7 @@
 	
 BRK
 
-@focus-page ( "calendar ) $1
+@focus-page ( "oscean ) $1
 
 @error ( name* msg* -- )
 	
@@ -320,7 +320,7 @@ RTN
 	;ul-tag ^<
 		;diary-path-pages/end ;diary-path-pages
 		&loop
-			DUP2 LDA2 ;load/diary JSR2 ,&append-li JSR
+			LDA2k ;load/diary JSR2 ,&append-li JSR
 			INC2 INC2 GTH2k ,&loop JCN
 		POP2 POP2
 	;ul-tag ^>
@@ -379,17 +379,19 @@ RTN
 @build-module-calendar ( name* -- name* )
 
 	;ul-tag ^<
-		;diary-path-page2 ;load/diary JSR2 
-		,&append-li JSR
-		;diary-path-page1 ;load/diary JSR2 
-		,&append-li JSR
-		;diary-path-page0 ;load/diary JSR2 
-		,&append-li JSR
+		STH2
+		;diary-path-pages/end ;diary-path-pages
+		&loop
+			LDA2k ;load/diary JSR2 
+			STH2kr ,&append-li JSR
+			INC2 INC2 GTH2k ,&loop JCN
+		POP2 POP2
+		STH2r
 	;ul-tag ^>
 
 	RTN
 
-	&append-li ( name* -- name* )
+	&append-li ( name* -- )
 		STH2
 		DIARY 
 		&while
@@ -401,21 +403,24 @@ RTN
 				&continue
 			( goto eol ) &eol INC2 LDAk ,&eol JCN INC2
 			LDAk ,&while JCN
-		POP2 STH2r
+		POP2 POP2r
 
 RTN
 
 @build-module-album ( name* -- name* )
 
-	;diary-path-page2 ;load/diary JSR2 
-	,&append-figure JSR
-	;diary-path-page1 ;load/diary JSR2 
-	,&append-figure JSR
-	;diary-path-page0 ;load/diary JSR2 
-	,&append-figure JSR
+	STH2
+	;diary-path-pages/end ;diary-path-pages
+	&loop
+		LDA2k ;load/diary JSR2 
+		STH2kr ,&append-figure JSR
+		INC2 INC2 GTH2k ,&loop JCN
+	POP2 POP2
+	STH2r
 	RTN
 
-	&append-figure ( name* -- name* )
+	&append-figure ( name* -- )
+
 		STH2
 		DIARY 
 		&while
@@ -426,7 +431,7 @@ RTN
 			&continue
 			( goto eol ) &eol INC2 LDAk ,&eol JCN INC2
 			LDAk ,&while JCN
-		POP2 STH2r
+		POP2 POP2r
 
 RTN
 
@@ -964,7 +969,7 @@ RTN
 @diary-path-pages 
 	:diary-path-page2
 	:diary-path-page1
-	:diary-path-page2
+	:diary-path-page0
 	&end
 
 |1800
