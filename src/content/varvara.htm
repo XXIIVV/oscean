@@ -22,8 +22,8 @@
 	<tr><th rowspan='5'><code>20</code></th><th rowspan='5'><a href='#screen'>screen</a></th><td class='bg2'>vector*</td><td>x*</td><td rowspan="5">The screen device's vector is triggered 60 times per second, it is typically used to update pixels on the screen.</td></tr>
 	<tr><td>width*</td><td>y*</td></tr>
 	<tr><td>height*</td><td>addr*</td></tr>
-	<tr><td rowspan="2"></td><td class='bg1'>pixel</td></tr>
-	<tr><td class='bg1'>sprite</td></tr>
+	<tr><td>auto</td><td class='bg1'>pixel</td></tr>
+	<tr><td></td><td class='bg1'>sprite</td></tr>
 
 	<tr><th rowspan='5'><code>30</code><br /><code>40</code><br /><code>50</code><br /><code>60</code></th><th rowspan='5'><a href='#audio'>audio</a></th><td>vector*</td><td>adsr*</td><td rowspan="5">The audio device vector is currently unused.</td></tr>
 	<tr><td>position*</td><td>length*</td></tr>
@@ -84,7 +84,7 @@
 <p>The screen device is made of two overlayed screen buffers, displaying 2-bits graphics in up to 4 colors. Drawing pixels to the screen is done by writing values to the screen's <code>x*</code>, <code>y*</code> and <code>pixel</code> ports of the screen device.</p>
 
 <pre>
-M L * *            D C B A            
+M L Y X            D C B A            
 | | | +---- Flipx  | | | +---- Blend   
 | | +------ Flipy  | | +------ Blend   
 | +-------- Layer  | +-------- Blend  
@@ -139,6 +139,16 @@ RTN
 
 @sprite
 	0f38 675f dfbf bfbf
+</pre>
+
+<p>The screen's <b>auto byte</b> automates the incrementation of the position and/or the sprite address whenever a drawing command is sent, so the program does not need to manually move to the next sprite, or the next tile over.</p>
+
+<pre>
+B A Y X            
+| | | +---- Auto X
+| | +------ Auto Y  
+| +-------- Auto addr+8
++---------- Auto addr+8
 </pre>
 
 <h3 id='audio'>Audio Device</h3>
