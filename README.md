@@ -21,4 +21,4 @@ uxncli bin/oscean.rom
 - Pull Requests are welcome.
 - See the [License](LICENSE) file for license rights and limitations(MIT), the media assets are [BY-NC-SA 4.0](http://wiki.xxiivv.com/About).
 
-<img src='https://github.com/XXIIVV/Oscean/blob/master/media/identity/logo.crest.png?raw=true' width='200'/>
+<img src='https://wiki.xxiivv.com/media/identity/logo.crest.png' width='200'/>
