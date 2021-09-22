@@ -1,0 +1,435 @@
+<p>The BMP file format is a simple raster graphics image file format originally on Microsoft Windows and OS/2 operating systems. </p>
+
+<p>The basic file structure is broken into the following four sections:</p>
+
+<ul>
+	<li><b>The File Header (14 bytes)</b>
+		<ul>
+			<li>Confirms that the file is (at least probably) a BMP file.</li>
+			<li>Tells exactly how large the file is.</li>
+			<li>Tells where the actual image data is located within the file.</li>
+		</ul>
+	</li>
+	<li><b>The Image Header (40 bytes in the versions of interest)</b>
+		<ul>
+			<li>Tells how large the image is (rows and columns).</li>
+			<li>Tells what format option is used (bits per pixel).</li>
+			<li>Tells which type of compression, if any, is used.</li>
+			<li>Provides other details, all of which 
+			are seldom used.</li>
+		</ul>
+	</li>
+	<li><b>The Color Table (length varies and is not always present)</b>
+		<ul>
+			<li>Provides the color palette for bit depths of 8 or less.</li>
+			<li>Provides the (optional) bit masks for bit depths of 16 and 32.</li>
+			<li>Not used for 24-bit images.</li>
+		</ul>
+	</li>
+	<li><b>The Pixel Data</b>
+		<ul>
+			<li>Pixel by pixel color information</li>
+			<li>Row-by-row, bottom to top.</li>
+			<li>Rows start on double word (4-byte) boundaries and are null padded if necessary.</li>
+			<li>Each row is column-by-column, left to right.</li>
+			<li>In 24-bit images, color order is Red, Green, Blue.</li>
+			<li>In images less than 8-bits, the higher order bits are the left-most pixels.</li>
+		</ul>
+	</li>
+</ul>
+<p>Each of these four sections is discussed in detail below.</p>
+
+<p>Endianness - Since this is a Microsoft format 
+specification originally targeted for Intel processors, most multibyte 
+values are stored in Little Endian format. This means that the bytes within 
+the value are stored starting with the least significant byte first and the 
+most significant byte last. Since this is how multibyte values are 
+represented internally on an Intel processor, you will not need to worry 
+about this convention as long as you transfer multibyte values directly 
+between the file and memory. The only exception to this rule is for 16-bit 
+pixel data in the WinNT version, which is stored in Big Endian. Note that 
+ASCII character strings are not multibyte values -- they are strings of 
+single-byte characters -- and, hence, the very concept of Endianness does 
+not apply to them.</p>
+
+<h1>The File Header</h1>
+
+<p>The File Header has exactly fourteen bytes separated into five 
+fields.</p>
+
+<table border='1'>
+<tr>
+  <td width="17%"><strong>Field Name</strong></td>
+  <td width="13%" align="center"><strong>Size in Bytes</strong></td>
+  <td width="70%"><strong>Description</strong></td>
+</tr>
+<tr>
+  <td width="17%">bfType</td>
+  <td width="13%" align="center">2</td>
+  <td width="70%">The characters "BM"</td>
+</tr>
+<tr>
+  <td width="17%">bfSize</td>
+  <td width="13%" align="center">4</td>
+  <td width="70%">The size of the file in bytes</td>
+</tr>
+<tr>
+  <td width="17%">bfReserved1</td>
+  <td width="13%" align="center">2</td>
+  <td width="70%">Unused - must be zero</td>
+</tr>
+<tr>
+  <td width="17%">bfReserved2</td>
+  <td width="13%" align="center">2</td>
+  <td width="70%">Unused - must be zero</td>
+</tr>
+<tr>
+  <td width="17%">bfOffBits</td>
+  <td width="13%" align="center">4</td>
+  <td width="70%">Offset to start of Pixel Data</td>
+</tr>
+</table>
+<h3>bfType</h3>
+
+<p>The first 
+two bytes must be the ASCII codes for the characters 'B' and 'M'. The software 
+should check these values to confirm that the file it is reading is most 
+probably a Windows BMP file. There are actually other options for these two 
+characters, but they all refer to formats developed for the OS/2 operating 
+system, which is largely extinct. </p>
+
+<h3>bfSize</h3>
+
+<p>The second field is a four-byte integer that 
+contains the size of the file in bytes. In theory, this means that a BMP file 
+could be as large as 4GB (4,294,967,296 bytes), however it is not safe to 
+assume that all editors will treat this as an unsigned value and therefore a 
+more reasonable limit is 2GB (2,147,483,648 bytes). This can accommodate a 
+24-bit image that contains over 715 million pixels (e.g., a picture larger 
+than 32,000 by 23,000 pixels). It is probably worth noting that the BMP file 
+specification actually supports storing multiple images in a single file; 
+however, this is almost never done and very few editors support this option.</p>
+
+<h3>bfReserved1</h3>
+
+<h3>bfReserved2</h3>
+
+<p>The third and fourth fields are each 
+two bytes long and are reserved for future extensions to the format 
+definition. While certainly not impossible, it is unlikely at this point that 
+either will ever be used. The present definition requires that both of these fields be zero. 
+A well-written reader should behave reasonably if non-zero values are 
+encountered, but what is "reasonable"? Should the reader ignore the values 
+regardless of what they are, or should it refuse to proceed any further on 
+the assumption that the file conforms to a later version of the format 
+specification and that it has no basis for assuming that it can properly 
+interpret the contents? Good arguments can be made for either approach. 
+Assuming that the decision is made to go ahead and read the file while 
+ignoring these values, what should happen when the file is written back to 
+disk? Should these values be forced to zero, in order to conform to the 
+present specification, or should they be preserved assuming that they have 
+meaning to the program that originally generated the file? Again, good 
+arguments can be made either way.</p>
+
+<h3>bfOffBits</h3>
+
+<p>The final four byte field is an integer that gives the offset of the start of 
+the Pixel Data section relative to the start of the file.</p>
+
+<h1>The Image Header</h1>
+
+<p>There are actually several options for the Image Header, 
+particularly when Versions 4 and 5 of the specification are considered. 
+Limiting the discussion to Version 3, there are still two distinct options: 
+one that was developed for the OS/2 BMP format and one that is for the Windows 
+BMP format. The OS/2 Image Header is exactly 12 bytes long while the Windows 
+Image Header is at least 40 bytes long. Fortunately, the first four bytes of 
+each format (including Versions 4 and 5 and, probably, all future versions) is the length of the Image Header in bytes and therefore a simple 
+examination of this value tells you which format is being used. While the 
+Windows Image Header allows headers longer than 40 bytes (and this was 
+supported by Windows 95), few applications ever adopted it and, once again, an 
+editor that restricts itself to only working with 40-byte Image Headers will 
+likely never encounter a file it can't work with.</p>
+
+<p>The following is the format for the basic 40-byte Windows 
+Image Header.</p>
+
+<table border='1'>
+<tr>
+  <td width="17%"><strong>Field Name</strong></td>
+  <td width="13%" align="center"><strong>Size in Bytes</strong></td>
+  <td width="70%"><strong>Description</strong></td>
+</tr>
+<tr>
+  <td width="17%">biSize</td>
+  <td width="13%" align="center">4</td>
+  <td width="70%">Header Size - Must be at least 40</td>
+</tr>
+<tr>
+  <td width="17%">biWidth</td>
+  <td width="13%" align="center">4</td>
+  <td width="70%">Image width in pixels</td>
+</tr>
+<tr>
+  <td width="17%">biHeight</td>
+  <td width="13%" align="center">4</td>
+  <td width="70%">Image height in pixels</td>
+</tr>
+<tr>
+  <td width="17%">biPlanes</td>
+  <td width="13%" align="center">2</td>
+  <td width="70%">Must be 1</td>
+</tr>
+<tr>
+  <td width="17%">biBitCount</td>
+  <td width="13%" align="center">2</td>
+  <td width="70%">Bits per pixel - 1, 4, 8, 16, 24, or 32</td>
+</tr>
+<tr>
+  <td width="17%">biCompression</td>
+  <td width="13%" align="center">4</td>
+  <td width="70%">Compression type (0 = uncompressed)</td>
+</tr>
+<tr>
+  <td width="17%">biSizeImage</td>
+  <td width="13%" align="center">4</td>
+  <td width="70%">Image Size - may be zero for uncompressed images</td>
+</tr>
+<tr>
+  <td width="17%">biXPelsPerMeter</td>
+  <td width="13%" align="center">4</td>
+  <td width="70%">Preferred resolution in pixels per meter</td>
+</tr>
+<tr>
+  <td width="17%">biYPelsPerMeter</td>
+  <td width="13%" align="center">4</td>
+  <td width="70%">Preferred resolution in pixels per meter</td>
+</tr>
+<tr>
+  <td width="17%">biClrUsed</td>
+  <td width="13%" align="center">4</td>
+  <td width="70%">Number Color Map entries that are actually used</td>
+</tr>
+<tr>
+  <td width="17%">biClrImportant</td>
+  <td width="13%" align="center">4</td>
+  <td width="70%">Number of significant colors</td>
+</tr>
+</table>
+<h3>biSize</h3>
+
+<p>The size, in bytes, of the Image Header. Nearly all BMP 
+files use the basic 40-byte header from the Windows Version 3 specification.</p>
+
+<h3>biWidth</h3>
+
+<p>This is the width of the image, in pixels.</p>
+
+<h3>biHeight</h3>
+
+<p>This is the height of the image, in pixels. The pixel data 
+is ordered from bottom to top. If this value is negative, then the data is 
+ordered from top to bottom. </p>
+
+<h3>biPlanes</h3>
+
+<p>This is the number of image planes in the image. It is 
+always equal to 1.</p>
+
+<h3>biBitCount</h3>
+
+<p>This is the number of bits used to represent the data for 
+each pixel. Bit Counts of 8 or less are "indexed" with the data being an 
+index into the color pallete that is located stored in the Color Table 
+section. Bit Counts greater than 8 are considered to be "true color" data 
+with the complete color information being contained in each pixel's data. 
+The overwhelming number of true color BMP files contain 24-bit images in 
+which each pixel is represented by three bytes of data with one byte each 
+for red, green, and blue intensities; no Color Table is present for such an 
+image. Bit counts of 16 and 32 are color-masked bit fields and although all 
+of the color data is present for each pixel, a set of three bit-masks, one 
+for each primary color, is needed in order to determine which bits 
+correspond to which colors; these bitmasks are stored in the Color Table 
+section (with a default set of color masks being used if no Color Table is 
+present).</p>
+
+<h3>biCompression</h3>
+
+<p>This value indicates what type of compression, if any, is 
+used. The possible values are:</p>
+
+<table border='1'>
+	<tr>
+		<td style="width: 129px"><strong>biCompression</strong></td>
+		<td><strong>Meaning</strong></td>
+	</tr>
+	<tr>
+		<td style="width: 129px">0</td>
+		<td>Uncompressed</td>
+	</tr>
+	<tr>
+		<td style="width: 129px">1</td>
+		<td>RLE-8 (Usable only with 8-bit images)</td>
+	</tr>
+	<tr>
+		<td style="width: 129px">2</td>
+		<td>RLE-4 (Usable only with 4-bit images)</td>
+	</tr>
+	<tr>
+		<td style="width: 129px">3</td>
+		<td>Bitfields (Used - and required - only with 16- 
+		and 32-bit images)</td>
+	</tr>
+</table>
+<h3>biSizeImage</h3>
+
+<p>This indicates the size of the actual pixel data, in bytes, 
+stored in the file. It is required for compressed image types. For 
+uncompressed types (including bit-fielded images) it is generally set equal 
+to zero since the size of the data can be calculated directly from the image 
+size and width.</p>
+
+<h3>biXPelsPerMeter</h3>
+
+<p>This is the preferred horizontal resolution of the image, in 
+pixels per meter, when it is printed or displayed. It is only recommendation 
+to the display device and is generally equal to zero, indicating no 
+preference.</p>
+
+<h3>biYPelsPerMeter</h3>
+
+<p>This is the preferred vertical resolution of the image, in 
+pixels per meter, when it is printed or displayed. It is only recommendation 
+to the display device and is generally equal to zero, indicating no 
+preference.</p>
+
+<h3>biClrUsed</h3>
+
+<p>This value is zero except for indexed images using fewer 
+than the maximum number of colors, in which case it refers to the number of 
+colors contained in the Color Table. For the indexed bit depths (i.e., Bit 
+Counts of 8 and smaller) the Color Table contains a list of colors to which 
+the pixel data refer. The maximum number of colors that can be used is 2<sup><em>N</em></sup> 
+where <em>N</em> is the value of Bit Count. For instance, 8-bit images can 
+support a maximum of 256 colors. But suppose that an image only uses 47 
+colors. Why store 256? More to the point, why have to make up 109 colors 
+that aren't being used? Instead, simply set this parameter to 47 and store 
+those 47 colors and no more. </p>
+
+<p>In practice it is very uncommon to run across images that 
+have anything other than zero for this parameter. The reason is that it is a 
+simple matter to go ahead and set all of the unused colors to all zero 
+(black) -- or some other color -- and store all 2<sup><em>N</em></sup> of 
+them in the Color Table. The space penalty is negligible since the file size 
+is dominated by the pixel data for all but the smallest images.</p>
+
+<h3>biClrImportant</h3>
+
+<p>This is the number of colors that are considered important 
+when rendering the image. For instance, an image might contain 47 different 
+colors but perhaps a reasonable image can be generated using just 13 of 
+them. If the image is displayed on hardware having very limited color 
+capability, say a cheap LCD panel supporting only 16 colors, then the reader 
+knows that it should be able to generate an acceptable image by just using 
+the first 16 colors in the Color Table. Needless to say, the important 
+colors need to be stored first in the Color Table for this to work. It is 
+left up to the application reading the file to determine how to map the 
+"unimportant" colors into the available ones. </p>
+
+<p>If this parameter is equal to zero, then all colors in the 
+Color Table are to be considered important. </p>
+
+<h1>The Color Table</h1>
+
+<p>If we are dealing with images having a bit depth of 8 or less, 
+then the pixel data is actually an index into a color palette. For instance, 
+in a 4-bit image there are a maximum of 16 colors in the palette. If the 
+data for a particular pixel is, say, 9, then the color that is used for that 
+pixel is given by the tenth entry in the table (because the numbering starts 
+with 0 and not 1). </p>
+
+<p>In all versions of BMP files starting with Version 3 
+(Win3x), the color entries occupy 4 bytes each so that they can be 
+efficiently read and written as single 32-bit values. Taken as a single 
+value, the four bytes are ordered as follows: [ZERO][RED][GREEN][BLUE]. Due 
+to the Little Endian format, this means that the Blue value comes first 
+followed by the green and then the red. A fourth, unused, byte comes next 
+which is expected to be equal to 0.</p>
+
+<p>If we are dealing with 16-bit or 32-bit images, then the 
+Color Table contains a set of bit masks used to define which bits in the 
+pixel data to associate with each color. Note that the original Version 3 
+BMP format did not support these image types. Instead, these were an 
+extension of the format developed for WindowsNT. For both the 16-bit and the 
+32-bit variants, the color masks are 32-bits long with the green mask being 
+first and the blue mask being last. In both cases the bit masks start with 
+the most significant bits, meaning that for the 16-bit images the least 
+significant two bytes are zero. The format requires that the bits in each 
+mask be contiguous and that the masks be non-overlapping. The most common 
+bit masks for 16-bit images are RGB555 and RGB565 while the most common 
+bitmasks for 32-bit images are RGB888 and RGB101010.</p>
+
+<p>If we are dealing with a 24-bit image, then there is no 
+Color Table present.</p>
+
+<h1>The Pixel Data</h1>
+
+<p>The pixel data is organized in rows from bottom to top and, within each 
+row, from left to right. Each row is called a "scan line". If the image 
+height is given as a negative number, then the rows are ordered from top to 
+bottom.</p>
+
+<p>In the uncompressed formats (including the color masked formats) each 
+scan line is null-padded so as to occupy an integer number of dwords (4-byte 
+words). In other words, the number of bytes needed to store each scan line 
+must be an even multiple of four and, if necessary, null bytes (bytes whose 
+values are zero) are appended to the end of the pixel data for that row in 
+order to make this so. For instance, in the 24-bit format each pixel 
+requires three bytes of data. If the image is 13 pixels wide then each row 
+requires 39 bytes of data and a single null byte would be appended to bring 
+this total to 40.</p>
+
+<h3>1-bit (Monochrome Bitmap)</h3>
+
+<p>Each byte of data represents 8 pixels. The most significant bit maps to 
+the left most pixel in the group of eight. Any unused bits are set to zero.</p>
+
+<h3>4-bit (16 Color Bitmap)</h3>
+
+<p>Each byte of data represents 2 pixels. The most significant nibble maps 
+to the left most pixel in the group of two. Any unused nibble is set to 
+zero.</p>
+
+<h3>8-bit (256 Color Bitmap)</h3>
+
+<p>Each byte represents 1 pixel. </p>
+
+<h3>16-bit (Up to 65,536 Colors, but commonly 32,768 Colors)</h3>
+
+<p>Each pixel is represented by two bytes. A common representation is RGB555 
+which allocates 5 bits to each color allowing for 32K colors while leaving 
+one bit unused. Since the eye is most sensitive to green, another common 
+representation is RGB565 which allocates this unused bit to the green 
+component </p>
+
+<h3>24-bit (16,777,216 Colors)</h3>
+
+<p>Each pixel is represented by three bytes. The first byte gives the 
+intensity of the red component, the second byte gives the intensity of the 
+green component, and the third byte gives the intensity of the blue 
+component.</p>
+
+<h3>32-bit (Up to 4,294,967,296 Colors, but commonly 1,073,741,824 or 
+16,777,216 Colors)</h3>
+
+<p>Each pixel is represented by four bytes. Even though this means that over 
+four billion colors could be represented, very few display devices are 
+capable of such resolution. However, it can be desirable to store images 
+with such high resolution so that significant processing can be performed on 
+the data without significant degradation building up from accumulated 
+round-off errors. Even so, it is generally sufficient to only maintain an 
+additional two bits of information per pixel, so the RGB101010 
+representation allocates 10 bits to each color. Another common 
+representation is the RGB888 which simply uses a 32-bit format to store 
+24-bit images in order to leverage the ability of the processor to work with 
+data in 32-bit chunks more efficiently.</p>
