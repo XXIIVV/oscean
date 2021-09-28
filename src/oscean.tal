@@ -79,7 +79,7 @@
 	
 BRK
 
-@focus-page ( "index ) $1
+@focus-page $1
 
 @error ( name* msg* -- )
 	
@@ -96,7 +96,6 @@ BRK
 		LDAk ,&msg-loop JCN
 	POP2
 	#0a .Console/write DEO 
-
 	HALT
 
 RTN
@@ -145,7 +144,7 @@ BRK
 
 RTN
 
-( ---------------------------------- )
+( build )
 
 @build-page ( name* -- )
 	
@@ -230,17 +229,17 @@ RTN
 		GET-DEPTH #00 = ,&no-siblings JCN
 		( parents ) 
 		GET-DEPTH #02 < ,&no-parents JCN
-			DUP2 ;find-parent JSR2 ;find-parent JSR2 ,&children JSR POP2
+			DUP2 ;find-parent JSR2 ;find-parent JSR2 ,&build-children JSR POP2
 			&no-parents
 		( siblings ) 
 		GET-DEPTH #01 < ,&no-siblings JCN
-			DUP2 ;find-parent JSR2 ,&children JSR POP2
+			DUP2 ;find-parent JSR2 ,&build-children JSR POP2
 			&no-siblings
-		( children ) ,&children JSR
+		( children ) ,&build-children JSR
 	;nav-tag ^>
 	RTN
 
-	&children ( name* -- name* )
+	&build-children ( name* -- name* )
 
 		;ul-tag ^<
 		DUP2
@@ -547,28 +546,6 @@ RTN
 
 RTN
 
-@check-page ( page* -- )
-
-	( look for redlinks )
-	&while
-		DUP2 ;href-attr SWP2 ;scmp-seg JSR2 #00 = ,&continue JCN
-			( move to href ) #0006 ++ 
-			( strip relative ) LDAk [ LIT '. ] = ,&continue JCN
-			( strip jumps ) LDAk [ LIT '# ] = ,&continue JCN
-			( strip http* ) DUP2 ;http-txt SWP2 ;scmp-seg JSR2 ,&continue JCN
-			( filter ) DUP2 
-			;&buff #0030 ;mcpy JSR2
-			;&buff [ LIT '. ] #00 ;cswp JSR2
-			;&buff [ LIT '_ ] #20 ;cswp JSR2
-			( find term )
-			;&buff ;find-term JSR2 #0000 !! ,&continue JCN
-				;&buff ;error-broken-link ERROR
-			&continue
-		INC2 LDAk ,&while JCN
-	POP2
-RTN
-	&buff $30
-
 ( tools )
 
 @find-term ( name* -- term* )
@@ -620,6 +597,10 @@ RTN
 
 @find-parent ( term* -- parent* )
 
+	GET-DEPTH ,&not-root JCN 
+		RTN 
+		&not-root
+
 	REWIND 
 	( stash depth ) LDAk ;chex JSR2 #01 - STH
 	LEXICON SWP2
@@ -633,6 +614,28 @@ RTN
 	#0002
 
 RTN
+
+@check-page ( page* -- )
+
+	( look for redlinks )
+	&while
+		DUP2 ;href-attr SWP2 ;scmp-seg JSR2 #00 = ,&continue JCN
+			( move to href ) #0006 ++ 
+			( strip relative ) LDAk [ LIT '. ] = ,&continue JCN
+			( strip jumps ) LDAk [ LIT '# ] = ,&continue JCN
+			( strip http* ) DUP2 ;http-txt SWP2 ;scmp-seg JSR2 ,&continue JCN
+			( filter ) DUP2 
+			;&buff #0030 ;mcpy JSR2
+			;&buff [ LIT '. ] #00 ;cswp JSR2
+			;&buff [ LIT '_ ] #20 ;cswp JSR2
+			( find term )
+			;&buff ;find-term JSR2 #0000 !! ,&continue JCN
+				;&buff ;error-broken-link ERROR
+			&continue
+		INC2 LDAk ,&while JCN
+	POP2
+RTN
+	&buff $30
 
 ( Web framework )
 
@@ -686,15 +689,25 @@ RTN
 
 @add-local ( name* -- )
 
-	DUP2 ;term/name ;scmp JSR2 ,&no-link JCN
+	DUP2 ;term/name ;scmp JSR2 ,&local-link JCN
+	DUP2 ;term/name ;find-term JSR2 ;find-parent JSR2 ;scmp JSR2 ,&parent-link JCN
 
 	FILE RESUME
 		SWP2 ;thread-local JSR2
 		CLOSE
 
 	RTN
-	&no-link
-		^s [ LIT '/ ] ^c
+	&local-link
+		FILE RESUME
+			SWP2 ;thread-local-self JSR2
+			CLOSE
+		RTN
+
+	&parent-link
+		FILE RESUME
+			SWP2 ;thread-local-parent JSR2
+			CLOSE
+		RTN
 
 RTN
 
@@ -718,6 +731,38 @@ RTN
 	LIT '< PUTC
 	LIT 'a PUTC		
 	;href-attr STH2kr ;to-filename JSR2 ;thread-attr JSR2
+	LIT '> PUTC
+	STH2r PUTS
+	LIT '< PUTC
+	LIT '/ PUTC
+	LIT 'a PUTC
+	LIT '> PUTC
+
+RTN
+
+@thread-local-self ( thread* name* -- thread* )
+
+	STH2
+	LIT '< PUTC
+	LIT 'a PUTC		
+	;href-attr STH2kr ;to-filename JSR2 ;thread-attr JSR2
+	;class-attr ;self-txt ;thread-attr JSR2
+	LIT '> PUTC
+	STH2r PUTS
+	LIT '< PUTC
+	LIT '/ PUTC
+	LIT 'a PUTC
+	LIT '> PUTC
+
+RTN
+
+@thread-local-parent ( thread* name* -- thread* )
+
+	STH2
+	LIT '< PUTC
+	LIT 'a PUTC		
+	;href-attr STH2kr ;to-filename JSR2 ;thread-attr JSR2
+	;class-attr ;parent-txt ;thread-attr JSR2
 	LIT '> PUTC
 	STH2r PUTS
 	LIT '< PUTC
@@ -1000,6 +1045,7 @@ RTN
 @href-attr "href $1
 @rel-attr "rel $1
 @type-attr "type $1
+@class-attr "class $1
 
 @title-txt "XXIIVV $1
 @stylesheet-txt "stylesheet $1
@@ -1009,8 +1055,11 @@ RTN
 @index-txt "index $1
 @calendar-txt "calendar $1
 @journal-txt "journal $1
+@self-txt "self $1
+@parent-txt "parent $1
 
 @lexicon-path "database/lexicon $1
+@diary-path-page3 "database/diary3 $1
 @diary-path-page2 "database/diary2 $1
 @diary-path-page1 "database/diary1 $1
 @diary-path-page0 "database/diary0 $1
@@ -1035,6 +1084,7 @@ RTN
 @shortcuticon-type "image/png $1
 
 @diary-path-pages 
+	:diary-path-page3
 	:diary-path-page2
 	:diary-path-page1
 	:diary-path-page0

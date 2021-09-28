@@ -68,7 +68,7 @@
 <p>The console device is the standard I/O device, it allows for communication between programs on the host computer, or even between instances of Uxn.</p>
 
 <pre>
-#41 #18 DEO <span style='float:right; color:#888'>( to send the letter "A" )</span>
+#41 .Console/write DEO <span style='float:right; color:#888'>( to send the letter "A" )</span>
 </pre>
 
 <p>To send data from one Uxn to another, when using a <a href='unix.html'>Unix</a> host, use the following pattern:</p>
@@ -81,7 +81,7 @@
 
 <img src='../media/generic/uxn.ppu.jpg' style='float:right' width='240' />
 
-<p>The screen device is made of two overlayed screen buffers, displaying 2-bits graphics in up to 4 colors. Drawing pixels to the screen is done by writing values to the screen's <code>x*</code>, <code>y*</code> and <code>pixel</code> ports of the screen device.</p>
+<p>The screen device is made of two layers, each displaying 2-bits graphics in up to 4 colors. Drawing to the screen is done by writing values to the screen's <code>x*</code>, <code>y*</code> and <code>pixel/sprite</code> ports of the screen device.</p>
 
 <pre>
 M L Y X            D C B A            
@@ -91,29 +91,43 @@ M L Y X            D C B A
 +---------- Mode   +---------- Blend  
 </pre>
 
-<p>The screen can also draw 8x8 sprites by writing an <code>addr*</code> which points to the <a href='chr_format.html'>sprite data</a> in memory. The <b>sprite byte</b> defines the layer to draw on, the type of data to draw, and the colors to use. </p>
-
 <table border='1'>
-	<tr><th colspan='8'>Sprite Blending</th></tr>
+	<tr><th colspan='8'>Effects(MLYX)</th><th colspan='8'>Blending(DBCA)</th></tr>
 	<tr>
+		<th>0</th><td>bg 1b</td>
+		<th>4</th><td>fg 1b</td>
+		<th>8</th><td>bg 2b</td>
+		<th>c</th><td>fg 2b</td>
 		<th>0</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg0 fg0'><circle cx="10" cy="10" r="8"/></svg></td>
 		<th>4</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg1 fg0'><circle cx="10" cy="10" r="8"/></svg></td>
 		<th>8</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg2 fg0'><circle cx="10" cy="10" r="8"/></svg></td>
 		<th>c</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg3 fg0'><circle cx="10" cy="10" r="8"/></svg></td>
 	</tr>
 	<tr>
+		<th>1</th><td><i>flipx</i></td>
+		<th>5</th><td><i>flipx</i></td>
+		<th>9</th><td><i>flipx</i></td>
+		<th>d</th><td><i>flipx</i></td>
 		<th>1</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg0 fg1'><circle cx="10" cy="10" r="8"/></svg></td>
 		<th>5</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite fg1' style='background:#ccc'><circle cx="10" cy="10" r="8"/></svg></td>
 		<th>9</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg2 fg1'><circle cx="10" cy="10" r="8"/></svg></td><th>d</th>
 		<td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg3 fg1'><circle cx="10" cy="10" r="8"/></svg></td>
 	</tr>
 	<tr>
+		<th>2</th><td><i>flipy</i></td>
+		<th>6</th><td><i>flipy</i></td>
+		<th>a</th><td><i>flipy</i></td>
+		<th>e</th><td><i>flipy</i></td>
 		<th>2</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg0 fg2'><circle cx="10" cy="10" r="8"/></svg></td>
 		<th>6</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg1 fg2'><circle cx="10" cy="10" r="8"/></svg></td>
 		<th>a</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite fg2' style='background:#ccc'><circle cx="10" cy="10" r="8"/></svg></td>
 		<th>e</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg3 fg2'><circle cx="10" cy="10" r="8"/></svg></td>
 	</tr>
 	<tr>
+		<th>3</th><td><i>flipxy</i></td>
+		<th>7</th><td><i>flipxy</i></td>
+		<th>b</th><td><i>flipxy</i></td>
+		<th>f</th><td><i>flipxy</i></td>
 		<th>3</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg0 fg3'><circle cx="10" cy="10" r="8"/></svg></td>
 		<th>7</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg1 fg3'><circle cx="10" cy="10" r="8"/></svg></td>
 		<th>b</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg2 fg3'><circle cx="10" cy="10" r="8"/></svg></td><th>f</th>
@@ -121,25 +135,33 @@ M L Y X            D C B A
 	</tr>
 </table>
 
-<p>Sprites are 8x8 tiles, stored in memory as sequences of 8 bytes for a 1bpp sprite, and 16 bytes for a 2bpp sprite. For example, the color byte <code>#01</code> will paint a 1bpp sprite on the background with the first system color, and <code>#32</code> will paint a 2bpp sprite on the foreground with the second system color. </p>
+<p>To draw a single pixel at 20,30 with the second color on the foreground layer: </p>
 
-<p>The permutations of the sprite byte are as follow:</p>
+<pre>
+@paint-pixel
+	#0020 .Screen/x DEO2 <span style='float:right; color:#888'>( set x* position )</span>
+	#0030 .Screen/x DEO2 <span style='float:right; color:#888'>( set y* position )</span>
+	#42 .Screen/pixel DEO2 <span style='float:right; color:#888'>( draw 4-fg 2-color2 )</span>
+RTN
+</pre>
 
-<img src='../media/generic/varvara.blending.png' />
-
-<p>Here's a <a href='uxntal.html'>Uxntal</a> routine to draw a 1-bit sprite at position <code>20,30</code>.</p>
+<p>The screen can also draw 8x8 sprites by writing an <code>addr*</code> which points to the <a href='chr_format.html'>sprite data</a> in memory. The <b>sprite byte</b> defines the layer to draw on, the type of data to draw, and the colors to use. </p>
 
 <pre>
 @paint-sprite
-	#0020 #28 DEO2
-	#0030 #2a DEO2
-	;sprite #2c DEO2
-	#01 #2f DEO
+	#0020 .Screen/x DEO2 <span style='float:right; color:#888'>( set x* position )</span>
+	#0030 .Screen/y DEO2 <span style='float:right; color:#888'>( set y* position )</span>
+	;sprite .Screen/addr DEO2 <span style='float:right; color:#888'>( set addr* position )</span>
+	#03 .Screen/sprite DEO <span style='float:right; color:#888'>( draw 0-bg 3-color3 )</span>
 RTN
 
 @sprite
 	0f38 675f dfbf bfbf
 </pre>
+
+<p>Sprites are 8x8 tiles, stored in memory as sequences of 8 bytes for a 1-bit sprite, and 16 bytes for a 2-bits sprite. For example, the color byte <code>#01</code> will paint a 1bpp sprite on the background with the first system color, and <code>#42</code> will paint a 2-bits sprite on the foreground with the second system color. </p>
+
+<img src='../media/generic/varvara.blending.png' />
 
 <p>The screen's <b>auto byte</b> automates the incrementation of the position and/or the sprite address whenever a drawing command is sent, so the program does not need to manually move to the next sprite, or the next tile. A pixel drawing will increment the positions by 1, and a sprite drawing, by 8. A 1bpp sprite drawing will increment the address by 8, and a 2bpp drawing, by 16.</p>
 
