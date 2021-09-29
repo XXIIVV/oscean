@@ -614,20 +614,20 @@ RTN
 RTN
 
 @find-diary ( name* -- diary* )
-
-	( load page2 )
-	;diary-path-page2 ;load/diary JSR2
-	;&search JSR2 
-	( load page1 )
-	DUP2 #0000 !! ,&page1 JCN
-		POP2 ;diary-path-page1 ;load/diary JSR2 
-		DUP2 ;&search JSR2
-		&page1
-	( load page0 )
-	DUP2 #0000 !! ,&page0 JCN
-		POP2 ;diary-path-page0 ;load/diary JSR2 
-		DUP2 ;&search JSR2
-		&page0
+	
+	STH2
+	;diary-path-pages/end ;diary-path-pages
+	&loop
+		LDA2k ;load/diary JSR2 
+		STH2kr ,&search JSR 
+		DUP2 #0000 == ,&continue JCN
+			( found ) NIP2 NIP2 POP2r RTN
+			&continue
+			POP2
+		INC2 INC2 GTH2k ,&loop JCN
+	POP2 POP2
+	POP2r
+	#0000
 	RTN
 
 	&search ( name* -- diary* )
@@ -635,12 +635,19 @@ RTN
 		DIARY 
 		&while
 			( skip events ) DUP2 #0006 ++ ;no-picture SWP2 ;scmp-seg JSR2 ,&skip JCN
-			( test name ) DUP2 #000a ++ STH2kr SWP2 ;scmp-seg JSR2 ,&end JCN
+			( bound ) DUP2 #000a ++ #09 ;next-char JSR2 STH2
+			( clip ) #00 STH2kr STA
+			( a ) DUP2 #000a ++ 
+			( b ) OVR2r STH2r ;scmp JSR2 #01 ! ,&no-found JCN
+				( unclip ) #09 STH2r STA
+				POP2r
+				RTN
+				&no-found
+			( unclip ) #09 STH2r STA
 			&skip
 			( move to eol ) &eol INC2 LDAk ,&eol JCN INC2
 			LDAk ,&while JCN
 		POP2 #0000
-		&end
 		POP2r
 
 RTN
