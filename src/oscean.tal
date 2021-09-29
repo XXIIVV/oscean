@@ -1,9 +1,16 @@
-( The Bequest Globe 
+( 
+
+The Bequest Globe 
 
 Runes:
 	, album 
 	; portal 
-	: archive )
+	: archive 
+
+Map:
+	0x1800 - 0x3000 Lexicon
+	0x3000 - 0x8000 Diary
+	0x8000 - 0xffff Output )
 
 %+  { ADD } %-   { SUB }              %/   { DIV }  
 %<  { LTH } %>   { GTH }  %=  { EQU } %!   { NEQ } 
@@ -41,10 +48,9 @@ Runes:
 %open-tag { STH2 LIT '< PUTC STH2r PUTS LIT '> PUTC }
 %close-tag { STH2 LIT '< PUTC LIT '/ PUTC STH2r PUTS LIT '> PUTC }
 
-( Map:
-	0x1800 - 0x3000 Lexicon
-	0x3000 - 0x8000 Diary
-	0x8000 - 0xffff Output )
+%RUNE-ALBUM { LIT ', }  
+%RUNE-PORTAL { LIT '; }  
+%RUNE-ARCHIVE { LIT ': }  
 
 %TERM-NAME-SIZE { #0016 }
 
@@ -78,6 +84,7 @@ Runes:
 |0100 ( -> )
 	
 	;load JSR2
+	;validate-diary JSR2
 	,focus-page LDR ;build-one JCN2
 		;build-all JMP2
 	HALT
@@ -124,6 +131,34 @@ RTN
 		DIARY STH2k .File/load DEO2
 		STH2r REMOVE-LINEBREAKS
 	RTN
+
+RTN
+
+@validate-diary ( -- )
+
+	;diary-path-pages/end ;diary-path-pages
+	&loop
+		LDA2k ;load/diary JSR2 ,&check JSR
+		INC2 INC2 GTH2k ,&loop JCN
+	POP2 POP2
+	RTN
+
+	&check ( name* -- name* )
+		DIARY 
+		&while
+			( get term )
+			#000a ++ 
+			DUP2 #09 ;has-char JSR2 #00 = ,&skip JCN
+				( bound ) DUP2 #09 ;next-char JSR2 STH2
+				( clip ) #00 STH2kr STA
+				( flag ) DUP2 ;find-term JSR2 #0000 !! ,&exists JCN
+					DUP2 ;error-term-name-unknown ERROR
+					&exists
+				( unclip ) #09 STH2r STA
+				&skip
+			( goto eol ) &eol INC2 LDAk ,&eol JCN INC2
+			LDAk ,&while JCN
+		POP2
 
 RTN
 
@@ -201,7 +236,7 @@ RTN
 	;to-output-path JSR2 .File/name DEO2
 	FILE ;slen JSR2   .File/length DEO2
 	FILE              .File/save DEO2
-	FILE ;check-page JSR2
+	FILE ;validate-output JSR2
 
 RTN
 
@@ -273,33 +308,43 @@ RTN
 			;term/diary ;build-module-photo JSR2
 			&no-picture
 		( body )
-		;build-page-main-body JSR2
-		( modules )
-		DUP2 1-- LDA [ LIT ', ] ! ,&no-album JCN 
-			;build-module-album JSR2
-			&no-album
-		DUP2 1-- LDA [ LIT '; ] ! ,&no-portal JCN 
-			;build-module-portal JSR2
-			&no-portal
-		DUP2 1-- LDA [ LIT ': ] ! ,&no-archive JCN 
-			;build-module-archive JSR2
-			&no-archive
-		( special pages )
-		DUP2 ;index-txt ;scmp JSR2 #00 = ,&no-index JCN
-			;build-special-index JSR2
-			&no-index
-		DUP2 ;calendar-txt ;scmp JSR2 #00 = ,&no-calendar JCN
-			;build-special-calendar JSR2
-			&no-calendar
-		DUP2 ;journal-txt ;scmp JSR2 #00 = ,&no-journal JCN
-			;build-special-journal JSR2
-			&no-journal
-		;build-module-calendar JSR2
+		;build-page-body JSR2
+		;build-page-module JSR2
+		;build-page-special JSR2
+		;build-page-calendar JSR2
 	;main-tag ^>
 
 RTN
 
-@build-page-main-body ( name* -- name* )
+@build-page-module ( term* -- term* )
+
+	DUP2 1-- LDA RUNE-ALBUM ! ,&no-album JCN 
+		;build-module-album JSR2 RTN
+		&no-album
+	DUP2 1-- LDA RUNE-PORTAL ! ,&no-portal JCN 
+		;build-module-portal JSR2 RTN
+		&no-portal
+	DUP2 1-- LDA RUNE-ARCHIVE ! ,&no-archive JCN 
+		;build-module-archive JSR2 RTN
+		&no-archive
+
+RTN
+
+@build-page-special ( term* -- term* )
+
+	DUP2 ;index-txt ;scmp JSR2 #00 = ,&no-index JCN
+		;build-special-index JSR2 RTN
+		&no-index
+	DUP2 ;calendar-txt ;scmp JSR2 #00 = ,&no-calendar JCN
+		;build-special-calendar JSR2 RTN
+		&no-calendar
+	DUP2 ;journal-txt ;scmp JSR2 #00 = ,&no-journal JCN
+		;build-special-journal JSR2 RTN
+		&no-journal
+
+RTN
+
+@build-page-body ( name* -- name* )
 
 	( max include size )
 	#8000 FILE DUP2 ;slen JSR2 ++ #8000 -- -- STH2k
@@ -405,7 +450,7 @@ RTN
 RTN
 	&limit $1
 
-@build-module-calendar ( name* -- name* )
+@build-page-calendar ( name* -- name* )
 
 	;ul-tag ^<
 		STH2
@@ -492,7 +537,7 @@ RTN
 		( stop at sibling ) LDAk ;chex JSR2 STHkr = ,&end JCN
 		( when depth+1 ) LDAk ;chex JSR2 STHkr INC NEQ ,&continue JCN 
 			2++ 
-				;build-page-main-body JSR2
+				;build-page-body JSR2
 			&continue
 		( move to eol ) 2++ &eol INC2 LDAk ,&eol JCN INC2
 		LDAk ,&while JCN
@@ -620,7 +665,7 @@ RTN
 
 RTN
 
-@check-page ( page* -- )
+@validate-output ( page* -- )
 
 	( look for redlinks )
 	&while
@@ -847,6 +892,19 @@ RTN
 	&end
 		POPr
 
+RTN
+
+@has-char ( addr* char -- flag )
+	
+	STH
+	&while
+		LDAk STHkr ! ,&continue JCN
+			POP2 POPr #01 RTN
+			&continue
+		INC2 LDAk ,&while JCN
+	POP2 POPr
+	#00
+	
 RTN
 
 ( helpers )
@@ -1084,6 +1142,7 @@ RTN
 @error-broken-link "--redlink $1
 @error-term-name-size "--term_name_size_exceeded $1
 @error-output-size "--output_size_exceeded $1
+@error-term-name-unknown "--term_name_unknown $1
 
 @stylesheet-type "text/css $1
 @shortcuticon-type "image/png $1
