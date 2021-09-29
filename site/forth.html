@@ -1,9 +1,15 @@
 <!DOCTYPE html><html><head><link href="../links/main.css" type="text/css" rel="stylesheet"/><link href="../media/services/icon.png" type="image/png" rel="shortcut icon"/><title>XXIIVV &mdash; forth</title></head><body><header><a href="home.html"><img src="../media/icon/logo.svg" alt="XXIIVV"/></a></header><nav><ul><li><a href="paper_computing.html">paper computing</a></li><li><a href="programming.html" class="parent">programming</a></li><li><a href="virtual_machines.html">virtual machines</a></li><li><a href="cellular_automata.html">cellular automata</a></li><li><a href="fluidics.html">fluidics</a></li><li><a href="fractals.html">fractals</a></li></ul><ul><li><a href="assembly.html">assembly</a></li><li><a href="forth.html" class="self">forth</a></li><li><a href="lisp.html">lisp</a></li><li><a href="pascal.html">pascal</a></li><li><a href="ansi_c.html">ansi c</a></li><li><a href="postscript.html">postscript</a></li><li><a href="hypertalk.html">hypertalk</a></li><li><a href="unix.html">unix</a></li></ul><ul></ul></nav><main><h2>Forth is a programming language that uses two stacks and a dictionary of words.</h2>
 
 <p>A Forth environment combines the compiler with an interactive shell, where the user defines and runs subroutines called words. Words can be tested, redefined, and debugged as the source is entered without recompiling or restarting the whole program.</p>
+
 <p>Forth programmers enjoy the immediacy of an interpreter while at the same time the performance and efficiency of a compiler. </p>
-<figure><img src='../media/refs/vogue.jpg' width='300'/><figcaption>—Forth Programming Aesthetics</figcaption></figure>
-<p>I use a custom version of the <code>lbforth.c</code> REPL, modified to work on <a href='plan9.html'>Plan9</a> ARM which can be downloaded <a href='../src/inc/lbforth9.c.txt' target='_blank'>here</a>. To experiment with a subset of Forth in the terminal, have a look at <a href='firth.html'>Firth</a> and <a href='uxn.html'>Uxn</a>, for a graphical exploration try <a href='postscript.html'>Postscript</a> which also follows the <a href='reverse_polish.html'>Reverse Polish Notation</a>.</p>
+
+<figure>
+	<img src='../media/refs/vogue.jpg' width='300'/>
+	<figcaption>—Forth Programming Aesthetics</figcaption>
+</figure>
+
+<p>I use a custom version of the <code>lbforth.c</code> REPL, modified to work on <a href='plan9.html'>Plan9(ARM)</a> which can be downloaded <a href='../src/inc/lbforth9.c.txt' target='_blank'>here</a>. To experiment with a subset of Forth's primitives and learn <a href='reverse_polish.html'>Reverse Polish Notation</a>, have a look at <a href='firth.html'>Firth</a>. For a graphical exploration of forth's concepts, try <a href='postscript.html'>Postscript</a>, if you're looking to build GUI applications, try <a href='uxn.html'>Uxn</a>.</p>
 
 <h3>Basics</h3>
 
@@ -12,21 +18,22 @@
 <p>To inspect the stack, type <code>.S</code></p>
 
 <pre>
-10 ; 20 ; 30 ; .S
-30 20 10  OK
-DROP ; .S
-20 10  OK
+10 20 30 .S
+30 20 10 <b>OK</b>
+DROP .S
+20 10 <b>OK</b>
 BYE
 </pre>
 
-<p>Forth reads from left to right, there is no operator precedence.</p>
+<p>Forth has no operator precedence, and does not need parentheses.</p>
 
-<pre>
-2 3 4 + *       \ (3 + 4) * 2
-2 3 4 * +       \ (3 * 4) + 2
-2 3 * 4 +       \ (2 * 3) + 4
-5 6 + 7 *       \ (5 + 6) * 7
-</pre>
+<table border='1'>
+	<tr><th>Reverse Polish</th><th>Infix</th></tr>
+	<tr><td>3 4 + 2 *</td><td>(3 + 4) * 2</td></tr>
+	<tr><td>2 3 4 * +</td><td>(3 * 4) + 2</td></tr>
+	<tr><td>2 3 * 4 +</td><td>(2 * 3) + 4</td></tr>
+	<tr><td>5 6 + 7 *</td><td>(5 + 6) * 7</td></tr>
+</table>
 
 <h3>Words</h3>
 
@@ -43,7 +50,6 @@ Hi!  OK
 <p>Because in Forth data is passed implicitly, it is considered insane to define a word without documenting what data it takes from the stack and what data it returns to the stack. The canonical way of doing this is to use the Forth word <code>(</code> which tells the system to ignore what follows up to and including the next <code>)</code>. Expectations ("before") and results ("after") are separated by --. The resulting ( before -- after ) is a "stack-effect comment".</p>
 
 <pre>
-\ Return square of n
 : SQUARED DUP * ;
 5 SQUARED .
 25
@@ -59,18 +65,13 @@ Hi!  OK
 
 <h3>Logic</h3>
 
-<p>To define TRUE/FALSE:</p>
+<p>There’s actually no boolean type in Forth. The number <code>0</code> is treated as false, and any other number is true, although the canonical true value is <code>-1</code> (all boolean operators return <code>0</code> or <code>-1</code>). Conditionals in Forth can only be used inside definitions. </p>
+
+<p>The simplest conditional statement in Forth is <code>if then</code>, which is equivalent to a standard <code>if</code> statement in most languages. Here’s an example of a definition using <code>if then</code>. In this example, we’re also
+using the <code>mod</code> word, which returns the modulo of the top two numbers on the stack. In this case, the top number is 5, and the other is whatever was placed on the stack before calling <code>buzz?</code>. Therefore, <code>5 mod 0 =</code> is a boolean expression that checks to see if the top of the stack is divisible by 5.</p>
 
 <pre>
-\ CONSTANT defines a word that always returns the same value
-0 CONSTANT FALSE
-FALSE .
-
-\ = returns a true flag if the top two stack items are equal
-FALSE FALSE = CONSTANT TRUE
-TRUE .
-
-: EVEN?  ( n -- )  2 MOD IF ." odd" ELSE ." even" THEN ;
+: BUZZ? 5 MOD 0 = IF ." BUZZ" THEN ;
 </pre>
 
 <h3>Loops</h3>
