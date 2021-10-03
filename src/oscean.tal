@@ -472,7 +472,7 @@ RTN
 		DIARY 
 		&while
 			DUP2 #0005 ++ LDA [ LIT '+ ] ! ,&continue JCN
-				DUP2 #000a ++ STH2kr SWP2 ;scmp-seg JSR2 #01 ! ;&continue JCN2
+				( host is term ) DUP2 ;term/name ;log-has-term JSR2 #01 ! ,&continue JCN
 				;li-tag ^<
 					DUP2 ;build-module-event JSR2
 				;li-tag ^>
@@ -502,7 +502,7 @@ RTN
 		&while
 			( picture is blank ) DUP2 ;no-picture ;log-has-picture JSR2 ,&continue JCN
 			( picture is head ) DUP2 ;term/pict ;log-has-picture JSR2 ,&continue JCN
-			DUP2 #000a ++ STH2kr SWP2 ;scmp-seg JSR2 #01 ! ,&continue JCN
+			( host is term ) DUP2 ;term/name ;log-has-term JSR2 #01 ! ,&continue JCN
 				DUP2 ;build-module-photo JSR2
 			&continue
 			( goto eol ) &eol INC2 LDAk ,&eol JCN INC2
@@ -510,6 +510,7 @@ RTN
 		POP2 POP2r
 
 RTN
+
 
 @build-module-portal ( name* -- name* )
 
@@ -637,15 +638,10 @@ RTN
 		DIARY 
 		&while
 			( skip events ) DUP2 ;no-picture ;log-has-picture JSR2 ,&skip JCN
-			( bound ) DUP2 #000a ++ #09 ;next-char JSR2 STH2
-			( clip ) #00 STH2kr STA
-			( a ) DUP2 #000a ++ 
-			( b ) OVR2r STH2r ;scmp JSR2 #01 ! ,&no-found JCN
-				( unclip ) #09 STH2r STA
+			( host is term ) DUP2 STH2kr ;log-has-term JSR2 #01 ! ,&skip JCN
 				POP2r
 				RTN
 				&no-found
-			( unclip ) #09 STH2r STA
 			&skip
 			( move to eol ) &eol INC2 LDAk ,&eol JCN INC2
 			LDAk ,&while JCN
@@ -679,6 +675,17 @@ RTN
 	STH2
 	#0006 ++
 	( clip bound ) DUP2 #0003 ++ STH2 [ #00 ] STH2kr STA
+	SWP2r STH2r ;scmp JSR2
+	( clip restore ) [ #09 ] STH2r STA
+
+RTN
+
+
+@log-has-term ( log* term* -- flag )
+
+	STH2
+	#000a ++ 
+	( clip bounds ) DUP2 #09 ;next-char JSR2 STH2 [ #00 ] STH2kr STA
 	SWP2r STH2r ;scmp JSR2
 	( clip restore ) [ #09 ] STH2r STA
 
