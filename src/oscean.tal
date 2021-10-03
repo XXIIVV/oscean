@@ -138,8 +138,9 @@ RTN
 
 	;diary-path-pages/end ;diary-path-pages
 	&loop
-		LDA2k ;load/diary JSR2 ,&check JSR
-		INC2 INC2 GTH2k ,&loop JCN
+		LDA2k ;load/diary JSR2 
+		,&check JSR
+		2++ GTH2k ,&loop JCN
 	POP2 POP2
 	RTN
 
@@ -394,8 +395,9 @@ RTN
 	;ul-tag ^<
 		;diary-path-pages/end ;diary-path-pages
 		&loop
-			LDA2k ;load/diary JSR2 ,&append-li JSR
-			INC2 INC2 GTH2k ,&loop JCN
+			LDA2k ;load/diary JSR2 
+			,&append-li JSR
+			2++ GTH2k ,&loop JCN
 		POP2 POP2
 	;ul-tag ^>
 
@@ -426,19 +428,19 @@ RTN
 @build-special-journal ( -- )
 
 	#00 ;&limit STA
-	;diary-path-page2 ;load/diary JSR2 
-	,&append-figure JSR
-	;diary-path-page1 ;load/diary JSR2 
-	,&append-figure JSR
-	;diary-path-page0 ;load/diary JSR2 
-	,&append-figure JSR
+	;diary-path-pages/end ;diary-path-pages
+	&loop
+		LDA2k ;load/diary JSR2 
+		,&append-figure JSR
+		2++ GTH2k ,&loop JCN
+	POP2 POP2
 	RTN
 
 	&append-figure ( name* -- name* )
 		DIARY 
 		&while
 			;&limit LDA #20 > ,&end JCN
-			DUP2 #0006 ++ ;no-picture SWP2 ;scmp-seg JSR2 ,&continue JCN
+			DUP2 ;no-picture ;log-has-picture JSR2 ,&continue JCN
 				DUP2 ;build-module-photo JSR2
 				;&limit LDA INC ;&limit STA
 			&continue
@@ -498,9 +500,9 @@ RTN
 		STH2
 		DIARY 
 		&while
-			DUP2 #0006 ++ ;no-picture SWP2 ;scmp-seg JSR2 ,&continue JCN
+			( picture is blank ) DUP2 ;no-picture ;log-has-picture JSR2 ,&continue JCN
+			( picture is head ) DUP2 ;term/pict ;log-has-picture JSR2 ,&continue JCN
 			DUP2 #000a ++ STH2kr SWP2 ;scmp-seg JSR2 #01 ! ,&continue JCN
-			DUP2 #0006 ++ ;term/pict SWP2 ;scmp-seg JSR2 ,&continue JCN
 				DUP2 ;build-module-photo JSR2
 			&continue
 			( goto eol ) &eol INC2 LDAk ,&eol JCN INC2
@@ -634,7 +636,7 @@ RTN
 		STH2
 		DIARY 
 		&while
-			( skip events ) DUP2 #0006 ++ ;no-picture SWP2 ;scmp-seg JSR2 ,&skip JCN
+			( skip events ) DUP2 ;no-picture ;log-has-picture JSR2 ,&skip JCN
 			( bound ) DUP2 #000a ++ #09 ;next-char JSR2 STH2
 			( clip ) #00 STH2kr STA
 			( a ) DUP2 #000a ++ 
@@ -669,6 +671,16 @@ RTN
 		LTH2k ,&loop JCN
 	( pop depth ) POPr
 	#0002
+
+RTN
+
+@log-has-picture ( log* picture* -- flag )
+
+	STH2
+	#0006 ++
+	( clip bound ) DUP2 #0003 ++ STH2 [ #00 ] STH2kr STA
+	SWP2r STH2r ;scmp JSR2
+	( clip restore ) [ #09 ] STH2r STA
 
 RTN
 
