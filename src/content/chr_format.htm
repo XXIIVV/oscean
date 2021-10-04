@@ -50,7 +50,40 @@ drawicn(Uint32 *dst, int x, int y, Uint8 *sprite, int fg, int bg)
 			putpixel(dst, x + h, y + v, ch1 ? fg : bg);
 		}
 }
-</pre><ul>
+</pre>
+
+<p>To convert non-black pixels of an image to an icn file:</p>
+
+<pre>
+static void
+export_icn(Uint32 *src, int width, int height, char *filename)
+{
+	int i, x, y;
+	Uint8 icnbuf[SZ];
+	FILE *f = fopen(filename, "wb");
+	/* clean */
+	for(i = 0; i < SZ; ++i)
+		icnbuf[i] = 0;
+	/* write pixels */
+	for(y = 0; y < height; ++y) {
+		for(x = 0; x < width; ++x) {
+			int color = pixels[y * width + x];
+			if(color) {
+				int col = x & 7, row = y & 7;
+				int byte = (x & ~7) + (y & ~7) * width / 8 + row;
+				icnbuf[byte] |= 1 << (7 - col);
+			}
+		}
+	}
+	/* save */
+	if(!fwrite(icnbuf, sizeof(icnbuf), 1, f))
+		fprintf(stderr, "Failed: %s!\n", filename);
+	fclose(f);
+	fprintf(stderr, "Export: %s\n", filename);
+}
+</pre>
+
+<ul>
 	<li><a href='https://git.sr.ht/~rabbits/chr-format' target='_blank'>C Toolkit</a></li>
 </ul>
 
