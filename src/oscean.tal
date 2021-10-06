@@ -28,6 +28,8 @@ Map:
 %RTN { JMP2r }
 %HALT { #0101 .System/debug DEO2 }
 %ERROR { ;error JMP2 }
+%MOD  { DUP2 DIV MUL SUB }
+%MOD2 { DIV2k MUL2 SUB2 }
 
 %GET-DEPTH { DUP2 #0002 -- LDA ;chex JSR2 }
 %REMOVE-LINEBREAKS { #0a #00 ;cswp JSR2 }
@@ -83,6 +85,7 @@ Map:
 
 |0100 ( -> )
 	
+	;print-arvelie JSR2
 	;load JSR2
 	;validate-diary JSR2
 	,focus-page LDR ;build-one JCN2
@@ -384,10 +387,10 @@ RTN
 			#00 PUTC
 			( pop thread ) POP2
 			( move to eol ) &eol INC2 LDAk ,&eol JCN INC2
-			LDAk ,&while JCN
+			LDAk ;&while JCN2
 		POP2 
 	;ul-tag ^>
-	
+
 RTN
 
 @build-special-calendar ( -- )
@@ -1103,6 +1106,19 @@ RTN
 	&loop 
 		INC2 LDAk [ DUP .Console/write DEO ] ,&loop JCN 
 	POP2
+
+RTN
+
+@print-arvelie ( -- )
+
+	.DateTime/year DEI2 #07d6 -- NIP 
+		( digit1 ) DUP #0a DIV #30 + .Console/write DEO
+		( digit2 ) #0a MOD #30 + .Console/write DEO
+	.DateTime/doty DEI2
+		( month ) DUP2 #000e DIV2 NIP #41 + .Console/write DEO
+		( digit3 ) #000e MOD2 DUP2 #000a DIV2 NIP #30 + .Console/write DEO
+		( digit4 ) #000a MOD2 NIP #30 + .Console/write DEO
+	#0a .Console/write DEO
 
 RTN
 
