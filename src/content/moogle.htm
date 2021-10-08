@@ -45,6 +45,50 @@ createbox(Scene *s, double width, double height, double depth, int color)
 
 <iframe src="https://git.sr.ht/~rabbits/moogle/blob/main/src/moogle.c"></iframe>
 
+<h3>Structures</h3>
+
+<pre>
+Mesh *
+createstairs(Scene *s, double width, int steps, int color)
+{
+	int i;
+	Point3d a, b, c, d;
+	Mesh *stairs = addmesh(s);
+	for(i = 0; i < steps; ++i) {
+		a = Pt3d(-width, i + 1, i), b = Pt3d(width, i + 1, i), c = Pt3d(-width, i + 1, 1 + i), d = Pt3d(width, i + 1, 1 + i);
+		addline(stairs, a, b, color);
+		addline(stairs, c, d, color);
+		addline(stairs, a, c, color);
+		addline(stairs, b, d, color);
+		addline(stairs, a, Pt3d(a.x, a.y - 1, a.z), color);
+		addline(stairs, b, Pt3d(b.x, b.y - 1, b.z), color);
+	}
+	addline(stairs, c, Pt3d(c.x, 0, c.z), color);
+	addline(stairs, d, Pt3d(d.x, 0, d.z), color);
+	addline(stairs, Pt3d(c.x, 0, c.z - steps), Pt3d(c.x, 0, c.z), color);
+	addline(stairs, Pt3d(d.x, 0, d.z - steps), Pt3d(d.x, 0, d.z), color);
+	return stairs;
+}
+
+Mesh *
+createdoor(Scene *s, double width, double height, double depth, int color)
+{
+	Mesh *door = addmesh(s);
+	Point3d a = Pt3d(-width, 0, 0),
+			b = Pt3d(-width, height, 0),
+			c = Pt3d(0, height + width, 0),
+			d = Pt3d(width, height, 0),
+			e = Pt3d(width, 0, 0);
+	addline(door, a, b, color);
+	addline(door, b, c, color);
+	addline(door, c, d, color);
+	addline(door, d, e, color);
+	addline(door, e, a, color);
+	extrude(door, 0, 0, depth, color);
+	return door;
+}
+</pre>
+
 <ul>
 	<li><a href='https://git.sr.ht/~rabbits/moogle' target='_blank'>source</a></li>
 </ul>
