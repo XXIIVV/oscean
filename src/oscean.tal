@@ -77,8 +77,8 @@ Map:
 @term
 	&name $16 ( term name limit )
 	&pict $4
-	&diary $4c
-
+	&diary $40
+	&meta $40
 @buff $40
 
 ( program )
@@ -150,14 +150,18 @@ RTN
 	&check ( name* -- name* )
 		DIARY 
 		&while
-			( get term )
+			( test length )
+			DUP2 ;slen JSR2 #003f << ,&ok-length JCN 
+				DUP2 ;error-diary-name-length ERROR
+				&ok-length
+			( test term )
 			#000a ++ 
 			DUP2 #09 ;has-char JSR2 #00 = ,&skip JCN
 				( bound ) DUP2 #09 ;next-char JSR2 STH2
 				( clip ) #00 STH2kr STA
-				( flag ) DUP2 ;find-term JSR2 #0000 !! ,&exists JCN
+				( flag ) DUP2 ;find-term JSR2 #0000 !! ,&ok-found JCN
 					DUP2 ;error-term-name-unknown ERROR
-					&exists
+					&ok-found
 				( unclip ) #09 STH2r STA
 				&skip
 			( goto eol ) &eol INC2 LDAk ,&eol JCN INC2
@@ -217,6 +221,8 @@ RTN
 		&continue
 	POP2
 
+	( TODO: fill meta )
+
 	;doctype ^s
 	( create body )
 	;html-tag ^<
@@ -250,6 +256,7 @@ RTN
 		;stylesheet-txt ;stylesheet-type ;stylesheet-path ;add-link-tag JSR2
 		;shortcuticon-txt ;shortcuticon-type ;shortcuticon-path ;add-link-tag JSR2
 		( TODO: add og )
+		( TODO: add description )
 		;title-tag ^<
 			;title-txt ^s ^space ;mdash-entity-txt ^s ^space DUP2 ^s
 		;title-tag ^>
@@ -362,10 +369,12 @@ RTN
 	STH2kr .File/length DEO2
 	FILE DUP2 ;slen JSR2 ++ STH2k .File/load DEO2
 
+	( file is too large )
 	.File/success DEI2 SWP2r STH2r !! ,&no-cap JCN
 		;error-include-size ERROR
 		&no-cap
 
+	( file is missing )
 	.File/success DEI2 #0000 !! ,&no-blank JCN
 		;error-include-missing ERROR
 		&no-blank
@@ -1059,6 +1068,13 @@ RTN
 RTN
 	&a $2 &b $2
 
+@msfl ( addr* length* -- )
+
+	POP2 
+	( TODO )
+
+RTN
+
 @scap ( addr* -- addr* )
 
 	1-- &eol INC2 LDAk ,&eol JCN
@@ -1183,6 +1199,7 @@ RTN
 @error-term-name-size "--term_name_size_exceeded $1
 @error-output-size "--output_size_exceeded $1
 @error-term-name-unknown "--term_name_unknown $1
+@error-diary-name-length "--diary_name_size_exceeded $1
 
 @stylesheet-type "text/css $1
 @shortcuticon-type "image/png $1
