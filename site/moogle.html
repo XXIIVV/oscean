@@ -49,6 +49,24 @@ createbox(Scene *s, double width, double height, double depth, int color)
 
 <pre>
 Mesh *
+createdoorway(Scene *s, double width, double height, double depth, int color)
+{
+	Mesh *doorway = addmesh(s);
+	Point3d a = Pt3d(-width, 0, 0),
+			b = Pt3d(-width, height, 0),
+			c = Pt3d(0, height + width, 0),
+			d = Pt3d(width, height, 0),
+			e = Pt3d(width, 0, 0);
+	addline(doorway, a, b, color);
+	addline(doorway, b, c, color);
+	addline(doorway, c, d, color);
+	addline(doorway, d, e, color);
+	addline(doorway, e, a, color);
+	extrude(doorway, 0, 0, depth, color);
+	return doorway;
+}
+
+Mesh *
 createstairs(Scene *s, double width, int steps, int color)
 {
 	int i;
@@ -71,21 +89,27 @@ createstairs(Scene *s, double width, int steps, int color)
 }
 
 Mesh *
-createdoor(Scene *s, double width, double height, double depth, int color)
+createring(Scene *s, double radius, double thickness, double depth, int segs, double angle, int color)
 {
-	Mesh *door = addmesh(s);
-	Point3d a = Pt3d(-width, 0, 0),
-			b = Pt3d(-width, height, 0),
-			c = Pt3d(0, height + width, 0),
-			d = Pt3d(width, height, 0),
-			e = Pt3d(width, 0, 0);
-	addline(door, a, b, color);
-	addline(door, b, c, color);
-	addline(door, c, d, color);
-	addline(door, d, e, color);
-	addline(door, e, a, color);
-	extrude(door, 0, 0, depth, color);
-	return door;
+	Mesh *ring = addmesh(s);
+	/* front */
+	addarc(ring, radius, segs, angle, color);
+	addarc(ring, radius + thickness, segs, angle, color);
+	addedge(ring, ring->vertices, ring->vertices + segs + 1, color);
+	addedge(ring, ring->vertices + segs, ring->vertices + segs * 2 + 1, color);
+	/* back */
+	moveto(s, 0, 0, depth);
+	addarc(ring, radius, segs, angle, color);
+	addarc(ring, radius + thickness, segs, angle, color);
+	addedge(ring, ring->vertices + segs * 3 + 2, ring->vertices + segs * 4 + 3, color);
+	addedge(ring, ring->vertices + segs * 2 + 2, ring->vertices + segs * 3 + 3, color);
+	/* connects */
+	addedge(ring, ring->vertices, ring->vertices + segs * 2 + 2, color);
+	addedge(ring, ring->vertices + segs, ring->vertices + segs * 3 + 2, color);
+	addedge(ring, ring->vertices + segs + 1, ring->vertices + segs * 3 + 3, color);
+	addedge(ring, ring->vertices + segs * 2 + 1, ring->vertices + segs * 4 + 3, color);
+	reset(s);
+	return ring;
 }
 </pre>
 
