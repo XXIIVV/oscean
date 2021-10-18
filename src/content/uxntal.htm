@@ -80,32 +80,27 @@
 
 <h3>Example</h3>
 
-<p>In the following example, our program begins with a padding to the address <code>#0018</code> with <code class='op'>|18</code>, followed by the definition of the <code class='op'>Console/write</code> label. From that point onward, the absolute or zero-page address of that label can be referenced by name. The <b>zero-page</b> is the name of the first 256 bytes in memory, the <code>0000-0100</code> range, it is typically used to store variables and devices.</p>
+<p>In the following example, our program begins by creating the macro <code>EMIT</code>, which contains the <a href='varvara.html#console'>Console/write port</a> and the <code>device output</code> opcode. From that point onward, using <code>EMIT</code> will send a byte to the Console's write port.</p>
 
-<table border="1">
-	<tr><th>Zero-page</th><td>.Console/write</td><td><code>#18</code></td></tr>
-	<tr><th>Absolute</th><td>;Console/write</td><td><code>#0018</code></td></tr>
-</table>
+<p>Next, we pad to <code class='op'>|0100</code>, which is where the first page of memory ends, and where all Uxn programs begin. Our program begins by pushing to the stack, the absolute address of the label <code class='op'>hello-world</code>, which is defined at the end of the program and points to a series of characters. An absolute address is made of two bytes. We then assign the child label <code class='op'>&loop</code> to this position of the program so we can return to it later.</p>
 
-<p>Next, we pad to <code class='op'>|0100</code>, which is where the first page of memory ends, and where all Uxn programs begin. Our program begins by pushing to the stack, the absolute address of the label <code class='op'>hello-world</code>, which is defined at the end of the program and points to a series of characters. An absolute address is made of two bytes. We then assign the label <code class='op'>&loop</code> to this position of the program so we can return to it later.</p>
-
-<p>Next, the <code class='op'>LDAk</code> opcode takes two bytes at the top of the stack to form an absolute address, and loads the value in memory found at that address to the top of the stack, in this case, the <a href='ascii.html'>ascii value</a> of the letter H. That value is sent to the Console's port named <code class='op'>write</code><code>(#18)</code> which prints that character to the terminal.</p>
+<p>Next, the <code class='op'>LDAk</code> opcode takes two bytes at the top of the stack to form an absolute address, and loads the value in memory found at that address to the top of the stack, in this case, the <a href='ascii.html'>ascii value</a> of the letter H. That value is sent to <code>Console/write(#18)</code> which prints that character to the terminal.</p>
 
 <p>Next, we increment the absolute address found on top of the stack, we use <code class='op'>#0001</code> and <code class='op'>ADD2</code> because we know the items on the stack to be an address made of two bytes. We load the incremented value, the <code class='op'>JCN</code> opcode will jump to the position of label <code class='op'>&loop</code> as long as the item before the address is not zero. We complete the program with <code class='op'>POP2</code> to remove the address on the stack, to keep the stack clean.</p>
 
 <pre style='clear:both'>
 ( dev/console )
 
-|18 @Console/write
+%EMIT { #18 DEO }
 
 ( init )
 
-|0100 ( -> )
+|0100 @program
 	
 	;hello-word 
 
 	&loop
-		( send ) LDAk .Console/write DEO
+		( send ) LDAk EMIT
 		( loop ) INC2 LDAk ,&loop JCN
 	POP2
 	
@@ -114,7 +109,7 @@ BRK
 @hello-word "Hello 20 "World!
 </pre>
 
-<p>Both <code class='op'>&loop</code> and <code class='op'>@loop</code> are ways to define labels, but using <code>&loop</code> will automatically prefix your new <code>&label</code> with the name of the last <code>@label</code>. Since label names are unique identifiers and you might need multiple instances of something called <i>loop</i>, it's best to use sublabels when possible.</p>
+<p>Both <code class='op'>&loop</code> and <code class='op'>@loop</code> are ways to define labels, but using <code>&loop</code> will automatically prefix your new <code>&label</code> with the name of the last <code>@label</code>, or <code>program/loop</code>. Since label names are unique identifiers and you might need multiple instances of something called <i>loop</i>, it's best to use sublabels when possible.</p>
 
 <h2>Addressing</h2>
 
