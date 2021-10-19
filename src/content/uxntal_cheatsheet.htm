@@ -1,0 +1,158 @@
+<p><a href='uxntal.html'>Uxntal</a> is a stack-machine assembly language targeting the <a href='uxn.html'>Uxn virtual machine</a>.</p>
+
+<p>Stack machine programming might look at bit odd, as it uses a <a href='reverse_polish.html'>postfix notation</a>, which means that operators are always found at the end of an operation. For instance, one would write 3 4 + instead of 3 + 4. </p>
+
+<p>The expression written (5 + 10) * 3 in conventional notation would be written 10 5 + 3 * in reverse Polish notation.</p>
+
+<pre>
+<code>( This is a comment )</code>
+
+<code>( All programming in Unxtal is done by manipulating the stack )</code>
+
+#12 <code>( push a byte )</code>
+#3456 <code>( push a short )</code>
+
+<code>( Uxn has 32 opcodes, each opcode has 3 possible modes )</code>
+
+POP <code>( pop a byte )</code>
+POP2 <code>( pop a short )</code>
+
+<code>( The modes are:
+	[2] The short mode consumes two bytes from the stack.
+	[k] The keep mode does not consume items from the stack.
+	[r] The return mode makes the operator operate on the return-stack. )</code>
+
+#12 #34 ADD <code>( 46 )</code>
+#12 #34 ADDk <code>( 12  34  46 )</code>
+
+<code>( The modes can be combined )</code>
+
+#1234 #5678 ADD2k <code>( 12  34  56  78  68  ac )</code>
+
+<code>( The arithmetic/bitewise opcodes are:
+	ADD SUB MUL DIV
+	AND ORA EOR SFT )</code>
+
+<code>( New opcodes can be created using macros )</code>
+
+%MOD2 { DIV2k MUL2 SUB2 }
+
+#1234 #0421 MOD2 <code>( 01  b0 )</code>
+
+<code>( ---------------------------------------------------------------------------- )</code>
+
+<code>( A short is simply two bytes, each byte can be manipulated )</code>
+
+#1234 SWP <code>( 34  12 )</code>
+#1234 #5678 SWP2 <code>( 56  78  12  34 )</code>
+#1234 #5678 SWP <code>( 12  34  78  56 )</code>
+
+<code>( Individual bytes of of a short can be removed from the stack )</code>
+
+#1234 POP <code>( 12 )</code>
+#1234 NIP <code>( 34 )</code>
+
+<code>( The stack opcodes are:
+	POP DUP NIP SWP OVR ROT )</code>
+
+<code>( ---------------------------------------------------------------------------- )</code>
+
+<code>( To compare values on the stack with each other )</code>
+
+#12 #34 EQU <code>( 00 )</code>
+#12 #12 EQU <code>( 01 )</code>
+
+<code>( Logic opcodes will put a flag with a value of either 00 or 01 )</code>
+
+#12 #34 LTH 
+#78 #56 GTH 
+	ADD <code>( 02 )</code>
+
+<code>( The logic opcodes are:
+	EQU NEQ GTH LTH )</code>
+
+<code>( ---------------------------------------------------------------------------- )</code>
+
+<code>( Uxn's accessible memory is as follow: 
+	256 bytes of working stack 
+	256 bytes of return stack
+	65536 bytes of memory
+	256 bytes of IO memory )</code>
+
+<code>( The addressable memory is between 0000-ffff )</code>
+
+#12 #0200 STA <code>( stored 12 at 0200 in memory )</code>
+#3456 #0201 STA2 <code>( stored 3456 at 0201 in memory )</code>
+#0200 LDA2 <code>( 12  34 )</code>
+
+<code>( The zero-page can be addressed with a single byte )</code>
+
+#1234 #80 STZ2 <code>( stored 12 at 0080 in memory )</code>
+#80 LDZ2 <code>( 12  34 )</code>
+
+<code>( Devices are ways for Uxn to communicate with the outside world
+	There is a maximum of 16 devices connected to Uxn at once
+	Device bytes are called ports, the Console device uses the 10-1f ports
+	The console's port 18 is called /write )</code>
+
+%EMIT { #18 DEO }
+
+#31 EMIT <code>( print "1" to console )</code>
+
+<code>( A label is equal to a position in the program )</code>
+@parent <code>( defines a label "parent" )</code>
+	&child <code>( defines a sublabel "parent/child" )</code>
+
+<code>( Label positions can be pushed on stack )</code>
+;parent <code>( push the absolute position, 2 bytes )</code>
+,parent <code>( push the relative position, 1 byte )</code>
+.parent <code>( push the zero-page position, 1 byte )</code>
+
+<code>( The memory opcodes are:
+	LDZ STZ LDR STR
+	LDA STA DEI DEO )</code>
+
+<code>( ---------------------------------------------------------------------------- )</code>
+
+<code>( Logic allows to create conditionals )</code>
+
+#12 #34 NEQ ,skip JCN
+	#31 EMIT
+	@skip
+
+<code>( Logic also allows to create for-loops )</code>
+
+#3a #30
+@loop
+	DUP EMIT <code>( print "123456789" to console )</code>
+	INC GTHk ,loop JCN
+POP2
+
+<code>( Logic also allows to create while-loops )</code>
+
+;word
+@while
+	LDAk EMIT
+	INC2 LDAk ,while JCN
+POP2
+BRK
+
+@word "vermillion $1
+
+<code>( Subroutines can be jumped to with JSR, and returned from with JMP2r )</code>
+
+;word ,print-word JSR
+BRK
+
+@print-word <code>( word* -- )</code>
+	@while
+		LDAk EMIT
+		INC2 LDAk ,while JCN
+	POP2
+JMP2r
+
+@word "cerulean
+
+<code>( The jump opcodes are: 
+	JMP JCN JSR )</code>
+</pre>
