@@ -2,7 +2,8 @@
 
 rm -f bin/oscean.rom
 rm -rf ../site
-mkdir ../site
+mkdir -p ../site
+mkdir -p bin
 
 uxnasm oscean.tal bin/oscean.rom
 uxncli bin/oscean.rom
