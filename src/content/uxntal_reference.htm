@@ -21,16 +21,32 @@
 	<tr><th>f0</th><td>LDZ2rk</td><td>STZ2rk</td><td>LDR2rk</td><td>STR2rk</td><td>LDA2rk</td><td>STA2rk</td><td>DEI2rk</td><td>DEO2rk</td><td>ADD2rk</td><td>SUB2rk</td><td>MUL2rk</td><td>DIV2rk</td><td>AND2rk</td><td>ORA2rk</td><td>EOR2rk</td><td>SFT2rk</td></tr>
 </table>
 
-<h3>Stack</h3>
+<h3>Instructions</h3>
+<ul>
+  <li><code>a -- b</code>: Instruction consumes <code>a</code> as input off the stack, and pushes the result <code>b</code> onto the stack.</li>
+	<li><code>arg</code>: An 8-bit or 16-bit value, depending upon whether Short Mode is set.</li>
+	<li><code>arg^</code>: An 8-bit value regardless of whether Short Mode is set. </li>
+	<li><code>arg*</code>: An 16-bit value regardless of whether Short Mode is set. </li>
+	<li><code>bool</code>: The byte 00 for false, or the byte 01 for true.</li>
+</ul>
 
 <h4 id='brk'>Break</h4>
-<p><code class='op'>BRK</code> Halts the program. Further instructions will not be run.</p>
+<p>
+<code class='op'>BRK</code>
+<code class="sig">--</code>
+Halts the program. Further instructions will not be run.</p>
 
 <h4 id='lit'>Literal</h4>
-<p><code class='op'>LIT</code> Pushes the next value seen in the program onto the stack.</p>
+<p>
+<code class='op'>LIT</code>
+<code class="sig">-- a</code>
+Pushes the next value seen in the program onto the stack.</p>
 
 <h4 id='inc'>Increment</h4>
-<p><code class='op'>INC</code> Adds 1 to the value at the top of the stack.</p>
+<p>
+<code class='op'>INC</code>
+<code class="sig">a -- b</code>
+Adds 1 to the value at the top of the stack.</p>
 <pre>
 #01 INC         ( 02 )
 #0001 INC2      ( 00 02 )
@@ -38,7 +54,10 @@
 </pre>
 
 <h4 id='pop'>Pop</h4>
-<p><code class='op'>POP</code> Removes the value at the top of the stack.</p>
+<p>
+<code class='op'>POP</code>
+<code class="sig">a --</code>
+Removes the value at the top of the stack.</p>
 <pre>
 #1234 POP    ( 12 )
 #1234 POP2   ( )
@@ -46,14 +65,20 @@
 </pre>
 
 <h4 id='dup'>Duplicate</h4>
-<p><code class='op'>DUP</code> Duplicates the value at the top of the stack.</p>
+<p>
+<code class='op'>DUP</code>
+<code class="sig">a -- a</code>
+Duplicates the value at the top of the stack.</p>
 <pre>
 #1234 DUP   ( 12 34 34 )
 #1234 DUP2  ( 12 34 12 34 )
 </pre>
 
 <h4 id='nip'>Nip</h4>
-<p><code class='op'>Nip</code> Removes the second value from the stack.</p>
+<p>
+<code class='op'>Nip</code>
+<code class="sig">a b -- b</code>
+Removes the second value from the stack.</p>
 <pre>
 #1234 NIP          ( 34 )
 #1234 #5678 NIP2   ( 56 78 )
@@ -61,7 +86,10 @@
 </pre>
 
 <h4 id='swp'>Swap</h4>
-<p><code class='op'>SWP</code> Exchanges the first and second values at the top of the stack.</p>
+<p>
+<code class='op'>SWP</code>
+<code class="sig">a b -- b a</code>
+Exchanges the first and second values at the top of the stack.</p>
 <pre>
 #1234 SWP          ( 34 12 )
 #1234 SWPk         ( 12 34 34 12 )
@@ -70,7 +98,10 @@
 </pre>
 
 <h4 id='ovr'>Over</h4>
-<p><code class='op'>OVR</code> Duplicates the second value at the top of the stack.</p>
+<p>
+<code class='op'>OVR</code>
+<code class="sig">a b -- a b a</code>
+Duplicates the second value at the top of the stack.</p>
 <pre>
 #1234 OVR          ( 12 34 12 )
 #1234 OVRk         ( 12 34 12 34 12 )
@@ -79,7 +110,10 @@
 </pre>
 
 <h4 id='rot'>Rotate</h4>
-<p><code class='op'>ROT</code> Rotates three values at the top of the stack, to the left, wrapping around.</p>
+<p>
+<code class='op'>ROT</code>
+<code class="sig">a b c -- b c a</code>
+Rotates three values at the top of the stack, to the left, wrapping around.</p>
 <pre>
 #1234 #56 ROT            ( 34 56 12 )
 #1234 #56 ROTk           ( 12 34 56 34 56 12 )
@@ -90,7 +124,10 @@
 <h3>Logic</h3>
 
 <h4 id='equ'>Equal</h4>
-<p><code class='op'>EQU</code> Pushes 01 to the stack if the two values at the top of the stack are equal, 00 otherwise.</p>
+<p>
+<code class='op'>EQU</code>
+<code class="sig">a b -- bool^</code>
+Pushes 01 to the stack if the two values at the top of the stack are equal, 00 otherwise.</p>
 <pre>
 #0101 EQU          ( 01 )
 #0100 EQUk         ( 01 00 00 )
@@ -99,7 +136,10 @@
 </pre>
 
 <h4 id='neq'>Not Equal</h4>
-<p><code class='op'>NEQ</code> Pushes 01 to the stack if the two values at the top of the stack are not equal, 00 otherwise.</p>
+<p>
+<code class='op'>NEQ</code>
+<code class="sig">a b -- bool^</code>
+Pushes 01 to the stack if the two values at the top of the stack are not equal, 00 otherwise.</p>
 <pre>
 #0101 NEQ          ( 00 )
 #0100 NEQk         ( 01 00 01 )
@@ -108,7 +148,10 @@
 </pre>
 
 <h4 id='gth'>Greater Than</h4>
-<p><code class='op'>GTH</code> Pushes 01 to the stack if the value at the top of the stack is greater than the second value at the top of the stack, 00 otherwise.</p>
+<p>
+<code class='op'>GTH</code>
+<code class="sig">a b -- bool^</code>
+Pushes 01 to the stack if the value at the top of the stack is greater than the second value at the top of the stack, 00 otherwise.</p>
 <pre>
 #0101 GTH          ( 00 )
 #0100 GTHk         ( 01 00 01 )
@@ -117,7 +160,10 @@
 </pre>
 
 <h4 id='lth'>Lesser Than</h4>
-<p><code class='op'>LTH</code> Pushes 01 to the stack if the value at the top of the stack is lesser than the second value at the top of the stack, 00 otherwise.</p>
+<p>
+<code class='op'>LTH</code>
+<code class="sig">a b -- bool^</code>
+Pushes 01 to the stack if the value at the top of the stack is lesser than the second value at the top of the stack, 00 otherwise.</p>
 <pre>
 #0101 LTH          ( 00 )
 #0100 LTHk         ( 01 00 00 )
@@ -128,75 +174,140 @@
 <h3>Control-Flow</h3>
 
 <h4 id='jmp'>Jump</h4>
-<p><code class='op'>JMP</code> Moves the program counter by a signed value equal to the byte on the top of the stack, or an absolute address in short mode.</p>
+<p>
+<code class='op'>JMP</code>
+<code class="sig">addr --</code>
+Moves the program counter by a signed value equal to the byte on the top of the stack, or an absolute address in short mode.</p>
 
 <h4 id='jcn'>Jump Conditional</h4>
-<p><code class='op'>JCN</code> If the byte preceeding the address is not 00, moves the program counter by a signed value equal to the byte on the top of the stack, or an absolute address in short mode.</p>
+<p>
+<code class='op'>JCN</code>
+<code class="sig">bool^ addr --</code>
+If the byte preceeding the address is not 00, moves the program counter by a signed value equal to the byte on the top of the stack, or an absolute address in short mode.</p>
 
 <h4 id='jsr'>Jump Stash Return</h4>
-<p><code class='op'>JSR</code> Pushes the value of the program counter to the return-stack and moves the program counter by a signed value equal to the byte on the top of the stack, or an absolute address in short mode.</p>
+<p>
+<code class='op'>JSR</code>
+<code class="sig">addr --</code>
+Pushes the value of the program counter to the return-stack and moves the program counter by a signed value equal to the byte on the top of the stack, or an absolute address in short mode.</p>
 
 <h4 id='sth'>Stash</h4>
-<p><code class='op'>STH</code> Moves the value at the top of the stack, to the return stack.</p>
+<p>
+<code class='op'>STH</code>
+<code class="sig">a --</code>
+Moves the value at the top of the stack, to the return stack.</p>
 
 <h3>Memory</h3>
 
 <h4 id='ldz'>Load Zero-Page</h4>
-<p><code class='op'>LDZ</code> Pushes the value at an address within the first 256 bytes of memory, to the top of the stack.</p>
+<p>
+<code class='op'>LDZ</code>
+<code class="sig">addr^ -- value</code>
+Pushes the value at an address within the first 256 bytes of memory, to the top of the stack.</p>
 
 <h4 id='stz'>Store Zero-Page</h4>
-<p><code class='op'>STZ</code> Writes a value to an address within the first 256 bytes of memory.</p>
+<p>
+<code class='op'>STZ</code>
+<code class="sig">val addr^ --</code>
+Writes a value to an address within the first 256 bytes of memory.</p>
 
 <h4 id='ldr'>Load Relative</h4>
-<p><code class='op'>LDZ</code> Pushes the value at a relative address, to the top of the stack. The possible relative range is -128 to +127 bytes.</p>
+<p>
+<code class='op'>LDR</code>
+<code class="sig">addr^ -- value</code>
+Pushes the value at a relative address, to the top of the stack. The possible relative range is -128 to +127 bytes.</p>
 
 <h4 id='str'>Store Relative</h4>
-<p><code class='op'>STZ</code> Writes a value to a relative address. The possible relative range is -128 to +127 bytes.</p>
+<p>
+<code class='op'>STR</code>
+<code class="sig">val addr^ --</code>
+Writes a value to a relative address. The possible relative range is -128 to +127 bytes.</p>
 
 <h4 id='lda'>Load Absolute</h4>
-<p><code class='op'>LDA</code> Pushes the value at a absolute address, to the top of the stack.</p>
+<p>
+<code class='op'>LDA</code>
+<code class="sig">addr* -- value</code>
+Pushes the value at a absolute address, to the top of the stack.</p>
 
 <h4 id='sta'>Store Absolute</h4>
-<p><code class='op'>STA</code> Writes a value to a absolute address.</p>
+<p>
+<code class='op'>STA</code>
+<code class="sig">val addr* --</code>
+Writes a value to a absolute address.</p>
 
 <h3>Arithmetic</h3>
 
 <h4 id='add'>Add</h4>
-<p><code class='op'>ADD</code> Pushes the sum of the two values at the top of the stack.</p>
+<p>
+<code class='op'>ADD</code>
+<code class="sig">a b -- c</code>
+Pushes the sum of the two values at the top of the stack.</p>
 
 <h4 id='sub'>Subtract</h4>
-<p><code class='op'>SUB</code> Pushes the difference of the first value minus the second, to the top of the stack.</p>
+<p>
+<code class='op'>SUB</code>
+<code class="sig">a b -- c</code>
+Pushes the difference of the first value minus the second, to the top of the stack.</p>
 
 <h4 id='mul'>Multiply</h4>
-<p><code class='op'>MUL</code> Pushes the product of the first and second values at the top of the stack.</p>
+<p>
+<code class='op'>MUL</code>
+<code class="sig">a b -- c</code>
+Pushes the product of the first and second values at the top of the stack.</p>
 
 <h4 id='div'>Divide</h4>
-<p><code class='op'>DIV</code> Pushes the quotient of the first value over the second, to the top of the stack.</p>
+<p>
+<code class='op'>DIV</code>
+<code class="sig">a b -- c</code>
+Pushes the quotient of the first value over the second, to the top of the stack.</p>
 
 <h3>Bitwise</h3>
 
 <h4 id='and'>And</h4>
-<p><code class='op'>AND</code> Pushes the result of the bitwise operation AND, to the top of the stack.</p>
+<p>
+<code class='op'>AND</code>
+<code class="sig">a b -- c</code>
+Pushes the result of the bitwise operation AND, to the top of the stack.</p>
 
 <h4 id='ora'>Or</h4>
-<p><code class='op'>ORA</code> Pushes the result of the bitwise operation OR, to the top of the stack.</p>
+<p>
+<code class='op'>ORA</code>
+<code class="sig">a b -- c</code>
+Pushes the result of the bitwise operation OR, to the top of the stack.</p>
 
 <h4 id='eor'>Exclusive Or</h4>
-<p><code class='op'>EOR</code> Pushes the result of the bitwise operation XOR, to the top of the stack.</p>
+<p>
+<code class='op'>EOR</code>
+<code class="sig">a b -- c</code>
+Pushes the result of the bitwise operation XOR, to the top of the stack.</p>
 
 <h4 id='sft'>Shift</h4>
-<p><code class='op'>SFT</code> Moves the bits of the value at the top of the stack to the left or right, depending on the control value of the second. The high nibble of the control value determines how many bits left to shift, and the low nibble how many bits right to shift. The rightward shift is done first.</p>
+<p>
+<code class='op'>SFT</code>
+<code class="sig">a b^ -- c</code>
+Moves the bits of the value at the top of the stack to the left or right, depending on the control value of the second. The high nibble of the control value determines how many bits left to shift, and the low nibble how many bits right to shift. The rightward shift is done first.</p>
 
 <style>
 .clr0 { background:white; color:black; }
 .clr1 { background:black; color:white; }
 .clr2 { background:#72dec2; color:black; }
 .clr3 { background:#ff0000; color:black; }
+code.sig { background: #72dec2; color: black; font-size: smaller; display: inline-block; padding: 0px 6px; font-weight: bold; border-radius: 2px; line-height: 22px }
 code.op { background: #000; color: white; font-size: smaller; display: inline-block; padding: 0px 6px; font-weight: bold; border-radius: 2px; line-height: 22px }
 pre span.comment { color:#666; }
 </style>
 
 <ul>
-	<li><a href='http://kira.solar' target='_blank'>Kira</a>, contributor</li>
+	<li><a href='http://kira.solar' target='_blank'>Kira Oakley</a>, contributor</li>
+	<li><a href='https://github.com/Ismael-VC' target='_blank'>Ismael Venegas Castello</a>, contributor</li>
+</ul>
+<ul></ul></main><footer><a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.svg" alt="CreativeCommons"/></a><a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a><a href="https://merveilles.town/@neauoire" target="_blank"><img src="../media/icon/merveilles.svg" alt="Merveilles"/></a><a href="uxn.html"><img src="../media/icon/uxn.svg" alt="Uxn Powered"/></a><span><a href="devine_lu_linvega.html">Devine Lu Linvega</a> &copy; 2021 &mdash; <a href="about.html">BY-NC-SA 4.0</a></span></footer>
+</body></html>
+code.op { background: #000; color: white; font-size: smaller; display: inline-block; padding: 0px 6px; font-weight: bold; border-radius: 2px; line-height: 22px }
+pre span.comment { color:#666; }
+</style>
+
+<ul>
+	<li><a href='http://kira.solar' target='_blank'>Kira Oakley</a>, contributor</li>
 	<li><a href='https://github.com/Ismael-VC' target='_blank'>Ismael Venegas Castello</a>, contributor</li>
 </ul>
