@@ -68,7 +68,7 @@ Hi!  OK
 <p>There’s actually no boolean type in Forth. The number <code>0</code> is treated as false, and any other number is true, although the canonical true value is <code>-1</code> (all boolean operators return <code>0</code> or <code>-1</code>). Conditionals in Forth can only be used inside definitions. </p>
 
 <p>The simplest conditional statement in Forth is <code>if then</code>, which is equivalent to a standard <code>if</code> statement in most languages. Here’s an example of a definition using <code>if then</code>. In this example, we’re also
-using the <code>mod</code> word, which returns the modulo of the top two numbers on the stack. In this case, the top number is 5, and the other is whatever was placed on the stack before calling <code>buzz?</code>. Therefore, <code>5 mod 0 =</code> is a boolean expression that checks to see if the top of the stack is divisible by 5.</p>s
+using the <code>mod</code> word, which returns the modulo of the top two numbers on the stack. In this case, the top number is 5, and the other is whatever was placed on the stack before calling <code>buzz?</code>. Therefore, <code>5 mod 0 =</code> is a boolean expression that checks to see if the top of the stack is divisible by 5.</p>
 
 <pre>
 : BUZZ? 5 MOD 0 = IF ." BUZZ" THEN ;
@@ -93,16 +93,21 @@ using the <code>mod</code> word, which returns the modulo of the top two numbers
 	<tr><th>DROP</th><td>a</td><td></td><td>Discards the top stack item</td></tr>
 </table>
 
-<h3>Cons cells</h3>
+<h3>Machine Forth</h3>
 
-<pre>
-: car! ( v a - ) ! ; 
-: cdr! ( v a - ) cell+ ! ; 
-: car@ ( a - v ) @ ;
-: cdr@ ( a - v ) cell+ @ ;
-: cons ( k v - a ) swap 2 cells allocate throw tuck ! tuck ! ;
-: cons0 ( - a ) 0 0 cons ;
-</pre><ul>
+<p>Chuck Moore also uses a pared down Forth for his custom minimal-instruction set processors. They are an inspiration for designing other minimal languages. For example, his latest designs have five-bit instructions, for 32 possible opcodes:</p>
+
+<table border='1'>
+	<tr><th>Stack</th><td>DROP, DUP, OVER, PUSH, POP</td></tr>
+	<tr><th>Math</th><td>+, AND, XOR, NOT, 2*, 2/, multiply-step</td></tr>
+	<tr><th>Call</th><td>JUMP, CALL, RETURN, IF, -IF</td></tr>
+	<tr><th>Loop</th><td>NEXT, UNEXT</td></tr>
+	<tr><th>Register</th><td>A, A!, B!</td></tr>
+	<tr><th>Memory</th><td>@, !, @+, !+, @B, !B, @P, !P</td></tr>
+	<tr><th>NO-OP</th><td>.</td></tr>
+</table>
+
+<ul>
 	<li><a href='http://www.murphywong.net/hello/simple.htm' target='_blank'>Forth Tutorial</a></li>
 	<li><a href='https://gist.github.com/lbruder/10007431' target='_blank'>Original lbforth</a></li>
 	<li><a href='https://en.wikipedia.org/wiki/Reverse_Polish_notation' target='_blank'>Reverse Polish notation</a></li>
