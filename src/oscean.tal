@@ -253,6 +253,7 @@ RTN
 @build-head ( FILE* name* -- name* )
 
 	;head-tag ^<
+		;charset-attr ;charset-txt ;add-meta-tag JSR2
 		;stylesheet-txt ;stylesheet-type ;stylesheet-path ;add-link-tag JSR2
 		;shortcuticon-txt ;shortcuticon-type ;shortcuticon-path ;add-link-tag JSR2
 		( TODO: add og )
@@ -747,6 +748,20 @@ RTN
 
 RTN
 
+@add-meta-tag ( name* value* -- )
+
+	FILE RESUME
+		[ LIT '< ] PUTC
+		;meta-tag PUTS CLOSE
+	SWP2 ;add-attr JSR2
+	FILE RESUME
+		[ LIT '/ ] PUTC
+		[ LIT '> ] PUTC
+		CLOSE
+
+RTN
+
+
 @add-link-tag ( rel* type* href* -- )
 	
 	FILE RESUME
@@ -1145,6 +1160,8 @@ RTN
 @doctype "<!DOCTYPE 20 "html> $1
 @html-tag "html $1
 @head-tag "head $1
+@meta-tag "meta $1
+@link-tag "link $1
 @title-tag "title $1
 @body-tag "body $1
 @header-tag "header $1
@@ -1155,10 +1172,10 @@ RTN
 @a-tag "a $1
 @img-tag "img $1
 @code-tag "code $1
-@link-tag "link $1
 @figure-tag "figure $1
 @figcaption-tag "figcaption $1
 
+@charset-attr "charset $1
 @src-attr "src $1
 @alt-attr "alt $1
 @href-attr "href $1
@@ -1166,6 +1183,7 @@ RTN
 @type-attr "type $1
 @class-attr "class $1
 
+@charset-txt "utf-8 $1
 @title-txt "XXIIVV $1
 @stylesheet-txt "stylesheet $1
 @shortcuticon-txt "shortcut 20 "icon $1
