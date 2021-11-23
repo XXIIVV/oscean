@@ -1,6 +1,4 @@
-( 
-
-The Bequest Globe 
+ ( The Bequest Globe 
 
 Runes:
 	, album 
@@ -20,10 +18,11 @@ Map:
 %1-- { #0001 -- }
 %2++ { INC2 INC2 }
 
-%DEBUG  { ;print-hex/byte JSR2 #0a .Console/write DEO }
-%DEBUG2 { ;print-hex/short JSR2 #0a .Console/write DEO }
-%PRINT { ;print-string JSR2 #0a .Console/write DEO }
-%PRINT-CR { ;print-hex/short JSR2 #0d .Console/write DEO }
+%EMIT { #18 DEO }
+%DEBUG  { ;print-hex/byte JSR2 #0a EMIT }
+%DEBUG2 { ;print-hex/short JSR2 #0a EMIT }
+%PRINT { ;print-string JSR2 #0a EMIT }
+%PRINT-CR { ;print-hex/short JSR2 #0d EMIT }
 
 %RTN { JMP2r }
 %HALT { #0101 .System/debug DEO2 BRK }
@@ -35,24 +34,16 @@ Map:
 %REMOVE-LINEBREAKS { #0a #00 ;cswp JSR2 }
 %REWIND { #00 ;prev-char JSR2 INC2 }
 
-%^s { FILE ;scat JSR2 }
-%^c { FILE ;ccat JSR2 }
-%^space { #20 ^c }
-%^< { STH2 LIT '< ^c STH2r ^s LIT '> ^c }
-%^> { STH2 LIT '< ^c LIT '/ ^c STH2r ^s LIT '> ^c }
-%^<> { STH2k ^< ^s STH2r ^> }
+( framework )
+%^" { ;write JSR2 }
+%^' { ;write/char JSR2 }
+%^< { STH2 LIT '< ^' STH2r ^" LIT '> ^' }
+%^> { STH2 LIT '< ^' LIT '/ ^' STH2r ^" LIT '> ^' }
+%^<> { STH2k ^< ^" STH2r ^> }
 
-( thread )
-%PUTS { ;put/string JSR2 }
-%PUTC { ;put/char JSR2 }
-%CLOSE { #00 ROT ROT STA }
-%RESUME { ;scap JSR2 }
-%open-tag { STH2 LIT '< PUTC STH2r PUTS LIT '> PUTC }
-%close-tag { STH2 LIT '< PUTC LIT '/ PUTC STH2r PUTS LIT '> PUTC }
-
-%RUNE-ALBUM { LIT ', }  
-%RUNE-PORTAL { LIT '; }  
-%RUNE-ARCHIVE { LIT ': }  
+%RUNE-ALBUM { LIT ', }
+%RUNE-PORTAL { LIT '; }
+%RUNE-ARCHIVE { LIT ': }
 
 %TERM-NAME-SIZE { #0016 }
 
@@ -61,7 +52,7 @@ Map:
 %DIARY { #3000 }
 %DIARY-SIZE { #5000 }
 %FILE { #8000 }
-%FILE-SIZE { #8000 }
+%FILE-SIZE { #7fff }
 
 ( devices )
 
@@ -72,14 +63,16 @@ Map:
 
 ( variables )
 
-|0000 $2 
+|0000
 
-@term
+@term ( 0080  )
 	&name $16 ( term name limit )
 	&pict $4
-	&diary $40
-	&meta $40
-@buff $40
+	&diary $60
+	&input $30
+	&output $30
+|00fe
+	@head $2 ( head )
 
 ( program )
 
@@ -87,9 +80,11 @@ Map:
 	
 	;print-arvelie JSR2
 	;load JSR2
-	;validate-diary JSR2
+	;validate JSR2
+
 	,focus-page LDR ;build-one JCN2
 		;build-all JMP2
+
 	HALT
 	
 BRK
@@ -99,24 +94,18 @@ BRK
 @error ( name* msg* -- )
 	
 	SWP2 
-	1--
-	&name-loop
-		INC2 LDAk .Console/write DEO 
-		LDAk ,&name-loop JCN
-	POP2
-	#20 .Console/write DEO 
-	1--
-	&msg-loop
-		INC2 LDAk .Console/write DEO 
-		LDAk ,&msg-loop JCN
-	POP2
-	#0a .Console/write DEO 
+	1-- &name-loop 
+		INC2 LDAk [ DUP EMIT ] ,&name-loop JCN 
+	POP2 #20 EMIT
+	1-- &msg-loop 
+		INC2 LDAk [ DUP EMIT ] ,&msg-loop JCN 
+	POP2 #0a EMIT
 	HALT
 
 RTN
 
 @load ( -- )
-	
+
 	;lexicon-path ,&lexicon JSR
 	RTN
 	&lexicon ( path* -- )
@@ -137,7 +126,7 @@ RTN
 
 RTN
 
-@validate-diary ( -- )
+@validate ( -- )
 
 	;diary-path-pages/end ;diary-path-pages
 	&loop
@@ -195,15 +184,16 @@ RTN
 ( build )
 
 @build-page ( name* -- )
-	
-	( cleanup )
-	( zero-page ) #0000 #0100 ;mclr JSR2
-	( output ) FILE FILE-SIZE ;mclr JSR2
 
 	( term name limit )
 	DUP2 ;slen JSR2 TERM-NAME-SIZE << ,&namelength-ok JCN
 		;error-term-name-size ERROR
 		&namelength-ok
+
+	( cleanup )
+	( clear zeropage ) #0000 #00ff ;mclr JSR2
+	( clean output ) FILE FILE-SIZE ;mclr JSR2
+	( reset head ) FILE .head STZ2
 
 	( fill name )
 	DUP2 ;term/name ;scpy JSR2
@@ -221,16 +211,36 @@ RTN
 		&continue
 	POP2
 
-	( TODO: fill meta )
+	( input path )
+	;input-path ;term/input STH2k ;scat JSR2
+	DUP2 STH2kr ;scat JSR2
+	;htm-ext STH2r ;scat JSR2
+	;term/input #20 [ LIT '_ ] ;cswp JSR2
+	( output path )
+	;output-path ;term/output STH2k ;scat JSR2
+	DUP2 STH2kr ;scat JSR2
+	;html-ext STH2r ;scat JSR2
+	;term/output #20 [ LIT '_ ] ;cswp JSR2
 
-	;doctype ^s
-	( create body )
+	( render )
+	;doctype ^" 
 	;html-tag ^<
 		( head )
-		;build-head JSR2
+		;head-tag ^<
+			;charset-attr ;charset-txt ;add-meta-tag JSR2 
+			;stylesheet-txt ;stylesheet-type ;stylesheet-path ;add-link-tag JSR2
+			;shortcuticon-txt ;shortcuticon-type ;shortcuticon-path ;add-link-tag JSR2
+			;title-tag ^<
+				;title-txt ^" [ LIT 20 ] ^' ;mdash-entity-txt ^" [ LIT 20 ] ^' DUP2 ^"
+			;title-tag ^>
+		;head-tag ^> 
 		( body )
 		;body-tag ^<
-			;build-page-header JSR2
+			;header-tag ^<
+				;home-path ;add-a-tag JSR2
+					;logo-path ;title-txt ;add-img-tag JSR2
+				;a-tag ^>
+			;header-tag ^>
 			;build-page-nav JSR2
 			;build-page-main JSR2
 			;build-page-footer JSR2
@@ -238,40 +248,20 @@ RTN
 	;html-tag ^>
 
 	( check file )
-	FILE ;slen JSR2 FILE-SIZE << ,&size-ok JCN
+	.head LDZ2 FILE -- FILE-SIZE << ,&size-ok JCN
 		;error-output-size ERROR
 		&size-ok
 
+	( FILE ;validate-output JSR2 )
+
 	( save file )
-	;to-output-path JSR2 .File/name DEO2
-	FILE ;slen JSR2   .File/length DEO2
-	FILE              .File/save DEO2
-	FILE ;validate-output JSR2
+	;term/output .File/name DEO2
+	.head LDZ2 FILE -- .File/length DEO2
+	FILE .File/save DEO2
 
-RTN
-
-@build-head ( FILE* name* -- name* )
-
-	;head-tag ^<
-		;charset-attr ;charset-txt ;add-meta-tag JSR2
-		;stylesheet-txt ;stylesheet-type ;stylesheet-path ;add-link-tag JSR2
-		;shortcuticon-txt ;shortcuticon-type ;shortcuticon-path ;add-link-tag JSR2
-		( TODO: add og )
-		( TODO: add description )
-		;title-tag ^<
-			;title-txt ^s ^space ;mdash-entity-txt ^s ^space DUP2 ^s
-		;title-tag ^>
-	;head-tag ^>
-
-RTN
-
-@build-page-header ( name* -- name* )
-
-	;header-tag ^<
-		;home-path ;add-a-tag JSR2
-			;logo-path ;title-txt ;add-img-tag JSR2
-		;a-tag ^>
-	;header-tag ^>
+	.head LDZ2 FILE -- ;print-hex/short JSR2 
+	#20 EMIT
+	;print-string JSR2 #0a EMIT
 
 RTN
 
@@ -313,7 +303,7 @@ RTN
 RTN
 
 @build-page-main ( name* -- name* )
-	
+
 	;main-tag ^<
 		( picture )
 		;term/pict LDA #00 = ,&no-picture JCN
@@ -325,6 +315,31 @@ RTN
 		;build-page-special JSR2
 		;build-page-calendar JSR2
 	;main-tag ^>
+
+RTN
+
+@build-page-body ( name* -- name* )
+
+	( max include size )
+	#8000 FILE DUP2 ;slen JSR2 ++ #8000 -- -- STH2k
+
+	#0000 !! ,&no-null JCN
+		;error-include-size ERROR
+		&no-null
+
+	( write body )
+	;term/input .File/name DEO2
+	STH2kr .File/length DEO2
+	.head LDZ2 
+		DUP2 .File/load DEO2
+		.File/success DEI2 ++ .head STZ2
+
+	( file is missing )
+	.File/success DEI2 #0000 !! ,&no-blank JCN
+		;error-include-missing ERROR
+		&no-blank
+
+	POP2r
 
 RTN
 
@@ -356,46 +371,15 @@ RTN
 
 RTN
 
-@build-page-body ( name* -- name* )
-
-	( max include size )
-	#8000 FILE DUP2 ;slen JSR2 ++ #8000 -- -- STH2k
-
-	#0000 !! ,&no-null JCN
-		;error-include-size ERROR
-		&no-null
-
-	( write body )
-	DUP2 ;to-include-path JSR2 .File/name DEO2
-	STH2kr .File/length DEO2
-	FILE DUP2 ;slen JSR2 ++ STH2k .File/load DEO2
-
-	( file is too large )
-	.File/success DEI2 SWP2r STH2r !! ,&no-cap JCN
-		;error-include-size ERROR
-		&no-cap
-
-	( file is missing )
-	.File/success DEI2 #0000 !! ,&no-blank JCN
-		;error-include-missing ERROR
-		&no-blank
-
-	( close ) #00 STH2r .File/success DEI2 ++ STA
-
-RTN
-
 @build-special-index ( -- )
 
 	;ul-tag ^<
 		LEXICON 
 		&while
-			( move to name ) 2++ 
-			( push thread ) FILE RESUME
-			;li-tag open-tag
-				OVR2 ;thread-local JSR2
-			;li-tag close-tag
-			#00 PUTC
-			( pop thread ) POP2
+			( move to name ) 2++
+			;li-tag ^<
+				DUP2 ;add-local JSR2
+			;li-tag ^>
 			( move to eol ) &eol INC2 LDAk ,&eol JCN INC2
 			LDAk ;&while JCN2
 		POP2 
@@ -569,8 +553,8 @@ RTN
 	( clip start ) #00 STH2kr STA
 	( clip wrap ) ;code-tag ^<>
 	( clip restore ) [ LIT '+ ] STH2r STA
-	( event spacer ) ^space ;mdash-entity-txt ^s ^space 
-	( event name ) DUP2 #09 ;next-char JSR2 INC2 #09 ;next-char JSR2 INC2 ^s
+	( event spacer ) [ LIT 20 ] ^' ;mdash-entity-txt ^" [ LIT 20 ] ^'
+	( event name ) DUP2 #09 ;next-char JSR2 INC2 #09 ;next-char JSR2 INC2 ^"
 
 RTN
 
@@ -578,13 +562,27 @@ RTN
  
 	( html )
 	;figure-tag ^<
-		DUP2 ;to-diary-path JSR2 OVR2 #09 ;next-char JSR2 INC2 #09 ;next-char JSR2 INC2 ;add-img-tag JSR2
+
+		( clip ) DUP2 #0009 ++ STH2 #00 STH2r STA
+		[ LIT '< ] ^'
+		;img-tag ^"
+		[ LIT 20 ] ^'
+		;src-attr ^"
+		[ LIT '= ] ^'
+		[ LIT '" ] ^'
+		;diary-path ^"
+		DUP2 #0006 ++ ^"
+		;jpg-ext ^"
+		[ LIT '" ] ^'
+		[ LIT '/ ] ^'
+		[ LIT '> ] ^'
+		( unclip ) DUP2 #0009 ++ STH2 #09 STH2r STA
 		;figcaption-tag ^<
 			DUP2 #000a ++ ;term/name SWP2 ;scmp-seg JSR2 ,&skip JCN
 				DUP2 ;extract-term JSR2 ;add-local JSR2 
-				^space ;mdash-entity-txt ^s ^space 
+				[ LIT 20 ] ^' ;mdash-entity-txt ^" [ LIT 20 ] ^'
 				&skip
-			#09 ;next-char JSR2 INC2 #09 ;next-char JSR2 INC2 ^s 
+			#09 ;next-char JSR2 INC2 #09 ;next-char JSR2 INC2 ^" 
 		;figcaption-tag ^>
 	;figure-tag ^>
 
@@ -607,8 +605,9 @@ RTN
 
 	;meta-footer-path .File/name DEO2
 	#0300 .File/length DEO2
-	FILE DUP2 ;slen JSR2 ++ STH2k .File/load DEO2
-	( close ) #00 STH2r .File/success DEI2 ++ STA
+	.head LDZ2 
+		DUP2 .File/load DEO2
+		.File/success DEI2 ++ .head STZ2
 
 RTN
 
@@ -721,6 +720,7 @@ RTN
 			&continue
 		INC2 LDAk ,&while JCN
 	POP2
+
 RTN
 	&buff $30
 
@@ -728,194 +728,81 @@ RTN
 
 @add-a-tag ( path* -- )
 
-	STH2
-	[ LIT '< ] ^c
-	[ LIT 'a ] ^c
-	STH2r ;href-attr ;add-attr JSR2
-	[ LIT '> ] ^c
+	[ LIT '< ] ^'
+	[ LIT 'a ] ^'
+	;href-attr ;add-attr JSR2
+	[ LIT '> ] ^'
 
 RTN
 
 @add-img-tag ( src* alt* -- )
 
 	STH2 STH2
-	[ LIT '< ] ^c
-	;img-tag ^s
+	[ LIT '< ] ^'
+	;img-tag ^"
 	STH2r ;src-attr ;add-attr JSR2
 	STH2r ;alt-attr ;add-attr JSR2
-	[ LIT '/ ] ^c
-	[ LIT '> ] ^c
+	[ LIT '/ ] ^'
+	[ LIT '> ] ^'
 
 RTN
 
 @add-meta-tag ( name* value* -- )
 
-	FILE RESUME
-		[ LIT '< ] PUTC
-		;meta-tag PUTS CLOSE
+	[ LIT '< ] ^'
+	;meta-tag ^"
 	SWP2 ;add-attr JSR2
-	FILE RESUME
-		[ LIT '/ ] PUTC
-		[ LIT '> ] PUTC
-		CLOSE
+	[ LIT '/ ] ^'
+	[ LIT '> ] ^'
 
 RTN
 
 
 @add-link-tag ( rel* type* href* -- )
-	
-	FILE RESUME
-		[ LIT '< ] PUTC 
-		;link-tag PUTS CLOSE
-			;href-attr ;add-attr JSR2
-			;type-attr ;add-attr JSR2
-			;rel-attr ;add-attr JSR2
-	FILE RESUME 
-		[ LIT '/ ] PUTC
-		[ LIT '> ] PUTC
-		CLOSE
+
+	[ LIT '< ] ^'
+	;link-tag ^"
+		;href-attr ;add-attr JSR2
+		;type-attr ;add-attr JSR2
+		;rel-attr ;add-attr JSR2
+	[ LIT '/ ] ^'
+	[ LIT '> ] ^'
 
 RTN
 
 @add-attr ( body* attr* -- )
- 	
- 	^space
-	^s
-	[ LIT '= ] ^c
-	[ LIT '" ] ^c
-	^s
-	[ LIT '" ] ^c
+
+	[ LIT 20 ] ^'
+	^"
+	[ LIT '= ] ^'
+	[ LIT '" ] ^'
+	^"
+	[ LIT '" ] ^'
 
 RTN
 
 @add-local ( name* -- )
 
-	DUP2 ;term/name ;scmp JSR2 ,&local-link JCN
-	DUP2 ;term/name ;find-term JSR2 ;find-parent JSR2 ;scmp JSR2 ,&parent-link JCN
-
-	FILE RESUME
-		SWP2 ;thread-local JSR2
-		CLOSE
-
-	RTN
-	&local-link
-		FILE RESUME
-			SWP2 ;thread-local-self JSR2
-			CLOSE
-		RTN
-
-	&parent-link
-		FILE RESUME
-			SWP2 ;thread-local-parent JSR2
-			CLOSE
-		RTN
+	[ LIT '< ] ^'
+	[ LIT 'a ] ^'
+	[ LIT 20 ] ^'
+	;href-attr ^"
+	[ LIT '= ] ^'
+	[ LIT '" ] ^'
+	STH2k ;add-filename JSR2
+	[ LIT '" ] ^'
+	[ LIT '> ] ^'
+	STH2r ^"
+	;a-tag ^>
 
 RTN
 
-( fast thread )
+@add-filename ( name* -- )
 
-@thread-attr ( thread* name* body* -- thread* )
-
-	STH2 STH2
-	#20 PUTC
-	STH2r PUTS
-	LIT '= PUTC
-	LIT '" PUTC
-	STH2r PUTS
-	LIT '" PUTC
-
-RTN
-
-@thread-local ( thread* name* -- thread* )
-
-	STH2
-	LIT '< PUTC
-	LIT 'a PUTC		
-	;href-attr STH2kr ;to-filename JSR2 ;thread-attr JSR2
-	LIT '> PUTC
-	STH2r PUTS
-	LIT '< PUTC
-	LIT '/ PUTC
-	LIT 'a PUTC
-	LIT '> PUTC
-
-RTN
-
-@thread-local-self ( thread* name* -- thread* )
-
-	STH2
-	LIT '< PUTC
-	LIT 'a PUTC		
-	;href-attr STH2kr ;to-filename JSR2 ;thread-attr JSR2
-	;class-attr ;self-txt ;thread-attr JSR2
-	LIT '> PUTC
-	STH2r PUTS
-	LIT '< PUTC
-	LIT '/ PUTC
-	LIT 'a PUTC
-	LIT '> PUTC
-
-RTN
-
-@thread-local-parent ( thread* name* -- thread* )
-
-	STH2
-	LIT '< PUTC
-	LIT 'a PUTC		
-	;href-attr STH2kr ;to-filename JSR2 ;thread-attr JSR2
-	;class-attr ;parent-txt ;thread-attr JSR2
-	LIT '> PUTC
-	STH2r PUTS
-	LIT '< PUTC
-	LIT '/ PUTC
-	LIT 'a PUTC
-	LIT '> PUTC
-
-RTN
-
-@to-filename ( name* -- filename* )
-
-	;buff
-		SWP2 PUTS
-		;html-ext PUTS
-		CLOSE
-	;buff DUP2 #20 [ LIT '_ ] ;cswp JSR2
-
-RTN
-
-@to-output-path ( name* -- filepath* )
-	
-	;buff
-		;output-path PUTS
-		SWP2 PUTS
-		;html-ext PUTS
-		CLOSE
-	;buff DUP2 #20 [ LIT '_ ] ;cswp JSR2
-
-RTN
-
-@to-include-path ( name* -- filepath* )
-
-	;buff
-		;input-path PUTS
-		SWP2 PUTS
-		;htm-ext PUTS
-		CLOSE
-	;buff DUP2 #20 [ LIT '_ ] ;cswp JSR2
-
-RTN
-
-@to-diary-path ( diary* -- filepath* )
-	
-	#0006 ++
-	#00 ;buff STA
-	;media-diary-path ;buff ;scpy JSR2
-	( clip bound ) DUP2 #0003 ++ STH2
-	( clip start ) #00 STH2kr STA
-	( clip wrap ) ;buff ;scat JSR2
-	( clip restore ) #09 STH2r STA
-	;jpg-ext ;buff ;scat JSR2
-	;buff
+	DUP2 #20 [ LIT '_ ] ;cswp JSR2
+	^"
+	DUP2 [ LIT '_ ] #20 ;cswp JSR2
+	;html-ext ^"
 
 RTN
 
@@ -969,16 +856,6 @@ RTN
 			&continue
 		INC2 LDAk ,&while JCN
 	POP2 POP2r
-
-RTN
-
-@ccat ( char dst* -- )
-	
-	1--
-	&while
-		INC2 LDAk ,&while JCN
-	STH2k STA
-	#00 STH2r INC2 STA
 
 RTN
 
@@ -1083,36 +960,20 @@ RTN
 RTN
 	&a $2 &b $2
 
-@msfl ( addr* length* -- )
+@write ( addr* -- )
 
-	POP2 
-	( TODO )
-
-RTN
-
-@scap ( addr* -- addr* )
-
-	1-- &eol INC2 LDAk ,&eol JCN
+	LDAk #00 = ,&end JCN
+	&while
+		LDAk ,&char JSR
+		INC2 LDAk ,&while JCN
+	&end
+	POP2
 
 RTN
-
-@put ( addr* string* -- addr* )
-
-	&string ( addr* string* -- addr* )
-		&while
-			SWP2 STH2
-			LDAk STH2r ROT
-			,&char JSR 
-			SWP2 INC2 
-			LDAk ,&while JCN
-		POP2
+	&char ( char -- )
+		.head LDZ2 STA 
+		.head LDZ2k INC2 ROT STZ2
 	RTN
-	&char ( addr* char -- addr* )
-		ROT ROT STH2k STA
-		STH2r INC2
-	RTN
-	
-RTN
 
 @print-hex ( value* -- )
 	
@@ -1123,8 +984,8 @@ RTN
 	RTN
 
 	&echo ( value -- )
-	STHk #04 SFT ,&parse JSR .Console/write DEO
-	STHr #0f AND ,&parse JSR .Console/write DEO
+	STHk #04 SFT ,&parse JSR EMIT
+	STHr #0f AND ,&parse JSR EMIT
 	RTN
 	&parse ( value -- char )
 		DUP #09 GTH ,&above JCN #30 + RTN &above #09 - #60 + RTN
@@ -1134,8 +995,8 @@ RTN
 @print-string ( addr* -- )
 
 	1-- 
-	&loop 
-		INC2 LDAk [ DUP .Console/write DEO ] ,&loop JCN 
+	&while
+		INC2 LDAk [ DUP EMIT ] ,&while JCN 
 	POP2
 
 RTN
@@ -1143,13 +1004,13 @@ RTN
 @print-arvelie ( -- )
 
 	.DateTime/year DEI2 #07d6 -- NIP 
-		( digit1 ) DUP #0a DIV #30 + .Console/write DEO
-		( digit2 ) #0a MOD #30 + .Console/write DEO
+		( digit1 ) DUP #0a DIV #30 + EMIT
+		( digit2 ) #0a MOD #30 + EMIT
 	.DateTime/doty DEI2
-		( month ) DUP2 #000e DIV2 NIP #41 + .Console/write DEO
-		( digit3 ) #000e MOD2 DUP2 #000a DIV2 NIP #30 + .Console/write DEO
-		( digit4 ) #000a MOD2 NIP #30 + .Console/write DEO
-	#0a .Console/write DEO
+		( month ) DUP2 #000e DIV2 NIP #41 + EMIT
+		( digit3 ) #000e MOD2 DUP2 #000a DIV2 NIP #30 + EMIT
+		( digit4 ) #000a MOD2 NIP #30 + EMIT
+	#0a EMIT
 
 RTN
 
@@ -1202,11 +1063,11 @@ RTN
 @diary-path-page0 "database/diary0 $1
 @input-path "content/ $1
 @output-path "../site/ $1
+@diary-path "../media/diary/ $1
 @home-path "home.html $1
 @meta-footer-path "content/meta_footer.htm $1
 @stylesheet-path "../links/main.css $1
 @logo-path "../media/icon/logo.svg $1
-@media-diary-path "../media/diary/ $1
 @shortcuticon-path "../media/services/icon.png $1
 
 @no-picture "000 $1

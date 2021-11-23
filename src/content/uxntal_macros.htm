@@ -108,6 +108,52 @@
 RTN
 </pre>
 
+<pre>
+@print-string ( addr* -- )
+
+	1-- 
+	&while
+		INC2 LDAk [ DUP #18 DEO ] ,&while JCN 
+	POP2
+
+RTN
+</pre>
+
+<pre>
+@print-zeropage ( -- )
+
+	#0a #18 DEO
+	#0000
+	&loop
+		LDZk ;print-hex/byte JSR2
+		DUP #01 AND #00 = ,&no-space JCN
+			#20 #18 DEO
+			&no-space
+		DUP #0f AND #0f ! ,&no-break JCN
+			#0a #18 DEO
+			&no-break
+		INC NEQk ,&loop JCN
+	POP2
+	#0a #18 DEO
+
+RTN
+</pre>
+
+<pre>
+@print-arvelie ( -- )
+
+	.DateTime/year DEI2 #07d6 -- NIP 
+		( digit1 ) DUP #0a DIV #30 + .Console/write DEO
+		( digit2 ) #0a MOD #30 + .Console/write DEO
+	.DateTime/doty DEI2
+		( month ) DUP2 #000e DIV2 NIP #41 + .Console/write DEO
+		( digit3 ) #000e MOD2 DUP2 #000a DIV2 NIP #30 + .Console/write DEO
+		( digit4 ) #000a MOD2 NIP #30 + .Console/write DEO
+	#0a .Console/write DEO
+
+RTN
+</pre>
+
 <h2>Multiplication</h2>
 
 <p>By Alderwick</p>
