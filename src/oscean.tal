@@ -23,10 +23,11 @@ Map:
 %DEBUG2 { ;print-hex/short JSR2 #0a EMIT }
 %PRINT { ;print-string JSR2 #0a EMIT }
 %PRINT-CR { ;print-hex/short JSR2 #0d EMIT }
+%ERROR { ;print-error JMP2 }
 
 %RTN { JMP2r }
 %HALT { #0101 .System/debug DEO2 BRK }
-%ERROR { ;error JMP2 }
+
 %MOD  { DUP2 DIV MUL SUB }
 %MOD2 { DIV2k MUL2 SUB2 }
 
@@ -77,37 +78,65 @@ Map:
 ( program )
 
 |0100 ( -> )
-	
+
 	;print-arvelie JSR2
-	;load JSR2
-	;validate JSR2
+
+	;initialize JSR2
 
 	,focus-page LDR ;build-one JCN2
 		;build-all JMP2
 
-	HALT
-	
 BRK
 
 @focus-page $1
 
-@error ( name* msg* -- )
-	
-	SWP2 
-	1-- &name-loop 
-		INC2 LDAk [ DUP EMIT ] ,&name-loop JCN 
-	POP2 #20 EMIT
-	1-- &msg-loop 
-		INC2 LDAk [ DUP EMIT ] ,&msg-loop JCN 
-	POP2 #0a EMIT
-	HALT
+@initialize ( -- )
+
+	( LEX )
+	;lexicon-path ;load/lexicon JSR2
+	( check size )
+	.File/success DEI2 LEXICON-SIZE !! ,&ok-lexicon-size JCN
+		;error-lexicon-size ERROR
+		&ok-lexicon-size
+
+	( HOR )
+	;diary-path-pages/end ;diary-path-pages
+	&loop
+		LDA2k ;load/diary JSR2
+		( check size )
+		.File/success DEI2 DIARY-SIZE !! ,&ok-diary-size JCN
+			;error-diary-size ERROR
+			&ok-diary-size
+		,&check-diary-entries JSR
+		2++ GTH2k ,&loop JCN
+	POP2 POP2
 
 RTN
 
+	&check-diary-entries ( name* -- name* )
+		DIARY 
+		&while
+			( test length )
+			DUP2 ;slen JSR2 #003f << ,&ok-length JCN 
+				;error-diary-name-length ERROR
+				&ok-length
+			( test term )
+			#000a ++ 
+			DUP2 #09 ;has-char JSR2 #00 = ,&skip JCN
+				( bound ) DUP2 #09 ;next-char JSR2 STH2
+				( clip ) #00 STH2kr STA
+				( flag ) DUP2 ;find-term JSR2 #0000 !! ,&ok-found JCN
+					DUP2 ;error-term-name-unknown ERROR
+					&ok-found
+				( unclip ) #09 STH2r STA
+				&skip
+			( goto eol ) &eol INC2 LDAk ,&eol JCN INC2
+			LDAk ,&while JCN
+		POP2
+	RTN
+
 @load ( -- )
 
-	;lexicon-path ,&lexicon JSR
-	RTN
 	&lexicon ( path* -- )
 		( load lexicon )
 		.File/name DEO2
@@ -126,39 +155,6 @@ RTN
 
 RTN
 
-@validate ( -- )
-
-	;diary-path-pages/end ;diary-path-pages
-	&loop
-		LDA2k ;load/diary JSR2 
-		,&check JSR
-		2++ GTH2k ,&loop JCN
-	POP2 POP2
-	RTN
-
-	&check ( name* -- name* )
-		DIARY 
-		&while
-			( test length )
-			DUP2 ;slen JSR2 #003f << ,&ok-length JCN 
-				DUP2 ;error-diary-name-length ERROR
-				&ok-length
-			( test term )
-			#000a ++ 
-			DUP2 #09 ;has-char JSR2 #00 = ,&skip JCN
-				( bound ) DUP2 #09 ;next-char JSR2 STH2
-				( clip ) #00 STH2kr STA
-				( flag ) DUP2 ;find-term JSR2 #0000 !! ,&ok-found JCN
-					DUP2 ;error-term-name-unknown ERROR
-					&ok-found
-				( unclip ) #09 STH2r STA
-				&skip
-			( goto eol ) &eol INC2 LDAk ,&eol JCN INC2
-			LDAk ,&while JCN
-		POP2
-
-RTN
-
 @build-one ( -> ) 
 
 	;focus-page ;find-term JSR2 ;build-page JSR2
@@ -173,7 +169,8 @@ BRK
 	&while
 		( move to name ) 2++ 
 		( display ) STH2kr PRINT-CR INC2r
-		( build ) DUP2 ,build-page JSR
+		( init ) ;init-page JSR2
+		( build ) ;build-page JSR2
 		( goto eol ) &eol INC2 LDAk ,&eol JCN INC2
 		LDAk ,&while JCN
 	POP2 POP2r
@@ -183,7 +180,7 @@ RTN
 
 ( build )
 
-@build-page ( name* -- )
+@init-page ( name* -- name* )
 
 	( term name limit )
 	DUP2 ;slen JSR2 TERM-NAME-SIZE << ,&namelength-ok JCN
@@ -211,6 +208,10 @@ RTN
 		( clip restore ) #09 STH2r STA
 		&continue
 	POP2
+
+RTN
+
+@build-page ( name* -- name* )
 
 	( render )
 	;doctype ^" 
@@ -244,21 +245,14 @@ RTN
 
 	( FILE ;validate-output JSR2 )
 
-	( make path )
-	;buff #0030 ;mclr JSR2
-	;output-path ;buff ;scat JSR2
-	DUP2 ;buff ;scat JSR2
-	;html-ext ;buff ;scat JSR2
-	;buff #20 [ LIT '_ ] ;cswp JSR2
-
 	( save file )
-	;buff .File/name DEO2
-	.head LDZ2 FILE -- .File/length DEO2
+	[ ;output-path OVR2 ;html-ext ;make-path JSR2 ] .File/name DEO2
+	[ .head LDZ2 FILE -- ] .File/length DEO2
 	FILE .File/save DEO2
 
 	.head LDZ2 FILE -- ;print-hex/short JSR2 
 	#20 EMIT
-	;print-string JSR2 #0a EMIT
+	DUP2 ;print-string JSR2 #0a EMIT
 
 RTN
 
@@ -317,16 +311,9 @@ RTN
 
 @build-page-body ( name* -- name* )
 
-	( make path )
-	;buff #0030 ;mclr JSR2
-	;input-path ;buff ;scat JSR2
-	DUP2 ;buff ;scat JSR2
-	;htm-ext ;buff ;scat JSR2
-	;buff #20 [ LIT '_ ] ;cswp JSR2
-
 	( write body )
-	;buff .File/name DEO2
-	#fffe .head LDZ2 -- .File/length DEO2
+	[ ;input-path OVR2 ;htm-ext ;make-path JSR2 ] .File/name DEO2
+	[ #fffe .head LDZ2 -- ] .File/length DEO2
 	.head LDZ2 
 		DUP2 .File/load DEO2
 		.File/success DEI2 ++ .head STZ2
@@ -685,7 +672,6 @@ RTN
 
 RTN
 
-
 @log-has-term ( log* term* -- flag )
 
 	STH2
@@ -693,6 +679,17 @@ RTN
 	( clip bounds ) DUP2 #09 ;next-char JSR2 STH2 [ #00 ] STH2kr STA
 	SWP2r STH2r ;scmp JSR2
 	( clip restore ) [ #09 ] STH2r STA
+
+RTN
+
+@make-path ( a* b* c* -- path* )
+
+	;buff STH2k #0030 ;mclr JSR2
+	ROT2 STH2kr ;scat JSR2
+	SWP2 STH2kr ;scat JSR2
+	STH2kr ;scat JSR2
+	STH2kr #20 [ LIT '_ ] ;cswp JSR2
+	STH2r
 
 RTN
 
@@ -732,11 +729,10 @@ RTN
 
 @add-img-tag ( src* alt* -- )
 
-	STH2 STH2
 	[ LIT '< ] ^'
 	;img-tag ^"
-	STH2r ;src-attr ;add-attr JSR2
-	STH2r ;alt-attr ;add-attr JSR2
+	;alt-attr ;add-attr JSR2
+	;src-attr ;add-attr JSR2
 	[ LIT '/ ] ^'
 	[ LIT '> ] ^'
 
@@ -757,9 +753,9 @@ RTN
 
 	[ LIT '< ] ^'
 	;link-tag ^"
-		;href-attr ;add-attr JSR2
-		;type-attr ;add-attr JSR2
-		;rel-attr ;add-attr JSR2
+	;href-attr ;add-attr JSR2
+	;type-attr ;add-attr JSR2
+	;rel-attr ;add-attr JSR2
 	[ LIT '/ ] ^'
 	[ LIT '> ] ^'
 
@@ -780,29 +776,21 @@ RTN
 
 	[ LIT '< ] ^'
 	[ LIT 'a ] ^'
-	[ LIT 20 ] ^' ;href-attr ^" [ LIT '= ] ^' [ LIT '" ] ^' DUP2 ;add-filename JSR2 [ LIT '" ] ^'
+	;&blank OVR2 ;html-ext ;make-path JSR2 ;href-attr ;add-attr JSR2
 	( self )
 	DUP2 ;term/name ;scmp JSR2 #00 = ,&not-self JCN
-		[ LIT 20 ] ^' ;class-attr ^" [ LIT '= ] ^' [ LIT '" ] ^' ;self-txt ^" [ LIT '" ] ^'
+		;self-txt ;class-attr ;add-attr JSR2
 		&not-self
 	( parent )
 	DUP2 ;term/parent ;scmp JSR2 #00 = ,&not-parent JCN
-		[ LIT 20 ] ^' ;class-attr ^" [ LIT '= ] ^' [ LIT '" ] ^' ;parent-txt ^" [ LIT '" ] ^'
+		;parent-txt ;class-attr ;add-attr JSR2
 		&not-parent 
 	[ LIT '> ] ^'
 	^"
 	;a-tag ^>
 
 RTN
-
-@add-filename ( name* -- )
-
-	DUP2 #20 [ LIT '_ ] ;cswp JSR2
-	^"
-	DUP2 [ LIT '_ ] #20 ;cswp JSR2
-	;html-ext ^"
-
-RTN
+	&blank $1
 
 ( generics )
 
@@ -990,6 +978,19 @@ RTN
 
 RTN
 
+@print-error ( name* msg* -- )
+	
+	SWP2 
+	1-- &name-loop 
+		INC2 LDAk [ DUP EMIT ] ,&name-loop JCN 
+	POP2 #20 EMIT
+	1-- &msg-loop 
+		INC2 LDAk [ DUP EMIT ] ,&msg-loop JCN 
+	POP2 #0d EMIT
+	HALT
+
+RTN
+
 @print-string ( addr* -- )
 
 	1-- 
@@ -1070,13 +1071,14 @@ RTN
 
 @no-picture "000 $1
 
-@error-include-size "--include_size_exceeded $1
 @error-include-missing "include_missing $1
 @error-broken-link "--redlink $1
 @error-term-name-size "--term_name_size_exceeded $1
 @error-output-size "--output_size_exceeded $1
 @error-term-name-unknown "--term_name_unknown $1
 @error-diary-name-length "--diary_name_size_exceeded $1
+@error-diary-size "--diary_size_exceeded $1
+@error-lexicon-size "--lexicon_size_exceeded $1
 
 @stylesheet-type "text/css $1
 @shortcuticon-type "image/png $1
