@@ -65,8 +65,9 @@ Map:
 
 |0000
 
-@term ( 0080  )
-	&name $16 ( term name limit )
+@term
+	&name $16
+	&parent $16
 	&pict $4
 	&diary $60
 	&input $30
@@ -197,6 +198,7 @@ RTN
 
 	( fill name )
 	DUP2 ;term/name ;scpy JSR2
+	DUP2 ;find-parent JSR2 ;term/parent ;scpy JSR2
 
 	( fill diary )
 	DUP2 ;find-diary JSR2
@@ -785,14 +787,17 @@ RTN
 
 	[ LIT '< ] ^'
 	[ LIT 'a ] ^'
-	[ LIT 20 ] ^'
-	;href-attr ^"
-	[ LIT '= ] ^'
-	[ LIT '" ] ^'
-	STH2k ;add-filename JSR2
-	[ LIT '" ] ^'
+	[ LIT 20 ] ^' ;href-attr ^" [ LIT '= ] ^' [ LIT '" ] ^' DUP2 ;add-filename JSR2 [ LIT '" ] ^'
+	( self )
+	DUP2 ;term/name ;scmp JSR2 #00 = ,&not-self JCN
+		[ LIT 20 ] ^' ;class-attr ^" [ LIT '= ] ^' [ LIT '" ] ^' ;self-txt ^" [ LIT '" ] ^'
+		&not-self
+	( parent )
+	DUP2 ;term/parent ;scmp JSR2 #00 = ,&not-parent JCN
+		[ LIT 20 ] ^' ;class-attr ^" [ LIT '= ] ^' [ LIT '" ] ^' ;parent-txt ^" [ LIT '" ] ^'
+		&not-parent 
 	[ LIT '> ] ^'
-	STH2r ^"
+	^"
 	;a-tag ^>
 
 RTN
