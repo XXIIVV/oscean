@@ -70,8 +70,7 @@ Map:
 	&parent $16
 	&pict $4
 	&diary $60
-	&input $30
-	&output $30
+@buff $30
 |00fe
 	@head $2 ( head )
 
@@ -213,17 +212,6 @@ RTN
 		&continue
 	POP2
 
-	( input path )
-	;input-path ;term/input STH2k ;scat JSR2
-	DUP2 STH2kr ;scat JSR2
-	;htm-ext STH2r ;scat JSR2
-	;term/input #20 [ LIT '_ ] ;cswp JSR2
-	( output path )
-	;output-path ;term/output STH2k ;scat JSR2
-	DUP2 STH2kr ;scat JSR2
-	;html-ext STH2r ;scat JSR2
-	;term/output #20 [ LIT '_ ] ;cswp JSR2
-
 	( render )
 	;doctype ^" 
 	;html-tag ^<
@@ -256,8 +244,15 @@ RTN
 
 	( FILE ;validate-output JSR2 )
 
+	( make path )
+	;buff #0030 ;mclr JSR2
+	;output-path ;buff ;scat JSR2
+	DUP2 ;buff ;scat JSR2
+	;html-ext ;buff ;scat JSR2
+	;buff #20 [ LIT '_ ] ;cswp JSR2
+
 	( save file )
-	;term/output .File/name DEO2
+	;buff .File/name DEO2
 	.head LDZ2 FILE -- .File/length DEO2
 	FILE .File/save DEO2
 
@@ -322,16 +317,16 @@ RTN
 
 @build-page-body ( name* -- name* )
 
-	( max include size )
-	#8000 FILE DUP2 ;slen JSR2 ++ #8000 -- -- STH2k
-
-	#0000 !! ,&no-null JCN
-		;error-include-size ERROR
-		&no-null
+	( make path )
+	;buff #0030 ;mclr JSR2
+	;input-path ;buff ;scat JSR2
+	DUP2 ;buff ;scat JSR2
+	;htm-ext ;buff ;scat JSR2
+	;buff #20 [ LIT '_ ] ;cswp JSR2
 
 	( write body )
-	;term/input .File/name DEO2
-	STH2kr .File/length DEO2
+	;buff .File/name DEO2
+	#fffe .head LDZ2 -- .File/length DEO2
 	.head LDZ2 
 		DUP2 .File/load DEO2
 		.File/success DEI2 ++ .head STZ2
@@ -340,8 +335,6 @@ RTN
 	.File/success DEI2 #0000 !! ,&no-blank JCN
 		;error-include-missing ERROR
 		&no-blank
-
-	POP2r
 
 RTN
 
@@ -538,7 +531,7 @@ RTN
 	&while
 		( stop at sibling ) LDAk ;chex JSR2 STHkr = ,&end JCN
 		( when depth+1 ) LDAk ;chex JSR2 STHkr INC NEQ ,&continue JCN 
-			2++ 
+			2++
 				;build-page-body JSR2
 			&continue
 		( move to eol ) 2++ &eol INC2 LDAk ,&eol JCN INC2
