@@ -15,7 +15,7 @@
 #define NAME "XXIIVV"
 #define DOMAIN "https://wiki.xxiivv.com/"
 #define LOCATION "Sidney, Canada"
-#define REPOPATH "https://github.com/XXIIVV/oscean/blob/master/src/"
+#define REPOPATH "https://github.com/XXIIVV/oscean/tree/main/src"
 
 typedef struct Block {
 	int len;
