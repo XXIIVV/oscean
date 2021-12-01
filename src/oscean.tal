@@ -20,9 +20,9 @@ Map:
 
 %EMIT { #18 DEO }
 %DEBUG  { ;print-hex/byte JSR2 #0a EMIT }
-%DEBUG2 { ;print-hex/short JSR2 #0a EMIT }
+%DEBUG2 { ;print-hex JSR2 #0a EMIT }
 %PRINT { ;print-string JSR2 #0a EMIT }
-%PRINT-CR { ;print-hex/short JSR2 #0d EMIT }
+%PRINT-CR { ;print-hex JSR2 #0d EMIT }
 %ERROR { ;print-error JMP2 }
 
 %RTN { JMP2r }
@@ -79,12 +79,14 @@ Map:
 
 |0100 ( -> )
 
-	;print-arvelie JSR2
-
 	;initialize JSR2
 
 	,focus-page LDR ;build-one JCN2
-		;build-all JMP2
+		;build-all JSR2
+
+	( print date ) #0a18 DEO ;print-arvelie JSR2
+	
+	HALT
 
 BRK
 
@@ -174,7 +176,6 @@ BRK
 		( goto eol ) &eol INC2 LDAk ,&eol JCN INC2
 		LDAk ,&while JCN
 	POP2 POP2r
-	HALT
 
 RTN
 
@@ -250,7 +251,7 @@ RTN
 	[ .head LDZ2 FILE -- ] .File/length DEO2
 	FILE .File/save DEO2
 
-	.head LDZ2 FILE -- ;print-hex/short JSR2 
+	.head LDZ2 FILE -- ;print-hex JSR2 
 	#20 EMIT
 	DUP2 ;print-string JSR2 #0a EMIT
 
@@ -963,18 +964,16 @@ RTN
 
 @print-hex ( value* -- )
 	
-	&short ( value* -- )
-		SWP ,&echo JSR 
-	&byte ( value -- )
+	SWP ,&echo JSR 
+	&byte ( byte -- )
 		,&echo JSR
 	RTN
-
-	&echo ( value -- )
-	STHk #04 SFT ,&parse JSR EMIT
-	STHr #0f AND ,&parse JSR EMIT
+	&echo ( byte -- )
+		STHk #04 SFT ,&parse JSR #18 DEO
+		STHr #0f AND ,&parse JSR #18 DEO
 	RTN
-	&parse ( value -- char )
-		DUP #09 GTH ,&above JCN #30 + RTN &above #09 - #60 + RTN
+	&parse ( byte -- char ) DUP #09 GTH ,&above JCN #30 + RTN 
+	&above #57 + RTN
 
 RTN
 
