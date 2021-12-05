@@ -1,19 +1,19 @@
- ( The Bequest Globe 
+( The Bequest Globe
 
 Runes:
-	, album 
-	; portal 
-	: archive 
+	, album
+	; portal
+	: archive
 
 Map:
 	0x1800 - 0x3000 Lexicon
 	0x3000 - 0x8000 Diary
 	0x8000 - 0xffff Output )
 
-%+  { ADD } %-   { SUB }              %/   { DIV }  
-%<  { LTH } %>   { GTH }  %=  { EQU } %!   { NEQ } 
-%++ { ADD2 } %-- { SUB2 }              %// { DIV2 } 
-%<< { LTH2 } %>> { GTH2 } %== { EQU2 } %!! { NEQ2 }  
+%+  { ADD } %-   { SUB }              %/   { DIV }
+%<  { LTH } %>   { GTH }  %=  { EQU } %!   { NEQ }
+%++ { ADD2 } %-- { SUB2 }              %// { DIV2 }
+%<< { LTH2 } %>> { GTH2 } %== { EQU2 } %!! { NEQ2 }
 
 %1-- { #0001 -- }
 %2++ { INC2 INC2 }
@@ -85,7 +85,7 @@ Map:
 		;build-all JSR2
 
 	( print date ) #0a18 DEO ;print-arvelie JSR2
-	
+
 	HALT
 
 BRK
@@ -116,14 +116,14 @@ BRK
 RTN
 
 	&check-diary-entries ( name* -- name* )
-		DIARY 
+		DIARY
 		&while
 			( test length )
-			DUP2 ;slen JSR2 #003f << ,&ok-length JCN 
+			DUP2 ;slen JSR2 #003f << ,&ok-length JCN
 				;error-diary-name-length ERROR
 				&ok-length
 			( test term )
-			#000a ++ 
+			#000a ++
 			DUP2 #09 ;has-char JSR2 #00 = ,&skip JCN
 				( bound ) DUP2 #09 ;next-char JSR2 STH2
 				( clip ) #00 STH2kr STA
@@ -157,7 +157,7 @@ RTN
 
 RTN
 
-@build-one ( -> ) 
+@build-one ( -> )
 
 	;focus-page ;find-term JSR2 ;build-page JSR2
 	HALT
@@ -165,11 +165,11 @@ RTN
 BRK
 
 @build-all ( -- )
-	
+
 	LIT2r 0000
 	LEXICON
 	&while
-		( move to name ) 2++ 
+		( move to name ) 2++
 		( display ) STH2kr PRINT-CR INC2r
 		( init ) ;init-page JSR2
 		( build ) ;build-page JSR2
@@ -215,17 +215,17 @@ RTN
 @build-page ( name* -- name* )
 
 	( render )
-	;doctype ^" 
+	;doctype ^"
 	;html-tag ^<
 		( head )
 		;head-tag ^<
-			;charset-attr ;charset-txt ;add-meta-tag JSR2 
+			;charset-attr ;charset-txt ;add-meta-tag JSR2
 			;stylesheet-txt ;stylesheet-type ;stylesheet-path ;add-link-tag JSR2
 			;shortcuticon-txt ;shortcuticon-type ;shortcuticon-path ;add-link-tag JSR2
 			;title-tag ^<
 				;title-txt ^" [ LIT 20 ] ^' ;mdash-entity-txt ^" [ LIT 20 ] ^' DUP2 ^"
 			;title-tag ^>
-		;head-tag ^> 
+		;head-tag ^>
 		( body )
 		;body-tag ^<
 			;header-tag ^<
@@ -251,7 +251,7 @@ RTN
 	[ .head LDZ2 FILE -- ] .File/length DEO2
 	FILE .File/save DEO2
 
-	.head LDZ2 FILE -- ;print-hex JSR2 
+	.head LDZ2 FILE -- ;print-hex JSR2
 	#20 EMIT
 	DUP2 ;print-string JSR2 #0a EMIT
 
@@ -261,11 +261,11 @@ RTN
 
 	;nav-tag ^<
 		GET-DEPTH #00 = ,&no-siblings JCN
-		( parents ) 
+		( parents )
 		GET-DEPTH #02 < ,&no-parents JCN
 			DUP2 ;find-parent JSR2 ;find-parent JSR2 ,&build-children JSR POP2
 			&no-parents
-		( siblings ) 
+		( siblings )
 		GET-DEPTH #01 < ,&no-siblings JCN
 			DUP2 ;find-parent JSR2 ,&build-children JSR POP2
 			&no-siblings
@@ -278,7 +278,7 @@ RTN
 		;ul-tag ^<
 		DUP2
 		( stash depth ) GET-DEPTH STH
-		( start after ) DUP2 ;slen JSR2 ++ INC2 
+		( start after ) DUP2 ;slen JSR2 ++ INC2
 		&while
 			( stop at sibling ) LDAk ;chex JSR2 STHkr = ,&end JCN
 			( when depth+1 ) LDAk ;chex JSR2 STHkr INC NEQ ,&continue JCN
@@ -315,7 +315,7 @@ RTN
 	( write body )
 	[ ;input-path OVR2 ;htm-ext ;make-path JSR2 ] .File/name DEO2
 	[ #fffe .head LDZ2 -- ] .File/length DEO2
-	.head LDZ2 
+	.head LDZ2
 		DUP2 .File/load DEO2
 		.File/success DEI2 ++ .head STZ2
 
@@ -328,13 +328,13 @@ RTN
 
 @build-page-module ( term* -- term* )
 
-	DUP2 1-- LDA RUNE-ALBUM ! ,&no-album JCN 
+	DUP2 1-- LDA RUNE-ALBUM ! ,&no-album JCN
 		;build-module-album JSR2 RTN
 		&no-album
-	DUP2 1-- LDA RUNE-PORTAL ! ,&no-portal JCN 
+	DUP2 1-- LDA RUNE-PORTAL ! ,&no-portal JCN
 		;build-module-portal JSR2 RTN
 		&no-portal
-	DUP2 1-- LDA RUNE-ARCHIVE ! ,&no-archive JCN 
+	DUP2 1-- LDA RUNE-ARCHIVE ! ,&no-archive JCN
 		;build-module-archive JSR2 RTN
 		&no-archive
 
@@ -357,7 +357,7 @@ RTN
 @build-special-index ( -- )
 
 	;ul-tag ^<
-		LEXICON 
+		LEXICON
 		&while
 			( move to name ) 2++
 			;li-tag ^<
@@ -365,7 +365,7 @@ RTN
 			;li-tag ^>
 			( move to eol ) &eol INC2 LDAk ,&eol JCN INC2
 			LDAk ;&while JCN2
-		POP2 
+		POP2
 	;ul-tag ^>
 
 RTN
@@ -375,7 +375,7 @@ RTN
 	;ul-tag ^<
 		;diary-path-pages/end ;diary-path-pages
 		&loop
-			LDA2k ;load/diary JSR2 
+			LDA2k ;load/diary JSR2
 			,&append-li JSR
 			2++ GTH2k ,&loop JCN
 		POP2 POP2
@@ -384,7 +384,7 @@ RTN
 	RTN
 
 	&append-li ( name* -- name* )
-		DIARY 
+		DIARY
 		&while
 			DUP2 #0005 ++ LDA [ LIT '+ ] ! ;&continue JCN2
 				( break list on year change )
@@ -410,14 +410,14 @@ RTN
 	#00 ;&limit STA
 	;diary-path-pages/end ;diary-path-pages
 	&loop
-		LDA2k ;load/diary JSR2 
+		LDA2k ;load/diary JSR2
 		,&append-figure JSR
 		2++ GTH2k ,&loop JCN
 	POP2 POP2
 	RTN
 
 	&append-figure ( name* -- name* )
-		DIARY 
+		DIARY
 		&while
 			;&limit LDA #20 > ,&end JCN
 			DUP2 ;no-picture ;log-has-picture JSR2 ,&continue JCN
@@ -438,7 +438,7 @@ RTN
 		STH2
 		;diary-path-pages/end ;diary-path-pages
 		&loop
-			LDA2k ;load/diary JSR2 
+			LDA2k ;load/diary JSR2
 			STH2kr ,&append-li JSR
 			INC2 INC2 GTH2k ,&loop JCN
 		POP2 POP2
@@ -449,7 +449,7 @@ RTN
 
 	&append-li ( name* -- )
 		STH2
-		DIARY 
+		DIARY
 		&while
 			DUP2 #0005 ++ LDA [ LIT '+ ] ! ,&continue JCN
 				( host is term ) DUP2 ;term/name ;log-has-term JSR2 #01 ! ,&continue JCN
@@ -468,7 +468,7 @@ RTN
 	STH2
 	;diary-path-pages/end ;diary-path-pages
 	&loop
-		LDA2k ;load/diary JSR2 
+		LDA2k ;load/diary JSR2
 		STH2kr ,&append-figure JSR
 		INC2 INC2 GTH2k ,&loop JCN
 	POP2 POP2
@@ -478,7 +478,7 @@ RTN
 	&append-figure ( name* -- )
 
 		STH2
-		DIARY 
+		DIARY
 		&while
 			( picture is blank ) DUP2 ;no-picture ;log-has-picture JSR2 ,&continue JCN
 			( picture is head ) DUP2 ;term/pict ;log-has-picture JSR2 ,&continue JCN
@@ -495,7 +495,7 @@ RTN
 @build-module-portal ( name* -- name* )
 
 	( stash depth ) DUP2 GET-DEPTH STH
-	( start after ) DUP2 ;slen JSR2 ++ INC2 
+	( start after ) DUP2 ;slen JSR2 ++ INC2
 	&while
 		( stop at sibling ) LDAk ;chex JSR2 STHkr = ,&end JCN
 		( when depth+1 ) LDAk ;chex JSR2 STHkr INC NEQ ,&continue JCN
@@ -515,10 +515,10 @@ RTN
 @build-module-archive ( name* -- name* )
 
 	( stash depth ) DUP2 GET-DEPTH STH
-	( start after ) DUP2 ;slen JSR2 ++ INC2 
+	( start after ) DUP2 ;slen JSR2 ++ INC2
 	&while
 		( stop at sibling ) LDAk ;chex JSR2 STHkr = ,&end JCN
-		( when depth+1 ) LDAk ;chex JSR2 STHkr INC NEQ ,&continue JCN 
+		( when depth+1 ) LDAk ;chex JSR2 STHkr INC NEQ ,&continue JCN
 			2++
 				;build-page-body JSR2
 			&continue
@@ -542,7 +542,7 @@ RTN
 RTN
 
 @build-module-photo ( diary* -- )
- 
+
 	( html )
 	;figure-tag ^<
 
@@ -562,10 +562,10 @@ RTN
 		( unclip ) DUP2 #0009 ++ STH2 #09 STH2r STA
 		;figcaption-tag ^<
 			DUP2 #000a ++ ;term/name SWP2 ;scmp-seg JSR2 ,&skip JCN
-				DUP2 ;extract-term JSR2 ;add-local JSR2 
+				DUP2 ;extract-term JSR2 ;add-local JSR2
 				[ LIT 20 ] ^' ;mdash-entity-txt ^" [ LIT 20 ] ^'
 				&skip
-			#09 ;next-char JSR2 INC2 #09 ;next-char JSR2 INC2 ^" 
+			#09 ;next-char JSR2 INC2 #09 ;next-char JSR2 INC2 ^"
 		;figcaption-tag ^>
 	;figure-tag ^>
 
@@ -574,7 +574,7 @@ RTN
 @extract-term ( diary* -- term* )
 
 	#00 ;&buff STA
-	#000a ++ 
+	#000a ++
 	( clip bound ) DUP2 #09 ;next-char JSR2 STH2
 	( clip start ) #00 STH2kr STA
 	( clip wrap ) ;&buff ;scat JSR2
@@ -588,7 +588,7 @@ RTN
 
 	;meta-footer-path .File/name DEO2
 	#0300 .File/length DEO2
-	.head LDZ2 
+	.head LDZ2
 		DUP2 .File/load DEO2
 		.File/success DEI2 ++ .head STZ2
 
@@ -599,9 +599,9 @@ RTN
 @find-term ( name* -- term* )
 
 	STH2
-	LEXICON 
+	LEXICON
 	&while
-		( move to name ) 2++ 
+		( move to name ) 2++
 		( test ) DUP2 STH2kr ;scmp JSR2 ,&end JCN
 		( move to eol ) &eol INC2 LDAk ,&eol JCN INC2
 		LDAk ,&while JCN
@@ -612,12 +612,12 @@ RTN
 RTN
 
 @find-diary ( name* -- diary* )
-	
+
 	STH2
 	;diary-path-pages/end ;diary-path-pages
 	&loop
-		LDA2k ;load/diary JSR2 
-		STH2kr ,&search JSR 
+		LDA2k ;load/diary JSR2
+		STH2kr ,&search JSR
 		DUP2 #0000 == ,&continue JCN
 			( found ) NIP2 NIP2 POP2r RTN
 			&continue
@@ -630,7 +630,7 @@ RTN
 
 	&search ( name* -- diary* )
 		STH2
-		DIARY 
+		DIARY
 		&while
 			( skip events ) DUP2 ;no-picture ;log-has-picture JSR2 ,&skip JCN
 			( host is term ) DUP2 STH2kr ;log-has-term JSR2 #01 ! ,&skip JCN
@@ -645,15 +645,15 @@ RTN
 
 @find-parent ( term* -- parent* )
 
-	GET-DEPTH ,&not-root JCN 
-		RTN 
+	GET-DEPTH ,&not-root JCN
+		RTN
 		&not-root
 
-	REWIND 
+	REWIND
 	( stash depth ) LDAk ;chex JSR2 #01 - STH
 	LEXICON SWP2
 	&loop
-		1-- #00 ;prev-char JSR2 
+		1-- #00 ;prev-char JSR2
 		INC2k LDA ;chex JSR2 STHkr ! ,&continue JCN
 			NIP2 POPr #0003 ++ RTN
 			&continue
@@ -676,7 +676,7 @@ RTN
 @log-has-term ( log* term* -- flag )
 
 	STH2
-	#000a ++ 
+	#000a ++
 	( clip bounds ) DUP2 #09 ;next-char JSR2 STH2 [ #00 ] STH2kr STA
 	SWP2r STH2r ;scmp JSR2
 	( clip restore ) [ #09 ] STH2r STA
@@ -699,11 +699,11 @@ RTN
 	( look for redlinks )
 	&while
 		DUP2 ;href-attr SWP2 ;scmp-seg JSR2 #00 = ,&continue JCN
-			( move to href ) #0006 ++ 
+			( move to href ) #0006 ++
 			( strip relative ) LDAk [ LIT '. ] = ,&continue JCN
 			( strip jumps ) LDAk [ LIT '# ] = ,&continue JCN
 			( strip http* ) DUP2 ;http-txt SWP2 ;scmp-seg JSR2 ,&continue JCN
-			( filter ) DUP2 
+			( filter ) DUP2
 			;&buff #0030 ;mcpy JSR2
 			;&buff [ LIT '. ] #00 ;cswp JSR2
 			;&buff [ LIT '_ ] #20 ;cswp JSR2
@@ -785,7 +785,7 @@ RTN
 	( parent )
 	DUP2 ;term/parent ;scmp JSR2 #00 = ,&not-parent JCN
 		;parent-txt ;class-attr ;add-attr JSR2
-		&not-parent 
+		&not-parent
 	[ LIT '> ] ^'
 	^"
 	;a-tag ^>
@@ -796,7 +796,7 @@ RTN
 ( generics )
 
 @prev-char ( addr* char -- addr* )
-	
+
 	STH
 	&while
 		LDAk STHkr = ,&end JCN
@@ -808,7 +808,7 @@ RTN
 RTN
 
 @next-char ( addr* char -- addr* )
-	
+
 	STH
 	&while
 		LDAk STHkr = ,&end JCN
@@ -820,7 +820,7 @@ RTN
 RTN
 
 @has-char ( addr* char -- flag )
-	
+
 	STH
 	&while
 		LDAk STHkr ! ,&continue JCN
@@ -829,7 +829,7 @@ RTN
 		INC2 LDAk ,&while JCN
 	POP2 POPr
 	#00
-	
+
 RTN
 
 ( helpers )
@@ -847,7 +847,7 @@ RTN
 RTN
 
 @chex ( char -- hex )
-	
+
 	DUPk #2f GTH SWP #3a LTH #0101 == ,&num JCN
 	DUPk #40 GTH SWP #47 LTH #0101 == ,&uca JCN
 	DUPk #60 GTH SWP #67 LTH #0101 == ,&lca JCN
@@ -863,7 +863,7 @@ RTN
 
 @scmp ( a* b* -- flag )
 
-	STH2 
+	STH2
 	&loop
 		LDAk LDAkr STHr = ,&not-diff JCN
 			POP2 POP2r #00 RTN
@@ -879,7 +879,7 @@ RTN
 
 @scmp-seg ( a* b* -- flag )
 
-	STH2 
+	STH2
 	&loop
 		LDAk LDAkr STHr = ,&not-diff JCN
 			POP2 POP2r #00 RTN
@@ -901,13 +901,13 @@ RTN
 
 @scpy ( src* dst* -- )
 
-	STH2 
+	STH2
 	DUP2
 	&while
 		SWP2k -- STH2kr ++ STH2
 		LDAk STH2r STA
 		INC2 LDAk ,&while JCN
-	SWP2 -- STH2r ++ 
+	SWP2 -- STH2r ++
 	#00 ROT ROT STA
 
 RTN
@@ -923,7 +923,7 @@ RTN
 RTN
 
 @mclr ( addr* length* -- )
-	
+
 	OVR2 ++ SWP2
 	&loop
 		DUP2 #00 ROT ROT STA
@@ -933,13 +933,13 @@ RTN
 RTN
 
 @mcpy ( a* b* length* -- )
-	
+
 	STH2
 	,&b STR2 ,&a STR2
 	STH2r #0000
 	&loop
 		STH2k
-		,&a LDR2 STH2kr ++ LDA 
+		,&a LDR2 STH2kr ++ LDA
 		,&b LDR2 STH2r ++ STA
 		INC2 GTH2k ,&loop JCN
 	POP2 POP2
@@ -958,30 +958,30 @@ RTN
 
 RTN
 	&char ( char -- )
-		.head LDZ2 STA 
+		.head LDZ2 STA
 		.head LDZ2k INC2 ROT STZ2
 	RTN
 
 @print-hex ( value* -- )
-	
-	SWP ,&byte JSR 
+
+	SWP ,&byte JSR
 	&byte ( byte -- )
 		STHk #04 SFT ,&parse JSR #18 DEO
 		STHr #0f AND ,&parse JSR #18 DEO
 	RTN
-	&parse ( byte -- char ) DUP #09 GTH ,&above JCN #30 + RTN 
+	&parse ( byte -- char ) DUP #09 GTH ,&above JCN #30 + RTN
 	&above #57 + RTN
 
 RTN
 
 @print-error ( name* msg* -- )
-	
-	SWP2 
-	1-- &name-loop 
-		INC2 LDAk [ DUP EMIT ] ,&name-loop JCN 
+
+	SWP2
+	1-- &name-loop
+		INC2 LDAk [ DUP EMIT ] ,&name-loop JCN
 	POP2 #20 EMIT
-	1-- &msg-loop 
-		INC2 LDAk [ DUP EMIT ] ,&msg-loop JCN 
+	1-- &msg-loop
+		INC2 LDAk [ DUP EMIT ] ,&msg-loop JCN
 	POP2 #0d EMIT
 	HALT
 
@@ -989,16 +989,16 @@ RTN
 
 @print-string ( addr* -- )
 
-	1-- 
+	1--
 	&while
-		INC2 LDAk [ DUP EMIT ] ,&while JCN 
+		INC2 LDAk [ DUP EMIT ] ,&while JCN
 	POP2
 
 RTN
 
 @print-arvelie ( -- )
 
-	.DateTime/year DEI2 #07d6 -- NIP 
+	.DateTime/year DEI2 #07d6 -- NIP
 		( digit1 ) DUP #0a DIV #30 + EMIT
 		( digit2 ) #0a MOD #30 + EMIT
 	.DateTime/doty DEI2
@@ -1079,7 +1079,7 @@ RTN
 @stylesheet-type "text/css $1
 @shortcuticon-type "image/png $1
 
-@diary-path-pages 
+@diary-path-pages
 	:diary-path-page3
 	:diary-path-page2
 	:diary-path-page1
