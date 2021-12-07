@@ -1,14 +1,6 @@
-<!DOCTYPE html><html><head><meta charset="utf-8"/><link href="../links/main.css" type="text/css" rel="stylesheet"/><link href="../media/services/icon.png" type="image/png" rel="shortcut icon"/><title>XXIIVV &mdash; chr format</title></head><body><header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"/></a></header><nav><ul><li><a href="roms.html">roms</a></li><li><a href="tools.html">tools</a></li><li><a href="utilities.html">utilities</a></li><li><a href="formats.html" class="parent">formats</a></li><li><a href="games.html">games</a></li><li><a href="toys.html">toys</a></li><li><a href="mobile.html">mobile</a></li><li><a href="unreleased.html">unreleased</a></li></ul><ul><li><a href="chr_format.html" class="self">chr format</a></li><li><a href="ufx_format.html">ufx format</a></li><li><a href="gly_format.html">gly format</a></li><li><a href="bmp_format.html">bmp format</a></li><li><a href="theme.html">theme</a></li><li><a href="snarf.html">snarf</a></li></ul><ul></ul></nav><main><figure><img src="../media/diary/726.jpg"/><figcaption>Nasu on Plan 9</figcaption></figure><h2>Character Memory is a 2-bit graphic format for Famicom and Uxn spritesheets.</h2>
+<!DOCTYPE html><html><head><meta charset="utf-8"/><link href="../links/main.css" type="text/css" rel="stylesheet"/><link href="../media/services/icon.png" type="image/png" rel="shortcut icon"/><title>XXIIVV &mdash; chr format</title></head><body><header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"/></a></header><nav><ul><li><a href="roms.html">roms</a></li><li><a href="tools.html">tools</a></li><li><a href="utilities.html">utilities</a></li><li><a href="formats.html" class="parent">formats</a></li><li><a href="games.html">games</a></li><li><a href="toys.html">toys</a></li><li><a href="mobile.html">mobile</a></li><li><a href="unreleased.html">unreleased</a></li></ul><ul><li><a href="icn_format.html">icn format</a></li><li><a href="chr_format.html" class="self">chr format</a></li><li><a href="ufx_format.html">ufx format</a></li><li><a href="gly_format.html">gly format</a></li><li><a href="theme.html">theme</a></li><li><a href="snarf.html">snarf</a></li></ul><ul></ul></nav><main><figure><img src="../media/diary/726.jpg"/><figcaption>Nasu on Plan 9</figcaption></figure><h2>CHR is a 2-bit graphic format for Famicom and Uxn spritesheets.</h2>
 
-<p>The <code>.chr</code> file format contains a series of bits equivalent to pixels for each tile in the spreadsheet of a rom. A chr tile is 8x8 pixels, the data for each tile is made up of 128 bits, where the first 64 bits are the first color, the next 64 bits the second color, and where the colors overlap result in the third color, for a total of 4 colors including the background.</p>
-
-<pre>0000 1e3f 3f3f 3f1e 78fc fcfc fc78 0000</pre>
-
-<p>If you're looking for a simple editor and <a href='ansi_c.html'>ANSI C</a> implementation, see <a href='nasu.html'>Nasu</a> and <a href='dexe.html'>Dexe</a>. To convert an image into sprites, see <a href='dito.html'>Dito</a>. You will find this filetype in most of the <a href='famicom.html'>famicom</a> and <a href='uxn.html'>Uxn</a> ecosystems.</p>
-
-<h2>C Integration</h2>
-
-<h3>Drawing a 2-bit sprite</h3>
+<p>The <code>CHR</code> file contains a series of bits equivalent to pixels for each tile in the spreadsheet of a rom. A chr tile is 8x8 pixels, the data for each tile is made up of 128 bits, where the first 64 bits are the first color, the next 64 bits the second color, and where the colors overlap result in the third color, for a total of 4 colors including the background.</p>
 
 <pre>
 Uint8 icon[16] = {
@@ -17,7 +9,7 @@ Uint8 icon[16] = {
 };
 </pre>
 
-<p>Chrs are 8x8 bitmaps with a maximum of 4 colors.</p>
+<p>If you're looking for a simple editor and <a href='ansi_c.html'>ANSI C</a> implementation, see <a href='nasu.html'>Nasu</a> and <a href='dexe.html'>Dexe</a>. To convert an image into sprites, see <a href='dito.html'>Dito</a>. You will find this filetype in most of the <a href='famicom.html'>famicom</a> and <a href='uxn.html'>Uxn</a> ecosystems.</p>
 
 <pre>
 void
@@ -31,80 +23,5 @@ drawchr(Uint32 *dst, int x, int y, Uint8 *sprite)
 			putpixel(dst, x + 7 - h, y + v, ch1 + ch2);
 		}
 }
-</pre>
-
-<h3>1-bit Example</h3>
-
-<table border='1'>
-	<th colspan="2">3x3 Sprite</th>
-	<tr>
-		<td>
-<img src='../media/generic/endchr.png'/></td>
-		<td>	
-<pre>
-0003 6331 397b 77f8 c0f0 f7ff fff0 8003
-1c7e feff 0f07 078e f860 0c07 0300 301f
-071f 7cf8 f007 7fff dcc0 c000 70f8 f8b0
-0f07 4143 677f 7f3e ffe3 87cf cfcf 8703
-84c4 8406 0efe fcf8 	
-</pre>
-		</td>
-	</tr>
-</table>
-
-<pre>
-Uint8 icon[8] = {0x38, 0x7c, 0xfe, 0xfe, 0xfe, 0x7c, 0x38, 0x00};
-</pre>
-
-<p>Icns are 8x8 monochromatic bitmaps, or half of a chr.</p>
-
-<pre>
-void
-draw_icn(Uint32 *dst, int x, int y, Uint8 *sprite, int fg, int bg)
-{
-	int v, h;
-	for(v = 0; v < 8; v++)
-		for(h = 0; h < 8; h++) {
-			int ch1 = (sprite[v] >> (7 - h)) & 0x1;
-			putpixel(dst, x + h, y + v, ch1 ? fg : bg);
-		}
-}
-</pre>
-
-<p>To convert non-black pixels of an image to an icn file:</p>
-
-<pre>
-void
-export_icn(Uint32 *src, int width, int height, char *filename)
-{
-	int i, x, y;
-	Uint8 icnbuf[SZ];
-	FILE *f = fopen(filename, "wb");
-	/* clean memory */
-	for(i = 0; i < SZ; ++i)
-		icnbuf[i] = 0;
-	/* write pixels */
-	for(y = 0; y < height; ++y) {
-		for(x = 0; x < width; ++x) {
-			int color = pixels[y * width + x];
-			if(color) {
-				int col = x & 7, row = y & 7;
-				int byte = (x & ~7) + (y & ~7) * width / 8 + row;
-				icnbuf[byte] |= 1 << (7 - col);
-			}
-		}
-	}
-	/* save file */
-	if(!fwrite(icnbuf, sizeof(icnbuf), 1, f))
-		fprintf(stderr, "Failed: %s!\n", filename);
-	fclose(f);
-	fprintf(stderr, "Export: %s\n", filename);
-}
-</pre>
-
-<ul>
-	<li><a href='https://git.sr.ht/~rabbits/chr-format' target='_blank'>C Toolkit</a></li>
-</ul>
-
-<ul></ul></main><footer><a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.svg" alt="CreativeCommons"/></a><a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a><a href="https://merveilles.town/@neauoire" target="_blank"><img src="../media/icon/merveilles.svg" alt="Merveilles"/></a><a href="uxn.html"><img src="../media/icon/uxn.svg" alt="Uxn Powered"/></a><span><a href="devine_lu_linvega.html">Devine Lu Linvega</a> &copy; 2021 &mdash; <a href="about.html">BY-NC-SA 4.0</a></span></footer>
+</pre><ul></ul></main><footer><a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.svg" alt="CreativeCommons"/></a><a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a><a href="https://merveilles.town/@neauoire" target="_blank"><img src="../media/icon/merveilles.svg" alt="Merveilles"/></a><a href="uxn.html"><img src="../media/icon/uxn.svg" alt="Uxn Powered"/></a><span><a href="devine_lu_linvega.html">Devine Lu Linvega</a> &copy; 2021 &mdash; <a href="about.html">BY-NC-SA 4.0</a></span></footer>
 </body></html>
