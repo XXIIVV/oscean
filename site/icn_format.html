@@ -1,6 +1,10 @@
-<!DOCTYPE html><html><head><meta charset="utf-8"/><link href="../links/main.css" type="text/css" rel="stylesheet"/><link href="../media/services/icon.png" type="image/png" rel="shortcut icon"/><title>XXIIVV &mdash; icn format</title></head><body><header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"/></a></header><nav><ul><li><a href="roms.html">roms</a></li><li><a href="tools.html">tools</a></li><li><a href="utilities.html">utilities</a></li><li><a href="formats.html" class="parent">formats</a></li><li><a href="games.html">games</a></li><li><a href="toys.html">toys</a></li><li><a href="mobile.html">mobile</a></li><li><a href="unreleased.html">unreleased</a></li></ul><ul><li><a href="icn_format.html" class="self">icn format</a></li><li><a href="chr_format.html">chr format</a></li><li><a href="ufx_format.html">ufx format</a></li><li><a href="gly_format.html">gly format</a></li><li><a href="theme.html">theme</a></li><li><a href="snarf.html">snarf</a></li></ul><ul></ul></nav><main><h2>ICN is a 1-bit graphic format for Uxn spritesheets.</h2>
+<!DOCTYPE html><html><head><meta charset="utf-8"/><link href="../links/main.css" type="text/css" rel="stylesheet"/><link href="../media/services/icon.png" type="image/png" rel="shortcut icon"/><title>XXIIVV &mdash; icn format</title></head><body><header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"/></a></header><nav><ul><li><a href="roms.html">roms</a></li><li><a href="tools.html">tools</a></li><li><a href="utilities.html">utilities</a></li><li><a href="formats.html" class="parent">formats</a></li><li><a href="games.html">games</a></li><li><a href="toys.html">toys</a></li><li><a href="mobile.html">mobile</a></li><li><a href="unreleased.html">unreleased</a></li></ul><ul><li><a href="icn_format.html" class="self">icn format</a></li><li><a href="chr_format.html">chr format</a></li><li><a href="gly_format.html">gly format</a></li><li><a href="ufx_format.html">ufx format</a></li><li><a href="theme.html">theme</a></li><li><a href="snarf.html">snarf</a></li></ul><ul></ul></nav><main><h2>ICN is a 1-bit graphic format for Uxn spritesheets.</h2>
 
 <p>The <code>ICN</code> file contains a series of bits equivalent to pixels for each tile in the spreadsheet of a rom. A chr tile is 8x8 pixels, the data for each tile is made up of 64 bits, where each bit is a pixel. An ICN is the first half of a <a href='chr_format.html'>CHR</a>.</p>
+
+<pre>
+Uint8 tile[8] = {0x00, 0x3c, 0x42, 0x7e, 0x40, 0x42, 0x3c, 0x00};
+</pre>
 
 <table border='1'>
 	<tr><th colspan="8">bits</th><th>hex</th></tr>
@@ -17,7 +21,7 @@
 <h3>ICN Example</h3>
 
 <table border='1'>
-	<th colspan="2">3x3 Sprite</th>
+	<th colspan="2">24x24 Sprite</th>
 	<tr>
 		<td>
 <img src='../media/generic/endchr.png'/></td>
@@ -34,10 +38,6 @@
 </table>
 
 <pre>
-Uint8 icon[8] = {0x38, 0x7c, 0xfe, 0xfe, 0xfe, 0x7c, 0x38, 0x00};
-</pre>
-
-<pre>
 void
 draw_icn(Uint32 *dst, int x, int y, Uint8 *sprite, int fg, int bg)
 {
@@ -45,39 +45,8 @@ draw_icn(Uint32 *dst, int x, int y, Uint8 *sprite, int fg, int bg)
 	for(v = 0; v < 8; v++)
 		for(h = 0; h < 8; h++) {
 			int ch1 = (sprite[v] >> (7 - h)) & 0x1;
-			putpixel(dst, x + h, y + v, ch1 ? fg : bg);
+			put_pixel(dst, x + h, y + v, ch1);
 		}
-}
-</pre>
-
-<p>To convert non-black pixels of an image to an icn file:</p>
-
-<pre>
-void
-export_icn(Uint32 *src, int width, int height, char *filename)
-{
-	int i, x, y;
-	Uint8 icnbuf[SZ];
-	FILE *f = fopen(filename, "wb");
-	/* clean memory */
-	for(i = 0; i < SZ; ++i)
-		icnbuf[i] = 0;
-	/* write pixels */
-	for(y = 0; y < height; ++y) {
-		for(x = 0; x < width; ++x) {
-			int color = pixels[y * width + x];
-			if(color) {
-				int col = x & 7, row = y & 7;
-				int byte = (x & ~7) + (y & ~7) * width / 8 + row;
-				icnbuf[byte] |= 1 << (7 - col);
-			}
-		}
-	}
-	/* save file */
-	if(!fwrite(icnbuf, sizeof(icnbuf), 1, f))
-		fprintf(stderr, "Failed: %s!\n", filename);
-	fclose(f);
-	fprintf(stderr, "Export: %s\n", filename);
 }
 </pre>
 
