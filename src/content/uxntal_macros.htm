@@ -78,9 +78,10 @@
 <p>To print the hex values of data.</p>
 
 <pre>
-%DEBUG      { ;print-hex/byte JSR2 #0a18 DEO }
-%DEBUG2     { ;print-hex JSR2 #0a18 DEO }
-%RTN        { JMP2r }
+%EMIT   { #18 DEO }
+%PRINT  { ;print-str JSR2 #0a EMIT }
+%DEBUG  { ;print-hex/byte JSR2 #0a EMIT }
+%DEBUG2 { ;print-hex JSR2 #0a EMIT }
 </pre>
 
 <pre>
@@ -112,7 +113,7 @@ RTN
 <pre>
 @print-str ( string* -- )
 
-	1-- 
+	#0001 SUB2 
 	&while
 		INC2 LDAk DUP #18 DEO ,&while JCN 
 	POP2
@@ -157,15 +158,31 @@ RTN
 
 <h2>Strings</h2>
 
-<h3>string length</h3>
+<h3>string primitives</h3>
 <pre>
-@slen ( addr* -- length* )
+@slen ( str* -- len* )
 
-	#0001 -- DUP2
-	&while
-		INC2 LDAk ,&while JCN
-	SWP2 --
-	#0001 --
+	DUP2 ,scap JSR SWP2 --
+
+RTN
+
+@scap ( str* -- str-end* )
+
+	( clamp ) LDAk #00 ! JMP RTN
+	&while INC2 LDAk ,&while JCN
+
+RTN
+
+@sput ( str* char -- )
+
+	ROT ROT ,scap JSR STA
+
+RTN
+
+@spop ( str* -- )
+
+	( clamp ) LDAk #00 ! JMP RTN
+	#00 ROT ROT ,scap JSR #0001 -- STA
 
 RTN
 </pre>
