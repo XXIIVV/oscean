@@ -118,7 +118,7 @@ c00a
 </table>
 <h2>UFX is a 1-bit proportional font format for the Uxn system.</h2>
 
-<p>The <code>UF*</code> file contains a page of 256 bytes corresponding to the width of each of the 255 characters in the font (in pixels), followed by the pixel data in the <a href='chr_format.html'>.chr format</a> for each character. </p>
+<p>The <code>UF*</code> file begins with 256 bytes corresponding to the width of each of the 255 characters in the font (in pixels), followed by the pixel data in the <a href='icn_format.html'>.icn format</a> for each character. </p>
 
 <table border='1'>
 	<tr><th>Extension</th><th>Size(px)</th><th>Filesize</th></tr>
@@ -127,8 +127,38 @@ c00a
 	<tr><td><code>.uf3</code></td><td>24x24(9 tiles)</td><td>0x4900</td></tr>
 </table>
 
-<p>You will find this filetype in the <a href='uxn.html'>Uxn</a> ecosystem, namely in <a href='left.html'>Left</a>. Uf2 fonts can be viewed and edited with <a href='turye.html'>Turye</a>.</p>
-<h2>Theme files are the interface customization standard for Uxn software.</h2>
+<p>You will find this filetype in the <a href='uxn.html'>Uxn</a> ecosystem, namely in <a href='left.html'>Left</a>. Uf2 fonts can be viewed and edited with <a href='turye.html'>Turye</a>. The drawing order goes vertically as to be able to skip 2 draw calls for narrow characters:</p>
+
+<table border='1'>
+	<tr><td>0</td><td style='background:#eee'>2</td></tr>
+	<tr><td>1</td><td style='background:#eee'>3</td></tr>
+</table>
+
+<p>Draw a character's glyph in <a href='uxntal.html'>Uxntal</a> is less than 80 bytes when the screen's <a href='varvara.html'>auto byte</a> is set to <code>auto-y</code> and <code>auto-addr</code>:</p>
+
+<pre>
+%GET-WIDTH { TOS ;font ++ LDA }
+%GET-GLYPH { TOS 20** ;font/glyphs ++ }
+
+@draw-char ( char color -- )
+
+	.Screen/x DEI2 STH2 
+	.Screen/y DEI2 STH2 
+	( glyph ) OVR GET-GLYPH .Screen/addr DEO2
+	DUP .Screen/sprite DEOk DEO 
+	STH2kr .Screen/y DEO2
+	SWP GET-WIDTH 
+	DUP #09 < ,&narrow JCN
+		.Screen/x DEI2k #0008 ++ ROT DEO2
+		OVR .Screen/sprite DEOk DEO 
+		STH2kr .Screen/y DEO2
+		&narrow
+	POP2r
+	( width ) TOS STH2r ++ .Screen/x DEO2
+	POP
+
+RTN
+</pre><h2>Theme files are the interface customization standard for Uxn software.</h2>
 
 <p>A <code>.theme</code> file contains <b>6 bytes</b> equal to 4 colors, divided into 3 shorts corresponding to the RGB channels.</p>
 

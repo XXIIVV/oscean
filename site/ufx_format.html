@@ -1,6 +1,6 @@
 <!DOCTYPE html><html><head><meta charset="utf-8"/><link href="../links/main.css" type="text/css" rel="stylesheet"/><link href="../media/services/icon.png" type="image/png" rel="shortcut icon"/><title>XXIIVV &mdash; ufx format</title></head><body><header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"/></a></header><nav><ul><li><a href="roms.html">roms</a></li><li><a href="tools.html">tools</a></li><li><a href="utilities.html">utilities</a></li><li><a href="formats.html" class="parent">formats</a></li><li><a href="games.html">games</a></li><li><a href="toys.html">toys</a></li><li><a href="mobile.html">mobile</a></li><li><a href="unreleased.html">unreleased</a></li></ul><ul><li><a href="icn_format.html">icn format</a></li><li><a href="chr_format.html">chr format</a></li><li><a href="gly_format.html">gly format</a></li><li><a href="ufx_format.html" class="self">ufx format</a></li><li><a href="theme.html">theme</a></li><li><a href="snarf.html">snarf</a></li></ul><ul></ul></nav><main><figure><img src="../media/diary/020.jpg"/><figcaption>Proportional Fonts in Uxn</figcaption></figure><h2>UFX is a 1-bit proportional font format for the Uxn system.</h2>
 
-<p>The <code>UF*</code> file contains a page of 256 bytes corresponding to the width of each of the 255 characters in the font (in pixels), followed by the pixel data in the <a href='chr_format.html'>.chr format</a> for each character. </p>
+<p>The <code>UF*</code> file begins with 256 bytes corresponding to the width of each of the 255 characters in the font (in pixels), followed by the pixel data in the <a href='icn_format.html'>.icn format</a> for each character. </p>
 
 <table border='1'>
 	<tr><th>Extension</th><th>Size(px)</th><th>Filesize</th></tr>
@@ -9,6 +9,36 @@
 	<tr><td><code>.uf3</code></td><td>24x24(9 tiles)</td><td>0x4900</td></tr>
 </table>
 
-<p>You will find this filetype in the <a href='uxn.html'>Uxn</a> ecosystem, namely in <a href='left.html'>Left</a>. Uf2 fonts can be viewed and edited with <a href='turye.html'>Turye</a>.</p>
-<ul></ul></main><footer><a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.svg" alt="CreativeCommons"/></a><a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a><a href="https://merveilles.town/@neauoire" target="_blank"><img src="../media/icon/merveilles.svg" alt="Merveilles"/></a><a href="uxn.html"><img src="../media/icon/uxn.svg" alt="Uxn Powered"/></a><span><a href="devine_lu_linvega.html">Devine Lu Linvega</a> &copy; 2021 &mdash; <a href="about.html">BY-NC-SA 4.0</a></span></footer>
+<p>You will find this filetype in the <a href='uxn.html'>Uxn</a> ecosystem, namely in <a href='left.html'>Left</a>. Uf2 fonts can be viewed and edited with <a href='turye.html'>Turye</a>. The drawing order goes vertically as to be able to skip 2 draw calls for narrow characters:</p>
+
+<table border='1'>
+	<tr><td>0</td><td style='background:#eee'>2</td></tr>
+	<tr><td>1</td><td style='background:#eee'>3</td></tr>
+</table>
+
+<p>Draw a character's glyph in <a href='uxntal.html'>Uxntal</a> is less than 80 bytes when the screen's <a href='varvara.html'>auto byte</a> is set to <code>auto-y</code> and <code>auto-addr</code>:</p>
+
+<pre>
+%GET-WIDTH { TOS ;font ++ LDA }
+%GET-GLYPH { TOS 20** ;font/glyphs ++ }
+
+@draw-char ( char color -- )
+
+	.Screen/x DEI2 STH2 
+	.Screen/y DEI2 STH2 
+	( glyph ) OVR GET-GLYPH .Screen/addr DEO2
+	DUP .Screen/sprite DEOk DEO 
+	STH2kr .Screen/y DEO2
+	SWP GET-WIDTH 
+	DUP #09 < ,&narrow JCN
+		.Screen/x DEI2k #0008 ++ ROT DEO2
+		OVR .Screen/sprite DEOk DEO 
+		STH2kr .Screen/y DEO2
+		&narrow
+	POP2r
+	( width ) TOS STH2r ++ .Screen/x DEO2
+	POP
+
+RTN
+</pre><ul></ul></main><footer><a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.svg" alt="CreativeCommons"/></a><a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a><a href="https://merveilles.town/@neauoire" target="_blank"><img src="../media/icon/merveilles.svg" alt="Merveilles"/></a><a href="uxn.html"><img src="../media/icon/uxn.svg" alt="Uxn Powered"/></a><span><a href="devine_lu_linvega.html">Devine Lu Linvega</a> &copy; 2021 &mdash; <a href="about.html">BY-NC-SA 4.0</a></span></footer>
 </body></html>
