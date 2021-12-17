@@ -34,3 +34,26 @@ c00a
 		</td>
 	</tr>
 </table>
+
+<p>To </p>
+
+<p>Draw a character's glyph in <a href='uxntal.html'>Uxntal</a> when the screen's <a href='varvara.html'>auto byte</a> is set to <code>auto-y</code>:</p>
+
+<pre>
+@draw-gly ( char color -- )
+
+	STH STH 
+	.Screen/y DEI2
+	( y ) #00 STHkr #30 AND #24 SFT OVR2 ++ .Screen/y DEO2
+	#0400
+	&loop
+		STHkr #0f AND OVR SFT #01 AND 
+		( pixel ) OVRr STHr #00 ! * .Screen/pixel DEO
+		INC GTHk ,&loop JCN
+	POP2
+	.Screen/y DEO2
+	( x ) NIPr STHr #06 SFT #01 AND JMP RTN 
+		.Screen/x DEI2k INC2 ROT DEO2
+
+RTN
+</pre>
