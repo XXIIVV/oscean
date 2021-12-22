@@ -1,0 +1,88 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"/><link href="../links/main.css" type="text/css" rel="stylesheet"/><link href="../media/services/icon.png" type="image/png" rel="shortcut icon"/><title>XXIIVV &mdash; chip8</title></head><body><header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"/></a></header><nav><ul><li><a href="paper_computing.html">paper computing</a></li><li><a href="programming.html">programming</a></li><li><a href="virtual_machines.html" class="parent">virtual machines</a></li><li><a href="cellular_automata.html">cellular automata</a></li><li><a href="fluidics.html">fluidics</a></li><li><a href="fractals.html">fractals</a></li></ul><ul><li><a href="subleq.html">subleq</a></li><li><a href="fractran.html">fractran</a></li><li><a href="brainfuck.html">brainfuck</a></li><li><a href="gyo.html">gyo</a></li><li><a href="chip8.html" class="self">chip8</a></li><li><a href="uxn.html">uxn</a></li><li><a href="orca.html">orca</a></li><li><a href="noton.html">noton</a></li></ul><ul></ul></nav><main><h2>Chip-8 is a simple virtual machine created in the 70s.</h2>
+
+<p>The Chip-8 language is capable of accessing up to 4KB (4,096 bytes) of RAM, from location 0x000 (0) to 0xFFF (4095). The first 512 bytes, from 0x000 to 0x1FF, are where the original interpreter was located, and should not be used by programs.</p>
+
+<h3>Registers</h3>
+
+<table border='1'>
+	<tr><th>Register</th><th>Size</th><th>Description</th></tr>
+	<tr><td>V[16]</td><td>byte</td><td>General purpose</td></tr>
+	<tr><td>I</td><td>short</td><td>General purpose</td></tr>
+	<tr><td>PC</td><td>short</td><td>Program counter</td></tr>
+	<tr><td>SP</td><td>byte</td><td>Stack pointer</td></tr>
+	<tr><td>DT</td><td>byte</td><td>Delay timer</td></tr>
+	<tr><td>ST</td><td>byte</td><td>Sound timer</td></tr>
+</table>
+
+<h3>Keypad</h3>
+
+<p>The computers which originally used the Chip-8 Language had a 16-key hexadecimal keypad.</p>
+
+<table border="1">
+	<tr><td><tt>1</tt></td><td><tt>2</tt></td><td><tt>3</tt></td><td><tt>C</tt></td></tr>
+	<tr><td><tt>4</tt></td><td><tt>5</tt></td><td><tt>6</tt></td><td><tt>D</tt></td></tr>
+	<tr><td><tt>7</tt></td><td><tt>8</tt></td><td><tt>9</tt></td><td><tt>E</tt></td></tr>
+	<tr><td><tt>A</tt></td><td><tt>0</tt></td><td><tt>B</tt></td><td><tt>F</tt></td></tr>
+</table>
+
+<h3>Screen</h3>
+
+<p>The original implementation of the Chip-8 language used a 64x32-pixel monochrome display. Programs may also refer to a group of sprites representing the hexadecimal digits 0 through F. These sprites are 5 bytes long, or 8x5 pixels. The data should be stored in the interpreter area of Chip-8 memory (0x000 to 0x1FF).</p>
+
+<h3>Instructions</h3>
+
+<p>CHIP-8 instructions are always 2 bytes long and arranged in big-endian order, that is with the most significant byte first. The original implementation of the Chip-8 language includes 36 different instructions, including math, graphics, and flow control functions.</p>
+
+<p>All instructions are 2 bytes long and are stored most-significant-byte first. In memory, the first byte of each instruction should be located at an even addresses. If a program includes sprite data, it should be padded so any instructions following it will be properly situated in RAM.</p>
+
+<ul>
+	<li>nnn or addr - A 12-bit value, the lowest 12 bits of the instruction</li>
+	<li>n or nibble - A 4-bit value, the lowest 4 bits of the instruction</li>
+	<li>x - A 4-bit value, the lower 4 bits of the high byte of the instruction</li>
+	<li>y - A 4-bit value, the upper 4 bits of the low byte of the instruction</li>
+	<li>kk or byte - An 8-bit value, the lowest 8 bits of the instruction</li>
+</ul>
+
+<table border="1">
+	<tr><th>Opcode</th><th>Type</th><th>C Pseudo</th><th>Explanation</th></tr>
+	<tr><td>0NNN</td><td>Call</td><td></td><td>Calls machine code routine (RCA 1802 for COSMAC VIP) at address NNN.  Not necessary for most ROMs.</td></tr>
+	<tr><td>00E0</td><td>Display</td><td>disp_clear()</td><td>Clears the screen.</td></tr>
+	<tr><td>00EE</td><td rowspan="3">Flow</td><td>return;</td><td>Returns from a subroutine.</td></tr>
+	<tr><td>1NNN</td><td>goto NNN;</td><td>Jumps to address NNN.</td></tr>
+	<tr><td>2NNN</td><td>*(0xNNN)()</td><td>Calls subroutine at NNN.</td></tr>
+	<tr><td>3XNN</td><td rowspan="3">Cond</td><td>if (Vx == NN)</td><td>Skips the next instruction if VX equals NN. (Usually the next instruction is a jump to skip a code block);</td></tr>
+	<tr><td>4XNN</td><td>if (Vx != NN)</td><td>Skips the next instruction if VX does not equal NN. (Usually the next instruction is a jump to skip a code block);</td></tr>
+	<tr><td>5XY0</td><td>if (Vx == Vy)</td><td>Skips the next instruction if VX equals VY. (Usually the next instruction is a jump to skip a code block);</td></tr>
+	<tr><td>6XNN</td><td rowspan="2">Const</td><td>Vx = N</td><td>Sets VX to NN.</td></tr>
+	<tr><td>7XNN</td><td>Vx += N</td><td>Adds NN to VX. (Carry flag is not changed);</td></tr>
+	<tr><td>8XY0</td><td>Assig</td><td>Vx = Vy</td><td>Sets VX to the value of VY.</td></tr>
+	<tr><td>8XY1</td><td rowspan="3">BitOp</td><td>Vx |= Vy</td><td>Sets VX to VX or VY. (Bitwise OR operation);</td></tr>
+	<tr><td>8XY2</td><td>Vx &amp;= Vy</td><td>Sets VX to VX and VY.  (Bitwise AND operation);</td></tr>
+	<tr><td>8XY3</td><td>Vx ^= Vy</td><td>Sets VX to VX xor VY.</td></tr>
+	<tr><td>8XY4</td><td rowspan="2">Math</td><td>Vx += Vy</td><td>Adds VY to VX. VF is set to 1 when there's a carry, and to 0 when there is not.</td></tr>
+	<tr><td>8XY5</td><td>Vx -= Vy</td><td>VY is subtracted from VX. VF is set to 0 when there's a borrow, and 1 when there is not.</td></tr>
+	<tr><td>8XY6</td><td>BitOp</td><td>Vx &gt;&gt;= 1</td><td>Stores the least significant bit of VX in VF and then shifts VX to the right by 1.[b]</td></tr>
+	<tr><td>8XY7</sup></td><td>Math</td><td>Vx = Vy - Vx</td><td>Sets VX to VY minus VX. VF is set to 0 when there's a borrow, and 1 when there is not.</td></tr>
+	<tr><td>8XYE</td><td>BitOp</td><td>Vx &lt;&lt;= 1</td><td>Stores the most significant bit of VX in VF and then shifts VX to the left by 1.[b]</td></tr>
+	<tr><td>9XY0</td><td>Cond</td><td>if (Vx != Vy)</td><td>Skips the next instruction if VX does not equal VY. (Usually the next instruction is a jump to skip a code block);</td></tr>
+	<tr><td>ANNN</td><td>MEM</td><td>I = NNN</td><td>Sets I to the address NNN.</td></tr>
+	<tr><td>BNNN</td><td>Flow</td><td>PC = V0 + NNN</td><td>Jumps to the address NNN plus V0.</td></tr>
+	<tr><td>CXNN</td><td>Rand</td><td>Vx = rand() &amp; NN</td><td>Sets VX to the result of a bitwise and operation on a random number (Typically: 0 to 255) and NN.</td></tr>
+	<tr><td>DXYN</td><td>Disp</td><td>draw(Vx, Vy, N)</td><td>Draws a sprite at coordinate (VX, VY) that has a width of 8 pixels and a height of N pixels. Each row of 8 pixels is read as bit-coded starting from memory location I; I value does not change after the execution of this instruction. As described above, VF is set to 1 if any screen pixels are flipped from set to unset when the sprite is drawn, and to 0 if that does not happen</td></tr>
+	<tr><td>EX9E</td><td rowspan="2">KeyOp</td><td>if (key() == Vx)</td><td>Skips the next instruction if the key stored in VX is pressed. (Usually the next instruction is a jump to skip a code block);</td></tr>
+	<tr><td>EXA1</td><td>if (key() != Vx)</td><td>Skips the next instruction if the key stored in VX is not pressed. (Usually the next instruction is a jump to skip a code block);</td></tr>
+	<tr><td>FX07</td><td>Timer</td><td>Vx = get_delay()</td><td>Sets VX to the value of the delay timer.</td></tr>
+	<tr><td>FX0A</td><td>KeyOp</td><td>Vx = get_key()</td><td>A key press is awaited, and then stored in VX. (Blocking Operation. All instruction halted until next key event);</td></tr>
+	<tr><td>FX15</td><td>Timer</td><td>delay_timer(Vx)</td><td>Sets the delay timer to VX.</td></tr>
+	<tr><td>FX18</td><td>Sound</td><td>sound_timer(Vx)</td><td>Sets the sound timer to VX.</td></tr>
+	<tr><td>FX1E</td><td rowspan="2">MEM</td><td>I += Vx</td><td>Adds VX to I. VF is not affected.[c]</td></tr>
+	<tr><td>FX29</td><td>I = sprite_addr[Vx]</td><td>Sets I to the location of the sprite for the character in VX. Characters 0-F (in hexadecimal) are represented by a 4x5 font.</td></tr>
+	<tr><td>FX33</td><td>BCD</td><td><pre>set_BCD(Vx)<br />*(I+0) = BCD(3);<br />*(I+1) = BCD(2);<br />*(I+2) = BCD(1);</pre></td><td>Stores the binary-coded decimal representation of VX, with the most significant of three digits at the address in I, the middle digit at I plus 1, and the least significant digit at I plus 2. (In other words, take the decimal representation of VX, place the hundreds digit in memory at location in I, the tens digit at location I+1, and the ones digit at location I+2.);</td></tr>
+	<tr><td>FX55</td><td rowspan="2">MEM</td><td>reg_dump(Vx, &amp;I)</td><td>Stores from V0 to VX (including VX) in memory, starting at address I. The offset from I is increased by 1 for each value written, but I itself is left unmodified.[d]</td></tr>
+	<tr><td>FX65</td><td>reg_load(Vx, &amp;I)</td><td>Fills from V0 to VX (including VX) with values from memory, starting at address I. The offset from I is increased by 1 for each value written, but I itself is left unmodified.[d]</td></tr>
+</table>
+
+<ul>
+	<li><a href='https://github.com/dmatlack/chip8/tree/master/roms/games' target='_blank'>Chip-8 Games</a></li>
+</ul><ul></ul></main><footer><a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.svg" alt="CreativeCommons"/></a><a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a><a href="https://merveilles.town/@neauoire" target="_blank"><img src="../media/icon/merveilles.svg" alt="Merveilles"/></a><a href="uxn.html"><img src="../media/icon/uxn.svg" alt="Uxn Powered"/></a><span><a href="devine_lu_linvega.html">Devine Lu Linvega</a> &copy; 2021 &mdash; <a href="about.html">BY-NC-SA 4.0</a></span></footer>
+</body></html>
