@@ -160,16 +160,34 @@ RTN
 
 <h3>string primitives</h3>
 <pre>
+@scat ( src* dst* -- )
+
+	DUP2 ,slen JSR ++ ,scpy JSR
+
+RTN
+
 @slen ( str* -- len* )
 
 	DUP2 ,scap JSR SWP2 --
 
 RTN
 
-@scap ( str* -- str-end* )
+@scap ( str* -- end* )
 
-	( clamp ) LDAk #00 ! JMP RTN
-	&while INC2 LDAk ,&while JCN
+	LDAk #00 ! JMP RTN
+	&while 
+		INC2 LDAk ,&while JCN
+
+RTN
+
+@scpy ( src* dst* -- )
+	
+	STH2
+	&while
+		LDAk STH2kr STA INC2r
+		INC2 LDAk ,&while JCN
+	POP2
+	#00 STH2r STA
 
 RTN
 
@@ -183,6 +201,32 @@ RTN
 
 	( clamp ) LDAk #00 ! JMP RTN
 	#00 ROT ROT ,scap JSR #0001 -- STA
+
+RTN
+</pre>
+
+<h3>Memory</h3>
+
+<pre>
+@mclr ( addr* len* -- )
+
+	OVR2 ++ SWP2
+	&loop
+		STH2k #00 STH2r STA
+		INC2 GTH2k ,&loop JCN
+	POP2 POP2
+
+RTN
+
+@mcpy ( src* dst* len* -- )
+
+	SWP2 STH2
+	OVR2 ++ SWP2
+	&loop
+		LDAk STH2kr STA INC2r
+		INC2 GTH2k ,&loop JCN
+	POP2 POP2
+	POP2r
 
 RTN
 </pre>
