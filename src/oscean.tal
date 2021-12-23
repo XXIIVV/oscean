@@ -10,26 +10,30 @@ Map:
 	0x3000 - 0x8000 Diary
 	0x8000 - 0xffff Output )
 
-%+  { ADD } %-   { SUB }              %/   { DIV }
-%<  { LTH } %>   { GTH }  %=  { EQU } %!   { NEQ }
-%++ { ADD2 } %-- { SUB2 }              %// { DIV2 }
+%+  { ADD }  %-  { SUB }  %*  { MUL }  %/  { DIV }
+%<  { LTH }  %>  { GTH }  %=  { EQU }  %!  { NEQ }
+%++ { ADD2 } %-- { SUB2 } %** { MUL2 } %// { DIV2 }
 %<< { LTH2 } %>> { GTH2 } %== { EQU2 } %!! { NEQ2 }
 
-%1-- { #0001 -- }
-%2++ { INC2 INC2 }
+%IS-UC { DUP #40 > SWP #5b < AND }
+%IS-LC { DUP #60 > SWP #7b < AND }
+%IS-NUM { DUP #2f > SWP #3a < AND }
+
+%DEC2 { #0001 -- }
+
+%MOD  { DIVk MUL SUB }
+%MOD2 { DIV2k MUL2 SUB2 }
 
 %EMIT { #18 DEO }
 %DEBUG  { ;print-hex/byte JSR2 #0a EMIT }
 %DEBUG2 { ;print-hex JSR2 #0a EMIT }
-%PRINT { ;print-string JSR2 #0a EMIT }
+%PRINT { ;print-str JSR2 #0a EMIT }
 %PRINT-CR { ;print-hex JSR2 #0d EMIT }
+
 %ERROR { ;print-error JMP2 }
 
 %RTN { JMP2r }
 %HALT { #0101 .System/debug DEO2 BRK }
-
-%MOD  { DUP2 DIV MUL SUB }
-%MOD2 { DIV2k MUL2 SUB2 }
 
 %GET-DEPTH { DUP2 #0002 -- LDA ;chex JSR2 }
 %REMOVE-LINEBREAKS { #0a #00 ;cswp JSR2 }
@@ -45,8 +49,6 @@ Map:
 %RUNE-ALBUM { LIT ', }
 %RUNE-PORTAL { LIT '; }
 %RUNE-ARCHIVE { LIT ': }
-
-%TERM-NAME-SIZE { #0016 }
 
 %LEXICON { #1800 }
 %LEXICON-SIZE { #1800 }
@@ -71,9 +73,10 @@ Map:
 	&parent $16
 	&pict $4
 	&diary $60
+
 @buff $30
-|00fe
-	@head $2 ( head )
+
+|00fe @head $2 ( head )
 
 ( program )
 
@@ -110,7 +113,7 @@ BRK
 			;error-diary-size ERROR
 			&ok-diary-size
 		,&check-diary-entries JSR
-		2++ GTH2k ,&loop JCN
+		INC2 INC2 GTH2k ,&loop JCN
 	POP2 POP2
 
 RTN
@@ -169,7 +172,7 @@ BRK
 	LIT2r 0000
 	LEXICON
 	&while
-		( move to name ) 2++
+		( move to name ) INC2 INC2
 		( display ) STH2kr PRINT-CR INC2r
 		( init ) ;init-page JSR2
 		( build ) ;build-page JSR2
@@ -184,7 +187,7 @@ RTN
 @init-page ( name* -- name* )
 
 	( term name limit )
-	DUP2 ;slen JSR2 TERM-NAME-SIZE << ,&namelength-ok JCN
+	DUP2 ;slen JSR2 #0016 << ,&namelength-ok JCN
 		;error-term-name-size ERROR
 		&namelength-ok
 
@@ -253,7 +256,7 @@ RTN
 
 	.head LDZ2 FILE -- ;print-hex JSR2
 	#20 EMIT
-	DUP2 ;print-string JSR2 #0a EMIT
+	DUP2 ;print-str JSR2 #0a EMIT
 
 RTN
 
@@ -283,10 +286,10 @@ RTN
 			( stop at sibling ) LDAk ;chex JSR2 STHkr = ,&end JCN
 			( when depth+1 ) LDAk ;chex JSR2 STHkr INC NEQ ,&continue JCN
 				;li-tag ^<
-				DUP2 2++ ;add-local JSR2
+				DUP2 INC2 INC2 ;add-local JSR2
 				;li-tag ^>
 				&continue
-			( move to eol ) 2++ &eol INC2 LDAk ,&eol JCN INC2
+			( move to eol ) INC2 INC2 &eol INC2 LDAk ,&eol JCN INC2
 			LDAk ,&while JCN
 		&end
 		POP2 POPr
@@ -328,13 +331,13 @@ RTN
 
 @build-page-module ( term* -- term* )
 
-	DUP2 1-- LDA RUNE-ALBUM ! ,&no-album JCN
+	DUP2 DEC2 LDA RUNE-ALBUM ! ,&no-album JCN
 		;build-module-album JSR2 RTN
 		&no-album
-	DUP2 1-- LDA RUNE-PORTAL ! ,&no-portal JCN
+	DUP2 DEC2 LDA RUNE-PORTAL ! ,&no-portal JCN
 		;build-module-portal JSR2 RTN
 		&no-portal
-	DUP2 1-- LDA RUNE-ARCHIVE ! ,&no-archive JCN
+	DUP2 DEC2 LDA RUNE-ARCHIVE ! ,&no-archive JCN
 		;build-module-archive JSR2 RTN
 		&no-archive
 
@@ -359,7 +362,7 @@ RTN
 	;ul-tag ^<
 		LEXICON
 		&while
-			( move to name ) 2++
+			( move to name ) INC2 INC2
 			;li-tag ^<
 				DUP2 ;add-local JSR2
 			;li-tag ^>
@@ -377,7 +380,7 @@ RTN
 		&loop
 			LDA2k ;load/diary JSR2
 			,&append-li JSR
-			2++ GTH2k ,&loop JCN
+			INC2 INC2 GTH2k ,&loop JCN
 		POP2 POP2
 	;ul-tag ^>
 
@@ -412,7 +415,7 @@ RTN
 	&loop
 		LDA2k ;load/diary JSR2
 		,&append-figure JSR
-		2++ GTH2k ,&loop JCN
+		INC2 INC2 GTH2k ,&loop JCN
 	POP2 POP2
 	RTN
 
@@ -499,12 +502,12 @@ RTN
 	&while
 		( stop at sibling ) LDAk ;chex JSR2 STHkr = ,&end JCN
 		( when depth+1 ) LDAk ;chex JSR2 STHkr INC NEQ ,&continue JCN
-			DUP2 2++ ;find-diary JSR2 DUP2 #0000 == ,&no-diary JCN
+			DUP2 INC2 INC2 ;find-diary JSR2 DUP2 #0000 == ,&no-diary JCN
 				DUP2 ;build-module-photo JSR2
 				&no-diary
 				POP2
 			&continue
-		( move to eol ) 2++ &eol INC2 LDAk ,&eol JCN INC2
+		( move to eol ) INC2 INC2 &eol INC2 LDAk ,&eol JCN INC2
 		LDAk ,&while JCN
 	&end
 	POP2 POPr
@@ -519,10 +522,10 @@ RTN
 	&while
 		( stop at sibling ) LDAk ;chex JSR2 STHkr = ,&end JCN
 		( when depth+1 ) LDAk ;chex JSR2 STHkr INC NEQ ,&continue JCN
-			2++
+			INC2 INC2
 				;build-page-body JSR2
 			&continue
-		( move to eol ) 2++ &eol INC2 LDAk ,&eol JCN INC2
+		( move to eol ) INC2 INC2 &eol INC2 LDAk ,&eol JCN INC2
 		LDAk ,&while JCN
 	&end
 	POP2 POPr
@@ -601,7 +604,7 @@ RTN
 	STH2
 	LEXICON
 	&while
-		( move to name ) 2++
+		( move to name ) INC2 INC2
 		( test ) DUP2 STH2kr ;scmp JSR2 ,&end JCN
 		( move to eol ) &eol INC2 LDAk ,&eol JCN INC2
 		LDAk ,&while JCN
@@ -653,7 +656,7 @@ RTN
 	( stash depth ) LDAk ;chex JSR2 #01 - STH
 	LEXICON SWP2
 	&loop
-		1-- #00 ;prev-char JSR2
+		DEC2 #00 ;prev-char JSR2
 		INC2k LDA ;chex JSR2 STHkr ! ,&continue JCN
 			NIP2 POPr #0003 ++ RTN
 			&continue
@@ -801,7 +804,7 @@ RTN
 	&while
 		LDAk STHkr = ,&end JCN
 		LDAk #00 = ,&end JCN
-		1-- LDAk ,&while JCN
+		DEC2 LDAk ,&while JCN
 	&end
 		POPr
 
@@ -832,6 +835,70 @@ RTN
 
 RTN
 
+@write ( addr* -- )
+
+	LDAk #00 = ,&end JCN
+	&while
+		LDAk ,&char JSR
+		INC2 LDAk ,&while JCN
+	&end
+	POP2
+
+RTN
+	&char ( char -- )
+		.head LDZ2 STA
+		.head LDZ2k INC2 ROT STZ2
+	RTN
+
+( print )
+
+@print-str ( str* -- )
+
+	#0001 SUB2
+	&while
+		INC2 LDAk DUP #18 DEO ,&while JCN
+	POP2
+
+RTN
+
+@print-hex ( val* -- )
+
+	SWP ,&byte JSR
+	&byte ( byte -- )
+		STHk #04 SFT ,&parse JSR #18 DEO
+		STHr #0f AND ,&parse JSR #18 DEO
+	RTN
+	&parse ( byte -- char ) DUP #09 GTH ,&above JCN #30 ADD RTN
+	&above #57 ADD RTN
+
+RTN
+
+@print-error ( name* msg* -- )
+
+	SWP2
+	DEC2 &name-loop
+		INC2 LDAk [ DUP EMIT ] ,&name-loop JCN
+	POP2 #20 EMIT
+	DEC2 &msg-loop
+		INC2 LDAk [ DUP EMIT ] ,&msg-loop JCN
+	POP2 #0d EMIT
+	HALT
+
+RTN
+
+@print-arvelie ( -- )
+
+	.DateTime/year DEI2 #07d6 -- NIP
+		( digit1 ) DUP #0a DIV #30 + EMIT
+		( digit2 ) #0a MOD #30 + EMIT
+	.DateTime/doty DEI2
+		( month ) DUP2 #000e DIV2 NIP #41 + EMIT
+		( digit3 ) #000e MOD2 DUP2 #000a DIV2 NIP #30 + EMIT
+		( digit4 ) #000a MOD2 NIP #30 + EMIT
+	#0a EMIT
+
+RTN
+
 ( helpers )
 
 @cswp ( string* a b -- )
@@ -848,16 +915,13 @@ RTN
 
 @chex ( char -- hex )
 
-	DUPk #2f GTH SWP #3a LTH #0101 == ,&num JCN
-	DUPk #40 GTH SWP #47 LTH #0101 == ,&uca JCN
-	DUPk #60 GTH SWP #67 LTH #0101 == ,&lca JCN
+	DUP IS-NUM ,&num JCN
+	DUP IS-UC ,&uca JCN
+	DUP IS-LC ,&lca JCN
 	POP #00 RTN
-	&num ( char -- hex )
-		LIT '0 - RTN
-	&uca ( char -- hex )
-		LIT 'A - #0a + RTN
-	&lca ( char -- hex )
-		LIT 'a - #0a + RTN
+	&num #30 - RTN
+	&uca #4b - RTN
+	&lca #6b - RTN
 
 RTN
 
@@ -912,100 +976,40 @@ RTN
 
 RTN
 
-@slen ( addr* -- length* )
+@slen ( str* -- len* )
 
-	1-- DUP2
-	&while
-		INC2 LDAk ,&while JCN
-	SWP2 --
-	1--
+	DUP2 ,scap JSR SWP2 --
 
 RTN
 
-@mclr ( addr* length* -- )
+@scap ( str* -- str-end* )
+
+	( clamp ) LDAk #00 ! JMP RTN
+	&while INC2 LDAk ,&while JCN
+
+RTN
+
+@mclr ( addr* len* -- )
 
 	OVR2 ++ SWP2
 	&loop
-		DUP2 #00 ROT ROT STA
+		STH2k #00 STH2r STA
 		INC2 GTH2k ,&loop JCN
 	POP2 POP2
 
 RTN
 
-@mcpy ( a* b* length* -- )
+@mcpy ( src* dst* len* -- )
 
-	STH2
-	,&b STR2 ,&a STR2
-	STH2r #0000
-	&loop
-		STH2k
-		,&a LDR2 STH2kr ++ LDA
-		,&b LDR2 STH2r ++ STA
+	SWP2 STH2 SWP2 STH2
+	#0000
+	&loop 
+		( src ) STH2kr LDA
+		( dst ) OVR2r STH2r STA
+		( inc ) INC2r SWP2r INC2r SWP2r
 		INC2 GTH2k ,&loop JCN
 	POP2 POP2
-
-RTN
-	&a $2 &b $2
-
-@write ( addr* -- )
-
-	LDAk #00 = ,&end JCN
-	&while
-		LDAk ,&char JSR
-		INC2 LDAk ,&while JCN
-	&end
-	POP2
-
-RTN
-	&char ( char -- )
-		.head LDZ2 STA
-		.head LDZ2k INC2 ROT STZ2
-	RTN
-
-@print-hex ( value* -- )
-	
-	SWP ,&byte JSR 
-	&byte ( byte -- )
-		STHk #04 SFT ,&parse JSR #18 DEO
-		STHr #0f AND ,&parse JSR #18 DEO
-	RTN
-	&parse ( byte -- char ) DUP #09 GTH ,&above JCN #30 + RTN 
-	&above #57 + RTN
-
-RTN
-
-@print-error ( name* msg* -- )
-
-	SWP2
-	1-- &name-loop
-		INC2 LDAk [ DUP EMIT ] ,&name-loop JCN
-	POP2 #20 EMIT
-	1-- &msg-loop
-		INC2 LDAk [ DUP EMIT ] ,&msg-loop JCN
-	POP2 #0d EMIT
-	HALT
-
-RTN
-
-@print-string ( addr* -- )
-
-	1--
-	&while
-		INC2 LDAk [ DUP EMIT ] ,&while JCN
-	POP2
-
-RTN
-
-@print-arvelie ( -- )
-
-	.DateTime/year DEI2 #07d6 -- NIP
-		( digit1 ) DUP #0a DIV #30 + EMIT
-		( digit2 ) #0a MOD #30 + EMIT
-	.DateTime/doty DEI2
-		( month ) DUP2 #000e DIV2 NIP #41 + EMIT
-		( digit3 ) #000e MOD2 DUP2 #000a DIV2 NIP #30 + EMIT
-		( digit4 ) #000a MOD2 NIP #30 + EMIT
-	#0a EMIT
+	POP2r POP2r
 
 RTN
 
