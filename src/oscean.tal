@@ -247,7 +247,7 @@ RTN
 		;error-output-size ERROR
 		&size-ok
 
-	( FILE ;validate-output JSR2 )
+	FILE ;validate-output JSR2
 
 	( save file )
 	[ ;output-path OVR2 ;html-ext ;make-path JSR2 ] .File/name DEO2
@@ -706,19 +706,18 @@ RTN
 			( strip relative ) LDAk [ LIT '. ] = ,&continue JCN
 			( strip jumps ) LDAk [ LIT '# ] = ,&continue JCN
 			( strip http* ) DUP2 ;http-txt SWP2 ;scmp-seg JSR2 ,&continue JCN
-			( filter ) DUP2
-			;&buff #0030 ;mcpy JSR2
-			;&buff [ LIT '. ] #00 ;cswp JSR2
-			;&buff [ LIT '_ ] #20 ;cswp JSR2
+			;buff #0030 ;mclr JSR2
+			DUP2 ;buff #002f ;mcpy JSR2
+			;buff [ LIT '. ] #00 ;cswp JSR2
+			;buff [ LIT '_ ] #20 ;cswp JSR2
 			( find term )
-			;&buff ;find-term JSR2 #0000 !! ,&continue JCN
-				;&buff ;error-broken-link ERROR
+			;buff ;find-term JSR2 #0000 !! ,&continue JCN
+				;buff ;error-broken-link ERROR
 			&continue
 		INC2 LDAk ,&while JCN
 	POP2
 
 RTN
-	&buff $30
 
 ( Web framework )
 
