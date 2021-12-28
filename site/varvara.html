@@ -6,69 +6,44 @@
 
 <p><b>Devices</b> are external systems connected to the Uxn CPU, such as the screen, the mouse, the keyboard, etc. There is a maximum of 16 devices, each device has 16 bytes, also called ports, of I/O memory. <b>Vectors</b> are ports holding the address to an entry point into a program, in other words, the part of the program that triggers when the mouse is moved, or a key is pressed.</p>
 
-<h2>Standard Devices</h2>
-
-<table border='1'>
-	<tr><th rowspan='2' colspan='2'>device</th><th colspan='2'>i/o</th><th rowspan="2">Notes</th></tr>
-	<tr><th>0x00</th><th>0x08</th></tr>
-
-	<tr><th rowspan='5'><code>00</code></th><th rowspan='5'><a href='#system'>system</a></th><td>vector*</td><td class='bg1'>red*</td><td rowspan="5">The system device vector is currently unused.</td></tr>
-	<tr><td>wst</td><td class='bg1'>green*</td></tr>
-	<tr><td>rst</td><td class='bg1'>blue*</td></tr>
-	<tr><td rowspan='2'></td><td>debug</td></tr>
-	<tr><td class='bg1'>halt</td></tr>
-
-	<tr><th rowspan='2'><code>10</code></th><th rowspan='2'><a href='#console'>console</a></th><td class='bg2'>vector*</td><td class='bg1'>write</td><td rowspan="2">The console device's vector is triggered once for each character received through <a href='unix.html'>stdin</a>, and stored in the read port.</td></tr>
-	<tr><td>read</td><td class='bg1'>error</td></tr>
-
-	<tr><th rowspan='5'><code>20</code></th><th rowspan='5'><a href='#screen'>screen</a></th><td class='bg2'>vector*</td><td>x*</td><td rowspan="5">The screen device's vector is triggered 60 times per second, it is typically used to update pixels on the screen.</td></tr>
-	<tr><td>width*</td><td>y*</td></tr>
-	<tr><td>height*</td><td>addr*</td></tr>
-	<tr><td>auto</td><td class='bg1'>pixel</td></tr>
-	<tr><td></td><td class='bg1'>sprite</td></tr>
-
-	<tr><th rowspan='5'><code>30</code><br /><code>40</code><br /><code>50</code><br /><code>60</code></th><th rowspan='5'><a href='#audio'>audio</a></th><td>vector*</td><td>adsr*</td><td rowspan="5">The audio device vector is currently unused.</td></tr>
-	<tr><td>position*</td><td>length*</td></tr>
-	<tr><td>output</td><td>addr*</td></tr>
-	<tr><td rowspan="2"></td><td>volume</td></tr>
-	<tr><td class='bg1'>pitch</td></tr>
-
-	<tr><th rowspan="3"><code>80</code></th><th rowspan="3"><a href='#controller'>controller</a></th><td class='bg2'>vector*</td><td rowspan="3"><i>nil</i></td><td rowspan="3">The controller device's vector is triggered each time a button or key is pressed or released.</td></tr>
-	<tr><td>button</td></tr>
-	<tr><td>key</td></tr>
-
-	<tr><th rowspan='5'><code>90</code></th><th rowspan='5'>mouse</th><td class='bg2'>vector*</td><td rowspan="5"><i>nil</i></td><td rowspan="5">The mouse device's vector is triggered each time the mouse moved, or a button was pressed or released.</td></tr>
-	<tr><td>x*</td></tr>
-	<tr><td>y*</td></tr>
-	<tr><td>state</td></tr>
-	<tr><td>wheel</td></tr>
-
-    <tr><th rowspan='5'><code>a0</code></th><th rowspan='5'><a href='#file'>file</a></th><td>vector*</td><td>name*</td><td rowspan="5">The file's vector is currently unused.</td></tr>
-	<tr><td>success*</td><td>length*</td></tr>
-	<tr><td class='bg1'>addr(stat)*</td><td class='bg1'>addr(read)*</td></tr>
-	<tr><td class='bg1'>delete</td><td class='bg1'>addr(write)*</td></tr>
-	<tr><td>append</td><td></td></tr>
-	
-	<tr><th rowspan='6'><code>b0</code></th><th rowspan='6'>datetime</th><td>year*</td><td rowspan="6"><i>nil</i></td><td rowspan="6">The datetime's vector is currently unused.</td></tr>
-	<tr><td>month</td></tr>
-	<tr><td>day</td></tr>
-	<tr><td>hour</td></tr>
-	<tr><td>minute</td></tr>
-	<tr><td>second</td></tr>
-
-	<tr><th><code>e0</code><br /><code>f0</code></th><th><i>reserved</i></th><td>unknown</td><td><i>unknown</i></td><td>Reserved for platform specific devices.</td></tr>
-</table>
-
 <h3 id='system'>System Device</h3>
 
+<table border='1'>
+	<tr>
+		<th rowspan='8'><a href='#system'>system</a></th>
+		<th>00</th><td rowspan="2" class='bg2'>vector*</td><th>08</th><td rowspan="2">red*</td>
+	</tr>
+	<tr><th>01</th><th>09</th></tr>
+	<tr><th>02</th><td>wst</td><th>0a</th><td rowspan="2">green*</td></tr>
+	<tr><th>03</th><td>rst</td><th>0b</th></tr>
+	<tr><th>04</th><td class='empty'>--</td><th>0c</th><td rowspan="2">blue*</td></tr>
+	<tr><th>05</th><td class='empty'>--</td><th>0d</th></tr>
+	<tr><th>06</th><td class='empty'>--</td><th>0e</th><td>debug</td></tr>
+	<tr><th>07</th><td class='empty'>--</td><th>0f</th><td>halt</td></tr>
+</table>
+
 <p>This device is holding 3 shorts to be used for application customization. For a device that does not use a screen, these bytes may be used for speech controls, or other system globals, for simplicity we call them the Red*, Green* and Blue* shorts.</p>
-<p>The <code>0xe</code> port is used to keep the debug mode flag, when active, the debug and diagnostic tools should be active. Writing to the <code>0xf</code> port will prevent Uxn from evaluating any more instructions after the next BRK.</p>
+<p>The <code>0xe</code> port is used to keep the debug mode flag, when active, the debug and diagnostic tools should be active. Writing to the <code>0xf</code> port will prevent Uxn from evaluating after the next BRK.</p>
 
 <pre>
 %BREAKPOINT { #0101 #0e DEO2 BRK } <span style='float:right; color:#888'>( macro to set a break-point )</span>
 </pre>
 
 <h3 id='console'>Console Device</h3>
+
+<table border='1'>
+	<tr>
+		<th rowspan='8'><a href='#console'>console</a></th>
+		<th>10</th><td rowspan="2" class='bg2'>vector*</td><th>18</th><td>write</td>
+	</tr>
+	<tr><th>11</th><th>19</th><td>error</td></tr>
+	<tr><th>12</th><td>read</td><th>1a</th><td class='empty'>--</td></tr>
+	<tr><th>13</th><td class='empty'>--</td><th>1b</th><td class='empty'>--</td></tr>
+	<tr><th>14</th><td class='empty'>--</td><th>1c</th><td class='empty'>--</td></tr>
+	<tr><th>15</th><td class='empty'>--</td><th>1d</th><td class='empty'>--</td></tr>
+	<tr><th>16</th><td class='empty'>--</td><th>1e</th><td class='empty'>--</td></tr>
+	<tr><th>17</th><td class='empty'>--</td><th>1f</th><td class='empty'>--</td></tr>
+</table>
 
 <p>The console device is the standard I/O device, it allows for communication between programs on the host computer, or even between instances of Uxn.</p>
 
@@ -83,6 +58,20 @@
 <p>For example, a program sending the line of text "hello", will trigger the console's vector 6 times; one for each character and a line ending character. </p>
 
 <h3 id='screen'>Screen Device</h3>
+
+<table border='1'>
+	<tr>
+		<th rowspan='8'><a href='#screen'>screen</a></th>
+		<th>20</th><td rowspan="2" class='bg2'>vector*</td><th>28</th><td rowspan="2">x*</td>
+	</tr>
+	<tr><th>21</th><th>29</th></tr>
+	<tr><th>22</th><td rowspan="2">width*</td><th>2a</th><td rowspan="2">y*</td></tr>
+	<tr><th>23</th><th>2b</th></tr>
+	<tr><th>24</th><td rowspan="2">height*</td><th>2c</th><td rowspan="2">addr*</td></tr>
+	<tr><th>25</th><th>2d</th></tr>
+	<tr><th>26</th><td>auto</td><th>2e</th><td>pixel</td></tr>
+	<tr><th>27</th><td class='empty'>--</td><th>2f</th><td>sprite</td></tr>
+</table>
 
 <img src='../media/generic/uxn.ppu.jpg' style='float:right' width='240' />
 
@@ -180,6 +169,20 @@ RTN
 
 <h3 id='audio'>Audio Device</h3>
 
+<table border='1'>
+	<tr>
+		<th rowspan='8'><a href='#audio'>audio</a></th>
+		<th>30</th><td rowspan="2" class='bg2'>vector*</td><th>38</th><td rowspan="2">adsr*</td>
+	</tr>
+	<tr><th>31</th><th>39</th></tr>
+	<tr><th>32</th><td rowspan="2">position*</td><th>3a</th><td rowspan="2">length*</td></tr>
+	<tr><th>33</th><th>3b</th></tr>
+	<tr><th>34</th><td>output</td><th>3c</th><td rowspan="2">addr*</td></tr>
+	<tr><th>35</th><td class='empty'>--</td><th>3d</th></tr>
+	<tr><th>36</th><td class='empty'>--</td><th>3e</th><td>volume</td></tr>
+	<tr><th>37</th><td class='empty'>--</td><th>3f</th><td>pitch</td></tr>
+</table>
+
 <img src='../media/generic/uxn.apu.jpg' style='float:right' width='240' />
 
 <p>When <code>pitch</code> is written to any of the audio devices, it starts playing an audio sample from Uxn's memory, pointed to by <code>addr*</code> and <code>length*</code>. It loops the sample (unless told not to) until it reaches the end of the ADSR envelope defined by <code>adsr*</code>.</p>
@@ -216,16 +219,62 @@ RTN
 
 <h3 id='controller'>Controller Device</h3>
 
+<table border='1'>
+	<tr>
+		<th rowspan='8'><a href='#controller'>controller</a></th>
+		<th>80</th><td rowspan="2" class='bg2'>vector*</td><th>88</th><td class='empty'>--</td>
+	</tr>
+	<tr><th>81</th><th>89</th><td class='empty'>--</td></tr>
+	<tr><th>82</th><td>button</td><th>8a</th><td class='empty'>--</td></tr>
+	<tr><th>83</th><td>key</td><th>8b</th><td class='empty'>--</td></tr>
+	<tr><th>84</th><td class='empty'>--</td><th>8c</th><td class='empty'>--</td></tr>
+	<tr><th>85</th><td class='empty'>--</td><th>8d</th><td class='empty'>--</td></tr>
+	<tr><th>86</th><td class='empty'>--</td><th>8e</th><td class='empty'>--</td></tr>
+	<tr><th>87</th><td class='empty'>--</td><th>8f</th><td class='empty'>--</td></tr>
+</table>
+
 <p>This button byte works similarly to a <a href='https://wiki.nesdev.com/w/index.php/Standard_controller' target='_blank'>NES controller</a>, where there the state of each one of the 8 buttons is stored as a bit in a single byte. The keys byte contains the ascii character that is currently pressed.</p>
 
 <table border='1'>
 	<tr><td><code>0x01</code></td><td><code class='button'>A</code> <i>Ctrl</i></td><td><code>0x10</code></td><td><code class='button'>Up</code></td></tr>
 	<tr><td><code>0x02</code></td><td><code class='button'>B</code> <i>Alt</i></td><td><code>0x20</code></td><td><code class='button'>Down</code></td></tr>
 	<tr><td><code>0x04</code></td><td><code class='button'>Select</code> <i>Shift</i></td><td><code>0x40</code></td><td><code class='button'>Left</code></td></tr>
-	<tr><td><code>0x08</code></td><td><code class='button'>Start</code> <i>Escape</i></td><td><code>0x80</code></td><td><code class='button'>Right</code></td></tr>
+	<tr><td><code>0x08</code></td><td><code class='button'>Start</code> <i>Home</i></td><td><code>0x80</code></td><td><code class='button'>Right</code></td></tr>
 </table>
 
+<h3 id='mouse'>Mouse Device</h3>
+
+<table border='1'>
+	<tr>
+		<th rowspan='8'><a href='#mouse'>mouse</a></th>
+		<th>00</th><td rowspan="2" class='bg2'>vector*</td><th>08</th><td class='empty'>--</td>
+	</tr>
+	<tr><th>01</th><th>09</th><td class='empty'>--</td></tr>
+	<tr><th>02</th><td rowspan="2">x*</td><th>0a</th><td rowspan="2">mod-x*</td></tr>
+	<tr><th>03</th><th>0b</th></tr>
+	<tr><th>04</th><td rowspan="2">y*</td><th>0c</th><td rowspan="2">mod-y*</td></tr>
+	<tr><th>05</th><th>0d</th></tr>
+	<tr><th>06</th><td>state</td><th>0e</th><td class='empty'>--</td></tr>
+	<tr><th>07</th><td class='empty'>--</td><th>0f</th><td class='empty'>--</td></tr>
+</table>
+
+<p>The mouse device's state port holds a byte in which each bit is a button state. The byte value of holding down the mouse1 button is <code>01</code>, and holding down mouse1+mouse3 button is <code>05</code>.</p>
+
 <h3 id='file'>File Device</h3>
+
+<table border='1'>
+	<tr>
+		<th rowspan='8'><a href='#file'>file</a></th>
+		<th>a0</th><td rowspan="2" class='bg2'>vector*</td><th>a8</th><td rowspan="2">addr(name)*</td>
+	</tr>
+	<tr><th>a1</th><th>a9</th></tr>
+	<tr><th>a2</th><td rowspan="2">success*</td><th>aa</th><td rowspan="2">addr(length)*</td></tr>
+	<tr><th>a3</th><th>ab</th></tr>
+	<tr><th>a4</th><td rowspan="2">addr(stat)*</td><th>ac</th><td rowspan="2">addr(read)*</td></tr>
+	<tr><th>a5</th><th>ad</th></tr>
+	<tr><th>a6</th><td>delete</td><th>ae</th><td rowspan="2">addr(write)*</td></tr>
+	<tr><th>a7</th><td>append</td><th>af</th></tr>
+</table>
 
 <p>The file device supports reading and writing files, listing directories, obtaining file information and deleting files.</p>
 
@@ -250,8 +299,25 @@ RTN
 
 <p>Finally, to delete a file, write any value to the <code>delete</code> byte.</p>
 
+<h3 id='datetime'>Datetime Device</h3>
+
+<table border='1'>
+	<tr>
+		<th rowspan='8'><a href='#datetime'>datetime</a></th>
+		<th>b0</th><td rowspan="2">year*</td><th>b8</th><td>doty</td>
+	</tr>
+	<tr><th>b1</th><th>b9</th><td>isdst</td></tr>
+	<tr><th>b2</th><td>month</td><th>ba</th><td class='empty'>--</td></tr>
+	<tr><th>b3</th><td>day</td><th>bb</th><td class='empty'>--</td></tr>
+	<tr><th>b4</th><td>hour</td><th>bc</th><td class='empty'>--</td></tr>
+	<tr><th>b5</th><td>minute</td><th>bd</th><td class='empty'>--</td></tr>
+	<tr><th>b6</th><td>second</td><th>be</th><td class='empty'>--</td></tr>
+	<tr><th>b7</th><td>dotw</td><th>bf</th><td class='empty'>--</td></tr>
+</table>
+
 <style>
 svg.sprite { width:20px; height:20px; margin-bottom:0px }
+.empty { background:#efefef; }
 .bg0 { background:white; color:black; }
 .bg1 { background:black; color:white; }
 .bg2 { background:#72dec2; color:black; }
