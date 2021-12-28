@@ -61,7 +61,7 @@ Map:
 
 |00 @System     [ &vector $2 &wst      $1 &rst    $1 &pad   $4 &r      $2 &g      $2 &b    $2 &debug  $1 &halt $1 ]
 |10 @Console    [ &vector $2 &read     $1 &pad    $5 &write $1 &error  $1 ]
-|a0 @File       [ &vector $2 &success  $2 &pad    $4 &name  $2 &length $2 &load   $2 &save $2 ]
+|a0 @File       [ &vector $2 &success  $2 &stat   $2 &delete $1 &append $1 &name  $2 &length $2 &read $2 &write $2 ]
 |b0 @DateTime   [ &year   $2 &month    $1 &day    $1 &hour  $1 &minute $1 &second $1 &dotw $1 &doty   $2 &isdst $1 ]
 
 ( variables )
@@ -146,7 +146,7 @@ RTN
 		( load lexicon )
 		.File/name DEO2
 		LEXICON-SIZE  .File/length DEO2
-		LEXICON STH2k .File/load DEO2
+		LEXICON STH2k .File/read DEO2
 		STH2r REMOVE-LINEBREAKS
 	RTN
 	&diary ( path* -- )
@@ -154,7 +154,7 @@ RTN
 		( load diary )
 		.File/name DEO2
 		DIARY-SIZE  .File/length DEO2
-		DIARY STH2k .File/load DEO2
+		DIARY STH2k .File/read DEO2
 		STH2r REMOVE-LINEBREAKS
 	RTN
 
@@ -252,7 +252,7 @@ RTN
 	( save file )
 	[ ;output-path OVR2 ;html-ext ;make-path JSR2 ] .File/name DEO2
 	[ .head LDZ2 FILE -- ] .File/length DEO2
-	FILE .File/save DEO2
+	FILE .File/write DEO2
 
 	.head LDZ2 FILE -- ;print-hex JSR2
 	#20 EMIT
@@ -319,7 +319,7 @@ RTN
 	[ ;input-path OVR2 ;htm-ext ;make-path JSR2 ] .File/name DEO2
 	[ #fffe .head LDZ2 -- ] .File/length DEO2
 	.head LDZ2
-		DUP2 .File/load DEO2
+		DUP2 .File/read DEO2
 		.File/success DEI2 ++ .head STZ2
 
 	( file is missing )
@@ -592,7 +592,7 @@ RTN
 	;meta-footer-path .File/name DEO2
 	#0300 .File/length DEO2
 	.head LDZ2
-		DUP2 .File/load DEO2
+		DUP2 .File/read DEO2
 		.File/success DEI2 ++ .head STZ2
 
 RTN
