@@ -74,6 +74,7 @@
 <p>To print the hex values of data.</p>
 
 <pre>
+%HALT   { #010f DEO }
 %EMIT   { #18 DEO }
 %PRINT  { ;print-str JSR2 #0a EMIT }
 %DEBUG  { ;print-hex/byte JSR2 #0a EMIT }
@@ -82,16 +83,16 @@
 
 <pre>
 @print-hex ( value* -- )
-	
+
 	SWP ,&byte JSR 
 	&byte ( byte -- )
 		STHk #04 SFT ,&parse JSR #18 DEO
 		STHr #0f AND ,&parse JSR #18 DEO
-	RTN
-	&parse ( byte -- char ) DUP #09 GTH ,&above JCN #30 + RTN 
-	&above #57 + RTN
+	JMP2r
+	&parse ( byte -- char ) DUP #09 GTH ,&above JCN #30 ADD JMP2r 
+	&above #57 ADD JMP2r
 
-RTN
+JMP2r
 </pre>
 
 <pre>
@@ -103,7 +104,7 @@ RTN
 	#000a DIV2k DUP #30 ADD #18 DEO MUL2 SUB2
 	#30 ADD #18 DEO POP
 
-RTN
+JMP2r
 </pre>
 
 <pre>
@@ -114,7 +115,7 @@ RTN
 		INC2 LDAk DUP #18 DEO ,&while JCN 
 	POP2
 
-RTN
+JMP2r
 </pre>
 
 <pre>
@@ -134,7 +135,7 @@ RTN
 	POP2
 	#0a #18 DEO
 
-RTN
+JMP2r
 </pre>
 
 <pre>
@@ -149,7 +150,7 @@ RTN
 		( digit4 ) #000a MOD2 NIP #30 + #18 DEO
 	#0a #18 DEO
 
-RTN
+JMP2r
 </pre>
 
 <h2>Strings</h2>
@@ -160,21 +161,21 @@ RTN
 
 	DUP2 ,slen JSR ++ ,scpy JSR
 
-RTN
+JMP2r
 
 @slen ( str* -- len* )
 
 	DUP2 ,scap JSR SWP2 --
 
-RTN
+JMP2r
 
 @scap ( str* -- end* )
 
-	LDAk #00 ! JMP RTN
+	LDAk #00 ! JMP JMP2r
 	&while 
 		INC2 LDAk ,&while JCN
 
-RTN
+JMP2r
 
 @scpy ( src* dst* -- )
 	
@@ -185,20 +186,20 @@ RTN
 	POP2
 	#00 STH2r STA
 
-RTN
+JMP2r
 
 @sput ( str* char -- )
 
 	ROT ROT ,scap JSR STA
 
-RTN
+JMP2r
 
 @spop ( str* -- )
 
-	( clamp ) LDAk #00 ! JMP RTN
+	( clamp ) LDAk #00 ! JMP JMP2r
 	#00 ROT ROT ,scap JSR #0001 -- STA
 
-RTN
+JMP2r
 </pre>
 
 <h3>Memory</h3>
@@ -212,7 +213,7 @@ RTN
 		INC2 GTH2k ,&loop JCN
 	POP2 POP2
 
-RTN
+JMP2r
 
 @mcpy ( src* dst* len* -- )
 
@@ -224,7 +225,7 @@ RTN
 	POP2 POP2
 	POP2r
 
-RTN
+JMP2r
 </pre>
 
 <h3>Random</h3>
@@ -239,9 +240,9 @@ RTN
 	#00 .DateTime/hour   DEI #04 SFT2
 	#00 .DateTime/day    DEI #10 SFT2 EOR2
 	#00 .DateTime/month  DEI #60 SFT2 EOR2
-	    .DateTime/year  DEI2 #a0 SFT2 EOR2 ,prng/y STR2
+		.DateTime/year  DEI2 #a0 SFT2 EOR2 ,prng/y STR2
 
-RTN
+JMP2r
 
 @prng ( -- number* )
 
@@ -252,7 +253,7 @@ RTN
 	DUP2 #01 SFT2 EOR2 EOR2
 	,&y STR2k POP
 
-RTN
+JMP2r
 </pre>
 
 <h3>decimal string to hex number</h3>
@@ -267,7 +268,7 @@ RTN
 	POP2
 	( res ) STH2r
 
-RTN
+JMP2r
 </pre>
 
 <h3>Presets</h3>
