@@ -1,0 +1,49 @@
+<h2>VGA stands for Video Graphics Array, sometimes referred to as Video Graphics Adapter. </h2>
+
+<p>It offers many different video modes, from 2 color to 256 color, and resolutions from 320x200 to 640x480. These notesfocus on the 256-color mode, known as mode 0x13. In mode 0x13, the screen dimensions are 320 pixels in width and 200 pixels in height. Since this is a 256-color mode, each pixel represents <a href='binary.html'>one byte</a>, so the memory needed is 320*200 or 64,000 bytes. </p>
+
+<pre>
+#define 256_COLOR_MODE 0x13
+#define TEXT_MODE 0x03
+
+void
+set_mode(Uint8 mode)
+{
+	union REGS regs;
+	regs.h.ah = 0x00;
+	regs.h.al = mode;
+	int86(VIDEO_INT, &regs, &regs);
+}
+</pre>
+
+<h3>Pixels</h3>
+
+<p>The variable offset must be an unsigned short data type (16 bits with a range from 0 to 65,535) because the size of memory needed for mode 0x13 is 64,000 bytes. Using an unsigned short data type helps insure that we won't accidently write to an area of memory that isn't part of the video memory, which might cause our program to crash.</p>
+
+<pre>
+Uint8 *VGA = (Uint8 *)0xA0000000L;
+
+#define SCREEN_WIDTH 320  /* width in pixels of mode 0x13 */
+#define SCREEN_HEIGHT 200 /* height in pixels of mode 0x13 */
+
+void
+plot_pixel(Uint16 x, Uint16 y, Uint8 color)
+{
+	VGA[y * SCREEN_WIDTH + x] = color;
+}
+</pre>
+
+<h3>Palette</h3>
+
+<p>To set one color in the palette, write the color index to port 0x3C8 and then write the red, green, and blue values, in order, to port 0x3C9. The VGA only gives us 6 bits per color channel</p>
+
+<pre>
+outp(0x03c8, 0x03);      /* color[3] */
+outp(0x03c9, 0x72 >> 2); /* R */
+outp(0x03c9, 0xde >> 2); /* G */
+outp(0x03c9, 0xc2 >> 2); /* B */
+</pre>
+
+<ul>
+	<li><a href="http://www.brackeen.com/vga/basics.html" target='_blank'>VGA Tutorial</a></li>
+</ul>

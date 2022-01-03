@@ -1,6 +1,6 @@
-<!DOCTYPE html><html><head><meta charset="utf-8"/><link href="../links/main.css" type="text/css" rel="stylesheet"/><link href="../media/services/icon.png" type="image/png" rel="shortcut icon"/><title>XXIIVV &mdash; dos</title></head><body><header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"/></a></header><nav><ul><li><a href="paper_computing.html">paper computing</a></li><li><a href="operating_systems.html" class="parent">operating systems</a></li><li><a href="programming.html">programming</a></li><li><a href="virtual_machines.html">virtual machines</a></li><li><a href="cellular_automata.html">cellular automata</a></li><li><a href="fluidics.html">fluidics</a></li><li><a href="fractals.html">fractals</a></li></ul><ul><li><a href="unix.html">unix</a></li><li><a href="dos.html" class="self">dos</a></li><li><a href="plan9.html">plan9</a></li><li><a href="linux.html">linux</a></li></ul><ul></ul></nav><main><h2>DOS is a platform-independent acronym for Disk Operating System.</h2>
+<!DOCTYPE html><html><head><meta charset="utf-8"/><link href="../links/main.css" type="text/css" rel="stylesheet"/><link href="../media/services/icon.png" type="image/png" rel="shortcut icon"/><title>XXIIVV &mdash; dos</title></head><body><header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"/></a></header><nav><ul><li><a href="paper_computing.html">paper computing</a></li><li><a href="operating_systems.html" class="parent">operating systems</a></li><li><a href="programming.html">programming</a></li><li><a href="virtual_machines.html">virtual machines</a></li><li><a href="cellular_automata.html">cellular automata</a></li><li><a href="fluidics.html">fluidics</a></li><li><a href="fractals.html">fractals</a></li></ul><ul><li><a href="dos.html" class="self">dos</a></li><li><a href="unix.html">unix</a></li><li><a href="plan9.html">plan9</a></li><li><a href="linux.html">linux</a></li></ul><ul><li><a href="vga.html">vga</a></li></ul></nav><main><h2>DOS is a platform-independent acronym for Disk Operating System.</h2>
 
-<img src='../media/refs/seed.png'/>
+<img src='../media/refs/darkseed.jpg'/>
 
 <h3>Commands</h3>
 
@@ -68,5 +68,65 @@ MAIN.C
 INCLUDE.C
 EXTRAS.C
 </pre>
-<ul></ul></main><footer><a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.svg" alt="CreativeCommons"/></a><a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a><a href="https://merveilles.town/@neauoire" target="_blank"><img src="../media/icon/merveilles.svg" alt="Merveilles"/></a><a href="uxn.html"><img src="../media/icon/uxn.svg" alt="Uxn Powered"/></a><span><a href="devine_lu_linvega.html">Devine Lu Linvega</a> &copy; 2021 &mdash; <a href="about.html">BY-NC-SA 4.0</a></span></footer>
+
+<p>Turbo C also comes with a terminal util to compile outside of the IDE:</p>
+
+<pre>
+SET PATH=%1;C:\TC
+DEL UXNEMU.EXE
+TCC.EXE -ml -IC:\SRC src\UXNEMU.C
+UXNEMU.EXE ROMS\SCREEN.ROM
+</pre>
+
+<ul>
+	<li><a href="http://bitsavers.informatik.uni-stuttgart.de/pdf/borland/turbo_c/Turbo_C_Users_Guide_1987.pdf">Turbo C Guide</a></li>
+</ul><h2>VGA stands for Video Graphics Array, sometimes referred to as Video Graphics Adapter. </h2>
+
+<p>It offers many different video modes, from 2 color to 256 color, and resolutions from 320x200 to 640x480. These notesfocus on the 256-color mode, known as mode 0x13. In mode 0x13, the screen dimensions are 320 pixels in width and 200 pixels in height. Since this is a 256-color mode, each pixel represents <a href='binary.html'>one byte</a>, so the memory needed is 320*200 or 64,000 bytes. </p>
+
+<pre>
+#define 256_COLOR_MODE 0x13
+#define TEXT_MODE 0x03
+
+void
+set_mode(Uint8 mode)
+{
+	union REGS regs;
+	regs.h.ah = 0x00;
+	regs.h.al = mode;
+	int86(VIDEO_INT, &regs, &regs);
+}
+</pre>
+
+<h3>Pixels</h3>
+
+<p>The variable offset must be an unsigned short data type (16 bits with a range from 0 to 65,535) because the size of memory needed for mode 0x13 is 64,000 bytes. Using an unsigned short data type helps insure that we won't accidently write to an area of memory that isn't part of the video memory, which might cause our program to crash.</p>
+
+<pre>
+Uint8 *VGA = (Uint8 *)0xA0000000L;
+
+#define SCREEN_WIDTH 320  /* width in pixels of mode 0x13 */
+#define SCREEN_HEIGHT 200 /* height in pixels of mode 0x13 */
+
+void
+plot_pixel(Uint16 x, Uint16 y, Uint8 color)
+{
+	VGA[y * SCREEN_WIDTH + x] = color;
+}
+</pre>
+
+<h3>Palette</h3>
+
+<p>To set one color in the palette, write the color index to port 0x3C8 and then write the red, green, and blue values, in order, to port 0x3C9. The VGA only gives us 6 bits per color channel</p>
+
+<pre>
+outp(0x03c8, 0x03);      /* color[3] */
+outp(0x03c9, 0x72 >> 2); /* R */
+outp(0x03c9, 0xde >> 2); /* G */
+outp(0x03c9, 0xc2 >> 2); /* B */
+</pre>
+
+<ul>
+	<li><a href="http://www.brackeen.com/vga/basics.html" target='_blank'>VGA Tutorial</a></li>
+</ul><ul></ul></main><footer><a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.svg" alt="CreativeCommons"/></a><a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a><a href="https://merveilles.town/@neauoire" target="_blank"><img src="../media/icon/merveilles.svg" alt="Merveilles"/></a><a href="uxn.html"><img src="../media/icon/uxn.svg" alt="Uxn Powered"/></a><span><a href="devine_lu_linvega.html">Devine Lu Linvega</a> &copy; 2021 &mdash; <a href="about.html">BY-NC-SA 4.0</a></span></footer>
 </body></html>
