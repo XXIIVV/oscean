@@ -1,0 +1,84 @@
+<h2>The Uxn development diary.</h2>
+
+<p>Below are the disjointed thoughts on the creation of a clean-slate computing stack based on a minimal virtual machine.</p>
+
+<ul>
+	<li><b>Part 1</b>: <a href='uxn_devlog.html'>A virtual machine</a></li>
+	<li><b>Part 2</b>: A personal computer</li>
+	<li><b>Part 3</b>: An operating system</li>
+</ul>
+
+<p>Before we begin,</p>
+
+<p>Emulation is the reproduction of the actions of a different computer within software, meaning that programs can be made to behave like circuitry. Given that an emulator can translate the actions of one computer onto the other, the same program could be used on both. This is emulation. </p>
+
+<p>Someone could devise the actions of a fictional computer that is not necessarily based on existing hardware, write software for this fantastical computer, implement an emulators for it, and use the same program on any supported computer. This is a <a href='virtual_machines.html'>virtual machine</a>.</p>
+
+<img src='../media/refs/magiciens.png' alt='Le Matin des magiciens, by Louis Pauwels and Jacques Bergier. 1963' width='200'/>
+
+<p>Over the years, I wrote software for various frameworks and peripherals. All of these projects have died with their respective platform. <b>Bitrot</b> is the inability to access digital data because hardware and software no longer exist to read its format. Perhaps it's a matter of time until people build containers, players and jailbreakers to make these projects usable again, otherwise these projects were never truly mine, and my learning of these languages truly only ever belonged to the <a href='stack.html'>platforms</a>.</p>
+
+<p><i>So, why not <a href='ansi_c.html'>C</a>? While terminal utilities can be made portable, cross-platform graphical development is not.</i></p>
+
+<h3>I. As Few Bits As Possible</h3>
+
+<p>During my research into portability, I kept thinking about how pleasant it was to play <a href='famicom.html'>NES</a> games today. Pulling on that thread lead me to projects designed explicitly for virtual machines(such as <a href='https://fabiensanglard.net/another_world_polygons/' target='_blank'>Another World</a> or Quake), which are equally easy to play today, due to their targeting of portable virtual machines, instead of ever-changing physical hardware.</p>
+
+<img src='../media/refs/mos6502.jpg' width="100" style='float:right'/>
+
+<p>For a time, I thought I should probably be building software for the NES, as to ensure their survival over the influx of disposable <a href='technology.html'>modern platforms</a> &mdash; So, <a href='assembly.html'>I did</a>. Sadly, most of the software that I care to write and use require slightly more than a 8-button controller; a mouse and a keyboard would be a good start. </p>
+
+<img src='../media/refs/hands.png' alt='Not for human hands, Lem.' width='350'/>
+
+<h3>II. Tarpits & Houses Of Cards</h3>
+
+<p>If the focus of this experiment is to ensure the <a href='http://collapseos.org/why.html'>survival</a> of a piece of code by writing new emulation software for each platform, the specs should be painless to implement. Let's use the time one would need to write a passable emulator as a limit in complexity for this system. Could a computer science student implement a mediocre emulation of the 6502 instructions in an afternoon? Could that design be simplified, changed in some way to make it more approachable for would-be implementers?</p>
+
+<img src='../media/refs/bthennota.png' width='100'/>
+
+<p><a href='subleq.html'>Subleq</a> is a <i>One-Instruction</i> architecture, an emulator for this platform takes at most 15 minutes to write. Perhaps this could be an interesting target, but what it does away in emulation complexity, it offloads onto the toolchain that will turn the text into programs, or onto the programmer.</p>
+
+<p>Okay, let us <i>also</i> set a limit to the complexity of the toolchain as to not find ourselves in a <a href='https://esolangs.org/wiki/Turing_tarpit'>tarpit</a>. How complex can an assembler be if the maximum amount of time one could use to write it is a single afternoon. It would be an equally herculean task to build an emulator and assembler for a machine with thousands of instructions; or a single instruction subleq that builds abstract logic from thousands of its primitive parts.</p>
+
+<h3>III. Things Betwixt</h3>
+
+<p>A <a href='paper_computer.html'>paper computer</a> was created in the early 1980s, when computer access was not yet widespread, it consists of a piece of paper with 21 lines of code on the left and eight registers on the right. The instruction set of five commands(inc, dec, jmp, isz, stp) is small but <a href='https://en.wikipedia.org/wiki/Turing_completeness' target='_blank'>Turing complete</a>, meaning that it can approximately simulate the computational aspects of any other real-world general-purpose computer, and therefore enough to represent all mathematical functions.</p>
+
+<img src="../media/refs/computers.png" width="300">
+
+<p>In 1977, a programmer wrote a small virtual machine with <a href='chip8.html'>36 instructions</a>, 16 registers and 4096 bytes of memory. It has no mouse, the screen is barely capable of displaying readable text, the keyboard is a nightmare &mdash; But at least, Iwas able to write an emulator and assembler for it an afternoon.</p>
+
+<p>There is a type of electronics relevant to emulation that <a href='https://excamera.com/sphinx/fpga-j1.html'>has no chips</a>, no instruction set, but instead the programmer designs the hardware circuit in software. As much fun as it would be to create a design that maps well onto these machines, it would make for a poor emulation on my existing devices as it would use nearly none of the optimizations available on the host computer. </p>
+
+<p>Somewhere along this voyage into finding a suitable host for my programs, I began thinking about <a href='collapse.html'>electronic waste</a>, and I couldn't justify surrounding myself with yet more electronic gizmos. This dream platform would therefore be designed to be emulated, its complexity would be designed around the complexity of software and not that of hardware.</p>
+
+<h3>IV. Back & Forth</h3>
+
+<p>The balancing act of virtual machine instructions, assembler, emulator and the resulting capabilities of its language revealed the stack machines as ideal systems. </p>
+
+<p><a href='forth.html'>Forth</a> is a programming language that consists simply of splitting text into a list of words, breaking on whitespace, and to interpret each word, words are often combinations of other words combined to create more complex words.</p>
+
+<img src="../media/refs/swap.png" alt="Swap operation by Leo Brodie">
+
+<p>Brackets and parentheses are unnecessary: the program merely performs calculations in the order that is required, letting the automatic stack store intermediate results on the fly for later use. Likewise, there is no requirement for the precedence rules.</p>
+
+<p>In Forth, memory is made of cells, which are typically <a href='binary.html'>16-bits in length</a>, meaning that each piece of data is a number from 0 to 65535. For this specific imaginary system, I wanted the memory to consist of cells of 8-bit, or numbers from 0 to 255. For example, the <code>12 / (34 - 12)</code> sequence is equivalent to 6 bytes:</p>
+
+<pre>
+uxn    |    #12 #34 OVR SUB MUL
+binary | a0  12  34  06  19  1b 
+</pre>
+
+<img src='../media/generic/uxn.apu.jpg' width='240'/>
+
+<h3>V. Where To</h3>
+
+<p>As opposed to the seemingly natural trend in software, Uxn is reaching backward in time and making itself available further and further back in time(1987), growing increasingly smaller(1kb). I keep on circling back to paper computers, and how much I want a machine such that even if people took computers away from me, a piece of paper could serve as a viable host in its stead.</p>
+
+<p>This is all for now, the <a href='varvara_devlog.html'>next devlog</a> will cover the design notes that went into the creation <a href='varvara.html'>Varvara</a>. <i>Thank you for reading</i>.</p>
+
+<img src='../media/refs/mothra.png' alt='mothra' width='16'/>
+
+<h3>Notes</h3>
+
+<p>The realization of this project is largely due to the work of the community, with special thanks to Andy Alderwick and Sigrid, everyone else who contributed ideas and shared their knowledge with me, without whom Uxn could not have become what it is now. Nearly a year after its initial draft, <a href='https://github.com/hundredrabbits/awesome-uxn' target='_blank'>a lot of uxn code</a> has been written. In fact, this text has been written in <a href='left.html'>Left</a>, a text-editor hosted on this strangely personal computer, oh, and this entire <a href='oscean.html'>wiki</a> was also built by it.</p>
