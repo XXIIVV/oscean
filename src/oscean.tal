@@ -550,18 +550,16 @@ RTN
 	;figure-tag ^<
 
 		( clip ) DUP2 #0009 ++ STH2 #00 STH2r STA
-		[ LIT '< ] ^'
-		;img-tag ^"
-		[ LIT 20 ] ^'
-		;src-attr ^"
-		[ LIT '= ] ^'
-		[ LIT '" ] ^'
-		;diary-path ^"
-		DUP2 #0006 ++ ^"
-		;jpg-ext ^"
-		[ LIT '" ] ^'
-		[ LIT '/ ] ^'
-		[ LIT '> ] ^'
+
+		( make src* )
+		;diary-path ;&diary-path ;scpy JSR2
+		DUP2 #0006 ++ ;&diary-path ;scat JSR2
+		;jpg-ext ;&diary-path ;scat JSR2
+		;&diary-path 
+		( make alt* )
+		OVR2 #00 ;next-char JSR2 INC2 #09 ;next-char JSR2 INC2
+			;add-img-tag JSR2
+			
 		( unclip ) DUP2 #0009 ++ STH2 #09 STH2r STA
 		;figcaption-tag ^<
 			DUP2 #000a ++ ;term/name SWP2 ;scmp-seg JSR2 ,&skip JCN
@@ -573,6 +571,7 @@ RTN
 	;figure-tag ^>
 
 RTN
+	&diary-path $20 
 
 @extract-term ( diary* -- term* )
 
