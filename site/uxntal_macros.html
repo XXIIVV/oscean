@@ -159,19 +159,19 @@ JMP2r
 <pre>
 @scat ( src* dst* -- )
 
-	DUP2 ,slen JSR ++ ,scpy JSR
+	DUP2 ,slen JSR ADD2 ,scpy JSR
 
 JMP2r
 
 @slen ( str* -- len* )
 
-	DUP2 ,scap JSR SWP2 --
+	DUP2 ,scap JSR SWP2 SUB2
 
 JMP2r
 
 @scap ( str* -- end* )
 
-	LDAk #00 ! JMP JMP2r
+	LDAk #00 NEQ JMP JMP2r
 	&while 
 		INC2 LDAk ,&while JCN
 
@@ -196,8 +196,9 @@ JMP2r
 
 @spop ( str* -- )
 
-	( clamp ) LDAk #00 ! JMP JMP2r
-	#00 ROT ROT ,scap JSR #0001 -- STA
+	LDAk ,&no-null JCN
+		POP2 RTN &no-null
+	#00 ROT ROT ,scap JSR #0001 SUB2 STA
 
 JMP2r
 </pre>
