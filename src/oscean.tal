@@ -217,7 +217,8 @@ RTN
 			;header-tag ^>
 			;build-page-nav JSR2
 			;build-page-main JSR2
-			;build-page-footer JSR2
+			( inlude footer )
+			;meta-footer-path ;include JSR2
 		;body-tag ^>
 	;html-tag ^>
 
@@ -294,16 +295,7 @@ RTN
 
 @build-page-body ( name* -- name* )
 
-	( write body )
-	[ ;input-path OVR2 ;htm-ext ;make-path JSR2 ] .File/name DEO2
-	[ #fffe .head LDZ2 -- ] .File/length DEO2
-	.head LDZ2
-		DUP2 .File/read DEO2
-		.File/success DEI2 ++ .head STZ2
-	( file is missing )
-	.File/success DEI2 #0000 !! ,&no-blank JCN
-		;error-include-missing ERROR
-		&no-blank
+	[ ;input-path OVR2 ;htm-ext ;make-path JSR2 ] ;include JSR2
 
 RTN
 
@@ -564,16 +556,6 @@ RTN
 RTN
 	&buff $16
 
-@build-page-footer ( name* -- name* )
-
-	;meta-footer-path .File/name DEO2
-	#0300 .File/length DEO2
-	.head LDZ2
-		DUP2 .File/read DEO2
-		.File/success DEI2 ++ .head STZ2
-
-RTN
-
 ( tools )
 
 @find-term ( name* -- term* )
@@ -771,6 +753,20 @@ RTN
 
 RTN
 	&blank $1
+
+@include ( path* -- )
+	
+	.File/name DEO2
+	[ #fffe .head LDZ2 -- ] .File/length DEO2
+	.head LDZ2
+		DUP2 .File/read DEO2
+		.File/success DEI2 ++ .head STZ2
+	( file is missing )
+	.File/success DEI2 #0000 !! ,&no-blank JCN
+		;error-include-missing ERROR
+		&no-blank
+
+RTN
 
 ( generics )
 
