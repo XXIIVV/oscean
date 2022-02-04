@@ -55,8 +55,6 @@ Map:
 
 @buff $30
 
-|00fe @head $2 ( head )
-
 ( program )
 
 |0100 ( -> )
@@ -173,7 +171,7 @@ RTN
 	( cleanup )
 	( clear zeropage ) #0000 #00ff ;mclr JSR2
 	( clean output ) FILE FILE-SIZE ;mclr JSR2
-	( reset head ) FILE .head STZ2
+	( reset head ) FILE ;write/head STA2
 
 	( fill name )
 	DUP2 ;term/name ;scpy JSR2
@@ -223,18 +221,16 @@ RTN
 	;html-tag ^>
 
 	( check file )
-	.head LDZ2 FILE -- FILE-SIZE << ,&size-ok JCN
+	;write/head LDA2 FILE -- FILE-SIZE << ,&size-ok JCN
 		;error-output-size ERROR
 		&size-ok
 
-	FILE ;validate-output JSR2
-
 	( save file )
 	[ ;output-path OVR2 ;html-ext ;make-path JSR2 ] .File/name DEO2
-	[ .head LDZ2 FILE -- ] .File/length DEO2
+	[ ;write/head LDA2 FILE -- ] .File/length DEO2
 	FILE .File/write DEO2
 
-	.head LDZ2 FILE -- ;print-hex JSR2
+	;write/head LDA2 FILE -- ;print-hex JSR2
 	#20 EMIT
 	DUP2 ;print-str JSR2 #0a EMIT
 
@@ -295,7 +291,9 @@ RTN
 
 @build-page-body ( name* -- name* )
 
+	( origin ) ;write/head LDA2 STH2
 	[ ;input-path OVR2 ;htm-ext ;make-path JSR2 ] ;include JSR2
+	( validate ) STH2r ;validate-output JSR2
 
 RTN
 
@@ -464,7 +462,6 @@ RTN
 
 RTN
 
-
 @build-module-portal ( name* -- name* )
 
 	( stash depth ) DUP2 GET-DEPTH STH
@@ -525,7 +522,7 @@ RTN
 		;diary-path ;&diary-path ;scpy JSR2
 		DUP2 #0006 ++ ;&diary-path ;scat JSR2
 		;jpg-ext ;&diary-path ;scat JSR2
-		;&diary-path 
+		;&diary-path
 		( make alt* )
 		OVR2 #00 ;next-char JSR2 INC2 #09 ;next-char JSR2 INC2
 			;add-img-tag JSR2
@@ -541,7 +538,7 @@ RTN
 	;figure-tag ^>
 
 RTN
-	&diary-path $20 
+	&diary-path $20
 
 @extract-term ( diary* -- term* )
 
@@ -637,11 +634,15 @@ RTN
 
 @log-has-term ( log* term* -- flag )
 
-	STH2
-	#000a ++
-	( clip bounds ) DUP2 #09 ;next-char JSR2 STH2 [ #00 ] STH2kr STA
-	SWP2r STH2r ;scmp JSR2
-	( clip restore ) [ #09 ] STH2r STA
+	SWP2 #000a ++ SWP2 
+	OVR2 OVR2
+	SWP2 ;scmp-seg JSR2 ,&pass1 JCN
+		POP2 POP2 #00 RTN
+		&pass1
+	;slen JSR2 ++ LDA #09 = ,&pass2 JCN
+		#00 RTN
+		&pass2
+	#01
 
 RTN
 
@@ -710,7 +711,6 @@ RTN
 
 RTN
 
-
 @add-link-tag ( rel* type* href* -- )
 
 	[ LIT '< ] ^'
@@ -738,7 +738,7 @@ RTN
 
 	[ LIT '< ] ^'
 	[ LIT 'a ] ^'
-	;&blank OVR2 ;html-ext ;make-path JSR2 ;href-attr ;add-attr JSR2
+	DUP2 ;html-ext ;&blank ;make-path JSR2 ;href-attr ;add-attr JSR2
 	( self )
 	DUP2 ;term/name ;scmp JSR2 #00 = ,&not-self JCN
 		;self-txt ;class-attr ;add-attr JSR2
@@ -757,12 +757,11 @@ RTN
 @include ( path* -- )
 	
 	.File/name DEO2
-	[ #fffe .head LDZ2 -- ] .File/length DEO2
-	.head LDZ2
-		DUP2 .File/read DEO2
-		.File/success DEI2 ++ .head STZ2
+	[ #fffe ;write/head LDA2 STH2k -- ] .File/length DEO2
+	STH2kr .File/read DEO2
+	STH2r .File/success DEI2 STH2k ++ ;write/head STA2
 	( file is missing )
-	.File/success DEI2 #0000 !! ,&no-blank JCN
+	STH2r #0000 !! ,&no-blank JCN
 		;error-include-missing ERROR
 		&no-blank
 
@@ -817,9 +816,8 @@ RTN
 	POP2
 
 RTN
-	&char ( char -- )
-		.head LDZ2 STA
-		.head LDZ2k INC2 ROT STZ2
+	&char ( char -- ) 
+		[ LIT2 &head $2 ] STH2k STA STH2r INC2 ,&head STR2 
 	RTN
 
 ( print )
