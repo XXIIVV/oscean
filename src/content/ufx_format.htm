@@ -16,28 +16,24 @@
 	<tr><td>1</td><td style='background:#eee'>3</td></tr>
 </table>
 
-<p>Draw a character's glyph in <a href='uxntal.html'>Uxntal</a> is less than 80 bytes when the screen's <a href='varvara.html'>auto byte</a> is set to <code>auto-y</code> and <code>auto-addr</code>:</p>
+<p>The uf2 character drawing routine in <a href='uxntal.html'>Uxntal</a> is about 80 bytes, with the screen's <a href='varvara.html'>auto byte</a> set to <code>AUTO-YADDR</code>:</p>
 
 <pre>
-%GET-WIDTH { TOS ;font ++ LDA }
-%GET-GLYPH { TOS #50 SFT2 ;font/glyphs ++ }
+@uf2 ( char color -- )
 
-@draw-ufx ( char color -- )
-
-	.Screen/x DEI2 STH2 
-	.Screen/y DEI2 STH2 
-	( glyph ) OVR GET-GLYPH .Screen/addr DEO2
-	DUP .Screen/sprite DEOk DEO 
-	STH2kr .Screen/y DEO2
-	SWP GET-WIDTH 
-	DUP #09 < ,&narrow JCN
+	,&color STR
+	#20 - TOS STH2k ;font-uf2 ++ LDA STHk
+	.Screen/x DEI2 #00 STHr ++ ,&anchor-x STR2
+	.Screen/y DEI2 ,&anchor-y STR2
+	;font-uf2/glyphs STH2r 20** ++ .Screen/addr DEO2
+	#08 > INC #00
+	&loop
+		[ LIT &color $1 ] .Screen/sprite DEOk DEO
+		[ LIT2 &anchor-y $2 ] .Screen/y DEO2
 		.Screen/x DEI2k #0008 ++ ROT DEO2
-		OVR .Screen/sprite DEOk DEO 
-		STH2kr .Screen/y DEO2
-		&narrow
-	POP2r
-	( width ) TOS STH2r ++ .Screen/x DEO2
-	POP
+		INC GTHk ,&loop JCN
+	POP2
+	[ LIT2 &anchor-x $2 ] .Screen/x DEO2
 
 RTN
 </pre>
