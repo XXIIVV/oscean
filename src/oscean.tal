@@ -230,7 +230,7 @@ RTN
 	[ ;write/head LDA2 FILE -- ] .File/length DEO2
 	FILE .File/write DEO2
 
-	;write/head LDA2 FILE -- ;print-hex JSR2
+	;write/head LDA2 FILE -- ;print/short JSR2
 	#20 EMIT
 	DUP2 ;print-str JSR2 #0a EMIT
 
@@ -827,15 +827,11 @@ RTN
 
 RTN
 
-@print-hex ( val* -- )
+@print ( short* -- )
 
-	SWP ,&byte JSR
-	&byte ( byte -- )
-		STHk #04 SFT ,&parse JSR #18 DEO
-		STHr #0f AND ,&parse JSR #18 DEO
-	RTN
-	&parse ( byte -- char ) DUP #09 GTH ,&above JCN #30 ADD RTN
-	&above #57 ADD RTN
+	&short ( short* -- ) SWP ,&byte JSR
+	&byte ( byte -- ) DUP #04 SFT ,&char JSR
+	&char ( char -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD EMIT
 
 RTN
 

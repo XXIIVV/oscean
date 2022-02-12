@@ -76,23 +76,19 @@
 <pre>
 %HALT   { #010f DEO }
 %EMIT   { #18 DEO }
+%DEBUG  { ;print/byte JSR2 #0a EMIT }
+%DEBUG2 { ;print/short JSR2 #0a EMIT }
 %PRINT  { ;print-str JSR2 #0a EMIT }
-%DEBUG  { ;print-hex/byte JSR2 #0a EMIT }
-%DEBUG2 { ;print-hex JSR2 #0a EMIT }
 </pre>
 
 <pre>
-@print-hex ( value* -- )
+@print ( short* -- )
 
-	SWP ,&byte JSR 
-	&byte ( byte -- )
-		STHk #04 SFT ,&parse JSR #18 DEO
-		STHr #0f AND ,&parse JSR #18 DEO
-	JMP2r
-	&parse ( byte -- char ) DUP #09 GTH ,&above JCN #30 ADD JMP2r 
-	&above #57 ADD JMP2r
+	&short ( short* -- ) SWP ,&byte JSR
+	&byte ( byte -- ) DUP #04 SFT ,&char JSR
+	&char ( char -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD EMIT
 
-JMP2r
+RTN
 </pre>
 
 <pre>
