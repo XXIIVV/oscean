@@ -1,44 +1,64 @@
 <h2>The design for a simple portable computer that only requires a pen and a piece of paper.</h2>
 
-<p>The computer consists of a sheet of paper that contains both the program as well as a number of data registers, that will be used to represent the contents of the <a href='computation.html'>eight registers</a>. This is a modified and extended edition of the <a href='https://en.wikipedia.org/wiki/WDR_paper_computer' target='_blank'>papiercomputer</a> by Wolfgang Back and Ulrich Rohde.</p>
-
-<table border='1' width='100%'>
-	<tr><th colspan='2'>Commands</th><th colspan='2'>Registers</th></tr>
-	<tr><td width='10'>00</td><td></td><td rowspan='2' width='10'>R0</td><td rowspan='2'></td></tr>
-	<tr><td>01</td><td></td></tr>
-	<tr><td>02</td><td></td><td rowspan='2'>R1</td><td rowspan='2'></td></tr>
-	<tr><td>03</td><td></td></tr>
-	<tr><td>04</td><td></td><td rowspan='2'>R2</td><td rowspan='2'></td></tr>
-	<tr><td>05</td><td></td></tr>
-	<tr><td>06</td><td></td><td rowspan='2'>R3</td><td rowspan='2'></td></tr>
-	<tr><td>07</td><td></td></tr>
-	<tr><td>08</td><td></td><td rowspan='2'>R4</td><td rowspan='2'></td></tr>
-	<tr><td>09</td><td></td></tr>
-	<tr><td>0A</td><td></td><td rowspan='2'>R5</td><td rowspan='2'></td></tr>
-	<tr><td>0B</td><td></td></tr>
-	<tr><td>0C</td><td></td><td rowspan='2'>R6</td><td rowspan='2'></td></tr>
-	<tr><td>0D</td><td></td></tr>
-	<tr><td>0E</td><td></td><td rowspan='2'>R7</td><td rowspan='2'></td></tr>
-	<tr><td>0F</td><td></td></tr>
-</table>
+<p>The computer consists of a sheet of paper that contains both the program as well as a number of data registers, that will be used to represent the contents of the <a href='computation.html'>registers</a>.</p>
 
 <p>To begin, the pen, representing the program counter, is positioned at the line <code>00</code> of a program. The instruction in that line is then processed by the user by either moving the pen(program counter), modifying the value of a data register or by checking if a data register has become “empty”(zeroed).</p>
 
-<h3>Operations</h3>
+<h3>Primitives</h3>
 
-<p>This very rudimentary instruction set will not allow to write sophisticated applications, but will teach about the use of commands to program, mnemonics to write up commands in a short code similarly to assembly language instructions and introduce the concepts of registers</p>
+<p>Most models contain a few arithmetic operations and at least one conditional operation. Three base models, each using three instructions, are drawn from the following collection. In addition, a machine usually has a HALT instruction, which stops the machine.</p>
 
 <ul>
-	<li><code>END</code> Aborts the execution of your program, so that you can examine the contents of your data registers.</li>
-	<li><code>SKP R#</code> Checks if the data register R# is zero(contains no value). If it is zero, the program counter is increased by 2, otherwise the program counter is increased only by 1.</li>
-	<li><code>JMP ##</code> Sets the program counter to line number ##, “jump” to line ## in your program.</li>
-	<li><code>ADD R#</code> Increments the contents of the data register R# and increases the program counter by 1.</li>
-	<li><code>SUB R#</code> Decrements the contents of the data register R# and increases the program counter by 1.</li>
+	<li><b>CLR</b>(r): CLeaR register r. (Set r to zero.)</li>
+	<li><b>INC</b>(r): INCrement the contents of register r.</li>
+	<li><b>DEC</b>(r): DECrement the contents of register r.</li>
+	<li><b>CPY</b>(rj, rk): CoPY the contents of register rj to register rk leaving the contents of rj intact.</li>
+	<li><b>JZ</b>(r, z): IF register r contains Zero THEN Jump to instruction z ELSE continue in sequence.</li>
+	<li><b>JE</b>(rj, rk, z): IF the contents of register rj Equals the contents of register rk THEN Jump to instruction z ELSE continue in sequence.</li>
 </ul>
+
+<p>The following three counter machine models have the same computational power since the instructions of one model can be derived from those of another:</p>
+
+<ul>
+	<li>INC (r), DEC (r), JZ (r, z) &mdash; <i>Minsky (1961, 1967), Lambek (1961)</i></li>
+	<li>CLR (r), INC (r), JE (rj, rk, z) &mdash; <i>Ershov (1958), Peter (1958)</i></li>
+	<li>INC (r), CPY (rj, rk), JE (rj, rk, z) &mdash; <i>Elgot-Robinson (1964), Minsky (1967)</i></li>
+</ul>
+
+<h3>WDR Instruction Set</h3>
+
+<p>The WDR paper computer or Know-how Computer is an educational model of a computer consisting only of a pen, a sheet of paper, and individual matches in the most simple case. The instruction set of five commands is small but Turing complete and therefore enough to represent all mathematical functions: incrementing ("inc") or decrementing ("dec") a register, unconditional jump ("jmp"), conditional jump ("isz", skips next instruction if a register is zero), and stopping program execution ("stp"). </p>
+
+<table border="1">
+	<tr><th>Opcode</th><th>Description</th></tr>
+	<tr><td>END</td><td>Aborts the execution of your program, so that you can examine the contents of your data registers.</td></tr>
+	<tr><td>SKP R#</td><td>Checks if the data register R# is zero(contains no value). If it is zero, the program counter is increased by 2, otherwise the program counter is increased only by 1.</td></tr>
+	<tr><td>JMP ##</td><td>Sets the program counter to line number ##, “jump” to line ## in your program.</td></tr>
+	<tr><td>ADD R#</td><td>Increments the contents of the data register R# and increases the program counter by 1.</td></tr>
+	<tr><td>SUB R#</td><td>Decrements the contents of the data register R# and increases the program counter by 1.</td></tr>
+</table>
+
+<h3>CARDIAC Instruction Set</h3>
+
+<p>CARDIAC (CARDboard Illustrative Aid to Computation) is a learning aid developed for Bell Telephone Laboratories in 1968 to teach high school students how computers work. The computer operates in base 10 and has 100 memory cells which can hold signed numbers from 0 to ±999. It has an instruction set of 10 instructions which allows CARDIAC to add, subtract, test, shift, input, output and jump. </p>
+
+<table border="1">
+	<tr><th>Opcode</th><th>Mnemonic</th><th>Instruction</th><th>Description</th></tr>
+	<tr><td>0</td><td>INP</td><td>Input</td><td>take a number from the input card and put it in a specified memory cell.</td></tr>
+	<tr><td>1</td><td>CLA</td><td>Clear and add</td><td>clear the accumulator and add the contents of a memory cell to the accumulator.</td></tr>
+	<tr><td>2</td><td>ADD</td><td>Add</td><td>add the contents of a memory cell to the accumulator.</td></tr>
+	<tr><td>3</td><td>TAC</td><td>Test accumulator contents</td><td>performs a sign test on the contents of the accumulator; if minus, jump to a specified memory cell.</td></tr>
+	<tr><td>4</td><td>SFT</td><td>Shift</td><td>shifts the accumulator x places left, then y places right, where x is the upper address digit and y is the lower.</td></tr>
+	<tr><td>5</td><td>OUT</td><td>Output</td><td>take a number from the specified memory cell and write it on the output card.</td></tr>
+	<tr><td>6</td><td>STO</td><td>Store</td><td>copy the contents of the accumulator into a specified memory cell.</td></tr>
+	<tr><td>7</td><td>SUB</td><td>Subtract</td><td>subtract the contents of a specified memory cell from the accumulator.</td></tr>
+	<tr><td>8</td><td>JMP</td><td>Jump</td><td>jump to a specified memory cell.  The current cell number is written in cell 99.  This allows for one level of subroutines by having the return be the instruction at cell 99 (which had '8' hardcoded as the first digit.</td></tr>
+	<tr><td>9</td><td>HRS</td><td>Halt and reset</td><td>move bug to the specified cell, then stop program execution.</td></tr>
+</table>
 
 <h3>Punched card</h3>
 
-<p>To encode a program into a 8-bits <a href='https://en.wikipedia.org/wiki/Punched_card' target='_blank'>punched card</a>, we will be using 3 bits of space to encode the operation, which leaves 5 bits for the value. This computer's programs uses only 5 operations out of a possible 8, leaving 3 unused.</p>
+<p>To encode a WDR program into a 8-bits <a href='https://en.wikipedia.org/wiki/Punched_card' target='_blank'>punched card</a>, we could use 3 bits of space to encode the operation, which leaves 5 bits for the value. This computer's programs uses only 5 operations out of a possible 8, leaving 3 unused.</p>
 
 <table border='1'>
 	<tr><th colspan='3'>binary</th><th>operation</th></tr>
@@ -67,15 +87,15 @@
 <p>The binary expression of the operation and value of the previous program can be encoded vertically as the following punched card:</p>
 
 <pre style='border: 1px dotted black;line-height: 10px; background:white'>
-    v   v   v   v   v   v    
-            •                
-    •   •           •        
-        •       •            
-                             
-                             
-                             
-    •                        
-    •       •   •   •        
+	v   v   v   v   v   v    
+			•                
+	•   •           •        
+		•       •            
+							 
+							 
+							 
+	•                        
+	•       •   •   •        
 </pre>
 
 <h3>Ref. 5-bits Table</h3>
@@ -92,9 +112,11 @@
   <tr><td>06</td><td>00010</td><td>0E</td><td>01110</td><td>16</td><td>100010</td><td>1E</td><td>11110</td></tr>
   <tr><td>07</td><td>00011</td><td>0F</td><td>01111</td><td>17</td><td>100011</td><td>1F</td><td>11111</td></tr>
 </table>
+
+
 <ul>
 	<li><a href='https://en.wikipedia.org/wiki/WDR_paper_computer' target='_blank'>WDR Paper Computer</a></li>
-	<li><a href='https://gmg-bayreuth.de/wp-content/uploads/2017/03/papiercomputer.pdf' target='_blank'>Original(pdf)</a></li>
+	<li><a href='https://en.wikipedia.org/wiki/CARDboard_Illustrative_Aid_to_Computation' target='_blank'>CARDIAC Paper Computer</a></li>
 	<li><a href='https://www.jeffreythompson.org/human-computers.php' target='_blank'>Human-Computers</a></li>
 	<li><a href='https://wintermute.org/project/Rustic_Computing/' target='_blank'>Rustic Computing</a></li>
 </ul>
