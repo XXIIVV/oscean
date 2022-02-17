@@ -1,0 +1,121 @@
+( lietal )
+
+%HALT   { #010f DEO }
+%EMIT   { #18 DEO }
+%READ   { #12 DEI }
+%PRINT  { ;print-str JSR2 #0a EMIT }
+%RTN    { JMP2r }
+
+( variables )
+
+|0000
+
+	@con &1 $1 &2 $1
+	@vow &1 $1 &2 $1
+
+|0100 ( -> )
+
+	;on-console #10 DEO2
+
+BRK
+
+@on-console ( -> )
+
+	READ #0a EQU ,parse JCN
+	READ ;raw-txt ROT ;sput JSR2
+
+BRK
+
+@parse ( str* -- )
+
+	;raw-txt PRINT
+	( casual )
+	;raw-txt
+	&casual-while
+		,load-seg JSR
+		( v c )
+		;cas-txt
+			DUP2 .vow/1 LDZ ;sput JSR2
+			DUP2 .con/1 LDZ ;sput JSR2
+		,parse-seg JSR
+		LDAk ,&casual-while JCN
+	POP2
+	( formal )
+	;raw-txt
+	&formal-while
+		,load-seg JSR
+		( c v )
+		;for-txt
+			DUP2 .con/1 LDZ ;sput JSR2
+			DUP2 .vow/1 LDZ ;sput JSR2
+		,parse-seg JSR
+		LDAk ,&formal-while JCN
+	POP2
+	( print )
+	;casual-txt ;print-str JSR2
+	;cas-txt PRINT
+	;formal-txt ;print-str JSR2
+	;for-txt PRINT
+	( end )
+	HALT
+
+BRK
+
+@load-seg ( str* -- str* )
+
+	LDAk .con/1 STZ INC2
+	LDAk .vow/1 STZ INC2
+	LDAk .con/2 STZ INC2
+	LDAk .vow/2 STZ INC2
+
+RTN
+
+@parse-seg ( str* -- str* )
+
+	( e )
+	.con LDZ2 EQU .vow LDZ2 EQU #0101 NEQ2 ,&no-both JCN
+		LIT 'e ;sput JSR2 RTN
+		&no-both
+	( v2 )
+	.con LDZ2 NEQ ,&no-c JCN
+		.vow/2 LDZ ;sput JSR2 RTN
+		&no-c
+	( e c2 )
+	.vow LDZ2 NEQ ,&no-v JCN
+		DUP2 LIT 'e ;sput JSR2
+		.con/2 LDZ ;sput JSR2 RTN
+		&no-v
+	( v2 c2 )
+	DUP2 .vow/2 LDZ ;sput JSR2
+	.con/2 LDZ ;sput JSR2
+
+RTN
+
+@print-str ( string* -- )
+
+	#0001 SUB2
+	&while
+		INC2 LDAk DUP #18 DEO ,&while JCN
+	POP2
+
+RTN
+
+@scap ( str* -- end* )
+
+	LDAk #00 NEQ JMP JMP2r
+	&while
+		INC2 LDAk ,&while JCN
+
+JMP2r
+
+@sput ( str* char -- )
+
+	ROT ROT ,scap JSR STA
+
+JMP2r
+
+@casual-txt "casual: 20 $1
+@formal-txt "formal: 20 $1
+@raw-txt $40
+@cas-txt $40
+@for-txt $40
