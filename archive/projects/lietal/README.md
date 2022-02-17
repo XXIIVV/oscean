@@ -1,16 +1,16 @@
 # Lietal
 
-A small utility for printing and converting lietal phonetics.
-
-## Use
-
-```
-./lietal # Display usage
-./lietal daliri # Display phonetic forms for this word
-```
+A small utility for printing and converting lietal phonetics, written in uxntal.
 
 ## Build
 
 ```
-./build.sh
+uxnasm lie.tal lie.rom
+uxncli lie.rom losorari
+```
+
+## Usage
+
+```
+uxncli lie.rom losorari
 ```
