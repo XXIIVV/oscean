@@ -1,18 +1,17 @@
 #!/bin/sh -e
 
+echo "Assembling -------------------"
 rm -rf bin
 mkdir -p bin
+uxnasm maeve.tal bin/maeve.rom
+uxnasm oscean.tal bin/oscean.rom
 
-# Pre-process
-
+echo "Parsing ----------------------"
 rm -rf tmp
 mkdir -p tmp
-uxnasm maeve.tal bin/maeve.rom
 uxncli bin/maeve.rom
 
-# Create 
-
+echo "Building ---------------------"
 rm -rf ../site
 mkdir -p ../site
-uxnasm oscean.tal bin/oscean.rom
 uxncli bin/oscean.rom
