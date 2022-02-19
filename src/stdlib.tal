@@ -1,0 +1,182 @@
+( fancy )
+
+@prev-char ( addr* char -- addr* )
+
+	STH
+	&while
+		LDAk STHkr = ,&end JCN
+		LDAk #00 = ,&end JCN
+		DEC2 LDAk ,&while JCN
+	&end
+		POPr
+
+RTN
+
+@next-char ( addr* char -- addr* )
+
+	STH
+	&while
+		LDAk STHkr = ,&end JCN
+		LDAk #00 = ,&end JCN
+		INC2 LDAk ,&while JCN
+	&end
+		POPr
+
+RTN
+
+( helpers )
+
+@cswp ( string* a b -- )
+
+	STH STH
+	&while
+		LDAk STHkr NEQ ,&continue JCN
+			DUP2 OVRr STHr ROT ROT STA
+			&continue
+		INC2 LDAk ,&while JCN
+	POP2 POP2r
+
+RTN
+
+@chex ( char -- hex )
+
+	DUP IS-NUM ,&num JCN
+	DUP IS-UC ,&uca JCN
+	DUP IS-LC ,&lca JCN
+	POP #00 RTN
+	&num #30 - RTN
+	&uca #4b - RTN
+	&lca #6b - RTN
+
+RTN
+
+@scmp ( a* b* -- flag )
+
+	STH2
+	&loop
+		LDAk LDAkr STHr = ,&not-diff JCN
+			POP2 POP2r #00 RTN
+			&not-diff
+		LDAk LDAkr STHr #0000 !! ,&not-end JCN
+			POP2 POP2r #01 RTN
+			&not-end
+		INC2 INC2r
+		,&loop JMP
+	POP2 POP2r #00
+
+RTN
+
+@scmp-seg ( a* b* -- flag )
+
+	STH2
+	&loop
+		LDAk LDAkr STHr = ,&not-diff JCN
+			POP2 POP2r #00 RTN
+			&not-diff
+		INC2k LDA #00 ! ,&continue JCN
+			POP2 POP2r #01 RTN
+			&continue
+		INC2 INC2r
+		,&loop JMP
+	POP2 POP2r #00
+
+RTN
+
+@scat ( src* dst* -- )
+
+	DUP2 ,slen JSR ++ ,scpy JSR
+
+RTN
+
+@scpy ( src* dst* -- )
+	
+	STH2
+	&while
+		LDAk STH2kr STA INC2r
+		INC2 LDAk ,&while JCN
+	POP2
+	#00 STH2r STA
+
+RTN
+
+@slen ( str* -- len* )
+
+	DUP2 ,scap JSR SWP2 --
+
+RTN
+
+@scap ( str* -- str-end* )
+
+	( clamp ) LDAk #00 ! JMP RTN
+	&while INC2 LDAk ,&while JCN
+
+RTN
+
+@mclr ( addr* len* -- )
+
+	OVR2 ++ SWP2
+	&loop
+		STH2k #00 STH2r STA
+		INC2 GTH2k ,&loop JCN
+	POP2 POP2
+
+RTN
+
+@mcpy ( src* dst* len* -- )
+
+	SWP2 STH2
+	OVR2 ++ SWP2
+	&loop
+		LDAk STH2kr STA INC2r
+		INC2 GTH2k ,&loop JCN
+	POP2 POP2
+	POP2r
+
+RTN
+
+( debugging )
+
+@print-str ( str* -- )
+
+	#0001 SUB2
+	&while
+		INC2 LDAk DUP #18 DEO ,&while JCN
+	POP2
+
+RTN
+
+@print ( short* -- )
+
+	&short ( short* -- ) SWP ,&byte JSR
+	&byte ( byte -- ) DUP #04 SFT ,&char JSR
+	&char ( char -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD EMIT
+
+RTN
+
+@print-error ( name* msg* -- )
+
+	#0a EMIT
+	SWP2
+	DEC2 &name-loop
+		INC2 LDAk [ DUP EMIT ] ,&name-loop JCN
+	POP2 #20 EMIT
+	DEC2 &msg-loop
+		INC2 LDAk [ DUP EMIT ] ,&msg-loop JCN
+	POP2 #0d EMIT
+	#0a EMIT
+	HALT
+
+RTN
+
+@print-arvelie ( -- )
+
+	.DateTime/year DEI2 #07d6 -- NIP
+		( digit1 ) DUP #0a DIV #30 + EMIT
+		( digit2 ) #0a MOD #30 + EMIT
+	.DateTime/doty DEI2
+		( month ) DUP2 #000e DIV2 NIP #41 + EMIT
+		( digit3 ) #000e MOD2 DUP2 #000a DIV2 NIP #30 + EMIT
+		( digit4 ) #000a MOD2 NIP #30 + EMIT
+	#0a EMIT
+
+RTN

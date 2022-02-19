@@ -1,0 +1,222 @@
+( Oscean's preprocessor )
+
+~utils.tal
+
+|0000
+
+	@workarea $2
+	@maxlength $2
+
+|0100
+
+	( append mode )
+	#01 .File/append DEO
+
+	( load lexicon )
+	;lexicon-path .File/name DEO2
+	#2000 .File/length DEO2
+	;lexicon .File/read DEO2
+	;lexicon REMOVE-LINEBREAKS
+
+	.File/success DEI2 ;lexicon ++ INC2 .workarea STZ2
+	#f000 .workarea LDZ2 -- .maxlength STZ2
+
+	( let's fucking go )
+	;parse-lexicon JSR2
+	;parse-diary JSR2
+
+HALT
+
+( lexicon )
+
+@parse-lexicon ( term* -- )
+
+	;lexicon
+	&while
+		( move to name ) INC2 INC2
+		( setup files ) DUP2 ,parse-term JSR
+		( goto eol ) &eol INC2 LDAk ,&eol JCN INC2
+		LDAk ,&while JCN
+	POP2
+
+RTN
+
+@parse-term ( term* -- )
+	
+	( src )
+	;&src #0030 ;mclr JSR2
+	;src-path ;&src ;scpy JSR2
+	DUP2 ;&src ;scat JSR2
+	;htm-ext ;&src ;scat JSR2
+	;&src #20 [ LIT '_ ] ;cswp JSR2
+
+	( load src )
+	;&src .File/name DEO2
+	.maxlength LDZ2 .File/length DEO2
+	.workarea LDZ2 .File/read DEO2
+
+	( null terminate )
+	#00 .workarea LDZ2 .File/success DEI2 ++ STA
+
+	( errors on empty )
+	.File/success DEI2 #0000 >> ,&continue JCN
+		;error-include-missing SWP2 ERROR
+		&continue
+
+	.workarea LDZ2 ,validate JSR
+
+	POP2
+
+RTN
+	&src $30
+
+@validate ( page* -- )
+
+	&while
+		;href-attr OVR2 ;scmp-seg JSR2 #00 = ,&continue JCN
+			( move to href ) #0006 ++
+			( strip relative ) LDAk [ LIT '. ] = ,&continue JCN
+			( strip jumps ) LDAk [ LIT '# ] = ,&continue JCN
+			( strip http* ) DUP2 ;http-txt SWP2 ;scmp-seg JSR2 ,&continue JCN
+			;&link STH2k #0030 ;mclr JSR2
+			DUP2 STH2kr #002f ;mcpy JSR2
+			STH2kr [ LIT '. ] #00 ;cswp JSR2
+			STH2kr [ LIT '_ ] #20 ;cswp JSR2
+			( find term )
+			STH2r ,find-term JSR #0000 !! ,&found JCN
+				;&link ;error-broken-link ERROR
+				&found
+			( connect incoming )
+			OVR2 ;&link ,connect-incoming JSR
+			&continue
+		INC2 LDAk ,&while JCN
+	POP2
+
+RTN
+	&link $30
+
+@find-term ( name* -- term* )
+
+	STH2
+	;lexicon
+	&while
+		( move to name ) INC2 INC2
+		( test ) DUP2 STH2kr ;scmp JSR2 ,&end JCN
+		( move to eol ) &eol INC2 LDAk ,&eol JCN INC2
+		LDAk ,&while JCN
+	POP2 #0000
+	&end
+	POP2r
+
+RTN
+
+@connect-incoming ( src* dst* -- )
+
+	( find file )
+	;&dst-map STH2k #0030 ;mclr JSR2
+	;tmp-path STH2kr ;scpy JSR2
+	STH2kr ;scat JSR2
+	;map-ext STH2kr ;scat JSR2
+	STH2kr #20 [ LIT '_ ] ;cswp JSR2
+
+	( write )
+	STH2r .File/name DEO2
+	DUP2 ;slen JSR2 .File/length DEO2
+	.File/write DEO2
+
+	#0001 .File/length DEO2
+	;&lb .File/write DEO2
+
+RTN
+	&dst-map $30
+	&lb 0a
+
+( diary )
+
+@parse-diary ( -- )
+
+	;diary-path-pages/end ;diary-path-pages
+	&loop
+		( clear workarea )
+		.workarea LDZ2 .maxlength LDZ2 ;mclr JSR2
+		LDA2k .File/name DEO2
+		.maxlength LDZ2 .File/length DEO2
+		.workarea LDZ2 .File/read DEO2
+		( null terminate )
+		#00 .workarea LDZ2 .File/success DEI2 ++ STA
+		( split lines )
+		.workarea LDZ2 REMOVE-LINEBREAKS
+		.workarea LDZ2 ,parse-diary-page JSR
+		INC2 INC2 GTH2k ,&loop JCN
+	POP2 POP2
+
+RTN
+
+@parse-diary-page ( page* -- )
+
+	&while
+		DUP2 ,&log STR2
+		#000a ++
+		( bound ) DUP2 #09 ;next-char JSR2 STH2
+		( clip ) #00 STH2kr STA
+		( flag ) DUP2 ;find-term JSR2 ,&term STR2
+		( unclip ) #09 STH2r STA
+		[ LIT2 &log $2 ] [ LIT2 &term $2 ] ,connect-diaries JSR
+		( goto eol ) &eol INC2 LDAk ,&eol JCN INC2
+		LDAk ,&while JCN
+	POP2
+
+RTN
+
+@connect-diaries ( diary* term* -- )
+
+	( find file )
+	;&dst-log STH2k #0030 ;mclr JSR2
+	;tmp-path STH2kr ;scpy JSR2
+	STH2kr ;scat JSR2
+	;log-ext STH2kr ;scat JSR2
+	STH2kr #20 [ LIT '_ ] ;cswp JSR2
+	( write )
+	STH2r .File/name DEO2
+	DUP2 ;slen JSR2 .File/length DEO2
+	.File/write DEO2
+	( linebreak )
+	#0001 .File/length DEO2
+	;&lb .File/write DEO2
+
+RTN
+	&dst-log $30
+	&lb 0a
+
+~stdlib.tal
+
+@http-txt "http $1
+
+@href-attr "href $1
+
+@htm-ext ".htm $1
+@log-ext "-log $1
+@map-ext "-map $1
+
+@lexicon-path "database/lexicon $1
+
+@diary-paths
+	&3 "database/diary/15-19 $1
+	&2 "database/diary/10-14 $1
+	&1 "database/diary/05-09 $1
+	&0 "database/diary/00-04 $1
+
+@diary-path-pages
+	:diary-paths/3
+	:diary-paths/2
+	:diary-paths/1
+	:diary-paths/0
+	&end
+
+@src-path "content/ $1
+@tmp-path "tmp/ $1
+
+@error-include-missing "--include_missing $1
+@error-broken-link "--local_missing $1
+
+@lexicon
