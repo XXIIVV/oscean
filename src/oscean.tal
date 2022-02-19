@@ -6,8 +6,6 @@ Runes:
 	: archive
 
 Map:
-	0x1800 - 0x3000 Lexicon
-	0x3000 - 0x8000 Diary
 	0x8000 - 0xffff Output )
 
 ~utils.tal
@@ -26,8 +24,6 @@ Map:
 %RUNE-PORTAL { LIT '; }
 %RUNE-ARCHIVE { LIT ': }
 
-%LEXICON { #1800 }
-%LEXICON-SIZE { #1800 }
 %DIARY { #3000 }
 %DIARY-SIZE { #5000 }
 %FILE { #8000 }
@@ -65,57 +61,16 @@ BRK
 @initialize ( -- )
 
 	( LEX )
-	;lexicon-path ;load/lexicon JSR2
-	( check size )
-	.File/success DEI2 LEXICON-SIZE !! ,&ok-lexicon-size JCN
-		;error-lexicon-size ERROR
-		&ok-lexicon-size
-
-	( HOR )
-	;diary-path-pages/end ;diary-path-pages
-	&loop
-		LDA2k ;load/diary JSR2
-		( check size )
-		.File/success DEI2 DIARY-SIZE !! ,&ok-diary-size JCN
-			;error-diary-size ERROR
-			&ok-diary-size
-		,&check-diary-entries JSR
-		INC2 INC2 GTH2k ,&loop JCN
-	POP2 POP2
+	;lexicon-path .File/name DEO2
+	#2000  .File/length DEO2
+	;lexicon 
+		DUP2 .File/read DEO2
+		REMOVE-LINEBREAKS
 
 RTN
 
-	&check-diary-entries ( name* -- name* )
-		DIARY
-		&while
-			( test length )
-			DUP2 ;slen JSR2 #003f << ,&ok-length JCN
-				;error-diary-name-length ERROR
-				&ok-length
-			( test term )
-			#000a ++
-			DUP2 #09 ;has-char JSR2 #00 = ,&skip JCN
-				( bound ) DUP2 #09 ;next-char JSR2 STH2
-				( clip ) #00 STH2kr STA
-				( flag ) DUP2 ;find-term JSR2 #0000 !! ,&ok-found JCN
-					DUP2 ;error-term-name-unknown ERROR
-					&ok-found
-				( unclip ) #09 STH2r STA
-				&skip
-			( goto eol ) &eol INC2 LDAk ,&eol JCN INC2
-			LDAk ,&while JCN
-		POP2
-	RTN
-
 @load ( -- )
 
-	&lexicon ( path* -- )
-		( load lexicon )
-		.File/name DEO2
-		LEXICON-SIZE  .File/length DEO2
-		LEXICON STH2k .File/read DEO2
-		STH2r REMOVE-LINEBREAKS
-	RTN
 	&diary ( path* -- )
 		DIARY DIARY-SIZE ;mclr JSR2
 		( load diary )
@@ -137,7 +92,7 @@ BRK
 @build-all ( -- )
 
 	LIT2r 0000
-	LEXICON
+	;lexicon
 	&while
 		( move to name ) INC2 INC2
 		( display ) STH2kr PRINT-CR INC2r
@@ -160,6 +115,7 @@ RTN
 
 	( cleanup )
 	( clear zeropage ) #0000 #00ff ;mclr JSR2
+	( clean output ) FILE FILE-SIZE ;mclr JSR2
 	( clean output ) FILE FILE-SIZE ;mclr JSR2
 	( reset head ) FILE ;write/head STA2
 
@@ -318,7 +274,7 @@ RTN
 @build-special-index ( -- )
 
 	;ul-tag ^<
-		LEXICON
+		;lexicon
 		&while
 			( move to name ) INC2 INC2
 			;li-tag ^<
@@ -548,7 +504,7 @@ RTN
 @find-term ( name* -- term* )
 
 	STH2
-	LEXICON
+	;lexicon
 	&while
 		( move to name ) INC2 INC2
 		( test ) DUP2 STH2kr ;scmp JSR2 ,&end JCN
@@ -600,7 +556,7 @@ RTN
 
 	REWIND
 	( stash depth ) LDAk ;chex JSR2 #01 - STH
-	LEXICON SWP2
+	;lexicon SWP2
 	&loop
 		DEC2 #00 ;prev-char JSR2
 		INC2k LDA ;chex JSR2 STHkr ! ,&continue JCN
@@ -863,4 +819,5 @@ RTN
 	:diary-paths/0
 	&end
 
-|1800
+@lexicon $2000
+@diary $2000

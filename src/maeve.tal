@@ -4,7 +4,6 @@
 
 |0000
 
-	@workarea $2
 	@maxlength $2
 
 |0100
@@ -15,11 +14,11 @@
 	( load lexicon )
 	;lexicon-path .File/name DEO2
 	#2000 .File/length DEO2
-	;lexicon .File/read DEO2
-	;lexicon REMOVE-LINEBREAKS
+	;lexicon 
+		DUP2 .File/read DEO2
+		REMOVE-LINEBREAKS
 
-	.File/success DEI2 ;lexicon ++ INC2 .workarea STZ2
-	#f000 .workarea LDZ2 -- .maxlength STZ2
+	#f000 ;workarea -- .maxlength STZ2
 
 	( let's fucking go )
 	;parse-lexicon JSR2
@@ -53,17 +52,17 @@ RTN
 	( load htm )
 	;&htm .File/name DEO2
 	.maxlength LDZ2 .File/length DEO2
-	.workarea LDZ2 .File/read DEO2
+	;workarea .File/read DEO2
 
 	( null terminate )
-	#00 .workarea LDZ2 .File/success DEI2 ++ STA
+	#00 ;workarea .File/success DEI2 ++ STA
 
 	( errors on empty )
 	.File/success DEI2 #0000 >> ,&continue JCN
 		;error-include-missing SWP2 ERROR
 		&continue
 
-	.workarea LDZ2 ,validate JSR
+	;workarea ,validate JSR
 
 	POP2
 
@@ -138,15 +137,15 @@ RTN
 	;diary-path-pages/end ;diary-path-pages
 	&loop
 		( clear workarea )
-		.workarea LDZ2 .maxlength LDZ2 ;mclr JSR2
+		;workarea .maxlength LDZ2 ;mclr JSR2
 		LDA2k .File/name DEO2
 		.maxlength LDZ2 .File/length DEO2
-		.workarea LDZ2 .File/read DEO2
+		;workarea .File/read DEO2
 		( null terminate )
-		#00 .workarea LDZ2 .File/success DEI2 ++ STA
+		#00 ;workarea .File/success DEI2 ++ STA
 		( split lines )
-		.workarea LDZ2 REMOVE-LINEBREAKS
-		.workarea LDZ2 ,parse-diary-page JSR
+		;workarea REMOVE-LINEBREAKS
+		;workarea ,parse-diary-page JSR
 		INC2 INC2 GTH2k ,&loop JCN
 	POP2 POP2
 
@@ -219,4 +218,5 @@ RTN
 @error-include-missing "--include_missing $1
 @error-broken-link "--local_missing $1
 
-@lexicon
+@lexicon $2000
+@workarea
