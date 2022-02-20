@@ -301,9 +301,6 @@ RTN
 	DUP2 ;index-txt ;scmp JSR2 #00 = ,&no-index JCN
 		;build-special-index JSR2 RTN
 		&no-index
-	DUP2 ;calendar-txt ;scmp JSR2 #00 = ,&no-calendar JCN
-		;build-special-calendar JSR2 RTN
-		&no-calendar
 	DUP2 ;journal-txt ;scmp JSR2 #00 = ,&no-journal JCN
 		;build-special-journal JSR2 RTN
 		&no-journal
@@ -325,45 +322,6 @@ RTN
 	;ul-tag ^>
 
 RTN
-
-@build-special-calendar ( -- )
-
-	RTN ( TODO )
-
-	( the trick here is to load the original diary database )
-
-	;ul-tag ^<
-		;diary-path-pages/end ;diary-path-pages
-		&loop
-			LDA2k ;load/diary JSR2
-			,&append-li JSR
-			INC2 INC2 GTH2k ,&loop JCN
-		POP2 POP2
-	;ul-tag ^>
-
-	RTN
-
-	&append-li ( name* -- name* )
-		DIARY
-		&while
-			DUP2 #0005 ++ LDA [ LIT '+ ] ! ;&continue JCN2
-				( break list on year change )
-				DUP2 INC2 LDA [ STHk ] ;&last LDA = ,&no-yearchange JCN
-					;ul-tag ^>
-					;ul-tag ^<
-					&no-yearchange
-				;li-tag ^<
-					DUP2 ;build-module-event JSR2
-				;li-tag ^>
-				( save last )
-				[ STHr ] ;&last STA
-				&continue
-			( goto eol ) &eol INC2 LDAk ,&eol JCN INC2
-			LDAk ;&while JCN2
-		POP2
-
-RTN
-	&last $1
 
 @build-special-journal ( -- )
 
