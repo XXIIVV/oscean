@@ -1,4 +1,4 @@
-( fancy )
+( fancyful things )
 
 @prev-char ( addr* char -- addr* )
 
@@ -10,7 +10,7 @@
 	&end
 		POPr
 
-RTN
+JMP2r
 
 @next-char ( addr* char -- addr* )
 
@@ -22,11 +22,23 @@ RTN
 	&end
 		POPr
 
-RTN
+JMP2r
 
 ( helpers )
 
-@cswp ( string* a b -- )
+@chex ( char -- hex )
+
+	DUP IS-NUM ,&num JCN
+	DUP IS-UC ,&uca JCN
+	DUP IS-LC ,&lca JCN
+	POP #00 JMP2r
+	&num #30 - JMP2r
+	&uca #4b - JMP2r
+	&lca #6b - JMP2r
+
+JMP2r
+
+@cswp ( str* a b -- )
 
 	STH STH
 	&while
@@ -36,57 +48,59 @@ RTN
 		INC2 LDAk ,&while JCN
 	POP2 POP2r
 
-RTN
+JMP2r
 
-@chex ( char -- hex )
+@sfnd ( src* target* -- addr* )
 
-	DUP IS-NUM ,&num JCN
-	DUP IS-UC ,&uca JCN
-	DUP IS-LC ,&lca JCN
-	POP #00 RTN
-	&num #30 - RTN
-	&uca #4b - RTN
-	&lca #6b - RTN
+	STH2
+	&while
+		STH2kr OVR2 ,scmp-seg JSR #00 = ,&continue JCN
+			POP2r JMP2r
+			&continue
+		INC2 LDAk ,&while JCN
+	POP2
+	POP2r
+	#ffff
 
-RTN
+JMP2r
 
 @scmp ( a* b* -- flag )
 
 	STH2
 	&loop
 		LDAk LDAkr STHr = ,&not-diff JCN
-			POP2 POP2r #00 RTN
+			POP2 POP2r #00 JMP2r
 			&not-diff
 		LDAk LDAkr STHr #0000 !! ,&not-end JCN
-			POP2 POP2r #01 RTN
+			POP2 POP2r #01 JMP2r
 			&not-end
 		INC2 INC2r
 		,&loop JMP
 	POP2 POP2r #00
 
-RTN
+JMP2r
 
 @scmp-seg ( a* b* -- flag )
 
 	STH2
 	&loop
 		LDAk LDAkr STHr = ,&not-diff JCN
-			POP2 POP2r #00 RTN
+			POP2 POP2r #00 JMP2r
 			&not-diff
 		INC2k LDA #00 ! ,&continue JCN
-			POP2 POP2r #01 RTN
+			POP2 POP2r #01 JMP2r
 			&continue
 		INC2 INC2r
 		,&loop JMP
 	POP2 POP2r #00
 
-RTN
+JMP2r
 
 @scat ( src* dst* -- )
 
 	DUP2 ,slen JSR ++ ,scpy JSR
 
-RTN
+JMP2r
 
 @scpy ( src* dst* -- )
 	
@@ -97,20 +111,34 @@ RTN
 	POP2
 	#00 STH2r STA
 
-RTN
+JMP2r
+
+@sput ( str* char -- )
+
+	ROT ROT ,scap JSR STA
+
+JMP2r
+
+@spop ( str* -- )
+
+	LDAk ,&no-null JCN
+		POP2 JMP2r &no-null
+	#00 ROT ROT ,scap JSR #0001 SUB2 STA
+
+JMP2r
 
 @slen ( str* -- len* )
 
 	DUP2 ,scap JSR SWP2 --
 
-RTN
+JMP2r
 
 @scap ( str* -- str-end* )
 
-	( clamp ) LDAk #00 ! JMP RTN
+	( clamp ) LDAk #00 ! JMP JMP2r
 	&while INC2 LDAk ,&while JCN
 
-RTN
+JMP2r
 
 @mclr ( addr* len* -- )
 
@@ -120,7 +148,7 @@ RTN
 		INC2 GTH2k ,&loop JCN
 	POP2 POP2
 
-RTN
+JMP2r
 
 @mcpy ( src* dst* len* -- )
 
@@ -132,7 +160,7 @@ RTN
 	POP2 POP2
 	POP2r
 
-RTN
+JMP2r
 
 ( debugging )
 
@@ -143,7 +171,7 @@ RTN
 		INC2 LDAk DUP #18 DEO ,&while JCN
 	POP2
 
-RTN
+JMP2r
 
 @print ( short* -- )
 
@@ -151,7 +179,7 @@ RTN
 	&byte ( byte -- ) DUP #04 SFT ,&char JSR
 	&char ( char -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD EMIT
 
-RTN
+JMP2r
 
 @print-error ( name* msg* -- )
 
@@ -166,7 +194,7 @@ RTN
 	#0a EMIT
 	HALT
 
-RTN
+JMP2r
 
 @print-dec ( value* -- )
 
@@ -189,4 +217,4 @@ JMP2r
 		( digit4 ) #000a MOD2 NIP #30 + EMIT
 	#0a EMIT
 
-RTN
+JMP2r

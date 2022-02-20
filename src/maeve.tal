@@ -18,7 +18,7 @@
 	( load lexicon )
 	;lexicon-path .File/name DEO2
 	#2000 .File/length DEO2
-	;lexicon 
+	;lexicon
 		DUP2 .File/read DEO2
 		REMOVE-LINEBREAKS
 
@@ -26,11 +26,9 @@
 
 	( let's fucking go )
 	;parse-lexicon JSR2
-	;parse-diary JSR2
-
-	( print stats )
 	.stats/terms LDZ2 ;print-dec JSR2 #20 EMIT ;terms-txt PRINT
 	.stats/links LDZ2 ;print-dec JSR2 #20 EMIT ;links-txt PRINT
+	;parse-diary JSR2
 	.stats/diaries LDZ2 ;print-dec JSR2 #20 EMIT ;diaries-txt PRINT
 
 HALT
@@ -58,11 +56,13 @@ RTN
 	;htm-ext STH2kr ;scat JSR2
 	;&htm #20 [ LIT '_ ] ;cswp JSR2
 
+	( clear outgoing )
+	;outgoing #1000 ;mclr JSR2
+
 	( load htm )
 	STH2r .File/name DEO2
 	.maxlength LDZ2 .File/length DEO2
 	;workarea .File/read DEO2
-
 	( null terminate )
 	#00 ;workarea .File/success DEI2 ++ STA
 
@@ -121,6 +121,15 @@ RTN
 RTN
 
 @connect-incoming ( src* dst* -- )
+
+	( check for duplicates )
+	;outgoing OVR2 ;sfnd JSR2 #ffff == ,&no-duplicate JCN
+		OVR2 ;print-str JSR2 #20 EMIT DUP2 PRINT
+		&no-duplicate
+
+	( record in outgoing )
+	DUP2 ;outgoing ;scat JSR2
+	;outgoing #0a ;sput JSR2
 
 	( find file )
 	;&dst-map STH2k #0030 ;mclr JSR2
@@ -236,4 +245,5 @@ RTN
 @error-broken-link "--local_missing $1
 
 @lexicon $2000
+@outgoing $1000
 @workarea
