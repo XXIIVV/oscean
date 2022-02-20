@@ -5,8 +5,12 @@
 |0000
 
 	@maxlength $2
+	@stats
+		&terms $2
+		&links $2
+		&diaries $2
 
-|0100
+|0100 @on-reset
 
 	( append mode )
 	#01 .File/append DEO
@@ -23,6 +27,11 @@
 	( let's fucking go )
 	;parse-lexicon JSR2
 	;parse-diary JSR2
+
+	( print stats )
+	.stats/terms LDZ2 ;print-dec JSR2 #20 EMIT ;terms-txt PRINT
+	.stats/links LDZ2 ;print-dec JSR2 #20 EMIT ;links-txt PRINT
+	.stats/diaries LDZ2 ;print-dec JSR2 #20 EMIT ;diaries-txt PRINT
 
 HALT
 
@@ -63,6 +72,8 @@ RTN
 		&continue
 
 	;workarea ,validate JSR
+
+	( stats ) .stats/terms LDZ2k INC2 ROT STZ2
 
 	POP2
 
@@ -126,6 +137,8 @@ RTN
 	#0001 .File/length DEO2
 	;&lb .File/write DEO2
 
+	( stats ) .stats/links LDZ2k INC2 ROT STZ2
+
 RTN
 	&dst-map $30
 	&lb 0a
@@ -181,11 +194,17 @@ RTN
 	#0001 .File/length DEO2
 	;&lb .File/write DEO2
 
+	( stats ) .stats/diaries LDZ2k INC2 ROT STZ2
+
 RTN
 	&dst-log $30
 	&lb 0a
 
 ~stdlib.tal
+
+@terms-txt "terms $1
+@links-txt "links $1
+@diaries-txt "diaries $1
 
 @http-txt "http $1
 
