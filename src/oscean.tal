@@ -367,34 +367,30 @@ RTN
 
 @build-special-journal ( -- )
 
-	RTN ( TODO )
-
-	( the trick here is to load the original diary database )
-
+	( load latest diary page )
+	;diary #1000 ;mclr JSR2
+	;&latest-page .File/name DEO2
+	#1000 .File/length DEO2
+	;diary .File/read DEO2
+	( split lines )
+	;diary REMOVE-LINEBREAKS
+	( limit at 20 )
 	#00 ;&limit STA
-	;diary-path-pages/end ;diary-path-pages
-	&loop
-		LDA2k ;load/diary JSR2
-		,&append-figure JSR
-		INC2 INC2 GTH2k ,&loop JCN
-	POP2 POP2
-	RTN
-
-	&append-figure ( name* -- name* )
-		DIARY
-		&while
-			;&limit LDA #20 > ,&end JCN
-			DUP2 ;no-picture ;log-has-picture JSR2 ,&continue JCN
-				DUP2 ;build-module-photo JSR2
-				;&limit LDA INC ;&limit STA
-			&continue
-			( goto eol ) &eol INC2 LDAk ,&eol JCN INC2
-			LDAk ,&while JCN
-		&end
-		POP2
+	;diary
+	&while
+		;&limit LDA #20 > ,&end JCN
+		DUP2 ;no-picture ;log-has-picture JSR2 ,&continue JCN
+			DUP2 ;build-module-photo JSR2
+			;&limit LDA INC ;&limit STA
+		&continue
+		( goto eol ) &eol INC2 LDAk ,&eol JCN INC2
+		LDAk ,&while JCN
+	&end
+	POP2
 
 RTN
 	&limit $1
+	&latest-page "database/diary/15-19 $1 
 
 @build-page-calendar ( name* -- name* )
 
