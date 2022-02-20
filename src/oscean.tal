@@ -116,8 +116,10 @@ RTN
 	( cleanup )
 	( clear zeropage ) #0000 #00ff ;mclr JSR2
 	( clean output ) FILE FILE-SIZE ;mclr JSR2
-	( clean output ) FILE FILE-SIZE ;mclr JSR2
 	( reset head ) FILE ;write/head STA2
+
+	DUP2 ;load-diary JSR2
+	DUP2 ;load-incoming JSR2
 
 	( fill name )
 	DUP2 ;term/name ;scpy JSR2
@@ -135,6 +137,42 @@ RTN
 		( clip restore ) #09 STH2r STA
 		&continue
 	POP2
+
+RTN
+
+@load-diary ( name* -- )
+
+	( make path )
+	;diary #1000 ;mclr JSR2
+	;buff STH2k #0030 ;mclr JSR2
+	;tmp-path STH2kr ;scpy JSR2
+	STH2kr ;scat JSR2
+	;log-ext STH2kr ;scat JSR2
+	STH2kr #20 [ LIT '_ ] ;cswp JSR2
+	( load )
+	STH2r .File/name DEO2
+	#1000 .File/length DEO2
+	;diary .File/read DEO2
+	( split lines )
+	;diary REMOVE-LINEBREAKS
+
+RTN
+
+@load-incoming ( name* -- )
+
+	( make path )
+	;incoming #1000 ;mclr JSR2
+	;buff STH2k #0030 ;mclr JSR2
+	;tmp-path STH2kr ;scpy JSR2
+	STH2kr ;scat JSR2
+	;map-ext STH2kr ;scat JSR2
+	STH2kr #20 [ LIT '_ ] ;cswp JSR2
+	( load )
+	STH2r .File/name DEO2
+	#1000 .File/length DEO2
+	;incoming .File/read DEO2
+	( split lines )
+	;incoming REMOVE-LINEBREAKS
 
 RTN
 
@@ -231,6 +269,7 @@ RTN
 		;build-page-module JSR2
 		;build-page-special JSR2
 		;build-page-calendar JSR2
+		;build-page-incoming JSR2
 	;main-tag ^>
 
 RTN
@@ -238,7 +277,7 @@ RTN
 @build-page-body ( name* -- name* )
 
 	( origin ) ;write/head LDA2 STH2
-	[ ;input-path OVR2 ;htm-ext ;make-path JSR2 ] ;include JSR2
+	[ ;htm-path OVR2 ;htm-ext ;make-path JSR2 ] ;include JSR2
 	( validate ) STH2r ;validate-output JSR2
 
 RTN
@@ -289,6 +328,10 @@ RTN
 
 @build-special-calendar ( -- )
 
+	RTN ( TODO )
+
+	( the trick here is to load the original diary database )
+
 	;ul-tag ^<
 		;diary-path-pages/end ;diary-path-pages
 		&loop
@@ -324,6 +367,10 @@ RTN
 
 @build-special-journal ( -- )
 
+	RTN ( TODO )
+
+	( the trick here is to load the original diary database )
+
 	#00 ;&limit STA
 	;diary-path-pages/end ;diary-path-pages
 	&loop
@@ -352,21 +399,13 @@ RTN
 @build-page-calendar ( name* -- name* )
 
 	;ul-tag ^<
-		STH2
-		;diary-path-pages/end ;diary-path-pages
-		&loop
-			LDA2k ;load/diary JSR2
-			STH2kr ,&append-li JSR
-			INC2 INC2 GTH2k ,&loop JCN
-		POP2 POP2
-		STH2r
+		DUP2 ,&append-li JSR
 	;ul-tag ^>
-
 	RTN
 
 	&append-li ( name* -- )
 		STH2
-		DIARY
+		;diary
 		&while
 			DUP2 #0005 ++ LDA [ LIT '+ ] ! ,&continue JCN
 				( host is term ) DUP2 ;term/name ;log-has-term JSR2 #01 ! ,&continue JCN
@@ -382,20 +421,13 @@ RTN
 
 @build-module-album ( name* -- name* )
 
-	STH2
-	;diary-path-pages/end ;diary-path-pages
-	&loop
-		LDA2k ;load/diary JSR2
-		STH2kr ,&append-figure JSR
-		INC2 INC2 GTH2k ,&loop JCN
-	POP2 POP2
-	STH2r
+	DUP2 ,&append-figure JSR
 	RTN
 
 	&append-figure ( name* -- )
 
 		STH2
-		DIARY
+		;diary
 		&while
 			( picture is blank ) DUP2 ;no-picture ;log-has-picture JSR2 ,&continue JCN
 			( picture is head ) DUP2 ;term/pict ;log-has-picture JSR2 ,&continue JCN
@@ -409,6 +441,8 @@ RTN
 RTN
 
 @build-module-portal ( name* -- name* )
+
+	RTN
 
 	( stash depth ) DUP2 GET-DEPTH STH
 	( start after ) DUP2 ;slen JSR2 ++ INC2
@@ -499,6 +533,25 @@ RTN
 RTN
 	&buff $16
 
+@build-page-incoming ( -- )
+
+	;incoming
+	( exists )
+	LDAk ,&continue JCN
+		POP2 RTN
+		&continue
+	;p-tag ^<
+	;&incoming-txt ^"
+	&while
+		DUP2 ;add-local JSR2 #20 ^'
+		( move to eol ) &eol INC2 LDAk ,&eol JCN 
+		INC2 LDAk ,&while JCN
+	POP2
+	;p-tag ^>
+
+RTN
+	&incoming-txt "<b>Incoming</b>: 20 $1
+
 ( tools )
 
 @find-term ( name* -- term* )
@@ -519,32 +572,16 @@ RTN
 @find-diary ( name* -- diary* )
 
 	STH2
-	;diary-path-pages/end ;diary-path-pages
-	&loop
-		LDA2k ;load/diary JSR2
-		STH2kr ,&search JSR
-		DUP2 #0000 == ,&continue JCN
-			( found ) NIP2 NIP2 POP2r RTN
-			&continue
-			POP2
-		INC2 INC2 GTH2k ,&loop JCN
-	POP2 POP2
+	;diary
+	&while
+		( skip events ) DUP2 ;no-picture ;log-has-picture JSR2 ,&skip JCN
+		( host is term ) DUP2 STH2kr ;log-has-term JSR2 #01 ! ,&skip JCN
+			POP2r RTN
+		&skip
+		( move to eol ) &eol INC2 LDAk ,&eol JCN INC2
+		LDAk ,&while JCN
+	POP2 #0000
 	POP2r
-	#0000
-	RTN
-
-	&search ( name* -- diary* )
-		STH2
-		DIARY
-		&while
-			( skip events ) DUP2 ;no-picture ;log-has-picture JSR2 ,&skip JCN
-			( host is term ) DUP2 STH2kr ;log-has-term JSR2 #01 ! ,&skip JCN
-				POP2r RTN
-			&skip
-			( move to eol ) &eol INC2 LDAk ,&eol JCN INC2
-			LDAk ,&while JCN
-		POP2 #0000
-		POP2r
 
 RTN
 
@@ -740,6 +777,9 @@ RTN
 
 ~stdlib.tal
 
+@log-ext "-log $1
+@map-ext "-map $1
+
 @html-ext ".html $1
 @htm-ext ".htm $1
 @jpg-ext ".jpg $1
@@ -754,6 +794,7 @@ RTN
 @header-tag "header $1
 @nav-tag "nav $1
 @main-tag "main $1
+@p-tag "p $1
 @ul-tag "ul $1
 @li-tag "li $1
 @a-tag "a $1
@@ -783,7 +824,8 @@ RTN
 @parent-txt "parent $1
 
 @lexicon-path "database/lexicon $1
-@input-path "htm/ $1
+@tmp-path "tmp/ $1
+@htm-path "htm/ $1
 @output-path "../site/ $1
 @diary-path "../media/diary/ $1
 @home-path "home.html $1
@@ -820,4 +862,5 @@ RTN
 	&end
 
 @lexicon $2000
-@diary $2000
+@diary $1000
+@incoming $1000
