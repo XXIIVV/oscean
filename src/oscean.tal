@@ -1,33 +1,24 @@
-( The Bequest Globe
-
-Runes:
-	, album
-	; portal
-	: archive
-
-Map:
-	0x8000 - 0xffff Output )
+( The Bequest Globe )
 
 ~utils.tal
 
 %GET-DEPTH { DUP2 #0002 -- LDA ;chex JSR2 }
 %REWIND { #00 ;prev-char JSR2 INC2 }
 
+%RUNE-ALBUM { LIT ', }
+%RUNE-PORTAL { LIT '; }
+%RUNE-ARCHIVE { LIT ': }
+
+%FILE { #8000 }
+%FILE-SIZE { #7fff }
+
 ( framework )
+
 %^" { ;write JSR2 }
 %^' { ;write/char JSR2 }
 %^< { STH2 LIT '< ^' STH2r ^" LIT '> ^' }
 %^> { STH2 LIT '< ^' LIT '/ ^' STH2r ^" LIT '> ^' }
 %^<> { STH2k ^< ^" STH2r ^> }
-
-%RUNE-ALBUM { LIT ', }
-%RUNE-PORTAL { LIT '; }
-%RUNE-ARCHIVE { LIT ': }
-
-%DIARY { #3000 }
-%DIARY-SIZE { #5000 }
-%FILE { #8000 }
-%FILE-SIZE { #7fff }
 
 ( variables )
 
@@ -63,7 +54,7 @@ BRK
 	( LEX )
 	;lexicon-path .File/name DEO2
 	#2000  .File/length DEO2
-	;lexicon 
+	;lexicon
 		DUP2 .File/read DEO2
 		REMOVE-LINEBREAKS
 
@@ -335,55 +326,47 @@ RTN
 
 RTN
 	&limit $1
-	&latest-page "database/diary/15-19 $1 
+	&latest-page "database/diary/15-19 $1
 
 @build-page-calendar ( name* -- name* )
 
+	STH2
 	;ul-tag ^<
-		DUP2 ,&append-li JSR
+	;diary
+	&while
+		DUP2 #0005 ++ LDA [ LIT '+ ] ! ,&continue JCN
+			( host is term ) DUP2 ;term/name ;log-has-term JSR2 #01 ! ,&continue JCN
+			;li-tag ^<
+				DUP2 ;build-module-event JSR2
+			;li-tag ^>
+			&continue
+		( goto eol ) &eol INC2 LDAk ,&eol JCN INC2
+		LDAk ,&while JCN
+	POP2
 	;ul-tag ^>
-	RTN
-
-	&append-li ( name* -- )
-		STH2
-		;diary
-		&while
-			DUP2 #0005 ++ LDA [ LIT '+ ] ! ,&continue JCN
-				( host is term ) DUP2 ;term/name ;log-has-term JSR2 #01 ! ,&continue JCN
-				;li-tag ^<
-					DUP2 ;build-module-event JSR2
-				;li-tag ^>
-				&continue
-			( goto eol ) &eol INC2 LDAk ,&eol JCN INC2
-			LDAk ,&while JCN
-		POP2 POP2r
-
+	STH2r
+	
 RTN
 
 @build-module-album ( name* -- name* )
 
-	DUP2 ,&append-figure JSR
-	RTN
-
-	&append-figure ( name* -- )
-
-		STH2
-		;diary
-		&while
-			( picture is blank ) DUP2 ;no-picture ;log-has-picture JSR2 ,&continue JCN
-			( picture is head ) DUP2 ;term/pict ;log-has-picture JSR2 ,&continue JCN
-			( host is term ) DUP2 ;term/name ;log-has-term JSR2 #01 ! ,&continue JCN
-				DUP2 ;build-module-photo JSR2
-			&continue
-			( goto eol ) &eol INC2 LDAk ,&eol JCN INC2
-			LDAk ,&while JCN
-		POP2 POP2r
+	STH2
+	;diary
+	&while
+		( picture is blank ) DUP2 ;no-picture ;log-has-picture JSR2 ,&continue JCN
+		( picture is head ) DUP2 ;term/pict ;log-has-picture JSR2 ,&continue JCN
+		( host is term ) DUP2 ;term/name ;log-has-term JSR2 #01 ! ,&continue JCN
+			DUP2 ;build-module-photo JSR2
+		&continue
+		( goto eol ) &eol INC2 LDAk ,&eol JCN INC2
+		LDAk ,&while JCN
+	POP2 STH2r
 
 RTN
 
 @build-module-portal ( name* -- name* )
 
-	RTN
+	RTN ( TODO )
 
 	( stash depth ) DUP2 GET-DEPTH STH
 	( start after ) DUP2 ;slen JSR2 ++ INC2
@@ -436,9 +419,7 @@ RTN
 
 	( html )
 	;figure-tag ^<
-
 		( clip ) DUP2 #0009 ++ STH2 #00 STH2r STA
-
 		( make src* )
 		;diary-path ;&diary-path ;scpy JSR2
 		DUP2 #0006 ++ ;&diary-path ;scat JSR2
@@ -447,7 +428,6 @@ RTN
 		( make alt* )
 		OVR2 #00 ;next-char JSR2 INC2 #09 ;next-char JSR2 INC2
 			;add-img-tag JSR2
-			
 		( unclip ) DUP2 #0009 ++ STH2 #09 STH2r STA
 		;figcaption-tag ^<
 			DUP2 #000a ++ ;term/name SWP2 ;scmp-seg JSR2 ,&skip JCN
@@ -481,11 +461,12 @@ RTN
 	LDAk ,&continue JCN
 		POP2 RTN
 		&continue
+	( html )
 	;p-tag ^<
 	;&incoming-txt ^"
 	&while
 		DUP2 ;add-local JSR2 #20 ^'
-		( move to eol ) &eol INC2 LDAk ,&eol JCN 
+		( move to eol ) &eol INC2 LDAk ,&eol JCN
 		INC2 LDAk ,&while JCN
 	POP2
 	;p-tag ^>
@@ -699,8 +680,8 @@ RTN
 	POP2
 
 RTN
-	&char ( char -- ) 
-		[ LIT2 &head $2 ] STH2k STA STH2r INC2 ,&head STR2 
+	&char ( char -- )
+		[ LIT2 &head $2 ] STH2k STA STH2r INC2 ,&head STR2
 	RTN
 
 ~stdlib.tal
