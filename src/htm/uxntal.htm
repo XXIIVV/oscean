@@ -1,6 +1,6 @@
 <h2>Tal is the programming language for the Uxn virtual machine.</h2>
 
-<p>Uxn programs are written in a unique flavor of <a href='assembly.html'>assembly</a> designed explicitly for this virtual machine. TAL files are human-readable program files, ROM files are uxn-compatible binary application files; the application that transforms a program into an application is called an assembler.</p>
+<p>Uxn programs are written in a unique flavor of <a href='assembly.html'>assembly</a> designed explicitly for this virtual machine. TAL files are human-readable source files, ROM files are uxn-compatible binary program files; the application that transforms a program into an application is called the <i>Assembler</i>.</p>
 
 <img src='../media/generic/uxn.beet.png' width='150' style='float:left'/>
 
@@ -9,81 +9,48 @@
 
 <h2>Opcodes</h2>
 
-<p>There are 32 opcodes, each opcode occupies 5 bits of a byte, the remaining 3 bits are used for the modes of that opcode, modes are explained below.</p>
+
+<p>There are 32 opcodes, each opcode occupies 5 bits of a byte, the remaining 3 bits are used for the modes of that opcode. </p>
 
 <table border="1">
-	<tr><td><i>keep</i> <code class='op'>k</code></td><td><i>return</i> <code class='op'>r</code></td><td><i>short</i> <code class='op'>2</code></td><td colspan="5">opcode <code class='op'>BRK</code></td></tr>
+	<tr><td colspan="3"><i>modes</i> <code class='op'>kr2</code></td><td colspan="5">opcode <code class='op'>BRK</code></td></tr>
 	<tr><td class='clr2'>0</td><td class='clr2'>0</td><td class='clr2'>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
 </table>
 
-<p>Operator modes are indicated by appending extra characters at the end of the opcode, for example, the <i>short mode</i> for the <code class='op'>ADD</code> opcode is <code class='op'>ADD2</code>, modes can also be combined, for example: <code class='op'>ADD2kr</code>. To learn more, see the <a href='uxntal_reference.html'>Uxntal Reference</a>.</p>
-
-<table border="1" width="800">
-	<tr><td></td><th>Stack</th><th>in</th><th>out</th><td></td>                                <th>Memory</th><th>in</th><th>out</th></tr>
-	<tr><th>0x00</th><td><code class='op'>BRK/LIT</code> Break</td><td></td><td>num</td>       <th>0x10</th><td><code class='op'>LDZ</code> LoadZeropage</td><td>addr^</td><td>val</td></tr>
-	<tr><th>0x01</th><td><code class='op'>INC</code> Increment</td><td>a</td><td>a+1</td>      <th>0x11</th><td><code class='op'>STZ</code> StoreZeropage</td><td>val addr^</td><td></td></tr>
-	<tr><th>0x02</th><td><code class='op'>POP</code> Pop</td><td>a</td><td></td>               <th>0x12</th><td><code class='op'>LDR</code> LoadRelative</td><td>addr^</td><td>val</td></tr>
-	<tr><th>0x03</th><td><code class='op'>DUP</code> Duplicate</td><td>a</td><td>a a</td>      <th>0x13</th><td><code class='op'>STR</code> StoreRelative</td><td>val addr^</td><td></td></tr>
-	<tr><th>0x04</th><td><code class='op'>NIP</code> Nip</td><td>a b</td><td>b</td>            <th>0x14</th><td><code class='op'>LDA</code> LoadAbsolute</td><td>addr*</td><td>val</td></tr>
-	<tr><th>0x05</th><td><code class='op'>SWP</code> Swap</td><td>a b</td><td>b a</td>         <th>0x15</th><td><code class='op'>STA</code> StoreAbsolute</td><td>val addr*</td><td></td></tr>
-	<tr><th>0x06</th><td><code class='op'>OVR</code> Over</td><td>a b</td><td>a b a</td>       <th>0x16</th><td><code class='op'>DEI</code> Device In</td><td>addr^</td><td>val</td></tr>
-	<tr><th>0x07</th><td><code class='op'>ROT</code> Rotate</td><td>a b c</td><td>b c a</td>   <th>0x17</th><td><code class='op'>DEO</code> Device Out</td><td>val addr^</td><td></td></tr>
-	<tr><td></td><th>Logic</th><th>in</th><th>out</th><td></td>                                <th>Arithmetic</th><th>in</th><th>out</th></tr>
-	<tr><th>0x08</th><td><code class='op'>EQU</code> Equal</td><td>a b</td><td>bool^</td>       <th>0x18</th><td><code class='op'>ADD</code> Add</td><td>a b</td><td>a+b</td></tr>
-	<tr><th>0x09</th><td><code class='op'>NEQ</code> NotEqual</td><td>a b</td><td>bool^</td>    <th>0x19</th><td><code class='op'>SUB</code> Subtract</td><td>a b</td><td>a-b</td></tr>
-	<tr><th>0x0a</th><td><code class='op'>GTH</code> GreaterThan</td><td>a b</td><td>bool^</td> <th>0x1a</th><td><code class='op'>MUL</code> Multiply</td><td>a b</td><td>a*b</td></tr>
-	<tr><th>0x0b</th><td><code class='op'>LTH</code> LesserThan</td><td>a b</td><td>bool^</td>  <th>0x1b</th><td><code class='op'>DIV</code> Divide</td><td>a b</td><td>a/b</td></tr>
-	<tr><th>0x0c</th><td><code class='op'>JMP</code> Jump</td><td>addr</td><td></td>              <th>0x1c</th><td><code class='op'>AND</code> And</td><td>a b</td><td>res</td></tr>
-	<tr><th>0x0d</th><td><code class='op'>JCN</code> JumpCond</td><td>cond^ addr</td><td></td>     <th>0x1d</th><td><code class='op'>ORA</code> Or</td><td>a b</td><td>res</td></tr>
-	<tr><th>0x0e</th><td><code class='op'>JSR</code> JumpStash</td><td>addr</td><td></td>       <th>0x1e</th><td><code class='op'>EOR</code> ExclusiveOr</td><td>a b</td><td>res</td></tr>
-	<tr><th>0x0f</th><td><code class='op'>STH</code> Stash</td><td>a</td><td></td>           <th>0x1f</th><td><code class='op'>SFT</code> Shift</td><td>a b^</td><td>res</td></tr>
-</table>
-
 <ul>
-	<li><code>arg</code>: An 8-bit or 16-bit value, depending upon whether Short Mode is set.</li>
-	<li><code>arg^</code>: An 8-bit value regardless of whether Short Mode is set. </li>
-	<li><code>arg*</code>: An 16-bit value regardless of whether Short Mode is set. </li>
-	<li><code>bool</code>: The byte 00 for false, or the byte 01 for true.</li>
+	<li>The <b>keep mode</b> does not consume items from the stack, and pushes the result on top.</li>
+	<li>The <b>return mode</b> operates on the return-stack directly as opposed to the working stack.</li>
+	<li>The <b>short mode</b> will operate on shorts instead of bytes when possible.</li>
 </ul>
 
-<p>The jump operators will jump to a relative address in normal mode, and to an absolute address in <b>short mode</b>. All memory operators expect a single byte, except for the absolute operators expecting an absolute address. Shift in short mode is expecting a single byte.</p>
-
-<h3>Modes</h3>
-
-<p>By default, operators operate on bytes, notice how in the following example only the last two bytes <code>#45</code> and <code>#67</code> are added, even if there are two shorts on the stack.</p>
-<pre>#1234 #4567 ADD  <span style='color:#888; float:right'>12  34  <b style='color:black'>ac</b>  00  00  00  00  00</span></pre>
-
-<p>The <b>short mode</b> consumes two bytes from the stack. In the case of jump opcodes, the short-mode operation jumps to an absolute address in memory. For the memory accessing opcodes, the short mode operation indicates the size of the data to read and write.</p>
-<pre>#1234 #4567 ADD2 <span style='color:#888; float:right'><b style='color:black'>57  9b</b>  00  00  00  00  00  00</span></pre>
-
-<p>The <b>keep mode</b> does not consume items from the stack, and pushes the result on top. The following example adds the two shorts together, but does not consume them. You can see the complete list of <a href='uxntal_stacking.html'>stack permutations</a>.</p>
-<pre>#1234 #4567 ADD2k <span style='color:#888; float:right'>12  34  45  67  <b style='color:black'>57  9b</b>  00  00</span></pre>
-
-<table border="1">
-	<tr><td><code class='op'>POPk</td><td>a</td><td>a</code></td><td><code class='op'>SWPk</td><td>a b</td><td>a b b a</code></td></tr>
-	<tr><td><code class='op'>DUPk</td><td>a</td><td>a a a</code></td><td><code class='op'>OVRk</td><td>a b</td><td>a b a b a</code></td></tr>
-	<tr><td><code class='op'>NIPk</td><td>a b</td><td>a b b</code></td><td><code class='op'>ROTk</td><td>a b c</td><td>a b c b c a</code></td></tr>
+<table border="1" width="840">
+	<tr><td></td><th>Stack</th><th>in</th><th>out</th><td></td>                                <th>Memory</th><th>in</th><th>out</th></tr>
+	<tr><th>0x00</th><td><code class='op'>BRK/LIT</code> Break</td><td></td><td>num</td>       <th>0x10</th><td><code class='op'>LDZ</code> Load Zeropage</td><td>addr8</td><td>val</td></tr>
+	<tr><th>0x01</th><td><code class='op'>INC</code> Increment</td><td>a</td><td>a + 1</td>    <th>0x11</th><td><code class='op'>STZ</code> Save Zeropage</td><td>val addr8</td><td></td></tr>
+	<tr><th>0x02</th><td><code class='op'>POP</code> Pop</td><td>a</td><td></td>               <th>0x12</th><td><code class='op'>LDR</code> Load Rel</td><td>addr8</td><td>val</td></tr>
+	<tr><th>0x03</th><td><code class='op'>DUP</code> Duplicate</td><td>a</td><td>a a</td>      <th>0x13</th><td><code class='op'>STR</code> Save Rel</td><td>val addr8</td><td></td></tr>
+	<tr><th>0x04</th><td><code class='op'>NIP</code> Nip</td><td>a b</td><td>b</td>            <th>0x14</th><td><code class='op'>LDA</code> Load Abs</td><td>addr16</td><td>val</td></tr>
+	<tr><th>0x05</th><td><code class='op'>SWP</code> Swap</td><td>a b</td><td>b a</td>         <th>0x15</th><td><code class='op'>STA</code> Save Abs</td><td>val addr16</td><td></td></tr>
+	<tr><th>0x06</th><td><code class='op'>OVR</code> Over</td><td>a b</td><td>a b a</td>       <th>0x16</th><td><code class='op'>DEI</code> Device In</td><td>addr8</td><td>val</td></tr>
+	<tr><th>0x07</th><td><code class='op'>ROT</code> Rotate</td><td>a b c</td><td>b c a</td>   <th>0x17</th><td><code class='op'>DEO</code> Device Out</td><td>val addr8</td><td></td></tr>
+	<tr><td></td><th>Logic</th><th>in</th><th>out</th><td></td>                                <th>Arithmetic</th><th>in</th><th>out</th></tr>
+	<tr><th>0x08</th><td><code class='op'>EQU</code> Equal</td><td>a b</td><td>bool8</td>      <th>0x18</th><td><code class='op'>ADD</code> Add</td><td>a b</td><td>a + b</td></tr>
+	<tr><th>0x09</th><td><code class='op'>NEQ</code> NotEqual</td><td>a b</td><td>bool8</td>   <th>0x19</th><td><code class='op'>SUB</code> Subtract</td><td>a b</td><td>a - b</td></tr>
+	<tr><th>0x0a</th><td><code class='op'>GTH</code> Greater</td><td>a b</td><td>bool8</td>    <th>0x1a</th><td><code class='op'>MUL</code> Multiply</td><td>a b</td><td>a * b</td></tr>
+	<tr><th>0x0b</th><td><code class='op'>LTH</code> Lesser</td><td>a b</td><td>bool8</td>     <th>0x1b</th><td><code class='op'>DIV</code> Divide</td><td>a b</td><td>a / b</td></tr>
+	<tr><th>0x0c</th><td><code class='op'>JMP</code> Jump</td><td>addr</td><td></td>           <th>0x1c</th><td><code class='op'>AND</code> And</td><td>a b</td><td>a & b</td></tr>
+	<tr><th>0x0d</th><td><code class='op'>JCN</code> JumpCond</td><td>cond8 addr</td><td></td> <th>0x1d</th><td><code class='op'>ORA</code> Or</td><td>a b</td><td>a | b</td></tr>
+	<tr><th>0x0e</th><td><code class='op'>JSR</code> JumpStash</td><td>addr</td><td></td>      <th>0x1e</th><td><code class='op'>EOR</code> ExclusiveOr</td><td>a b</td><td>a ^ b</td></tr>
+	<tr><th>0x0f</th><td><code class='op'>STH</code> Stash</td><td>a</td><td></td>             <th>0x1f</th><td><code class='op'>SFT</code> Shift</td><td>a b8</td><td>a >> bl<br/>a << bh</td></tr>
 </table>
 
-<p>The <b>return mode</b> makes it possible for any opcode to operate on the return-stack directly. For that reason, there is no dedicated return opcode. For example, the <code class='op'>JSR</code> opcode pushes the program's address onto the return stash before jumping, to return to that address, the <code class='op'>JMP2r</code> opcode is used, where instead of using the address on the working-stack, it takes its address from the return-stack.</p>
-<pre>#1234 #4567 STH ROT STH ADDr STHr <span style='color:#888; float:right'>34  45  <b style='color:black'>79</b>  00  00  00  00  00</span></pre>
+<p>Operator modes are indicated by appending extra characters at the end of the opcode, for example, the <i>short mode</i> for the <code class='op'>ADD</code> opcode is <code class='op'>ADD2</code>, modes can also be combined, for example: <code class='op'>ADD2kr</code>. A boolean byte is 00 for false, or or 01 for true. To learn more, visit the <a href='uxntal_reference.html'>Uxntal Reference</a>.</p>
 
 <img src="../media/generic/uxn.team.png" width="250" style="margin:0 auto 30px">
 
 <h2>Programming</h2>
 
-<p>Uxntal has no reserved words besides the 32 opcodes, each element type begins with its own special character, or <i>rune</i>. Comments are within parentheses, curlies are used in the definition of macros, and the square brackets are ignored.</p>
-
-<table border="1">
-	<tr><th colspan="4">Runes</th></tr>
-	<tr><td><code>%</code></td><td>macro-define</td><td><code>#</code></td><td>literal hex</td></tr>
-	<tr><td><code>|</code></td><td>pad(absolute)</td><td><code>.</code></td><td>literal addr(zero-page)</td></tr>
-	<tr><td><code>$</code></td><td>pad(relative)</td><td><code>,</code></td><td>literal addr(relative)</td></tr>
-	<tr><td><code>@</code></td><td>label-define</td><td><code>;</code></td><td>literal addr(absolute)</td></tr>
-	<tr><td><code>&amp;</code></td><td>sublabel-define</td> <td><code>:</code></td><td>raw addr(absolute)</td></tr>
-	<tr><td></td><td></td> <td><code>&#39;</code></td><td>raw char</td></tr>
-	<tr><td><code>~</code></td><td>include</td><td><code>&quot;</code></td><td>raw word</td></tr>
-</table>
+<p>Uxntal has no reserved words besides the 32 opcodes, each element type begins with its own special character, or <i>rune</i>. Comments are within parentheses, curlies are used in the definition of macros, and the square brackets are ignored. Hexadecimal values are always lowercase.</p>
 
 <h3>Hello World</h3>
 
@@ -111,9 +78,15 @@ BRK
 <span class='label'>@hello-word</span> "Hello 20 "World! 00
 </pre>
 
+<p>Assembled(31 bytes):</p>
+
+<pre>
+a001 1294 8018 1721 9480 f70d 22a0 010f
+1700 4865 6c6c 6f20 576f 726c 6421 00
+</pre>
+
 <style>
-pre.example { clear:both; background:#fff; border:2px solid; padding:15px; }
-span.label { font-weight: bold; color:#42bea2 }
+span.label { font-weight: bold;background: #fff;color: #000;padding: 2px 4px; }
 span.comment { color:#aaa }
 </style>
 
@@ -126,6 +99,17 @@ span.comment { color:#aaa }
 <p>To increment the absolute address found on top of the stack, we use <code class='op'>INC2</code> because we know the items on the stack to be an address made of two bytes. We load the incremented value, the <code class='op'>JCN</code> opcode will jump to the position of label <code class='op'>&while</code> as long as the item before the address is not zero. We complete the program with <code class='op'>POP2</code> to remove the address on the stack, to keep the stack clean.</p>
 
 <p>Both <code class='op'>&while</code> and <code class='op'>@while</code> are ways to define labels, but using <code>&while</code> will automatically prefix a new <code>&label</code> with the name of the last <code>@label</code>, in this example <code>program/while</code>. Since label names are unique identifiers and you might need multiple instances of something called <i>while</i>, it's best to use sublabels when possible.</p>
+
+<table border="1">
+	<tr><th colspan="4">Runes</th></tr>
+	<tr><td><code>%</code></td><td>macro-define</td><td><code>#</code></td><td>literal hex</td></tr>
+	<tr><td><code>|</code></td><td>pad(absolute)</td><td><code>.</code></td><td>literal addr(zero-page)</td></tr>
+	<tr><td><code>$</code></td><td>pad(relative)</td><td><code>,</code></td><td>literal addr(relative)</td></tr>
+	<tr><td><code>@</code></td><td>label-define</td><td><code>;</code></td><td>literal addr(absolute)</td></tr>
+	<tr><td><code>&amp;</code></td><td>sublabel-define</td> <td><code>:</code></td><td>raw addr(absolute)</td></tr>
+	<tr><td></td><td></td> <td><code>&#39;</code></td><td>raw char</td></tr>
+	<tr><td><code>~</code></td><td>include</td><td><code>&quot;</code></td><td>raw word</td></tr>
+</table>
 
 <h2>Addressing</h2>
 
