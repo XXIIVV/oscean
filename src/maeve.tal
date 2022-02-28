@@ -179,7 +179,12 @@ RTN
 		#000a ++
 		( bound ) DUP2 #09 ;next-char JSR2 STH2
 		( clip ) #00 STH2kr STA
-		( flag ) DUP2 ;find-term JSR2 ,&term STR2
+		( flag ) DUP2 ;find-term JSR2 
+		( test for exist )
+			DUP2 #0000 !! ,&no-missing JCN
+				;error-diary-term-missing ROT2 ERROR
+				&no-missing
+			,&term STR2
 		( unclip ) #09 STH2r STA
 		[ LIT2 &log $2 ] [ LIT2 &term $2 ] ,connect-diaries JSR
 		( goto eol ) &eol INC2 LDAk ,&eol JCN INC2
@@ -242,6 +247,7 @@ RTN
 @htm-path "htm/ $1
 @tmp-path "tmp/ $1
 
+@error-diary-term-missing "-- 20 "diary_term_missing 20 $1
 @error-include-missing "-- 20 "include_missing 20 $1
 @error-broken-link "-- 20 "local_missing 20 $1
 @warning-duplicate-outgoing "-- 20 "duplicate_outgoing 20 $1
