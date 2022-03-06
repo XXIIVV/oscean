@@ -7,7 +7,7 @@
 
 <p>There is a maximum of 16 devices, each device has 16 bytes, also called ports, of I/O memory. <b>Vectors</b> are ports holding the address to an entry point into a program, in other words, the part of the program that triggers when the mouse is moved, or a key is pressed.</p>
 
-<ul>
+<ul style='column-count:2;'>
 	<li>0x0 <a href='#system'>system</a></li>
 	<li>0x1 <a href='#console'>console</a></li>
 	<li>0x2 <a href='#screen'>screen</a></li>
@@ -67,6 +67,8 @@
 
 <h3 id='screen'>Screen Device</h3>
 
+<img src='../media/generic/uxn.ppu.jpg' style='float:right' width='240' />
+
 <table border='1'>
 	<tr>
 		<th rowspan='8'><a href='#screen'>screen</a></th>
@@ -81,25 +83,23 @@
 	<tr><th>27</th><td class='empty'>--</td><th>2f</th><td>sprite</td></tr>
 </table>
 
-<img src='../media/generic/uxn.ppu.jpg' style='float:right' width='240' />
-
-<p>The screen device is made of two layers, each displaying 2-bits graphics in up to 4 colors. Drawing to the screen is done by writing values to the screen's <code>x*</code>, <code>y*</code> and <code>pixel/sprite</code> ports of the screen device. The screen vector triggers 60 per seconds.</p>
+<p>The screen device is made of two layers, each displaying 2-bits graphics in up to 4 colors. Drawing to the screen is done by writing values to the screen's <code>x*</code>, <code>y*</code> and <code>pixel/sprite</code> ports of the screen device. The screen vector triggers 60 times per seconds.</p>
 
 <pre>
-M L Y X            D C B A            
-| | | +---- Flipx  | | | +---- Blend   
-| | +------ Flipy  | | +------ Blend   
-| +-------- Layer  | +-------- Blend  
-+---------- Mode   +---------- Blend  
+M L Y X            D C B A          
+| | | +---- Flipx  | | | +---- Blend 
+| | +------ Flipy  | | +------ Blend 
+| +-------- Layer  | +-------- Blend
++---------- Mode   +---------- Blend
 </pre>
 
 <table border='1'>
 	<tr><th colspan='8'>Effects(MLYX)</th><th colspan='8'>Blending(DBCA)</th></tr>
 	<tr>
-		<th>0</th><td>bg 1b</td>
-		<th>4</th><td>fg 1b</td>
-		<th>8</th><td>bg 2b</td>
-		<th>c</th><td>fg 2b</td>
+		<th>0</th><td><i>bg1bit</i></td>
+		<th>4</th><td><i>fg1bit</i></td>
+		<th>8</th><td><i>bg2bit</i></td>
+		<th>c</th><td><i>fg2bit</i></td>
 		<th>0</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg0 fg0'><circle cx="10" cy="10" r="8"/></svg></td>
 		<th>4</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg1 fg0'><circle cx="10" cy="10" r="8"/></svg></td>
 		<th>8</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg2 fg0'><circle cx="10" cy="10" r="8"/></svg></td>
@@ -137,14 +137,14 @@ M L Y X            D C B A
 	</tr>
 </table>
 
-<p>To draw a single pixel at 20,30 with the second color on the foreground layer: </p>
+<p>To draw a single teal pixel on the foreground, at the position 20,30: </p>
 
 <pre>
 @paint-pixel
 	#0020 .Screen/x DEO2 <span style='float:right; color:#888'>( set x* position )</span>
 	#0030 .Screen/y DEO2 <span style='float:right; color:#888'>( set y* position )</span>
 	#42 .Screen/pixel DEO2 <span style='float:right; color:#888'>( draw 4-fg 2-color2 )</span>
-RTN
+JMP2r
 </pre>
 
 <p>The screen can also draw 8x8 sprites by writing an <code>addr*</code> which points to the <a href='chr_format.html'>sprite data</a> in memory. The <b>sprite byte</b> defines the layer to draw on, the type of data to draw, and the colors to use. </p>
@@ -155,7 +155,7 @@ RTN
 	#0030 .Screen/y DEO2 <span style='float:right; color:#888'>( set y* position )</span>
 	;sprite .Screen/addr DEO2 <span style='float:right; color:#888'>( set addr* position )</span>
 	#03 .Screen/sprite DEO <span style='float:right; color:#888'>( draw 0-bg 3-color3 )</span>
-RTN
+JMP2r
 
 @sprite
 	0f38 675f dfbf bfbf
@@ -165,17 +165,35 @@ RTN
 
 <img src='../media/generic/varvara.blending.png' />
 
-<p>The screen's <b>auto byte</b> automates the incrementation of the position and/or the sprite address whenever a drawing command is sent, so the program does not need to manually move to the next sprite, or the next tile. A pixel drawing will increment the positions by 1, and a sprite drawing, by 8. A 1bpp sprite drawing will increment the address by 8, and a 2bpp drawing, by 16.</p>
+<p>The screen's <b>auto byte</b> automates the position and sprite address whenever a drawing command is sent, so the program does not need to manually move to the next sprite, or the next tile. A pixel drawing will increment the positions by 1, and a sprite drawing, by 8. A 1bpp sprite drawing will increment the address by 8, and a 2bpp drawing, by 16.</p>
 
 <pre>
-* A Y X            
-| | | +---- Auto X
-| | +------ Auto Y  
-| +-------- Auto Addr
-+---------- <i>Unused</i>
+L L L L            * A Y X
+| | | +---- Length  | | | +---- Auto X
+| | +------ Length  | | +------ Auto Y
+| +-------- Length  | +-------- Auto Addr
++---------- Length  +---------- <i>Unused</i>
+</pre>
+
+<p>The high nibble of the auto byte is the length of pixel to draw at once. This allows to draw a 2x3 sprite without needing complex logic:</p>
+
+<pre>
+@paint-sprite
+	#0020 .Screen/x DEO2 <span style='float:right; color:#888'>( set x* position )</span>
+	#0030 .Screen/y DEO2 <span style='float:right; color:#888'>( set y* position )</span>
+	;23x-icns .Screen/addr DEO2 <span style='float:right; color:#888'>( set addr* position )</span>
+	#01 .Screen/sprite DEOk DEOk DEO <span style='float:right; color:#888'>( draw 3 rows )</span>
+JMP2r
+
+@23x-icns
+	0010 2847 2810 0001 0000 00e0 2040 8000
+	0204 080f 0000 0001 0000 00e0 2040 8000
+	0204 080f 0000 0000 0010 28c4 2810 0000
 </pre>
 
 <h3 id='audio'>Audio Device</h3>
+
+<img src='../media/generic/uxn.apu.jpg' style='float:right' width='240' />
 
 <table border='1'>
 	<tr>
@@ -190,8 +208,6 @@ RTN
 	<tr><th>36</th><td class='empty'>--</td><th>3e</th><td>volume</td></tr>
 	<tr><th>37</th><td class='empty'>--</td><th>3f</th><td>pitch</td></tr>
 </table>
-
-<img src='../media/generic/uxn.apu.jpg' style='float:right' width='240' />
 
 <p>When <code>pitch</code> is written to any of the audio devices, it starts playing an audio sample from Uxn's memory, pointed to by <code>addr*</code> and <code>length*</code>. It loops the sample (unless told not to) until it reaches the end of the ADSR envelope defined by <code>adsr*</code>. The audio vector triggers when a note ends.</p>
 
@@ -361,5 +377,5 @@ code.button { background: #000; color: white; font-size: smaller; display: inlin
 
 <img src="../media/generic/uxn.cake.png" style="float:left;margin-right:30px" width="250">
 
-<p>This rom should at allow to navigate between roms that are available in the current folder. If no rom is loaded into the emulator, the launcher should start. The basic launcher allows to assemble <a href='uxntal.html'>uxntal</a> files.</p><ul></ul><p><b>Incoming</b>: <a href="donsol.html">donsol</a> <a href="roms.html">roms</a> <a href="noodle.html">noodle</a> <a href="adelie.html">adelie</a> <a href="shim.html">shim</a> <a href="icn_format.html">icn format</a> <a href="chr_format.html">chr format</a> <a href="gly_format.html">gly format</a> <a href="ufx_format.html">ufx format</a> <a href="tga_format.html">tga format</a> <a href="paradise.html">paradise</a> <a href="chip8.html">chip8</a> <a href="uxn.html" class="parent">uxn</a> <a href="uxntal.html">uxntal</a> <a href="playdate.html">playdate</a> <a href="2021.html">2021</a> <a href="devine_lu_linvega.html">devine lu linvega</a> <a href="computer.html">computer</a> <a href="ayatori.html">ayatori</a> </p></main>
+<p>This rom should at allow to navigate between roms that are available in the current folder. If no rom is loaded into the emulator, the launcher should start. The basic launcher allows to assemble <a href='uxntal.html'>Uxntal</a> files.</p><ul></ul><p><b>Incoming</b>: <a href="donsol.html">donsol</a> <a href="roms.html">roms</a> <a href="noodle.html">noodle</a> <a href="adelie.html">adelie</a> <a href="shim.html">shim</a> <a href="icn_format.html">icn format</a> <a href="chr_format.html">chr format</a> <a href="gly_format.html">gly format</a> <a href="ufx_format.html">ufx format</a> <a href="tga_format.html">tga format</a> <a href="tga_format.html">tga format</a> <a href="paradise.html">paradise</a> <a href="chip8.html">chip8</a> <a href="uxn.html" class="parent">uxn</a> <a href="uxntal.html">uxntal</a> <a href="playdate.html">playdate</a> <a href="2021.html">2021</a> <a href="devine_lu_linvega.html">devine lu linvega</a> <a href="computer.html">computer</a> <a href="ayatori.html">ayatori</a> </p></main>
 <footer><a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.svg" alt="CreativeCommons"/></a><a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a><a href="https://merveilles.town/@neauoire" rel="me" target="_blank"><img src="../media/icon/merveilles.svg" alt="Merveilles"/></a><a href="uxn.html"><img src="../media/icon/uxn.svg" alt="Uxn Powered"/></a><span><a href="devine_lu_linvega.html">Devine Lu Linvega</a> &copy; 2022 &mdash; <a href="about.html">BY-NC-SA 4.0</a></span></footer></body></html>

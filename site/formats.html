@@ -192,7 +192,7 @@ RTN
 RTN
 </pre><h2>Truevision TGA is a raster graphics file format created by Truevision.</h2>
 
-<p>TGA are the current image transfer format between <a href="varvara.html">Varvara</a> and the host operating system.</p>
+<p>TGA files are currently used as the standard image transfer format between <a href="varvara.html">Varvara</a> and the host operating system.</p>
 
 <table border="1">
 	<tr><th>Length</th><th>Field name</th><th>Description</th></tr>
@@ -249,9 +249,112 @@ Image type 2 and 10: The image data is a direct representation of the pixel colo
 
 <p>In case that not the entire color map is actually used by the image, a non-zero first entry index allows to store only a required part of the color map in the file.</p>
 
+<h3>Uxntal Implementation</h3>
+
+<p>Here is an <a href='uxntal.html'>Uxntal</a> implementation to draw an uncompressed TGA image in <a href='varvara.html'>Varvara</a>:</p>
+
+<pre>
+%FLIP { STH2k LDA2 SWP STH2r STA2 }
+
+@tga
+	&id-length $1
+	&color-map $1
+	&image-type $1
+	&map $5
+	&position &x $2 &y $2
+	&size &w $2 &h $2
+	&depth $1
+	&descriptor $1
+
+@draw-tga ( addr* -- )
+
+	( header )
+	.File/name DEO2
+	#0012 .File/length DEO2
+	;tga .File/read DEO2
+	( flip endianness )
+	;tga/x FLIP ;tga/y FLIP
+	;tga/w FLIP ;tga/h FLIP
+	( get parser )
+	;tga/image-type LDA
+	#02 !~ ,&no-rawt JCN
+		;tga-rawt #0004 ,parse-tga JSR
+		POP RTN
+		&no-rawt
+	#03 !~ ,&no-rawm JCN
+		;tga-rawm #0001 ,parse-tga JSR
+		POP RTN
+		&no-rawm
+	( error )
+	;&error-unknown-txt ;print-str JSR2
+	;tga/image-type LDA 2* TOS ;tga-types ++ LDA2 PRINT
+
+RTN
+	&error-unknown-txt "Unsupported 20 "image-type: 20 $1
+
+@parse-tga ( filter* length* -- )
+
+	.File/length DEO2 ,&filter STR2
+	.Screen/x DEI2 ,&x STR2
+	AUTO-X
+	LIT2r 0000
+	&stream
+		;&pixel
+			DUP2 .File/read DEO2
+			[ LIT2 &filter $2 ] JSR2 .Screen/pixel DEO
+		INC2r
+		( skip line )
+		STH2kr ;tga/w LDA2 !! ,&continue JCN
+			[ LIT2 &x $2 ] .Screen/x DEO2
+			POP2r LIT2r 0000
+			.Screen/y DEI2k INC2 ROT DEO2
+			&continue
+		.File/success DEI2 #0000 !! ,&stream JCN
+	POP2r
+	AUTO-NONE
+
+RTN
+	&pixel $4
+
+( pixel filters )
+
+@tga-rawt ( rgba* -- color )
+
+	STH2
+	( b ) #00 STH2kr LDA INC2r
+	( g ) #00 STH2kr LDA INC2r
+	( r ) #00 STH2r LDA
+	( res ) ++ ++ #0003 // NIP 40/
+
+RTN
+
+@tga-rawm ( grey* -- color )
+
+	( res ) LDA 40/
+
+RTN
+
+@tga-types-txts
+	&null "missing-type $1
+	&rawc "RAW-color $1
+	&rawt "RAW-true $1
+	&rawm "RAW-mono $1
+	&rlec "RLE-color $1
+	&rlet "RLE-true $1
+	&rlem "RLE-mono $1
+	&void "unknown-type $1
+
+@tga-types
+	:tga-types-txts/null :tga-types-txts/rawc
+	:tga-types-txts/rawt :tga-types-txts/rawm
+	:tga-types-txts/void :tga-types-txts/void
+	:tga-types-txts/void :tga-types-txts/void
+	:tga-types-txts/void :tga-types-txts/rlec
+	:tga-types-txts/rlet :tga-types-txts/rlem
+</pre>
+
 <ul>
 	<li><a href='https://git.sr.ht/~rabbits/tga-format' target='_blank'>view source</a></li>
 </ul>
-
 <ul></ul></main>
 <footer><a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.svg" alt="CreativeCommons"/></a><a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a><a href="https://merveilles.town/@neauoire" rel="me" target="_blank"><img src="../media/icon/merveilles.svg" alt="Merveilles"/></a><a href="uxn.html"><img src="../media/icon/uxn.svg" alt="Uxn Powered"/></a><span><a href="devine_lu_linvega.html">Devine Lu Linvega</a> &copy; 2022 &mdash; <a href="about.html">BY-NC-SA 4.0</a></span></footer></body></html>
