@@ -14,19 +14,57 @@
 
 <p>I am certain that making something unique by way of customization is necessary for care, <i>for when the unique breaks, </i><a href='https://simonsarris.substack.com/p/that-which-is-unique-breaks' target='_blank'>we might mend</a>. I often think back on how, in the movie Hackers(1995), each character had their own laptop launch sequence reflecting parts of their aesthetics. A far cry from the NodeJS hexagonal stickers found on every second laptop today.</p>
 
-<h3>I. Drawing a Pixel</h3>
+<img src='../media/generic/uxn.devices.png' width='300'/>
 
-<p>I heard tales from the fabled era of computing when people would create simple operating systems over the course of a weekend or two, it inspired me to try and find the building blocks needed to make this process more approachable. But first, <b>a pixel</b>, from the pixel, various lines, letters, shapes and other primitives can be derived.</p>
+<h3>I. Drawing</h3>
+
+<p>I heard tales from the fabled era of computing when people would create simple operating systems over the course of a weekend or two, it inspired me to try and find the building blocks needed to make this process more approachable. But first, <b>a pixel</b>, from it various lines, letters, shapes and other primitives can be derived.</p>
 
 <pre>
-#0010 .Screen/x DEO2   <span style='float:right; color:#777'>a000 1080 2837</span>
-#0020 .Screen/y DEO2   <span style='float:right; color:#777'>a000 2080 2a37</span>
-#01 .Screen/pixel DEO  <span style='float:right; color:#777'>a001 2e17</span>
+@draw-pixel ( -- )
+	#0010 .Screen/x DEO2   <span style='float:right; color:#777'>a000 1080 2837</span>
+	#0020 .Screen/y DEO2   <span style='float:right; color:#777'>a000 2080 2a37</span>
+	#01 .Screen/pixel DEO  <span style='float:right; color:#777'>a001 2e17</span>
+JMP2r
 </pre>
+
+<img src='../media/generic/pixel.heart.png' width='200' style='float:right'/>
 
 <p>One of the many things that <a href='plan9.html'>Plan 9</a> has made quite clear to me, was that interface design can be fun. An easy access to a pixel buffer makes all the difference to fostering an ecosystem of personalized applications. </p>
 
-<h3>II. Drawing 64 Pixels</h3>
+<p>The Famicom's picture processing unit uses little 8x8 tiles, which fit neatly in 8 bytes of memory, where each byte is a row, and each monochromatic pixel is a bit. This tile size is small enough that someone with a pen and paper could mentally decypher its content, and large enough to contain a letter or a pictogram.</p>
 
-<p>The Famicom picture processing unit uses little 8x8 tiles, which fit neatly in 8 bytes of memory, where each byte is a row, and each pixel is a bit.</p><ul></ul><p><b>Incoming</b>: <a href="devlog.html" class="parent">devlog</a> <a href="uxn_devlog.html">uxn devlog</a> </p></main>
+<pre>
+@draw-heart ( -- )
+	#0010 .Screen/x DEO2   <span style='float:right; color:#777'>a000 1080 2837</span>
+	#0020 .Screen/y DEO2   <span style='float:right; color:#777'>a000 2080 2a37</span>
+	;heart-icn .Screen/addr DEO2 <span style='float:right; color:#777'>a001 2e80 2c37</span>
+	#01 .Screen/sprite DEO  <span style='float:right; color:#777'>a001 2e17</span>
+JMP2r
+
+@heart-icn
+	006c fefe 7c38 1000
+</pre>
+
+<img src='../media/generic/pixel.smile.png' width='200' style='float:right'/>
+
+<p>The Neo Geo's graphics processor assembles tiles into larger sprites by drawing them in a sequence, either vertically or horizontally. We can easily draw a 2x2 picture by adding an extra drawing message to the screen device.</p>
+
+<p>Varvara's screen device allows for drawing larger real-time graphics with very little boilerplate that could get in the way of creating interfaces and assets.</p>
+
+<pre>
+@draw-smile ( -- )
+	#0010 .Screen/x DEO2   <span style='float:right; color:#777'>a000 1080 2837</span>
+	#0020 .Screen/y DEO2   <span style='float:right; color:#777'>a000 2080 2a37</span>
+	;smile-icns .Screen/addr DEO2 <span style='float:right; color:#777'>a001 3780 2c37</span>
+	#16 .Screen/auto DEO <span style='float:right; color:#777'>a016 2617</span>
+	#01 .Screen/sprite DEOk DEO <span style='float:right; color:#777'>a001 2f97 17</span>
+JMP2r
+
+@smile-icns
+	( first row )
+	0007 1820 2040 4044 00e0 1804 0402 0222
+	( second row ) 
+	4040 4423 2018 0700 0202 22c4 0418 e000
+</pre><ul></ul><p><b>Incoming</b>: <a href="devlog.html" class="parent">devlog</a> <a href="uxn_devlog.html">uxn devlog</a> </p></main>
 <footer><a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.svg" alt="CreativeCommons"/></a><a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a><a href="https://merveilles.town/@neauoire" rel="me" target="_blank"><img src="../media/icon/merveilles.svg" alt="Merveilles"/></a><a href="uxn.html"><img src="../media/icon/uxn.svg" alt="Uxn Powered"/></a><span><a href="devine_lu_linvega.html">Devine Lu Linvega</a> &copy; 2022 &mdash; <a href="about.html">BY-NC-SA 4.0</a></span></footer></body></html>
