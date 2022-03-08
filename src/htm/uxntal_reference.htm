@@ -21,7 +21,7 @@
 	<tr><th>f0</th><td><a href="#ldz">LDZ2rk</a></td><td><a href="#stz">STZ2rk</a></td><td><a href="#ldr">LDR2rk</a></td><td><a href="#str">STR2rk</a></td><td><a href="#lda">LDA2rk</a></td><td><a href="#sta">STA2rk</a></td><td><a href="#dei">DEI2rk</a></td><td><a href="#deo">DEO2rk</a></td><td><a href="#add">ADD2rk</a></td><td><a href="#sub">SUB2rk</a></td><td><a href="#mul">MUL2rk</a></td><td><a href="#div">DIV2rk</a></td><td><a href="#and">AND2rk</a></td><td><a href="#ora">ORA2rk</a></td><td><a href="#eor">EOR2rk</a></td><td><a href="#sft">SFT2rk</a></td></tr>
 </table>
 
-<h3>Modes</h3>
+<h2>Modes</h2>
 
 <p>By default, operators operate on bytes, notice how in the following example only the last two bytes <code>#45</code> and <code>#67</code> are added, even if there are two shorts on the stack.</p>
 <pre>#1234 #4567 ADD  <span style='color:#888; float:right'>12  34  <b style='color:black'>ac</b>  00  00  00  00  00</span></pre>
@@ -41,14 +41,7 @@
 <p>The <b>return mode</b> makes it possible for any opcode to operate on the return-stack directly. For that reason, there is no dedicated return opcode. For example, the <code class='op'>JSR</code> opcode pushes the program's address onto the return stash before jumping, to return to that address, the <code class='op'>JMP2r</code> opcode is used, where instead of using the address on the working-stack, it takes its address from the return-stack.</p>
 <pre>#1234 #4567 STH ROT STH ADDr STHr <span style='color:#888; float:right'>34  45  <b style='color:black'>79</b>  00  00  00  00  00</span></pre>
 
-<h3>Instructions</h3>
-<ul>
-  <li><code>a -- b</code>: Instruction consumes <code>a</code> as input off the stack, and pushes the result <code>b</code> onto the stack.</li>
-	<li><code>arg</code>: An 8-bit or 16-bit value, depending upon whether Short Mode is set.</li>
-	<li><code>arg^</code>: An 8-bit value regardless of whether Short Mode is set. </li>
-	<li><code>arg*</code>: An 16-bit value regardless of whether Short Mode is set. </li>
-	<li><code>bool</code>: The byte 00 for false, or the byte 01 for true.</li>
-</ul>
+<h2>Instructions</h2>
 
 <h4 id='brk'>Break</h4>
 <p>
@@ -146,7 +139,7 @@ Rotates three values at the top of the stack, to the left, wrapping around.</p>
 <h4 id='equ'>Equal</h4>
 <p>
 <code class='op'>EQU</code>
-<code class="sig">a b -- bool^</code>
+<code class="sig">a b -- bool8</code>
 Pushes 01 to the stack if the two values at the top of the stack are equal, 00 otherwise.</p>
 <pre>
 #0101 EQU          ( 01 )
@@ -158,7 +151,7 @@ Pushes 01 to the stack if the two values at the top of the stack are equal, 00 o
 <h4 id='neq'>Not Equal</h4>
 <p>
 <code class='op'>NEQ</code>
-<code class="sig">a b -- bool^</code>
+<code class="sig">a b -- bool8</code>
 Pushes 01 to the stack if the two values at the top of the stack are not equal, 00 otherwise.</p>
 <pre>
 #0101 NEQ          ( 00 )
@@ -170,7 +163,7 @@ Pushes 01 to the stack if the two values at the top of the stack are not equal, 
 <h4 id='gth'>Greater Than</h4>
 <p>
 <code class='op'>GTH</code>
-<code class="sig">a b -- bool^</code>
+<code class="sig">a b -- bool8</code>
 Pushes 01 to the stack if the second value at the top of the stack is greater than the value at the top of the stack, 00 otherwise.</p>
 <pre>
 #0101 GTH          ( 00 )
@@ -182,7 +175,7 @@ Pushes 01 to the stack if the second value at the top of the stack is greater th
 <h4 id='lth'>Lesser Than</h4>
 <p>
 <code class='op'>LTH</code>
-<code class="sig">a b -- bool^</code>
+<code class="sig">a b -- bool8</code>
 Pushes 01 to the stack if the second value at the top of the stack is lesser than the value at the top of the stack, 00 otherwise.</p>
 <pre>
 #0101 LTH          ( 00 )
@@ -202,7 +195,7 @@ Moves the program counter by a signed value equal to the byte on the top of the 
 <h4 id='jcn'>Jump Conditional</h4>
 <p>
 <code class='op'>JCN</code>
-<code class="sig">cond^ addr --</code>
+<code class="sig">cond8 addr --</code>
 If the byte preceeding the address is not 00, moves the program counter by a signed value equal to the byte on the top of the stack, or an absolute address in short mode.</p>
 
 <h4 id='jsr'>Jump Stash Return</h4>
@@ -222,37 +215,37 @@ Moves the value at the top of the stack, to the return stack.</p>
 <h4 id='ldz'>Load Zero-Page</h4>
 <p>
 <code class='op'>LDZ</code>
-<code class="sig">addr^ -- value</code>
+<code class="sig">addr8 -- value</code>
 Pushes the value at an address within the first 256 bytes of memory, to the top of the stack.</p>
 
 <h4 id='stz'>Store Zero-Page</h4>
 <p>
 <code class='op'>STZ</code>
-<code class="sig">val addr^ --</code>
+<code class="sig">val addr8 --</code>
 Writes a value to an address within the first 256 bytes of memory.</p>
 
 <h4 id='ldr'>Load Relative</h4>
 <p>
 <code class='op'>LDR</code>
-<code class="sig">addr^ -- value</code>
+<code class="sig">addr8 -- value</code>
 Pushes the value at a relative address, to the top of the stack. The possible relative range is -128 to +127 bytes.</p>
 
 <h4 id='str'>Store Relative</h4>
 <p>
 <code class='op'>STR</code>
-<code class="sig">val addr^ --</code>
+<code class="sig">val addr8 --</code>
 Writes a value to a relative address. The possible relative range is -128 to +127 bytes.</p>
 
 <h4 id='lda'>Load Absolute</h4>
 <p>
 <code class='op'>LDA</code>
-<code class="sig">addr* -- value</code>
+<code class="sig">addr16 -- value</code>
 Pushes the value at a absolute address, to the top of the stack.</p>
 
 <h4 id='sta'>Store Absolute</h4>
 <p>
 <code class='op'>STA</code>
-<code class="sig">val addr* --</code>
+<code class="sig">val addr16 --</code>
 Writes a value to a absolute address.</p>
 
 <h4 id='dei'>Device Input</h4>
@@ -316,7 +309,7 @@ Pushes the result of the bitwise operation XOR, to the top of the stack.</p>
 <h4 id='sft'>Shift</h4>
 <p>
 <code class='op'>SFT</code>
-<code class="sig">a b^ -- c</code>
+<code class="sig">a shift8 -- c</code>
 Moves the bits of the second value of the stack to the left or right, depending on the control value at the top of the stack. The high nibble of the control value determines how many bits left to shift, and the low nibble how many bits right to shift. The rightward shift is done first.</p>
 
 <style>

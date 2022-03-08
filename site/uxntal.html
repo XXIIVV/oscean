@@ -51,15 +51,15 @@
 
 <h2>Programming</h2>
 
-<p>Uxntal has no reserved words besides the 32 opcodes, each element type begins with its own special character, or <i>rune</i>. Comments are within parentheses, curlies are used in the definition of macros, and the square brackets are ignored. Hexadecimal values are always lowercase.</p>
+<p>The 32 captialized opcodes are reserved words, values and labels begin with a special character, or <i>rune</i>. Comments are within parentheses, curlies are used in the definition of macros, and the square brackets are ignored. Hexadecimal values are always in lowercase.</p>
 
 <h3>Hello World</h3>
 
-<p>In this example program, we begins by creating the <code>EMIT</code> macro, which contains the byte value of the <a href='varvara.html#console'>Console/write</a> port, followed by the <code class='op'>DEO</code> device output opcode. From that point onward, using <code>EMIT</code> will send a byte from the stack, to the Console/write port. Each device has 16 ports, each port handle a specific I/O.</p>
+<p>In this example program, we begins by creating the <code>EMIT</code> macro, which contains <code>#18</code> the byte referencing the <a href='varvara.html#console'>Console/write</a> port, followed by the device output <code class='op'>DEO</code> opcode. From that point onward, using <code>EMIT</code> will send a byte from the stack, to the Console/write port. Each device has 16 ports, each port handles a specific I/O message.</p>
 
 <pre class='example'>
-<b>%HALT</b> { #010f DEO }
 <b>%EMIT</b> { #18 DEO }
+<b>%HALT</b> { #010f DEO }
 
 <span class='comment'>( init )</span>
 
@@ -91,15 +91,13 @@ span.label { font-weight: bold;background: #fff;color: #000;padding: 2px 4px; }
 span.comment { color:#aaa }
 </style>
 
-<p>Next, we pad to <code class='op'>|0100</code>, which is where the first page of memory ends, and where all Uxn programs begin. Our program begins by pushing to the stack, the absolute address of the label <code class='op'>@hello-world</code>, which is defined at the end, and points to a series of characters. An absolute address is made of two bytes.</p>
+<p>Next, we pad to <code class='op'>|0100</code>, which is where the first page of memory ends, and where all Uxn programs begin. Our program begins by pushing the absolute address of the label <code class='op'>@hello-world</code> to the stack, which is defined later, and points to a series of<a href='ascii.html'>ASCII</a> characters. This absolute address is made of two bytes.</p>
 
-<p>We then assign the child label <code class='op'>&while</code> to this position of the program so we can return to it later.</p>
+<p>We create the child label <code class='op'>&while</code> to this position of the program so we can return to it later. Both <code class='op'>&while</code> and <code class='op'>@while</code> are ways to define labels, but using <code>&while</code> will automatically prefix a new <code>&label</code> with the name of the last <code>@label</code>, in this example <code>program/while</code>. </p>
 
-<p>Next, the <code class='op'>LDAk</code> opcode takes two bytes at the top of the stack to form an absolute address, and loads the value in memory found at that address to the top of the stack, in this case, the <a href='ascii.html'>ascii value</a> of the letter H. That value is sent to Console/write(port #18) which prints that character to the terminal.</p>
+<p>Next, the <code class='op'>LDAk</code> opcode takes two bytes at the top of the stack to form an absolute address, and loads the value in memory found at that address to the top of the stack, in this case, the ASCII value of the letter H. That value is sent to Console/write(port #18) which prints that character to the terminal.</p>
 
-<p>To increment the absolute address found on top of the stack, we use <code class='op'>INC2</code> because we know the items on the stack to be an address made of two bytes. We load the incremented value, the <code class='op'>JCN</code> opcode will jump to the position of label <code class='op'>&while</code> as long as the item before the address is not zero. We complete the program with <code class='op'>POP2</code> to remove the address on the stack, to keep the stack clean.</p>
-
-<p>Both <code class='op'>&while</code> and <code class='op'>@while</code> are ways to define labels, but using <code>&while</code> will automatically prefix a new <code>&label</code> with the name of the last <code>@label</code>, in this example <code>program/while</code>. Since label names are unique identifiers and you might need multiple instances of something called <i>while</i>, it's best to use sublabels when possible.</p>
+<p>We increment the absolute address found on top of the stack with <code class='op'>INC2</code>, because the address is made of two bytes. We load the incremented value, the <code class='op'>JCN</code> opcode will jump to the position of label <code class='op'>&while</code> as long as the item before the address is not zero. We complete the program with <code class='op'>POP2</code> to remove the address on the stack, to keep the stack clean at the end of the program.</p>
 
 <table border="1">
 	<tr><th colspan="4">Runes</th></tr>
@@ -123,12 +121,6 @@ span.comment { color:#aaa }
 	<tr><td><i>Raw</i></td><td><code>ab</code></td><td><code>'Q</code></td><td></td><td></td><td><code>abcd</code></td><td><code>:label</code></td></tr>
 </table>
 
-<h2>Assembler</h2>
-
-<p>The original assembler is about 400 lines of <a href='ansi_c.html'>ANSI C</a>, it is used to create rom program files, from tal source files. Nowadays, most uxntal programmers prefer to use the <a href='https://git.sr.ht/~rabbits/uxn/tree/main/item/projects/library/asma.tal' target='_blank'>self-hosted assembler</a>.</p>
-
-<iframe src="https://git.sr.ht/~rabbits/uxn/blob/main/src/uxnasm.c"></iframe>
-
 <style>
 .clr0 { background:white; color:black; }
 .clr1 { background:black; color:white; }
@@ -142,6 +134,8 @@ pre span.comment { color:#666; }
 
 <ul>
 	<li><a href='https://compudanzas.net/uxn_tutorial.html' target='_blank'>Introduction to Uxntal</a></li>
+	<li><a href='https://git.sr.ht/~rabbits/uxn/tree/main/item/projects/library/asma.tal' target='_blank'>Assembler Source(self-hosted)</a></li>
+	<li><a href='https://git.sr.ht/~rabbits/uxn/blob/main/src/uxnasm.c' target='_blank'>Assembler Source(ANSI C)</a></li>
 </ul>
 
 <ul></ul><p><b>Incoming</b>: <a href="roms.html">roms</a> <a href="noodle.html">noodle</a> <a href="left.html">left</a> <a href="gly_format.html">gly format</a> <a href="ufx_format.html">ufx format</a> <a href="bifurcan.html">bifurcan</a> <a href="catclock.html">catclock</a> <a href="yufo.html">yufo</a> <a href="proquints.html">proquints</a> <a href="primes.html">primes</a> <a href="brainfuck.html">brainfuck</a> <a href="uxn.html" class="parent">uxn</a> <a href="varvara_launcher.html">varvara launcher</a> <a href="about.html">about</a> <a href="2021.html">2021</a> <a href="computer.html">computer</a> <a href="oscean.html">oscean</a> </p></main>
