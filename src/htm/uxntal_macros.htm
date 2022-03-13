@@ -106,9 +106,9 @@ JMP2r
 <pre>
 @print-str ( str* -- )
 
-	#0001 SUB2
 	&while
-		INC2 LDAk DUP EMIT ,&while JCN
+		LDAk #18 DEO
+		INC2 LDAk ,&while JCN
 	POP2
 
 JMP2r
@@ -155,7 +155,16 @@ JMP2r
 <pre>
 @scat ( src* dst* -- )
 
-	DUP2 ,slen JSR ADD2 ,scpy JSR
+	DUP2 ,slen JSR ADD2
+
+@scpy ( src* dst* -- )
+	
+	STH2
+	&while
+		LDAk STH2kr STA INC2r
+		INC2 LDAk ,&while JCN
+	POP2
+	#00 STH2r STA
 
 JMP2r
 
@@ -168,19 +177,7 @@ JMP2r
 @scap ( str* -- end* )
 
 	LDAk #00 NEQ JMP JMP2r
-	&while 
-		INC2 LDAk ,&while JCN
-
-JMP2r
-
-@scpy ( src* dst* -- )
-	
-	STH2
-	&while
-		LDAk STH2kr STA INC2r
-		INC2 LDAk ,&while JCN
-	POP2
-	#00 STH2r STA
+	&while INC2 LDAk ,&while JCN
 
 JMP2r
 
@@ -204,7 +201,7 @@ JMP2r
 <pre>
 @mclr ( addr* len* -- )
 
-	OVR2 ++ SWP2
+	OVR2 ADD2 SWP2
 	&loop
 		STH2k #00 STH2r STA
 		INC2 GTH2k ,&loop JCN
@@ -292,9 +289,10 @@ JMP2r
 
 <h3>Shorthands</h3>
 
-<p>Small optimizations for comparison:</p>
+<p>Small notorious optimizations:</p>
 
 <table border="1">
 	<tr><th>#0101 EQU2</th><td>AND</td></tr>
 	<tr><th>#0000 NEQ2</th><td>ORA</td></tr>
+	<tr><th>JSR2 JMP2r</th><td>JMP2</td></tr>
 </table>
