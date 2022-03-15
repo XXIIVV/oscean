@@ -3,7 +3,9 @@
 echo "Assembling -------------------"
 rm -rf bin
 mkdir -p bin
-uxnasm maeve.tal bin/maeve.rom
+uxncli ~/roms/drifblim.rom maeve.tal
+mv maeve.rom bin/
+# uxnasm maeve.tal bin/maeve.rom
 uxnasm oscean.tal bin/oscean.rom
 
 echo "Parsing ----------------------"

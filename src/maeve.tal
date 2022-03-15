@@ -1,13 +1,12 @@
 ( Meanwhile, in the Atari Gang's car )
 
-|a0 
-
-	@File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 
 |0000
 
 	@maxlength $2
 	@stats &terms $2 &links $2 &diaries $2
+	@buf &htm $30 &link $30 &map $30 &log $30
 
 |0100 ( -> )
 
@@ -49,11 +48,11 @@ JMP2r
 @parse-term ( term* -- )
 	
 	( htm )
-	;&htm STH2k #0030 ;mclr JSR2
+	;buf/htm STH2k #0030 ;mclr JSR2
 	;htm-path STH2kr ;scpy JSR2
 	DUP2 STH2kr ;scat JSR2
 	;htm-ext STH2kr ;scat JSR2
-	;&htm #20 [ LIT '_ ] ;cswp JSR2
+	;buf/htm #20 [ LIT '_ ] ;cswp JSR2
 	( clear outgoing )
 	;outgoing #1000 ;mclr JSR2
 	( load htm )
@@ -75,8 +74,7 @@ JMP2r
 	POP2
 
 JMP2r
-	&htm $30
-
+	
 @validate ( page* -- )
 
 	&while
@@ -85,22 +83,21 @@ JMP2r
 			( strip relative ) LDAk [ LIT '. ] EQU ,&continue JCN
 			( strip jumps ) LDAk [ LIT '# ] EQU ,&continue JCN
 			( strip http* ) DUP2 ;http-txt SWP2 ;scmp-seg JSR2 ,&continue JCN
-			;&link STH2k #0030 ;mclr JSR2
+			;buf/link STH2k #0030 ;mclr JSR2
 			DUP2 STH2kr #002f ;mcpy JSR2
 			STH2kr [ LIT '. ] #00 ;cswp JSR2
 			STH2kr [ LIT '_ ] #20 ;cswp JSR2
 			( find term )
 			STH2r ,find-term JSR ORA ,&found JCN
-				;&link ;error/local-missing ;print-error JMP2
+				;buf/link ;error/local-missing ;print-error JMP2
 				&found
 			( connect incoming )
-			OVR2 ;&link ,connect-incoming JSR
+			OVR2 ;buf/link ,connect-incoming JSR
 			&continue
 		INC2 LDAk ,&while JCN
 	POP2
 
 JMP2r
-	&link $30
 
 @find-term ( name* -- term* )
 
@@ -128,7 +125,7 @@ JMP2r
 	DUP2 ;outgoing ;scat JSR2
 	;outgoing #0a ;sput JSR2
 	( find file )
-	;&dst-map STH2k #0030 ;mclr JSR2
+	;buf/map STH2k #0030 ;mclr JSR2
 	;tmp-path STH2kr ;scpy JSR2
 	STH2kr ;scat JSR2
 	;map-ext STH2kr ;scat JSR2
@@ -143,7 +140,6 @@ JMP2r
 	.stats/links LDZ2k INC2 ROT STZ2
 
 JMP2r
-	&dst-map $30
 	&lb 0a
 
 ( diary )
@@ -189,7 +185,7 @@ JMP2r
 @connect-diaries ( diary* term* -- )
 
 	( find file )
-	;&dst-log STH2k #0030 ;mclr JSR2
+	;buf/log STH2k #0030 ;mclr JSR2
 	;tmp-path STH2kr ;scpy JSR2
 	STH2kr ;scat JSR2
 	;log-ext STH2kr ;scat JSR2
@@ -205,7 +201,6 @@ JMP2r
 	.stats/diaries LDZ2k INC2 ROT STZ2
 
 JMP2r
-	&dst-log $30
 	&lb 0a
 
 @print-stat ( number* type* -- )
