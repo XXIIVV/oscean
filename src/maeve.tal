@@ -1,37 +1,36 @@
-( Oscean's preprocessor )
+( Meanwhile, in the Atari Gang's car )
 
-~utils.tal
+|a0 
+
+	@File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 
 |0000
 
 	@maxlength $2
-	@stats
-		&terms $2
-		&links $2
-		&diaries $2
+	@stats &terms $2 &links $2 &diaries $2
 
-|0100 @on-reset
+|0100 ( -> )
 
 	( append mode )
 	#01 .File/append DEO
-
 	( load lexicon )
 	;lexicon-path .File/name DEO2
 	#2000 .File/length DEO2
 	;lexicon
 		DUP2 .File/read DEO2
-		REMOVE-LINEBREAKS
-
-	#f000 ;workarea -- .maxlength STZ2
-
-	( let's fucking go )
+		#0a #00 ;cswp JSR2
+	( save bounds )
+	#f000 ;workarea SUB2 .maxlength STZ2
+	( I'm mad as hell, i want to kill! )
 	;parse-lexicon JSR2
-	.stats/terms LDZ2 ;print-dec JSR2 #20 EMIT ;terms-txt PRINT
-	.stats/links LDZ2 ;print-dec JSR2 #20 EMIT ;links-txt PRINT
+	;terms-txt .stats/terms LDZ2 ;print-stat JSR2
+	;links-txt .stats/links LDZ2 ;print-stat JSR2
 	;parse-diary JSR2
-	.stats/diaries LDZ2 ;print-dec JSR2 #20 EMIT ;diaries-txt PRINT
+	;diaries-txt .stats/diaries LDZ2 ;print-stat JSR2
+	( halt. )
+	#010f DEO
 
-HALT
+BRK
 
 ( lexicon )
 
@@ -45,7 +44,7 @@ HALT
 		LDAk ,&while JCN
 	POP2
 
-RTN
+JMP2r
 
 @parse-term ( term* -- )
 	
@@ -55,46 +54,44 @@ RTN
 	DUP2 STH2kr ;scat JSR2
 	;htm-ext STH2kr ;scat JSR2
 	;&htm #20 [ LIT '_ ] ;cswp JSR2
-
 	( clear outgoing )
 	;outgoing #1000 ;mclr JSR2
-
 	( load htm )
 	STH2r .File/name DEO2
 	.maxlength LDZ2 .File/length DEO2
 	;workarea .File/read DEO2
 	( null terminate )
-	#00 ;workarea .File/success DEI2 ++ STA
-
+	#00 ;workarea .File/success DEI2 ADD2 STA
+	( errors on too large )
+	.File/success DEI2 .maxlength LDZ2 NEQ2 ,&size-valid JCN
+		;error/include-large SWP2 ;print-error JMP2
+		&size-valid
 	( errors on empty )
-	.File/success DEI2 #0000 >> ,&continue JCN
-		;error-include-missing SWP2 ERROR
-		&continue
-
+	.File/success DEI2 #0000 GTH2 ,&exist-valid JCN
+		;error/include-missing SWP2 ;print-error JMP2
+		&exist-valid
 	;workarea ,validate JSR
-
 	( stats ) .stats/terms LDZ2k INC2 ROT STZ2
-
 	POP2
 
-RTN
+JMP2r
 	&htm $30
 
 @validate ( page* -- )
 
 	&while
-		;href-attr OVR2 ;scmp-seg JSR2 #00 = ,&continue JCN
-			( move to href ) #0006 ++
-			( strip relative ) LDAk [ LIT '. ] = ,&continue JCN
-			( strip jumps ) LDAk [ LIT '# ] = ,&continue JCN
+		;href-attr OVR2 ;scmp-seg JSR2 #00 EQU ,&continue JCN
+			( move to href ) #0006 ADD2
+			( strip relative ) LDAk [ LIT '. ] EQU ,&continue JCN
+			( strip jumps ) LDAk [ LIT '# ] EQU ,&continue JCN
 			( strip http* ) DUP2 ;http-txt SWP2 ;scmp-seg JSR2 ,&continue JCN
 			;&link STH2k #0030 ;mclr JSR2
 			DUP2 STH2kr #002f ;mcpy JSR2
 			STH2kr [ LIT '. ] #00 ;cswp JSR2
 			STH2kr [ LIT '_ ] #20 ;cswp JSR2
 			( find term )
-			STH2r ,find-term JSR #0000 !! ,&found JCN
-				;&link ;error-broken-link ERROR
+			STH2r ,find-term JSR ORA ,&found JCN
+				;&link ;error/local-missing ;print-error JMP2
 				&found
 			( connect incoming )
 			OVR2 ;&link ,connect-incoming JSR
@@ -102,7 +99,7 @@ RTN
 		INC2 LDAk ,&while JCN
 	POP2
 
-RTN
+JMP2r
 	&link $30
 
 @find-term ( name* -- term* )
@@ -118,38 +115,34 @@ RTN
 	&end
 	POP2r
 
-RTN
+JMP2r
 
 @connect-incoming ( src* dst* -- )
 
 	( check for duplicates )
-	;outgoing OVR2 ;sfnd JSR2 #ffff == ,&no-duplicate JCN
-		;warning-duplicate-outgoing ;print-str JSR2
-		OVR2 ;print-str JSR2 #2f EMIT DUP2 PRINT
+	;outgoing OVR2 ;sfnd JSR2 #ffff EQU2 ,&no-duplicate JCN
+		;error/duplicate-outgoing ;print-str JSR2
+		OVR2 ;print-str JSR2 #2f18 DEO DUP2 ;print-str JSR2 #0a18 DEO
 		&no-duplicate
-
 	( record in outgoing )
 	DUP2 ;outgoing ;scat JSR2
 	;outgoing #0a ;sput JSR2
-
 	( find file )
 	;&dst-map STH2k #0030 ;mclr JSR2
 	;tmp-path STH2kr ;scpy JSR2
 	STH2kr ;scat JSR2
 	;map-ext STH2kr ;scat JSR2
 	STH2kr #20 [ LIT '_ ] ;cswp JSR2
-
 	( write )
 	STH2r .File/name DEO2
 	DUP2 ;slen JSR2 .File/length DEO2
 	.File/write DEO2
-
 	#0001 .File/length DEO2
 	;&lb .File/write DEO2
+	( stats ) 
+	.stats/links LDZ2k INC2 ROT STZ2
 
-	( stats ) .stats/links LDZ2k INC2 ROT STZ2
-
-RTN
+JMP2r
 	&dst-map $30
 	&lb 0a
 
@@ -160,29 +153,29 @@ RTN
 	;diary-path-pages/end ;diary-path-pages
 	&loop
 		( clear workarea )
-		;workarea .maxlength LDZ2 ;mclr JSR2
 		LDA2k .File/name DEO2
 		.maxlength LDZ2 .File/length DEO2
-		;workarea .File/read DEO2
-		( split lines )
-		;workarea REMOVE-LINEBREAKS
-		;workarea ,parse-diary-page JSR
+		;workarea 
+			DUP2 .maxlength LDZ2 ;mclr JSR2
+			DUP2 .File/read DEO2
+			DUP2 #0a #00 ;cswp JSR2
+			,parse-diary-page JSR
 		INC2 INC2 GTH2k ,&loop JCN
 	POP2 POP2
 
-RTN
+JMP2r
 
 @parse-diary-page ( page* -- )
 
 	&while
 		DUP2 ,&log STR2
-		#000a ++
+		#000a ADD2
 		( bound ) DUP2 #09 ;next-char JSR2 STH2
 		( clip ) #00 STH2kr STA
-		( flag ) DUP2 ;find-term JSR2 
+		( flag ) DUP2 ;find-term JSR2
 		( test for exist )
-			DUP2 #0000 !! ,&no-missing JCN
-				;error-diary-term-missing ROT2 ERROR
+			DUP2 ORA ,&no-missing JCN
+				;error/diary-term-missing ROT2 ;print-error JMP2
 				&no-missing
 			,&term STR2
 		( unclip ) #09 STH2r STA
@@ -191,7 +184,7 @@ RTN
 		LDAk ,&while JCN
 	POP2
 
-RTN
+JMP2r
 
 @connect-diaries ( diary* term* -- )
 
@@ -208,27 +201,197 @@ RTN
 	( linebreak )
 	#0001 .File/length DEO2
 	;&lb .File/write DEO2
+	( stats ) 
+	.stats/diaries LDZ2k INC2 ROT STZ2
 
-	( stats ) .stats/diaries LDZ2k INC2 ROT STZ2
-
-RTN
+JMP2r
 	&dst-log $30
 	&lb 0a
 
-~stdlib.tal
+@print-stat ( number* type* -- )
+
+	;print-dec JSR2
+	#2018 DEO
+	,print-str JSR
+	#0a18 DEO
+
+JMP2r
+
+@print-error ( name* msg* -- )
+
+	#0a18 DEO
+	SWP2
+	,print-str JSR
+	#2018 DEO
+	,print-str JSR
+	#0d18 DEO
+	#0a18 DEO
+	#010f DEO
+
+BRK
+
+@print-str ( str* -- )
+
+	#0001 SUB2
+	&while
+		INC2 LDAk DUP #18 DEO ,&while JCN
+	POP2
+
+JMP2r
+
+( generics )
+
+@next-char ( addr* char -- addr* )
+
+	STH
+	&while
+		LDAk STHkr EQU ,&end JCN
+		LDAk #00 EQU ,&end JCN
+		INC2 LDAk ,&while JCN
+	&end
+		POPr
+
+JMP2r
+
+@cswp ( str* a b -- )
+
+	STH STH
+	&while
+		LDAk STHkr NEQ ,&continue JCN
+			DUP2 OVRr STHr ROT ROT STA
+			&continue
+		INC2 LDAk ,&while JCN
+	POP2 POP2r
+
+JMP2r
+
+@sfnd ( src* target* -- addr* )
+
+	STH2
+	&while
+		STH2kr OVR2 ,scmp-seg JSR #00 EQU ,&continue JCN
+			POP2r JMP2r
+			&continue
+		INC2 LDAk ,&while JCN
+	POP2
+	POP2r
+	#ffff
+
+JMP2r
+
+@scmp ( a* b* -- flag )
+
+	STH2
+	&loop
+		LDAk LDAkr STHr NEQ ,&end JCN
+		LDAk LDAkr STHr ORA ,&not-end JCN
+			POP2 POP2r #01 JMP2r
+			&not-end
+		INC2 INC2r ,&loop JMP
+	&end
+	POP2 POP2r #00
+
+JMP2r
+
+@scmp-seg ( a* b* -- flag )
+
+	STH2
+	&loop
+		LDAk LDAkr STHr NEQ ,&end JCN
+		INC2k LDA #00 NEQ ,&continue JCN
+			POP2 POP2r #01 JMP2r
+			&continue
+		INC2 INC2r
+		,&loop JMP
+	&end
+	POP2 POP2r #00
+
+JMP2r
+
+@scat ( src* dst* -- )
+
+	DUP2 ,slen JSR ADD2
+
+@scpy ( src* dst* -- )
+	
+	STH2
+	&while
+		LDAk STH2kr STA INC2r
+		INC2 LDAk ,&while JCN
+	POP2
+	#00 STH2r STA
+
+JMP2r
+
+@sput ( str* char -- )
+
+	ROT ROT ,scap JSR STA
+
+JMP2r
+
+@slen ( str* -- len* )
+
+	DUP2 ,scap JSR SWP2 SUB2
+
+JMP2r
+
+@scap ( str* -- str-end* )
+
+	( clamp ) LDAk #00 NEQ JMP JMP2r
+	&while INC2 LDAk ,&while JCN
+
+JMP2r
+
+@mclr ( addr* len* -- )
+
+	OVR2 ADD2 SWP2
+	&loop
+		STH2k #00 STH2r STA
+		INC2 GTH2k ,&loop JCN
+	POP2 POP2
+
+JMP2r
+
+@mcpy ( src* dst* len* -- )
+
+	SWP2 STH2
+	OVR2 ADD2 SWP2
+	&loop
+		LDAk STH2kr STA INC2r
+		INC2 GTH2k ,&loop JCN
+	POP2 POP2
+	POP2r
+
+JMP2r
+
+( debugging )
+
+@print ( short* -- )
+
+	&short ( short* -- ) SWP ,&byte JSR
+	&byte ( byte -- ) DUP #04 SFT ,&char JSR
+	&char ( char -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO
+
+JMP2r
+
+@print-dec ( value* -- )
+
+	#2710 DIV2k DUP #30 ADD #18 DEO MUL2 SUB2
+	#03e8 DIV2k DUP #30 ADD #18 DEO MUL2 SUB2
+	#0064 DIV2k DUP #30 ADD #18 DEO MUL2 SUB2
+	#000a DIV2k DUP #30 ADD #18 DEO MUL2 SUB2
+	#30 ADD #18 DEO POP
+
+JMP2r
 
 @terms-txt "terms $1
 @links-txt "links $1
 @diaries-txt "diaries $1
-
 @http-txt "http $1
-
 @href-attr "href $1
-
 @htm-ext ".htm $1
 @log-ext "-log $1
 @map-ext "-map $1
-
 @lexicon-path "tables/lexicon $1
 
 @diary-paths
@@ -247,10 +410,12 @@ RTN
 @htm-path "htm/ $1
 @tmp-path "tmp/ $1
 
-@error-diary-term-missing "-- 20 "diary_term_missing 20 $1
-@error-include-missing "-- 20 "include_missing 20 $1
-@error-broken-link "-- 20 "local_missing 20 $1
-@warning-duplicate-outgoing "-- 20 "duplicate_outgoing 20 $1
+@error
+	&diary-term-missing "-- 20 "diary_term_missing 20 $1
+	&include-missing "-- 20 "include_missing 20 $1
+	&include-large "-- 20 "include_too_large 20 $1
+	&local-missing "-- 20 "local_missing 20 $1
+	&duplicate-outgoing "-- 20 "duplicate_outgoing 20 $1
 
 @lexicon $2000
 @outgoing $1000
