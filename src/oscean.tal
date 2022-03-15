@@ -1,69 +1,37 @@
 ( The Bequest Globe )
 
-~utils.tal
-
-%GET-DEPTH { DUP2 #0002 -- LDA ;chex JSR2 }
-%REWIND { #00 ;prev-char JSR2 INC2 }
-
-%RUNE-ALBUM { LIT ', }
-%RUNE-PORTAL { LIT '; }
-%RUNE-ARCHIVE { LIT ': }
-
-%FILE { #8000 }
-%FILE-SIZE { #7fff }
-
-( framework )
-
-%^" { ;write JSR2 }
-%^' { ;write/char JSR2 }
-%^< { STH2 LIT '< ^' STH2r ^" LIT '> ^' }
-%^> { STH2 LIT '< ^' LIT '/ ^' STH2r ^" LIT '> ^' }
-%^<> { STH2k ^< ^" STH2r ^> }
-
-( variables )
+|a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|b0 @DateTime   [ &year   $2 &month    $1 &day    $1 &hour  $1 &minute $1 &second $1 &dotw $1 &doty   $2 &isdst $1 ]
 
 |0000
 
-@term
-	&name $16
-	&parent $16
-	&pict $4
-	&diary $60
-
-@buff $30
-
-( program )
+	@term &name $16 &parent $16 &pict $4 &diary $60
+	@buff $30
 
 |0100 ( -> )
 
-	;initialize JSR2
-
+	( initialize )
+	;lexicon-path .File/name DEO2
+	#2000  .File/length DEO2
+	;lexicon
+		DUP2 .File/read DEO2
+		#0a #00 ;cswp JSR2
+	( build )
 	,focus-page LDR ;build-one JCN2
 		;build-all JSR2
-
-	( print date ) #0a18 DEO ;print-arvelie JSR2
-
-	HALT
+	( print date )
+	#0a18 DEO ;print-arvelie JSR2
+	( Halt. )
+	#010f DEO
 
 BRK
 
 @focus-page $1
 
-@initialize ( -- )
-
-	( LEX )
-	;lexicon-path .File/name DEO2
-	#2000  .File/length DEO2
-	;lexicon
-		DUP2 .File/read DEO2
-		REMOVE-LINEBREAKS
-
-RTN
-
 @build-one ( -> )
 
 	;focus-page ;find-term JSR2 ;build-page JSR2
-	HALT
+	#010f DEO
 
 BRK
 
@@ -78,21 +46,21 @@ BRK
 		LDAk ,&while JCN
 	POP2
 
-RTN
+JMP2r
 
 ( build )
 
 @init-page ( name* -- name* )
 
 	( term name limit )
-	DUP2 ;slen JSR2 #0016 << ,&namelength-ok JCN
-		;error-term-name-size ERROR
+	DUP2 ;slen JSR2 #0016 LTH2 ,&namelength-ok JCN
+		;error-term-name-size ;print-error JMP2
 		&namelength-ok
 
 	( cleanup )
 	( clear zeropage ) #0000 #00ff ;mclr JSR2
-	( clean output ) FILE FILE-SIZE ;mclr JSR2
-	( reset head ) FILE ;write/head STA2
+	( clean output ) #8000 #7fff ;mclr JSR2
+	( reset head ) #8000 ;write/head STA2
 
 	DUP2 ;load-diary JSR2
 	DUP2 ;load-incoming JSR2
@@ -103,18 +71,18 @@ RTN
 
 	( fill diary )
 	DUP2 ;find-diary JSR2
-	DUP2 #0000 == ,&continue JCN
+	DUP2 #0000 EQU2 ,&continue JCN
 		DUP2 ;term/diary #0050 ;mcpy JSR2
 		( copy pict )
-		DUP2 #0006 ++
-		( clip bound ) DUP2 #0003 ++ STH2
+		DUP2 #0006 ADD2
+		( clip bound ) DUP2 #0003 ADD2 STH2
 		( clip start ) #00 STH2kr STA
 		( clip wrap ) ;term/pict ;scpy JSR2
 		( clip restore ) #09 STH2r STA
 		&continue
 	POP2
 
-RTN
+JMP2r
 
 @load-diary ( name* -- )
 
@@ -130,9 +98,9 @@ RTN
 	#1000 .File/length DEO2
 	;diary .File/read DEO2
 	( split lines )
-	;diary REMOVE-LINEBREAKS
+	;diary #0a #00 ;cswp JSR2
 
-RTN
+JMP2r
 
 @load-incoming ( name* -- )
 
@@ -148,97 +116,97 @@ RTN
 	#1000 .File/length DEO2
 	;incoming .File/read DEO2
 	( split lines )
-	;incoming REMOVE-LINEBREAKS
+	;incoming #0a #00 ;cswp JSR2
 
-RTN
+JMP2r
 
 @build-page ( name* -- name* )
 
 	( render )
-	;doctype ^"
-	;html-tag ^<
+	;doctype ;write JSR2
+	;html-tag ;write-open JSR2
 		( head )
-		;head-tag ^<
+		;head-tag ;write-open JSR2
 			;charset-attr ;charset-txt ;add-meta-tag JSR2
 			;stylesheet-txt ;stylesheet-type ;stylesheet-path ;add-link-tag JSR2
 			;shortcuticon-txt ;shortcuticon-type ;shortcuticon-path ;add-link-tag JSR2
-			;title-tag ^<
-				;title-txt ^" [ LIT 20 ] ^' ;mdash-entity-txt ^" [ LIT 20 ] ^' DUP2 ^"
-			;title-tag ^>
-		;head-tag ^>
+			;title-tag ;write-open JSR2
+				;title-txt ;write JSR2 [ LIT 20 ] ;write/char JSR2 ;mdash-entity-txt ;write JSR2 [ LIT 20 ] ;write/char JSR2 DUP2 ;write JSR2
+			;title-tag ;write-close JSR2
+		;head-tag ;write-close JSR2
 		( body )
-		;body-tag ^<
-			;header-tag ^<
+		;body-tag ;write-open JSR2
+			;header-tag ;write-open JSR2
 				;home-path ;add-a-tag JSR2
 					;logo-path ;title-txt ;add-img-tag JSR2
-				;a-tag ^>
-			;header-tag ^>
+				;a-tag ;write-close JSR2
+			;header-tag ;write-close JSR2
 			;build-page-nav JSR2
 			;build-page-main JSR2
 			( inlude footer )
 			;meta-footer-path ;include JSR2
-		;body-tag ^>
-	;html-tag ^>
+		;body-tag ;write-close JSR2
+	;html-tag ;write-close JSR2
 
 	( check file )
-	;write/head LDA2 FILE -- FILE-SIZE << ,&size-ok JCN
-		;error-output-size ERROR
+	;write/head LDA2 #8000 SUB2 #7fff LTH2 ,&size-ok JCN
+		;error-output-size ;print-error JMP2
 		&size-ok
 
 	( save file )
 	[ ;output-path OVR2 ;html-ext ;make-path JSR2 ] .File/name DEO2
-	[ ;write/head LDA2 FILE -- ] .File/length DEO2
-	FILE .File/write DEO2
+	[ ;write/head LDA2 #8000 SUB2 ] .File/length DEO2
+	#8000 .File/write DEO2
 
-	RTN ( print )
-	;write/head LDA2 FILE -- ;print/short JSR2
-	#20 EMIT
-	DUP2 ;print-str JSR2 #0a EMIT
+	JMP2r ( print )
+	;write/head LDA2 #8000 SUB2 ;print/short JSR2
+	#20 #18 DEO
+	DUP2 ;print-str JSR2 #0a18 DEO
 
-RTN
+JMP2r
 
 @build-page-nav ( name* -- name* )
 
-	;nav-tag ^<
-		GET-DEPTH #00 = ,&no-siblings JCN
+	;nav-tag ;write-open JSR2
+		DUP2 #0002 SUB2 LDA ;chex JSR2 #00 EQU ,&no-siblings JCN
 		( parents )
-		GET-DEPTH #02 < ,&no-parents JCN
+		DUP2 #0002 SUB2 LDA ;chex JSR2 #02 LTH ,&no-parents JCN
 			DUP2 ;find-parent JSR2 ;find-parent JSR2 ,&build-children JSR POP2
 			&no-parents
 		( siblings )
-		GET-DEPTH #01 < ,&no-siblings JCN
+		DUP2 #0002 SUB2 LDA ;chex JSR2 #01 LTH ,&no-siblings JCN
 			DUP2 ;find-parent JSR2 ,&build-children JSR POP2
 			&no-siblings
 		( children ) ,&build-children JSR
-	;nav-tag ^>
-	RTN
+	;nav-tag ;write-close JSR2
+	JMP2r
 
 	&build-children ( name* -- name* )
 
-		;ul-tag ^<
+		;ul-tag ;write-open JSR2
 		DUP2
-		( stash depth ) GET-DEPTH STH
-		( start after ) DUP2 ;slen JSR2 ++ INC2
+		( stash depth ) DUP2 #0002 SUB2 LDA ;chex JSR2 STH
+		( start after ) DUP2 ;slen JSR2 ADD2 INC2
 		&while
-			( stop at sibling ) LDAk ;chex JSR2 STHkr = ,&end JCN
+			( stop at sibling ) LDAk ;chex JSR2 STHkr EQU ,&end JCN
 			( when depth+1 ) LDAk ;chex JSR2 STHkr INC NEQ ,&continue JCN
-				;li-tag ^<
+				;li-tag ;write-open JSR2
 				DUP2 INC2 INC2 ;add-local JSR2
-				;li-tag ^>
+				;li-tag ;write-close JSR2
 				&continue
 			( move to eol ) INC2 INC2 &eol INC2 LDAk ,&eol JCN INC2
 			LDAk ,&while JCN
 		&end
 		POP2 POPr
-		;ul-tag ^>
+		;ul-tag ;write-close JSR2
 
-RTN
+JMP2r
 
 @build-page-main ( name* -- name* )
 
-	;main-tag ^<
+	;main-tag ;write-open JSR2
 		( picture )
-		;term/pict LDA #00 = ,&no-picture JCN
+		;term/pict LDA #00 EQU ,&no-picture JCN
 			;term/diary ;build-module-photo JSR2
 			&no-picture
 		( body )
@@ -247,9 +215,9 @@ RTN
 		;build-page-special JSR2
 		;build-page-calendar JSR2
 		;build-page-incoming JSR2
-	;main-tag ^>
+	;main-tag ;write-close JSR2
 
-RTN
+JMP2r
 
 @build-page-body ( name* -- name* )
 
@@ -257,48 +225,48 @@ RTN
 	[ ;htm-path OVR2 ;htm-ext ;make-path JSR2 ] ;include JSR2
 	( validate ) STH2r ;validate-output JSR2
 
-RTN
+JMP2r
 
 @build-page-module ( term* -- term* )
 
-	DUP2 DEC2 LDA RUNE-ALBUM ! ,&no-album JCN
-		;build-module-album JSR2 RTN
+	DUP2 #0001 SUB2 LDA LIT ', NEQ ,&no-album JCN
+		;build-module-album JSR2 JMP2r
 		&no-album
-	DUP2 DEC2 LDA RUNE-PORTAL ! ,&no-portal JCN
-		;build-module-portal JSR2 RTN
+	DUP2 #0001 SUB2 LDA LIT '; NEQ ,&no-portal JCN
+		;build-module-portal JSR2 JMP2r
 		&no-portal
-	DUP2 DEC2 LDA RUNE-ARCHIVE ! ,&no-archive JCN
-		;build-module-archive JSR2 RTN
+	DUP2 #0001 SUB2 LDA LIT ': NEQ ,&no-archive JCN
+		;build-module-archive JSR2 JMP2r
 		&no-archive
 
-RTN
+JMP2r
 
 @build-page-special ( term* -- term* )
 
-	DUP2 ;index-txt ;scmp JSR2 #00 = ,&no-index JCN
-		;build-special-index JSR2 RTN
+	DUP2 ;index-txt ;scmp JSR2 #00 EQU ,&no-index JCN
+		;build-special-index JSR2 JMP2r
 		&no-index
-	DUP2 ;journal-txt ;scmp JSR2 #00 = ,&no-journal JCN
-		;build-special-journal JSR2 RTN
+	DUP2 ;journal-txt ;scmp JSR2 #00 EQU ,&no-journal JCN
+		;build-special-journal JSR2 JMP2r
 		&no-journal
 
-RTN
+JMP2r
 
 @build-special-index ( -- )
 
-	;ul-tag ^<
+	;ul-tag ;write-open JSR2
 		;lexicon
 		&while
 			( move to name ) INC2 INC2
-			;li-tag ^<
+			;li-tag ;write-open JSR2
 				DUP2 ;add-local JSR2
-			;li-tag ^>
+			;li-tag ;write-close JSR2
 			( move to eol ) &eol INC2 LDAk ,&eol JCN INC2
 			LDAk ;&while JCN2
 		POP2
-	;ul-tag ^>
+	;ul-tag ;write-close JSR2
 
-RTN
+JMP2r
 
 @build-special-journal ( -- )
 
@@ -308,12 +276,12 @@ RTN
 	#1000 .File/length DEO2
 	;diary .File/read DEO2
 	( split lines )
-	;diary REMOVE-LINEBREAKS
+	;diary #0a #00 ;cswp JSR2
 	( limit at 20 )
 	#00 ;&limit STA
 	;diary
 	&while
-		;&limit LDA #20 > ,&end JCN
+		;&limit LDA #20 GTH ,&end JCN
 		DUP2 ;no-picture ;log-has-picture JSR2 ,&continue JCN
 			DUP2 ;build-module-photo JSR2
 			;&limit LDA INC ;&limit STA
@@ -325,28 +293,28 @@ RTN
 	( clear diary )
 	;diary #1000 ;mclr JSR2
 
-RTN
+JMP2r
 	&limit $1
 	&latest-page "tables/diary/15-19 $1
 
 @build-page-calendar ( name* -- name* )
 
 	STH2
-	;ul-tag ^<
+	;ul-tag ;write-open JSR2
 	;diary
 	&while
-		DUP2 #0005 ++ LDA [ LIT '+ ] ! ,&continue JCN
-			;li-tag ^<
+		DUP2 #0005 ADD2 LDA [ LIT '+ ] NEQ ,&continue JCN
+			;li-tag ;write-open JSR2
 				DUP2 ;build-module-event JSR2
-			;li-tag ^>
+			;li-tag ;write-close JSR2
 			&continue
 		( goto eol ) &eol INC2 LDAk ,&eol JCN INC2
 		LDAk ,&while JCN
 	POP2
-	;ul-tag ^>
+	;ul-tag ;write-close JSR2
 	STH2r
 	
-RTN
+JMP2r
 
 @build-module-album ( name* -- name* )
 
@@ -361,18 +329,18 @@ RTN
 		LDAk ,&while JCN
 	POP2 STH2r
 
-RTN
+JMP2r
 
 @build-module-portal ( name* -- name* )
 
-	RTN ( TODO )
+	JMP2r ( TODO )
 
-	( stash depth ) DUP2 GET-DEPTH STH
-	( start after ) DUP2 ;slen JSR2 ++ INC2
+	( stash depth ) DUP2 DUP2 #0002 SUB2 LDA ;chex JSR2 STH
+	( start after ) DUP2 ;slen JSR2 ADD2 INC2
 	&while
-		( stop at sibling ) LDAk ;chex JSR2 STHkr = ,&end JCN
+		( stop at sibling ) LDAk ;chex JSR2 STHkr EQU ,&end JCN
 		( when depth+1 ) LDAk ;chex JSR2 STHkr INC NEQ ,&continue JCN
-			DUP2 INC2 INC2 ;find-diary JSR2 DUP2 #0000 == ,&no-diary JCN
+			DUP2 INC2 INC2 ;find-diary JSR2 DUP2 #0000 EQU2 ,&no-diary JCN
 				DUP2 ;build-module-photo JSR2
 				&no-diary
 				POP2
@@ -381,16 +349,16 @@ RTN
 		LDAk ,&while JCN
 	&end
 	POP2 POPr
-	;ul-tag ^>
+	;ul-tag ;write-close JSR2
 
-RTN
+JMP2r
 
 @build-module-archive ( name* -- name* )
 
-	( stash depth ) DUP2 GET-DEPTH STH
-	( start after ) DUP2 ;slen JSR2 ++ INC2
+	( stash depth ) DUP2 DUP2 #0002 SUB2 LDA ;chex JSR2 STH
+	( start after ) DUP2 ;slen JSR2 ADD2 INC2
 	&while
-		( stop at sibling ) LDAk ;chex JSR2 STHkr = ,&end JCN
+		( stop at sibling ) LDAk ;chex JSR2 STHkr EQU ,&end JCN
 		( when depth+1 ) LDAk ;chex JSR2 STHkr INC NEQ ,&continue JCN
 			INC2 INC2
 				;build-page-body JSR2
@@ -400,57 +368,57 @@ RTN
 	&end
 	POP2 POPr
 
-RTN
+JMP2r
 
 @build-module-event ( diary* -- )
 
 	( event date )
-	( clip bound ) DUP2 #0005 ++ STH2
+	( clip bound ) DUP2 #0005 ADD2 STH2
 	( clip start ) #00 STH2kr STA
-	( clip wrap ) ;code-tag ^<>
+	( clip wrap ) ;code-tag ;write-auto JSR2
 	( clip restore ) [ LIT '+ ] STH2r STA
-	( event spacer ) [ LIT 20 ] ^' ;mdash-entity-txt ^" [ LIT 20 ] ^'
-	( event name ) DUP2 #09 ;next-char JSR2 INC2 #09 ;next-char JSR2 INC2 ^"
+	( event spacer ) [ LIT 20 ] ;write/char JSR2 ;mdash-entity-txt ;write JSR2 [ LIT 20 ] ;write/char JSR2
+	( event name ) DUP2 #09 ;next-char JSR2 INC2 #09 ;next-char JSR2 INC2 ;write JSR2
 
-RTN
+JMP2r
 
 @build-module-photo ( diary* -- )
 
 	( html )
-	;figure-tag ^<
-		( clip ) DUP2 #0009 ++ STH2 #00 STH2r STA
+	;figure-tag ;write-open JSR2
+		( clip ) DUP2 #0009 ADD2 STH2 #00 STH2r STA
 		( make src* )
 		;diary-path ;&diary-path ;scpy JSR2
-		DUP2 #0006 ++ ;&diary-path ;scat JSR2
+		DUP2 #0006 ADD2 ;&diary-path ;scat JSR2
 		;jpg-ext ;&diary-path ;scat JSR2
 		;&diary-path
 		( make alt* )
 		OVR2 #00 ;next-char JSR2 INC2 #09 ;next-char JSR2 INC2
 			;add-img-tag JSR2
-		( unclip ) DUP2 #0009 ++ STH2 #09 STH2r STA
-		;figcaption-tag ^<
-			DUP2 #000a ++ ;term/name SWP2 ;scmp-seg JSR2 ,&skip JCN
+		( unclip ) DUP2 #0009 ADD2 STH2 #09 STH2r STA
+		;figcaption-tag ;write-open JSR2
+			DUP2 #000a ADD2 ;term/name SWP2 ;scmp-seg JSR2 ,&skip JCN
 				DUP2 ;extract-term JSR2 ;add-local JSR2
-				[ LIT 20 ] ^' ;mdash-entity-txt ^" [ LIT 20 ] ^'
+				[ LIT 20 ] ;write/char JSR2 ;mdash-entity-txt ;write JSR2 [ LIT 20 ] ;write/char JSR2
 				&skip
-			#09 ;next-char JSR2 INC2 #09 ;next-char JSR2 INC2 ^"
-		;figcaption-tag ^>
-	;figure-tag ^>
+			#09 ;next-char JSR2 INC2 #09 ;next-char JSR2 INC2 ;write JSR2
+		;figcaption-tag ;write-close JSR2
+	;figure-tag ;write-close JSR2
 
-RTN
+JMP2r
 	&diary-path $20
 
 @extract-term ( diary* -- term* )
 
 	#00 ;&buff STA
-	#000a ++
+	#000a ADD2
 	( clip bound ) DUP2 #09 ;next-char JSR2 STH2
 	( clip start ) #00 STH2kr STA
 	( clip wrap ) ;&buff ;scat JSR2
 	( clip restore ) #09 STH2r STA
 	;&buff
 
-RTN
+JMP2r
 	&buff $16
 
 @build-page-incoming ( -- )
@@ -458,19 +426,19 @@ RTN
 	;incoming
 	( exists )
 	LDAk ,&continue JCN
-		POP2 RTN
+		POP2 JMP2r
 		&continue
 	( html )
-	;p-tag ^<
-	;&incoming-txt ^"
+	;p-tag ;write-open JSR2
+	;&incoming-txt ;write JSR2
 	&while
-		DUP2 ;add-local JSR2 #20 ^'
+		DUP2 ;add-local JSR2 #20 ;write/char JSR2
 		( move to eol ) &eol INC2 LDAk ,&eol JCN
 		INC2 LDAk ,&while JCN
 	POP2
-	;p-tag ^>
+	;p-tag ;write-close JSR2
 
-RTN
+JMP2r
 	&incoming-txt "<b>Incoming</b>: 20 $1
 
 ( tools )
@@ -488,7 +456,7 @@ RTN
 	&end
 	POP2r
 
-RTN
+JMP2r
 
 @find-diary ( name* -- diary* )
 
@@ -496,40 +464,39 @@ RTN
 	;diary
 	&while
 		( skip events ) DUP2 ;no-picture ;log-has-picture JSR2 ,&skip JCN
-			POP2r RTN
+			POP2r JMP2r
 		&skip
 		( move to eol ) &eol INC2 LDAk ,&eol JCN INC2
 		LDAk ,&while JCN
 	POP2 #0000
 	POP2r
 
-RTN
+JMP2r
 
 @find-parent ( term* -- parent* )
 
-	GET-DEPTH ,&not-root JCN
-		RTN
+	DUP2 #0002 SUB2 LDA ;chex JSR2 ,&not-root JCN
+		JMP2r
 		&not-root
-
-	REWIND
-	( stash depth ) LDAk ;chex JSR2 #01 - STH
+	#00 ;prev-char JSR2 INC2
+	( stash depth ) LDAk ;chex JSR2 #01 SUB STH
 	;lexicon SWP2
 	&loop
-		DEC2 #00 ;prev-char JSR2
-		INC2k LDA ;chex JSR2 STHkr ! ,&continue JCN
-			NIP2 POPr #0003 ++ RTN
+		#0001 SUB2 #00 ;prev-char JSR2
+		INC2k LDA ;chex JSR2 STHkr NEQ ,&continue JCN
+			NIP2 POPr #0003 ADD2 JMP2r
 			&continue
 		LTH2k ,&loop JCN
 	( pop depth ) POPr
 	#0002
 
-RTN
+JMP2r
 
 @log-has-picture ( log* picture* -- flag )
 
-	SWP2 #0006 ++ ;scmp-seg JSR2
+	SWP2 #0006 ADD2 ;scmp-seg JSR2
 
-RTN
+JMP2r
 
 @make-path ( a* b* c* -- path* )
 
@@ -540,143 +507,338 @@ RTN
 	STH2kr #20 [ LIT '_ ] ;cswp JSR2
 	STH2r
 
-RTN
+JMP2r
 
 @validate-output ( page* -- )
 
 	( look for redlinks )
 	&while
-		DUP2 ;href-attr SWP2 ;scmp-seg JSR2 #00 = ,&continue JCN
-			( move to href ) #0006 ++
-			( strip relative ) LDAk [ LIT '. ] = ,&continue JCN
-			( strip jumps ) LDAk [ LIT '# ] = ,&continue JCN
+		DUP2 ;href-attr SWP2 ;scmp-seg JSR2 #00 EQU ,&continue JCN
+			( move to href ) #0006 ADD2
+			( strip relative ) LDAk [ LIT '. ] EQU ,&continue JCN
+			( strip jumps ) LDAk [ LIT '# ] EQU ,&continue JCN
 			( strip http* ) DUP2 ;http-txt SWP2 ;scmp-seg JSR2 ,&continue JCN
 			;buff #0030 ;mclr JSR2
 			DUP2 ;buff #002f ;mcpy JSR2
 			;buff [ LIT '. ] #00 ;cswp JSR2
 			;buff [ LIT '_ ] #20 ;cswp JSR2
 			( find term )
-			;buff ;find-term JSR2 #0000 !! ,&continue JCN
-				;buff ;error-broken-link ERROR
+			;buff ;find-term JSR2 ORA ,&continue JCN
+				;buff ;error-broken-link ;print-error JMP2
 			&continue
 		INC2 LDAk ,&while JCN
 	POP2
 
-RTN
+JMP2r
 
 ( Web framework )
 
 @add-a-tag ( path* -- )
 
-	[ LIT '< ] ^'
-	[ LIT 'a ] ^'
-	;href-attr ;add-attr JSR2
-	[ LIT '> ] ^'
+	[ LIT '< ] ;write/char JSR2
+	[ LIT 'a ] ;write/char JSR2
+	;href-attr ;write-attr JSR2
+	[ LIT '> ] ;write/char JSR2
 
-RTN
+JMP2r
 
 @add-img-tag ( src* alt* -- )
 
-	[ LIT '< ] ^'
-	;img-tag ^"
-	;alt-attr ;add-attr JSR2
-	;src-attr ;add-attr JSR2
-	[ LIT '/ ] ^'
-	[ LIT '> ] ^'
+	[ LIT '< ] ;write/char JSR2
+	;img-tag ;write JSR2
+	;alt-attr ;write-attr JSR2
+	;src-attr ;write-attr JSR2
+	[ LIT '/ ] ;write/char JSR2
+	[ LIT '> ] ;write/char JSR2
 
-RTN
+JMP2r
 
 @add-meta-tag ( name* value* -- )
 
-	[ LIT '< ] ^'
-	;meta-tag ^"
-	SWP2 ;add-attr JSR2
-	[ LIT '/ ] ^'
-	[ LIT '> ] ^'
+	[ LIT '< ] ;write/char JSR2
+	;meta-tag ;write JSR2
+	SWP2 ;write-attr JSR2
+	[ LIT '/ ] ;write/char JSR2
+	[ LIT '> ] ;write/char JSR2
 
-RTN
+JMP2r
 
 @add-link-tag ( rel* type* href* -- )
 
-	[ LIT '< ] ^'
-	;link-tag ^"
-	;href-attr ;add-attr JSR2
-	;type-attr ;add-attr JSR2
-	;rel-attr ;add-attr JSR2
-	[ LIT '/ ] ^'
-	[ LIT '> ] ^'
+	[ LIT '< ] ;write/char JSR2
+	;link-tag ;write JSR2
+	;href-attr ;write-attr JSR2
+	;type-attr ;write-attr JSR2
+	;rel-attr ;write-attr JSR2
+	[ LIT '/ ] ;write/char JSR2
+	[ LIT '> ] ;write/char JSR2
 
-RTN
-
-@add-attr ( body* attr* -- )
-
-	[ LIT 20 ] ^'
-	^"
-	[ LIT '= ] ^'
-	[ LIT '" ] ^'
-	^"
-	[ LIT '" ] ^'
-
-RTN
+JMP2r
 
 @add-local ( name* -- )
 
-	[ LIT '< ] ^'
-	[ LIT 'a ] ^'
-	DUP2 ;html-ext ;&blank ;make-path JSR2 ;href-attr ;add-attr JSR2
+	[ LIT '< ] ;write/char JSR2
+	[ LIT 'a ] ;write/char JSR2
+	DUP2 ;html-ext ;&blank ;make-path JSR2 ;href-attr ;write-attr JSR2
 	( self )
-	DUP2 ;term/name ;scmp JSR2 #00 = ,&not-self JCN
-		;self-txt ;class-attr ;add-attr JSR2
+	DUP2 ;term/name ;scmp JSR2 #00 EQU ,&not-self JCN
+		;self-txt ;class-attr ;write-attr JSR2
 		&not-self
 	( parent )
-	DUP2 ;term/parent ;scmp JSR2 #00 = ,&not-parent JCN
-		;parent-txt ;class-attr ;add-attr JSR2
+	DUP2 ;term/parent ;scmp JSR2 #00 EQU ,&not-parent JCN
+		;parent-txt ;class-attr ;write-attr JSR2
 		&not-parent
-	[ LIT '> ] ^'
-	^"
-	;a-tag ^>
+	[ LIT '> ] ;write/char JSR2
+	;write JSR2
+	;a-tag ;write-close JSR2
 
-RTN
+JMP2r
 	&blank $1
 
 @include ( path* -- )
 	
 	.File/name DEO2
-	[ #fffe ;write/head LDA2 STH2k -- ] .File/length DEO2
+	[ #fffe ;write/head LDA2 STH2k SUB2 ] .File/length DEO2
 	STH2kr .File/read DEO2
-	STH2r .File/success DEI2 STH2k ++ ;write/head STA2
+	STH2r .File/success DEI2 STH2k ADD2 ;write/head STA2
 	( file is missing )
-	STH2r #0000 !! ,&no-blank JCN
-		;error-include-missing ERROR
+	STH2r ORA ,&no-blank JCN
+		;error-include-missing ;print-error JMP2
 		&no-blank
 
-RTN
+JMP2r
 
 ( generics )
 
+@write-attr ( body* attr* -- )
+
+	[ LIT 20 ] ,write/char JSR
+	,write JSR
+	[ LIT '= ] ,write/char JSR
+	[ LIT '" ] ,write/char JSR
+	,write JSR
+	[ LIT '" ] ,write/char JSR
+
+JMP2r
+
+@write-open ( str* -- )
+
+	STH2
+	LIT '< ,write/char JSR
+	STH2r ,write JSR
+	LIT '> ,write/char JSR
+
+JMP2r
+
+@write-auto ( str* -- )
+
+	STH2k ,write-open JSR
+	,write JSR
+	STH2r
+
+@write-close ( str* -- )
+
+	STH2
+	LIT '< ,write/char JSR
+	LIT '/ ,write/char JSR
+	STH2r ,write JSR
+	LIT '> ,write/char JMP
+
+JMP2r
+
 @write ( addr* -- )
 
-	LDAk #00 = ,&end JCN
+	LDAk #00 EQU ,&end JCN
 	&while
 		LDAk ,&char JSR
 		INC2 LDAk ,&while JCN
 	&end
 	POP2
 
-RTN
-	&char ( char -- )
-		[ LIT2 &head $2 ] STH2k STA STH2r INC2 ,&head STR2
-	RTN
+JMP2r
+	&char ( char -- ) [ LIT2 &head $2 ] STH2k STA STH2r INC2 ,&head STR2 JMP2r
 
-~stdlib.tal
+( fancyful things )
+
+@prev-char ( addr* char -- addr* )
+
+	STH
+	&while
+		LDAk STHkr EQU ,&end JCN
+		LDAk #00 EQU ,&end JCN
+		#0001 SUB2 LDAk ,&while JCN
+	&end
+		POPr
+
+JMP2r
+
+@next-char ( addr* char -- addr* )
+
+	STH
+	&while
+		LDAk STHkr EQU ,&end JCN
+		LDAk #00 EQU ,&end JCN
+		INC2 LDAk ,&while JCN
+	&end
+		POPr
+
+JMP2r
+
+( helpers )
+
+@chex ( char -- hex )
+
+	DUP DUP #2f GTH SWP #3a LTH AND ,&num JCN
+	DUP DUP #40 GTH SWP #5b LTH AND ,&uca JCN
+	DUP DUP #60 GTH SWP #7b LTH AND ,&lca JCN
+	POP #00 JMP2r
+	&num #30 SUB JMP2r
+	&uca #4b SUB JMP2r
+	&lca #6b SUB JMP2r
+
+JMP2r
+
+@cswp ( str* a b -- )
+
+	STH STH
+	&while
+		LDAk STHkr NEQ ,&continue JCN
+			DUP2 OVRr STHr ROT ROT STA
+			&continue
+		INC2 LDAk ,&while JCN
+	POP2 POP2r
+
+JMP2r
+
+@scmp ( a* b* -- flag )
+
+	STH2
+	&loop
+		LDAk LDAkr STHr NEQ ,&end JCN
+		LDAk LDAkr STHr ORA ,&not-end JCN
+			POP2 POP2r #01 JMP2r
+			&not-end
+		INC2 INC2r ,&loop JMP
+	&end
+	POP2 POP2r #00
+
+JMP2r
+
+@scmp-seg ( a* b* -- flag )
+
+	STH2
+	&loop
+		LDAk LDAkr STHr NEQ ,&end JCN
+		INC2k LDA #00 NEQ ,&continue JCN
+			POP2 POP2r #01 JMP2r
+			&continue
+		INC2 INC2r
+		,&loop JMP
+	&end
+	POP2 POP2r #00
+
+JMP2r
+
+@scat ( src* dst* -- )
+
+	DUP2 ,slen JSR ADD2
+
+@scpy ( src* dst* -- )
+	
+	STH2
+	&while
+		LDAk STH2kr STA INC2r
+		INC2 LDAk ,&while JCN
+	POP2
+	#00 STH2r STA
+
+JMP2r
+
+@slen ( str* -- len* )
+
+	DUP2 ,scap JSR SWP2 SUB2
+
+JMP2r
+
+@scap ( str* -- str-end* )
+
+	( clamp ) LDAk #00 NEQ JMP JMP2r
+	&while INC2 LDAk ,&while JCN
+
+JMP2r
+
+@mclr ( addr* len* -- )
+
+	OVR2 ADD2 SWP2
+	&loop
+		STH2k #00 STH2r STA
+		INC2 GTH2k ,&loop JCN
+	POP2 POP2
+
+JMP2r
+
+@mcpy ( src* dst* len* -- )
+
+	SWP2 STH2
+	OVR2 ADD2 SWP2
+	&loop
+		LDAk STH2kr STA INC2r
+		INC2 GTH2k ,&loop JCN
+	POP2 POP2
+	POP2r
+
+JMP2r
+
+( debugging )
+
+@print ( short* -- )
+
+	&short ( short* -- ) SWP ,&byte JSR
+	&byte ( byte -- ) DUP #04 SFT ,&char JSR
+	&char ( char -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO
+
+JMP2r
+
+@print-str ( str* -- )
+
+	#0001 SUB2
+	&while
+		INC2 LDAk DUP #18 DEO ,&while JCN
+	POP2
+
+JMP2r
+
+@print-error ( name* msg* -- )
+
+	#0a18 DEO
+	SWP2
+	,print-str JSR
+	#2018 DEO
+	,print-str JSR
+	#0d18 DEO
+	#0a18 DEO
+	#010f DEO
+
+BRK
+
+@print-arvelie ( -- )
+
+	.DateTime/year DEI2 #07d6 SUB2 NIP
+		( digit1 ) DUP #0a DIV #30 ADD #18 DEO
+		( digit2 ) #0a [ DIVk MUL SUB ] #30 ADD #18 DEO
+	.DateTime/doty DEI2
+		( month ) DUP2 #000e DIV2 NIP #41 ADD #18 DEO
+		( digit3 ) #000e [ DIV2k MUL2 SUB2 ] DUP2 #000a DIV2 NIP #30 ADD #18 DEO
+		( digit4 ) #000a [ DIV2k MUL2 SUB2 ] NIP #30 ADD #18 DEO
+	#0a18 DEO
+
+JMP2r
 
 @log-ext "-log $1
 @map-ext "-map $1
-
 @html-ext ".html $1
 @htm-ext ".htm $1
 @jpg-ext ".jpg $1
-
 @doctype "<!DOCTYPE 20 "html> $1
 @html-tag "html $1
 @head-tag "head $1
@@ -695,7 +857,6 @@ RTN
 @code-tag "code $1
 @figure-tag "figure $1
 @figcaption-tag "figcaption $1
-
 @charset-attr "charset $1
 @src-attr "src $1
 @alt-attr "alt $1
@@ -703,7 +864,6 @@ RTN
 @rel-attr "rel $1
 @type-attr "type $1
 @class-attr "class $1
-
 @charset-txt "utf-8 $1
 @title-txt "XXIIVV $1
 @stylesheet-txt "stylesheet $1
@@ -714,7 +874,6 @@ RTN
 @journal-txt "journal $1
 @self-txt "self $1
 @parent-txt "parent $1
-
 @lexicon-path "tables/lexicon $1
 @tmp-path "tmp/ $1
 @htm-path "htm/ $1
@@ -725,14 +884,11 @@ RTN
 @stylesheet-path "../links/main.css $1
 @logo-path "../media/icon/logo.svg $1
 @shortcuticon-path "../media/services/icon.png $1
-
 @no-picture "000 $1
-
 @error-include-missing "include_missing $1
 @error-broken-link "--redlink $1
 @error-term-name-size "--term_name_size_exceeded $1
 @error-output-size "--output_size_exceeded $1
-
 @stylesheet-type "text/css $1
 @shortcuticon-type "image/png $1
 
