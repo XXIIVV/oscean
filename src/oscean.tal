@@ -124,10 +124,7 @@ JMP2r
 	;html-tag ;write-open JSR2
 		( head )
 		;head-tag ;write-open JSR2
-			;charset-attr ;charset-txt ;add-meta-tag JSR2
-			;viewport-txt ;viewport-content-txt ;add-meta-name-tag JSR2
-			;stylesheet-txt ;stylesheet-type ;stylesheet-path ;add-link-tag JSR2
-			;shortcuticon-txt ;shortcuticon-type ;shortcuticon-path ;add-link-tag JSR2
+			;meta-head-path ;include JSR2
 			;title-tag ;write-open JSR2
 				;title-txt ;write JSR2 [ LIT 20 ] ;write/char JSR2 ;mdash-entity-txt ;write JSR2 [ LIT 20 ] ;write/char JSR2 DUP2 ;write JSR2
 			;title-tag ;write-close JSR2
@@ -550,27 +547,6 @@ JMP2r
 
 JMP2r
 
-@add-meta-tag ( name* value* -- )
-
-	[ LIT '< ] ;write/char JSR2
-	;meta-tag ;write JSR2
-	SWP2 ;write-attr JSR2
-	[ LIT '/ ] ;write/char JSR2
-	[ LIT '> ] ;write/char JSR2
-
-JMP2r
-
-@add-meta-name-tag ( name* content* -- )
-
-	[ LIT '< ] ;write/char JSR2
-	;meta-tag ;write JSR2
-	SWP2 ;name-attr ;write-attr JSR2
-	;content-attr ;write-attr JSR2
-	[ LIT '/ ] ;write/char JSR2
-	[ LIT '> ] ;write/char JSR2
-
-JMP2r
-
 @add-local ( name* -- )
 
 	[ LIT '< ] ;write/char JSR2
@@ -592,18 +568,6 @@ JMP2r
 	&blank $1
 
 ( generics )
-
-@add-link-tag ( rel* type* href* -- )
-
-	[ LIT '< ] ,write/char JSR
-	;link-tag ,write JSR
-	;href-attr ,write-attr JSR
-	;type-attr ,write-attr JSR
-	;rel-attr ,write-attr JSR
-	[ LIT '/ ] ,write/char JSR
-	[ LIT '> ] ,write/char JSR
-
-JMP2r
 
 @write-attr ( body* attr* -- )
 
@@ -826,8 +790,6 @@ BRK
 @doctype "<!DOCTYPE 20 "html> $1
 @html-tag "html $1
 @head-tag "head $1
-@meta-tag "meta $1
-@link-tag "link $1
 @title-tag "title $1
 @body-tag "body $1
 @nav-tag "nav $1
@@ -840,43 +802,30 @@ BRK
 @code-tag "code $1
 @figure-tag "figure $1
 @figcaption-tag "figcaption $1
-@charset-attr "charset $1
-@content-attr "content $1
 @src-attr "src $1
 @alt-attr "alt $1
 @href-attr "href $1
-@name-attr "name $1
-@rel-attr "rel $1
-@type-attr "type $1
 @class-attr "class $1
-@charset-txt "utf-8 $1
 @title-txt "XXIIVV $1
-@stylesheet-txt "stylesheet $1
-@shortcuticon-txt "shortcut 20 "icon $1
 @mdash-entity-txt "&mdash; $1
 @http-txt "http $1
 @index-txt "index $1
 @journal-txt "journal $1
 @self-txt "self $1
 @parent-txt "parent $1
-@viewport-txt "viewport $1
-@viewport-content-txt "width=device-width, 20 "inital-scale=1 $1
 @lexicon-path "tables/lexicon $1
 @tmp-path "tmp/ $1
 @htm-path "htm/ $1
 @output-path "../site/ $1
 @diary-path "../media/diary/ $1
+@meta-head-path "htm/meta_head.htm $1
 @meta-header-path "htm/meta_header.htm $1
 @meta-footer-path "htm/meta_footer.htm $1
-@stylesheet-path "../links/main.css $1
-@shortcuticon-path "../media/services/icon.png $1
 @no-picture "000 $1
 @error-include-missing "include_missing $1
 @error-broken-link "--redlink $1
 @error-term-name-size "--term_name_size_exceeded $1
 @error-output-size "--output_size_exceeded $1
-@stylesheet-type "text/css $1
-@shortcuticon-type "image/png $1
 
 @lexicon $2000
 @diary $1000
