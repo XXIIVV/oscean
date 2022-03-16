@@ -3,12 +3,14 @@
 echo "Assembling -------------------"
 rm -rf bin
 mkdir -p bin
+
 # uxncli ~/roms/drifblim.rom maeve.tal
 # mv maeve.rom bin/
 # uxncli ~/roms/drifblim.rom arvelie.tal
 # mv arvelie.rom bin/
 # uxncli ~/roms/drifblim.rom oscean.tal
 # mv oscean.rom bin/
+
 uxnasm maeve.tal bin/maeve.rom
 uxnasm arvelie.tal bin/arvelie.rom
 uxnasm oscean.tal bin/oscean.rom
