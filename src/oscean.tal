@@ -136,14 +136,9 @@ JMP2r
 		;head-tag ;write-close JSR2
 		( body )
 		;body-tag ;write-open JSR2
-			;header-tag ;write-open JSR2
-				;home-path ;add-a-tag JSR2
-					;logo-path ;title-txt ;add-img-tag JSR2
-				;a-tag ;write-close JSR2
-			;header-tag ;write-close JSR2
+			;meta-header-path ;include JSR2
 			;build-page-nav JSR2
 			;build-page-main JSR2
-			( inlude footer )
 			;meta-footer-path ;include JSR2
 		;body-tag ;write-close JSR2
 	;html-tag ;write-close JSR2
@@ -531,16 +526,20 @@ JMP2r
 
 JMP2r
 
-( Web framework )
-
-@add-a-tag ( path* -- )
-
-	[ LIT '< ] ;write/char JSR2
-	[ LIT 'a ] ;write/char JSR2
-	;href-attr ;write-attr JSR2
-	[ LIT '> ] ;write/char JSR2
+@include ( path* -- )
+	
+	.File/name DEO2
+	#fffe ;write/head LDA2 STH2k SUB2 .File/length DEO2
+	STH2kr .File/read DEO2
+	STH2r .File/success DEI2 STH2k ADD2 ;write/head STA2
+	( file is missing )
+	STH2r ORA ,&no-blank JCN
+		;error-include-missing ;print-error JMP2
+		&no-blank
 
 JMP2r
+
+( Web framework )
 
 @add-img-tag ( src* alt* -- )
 
@@ -558,18 +557,6 @@ JMP2r
 	[ LIT '< ] ;write/char JSR2
 	;meta-tag ;write JSR2
 	SWP2 ;write-attr JSR2
-	[ LIT '/ ] ;write/char JSR2
-	[ LIT '> ] ;write/char JSR2
-
-JMP2r
-
-@add-link-tag ( rel* type* href* -- )
-
-	[ LIT '< ] ;write/char JSR2
-	;link-tag ;write JSR2
-	;href-attr ;write-attr JSR2
-	;type-attr ;write-attr JSR2
-	;rel-attr ;write-attr JSR2
 	[ LIT '/ ] ;write/char JSR2
 	[ LIT '> ] ;write/char JSR2
 
@@ -595,20 +582,19 @@ JMP2r
 JMP2r
 	&blank $1
 
-@include ( path* -- )
-	
-	.File/name DEO2
-	[ #fffe ;write/head LDA2 STH2k SUB2 ] .File/length DEO2
-	STH2kr .File/read DEO2
-	STH2r .File/success DEI2 STH2k ADD2 ;write/head STA2
-	( file is missing )
-	STH2r ORA ,&no-blank JCN
-		;error-include-missing ;print-error JMP2
-		&no-blank
+( generics )
+
+@add-link-tag ( rel* type* href* -- )
+
+	[ LIT '< ] ,write/char JSR
+	;link-tag ,write JSR
+	;href-attr ,write-attr JSR
+	;type-attr ,write-attr JSR
+	;rel-attr ,write-attr JSR
+	[ LIT '/ ] ,write/char JSR
+	[ LIT '> ] ,write/char JSR
 
 JMP2r
-
-( generics )
 
 @write-attr ( body* attr* -- )
 
@@ -656,7 +642,9 @@ JMP2r
 	POP2
 
 JMP2r
-	&char ( char -- ) [ LIT2 &head $2 ] STH2k STA STH2r INC2 ,&head STR2 JMP2r
+	&char ( char -- ) 
+		[ LIT2 &head $2 ] STH2k STA STH2r INC2 ,&head STR2 
+	JMP2r
 
 ( fancyful things )
 
@@ -846,7 +834,6 @@ JMP2r
 @link-tag "link $1
 @title-tag "title $1
 @body-tag "body $1
-@header-tag "header $1
 @nav-tag "nav $1
 @main-tag "main $1
 @p-tag "p $1
@@ -879,10 +866,9 @@ JMP2r
 @htm-path "htm/ $1
 @output-path "../site/ $1
 @diary-path "../media/diary/ $1
-@home-path "home.html $1
+@meta-header-path "htm/meta_header.htm $1
 @meta-footer-path "htm/meta_footer.htm $1
 @stylesheet-path "../links/main.css $1
-@logo-path "../media/icon/logo.svg $1
 @shortcuticon-path "../media/services/icon.png $1
 @no-picture "000 $1
 @error-include-missing "include_missing $1
