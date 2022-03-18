@@ -6,7 +6,7 @@
 
 	@maxlength $2
 	@stats &terms $2 &links $2 &diaries $2
-	@buf &htm $30 &link $30 &map $30 &log $30
+	@buf &path $30 &link $30
 
 |0100 ( -> )
 
@@ -47,16 +47,10 @@ JMP2r
 
 @parse-term ( term* -- )
 	
-	( htm )
-	;buf/htm STH2k #0030 ;mclr JSR2
-	;htm-path STH2kr ;scpy JSR2
-	DUP2 STH2kr ;scat JSR2
-	;htm-ext STH2kr ;scat JSR2
-	;buf/htm #20 [ LIT '_ ] ;cswp JSR2
 	( clear outgoing )
 	;outgoing #1000 ;mclr JSR2
 	( load htm )
-	STH2r .File/name DEO2
+	;htm-path OVR2 ;htm-ext ;make-path JSR2 .File/name DEO2
 	.maxlength LDZ2 .File/length DEO2
 	;workarea .File/read DEO2
 	( null terminate )
@@ -124,14 +118,8 @@ JMP2r
 	( record in outgoing )
 	DUP2 ;outgoing ;scat JSR2
 	;outgoing #0a ;sput JSR2
-	( find file )
-	;buf/map STH2k #0030 ;mclr JSR2
-	;tmp-path STH2kr ;scpy JSR2
-	STH2kr ;scat JSR2
-	;map-ext STH2kr ;scat JSR2
-	STH2kr #20 [ LIT '_ ] ;cswp JSR2
 	( write )
-	STH2r .File/name DEO2
+	;tmp-path SWP2 ;map-ext ;make-path JSR2 .File/name DEO2
 	DUP2 ;slen JSR2 .File/length DEO2
 	.File/write DEO2
 	#0001 .File/length DEO2
@@ -184,14 +172,7 @@ JMP2r
 
 @connect-diaries ( diary* term* -- )
 
-	( find file )
-	;buf/log STH2k #0030 ;mclr JSR2
-	;tmp-path STH2kr ;scpy JSR2
-	STH2kr ;scat JSR2
-	;log-ext STH2kr ;scat JSR2
-	STH2kr #20 [ LIT '_ ] ;cswp JSR2
-	( write )
-	STH2r .File/name DEO2
+	;tmp-path SWP2 ;log-ext ;make-path JSR2 .File/name DEO2
 	DUP2 ;slen JSR2 .File/length DEO2
 	.File/write DEO2
 	( linebreak )
@@ -202,6 +183,17 @@ JMP2r
 
 JMP2r
 	&lb 0a
+
+@make-path ( a* b* c* -- path* )
+
+	;buf/path STH2k #0030 ;mclr JSR2
+	( a ) ROT2 STH2kr ;scpy JSR2
+	( b ) SWP2 STH2kr ;scat JSR2
+	( c ) STH2kr ;scat JSR2
+	STH2kr #20 [ LIT '_ ] ;cswp JSR2
+	STH2r
+
+JMP2r
 
 @print-stat ( number* type* -- )
 
