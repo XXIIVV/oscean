@@ -99,30 +99,26 @@ span.comment { color:#aaa }
 
 <p>We create the child label <code class='op'>&while</code> to this position of the program so we can return to it later. Both <code class='op'>&while</code> and <code class='op'>@while</code> are ways to define labels, but using <code>&while</code> will automatically prefix a new <code>&label</code> with the name of the last <code>@label</code>, in this example <code>program/while</code>. </p>
 
+<table border="1">
+	<tr><th colspan="4">Padding</th><th colspan="4">Literals</th></tr>
+	<tr><td><code>|</code></td><td>absolute</td><td><code>$</code></td><td>relative</td><td><code>#</code></td><td colspan="3">literal hex</td></tr>
+	<tr><th colspan="4">Labels</th><th colspan="4">Ascii</th></tr>
+	<tr><td><code>@</code></td><td>parent</td><td><code>&</code></td><td>child</td><td><code>&quot;</code></td><td>raw word</td><td><code>&#39;</code></td><td>raw char</td></tr>
+	<tr><th colspan="4">Addressing</th><th colspan="4">Pre-processor</th></tr>
+	<tr><td><code>,</code></td><td>literal relative</td><td>.</td><td>literal zero-page</td><td><code>%</code></td><td>macro-define</td><td><code>~</code></td><td>include</td></tr>
+	<tr><td><code>:</code></td><td>raw absolute</td><td><code>;</code></td><td>literal absolute</td></tr>
+</table>
+
 <p>Next, the <code class='op'>LDAk</code> opcode takes two bytes at the top of the stack to form an absolute address, and loads the value in memory found at that address to the top of the stack, in this case, the ASCII value of the letter H. That value is sent to Console/write(port #18) which prints that character to the terminal.</p>
 
 <p>We increment the absolute address found on top of the stack with <code class='op'>INC2</code>, because the address is made of two bytes. We load the incremented value, the <code class='op'>JCN</code> opcode will jump to the position of label <code class='op'>&while</code> as long as the item before the address is not zero. We complete the program with <code class='op'>POP2</code> to remove the address on the stack, to keep the stack clean at the end of the program.</p>
-
-<table border="1">
-	<tr><th colspan="4">Runes</th></tr>
-	<tr><td><code>|</code></td><td>pad(absolute)</td><td><code>#</code></td><td>literal hex</td></tr>
-	<tr><td><code>$</code></td><td>pad(relative)</td><td><code>.</code></td><td>literal addr(zero-page)</td></tr>
-	<tr><td><code>@</code></td><td>label-define</td><td><code>,</code></td><td>literal addr(relative)</td></tr>
-	<tr><td><code>&amp;</code></td><td>sublabel-define</td><td><code>;</code></td><td>literal addr(absolute)</td></tr>
-	<tr><td><code></code></td><td></td><td><code>:</code></td><td>raw addr(absolute)</td></tr>
-	<tr><td></td><td></td><td><code>&#39;</code></td><td>raw char</td></tr>
-	<tr><td><code></code></td><td></td><td><code>&quot;</code></td><td>raw word</td></tr>
-	<tr><th colspan="4">Pre-processor</th></tr>
-	<tr><td><code>%</code></td><td>macro-define</td><td><code>~</code></td><td>include</td></tr>
-</table>
 
 <h2>Addressing</h2>
 
 <p>The memory and stacks contain bytes, values with a length of 8 bits. To differentiate between operations and literal numbers, the <code class='op'>LIT</code> opcode will push the following byte from memory onto the stack, the 16-bits mode <code class='op'>LIT2</code> opcode will push the following short. A literal is a byte or short prefixed with a LIT opcode, raw values are not prefixed with the LIT opcode.</p>
 
 <table border="1">
-	<tr><th rowspan="2"></th><th colspan="4">Single</th><th colspan="2">Double</th></tr>
-	<tr><th>Byte</th><th>Char</th><th>ZeroPage</th><th>Relative</th><th>Short</th><th>Absolute</th></tr>
+	<tr><td></td><th>Byte</th><th>Char</th><th>ZeroPage</th><th>Relative</th><th>Short*</th><th>Absolute*</th></tr>
 	<tr><td><i>Literal</i></td><td><code>#ab</code></td><td></td><td><code>.label</code></td><td><code>,label</code></td><td><code>#abcd</code></td><td><code>;label</code></td></tr>
 	<tr><td><i>Raw</i></td><td><code>ab</code></td><td><code>'Q</code></td><td></td><td></td><td><code>abcd</code></td><td><code>:label</code></td></tr>
 </table>
