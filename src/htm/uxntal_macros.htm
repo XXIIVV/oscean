@@ -69,18 +69,9 @@
 %IS-NUM { DUP #2f > SWP #3a < AND }
 </pre>
 
-<h2>Debugger</h2>
+<h2>Numbers</h2>
 
-<p>To print the hex values of data.</p>
-
-<pre>
-%HALT   { #010f DEO }
-%EMIT   { #18 DEO }
-%DEBUG  { ;print/byte JSR2 #0a EMIT }
-%DEBUG2 { ;print/short JSR2 #0a EMIT }
-%PRINT  { ;print-str JSR2 #0a EMIT }
-</pre>
-
+<p>To emit hexadecimal numbers:</p>
 <pre>
 @print ( short* -- )
 
@@ -91,25 +82,49 @@
 JMP2r
 </pre>
 
+<p>To emit a decimal number from a short:</p>
 <pre>
 @print-dec ( value* -- )
 
-	#2710 DIV2k DUP #30 ADD EMIT MUL2 SUB2
-	#03e8 DIV2k DUP #30 ADD EMIT MUL2 SUB2
-	#0064 DIV2k DUP #30 ADD EMIT MUL2 SUB2
-	#000a DIV2k DUP #30 ADD EMIT MUL2 SUB2
-	#30 ADD EMIT POP
+	#2710 ,&parse JSR
+	#03e8 ,&parse JSR
+	#0064 ,&parse JSR
+	#000a ,&parse JSR
+	,&emit JSR POP
 
 JMP2r
+	&parse DIV2k DUP ,&emit JSR MUL2 SUB2 JMP2r
+	&emit #30 ADD #18 DEO JMP2r
 </pre>
 
+<p>To emit a decimal number from a short, without leading zeroes:</p>
 <pre>
-@print-str ( str* -- )
+@print-dec-trim ( value* -- )
 
+	#2710 ,&parse JSR
+	#03e8 ,&parse JSR
+	#0064 ,&parse JSR
+	#000a ,&parse JSR
+	,&emit JSR POP
+
+JMP2r
+	&parse DIV2k DUP ,&emit JSR MUL2 SUB2 JMP2r
+	&emit 
+		DUP [ LIT &zero $1 ] #0000 EQU2 ,&skip JCN
+		#01 ,&zero STR DUP #30 ADD #18 DEO &skip POP JMP2r
+</pre>
+
+<h3>decimal string to hex number</h3>
+<pre>
+@sdec ( addr* -- hex* )
+
+	LIT2r 0000
 	&while
-		LDAk #18 DEO
+		LDAk #30 SUB #00 SWP
+		STH2r #000a MUL2 ADD2 STH2
 		INC2 LDAk ,&while JCN
 	POP2
+	STH2r
 
 JMP2r
 </pre>
@@ -134,22 +149,19 @@ JMP2r
 JMP2r
 </pre>
 
-<pre>
-@print-arvelie ( -- )
+<h2>Strings</h2>
 
-	.DateTime/year DEI2 #07d6 -- NIP
-		( digit1 ) DUP #0a DIV #30 + EMIT
-		( digit2 ) #0a MOD #30 + EMIT
-	.DateTime/doty DEI2
-		( month ) DUP2 #000e DIV2 NIP #41 + EMIT
-		( digit3 ) #000e MOD2 DUP2 #000a DIV2 NIP #30 + EMIT
-		( digit4 ) #000a MOD2 NIP #30 + EMIT
-	#0a EMIT
+<p>To emit a string: </p>
+<pre>
+@print-str ( str* -- )
+
+	&while
+		LDAk #18 DEO
+		INC2 LDAk ,&while JCN
+	POP2
 
 JMP2r
 </pre>
-
-<h2>Strings</h2>
 
 <h3>string primitives</h3>
 <pre>
@@ -250,17 +262,17 @@ JMP2r
 JMP2r
 </pre>
 
-<h3>decimal string to hex number</h3>
 <pre>
-@sdec ( addr* -- hex* )
+@print-arvelie ( -- )
 
-	( res ) LIT2r 0000
-	&while
-		LDAk #30 - #00 SWP
-		STH2r #000a ** ++ STH2
-		INC2 LDAk ,&while JCN
-	POP2
-	( res ) STH2r
+	.DateTime/year DEI2 #07d6 -- NIP
+		( digit1 ) DUP #0a DIV #30 + #18 DEO
+		( digit2 ) #0a MOD #30 + #18 DEO
+	.DateTime/doty DEI2
+		( month ) DUP2 #000e DIV2 NIP #41 + #18 DEO
+		( digit3 ) #000e MOD2 DUP2 #000a DIV2 NIP #30 + #18 DEO
+		( digit4 ) #000a MOD2 NIP #30 + #18 DEO
+	#0a #18 DEO
 
 JMP2r
 </pre>
