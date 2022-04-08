@@ -13,33 +13,29 @@
 	<tr><td><code>.uf3</code></td><td>24x24(9 tiles)</td><td>0x4900</td></tr>
 </table>
 
-<p>You will find this filetype in the <a href='uxn.html'>Uxn</a> ecosystem, namely in <a href='left.html'>Left</a>. Uf2 fonts can be viewed and edited with <a href='turye.html'>Turye</a>. The drawing order goes vertically as to be able to skip 2 draw calls for narrow characters:</p>
+<p>You will find this filetype in the <a href='uxn.html'>Uxn</a> ecosystem, namely in <a href='left.html'>Left</a>. Uf2 fonts can be viewed and edited with <a href='turye.html'>Turye</a>. The drawing order goes vertically as to be able to skip 2 draw calls for narrow characters if needed:</p>
 
 <table border='1'>
 	<tr><td>0</td><td style='background:#eee'>2</td></tr>
 	<tr><td>1</td><td style='background:#eee'>3</td></tr>
 </table>
 
-<p>The uf2 character drawing routine in <a href='uxntal.html'>Uxntal</a> is about 80 bytes, with the screen's <a href='varvara.html'>auto byte</a> set to <code>AUTO-YADDR</code>:</p>
+<p>The uf2 character drawing routine in <a href='uxntal.html'>Uxntal</a> is about 50 bytes, with the screen's <a href='varvara.html'>auto byte</a> set to <code>#15</code>:</p>
 
 <pre>
-@uf2 ( char color -- )
+@draw-uf2 ( text* -- )
 
-	,&color STR
-	#20 - TOS STH2k ;font-uf2 ++ LDA STHk
-	.Screen/x DEI2 #00 STHr ++ ,&anchor-x STR2
-	.Screen/y DEI2 ,&anchor-y STR2
-	;font-uf2/glyphs STH2r 20** ++ .Screen/addr DEO2
-	#08 > INC #00
-	&loop
-		[ LIT &color $1 ] .Screen/sprite DEOk DEO
-		[ LIT2 &anchor-y $2 ] .Screen/y DEO2
-		.Screen/x DEI2k #0008 ++ ROT DEO2
-		INC GTHk ,&loop JCN
+	#15 .Screen/auto DEO
+	&while
+		LDAk #20 SUB #00 SWP
+			DUP2 #50 SFT2 ;font/glyphs ADD2 .Screen/addr DEO2
+			;font ADD2 LDA #00 SWP .Screen/x DEI2 ADD2
+		#01 .Screen/sprite DEOk DEO
+		.Screen/x DEO2
+		INC2 LDAk ,&while JCN
 	POP2
-	[ LIT2 &anchor-x $2 ] .Screen/x DEO2
 
-RTN
+JMP2r
 </pre><ul></ul><p><b>Incoming</b>: <a href="turye.html">turye</a> <a href="adelie.html">adelie</a> </p></main>
 <footer><a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.svg" alt="CreativeCommons"/></a> <a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a> <a href="https://merveilles.town/@neauoire" rel="me" target="_blank"><img src="../media/icon/merveilles.svg" alt="Merveilles"/></a> <a href="ethics.html"><img src="../media/icon/dreipfeile.svg" alt="NoNazis!"/></a> <a href="uxn.html"><img src="../media/icon/uxn.svg" alt="UxnPowered"/></a> <span><a href="devine_lu_linvega.html">Devine Lu Linvega</a> &copy; 2022 &mdash; <a href="about.html">BY-NC-SA 4.0</a></span></footer>
 </body></html>
