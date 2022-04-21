@@ -1,0 +1,84 @@
+<!DOCTYPE html><html><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, inital-scale=1"/><link href="../links/main.css" type="text/css" rel="stylesheet"/><link href="../media/services/icon.png" type="image/png" rel="shortcut icon"/>
+<title>XXIIVV &mdash; turquoise</title></head><body>
+<header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
+<nav><ul><li><a href="paper_computing.html">paper computing</a></li><li><a href="operating_systems.html">operating systems</a></li><li><a href="programming.html">programming</a></li><li><a href="virtual_machines.html" class="parent">virtual machines</a></li><li><a href="cellular_automata.html">cellular automata</a></li><li><a href="fractals.html">fractals</a></li></ul><ul><li><a href="subleq.html">subleq</a></li><li><a href="fractran.html">fractran</a></li><li><a href="brainfuck.html">brainfuck</a></li><li><a href="thue.html">thue</a></li><li><a href="gyo.html">gyo</a></li><li><a href="chip8.html">chip8</a></li><li><a href="turquoise.html" class="self">turquoise</a></li><li><a href="uxn.html">uxn</a></li><li><a href="orca.html">orca</a></li><li><a href="noton.html">noton</a></li></ul><ul></ul></nav><main><h2>Turquoise is a line-plotting virtual machine.</h2>
+
+<p>This is a little system to plot lines from 16 operations.</p>
+
+<h3>Registers</h3>
+
+<p>The state of the virtual machine is defined as:</p>
+
+<table border="1">
+	<tr><th>cycle</th><td>short</td><td>The id of the current cycle</td></tr>
+	<tr><th class='move'>x</th><td>short</td><td>Position on the x axis</td></tr>
+	<tr><th class='move'>y</th><td>short</td><td>Position on the y axis</td></tr>
+	<tr><th>scale</th><td>byte</td><td>Length of segment</td></tr>
+	<tr><th>alive</th><td>bit</td><td>On/off</td></tr>
+	<tr><th>color</th><td>bit</td><td>Black/white</td></tr>
+	<tr><th>flip</th><td>2 bit</td><td>None/X/Y/XY</td></tr>
+	<tr><th>direction</th><td>bit</td><td>Loop/ping-pong</td></tr>
+</table>
+
+<h3>Rules</h3>
+
+<p>Turtoise programs are defined as a set of rules in the follow format:</p>
+
+<table border="1">
+	<tr><th>length</th><td>byte</td><td>Number of commands in the rule.</td></tr>
+	<tr><th>cycles</th><td>short</td><td>Number of cycles to run this rule for.</td></tr>
+	<tr><th>body</th><td>..</td><td>Commands of the rule.</td></tr>
+</table>
+
+<p>For example, here is a rule to draw a staircase:</p>
+
+<pre>02 00 10 18</pre>
+
+<p>The OIS files are made of line plotting rules in the following format:</p>
+
+<p>There are 16 operations:</p>
+
+<table border="1">
+	<tr><th><code>0</code></th><td>0</td><td>0</td><td>0</td><td>0</td><td>End()</td><th><code>8</code></th><td class='cel1'>1</td><td>0</td><td>0</td><td>0</td><td class='move'>Move(0,-1)</td></tr>
+	<tr><th><code>1</code></th><td>0</td><td>0</td><td>0</td><td class='cel1'>1</td><td class='move'>Move(1,0)</td> <th><code>9</code></th><td class='cel1'>1</td><td>0</td><td>0</td><td class='cel1'>1</td><td class='move'>Move(1,-1)</td></tr>
+	<tr><th><code>2</code></th><td>0</td><td>0</td><td class='cel1'>1</td><td>0</td><td class='move'>Move(-1,0)</td><th><code>a</code></th><td class='cel1'>1</td><td>0</td><td class='cel1'>1</td><td>0</td><td class='move'>Move(-1,-1)</td></tr>
+	<tr><th><code>3</code></th><td>0</td><td>0</td><td class='cel1'>1</td><td class='cel1'>1</td><td>Flip()</td><th><code>b</code></th><td class='cel1'>1</td><td>0</td><td class='cel1'>1</td><td class='cel1'>1</td><td>Direction()</td></tr>
+	<tr><th><code>4</code></th><td>0</td><td class='cel1'>1</td><td>0</td><td>0</td><td class='move'>Move(0,1)</td> <th><code>c</code></th><td class='cel1'>1</td><td class='cel1'>1</td><td>0</td><td>0</td><td>Draw()</td></tr>
+	<tr><th><code>5</code></th><td>0</td><td class='cel1'>1</td><td>0</td><td class='cel1'>1</td><td class='move'>Move(1,1)</td> <th><code>d</code></th><td class='cel1'>1</td><td class='cel1'>1</td><td>0</td><td class='cel1'>1</td><td>Color()</td></tr>
+	<tr><th><code>6</code></th><td>0</td><td class='cel1'>1</td><td class='cel1'>1</td><td>0</td><td class='move'>Move(-1,1)</td><th><code>e</code></th><td class='cel1'>1</td><td class='cel1'>1</td><td class='cel1'>1</td><td>0</td><td>Scale(1)</td></tr>
+	<tr><th><code>7</code></th><td>0</td><td class='cel1'>1</td><td class='cel1'>1</td><td class='cel1'>1</td><td>Mirror()</td><th><code>f</code></th><td class='cel1'>1</td><td class='cel1'>1</td><td class='cel1'>1</td><td class='cel1'>1</td><td>Scale(-1)</td></tr>
+</table>
+
+<p>The commands are run at each pixel.</p>
+
+<table border="1">
+	<tr><th>End</th><td>Go to the next rule.</td></tr>
+	<tr><th class='move'>Move</th><td>Move by a length equal to the <code>scale</code> register.</td></tr>
+	<tr><th>Flip</th><td>Increment the value of the flip register.</td></tr>
+	<tr><th>Mirror</th><td>Swap the X and Y axis.</td></tr>
+	<tr><th>Direction</th><td>Set the way the rule loops around.</td></tr>
+	<tr><th>Draw</th><td>Toggle between drawing and not drawing.</td></tr>
+	<tr><th>Color</th><td>Toggle between painting and erasing.</td></tr>
+	<tr><th>Scale</th><td>Modify the length of line segments.</td></tr>
+</table>
+
+<p>Move by the length of the scale register value in the direction of the move operation.</p>
+
+<table border="1">
+	<tr><th><code>6</code></th><th><code>4</code></th><th><code>5</code></th></tr>
+	<tr><th><code>2</code></th><th><code>0</code></th><th><code>1</code></th></tr>
+	<tr><th><code>a</code></th><th><code>8</code></th><th><code>9</code></th></tr>
+</table>
+
+<style>
+	.cel1 { background:black;color:white }
+	.move { background:#efefef }
+</style>
+
+<ul>
+	<li><a href='https://git.sr.ht/~rabbits/turquoise' target='_blank'>view source</a></li>
+</ul>
+<ul></ul></main>
+<footer><a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.svg" alt="CreativeCommons"/></a> <a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a> <a href="https://merveilles.town/@neauoire" rel="me" target="_blank"><img src="../media/icon/merveilles.svg" alt="Merveilles"/></a> <a href="ethics.html"><img src="../media/icon/dreipfeile.svg" alt="NoNazis!"/></a> <a href="uxn.html"><img src="../media/icon/uxn.svg" alt="UxnPowered"/></a> <span><a href="devine_lu_linvega.html">Devine Lu Linvega</a> &copy; 2022 &mdash; <a href="about.html">BY-NC-SA 4.0</a></span></footer>
+</body></html>
