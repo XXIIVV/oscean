@@ -10,11 +10,11 @@
 	<tr><td rowspan="3">Runtime</td><th class='move'>x</th><td>short</td><td>Position on the x axis</td></tr>
 	<tr><th class='move'>y</th><td>short</td><td>Position on the y axis</td></tr>
 	<tr><th class='scale'>scale</th><td>byte</td><td>Length of segment</td></tr>
-	<tr><td rowspan="5">Registers</td><th>alive</th><td>1 bit</td><td>On/off</td></tr>
-	<tr><th>color</th><td>1 bit</td><td>Foreground/background</td></tr>
+	<tr><td rowspan="5">Registers</td><th>drawing</th><td>1 bit</td><td>On/off</td></tr>
+	<tr><th>color</th><td>1 bit</td><td>A/B</td></tr>
 	<tr><th class='mirror'>mirror</th><td>1 bit</td><td>Off/on</td></tr>
-	<tr><th>flip</th><td>2 bit</td><td>None/X/Y/XY</td></tr>
-	<tr><th>direction</th><td>1 bit</td><td>Loop/ping-pong</td></tr>
+	<tr><th>flipx</th><td>1 bit</td><td>Off/on</td></tr>
+	<tr><th>flipy</th><td>1 bit</td><td>Off/on</td></tr>
 </table>
 
 <h3>Rules</h3>
@@ -27,9 +27,9 @@
 	<tr><th>body</th><td>..</td><td>Commands for the rule.</td></tr>
 </table>
 
-<p>For example, a rule of 11 operations to draw a small circle made from 4 arc segments:</p>
+<p>For example, a rule of 11 operations to draw a small circle made from 2 arc segments:</p>
 
-<pre>0b04 4454 5551 5130</pre>
+<pre>1a01 4454 5551 5113 7445 4555 1511 b7</pre>
 
 <p>Rules are made of 16 line plotting operations:</p>
 
@@ -37,7 +37,7 @@
 	<tr><th><code>0</code></th><td>0</td><td>0</td><td>0</td><td>0</td><td>Push()</td><th><code>8</code></th><td class='cel1'>1</td><td>0</td><td>0</td><td>0</td><td class='move'>Move(0,-1)</td></tr>
 	<tr><th><code>1</code></th><td>0</td><td>0</td><td>0</td><td class='cel1'>1</td><td class='move'>Move(1,0)</td> <th><code>9</code></th><td class='cel1'>1</td><td>0</td><td>0</td><td class='cel1'>1</td><td class='move'>Move(1,-1)</td></tr>
 	<tr><th><code>2</code></th><td>0</td><td>0</td><td class='cel1'>1</td><td>0</td><td class='move'>Move(-1,0)</td><th><code>a</code></th><td class='cel1'>1</td><td>0</td><td class='cel1'>1</td><td>0</td><td class='move'>Move(-1,-1)</td></tr>
-	<tr><th><code>3</code></th><td>0</td><td>0</td><td class='cel1'>1</td><td class='cel1'>1</td><td>Flip()</td><th><code>b</code></th><td class='cel1'>1</td><td>0</td><td class='cel1'>1</td><td class='cel1'>1</td><td>Pop()</td></tr>
+	<tr><th><code>3</code></th><td>0</td><td>0</td><td class='cel1'>1</td><td class='cel1'>1</td><td>Flip(1,0)</td><th><code>b</code></th><td class='cel1'>1</td><td>0</td><td class='cel1'>1</td><td class='cel1'>1</td><td>Flip(0,1)</td></tr>
 	<tr><th><code>4</code></th><td>0</td><td class='cel1'>1</td><td>0</td><td>0</td><td class='move'>Move(0,1)</td> <th><code>c</code></th><td class='cel1'>1</td><td class='cel1'>1</td><td>0</td><td>0</td><td>Color()</td></tr>
 	<tr><th><code>5</code></th><td>0</td><td class='cel1'>1</td><td>0</td><td class='cel1'>1</td><td class='move'>Move(1,1)</td> <th><code>d</code></th><td class='cel1'>1</td><td class='cel1'>1</td><td>0</td><td class='cel1'>1</td><td>Draw()</td></tr>
 	<tr><th><code>6</code></th><td>0</td><td class='cel1'>1</td><td class='cel1'>1</td><td>0</td><td class='move'>Move(-1,1)</td><th><code>e</code></th><td class='cel1'>1</td><td class='cel1'>1</td><td class='cel1'>1</td><td>0</td><td class='scale'>Scale(1)</td></tr>
@@ -49,7 +49,7 @@
 <table border="1">
 	<!-- <tr><th>True</th><td>Skip next operation, if <code>alive</code> register is not null.</td></tr> -->
 	<tr><th class='move'>Move</th><td>Move by a length equal to the <code>scale</code> register.</td></tr>
-	<tr><th>Flip</th><td>Increment the value of the flip register.</td></tr>
+	<tr><th>Flip</th><td>Flip movement axis vectors.</td></tr>
 	<tr><th class='mirror'>Mirror</th><td>Swap the target axis with the move operation.</td></tr>
 	<!-- <tr><th>Direction</th><td>Set the way the rule loops around.</td></tr> -->
 	<tr><th>Draw</th><td>Toggle between drawing and not drawing.</td></tr>
