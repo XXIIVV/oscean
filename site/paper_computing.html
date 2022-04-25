@@ -55,6 +55,217 @@
 	<li><a href='https://yip.pe/analog.html' target='_blank'>Thread</a></li>
 </ul>
 
-<ul></ul><p><b>Incoming</b>: <a href="uxn.html">uxn</a> <a href="noton.html">noton</a> <a href="2021.html">2021</a> </p></main>
+<h2>The design for a simple portable computer that only requires a pen and a piece of paper.</h2>
+
+<p>The computer consists of a sheet of paper that contains both the program as well as a number of data registers, that will be used to represent the contents of the <a href='computation.html'>registers</a>.</p>
+
+<p>To begin, the pen, representing the program counter, is positioned at the line <code>00</code> of a program. The instruction in that line is then processed by the user by either moving the pen(program counter), modifying the value of a data register or by checking if a data register has become “empty”(zeroed).</p>
+
+<h3>Primitives</h3>
+
+<p>Most models contain a few arithmetic operations and at least one conditional operation. Three base models, each using three instructions, are drawn from the following collection. In addition, a machine usually has a HALT instruction, which stops the machine.</p>
+
+<ul>
+	<li><b>CLR</b>(r): CLeaR register r. (Set r to zero.)</li>
+	<li><b>INC</b>(r): INCrement the contents of register r.</li>
+	<li><b>DEC</b>(r): DECrement the contents of register r.</li>
+	<li><b>CPY</b>(rj, rk): CoPY the contents of register rj to register rk leaving the contents of rj intact.</li>
+	<li><b>JZ</b>(r, z): IF register r contains Zero THEN Jump to instruction z ELSE continue in sequence.</li>
+	<li><b>JE</b>(rj, rk, z): IF the contents of register rj Equals the contents of register rk THEN Jump to instruction z ELSE continue in sequence.</li>
+</ul>
+
+<p>The following three counter machine models have the same computational power since the instructions of one model can be derived from those of another:</p>
+
+<ul>
+	<li><b>INC</b>(r), <b>DEC</b>(r), <b>JZ</b>(r, z) &mdash; <i>Minsky (1961, 1967), Lambek (1961)</i></li>
+	<li><b>CLR</b>(r), <b>INC</b>(r), <b>JE</b>(rj, rk, z) &mdash; <i>Ershov (1958), Peter (1958)</i></li>
+	<li><b>INC</b>(r), <b>CPY</b>(rj, rk), <b>JE</b>(rj, rk, z) &mdash; <i>Elgot-Robinson (1964), Minsky (1967)</i></li>
+</ul>
+
+<h3>WDR Instruction Set</h3>
+
+<p>The WDR paper computer or Know-how Computer is an educational model of a computer consisting only of a pen, a sheet of paper, and individual matches in the most simple case. The instruction set of five commands is small but Turing complete and therefore enough to represent all mathematical functions: incrementing ("inc") or decrementing ("dec") a register, unconditional jump ("jmp"), conditional jump ("isz", skips next instruction if a register is zero), and stopping program execution ("stp"). </p>
+
+<table border="1">
+	<tr><th>Opcode</th><th>Description</th></tr>
+	<tr><td><b>END</b></td><td>Aborts the execution of your program, so that you can examine the contents of your data registers.</td></tr>
+	<tr><td><b>SKP</b>(r)</td><td>Checks if the data register r is zero. If it is zero, the program counter is increased by 2, otherwise the program counter is increased only by 1.</td></tr>
+	<tr><td><b>JMP</b>(z)</td><td>Sets the program counter to line number z.</td></tr>
+	<tr><td><b>INC</b>(r)</td><td>Increments the contents of the data register r and increases the program counter by 1.</td></tr>
+	<tr><td><b>DEC</b>(r)</td><td>Decrements the contents of the data register r and increases the program counter by 1.</td></tr>
+</table>
+
+<h3>CARDIAC Instruction Set</h3>
+
+<p>CARDIAC (CARDboard Illustrative Aid to Computation) is a learning aid developed for Bell Telephone Laboratories in 1968 to teach high school students how computers work. The computer operates in base 10 and has 100 memory cells which can hold signed numbers from 0 to ±999. It has an instruction set of 10 instructions which allows CARDIAC to add, subtract, test, shift, input, output and jump. </p>
+
+<table border="1">
+	<tr><th>Opcode</th><th>Instruction</th><th>Description</th></tr>
+	<tr><td>INP</td><td>Input</td><td>take a number from the input card and put it in a specified memory cell.</td></tr>
+	<tr><td>CLA</td><td>Clear and add</td><td>clear the accumulator and add the contents of a memory cell to the accumulator.</td></tr>
+	<tr><td>ADD</td><td>Add</td><td>add the contents of a memory cell to the accumulator.</td></tr>
+	<tr><td>TAC</td><td>Test accumulator contents</td><td>performs a sign test on the contents of the accumulator; if minus, jump to a specified memory cell.</td></tr>
+	<tr><td>SFT</td><td>Shift</td><td>shifts the accumulator x places left, then y places right, where x is the upper address digit and y is the lower.</td></tr>
+	<tr><td>OUT</td><td>Output</td><td>take a number from the specified memory cell and write it on the output card.</td></tr>
+	<tr><td>STO</td><td>Store</td><td>copy the contents of the accumulator into a specified memory cell.</td></tr>
+	<tr><td>SUB</td><td>Subtract</td><td>subtract the contents of a specified memory cell from the accumulator.</td></tr>
+	<tr><td>JMP</td><td>Jump</td><td>jump to a specified memory cell.  The current cell number is written in cell 99.  This allows for one level of subroutines by having the return be the instruction at cell 99 (which had '8' hardcoded as the first digit.</td></tr>
+	<tr><td>HRS</td><td>Halt and reset</td><td>move bug to the specified cell, then stop program execution.</td></tr>
+</table>
+
+<h3>Punched card</h3>
+
+<p>To encode a WDR program into a 8-bits <a href='https://en.wikipedia.org/wiki/Punched_card' target='_blank'>punched card</a>, we could use 3 bits of space to encode the operation, which leaves 5 bits for the value. This computer's programs uses only 5 operations out of a possible 8, leaving 3 unused.</p>
+
+<table border='1'>
+	<tr><th colspan='3'>Binary</th><th>Opcode</th></tr>
+	<tr><td>0</td><td>0</td><td>0</td><td>END</td></tr>
+	<tr><td>0</td><td>0</td><td style='background:#000;color:#fff'>1</td><td>SKP</td></tr>
+	<tr><td>0</td><td style='background:#000;color:#fff'>1</td><td>0</td><td>JMP</td></tr>
+	<tr><td>0</td><td style='background:#000;color:#fff'>1</td><td style='background:#000;color:#fff'>1</td><td>ADD</td></tr>
+	<tr><td style='background:#000;color:#fff'>1</td><td>0</td><td>0</td><td>SUB</td></tr>
+	<tr style='background:#eee'><td style='background:#000;color:#fff'>1</td><td>0</td><td style='background:#000;color:#fff'>1</td><td><i>unused</i></td></tr>
+	<tr style='background:#eee'><td style='background:#000;color:#fff'>1</td><td style='background:#000;color:#fff'>1</td><td>0</td><td><i>unused</i></td></tr>
+	<tr style='background:#eee'><td style='background:#000;color:#fff'>1</td><td style='background:#000;color:#fff'>1</td><td style='background:#000;color:#fff'>1</td><td><i>unused</i></td></tr>
+</table>
+
+<p>The following program subtracts from <code>R1</code> and adds to <code>R0</code> until the value of <code>R1</code> is zero. The result of the addition of <code>R0</code> and <code>R1</code> will be stored in <code>R0</code>.</p>
+
+<table border='1'>
+	<tr><th>Line</th><th colspan='3'>Opcode</th><th colspan='5'>Value</th><th>Opcode</th><th>Hex</th></tr>
+	<tr><td>00</td><td>0</td><td style='background:#000;color:#fff'>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td style='background:#000;color:#fff'>1</td><td style='background:#000;color:#fff'>1</td><td>JMP 03</td><td>$43</td></tr>
+	<tr><td>01</td><td>0</td><td style='background:#000;color:#fff'>1</td><td style='background:#000;color:#fff'>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>ADD R0</td><td>$60</td></tr>
+	<tr><td>02</td><td style='background:#000;color:#fff'>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td style='background:#000;color:#fff'>1</td><td>SUB R1</td><td>$82</td></tr>
+	<tr><td>03</td><td>0</td><td>0</td><td style='background:#000;color:#fff'>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td style='background:#000;color:#fff'>1</td><td>SKP R1</td><td>$22</td></tr>
+	<tr><td>04</td><td>0</td><td style='background:#000;color:#fff'>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td style='background:#000;color:#fff'>1</td><td>JMP 01</td><td>$41</td></tr>
+	<tr><td>05</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>END</td><td>$00</td></tr>
+</table>
+
+<p>The binary expression of the operation and value of the previous program can be encoded vertically as the following punched card:</p>
+
+<pre style='border: 1px dotted black;line-height: 10px; background:white'>
+	v   v   v   v   v   v    
+			•                
+	•   •           •        
+		•       •            
+							 
+							 
+							 
+	•                        
+	•       •   •   •        
+</pre>
+
+<h3>Ref. 5-bits Table</h3>
+
+<p>The following table show the binary table for 32 addressable lines of a program.</p>
+
+<table border='1'>
+  <tr><td>00</td><td>00000</td><td>08</td><td>01000</td><td>10</td><td>100000</td><td>18</td><td>11000</td></tr>
+  <tr><td>01</td><td>00001</td><td>09</td><td>01001</td><td>11</td><td>100001</td><td>19</td><td>11001</td></tr>
+  <tr><td>02</td><td>00010</td><td>0A</td><td>01010</td><td>12</td><td>100010</td><td>1A</td><td>11010</td></tr>
+  <tr><td>03</td><td>00011</td><td>0B</td><td>01011</td><td>13</td><td>100011</td><td>1B</td><td>11011</td></tr>
+  <tr><td>04</td><td>00000</td><td>0C</td><td>01100</td><td>14</td><td>100000</td><td>1C</td><td>11100</td></tr>
+  <tr><td>05</td><td>00001</td><td>0D</td><td>01101</td><td>15</td><td>100001</td><td>1D</td><td>11101</td></tr>
+  <tr><td>06</td><td>00010</td><td>0E</td><td>01110</td><td>16</td><td>100010</td><td>1E</td><td>11110</td></tr>
+  <tr><td>07</td><td>00011</td><td>0F</td><td>01111</td><td>17</td><td>100011</td><td>1F</td><td>11111</td></tr>
+</table>
+
+
+<ul>
+	<li><a href='https://en.wikipedia.org/wiki/WDR_paper_computer' target='_blank'>WDR Paper Computer</a></li>
+	<li><a href='https://en.wikipedia.org/wiki/CARDboard_Illustrative_Aid_to_Computation' target='_blank'>CARDIAC Paper Computer</a></li>
+	<li><a href='https://www.jeffreythompson.org/human-computers.php' target='_blank'>Human-Computers</a></li>
+	<li><a href='https://wintermute.org/project/Rustic_Computing/' target='_blank'>Rustic Computing</a></li>
+</ul>
+
+<h2>Paper data storage refers to the use of paper as a data storage device.</h2>
+
+<p>This includes writing, illustrating, and the use of data that can be interpreted by a machine or is the result of the functioning of a machine.</p>
+
+<img src='../media/refs/punchcard.png'/>
+
+<h3>Punched Cards</h3>
+
+<p>Punched cards would encode alphanumeric characters vertically, the IBM 12-row/80-column punched card format came to dominate the industry. It encoded 960 bits of memory.</p>
+
+<h3>Hex Codes</h3>
+
+<p>You can get 3.5 kilobytes per A4 page (font size 12pt, font Inconsolata) and OCR it with gocr at 400DPI. </p>
+
+<table border='1'>
+	<th colspan="2">24x24 ICN Sprite</th>
+	<tr>
+		<td>
+			<img src='../media/generic/endchr.png'/></td>
+		<td>	
+<pre>
+0003 6331 397b 77f8 c0f0 f7ff fff0 8003
+1c7e feff 0f07 078e f860 0c07 0300 301f
+071f 7cf8 f007 7fff dcc0 c000 70f8 f8b0
+0f07 4143 677f 7f3e ffe3 87cf cfcf 8703
+84c4 8406 0efe fcf8 	
+</pre>
+		</td>
+	</tr>
+</table>
+
+<h3>MICR</h3>
+
+<p>E-13B is a magnetic ink character recognition(MICR) code of 14 character, comprising the 10 decimal digits. Westminster is a printing and display typeface inspired by the machine-readable numbers printed on cheques. It's akin to encoding QR code in typography.</p>
+
+<img src='../media/refs/data70.png' width='250'/>
+
+<ul>
+	<li><a href='https://www.monperrus.net/martin/store-data-paper' target='_blank'>Martin Monperrus</a></li>
+	<li><a href='https://simplifier.neocities.org/irongall.html' target='_blank'>Iron Gall Ink</a></li>
+</ul><h2>Pen & Paper Games</h2>
+
+<h3>Hexapawn</h3>
+
+<p>Hexapawn is played on a rectangular board of variable size, for example on a 3×3 board or on a chessboard. On a board of size n×m, each player begins with m pawns, one for each square in the row closest to them. The goal of each player is to advance one of their pawns to the opposite end of the board or to prevent the other player from moving. <a href='https://www.youtube.com/watch?v=sw7UAZNgGg' target='_blank'>~</a></p>
+
+<img src='../media/refs/hexapawn.jpg' />
+
+<h3>Sprouts</h3>
+
+<p>The game is played by two players starting with a few spots drawn on a sheet of paper. Players take turns, where each turn consists of drawing a line between two spots, or from a spot to itself, and adding a new spot somewhere along the new line. In so-called normal play, the player who makes the last move wins. In misère play, the player who makes the last move loses. </p>
+
+<ul>
+	<li>A new line cannot cross itself or any other line.</li>
+	<li>No spot may have more than three lines attached to it.</li>
+</ul>
+
+<h3>Pipelayer</h3>
+
+<p>The game is played with two grids of dots that are slightly offset from one another. To win a player must make a continuous connection from one side of the board to the other in the long direction for his color of dots.</p>
+
+<ul>
+	<li>The players take turns connecting two dots.</li>
+	<li>A player can only connect dots that are adjacent horizontally or vertically and their own color.</li>
+</ul>
+
+<h3>Capture</h3>
+
+<p>Capture is played on a grid of dots. The players take turns connecting dots that are horizontally or vertically adjacent. If a player can complete a square then they capture that square. You must draw another line after making a capture. A player may make multiple captures in a single turn. After the last capture they must still connect two dots.</p>
+
+<ul>
+	<li>The players take turns connecting two dots.</li>
+	<li>The player who captured the most squares wins. </li>
+</ul>
+
+<h3>Peg Solitaire</h3>
+
+<p>Pegs is played on a shape made of pegs. The standard game fills the entire board with pegs except for the central hole. The objective is, making valid moves, to empty the entire board except for a solitary peg in the central hole. </p>
+
+<ul>
+	<li>A valid move is to jump a peg orthogonally over an adjacent peg into a hole two positions away and then to remove the jumped peg.</li>
+</ul>
+
+<img src='../media/refs/puzzle.png' width='300'/>
+
+<ul>
+	<li><a href="https://www.hempuli.com/blogblog/archives/category/games/paper-puzzles">Paper Puzzles</a></li>
+	<li><a href='http://zenseeker.net/BoardGames/PaperPenGames.htm' target='_blank'>Pen & Paper games</a></li>
+</ul><ul></ul><p><b>Incoming</b>: <a href="uxn.html">uxn</a> <a href="noton.html">noton</a> <a href="2021.html">2021</a> </p></main>
 <footer><a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.svg" alt="CreativeCommons"/></a> <a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a> <a href="https://merveilles.town/@neauoire" rel="me" target="_blank"><img src="../media/icon/merveilles.svg" alt="Merveilles"/></a> <a href="ethics.html"><img src="../media/icon/dreipfeile.svg" alt="NoNazis!"/></a> <a href="uxn.html"><img src="../media/icon/uxn.svg" alt="UxnPowered"/></a> <span><a href="devine_lu_linvega.html">Devine Lu Linvega</a> &copy; 2022 &mdash; <a href="about.html">BY-NC-SA 4.0</a></span></footer>
 </body></html>
