@@ -1,0 +1,108 @@
+<!DOCTYPE html><html><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, inital-scale=1"/><link href="../links/main.css" type="text/css" rel="stylesheet"/><link href="../media/services/icon.png" type="image/png" rel="shortcut icon"/>
+<title>XXIIVV &mdash; logic</title></head><body>
+<header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
+<nav><ul><li><a href="audio.html">audio</a></li><li><a href="visual.html">visual</a></li><li><a href="research.html" class="parent">research</a></li><li><a href="about.html">about</a></li></ul><ul><li><a href="logic.html" class="self">logic</a></li><li><a href="arithmetic.html">arithmetic</a></li><li><a href="geometry.html">geometry</a></li><li><a href="language.html">language</a></li><li><a href="computation.html">computation</a></li><li><a href="hardware.html">hardware</a></li></ul><ul></ul></nav><main><h2>Combinatory calculus provides a limited set of primitive functions out of which other functions may be built.</h2>
+
+<p>Combinatory Logic, invented by Shoenfinkel and developed by Curry and others in the 1920s is equivalent in expressive power to lambda calculus. The language contains three special symbols ("S", "K", and "I"), along with parentheses and variables (restricted here to single characters, e.g., "x" or "y").</p>
+
+<p>By convention, combination is left-associative, so <code>(((SK)K)(yS))</code> can be written equivalently as <code>SKK(yS)</code>. The meaning of "K" can be thought of as <code>(λ x (λ y x))</code>, the meaning of "S" can be thought of as <code>(λ x (λ y (λ z ((x z)(y z)))))</code>. The other special symbol, "I", can be thought of as <code>(λ x x)</code>, but can also be defined as SSK. Since this derivation works for any expression X, SKK is the identity function.</p>
+
+<img src="../media/refs/mocking.png"/>
+
+<h3>BCKW</h3>
+
+<p>A variant of combinatory logic that takes as primitive the combinators B, C, K, and W.</p>
+
+<table border="1">
+	<tr><th>B</th><td>x y z</td><td>x (y z)</td><td>Composition of x and y applied to z</td></tr>
+	<tr><th>C</th><td>x y z</td><td>x z y</td><td>Swaps the second and third arguments</td></tr>
+	<tr><th>K</th><td>x y</td><td>x</td><td>Discards the second argument</td></tr>
+	<tr><th>W</th><td>x y</td><td>x y y</td><td>Duplicates the second argument</td></tr>
+</table>
+
+<p>We always start from the left, applying the rule for the left-most combinator first. For example, <code>WKxyz</code> becomes <code>Kxxyz</code>, which becomes <code>xyz</code>.</p>
+
+<h3>Conversion</h3>
+
+<table border="1">
+	<tr><th colspan="2">BCKW -> SKI</th><th colspan="2">SKI -> BCKW</th></tr>
+	<tr><th>B</th><td>S (K S) K</td><th>S</th><td>B (B (B W) C) (B B)</td></tr>
+	<tr><th>C</th><td>S (S (K (S (K S) K)) S) (K K)</td><th>K</th><td>K</td></tr>
+	<tr><th>K</th><td>K</td><th>I</th><td>W K</td></tr>
+	<tr><th>W</th><td>S S (S K)</td></tr>
+</table>
+
+<h3>Arithmetic</h3>
+
+<pre>
+true = K
+false = KI
+not = V false true = V(KI)K
+implies = R true = RK
+and = R false = R(KI)
+or = T true = TK
+equiv = CS not = CS(V(KI)K)
+</pre>
+
+<table border="1">
+	<th>Abstraction</th><th>Symbol</th><th>Bird</th><th>Combinator</th></tr>
+	<tr><td>λabc.a(bc)</td><td>B</td><td>Bluebird</td><td>S(KS)K</td></tr>
+	<tr><td>λabcd.a(bcd)</td><td>B<sub>1</sub></td><td>Blackbird</td><td>BBB</td></tr>
+	<tr><td>λabcde.a(bcde)</td><td>B<sub>2</sub></td><td>Bunting</td><td>B(BBB)B</td></tr>
+	<tr><td>λabcd.a(b(cd))</td><td>B<sub>3</sub></td><td>Becard</td><td>B(BB)B</td></tr>
+	<tr><td>λabc.acb</td><td>C</td><td>Cardinal</td><td>S(BBS)(KK)</td></tr>
+	<tr><td>λabcd.ab(cd)</td><td>D</td><td>Dove</td><td>BB</td></tr>
+	<tr><td>λabcde.abc(de)</td><td>D<sub>1</sub></td><td>Dickcissel</td><td>B(BB)</td></tr>
+	<tr><td>λabcde.a(bc)(de)</td><td>D<sub>2</sub></td><td>Dovekies</td><td>BB(BB)</td></tr>
+	<tr><td>λabcde.ab(cde)</td><td>E</td><td>Eagle</td><td>B(BBB)</td></tr>
+	<tr><td>λabcdefg.a(bcd)(efg)</td><td>Ê</td><td>Bald Eagle</td><td>B(BBB)(B(BBB))</td></tr>
+	<tr><td>λabc.cba</td><td>F</td><td>Finch</td><td>ETTET</td></tr>
+	<tr><td>λabcd.ad(bc)</td><td>G</td><td>Goldfinch</td><td>BBC</td></tr>
+	<tr><td>λabc.abcb</td><td>H</td><td>Hummingbird</td><td>BW(BC)</td></tr>
+	<tr><td>λa.a</td><td>I</td><td>Identity Bird (aka Idiot)</td><td>SKK</td></tr>
+	<tr><td>λabcd.ab(adc)</td><td>J</td><td>Jay</td><td>B(BC)(W(BC(B(BBB))))</td></tr>
+	<tr><td>λab.a</td><td>K</td><td>Kestrel (True)</td><td>K</td></tr>
+	<tr><td>λab.a(bb)</td><td>L</td><td>Lark</td><td>CBM</td></tr>
+	<tr><td>λa.aa</td><td>M</td><td>Mockingbird</td><td>SII</td></tr>
+	<tr><td>λab.ab(ab)</td><td>M<sub>2</sub></td><td>Double Mockingbird</td><td>BM</td></tr>
+	<tr><td>λab.b(ab)</td><td>O</td><td>Owl</td><td>SI</td></tr>
+	<tr><td>λabc.b(ac)</td><td>Q</td><td>Queer Bird</td><td>CB</td></tr>
+	<tr><td>λabc.a(cb)</td><td>Q<sub>1</sub></td><td>Quixotic Bird</td><td>BCB</td></tr>
+	<tr><td>λabc.b(ca)</td><td>Q<sub>2</sub></td><td>Quizzical Bird</td><td>C(BCB)</td></tr>
+	<tr><td>λabc.c(ab)</td><td>Q<sub>3</sub></td><td>Quirky Bird</td><td>BT</td></tr>
+	<tr><td>λabc.c(ba)</td><td>Q<sub>4</sub></td><td>Quacky Bird</td><td>F*B</td></tr>
+	<tr><td>λabc.bca</td><td>R</td><td>Robin</td><td>BBT</td></tr>
+	<tr><td>λabc.ac(bc)</td><td>S</td><td>Starling</td><td>S</td></tr>
+	<tr><td>λab.ba</td><td>T</td><td>Thrush</td><td>CI</td></tr>
+	<tr><td>λab.b(aab)</td><td>U</td><td>Turing</td><td>LO</td></tr>
+	<tr><td>λabc.cab</td><td>V</td><td>Vireo (aka Pairing)</td><td>BCT</td></tr>
+	<tr><td>λab.abb</td><td>W</td><td>Warbler</td><td>C(BMR)</td></tr>
+	<tr><td>λab.baa</td><td>W<sup>1</sup></td><td>Converse Warbler</td><td>CW</td></tr>
+	<tr><td>λa.a(λa)</td><td>Y</td><td>Why Bird (aka Sage Bird)</td><td>SLL</td></tr>
+	<tr><td>λab.ab</td><td>I*</td><td>Identity Bird Once Removed</td><td>S(SK)</td></tr>
+	<tr><td>λabc.abcc</td><td>W*</td><td>Warbler Once Removed</td><td>BW</td></tr>
+	<tr><td>λabcd.abdc</td><td>C*</td><td>Cardinal Once Removed</td><td>BC</td></tr>
+	<tr><td>λabcd.acdb</td><td>R*</td><td>Robin Once Removed</td><td>C*C*</td></tr>
+	<tr><td>λabcd.adcb</td><td>F*</td><td>Finch Once Removed</td><td>BC*R*</td></tr>
+	<tr><td>λabcd.acbd</td><td>V*</td><td>Vireo Once Removed</td><td>C*F*</td></tr>
+	<tr><td>λabc.abc</td><td>I**</td><td>Identity Bird Twice Removed</td><td>&nbsp;</td></tr>
+	<tr><td>λabcd.abcdd</td><td>W**</td><td>Warbler Twice Removed</td><td>B(BW)</td></tr>
+	<tr><td>λabcde.abced</td><td>C**</td><td>Cardinal Twice Removed</td><td>BC*</td></tr>
+	<tr><td>λabcde.abdec</td><td>R**</td><td>Robin Twice Removed</td><td>BR*</td></tr>
+	<tr><td>λabcde.abedc</td><td>F**</td><td>Finch Twice Removed</td><td>BF*</td></tr>
+	<tr><td>λabcde.abecd</td><td>V**</td><td>Vireo Twice Removed</td><td>BV*</td></tr>
+	<tr><td>λab.b</td><td>KI</td><td>Kite (False)</td><td>KI</td></tr>
+	<tr><td>λ</td><td><font>W</font></td><td>Omega</td><td>MM</td></tr>
+	<tr><td>λab.bb</td><td>KM</td><td>Konstant Mocker</td><td>KM</td></tr>
+	<tr><td>λab.aa</td><td>C(KM)</td><td>Crossed Konstant Mocker</td><td>C(KM)</td></tr>
+	<tr><td>λ</td><td><font>Q</font></td><td>Theta</td><td>YO</td></tr>
+</table>
+
+<ul>
+	<li><a href="https://dkeenan.com/Lambda/" target="_blank">To Dissect a Mockingbird</a></li>
+	<li><a href="https://doisinkidney.com/posts/2020-10-17-ski.html" target="_blank">Fun with Combinators</a></li>
+	<li><a href="http://www.inf.fu-berlin.de/lehre/WS03/alpi/lambda.pdf" target="_blank">Introduction to the Lambda Calculus</a></li>
+</ul><ul></ul></main>
+<footer><a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.svg" alt="CreativeCommons"/></a> <a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a> <a href="https://merveilles.town/@neauoire" rel="me" target="_blank"><img src="../media/icon/merveilles.svg" alt="Merveilles"/></a> <a href="ethics.html"><img src="../media/icon/dreipfeile.svg" alt="NoNazis!"/></a> <a href="uxn.html"><img src="../media/icon/uxn.svg" alt="UxnPowered"/></a> <span><a href="devine_lu_linvega.html">Devine Lu Linvega</a> &copy; 2022 &mdash; <a href="about.html">BY-NC-SA 4.0</a></span></footer>
+</body></html>
