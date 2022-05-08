@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<script src="program.js"></script>
+	<script src="emu.js"></script>
+	<script src="uxn.js"></script>
+</head>
+<body>
+	<input type="value" placeholder="Uxntal Interpreter" name="prompt" id="prompt" autofocus/>
+	<span id="result"></span>
+	<script type="text/javascript">
+		'use strict'
+
+		let prompt_el = document.getElementById("prompt")
+		let result_el = document.getElementById("result")
+		let emulator = new Emu()
+
+		emulator.console.display = result_el
+		emulator.uxn.load(program).eval(0x0100)
+
+		prompt_el.addEventListener("keydown", function (event) {
+			if (event.key === "Enter") {
+				event.preventDefault();
+				// Send characters in value to Console/vector
+				for (let i = 0; i < prompt_el.value.length; i++) {
+					emulator.console.input(prompt_el.value.charAt(i).charCodeAt(0))
+				}
+				emulator.console.input(0x0a)
+				prompt_el.value = ""
+				emulator.debugger()
+			}
+		})
+	</script>
+</body>
+</html> 
