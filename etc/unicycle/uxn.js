@@ -184,7 +184,14 @@ function Uxn (emu)
 	]
 
 	this.halt = (err) => {
-		console.error("Error", this.rr ? "Return-stack" : "Working-stack", this.errors[err]);
+		let vec = this.peek16(emu.uxn.dev)
+		if(vec){
+			this.eval(vec)
+		}
+		else{
+			console.error("Error", this.rr ? "Return-stack" : "Working-stack", this.errors[err]);
+		}
+		
 		this.pc = 0x0000
 	}
 
