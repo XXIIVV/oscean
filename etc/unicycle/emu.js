@@ -3,7 +3,7 @@
 function Console(emu)
 {
 	this.buffer = ""
-	this.display = null
+	this.display = console.log
 
 	this.i = (char) => {
 		console.log("i",char)
@@ -11,7 +11,7 @@ function Console(emu)
 
 	this.send = (char) => {
 		if(char == 0x0a) {
-			this.display.innerHTML = this.buffer
+			this.display(this.buffer)
 			this.buffer = ""
 		}
 		else{
