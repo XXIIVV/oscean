@@ -1,0 +1,3155 @@
+<p>An introduction to combinatory calculus, by Brent Kerby</p>
+
+<h1>Functions</h1>
+
+<p>We'll now introduce the notion of a "function", a notion which is
+quite vague. A <b>function</b> can be thought of as an imaginary table
+(possibly infinite) with two columns, the things on the left being called
+<b>parameters</b> and the things on the right being called <b>results</b>. 
+A function maps parameters to results, like a dictionary maps words
+to their definitions.
+
+<p>One example of a function is arithmetic negation, which given a number
+as a parameter, yields another number (the parameter's opposite) as
+a result. Negation would, for instance, given "3", yield "-3". 
+
+<p>Here are some other examples of functions:
+
+<p><ul>
+<li>A function that given any number "x", yields "x+1"
+<li>A function that given any number "x", yields "x*x"
+<li>A function that given any list, yields the number of items in it
+<li>A function that given any person, yields the person's father
+</ul>
+
+<p>It is often convenient to assign abbreviated names to certain functions.
+For instance, the function mentioned in the second example we'll
+call simply "sqr" (an abbreviation for "squaring", appropriate because
+that function yields the square of its parameter). Then, the square
+of a particular number "x" we'll write as "sqr(x)" (the "application"
+of the function "sqr" to parameter "x"). For instance, the number "9" could
+be written as "sqr(3)".
+
+<p>Now, it should not be thought that we use "sqr(3)" to denote
+the "action" of finding the square of "3". We use "sqr(3)" simply to
+denote the square of "3" itself (in other words, "9").
+
+<p>Also, we distinguish between "sqr" and "sqr(x)". The former is the function
+of squaring; the latter is the square of a particular number "x".
+
+<p>At this point, we offer a few simple problems to ensure that the
+reader understands our conventions:
+
+<p><h2>Problem Set 1 (<a href="#Answers_1">Answers</a>)</h2>
+<p><ol>
+<li>If "succ" is the function that adds one to its parameter
+    (i.e., the "successor" function), then what is "succ(sqr(4))"?
+<li>Then, what is "sqr(succ(4))"
+</ol>
+
+<p><h1>Multiple-Parametered Functions</h1>
+
+<p>All of the functions mentioned so far took a single parameter
+to yield a result. However, there are many functions that require
+several parameters to yield a result. For instance, the functions of
+addition, subtraction, multiplication, and division ("+", "-", "*", "/")
+each require two parameters.
+
+<p>We'll call "add" the function of addition. Then, we'll use "add(3,5)"
+to mean the sum of "3" and "5", or in other words, "8". 
+
+<p>In general, if "f" is a function that takes two parameters then we write
+the application of "f" to two parameters "x" and "y" as "f(x,y)".
+
+<p>Whereas functions that take only one parameter are called <b>unary</b>,
+functions that take two parameters are called <b>binary</b>. Functions
+that take three parameters are called <b>tertiary</b>. In general,
+the number of parameters that a function takes is called the function's
+<b>order</b>.
+
+<p><h2>Problem Set 2 (<a href="#Answers_2">Answers</a>)</h2>
+<p><ol>
+<li>If "mul" is the multiplication function, then what is
+    "add(mul(2,3),mul(3,4))?
+<li>Is "add" a unary function?
+</ol>
+
+<p><h1>Higher-Order Functions</h1>
+
+<p>Up to this point, we have mostly only dealt with functions that
+take numbers as parameters and yield numbers as results. However,
+there are many other interesting things that functions could take or yield
+(for instance: lists of numbers). In particular, a function could take
+or yield another function. A function that takes or yields a function
+is called a <b>higher-order</b> function.
+
+<p>One example of a higher-order function is the "composition" function.
+This function takes two parameters (each parameter being a unary function)
+and yields a unary function that is a "composite" of the two functions.
+
+<p>By a "composite" of two unary functions "f" and "g", we mean a function
+that, given a parameter "x", yields "f(g(x))". In other words, the
+composition of "f" and "g" applies "g" to its parameter and then "f".
+
+<p>As an example use of the composition function (which we'll call "comp"),
+take "comp(sqr,succ)", the composition of squaring with succession.
+This is a function that takes a parameter and yields the square of
+its successor; given a parameter "x", it would yield "sqr(succ(x))"
+or in other words "(x+1)*(x+1)". Note that "comp(sqr,succ)" is very
+different from "comp(succ,sqr)".
+
+<p>In general, for composition, we can say that "(comp(f,g))(x)"
+is the same as "f(g(x))".
+
+<p><h2>Problem Set 3 (<a href="#Answers_3">Answers</a>)</h2>
+<p><ol>
+<li>Give an example parameter for which the functions
+    "comp(succ,sqr)" and "comp(sqr,succ)" give different results.
+<li>Is "sqr" a higher-order function?
+<li>Is "sqr(sqr)" the same as "comp(sqr,sqr)"?
+</ol>
+
+<p><h1>Currying</h1>
+
+<p>There is a way in which unary higher-order functions can be used to
+emulate multiple-parametered functions. This technique is very
+interesting and is called "currying". We'll illustrate it
+with an example:
+
+<p>Consider the function that adds 1 to its parameter (the previously
+mentioned "succ" function). Now consider the function that adds 2
+to its parameter, and the function that adds 3 to its parameter. Clearly,
+there is many similar functions like these, each adding a certain amount
+to their parameter. We could capture them all if we had a higher-order
+function (which we'll call "plus") that given a number, yields a
+function that adds that number to its parameter. For example, "plus(1)"
+would be the successor function, while "plus(2)" would be the function
+that adds 2 to its parameter.
+
+<p>This "plus" function is very similar to the original multiple-parametered
+function "add". Whereas the "add" function took both parameters at once,
+the "plus" function takes just one, yielding a function that takes the
+second parameter, yielding the result. We call "plus" the "curried"
+version of "add". In general, we can say about "plus", that
+"(plus(x))(y)" is the same as "x+y", or in other words, "add(x,y)".
+
+<p>This technique of currying can be used with all multiple-parametered
+functions, including those that take 3 or more parameters. From now
+on, we will generally not use multiple-parametered functions, in
+favor of curried functions.
+
+<p><h2>Problem Set 4 (<a href="#Answers_4">Answers</a>)</h2>
+<p><ol>
+<li>How can the multiple-parametered function of subtraction be
+    thought of as a single-parametered one, using currying?
+</ol>
+
+<p><h1>Simplified Notation for Application</h1>
+
+<p>Now that we no longer have to worry about multiple-parametered functions,
+we can adopt a new notation for function application that will be
+less cluttery (requiring fewer parentheses).
+
+<p>We illustrate our new notation with a few examples:
+
+<p><table border>
+<tr><th>Old Notation<th>New Notation
+<tr><td>succ(1)<td>succ 1
+<tr><td>(plus(x))(y)<td>plus x y
+<tr><td>(add(succ(1)))(succ(2))<td>add (succ 1) (succ 2)
+</table>
+
+<p>Basically, we write the application of "f" to "x" as just "f x",
+unless "x" is a large expression (itself containing applications),
+in which case the "x" will be surrounded by parentheses.
+
+<p>Note that even if the left side of the application (the "f") is a large
+expression, it is not necessary to surround it by parentheses;
+that is, "plus x y" is understood to mean "(plus x) y". Also,
+if there was a function "f" that took three parameters through currying,
+then "f x y z " would be understood to mean "((f x) y) z".
+
+<p>This notation is very convenient. In fact, the convenience of this
+kind of notation is probably the most important reason to
+use curried functions instead of multiple-parametered ones
+(just kidding).
+
+<p><h2>Problem Set 5 (<a href="#Answers_5">Answers</a>)</h2>
+<p><ol>
+<li>Write "add(3,sqr(succ(4)))" in the new notation, using a
+    curried version of "add".
+</ol>
+
+<hr>
+<p><a name="Answers_1"><h1>Answers to Problem Set 1</h1>
+
+<p><ol>
+<li>"succ(sqr(4))" is the successor of 16, or in other words, 17.
+<li>"sqr(succ(4))" is the square of 5, or in other words, 25.
+</ol>
+
+<p><a name="Answers_2"><h1>Answers to Problem Set 2</h1>
+
+<p><ol>
+<li>"add(mul(2,3),mul(3,4))" is the sum of 6 and 12, or in other
+    words, 18.
+<li>No. "add" is a binary function, meaning that it takes two parameters,
+    Examples of unary functions include "succ" and "sqr".
+</ol>
+
+<p><a name="Answers_3"><h1>Answers to Problem Set 3</h1>
+
+<p><ol>
+<li>The number 1 will do as an example. The first function will result
+    in 2 while the second will result in 4. Actually, any number will
+    do as an example except 0 (for which both functions yield 1).
+<li>No, "sqr" is not a higher-order function. As we've defined it, "sqr"
+    only takes and yields numbers, not other functions. An example of
+    a higher-order function is the composition function.
+<li>No, "sqr(sqr)" (the squaring function squared) is quite a meaningless
+    expression, since "sqr" applies only to numbers, not functions.
+    However, "comp(sqr,sqr)" is quite meaningful; it is the function
+    that squares a number twice (i.e., raises it to the fourth power).
+</ol>
+
+<p><a name="Answers_4"><h1>Answers to Problem Set 4</h1>
+
+<p><ol>
+<li>One can think of a higher-order function "minus", that given a
+    number, yields a function that subtracts that number. That is,
+    "minus(1)" would be a function that subtracts one, while
+    "minus(2)" would be a function that subtracts two. So,
+    "(minus(2))(5)" is the same as "3". (Note that this "minus" actually
+    takes the parameters in the opposite order of the traditional
+    "-", taking the thing to be subtracted first, rather than second.
+    There is, of course, a higher-order function "minusfrom" that
+    takes them in the traditional order)
+</ol>
+
+<p><a name="Answers_5"><h1>Answers to Problem Set 5</h1>
+
+<p><ol>
+<li>"add(3,sqr(succ(4)))" would be written as "plus 3 (sqr (succ 4))".
+</ol>
+
+<hr>
+
+<p><h1>Historical Note</h1>
+
+<p>The notion of a "function" has, for its simplicity, been around a
+surprisingly short time. It originated, I think, sometime in the 1800s
+with mathematicians like G. W. Leibniz and Leonhard Euler. The idea of
+applying functions to things other than numbers (in particular, to
+other functions) began, it seems, with Gottlob Frege in the late 1800s
+and early 1900s.
+
+<p>Frege, it seems, was the first to think of emulating multiple-parametered
+functions using higher-order functions, but the technique ("currying")
+has come to be named after Haskell Curry, an influential mathematician
+who popularized the technique.
+
+
+
+<p>In the last section we defined some basic terminology relating to
+functions and explained the technique of currying, a way of emulating
+multiple-parameter functions using higher-order unary ones.
+In this section, we'll describe some very special higher-order
+functions called "combinators".
+
+<p><h1>B combinator</h1>
+
+<p>The first combinator we'll describe is the one which has come to
+be known simply as "B". In the last section we mentioned a
+composition function "comp", which was presented as a binary function
+that takes two parameters (each unary functions) and yields their
+composite. The "B" combinator is related to the composition function
+and, in fact, is basically just a curried version of it.
+
+<p>In the last section, we mentioned that the composition function
+had the property (for all "f", "g", and "x")
+
+<p><pre>
+(comp(f,g))(x) = f(g(x))
+</pre>
+
+<p>The "B" combinator has a similar property:
+
+<p><pre>
+Bfgx = f(gx)
+</pre>
+
+<p>Using extra parentheses and spaces, the statement could be written as:
+
+<p><pre>
+((B f) g) x = f (g x)
+</pre>
+
+<p>This property (sometimes called "B"'s "rewrite rule") can be thought of
+as the definition of what we mean by "B".
+
+<p>As described in the last section using "comp", the "B" combinator has
+many uses. Given a function "plus 2" that adds two, and a function
+"times 3" that multiplies by three, we can form a function
+"B (plus 2) (times 3)" that multiplies its parameter by three and then
+adds two.
+
+<p>In general, "B" is used to sort of "chain" functions together...
+Remember that the order of the parameters does matter with "B";
+i.e., "Bfg" is not always the same as "Bgf".
+
+<p>Although "B" is often applied to two things together, yielding their
+composite, it is also meaningful when applied to just one parameter.
+For instance, "B sqr" is a function that is like squaring, except that
+instead of taking just one parameter (a number), it takes two parameters
+(a function and a number), the function being applied to the number
+before being passed to the original squaring function. One might think
+of "B sqr" as a version of "sqr" in which the parameter has
+been split into two. This function might be called the
+"composition of squaring".
+
+<p>We've only used "comp" on functions that are unary; however "Bfg"
+may be meaningful even if "f" takes more than one parameter (through
+currying). For instance, "B plus sqr" (the composition of addition
+with squaring) is meaningful: Even though "plus" can be thought of
+as a binary function (taking two numbers through currying and adding
+them together), it can also be thought of as a (higher-order) unary
+one that takes a number and yields a function that adds that number. 
+So, if "plus" takes a number and yields a function that adds that number, 
+then "B plus sqr" takes a number and yields a function that adds
+<em>the square of</em> that number. That is:
+
+<p><pre>
+plus         x y = x + y
+(B plus sqr) x y = x<sup>2</sup> + y
+</pre>
+
+<p>So, we see that the composition of addition and squaring is an
+adding function, except that its first parameter is squared.
+
+<p>In general, when composing a multiple-parametered function "f" with
+function "g", only the first parameter of "f" is affected (in speaking
+of a "multiple-parametered" function we mean a function that takes
+multiple parameters through currying; this is how we will usually
+use "multiple-parametered" from now on).
+
+<p><h2>Problem Set 1 (<a href="#Answers_1">Answers</a>)</h2>
+
+<p><ol>
+<li>What is "B succ (B (times 3) sqr)"?
+<li>What is "B (B succ (times 3)) sqr"?
+</ol>
+
+<p><h1>C combinator</h1>
+
+<p>Now we introduce another very interesting higher-order function,
+the "C" combinator. Basically, this function swaps the order of
+a function's parameters. That is, if "C" is applied to a binary
+function "f", then it yields a modification of "f" that is the
+like "f", except the order of its two parameters are reversed.
+
+<p>For instance, if "minus" is a subtraction function such that
+"minus 3 5" is the same as "2", then "C minus" will be like the
+minus function, except that it takes the two parameters in reverse
+order; that is, "(C minus) 3 5" is the same as "minus 5 3", and "-2".
+
+<p>In general, we can say for "C" that
+
+<p><pre>
+(Cf)xy = fyx
+</pre>
+
+<p>or without the extra parentheses:
+
+<p><pre>
+Cfxy = fyx
+</pre>
+
+<p>Another way to think of "C" is that it can be used to postpone
+a function's first parameter. Using "C", it is possible to
+"sneak in", so to speak, a function's second parameter
+without giving the first. Suppose, for instance, that we have "minus"
+and want to form a unary function that subtracts a number
+<em>from</em> "3"; now, the number to subtract <em>from</em> comes second
+in "minus". However, we can sneak in the second parameter using "C";
+"C minus 3" is a function that subtracts a number from "3".
+
+<p>(later, we will show how variations of the "C" combinator can
+be used to sneak in a function's third, fourth, or other parameter).
+
+<p><h2>Problem Set 2 (<a href="#Answers_2">Answers</a>)</h2>
+
+<p><ol>
+<li>What is the result of applying "C" to "plus"? (i.e., what is the
+    converse of addition?)
+<li>What is the result of applying "C" to "B"?
+</ol>
+
+<p><h1>W combinator</h1>
+
+<p>We now turn our attention to another interesting combinator,
+the W combinator. Basically, this combinator duplicates a
+function's parameter. That is, if "W" is applied to a binary
+function "f", the result is a unary function that is like "f"
+except that its one parameter plays the role of both parameters.
+
+<p>For instance, "W plus" is the doubling function. Whereas "plus"
+is a binary function adding the new parameters together,
+"W plus" (doubling) is a unary function that adds a parameter
+with itself. That is, "(W plus) 5" is the same as "plus 5 5".
+
+<p>In general, we can say about "W" that
+
+<p><pre>
+(Wf)x = fxx
+</pre>
+
+<p><h2>Problem Set 3 (<a href="#Answers_3">Answers</a>)</h2>
+
+<p><ol>
+<li>What is the result of applying "W" to "times"?
+</ol>
+
+<p><h1>K combinator</h1>
+
+<p>Whereas the W combinator is used to construct functions that use their
+parameter more than once (so to speak), the K combinator is
+used to construct functions that ignore their parameter. In particular,
+applying "K" to an "x" yields a function that always results in "x".
+
+<p>For instance, "K 3" is a function that always results in three,
+regardless of its parameter. That is, "(K 3) 0" is "3". Also,
+"(K 3) W", "(K 3) B", and "(K 3) C" are also "3". The second
+parameter to K is always ignored.
+   
+<p>In general, we can say about "K" that
+
+<p><pre>
+Kxy = x
+</pre>
+
+<p><h2>Problem Set 4 (<a href="#Answers_4">Answers</a>)</h2>
+
+<p><ol>
+<li>What is "K 2 2"?
+</ol>
+
+<p><h1>I combinator</h1>
+
+<p>We've now mentioned several combinators (B, C, W, and K) and shown
+how, given some primitives like "plus" and "times", they can be
+used to form other interesting functions (like the doubling function,
+the squaring function, the function that doubles and then squares, etc.)
+
+<p>One interesting thing about combinators is that, even without
+other primitives like "plus" and "times", very interesting things
+can be formed simply by applying combinators to one another. 
+
+<p>For instance, consider "WK". "K" can be thought of as a binary function
+that always yields the first parameter; so "WK" is then a unary function
+whose parameter plays the role of both. The result is that "WK"
+always yields its parameter unchanged and is another name for
+the "I combinator", for which we can say:
+
+<p><pre>
+Ix = x
+</pre>
+
+<p>To see this more clearly, note that "WKx" is the same as "Kxx"
+(by W's rewrite rule) and thus "x" (by K's rewrite rule). So,
+"(WK)x" is the same as "x", and "WK" is a function that results
+exactly in its parameter, with no change. 
+
+<p><h2>Problem Set 5 (<a href="#Answers_5">Answers</a>)</h2>
+
+<p><ol>
+<li>Is "WK" the same as "KW"?
+</ol>
+
+<p><h1>S combinator</h1>
+
+<p>We've just shown how the I combinator can be derived from W and K.
+Now, we'll give a much more elaborate example. We'll show how
+a combinator called "S" can be derived from B, C, and W.
+To begin, by "S", we mean the "S" that has this rewrite rule:
+
+<p><pre>
+Sfgx = fx(gx)
+</pre>
+
+<p>This "S" is actually quite an interesting combinator. It could be
+thought of as a generalized version of "W". Remember that "W" 
+duplicates a parameter of a binary function "f". Similarly, "S"
+duplicates a parameter of a binary function "f" but allows the duplicated
+parameter to be modified by a function "g" before being passed as
+the second parameter to "f".
+
+<p>For example, "W plus" is a doubling function; i.e., it is a function
+that adds a parameter with itself. Then, "S plus sqr" is a function that
+adds a parameter, not with itself, but with its square. For instance,
+"(S plus sqr) 4" is "plus 4 (sqr 4)" or in other words "4 + 4<sup>2</sup>"
+or "20".
+
+<p>Now, we'll show how "S" may be constructed from B, C, and W. In
+fact, "S" is quite simply
+
+<p><pre>
+B(BW)(BBC)
+</pre>
+
+<p>(Read: "the composition of composed duplication with composition
+itself and the swapping function". Just kidding.)
+
+<p>At first, this may appear to be jibberish, but a closer look will
+show that it is indeed the "S" combinator.
+
+<p>In particular, when this combinator is applied to a parameter "f",
+one gets 
+
+<p><pre>
+B(BW)(BBC)f
+BW(BBCf)        by "B"'s rewrite rule
+BW(B(Cf))       by "B"'s rewrite rule (again)
+</pre>
+
+<p>If we apply this to another parameter "g", we get
+
+<p><pre>
+BW(B(Cf))g
+W(B(Cf)g)                       by "B"'s rewrite rule
+</pre>
+
+<p>Finally, if we apply this to a third parameter "x", we get
+
+<p><pre>
+W(B(Cf)g)x
+B(Cf)gxx        by "W"'s rewrite rule
+Cf(gx)x         by "B"'s rewrite rule
+fx(gx)          by "C"'s rewrite rule
+</pre>
+
+<p>So, we can see that "B(BW)(BBC)" is a combinator that, given
+three parameters "f", "g", and "x", yields "fx(gx)", and is the
+same as the "S" combinator.
+
+<p><h2>Problem Set 6 (<a href="#Answers_6">Answers</a>)</h2>
+
+<p><ol>
+<li>What is "S times (plus 2)"?
+<li>What is "S times I"?
+<li>What is "S plus I"?
+</ol>
+
+<p><h1>Definition of "combinator"</h1>
+
+<p>In this section, we've described some specific higher-order functions
+called "combinators" but have not yet told what exactly we mean
+by saying that they are "combinators". We'll now fill in this
+gap.
+
+<p>Before giving a precise definition of "combinator", we first introduce
+another term, a "combination". We define this term using an example;
+here are some combinations of "x", "y", "z":
+
+<p><ul>
+<li>x(yz)
+<li>x(yzz)
+<li>yzz
+<li>xyyzz
+<li>xyz
+<li>zyx
+<li>x
+<li>y
+<li>z
+</ul>
+
+<p>Basically, to form a combination of a set of things, just pick some
+out (possibly picking some more than once), scramble them up a bit,
+and insert some parentheses. (This definition of "combination" is
+somewhat vague, but it will do for now).
+
+<p>Now, with that in mind, we finally define what we mean by "combinator".
+A <b>combinator</b> is a function that, given some parameters, yields
+a combination of those parameters.
+
+<p>We can see that B, C, W, K, I, and S are all functions that take some
+parameters and always yield a combination of them.
+
+<p><h1>Conclusion</h1>
+
+<p>We've described several interesting combinators, including
+B, C, W, K, I, and S. Some of these combinators can be constructed
+from one another (as "I" can from "W" and "K"), and many interesting
+other combinators can be constructed from all these.
+
+<p>Actually, the set of combinators is infinite, and there are lots
+of interesting ones. One thing that may be a bit surprising is that
+all combinators can be constructed from just B, C, W, and K.
+It may also be surprising that all combinators can be constructed
+from just S and K. This topic will be discussed more in the next
+section, on Completeness.
+
+<hr>
+
+<p><a name="Answers_1"><h1>Answers to Problem Set 1</h1>
+
+<p><ol>
+<li>Well, "B (times 3) sqr" is a function that squares a parameter and
+    then multiplies it by three; so, "B succ (B (times 3) sqr)" is
+    a function that does that and then adds one. In other words,
+    if we call this function "f", we have:
+    
+<p><pre>
+fx = x<sup>2</sup>*3 + 1
+</pre>
+
+<li>"B succ (times 3)" is the function that multiplies a parameter by
+    three and then adds one. So, "B (B succ (times 3)) sqr" is the
+    function that squares its parameter and then does that. So,
+    if we call this function "f", we have:
+
+<p><pre>
+fx = x<sup>2</sup>*3 + 1
+</pre>
+
+    <p>Note that this function is the same as the function in the
+    last example. In general, "Bf(Bgh)" is the same as "B(Bfg)h",
+    in that both, given a parameter "x", result in "f(g(hx))". This
+    property of "B" is called its <b>associativity</b>.
+
+</ol>
+
+<p><a name="Answers_2"><h1>Answers to Problem Set 2</h1>
+
+<p><ol>
+<li>The result is the addition function (there is no change). Since the
+    order of parameters does not matter in addition, "C plus" is the
+    same as "plus".
+<li>The result is like "B" except that it takes the two parameters in
+    reverse order. 
+</ol>
+
+<p><a name="Answers_3"><h1>Answers to Problem Set 3</h1>
+
+<p><ol>
+<li>The result is the squaring function, the function that multiplies
+    a parameter by itself.
+</ol>
+
+<p><a name="Answers_4"><h1>Answers to Problem Set 4</h1>
+
+<p><ol>
+<li>"K 2 2" is the same as "2". Note that the first instance of "2"
+    in "K 2 2" is the one that matters; the second one could be
+    changed to something else (as in "K 2 5") and the result would
+    still be "2".
+</ol>
+
+<p><a name="Answers_5"><h1>Answers to Problem Set 5</h1>
+
+<p><ol>
+<li>No. "WK" always yields its parameter. In contrast, "KW" always
+    just yields "W", ignoring its parameter.
+</ol>
+
+<p><a name="Answers_6"><h1>Answers to Problem Set 6</h1>
+
+<p><ol>
+<li>"S times (plus 2)" is a function that multiplies a number by
+    the number plus two. That is, given a number "x", the function
+    yields "x * (x+2)". For a parameter of 3, the function yields
+    "3 * (3+2)", or in other words, 15.
+<li>"S times I" is a function that multiplies a number by its
+    own self. In other words, it is a squaring function and
+    is also "W times". We can see that "S times I" when
+    applied to a parameter "x" yields "times x (I x)" (by S's
+    rewrite rule), and this is the same as "times x x" (since "I x" is
+    the same as "x").
+<li>"S plus I" is a function that adds a number with its own self.
+    It is a doubling function is and is also the same as "W plus".
+    This is very similar to the last problem. Actually, "SfI"
+    is, in all cases of "f", the same as "Wf". 
+</ol>
+
+<hr>
+
+<p><h1>Historical Note</h1>
+
+<p>The first studies of combinators began in 1924 with
+a mathematician named Moses Schonfinkel; he introduced the I, B, C, S, and K
+combinators (he called them "I", "Z", "T", "S", and "C", respectively).
+
+<p>Combinators were independently studied about the same time
+by Haskell Curry (he found out about Schonfinkel's work in late 1927).
+The names he used for them are the ones we use (they've sort of
+come to be the standard). For curiosity, here are the (arbitrary)
+reasons why he chose the names:
+
+<p><table border>
+<tr><td>I<td>suggested by "identity"
+<tr><td>B<td>suggested by "substitution"; he was reserving "S" for other
+         uses (possibly for "sum" or "successor"), although he ended
+         up adopting Schonfinkel's use of "S" when he heard of it.
+<tr><td>C<td>suggested by "converse"
+<tr><td>W<td>suggested by the letter's appearance; "W" is often rendered
+         as two side-by-side "V"'s, suggesting duplication.
+<tr><td>K<td>suggested by "constant", which is pronounced with a "k" sound.
+</table>
+
+
+
+
+<p><h1>Lambda Construct</h1>
+
+<p>In the last section we showed how using combinators (like B, C, W, and K)
+and certain primitive functions like "plus" and "times", it is possible
+to form many other interesting functions. In this section, we'll show
+how a very different approach, using a construct called a "lambda" instead
+of combinators, can also be used to form functions.
+
+<p>We illustrate the approach with an example. Consider the function
+that takes the square of the successor of a number. Using the "B"
+combinator, this function might be represented as
+
+<p><pre>
+B sqr succ
+</pre>
+
+<p>On the other hand, using a "lambda", the function could be represented as
+
+<p><pre>
+x\ sqr (succ x)
+</pre>
+
+<p>(Read: "the function that given 'x', yields the square of the
+successor of 'x'")
+
+<p>A second example: Consider the function of doubling (adding something
+with itself). Using the "W" combinator, this function might be represented
+in terms of "plus" as
+
+<p><pre>
+W plus
+</pre>
+
+<p>On the other hand, using a lambda, the function could be represented as
+
+<p><pre>
+x\ plus x x
+</pre>
+
+<p>(Read: "the function that given 'x', yields the sum of 'x' and 'x'")
+
+<p>In general, we say that "x\F" (where "F" is an expression possibly
+mentioning "x") is the function that, given a parameter "x", yields "F".
+We call "\" the <b>lambda</b> operator.
+
+<p>To ensure that the reader understands this new notation, we
+offer a few simple problems:
+
+<p><h2>Problem Set 1 (<a href="#Answers_1">Answers</a>)</h2>
+
+<p><ol>
+<li>Does "x\ plus x x" mean the same thing as "y\ plus y y" ?
+<li>What is "(x\ plus x x) 5"?
+<li>What is "x\ sqr x"?
+<li>What is "x\ plus (sqr x) (sqr x)" ?
+<li>How it could it be written using combinators instead of a lambda?
+</ol>
+
+<p><h1>Nested Lambdas</h1>
+
+<p>When using the combinator approach to forming functions, we used
+currying to model multiple-parametered functions. When using
+the lambda approach, we can (and will) still use currying.
+
+<p>So far, we have only used lambdas to form unary functions
+(like the doubling function and the double-and-square function).
+But lambdas can also be used to form multiple-parametered functions
+(in the curried sense). 
+
+<p>For instance, consider the "minusfrom" function (a subtraction
+such that "minusfrom 5 3" is "2"). Using the C combinator, this can
+be expressed in terms of "minus" as
+
+<p><pre>
+C minus
+</pre>
+
+<p>It can also be expressed using lambdas as
+
+<p><pre>
+x\ (y\ minus y x)
+</pre>
+
+<p>(Read: "the function that given 'x', yields the function that given 'y',
+yields the subtraction of 'y' from 'x'")
+
+<p>Note that we are using a lambda within a lambda (i.e., nested lambdas);
+this is common when using lambdas to form multiple-parametered functions.
+The parentheses and extra space in the last expression are not necessary
+and could have been omitted, as in
+
+<p><pre>
+x\y\ minus y x
+</pre>
+
+<p>(In our notation, a lambda should always be interpreted as extending
+as far to the right as possible; for instance, "x\plus 2 x" should be
+interpreted as "x\ (plus 2 x)", and not "(x\plus) 2 x").
+
+<p><h2>Problem Set 2 (<a href="#Answers_2">Answers</a>)</h2>
+
+<p><ol>
+<li>What is "x\y\ plus x y"?
+<li>What is "x\y\ minusfrom (sqr x) (sqr y)"?
+<li>What is "x\y\ times (plus x y) (minusfrom x y)"?
+</ol>
+
+<p><h1>Vacuous Lambdas</h1>
+
+<p>So far we've only used lambdas to form functions that actually use
+their parameter; however, a lambda can also be used to form functions
+that ignore their parameters. For instance, the function that
+always results in "3", regardless of its parameter, we can write
+using a lambda as
+
+<p><pre>
+x\3
+</pre>
+
+<p>This function could also be formed easily using the K combinator:
+
+<p><pre>
+K 3
+</pre>
+
+A function that ignores its parameter is said to be <b>vacuous</b>.
+
+<p><h2>Problem Set 3 (<a href="#Answers_3">Answers</a>)</h2>
+
+<p><ol>
+<li>Is "K 3" a vacuous function?
+<li>What is "(x\3) 5"?
+</ol>
+
+<p><h1>Forming Combinators using Lambdas</h1>
+
+<p>We have seen that many functions that can be formed using lambdas
+can also be formed using combinators. However, it is also possible
+to form the combinators themselves using lambdas. For instance,
+the I combinator can be formed using a lambda as
+
+<p><pre>
+x\x
+</pre>
+
+<p>It is the function that, given parameter 'x', yields 'x'. Similarly,
+it is possible to form the W combinator using lambdas as
+
+<p><pre>
+f\x\ fxx
+</pre>
+
+<p>It is the function that, given parameter 'f', yields the function
+that given parameter 'x', yields 'f' applied to 'x' and 'x'. In a
+similar way, it is possible to form other combinators using lambdas:
+
+<p><pre>
+K = x\y\ x
+B = f\g\x\ f(gx)
+C = f\x\y\ fyx
+</pre>
+
+<p><h2>Problem Set 4 (<a href="#Answers_4">Answers</a>)</h2>
+
+<p><ol>
+<li>How can the S combinator be written using lambdas?
+</ol>
+
+<p><h1>Lambda Rewrite Rule</h1>
+
+<p>When discussing combinators, we assigned each combinator a rewrite
+rule; in particular, we said that (for all "f", "g", "x", "y", and "z")
+
+<p><pre>
+Ix   = x
+Bfgx = f(gx)
+Cfxy = fyx
+Wfx  = fxx
+Sxyz = fx(gx)
+Kxy  = x
+</pre>
+
+<p>These rewrite rules sort of acted as definitions of the combinators.
+We'll now give a similar rewrite rule that will more precisely define the
+lambda construct. Before precisely stating the rule, we'll give some
+instances of it. One instance is that
+
+<p><pre>
+(x\ sqr (succ x)) 3 = sqr (succ 3)
+</pre>
+
+<p>Since "x\ sqr (succ x)" is the function that, given "x", yields
+the square of the successor of "x", it makes sense that applying
+the function to a specific parameter "3" would yield the square
+of the successor of "3". Some other instances of the rule:
+
+<p><pre>
+(x\ plus x x)     3       = plus 3 3
+(x\ plus x x)     (sqr 3) = plus (sqr 3) (sqr 3)
+(x\ x)            3       = 3
+(x\ y\ minus y x) 3       = (y\ minus y 3)
+(x\ y\ minus y x) (sqr 3) = (y\ minus y (sqr 3))
+(x\ y\ x)         3       = (y\ 3)
+(x\ 1)            3       = 1
+</pre>
+
+<p>Basically, the general rule is that "(x\F) G" is the same as just
+"F", except that every instance of "x" must be replaced with "G".
+This rule is called the rule of <b>beta-reduction</b>.
+
+<p><h2>Problem Set 5 (<a href="#Answers_5">Answers</a>)</h2>
+
+<p><ol>
+<li>What is "(f\g\x\ f(gx)) sqr succ"?
+<li>What is "x\ xx"?
+<li>What does it give when applied to the K combinator?
+</ol>
+
+<p><h1>Variable Clashes</h1>
+
+<p>Each time one forms a function using a lambda, it is necessary to
+make up an arbitrary name (like "x") to stand for the function's parameter.
+If one is using nested lambdas (say, to form a multiple-parametered
+function), then when the time comes to pick the name for the second
+parameter, a name (say "x") will already be used up by the first one;
+so, it is necessary to pick a different name (like "y"). Obviously,
+if one picks the same name for both parameters, then problems will occur.
+
+<p>A person is probably not likely to initially pick the same name for
+two different parameters; however, it is quite easy to make a mistake
+while doing beta-reductions. It is possible for an expression initially
+free of naming conflicts to cause a conflict when beta-reduced. For
+instance, consider the expression
+
+<p><pre>
+(z\ zz) (x\y\x)
+</pre>
+
+<p>This is the application of the K combinator to itself (mentioned in
+the last problem). The expression is free of name conflicts, but
+if we naively beta-reduce it, we get
+
+<p><pre>
+(x\y\x) (x\y\x)
+</pre>
+
+<p>and then
+
+<p><pre>
+y\x\y\x
+</pre>
+
+<p>There are now two parameters with the name "y". In this case,
+the problem is not really too severe, since "y" is not actually
+referenced; however, there are worse cases (one is mentioned in
+the next problem), where several referenced parameters end up having
+the same name.
+
+<p>Note in the second step of the last example, that there is not
+yet a naming conflict with "(x\y\x) (x\y\x)". Although there are
+two parameters each with names "x" and "y", the functions with
+those parameter names are not nested within each other; the expression
+is easily identifiable as the application of the K combinator to itself.
+The problem does not occur until the final step.
+
+<p>The problem with the final step could have been solved if the
+variables in one of the "x\y\x"s had been renamed. For instance,
+the expression could have been rewritten as
+
+<p><pre>
+(x\y\x) (f\g\f)
+</pre>
+
+<p>before proceeding. Then the final step would yield
+
+<p><pre>
+y\f\g\f
+</pre>
+
+<p>which has no naming conflicts. 
+
+<p><h2>Problem Set 6 (<a href="#Answers_6">Answers</a>)</h2>
+
+<p><ol>
+<li>What is a correct beta-reduction of "(x\y\x) (x\y\y)"?
+</ol>
+
+<p><h1>Eta-Reduction</h1>
+
+<p>The most common kind of rewrite used with lambdas is beta-reduction,
+but there is another kind, alluded to in the examples, known as
+"eta-reduction". Eta-reduction is the kind of rewrite used when
+we say that
+
+<p><pre>
+x\ sqr x
+</pre>
+
+<p>is the same as just "sqr". In general, <b>eta-reduction</b> is
+the rewriting of a expression of the form "x\ F x" (where "F" contains
+no references to "x") to just "F".
+
+<p>Eta-reduction is a subset of a more general principle, called
+the <b>principle of extensionality</b>. The principle of extensionality
+says that if "Fx = Gx" for an arbitrary "x", then "F = G". In other
+words, if two functions always yield the same thing given the same
+parameter, then they are same.
+
+<p><h2>Problem Set 7 (<a href="#Answers_7">Answers</a>)</h2>
+
+<p><ol>
+<li>How can it be shown using eta-reduction that "x\y\ plus x y" is
+    the same as just "plus"?
+</ol>
+
+<p><h1>Remark on Expressions</h1>
+
+<p>Before proceeding to discuss lambda expressions and their relation
+to combinators, it may be useful to step back and reflect on
+our technique of referring to things.
+
+<p>By <b>expression</b>, we mean a symbol (typically a sequence of
+English characters/puncuators) used to denote something.
+In a broad sense, we might call the English sentence "The cat
+jumped over the hat" an expression, but by "expression" usually
+we mean something like "sqr", "3", "plus 5", "B sqr succ"; i.e.,
+one of those symbols not common in ordinary English but assigned
+a precise meaning by us.
+
+<p>In fact, throughout this work we've been developing a sort
+of formal language. Because ordinary English does not have
+a concise way of precisely referring to things like the
+B, C, W, and K combinators and the function of squaring
+(etc.), we have made up our own abbreviated words for referring to them.
+Our abbreviated words like "B", "C", "W", "K", "sqr", and "plus"
+that are assigned specific meanings we will call <b>primitive expressions</b>. 
+
+<p>There are some expressions that are not primitive expressions.
+The expression "B sqr succ" we will call a <b>compound expression</b>
+(and not a primitive expression) because it is formed several parts,
+parts which individually have meaning.
+
+<p>In English and other natural languages a myriad of strange
+constructs are used for forming compound expressions. Often a sentence
+in English appears as a long string of primitive words, possibly with
+puncuators. Complicated traditions (involving verbs, subjects,
+direct objects, prepositions, etc.) determine how the meaning
+of overall sentence is to be drawn from the individual parts.
+
+<p>In contrast, in our little formal language, compound expressions
+are generally formed from primitives using only the simple construct of
+<b>function application</b>. An expression in our formal language
+that is written using only primitives and function application is
+said to be <b>purely applicative</b>. A purely applicative expression
+is represented nicely using a "binary tree"; that is, a diagram like this:
+
+<p><pre>
+         *
+        / \        
+       /   \
+      /     \
+     /       \
+    *         *
+   / \       / \
+  /   \    sqr  3
+plus   *
+      / \
+    sqr  5
+</pre>
+
+<p>Each "*" represents a function application, the thing to the left
+being the function and the thing on the right being the parameter.
+This particular diagram represents "plus (sqr 5) (sqr 3)",
+which, with extra parentheses, is written "(plus (sqr 5)) (sqr 3)".
+
+<p>Because binary trees are a bit awkward to draw, we've adopted
+the convention of writing expressions as a string of primitives
+with parentheses that convey the tree structure. Relevant to
+parentheses, it is always a good idea to keep in mind that by "f x y z"
+we mean "((f x) y) z", or, using with a binary tree diagram:
+
+<p><pre>
+      *
+     / \
+    *   z
+   / \
+  *   y
+ / \
+f   x
+</pre>
+
+<p>Now, it should not be thought that all our expressions are
+purely applicative. In particular, in this last section, we've
+used the lambda construct, a construct that is neither a primitive
+nor a function application. An expression that is purely applicative
+except for uses of lambda will be called a <b>lambda expression</b>.
+
+<p>The lambda construct involves odd things called "variables".
+Symbolized using letters like "x", "y", "z", these symbols
+do not have any concrete meaning permanently associated with them,
+and thus are not primitives. Thus, the lambda construct is quite odd.
+There is then great interest (and practical use, we suspect, in computing
+systems) in seeing how lambdas can be eliminated in place of combinators.
+
+<p><h1>Eliminating Lambdas using Combinators</h1>
+
+<p>Earlier we showed how certain expressions written with lambdas could
+be rewritten using combinators instead. For instance, the expression
+
+<p><pre>
+x\ sqr (succ x)
+</pre>
+
+<p>can be rewritten, using the B combinator, as
+
+<p><pre>
+B sqr succ
+</pre>
+
+<p>Some expressions are apparently more difficult to rewrite, for example,
+
+<p><pre>
+x\y\ minusfrom (sqr x) (sqr y)
+</pre>
+
+<p>In a moment we'll show how this expression, and in general all
+lambda expressions, can be written as purely applicative expressions,
+using combinators. But first, we'll give some more concrete examples,
+demonstrating some of our techniques.
+
+<p><h3>Example 1</h3>
+
+<p><pre>
+x\ minus 2 (sqr (succ x))
+</pre>
+
+We want to eliminate the lambda in this expression. We can
+see that this is the composition of three functions,
+"minus 2", "sqr", and "succ". Thus, the expression could be
+written without lambdas as
+
+<p><pre>
+B (minus 2) (B sqr succ)
+</pre>
+
+<p><h3>Example 2</h3>
+
+<p><pre>
+x\ minus x 3
+</pre>
+
+This is the function that subtracts a number from 3. 
+It is the "minus" function with the second parameter "snuck in" to
+be "3". It can be written without a lambda as
+
+<p><pre>
+C minus 3
+</pre>
+
+<p><h3>Example 3</h3>
+
+<p><pre>
+x\ minus (sqr x) 3
+</pre>
+
+<p>This function subtracts the square of a number from 3. It is just
+like the last example except that the parameter is squared first.
+So, if we compose the last example with squaring, we get
+
+<p><pre>
+B (C minus 3) sqr
+</pre>
+
+<p>But there is an alternative solution to this one. Consider the
+function "B minus sqr"; this is the subtraction function with
+the first parameter squared. If we snuck in "3" as the second parameter
+to this function, we would get the function we want, the function
+that subtracts a number's square from 3:
+
+<p><pre>
+C (B minus sqr) 3
+</pre>
+
+<p>Now that we've given these examples, we'll give a couple simple
+techniques that can be used to help eliminate lambdas. The first
+technique is that if one has an expression of the form
+
+<p><pre>
+x\ F G
+</pre>
+
+<p>where "G" mentions "x" but "F" does not, then the lambda may
+be "pushed" deeper into the right, using the B combinator:
+
+<p><pre>
+B F (x\G)
+</pre>
+
+<p>For instance, if one had the expression
+
+<p><pre>
+x\ sqr (jiba x 3)
+</pre>
+
+then, since the left side ("sqr") does not mention "x", it is possible
+to "push" the lambda to the right, as in
+
+<p><pre>
+B sqr (x\ jiba x 3)
+</pre>
+
+<p>This makes sense; the original function does something to "x"
+(finds "jiba x 3") and then takes the "sqr" of the whole thing.
+Since "sqr" is being taken of the whole thing, it makes sense
+that the function is the composition of "sqr" with the other part.
+Also it can be verified that each function, given an arbitrary
+parameter "z", yields "sqr (jiba z 3)"; for the original function,
+this is obvious; for the new function, the result is
+
+<p><pre>
+B sqr (x\ jiba x 3) z
+sqr ((x\ jiba x 3) z)       (B's rewrite rule)
+sqr (jiba z 3)              (beta-reduction)
+</pre>
+
+<p>So, we see that the technique of pushing a lambda to the right
+(when the variable is only mentioned on the right) is sound. Now,
+we'll demonstrate a similar technique; if the only occurence of
+the variable is on the left, then the lambda can be pushed to
+the left, using the C combinator. For instance, in the expression
+
+<p><pre>
+x\ jiba x 3 4
+</pre>
+
+<p>which can be redundantly parenthesized as
+
+<p><pre>
+x\ (jiba x 3) 4
+</pre>
+
+<p>the left side is "jiba x 3" and the right side is "4". Since
+only the left side mentions "x", we can push the lambda to the
+left, using the C combinator:
+
+<p><pre>
+C (x\ jiba x 3) 4
+</pre>
+
+<p>In the resulting lambda, the left side is "jiba x" and right side is "3".
+So, the lambda can be pushed left further:
+
+<p><pre>
+C (C (x\ jiba x) 3) 4
+</pre>
+
+<p>Now, "x\ jiba x" can be eta-reduced to "jiba", so we get
+
+<p><pre>
+C (C jiba 3) 4
+</pre>
+
+<p>This makes sense; the original function "x\ jiba x 3 4" is like "jiba"
+except that the second and third parameters are snuck in to be
+"3" and "4" respectively. Our function is formed by sneaking in
+"3" as the second parameter ("C jiba 3"), and then sneaking in
+"4" as the new second parameter. It can be verified that we get
+the right answers when we apply this function to an arbitrary parameter
+"z":
+
+<p><pre>
+C (C jiba 3) 4 z
+C jiba 3 z 4           (C's rewrite rule)
+jiba z 3 4             (C's rewrite rule)
+</pre>
+
+<p>These two techniques are often quite helpful ways of eliminating
+lambdas. Note that in order for these techniques to work, the
+lambda's variable must be referenced only on one side of the
+expression or the other (the left or the right); the variable
+must not be referenced on both sides.
+
+<p><h2>Problem Set 8 (<a href="#Answers_8">Answers</a>)</h2>
+
+<p><ol>
+<li>How may "x\ times 3 (minus x 3)" be written without lambdas?
+<li>How may "x\y\ minusfrom (sqr x) (sqr y)" be written without lambdas?
+    (this is question given earlier that was never answered)
+<li>How may "f\g\x\y\ f(gxy)" be written without lambdas?
+</ol>
+
+<p><h1>Algorithm for Eliminating Lambdas</h1>
+
+<p>We've given a couple techniques that can help one rewrite lambda
+expressions as purely applicative ones. We'll now describe a couple
+more, and then tie them all together into a specific procedure
+for eliminating lambdas.
+
+<p>We've already shown how a lambda expression of the form "x\ F G"
+can be simplified if "x" is mentioned by either "F" or "G" (but not both).
+There are a couple cases we haven't considered:
+
+<p><ul>
+<li>What if "x" is not mentioned by either one?
+<li>What if "x" is mentioned by both?
+</ul>
+
+<p>The first case, if "x" is not mentioned by either one, is very easy.
+The entire lambda can be eliminated in one swell foop using the
+K combinator.
+
+<p>The second case is a bit trickier. The thing to do in the second case
+is to push the lambda inward to both "F" and "G", using the S combinator.
+Remember that the S combinator has the rewrite rule
+
+<p><pre>
+Sfgx = fx(gx)
+</pre>
+
+<p>Now, what we're saying is that "x\ F G" could be rewritten as
+"S (x\F) (x\G)". To see that this is sound (i.e., that "x\ F G" is
+in all cases the same as "S (x\F) (x\G)"), check that both
+"x\ F G" and "S (x\F) (x\G)" give them same thing when applied to an
+arbitrary parameter "z":
+
+<p>The original expression "x\ F G" when applied to an "z" will give
+"F G", but with every occurence of "x" changed to "z". Also,
+"S (x\F) (x\G)" when applied to "z" will give "(x\F) z ((x\G) z)",
+or in other words "F G", with every occurence of "x" within "F"
+changed to "z" and also every occurence of  "x" within "G" changed
+to "z". So, the technique is sound. We'll give an example of it now,
+in rewriting this expression:
+
+<p><pre>
+x\ plus (sqr x) (succ x)
+</pre>
+
+<p>The left side is "plus (sqr x)" and the right is "succ x"; each
+side mentions "x". So, we use the S combinator to push the lambda
+inward both ways:
+
+<p><pre>
+S (x\ plus (sqr x)) (x\ succ x)
+S (x\ plus (sqr x)) succ              (eta-reduction)
+S (B plus sqr) succ                   (eliminate remaining lambda)
+</pre>
+
+<p>We can see that this function is the same as the original function
+(that adds the square of a number with the successor of the number):
+
+<p><pre>
+S (B plus sqr) succ x
+B plus sqr x (succ x)                 (S's rewrite rule)
+plus (sqr x) (succ x)                 (B's rewrite rule)
+</pre>
+
+<p>Now that we can see that this technique works, we can tie together
+a complete procedure for eliminating a lambda:
+
+<p>Suppose that we have a lambda expression of the form "x\Z"
+(where "Z" is a purely applicative expression; this must be an
+innermost lambda). Then, the structure of "Z" determines how the
+expression should be rewritten:
+
+<ol>
+<li>If "Z" is of the form "F x", where "F" does not mention "x",
+    then eta-reduce the expression to just "F".
+<li>If "Z" is of the form "x", then the expression is the I combinator,
+    and should be rewritten as just "I".
+<li>If "Z" does not mention "x", then the expression should be
+    rewritten as "K Z".
+<li>If "Z" is of the form "F G" and "x" is mentioned only in "F",
+    then the expression should be rewritten as "C (x\F) G".
+<li>If "Z" is of the form "F G" and "x" is mentioned only in "G",
+    then the expression should be rewritten as "B F (x\G)".
+<li>If "Z" is of the form "F G" and "x" is mentioned in both "F" and "G",
+    then the expression should be rewritten as "S (x\F) (x\G)".
+</ol>
+
+<p>Note that "Z" will always be in at least one of those forms.
+The first three cases are the base cases. It would be nice to
+get to one of those cases, because then the lambda can be
+gotten rid of entirely. However, in the other three cases,
+the rewrite of the expression still involves a lambda; but,
+the body of each lambda is smaller than the body of the original
+lambda, which brings the expression closer to a base case.
+
+<p>Now, as for eliminating lambdas in expressions that have more than
+one lambda ... Simply pick a lambda that has no lambdas within it
+(i.e., pick an innermost lambda; for, there will always be at least
+one innermost lambda if there are any lambdas at all). Eliminate it.
+Then there will be one less lambda. Repeat the process until there
+are no more.
+
+<p><h2>Problem Set 9 (<a href="#Answers_9">Answers</a>)</h2>
+
+<p><ol>
+<li>How may "f\x\ fxx" be rewritten without lambdas, using the
+    procedure we're outlined?
+</ol>
+
+<p><h1>Completeness and the Base {S, K}</h1>
+
+<p>We've just shown how using the I, K, B, C, and S combinators it
+is possible to eliminate lambdas in an otherwise purely applicative
+expression. Since all combinators can be written as lambda expressions,
+this means that I, K, B, C, and S can be used to form any combinator.
+Because of this, we say that {I, K, B, C, S} (i.e., the set containing
+these five combinators) is a <b>complete combinatory base</b>.
+
+<p>However, this is not necessarily the most special base, or even
+the smallest. For, if the B and C combinators are omitted from the
+base, it will still be complete (i.e., {I, K, S} is also complete).
+In the cases where a lambda is pushed to the left or to the right
+using "B" or "C", it also works to push it both ways, using "S";
+this will cause it to be pushed to a side where it is not needed,
+but this not a problem, and will just require an extra use of the
+K combinator. And, in fact, since {I, K, S} is a complete 
+combinator base, it is possible to construct the B and C combinators
+from I, K, and S. Applying our procedure to the B and C combinators
+will show that
+
+<p><pre>
+B = S(KS)K
+C = S(BBS)(KK) = S(S(K(S(KS)K))S)(KK)
+</pre>
+
+<p>It is also interesting to note that the I combinator can be
+constructed from just "S" and "K". In fact, "SKx" for any "x"
+is an identity combinator; for "(SKx)z" rewrites to "Kz(xz)" and
+thus "z", regardless of what "x" is. So, "SKK" is the identity
+combinator, then (as is "SKS").
+
+<p>This means that {S, K} is a complete base (and in fact, is
+a smallest base; no base with just one combinator can be complete,
+as we'll show in a later section). Still, it is not necessarily the
+most elegant, or the most useful in all cases.
+
+<p><h1>The base {I, B, C, W, K}</h1>
+
+<p>There might be some interest in a base that does not involve "S". 
+"S" is sort of an odd combinator that might seem kind of complex and
+thus not well fit to be taken as primitive. It is possible to use "W"
+in some cases as a primitive instead of "S". In particular,
+{I, B, C, W, K} is a complete base that does not involve "S". To show
+that this is complete, it is enough to show that "S" can be constructed
+from these. It can; remember that
+
+<p><pre>
+S = B(BW)(BBC)
+</pre>
+
+<p>Also, we might like to know a good procedure for eliminating
+lambdas using this base (simply using our original procedure
+with the derived version of "S" would not be a very elegant
+solution). With "W", it is possible, at the very beginning
+stage of eliminating lambdas, to change all lambdas with
+more than one occurence of their variables into ones that
+only have one occurence (once this is done, there will be no need
+to use "S" to push a lambda inward, since a variable could not
+possibly occur on both sides if there is only one occurence). In
+a lambda "x\Z", if "Z" mentions "x" more than one time, then the lambda
+can be rewritten as "W (x\y\Z)", with one of the occurences of "x"
+changed to a "y"; the process may need to be repeated, if "x" still
+has more than one occurence (i.e., if there were three or more at
+the beginning).
+
+<p>Now we'll give a specific example of eliminating lambdas with
+the base {I, B, C, W, K}:
+
+<p><pre>
+x\y\ times (plus x y) (minusfrom x y)
+</pre>
+
+<p>To begin with, there are multiple occurences of "y"; so, we'll
+use "W" to split the lambda:
+
+<p><pre>
+x\W (y\y2\ times (plus x y) (minusfrom x y2))
+</pre>
+
+<p>Now, there are still multiple occurences of "x", so we'll split
+that lambda also:
+
+<p><pre>
+W (x\x2\ W (y\y2\ times (plus x y) (minusfrom x2 y2)))
+</pre>
+
+<p>Now it is just a matter of eliminating the lambdas with B and C.
+
+<p><pre>
+W x\x2\ W y\y2\ times (plus x y) (minusfrom x2 y2)
+W x\x2\ W y\ B (times (plus x y)) (minusfrom x2)
+W x\x2\ W (C (B B (B times (plus x))) (minusfrom x2))
+W x\B W (B (C (B B (B times (plus x)))) minusfrom)
+W (B (B W) (C (B B (B C (B (B B) (B (B times) plus))) minusfrom))
+</pre>
+
+<p>Needless to say, our procedure gave quite a messy result in this case.
+
+<p><h2>Problem Set 10 (<a href="#Answers_10">Answers</a>)</h2>
+
+<p><ol>
+<li>How can the combinator "x\f\ fx" be written using only combinators
+in {I, B, C, W, K, S}?
+<li>How can the combinator "f\g\h\x\ f(gx)(hx)" be written using only
+combinators in {I, B, C, W, K, S}?
+</ol>
+
+<hr>
+
+<p><a name="Answers_1"><h1>Answers to Problem Set 1</h1>
+
+<p><ol>
+<li>Yes, they both represent the doubling function ("W plus"). The name
+    of the variable does not matter (but we will usually use
+    "x", "y", "z", "f", "g", or "h").
+<li>It is the application of the doubling function to "5", or in other
+    words, "10".
+<li>It is the function that, given parameter "x", yields the square
+    of "x". This function "x\ sqr x" is the same as just "sqr".
+<li>It is the function that, given parameter "x", yields the square
+    of "x" plus the square of "x". In other words, it yields
+    the double of the square of "x". Given a parameter of, say, "3",
+    it would yield the double of "9", or in other words, "18".
+<li>Since the function takes the double of a square, it could be
+    written as "B dub sqr" (where "dub" is a doubling function),
+    or in other words "B (W plus) sqr".
+</ol>
+
+<p><a name="Answers_2"><h1>Answers to Problem Set 2</h1>
+
+<p><ol>
+<li>It is the function that, given parameters "x" and "y", yields
+    the sum of "x" and "y". This function is the same as just "plus".
+<li>It is the function that, given two parameters "x" and "y",
+    yields the square of "x" minus the square of "y", or in other words,
+    "x<sup>2</sup> - y<sup>2</sup>". Given parameters of "5" and "2",
+    it would yield "25 - 4", or in other words, "21".
+
+    <p>(The reader may be wondering if this function can be formed
+    using combinators instead of lambdas; it can, but because
+    it is a little complicated, we'll delay showing how for a bit.)
+    
+<li>It is the function that, given two parameters "x" and "y",
+    yields "(x+y) * (x-y)". Given parameters of "5" and "2", it
+    would yield "(5 + 2) * (5 - 2)", or in other words, "7 * 3", or "21".
+
+    <p>(Incidentally, it is a fairly well-known fact of arithmetic that
+    this function and the function mentioned in problem 2 always yield
+    the same thing, given the same parameters).
+</ol>
+
+<p><a name="Answers_3"><h1>Answers to Problem Set 3</h1>
+
+<p><ol>
+<li>Yes. It is the example of a vacuous function that we just used.
+<li>"3". Since "x\3" is a function that always results in "3", 
+    the application of it to any particular thing (in this case, "5")
+    is "3".
+</ol>
+
+<p><a name="Answers_4"><h1>Answers to Problem Set 4</h1>
+
+<p><ol>
+<li>It could be written as "f\g\x\ fx(gx)", or perhaps "x\y\z\ xz(yz)"
+    (it does not matter which variable names are used).
+</ol>
+
+<p><a name="Answers_5"><h1>Answers to Problem Set 5</h1>
+
+<p><ol>
+<li>Since "f\g\x\ f(gx)" is the composition function "B", we can see
+    then that "(f\g\x\ f(gx)) sqr succ" is the composition of
+    the squaring function with the succession function (this function
+    often seems to turn up in our examples). Another way to think of
+    it is to realize that
+
+<p><pre>
+(f\g\x\ f(gx)) sqr succ
+</pre>
+
+    <p>beta-reduces to
+
+<p><pre>
+(g\x\ sqr (gx)) succ
+</pre>
+
+    <p>and then to
+
+<p><pre>
+x\ sqr (succ x)
+</pre>
+
+    <p>Then we can see that this is the composition of squaring
+    with succession.
+<li>It is the function that applies a function to itself. This
+    function we will later call the "M" combinator. Many
+    functions do not make sense when applied to themselves
+    (for instance, "sqr" would not make sense applied to itself,
+    since it only applies to numbers, not functions). However,
+    some functions are interesting when applied to themselves
+    (for instance, the K combinator).
+<li>It the K combinator applied to itself, or in other words, a function
+    that always yields the K combinator, regardless of its parameter.
+    That is, "KK" (or in other words, "MK") is "x\K", or in other words,
+    "x\y\z\y". This function takes three parameters and always yields
+    the second.
+</ol>
+
+<p><a name="Answers_6"><h1>Answers to Problem Set 6</h1>
+
+<p><ol>
+<li>Beta-reducing "(x\y\x) (x\y\y)" would yield "y\x\y\y", which has
+    a naming conflict. So, we first rename variables in the expression,
+    getting "(x\y\x) (f\g\g)". Then, when we beta-reduce, we get
+    "y\f\g\g", a correct answer. "x\y\z\z" is also a correct answer, then.
+</ol>
+
+<p><a name="Answers_7"><h1>Answers to Problem Set 7</h1>
+
+<p><ol>
+<li>Well, the expression "x\y\ plus x y" contains the expression
+    "y\ (plus x) y", which can be eta-reduced to just "plus x",
+    leaving the full expression to be "x\ plus x", which can
+    by another eta-reduction be reduced to "plus".
+</ol>
+
+<p><a name="Answers_8"><h1>Answers to Problem Set 8</h1>
+
+<p><ol>
+<li>In the expression "x\ times 3 (minus x 3)", only the right side
+    mentions "x", so we can push the lambda to the right, giving
+
+<p><pre>
+B (times 3) (x\ minus x 3)
+</pre>
+
+    <p>Then, in the new lambda, only the left side is mentioned,
+    so we can push the lambda left with "C", giving
+
+<p><pre>
+B (times 3) (C (x\ minus x) 3)
+</pre>
+
+    <p>Then, since "x\ minus x" can be eta-reduced to "minus", we get
+
+<p><pre>
+B (times 3) (C minus 3)
+</pre>
+<li>One way to eliminate the lambdas in "x\y\ minusfrom (sqr x) (sqr y)"
+    is to focus first on the inner lambda. In the inner lambda,
+    only the right side ("sqr y") mentions "y", so we can push the
+    lambda right, using "B"; this gives
+
+<p><pre>
+x\ B (minusfrom (sqr x)) (y\ sqr y)
+x\ B (minusfrom (sqr x)) sqr              (by eta-reduction)
+</pre>
+
+    <p>We are now left only with one lambda. The only occurence of the "x"
+    is on the left, so we can push the lambda left with "C":
+
+<p><pre>
+C (x\ B (minusfrom (sqr x))) sqr
+</pre>
+
+    <p>Now it is just a matter of pushing the lambda right a couple times:
+
+<p><pre>
+C (B B (x\ minusfrom (sqr x))) sqr
+C (B B (B minusfrom (x\ sqr x))) sqr
+C (B B (B minusfrom sqr)) sqr
+</pre>
+
+<li>To eliminate the lambdas is "f\g\x\y\ f(gxy)" we'll again focus
+    on the innermost lambda, the one using the variable "y". The left
+    side is "f" and the right side is "gxy". Only the right side mentions
+    "y". So, we use "B" to push the lambda to the right, giving
+
+<p><pre>
+f\g\x\ Bf(y\gxy)
+f\g\x\ Bf(gx)            (eta-reduction)
+</pre>
+
+    <p>Now, we focus on the next lambda, the one with the "x". Once again,
+    only the right side mentions "x", so we push right with "B":
+
+<p><pre>
+f\g\ B(Bf)(x\gx)
+f\g\ B(Bf)g              (eta-reduction)
+</pre>
+
+    <p>Now, we focus on the next lambda, the one with the "g". It can
+    be gotten rid of immediately using an eta-reduction, leaving
+
+<p><pre>
+f\ B(Bf)
+</pre>
+
+    <p>Now, our answer is simply
+
+<p><pre>
+BB(f\Bf)
+BBB                      (eta-reduction)
+</pre>
+    
+    <p>("Composition composed with composition")
+</ol>
+
+<p><a name="Answers_9"><h1>Answers to Problem Set 9</h1>
+
+<p><ol>
+<li>This is the W combinator. We begin by trying to remove the innermost lambda
+    (with variable name "x"), in "f\x\ fxx". The left side is "fx"
+    and the right side is "x". Both sides mention "x", so we rewrite
+    using "S":
+
+<p><pre>
+f\ S (x\fx) (x\x)
+f\ S f (x\x)             (eta-reduction)
+f\ S f I                 ("x\x" is I combinator)
+</pre>
+
+    <p>Now, "f" is mentioned on the left ("S f") only, so we rewrite with "C":
+
+<p><pre>
+C (f\ S f) I
+CSI                      (eta-reduction)
+</pre>
+
+    <p>This gives us an interesting way of writing the W combinator
+    in terms of "C", "S", and "I".
+
+</ol>
+
+<p><a name="Answers_10"><h1>Answers to Problem Set 10</h1>
+
+<p><ol>
+<li>It may be written as "CI". This is an interesting combinator
+    which we will call "T", or the "reverse-applicator". Given a
+    parameter, it yields a function that passes that parameter to a
+    function.
+
+<li>It may be written as "B(BS)B":
+
+<p><pre>
+f\g\h\x\ f(gx)(hx)
+f\g\h\ S(Bfg)h
+f\g\ S(Bfg)
+f\ BS(Bf)
+B(BS)B
+</pre>
+
+    <p>This is an interesting combinator which we will call "N". Whereas
+    "S" was a generalized version of "W", "N" is a more general
+    form still. From "S"'s rewrite rule,
+
+<p><pre>
+Sfgx = fx(gx)
+</pre>
+
+    <p>we see that "S" is like "W" except that it allows the second
+    "x" to be modified by a function before being passed to the
+    binary "f". "N", with the rewrite rule,
+
+<p><pre>
+Nfghx = f(gx)(hx)
+</pre>
+
+    <p>allows both "x"s to be modified (each by a different function)
+    before each is passed to the binary "f".
+
+</ol>
+
+<hr>
+
+<p><h1>Historical Note</h1>
+
+<p>The idea of using a construct like a lambda to refer to functions
+began, it seems, with Alonzo Church in the 1930s or so as a device
+for his "lambda calculus" (Gottlob Frege I think may have used a similar
+notation a bit earlier). Before lambdas were used, functions were
+apparently referred to in this sort of way:
+
+<blockquote>
+The function, f(x) = 2*x + 3
+</blockquote>
+
+<p>This sort of notation requires that the function be given an
+arbitrary name "f" (in addition to an arbitrary name "x" for the parameter),
+whereas with a lambda construct, a name like "f" is not needed.
+
+<p>There are actually many different notations in use for the lambda
+construct. In the most standard notation, the last function would
+be written
+
+<p><pre>
+<img src="/web/20040408220547im_/http://tunes.org/~iepos/introduction-to-logic/chap00/img_lambda.gif">x. 2*x + 3
+</pre>
+
+<p>using "<img src="/web/20040408220547im_/http://tunes.org/~iepos/introduction-to-logic/chap00/img_lambda.gif">", the greek letter "lambda".
+(We've avoided this notation because it is somewhat cluttery and
+because it is difficult to get the lambda to match the font size in HTML).
+One might also see
+
+<p><pre>
+\x. 2*x + 3
+</pre>
+
+<p>where a backslash ("\") is used in place of the lambda symbol. Also,
+in the <a href="https://web.archive.org/web/20040408220547/http://www.haskell.org/">Haskell</a> programming language,
+
+<p><pre>
+\x-&gt; 2*x + 3
+</pre>
+
+<p>is used.
+
+  <p><h1>Common Iterators: 2, 3, 4</h1>
+
+<p>We've already introduced several interesting combinators,
+including I, B, C, W, K, and S. In this section, we'll introduce
+a series of combinators called "iterators". These combinators are
+very similar to the natural numbers "0", "1", "2", "3", and so forth.
+
+<p>The first iterator we'll introduce is the one which corresponds
+to the number two. This combinator, "2", has the rewrite rule:
+
+<p><pre>
+2fx = f(fx)
+</pre>
+
+<p>This combinator takes a function "f" and yields a function that
+applies "f" two times. For instance, "2 sqr" would be a function that
+squares a number twice (i.e., raises it to the fourth power); applying
+"2 sqr" to a number "3" would give "sqr (sqr 3)", or in other words "81".
+"2 sqr" is the same as "B sqr sqr".
+
+<p>Now, we introduce the iterator "3", with the rewrite rule:
+
+<p><pre>
+3fx = f(f(fx))
+</pre>
+
+<p>This combinator take a function "f" and yields a function that
+applies "f" three times. In other words, given "f", it yields
+"Bf(Bff)", which is the same as "B(Bff)f". Continuing this pattern, we
+define "4" to have the rewrite rule:
+
+<p><pre>
+4fx = f(f(f(fx)))
+</pre>
+
+<p>Combinators that are like "2", "3", and "4" are called <b>iterators</b>.
+In an expression "4f", the "f" is called the <b>iterand</b>, and
+the the result is called an <b>iteration</b> of "f".
+
+<p><h2>Problem Set 1 (<a href="#Answers_1">Answers</a>)</h2>
+
+<p><ol>
+<li>What is "2Kx"?
+</ol>
+
+<p><h1>One and Zero</h1>
+
+<p>There are, of course, iterators for the two very special numbers
+one and zero. "1" is an iterator that takes a function "f" and yields
+a function that applies "f" a single time (in other words, it
+makes no change on "f"); it would have the rewrite rule:
+
+<p><pre>
+1fx = fx
+</pre>
+
+<p>In extension, the "1" iterator is the same as the "I" combinator,
+since it makes no change to its parameter.
+
+<p>Next, the "0" iterator is a combinator that takes a function "f"
+and yields a function that applies "f" no times at all:
+
+<p><pre>
+0fx = x
+</pre>
+
+<p><h2>Problem Set 2 (<a href="#Answers_2">Answers</a>)</h2>
+
+<p><ol>
+<li>What is "0K"?
+</ol>
+
+<p><h1>Construction of Iterators from Other Combinators</h1>
+
+<p>In the last section we showed how the I, B, C, W, and K combinators
+could be used to form all other combinators. Since an iterator is
+a kind of combinator, iterators can also be formed from I, B, C, W, and K.
+
+<p>We already mentioned that the "1" iterator is the same as the
+I combinator. The "0" iterator when applied to any function yields
+the I combinator, so we can say that
+
+<p><pre>
+0 = KI
+</pre>
+
+<p>Also, the "2" iterator takes a function "f" and yields "Bff"
+(composition of "f" with itself). Because of this, we say that
+
+<p><pre>
+2 = WB
+</pre>
+
+<p>Now, as for the "3" iterator, it is
+
+<p><pre>
+f\x\ f(f(fx))
+f\ Bf(Bff)
+S(f\Bf)(f\Bff)
+SB(WB)
+</pre>
+
+<p>And, the "4" iterator is
+
+<p><pre>
+f\x\ f(f(f(fx)))
+f\Bf(Bf(Bff))
+SB(f\Bf(Bff))
+SB(SB(f\Bff))
+SB(SB(WB))
+</pre>
+
+<p><h1>The Successor Function</h1>
+
+<p>At this point, it looks like "SB" may be a successor function,
+since "SB2" is "3" and "SB3" is "4". In fact, "SB" is a successor
+function; it may be useful to write it using lambdas:
+
+<p><pre>
+SB
+n\f\ Bf(nf)
+n\f\x\ f(nfx)
+</pre>
+
+<p>It takes three parameters; the first one, "n", is the iterator
+to take the successor of. The next one is "f", the function to
+iterate. The third is "x", the thing that will have "f" applied
+to it some number of times. Then, after taking these three parameters,
+"SB" yields, not "nfx" (which would be "f" applied to "x" the original
+number of times), but "f(nfx)", which is "f" applied to "x" the
+original number of times <i>plus</i> one more time.
+
+<p><h2>Problem Set 3 (<a href="#Answers_3">Answers</a>)</h2>
+
+<p><ol>
+<li>What is "SBI"?
+<li>What is "SB(KI)"?
+<li>What is "K(3Kx)"?
+<li>What is "2K(3Kx)"?
+</ol>
+
+<p><h1>Addition</h1>
+
+<p>We found that "SB" is a successor function, a function that adds one.
+We'll now show that "NB" is a general addition function, where
+"N" is the combinator such that
+
+<p><pre>
+Nfghx = f(gx)(hx)
+</pre>
+
+<p>If "N" is this combinator, then "NB", the addition function, is
+
+<p><pre>
+m\n\f\ B(mf)(nf)
+m\n\f\x\ mf(nfx)
+</pre>
+
+<p>Unlike the successor function which took three parameters, this
+function takes four parameters; "m" is the iterator that is being added
+(i.e., the amount to add); "n" is the original iterator; "f" is
+the function being iterated; and "x" is the thing that "f" will
+be applied to some number of times. Unlike the successor function
+which gave "f(nfx)" ("f" applied to "x" the original number of
+times plus one more), the addition function yields "mf(nfx)"
+("f" applied to "x" the original number of times plus "m" more times).
+
+<p><h2>Problem Set 4 (<a href="#Answers_4">Answers</a>)</h2>
+
+<p><ol>
+<li>What is "(NB 2 3) K x"?
+<li>What is "2K(2K(2Kx))"?
+</ol>
+
+<p><h1>Multiplication</h1>
+
+<p>As noted in the last problem, "3(2K)" is the same as "6K". And,
+in general, "3(2f)" is the same as "6f". Thus, "B 3 2" is the same as "6".
+It seems that the B combinator can be used to multiply iterators,
+and it can.
+
+<p>This makes sense because in general, if "m" and "n" are iterators,
+then "m(nf)" is a function that applies "nf" "m" times, but "nf"
+is the applies "f" "n" times, so "m(nf)" applies "f" a total of "m * n"
+times. So, in general, "B m n", given a function "f", yields a 
+function that applies "f" "m * n" times.
+
+<p>It is interesting that the combinator for multiplication is
+even simpler than the combinator for addition.
+
+<p><h2>Problem Set 5 (<a href="#Answers_5">Answers</a>)</h2>
+
+<p><ol>
+<li>What is "3(2f)"?
+<li>What is "2(3(4f))"?
+<li>What is "2(2(2f))"?
+</ol>
+
+<p><h1>Exponentiation</h1>
+
+<p>As demonstrated in the last problem, "3 2" is the cube of "2", or
+in other words, "8". In general, if "m" and "n" are iterators,
+then "m n" is "n<sup>m</sup>".
+
+<p>This makes sense because in general, if "n" is an iterator,
+then "n f" is "f" composed with itself "n" times. And, if "f"
+is an iterator, then composing it with itself "n" is the same as
+multiplying it with itself "n" times (since composition is used for
+multiplication of iterators), and multiplying something by
+itself "n" times is what is meant by raising it to the "n"<sup>th</sup>
+exponent.
+
+<p>So, essentially, the "2" iterator acts as a squaring function,
+when applied to other iterators. And, "3" acts as a cubing function.
+And, "1" acts a function that raises a number to the power of "1"
+(i.e., makes no change). And, "0" acts as a function that raises
+a number to the power of "0" (i.e., always yields "1").
+
+<p>A note about our notation: although we often omit spaces in
+expressions (as in "2Kx"), we will always leave a space between
+the names of two iterators. That is, we will not write "32" if
+we mean the cube of two; we will instead write "3 2". When we
+do write "32", we are referring to the iterator for thirty-two.
+
+<p><h2>Problem Set 6 (<a href="#Answers_6">Answers</a>)</h2>
+
+<p><ol>
+<li>What is "2 3"?
+</ol>
+
+<p><h1>Properties of Iterators</h1>
+
+<p>There are several properties that numbers are traditionally
+taken as having; here are some (where "^" is exponentiation):
+
+<p><pre>
+0 + x        =  x
+1 * x        =  x
+0 * x        =  0
+x ^ 1        =  x
+x ^ 0        =  1
+(x + y) + z  =  x + (y + z)
+(x * y) * z  =  x * (y * z)
+(x + y) * z  =  (x * z) + (y * z)
+z ^ (x + y)  =  (z ^ x) * (z ^ y)
+z ^ (x * y)  =  (z ^ y) ^ x
+</pre>
+
+<p>These properties hold for all iterators "x", "y", and "z", as nearly
+trivial consequences of the definitions we've given of
+"+", "*", "^", "0", and "1". We won't bother to show how every
+single one can be proven, but we will prove a few...
+
+<p>For instance, the property that 
+
+<p><pre>
+(x * y) * z  =  x * (y * z)
+</pre>
+
+can be proven by showing that "B" is associative, that "B(Bfg)h" is in all
+cases the same as "Bf(Bgh)". This is fairly obvious, because
+both "B(Bfg)h" and "Bf(Bgh)" give "f(g(hx))" when applied to a
+parameter "x".
+
+<p>One particularly interesting property is
+
+<p><pre>
+z ^ (x * y) = (z ^ y) ^ x
+</pre>
+
+Written using "B" for "*", it says:
+
+<p><pre>
+(Bxy)z = x(yz)
+</pre>
+
+<p>So, this property is the most fundamental property of "*" of all
+(B's rewrite rule), and is a sort of definition of multiplication
+in terms of exponentiation.
+
+<p>Similarly, the property
+
+<p><pre>
+z ^ (x + y)  =  (z ^ x) * (z ^ y)
+</pre>
+
+<p>is a fundamental definition of addition in terms of
+multiplication and exponentiation.
+
+<p>Now, it should not be thought that all properties of numbers
+are trivial to prove with iterators. One that is typically
+not-so-easy is
+
+<p><pre>
+x * y  =  y * x
+</pre>
+
+<p>In a theory of iterators, this might be expressed as
+
+<p><pre>
+Bxy = Byx
+</pre>
+
+<p>Yet, this does not hold for all "x" and "y" (remember that composition
+is not commutative). However, it does hold if "x" and "y" are both
+iterators, but this is not a simple thing to prove (in fact, we
+won't attempt to prove it here at all).
+
+<p><h1>Negative Numbers</h1>
+
+<p>Up until now, we have only used iterators corresponding to
+the natural numbers: 0, 1, 2, 3, (etc.). We thought of "2"
+as the iterator applies a function twice; "1" is the iterator
+that applies a function once; "0" is the iterator that applies
+a function no times at all. If we continued the pattern, we
+would take "-1" to be the iterator that "takes away" a function
+from a parameter. In other words, "-1", given a function, would
+yield the function's "inverse", a function that has the opposite
+effect as the original.
+
+<p>Unfortunately, although iterators for "0", "1", "2", (etc.) could
+be defined in terms of combinators, there is no way that this
+can be done for "-1". For, consider our definitions of "3", "2", "1", and "0":
+
+<p><pre>
+3 = f\x\ f(f(fx))
+2 = f\x\ f(fx)
+1 = f\x\ fx
+0 = f\x\ x
+</pre>
+
+<p>There does not seem to be a way to continue this pattern. However,
+if we added an odd extension to our lambda construct, we could, in
+this way:
+
+<p><pre>
+-1 = f\(fx)\ x
+-2 = f\(f(fx))\ x
+-3 = f\(f(f(fx)))\ x
+</pre>
+
+<p>But this is quite an abuse of the lambda construct, as we've currently
+defined it.
+
+<p>An addition of a "-1" as a primitive would add great strength to
+a language which otherwise could only express combinators, because,
+using multiplication, it is possible to form all negative integers
+(for instance, "B 3 (-1)" is "-3"). Also, fractions could be formed
+by raising a integer to the power of "-1" (for instance, "(-1) 3"
+is one third). Then, by raising numbers to fractional powers,
+roots of numbers could be expressed (for instance, "(-1) 2 3" is the
+square root of three, because "(-1) 2" is the inverse of the squaring
+function, the square root function). Roots of negative numbers could be
+used to express imaginary numbers.
+
+<p>However, because consideration of "-1" and similar functions would
+cause many complications that we are not yet prepared to handle, we will
+postpone discussing them further until a later chapter.
+
+<p><h1>New Notation for Composition</h1>
+
+<p>Often in this work we'll refer to compositions of various functions.
+With our current syntax for composition, this can be quite cluttery.
+For instance, the composition of functions "f", "g", "h", and "x"
+might be written:
+
+<p><pre>
+Bf(Bg(Bhx))
+</pre>
+
+<p>Since this is too cluttery, we introduce a new notation. In our
+new notation, the above function would be written:
+
+<p><pre>
+f * g * h * x
+</pre>
+
+<p>In general, "Bfg" will be abbreviated to "f * g". The use of "*" is,
+of course, suggested by "B"'s use for multiplication. 
+
+<p>Also, we will sometimes abbreviate "NBfg" to "f + g". This is
+sometimes meaningful even when "f" and "g" are not iterators.
+Whereas "*" is used for composing unary functions, "+" is
+used to sort of "compose" binary functions. For instance,
+"add + mul" is a function that multiplies by number and then
+adds by the same number. That is, "(add + mul) 3" is a function
+that multiplies by 3 and then adds 3, and is the same as
+"add 3 * mul 3". Applying "(add + mul) 3" to, say, the number "2"
+would give "add 3 (mul 3 2)", or in other words, "9".
+
+<hr>
+
+<p><a name="Answers_1"><h1>Answers to Problem Set 1</h1>
+
+<p><ol>
+<li>It is "K(Kx)", a function that ignores its parameter and
+yields "Kx", which is a function that in turn ignores its parameter
+and yields "x". In other words, "K(Kx)" takes two parameters through
+currying, ignores them, and yields "x". "K(K(Kx))" would be a function
+that ignored three parameters, yielding "x".
+</ol>
+
+<p><a name="Answers_2"><h1>Answers to Problem Set 2</h1>
+
+<p><ol>
+<li>"0K" is a function that applies "K" no times at all. "0Kx" is
+then the same as, not "K(Kx)" or "Kx", but just "x". So, "0K" is
+the I combinator.
+</ol>
+
+<p><a name="Answers_3"><h1>Answers to Problem Set 3</h1>
+
+<p><ol>
+<li>Since "SB" is the successor function, we might expect "(SB)I" to
+    be the "2" iterator (the successor of "1"). It is. Remember that
+    in general "SfI" is the same as "Wf"; so, "SBI" is the same as "WB",
+    the "2" iterator. Also, we can see that "SBI" when applied
+    to parameters "f" and "x" gives
+
+<p><pre>
+SBIfx
+Bf(If)x          (S's rewrite rule)
+Bffx             (I's rewrite rule)
+f(fx)            (B's rewrite rule)
+</pre>
+
+    as we'd expect the "2" iterator to.
+
+<li>Since "KI" is the "0" iterator, we'd expect "SB(KI)" to be
+    the "1" iterator, the I combinator. It is, as we can see
+    when we apply "SB(KI)" to parameters "f" and "x":
+
+<p><pre>
+SB(KI)fx
+Bf(KIf)x         (S's rewrite rule)
+BfIx             (K's rewrite rule)
+f(Ix)            (B's rewrite rule)
+fx               (I's rewrite rule)
+</pre>
+
+<li>First, "3Kx" is "K(K(Kx))" the function that yields "x" after
+    ignoring 3 parameters. So, "K(3Kx)" is "K(K(K(Kx)))", ignoring
+    one more parameter than "3Kx"; i.e., it ignores 4 parameters
+    and is the same as "4Kx".
+
+<li>It is "5Kx", or in other words, "K(K(K(K(Kx))))".
+
+</ol>
+
+<p><a name="Answers_4"><h1>Answers to Problem Set 4</h1>
+
+<p><ol>
+<li>"(NB 2 3) K x" is
+
+<p><pre>
+B(2K)(3K)x      (N's rewrite rule)
+2K(3Kx)         (B's rewrite rule)
+</pre>
+
+    <p>This is the application of "K" upon "x" 3 times and then 2 more times.
+    In other words, it is "5Kx", or "K(K(K(K(Kx))))". We could have
+    seen this easily if we'd noticed that "NB 2 3" (the sum of 2 and 3)
+    is "5".
+
+<li>It is "K(K(K(K(K(Kx)))))", or "6Kx". Note that "2K(2K(2Kx))" could also
+    have been written "3(2K)x". This means that "3(2K)" (the application
+    of "2K" three times) is the same as "6K".
+</ol>
+
+<p><a name="Answers_5"><h1>Answers to Problem Set 5</h1>
+
+<p><ol>
+<li>It is a function that applies "f" 6 times; in other words, "3(2f)"
+    is the same as "6f". This can be verified:
+
+<p><pre>
+3(2f)x
+2f(2f(2fx))
+2f(2f(f(fx)))
+2f(f(f(f(fx))))
+f(f(f(f(f(fx)))))
+</pre>
+
+    <p>So, "3(2f)", given an "x", gives "f(f(f(f(f(fx)))))", just as
+    "6f" does.
+
+<li>It is a function that applies "f" 24 times, in other words, "24 f".
+
+<li>It is a function that applies "f" 8 times, in other words, "8f".
+    Note that this function could also have been written "3 2 f"
+    (which, by "3"'s rewrite rule, is the same as "2(2(2f))").
+</ol>
+
+<p><a name="Answers_6"><h1>Answers to Problem Set 6</h1>
+
+<p><ol>
+<li>It is the square of "3", or in other words, "9".
+</ol>
+
+<hr>
+
+<p><h1>Historical Note</h1>
+
+<p>The idea of using combinators in this way to represent natural numbers
+originated with Alonzo Church in the early 1930s. Actually, Church
+did not use the iterator for zero (he began with one); apparently,
+he did not like the zero iterator, because it is a function ("KI")
+that ignores its parameter (in general Church did not
+like functions that ignore their parameters).
+
+<p>We've already mentioned several combinators, including I, B, C, W, K, S, 
+N, T, and several iterators, with these rewrite rules:
+
+<p><pre>
+Ix    = x
+Bfgx  = f(gx)
+Cfxy  = fyx
+Wfx   = fxx
+Kxy   = x
+Sfgx  = fx(gx)
+Nfghx = f(gx)(hx)
+Txf   = fx
+0fx   = x
+1fx   = fx
+2fx   = f(fx)
+3fx   = f(f(fx))
+</pre>
+
+<p>In this section, we'll describe several other interesting combinators,
+primarily variations of the above combinators.
+
+<p><h1>Iterations of B</h1>
+
+<p>We've already used the B combinator extensively. Now we'll focus
+on various iterations of "B". For instance, "2B" (read: "B squared"),
+or in other words, "BBB" or "B * B", has the rewrite rule:
+
+<p><pre>
+(2B)fgxy = f(gxy)
+</pre>
+
+<p>This is clear, because "(2B)fgxy" is the same as
+
+<p><pre>
+2Bfgxy
+B(Bf)gxy       (2's rewrite rule)
+Bf(gx)y        (B's rewrite rule)
+f(gxy)         (B's rewrite rule)
+</pre>
+
+<p>Whereas "B" is used to compose a function "f" upon a unary
+function "g", "2B" can be used to compose "f" upon a binary
+function. For instance, "2B sqr plus" is a binary function
+that adds two numbers and then squares the result. 
+
+<p>Note that "B sqr plus" (as opposed to "2B sqr plus") is not particularly
+meaningful; whereas "2B sqr plus" waits for two parameters "x" and "y"
+(so to speak), giving them to "plus" before taking the square,
+"B sqr plus" only waits for one parameter to give to "plus", and takes
+the square (the square is then taken of an adding function then, rather
+than a number). This actually could be meaningful after all
+if "sqr" is interpreted as the "2" iterator; for sake of clarity,
+however, we're using "sqr" and "plus" to mean the functions of
+squaring and addition over numbers in the ordinary sense, not iterators.
+
+<p>Now, "3B", as one might expect, has the rewrite rule:
+
+<p><pre>
+(3B)fgxyz = f(gxyz)
+</pre>
+
+<p>because "(3B)fgxyz" is the same as
+
+<p><pre>
+3Bfgxyz
+B(B(Bf))gxyz       (3's rewrite rule)
+B(Bf)(gx)yz        (B's rewrite rule)
+Bf(gxy)z           (B's rewrite rule)
+f(gxyz)            (B's rewrite rule)
+</pre>
+
+<p>"3B" could be useful when composing "f" with a tertiary function
+"g" that needs to take 3 parameters before the result is passed
+to "f". And, of course, "4B", "5B", (etc.) could be used for
+compositions upon functions of 4, 5, and more parameters.
+
+<p><h2>Problem Set 1 (<a href="#Answers_1">Answers</a>)</h2>
+
+<p><ol>
+<li>What is "2B (plus 1) times"?
+<li>What is "2B plus times"?
+<li>What is "0B plus 1"?
+</ol>
+
+<p><h1>Iterations of C</h1>
+
+<p>Unlike "B", when "C" is iterated, new interesting combinators
+are not formed. For instance, "2C" is the same as "I", because "C(Cf)"
+is in all cases the same as "f". This is because taking the converse
+of a function one time flips the order of its two parameters, but
+taking the converse again restores them to the original order.
+
+<p>Then, "3C" is the same as "C", and "4C" is the same as "I".
+In general, if "n" is an iterator, then "nC" is either "C" or "I";
+it is "C" if "n" is odd, but "I" if "n" is even. 
+
+<p><h2>Problem Set 2 (<a href="#Answers_2">Answers</a>)</h2>
+
+<p><ol>
+<li>What is "5C"?
+<li>What is "1C"?
+<li>What is "0C"?
+</ol>
+
+<p><h1>Iterations of W</h1>
+
+<p>The W combinator does yield interesting variations when iterated.
+For instance, "2W" has the rewrite rule:
+
+<p><pre>
+(2W)fx = fxxx
+</pre>
+
+<p>This is because "(2W)fx" is the same as
+
+<p><pre>
+2Wfx
+W(Wf)x       (2's rewrite rule)
+Wfxx         (W's rewrite rule)
+fxxx         (W's rewrite rule)
+</pre>
+
+<p>Whereas "W" was used to unify a binary function to a unary one,
+"2W" can be used to unify a tertiary function to a unary one.
+Then, as would be expected, "3W" can be used to unify 4-ary functions,
+and has the rewrite rule:
+
+<p><pre>
+(3W)fx = fxxxx
+</pre>
+
+<p>This is clear because "(3W)fx" is the same as:
+
+<p><pre>
+(3W)fx
+W(W(Wf))x    (3's rewrite rule)
+W(Wf)xx      (W's rewrite rule)
+Wfxxx        (W's rewrite rule)
+fxxxx        (W's rewrite rule)
+</pre>
+
+<p>One can think of "3W" as making 3 duplicates of its second parameter,
+"x" (making a total of 4 instances).
+
+<p><h2>Problem Set 3 (<a href="#Answers_3">Answers</a>)</h2>
+
+<p><ol>
+<li>What is "2W (2B plus times)"?
+</ol>
+
+<p><h1>Iterations of K</h1>
+
+<p>We've already mentioned some iterations of "K" in the last section.
+We saw that while "K" can be used to form a function that ignores
+a parameter, "2K" can be used to form a function that ignores two
+parameters. In particular, "2K" has the rewrite rule:
+
+<p><pre>
+(2K)xyz = x
+</pre>
+
+<p>We know this because "(2K)xyz" is the same as
+
+<p><pre>
+2Kxyz
+K(Kx)yz     (2's rewrite rule)
+Kxz         (K's rewrite rule)
+x           (K's rewrite rule)
+</pre>
+
+<p>Also, "3K" can be used to form a function that ignores three
+parameters; it has the rewrite rule:
+
+<p><pre>
+(3K)xyzf = x
+</pre>
+
+<p>This is clear because "(3K)xyzf" is the same as
+
+<p><pre>
+3Kxyzf
+K(K(Kx))yzf    (3's rewrite rule)
+K(Kx)zf        (K's rewrite rule)
+Kxf            (K's rewrite rule)
+x              (K's rewrite rule)
+</pre>
+
+<p><h2>Problem Set 4 (<a href="#Answers_4">Answers</a>)</h2>
+
+<p><ol>
+<li>What is "2KI"?
+<li>What is "2K(2K)"?
+</ol>
+
+<p><h1>Compositions of C</h1>
+
+<p>We'll now look at what is formed when "B", and iterations of "B",
+are applied to "C". We've seen that "C" can be used to swap the
+first two parameters of a function that is at least binary.
+it has the rewrite rule:
+
+<p><pre>
+Cfxy = fyx
+</pre>
+
+<p>Now, "BC" is similar to "C"; it takes a function and swaps
+its second and third parameters (leaving the first intact).
+It has the rewrite rule:
+
+<p><pre>
+(BC)fxyz = fxzy
+</pre>
+
+<p>Note that the "y" and "z" are interchanged on the right.
+To verify that "BC" behaves this way, see that "(BC)fxyz" is
+the same as:
+
+<p><pre>
+BCfxyz
+C(fx)yz        (B's rewrite rule)
+fxzy           (C's rewrite rule)
+</pre>
+
+<p>Now, "B(BC)", or in other words, "2BC", is also similar to "C".
+It takes a function and swaps its third and fourth parameters
+(leaving the first and second intact). It has the rewrite rule:
+
+<p><pre>
+(2BC)fxyzg = fxygz
+</pre>
+
+<p>This can be verified by noting that "(2BC)fxyzg" is the same as:
+
+<p><pre>
+2BCfxyzg
+B(BC)fxyzg
+BC(fx)yzg
+C(fxy)zg
+fxygz
+</pre>
+
+<p>As one might expect, "3BC" is like "2BC" except it postpones
+the interchange for one more parameter (i.e., it swaps a function's
+fourth and fifth parameters). In general, if "n" is an iterator,
+then "nBC" takes a function and swaps its "n+1"<sup>th</sup> and
+"n+2"<sup>th</sup> parameters.
+
+<p><h2>Problem Set 5 (<a href="#Answers_5">Answers</a>)</h2>
+
+<p><ol>
+<li>What is "BC (2B plus times)"?
+</ol>
+
+<p><h1>Compositions of W</h1>
+
+<p>We'll now look at the results of applying iterations of "B" to "W".
+We know that "W" can be used on an at-least binary function to duplicate
+its first parameter (i.e., make it take the place of the first and
+second parameters); it had the rewrite rule:
+
+<p><pre>
+Wfx = fxx
+</pre>
+
+Similarly, "BW" can be used on an at-least tertiary function to
+duplicate its second parameter, leaving the first parameter intact. 
+It has the rewrite rule:
+
+<p><pre>
+(BW)fxy = fxyy
+</pre>
+
+<p>This can be verified by noting that "(BW)fxy" is the same as:
+
+<p><pre>
+BWfxy
+W(fx)y       (B's rewrite rule)
+fxyy         (W's rewrite rule)
+</pre>
+
+<p>As one might expect, "2BW", or in other words, "B(BW)", has the
+rewrite rule:
+
+<p><pre>
+(2BW)fxyz = fxyzz
+</pre>
+
+<p>This is clear because "(2BW)fxyz" is the same as:
+
+<p><pre>
+2BWfxyz
+B(BW)fxyz    (2's rewrite rule)
+BW(fx)yz     (B's rewrite rule)
+W(fxy)z      (B's rewrite rule)
+fxyzz        (W's rewrite rule)
+</pre>
+
+<p>It is clear that each time "B" is applied the operation of duplication
+is postponed another parameter.
+
+<p><h2>Problem Set 6 (<a href="#Answers_6">Answers</a>)</h2>
+
+<p><ol>
+<li>What is "BW (2B plus times)"?
+</ol>
+
+<p><h1>Compositions of K</h1>
+
+<p>The situation with "K" is similar to that of "C" and "W".
+We know that "K" can be used on a function (possibly a 0-ary function;
+i.e., not a function at all) to yield a function like the original, but
+with a "dummy" parameter inserted first in the parameter list. "K" has
+the rewrite rule:
+
+<p><pre>
+Kfx = f
+</pre>
+
+<p>Now, "BK" is like "K", except that the second parameter of
+the resulting function is ignored, instead of the first. "BK" has the
+rewrite rule:
+
+<p><pre>
+(BK)fxy = fx
+</pre>
+
+<p>This is clear because "(BK)fxy" is the same as:
+
+<p><pre>
+BKfxy
+K(fx)y       (B's rewrite rule)
+fx           (K's rewrite rule)
+</pre>
+
+<p>As one would expect, applying "2BK" to a function results in
+the function but with a dummy parameter inserted after two real ones.
+Then, "3BK" takes a function and inserts a dummy parameter after
+three real ones.
+
+<p><h2>Problem Set 7 (<a href="#Answers_7">Answers</a>)</h2>
+
+<p><ol>
+<li>What is "BK (2B plus times)"?
+</ol>
+
+<p><h1>Compositions of B</h1>
+
+<p>Iterating "B" upon itself has some interesting results.
+Recall that "B" essentially takes a function and yields a
+function like the original, but with the first parameter "split"
+into two (function and parameter). We see that "BB" is like
+"B", except that it splits a function's <em>second</em> parameter
+instead of its first:
+
+<p><pre>
+(BB)fxgy = fx(gy)
+</pre>
+
+<p>Similarly, "2BB" would split a function's third parameter
+(skipping over 2 of them):
+
+<p><pre>
+(2BB)fxygz = fxy(gz)
+</pre>
+
+<p>This is clear because "(2BB)fxygz" is the same as:
+
+<p><pre>
+2BBfxygz
+B(BB)fxygz   (2's rewrite rule)
+BB(fx)ygz    (B's rewrite rule)
+B(fxy)gz     (B's rewrite rule)
+fxy(gz)      (B's rewrite rule)
+</pre>
+
+<p><h2>Problem Set 8 (<a href="#Answers_8">Answers</a>)</h2>
+
+<p><ol>
+<li>What is "B (2B plus times)"?
+<li>What is "BB (2B plus times)"?
+<li>What is "2BB (2B plus times)"?
+</ol>
+
+<p><h1>Summary</h1>
+
+<p>We've now seen the results of iterating and composing the
+basic combinators B, C, W, and K. In summary, iterating each
+combinator three times gives:
+
+<p><pre>
+3B = B * B * B = f\g\x\y\z\ f(gxyz)
+3C = C * C * C = f\x\y\     fyx
+3W = W * W * W = f\x\       fxxxx
+3K = K * K * K = f\x\y\z\   f
+</pre>
+
+<p>Remember that by "*" we mean composition, and that iterating
+a function yields that function's composition with itself
+so many times.
+
+<p>Then, to summarize our discussion of compositions of B, C, W, and K,
+note that composing each two times gives:
+
+<p><pre>
+2BB = B(BB) = f\x\y\g\z\ fxy(gz)
+2BC = B(BC) = f\x\y\z\g\ fxygz
+2BW = B(BW) = f\x\y\z\   fxyzz
+2BK = B(BK) = f\x\y\z\   fxy
+</pre>
+
+<p>The B, C, W, and K combinators all take a function "f" and yield
+a function like "f", but with the parameter list rearranged
+(some parameters possibly duplicated, ignored, or applied
+to each other). Because these combinators behave this way, they
+are called "regular combinators". Applying "B" to any regular combinator
+yields another regular combinator like the original but
+with the effect on the parameter list postponed one parameter.
+
+<p>To more precisely define "regular combinator", we say that a
+combinator is a <b>regular combinator</b> if and only if
+it mentions its first parameter only one time, and at the very front of
+the right side of the rewrite rule. The combinators I, B, C, W, K, and S
+are all examples of regular combinators. The combinators T and M,
+however, are irregular:
+
+<p><pre>
+Txf = fx
+Mf  = ff
+</pre>
+
+<p><h1>Pushing Combinators</h1>
+
+<p>We'll now examine interesting variations of the C combinator
+which we'll call "pushing" combinators; a pushing combinator is
+a regular combinator that when applied to a function yields a function
+like the original but with the function's first parameter pushed back
+some number of parameters (i.e., the first parameter is postponed).
+
+<p>The C combinator is the most elementary pushing combinator; it postpones
+a parameter back one place. The next pushing combinator is:
+
+<p><pre>
+BC * C
+</pre>
+
+<p>Essentially, applied to a function, it takes the function's converse,
+pushing the first parameter back one place; then, "BC" is taken of the
+result, swapping the function's new second parameter with the third,
+pushing it back one further.
+
+<p>The next pushing combinator is:
+
+<p><pre>
+2BC * BC * C
+</pre>
+
+<p>This combinator takes a function, swaps its first parameter
+with its second, its new second parameter with its third,
+and then its new third parameter with its fourth; in the final
+result, the original first parameter is swapped into the fourth place
+and the other three are shifted forward.
+
+<p>The pushing combinators are quite useful; thus, we'll use
+a special syntax for naming them ... "BC * C" will be called
+simply "C<sub>2</sub>", and "2BC * BC * C" will be called "C<sub>3</sub>"
+and so forth.
+
+<p><h2>Problem Set 9 (<a href="#Answers_9">Answers</a>)</h2>
+
+<p><ol>
+<li>What is "C<sub>2</sub> (2B plus times) 3 4"?
+</ol>
+
+<p><h1>Pulling Combinators</h1>
+
+<p>There is another kind of variation of "C", "pulling" combinators.
+These behave in the opposite way as pushing combinators; whereas
+a pushing combinator postpones a parameter some number of places,
+a pulling combinator takes a parameter some number of places back 
+and pulls it to the front. That is, a pulling combinator, when
+applied to a function of several parameters, yields a function like
+the original but with one of the later parameters taken first.
+
+<p>The C combinator is the most elementary pulling combinator; it
+pulls a function's second parameter to the front. The next
+pulling combinator is:
+
+<p><pre>
+C * BC
+</pre>
+
+<p>When applied to a function, it swaps the function's second and
+third parameters, then swaps the new second parameter with the first.
+The result is that the third parameter is pulled to the first place
+while the original first and second parameters are pushed back.
+
+<p>The next pulling combinator is:
+
+<p><pre>
+C * BC * 2BC
+</pre>
+
+<p>This combinator pulls a function's fourth parameter to the front.
+
+<p>It is interesting that pulling combinators are formed in
+quite a similar way to pushing combinators. Also, all pushing
+combinators and pulling combinators can be formed from just "B"
+and "C". For instance, the pulling combinator just mentioned would
+be written without the "*" abbreviation as:
+
+<p><pre>
+BC(B(BC)(B(BC)))
+</pre>
+
+<p>Because pulling combinators are quite useful, we also use
+a special syntax for naming them; 
+
+<p><pre>
+C * BC
+</pre>
+
+<p>will be called "C<sub>2</sub><sup>-1</sup>", while 
+
+<p><pre>
+C * BC * 2BC
+</pre>
+
+<p>will be called "C<sub>3</sub><sup>-1</sup>". This is a natural
+way of naming pulling combinators, since they are inverses of
+corresponding pushing combinators (the inverse of a function
+"f" is commonly (and naturally) written "f<sup>-1</sup>").
+
+<p><h2>Problem Set 10 (<a href="#Answers_10">Answers</a>)</h2>
+
+<p><ol>
+<li>What is "(C * BC) (2B plus times) 3"?
+</ol>
+
+<hr>
+
+<p><a name="Answers_1"><h1>Answers to Problem Set 1</h1>
+
+<p><ol>
+<li>It's a binary function, taking two parameters, multiplying
+    them together and then adding one.
+<li>At first, this may appear to be meaningless, but it is
+    meaningful. Given two parameters "x" and "y", it yields
+    "plus (times x y)", a function that adds the product of "x" and "y".
+    So, this is a tertiary function, multiplying the first two
+    parameters together and then adding the third. It could
+    be written using lambdas as:
+
+<p><pre>
+x\y\z\ (x*y) + z
+</pre>
+
+<li>It is "plus 1". Remember that "0" applied to anything is "I";
+    so "0B" is "I" and "0B plus 1" is the same as "plus 1".
+    This makes sense; whereas "2B" applied to "f" and "g"
+    waits for two parameters to give to "g" before applying "f",
+    and "B" waits for one parameter to give to "g", "0B" waits
+    for no parameters at all and, applied to "f" and "g", is
+    just "fg".
+</ol>
+
+<p><a name="Answers_2"><h1>Answers to Problem Set 2</h1>
+
+<p><ol>
+<li>It is "C", because it an odd iteration of "C". Another way
+    to think of it is that "5C" is the same as "4C * C", and
+    thus "I * C" (since "4C" is "I") and thus "C" (since
+    composing anything with the identity is itself).
+
+<li>It is just "C", the function that takes a converse just one time.
+    Remember that "1" is the same as the I combinator.
+
+<li>It is "I", the function that takes no converse at all.
+    Another way to think of it is that since "0" is even, this is
+    a special case of our rule that an even iteration of "C" is "I".
+
+</ol>
+
+<p><a name="Answers_3"><h1>Answers to Problem Set 3</h1>
+
+<p><ol>
+<li>"2B plus times" was the function mentioned earlier,
+
+<p><pre>
+x\y\z\ (x*y) + z
+</pre>
+
+    <p>So, applying "2W" to this unifies all three parameters, giving
+
+<p><pre>
+x\ (x*x) + x
+</pre>
+
+    <p>This function could also have been written,
+
+<p><pre>
+N plus sqr I
+</pre>
+</ol>
+
+<p><a name="Answers_4"><h1>Answers to Problem Set 4</h1>
+
+<p><ol>
+<li>It is a function that ignores two parameters, yielding "I".
+    In other words, it takes three parameters, and yields the last.
+    It has the rewrite rule:
+
+<p><pre>
+(2KI)xyz = z
+</pre>
+
+<li>It is a function that ignores two parameters, yielding "2K",
+    which takes a parameter "z", ignores two more parameters,
+    yielding "z". In other words, it takes 5 parameters, and yields
+    the third. It has the rewrite rule:
+
+<p><pre>
+(2K(2K))xyzfg = z
+</pre>
+
+    <p>In general, if "m" and "n" are iterators, then "mK(nK)" is
+    a function that ignores "m" parameters, takes the important
+    parameter, ignores "n" more parameters, and yields the important
+    one. It takes a total of "m+n+1" parameters, "m+n" being the
+    number of parameters that are ignored.
+
+    <p>Note that our last example, "2KI", could be written "2K(0K)";
+    as one would think from the rule stated above, it ignores two
+    parameters, takes the important one, doesn't ignore any more,
+    and yields the important one.
+</ol>
+
+<p><a name="Answers_5"><h1>Answers to Problem Set 5</h1>
+
+<p><ol>
+<li>We first recall that "2B plus times" is:
+
+<p><pre>
+x\y\z\ (x*y) + z
+</pre>
+
+    <p>Then, applying "BC" to this would interchange the second and third
+    parameters, giving:
+
+<p><pre>
+x\y\z\ (x*z) + y
+</pre>
+
+</ol>
+
+<p><a name="Answers_6"><h1>Answers to Problem Set 6</h1>
+
+<p><ol>
+<li>We know that "2B plus times" is:
+
+<p><pre>
+x\y\z\ (x*y) + z
+</pre>
+
+    <p>So, applying "BW" to this would duplicate the second parameter "y",
+    making it take the place of the third parameter "z" also, giving:
+
+<p><pre>
+x\y\ (x*y) + y
+</pre>
+
+</ol>
+
+<p><a name="Answers_7"><h1>Answers to Problem Set 7</h1>
+
+<p><ol>
+<li>It is like "2B plus times", but with a dummy parameter inserted
+    after the first real one. It could be written:
+
+<p><pre>
+x\f\y\z\ (x*y) + z
+</pre>
+
+</ol>
+
+<p><a name="Answers_8"><h1>Answers to Problem Set 8</h1>
+
+<p><ol>
+<li>It is like "2B plus times", but the first parameter is split:
+
+<p><pre>
+f\x\y\z\ (fx * y) + z
+</pre>
+<li>It is like "2B plus times", but the second parameter is split:
+
+<p><pre>
+x\f\y\z\ (x * fy) + z
+</pre>
+
+<li>It is like "2B plus times", but the third parameter is split:
+
+<p><pre>
+x\y\f\z\ (x * y) + fz
+</pre>
+
+</ol>
+
+<p><a name="Answers_9"><h1>Answers to Problem Set 9</h1>
+
+<p><ol>
+<li>"C<sub>2</sub> (2B plus times)" is like "2B plus times" but with the
+    first parameter pushed back two places:
+
+<p><pre>
+y\z\x\ (x*y) + z
+</pre>
+
+    <p>Then, applying "3" and "4" to this gives:
+
+<p><pre>
+x\ (x*3) + 4
+</pre>
+
+</ol>
+
+<p><a name="Answers_10"><h1>Answers to Problem Set 10</h1>
+
+<p><ol>
+<li>It is like "2B plus times", but with the third parameter snuck
+    in to be "3":
+
+<p><pre>
+x\y\ (x*y) + 3
+</pre>
+
+</ol>
+
+<p>Often in mathematics, one talks about "ordered pairs"
+of numbers (or other things). The <b>tuple</b>, an ordered collection
+of things, is the topic of this section. An ordered pair is
+a kind of tuple, a tuple in which there are two elements.
+
+<p>A tuple of "x", "y", and "z", we'll write as "[x, y, z]". In
+general, a tuple can be written as a comma-seperated list of
+its members, enclosed by square brackets.
+
+<p>Tuples are quite useful. They are often used to represent
+points in coordinate geometry, and they (or varieties of them) are
+essential data structures in most programming languages.
+
+<p><h1>Tuples As Functions</h1>
+
+<p>It is possible to think of a tuple as a kind of function, a function
+that passes some parameters. For instance, the tuple "[2,3]" might
+be thought of as a function that takes a function and passes
+the parameters "2" and "3" to it; i.e., the function:
+
+<p><pre>
+f\ f 2 3
+</pre>
+
+<p>If "[2,3]" is thought of in this way, then "[2,3] plus" is the
+same as "plus 2 3", or "5". The tuple "[2,3]" could be written
+using combinators as:
+
+<p><pre>
+f\ f 2 3
+C (f\ f 2) 3
+C (T 2) 3
+</pre>
+
+<p>As another example, the tuple "[2,3,4]" could be thought of
+as a function that passes "2", "3", and "4" to a function, or
+in other words,
+
+<p><pre>
+f\ f 2 3 4
+C (f\ f 2 3) 4
+C (C (f\f 2) 3) 4
+C (C (T 2) 3) 4
+</pre>
+
+<p>A tuple with only one element in it, such as "[2]", is called
+a <b>unit tuple</b>. Note that "[2]" is distinct from "2". 
+"[2]" is a function that passes "2", and is the same as "T 2".
+
+<p><h1>Combinatory Tuple-Makers</h1>
+
+<p>A moment ago it was mentioned that "[2,3]" could be written
+using combinators as
+
+<p><pre>
+C (T 2) 3
+</pre>
+
+<p>In general, "[x,y]" can be written with combinators as
+
+<p><pre>
+C(Tx)y
+</pre>
+
+<p>Because of this, we can see that there is a binary function
+that yields the pair of two parameters:
+
+<p><pre>
+x\y\ C(Tx)y
+C * T
+</pre>
+
+<p>This function is the same as "C<sub>2</sub>I", or in other words,
+
+<p><pre>
+(BC * C)I
+</pre>
+
+<p>In general, "C<sub>n</sub>I" is a function that takes "n" parameters
+forming a "n"-tuple with those parameters in it.
+
+<p>(this section needs to be finished)
+<!--
+     FILE ARCHIVED ON 22:01:13 Apr 08, 2004 AND RETRIEVED FROM THE
+     INTERNET ARCHIVE ON 16:38:01 May 11, 2022.
+     JAVASCRIPT APPENDED BY WAYBACK MACHINE, COPYRIGHT INTERNET ARCHIVE.
+
+     ALL OTHER CONTENT MAY ALSO BE PROTECTED BY COPYRIGHT (17 U.S.C.
+     SECTION 108(a)(3)).
+-->
