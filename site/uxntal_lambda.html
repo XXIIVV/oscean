@@ -1,0 +1,69 @@
+<!DOCTYPE html><html><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, inital-scale=1"/><link href="../links/main.css" type="text/css" rel="stylesheet"/><link href="../media/services/icon.png" type="image/png" rel="shortcut icon"/>
+<title>XXIIVV &mdash; uxntal lambda</title></head><body>
+<header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
+<nav><ul><li><a href="uxntal.html" class="parent">uxntal</a></li><li><a href="varvara.html">varvara</a></li></ul><ul><li><a href="uxntal_cheatsheet.html">uxntal cheatsheet</a></li><li><a href="uxntal_reference.html">uxntal reference</a></li><li><a href="uxntal_stacking.html">uxntal stacking</a></li><li><a href="uxntal_lambda.html" class="self">uxntal lambda</a></li><li><a href="uxntal_macros.html">uxntal macros</a></li><li><a href="drifblim.html">drifblim</a></li></ul><ul></ul></nav><main><h2>A quick-n-dirty guide to function programming concepts in Uxntal.</h2>
+
+<p>Functions are the only primitive data types in untyped lambda calculus. It is nevertheless possible to represent numerals, booleans, lists, sets, characters and strings as higher order functions in untyped lambda calculus using Church encoding.</p>
+
+<p>To familiarize yourself with Combinatory Logic, begin with the <a href='logic.html'>primer</a>.</p>
+
+<h2>Church Booleans</h2>
+
+<p>In Uxntal, to apply an operation from a value on the stack, we use the Identity macro, which pops a byte from the stack and writes it in front of the Program Counter. It is possible to put the literal values of opcodes on the stack, operate the stack and apply them at a later time, this is done with the <code>#00 STR 00</code> pattern.</p>
+
+<pre>
+%I { #00 STR 00 }
+%True { LIT POP }
+%False { LIT NIP }
+%And { DUP I }
+%Not { False True ROT I }
+%Or { DUP Not I }
+%Nand { And Not }
+</pre>
+
+<p>Booleans can be represented as operations that expect two values on the stack, returning the first argument if <i>True</i>, or POP, and the second if <i>False</i>, or NIP.</p>
+
+<pre>
+False True And <comment>False</comment>
+True Not <comment>False</comment>
+True False Or <comment>True</comment>
+</pre>
+
+<h3>Running routines over an array</h3>
+
+<p>You might want to run a routine over an array of data, in the style of:</p>
+
+<pre>array.each(incr)</pre>
+
+<p>You can create a <code>each</code> routine that way, but remember that this is not immutable.</p>
+
+<pre>
+|0100
+
+	;array ;incr ,each JSR ;send ,each JSR POP2
+
+BRK
+
+@each ( arr* fn* -- arr* )
+
+	,&fn STR2 DUP2
+	LDAk #00 SWP ADD2k NIP2 SWP2
+	&l
+		INC2 [ LIT2 &fn $2 ] JSR2
+		GTH2k ,&l JCN
+	POP2 POP2
+
+JMP2r
+
+@incr ( addr* -- addr* ) STH2k LDA INC STH2kr STA STH2r JMP2r
+@send ( addr* -- addr* ) LDAk #18 DEO JMP2r
+
+@array 06 &body "abcdef
+</pre>
+
+<style>
+pre comment { color:#777 }
+</style><ul></ul></main>
+<footer><a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.svg" alt="CreativeCommons"/></a> <a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a> <a href="https://merveilles.town/@neauoire" rel="me" target="_blank"><img src="../media/icon/merveilles.svg" alt="Merveilles"/></a> <a href="ethics.html"><img src="../media/icon/dreipfeile.svg" alt="NoNazis!"/></a> <a href="uxn.html"><img src="../media/icon/uxn.svg" alt="UxnPowered"/></a> <span><a href="devine_lu_linvega.html">Devine Lu Linvega</a> &copy; 2022 &mdash; <a href="about.html">BY-NC-SA 4.0</a></span></footer>
+</body></html>
