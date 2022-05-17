@@ -14,7 +14,7 @@
 <p>Also equivalent to the single expression:</p>
 <pre>(list cat dog owl)</pre>
 
-<p>A translation into uxntal assembly would be something like the following, where <code>;data</code> is an address in memory with available space to host the list. The <code>POP2</code> is to get rid of the trailing list pointer. This can obviously be made prettier with macros, but we'll keep things straightforward.</p>
+<p>A translation into uxntal assembly would be something like the following, where <code>;data</code> is an address in memory with available space to host the list. The <code>POP2</code> is to get rid of the dangling pointer. This can obviously be made prettier with macros, but we'll keep things straightforward.</p>
 <pre>
 ;data ;nil JSR2
 	;cat ;cons JSR2
@@ -62,9 +62,7 @@ JMP2r
 <pre>
 @eval ( list* -- )
 
-	&w
-		LDA2k JSR2 INC2 INC2
-		LDA2 LDA2k ;nil NEQ2 ,&w JCN
+	&w LDA2k JSR2 INC2 INC2 LDA2 LDA2k ;nil NEQ2 ,&w JCN
 	POP2
 
 JMP2r
@@ -96,8 +94,7 @@ JMP2r
 @length ( list* -- length* )
 
 	LIT2r 0000
-	&w
-		INC2 INC2 INC2r LDA2 LDA2k ;nil NEQ2 ,&w JCN
+	&w INC2 INC2 INC2r LDA2 LDA2k ;nil NEQ2 ,&w JCN
 	POP2 STH2r
 
 JMP2r
