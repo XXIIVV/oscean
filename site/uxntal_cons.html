@@ -2,29 +2,88 @@
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width, inital-scale=1"/><link href="../links/main.css" type="text/css" rel="stylesheet"/><link href="../media/services/icon.png" type="image/png" rel="shortcut icon"/>
 <title>XXIIVV &mdash; uxntal cons</title></head><body>
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
-<nav><ul><li><a href="uxntal.html" class="parent">uxntal</a></li><li><a href="varvara.html">varvara</a></li></ul><ul><li><a href="uxntal_cheatsheet.html">uxntal cheatsheet</a></li><li><a href="uxntal_reference.html">uxntal reference</a></li><li><a href="uxntal_stacking.html">uxntal stacking</a></li><li><a href="uxntal_cons.html" class="self">uxntal cons</a></li><li><a href="uxntal_lambda.html">uxntal lambda</a></li><li><a href="uxntal_macros.html">uxntal macros</a></li><li><a href="drifblim.html">drifblim</a></li></ul><ul></ul></nav><main><h2>A cons cell is a data structure which holds a bit of data and the address of the following cell.</h2>
+<nav><ul><li><a href="uxntal.html" class="parent">uxntal</a></li><li><a href="varvara.html">varvara</a></li></ul><ul><li><a href="uxntal_cheatsheet.html">uxntal cheatsheet</a></li><li><a href="uxntal_reference.html">uxntal reference</a></li><li><a href="uxntal_stacking.html">uxntal stacking</a></li><li><a href="uxntal_cons.html" class="self">uxntal cons</a></li><li><a href="uxntal_lambda.html">uxntal lambda</a></li><li><a href="uxntal_macros.html">uxntal macros</a></li><li><a href="drifblim.html">drifblim</a></li></ul><ul></ul></nav><main><h2>A cons cell is a data structure which holds both data and the address to the following cell.</h2>
 
-<p>One slot is known as the CAR, and the other is known as the CDR. The purpose is so that ordered lists can be traversed by going from one cell to the next, it also allows one to change the order of cells without manually moving any of the cells' data.</p>
+<p>The data slot is known as the CAR, and the address slot is known as the CDR. The purpose is so that ordered lists can be traversed by going from one cell to the next, it also allows one to change the order of cells without manually moving any of the cells' data. </p>
 
 <img src='../media/refs/cons.png'/>
 
-<h3>Nested Lists</h3>
+<p>Let us consider the following cons list: </p>
+<pre>(cons owl (cons dog (cons cat nil)))</pre>
 
-<p>If we consider the following nested list:</p>
+<p>Also equivalent to the single expression:</p>
+<pre>(list cat dog owl)</pre>
 
-<pre>( cat ( dog bat ) ant )</pre>
+<p>A translation into uxntal assembly would be something like the following, where <code>;data</code> is an address in memory with available space to host the list. The <code>POP2</code> is to get rid of the trailing list pointer. This can obviously be made prettier with macros, but we'll keep things straightforward.</p>
+<pre>
+;data ;nil JSR2
+	;cat ;cons JSR2
+		;dog ;cons JSR2
+			;owl ;cons JSR2
+POP2
+</pre>
 
-<p>By prefixing each list with a dummy cell made of <code>data</code>, <code>next_cell</code> and <code>first_cell</code>, we can then operate(swap, duplicate, etc..) on cells and cells of nested lists as single items. Here is the previous list in memory, notice how the <code>&b</code> nested list has the extra piece of data <code>:list</code>, <code>:&e</code> and <code>:&c</code>:</p>
+<h3>Creating a new list</h3>
+
+<p>The <code>@nil</code> routine takes an address in memory with enough space to host the list, it returns the address of the list. A list begins with a cons cell whose car is the first element of the list and whose cdr is a list containing the rest of the elements. A nil list begins with the nil function pointer and the address of the last cell in the list.</p>
 
 <pre>
-@root
-:list :nil :&a
-	&a :cat :&b
-	&b :list :&e :&c
-		&c :dog :&d
-		&d :bat :nil
-	&e :ant :nil
+@nil ( addr* -- list* )
+
+	;nil OVR2 STA2 INC2k INC2 ,alloc/next STR2
+
+JMP2r
+
+@alloc ( -- cell* )
+
+	LIT2 &next $2 DUP2 #0004 ADD2 ,&next STR2
+
+JMP2r
 </pre>
+
+<h3>Adding items to the list</h3>
+
+<p>The <code>@cons</code> routine is the most basic routine for building new list structure. It creates a new cons cell, making the <code>fn</code> the CAR, and the previous cell its CDR. It then returns the new cons cell. <code>cons</code> is often used to add a single element to the front of a list. This is called <i>consing</i> the element onto the list.</p>
+
+<pre>
+@cons ( list* fn* -- list* )
+
+	( car ) ,alloc JSR STH2k STA2
+	( cdr ) DUP2 STH2kr INC2 INC2 STA2
+	STH2r
+
+JMP2r
+</pre>
+
+<h3>Evaluating a list</h3>
+
+<p>If the list is a series of function pointers, you can quickly run through a list with the eval function.</p>
+
+<pre>
+@eval ( list* -- )
+
+	&w
+		LDA2k JSR2 INC2 INC2
+		LDA2 LDA2k ;nil NEQ2 ,&w JCN
+	POP2
+
+JMP2r
+</pre>
+
+<h3>Finding the length of a list</h3>
+
+<p>This routine will run through a list and return its length.</p>
+<pre>
+@length ( list* -- length* )
+
+	LIT2r 0000
+	&w
+		INC2 INC2 INC2r LDA2 LDA2k ;nil NEQ2 ,&w JCN
+	POP2 STH2r
+
+JMP2r
+</pre>
+
 <ul></ul></main>
 <footer><a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.svg" alt="CreativeCommons"/></a> <a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a> <a href="https://merveilles.town/@neauoire" rel="me" target="_blank"><img src="../media/icon/merveilles.svg" alt="Merveilles"/></a> <a href="ethics.html"><img src="../media/icon/dreipfeile.svg" alt="NoNazis!"/></a> <a href="uxn.html"><img src="../media/icon/uxn.svg" alt="UxnPowered"/></a> <span><a href="devine_lu_linvega.html">Devine Lu Linvega</a> &copy; 2022 &mdash; <a href="about.html">BY-NC-SA 4.0</a></span></footer>
 </body></html>
