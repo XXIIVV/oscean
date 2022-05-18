@@ -1,47 +1,41 @@
 <h2>A cons cell is a data structure which holds both data and the address to the following cell.</h2>
 
-<p>The data slot is known as the CAR, and the address slot is known as the CDR. The purpose is so that ordered lists can be traversed by going from one cell to the next, it also allows one to change the order of cells without manually moving any of the cells' data. </p>
+<p>In functional programming languages, a list is the most versatile data type that can be used to store a collection of similar data items. Uxn uses singular opcodes operating on words of equal length, one might come across a problem that is better addressed with routines that operate on ordered lists of items and nested stacks. This 300 bytes implementation of cons cells gives your project that power.</p>
+
+<p>The data slot is known as the <i>CAR</i>, and the address slot is known as the <i>CDR</i>. The purpose is so that ordered lists can be traversed by going from one cell to the next, it also allows one to change the order of cells without manually moving any of the cells' data. </p>
 
 <img src='../media/refs/cons.png'/>
 
 <p>Let us consider the following cons list: </p>
-<pre>(cons owl (cons dog (cons cat nil)))</pre>
-
-<p>Also equivalent to the single expression:</p>
 <pre>(list cat dog owl)</pre>
 
-<p>A translation into uxntal assembly would be something like the following, where <code>;data</code> is an address in memory with available space to host the list. The <code>POP2</code> is to get rid of the dangling pointer. This can obviously be made prettier with macros, but we'll keep things straightforward.</p>
+<p>Also equivalent to the expression:</p>
+<pre>(cons owl (cons dog (cons cat nil)))</pre>
+
+<p>A translation into uxntal assembly would be something like the following, in which <code>POP2</code> is to get rid of the dangling pointer. This can obviously be made prettier with macros, but we'll keep things straightforward.</p>
 <pre>
-;data ;nil JSR2
-	;cat ;cons JSR2
-		;dog ;cons JSR2
-			;owl ;cons JSR2
+;nil JSR2
+    ;cat ;cons JSR2
+        ;dog ;cons JSR2
+            ;owl ;cons JSR2
 POP2
 </pre>
 
 <h3>Creating a new list</h3>
 
-<p>The <code>@nil</code> routine takes an address in memory with enough space to host the list, it returns the address of the list. A list begins with a cons cell whose car is the first element of the list and whose cdr is a list containing the rest of the elements. A nil list begins with the nil function pointer and the address of the last cell in the list.</p>
+<p>The <code>@alloc</code> routine needs a <code>@memory</code> label to an address with enough space to host the lists, it returns the address of the newly created cell. A list begins with a cons cell whose <i>CAR</i> is a pointer to the cell's data and whose <i>CDR</i> is the next cell. A nil list begins with the nil function pointer.</p>
 
 <pre>
-@nil ( addr* -- list* )
-
-	;nil OVR2 STA2 INC2k INC2 ,alloc/next STR2
-
-JMP2r
-
 @alloc ( -- cell* )
 
-	LIT2 &next $2 DUP2 #0004 ADD2 ,&next STR2
+	[ LIT2 &next :memory ] DUP2 #0004 ADD2 ,&next STR2
 
 JMP2r
-</pre>
 
-<h3>Adding items to the list</h3>
+@nil ( -- list* )
 
-<p>The <code>@cons</code> routine is the most basic routine for building new list structure. It creates a new cons cell, making the <code>fn</code> the CAR, and the previous cell its CDR. It then returns the new cons cell. <code>cons</code> is often used to add a single element to the front of a list. This is called <i>consing</i> the element onto the list.</p>
+	,alloc JSR ;nil
 
-<pre>
 @cons ( list* fn* -- list* )
 
 	( car ) ,alloc JSR STH2k STA2
@@ -51,18 +45,31 @@ JMP2r
 JMP2r
 </pre>
 
-<h3>Evaluating a list</h3>
+<h3>Adding to the list</h3>
 
-<p>If the list is a series of function pointers, you can quickly run through a list with the eval function.</p>
+<p>The <code>@cons</code> routine creates a new cons cell, making the <code>fn</code> its <i>CAR</i>, and the next cell its <i>CDR</i>. It returns the address of the newly created cons cell. <code>@cons</code> is often used to add a single element to the front of a list. This is called <i>consing</i> the element onto the list.</p>
+
+<h3>Nesting two lists</h3>
+
+<p>You can make a list of lists, or nested lists, using the <code>@cons</code> routine with two cons cells from different lists.</p>
 
 <pre>
-@eval ( list* -- )
-
-	&w LDA2k JSR2 INC2 INC2 LDA2 LDA2k ;nil NEQ2 ,&w JCN
-	POP2
-
-JMP2r
-</pre>
+( list1 )
+;nil JSR2
+	;cat ;cons JSR2
+		;dog ;cons JSR2
+			;owl ;cons JSR2
+( list2 )
+;nil JSR2
+	;ant ;cons JSR2
+		;bat ;cons JSR2
+			;cow ;cons JSR2
+( list3 list1 list2 )
+;nil JSR2
+	SWP2 ;cons JSR2
+		SWP2 ;cons JSR2
+;echo JSR2
+	</pre>
 
 <h3>Joining two lists</h3>
 
@@ -83,7 +90,7 @@ JMP2r
 JMP2r
 </pre>
 
-<h3>Finding the length of a list</h3>
+<h3>Finding the length</h3>
 
 <p>This routine will run through a list and return its length.</p>
 <pre>
@@ -96,3 +103,35 @@ JMP2r
 JMP2r
 </pre>
 
+<h3>Printing a list</h3>
+
+<p>If the list is a series of function pointers, you can quickly run through a list with the eval function.</p>
+
+<pre>
+@echo ( list* -- )
+
+	#2818 DEO #2018 DEO
+	&w
+		LDA2k INC2 INC2 LDA2 ;nil EQU2 ,&value JCN
+			( list ) LDA2k ;echo JSR2 ,&resume JMP
+			&value LDA2k LDA2 ,print JSR #2018 DEO
+		&resume
+		INC2 INC2 LDA2
+		LDA2k ;nil NEQ2 ,&w JCN
+	POP2
+	#2918 DEO #2018 DEO
+
+JMP2r
+
+@print ( short* -- )
+
+	SWP ,&byte JSR
+	&byte ( byte -- ) DUP #04 SFT ,&char JSR
+	&char ( char -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO
+
+JMP2r
+</pre>
+
+<ul>
+	<li><a href='https://paste.sr.ht/~rabbits/ee92fd167503ed318f7fd1a486573d1562feab2f' target='_blank'>example file</a></li>
+</ul>
