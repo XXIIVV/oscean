@@ -15,15 +15,17 @@
 <p>A translation into uxntal assembly would be something like the following, in which <code>POP2</code> is to get rid of the dangling pointer. This can obviously be made prettier with macros, but we'll keep things straightforward.</p>
 <pre>
 ;nil JSR2
-    ;cat ;cons JSR2
-        ;dog ;cons JSR2
-            ;owl ;cons JSR2
+	;cat ;cons JSR2
+		;dog ;cons JSR2
+			;owl ;cons JSR2
 POP2
 </pre>
 
 <h3>Creating a new list</h3>
 
 <p>The <code>@alloc</code> routine needs a <code>@memory</code> label to an address with enough space to host the lists, it returns the address of the newly created cell. A list begins with a cons cell whose <i>CAR</i> is a pointer to the cell's data and whose <i>CDR</i> is the next cell. A nil list begins with the nil function pointer.</p>
+
+<p>The <code>@cons</code> routine creates a new cons cell, making the <code>fn</code> its <i>CAR</i>, and the next cell its <i>CDR</i>. It returns the address of the newly created cons cell. <code>@cons</code> is often used to add a single element to the front of a list. This is called <i>consing</i> the element onto the list.</p>
 
 <pre>
 @alloc ( -- cell* )
@@ -45,9 +47,23 @@ JMP2r
 JMP2r
 </pre>
 
-<h3>Adding to the list</h3>
+<h3>Duplicate/Remove</h3>
 
-<p>The <code>@cons</code> routine creates a new cons cell, making the <code>fn</code> its <i>CAR</i>, and the next cell its <i>CDR</i>. It returns the address of the newly created cons cell. <code>@cons</code> is often used to add a single element to the front of a list. This is called <i>consing</i> the element onto the list.</p>
+<p>We can build new primitives to duplicate and remove cells from the list:</p>
+
+<pre>
+@pop ( list* -- list* )
+
+	INC2 INC2 LDA2
+
+JMP2r
+
+@dup ( list* -- list* )
+
+	LDA2k ,cons JSR
+
+JMP2r
+</pre>
 
 <h3>Nesting two lists</h3>
 
@@ -112,12 +128,13 @@ JMP2r
 
 	#2818 DEO #2018 DEO
 	&w
-		LDA2k INC2 INC2 LDA2 ;nil EQU2 ,&value JCN
-			( list ) LDA2k ;echo JSR2 ,&resume JMP
-			&value LDA2k LDA2 ,print JSR #2018 DEO
+		LDA2k INC2 INC2 LDA2 ;nil EQU2 ,&fn JCN
+			( list )
+			LDA2k ;echo JSR2 ,&resume JMP
+			&fn
+			LDA2k LDA2 ,print JSR #2018 DEO
 		&resume
-		INC2 INC2 LDA2
-		LDA2k ;nil NEQ2 ,&w JCN
+		INC2 INC2 LDA2 LDA2k ;nil NEQ2 ,&w JCN
 	POP2
 	#2918 DEO #2018 DEO
 
@@ -133,5 +150,5 @@ JMP2r
 </pre>
 
 <ul>
-	<li><a href='https://paste.sr.ht/~rabbits/ee92fd167503ed318f7fd1a486573d1562feab2f' target='_blank'>example project</a></li>
+	<li><a href='https://git.sr.ht/~rabbits/ornithologics' target='_blank'>Ornithologics</a></li>
 </ul>
