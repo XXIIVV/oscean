@@ -104,16 +104,21 @@ JMP2r
 <p>Two lists of cons cells can be joined together into one by modifying the last pointer of the second list, and pointing it to the first one.</p>
 
 <pre>
-@last ( list* -- cell* )
+@last ( list* -- list* )
 
-	&w INC2 INC2 LDA2 LDA2k ;nil NEQ2 ,&w JCN
-	INC2 INC2
+	&w INC2 INC2 LDA2 LDA2k ;nil NEQ2 ,&w JCN #0004 ADD2
 
 JMP2r
 
 @join ( list-a* list-b* -- list-b* )
 
-	STH2k ,last JSR INC2 INC2 STA2 STH2r
+	STH2k ,last JSR STA2 STH2r
+
+JMP2r
+
+@unwrap ( list* -- list* )
+
+	INC2k INC2 LDA2 SWP2 LDA2 STH2k ,last JSR INC2 INC2 STA2 STH2r
 
 JMP2r
 </pre>
