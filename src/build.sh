@@ -4,6 +4,14 @@ echo "Assembling -------------------"
 rm -rf bin
 mkdir -p bin
 
+if [ -e "$HOME/roms/uxnlin.rom" ]
+then
+	echo "Linting.."
+	uxncli $HOME/roms/uxnlin.rom maeve.tal
+	uxncli $HOME/roms/uxnlin.rom arvelie.tal
+	uxncli $HOME/roms/uxnlin.rom oscean.tal
+fi
+
 # uxncli ~/roms/drifblim.rom maeve.tal
 # mv maeve.rom bin/
 # uxncli ~/roms/drifblim.rom arvelie.tal
