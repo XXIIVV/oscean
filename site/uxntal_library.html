@@ -1,53 +1,12 @@
 <!DOCTYPE html><html><head>
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width, inital-scale=1"/><link href="../links/main.css" type="text/css" rel="stylesheet"/><link href="../media/services/icon.png" type="image/png" rel="shortcut icon"/>
-<title>XXIIVV &mdash; uxntal macros</title></head><body>
+<title>XXIIVV &mdash; uxntal library</title></head><body>
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
-<nav><ul><li><a href="uxntal.html" class="parent">uxntal</a></li><li><a href="varvara.html">varvara</a></li></ul><ul><li><a href="uxntal_cheatsheet.html">uxntal cheatsheet</a></li><li><a href="uxntal_reference.html">uxntal reference</a></li><li><a href="uxntal_lambda.html">uxntal lambda</a></li><li><a href="uxntal_macros.html" class="self">uxntal macros</a></li><li><a href="drifblim.html">drifblim</a></li></ul><ul></ul></nav><main><h2>A collection of commonly used macros in uxn projects.</h2>
+<nav><ul><li><a href="uxntal.html" class="parent">uxntal</a></li><li><a href="varvara.html">varvara</a></li></ul><ul><li><a href="uxntal_cheatsheet.html">uxntal cheatsheet</a></li><li><a href="uxntal_reference.html">uxntal reference</a></li><li><a href="uxntal_lambda.html">uxntal lambda</a></li><li><a href="uxntal_library.html" class="self">uxntal library</a></li><li><a href="drifblim.html">drifblim</a></li></ul><ul></ul></nav><main><h2>A collection of commonly used routines in Uxntal projects.</h2>
 
-<h3>Buttons</h3>
+<p>The following snippets are in the standard format.</p>
 
-<pre>
-%B_UP { #10 } %B_DOWN { #20 } %B_LEFT   { #40 } %B_RIGHT { #80 }
-%B_A  { #01 } %B_B    { #02 } %B_SELECT { #04 } %B_START { #08 }
-</pre>
-
-<h3>Binary Opcodes</h3>
-
-<pre>
-%ROL { DUP #07 SFT SWP #10 SFT + }
-%ROR { DUP #70 SFT SWP #01 SFT + }
-%ROL2 { DUP2 #0f SFT2 SWP2 #10 SFT2 ++ }
-%ROR2 { DUP2 #f0 SFT2 SWP2 #01 SFT2 ++ }
-</pre>
-
-<h3>Signed Opcodes</h3>
-
-<pre>
-%LTS2 { #8000 ++ SWP2 #8000 ++ >> }
-%GTS2 { #8000 ++ SWP2 #8000 ++ << }
-%ABS2 { #0000 OVR2 #0f EQU JMP SWP2 SUB2 }
-</pre>
-
-<h3>Modulo/MinMax</h3>
-
-<pre>
-%MOD  { DIVk MUL SUB }
-%MOD2 { DIV2k MUL2 SUB2 }
-%MIN2 { LTH2k JMP SWP2 POP2 }
-%MAX2 { GTH2k JMP SWP2 POP2 }
-</pre>
-
-<h3>ASCII</h3>
-
-<p>To test for character types.</p>
-
-<pre>
-%IS-UC { DUP #40 > SWP #5b < AND }
-%IS-LC { DUP #60 > SWP #7b < AND }
-%IS-NUM { DUP #2f > SWP #3a < AND }
-</pre>
-
-<h2>Numbers</h2>
+<h3>Numbers</h3>
 
 <p>To emit hexadecimal numbers:</p>
 <pre>
@@ -93,7 +52,7 @@ JMP2r
 		#01 ,&zero STR DUP #30 ADD #18 DEO &skip POP JMP2r
 </pre>
 
-<h3>decimal string to hex number</h3>
+<p>To convert a decimal string to a hexadecimal value.</p>
 <pre>
 @sdec ( addr* -- hex* )
 
@@ -108,29 +67,9 @@ JMP2r
 JMP2r
 </pre>
 
-<pre>
-@print-zeropage ( -- )
-
-	#0a #18 DEO
-	#0000
-	&loop
-		LDZk ;print-hex/byte JSR2
-		DUP #01 AND #00 = ,&no-space JCN
-			#2018 DEO
-			&no-space
-		DUP #0f AND #0f ! ,&no-break JCN
-			#0a18 DEO
-			&no-break
-		INC NEQk ,&loop JCN
-	POP2
-	#0a #18 DEO
-
-JMP2r
-</pre>
-
 <h2>Strings</h2>
 
-<p>To emit a string: </p>
+<p>To emit a string.</p>
 <pre>
 @print-str ( str* -- )
 
@@ -241,41 +180,49 @@ JMP2r
 JMP2r
 </pre>
 
+<h2>Macros</h2>
+
+<h3>Buttons</h3>
+
 <pre>
-@print-arvelie ( -- )
-
-	.DateTime/year DEI2 #07d6 -- NIP
-		( digit1 ) DUP #0a DIV #30 + #18 DEO
-		( digit2 ) #0a MOD #30 + #18 DEO
-	.DateTime/doty DEI2
-		( month ) DUP2 #000e DIV2 NIP #41 + #18 DEO
-		( digit3 ) #000e MOD2 DUP2 #000a DIV2 NIP #30 + #18 DEO
-		( digit4 ) #000a MOD2 NIP #30 + #18 DEO
-	#0a #18 DEO
-
-JMP2r
+%B_UP { #10 } %B_DOWN { #20 } %B_LEFT   { #40 } %B_RIGHT { #80 }
+%B_A  { #01 } %B_B    { #02 } %B_SELECT { #04 } %B_START { #08 }
 </pre>
 
-<h3>Presets</h3>
+<h3>Binary Opcodes</h3>
 
 <pre>
-%AUTO-NONE   { #00 .Screen/auto DEO }
-%AUTO-X      { #01 .Screen/auto DEO }
-%AUTO-Y      { #02 .Screen/auto DEO }
-%AUTO-XY     { #03 .Screen/auto DEO }
-%AUTO-ADDR   { #04 .Screen/auto DEO }
-%AUTO-XADDR  { #05 .Screen/auto DEO }
-%AUTO-YADDR  { #06 .Screen/auto DEO }
-%AUTO-XYADDR { #07 .Screen/auto DEO }
-%RELEASE-MOUSE { #0096 DEO }
+%ROL { DUP #07 SFT SWP #10 SFT + }
+%ROR { DUP #70 SFT SWP #01 SFT + }
+%ROL2 { DUP2 #0f SFT2 SWP2 #10 SFT2 ++ }
+%ROR2 { DUP2 #f0 SFT2 SWP2 #01 SFT2 ++ }
 </pre>
 
-<h3>Geometry</h3>
+<h3>Signed Opcodes</h3>
 
 <pre>
-%SIZE-TO-RECT {
-	STH2 STH2 OVR2 STH2r ++ OVR2 STH2r ++
-} ( x y w h -- x1 y1 x2 y2 )
+%LTS2 { #8000 ++ SWP2 #8000 ++ >> }
+%GTS2 { #8000 ++ SWP2 #8000 ++ << }
+%ABS2 { #0000 OVR2 #0f EQU JMP SWP2 SUB2 }
+</pre>
+
+<h3>Modulo/MinMax</h3>
+
+<pre>
+%MOD  { DIVk MUL SUB }
+%MOD2 { DIV2k MUL2 SUB2 }
+%MIN2 { LTH2k JMP SWP2 POP2 }
+%MAX2 { GTH2k JMP SWP2 POP2 }
+</pre>
+
+<h3>ASCII</h3>
+
+<p>To test for character types.</p>
+
+<pre>
+%IS-UC { DUP #40 > SWP #5b < AND }
+%IS-LC { DUP #60 > SWP #7b < AND }
+%IS-NUM { DUP #2f > SWP #3a < AND }
 </pre>
 <ul></ul></main>
 <footer><a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.svg" alt="CreativeCommons"/></a> <a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a> <a href="https://merveilles.town/@neauoire" rel="me" target="_blank"><img src="../media/icon/merveilles.svg" alt="Merveilles"/></a> <a href="ethics.html"><img src="../media/icon/dreipfeile.svg" alt="NoNazis!"/></a> <a href="uxn.html"><img src="../media/icon/uxn.svg" alt="UxnPowered"/></a> <span><a href="devine_lu_linvega.html">Devine Lu Linvega</a> &copy; 2022 &mdash; <a href="about.html">BY-NC-SA 4.0</a></span></footer>
