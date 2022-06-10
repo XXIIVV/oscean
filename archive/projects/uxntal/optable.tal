@@ -1,0 +1,78 @@
+( uxnasm optable.tal optable.rom && uxncli optable.rom && rm optable.rom )
+
+|0000
+
+|0100
+
+	;table/< ;print-str JSR2
+	( row key )
+	;tr/< ;print-str JSR2
+	;th/< ;print-str JSR2
+	;th/> ;print-str JSR2
+	#1000
+	&loop-top
+		;th/< ;print-str JSR2
+		DUP ;print/byte JSR2
+		;th/> ;print-str JSR2
+		INC GTHk ,&loop-top JCN
+	POP2
+	;tr/> ;print-str JSR2
+	( body )
+	#1000
+	&row
+		;tr/< ;print-str JSR2
+		( col key ) 
+		;th/< ;print-str JSR2
+		DUP ;print/byte JSR2
+		;th/> ;print-str JSR2
+		#1000
+		&col
+			;td/< ;print-str JSR2
+			[ LIT &byte $1 ] ;print-opcode JSR2
+			,&byte LDR INC ,&byte STR
+			;td/> ;print-str JSR2
+			INC GTHk ,&col JCN
+		POP2
+		;tr/> ;print-str JSR2
+		INC GTHk ,&row JCN
+	POP2
+	;table/> ;print-str JSR2
+	( halt ) #010f DEO
+
+BRK
+
+@print-opcode ( byte -- )
+
+	#00 SWP #1f AND #20 SFT2 ;opcodes ADD2 ;print-str JSR2
+
+JMP2r
+
+@print ( short* -- )
+
+	SWP ,&byte JSR
+	&byte ( byte -- ) DUP #04 SFT ,&char JSR
+	&char ( char -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO
+
+JMP2r
+
+@print-str ( str* -- )
+
+	&while
+		LDAk #18 DEO
+		INC2 LDAk ,&while JCN
+	POP2
+
+JMP2r
+
+@table &< "<table> $1 &> "</table> $1
+@tr &< "<tr> $1 &> "</tr> $1
+@th &< "<th> $1 &> "</th> $1
+@td &< "<td> $1 &> "</td> $1
+
+@opcodes
+	"LIT $1 "INC $1 "POP $1 "NIP $1 "SWP $1 "ROT $1 "DUP $1 "OVR $1
+	"EQU $1 "NEQ $1 "GTH $1 "LTH $1 "JMP $1 "JCN $1 "JSR $1 "STH $1
+	"LDZ $1 "STZ $1 "LDR $1 "STR $1 "LDA $1 "STA $1 "DEI $1 "DEO $1
+	"ADD $1 "SUB $1 "MUL $1 "DIV $1 "AND $1 "ORA $1 "EOR $1 "SFT $1
+	&brk "BRK
+
