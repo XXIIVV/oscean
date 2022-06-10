@@ -23,7 +23,7 @@
 		;tr/< ;print-str JSR2
 		( col key ) 
 		;th/< ;print-str JSR2
-		DUP ;print/byte JSR2
+		DUP #40 SFT ;print/byte JSR2
 		;th/> ;print-str JSR2
 		#1000
 		&col
@@ -43,9 +43,25 @@ BRK
 
 @print-opcode ( byte -- )
 
-	#00 SWP #1f AND #20 SFT2 ;opcodes ADD2 ;print-str JSR2
+	DUP #20 EQU ,&unused JCN
+	DUP #40 EQU ,&unused JCN
+	DUP #00 NEQ ,&no-brk JCN
+		;opcodes/brk ;print-str JSR2 POP JMP2r
+		&no-brk
+	#00 OVR #1f AND #20 SFT2 ;opcodes ADD2 ;print-str JSR2
+	DUP #05 SFT #01 AND #00 EQU ,&no-2 JCN
+		LIT '2 #18 DEO
+		&no-2
+	DUP #07 SFT #01 AND #00 EQU ,&no-k JCN
+		LIT 'k #18 DEO
+		&no-k
+	DUP #06 SFT #01 AND #00 EQU ,&no-r JCN
+		LIT 'r #18 DEO
+		&no-r
+	POP
 
 JMP2r
+	&unused LIT '- #18 DEO POP JMP2r
 
 @print ( short* -- )
 
@@ -64,7 +80,7 @@ JMP2r
 
 JMP2r
 
-@table &< "<table> $1 &> "</table> $1
+@table &< "<table 20 "border='1'> $1 &> "</table> $1
 @tr &< "<tr> $1 &> "</tr> $1
 @th &< "<th> $1 &> "</th> $1
 @td &< "<td> $1 &> "</td> $1
