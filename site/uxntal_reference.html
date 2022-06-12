@@ -11,9 +11,7 @@
 <ul>
 	<li><a href='#opcodes'>Opcodes</a></li>
 	<li><a href='#modes'>Modes</a></li>
-	<li><a href='#addressing'>Addressing</a></li>
 	<li><a href='#errors'>Errors</a></li>
-	<li><a href='#numbers'>Numbers</a></li>
 </ul>
 
 <h2 id='opcodes'>Opcodes</h2>
@@ -370,76 +368,16 @@ Shifts the bits of the second value of the stack to the left or right, depending
 <p>The <b>return mode</b> makes it possible for any opcode to operate on the return-stack directly. For that reason, there is no dedicated return opcode. For example, the <code class='op'>JSR</code> opcode pushes the program's address onto the return stack before jumping, to return to that address, the <code class='op'>JMP2r</code> opcode is used, where instead of using the address on the working-stack, it takes its address from the return-stack.</p>
 <pre>#1234 #4567 STH ROT STH ADDr STHr <span style='color:#888; float:right'>34  45  <b style='color:black'>79</b>  00  00  00  00  00</span></pre>
 
-<h2 id='addressing'>Addressing</h2>
-
-<p>A position in a program can be defined with a label, a label is a permanent reference to that specific location in the program. Labels can have sublabels, which are automatically prefixed with their parent label. In the following example, <code>print-str</code> is a label, and code>print-str/while</code> is a sublabel.</p>
-
-<pre>
-@print-str ( str* -- )
-
-	&while
-		LDAk #18 DEO
-		INC2 LDAk ,&while JCN
-	POP2
-
-JMP2r
-</pre>
-
-<p>There are 4 ways to reference a label, a zero-page reference can only target a label located within the first 256 bytes of memory. A relative reference can only target a label located 127 bytes before, or 127 bytes after the current location, an absolute reference can target a label anywhere in the program.</p>
-
-<ul>
-	<li><code>.label</code>, literal zero-page</li>
-	<li><code>,label</code>, literal relative</li>
-	<li><code>;label</code>, literal absolute</li>
-	<li><code>:label</code>, raw absolute</li>
-</ul>
-
 <h2 id='errors'>Errors</h2>
 
-<p>Errors occur when a program behaves badly. There are four known error types, and each one has an error code. Errors are indicated with the address where it occurred, and the stack which caused it. For example, an underflow in the return stack, will be reported as "Return Stack Underflow, at #0000".</p>
+<p>Errors occur when a program behaves badly. Errors are normally handled by the emulator, but programs can set a system vector to evaluate when errors occurs. There are four known error types, and each one has an error code:</p>
 
 <ul>
+	<li><code>00</code> <b>Unknown</b>: Occurs when the System/vector is evaluated without an error code.</li>
 	<li><code>01</code> <b>Underflow</b>: Occurs when an opcode is trying to pop an item from an empty stack.</li>
 	<li><code>02</code> <b>Overflow</b>: Occurs when an opcode is trying to push an item to a full stack.</li>
 	<li><code>03</code> <b>Division By Zero</b>: Occurs when the DIV opcode is done on a value of zero.</li>
 </ul>
-
-<h2 id='numbers'>Numbers</h2>
-
-<p>Hexadecimal numerals are widely used by computer system designers and programmers because they provide a human-friendly representation of binary-coded values. Uxn gestures differenciate from traditional ASL numbers which are used only in the names of labels.</p>
-
-<img src='../media/generic/ugl/hex.png' class='ugl'/>
-
-<p>A way to look at this system is to consider the hand as an abacus, where the little finger has a value of 1, the ring finger has a value of 2, the middle finger has a value of 4, and the index has a value of 8. Numbers are made by adding the value of the pointed fingers.</p>
-
-<table class='usl'>
-	<tr>
-		<td><img src='../media/generic/usl/0.png' alt='zero'/></td>
-		<td><img src='../media/generic/usl/1.png' alt='one'/></td>
-		<td><img src='../media/generic/usl/2.png' alt='two'/></td>
-		<td><img src='../media/generic/usl/3.png' alt='three'/></td>
-	</tr>
-	<tr>
-		<td><img src='../media/generic/usl/4.png' alt='four'/></td>
-		<td><img src='../media/generic/usl/5.png' alt='five'/></td>
-		<td><img src='../media/generic/usl/6.png' alt='six'/></td>
-		<td><img src='../media/generic/usl/7.png' alt='seven'/></td>
-	</tr>
-	<tr>
-		<td><img src='../media/generic/usl/8.png' alt='eight'/></td>
-		<td><img src='../media/generic/usl/9.png' alt='nine'/></td>
-		<td><img src='../media/generic/usl/a.png' alt='ha'/></td>
-		<td><img src='../media/generic/usl/b.png' alt='be'/></td>
-	</tr>
-	<tr>
-		<td><img src='../media/generic/usl/c.png' alt='ce'/></td>
-		<td><img src='../media/generic/usl/d.png' alt='de'/></td>
-		<td><img src='../media/generic/usl/e.png' alt='he'/></td>
-		<td><img src='../media/generic/usl/f.png' alt='fe'/></td>
-	</tr>
-</table>
-
-<p>To sign numbers, such as the number <i>two</i>, which would be hard to do by sheer positioning of the finger, open your palm, and use your left index finger to push the ring finger out of your right palm. Don't try to extend the ring finger out on its own.</p>
 
 <img src='../media/generic/ugl/min2.png' width='150' alt='min2()'/>
 <q>The Min2 routine written with the Uxntal alphabet.</q>
