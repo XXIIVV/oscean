@@ -11,7 +11,7 @@ uxnasm maeve.tal bin/maeve.rom # build pre-processor
 uxnasm oscean.tal bin/oscean.rom # build wiki engine
 ```
 
-The rom does not have a graphical interface, but can be used with the `uxncli` emulator:
+The rom does not have a graphical interface, but can be used with the [uxncli](https://git.sr.ht/~rabbits/uxn11/tree/main/item/src/uxncli.c) emulator:
 
 ```sh
 uxncli bin/maeve.rom
