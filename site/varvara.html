@@ -6,9 +6,9 @@
 
 <p>This personal computer system was designed with a focus on <a href='permacomputing.html'>portability</a>, built on top of the <a href='uxn.html'>Uxn</a> virtual machine. It is an ideal platform for running small audio/visual applications. To see a list of compatible software, see <a href='roms.html'>roms</a>, and the <a href='https://github.com/hundredrabbits/awesome-uxn' target='_blank'>community projects</a>.</p>
 
-<p style='background: #eee; padding: 15px;'>While this project aspires to be a platform that lasts, it is in its infancy, the design may still change and break compatibility.</p>
+<p style='background: #eee; padding: 15px;'>While this project aspires to act as a platform that may last, it is in its infancy, the design could still change and break compatibility.</p>
 
-<p>Devices are external systems connected to the Uxn CPU, such as the screen, the mouse and the keyboard. Each device has 16 bytes, also called ports, of I/O memory. <b>Vectors</b> are ports holding the address to an entry point into a program that triggers when the mouse is moved, or a key is pressed.</p>
+<p>Devices are external systems connected to the Uxn CPU, such as the screen, the mouse and the keyboard. Each device has 16 bytes, also called ports, of I/O memory. <b>Vectors</b> are ports holding an address in memory to evaluate when a device event is triggered, such as when the mouse is moved, or a key is pressed.</p>
 
 <img src='../media/generic/uxn.comfy.png' width='250' style='float: right;margin: 0px auto 30px'/>
 
@@ -24,7 +24,7 @@
 	<tr><th>70</th><td><a href='#midi'>midi</a></td><th>f0</th></tr>
 </table>
 
-<p>The two reserved devices can be used for implementation specific systems that do not need to be part of the specs, or other Uxn/Varvara instances.</p>
+<p>The two reserved devices can be used for implementation specific features that do not need to be part of the specs, or other Uxn/Varvara instances.</p>
 
 <h3 id='system'>System Device</h3>
 
@@ -44,9 +44,11 @@
 	<tr><th>07</th><td class='empty'>--</td><th>0f</th><td>state</td></tr>
 </table>
 
-<p>This device is holding 3 shorts to be used for application customization. For a device that does not use a screen, these bytes may be used for speech controls, or other system globals, for simplicity we call them the Red*, Green* and Blue* shorts.</p>
+<p>The locations the stacks can be modified by writing a byte to the <code>wst</code> and <code>rst</code> ports. Writing <code>0xff</code> to the <code>wst</code> port, will assign the range <code>0xff00&mdash;0xffff</code> as the working stack memory.</p>
 
-<p>Sending a non-null byte to the <code>0x0e</code> port will print the system's status, sending a non-null byte to the <code>0x0f</code> port will terminate the application.</p>
+<p>Sending a non-null byte to the <code>0x0e</code> port will print the content of the stacks if they are not empty, sending a non-null byte to the <code>0x0f</code> port will terminate the application.</p>
+
+<p>This device is also holding 3 shorts to be used for application customization. For a device that does not use a screen, these bytes may be used for speech controls, or other system globals, for simplicity we call them the Red*, Green* and Blue* shorts.</p>
 
 <h3 id='console'>Console Device</h3>
 
@@ -330,7 +332,7 @@ JMP2r
 	<tr><th>a7</th><td>append</td><th>af</th></tr>
 </table>
 
-<p>The file device supports reading and writing files, listing directories, obtaining file information and deleting files. The file vector is unused.</p>
+<p>The file device supports reading and writing files, listing directories, obtaining file information and deleting files. The device may not access files outside of the working directory. The vector is unused. </p>
 
 <p>The general approach is to write <code>name*</code> with the address of the filename in memory, <code>length*</code> with the length of the memory region to use in the data exchange, and finally one of the <code>addr*</code> shorts with the address of that memory region. Once the operation has completed, the <code>success*</code> short can be read to find the number of bytes successfully exchanged.</p>
 
