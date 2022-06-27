@@ -7,13 +7,6 @@
 <h3>Let's Begin.</h3>
 
 <pre>
-<code>( This is a comment )</code>
-
-<code>( All programming in Unxtal is done by manipulating the stack )</code>
-
-#12 <code>( 12 )</code>
-#3456 <code>( 34 56 )</code>
-
 <code>( Uxn has 32 opcodes )</code>
 
 <b>LIT</b> a b c M[PC+1] <b>EQU</b> a b?c             <b>LDZ</b> a b M[c8]      <b>ADD</b> a b+c
@@ -26,9 +19,9 @@
 <b>OVR</b> a b c b       <b>STH</b> a b {rs.c}        <b>DEO</b> a {D[c8]=b}    <b>SFT</b> a b&gt;&gt;c8l&lt;&lt;c8h
 
 <code>( Each opcode has 3 possible modes
-	[2] The short mode operates on shorts instead of bytes.
-	[r] The return mode operate on the return stack.
-	[k] The keep mode operates without consuming items. )</code>
+	[2] The short mode operates on shorts instead of bytes
+	[r] The return mode operate on the return stack
+	[k] The keep mode operates without consuming items )</code>
 
 #12 #34 ADD <code>( 46 )</code>
 #12 #34 ADDk <code>( 12 34 46 )</code>
@@ -48,6 +41,14 @@
 #1234 #0421 MOD2 <code>( 01 b0 )</code>
 
 <code>( -------------------------------------------------------------------------- )</code>
+
+<code>( All programming in Unxtal is done by manipulating the stacks )</code>
+
+#12 <code>( working-stack: 12 )</code>
+#3456 <code>( working-stack: 34 56 )</code>
+#12 STH <code>( return-stack: 12 )</code>
+LIT2r 1234 <code>( return-stack: 12 34 )</code>
+LIT2r 1234 STH2r <code>( working-stack: 12 34 )</code>
 
 <code>( A short is simply two bytes, each byte can be manipulated )</code>
 
@@ -83,21 +84,19 @@
 
 <code>( Uxn's memory contains 65536 bytes )</code>
 
-#12 #0200 STA <code>( stored 12 at 0x0200 )</code>
-#3456 #0400 STA2 <code>( stored 34 at 0x0400, stored 56 at 0x0401 )</code>
+#12 #0200 STA <code>( 0x0200=12 )</code>
+#3456 #0400 STA2 <code>( 0x0400=34, 0x0401=56 )</code>
 #0400 LDA2 <code>( 34 56 )</code>
 
 <code>( The zero-page can be addressed with a single byte )</code>
 
-#1234 #80 STZ2 <code>( stored 12 at 0x0080, and 34 at 0x0081 )</code>
+#1234 #80 STZ2 <code>( 0x0080=12, 0x0081=34 )</code>
 #80 LDZ2 <code>( 12 34 )</code>
 
-<code>( Devices are ways for Uxn to communicate with the outside world
-	There is a maximum of 16 devices connected to Uxn at once
-	Device bytes are called ports, the Console device uses the 10-1f ports
-	The console's port 18 is called /write )</code>
+<code>( Devices are ways for Uxn to communicate with the outside world )</code>
 
-%EMIT { #18 DEO }
+%Console/write { #18 }
+%EMIT { Console/write DEO }
 
 #31 EMIT <code>( print "1" to console )</code>
 
@@ -167,16 +166,10 @@ JMP2r
 %MIN2 { LTH2k JMP SWP2 POP2 }
 %MAX2 { GTH2k JMP SWP2 POP2 }
 
-<code>( Signed logic macros )</code>
+<code>( Signed macros )</code>
 
 %LTS2 { #8000 ADD2 SWP2 #8000 ADD2 GTH2 }
 %GTS2 { #8000 ADD2 SWP2 #8000 ADD2 LTH2 }
-
-<code>( ASCII macros )</code>
-
-%IS-UC { DUP #40 GTH SWP #5b LTH AND }
-%IS-LC { DUP #60 GTH SWP #7b LTH AND }
-%IS-NUM { DUP #2f GTH SWP #3a LTH AND }
 
 <code>( Binary macros )</code>
 
