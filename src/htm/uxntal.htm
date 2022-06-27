@@ -1,15 +1,12 @@
 <h2>Tal is the programming language for the Uxn virtual machine.</h2>
 
-<p>Uxn programs are written in a unique flavor of <a href='assembly.html'>assembly</a> designed explicitly for this virtual machine. TAL files are human-readable source files, ROM files are uxn-compatible binary program files; the application that transforms a program into an application is called the <i>Assembler</i>.</p>
+<p>Uxn programs are written in a unique flavor of assembly designed especially for this virtual machine. TAL files are human-readable source files, ROM files are uxn-compatible binary program files; the application that transforms a program into an application is called the <b>Assembler</b>.</p>
 
-<img src='../media/generic/uxn.beet.png' width='150' style='float:left; margin-right: 15px;'/>
+<h3>The Stack</h3>
 
-<p>Stack machine programming might look at bit odd, as it uses a <a href='notation.html'>postfix notation</a>, which means that operators are always found at the end of an operation. For instance, one would write <code>3 4 +</code> instead of <code>3 + 4</code>. The expression written <code>(5 + 10) * 3</code> in conventional notation would be written <code>10 5 + 3 *</code> in reverse Polish notation.</p>
-<hr style='border:0'/>
+<img src='../media/generic/uxn.beet.png' width='150' style='float:right; margin-left: 15px;'/>
 
-<h2>Primitives</h2>
-
-<p>The order in which elements come off a stack is known as <i>last in, first out</i>(LIFO). In the stack <code>a b c</code>, the <code>c</code> item was the last to be added, and will be the first to be removed.</p>
+<p>In stack-machine programming, parentheses are unnecessary as there are no <a href='notation.html'>precedence rules</a>, the user merely performs calculations in the sequence that is presented. The order in which elements come off a stack is known as <i>last in, first out</i>. In the stack items <code>a b c</code>, the <code>c</code> item was the last to be added, and will be the first to be removed.</p>
 
 <table border='1'>
 	<tr><th>POP</th><td>a b</td><td>Discard top item.</td></tr>
@@ -20,14 +17,34 @@
 	<tr><th>OVR</th><td>a b c b</td><td>Copy second item to top.</td></tr>
 </table>
 
-<h2>Opcodes</h2>
+<p>For example, the expression <code>3 + 4</code> in conventional notation would be written as <code>3 4 +</code> in postfix notation. The expression <code>(5 + 10) * 3</code> in would be written <code>10 5 + 3 *</code>.</p>
 
-<p>There are 32 opcodes, each opcode occupies 5 bits of a byte, the remaining 3 bits are used for the modes of that opcode. </p>
+<h3>The Opcodes</h3>
 
-<table border="1">
-	<tr><td colspan="3"><i>modes</i> <code class='op'>kr2</code></td><td colspan="5">opcode <code class='op'>BRK</code></td></tr>
-	<tr><td class='clr2'>0</td><td class='clr2'>0</td><td class='clr2'>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<p>Uxn can perform 32 different operations, each operation has 3 possible modes. The items in the following table include the Program Counter(PC), Memory(M), Devices(D) and Return Stack(rs). For a more detailed view of the opcodes, see the <a href='uxntal_reference.html'>Uxntal Reference</a>.</p>
+
+<table border="1" width="760">
+	<tr><th colspan="2">Stack</th><th colspan="2">Memory</th></tr>
+	<tr><td><code class='op'>BRK/LIT</code> Literal</td><td>a b c M[PC+1]</td>     <td><code class='op'>LDZ</code> Load Zeropage</td><td>a b M[c8]</td></tr>
+	<tr><td><code class='op'>INC</code> Increment</td><td>a b c+1</td>           <td><code class='op'>STZ</code> Save Zeropage</td><td>a {M[c8]=b}</td></tr>
+	<tr><td><code class='op'>POP</code> Pop</td><td>a b</td>                     <td><code class='op'>LDR</code> Load Rel</td><td>a b M[PC+c8]</td></tr>
+	<tr><td><code class='op'>NIP</code> Nip</td><td>a c</td>                     <td><code class='op'>STR</code> Save Rel</td><td>a {M[PC+c8]=b}</td></tr>
+	<tr><td><code class='op'>SWP</code> Swap</td><td>a c b</td>                  <td><code class='op'>LDA</code> Load Abs</td><td>a b M[c16]</td></tr>
+	<tr><td><code class='op'>ROT</code> Rotate</td><td>b c a</td>                <td><code class='op'>STA</code> Save Abs</td><td>a {M[c16]=b}</td></tr>
+	<tr><td><code class='op'>DUP</code> Duplicate</td><td>a b c c</td>           <td><code class='op'>DEI</code> Device In</td><td>a b D[c8]</td></tr>
+	<tr><td><code class='op'>OVR</code> Over</td><td>a b c b</td>                <td><code class='op'>DEO</code> Device Out</td><td>a {D[c8]=b}</td></tr>
+	<tr><th colspan="2">Logic</th><th colspan="2">Arithmetic</th></tr>
+	<tr><td><code class='op'>EQU</code> Equal</td><td>a b?c</td>                 <td><code class='op'>ADD</code> Add</td><td>a b+c</td></tr>
+	<tr><td><code class='op'>NEQ</code> NotEqual</td><td>a b!c</td>              <td><code class='op'>SUB</code> Subtract</td><td>a b-c</td></tr>
+	<tr><td><code class='op'>GTH</code> Greater</td><td>a b&gt;c</td>            <td><code class='op'>MUL</code> Multiply</td><td>a b*c</td></tr>
+	<tr><td><code class='op'>LTH</code> Lesser</td><td>a b&lt;c</td>             <td><code class='op'>DIV</code> Divide</td><td>a b/c</td></tr>
+	<tr><td><code class='op'>JMP</code> Jump</td><td>a b {PC+=c}</td>            <td><code class='op'>AND</code> And</td><td>a b&c</td></tr>
+	<tr><td><code class='op'>JCN</code> JumpCond</td><td>a {(b8)PC+=c}</td>      <td><code class='op'>ORA</code> Or</td><td>a b|c</td></tr>
+	<tr><td><code class='op'>JSR</code> JumpStash</td><td>a b {rs.PC PC+=c}</td> <td><code class='op'>EOR</code> ExclusiveOr</td><td>a b^c</td></tr>
+	<tr><td><code class='op'>STH</code> Stash</td><td>a b {rs.c}</td>            <td><code class='op'>SFT</code> Shift</td><td>a b&gt;&gt;c8l&lt;&lt;c8h</td></tr>
 </table>
+
+<p>The modes are indicated by appending extra characters at the end of an opcode, for example, the <i>short mode</i> for the <code class='op'>ADD</code> opcode is <code class='op'>ADD2</code>, modes can also be combined, for example: <code class='op'>ADD2kr</code>.</p>
 
 <ul>
 	<li>The <b>keep mode</b> does not consume items from the stack.</li>
@@ -35,38 +52,13 @@
 	<li>The <b>short mode</b> operates on shorts instead of bytes.</li>
 </ul>
 
-<p>The items in the following table include the Program Counter(PC), Memory(M), Devices(D) and Return Stack(rs). For a more detailed view of the opcodes, see the <a href='uxntal_reference.html'>Uxntal Reference</a>.</p>
+<h2>Programming</h2>
 
-<table border="1" width="840">
-	<tr><td></td><th>Stack</th><th></th><td></td>                                             <th>Memory</th><th></th></tr>
-	<tr><th>0x80</th><td><code class='op'>BRK/LIT</code> Break</td><td>a b c M[PC+1]</td>     <th>0x10</th><td><code class='op'>LDZ</code> Load Zeropage</td><td>a b M[c8]</td></tr>
-	<tr><th>0x01</th><td><code class='op'>INC</code> Increment</td><td>a b c+1</td>           <th>0x11</th><td><code class='op'>STZ</code> Save Zeropage</td><td>a {M[c8]=b}</td></tr>
-	<tr><th>0x02</th><td><code class='op'>POP</code> Pop</td><td>a b</td>                     <th>0x12</th><td><code class='op'>LDR</code> Load Rel</td><td>a b M[PC+c8]</td></tr>
-	<tr><th>0x03</th><td><code class='op'>NIP</code> Nip</td><td>a c</td>                     <th>0x13</th><td><code class='op'>STR</code> Save Rel</td><td>a {M[PC+c8]=b}</td></tr>
-	<tr><th>0x04</th><td><code class='op'>SWP</code> Swap</td><td>a c b</td>                  <th>0x14</th><td><code class='op'>LDA</code> Load Abs</td><td>a b M[c16]</td></tr>
-	<tr><th>0x05</th><td><code class='op'>ROT</code> Rotate</td><td>b c a</td>                <th>0x15</th><td><code class='op'>STA</code> Save Abs</td><td>a {M[c16]=b}</td></tr>
-	<tr><th>0x06</th><td><code class='op'>DUP</code> Duplicate</td><td>a b c c</td>           <th>0x16</th><td><code class='op'>DEI</code> Device In</td><td>a b D[c8]</td></tr>
-	<tr><th>0x07</th><td><code class='op'>OVR</code> Over</td><td>a b c b</td>                <th>0x17</th><td><code class='op'>DEO</code> Device Out</td><td>a {D[c8]=b}</td></tr>
-	<tr><td></td><th>Logic</th><th></th><td></td>                                             <th>Arithmetic</th><th></th></tr>
-	<tr><th>0x08</th><td><code class='op'>EQU</code> Equal</td><td>a b?c</td>                 <th>0x18</th><td><code class='op'>ADD</code> Add</td><td>a b+c</td></tr>
-	<tr><th>0x09</th><td><code class='op'>NEQ</code> NotEqual</td><td>a b!c</td>              <th>0x19</th><td><code class='op'>SUB</code> Subtract</td><td>a b-c</td></tr>
-	<tr><th>0x0a</th><td><code class='op'>GTH</code> Greater</td><td>a b&gt;c</td>            <th>0x1a</th><td><code class='op'>MUL</code> Multiply</td><td>a b*c</td></tr>
-	<tr><th>0x0b</th><td><code class='op'>LTH</code> Lesser</td><td>a b&lt;c</td>             <th>0x1b</th><td><code class='op'>DIV</code> Divide</td><td>a b/c</td></tr>
-	<tr><th>0x0c</th><td><code class='op'>JMP</code> Jump</td><td>a b {PC+=c}</td>            <th>0x1c</th><td><code class='op'>AND</code> And</td><td>a b&c</td></tr>
-	<tr><th>0x0d</th><td><code class='op'>JCN</code> JumpCond</td><td>a {(b8)PC+=c}</td>      <th>0x1d</th><td><code class='op'>ORA</code> Or</td><td>a b|c</td></tr>
-	<tr><th>0x0e</th><td><code class='op'>JSR</code> JumpStash</td><td>a b {rs.PC PC+=c}</td> <th>0x1e</th><td><code class='op'>EOR</code> ExclusiveOr</td><td>a b^c</td></tr>
-	<tr><th>0x0f</th><td><code class='op'>STH</code> Stash</td><td>a b {rs.c}</td>            <th>0x1f</th><td><code class='op'>SFT</code> Shift</td><td>a b&gt;&gt;c8l&lt;&lt;c8h</td></tr>
-</table>
-
-<p>Operator modes are indicated by appending extra characters at the end of the opcode, for example, the <i>short mode</i> for the <code class='op'>ADD</code> opcode is <code class='op'>ADD2</code>, modes can also be combined, for example: <code class='op'>ADD2kr</code>. Boolean bytes are <code>00</code> for false, and <code>01</code> for true.</p>
+<p>Uppercased opcodes are reserved words, hexadecimal values are always lowercase, values and labels begin with a special character. Comments are within parentheses, curlies are used in the definition of macros, and the square brackets are ignored.</p>
 
 <img src="../media/generic/uxn.team.png" width="250" style="margin:0 auto 30px">
 
-<h2>Programming</h2>
-
-<p>The 32 captialized opcodes are reserved words, values and labels begin with a special character, or <i>rune</i>. Comments are within parentheses, curlies are used in the definition of macros, and the square brackets are ignored. Hexadecimal values are always in lowercase.</p>
-
-<p>In this example program, we begins by creating the <code>EMIT</code> macro, which contains <code>#18</code> the byte referencing the <a href='varvara.html#console'>Console/write</a> port, followed by the device output <code class='op'>DEO</code> opcode. From that point onward, using <code>EMIT</code> will send a byte from the stack, to the Console/write port. Each device has 16 ports, each port handles a specific I/O message.</p>
+<p>In the following example program, we begins by creating the <code>EMIT</code> macro, which contains <code>#18</code> the byte referencing the <a href='varvara.html#console'>Console/write</a> port, followed by the device output <code class='op'>DEO</code> opcode. From that point onward, using <code>EMIT</code> will send a byte from the stack, to the Console/write port. Each device has 16 ports, each port handles a specific I/O message.</p>
 
 <pre class='example'>
 <b>%EMIT</b> { #18 DEO }
@@ -90,7 +82,7 @@ BRK
 <span class='label'>@hello-word</span> "Hello 20 "World! 00
 </pre>
 
-<p>Assembled(31 bytes):</p>
+<p>Assembled(32 bytes):</p>
 
 <pre>
 a001 1294 8018 1721 9480 f70d 22a0 010f
@@ -116,17 +108,11 @@ span.comment { color:#aaa }
 	<tr><td><code>:</code></td><td>raw absolute</td><td><code>;</code></td><td>literal absolute</td></tr>
 </table>
 
-<p>Next, the <code class='op'>LDAk</code> opcode takes two bytes at the top of the stack to form an absolute address, and loads the value in memory found at that address to the top of the stack, in this case, the ASCII value of the letter H. That value is sent to Console/write(port #18) which prints that character to the terminal.</p>
+<p>Next, the <code class='op'>LDAk</code> opcode takes two bytes at the top of the stack to form an absolute address, and puts the value in memory found at that address to the top of the stack, in this case, the ASCII value of the letter H. That value is sent to Console/write(port #18) which prints that character to the terminal.</p>
 
-<p>We increment the absolute address found on top of the stack with <code class='op'>INC2</code>, because the address is made of two bytes. We load the incremented value, the <code class='op'>JCN</code> opcode will jump to the position of label <code class='op'>&while</code> as long as the item before the address is not zero. We complete the program with <code class='op'>POP2</code> to remove the address on the stack, to keep the stack clean at the end of the program.</p>
+<p>We increment the absolute address found on top of the stack with <code class='op'>INC2</code>, because the address is made of two bytes. We load the incremented value, the <code class='op'>JCN</code> opcode will jump to the position of label <code class='op'>&while</code> for as long as the item on the stack not zero. We complete the program with <code class='op'>POP2</code> to remove the address on the stack, to keep the stack clean at the end of the program.</p>
 
-<h2>Varvara's Unicycle</h2>
-
-<p>The following input field is a small interactive terminal to play with the uxntal opcodes and see their effect on the stack. You can also use <a href='https://git.sr.ht/~rabbits/drifblim/tree/main/item/src/unicycle.tal' target='_blank'>unicycle.rom</a> directly in your <a href='https://git.sr.ht/~rabbits/uxn11/tree/main/item/src/uxncli.c' target='_blank'>terminal emulator</a>. Alternatively, you can use <a href='dexe.html'>Dexe</a> to inspect disassembled rom.</p>
-
-<p>For example, type <code>#12 #34 ADD</code>, and press <b>Run</b> to see the result.</p>
-
-<iframe title="Uxntal Interpreter" src="../etc/unicycle/index.html" frameborder="0" style="height: 100px;"></iframe>
+<p>That's it! For a print-friendly document, see the <a href="uxntal_cheatsheet.html">Cheatsheet</a>.</p>
 
 <style>
 .clr0 { background:white; color:black; }
@@ -139,8 +125,8 @@ img.ugl { width: 15px; display: inline-block; margin: 0px 5px 0px 0px; vertical-
 </style>
 
 <ul>
-	<li><a href='https://compudanzas.net/uxn_tutorial.html' target='_blank'>Introduction to Uxntal</a></li>
+	<li><a href='https://compudanzas.net/uxn_tutorial.html' target='_blank'>Introduction to Uxntal</a>, online book</li>
 	<li><a href='https://git.sr.ht/~rabbits/drifblim' target='_blank'>Uxntal Assembler</a>, self-hosted</li>
-	<li><a href='https://git.sr.ht/~rabbits/uxn/blob/main/src/uxnasm.c' target='_blank'>Uxntal Assembler</a>, C89</li>
-	<li><a href='https://git.sr.ht/~rabbits/uxnlin' target='_blank'>Uxntal Linter</a></li>
+	<li><a href='https://git.sr.ht/~rabbits/uxnlin' target='_blank'>Uxntal Linter</a>, self-hosted</li>
+	<li><a href='../etc/unicycle/index.html' target='_blank'>HTML5 Interpreter</a>, works in browser</li>
 </ul>
