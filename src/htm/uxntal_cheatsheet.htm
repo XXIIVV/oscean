@@ -27,18 +27,13 @@
 #12 #34 <b>ADD</b> <code>( 46 )</code>
 #12 #34 <b>ADDk</b> <code>( 12 34 46 )</code>
 
-<code>( The modes can be combined )</code>
+<code>( Modes can be combined )</code>
 
 #1234 #5678 <b>ADD2k</b> <code>( 12 34 56 78 68 ac )</code>
-
-<code>( The arithmetic and bitewise opcodes are:
-	ADD SUB MUL DIV
-	AND ORA EOR SFT )</code>
 
 <code>( New words can be created using macros )</code>
 
 %MOD2 { DIV2k MUL2 SUB2 }
-
 #1234 #0421 MOD2 <code>( 01 b0 )</code>
 
 <code>( -------------------------------------------------------------------------- )</code>
@@ -51,35 +46,33 @@
 <b>LIT2r</b> 1234 <code>( return-stack: 12 34 )</code>
 <b>LIT2r</b> 1234 <b>STH2r</b> <code>( working-stack: 12 34 )</code>
 
-<code>( A short is simply two bytes, each byte can be manipulated )</code>
+<code>( Shorts are made of two bytes, each byte can be manipulated )</code>
 
 #1234 <b>SWP</b> <code>( 34 12 )</code>
 #1234 #5678 <b>SWP2</b> <code>( 56 78 12 34 )</code>
 #1234 #5678 <b>SWP</b> <code>( 12 34 78 56 )</code>
 
-<code>( Individual bytes of of a short can be removed from the stack )</code>
+<code>( Each byte can be removed )</code>
 
 #1234 <b>POP</b> <code>( 12 )</code>
 #1234 <b>NIP</b> <code>( 34 )</code>
 
-<code>( The stack opcodes are:
-	POP DUP NIP SWP OVR ROT )</code>
-
 <code>( -------------------------------------------------------------------------- )</code>
 
-<code>( To compare values on the stack with each other )</code>
+<code>( Comparison will push 01 for true, 00 for false )</code>
 
 #12 #34 <b>EQU</b> <code>( 00 )</code>
 #12 #12 <b>EQU</b> <code>( 01 )</code>
 
-<code>( Logic opcodes will put a flag with a value of either 00 or 01 )</code>
+<code>( Comparing shorts will also push a byte )</code>
 
-#12 #34 <b>LTH</b>
-#78 #56 <b>GTH</b>
-	<b>ADD</b> <code>( 02 )</code>
+#1234 #7856 <b>LTH2</b> <code>( 01 )</code>
 
-<code>( The logic opcodes are:
-	EQU NEQ GTH LTH )</code>
+<code>( Skip a piece of code when two bytes are not equal )</code>
+
+#12 #34 <b>NEQ</b> ,skip <b>JCN</b>
+	<code>( body )</code>
+	@skip
 
 <code>( -------------------------------------------------------------------------- )</code>
 
@@ -98,29 +91,20 @@
 
 %Console/write { #18 }
 %EMIT { Console/write DEO }
-
-#31 EMIT <code>( print "1" to console )</code>
+#31 EMIT <code>( print ascii "1" to console )</code>
 
 <code>( A label is equal to a position in the program )</code>
+
 @parent <code>( defines a label "parent" )</code>
 	&child <code>( defines a sublabel "parent/child" )</code>
 
 <code>( Label positions can be pushed on stack )</code>
+
 ;parent <code>( push the absolute position, 2 bytes )</code>
 ,parent <code>( push the relative position, 1 byte )</code>
 .parent <code>( push the zero-page position, 1 byte )</code>
 
-<code>( The memory opcodes are:
-	LDZ STZ LDR STR
-	LDA STA DEI DEO )</code>
-
 <code>( -------------------------------------------------------------------------- )</code>
-
-<code>( Skip a piece of code )</code>
-
-#12 #34 <b>NEQ</b> ,skip <b>JCN</b>
-	<code>( body )</code>
-	@skip
 
 <code>( Create a for-loop )</code>
 
@@ -152,9 +136,6 @@
 	<b>POP2</b>
 <b>JMP2r</b>
 @word "cerulean
-
-<code>( The jump opcodes are: 
-	JMP JCN JSR )</code>
 
 <code>( -------------------------------------------------------------------------- )</code>
 
