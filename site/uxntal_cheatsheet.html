@@ -4,13 +4,6 @@
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
 <nav><ul><li><a href="uxntal.html" class="parent">uxntal</a></li><li><a href="varvara.html">varvara</a></li></ul><ul><li><a href="uxntal_cheatsheet.html" class="self">uxntal cheatsheet</a></li><li><a href="uxntal_reference.html">uxntal reference</a></li><li><a href="uxntal_library.html">uxntal library</a></li><li><a href="drifblim.html">drifblim</a></li></ul><ul><li><a href="uxntal_stacking.html">uxntal stacking</a></li></ul></nav><main><h2>Uxntal is a stack-machine assembly language targeting the Uxn virtual machine.</h2>
 
-<p>Stack machine programming might look at bit odd, as it uses a <a href='notation.html'>postfix notation</a>, which means that operators are always found at the end of an operation. Brackets and parentheses are unnecessary: the user merely performs calculations in the order that is required. There are no precedence rules.</p>
-
-<table border="1">
-	<tr><th>Infix</th><td><code>(5 + 10) * 3</code></td></tr>
-	<tr><th>Postfix</th><td><code>10 5 + 3 *</code></td></tr>
-</table>
-
 <h3>Let's Begin.</h3>
 
 <pre>
@@ -18,43 +11,49 @@
 
 <code>( All programming in Unxtal is done by manipulating the stack )</code>
 
-#12 <code>( push a byte )</code>
-#3456 <code>( push a short )</code>
+#12 <code>( 12 )</code>
+#3456 <code>( 34 56 )</code>
 
-<code>( Uxn has 32 opcodes, each opcode has 3 possible modes )</code>
+<code>( Uxn has 32 opcodes )</code>
 
-POP <code>( pop a byte )</code>
-POP2 <code>( pop a short )</code>
+<b>LIT</b> a b c M[PC+1] <b>EQU</b> a b?c             <b>LDZ</b> a b M[c8]      <b>ADD</b> a b+c
+<b>INC</b> a b c+1       <b>NEQ</b> a b!c             <b>STZ</b> a {M[c8]=b}    <b>SUB</b> a b-c
+<b>POP</b> a b           <b>GTH</b> a b&gt;c             <b>LDR</b> a b M[PC+c8]   <b>MUL</b> a b*c
+<b>NIP</b> a c           <b>LTH</b> a b&lt;c             <b>STR</b> a {M[PC+c8]=b} <b>DIV</b> a b/c
+<b>SWP</b> a c b         <b>JMP</b> a b {PC+=c}       <b>LDA</b> a b M[c16]     <b>AND</b> a b&c
+<b>ROT</b> b c a         <b>JCN</b> a {(b8)PC+=c}     <b>STA</b> a {M[c16]=b}   <b>ORA</b> a b|c
+<b>DUP</b> a b c c       <b>JSR</b> a b {rs.PC PC+=c} <b>DEI</b> a b D[c8]      <b>EOR</b> a b^c
+<b>OVR</b> a b c b       <b>STH</b> a b {rs.c}        <b>DEO</b> a {D[c8]=b}    <b>SFT</b> a b&gt;&gt;c8l&lt;&lt;c8h
 
-<code>( The modes are:
+<code>( Each opcode has 3 possible modes
 	[2] The short mode consumes two bytes from the stack.
 	[k] The keep mode does not consume items from the stack.
 	[r] The return mode makes the operator operate on the return-stack. )</code>
 
 #12 #34 ADD <code>( 46 )</code>
-#12 #34 ADDk <code>( 12  34  46 )</code>
+#12 #34 ADDk <code>( 12 34 46 )</code>
 
 <code>( The modes can be combined )</code>
 
-#1234 #5678 ADD2k <code>( 12  34  56  78  68  ac )</code>
+#1234 #5678 ADD2k <code>( 12 34 56 78 68 ac )</code>
 
-<code>( The arithmetic/bitewise opcodes are:
+<code>( The arithmetic and bitewise opcodes are:
 	ADD SUB MUL DIV
 	AND ORA EOR SFT )</code>
 
-<code>( New opcodes can be created using macros )</code>
+<code>( New words can be created using macros )</code>
 
 %MOD2 { DIV2k MUL2 SUB2 }
 
-#1234 #0421 MOD2 <code>( 01  b0 )</code>
+#1234 #0421 MOD2 <code>( 01 b0 )</code>
 
-<code>( ---------------------------------------------------------------------------- )</code>
+<code>( -------------------------------------------------------------------------- )</code>
 
 <code>( A short is simply two bytes, each byte can be manipulated )</code>
 
-#1234 SWP <code>( 34  12 )</code>
-#1234 #5678 SWP2 <code>( 56  78  12  34 )</code>
-#1234 #5678 SWP <code>( 12  34  78  56 )</code>
+#1234 SWP <code>( 34 12 )</code>
+#1234 #5678 SWP2 <code>( 56 78 12 34 )</code>
+#1234 #5678 SWP <code>( 12 34 78 56 )</code>
 
 <code>( Individual bytes of of a short can be removed from the stack )</code>
 
@@ -64,7 +63,7 @@ POP2 <code>( pop a short )</code>
 <code>( The stack opcodes are:
 	POP DUP NIP SWP OVR ROT )</code>
 
-<code>( ---------------------------------------------------------------------------- )</code>
+<code>( -------------------------------------------------------------------------- )</code>
 
 <code>( To compare values on the stack with each other )</code>
 
@@ -80,24 +79,18 @@ POP2 <code>( pop a short )</code>
 <code>( The logic opcodes are:
 	EQU NEQ GTH LTH )</code>
 
-<code>( ---------------------------------------------------------------------------- )</code>
+<code>( -------------------------------------------------------------------------- )</code>
 
-<code>( Uxn's accessible memory is as follows: 
-	256 bytes of working stack 
-	256 bytes of return stack
-	65536 bytes of memory
-	256 bytes of IO memory )</code>
+<code>( Uxn's memory contains 65536 bytes )</code>
 
-<code>( The addressable memory is between 0000-ffff )</code>
-
-#12 #0200 STA <code>( stored 12 at 0200 in memory )</code>
-#3456 #0201 STA2 <code>( stored 3456 at 0201 in memory )</code>
-#0200 LDA2 <code>( 12  34 )</code>
+#12 #0200 STA <code>( stored 12 at 0x0200 )</code>
+#3456 #0400 STA2 <code>( stored 34 at 0x0400, stored 56 at 0x0401 )</code>
+#0400 LDA2 <code>( 34 56 )</code>
 
 <code>( The zero-page can be addressed with a single byte )</code>
 
-#1234 #80 STZ2 <code>( stored 12 at 0080, and 34 at 0081 )</code>
-#80 LDZ2 <code>( 12  34 )</code>
+#1234 #80 STZ2 <code>( stored 12 at 0x0080, and 34 at 0x0081 )</code>
+#80 LDZ2 <code>( 12 34 )</code>
 
 <code>( Devices are ways for Uxn to communicate with the outside world
 	There is a maximum of 16 devices connected to Uxn at once
@@ -121,15 +114,15 @@ POP2 <code>( pop a short )</code>
 	LDZ STZ LDR STR
 	LDA STA DEI DEO )</code>
 
-<code>( ---------------------------------------------------------------------------- )</code>
+<code>( -------------------------------------------------------------------------- )</code>
 
-<code>( Logic allows to create conditionals )</code>
+<code>( Skip a piece of code )</code>
 
 #12 #34 NEQ ,skip JCN
-	#31 EMIT
+	<code>( body )</code>
 	@skip
 
-<code>( Logic also allows to create for-loops )</code>
+<code>( Create a for-loop )</code>
 
 #3a #30
 @loop
@@ -137,11 +130,11 @@ POP2 <code>( pop a short )</code>
 	INC GTHk ,loop JCN
 POP2
 
-<code>( Logic also allows to create while-loops )</code>
+<code>( Create a while-loops )</code>
 
 ;word
 @while
-	LDAk EMIT
+	LDAk EMIT <code>( print "vermillion" to console )</code>
 	INC2 LDAk ,while JCN
 POP2
 BRK
@@ -164,7 +157,40 @@ JMP2r
 
 <code>( The jump opcodes are: 
 	JMP JCN JSR )</code>
+
+<code>( -------------------------------------------------------------------------- )</code>
+
+<code>( Arithmetic macros )</code>
+
+%MOD  { DIVk MUL SUB }
+%MOD2 { DIV2k MUL2 SUB2 }
+%MIN2 { LTH2k JMP SWP2 POP2 }
+%MAX2 { GTH2k JMP SWP2 POP2 }
+
+<code>( Signed logic macros )</code>
+
+%LTS2 { #8000 ADD2 SWP2 #8000 ADD2 GTH2 }
+%GTS2 { #8000 ADD2 SWP2 #8000 ADD2 LTH2 }
+
+<code>( ASCII macros )</code>
+
+%IS-UC { DUP #40 GTH SWP #5b LTH AND }
+%IS-LC { DUP #60 GTH SWP #7b LTH AND }
+%IS-NUM { DUP #2f GTH SWP #3a LTH AND }
+
+<code>( Binary macros )</code>
+
+%ROL { DUP #07 SFT SWP #10 SFT ADD }
+%ROR { DUP #70 SFT SWP #01 SFT ADD }
+%ROL2 { DUP2 #0f SFT2 SWP2 #10 SFT2 ADD2 }
+%ROR2 { DUP2 #f0 SFT2 SWP2 #01 SFT2 ADD2 }
+
+<code>( Clever hacks )</code>
+
+%PC { #00 JSR STH2r }
 </pre>
+
+<p>Try the <a href='../etc/unicycle/index.html' target='_blank'>HTML5 Interpreter</a> in your browser.</p>
 <ul></ul><p><b>Incoming</b>: <a href="uxntal.html" class="parent">uxntal</a> </p></main>
 <footer><a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.svg" alt="CreativeCommons"/></a> <a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a> <a href="https://merveilles.town/@neauoire" rel="me" target="_blank"><img src="../media/icon/merveilles.svg" alt="Merveilles"/></a> <a href="ethics.html"><img src="../media/icon/dreipfeile.svg" alt="NoNazis!"/></a> <a href="uxn.html"><img src="../media/icon/uxn.svg" alt="UxnPowered"/></a> <span><a href="devine_lu_linvega.html">Devine Lu Linvega</a> &copy; 2022 &mdash; <a href="about.html">BY-NC-SA 4.0</a></span></footer>
 </body></html>
