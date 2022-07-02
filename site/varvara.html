@@ -321,14 +321,14 @@ JMP2r
 <table border='1'>
 	<tr>
 		<th rowspan='8'><a href='#file'>file</a></th>
-		<th>a0</th><td rowspan="2" class='bg2'>vector*</td><th>a8</th><td rowspan="2">addr(name)*</td>
+		<th>a0</th><td rowspan="2" class='bg2'>vector*</td><th>a8</th><td rowspan="2">name(addr)*</td>
 	</tr>
 	<tr><th>a1</th><th>a9</th></tr>
 	<tr><th>a2</th><td rowspan="2">success*</td><th>aa</th><td rowspan="2">length*</td></tr>
 	<tr><th>a3</th><th>ab</th></tr>
-	<tr><th>a4</th><td rowspan="2">addr(stat)*</td><th>ac</th><td rowspan="2">addr(read)*</td></tr>
+	<tr><th>a4</th><td rowspan="2">stat(addr)*</td><th>ac</th><td rowspan="2">read(addr)*</td></tr>
 	<tr><th>a5</th><th>ad</th></tr>
-	<tr><th>a6</th><td>delete</td><th>ae</th><td rowspan="2">addr(write)*</td></tr>
+	<tr><th>a6</th><td>delete</td><th>ae</th><td rowspan="2">write(addr)*</td></tr>
 	<tr><th>a7</th><td>append</td><th>af</th></tr>
 </table>
 
@@ -336,20 +336,20 @@ JMP2r
 
 <p>The general approach is to write <code>name*</code> with the address of the filename in memory, <code>length*</code> with the length of the memory region to use in the data exchange, and finally one of the <code>addr*</code> shorts with the address of that memory region. Once the operation has completed, the <code>success*</code> short can be read to find the number of bytes successfully exchanged.</p>
 
-<p>When <code>name*</code> resolves to a file, writing the address to <code>addr(read)*</code> will read the file's data into the memory region. <code>success*</code> will be less than <code>length*</code> if the file is shorter than <code>length*</code>, and will be zero if the file does not exist or the filename is invalid. If the file is longer than <code>length*</code>, subsequent writes to <code>addr(read)*</code> will read the next chunk of data into the memory region, so it is possible to read the contents of very large files one chunk at a time.</p>
+<p>When <code>name*</code> resolves to a file, writing the address to <code>read(addr)*</code> will read the file's data into the memory region. <code>success*</code> will be less than <code>length*</code> if the file is shorter than <code>length*</code>, and will be zero if the file does not exist or the filename is invalid. If the file is longer than <code>length*</code>, subsequent writes to <code>read(addr)*</code> will read the next chunk of data into the memory region, so it is possible to read the contents of very large files one chunk at a time.</p>
 
-<p>When <code>name*</code> resolves to a directory, writing the address to <code>addr(read)*</code> will read the directory as if it were a text file listing each of the directory's contents:</p>
+<p>When <code>name*</code> resolves to a directory, writing the address to <code>read(addr)*</code> will read the directory as if it were a text file listing each of the directory's contents:</p>
 
 <pre>001a small text file.txt
 ---- subdirectory
 ???? huge file.mp4
 </pre>
 
-<p>The listing has each file or directory on its own line, prefixed with the file size in four hex characters and a space. The ending newline is always present. If the file is too big to fit in four hex characters (&gt; 64 kB) then <code>????</code> will be used instead; for directories, <code>----</code> takes the place of the file size. As for reading file data, if the listing length exceeds <code>length*</code> then subsequent writes to <code>addr(read)*</code> will read more entries. Unlike file data, directory entries will be returned as atomic units that won't be broken across chunks, so <code>success*</code> will usually be lower than <code>length*</code> even when more data is available. When <code>success*</code> reads zero, the listing is complete.</p>
+<p>The listing has each file or directory on its own line, prefixed with the file size in four hex characters and a space. The ending newline is always present. If the file is too big to fit in four hex characters (&gt; 64 kB) then <code>????</code> will be used instead; for directories, <code>----</code> takes the place of the file size. As for reading file data, if the listing length exceeds <code>length*</code> then subsequent writes to <code>read(addr)*</code> will read more entries. Unlike file data, directory entries will be returned as atomic units that won't be broken across chunks, so <code>success*</code> will usually be lower than <code>length*</code> even when more data is available. When <code>success*</code> reads zero, the listing is complete.</p>
 
-<p>The directory listing for a single file or directory can be obtained when <code>addr(stat)*</code> is written, and will write the same format as above, including the newline, into the memory buffer. If <code>success*</code> reads zero, the file or directory doesn't exist or the region is too small to fit the line.</p>
+<p>The directory listing for a single file or directory can be obtained when <code>stat(addr)*</code> is written, and will write the same format as above, including the newline, into the memory buffer. If <code>success*</code> reads zero, the file or directory doesn't exist or the region is too small to fit the line.</p>
 
-<p>Writing files is performed by writing to <code>addr(write)*</code>. If <code>append</code> is set to 0x01, then the data in the memory region will be written after the end of the file, if it is 0x00 (the default) it will replace the contents of the file. If the file doesn't previously exist then it will be created and <code>append</code> makes no difference. <code>success*</code> will be set to <code>length*</code> if the write was successful, otherwise it will read as zero. As with reading files and directories, subsequent writes to <code>addr(write)*</code> will write more chunks of data to the file.</p>
+<p>Writing files is performed by writing to <code>write(addr)*</code>. If <code>append</code> is set to 0x01, then the data in the memory region will be written after the end of the file, if it is 0x00 (the default) it will replace the contents of the file. If the file doesn't previously exist then it will be created and <code>append</code> makes no difference. <code>success*</code> will be set to <code>length*</code> if the write was successful, otherwise it will read as zero. As with reading files and directories, subsequent writes to <code>addr(write)*</code> will write more chunks of data to the file.</p>
 
 <p>In all cases, writing to <code>name*</code> closes the file/directory and new calls to the <code>addr*</code> shorts will start from the beginning (or writing after the end when <code>append</code> is 0x01).</p>
 
