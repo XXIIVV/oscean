@@ -1,6 +1,6 @@
 <h2>A collection of commonly used routines in Uxntal projects.</h2>
 
-<p>The following snippets are in the standard format.</p>
+<p>The following snippets are in the standard format. If you discover faster and smaller helpers, please get in touch with me.</p>
 
 <h3>Numbers</h3>
 
@@ -11,22 +11,6 @@
 	SWP ,&byte JSR
 	&byte ( byte -- ) DUP #04 SFT ,&char JSR
 	&char ( char -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO
-
-JMP2r
-</pre>
-
-<p>To print an entire page of memory:</p>
-<pre>
-@print-mem ( addr* -- )
-
-	STH2
-	#0000
-	&loop
-		#00 OVR STH2kr ADD2 LDA ,print/byte JSR
-		DUP #0f AND #0f NEQ #16 MUL #0a ADD #18 DEO
-		INC NEQk ,&loop JCN
-	POP2
-	POP2r
 
 JMP2r
 </pre>
@@ -79,7 +63,7 @@ JMP2r
 JMP2r
 </pre>
 
-<h2>Strings</h2>
+<h3>Strings</h3>
 
 <p>To emit a string.</p>
 <pre>
@@ -93,75 +77,41 @@ JMP2r
 JMP2r
 </pre>
 
-<h3>string primitives</h3>
+<p>Helpers for strings.</p>
+
 <pre>
-@scat ( src* dst* -- )
-
-	DUP2 ,slen JSR ADD2
-
-@scpy ( src* dst* -- )
-	
-	STH2
-	&while
-		LDAk STH2kr STA INC2r
-		INC2 LDAk ,&while JCN
-	POP2
-	#00 STH2r STA
-
-JMP2r
-
-@slen ( str* -- len* )
-
-	DUP2 ,scap JSR SWP2 SUB2
-
-JMP2r
-
-@scap ( str* -- end* )
-
-	LDAk #00 NEQ JMP JMP2r
-	&while INC2 LDAk ,&while JCN
-
-JMP2r
-
-@sput ( char str* -- )
-
-	,scap JSR STA
-
-JMP2r
-
-@spop ( str* -- )
-
-	LDAk ,&no-null JCN
-		POP2 JMP2r &no-null
-	#00 ROT ROT ,scap JSR #0001 SUB2 STA
-
-JMP2r
+@scap ( str* -- end* ) LDAk #00 NEQ JMP JMP2r &w INC2 LDAk ,&w JCN JMP2r
+@spop ( str* -- ) LDAk ,&n JCN POP2 JMP2r &n ,scap JSR #0001 SUB2 #00 ROT ROT STA JMP2r
+@sput ( chr str* -- ) ,scap JSR STA JMP2r
+@slen ( str* -- len* ) DUP2 ,scap JSR SWP2 SUB2 JMP2r
+@scat ( src* dst* -- ) DUP2 ,slen JSR ADD2
+@scpy ( src* dst* -- ) STH2 &w LDAk STH2kr STA INC2r INC2 LDAk ,&w JCN POP2 #00 STH2r STA JMP2r
+@scmp ( a* b* -- f ) STH2 &l LDAk LDAkr STHr ANDk #00 EQU ,&e JCN NEQk ,&e JCN POP2 INC2 INC2r ,&l JMP &e NIP2 POP2r EQU JMP2r
 </pre>
 
 <h3>Memory</h3>
 
+<p>To print an entire page of memory:</p>
 <pre>
-@mclr ( addr* len* -- )
+@print-mem ( addr* -- )
 
-	OVR2 ADD2 SWP2
+	STH2
+	#0000
 	&loop
-		STH2k #00 STH2r STA
-		INC2 GTH2k ,&loop JCN
-	POP2 POP2
-
-JMP2r
-
-@mcpy ( src* dst* len* -- )
-
-	SWP2 STH2
-	OVR2 ADD2 SWP2
-	&loop
-		LDAk STH2kr STA INC2r
-		INC2 GTH2k ,&loop JCN
-	POP2 POP2
+		#00 OVR STH2kr ADD2 LDA ,print/byte JSR
+		DUP #0f AND #0f NEQ #16 MUL #0a ADD #18 DEO
+		INC NEQk ,&loop JCN
+	POP2
 	POP2r
 
 JMP2r
+</pre>
+
+<p>Helpers for memory.</p>
+
+<pre>
+@mclr ( src* len* -- ) OVR2 ADD2 SWP2 &l STH2k #00 STH2r STA INC2 GTH2k ,&l JCN POP2 POP2 JMP2r
+@mcpy ( src* dst* len* -- ) SWP2 STH2 OVR2 ADD2 SWP2 &loop LDAk STH2kr STA INC2r INC2 GTH2k ,&loop JCN POP2 POP2 POP2r JMP2r
 </pre>
 
 <h3>Random</h3>
@@ -190,13 +140,4 @@ JMP2r
 	,&y STR2k POP
 
 JMP2r
-</pre>
-
-<h2>Macros</h2>
-
-<h3>Buttons</h3>
-
-<pre>
-%B_UP { #10 } %B_DOWN { #20 } %B_LEFT   { #40 } %B_RIGHT { #80 }
-%B_A  { #01 } %B_B    { #02 } %B_SELECT { #04 } %B_START { #08 }
 </pre>
