@@ -68,7 +68,7 @@ JMP2r
 
 	( fill diary )
 	DUP2 ;find-diary JSR2
-	DUP2 #0000 EQU2 ,&continue JCN
+	ORAk #00 EQU ,&continue JCN
 		DUP2 ;term/diary #0050 ;mcpy JSR2
 		( copy pict )
 		DUP2 #0006 ADD2
@@ -328,7 +328,7 @@ JMP2r
 		( stop at sibling ) LDAk ;chex JSR2 STHkr EQU ,&end JCN
 		( when depth+1 ) LDAk ;chex JSR2 STHkr INC NEQ ,&continue JCN
 
-			INC2k INC2 ;find-diary-external JSR2 DUP2 #0000 EQU2 ,&no-diary JCN
+			INC2k INC2 ;find-diary-external JSR2 ORAk #00 EQU ,&no-diary JCN
 				DUP2 ;build-module-photo JSR2
 				&no-diary
 				POP2
@@ -691,20 +691,6 @@ JMP2r
 
 JMP2r
 
-@scmp ( a* b* -- flag )
-
-	STH2
-	&loop
-		LDAk LDAkr STHr NEQ ,&end JCN
-		LDAk LDAkr STHr ORA ,&not-end JCN
-			POP2 POP2r #01 JMP2r
-			&not-end
-		INC2 INC2r ,&loop JMP
-	&end
-	POP2 POP2r #00
-
-JMP2r
-
 @scmp-seg ( a* b* -- flag )
 
 	STH2
@@ -720,55 +706,14 @@ JMP2r
 
 JMP2r
 
-@scat ( src* dst* -- )
+@scap ( str* -- end* ) LDAk #00 NEQ JMP JMP2r &w INC2 LDAk ,&w JCN JMP2r
+@slen ( str* -- len* ) DUP2 ,scap JSR SWP2 SUB2 JMP2r
+@scat ( src* dst* -- ) DUP2 ,slen JSR ADD2
+@scpy ( src* dst* -- ) STH2 &w LDAk STH2kr STA INC2r INC2 LDAk ,&w JCN POP2 #00 STH2r STA JMP2r
+@scmp ( a* b* -- f ) STH2 &l LDAk LDAkr STHr ANDk #00 EQU ,&e JCN NEQk ,&e JCN POP2 INC2 INC2r ,&l JMP &e NIP2 POP2r EQU JMP2r
 
-	DUP2 ,slen JSR ADD2
-
-@scpy ( src* dst* -- )
-	
-	STH2
-	&while
-		LDAk STH2kr STA INC2r
-		INC2 LDAk ,&while JCN
-	POP2
-	#00 STH2r STA
-
-JMP2r
-
-@slen ( str* -- len* )
-
-	DUP2 ,scap JSR SWP2 SUB2
-
-JMP2r
-
-@scap ( str* -- str-end* )
-
-	( clamp ) LDAk #00 NEQ JMP JMP2r
-	&while INC2 LDAk ,&while JCN
-
-JMP2r
-
-@mclr ( addr* len* -- )
-
-	OVR2 ADD2 SWP2
-	&loop
-		STH2k #00 STH2r STA
-		INC2 GTH2k ,&loop JCN
-	POP2 POP2
-
-JMP2r
-
-@mcpy ( src* dst* len* -- )
-
-	SWP2 STH2
-	OVR2 ADD2 SWP2
-	&loop
-		LDAk STH2kr STA INC2r
-		INC2 GTH2k ,&loop JCN
-	POP2 POP2
-	POP2r
-
-JMP2r
+@mclr ( src* len* -- ) OVR2 ADD2 SWP2 &l STH2k #00 STH2r STA INC2 GTH2k ,&l JCN POP2 POP2 JMP2r
+@mcpy ( src* dst* len* -- ) SWP2 STH2 OVR2 ADD2 SWP2 &loop LDAk STH2kr STA INC2r INC2 GTH2k ,&loop JCN POP2 POP2 POP2r JMP2r
 
 ( debugging )
 
