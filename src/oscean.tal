@@ -72,7 +72,7 @@ JMP2r
 		DUP2 ;term/diary #0050 ;mcpy JSR2
 		( copy pict )
 		DUP2 #0006 ADD2
-		( clip bound ) DUP2 #0003 ADD2 STH2
+		( clip bound ) INC2k INC2 INC2 STH2
 		( clip start ) #00 STH2kr STA
 		( clip wrap ) ;term/pict ;scpy JSR2
 		( clip restore ) #09 STH2r STA
@@ -149,7 +149,7 @@ JMP2r
 	#8000 .File/write DEO2
 
 	JMP2r ( print )
-	;write/head LDA2 #8000 SUB2 ;print/short JSR2
+	;write/head LDA2 #8000 SUB2 ;print JSR2
 	#20 #18 DEO
 	DUP2 ;print-str JSR2 #0a18 DEO
 
@@ -494,7 +494,7 @@ JMP2r
 	&loop
 		#0001 SUB2 #00 ;prev-char JSR2
 		INC2k LDA ;chex JSR2 STHkr NEQ ,&continue JCN
-			NIP2 POPr #0003 ADD2 JMP2r
+			NIP2 POPr INC2 INC2 INC2 JMP2r
 			&continue
 		LTH2k ,&loop JCN
 	( pop depth ) POPr
@@ -702,24 +702,8 @@ JMP2r
 @mclr ( src* len* -- ) OVR2 ADD2 SWP2 &l STH2k #00 STH2r STA INC2 GTH2k ,&l JCN POP2 POP2 JMP2r
 @mcpy ( src* dst* len* -- ) SWP2 STH2 OVR2 ADD2 SWP2 &loop LDAk STH2kr STA INC2r INC2 GTH2k ,&loop JCN POP2 POP2 POP2r JMP2r
 
-( debugging )
-
-@print ( short* -- )
-
-	&short ( short* -- ) SWP ,&byte JSR
-	&byte ( byte -- ) DUP #04 SFT ,&char JSR
-	&char ( char -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO
-
-JMP2r
-
-@print-str ( str* -- )
-
-	#0001 SUB2
-	&while
-		INC2 LDAk DUP #18 DEO ,&while JCN
-	POP2
-
-JMP2r
+@print ( hex* -- ) SWP ,&b JSR &b DUP #04 SFT ,&c JSR &c #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO JMP2r
+@print-str ( str* -- ) &w LDAk #18 DEO INC2 LDAk ,&w JCN POP2 JMP2r
 
 @print-error ( name* msg* -- )
 
