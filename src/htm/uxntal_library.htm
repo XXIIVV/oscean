@@ -15,37 +15,47 @@
 JMP2r
 </pre>
 
+<p>To emit a hexadecimal number, without leading zeroes:</p>
+
 <p>To emit a decimal number from a short:</p>
 <pre>
-@print-dec ( value* -- )
+@print-hex-pp ( short* -- )
 
-	#2710 ,&parse JSR
-	#03e8 ,&parse JSR
-	#0064 ,&parse JSR
-	#000a ,&parse JSR
-	,&emit JSR POP
+	#00 ,&z STR
+	,&parse JSR
+	,&parse JSR
+	,&parse JSR
+	,&parse JSR POP2
 
 JMP2r
-	&parse DIV2k DUP ,&emit JSR MUL2 SUB2 JMP2r
-	&emit #30 ADD #18 DEO JMP2r
+	&parse
+		OVR #04 SFT DUP [ LIT &z $1 ] EQU ,&skip JCN
+			#ff ,&z STR DUP #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO
+			&skip
+		POP #40 SFT2
+	JMP2r
 </pre>
 
 <p>To emit a decimal number from a short, without leading zeroes:</p>
 <pre>
-@print-dec-trim ( value* -- )
+@print-dec ( short* -- )
 
-	#00 ,&zero STR
+	#00 ,&z STR
 	#2710 ,&parse JSR
 	#03e8 ,&parse JSR
 	#0064 ,&parse JSR
 	#000a ,&parse JSR
-	,&emit JSR POP
+	NIP
+	&emit
+		DUP [ LIT &z $1 ] EQU ,&skip JCN
+			#ff ,&z STR DUP #30 ADD #18 DEO
+			&skip
+	POP
 
 JMP2r
-	&parse DIV2k DUP ,&emit JSR MUL2 SUB2 JMP2r
-	&emit 
-		DUP [ LIT &zero $1 ] #0000 EQU2 ,&skip JCN
-		#01 ,&zero STR DUP #30 ADD #18 DEO &skip POP JMP2r
+	&parse
+		DIV2k DUP ,&emit JSR MUL2 SUB2
+	JMP2r
 </pre>
 
 <p>To convert a decimal string to a hexadecimal value.</p>
@@ -111,7 +121,7 @@ JMP2r
 
 <pre>
 @mclr ( src* len* -- ) OVR2 ADD2 SWP2 &l STH2k #00 STH2r STA INC2 GTH2k ,&l JCN POP2 POP2 JMP2r
-@mcpy ( src* dst* len* -- ) SWP2 STH2 OVR2 ADD2 SWP2 &loop LDAk STH2kr STA INC2r INC2 GTH2k ,&loop JCN POP2 POP2 POP2r JMP2r
+@mcpy ( src* dst* len* -- ) SWP2 STH2 OVR2 ADD2 SWP2 &l LDAk STH2kr STA INC2r INC2 GTH2k ,&l JCN POP2 POP2 POP2r JMP2r
 </pre>
 
 <h3>Random</h3>
