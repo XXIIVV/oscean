@@ -122,6 +122,23 @@ JMP2r
 <pre>
 @mclr ( src* len* -- ) OVR2 ADD2 SWP2 &l STH2k #00 STH2r STA INC2 GTH2k ,&l JCN POP2 POP2 JMP2r
 @mcpy ( src* dst* len* -- ) SWP2 STH2 OVR2 ADD2 SWP2 &l LDAk STH2kr STA INC2r INC2 GTH2k ,&l JCN POP2 POP2 POP2r JMP2r
+@msfl ( a* b* len* -- ) STH2 SWP2 EQU2k ,&e JCN &l DUP2k STH2kr ADD2 LDA ROT ROT STA INC2 GTH2k ,&l JCN POP2 POP2 &e POP2r JMP2r
+@msfr ( a* b* len* -- ) STH2 EQU2k ,&e JCN &l DUP2 LDAk ROT ROT STH2kr ADD2 STA #0001 SUB2 LTH2k ,&l JCN POP2 POP2 &e POP2r JMP2r
+</pre>
+
+<p>To shift part of a string using a signed short.</p>
+
+<pre>
+@ssft ( str* len* -- )
+
+    STH2 DUP2k ;slen JSR2 ADD2 STH2r
+    DUP2 #8000 GTH2 ,&l JCN
+    ORAk ,&r JCN
+    POP2 POP2
+
+JMP2r
+    &l #8000 SWP2 SUB2 #8000 ADD2 ;msfl JSR2 JMP2r
+    &r ;msfr JSR2 JMP2r
 </pre>
 
 <h3>Random</h3>

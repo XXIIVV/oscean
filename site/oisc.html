@@ -1,3 +1,60 @@
+<!DOCTYPE html><html><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, inital-scale=1"/><link href="../links/main.css" type="text/css" rel="stylesheet"/><link href="../media/services/icon.png" type="image/png" rel="shortcut icon"/>
+<title>XXIIVV &mdash; oisc</title></head><body>
+<header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
+<nav><ul><li><a href="paper_computing.html">paper computing</a></li><li><a href="operating_systems.html">operating systems</a></li><li><a href="programming.html">programming</a></li><li><a href="virtual_machines.html" class="parent">virtual machines</a></li><li><a href="cellular_automata.html">cellular automata</a></li><li><a href="fractals.html">fractals</a></li></ul><ul><li><a href="oisc.html" class="self">oisc</a></li><li><a href="brainfuck.html">brainfuck</a></li><li><a href="gyo.html">gyo</a></li><li><a href="chip8.html">chip8</a></li><li><a href="turquoise.html">turquoise</a></li><li><a href="uxn.html">uxn</a></li><li><a href="orca.html">orca</a></li></ul><ul><li><a href="subleq.html">subleq</a></li><li><a href="fractran.html">fractran</a></li><li><a href="thue.html">thue</a></li></ul></nav><main><h2>OISCs are One Instruction Set Computers.</h2>
+
+<ul>
+	<li><a href='https://en.wikipedia.org/wiki/One-instruction_set_computer' target='_blank'>OISC</a></li>
+	<li><a href='http://msc-projects.great-site.net/TOGA/' target='_blank'>TOGA OISC</a></li>
+</ul>
+<h2>Subleq is a One Instruction Set Computer(OISC) architecture.</h2>
+
+<p>The subleq instruction subtracts the contents at address <code>a</code> from the contents at address <code>b</code>, stores the result at address <code>b</code>, and then, if the result is not positive, jumps to address <code>c</code>. If the result is positive, execution proceeds to the next instruction in sequence.</p>
+
+<pre>
+if (mem[B] -= mem[A]) <= 0 
+	goto C
+</pre>
+
+<p>Each subleq instruction has 3 operands which are memory addresses:</p>
+
+<pre>A B C</pre>
+
+<p>For example, in the following example, the first instruction subtracts 7 (address 3) from 7 (address 4). The result in address 4 is 0, so goto 6. On address 6 is the instruction 3 4 0 which again subtracts 7 from now 0 and jumps back to 0.</p>
+
+<pre>
+3 4 6
+7 7 7
+3 4 0
+</pre>
+
+<h2>Instructions</h2>
+
+<table border='1'>
+	<tr><th>JMP c</th><td><pre>Z Z c</pre></td></tr>
+	<tr><th>ADD a, b</th><td>
+<pre>a, Z
+Z, b
+Z, Z</pre></td></tr>
+	<tr><th>MOV a, b</th><td><pre>b, b
+a, Z
+Z, b
+Z, Z</pre></td></tr>
+	<tr><th>BEQ b, c</th><td><pre>b, Z, L1
+  Z, Z, OUT
+L1:
+  Z, Z
+  Z, b, c
+OUT:
+  ...</td></tr>
+</table>
+
+<ul>
+	<li><a href='https://git.sr.ht/~rabbits/uxn/tree/main/item/projects/examples/exercises/subleq.tal' target='_blank'>Subleq in Uxntal</a></li>
+	<li><a href='http://mazonka.com/subleq/index.html' target='_blank'>Oleg Mazonka</a></li>
+</ul>
+
 <h2>Fractran is based on one of the most bizarrely elegant concepts of computation.</h2>
 
 <p>A Fractran program is an ordered list of positive <a href='fractions.html'>fractions</a> together with an initial positive integer input. The program is run by updating the accumulator.</p>
@@ -165,3 +222,71 @@ if(<span class='denreg'>r2</span> >= <span class='denval'>2</span> && <span clas
 	.denreg { background:#72dec2 }
 	.denval { background:#ffd18c }
 </style>
+<h2>Thue is a matrioshka esoteric computer based on string rewriting rules.</h2>
+
+<p>A Thue program consists of two parts: a list of <a href='logic.html'>substitution rules</a>, which is terminated with a line having both sides of the operator empty, followed by a string representing the initial program state, which may extend over multiple lines.</p>
+
+<pre>
+#::=<span style='color:#777'>Unused rules are comments</span>
+a::=~Hello Thue!
+::=
+[a] <span style='color:#777; float:right'>[]</span>
+</pre>
+
+<p>Execution consists of picking, from the list of rules, an arbitrary rule whose original string exists as a substring somewhere in the program state, and replacing that substring by the rule's replacement string. This process repeats until there are no rules that can be applied, at which point, the program ends. </p>
+
+<pre>
+#::=<span style='color:#777'>Increment binary number</span>
+1_::=1++
+0_::=1
+01++::=10
+11++::=1++0
+_0::=_
+_1++::=10
+::=
+_10010011_ <span style='color:#777; float:right'>_10010100</span>
+</pre>
+
+<p>Thue represents one of the simplest possible constraint-based programming language. It is to the constraint-based paradigm what languages like <a href='oisc.html'>OISC</a> are to the imperative paradigm. </p>
+
+<img src='../media/refs/bthennota.png' width='100'/>
+
+<h3>Input</h3>
+
+<p>Added to this simple system are two strings which are used to permit Thue to communicate with the outside world. The first of these is the input symbol (":::").  The input symbol is actually the lhs of an implicit rule of which the user (or system's "input stream") is a component.  The input symbol, therefore, is replaced by a line of text received from the "input stream."</p>
+
+<h3>Output</h3>
+
+<p>As a counterpart of input, the output symbol ("~") is supplied.  Like the input symbol, the output symbol triggers an implicit rule which, in this case, encompasses the "output stream."  The specific effect is that all text to the right of the output symbol in the rhs of a production is sent to the output stream.</p>
+
+<p>Note that either (or both) of these implicit rules may be overridden by providing explicit rules that perform some other task.</p>
+
+<pre>
+#::=<span style='color:#777'>Sierpinski's triangle, backticks are linebreaks</span>
+X::=~_
+Y::=~*
+Z::=~`
+_.::=._X
+_*::=*_Y
+._|::=.Z-|
+*_|::=Z
+..-::=.-.
+**-::=*-.
+*.-::=*-*
+.*-::=.-*
+@.-::=@_.
+@*-::=@_*
+::=
+@_*...............................|
+</pre>
+
+<q>It is pitch black. You are likely to be eaten by a Thue.</q>
+
+<ul>
+	<li><a href='https://esolangs.org/wiki/Thue' target='_blank'>On Esolangs</a></li>
+	<li><a href='https://git.sr.ht/~rabbits/thuesday' target='_blank'>Uxn Interpreter</a></li>
+	<li><a href='http://web.archive.org/web/20031210145310/http://cyberspace.org/~lament/thue.html#' target='_blank'>Javascript Interpreter</a></li>
+</ul>
+<ul></ul><p><b>Incoming</b>: <a href="thue.html">thue</a> </p></main>
+<footer><a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.svg" alt="CreativeCommons"/></a> <a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a> <a href="https://merveilles.town/@neauoire" rel="me" target="_blank"><img src="../media/icon/merveilles.svg" alt="Merveilles"/></a> <a href="ethics.html"><img src="../media/icon/dreipfeile.svg" alt="NoNazis!"/></a> <a href="uxn.html"><img src="../media/icon/uxn.svg" alt="UxnPowered"/></a> <span><a href="devine_lu_linvega.html">Devine Lu Linvega</a> &copy; 2022 &mdash; <a href="about.html">BY-NC-SA 4.0</a></span></footer>
+</body></html>
