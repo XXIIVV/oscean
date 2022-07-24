@@ -34,3 +34,9 @@ rm -rf site
 mkdir -p site
 uxncli bin/oscean.rom
 uxncli bin/arvelie.rom
+
+if [ "${1}" = '--push' ];
+then
+	echo "Pushing.."
+	git add * && git commit -m '*' && git push
+fi

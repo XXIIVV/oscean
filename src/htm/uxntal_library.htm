@@ -15,11 +15,11 @@
 JMP2r
 </pre>
 
-<p>To emit a hexadecimal number, without leading zeroes:</p>
+<p>To emit a hexadecimal number from a short, without leading zeroes:</p>
 
 <p>To emit a decimal number from a short:</p>
 <pre>
-@print-hex-pp ( short* -- )
+@print-hex ( short* -- )
 
 	#00 ,&z STR
 	,&parse JSR
@@ -60,17 +60,47 @@ JMP2r
 
 <p>To convert a decimal string to a hexadecimal value.</p>
 <pre>
-@sdec ( addr* -- hex* )
+@sdec ( str* -- val* )
 
 	LIT2r 0000
-	&while
-		LDAk #30 SUB #00 SWP
-		STH2r #000a MUL2 ADD2 STH2
-		INC2 LDAk ,&while JCN
+	&w
+		LIT2r 000a MUL2r
+		LITr 00
+		LDAk #30 SUB STH ADD2r
+		INC2 LDAk ,&w JCN
 	POP2
 	STH2r
 
 JMP2r
+</pre>
+
+<p>To convert a hexadecimal string to a hexadecimal value.</p>
+<pre>
+@shex ( str* -- val* )
+
+	LIT2r 0000
+	&w
+		LITr 40 SFT2r
+		LITr 00
+		LDAk ,chex JSR STH ADD2r
+		INC2 LDAk ,&w JCN
+	POP2
+	STH2r
+
+JMP2r
+</pre>
+
+<p>To convert a hexadecimal character to a nibble.</p>
+<pre>
+@chex ( char -- value/ff )
+
+	DUP #2f GTH OVR #3a LTH AND ,&n JCN
+	DUP #40 GTH OVR #47 LTH AND ,&u JCN
+	DUP #60 GTH OVR #67 LTH AND ,&l JCN
+	POP #ff
+
+JMP2r
+	&l #20 SUB &u #07 SUB &n #30 SUB JMP2r
 </pre>
 
 <h3>Strings</h3>
@@ -79,9 +109,9 @@ JMP2r
 <pre>
 @print-str ( str* -- )
 
-	&while
+	&w
 		LDAk #18 DEO
-		INC2 LDAk ,&while JCN
+		INC2 LDAk ,&w JCN
 	POP2
 
 JMP2r
@@ -107,10 +137,10 @@ JMP2r
 
 	STH2
 	#0000
-	&loop
+	&l
 		#00 OVR STH2kr ADD2 LDA ,print/byte JSR
 		DUP #0f AND #0f NEQ #16 MUL #0a ADD #18 DEO
-		INC NEQk ,&loop JCN
+		INC NEQk ,&l JCN
 	POP2
 	POP2r
 
