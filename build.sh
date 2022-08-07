@@ -12,16 +12,16 @@ then
 	uxncli $HOME/roms/uxnlin.rom src/oscean.tal
 fi
 
-# uxncli ~/roms/drifblim.rom maeve.tal
-# mv maeve.rom bin/
-# uxncli ~/roms/drifblim.rom arvelie.tal
-# mv arvelie.rom bin/
-# uxncli ~/roms/drifblim.rom oscean.tal
-# mv oscean.rom bin/
+uxncli ~/roms/drifblim.rom src/maeve.tal
+mv src/maeve.rom bin/
+uxncli ~/roms/drifblim.rom src/arvelie.tal
+mv src/arvelie.rom bin/
+uxncli ~/roms/drifblim.rom src/oscean.tal
+mv src/oscean.rom bin/
 
-uxnasm src/maeve.tal bin/maeve.rom
-uxnasm src/arvelie.tal bin/arvelie.rom
-uxnasm src/oscean.tal bin/oscean.rom
+# uxnasm src/maeve.tal bin/maeve.rom
+# uxnasm src/arvelie.tal bin/arvelie.rom
+# uxnasm src/oscean.tal bin/oscean.rom
 
 echo "Parsing ----------------------"
 rm -rf tmp
