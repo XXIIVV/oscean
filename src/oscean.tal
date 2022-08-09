@@ -95,9 +95,9 @@ JMP2r
 	#1000 .File/length DEO2
 	;diary .File/read DEO2
 	( split lines )
-	;diary #0a00 ;cswp JSR2
+	;diary #0a00 ;cswp ( .. )
 
-JMP2r
+JMP2
 
 @load-incoming ( name* -- )
 
@@ -113,9 +113,9 @@ JMP2r
 	#1000 .File/length DEO2
 	;incoming .File/read DEO2
 	( split lines )
-	;incoming #0a00 ;cswp JSR2
+	;incoming #0a00 ;cswp ( .. )
 
-JMP2r
+JMP2
 
 @build-page ( name* -- name* )
 
@@ -168,8 +168,9 @@ JMP2r
 			DUP2 ;find-parent JSR2 ,&build-children JSR POP2
 			&no-siblings
 		( children ) ,&build-children JSR
-	;nav-tag ;write-close JSR2
-	JMP2r
+	;nav-tag ;write-close ( .. )
+
+JMP2
 
 	&build-children ( name* -- name* )
 
@@ -187,9 +188,9 @@ JMP2r
 			LDAk ,&while JCN
 		&end
 		POP2 POPr
-		;ul-tag ;write-close JSR2
+		;ul-tag ;write-close ( .. )
 
-JMP2r
+JMP2
 
 @build-page-main ( name* -- name* )
 
@@ -204,28 +205,28 @@ JMP2r
 		;build-page-special JSR2
 		;build-page-calendar JSR2
 		;build-page-incoming JSR2
-	;main-tag ;write-close JSR2
+	;main-tag ;write-close ( .. )
 
-JMP2r
+JMP2
 
 @build-page-body ( name* -- name* )
 
 	( origin ) ;write/head LDA2 STH2
 	[ ;htm-path OVR2 ;htm-ext ;make-path JSR2 ] ;include JSR2
-	( validate ) STH2r ;validate-output JSR2
+	( validate ) STH2r ;validate-output ( .. )
 
-JMP2r
+JMP2
 
 @build-page-module ( term* -- term* )
 
 	DUP2 #0001 SUB2 LDA LIT ', NEQ ,&no-album JCN
-		;build-module-album JSR2 JMP2r
+		;build-module-album JMP2
 		&no-album
 	DUP2 #0001 SUB2 LDA LIT '; NEQ ,&no-portal JCN
-		;build-module-portal JSR2 JMP2r
+		;build-module-portal JMP2
 		&no-portal
 	DUP2 #0001 SUB2 LDA LIT ': NEQ ,&no-archive JCN
-		;build-module-archive JSR2 JMP2r
+		;build-module-archive JMP2
 		&no-archive
 
 JMP2r
@@ -233,10 +234,10 @@ JMP2r
 @build-page-special ( term* -- term* )
 
 	DUP2 ;index-txt ;scmp JSR2 #00 EQU ,&no-index JCN
-		;build-special-index JSR2 JMP2r
+		;build-special-index JMP2
 		&no-index
 	DUP2 ;journal-txt ;scmp JSR2 #00 EQU ,&no-journal JCN
-		;build-special-journal JSR2 JMP2r
+		;build-special-journal JMP2
 		&no-journal
 
 JMP2r
@@ -253,9 +254,9 @@ JMP2r
 			( move to eol ) &eol INC2 LDAk ,&eol JCN INC2
 			LDAk ;&while JCN2
 		POP2
-	;ul-tag ;write-close JSR2
+	;ul-tag ;write-close ( .. )
 
-JMP2r
+JMP2
 
 @build-special-journal ( -- )
 
@@ -280,9 +281,9 @@ JMP2r
 	&end
 	POP2
 	( clear diary )
-	;diary #1000 ;mclr JSR2
+	;diary #1000 ;mclr ( .. )
 
-JMP2r
+JMP2
 	&limit $1
 	&latest-page "src/tables/diary/15-19 $1
 
@@ -366,9 +367,9 @@ JMP2r
 	( clip wrap ) ;code-tag ;write-auto JSR2
 	( clip restore ) [ LIT '+ ] STH2r STA
 	( event spacer ) [ LIT 20 ] ;write/char JSR2 ;mdash-entity-txt ;write JSR2 [ LIT 20 ] ;write/char JSR2
-	( event name ) DUP2 #09 ;next-char JSR2 INC2 #09 ;next-char JSR2 INC2 ;write JSR2
+	( event name ) DUP2 #09 ;next-char JSR2 INC2 #09 ;next-char JSR2 INC2 ;write ( .. )
 
-JMP2r
+JMP2
 
 @build-module-photo ( diary* -- )
 
@@ -391,9 +392,9 @@ JMP2r
 				&skip
 			#09 ;next-char JSR2 INC2 #09 ;next-char JSR2 INC2 ;write JSR2
 		;figcaption-tag ;write-close JSR2
-	;figure-tag ;write-close JSR2
+	;figure-tag ;write-close
 
-JMP2r
+JMP2
 	&diary-path $20
 
 @extract-term ( diary* -- term* )
@@ -424,9 +425,9 @@ JMP2r
 		( move to eol ) &eol INC2 LDAk ,&eol JCN
 		INC2 LDAk ,&while JCN
 	POP2
-	;p-tag ;write-close JSR2
+	;p-tag ;write-close ( .. )
 
-JMP2r
+JMP2
 	&incoming-txt "<b>Incoming</b>: 20 $1
 
 ( tools )
@@ -504,9 +505,9 @@ JMP2r
 
 @log-has-picture ( log* picture* -- flag )
 
-	SWP2 #0006 ADD2 ;sseg JSR2
+	SWP2 #0006 ADD2 ;sseg ( .. )
 
-JMP2r
+JMP2
 
 @make-path ( a* b* c* -- path* )
 
@@ -563,9 +564,9 @@ JMP2r
 	;alt-attr ;write-attr JSR2
 	;src-attr ;write-attr JSR2
 	[ LIT '/ ] ;write/char JSR2
-	[ LIT '> ] ;write/char JSR2
+	[ LIT '> ] ;write/char ( .. )
 
-JMP2r
+JMP2
 
 @add-local ( name* -- )
 
@@ -582,9 +583,9 @@ JMP2r
 		&not-parent
 	[ LIT '> ] ;write/char JSR2
 	;write JSR2
-	;a-tag ;write-close JSR2
+	;a-tag ;write-close ( .. )
 
-JMP2r
+JMP2
 	&blank $1
 
 ( generics )
