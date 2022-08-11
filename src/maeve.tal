@@ -46,7 +46,7 @@ BRK
 JMP2r
 
 @parse-term ( term* -- )
-	
+
 	( clear outgoing )
 	;outgoing #1000 ;mclr JSR2
 	( load htm )
@@ -68,7 +68,7 @@ JMP2r
 	POP2
 
 JMP2r
-	
+
 @validate ( page* -- )
 
 	&while
@@ -124,7 +124,7 @@ JMP2r
 	.File/write DEO2
 	#0001 .File/length DEO2
 	;&lb .File/write DEO2
-	( stats ) 
+	( stats )
 	.stats/links LDZ2k INC2 ROT STZ2
 
 JMP2r
@@ -139,7 +139,7 @@ JMP2r
 		( clear workarea )
 		LDA2k .File/name DEO2
 		.maxlength LDZ2 .File/length DEO2
-		;workarea 
+		;workarea
 			DUP2 .maxlength LDZ2 ;mclr JSR2
 			DUP2 .File/read DEO2
 			DUP2 #0a00 ;cswp JSR2
@@ -178,7 +178,7 @@ JMP2r
 	( linebreak )
 	#0001 .File/length DEO2
 	;&lb .File/write DEO2
-	( stats ) 
+	( stats )
 	.stats/diaries LDZ2k INC2 ROT STZ2
 
 JMP2r
@@ -236,9 +236,9 @@ JMP2r
 JMP2r
 
 @scap ( str* -- end* ) LDAk #00 NEQ JMP JMP2r &w INC2 LDAk ,&w JCN JMP2r
-@sput ( chr str* -- ) ,scap JSR STA JMP2r
+@sput ( chr str* -- ) ,scap JSR INC2k #00 ROT ROT STA STA JMP2r
 @slen ( str* -- len* ) DUP2 ,scap JSR SWP2 SUB2 JMP2r
-@scat ( src* dst* -- ) DUP2 ,slen JSR ADD2
+@scat ( src* dst* -- ) ,scap JSR
 @scpy ( src* dst* -- ) STH2 &w LDAk STH2kr STA INC2r INC2 LDAk ,&w JCN POP2 #00 STH2r STA JMP2r
 @scmp ( a* b* -- f ) STH2 &l LDAk LDAkr STHr ANDk #00 EQU ,&e JCN NEQk ,&e JCN POP2 INC2 INC2r ,&l JMP &e NIP2 POP2r EQU JMP2r
 @sseg ( a* b* -- f ) STH2 &l LDAk LDAkr STHr NEQ ,&e JCN INC2k LDA #00 EQU ,&e JCN INC2 INC2r ,&l JMP &e LDA LDAr STHr EQU JMP2r
@@ -271,20 +271,24 @@ JMP2r
 
 BRK
 
-@print-dec ( value* -- )
+@print-dec ( short* -- )
 
-	#00 ,&zero STR
+	#00 ,&z STR
 	#2710 ,&parse JSR
 	#03e8 ,&parse JSR
 	#0064 ,&parse JSR
 	#000a ,&parse JSR
-	,&emit JSR POP
+	NIP
+	&emit
+		DUP [ LIT &z $1 ] EQU ,&skip JCN
+			#ff ,&z STR DUP #30 ADD #18 DEO
+			&skip
+	POP
 
 JMP2r
-	&parse DIV2k DUP ,&emit JSR MUL2 SUB2 JMP2r
-	&emit
-		DUP [ LIT &zero $1 ] #0000 EQU2 ,&skip JCN
-		#01 ,&zero STR DUP #30 ADD #18 DEO &skip POP JMP2r
+	&parse
+		DIV2k DUP ,&emit JSR MUL2 SUB2
+	JMP2r
 
 @terms-txt "terms $1
 @links-txt "links $1
