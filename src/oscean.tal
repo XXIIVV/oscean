@@ -89,7 +89,7 @@ JMP2r
 	;tmp-path STH2kr ;scpy JSR2
 	STH2kr ;scat JSR2
 	;log-ext STH2kr ;scat JSR2
-	STH2kr #20 [ LIT '_ ] ;cswp JSR2
+	STH2kr #20 [ LIT "_ ] ;cswp JSR2
 	( load )
 	STH2r .File/name DEO2
 	#1000 .File/length DEO2
@@ -107,7 +107,7 @@ JMP2
 	;tmp-path STH2kr ;scpy JSR2
 	STH2kr ;scat JSR2
 	;map-ext STH2kr ;scat JSR2
-	STH2kr #20 [ LIT '_ ] ;cswp JSR2
+	STH2kr #20 [ LIT "_ ] ;cswp JSR2
 	( load )
 	STH2r .File/name DEO2
 	#1000 .File/length DEO2
@@ -219,13 +219,13 @@ JMP2
 
 @build-page-module ( term* -- term* )
 
-	DUP2 #0001 SUB2 LDA LIT ', NEQ ,&no-album JCN
+	DUP2 #0001 SUB2 LDA LIT ", NEQ ,&no-album JCN
 		;build-module-album JMP2
 		&no-album
-	DUP2 #0001 SUB2 LDA LIT '; NEQ ,&no-portal JCN
+	DUP2 #0001 SUB2 LDA LIT "; NEQ ,&no-portal JCN
 		;build-module-portal JMP2
 		&no-portal
-	DUP2 #0001 SUB2 LDA LIT ': NEQ ,&no-archive JCN
+	DUP2 #0001 SUB2 LDA LIT ": NEQ ,&no-archive JCN
 		;build-module-archive JMP2
 		&no-archive
 
@@ -293,7 +293,7 @@ JMP2
 	;ul-tag ;write-open JSR2
 	;diary
 	&while
-		DUP2 #0005 ADD2 LDA [ LIT '+ ] NEQ ,&continue JCN
+		DUP2 #0005 ADD2 LDA [ LIT "+ ] NEQ ,&continue JCN
 			;li-tag ;write-open JSR2
 				DUP2 ;build-module-event JSR2
 			;li-tag ;write-close JSR2
@@ -365,7 +365,7 @@ JMP2r
 	( clip bound ) DUP2 #0005 ADD2 STH2
 	( clip start ) #00 STH2kr STA
 	( clip wrap ) ;code-tag ;write-auto JSR2
-	( clip restore ) [ LIT '+ ] STH2r STA
+	( clip restore ) [ LIT "+ ] STH2r STA
 	( event spacer ) [ LIT 20 ] ;write/char JSR2 ;mdash-entity-txt ;write JSR2 [ LIT 20 ] ;write/char JSR2
 	( event name ) DUP2 #09 ;next-char JSR2 INC2 #09 ;next-char JSR2 INC2 ;write ( .. )
 
@@ -469,7 +469,7 @@ JMP2r
 	;tmp-path STH2kr ;scpy JSR2
 	STH2kr ;scat JSR2
 	;log-ext STH2kr ;scat JSR2
-	STH2kr #20 [ LIT '_ ] ;cswp JSR2
+	STH2kr #20 [ LIT "_ ] ;cswp JSR2
 	( load )
 	STH2r .File/name DEO2
 	#0060 .File/length DEO2
@@ -515,7 +515,7 @@ JMP2
 	ROT2 STH2kr ;scat JSR2
 	SWP2 STH2kr ;scat JSR2
 	STH2kr ;scat JSR2
-	STH2kr #20 [ LIT '_ ] ;cswp JSR2
+	STH2kr #20 [ LIT "_ ] ;cswp JSR2
 	STH2r
 
 JMP2r
@@ -526,13 +526,13 @@ JMP2r
 	&while
 		DUP2 ;href-attr SWP2 ;sseg JSR2 #00 EQU ,&continue JCN
 			( move to href ) #0006 ADD2
-			( strip relative ) LDAk [ LIT '. ] EQU ,&continue JCN
-			( strip jumps ) LDAk [ LIT '# ] EQU ,&continue JCN
+			( strip relative ) LDAk [ LIT ". ] EQU ,&continue JCN
+			( strip jumps ) LDAk [ LIT "# ] EQU ,&continue JCN
 			( strip http* ) DUP2 ;http-txt SWP2 ;sseg JSR2 ,&continue JCN
 			;buff #0030 ;mclr JSR2
 			DUP2 ;buff #002f ;mcpy JSR2
-			;buff [ LIT '. ] #00 ;cswp JSR2
-			;buff [ LIT '_ ] #20 ;cswp JSR2
+			;buff [ LIT ". ] #00 ;cswp JSR2
+			;buff [ LIT "_ ] #20 ;cswp JSR2
 			( find term )
 			;buff ;find-term JSR2 ORA ,&continue JCN
 				;buff ;error-broken-link ;print-error JMP2
@@ -559,19 +559,19 @@ JMP2r
 
 @add-img-tag ( src* alt* -- )
 
-	[ LIT '< ] ;write/char JSR2
+	[ LIT "< ] ;write/char JSR2
 	;img-tag ;write JSR2
 	;alt-attr ;write-attr JSR2
 	;src-attr ;write-attr JSR2
-	[ LIT '/ ] ;write/char JSR2
-	[ LIT '> ] ;write/char ( .. )
+	[ LIT "/ ] ;write/char JSR2
+	[ LIT "> ] ;write/char ( .. )
 
 JMP2
 
 @add-local ( name* -- )
 
-	[ LIT '< ] ;write/char JSR2
-	[ LIT 'a ] ;write/char JSR2
+	[ LIT "< ] ;write/char JSR2
+	[ LIT "a ] ;write/char JSR2
 	DUP2 ;html-ext ;&blank ;make-path JSR2 ;href-attr ;write-attr JSR2
 	( self )
 	DUP2 ;term/name ;scmp JSR2 #00 EQU ,&not-self JCN
@@ -581,7 +581,7 @@ JMP2
 	DUP2 ;term/parent ;scmp JSR2 #00 EQU ,&not-parent JCN
 		;parent-txt ;class-attr ;write-attr JSR2
 		&not-parent
-	[ LIT '> ] ;write/char JSR2
+	[ LIT "> ] ;write/char JSR2
 	;write JSR2
 	;a-tag ;write-close ( .. )
 
@@ -594,19 +594,19 @@ JMP2
 
 	[ LIT 20 ] ,write/char JSR
 	,write JSR
-	[ LIT '= ] ,write/char JSR
-	[ LIT '" ] ,write/char JSR
+	[ LIT "= ] ,write/char JSR
+	[ LIT "" ] ,write/char JSR
 	,write JSR
-	[ LIT '" ] ,write/char ( .. )
+	[ LIT "" ] ,write/char ( .. )
 
 JMP
 
 @write-open ( str* -- )
 
 	STH2
-	LIT '< ,write/char JSR
+	LIT "< ,write/char JSR
 	STH2r ,write JSR
-	LIT '> ,write/char ( .. )
+	LIT "> ,write/char ( .. )
 
 JMP
 
@@ -619,10 +619,10 @@ JMP
 @write-close ( str* -- )
 
 	STH2
-	LIT '< ,write/char JSR
-	LIT '/ ,write/char JSR
+	LIT "< ,write/char JSR
+	LIT "/ ,write/char JSR
 	STH2r ,write JSR
-	LIT '> ,write/char JMP
+	LIT "> ,write/char JMP
 
 JMP2r
 
