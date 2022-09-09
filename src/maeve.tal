@@ -77,7 +77,7 @@ JMP2r
 			( strip relative ) LDAk [ LIT ". ] EQU ,&continue JCN
 			( strip jumps ) LDAk [ LIT "# ] EQU ,&continue JCN
 			( strip http* ) DUP2 ;http-txt SWP2 ;sseg JSR2 ,&continue JCN
-			;buf/link STH2k #0030 ;mclr JSR2
+			;buf/link STH2k ;sclr JSR2
 			DUP2 STH2kr #002f ;mcpy JSR2
 			STH2kr [ LIT ". ] #00 ;cswp JSR2
 			STH2kr [ LIT "_ ] #20 ;cswp JSR2
@@ -186,7 +186,7 @@ JMP2r
 
 @make-path ( a* b* c* -- path* )
 
-	;buf/path STH2k #0030 ;mclr JSR2
+	;buf/path STH2k ;sclr JSR2
 	( a ) ROT2 STH2kr ;scpy JSR2
 	( b ) SWP2 STH2kr ;scat JSR2
 	( c ) STH2kr ;scat JSR2
@@ -242,6 +242,7 @@ JMP2r
 @scpy ( src* dst* -- ) STH2 &w LDAk STH2kr STA INC2r INC2 LDAk ,&w JCN POP2 #00 STH2r STA JMP2r
 @scmp ( a* b* -- f ) STH2 &l LDAk LDAkr STHr ANDk #00 EQU ,&e JCN NEQk ,&e JCN POP2 INC2 INC2r ,&l JMP &e NIP2 POP2r EQU JMP2r
 @sseg ( a* b* -- f ) STH2 &l LDAk LDAkr STHr NEQ ,&e JCN INC2k LDA #00 EQU ,&e JCN INC2 INC2r ,&l JMP &e LDA LDAr STHr EQU JMP2r
+@sclr ( str* -- ) LDAk ,&w JCN POP2 JMP2r &w STH2k #00 STH2r STA INC2 LDAk ,&w JCN POP2 JMP2r
 
 @mclr ( src* len* -- ) OVR2 ADD2 SWP2 &l STH2k #00 STH2r STA INC2 GTH2k ,&l JCN POP2 POP2 JMP2r
 @mcpy ( src* dst* len* -- ) SWP2 STH2 OVR2 ADD2 SWP2 &loop LDAk STH2kr STA INC2r INC2 GTH2k ,&loop JCN POP2 POP2 POP2r JMP2r
