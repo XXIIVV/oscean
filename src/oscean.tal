@@ -128,21 +128,19 @@ JMP2
 	;html-tag ;write-open JSR2
 		( head )
 		;head-tag ;write-open JSR2
-			;meta-head-path ;include JSR2
+			;meta-head-path ;write-inc JSR2
 			;title-tag ;write-open JSR2
 				;title-txt ;write JSR2 [ LIT 20 ] ;write/char JSR2 ;mdash-entity-txt ;write JSR2 [ LIT 20 ] ;write/char JSR2 DUP2 ;write JSR2
 			;title-tag ;write-close JSR2
 		;head-tag ;write-close JSR2
 		( body )
 		;body-tag ;write-open JSR2
-			;meta-header-path ;include JSR2
+			;meta-header-path ;write-inc JSR2
 			;build-page-nav JSR2
 			;build-page-main JSR2
-			;meta-footer-path ;include JSR2
+			;meta-footer-path ;write-inc JSR2
 		;body-tag ;write-close JSR2
 	;html-tag ;write-close JSR2
-
-	
 
 	( check file )
 	;write/head LDA2 #8000 SUB2 #7fff LTH2 ,&size-ok JCN
@@ -182,7 +180,7 @@ JMP2
 			( stop at sibling ) LDAk ;chex JSR2 STHkr EQU ,&end JCN
 			( when depth+1 ) LDAk ;chex JSR2 STHkr INC NEQ ,&continue JCN
 				;li-tag ;write-open JSR2
-				INC2k INC2 ;add-local JSR2
+				INC2k INC2 ;write-link JSR2
 				;li-tag ;write-close JSR2
 				&continue
 			( move to eol ) INC2 INC2 &eol INC2 LDAk ,&eol JCN INC2
@@ -213,7 +211,7 @@ JMP2
 @build-page-body ( name* -- name* )
 
 	( origin ) ;write/head LDA2 STH2
-	[ ;htm-path OVR2 ;htm-ext ;make-path JSR2 ] ;include JSR2
+	[ ;htm-path OVR2 ;htm-ext ;make-path JSR2 ] ;write-inc JSR2
 	( validate ) STH2r ;validate-output ( .. )
 
 JMP2
@@ -250,7 +248,7 @@ JMP2r
 		&while
 			( move to name ) INC2 INC2
 			;li-tag ;write-open JSR2
-				DUP2 ;add-local JSR2
+				DUP2 ;write-link JSR2
 			;li-tag ;write-close JSR2
 			( move to eol ) &eol INC2 LDAk ,&eol JCN INC2
 			LDAk ;&while JCN2
@@ -384,11 +382,11 @@ JMP2
 		;&diary-path
 		( make alt* )
 		OVR2 #00 ;next-char JSR2 INC2 #09 ;next-char JSR2 INC2
-			;add-img-tag JSR2
+			;write-img JSR2
 		( unclip ) DUP2 #0009 ADD2 STH2 #09 STH2r STA
 		;figcaption-tag ;write-open JSR2
 			DUP2 #000a ADD2 ;term/name SWP2 ;sseg JSR2 ,&skip JCN
-				DUP2 ;extract-term JSR2 ;add-local JSR2
+				DUP2 ;extract-term JSR2 ;write-link JSR2
 				[ LIT 20 ] ;write/char JSR2 ;mdash-entity-txt ;write JSR2 [ LIT 20 ] ;write/char JSR2
 				&skip
 			#09 ;next-char JSR2 INC2 #09 ;next-char JSR2 INC2 ;write JSR2
@@ -425,7 +423,7 @@ JMP2r
 	;p-tag ;write-open JSR2
 	;&incoming-txt ;write JSR2
 	&while
-		DUP2 ;add-local JSR2 #20 ;write/char JSR2
+		DUP2 ;write-link JSR2 #20 ;write/char JSR2
 		( move to eol ) &eol INC2 LDAk ,&eol JCN
 		INC2 LDAk ,&while JCN
 	POP2
@@ -546,7 +544,10 @@ JMP2r
 
 JMP2r
 
-@include ( path* -- )
+(
+@|framework )
+
+@write-inc ( path* -- )
 
 	.File/name DEO2
 	#fffe ;write/head LDA2 STH2k SUB2 .File/length DEO2
@@ -559,9 +560,7 @@ JMP2r
 
 JMP2r
 
-( Web framework )
-
-@add-img-tag ( src* alt* -- )
+@write-img ( src* alt* -- )
 
 	[ LIT "< ] ;write/char JSR2
 	;img-tag ;write JSR2
@@ -572,7 +571,7 @@ JMP2r
 
 JMP2
 
-@add-local ( name* -- )
+@write-link ( name* -- )
 
 	[ LIT "< ] ;write/char JSR2
 	[ LIT "a ] ;write/char JSR2
