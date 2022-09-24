@@ -28,23 +28,23 @@ BRK
 	;diary-path-pages/end ;diary-path-pages
 	&l
 		LDA2k .File/name DEO2
-		;workarea
-			DUP2 .File/read DEO2
-			#0000 OVR2 .File/success DEI2 ADD2 STA2
-			,parse-diary JSR
-		#4000 ;workarea ;mclr JSR2
+		;workarea .File/read DEO2
+		#0000
+			( to* from* ) ;workarea STH2k .File/success DEI2 ADD2
+			( cap ) STA2k NIP2
+			( parse ) STH2r ,parse-diary JSR
 		INC2 INC2 GTH2k ,&l JCN
 	POP2 POP2
 
 JMP2r
 
-@parse-diary ( page* -- )
+@parse-diary ( to* from* -- )
 
 	( swap ) DUP2 #0a00 ;cswp JSR2
-	&w
+	&l
 		,parse-line JSR
-		INC2 LDAk ,&w JCN
-	POP2
+		INC2 GTH2k ,&l JCN
+	POP2 POP2
 
 JMP2r
 
