@@ -13,19 +13,23 @@
 	( append mode )
 	#01 .File/append DEO
 	( load lexicon )
-	;lexicon-path .File/name DEO2
+	;dict/lexicon-path .File/name DEO2
 	#2000 .File/length DEO2
 	;lexicon
 		DUP2 .File/read DEO2
 		#0a00 ;cswp JSR2
+	( errors on size exceeded )
+	.File/success DEI2 #2000 LTH2 ,&size-ok JCN
+		;dict/lexicon-txt ;error/size ;print-error JMP2
+		&size-ok
 	( save bounds )
 	#f000 ;workarea SUB2 .maxlength STZ2
 	( I'm mad as hell, i want to kill! )
 	;parse-lexicon JSR2
-	;terms-txt .stats/terms LDZ2 ;print-stat JSR2
-	;links-txt .stats/links LDZ2 ;print-stat JSR2
+	;dict/terms-txt .stats/terms LDZ2 ;print-stat JSR2
+	;dict/links-txt .stats/links LDZ2 ;print-stat JSR2
 	;parse-diary JSR2
-	;diaries-txt .stats/diaries LDZ2 ;print-stat JSR2
+	;dict/diaries-txt .stats/diaries LDZ2 ;print-stat JSR2
 	( halt. )
 	#010f DEO
 
@@ -51,7 +55,7 @@ JMP2r
 	( clear outgoing )
 	;outgoing #1000 ;mclr JSR2
 	( load htm )
-	;htm-path OVR2 ;htm-ext ;make-path JSR2 .File/name DEO2
+	;dict/htm-path OVR2 ;dict/htm-ext ;make-path JSR2 .File/name DEO2
 	.maxlength LDZ2 .File/length DEO2
 	;workarea .File/read DEO2
 	( null terminate )
@@ -73,16 +77,16 @@ JMP2r
 @validate ( page* -- )
 
 	&while
-		;href-attr OVR2 ;sseg JSR2 #00 EQU ,&continue JCN
+		;dict/href-attr OVR2 ;sseg JSR2 #00 EQU ,&continue JCN
 			( move to href ) #0006 ADD2
 			( strip relative ) LDAk [ LIT ". ] EQU ,&continue JCN
 			( strip jumps ) LDAk [ LIT "# ] EQU ,&continue JCN
-			( strip http* ) DUP2 ;http-txt SWP2 ;sseg JSR2 ,&continue JCN
+			( strip http* ) DUP2 ;dict/http-txt SWP2 ;sseg JSR2 ,&continue JCN
 			;buf/link STH2k ;sclr JSR2
 			DUP2 STH2kr #002f ;mcpy JSR2
 			STH2kr [ LIT ". ] #00 ;cswp JSR2
 			STH2kr [ LIT "_ ] #20 ;cswp JSR2
-			( find term )
+			( errors on missing term )
 			STH2r ,find-term JSR ORA ,&found JCN
 				;buf/link ;error/local-missing ;print-error JMP2
 				&found
@@ -120,7 +124,7 @@ JMP2r
 	DUP2 ;outgoing ;scat JSR2
 	#0a ;outgoing ;sput JSR2
 	( write )
-	;tmp-path SWP2 ;map-ext ;make-path JSR2 .File/name DEO2
+	;dict/tmp-path SWP2 ;dict/map-ext ;make-path JSR2 .File/name DEO2
 	DUP2 ;slen JSR2 .File/length DEO2
 	.File/write DEO2
 	#0001 .File/length DEO2
@@ -174,7 +178,7 @@ JMP2r
 
 @connect-diaries ( diary* term* -- )
 
-	;tmp-path SWP2 ;log-ext ;make-path JSR2 .File/name DEO2
+	;dict/tmp-path SWP2 ;dict/log-ext ;make-path JSR2 .File/name DEO2
 	DUP2 ;slen JSR2 .File/length DEO2
 	.File/write DEO2
 	( linebreak )
@@ -299,15 +303,19 @@ JMP2r
 (
 @|assets )
 
-@terms-txt "terms $1
-@links-txt "links $1
-@diaries-txt "diaries $1
-@http-txt "http $1
-@href-attr "href $1
-@htm-ext ".htm $1
-@log-ext "-log $1
-@map-ext "-map $1
-@lexicon-path "src/tables/lexicon $1
+@dict
+	&lexicon-txt "lexicon $1
+	&terms-txt "terms $1
+	&links-txt "links $1
+	&diaries-txt "diaries $1
+	&http-txt "http $1
+	&href-attr "href $1
+	&htm-ext ".htm $1
+	&log-ext "-log $1
+	&map-ext "-map $1
+	&lexicon-path "src/tables/lexicon $1
+	&htm-path "src/htm/ $1
+	&tmp-path "tmp/ $1
 
 @diary-paths
 	&3 "src/tables/diary/15-19 $1
@@ -322,10 +330,8 @@ JMP2r
 	:diary-paths/0
 	&end
 
-@htm-path "src/htm/ $1
-@tmp-path "tmp/ $1
-
 @error
+	&size "-- 20 "size_exceeded 20 $1
 	&diary-term-missing "-- 20 "diary_term_missing 20 $1
 	&include-missing "-- 20 "include_missing 20 $1
 	&include-large "-- 20 "include_too_large 20 $1
