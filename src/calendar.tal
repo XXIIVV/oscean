@@ -10,16 +10,23 @@
 	( clear old copies )
 	;calendar-path .File2/name DEO2
 	#01 .File2/delete DEO
+	;journal-path .File2/name DEO2
+	#01 .File2/delete DEO
 
 	( setup output )
 	#01 .File2/append DEO
 	#0001 .File2/length DEO2
-	;header-txt ;w-str JSR2
 
-	( write )
-	;<p> ;w-str JSR2
+	( head )
+	;calendar-path .File2/name DEO2
+	;header-txt ;w-str JSR2
+	;p-tag ;<w> JSR2
+
 	,parse-pages JSR
-	;</p> ;w-str JSR2
+
+	( foot )
+	;calendar-path .File2/name DEO2
+	;p-tag ;</w> JSR2
 
 	( halt. )
 	#010f DEO
@@ -75,20 +82,20 @@ JMP2r
 
 	( year )
 	LDAk2 ,&last LDR2 EQU2 ,&no-year JCN
-		;<br/> ;w-str JSR2
+		;br-tag ;<w/> JSR2
 		LDA2k ,&last STR2
 		&no-year
 
 	( date )
-	;<code> ;w-str JSR2
-	DUP2 #0005 ;w-len JSR2
-	;</code> ;w-str JSR2
+	;code-tag ;<w> JSR2
+		DUP2 #0005 ;w-len JSR2
+	;code-tag ;</w> JSR2
 	;scap JSR2 INC2
 	( term ) DUP2 ;w-link JSR2
 	;spacer ;w-str JSR2
 	;scap JSR2 INC2
 	( name ) DUP2 ;w-str JSR2
-	;<br/> ;w-str JSR2
+	;br-tag ;<w/> JSR2
 	;scap JSR2
 	POP2
 
@@ -97,12 +104,39 @@ JMP2r
 
 @parse-photo ( photo* -- )
 
-	;print-str JSR2 #0a18 DEO
+	;journal-path .File2/name DEO2
+	;w-str JSR2
 
 JMP2r
 
 (
 @|framework )
+
+@<w> ( name* -- )
+
+	LIT "< ;w-chr JSR2
+	;w-str JSR2
+	LIT "> ;w-chr JSR2
+
+JMP2r
+
+@</w> ( name* -- )
+
+	LIT "< ;w-chr JSR2
+	LIT "/ ;w-chr JSR2
+	;w-str JSR2
+	LIT "> ;w-chr JSR2
+
+JMP2r
+
+@<w/> ( name* -- )
+
+	LIT "< ;w-chr JSR2
+	;w-str JSR2
+	LIT "/ ;w-chr JSR2
+	LIT "> ;w-chr JSR2
+
+JMP2r
 
 @w-link ( str* -- )
 
@@ -181,13 +215,19 @@ JMP2r
 (
 @|assets )
 
+@code-tag "code $1
+@p-tag "p $1
+@br-tag "br $1
+
+@figure-tag "figure $1
+@figcaption-tag "figcaption $1
+@a-tag "a $1
+@img-tag "img $1
+
 @calendar-path "src/htm/calendar.htm $1
+@journal-path "src/htm/journal.htm $1
+
 @spacer 20 "&mdash; 20 $1
-@<p> "<p> $1
-@</p> "</p> $1
-@<br/> "<br/> 0a $1
-@<code> "<code> $1
-@</code> "</code> 20 $1
 @<ahref=' "<a 20 "href=' $1
 @.html'> ".html'> $1
 @</a> "</a> $1
