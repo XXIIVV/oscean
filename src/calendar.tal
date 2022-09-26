@@ -52,7 +52,17 @@ JMP2r
 
 	( swap ) DUP2 #0900 ;cswp JSR2
 
-	DUP2 #0005 ADD2 LDA LIT "+ NEQ ,&skip JCN
+	DUP2 #0005 ADD2 LDA LIT "+ NEQ ,&no-event JCN
+		DUP2 ;parse-event JSR2
+		&no-event
+
+	;scap JSR2 INC2
+	;scap JSR2 INC2
+	;scap JSR2
+
+JMP2r
+
+@parse-event ( event* -- )
 
 	( year )
 	LDAk2 ,&last LDR2 EQU2 ,&no-year JCN
@@ -60,7 +70,6 @@ JMP2r
 		LDA2k ,&last STR2
 		&no-year
 
-	( print )
 	( date )
 	;<code> ;w-str JSR2
 	DUP2 #0005 ;w-len JSR2
@@ -72,17 +81,10 @@ JMP2r
 	( name ) DUP2 ;w-str JSR2
 	;<br/> ;w-str JSR2
 	;scap JSR2
+	POP2
 
 JMP2r
 	&last $3
-
-&skip ( str* -- str* )
-
-	;scap JSR2 INC2
-	;scap JSR2 INC2 
-	;scap JSR2
-
-JMP2r
 
 (
 @|framework )
