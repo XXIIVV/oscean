@@ -94,10 +94,9 @@ JMP2r
 	( term ) DUP2 ;w-link JSR2
 	;spacer ;w-str JSR2
 	;scap JSR2 INC2
-	( name ) DUP2 ;w-str JSR2
+	( name ) ;w-str JSR2
 	;br-tag ;<w/> JSR2
-	;scap JSR2
-	POP2
+	#0a ;w-chr JSR2
 
 JMP2r
 	&last $3
@@ -111,15 +110,22 @@ JMP2r
 
 	;journal-path .File2/name DEO2
 
+	DUP2 #0006 ADD2 ,&pict STR2
+	#000a ADD2
+		DUP2 ,&term STR2 
+		;scap JSR2 INC2 ,&title STR2
+
 	;figure-tag ;<w> JSR2
+		( src ) [ LIT2 &pict $2 ]
+		( alt ) [ LIT2 &title $2 ] ;w-img JSR2
 		;figcaption-tag ;<w> JSR2
-			#000a ADD2
-				DUP2 ;w-link JSR2
+			[ LIT2 &term $2 ] ;w-link JSR2
 				;spacer ;w-str JSR2
-				;scap JSR2 INC2 ;w-str JSR2
+				,&title LDR2 ;w-str JSR2
 		;figcaption-tag ;</w> JSR2
 	;figure-tag ;</w> JSR2
 	,&len LDR2 INC2 ,&len STR2
+	#0a ;w-chr JSR2
 
 JMP2r
 
@@ -162,8 +168,8 @@ JMP2r
 
 JMP2r
 	&a "<img 20 "alt=" $1
-	&b "" 20 "src=" $1
-	&c ""/> $1
+	&b "" 20 "src="../media/diary/ $1
+	&c ".jpg"/> $1
 
 @w-link ( str* -- )
 
@@ -171,7 +177,7 @@ JMP2r
 	DUP2 ;w-path JSR2
 	;.html'> ;w-str JSR2
 	;w-str JSR2
-	;</a> ;w-str JSR2
+	;a-tag ;</w> JSR2
 
 JMP2r
 
@@ -199,7 +205,6 @@ JMP2r
 	POP2 POP2
 
 JMP2r
-	&b $1
 
 @w-str ( str* -- )
 
@@ -209,7 +214,6 @@ JMP2r
 	POP2
 
 JMP2r
-	&b $1
 
 @w-chr ( chr -- )
 
@@ -249,7 +253,6 @@ JMP2r
 @figure-tag "figure $1
 @figcaption-tag "figcaption $1
 @a-tag "a $1
-@img-tag "img $1
 
 @calendar-path "src/htm/calendar.htm $1
 @journal-path "src/htm/journal.htm $1
@@ -257,7 +260,6 @@ JMP2r
 @spacer 20 "&mdash; 20 $1
 @<ahref=' "<a 20 "href=' $1
 @.html'> ".html'> $1
-@</a> "</a> $1
 
 @no-photo "000 $1
 
