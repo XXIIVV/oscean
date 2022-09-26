@@ -104,8 +104,22 @@ JMP2r
 
 @parse-photo ( photo* -- )
 
+	( limit to 20 entries )
+	[ LIT2 &len $2 ] #0020 LTH2 ,&continue JCN
+		POP2 JMP2r
+		&continue
+
 	;journal-path .File2/name DEO2
-	;w-str JSR2
+
+	;figure-tag ;<w> JSR2
+		;figcaption-tag ;<w> JSR2
+			#000a ADD2
+				DUP2 ;w-link JSR2
+				;spacer ;w-str JSR2
+				;scap JSR2 INC2 ;w-str JSR2
+		;figcaption-tag ;</w> JSR2
+	;figure-tag ;</w> JSR2
+	,&len LDR2 INC2 ,&len STR2
 
 JMP2r
 
@@ -137,6 +151,19 @@ JMP2r
 	LIT "> ;w-chr JSR2
 
 JMP2r
+
+@w-img ( src* alt* )
+
+	;&a ;w-str JSR2
+	;w-str JSR2
+	;&b ;w-str JSR2
+	;w-str JSR2
+	;&c ;w-str JSR2
+
+JMP2r
+	&a "<img 20 "alt=" $1
+	&b "" 20 "src=" $1
+	&c ""/> $1
 
 @w-link ( str* -- )
 
