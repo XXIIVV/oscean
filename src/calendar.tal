@@ -59,6 +59,9 @@ JMP2r
 	DUP2 #0005 ADD2 LDA LIT "+ NEQ ,&no-event JCN
 		DUP2 ;parse-event JSR2
 		&no-event
+	;no-photo OVR2 #0006 ADD2 ;scmp JSR2 ,&no-photo JCN
+		DUP2 ;parse-photo JSR2
+		&no-photo
 
 	;scap JSR2 INC2
 	;scap JSR2 INC2
@@ -91,6 +94,12 @@ JMP2r
 
 JMP2r
 	&last $3
+
+@parse-photo ( photo* -- )
+
+	;print-str JSR2 #0a18 DEO
+
+JMP2r
 
 (
 @|framework )
@@ -164,6 +173,7 @@ JMP2r
 
 JMP2r
 
+@scmp ( a* b* -- f ) STH2 &l LDAk LDAkr STHr ANDk #00 EQU ,&e JCN NEQk ,&e JCN POP2 INC2 INC2r ,&l JMP &e NIP2 POP2r EQU JMP2r
 @scap ( str* -- end* ) LDAk #00 NEQ JMP JMP2r &w INC2 LDAk ,&w JCN JMP2r
 @print ( hex* -- ) SWP ,&b JSR &b DUP #04 SFT ,&c JSR &c #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO JMP2r
 @print-str ( str* -- ) &w LDAk #18 DEO INC2 LDAk ,&w JCN POP2 JMP2r
@@ -181,6 +191,8 @@ JMP2r
 @<ahref=' "<a 20 "href=' $1
 @.html'> ".html'> $1
 @</a> "</a> $1
+
+@no-photo "000 $1
 
 @diary-paths
 	&3 "src/tables/diary/15-19 $1
