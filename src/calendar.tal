@@ -7,8 +7,12 @@
 
 |0100 ( -> )
 
+	( clear old copies )
+	;calendar-path .File2/name DEO2
+	#01 .File2/delete DEO
+
 	( setup output )
-	;output-path .File2/name DEO2
+	#01 .File2/append DEO
 	#0001 .File2/length DEO2
 	;header-txt ;w-str JSR2
 
@@ -64,6 +68,8 @@ JMP2r
 
 @parse-event ( event* -- )
 
+	;calendar-path .File2/name DEO2
+
 	( year )
 	LDAk2 ,&last LDR2 EQU2 ,&no-year JCN
 		;<br/> ;w-str JSR2
@@ -99,17 +105,6 @@ JMP2r
 
 JMP2r
 
-@w-str ( str* -- )
-
-	&w
-		LDAk ,&b STR
-		;&b .File2/write DEO2
-		INC2 LDAk ,&w JCN
-	POP2
-
-JMP2r
-	&b $1
-
 @w-path ( str* -- )
 
 	&w
@@ -129,10 +124,27 @@ JMP2r
 
 	ADD2k NIP2 SWP2
 	&l
-		LDAk ,&b STR
-		;&b .File2/write DEO2
+		LDAk ,w-chr JSR
 		INC2 GTH2k ,&l JCN
 	POP2 POP2
+
+JMP2r
+	&b $1
+
+@w-str ( str* -- )
+
+	&w
+		LDAk ,w-chr JSR
+		INC2 LDAk ,&w JCN
+	POP2
+
+JMP2r
+	&b $1
+
+@w-chr ( chr -- )
+
+	;&b STH2k STA
+	STH2r .File2/write DEO2
 
 JMP2r
 	&b $1
@@ -159,7 +171,7 @@ JMP2r
 (
 @|assets )
 
-@output-path "src/htm/calendar.htm $1
+@calendar-path "src/htm/calendar.htm $1
 @spacer 20 "&mdash; 20 $1
 @<p> "<p> $1
 @</p> "</p> $1
