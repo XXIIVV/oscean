@@ -202,7 +202,7 @@ JMP2
 		;build-page-body JSR2
 		;build-page-module JSR2
 		;build-page-special JSR2
-		;build-page-calendar JSR2
+		;build-page-events JSR2
 		;build-page-incoming JSR2
 	;main-tag ;write-close ( .. )
 
@@ -254,36 +254,7 @@ JMP2r
 
 JMP2
 
-@build-special-journal ( -- )
-
-	( load latest diary page )
-	;diary ;sclr JSR2
-	;&latest-page .File/name DEO2
-	#1000 .File/length DEO2
-	;diary .File/read DEO2
-	( split lines )
-	;diary #0a00 ;cswp JSR2
-	( limit at 20 )
-	#00 ;&limit STA
-	;diary
-	&while
-		;&limit LDA #20 GTH ,&end JCN
-		DUP2 ;no-picture ;log-has-picture JSR2 ,&continue JCN
-			DUP2 ;build-module-photo JSR2
-			;&limit LDA INC ;&limit STA
-		&continue
-		( goto eol ) &eol INC2 LDAk ,&eol JCN INC2
-		LDAk ,&while JCN
-	&end
-	POP2
-	( clear diary )
-	;diary ;sclr ( .. )
-
-JMP2
-	&limit $1
-	&latest-page "src/tables/diary/15-19 $1
-
-@build-page-calendar ( name* -- name* )
+@build-page-events ( name* -- name* )
 
 	STH2
 	;ul-tag ;write-open JSR2
