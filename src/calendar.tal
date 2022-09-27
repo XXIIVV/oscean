@@ -61,7 +61,10 @@ JMP2r
 
 @parse-line ( line* -- line* )
 
-	( swap ) DUP2 #0900 ;cswp JSR2
+	DUP2 ;parse-log JSR2
+
+	( split )
+	DUP2 #0900 ;cswp JSR2
 
 	DUP2 #0005 ADD2 LDA LIT "+ NEQ ,&no-event JCN
 		DUP2 ;parse-event JSR2
@@ -73,6 +76,14 @@ JMP2r
 	;scap JSR2 INC2
 	;scap JSR2 INC2
 	;scap JSR2
+
+JMP2r
+
+@parse-log ( event* -- )
+
+	DUP2 #000a ADD2 ;make-path-tmp JSR2 .File2/name DEO2
+	;w-str JSR2
+	#0a ;w-chr JSR2
 
 JMP2r
 
@@ -128,6 +139,15 @@ JMP2r
 	#0a ;w-chr JSR2
 
 JMP2r
+
+@make-path-tmp ( name* -- path* )
+
+	;&term ;scpy-line JSR2
+	;&term #20 LIT "_ ;cswp JSR2
+	;&path
+
+JMP2r
+	&path "tmp/log- &term $30
 
 (
 @|framework )
@@ -239,6 +259,7 @@ JMP2r
 
 JMP2r
 
+@scpy-line ( src* dst* -- ) STH2 &w LDAk STH2kr STA INC2r INC2 LDAk #1f GTH ,&w JCN POP2 #00 STH2r STA JMP2r
 @slen ( str* -- len* ) DUP2 ,scap JSR SWP2 SUB2 JMP2r
 @scmp ( a* b* -- f ) STH2 &l LDAk LDAkr STHr ANDk #00 EQU ,&e JCN NEQk ,&e JCN POP2 INC2 INC2r ,&l JMP &e NIP2 POP2r EQU JMP2r
 @scap ( str* -- end* ) LDAk #00 NEQ JMP JMP2r &w INC2 LDAk ,&w JCN JMP2r
