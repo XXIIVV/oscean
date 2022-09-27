@@ -8,6 +8,8 @@
 |0100 ( -> )
 
 	( clear old copies )
+	;sitemap-path .File2/name DEO2
+	#01 .File2/delete DEO
 	;calendar-path .File2/name DEO2
 	#01 .File2/delete DEO
 	;journal-path .File2/name DEO2
@@ -18,16 +20,14 @@
 	#0001 .File2/length DEO2
 
 	( lexicon )
-	;lexicon-path .File/name DEO2
+	;sitemap-path .File2/name DEO2 ;ul-tag ;<w> JSR2
 	;parse-lexicon JSR2
+	;sitemap-path .File2/name DEO2 ;ul-tag ;</w> JSR2
 
 	( diary )
-	;calendar-path .File2/name DEO2
-	;header-txt ;w-str JSR2
-	;p-tag ;<w> JSR2
+	;calendar-path .File2/name DEO2 ;header-txt ;w-str JSR2 ;p-tag ;<w> JSR2
 	;parse-diary-pages JSR2
-	;calendar-path .File2/name DEO2
-	;p-tag ;</w> JSR2
+	;calendar-path .File2/name DEO2 ;p-tag ;</w> JSR2
 
 	( halt. )
 	#010f DEO
@@ -39,15 +39,34 @@ BRK
 
 @parse-lexicon ( -- )
 
+	;lexicon-path .File/name DEO2
 	#2000 .File/length DEO2
 	;lexicon .File/read DEO2
 	( swap ) ;lexicon #0a00 ;cswp JSR2
 
 	;lexicon .File/success DEI2 ADD2k NIP2 SWP2
 	&l
-		LDAk #18 DEO
+		,parse-lexicon-line JSR
 		INC2 GTH2k ,&l JCN
 	POP2 POP2
+
+JMP2r
+
+@parse-lexicon-line ( line* -- next* )
+
+	INC2 INC2
+	DUP2 ,parse-term JSR
+	;scap JSR2
+
+JMP2r
+
+@parse-term ( term* -- )
+
+	;sitemap-path .File2/name DEO2
+	;li-tag ;<w> JSR2
+	;w-link JSR2
+	;li-tag ;</w> JSR2
+	#0a ;w-chr JSR2
 
 JMP2r
 
@@ -74,13 +93,13 @@ JMP2r
 
 	( swap ) DUP2 #0a00 ;cswp JSR2
 	&l
-		,parse-line JSR
+		,parse-diary-line JSR
 		INC2 GTH2k ,&l JCN
 	POP2 POP2
 
 JMP2r
 
-@parse-line ( line* -- line* )
+@parse-diary-line ( line* -- next* )
 
 	DUP2 ;parse-log JSR2
 	( split )
@@ -286,12 +305,15 @@ JMP2r
 @|assets )
 
 @p-tag "p $1
+@ul-tag "ul $1
+@li-tag "li $1
 @br-tag "br $1
 @code-tag "code $1
 @figure-tag "figure $1
 @figcaption-tag "figcaption $1
 
 @lexicon-path "src/tables/lexicon $1
+@sitemap-path "src/htm/sitemap.htm $1
 @calendar-path "src/htm/calendar.htm $1
 @journal-path "src/htm/journal.htm $1
 
