@@ -22,7 +22,7 @@
 	;header-txt ;w-str JSR2
 	;p-tag ;<w> JSR2
 
-	,parse-pages JSR
+	,parse-diary-pages JSR
 
 	( foot )
 	;calendar-path .File2/name DEO2
@@ -33,7 +33,10 @@
 
 BRK
 
-@parse-pages ( -- )
+(
+@|diary )
+
+@parse-diary-pages ( -- )
 
 	#4000 .File/length DEO2
 	;diary-path-pages/end ;diary-path-pages
@@ -43,13 +46,13 @@ BRK
 		#0000
 			( to* from* ) ;workarea STH2k .File/success DEI2 ADD2
 			( cap ) STA2k NIP2
-			( parse ) STH2r ,parse-diary JSR
+			( parse ) STH2r ,parse-diary-page JSR
 		INC2 INC2 GTH2k ,&l JCN
 	POP2 POP2
 
 JMP2r
 
-@parse-diary ( to* from* -- )
+@parse-diary-page ( to* from* -- )
 
 	( swap ) DUP2 #0a00 ;cswp JSR2
 	&l
@@ -62,17 +65,17 @@ JMP2r
 @parse-line ( line* -- line* )
 
 	DUP2 ;parse-log JSR2
-
 	( split )
 	DUP2 #0900 ;cswp JSR2
-
+	( event )
 	DUP2 #0005 ADD2 LDA LIT "+ NEQ ,&no-event JCN
 		DUP2 ;parse-event JSR2
 		&no-event
+	( photo )
 	;no-photo OVR2 #0006 ADD2 ;scmp JSR2 ,&no-photo JCN
 		DUP2 ;parse-photo JSR2
 		&no-photo
-
+	( eol )
 	;scap JSR2 INC2
 	;scap JSR2 INC2
 	;scap JSR2
@@ -207,7 +210,7 @@ JMP2r
 @w-path ( str* -- )
 
 	&w
-		LDAk LIT "_ OVR #20 NEQ JMP SWP POP ,w-chr JSR
+		LDAk LIT "_ OVR #20 NEQ [ JMP SWP POP ] ,w-chr JSR
 		INC2 LDAk ,&w JCN
 	POP2
 
