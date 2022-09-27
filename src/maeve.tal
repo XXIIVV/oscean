@@ -5,7 +5,7 @@
 |0000
 
 	@maxlength $2
-	@stats &terms $2 &links $2 &diaries $2
+	@stats &terms $2 &links $2
 	@buf &path $30 &link $30
 
 |0100 ( -> )
@@ -28,8 +28,6 @@
 	;parse-lexicon JSR2
 	;dict/terms-txt .stats/terms LDZ2 ;print-stat JSR2
 	;dict/links-txt .stats/links LDZ2 ;print-stat JSR2
-	;parse-diary JSR2
-	;dict/diaries-txt .stats/diaries LDZ2 ;print-stat JSR2
 	( halt. )
 	#010f DEO
 
@@ -136,61 +134,6 @@ JMP2r
 JMP2r
 	&lb 0a
 
-(
-@|diary )
-
-@parse-diary ( -- )
-
-	;diary-path-pages/end ;diary-path-pages
-	&loop
-		( clear workarea )
-		LDA2k .File/name DEO2
-		.maxlength LDZ2 .File/length DEO2
-		;workarea
-			DUP2 .maxlength LDZ2 ;mclr JSR2
-			DUP2 .File/read DEO2
-			DUP2 #0a00 ;cswp JSR2
-			,parse-diary-page JSR
-		INC2 INC2 GTH2k ,&loop JCN
-	POP2 POP2
-
-JMP2r
-
-@parse-diary-page ( page* -- )
-
-	&while
-		DUP2 ,&log STR2
-		#000a ADD2
-		( bound ) DUP2 #09 ;next-char JSR2 STH2
-		( clip ) #00 STH2kr STA
-		( flag ) DUP2 ;find-term JSR2
-		( test for exist )
-			ORAk ,&no-missing JCN
-				;error/diary-term-missing ROT2 ;print-error JMP2
-				&no-missing
-			,&term STR2
-		( unclip ) #09 STH2r STA
-		[ LIT2 &log $2 ] [ LIT2 &term $2 ] ,connect-diaries JSR
-		( goto eol ) &eol INC2 LDAk ,&eol JCN INC2
-		LDAk ,&while JCN
-	POP2
-
-JMP2r
-
-@connect-diaries ( diary* term* -- )
-
-	;dict/tmp-path SWP2 ;dict/log-ext ;make-path JSR2 .File/name DEO2
-	DUP2 ;slen JSR2 .File/length DEO2
-	.File/write DEO2
-	( linebreak )
-	#0001 .File/length DEO2
-	;&lb .File/write DEO2
-	( stats )
-	.stats/diaries LDZ2k INC2 ROT STZ2
-
-JMP2r
-	&lb 0a
-
 @make-path ( a* b* c* -- path* )
 
 	;buf/path STH2k ;sclr JSR2
@@ -199,20 +142,6 @@ JMP2r
 	( c ) STH2kr ;scat JSR2
 	STH2kr #20 [ LIT "_ ] ;cswp JSR2
 	STH2r
-
-JMP2r
-
-( generics )
-
-@next-char ( addr* char -- addr* )
-
-	STH
-	&while
-		LDAk STHkr EQU ,&end JCN
-		LDAk #00 EQU ,&end JCN
-		INC2 LDAk ,&while JCN
-	&end
-		POPr
 
 JMP2r
 
@@ -304,35 +233,18 @@ JMP2r
 
 @dict
 	&lexicon-txt "lexicon $1
-	&calendar-txt "calendar $1
 	&terms-txt "terms $1
 	&links-txt "links $1
-	&diaries-txt "diaries $1
 	&http-txt "http $1
 	&href-attr "href $1
 	&htm-ext ".htm $1
-	&log-ext "-log $1
 	&map-ext "-map $1
 	&lexicon-path "src/tables/lexicon $1
 	&htm-path "src/htm/ $1
 	&tmp-path "tmp/ $1
 
-@diary-paths
-	&3 "src/tables/diary/15-19 $1
-	&2 "src/tables/diary/10-14 $1
-	&1 "src/tables/diary/05-09 $1
-	&0 "src/tables/diary/00-04 $1
-
-@diary-path-pages
-	:diary-paths/3
-	:diary-paths/2
-	:diary-paths/1
-	:diary-paths/0
-	&end
-
 @error
 	&size "-- 20 "size_exceeded 20 $1
-	&diary-term-missing "-- 20 "diary_term_missing 20 $1
 	&include-missing "-- 20 "include_missing 20 $1
 	&include-large "-- 20 "include_too_large 20 $1
 	&local-missing "-- 20 "local_missing 20 $1
