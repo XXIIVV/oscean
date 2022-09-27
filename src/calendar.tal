@@ -37,13 +37,24 @@ BRK
 (
 @|lexicon )
 
+@load-file ( name* length* path* -- )
+
+	DUP2 .File/name DEO2
+		;print-str JSR2
+	#2018 DEO
+	DUP2 .File/length DEO2
+	SWP2 .File/read DEO2
+	.File/success DEI2 ;print JSR2
+	LIT "/ #18 DEO
+	;print JSR2
+	#0a18 DEO
+
+JMP2r
+
 @parse-lexicon ( -- )
 
-	;lexicon-path .File/name DEO2
-	#2000 .File/length DEO2
-	;lexicon .File/read DEO2
+	;lexicon #2000 ;lexicon-path ;load-file JSR2
 	( swap ) ;lexicon #0a00 ;cswp JSR2
-
 	;lexicon .File/success DEI2 ADD2k NIP2 SWP2
 	&l
 		,parse-lexicon-line JSR
@@ -78,8 +89,7 @@ JMP2r
 	#4000 .File/length DEO2
 	;diary-path-pages/end ;diary-path-pages
 	&l
-		LDA2k .File/name DEO2
-		;workarea .File/read DEO2
+		LDA2k ;workarea #4000 ROT2 ;load-file JSR2
 		#0000
 			( to* from* ) ;workarea STH2k .File/success DEI2 ADD2
 			( cap ) STA2k NIP2
