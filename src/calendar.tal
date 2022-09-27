@@ -65,19 +65,48 @@ JMP2r
 
 @parse-lexicon-line ( line* -- next* )
 
-	INC2 INC2
-	DUP2 ,parse-term JSR
-	;scap JSR2
+	INC2 INC2 DUP2 
 
-JMP2r
+	( do incoming )
+	DUP2 #0001 SUB2 LDA LIT "? EQU ,&no-map JCN
+		DUP2 ;print-str JSR2 #2018 DEO
+		DUP2 ;make-path-htm JSR2 ;workarea #8000 ROT2 ;load-file JSR2
+		;parse-links JSR2
+		&no-map
 
-@parse-term ( term* -- )
-
+	( do sitemap )
 	;sitemap-path .File2/name DEO2
 	;li-tag ;<w> JSR2
 	;w-link JSR2
 	;li-tag ;</w> JSR2
 	#0a ;w-chr JSR2
+
+	;scap JSR2
+
+JMP2r
+
+@parse-links ( -- )
+
+	;workarea .File/success DEI2 ADD2k NIP2 SWP2
+	&l
+		;href-attr OVR2 ;sseg JSR2 #00 EQU ,&no-link JCN
+			DUP2 #0006 ADD2 ;parse-link JSR2
+			&no-link
+		INC2 GTH2k ,&l JCN
+	POP2 POP2
+
+JMP2r
+
+@parse-link ( link* -- )
+
+	( external ) ;http-txt OVR2 ;sseg JSR2 ,&end JCN
+	( hash ) LDAk LIT "# EQU ,&end JCN
+	&w
+		LDAk #18 DEO
+		INC2 LDAk LIT ". NEQ ,&w JCN
+	#0a18 DEO
+	&end
+	POP2
 
 JMP2r
 
@@ -199,6 +228,16 @@ JMP2r
 JMP2r
 	&path "tmp/log- &term $30
 
+@make-path-htm ( name* -- path* )
+
+	DUP2 ;&term ;scpy-line JSR2
+	;&term #20 LIT "_ ;cswp JSR2
+	;slen JSR2 ;&term ADD2 ;htm-ext SWP2 ;scpy-line JSR2
+	;&path
+
+JMP2r
+	&path "src/htm/ &term $30
+
 (
 @|framework )
 
@@ -305,6 +344,8 @@ JMP2r
 
 JMP2r
 
+@sseg ( a* b* -- f ) STH2 &l LDAk LDAkr STHr NEQ ,&e JCN INC2k LDA #00 EQU ,&e JCN INC2 INC2r ,&l JMP &e LDA LDAr STHr EQU JMP2r
+@slen ( str* -- len* ) DUP2 ,scap JSR SWP2 SUB2 JMP2r
 @scpy-line ( src* dst* -- ) STH2 &w LDAk STH2kr STA INC2r INC2 LDAk #1f GTH ,&w JCN POP2 #00 STH2r STA JMP2r
 @scmp ( a* b* -- f ) STH2 &l LDAk LDAkr STHr ANDk #00 EQU ,&e JCN NEQk ,&e JCN POP2 INC2 INC2r ,&l JMP &e NIP2 POP2r EQU JMP2r
 @scap ( str* -- end* ) LDAk #00 NEQ JMP JMP2r &w INC2 LDAk ,&w JCN JMP2r
@@ -314,6 +355,8 @@ JMP2r
 (
 @|assets )
 
+@http-txt "http $1
+@htm-ext ".htm $1
 @p-tag "p $1
 @ul-tag "ul $1
 @li-tag "li $1
@@ -321,6 +364,8 @@ JMP2r
 @code-tag "code $1
 @figure-tag "figure $1
 @figcaption-tag "figcaption $1
+
+@href-attr "href $1
 
 @lexicon-path "src/tables/lexicon $1
 @sitemap-path "src/htm/sitemap.htm $1
