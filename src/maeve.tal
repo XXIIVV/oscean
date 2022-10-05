@@ -1,11 +1,20 @@
-( Oh time thy pyramids )
+( Oh time thy pyramids
+
+	Notes:
+	#f000-#f400 is used to store used diary ids
+)
 
 |a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |b0 @File2 &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 
 |0000
 
-|0100 ( -> )
+(
+@|vectors )
+
+|0100
+
+@on-reset ( -> )
 
 	( clear old copies )
 	;sitemap-path .File2/name DEO2
@@ -28,6 +37,10 @@
 	;calendar-path .File2/name DEO2 ;header-txt ;w-str JSR2 ;p-tag ;<w> JSR2
 	;parse-diary-pages JSR2
 	;calendar-path .File2/name DEO2 ;p-tag ;</w> JSR2
+
+	( print next available id )
+	;available-txt ;print-str JSR2
+	;find-available JSR2 ;pdec JSR2 #0a18 DEO
 
 	( halt. )
 	#010f DEO
@@ -65,10 +78,10 @@ JMP2r
 
 @parse-lexicon-line ( line* -- next* )
 
-	INC2 INC2 DUP2 
+	INC2 INC2
 
 	( do incoming )
-	DUP2 #0001 SUB2 LDA LIT "? EQU ,&no-map JCN
+	DUP2k #0001 SUB2 LDA LIT "? EQU ,&no-map JCN
 		DUP2 ;parse-links JSR2
 		&no-map
 
@@ -145,6 +158,7 @@ JMP2r
 	DUP2 ;parse-log JSR2
 	( split )
 	DUP2 #0900 ;cswp JSR2
+	DUP2 ;validate-log JSR2
 	( event )
 	DUP2 #0005 ADD2 LDA LIT "+ NEQ ,&no-event JCN
 		DUP2 ;parse-event JSR2
@@ -248,6 +262,43 @@ JMP2r
 
 JMP2r
 	&path "tmp/map- &term $30
+
+(
+@|validate )
+
+@validate-log ( log* -- )
+
+	( validate photo id )
+	DUP2 #0006 ADD2 ;sdec JSR2 ;record-log-id JSR2
+	POP2
+
+JMP2r
+
+@record-log-id ( log* -- )
+
+	ORAk ,&exists JCN
+		POP2 JMP2r
+		&exists
+	#f000 ADD2 LDAk ,&duplicate JCN
+	#01 ROT ROT STA
+
+JMP2r
+	&duplicate ( id* -- )
+		LDA ;print/b JSR2 #0a18 DEO
+	JMP2r
+
+@find-available ( -- id* )
+
+	( find next diary )
+	#f400 #f001
+	&loop
+		LDAk #00 EQU ,&end JCN
+		INC2 GTH2k ,&loop JCN
+		&end
+	NIP2
+	#f000 SUB2
+
+JMP2r
 
 (
 @|framework )
@@ -355,6 +406,19 @@ JMP2r
 
 JMP2r
 
+@sdec ( str* -- val* )
+
+	LIT2r 0000
+	&w
+		LIT2r 000a MUL2r
+		LITr 00
+		LDAk #30 SUB STH ADD2r
+		INC2 LDAk ,&w JCN
+	POP2
+	STH2r
+
+JMP2r
+
 @sseg ( a* b* -- f ) STH2 &l LDAk LDAkr STHr NEQ ,&e JCN INC2k LDA #00 EQU ,&e JCN INC2 INC2r ,&l JMP &e LDA LDAr STHr EQU JMP2r
 @slen ( str* -- len* ) DUP2 ,scap JSR SWP2 SUB2 JMP2r
 @scpy-line ( src* dst* -- ) STH2 &w LDAk STH2kr STA INC2r INC2 LDAk DUP #1f GTH SWP LIT ". NEQ AND ,&w JCN POP2 #00 STH2r STA JMP2r
@@ -362,6 +426,25 @@ JMP2r
 @scap ( str* -- end* ) LDAk #00 NEQ JMP JMP2r &w INC2 LDAk ,&w JCN JMP2r
 @print ( hex* -- ) SWP ,&b JSR &b DUP #04 SFT ,&c JSR &c #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO JMP2r
 @print-str ( str* -- ) &w LDAk #18 DEO INC2 LDAk ,&w JCN POP2 JMP2r
+
+@pdec ( short* -- )
+
+	#00 ,&z STR
+	#2710 ,&parse JSR
+	#03e8 ,&parse JSR
+	#0064 ,&parse JSR
+	#000a ,&parse JSR
+	NIP
+	&emit
+		DUP [ LIT &z $1 ] EQU ,&skip JCN
+			#ff ,&z STR DUP #30 ADD #18 DEO
+			&skip
+	POP
+
+JMP2r
+	&parse
+		DIV2k DUP ,&emit JSR MUL2 SUB2
+	JMP2r
 
 (
 @|assets )
@@ -382,6 +465,7 @@ JMP2r
 @journal-path "src/htm/journal.htm $1
 @spacer 20 "&mdash; 20 $1
 @no-photo "000 $1
+@available-txt "-- 20 "Available 20 "diary: 20 $1
 
 @diary-paths
 	&3 "src/tables/diary/15-19 $1
