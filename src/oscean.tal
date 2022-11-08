@@ -54,7 +54,7 @@ JMP2r
 
 	( term name limit )
 	DUP2 ;slen JSR2 #0016 LTH2 ,&namelength-ok JCN
-		;error-term-name-size ;print-error JMP2
+		;err/name-length ;print-error JMP2
 		&namelength-ok
 
 	( cleanup )
@@ -144,7 +144,7 @@ JMP2
 
 	( check file )
 	;write/head LDA2 #8000 SUB2 #7fff LTH2 ,&size-ok JCN
-		;error-output-size ;print-error JMP2
+		;err/output-size ;print-error JMP2
 		&size-ok
 
 	( save file )
@@ -480,7 +480,7 @@ JMP2r
 			;buff [ LIT "_ ] #20 ;cswp JSR2
 			( find term )
 			;buff ;find-term JSR2 ORA ,&continue JCN
-				;buff ;error-broken-link ;print-error JMP2
+				;buff ;err/broken-link ;print-error JMP2
 			&continue
 		INC2 LDAk ,&while JCN
 	POP2
@@ -498,7 +498,7 @@ JMP2r
 	STH2r .File/success DEI2 STH2k ADD2 ;write/head STA2
 	( file is missing )
 	STH2r ORA ,&no-blank JCN
-		;error-include-missing ;print-error JMP2
+		;err/include-missing ;print-error JMP2
 		&no-blank
 
 JMP2r
@@ -705,11 +705,12 @@ BRK
 @meta-header-path "src/htm/meta_header.htm $1
 @meta-footer-path "src/htm/meta_footer.htm $1
 @no-picture "000 $1
-@error-include-missing "include_missing $1
-@error-broken-link "--redlink $1
-@error-term-name-size "--term_name_size_exceeded $1
-@error-output-size "--output_size_exceeded $1
 
+@err
+	&name-length "--name_length_limit $1
+	&include-missing "include_missing $1
+	&broken-link "--redlink $1
+	&output-size "--output_size_limit $1
 (
 @|memory )
 
