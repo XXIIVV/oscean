@@ -1,0 +1,36 @@
+<h2>Structs allow to access individual members in a data structure.</h2>
+
+<p>Structs are defined by rolling back the program address with <kbd>|00</kbd>, similarly to how you would define an enum.</p>
+
+<pre>
+|00 @person &name $2 &age $1 &height $2 &length
+</pre>
+
+<p>The <code>length</code> member of the struct holds the total size of the struct, and allows to jump to a specific item in a datastructure.</p>
+
+<h3>Example</h3>
+
+<p>The idea here is that you define padded labels, for example the <code>;person/age</code> label holds the value of <code>$0002</code>, naming that offset allows to access specific members of a data structure by applying the sublabels of the enum to a pointer.</p>
+
+<pre>
+|0100 @reset
+
+	( get second person ) ;family #0001 ;person/length MUL2 ADD2
+		( get name* ) DUP2 ;person/name ADD2 LDA2 ;pstr JSR2
+		( get age ) DUP2 ;person/age ADD2 LDA ;phex/byte JSR2
+		( get height* ) ;person/height ADD2 LDA2 ;phex JSR2
+
+BRK
+
+@family ( name* age height* )
+	:dict/melany 2a 008c
+	:dict/emily 14 0073
+	:dict/avery 09 0091
+	&end
+
+@dict
+	&melany "Melany $1
+	&emily "Emily $1
+	&avery "Avery $1
+</pre>
+
