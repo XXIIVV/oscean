@@ -82,16 +82,30 @@ JMP2r
 </pre>
 
 <q>Snarf is the term for Copy on the <a href='plan9.html'>Plan9</a> operating system. The operation is not to copy but to snarf. It's called snarf because snarf is what it does. There is no design document.</q>
-<h2>Manifest files are the application definition standard for Varvara software.</h2>
+<h2>Manifests are an application definition standard for Varvara software.</h2>
 
-<p>The location of a rom's metadata is located at the address specified at location <code>#0001</code> in memory.</p>
+<h3>Metadata</h3>
+
+<p>If you want to supply metadata to your rom, the address of that metadata must be placed at location <code>0101</code> in its source code (which ends up at location <code>0001</code> in the assembled ROM). This will allow for an external program to navigate the binary data and locate the metadata.</p>
+
+<p>If supported, writing the metadata's address to the <a href='varvara.html'>#f0 device</a>, via <code>#f0 DEO</code>, informs the emulator of the metadata's location. And emulator may choose to handle this information to name the window, or display an icon when a ROM is started.</p>
 
 <pre>
 |0100
 	;meta #f0 DEO
-BRK</pre>
+</pre>
 
-<p>The metadata begins with the address where the metadata ends, followed by the address of the appicon, a <a href='icn_format.html'>8x8 icon</a>, and four zero-terminated strings:</p>
+<p>A Varvara ROM is able to store certain information about itself, such as:</p>
+
+<ul>
+	<li><b>name</b>: application name</li>
+	<li><b>version</b>: release id</li>
+	<li><b>description</b>: what it is</li>
+	<li><b>author</b>: who built it</li>
+	<li><b>icon</b>: a 64x64 pixels monochromatic graphic</li>
+</ul>
+
+<p>The metadata format begins with the address of the end of the metadata block, followed by the address of the appicon (an <a href='icn_format.html'>8x8 icon</a>), and finally four zero-terminated strings:</p>
 
 <pre>
 @meta =&end =appicon
@@ -102,7 +116,11 @@ BRK</pre>
 	&end
 </pre>
 
-<p>A <code>manifest.tal</code> is a support library that populates a menubar with the application's shortcuts. You can see support coverage <a href='roms.html'>here</a>, it is also used in the definition of applications in <a href='potato.html'>Potato</a>.</p>
+<h3>Manifest</h3>
+
+<p>A manifest is a format for allowing Varvara applications to specify what menubar options it provides.</p>
+
+<p>A <code>manifest.tal</code> is a support library to this end. You can see support coverage <a href='roms.html'>here</a>, it is also used in the definition of applications in <a href='potato.html'>Potato</a>.</p>
 
 <pre>
 @manifest
@@ -120,6 +138,7 @@ BRK</pre>
 		01 'a :select-all "All $1
 	$1
 </pre>
+
 <ul></ul></main>
 <footer><a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.svg" alt="CreativeCommons"/></a> <a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a> <a href="https://merveilles.town/@neauoire" rel="me" target="_blank"><img src="../media/icon/merveilles.svg" alt="Merveilles"/></a> <a href="ethics.html"><img src="../media/icon/dreipfeile.svg" alt="NoNazis!"/></a> <a href="uxn.html"><img src="../media/icon/uxn.svg" alt="UxnPowered"/></a> <span><a href="devine_lu_linvega.html">Devine Lu Linvega</a> &copy; 2022 &mdash; <a href="about.html">BY-NC-SA 4.0</a></span></footer>
 </body></html>
