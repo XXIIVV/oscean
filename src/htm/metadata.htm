@@ -1,8 +1,8 @@
 <h2>Metadata exposes additional information about a Varvara rom.</h2>
 
-<p>The address of that metadata must be placed at location <code>0101</code> in its source code (which ends up at location <code>0001</code> in the assembled ROM). This will allow for an external program to navigate the binary data and locate the metadata.</p>
+<p>An external program can find the location of a ROM's metadata, by forming a 16-bit address from the second and third bytes of a rom file. That program can verify that this is indeed a valid address by reading the subsequent 3 bytes which should <b>always</b> be <code>80 f0 37</code>.</p>
 
-<p>If supported, writing the metadata's address to the <a href='varvara.html'>#f0 device</a>, via <code>#f0 DEO</code>, informs the emulator of the metadata's location. And emulator may choose to handle this information to name the window, or display an icon when a ROM is started.</p>
+<p>If supported by the emulator, writing the metadata's address to the <a href='varvara.html'>#f0 device</a>, via <code>#f0 DEO</code>, informs the emulator of the metadata's location, and so it may choose to handle this information to name the window, or display an icon when a ROM is started.</p>
 
 <pre>
 |0100
@@ -19,7 +19,7 @@
 	<li><b>icon</b>: a 64x64 pixels monochromatic graphic</li>
 </ul>
 
-<p>The metadata format begins with the address of the end of the metadata block, followed by the address of the appicon (an <a href='icn_format.html'>8x8 icon</a>), and finally four zero-terminated strings:</p>
+<p>The metadata format begins with the address of the end of the metadata block, followed by the address of the appicon (an <a href='icn_format.html'>8 by 8 tiles icn</a>), and finally four zero-terminated strings:</p>
 
 <pre>
 @meta =&end =appicon
@@ -29,6 +29,8 @@
 	( author ) "Hundred 20 "Rabbits 20 7f 20 "2022 $2
 	&end
 </pre>
+
+<p>The metadata is stored in the rom itself as to allow the rom program to reuse this information internally.</p>
 
 <ul>
 	<li><a href='https://git.sr.ht/~rabbits/uxn/tree/main/item/projects/utils/metadata.tal' target='_blank'>Uxntal Implementation</a></li>
