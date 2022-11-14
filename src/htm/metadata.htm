@@ -1,0 +1,31 @@
+<h2>Metadata exposes additional information about a Varvara rom.</h2>
+
+<p>The address of that metadata must be placed at location <code>0101</code> in its source code (which ends up at location <code>0001</code> in the assembled ROM). This will allow for an external program to navigate the binary data and locate the metadata.</p>
+
+<p>If supported, writing the metadata's address to the <a href='varvara.html'>#f0 device</a>, via <code>#f0 DEO</code>, informs the emulator of the metadata's location. And emulator may choose to handle this information to name the window, or display an icon when a ROM is started.</p>
+
+<pre>
+|0100
+	;meta #f0 DEO
+</pre>
+
+<p>A Varvara ROM is able to store certain information about itself, such as:</p>
+
+<ul>
+	<li><b>name</b>: application name</li>
+	<li><b>version</b>: release id</li>
+	<li><b>description</b>: what it is</li>
+	<li><b>author</b>: who built it</li>
+	<li><b>icon</b>: a 64x64 pixels monochromatic graphic</li>
+</ul>
+
+<p>The metadata format begins with the address of the end of the metadata block, followed by the address of the appicon (an <a href='icn_format.html'>8x8 icon</a>), and finally four zero-terminated strings:</p>
+
+<pre>
+@meta =&end =appicon
+	( name ) "Catclock $1
+	( version ) "Ver. 20 "4 $1
+	( details ) "tic 20 "tac 20 "cat 20 "clock $1
+	( author ) "Hundred 20 "Rabbits 20 7f 20 "2022 $2
+	&end
+</pre>
