@@ -208,7 +208,6 @@ JMP2r
 <h3>Dates</h3>
 
 <p>To find the day of the week from a given date, <a href='https://c-faq.com/misc/zeller.html' target='_blank'>Tomohiko Sakamoto</a>'s method:</p>
-
 <pre>
 @dotw ( y* m d -- dotw )
 
@@ -229,6 +228,24 @@ JMP2r
 
 JMP2r
 	&t 00 03 02 05 00 03 05 01 04 06 02 04
+</pre>
+
+<p>To find if a year is a leap year:</p>
+<pre>
+@is-leap-year ( year* -- bool )
+
+	( leap year if perfectly divisible by 400 )
+	DUP2 #0190 ( MOD2 ) DIV2k MUL2 SUB2 #0000 EQU2 ,&leap JCN
+	( not leap year if divisible by 100 but not divisible by 400 )
+	DUP2 #0064 ( MOD2 ) DIV2k MUL2 SUB2 #0000 EQU2 ,&not-leap JCN
+	( leap year if not divisible by 100 but divisible by 4 )
+	DUP2 #0003 AND2 #0000 EQU2 ,&leap JCN
+	( all other years are not leap years )
+	&not-leap
+	POP2 #00
+
+JMP2r
+	&leap POP2 #01 JMP2r
 </pre>
 
 <h3>Random</h3>
