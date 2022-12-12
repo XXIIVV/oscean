@@ -8,7 +8,8 @@
 
 <p style='background: #eee; padding: 15px;'>While this project aspires to act as a target that may last, it is in its infancy, the design could still change and break compatibility.</p>
 
-<p>Devices are external systems connected to the Uxn CPU, such as the screen, the mouse and the keyboard. Each device has 16 bytes, also called ports, of I/O memory. <b>Vectors</b> are ports holding an address in memory to evaluate when a device event is triggered, such as when the mouse is moved, or a key is pressed.</p>
+<p>Devices are external systems connected to the Uxn CPU, such as the screen, the mouse and the keyboard. Each device has 16 bytes, also called ports, of I/O memory.</p>
+<p>Vectors are ports holding an address in memory to evaluate when a device event is triggered, such as when the mouse is moved, or a key is pressed. Writing to vector ports does not trigger an event, it only tell the emulator which address to evaluate from when an event happens with that device.</p>
 
 <img src='../media/generic/uxn.comfy.png' width='250' style='float: right;margin: 0px auto 30px'/>
 
@@ -19,9 +20,9 @@
 	<tr><th>20</th><td><a href='#screen'>screen</a></td><th>a0</th><td rowspan="2"><a href='#file'>file</a></td></tr>
 	<tr><th>30</th><td rowspan="4"><a href='#audio'>audio</a></td><th>b0</th></tr>
 	<tr><th>40</th><th>c0</th><td><a href='#datetime'>datetime</a></td></tr>
-	<tr><th>50</th><th>d0</th><td class='empty'>---</td></tr>
-	<tr><th>60</th><th>e0</th><td rowspan="2"><i>Reserved</i></td></tr>
-	<tr><th>70</th><td><a href='#midi'>midi</a></td><th>f0</th></tr>
+	<tr><th>50</th><th>d0</th><td rowspan="2"><i>Reserved</i></td></tr>
+	<tr><th>60</th><th>e0</th></tr>
+	<tr><th>70</th><td><a href='#midi'>midi</a></td><th>f0</th><td>Emulator</td></tr>
 </table>
 
 <p>The two reserved devices can be used for implementation specific features that do not need to be part of the specs, or other Uxn/Varvara instances.</p>
@@ -36,15 +37,13 @@
 		<th>00</th><td rowspan="2" class='bg2'>vector*</td><th>08</th><td rowspan="2">red*</td>
 	</tr>
 	<tr><th>01</th><th>09</th></tr>
-	<tr><th>02</th><td>wst</td><th>0a</th><td rowspan="2">green*</td></tr>
-	<tr><th>03</th><td>rst</td><th>0b</th></tr>
+	<tr><th>02</th><td class='empty'>--</td><th>0a</th><td rowspan="2">green*</td></tr>
+	<tr><th>03</th><td class='empty'>--</td><th>0b</th></tr>
 	<tr><th>04</th><td class='empty'>--</td><th>0c</th><td rowspan="2">blue*</td></tr>
 	<tr><th>05</th><td class='empty'>--</td><th>0d</th></tr>
 	<tr><th>06</th><td class='empty'>--</td><th>0e</th><td>debug</td></tr>
 	<tr><th>07</th><td class='empty'>--</td><th>0f</th><td>state</td></tr>
 </table>
-
-<p>The locations the stacks can be modified by writing a byte to the <code>wst</code> and <code>rst</code> ports. Writing <code>0xff</code> to the <code>wst</code> port, will assign the range <code>0xff00&mdash;0xffff</code> as the working stack memory.</p>
 
 <p>Sending a non-null byte to the <code>0x0e</code> port will print the content of the stacks if they are not empty, sending a non-null byte to the <code>0x0f</code> port will terminate the application.</p>
 
