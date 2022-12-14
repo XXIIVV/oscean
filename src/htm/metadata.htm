@@ -2,12 +2,30 @@
 
 <p>An external program can find the location of a ROM's metadata, by forming a 16-bit address from the second and third bytes of a rom file. That program can verify that this is indeed a valid address by reading the subsequent 3 bytes which should <b>always</b> be <code>80 f0 37</code>.</p>
 
+<table border='1'>
+	<tr><th colspan='6'>First six bytes</th></tr>
+	<tr><th>LIT2</th><th colspan='2'>address</th><th>LIT</th><th>port</th><th>DEO2</th><td>...</td></tr>
+	<tr><td>a0</td><td class='addr'>hb</td><td class='addr'>lb</td><td class='key'>80</td><td class='key'>f0</td><td class='key'>37</td><td>...</td></tr>
+</table>
+
 <p>If supported by the emulator, writing the metadata's address to the <a href='varvara.html'>#f0 device</a>, via <code>#f0 DEO</code>, informs the emulator of the metadata's location, and so it may choose to handle this information to name the window, or display an icon when a ROM is started.</p>
 
 <pre>
-|0100
+|0100 ( -> )
+
 	;meta #f0 DEO2
+
+BRK
+
+@meta =&end =appicon
+	( name ) "Catclock $1
+	( version ) "Ver. 20 "4 $1
+	( details ) "tic 20 "tac 20 "cat 20 "clock $1
+	( author ) "Hundred 20 "Rabbits 20 7f 20 "2022 $2
+	&end
 </pre>
+
+<p>The metadata format begins with the address of the end of the metadata block, followed by the address of the appicon (an <a href='icn_format.html'>8 by 8 tiles icn</a>), and finally four zero-terminated strings:</p>
 
 <p>A Varvara ROM is able to store certain information about itself, such as:</p>
 
@@ -19,20 +37,14 @@
 	<li><b>icon</b>: a 64x64 pixels monochromatic graphic</li>
 </ul>
 
-<p>The metadata format begins with the address of the end of the metadata block, followed by the address of the appicon (an <a href='icn_format.html'>8 by 8 tiles icn</a>), and finally four zero-terminated strings:</p>
-
-<pre>
-@meta =&end =appicon
-	( name ) "Catclock $1
-	( version ) "Ver. 20 "4 $1
-	( details ) "tic 20 "tac 20 "cat 20 "clock $1
-	( author ) "Hundred 20 "Rabbits 20 7f 20 "2022 $2
-	&end
-</pre>
-
 <p>The metadata is stored in the rom itself as to allow the rom program to reuse this information internally.</p>
 
 <ul>
 	<li><a href='https://git.sr.ht/~rabbits/uxn/tree/main/item/projects/utils/metadata.tal' target='_blank'>Uxntal Implementation</a></li>
 </ul>
+
+<style>
+	.addr { background:#eee; }
+	.key { background:#72dec2 }
+</style>
 
