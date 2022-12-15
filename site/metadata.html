@@ -12,6 +12,20 @@
 	<tr><td>a0</td><td class='addr'>hb</td><td class='addr'>lb</td><td class='key'>80</td><td class='key'>f0</td><td class='key'>37</td><td>...</td></tr>
 </table>
 
+<p>A Varvara ROM is able to store certain information about itself, such as:</p>
+
+<ul>
+	<li><b>name</b>: application name</li>
+	<li><b>version</b>: release id</li>
+	<li><b>description</b>: what it is</li>
+	<li><b>author</b>: who built it</li>
+	<li><b>icon</b>: a 64x64 pixels monochromatic graphic</li>
+</ul>
+
+<p>The metadata is stored in the rom itself as to allow the rom program to reuse this information internally.</p>
+
+<h3>Writing Metadata</h3>
+
 <p>If supported by the emulator, writing the metadata's address to the <a href='varvara.html'>#f0 device</a>, via <code>#f0 DEO</code>, informs the emulator of the metadata's location, and so it may choose to handle this information to name the window, or display an icon when a ROM is started.</p>
 
 <pre>
@@ -31,17 +45,22 @@ BRK
 
 <p>The metadata format begins with the address of the end of the metadata block, followed by the address of the appicon (an <a href='icn_format.html'>8 by 8 tiles icn</a>), and finally four zero-terminated strings:</p>
 
-<p>A Varvara ROM is able to store certain information about itself, such as:</p>
+<h3>Reading Metadata</h3>
 
-<ul>
-	<li><b>name</b>: application name</li>
-	<li><b>version</b>: release id</li>
-	<li><b>description</b>: what it is</li>
-	<li><b>author</b>: who built it</li>
-	<li><b>icon</b>: a 64x64 pixels monochromatic graphic</li>
-</ul>
+<p>A program can check a rom for metadata with the following routine: </p>
 
-<p>The metadata is stored in the rom itself as to allow the rom program to reuse this information internally.</p>
+<pre>
+@has-meta ( filename* -- bool )
+
+	.File/name DEO2
+	#0003 .File/length DEO2
+	;&b .File/read DEO2k DEO2
+	,&litport LDR2 #80f0 EQU2
+	,&deo2 LDR #37 EQU AND
+
+JMP2r
+	&b &litport $2 &deo2 $1
+</pre>
 
 <ul>
 	<li><a href='https://git.sr.ht/~rabbits/uxn/tree/main/item/projects/utils/metadata.tal' target='_blank'>Uxntal Implementation</a></li>
