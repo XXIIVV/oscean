@@ -1,0 +1,22 @@
+<h2>Uxntal Modes</h2>
+
+<p>Each opcode has 3 possible modes, which can combined:</p>
+
+<ul>
+	<li>The <b>short mode</b> operates on shorts instead of bytes.</li>
+	<li>The <b>return mode</b> operate on the return stack.</li>
+	<li>The <b>keep mode</b> operates without consuming items.</li>
+</ul>
+
+<p>By default, operators consume bytes from the working stack, notice how in the following example only the last two bytes <code>#45</code> and <code>#67</code> are added, even if there are two shorts on the stack.</p>
+<pre>#1234 #4567 ADD<span style='float:right'>12 34 ac</span></pre>
+
+<p>The <b>short mode</b> consumes two bytes from the stack. In the case of jump opcodes, the short-mode operation jumps to an absolute address in memory. For the memory accessing opcodes, the short mode operation indicates the size of the data to read and write.</p>
+<pre>#1234 #4567 ADD2 <span style='float:right'>57 9b</span></pre>
+
+<p>The <b>keep mode</b> does not consume items from the stack, and pushes the result on top. The following example adds the two shorts together, but does not consume them. Under the hood, the keep mode keeps a temporary stack pointer that is decrement on <code>POP</code>.</p>
+<pre>#1234 #4567 ADD2k <span style='float:right'>12 34 45 67 57 9b</pre>
+
+<p>The <b>return mode</b> makes it possible for any opcode to operate on the return-stack directly. For that reason, there is no dedicated return opcode. For example, the <code class='op'>JSR</code> opcode pushes the program's address onto the return stack before jumping, to return to that address, the <code class='op'>JMP2r</code> opcode is used, where instead of using the address on the working-stack, it takes its address from the return-stack.</p>
+<pre>#1234 LIT2r 4567 STHr <span style='float:right'>57 9b</span></pre>
+

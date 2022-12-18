@@ -361,27 +361,6 @@ Shifts the bits of the second value of the stack to the left or right, depending
 #1248 #34 SFTk2    ( 12 48 34 09 20 )
 </pre>
 
-<h2 id='modes'>Modes</h2>
-
-<p>There are 32 opcodes, each opcode occupies 5 bits of a byte, the remaining 3 bits are used for the modes of that opcode. </p>
-
-<table border="1">
-	<tr><td colspan="3"><i>modes</i> <code class='op'>kr2</code></td><td colspan="5">opcode <code class='op'>BRK</code></td></tr>
-	<tr><td class='clr2'>keep</td><td class='clr2'>return</td><td class='clr2'>short</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
-</table>
-
-<p>By default, operators operate on bytes, notice how in the following example only the last two bytes <code>#45</code> and <code>#67</code> are added, even if there are two shorts on the stack.</p>
-<pre>#1234 #4567 ADD  <span style='color:#888; float:right'>12  34  <b style='color:black'>ac</b>  00  00  00  00  00</span></pre>
-
-<p>The <b>short mode</b> consumes two bytes from the stack. In the case of jump opcodes, the short-mode operation jumps to an absolute address in memory. For the memory accessing opcodes, the short mode operation indicates the size of the data to read and write.</p>
-<pre>#1234 #4567 ADD2 <span style='color:#888; float:right'><b style='color:black'>57  9b</b>  00  00  00  00  00  00</span></pre>
-
-<p>The <b>keep mode</b> does not consume items from the stack, and pushes the result on top. The following example adds the two shorts together, but does not consume them. Under the hood, the keep mode keeps a temporary stack pointer that is decrement on <code>POP</code>.</p>
-<pre>#1234 #4567 ADD2k <span style='color:#888; float:right'>12  34  45  67  <b style='color:black'>57  9b</b>  00  00</span></pre>
-
-<p>The <b>return mode</b> makes it possible for any opcode to operate on the return-stack directly. For that reason, there is no dedicated return opcode. For example, the <code class='op'>JSR</code> opcode pushes the program's address onto the return stack before jumping, to return to that address, the <code class='op'>JMP2r</code> opcode is used, where instead of using the address on the working-stack, it takes its address from the return-stack.</p>
-<pre>#1234 #4567 STH ROT STH ADDr STHr <span style='color:#888; float:right'>34  45  <b style='color:black'>79</b>  00  00  00  00  00</span></pre>
-
 <h2 id='literals'>Literals</h2>
 
 <p>A literal is a byte or short value to be pushed on the stacks, it is prefixed with the <a href='#lit'>LIT opcode</a>. Hexadecimal values are always lowercase, either a byte or a short in length.</p>
