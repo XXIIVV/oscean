@@ -78,11 +78,12 @@ LIT2r 1234 STHr <span style='float:right;color:red'> 12</span> <span style='floa
 <p>Shorts are made of two bytes, each byte can be manipulated individually.</p>
 
 <pre>
-#1234 SWP <span style='float:right'>34 12</span>
-#1234 #5678 SWP2 <span style='float:right'>56 78 12 34</span>
-#1234 #5678 SWP <span style='float:right'>12 34 78 56</span>
 #1234 POP <span style='float:right'>12</span>
 #1234 NIP <span style='float:right'>34</span>
+#12 DUP <span style='float:right'>12 12</span>
+#1234 OVR <span style='float:right'>12 34 12</span>
+#abcd #5678 SWP2 <span style='float:right'>56 78 ab cd</span>
+#1234 #5678 SWP <span style='float:right'>12 34 78 56</span>
 </pre>
 
 <p>A literal is a byte or short value to be pushed on the stacks, it is prefixed with the <a href='#lit'>LIT opcode</a>. Hexadecimal values are always lowercase, either a byte or a short in length.</p>
@@ -93,10 +94,7 @@ LIT2r 1234 STHr <span style='float:right;color:red'> 12</span> <span style='floa
 	<tr><td><i>Plain</i></td><td><code>ab</code></td><td><code>"Q</code></td><td><code>_label</code></td><td><code>-label</code></td><td><code>=label</code></td><td><code>abcd</code></td></tr>
 </table>
 
-<pre>
-ADD2 ( the ADD opcode with the 2 mode )
-add2 ( the raw hexadecimal value, equal to decimal 44498 )
-</pre>
+<p>Give a special attention to the <code>add2</code> hexadecimal value which, equals 44498 in decimal, and will not be interpreted as an opcode.</p>
 
 <h2>Uxntal Memory</h2>
 
@@ -177,7 +175,7 @@ BRK
 
 <h2>Uxntal Logic</h2>
 
-<p>Comparison operators will always push 01 for true, 00 for false. This is also true for operators in the <i>short mode</i>.</p>
+<p>Comparison operators will always push 01 for true, 00 for false. This is also true for operators in <i>short mode</i>.</p>
 
 <pre>
 #12 #34 EQU <span style='float:right'>00</span>
@@ -185,7 +183,7 @@ BRK
 #1234 #7856 LTH2 <span style='float:right'>01</span>
 </pre>
 
-<p>A non-null byte can be fed to the <kbd>JCN</kbd> opcode to create a for-loop:</p>
+<p>A non-null byte can be fed to the conditional jump opcode to create a <i>for</i> loop:</p>
 
 <pre>
 #10 #00
@@ -195,7 +193,7 @@ BRK
 POP2
 </pre>
 
-<p>It can also be used to create something like a while loop:</p>
+<p>It can also be used to create something like a <i>while</i> loop:</p>
 
 <pre>
 ;word
@@ -208,10 +206,9 @@ POP2
 
 <h2 id='errors'>Errors</h2>
 
-<p>Errors occur when a program behaves badly. Errors are normally handled by the emulator, but programs can set a system vector to evaluate when errors occurs. There are four known error types, and each one has an error code:</p>
+<p>Errors occur when a program behaves unexpectedly. Errors are normally handled by the emulator, but programs can set a system vector to evaluate when errors occurs. There are three known error types, and each one has an error code:</p>
 
 <ul>
-	<li><code>00</code> <b>Unknown</b>: Occurs when the System/vector is evaluated without an error code.</li>
 	<li><code>01</code> <b>Underflow</b>: Occurs when an opcode is trying to pop an item from an empty stack.</li>
 	<li><code>02</code> <b>Overflow</b>: Occurs when an opcode is trying to push an item to a full stack.</li>
 	<li><code>03</code> <b>Division By Zero</b>: Occurs when the DIV opcode is done on a value of zero.</li>
