@@ -1,0 +1,620 @@
+Sidorov S.A. (MSU), Shumakov M.N. (NIISI RAN)
+_____________________________________________
+
+               DSSP AND FORTH. COMPARE ANALYSIS
+               ---------------------------------
+
+                          1. HISTORY
+
+      DSSP (Dialog System for Structured Programming) was
+created in the laboratory of Brousentsov N.P. at the Computer
+science department of the Moscow State University in 1980,
+contemporary version - in 1985, 32-bit version - in 1989.
+
+      Genealogy:           Setun-70 ----- Forth
+                                      |
+                                     DSSP
+
+      Setun-70 is a ternary minicomputer with a two-stack
+architecture. From it DSSP inherited control constructions and the
+basic idea: programming without a semantic gap.
+      From Forth DSSP inherited the idea of vocabulary and the method
+of notation of procedures between ":" and ";" . The ideologist of
+DSSP, d-r. Brousentsov was educated as mathematician. He has
+theoretical works in the fields of logic and computer architecture.
+And he had a big experience in the computer industry as an architect
+and constructor of ternary computers Setun and Setun-70.
+      In 1980 he was not young men (55) and worked as a theorist and
+leader of a project. The code of DSSP is created mainly by students
+and postgraduate students of Moscow university. After 1991 the
+majority of them works in other fields, DSSP-activities decreased.
+But DSSP is alive. In the Moscow university and in NIISI RAN new
+32-bit versions and a new shell were created, some applications are
+in practice use. DSSP is open and ready. Probably, it is the first
+English paper about DSSP.
+
+     2. BUILDING OF DSSP LANGUAGE
+
+           2.1 OPENNESS
+
+Our startpoint is the definition:
+    -------------------------------------------------
+    | Openness is absence of gaps between languages |  (1)
+    -------------------------------------------------
+We consider pairs:
+    machine language - program language;
+    program language - system language ;
+    program language - language of application field
+     and make assumption that a programming system without gaps
+between these languages is some optimum in a system "human+computer".
+
+
+      Firstly, we consider the pair: machine language - program
+language. We should remark that an usual assembler does not coincide
+with its machine language. An assembler program has pseudocommands,
+macros and other terms, that are absent in a machine language. Even a
+single assembler command, for example:
+     MOVE.L (R1)+,(R2+BASE)
+consists of letters, comas and other terms, that are far from the
+internal machine world. The only object, that can have similar sense
+for human and for machine is the word. Let us try to build the
+language from demand:
+
+     "one word of text - one word of machine code".     (2)
+
+     It is obvious, that Forth is very close to such a language.
+Any one word of text
+       : EXAMPLE ONE TWO THREE ;
+corresponds to one word of code: address of procedure. But there are
+exclusions: control operators and literals.
+
+                   2.2.   CONTROL OPERATORS
+2.2.1. BRANCHES
+     "IF" in Forth has form:
+       [n]  IF  y1 y2 ... yN  ELSE n1 n2 ... nM THEN
+The direct interpretation of this phrase is not effective as
+the interpreter must go through both branches. It means, that we
+must install in code invisible "GO TO" or transform text to:
+    : P1 y1 y2 ... yN ;
+    : P2 n1 n2 ... nM ;
+    [n] IF P1 ELSE P2 THEN
+Thus, if we want to have the text and the code word to word
+compatible, we must use only one word length phrase inside branches.
+But in the phrase IF P1 THEN P2 ELSE there are three predefined words
+(IF, THEN, ELSE) and only two user defined (P1 P2). It can be made
+shorter.
+      Secondly, Forth has only one branch operator. It leads to a
+short programming system but long phrases in user programs. In DSSP
+another way was chosen: a lot of branch operators and short phrases in
+user programs. In the result we have:
+
+  DSSP               Forth
+  [n] IF+ A       [n] 0> IF A THEN
+  [n] IF0 A       [n] 0= IF A THEN
+  [n] IF- A       [n] 0< IF A THEN
+  [n] BR+ A B     [n] 0> IF A ELSE B THEN
+  [n] BR- A B     [n] 0< NEG IF A ELSE B THEN
+  [n] BR0 A B     [n] 0= IF A ELSE B THEN
+  [n] BRS X Y Z
+  [n] BR c1 p1  c2 p2 ... cN pN else pN+1
+
+      Two last operators in Forth are too long. BRS (BRanch on Sign)
+is the three-directional switch (as in FORTRAN):
+     [n] BRS MINUS ZERO PLUS
+"BR" is similar to switch of Pascal or C. Using of "BR" is
+clear from this example:
+ : TRANSCRIPTION [n] BR #A ."ei"  #B ."bi"  #C ."ci" ....  #Z ."zet"
+   ELSE ."???" ;
+( here #A - constant, equal to ASCII-code of letter A).
+
+      So, we must write a new procedure (and a new name) for any new
+branch of program. It seems annoying, but only at first sight. As any
+branch of program has a name, break point setting is very convenient.
+Moreover, as any branch is called by one word, we can replace this
+word by other one during debugging.
+      In early 80's a special experimental version of DSSP with
+brackets inside control constructions was created. After some time
+of exploitation practical programmers said, that the variant
+without brackets (i.e. without semantic gap) is better.
+      The list of DSSP compare operation is short: "=", "<", ">".
+Such operations as "0>" "0=" "0<" "<>" are absent.
+
+2.2.2. CYCLES
+      Construction DO .... LOOP is not suitable for us as it has
+invisible variable of cycle I. This variable can be used only on
+level between DO and LOOP. For example
+  0 10  DO I . LOOP
+is right, but
+     : A I . ;
+  0 10 DO A LOOP
+is wrong. It contradicts to our principle of openness. In the
+result we have only two simple cycle operators:
+
+     DSSP            Forth
+  [ ] RP A        []  BEGIN  A 0 UNTIL
+  [n] DO A        [n,0] DO A LOOP
+
+    To leave the cycle  4 break operators can be used:
+
+   DSSP   Forth
+    EX    LEAVE
+    EX-   O< IF LEAVE THEN
+    EX0   0= IF LEAVE THEN
+    EX+   0> IF LEAVE THEN
+
+      To leave N nested cycles the word EXT can be used:
+                  [N] EXT.
+      But it is a dangerous word and a mechanism of
+situations in this case used usually (see 4.3.).
+
+        Example:
+1. The calculation of sum of numbers:
+   1 2 3 4  DEEP 1- DO +  [10]  .
+(DEEP  is the deepness of stack)
+
+                           2.3. DATA
+2.3.1. VARIABLES, NUMBERS, CONSTANTS
+
+      A Literal (numbers inside procedures) of Forth occupies one
+word of text, but two word of code:
+           address_of_primitive
+           value_of_number
+      But a constant of Forth occupies only one word of code. To save
+the principle "one word of text - one word of procedures code" DSSP
+in both cases uses variant, similar to the constant of Forth. As one
+number can be used in many places, the special vocabulary of
+constants is supported.
+      In Forth the execution of a constant give a value, but the
+execution of variable give an address. We want to have one language
+for all, therefore, the execution a variable must give a value too.
+It means, that we must use the prefix notation for other operations
+with variables.
+     Example:
+       DSSP                           Forth
+       VAR X                          VARIABLE X
+         X                              X @
+     7 ! X  [ X=7 ]                   7 X !
+       ' X  [address]                   X
+
+      To make it a special table, and a special set of assembler
+procedures is used for any type of variable. Any element of the table
+is the address of the procedure. "X" calls the first procedure, "! X"
+calls the second procedure and so on. It is the full list of
+operations with scalar variables:
+
+  DSSP       Forth    HLL
+   ' X        X       t=addr(X)
+     X        X @     t=X
+   ! X        X !     X=t
+  !0 X      0 X !     X=0
+  !1 X      1 X !     X=1
+ !1+ X      1 X !+    X=X+1
+ !1- X      1 X !-    X=X-1
+ !+  X        X !+    X=X+t
+ !-  X        X !-    X=X-t
+
+There are 5 base types of data, 2 unsigned: BYTE, WORD
+and 3 signed: SBYTE SWORD and LONG. To support them about 40
+assembler procedures are used.
+
+      So, DSSP is more complex in realisation, but more
+convenient to human operations with data. A usual "A=B" in DSSP
+is " B ! A " versus " B @ A ! " in Forth. We think that the
+speed of DSSP data operations is less or equal to that of
+Forth in case of emulation (DSSP operations have longer
+algorithm) and greater or equal in case of hardware processors
+(the code of DSSP is shorter than the code of Forth).
+
+2.3.2. ARRAYS
+      In usual high level language (HLL) the dimensionality of array
+is defined by the number of indexes in brackets. For example
+    ARRAY M (5,7,9)
+is a definition of 3-dimension array. In the Polish inverse notation
+there are not brackets, therefore we must define the
+dimensionality by number:
+    5 7 9 3 ARRAY M
+    The language of data execution is obtained by usual translation
+from HLL to an inverse notation:
+    A(2,5)=X  ----->   X  5 2  ! A
+      The last phrase is very natural to a human. It step by step
+describes actions of a human, who writes "X" in a two-dimensional
+table.
+      DSSP uses for arrays the same list of operations as for scalar
+variables, plus a natural operation "write the same value in all
+elements of array:
+                            X !!! M
+    As one-dimensional arrays are used more often than multidimensional,
+a special word VCTR (vector) was introduced. Examples:
+
+      100  BYTE VCTR  V       [  V[0:100]   ]
+     4 6 2 LONG ARRAY A       [  A[0:4,0:6] ]
+
+     DSSP       Forth            HLL
+     !T           !
+     @            @
+     I   V      V I 2* + @       t=V(I)
+     I ' V      V I 2* +         t=addr(V(I))
+   3 I ! V    3 V I + !          V(I)=3
+   I J   A      A J 9 * I + @    t=A(I,J)
+ 7 I J ! A    7 A J 9 * I + !    A(I,J)=7
+   X !!! A   [ store X in all elements A(I,J) ]
+     I   V      V I 2* + @       t=V(I)
+
+2.3.3. FIXED VARIABLES
+    A variables, whose values must be saved with the current
+state of system (command SAVE) must be marked by the word "FIX":
+   :: FIX VAR LENGTH   80 ! LENGTH
+   BYTE FIX VECTOR V
+
+              2.4.  OTHER OPERATIONS
+
+      Many simple operations of Forth and DSSP coincide exactly. But
+not all of them have the same names. There are two reasons for it: 1)
+authors of DSSP thought, that in this case "the shorter - the better";
+2) they used the terms of Setun-70. This table contains some examples
+to compare Forth and DSSP. The sign :-( marks, where we do not know
+any arguments in favour of DSSP.
+
+ DSSP  Forth              DSSP    Forth
+  +    +                  C@     DUP @
+  D    DROP               @B     C@
+  C    DUP                EXEC   EXECUTE
+ .     DUP .              CR     CR
+ .D    .                  TOS    TYPE
+ DD   2DROP               SP     SPACE
+SHL    2*     :-(         B8          OCTAL
+  2+   2+                 ."Hello"    ."Hello"
+NEG    NEG                ."Hello"    .(Hello)
+ABS    ABS                VALUE       CONSTANT              :-(
+LOAD   LOAD               CONSTANT    VECTOR OF CONSTANTS   :-(
+
+          2.5   INPUT/OUTPUT.
+
+      Input/Output has a strong dependence on the environment.
+Therefore, we must think about the portability. A number of assembler
+primitives must be as small as possible.
+     For terminal only two low level operations is enough:
+   TRB  [Terminal Input  Byte]
+   TOB  [Terminal Output Byte]
+     Other operation can be written in DSSP
+
+2.5.1. TERMINAL OUTPUT
+      [Terminal Output String:]
+      : TOS [Al] DO TOSS D [] ;
+        : TOSS [a] C @B TOB 1+ [a+1] ;
+  [ In Forth:  C - DUP, D - DROP,  @B - C@ ]
+      The output of an integer number is described by two
+parameters: the length of output in chars and the base of
+calculus. Thus, the general form is:
+
+        Number   N_of_chars  Base_of_calculus  Operator
+
+     As the base of calculus changes relatively seldom,
+it is better to define it as the variable:
+              VAR BASE@
+Then the form for number output is:
+
+        Number L TON   [Terminal Output Number]
+
+      Obviously, all variants of text number output can be performed
+by four words: TOB, TOS, TON and BASE@. But, for ease of handling,
+some additional operations were added as standard:
+
+[n]  .          Output all positions of number
+."Hello world"  Message output
+SP  CR          SPace, Carriage Return
+B2 B8 B10 B16   BINARY  OCTAL  DECIMAL  HEX
+
+    Many applications use next extensions:
+: .D [n] . D [] ;
+: .B10 [n] BASE@  E2 B10 .  ! BASE@ [n] ;
+
+2.5.2. TERMINAL INPUT
+
+      The main base input operation is TRB - Terminal Read
+Byte. Other input operations are symmetrical to output
+ones:
+    TIB  Terminal Input Byte with echo
+    TIN  Terminal Input Number
+    TIS  Terminal Input String
+   The text of TIB is simple:
+    : TIB TRB C TOB [b] ;
+
+                    3. PROGRAMMING SYSTEM
+
+             3.1. INTERPRETATION  AND  COMPILATION
+
+Three main gaps contradict to the openness of the programming
+system:
+   1) a gap between the program language and the system language;
+   2) a time gap between editing and debugging;
+   3) a gap between parts of program;
+
+The "language of programming system" is more confusing
+thing than a program language. Usually it is some strange mixture of
+commands of a text editor, compiler, debugger, file system etc.
+
+Let the command line interpreter of system works exactly as the
+internal interpreter, i.e. let it interpret, word by word, the text
+of the input flow. It is easy for DSSP, as any word of the text
+corresponds to one and the only one word of the code. All what is
+needed is a vocabulary with names and addresses of words plus a
+simple program to handle this vocabulary.
+
+The minimal time from editing to debugging is reached,
+when a word (data or procedure) is compiling once after the input. It
+means, what such words as "VAR", ":" etc. must be no
+descriptors for some external compiler, they must be
+a special compiler themselves.
+
+I.e. "VAR", ":", ARRAY and others are compiling words, words
+"LONG" "BYTE" and other are description words.
+
+Consequences: 1) A programmer can create new compiling
+words; 2) Compiling words can be executed inside a procedure, a
+special word "TEXEC" (call of external text interpreter) was
+introduced for it. Example: creation of a temporary array:
+
+    : PROC1 "B10 10000 LONG VCTR VL  0 !!! VL " TEXEC ;
+
+Now we can say, that some minimal programming system has
+been built. But words in this system must be defined "from down to
+top". To clear this limitation we must introduce a table of
+undefined names and some procedure to support it. In result the
+system becomes more complex and big. In 1970's it was difficult,
+but in 1980's it was not, and it was made.  Thus, DSSP supports
+"Top to Down"  programming.
+
+              3.2.  SUBVOCABULARIES
+
+The text of a usual word is a too small unit of the compilation
+to store it as one file, the text of a full vocabulary is a too big
+unit. Therefore, the structurisation of the vocabulary into groups of
+words is needed. Moreover, in some cases the need appears in more
+detail management of such groups. For example to close a part of
+vocabulary from unwanted use or link.
+
+That is why the vocabulary of DSSP is divided into named
+subvocabularies. Usually, the name of subvocabulary begins with "$"
+and the text of one subvocabulary is saved in one file, but it is
+only a tradition. The size of text files of early stand-alone
+versions of DSSP was limited by 4K bytes, today it is limited by 64K
+bytes, but the usual size is less than 20 K.
+       Next words used to handle  subvocabularies
+
+   ?$          Show list of vocabularies
+   FORGET  $V   [ Analogue to Forget of Forth ]
+   GROW    $V
+   PROGRAM $V  [ FORGET $V + GROW  $V]
+   SHUT    $V  [ Close access and link to words of $V ]
+   USE     $V  [ Open  access  and link to words of $V ]
+   ONLY    $V  [ Use only one subvocabulary $V ]
+   CANCEL      [ Cancel last "ONLY" ]
+   CLEAR   $V  [ Delete all names of $V, exclude marked by :: ]
+
+Obviously, many names are used only inside one or
+several vocabularies, others are used only in debugging. The
+operation "CLEAR" deletes such names from the subvocabulary, to
+diminish the size of used memory and the number of
+coincident names.
+
+So, the vocabulary of DSSP is more complex, than the
+vocabulary of Forth. Obviously, it is more suitable to develop
+large program, particularly when several programmers are working
+at the same time. For example, let programmer A make
+subvocabulary $A, programmer B make $B etc., and let in
+$A uses words from $B, $B uses words from $A.
+Our programmers can use the next lists of vocabularies:
+
+    Computer A:     Computer B:
+    $A              $B
+    $B              $A
+    $OTHERS         $OTHERS
+
+Both A and B are free in compiling and debugging. There is only
+one limitation: the attempt to execute undefined word XXX leads to
+the message "Unknown word XXX" and restart of DSSP.
+
+
+           4. SOME  ARCHITECTURAL  FEATURES
+
+                 4.1. ACTIONS
+
+Any word of DSSP, for example X, can be executed in
+procedure directly, by address and by name:
+
+    1)   X
+    2)   '' X  EXEC   [ '' - (two apostrophes) - get address of executor]
+    3)  "X" TEXEC     [ call outernal text interpreter ]
+
+Obviously, the executive address can be stored as value of variable
+or array, and can be used to switch a flow of program. A special type
+of data was introduced:
+
+                 ACT  VAR  X
+
+Actions are used to switch the output flow. As all terminal output is
+based on the word TOB (Terminal Output Byte), TOB was defined as:
+
+   :: FIX ACT VAR TOB   '' TOB' ! TOB
+
+where TOB' is the "unconditional TOB".
+
+    To change the direction of output flow is enough:
+   '' LPB ! TOB   - direct output to printer.
+   '' D   ! TOB   - no output.
+
+
+      4.2.  LOCAL VALUES INSTEAD OF LOCAL VARIABLES
+
+It is impossible to have a mechanism of local variables
+in DSSP, as there are no place inside a procedure to describe
+variables. But instead of it the mechanism of local values of
+variables can be introduced. Using of local values is clear
+from the example:
+
+    : P1 S( BASE@ X Y ) B8  11 ! X  22 ! Y   P2 P3 ;
+
+The values of variables , whose names of which are placed
+between "S(" and ")", store in the additional stack and restore after
+leaving the level of procedure P1 . While P2 and P3 are executed
+these variables have local values.
+
+              4.3.  SITUATIONS
+
+DSSP is a language, a machine and a programming
+system. The usual machine has interrupt system, therefore the
+DSSP language must have words to describe it. As DSSP has
+a vocabulary, interrupts can be handled by name, but not by
+address or number. As DSSP is a "machine in development" there
+are base interrupts and user defined interrupts. As DSSP is a
+threaded code stack machine, "to call a interrupt" means "to
+store the former state of interpreter and begin interpret with
+some new word on first level of hierarchy". "To return from
+interrupt" means "to run the interpreter in the former state".
+
+The interrupt can be described by two names: the name of
+interrupt and the name of reaction:
+
+                       TRAP Q1 REACT1
+
+TRAP is a compiling word, it create new word Q1, which run
+new interpretation process with word REACT1 in first level.
+In runtime the reaction can be set by phrase:
+
+                  ON Q1 REACT2
+
+which acts only in the current branch of program tree.
+
+Also, we have got usual mechanism of interrupts. It is good for
+hardware DSSP machine, but for DSSP emulators we have got only a
+control method, similar to ACT VAR. But we can use situations to
+resolve the well-known problem of structured languages: the absence
+of GOTO leads in some cases to very long return from hierarchy of
+calls. The word EON (Exit ON) was introduced for it. Example:
+
+    : P  EON Q1 REACT2  P1 P2 P3 ;
+       : P2 ... Q1 ... ;
+
+After exciting of Q1 in word P2, the program leaves
+P2 and P and after it executes word REACT2.
+
+Situations are used widely in DSSP, especially in
+input-output. Among predefined traps are: NOF (NO File), EOF
+(End Of File), DERR (Disk ERRor), NOIND (index out of
+boundaries), ZAPROS etc.
+
+The ZAPROS (Russian word for ASK) is excited, if
+text interpreter has not got text after execution of some input
+operation.  ZAPROS is described as
+
+      TRAP ZAPROS ." ?"   [type " ?" when exciting].
+
+    It is the example of memory look procedure:
+    : M [] ON ZAPROS ." Address? " TIN . @ . D CR [] ;
+
+Now, if we write  " M " the system asks: " Address? ",
+but if we write "M 100", the system execute M without asking.
+
+        5.  EDITING, DEBUGGING, EXECUTING
+
+The last 10 years DSSP uses built-in common purpose screen
+editor, in MSDOS size of text is limited by 64K bytes. The only
+specific for DSSP function is PF (Perform text).
+
+In debugging the main principle "one word of text - one word of
+code" is in use. A procedure can be recompiled from binary form to
+text form. Any word of procedure can be changed by another word,
+particularly - by breakpoint. You can call a debugger of OS or load a
+DSSP-disassembler to see the text of primitives. I.e. DSSP is the
+open system. May be, the most open in the world.
+
+After debugging the state of system can be saved by command:
+
+       SAVE FILE.EXT  phrase
+
+where "phrase" - a set of words to execute after run FILE.EXT.
+
+             6. AS IT WORKS
+
+      Let us write a small program. Let "U:" marks the user text,
+"S:" marks the system text.
+
+ S: *
+ U: KE E [Clear editor buffer, Edit]
+
+    The next text is created in editor:
+
+  ---------------------------------------------------------
+  PROGRAM $LM [ Look memory from a1 to a2, where a1 and a2 -
+              numbers in stack]
+  : LM [a1,a2] CR C2 - 1+  DO LM1  D [] ;
+   : LM1 [a] C . @ . D 1+ CR  [a+1] ;
+  : HELP ." a1 a2 LM - dump memory from a1 to a2 "  ;
+
+   UNDEF  [show undefined words]
+    ---------------------------------------------------------
+    U: ^E           [ leave editor ]
+    S: *
+    U: OE LM  [ save text in file LM.DSP ]
+    S: *
+    U: PF   [Perform the text in editor's buffer. Other variant: LOAD LM ]
+
+     Now begin the debugging:
+
+    U:   \L LM1    [recompile the word LM1:
+    S:  : LM1
+    S:    C         .            @B        .         D
+    S:    1+         ;
+
+    U: 1 \P LM1    [Set breakpoint at word 1 of procedure LM1 ]
+    U: 100 103 LM  [RUN LM]
+    S: Break at C
+    U: ..          [ Show stack of operands ]
+    S: 1 Pos       [
+    0100 ]
+    U: \G          [ Go ]
+    S: 0100 00BE
+      Break at C
+    U: ..         [ Show stack of operands ]
+    S: 1 Pos      [
+       0101 ]     [ The most typical error is the change of the stack
+                 depth in cycle. We see that stack is right ]
+    U: \C  \G     [Clear breakpoint, Go ]
+    S: 0101 003F
+       0102 0000
+       0103 0089
+       *
+    U: SAVE lm.exe  HELP
+
+The last command create the executive file, which types a help
+message at run.
+
+                          CONCLUSION
+
+DSSP was not invented. It was found. That is why DSSP has not
+versions, but only extensions. Forth is created by practice.
+DSSP is created by theory. But they are similar and it is a
+fact of great importance.
+
+
+REFERENCES
+Sorry, we do not know papers about DSSP in English.
+
+
+
+
+
+
+
+
+
+
+1
+
+
+
+
+
+
+

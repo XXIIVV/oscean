@@ -2,145 +2,46 @@
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width, inital-scale=1"/><link href="../links/main.css" type="text/css" rel="stylesheet"/><link href="../media/services/icon.png" type="image/png" rel="shortcut icon"/>
 <title>XXIIVV &mdash; gyo</title></head><body>
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
-<nav><ul><li><a href="paper_computing.html">paper computing</a></li><li><a href="reversible_computing.html">reversible computing</a></li><li><a href="operating_systems.html">operating systems</a></li><li><a href="programming.html">programming</a></li><li><a href="virtual_machines.html" class="parent">virtual machines</a></li><li><a href="cellular_automata.html">cellular automata</a></li><li><a href="fractals.html">fractals</a></li></ul><ul><li><a href="oisc.html">oisc</a></li><li><a href="brainfuck.html">brainfuck</a></li><li><a href="gyo.html" class="self">gyo</a></li><li><a href="chip8.html">chip8</a></li><li><a href="turquoise.html">turquoise</a></li><li><a href="uxn.html">uxn</a></li><li><a href="orca.html">orca</a></li></ul><ul></ul></nav><main><h2>Gyo is a register machine with 16 instructions.</h2>
+<nav><ul><li><a href="paper_computing.html">paper computing</a></li><li><a href="reversible_computing.html">reversible computing</a></li><li><a href="operating_systems.html">operating systems</a></li><li><a href="programming.html">programming</a></li><li><a href="virtual_machines.html" class="parent">virtual machines</a></li><li><a href="cellular_automata.html">cellular automata</a></li><li><a href="fractals.html">fractals</a></li></ul><ul><li><a href="oisc.html">oisc</a></li><li><a href="brainfuck.html">brainfuck</a></li><li><a href="gyo.html" class="self">gyo</a></li><li><a href="chip8.html">chip8</a></li><li><a href="turquoise.html">turquoise</a></li><li><a href="uxn.html">uxn</a></li><li><a href="orca.html">orca</a></li></ul><ul></ul></nav><main><h2>Gyo is a stack machine capable of executing Forth primitives in a single cycle.</h2>
 
-<p>Gyo was designed as an educational system foundational computing concepts. The computer has 16 registers, 16 opcodes and 256 memory addresses. The gyo <a href='assembly.html'>assembler</a> syntax supports <code>=constants</code> and <code>:labels</code>. The computer and assembler are written in less than 400 lines of <a href='ansi_c.html'>ANSI C</a> code.</p>
-<img src='../media/generic/gyo.jpg' width='200'/>
+<h3>16-bit Word</h3>
 
-<h3>Instructions</h3>
-
-<p>Each instruction uses 4-bits for the operation, 4-bits for the addressing mode and 8 bits for the address. The instructions are written directly into the RAM and read from the memory, the program can be modified as it is running. Programs are loaded directly into memory to create procedural self-modifiable programs.</p>
+<p>This is a modified version of James Bowman's <a href='http://www.excamera.com/sphinx/fpga-j1.html' target='_blank'>Forth J1 CPU</a>.</p>
 
 <table border='1'>
-	<tr><td>0x0</td><td>BRK</td><td>Break</td></tr>
-	<tr><td>0x1</td><td>JMP</td><td>Jump to position in memory</td></tr>
-	<tr><td>0x2</td><td>JCA</td><td>Jump to position in memory, when <i>carryflag</i></td></tr>
-	<tr><td>0x3</td><td>JZE</td><td>Jump to position in memory, when not <i>zeroflag</i></td></tr>
-	<tr><td>0x4</td><td>PEK</td><td>Read status</td></tr>
-	<tr><td>0x5</td><td>POK</td><td>Write status</td></tr>
-	<tr><td>0x6</td><td>GET</td><td>Store in register</td></tr>
-	<tr><td>0x7</td><td>PUT</td><td>Store in memory</td></tr>
-	<tr><td>0x8</td><td>ADD</td><td>Add value to register, set <i>carryflag</i> when overflow</td></tr>
-	<tr><td>0x9</td><td>SUB</td><td>Substract value from register, set <i>carryflag</i> when overflow</td></tr>
-	<tr><td>0xA</td><td>EQU</td><td>Compare register with value, set <i>zeroflag</i> when equal</td></tr>
-	<tr><td>0xB</td><td>LES</td><td>Compare register with value, set <i>zeroflag</i> when less than</td></tr>
-	<tr><td>0xC</td><td>AND</td><td>Bitwise AND operator</td></tr>
-	<tr><td>0xD</td><td>XOR</td><td>Bitwise XOR operator</td></tr>
-	<tr><td>0xE</td><td>ROL</td><td>Bitwise rotate left</td></tr>
-	<tr><td>0xF</td><td>ROR</td><td>Bitwise rotate right</td></tr>
+	<tr>
+		<td>15</td><td>14</td><td>13</td><td>12</td><td>11</td><td>10</td><td>9</td><td>8</td>
+		<td>7</td><td>6</td><td>5</td><td>4</td><td>3</td><td>2</td><td>1</td><td>0</td>
+	</tr>
+	<tr><td>1</td><td colspan='15'>Literal</td></tr>
+	<tr><td>0</td><td>0</td><td>0</td><td colspan='13'>Call</td></tr>
+	<tr><td>0</td><td>0</td><td>1</td><td colspan='13'>Conditional Jump</td></tr>
+	<tr><td>0</td><td>1</td><td>0</td><td colspan='13'>Jump</td></tr>
+	<tr>
+		<td>0</td><td>1</td><td>1</td><td class='free'>Bank</td><td colspan='4'>ALU</td>
+		<td colspan='2'>WSD</td><td colspan='2'>RSD</td>
+		<td>N=T</td><td>[T]=N</td><td>R=T</td><td>PC=R</td>
+	</tr>
 </table>
 
-<p>There are 4 principal addressing modes:</p>
+<h3>ALU</h3>
 
 <table border='1'>
-	<tr><th>instruction</th><th>result</th></tr>
-	<tr><td><code>EQU #00</code></td><td>the raw value</td></tr>
-	<tr><td><code>EQU $EF</code></td><td>the value at address #EF in memory</td></tr>
-	<tr><td><code>EQU [e]</code></td><td>the value of the 15th register</td></tr>
-	<tr><td><code>EQU {e}</code></td><td>the value at the address of the 15th register</td></tr>
+	<tr><td>T</td><td>N</td><td>R</td><td>[T]</td></tr>
+	<tr><td>~T</td><td>T&N</td><td>T^N</td><td>T|N</td></tr>
+	<tr><td>T=N</td><td>T&lt;N</td><td>N&gt;&gt;T</td><td>N&lt;&lt;T</td></tr>
+	<tr><td>T+N</td><td>T-1</td><td class='free'></td><td class='free'></td></tr>
 </table>
-
-<p>Registers are used by reading and writing to the status using a combination of bitwise operators, to quickly select the 3rd register and set all flags to 0, use <code>POK #20</code>.</p>
-
-<h3>Assembler</h3>
-
-<p>The assembler syntax supports :label, ~const and =var.</p>
-
-<pre>
-; comment
-
-=rate #01 ; defines a constant
-
-; program 
-
-:label
-	GET $02
-	PUT #03
-	BRK
-</pre>
-
-<h3>Conditional</h3>
-
-<p>The following example demonstrate how to do a conditional jump.</p>
-<pre>
-	GET #EF         ; load #EF in register
-	EQU [1]         ; set zeroflag if r0 is equal to r1
-	JZE there       ; if equal, goto :there
-:here
-	PUT #10         ; write in memory at #10
-	BRK
-:there
-	PUT #20         ; write in memory at #20
-	BRK	
-</pre>
-
-<h3>Loop</h3>
-
-<p>The following example demonstrate how to do a basic loop.</p>
-
-<pre>
-:loop
-	ADD #01
-	EQU #0f
-	JZE end
-	JMP loop
-:end
-	BRK
-</pre>
-
-<h3>Status Register</h3>
-
-<p>The status register is distributed as follows, it shares the same byte as the register selector. The <b>halt</b> flag is used by the BRK instruction is stops the cpu, the <b>zero</b> flag is used for logic instructions, the <b>carry</b> flag is set when an instruction carries over the 8bit range and the <b>traps</b> flag is set when the pointer should be sent to the traps location(in IO operations).</p>
-
-<pre>
-T C Z H
-| | | +---- Halt
-| | +------ Zero
-| +-------- Carry
-+---------- Traps
-</pre>
-
-<h3>IO</h3>
-
-<p>To begin IO mode, activate the traps flag with <code>POK #08</code>.</p>
-
-<pre>
-	POK #08  ; Set traps flag ON
-	GET      ; Read character from stdin
-	PUT [0]  ; Write character to stdout
-	POK #00  ; Set traps flag OFF 
-</pre>
-
-<h3>Hello World</h3>
-
-<pre>
-	POK #20   ; select r2
-	GET hello ; store location of :hello
-:loop
-	POK #00   ; select r0
-	GET [1]   ; get value of r1
-	ADD [2]   ; add value of r2
-	POK #08   ; set traps flag
-	PUT {0}   ; stdout value of memory[r0]
-	POK #10   ; select r1, remove traps
-	ADD #01   ; add 1
-	EQU #06   ; set zeroflag if == 6
-	JZE end   ; end if true
-	JMP loop  ; repeat
-:end
-	BRK
-
-:hello
-	#48 #65
-	#6C #6C
-	#6F #0A
-</pre>
 
 <img src='../media/refs/leggy.png'/>
 
 <ul>
 	<li><a href='https://git.sr.ht/~rabbits/gyo' target='_blank'>source</a></li>
 </ul>
+
+<style>
+	.free { background:#eee }
+</style>
 
 <ul><li><code>14R10</code> &mdash; Gyo Release</li></ul></main>
 <footer><a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.svg" alt="CreativeCommons"/></a> <a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a> <a href="https://merveilles.town/@neauoire" rel="me" target="_blank"><img src="../media/icon/merveilles.svg" alt="Merveilles"/></a> <a href="ethics.html"><img src="../media/icon/dreipfeile.svg" alt="NoNazis!"/></a> <a href="uxn.html"><img src="../media/icon/uxn.svg" alt="UxnPowered"/></a> <span><a href="devine_lu_linvega.html">Devine Lu Linvega</a> &copy; 2022 &mdash; <a href="about.html">BY-NC-SA 4.0</a></span></footer>
