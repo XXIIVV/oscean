@@ -29,18 +29,18 @@
 	#0001 .File2/length DEO2
 
 	( lexicon )
-	;sitemap-path .File2/name DEO2 ;ul-tag ;<w> JSR2
-	;parse-lexicon JSR2
-	;sitemap-path .File2/name DEO2 ;ul-tag ;</w> JSR2
+	;sitemap-path .File2/name DEO2 ;ul-tag <w>
+	parse-lexicon
+	;sitemap-path .File2/name DEO2 ;ul-tag </w>
 
 	( diary )
-	;calendar-path .File2/name DEO2 ;header-txt ;w-str JSR2 ;p-tag ;<w> JSR2
-	;parse-diary-pages JSR2
-	;calendar-path .File2/name DEO2 ;p-tag ;</w> JSR2
+	;calendar-path .File2/name DEO2 ;header-txt w-str ;p-tag <w>
+	parse-diary-pages
+	;calendar-path .File2/name DEO2 ;p-tag </w>
 
 	( print next available id )
-	;available-txt ;print-str JSR2
-	;find-available JSR2 ;pdec JSR2 #0a18 DEO
+	;available-txt print-str
+	find-available pdec #0a18 DEO
 
 	( halt. )
 	#010f DEO
@@ -58,7 +58,7 @@ BRK
 
 	( check for size )
 	.File/success DEI2 STH2r NEQ2 ,&size-ok JCN
-		STH2kr ;print-str JSR2 #0a18 DEO
+		STH2kr print-str #0a18 DEO
 		&size-ok
 	POP2r
 
@@ -66,8 +66,8 @@ JMP2r
 
 @parse-lexicon ( -- )
 
-	;lexicon #2000 ;lexicon-path ;load-file JSR2
-	( swap ) ;lexicon #0a00 ;cswp JSR2
+	;lexicon #2000 ;lexicon-path load-file
+	( swap ) ;lexicon #0a00 cswp
 	;lexicon .File/success DEI2 ADD2k NIP2 SWP2
 	&l
 		,parse-lexicon-line JSR
@@ -82,15 +82,15 @@ JMP2r
 
 	( do incoming )
 	DUP2k #0001 SUB2 LDA LIT "? EQU ,&no-map JCN
-		DUP2 ;parse-links JSR2
+		DUP2 parse-links
 		&no-map
 
 	( do sitemap )
 	;sitemap-path .File2/name DEO2
-	;li-tag ;<w> JSR2
-	;w-link JSR2
-	;li-tag ;</w> JSR2
-	#0a ;w-chr JSR2
+	;li-tag <w>
+	w-link
+	;li-tag </w>
+	#0a w-chr
 
 	( next line )
 	;scap ( .. )
@@ -99,12 +99,12 @@ JMP2
 
 @parse-links ( src* -- )
 
-	DUP2 ;make-path-htm JSR2 ;workarea #8000 ROT2 ;load-file JSR2
+	DUP2 make-path-htm ;workarea #8000 ROT2 load-file
 
 	,&src STR2
 	;workarea .File/success DEI2 ADD2k NIP2 SWP2
 	&l
-		;href-attr OVR2 ;sseg JSR2 #00 EQU ,&no-link JCN
+		;href-attr OVR2 sseg #00 EQU ,&no-link JCN
 			[ LIT2 &src $2 ] OVR2 #0006 ADD2 ,parse-link JSR
 			&no-link
 		INC2 GTH2k ,&l JCN
@@ -114,11 +114,11 @@ JMP2r
 
 @parse-link ( src* link* -- )
 
-	( external ) ;http-txt OVR2 ;sseg JSR2 ,&end JCN
+	( external ) ;http-txt OVR2 sseg ,&end JCN
 	( hash ) LDAk LIT "# EQU ,&end JCN
-		DUP2 ;make-path-map JSR2 .File2/name DEO2
-		OVR2 ;w-str JSR2
-		#0a ;w-chr JSR2
+		DUP2 make-path-map .File2/name DEO2
+		OVR2 w-str
+		#0a w-chr
 		&end
 	POP2
 	POP2
@@ -133,7 +133,7 @@ JMP2r
 	#4000 .File/length DEO2
 	;diary-path-pages/end ;diary-path-pages
 	&l
-		LDA2k ;workarea #4000 ROT2 ;load-file JSR2
+		LDA2k ;workarea #4000 ROT2 load-file
 		#0000
 			( to* from* ) ;workarea STH2k .File/success DEI2 ADD2
 			( cap ) STA2k NIP2
@@ -145,7 +145,7 @@ JMP2r
 
 @parse-diary-page ( to* from* -- )
 
-	( swap ) DUP2 #0a00 ;cswp JSR2
+	( swap ) DUP2 #0a00 cswp
 	&l
 		,parse-diary-line JSR
 		INC2 GTH2k ,&l JCN
@@ -155,29 +155,29 @@ JMP2r
 
 @parse-diary-line ( line* -- next* )
 
-	DUP2 ;parse-log JSR2
+	DUP2 parse-log
 	( split )
-	DUP2 #0900 ;cswp JSR2
-	DUP2 ;validate-log JSR2
+	DUP2 #0900 cswp
+	DUP2 validate-log
 	( event )
 	DUP2 #0005 ADD2 LDA LIT "+ NEQ ,&no-event JCN
-		DUP2 ;parse-event JSR2
+		DUP2 parse-event
 		&no-event
 	( photo )
-	;no-photo OVR2 #0006 ADD2 ;scmp JSR2 ,&no-photo JCN
-		DUP2 ;parse-photo JSR2
+	;no-photo OVR2 #0006 ADD2 scmp ,&no-photo JCN
+		DUP2 parse-photo
 		&no-photo
 	( eol )
-	;scap JSR2 INC2
-	;scap JSR2 INC2
+	scap INC2
+	scap INC2
 	;scap ( .. )
 
 JMP2
 
 @parse-log ( event* -- )
 
-	DUP2 #000a ADD2 ;make-path-tmp JSR2 .File2/name DEO2
-	;w-str JSR2
+	DUP2 #000a ADD2 make-path-tmp .File2/name DEO2
+	w-str
 	#0a ;w-chr ( .. )
 
 JMP2
@@ -188,20 +188,20 @@ JMP2
 
 	( year )
 	LDAk2 ,&last LDR2 EQU2 ,&no-year JCN
-		;br-tag ;<w/> JSR2
+		;br-tag <w/>
 		LDA2k ,&last STR2
 		&no-year
 
 	( date )
-	;code-tag ;<w> JSR2
-		DUP2 #0005 ;w-len JSR2
-	;code-tag ;</w> JSR2
-	;scap JSR2 INC2
-	( term ) DUP2 ;w-link JSR2
-	;spacer ;w-str JSR2
-	;scap JSR2 INC2
-	( name ) ;w-str JSR2
-	;br-tag ;<w/> JSR2
+	;code-tag <w>
+		DUP2 #0005 w-len
+	;code-tag </w>
+	scap INC2
+	( term ) DUP2 w-link
+	;spacer w-str
+	scap INC2
+	( name ) w-str
+	;br-tag <w/>
 	#0a ;w-chr ( .. )
 
 JMP2
@@ -219,17 +219,17 @@ JMP2
 	DUP2 #0006 ADD2 ,&pict STR2
 	#000a ADD2
 		DUP2 ,&term STR2 
-		;scap JSR2 INC2 ,&title STR2
+		scap INC2 ,&title STR2
 
-	;figure-tag ;<w> JSR2
+	;figure-tag <w>
 		( src ) [ LIT2 &pict $2 ]
-		( alt ) [ LIT2 &title $2 ] ;w-img JSR2
-		;figcaption-tag ;<w> JSR2
-			[ LIT2 &term $2 ] ;w-link JSR2
-				;spacer ;w-str JSR2
-				,&title LDR2 ;w-str JSR2
-		;figcaption-tag ;</w> JSR2
-	;figure-tag ;</w> JSR2
+		( alt ) [ LIT2 &title $2 ] w-img
+		;figcaption-tag <w>
+			[ LIT2 &term $2 ] w-link
+				;spacer w-str
+				,&title LDR2 w-str
+		;figcaption-tag </w>
+	;figure-tag </w>
 	,&len LDR2 INC2 ,&len STR2
 	#0a ;w-chr ( .. )
 
@@ -237,8 +237,8 @@ JMP2
 
 @make-path-tmp ( name* -- path* )
 
-	;&term ;scpy-line JSR2
-	;&term #20 LIT "_ ;cswp JSR2
+	;&term scpy-line
+	;&term #20 LIT "_ cswp
 	;&path
 
 JMP2r
@@ -246,9 +246,9 @@ JMP2r
 
 @make-path-htm ( name* -- path* )
 
-	DUP2 ;&term ;scpy-line JSR2
-	;&term #20 LIT "_ ;cswp JSR2
-	;slen JSR2 ;&term ADD2 ;htm-ext SWP2 ;scpy-line JSR2
+	DUP2 ;&term scpy-line
+	;&term #20 LIT "_ cswp
+	slen ;&term ADD2 ;htm-ext SWP2 scpy-line
 	;&path
 
 JMP2r
@@ -256,8 +256,8 @@ JMP2r
 
 @make-path-map ( name* -- path* )
 
-	;&term ;scpy-line JSR2
-	;&term #20 LIT "_ ;cswp JSR2
+	;&term scpy-line
+	;&term #20 LIT "_ cswp
 	;&path
 
 JMP2r
@@ -269,7 +269,7 @@ JMP2r
 @validate-log ( log* -- )
 
 	( validate photo id )
-	DUP2 #0006 ADD2 ;sdec JSR2 ;record-log-id JSR2
+	DUP2 #0006 ADD2 sdec record-log-id
 	POP2
 
 JMP2r
@@ -284,7 +284,7 @@ JMP2r
 
 JMP2r
 	&duplicate ( id* -- )
-		LDA ;print/b JSR2 #0a18 DEO
+		LDA print/b #0a18 DEO
 	JMP2r
 
 @find-available ( -- id* )
@@ -305,36 +305,36 @@ JMP2r
 
 @<w> ( name* -- )
 
-	LIT "< ;w-chr JSR2
-	;w-str JSR2
+	LIT "< w-chr
+	w-str
 	LIT "> ;w-chr ( .. )
 
 JMP2
 
 @</w> ( name* -- )
 
-	LIT "< ;w-chr JSR2
-	LIT "/ ;w-chr JSR2
-	;w-str JSR2
+	LIT "< w-chr
+	LIT "/ w-chr
+	w-str
 	LIT "> ;w-chr ( .. )
 
 JMP2
 
 @<w/> ( name* -- )
 
-	LIT "< ;w-chr JSR2
-	;w-str JSR2
-	LIT "/ ;w-chr JSR2
+	LIT "< w-chr
+	w-str
+	LIT "/ w-chr
 	LIT "> ;w-chr ( .. )
 
 JMP2
 
 @w-img ( src* alt* )
 
-	;&a ;w-str JSR2
-	;w-str JSR2
-	;&b ;w-str JSR2
-	;w-str JSR2
+	;&a w-str
+	w-str
+	;&b w-str
+	w-str
 	;&c ;w-str ( .. )
 
 JMP2
@@ -344,10 +344,10 @@ JMP2
 
 @w-link ( str* -- )
 
-	;&a ;w-str JSR2
-	DUP2 ;w-path JSR2
-	;&b ;w-str JSR2
-	;w-str JSR2
+	;&a w-str
+	DUP2 w-path
+	;&b w-str
+	w-str
 	;&c ;w-str ( .. )
 
 JMP2
