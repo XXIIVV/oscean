@@ -9,30 +9,30 @@
 <img src='../media/generic/usl/brk.png' class='usl'/>
 <p>
 <code class='op'>BRK <code class="sig">--</code></code>
-Ends the evalutation of the current <a href='#vectors'>vector</a>, this opcode has no modes.</p>
+Ends the evalutation of the current <a href='#vectors'>vector</a>. This opcode has no modes.</p>
 
 <h3 id='jmi'>Instant Jump</h3>
 <p>
 <code class='op'>JMI <code class="sig"> -- </code></code>
-Moves the program counter to an absolute address equal to the next short in memory, this opcode has no modes.
+Moves the PC to an absolute address equal to the next short in memory. This opcode has no modes.
 </p>
 
 <h3 id='jci'>Instant Jump Conditional</h3>
 <p>
 <code class='op'>JCI <code class="sig">cond8 -- </code></code>
-Pops a byte from the working stack and if it is not zero, moves the program counter to an absolute address equal to the next short in memory, this opcode has no modes.
+Pops a byte from the working stack and if it is not zero, moves the PC to an absolute address equal to the next short in memory, otherwise moves PC+2. This opcode has no modes.
 </p>
 
 <h3 id='jsi'>Instant Jump Stash Return</h3>
 <p>
 <code class='op'>JSI <code class="sig"> -- </code></code>
-Pushes the program counter to the return-stack and moves the program counter to an absolute address equal to the next short in memory, this opcode has no modes.
+Pushes PC+2 to the return-stack and moves the PC to an absolute address equal to the next short in memory. This opcode has no modes.
 </p>
 
 <h3 id='lit'>Literal</h3>
 <p>
 <code class='op'>LIT <code class="sig">-- a</code></code>
-Pushes the next bytes in memory, on the stack, the LIT opcode always has the <a href='#modes'>keep mode</a> active. Notice how the <code>0x00</code> opcode, with the <i>keep</i> bit toggled, is the location of the literal opcodes. To learn more, see <a href='#literals'>literals</a>.</p>
+Pushes the next bytes in memory, and moves the PC+2. The LIT opcode always has the <a href='#modes'>keep mode</a> active. Notice how the <code>0x00</code> opcode, with the <i>keep</i> bit toggled, is the location of the literal opcodes. To learn more, see <a href='#literals'>literals</a>.</p>
 <pre>
 LIT 12          ( 12 )
 LIT2 abcd       ( ab cd )
@@ -191,7 +191,7 @@ Pushes 01 to the stack if the second value at the top of the stack is lesser tha
 <img src='../media/generic/usl/jmp.png' class='usl'/>
 <p>
 <code class='op'>JMP <code class="sig">addr --</code></code>
-Moves the program counter by a relative distance equal to the signed byte on the top of the stack, or to an absolute address in short mode.</p>
+Moves the PC by a relative distance equal to the signed byte on the top of the stack, or to an absolute address in short mode.</p>
 <pre>
 ,&skip-rel JMP BRK &skip-rel #01  ( 01 )
 </pre>
@@ -201,7 +201,7 @@ Moves the program counter by a relative distance equal to the signed byte on the
 <img src='../media/generic/usl/jcn.png' class='usl'/>
 <p>
 <code class='op'>JCN <code class="sig">cond8 addr --</code></code>
-If the byte preceeding the address is not 00, moves the program counter by a signed value equal to the byte on the top of the stack, or to an absolute address in short mode.</p>
+If the byte preceeding the address is not 00, moves the PC by a signed value equal to the byte on the top of the stack, or to an absolute address in short mode.</p>
 <pre>
 #abcd #01 ,&pass JCN SWP &pass POP  ( ab )
 #abcd #00 ,&fail JCN SWP &fail POP  ( cd )
@@ -212,7 +212,7 @@ If the byte preceeding the address is not 00, moves the program counter by a sig
 <img src='../media/generic/usl/jsr.png' class='usl'/>
 <p>
 <code class='op'>JSR <code class="sig">addr --</code></code>
-Pushes the program counter to the return-stack and moves the program counter by a signed value equal to the byte on the top of the stack, or to an absolute address in short mode.</p>
+Pushes the PC to the return-stack and moves the PC by a signed value equal to the byte on the top of the stack, or to an absolute address in short mode.</p>
 <pre>
 ,&get JSR #01 BRK &get #02 JMP2r  ( 02 01 )
 </pre>
@@ -250,7 +250,7 @@ Writes a value to an address within the first 256 bytes of memory.</p>
 <img src='../media/generic/ugl/ldr.png' class='ugl'/>
 <p>
 <code class='op'>LDR <code class="sig">addr8 -- value</code></code>
-Pushes a value at a relative address in relation to the program counter, within a range between -128 and +127 bytes, to the top of the stack.</p>
+Pushes a value at a relative address in relation to the PC, within a range between -128 and +127 bytes, to the top of the stack.</p>
 <pre>
 ,cell LDR2 BRK @cell abcd  ( ab cd )
 </pre>
@@ -259,7 +259,7 @@ Pushes a value at a relative address in relation to the program counter, within 
 <img src='../media/generic/ugl/str.png' class='ugl'/>
 <p>
 <code class='op'>STR <code class="sig">val addr8 --</code></code>
-Writes a value to a relative address in relation to the program counter, within a range between -128 and +127 bytes.</p>
+Writes a value to a relative address in relation to the PC, within a range between -128 and +127 bytes.</p>
 <pre>
 #1234 ,cell STR2 BRK @cell $2  ( )
 </pre>
