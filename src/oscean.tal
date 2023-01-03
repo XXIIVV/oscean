@@ -321,19 +321,19 @@ JMP2
 		( make src* )
 		;diary-path ;&diary-path scpy
 		DUP2 #0006 ADD2 ;&diary-path scat
-		;jpg-ext ;&diary-path ;scat JSR2
+		;jpg-ext ;&diary-path scat
 		;&diary-path
 		( make alt* )
-		OVR2 #00 ;next-char JSR2 INC2 #09 ;next-char JSR2 INC2
-			;write-img JSR2
+		OVR2 #00 next-char INC2 #09 next-char INC2
+			write-img
 		( unclip ) DUP2 #0009 ADD2 STH2 #09 STH2r STA
-		;figcaption-tag ;write-open JSR2
-			DUP2 #000a ADD2 ;term/name SWP2 ;sseg JSR2 ,&skip JCN
-				DUP2 ;extract-term JSR2 ;write-link JSR2
-				[ LIT 20 ] ;write/char JSR2 ;mdash-entity-txt ;write JSR2 [ LIT 20 ] ;write/char JSR2
+		;figcaption-tag write-open
+			DUP2 #000a ADD2 ;term/name SWP2 sseg ,&skip JCN
+				DUP2 extract-term write-link
+				[ LIT 20 ] write/char ;mdash-entity-txt write [ LIT 20 ] write/char
 				&skip
-			#09 ;next-char JSR2 INC2 #09 ;next-char JSR2 INC2 ;write JSR2
-		;figcaption-tag ;write-close JSR2
+			#09 next-char INC2 #09 next-char INC2 write
+		;figcaption-tag write-close
 	;figure-tag ;write-close
 
 JMP2
@@ -346,9 +346,9 @@ JMP2
 
 	#00 ;&buff STA
 	#000a ADD2
-	( clip bound ) DUP2 #09 ;next-char JSR2 STH2
+	( clip bound ) DUP2 #09 next-char STH2
 	( clip start ) #00 STH2kr STA
-	( clip wrap ) ;&buff ;scat JSR2
+	( clip wrap ) ;&buff scat
 	( clip restore ) #09 STH2r STA
 	;&buff
 
@@ -363,10 +363,10 @@ JMP2r
 		POP2 JMP2r
 		&continue
 	( html )
-	;p-tag ;write-open JSR2
-	;&incoming-txt ;write JSR2
+	;p-tag write-open
+	;&incoming-txt write
 	&while
-		DUP2 ;write-link JSR2 #20 ;write/char JSR2
+		DUP2 write-link #20 write/char
 		( move to eol ) &eol INC2 LDAk ,&eol JCN
 		INC2 LDAk ,&while JCN
 	POP2
@@ -383,7 +383,7 @@ JMP2
 	;lexicon
 	&while
 		( move to name ) INC2 INC2
-		( test ) DUP2 STH2kr ;scmp JSR2 ,&end JCN
+		( test ) DUP2 STH2kr scmp ,&end JCN
 		( move to eol ) &eol INC2 LDAk ,&eol JCN INC2
 		LDAk ,&while JCN
 	POP2 #0000
@@ -397,7 +397,7 @@ JMP2r
 	STH2
 	;diary
 	&while
-		( skip events ) DUP2 ;no-picture ;log-has-picture JSR2 ,&skip JCN
+		( skip events ) DUP2 ;no-picture log-has-picture ,&skip JCN
 			POP2r JMP2r
 		&skip
 		( move to eol ) &eol INC2 LDAk ,&eol JCN INC2
@@ -409,17 +409,17 @@ JMP2r
 
 @find-diary-external ( name* -- diary* )
 
-	;&external ;sclr JSR2
-	;buff STH2k ;sclr JSR2
-	;&new-path STH2kr ;scpy JSR2
-	STH2kr ;scat JSR2
-	STH2kr #20 [ LIT "_ ] ;cswp JSR2
+	;&external sclr
+	;buff STH2k sclr
+	;&new-path STH2kr scpy
+	STH2kr scat
+	STH2kr #20 [ LIT "_ ] cswp
 	( load )
 	STH2r .File/name DEO2
 	#0060 .File/length DEO2
 	;&external DUP2 .File/read DEO2
 	( split lines )
-	;&external #0a00 ;cswp JSR2
+	;&external #0a00 cswp
 
 	.File/success DEI2 ORA ,&valid JCN
 		POP2 #0000
@@ -431,15 +431,15 @@ JMP2r
 
 @find-parent ( term* -- parent* )
 
-	DUP2 #0002 SUB2 LDA ;chex JSR2 ,&not-root JCN
+	DUP2 #0002 SUB2 LDA chex ,&not-root JCN
 		JMP2r
 		&not-root
-	#00 ;prev-char JSR2 INC2
-	( stash depth ) LDAk ;chex JSR2 #01 SUB STH
+	#00 prev-char INC2
+	( stash depth ) LDAk chex #01 SUB STH
 	;lexicon SWP2
 	&loop
-		#0001 SUB2 #00 ;prev-char JSR2
-		INC2k LDA ;chex JSR2 STHkr NEQ ,&continue JCN
+		#0001 SUB2 #00 prev-char
+		INC2k LDA chex STHkr NEQ ,&continue JCN
 			NIP2 POPr INC2 INC2 INC2 JMP2r
 			&continue
 		LTH2k ,&loop JCN
@@ -456,11 +456,11 @@ JMP2
 
 @make-path ( a* b* c* -- path* )
 
-	;buff STH2k ;sclr JSR2
-	ROT2 STH2kr ;scat JSR2
-	SWP2 STH2kr ;scat JSR2
-	STH2kr ;scat JSR2
-	STH2kr #20 [ LIT "_ ] ;cswp JSR2
+	;buff STH2k sclr
+	ROT2 STH2kr scat
+	SWP2 STH2kr scat
+	STH2kr scat
+	STH2kr #20 [ LIT "_ ] cswp
 	STH2r
 
 JMP2r
@@ -469,17 +469,17 @@ JMP2r
 
 	( look for redlinks )
 	&while
-		DUP2 ;href-attr SWP2 ;sseg JSR2 #00 EQU ,&continue JCN
+		DUP2 ;href-attr SWP2 sseg #00 EQU ,&continue JCN
 			( move to href ) #0006 ADD2
 			( strip relative ) LDAk [ LIT ". ] EQU ,&continue JCN
 			( strip jumps ) LDAk [ LIT "# ] EQU ,&continue JCN
-			( strip http* ) DUP2 ;http-txt SWP2 ;sseg JSR2 ,&continue JCN
-			;buff ;sclr JSR2
-			DUP2 ;buff #002f ;mcpy JSR2
-			;buff [ LIT ". ] #00 ;cswp JSR2
-			;buff [ LIT "_ ] #20 ;cswp JSR2
+			( strip http* ) DUP2 ;http-txt SWP2 sseg ,&continue JCN
+			;buff sclr
+			DUP2 ;buff #002f mcpy
+			;buff [ LIT ". ] #00 cswp
+			;buff [ LIT "_ ] #20 cswp
 			( find term )
-			;buff ;find-term JSR2 ORA ,&continue JCN
+			;buff find-term ORA ,&continue JCN
 				;buff ;err/broken-link ;print-error JMP2
 			&continue
 		INC2 LDAk ,&while JCN
@@ -505,30 +505,30 @@ JMP2r
 
 @write-img ( src* alt* -- )
 
-	[ LIT "< ] ;write/char JSR2
-	;img-tag ;write JSR2
-	;alt-attr ;write-attr JSR2
-	;src-attr ;write-attr JSR2
-	[ LIT "/ ] ;write/char JSR2
+	[ LIT "< ] write/char
+	;img-tag write
+	;alt-attr write-attr
+	;src-attr write-attr
+	[ LIT "/ ] write/char
 	[ LIT "> ] ;write/char ( .. )
 
 JMP2
 
 @write-link ( name* -- )
 
-	[ LIT "< ] ;write/char JSR2
-	[ LIT "a ] ;write/char JSR2
-	DUP2 ;html-ext ;&blank ;make-path JSR2 ;href-attr ;write-attr JSR2
+	[ LIT "< ] write/char
+	[ LIT "a ] write/char
+	DUP2 ;html-ext ;&blank make-path ;href-attr write-attr
 	( self )
-	DUP2 ;term/name ;scmp JSR2 #00 EQU ,&not-self JCN
-		;self-txt ;class-attr ;write-attr JSR2
+	DUP2 ;term/name scmp #00 EQU ,&not-self JCN
+		;self-txt ;class-attr write-attr
 		&not-self
 	( parent )
-	DUP2 ;term/parent ;scmp JSR2 #00 EQU ,&not-parent JCN
-		;parent-txt ;class-attr ;write-attr JSR2
+	DUP2 ;term/parent scmp #00 EQU ,&not-parent JCN
+		;parent-txt ;class-attr write-attr
 		&not-parent
-	[ LIT "> ] ;write/char JSR2
-	;write JSR2
+	[ LIT "> ] write/char
+	write
 	;a-tag ;write-close ( .. )
 
 JMP2
