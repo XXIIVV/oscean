@@ -57,7 +57,7 @@ BRK
 	.File/read DEO2
 
 	( check for size )
-	.File/success DEI2 STH2r NEQ2 ,&size-ok JCN
+	.File/success DEI2 STH2r NEQ2 ?&size-ok
 		STH2kr print-str #0a18 DEO
 		&size-ok
 	POP2r
@@ -71,7 +71,7 @@ JMP2r
 	;lexicon .File/success DEI2 ADD2k NIP2 SWP2
 	&l
 		,parse-lexicon-line JSR
-		INC2 GTH2k ,&l JCN
+		INC2 GTH2k ?&l
 	POP2 POP2
 
 JMP2r
@@ -81,7 +81,7 @@ JMP2r
 	INC2 INC2
 
 	( do incoming )
-	DUP2k #0001 SUB2 LDA LIT "? EQU ,&no-map JCN
+	DUP2k #0001 SUB2 LDA LIT "? EQU ?&no-map
 		DUP2 parse-links
 		&no-map
 
@@ -104,18 +104,18 @@ JMP2
 	,&src STR2
 	;workarea .File/success DEI2 ADD2k NIP2 SWP2
 	&l
-		;href-attr OVR2 sseg #00 EQU ,&no-link JCN
+		;href-attr OVR2 sseg #00 EQU ?&no-link
 			[ LIT2 &src $2 ] OVR2 #0006 ADD2 ,parse-link JSR
 			&no-link
-		INC2 GTH2k ,&l JCN
+		INC2 GTH2k ?&l
 	POP2 POP2
 
 JMP2r
 
 @parse-link ( src* link* -- )
 
-	( external ) ;http-txt OVR2 sseg ,&end JCN
-	( hash ) LDAk LIT "# EQU ,&end JCN
+	( external ) ;http-txt OVR2 sseg ?&end
+	( hash ) LDAk LIT "# EQU ?&end
 		DUP2 make-path-map .File2/name DEO2
 		OVR2 w-str
 		#0a w-chr
@@ -138,7 +138,7 @@ JMP2r
 			( to* from* ) ;workarea STH2k .File/success DEI2 ADD2
 			( cap ) STA2k NIP2
 			( parse ) STH2r ,parse-diary-page JSR
-		INC2 INC2 GTH2k ,&l JCN
+		INC2 INC2 GTH2k ?&l
 	POP2 POP2
 
 JMP2r
@@ -148,7 +148,7 @@ JMP2r
 	( swap ) DUP2 #0a00 cswp
 	&l
 		,parse-diary-line JSR
-		INC2 GTH2k ,&l JCN
+		INC2 GTH2k ?&l
 	POP2 POP2
 
 JMP2r
@@ -160,11 +160,11 @@ JMP2r
 	DUP2 #0900 cswp
 	DUP2 validate-log
 	( event )
-	DUP2 #0005 ADD2 LDA LIT "+ NEQ ,&no-event JCN
+	DUP2 #0005 ADD2 LDA LIT "+ NEQ ?&no-event
 		DUP2 parse-event
 		&no-event
 	( photo )
-	;no-photo OVR2 #0006 ADD2 scmp ,&no-photo JCN
+	;no-photo OVR2 #0006 ADD2 scmp ?&no-photo
 		DUP2 parse-photo
 		&no-photo
 	( eol )
@@ -187,7 +187,7 @@ JMP2
 	;calendar-path .File2/name DEO2
 
 	( year )
-	LDAk2 ,&last LDR2 EQU2 ,&no-year JCN
+	LDAk2 ,&last LDR2 EQU2 ?&no-year
 		;br-tag <w/>
 		LDA2k ,&last STR2
 		&no-year
@@ -210,7 +210,7 @@ JMP2
 @parse-photo ( photo* -- )
 
 	( limit to 20 entries )
-	[ LIT2 &len $2 ] #0020 LTH2 ,&continue JCN
+	[ LIT2 &len $2 ] #0020 LTH2 ?&continue
 		POP2 JMP2r
 		&continue
 
@@ -276,10 +276,10 @@ JMP2r
 
 @record-log-id ( log* -- )
 
-	ORAk ,&exists JCN
+	ORAk ?&exists
 		POP2 JMP2r
 		&exists
-	#f000 ADD2 LDAk ,&duplicate JCN
+	#f000 ADD2 LDAk ?&duplicate
 	#01 ROT ROT STA
 
 JMP2r
@@ -292,8 +292,8 @@ JMP2r
 	( find next diary )
 	#f400 #f001
 	&loop
-		LDAk #00 EQU ,&end JCN
-		INC2 GTH2k ,&loop JCN
+		LDAk #00 EQU ?&end
+		INC2 GTH2k ?&loop
 		&end
 	NIP2
 	#f000 SUB2
@@ -359,7 +359,7 @@ JMP2
 
 	&w
 		LDAk LIT "_ OVR #20 NEQ [ JMP SWP POP ] ,w-chr JSR
-		INC2 LDAk ,&w JCN
+		INC2 LDAk ?&w
 	POP2
 
 JMP2r
@@ -369,7 +369,7 @@ JMP2r
 	ADD2k NIP2 SWP2
 	&l
 		LDAk ,w-chr JSR
-		INC2 GTH2k ,&l JCN
+		INC2 GTH2k ?&l
 	POP2 POP2
 
 JMP2r
@@ -378,7 +378,7 @@ JMP2r
 
 	&w
 		LDAk ,w-chr JSR
-		INC2 LDAk ,&w JCN
+		INC2 LDAk ?&w
 	POP2
 
 JMP2r
@@ -398,10 +398,10 @@ JMP2r
 
 	STH STH
 	&while
-		LDAk STHkr NEQ ,&continue JCN
+		LDAk STHkr NEQ ?&continue
 			DUP2 OVRr STHr ROT ROT STA
 			&continue
-		INC2 LDAk ,&while JCN
+		INC2 LDAk ?&while
 	POP2 POP2r
 
 JMP2r
@@ -413,19 +413,19 @@ JMP2r
 		LIT2r 000a MUL2r
 		LITr 00
 		LDAk #30 SUB STH ADD2r
-		INC2 LDAk ,&w JCN
+		INC2 LDAk ?&w
 	POP2
 	STH2r
 
 JMP2r
 
-@sseg ( a* b* -- f ) STH2 &l LDAk LDAkr STHr NEQ ,&e JCN INC2k LDA #00 EQU ,&e JCN INC2 INC2r ,&l JMP &e LDA LDAr STHr EQU JMP2r
+@sseg ( a* b* -- f ) STH2 &l LDAk LDAkr STHr NEQ ?&e INC2k LDA #00 EQU ?&e INC2 INC2r ,&l JMP &e LDA LDAr STHr EQU JMP2r
 @slen ( str* -- len* ) DUP2 ,scap JSR SWP2 SUB2 JMP2r
-@scpy-line ( src* dst* -- ) STH2 &w LDAk STH2kr STA INC2r INC2 LDAk DUP #1f GTH SWP LIT ". NEQ AND ,&w JCN POP2 #00 STH2r STA JMP2r
-@scmp ( a* b* -- f ) STH2 &l LDAk LDAkr STHr ANDk #00 EQU ,&e JCN NEQk ,&e JCN POP2 INC2 INC2r ,&l JMP &e NIP2 POP2r EQU JMP2r
-@scap ( str* -- end* ) LDAk #00 NEQ JMP JMP2r &w INC2 LDAk ,&w JCN JMP2r
+@scpy-line ( src* dst* -- ) STH2 &w LDAk STH2kr STA INC2r INC2 LDAk DUP #1f GTH SWP LIT ". NEQ AND ?&w POP2 #00 STH2r STA JMP2r
+@scmp ( a* b* -- f ) STH2 &l LDAk LDAkr STHr ANDk #00 EQU ?&e NEQk ?&e POP2 INC2 INC2r ,&l JMP &e NIP2 POP2r EQU JMP2r
+@scap ( str* -- end* ) LDAk #00 NEQ JMP JMP2r &w INC2 LDAk ?&w JMP2r
 @print ( hex* -- ) SWP ,&b JSR &b DUP #04 SFT ,&c JSR &c #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO JMP2r
-@print-str ( str* -- ) &w LDAk #18 DEO INC2 LDAk ,&w JCN POP2 JMP2r
+@print-str ( str* -- ) &w LDAk #18 DEO INC2 LDAk ?&w POP2 JMP2r
 
 @pdec ( short* -- )
 
@@ -436,7 +436,7 @@ JMP2r
 	#000a ,&parse JSR
 	NIP
 	&emit
-		DUP [ LIT &z $1 ] EQU ,&skip JCN
+		DUP [ LIT &z $1 ] EQU ?&skip
 			#ff ,&z STR DUP #30 ADD #18 DEO
 			&skip
 	POP
