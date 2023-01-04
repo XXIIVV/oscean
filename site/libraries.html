@@ -96,48 +96,56 @@ JMP2r
 
 <h2>Metadata exposes additional information about a Varvara rom.</h2>
 
-<p>An external program can find the location of a ROM's metadata, by forming a 16-bit address from the second and third bytes of a rom file. That program can verify that this is indeed a valid address by reading the subsequent 3 bytes which should <b>always</b> be <code>80 f0 37</code>.</p>
+<p>An external program can find the location of a ROM's metadata, by forming a 16-bit address from the second and third bytes of a rom file. That program can verify that this is indeed a valid address by reading the subsequent 3 bytes which should <b>always</b> be <code>80 06 37</code>.</p>
 
 <p style="background: #eee; padding: 15px;">This is a work in progress, the spec might still change.</p>
 
 <table border='1'>
 	<tr><th colspan='6'>First six bytes</th></tr>
 	<tr><th>LIT2</th><th colspan='2'>address</th><th>LIT</th><th>port</th><th>DEO2</th><td>...</td></tr>
-	<tr><td>a0</td><td class='addr'>hb</td><td class='addr'>lb</td><td class='key'>80</td><td class='key'>f0</td><td class='key'>37</td><td>...</td></tr>
+	<tr><td>a0</td><td class='addr'>hb</td><td class='addr'>lb</td><td class='key'>80</td><td class='key'>06</td><td class='key'>37</td><td>...</td></tr>
 </table>
 
-<p>A Varvara ROM is able to store certain information about itself, such as:</p>
+<p>The body of the metadata can be anything, but it is recommended that it be plain-text with <code>0a</code> as line separator, and that the first line be the name of the application. Here are some suggestions for lines to include in the body of the metadata:</p>
 
 <ul>
 	<li><b>name</b>: application name</li>
 	<li><b>version</b>: release id</li>
 	<li><b>description</b>: what it is</li>
 	<li><b>author</b>: who built it</li>
-	<li><b>icon</b>: a 64x64 pixels monochromatic graphic</li>
 </ul>
 
-<p>The metadata is stored in the rom itself as to allow the rom program to reuse this information internally.</p>
+<p>The metadata is stored in the rom itself to allow the program to make use of this information internally.</p>
 
-<h3>Writing Metadata</h3>
+<h3>Implementation</h3>
 
-<p>If supported by the emulator, writing the metadata's address to the <a href='varvara.html'>#f0 device</a>, via <code>#f0 DEO</code>, informs the emulator of the metadata's location, and so it may choose to handle this information to name the window, or display an icon when a ROM is started.</p>
+<p>The metadata format begins with the address of the end of the metadata block, followed by a null-terminating metadata:</p>
 
 <pre>
 |0100 ( -> )
 
-	;meta #f0 DEO2
+	;meta #06 DEO2
 
 BRK
 
-@meta =&end =appicon
-	( name ) "Catclock $1
-	( version ) "Ver. 20 "4 $1
-	( details ) "tic 20 "tac 20 "cat 20 "clock $1
-	( author ) "Hundred 20 "Rabbits 20 7f 20 "2022 $2
-	&end
+@meta =&end
+	( name ) "Catclock 0a
+	( version ) "Ver. 20 "4 0a
+	( details ) "tic 20 "tac 20 "cat 20 "clock 0a
+	( author ) "Hundred 20 "Rabbits 20 7f 20 "2022 00
+	&end $1
 </pre>
 
-<p>The metadata format begins with the address of the end of the metadata block, followed by the address of the appicon (an <a href='icn_format.html'>8 by 8 tiles icn</a>), and finally four zero-terminated strings:</p>
+<p>If supported by the emulator, writing the metadata's address to the <a href='varvara.html#system'>system device</a>, via <code>#06 DEO2</code>, informs the emulator of the metadata's location, and it may choose to handle this information when a ROM is started.</p>
+
+<h3>Extended</h3>
+
+<p>The length of the metadata body can extend beyond the text and host various other fields:</p>
+
+<table border='1'>
+	<tr><th>Application</th><th>id</th><th>value</th></tr>
+	<tr><th rowspan='2'><a href='potato.html'>Potato</a></th><th>80</td><td>icon(3x3)*</td></tr>
+</table>
 
 <h3>Reading Metadata</h3>
 
@@ -149,7 +157,7 @@ BRK
 	.File/name DEO2
 	#0003 .File/length DEO2
 	;&b .File/read DEO2k DEO2
-	,&litport LDR2 #80f0 EQU2
+	,&litport LDR2 #8006 EQU2
 	,&deo2 LDR #37 EQU AND
 
 JMP2r
