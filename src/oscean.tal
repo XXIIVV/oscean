@@ -270,7 +270,7 @@ JMP2r
 	&while
 		( stop at sibling ) LDAk chex STHkr EQU ?&end
 		( when depth+1 ) LDAk chex STHkr INC NEQ ?&continue
-			INC2k INC2 find-photo-external ORAk #00 EQU ?&no-diary
+			INC2k INC2 DUP2 load-diary find-diary ORAk #00 EQU ?&no-diary
 				DUP2 build-module-photo
 				&no-diary
 				POP2
@@ -407,28 +407,6 @@ JMP2r
 	POP2r
 
 JMP2r
-
-@find-photo-external ( name* -- diary* )
-
-	;&external sclr
-	;buff STH2k sclr
-	;&new-path STH2kr scpy
-	STH2kr scat
-	STH2kr #20 [ LIT "_ ] cswp
-	( load )
-	STH2r .File/name DEO2
-	#0060 .File/length DEO2
-	;&external DUP2 .File/read DEO2
-	( split lines )
-	;&external #0a00 cswp
-
-	.File/success DEI2 ORA ?&valid
-		POP2 #0000
-		&valid
-
-JMP2r
-	&new-path "tmp/log- $1
-	&external $60
 
 @find-parent ( term* -- parent* )
 
