@@ -6,8 +6,6 @@
 
 <p>An external program can find the location of a ROM's metadata, by forming a 16-bit address from the second and third bytes of a rom file. That program can verify that this is indeed a valid address by reading the subsequent 3 bytes which should <b>always</b> be <code>80 06 37</code>.</p>
 
-<p style="background: #eee; padding: 15px;">This is a work in progress, the spec might still change.</p>
-
 <table border='1'>
 	<tr><th colspan='6'>First six bytes</th></tr>
 	<tr><th>LIT2</th><th colspan='2'>address</th><th>LIT</th><th>port</th><th>DEO2</th><td>...</td></tr>
@@ -27,7 +25,7 @@
 
 <h3>Implementation</h3>
 
-<p>The metadata format begins with the address of the end of the metadata block, followed by a null-terminating metadata:</p>
+<p>The metadata format begins with a byte for the <a href='varvara.html#version'>varvara version</a>, followed by a null-terminating text:</p>
 
 <pre>
 |0100 ( -> )
@@ -36,27 +34,25 @@
 
 BRK
 
-@meta =&end
-	"Nasu 0a
-	"Ver. 20 "16 0a
-	"A 20 "Sprite 20 "Editor 0a
-	"Hundred 20 "Rabbits 20 7f 20 "2022 00
-	( spec ) 40 0001
-	( mask ) 41 1705
-	( icon ) 83 =appicon
-	&end
+@meta 00 &body
+	( name ) "Nasu 0a
+	( details ) "A 20 "Sprite 20 "Editor 0a
+	( author ) "By 20 "Hundred 20 "Rabbits 0a
+	( date ) "Jan 20 "8, 20 "2023 00
+	03
+		( icon ) 83 =appicon
+		( mask ) 41 1705
 </pre>
 
 <p>If supported by the emulator, writing the metadata's address to the <a href='varvara.html#system'>system device</a>, via <code>#06 DEO2</code>, informs the emulator of the metadata's location, and it may choose to handle this information when a ROM is started.</p>
 
 <h3>Extended</h3>
 
-<p>The length of the metadata can extend beyond its text and host various other informations. The format for the fields is: a single byte id field, followed by a 2 bytes value field.</p>
+<p>The length of the metadata can be extended and host various other informations. The format for the fields is: a single byte id field, followed by a 2 bytes value field.</p>
 
 <table border='1'>
 	<tr><th>Application</th><th>id</th><th>value</th></tr>
-	<tr><th rowspan='2'>emulators</th><th>40</td><td>Expected specs version of the vm.</td></tr>
-	<tr><th>41</td><td>Expected <a href='varvara.html#mask'>device mask</a>.</td></tr>
+	<tr><th>--<th>41</td><td>Expected <a href='varvara.html#mask'>device mask</a>.</td></tr>
 	<tr><th rowspan='2'><a href='potato.html'>Potato</a></th><th>83</td><td>24x24 icon in the <a href='chr_format.html'>chr format</a>.</td></tr>
 </table>
 
