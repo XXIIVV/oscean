@@ -1,7 +1,6 @@
 #!/bin/sh -e
 
 ASM="uxncli $HOME/roms/drifblim.rom"
-ASM="uxnasm"
 LIN="uxncli $HOME/roms/uxnlin.rom"
 
 if [[ "$*" == *"--lint"* ]]
