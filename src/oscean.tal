@@ -313,19 +313,9 @@ JMP2r
 
 ( .. )
 
-@pstr ( str* -- )
-
-	&w
-		LDAk #18 DEO
-		INC2 LDAk ,&w JCN
-	POP2
-
-JMP2r
-
-
 @build-module-photo ( diary* -- )
 
-	LDAk ,&continue JCN
+	LDAk ?&continue
 		POP2 JMP2r
 		&continue
 	( html )
@@ -609,26 +599,25 @@ JMP2r
 
 @chex ( c -- val|ff )
 
-	LIT "0 SUB DUP #09 GTH JMP JMP2r
-	#27 SUB DUP #0f GTH JMP JMP2r
+	LIT "0 SUB DUP #09 GTH [ JMP JMP2r ]
+	#27 SUB DUP #0f GTH [ JMP JMP2r ]
 	POP #ff
 
 JMP2r
 
 @cswp ( str* a b -- )
 
-	STH STH
+	,&b STR ,&a STR
 	&while
-		LDAk STHkr NEQ ?&continue
-			DUP2 OVRr STHr ROT ROT STA
+		LDAk [ LIT &a $1 ] NEQ ?&continue
+			STH2k [ LIT &b $1 ] STH2r STA
 			&continue
 		INC2 LDAk ?&while
-	POP2 POP2r
+	POP2
 
 JMP2r
 
-
-@scap ( str* -- end* ) LDAk #00 NEQ JMP JMP2r &w INC2 LDAk ?&w JMP2r
+@scap ( str* -- end* ) LDAk #00 NEQ [ JMP JMP2r ] &w INC2 LDAk ?&w JMP2r
 @slen ( str* -- len* ) DUP2 scap SWP2 SUB2 JMP2r
 @scat ( src* dst* -- ) DUP2 slen ADD2
 @scpy ( src* dst* -- ) STH2 &w LDAk STH2kr STA INC2r INC2 LDAk ?&w POP2 #00 STH2r STA JMP2r
