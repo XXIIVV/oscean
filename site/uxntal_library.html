@@ -10,7 +10,7 @@
 
 <p>To print hexadecimal numbers:</p>
 <pre>
-@print ( short* -- )
+@print ( v* -- )
 
 	SWP ,&byte JSR
 	&byte ( byte -- ) DUP #04 SFT ,&char JSR
@@ -19,28 +19,25 @@
 JMP2r
 </pre>
 
-<p>To print a hexadecimal short, without leading zeroes:</p>
+<p>To print the binary value from a short:</p>
 
 <pre>
-@phex ( short* -- )
+@pbin ( v* -- )
 
-	#00 ,&z STR
-	LIT2r 0400
+	,&t STR2
+	#1000
 	&l
-		OVR #04 SFT DUP [ LIT &z $1 ] EQU ,&skip JCN
-			DUPk #09 GTH #27 MUL ADD #30 ADD #18 DEO
-			#ff ,&z STR
-			&skip
-		POP #40 SFT2
-		INCr GTHkr LITr _&l JCNr
-	POP2r POP2
+		#0f OVR SUB [ LIT2 &t $2 ] ROT SFT2
+		NIP #01 AND LIT "0 ADD #18 DEO
+		INC GTHk ?&l
+	POP2
 
 JMP2r
 </pre>
 
 <p>To print a decimal number from a short, without leading zeroes:</p>
 <pre>
-@pdec ( short* -- )
+@pdec ( v* -- )
 
 	#00 ,&z STR
 	#2710 ,&parse JSR
