@@ -1,6 +1,6 @@
 'use strict'
 
-function Stack(u, addr) 
+function Stack(u, addr)
 {
 	this.addr = addr
 
@@ -106,11 +106,15 @@ function Uxn (emu)
 	}
 
 	this.jump = (addr, pc) => {
-		return this.r2 ? addr : pc + rel(addr);
+		return (this.r2 ? addr : pc + rel(addr)) & 0xffff;
+	}
+
+	this.move = (distance, pc) => {
+		return pc = (pc + distance) & 0xffff
 	}
 
 	this.eval = (pc) => {
-		let a, b, c, instr
+		let a, b, c, instr, opcode
 		if(!pc || this.dev[0x0f])
 			return 0;
 		while((instr = this.ram[pc++])) {
@@ -130,9 +134,20 @@ function Uxn (emu)
 				this.src = this.wst
 				this.dst = this.rst
 			}
-			switch(instr & 0x1f) {
+			
+			opcode = instr & 0x1f;
+			switch(opcode - (!opcode * (instr >> 5))) {
+			/* Literals/Calls */
+			case -0x0: /* BRK */ return 1;
+			case -0x1: /* JCI */ if(!this.src.pop8(b)) { pc = this.move(2, pc); break; }
+			case -0x2: /* JMI */ pc = this.move(this.peek16(pc) + 2, pc); break;
+			case -0x3: /* JSI */ this.rst.push16(pc + 2); pc = this.move(this.peek16(pc) + 2, pc); break;
+			case -0x4: /* LIT */
+			case -0x6: /* LITr */ 
+			case -0x5: /* LIT2 */
+			case -0x7: /* LIT2r */ 
 			// Stack
-			case 0x00: /* LIT */ this.push(this.peek(pc)); pc += !!this.r2 + 1; break;
+			case 0x00: /* LIT */ this.push(this.peek(pc)); pc = this.move(!!this.r2 + 1, pc); break;
 			case 0x01: /* INC */ this.push(this.pop() + 1); break;
 			case 0x02: /* POP */ this.pop(); break;
 			case 0x03: /* NIP */ a = this.pop(); this.pop(); this.push(a); break;
@@ -185,13 +200,10 @@ function Uxn (emu)
 
 	this.halt = (err) => {
 		let vec = this.peek16(emu.uxn.dev)
-		if(vec){
+		if(vec)
 			this.eval(vec)
-		}
-		else{
+		else
 			console.error("Error", this.rr ? "Return-stack" : "Working-stack", this.errors[err]);
-		}
-		
 		this.pc = 0x0000
 	}
 

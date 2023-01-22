@@ -3,15 +3,16 @@
 function Console(emu)
 {
 	this.buffer = ""
-	this.display = console.log
+	this.display = null
+	this.emit = null
 
-	this.i = (char) => {
-		console.log("i",char)
+	this.write = (char) => {
+		this.display.innerHTML += this.buffer
 	}
 
-	this.send = (char) => {
+	this.error = (char) => {
 		if(char == 0x0a) {
-			this.display(this.buffer)
+			console.warn(this.buffer)
 			this.buffer = ""
 		}
 		else{
@@ -82,10 +83,13 @@ function Emu ()
 			this.uxn.wst.addr = val ? val * 0x100 : 0x10000
 		}
 		else if(port == 0x18) {
-			this.console.send(val)
+			this.console.write(val)
+		}
+		else if(port == 0x19) {
+			this.console.error(val)
 		}
 		else if(port == 0x0f) {
-			console.warn("Program ended.")
+			// console.warn("Program ended.")
 		}
 		else {
 			console.log("Unknown deo", port, val)
