@@ -1,20 +1,3 @@
-const hello_tal= `|0100 ( init )
-
-	;hello-word ;print-text JSR2
-
-BRK
-
-@print-text ( str* -- )
-
-	&while
-		( send ) LDAk #18 DEO
-		( loop ) INC2 LDAk ,&while JCN
-	POP2
-
-JMP2r
-
-@hello-word "Hello 20 "World! 00`
-
 const drifloon_rom = new Uint8Array([
 	0xa0, 0x01, 0x07, 0x80, 0x10, 0x37, 0x00, 0x80, 
 	0x12, 0x16, 0x06, 0xa0, 0x07, 0xaf, 0x15, 0xa0, 
