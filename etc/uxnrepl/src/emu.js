@@ -3,21 +3,15 @@
 function Console(emu)
 {
 	this.buffer = ""
-	this.display = null
-	this.emit = null
+	this.write_el = null
+	this.error_el = null
 
 	this.write = (char) => {
-		this.display.innerHTML += String.fromCharCode(char)
+		this.write_el.innerHTML += String.fromCharCode(char)
 	}
 
 	this.error = (char) => {
-		if(char == 0x0a) {
-			console.warn(this.buffer)
-			this.buffer = ""
-		}
-		else{
-			this.buffer += String.fromCharCode(char)
-		}
+		this.error_el.innerHTML += String.fromCharCode(char)
 	}
 
 	this.input = (char) => {
@@ -89,7 +83,7 @@ function Emu ()
 			this.console.error(val)
 		}
 		else if(port == 0x0f) {
-			// console.warn("Program ended.")
+			console.warn("Program ended.")
 		}
 		else {
 			console.log("Unknown deo", port, val)

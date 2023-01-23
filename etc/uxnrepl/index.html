@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8"/>
 	<title>Uxntal Playground</title>
-	<script src="src/programs.js"></script>
+	<script src="src/asm.js"></script>
 	<script src="src/emu.js"></script>
 	<script src="src/uxn.js"></script>
 </head>
@@ -34,9 +34,7 @@ JMP2r
 
 		document.body.className = "active"
 
-		let editor_el = document.getElementById("editor")
 		let term_el = document.getElementById("term")
-		let wst_el = document.getElementById("wst")
 
 		function assemble(query, program) {
 			let emulator = new Emu()
@@ -50,25 +48,31 @@ JMP2r
 			emulator.console.input(0x0a)
 		}
 
-		/* assembler */
-		let run_el = document.getElementById("run")		
-		run_el.addEventListener("click", (event) => {
-			let program = new Uint8Array(0x10000)
-			assemble(editor_el.value.replace(/(\r\n|\n|\r|\t)/gm, " "), program)
-			let emulator = new Emu()
-			emulator.console.display = term_el
-			emulator.uxn.load(program).eval(0x0100)
-			/* draw stack */
-			if(!emulator.uxn.wst.ptr())
+		function print_stack(stack) {
+			let wst_el = document.getElementById("wst")
+			if(!stack.ptr())
 				wst_el.innerHTML = "Stack: Empty"
 			else {
 				let i = 0;
 				wst_el.innerHTML = "Stack: "
-				for(i = 0; i< emulator.uxn.wst.ptr(); i++)
-					wst_el.innerHTML += ('0' + (emulator.uxn.wst.get(i) & 0xFF).toString(16)).slice(-2) + " ";
+				for(i = 0; i< stack.ptr(); i++)
+					wst_el.innerHTML += ('0' + (stack.get(i) & 0xFF).toString(16)).slice(-2) + " ";
 			}
-			
-		})
+		}
+
+		function run() {
+			let editor_el = document.getElementById("editor")
+			let program = new Uint8Array(0x10000)
+			assemble(editor_el.value.replace(/(\r\n|\n|\r|\t)/gm, " "), program)
+			let emulator = new Emu()
+			emulator.console.write_el = term_el
+			emulator.console.error_el = term_el
+			emulator.uxn.load(program).eval(0x0100)
+			print_stack(emulator.uxn.wst)
+		}
+	
+		document.getElementById("run").addEventListener("click", run)
+
 	</script>
 	<style>
 		body { font-family:monospace; overflow:hidden; height:100vh; padding:0; margin:0 }
