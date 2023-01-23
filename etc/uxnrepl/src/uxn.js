@@ -203,7 +203,7 @@ function Uxn (emu)
 		if(vec)
 			this.eval(vec)
 		else
-			console.error("Error", this.rr ? "Return-stack" : "Working-stack", this.errors[err]);
+			emu.console.display.innerHTML = "<b>Error</b>: " + (this.rr ? "Return-stack" : "Working-stack") + " " + this.errors[err] + "."
 		this.pc = 0x0000
 	}
 

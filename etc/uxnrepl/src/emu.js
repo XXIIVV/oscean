@@ -7,7 +7,7 @@ function Console(emu)
 	this.emit = null
 
 	this.write = (char) => {
-		this.display.innerHTML += this.buffer
+		this.display.innerHTML += String.fromCharCode(char)
 	}
 
 	this.error = (char) => {
