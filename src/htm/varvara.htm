@@ -49,7 +49,7 @@
 
 <p>This device is holding 3 shorts to be used for application customization. For a device that does not use a screen, these bytes may be used for speech controls, or other system globals, for simplicity we call them the Red*, Green* and Blue* shorts.</p>
 
-<p>Sending a non-null byte to the <code>0x0e</code> port will print the content of the stacks or pause the evaluation if the emulator includes a step-debugger, sending a non-null byte to the <code>0x0f</code> port will terminate the application.</p>
+<p>Sending a non-null byte to the <code>0x0e</code> port will print the content of the stacks or pause the evaluation if the emulator includes a step-debugger. Sending a non-null byte to the <code>0x0f</code> port will terminate the application, on systems that can handle exit codes, the error code is the 0x7f portion of the byte.</p>
 
 <p>The <code>expansion*</code> port allows to do special memory management operations, it expects an address to an operation. This is used mostly by larger roms that want to keep assets outside of addressable range. An example operation is in the following format:</p>
 
@@ -107,11 +107,11 @@
 <p>The screen device is made of two layers, each displaying 2-bits graphics in up to 4 colors. Drawing to the screen is done by writing values to the screen's <code>x*</code>, <code>y*</code> and <code>pixel/sprite</code> ports of the screen device. The screen vector triggers 60 times per seconds.</p>
 
 <pre>
-M L Y X            D C B A          
-| | | +---- Flipx  | | | +---- Blend 
-| | +------ Flipy  | | +------ Blend 
-| +-------- Layer  | +-------- Blend
-+---------- Mode   +---------- Blend
+M L Y X   D C B A 
+| | | +---- Flipx | | | +---- Blend
+| | +------ Flipy | | +------ Blend
+| +-------- Layer | +-------- Blend
++---------- Mode +---------- Blend
 </pre>
 
 <table border='1'>
@@ -189,11 +189,11 @@ JMP2r
 <p>The screen's <b>auto byte</b> automates the position and sprite address whenever a drawing command is sent, so the program does not need to manually move to the next sprite, or the next tile. A pixel drawing will increment the positions by 1, and a sprite drawing, by 8. A 1bpp sprite drawing will increment the address by 8, and a 2bpp drawing, by 16.</p>
 
 <pre>
-L L L L             * A Y X
-| | | +---- Length  | | | +---- Auto X
-| | +------ Length  | | +------ Auto Y
-| +-------- Length  | +-------- Auto Addr
-+---------- Length  +---------- <i>Unused</i>
+L L L L    * A Y X
+| | | +---- Length | | | +---- Auto X
+| | +------ Length | | +------ Auto Y
+| +-------- Length | +-------- Auto Addr
++---------- Length +---------- <i>Unused</i>
 </pre>
 
 <p>The high nibble of the auto byte is the length of sprites to draw at once. This allows to draw a 2x3 sprite without needing complex logic:</p>
