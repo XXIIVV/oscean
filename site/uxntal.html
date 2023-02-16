@@ -2,7 +2,7 @@
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width, inital-scale=1"/><link href="../links/main.css" type="text/css" rel="stylesheet"/><link href="../media/services/icon.png" type="image/png" rel="shortcut icon"/>
 <title>XXIIVV &mdash; uxntal</title></head><body>
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
-<nav><ul><li><a href="oisc.html">oisc</a></li><li><a href="brainfuck.html">brainfuck</a></li><li><a href="gyo.html">gyo</a></li><li><a href="chip8.html">chip8</a></li><li><a href="turquoise.html">turquoise</a></li><li><a href="uxn.html" class="parent">uxn</a></li><li><a href="orca.html">orca</a></li></ul><ul><li><a href="uxntal.html" class="self">uxntal</a></li><li><a href="varvara.html">varvara</a></li></ul><ul><li><a href="uxntal_opcodes.html">uxntal opcodes</a></li><li><a href="uxntal_modes.html">uxntal modes</a></li><li><a href="uxntal_stacks.html">uxntal stacks</a></li><li><a href="uxntal_memory.html">uxntal memory</a></li><li><a href="uxntal_devices.html">uxntal devices</a></li><li><a href="uxntal_syntax.html">uxntal syntax</a></li><li><a href="uxntal_errors.html">uxntal errors</a></li><li><a href="uxntal_library.html">uxntal library</a></li></ul></nav><main><figure><img alt="Rostiger's Uxn Zine" src="../media/diary/804.jpg"/><figcaption>Rostiger's Uxn Zine</figcaption></figure><h2>Tal is the programming language for the Uxn virtual machine.</h2>
+<nav><ul><li><a href="oisc.html">oisc</a></li><li><a href="brainfuck.html">brainfuck</a></li><li><a href="gyo.html">gyo</a></li><li><a href="chip8.html">chip8</a></li><li><a href="turquoise.html">turquoise</a></li><li><a href="uxn.html" class="parent">uxn</a></li><li><a href="orca.html">orca</a></li></ul><ul><li><a href="uxntal.html" class="self">uxntal</a></li><li><a href="varvara.html">varvara</a></li></ul><ul><li><a href="uxntal_opcodes.html">uxntal opcodes</a></li><li><a href="uxntal_stacks.html">uxntal stacks</a></li><li><a href="uxntal_modes.html">uxntal modes</a></li><li><a href="uxntal_immediate.html">uxntal immediate</a></li><li><a href="uxntal_memory.html">uxntal memory</a></li><li><a href="uxntal_devices.html">uxntal devices</a></li><li><a href="uxntal_syntax.html">uxntal syntax</a></li><li><a href="uxntal_errors.html">uxntal errors</a></li><li><a href="uxntal_library.html">uxntal library</a></li></ul></nav><main><figure><img alt="Rostiger's Uxn Zine" src="../media/diary/804.jpg"/><figcaption>Rostiger's Uxn Zine</figcaption></figure><h2>Tal is the programming language for the Uxn virtual machine.</h2>
 
 <img src="../media/generic/uxn.beet.png" style="float:right; margin-left: 15px;" width="150">
 
@@ -17,7 +17,7 @@
 
 <h2>Uxntal Opcodes</h2>
 
-<p>Uxn has 64kb of memory, 16 devices, 2 stacks, and 36 opcodes with 3 modes each. The list below show the opcodes and their effect on a given stack <b>a b c</b>, where <b>PC</b>: Program Counter, <b>M</b>: Memory, <b>D</b>: Devices, and <b>rs</b>: Return Stack. </p>
+<p>Uxn has 64kb of memory, 16 devices, 2 stacks, 32 standard opcodes with 3 modes each and 4 immediate opcodes. The list below show the standard opcodes and their effect on a given stack <b>a b c</b>, <b>PC</b>: Program Counter, <b>M</b>: Memory, <b>D</b>: Devices, and <b>rs</b>: Return Stack. </p>
 
 <pre>
 <b>LIT</b> a b c M[PC]   <b>EQU</b> a b?c             <b>LDZ</b> a b M[c8]      <b>ADD</b> a b+c
@@ -28,13 +28,50 @@
 <b>ROT</b> b c a         <b>JCN</b> a {(b8)PC+=c}     <b>STA</b> a {M[c16]=b}   <b>ORA</b> a b|c
 <b>DUP</b> a b c c       <b>JSR</b> a b {rs.PC PC+=c} <b>DEI</b> a b D[c8]      <b>EOR</b> a b^c
 <b>OVR</b> a b c b       <b>STH</b> a b {rs.c}        <b>DEO</b> a {D[c8]=b}    <b>SFT</b> a b&gt;&gt;c8l&lt;&lt;c8h
-
-<b>JMI</b> PC=M[PC]      <b>JCI</b> (a8)PC=M[PC]      <b>JSI</b> {rs.PC} M[PC]
-<b>--2</b> a16 b16+c16   <b>--r</b> a b c {rs.b+rs.c} <b>--k</b> a b c b+c
 </pre>
 
 <p>To learn more about each opcode, see the <a href='uxntal_reference.html'>Uxntal Reference</a>.</p>
 
+<h2>Uxntal stacks</h2>
+
+<p>In stack-machine programming, there are no precedence rules, the calculations are merely performed in the sequence in which they are presented. The order with which elements come off a stack is known as <b>last in, first out</b>. In the stack <i>a b c</i>, the <i>c</i> item was the last to be added, and will be the first to be removed.</p>
+
+<pre>
+#12 <span style='float:right'>12</span>
+#3456<span style='float:right'>34 56</span>
+#12 STH <span style='float:right;color:#777'>12</span>
+LIT2r 1234 <span style='float:right;color:#777'>12 34</span>
+LIT2r 1234 STHr <span style='float:right;color:#777'> 12</span> <span style='float:right'>34</span>
+</pre>
+
+<p>All programming in Unxtal is done by manipulating the <i>working stack</i>, and <i>return stack</i>. Each stack contains 254 bytes, items from one stack can be moved into the other. Here are the stack primitives: </p>
+
+<table border='1'>
+	<tr><th>POP</th><td>a b</td><td>Discard top item.</td></tr>
+	<tr><th>NIP</th><td>a c</td><td>Discard second item.</td></tr>
+	<tr><th>SWP</th><td>a c b</td><td>Move second item to top.</td></tr>
+	<tr><th>ROT</th><td>b c a</td><td>Move third item to top.</td></tr>
+	<tr><th>DUP</th><td>a b c c</td><td>Copy top item.</td></tr>
+	<tr><th>OVR</th><td>a b c b</td><td>Copy second item to top.</td></tr>
+</table>
+
+<p>Shorts are made of two bytes, each byte can be manipulated individually.</p>
+
+<pre>
+#12 #34 POP <span style='float:right'>12</span>
+#12 #34 NIP <span style='float:right'>34</span>
+#1234 DUP <span style='float:right'>12 34 34</span>
+#abcd #5678 SWP2 <span style='float:right'>56 78 ab cd</span>
+#1234 #5678 NIP2 <span style='float:right'>56 78</span>
+</pre>
+
+<p>A <i>literal</i> is a byte or short value, it is prefixed in the program by the <a href='#lit'>LIT</a> opcode, some words will automatically prefix the value with the opcode:</p>
+
+<table border="1">
+	<tr><td></td><th>Byte</th><th>Char</th><th>Relative</th><th>ZeroPage</th><th>Absolute*</th><th>Short*</th></tr>
+	<tr><td><i>Literal</i></td><td><code>#ab</code></td><td></td><td><code>,label</code></td><td><code>.label</code></td><td><code>;label</code></td><td><code>#abcd</code></td></tr>
+	<tr><td><i>Plain</i></td><td><code>ab</code></td><td><code>"Q</code></td><td><code>_label</code></td><td><code>-label</code></td><td><code>=label</code></td><td><code>abcd</code></td></tr>
+</table>
 <h2>Uxntal Modes</h2>
 
 <p>Each opcode has 3 possible modes, which can combined:</p>
@@ -57,49 +94,25 @@
 <p>The <b>return mode</b> makes it possible for any opcode to operate on the return-stack directly. For that reason, there is no dedicated return opcode. For example, the <code class='op'>JSR</code> opcode pushes the program's address onto the return stack before jumping, to return to that address, the <code class='op'>JMP2r</code> opcode is used, where instead of using the address on the working-stack, it takes its address from the return-stack.</p>
 <pre>LITr 12 #34 STH ADDr STHr <span style='float:right'>46</span></pre>
 
-<h2>Uxntal stacks</h2>
+<h2>Immediate opcodes</h2>
 
-<p>In stack-machine programming, there are no precedence rules, the calculations are merely performed in the sequence in which they are presented. The order with which elements come off a stack is known as <b>last in, first out</b>. In the stack <i>a b c</i>, the <i>c</i> item was the last to be added, and will be the first to be removed.</p>
+<p>Immediate opcodes are operations which do not take items from the stack, but <i>immediately</i> after the opcode in the program memory. Uxntal has 4 immediate opcodes: </p>
 
-<pre>
-#12 <span style='float:right'>12</span>
-#3456<span style='float:right'>34 56</span>
-LIT 12 STH <span style='float:right;color:#777'>12</span>
-LIT2r 1234 <span style='float:right;color:#777'>12 34</span>
-LIT2r 1234 STHr <span style='float:right;color:#777'> 12</span> <span style='float:right'>34</span>
-</pre>
+<ul>
+	<li>The <b>literal</b> opcode <kbd>LIT</kbd>.</li>
+	<li>The <b>jump cond</b> <kbd>?routine</kbd>, immediate of <kbd>JCN</kbd>.</li>
+	<li>The <b>jump</b> <kbd>!routine</kbd>, immediate of <kbd>JMP</kbd>.</li>
+	<li>The <b>jump subroutine</b> <kbd>routine</kbd>, immediate of <kbd>JSR</kbd>.</li>
+</ul>
 
-<p>All programming in Unxtal is done by manipulating the working stack(wst), and return stack(rst). Each stack contains 254 bytes, items from one stack can be moved into the other. Here are the stack primitives: </p>
+<p>The immediate jump opcodes are slightly faster, and easier to write, than their standard counterparts, but cannot be used to do arithmetic and do not have modes. They are written by prefixing a label name with the opcode's rune:</p>
 
 <table border='1'>
-	<tr><th>POP</th><td>a b</td><td>Discard top item.</td></tr>
-	<tr><th>NIP</th><td>a c</td><td>Discard second item.</td></tr>
-	<tr><th>SWP</th><td>a c b</td><td>Move second item to top.</td></tr>
-	<tr><th>ROT</th><td>b c a</td><td>Move third item to top.</td></tr>
-	<tr><th>DUP</th><td>a b c c</td><td>Copy top item.</td></tr>
-	<tr><th>OVR</th><td>a b c b</td><td>Copy second item to top.</td></tr>
+	<tr><th>Standard</th><th>Immediate</th></tr>
+	<tr><td>;routine JCN2</td><td>?routine</td></tr>
+	<tr><td>;routine JMP2</td><td>!routine</td></tr>
+	<tr><td>;routine JSR2</td><td>routine</td></tr>
 </table>
-
-<p>Shorts are made of two bytes, each byte can be manipulated individually.</p>
-
-<pre>
-#1234 POP <span style='float:right'>12</span>
-#1234 NIP <span style='float:right'>34</span>
-#12 DUP <span style='float:right'>12 12</span>
-#1234 OVR <span style='float:right'>12 34 12</span>
-#abcd #5678 SWP2 <span style='float:right'>56 78 ab cd</span>
-#1234 #5678 SWP <span style='float:right'>12 34 78 56</span>
-</pre>
-
-<p>A <i>literal</i> is a byte or short value to be pushed on the stacks, it must be prefixed with the <a href='#lit'>LIT opcode</a>, some runes will automatically prefix the value with the opcode.</p>
-
-<table border="1">
-	<tr><td></td><th>Byte</th><th>Char</th><th>Relative</th><th>ZeroPage</th><th>Absolute*</th><th>Short*</th></tr>
-	<tr><td><i>Literal</i></td><td><code>#ab</code></td><td></td><td><code>,label</code></td><td><code>.label</code></td><td><code>;label</code></td><td><code>#abcd</code></td></tr>
-	<tr><td><i>Plain</i></td><td><code>ab</code></td><td><code>"Q</code></td><td><code>_label</code></td><td><code>-label</code></td><td><code>=label</code></td><td><code>abcd</code></td></tr>
-</table>
-
-<p>Hexadecimal values are always lowercase, either a byte or a short in length. Give a special attention to the <code>add2</code> hexadecimal value which, equals 44498 in decimal, and will not be interpreted as an opcode.</p>
 
 <h2>Uxntal Memory</h2>
 
@@ -132,27 +145,6 @@ LIT2r 1234 STHr <span style='float:right;color:#777'> 12</span> <span style='flo
 
 <iframe src="../etc/uxnrepl/index.html" frameborder="0" style='overflow:hidden; height:400px; margin-bottom:15px'></iframe>
 
-<!--
-<pre class='example'>
-|0100 <span class='comment'>( init )</span>
-
-	<b>;hello-word</b> <b>;print-text</b> JSR2
-
-BRK
-
-<span class='label'>@print-text</span> <span class='comment'>( str* -- )</span>
-
-	<span class='label'>&while</span>
-		<span class='comment'>( send )</span> LDAk #18 DEO
-		<span class='comment'>( loop )</span> INC2 LDAk <b>,&while</b> JCN
-	POP2
-
-JMP2r
-
-<span class='label'>@hello-word</span> "Hello 20 "World! 00
-</pre>
--->
-
 <style>
 .example span.label { font-weight: bold;background: #fff;color: #000;padding: 2px 4px; }
 .example span.comment { color:#777 }
@@ -167,15 +159,15 @@ JMP2r
 <p>Both <kbd>&while</kbd> and <kbd>@while</kbd> are ways to define labels, but using <code>&while</code> will automatically prefix our new label with the name of the last <code>@label</code>, in this example <code>print-text/while</code>. </p>
 
 <table border="1">
-	<tr><th colspan="4">Padding</th><th colspan="4">Literals</th></tr>
+	<tr><th colspan="4">Padding Runes</th><th colspan="4">Literal Hex Rune</th></tr>
 	<tr><td><code>|</code></td><td>absolute</td><td><code>$</code></td><td>relative</td><td><code>#</code></td><td colspan="3">literal hex</td></tr>
-	<tr><th colspan="4">Labels</th><th colspan="4">Ascii</th></tr>
+	<tr><th colspan="4">Label Runes</th><th colspan="4">Ascii Runes</th></tr>
 	<tr><td><code>@</code></td><td>parent</td><td><code>&</code></td><td>child</td><td><code>&quot;</code></td><td colspan="3">raw ascii</td></tr>
-	<tr><th colspan="4">Addressing</th><th colspan="4">Pre-processor</th></tr>
+	<tr><th colspan="4">Addressing Runes</th><th colspan="4">Pre-processor Runes</th></tr>
 	<tr><td><code>,</code></td><td>literal relative</td><td><code>_</code></td><td>raw relative</td><td><code>%</code></td><td>macro-define</td><td><code>~</code></td><td>include</td></tr>
 	<tr><td><code>.</code></td><td>literal zero-page</td><td><code>-</code></td><td>raw zero-page</td></tr>
 	<tr><td><code>;</code></td><td>literal absolute</td><td><code>=</code></td><td>raw absolute</td></tr>
-	<tr><th colspan="4">Immediate</th></tr>
+	<tr><th colspan="4">Immediate Runes</th></tr>
 	<tr><td><code>!</code></td><td>jmi</td><td><code>?</code></td><td>jci</td></tr>
 </table>
 
