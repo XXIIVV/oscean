@@ -14,19 +14,18 @@
 <p>You can use the following <a href='uxntal.html'>Uxntal</a> routine to implement theme support to your application: </p>
 
 <pre>
-( theme )
-
 @load-theme ( -- )
 
 	;&path .File/name DEO2
 	#0002 .File/length DEO2
-	;&r .File/read DEO2
-	;&g .File/read DEO2
-	;&b .File/read DEO2
-	.File/success DEI2 ORA #01 JCN JMP2r
-	LIT2 &r $2 .System/r DEO2
-	LIT2 &g $2 .System/g DEO2
-	LIT2 &b $2 .System/b DEO2
+	[ LIT2 -System/debug -System/r ]
+	&loop
+		;&buf .File/read DEO2
+		.File/success DEI2 ORA ?&end
+			POP2 JMP2r &end
+		DUP [ LIT2 &buf $2 ] ROT DEO2
+		INC INC NEQk ?&loop
+	POP2
 
 JMP2r
 	&path ".theme $1
