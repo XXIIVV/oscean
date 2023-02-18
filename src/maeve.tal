@@ -9,10 +9,7 @@
 
 |0000
 
-(
-@|vectors )
-
-|0100 @on-reset ( -> )
+|0100 ( -> )
 
 	( clear old copies )
 	;sitemap-path .File2/name DEO2
@@ -37,7 +34,7 @@
 	;calendar-path .File2/name DEO2 ;p-tag </w>
 
 	( print next available id )
-	;available-txt print-str
+	;available-txt pstr
 	find-available pdec #0a18 DEO
 
 	( halt. )
@@ -56,7 +53,7 @@ BRK
 
 	( check for size )
 	.File/success DEI2 STH2r NEQ2 ?&size-ok
-		STH2kr print-str #0a18 DEO
+		STH2kr pstr #0a18 DEO
 		&size-ok
 	POP2r
 
@@ -182,6 +179,14 @@ JMP2r
 
 @parse-event ( event* -- )
 
+	( add to parent topic )
+	DUP2 #000a ADD2 find-term find-parent make-path-tmp .File2/name DEO2
+	DUP2
+		DUP2 w-str scap INC2 #09 w-chr
+		DUP2 w-str scap INC2 #09 w-chr
+		w-str #0a w-chr
+
+	( add to calendar )
 	;calendar-path .File2/name DEO2
 
 	( year )
@@ -194,6 +199,7 @@ JMP2r
 	;code-tag <w>
 		DUP2 #0005 w-len
 	;code-tag </w>
+	#20 w-chr
 	scap INC2
 	( term ) DUP2 w-link
 	;spacer w-str
@@ -203,7 +209,7 @@ JMP2r
 	#0a !w-chr
 
 ( .. )
-	&last $3
+	&last "17 $1
 
 @parse-photo ( photo* -- )
 
@@ -282,7 +288,7 @@ JMP2r
 
 JMP2r
 	&duplicate ( id* -- )
-		LDA print/b #0a18 DEO
+		LDA phex/b #0a18 DEO
 	JMP2r
 
 @find-available ( -- id* )
@@ -295,6 +301,52 @@ JMP2r
 		&end
 	NIP2
 	#f000 SUB2
+
+JMP2r
+
+@find-term ( name* -- term* )
+
+	STH2
+	;lexicon
+	&while
+		( move to name ) INC2 INC2
+		( test ) DUP2 STH2kr scmp ?&end
+		( move to eol ) &eol INC2 LDAk ?&eol INC2
+		LDAk ?&while
+	POP2 #0000
+	&end
+	POP2r
+
+JMP2r
+
+@find-parent ( term* -- parent* )
+
+	DUP2 #0002 SUB2 LDA chex ?&not-root
+		JMP2r
+		&not-root
+	#00 prev-char INC2
+	( stash depth ) LDAk chex #01 SUB STH
+	;lexicon SWP2
+	&loop
+		#0001 SUB2 #00 prev-char
+		INC2k LDA chex STHkr NEQ ?&continue
+			NIP2 POPr INC2 INC2 INC2 JMP2r
+			&continue
+		LTH2k ?&loop
+	( pop depth ) POPr
+	#0002
+
+JMP2r
+
+@prev-char ( addr* char -- addr* )
+
+	STH
+	&while
+		LDAk STHkr EQU ?&end
+		LDAk #00 EQU ?&end
+		#0001 SUB2 LDAk ?&while
+	&end
+		POPr
 
 JMP2r
 
@@ -392,6 +444,14 @@ JMP2r
 (
 @|stdlib )
 
+@chex ( c -- <val> )
+
+	LIT "0 SUB DUP #09 GTH [ JMP JMP2r ]
+	#27 SUB DUP #0f GTH [ JMP JMP2r ]
+	POP #ff
+
+JMP2r
+
 @cswp ( str* a b -- )
 
 	STH STH
@@ -422,8 +482,8 @@ JMP2r
 @scpy-line ( src* dst* -- ) STH2 &w LDAk STH2kr STA INC2r INC2 LDAk DUP #1f GTH SWP LIT ". NEQ AND ?&w POP2 #00 STH2r STA JMP2r
 @scmp ( a* b* -- f ) STH2 &l LDAk LDAkr STHr ANDk #00 EQU ?&e NEQk ?&e POP2 INC2 INC2r !&l &e NIP2 POP2r EQU JMP2r
 @scap ( str* -- end* ) LDAk #00 NEQ [ JMP JMP2r ] &w INC2 LDAk ?&w JMP2r
-@print ( hex* -- ) SWP ,&b JSR &b DUP #04 SFT ,&c JSR &c #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO JMP2r
-@print-str ( str* -- ) &w LDAk #18 DEO INC2 LDAk ?&w POP2 JMP2r
+@phex ( hex* -- ) SWP phex/b &b DUP #04 SFT phex/c &c #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO JMP2r
+@pstr ( str* -- ) &w LDAk #18 DEO INC2 LDAk ?&w POP2 JMP2r
 
 @pdec ( short* -- )
 
