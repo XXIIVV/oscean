@@ -2,7 +2,7 @@
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width, inital-scale=1"/><link href="../links/main.css" type="text/css" rel="stylesheet"/><link href="../media/services/icon.png" type="image/png" rel="shortcut icon"/>
 <title>XXIIVV &mdash; uxntal syntax</title></head><body>
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
-<nav><ul><li><a href="uxntal.html" class="parent">uxntal</a></li><li><a href="varvara.html">varvara</a></li></ul><ul><li><a href="uxntal_opcodes.html">uxntal opcodes</a></li><li><a href="uxntal_stacks.html">uxntal stacks</a></li><li><a href="uxntal_modes.html">uxntal modes</a></li><li><a href="uxntal_immediate.html">uxntal immediate</a></li><li><a href="uxntal_memory.html">uxntal memory</a></li><li><a href="uxntal_devices.html">uxntal devices</a></li><li><a href="uxntal_syntax.html" class="self">uxntal syntax</a></li><li><a href="uxntal_errors.html">uxntal errors</a></li><li><a href="uxntal_library.html">uxntal library</a></li></ul><ul></ul></nav><main><h2>Uxntal syntax</h2>
+<nav><ul><li><a href="uxntal.html" class="parent">uxntal</a></li><li><a href="varvara.html">varvara</a></li></ul><ul><li><a href="uxntal_opcodes.html">uxntal opcodes</a></li><li><a href="uxntal_stacks.html">uxntal stacks</a></li><li><a href="uxntal_modes.html">uxntal modes</a></li><li><a href="uxntal_immediate.html">uxntal immediate</a></li><li><a href="uxntal_memory.html">uxntal memory</a></li><li><a href="uxntal_devices.html">uxntal devices</a></li><li><a href="uxntal_syntax.html" class="self">uxntal syntax</a></li><li><a href="uxntal_errors.html">uxntal errors</a></li><li><a href="uxntal_library.html">uxntal library</a></li></ul><ul><li><a href="uxntal_struct.html">uxntal struct</a></li><li><a href="uxntal_lambda.html">uxntal lambda</a></li><li><a href="uxntal_cons.html">uxntal cons</a></li></ul></nav><main><h2>Uxntal syntax</h2>
 
 <p>Uppercased opcodes are reserved words, hexadecimal values are always lowercased. Comments are within parentheses, curlies are used in the definition of macros, and the square brackets are ignored.</p>
 
@@ -38,6 +38,295 @@
 
 <p>We increment the absolute address found on top of the stack with <kbd>INC2</kbd>, because the address is made of two bytes. We load the incremented value, the <kbd>JCN</kbd> opcode will jump to the position of label <kbd>&while</kbd> for as long as the item on the stack not zero. We complete the program with <kbd>POP2</kbd> to remove the address on the stack, to keep the stack clean at the end of the program.</p>
 
+<h2>Structs allow to access individual members in a data structure.</h2>
+
+<p>Structs are defined by rolling back the program address with <kbd>|00</kbd>, similarly to how you would define an enum.</p>
+
+<pre>
+|00 @person &name $2 &age $1 &height $2 &length
+</pre>
+
+<p>The <code>length</code> member of the struct holds the total size of the struct, and allows to jump to a specific item in a datastructure.</p>
+
+<h3>Example</h3>
+
+<p>The idea here is that you define padded labels, for example the <code>;person/age</code> label holds the value of <code>$0002</code>, naming that offset allows to access specific members of a data structure by applying the sublabels of the enum to a pointer.</p>
+
+<pre>
+|0100 @reset
+
+	( get second person ) ;family #0001 ;person/length MUL2 ADD2
+		( get name* ) DUP2 ;person/name ADD2 LDA2 ;pstr JSR2
+		( get age ) DUP2 ;person/age ADD2 LDA ;phex/byte JSR2
+		( get height* ) ;person/height ADD2 LDA2 ;phex JSR2
+
+BRK
+
+@family ( name* age height* )
+	:dict/melany 2a 008c
+	:dict/emily 14 0073
+	:dict/avery 09 0091
+	&end
+
+@dict
+	&melany "Melany $1
+	&emily "Emily $1
+	&avery "Avery $1
+</pre>
+
+<h2>Functional programming concepts in Uxntal.</h2>
+
+<p>Functions are the only primitive data types in untyped lambda calculus. It is nevertheless possible to represent numerals, booleans, lists, sets, characters and strings as higher order functions in untyped lambda calculus using Church encoding.</p>
+
+<h3>Quoting Opcodes</h3>
+
+<p>Quoting is the act of <a href='https://limited.systems/articles/uxntal-quoting/' target='_blank'>deferring an operation</a>, for example, the following code will instantly put the resulting value of <code>0d</code> on the stack:</p>
+
+<pre>#06 #07 ADD</pre>
+
+<p>If we instead do the following, the ADD opcode will remain on the stack as a value and will not immediately compute the result:</p>
+
+<pre>#06 #07 LIT ADD</pre>
+
+<p>The opcode can then be utilized when needed by using the following pattern, which effectively pulls the opcode from the stack and writes it at the next address in memory:</p>
+
+<pre>#00 STR $1</pre>
+
+<p>To familiarize yourself with Combinatory Logic, begin with the <a href='logic.html'>primer</a>.</p>
+
+<h3>Church Booleans</h3>
+
+<p>In Uxntal, to apply an operation from a value on the stack, we use the Identity macro, which pops a byte from the stack and writes it in front of the Program Counter. It is possible to put the literal values of opcodes on the stack, operate the stack and apply them at a later time, this is done with the <code>#00 STR 00</code> pattern.</p>
+
+<pre>
+%I { #00 STR 00 }
+%True { LIT POP }
+%False { LIT NIP }
+%And { DUP I }
+%Not { False True ROT I }
+%Or { DUP Not I }
+%Nand { And Not }
+</pre>
+
+<p>Booleans can be represented as operations that expect two values on the stack, returning the first argument if <i>True</i>, or POP, and the second if <i>False</i>, or NIP.</p>
+
+<pre>
+False True And <comment>False</comment>
+True Not <comment>False</comment>
+True False Or <comment>True</comment>
+</pre>
+
+<h3>Currying</h3>
+
+<p>Currying is the technique of converting a routine that takes multiple arguments into a sequence of routines that each takes a single argument. Functions are curried when we partially apply their arguments, both invocations returned functions into which the partially applied values are baked. </p>
+
+<pre>
+INCRABC ( a b c -- res ) ROT INC ROT INC ROT INC JMP2r
+</pre>
+
+
+<h3>Running routines over an array</h3>
+
+<p>You might want to run a routine over an array of data, in the style of:</p>
+
+<pre>array.each(incr)</pre>
+
+<p>You can create a <code>each</code> routine that way, but remember that this is not immutable.</p>
+
+<pre>
+|0100
+
+	;array ;incr ,each JSR ;send ,each JSR POP2
+
+BRK
+
+@each ( arr* fn* -- arr* )
+
+	,&fn STR2 DUP2
+	LDAk #00 SWP ADD2k NIP2 SWP2
+	&l
+		INC2 [ LIT2 &fn $2 ] JSR2
+		GTH2k ,&l JCN
+	POP2 POP2
+
+JMP2r
+
+@incr ( addr* -- addr* ) STH2k LDA INC STH2kr STA STH2r JMP2r
+@send ( addr* -- addr* ) LDAk #18 DEO JMP2r
+
+@array 06 &body "abcdef
+</pre>
+
+<style>
+pre comment { color:#777 }
+</style>
+<h2>A cons cell is a data structure which holds both data and the address to the following cell.</h2>
+
+<p>In functional programming languages, a list is the most versatile data type that can be used to store a collection of similar data items. Uxn uses singular opcodes operating on words of equal length, one might come across a problem that is better addressed with routines that operate on ordered lists of items and nested stacks. This 300 bytes implementation of cons cells gives your project that power.</p>
+
+<p>The data slot is known as the <i>CAR</i>, and the address slot is known as the <i>CDR</i>. The purpose is so that ordered lists can be traversed by going from one cell to the next, it also allows one to change the order of cells without manually moving any of the cells' data. </p>
+
+<img src='../media/refs/cons.png'/>
+
+<p>Let us consider the following cons list: </p>
+<pre>(list cat dog owl)</pre>
+
+<p>Also equivalent to the expression:</p>
+<pre>(cons owl (cons dog (cons cat nil)))</pre>
+
+<p>A translation into uxntal assembly would be something like the following, in which <code>POP2</code> is to get rid of the dangling pointer. This can obviously be made prettier with macros, but we'll keep things straightforward.</p>
+<pre>
+;nil JSR2
+	;cat ;cons JSR2
+		;dog ;cons JSR2
+			;owl ;cons JSR2
+POP2
+</pre>
+
+<h3>Creating a new list</h3>
+
+<p>The <code>@alloc</code> routine needs a <code>@memory</code> label to an address with enough space to host the lists, it returns the address of the newly created cell. A list begins with a cons cell whose <i>CAR</i> is a pointer to the cell's data and whose <i>CDR</i> is the next cell. A nil list begins with the nil function pointer.</p>
+
+<p>The <code>@cons</code> routine creates a new cons cell, making the <code>fn</code> its <i>CAR</i>, and the next cell its <i>CDR</i>. It returns the address of the newly created cons cell. <code>@cons</code> is often used to add a single element to the front of a list. This is called <i>consing</i> the element onto the list.</p>
+
+<pre>
+@alloc ( -- cell* )
+
+	[ LIT2 &next :memory ] DUP2 #0004 ADD2 ,&next STR2
+
+JMP2r
+
+@nil ( -- list* )
+
+	,alloc JSR ;nil
+
+@cons ( list* fn* -- list* )
+
+	( car ) ,alloc JSR STH2k STA2
+	( cdr ) STH2kr INC2 INC2 STA2
+	STH2r
+
+JMP2r
+</pre>
+
+<h3>Duplicate/Remove</h3>
+
+<p>We can build new primitives to duplicate, remove and swap cells from the list:</p>
+
+<pre>
+@pop ( list* -- list* )
+
+	INC2 INC2 LDA2
+
+JMP2r
+
+@dup ( list* -- list* )
+
+	LDA2k ,cons JSR
+
+JMP2r
+
+@swap ( list* -- list* )
+
+	LDA2k STH2 ,pop JSR LDA2k STH2 ,pop JSR
+	SWP2r
+	STH2r ,cons JSR STH2r ,cons JSR
+
+JMP2r
+</pre>
+
+<h3>Nesting two lists</h3>
+
+<p>You can make a list of lists, or nested lists, using the <code>@cons</code> routine with two cons cells from different lists.</p>
+
+<pre>
+( list1 )
+;nil JSR2
+	;cat ;cons JSR2
+		;dog ;cons JSR2
+			;owl ;cons JSR2
+( list2 )
+;nil JSR2
+	;ant ;cons JSR2
+		;bat ;cons JSR2
+			;cow ;cons JSR2
+( list3 list1 list2 )
+;nil JSR2
+	SWP2 ;cons JSR2
+		SWP2 ;cons JSR2
+;echo JSR2
+	</pre>
+
+<h3>Joining two lists</h3>
+
+<p>Two lists of cons cells can be joined together into one by modifying the last pointer of the second list, and pointing it to the first one.</p>
+
+<pre>
+@last ( list* -- list* )
+
+	&w INC2 INC2 LDA2 LDA2k ;nil NEQ2 ,&w JCN #0004 ADD2
+
+JMP2r
+
+@join ( list-a* list-b* -- list-b* )
+
+	STH2k ,last JSR STA2 STH2r
+
+JMP2r
+
+@unwrap ( list* -- list* )
+
+	INC2k INC2 LDA2 SWP2 LDA2 STH2k ,last JSR INC2 INC2 STA2 STH2r
+
+JMP2r
+</pre>
+
+<h3>Finding the length</h3>
+
+<p>This routine will run through a list and return its length.</p>
+<pre>
+@length ( list* -- length* )
+
+	LIT2r 0000
+	&w INC2 INC2 INC2r LDA2 LDA2k ;nil NEQ2 ,&w JCN
+	POP2 STH2r
+
+JMP2r
+</pre>
+
+<h3>Printing a list</h3>
+
+<p>Running through a list and its nested lists is a matter of itterating through each cell's <i>CDR</i> until a <code>;nil</code> pointer is found. The following routine will run recursively. If the list is a series of function pointers, you can modify this into an evaluation routine.</p>
+
+<pre>
+@echo ( list* -- )
+
+	#2818 DEO #2018 DEO
+	&w
+		LDA2k INC2 INC2 LDA2 ;nil EQU2 ,&fn JCN
+			( list )
+			LDA2k ;echo JSR2 ,&resume JMP
+			&fn
+			LDA2k LDA2 ,print JSR #2018 DEO
+		&resume
+		INC2 INC2 LDA2 LDA2k ;nil NEQ2 ,&w JCN
+	POP2
+	#2918 DEO #2018 DEO
+
+JMP2r
+
+@print ( short* -- )
+
+	SWP ,&byte JSR
+	&byte ( byte -- ) DUP #04 SFT ,&char JSR
+	&char ( char -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO
+
+JMP2r
+</pre>
+
+<ul>
+	<li><a href='https://git.sr.ht/~rabbits/ornithologics' target='_blank'>Ornithologics</a></li>
+</ul>
 <ul></ul></main>
 <footer><a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.svg" alt="CreativeCommons"/></a> <a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a> <a href="https://merveilles.town/@neauoire" rel="me" target="_blank"><img src="../media/icon/merveilles.svg" alt="Merveilles"/></a> <a href="ethics.html"><img src="../media/icon/dreipfeile.svg" alt="NoNazis!"/></a> <a href="uxn.html"><img src="../media/icon/uxn.svg" alt="UxnPowered"/></a> <span><a href="devine_lu_linvega.html">Devine Lu Linvega</a> &copy; 2023 &mdash; <a href="about.html#license">BY-NC-SA 4.0</a></span></footer>
 </body></html>
