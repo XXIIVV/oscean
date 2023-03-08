@@ -70,13 +70,6 @@ int main(int argc, char** argv) {
 
 <pre>#include "folder/file.h"</pre>
 
-<h3>Data Types</h3>
-
-<table border='1'>
-  <tr><td>char</td><td>0xff</td><td>0-255</td></tr>
-  <tr><td>short</td><td>0xffff</td><td>0-65535</td></tr>
-</table>
-
 <h3>IO</h3>
 
 <p>One way to get input into a program or to display output from a program is to use standard input and standard output, respectively. The following two programs can be used with the unix pipe <code>./o | ./i</code></p>
@@ -106,6 +99,48 @@ main()
     printf("(input: %s)\n", line);
   }
   return 0;
+}
+</pre>
+
+<h3>Threads</h3>
+
+<p>Threads are a way that a program can spawn concurrent operations that can then be delegated by the operating system to multiple processing cores. </p>
+
+<pre>
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+
+#define NTHREADS 5
+
+void *myFun(void *x)
+{
+  int tid;
+  tid = *((int *) x);
+  printf("Hi from thread %d!\n", tid);
+  return NULL;
+}
+
+int main(int argc, char *argv[])
+{
+  pthread_t threads[NTHREADS];
+  int thread_args[NTHREADS];
+  int rc, i;
+
+  /* spawn the threads */
+  for (i=0; i&lt;NTHREADS; ++i)
+    {
+      thread_args[i] = i;
+      printf("spawning thread %d\n", i);
+      rc = pthread_create(&threads[i], NULL, myFun, (void *) &thread_args[i]);
+    }
+
+  /* wait for threads to finish */
+  for (i=0; i&lt;NTHREADS; ++i) {
+    rc = pthread_join(threads[i], NULL);
+  }
+
+  return 1;
 }
 </pre>
 
@@ -190,187 +225,6 @@ printf("|%-10s|", "Hello");
 #define ABS(a)     (((a) < 0) ? -(a) : (a))
 #define CLAMP(x, low, high)  (((x) > (high)) ? (high) : (((x) < (low)) ? (low) : (x)))
 </pre>
-
-<h2>Reserved Words</h2>
-
-<table border='1'>
-  <tr><td><code>auto</code></td><td><code>else</code></td><td><code>long</code></td><td><code>switch</code></td></tr>
-  <tr><td><code>break</code></td><td><code>enum</code></td><td><code>register</code></td><td><code>typedef</code></td></tr>
-  <tr><td><code>case</code></td><td><code>extern</code></td><td><code>return</code></td><td><code>union</code></td></tr>
-  <tr><td><code>char</code></td><td><code>float</code></td><td><code>short</code></td><td><code>unsigned</code></td></tr>
-  <tr><td><code>const</code></td><td><code>for</code></td><td><code>signed</code></td><td><code>void</code></td></tr>
-  <tr><td><code>continue</code></td><td><code>goto</code></td><td><code>sizeof</code></td><td><code>volatile</code></td></tr>
-  <tr><td><code>default</code></td><td><code>if</code></td><td><code>static</code></td><td><code>while</code></td></tr>
-  <tr><td><code>do</code></td><td><code>int</code></td><td><code>struct</code></td><td><code>_Packed</code></td></tr>
-  <tr><td><code>double</code></td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
-</table>
-
-<h2>Array of function pointers</h2>
-
-<pre>
-void (*fns[3])() = {fn1, fn2, fn3};
-</pre>
-
-<h2>Operators Precedence</h2>
-
-<table border='1'>
-   <tbody>
-      <tr>
-         <th> Precedence</th>
-         <th> Operator</th>
-         <th> Description</th>
-         <th> Associativity</th>
-      </tr>
-      <tr>
-         <th rowspan="6"> 1</th>
-         <td> <code>++</code> <code>--</code></td>
-         <td> Suffix/postfix increment and decrement</td>
-         <td style="vertical-align: top" rowspan="6"> Left-to-right</td>
-      </tr>
-      <tr>
-         <td> <code>()</code></td>
-         <td> Function call</td>
-      </tr>
-      <tr>
-         <td> <code>[]</code></td>
-         <td> Array subscripting</td>
-      </tr>
-      <tr>
-         <td> <code>.</code></td>
-         <td> Structure and union member access</td>
-      </tr>
-      <tr>
-         <td> <code>-&gt;</code></td>
-         <td> Structure and union member access through pointer</td>
-      </tr>
-      <tr>
-         <td> <code>(<i>type</i>){<i>list</i>}</code></td>
-         <td> Compound literal<span class="t-mark-rev t-since-c99">(C99)</span></td>
-      </tr>
-      <tr>
-         <th rowspan="8"> 2</th>
-         <td> <code>++</code> <code>--</code></td>
-         <td> Prefix increment and decrement<sup id="cite_ref-1" class="reference"><a href="#cite_note-1">[note 1]</a></sup></td>
-         <td style="vertical-align: top" rowspan="8"> Right-to-left</td>
-      </tr>
-      <tr>
-         <td> <code>+</code> <code>-</code></td>
-         <td> Unary plus and minus</td>
-      </tr>
-      <tr>
-         <td> <code>!</code> <code>~</code></td>
-         <td> Logical NOT and bitwise NOT</td>
-      </tr>
-      <tr>
-         <td> <code>(<i>type</i>)</code></td>
-         <td> Cast</td>
-      </tr>
-      <tr>
-         <td> <code>*</code></td>
-         <td> Indirection (dereference)</td>
-      </tr>
-      <tr>
-         <td> <code>&amp;</code></td>
-         <td> Address-of</td>
-      </tr>
-      <tr>
-         <td> <code>sizeof</code></td>
-         <td> Size-of<sup id="cite_ref-2" class="reference"><a href="#cite_note-2">[note 2]</a></sup></td>
-      </tr>
-      <tr>
-         <td> <code>_Alignof</code></td>
-         <td> Alignment requirement<span class="t-mark-rev t-since-c11">(C11)</span></td>
-      </tr>
-      <tr>
-         <th> 3</th>
-         <td> <code>*</code> <code>/</code> <code>%</code></td>
-         <td> Multiplication, division, and remainder</td>
-         <td style="vertical-align: top" rowspan="11"> Left-to-right</td>
-      </tr>
-      <tr>
-         <th> 4</th>
-         <td> <code>+</code> <code>-</code></td>
-         <td> Addition and subtraction</td>
-      </tr>
-      <tr>
-         <th> 5</th>
-         <td> <code>&lt;&lt;</code> <code>&gt;&gt;</code></td>
-         <td> Bitwise left shift and right shift</td>
-      </tr>
-      <tr>
-         <th rowspan="2"> 6</th>
-         <td> <code>&lt;</code> <code>&lt;=</code></td>
-         <td> For relational operators &lt; and ≤ respectively</td>
-      </tr>
-      <tr>
-         <td> <code>&gt;</code> <code>&gt;=</code></td>
-         <td> For relational operators &gt; and ≥ respectively</td>
-      </tr>
-      <tr>
-         <th> 7</th>
-         <td> <code>==</code> <code>!=</code></td>
-         <td> For relational = and ≠ respectively</td>
-      </tr>
-      <tr>
-         <th> 8</th>
-         <td> <code>&amp;</code></td>
-         <td> Bitwise AND</td>
-      </tr>
-      <tr>
-         <th> 9</th>
-         <td> <code>^</code></td>
-         <td> Bitwise XOR (exclusive or)</td>
-      </tr>
-      <tr>
-         <th> 10</th>
-         <td> <code>|</code></td>
-         <td> Bitwise OR (inclusive or)</td>
-      </tr>
-      <tr>
-         <th> 11</th>
-         <td> <code>&amp;&amp;</code></td>
-         <td> Logical AND</td>
-      </tr>
-      <tr>
-         <th> 12</th>
-         <td> <code>||</code></td>
-         <td> Logical OR</td>
-      </tr>
-      <tr>
-         <th> 13</th>
-         <td> <code>?:</code></td>
-         <td> Ternary conditional</td>
-         <td style="vertical-align: top" rowspan="6"> Right-to-left</td>
-      </tr>
-      <tr>
-         <th rowspan="5"> 14</th>
-         <td> <code>=</code></td>
-         <td> Simple assignment</td>
-      </tr>
-      <tr>
-         <td> <code>+=</code> <code>-=</code></td>
-         <td> Assignment by sum and difference</td>
-      </tr>
-      <tr>
-         <td> <code>*=</code> <code>/=</code> <code>%=</code></td>
-         <td> Assignment by product, quotient, and remainder</td>
-      </tr>
-      <tr>
-         <td> <code>&lt;&lt;=</code> <code>&gt;&gt;=</code></td>
-         <td> Assignment by bitwise left shift and right shift</td>
-      </tr>
-      <tr>
-         <td> <code>&amp;=</code> <code>^=</code> <code>|=</code></td>
-         <td> Assignment by bitwise AND, XOR, and OR</td>
-      </tr>
-      <tr>
-         <th> 15</th>
-         <td> <code>,</code></td>
-         <td> Comma</td>
-         <td> Left-to-right</td>
-      </tr>
-   </tbody>
-</table>
 
 <q>Quidquid latine dictum sit, altum sonatur.</q>
 
