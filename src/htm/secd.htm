@@ -1,0 +1,50 @@
+<h2>The SECD machine is a virtual machine and abstract machine intended as a target for functional programming language compilers.</h2>
+
+<p>The SECD machine is built using four stacks:</p>
+
+<ul>
+	<li><kbd>s</kbd> Stack used for evaluation of expressions</li>
+	<li><kbd>e</kbd> Environment used to store the current value list</li>
+	<li><kbd>c</kbd> Control used to store the instructions</li>
+	<li><kbd>d</kbd> Dump used to store suspended invocation context.</li>
+</ul>
+
+<table border='1'>
+	<tr><th>OP</th><th>Description</th><th>Purpose</th></tr>
+	<tr><th>NIL</th><td>push a nil pointer</td><td></td></tr>
+	<tr><th>LD</th><td>load from the environment</td><td>get a value from context</td></tr>
+	<tr><th>LDC</th><td>load constant</td><td></td></tr>
+	<tr><th>LDF</th><td>load function</td><td>get a closure</td></tr>
+	<tr><th>AP</th><td>apply function</td><td></td></tr>
+	<tr><th>RTN</th><td>return</td><td>restore calling env</td></tr>
+	<tr><th>SEL</th><td>select in if statement</td><td></td></tr>
+	<tr><th>JOIN</th><td>rejoin main control</td><td>used with SEL</td></tr>
+	<tr><th>RAP</th><td>recursive apply</td><td></td></td></tr>
+	<tr><th>DUM</th><td>create a dummy env</td><td>used with RAP</td></tr>
+</table>
+
+<h3>A. Push Objects to Stack</h3>
+
+<p>Compilation Rules:</p>
+<ul>
+	<li>(a) A nil is compiled to (NIL)</li>
+	<li>(b) A number (or a constant) x is compiled to (LDC x)</li>
+	<li>(c) An identifier is compiled to (LD (i.j)) where (i.j) is an index into stack e.</li>
+</ul>
+
+<p>Stack Operations:</p>
+
+<ul>
+	<li>NIL	s e (NIL.c) d -> (nil.s) e c d</li>
+	<li>LDC	s e (LDC x.c) d -> (x.s) e c d</li>
+	<li>LD	s e (LD (i.j).c) d -> (locate((i.j),e).s) e c d</li>
+</ul>
+
+<p>"Locate" is an auxiliary function. It returns the jth element of the ith sublist in e.</p>
+
+<p>Note: roughly, e is a list of sublists each of which is a list of
+actual parameters. Thus, e corresponds to the value list in
+our interpreter. There will be no name list here, as each occurrence
+of a formal parameter will be compiled to LD (i.j) and by
+locate(i.j) the corresponding actual parameter is found.</p>
+
