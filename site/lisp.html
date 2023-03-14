@@ -2,7 +2,7 @@
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width, inital-scale=1"/><link href="../links/main.css" type="text/css" rel="stylesheet"/><link href="../media/services/icon.png" type="image/png" rel="shortcut icon"/>
 <title>XXIIVV &mdash; lisp</title></head><body>
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
-<nav><ul><li><a href="paper_computing.html">paper computing</a></li><li><a href="reversible_computing.html">reversible computing</a></li><li><a href="operating_systems.html">operating systems</a></li><li><a href="programming.html" class="parent">programming</a></li><li><a href="virtual_machines.html">virtual machines</a></li><li><a href="cellular_automata.html">cellular automata</a></li><li><a href="fractals.html">fractals</a></li></ul><ul><li><a href="assembly.html">assembly</a></li><li><a href="forth.html">forth</a></li><li><a href="lisp.html" class="self">lisp</a></li><li><a href="basic.html">basic</a></li><li><a href="pascal.html">pascal</a></li><li><a href="ansi_c.html">ansi c</a></li><li><a href="postscript.html">postscript</a></li><li><a href="hypertalk.html">hypertalk</a></li></ul><ul></ul></nav><main><h2>LISP is a family of programming languages with a parenthesized prefix notation.</h2>
+<nav><ul><li><a href="paper_computing.html">paper computing</a></li><li><a href="reversible_computing.html">reversible computing</a></li><li><a href="operating_systems.html">operating systems</a></li><li><a href="programming.html" class="parent">programming</a></li><li><a href="virtual_machines.html">virtual machines</a></li><li><a href="cellular_automata.html">cellular automata</a></li><li><a href="fractals.html">fractals</a></li></ul><ul><li><a href="assembly.html">assembly</a></li><li><a href="forth.html">forth</a></li><li><a href="lisp.html" class="self">lisp</a></li><li><a href="basic.html">basic</a></li><li><a href="pascal.html">pascal</a></li><li><a href="ansi_c.html">ansi c</a></li><li><a href="postscript.html">postscript</a></li><li><a href="hypertalk.html">hypertalk</a></li></ul><ul><li><a href="secd.html">secd</a></li></ul></nav><main><h2>LISP is a family of programming languages with a parenthesized prefix notation.</h2>
 
 <p>Operations in LISP use the format <code>(* 5 5)</code>, as opposed to the infix notation <code>(5 * 5)</code>. A pair of parentheses indicates one step of calculation. A function name comes after the open parenthesis followed by arguments. Atoms are tokens in a list separated by spaces, tabs and newlines.</p>
 
@@ -26,7 +26,7 @@
 <p>You can create a list of items, and access items in the list by id:</p>
 
 <pre>
-(define colors 
+(define colors
 	(list red yellow green cyan))
 (list-ref colors 2) ; yellow
 </pre>
@@ -36,9 +36,11 @@
 <p>Logic operations are in the format of <code>(if true this that)</code> where the result of the operation will be <code>this</code> if the second parameter is <code>true</code>, otherwise will be <code>that</code>. In Scheme, true is indicated as <code>#t</code>, and falseis indicated as <code>#f</code>.</p>
 
 <pre>
-(define (min a b) 
+(define (min a b)
 	(if (< a b) a b))
 </pre>
+
+<img src='../media/refs/fib.png'/>
 
 <h3>Variables</h3>
 
@@ -86,6 +88,8 @@
 
 <p>Cons is a fundamental function, <code>(cons x y)</code>, which stands for <b>constructs memory objects</b> and holds two values or pointers to values. The resulting pair has a left half, referred to as the car (the first element, or contents of the address part of register), and a right half (the second element, or contents of the decrement part of register), referred to as the cdr. </p>
 
+<img src='../media/refs/sexp.png'/>
+
 <p>Although cons cells can be used to hold ordered pairs of data, they are more commonly used to construct more complex compound data structures, notably lists and binary trees. For example, the LISP expression <code>(cons 1 2)</code> constructs a cell holding 1 in its left half (the so-called <b>car</b> field) and 2 in its right half (the <b>cdr</b> field). In LISP notation, the value (cons 1 2) looks like: </p>
 
 <table border='1'>
@@ -127,12 +131,85 @@
 
 <img src='../media/refs/lisp-maxwells.png'/>
 
+<q>Writing eval required inventing a notation representing LISP functions as LISP data, and such a notation was devised for the purposes of the paper with no thought that it would be used to express LISP programs in practice. </q>
+
 <ul>
 	<li><a href='http://www.shido.info/lisp/idx_scm_e.html' target='_blank'>Scheme Tutorial</a></li>
 	<li><a href='http://lib.store.yahoo.net/lib/paulgraham/jmc.lisp' target='_blank'>Lisp Eval</a></li>
 </ul>
 
 <img src='../media/refs/lmi.png' width='100'/>
+
+<h2>A virtual machine intended as a target for functional programming language compilers.</h2>
+
+<p>The SECD machine is defined with a set of transitions between its four components:</p>
+
+<ul>
+	<li>A stack register holding a list of intermediate results.</li>
+	<li>An environment register holding the current environment.</li>
+	<li>A control register holding a list of control directives.</li>
+	<li>A dump register holding a list of triples. Each triple contains snapshots of the stack, environment, and control registers.</li>
+</ul>
+
+<h3>Stacks</h3>
+
+<p>Like all internal data-structures, the stack is a list, with the S register pointing at the list's head or beginning. Due to the list structure, the stack need not be a continuous block of memory, so stack space is available as long as there is a single free memory cell. Even when all cells have been used, garbage collection may yield additional free memory. Obviously, specific implementations of the SECD structure can implement the stack as a canonical stack structure, thus improving the overall efficiency of the virtual machine, provided that a strict bound be put on the dimension of the stack.</p>
+<p>The C register points at the head of the code or instruction list that will be evaluated. Once the instruction there has been executed, the C is pointed at the next instruction in the list—it is similar to an instruction pointer (or program counter) in conventional machines, except that subsequent instructions are always specified during execution and are not by default contained in subsequent memory locations, as is the case with the conventional machines.</p>
+<p>The current variable environment is managed by the E register, which points at a list of lists. Each individual list represents one environment level: the parameters of the current function are in the head of the list, variables that are free in the current function, but bound by a surrounding function, are in other elements of E.</p>
+<p>The dump, at whose head the D register points, is used as temporary storage for values of the other registers, for example during function calls. It can be likened to the return stack of other machines. </p>
+
+<ul>
+	<li><kbd>s</kbd> Stack used for evaluation of expressions.</li>
+	<li><kbd>e</kbd> Environment used to store the current value list.</li>
+	<li><kbd>c</kbd> Control used to store the instructions.</li>
+	<li><kbd>d</kbd> Dump used to store suspended invocation context.</li>
+</ul>
+
+<h3>Primitives</h3>
+
+<table border='1'>
+	<tr><th colspan='5'>Basic Instructions</th></tr>
+	<tr><th>NIL</th><td>pushes a nil pointer onto the stack</td></tr>
+	<tr><th>LD</th><td>pushes the value of a variable onto the stack. The variable is indicated by the argument, a pair.</td></tr>
+	<tr><th>LDC</th><td>pushes a constant argument onto the stack</td></tr>
+	<tr><th colspan='5'>Branching instructions</th></tr>
+	<tr><th>SEL</th><td>expects two list arguments, and pops a value from the stack. The first list is executed if the popped value was non-nil, the second list otherwise. Before one of these list pointers is made the new C, a pointer to the instruction following s e l sel is saved on the dump.</td></tr>
+	<tr><th>JOIN</th><td>pops a list reference from the dump and makes this the new value of C. This instruction occurs at the end of both alternatives of a sel.</td></tr>
+	<tr><th colspan='5'>Non-recursive function instructions</th></tr>
+	<tr><th>LDF</th><td>takes one list argument representing a function. It constructs a closure (a pair containing the function and the current environment) and pushes that onto the stack.</td></tr>
+	<tr><th>AP</th><td>pops a closure and a list of parameter values from the stack. The closure is applied to the parameters by installing its environment as the current one, pushing the parameter list in front of that, clearing the stack, and setting C to the closure's function pointer. The previous values of S, E, and the next value of C are saved on the dump.</td></tr>
+	<tr><th>RTN</th><td>pops one return value from the stack, restores S, E, and C from the dump, and pushes the return value onto the now-current stack.</td></tr>
+	<tr><th colspan='5'>Recursive function instructions</th></tr>
+	<tr><th>RAP</th><td>works like a p ap, only that it replaces an occurrence of a dummy environment with the current one, thus making recursive functions possible</td></tr>
+	<tr><th>DUM</th><td>pushes a "dummy", an empty list, in front of the environment list.</td></tr>
+</table>
+
+<h3>A. Push Objects to Stack</h3>
+
+<p>Compilation Rules:</p>
+<ul>
+	<li>(a) A nil is compiled to (NIL)</li>
+	<li>(b) A number (or a constant) x is compiled to (LDC x)</li>
+	<li>(c) An identifier is compiled to (LD (i.j)) where (i.j) is an index into stack e.</li>
+</ul>
+
+<p>Stack Operations:</p>
+
+<ul>
+	<li>NIL	s e (NIL.c) d -> (nil.s) e c d</li>
+	<li>LDC	s e (LDC x.c) d -> (x.s) e c d</li>
+	<li>LD	s e (LD (i.j).c) d -> (locate((i.j),e).s) e c d</li>
+</ul>
+
+<p>"Locate" is an auxiliary function. It returns the jth element of the ith sublist in e.</p>
+
+<p>Note: roughly, e is a list of sublists each of which is a list of
+actual parameters. Thus, e corresponds to the value list in
+our interpreter. There will be no name list here, as each occurrence
+of a formal parameter will be compiled to LD (i.j) and by
+locate(i.j) the corresponding actual parameter is found.</p>
+
+<p>"The Mechanical Evaluation of Expressions" by PeterLandin is the original paper that describes the SECD machine.</p>
 
 <ul></ul><p><b>Incoming</b>: <a href="ronin.html">ronin</a> <a href="lain.html">lain</a> </p></main>
 <footer><a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.svg" alt="CreativeCommons"/></a> <a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a> <a href="https://merveilles.town/@neauoire" rel="me" target="_blank"><img src="../media/icon/merveilles.svg" alt="Merveilles"/></a> <a href="ethics.html"><img src="../media/icon/dreipfeile.svg" alt="NoNazis!"/></a> <a href="uxn.html"><img src="../media/icon/uxn.svg" alt="UxnPowered"/></a> <span><a href="devine_lu_linvega.html">Devine Lu Linvega</a> &copy; 2023 &mdash; <a href="about.html#license">BY-NC-SA 4.0</a></span></footer>
