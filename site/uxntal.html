@@ -17,17 +17,19 @@
 
 <h2>Uxntal Opcodes</h2>
 
-<p>Uxn has 64kb of memory, 16 devices, 2 stacks, 32 standard opcodes with 3 modes each and 4 immediate opcodes. The list below show the standard opcodes and their effect on a given stack <b>a b c</b>, <b>PC</b>: Program Counter, <b>M</b>: Memory, <b>D</b>: Devices, and <b>rs</b>: Return Stack. </p>
+<p>Uxn has 64kb of memory, 16 devices, 2 stacks, 32 standard opcodes with 3 modes each and 4 immediate opcodes. The list below show the standard opcodes and their effect on a given stack <b>a b c</b>, <b>PC</b>: Program Counter, <b>[M]</b>: Memory, <b>[D+*]</b>: Device Memory, and <b>R</b>: Return/Working Stack. </p>
 
 <pre>
-<b>LIT</b> a b c M[PC]   <b>EQU</b> a b?c             <b>LDZ</b> a b M[c8]      <b>ADD</b> a b+c
-<b>INC</b> a b c+1       <b>NEQ</b> a b!c             <b>STZ</b> a {M[c8]=b}    <b>SUB</b> a b-c
-<b>POP</b> a b           <b>GTH</b> a b&gt;c             <b>LDR</b> a b M[PC+c8]   <b>MUL</b> a b*c
-<b>NIP</b> a c           <b>LTH</b> a b&lt;c             <b>STR</b> a {M[PC+c8]=b} <b>DIV</b> a b/c
-<b>SWP</b> a c b         <b>JMP</b> a b {PC+=c}       <b>LDA</b> a b M[c16]     <b>AND</b> a b&c
-<b>ROT</b> b c a         <b>JCN</b> a {(b8)PC+=c}     <b>STA</b> a {M[c16]=b}   <b>ORA</b> a b|c
-<b>DUP</b> a b c c       <b>JSR</b> a b {rs.PC PC+=c} <b>DEI</b> a b D[c8]      <b>EOR</b> a b^c
-<b>OVR</b> a b c b       <b>STH</b> a b {rs.c}        <b>DEO</b> a {D[c8]=b}    <b>SFT</b> a b&gt;&gt;c8l&lt;&lt;c8h
+<b>LIT</b> ~ [PC]     <b>JCI</b> ~ (c8){PC+=[PC]}   <b>JMI</b> ~ {PC+=[PC]}   <b>JSI</b> ~ {R.PC PC+=[PC]}
+
+<b>BRK</b> ~          <b>EQU</b> a b==c             <b>LDZ</b> a b [c8]       <b>ADD</b> a b+c
+<b>INC</b> a b c+1    <b>NEQ</b> a b!=c             <b>STZ</b> a {[c8]=b}     <b>SUB</b> a b-c
+<b>POP</b> a b        <b>GTH</b> a b&gt;c              <b>LDR</b> a b [PC+c8]    <b>MUL</b> a b*c
+<b>NIP</b> a c        <b>LTH</b> a b&lt;c              <b>STR</b> a {[PC+c8]=b}  <b>DIV</b> a b/c
+<b>SWP</b> a c b      <b>JMP</b> a b {PC+=c}        <b>LDA</b> a b [c16]      <b>AND</b> a b&c
+<b>ROT</b> b c a      <b>JCN</b> a (b8){PC+=c}      <b>STA</b> a {[c16]=b}    <b>ORA</b> a b|c
+<b>DUP</b> a b c c    <b>JSR</b> a b {R.PC PC+=c}   <b>DEI</b> a b {[D+c8]}   <b>EOR</b> a b^c
+<b>OVR</b> a b c b    <b>STH</b> a b {R.c}          <b>DEO</b> a {[D+c8]=b}   <b>SFT</b> a b&gt;&gt;c8l&lt;&lt;c8h
 </pre>
 
 <p>To learn more about each opcode, see the <a href='uxntal_reference.html'>Uxntal Reference</a>.</p>
@@ -44,7 +46,7 @@ LIT2r 1234 <span style='float:right;color:#777'>12 34</span>
 LIT2r 1234 STHr <span style='float:right;color:#777'> 12</span> <span style='float:right'>34</span>
 </pre>
 
-<p>All programming in Unxtal is done by manipulating the <i>working stack</i>, and <i>return stack</i>. Each stack contains 254 bytes, items from one stack can be moved into the other. Here are the stack primitives: </p>
+<p>All programming in Unxtal is done by manipulating the <i>working stack</i>, and <i>return stack</i>. Each stack contains 255 bytes, items from one stack can be moved into the other. Here are the stack primitives: </p>
 
 <table border='1'>
 	<tr><th>POP</th><td>a b</td><td>Discard top item.</td></tr>
