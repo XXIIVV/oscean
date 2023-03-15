@@ -4,8 +4,11 @@
 
 <p style='background: #eee; padding: 15px;'>While this project aspires to act as a target that may last, it is in its infancy, the design could still change and break compatibility.</p>
 
-<p>Devices are external systems connected to the Uxn CPU, such as the screen, the mouse and the keyboard. Each device has 16 bytes, also called ports, of I/O memory.</p>
-<p>Vectors are ports holding an address in memory to evaluate when a device event is triggered, such as when the mouse is moved, or a key is pressed. Writing to vector ports does not trigger an event, it only tell the emulator which address to evaluate from when an event happens with that device.</p>
+<p><b>Devices</b> are external systems connected to the Uxn CPU, such as the screen, the mouse and the keyboard. Each device has 16 bytes, also called ports, of I/O memory.</p>
+
+<p><b>Vectors</b> are ports holding an address in memory to evaluate when a device event is triggered, such as when the mouse is moved, or a key is pressed.</p>
+
+<p><b>Masks</b> are values in which each bit correspond to a port in a device, the device mask tells the emulator when to trigger a device event, such as drawing a pixel or playing a sound.</p>
 
 <img src='../media/generic/uxn.comfy.png' width='250' style='float: right;margin: 0px auto 30px'/>
 
@@ -18,29 +21,29 @@
 	<tr><th>40</th><th>c0</th><td><a href='#datetime'>datetime</a></td></tr>
 	<tr><th>50</th><th>d0</th><td rowspan="2"><i>Reserved</i></td></tr>
 	<tr><th>60</th><th>e0</th></tr>
-	<tr><th>70</th><td><a href='#midi'>midi</a></td><th>f0</th><td></td></tr>
+	<tr><th>70</th><td></td><th>f0</th><td></td></tr>
 </table>
 
 <p>The two reserved devices can be used for implementation specific features that do not need to be part of the specs, or other Uxn/Varvara instances.</p>
 
 <p>A <b id='mask'>device mask</b>, is a short in which each bit represent one of the sixteen devices, and each toggled bit represents a required device to run a rom, for more details, see <a href='metadata.html'>metadata</a>.</p>
 
-<h3 id='system'>System Device</h3>
+<h3 id='system'>System Device <kbd>mask 0xff08</kbd></h3>
 
 <p>The System device is used to control the execution of a varvara program.</p>
 
 <table border='1'>
 	<tr>
 		<th rowspan='8'><a href='#system'>system</a></th>
-		<th>00</th><td rowspan="2" class='bg2'>halt*</td><th>08</th><td rowspan="2">red*</td>
+		<th>00</th><td rowspan="2" class='bg2'>halt*</td><th class='bg1'>08</th><td rowspan="2">red*</td>
 	</tr>
-	<tr><th>01</th><th>09</th></tr>
-	<tr><th>02</th><td rowspan='2'>Expansion*</td><th>0a</th><td rowspan="2">green*</td></tr>
-	<tr><th>03</th><th>0b</th></tr>
-	<tr><th>04</th><td rowspan='2'>title*</td><th>0c</th><td rowspan="2">blue*</td></tr>
-	<tr><th>05</th><th>0d</th></tr>
-	<tr><th>06</th><td rowspan='2'>metadata*</td><th>0e</th><td>debug</td></tr>
-	<tr><th>07</th><th>0f</th><td>state</td></tr>
+	<tr><th>01</th><th class='bg1'>09</th></tr>
+	<tr><th>02</th><td rowspan='2'>Expansion*</td><th class='bg1'>0a</th><td rowspan="2">green*</td></tr>
+	<tr><th class='bg1'>03</th><th class='bg1'>0b</th></tr>
+	<tr><th>04</th><td rowspan='2'>title*</td><th class='bg1'>0c</th><td rowspan="2">blue*</td></tr>
+	<tr><th>05</th><th class='bg1'>0d</th></tr>
+	<tr><th>06</th><td rowspan='2'>metadata*</td><th class='bg1'>0e</th><td>debug</td></tr>
+	<tr><th>07</th><th class='bg1'>0f</th><td>state</td></tr>
 </table>
 
 <p>The <code>halt*</code> vector is evaluated when uxn errors. If the vector is unset, the emulator handles the error, if an address in found in the halt port, the vector is evaluated. In that scenario, stacks are emptied, a short of the address where the error occured, a byte of the instruction that errored, and a byte for the error code are put on the working stack.</p>
@@ -58,14 +61,14 @@
 	<tr><th>copy</td><td>01</td><td>length*</td><td>src page*</td><td>src addr*</td><td>dst page*</td><td>dst addr*</td></tr>
 </table>
 
-<h3 id='console'>Console Device</h3>
+<h3 id='console'>Console Device <kbd>mask 0x0300</kbd></h3>
 
 <table border='1'>
 	<tr>
 		<th rowspan='8'><a href='#console'>console</a></th>
-		<th>10</th><td rowspan="2" class='bg2'>vector*</td><th>18</th><td>write</td>
+		<th>10</th><td rowspan="2" class='bg2'>vector*</td><th class='bg1'>18</th><td>write</td>
 	</tr>
-	<tr><th>11</th><th>19</th><td>error</td></tr>
+	<tr><th>11</th><th class='bg1'>19</th><td>error</td></tr>
 	<tr><th>12</th><td>read</td><th>1a</th><td class='empty'>--</td></tr>
 	<tr><th>13</th><td class='empty'>--</td><th>1b</th><td class='empty'>--</td></tr>
 	<tr><th>14</th><td class='empty'>--</td><th>1c</th><td class='empty'>--</td></tr>
@@ -86,7 +89,7 @@
 
 <p>For example, a program sending the line of text "hello", will trigger the console's vector 6 times; one for each character and a line ending character. </p>
 
-<h3 id='screen'>Screen Device</h3>
+<h3 id='screen'>Screen Device <kbd>mask 0xc028</kbd></h3>
 
 <img src='../media/generic/uxn.ppu.jpg' style='float:right' width='240' />
 
@@ -100,8 +103,8 @@
 	<tr><th>23</th><th>2b</th></tr>
 	<tr><th>24</th><td rowspan="2">height*</td><th>2c</th><td rowspan="2">addr*</td></tr>
 	<tr><th>25</th><th>2d</th></tr>
-	<tr><th>26</th><td>auto</td><th>2e</th><td>pixel</td></tr>
-	<tr><th>27</th><td class='empty'>--</td><th>2f</th><td>sprite</td></tr>
+	<tr><th>26</th><td>auto</td><th class='bg1'>2e</th><td>pixel</td></tr>
+	<tr><th>27</th><td class='empty'>--</td><th class='bg1'>2f</th><td>sprite</td></tr>
 </table>
 
 <p>The screen device is made of two layers, each displaying 2-bits graphics in up to 4 colors. Drawing to the screen is done by writing to the <code>pixel</code> or <code>sprite</code> ports. The screen vector is evaluated 60 times per second. Color0 on the foreground layer is treated as transparent.</p>
@@ -214,7 +217,7 @@ JMP2r
 	0204 080f 0000 0000 0010 28c4 2810 0000
 </pre>
 
-<h3 id='audio'>Audio Device</h3>
+<h3 id='audio'>Audio Device <kbd>mask 0x8014</kbd></h3>
 
 <img src='../media/generic/uxn.apu.jpg' style='float:right' width='240' />
 
@@ -229,7 +232,7 @@ JMP2r
 	<tr><th>34</th><td>output</td><th>3c</th><td rowspan="2">addr*</td></tr>
 	<tr><th>35</th><td class='empty'>--</td><th>3d</th></tr>
 	<tr><th>36</th><td class='empty'>--</td><th>3e</th><td>volume</td></tr>
-	<tr><th>37</th><td class='empty'>--</td><th>3f</th><td>pitch</td></tr>
+	<tr><th>37</th><td class='empty'>--</td><th class='bg1'>3f</th><td>pitch</td></tr>
 </table>
 
 <p>When <code>pitch</code> is written to any of the audio devices, it starts playing an audio sample from Uxn's memory, pointed to by <code>addr*</code> and <code>length*</code>. It loops the sample (unless told not to) until it reaches the end of the ADSR envelope defined by <code>adsr*</code>. The audio vector triggers when a note ends.</p>
@@ -264,25 +267,7 @@ JMP2r
 
 <p>The minimum sample size that can be pitched at 44.1 kHz to Middle C with reasonable accuracy is 337 bytes long, which represents two cycles of the 261 Hz wave. The single wavelength mode in Uxn allows much smaller samples to be used, even down to only two bytes for a square wave. In this mode the length of the entire sample is taken to be one cycle of the Middle C note, so the pitch is not heard to vary even if <code>length*</code> were to change between sample plays.</p>
 
-<h3 id='midi'>Midi Device</h3>
-
-<p>This device is currently a work in progress, more details shortly.</p>
-
-<table border='1'>
-	<tr>
-		<th rowspan='8'><a href='#audio'>midi</a></th>
-		<th>30</th><td rowspan="2" class='bg2'>vector*</td><th>38</th><td rowspan="2">send*</td>
-	</tr>
-	<tr><th>31</th><th>39</th></tr>
-	<tr><th>32</th><td>bpm</td><th>3a</th><td>num</td></tr>
-	<tr><th>33</th><td class='empty'>--</td><th>3b</th><td>den</td></tr>
-	<tr><th>34</th><td class='empty'>--</td><th>3c</th><td>swing</td></tr>
-	<tr><th>35</th><td>read-chan</td><th>3d</th><td>send-chan</td></tr>
-	<tr><th>36</th><td>read-pitch</td><th>3e</th><td>send-pitch</td></tr>
-	<tr><th>37</th><td>read-velocity</td><th>3f</th><td>send-velocity</td></tr>
-</table>
-
-<h3 id='controller'>Controller Device</h3>
+<h3 id='controller'>Controller Device <kbd>mask 0x0000</kbd></h3>
 
 <table border='1'>
 	<tr>
@@ -309,7 +294,7 @@ JMP2r
 
 <p>Would the need for multi-player games arise, the P2, P3 and P4 ports, will host button-type byte values received from the other controllers.</p>
 
-<h3 id='mouse'>Mouse Device</h3>
+<h3 id='mouse'>Mouse Device <kbd>mask 0x0000</kbd></h3>
 
 <table border='1'>
 	<tr>
@@ -327,20 +312,20 @@ JMP2r
 
 <p>The mouse device's state port holds a byte in which each bit is a button state. The byte value of holding down the mouse1 button is <code>01</code>, and holding down mouse1+mouse3 button is <code>05</code>. The scroll values are signed shorts, normally <code>ffff</code> and <code>0001</code>, for -1 and +1. The mouse vector triggers when the mouse is moved and when a button is pressed or released.</p>
 
-<h3 id='file'>File Device</h3>
+<h3 id='file'>File Device <kbd>mask 0xa260</kbd></h3>
 
 <table border='1'>
 	<tr>
 		<th rowspan='8'><a href='#file'>file</a></th>
 		<th>a0</th><td rowspan="2" class='bg2'>vector*</td><th>a8</th><td rowspan="2">name(addr)*</td>
 	</tr>
-	<tr><th>a1</th><th>a9</th></tr>
+	<tr><th>a1</th><th class='bg1'>a9</th></tr>
 	<tr><th>a2</th><td rowspan="2">success*</td><th>aa</th><td rowspan="2">length*</td></tr>
 	<tr><th>a3</th><th>ab</th></tr>
 	<tr><th>a4</th><td rowspan="2">stat(addr)*</td><th>ac</th><td rowspan="2">read(addr)*</td></tr>
-	<tr><th>a5</th><th>ad</th></tr>
-	<tr><th>a6</th><td>delete</td><th>ae</th><td rowspan="2">write(addr)*</td></tr>
-	<tr><th>a7</th><td>append</td><th>af</th></tr>
+	<tr><th class='bg1'>a5</th><th class='bg1'>ad</th></tr>
+	<tr><th class='bg1'>a6</th><td>delete</td><th>ae</th><td rowspan="2">write(addr)*</td></tr>
+	<tr><th>a7</th><td>append</td><th class='bg1'>af</th></tr>
 </table>
 
 <p>The file device supports reading and writing files, listing directories, obtaining file information and deleting files. The device may not access files outside of the working directory. The vector is unused. </p>
@@ -366,20 +351,20 @@ JMP2r
 
 <p>Finally, to delete a file, write any value to the <code>delete</code> byte.</p>
 
-<h3 id='datetime'>Datetime Device</h3>
+<h3 id='datetime'>Datetime Device <kbd>mask 0x07ff</kbd></h3>
 
 <table border='1'>
 	<tr>
 		<th rowspan='8'><a href='#datetime'>datetime</a></th>
-		<th>c0</th><td rowspan="2">year*</td><th>c8</th><td rowspan="2">doty</td>
+		<th class='bg1'>c0</th><td rowspan="2">year*</td><th class='bg1'>c8</th><td rowspan="2">doty</td>
 	</tr>
-	<tr><th>c1</th><th>c9</th></tr>
-	<tr><th>c2</th><td>month</td><th>ca</th><td>isdst</td></tr>
-	<tr><th>c3</th><td>day</td><th>cb</th><td class='empty'>--</td></tr>
-	<tr><th>c4</th><td>hour</td><th>cc</th><td class='empty'>--</td></tr>
-	<tr><th>c5</th><td>minute</td><th>cd</th><td class='empty'>--</td></tr>
-	<tr><th>c6</th><td>second</td><th>ce</th><td class='empty'>--</td></tr>
-	<tr><th>c7</th><td>dotw</td><th>cf</th><td class='empty'>--</td></tr>
+	<tr><th class='bg1'>c1</th><th class='bg1'>c9</th></tr>
+	<tr><th class='bg1'>c2</th><td>month</td><th class='bg1'>ca</th><td>isdst</td></tr>
+	<tr><th class='bg1'>c3</th><td>day</td><th>cb</th><td class='empty'>--</td></tr>
+	<tr><th class='bg1'>c4</th><td>hour</td><th>cc</th><td class='empty'>--</td></tr>
+	<tr><th class='bg1'>c5</th><td>minute</td><th>cd</th><td class='empty'>--</td></tr>
+	<tr><th class='bg1'>c6</th><td>second</td><th>ce</th><td class='empty'>--</td></tr>
+	<tr><th class='bg1'>c7</th><td>dotw</td><th>cf</th><td class='empty'>--</td></tr>
 </table>
 
 <p>The week, in the dotw port, begins on sunday.</p>
