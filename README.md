@@ -9,7 +9,8 @@ The `oscean.rom` file can be assembled with [uxnasm](https://git.sr.ht/~rabbits/
 ### Maeve
 
 ```sh
-uxnasm maeve.tal bin/maeve.rom # build pre-processor
+mkdir tmp
+uxnasm src/maeve.tal bin/maeve.rom # build pre-processor
 ```
 
 Maeve is the pre-processor, it generates temporary files for oscean to populate the wiki with. The files are as follow:
@@ -20,7 +21,7 @@ Maeve is the pre-processor, it generates temporary files for oscean to populate 
 ### Oscean
 
 ```sh
-uxnasm oscean.tal bin/oscean.rom # build wiki engine
+uxnasm src/oscean.tal bin/oscean.rom # build wiki engine
 ```
 
 The rom does not have a graphical interface, but can be used with the [uxncli](https://git.sr.ht/~rabbits/uxn11/tree/main/item/src/uxncli.c) emulator:
