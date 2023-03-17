@@ -111,114 +111,107 @@
 	<tr><th>27</th><td class='empty'>--</td><th class='bg1'>2f</th><td>sprite</td></tr>
 </table>
 
-<p>The screen device is made of two layers, each displaying 2-bits graphics in up to 4 colors. Drawing to the screen is done by writing to the <code>pixel</code> or <code>sprite</code> ports. The screen vector is evaluated 60 times per second. Color0 on the foreground layer is treated as transparent.</p>
+<p>The screen device is capable of displaying 2-bit graphics with the 4 system colors defined by the <a href='#system'>system</a> device. Drawing to the screen is done by writing to the <code>pixel</code> port which draws a single pixel on the screen, or the <code>sprite</code> port which can draw many pixels at once.</p>
+
+<p>The screen is made of two independent layers. The foreground layer treats the first system color as transparent.</p>
+
+The <b>pixel byte</b> defines the layer to draw on, and the color of the pixel.</p>
 
 <pre>
-M L Y X   D C B A 
-| | | +---- Flipx | | | +---- Blend
-| | +------ Flipy | | +------ Blend
-| +-------- Layer | +-------- Blend
-+---------- Mode  +---------- Blend
+          * L * * * * C1 C0
+            |         |  +---- Color bit 0
+Layer ------+         +------- Color bit 1
 </pre>
 
-<table border='1'>
-	<tr><th colspan='8'>Effects(MLYX)</th><th colspan='8'>Blending(DBCA)</th></tr>
-	<tr>
-		<th>0</th><td><i>bg1bit</i></td>
-		<th>4</th><td><i>fg1bit</i></td>
-		<th>8</th><td><i>bg2bit</i></td>
-		<th>c</th><td><i>fg2bit</i></td>
-		<th>0</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bga fg0'><rect x="0" y="0" width="10" height="10" style="fill:#999" /><rect x="10" y="10" width="10" height="10" style="fill:#999" /></svg>
-		</td>
-		<th>4</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg1 fg0'><circle cx="10" cy="10" r="8"/></svg></td>
-		<th>8</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg2 fg0'><circle cx="10" cy="10" r="8"/></svg></td>
-		<th>c</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg3 fg0'><circle cx="10" cy="10" r="8"/></svg></td>
-	</tr>
-	<tr>
-		<th>1</th><td><i>flipx</i></td>
-		<th>5</th><td><i>flipx</i></td>
-		<th>9</th><td><i>flipx</i></td>
-		<th>d</th><td><i>flipx</i></td>
-		<th>1</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg0 fg1'><circle cx="10" cy="10" r="8"/></svg></td>
-		<th>5</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bga fg1'><rect x="0" y="0" width="10" height="10" style="fill:#999" /><rect x="10" y="10" width="10" height="10" style="fill:#999" /><circle cx="10" cy="10" r="8"/></svg></td>
-		<th>9</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg2 fg1'><circle cx="10" cy="10" r="8"/></svg></td><th>d</th>
-		<td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg3 fg1'><circle cx="10" cy="10" r="8"/></svg></td>
-	</tr>
-	<tr>
-		<th>2</th><td><i>flipy</i></td>
-		<th>6</th><td><i>flipy</i></td>
-		<th>a</th><td><i>flipy</i></td>
-		<th>e</th><td><i>flipy</i></td>
-		<th>2</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg0 fg2'><circle cx="10" cy="10" r="8"/></svg></td>
-		<th>6</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg1 fg2'><circle cx="10" cy="10" r="8"/></svg></td>
-		<th>a</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bga fg2'><rect x="0" y="0" width="10" height="10" style="fill:#999" /><rect x="10" y="10" width="10" height="10" style="fill:#999" /><circle cx="10" cy="10" r="8"/></svg></td>
-		<th>e</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg3 fg2'><circle cx="10" cy="10" r="8"/></svg></td>
-	</tr>
-	<tr>
-		<th>3</th><td><i>flipxy</i></td>
-		<th>7</th><td><i>flipxy</i></td>
-		<th>b</th><td><i>flipxy</i></td>
-		<th>f</th><td><i>flipxy</i></td>
-		<th>3</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg0 fg3'><circle cx="10" cy="10" r="8"/></svg></td>
-		<th>7</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg1 fg3'><circle cx="10" cy="10" r="8"/></svg></td>
-		<th>b</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg2 fg3'><circle cx="10" cy="10" r="8"/></svg></td><th>f</th>
-		<td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bga fg3'><rect x="0" y="0" width="10" height="10" style="fill:#999" /><rect x="10" y="10" width="10" height="10" style="fill:#999" /><circle cx="10" cy="10" r="8"/></svg></td>
-	</tr>
-</table>
-
-<p>To draw a single teal pixel on the foreground, at the position 20,30: </p>
+<p>Assuming the system colors are (in order) white, black, teal, and red, to draw a single teal pixel on the foreground, at the position 20,30:</p>
 
 <pre>
 @paint-pixel
-	#0020 .Screen/x DEO2 <span style='float:right; color:#888'>( set x* position )</span>
-	#0030 .Screen/y DEO2 <span style='float:right; color:#888'>( set y* position )</span>
-	#42 .Screen/pixel DEO <span style='float:right; color:#888'>( draw 4-fg 2-color2 )</span>
+	#0020 .Screen/x DEO2 <span style='float:right; color:#888'>( set x position )</span>
+	#0030 .Screen/y DEO2 <span style='float:right; color:#888'>( set y position )</span>
+	#42 .Screen/pixel DEO <span style='float:right; color:#888'>( draw with color 2 on fg )</span>
 JMP2r
 </pre>
 
-<p>The screen can also draw 8x8 sprites by writing an <code>addr*</code> which points to the <a href='chr_format.html'>sprite data</a> in memory. The <b>sprite byte</b> defines the layer to draw on, the type of data to draw, and the colors to use. </p>
+<p>The screen can draw 8x8 sprites by first writing an <code>addr*</code> which points to either <a href='icn_format.html'>1-bit</a> or <a href='chr_format.html'>2-bit</a> sprite data in memory. Sprite data is stored as 8 bytes for a 1-bit sprite, and 16 bytes for a 2-bits sprite. The <b>sprite byte</b> defines the 1-bit or 2-bit mode, the layer to draw on, optional horizontal and vertical flipping, and the colors to use.</p> 
+
+<pre>
+           M L Y X B3 B2 B1 B0
+  Mode ----+ | | | |  |  |  +---- Blending bit 0
+ Layer ------+ | | |  |  +------- Blending bit 1
+Flip Y --------+ | |  +---------- Blending bit 2
+Flip X ----------+ +------------- Blending bit 3
+</pre>
+
+<p>The low nibble defines the blending, i.e., which color to use for each value of the sprite data. The following table presents all possible blendings, assuming a sprite has a background of value 0 and three concentric circles of values 1, 2, and 3 (counting from the outside). For 1-bit sprites, only values 0 and 1 are applicable.</p>
+
+<table border='1'>
+	<tr>
+		<th>0</th><td></td>
+		<th>4</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg1'><circle cx="10" cy="10" r="8" class='fg0'/><circle cx="10" cy="10" r="6" class='fg1'/><circle cx="10" cy="10" r="4" class='fg2'/></svg></td>
+		<th>8</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg2 fg0'><circle cx="10" cy="10" r="8" class='fg0'/><circle cx="10" cy="10" r="6" class='fg1'/><circle cx="10" cy="10" r="4" class='fg2'/></svg></td>
+		<th>c</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg3 fg0'><circle cx="10" cy="10" r="8" class='fg0'/><circle cx="10" cy="10" r="6" class='fg1'/><circle cx="10" cy="10" r="4" class='fg2'/></svg></td>
+	</tr>
+	<tr>
+		<th>1</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg0'><circle cx="10" cy="10" r="8" class='fg1'/><circle cx="10" cy="10" r="6" class='fg2'/><circle cx="10" cy="10" r="4" class='fg3'/></svg></td>
+		<th>5</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bga'><rect x="0" y="0" width="10" height="10" style="fill:#999" /><rect x="10" y="10" width="10" height="10" style="fill:#999" /><circle cx="10" cy="10" r="8" class='fg1'/><circle cx="10" cy="10" r="6" class='fg2'/><circle cx="10" cy="10" r="4" class='fg3'/></svg></td>
+		<th>9</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg2'><circle cx="10" cy="10" r="8" class='fg1'/><circle cx="10" cy="10" r="6" class='fg2'/><circle cx="10" cy="10" r="4" class='fg3'/></svg></td>
+		<th>d</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg3'><circle cx="10" cy="10" r="8" class='fg1'/><circle cx="10" cy="10" r="6" class='fg2'/><circle cx="10" cy="10" r="4" class='fg3'/></svg></td>
+	</tr>
+	<tr>
+		<th>2</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg0'><circle cx="10" cy="10" r="8" class='fg2'/><circle cx="10" cy="10" r="6" class='fg3'/><circle cx="10" cy="10" r="4" class='fg1'/></svg></td>
+		<th>6</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg1'><circle cx="10" cy="10" r="8" class='fg2'/><circle cx="10" cy="10" r="6" class='fg3'/><circle cx="10" cy="10" r="4" class='fg1'/></svg></td>
+		<th>a</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bga'><rect x="0" y="0" width="10" height="10" style="fill:#999" /><rect x="10" y="10" width="10" height="10" style="fill:#999" /><circle cx="10" cy="10" r="8" class='fg2'/><circle cx="10" cy="10" r="6" class='fg3'/><circle cx="10" cy="10" r="4" class='fg1'/></svg></td>
+		<th>e</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg3'><circle cx="10" cy="10" r="8" class='fg2'/><circle cx="10" cy="10" r="6" class='fg3'/><circle cx="10" cy="10" r="4" class='fg1'/></svg></td>
+	</tr>
+	<tr>
+		<th>3</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg0'><circle cx="10" cy="10" r="8" class='fg3'/><circle cx="10" cy="10" r="6" class='fg1'/><circle cx="10" cy="10" r="4" class='fg2'/></svg></td>
+		<th>7</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg1'><circle cx="10" cy="10" r="8" class='fg3'/><circle cx="10" cy="10" r="6" class='fg1'/><circle cx="10" cy="10" r="4" class='fg2'/></svg></td>
+		<th>b</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg2'><circle cx="10" cy="10" r="8" class='fg3'/><circle cx="10" cy="10" r="6" class='fg1'/><circle cx="10" cy="10" r="4" class='fg2'/></svg></td>
+		<th>f</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bga'><rect x="0" y="0" width="10" height="10" style="fill:#999" /><rect x="10" y="10" width="10" height="10" style="fill:#999" /><circle cx="10" cy="10" r="8" class='fg3'/><circle cx="10" cy="10" r="6" class='fg1'/><circle cx="10" cy="10" r="4" class='fg2'/></svg></td>
+	</tr>
+</table>
 
 <pre>
 @paint-sprite
-	#0020 .Screen/x DEO2 <span style='float:right; color:#888'>( set x* position )</span>
-	#0030 .Screen/y DEO2 <span style='float:right; color:#888'>( set y* position )</span>
-	;sprite .Screen/addr DEO2 <span style='float:right; color:#888'>( set addr* position )</span>
-	#03 .Screen/sprite DEO <span style='float:right; color:#888'>( draw 0-bg 3-color3 )</span>
+	#0020 .Screen/x DEO2 <span style='float:right; color:#888'>( set x position )</span>
+	#0030 .Screen/y DEO2 <span style='float:right; color:#888'>( set y position )</span>
+	;sprite .Screen/addr DEO2 <span style='float:right; color:#888'>( set addr )</span>
+	#03 .Screen/sprite DEO <span style='float:right; color:#888'>( draw 1-bit with blending 3 on bg )</span>
 JMP2r
 
 @sprite
 	0f38 675f dfbf bfbf
 </pre>
 
-<p>Sprites are 8x8 tiles, stored in memory as sequences of 8 bytes for a 1-bit sprite, and 16 bytes for a 2-bits sprite. For example, the color byte <code>#01</code> will paint a 1bpp sprite on the background with the first system color, and <code>#c2</code> will paint a 2-bits sprite on the foreground with the second system color. </p>
-
 <img src='../media/generic/varvara.blending.png' />
 
-<p>The screen's <b>auto byte</b> automates the position and sprite address whenever a drawing command is sent, so the program does not need to manually move to the next sprite, or the next tile. A pixel drawing will increment the positions by 1, and a sprite drawing, by 8. A 1bpp sprite drawing will increment the address by 8, and a 2bpp drawing, by 16.</p>
+<p>The screen's <b>auto byte</b> automates the position and sprite address whenever a drawing command is sent, so the program does not need to manually move to the next sprite, or the next position. Pixel drawing will increment the positions by 1, and sprite drawing by either 8 or 16 depending on the mode.</p>
 
 <pre>
-L L L L    * A Y X
-| | | +---- Length | | | +---- Auto X
-| | +------ Length | | +------ Auto Y
-| +-------- Length | +-------- Auto Addr
-+---------- Length +---------- <i>Unused</i>
+                L3 L2 L1 L0 * A Y X
+Length bit 3 ----+  |  |  |   | | +---- Auto X
+Length bit 2 -------+  |  |   | +------ Auto Y
+Length bit 1 ----------+  |   +-------- Auto Addr
+Length bit 0 -------------+
 </pre>
 
-<p>The high nibble of the auto byte is the length of sprites to draw at once. This allows to draw a 2x3 sprite without needing complex logic:</p>
+<p>The high nibble of the auto byte is the number of sprites to draw at once minus one. This allows to draw a 2x3 sprite without needing complex logic:</p>
 
 <pre>
 @paint-sprite
-	#0020 .Screen/x DEO2 <span style='float:right; color:#888'>( set x* position )</span>
-	#0030 .Screen/y DEO2 <span style='float:right; color:#888'>( set y* position )</span>
-	#16 .Screen/auto DEO <span style='float:right; color:#888'>( set 2w y addr auto )</span>
-	;23x-icns .Screen/addr DEO2 <span style='float:right; color:#888'>( set addr* )</span>
-	#01 .Screen/sprite DEOk DEOk DEO <span style='float:right; color:#888'>( draw 3 rows )</span>
+	#0020 .Screen/x DEO2 <span style='float:right; color:#888'>( set x position )</span>
+	#0030 .Screen/y DEO2 <span style='float:right; color:#888'>( set y position )</span>
+	#16 .Screen/auto DEO <span style='float:right; color:#888'>( set length 2 with auto y and addr )</span>
+	;23x-icns .Screen/addr DEO2 <span style='float:right; color:#888'>( set addr )</span>
+	#01 .Screen/sprite DEOk DEOk DEO <span style='float:right; color:#888'>( draw 3 rows of 1-bit sprites )</span>
 JMP2r
 
 @23x-icns
-	0010 2847 2810 0001 0000 00e0 2040 8000
-	0204 080f 0000 0001 0000 00e0 2040 8000
-	0204 080f 0000 0000 0010 28c4 2810 0000
+	      <span style='color:#888'>(        0        ) (        1        )</span>
+	<span style='color:#888'>( 0 )</span> 0010 2847 2810 0001 0000 00e0 2040 8000
+	<span style='color:#888'>( 1 )</span> 0204 080f 0000 0001 0000 00e0 2040 8000
+	<span style='color:#888'>( 2 )</span> 0204 080f 0000 0000 0010 28c4 2810 0000
 </pre>
 
 <h3 id='audio'>Audio Device <kbd>mask 0x8014</kbd></h3>
