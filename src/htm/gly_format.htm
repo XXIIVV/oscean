@@ -43,29 +43,25 @@ c00a
 
 <h3>Implementation</h3>
 
-<p>Draw a character's glyph in <a href='uxntal.html'>Uxntal</a> when the screen's <a href='varvara.html'>auto byte</a> is set to <code>auto-y</code>:</p>
+<p>Draw a character's glyph in <a href='uxntal.html'>Uxntal</a> when the screen's <a href='varvara.html'>auto byte</a> is set to <code>auto-y(0x02)</code>:</p>
 
 <pre>
-@draw-gly ( str* -- str* )
+@draw-gly ( chr -- )
 
-	#02 .Screen/auto DEO
-	INC2
-	&w
-		( cmds )
-		LDAk #20 NEQ ?&no-x .Screen/x DEI2k INC2 ROT DEO2 INC2 &no-x
-		LDAk #20 LTH ?&end
-		( opcode )
-		LDAk LIT "? SUB STH
-		.Screen/y DEI2
-		#00 STHkr #30 AND #24 SFT OVR2 ADD2 .Screen/y DEO2
-		#0400
-		&loop
-			STHkr OVR SFT #01 AND .Screen/pixel DEO
-			INC GTHk ?&loop
-		POP2 POPr
-		.Screen/y DEO2
-		INC2 !&w
-	&end
+	( cmds )
+	LDAk #20 NEQ ?&no-x .Screen/x DEI2k INC2 ROT DEO2 INC2 &no-x
+	LDAk #20 LTH ?&end
+	( opcode )
+	LDAk LIT "? SUB STH
+	.Screen/y DEI2
+	#00 STHkr #30 AND #24 SFT OVR2 ADD2 .Screen/y DEO2
+	#0400
+	&loop
+		STHkr OVR SFT #01 AND .Screen/pixel DEO
+		INC GTHk ?&loop
+	POP2 POPr
+	.Screen/y DEO2
+	INC2 !&w
 
 JMP2r
 </pre>
