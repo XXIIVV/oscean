@@ -2,17 +2,19 @@
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width, inital-scale=1"/><link href="../links/main.css" type="text/css" rel="stylesheet"/><link href="../media/services/icon.png" type="image/png" rel="shortcut icon"/>
 <title>XXIIVV &mdash; interaction nets</title></head><body>
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
-<nav><ul><li><a href="audio.html">audio</a></li><li><a href="visual.html">visual</a></li><li><a href="research.html" class="parent">research</a></li><li><a href="about.html">about</a></li></ul><ul><li><a href="logic.html">logic</a></li><li><a href="interaction_nets.html" class="self">interaction nets</a></li><li><a href="arithmetic.html">arithmetic</a></li><li><a href="geometry.html">geometry</a></li><li><a href="language.html">language</a></li><li><a href="computation.html">computation</a></li><li><a href="hardware.html">hardware</a></li></ul><ul></ul></nav><main><figure><img alt="Covering a Net, Yves Lafont" src="../media/diary/808.jpg"/><figcaption>Covering a Net, Yves Lafont</figcaption></figure><h2>Interaction nets are a graphical model of computation.</h2>
+<nav><ul><li><a href="logic.html">logic</a></li><li><a href="arithmetic.html">arithmetic</a></li><li><a href="geometry.html">geometry</a></li><li><a href="language.html">language</a></li><li><a href="computation.html" class="parent">computation</a></li><li><a href="hardware.html">hardware</a></li></ul><ul><li><a href="paper_computing.html">paper computing</a></li><li><a href="interaction_nets.html" class="self">interaction nets</a></li><li><a href="reversible_computing.html">reversible computing</a></li><li><a href="operating_systems.html">operating systems</a></li><li><a href="programming.html">programming</a></li><li><a href="virtual_machines.html">virtual machines</a></li><li><a href="cellular_automata.html">cellular automata</a></li><li><a href="fractals.html">fractals</a></li></ul><ul></ul></nav><main><figure><img alt="Covering a Net, Yves Lafont" src="../media/diary/808.jpg"/><figcaption>Covering a Net, Yves Lafont</figcaption></figure><h2>Interaction nets are a graphical model of computation.</h2>
 
-<p>With interaction nets, all aspects of a computation are captured by the rewriting rules. No external machinery such as copying a chunk of memory, or a garbage collector, is needed. There is growing evidence that interaction nets can provide a platform for the development of parallel applications.</p>
+<p>With interaction nets, all aspects of a computation are captured by the rewriting rules. No external machinery such as copying a chunk of memory, or a garbage collector, is needed. The model therefore is an interesting one if we are interested in cost models of computation, and also take advantage of possible parallelism.</p>
 
-<p>Interaction nets can capture all computable functions, as it is possible to simulate a Turing Machine, but unlike models such as Turing machines, cellular automata, Lambda calculus or combinators, an interaction net computational step can be defined as a constant time operation, and the model allows for parallelism(many steps can take place at the same time). The model therefore is an interesting one if we are interested in cost models of computation, and also take advantage of possible parallelism.</p>
+<p>Interaction nets can capture all computable functions, as it is possible to simulate a Turing Machine, but unlike models such as Turing machines, cellular automata, Lambda calculus or combinators, an interaction net computational step can be defined as a constant time operation, and the model allows for parallelism in which many steps can take place at the same time.</p>
 
-<p>An <b>agent</b>(<i>a</i>) has one principal port and a number of auxiliary ports(<i>n</i>). A pair of agents connected together on their principal ports is called an <i>active pair</i>.</p>
+<h3>Introduction</h3>
+
+<p>An <b>agent</b>(<i>a</i>) has one <i>principal port</i> and a number of auxiliary ports(<i>n</i>). A pair of agents connected together on their principal ports is called an <i>active pair</i>. A rewriting of a net is performed only on an active pair according to an <b>interaction rule</b>.</p>
 
 <img src='../media/refs/in_cell.png' width='350'/>
 
-<p>A <b>net</b> is a graph of cells and where each port is connected to another one by means of a <b>wire</b>. The following net has three free ports, <i>x</i>, <i>y</i>, and <i>z</i>. Note that a wire may connect two ports of the same cell.</p>
+<p>A <b>net</b> is a graph of agents where each port is connected to another one by means of a <b>wire</b>. The following net has three free ports, <i>x</i>, <i>y</i>, and <i>z</i>. Note that a wire may connect two ports of the same agent.</p>
 
 <img src='../media/refs/in_net.png' width='300'/>
 
@@ -52,11 +54,11 @@ sx * y = (x + y) + y              0 * y = 0
 
 <h3>Rewriting</h3>
 
-<p>Here, <i>rewriting</i> is just a convenient word to express a very concrete notion of interaction, which we shall make precise by requiring some properties of rules. The first one is in fact imposed by our option of nets (as opposed to trees or directed graphs):</p>
+<p>Here, <i>rewriting</i> is just a convenient word to express a very concrete notion of interaction, which we shall make precise by requiring some properties of rules:</p>
 
 <ul>
-	<li>Inside a rule, each variable occurs exactly twice, once in the left member and once in the right one.</li>
-	<li>Agents interact through their principal port only</li>
+	<li>Agents interact only through their principal port.</li>
+	<li>Each variable in a rule occurs exactly twice, once on each side.</li>
 	<li>There is at most one rule for each pair of distinct symbols S, T, and no rule for S, S.</li>
 </ul>
 
@@ -80,7 +82,8 @@ sx * y = (x + y) + y              0 * y = 0
 <p>We can <b>represent the net</b> above in the following form:</p>
 <pre>
 x = Z(), x = S(y), x = Add(y, z)
-S(Z) = Add(z, S(Z)) <span style='color:#777'>;; replacing equals for equals</span>
+<span style='color:#777'>;; replacing equals for equals</span>
+S(Z) = Add(z, S(Z))
 </pre>
 
 <p>We can <b>represent the rules</b> above in the following form:</p>
@@ -92,8 +95,7 @@ Z = Add(x, x)               -->
 S(Add(b, y)) = Add(S(b), y) -->
 </pre>
 
-<p>When replacing equals for equals in this notation, we observe that the right-hand side of the rule is always empty. In this case we will omit the arrow symbol. We also note that all rules can be written in a form α(..) = β(...) =⇒
-N, and as such we replace the arrow by &gt;&lt; so that we can distinguish an occurrence of a rule from an occurrence of an active pair. Thus, we can write the rules above as:</p>
+<p>When replacing equals for equals in this notation, we observe that the right-hand side of the rule is always empty. In this case we will omit the arrow symbol, and replace the equal sign by &gt;&lt; so that we can distinguish an occurrence of a rule from an occurrence of an active pair. Thus, we can write the rules above as:</p>
 
 <pre>
 Z >< Add(x, x)

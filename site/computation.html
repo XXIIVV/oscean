@@ -2,7 +2,7 @@
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width, inital-scale=1"/><link href="../links/main.css" type="text/css" rel="stylesheet"/><link href="../media/services/icon.png" type="image/png" rel="shortcut icon"/>
 <title>XXIIVV &mdash; computation</title></head><body>
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
-<nav><ul><li><a href="audio.html">audio</a></li><li><a href="visual.html">visual</a></li><li><a href="research.html" class="parent">research</a></li><li><a href="about.html">about</a></li></ul><ul><li><a href="logic.html">logic</a></li><li><a href="interaction_nets.html">interaction nets</a></li><li><a href="arithmetic.html">arithmetic</a></li><li><a href="geometry.html">geometry</a></li><li><a href="language.html">language</a></li><li><a href="computation.html" class="self">computation</a></li><li><a href="hardware.html">hardware</a></li></ul><ul><li><a href="paper_computing.html">paper computing</a></li><li><a href="reversible_computing.html">reversible computing</a></li><li><a href="operating_systems.html">operating systems</a></li><li><a href="programming.html">programming</a></li><li><a href="virtual_machines.html">virtual machines</a></li><li><a href="cellular_automata.html">cellular automata</a></li><li><a href="fractals.html">fractals</a></li></ul></nav><main><h2>If you want to write fast software, use a slow computer.</h2>
+<nav><ul><li><a href="audio.html">audio</a></li><li><a href="visual.html">visual</a></li><li><a href="research.html" class="parent">research</a></li><li><a href="about.html">about</a></li></ul><ul><li><a href="logic.html">logic</a></li><li><a href="arithmetic.html">arithmetic</a></li><li><a href="geometry.html">geometry</a></li><li><a href="language.html">language</a></li><li><a href="computation.html" class="self">computation</a></li><li><a href="hardware.html">hardware</a></li></ul><ul><li><a href="paper_computing.html">paper computing</a></li><li><a href="interaction_nets.html">interaction nets</a></li><li><a href="reversible_computing.html">reversible computing</a></li><li><a href="operating_systems.html">operating systems</a></li><li><a href="programming.html">programming</a></li><li><a href="virtual_machines.html">virtual machines</a></li><li><a href="cellular_automata.html">cellular automata</a></li><li><a href="fractals.html">fractals</a></li></ul></nav><main><h2>If you want to write fast software, use a slow computer.</h2>
 
 <p>A beauty cold and austere, like that of sculpture, without appeal to any part of our weaker nature, without the gorgeous trappings of painting or music, yet sublimely pure, and capable of a stern perfection such as only the greatest art can show.<a href='https://en.wikipedia.org/wiki/Mathematical_beauty' target='_blank'>~</a></p>
 
@@ -73,6 +73,119 @@
 	<li><a href='http://worrydream.com/AlligatorEggs/' target='_blank'>Alligator Calculus</a></li>
 	<li><a href='https://esolangs.org/wiki/Sadako' target='_blank'>Sadako</a></li>
 	<li><a href='https://yip.pe/analog.html' target='_blank'>Thread</a></li>
+</ul>
+
+<h2>Interaction nets are a graphical model of computation.</h2>
+
+<p>With interaction nets, all aspects of a computation are captured by the rewriting rules. No external machinery such as copying a chunk of memory, or a garbage collector, is needed. The model therefore is an interesting one if we are interested in cost models of computation, and also take advantage of possible parallelism.</p>
+
+<p>Interaction nets can capture all computable functions, as it is possible to simulate a Turing Machine, but unlike models such as Turing machines, cellular automata, Lambda calculus or combinators, an interaction net computational step can be defined as a constant time operation, and the model allows for parallelism in which many steps can take place at the same time.</p>
+
+<h3>Introduction</h3>
+
+<p>An <b>agent</b>(<i>a</i>) has one <i>principal port</i> and a number of auxiliary ports(<i>n</i>). A pair of agents connected together on their principal ports is called an <i>active pair</i>. A rewriting of a net is performed only on an active pair according to an <b>interaction rule</b>.</p>
+
+<img src='../media/refs/in_cell.png' width='350'/>
+
+<p>A <b>net</b> is a graph of agents where each port is connected to another one by means of a <b>wire</b>. The following net has three free ports, <i>x</i>, <i>y</i>, and <i>z</i>. Note that a wire may connect two ports of the same agent.</p>
+
+<img src='../media/refs/in_net.png' width='300'/>
+
+<p>For this tutorial, we will use the following four agents: Successor(increments a natural number), Zero, Add & Mul.</p>
+
+<img src='../media/refs/in_ari.png' width='475'/>
+
+<h3>Addition</h3>
+
+<p>Since addition and multiplication are defined by induction on their first argument, we shall always plug this argument into the principal port.</p>
+
+<pre>
+sx + y = s(x + y)                  0 + y = y
+</pre>
+<img src='../media/refs/in_add.png' width='450'/>
+
+<h3>Multiplication</h3>
+
+<p>When defining multiplication, note that the argument <i>y</i> is used twice in the first equation, and it is not used at all in the second one. For that reason, two extra symbols are needed <i>duplicate</i> and <i>erase</i>. </p>
+
+<pre>
+sx * y = (x + y) + y              0 * y = 0
+</pre>
+<img src='../media/refs/in_mul.png' width='450'/>
+
+<p>The idea is that a net representing a natural number should be duplicated when it is connected to the principal port of a <i>duplicate</i>, and it should be erased when it is connected to the principal port of an <i>erase</i>.</p>
+
+<img src='../media/refs/in_dupera.png' width='450'/>
+
+<p>The system of interaction combinators consists of three symbols, called combinators: <i>y</i>(constructor), <i>d</i>(duplicator), and <i>e</i>(eraser). The six interaction rules below are of two kinds: commutation when the two cells carry different symbols (<i>yd</i>, <i>ye</i>, <i>de</i>) and annihilation when they carry the same symbol (<i>yy</i>, <i>dd</i>, <i>ee</i>).</p>
+
+<img src='../media/refs/in_comb.png' width='800' style='max-width:800px'/>
+
+<p>Note that the annihilations for <i>y</i> and <i>d</i> are not the same. Furthermore, if one numbers the auxiliary ports, one realizes that it is <i>yy</i>, not <i>dd</i>, which exchanges the ports:</p>
+
+<img src='../media/refs/in_swp.png' width='450'/>
+
+<h3>Rewriting</h3>
+
+<p>Here, <i>rewriting</i> is just a convenient word to express a very concrete notion of interaction, which we shall make precise by requiring some properties of rules:</p>
+
+<ul>
+	<li>Agents interact only through their principal port.</li>
+	<li>Each variable in a rule occurs exactly twice, once on each side.</li>
+	<li>There is at most one rule for each pair of distinct symbols S, T, and no rule for S, S.</li>
+</ul>
+
+<table border='1'>
+	<tr>
+		<th>Rule 1</th>
+		<th> Rule 2</th>
+	</tr>
+	<tr>
+		<td><img src='../media/refs/in_add_rule1.png' width='300'/></td>
+		<td><img src='../media/refs/in_add_rule2.png' width='350'/></td>
+	</tr>
+</table>
+
+<p>A simple net, representing S(0) + S(0), 1 + 1 really, is shown below, where one active pair has been generated. We then show two reductions, which use the previous two rules. The final net, on the right-hand side, is of course the representation of 2, which is the expected answer.</p>
+
+<img src='../media/refs/in_add_res.png' width='550'/>
+
+<h3>Textual Representation</h3>
+
+<p>We can <b>represent the net</b> above in the following form:</p>
+<pre>
+x = Z(), x = S(y), x = Add(y, z)
+<span style='color:#777'>;; replacing equals for equals</span>
+S(Z) = Add(z, S(Z))
+</pre>
+
+<p>We can <b>represent the rules</b> above in the following form:</p>
+<pre>
+a = Add(x, y), a = Z    --> x = y
+a = Add(x, y), a = S(z) --> x = S(b), z = Add(b, y)
+<span style='color:#777'>;; replacing equals for equals</span>
+Z = Add(x, x)               -->
+S(Add(b, y)) = Add(S(b), y) -->
+</pre>
+
+<p>When replacing equals for equals in this notation, we observe that the right-hand side of the rule is always empty. In this case we will omit the arrow symbol, and replace the equal sign by &gt;&lt; so that we can distinguish an occurrence of a rule from an occurrence of an active pair. Thus, we can write the rules above as:</p>
+
+<pre>
+Z >< Add(x, x)
+S(Add(b, y)) >< Add(S(b), y)
+</pre>
+
+<q>The fundamental laws of computation are <b>commutation</b> and <b>annihilation</b>.</q>
+
+<ul>
+	<li><a href='https://dl.acm.org/doi/pdf/10.1145/96709.96718' target='_blank'>Interaction Nets</a></li>
+	<li><a href='https://raw.githubusercontent.com/cicada-lang/inet/master/docs/papers/interaction-combinators.pdf' target='_blank'>Interaction Combinators</a></li>
+	<li><a href='http://sro.sussex.ac.uk/id/eprint/54469/1/Sato%2C_Shinya.pdf' target='_blank'>Implementation of a low-level language for interaction nets</a>, Shinya Sato</li>
+	<li><a href='https://github.com/inpla/inpla' target='_blank'>Inpla</a>, Interaction Nets as Programming Language</li>
+	<li><a href='https://www.sciencedirect.com/sdfe/reader/pii/S1571066105050176/pdf' target='_blank'>Towards a Programming Language for Interaction Nets</a>, Ian Mackie</li>
+	<li><a href='https://arxiv.org/pdf/1505.07164.pdf' target='_blank'>An Implementation Model for Interaction Nets</a></li>
+	<li><a href='https://github.com/cicada-lang/inet' target='_blank'>Interaction Nets Playground</a></li>
+	<li><a href='https://github.com/asperti/BOHM1.1' target='_blank'>Bologna Optimal Higher-Order Machine</a></li>
 </ul>
 
 <h2>Reversible computing is a model of computation in which time is reversible.</h2>
