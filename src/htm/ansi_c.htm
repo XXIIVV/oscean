@@ -24,35 +24,41 @@
 
 int count = 10;
 
-int add_together(int x, int y) {
-  int result = x + y;
-  return result;
+int
+add_together(int x, int y)
+{
+	int result = x + y;
+	return result;
 }
 
 typedef struct {
-  int x;
-  int y;
-  int z;
+	int x;
+	int y;
+	int z;
 } point;
 
-void print_point(point point) {
-  printf("the point is: (%d,%d,%d)\n",point.x,point.y,point.z);
+void
+print_point(point point)
+{
+	printf("the point is: (%d,%d,%d)\n",point.x,point.y,point.z);
 }
 
-int main(int argc, char** argv) {
-  point p;
-  p.x = 2;
-  p.y = 3;
-  p.z = 4;
+int
+main(int argc, char** argv)
+{
+	point p;
+	p.x = 2;
+	p.y = 3;
+	p.z = 4;
 
-  float length = sqrt(p.x * p.x + p.y * p.y);
+	float length = sqrt(p.x * p.x + p.y * p.y);
 
-  printf("float: %.6f\n", length);
-  printf("int: %d\n", p.z);
+	printf("float: %.6f\n", length);
+	printf("int: %d\n", p.z);
 
-  print_point(p);
+	print_point(p);
 
-  return 0;
+	return 0;
 }
 </pre>
 
@@ -77,8 +83,8 @@ int main(int argc, char** argv) {
 int
 main()
 {
-  printf("(output hello)");
-  return 0;
+	printf("(output hello)");
+	return 0;
 }
 </pre>
 
@@ -90,11 +96,11 @@ main()
 int
 main()
 {
-  char line[256];
-  if(fgets(line, 256, stdin) != NULL) {
-    printf("(input: %s)\n", line);
-  }
-  return 0;
+	char line[256];
+	if(fgets(line, 256, stdin) != NULL) {
+		printf("(input: %s)\n", line);
+	}
+	return 0;
 }
 </pre>
 
@@ -109,34 +115,36 @@ main()
 
 #define NTHREADS 5
 
-void *myFun(void *x)
+void
+*myFun(void *x)
 {
-  int tid;
-  tid = *((int *) x);
-  printf("Hi from thread %d!\n", tid);
-  return NULL;
+	int tid;
+	tid = *((int *) x);
+	printf("Hi from thread %d!\n", tid);
+	return NULL;
 }
 
-int main(int argc, char *argv[])
+int
+main(int argc, char *argv[])
 {
-  pthread_t threads[NTHREADS];
-  int thread_args[NTHREADS];
-  int rc, i;
+	pthread_t threads[NTHREADS];
+	int thread_args[NTHREADS];
+	int rc, i;
 
-  /* spawn the threads */
-  for (i=0; i&lt;NTHREADS; ++i)
-    {
-      thread_args[i] = i;
-      printf("spawning thread %d\n", i);
-      rc = pthread_create(&threads[i], NULL, myFun, (void *) &thread_args[i]);
-    }
+	/* spawn the threads */
+	for (i=0; i&lt;NTHREADS; ++i)
+	{
+		thread_args[i] = i;
+		printf("spawning thread %d\n", i);
+		rc = pthread_create(&threads[i], NULL, myFun, (void *) &thread_args[i]);
+	}
 
-  /* wait for threads to finish */
-  for (i=0; i&lt;NTHREADS; ++i) {
-    rc = pthread_join(threads[i], NULL);
-  }
+	/* wait for threads to finish */
+	for (i=0; i&lt;NTHREADS; ++i) {
+		rc = pthread_join(threads[i], NULL);
+	}
 
-  return 1;
+	return 1;
 }
 </pre>
 
@@ -153,61 +161,60 @@ int main(int argc, char *argv[])
 int
 error(char* msg, const char* err)
 {
-  printf("Error %s: %s\n", msg, err);
-  return 1;
+	printf("Error %s: %s\n", msg, err);
+	return 1;
 }
 
 int
 main()
 {
-  SDL_Window* window = NULL;
-  SDL_Surface* surface = NULL;
-  SDL_Surface* image = NULL;
+	SDL_Window* window = NULL;
+	SDL_Surface* surface = NULL;
+	SDL_Surface* image = NULL;
 
-  if(SDL_Init(SDL_INIT_VIDEO) < 0)
-    return error("init", SDL_GetError());
+	if(SDL_Init(SDL_INIT_VIDEO) < 0)
+	return error("init", SDL_GetError());
 
-  window = SDL_CreateWindow("Blank Window",
-                            SDL_WINDOWPOS_UNDEFINED,
-                            SDL_WINDOWPOS_UNDEFINED,
-                            640,
-                            480,
-                            SDL_WINDOW_SHOWN);
+	window = SDL_CreateWindow("Blank Window",
+	SDL_WINDOWPOS_UNDEFINED,
+	SDL_WINDOWPOS_UNDEFINED,
+	640,
+	480,
+	SDL_WINDOW_SHOWN);
 
-  if(window == NULL)
-    return error("window", SDL_GetError());
+	if(window == NULL)
+		return error("window", SDL_GetError());
 
-  surface = SDL_GetWindowSurface(window);
-  SDL_FillRect(surface, NULL,
-               SDL_MapRGB(surface->format, 0x72, 0xDE, 0xC2));
+	surface = SDL_GetWindowSurface(window);
+	SDL_FillRect(surface, NULL,
+	SDL_MapRGB(surface->format, 0x72, 0xDE, 0xC2));
 
-  /* Display an image */
-  image = SDL_LoadBMP("graphic.bmp");
+	/* Display an image */
+	image = SDL_LoadBMP("graphic.bmp");
 
-  if(image == NULL)
-    return error("image", SDL_GetError());
+	if(image == NULL)
+		return error("image", SDL_GetError());
 
-  SDL_BlitSurface(image, NULL, surface, NULL);
+	SDL_BlitSurface(image, NULL, surface, NULL);
 
-  /* Draw canvas */
-  SDL_UpdateWindowSurface(window);
-  SDL_Delay(2000);
+	/* Draw canvas */
+	SDL_UpdateWindowSurface(window);
+	SDL_Delay(2000);
 
-  /* close */
-  SDL_FreeSurface(surface);
-  surface = NULL;
-  SDL_DestroyWindow(window);
-  window = NULL;
-  SDL_Quit();
+	/* close */
+	SDL_FreeSurface(surface);
+	surface = NULL;
+	SDL_DestroyWindow(window);
+	window = NULL;
+	SDL_Quit();
 
-  return 0;
+	return 0;
 }
-
 </pre>
 
 <h3>Misc</h3>
 
-<p>String padding: <code>|Hello     |</code></p>
+<p>String padding: <code>|Hello |</code></p>
 
 <pre>
 printf("|%-10s|", "Hello");
@@ -216,10 +223,10 @@ printf("|%-10s|", "Hello");
 <h3>Macros</h3>
 
 <pre>
-#define MIN(a, b)  (((a) < (b)) ? (a) : (b))
-#define MAX(a, b)  (((a) > (b)) ? (a) : (b))
-#define ABS(a)     (((a) < 0) ? -(a) : (a))
-#define CLAMP(x, low, high)  (((x) > (high)) ? (high) : (((x) < (low)) ? (low) : (x)))
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+#define ABS(a) (((a) < 0) ? -(a) : (a))
+#define CLAMP(x, low, high) (((x) > (high)) ? (high) : (((x) < (low)) ? (low) : (x)))
 </pre>
 
 <q>Quidquid latine dictum sit, altum sonatur.</q>
