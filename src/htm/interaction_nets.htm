@@ -1,16 +1,8 @@
 <h2>Interaction nets are a graphical model of computation.</h2>
 
-<p>Interaction nets can capture all computable functions with rewriting rules, no external machinery such as copying a chunk of memory, or a garbage collector, is needed. Unlike models such as Turing machines, Lambda calculus, cellular automata, or <a href='logic.html'>combinators</a>, an interaction net computational step can be defined as a constant time operation, and the model allows for parallelism in which many steps can take place at the same time.</p>
+<p><b>Interaction nets</b> can capture all computable functions with rewriting rules, no external machinery such as copying a chunk of memory, or a garbage collector, is needed. Unlike models such as Turing machines, Lambda calculus, cellular automata, or <a href='logic.html'>combinators</a>, an interaction net computational step can be defined as a constant time operation, and the model allows for parallelism in which many steps can take place at the same time.</p>
 
-<p>An interaction net runtime includes three primitives:</p>
-
-<ul>
-	<li><a href='#agents'>Agents</a>, and ports</li>
-	<li><a href='#nets'>Nets</a>, and wires</li>
-	<li><a href='#rules'>Rewrite Rules</a></li>
-</ul>
-
-<h3 id='agents'>Agents</h3>
+<h3 id='agents'>1. Agents</h3>
 
 <p>An <b>agent</b>(<i>a</i>) is a cell that has one <i>principal port</i> and a number of <b>auxiliary ports</b>(<i>n</i>). A pair of agents connected together on their principal ports is called an <i>active pair</i>. </p>
 
@@ -20,25 +12,25 @@
 
 <img src='../media/refs/in_ari.png' width='475'/>
 
-<h3 id='nets'>Interaction Nets</h3>
+<h3 id='nets'>2. Interaction Nets</h3>
 
 <p>A <b>net</b> is a graph of agents where each port is connected to another one by means of a <b>wire</b>. The following net has three free ports, <i>x</i>, <i>y</i>, and <i>z</i>. Note that a wire may connect two ports of the same agent. A rewriting of a net is performed only on an active pair according to an <a href='#rules'>interaction rule</a>.</p>
 
 <img src='../media/refs/in_net.png' width='300'/>
 
-<h3 id='rules'>Rewriting Rules</h3>
+<h3 id='rules'>3. Rewriting Rules</h3>
 
-<p>Here, <i>rewriting</i> is just a convenient word to express a very concrete notion of interaction, which we shall make precise by requiring some properties of rules:</p>
+<p>Here, <i>rewriting</i> is just a convenient word to express a very concrete notion of <a href='https://www.youtube.com/watch?v=_uIGQ1biCXY' target='_blank'>interaction</a>, which we shall make precise by requiring some properties of rules:</p>
 
 <ul>
 	<li>Agents interact only through their principal port.</li>
 	<li>Each variable in a rule occurs exactly twice, once on each side.</li>
-	<li>There is at most one rule for each pair of distinct symbols S, T, and no rule for S, S.</li>
+	<li>There is at most one rule for each pair of distinct symbols.</li>
 </ul>
 
-
 <pre>
-x = Z(), x = S(y), x = Add(y, z)
+<b>Net:</b>
+	x = Z(), x = S(y), x = Add(y, z)
 </pre>
 
 <table>
@@ -53,21 +45,59 @@ x = Z(), x = S(y), x = Add(y, z)
 </table>
 
 <pre>
-<b>Rule 1:</b> a = Add(x, y), a = Z    --> x = y
-<b>Rule 2:</b> a = Add(x, y), a = S(z) --> x = S(b), z = Add(b, y)
+<b>Rules:</b>
+	a = Add(x, y), a = Z --> x = y
+	a = Add(x, y), a = S(z) --> x = S(b), z = Add(b, y)
 </pre>
-
 
 <p>An interaction net to compute the result of 1 + 1 with the rules defined above, is shown below, where one active pair has been generated. We then show two reductions, which use the previous two rules. The final net, on the right-hand side, is of course the representation of 2, which is the expected answer.</p>
 
 <img src='../media/refs/in_add_res.png' width='550'/>
+
+<h3>Textual Representation</h3>
+
+<p>We can <b>represent the net</b> above in the following form:</p>
+<pre>
+<b>Net:</b>
+	x = Z(), x = S(y), x = Add(y, z)
+</pre>
+
+<p>If we replace equals for equals, we get the following form:</p>
+<pre>
+<b>Net:</b>
+	S(Z) = Add(z, S(Z))
+</pre>
+
+<p>We can <b>represent the rules</b> above in the following form:</p>
+<pre>
+<b>Rules:</b>
+	a = Add(x, y), a = Z --> x = y
+	a = Add(x, y), a = S(z) --> x = S(b), z = Add(b, y)
+</pre>
+
+<p>If we replace equals for equals, we get the following form:</p>
+<pre>
+<b>Rules:</b>
+	Z = Add(x, x) -->
+	S(Add(b, y)) = Add(S(b), y) -->
+</pre>
+
+<p>When replacing equals for equals in this notation, we observe that the right-hand side of the rule is always empty. In this case we will omit the arrow symbol, and replace the equal sign by <kbd>&gt;&lt;</kbd> so that we can distinguish an occurrence of a rule from an occurrence of an active pair. Thus, we can write the entire interaction net defined above as:</p>
+
+<pre>
+<b>Net:</b>
+	S(Z) = Add(z, S(Z))
+<b>Rules:</b>
+	Z >< Add(x, x)
+	S(Add(b, y)) >< Add(S(b), y)
+</pre>
 
 <h3>Addition Rules</h3>
 
 <p>Since addition and multiplication are defined by induction on their first argument, we shall always plug this argument into the principal port.</p>
 
 <pre>
-sx + y = s(x + y)                  0 + y = y
+sx + y = s(x + y) 0 + y = y
 </pre>
 <img src='../media/refs/in_add.png' width='450'/>
 
@@ -76,7 +106,7 @@ sx + y = s(x + y)                  0 + y = y
 <p>When defining multiplication, note that the argument <i>y</i> is used twice in the first equation, and it is not used at all in the second one. For that reason, two extra symbols are needed <i>duplicate</i> and <i>erase</i>. </p>
 
 <pre>
-sx * y = (x + y) + y              0 * y = 0
+sx * y = (x + y) + y 0 * y = 0
 </pre>
 <img src='../media/refs/in_mul.png' width='450'/>
 
@@ -91,31 +121,6 @@ sx * y = (x + y) + y              0 * y = 0
 <p>Note that the annihilations for <i>y</i> and <i>d</i> are not the same. Furthermore, if one numbers the auxiliary ports, one realizes that it is <i>yy</i>, not <i>dd</i>, which exchanges the ports:</p>
 
 <img src='../media/refs/in_swp.png' width='450'/>
-
-<h3>Textual Representation</h3>
-
-<p>We can <b>represent the net</b> above in the following form:</p>
-<pre>
-x = Z(), x = S(y), x = Add(y, z)
-<span style='color:#777'>;; replacing equals for equals</span>
-S(Z) = Add(z, S(Z))
-</pre>
-
-<p>We can <b>represent the rules</b> above in the following form:</p>
-<pre>
-a = Add(x, y), a = Z    --> x = y
-a = Add(x, y), a = S(z) --> x = S(b), z = Add(b, y)
-<span style='color:#777'>;; replacing equals for equals</span>
-Z = Add(x, x)               -->
-S(Add(b, y)) = Add(S(b), y) -->
-</pre>
-
-<p>When replacing equals for equals in this notation, we observe that the right-hand side of the rule is always empty. In this case we will omit the arrow symbol, and replace the equal sign by &gt;&lt; so that we can distinguish an occurrence of a rule from an occurrence of an active pair. Thus, we can write the rules above as:</p>
-
-<pre>
-Z >< Add(x, x)
-S(Add(b, y)) >< Add(S(b), y)
-</pre>
 
 <q>The fundamental laws of computation are <b>commutation</b> and <b>annihilation</b>.</q>
 
