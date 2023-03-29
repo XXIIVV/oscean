@@ -1,0 +1,1214 @@
+<TITLE>Mathematical foundations of Joy</TITLE>
+<H1>Mathematical foundations of Joy</H1>
+<I> by Manfred von Thun </I>
+<P>
+<EM>Abstract:</EM>
+
+Joy is a functional programming language which is not based on the
+application of functions to arguments but on the composition of
+functions.  This paper describes the theoretical basis of the
+language.  The denotation of Joy programs maps a syntactic monoid of
+program concatenation to a semantic monoid of function composition.
+Instead of lambda abstraction Joy uses program quotation, and higher
+order functions can be simulated by first order functions which
+dequote quoted programs.
+
+<P>
+
+<EM>Keywords:</EM> functional programming, syntactic and semantic
+monoids, function composition, quotation and dequotation of programs,
+combinators, elimination of recursive definitions.
+
+<HR>
+
+<H1>Introduction</H1>
+
+Joy programs are built from smaller programs by just two constructors:
+<EM>concatenation</EM> and <EM>quotation</EM>.
+
+<P>
+
+Concatenation is a binary constructor, and since it is associative it
+is best written in infix notation and hence no parentheses are
+required.  Since concatenation is the only binary constructor of its
+kind, in Joy it is best written without an explicit symbol.
+
+<P>
+
+Quotation is a unary constructor which takes as its operand a program.
+In Joy the quotation of a program is written by enclosing it in square
+brackets.  Ultimately all programs are built from atomic programs
+which do not have any parts.
+
+<P>
+
+The semantics of Joy has to explain what the atomic programs mean, how
+the meaning of a concatenated program depends on the meaning of its
+parts, and what the meaning of a quoted program is.  Moreover, it has
+to explain under what conditions it is possible to replace a part by
+an equivalent part while retaining the meaning of the whole program.
+
+<P>
+
+Joy programs denote functions which take one argument and yield one
+value.  The argument and the value are <EM>state</EM>s consisting of
+at least three components.  The principal component is a
+<EM>stack</EM>, and the other components are not needed here.  Much of
+the detail of the semantics of Joy depends on specific properties of
+programs.
+
+<P>
+
+However, central to the semantics of Joy is the following:
+<BLOCKQUOTE>
+  The concatenation of two programs
+denotes the composition of the functions denoted by the two programs.
+</BLOCKQUOTE>
+
+Function composition is associative, and hence denotation maps the
+associative syntactic operation of program concatenation onto the
+associative semantic operation of function composition.  The quotation
+of a program denotes a function which takes any state as argument and
+yields as value the same state except that the quotation is pushed
+onto the stack.
+
+<P>
+
+One part of a concatenation may be replaced by another part denoting
+the same function while retaining the denotation of the whole
+concatenation.
+<P>
+
+One quoted program may be replaced by another denoting the same
+function only in a context where the quoted program will be dequoted
+by being executed.  Such contexts are provided by the
+<EM>combinator</EM>s of Joy.  These denote functions which behave like
+higher order functions in other languages.
+
+<P>
+
+The above may be summarised as follows: Let <CODE>P</CODE>,
+<CODE>Q1</CODE>, <CODE>Q2</CODE> and <CODE>R</CODE> be programs, and
+let <CODE>C</CODE> be a combinator.  Then this principle holds:
+
+<PRE>
+        IF          Q1      ==      Q2
+        THEN     P  Q1  R   ==   P  Q2  R
+        AND        [Q1] C   ==     [Q2] C
+</PRE>
+
+The principle is the prime rule of inference for the <EM>algebra of
+Joy</EM> which deals with the equivalence of Joy programs, and hence
+with the identity of functions denoted by such programs.  A few laws
+in the algebra can be expressed without combinators, but most require
+one or more combinators for their expression.
+
+
+<P>
+
+The remainder of this paper is organised as follows.  The next
+sections deal with program concatenation and function composition.
+The first of these reviews certain algebras called monoids, and
+homomorphisms between them.  In the following section the meaning of
+Joy programs is shown to be a homomorphism from a syntactic monoid to
+a semantic monoid.  The last of these sections explains the semantic
+monoid in a little more detail, in particular function composition and
+the identity function.
+
+<P>
+
+The other sections deal with quotations and combinators.  The first
+treats combinators that do not involve the stack, the second those
+that do.  The next section illustrates how these very basic
+combinators can be used to emulate recursion without explicit
+definitions.  The summary section recapitulates the main conclusions
+and hints at a connection with category theory.
+
+<H1>Monoids and homomorphisms</H1>
+
+The design of Joy was motivated by <A HREF="refs.html#{Quine71}">{Quine71}</A> and <A HREF="refs.html#{Backus78}">{Backus78}</A> who in
+quite different fields examine how variables of one kind or another
+can be eliminated and how their work can be done by combinators.  In
+turn their work is based on the pioneers Sch&#246;nfinkel and Curry.
+Backus has argued that concepts of programming languages should be
+selected on the basis of yielding strong and clean mathematical laws.
+In particular he favours concepts that allow simple algebraic
+manipulations, where possible replacing variables by combinators or
+higher order functions.  With these goals in mind his research
+culminated in the language <EM>FP</EM>.  The language Joy offers a
+very different solution to the same goals.
+
+Paulson <A HREF="refs.html#{Paulson92}">{Paulson92}</A> remarked that "Programming and pure mathematics
+are difficult to combine into one formal framework".  Joy attempts
+this task.
+
+<P>
+
+Much of the elegance of Joy is due to the simple algebraic structure
+of its syntax and the simple algebraic structure of its semantics and
+to the fact that the two structures are so similar.  In particular,
+the two structures are <EM>monoid</EM>s and the meaning function which
+maps syntax into semantics is a <EM>homomorphism</EM>.
+
+<P>
+
+Monoids and homomorphisms are familiar from abstract algebra.  A <EM>
+monoid</EM> <CODE>M</CODE> consists of a nonempty set <CODE>{m, m1,
+m2 ...}</CODE> including a special element <CODE>m</CODE>, and a
+binary operation, written, say, as infix period <CODE>"."</CODE>.  The
+special element has to be a left and right <EM>unit element</EM> for
+the binary operation, and the binary operation has to be
+<EM>associative</EM>.  In symbols, for all <CODE>x</CODE>,
+<CODE>y</CODE> and <CODE>z</CODE> from the set,
+
+<PRE>
+        m . x   =   x   =   x . m
+        (x . y) . z   =   x . (y . z)
+</PRE>
+
+For example, these are monoids: the integers with <CODE>0</CODE> as
+the unit element and addition as the binary operation, or the integers
+with <CODE>1</CODE> as the unit element and multiplication as the
+binary operation.  Two examples from logic are the truth values with
+falsity as the unit element and disjunction as the binary operation,
+or truth as the unit element and conjunction as the binary operation.
+Two examples from set theory are sets with the nullset as the unit
+element and set union as the binary operation, or the universal set as
+the unit element and set intersection as the binary operation.  It so
+happens that in the preceding examples the binary operation is
+commutative, but this is not essential for monoids.  Two other
+examples consists of lists with the empty list as the unit element and
+concatenation as the binary operation, or strings of characters with
+the empty string as the unit element and concatenation as the binary
+operation.  Concatenation is <EM> not</EM> commutative.
+
+<P>
+
+Because of the associative law, parentheses are not needed.  Also, if
+there are no other binary operations, the infix operator itself can be
+omitted and the operation indicated by juxtaposition.  Unit elements
+are often called identity elements, but the word "identity" is already
+needed with a different meaning in Joy.  Unit elements are sometimes
+called neutral elements, too.
+
+<P>
+
+Unit elements should be distinguished from <EM>zero element</EM>s,
+which behave the way the number <CODE>0</CODE> interacts with
+multiplication: a product containing a zero factor is equal to zero.
+In logic falsity is the zero element for conjunction, and truth is the
+zero element for disjunction.  For sets the nullset is the zero
+element for intersection, and the universal set is the zero element
+for union.  In commutative monoids there is always at most one zero
+element.
+
+<P>
+
+Let <CODE>M</CODE> over <CODE>{m m1 ..}</CODE> and <CODE>N</CODE> over
+<CODE>{n n1 ..}</CODE> be two monoids.  A function <CODE>h</CODE> from
+<CODE>{m m1 ..}</CODE> to <CODE>{n n1 ..}</CODE> is called a <EM>
+homomorphism</EM> if and only if it maps unit elements onto unit
+elements and commutes with the binary operation:
+
+<PRE>
+        h(m)  =  n                      h(x . y)  =  h(x) . h(y)
+</PRE>
+
+In the second equation, the binary operation on the left is that of
+<CODE>M</CODE>, and the one on the right is that of <CODE>N</CODE>.
+One example is the logarithm function which is a homomorphism from the
+multiplicative monoid onto the additive monoid.  Another example of a
+homomorphism is the <KBD>size</KBD> (or length) function on lists
+which maps the list monoid onto the additive monoid: the size of the
+empty list is zero, and the size of the concatenation of two lists is
+the sum of the sizes of the two lists:
+
+<PRE>
+        log(1)  =  0                    log(x * y)  =  log(x) + log(y)
+        size([])  =  0                  size(x ++ y)  =  size(x) + size(y)
+</PRE>
+
+(In the last two equations, the symbols <CODE>[]</CODE> and
+<CODE>++</CODE> are used for the empty list and for concatenation.)
+Other examples are the function which takes a list (or string) as
+argument and returns the set of its elements.  So this function
+removes duplicates and forgets order.  It maps the list monoid onto
+the set monoid with the nullset as the unit and union as the binary
+operation.
+
+<P>
+
+Homomorphisms can be defined over other algebras which are not
+monoids.  Examples are groups, rings, fields and Boolean algebras.
+They are studied in universal algebra and in category theory.  One
+particular homomorphism can only be described as mind-blowing: this is
+G&#246;del's arithmetisation of syntax - all syntactic operations on
+formulas of a theory are mapped onto corresponding arithmetic
+operations on their G&#246;del numbers.  (See for example
+<A HREF="refs.html#{Mendelson64}">{Mendelson64}</A>.)
+
+<P>
+
+In propositional logic the equivalence classes of formulas constitute
+a Boolean algebra of many elements.  A valuation is a homomorphism
+from that algebra to the two element Boolean algebra of truth values.
+One can go further: the meaning of a formula is the set of valuations
+that make it true.  The meaning function then is a homomorphism from
+the Boolean algebra of equivalence classes to the Boolean algebra of
+sets of valuations.  This situation is typical in semantics: the
+meaning function is a homomorphism.  The same holds for Joy - the
+meaning function is a homomorphism from Joy syntax to Joy semantics.
+
+<H1>A syntactic monoid and a semantic monoid</H1>
+
+The <EM>syntax</EM> of Joy programs is very simple: the basic building
+blocks are atomic programs, and larger programs are formed by
+concatenation as one of the main modes of program construction.
+Concatenation is associative, and hence no parentheses are required.
+Also, concatenation is the only binary constructor, so no explicit
+symbol is required, and hence concatenation can be expressed by
+juxtaposition.  It is useful to have a left and right unit element
+<KBD>id</KBD>.  Collectively these constitute the syntactic monoid.
+
+<P>
+
+Now to the <EM>semantics</EM>.  In the introduction it was said that
+Joy uses postfix notation for the evaluation of arithmetic
+expressions.  To add two numbers they are pushed onto a stack and then
+replaced by their sum.  This terminology is helpful but can be
+misleading in several ways.  The phrasing suggest a procedural or
+imperative interpretation: Joy programs consist of commands such as
+push this, push that, pop these and push their sum.  But there is
+nothing procedural about Joy, as described here it is a purely
+functional language.
+
+<P>
+
+However, the terminology of commands does suggest something useful.
+Commands, when executed, produce changes.  Exactly what is changed
+depends on the nature of the command.  But in the most general terms
+what changes is the state of a system.  In particular the execution of
+a postfix expression produces changes in the state of a stack.  For
+each change there is a before-state and an after-state.  The
+after-state of one change is the before-state of the next change.
+
+<P>
+
+So, changes are essentially functions that take states as arguments
+and yield states as values.  There is only one before-state, so they
+are functions of one argument.  Therefore they can be composed.  The
+composite of two functions can be applied to a state as argument and
+yields as value the state that is obtained by first applying the one
+function to the argument and then applying the other function to the
+resulting value.  This is essentially the semantics of Joy: All
+programs denote functions from states to states.
+
+<P>
+
+The state does not have to be the state of a stack.  It just so
+happens that evaluation of postfix expressions is so conveniently done
+on a stack.  But evaluation of expressions is by no means everything.
+In what follows, the stack is an essential part of the state, but for
+many purposes it is useful to ignore the whole state altogether.
+
+<P>
+
+The operation of <EM>function composition</EM> is associative and
+there is a left and right unit element, the <EM>identity
+function</EM>.  Collectively they comprise the semantic monoid.  The
+meaning function maps a syntactic monoid onto a semantic monoid.  The
+concatenation of two programs denotes the composition of the functions
+denoted by the two programs, and the unit element of concatenation
+denotes the unit element of composition.
+
+<H1>Function composition and the identity function</H1>
+
+If the <EM> programs</EM> <CODE>P</CODE> and <CODE>Q</CODE> denote
+the same function, then the <EM> functions</EM> <CODE>P</CODE> and
+<CODE>Q</CODE> are <EM> identical</EM>.  Two functions are identical
+if for all values in the intersection of their domains they yield the
+same value.  This will be written
+
+<PRE>
+        P   ==   Q
+</PRE>
+
+The symbol <CODE>==</CODE> will be used to denote the identity of Joy
+functions.  The symbol does not belong to the language Joy but to its
+metalanguage.  The <EM>identity relation</EM> between functions is
+clearly <EM>reflexive</EM>, <EM>symmetric</EM> and
+<EM>transitive</EM>.  Furthermore, identicals are indiscernible in
+larger contexts such as compositions.  Hence <EM>substitution</EM> of
+identicals can be used as a rule of inference:
+
+<PRE>
+        IF             Q1      ==      Q2
+        THEN        P  Q1  R   ==   P  Q2  R
+</PRE>
+
+The symbol <KBD>id</KBD> will be used to denote the <EM>identity
+function</EM>.  The fact that function composition is associative and
+that the identity function is a left and right unit is expressed by
+
+<PRE>
+        (P  Q)  R   ==   P  (Q  R)
+        id  P   ==   P   ==   P  id
+</PRE>
+
+The notation can be used to express what <EM> look</EM> like
+identities of numbers; for example
+
+<PRE>
+        2  3  +   ==   5
+</PRE>
+
+expresses that the composition of the three <EM> functions</EM> on the
+left is identical with the one <EM> function</EM> on the right.  On
+the left, the first two functions push the <EM> numbers</EM> 2 and 3
+onto the stack, and the third replaces them by their sum.  On the
+right, the function pushes the <EM> number</EM> 5.  The left and the
+right are defined for all stacks as arguments and yield the same stack
+as value.  Hence the left and the right are identical.
+
+<P>
+
+But it is important to be quite clear what the equation says.  Each of
+the four symbols <CODE>2</CODE>, <CODE>3</CODE>, <CODE>+</CODE> and
+<CODE>5</CODE> denotes a function which takes a stack as argument and
+yields a stack as value.  The three <EM> numerals</EM> <CODE>2</CODE>,
+<CODE>3</CODE> and <CODE>5</CODE> denote <EM> functions</EM> which are
+defined for all argument stacks.  They yield as values other stacks
+which are like the argument stacks except that a new <EM> number</EM>,
+2, 3 and 5 has been pushed on top.
+
+<P>
+
+The symbol <CODE>+</CODE> does <EM> not</EM> denote a <EM>
+binary</EM> function of two numbers, but like all Joy functions it
+takes one argument only.  That argument has to be a stack whose top
+two elements are numbers.  The value returned is another stack which
+has the top two numbers replaced by their sum.  It follows that the
+above equation does <EM> not</EM> express the identity of numbers
+but the identity of <EM> functions</EM>.
+
+<P>
+
+The associativity of composition has as a consequence about
+<EM>currying</EM>: that there is no difference between standard and
+curried operators.  Consider the example
+
+<PRE>
+        (2  3)  +   ==   2  (3  +)
+</PRE>
+
+On the left the <CODE>+</CODE> takes two parameters supplied by
+<CODE>(2 3)</CODE>.  On the right <CODE>+</CODE> is given one
+parameter, <CODE>3</CODE>.  The resulting function <CODE>(3 +)</CODE>
+expects one parameter to which it will add <CODE>3</CODE>.  Because of
+associativity the two sides are identical and hence no parentheses are
+required.
+
+<P>
+
+Let <CODE>P</CODE> be a program which pushes <TT>m</TT> values onto the
+stack.  Let <CODE>Q</CODE> be a program which expects <TT>n</TT> values on
+the stack, <TT>m</TT> &lt;= <TT>n</TT>.  Now consider their concatenation <CODE>P
+Q</CODE>.  Of the <TT>n</TT> expected by <CODE>Q</CODE>, <TT>n</TT> will be supplied
+by <CODE>P</CODE>.  So the program <CODE>P Q</CODE> only expects <TT>n -
+m</TT> values on the stack.
+
+<HR>
++++HERE+++ assoc and curry
+<HR>
+
+<P>
+
+In the development of mathematics an explicit notation for the number
+<CODE>0</CODE> has been a rather recent innovation.  The symbol
+enables one to say more than just that <CODE>0</CODE> is a unit
+element for addition.  Similarly, in the algebra of functions an
+explicit symbol for the identity function makes it possible to state
+many laws.  This is particularly true for the functions in Joy.  The
+following are some examples:
+
+<P>
+
+In arithmetic <CODE>0</CODE> and <CODE>1</CODE> are unit elements for
+addition and multiplication, so adding <CODE>0</CODE> or multiplying
+by <CODE>1</CODE> have no effect.  For lists the empty list is a unit
+element, so concatenation on the left or the right has no effect.
+Similarly in logic, falsity and truth are unit elements for
+disjunction and conjunction, so disjoining with falsity and conjoining
+with truth make no difference.  Also in logic, disjunction and
+conjunction are idempotent, so disjoining or conjoining with a
+<KBD>dup</KBD>licate yields the original.  For any stack it holds that
+<KBD>swap</KBD>ping the top two elements twice has no net effect, and
+that duplicating the top element and then <KBD>pop</KBD>ping off the
+duplicate has no net effect.
+
+<P>
+
+There are many more laws: double negation has no net effect, reversing
+a sequence twice just leaves the original, and taking the successor
+and the predeccessor of a number - in either order - produces no net
+effect.
+
+In the <EM>algebra of Joy</EM> these are expressed by the following:
+
+<PRE>
+        0  +   ==   id                  1  *   ==   id
+        []  concat   ==   id            []  swap  concat   ==   id
+        false  or   ==   id             true  and   ==   id
+        dup  and   ==   id              dup  or   ==   id
+        swap  swap   ==   id            dup  pop   ==   id
+        not  not   ==   id              reverse  reverse   ==   id
+        succ  pred   ==   id            pred  succ   ==   id
+</PRE>
+
+Note that no variables were needed to express these laws.
+<P>
+
+The identity function is a left and right unit element with respect to
+function composition.  It is appropriate to remark here that there is
+also a <EM>left zero element</EM> and there is a <EM>right zero
+element</EM>.  Two such elements <CODE>l</CODE> and <CODE>r</CODE>
+satisfy the following for all programs <CODE>P</CODE>:
+
+<PRE>
+        l  P   ==   l                   P  r   ==   r
+</PRE>
+
+Since function composition is not commutative, the two zero elements
+are not identical.  In Joy the left zero <CODE>l</CODE> is the
+<KBD>abort</KBD> operator, it ignores any program following it.  The
+right zero <CODE>r</CODE> is the <KBD>clearstack</KBD> operator, it
+empties the stack and hence ignores any calculations that might have
+been done before.  The two operators have some theoretical interest,
+and they are occasionally useful.
+
+<H1>Quotation, dequotation and combinators</H1>
+
+Any program enclosed in square brackets is called a <EM>quoted
+program</EM> or <EM>quotation</EM>.  The length or <CODE>size</CODE>
+of the quotation <CODE>[5]</CODE> is <CODE>1</CODE>, and the size of
+the quotation <CODE>[2 3 +]</CODE> is <CODE>3</CODE>.  However, as
+noted earlier, the two programs inside the brackets denote the same
+function.  What this shows is that we cannot substitute their
+quotations for each other:
+
+<PRE>
+        [5]  size   =/=   [2 3 +]  size
+</PRE>
+
+What forbids the substitution is the quotation - by the square
+brackets.  So quotations produce opaque contexts, quotation is an
+intensional constructor.
+
+<P>
+
+However, there are contexts where substitution is permissable across
+quotations.  These are contexts where the content of the quote is not
+treated as a passive datum but as an active program.  In Joy such
+treatment is due to <EM>combinator</EM>s which in effect dequote one
+or more of their parameters.
+
+<P>
+
+The <KBD>i</KBD> combinator expects a quoted program on top of the
+stack.  It pops that program and executes it.  So, if the quoted
+program <CODE>[P]</CODE> has just been pushed onto the stack, then the
+<CODE>i</CODE> combinator will execute <CODE>P</CODE>:
+
+<PRE>
+        [P]  i   ==   P
+</PRE>
+
+For example, each of the following four programs compute the same
+function - the one which takes any stack as argument and returns as
+value another stack which is like the argument stack but has the
+number <CODE>5</CODE> pushed on top.
+
+<PRE>
+         2  3  +                         5
+        [2  3  +] i                     [5] i
+</PRE>
+
+If the program <CODE>P</CODE> computes the identity function, then the
+effect of applying the <CODE>i</CODE> combinator is that of the
+identity function:
+
+<PRE>
+        [id]  i   ==   id               []  i   ==   id
+</PRE>
+Another law is this:
+<PRE>
+        i  ==  []  cons  i  i
+</PRE>
+<P>
+
+Two programs <CODE>P</CODE> and <CODE>Q</CODE> may look very different
+- for example, they may differ in their sizes.  But it could be that
+the compute the same function.  In that case the dequotations of their
+quotations also compute the same function:
+
+<P>
+Hence
+<PRE>
+        IF       P       ==    Q
+        THEN    [P]  i   ==   [Q]  i
+</PRE>
+
+Suppose now that a quoted program, <CODE>[P]</CODE>, is on top of the
+stack.  It could then be executed with the <CODE>i</CODE> combinator.
+But it could also be manipulated as a passive data structure first.
+For example, one could push the quotation <CODE>[i]</CODE> and then
+use the <KBD>cons</KBD> operator to insert <CODE>[P]</CODE> into
+<CODE>[i]</CODE> to give <CODE>[[P] i]</CODE>.  What happens if this
+is executed by the <CODE>i</CODE> combinator?  The internal
+<CODE>[P]</CODE> quote is pushed, and then the internal <CODE>i</CODE>
+combinator is executed.  So the net effect is that of executing
+<CODE>P</CODE>.
+
+<P>
+Hence
+<PRE>
+        [i]  cons  i   ==   i
+</PRE>
+
+Note that it has been possible to state this law without reference to
+the quoted program <CODE>[P]</CODE>.  But it may help to spell out a
+consequence:
+
+<PRE>
+        [P]  [i]  cons  i   ==   [[P] i]  i   ==   [P]  i   ==   P
+</PRE>
+<P>
+
+The <CODE>i</CODE> combinator is only one of many.  Another is the
+<KBD>b</KBD> combinator which expects two quoted programs on top of
+the stack.  It pops them both and then executes the program that was
+second on the stack and continues by executing the program that was on
+top of the stack.  So, in the special case where two programs
+<CODE>[P]</CODE> and <CODE>[Q]</CODE> have just been pushed onto the
+stack, the <CODE>b</CODE> combinator will execute them in the order in
+which they have been pushed:
+
+<PRE>
+        [P]  [Q]  b   ==   P  Q
+</PRE>
+
+It follows that the <CODE>b</CODE> combinator actually dequotes both
+of its parameters, and hence either or both can be replaced by an
+equivalent program:
+
+<PRE>
+        IF       P1  ==  P2     AND    Q1  ==  Q2
+        THEN    [P1]  [Q1]  b   ==   [P2]  [Q2]  b
+</PRE>
+
+If both programs compute the identity function, then the effect of the
+<CODE>b</CODE> combinator is the identity function.  If either of the
+two programs computes the identity function, then the effect is the
+same as that of executing the other, which is the same as applying the
+<CODE>i</CODE> combinator to the other:
+
+<PRE>
+        []  []  b   ==   id
+        []  b   ==   i
+        []  swap  b   ==   i
+</PRE>
+
+The second equation could be reversed, and this shows that the
+<CODE>i</CODE> combinator could be <EM> defined</EM> in terms of the
+<CODE>b</CODE> combinator.
+
+<P>
+
+Quotations are sequences, and sequences can be concatenated.  In Joy
+strings, lists and, more generally, quotations can be concatenated
+with the <KBD>concat</KBD> operator.  If <CODE>[P]</CODE> and
+<CODE>[Q]</CODE> have just been pushed, then they can be concatenated
+to become <CODE>[P Q]</CODE>.  The resultant concatenation can be
+executed by the <CODE>i</CODE> combinator.  The net effect is that of
+executing the two programs, and that is also achieved by applying the
+<CODE>b</CODE> combinator:
+
+<PRE>
+        [P]  [Q]  concat  i   ==   P  Q   ==   [P]  [Q]  b
+</PRE>
+
+But the two quoted programs do not have to be pushed immediately
+before the concatenation or the application of the <CODE>b</CODE>
+combinator.  Instead they could have been constructed from smaller
+parts or extracted from some larger quotation.  Hence the more general
+law:
+
+<PRE>
+        concat  i   ==   b
+</PRE>
+
+The equation could be reversed, hence the <CODE>b</CODE> combinator
+could be <EM> defined</EM> in terms of the <CODE>i</CODE>
+combinator.  The <EM> names</EM> <CODE>i</CODE> and <CODE>b</CODE>
+of the two combinators have been chosen because of their similarity to
+the <EM>I combinator</EM> and <EM>B combinator</EM> in <EM>combinatory
+logic</EM>.  The standard text is <A HREF="refs.html#{Curry58}">{Curry58}</A>, but good expositions are
+to be found in many other books, for example <A HREF="refs.html#{Burge75}">{Burge75}</A>.
+
+<H1>Stack oriented combinators</H1>
+
+The two previous combinators require one or two quoted programs as
+parameters, but the parameters merely have to be in an agreed place,
+they do not need to be on a stack.  There are several combinators
+which only make sense if the data are located on a stack.
+
+<P>
+
+Sometimes it is necessary to manipulate the stack not at the top but
+just below the top.  That is what the <KBD>dip</KBD> combinator is
+for.  It is behaves like the <CODE>i</CODE> combinator by executing
+one quotation on top of the stack, except that it leaves the item just
+below the quotation unchanged.  In detail, it expects a program
+<CODE>[P]</CODE> and below that another item <CODE>X</CODE>.  It pops
+both, saves <CODE>X</CODE>, executes <CODE>P</CODE> and then restores
+<CODE>X</CODE>.
+
+<P>
+For example, in the following the saved and restored item is <CODE>4</CODE>:
+
+<PRE>
+        2  3  4  [+]  dip  ==   5  4
+</PRE>
+
+If a program computes the identity function, then the effect of
+applying the <CODE>dip</CODE> combinator is to compute the identity
+function:
+
+<PRE>
+        [id]  dip   ==   id             []  dip   ==   id
+</PRE>
+
+Suppose a program <CODE>[P]</CODE> is on top of the stack, and it is
+first duplicated and then the copy executed with <CODE>dip</CODE> just
+below the original <CODE>[P]</CODE>.  Now the original has been
+restored, but suppose it is now popped explicitly.  The net effect was
+the same as executing just the original <CODE>[P]</CODE> with the
+<CODE>i</CODE> combinator:
+
+<PRE>
+        i   ==   dup  dip  pop
+</PRE>
+
+Suppose that there are two programs <CODE>[P]</CODE> and
+<CODE>[Q]</CODE> on top of the stack, with <CODE>[Q]</CODE> on top.
+It is required to execute <CODE>[P]</CODE> while saving
+<CODE>[Q]</CODE> above.  One way to do that is this: First push
+<CODE>[i]</CODE>.  Now <CODE>[Q]</CODE> is the second element.
+Executing <CODE>dip</CODE> will save <CODE>[Q]</CODE> and execute
+<CODE>[i]</CODE> on the stack which now has <CODE>[P]</CODE> on the
+top.  That amounts to executing <CODE>[P]</CODE>, and after that
+<CODE>[Q]</CODE> is restored.
+
+<P>
+
+Suppose further that it is now required to execute <CODE>[Q]</CODE>,
+and that is easily done with the <CODE>i</CODE> combinator.  The net
+effect of all this is the same as executing first <CODE>[P]</CODE> and
+then <CODE>[Q]</CODE>, which could have been done with the
+<CODE>b</CODE> combinator.  Hence
+
+<PRE>
+        b   ==   [i]  dip  i
+</PRE>
+
+The last two equations show that the <CODE>dip</CODE> combinator could
+be used to <EM> define</EM> both the <CODE>i</CODE> combinator and
+the <CODE>b</CODE> combinator.  The reverse is not possible.
+
+<P>
+
+The last two equations also serve to illustrate algebraic manipulation
+of Joy programs.  In the last equation the <CODE>i</CODE> combinator
+occurs twice, once quoted and once unquoted.  Both occurrences can be
+replaced in accordance with the previous equation, and this yields
+
+<PRE>
+        b   ==   [dup dip pop]  dip  dup  dip  pop
+</PRE>
+
+The substitution of the unquoted occurrence is unproblematic.  But the
+other substitution requires comment.  Quoted occurrences can be
+substituted only in a context of dequotation, and in this case such a
+context is given by the <CODE>dip</CODE> combinator.
+
+<P>
+
+Again suppose that there are two quoted programs <CODE>[P]</CODE> and
+<CODE>[Q]</CODE> on the stack.  If the <CODE>dip</CODE> combinator is
+executed next, it will cause the topmost quotation <CODE>[Q]</CODE> to
+be executed while saving and later restoring <CODE>[P]</CODE> below.
+Suppose that the <CODE>i</CODE> combinator is executed next, this will
+cause the restored <CODE>[P]</CODE> to be executed.  So the net effect
+of the two combinators is to execute first <CODE>P</CODE> and then
+<CODE>Q</CODE>.  That same effect could have been achieved by first
+swapping <CODE>[P]</CODE> and <CODE>[Q]</CODE> around, so that
+<CODE>[P]</CODE> is on top, and then executing the <CODE>b</CODE>
+combinator.  This is expressed in the left law below.  The right law
+says the same thing, and it shows another way in which the
+<CODE>b</CODE> combinator could have been defined.
+
+<PRE>
+        dip  i   ==   swap  b           b   ==   swap  dip  i
+                                        b   ==   swap  dip  dup  dip  pop
+</PRE>
+<P>
+Function composition is associative, and hence the following holds:
+<PRE>
+        [P]  [Q]  b  [R]  i   ==   [P]  i  [Q]  [R]  b
+</PRE>
+
+To eliminate the three quotations from this equation observe that they
+can be written on the left of both sides provided that the
+<CODE>b</CODE> combinator and the <CODE>i</CODE> combinator are
+applied appropriately.  For the left side this is easy:
+
+<PRE>
+        [P]  [Q]  b  [R]  i   ==   [P]  [Q]  [R]  [b] dip i
+</PRE>
+
+For the right side it is a little harder since the <CODE>i</CODE>
+combinator has to be applied to <CODE>[P]</CODE> which is obscured not
+by one but two other quotations.  The <CODE>dip</CODE> combinator has
+to be used on itself in this case, as follows:
+
+<PRE>
+        [P]  i  [Q]  [R]  b   ==   [P]  [Q]  [R]  [[i] dip]  dip  b
+</PRE>
+
+Combining the two right hand sides and cancelling the common three
+quotations we obtain the following to expressing the associativity of
+function composition:
+
+<PRE>
+        [b]  dip  i   ==   [[i] dip]  dip  b
+</PRE>
+
+In this law we can even replace the <CODE>i</CODE> combinator and the
+<CODE>b</CODE> combinator in accordance with earlier definitions:
+
+<PRE>
+        [swap  dip  dup  dip  pop]  dip  dup  dip  pop
+   ==   [[dup  dip  pop]  dip]  dip  swap  dip  dup  dip  pop
+</PRE>
+
+It is possible to cancel the final <CODE>pop</CODE> on both sides, but
+it is not possible to cancel the prefinal <CODE>dip</CODE> on both
+sides.  This unlikely law also expresses the associativity of function
+composition.  But the most elegant way of expressing the associativity
+is by using a variant of the <CODE>dip</CODE> combinator, called
+<KBD>dipd</KBD>, which might be defined by
+
+<PRE>
+        dipd   ==   [dip]  cons  dip
+</PRE>
+Then the associativity can be expressed by
+<PRE>
+        [b]  dip  i   ==   [i]  dipd  b
+</PRE>
+
+(<A HREF="refs.html#{Henson87}">{Henson87}</A> criticises presentations of FP-systems, originally due to
+<A HREF="refs.html#{Backus78}">{Backus78}</A> in that they give no law to this effect although they use
+it in proofs.)
+
+<P>
+
+The combination of the <CODE>dip</CODE> combinator immediately
+followed by the <CODE>i</CODE> combinator is sometimes useful for
+arranging the top few elements on the stack in a form that is suitable
+for executing a quoted program <CODE>[P]</CODE> that is at the top of
+the stack.
+
+<P> 
+
+This is how it is done: first another quoted program
+<CODE>[Q]</CODE> is pushed, and executed using the <CODE>dip</CODE>
+combinator.  This will save and restore the <CODE>[P]</CODE>, but
+arrange the stack in accordance with <CODE>[Q]</CODE>.  Then the
+restored <CODE>[P]</CODE> is executed by the <CODE>i</CODE>
+combinator.  Depending on the <CODE>[Q]</CODE> that is chosen, the
+three part combination of <CODE>[Q]</CODE>, the <CODE>dip</CODE>
+combinator and the <CODE>i</CODE> combinator will prepare the stack
+for the execution of <CODE>[P]</CODE>.
+
+<P>
+
+Since such a combination still requires the <CODE>[P]</CODE> on the
+stack, any such combination has the effect of a combinator.  The
+following illustrate some simple choices of <CODE>[Q]</CODE> that are
+sometimes useful.  The names of these combinators have been chosen
+because of their similarity to the <EM>K combinator</EM>, <EM>W
+combinator</EM> and the <EM>C combinator</EM> in <EM>combinatory
+logic</EM>.
+
+<PRE>
+        k   ==   [pop]  dip  i
+        w   ==   [dup]  dip  i
+        c   ==   [swap] dip  i
+</PRE>
+
+<H1>More general laws</H1>
+
+Suppose that there is a quoted program <CODE>[P]</CODE> on top of the
+stack.  This could now be executed by some combinator, say
+<CODE>C</CODE>.  Alternatively, one could push the quotation
+<CODE>[C]</CODE> and then use the <CODE>cons</CODE> operator to insert
+the earlier <CODE>[P]</CODE> into the later quotation, and this
+produces <CODE>[[P] C]</CODE>.  This of course may be executed by the
+<CODE>i</CODE> combinator.  When that happens the inner
+<CODE>[P]</CODE> is pushed, thus partly undoing the <CODE>cons</CODE>
+operation.  But then <CODE>C</CODE> will be executed.  The net effect
+is the same as the earlier alternative.  So we have: For all operators
+or combinators <CODE>C</CODE>
+
+<PRE>
+        [C]  cons  i   ==   C
+</PRE>
+
+It should be remarked that this theorem also holds for operators, say
+<CODE>O</CODE>, instead of combinators <CODE>C</CODE>.
+
+<P>
+
+Again suppose that there is a quoted program <CODE>[P]</CODE> on top
+of the stack.  It could be executed by some combinator <CODE>C</CODE>,
+or one could do this: push the quotation <CODE>[i]</CODE>,
+<CODE>cons</CODE> the earlier <CODE>[P]</CODE> into that and now
+execute <CODE>C</CODE>.  The <CODE>cons</CODE> operation produced
+<CODE>[[P] i]</CODE> and when this is executed by <CODE>C</CODE>, the
+inner <CODE>[P]</CODE> is pushed partly undoing the <CODE>cons</CODE>.
+Then the <CODE>i</CODE> combinator actually executes this.  The net
+effect is that of just executing <CODE>C</CODE>.  Hence for all
+combinators <CODE>C</CODE>
+
+<PRE>
+        [i]  cons  C   ==   C
+</PRE>
+<P>
+
+The two laws above may be combined: for all combinators C
+
+<PRE>
+        [i]  cons  C   ==   [C]  cons  i
+</PRE>
+<P>
+
+So far we have only encountered one combinator which takes two quoted
+parameters - the <CODE>b</CODE> combinator.  But Joy has a large
+number of combinators which take two, three or even four quoted
+parameters.  The following concerns combinators which expect at least
+two quoted programs as parameters.  For such combinators the first
+three laws holds unchanged, but these variations also hold:
+
+<PRE>
+        [i]  cons  cons  C   ==   C
+        [C]  cons  cons  i   ==   C
+        [i]  cons  cons  C   ==   [C]  cons cons  i
+</PRE>
+
+The principle generalises to combinators with at least three quoted
+parameters, by allowing three <CODE>cons</CODE> operations to occur.
+
+<P>
+
+Finally, the second law generalises to all parameters of a combinator:
+any one parameter <CODE>[P]</CODE> can be replaced by <CODE>[[P]
+i]</CODE>.  The replacement can of course be constructed by
+<CODE>cons</CODE>ing <CODE>[P]</CODE> into <CODE>[i]</CODE>.  That of
+course may be done for all quotation parameters.  If there is just the
+one parameter <CODE>[P]</CODE>, then <CODE>cons</CODE>ing it into
+<CODE>[i]</CODE> to produce <CODE>[[P] i]</CODE> is easy enough, as in
+the second law.
+
+<P>
+
+If there are two parameters <CODE>[P]</CODE> and <CODE>[Q]</CODE> it
+already becomes tedious to change them to <CODE>[[P] i]</CODE> and
+<CODE>[[Q] i]</CODE>.  If there are three or more quotation
+parameters, then the program to produce the three changes could be
+rather obscure.
+
+<P>
+
+Joy has a combinator which can use a function to <KBD>map</KBD> the
+elements of a list to a list of the same length containing the results
+of applying the function.  Several special forms take as a parameter
+not an arbitrary list but a specified number of one, two, three and so
+on elements from the stack.  These are the <KBD>app1</KBD> combinator,
+the <KBD>app2</KBD> combinator, the <KBD>app3</KBD> combinator and so
+on.  These are just the right combinators to produce the changes
+required for the parameters of a combinator.  The following laws hold
+for combinators <CODE>C1</CODE>, <CODE>C2</CODE> and <CODE>C3</CODE>
+requiring one, two or three quotation parameters:
+
+<PRE>
+        [[i] cons]  app1  C1   ==   C1
+        [[i] cons]  app2  C2   ==   C2
+        [[i] cons]  app3  C3   ==   C3
+</PRE>
+To illustrate for a combinator C3:
+<PRE>
+         [P]      [Q]      [R]    [[i] cons]  app3  C3
+   ==   [[P] i]  [[Q] i]  [[R] i]                   C3
+   ==    [P]      [Q]      [R]                      C3
+</PRE>
+
+Computationally it is of course pointless to replace a quotation such
+as <CODE>[P]</CODE> by <CODE>[[P] i]</CODE> if the quotations are
+being used as parameters for a combinator.  But the replacements are
+invaluable in a Joy interpreter written in Joy.  This interpreter is
+essentially a complex combinator, appropriately called <KBD>joy</KBD>,
+and it has to behave just like the <CODE>i</CODE> combinator.  In the
+definition of the <CODE>joy</CODE> combinator, the implementation of
+all combinators uses the above mapping combinators but with
+<CODE>[[joy] cons]</CODE> instead of <CODE>[[i] cons]</CODE>.
+
+<H1>Elimination of Definitions</H1>
+
+One of the problems of large pieces of software concerns the
+complexity of interdependent parts and the need to make interfaces
+lean.  To some extent this is a matter of information hiding, and
+programming languages achieve this in various ways.  Most have local
+symbols such as formal parameters of functions and local program
+variables of procedures.  Many have full block structure allowing
+declarations of functions and procedures to be nested and hence
+invisible from the outside.  Some have modules or other compilation
+units which allow further information hiding in larger program
+components.  Joy approaches the problem in a different way -- the
+information that needs to be hidden is minimised in the first place.
+Mostly the problem arises from declarations of named functions and
+procedures and their named formal parameters.
+
+<P>
+
+There are several reasons why one might want to declare
+a function, because
+<OL>
+<LI> it requires recursion, or
+<LI> it is needed in several seemingly unrelated places in a program, or
+<LI> it makes the program clearer.
+</OL>
+
+
+<P>
+
+The third reason is always valid.  In Joy the second reason is much
+less compelling, and the first has almost no force at all.
+
+<P>
+
+Joy has a large number of combinators which permit computation of
+anonymous functions which are normally defined recursively.  It also
+has combinators that permit repeated calls of such functions in some
+related patterns.  Joy programs which use suitable combinators to
+allow the computation of anonymous functions with anonymous formal
+parameters.
+
+<P>
+
+Consider the following recursive definition and use of the
+<EM>factorial</EM> function in a (fantasy) functional language:
+
+<PRE>
+    LET  factorial(n)  =  if n = 0 then 1 else n * factorial(n - 1)
+     IN  factorial(5)
+</PRE>
+
+The call in the second line should return <CODE>120</CODE>.  Joy has a
+number of ways of doing essentially the same computation without
+introducing the <EM> name</EM> <CODE>factorial</CODE> and without
+introducing the <EM> name</EM> of the formal parameter <CODE>n</CODE>.
+Several of these ways are still modelled on the recursive definition
+and have approximately the same length.  Two of them are based on the
+fact that the definition has the pattern of <EM>linear recursion</EM>,
+indeed <EM>primitive recursion</EM>.  As in all languages the use of
+<EM>accumulating parameter</EM>s can avoid the recursion altogether,
+but that is not the point here.
+
+<P>
+
+The humble <CODE>i</CODE> and <CODE>dip</CODE> combinators were
+certainly not designed for recursion, so it will come as a surprise
+that they can be used to emulate recursion without naming the function
+or its formal parameter.  To make the recursion possible, every call
+of the anonymous function must be able to access itself again, and
+this is done by giving it its own body as a quoted parameter on the
+top of the stack.  This is achieved by always duplicating the quoted
+body first and then using the <CODE>i</CODE> combinator to execute the
+duplicate.  The <CODE>dip</CODE> combinator can be used to access the
+stack below the quoted body.  The only other combinator needed is the
+<CODE>ifte</CODE> combinator which achieves the same kind of two-way
+branching as the <CODE>if-then-else</CODE> in the conventional
+definition above.
+
+<P>
+This is the program:
+<PRE>
+1           5
+2           [  [pop  0  =]
+3              [pop  pop  1]
+4              [  [dup  1  -]  dip
+5                 dip  i
+6                 *  ]
+7              ifte  ]
+8           dup  i
+</PRE>
+<P>
+
+The line numbers are only included for reference.  Execution begins in
+line 1 by pushing the actual parameter <CODE>5</CODE> onto the stack.
+Then the long quotation extending from line 2 to line 7 is pushed onto
+the stack.  This quotation is the body of the function, it corresponds
+to the right hand side of the conventional definition.  Execution
+continues in line 8 where the long quotation is duplicated and the top
+copy is executed by the <CODE>i</CODE> combinator.  This execution has
+the effect of pushing the two short quotations in lines 2 and 3 and
+also the longer quotation in lines 4 to 6.  So at this point the stack
+contains the parameter <CODE>5</CODE> and above that four quotations.
+
+<P>
+
+But now the <CODE>ifte</CODE> combinator in line 7 executes.  It pops
+the last three quotations and saves them elsewhere.  Then it executes
+the if-part, the saved quotation from line 2.  That will pop what is
+now the top of the stack, the body of the function from lines 2 to 7.
+This exposes the number which is the parameter, and it is compared
+with <CODE>0</CODE>.
+
+<P>
+
+The comparison will yield a truth value which the <CODE>ifte</CODE>
+combinator will use to determine whether to execute the saved
+then-part from line 3 or the saved else-part from lines 4 to 6.  In
+either case the stack is first restored to what it was before the
+if-part was executed: the quoted body of the function is again on top
+of the stack and below it is the actual parameter for this particular
+call.  If the most recent comparison by the if-part was true, then the
+saved then-part from line 3 is executed.
+
+<P>
+
+This results in the body and the actual parameter being popped off the
+stack and replaced by <CODE>1</CODE>, the factorial of <CODE>0</CODE>.
+On the other hand, if the most recent comparison was false, then the
+saved else-part from lines 4 to 6 is executed.  For the later
+multiplication the parameter has to be duplicated and the top
+duplicate has to be decremented.  Since the body of the function is in
+the way, the duplicating and decrementing is done via the
+<CODE>dip</CODE> combinator in line 4.
+
+<P>
+
+At this point the top three elements on the stack are the original
+parameter for this call, then the decremented duplicate, and right on
+top of that the quoted body of the function.  It is now necessary to
+compute the factorial of the decremented duplicate, and this call may
+need access to the body again.  So the body cannot be simply executed
+by the <CODE>i</CODE> combinator, but first the body is duplicated in
+line 5 and then the duplicate is executed by the <CODE>i</CODE>
+combinator.  Execution of that duplicate body will eventually
+terminate, and then the top two elements will be the original
+parameter and the factorial of what was its decremented duplicate.
+The two numbers are now multiplied in line 6, yielding the required
+factorial of the parameter for this call.  This completes the
+execution of the else-part from lines 4 to 6.  Irrespective of whether
+the then-part or the else-part was executed, the execution of the
+<CODE>ifte</CODE> combinator is now complete.
+
+<P>
+
+This completes the execution of the body of the function in lines 2 to
+7.  It also completes the execution of whichever occurrence of the
+<CODE>i</CODE> combinator in lines 5 or 8 triggered this execution of
+the body.  Ultimately the execution of the <CODE>i</CODE> combinator
+in line 8 will have completed, and at this point the parameter
+<CODE>5</CODE> from line 1 will have been replaced by its factorial
+<CODE>120</CODE> as required.
+
+<P>
+
+Two short comments are in order: Firstly, the <EM> description</EM> of
+the program was given in an imperative or procedural mode which is
+psychologically helpful.  But this does not change the fact that all
+Joy programs and all their parts denote functions.  Secondly, the
+program can be written using only the <CODE>dip</CODE> combinator and
+the <CODE>ifte</CODE> combinator by substituting <CODE>dup dip
+pop</CODE> for the two calls of the <CODE>i</CODE> combinator in lines
+5 and 8.
+
+<P>
+
+Of course this program is a <EM> tour de force</EM>, it is ugly and
+inefficient.  With more suitable combinators much crisper and more
+efficient programs can be written.  In particular, the repeated
+pushing and saving of the quoted if-part, then-part and else-part is
+not necessary.  Also, the repeated duplication of the quoted body is
+not necessary, and consequently the three parts do not have to work
+around the quoted body when it is in the way on the top.  In fact, the
+essence of the if-part and most of the else-part are built into the
+<KBD>primrec</KBD> combinator for primitive recursion.  The entire
+program then is
+
+<PRE>
+        5  [1]  [*]  primrec
+</PRE>
+
+As mentioned before, even the use of recursion can be eliminated in
+favour of a more efficient loop combinator which uses an accumulating
+parameter.
+
+<H1>Summary</H1>
+
+This paper has attempted to explain the theoretical foundations of the
+language Joy.  Much of the semantics is summarised by observing that
+the following are true:
+
+<PRE>
+        2  3  +   ==   7  2 -
+        dup  +   ==   2  *
+        dip  i   ==   swap  b
+</PRE>
+
+The first <EM> seems</EM> to express the identity of numbers.  The
+second <EM> seems</EM> to express the identity of functions which both
+double a given number which they expect on the stack.  The third <EM>
+seems</EM> to express the identity of functionals, or second order
+functions which take two first order functions as parameter and
+compose them.
+
+<P>
+
+While these readings are sometimes helpful, the unity of Joy semantics
+really forces a different interpretation.  All three equations express
+identity of Joy functions which take one argument stack and yield one
+value stack.
+
+<P> 
+
+The mathematical discipline of <EM>category theory</EM> deals with
+functions of one arguments.  All Joy functions are of that kind, too.
+In fact all monoids are special cases of categories, so Joy's
+syntactic monoid of concatenation and Joy's semantic monoid of
+function composition are categories.  So some fundamental connections
+should be expected.  In particular, Joy is related to Cartesian closed
+categories, and to the "Combinatory Abstract Machine" <EM>CAM</EM>,
+see for example <A HREF="refs.html#{Poigne92}">{Poigne92}</A>.
+
+<P>
+
+The paper 
+<A HREF="J00OVR.HTML">
+j00ovr </A>
+contains an overview of Joy and references to other
+papers dealing with specific aspects of Joy.
+
+<HR>
