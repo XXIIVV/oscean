@@ -100,7 +100,7 @@
 
 <img src="../media/generic/uxn.team.png" style="margin:0 auto 30px" width="250">
 
-<p>We push the absolute address of the label <kbd>@hello-world</kbd> to the stack, which points to a series of characters in memory. A hexadecimal or label value pushed to the stack in this fashion is called a <b>literal</b>, as opposed to a value stored in memory. Next, we jump to the <kbd>@print-text</kbd> subroutine, and leave a return address onto the return stack.</p>
+<p>We push the <b>absolute address</b>, made of two bytes, of the label <kbd>@hello-world</kbd> to the stack, which points to a series of characters in memory. A hexadecimal number or label pushed to the stack in this fashion is called a <b>literal</b>, as opposed to a value stored in memory. Next, we jump to the <kbd>@print-text</kbd> subroutine, and leave a return address onto the return stack.</p>
 
 <p>Both <kbd>&while</kbd> and <kbd>@while</kbd> are ways to define <b>labels</b>, but using <code>&while</code> will automatically prefix our new label with the name of the last <code>@label</code>, in this example <code>print-text/while</code>. </p>
 
@@ -117,9 +117,11 @@
 	<tr><td><code>!</code></td><td>jmi</td><td><code>?</code></td><td>jci</td></tr>
 </table>
 
-<p>Next, the <kbd>LDAk</kbd> opcode takes two bytes at the top of the stack to form an absolute address, and puts the value in memory found at that address to the top of the stack, in this case, the ASCII value of the letter H. That value is sent to Console/write(port #18) which prints that character to the terminal.</p>
+<p>Next, the <kbd>LDAk</kbd> opcode takes the absolute address on the stack, and loads the byte in memory found at that address to the top of the stack, in this case, the <a href='ascii.html'>ASCII</a> value of the letter H. That value is sent to the device port #18, defined by our Console enum, which prints that character to the terminal.</p>
 
-<p>We increment the absolute address found on top of the stack with <kbd>INC2</kbd>, because the address is made of two bytes. We load the incremented value, next we do a conditional jump with <kbd>?&while</kbd> for as long as the item on the stack is not zero. We complete the program with <kbd>POP2</kbd> to remove the address on the stack, to keep the stack clean at the end of the program.</p>
+<p>We increment the absolute address found on top of the stack with <kbd>INC2</kbd>, because the address is made of two bytes. We load the incremented value, next we do a conditional jump with <kbd>?&while</kbd> for as long as the item on the stack is not zero. We use <kbd>POP2</kbd> to remove the address on the stack and keep the stack clean at the end of the subroutine.</p>
+
+<p>Lastly, we encounter <kbd>JMP2r</kbd> which jumps to the absolute address that we left on the return stack when we entered the <kbd>@print-text</kbd> subroutine.</p>
 
 <h2>Immediate opcodes</h2>
 
