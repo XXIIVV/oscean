@@ -11,48 +11,27 @@
 
 <p>The immediate jump opcodes are slightly faster than their standard opcode counterparts, but do not have modes and cannot be used to do stack arithmetic. The address value of the immediate opcodes are stored in memory as relative shorts, enabling routines making use of these opcodes to be moved around in the program's memory.</p>
 
-<p>Quoting is the act of <a href='https://limited.systems/articles/uxntal-quoting/' target='_blank'>deferring an operation</a>, for example, the following code will instantly put the resulting value of <code>0d</code> on the stack:</p>
+<p>Quoting is the act of <a href='https://limited.systems/articles/uxntal-quoting/' target='_blank'>deferring an operation</a>, for example, a program that can do either <code>odd()</code> or <code>even()</code>, could use <kbd>JMP2</kbd> to <i>unquote</i> a function pointer passed via the stack:</p>
 
-<pre>#06 #07 ADD</pre>
+<table border='1' width='100%'>
+	<tr>
+		<td><pre>
+@fn ( odd* even* v -- )
 
-<p>If we instead <i>quote</i> the ADD opcode with <kbd>LIT</kbd>, it will remain on the stack as a value and will not immediately compute the result:</p>
+	#01 AND
+	JMP SWP2 POP2
 
-<pre>#06 #07 LIT ADD</pre>
-
-<p>The opcode can then be <i>unquoted</i>, or utilized, when needed by using the following <kbd>STR</kbd> pattern, which effectively pulls the opcode from the stack and writes it at the next address in memory:</p>
-
-<pre>#00 STR $1</pre>
-
-<p>In the following example, in which we apply a <code>print-byte</code> function over each item of an array, we use <kbd>JSR2</kbd> to <i>unquote</i> the function that was passed via the stack:</p>
-
-<pre>
-|0100 ( -> )
-
-	;array ;print-byte apply POP2
-
-BRK
-
-@apply ( arr* fn* -- arr* )
-
-	,&fn STR2
-	LDA2k OVR2 INC2 INC2
-	&loop
-		[ LIT2 &fn $2 ] JSR2
-		INC2 GTH2k ?&loop
-	POP2 POP2
-
-JMP2r
-
-@print-byte ( addr* -- addr* )
-
-	LDAk DUP #04 SFT #0a18 DEO print-char
-
-@print-char ( char -- )
-
-	#0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO
-
-JMP2r
-
-@array =&end 0a 0b 0c 0d 0e 0f &end
-</pre>
+JMP2</pre></td>
+<td><pre>
+void
+fn(void (*even)(), void (*odd)(), char v)
+{
+	if(value & 1)
+		return odd();
+	else
+		return even();
+}
+</pre></td>
+	</tr>
+</table>
 
