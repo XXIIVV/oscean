@@ -1,6 +1,6 @@
 <h2>Uxntal syntax</h2>
 
-<p>Uppercased opcodes are reserved words, hexadecimal values are always lowercased. Comments are within parentheses, curlies are used in the definition of macros, and the square brackets are ignored.</p>
+<p>Uppercased opcodes are reserved words, hexadecimal bytes and shorts are always lowercase. Comments are within parentheses, and the square brackets are ignored.</p>
 
 <iframe src="../etc/uxnrepl/index.html" frameborder="0" style='overflow:hidden; height:400px; margin-bottom:15px'></iframe>
 
@@ -13,7 +13,7 @@
 
 <img src="../media/generic/uxn.team.png" style="margin:0 auto 30px" width="250">
 
-<p>Next, we push the address of the <kbd>@print-text</kbd> routine, jump to it while also leaving a return address onto the return stack.</p>
+<p>Next, we jump to the <kbd>@print-text</kbd> subroutine, while also leaving a return address onto the return stack.</p>
 
 <p>Both <kbd>&while</kbd> and <kbd>@while</kbd> are ways to define labels, but using <code>&while</code> will automatically prefix our new label with the name of the last <code>@label</code>, in this example <code>print-text/while</code>. </p>
 
@@ -32,5 +32,13 @@
 
 <p>Next, the <kbd>LDAk</kbd> opcode takes two bytes at the top of the stack to form an absolute address, and puts the value in memory found at that address to the top of the stack, in this case, the ASCII value of the letter H. That value is sent to Console/write(port #18) which prints that character to the terminal.</p>
 
-<p>We increment the absolute address found on top of the stack with <kbd>INC2</kbd>, because the address is made of two bytes. We load the incremented value, the <kbd>JCN</kbd> opcode will jump to the position of label <kbd>&while</kbd> for as long as the item on the stack not zero. We complete the program with <kbd>POP2</kbd> to remove the address on the stack, to keep the stack clean at the end of the program.</p>
+<p>We increment the absolute address found on top of the stack with <kbd>INC2</kbd>, because the address is made of two bytes. We load the incremented value, we then do a conditional jump with <kbd>?&while</kbd> for as long as the item on the stack is not zero. We complete the program with <kbd>POP2</kbd> to remove the address on the stack, to keep the stack clean at the end of the program.</p>
+
+<p>In a program, a number that will be pushed on the stack is called a <i>literal</i>. The various ways to write literals is as follow:</p>
+
+<table border="1">
+	<tr><td></td><th>Byte</th><th>Char</th><th>Relative</th><th>ZeroPage</th><th>Absolute*</th><th>Short*</th></tr>
+	<tr><td><i>Literal</i></td><td><code>#ab</code></td><td></td><td><code>,label</code></td><td><code>.label</code></td><td><code>;label</code></td><td><code>#abcd</code></td></tr>
+	<tr><td><i>Raw</i></td><td><code>ab</code></td><td><code>"Q</code></td><td><code>_label</code></td><td><code>-label</code></td><td><code>=label</code></td><td><code>abcd</code></td></tr>
+</table>
 
