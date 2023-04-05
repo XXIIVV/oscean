@@ -2,7 +2,6 @@
 
 function Console(emu)
 {
-	this.buffer = ""
 	this.write_el = null
 	this.error_el = null
 
