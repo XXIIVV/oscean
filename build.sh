@@ -5,27 +5,21 @@ LIN="uxncli $HOME/roms/uxnlin.rom"
 
 if [[ "$*" == *"--lint"* ]]
 then
-	echo "Linting.."
 	$LIN src/maeve.tal
 	$LIN src/oscean.tal
 	$LIN src/arvelie.tal
 fi
 
-echo "Assembling -------------------"
-rm -rf bin
-mkdir -p bin
+mkdir -p bin && rm bin/*
+
 $ASM src/maeve.tal bin/maeve.rom
 $ASM src/oscean.tal bin/oscean.rom
 $ASM src/arvelie.tal bin/arvelie.rom
 
-echo "Parsing ----------------------"
-rm -rf tmp
-mkdir -p tmp
-uxncli bin/maeve.rom
+mkdir -p tmp && rm tmp/*
+mkdir -p site && rm site/*
 
-echo "Building ---------------------"
-rm -rf site
-mkdir -p site
+uxncli bin/maeve.rom
 uxncli bin/oscean.rom
 uxncli bin/arvelie.rom
 
