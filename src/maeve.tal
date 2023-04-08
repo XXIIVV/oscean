@@ -86,11 +86,9 @@ JMP2r
 	w-link
 	;li-tag </w>
 	#0a w-chr
-	( next line )
+	( eol )
 
-	!scap
-
-( >> )
+!scap
 
 @parse-links ( src* -- )
 
@@ -165,17 +163,17 @@ JMP2r
 	( eol )
 	scap INC2
 	scap INC2
-	!scap
 
-( .. )
+!scap
+
 
 @parse-log ( event* -- )
 
 	DUP2 #000a ADD2 make-path-tmp .File2/name DEO2
 	w-str
-	#0a !w-chr
+	#0a
 
-( .. )
+!w-chr
 
 @parse-event ( event* -- )
 
@@ -206,9 +204,9 @@ JMP2r
 	scap INC2
 	( name ) w-str
 	;br-tag <w/>
-	#0a !w-chr
+	#0a
 
-( .. )
+!w-chr
 	&last "17 $1
 
 @parse-photo ( photo* -- )
@@ -235,9 +233,9 @@ JMP2r
 		;figcaption-tag </w>
 	;figure-tag </w>
 	,&len LDR2 INC2 ,&len STR2
-	#0a !w-chr
+	#0a
 
-( .. )
+!w-chr
 
 @make-path-tmp ( name* -- path* )
 
@@ -295,9 +293,9 @@ JMP2r
 
 	( find next diary )
 	#f400 #f001
-	&loop
+	&l
 		LDAk #00 EQU ?&end
-		INC2 GTH2k ?&loop
+		INC2 GTH2k ?&l
 		&end
 	NIP2
 	#f000 SUB2
@@ -308,11 +306,11 @@ JMP2r
 
 	,&t STR2
 	;lexicon
-	&while
+	&w
 		( name ) INC2 INC2
 		( test ) DUP2 [ LIT2 &t $2 ] scmp ?&end
 		( eol ) &eol INC2 LDAk ?&eol INC2
-		LDAk ?&while
+		LDAk ?&w
 	POP2 #0000
 	&end
 
@@ -326,12 +324,12 @@ JMP2r
 	#00 prev-char INC2
 	( stash depth ) LDAk chex #01 SUB STH
 	;lexicon SWP2
-	&loop
+	&l
 		#0001 SUB2 #00 prev-char
 		INC2k LDA chex STHkr NEQ ?&continue
 			NIP2 POPr INC2 INC2 INC2 JMP2r
 			&continue
-		LTH2k ?&loop
+		LTH2k ?&l
 	( pop depth ) POPr
 	#0002
 
@@ -340,10 +338,10 @@ JMP2r
 @prev-char ( addr* char -- addr* )
 
 	STH
-	&while
+	&w
 		LDAk STHkr EQU ?&end
 		LDAk #00 EQU ?&end
-		#0001 SUB2 LDAk ?&while
+		#0001 SUB2 LDAk ?&w
 	&end
 		POPr
 
@@ -356,27 +354,27 @@ JMP2r
 
 	LIT "< w-chr
 	w-str
-	LIT "> !w-chr
+	LIT ">
 
-( .. )
+!w-chr
 
 @</w> ( name* -- )
 
 	LIT "< w-chr
 	LIT "/ w-chr
 	w-str
-	LIT "> !w-chr
+	LIT ">
 
-( .. )
+!w-chr
 
 @<w/> ( name* -- )
 
 	LIT "< w-chr
 	w-str
 	LIT "/ w-chr
-	LIT "> !w-chr
+	LIT ">
 
-( .. )
+!w-chr
 
 @w-img ( src* alt* )
 
@@ -384,9 +382,9 @@ JMP2r
 	w-str
 	;&b w-str
 	w-str
-	;&c !w-str
+	;&c
 
-( .. )
+!w-str
 	&a "<img 20 "alt=" $1
 	&b "" 20 "src="../media/diary/ $1
 	&c ".jpg"/> $1
@@ -397,9 +395,9 @@ JMP2r
 	DUP2 w-path
 	;&b w-str
 	w-str
-	;&c !w-str
+	;&c
 
-( .. )
+!w-str
 	&a "<a 20 "href=' $1
 	&b ".html'> $1
 	&c "</a> $1
@@ -452,13 +450,13 @@ JMP2r
 
 @cswp ( str* a b -- )
 
-	STH STH
-	&while
-		LDAk STHkr NEQ ?&continue
-			DUP2 OVRr STHr ROT ROT STA
+	,&b STR ,&a STR
+	&w
+		LDAk [ LIT &a $1 ] NEQ ?&continue
+			STH2k [ LIT &b $1 ] STH2r STA
 			&continue
-		INC2 LDAk ?&while
-	POP2 POP2r
+		INC2 LDAk ?&w
+	POP2
 
 JMP2r
 
