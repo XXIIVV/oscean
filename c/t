@@ -1,1 +1,0 @@
-<a href="" target="_blank"></a>
