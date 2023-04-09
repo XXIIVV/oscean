@@ -32,7 +32,20 @@
 
 <p><a href='subleq.html'>Subleq</a> is a <i>One-Instruction</i> architecture, an emulator for this platform takes at most 15 minutes to write. Perhaps this could be an interesting target, but what it does away in emulation complexity, it offloads onto the toolchain needed to make intelligible programs.</p>
 
-<p>So, let us also set a limit to the complexity of the toolchain as to not find ourselves in a <a href='https://esolangs.org/wiki/Turing_tarpit' target='_blank'>tarpit</a>. It would be an equally Herculean task to build an <b>emulator and assembler</b> for a machine with thousands of instructions; or a single instruction machine building abstract logic from thousands of primitive parts. How complex can an assembler be if the maximum amount of time one could use to write it is a single afternoon, or <a href='drifblim.html'>at most 500 lines</a>.</p>
+<p>So, let us also set a limit to the complexity of the toolchain as to not find ourselves in a <a href='https://esolangs.org/wiki/Turing_tarpit' target='_blank'>tarpit</a>. It would be an equally Herculean task to build an <b>emulator and assembler</b> for a machine with thousands of instructions; or a single instruction machine building abstract logic from thousands of primitive parts. How complex can an assembler be if the maximum amount of time one could use to write it is a single weekend, or <a href='drifblim.html'>at most 500 lines</a>.</p>
+
+<pre>
+<b>LIT</b> ~ [PC]     <b>JCI</b> ~ (c8){PC+=[PC]}   <b>JMI</b> ~ {PC+=[PC]}   <b>JSI</b> ~ {R.PC PC+=[PC]}
+
+<b>BRK</b> ~          <b>EQU</b> a b==c             <b>LDZ</b> a b [c8]       <b>ADD</b> a b+c
+<b>INC</b> a b c+1    <b>NEQ</b> a b!=c             <b>STZ</b> a {[c8]=b}     <b>SUB</b> a b-c
+<b>POP</b> a b        <b>GTH</b> a b&gt;c              <b>LDR</b> a b [PC+c8]    <b>MUL</b> a b*c
+<b>NIP</b> a c        <b>LTH</b> a b&lt;c              <b>STR</b> a {[PC+c8]=b}  <b>DIV</b> a b/c
+<b>SWP</b> a c b      <b>JMP</b> a b {PC+=c}        <b>LDA</b> a b [c16]      <b>AND</b> a b&c
+<b>ROT</b> b c a      <b>JCN</b> a (b8){PC+=c}      <b>STA</b> a {[c16]=b}    <b>ORA</b> a b|c
+<b>DUP</b> a b c c    <b>JSR</b> a b {R.PC PC+=c}   <b>DEI</b> a b {[D+c8]}   <b>EOR</b> a b^c
+<b>OVR</b> a b c b    <b>STH</b> a b {R.c}          <b>DEO</b> a {[D+c8]=b}   <b>SFT</b> a b&gt;&gt;c8l&lt;&lt;c8h
+</pre>
 
 <p>We shall call this definition of a computer that fits on a napkin, capable of self-hosting in a few hundred lines of its own assembly &mdash; <b><i>A One-page Computer</i></b>.</p>
 
@@ -44,6 +57,8 @@
 
 <p>In 1977, a programmer wrote a small virtual machine with <a href='chip8.html'>36 instructions</a>, 16 registers and 4096 bytes of memory. It has no mouse, the screen is barely capable of displaying readable text, its controller is a nightmare. &mdash; But I was able to write an emulator and an assembler for it, in an afternoon.</p>
 
+<img src='../media/refs/ma.gif' style='float:right; margin-left:30px; width:100px'/>
+
 <p>There is a type of electronics relevant to emulation that <a href='https://excamera.com/sphinx/fpga-j1.html'>has no chips</a>, no instruction set, but instead the programmer designs the hardware circuit in software. As much fun as it would be to create a design that maps well onto these machines, it would make for a poor emulation on my existing devices as it would use nearly none of the optimizations available on the host computer. </p>
 
 <p>Somewhere along this voyage into finding a suitable host for my programs, I began thinking about <a href='collapse.html'>electronic waste</a>, and I couldn't justify surrounding myself with <a href='salvage_computing.html'>yet more electronics</a>. This dream platform would therefore be designed to be emulated, its complexity would be designed around the complexity of software and not that of hardware.</p>
@@ -52,11 +67,11 @@
 
 <p>The balancing act of virtual machine instructions, assembler, emulator and the resulting capabilities of its language revealed the stack machines as ideal systems. </p>
 
-<p><a href='forth.html'>Forth</a> is a programming language that consists simply of splitting text into a list of words, breaking on whitespace, and to interpret each word, words are often combinations of other words combined to create more complex words.</p>
-
 <img src="../media/refs/swap.png" alt="Swap operation by Leo Brodie">
 
-<p>Brackets and parentheses are unnecessary: the program merely performs calculations in the order that is required, letting the automatic stack store intermediate results on the fly for later use. Likewise, there is no requirement for precsedence rules.</p>
+<p><a href='forth.html'>Forth</a> is a programming language that consists simply of splitting text into a list of words, breaking on whitespace, and to interpret each word, words are often combinations of other words combined to create more complex words.</p>
+
+<p>Brackets and parentheses are unnecessary: the program merely performs calculations in the order that is required, letting the automatic stack store intermediate results on the fly for later use. Likewise, there is no requirement for precedence rules.</p>
 
 <p>In Forth, memory is made of cells, which are typically <a href='binary.html'>16-bits in length</a>, meaning that each piece of data is a number from 0 to 65535. For this specific imaginary system, I wanted the memory to consist of cells of 8-bit, or numbers from 0 to 255. For example, the <code>12 / (34 - 12)</code> sequence is equivalent to the 6 bytes:</p>
 
@@ -65,19 +80,5 @@ uxn    |    #12 #34 OVR SUB DIV
 binary | a0  12  34  07  19  1b
 </pre>
 
-<p>Using stack-machine operations as primitives, along with a handful of arithmetic and bitwise helpers, we approach a comfortable 32 opcodes, leaving 3 bits in a byte for little extras, or the following one-page computer:</p>
+<p>Using stack-machine operations as primitives, along with a handful of arithmetic and bitwise functions, we find the resulting <a href='uxn.html'>virtual machine</a> with a comfortable 32 opcodes, leaving 3 bits in a byte for <a href='uxntal_modes.html'>little extras</a>.</p>
 
-<pre>
-<b>80</b> a b c M[PC+1] <b>08</b> a b?c             <b>10</b> a b M[c8]      <b>18</b> a b+c
-<b>01</b> a b c+1       <b>09</b> a b!c             <b>11</b> a {M[c8]=b}    <b>19</b> a b-c
-<b>02</b> a b           <b>0a</b> a b&gt;c             <b>12</b> a b M[PC+c8]   <b>1a</b> a b*c
-<b>03</b> a c           <b>0b</b> a b&lt;c             <b>13</b> a {M[PC+c8]=b} <b>1b</b> a b/c
-<b>04</b> a c b         <b>0c</b> a b {PC+=c}       <b>14</b> a b M[c16]     <b>1c</b> a b&c
-<b>05</b> b c a         <b>0d</b> a {(b8)PC+=c}     <b>15</b> a {M[c16]=b}   <b>1d</b> a b|c
-<b>06</b> a b c c       <b>0e</b> a b {rs.PC PC+=c} <b>16</b> a b D[c8]      <b>1e</b> a b^c
-<b>07</b> a b c b       <b>0f</b> a b {rs.c}        <b>17</b> a {D[c8]=b}    <b>1f</b> a b&gt;&gt;c8l&lt;&lt;c8h
-
-<b>2x</b> a16 b16+c16   <b>4x</b> a b c {rs.b+rs.c} <b>8x</b> a b c b+c
-</pre>
-
-<p>Continue reading, the <a href='varvara_devlog.html'>Varvara Devlog</a>..</p>
