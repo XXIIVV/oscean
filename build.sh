@@ -1,25 +1,27 @@
 #!/bin/sh -e
 
-ASM="uxncli $HOME/roms/drifblim.rom"
-LIN="uxncli $HOME/roms/uxnlin.rom"
+set -o nounset # Fails when accessing an unset variable.
+set -o errexit # Exits if a command exits with a non-zero status.
 
-if [[ "$*" == *"--lint"* ]]
-then
-	$LIN src/maeve.tal
-	$LIN src/oscean.tal
-	$LIN src/arvelie.tal
-fi
+roms_dir=${UXN_ROMS_DIR-"$HOME/roms"}
+asm="uxncli $roms_dir/drifblim.rom"
+emu="uxncli"
+lin="uxncli $roms_dir/uxnlin.rom"
+
+case "$*" in *--lint*)
+	$lin src/maeve.tal
+	$lin src/oscean.tal
+	$lin src/arvelie.tal
+;; esac
 
 mkdir -p bin && rm bin/*
-
-$ASM src/maeve.tal bin/maeve.rom
-$ASM src/oscean.tal bin/oscean.rom
-$ASM src/arvelie.tal bin/arvelie.rom
-
 mkdir -p tmp && rm tmp/*
 mkdir -p site && rm site/*
 
-uxncli bin/maeve.rom
-uxncli bin/oscean.rom
-uxncli bin/arvelie.rom
+$asm src/maeve.tal bin/maeve.rom
+$asm src/oscean.tal bin/oscean.rom
+$asm src/arvelie.tal bin/arvelie.rom
 
+$emu bin/maeve.rom
+$emu bin/oscean.rom
+$emu bin/arvelie.rom
