@@ -115,25 +115,17 @@
 
 <p>The screen is made of two independent layers. The foreground layer treats the first system color as transparent.</p>
 
-The <b>pixel byte</b> defines the layer to draw on, and the color of the pixel.</p>
+The <b>pixel byte</b> is used to paint a single pixel or fill a quadrant of the screen, it defines the layer to draw on, and the color of the pixel. When the fill bit is active, the operation will fill a portion of the screen starting at the x,y position until the edge. The default quadrant is bottom-right, flipping the x bit will fill the buttom-left quadrant.</p>
 
 <pre>
-          * L * * * * C1 C0
-            |         |  +---- Color bit 0
-Layer ------+         +------- Color bit 1
+          F L Y X * * C1 C0
+Fill -----+ | | |     |  +---- Color bit 0
+Layer ------+ | |     +------- Color bit 1
+Flip Y -------+ |
+Flip X ---------+
 </pre>
 
-<p>Assuming the system colors are (in order) white, black, teal, and red, to draw a single teal pixel on the foreground, at the position 20,30:</p>
-
-<pre>
-@paint-pixel
-	#0020 .Screen/x DEO2 <span style='float:right; color:#888'>( set x position )</span>
-	#0030 .Screen/y DEO2 <span style='float:right; color:#888'>( set y position )</span>
-	#42 .Screen/pixel DEO <span style='float:right; color:#888'>( draw with color 2 on fg )</span>
-JMP2r
-</pre>
-
-<p>The screen can draw 8x8 sprites by first writing an <code>addr*</code> which points to either <a href='icn_format.html'>1-bit</a> or <a href='chr_format.html'>2-bit</a> sprite data in memory. Sprite data is stored as 8 bytes for a 1-bit sprite, and 16 bytes for a 2-bits sprite. The <b>sprite byte</b> defines the 1-bit or 2-bit mode, the layer to draw on, optional horizontal and vertical flipping, and the colors to use.</p> 
+<p>The <b>sprite byte</b> defines the 1-bit or 2-bit mode, the layer to draw on, optional horizontal and vertical flipping, and the colors to use. The screen can draw 8x8 sprites by first writing an <code>addr*</code> which points to either <a href='icn_format.html'>1-bit</a> or <a href='chr_format.html'>2-bit</a> sprite data in memory. Sprite data is stored as 8 bytes for a 1-bit sprite, and 16 bytes for a 2-bits sprite. </p> 
 
 <pre>
            M L Y X B3 B2 B1 B0
