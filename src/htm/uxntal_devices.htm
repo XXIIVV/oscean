@@ -1,8 +1,31 @@
 <h2>Uxntal Devices</h2>
 
-<p>Uxn can communicate with 16 devices at once, each device has 16 ports, each port handles a specific I/O message. Ports are mapped to the devices memory page, which is located outside of the main addressable memory.</p>
+<p>Uxn can communicate with a maximum of 16 devices, each device has 16 ports, each port handles a specific I/O message. Ports are mapped to the devices memory page, which is located outside of the main addressable memory.</p>
 
-<p><b>Uxn is non-interruptible</b>, vectors are locations in programs that are evaluated when certain events occur. A vector is evaluated until a BRK opcode is encountered, no new events will be triggered while a vector is evaluated, but events may be queued. Only one vector is executed at a time. The content of the stacks are preserved between vectors.</p>
+<p>Uxn is non-interruptible, <b>vectors</b> are locations in programs that are evaluated when certain events occur. A vector is evaluated until a BRK opcode is encountered, no new events will be triggered while a vector is evaluated, but events may be queued. All programs begin by executing the <i>reset vector</i> located at <code>0x100</code>. Only one vector is executed at a time. The content of the stacks are preserved between vectors.</p>
+
+<pre>
+|0100
+
+	<i>( set a vector )</i>
+	;on-mouse .Mouse/vector DEO2
+
+BRK
+
+@on-mouse ( -> )
+
+	<i>( read mouse state )</i>
+	.Mouse/state DEI ?&on-touch BRK 
+
+&on-touch ( -> )
+
+	<i>( A mouse button was pressed )</i>
+
+BRK
+</pre>
 
 <p>For example, the address stored in the <code>Mouse/vector</code> port points to a part of the program to be evaluated when the cursor is moved, or a button state has changed. </p>
 
+<style>
+pre i { color: #777 }
+</style>
