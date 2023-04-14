@@ -8,7 +8,7 @@
 
 <p><b>Vectors</b> are ports holding an address in memory to evaluate when a device event is triggered, such as when the mouse is moved, or a key is pressed.</p>
 
-<p><b>Masks</b> are values in which each bit correspond to a port in a device, the device mask tells the emulator when to trigger a device event, such as drawing a pixel or playing a sound.</p>
+<p><b>Masks</b> are shorts in which each bit correspond to one of the 16 ports in a device, the device mask tells the emulator when to trigger a device event, such as drawing a pixel or playing a sound. They are drawn in black in the follow tables.</p>
 
 <img src='../media/generic/uxn.comfy.png' width='250' style='float: right;margin: 0px auto 30px'/>
 
@@ -26,8 +26,6 @@
 
 <p>The two reserved devices can be used for implementation specific features that do not need to be part of the specs, or other Uxn/Varvara instances.</p>
 
-<p>A <b id='mask'>device mask</b>, is a short in which each bit represent one of the sixteen devices, and each toggled bit represents a required device to run a rom, for more details, see <a href='metadata.html'>metadata</a>.</p>
-
 <h3 id='system'>System Device <kbd>mask 0xff08</kbd></h3>
 
 <p>The System device is used to control the execution of a varvara program.</p>
@@ -40,26 +38,79 @@
 	<tr><th>01</th><th class='bg1'>09</th></tr>
 	<tr><th>02</th><td rowspan='2'>Expansion*</td><th class='bg1'>0a</th><td rowspan="2">green*</td></tr>
 	<tr><th class='bg1'>03</th><th class='bg1'>0b</th></tr>
-	<tr><th>04</th><td rowspan='2'>title*</td><th class='bg1'>0c</th><td rowspan="2">blue*</td></tr>
+	<tr><th>04</th><td rowspan='2'></td><th class='bg1'>0c</th><td rowspan="2">blue*</td></tr>
 	<tr><th>05</th><th class='bg1'>0d</th></tr>
 	<tr><th>06</th><td rowspan='2'>metadata*</td><th class='bg1'>0e</th><td>debug</td></tr>
 	<tr><th>07</th><th class='bg1'>0f</th><td>state</td></tr>
 </table>
 
-<p>The <code>halt*</code> vector is evaluated when uxn errors. If the vector is unset, the emulator handles the error, if an address in found in the halt port, the vector is evaluated. In that scenario, stacks are emptied, a short of the address where the error occured, a byte of the instruction that errored, and a byte for the error code are put on the working stack.</p>
+<p>The <b>halt*</b> vector is evaluated when uxn errors. If the vector is unset, the emulator handles the error, if an address in found in the halt port, the vector is evaluated. In that scenario, stacks are emptied, a short of the address where the error occured, a byte of the instruction that errored, and a byte for the error code are put on the working stack.</p>
 
-<p>The address in <code>title*</code> points to text, which may be printed as the emulator window title. The address in <code>metadata*</code> points to text that contains <a href='metadata.html'>metadata</a> about the rom.</p>
+<pre>
+int
+uxn_halt(Uxn *u, Uint8 instr, Uint8 err, Uint16 addr)
+{
+	Uint8 *d = &u->dev[0x00];
+	Uint16 handler = PEEK2(d);
+	if(handler) {
+		u->wst.ptr = 4;
+		u->wst.dat[0] = addr >> 0x8;
+		u->wst.dat[1] = addr & 0xff;
+		u->wst.dat[2] = instr;
+		u->wst.dat[3] = err;
+		return uxn_eval(u, handler);
+	} else {
+		system_inspect(u);
+		fprintf(stderr, "%s %s, by %02x at 0x%04x.\n", (instr & 0x40) ? "Return-stack" : "Working-stack", errors[err - 1], instr, addr);
+	}
+	return 0;
+}
+</pre>
 
-<p>This device is holding 3 shorts to be used for application customization. For a device that does not use a screen, these bytes may be used for speech controls, or other system globals, for simplicity we call them the Red*, Green* and Blue* shorts.</p>
-
-<p>Sending a non-null byte to the <code>0x0e</code> port will print the content of the stacks or pause the evaluation if the emulator includes a step-debugger. Sending a non-null byte to the <code>0x0f</code> port will terminate the application, on systems that can handle exit codes, the error code is the 0x7f portion of the byte.</p>
-
-<p>The <code>expansion*</code> port allows to do special memory management operations, it expects an address to an operation. This is used mostly by larger roms that want to keep assets outside of addressable range. An example operation is in the following format:</p>
+<p>The <b>expansion*</b> port allows to do special memory management operations, it expects an address to an operation. This is used mostly by larger roms that want to keep assets outside of addressable range. An example operation is in the following format:</p>
 
 <table border='1'>
 	<tr><th>name</th><th>operation</th><th colspan='6'>fields</th></tr>
 	<tr><th>copy</td><td>01</td><td>length*</td><td>src page*</td><td>src addr*</td><td>dst page*</td><td>dst addr*</td></tr>
 </table>
+
+<pre>
+static void
+system_cmd(Uint8 *ram, Uint16 addr)
+{
+	if(ram[addr] == 0x01) {
+		Uint16 i, length = PEEK2(ram + addr + 1);
+		Uint16 a_page = PEEK2(ram + addr + 1 + 2), a_addr = PEEK2(ram + addr + 1 + 4);
+		Uint16 b_page = PEEK2(ram + addr + 1 + 6), b_addr = PEEK2(ram + addr + 1 + 8);
+		int src = (a_page % RAM_PAGES) * 0x10000, dst = (b_page % RAM_PAGES) * 0x10000;
+		for(i = 0; i < length; i++)
+			ram[dst + (Uint16)(b_addr + i)] = ram[src + (Uint16)(a_addr + i)];
+	}
+}</pre>
+
+<p>Sending a non-null byte to the <b>debug</b> port will print the content of the stacks or pause the evaluation if the emulator includes a step-debugger.</p>
+
+<p>Sending a non-null byte to the <b>state</b> port will terminate the application, on systems that can handle exit codes, the error code is the 0x7f portion of the byte. So, <code>0x01</code> terminates the program with an error, and <code>0x80</code> terminates the program succesfully.</p>
+
+<p>The <b>metadata*</b> port allows points the emulator to <a href='metadata.html'>metadata</a> about the rom. The emulator can choose to utilize this information to update the window name.</p>
+
+<table border='1' style='float:right;margin-left:15px'>
+	<tr><th>0</th><th>1</th><th>2</th><th>3</th></tr>
+	<tr>
+		<td style='background:#fff'>#fff</td>
+		<td style='background:#000;color:white'>#000</td>
+		<td style='background:#7ec'>#7ec</td>
+		<td style='background:#f00'>#f00</td>
+	</tr>
+</table>
+
+<p>This device is holding 3 shorts to be used for application customization, for simplicity we call them the <b>Red*</b>, <b>Green*</b> and <b>Blue*</b> shorts. These colors are typically used by the <a href='#screen'>screen device</a> to form four application colors.</p>
+
+<pre>
+#f07f .System/r DEO2
+#f0e0 .System/g DEO2
+#f0c0 .System/b DEO2
+</pre>
 
 <h3 id='console'>Console Device <kbd>mask 0x0300</kbd></h3>
 
@@ -77,17 +128,29 @@
 	<tr><th>17</th><td class='empty'>--</td><th>1f</th><td class='empty'>--</td></tr>
 </table>
 
-<p>The console device is the standard I/O device, it allows for communication between programs on the host computer. The console vector triggers when a stdio event occurs.</p>
+<p>The console <b>vector*</b> is evaluated when a byte is received. An example program to read the value of the byte:</p>
 
 <pre>
-#41 .Console/write DEO <span style='float:right; color:#888'>( to send the letter "A" )</span>
+|10 @Console &vector $2 &read $1 &pad $5 &write $1 &error $1
+
+|0100 @on-reset ( -> )
+
+	;on-console .Console/vector DEO2
+
+BRK
+
+@on-console ( -> )
+
+	.Console/read DEI <i>( puts the byte value on the working stack )</i>
+
+BRK
 </pre>
 
-<p>To send data from one Uxn to another, when using a <a href='unix.html'>Unix</a> host, use the following pattern:</p>
+<p>The <b>write</b> port is used to send data through the console, For example, a program sending the line of text "hello", will trigger the console's vector 6 times; one for each character and a line ending character.</p>
 
-<pre>uxnemu orca.rom | uxnemu piano.rom</pre>
-
-<p>For example, a program sending the line of text "hello", will trigger the console's vector 6 times; one for each character and a line ending character. </p>
+<pre>
+LIT "H .Console/write DEO <i>( to send the letter "H" )</i>
+</pre>
 
 <h3 id='screen'>Screen Device <kbd>mask 0xc028</kbd></h3>
 
@@ -107,11 +170,9 @@
 	<tr><th>27</th><td class='empty'>--</td><th class='bg1'>2f</th><td>sprite</td></tr>
 </table>
 
-<p>The screen device is capable of displaying 2-bit graphics with the 4 system colors defined by the <a href='#system'>system</a> device. Drawing to the screen is done by writing to the <code>pixel</code> port which draws a single pixel on the screen, or the <code>sprite</code> port which can draw many pixels at once.</p>
+<p>The console <b>vector*</b> is evaluated 60 times per second. The screen device is capable of displaying 2-bit graphics with the 4 system colors defined by the <a href='#system'>system</a> device. The screen is made of two independent layers. The foreground layer treats color0 as transparent.</p>
 
-<p>The screen is made of two independent layers. The foreground layer treats the first system color as transparent.</p>
-
-The <b>pixel byte</b> defines the pixel or fill mode, the layer to draw on, optional horizontal and vertical flipping for the fill, and the color to use. When the fill bit is active, the operation will fill a portion of the screen starting at the x,y position until the edge. The default quadrant is bottom-right, flipping the x bit will fill the buttom-left quadrant.</p>
+<p>The <b>pixel byte</b> defines the pixel or fill mode, the layer to draw on, optional horizontal and vertical flipping for the quadrant to fill, and the color to use. When the fill bit is active, the operation will fill a portion of the screen starting at the x,y position until the edges of the screen. The default quadrant is bottom-right, flipping the x bit will fill the buttom-left quadrant, and so on.</p>
 
 <pre>
           M L Y X * * C1 C0
@@ -121,7 +182,23 @@ Flip Y -------+ |
 Flip X ---------+
 </pre>
 
-<p>The <b>sprite byte</b> defines the 1-bit or 2-bit mode, the layer to draw on, optional horizontal and vertical flipping, and the colors to use. The screen can draw 8x8 sprites by first writing an <code>addr*</code> which points to either <a href='icn_format.html'>1-bit</a> or <a href='chr_format.html'>2-bit</a> sprite data in memory. Sprite data is stored as 8 bytes for a 1-bit sprite, and 16 bytes for a 2-bits sprite. </p> 
+<pre>
+static void
+screen_fill(UxnScreen *p, Layer *layer, Uint16 x1, Uint16 y1, Uint16 x2, Uint16 y2, Uint8 color)
+{
+	int x, y;
+	if(x2 >= p->width) x2 = p->width;
+	if(y2 >= p->height) y2 = p->height;
+	if(x1 >= x2 || y1 >= y2)
+		return;
+	for(y = y1; y < y2; y++)
+		for(x = x1; x < x2; x++)
+			layer->pixels[x + y * p->width] = color;
+	layer->changed = 1;
+}
+</pre>
+
+<p>The <b>sprite byte</b> defines the 1-bit or 2-bit mode, the layer to draw on, optional horizontal and vertical flipping, and the colors to use. The screen can draw 8x8 sprites by first writing an <code>addr*</code> which points to either <a href='icn_format.html'>1-bit</a> or <a href='chr_format.html'>2-bit</a> sprite data in memory. Sprite data is stored as 8 bytes for a 1-bit sprite, and 16 bytes for a 2-bits sprite. To find the color for each pixel in a sprite, you can use the following formula, or use a table.</p> 
 
 <pre>
            M L Y X B3 B2 B1 B0
@@ -131,9 +208,36 @@ Flip Y --------+ | |  +---------- Blending bit 2
 Flip X ----------+ +------------- Blending bit 3
 </pre>
 
-<p>The low nibble defines the blending, i.e., which color to use for each value of the sprite data. The following table presents all possible blendings, assuming a sprite has a background of value 0 and three concentric circles of values 1, 2, and 3 (counting from the outside). For 1-bit sprites, only values 0 and 1 are applicable.</p>
+<pre>
+/* c = !ch ? (color % 5 ? color >> 2 : 0) : color % 4 + ch == 1 ? 0 : (ch - 2 + (color & 3)) % 3 + 1; */
 
-<table border='1'>
+static Uint8 blending[4][16] = {
+	{0, 0, 0, 0, 1, 0, 1, 1, 2, 2, 0, 2, 3, 3, 3, 0},
+	{0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3},
+	{1, 2, 3, 1, 1, 2, 3, 1, 1, 2, 3, 1, 1, 2, 3, 1},
+	{2, 3, 1, 2, 2, 3, 1, 2, 2, 3, 1, 2, 2, 3, 1, 2}};
+
+static void
+screen_blit(UxnScreen *p, Layer *layer, Uint16 x, Uint16 y, Uint8 *sprite, Uint8 color, Uint8 flipx, Uint8 flipy, Uint8 twobpp)
+{
+	int v, h, opaque = (color % 5) || !color;
+	for(v = 0; v < 8; v++) {
+		Uint16 c = sprite[v] | (twobpp ? (sprite[v + 8] << 8) : 0);
+		for(h = 7; h >= 0; --h, c >>= 1) {
+			Uint8 ch = (c & 1) | ((c >> 7) & 2);
+			if(opaque || ch)
+				screen_pixel(p,
+					layer,
+					x + (flipx ? 7 - h : h),
+					y + (flipy ? 7 - v : v),
+					blending[ch][color]);
+		}
+	}
+	layer->changed = 1;
+}
+</pre>
+
+<table border='1' style='float:right;margin-left:15px'>
 	<tr>
 		<th>0</th><td></td>
 		<th>4</th><td><svg xmlns="http://www.w3.org/2000/svg" class='sprite bg1'><circle cx="10" cy="10" r="8" class='fg0'/><circle cx="10" cy="10" r="6" class='fg1'/><circle cx="10" cy="10" r="4" class='fg2'/></svg></td>
@@ -160,17 +264,7 @@ Flip X ----------+ +------------- Blending bit 3
 	</tr>
 </table>
 
-<pre>
-@paint-sprite
-	#0020 .Screen/x DEO2 <span style='float:right; color:#888'>( set x position )</span>
-	#0030 .Screen/y DEO2 <span style='float:right; color:#888'>( set y position )</span>
-	;sprite .Screen/addr DEO2 <span style='float:right; color:#888'>( set addr )</span>
-	#03 .Screen/sprite DEO <span style='float:right; color:#888'>( draw 1-bit with blending 3 on bg )</span>
-JMP2r
-
-@sprite
-	0f38 675f dfbf bfbf
-</pre>
+<p>The low nibble of the sprite byte defines the blending mode, meaning which color to use for each value of the sprite data. The following table presents all possible blendings, assuming a sprite has a background of value 0 and three concentric circles of values 1, 2, and 3 (counting from the outside). For 1-bit sprites, only values 0 and 1 are applicable.</p>
 
 <img src='../media/generic/varvara.blending.png' />
 
