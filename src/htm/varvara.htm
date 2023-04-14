@@ -183,19 +183,25 @@ Flip X ---------+
 </pre>
 
 <pre>
-static void
-screen_fill(UxnScreen *p, Layer *layer, Uint16 x1, Uint16 y1, Uint16 x2, Uint16 y2, Uint8 color)
-{
-	int x, y;
-	if(x2 >= p->width) x2 = p->width;
-	if(y2 >= p->height) y2 = p->height;
-	if(x1 >= x2 || y1 >= y2)
-		return;
-	for(y = y1; y < y2; y++)
-		for(x = x1; x < x2; x++)
-			layer->pixels[x + y * p->width] = color;
+/* fill mode */
+if(d[0xe] & 0x80) {
+	Uint8 xflip = d[0xe] & 0x10;
+	Uint8 yflip = d[0xe] & 0x20;
+	Uint16 x1 = xflip ? 0 : x;
+	Uint16 y1 = yflip ? 0 : y;
+	Uint16 x2 = xflip ? x : uxn_screen.width;
+	Uint16 y2 = yflip ? y : uxn_screen.height;
+	screen_fill(&uxn_screen, layer, x1, y1, x2, y2, color);
 	layer->changed = 1;
 }
+/* pixel mode */
+else {
+	screen_pixel(&uxn_screen, layer, x, y, color);
+	layer->changed = 1;
+	if(d[0x6] & 0x1) POKE2(d + 0x8, x + 1); /* auto x+1 */
+	if(d[0x6] & 0x2) POKE2(d + 0xa, y + 1); /* auto y+1 */
+}
+break;
 </pre>
 
 <p>The <b>sprite byte</b> defines the 1-bit or 2-bit mode, the layer to draw on, optional horizontal and vertical flipping, and the colors to use. The screen can draw 8x8 sprites by first writing an <code>addr*</code> which points to either <a href='icn_format.html'>1-bit</a> or <a href='chr_format.html'>2-bit</a> sprite data in memory. Sprite data is stored as 8 bytes for a 1-bit sprite, and 16 bytes for a 2-bits sprite. To find the color for each pixel in a sprite, you can use the following formula, or use a table.</p> 
