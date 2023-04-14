@@ -184,19 +184,22 @@ Flip X ---------+
 
 <pre>
 Uint8 ctrl = d[0xe];
+Uint8 color = ctrl & 0x3;
 /* fill mode */
 if(ctrl & 0x80) {
 	Uint16 x2 = uxn_screen.width;
 	Uint16 y2 = uxn_screen.height;
-	if (ctrl & 0x10) x = 0, x2 = x;
-	if (ctrl & 0x20) y = 0, y2 = y;
+	if(ctrl & 0x10) x = 0, x2 = x;
+	if(ctrl & 0x20) y = 0, y2 = y;
 	screen_fill(&uxn_screen, layer, x, y, x2, y2, color);
 	layer->changed = 1;
 }
 /* pixel mode */
 else {
-	if(x < p->width && y < p->height)
-		layer->pixels[x + y * p->width] = color;
+	Uint16 width = uxn_screen.width;
+	Uint16 height = uxn_screen.height;
+	if(x < width && y < height)
+		layer->pixels[x + y * width] = color;
 	layer->changed = 1;
 	if(d[0x6] & 0x1) POKE2(d + 0x8, x + 1); /* auto x+1 */
 	if(d[0x6] & 0x2) POKE2(d + 0xa, y + 1); /* auto y+1 */
