@@ -4,7 +4,7 @@
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
 <nav><ul><li><a href="oisc.html">oisc</a></li><li><a href="brainfuck.html">brainfuck</a></li><li><a href="chip8.html">chip8</a></li><li><a href="turquoise.html">turquoise</a></li><li><a href="uxn.html" class="parent">uxn</a></li><li><a href="orca.html">orca</a></li></ul><ul><li><a href="uxntal.html">uxntal</a></li><li><a href="varvara.html" class="self">varvara</a></li></ul><ul><li><a href="varvara_tutorial.html">varvara tutorial</a></li><li><a href="drifblim.html">drifblim</a></li><li><a href="beetbug.html">beetbug</a></li></ul></nav><main><figure><img alt="The Sound Of Plumpkins" src="../media/diary/776.jpg"/><figcaption>The Sound Of Plumpkins</figcaption></figure><h2>Varvara is a clean-slate computing stack based on the Uxn CPU.</h2>
 
-<p>This personal computer system, built on top of the <a href='uxn.html'>Uxn</a> virtual machine, was designed to run audio and visual applications. To see a list of compatible software, see <a href='roms.html'>roms</a>, and the <a href='https://github.com/hundredrabbits/awesome-uxn' target='_blank'>community projects</a>.</p>
+<p>This personal computer system, built on top of the <a href='uxn.html'>Uxn</a> virtual machine, was designed to run audio and visual applications. To see a list of compatible software, see <a href='roms.html'>roms</a>, and the <a href='https://github.com/hundredrabbits/awesome-uxn' target='_blank'>community projects</a>. If you are implementing your own Varvara emulator, you can find a series of roms to test your devices implementations <a href='https://git.sr.ht/~rabbits/uxn/tree/main/item/projects/examples/devices' target='_blank'>here</a>.</p>
 
 <p style='background: #eee; padding: 15px;'>While this project aspires to act as a target that may last, it is in its infancy, the design could still change and break compatibility.</p>
 
@@ -186,30 +186,6 @@ Flip Y -------+ |
 Flip X ---------+
 </pre>
 
-<pre>
-Uint8 ctrl = d[0xe];
-Uint8 color = ctrl & 0x3;
-/* fill mode */
-if(ctrl & 0x80) {
-	Uint16 x2 = uxn_screen.width;
-	Uint16 y2 = uxn_screen.height;
-	if(ctrl & 0x10) x2 = x, x = 0;
-	if(ctrl & 0x20) y2 = y, y = 0;
-	screen_fill(&uxn_screen, layer, x, y, x2, y2, color);
-	layer->changed = 1;
-}
-/* pixel mode */
-else {
-	Uint16 width = uxn_screen.width;
-	Uint16 height = uxn_screen.height;
-	if(x < width && y < height)
-		layer->pixels[x + y * width] = color;
-	layer->changed = 1;
-	if(d[0x6] & 0x1) POKE2(d + 0x8, x + 1); /* auto x+1 */
-	if(d[0x6] & 0x2) POKE2(d + 0xa, y + 1); /* auto y+1 */
-}
-</pre>
-
 <p>The <b>sprite byte</b> defines the 1-bit or 2-bit mode, the layer to draw on, optional horizontal and vertical flipping, and the colors to use. The screen can draw 8x8 sprites by first writing an <code>addr*</code> which points to either <a href='icn_format.html'>1-bit</a> or <a href='chr_format.html'>2-bit</a> sprite data in memory. Sprite data is stored as 8 bytes for a 1-bit sprite, and 16 bytes for a 2-bits sprite. To find the color for each pixel in a sprite, you can use the following formula, or use a table.</p> 
 
 <pre>
@@ -218,35 +194,6 @@ else {
  Layer ------+ | | |  |  +------- Blending bit 1
 Flip Y --------+ | |  +---------- Blending bit 2
 Flip X ----------+ +------------- Blending bit 3
-</pre>
-
-<pre>
-/* c = !ch ? (color % 5 ? color >> 2 : 0) : color % 4 + ch == 1 ? 0 : (ch - 2 + (color & 3)) % 3 + 1; */
-
-static Uint8 blending[4][16] = {
-	{0, 0, 0, 0, 1, 0, 1, 1, 2, 2, 0, 2, 3, 3, 3, 0},
-	{0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3},
-	{1, 2, 3, 1, 1, 2, 3, 1, 1, 2, 3, 1, 1, 2, 3, 1},
-	{2, 3, 1, 2, 2, 3, 1, 2, 2, 3, 1, 2, 2, 3, 1, 2}};
-
-static void
-screen_blit(UxnScreen *p, Layer *layer, Uint16 x, Uint16 y, Uint8 *sprite, Uint8 color, Uint8 flipx, Uint8 flipy, Uint8 twobpp)
-{
-	int v, h, opaque = (color % 5) || !color;
-	for(v = 0; v < 8; v++) {
-		Uint16 c = sprite[v] | (twobpp ? (sprite[v + 8] << 8) : 0);
-		for(h = 7; h >= 0; --h, c >>= 1) {
-			Uint8 ch = (c & 1) | ((c >> 7) & 2);
-			if(opaque || ch)
-				screen_pixel(p,
-					layer,
-					x + (flipx ? 7 - h : h),
-					y + (flipy ? 7 - v : v),
-					blending[ch][color]);
-		}
-	}
-	layer->changed = 1;
-}
 </pre>
 
 <table border='1' style='float:right;margin-left:15px'>
@@ -278,7 +225,17 @@ screen_blit(UxnScreen *p, Layer *layer, Uint16 x, Uint16 y, Uint8 *sprite, Uint8
 
 <p>The low nibble of the sprite byte defines the blending mode, meaning which color to use for each value of the sprite data. The following table presents all possible blendings, assuming a sprite has a background of value 0 and three concentric circles of values 1, 2, and 3 (counting from the outside). For 1-bit sprites, only values 0 and 1 are applicable.</p>
 
-<img src='../media/generic/varvara.blending.png' />
+<pre>
+c = !ch ? (color % 5 ? color >> 2 : 0) : color % 4 + ch == 1 ? 0 : (ch - 2 + (color & 3)) % 3 + 1;
+
+static Uint8 blending[4][16] = {
+	{0, 0, 0, 0, 1, 0, 1, 1, 2, 2, 0, 2, 3, 3, 3, 0},
+	{0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3},
+	{1, 2, 3, 1, 1, 2, 3, 1, 1, 2, 3, 1, 1, 2, 3, 1},
+	{2, 3, 1, 2, 2, 3, 1, 2, 2, 3, 1, 2, 2, 3, 1, 2}};
+</pre>
+
+<!-- <img src='../media/generic/varvara.blending.png' /> -->
 
 <p>The screen's <b>auto byte</b> automates the position and sprite address whenever a drawing command is sent, so the program does not need to manually move to the next sprite, or the next position. Pixel drawing will increment the positions by 1, and sprite drawing by either 8 or 16 depending on the mode.</p>
 
