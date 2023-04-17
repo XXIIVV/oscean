@@ -128,22 +128,12 @@ system_cmd(Uint8 *ram, Uint16 addr)
 	<tr><th>17</th><td>type</td><th>1f</th><td class='empty'>--</td></tr>
 </table>
 
-<p>The console <b>vector*</b> is evaluated when a byte is received, the type port indicates the source. There are currently 4 known types of console input: stdin(0), argument(2), argument-spacer(3), argument-end(4). An example program to read the value of the byte:</p>
+<p>The console <b>vector*</b> is evaluated when a byte is received. The type port holds one of 5 known types: stdin(0), no-queue(1), argument(2), argument-spacer(3), argument-end(4). During the reset vector, a program should be able to query the type port and get <kbd>0x1</kbd> when there is no arguments to be expected.</p>
 
 <pre>
-|10 @Console &vector $2 &read $1 &pad $5 &write $1 &error $1
-
-|0100 @on-reset ( -> )
-
-	;on-console .Console/vector DEO2
-
-BRK
-
-@on-console ( -> )
-
-	.Console/read DEI <i>( puts the byte value on the working stack )</i>
-
-BRK
+uxncli file.rom arg1 arg2
+                ^   ^^   ^
+                2   32   4
 </pre>
 
 <p>The <b>write</b> port is used to send data through the console, For example, a program sending the line of text "hello", will trigger the console's vector 6 times; one for each character and a line ending character.</p>
