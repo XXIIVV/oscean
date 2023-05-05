@@ -12,13 +12,9 @@
 <p>Also equivalent to the expression:</p>
 <pre>(cons owl (cons dog (cons cat nil)))</pre>
 
-<p>A translation into uxntal assembly would be something like the following, in which <code>POP2</code> is to get rid of the dangling pointer. This can obviously be made prettier with macros, but we'll keep things straightforward.</p>
+<p>A translation to uxntal assembly would be something like the following, in which <code>POP2</code> is to get rid of the dangling pointer. This can obviously be made prettier with macros, but we'll keep things straightforward.</p>
 <pre>
-;nil JSR2
-	;cat ;cons JSR2
-		;dog ;cons JSR2
-			;owl ;cons JSR2
-POP2
+nil ;cat cons ;dog cons ;owl cons POP2
 </pre>
 
 <h3>Creating a new list</h3>
@@ -36,41 +32,25 @@ JMP2r
 
 @nil ( -- list* )
 
-	,alloc JSR ;nil
+	alloc ;nil
 
 @cons ( list* fn* -- list* )
 
-	( car ) ,alloc JSR STH2k STA2
+	( car ) alloc STH2k STA2
 	( cdr ) STH2kr INC2 INC2 STA2
 	STH2r
 
 JMP2r
-</pre>
 
-<h3>Duplicate/Remove</h3>
+( values ) [
+	@cat =dict/cat :nil @dog =dict/dog :nil @bat =dict/bat :nil
+	@ant =dict/ant :nil @owl =dict/owl :nil @cow =dict/cow :nil ]
 
-<p>We can build new primitives to duplicate, remove and swap cells from the list:</p>
+@dict [
+	&cat "cat $1 &dog "dog $1 &bat "bat $1
+	&ant "ant $1 &owl "owl $1 &cow "cow $1 ]
 
-<pre>
-@pop ( list* -- list* )
-
-	INC2 INC2 LDA2
-
-JMP2r
-
-@dup ( list* -- list* )
-
-	LDA2k ,cons JSR
-
-JMP2r
-
-@swap ( list* -- list* )
-
-	LDA2k STH2 ,pop JSR LDA2k STH2 ,pop JSR
-	SWP2r
-	STH2r ,cons JSR STH2r ,cons JSR
-
-JMP2r
+@memory $4000
 </pre>
 
 <h3>Nesting two lists</h3>
@@ -78,43 +58,28 @@ JMP2r
 <p>You can make a list of lists, or nested lists, using the <code>@cons</code> routine with two cons cells from different lists.</p>
 
 <pre>
-( list1 )
-;nil JSR2
-	;cat ;cons JSR2
-		;dog ;cons JSR2
-			;owl ;cons JSR2
-( list2 )
-;nil JSR2
-	;ant ;cons JSR2
-		;bat ;cons JSR2
-			;cow ;cons JSR2
-( list3 list1 list2 )
-;nil JSR2
-	SWP2 ;cons JSR2
-		SWP2 ;cons JSR2
-;echo JSR2
-	</pre>
+nil ;cat cons ;dog cons ;owl cons
+nil ;ant cons ;bat cons ;cow cons
+nil SWP2 cons SWP2 cons
+	echo <i>( ( owl dog cat ) ( cow bat ant ) )</i>
+</pre>
 
 <h3>Joining two lists</h3>
 
 <p>Two lists of cons cells can be joined together into one by modifying the last pointer of the second list, and pointing it to the first one.</p>
 
 <pre>
-@last ( list* -- list* )
+@last ( list* -- cell* )
 
-	&w INC2 INC2 LDA2 LDA2k ;nil NEQ2 ,&w JCN #0004 ADD2
+	&w
+		INC2 INC2 LDA2 LDA2k ;nil NEQ2 ?&w
+	INC2 INC2
 
 JMP2r
 
 @join ( list-a* list-b* -- list-b* )
 
-	STH2k ,last JSR STA2 STH2r
-
-JMP2r
-
-@unwrap ( list* -- list* )
-
-	INC2k INC2 LDA2 SWP2 LDA2 STH2k ,last JSR INC2 INC2 STA2 STH2r
+	STH2k last INC2 INC2 STA2 STH2r
 
 JMP2r
 </pre>
@@ -122,11 +87,14 @@ JMP2r
 <h3>Finding the length</h3>
 
 <p>This routine will run through a list and return its length.</p>
+
 <pre>
 @length ( list* -- length* )
 
 	LIT2r 0000
-	&w INC2 INC2 INC2r LDA2 LDA2k ;nil NEQ2 ,&w JCN
+	&w
+		INC2 INC2 INC2r
+		LDA2 LDA2k ;nil NEQ2 ?&w
 	POP2 STH2r
 
 JMP2r
@@ -141,27 +109,29 @@ JMP2r
 
 	#2818 DEO #2018 DEO
 	&w
-		LDA2k INC2 INC2 LDA2 ;nil EQU2 ,&fn JCN
-			( list )
-			LDA2k ;echo JSR2 ,&resume JMP
-			&fn
-			LDA2k LDA2 ,print JSR #2018 DEO
+		LDA2k INC2 INC2 LDA2 ;nil EQU2 ?&value
+			( list ) LDA2k echo !&resume
+			&value LDA2k LDA2 pstr #2018 DEO
 		&resume
-		INC2 INC2 LDA2 LDA2k ;nil NEQ2 ,&w JCN
+		INC2 INC2 LDA2
+		LDA2k ;nil NEQ2 ?&w
 	POP2
 	#2918 DEO #2018 DEO
 
 JMP2r
 
-@print ( short* -- )
+@pstr ( str* -- )
 
-	SWP ,&byte JSR
-	&byte ( byte -- ) DUP #04 SFT ,&char JSR
-	&char ( char -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO
+	&w
+		LDAk #18 DEO
+		INC2 LDAk ?&w
+	POP2
 
 JMP2r
 </pre>
 
 <ul>
+	<li><a href='https://paste.sr.ht/~rabbits/17e0bc158c7219c83838b81c2980ab1ec2764087' target='_blank'>Complete source file</a></li>
 	<li><a href='https://git.sr.ht/~rabbits/ornithologics' target='_blank'>Ornithologics</a></li>
 </ul>
+
