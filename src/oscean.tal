@@ -91,7 +91,7 @@ JMP2r
 	;buff STH2k sclr
 	;&new-path STH2kr scpy
 	STH2kr scat
-	STH2kr #20 [ LIT "_ ] cswp
+	STH2kr [ LIT2 20 "_ ] cswp
 	( load )
 	STH2r .File/name DEO2
 	#1000 .File/length DEO2
@@ -110,7 +110,7 @@ JMP2r
 	;buff STH2k sclr
 	;&new-path STH2kr scpy
 	STH2kr scat
-	STH2kr #20 [ LIT "_ ] cswp
+	STH2kr [ LIT2 20 "_ ] cswp
 	( load )
 	STH2r .File/name DEO2
 	#1000 .File/length DEO2
@@ -207,21 +207,41 @@ JMP2r
 
 @build-page-body ( name* -- name* )
 
-	( origin ) ;write/head LDA2 STH2
-	[ ;htm-path OVR2 ;htm-ext make-path ] write-inc
-	( validate ) STH2r
+	( keep ptr before include ) ;write/head LDA2 STH2
+	;htm-path OVR2 ;htm-ext make-path write-inc
+	STH2r
 
-!validate-output
+@validate-output ( page* -- )
+
+	( look for redlinks )
+	&while
+		;href-attr OVR2 sseg #00 EQU ?&continue
+			( move to href ) #0006 ADD2
+			( strip relative ) LDAk [ LIT ". ] EQU ?&continue
+			( strip jumps ) LDAk [ LIT "# ] EQU ?&continue
+			( strip http* ) ;http-txt OVR2 sseg ?&continue
+			;buff sclr
+			DUP2 ;buff #002f mcpy
+			;buff [ LIT2 ". 00 ] cswp
+			;buff [ LIT2 "_ 20 ] cswp
+			( find term )
+			;buff find-term ORA ?&continue
+				;buff ;err/broken-link !print-error
+			&continue
+		INC2 LDAk ?&while
+	POP2
+
+JMP2r
 
 @build-page-module ( term* -- term* )
 
-	DUP2 #0001 SUB2 LDA LIT ", NEQ ?&no-album
+	DUP2 #0001 SUB2 LDA [ LIT ", ] NEQ ?&no-album
 		!build-module-album
 		&no-album
-	DUP2 #0001 SUB2 LDA LIT "; NEQ ?&no-portal
+	DUP2 #0001 SUB2 LDA [ LIT "; ] NEQ ?&no-portal
 		!build-module-portal
 		&no-portal
-	DUP2 #0001 SUB2 LDA LIT ": NEQ ?&no-archive
+	DUP2 #0001 SUB2 LDA [ LIT ": ] NEQ ?&no-archive
 		!build-module-archive
 		&no-archive
 
@@ -439,30 +459,8 @@ JMP2r
 	ROT2 STH2kr scat
 	SWP2 STH2kr scat
 	STH2kr scat
-	STH2kr #20 [ LIT "_ ] cswp
+	STH2kr [ LIT2 20 "_ ] cswp
 	STH2r
-
-JMP2r
-
-@validate-output ( page* -- )
-
-	( look for redlinks )
-	&while
-		;href-attr OVR2 sseg #00 EQU ?&continue
-			( move to href ) #0006 ADD2
-			( strip relative ) LDAk [ LIT ". ] EQU ?&continue
-			( strip jumps ) LDAk [ LIT "# ] EQU ?&continue
-			( strip http* ) ;http-txt OVR2 sseg ?&continue
-			;buff sclr
-			DUP2 ;buff #002f mcpy
-			;buff [ LIT ". ] #00 cswp
-			;buff [ LIT "_ ] #20 cswp
-			( find term )
-			;buff find-term ORA ?&continue
-				;buff ;err/broken-link !print-error
-			&continue
-		INC2 LDAk ?&while
-	POP2
 
 JMP2r
 
