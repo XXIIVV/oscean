@@ -160,18 +160,16 @@ JMP2r
 		DUP2 #0002 SUB2 LDA chex #00 EQU ?&no-siblings
 		( parents )
 		DUP2 #0002 SUB2 LDA chex #02 LTH ?&no-parents
-			DUP2 find-parent find-parent ,&build-children JSR POP2
+			DUP2 find-parent find-parent build-children POP2
 			&no-parents
 		( siblings )
-		DUP2 #0002 SUB2 LDA chex #01 LTH ?&no-siblings
-			DUP2 find-parent ,&build-children JSR POP2
+		DUP2 #0002 SUB2 LDA chex #00 EQU ?&no-siblings
+			DUP2 find-parent build-children POP2
 			&no-siblings
-		( children ) ,&build-children JSR
+		( children ) build-children
 	;nav-tag !write-close
 
-( .. )
-
-	&build-children ( name* -- name* )
+@build-children ( name* -- name* )
 
 		;ul-tag write-open
 		( stash depth ) DUP2k #0002 SUB2 LDA chex STH
@@ -280,7 +278,7 @@ JMP2r
 	&end
 	POP2 POPr
 	( restore diary )
-	DUP2 
+	DUP2
 
 !load-diary
 
@@ -623,7 +621,6 @@ JMP2r
 @scmp ( a* b* -- f ) STH2 &l LDAk LDAkr STHr ANDk #00 EQU ?&e NEQk ?&e POP2 INC2 INC2r !&l &e NIP2 POP2r EQU JMP2r
 @sseg ( a* b* -- f ) STH2 &l LDAk LDAkr STHr NEQ ?&e INC2k LDA #00 EQU ?&e INC2 INC2r !&l &e LDA LDAr STHr EQU JMP2r
 @sclr ( str* -- ) LDAk ?&w POP2 JMP2r &w STH2k #00 STH2r STA INC2 LDAk ?&w POP2 JMP2r
-
 @mclr ( src* len* -- ) OVR2 ADD2 SWP2 &l STH2k #00 STH2r STA INC2 GTH2k ?&l POP2 POP2 JMP2r
 @mcpy ( src* dst* len* -- ) SWP2 STH2 OVR2 ADD2 SWP2 &loop LDAk STH2kr STA INC2r INC2 GTH2k ?&loop POP2 POP2 POP2r JMP2r
 
