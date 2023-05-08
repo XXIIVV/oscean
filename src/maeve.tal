@@ -176,13 +176,6 @@ JMP2r
 
 @parse-event ( event* -- )
 
-	( add to parent topic )
-	( DUP2 #000a ADD2 find-term find-parent make-path-tmp .File2/name DEO2
-	DUP2
-		DUP2 w-str scap INC2 #09 w-chr
-		DUP2 w-str scap INC2 #09 w-chr
-		w-str #0a w-chr )
-
 	( add to calendar )
 	;calendar-path .File2/name DEO2
 
@@ -301,51 +294,6 @@ JMP2r
 
 JMP2r
 
-@find-term ( name* -- term* )
-
-	,&t STR2
-	;lexicon
-	&w
-		( name ) INC2 INC2
-		( test ) DUP2 [ LIT2 &t $2 ] scmp ?&end
-		( eol ) &eol INC2 LDAk ?&eol INC2
-		LDAk ?&w
-	POP2 #0000
-	&end
-
-JMP2r
-
-@find-parent ( term* -- parent* )
-
-	DUP2 #0002 SUB2 LDA chex ?&not-root
-		JMP2r
-		&not-root
-	#00 prev-char INC2
-	( stash depth ) LDAk chex #01 SUB STH
-	;lexicon SWP2
-	&l
-		#0001 SUB2 #00 prev-char
-		INC2k LDA chex STHkr NEQ ?&continue
-			NIP2 POPr INC2 INC2 INC2 JMP2r
-			&continue
-		LTH2k ?&l
-	( pop depth ) POPr
-	#0002
-
-JMP2r
-
-@prev-char ( addr* char -- addr* )
-
-	STH
-	&w
-		LDAk STHkr EQU ?&end
-		LDAk #00 EQU ?&end
-		#0001 SUB2 LDAk ?&w
-	&end
-		POPr
-
-JMP2r
-
 (
 @|framework )
 
@@ -438,14 +386,6 @@ JMP2r
 
 (
 @|stdlib )
-
-@chex ( c -- <val> )
-
-	LIT "0 SUB DUP #09 GTH [ JMP JMP2r ]
-	#27 SUB DUP #0f GTH [ JMP JMP2r ]
-	POP #ff
-
-JMP2r
 
 @cswp ( str* a b -- )
 
