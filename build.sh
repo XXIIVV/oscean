@@ -14,9 +14,9 @@ case "$*" in *--lint*)
 	$lin src/arvelie.tal
 ;; esac
 
-mkdir -p bin && rm bin/*
-mkdir -p tmp && rm tmp/*
-mkdir -p site && rm site/*
+mkdir -p bin && rm -f bin/*
+mkdir -p tmp && rm -f tmp/*
+mkdir -p site && rm -f site/*
 
 $asm src/maeve.tal bin/maeve.rom
 $asm src/oscean.tal bin/oscean.rom

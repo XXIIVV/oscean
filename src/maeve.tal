@@ -1,8 +1,4 @@
-( Oh time thy pyramids
-
-	Notes:
-	#f000-#f400 is used to store used diary ids
-)
+( Oh time thy pyramids )
 
 |a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |b0 @File2 &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
@@ -38,6 +34,7 @@
 	find-available pdec #0a18 DEO
 
 	( halt. )
+	#010e DEO
 	#800f DEO
 
 BRK
@@ -263,34 +260,47 @@ JMP2r
 @validate-log ( log* -- )
 
 	( validate photo id )
-	DUP2 #0006 ADD2 sdec record-log-id
+	DUP2 #0006 ADD2 sdec set-diary
 	POP2
 
 JMP2r
 
-@record-log-id ( log* -- )
+(
+@|diaries )
 
-	ORAk ?&exists
-		POP2 JMP2r
-		&exists
-	#f000 ADD2 LDAk ?&duplicate
-	#01 ROT ROT STA
+@set-diary ( id* -- )
+
+	ORAk ?&exists POP2 JMP2r &exists
+	DUP2 get-diary ?&duplicate
+
+	#01 OVR #07 AND #40 SFT SFT STH
+	#03 SFT2 ;diaries ADD2
+	LDAk STHr ORA ROT ROT STA
 
 JMP2r
-	&duplicate ( id* -- )
-		LDA phex/b #0a18 DEO
-	JMP2r
+&duplicate ( id* -- )
 
-@find-available ( -- id* )
+	( TODO: Add warning )
+	phex #0a18 DEO
+
+JMP2r
+
+@get-diary ( id* -- mask )
+
+	#01 OVR #07 AND #40 SFT SFT STH
+	#03 SFT2 ;diaries ADD2
+	LDA STHr AND
+
+JMP2r
+
+@find-available ( -- id* ) ( 1000dec -> 4096hex )
 
 	( find next diary )
-	#f400 #f001
-	&l
-		LDAk #00 EQU ?&end
-		INC2 GTH2k ?&l
+	#0001
+	&w
+		DUP2 get-diary #00 EQU ?&end
+		INC2 !&w
 		&end
-	NIP2
-	#f000 SUB2
 
 JMP2r
 
@@ -505,5 +515,6 @@ JMP2r
 @|memory )
 
 @lexicon $2000
+@diaries $100
 
 @workarea
