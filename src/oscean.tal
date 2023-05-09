@@ -340,7 +340,6 @@ JMP2r
 	;figure-tag
 
 !write-close
-
 	&diary-path $20
 
 (
@@ -506,27 +505,25 @@ JMP2r
 
 !write/char
 
-@write-open ( str* -- )
+@write-open ( tag* -- )
 
-	STH2
 	LIT "< write/char
-	STH2r write
+	write
 	LIT ">
 
 !write/char
 
-@write-auto ( str* -- )
+@write-auto ( str* tag* -- )
 
 	STH2k write-open
 	write
 	STH2r
 
-@write-close ( str* -- )
+@write-close ( tag* -- )
 
-	STH2
 	LIT "< write/char
 	LIT "/ write/char
-	STH2r write
+	write
 	LIT ">
 
 !write/char
@@ -549,25 +546,23 @@ JMP2r
 
 @prev-char ( addr* char -- addr* )
 
-	STH
+	,&t STR
 	&while
-		LDAk STHkr EQU ?&end
+		LDAk [ LIT &t $1 ] EQU ?&end
 		LDAk #00 EQU ?&end
 		#0001 SUB2 LDAk ?&while
 	&end
-		POPr
 
 JMP2r
 
 @next-char ( addr* char -- addr* )
 
-	STH
+	,&t STR
 	&while
-		LDAk STHkr EQU ?&end
+		LDAk [ LIT &t $1 ] EQU ?&end
 		LDAk #00 EQU ?&end
 		INC2 LDAk ?&while
 	&end
-		POPr
 
 JMP2r
 
@@ -604,15 +599,15 @@ JMP2r
 @mclr ( src* len* -- ) OVR2 ADD2 SWP2 &l STH2k #00 STH2r STA INC2 GTH2k ?&l POP2 POP2 JMP2r
 @mcpy ( src* dst* len* -- ) SWP2 STH2 OVR2 ADD2 SWP2 &loop LDAk STH2kr STA INC2r INC2 GTH2k ?&loop POP2 POP2 POP2r JMP2r
 
-@print-str ( str* -- ) &w LDAk #18 DEO INC2 LDAk ?&w POP2 JMP2r
+@pstr ( str* -- ) &w LDAk #18 DEO INC2 LDAk ?&w POP2 JMP2r
 
 @print-error ( name* msg* -- )
 
 	#0a18 DEO
 	SWP2
-	print-str
+	pstr
 	#2018 DEO
-	print-str
+	pstr
 	#0d18 DEO
 	#0a18 DEO
 	#010f DEO
