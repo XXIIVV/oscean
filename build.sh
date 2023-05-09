@@ -7,11 +7,18 @@ roms_dir=${UXN_ROMS_DIR-"$HOME/roms"}
 asm="uxncli $roms_dir/drifblim.rom"
 emu="uxncli"
 lin="uxncli $roms_dir/uxnlin.rom"
+bal="uxncli $roms_dir/uxnbal.rom"
 
+# https://git.sr.ht/~rabbits/uxnlin
 case "$*" in *--lint*)
 	$lin src/maeve.tal
 	$lin src/oscean.tal
 	$lin src/arvelie.tal
+;; esac
+
+case "$*" in *--bal*)
+	# https://git.sr.ht/~rabbits/uxnbal
+	$bal src/maeve.tal
 ;; esac
 
 mkdir -p bin && rm -f bin/*
