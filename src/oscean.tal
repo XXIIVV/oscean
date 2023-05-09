@@ -16,8 +16,14 @@
 		DUP2 .File/read DEO2
 		#0a00 cswp
 	( build )
-	,focus-page LDR ?build-one
-		build-all
+	;lexicon
+	&while
+		( move to name ) INC2 INC2
+		( init ) init-page
+		( build ) build-page
+		( goto eol ) &eol INC2 LDAk ?&eol
+		INC2 LDAk ?&while
+	POP2
 	( Halt. )
 	#800f DEO
 
@@ -25,30 +31,6 @@ BRK
 
 (
 @|build )
-
-@focus-page $1
-
-@build-one ( -> )
-
-	;focus-page find-term build-page
-	#800f DEO
-
-BRK
-
-@build-all ( -- )
-
-	;lexicon
-	&while
-		( move to name ) INC2 INC2
-		( init ) init-page
-		( build ) build-page
-		( goto eol ) &eol INC2 LDAk ?&eol INC2
-		LDAk ?&while
-	POP2
-
-JMP2r
-
-( build )
 
 @init-page ( name* -- name* )
 
@@ -87,7 +69,6 @@ JMP2r
 @load-diary ( name* -- )
 
 	( make path )
-	;diary sclr
 	;buff STH2k sclr
 	;&new-path STH2kr scpy
 	STH2kr scat
@@ -95,10 +76,11 @@ JMP2r
 	( load )
 	STH2r .File/name DEO2
 	#1000 .File/length DEO2
-	;diary .File/read DEO2
-	#00 .File/success DEI2 ;diary ADD2 STA
-	( split lines )
-	;diary #0a00
+	;diary
+		( clear ) DUP2 sclr
+		( read ) DUP2 .File/read DEO2
+		#00 .File/success DEI2 ;diary ADD2 STA
+		( split lines ) #0a00
 
 !cswp
 	&new-path "tmp/log- $1
@@ -106,7 +88,6 @@ JMP2r
 @load-incoming ( name* -- )
 
 	( make path )
-	;incoming #1000 mclr
 	;buff STH2k sclr
 	;&new-path STH2kr scpy
 	STH2kr scat
@@ -114,9 +95,10 @@ JMP2r
 	( load )
 	STH2r .File/name DEO2
 	#1000 .File/length DEO2
-	;incoming .File/read DEO2
-	( split lines )
-	;incoming #0a00
+	;incoming
+		( clear ) DUP2 #1000 mclr
+		( read ) DUP2 .File/read DEO2
+		( split lines ) #0a00
 
 !cswp
 	&new-path "tmp/map- $1
@@ -181,8 +163,8 @@ JMP2r
 				INC2k INC2 write-link
 				;li-tag write-close
 				&continue
-			( move to eol ) INC2 INC2 &eol INC2 LDAk ?&eol INC2
-			LDAk ?&while
+			( move to eol ) INC2 INC2 &eol INC2 LDAk ?&eol
+			INC2 LDAk ?&while
 		&end
 		POP2 POPr
 		;ul-tag
@@ -258,8 +240,8 @@ JMP2r
 				DUP2 build-module-event
 			;li-tag write-close
 			&continue
-		( goto eol ) &eol INC2 LDAk ?&eol INC2
-		LDAk ?&while
+		( goto eol ) &eol INC2 LDAk ?&eol
+		INC2 LDAk ?&while
 	POP2
 	;ul-tag write-close
 	STH2r
@@ -275,8 +257,8 @@ JMP2r
 		( picture is head ) DUP2 ;term/pict log-has-picture ?&continue
 			DUP2 build-module-photo
 		&continue
-		( goto eol ) &eol INC2 LDAk ?&eol INC2
-		LDAk ?&while
+		( goto eol ) &eol INC2 LDAk ?&eol
+		INC2 LDAk ?&while
 	POP2 STH2r
 
 JMP2r
@@ -293,8 +275,8 @@ JMP2r
 				&no-diary
 				POP2
 			&continue
-		( move to eol ) INC2 INC2 &eol INC2 LDAk ?&eol INC2
-		LDAk ?&while
+		( move to eol ) INC2 INC2 &eol INC2 LDAk ?&eol
+		INC2 LDAk ?&while
 	&end
 	POP2 POPr
 	( restore diary )
@@ -312,8 +294,8 @@ JMP2r
 			INC2 INC2
 				build-page-body
 			&continue
-		( move to eol ) INC2 INC2 &eol INC2 LDAk ?&eol INC2
-		LDAk ?&while
+		( move to eol ) INC2 INC2 &eol INC2 LDAk ?&eol
+		INC2 LDAk ?&while
 	&end
 	POP2 POPr
 
@@ -406,8 +388,8 @@ JMP2r
 	&while
 		( move to name ) INC2 INC2
 		( test ) DUP2 [ LIT2 &t $2 ] scmp ?&end
-		( move to eol ) &eol INC2 LDAk ?&eol INC2
-		LDAk ?&while
+		( move to eol ) &eol INC2 LDAk ?&eol
+		INC2 LDAk ?&while
 	POP2 #0000
 	&end
 
@@ -421,8 +403,8 @@ JMP2r
 		( skip events ) DUP2 ;no-picture log-has-picture ?&skip
 			POP2r JMP2r
 		&skip
-		( move to eol ) &eol INC2 LDAk ?&eol INC2
-		LDAk ?&while
+		( move to eol ) &eol INC2 LDAk ?&eol
+		INC2 LDAk ?&while
 	POP2 #0000
 	POP2r
 
