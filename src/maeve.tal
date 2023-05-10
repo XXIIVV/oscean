@@ -148,7 +148,7 @@ JMP2r
 	DUP2 parse-log
 	( split )
 	DUP2 #0900 cswp
-	DUP2 validate-log
+	DUP2 set-diary
 	( event )
 	DUP2 #0005 ADD2 LDA LIT "+ NEQ ?&no-event
 		DUP2 parse-event
@@ -203,7 +203,7 @@ JMP2r
 	( limit to 20 entries )
 	[ LIT2 &len $2 ] #0020 LTH2 ?&continue
 		POP2 JMP2r
-		&continue ( -- )
+		&continue ( photo* -- )
 
 	;journal-path .File2/name DEO2
 
@@ -257,14 +257,12 @@ JMP2r
 (
 @|validate )
 
-@validate-log ( log* -- )
+@set-diary ( log* -- )
 
 	( validate photo id )
 	#0006 ADD2 sdec
 
-@set-diary ( id* -- )
-
-	ORAk ?&exists POP2 JMP2r &exists ( -- )
+	ORAk #00 EQU ?&missing
 	DUP2 get-diary ?&duplicate
 
 	#01 OVR #07 AND #40 SFT SFT STH
@@ -272,6 +270,7 @@ JMP2r
 	LDAk STHr ORA ROT ROT STA
 
 JMP2r
+	&missing ( id* -- ) POP2 JMP2r
 
 &duplicate ( id* -- )
 
