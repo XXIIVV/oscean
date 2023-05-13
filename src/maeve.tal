@@ -268,9 +268,9 @@ JMP2r
 	LDAk STHr ORA ROT ROT STA
 
 JMP2r
-	&missing ( id* -- ) POP2 JMP2r
+	&missing ( id* -: ) POP2 JMP2r
 
-&duplicate ( id* -- )
+&duplicate ( id* -: )
 
 	;&warning-txt pstr
 	pdec #0a18 DEO
@@ -419,7 +419,15 @@ JMP2r
 @sseg ( a* b* -- f ) STH2 &l ( -- ) LDAk LDAkr STHr NEQ ?&e INC2k LDA #00 EQU ?&e INC2 INC2r !&l &e ( -- ) LDA LDAr STHr EQU JMP2r
 @slen ( str* -- len* ) DUP2 scap SWP2 SUB2 JMP2r
 @scpy-line ( src* dst* -- ) STH2 &w ( -- ) LDAk STH2kr STA INC2r INC2 LDAk DUP #1f GTH SWP LIT ". NEQ AND ?&w POP2 #00 STH2r STA JMP2r
-@scmp ( a* b* -- f ) STH2 &l ( -- ) LDAk LDAkr STHr ANDk #00 EQU ?&e NEQk ?&e POP2 INC2 INC2r !&l &e ( -- ) NIP2 POP2r EQU JMP2r
+@scmp ( a* b* -- f )
+	STH2
+	&l ( -- )
+		LDAk LDAkr STHr NEQk ?&d
+		DUP EOR EQUk ?&d
+	POP2 INC2 INC2r !&l
+	&d ( a* b* -: f )
+		NIP2 POP2r EQU
+JMP2r
 @scap ( str* -- end* ) LDAk #00 NEQ [ JMP JMP2r ] &w ( -- ) INC2 LDAk ?&w JMP2r
 @phex ( hex* -- ) SWP phex/b &b ( b -- ) DUP #04 SFT phex/c &c ( c -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO JMP2r
 @pstr ( str* -- ) &w ( -- ) LDAk #18 DEO INC2 LDAk ?&w POP2 JMP2r
@@ -432,14 +440,14 @@ JMP2r
 	#0064 pdec/parse
 	#000a pdec/parse
 	NIP
-	&emit ( -- )
+	&emit ( num -- )
 		DUP LIT &z $1 EQU ?&skip
 			#ff ,&z STR DUP #30 ADD #18 DEO
-			&skip ( -- )
+		&skip ( a -- )
 	POP
 
 JMP2r
-	&parse ( -- )
+	&parse ( a* dec* -: a* )
 		DIV2k DUP pdec/emit MUL2 SUB2
 	JMP2r
 

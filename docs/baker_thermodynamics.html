@@ -1,0 +1,1329 @@
+<html><head>
+<!-- This document was created from RTF source by rtftohtml version 2.7.5 -->
+
+<title>NREVERSAL of Fortune</title>
+
+<link rev="made" href="mailto:hbaker@netcom.com">
+
+<h1>NREVERSAL of Fortune<a href="#fn1">[1]</a> -- The Thermodynamics of Garbage Collection</h1>
+
+<address>
+<a href="home.html">Henry G. Baker</a>
+</address>
+
+<address>
+Nimble Computer Corp., 16231 Meadow Ridge Way, Encino, CA  91436<br>
+(818) 501-4956  (818) 986-1360 (FAX)
+</address>
+
+<address>
+An early version of this paper appears in <i>Memory Management, Proc.
+IWMM'92.</i> Y. Bekkers, J. Cohen (Eds.)  Springer-Verlag LNCS 637,
+1992.
+</address>
+
+<hr>
+
+The need to <i>reverse</i> a computation arises in many contexts--debugging,
+editor undoing, optimistic concurrency undoing, speculative computation
+undoing, trace scheduling, exception handling undoing, database recovery,
+optimistic discrete event simulations, subjunctive computing, etc.  The need to
+<i>analyze</i> a reversed computation arises in the context of static
+analysis--liveness analysis, strictness analysis, type inference, etc.
+Traditional means for restoring a computation to a previous state involve
+checkpoints; checkpoints require time to copy, as well as space to store, the
+copied material.  Traditional reverse abstract interpretation produces
+relatively poor information due to its inability to guess the previous values
+of assigned-to variables.<p>
+
+We propose an abstract computer model and a programming
+language--Psi-Lisp--whose primitive operations are injective and hence
+reversible, thus allowing arbitrary undoing without the overheads of
+checkpointing.  Such a computer can be built from reversible conservative logic
+circuits, with the serendipitous advantage of dissipating far less heat than
+traditional Boolean AND/OR/NOT circuits.  Unlike functional languages, which
+have one "state" for all times, Psi-Lisp has at all times one "state", with
+unique predecessor and successor states.<p>
+
+Compiling into a reversible pseudocode can have benefits even when targeting a
+traditional computer.  Certain optimizations, e.g., update-in-place, and
+compile-time garbage collection may be more easily performed, because the
+information may be elicited without the difficult and time-consuming iterative
+abstract interpretation required for most non-reversible models.<p>
+
+In a reversible machine, garbage collection for recycling storage can always be
+performed by a reversed (sub)computation.  While this "collection is reversed
+mutation" insight does not reduce space requirements when used for the
+computation as a whole, it does save space when used to recycle at finer
+scales.  This insight also provides an explanation for the fundamental
+importance of the push-down stack both for recognizing palindromes and for
+managing storage.<p>
+
+Reversible computers are related to <i>Prolog</i>, <i>linear logic</i> and
+<i>chemical abstract machines</i>.
+
+<hr>
+
+</head><body>
+
+<h2>Introduction</h2>
+
+<blockquote>
+<b>Those behind cried "Forward!"<br>
+And those before cried "Back!"</b><br>
+T.B. Macaulay, <i>Lays of Ancient Rome -- Horatius</i> (1842)
+</blockquote>
+
+A physics revolution is brewing in computer science because many of the
+abstract models traditionally used have failed to provide deep insight into
+parallel and distributed computation.  Discrete-time serial automata cannot
+faithfully model a relativistic world in which communication is more expensive
+than computation.  Standard Boolean AND/OR/NOT logic found in all modern
+computers generates too much heat for use in high-performance 3D logic
+circuits.  Parallel imperative programs have proved to be a nightmare to debug.
+Lattice-based compile-time analysis has reached its limits, yet significant
+problems in "aliasing/sharing", "strictness/laziness" and "resource estimation"
+remain.<p>
+
+Physicists, on the other hand, routinely decide deep questions about physical
+systems--e.g., they can talk intelligently about events that happened 15
+billion years ago.  Computer scientists retort that computer programs are more
+complex than physical systems.  If this is true, then computer scientists
+should be embarrassed, considering the fact that computers and computer
+software are "cultural" objects--they are purely a product of man's
+imagination, and may be changed as quickly as a man can change his mind.  Could
+God be a better hacker than man?<a href="#fn2">[2]</a><p>
+
+Computation has heretofor been based on <i>writing</i> metaphors, either the
+<i>chalkboard</i> metaphor--e.g., the von Neumann model--or the
+<i>pen-and-paper</i> metaphor--e.g., the functional/logical model, rather than
+the <i>mechanical</i> metaphor of physics.  The use of writing metaphors is
+curious, since a large fraction of computation is devoted to the simulation of
+physical systems!<p>
+
+The property that makes the writing metaphor so attractive is that
+<i>reading</i> has very little cost compared with <i>writing</i>; something can
+be read many times without alteration, and this property can be used to
+<i>broadcast</i> information for inexpensive reuse at a number of different
+times or locations.  This property allows physical simulations to be
+instrumented in discreet ways not allowed by Heisenberg's principle.<p>
+
+Mechanical systems do not have the advantage of inexpensive copying, because
+mechanical objects can be in only one place at one time--they are conserved.
+While information can be recorded in an arrangement of mechanical objects and
+this arrangement can be copied into a similar arrangement of similar objects,
+the expense of this copying can be calculated and may be quite large.  The
+mechanical metaphor would thus seem to be at a hopeless disadvantage compared
+with the writing metaphor for general purpose computing.<p>
+
+We have enjoyed the advantages of cheap copying so long, however, that we have
+difficulty perceiving its penalties.  Its most apparent disadvantage is that
+software companies have a difficult time getting paid for their software--a
+significant irritation, but not important enough to dramatically change the
+future of computing.  Illegal cloning, however, demonstrates a major problem
+with cheap copying--which of the copies is the "real" one, and how can multiple
+copies be kept consistent?  "Object-oriented computing", a current major
+software trend, has at its core an assumption of <i>object identity</i>, which
+is the ability of a software object to have an identity which distinguishes it
+from other objects.  In physical terms, the identity of an object must be
+<i>conserved</i>, meaning that it has a particular location which is different
+from the locations of other objects.  According to Alan Kay [Kay77], it is no
+accident that object-oriented programming began with the <i>Simula</i> language
+for (physical) simulation.<p>
+
+A major problem in the programming of software simulations is in assuring that
+the simulations are faithful to the "real" system--i.e., whether the software
+model obeys the same conservation laws as the "real" system.  If the real
+system is a physical system, then the conservation laws are the laws of
+physics--e.g., the conservation of mass, energy, etc., while if the real system
+is an economic one, then the conservation laws are the laws of economics--e.g.,
+the conservation of money.  Much of the complexity of modern software systems
+can be traced to these requirements--e.g., file backup and recovery,
+transaction models, type systems (including those for physical units), etc.
+For example, if one physically removes a physical file from a physical filing
+cabinet, it no longer resides in the filing cabinet, so that there is no
+possibility of conflict.  The reading of a <i>software</i> file, on the other
+hand, does <i>not</i> remove the file, so we must go to extra trouble to avoid
+conflicts with writers and other readers.  In short, we must use an lot of
+computing "machinery" to simulate an innately conservative "mechanical"
+system.<p>
+
+Current computer <i>languages</i> are based on ideas from 3 models--the von
+Neumann random-access memory, Church's lambda calculus, and Boolean logic
+networks.  The serial nature of von Neumann RAM's shows up in conditionals,
+goto's, and assignments; this model has been attacked by advocates of the
+functional/applicative/logic languages based loosely on a write-once policy,
+which allows for more parallel execution while preserving Church-Rosser
+determinism.  Boolean circuits can be claimed by both the functional/logical
+and the RAM communities, depending upon whether they are purely combinational
+or have feedback.  All of these models, however, assume 1) that the
+<i>duplication</i> of information is free; and 2) that the <i>destruction</i>
+of information is free.<a href="#fn3">[3]</a>  A RAM reads a
+cell many times between writes, knowing that the value will always be that of
+the last write; the <b>S</b> combinator cheerfully copies; and Boolean circuit models
+may allow indefinite fanout.  A RAM write wipes out the previous memory
+contents; the <b>K</b> combinator knowingly kills; and Boolean AND's and OR's are not
+invertible.<p>
+
+Physical circuits have never lived up to these ideals.  Physical storage
+(cores,  DRAM's) must be refreshed, fan-out is limited and too much heat is
+generated.  Yet the physical systems of which real computers are composed do
+not have these problems.  All microscopic physical processes are inherently
+<i>conservative</i>, which means that in addition to conserving mass, energy,
+momentum, etc., they also <i>conserve information</i>.  The fundamental theorem
+of mechanics states that "phase space is incompressible" [Penrose89], which
+means that two separate "states" cannot converge, nor can a single state
+diverge.  Of course, separate points which are initially "close" in phase space
+may become widely dispersed; this behavior has been termed <i>chaotic</i>, even
+though chaotic mechanical systems still conserve information.  It is this
+theorem that produces the limits on a Carnot heat engine, because for a Carnot
+engine to produce <i>work</i>, it must somehow <i>summarize</i> the information
+which describes the randomness in a high temperature reservoir using a smaller
+amount of energy in the lower temperature reservoir.  It is not the excess heat
+<i>energy</i> that must be exhausted into the lower temperature reservoir, but
+the excess <i>information</i>!  Since the reliability of encoding this
+information is inversely proportional to the temperature, one can encode this
+information using less energy only when the exhaust temperature is lower.<a
+href="#fn4">[4]</a><p>
+
+Electrical engineers spend a great deal of their time modelling traditional
+non-conservative two-state Boolean logic with reversible physical processes,
+which are most uncooperative.  Thus, one must switch hundreds or thousands of
+electrons, and give up hundreds or thousands of "kT's" to make sure that a
+single bit is transmitted reliably.  If we want to utilize these devices to
+compute conservative computations, we must then spend hundreds or thousands of
+devices to reliably simulate conservatism.  In other words, we have given up
+factors of 10^6-10^9 in time and/or energy dissipation for nothing!  Yet
+functional/logic programming, database programming and many other computations
+(e.g., FFT's) either are, or can readily be reorganized to be, conservative!
+Biological information processing, for example, dissipates far less
+heat/information.  The processes used to copy DNA and transcribe RNA are mostly
+conservative, or else the heat dissipated during cell mitosis in an embryonic
+chicken would produce a hard-boiled egg!<p>
+
+If heat dissipation were the only problem with traditional computer models, the
+hardware circuits underlying individual functional units such as multipliers
+and caches could be re-implemented using conservative logic and thereby
+eliminate 80-90% of the wasted heat.  We would then not need to change the
+abstraction seen by the programmer or compiler; after all, computer engineers
+have been hiding the physical truth from programmers for over 50 years.<p>
+
+Yet it is actually at the <i>highest</i> levels of computer usage where the
+traditional computer models are wearing the thinnest.  One finds it very
+difficult to ensure that an accounting system "conserves money", or to ensure
+that a sort program "conserves records", or that a file system "preserves
+information".  It is difficult to program a compiler to optimize the use of
+registers in the face of arbitrary control structures, or for parallel process
+to automatically "back down" during an optimistic concurrency control.  Static
+analysis has failed to routinely produce important information, such as that
+needed for "escape analysis", "strictness analysis" and "aliasing/sharing
+analysis".  For example, Milner's elegant type inference algorithm is routinely
+used to statically decorate ML programs with type information, which is useful
+for partial correctness, but type information produces at most an order of
+magnitude performance improvement over a dynamically typed system.  Milner's
+algorithm can also be used to produce deeper structure sharing information
+
+<a href="Share-Unify.html">[Baker90UC],</a>
+
+but we conjecture that this usage will bring out the algorithm's
+latent exponential behavior.  In short, static analysis techniques can produce
+interesting information only when their computational complexity is hopelessly
+exponential.<p>
+
+As a result of these considerations, we advocate the use of models of
+computation which have more structure because they obey more laws and
+restrictions.  Strongly typed and functional systems are restrictive in their
+own way; we advocate restrictions which inherently conserve information--i.e.,
+copying is expensive, and information destruction is impossible.  Since
+information is conserved, these programs are <i>reversible</i>; reversibility
+becomes a property as important as the determinacy guaranteed by the
+Church-Rosser theorem.  Because deciding reversibility for bulk computations is
+generally unsolvable, we guarantee it instead by constructing computations from
+reversible primitives which are reversibly composed.<p>
+
+While many computations are obviously reversible--e.g., FFT's--a skeptic might
+wonder how often this is true.  For example, a sorting algorithm apparently
+throws away at least n*logn bits of information in the process of sorting n
+records.  However, if the input records are given "serial numbers", then the
+original order can be retrieved by resorting on the serial numbers.  Since the
+concatenation of serial numbers to the input records is conservative, we find
+that it is the <i>erasure</i> of these serial numbers at the end of sorting
+that inhibits reversibility, and not the sorting operation itself.  The Newton
+iterative square root algorithm x[i+1]=(x[i]+N/x[i])/2 exemplifies a large class of
+computations in which the output appears to be independent of the input, since
+the Newton iteration produces the square root independent of the initial
+approximation.  Nevertheless, if this algorithm is run a fixed number of
+iterations on infinite precision rational numbers, and if x[0]&gt;=sqrt(N), it is
+<i>reversible</i>!<a href="#fn5">[5]</a>  Newton's iteration essentially encodes the initial
+conditions into lower and lower order bits, until these bits become
+insignificant.  It is the <i>erasure</i> of these low order bits through
+rounding and/or truncation that dissipates the information needed for
+reversibility.  In a sense, Newton's iteration converges only because Newton's
+inverted iteration produces chaos.<p>
+
+Many arithmetic operations such as increment and negate are invertible.
+Multiplication, however, opens up the possibility of multiplying a number by
+zero and losing all information about the number.  In this instance, we must
+have a "multiplication by zero" exception which is analogous to "division by
+zero".  Although multiplication is mathematically commutative, we need check
+only one argument for zero, because we will then know the other argument was
+zero in the case of a zero product.<p>
+
+<i>Time warp</i> [Jefferson85] was the first general scheme for reversing an
+arbitrary distributed computation.  However, the primitive message-passing
+actors upon which time warp is based are traditional state machines; therefore,
+they can only be "rolled back" if they have saved copies of previous states.
+If, on the other hand, these primitive actors are all themselves reversible,
+then most of the clutter can be removed from this elegant scheme.<p>
+
+It is no accident that there is a significant overlap between those working on
+garbage collection and those working on "undoing" computations for purposes
+such as nondeterministic search, debugging, backup/recovery and concurrency
+control.  However, the approach previously taken has been to utilize garbage
+collection to help manage the data structures used for "undoing".  Our approach
+is exactly the opposite--<u>we propose using "undoing" to perform garbage
+collection</u>.  In other words, the concept of reversibility is too important
+to be left to garbage collection and storage management.  Garbage collection by
+undoing is more powerful than traditional garbage collection, because it can be
+used even for Actor systems in which the garbage may be quite active and thus
+hard to catch
+
+<a href="Futures.html">[Baker77].</a>
+
+<h2>Garbage Collection</h2>
+
+Garbage collection is a favorite topic of researchers; the number of published
+papers on this topic approaches 1,000.  Yet, the necessity for "garbage
+collection" in a symbolic processing system has troubled researchers from the
+beginning.  That the symbolic computations required in Artificial Intelligence
+(AI) applications generate "garbage" which must be recycled, has long been a
+fundamental assumption; AI applications tend to "hypothesize and test", so the
+structures created during hypothesizing must somehow be recycled when the test
+is not successful.<p>
+
+Despite its apparent popularity, garbage collection has never been a subfield
+of computer science in its own right, because it is always seen as a
+semantics-preserving <i>transparent optimization</i> in a programming language
+implementation.  Since it is by definition "invisible" to the programmer, the
+topic itself continues to be "swept under the rug".  Unfortunately, the rug has
+developed a huge mound beneath it, because we cannot characterize on
+theoretical grounds the costs and benefits of various garbage collection
+algorithms, but must rely on relatively crude and <i>ad hoc</i> measurements.
+For example, we have no theoretical model which can tell us that "generational"
+garbage collection is inherently better than non-generational garbage
+collection, even though a number of measurements seem to bear this out.<p>
+
+Whether a computational object is "garbage" or not depends upon one's point of
+view.  From the point of view of the computation itself--i.e., the "mutator"--a
+garbage object becomes inaccessible and cannot influence the future course of
+the computation.  From the point of view of the system--"mutator" plus
+"collector", however, the object is still accessible, and will be reclaimed by
+the collector.<p>
+
+Since it is the mutator which "loses" objects, and the collector which "finds"
+them, we have another characterization of the mutator/collector interaction.
+What do we mean by "losing an object"?  Clearly, the object is not completely
+lost, because the collector can find it; however, the mutator has "lost track"
+of it.  More precisely, the mutator destroys its <i>information</i> about
+locating the object, and it is up to the collector to <i>regenerate</i> this
+information.  Intuitively, the mutator is a "randomizing" influence, while the
+collector is an "ordering" influence.  Interestingly enough, the mutator and
+the collector must both be either dissipative, or both conservative; one cannot
+be dissipative while the other remains conservative.  If the collector is
+conservative and the mutator non-conservative, then the collector must
+somewhere dissipate the information it computes about which objects are
+garbage, since it creates a free-list with zero entropy/information.
+Similarly, if the mutator is conservative, then it doesn't produce garbage, and
+the collector is trivially conservative.<p>
+
+The efficiency of a generational garbage collector comes from its ability to
+recover storage before the mutator dissipates the information.  It can do this
+because it can localize easily recovered garbage to a small fraction of the
+address space.  If the newest generation consists of 1/256'th of the cells, and
+if half of these cells are garbage, then the <i>temperature</i> of this
+generation is the number of cells divided by the amount of information ~
+(N/256)/(N/256) ~ 1deg..  The generational collector will have an input
+"temperature" of ~1deg. and an exhaust "temperature" of ~0.5deg..  A
+non-generational collector collecting the same amount of garbage would have an
+input "temperature" of ~ (N)/(.0204N) ~ 49deg., and an exhaust "temperature" of
+511/512'th of that.  Thus, a generational collector would be operating at a
+temperature ratio of 2:1, while a non-generational collector would be operating
+at a temperature ratio of 1.002:1.  Since the efficiency of a "Carnot" GC is
+proportional to the ratio of input to exhaust temperatures, it is easy to see
+why the generational GC is more efficient.  (Of course, no reasonable system
+would operate a non-generational collector with such a small temperature
+differential.)  Thus, the effectiveness of a generational collector depends
+upon reclaiming a higher fraction of cells than a full GC--i.e., a "dying" cell
+is statistically more likely to be young than old.  If this is not true, then
+generational GC will not be effective.
+
+<h2>Reference Counting and Functional Programming</h2>
+
+The lambda calculus and combinators can be implemented using reference counting
+to collect "garbage", because these models do not require directed cycles.
+Many implementations do use directed cycles, however, for "efficiency" in
+implementing the <b>Y</b> combinator used to express recursion.  However, even with
+these <b>Y</b> combinator loops, reference counting can still be used to collect
+garbage, because the <b>Y</b> loops are well-structured [Peyton-Jones87].<p>
+
+Functional languages cannot "overwrite" a storage location, because assignment
+is prohibited.  This property has been called the "write-once" property of
+functional languages, and this property is shared with "logic languages"--e.g.,
+Prolog.  Since storage is never overwritten, the entire history of the
+computation is captured, and it would seem that we are very close to Charles
+Bennett's original thermodynamically efficient Turing Machine [Bennett73],
+which kept track on a separate tape of all of its actions.  However, standard
+functional language implementations do not preserve the information regarding
+which branches were taken.<p>
+
+Interestingly, functional language implementations depend upon garbage
+collection to implement all of the optimizations which require "side-effects".
+For example, MLNJ [Appel90] does frame allocation on the garbage-collected
+heap, so that all garbage normally recycled by "stack allocation" is performed
+by the garbage collector.  Furthermore, the use of shallow binding for the
+implementation of functional arrays
+
+<a href="ShallowArrays.html">[Baker91SB]</a>
+
+allows the garbage collector to
+perform the in-place "assignment" normally expected in an imperative language
+implementation.<p>
+
+Since functional programming is a "good thing", and since reference counting is
+sufficient for these languages, it would seem that little more can be said.
+However, evidence is starting to mount that the lambda calculus and
+combinators, which are pure models of <i>substitution</i> and <i>copying</i>,
+may not be the best models for the highest performance parallel computers.
+Although one reason for this is that <i>copying</i> may be a very expensive
+operation for a physical computer, the major reason for the current interest in
+models which perform less copying--e.g., "linear logic"--is the fact that a
+system which copies in an unrestricted fashion also loses track of things, and
+requires a garbage collector.
+
+<h2>Conservative Automata and Reversible Computation</h2>
+
+A number of researchers have been studying the ultimate limits to computation
+from a physical perspective in order to guide engineers in designing high
+performance computers.  In particular, these researchers have attacked a major
+problem for these computers--the generation of heat.  As computers become
+faster and smaller, the removal of heat becomes a very difficult problem.  One
+of the limitations on the number of active devices on a chip, for example, is
+the ability of the chip package to remove the heat fast enough to keep the chip
+from immolating itself.<p>
+
+It was long conjectured that heat was an essential byproduct of computation,
+but Bennett obliterated this conjecture by demonstrating a thermodynamically
+reversible computer [Bennett73].  Because it is thermodynamically reversible,
+any excess energy given off during one portion of the computation would be
+reabsorbed during another portion of the computation, leaving the entire
+computation energy and entropy neutral.  Bennett's results show that
+computation in and of itself does not generate waste heat, but any
+<i>erasure</i> of information must necessarily generate waste heat.<p>
+
+Fredkin and his collaborators [Toffoli80] [Margolus88] are refining Bennett's
+work to show models for reversible logic which could be used on a
+thermodynamically-efficient logic chip.  They have exhibited techniques for
+logic design using <i>conservative logic</i>, which conserves entropy by
+remaining reversible.  They go on to show physics-like conservation principles,
+as well as logical analogues to <i>energy</i>, <i>entropy</i> and
+<i>temperature</i>.<p>
+
+We were intrigued by their simulation of traditional AND/OR/NOT Boolean logic
+circuits using reversible logic.  In this simulation, each of the traditional
+gates is mapped into a configuration of reversible logic gates, but these gates
+have a number of "garbage" outputs, in addition to the simulated outputs.
+Bennett's key idea in making the emulation reversible is to mirror the mapped
+circuit with a reversed version of itself, with each "garbage output" being
+connected to the mirror image wire thus becoming a "garbage input" for the
+reversed circuit.  So far, we have "much ado about nothing", since the output
+of the reversed computation is exactly the same as the original input!
+However, we can put additional reversible gates <i>in between</i> the mapped
+circuit and its reverse, which can "sense" the output to either affect some
+other computation, or to copy the final answer.  Thus, just as the reversible
+computer collects its garbage bits with a reversed computation--after suitably
+summarizing the computation's result, we will utilize a reversed computation to
+recycle other kinds of resources--e.g., storage and processors.
+
+<h2>Reversible Pointer Automata</h2>
+
+A pointer automaton can be constructed from Fredkin's conservative logic using
+his universal simulation for non-conservative logic [Barton78] [Ressler81].
+This simulation is not the most efficient use of logic or space, however.  We
+describe a reversible pointer automaton which is a better model for a
+conservative higher level language.<p>
+
+Our reversible pointer automata will retain the finite state control and
+pointer registers, but with some restrictions.  We need to make sure that each
+instructions can be "undone", and must therefore retain enough information
+about the previous state.  All of the instructions are <i>exchanges</i>,
+conditional exchanges, and primitive arithmetic/logical operations.
+Arithmetic/logical instructions only come in forms that are invertible; e.g.,
+replace the pair of registers which encode a double-precision integer dividend
+by an integer quotient and an integer remainder, with no change in the case of
+a zero divisor.  Since the double-precision dividend can be reconstituted from
+the divisor, quotient and remainder, the instruction is invertible.<p>
+
+The following are primitive machine operations, where x,y,z,... denote distinct
+registers, x:y denotes a double-precision "register" constructed from the
+concatenation of x and y, and a,b,c,... denote distinct constants.  Some
+operations have additional constraints which cause them to "stick" in the same
+state.  Arithmetic operations on "integers" are performed modulo 2^<tt>w</tt>,
+where <tt>w</tt> is the word size.<p>
+
+x &lt;-&gt; y; exchange x and y.<br>
+x &lt;-&gt; CAR(y); exchange x and CAR(y).<br>
+x &lt;-&gt; CDR(y); exchange x and CDR(y).<br>
+y := CONS(x,y) &amp; x := nil; push x onto y and set x to nil.<br>
+if x=nil then swap(y,z); conditional exchange operation.<br>
+inc(x,y), semantics: x:=x+y; inverse is dec(x,y).<br>
+dec(x,y), semantics: x:=x-y; inverse is inc(x,y).<br>
+minus(x), semantics: x:=-x; inverse is minus(x).<br>
+mpy(x,y,z), 0&lt;=x&lt;z, semantics: x:y:=y*z+x; inverse is div(x,y,z).<br>
+div(x,y,z), 0&lt;=x&lt;z, semantics: x:=(x:y) mod z || y:=((x:y)-((x:y) mod z))/z; inv. is mpy(x,y,z).<br>
+rot(x,c) rotates the bit pattern in x by c bits; inverse is rot(x,-c)=rot(x,w-c).<br>
+xor(x,y), x,y distinct registers, has the semantics x:=x xor y; inverse is xor(x,y).<br>
+reverse(x) reverses the bits in register x; inverse is reverse(x).<br>
+<br>
+macro for push(r1,r2): {car(free)&lt;-&gt;r1; r2&lt;-&gt;cdr(free); r2&lt;-&gt;free;}<br>
+<br>
+macro for pop(r2,r1):<br>
+  if consp(r2) and null(r1) then {r2&lt;-&gt;free; r2&lt;-&gt;cdr(free); car(free)&lt;-&gt;r1;}<br>
+<br>
+macro for push(r): {push(r,stack);}<br>
+<br>
+macro for pop(r): {pop(stack,r);}<p>
+
+This machine language is carefully designed in such a way that all operations
+are invertible.  This property requires restrictions on the topology of the
+program flowchart.  We can "test" a value in a register, but the value must be
+preserved during, or restored after, the operations depending upon the test, so
+that when the program is reversed, we can test it again to reverse the
+appropriate arm of the conditional.  Suitably structured programs can be
+statically checked for proper topology.  Suzuki has proved [Suzuki82] that
+under these conditions 1) all reference counts are preserved, and 2) garbage
+cannot be created.  Since all cons cells on the free list start out with a
+unity reference count, they always have a unity reference count--i.e., we have
+a Linear Lisp.  Overall reversibility thus depends upon reversible primitives
+reversibly composed.
+
+<h2>Programming Style</h2>
+
+An operation P will have a "right" inverse when there exists an inverse
+operation P' which undoes the first operation--i.e., P*P'=I (the identity).
+For example, <tt>COPY</tt> and <tt>EQUAL</tt> are essentially inverses of one
+another, as are "destructuring bind" and "backquote".  We may not be able to
+execute P' in an arbitrary state, however, because it may have conditions on it
+which cannot be satisfied.  When P' is attempted in a situation in which its
+preconditions fail, we say that P' <i>sticks</i>, without doing anything else.
+Unlike most models, we do not map sticking states into an overall computational
+<i>failure</i>, because failure loses all information about what failed and how
+it failed, which is the whole point of reversible computation used for
+debugging.<p>
+
+The strangeness of the reversible programming style is due mainly to our lack
+of experience with it.  Every subcomputation must be reversible, which means
+that no information is destroyed within the subcomputation.  Loops in which the
+number of iterations is <i>a priori</i> fixed are trivial to reverse; other
+loops may require a counter to remember the number of iterations.<p>
+
+The hardest part of inverting an iterative program is to arrange that the loop
+iterations themselves preserve information.  While a loop can always store its
+information in the form of a "trail" (analogous to the Prolog "trail"), the
+amount of storage required may grow quite rapidly.  <u>The ability to summarize
+the information within a fixed number of "state variables" is the reversible
+computer's analogue to the "tail recursion optimization"</u>, which transforms
+recursive functional programs into iterative imperative programs.<p>
+
+A reversible computer can utilize the following optimization for loops.  Most
+loop tests rarely succeed, and hence produce little "information"; they cannot
+be dispensed with, however, else the loop would never terminate.  On a
+reversible computer the loop body can be iteratively doubled in size, and when
+it has exceeded the final value, the loop can be backed up to the correct
+point.  This scheme involves only O(logn) tests instead of O(n), but the
+non-test work may double.  As a result, it is useful only if the test is
+expensive relative to the body.<p>
+
+Input is handled by saving the input stream as in many other reversible and
+functional systems [Barton78] [Jefferson85].  Output could conceivably be
+"taken back" when reversed, as in pure <i>Time Warp</i> [Jefferson85], or saved
+until there is no further possibility of reversing, and then output, as in
+standard <i>Time Warp</i>.
+
+<h3>Psi-Lisp -- Reversible Linear Lisp<a href="#fn6">[6]</a></h3>
+
+In a companion paper
+
+<a href="LinearLisp.html">[Baker92LLL],</a>
+
+we introduced <i>Linear Lisp</i>, which is a
+variant of Lisp in which every cons cell has a unity reference count.  In this
+section, we introduce a variant of Linear Lisp called Psi-Lisp which looks
+very much like traditional Lisp, but all of its programs are reversible.  The
+primitive operations of Psi-Lisp are many of the operations discussed in
+previous sections.  We make extensive use of swapping operations, as they are
+self inverses.<p>
+
+Lambda-expressions in Psi-Lisp appear identical to those in traditional
+Lisp; they have a "lambda-list" of formal parameters, and a "body" consisting
+of a sequence of expressions.  There are differences, however.  The
+lambda-expression is considered to have a single "argument" which is a list
+"destructured" by the given lambda-list, in the manner of ML.  All of the
+variable names appearing in the lambda-list must be distinct, and any reference
+to a free variable inside a Psi-Lisp lambda-expression is the <i>only</i>
+reference to the variable to avoid violations of linearity.<p>
+
+The interpretation of a Psi-Lisp lambda-expression is that the "variables"
+occurring in its lambda-list are "new" local variables distinct from any other
+variables which are bound to the respective portions of the argument list, and
+the cons cells from the argument list itself are returned to the free list
+during destructuring.  The binding of these new variables is reversible, since
+each is a new variable which had no previous value, and the original argument
+list can be trivially recovered from the values of the distinct variables.  The
+body of the lambda-expression consists of a list of Psi-Lisp expressions,
+each of which is individually reversible, and which can be reversed by
+reversing the execution of each of the computations in the reversed list.  Any
+changes to the values of the lambda-list variables during the execution of the
+body will be reversed during reversed execution, thus reconstituting their
+values.<p>
+
+<u>It is an error if any lambda-list variable still has a value at the end of
+the execution of the lambda-expression body</u>, because linearity promises
+that every variable will be accessed <i>exactly once</i> within the body, and
+any such access returns the variable to its unbound state.  In other words,
+<u>the argument list to a lambda-expression is completely consumed during its
+evaluation</u>; the list itself is consumed during binding, and each of the
+bound values is then consumed during the execution of the body.  This property,
+along with the other properties of Psi-Lisp, allows us to conclude that
+<u>all of the information necessary for the reverse execution of the lambda
+expression is encoded into its returned value(s)</u>.  Similarly, it is an
+error if any expression in the body--except for the last--returns a value;
+i.e., these expressions must all be operations with only side-effects, but not
+values.  Of course, these side-effects are all completely local, since
+linearity forces each free variable to belong to only one closure; i.e., any
+"local" variables of an enclosing lambda which are referenced by a subsidiary
+lambda closure can no longer be accessed by the enclosing lambda.<p>
+
+A <tt>let</tt>-expression evaluates an expression and destructures it to bind
+several new distinct variables (destructuring means never having to say
+<tt>CAR</tt> or <tt>CDR</tt> again).  The body of a <tt>let</tt> expression is
+a sequence of expressions, in which only the last can return a value.  Like a
+lambda-expression, it is an error for a <tt>let</tt>-expression to terminate
+while its bound variables still have values.  These rules allow the reverse
+execution of a <tt>let</tt>-expression in the same way they allow the reverse
+execution of a lambda-expression.<p>
+
+Nested expressions have an interesting interpretation.  In general, a
+particular variable may "occur" only once.  The values of sub-expressions are
+conceptually bound to new intermediate variables, so we could have decomposed
+nested expressions into an equivalent nest of <tt>let</tt>-expressions.  The
+values of all of the intermediate variables are immediately consumed by the
+expression in which they are nested, so that they satisfy the restrictions on
+<tt>let</tt>-expressions.  A nested expression is thus executed in a manner
+analogous to a dataflow architecture in which the values ("tokens") flow
+through the variables ("wires") and into the application nodes ("operators"); a
+variable without a value is analogous to a wire without a token.  Multiple
+arguments may be evaluated in parallel
+
+<a href="LinearLisp.html">[Baker92LLL].</a>
+
+<p>
+
+The most difficult and interesting case is that of the if-then-else expression.
+This expression has 4(!) sub-expressions--a Boolean test expression, a Boolean
+predicate, and two arms, a then-arm and an else-arm.  If we were to execute the
+test expression in the normal fashion, then any arguments passed to it would be
+consumed, and it would be difficult to remember the direction of the evaluation
+during execution reversal.  Therefore, we will evaluate the test expression
+somewhat differently from the expressions of the arms.  We evaluate the test
+expression to determine the direction of the execution, and then <i>we undo the
+test expression to restore the values of any of its variables</i> before
+executing the appropriate arm.  The variables referenced in the test expression
+must be referenced again in both arms, since otherwise they would not be
+consumed.  <u>During reverse execution, the Boolean predicate is applied to the
+value previously returned by the if-then-else expression to determine which arm
+to execute</u>.  In order to keep the programmer honest, this predicate is also
+applied to the value <i>to be returned</i>, to make sure that it returns true
+on the then arm, and false on the else arm.  To allow for more traditional
+programming styles, we allow this boolean predicate to push some state on a
+hidden conditional "history" stack during forwards execution, which is popped
+during reverse execution to remember the direction of the branch.  Since only a
+single bit of information is being saved for a conditional expression, and only
+by <i>some</i> conditional expressions, this bit stack can be implemented very
+efficiently.  A clever optimizing compiler may be able to sometimes deduce the
+reverse predicate which doesn't use the bit stack; functions like these will
+operate with bounded history stacks and are analogous to tail recursion.<p>
+
+Here is a reversible version of the factorial function restricted to n&gt;0 so
+as to be injective; the result is 1 if and only if the "then" arm was taken,
+which forces n=1.
+
+<tt><pre>
+(defun fact (n) (assert (and (integerp n) (&gt; n 0)))
+  (if (onep n) #'onep n (* n (fact (1- n)))))
+</pre></tt>
+
+Our interpretation so far is approximately consistent with an
+applicative/functional interpretation of the lambda-expression.  We now give
+another, more operational, interpretation.  Parameters are not passed by copy
+or by reference, but by "swap-in, swap-out" [Harms91].  When a variable is
+referenced as an argument in an expression, it is swapped out of the variable
+and into the argument list structure, so that a side-effect of computing the
+expression is to make all of the referenced variables unbound!  This is why a
+variable should not appear more than once in an expression--succeeding
+occurrence will be unbound.  Results are also returned by swapping, so that
+when a lambda-expression terminates, none of its local variables have any
+values.<p>
+
+Psi-Lisp <tt>EVAL</tt> and <tt>APPLY</tt> look similar to their traditional
+Lisp counterparts, and their familiar appearance masks their metacircular
+ability to run backwards.  There are some notable differences, however.  Since
+<tt>EVAL</tt> must be reversible given only its computed value(s),
+<tt>EVAL</tt> returns 3 values: the expression, the environment and the
+computed value.  <tt>APPLY</tt> is more symmetrical--it is given a function and
+an argument list, and returns the function and its value(s).  Since many
+functions return multiple values, we make <tt>APPLY</tt> completely
+symmetrical--it consumes an argument list and returns a value list, which must
+be destructured by its recipient.  We utilize these additional returned values
+to eliminate the need for the interpreter itself to save state, although the
+interpreted program itself may do so.<p>
+
+The code for a recursive function is incrementally copied during a recursive
+evaluation in a Y-like manner.  Unfortunately, all of these copies become
+available at the end of the recursion and must be recycled.  A more "efficient"
+scheme might keep multiple copies of the code on a separate "free list", so
+that they wouldn't have to be created during recursion.  Tail recursive
+functions can not only reuse their stack frame, but their code, as well!
+Linear Lisp
+
+<a href="LinearLisp.html">[Baker92LLL]</a>
+
+utilizes a more efficient scheme (similar to "copy on
+write") for managing copies.
+
+<h2>Time and Space Complexity for a Reversible Garbage Collector</h2>
+
+If we make the reasonable assumption (for a machine with a single level RAM
+memory) that the inverse execution of each instruction takes exactly the same
+amount of time as its forward execution, then the total time required is
+exactly double that of the non-collected computation, plus whatever time is
+required to copy the answer.<p>
+
+If the entire computation finishes before being reversed, then "garbage
+collection" has not helped at all.  One can reverse portions of the computation
+at finer scales, however, and achieve significant storage savings.  In this
+case, the "answer" which must be copied before the reversal is initiated is the
+summary of the computation "so far".  In other words, we must "save" this
+intermediate state for later mutation (and reversal) at a larger scale.  The
+saving of this intermediate state is equivalent to traditional marking!<p>
+
+The value returned from a subprogram is a good example.  The "answer" can be
+copied, and a reversal initiated to collect any excess storage that the
+subprogram used, before the caller resumes "forward" motion again.  This
+reversal is equivalent to the popping of a classical stack frame.  In fact, our
+"collection is reverse mutation" hypothesis can simulate most standard garbage
+collection optimizations.
+
+<h2>Reverse Execution Paging</h2>
+
+Researchers have found that garbage collection algorithms have much less
+reference locality than "normal" programs.  Garbage collectors therefore page
+extensively, and many garbage collection improvements are aimed more at
+reducing the paging/caching costs than in reducing the number of instructions
+executed.<p>
+
+If we perform a "full" garbage collection, then every node and every link must
+be traced, requiring that every page/cache line be visited even if it has not
+otherwise been touched or modified since the last garbage collection.  If we
+perform a "partial" garbage collection in a generational system, then
+optimizations exist to avoid visiting otherwise untouched or unmodified pages.
+On the other hand, even a generational garbage collector will have to spend
+some time tracing in the pages recently referenced or modified by the
+mutator.<p>
+
+If one believes the "garbage collection by reverse mutation" hypothesis, then
+the collector must visit the same pages/cache lines as the mutator, but does
+not bother with reversing a lot of extraneous computation not involved with
+pointers.  As a result, the collector will tend to page "more heavily" than the
+forward computation, simply because the reverse of the operations not causing
+page faults are irrelevant to the task of garbage collection!  Thus, although
+it may not visit any more pages than the forward computation, the collector
+appears to be less efficient, because it has less to do on each page.<p>
+
+If we know that collection is the reverse of mutation, we may be able to use
+this information to greatly improve the paging of the collector.  We first note
+that the last-in, first-out (LIFO) behavior of a stack works extremely well
+with the least-recently-used (LRU) page replacement algorithm; even very small
+stack caches have high hit rates with LRU.  It is also well known that the
+optimal paging algorithm (OPT) can be computed by submitting the reversed
+reference stream to an LRU algorithm.  But we have already submitted our
+mutator program to the LRU algorithm during forwards execution, so we can
+compute the information necessary to utilize the OPT paging algorithm during
+the reversed execution (collection) phase!<p>
+
+Thus, while our garbage collection by reversed mutation would seem to exactly
+double the execution time of the mutator, we might reduce the collection time
+in the context of a paged implementation by utilizing the additional
+information generated during forward execution, and thereby achieve a running
+time only a fraction longer than an uncollected computation.<a
+href="#fn7">[7]</a>
+
+<h2>Implications for Real Hardware</h2>
+
+The biggest problem with an exchange-oriented architecture is the fact that it
+goes squarely against the grain of one of the most universally-held assumptions
+about computation--that copying by reference is free.  Conversely, exchanges
+are cheaper than copies, even though "everyone knows" that exchanges take 3
+copies, and that exchanges on a bus require atomic (i.e., slow) back-to-back
+bus cycles.<p>
+
+That exchanges are expensive seems to be an artifact of traditional
+Boolean--i.e., irreversible--logic.  One can conceive of other types of logic
+in which the same connection could be used for signalling in both directions
+simultaneously--e.g., optical fiber.  In fact, since all suitably small
+physical systems are reversible, it is actually more difficult to build
+irreversible/non-exchange architectures out of small components than to build
+reversible/exchange architectures.<p>
+
+Interestingly enough, one can find a precedent for exchange architecture in
+current <i>cache consistency</i> protocols for MIMD multiprocessors.  In order
+to cut down on the bus/network traffic in the case that multiple writers are
+active, some cache line may be <i>owned</i> by a particular processor.  If
+another processor attempts to write to this line, then the ownership of the
+line may be transferred to the other processor, in which case the first
+processor no longer owns it.  While the information going in the direction
+opposite to that of moving cache line is essentially a "hole", it is not
+difficult to conceive of a more productive exchange protocol which would allow
+them to immediately synchronize, for example.<p>
+
+The restricted fan-in/fan-out of exchange architectures provides relief to the
+designer of a PRAM implementation, because the unlimited fan-in/fan-out of a
+CRCW PRAM architecture [Corman90] is very expensive to achieve.
+
+<h2>What Makes the Free-List Free?</h2>
+
+Joseph Halpern, <i>et al</i>. [Halpern84], asked the question "what makes the
+free-list free?"  We believe that their paper could not properly answer the
+question, because it is a <i>thermodynamic</i> question, not a <i>semantic</i>
+question.  Our answer is that the free-list is free because it is storage that
+is in the highest state of availability; in thermodynamic terms, it is
+<i>work</i>.  What is work?  Carnot's theorem tells us that work (available
+energy) can be produced from heat (energy+randomness), by removing the
+randomness into a cooler reservoir.  The free-list always has exactly the same
+configuration--a semi-infinite sequence of cells (list of nil's)--i.e., the
+structure of the free-list is isomorphic to <i>omega</i>, the first infinite
+ordinal.  Since 1+<i>omega</i>=<i>omega</i>, allocating a cell from the free-list
+does not change its structure.  Since the structure of the free-list is always
+the same, it has <i>zero</i> entropy/information.  No other simple structure
+for the free-list would have as little entropy/information.
+
+<h2>Conclusions and Previous Work</h2>
+
+We have advocated the use of reversible models of computation, and we have
+shown how a particular model can be programmed to perform interesting
+computations.  The property of reversibility is very strong, and should allow
+static analysis of programs to produce deeper information than is typically
+feasible with non-reversible models.<p>
+
+Hoare's, Dijkstra's and Pratt's logics all consider the operation of a program
+in reverse, although to our amazement, no one seems to have taken up the
+retrospectively obvious line of attack we here propose.<a
+href="#fn8">[8]</a>  <i>Abstract interpretation</i> and
+<i>type inference</i> often consider the retrograde execution of a program.
+Computer architects find that the reverse of reference strings are an important
+concept in the study of memory hierarchies; e.g., the optimal page replacement
+algorithm is the least-recently-used algorithm running on the reversed
+reference string.<p>
+
+Our Psi-Lisp bears much resemblance to dataflow architectures.  Its
+argument-consuming property neatly finesses the storage recovery problems
+addressed by [Inoue88].<p>
+
+The Deutsch-Schorre-Waite "pointer-reversing" list tracing algorithm [Knuth73]
+is a paradigm of reference-count-conserving programming.  Binding tree
+"re-rooting"
+
+<a href="ShallowBinding.html">[Baker78SB]</a>
+
+is an even more sophisticated
+reference-count-conserving algorithm.  Suzuki [Suzuki82] gives the fundamental
+properties of pointer exchange and rotate instructions; Common Lisp's
+<tt>rotatef</tt> operation comes directly from this paper.<p>
+
+The <tt>unwind-protect</tt> and <tt>wind-unwind</tt> operations of Common Lisp
+and Scheme, respectively, offer a form of "undoing" computation.  In fact, some
+implementations of <tt>wind-unwind</tt> utilize the reversible "state space"
+tree re-rooting
+
+<a href="ShallowBinding.html">[Baker78SB].</a>
+
+<p>
+
+The reverse execution abilities of <i>Prolog</i> were initially touted, but
+never developed, and modern Prologs cannot run predicates backwards (this is
+not the same as backtracking!).  Subjunctive computing has been proposed as a
+valuable programming style [Zelkowitz73] [Nylin76] [Lafora84] [Heering85]
+[Leeman85] [Leeman86] [Strothotte87].  An enormous literature has developed
+around reversibility for debugging [Balzer69] [Grishman70] [Archer84]
+[LeBlanc87] [Feldman88] [Pan88] [Wilson89] [Tolmach90] [Agrawal91].<p>
+
+Hofstadter devotes a portion of his Pulitzer prize-winning book [Hafstadter79]
+to palindromes and "crab canons", which are musical pieces that simultaneously
+have same theme going in both the forward and reverse directions.  One can
+conceive of the mutator process as playing a theme, while the collector process
+plays the retrograde theme.<p>
+
+Bill Gosper was an early investigator [Beeler72] into the power of the Digital
+Equipment Corporation's PDP-10 <tt>EXCH</tt> instruction, which we have
+appropriated for our reversible computer.  Swapping has been given new life as
+a fundamental synchronization primitive in shared-memory multiprocessor
+architectures in the form of the "compare-and-swap" operation, which Herlihy
+has proven to be powerful and universal [Herlihy91].
+
+<h2>Acknowledgements</h2>
+
+We appreciate the discussions with Peter Deutsch, Richard Fateman, Richard
+Fujimoto, Bill Gosper, Robert Keller, Nori Suzuki, Tommaso Toffoli, and David
+Wise about these concepts.
+
+<h2>References</h2>
+
+Abadi, M. &amp; Plotkin, G.D.  "A Logical View of Composition and Refinement".
+<i>Proc. ACM POPL 18</i> (Jan. 1991),323-332.<p>
+
+Agrawal, H. <i>et al</i>.  "An Execution-Backtracking Approach to Debugging".
+<i>IEEE Software 8</i>,3 (May 1991),21-26.<p>
+
+Appel, A.W.  "Simple Generational Garbage Collection and Fast Allocation".
+<i>Soft. Prac. &amp; Exper. 19</i>,2 (Feb. 1989), 171-183.<p>
+
+Appel, A.W.  "A Runtime System".  <i>Lisp &amp; Symbolic Comput. 3</i>,4 (Nov.
+1990),343-380.<p>
+
+Archer, J.E., <i>et al</i>.  "User recovery and reversal in interactive
+systems".  <i>ACM TOPLAS 6</i>,1 (Jan. 1984),1-19.<p>
+
+Bacon, David F., <i>et al</i>.  "Optimistic Parallelization of Communicating
+Sequential Processes".  <i>Proc. 3rd ACM Sigplan PPOPP</i>, Williamsburg, VA,
+April, 1991,155-166.<p>
+
+<a href="Futures.html">[Baker77]</a>
+
+Baker, H.G., and Hewitt, C.  "The Incremental Garbage Collection of Processes".
+<i>ACM Sigplan Not.</i> 12, 8 (Aug. 1977), 55-59.<p>
+
+<a href="ShallowBinding.html">[Baker78SB]</a>
+
+Baker, H.G.  "Shallow Binding in Lisp 1.5".  <i>CACM 21</i>,7 (July
+1978),565-569.<p>
+
+<a href="Share-Unify.html">[Baker90UC]</a>
+
+Baker, H.G.  "Unify and Conquer (Garbage, Updating, Aliasing, ...) in
+Functional Languages".  <i>Proc. 1990 ACM Conf. on Lisp and Functional
+Progr.</i>, June 1990,218-226.<p>
+
+<a href="TInference.html">[Baker90TI]</a>
+
+Baker, H.G.  "The Nimble Type Inferencer for Common Lisp-84".  Tech. Report,
+Nimble Computer, 1990.<p>
+
+<a href="ShallowArrays.html">[Baker91SB]</a>
+
+Baker, H.G.  "Shallow Binding Makes Functional Arrays Fast".  ACM <i>Sigplan
+Notices 26,</i> 8 (1991), 145-147.<p>
+
+<a href="CacheCGC.html">[Baker91CCCC]</a>
+
+Baker, H.G.  "Cache-Conscious Copying Collectors".  <i>OOPSLA'91 GC
+Workshop</i>, Oct. 1991.<p>
+
+<a href="LazyAlloc.html">[Baker92CONS]</a>
+
+Baker, H.G.  "CONS Should not CONS its Arguments, or, A Lazy Alloc is a Smart
+Alloc".  <i>ACM Sigplan Not. 27</i>,3 (March 1992),24-34.<p>
+
+<a href="LinearLisp.html">[Baker92LLL]</a>
+
+Baker, H.G.  "Lively Linear Lisp -- 'Look Ma, No Garbage!'".  ACM <i>Sigplan
+Not. 27</i>,8 (Aug. 1992), 89-98.<p>
+
+<a href="ObjectIdentity.html">[Baker93]</a>
+
+Baker, H.G.  "Equal Rights for Functional Objects".  ACM <i>OOPS Messenger
+4</i>,4 (Oct. 1993), 2-27.<p>
+
+Balzer, R.M.  "EXDAMS: Extendable Debugging and Monitoring System".  <i>Proc.
+AFIPS 1969 SJCC 34</i>, AFIPS Press, Montvale, NJ,567-580.<p>
+
+Barghouti, N.S. &amp; Kaiser, G.E.  "Concurrency Control in Advanced Database
+Applications".  <i>ACM Comput. Surv. 23</i>,3 (Sept. 1991),269-317.<p>
+
+Barth, J.  "Shifting garbage collection overhead to compile time".  <i>CACM
+20</i>,7 (July 1977),513-518.<p>
+
+Barth, Paul S., <i>et al.</i>  "M-Structures: Extending a Parallel, Non-strict,
+Functional Language with State".  <i>Proc. Funct. Progr. Langs. &amp; Computer
+Arch.</i>, LNCS 523, Springer-Verlag, Aug. 1991,538-568.<p>
+
+Barton, Ed.  Conservative Logic.  6.895 Term Paper, MIT, May, 1978.<p>
+
+Bawden, Alan.  "Connection Graphs".  <i>Proc. ACM Conf. Lisp &amp; Funct.
+Progr.</i>, Camb., MA, Aug. 1986.<p>
+
+Beeler, M., Gosper, R.W, and Schroeppel, R.  "HAKMEM".  AI Memo 239, MIT AI
+Lab., Feb. 1972.  Important items: 102, 103, 104, 149, 150, 161, 166, 172.<p>
+
+Benioff, Paul.  "Quantum Mechanical Hamiltonian Models of Discrete Processes
+that Erase Their Own Histories: Application to Turing Machines".  <i>Int'l. J.
+Theor. Phys. 21</i> (1982),177-201.<p>
+
+Bennett, Charles.  "Logical Reversibility of Computation".  <i>IBM J. Res.
+Develop. 6</i> (1973),525-532.<p>
+
+Bennett, Charles.  "Thermodynamics of Computation".  <i>Int'l. J. Theor. Phys.
+21</i> (1982),905-940.<p>
+
+Bennett, Charles.  "Notes on the History of Reversible Computation".  <i>IBM J.
+Res. Develop. 32</i>,1 (1988),16-23.<p>
+
+Bennett, Charles.  "Time/Space Trade-offs for Reversible Computation".  <i>SIAM
+J. Computing 18</i>,4 (Aug. 1989).<p>
+
+Berry, G., and Boudol, G.  "The Chemical Abstract Machine".  <i>ACM POPL
+17</i>, San Francisco, CA, Jan. 1990.<p>
+
+Chase, David.  "Garbage Collection and Other Optimizations".  PhD Thesis, Rice
+U., Nov. 1987.<p>
+
+Chen, W., and Udding, J.T.  "Program Inversion: More than Fun!".  <i>Sci. of
+Computer Progr. 15</i> (1990),1-13.<p>
+
+Chen, W.  "A formal approach to program inversion".  <i>Proc. ACM 18th Comp.
+Sci. Conf.</i>, Feb., 1990,398-403.<p>
+
+Cheney, C.J.  "A Nonrecursive List Compacting Algorithm".  <i>CACM 13</i>,11
+(Nov. 1970),677-678.<p>
+
+Clarke, E.M.  "Synthesis of resource invariants for concurrent programs".
+<i>ACM TOPLAS 2</i>,3 (July 1980).<p>
+
+Cohen, Jacques.  "Non-Deterministic Algorithms".  <i>Comput. Surveys 11</i>,2
+(June 1979),79-94.<p>
+
+Corman, T.H., <i>et al</i>.  <i>Introduction to Algorithms</i>.  MIT Press,
+Cambridge, MA, 1990.<p>
+
+Cousot, P., and Cousot, R.  "Abstract interpretation: a unified lattice model
+for static analysis of programs by construction or approximation of fixpoints".
+<i>Proc. ACM POPL 4</i> (1977),238-252.<p>
+
+Coveney, P.V. &amp; Marcer, P.J.  "Irreversibility and computation".  <i>Specs.
+in Sci. &amp; Tech. 14</i>,1 (1991?),51-55.<p>
+
+DeWitt, B. &amp; Graham, N., <i>eds</i>.  <i>The Many-Worlds Interpretation of
+Quantum Mechanics</i>.  Princeton U. Press, 1973.<p>
+
+Deutsch, D.  "Quantum Theory, the Church-Turing Hypothesis, and Universal
+Quantum Computers".  <i>Proc. Roy. Soc.</i> (1985).<p>
+
+Dijkstra, E.W.  <i>A Discipline of Programming</i>.  Prentice-Hall, Englewood
+Cliffs, NJ, 1976.<p>
+
+Dobkin, D.P., and Munro, J.I.  "Efficient Uses of the Past".  <i>Proc. ACM FOCS
+21</i> (1980),200-206.<p>
+
+Drescher, G.L.  "Demystifying Quantum Mechanics: A Simple Universe with Quantum
+Uncertainty".  <i>Complex Sys. 5</i> (1991),207-237.<p>
+
+Feldman, S., and Brown, C.  "IGOR: A System for Program Debugging via
+Reversible Execution".  <i>Proc. Sigplan/Sigops WS on Parl &amp; Distr.
+Debugging</i>, May 1988,112-123.<p>
+
+Feynman, Richard P., <i>et al</i>.  <i>The Feynman Lectures on Physics, Vol.
+I.</i>  Addison-Wesley, Reading, MA, 1963.<p>
+
+Feynman, Richard P.  "Quantum Mechanical Computers".  <i>Founds. of Physics
+16</i>,6 (1986),507-531.<p>
+
+Fisher, J.  "Trace scheduling: A technique for global microcode compaction".
+<i>IEEE Tr.. Comps. C-30</i>,7 (July 1981),478-490.<p>
+
+Floyd, R.W.  "Nondeterministic Algorithms".  <i>J. ACM 14</i>,4 (Oct.
+1967),636-644.<p>
+
+Fredkin, E., and Toffoli, T.  "Conservative Logic".  <i>Int'l. J. Theor.
+Physics 21</i>,3/4 (1982),219-253.<p>
+
+Girard, J.-Y.  "Linear Logic".  <i>Theoretical Computer Sci. 50</i>
+(1987),1-102.<p>
+
+Grishman, R.  "The debugging system AIDS".  <i>AFIPS 1970 SJCC 41</i>, AFIPS
+Press, Montvale, NJ 1193-1202.<p>
+
+Halpern, J.Y., <i>et al</i>.  "The Semantics of Local Storage, or What Makes
+the Free-List Free?".  <i>ACM POPL 11</i>, 1984,245-257.<p>
+
+Harel, David.  <i>First Order Dynamic Logic</i>.  Springer-Verlag LNCS 68,
+1979.<p>
+
+Harms, D.E., and Weide, B.W.  "Copying and Swapping: Influences on the Design
+of Reusable Software Components".  <i>IEEE Trans. SW Engrg. 17</i>,5 (May
+1991),424-435.<p>
+
+Harrison, P.G.  "Function Inversion".  In Jones, N., <i>et al</i>, <i>eds</i>.
+<i>Proc. Workshop on Partial Evaluation and Mixed Computation</i>, Gammel
+Avernaes, Denmark, Oct. 1987, North-Holland, 1988.<p>
+
+Hederman, Lucy.  "Compile Time Garbage Collection".  MS Thesis, Rice U. Comp.
+Sci. Dept., Sept. 1988.<p>
+
+Heering, J., and Klint, P.  "Towards monolingual programming environments".
+<i>ACM TOPLAS 7</i>,2 (April 1985),183-213.<p>
+
+Herlihy, Maurice.  "Wait-Free Synchronization".  <i>ACM TOPLAS 11</i>,1 (Jan.
+1991),124-149.<p>
+
+Hofstadter, Douglas R.  <i>G&ouml;del, Escher, Bach: an Eternal Golden
+Braid</i>.  Vintage Bks., Random House, NY, 1979.<p>
+
+Inoue, K., <i>et al</i>.  "Analysis of functional programs to detect run-time
+garbage cells".  <i>ACM TOPLAS 10</i>,4 (Oct. 1988),555-578.<p>
+
+Johnsson, T.  "Lambda lifting: transforming programs to recursive equations".
+<i>Proc. FPCA</i>, Nancy, France, Springer LNCS 201, 1985,190-203.<p>
+
+Kay, A.C.  "Microelectronics and the Personal Computer".  <i>Sci. Amer.
+237</i>,3 (Sept. 1977),230-244.<p>
+
+Keller, Robert M., <i>et al</i>.  "An Architecture for a Loosely-Coupled
+Parallel Processor".  Tech. Rep. UUCS-78-105, Oct. 1978,50p.<p>
+
+Kieburtz, Richard B.  "Programming without pointer variables".  <i>Proc. Conf.
+on Data: Abstraction, Definition and Structure, Sigplan Not. 11</i> (special
+issue 1976),95-107.<p>
+
+Kieburtz, R. B.  "The G-machine: a fast, graph-reduction evaluator".  <i>Proc.
+IFIP FPCA</i>, Nancy, France, 1985.<p>
+
+Kieburtz, Richard B.  "A RISC Architecture for Symbolic Computation".  <i>Proc.
+ASPLOS II, Sigplan Not. 22</i>,10 (Oct. 1987),146-155.<p>
+
+Korth, H.F., <i>et al</i>.  "Formal approach to recovery by compensating
+transactions".  <i>Proc. 16th Int'l. Conf. on Very Large Databases</i>, 1990.<p>
+
+Kung, H.T. &amp; Robinson, J.T.  "On optimistic methods for concurrency
+control".  <i>ACM Trans. on DB Sys. 6</i>,2 (June 1981).<p>
+
+Jefferson, David R.  "Virtual Time".  <i>ACM TOPLAS 7</i>,3 (July
+1985),404-425.<p>
+
+Lafont, Yves.  "The Linear Abstract Machine".  <i>Theor. Computer Sci. 59</i>
+(1988),157-180.<p>
+
+Lafont, Yves.  "Interaction Nets".  <i>ACM POPL 17</i>, San Franciso, CA, Jan.
+1990,95-108.<p>
+
+Lafont, Yves.  "The Paradigm of Interaction (Short Version)".  Unpubl.
+manuscript, July 12, 1991, 18p.<p>
+
+Lafora, F, &amp; Soffa, M.L.  "Reverse Execution in a Generalized Control
+Regime".  <i>Comp. Lang. 9</i>,3/4 (1984), 183-192.<p>
+
+Landauer, R.  "Dissipation and Noise Immunity in Computation and
+Communication".  <i>Nature 335</i> (Oct. 1988),779-784.<p>
+
+LeBlanc, T.J., and Mellor-Crummey, J.M.  "Debugging parallel programs with
+Instant Replay".  <i>IEEE Tr. Comp. 36</i>,4 (April 1987),471-482.<p>
+
+Leeman, G.B.  "Building undo/redo operations into the C language".  <i>Proc.
+IEEE 15th Annual Int'l. Symp. on Fault-Tolerant Computing</i>, 1985,410-415.<p>
+
+Leeman, G.B.  "A Formal Approach to Undo Operations in Programming Languages".
+<i>ACM TOPLAS 8</i>,1 (Jan. 1986),50-87.<p>
+
+Levy, E., <i>et al.</i>  "An Optimistic Commit Protocol for Distributed
+Transaction Management".  <i>Proc. ACM SIGMOD</i>, Denver, CO, May
+1991,88-97.<p>
+
+Lewis, H.R., &amp; Papadimitriou, C.H.  "Symmetric Space-bounded Computation".
+<i>Theor. Comp. Sci. 19</i> (1982),161-187.<p>
+
+Lieberman, H., &amp; Hewitt, C.  "A Real-Time Garbage Collector Based on the
+Lifetimes of Objects".  <i>CACM 26</i>, 6 (June 1983),419-429.<p>
+
+Lindstrom, Gary.  "Efficiency in Nondeterministic Control through Non-Forgetful
+Backtracking".  Tech. Rep. UUCS-77-114, Oct. 1977,18p.<p>
+
+MacLennan, B.J.  "Values and Objects in Programming Languages".  <i>Sigplan
+Not. 17</i>,12 (Dec. 1982),70-79.<p>
+
+Manthey, M.J., &amp; Moret, B.M.E.  "The Computational Metaphor and Quantum
+Physics".  <i>CACM 26</i>,2 (Feb. 1983),137-145.<p>
+
+Margolus, Norman.  "Physics-Like Models of Computation".  Elsevier
+North-Holland, <i>Physica 10D</i> (1984),81-95.<p>
+
+Margolus, Norman H.  <i>Physics and Computation</i>.  Ph.D. Thesis,
+MIT/LCS/TR-415, March 1988,188p.<p>
+
+Mattson, R.L., <i>et al</i>.  "Evaluation Techniques for Storage Hierarchies".
+<i>IBM Sys. J. 9</i>,2 (1970),78-117.<p>
+
+McCarthy, John.  "The Inversion of Functions defined by Turing Machines".  In
+Shannon, C.E., and McCarthy, J., <i>eds</i>.  <i>Automata Studies</i>,
+Princeton, 1956,177-181.<p>
+
+McDowell, C.E. &amp; Helmbold, D.P.  "Debugging concurrent programs".  <i>ACM
+Comput. Surv. 21</i>,4 (Dec. 1989),593-622.<p>
+
+Miller, B.P. &amp; Choi, J.-D.  "A mechanism for efficient debugging of
+parallel programs".  <i>Proc. ACM PLDI,</i> 1988,135-144.<p>
+
+Morita, K.  "A Simple Construction Method of a Reversible Finite Automaton out
+of Fredkin Gates, and its Related Problem".  <i>Trans. IEICE E 73</i>, 6
+(1990),978-984.<p>
+
+Nylin, W.C.Jr., and Harvill, J.B.  "Multiple Tense Computer Programming".
+<i>Sigplan Not. 11</i>,12 (Dec. 1976),74-93.<p>
+
+Pan, D.Z., and Linton, M.A.  "Supporting reverse execution of parallel
+programs".  <i>Proc. ACM Sigplan/Sigops WS on Par. &amp; Distr. Debugging</i>,
+May 1988,112-123.<p>
+
+Penrose, R.  <i>The Emperor's New Mind: Concerning Computers, Minds, and the
+Laws of Physics</i>.  Penguin Bks, London, 1989.<p>
+
+Peyton-Jones, S.L.  <i>The Implementation of Functional Programming
+Languages</i>.  Prentice-Hall, NY, 1987.<p>
+
+Planck, Max.  <i>Treatise on Thermodynamics</i>.  Transl. Ogg, A., Dover Publ.,
+NY, 1945.<p>
+
+Ressler, A.L.  <i>The Design of a Conservative Logic Computer and a Graphical
+Editor Simulator</i>.  M.S. Th., MIT, 1981, 128p.<p>
+
+de Roever, Willem P.  "On Backtracking and Greatest Fixpoints".  In Neuhold,
+Erich J., <i>Ed</i>.  <i>Formal Description of Programming Concepts</i>,
+North-Holland, Amsterdam, 1978.<p>
+
+Romanenko, Alexander.  "Inversion and Metacomputation".  <i>ACM PEPM'91</i>,
+New Haven, CT, June 1991,12-22.<p>
+
+Rosenschein, Stanley J.  "Plan Synthesis: A Logical Perspective".  <i>Proc.
+IJCAI-81</i>, Vancouver, Canada, Aug. 1981, 331-337.<p>
+
+Ruggieri, C. &amp; Murtagh, T. P.  "Lifetime analysis of dynamically allocated
+objects".  <i>ACM POPL '88</i>,285-293.<p>
+
+Schorr, H., &amp; Waite, W.M.  "An efficient machine-independent procedure for
+garbage collection in various list structures".  <i>CACM 10</i>,8 (Aug.
+1967),501-506.<p>
+
+Shoman, Y., and McDermott, D.V.  "Directed Relations and Inversion of Prolog
+Programs".  <i>Proc. Conf. of 5th Gen. Comp. Sys.</i>, ICOT, 1984.<p>
+
+Sleator, D.D. &amp; Tarjan, R.E.  "Amortized Efficiency of List Update and
+Paging Rules".  <i>CACM 28</i>,2 (Feb. 1985),202-208.<p>
+
+Smith, J.M., and Maguire, G.Q., Jr.  "Transparent concurrent execution of
+mutually exclusive alternatives".  <i>Proc. 9th Int'l. Conf. on Distr. Computer
+Sys.</i>, Newport Bch., CA, June 1989.<p>
+
+Strom, R.E., <i>et al</i>.  "A recoverable object store".  IBM Watson Research
+Ctr., 1988.<p>
+
+Strothotte, T.W., and Cormack, G.V.  "Structured Program Lookahead".
+<i>Comput. Lang. 12</i>,2 (1987),95-108.<p>
+
+Suzuki, N.  "Analysis of Pointer 'Rotation'".  <i>CACM 25,</i>5 (May
+1982)330-335.<p>
+
+Toffoli, T.  "Reversible Computing".  MIT/LCS/TM-151, Feb. 1980, 36p.<p>
+
+Toffoli, T.  "Reversible Computing".  In De Bakker &amp; van Leeuwen,
+<i>eds</i>.  <i>Automata, Languages and Programming,</i> Springer-Verlag
+(1980),632-644.<p>
+
+Toffoli, T.  "Bicontinuous Extensions of Invertible Combinatorial Functions".
+<i>Math. Sys. Theor. 14</i> (1981),13-23.<p>
+
+Toffoli, T.  "Physics and Computation".  <i>Int'l. J. Theor. Phys. 21</i>, 3/4
+(1982),165-175.<p>
+
+Tolmach, A.P., and Appel, A.W.  "Debugging Standard ML without Reverse
+Engineering".  <i>Proc. ACM Lisp &amp; Funct. Progr. Conf.</i>, Nice, France,
+June 1990,1-12.<p>
+
+Turner, D.  "A New Implementation Technique for Applicative Languages".
+<i>SW--Pract.&amp;Exper. 9</i> (1979),31-49.<p>
+
+Vitter, J.S.  "US&amp;R: a new framework for redoing".  <i>ACM Symp. on Pract.
+SW Dev. Envs</i>., Pitts., PA, April 1984,168-176.<p>
+
+Wadler, P.  "Views: A way for pattern matching to cohabit with data
+abstraction".  <i>ACM POPL 14</i> (1987),307-313.<p>
+
+Wadler, P.  "Is there a use for linear logic?".  <i>Proc. ACM PEPM'91</i>, New
+Haven, June, 1991,255-273.<p>
+
+Wakeling, D. &amp; Runciman, C.  "Linearity and Laziness".  <i>Proc. Funct.
+Progr. &amp; Comp. Arch.</i>, Springer LNCS 523, 1991,215-240.<p>
+
+Wilson, P.R. &amp; Moher, T.G.  "Demonic memory for process histories".
+<i>Proc. Sigplan PLDI</i>, June 1989.<p>
+
+Zelkowitz, M.V.  "Reversible Execution".  <i>CACM 16</i>,9 (Sept.
+1973),566-566.<p>
+
+Zurek, W.H., <i>ed</i>.  <i>Complexity, Entropy and the Physics of
+Information</i>.  Addison-Wesley, Redwood City, 1990.<p>
+
+<a name="fn1">[1]</a>
+
+Apologies to Alan Dershowitz.<p>
+
+<a name="fn2">[2]</a>
+
+E.g., none of the Ten Commandments is concerned with von
+Neumann's Machine, nor does Moses mention ever seeing von Neumann on the
+mountain where the Commandments were obtained.<p>
+
+<a name="fn3">[3]</a>
+
+The "garbage collector" can erase a "write-once" memory in
+functional systems without contradiction, because the memory has previously
+become inaccessible.<p>
+
+<a name="fn4">[4]</a>
+
+Black holes seem to "eat" information; perhaps black holes
+are the "cooling fans" for the Biosphere of the universe.<p>
+
+<a name="fn5">[5]</a>
+
+Curiously, inverting Newton's square root iteration itself requires taking a
+square root.  However, the inputs for these roots will always be <i>rational
+perfect squares </i>if the initial forward approximation is rational.  If the
+initial approximation is chosen so that x0^2-N is <i>not</i> a perfect square,
+then reversal can use this property as its stopping criterion, and the
+algorithm becomes reversible even without the requirement for a fixed number of
+iterations.<p>
+
+<a name="fn6">[6]</a>
+
+Extra credit problem for the reader: why is it called
+Psi-Lisp?<p>
+
+<a name="fn7">[7]</a>
+
+For example, the TI Explorer GC "learns" locality by
+letting the running program copy incrementally; this scheme seems to provide
+locality superior to that from any uniform (depth-first or breadth-first)
+copying strategy.<p>
+
+<a name="fn8">[8]</a>
+
+Linearity, even without reversibility, elegantly
+eliminates the <i>aliasing</i> problem which gives these logics fits!
+
+</body></html>
