@@ -2,7 +2,7 @@
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width, inital-scale=1"/><link href="../links/main.css" type="text/css" rel="stylesheet"/><link href="../media/services/icon.png" type="image/png" rel="shortcut icon"/>
 <title>XXIIVV &mdash; uxntal syntax</title></head><body>
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
-<nav><ul><li><a href="uxntal.html" class="parent">uxntal</a></li><li><a href="varvara.html">varvara</a></li></ul><ul><li><a href="uxntal_opcodes.html">uxntal opcodes</a></li><li><a href="uxntal_stacks.html">uxntal stacks</a></li><li><a href="uxntal_modes.html">uxntal modes</a></li><li><a href="uxntal_syntax.html" class="self">uxntal syntax</a></li><li><a href="uxntal_immediate.html">uxntal immediate</a></li><li><a href="uxntal_memory.html">uxntal memory</a></li><li><a href="uxntal_devices.html">uxntal devices</a></li><li><a href="uxntal_errors.html">uxntal errors</a></li></ul><ul><li><a href="uxntal_library.html">uxntal library</a></li><li><a href="uxntal_struct.html">uxntal struct</a></li><li><a href="uxntal_functional.html">uxntal functional</a></li><li><a href="uxntal_cons.html">uxntal cons</a></li></ul></nav><main><h2>Uxntal syntax</h2>
+<nav><ul><li><a href="uxntal.html" class="parent">uxntal</a></li><li><a href="varvara.html">varvara</a></li></ul><ul><li><a href="uxntal_opcodes.html">uxntal opcodes</a></li><li><a href="uxntal_stacks.html">uxntal stacks</a></li><li><a href="uxntal_modes.html">uxntal modes</a></li><li><a href="uxntal_syntax.html" class="self">uxntal syntax</a></li><li><a href="uxntal_immediate.html">uxntal immediate</a></li><li><a href="uxntal_memory.html">uxntal memory</a></li><li><a href="uxntal_devices.html">uxntal devices</a></li><li><a href="uxntal_errors.html">uxntal errors</a></li></ul><ul><li><a href="uxntal_library.html">uxntal library</a></li><li><a href="uxntal_types.html">uxntal types</a></li><li><a href="uxntal_struct.html">uxntal struct</a></li><li><a href="uxntal_functional.html">uxntal functional</a></li><li><a href="uxntal_cons.html">uxntal cons</a></li></ul></nav><main><h2>Uxntal syntax</h2>
 
 <p>Uppercased opcodes are reserved words, hexadecimal bytes and shorts are always lowercase. Comments are within parentheses, and the square brackets are ignored.</p>
 
@@ -356,6 +356,36 @@ JMP2r
 
 %PC { #00 JSR STH2r }
 </pre>
+
+<h2>Typed uxntal is an inference system based on the routine definition comment.</h2>
+
+<p>The Uxntal <a href='type_systems.html'>type system</a> is primitive, but still allows to find some imbalance triggering code.</p>
+
+<p>Type inference in stack-based programming language is done by checking the stack effect declarations of words before they can be run, against the cumulative stack state of each item in the definition of each word.</p>
+
+<pre>
+pop ( 1 -- )
+swap ( 1 2 -- 2 1 )
+</pre>
+
+<p>Words that do not pass the stack checker are generating a warning, and so essentially this defines a very simple and permissive type system that nevertheless catches some invalid programs and enables compiler optimizations. </p>
+
+<p>The simplest case is when a piece of code does not have any branches or recursion, and just pushes literals and calls words. Pushing a literal has stack effect <code>( -- x )</code>. The stack effect of most words is always known statically from the declaration.</p>
+
+<p>The type value of a label is recorded as follow: </p>
+
+<pre>
+F V B D
+| | | +---- Defined
+| | +------ Branch
+| +-------- Vector
++---------- Fall-through
+</pre>
+
+<ul>
+	<li><a href='https://git.sr.ht/~rabbits/uxnbal' target='_blank'>Uxnbal</a>, Source</li>
+</ul>
+
 
 <h2>Structs allow to access individual members in a data structure.</h2>
 
