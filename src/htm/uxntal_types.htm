@@ -1,30 +1,53 @@
-<h2>Typed uxntal is an inference system based on the routine definition comment.</h2>
+<h2>Typed uxntal is an inference system based on routine definitions.</h2>
 
-<p>The Uxntal <a href='type_systems.html'>type system</a> is primitive, but still allows to find some imbalance triggering code.</p>
-
-<p>Type inference in stack-based programming language is done by checking the stack effect declarations of words before they can be run, against the cumulative stack state of each item in the definition of each word.</p>
-
-<pre>
-pop ( 1 -- )
-swap ( 1 2 -- 2 1 )
-</pre>
-
-<p>Words that do not pass the stack checker are generating a warning, and so essentially this defines a very simple and permissive type system that nevertheless catches some invalid programs and enables compiler optimizations. </p>
-
-<p>The simplest case is when a piece of code does not have any branches or recursion, and just pushes literals and calls words. Pushing a literal has stack effect <code>( -- x )</code>. The stack effect of most words is always known statically from the declaration.</p>
-
-<h3>Uxntal Routine Types</h3>
+<p><a href='type_systems.html'>Type inference</a> in <a href='uxntal.html'>Uxntal</a> is done by checking the stack effect declarations of words before they can be run, against the cumulative stack state of each item in the definition of each word.</p>
 
 <ul>
 	<li><code>00</code> Undefined</li>
 	<li><code>01</code> <kbd>( a -- b )</kbd> Normal</li>
 	<li><code>02</code> <kbd>( a -+ b )</kbd> Fallthrough</li>
 	<li><code>03</code> <kbd>( a ~- b )</kbd> Normal Branch</li>
-	<li><code>04</code> Unused</li>
 	<li><code>05</code> <kbd>( a -> b )</kbd> Vector</li>
-	<li><code>06</code> Unused</li>
 	<li><code>07</code> <kbd>( a ~> b )</kbd> Vector Branch</li>
 </ul>
+
+<pre>
+@routine ( a b -- c ) <i>Ok.</i>
+	MUL
+JMP2r
+</pre>
+
+<p>The simplest case is when a piece of code does not have any branches or recursion, and just pushes literals and calls words. Pushing a literal has stack effect <code>( -- x )</code>. The stack effect of most words is always known statically from the declaration.</p>
+
+<pre>
+@add ( <b style='color:red'>a*</b> b* -- c* ) <i>Warning: Imbalance in @add of +2</i>
+	DUP2 ADD2
+JMP2r 
+</pre>
+
+<h3>Branch Type</h3>
+<p>Words that do not pass the stack-checker are generating a warning, and so essentially this defines a very simple and permissive type system that nevertheless catches some invalid programs and enables compiler optimizations. </p>
+
+<pre>
+@routine ( a -- ) <i>Ok.</i>
+	#01 ?&branch POP 
+JMP2r
+	&branch ( a ~- )
+		POP
+JMP2r
+</pre>
+
+<h3>Fall-through Type</h3>
+
+<p>The tail-less fall-through type allows for routine to not return, and check the stack balance including that of the next routine in memory.</p>
+
+<pre>
+@falling ( a b c -+ c )
+	POP
+@next-routine ( a b -- res )
+	ADD
+JMP2r
+</pre>
 
 <h3>Type Byte</h3>
 
