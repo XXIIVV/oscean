@@ -17,11 +17,11 @@
 		#0a00 cswp
 	( build )
 	;lexicon
-	&while
+	&while ( -- )
 		( move to name ) INC2 INC2
 		( init ) init-page
 		( build ) build-page
-		( goto eol ) &eol INC2 LDAk ?&eol
+		( goto eol ) &eol ( -- ) INC2 LDAk ?&eol
 		INC2 LDAk ?&while
 	POP2
 	( Halt. )
@@ -37,7 +37,7 @@ BRK
 	( term name limit )
 	DUP2 slen #0016 LTH2 ?&namelength-ok
 		;err/name-length !print-error
-		&namelength-ok
+		&namelength-ok ( -- )
 
 	( cleanup )
 	( clear zeropage ) #0000 #00ff mclr
@@ -61,7 +61,7 @@ BRK
 		( clip start ) #00 STH2kr STA
 		( clip wrap ) ;term/pict scpy
 		( clip restore ) #09 STH2r STA
-		&continue
+		&continue ( -- )
 	POP2
 
 JMP2r
@@ -127,7 +127,7 @@ JMP2r
 	( check file )
 	;write/head LDA2 #8000 SUB2 #7fff LTH2 ?&size-ok
 		;err/output-size !print-error
-		&size-ok
+		&size-ok ( -- )
 
 	( save file )
 	;output-path OVR2 ;html-ext make-path .File/name DEO2
@@ -143,11 +143,11 @@ JMP2r
 		( parents )
 		DUP2 #0002 SUB2 LDA chex #02 LTH ?&no-parents
 			DUP2 find-parent find-parent build-children POP2
-			&no-parents
+			&no-parents ( -- )
 		( siblings )
 		DUP2 #0002 SUB2 LDA chex #00 EQU ?&no-siblings
 			DUP2 find-parent build-children POP2
-			&no-siblings
+			&no-siblings ( -- )
 		( children ) build-children
 	;nav-tag !write-close
 
@@ -156,16 +156,16 @@ JMP2r
 		;ul-tag write-open
 		( stash depth ) DUP2k #0002 SUB2 LDA chex STH
 		( start after ) DUP2 slen ADD2 INC2
-		&while
+		&while ( -- )
 			( stop at sibling ) LDAk chex STHkr EQU ?&end
 			( when depth+1 ) LDAk chex STHkr INC NEQ ?&continue
 				;li-tag write-open
 				INC2k INC2 write-link
 				;li-tag write-close
-				&continue
-			( move to eol ) INC2 INC2 &eol INC2 LDAk ?&eol
+				&continue ( -- )
+			( move to eol ) INC2 INC2 &eol ( -- ) INC2 LDAk ?&eol
 			INC2 LDAk ?&while
-		&end
+		&end ( -- )
 		POP2 POPr
 		;ul-tag
 
@@ -177,7 +177,7 @@ JMP2r
 		( picture )
 		;term/pict LDA #00 EQU ?&no-picture
 			;term/diary build-module-photo
-			&no-picture
+			&no-picture ( -- )
 		( body )
 		build-page-body
 		build-page-module
@@ -196,7 +196,7 @@ JMP2r
 @validate-output ( page* -- )
 
 	( look for redlinks )
-	&while
+	&while ( -- )
 		;href-attr OVR2 sseg #00 EQU ?&continue
 			( move to href ) #0006 ADD2
 			( strip relative ) LDAk [ LIT ". ] EQU ?&continue
@@ -209,7 +209,7 @@ JMP2r
 			( find term )
 			;buff find-term ORA ?&continue
 				;buff ;err/broken-link !print-error
-			&continue
+			&continue ( -- )
 		INC2 LDAk ?&while
 	POP2
 
@@ -219,13 +219,13 @@ JMP2r
 
 	DUP2 #0001 SUB2 LDA [ LIT ", ] NEQ ?&no-album
 		!build-module-album
-		&no-album
+		&no-album ( -- )
 	DUP2 #0001 SUB2 LDA [ LIT "; ] NEQ ?&no-portal
 		!build-module-portal
-		&no-portal
+		&no-portal ( -- )
 	DUP2 #0001 SUB2 LDA [ LIT ": ] NEQ ?&no-archive
 		!build-module-archive
-		&no-archive
+		&no-archive ( -- )
 
 JMP2r
 
@@ -234,13 +234,13 @@ JMP2r
 	STH2
 	;ul-tag write-open
 	;diary
-	&while
+	&while ( -- )
 		DUP2 #0005 ADD2 LDA [ LIT "+ ] NEQ ?&continue
 			;li-tag write-open
 				DUP2 build-module-event
 			;li-tag write-close
-			&continue
-		( goto eol ) &eol INC2 LDAk ?&eol
+			&continue ( -- )
+		( goto eol ) &eol ( -- ) INC2 LDAk ?&eol
 		INC2 LDAk ?&while
 	POP2
 	;ul-tag write-close
@@ -252,32 +252,32 @@ JMP2r
 
 	STH2
 	;diary
-	&while
+	&while ( -- )
 		( picture is blank ) DUP2 ;no-picture log-has-picture ?&continue
 		( picture is head ) DUP2 ;term/pict log-has-picture ?&continue
 			DUP2 build-module-photo
-		&continue
-		( goto eol ) &eol INC2 LDAk ?&eol
+		&continue ( -- )
+		( goto eol ) &eol ( -- ) INC2 LDAk ?&eol
 		INC2 LDAk ?&while
 	POP2 STH2r
 
 JMP2r
 
-@build-module-portal ( name* -- name* )
+@build-module-portal ( -- ) ( name* -- name* )
 
 	( stash depth ) DUP2k #0002 SUB2 LDA chex STH
 	( start after ) DUP2 slen ADD2 INC2
-	&while
+	&while ( -- )
 		( stop at sibling ) LDAk chex STHkr EQU ?&end
 		( when depth+1 ) LDAk chex STHkr INC NEQ ?&continue
 			INC2k INC2 DUP2 load-diary find-diary ORAk #00 EQU ?&no-diary
 				DUP2 build-module-photo
-				&no-diary
+				&no-diary ( -- )
 				POP2
-			&continue
-		( move to eol ) INC2 INC2 &eol INC2 LDAk ?&eol
+			&continue ( -- )
+		( move to eol ) INC2 INC2 &eol ( -- ) INC2 LDAk ?&eol
 		INC2 LDAk ?&while
-	&end
+	&end ( -- )
 	POP2 POPr
 	( restore diary )
 	DUP2
@@ -288,15 +288,15 @@ JMP2r
 
 	( stash depth ) DUP2k #0002 SUB2 LDA chex STH
 	( start after ) DUP2 slen ADD2 INC2
-	&while
+	&while ( -- )
 		( stop at sibling ) LDAk chex STHkr EQU ?&end
 		( when depth+1 ) LDAk chex STHkr INC NEQ ?&continue
 			INC2 INC2
 				build-page-body
-			&continue
-		( move to eol ) INC2 INC2 &eol INC2 LDAk ?&eol
+			&continue ( -- )
+		( move to eol ) INC2 INC2 &eol ( -- ) INC2 LDAk ?&eol
 		INC2 LDAk ?&while
-	&end
+	&end ( -- )
 	POP2 POPr
 
 JMP2r
@@ -317,7 +317,7 @@ JMP2r
 
 	LDAk ?&continue
 		POP2 JMP2r
-		&continue
+		&continue ( -- )
 	( html )
 	;figure-tag write-open
 		( clip ) DUP2 #0009 ADD2 STH2 #00 STH2r STA
@@ -334,7 +334,7 @@ JMP2r
 			DUP2 #000a ADD2 ;term/name SWP2 sseg ?&skip
 				DUP2 extract-term write-link
 				[ LIT 20 ] write/char ;mdash-entity-txt write [ LIT 20 ] write/char
-				&skip
+				&skip ( -- )
 			#09 next-char INC2 #09 next-char INC2 write
 		;figcaption-tag write-close
 	;figure-tag
@@ -364,13 +364,13 @@ JMP2r
 	( exists )
 	LDAk ?&continue
 		POP2 JMP2r
-		&continue
+		&continue ( -- )
 	( html )
 	;p-tag write-open
 	;&incoming-txt write
-	&while
+	&while ( -- )
 		DUP2 write-link #20 write/char
-		( move to eol ) &eol INC2 LDAk ?&eol
+		( move to eol ) &eol ( -- ) INC2 LDAk ?&eol
 		INC2 LDAk ?&while
 	POP2
 	;p-tag
@@ -384,13 +384,13 @@ JMP2r
 
 	,&t STR2
 	;lexicon
-	&while
+	&while ( -- )
 		( move to name ) INC2 INC2
 		( test ) DUP2 [ LIT2 &t $2 ] scmp ?&end
-		( move to eol ) &eol INC2 LDAk ?&eol
+		( move to eol ) &eol ( -- ) INC2 LDAk ?&eol
 		INC2 LDAk ?&while
 	POP2 #0000
-	&end
+	&end ( -- )
 
 JMP2r
 
@@ -398,11 +398,11 @@ JMP2r
 
 	STH2
 	;diary
-	&while
+	&while ( -- )
 		( skip events ) DUP2 ;no-picture log-has-picture ?&skip
 			POP2r JMP2r
-		&skip
-		( move to eol ) &eol INC2 LDAk ?&eol
+		&skip ( -- )
+		( move to eol ) &eol ( -- ) INC2 LDAk ?&eol
 		INC2 LDAk ?&while
 	POP2 #0000
 	POP2r
@@ -413,15 +413,15 @@ JMP2r
 
 	DUP2 #0002 SUB2 LDA chex ?&not-root
 		JMP2r
-		&not-root
+		&not-root ( -- )
 	#00 prev-char INC2
 	( stash depth ) LDAk chex #01 SUB STH
 	;lexicon SWP2
-	&loop
+	&loop ( -- )
 		#0001 SUB2 #00 prev-char
 		INC2k LDA chex STHkr NEQ ?&continue
 			NIP2 POPr INC2 INC2 INC2 JMP2r
-			&continue
+			&continue ( -- )
 		LTH2k ?&loop
 	( pop depth ) POPr
 	#0002
@@ -457,7 +457,7 @@ JMP2r
 	( file is missing )
 	ORAr STHr ?&no-blank
 		;err/include-missing !print-error
-		&no-blank
+		&no-blank ( -- )
 
 JMP2r
 
@@ -480,11 +480,11 @@ JMP2r
 	( self )
 	DUP2 ;term/name scmp #00 EQU ?&not-self
 		;self-txt ;class-attr write-attr
-		&not-self
+		&not-self ( -- )
 	( parent )
 	DUP2 ;term/parent scmp #00 EQU ?&not-parent
 		;parent-txt ;class-attr write-attr
-		&not-parent
+		&not-parent ( -- )
 	[ LIT "> ] write/char
 	write
 	;a-tag
@@ -531,10 +531,10 @@ JMP2r
 @write ( addr* -- )
 
 	LDAk #00 EQU ?&end
-	&while
+	&while ( -- )
 		LDAk write/char
 		INC2 LDAk ?&while
-	&end
+	&end ( -- )
 	POP2
 
 JMP2r
@@ -547,22 +547,22 @@ JMP2r
 @prev-char ( addr* char -- addr* )
 
 	,&t STR
-	&while
+	&while ( -- )
 		LDAk [ LIT &t $1 ] EQU ?&end
 		LDAk #00 EQU ?&end
 		#0001 SUB2 LDAk ?&while
-	&end
+	&end ( -- )
 
 JMP2r
 
 @next-char ( addr* char -- addr* )
 
 	,&t STR
-	&while
+	&while ( -- )
 		LDAk [ LIT &t $1 ] EQU ?&end
 		LDAk #00 EQU ?&end
 		INC2 LDAk ?&while
-	&end
+	&end ( -- )
 
 JMP2r
 
@@ -580,26 +580,26 @@ JMP2r
 @cswp ( str* a b -- )
 
 	,&b STR ,&a STR
-	&while
+	&while ( -- )
 		LDAk [ LIT &a $1 ] NEQ ?&continue
 			STH2k [ LIT &b $1 ] STH2r STA
-			&continue
+			&continue ( -- )
 		INC2 LDAk ?&while
 	POP2
 
 JMP2r
 
-@scap ( str* -- end* ) LDAk #00 NEQ [ JMP JMP2r ] &w INC2 LDAk ?&w JMP2r
+@scap ( str* -- end* ) LDAk #00 NEQ [ JMP JMP2r ] &w ( -- ) INC2 LDAk ?&w JMP2r
 @slen ( str* -- len* ) DUP2 scap SWP2 SUB2 JMP2r
 @scat ( src* dst* -- ) DUP2 slen ADD2
-@scpy ( src* dst* -- ) STH2 &w LDAk STH2kr STA INC2r INC2 LDAk ?&w POP2 #00 STH2r STA JMP2r
-@scmp ( a* b* -- f ) STH2 &l LDAk LDAkr STHr ANDk #00 EQU ?&e NEQk ?&e POP2 INC2 INC2r !&l &e NIP2 POP2r EQU JMP2r
-@sseg ( a* b* -- f ) STH2 &l LDAk LDAkr STHr NEQ ?&e INC2k LDA #00 EQU ?&e INC2 INC2r !&l &e LDA LDAr STHr EQU JMP2r
-@sclr ( str* -- ) LDAk ?&w POP2 JMP2r &w STH2k #00 STH2r STA INC2 LDAk ?&w POP2 JMP2r
-@mclr ( src* len* -- ) OVR2 ADD2 SWP2 &l STH2k #00 STH2r STA INC2 GTH2k ?&l POP2 POP2 JMP2r
-@mcpy ( src* dst* len* -- ) SWP2 STH2 OVR2 ADD2 SWP2 &loop LDAk STH2kr STA INC2r INC2 GTH2k ?&loop POP2 POP2 POP2r JMP2r
+@scpy ( src* dst* -- ) STH2 &w ( -- ) LDAk STH2kr STA INC2r INC2 LDAk ?&w POP2 #00 STH2r STA JMP2r
+@scmp ( a* b* -- f ) STH2 &l ( -- ) LDAk LDAkr STHr ANDk #00 EQU ?&e NEQk ?&e POP2 INC2 INC2r !&l &e ( -- ) NIP2 POP2r EQU JMP2r
+@sseg ( a* b* -- f ) STH2 &l ( -- ) LDAk LDAkr STHr NEQ ?&e INC2k LDA #00 EQU ?&e INC2 INC2r !&l &e ( -- ) LDA LDAr STHr EQU JMP2r
+@sclr ( str* -- ) LDAk ?&w POP2 JMP2r &w ( -- ) STH2k #00 STH2r STA INC2 LDAk ?&w POP2 JMP2r
+@mclr ( src* len* -- ) OVR2 ADD2 SWP2 &l ( -- ) STH2k #00 STH2r STA INC2 GTH2k ?&l POP2 POP2 JMP2r
+@mcpy ( src* dst* len* -- ) SWP2 STH2 OVR2 ADD2 SWP2 &loop ( -- ) LDAk STH2kr STA INC2r INC2 GTH2k ?&loop POP2 POP2 POP2r JMP2r
 
-@pstr ( str* -- ) &w LDAk #18 DEO INC2 LDAk ?&w POP2 JMP2r
+@pstr ( str* -- ) &w ( -- ) LDAk #18 DEO INC2 LDAk ?&w POP2 JMP2r
 
 @print-error ( name* msg* -- )
 

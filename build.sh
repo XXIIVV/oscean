@@ -19,6 +19,7 @@ case "$*" in *--lint*)
 case "$*" in *--bal*)
 	# https://git.sr.ht/~rabbits/uxnbal
 	$bal src/maeve.tal
+	$bal src/oscean.tal
 ;; esac
 
 mkdir -p bin && rm -f bin/*
