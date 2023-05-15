@@ -121,7 +121,7 @@ JMP2r
 
 	( check file )
 	;write/head LDA2 #8000 SUB2 #7fff LTH2 ?&size-ok
-		;err/output-size !print-error
+		DUP2 ;err/output-size print-error
 		&size-ok ( -- )
 
 	( save file )
@@ -182,7 +182,7 @@ JMP2r
 
 !write-close
 
-@build-page-body ( name* -- name* )
+@build-page-body ( name* -+ name* )
 
 	( keep ptr before include ) ;write/head LDA2 STH2
 	;htm-path OVR2 ;htm-ext make-path write-inc
@@ -203,7 +203,7 @@ JMP2r
 			;buff [ LIT2 "_ 20 ] cswp
 			( find term )
 			;buff find-term ORA ?&continue
-				;buff ;err/broken-link !print-error
+				;buff ;err/broken-link print-error
 			&continue ( -- )
 		INC2 LDAk ?&while
 	POP2
@@ -312,7 +312,7 @@ JMP2r
 
 	LDAk ?&continue
 		POP2 JMP2r
-		&continue ( -- )
+		&continue ( diary* ~- )
 	( html )
 	;figure-tag write-open
 		( clip ) DUP2 #0009 ADD2 STH2 #00 STH2r STA
@@ -359,7 +359,7 @@ JMP2r
 	( exists )
 	LDAk ?&continue
 		POP2 JMP2r
-		&continue ( -- )
+		&continue ( incoming* ~- )
 	( html )
 	;p-tag write-open
 	;&incoming-txt write
@@ -451,7 +451,7 @@ JMP2r
 	STH2r .File/success DEI2 STH2k ADD2 ;write/head STA2
 	( file is missing )
 	ORAr STHr ?&no-blank
-		;err/include-missing !print-error
+		.File/name DEI2 ;err/include-missing print-error
 		&no-blank ( -- )
 
 JMP2r
@@ -508,7 +508,7 @@ JMP2r
 
 !write/char
 
-@write-auto ( str* tag* -- )
+@write-auto ( str* tag* -+ )
 
 	STH2k write-open
 	write
@@ -533,7 +533,7 @@ JMP2r
 	POP2
 
 JMP2r
-	&char ( char -- )
+	&char ( char ~- )
 		[ LIT2 &head $2 ] INC2k ,&head STR2 STA
 	JMP2r
 
