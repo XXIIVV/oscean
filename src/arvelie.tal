@@ -75,13 +75,13 @@ JMP2r
 		INC GTHk ?&l
 	&end
 	NIP INC emit-dec [ LIT2 "- 18 ] DEO
-	STHr POPr
+	STHr POPr INC
 !emit-dec
 
 @emit-arv ( doty* year* -- )
 	#07d6 SUB2 NIP
 	( year ) emit-dec
-	( month ) DUP2 #000e DIV2 NIP #11 ADD emit-num
+	( month ) DUP2 #000e DIV2 NIP #11 ADD [ DUP #2a GTH #30 MUL SUB ] emit-num
 	( digit3 ) #000e [ DIV2k MUL2 SUB2 ] NIP
 !emit-dec
 
@@ -101,10 +101,11 @@ JMP2r
 @doty ( year* month* day* -- doty* )
 	ROT2 ,&y STR2
 	LIT2r 0000
-	SWP2 NIP #01 SUB #00
+	SWP2 NIP #01 SUB #00 EQUk ?&skip
 	&l
 		#00 OVR [ LIT2 &y $2 ] ROT diam STH2 ADD2r
 		INC GTHk ?&l
+	&skip
 	POP2
 	STH2r ADD2
 JMP2r
