@@ -154,7 +154,7 @@ JMP2r
 
 		;ul-tag write-open
 		( stash depth ) DUP2k #0002 SUB2 LDA chex STH
-		( start after ) DUP2 slen ADD2 INC2
+		( start after ) scap INC2
 		&while ( -- )
 			( stop at sibling ) LDAk chex STHkr EQU ?&end
 			( when depth+1 ) LDAk chex STHkr INC NEQ ?&continue
@@ -265,7 +265,7 @@ JMP2r
 @build-module-portal ( -- ) ( name* -- name* )
 
 	( stash depth ) DUP2k #0002 SUB2 LDA chex STH
-	( start after ) DUP2 slen ADD2 INC2
+	( start after ) scap INC2
 	&while ( -- )
 		( stop at sibling ) LDAk chex STHkr EQU ?&end
 		( when depth+1 ) LDAk chex STHkr INC NEQ ?&continue
@@ -286,7 +286,7 @@ JMP2r
 @build-module-archive ( name* -- name* )
 
 	( stash depth ) DUP2k #0002 SUB2 LDA chex STH
-	( start after ) DUP2 slen ADD2 INC2
+	( start after ) scap INC2
 	&while ( -- )
 		( stop at sibling ) LDAk chex STHkr EQU ?&end
 		( when depth+1 ) LDAk chex STHkr INC NEQ ?&continue
@@ -588,7 +588,13 @@ JMP2r
 
 JMP2r
 
-@scap ( str* -- end* ) LDAk #00 NEQ [ JMP JMP2r ] &w ( -- ) INC2 LDAk ?&w JMP2r
+@scap ( str* -- end* )
+	LDAk ?&w
+JMP2r
+	&w ( -- )
+		INC2 LDAk ?&w
+JMP2r
+
 @slen ( str* -- len* ) DUP2 scap SWP2 SUB2 JMP2r
 @scat ( src* dst* -- ) DUP2 slen ADD2
 @scpy ( src* dst* -- ) STH2 &w ( -- ) LDAk STH2kr STA INC2r INC2 LDAk ?&w POP2 #00 STH2r STA JMP2r
@@ -598,6 +604,7 @@ JMP2r
 @mclr ( src* len* -- ) OVR2 ADD2 SWP2 &l ( -- ) STH2k #00 STH2r STA INC2 GTH2k ?&l POP2 POP2 JMP2r
 @mcpy ( src* dst* len* -- ) SWP2 STH2 OVR2 ADD2 SWP2 &loop ( -- ) LDAk STH2kr STA INC2r INC2 GTH2k ?&loop POP2 POP2 POP2r JMP2r
 
+@phex ( hex* -- ) SWP phex/b &b ( b -- ) DUP #04 SFT phex/c &c ( c -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO JMP2r
 @pstr ( str* -- ) &w ( -- ) LDAk #18 DEO INC2 LDAk ?&w POP2 JMP2r
 
 @print-warning ( name* msg* -- )
