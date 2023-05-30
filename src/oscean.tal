@@ -49,7 +49,7 @@ BRK
 	( fill diary )
 	DUP2 find-diary
 	ORAk #00 EQU ?&continue
-		DUP2 ;term/diary #0050 mcpy
+		DUP2 ;term/diary scpy
 		( copy pict )
 		DUP2 #0006 ADD2
 		( clip bound ) INC2k INC2 INC2 STH2
@@ -595,10 +595,26 @@ JMP2r
 		INC2 LDAk ?&w
 JMP2r
 
-@slen ( str* -- len* ) DUP2 scap SWP2 SUB2 JMP2r
-@scat ( src* dst* -- ) DUP2 slen ADD2
-@scpy ( src* dst* -- ) STH2 &w ( -- ) LDAk STH2kr STA INC2r INC2 LDAk ?&w POP2 #00 STH2r STA JMP2r
-@scmp ( a* b* -- f ) STH2 &l ( -- ) LDAk LDAkr STHr ANDk #00 EQU ?&e NEQk ?&e POP2 INC2 INC2r !&l &e ( -- ) NIP2 POP2r EQU JMP2r
+@scat ( src* dst* -- )
+	scap
+@scpy ( src* dst* -- )
+	STH2
+	&w ( -- )
+		LDAk STH2kr STA INC2r INC2 LDAk ?&w
+		POP2
+	#00 STH2r STA
+JMP2r
+
+@scmp ( a* b* -- f )
+	STH2
+	&l ( -- )
+		LDAk LDAkr STHr ANDk #00 EQU ?&e
+		NEQk ?&e
+		POP2 INC2 INC2r !&l
+	&e ( -- )
+		NIP2 POP2r EQU
+JMP2r
+
 @sseg ( a* b* -- f ) STH2 &l ( -- ) LDAk LDAkr STHr NEQ ?&e INC2k LDA #00 EQU ?&e INC2 INC2r !&l &e ( -- ) LDA LDAr STHr EQU JMP2r
 @sclr ( str* -- ) LDAk ?&w POP2 JMP2r &w ( -- ) STH2k #00 STH2r STA INC2 LDAk ?&w POP2 JMP2r
 @mclr ( src* len* -- ) OVR2 ADD2 SWP2 &l ( -- ) STH2k #00 STH2r STA INC2 GTH2k ?&l POP2 POP2 JMP2r
