@@ -187,31 +187,9 @@ JMP2r
 
 @build-page-body ( name* -+ name* )
 
-	( keep ptr before include ) ;write/head LDA2 STH2
-	;htm-path OVR2 ;htm-ext make-path write-inc
-	STH2r
+	;htm-path OVR2 ;htm-ext make-path
 
-@validate-output ( page* -- )
-
-	( look for redlinks )
-	&while ( -- )
-		;href-attr OVR2 sseg #00 EQU ?&continue
-			( move to href ) #0006 ADD2
-			( strip relative ) LDAk [ LIT ". ] EQU ?&continue
-			( strip jumps ) LDAk [ LIT "# ] EQU ?&continue
-			( strip http* ) ;http-txt OVR2 sseg ?&continue
-			;buff sclr
-			DUP2 ;buff #002f mcpy
-			;buff [ LIT2 ". 00 ] cswp
-			;buff [ LIT2 "_ 20 ] cswp
-			( find term )
-			;buff find-term ORA ?&continue
-				;buff ;err/broken-link print-error
-			&continue ( -- )
-		INC2 LDAk ?&while
-	POP2
-
-JMP2r
+!write-inc
 
 @build-page-module ( term* -- term* )
 
@@ -377,20 +355,6 @@ JMP2r
 	&incoming-txt "<b>Incoming</b>: 20 $1
 
 ( tools )
-
-@find-term ( name* -- term* )
-
-	,&t STR2
-	;lexicon
-	&while ( -- )
-		( move to name ) INC2 INC2
-		( test ) DUP2 [ LIT2 &t $2 ] scmp ?&end
-		( move to eol ) &eol ( -- ) INC2 LDAk ?&eol
-		INC2 LDAk ?&while
-	POP2 #0000
-	&end ( -- )
-
-JMP2r
 
 @find-diary ( name* -- diary* )
 
@@ -625,8 +589,6 @@ JMP2r
 	POP2 POP2
 JMP2r
 
-@mcpy ( src* dst* len* -- ) SWP2 STH2 OVR2 ADD2 SWP2 &loop ( -- ) LDAk STH2kr STA INC2r INC2 GTH2k ?&loop POP2 POP2 POP2r JMP2r
-
 @phex ( hex* -- ) SWP phex/b &b ( b -- ) DUP #04 SFT phex/c &c ( c -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO JMP2r
 @pstr ( str* -- ) &w ( -- ) LDAk #18 DEO INC2 LDAk ?&w POP2 JMP2r
 
@@ -674,7 +636,6 @@ BRK
 @class-attr "class $1
 @title-txt "XXIIVV $1
 @mdash-entity-txt "&mdash; $1
-@http-txt "http $1
 @self-txt "self $1
 @parent-txt "parent $1
 @lexicon-path "src/tables/lexicon $1
@@ -687,9 +648,7 @@ BRK
 @no-picture "000 $1
 
 @err
-	&name-length "--name_length_limit $1
 	&include-missing "include_missing $1
-	&broken-link "--redlink $1
 	&output-size "--output_size_limit $1
 	&orphan "-- 20 "Orphan: 20 $1
 
