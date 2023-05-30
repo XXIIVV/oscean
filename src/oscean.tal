@@ -413,15 +413,15 @@ JMP2r
 @write-inc ( path* -- )
 
 	.File/name DEO2
-	#fffe ;write/head LDA2 STH2k SUB2 .File/length DEO2
-	STH2kr .File/read DEO2
-	STH2r .File/success DEI2 STH2k ADD2 ;write/head STA2
-	( file is missing )
-	ORAr STHr ?&no-blank
-		.File/name DEI2 ;err/include-missing print-error
-		&no-blank ( -- )
+	#0001 .File/length DEO2
+	&s
+		;&b .File/read DEO2
+		.File/success DEI2 #0000 EQU2 ?&end
+		,&b LDR write/char
+		!&s &end
 
 JMP2r
+	&b $1
 
 @write-img ( src* alt* -- )
 
