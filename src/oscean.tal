@@ -41,6 +41,10 @@ BRK
 
 	DUP2 load-diary
 	DUP2 load-incoming
+	( verify orphans )
+	.File/success DEI2 ORA ?&no-orphan
+		DUP2 ;err/orphan print-warning
+		&no-orphan
 
 	( fill name )
 	DUP2 ;term/name scpy
@@ -70,10 +74,10 @@ JMP2r
 	;&path .File/name DEO2
 	#1000 .File/length DEO2
 	;diary
-		( clear ) DUP2 sclr
+		( clear ) DUP2 [ LIT2 &length $2 ] mclr
 		( read ) DUP2 .File/read DEO2
-		( lines ) DUP2 #0a00 cswp
-		( tail ) #0000 SWP2 .File/success DEI2 ADD2 STA2
+		( lines ) #0a00 cswp
+	.File/success DEI2 ,&length STR2
 
 JMP2r
 	&path "tmp/log- &file $30
@@ -83,19 +87,16 @@ JMP2r
 	( make path )
 	;buff STH2k sclr
 	;&new-path STH2kr scpy
-	DUP2 STH2kr scat
+	STH2kr scat
 	STH2kr [ LIT2 20 "_ ] cswp
 	( load )
 	STH2r .File/name DEO2
 	#1000 .File/length DEO2
 	;incoming
-		( clear ) DUP2 #1000 mclr
+		( clear ) DUP2 [ LIT2 &length $2 ] mclr
 		( read ) DUP2 .File/read DEO2
 		( split lines ) #0a00 cswp
-	.File/success DEI2 ORA ?&no-orphan
-		DUP2 ;err/orphan print-warning
-		&no-orphan
-	POP2
+	.File/success DEI2 ,&length STR2
 
 JMP2r
 	&new-path "tmp/map- $1
@@ -615,7 +616,15 @@ JMP2r
 
 @sseg ( a* b* -- f ) STH2 &l ( -- ) LDAk LDAkr STHr NEQ ?&e INC2k LDA #00 EQU ?&e INC2 INC2r !&l &e ( -- ) LDA LDAr STHr EQU JMP2r
 @sclr ( str* -- ) LDAk ?&w POP2 JMP2r &w ( -- ) STH2k #00 STH2r STA INC2 LDAk ?&w POP2 JMP2r
-@mclr ( src* len* -- ) OVR2 ADD2 SWP2 &l ( -- ) STH2k #00 STH2r STA INC2 GTH2k ?&l POP2 POP2 JMP2r
+
+@mclr ( src* len* -- )
+	OVR2 ADD2 SWP2
+	&l ( -- )
+		STH2k #00 STH2r STA
+		INC2 GTH2k ?&l
+	POP2 POP2
+JMP2r
+
 @mcpy ( src* dst* len* -- ) SWP2 STH2 OVR2 ADD2 SWP2 &loop ( -- ) LDAk STH2kr STA INC2r INC2 GTH2k ?&loop POP2 POP2 POP2r JMP2r
 
 @phex ( hex* -- ) SWP phex/b &b ( b -- ) DUP #04 SFT phex/c &c ( c -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO JMP2r
