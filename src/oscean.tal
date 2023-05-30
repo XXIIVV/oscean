@@ -85,7 +85,7 @@ JMP2r
 	( make path )
 	;buff STH2k sclr
 	;&new-path STH2kr scpy
-	STH2kr scat
+	DUP2 STH2kr scat
 	STH2kr [ LIT2 20 "_ ] cswp
 	( load )
 	STH2r .File/name DEO2
@@ -93,9 +93,13 @@ JMP2r
 	;incoming
 		( clear ) DUP2 #1000 mclr
 		( read ) DUP2 .File/read DEO2
-		( split lines ) #0a00
+		( split lines ) #0a00 cswp
+	.File/success DEI2 ORA ?&no-orphan
+		DUP2 ;err/orphan print-warning
+		&no-orphan
+	POP2
 
-!cswp
+JMP2r
 	&new-path "tmp/map- $1
 
 @build-page ( name* -- name* )
@@ -596,14 +600,18 @@ JMP2r
 
 @pstr ( str* -- ) &w ( -- ) LDAk #18 DEO INC2 LDAk ?&w POP2 JMP2r
 
-@print-error ( name* msg* -- )
+@print-warning ( name* msg* -- )
 
-	#0a18 DEO
+	pstr pstr #0a18 DEO
+
+JMP2r
+
+@print-error ( name* msg* -> )
+
 	SWP2
 	pstr
 	#2018 DEO
 	pstr
-	#0d18 DEO
 	#0a18 DEO
 	#010f DEO
 
@@ -653,6 +661,8 @@ BRK
 	&include-missing "include_missing $1
 	&broken-link "--redlink $1
 	&output-size "--output_size_limit $1
+	&orphan "-- 20 "Orphan: 20 $1
+
 (
 @|memory )
 
