@@ -458,22 +458,20 @@ JMP2r
 
 @pdec ( short* -- )
 
-	#00 ,&z STR
-	#2710 pdec/parse
-	#03e8 pdec/parse
-	#0064 pdec/parse
-	#000a pdec/parse
-	NIP
-	&emit ( num -- )
-		DUP LIT &z $1 EQU ?&skip
-			#ff ,&z STR DUP #30 ADD #18 DEO
-		&skip ( a -- )
+	STH2 LIT2r 2710
+	[ LIT2 00 _&latch ] STR
+	#fb
+	&w
+		DIV2kr LIT2r 000a DIV2kr MUL2r SUB2r NIPr
+		STHkr [ LIT &latch $1 ] EQU ?&skip
+			STHkr LIT "0 ADD #18 DEO [ LIT2 ff _&latch ] STR
+			&skip
+		POPr LIT2r 000a DIV2r
+		INC DUP ?&w
 	POP
+	POP2r POP2r
 
 JMP2r
-	&parse ( a* dec* ~- a* )
-		DIV2k DUP pdec/emit MUL2 SUB2
-	JMP2r
 
 (
 @|assets )
