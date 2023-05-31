@@ -41,8 +41,6 @@ BRK
 
 	( cleanup )
 	( clear zeropage ) #0000 #0100 mclr
-	( clean output ) #8000 sclr
-	( reset head ) #8000 ;write/head STA2
 
 	DUP2 load-diary
 	DUP2 load-incoming
@@ -126,16 +124,6 @@ JMP2r
 			;meta-footer-path write-inc
 		;body-tag write-close
 	;html-tag write-close
-
-	( check file )
-	;write/head LDA2 #8000 SUB2 #7fff LTH2 ?&size-ok
-		DUP2 ;err/output-size print-error
-		&size-ok ( -- )
-
-	( save file )
-	;output-path OVR2 ;html-ext make-path .File/name DEO2
-	;write/head LDA2 #8000 SUB2 .File/length DEO2
-	#8000 .File/write DEO2
 
 JMP2r
 
@@ -417,16 +405,26 @@ JMP2r
 
 @write-inc ( path* -- )
 
-	.File/name DEO2
-	#0001 .File/length DEO2
+	DUP2 .File/name DEO2
+	#8000 .File/length DEO2
+	LITr 00
+	;workarea
 	&s
-		;&b .File/read DEO2
-		.File/success DEI2 #0000 EQU2 ?&end
-		,&b LDR write/char
+		DUP2 .File/read DEO2
+		.File/success DEI2
+			DUP2 .File2/length DEO2
+			#0000 EQU2 ?&end
+		DUP2 .File2/write DEO2
+		INCr
 		!&s &end
+	POP2
+	STHr ?&no-missing
+		DUP2 ;err/source print-error
+		&no-missing
+	POP2
+	#0001 .File2/length DEO2
 
 JMP2r
-	&b $1
 
 @write-img ( src* alt* -- )
 
@@ -506,8 +504,10 @@ JMP2r
 
 JMP2r
 	&char ( char ~- )
-		[ LIT2 &head $2 ] INC2k ,&head STR2 STA
+		,&b STR
+		;&b .File2/write DEO2
 	JMP2r
+&b $1
 
 ( fancyful things )
 
@@ -653,8 +653,7 @@ BRK
 @no-picture "000 $1
 
 @err
-	&include-missing "include_missing $1
-	&output-size "--output_size_limit $1
+	&source "-- 20 "Source: $1
 	&orphan "-- 20 "Orphan: 20 $1
 
 (
@@ -663,3 +662,4 @@ BRK
 @lexicon $2000
 @diary $1000
 @incoming $1000
+@workarea
