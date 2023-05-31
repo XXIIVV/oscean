@@ -123,9 +123,9 @@ JMP2r
 			build-page-main
 			;meta-footer-path write-inc
 		;body-tag write-close
-	;html-tag write-close
+	;html-tag
 
-JMP2r
+!write-close
 
 @build-page-nav ( name* -- name* )
 
@@ -495,19 +495,17 @@ JMP2r
 
 @write ( addr* -- )
 
-	LDAk #00 EQU ?&end
-	&while ( -- )
-		LDAk write/char
-		INC2 LDAk ?&while
-	&end ( -- )
-	POP2
+	DUP2 scap OVR2 SUB2 .File2/length DEO2
+	.File2/write DEO2
+	#0001 .File2/length DEO2
 
 JMP2r
-	&char ( char ~- )
-		,&b STR
-		;&b .File2/write DEO2
-	JMP2r
-&b $1
+
+&char ( char ~- )
+
+	;&b STAk .File2/write DEO2 POP
+
+JMP2r &b $1
 
 ( fancyful things )
 
