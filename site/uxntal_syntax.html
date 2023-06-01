@@ -121,9 +121,9 @@ JMP2r
 
 <h3>Caching</h3>
 
-<p>In most cases, uxn self-modification is used to cache data that would be otherwise difficult or slow to retrieve. The typical scenario is requesting values from a device, when within a routine that requires a deep stack.</p>
+<p>In most cases, self-modification is used to cache data that would otherwise be difficult or slow to retrieve &mdash; Such as when getting values from a device, or when data is needed within an operation with a deep stack.</p>
 
-<p>The following example, where we are comparing the state of the mouse device between each event, could read/write from a cell in the zero-page, but this both allows to reserve a byte from within the context where it is needed, and is faster by being inlined.</p>
+<p>The following example, where we are comparing the state of the mouse device between events, could read/write from a cell in the zero-page, but this both allows to reserve a byte from within the context where it is needed, and is faster by being inlined.</p>
 
 <pre>
 @on-mouse ( -> )
@@ -135,17 +135,41 @@ JMP2r
 
 BRK</pre>
 
+<h3>Callbacks</h3>
+
+<p>To chain operations across vectors, one might try passing the next operation pointer on the stack, but since we cannot be certain which vector will happen next, it is unsafe to rely on a specific stack state. A better way is to write the next operation directly in memory where it will be needed.</p>
+
+<pre>
+@set-animation ( callback* -- )
+
+	,&callback STR2
+	;&run .Screen/vector DEO2
+
+JMP2r
+
+&run ( -> )
+
+	[ LIT &time f0 ] 
+		INCk ,&time STR
+		#00 EQU ?&done
+	try-redraw
+
+BRK
+
+&done ( -> )
+
+	[ LIT2 &callback $2 ] JSR2
+
+BRK
+</pre>
+
 <h3>Quoting Opcodes</h3>
 
-<p>Quoting is the act of <a href='https://limited.systems/articles/uxntal-quoting/' target='_blank'>deferring an operation</a>, for example, the following code will instantly put the resulting value of <code>0d</code> on the stack:</p>
-
-<pre>#06 #07 ADD</pre>
-
-<p>If we instead do the following, the ADD opcode will remain on the stack as a value and will not immediately compute the result:</p>
+<p>Quoting is the act of <a href='https://limited.systems/articles/uxntal-quoting/' target='_blank'>deferring an operation</a>, for example, by <i>literalizing</i> the <kbd>ADD</kbd> opcode, it will remain on the stack as a value and will not immediately compute the result:</p>
 
 <pre>#06 #07 LIT ADD</pre>
 
-<p>The opcode can then be utilized when needed by using the following pattern, which effectively pulls the opcode from the stack and writes it at the next address in memory:</p>
+<p>The opcode can then be modified and utilized when needed by using the following pattern, which effectively pulls the opcode from the stack and writes it at the next address in memory:</p>
 
 <pre>#06 #07 LIT ADD <i>( unquote )</i> #00 STR $1</pre>
 
