@@ -1,0 +1,36 @@
+<h2>The Von Neumann Architecture</h2>
+
+<p>The ability to treat instructions as data makes programs that write programs possible. Self-modification is generally considered harmful, and for that reason is not permitted in most modern computer architectures today.</p>
+
+<p><b>Action at a distance</b> is an anti-pattern in computer science in which behavior in one part of a program modifies operations in another part of the program. I will try to demonstrate how it can be a powerful ally when writing Uxntal if wielded safely.</p>
+
+<h3>Caching</h3>
+
+<p>In most cases, uxn self-modification is used to cache data that would be otherwise difficult or slow to retrieve. The typical scenario is requesting values from a device, when within a routine that requires a deep stack.</p>
+
+<p>Let's look at a simple example, where we are comparing the state of the mouse device between each event.</p>
+
+<pre>
+@on-mouse ( -> )
+
+	[ LIT &last $1 ] .Mouse/state DEI 
+		DUP ,&last STR
+	EORk ?&changed
+	POP2
+
+BRK</pre>
+
+<h3>Quoting Opcodes</h3>
+
+<p>Quoting is the act of <a href='https://limited.systems/articles/uxntal-quoting/' target='_blank'>deferring an operation</a>, for example, the following code will instantly put the resulting value of <code>0d</code> on the stack:</p>
+
+<pre>#06 #07 ADD</pre>
+
+<p>If we instead do the following, the ADD opcode will remain on the stack as a value and will not immediately compute the result:</p>
+
+<pre>#06 #07 LIT ADD</pre>
+
+<p>The opcode can then be utilized when needed by using the following pattern, which effectively pulls the opcode from the stack and writes it at the next address in memory:</p>
+
+<pre>#06 #07 LIT ADD <i>( unquote )</i> #00 STR $1</pre>
+
