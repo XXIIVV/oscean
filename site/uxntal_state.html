@@ -12,14 +12,14 @@
 
 <p>In most cases, uxn self-modification is used to cache data that would be otherwise difficult or slow to retrieve. The typical scenario is requesting values from a device, when within a routine that requires a deep stack.</p>
 
-<p>Let's look at a simple example, where we are comparing the state of the mouse device between each event.</p>
+<p>The following example, where we are comparing the state of the mouse device between each event, could read/write from a cell in the zero-page, but this both allows to reserve a byte from within the context where it is needed, and is faster by being inlined.</p>
 
 <pre>
 @on-mouse ( -> )
 
 	[ LIT &last $1 ] .Mouse/state DEI 
 		DUP ,&last STR
-	EORk ?&changed
+		EORk ?&changed 
 	POP2
 
 BRK</pre>
