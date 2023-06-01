@@ -22,7 +22,7 @@ BRK</pre>
 
 <h3>Callbacks</h3>
 
-<p>To chain operations across vectors, one might try passing the next operation pointer on the stack, but since we cannot be certain which vector will happen next, it is unsafe to rely on a specific stack state. A better way is to write the next operation directly in memory where it will be needed.</p>
+<p>To chain operations across vectors, one might try passing the next operation pointer on the stack, but since we cannot be certain which vector will happen next, it is unsafe to rely on a specific stack state between events. A safer way is to write the next operation directly in memory where it will be needed.</p>
 
 <pre>
 @set-animation ( callback* -- )
@@ -46,6 +46,29 @@ BRK
 	[ LIT2 &callback $2 ] JSR2
 
 BRK
+</pre>
+
+<h3>Stack Shaving</h3>
+
+<p>Routines should try and avoid needing values that are further than 2 or 3 shorts deep on either stacks, but sometimes it cannot be helped. In the following example, we want to run a function expecting each value of a 2d array. Instead of juggling the stacks on each iteration, it is often more efficient to write the function pointer in memory directly.</p>
+
+<pre>
+@routine ( fn* -- )
+
+	,&fn STR2
+	#1000
+	&h
+		STHk
+		#1000
+		&x
+			DUP STHkr [ LIT2 &fn $2 ] JSR2
+			INC GTHk ?&x
+		POP2
+		POPr
+		INC GTHk ?&h
+	POP2
+
+JMP2r
 </pre>
 
 <h3>Quoting Opcodes</h3>
