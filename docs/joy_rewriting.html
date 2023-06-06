@@ -1,0 +1,1425 @@
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=windows-1252">
+
+<title> A rewriting system for Joy </title>
+<!-- begin css.php -->
+<link rel="stylesheet" type="text/css" media="screen" href="joy_rewriting_files/includes.css">
+<link rel="stylesheet" type="text/css" media="screen" href="joy_rewriting_files/base.css">
+<link rel="stylesheet" type="text/css" media="print" href="joy_rewriting_files/print.css">
+<link rel="stylesheet" type="text/css" media="screen" href="joy_rewriting_files/legacy.css">
+<!--[if lte IE 6]>
+<link href="/ltu_assets/css/ielegacy.css" rel="stylesheet" type="text/css" media="screen" />
+<![endif]-->
+
+<!--[if IE 7]>
+<link href="/ltu_assets/css/ie7.css" rel="stylesheet" type="text/css" media="screen" />
+<![endif]-->
+
+ 
+<!-- end css.php -->
+</head>
+
+<body>
+
+<!-- begin nav_top.php -->
+<!--  U T I L I T Y  N A V I G A T I O N  -->
+<div id="utilityNav">
+  <p>Global Utilities</p>
+  <ul>
+    <li><a href="http://nsl.com/papers/j07rrs.html#content">Skip to content</a></li>
+    <li><a href="http://www.latrobe.edu.au/sitemap/">Site map</a></li>
+  </ul>
+  <form action="http://search.latrobe.edu.au/search/index.cgi" method="get">
+    <div id="search">
+      <label for="query">Search: </label>
+      <input type="text" name="query" id="query" size="27" class="fieldcellInput" accesskey="q">
+      <input type="hidden" name="collection" value="Latrobe">
+      <input type="submit" class="button" value="SEARCH">
+    </div>
+  </form>
+</div>
+<!--  G L O B A L  N A V I G A T I O N  -->
+<div id="globalNav">
+  <p>Global Navigation</p>
+  <ul>
+    <li><a href="http://www.latrobe.edu.au/">La Trobe Home</a></li>
+    <li><a href="http://www.latrobe.edu.au/about">About La Trobe</a></li>
+    <li><a href="http://www.latrobe.edu.au/coursefinder/">Courses</a></li>
+    <li><a href="http://www.latrobe.edu.au/campuses">Campuses</a></li>
+    <li><a href="http://www.latrobe.edu.au/faculties">Faculties</a></li>
+    <li><a href="http://www.latrobe.edu.au/research">Research</a></li>
+    <li><a href="http://www.latrobe.edu.au/contact">Contacts</a></li>
+  </ul>
+</div>
+<!-- end nav_top.php -->
+<i> by Manfred von Thun </i>
+<p>
+This paper describes a conditional term rewriting
+system for Joy based on the two constructors
+concatenation and quotation.
+</p><p>
+A <em>rewriting system</em> consists of a set of
+syntactic rules for performing replacements on certain suitable entities.
+The best known such system is the one we learnt at school
+for evaluating arithmetic expressions.
+Any programming language can be given a rewriting system,
+but for Joy it is particularly simple.
+The basic binary rewriting relation will be written in infix notation
+as <code>=&gt;</code>, pronounced "can be rewritten as".
+The following are some sample rules for the <kbd>+</kbd> operator,
+the  <kbd>&lt;</kbd> predicate
+and the <kbd>dip</kbd> combinator.
+</p><pre>        2  3  +   =&gt;   5
+        2  3  &lt;   =&gt;   true
+        a  [P]  dip   =&gt;   P  a
+</pre>
+In the last example,
+<code>P</code> is any program and <code>a</code> is any literal
+(such as a number) or a program
+whose net effect is to push exactly one item onto the stack.
+The rewriting relation is extended to allow rewriting in appropriate contexts,
+further extended to accomodate several rewriting steps,
+and finally extended to become a congruence relation,
+an equivalence relation compatible with program concatenation.
+This congruence relation between programs
+is essentially the same as the identity relation in the algebra
+of of functions which the programs denote.
+Although Joy functions take a stack as argument and value,
+in the rewrite rules the stack is never mentioned.
+<p>
+The following are rewriting rules
+for arithmetic expressions in four different notations:
+infix, functional, prefix and postfix:
+</p><pre>        2 + 3  =&gt;  5                    +(2,3)  =&gt;  5
+        + 2 3  =&gt;  5                    2 3 +   =&gt;  5
+</pre>
+In each case on the left the operands are <code>2</code> and <code>3</code>,
+and the operator or <em>constructor</em> is <code>+</code>,
+so they all refer to the same arithmetic term.
+Since Joy uses what looks like postfix notation,
+it might be thought that one should attempt a term rewriting system
+with rules just like the second one in the last line.
+That would treat the short program <code>2 3 +</code>
+as being composed of two operands and one operator or constructor.
+It would also treat the gap between <code>2</code> and <code>3</code>
+as quite different from the gap between <code>3</code> and <code>+</code>.
+The difference would be explained away as a syntactic
+coincidence due to the choice of notation.
+Apart from <code>+</code> there would be very many term constructors.
+<p>
+However, Joy has operators for manipulating the top few elements
+of the stack, such as <kbd>swap</kbd>, <kbd>dup</kbd> and <kbd>pop</kbd>.
+These are also found in the language <em>Forth</em>,
+see for example
+\AX{Salman {\it et al}}{1984}{Salman-etal:84}
+and \AX{Kelly {\it et al}}{1986}{Kelly-etal:86}.
+These operators take a stack as argument and yield a stack
+as value,
+and their presence forces all other operators to be of the same type.
+For example,
+the following is a rewrite rule for <kbd>swap</kbd>:
+</p><pre>        a  b  swap   =&gt;   b  a
+</pre>
+Unlike Forth, Joy also has
+quotations and combinators.
+These features also force the conclusion that
+the appropriate rewriting system is a string rewriting system.
+Consider the following four programs:
+<pre>        [2] [3 +] b                     [2] [3 +] concat i
+        [2 3] [+] b                     [2 3] [+] concat i
+</pre>
+They all eventually have to reduce to <code>5</code>,
+just like the earlier Joy program <code>2 3 +</code>.
+It suggests that in the latter the gaps have to be treated
+in the same way,
+the program is a concatenation of three atomic symbols,
+and it denotes the composition of three functions.
+So, at least for Joy programs without quotations 
+and combinators,
+the appropriate system is a string rewriting system.
+Such a system is equivalent to a term rewriting system
+with a <em>concatenation constructor</em> for programs as the only constructor.
+To handle combinators,
+a <em>quotation constructor</em> has to be introduced
+as a second constructor.
+<p>
+The remainder of this paper is organised as follows:
+The next section introduces rewriting systems in general.
+Then follows a section on the principal concepts
+of a rewriting system for Joy.
+The next two sections give details of rewriting
+rules for operators and for combinators.
+Two other sections re-examine the stack and the quotation constructor.
+It is argued that the stack is not just an optimisation
+useful in an inmplementation,
+but that it is almost essential for understanding the semantics of Joy.
+The possibility of an extensional version
+of the quotation constructor is discussed
+but dismissed as unnecessarily restrictive.
+A final section is an outline of a rewriting system
+for Joy types;
+the system resembles a categorial grammar.
+</p><h1>String and term rewriting systems</h1>
+<p>
+Rewriting systems can be classified according to the entities
+that are being rewritten.
+In a <em>string rewriting system</em> those entities are
+linear sequences of symbols or strings of symbols.
+In a <em>term rewriting system</em>
+these entities are expressions or terms build from operands and operators.
+In a <em>graph rewriting system</em> they are graphs of various kinds.
+</p><p>
+A <em>string rewriting system</em> is based on an <em>alphabet</em>
+which is just a set of symbols.
+Strings over a given alphabet are arbitrary sequences of symbols,
+each taken from the alphabet.
+The empty sequence or null string is included.
+A rewriting rule is of the form
+</p><pre>        x   =&gt;   y
+</pre>
+where both x and y are strings.
+A string rewriting system consists
+of an alphabet and a relation <kbd>=&gt;</kbd>,
+a set of such pairs or rules.
+A wider relation <kbd>==&gt;</kbd> is defined as follows:
+For strings <code>w</code>, <code>x</code>, <code>y</code> and <code>z</code>,
+<pre>        w x z   ==&gt;   w y z
+</pre>
+if and only if <code>x =&gt; z</code>. This relation allows
+replacement of <code>x</code> by <code>y</code> in arbitrary contexts <code>w..z</code>.
+<p>
+A <em>term rewriting system</em> also requires an alphabet of symbols.
+Each symbol has an associated <em>arity</em> which is a natural number
+(0, 1, 2, ...).
+Symbols of arity 0 are nullary symbols or operands,
+symbols of positive arity are unary, binary, ternary and so on symbols
+or operators.
+A <em>term</em> over such an alphabet is either an operand
+or it is an operator of arity $n$ together with $n$ further terms.
+Terms are really abstract syntax trees,
+and various notations can be used for their concrete linear representation.
+A rewriting rule is again a pair of the form
+</p><pre>        x   =&gt;   y
+</pre>
+where <code>x</code> and <code>y</code> now have to be terms.
+A term rewriting system consists of an alphabet of symbols,
+each with their own arity,
+and a set of such rules.
+A wider relation <kbd>==&gt;</kbd> is defined as follows:
+<pre>        y   ==&gt;   z
+</pre>
+if and only if <code>y</code> and <code>z</code> are alike terms except that
+<code>y</code> contains a subterm  <code>u</code> where <code>z</code> contains
+a subterm <code>w</code> such that <code>u =&gt; w</code>.
+<p>
+In any rewriting system it is useful to define <kbd>==&gt;&gt;</kbd> as
+the reflexive transitive closure of <code> ==&gt; </code>.
+</p><pre>        x   ==&gt;&gt;   z
+</pre>
+if and only if <code>x = z</code> or for some <code>y</code>,
+<code>x ==&gt; y</code> and <code>y ==&gt;&gt; z</code>.
+<p>
+Here is an example for a fragment of a rewriting system
+for arithmetical expressions in Joy:
+</p><pre>        2 3 +       =&gt;   5
+        7 2 3 + *   ==&gt;    7 5 *
+        7 2 3 + *   ==&gt;&gt;   35
+</pre>
+In the second line the subexpression <code>2 3 +</code> on the left
+is called a reducible expression or <em>redex</em>
+since it can be reduced using the rule in the first line.
+<p>
+There are two distinct ways in which a string rewriting system
+can be interpreted as a term rewriting system.
+On the first interpretation,
+the term system has exactly one operand.
+It has as unary constructors all the symbols of the string system.
+It has no other constructors.
+The single operand is just the null string,
+and any symbol, say <code>s</code> from the string alphabet
+is interpreted as a unary operator <em> append</em> <code>s</code>.
+The appending is either uniformly on the left or uniformly on the right.
+</p><p>
+On the second interpretation,
+the term system has as operands all the symbols from the string system.
+It has only one binary constructor, concatenation.
+This interpretation is most useful for a rewriting system for Joy
+because it is now possible
+to add the unary <em>quotation constructor</em> which is needed
+for the combinators.
+</p><p>
+Rewriting systems can be based just on unconditional rules of the
+form <code>x =&gt; y</code>,
+but they can also have <em>conditional rule</em>s.
+Such rules state that certain rewritings are permitted
+provided certain other rewritings are permitted.
+The next sections give a <em>conditional rewriting system</em> for Joy.
+</p><p>
+A short general introduction to rewriting systems is in
+\AX{Salomaa}{1985}{Salomaa:85}.
+String rewriting systems in particular are discussed in
+\AX{Book}{1985}{Book:85}.
+A general survey of rewriting systems is in
+\AX{Schmitt}{1987}{Schmitt:87}.
+%
+</p><h1>A conditional rewriting system for Joy</h1>
+<p>
+This section describes the basis of a conditional rewriting system for Joy
+using a notation similar to Prolog.
+</p><p>
+A rewriting system for Joy will be a collection of syntactic rules
+for rewriting Joy programs.
+Such a system must be based on the two principal program constructors,
+<em>program concatenation</em> and <em>program quotation</em>.
+The system to be presented here uses (unconditional) axioms
+of the form
+</p><pre>        P   =&gt;   Q
+</pre>
+where <code>P</code> and <code>Q</code> are programs.
+There are also conditional rules of the following forms,
+where <code>R</code>, <code>S</code>, <code>T</code> and <code>U</code>
+are further programs.
+<pre>        P  =&gt;  Q   :-   R  =&gt;  S.
+        P  =&gt;  Q   :-   R  =&gt;  S,  T  =&gt; U.
+</pre>
+The rules are written in a <em>Prolog</em>-like syntax.
+The turnstyle <kbd>:-</kbd> is pronounced "if".
+On its left is the conclusion or <em>consequent</em>.
+On the right is a premise or <em>antecedent</em>.
+The antecedent can be a conjunction, as in the second form
+above, and the comma <kbd>,</kbd> is pronounced "and".
+So the second of the above rules can be read as:
+"<code>P</code> can be replaced by <code>Q</code> if
+<code>R</code> can be replaced by <code>S</code> and
+<code>T</code> can be replaced by <code>U</code>".
+Details of these rules are given in the next two sections.
+<p>
+Using the same notation,
+the relation <kbd>==&gt;</kbd> is defined by the three rules
+</p><pre>          P  ==&gt;  Q     :-   P  =&gt;  Q.
+        P Q  ==&gt;  P R   :-   Q  ==&gt;  R.
+        P R  ==&gt;  Q R   :-   P  ==&gt;  Q.
+</pre>
+The last two clauses allow rewriting in a context --- <code>P</code> on the left
+or <code>R</code> on the right.
+<p>
+The next rules for <code> ==&gt; </code> concern combinators.
+In the following, <code>C</code>$i$ is any combinator expecting
+at least $i$ quotation parameters.
+</p><pre>        [P] C1  ==&gt;  [Q] C1   :-   P ==&gt; Q.
+        [P] [R] C2  ==&gt;  [Q] [R] C2   :-   P  ==&gt; Q.
+        [P] [S] [R] C3  ==&gt;  [Q] [S] [R] C3   :-   P  ==&gt; Q.
+        [P] [T] [S] [R] C4  ==&gt;  [Q] [T] [S] [R] C4   :-   P  ==&gt;  Q.
+</pre>
+<p>
+Note that there is no rewrite rule
+</p><pre>        [P]  ==&gt;  [Q]   :-   P  ==&gt;  Q.
+</pre>
+The reason for this is further explained in section 7.
+<p>
+The final relation to be introduced is <kbd>==&gt;&gt;</kbd>,
+the reflexive transitive closure of <code>==&gt;</code>.
+It is defined by
+</p><pre>        P  ==&gt;&gt;  P.
+        P  ==&gt;&gt;  R   :-   P  ==&gt;  Q,  Q  ==&gt;&gt; R.
+</pre>
+<p>
+The simplest examples of rewriting axioms are those generated
+by <em>definition</em>s.
+If an atom <code>name</code> has been defined using <kbd>==</kbd> as program <code>P</code>,
+in the form
+</p><pre>        name   ==   P
+</pre>
+then <code>name</code> may be rewritten as <code>P</code>:
+<pre>        name   =&gt;   P
+</pre>
+<p>
+The stack is normally a sequence of values of various types.
+This sequence is just a special list
+which is modified by programs.
+The first general operator is <kbd>newstack</kbd>,
+which clears the stack.
+Clearing twice is the same as  clearing just once.
+If literals were pushed before the clearing,
+this has the same effect as just clearing.
+So <code>newstack</code>  is in fact the <em>right zero</em> element for
+program concatenation.
+</p><pre>        newstack  newstack   =&gt;   newstack.
+        P  newstack   =&gt;   newstack.
+</pre>
+Since the stack is a list,
+it should be possible to put this list on top of the stack ---
+that is to say, on top of itself.
+Also, it should be possible to make the list on top of the stack
+become the stack.
+There are two operators that do just that:
+The <kbd>stack</kbd> operator pushes onto the stack
+a list containing all the elements of the stack.
+The <kbd>unstack</kbd> operator expects a list on top
+of the stack
+and makes that the stack.
+The <code>unstack</code> operator undoes what the <code>stack</code> operator
+does,
+but the reverse is true only in special cases.
+<pre>        newstack stack  =&gt;  newstack [].
+        [] unstack   =&gt;   newstack.
+        newstack  L   =&gt;  [L]  reverse  unstack.
+</pre>
+In the last rule, <code>L</code> has to be a list of literals.
+Also, it should be noted that the stack is not always
+a sequence of values, it can also contain operators
+and combinators.
+So, strictly speaking the stack is always a quotation,
+and the <code>stack</code> operator pushes a quotation
+onto the stack,
+and the <code>unstack</code> operator expects a quotation
+on the stack and makes that the new stack.
+<p>
+Although the stack was mentioned in these informal explanations,
+it should be noted that it is not referred to at all in the rewrite rules.
+The same will be true in the sections to follow.
+Rewrite rules are purely syntactic,
+and the stack is a semantic entity.
+Joy symbols denote functions from stacks to stacks.
+But syntax does not concern semantic concepts such as denotation.
+rem
+</p><h1>Rules for operators</h1>
+An <em>operator</em> denotes a function which expects as argument one stack
+whose top few elements satisfy some condition
+and which returns a stack in which the top few elements
+have been replaced by something else,
+and which otherwise is like the argument stack.
+This section gives rewrite rules for Joy operators.
+The first ones given are for general operators
+that can be used for any stack.
+Then follow rules for operators on <em>simple type</em>s
+such as truth values, characters and integers.
+These are then followed by rules for operators
+on <em>aggregate type</em>s
+such as sets, strings and lists.
+<p>
+The unary operators <kbd>pop</kbd> and <kbd>dup</kbd>
+are defined on all stacks containing at least one element.
+In the rewrite rules to follow, let <code>a</code> be any literal
+or a program whose net effect is to push exactly one value onto the stack.
+</p><pre>        a  pop   =&gt;   id.
+        a  dup   =&gt;   a  a.
+</pre>
+The generalisation that <code>a</code> may be not just a literal but can be
+a program whose effect is to push a single value
+is needed for rare cases like the following:
+<pre>        [*] first  dup   =&gt;   [*] first  [*] first.
+</pre>
+The two programs on the left and right of the arrow
+have the net effect of pushing two occurrences
+of the multiplication operator <code>*</code> onto the stack.
+<p>
+The binary operators <kbd>swap</kbd>, <kbd>popd</kbd>, and <kbd>dupd</kbd>
+are defined on all stacks containing at least two elements.
+Let <code>a</code> and <code>b</code> be any literals or equivalent programs.
+</p><pre>        a  b  swap   =&gt;   b  a.
+        a  b  popd   =&gt;   b.
+        a  b  dupd   =&gt;   a  a  b.
+</pre>
+The ternary operators <kbd>swapd</kbd>, <kbd>rollup</kbd>, <kbd>rolldown</kbd>
+and <kbd>rotate</kbd>
+are defined on all stacks containing at least three elements.
+Let <code>a</code>, <code>b</code> and <code>c</code> be any literals
+or equivalent programs.
+<pre>        a  b  c  swapd      =&gt;   b  a  c.
+        a  b  c  rollup     =&gt;   c  a  b.
+        a  b  c  rolldown   =&gt;   b  c  a.
+        a  b  c  rotate     =&gt;   c  b  a.
+</pre>
+<p>
+The ternary operator <kbd>choice</kbd> also expects three elements,
+but the third element has to be a truth value.
+Let <code>a</code> and <code>b</code> be any literals or equivalent.
+</p><pre>        true   a  b  choice   =&gt;   a.
+        false  a  b  choice   =&gt;   b.
+</pre>
+<p>
+The <em>simple type</em>s of Joy are the
+<em>truth value type</em>, the <em>character type</em> and the <em>integer type</em>.
+The next rules are for the operators on these types.
+</p><p>
+Rewrite rules for the <em>unary operator</em>s
+<kbd>succ</kbd>, <kbd>pred</kbd>, <kbd>abs</kbd> and <kbd>sign</kbd>
+for integer operands is given by the following rules.
+Since characters are just small positive integers,
+the operators can also be applied to characters.
+The last two operators can also be applied to truth values.
+In what follows, let <code>i</code>, <code>j</code> and <code>k</code>
+be any integers.
+</p><pre>        i  succ   =&gt;   j.               ( j = i+1 )
+        i  pred   =&gt;   j.               ( j = i-1 )
+        i  abs    =&gt;   j.               ( j = abs(i) )
+        i  sign   =&gt;   j.               ( j = sign(i) )
+</pre>
+<p>
+Rewrite rules for the <em>binary operator</em>s
+<kbd>+</kbd>, <kbd>-</kbd>, <kbd>*</kbd>, <kbd>/</kbd>, <kbd>rem</kbd>,
+<kbd>max</kbd> and <kbd>min</kbd>
+for integers operands are as follows.
+</p><pre>        i  j  +     =&gt;   k.             ( k = i+j )
+        i  j  -     =&gt;   k.             ( k = i-j )
+        i  j  *     =&gt;   k.             ( k = i*j )
+        i  j  /     =&gt;   k.             ( k = i/j )
+        i  j  rem   =&gt;   k.             ( k = i mod j )
+        i  j  max   =&gt;   k.             ( k = max(i,j) )
+        i  j  min   =&gt;   k.             ( k = min(i,j) )
+</pre>
+Again these binary operators can be applied to characters
+as well as integers.
+In the mixed case the type of the result <code>k</code>
+is the same as the type of the second parameter <code>i</code>.
+<p>
+Most implementations of Joy will also provide
+many other arithmetical operations.
+Since these will be defined in a library,
+no reduction rules should be given here.
+</p><p>
+The type of truth values is one of the Boolean types.
+The <em>binary operator</em>s are <kbd>and</kbd>, <kbd>or</kbd> and <kbd>xor</kbd>
+(exclusive or).
+The <em>unary operator</em> is <kbd>not</kbd>.
+Let <code>p</code> and <code>q</code> be truth values
+<code>true</code> or <code>false</code>.
+</p><pre>        p  q  and   =&gt;   r.             ( r = p and q )
+        p  q  or.   =&gt;   r              ( r = p or  q )
+        p  q  xor.  =&gt;   r              ( r = p xor q )
+        p  not      =&gt;   r.             ( r = not p )
+</pre>
+<p>
+A <em>predicate</em> is a function which leaves
+a truth value on the stack.
+The <em>unary predicate</em>s
+<kbd>null</kbd>, <kbd>small</kbd>, <kbd>odd</kbd>, <kbd>even</kbd>, <kbd>positive</kbd> and <kbd>negative</kbd>
+are defined for all numeric types:
+</p><pre>        i  null       =&gt;   p.           ( p = (i=0) )
+        i  small      =&gt;   p.          ( p = (i&lt;2) )
+        i  odd        =&gt;   p.           ( p = odd(i) )
+        i  even       =&gt;   p.           ( p = even(i) )
+        i  positive   =&gt;   p.           ( p = positive(i) )
+        i  negative   =&gt;   p.           ( p = negative(i) )
+</pre>
+<p>
+The <em>binary predicate</em>s
+<kbd>=</kbd>, <kbd>!=</kbd>, <kbd>&lt;</kbd>, <kbd>&lt;=</kbd>, <kbd>&gt;</kbd> and <kbd>&gt;=</kbd>
+have the obvious rewrite rules:
+</p><pre>        i  j  =    =&gt;   p.              ( p = (i = j) )
+        i  j  !=   =&gt;   p.              ( p = not(i = j) )
+        i  j  &lt;    =&gt;   p.              ( p = (i &lt; j) )
+        i  j  &lt;=   =&gt;   p.              ( p = (i &lt;= j) )
+        i  j  &gt;    =&gt;   p.              ( p = (i &gt; j) )
+        i  j  &gt;=   =&gt;   p.              ( p = (i &gt;= j) )
+</pre>
+<p>
+The remainder of this section deals with <em>aggregate type</em>s:
+sets, strings and quotations, with lists as a special case.
+The <em>unary operator</em>s
+<kbd>first</kbd>, <kbd>second</kbd>, <kbd>third</kbd> and <kbd>rest</kbd>
+expect a non-empty aggregate on top of the stack.
+The following are the rules for list aggregates:
+</p><pre>        [a L]      first    =&gt;   a.
+        [a b L]    second   =&gt;   b.
+        [a b c L]  third    =&gt;   c.
+        [a L]      rest     =&gt;   [L].
+</pre>
+<p>
+Here <code>[a L]</code> is a non-empty list or quotation
+whose first member is <code>a</code> and whose rest is <code>[L]</code>.
+For strings an analogous notation can be used
+to obtain analogous rules. For example
+</p><pre>        "cS"  first   =&gt;   'c.
+        "cS"  rest    =&gt;   "S".
+</pre>
+Here "cS" denotes a non-empty string whose first character
+is <code>'c</code> and whose remaining characters are the string <code>"S"</code>.
+<p>
+For sets the rules are entirely analogous,
+except that the numeric ordering of the members
+is used.
+One possible notation is the following:
+</p><pre>        {a S}  first   =&gt;   a.
+        {a S}  rest    =&gt;   {S}.
+</pre>
+Here <code>{a S}</code> denotes a non-empty set whose smallest
+member is <code>a</code> and whose other members are those of <code>{S}</code>.
+<p>
+The <em>binary operator</em>s <kbd>cons</kbd> and <kbd>swons</kbd>
+expect an aggregate and a potential member on top of the stack.
+These are the rules for list aggregates:
+</p><pre>        a  [L]  cons    =&gt;   [a L].
+        [L]  a  swons   =&gt;   [a L].
+</pre>
+The rules for strings and sets are analogous.
+<p>
+The <em>unary operator</em>s <kbd>uncons</kbd> and <kbd>unswons</kbd>
+also expect a non-empty aggregate.
+The rules for list aggregates are:
+</p><pre>        [a L]  uncons    =&gt;   a  [L].
+        [a L]  unswons   =&gt;   [L]  a.
+</pre>
+So for strings and sets some of the rules are
+<pre>        'c "S"  cons   =&gt;   "cS".
+        {S} a  swons   =&gt;   {a S}.
+        {a S} uncons   =&gt;   a  {S}.
+</pre>
+<p>
+The two <em>binary operator</em>s <kbd>at</kbd> and <kbd>of</kbd>
+are for <em>index</em>ing into aggregates.
+For list the rules might be written:
+</p><pre>        [l1 l2 ... li ... ln]  i  at   =&gt;   li.
+        i  [l1 l2 ... li ... ln]  of   =&gt;   li.
+</pre>
+So the two operators are converses of each other.
+For both operators in the case of sequences
+the sequence ordering is used,
+and for sets the underlying ordering is used.
+But the notation with the dots <code>...</code> is not
+satisfactory.
+Here is a better version for <code>at</code> applied to lists:
+<pre>        [a L]  1  at   =&gt;   a.
+        [a L]  n  at   =&gt;   b   :-   [L]  (n-1)  at  =&gt;  b.
+</pre>
+And here is a version for <code>of</code> applied to sets:
+<pre>        1  {a S}  of   =&gt;   a.
+        n  {a S}  of   =&gt;   b   :-   (n-1)  {S}  of  =&gt;  b.
+</pre>
+<p>
+The unary operator <kbd>size</kbd> takes an aggregate
+and determines the number of elements:
+</p><pre>           []  size  =&gt;   0.
+        [a L]  size  =&gt;  (n+1)   :-   L  size   =&gt;   n.
+</pre>
+<p>
+The unary operator <kbd>reverse</kbd> can be applied to any aggregate
+but it is useful only for sequences:
+</p><pre>           []  reverse  =&gt;  [].
+        [a L]  reverse  =&gt;  [M a]   :-   L reverse  =&gt;  M.
+</pre>
+These rules for <code>reverse</code> are correct but inefficient
+since appending to the right to produce <code>[M a]</code>
+requires copying --- at least for the obvious implementation of lists.
+Most implementations would use an <em>accumulating parameter</em>
+to optimise the <code>reverse</code> operator.
+It is of some interest that this optimisation can
+be expressed in rewrite rules:
+<pre>        reverse   =&gt;   []  swap  shunt.
+        [L]  []  shunt   =&gt;   [L].
+        [L]  [a M]  shunt   =&gt;   [a L]  [M]  shunt.
+</pre>
+<p>
+The binary operator <kbd>concat</kbd> can be applied to
+two sequences which are either both lists or both strings.
+</p><pre>    []    [L]  concat  =&gt;  [L].
+    [a L] [M]  concat  =&gt;  [a N]   :-  [L] [M]  concat  =&gt;  [N].
+</pre>
+<p>
+The operators <kbd>and</kbd>, <kbd>or</kbd>, <kbd>xor</kbd> and <kbd>not</kbd>
+can be applied not only to truth values but also to
+values of the <em>set type</em>.
+The reduction rules look exactly as for the truth values,
+except that the operations have to be performed bitwise.
+So they compute the <em>intersection</em>, <em>union</em>, <em>symmetric difference</em>
+and <em>complement</em> with respect to the largest set.
+</p><p>
+The two <em>unary predicate</em>s <kbd>null</kbd> and <kbd>small</kbd>
+can also be applied to aggregates.
+These are the rules for lists,
+those for strings and sets are analogous.
+</p><pre>        []       null    =&gt;   true.
+        [a L]    null    =&gt;   false.
+        []       small   =&gt;   true.
+        [a]      small   =&gt;   true.
+        [a b L]  small   =&gt;   false.
+</pre>
+<p>
+The two binary predicates <kbd>in</kbd> and <kbd>has</kbd>
+test aggregates for members.
+</p><pre>        a  []  in   =&gt;   false.
+        a  [a L]  in   =&gt;   true.
+        a  [b L]  in   =&gt;   a  [L]  in
+</pre>
+The <kbd>has</kbd> predicate is just the converse:
+<pre>        []     a  has   =&gt;   false.
+        [a L]  a  has   =&gt;   true.
+        [b L]  a  has   =&gt;   [L]  a  has.
+</pre>
+<p>
+Most implementations of Joy will provide
+an operator for <kbd>sort</kbd>ing a sequence
+and a binary operator <kbd>merge</kbd> for combining
+two already sorted sequences.
+Since these will be implemented in a library,
+no reduction rules are given here.
+The same applies to many other operators
+for aggregates.
+%
+</p><p>
+Sometimes it is necessary to test a parameter for its type.
+The <em>unary predicate</em>s
+<kbd>logical</kbd>, <kbd>char</kbd>, <kbd>integer</kbd>,
+<kbd>set</kbd>, <kbd>string</kbd> and <kbd>list</kbd>
+are true if the parameter is a
+truth value, character, integer, set, string or list, respectively.
+The predicate <kbd>leaf</kbd> is true if the parameter
+is not a list.
+</p><pre>        false       logical  =&gt;   true.
+        123         logical  =&gt;   false.
+        123         integer  =&gt;   true.
+        ['A 'B 'C]  leaf     =&gt;   false.
+</pre>
+<p>
+There is another operator for multi-choices.
+It expects a non-empty list of non-empty lists on top of the stack
+and below that one further item.
+The <kbd>opcase</kbd> operator
+matches the type of the item
+with the <code>first</code> members of the lists.
+When a match is found,
+the <code>rest</code> of that list is pushed onto the stack.
+If no match is found,
+then the last list is used as the default.
+</p><pre>        123      [ [0 P] ['a Q] ["" R] ... ]  opcase   =&gt;   123     [P].
+        'c       [ [0 P] ['a Q] ["" R] ... ]  opcase   =&gt;   'c      [Q].
+        "Hello"  [ [0 P] ['a Q] ["" R] ... ]  opcase   =&gt;   "Hello" [R].
+</pre>
+<h1>Rules for combinators</h1>
+<p>
+The simplest <em>unary combinator</em>s are <kbd>i</kbd> and <kbd>x</kbd>,
+they require the top of the stack to be <em> one</em> quotation.
+Let <code>P</code> be any program.
+</p><pre>        [P]  i   =&gt;   P.
+        [P]  x   =&gt;   [P]  P.
+</pre>
+<p>
+The next unary combinators, <kbd>dip</kbd>, <kbd>dip2</kbd> and <kbd>dip3</kbd>,
+allow manipulation
+of the stack below the top few elements.
+Let <code>P</code> be any program,
+let <code>a</code>, <code>b</code> and <code>c</code> be any literals
+or equivalent.
+</p><pre>        a        [P]  dip   =&gt;   P  a.
+        a  b     [P]  dip2  =&gt;   P  a  b.
+        a  b  c  [P]  dip3  =&gt;   P  a  b  c.
+</pre>
+<p>
+Another unary combinator is <kbd>nullary</kbd>.
+Its rewrite rule has to be expressed conditionally.
+Let <code>L</code>, <code>M</code> and <code>P</code> be any programs.
+</p><pre>        L  [P]  nullary   =&gt;   L  a    :-   L  P   =&gt;   M  a.
+</pre>
+Three similar unary combinators are
+<kbd>unary</kbd>, <kbd>binary</kbd> and <kbd>ternary</kbd>:
+<pre>        L b     [P] unary    =&gt;  L a   :-  L b     P  =&gt;  M a.
+        L b c   [P] binary   =&gt;  L a   :-  L b c   P  =&gt;  M a.
+        L b c d [P] ternary  =&gt;  L a   :-  L b c d P  =&gt;  M a.
+</pre>
+<p>
+Three further unary combinators are
+<kbd>app1</kbd>, <kbd>app2</kbd> and <kbd>app3</kbd>.
+Let <code>a</code>, <code>a'</code>, <code>b</code>, <code>b'</code>, <code>c</code> and <code>c'</code>
+be any literals or equivalent.
+Note that the primed versions are used as the result
+of applying <code>P</code> to the unprimed versions.
+</p><pre>        L  a  [P]  app1   =&gt;   L  a'   :-
+            L a P  =&gt;  M  a'.
+        L  a  b  [P]  app2   =&gt;   L  a'  b'   :-
+            L a P  =&gt;  M a',   L b P  =&gt;  N b'
+        L  a  b  c  [P]  app3   =&gt;   L  a'  b'  c'   :-
+            L a P  =&gt;  M a',   L b P  =&gt;  N b',  L c P  =&gt;  O c'.
+</pre>
+There is even an <kbd>app4</kbd> combinator which applies <code>[P]</code>
+to four parameters <code>a</code>, <code>b</code>, <code>c</code> and <code>d</code>.
+<p>
+The <em>binary combinator</em>s expect two quotations
+on top of the stack.
+The <kbd>b</kbd> combinator expects two quotations <code>[P]</code> and <code>[Q]</code>,
+with <code>[Q]</code> on top.
+</p><pre>        [P]  [Q]  b   =&gt;   P  Q.
+</pre>
+The <kbd>cleave</kbd> combinator
+also expects two quotations,
+and below that an item <code>a</code>.
+<pre>        L a [P] [Q] cleave  =&gt;  L b c   :-   L a P  =&gt;  M b, L a Q  =&gt;  N c.
+</pre>
+<p>
+The <em>ternary combinator</em>s expect three quotations
+on top of the stack.
+One of the most important is <kbd>ifte</kbd>
+which performs branching.
+Its third parameter is the if-part,
+its second parameter is the then-part,
+its first parameter, on top, is the else-part.
+</p><pre>        L  [I]  [T]  [E]  ifte   =&gt;   T   :-
+            L  I   =&gt;  M  true.
+        L  [I]  [T]  [E]  ifte   =&gt;   E   :-
+            L  I   =&gt;  M  false.
+</pre>
+<p>
+The binary <kbd>whiledo</kbd> combinator is similar to the <code>ifte</code> combinator
+in that it has a test, the while-part, which is second on the stack.
+The combinator repeatedly executes the while-part
+and while that yields <code>true</code> it executes the other part,
+the do-part.
+</p><pre>        L  [W]  [D]  whiledo   =&gt;   L   :-
+            L  W   =&gt;   M  false.
+        L  [W]  [D]  whiledo   =&gt;   L  D  [W]  [D]  whiledo   :-
+            L  W   =&gt;   M  true.
+</pre>
+The ternary <kbd>tailrec</kbd> combinator
+for <em>tail recursion</em> also has a test, the third parameter.
+If that yields true,
+the second parameter is executed and the combinator exits,
+otherwise the top parameter is executed
+and after that the process is repeated.
+<pre>        L  [I]  [T]  [R]  tailrec   =&gt;   L  T   :-
+            L  I   =&gt;   M  true.
+        L  [I]  [T]  [R]  tailrec   =&gt;   L  R  [I]  [T]  [R]  tailrec   :-
+            L  I   =&gt;   M  false.
+</pre>
+<p>
+The <em>quaternary combinator</em>s expect four quotations
+on top of the stack.
+The <kbd>linrec</kbd> combinator for <em>linear recursion</em>
+expects an if-part <code>[I]</code>, a then-part <code>[T]</code>,
+and two recursion parts <code>[R1]</code> and <code>[R2]</code>.
+</p><pre>    L [I] [T] [R1] [R2] linrec  =&gt;  L  T   :-
+            L  I   =&gt;   M  true.
+    L [I] [T] [R1] [R2] linrec  =&gt;  L R1 [I] [T] [R1] [R2] linrec R2   :-
+            L  I   =&gt;   M  false.
+</pre>
+<p>
+The <kbd>binrec</kbd> combinator for <em>binary recursion</em>
+is similar, except that the first recursion part
+has to produce two values.
+The recursion with all four parts is
+applied to the two values separately.
+The second recursion part then has available the two results
+from these two applications.
+</p><pre>    L [I] [T] [R1] [R2] binrec  =&gt;  L  T   :-
+        L  I   =&gt;   M  true.
+    L [I] [T] [R1] [R2] binrec  =&gt; L  a b R2   :-
+        L T   =&gt;   M false,
+        L R1 [I] [T] [R1] [R2] binrec  =&gt;  N  a b.
+</pre>
+<p>
+The <kbd>genrec</kbd> combinator for <em>general recursion</em>
+is also has an if-part, a then-part
+and two recursion parts.
+It differs from the other two combinators
+in that after the execution of the first recursion part
+nothing in particular is executed,
+but a program consisting of the four parts
+and the combinator
+is pushed onto the stack.
+The second recursion part thus has it available as a parameter.
+</p><pre>    L  [I]  [T]  [R1]  [R2]  genrec   =&gt;   L  T   :-
+        L  I   =&gt;   M  true.
+    L  [I]  [T]  [R1]  [R2]  genrec   =&gt;
+            L  R1  [[I] [T] [R1] [R2] genrec]  R2   :-
+        L  I   =&gt;   M  false.
+</pre>
+<p>
+There are several combinators which do not have a fixed number
+of quotation parameters.
+Instead they use a list of quotations.
+The <kbd>cond</kbd> combinator is like the one in Lisp,
+it is a generalisation of the <code>ifte</code> combinator.
+It expects a non-empty list of programs,
+each consisting of a quoted if-part followed by a then-part.
+The various if-parts are executed until one is found
+that returns <code>true</code>, and then its corresponding then-part
+is executed.
+The last program in the list is the default
+which is executed if none of the if-parts yield <code>true</code>.
+</p><pre>        L  [ [[I1] T1] REST ]  cond   =&gt;  L  T1   :-
+            L  I1   =&gt;   M  true.
+        L  [ [[I1] T1] REST ]  cond   =&gt;   L [ REST ] cond   :-
+            L  I1   =&gt;   M  false.
+</pre>
+<p>
+The <kbd>condlinrec</kbd> combinator is similar,
+it expects a list of pairs or triples of quoted programs.
+Pairs consist of an if-part and a then1-part,
+and triples consist of an if-part, a rec1-part and a rec2-part.
+Again the first if-part that yields <code>true</code>
+selects its corresponding then-part or rec1-part for execution.
+If there is a rec2-part,
+the combinator first recurses and then executes the rec2-part.
+The last program is the default,
+it does not have an if-part.
+</p><p>
+The <code>cleave</code> combinator also has a generalisation,
+The <kbd>construct</kbd> combinator
+expects two parameters,
+a quotation and above that a list of quotations.
+Each quotation in the list
+will produce a value that will eventually be pushed
+onto the stack,
+and the first quotation determines the stack
+onto which these values will be pushed.
+</p><pre>        L [P] [..[Qi]..] construct =&gt;  L P ..qi..  :-  L Qi  =&gt;  M qi.
+</pre>
+<p>
+Some combinators expect values of specific types
+below their quotation parameters.
+The next few combinators expect values of simple types.
+</p><p>
+The binary combinator <kbd>branch</kbd>
+expects a truth value below its two quotation parameters:
+The <kbd>branch</kbd> combinator resembles the
+<code>choice</code> operator and the <code>ifte</code> combinator.
+The truth value below the two quotations
+determines which of the two quotations will be executed.
+If the truth value is <code>true</code>,
+then the if-part, the second parameter, is executed,
+otherwise the then-part, the top parameter, is executed.
+</p><pre>        true   [P]  [Q]  branch   =&gt;   P.
+        false  [P]  [Q]  branch   =&gt;   Q.
+</pre>
+<p>
+The unary combinator <kbd>times</kbd> expects a numeric value
+below its quotation parameter:
+The <code>times</code> combinator executes its quotation parameter
+as many times as indicated by the numeric value;
+if the value is zero or less,
+then the quotation is not executed at all.
+</p><pre>        0  [P]  times   =&gt;   id.
+        n  [P]  times   =&gt;   P  (n-1)  [P]  times.
+</pre>
+%
+<p>
+The stack is normally a list,
+so any list could serve as the stack,
+including a list which happens to be on top of the stack.
+But the stack can also contain operators and combinators,
+although this does not happen often.
+So the stack is always a quotation,
+and any other quotation could serve as the stack,
+including one on top of the stack.
+The <kbd>infra</kbd> combinator
+expects a quotation <code>[P]</code> which will be executed
+and below that another quotation which normally will be just a list <code>[M]</code>.
+The <code>infra</code> combinator
+temporarily discards the remainder of the stack
+and takes the quotation or list <code>[M]</code> to be the stack.
+It then executes the top quotation <code>[P]</code> which yields a result stack.
+This resulting stack is then pushed as a list <code>[N]</code> onto the original
+stack replacing the original quotation or list.
+Hence any quotation can serve as a complex unary operation
+on other quotations or lists.
+</p><pre>        L  [M]  [P]  infra  =&gt;  L  [N]   :-  [M]  unstack  P  =&gt;  N.
+</pre>
+<p>
+For linear recursion over <em>numeric type</em>s
+the if-part often is <code>[null]</code>
+and the first recursion part is <code>[dup pred]</code>.
+The <kbd>primrec</kbd> combinator has this built in.
+For integers the rewrite rules are:
+</p><pre>        0  [T]  [R2]  primrec   =&gt;   pop  T.
+        i  [T]  [R2]  primrec   =&gt;   i  dup pred  [T]  [R2]  primrec  R2.
+</pre>
+The <code>primrec</code> combinator can also be used for
+aggregates.
+The implicit if-part is again <code>[null]</code>,
+and the implicit first recursion part is <code>[rest]</code>.
+Below is the version for lists, the versions for sets and strings
+are analogous.
+<pre>        []     [T]  [R2]  primrec   =&gt;   pop  T.
+        [a L]  [T]  [R2]  primrec   =&gt;   a  [L]  [T] [R2] primrec R2.
+</pre>
+<p>
+The unary combinators <kbd>step</kbd>,
+<kbd>map</kbd>, <kbd>filter</kbd> and <kbd>split</kbd>
+all expect an aggregate below their quotation parameter.
+</p><p>
+For <kbd>step</kbd> operating on lists the rewrite rule is:
+</p><pre>        []  [P]  step   =&gt;   id.
+        K  [a L]  [P]  step   =&gt;   M  [L]  [P]  step   :-
+            K  a  P   =&gt;   M.
+</pre>
+For strings and sets the rules are analogous.
+The same is true of the rules to follow.
+For <kbd>map</kbd> operating on lists the rewrite rule is:
+<pre>        []  [P]  map   =&gt;   [].
+        K  [a L]  [P]  map   =&gt;   K  [b M]   :-
+            K  a  P   =&gt;   K  b,   K  [L]  [P]  map   =&gt;   K  M.
+</pre>
+The <kbd>filter</kbd> combinator expects a predicate
+as its quotation parameter.
+<pre>        []  [P]  filter   =&gt;   [].
+        K  [a L]  [P]  filter   =&gt;   K  [a M]   :-
+            K  a  P  =&gt;  J  true,    K  [L]  [P]  filter   =&gt;   K  [M].
+        K  [a L]  [P]  filter   =&gt;   K  [M]   :-
+            K  a  P  =&gt;  J  false,   K  [L]  [P]  filter   =&gt;   K  [M].
+</pre>
+The <kbd>split</kbd> combinator is like <code>filter</code>
+except that it produces two lists.
+The first list is just like the one from <code>filter</code>,
+the second list is the list of those elements which did
+not pass the predicate test <code>[P]</code>
+and hence are not members of the first list.
+<pre>        []  [P]  split   =&gt;   [].
+        K  [a L]  [P]  split   =&gt;   K  [a M]  [N]   :-
+            K  a  P  =&gt;  J  true,   K  [L]  [P]  split  =&gt;  K  [M]  [N].
+        K  [a L]  [P]  split  =&gt;  K  [M]  [a N]   :-
+            K  a  P  =&gt;  J  false,   K  [L]  [P]  split  =&gt;  K  [M]  [N].
+</pre>
+<p>
+The unary combinator <kbd>fold</kbd> expects
+a quotation which computes a binary operation.
+Below that has to be a literal
+and below that an aggregate.
+The literal is used as a start value
+to fold or reduce the aggregate.
+Applied to lists the combinator has these rules:
+</p><pre>        []  a  [P]  fold   =&gt;   a.
+        [b L]  a  [P]  fold   =&gt;   d   :-
+            a  b  P   =&gt;   c,
+            [L]  a  [P]  fold  c  P   =&gt;   d.
+</pre>
+<p>
+The two <em>unary combinator</em>s <kbd>some</kbd> and <kbd>all</kbd>
+expect an aggregate below their
+quotation parameter.
+The quotation must be a predicate,
+yielding a truth value.
+The <kbd>some</kbd> combinator returns <code>true</code> if some members 
+of the aggregate pass the test of the quotation,
+otherwise it returns <code>false</code>.
+The <kbd>all</kbd> combinator returns <code>true</code> if all members 
+of the aggregate pass the test of the quotation,
+otherwise it returns <code>false</code>.
+For empty aggregates <code>some</code> returns <code>false</code>
+and <code>all</code> returns <code>true</code>.
+The rules for <code>some</code> are:
+</p><pre>        []  [P]  some   =&gt;   false.
+        L  [a A]  [P]  some   =&gt;   L  true   :-
+            L  a  P  =&gt;  M  true.
+        L  [a A]  [P]  some   =&gt;   L  [A]  [P]  some   :-
+            L  a  P  =&gt;  M  false.
+</pre>
+The rules for <code>all</code> are:
+<pre>        []  [P]  all   =&gt;   true.
+        L  [a A]  [P]  all   =&gt;   L  false   :-
+            L  a  P   =&gt;   M  false.
+        L  [a A]  [P]  all   =&gt;   L  [A]  [P]  all   :-
+            L  a  P   =&gt;   M  true.
+</pre>
+<p>
+The unary combinator <kbd>zipwith</kbd> expects two aggregates
+and above that a program suitable for combining
+their respective elements.
+For lists the rules are
+</p><pre>        []  [A]  [P]  zipwith   =&gt;   [].
+        [A]  []  [P]  zipwith   =&gt;   [].
+        L  [a A]  [b B]  [P]  zipwith   =&gt;   L  [c C]   :-
+            L  a  b  P   =&gt;   M  c,
+            L  [A]  [B]  [P]  zipwith   =&gt;   L  [C].
+</pre>
+%
+<h1>The role of the stack</h1>
+<p>
+This section deals with the role of the Joy stack from a syntactic
+and semantic point of view.
+</p><p>
+First, let us consider a quite small arithmetic expression
+in postfix notation:
+</p><pre>        2  3  +  8  5  -  *
+</pre>
+A reduction might begin by doing the addition first,
+or the subtraction first,
+followed in a second step by the other operation.
+In fact, the addition and the subtraction could be done in parallel
+in the same step.
+Only when both reductions have been done will it be possible to do the
+final multiplication.
+The final result is the value <code>20</code>,
+and it is independent of the order in which
+the reductions have been applied.
+In detail,
+the first mentioned reduction sequence will look like this:
+<pre>        2  3  +  8  5  -  *
+              5  8  5  -  *
+              5        3  *
+                          15
+</pre>
+One possible <em>strategy</em> for reductions is the following:
+<p>
+Scan the expression from left to right until a <em>redex</em>
+is found, an expression that can be replaced in accordance with
+a rewrite rule.
+Apply the rule.
+Repeat until no more rules can be applied.
+</p><p>
+This strategy is most efficient for reducing expressions
+in which redexes are found early.
+The following is an example.
+Again all operators are binary, but note
+that except at the beginning operators and literals alternate.
+In each step the first three symbols constitute a redex.
+</p><pre>        10  5  /  3  *  4  -  1  +
+</pre>
+The strategy is least efficient when a redex is found late.
+In the example below, note that all operators occur towards the end.
+<pre>        3  2  6  8  6  -  /  +  *
+</pre>
+The strategy requires skipping the <code>3</code>, <code>2</code> and <code>6</code>
+and only then replacing <code>8 6 -</code> by <code>2</code>.
+The next step requires skipping <code>3</code> and <code>2</code>
+and only then replacing <code>6 2 /</code> by <code>3</code>.
+The next step requires skipping <code>3</code>
+and only then replacing <code>2 3 +</code> by <code>5</code>.
+The final step requires no skipping,
+<code>3 5 *</code> is replaced by <code>15</code>.
+All this skipping is of course inefficient.
+<p>
+A better strategy would apply the next operator
+at the point of the most recent change, if that is possible.
+An obvious way to do this is to use a <em>stack of values</em>
+for intermediate results.
+As the expression is being processed,
+operands such as literal numbers are pushed,
+and operators pop their arguments off the stack
+and push their result.
+This is of course the method commonly used
+for evaluating postfix expressions.
+So we have the following situation:
+The rewriting rules for programs are purely syntactic,
+they do not mention the stack.
+But the stack can be used as an optimisation of the rewrite rules.
+On the other hand, the stack is apparently an essential semantic entity,
+it is the argument and value of the functions
+denoted by programs.
+</p><p>
+</p><p>
+But this now raises the question whether the stack is <em> just</em>
+an optimisation for the rewriting system
+or whether it is really needed as a semantic object.
+In other words,
+is it possible to give a semantic characterisation of Joy
+which does not involve a stack at all?
+In such a semantics the programs will have to denote something,
+and presumably they will have to denote functions.
+But what might be the arguments and values of these functions?
+</p><p>
+It will help to review the stack based semantics of Joy:
+The <em>literal</em>s such as numerals, characters, strings
+and quotations denote functions taking any stack as argument
+and producing another stack as value
+which is like the argument stack except that a single item
+has been pushed on top.
+The <em>operator</em>s also denote unary functions from stacks to stacks,
+and the result stack is like the argument stack
+except that the top few items have been replaced by the result of applying
+some operation.
+Likewise, the <em>combinator</em>s denote unary functions from
+stacks to stacks,
+and the result stack depends on the combinator and the top few quotations.
+</p><p>
+To obtain a Joy semantics without a stack we take our hint from the rewriting
+rules.
+The operators and combinators no longer denote functions from stacks to stacks.
+The rewrite rule for addition transforms a program ending with two
+numerals into a program ending with a numeral for their sum.
+This is the key for a semantics without a stack:
+Joy programs denote unary functions taking one <em>program</em>
+as arguments and giving one <em>program</em> as value.
+The <em>literal</em>s denote <em> append</em> operations;
+the program returned as value is like the program given as argument,
+except that it has the literal appended to it.
+The <em>operator</em>s denote <em> replacement</em> operations,
+the last few items in the argument program
+have to be replaced by the result of applying the operator.
+Similarly the <em>combinator</em>s also denote (higher order)
+functions from programs to programs,
+the result program depends on the combinator
+and the last few quotations of the argument program.
+</p><p>
+It is clear that such a semantics without a stack is possible
+and that it is merely a rephrasing
+of the semantics with a stack.
+Purists would probably prefer a system with such a lean ontology
+in which there are essentially just programs operating on other programs.
+But most programmers are so familiar with stacks
+that it seems more helpful to give a semantics with a stack.
+Its is of course irrelevant for the semantics
+that for efficiency reasons any implementation
+of Joy will in fact use a stack.
+</p><p>
+There is one other argument for a stack semantics.
+By a program one would normally mean one that can
+be run, at least when supplied with appropriate parameters.
+The stack, however, can sometimes contain
+sequences of items that make the stack
+a non-executable program because it violates
+type rules.
+Such situations arise for example by executing one of the following:
+</p><pre>        [ 3  * ]   second
+        [ pop  cons  map ]   []  step
+</pre>
+The first results in the one operator <code>*</code> being pushed.
+The second results in two operators and one combinator to be pushed.
+Such situations are required only rarely.
+But the possibility is needed,
+for example for a Joy interpreter <kbd>joy</kbd> written in Joy itself.
+Such an interpreter is described in another paper.
+<h1>Quotation revisited</h1>
+<p>
+It was mention in section 3
+that for <em>quotation</em>s there is no rewrite rule
+of the form
+</p><pre>        [P]  ==&gt;  [Q]   :-   P  ==&gt;  Q.
+</pre>
+If there were such a rule, then the rewriting
+<pre>        42  dup   ==&gt;   42  42.
+</pre>
+would license
+<pre>        [ 42  dup ]   ==&gt;   [ 42  42 ].
+</pre>
+and hence
+<pre>        [ 42  dup ]  second   ==&gt;&gt;   [ 42  42 ]  second.
+        dup   ==&gt;&gt;  42.
+</pre>
+which is absurd.
+On the other hand,
+<pre>        [ 42  dup ]  i  +   ==&gt;   [ 42  42 ]  i  +
+</pre>
+is acceptable.
+So, quotations must not allow substitutions in all contexts,
+but only in those where the quotation is guaranteed to be undone
+by a <em>dequoting</em> operation, by a combinator.
+In other words, quotation is an <em>intensional constructor</em>.
+<p>
+There is a simple way out of this,
+and it is to treat quotations of programs to be very different
+from lists.
+Notice that the absurdity comes from taking the <code>second</code>
+element of the quotations <code>[42 dup]</code> and <code>[42 42]</code>.
+If it were forbidden to treat quoted programs as data structures,
+then the fatal inference would be blocked.
+In detail,
+such a treatment would look like this:
+If <code>P</code> is a program, then <code>(P)</code> is its quotation,
+now written inside round parentheses.
+Also, <code>[P]</code> is its list, as before written inside
+square brackets.
+Both <code>(P)</code> and <code>[P]</code> can be pushed onto the stack,
+can be <code>swap</code>ped, <code>dup</code>licated and <code>pop</code>ped,
+can be inserted into lists and later extracted.
+But only <code>(P)</code> can be used as a parameter for combinators,
+and it cannot  treated as a list.
+On the other hand, <code>[P]</code> cannot be used
+as a parameter for combinators,
+but it can be treated as a list.
+Importantly, there could then be a reduction rule
+</p><pre>        (P)  ==&gt;  (Q)   :-   P  ==&gt;  Q.
+</pre>
+and hence quotation would be an <em>extensional constructor</em>.
+<p>
+This is a draconian solution,
+it allows programs such as
+</p><pre>        [2]  cons  reverse
+</pre>
+but forbids 
+<pre>        (+)  cons  map
+</pre>
+The latter uses <code>map</code> to add a single number on top of the stack
+to each member of a list that is second on the stack.
+If the single number on top of the stack is, say <code>7</code>,
+then the <code>cons</code> operation produces <code>(7 +)</code>
+to be used by <code>map</code>.
+The prohibition would rule out <em>parameterisation</em>.
+In general,
+the prohibition would rule out using <em>constructed program</em>s
+as parameters to combinators.
+<p>
+It is possible to make a less drastic compromise:
+As before, quotations <code>(P)</code>
+serve as parameters to combinators,
+but they can also be built up by list operations
+such as <code>concat</code>enation or <code>cons</code>ing
+further items into their front.
+This would allow parameterisation as in the <code>map</code> example above.
+Quotations could be constructed and built up further and further
+and eventually called by a combinator,
+but quotations could not be destructed.
+On this proposal constructive operations on quotations
+would be allowed, but destructive operations would not.
+All list operations would need to be classified as constructive
+or destructive.
+Even the <code>size</code> operator would turn out to be destructive.
+</p><p>
+This compromise solution has much in its favour.
+Quotation is extensional, combinators can use constructed programs,
+but the absurdity does not arise.
+On the other hand,
+the compromise requires a syntactic distinction
+between quotations and lists,
+and it requires a semantic distinction between operations
+that can be applied to lists and to quotations,
+and those that can be applied only to lists.
+</p><p>
+On the whole, then,
+it does seem preferable to have quotation as an intensional constructor.
+</p><h1>Rewriting for Joy types</h1>
+<p>
+The rewriting system described up to here concerned values.
+It is also possible to give a rewriting system for Joy <em>type expression</em>s.
+We shall need constant and variable symbols for these types.
+The following will be used as <em>type constant</em>s:
+<code>Log</code> for the truth values,
+<code>Chr</code> for the characters,
+<code>Int</code> for the integers,
+<code>Set</code> for the sets,
+<code>Str</code> for the strings and
+<code>Lst</code> for possibly heterogeneous lists.
+For lists whose member are all of the same type, say <code>Int</code>,
+the notation <code>[Int]</code> will be used.
+As variables we use
+<code>T</code>, <code>T1</code>, <code>T2</code> and so on.
+So <code>[T]</code> is the type of lists whose members are all of
+the type <code>T</code>.
+</p><p>
+The following is a sample of one style of rules for operators:
+</p><pre>        T1   T2  swap   =&gt;   T2  T1.
+        Int  Int  +     =&gt;   Int.
+        Str      size   =&gt;   Int.
+</pre>
+The notation used above has been made as close as possible
+to the notation for the rewriting rules for values.
+In the following a different notation will be introduced
+which is more useful.
+<p>
+Literals have <em>atomic type</em>s,
+operators and combinators have <em>compound type</em>s.
+There are three constructors for compound types:
+<em>type concatenation</em>, <em>type quotation</em> and <em>type cancellation</em>.
+The first two are derived from the corresponding program constructors.
+The third is new and has no counterpart program constructor.
+It uses the infix symbol <kbd>-&gt;</kbd> to combine two types into a new one.
+If <code> T </code> is a type, then so is its quotation <code> [T] </code>.
+If <code> T1 </code> and <code> T2 </code> are types,
+then so are their concatenation
+<code> (T1 T2) </code> and their cancellation <code> T1-&gt;T2 </code>.
+If <code> P1 </code> and <code> P2 </code> are programs of types
+<code> T1 </code> and <code> T2 </code>,
+then the type of their concatenation <code> (P1 P2) </code>
+is the concatenation <code> (T1 T2) </code> of their types.
+Cancellation satisfies the law
+</p><pre>                T1  T1-&gt;T2   =&gt;   T2
+</pre>
+For types with concatenated parameter types:
+<pre>                (T1 T2)-&gt;T3   =&gt;   T1-&gt;(T2-&gt;T3)
+</pre>
+The expression on the right of the arrow can be written
+without parentheses on the convention that the cancellation
+operator <code>\</code> is taken to be right associative.
+<p>
+The three rules given above should now be rewritten in this style:
+</p><pre>        swap   =&gt;     (T1 T2) -&gt; (T2 T1).
+        +      =&gt;   (Int Int) -&gt; Int.
+        size   =&gt;         Str -&gt; Int.
+</pre>
+<p>
+The following are a sample of further rules in the two styles:
+Those in the left column are in the earlier style,
+those in the right are in the new style.
+</p><pre>        Chr      succ    =&gt;  Chr.       succ    =&gt;  Chr-&gt;Chr.
+        Int  Int  &gt;      =&gt;  Log.       &gt;       =&gt;  (Int Int)-&gt;Log.
+        Log  Log  and    =&gt;  Log.       and     =&gt;  (Log Log)-&gt;Log.
+        [T Lst]  first   =&gt;  T.         first   =&gt;  [T Lst]-&gt;T.
+        [T Lst]  rest    =&gt;  Lst.       rest    =&gt;  [T Lst]-&gt;Lst.
+        T  Lst   cons    =&gt;  [T Lst].   cons    =&gt;  (T Lst)-&gt;[T Lst].
+        [T Lst]  uncons  =&gt;  T Lst.     uncons  =&gt;  [T Lst]-&gt;(T Lst).
+        Chr Str  cons    =&gt;  Str.       cons    =&gt;  (Chr Str)-&gt;Str.
+        Set      null    =&gt;  Log.       null    =&gt;  Set-&gt;Log.
+</pre>
+Consider now the program <code> P </code> below.
+Its type is given by the concatenation of the types of its parts,
+in the line just below.
+All the types here are built from the atomic type <code>  Int  </code>
+of integers.
+By four applications of cancellation the type in line 1 is simplified
+to the type <code> Int </code> in line 4.
+<pre>P:    2      3      +                dup              *
+1.    Int    Int    (Int Int)-&gt;Int   Int-&gt;(Int Int)   (Int Int)-&gt;Int
+2.                  Int              Int-&gt;(Int Int)   (Int Int)-&gt;Int
+3.                                   (Int Int)        (Int Int)-&gt;Int
+4.                                                    Int
+</pre>
+<p>
+For combinators only only a few examples will be given here,
+for <kbd>i</kbd> and <kbd>map</kbd>.
+</p><pre>        i   =&gt;   [T] -&gt; T.
+        map   =&gt;   ([T1 -&gt; T2]) -&gt; ([T1] -&gt; [T2]).
+</pre>
+<p>
+The formalism used in this section is that of <em>categorial grammar</em>s.
+These have their origin in the (simple) theory of types
+and as generating devices are as powerful as context free grammars.
+Expositions and applications are to be found
+in the volume edited by
+\AX{Oehrle {\it et al}}{1988}{Oehrle-etal:88},
+see in particular
+the contributions by
+\X{Casadio} and \X{Lambek}.
+Another reference is the volume edited by
+\AX{Buskzkowski {\it et al}}{1988}{Buszkowski-etal:88}.
+</p><p>
+Rewriting systems are purely syntactic.
+If the object language has a semantics,
+then the rewriting rules have to be shown to be correct
+with reepsect to this semantics.
+This is true of the rewriting rules of the previous sections
+which dealt with values.
+It is also true for the rewriting rules for types.
+The basic semantic notion here is that of assigning types to programs.
+These take the form
+</p><pre>        P   :   T
+</pre>
+which is <em> not</em> a rewriting rule but a <em> statement</em>
+which says that program <code>P</code> is of type <code>T</code>.
+The basic type statements are to atomic programs,
+literals, operators and combinators.
+Here are some examples:
+<pre>        42    :  Int                'A  :  Chr
+        succ  :  Chr -&gt; Chr         &gt;   :  Int Int -&gt; Log
+        first :  [T Lst] -&gt; T       i   :  [T] -&gt; T
+</pre>
+This is the style adopted in the Joy manual.
+To obtain rewrite rules using <kbd>=&gt;</kbd>
+a single conditional rule is needed which converts the semantic
+predicate <kbd>:</kbd> into the syntactic <code>=&gt;</code>,
+as follows.
+<pre>        X =&gt; T   :-   X : T.
+</pre>
+<p>
+The material in this section has very tentative,
+most of the details need to be worked out fully.
+<!-- Begin nav_bottom.php -->
+<!--  G L O B A L  F O O T E R  -->
+</p><div id="globalFooter">
+  <ul id="policies">
+    <li><a href="http://www.latrobe.edu.au/accessibility">Accessibility</a></li>
+    <li><a href="http://www.latrobe.edu.au/privacy/privacy-statement.html">Privacy</a></li>
+    <li><a href="http://www.latrobe.edu.au/copyright/disclaimer.htm">Copyright and disclaimer</a></li>
+  </ul>
+  <ul id="copyright">
+    <li>CRICOS provider number: 00115M</li>
+    <!-- <li>CRICOS Provider Numbers: Bundoora, Albury-Wodonga 00115M; Bendigo 00119G</li>-->
+    <li>© La Trobe University 2008</li>
+  </ul>
+</div>
+<!-- Begin Webstat Code -->
+<noscript>
+<div><img src="http://webstat.latrobe.edu.au/i.latrobe" alt="" /></div>
+</noscript>
+<script type="text/javascript" src="joy_rewriting_files/latrobe.js"></script>
+<!-- End Webstat Code -->
+<!-- End nav_bottom.php -->
+
+</body></html>
