@@ -166,19 +166,19 @@ LIT "H .Console/write DEO <i>( to send the letter "H" )</i>
 	<tr><th>27</th><td class='empty'>--</td><th class='bg1'>2f</th><td>sprite</td></tr>
 </table>
 
-<p>The console <b>vector*</b> is evaluated 60 times per second. The screen device is capable of displaying 2-bit graphics with the 4 system colors defined by the <a href='#system'>system</a> device. The screen is made of two independent layers. The foreground layer treats color0 as transparent.</p>
+<p>The screen <b>vector*</b> is evaluated 60 times per second. The screen device is capable of displaying 2-bit graphics made of the four colors defined by the <a href='#system'>system</a> device. The screen is made of two independent layers, the foreground layer treats color0 as transparent.</p>
 
 <p>The <b>pixel byte</b> defines the pixel or fill mode, the layer to draw on, optional horizontal and vertical flipping for the quadrant to fill, and the color to use. When the fill bit is active, the operation will fill a portion of the screen starting at the x,y position until the edges of the screen. The default quadrant is bottom-right, flipping the x bit will fill the buttom-left quadrant, and so on.</p>
 
 <pre>
-          M L Y X * * C1 C0
-Mode -----+ | | |     |  +---- Color bit 0
-Layer ------+ | |     +------- Color bit 1
-Flip Y -------+ |
+           M L Y X * * C1 C0
+ Mode -----+ | | |     |  +---- Color bit 0
+ Layer ------+ | |     +------- Color bit 1
+Flip Y --------+ |
 Flip X ---------+
 </pre>
 
-<p>The <b>sprite byte</b> defines the 1-bit or 2-bit mode, the layer to draw on, optional horizontal and vertical flipping, and the colors to use. The screen can draw 8x8 sprites by first writing an <code>addr*</code> which points to either <a href='icn_format.html'>1-bit</a> or <a href='chr_format.html'>2-bit</a> sprite data in memory. Sprite data is stored as 8 bytes for a 1-bit sprite, and 16 bytes for a 2-bits sprite. To find the color for each pixel in a sprite, you can use the following formula, or use a table.</p> 
+<p>The <b>sprite byte</b> defines the 1-bit or 2-bit mode, the layer to draw on, optional horizontal and vertical flipping, and the colors to use. The screen can draw 8x8 sprites by first writing an <code>addr*</code> which points to either <a href='icn_format.html'>1-bit</a> or <a href='chr_format.html'>2-bit</a> sprite data in memory. Sprite data is stored as 8 bytes for a 1-bit sprite, and 16 bytes for a 2-bits sprite.</p> 
 
 <pre>
            M L Y X B3 B2 B1 B0
@@ -215,12 +215,12 @@ Flip X ----------+ +------------- Blending bit 3
 	</tr>
 </table>
 
-<p>The low nibble of the sprite byte defines the blending mode, meaning which color to use for each value of the sprite data. The following table presents all possible blendings, assuming a sprite has a background of value 0 and three concentric circles of values 1, 2, and 3 (counting from the outside). For 1-bit sprites, only values 0 and 1 are applicable.</p>
+<p>The <b>blending nibble</b> defines which color is drawn for each pixel of a sprite. The following table presents all possible blendings, assuming a sprite has a background of value 0 and three concentric circles of values 1, 2, and 3 (counting from the outside). For 1-bit sprites, only values 0 and 1 are applicable.</p>
 
 <pre>
 c = !ch ? (color % 5 ? color >> 2 : 0) : color % 4 + ch == 1 ? 0 : (ch - 2 + (color & 3)) % 3 + 1;
 
-static Uint8 blending[4][16] = {
+blending[4][16] = {
 	{0, 0, 0, 0, 1, 0, 1, 1, 2, 2, 0, 2, 3, 3, 3, 0},
 	{0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3},
 	{1, 2, 3, 1, 1, 2, 3, 1, 1, 2, 3, 1, 1, 2, 3, 1},
@@ -229,7 +229,7 @@ static Uint8 blending[4][16] = {
 
 <!-- <img src='../media/generic/varvara.blending.png' /> -->
 
-<p>The screen's <b>auto byte</b> automates the position and sprite address whenever a drawing command is sent, so the program does not need to manually move to the next sprite, or the next position. Pixel drawing will increment the positions by 1, and sprite drawing by either 8 or 16 depending on the mode.</p>
+<p>The <b>auto byte</b> automates the incrementation of the position and sprite address whenever a drawing command is sent, so the program does not need to manually move to the next sprite, or the next position. Pixel drawing will increment the positions by 1, and sprite drawing by either 8 or 16 depending on the mode.</p>
 
 <pre>
                 L3 L2 L1 L0 * A Y X
