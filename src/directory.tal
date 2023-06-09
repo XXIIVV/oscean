@@ -1,16 +1,41 @@
+( directory renderer )
+
+|10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
 |a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |b0 @File2 &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 
+|0000
+
+	@path $40
+
 |0100
 
-	;path load-dir
-	render
-	#800f DEO
+(
+@|vectors )
 
+@on-reset
+	.Console/type DEI ?&on-arg
+	;Dict/usage perr
+	#010f DEO
+BRK
+	&on-arg ( -> )
+		;await-src .Console/vector DEO2
 BRK
 
-@path "docs/ $1
-@output "docs/index.html $1
+@await-src ( -> )
+	.Console/read DEI .path skey ?on-ready
+BRK
+
+@on-ready ( -> )
+	;path
+		DUP2 load-dir
+		;Dict/index OVR2 scap scpy
+		render
+	#800f DEO
+BRK
+
+(
+@|core )
 
 @load-dir ( path* -- )
 	.File/name DEO2
@@ -18,8 +43,8 @@ BRK
 	;dir .File/read DEO2
 JMP2r
 
-@render ( -- )
-	;output .File/name DEO2
+@render ( path* -- )
+	.File/name DEO2
 	( head )
 	;El/<head> wstr
 		;El/<title> wstr
@@ -31,7 +56,7 @@ JMP2r
 		;El/<pre> wstr
 			;dir &w write-line LDAk ?&w POP2
 		;El/</pre> wstr
-	;El/</body> 
+	;El/</body>
 !wstr
 
 @write-line ( line* -- next* )
@@ -61,6 +86,9 @@ JMP2r
 	ADD2
 JMP2r
 
+(
+@|stdlib )
+
 @wstr ( str* -- next* )
 	DUP2 slen .File/length DEO2
 	.File/write DEO2
@@ -81,6 +109,32 @@ JMP2r
 @slen ( str* -- len* )
 	DUP2 scap SWP2 SUB2
 JMP2r
+
+@perr ( err* -- )
+	LDAk ?&w POP2 JMP2r
+	&w ( err* ~- )
+	LDAk #19 DEO INC2 LDAk ?&w POP2
+JMP2r
+
+@skey ( key buf -- proc )
+	OVR #21 LTH ?&eval #00 SWP sput #00 JMP2r
+	&eval POP2 #01 JMP2r
+
+@sput ( chr str* -- )
+	scap INC2k #00 ROT ROT STA STA JMP2r
+
+@scpy ( src* dst* -- )
+	STH2
+	&w LDAk #00 STH2kr STA2 INC2r INC2 LDAk ?&w
+		POP2 POP2r
+JMP2r
+
+(
+@|assets )
+
+@Dict
+	&usage "usage: 20 "directory.rom 20 "folder/ 0a $1
+	&index "index.html $1
 
 @El ( HTML elements )
 	&<head> "<head> $1

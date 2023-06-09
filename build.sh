@@ -14,6 +14,7 @@ case "$*" in *--lint*)
 	$lin src/maeve.tal
 	$lin src/oscean.tal
 	$lin src/arvelie.tal
+	$lin src/directory.tal
 ;; esac
 
 case "$*" in *--bal*)
@@ -29,7 +30,10 @@ mkdir -p site && rm -f site/*
 $asm src/maeve.tal bin/maeve.rom
 $asm src/oscean.tal bin/oscean.rom
 $asm src/arvelie.tal bin/arvelie.rom
+$asm src/directory.tal bin/directory.rom
 
 $emu bin/maeve.rom
 $emu bin/oscean.rom
 $emu bin/arvelie.rom
+$emu bin/directory.rom docs/
+
