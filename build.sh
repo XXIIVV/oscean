@@ -17,8 +17,8 @@ case "$*" in *--lint*)
 	$lin src/directory.tal
 ;; esac
 
+# https://git.sr.ht/~rabbits/uxnbal
 case "$*" in *--bal*)
-	# https://git.sr.ht/~rabbits/uxnbal
 	$bal src/maeve.tal
 	$bal src/oscean.tal
 ;; esac
