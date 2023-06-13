@@ -1,541 +1,362 @@
-( Oh time thy pyramids )
+(
+	Oh time thy pyramids )
 
 |a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |b0 @File2 &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
-
-|0100 ( -> )
-
-	( clear old copies )
-	;sitemap-path .File2/name DEO2
+|0100 @on-reset ( -> )
+	( clear old copies ) ;dict/sitemap-path .File2/name DEO2
 	[ LIT2 01 -File2/delete ] DEO
-	;calendar-path .File2/name DEO2
+	;dict/calendar-path .File2/name DEO2
 	[ LIT2 01 -File2/delete ] DEO
-	;journal-path .File2/name DEO2
+	;dict/journal-path .File2/name DEO2
 	[ LIT2 01 -File2/delete ] DEO
-
-	( setup output )
-	[ LIT2 01 -File2/append ] DEO
+	( setup output ) [ LIT2 01 -File2/append ] DEO
 	#0001 .File2/length DEO2
-
-	( lexicon )
-	;sitemap-path .File2/name DEO2 ;ul-tag <w>
-	parse-lexicon
-	;sitemap-path .File2/name DEO2 ;ul-tag </w>
-
-	( diary )
-	;calendar-path .File2/name DEO2 ;header-txt w-str ;p-tag <w>
-	parse-diary-pages
-	;calendar-path .File2/name DEO2 ;p-tag </w>
-
-	( print next available id )
-	;available-txt pstr
-	find-available pdec #0a18 DEO
-
-	( halt. )
-	#800f DEO
-
-BRK
+	( lexicon ) ;dict/sitemap-path .File2/name DEO2
+	;dict/ul-tag <w> parse-lexicon ;dict/sitemap-path .File2/name DEO2
+	;dict/ul-tag </w>
+	( diary ) ;dict/calendar-path .File2/name DEO2
+	;header-txt w-str ;dict/p-tag <w> parse-diary-pages ;dict/calendar-path .File2/name DEO2
+	;dict/p-tag </w>
+	( print next available id ) ;dict/available-txt pstr find-available pdec #0a18 DEO
+	( halt. ) #800f DEO
+	BRK
 
 (
 @|lexicon )
 
 @load-file ( addr* length* path* -- )
-
 	STH2k .File/name DEO2
 	DUP2 .File/length DEO2
 	SWP2 .File/read DEO2
-
-	( check for size )
-	.File/success DEI2 NEQ2 ?&size-ok
-		STH2kr pstr #0a18 DEO
-		&size-ok ( -- )
-	POP2r
-
-JMP2r
+	( check for size ) .File/success DEI2 NEQ2 ?&size-ok
+	STH2kr pstr #0a18 DEO
+	&size-ok ( -- )
+		POP2r JMP2r
 
 @parse-lexicon ( -- )
-
-	;lexicon #2000 ;lexicon-path load-file
-	( swap ) ;lexicon #0a00 cswp
-	;lexicon .File/success DEI2 ADD2k NIP2 SWP2
+	;lexicon #2000 ;dict/lexicon-path load-file
+	( swap ) ;lexicon #0a00 cswp ;lexicon .File/success DEI2 ADD2k NIP2 SWP2
 	&l ( -- )
-		parse-lexicon-line
-		INC2 GTH2k ?&l
-	POP2 POP2
-
-JMP2r
+		parse-lexicon-line INC2 GTH2k ?&l
+		POP2 POP2 JMP2r
 
 @parse-lexicon-line ( line* -- next* )
-
 	INC2 INC2
-
-	( do incoming )
-	DUP2k #0001 SUB2 LDA LIT "? EQU ?&no-map
-		DUP2 parse-links
-		&no-map ( -- )
-
-	( do sitemap )
-	;sitemap-path .File2/name DEO2
-	;li-tag <w>
-	w-link
-	;li-tag </w>
-	#0a w-chr
-	( eol )
-
-!scap
+	( do incoming ) DUP2k #0001 SUB2 LDA LIT "? EQU ?&no-map
+	DUP2 parse-links
+	&no-map ( -- )
+		( do sitemap ) ;dict/sitemap-path .File2/name DEO2
+		;dict/li-tag <w> w-link ;dict/li-tag </w> #0a w-chr
+		( eol ) !scap
 
 @parse-links ( src* -- )
-
-	DUP2 make-path-htm ;workarea #8000 ROT2 load-file
-
-	,&src STR2
+	DUP2 make-path-htm ;workarea #8000 ROT2 load-file ,&src STR2
 	;workarea .File/success DEI2 ADD2k NIP2 SWP2
 	&l ( -- )
-		;href-attr OVR2 sseg #00 EQU ?&no-link
-			[ LIT2 &src $2 ] OVR2 #0006 ADD2 parse-link
-			&no-link ( -- )
+		;dict/href-attr OVR2 sseg #00 EQU ?&no-link
+		[ LIT2 &src $2 ] OVR2 #0006 ADD2 parse-link
+	&no-link ( -- )
 		INC2 GTH2k ?&l
-	POP2 POP2
-
-JMP2r
+		POP2 POP2 JMP2r
 
 @parse-link ( src* link* -- )
-
-	( external ) ;http-txt OVR2 sseg ?&end
+	( external ) ;dict/http-txt OVR2 sseg ?&end
 	( hash ) LDAk LIT "# EQU ?&end
 	( rel ) LDAk LIT ". EQU ?&end
-
-		( find broken links )
-		DUP2 ;&buf scpy-line
-		;&buf [ LIT2 "_ 20 ] cswp
-		;&buf find-term INC2 ORA ?&exists
-			;&err pstr ;&buf pstr
-			;&in pstr OVR2 pstr #0a18 DEO
-			#010f DEO BRK
-			&exists
-
-		DUP2 make-path-map .File2/name DEO2
-		OVR2 w-str
-		#0a w-chr
-		&end ( -- )
-	POP2
-	POP2
-
-JMP2r
-&buf $30
-&err "-- 20 "Redlink: 20 $1
-&in 20 "in 20 $1
+	( find broken links ) DUP2 ;&buf scpy-line ;&buf [ LIT2 "_ 20 ] cswp ;&buf find-term INC2 ORA ?&exists
+	;&err pstr ;&buf pstr ;&in pstr OVR2 pstr #0a18 DEO
+	#010f DEO
+	BRK
+	&exists DUP2 make-path-map .File2/name DEO2
+		OVR2 w-str #0a w-chr
+	&end ( -- )
+		POP2 POP2 JMP2r
+	&buf $30
+	&err "-- 20 "Redlink: 20 $1
+	&in 20 "in 20 $1
 
 @find-term ( link* -- )
-
 	,&t STR2
 	;lexicon
-	&w
-		INC2 INC2
-		DUP2 [ LIT2 &t $2 ] scmp ?&end
+	&w ( -- )
+		INC2 INC2 DUP2 [ LIT2 &t $2 ] scmp ?&end
 		scap INC2 LDAk ?&w
-	POP2 #ffff
-	&end
-
-JMP2r
+		POP2 #ffff
+	&end JMP2r
 
 (
 @|diary )
 
 @parse-diary-pages ( -- )
-
 	#4000 .File/length DEO2
 	;diary-path-pages/end ;diary-path-pages
 	&l ( -- )
-		LDA2k ;workarea #4000 ROT2 load-file
-		#0000
-			( to* from* ) ;workarea STH2k .File/success DEI2 ADD2
-			( cap ) STA2k NIP2
-			( parse ) STH2r parse-diary-page
-		INC2 INC2 GTH2k ?&l
-	POP2 POP2
-
-JMP2r
+		LDA2k ;workarea #4000 ROT2 load-file #0000
+		( to* from* ) ;workarea STH2k .File/success DEI2 ADD2
+		( cap ) STA2k
+		NIP2
+		( parse ) STH2r parse-diary-page INC2 INC2 GTH2k ?&l
+		POP2 POP2 JMP2r
 
 @parse-diary-page ( to* from* -- )
-
 	( swap ) DUP2 #0a00 cswp
 	&l ( -- )
-		parse-diary-line
-		INC2 GTH2k ?&l
-	POP2 POP2
-
-JMP2r
+		parse-diary-line INC2 GTH2k ?&l
+		POP2 POP2 JMP2r
 
 @parse-diary-line ( line* -- next* )
-
 	DUP2 parse-log
-	( split )
-	DUP2 #0900 cswp
-	DUP2 set-diary
-	( event )
-	DUP2 #0005 ADD2 LDA LIT "+ NEQ ?&no-event
-		DUP2 parse-event
-		&no-event ( -- )
-	( photo )
-	;no-photo OVR2 #0006 ADD2 scmp ?&no-photo
+	( split ) DUP2 #0900 cswp DUP2 set-diary
+	( event ) DUP2 #0005 ADD2 LDA LIT "+ NEQ ?&no-event
+	DUP2 parse-event
+	&no-event ( -- )
+		( photo ) ;dict/no-photo OVR2 #0006 ADD2 scmp ?&no-photo
 		DUP2 parse-photo
-		&no-photo ( -- )
-	( eol )
-	scap INC2
-	scap INC2
-
-!scap
+	&no-photo ( -- )
+		( eol ) scap INC2 scap INC2 !scap
 
 @parse-log ( event* -- )
-
 	DUP2 #000a ADD2 make-path-tmp .File2/name DEO2
-	w-str
-	#0a
-
-!w-chr
+	w-str #0a !w-chr
 
 @parse-event ( event* -- )
-
-	( add to calendar )
-	;calendar-path .File2/name DEO2
-
-	( year )
-	LDAk2 ,&last LDR2 EQU2 ?&no-year
-		;br-tag <w/>
-		LDA2k ,&last STR2
-		&no-year ( -- )
-
-	( date )
-	;code-tag <w>
-		DUP2 #0005 w-len
-	;code-tag </w>
-	#20 w-chr
-	scap INC2
-	( term ) DUP2 w-link
-	;spacer w-str
-	scap INC2
-	( name ) w-str
-	;br-tag <w/>
-	#0a
-
-!w-chr
+	( add to calendar ) ;dict/calendar-path .File2/name DEO2
+	( year ) LDAk2 ,&last LDR2 EQU2 ?&no-year
+	;dict/br-tag <w/> LDA2k ,&last STR2
+	&no-year ( -- )
+		( date ) ;dict/code-tag <w> DUP2 #0005 w-len ;dict/code-tag </w> #20 w-chr scap INC2
+		( term ) DUP2 w-link ;dict/spacer w-str scap INC2
+		( name ) w-str ;dict/br-tag <w/> #0a !w-chr
 	&last "17 $1
 
 @parse-photo ( photo* -- )
-
-	( limit to 20 entries )
-	[ LIT2 &len $2 ] #0020 LTH2 ?&continue
-		POP2 JMP2r
-		&continue ( photo* ~- )
-
-	;journal-path .File2/name DEO2
-
-	DUP2 #0006 ADD2 ,&pict STR2
-	#000a ADD2
-		DUP2 ,&term STR2
+	( limit to 20 entries ) [ LIT2 &len $2 ] #0020 LTH2 ?&continue
+	POP2 JMP2r
+	&continue ( photo* ~- )
+		;dict/journal-path .File2/name DEO2
+		DUP2 #0006 ADD2 ,&pict STR2
+		#000a ADD2 DUP2 ,&term STR2
 		scap INC2 ,&title STR2
-
-	;figure-tag <w>
+		;dict/figure-tag <w>
 		( src ) [ LIT2 &pict $2 ]
-		( alt ) [ LIT2 &title $2 ] <img>
-		;figcaption-tag <w>
-			[ LIT2 &term $2 ] w-link
-				;spacer w-str
-				,&title LDR2 w-str
-		;figcaption-tag </w>
-	;figure-tag </w>
-	,&len LDR2 INC2 ,&len STR2
-	#0a
-
-!w-chr
+		( alt ) [ LIT2 &title $2 ] <img> ;dict/figcaption-tag <w> [ LIT2 &term $2 ] w-link ;dict/spacer w-str ,&title LDR2 w-str ;dict/figcaption-tag </w> ;dict/figure-tag </w> ,&len LDR2 INC2 ,&len STR2
+		#0a !w-chr
 
 @make-path-tmp ( name* -- path* )
-
-	;&term scpy-line
-	;&term [ LIT2 20 "_ ] cswp
-	;&path
-
-JMP2r
-	&path "tmp/log- &term $30
+	;&term scpy-line ;&term [ LIT2 20 "_ ] cswp ;&path JMP2r
+	&path "tmp/log-
+	&term $30
 
 @make-path-htm ( name* -- path* )
-
-	;&term STH2k scpy-line
-	STH2kr [ LIT2 20 "_ ] cswp
-	;htm-ext STH2r scap scpy-line
-	;&path
-
-JMP2r
-	&path "src/htm/ &term $30
+	;&term STH2k scpy-line STH2kr [ LIT2 20 "_ ] cswp ;dict/htm-ext STH2r scap scpy-line ;&path JMP2r
+	&path "src/htm/
+	&term $30
 
 @make-path-map ( name* -- path* )
-
-	;&term scpy-line
-	;&term [ LIT2 20 "_ ] cswp
-	;&path
-
-JMP2r
-	&path "tmp/map- &term $30
+	;&term scpy-line ;&term [ LIT2 20 "_ ] cswp ;&path JMP2r
+	&path "tmp/map-
+	&term $30
 
 (
 @|validate )
 
 @set-diary ( log* -- )
-
-	( validate photo id )
-	#0006 ADD2 sdec
-
-	ORAk #00 EQU ?&missing
+	( validate photo id ) #0006 ADD2 sdec ORAk #00 EQU ?&missing
 	DUP2 get-diary ?&duplicate
-
-	#01 OVR #07 AND #40 SFT SFT STH
-	#03 SFT2 ;diaries ADD2
-	LDAk STHr ORA ROT ROT STA
-
-JMP2r
-	&missing ( id* ~- ) POP2 JMP2r
-
-&duplicate ( id* ~- )
-
-	;&warning-txt pstr
-	pdec #0a18 DEO
-
-JMP2r
-
-&warning-txt "-- 20 "Duplicate 20 "diary: 20 $1
+	#01 OVR #07 AND #40 SFT SFT STH #03 SFT2 ;diaries ADD2 LDAk STHr ORA ROT ROT STA
+	JMP2r
+	&missing ( id* ~- )
+		POP2 JMP2r
+	&duplicate ( id* ~- )
+		;&warning-txt pstr pdec #0a18 DEO
+		JMP2r
+	&warning-txt "-- 20 "Duplicate 20 "diary: 20 $1
 
 @get-diary ( id* -- mask )
-
-	#01 OVR #07 AND #40 SFT SFT STH
-	#03 SFT2 ;diaries ADD2
-	LDA STHr AND
-
-JMP2r
+	#01 OVR #07 AND #40 SFT SFT STH #03 SFT2 ;diaries ADD2 LDA STHr AND JMP2r
 
 @find-available ( -- id* )
-
-	( find next diary )
-	#0001
+	( find next diary ) #0001
 	&w ( -- )
 		DUP2 get-diary #00 EQU ?&end
 		INC2 !&w
 	&end ( -- )
-
-JMP2r
+		JMP2r
 
 (
 @|framework )
 
 @<w> ( name* -- )
-
-	LIT "< w-chr
-	w-str
-	LIT ">
-
-!w-chr
+	LIT "< w-chr w-str LIT "> !w-chr
 
 @</w> ( name* -- )
-
-	LIT "< w-chr
-	LIT "/ w-chr
-	w-str
-	LIT ">
-
-!w-chr
+	LIT "< w-chr LIT "/ w-chr w-str LIT "> !w-chr
 
 @<w/> ( name* -- )
-
-	LIT "< w-chr
-	w-str
-	LIT "/ w-chr
-	LIT ">
-
-!w-chr
+	LIT "< w-chr w-str LIT "/ w-chr LIT "> !w-chr
 
 @<img> ( src* alt* -- )
-
-	;&a w-str
-	w-str
-	;&b w-str
-	w-str
-	;&c
-
-!w-str
+	;&a w-str w-str ;&b w-str w-str ;&c !w-str
 	&a "<img 20 "alt=" $1
 	&b "" 20 "src="../media/diary/ $1
 	&c ".jpg"/> $1
 
 @w-link ( str* -- )
-
-	;&a w-str
-	DUP2 w-path
-	;&b w-str
-	w-str
-	;&c
-
-!w-str
+	;&a w-str DUP2 w-path ;&b w-str w-str ;&c !w-str
 	&a "<a 20 "href=' $1
 	&b ".html'> $1
 	&c "</a> $1
 
 @w-path ( str* -- )
-
 	&w ( -- )
-		LDAk LIT "_ OVR #20 NEQ [ JMP SWP POP ] w-chr
-		INC2 LDAk ?&w
-	POP2
-
-JMP2r
+	LDAk LIT "_ OVR #20 NEQ [ JMP SWP POP ] w-chr INC2 LDAk ?&w
+	POP2 JMP2r
 
 @w-len ( str* len* -- )
-
 	ADD2k NIP2 SWP2
 	&l ( -- )
-		LDAk w-chr
-		INC2 GTH2k ?&l
-	POP2 POP2
-
-JMP2r
+		LDAk w-chr INC2 GTH2k ?&l
+		POP2 POP2 JMP2r
 
 @w-str ( str* -- )
-
 	&w ( -- )
-		LDAk w-chr
-		INC2 LDAk ?&w
-	POP2
-
-JMP2r
+	LDAk w-chr INC2 LDAk ?&w
+	POP2 JMP2r
 
 @w-chr ( chr -- )
-
-	;&b STAk .File2/write DEO2 POP
-
-JMP2r
+	;&b STAk
+	.File2/write DEO2
+	POP JMP2r
 	&b $1
 
 (
 @|stdlib )
 
 @cswp ( str* a b -- )
-
-	,&b STR ,&a STR
+	,&b STR
+	,&a STR
 	&w ( -- )
 		LDAk [ LIT &a $1 ] NEQ ?&continue
-			STH2k [ LIT &b $1 ] STH2r STA
-			&continue ( -- )
+		STH2k [ LIT &b $1 ] STH2r STA
+	&continue ( -- )
 		INC2 LDAk ?&w
-	POP2
-
-JMP2r
+		POP2 JMP2r
 
 @sdec ( str* -- val* )
-
 	LIT2r 0000
 	&w ( -- )
-		LIT2r 000a MUL2r
-		LITr 00
-		LDAk #30 SUB STH ADD2r
-		INC2 LDAk ?&w
-	POP2
-	STH2r
+		LIT2r 000a MUL2r LITr 00 LDAk #30 SUB STH ADD2r INC2 LDAk ?&w
+		POP2 STH2r JMP2r
 
-JMP2r
+@sseg ( a* b* -- f )
+	STH2
+	&l ( a* -- f )
+		LDAk LDAkr STHr NEQ ?&e
+		INC2k LDA #00 EQU ?&e
+		INC2 INC2r !&l
+	&e ( a* ~- f )
+		LDA LDAr STHr EQU JMP2r
 
-@sseg ( a* b* -- f ) STH2 &l ( a* -- f ) LDAk LDAkr STHr NEQ ?&e INC2k LDA #00 EQU ?&e INC2 INC2r !&l &e ( a* ~- f ) LDA LDAr STHr EQU JMP2r
-@scpy-line ( src* dst* -- ) STH2 &w ( -- ) LDAk STH2kr STA INC2r INC2 LDAk DUP #1f GTH SWP LIT ". NEQ AND ?&w POP2 #00 STH2r STA JMP2r
-@scmp ( a* b* -- f ) STH2 &l ( a -- ) LDAk LDAkr STHr NEQk ?&d DUP EOR EQUk ?&d POP2 INC2 INC2r !&l &d ( a* b* ~- f ) NIP2 POP2r EQU JMP2r
+@scpy-line ( src* dst* -- )
+	STH2
+	&w ( -- )
+		LDAk STH2kr STA
+		INC2r INC2 LDAk DUP #1f GTH SWP LIT ". NEQ AND ?&w
+		POP2 #00 STH2r STA
+		JMP2r
+
+@scmp ( a* b* -- f )
+	STH2
+	&l ( a -- )
+		LDAk LDAkr STHr NEQk ?&d
+		DUP EOR EQUk ?&d
+		POP2 INC2 INC2r !&l
+	&d ( a* b* ~- f )
+		NIP2 POP2r EQU JMP2r
 
 @scap ( str* -- end* )
 	LDAk ?&w
-JMP2r
+	JMP2r
 	&w ( -- )
 		INC2 LDAk ?&w
-JMP2r
+		JMP2r
 
-@phex ( hex* -- ) SWP phex/b &b ( b -- ) DUP #04 SFT phex/c &c ( c -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO JMP2r
-@pstr ( str* -- ) &w ( -- ) LDAk #18 DEO INC2 LDAk ?&w POP2 JMP2r
+@phex ( hex* -- )
+	SWP phex/b
+	&b ( b -- )
+		DUP #04 SFT phex/c
+	&c ( c -- )
+		#0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO
+		JMP2r
+
+@pstr ( str* -- )
+	&w ( -- )
+	LDAk #18 DEO
+	INC2 LDAk ?&w
+	POP2 JMP2r
 
 @pdec ( short* -- )
-
 	#2710 LIT2r 00fb
-	&w
-		DIV2k #000a DIV2k MUL2 SUB2 SWPr
-		EQUk OVR STHkr EQU AND ?&skip
-			DUP LIT "0 ADD #19 DEO INCr
-			&skip
-		POP2 #000a DIV2
-		SWPr INCr STHkr ?&w
-	POP2r POP2 POP2
-
-JMP2r
+	&w ( -- )
+		DIV2k #000a DIV2k MUL2 SUB2 SWPr EQUk OVR STHkr EQU AND ?&skip
+		DUP LIT "0 ADD #19 DEO
+		INCr
+	&skip POP2 #000a DIV2 SWPr INCr STHkr ?&w
+		POP2r POP2 POP2 JMP2r
 
 (
 @|assets )
 
-@http-txt "http $1
-@htm-ext ".htm $1
-@p-tag "p $1
-@ul-tag "ul $1
-@li-tag "li $1
-@br-tag "br $1
-@code-tag "code $1
-@figure-tag "figure $1
-@figcaption-tag "figcaption $1
-@href-attr "href $1
-@lexicon-path "src/tables/lexicon $1
-@sitemap-path "src/htm/sitemap.htm $1
-@calendar-path "src/htm/calendar.htm $1
-@journal-path "src/htm/journal.htm $1
-@spacer 20 "&mdash; 20 $1
-@no-photo "000 $1
-@available-txt "-- 20 "Available 20 "diary: 20 $1
+@dict &available-txt "-- 20 "Available 20 "diary: 20 $1
+	&no-photo "000 $1
+	&spacer 20 "&mdash; 20 $1
+	&journal-path "src/htm/journal.htm $1
+	&http-txt "http $1
+	&htm-ext ".htm $1
+	&p-tag "p $1
+	&ul-tag "ul $1
+	&li-tag "li $1
+	&br-tag "br $1
+	&code-tag "code $1
+	&figure-tag "figure $1
+	&figcaption-tag "figcaption $1
+	&href-attr "href $1
+	&lexicon-path "src/tables/lexicon $1
+	&sitemap-path "src/htm/sitemap.htm $1
+	&calendar-path "src/htm/calendar.htm $1
 
-@diary-paths
-	&3 "src/tables/diary/15-19 $1
+@diary-paths &3 "src/tables/diary/15-19 $1
 	&2 "src/tables/diary/10-14 $1
 	&1 "src/tables/diary/05-09 $1
 	&0 "src/tables/diary/00-04 $1
 
 @diary-path-pages
-	=diary-paths/3
-	=diary-paths/2
-	=diary-paths/1
-	=diary-paths/0
+	=diary-paths/3 =diary-paths/2 =diary-paths/1 =diary-paths/0
 	&end
 
 @header-txt
-3c68 323e 5468 6520 4361 6c65 6e64 6172
-2073 686f 7773 2075 7063 6f6d 696e 6720
-616e 6420 7061 7374 2065 7665 6e74 7320
-6672 6f6d 2074 6865 206a 6f75 726e 616c
-2e3c 2f68 323e 0a0a 3c70 3e54 6869 7320
-7769 6b69 2075 7365 7320 7468 6520 3c61
-2068 7265 663d 2761 7276 656c 6965 2e68
-746d 6c27 3e41 7276 656c 6965 3c2f 613e
-2074 696d 6520 666f 726d 6174 2c20 7768
-6572 6520 7468 6520 7965 6172 2069 7320
-6469 7669 6465 6420 696e 2032 3620 7065
-7269 6f64 732c 206f 7220 3c69 3e6d 6f6e
-7468 733c 2f69 3e2c 206f 6620 3134 2064
-6179 732c 206e 756d 6265 7265 6420 6672
-6f6d 2041 2074 6f20 5a2e 2054 6865 2069
-6e69 7469 616c 206c 6f67 6769 6e67 2079
-6561 7220 616e 6420 7468 6520 4172 7665
-6c69 6520 6461 7465 7320 636f 756e 7420
-7570 7761 7264 2066 726f 6d20 3230 3036
-2e20 596f 7520 6361 6e20 7365 6520 6d6f
-7265 2075 7064 6174 6573 2069 6e20 7468
-6520 3c61 2068 7265 663d 276a 6f75 726e
-616c 2e68 746d 6c27 3e6a 6f75 726e 616c
-3c2f 613e 2061 6e64 203c 6120 6872 6566
-3d27 6e6f 772e 6874 6d6c 273e 6e6f 773c
-2f61 3e20 7061 6765 733c 2f70 3e0a 0a00
+	[ 3c68 323e 5468 6520 4361 6c65 6e64 6172 2073 686f 7773 2075 7063 6f6d 696e 6720
+616e 6420 7061 7374 2065 7665 6e74 7320 6672 6f6d 2074 6865 206a 6f75 726e 616c
+2e3c 2f68 323e 0a0a 3c70 3e54 6869 7320 7769 6b69 2075 7365 7320 7468 6520 3c61
+2068 7265 663d 2761 7276 656c 6965 2e68 746d 6c27 3e41 7276 656c 6965 3c2f 613e
+2074 696d 6520 666f 726d 6174 2c20 7768 6572 6520 7468 6520 7965 6172 2069 7320
+6469 7669 6465 6420 696e 2032 3620 7065 7269 6f64 732c 206f 7220 3c69 3e6d 6f6e
+7468 733c 2f69 3e2c 206f 6620 3134 2064 6179 732c 206e 756d 6265 7265 6420 6672
+6f6d 2041 2074 6f20 5a2e 2054 6865 2069 6e69 7469 616c 206c 6f67 6769 6e67 2079
+6561 7220 616e 6420 7468 6520 4172 7665 6c69 6520 6461 7465 7320 636f 756e 7420
+7570 7761 7264 2066 726f 6d20 3230 3036 2e20 596f 7520 6361 6e20 7365 6520 6d6f
+7265 2075 7064 6174 6573 2069 6e20 7468 6520 3c61 2068 7265 663d 276a 6f75 726e
+616c 2e68 746d 6c27 3e6a 6f75 726e 616c 3c2f 613e 2061 6e64 203c 6120 6872 6566
+3d27 6e6f 772e 6874 6d6c 273e 6e6f 773c 2f61 3e20 7061 6765 733c 2f70 3e0a 0a00 ]
 
 (
 @|memory )
 
 @lexicon $2000
+
 @diaries $100
 
 @workarea
+
+
