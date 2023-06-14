@@ -13,10 +13,12 @@
 	( setup output ) [ LIT2 01 -File2/append ] DEO
 	#0001 .File2/length DEO2
 	( lexicon ) ;dict/sitemap-path .File2/name DEO2
-	;dict/ul-tag <w> parse-lexicon ;dict/sitemap-path .File2/name DEO2
+	;dict/ul-tag <w>
+	parse-lexicon ;dict/sitemap-path .File2/name DEO2
 	;dict/ul-tag </w>
 	( diary ) ;dict/calendar-path .File2/name DEO2
-	;header-txt w-str ;dict/p-tag <w> parse-diary-pages ;dict/calendar-path .File2/name DEO2
+	;header-txt w-str ;dict/p-tag <w>
+	parse-diary-pages ;dict/calendar-path .File2/name DEO2
 	;dict/p-tag </w>
 	( print next available id ) ;dict/available-txt pstr find-available pdec #0a18 DEO
 	( halt. ) #800f DEO
@@ -47,7 +49,9 @@
 	DUP2 parse-links
 	&no-map ( -- )
 		( do sitemap ) ;dict/sitemap-path .File2/name DEO2
-		;dict/li-tag <w> w-link ;dict/li-tag </w> #0a w-chr
+		;dict/li-tag <w>
+		w-link ;dict/li-tag </w>
+		#0a w-chr
 		( eol ) !scap
 
 @parse-links ( src* -- )
@@ -123,11 +127,15 @@
 @parse-event ( event* -- )
 	( add to calendar ) ;dict/calendar-path .File2/name DEO2
 	( year ) LDAk2 ,&last LDR2 EQU2 ?&no-year
-	;dict/br-tag <w/> LDA2k ,&last STR2
+	;dict/br-tag <w/>
+	LDA2k ,&last STR2
 	&no-year ( -- )
-		( date ) ;dict/code-tag <w> DUP2 #0005 w-len ;dict/code-tag </w> #20 w-chr scap INC2
+		( date ) ;dict/code-tag <w>
+		DUP2 #0005 w-len ;dict/code-tag </w>
+		#20 w-chr scap INC2
 		( term ) DUP2 w-link ;dict/spacer w-str scap INC2
-		( name ) w-str ;dict/br-tag <w/> #0a !w-chr
+		( name ) w-str ;dict/br-tag <w/>
+		#0a !w-chr
 	&last "17 $1
 
 @parse-photo ( photo* -- )
@@ -140,7 +148,11 @@
 		scap INC2 ,&title STR2
 		;dict/figure-tag <w>
 		( src ) [ LIT2 &pict $2 ]
-		( alt ) [ LIT2 &title $2 ] <img> ;dict/figcaption-tag <w> [ LIT2 &term $2 ] w-link ;dict/spacer w-str ,&title LDR2 w-str ;dict/figcaption-tag </w> ;dict/figure-tag </w> ,&len LDR2 INC2 ,&len STR2
+		( alt ) [ LIT2 &title $2 ] <img>
+		;dict/figcaption-tag <w>
+		[ LIT2 &term $2 ] w-link ;dict/spacer w-str ,&title LDR2 w-str ;dict/figcaption-tag </w>
+		;dict/figure-tag </w>
+		,&len LDR2 INC2 ,&len STR2
 		#0a !w-chr
 
 @make-path-tmp ( name* -- path* )
