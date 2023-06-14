@@ -7,7 +7,8 @@
 
 |0100 @on-reset ( -> )
 	.Console/type DEI ?on-params
-	( today ) .DateTime/doty DEI2 .DateTime/year DEI2 emit-arv #0a18 DEO
+	( today ) .DateTime/doty DEI2 .DateTime/year DEI2 <emit-arv>
+	#0a18 DEO
 	#800f DEO
 	BRK
 
@@ -40,41 +41,47 @@
 	&on-arvgre ( ztr -- )
 		( m ) INCk INC LDZk [ LIT "A ] SUB #00 SWP #000e MUL2 STH2
 		( d ) INC bytedec STH2r ADD2 INC2
-		( y ) ROT bytedec #07d6 ADD2 emit-gre #0a18 DEO
+		( y ) ROT bytedec #07d6 ADD2 <emit-gre>
+		#0a18 DEO
 		( end ) #800f DEO
 		JMP2r
 	&on-grearv ( ztr -- )
 		( y ) STHk shortdec LIT2r 0005 ADD2r DUP2
 		( m ) STHkr bytedec INCr INCr INCr
-		( d ) STHr bytedec #0001 SUB2 doty SWP2 emit-arv #0a18 DEO
+		( d ) STHr bytedec #0001 SUB2 doty SWP2 <emit-arv>
+		#0a18 DEO
 		( end ) #800f DEO
 		JMP2r
 	&err "usage: 20 "arvelie.rom 20 "YYYY-MM-DD 0a $1
 
-@emit-gre ( doty* year* -- )
-	DUP2 emit-dec2 [ LIT2 "- 18 ] DEO
+@<emit-gre> ( doty* year* -- )
+	DUP2 <emit-dec2>
+	[ LIT2 "- 18 ] DEO
 	,&y STR2
 	STH2 #0c00
 	&l DUP [ LIT2 &y $2 ] ROT diam #00 SWP DUP2 STH2kr GTH2 ?&skip
 		STH2k SUB2r !&continue
 	&skip POP2 !&end
 	&continue POP2 INC GTHk ?&l
-	&end NIP INC emit-dec [ LIT2 "- 18 ] DEO
-		STHr POPr INC !emit-dec
+	&end NIP INC <emit-dec>
+		[ LIT2 "- 18 ] DEO
+		STHr POPr INC !<emit-dec>
 
-@emit-arv ( doty* year* -- )
+@<emit-arv> ( doty* year* -- )
 	#07d6 SUB2 NIP
-	( year ) emit-dec
-	( month ) DUP2 #000e DIV2 NIP #11 ADD [ DUP #2a GTH #30 MUL SUB ] emit-num
-	( digit3 ) #000e [ DIV2k MUL2 SUB2 ] NIP !emit-dec
+	( year ) <emit-dec>
+	( month ) DUP2 #000e DIV2 NIP #11 ADD [ DUP #2a GTH #30 MUL SUB ] <emit-num>
+	( digit3 ) #000e [ DIV2k MUL2 SUB2 ] NIP !<emit-dec>
 
-@emit-dec2 ( short* -- )
-	#0064 DIV2k DUP emit-dec MUL2 SUB2 NIP
+@<emit-dec2> ( short* -- )
+	#0064 DIV2k DUP <emit-dec>
+	MUL2 SUB2 NIP
 
-@emit-dec ( byte -- )
-	DUP #0a DIV emit-num #0a DIVk MUL SUB
+@<emit-dec> ( byte -- )
+	DUP #0a DIV <emit-num>
+	#0a DIVk MUL SUB
 
-@emit-num ( num -- )
+@<emit-num> ( num -- )
 	[ LIT "0 ] ADD #18 DEO
 	JMP2r
 
