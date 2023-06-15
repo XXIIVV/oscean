@@ -3,9 +3,14 @@
 
 |10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
 |c0 @DateTime &year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
-|00 @buf
 
-|0100 @on-reset ( -> )
+|0000
+
+	@buf
+
+|0100
+
+@on-reset ( -> )
 	.Console/type DEI ?on-params
 	( today ) .DateTime/doty DEI2 .DateTime/year DEI2 <emit-arv>
 	#0a18 DEO
@@ -32,12 +37,11 @@
 @parse ( ztr -- )
 	DUP zlen #05 EQU ?&on-arvgre
 	DUP zlen #0a EQU ?&on-grearv
-	( print-error ) ;&err
-	&w LDAk #19 DEO
-		INC2 LDAk ?&w
-		POP2
-		( err ) #010f DEO
-		JMP2r
+	( print-error ) ;&err &w LDAk #19 DEO
+	INC2 LDAk ?&w
+	POP2
+	( err ) #010f DEO
+	JMP2r
 	&on-arvgre ( ztr -- )
 		( m ) INCk INC LDZk [ LIT "A ] SUB #00 SWP #000e MUL2 STH2
 		( d ) INC bytedec STH2r ADD2 INC2
@@ -51,8 +55,8 @@
 		( d ) STHr bytedec #0001 SUB2 doty SWP2 <emit-arv>
 		#0a18 DEO
 		( end ) #800f DEO
-		JMP2r
-	&err "usage: 20 "arvelie.rom 20 "YYYY-MM-DD 0a $1
+		JMP2r &err "usage: 20 "arvelie.rom 20 "YYYY-MM-DD 0a $1
+
 
 @<emit-gre> ( doty* year* -- )
 	DUP2 <emit-dec2>
@@ -97,19 +101,19 @@
 	&skip POP2 STH2r ADD2 JMP2r
 
 @diam ( year* month -- days )
-	#00 OVR ;&m ADD2 LDA SWP #01 NEQ ?&>no-feb
+	#00 OVR ;diam-lut ADD2 LDA SWP #01 NEQ ?&>no-feb
 	STH DUP2 is-leap-year STHr ADD &>no-feb
 	NIP NIP JMP2r
-	&m [ 1f 1c 1f 1e 1f 1e 1f 1f 1e 1f 1e 1f ]
+
+@diam-lut
+	[ 1f 1c 1f 1e 1f 1e 1f 1f 1e 1f 1e 1f ]
 
 @is-leap-year ( year* -- bool )
 	( leap year if divisible by 400 ) DUP2 #0190
 	( mod2 ) DIV2k MUL2 SUB2 #0000 EQU2 ?&leap
 	( not a leap year if divisible by 100, but not by 400 ) DUP2 #0064
 	( mod2 ) DIV2k MUL2 SUB2 #0000 EQU2 ?&not-leap
-	( leap year if not divisible by 100, but by 4 ) #0003 AND2 #0000 EQU2 JMP2r
-	&not-leap POP2 #00 JMP2r
-	&leap POP2 #01 JMP2r
+	( leap year if not divisible by 100, but by 4 ) #0003 AND2 #0000 EQU2 JMP2r &not-leap POP2 #00 JMP2r &leap POP2 #01 JMP2r
 
 @shortdec ( zp -- dec* )
 	( a ) STHk bytedec #0064 MUL2
@@ -129,6 +133,6 @@
 @zcap ( ztr -- end )
 	!&>a
 	&w INC &>a
-		LDZk ?&w
-		JMP2r
+	LDZk ?&w
+	JMP2r
 
