@@ -33,7 +33,7 @@
 @|build )
 
 @init-page ( name* -- name* )
-	( prepare output ) ;dict/output-path OVR2 ;html-ext make-path .File2/name DEO2
+	( prepare output ) ;dict/output-path OVR2 ;dict/html-ext make-path .File2/name DEO2
 	#0001 .File2/length DEO2
 	( cleanup )
 	( clear zeropage ) #0000 #0100 mclr DUP2 load-diary DUP2 load-incoming
@@ -77,47 +77,47 @@
 
 @build-page ( name* -- name* )
 	( | render )
-	;doctype write ;html-tag write-open
+	;dict/doctype write ;dict/html-tag write-open
 	( | head )
-	;head-tag write-open ;dict/meta-head-path write-inc ;title-tag write-open ;title-txt write [ LIT 20 ] write/char ;dict/mdash-entity-txt write [ LIT 20 ] write/char DUP2 write ;title-tag write-close ;head-tag write-close
+	;dict/head-tag write-open ;dict/meta-head-path write-inc ;dict/title-tag write-open ;dict/title-txt write [ LIT 20 ] write/char ;dict/mdash-entity-txt write [ LIT 20 ] write/char DUP2 write ;dict/title-tag write-close ;dict/head-tag write-close
 	( | body )
-	;body-tag write-open ;dict/meta-header-path write-inc build-page-nav build-page-main ;dict/meta-footer-path write-inc ;body-tag write-close ;html-tag !write-close
+	;dict/body-tag write-open ;dict/meta-header-path write-inc build-page-nav build-page-main ;dict/meta-footer-path write-inc ;dict/body-tag write-close ;dict/html-tag !write-close
 
 @build-page-nav ( name* -- name* )
-	;nav-tag write-open DUP2 #0002 SUB2 LDA chex #00 EQU ?&no-siblings
+	;dict/nav-tag write-open DUP2 #0002 SUB2 LDA chex #00 EQU ?&no-siblings
 	( parents ) DUP2 #0002 SUB2 LDA chex #02 LTH ?&no-parents
 	DUP2 find-parent find-parent build-children POP2
 	&no-parents ( -- )
 		( siblings ) DUP2 #0002 SUB2 LDA chex #00 EQU ?&no-siblings
 		DUP2 find-parent build-children POP2
 	&no-siblings ( -- )
-		( children ) build-children ;nav-tag !write-close
+		( children ) build-children ;dict/nav-tag !write-close
 
 @build-children ( name* -- name* )
-	;ul-tag write-open
+	;dict/ul-tag write-open
 	( stash depth ) DUP2k #0002 SUB2 LDA chex STH
 	( start after ) scap INC2
 	&while ( -- )
 		( stop at sibling ) LDAk chex STHkr EQU ?&end
 		( when depth+1 ) LDAk chex STHkr INC NEQ ?&continue
-		;li-tag write-open INC2k INC2 write-link ;li-tag write-close
+		;dict/li-tag write-open INC2k INC2 write-link ;dict/li-tag write-close
 	&continue ( -- )
 		( move to eol ) INC2 INC2
 	&eol ( -- )
 		INC2 LDAk ?&eol
 		INC2 LDAk ?&while
 	&end ( -- )
-		POP2 POPr ;ul-tag !write-close
+		POP2 POPr ;dict/ul-tag !write-close
 
 @build-page-main ( name* -- name* )
-	;main-tag write-open
+	;dict/main-tag write-open
 	( picture ) ;term/pict LDA #00 EQU ?&no-picture
 	;term/diary build-module-photo
 	&no-picture ( -- )
-		( body ) build-page-body build-page-module build-page-events build-page-incoming ;main-tag !write-close
+		( body ) build-page-body build-page-module build-page-events build-page-incoming ;dict/main-tag !write-close
 
 @build-page-body ( name* -+ name* )
-	;dict/htm-path OVR2 ;htm-ext make-path !write-inc
+	;dict/htm-path OVR2 ;dict/htm-ext make-path !write-inc
 
 @build-page-module ( term* -- term* )
 	DUP2 #0001 SUB2 LDA [ LIT ", ] NEQ ?&no-album
@@ -132,16 +132,16 @@
 		JMP2r
 
 @build-page-events ( name* -- name* )
-	STH2 ;ul-tag write-open ;diary
+	STH2 ;dict/ul-tag write-open ;diary
 	&while ( -- )
 		DUP2 #0005 ADD2 LDA [ LIT "+ ] NEQ ?&continue
-		;li-tag write-open DUP2 build-module-event ;li-tag write-close
+		;dict/li-tag write-open DUP2 build-module-event ;dict/li-tag write-close
 	&continue ( -- )
 		( goto eol )
 	&eol ( -- )
 		INC2 LDAk ?&eol
 		INC2 LDAk ?&while
-		POP2 ;ul-tag write-close STH2r JMP2r
+		POP2 ;dict/ul-tag write-close STH2r JMP2r
 
 @build-module-album ( name* -- name* )
 	STH2 ;diary
@@ -193,7 +193,7 @@
 	( event date )
 	( clip bound ) DUP2 #0005 ADD2 STH2
 	( clip start ) #00 STH2kr STA
-	( clip wrap ) ;code-tag write-auto
+	( clip wrap ) ;dict/code-tag write-auto
 	( clip restore ) [ LIT "+ ] STH2r STA
 	( event spacer ) [ LIT 20 ] write/char ;dict/mdash-entity-txt write [ LIT 20 ] write/char
 	( event name ) DUP2 #09 next-char INC2 #09 next-char INC2 !write
@@ -202,15 +202,15 @@
 	LDAk ?&continue
 	POP2 JMP2r
 	&continue ( diary* ~- )
-		( html ) ;figure-tag write-open
+		( html ) ;dict/figure-tag write-open
 		( clip ) DUP2 #0009 ADD2 STH2 #00 STH2r STA
-		( make src* ) ;dict/diary-path ;&diary-path scpy DUP2 #0006 ADD2 ;&diary-path scat ;jpg-ext ;&diary-path scat ;&diary-path
+		( make src* ) ;dict/diary-path ;&diary-path scpy DUP2 #0006 ADD2 ;&diary-path scat ;dict/jpg-ext ;&diary-path scat ;&diary-path
 		( make alt* ) OVR2 #00 next-char INC2 #09 next-char INC2 write-img
 		( unclip ) DUP2 #0009 ADD2 STH2 #09 STH2r STA
-		;figcaption-tag write-open DUP2 #000a ADD2 ;term/name SWP2 sseg ?&skip
+		;dict/figcaption-tag write-open DUP2 #000a ADD2 ;term/name SWP2 sseg ?&skip
 		DUP2 extract-term write-link [ LIT 20 ] write/char ;dict/mdash-entity-txt write [ LIT 20 ] write/char
 	&skip ( -- )
-		#09 next-char INC2 #09 next-char INC2 write ;figcaption-tag write-close ;figure-tag !write-close
+		#09 next-char INC2 #09 next-char INC2 write ;dict/figcaption-tag write-close ;dict/figure-tag !write-close
 		&diary-path $20
 
 (
@@ -231,14 +231,14 @@
 	( exists ) LDAk ?&continue
 	POP2 JMP2r
 	&continue ( incoming* ~- )
-		( html ) ;p-tag write-open ;&incoming-txt write
+		( html ) ;dict/p-tag write-open ;&incoming-txt write
 	&while ( -- )
 		DUP2 write-link #20 write/char
 		( move to eol )
 	&eol ( -- )
 		INC2 LDAk ?&eol
 		INC2 LDAk ?&while
-		POP2 ;p-tag !write-close
+		POP2 ;dict/p-tag !write-close
 		&incoming-txt "<b>Incoming</b>: 20 $1
 		( tools )
 
@@ -289,17 +289,17 @@
 	JMP2r
 
 @write-img ( src* alt* -- )
-	[ LIT "< ] write/char ;img-tag write ;alt-attr write-attr ;src-attr write-attr [ LIT "/ ] write/char [ LIT "> ] !write/char
+	[ LIT "< ] write/char ;dict/img-tag write ;dict/alt-attr write-attr ;dict/src-attr write-attr [ LIT "/ ] write/char [ LIT "> ] !write/char
 
 @write-link ( name* -- )
-	[ LIT "< ] write/char [ LIT "a ] write/char DUP2 ;html-ext ;&blank make-path ;href-attr write-attr
+	[ LIT "< ] write/char [ LIT "a ] write/char DUP2 ;dict/html-ext ;&blank make-path ;dict/href-attr write-attr
 	( self ) DUP2 ;term/name scmp #00 EQU ?&not-self
-	;dict/self-txt ;class-attr write-attr
+	;dict/self-txt ;dict/class-attr write-attr
 	&not-self ( -- )
 		( parent ) DUP2 ;term/parent scmp #00 EQU ?&not-parent
-		;dict/parent-txt ;class-attr write-attr
+		;dict/parent-txt ;dict/class-attr write-attr
 	&not-parent ( -- )
-		[ LIT "> ] write/char write ;a-tag !write-close
+		[ LIT "> ] write/char write ;dict/a-tag !write-close
 		&blank $1
 		( generics )
 
@@ -437,98 +437,6 @@
 (
 @|dict )
 
-@html-ext
-	".html $1
-
-
-@htm-ext
-	".htm $1
-
-
-@jpg-ext
-	".jpg $1
-
-
-@doctype
-	"<!DOCTYPE 20 "html> $1
-
-
-@html-tag
-	"html $1
-
-
-@head-tag
-	"head $1
-
-
-@title-tag
-	"title $1
-
-
-@body-tag
-	"body $1
-
-
-@nav-tag
-	"nav $1
-
-
-@main-tag
-	"main $1
-
-
-@p-tag
-	"p $1
-
-
-@ul-tag
-	"ul $1
-
-
-@li-tag
-	"li $1
-
-
-@a-tag
-	"a $1
-
-
-@img-tag
-	"img $1
-
-
-@code-tag
-	"code $1
-
-
-@figure-tag
-	"figure $1
-
-
-@figcaption-tag
-	"figcaption $1
-
-
-@src-attr
-	"src $1
-
-
-@alt-attr
-	"alt $1
-
-
-@href-attr
-	"href $1
-
-
-@class-attr
-	"class $1
-
-
-@title-txt
-	"XXIIVV $1
-
-
 @dict &meta-head-path "src/htm/meta_head.htm $1
 	&meta-header-path "src/htm/meta_header.htm $1
 	&meta-footer-path "src/htm/meta_footer.htm $1
@@ -539,6 +447,29 @@
 	&mdash-entity-txt "&mdash; $1
 	&parent-txt "parent $1
 	&htm-path "src/htm/ $1
+	&title-txt "XXIIVV $1
+	&class-attr "class $1
+	&href-attr "href $1
+	&html-ext ".html $1
+	&htm-ext ".htm $1
+	&jpg-ext ".jpg $1
+	&doctype "<!DOCTYPE 20 "html> $1
+	&html-tag "html $1
+	&head-tag "head $1
+	&title-tag "title $1
+	&body-tag "body $1
+	&nav-tag "nav $1
+	&main-tag "main $1
+	&p-tag "p $1
+	&ul-tag "ul $1
+	&li-tag "li $1
+	&a-tag "a $1
+	&img-tag "img $1
+	&code-tag "code $1
+	&figure-tag "figure $1
+	&figcaption-tag "figcaption $1
+	&src-attr "src $1
+	&alt-attr "alt $1
 
 
 @no-picture
