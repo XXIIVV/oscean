@@ -75,17 +75,17 @@
 
 @build-page ( name* -- name* )
 	( | render )
-	;dict/doctype <write>
+	;dict/doctype <str>
 	;dict/html-tag <write-open>
 	( | head )
 	;dict/head-tag <write-open>
 	;dict/meta-head-path <write-inc>
 	;dict/title-tag <write-open>
-	;dict/title-txt <write>
-	[ LIT 20 ] <write>/char
-	;dict/mdash-entity-txt <write>
-	[ LIT 20 ] <write>/char
-	DUP2 <write>
+	;dict/title-txt <str>
+	#20 <char>
+	;dict/mdash-entity-txt <str>
+	#20 <char>
+	DUP2 <str>
 	;dict/title-tag <write-close>
 	;dict/head-tag <write-close>
 	( | body )
@@ -206,10 +206,10 @@
 	( clip start ) #00 STH2kr STA
 	( clip wrap ) ;dict/code-tag <write-auto>
 	( clip restore ) [ LIT "+ ] STH2r STA
-	( event spacer ) [ LIT 20 ] <write>/char
-	;dict/mdash-entity-txt <write>
-	[ LIT 20 ] <write>/char
-	( event name ) DUP2 #09 next-char INC2 #09 next-char INC2 !<write>
+	( event spacer ) #20 <char>
+	;dict/mdash-entity-txt <str>
+	#20 <char>
+	( event name ) DUP2 #09 next-char INC2 #09 next-char INC2 !<str>
 
 @build-module-photo ( diary* -- )
 	LDAk ?&continue
@@ -217,17 +217,21 @@
 	&continue ( diary* ~- )
 		( html ) ;dict/figure-tag <write-open>
 		( clip ) DUP2 #0009 ADD2 STH2 #00 STH2r STA
-		( make src* ) ;dict/diary-path ;&diary-path scpy DUP2 #0006 ADD2 ;&diary-path scat ;dict/jpg-ext ;&diary-path scat ;&diary-path
+		( cpy path ) ;dict/diary-path ;&diary-path scpy
+		( cat id ) DUP2 #0006 ADD2 ;&diary-path scat
+		( cat ext ) ;dict/jpg-ext ;&diary-path scat
+		( | )
+		;&diary-path
 		( make alt* ) OVR2 #00 next-char INC2 #09 next-char INC2 <write-img>
 		( unclip ) DUP2 #0009 ADD2 STH2 #09 STH2r STA
 		;dict/figcaption-tag <write-open>
 		DUP2 #000a ADD2 ;term/name SWP2 sseg ?&skip
 		DUP2 extract-term <write-link>
-		[ LIT 20 ] <write>/char
-		;dict/mdash-entity-txt <write>
-		[ LIT 20 ] <write>/char
+		#20 <char>
+		;dict/mdash-entity-txt <str>
+		#20 <char>
 	&skip ( -- )
-		#09 next-char INC2 #09 next-char INC2 <write>
+		#09 next-char INC2 #09 next-char INC2 <str>
 		;dict/figcaption-tag <write-close>
 		;dict/figure-tag !<write-close>
 		&diary-path $20
@@ -245,15 +249,13 @@
 	;&buff JMP2r &buff $16
 
 @build-page-incoming ( -- )
-	;incoming
-	( exists ) LDAk ?&continue
-	POP2 JMP2r
-	&continue ( incoming* ~- )
-		( html ) ;dict/p-tag <write-open>
-		;&incoming-txt <write>
+	;incoming LDAk ?&>exists
+	POP2 JMP2r &>exists
+	( html ) ;dict/p-tag <write-open>
+	;&incoming-txt <str>
 	&while ( -- )
 		DUP2 <write-link>
-		#20 <write>/char
+		#20 <char>
 	&eol ( -- )
 		INC2 LDAk ?&eol
 		INC2 LDAk ?&while
@@ -313,58 +315,59 @@
 		JMP2r
 
 @<write-img> ( src* alt* -- )
-	[ LIT "< ] <write>/char
-	;dict/img-tag <write>
+	[ LIT "< ] <char>
+	;dict/img-tag <str>
 	;dict/alt-attr <write-attr>
 	;dict/src-attr <write-attr>
-	[ LIT "/ ] <write>/char
-	[ LIT "> ] !<write>/char
+	[ LIT "/ ] <char>
+	[ LIT "> ] !<char>
 
 @<write-link> ( name* -- )
-	[ LIT "< ] <write>/char
-	[ LIT "a ] <write>/char
+	[ LIT "< ] <char>
+	[ LIT "a ] <char>
 	DUP2 ;dict/html-ext ;&blank make-path ;dict/href-attr <write-attr>
 	( self ) DUP2 ;term/name scmp #00 EQU ?&>not-self
 	;dict/self-txt ;dict/class-attr <write-attr> &>not-self
 	( parent ) DUP2 ;term/parent scmp #00 EQU ?&>not-parent
 	;dict/parent-txt ;dict/class-attr <write-attr> &>not-parent
-	[ LIT "> ] <write>/char
-	<write>
+	[ LIT "> ] <char>
+	<str>
 	;dict/a-tag !<write-close>
 	&blank $1
 
 @<write-attr> ( body* attr* -- )
-	[ LIT 20 ] <write>/char
-	<write>
-	[ LIT "= ] <write>/char
-	[ LIT "" ] <write>/char
-	<write>
-	[ LIT "" ] !<write>/char
+	#20 <char>
+	<str>
+	[ LIT "= ] <char>
+	[ LIT "" ] <char>
+	<str>
+	[ LIT "" ] !<char>
 
 @<write-open> ( tag* -- )
-	LIT "< <write>/char
-	<write>
-	LIT "> !<write>/char
+	LIT "< <char>
+	<str>
+	LIT "> !<char>
 
 @<write-auto> ( str* tag* -+ )
 	DUP2 <write-open>
-	SWP2 <write>
+	SWP2 <str>
 
 @<write-close> ( tag* -- )
-	LIT "< <write>/char
-	LIT "/ <write>/char
-	<write>
-	LIT "> !<write>/char
+	LIT "< <char>
+	LIT "/ <char>
+	<str>
+	LIT "> !<char>
 
-@<write> ( addr* -- )
+@<str> ( addr* -- )
 	DUP2 scap OVR2 SUB2 .File2/length DEO2
 	.File2/write DEO2
-	#0001 .File2/length DEO2
 	JMP2r
-	&char ( char ~- )
-		;&b STAk
-		.File2/write DEO2
-		POP JMP2r &b $1
+
+@<char> ( char -- )
+	#0001 .File2/length DEO2
+	;&b STAk
+	.File2/write DEO2
+	POP JMP2r &b $1
 
 @prev-char ( addr* char -- addr* )
 	,&t STR
