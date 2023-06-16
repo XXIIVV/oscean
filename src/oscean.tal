@@ -275,7 +275,8 @@
 	DUP2 #0002 SUB2 LDA chex ?&>not-root
 	JMP2r &>not-root
 	#00 prev-char INC2
-	( stash depth ) LDAk chex #01 SUB STH ;lexicon SWP2
+	( stash depth ) LDAk chex #01 SUB STH
+	( let's go ) ;lexicon SWP2
 	&loop ( -- )
 		#0001 SUB2 #00 prev-char INC2k LDA chex STHkr NEQ ?&>continue
 		NIP2 POPr INC2 INC2 INC2 JMP2r &>continue
@@ -346,9 +347,8 @@
 	LIT "> !<write>/char
 
 @<write-auto> ( str* tag* -+ )
-	STH2k <write-open>
-	<write>
-	STH2r
+	DUP2 <write-open>
+	SWP2 <write>
 
 @<write-close> ( tag* -- )
 	LIT "< <write>/char
@@ -386,7 +386,9 @@
 @|stdlib )
 
 @chex ( c -- <val> )
-	LIT "0 SUB DUP #09 GTH [ JMP JMP2r ] #27 SUB DUP #0f GTH [ JMP JMP2r ] POP #ff JMP2r
+	( dec ) LIT "0 SUB DUP #09 GTH [ JMP JMP2r ]
+	( hex ) #27 SUB DUP #0f GTH [ JMP JMP2r ]
+	( err ) POP #ff JMP2r
 
 @cswp ( str* a b -- )
 	,&b STR
@@ -399,10 +401,10 @@
 		POP2 JMP2r
 
 @scap ( str* -- end* )
-	LDAk ?&w
-	JMP2r
+	!&>a
 	&w ( -- )
-		INC2 LDAk ?&w
+		INC2 &>a
+		LDAk ?&w
 		JMP2r
 
 @scat ( src* dst* -+ )
@@ -472,7 +474,6 @@
 
 @<print-error> ( name* msg* -> )
 	( msg ) <pstr>
-	#2018 DEO
 	( name ) <pstr>
 	#0a18 DEO
 	#010f DEO
@@ -516,7 +517,7 @@
 	&alt-attr "alt $1
 	&no-picture "000 $1
 
-@err &source "-- 20 "Source: $1
+@err &source "-- 20 "Source: 20 $1
 	&orphan "-- 20 "Orphan: 20 $1
 
 (
