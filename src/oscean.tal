@@ -102,7 +102,6 @@
 	DUP2 find-parent find-parent build-children POP2 &>no-parents
 	( siblings ) DUP2 #0002 SUB2 LDA chex #00 EQU ?&>no-siblings
 	DUP2 find-parent build-children POP2 &>no-siblings
-	( -- )
 	( children ) build-children ;dict/nav-tag !<write-close>
 
 @build-children ( name* -- name* )
@@ -116,7 +115,7 @@
 		INC2k INC2 <write-link>
 		;dict/li-tag <write-close>
 	&continue ( -- )
-		( move to eol ) INC2 INC2
+		INC2 INC2
 	&eol ( -- )
 		INC2 LDAk ?&eol
 		INC2 LDAk ?&while
@@ -178,7 +177,7 @@
 		DUP2 build-module-photo &>no-diary
 		POP2
 	&continue ( -- )
-		( move to eol ) INC2 INC2
+		INC2 INC2
 	&eol ( -- )
 		INC2 LDAk ?&eol
 		INC2 LDAk ?&while
@@ -194,7 +193,7 @@
 		( when depth+1 ) LDAk chex STHkr INC NEQ ?&continue
 		INC2 INC2 build-page-body
 	&continue ( -- )
-		( move to eol ) INC2 INC2
+		INC2 INC2
 	&eol ( -- )
 		INC2 LDAk ?&eol
 		INC2 LDAk ?&while
@@ -255,37 +254,33 @@
 	&while ( -- )
 		DUP2 <write-link>
 		#20 <write>/char
-		( move to eol )
 	&eol ( -- )
 		INC2 LDAk ?&eol
 		INC2 LDAk ?&while
 		POP2 ;dict/p-tag !<write-close>
 		&incoming-txt "<b>Incoming</b>: 20 $1
-		( tools )
+
+(
+@|tools )
 
 @find-diary ( name* -- diary* )
 	STH2 ;diary
 	&while ( -- )
-		( skip events ) DUP2 ;dict/no-picture log-has-picture ?&skip
-		POP2r JMP2r
-	&skip ( -- )
-		( move to eol )
-	&eol ( -- )
-		INC2 LDAk ?&eol
+		( skip events ) DUP2 ;dict/no-picture log-has-picture ?&eol
+		POP2r JMP2r &eol INC2 LDAk ?&eol
 		INC2 LDAk ?&while
 		POP2 #0000 POP2r JMP2r
 
 @find-parent ( term* -- parent* )
 	DUP2 #0002 SUB2 LDA chex ?&>not-root
 	JMP2r &>not-root
-	( -- ) #00 prev-char INC2
+	#00 prev-char INC2
 	( stash depth ) LDAk chex #01 SUB STH ;lexicon SWP2
 	&loop ( -- )
-		#0001 SUB2 #00 prev-char INC2k LDA chex STHkr NEQ ?&continue
-		NIP2 POPr INC2 INC2 INC2 JMP2r
-	&continue ( -- )
+		#0001 SUB2 #00 prev-char INC2k LDA chex STHkr NEQ ?&>continue
+		NIP2 POPr INC2 INC2 INC2 JMP2r &>continue
 		LTH2k ?&loop
-		( pop depth ) POPr #0002 JMP2r
+		POPr #0002 JMP2r
 
 @log-has-picture ( log* picture* -- flag )
 	SWP2 #0006 ADD2 !sseg
@@ -336,7 +331,6 @@
 	<write>
 	;dict/a-tag !<write-close>
 	&blank $1
-	( generics )
 
 @<write-attr> ( body* attr* -- )
 	[ LIT 20 ] <write>/char
@@ -376,7 +370,6 @@
 	,&t STR
 	&while ( -- )
 		LDAk [ LIT &t $1 ] EQU ?&end
-		LDAk #00 EQU ?&end
 		#0001 SUB2 LDAk ?&while
 	&end ( -- )
 		JMP2r
@@ -385,7 +378,6 @@
 	,&t STR
 	&while ( -- )
 		LDAk [ LIT &t $1 ] EQU ?&end
-		LDAk #00 EQU ?&end
 		INC2 LDAk ?&while
 	&end ( -- )
 		JMP2r
