@@ -144,7 +144,7 @@
 	LDA2k ,&last STR2
 	&no-year ( -- )
 		( date ) ;dict/code-tag <w>
-		DUP2 #0005 <w-len>
+		DUP2 #0005 <len>
 		;dict/code-tag </w>
 		#20 <char>
 		scap INC2
@@ -157,7 +157,8 @@
 		&last "17 $1
 
 @parse-photo ( photo* -- )
-	( limit to 20 entries ) [ LIT2 &len $2 ] #0020 LTH2 ?&>continue
+	( | limit to 20 entries )
+	[ LIT2 &len $2 ] #0020 LTH2 ?&>continue
 	POP2 JMP2r &>continue
 	( | )
 	;dict/journal-path .File2/name DEO2
@@ -258,20 +259,16 @@
 		INC2 LDAk ?&w
 		POP2 JMP2r
 
-@<w-len> ( str* len* -- )
-	ADD2k NIP2 SWP2
-	&l ( -- )
-		LDAk <char>
-		INC2 GTH2k ?&l
-		POP2 POP2 JMP2r
-
 @<str> ( str* -- )
-	&w ( -- )
-		LDAk <char>
-		INC2 LDAk ?&w
-		POP2 JMP2r
+	DUP2 scap OVR2 SUB2
+
+@<len> ( str* len* -- )
+	.File2/length DEO2
+	.File2/write DEO2
+	JMP2r
 
 @<char> ( chr -- )
+	#0001 .File2/length DEO2
 	;&b STAk
 	.File2/write DEO2
 	POP JMP2r &b $1
@@ -285,7 +282,7 @@
 	&w ( -- )
 		LDAk [ LIT &a $1 ] NEQ ?&>continue
 		STH2k [ LIT &b $1 ] STH2r STA &>continue
-		( -- ) INC2 LDAk ?&w
+		INC2 LDAk ?&w
 		POP2 JMP2r
 
 @sdec ( str* -- val* )
