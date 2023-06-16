@@ -37,17 +37,18 @@
 	#0001 .File2/length DEO2
 	( cleanup )
 	( clear zeropage ) #0000 #0100 mclr DUP2 load-diary DUP2 load-incoming
-	( verify orphans ) .File/success DEI2 ORA ?&no-orphan
-	DUP2 ;err/orphan <print-warning>
-	&no-orphan ( fill name )
-		DUP2 ;term/name scpy DUP2 find-parent ;term/parent scpy
-		( fill diary ) DUP2 find-diary ORAk #00 EQU ?&continue
-		DUP2 ;term/diary scpy
-		( copy pict ) DUP2 #0006 ADD2
-		( clip bound ) INC2k INC2 INC2 STH2
-		( clip start ) #00 STH2kr STA
-		( clip wrap ) ;term/pict scpy
-		( clip restore ) #09 STH2r STA
+	( verify orphans ) .File/success DEI2 ORA ?&>no-orphan
+	DUP2 ;err/orphan <print-warning> &>no-orphan
+
+	( | fill name )
+	DUP2 ;term/name scpy DUP2 find-parent ;term/parent scpy
+	( fill diary ) DUP2 find-diary ORAk #00 EQU ?&continue
+	DUP2 ;term/diary scpy
+	( copy pict ) DUP2 #0006 ADD2
+	( clip bound ) INC2k INC2 INC2 STH2
+	( clip start ) #00 STH2kr STA
+	( clip wrap ) ;term/pict scpy
+	( clip restore ) #09 STH2r STA
 	&continue ( -- )
 		POP2 JMP2r
 
@@ -99,14 +100,15 @@
 
 @build-page-nav ( name* -- name* )
 	;dict/nav-tag <write-open>
-	DUP2 #0002 SUB2 LDA chex #00 EQU ?&no-siblings
-	( parents ) DUP2 #0002 SUB2 LDA chex #02 LTH ?&no-parents
-	DUP2 find-parent find-parent build-children POP2
-	&no-parents ( -- )
-		( siblings ) DUP2 #0002 SUB2 LDA chex #00 EQU ?&no-siblings
-		DUP2 find-parent build-children POP2
-	&no-siblings ( -- )
-		( children ) build-children ;dict/nav-tag !<write-close>
+	DUP2 #0002 SUB2 LDA chex #00 EQU ?&>no-siblings
+	( parents ) DUP2 #0002 SUB2 LDA chex #02 LTH ?&>no-parents
+	DUP2 find-parent find-parent build-children POP2 &>no-parents
+
+	( siblings ) DUP2 #0002 SUB2 LDA chex #00 EQU ?&>no-siblings
+	DUP2 find-parent build-children POP2 &>no-siblings
+
+	( -- )
+	( children ) build-children ;dict/nav-tag !<write-close>
 
 @build-children ( name* -- name* )
 	;dict/ul-tag <write-open>
@@ -151,11 +153,9 @@
 	STH2 ;dict/ul-tag <write-open>
 	;diary
 	&while ( -- )
-		DUP2 #0005 ADD2 LDA [ LIT "+ ] NEQ ?&continue
+		DUP2 #0005 ADD2 LDA [ LIT "+ ] NEQ ?&eol
 		;dict/li-tag <write-open>
 		DUP2 build-module-event ;dict/li-tag <write-close>
-	&continue ( -- )
-		( goto eol )
 	&eol ( -- )
 		INC2 LDAk ?&eol
 		INC2 LDAk ?&while
@@ -165,8 +165,8 @@
 @build-module-album ( name* -- name* )
 	STH2 ;diary
 	&while ( -- )
-		( picture is blank ) DUP2 ;dict/no-picture log-has-picture ?&eol
-		( picture is head ) DUP2 ;term/pict log-has-picture ?&eol
+		( is blank ) DUP2 ;dict/no-picture log-has-picture ?&eol
+		( is head ) DUP2 ;term/pict log-has-picture ?&eol
 		DUP2 build-module-photo
 	&eol ( -- )
 		INC2 LDAk ?&eol
@@ -180,9 +180,8 @@
 	&while ( -- )
 		( stop at sibling ) LDAk chex STHkr EQU ?&end
 		( when depth+1 ) LDAk chex STHkr INC NEQ ?&continue
-		INC2k INC2 DUP2 load-diary find-diary ORAk #00 EQU ?&no-diary
-		DUP2 build-module-photo
-	&no-diary ( -- )
+		INC2k INC2 DUP2 load-diary find-diary ORAk #00 EQU ?&>no-diary
+		DUP2 build-module-photo &>no-diary
 		POP2
 	&continue ( -- )
 		( move to eol ) INC2 INC2
@@ -284,11 +283,11 @@
 		POP2 #0000 POP2r JMP2r
 
 @find-parent ( term* -- parent* )
-	DUP2 #0002 SUB2 LDA chex ?&not-root
-	JMP2r
-	&not-root ( -- )
-		#00 prev-char INC2
-		( stash depth ) LDAk chex #01 SUB STH ;lexicon SWP2
+	DUP2 #0002 SUB2 LDA chex ?&>not-root
+	JMP2r &>not-root
+
+	( -- ) #00 prev-char INC2
+	( stash depth ) LDAk chex #01 SUB STH ;lexicon SWP2
 	&loop ( -- )
 		#0001 SUB2 #00 prev-char INC2k LDA chex STHkr NEQ ?&continue
 		NIP2 POPr INC2 INC2 INC2 JMP2r
@@ -337,17 +336,16 @@
 	[ LIT "< ] <write>/char
 	[ LIT "a ] <write>/char
 	DUP2 ;dict/html-ext ;&blank make-path ;dict/href-attr <write-attr>
-	( self ) DUP2 ;term/name scmp #00 EQU ?&not-self
-	;dict/self-txt ;dict/class-attr <write-attr>
-	&not-self ( -- )
-		( parent ) DUP2 ;term/parent scmp #00 EQU ?&not-parent
-		;dict/parent-txt ;dict/class-attr <write-attr>
-	&not-parent ( -- )
-		[ LIT "> ] <write>/char
-		<write>
-		;dict/a-tag !<write-close>
-		&blank $1
-		( generics )
+	( self ) DUP2 ;term/name scmp #00 EQU ?&>not-self
+	;dict/self-txt ;dict/class-attr <write-attr> &>not-self
+
+	( parent ) DUP2 ;term/parent scmp #00 EQU ?&>not-parent
+	;dict/parent-txt ;dict/class-attr <write-attr> &>not-parent
+	[ LIT "> ] <write>/char
+	<write>
+	;dict/a-tag !<write-close>
+	&blank $1
+	( generics )
 
 @<write-attr> ( body* attr* -- )
 	[ LIT 20 ] <write>/char
