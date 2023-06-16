@@ -24,7 +24,8 @@
 	;dict/ul-tag </w>
 	( | diary )
 	;dict/calendar-path .File2/name DEO2
-	;header-txt w-str ;dict/p-tag <w>
+	;header-txt <str>
+	;dict/p-tag <w>
 	parse-diary-pages ;dict/calendar-path .File2/name DEO2
 	;dict/p-tag </w>
 	( | print next available id )
@@ -41,10 +42,9 @@
 	STH2k .File/name DEO2
 	DUP2 .File/length DEO2
 	SWP2 .File/read DEO2
-	( check for size ) .File/success DEI2 NEQ2 ?&size-ok
-	STH2kr pstr #0a18 DEO
-	&size-ok ( -- )
-		POP2r JMP2r
+	( check for size ) .File/success DEI2 NEQ2 ?&>size-ok
+	STH2kr pstr #0a18 DEO &>size-ok
+	( -- ) POP2r JMP2r
 
 @parse-lexicon ( -- )
 	;lexicon #2000 ;dict/lexicon-path load-file
@@ -61,8 +61,9 @@
 	&no-map ( -- )
 		( do sitemap ) ;dict/sitemap-path .File2/name DEO2
 		;dict/li-tag <w>
-		w-link ;dict/li-tag </w>
-		#0a w-chr
+		<link>
+		;dict/li-tag </w>
+		#0a <char>
 		( eol ) !scap
 
 @parse-links ( src* -- )
@@ -85,7 +86,8 @@
 	#010f DEO
 	BRK &>exists
 	DUP2 make-path-map .File2/name DEO2
-	OVR2 w-str #0a w-chr
+	OVR2 <str>
+	#0a <char>
 	&end ( -- )
 		POP2 POP2 JMP2r &buf $30
 		&err "-- 20 "Redlink: 20 $1
@@ -132,7 +134,8 @@
 
 @parse-log ( event* -- )
 	DUP2 #000a ADD2 make-path-tmp .File2/name DEO2
-	w-str #0a !w-chr
+	<str>
+	#0a !<char>
 
 @parse-event ( event* -- )
 	( add to calendar ) ;dict/calendar-path .File2/name DEO2
@@ -141,11 +144,16 @@
 	LDA2k ,&last STR2
 	&no-year ( -- )
 		( date ) ;dict/code-tag <w>
-		DUP2 #0005 w-len ;dict/code-tag </w>
-		#20 w-chr scap INC2
-		( term ) DUP2 w-link ;dict/spacer w-str scap INC2
-		( name ) w-str ;dict/br-tag <w/>
-		#0a !w-chr
+		DUP2 #0005 <w-len>
+		;dict/code-tag </w>
+		#20 <char>
+		scap INC2
+		( term ) DUP2 <link>
+		;dict/spacer <str>
+		scap INC2
+		( name ) <str>
+		;dict/br-tag <w/>
+		#0a !<char>
 		&last "17 $1
 
 @parse-photo ( photo* -- )
@@ -160,10 +168,13 @@
 	( src ) [ LIT2 &pict $2 ]
 	( alt ) [ LIT2 &title $2 ] <img>
 	;dict/figcaption-tag <w>
-	[ LIT2 &term $2 ] w-link ;dict/spacer w-str ,&title LDR2 w-str ;dict/figcaption-tag </w>
+	[ LIT2 &term $2 ] <link>
+	;dict/spacer <str>
+	,&title LDR2 <str>
+	;dict/figcaption-tag </w>
 	;dict/figure-tag </w>
 	,&len LDR2 INC2 ,&len STR2
-	#0a !w-chr
+	#0a !<char>
 
 @make-path-tmp ( name* -- path* )
 	;&term scpy-line ;&term [ LIT2 20 "_ ] cswp
@@ -205,43 +216,62 @@
 @|framework )
 
 @<w> ( name* -- )
-	LIT "< w-chr w-str LIT "> !w-chr
+	LIT "< <char>
+	<str>
+	LIT "> !<char>
 
 @</w> ( name* -- )
-	LIT "< w-chr LIT "/ w-chr w-str LIT "> !w-chr
+	LIT "< <char>
+	LIT "/ <char>
+	<str>
+	LIT "> !<char>
 
 @<w/> ( name* -- )
-	LIT "< w-chr w-str LIT "/ w-chr LIT "> !w-chr
+	LIT "< <char>
+	<str>
+	LIT "/ <char>
+	LIT "> !<char>
 
 @<img> ( src* alt* -- )
-	;&a w-str w-str ;&b w-str w-str ;&c !w-str
+	;&a <str>
+	<str>
+	;&b <str>
+	<str>
+	;&c !<str>
 	&a "<img 20 "alt=" $1
 	&b "" 20 "src="../media/diary/ $1
 	&c ".jpg"/> $1
 
-@w-link ( str* -- )
-	;&a w-str DUP2 w-path ;&b w-str w-str ;&c !w-str
+@<link> ( str* -- )
+	;&a <str>
+	DUP2 <path>
+	;&b <str>
+	<str>
+	;&c !<str>
 	&a "<a 20 "href=' $1
 	&b ".html'> $1
 	&c "</a> $1
 
-@w-path ( str* -- )
+@<path> ( str* -- )
 	&w ( -- )
-		LDAk LIT "_ OVR #20 NEQ [ JMP SWP POP ] w-chr INC2 LDAk ?&w
+		LDAk LIT "_ OVR #20 NEQ [ JMP SWP POP ] <char>
+		INC2 LDAk ?&w
 		POP2 JMP2r
 
-@w-len ( str* len* -- )
+@<w-len> ( str* len* -- )
 	ADD2k NIP2 SWP2
 	&l ( -- )
-		LDAk w-chr INC2 GTH2k ?&l
+		LDAk <char>
+		INC2 GTH2k ?&l
 		POP2 POP2 JMP2r
 
-@w-str ( str* -- )
+@<str> ( str* -- )
 	&w ( -- )
-		LDAk w-chr INC2 LDAk ?&w
+		LDAk <char>
+		INC2 LDAk ?&w
 		POP2 JMP2r
 
-@w-chr ( chr -- )
+@<char> ( chr -- )
 	;&b STAk
 	.File2/write DEO2
 	POP JMP2r &b $1
