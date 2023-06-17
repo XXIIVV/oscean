@@ -37,8 +37,11 @@
 @parse ( ztr -- )
 	DUP zlen #05 EQU ?&on-arvgre
 	DUP zlen #0a EQU ?&on-grearv
-	( print-error ) ;&err &w LDAk #19 DEO
-	INC2 LDAk ?&w
+	( | print-error )
+	;&err
+	&w ( -- )
+		LDAk #19 DEO
+		INC2 LDAk ?&w
 	POP2
 	( err ) #010f DEO
 	JMP2r
@@ -64,10 +67,10 @@
 	STH2 #0c00
 	&l ( -- )
 		DUP [ LIT2 &y $2 ] ROT diam #00 SWP DUP2 STH2kr GTH2 ?&>skip
-		STH2k SUB2r !&>continue
-		&>skip
-		POP2 !&end
-		&>continue
+			STH2k SUB2r !&>continue
+			&>skip
+			POP2 !&end
+			&>continue
 		POP2 INC GTHk ?&l
 	&end ( -- )
 		NIP INC <emit-dec>
@@ -103,7 +106,7 @@
 
 @diam ( year* month -- days )
 	#00 OVR ;diam-lut ADD2 LDA SWP #01 NEQ ?&>no-feb
-	STH DUP2 is-leap-year STHr ADD &>no-feb
+		STH DUP2 is-leap-year STHr ADD &>no-feb
 	NIP NIP JMP2r
 
 @is-leap-year ( year* -- bool )
@@ -133,10 +136,9 @@
 	DUP zcap SWP SUB JMP2r
 
 @zcap ( ztr -- end )
-	!&>a
+	!&a
 	&w ( -- )
-		INC &>a
-		LDZk ?&w
+		INC &a LDZk ?&w
 	JMP2r
 
 (
