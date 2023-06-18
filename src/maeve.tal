@@ -68,13 +68,16 @@
 		( eol ) !scap
 
 @parse-links ( src* -- )
-	DUP2 make-path-htm ;workarea #8000 ROT2 load-file ,&src STR2
+	DUP2 ;&term STH2k scpy-line
+	( ) STH2kr [ LIT2 20 "_ ] cswp
+	( ) ;dict/htm-ext STH2r scap scpy-line
+	( res ) ;&htm-path ;workarea #8000 ROT2 load-file ,&src STR2
 	;workarea .File/success DEI2 ADD2k NIP2 SWP2
 	&l ( -- )
 		;dict/href-attr OVR2 sseg #00 EQU ?&>no-link
 			[ LIT2 &src $2 ] OVR2 #0006 ADD2 parse-link &>no-link
 		INC2 GTH2k ?&l
-	POP2 POP2 JMP2r
+	POP2 POP2 JMP2r &htm-path [ "src/htm/ &term $30 ]
 
 @parse-link ( src* link* -- )
 	( external ) ;dict/http-txt OVR2 sseg ?&end
@@ -91,11 +94,13 @@
 	#010f DEO
 	BRK
 	&exists ( src* link* -- )
-		DUP2 make-path-map .File2/name DEO2
+		DUP2 ;&term scpy-line ;&term [ LIT2 20 "_ ] cswp
+		( res ) ;&map-path .File2/name DEO2
 		OVR2 <str>
 		#0a <char>
 	&end ( -- )
 		POP2 POP2 JMP2r &buf $30
+		&map-path [ "tmp/map- &term $30 ]
 
 @find-term ( link* -- )
 	,&t STR2
@@ -132,14 +137,17 @@
 	( event ) DUP2 #0005 ADD2 LDA LIT "+ NEQ ?&no-event
 	DUP2 parse-event
 	&no-event ( -- )
-		( photo ) ;dict/no-photo OVR2 #0006 ADD2 scmp ?&>no-photo
+		;dict/no-photo OVR2 #0006 ADD2 scmp ?&>no-photo
 			DUP2 parse-photo &>no-photo
 		( eol ) scap INC2 scap INC2 !scap
 
 @parse-log ( event* -- )
-	DUP2 #000a ADD2 make-path-tmp .File2/name DEO2
+	DUP2 #000a ADD2 ;&term scpy-line
+	( ) ;&term [ LIT2 20 "_ ] cswp
+	( res ) ;&log-path .File2/name DEO2
 	<str>
 	#0a !<char>
+	&log-path [ "tmp/log- &term $30 ]
 
 @parse-event ( event* -- )
 	( add to calendar ) ;dict/calendar-path .File2/name DEO2
@@ -180,18 +188,6 @@
 	;dict/figure-tag </w>
 	,&len LDR2 INC2 ,&len STR2
 	#0a !<char>
-
-@make-path-tmp ( name* -- path* )
-	;&term scpy-line ;&term [ LIT2 20 "_ ] cswp
-	( res ) ;&path JMP2r &path "tmp/log- &term $30
-
-@make-path-htm ( name* -- path* )
-	;&term STH2k scpy-line STH2kr [ LIT2 20 "_ ] cswp ;dict/htm-ext STH2r scap scpy-line
-	( res ) ;&path JMP2r &path "src/htm/ &term $30
-
-@make-path-map ( name* -- path* )
-	;&term scpy-line ;&term [ LIT2 20 "_ ] cswp
-	( res ) ;&path JMP2r &path "tmp/map- &term $30
 
 (
 @|validate )
