@@ -32,7 +32,10 @@
 @|build )
 
 @init-page ( name* -- name* )
-	( prepare output ) ;dict/output-path OVR2 ;dict/html-ext make-path .File2/name DEO2
+	( prepare output ) DUP2 ;&buf scpy
+	( ) ;&buf [ LIT2 20 "_ ] cswp
+	( ) ;dict/html-ext ;&buf scat
+	( ) ;&site-path .File2/name DEO2
 	#0001 .File2/length DEO2
 	( cleanup )
 	( clear zeropage ) #0000 #0100 mclr DUP2 load-diary DUP2 load-incoming
@@ -48,7 +51,7 @@
 	( clip wrap ) ;term/pict scpy
 	( clip restore ) #09 STH2r STA
 	&continue ( -- )
-		POP2 JMP2r
+		POP2 JMP2r &site-path [ "site/ &buf $30 ]
 
 @load-diary ( name* -- )
 	( make path ) ;&file scpy ;&file [ LIT2 20 "_ ] cswp
@@ -486,7 +489,6 @@
 @dict &meta-head-path "src/htm/meta_head.htm $1
 	&meta-header-path "src/htm/meta_header.htm $1
 	&meta-footer-path "src/htm/meta_footer.htm $1
-	&output-path "site/ $1
 	&lexicon-path "src/tables/lexicon $1
 	&self-txt "self $1
 	&mdash-entity-txt "&mdash; $1
