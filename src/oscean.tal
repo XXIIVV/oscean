@@ -52,25 +52,25 @@
 
 @load-diary ( name* -- )
 	( make path ) ;&file scpy ;&file [ LIT2 20 "_ ] cswp
-	( load ) ;&path .File/name DEO2
+	( load ) ;&log-path .File/name DEO2
 	#1000 .File/length DEO2
 	;diary
 	( clear ) DUP2 [ LIT2 &length $2 ] mclr
 	( read ) DUP2 .File/read DEO2
 	( lines ) #0a00 cswp .File/success DEI2 ,&length STR2
-	JMP2r &path "tmp/log- &file $30
+	JMP2r &log-path [ "tmp/log- &file $30 ]
 
 @load-incoming ( name* -- )
-	( make path ) ;buff STH2k sclr
-	( ) ;&new-path STH2kr scpy
-	( ) STH2kr scat STH2kr [ LIT2 20 "_ ] cswp
-	( load ) STH2r .File/name DEO2
+	( clear ) ;&buf STH2k sclr
+	( paste ) STH2kr scpy
+	( cswp ) STH2r [ LIT2 20 "_ ] cswp
+	( load ) ;&map-path .File/name DEO2
 	#1000 .File/length DEO2
 	;incoming
 	( clear ) DUP2 [ LIT2 &length $2 ] mclr
 	( read ) DUP2 .File/read DEO2
 	( split lines ) #0a00 cswp .File/success DEI2 ,&length STR2
-	JMP2r &new-path "tmp/map- $1
+	JMP2r &map-path [ "tmp/map- &buf $30 ]
 
 @build-page ( name* -- name* )
 	( | render )
@@ -250,7 +250,7 @@
 	;incoming LDAk ?&>exists
 		POP2 JMP2r &>exists
 	;dict/p-tag <write-open>
-	;&incoming-txt <str>
+	;dict/incoming-txt <str>
 	&while ( -- )
 		DUP2 <write-link>
 		#20 <char>
@@ -258,7 +258,6 @@
 		INC2 LDAk ?&eol
 	INC2 LDAk ?&while
 	POP2 ;dict/p-tag !<write-close>
-	&incoming-txt "<b>Incoming</b>: 20 $1
 
 (
 @|tools )
@@ -515,6 +514,7 @@
 	&src-attr "src $1
 	&alt-attr "alt $1
 	&no-picture "000 $1
+	&incoming-txt "<b>Incoming</b>: 20 $1
 
 @err &source "-- 20 "Source: 20 $1
 	&orphan "-- 20 "Orphan: 20 $1
