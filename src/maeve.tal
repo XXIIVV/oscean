@@ -83,9 +83,9 @@
 	( find broken links ) DUP2 ;&buf scpy-line
 	( cswp ) ;&buf [ LIT2 "_ 20 ] cswp
 	( ) ;&buf find-term INC2 ORA ?&exists
-	;&err <pstr>
+	;dict/redlink <pstr>
 	;&buf <pstr>
-	;&in <pstr>
+	;dict/in <pstr>
 	OVR2 <pstr>
 	#0a18 DEO
 	#010f DEO
@@ -96,8 +96,6 @@
 		#0a <char>
 	&end ( -- )
 		POP2 POP2 JMP2r &buf $30
-		&err "-- 20 "Redlink: 20 $1
-		&in 20 "in 20 $1
 
 @find-term ( link* -- )
 	,&t STR2
@@ -206,16 +204,16 @@
 	&missing ( id* ~- )
 		POP2 JMP2r
 	&duplicate ( id* ~- )
-		;&warning-txt <pstr>
+		;dict/duplicate <pstr>
 		<pdec>
 		#0a18 DEO
-		JMP2r &warning-txt "-- 20 "Duplicate 20 "diary: 20 $1
+		JMP2r
 
 @get-diary ( id* -- mask )
 	#01 OVR #07 AND #40 SFT SFT STH #03 SFT2 ;diaries ADD2 LDA STHr AND JMP2r
 
 @find-available ( -- id* )
-	( find next diary ) #0001
+	#0001
 	&w ( -- )
 		DUP2 get-diary #00 EQU ?&end
 		INC2 !&w
@@ -375,6 +373,9 @@
 	&lexicon-path "src/tables/lexicon $1
 	&sitemap-path "src/htm/sitemap.htm $1
 	&calendar-path "src/htm/calendar.htm $1
+	&redlink "-- 20 "Redlink: 20 $1
+	&duplicate "-- 20 "Duplicate 20 "diary: 20 $1
+	&in 20 "in 20 $1
 
 @diary-paths &3 "src/tables/diary/15-19 $1
 	&2 "src/tables/diary/10-14 $1
