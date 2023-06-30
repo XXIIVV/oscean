@@ -7,20 +7,20 @@
 <p><a href='type_systems.html'>Type inference</a> in <a href='uxntal.html'>Uxntal</a> is done by checking the stack effect declarations of words before they can be run, against the cumulative stack state of each item in the definition of each word.</p>
 
 <ul>
-	<li><kbd>( a -- b )</kbd> Normal</li>
-	<li><kbd>( a -> b )</kbd> Vector</li>
-	<li><kbd>( a -+ b )</kbd> Fallthrough</li>
-	<li><kbd>( a ~- b )</kbd> Normal Branch</li>
-	<li><kbd>( a ~> b )</kbd> Vector Branch</li>
-	<li><kbd>( a ~+ b )</kbd> Fallthrough Branch</li>
-	<li><kbd>( a -: b )</kbd> Unsafe</li>
+	<li><kbd>( a -- b )</kbd> Untyped</li>
+	<li><kbd>( a -: b )</kbd> Validated routine</li>
+	<li><kbd>( a -> b )</kbd> Validated vector</li>
 </ul>
 
+<p>Words that do not pass the stack-checker are generating a warning, and so essentially this defines a very simple and permissive type system that nevertheless catches some invalid programs and enables compiler optimizations. </p>
+
 <pre>
-@routine ( a b -- c ) <i>Ok.</i>
+@routine ( a b -: c ) <i>Ok.</i>
 	MUL
 JMP2r
 </pre>
+
+<h3>Basic Validation</h3>
 
 <p>The simplest case is when a piece of code does not have any branches or recursion, and just pushes literals and calls words. Pushing a literal has stack effect <code>( -- x )</code>. The stack effect of most words is always known statically from the declaration.</p>
 
@@ -30,42 +30,32 @@ JMP2r
 JMP2r 
 </pre>
 
-<h3>Branch Type</h3>
-<p>Words that do not pass the stack-checker are generating a warning, and so essentially this defines a very simple and permissive type system that nevertheless catches some invalid programs and enables compiler optimizations. </p>
+<h3>Return-Stack Passing</h3>
+
+<p>The following example shows some extra syntax where stack elements passed through the return stack are prefixed with a backtick:</p>
 
 <pre>
-@routine ( a -- ) <i>Ok.</i>
-	#01 ?&branch POP 
-JMP2r
-	&branch ( a ~- )
-		POP
-JMP2r
+@wcpy ( src* des* -: cap* ) <i>Ok.</i>
+	STH2
+	&w ( src* `des* -: cap* )
+		LDAk STH2kr STA
+		INC2r INC2 LDAk #20 GTH ?&w
+	POP2
+	( cap ) #00 STH2kr STA
+	INC2r STH2r JMP2r
 </pre>
+
+<p>Each jump label must be defined for a routine's body to validate with the arity checker, but labels can also be used anywhere in a routine to test against a specific arity in time, like you would a breakpoint.</p>
 
 <h3>Fall-through Type</h3>
 
 <p>The tail-less fall-through type allows for routine to not return, and check the stack balance including that of the next routine in memory.</p>
 
 <pre>
-@falling ( a b c -+ c )
+@falling ( a b c -: c ) <i>Ok.</i>
 	POP
-@next-routine ( a b -- res )
+@next-routine ( a b -: res )
 	ADD
-JMP2r
-</pre>
-
-<h3>Return-Stack Passing</h3>
-
-<p>Passing items to a branch through the return-stack, is done by prefixing the definition with a backtick.</p>
-
-<pre>
-@routine ( a -- b )
-	STHk
-	DUP #01 EQU ?&branch
-	POPr
-JMP2r
-	&branch ( a `a ~- b )
-		POP STHr
 JMP2r
 </pre>
 
