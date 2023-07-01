@@ -1,0 +1,83 @@
+<h2>A programming language</h2>
+
+<p>It is fair to assume that programming at the abstraction level of assembly, with only a handful of primitives, will make it difficult for compilers, and related tooling, to infer meaning from a program's source files. But we can pack a lot of meaning by using the encoded information at our disposal.</p>
+
+<h3>I. Structural Editing</h3>
+
+<p>Let's consider the following uxn program, and associated symbols file, created with <a href='drifblim.html'>Drifblim</a>:</p>
+
+<pre>
+<i>hello.rom</i>
+
+a001 1560 0001 0040 0005 9480 1817 2194
+20ff f722 6c48 656c 6c6f 2057 6f72 6c64
+21
+
+<i>hello.rom.sym</i>
+
+0018 write           0100 ( -> )
+0100 on-reset        0107 ( str* -: )
+0107 &lt;print&gt;         010a ( -- )
+010a &lt;print&gt;/while   010a ( send )
+010f &lt;print&gt;/        010e ( loop )
+0115 hello-txt
+</pre>
+
+<p>It is possible to <a href='https://git.sr.ht/~rabbits/uxnrea' target='_blank'>recreate</a> a textual source file by walking through the program data, drawing from the symbols file, as: first the labels, second the sublabels, lastly the comments, and create the following valid program:</p>
+
+<pre>
+|0018 @write |0100 @on-reset ( -> ) ;hello-txt &lt;print&gt; BRK @&lt;print&gt; ( str* -: ) !& &while ( -- ) ( send ) LDAk .write DEO ( loop ) INC2 & LDAk ?&while POP2 JMP2r @hello-txt "Hello 20 "World! 00 
+</pre>
+
+<p>While this text stream will reassemble to the program from which was created, it will need to be <a href='https://git.sr.ht/~rabbits/uxnfor' target='_blank'>reformatted</a> to be readable.</p>
+
+<pre>
+|0018 
+
+@write 
+
+|0100 
+
+@on-reset ( -> ) 
+	;hello-txt &lt;print&gt; BRK 
+
+@&lt;print&gt; ( str* -: ) 
+	!& &while ( -- ) 
+		( send ) LDAk .write DEO 
+		( loop ) INC2 & LDAk ?&while POP2 JMP2r 
+
+@hello-txt "Hello 20 "World! 00 
+</pre>
+
+<p>By breaking on absolute padding, labels tokens, between labels and non-defining comments, and tabbing the content of sublabels, we can improve readability further we can already return to something like what the original source file might have looked like:</p>
+
+<pre>
+|0018 
+
+@write
+
+|0100 
+
+@on-reset ( -> )
+	;hello-txt &lt;print&gt;
+	BRK
+
+@&lt;print&gt; ( str* -: )
+	!&
+	&while ( -- )
+		( send ) LDAk .write DEO
+		( loop ) INC2 & LDAk ?&while
+	POP2 JMP2r
+
+@hello-txt
+	"Hello 20 "World! 00
+</pre>
+
+<p>Finally, we can ensure that lines terminate on emiting opcodes(STZ/STR/STA/DEO), immediate opcodes(JCI, JMI, JSI). To make explicit that some routines are emiting, and therefore line-terminating, I chose to use the <code>&lt;label&gt;</code> format</code>.</p>
+
+<p>Labels marking the start of binary information use prefixes that communicate to the reassembler, how to handle the content. For example, txt for ascii characters, icn for 1-bit graphics and chr for 2-bit graphics.</p>
+
+<h3>II. Source Validation</h3>
+
+<h3>III. Parallel Programming</h3>
+

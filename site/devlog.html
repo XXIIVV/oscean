@@ -2,14 +2,14 @@
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link href="../links/main.css" type="text/css" rel="stylesheet"/><link href="../media/services/icon.png" type="image/png" rel="shortcut icon"/>
 <title>XXIIVV &mdash; devlog</title></head><body>
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
-<nav><ul><li><a href="identity.html">identity</a></li><li><a href="journal.html" class="parent">journal</a></li><li><a href="index.html">index</a></li><li><a href="faqs.html">faqs</a></li></ul><ul><li><a href="calendar.html">calendar</a></li><li><a href="blog.html">blog</a></li><li><a href="devlog.html" class="self">devlog</a></li><li><a href="now.html">now</a></li></ul><ul><li><a href="uxn_devlog.html">uxn devlog</a></li><li><a href="varvara_devlog.html">varvara devlog</a></li><li><a href="potato_devlog.html">potato devlog</a></li></ul></nav><main><figure><img alt="FUCK COMPUTERS #3" src="../media/diary/790.jpg"/><figcaption>FUCK COMPUTERS #3</figcaption></figure><h2>The devlog is a collection of design notes.</h2>
+<nav><ul><li><a href="identity.html">identity</a></li><li><a href="journal.html" class="parent">journal</a></li><li><a href="index.html">index</a></li><li><a href="faqs.html">faqs</a></li></ul><ul><li><a href="calendar.html">calendar</a></li><li><a href="blog.html">blog</a></li><li><a href="devlog.html" class="self">devlog</a></li><li><a href="now.html">now</a></li></ul><ul><li><a href="uxn_devlog.html">uxn devlog</a></li><li><a href="varvara_devlog.html">varvara devlog</a></li><li><a href="uxntal_devlog.html">uxntal devlog</a></li></ul></nav><main><figure><img alt="FUCK COMPUTERS #3" src="../media/diary/790.jpg"/><figcaption>FUCK COMPUTERS #3</figcaption></figure><h2>The devlog is a collection of design notes.</h2>
 
 <p>Below are disjointed thoughts on the creation of a <a href='varvara.html'>clean-slate computing stack</a> based on the <a href='uxn.html'>universal virtual machine</a> strategy for digital preservation. As opposed to the seemingly natural trend in software, Uxn is reaching backward in time and making itself available further and further back in time, growing increasingly smaller.</p>
 
 <ul>
 	<li><b>Part 1</b>: <a href='uxn_devlog.html'>A virtual machine</a></li>
 	<li><b>Part 2</b>: <a href='varvara_devlog.html'>A personal computer</a></li>
-	<li><b>Part 3</b>: <a href='potato_devlog.html'>An operating system</a></li>
+	<li><b>Part 3</b>: <a href='uxntal_devlog.html'>A programming language</a></li>
 </ul>
 
 <p>The content of the devlog was presented as a talk at Handmade Seattle 2022, watch the full presentation: <a href='https://guide.handmade-seattle.com/c/2022/weathering-software-winter/' target='_blank'>Weathering Software Winter</a>.</p>
@@ -57,7 +57,10 @@
 <p>So, let us also set a limit to the complexity of the toolchain as to not find ourselves in a <a href='https://esolangs.org/wiki/Turing_tarpit' target='_blank'>tarpit</a>. It would be an equally Herculean task to build an <b>emulator and assembler</b> for a machine with thousands of instructions; or a single instruction machine building abstract logic from thousands of primitive parts. How complex can an assembler be if the maximum amount of time one could use to write it is a single weekend, or <a href='drifblim.html'>at most 500 lines</a>.</p>
 
 <pre>
-<b>LIT</b> ~ [PC]     <b>JCI</b> ~ (c8){PC+=[PC]}   <b>JMI</b> ~ {PC+=[PC]}   <b>JSI</b> ~ {R.PC PC+=[PC]}
+<b>LIT</b> ~ [PC]
+<b>JCI</b> ~ (c8){PC+=[PC]}
+<b>JMI</b> ~ {PC+=[PC]}
+<b>JSI</b> ~ {R.PC PC+=[PC]}
 
 <b>BRK</b> ~          <b>EQU</b> a b==c             <b>LDZ</b> a b [c8]       <b>ADD</b> a b+c
 <b>INC</b> a b c+1    <b>NEQ</b> a b!=c             <b>STZ</b> a {[c8]=b}     <b>SUB</b> a b-c
@@ -145,9 +148,89 @@ binary | a0  12  34  07  19  1b
 <img src='../media/generic/uxn.devices.png' width='350'/>
 
 <p>As the system begins to take shape, I consider that possibly someday I may loose my sight, or the use of my hands, or I may become deaf. I wonder how I might replace one device for another in the future, and how I might adapt each device to my changing needs. I leave some blank spaces to be filled at a later time, should I need them.</p>
-<h2>An operating system</h2>
+<h2>A programming language</h2>
 
-<p>Coming soon.</p>
+<p>It is fair to assume that programming at the abstraction level of assembly, with only a handful of primitives, will make it difficult for compilers, and related tooling, to infer meaning from a program's source files. But we can pack a lot of meaning by using the encoded information at our disposal.</p>
+
+<h3>I. Structural Editing</h3>
+
+<p>Let's consider the following uxn program, and associated symbols file, created with <a href='drifblim.html'>Drifblim</a>:</p>
+
+<pre>
+<i>hello.rom</i>
+
+a001 1560 0001 0040 0005 9480 1817 2194
+20ff f722 6c48 656c 6c6f 2057 6f72 6c64
+21
+
+<i>hello.rom.sym</i>
+
+0018 write           0100 ( -> )
+0100 on-reset        0107 ( str* -: )
+0107 &lt;print&gt;         010a ( -- )
+010a &lt;print&gt;/while   010a ( send )
+010f &lt;print&gt;/        010e ( loop )
+0115 hello-txt
+</pre>
+
+<p>It is possible to <a href='https://git.sr.ht/~rabbits/uxnrea' target='_blank'>recreate</a> a textual source file by walking through the program data, drawing from the symbols file, as: first the labels, second the sublabels, lastly the comments, and create the following valid program:</p>
+
+<pre>
+|0018 @write |0100 @on-reset ( -> ) ;hello-txt &lt;print&gt; BRK @&lt;print&gt; ( str* -: ) !& &while ( -- ) ( send ) LDAk .write DEO ( loop ) INC2 & LDAk ?&while POP2 JMP2r @hello-txt "Hello 20 "World! 00 
+</pre>
+
+<p>While this text stream will reassemble to the program from which was created, it will need to be <a href='https://git.sr.ht/~rabbits/uxnfor' target='_blank'>reformatted</a> to be readable.</p>
+
+<pre>
+|0018 
+
+@write 
+
+|0100 
+
+@on-reset ( -> ) 
+	;hello-txt &lt;print&gt; BRK 
+
+@&lt;print&gt; ( str* -: ) 
+	!& &while ( -- ) 
+		( send ) LDAk .write DEO 
+		( loop ) INC2 & LDAk ?&while POP2 JMP2r 
+
+@hello-txt "Hello 20 "World! 00 
+</pre>
+
+<p>By breaking on absolute padding, labels tokens, between labels and non-defining comments, and tabbing the content of sublabels, we can improve readability further we can already return to something like what the original source file might have looked like:</p>
+
+<pre>
+|0018 
+
+@write
+
+|0100 
+
+@on-reset ( -> )
+	;hello-txt &lt;print&gt;
+	BRK
+
+@&lt;print&gt; ( str* -: )
+	!&
+	&while ( -- )
+		( send ) LDAk .write DEO
+		( loop ) INC2 & LDAk ?&while
+	POP2 JMP2r
+
+@hello-txt
+	"Hello 20 "World! 00
+</pre>
+
+<p>Finally, we can ensure that lines terminate on emiting opcodes(STZ/STR/STA/DEO), immediate opcodes(JCI, JMI, JSI). To make explicit that some routines are emiting, and therefore line-terminating, I chose to use the <code>&lt;label&gt;</code> format</code>.</p>
+
+<p>Labels marking the start of binary information use prefixes that communicate to the reassembler, how to handle the content. For example, txt for ascii characters, icn for 1-bit graphics and chr for 2-bit graphics.</p>
+
+<h3>II. Source Validation</h3>
+
+<h3>III. Parallel Programming</h3>
+
 <ul></ul></main>
 <footer><a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.svg" alt="CreativeCommons"/></a> <a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a> <a href="https://merveilles.town/@neauoire" rel="me" target="_blank"><img src="../media/icon/merveilles.svg" alt="Merveilles"/></a> <a href="ethics.html"><img src="../media/icon/dreipfeile.svg" alt="NoNazis!"/></a> <a href="uxn.html"><img src="../media/icon/uxn.svg" alt="UxnPowered"/></a> <span><a href="devine_lu_linvega.html">Devine Lu Linvega</a> &copy; 2023 &mdash; <a href="about.html#license">BY-NC-SA 4.0</a></span></footer>
 </body></html>
