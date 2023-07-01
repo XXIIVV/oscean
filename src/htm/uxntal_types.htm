@@ -16,14 +16,24 @@
 JMP2r
 </pre>
 
-<h3>Basic Validation</h3>
-
 <p>The simplest case is when a piece of code does not have any branches or recursion, and merely pushes literals and calls words. Pushing a literal has stack effect <code>( -- x )</code>. The stack effect of most words is always known statically from the declaration.</p>
 
 <pre>
 @add ( <b style='color:red'>a*</b> b* -- c* ) <i>Warning: Imbalance in @add of +2</i>
 	DUP2 ADD2
-JMP2r 
+JMP2r
+</pre>
+
+<h3>Branch Validation</h3>
+
+<p>A word calling a subroutine that would force an exit of the parent routine with an imbalanced stack also triggers an error.</p>
+
+<pre>
+@routine ( a b -: c ) <i>Warning: Imbalance in @routine of +1</i>
+	EQUk <b style='color:red'>?&sub-routine</b>
+	POP2 #0a JMP2r
+	&sub-routine ( a b -: c*</b> )
+		POP2 #000b JMP2r
 </pre>
 
 <h3>Return-Stack Passing</h3>
@@ -45,7 +55,7 @@ JMP2r
 
 <h3>Fall-through Type</h3>
 
-<p>The tail-less fall-through comment allows to validate a routine that does not return, by including the stack effect of the following routine in memory.</p>
+<p>The fall-through comment allows to validate a <i>tail-less routine</i>(or, that does not return or break), by including the stack effect of the following routine in memory.</p>
 
 <pre>
 @falling ( a b c -: c ) <i>Ok.</i>
