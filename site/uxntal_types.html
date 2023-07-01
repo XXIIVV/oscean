@@ -2,17 +2,17 @@
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link href="../links/main.css" type="text/css" rel="stylesheet"/><link href="../media/services/icon.png" type="image/png" rel="shortcut icon"/>
 <title>XXIIVV &mdash; uxntal types</title></head><body>
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
-<nav><ul><li><a href="uxntal_opcodes.html">uxntal opcodes</a></li><li><a href="uxntal_stacks.html">uxntal stacks</a></li><li><a href="uxntal_modes.html">uxntal modes</a></li><li><a href="uxntal_syntax.html" class="parent">uxntal syntax</a></li><li><a href="uxntal_immediate.html">uxntal immediate</a></li><li><a href="uxntal_memory.html">uxntal memory</a></li><li><a href="uxntal_state.html">uxntal state</a></li><li><a href="uxntal_devices.html">uxntal devices</a></li><li><a href="uxntal_errors.html">uxntal errors</a></li></ul><ul><li><a href="uxntal_types.html" class="self">uxntal types</a></li><li><a href="uxntal_library.html">uxntal library</a></li><li><a href="uxntal_struct.html">uxntal struct</a></li><li><a href="uxntal_cons.html">uxntal cons</a></li></ul><ul></ul></nav><main><h2>Typed uxntal is an inference system based on routine definitions.</h2>
+<nav><ul><li><a href="uxntal_opcodes.html">uxntal opcodes</a></li><li><a href="uxntal_stacks.html">uxntal stacks</a></li><li><a href="uxntal_modes.html">uxntal modes</a></li><li><a href="uxntal_syntax.html" class="parent">uxntal syntax</a></li><li><a href="uxntal_immediate.html">uxntal immediate</a></li><li><a href="uxntal_memory.html">uxntal memory</a></li><li><a href="uxntal_state.html">uxntal state</a></li><li><a href="uxntal_devices.html">uxntal devices</a></li><li><a href="uxntal_errors.html">uxntal errors</a></li></ul><ul><li><a href="uxntal_types.html" class="self">uxntal types</a></li><li><a href="uxntal_library.html">uxntal library</a></li><li><a href="uxntal_struct.html">uxntal struct</a></li><li><a href="uxntal_cons.html">uxntal cons</a></li></ul><ul></ul></nav><main><h2>Typed uxntal is an inference system based on stack effect definitions.</h2>
 
-<p><a href='type_systems.html'>Type inference</a> in <a href='uxntal.html'>Uxntal</a> is done by checking the stack effect declarations of words before they can be run, against the cumulative stack state of each item in the definition of each word.</p>
+<p><a href='type_systems.html'>Type inference</a> in <a href='uxntal.html'>Uxntal</a> is done by checking the stack effect declarations of words, against the sum of stack changes predicted to occur based on the items in their bodies.</p>
 
 <ul>
 	<li><kbd>( a -- b )</kbd> Untyped</li>
-	<li><kbd>( a -: b )</kbd> Validated routine</li>
-	<li><kbd>( a -> b )</kbd> Validated vector</li>
+	<li><kbd>( a -: b )</kbd> Typed routine</li>
+	<li><kbd>( a -> b )</kbd> Typed vector</li>
 </ul>
 
-<p>Words that do not pass the stack-checker are generating a warning, and so essentially this defines a very simple and permissive type system that nevertheless catches some invalid programs and enables compiler optimizations. </p>
+<p>Words that do not pass the stack-checker are generating a warning, and so essentially this defines a very basic and permissive type system that nevertheless catches some invalid programs and enables compiler optimizations. </p>
 
 <pre>
 @routine ( a b -: c ) <i>Ok.</i>
@@ -22,7 +22,7 @@ JMP2r
 
 <h3>Basic Validation</h3>
 
-<p>The simplest case is when a piece of code does not have any branches or recursion, and just pushes literals and calls words. Pushing a literal has stack effect <code>( -- x )</code>. The stack effect of most words is always known statically from the declaration.</p>
+<p>The simplest case is when a piece of code does not have any branches or recursion, and merely pushes literals and calls words. Pushing a literal has stack effect <code>( -- x )</code>. The stack effect of most words is always known statically from the declaration.</p>
 
 <pre>
 @add ( <b style='color:red'>a*</b> b* -- c* ) <i>Warning: Imbalance in @add of +2</i>

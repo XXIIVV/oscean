@@ -42,17 +42,17 @@
 
 <p>Lastly, we encounter <kbd>JMP2r</kbd> which jumps to the absolute address that we left on the return stack when we entered the <kbd>@print-text</kbd> subroutine.</p>
 
-<h2>Typed uxntal is an inference system based on routine definitions.</h2>
+<h2>Typed uxntal is an inference system based on stack effect definitions.</h2>
 
-<p><a href='type_systems.html'>Type inference</a> in <a href='uxntal.html'>Uxntal</a> is done by checking the stack effect declarations of words before they can be run, against the cumulative stack state of each item in the definition of each word.</p>
+<p><a href='type_systems.html'>Type inference</a> in <a href='uxntal.html'>Uxntal</a> is done by checking the stack effect declarations of words, against the sum of stack changes predicted to occur based on the items in their bodies.</p>
 
 <ul>
 	<li><kbd>( a -- b )</kbd> Untyped</li>
-	<li><kbd>( a -: b )</kbd> Validated routine</li>
-	<li><kbd>( a -> b )</kbd> Validated vector</li>
+	<li><kbd>( a -: b )</kbd> Typed routine</li>
+	<li><kbd>( a -> b )</kbd> Typed vector</li>
 </ul>
 
-<p>Words that do not pass the stack-checker are generating a warning, and so essentially this defines a very simple and permissive type system that nevertheless catches some invalid programs and enables compiler optimizations. </p>
+<p>Words that do not pass the stack-checker are generating a warning, and so essentially this defines a very basic and permissive type system that nevertheless catches some invalid programs and enables compiler optimizations. </p>
 
 <pre>
 @routine ( a b -: c ) <i>Ok.</i>
@@ -62,7 +62,7 @@ JMP2r
 
 <h3>Basic Validation</h3>
 
-<p>The simplest case is when a piece of code does not have any branches or recursion, and just pushes literals and calls words. Pushing a literal has stack effect <code>( -- x )</code>. The stack effect of most words is always known statically from the declaration.</p>
+<p>The simplest case is when a piece of code does not have any branches or recursion, and merely pushes literals and calls words. Pushing a literal has stack effect <code>( -- x )</code>. The stack effect of most words is always known statically from the declaration.</p>
 
 <pre>
 @add ( <b style='color:red'>a*</b> b* -- c* ) <i>Warning: Imbalance in @add of +2</i>
