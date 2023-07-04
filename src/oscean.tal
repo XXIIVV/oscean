@@ -110,7 +110,7 @@
 @build-children ( name* -- name* )
 	;dict/ul-tag <write-open>
 	( stash depth ) DUP2k #0002 SUB2 LDA chex STH
-	( start after ) scap INC2
+	( start after ) scap/ INC2
 	&while ( -- )
 		( stop at sibling ) LDAk chex STHkr EQU ?&end
 		( when depth+1 ) LDAk chex STHkr INC NEQ ?&continue
@@ -176,7 +176,7 @@
 @build-module-portal ( -- )
 	( name* -- name* )
 	( stash depth ) DUP2k #0002 SUB2 LDA chex STH
-	( start after ) scap INC2
+	( start after ) scap/ INC2
 	&while ( -- )
 		( stop at sibling ) LDAk chex STHkr EQU ?&end
 		( when depth+1 ) LDAk chex STHkr INC NEQ ?&continue
@@ -194,7 +194,7 @@
 
 @build-module-archive ( name* -- name* )
 	( stash depth ) DUP2k #0002 SUB2 LDA chex STH
-	( start after ) scap INC2
+	( start after ) scap/ INC2
 	&while ( -- )
 		( stop at sibling ) LDAk chex STHkr EQU ?&end
 		( when depth+1 ) LDAk chex STHkr INC NEQ ?&>continue
@@ -319,12 +319,10 @@
 	;dict/img-tag <str>
 	;dict/alt-attr <write-attr>
 	;dict/src-attr <write-attr>
-	[ LIT "/ ] <char>
-	[ LIT "> ] !<char>
+	[ LIT2 "/> ] !<char2>
 
 @<write-link> ( name* -- )
-	[ LIT "< ] <char>
-	[ LIT "a ] <char>
+	[ LIT2 "<a ] <char2>
 	( ) DUP2 ;&link-path scpy
 	( ) ;&link-path [ LIT2 20 "_ ] cswp
 	( ) ;dict/html-ext ;&link-path scat
@@ -341,8 +339,7 @@
 @<write-attr> ( body* attr* -- )
 	#20 <char>
 	<str>
-	[ LIT "= ] <char>
-	[ LIT "" ] <char>
+	[ LIT2 "=" ] <char2>
 	<str>
 	[ LIT "" ] !<char>
 
@@ -356,13 +353,12 @@
 	SWP2 <str>
 
 @<write-close> ( tag* -- )
-	LIT "< <char>
-	LIT "/ <char>
+	[ LIT2 "</ ] <char2>
 	<str>
 	LIT "> !<char>
 
 @<str> ( addr* -- )
-	DUP2 scap OVR2 SUB2 .File2/length DEO2
+	DUP2 scap/ OVR2 SUB2 .File2/length DEO2
 	.File2/write DEO2
 	JMP2r
 
@@ -372,6 +368,13 @@
 	.File2/write DEO2
 	POP JMP2r
 	&b $1
+
+@<char2> ( c1 c2 -- )
+	#0002 .File2/length DEO2
+	;&b STA2k
+	.File2/write DEO2
+	POP2 JMP2r
+	&b $2
 
 @prev-char ( addr* char -- addr* )
 	,&t STR
@@ -408,13 +411,12 @@
 	POP2 JMP2r
 
 @scap ( str* -- end* )
-	!&a
 	&w ( -- )
-		INC2 &a LDAk ?&w
+		INC2 & LDAk ?&w
 	JMP2r
 
 @scat ( src* dst* -+ )
-	scap
+	scap/
 
 @scpy ( src* dst* -- )
 	STH2
@@ -448,30 +450,29 @@
 		INC2 GTH2k ?&l
 	POP2 POP2 JMP2r
 
-@phex ( hex* -- )
-	SWP phex/b
+@<phex> ( hex* -- )
+	SWP <phex>/b
 	&b ( b -- )
-		DUP #04 SFT phex/c
+		DUP #04 SFT <phex>/c
 	&c ( c -- )
 		#0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO
 		JMP2r
 
 @<pstr> ( str* -- )
-	!&a
 	&w ( -- )
 		LDAk #18 DEO
-		INC2 &a LDAk ?&w
+		INC2 & LDAk ?&w
 	POP2 JMP2r
 
 @<print-warning> ( name* msg* -- )
-	( msg ) <pstr>
-	( name ) <pstr>
+	( msg ) <pstr>/
+	( name ) <pstr>/
 	#0a18 DEO
 	JMP2r
 
 @<print-error> ( name* msg* -> )
-	( msg ) <pstr>
-	( name ) <pstr>
+	( msg ) <pstr>/
+	( name ) <pstr>/
 	#0a18 DEO
 	#010f DEO
 	BRK
