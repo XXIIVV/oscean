@@ -28,7 +28,7 @@
 	parse-diary-pages ;dict/calendar-path .File2/name DEO2
 	;dict/p-tag </w>
 	( | print next available id )
-	;dict/available-txt <pstr>
+	;dict/available-txt <pstr>/
 	find-available <pdec>
 	#0a18 DEO
 	( | halt. )
@@ -43,7 +43,7 @@
 	DUP2 .File/length DEO2
 	SWP2 .File/read DEO2
 	( check for size ) .File/success DEI2 NEQ2 ?&>size-ok
-		STH2kr <pstr>
+		STH2kr <pstr>/
 		#0a18 DEO &>size-ok
 	POP2r JMP2r
 
@@ -65,12 +65,12 @@
 		<link>
 		;dict/li-tag </w>
 		#0a <char>
-		( eol ) !scap
+		( eol ) !scap/
 
 @parse-links ( src* -- )
 	DUP2 ;&term STH2k scpy-line
 	( ) STH2kr [ LIT2 20 "_ ] cswp
-	( ) ;dict/htm-ext STH2r scap scpy-line
+	( ) ;dict/htm-ext STH2r scap/ scpy-line
 	( res ) ;&htm-path ;workarea #8000 ROT2 load-file ,&src STR2
 	;workarea .File/success DEI2 ADD2k NIP2 SWP2
 	&l ( -- )
@@ -87,10 +87,10 @@
 	( find broken links ) DUP2 ;&buf scpy-line
 	( cswp ) ;&buf [ LIT2 "_ 20 ] cswp
 	( ) ;&buf find-term INC2 ORA ?&exists
-	;dict/redlink <pstr>
-	;&buf <pstr>
-	;dict/in <pstr>
-	OVR2 <pstr>
+	;dict/redlink <pstr>/
+	;&buf <pstr>/
+	;dict/in <pstr>/
+	OVR2 <pstr>/
 	#0a18 DEO
 	#010f DEO
 	BRK
@@ -109,7 +109,7 @@
 	;lexicon
 	&w ( -- )
 		INC2 INC2 DUP2 [ LIT2 &t $2 ] scmp ?&>end
-			scap INC2 LDAk ?&w
+			scap/ INC2 LDAk ?&w
 		POP2 #ffff &>end
 	JMP2r
 
@@ -141,7 +141,7 @@
 	&no-event ( -- )
 		;dict/no-photo OVR2 #0006 ADD2 scmp ?&>no-photo
 			DUP2 parse-photo &>no-photo
-		( eol ) scap INC2 scap INC2 !scap
+		( eol ) scap/ INC2 scap/ INC2 !scap/
 
 @parse-log ( event* -- )
 	DUP2 #000a ADD2 ;&term scpy-line
@@ -161,10 +161,10 @@
 		DUP2 #0005 <len>
 		;dict/code-tag </w>
 		#20 <char>
-		scap INC2
+		scap/ INC2
 		( term ) DUP2 <link>
 		;dict/spacer <str>
-		scap INC2
+		scap/ INC2
 		( name ) <str>
 		;dict/br-tag <w/>
 		#0a !<char>
@@ -178,7 +178,7 @@
 	;dict/journal-path .File2/name DEO2
 	DUP2 #0006 ADD2 ,&pict STR2
 	#000a ADD2 DUP2 ,&term STR2
-	scap INC2 ,&title STR2
+	scap/ INC2 ,&title STR2
 	;dict/figure-tag <w>
 	( src ) [ LIT2 &pict $2 ]
 	( alt ) [ LIT2 &title $2 ] <img>
@@ -202,7 +202,7 @@
 	&missing ( id* ~- )
 		POP2 JMP2r
 	&duplicate ( id* ~- )
-		;dict/duplicate <pstr>
+		;dict/duplicate <pstr>/
 		<pdec>
 		#0a18 DEO
 		JMP2r
@@ -264,7 +264,7 @@
 	POP2 JMP2r
 
 @<str> ( str* -- )
-	DUP2 scap OVR2 SUB2
+	DUP2 scap/ OVR2 SUB2
 
 @<len> ( str* len* -- )
 	.File2/length DEO2
@@ -323,24 +323,24 @@
 		NIP2 POP2r EQU JMP2r
 
 @scap ( str* -- end* )
-	!&a
+	!&
 	&w ( -- )
-		INC2 &a LDAk ?&w
+		INC2 & LDAk ?&w
 	JMP2r
 
-@phex ( hex* -- )
-	SWP phex/b
+@<phex> ( hex* -- )
+	SWP <phex>/b
 	&b ( b -- )
-		DUP #04 SFT phex/c
+		DUP #04 SFT <phex>/c
 	&c ( c -- )
 		#0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO
 		JMP2r
 
 @<pstr> ( str* -- )
-	!&a
+	!&
 	&w ( -- )
 		LDAk #18 DEO
-		INC2 &a LDAk ?&w
+		INC2 & LDAk ?&w
 	POP2 JMP2r
 
 @<pdec> ( short* -- )
@@ -355,8 +355,7 @@
 (
 @|assets )
 
-@dict &available-txt "-- 20 "Available 20 "diary: 20 $1
-	&no-photo "000 $1
+@dict &no-photo "000 $1
 	&spacer 20 "&mdash; 20 $1
 	&journal-path "src/htm/journal.htm $1
 	&http-txt "http $1
@@ -372,7 +371,8 @@
 	&lexicon-path "src/tables/lexicon $1
 	&sitemap-path "src/htm/sitemap.htm $1
 	&calendar-path "src/htm/calendar.htm $1
-	&redlink "-- 20 "Redlink: 20 $1
+	&redlink "!! 20 "Redlink: 20 $1
+	&available-txt "-- 20 "Available 20 "diary: 20 $1
 	&duplicate "-- 20 "Duplicate 20 "diary: 20 $1
 	&in 20 "in 20 $1
 
