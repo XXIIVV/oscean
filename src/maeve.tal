@@ -7,10 +7,6 @@
 
 @on-reset ( -> )
 	( | clear old copies )
-	;dict/sitemap-path .File2/name DEO2
-	[ LIT2 01 -File2/delete ] DEO
-	;dict/calendar-path .File2/name DEO2
-	[ LIT2 01 -File2/delete ] DEO
 	;dict/journal-path .File2/name DEO2
 	[ LIT2 01 -File2/delete ] DEO
 	( | setup output )
@@ -18,14 +14,16 @@
 	#0001 .File2/length DEO2
 	( | lexicon )
 	;dict/sitemap-path .File2/name DEO2
+	[ LIT2 01 -File2/delete ] DEO
 	;dict/ul-tag <w>
-	parse-lexicon ;dict/sitemap-path .File2/name DEO2
+	<parse-lexicon>
 	;dict/ul-tag </w>
 	( | diary )
 	;dict/calendar-path .File2/name DEO2
+	[ LIT2 01 -File2/delete ] DEO
 	;header-txt <str>
 	;dict/p-tag <w>
-	parse-diary-pages ;dict/calendar-path .File2/name DEO2
+	<parse-diary-pages>
 	;dict/p-tag </w>
 	( | print next available id )
 	;dict/available-txt <pstr>/
@@ -47,7 +45,7 @@
 		#0a18 DEO &>size-ok
 	POP2r JMP2r
 
-@parse-lexicon ( -- )
+@<parse-lexicon> ( -- )
 	;lexicon #2000 ;dict/lexicon-path load-file
 	( swap ) ;lexicon #0a00 cswp
 	( ) ;lexicon .File/success DEI2 ADD2k NIP2 SWP2
@@ -116,7 +114,7 @@
 (
 @|diary )
 
-@parse-diary-pages ( -- )
+@<parse-diary-pages> ( -- )
 	#4000 .File/length DEO2
 	;diary-path-pages/end ;diary-path-pages
 	&l ( -- )
@@ -140,7 +138,7 @@
 	DUP2 parse-event
 	&no-event ( -- )
 		;dict/no-photo OVR2 #0006 ADD2 scmp ?&>no-photo
-			DUP2 parse-photo &>no-photo
+			DUP2 add-to-journal &>no-photo
 		( eol ) scap/ INC2 scap/ INC2 !scap/
 
 @parse-log ( event* -- )
@@ -170,7 +168,7 @@
 		#0a !<char>
 	&last "17 $1
 
-@parse-photo ( photo* -- )
+@add-to-journal ( photo* -- )
 	( | limit to 20 entries )
 	[ LIT2 &len $2 ] #0020 LTH2 ?&>continue
 		POP2 JMP2r &>continue
