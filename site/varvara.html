@@ -2,17 +2,17 @@
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link href="../links/main.css" type="text/css" rel="stylesheet"/><link href="../media/services/icon.png" type="image/png" rel="shortcut icon"/>
 <title>XXIIVV &mdash; varvara</title></head><body>
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
-<nav><ul><li><a href="oisc.html">oisc</a></li><li><a href="brainfuck.html">brainfuck</a></li><li><a href="chip8.html">chip8</a></li><li><a href="turquoise.html">turquoise</a></li><li><a href="uxn.html" class="parent">uxn</a></li><li><a href="orca.html">orca</a></li></ul><ul><li><a href="uxntal.html">uxntal</a></li><li><a href="varvara.html" class="self">varvara</a></li></ul><ul><li><a href="varvara_tutorial.html">varvara tutorial</a></li><li><a href="drifblim.html">drifblim</a></li><li><a href="beetbug.html">beetbug</a></li></ul></nav><main><figure><img alt="The Sound Of Plumpkins" src="../media/diary/776.jpg"/><figcaption>The Sound Of Plumpkins</figcaption></figure><h2>Varvara is a clean-slate computing stack based on the Uxn CPU.</h2>
+<nav><ul><li><a href="oisc.html">oisc</a></li><li><a href="brainfuck.html">brainfuck</a></li><li><a href="chip8.html">chip8</a></li><li><a href="turquoise.html">turquoise</a></li><li><a href="uxn.html" class="parent">uxn</a></li><li><a href="orca.html">orca</a></li></ul><ul><li><a href="uxntal.html">uxntal</a></li><li><a href="varvara.html" class="self">varvara</a></li></ul><ul><li><a href="varvara_tutorial.html">varvara tutorial</a></li><li><a href="drifblim.html">drifblim</a></li><li><a href="beetbug.html">beetbug</a></li></ul></nav><main><figure><img alt="The Sound Of Plumpkins" src="../media/diary/776.jpg"/><figcaption>The Sound Of Plumpkins</figcaption></figure><h2>Varvara is a computer system running on Uxn.</h2>
 
-<p>This personal computer system, built on top of the <a href='uxn.html'>Uxn</a> virtual machine, was designed to run audio and visual applications. To see a list of compatible software, see <a href='roms.html'>roms</a>, and the <a href='https://github.com/hundredrabbits/awesome-uxn' target='_blank'>community projects</a>. If you are implementing your own Varvara emulator, you can find a series of roms to test your devices implementations <a href='https://git.sr.ht/~rabbits/uxn/tree/main/item/projects/examples/devices' target='_blank'>here</a>.</p>
+<p>Varvara is a specification for devices communicating with the <a href='uxn.html'>Uxn CPU</a> intended to run little audio and visual programs. To see a list of compatible software, see <a href='roms.html'>roms</a>, and the <a href='https://github.com/hundredrabbits/awesome-uxn' target='_blank'>community projects</a>. If you are implementing your own Varvara emulator, you can find a series of roms to test your devices implementations <a href='https://git.sr.ht/~rabbits/uxn/tree/main/item/projects/examples/devices' target='_blank'>here</a>.</p>
+<ul>
+	<li><b>Devices</b> are external systems connected to the Uxn CPU, such as the screen, the mouse and the keyboard. Each device has 16 bytes of addressable memory in the device page, which are called ports.</li>
+	<li><b>Ports</b> are addresses in the device page, addressable with a single byte. Some ports hold either the high or low bytes of a short, and will be presented below as a single port indicated like <i>vector*</i>.</li>
+	<li><b>Vectors</b> are ports holding an address in memory to evaluate when a device event is triggered, such as when the mouse is moved, or a key is pressed. Vector ports will be presented below with a colored background.</li>
+	<li><b>Masks</b> are shorts in which each bit correspond to one of the 16 ports in a device, the device mask tells the emulator when to trigger a device event, such as drawing a pixel or playing a sound. They are drawn in black in the follow tables.</li>
+</ul>
 
 <p style='background: #eee; padding: 15px;'>While this project aspires to act as a target that may last, it is in its infancy, the design could still change and break compatibility.</p>
-
-<p><b>Devices</b> are external systems connected to the Uxn CPU, such as the screen, the mouse and the keyboard. Each device has 16 bytes, also called ports, of I/O memory.</p>
-
-<p><b>Vectors</b> are ports holding an address in memory to evaluate when a device event is triggered, such as when the mouse is moved, or a key is pressed.</p>
-
-<p><b>Masks</b> are shorts in which each bit correspond to one of the 16 ports in a device, the device mask tells the emulator when to trigger a device event, such as drawing a pixel or playing a sound. They are drawn in black in the follow tables.</p>
 
 <img src='../media/generic/uxn.comfy.png' width='250' style='float: right;margin: 0px auto 30px'/>
 
@@ -92,13 +92,13 @@ system_cmd(Uint8 *ram, Uint16 addr)
 	}
 }</pre>
 
-<p>Sending the address of a vector to the <b>friend*</b> port spawns a new Uxn instance to evaluate it concurrently. Sending a null short, will wait for the threads to finish before continuing. An emulator may choose to not implement threads and evaluate the vectors linearly.</p>
+<p>Sending an address in memory to the <b>friend*</b> port spawns a new Uxn instance to evaluate it in parallel. Sending a null short, will wait for all threads to finish before continuing, these instances may not communicate with devices. An emulator may choose to not implement threads and evaluate the vectors sequentially.</p>
 
 <p>Sending a non-null byte to the <b>debug</b> port will print the content of the stacks or pause the evaluation if the emulator includes a step-debugger.</p>
 
-<p>Sending a non-null byte to the <b>state</b> port will terminate the application, on systems that can handle exit codes, the error code is the 0x7f portion of the byte. So, <code>0x01</code> terminates the program with an error, and <code>0x80</code> terminates the program succesfully.</p>
+<p>Sending a non-null byte to the <b>state</b> port will terminate the application, on systems that can handle exit codes, the error code is the <code>0x7f</code> portion of the byte. So, <code>0x01</code> terminates the program with an error, and <code>0x80</code> terminates the program succesfully.</p>
 
-<p>The <b>metadata*</b> port allows points the emulator to <a href='metadata.html'>metadata</a> about the rom. The emulator can choose to utilize this information to update the window name.</p>
+<p>The <b>metadata*</b> port notifies the emulator that <a href='metadata.html'>metadata</a> about the rom is located at that address. The emulator can choose to utilize this information to update the window name.</p>
 
 <table border='1' style='float:right;margin-left:15px'>
 	<tr><th>0</th><th>1</th><th>2</th><th>3</th></tr>
