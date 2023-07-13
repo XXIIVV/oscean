@@ -31,6 +31,7 @@
 @|build )
 
 @init-page ( name* -- name* )
+	STH2k ;dict/html-ext ;&buf STH2r make-path-ext
 	( prepare output ) DUP2 ;&buf scpy
 	( ) ;&buf [ LIT2 20 "_ ] cswp
 	( ) ;dict/html-ext ;&buf scat
@@ -137,9 +138,7 @@
 	( close ) ;dict/main-tag !<write-close>
 
 @build-page-body ( name* -+ name* )
-	DUP2 ;&buf scpy
-	( ) ;&buf [ LIT2 20 "_ ] cswp
-	( ) ;dict/htm-ext ;&buf scat
+	STH2k ;dict/htm-ext ;&buf STH2r make-path-ext
 	( ) ;&htm-path !<write-inc>
 	&htm-path [ "src/htm/ &buf $30 ]
 
@@ -246,14 +245,14 @@
 @|helpers )
 
 @extract-term ( diary* -- term* )
-	#00 ;&buff STA
+	#00 ;&buf STA
 	#000a ADD2
 	( clip bound ) DUP2 #09 next-char STH2
 	( clip start ) #00 STH2kr STA
-	( clip wrap ) ;&buff scat
+	( clip wrap ) ;&buf scat
 	( clip restore ) #09 STH2r STA
-	;&buff JMP2r
-	&buff $16
+	;&buf JMP2r
+	&buf $16
 
 @build-page-incoming ( -- )
 	;incoming LDAk ?&>exists
@@ -267,6 +266,9 @@
 		INC2 LDAk ?&eol
 	INC2 LDAk ?&while
 	POP2 ;dict/p-tag !<write-close>
+
+@make-path-ext ( ext* buf* str* -- )
+	OVR2 scpy DUP2 [ LIT2 20 "_ ] cswp !scat
 
 (
 @|tools )
