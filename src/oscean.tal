@@ -15,14 +15,14 @@
 	;lexicon DUP2 .File/read DEO2
 	#0a00 cswp
 	( build ) ;lexicon
-	&while ( -- )
+	&w ( -- )
 		( move to name ) INC2 INC2
 		( init ) init-page
 		( build ) build-page
 		( goto eol )
 	&eol ( -- )
 		INC2 LDAk ?&eol
-	INC2 LDAk ?&while
+	INC2 LDAk ?&w
 	POP2
 	( Halt. ) #800f DEO
 	BRK
@@ -31,11 +31,8 @@
 @|build )
 
 @init-page ( name* -- name* )
-	STH2k ;dict/html-ext ;&buf STH2r make-path-ext
-	( prepare output ) DUP2 ;&buf scpy
-	( ) ;&buf [ LIT2 20 "_ ] cswp
-	( ) ;dict/html-ext ;&buf scat
-	( ) ;&site-path .File2/name DEO2
+	STH2k ;dict/html-ext ;&buf STH2r <make-path-ext>
+	;&site-path .File2/name DEO2
 	#0001 .File2/length DEO2
 	( cleanup )
 	( clear zeropage ) #0000 #0100 mclr DUP2 load-diary DUP2 load-incoming
@@ -112,7 +109,7 @@
 	;dict/ul-tag <write-open>
 	( stash depth ) DUP2k #0002 SUB2 LDA chex STH
 	( start after ) scap/ INC2
-	&while ( -- )
+	&w ( -- )
 		( stop at sibling ) LDAk chex STHkr EQU ?&end
 		( when depth+1 ) LDAk chex STHkr INC NEQ ?&continue
 		;dict/li-tag <write-open>
@@ -122,7 +119,7 @@
 		INC2 INC2
 	&eol ( -- )
 		INC2 LDAk ?&eol
-	INC2 LDAk ?&while
+	INC2 LDAk ?&w
 	&end ( -- )
 		POP2 POPr ;dict/ul-tag !<write-close>
 
@@ -137,9 +134,9 @@
 	( incoming ) build-page-incoming
 	( close ) ;dict/main-tag !<write-close>
 
-@build-page-body ( name* -+ name* )
-	STH2k ;dict/htm-ext ;&buf STH2r make-path-ext
-	( ) ;&htm-path !<write-inc>
+@build-page-body ( name* -- name* )
+	STH2k ;dict/htm-ext ;&buf STH2r <make-path-ext>
+	;&htm-path !<write-inc>
 	&htm-path [ "src/htm/ &buf $30 ]
 
 @build-page-module ( term* -- term* )
@@ -151,32 +148,32 @@
 @build-page-events ( name* -- name* )
 	STH2 ;dict/ul-tag <write-open>
 	;diary
-	&while ( -- )
+	&w ( -- )
 		DUP2 #0005 ADD2 LDA [ LIT "+ ] NEQ ?&eol
 		;dict/li-tag <write-open>
 		DUP2 build-module-event ;dict/li-tag <write-close>
 	&eol ( -- )
 		INC2 LDAk ?&eol
-	INC2 LDAk ?&while
+	INC2 LDAk ?&w
 	POP2 ;dict/ul-tag <write-close>
 	STH2r JMP2r
 
 @build-module-album ( name* -- name* )
 	STH2 ;diary
-	&while ( -- )
+	&w ( -- )
 		( is blank ) DUP2 ;dict/no-picture log-has-picture ?&eol
 		( is head ) DUP2 ;term/pict log-has-picture ?&eol
 		DUP2 build-module-photo
 	&eol ( -- )
 		INC2 LDAk ?&eol
-	INC2 LDAk ?&while
+	INC2 LDAk ?&w
 	POP2 STH2r JMP2r
 
 @build-module-portal ( -- )
 	( name* -- name* )
 	( stash depth ) DUP2k #0002 SUB2 LDA chex STH
 	( start after ) scap/ INC2
-	&while ( -- )
+	&w ( -- )
 		( stop at sibling ) LDAk chex STHkr EQU ?&end
 		( when depth+1 ) LDAk chex STHkr INC NEQ ?&continue
 		INC2k INC2 DUP2 load-diary find-diary ORAk #00 EQU ?&>no-diary
@@ -186,7 +183,7 @@
 		INC2 INC2
 	&eol ( -- )
 		INC2 LDAk ?&eol
-	INC2 LDAk ?&while
+	INC2 LDAk ?&w
 	&end ( -- )
 		POP2 POPr
 		( restore diary ) DUP2 !load-diary
@@ -194,14 +191,14 @@
 @build-module-archive ( name* -- name* )
 	( stash depth ) DUP2k #0002 SUB2 LDA chex STH
 	( start after ) scap/ INC2
-	&while ( -- )
+	&w ( -- )
 		( stop at sibling ) LDAk chex STHkr EQU ?&end
 		( when depth+1 ) LDAk chex STHkr INC NEQ ?&>continue
 			INC2 INC2 build-page-body &>continue
 		INC2 INC2
 	&eol ( -- )
 		INC2 LDAk ?&eol
-	INC2 LDAk ?&while
+	INC2 LDAk ?&w
 	&end ( -- )
 		POP2 POPr JMP2r
 
@@ -217,24 +214,23 @@
 	( event name ) DUP2 #09 next-char INC2 #09 next-char INC2 !<write-str>
 
 @build-module-photo ( diary* -- )
-	LDAk ?&continue
-	POP2 JMP2r
-	&continue ( diary* ~- )
-		( html ) ;dict/figure-tag <write-open>
-		( clip ) DUP2 #0009 ADD2 STH2 #00 STH2r STA
-		( cpy path )
-		( cat id ) DUP2 #0006 ADD2 ;&buf scpy
-		( cat ext ) ;dict/jpg-ext ;&buf scat
-		( | )
-		;&diary-path
-		( make alt* ) OVR2 #00 next-char INC2 #09 next-char INC2 <write-img>
-		( unclip ) DUP2 #0009 ADD2 STH2 #09 STH2r STA
-		;dict/figcaption-tag <write-open>
-		DUP2 #000a ADD2 ;term/name SWP2 sseg ?&skip
-		DUP2 extract-term <write-link>
-		#20 <char>
-		;dict/mdash-entity-txt <write-str>
-		#20 <char>
+	LDAk ?&>continue
+		POP2 JMP2r &>continue
+	( html ) ;dict/figure-tag <write-open>
+	( clip ) DUP2 #0009 ADD2 STH2 #00 STH2r STA
+	( cpy path )
+	( cat id ) DUP2 #0006 ADD2 ;&buf scpy
+	( cat ext ) ;dict/jpg-ext ;&buf scat
+	( | )
+	;&diary-path
+	( make alt* ) OVR2 #00 next-char INC2 #09 next-char INC2 <write-img>
+	( unclip ) DUP2 #0009 ADD2 STH2 #09 STH2r STA
+	;dict/figcaption-tag <write-open>
+	DUP2 #000a ADD2 ;term/name SWP2 sseg ?&skip
+	DUP2 extract-term <write-link>
+	#20 <char>
+	;dict/mdash-entity-txt <write-str>
+	#20 <char>
 	&skip ( -- )
 		#09 next-char INC2 #09 next-char INC2 <write-str>
 		;dict/figcaption-tag <write-close>
@@ -259,15 +255,15 @@
 		POP2 JMP2r &>exists
 	;dict/p-tag <write-open>
 	;dict/incoming-txt <write-str>
-	&while ( -- )
+	&w ( -- )
 		DUP2 <write-link>
 		#20 <char>
 	&eol ( -- )
 		INC2 LDAk ?&eol
-	INC2 LDAk ?&while
+	INC2 LDAk ?&w
 	POP2 ;dict/p-tag !<write-close>
 
-@make-path-ext ( ext* buf* str* -- )
+@<make-path-ext> ( ext* buf* str* -- )
 	OVR2 scpy DUP2 [ LIT2 20 "_ ] cswp !scat
 
 (
@@ -275,11 +271,11 @@
 
 @find-diary ( name* -- diary* )
 	STH2 ;diary
-	&while ( -- )
+	&w ( -- )
 		( skip events ) DUP2 ;dict/no-picture log-has-picture ?&eol
 		POP2r JMP2r
 		&eol INC2 LDAk ?&eol
-	INC2 LDAk ?&while
+	INC2 LDAk ?&w
 	POP2 #0000 POP2r JMP2r
 
 @find-parent ( term* -- parent* )
@@ -288,10 +284,10 @@
 	#00 prev-char INC2
 	( stash depth ) LDAk chex #01 SUB STH
 	( let's go ) ;lexicon SWP2
-	&loop ( -- )
+	&l ( -- )
 		#0001 SUB2 #00 prev-char INC2k LDA chex STHkr NEQ ?&>continue
 			NIP2 POPr INC2 INC2 INC2 JMP2r &>continue
-		LTH2k ?&loop
+		LTH2k ?&l
 	POPr #0002 JMP2r
 
 @log-has-picture ( log* picture* -- flag )
@@ -349,7 +345,7 @@
 	<write-str>
 	LIT "> !<char>
 
-@<write-auto> ( str* tag* -+ )
+@<write-auto> ( str* tag* -- )
 	DUP2 <write-open>
 	SWP2 <write-str>
 
@@ -379,17 +375,17 @@
 
 @prev-char ( addr* char -- addr* )
 	,&t STR
-	&while ( -- )
+	&w ( -- )
 		LDAk [ LIT &t $1 ] EQU ?&end
-		#0001 SUB2 LDAk ?&while
+		#0001 SUB2 LDAk ?&w
 	&end ( -- )
 		JMP2r
 
 @next-char ( addr* char -- addr* )
 	,&t STR
-	&while ( -- )
+	&w ( -- )
 		LDAk [ LIT &t $1 ] EQU ?&end
-		INC2 LDAk ?&while
+		INC2 LDAk ?&w
 	&end ( -- )
 		JMP2r
 
@@ -404,11 +400,10 @@
 @cswp ( str* a b -- )
 	,&b STR
 	,&a STR
-	&while ( -- )
-		LDAk [ LIT &a $1 ] NEQ ?&continue
-		STH2k [ LIT &b $1 ] STH2r STA
-	&continue ( -- )
-		INC2 LDAk ?&while
+	&w ( -- )
+		LDAk [ LIT &a $1 ] NEQ ?&>no-match
+			STH2k [ LIT &b $1 ] STH2r STA &>no-match
+		INC2 LDAk ?&w
 	POP2 JMP2r
 
 @scap ( str* -- end* )
@@ -416,7 +411,7 @@
 		INC2 & LDAk ?&w
 	JMP2r
 
-@scat ( src* dst* -+ )
+@scat ( src* dst* -- )
 	scap/
 
 @scpy ( src* dst* -- )
