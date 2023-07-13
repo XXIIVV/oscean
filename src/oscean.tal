@@ -5,7 +5,7 @@
 
 |0000
 
-	@term &name $16 &parent $16 &pict $4 &diary $60
+	@term &name $16 &parent $16 &diary $6 &pict $4
 
 |0100
 
@@ -34,41 +34,41 @@
 	STH2k ;dict/html-ext ;&buf STH2r <make-path-ext>
 	;&site-path .File2/name DEO2
 	#0001 .File2/length DEO2
-	( cleanup )
-	( clear zeropage ) #0000 #0100 mclr DUP2 load-diary DUP2 load-incoming
-	( verify orphans ) .File/success DEI2 ORA ?&>no-orphan
+	( cleanup ) #0000 #0100 <mclr>
+	DUP2 <load-diary>
+	DUP2 <load-incoming>
+	( | verify orphans )
+	.File/success DEI2 ORA ?&>no-orphan
 		DUP2 ;err/orphan <print-warning> &>no-orphan
 	( | fill name )
-	DUP2 ;term/name scpy DUP2 find-parent ;term/parent scpy
-	( fill diary ) DUP2 find-diary ORAk #00 EQU ?&continue
-	DUP2 ;term/diary scpy
-	( copy pict ) DUP2 #0006 ADD2
-	( clip bound ) INC2k INC2 INC2 STH2
-	( clip start ) #00 STH2kr STA
-	( clip wrap ) ;term/pict scpy
-	( clip restore ) #09 STH2r STA
-	&continue ( -- )
-		POP2 JMP2r
-		&site-path [ "site/ &buf $30 ]
+	DUP2 ;term/name <scpy>
+	DUP2 find-parent ;term/parent <scpy>
+	( | fill diary )
+	DUP2 find-diary ORAk #00 EQU ?&>no-pict
+		DUP2 ;term/diary <scpy>
+		;term/diary [ LIT2 09 00 ] cswp &>no-pict
+	POP2 JMP2r
+	&site-path [ "site/ &buf $30 ]
 
-@load-diary ( name* -- )
-	( make path ) ;&buf scpy ;&buf [ LIT2 20 "_ ] cswp
+@<load-diary> ( name* -- )
+	( make path ) ;&buf <scpy>
+	;&buf [ LIT2 20 "_ ] cswp
 	( load ) ;&log-path .File/name DEO2
 	#1000 .File/length DEO2
 	;diary
-	( clear ) DUP2 [ LIT2 &length $2 ] mclr
+	( clear ) DUP2 [ LIT2 &length $2 ] <mclr>
 	( read ) DUP2 .File/read DEO2
 	( lines ) #0a00 cswp .File/success DEI2 ,&length STR2
 	JMP2r
 	&log-path [ "tmp/log- &buf $30 ]
 
-@load-incoming ( name* -- )
-	( paste ) ;&buf STH2k scpy
+@<load-incoming> ( name* -- )
+	( paste ) ;&buf STH2k <scpy>
 	( cswp ) STH2r [ LIT2 20 "_ ] cswp
 	( load ) ;&map-path .File/name DEO2
 	#1000 .File/length DEO2
 	;incoming
-	( clear ) DUP2 [ LIT2 &length $2 ] mclr
+	( clear ) DUP2 [ LIT2 &length $2 ] <mclr>
 	( read ) DUP2 .File/read DEO2
 	( split lines ) #0a00 cswp .File/success DEI2 ,&length STR2
 	JMP2r
@@ -176,7 +176,8 @@
 	&w ( -- )
 		( stop at sibling ) LDAk chex STHkr EQU ?&end
 		( when depth+1 ) LDAk chex STHkr INC NEQ ?&continue
-		INC2k INC2 DUP2 load-diary find-diary ORAk #00 EQU ?&>no-diary
+		INC2k INC2 DUP2 <load-diary>
+		find-diary ORAk #00 EQU ?&>no-diary
 			DUP2 build-module-photo &>no-diary
 		POP2
 	&continue ( -- )
@@ -186,7 +187,7 @@
 	INC2 LDAk ?&w
 	&end ( -- )
 		POP2 POPr
-		( restore diary ) DUP2 !load-diary
+		( restore diary ) DUP2 !<load-diary>
 
 @build-module-archive ( name* -- name* )
 	( stash depth ) DUP2k #0002 SUB2 LDA chex STH
@@ -261,7 +262,8 @@
 	POP2 ;dict/p-tag !<write-close>
 
 @<make-path-ext> ( ext* buf* str* -- )
-	OVR2 scpy DUP2 [ LIT2 20 "_ ] cswp !scat
+	OVR2 <scpy>
+	DUP2 [ LIT2 20 "_ ] cswp !scat
 
 (
 @|tools )
@@ -411,7 +413,7 @@
 @scat ( src* dst* -- )
 	scap/
 
-@scpy ( src* dst* -- )
+@<scpy> ( src* dst* -- )
 	STH2
 	&w ( -- )
 		LDAk #00 STH2kr STA2
@@ -436,7 +438,7 @@
 	&e ( -- )
 		LDA LDAr STHr EQU JMP2r
 
-@mclr ( src* len* -- )
+@<mclr> ( src* len* -- )
 	OVR2 ADD2 SWP2
 	&l ( -- )
 		LITr 00 STH2k STAr
