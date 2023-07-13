@@ -45,26 +45,29 @@
 	POP2r JMP2r
 
 @<parse-lexicon> ( -- )
-	;lexicon #2000 ;dict/lexicon-path load-file
-	( swap ) ;lexicon #0a00 cswp
-	( ) ;lexicon .File/success DEI2 ADD2k NIP2 SWP2
+	;lexicon
+	( load ) DUP2 #2000 ;dict/lexicon-path load-file
+	( swap ) DUP2 #0a00 cswp
+	( range ) .File/success DEI2 ADD2k NIP2 SWP2
 	&l ( -- )
-		parse-lexicon-line INC2 GTH2k ?&l
+		<parse-lexicon-line>
+		INC2 GTH2k ?&l
 	POP2 POP2 JMP2r
 
-@parse-lexicon-line ( line* -- next* )
+@<parse-lexicon-line> ( line* -- next* )
 	INC2 INC2
-	( do incoming ) DUP2k #0001 SUB2 LDA LIT "? EQU ?&no-map
-	DUP2 parse-links
-	&no-map ( -- )
-		( do sitemap ) ;dict/sitemap-path .File2/name DEO2
-		;dict/li-tag <w>
-		<link>
-		;dict/li-tag </w>
-		#0a <char>
-		( eol ) !scap/
+	( | do incoming )
+	DUP2k #0001 SUB2 LDA LIT "? EQU ?&>no-map
+		DUP2 <parse-links> &>no-map
+	( | do sitemap )
+	;dict/sitemap-path .File2/name DEO2
+	;dict/li-tag <w>
+	<link>
+	;dict/li-tag </w>
+	#0a <char>
+	!scap/
 
-@parse-links ( src* -- )
+@<parse-links> ( src* -- )
 	DUP2 ;&term STH2k scpy-line
 	( ) STH2kr [ LIT2 20 "_ ] cswp
 	( ) ;dict/htm-ext STH2r scap/ scpy-line
@@ -72,16 +75,17 @@
 	;workarea .File/success DEI2 ADD2k NIP2 SWP2
 	&l ( -- )
 		;dict/href-attr OVR2 sseg #00 EQU ?&>no-link
-			[ LIT2 &src $2 ] OVR2 #0006 ADD2 parse-link &>no-link
+			[ LIT2 &src $2 ] OVR2 #0006 ADD2 <parse-link> &>no-link
 		INC2 GTH2k ?&l
 	POP2 POP2 JMP2r
 	&htm-path [ "src/htm/ &term $30 ]
 
-@parse-link ( src* link* -- )
+@<parse-link> ( src* link* -- )
 	( external ) ;dict/http-txt OVR2 sseg ?&end
 	( hash ) LDAk LIT "# EQU ?&end
 	( rel ) LDAk LIT ". EQU ?&end
-	( find broken links ) DUP2 ;&buf scpy-line
+	( | find broken links )
+	DUP2 ;&buf scpy-line
 	( cswp ) ;&buf [ LIT2 "_ 20 ] cswp
 	( ) ;&buf find-term INC2 ORA ?&exists
 	;dict/redlink <print-str>/
@@ -100,14 +104,15 @@
 		&buf $30
 		&map-path [ "tmp/map- &term $30 ]
 
-@find-term ( link* -- )
+@find-term ( link* -- term* )
 	,&t STR2
 	;lexicon
 	&w ( -- )
-		INC2 INC2 DUP2 [ LIT2 &t $2 ] scmp ?&>end
-			scap/ INC2 LDAk ?&w
-		POP2 #ffff &>end
-	JMP2r
+		INC2 INC2 DUP2 [ LIT2 &t $2 ] scmp ?&end
+		scap/ INC2 LDAk ?&w
+	POP2 #ffff
+	&end ( -- term* )
+		JMP2r
 
 (
 @|diary )
@@ -119,25 +124,25 @@
 		LDA2k ;workarea #4000 ROT2 load-file #0000
 		( to* from* ) ;workarea STH2k .File/success DEI2 ADD2
 		( cap ) STA2k
-		NIP2
-		( parse ) STH2r parse-diary-page INC2 INC2 GTH2k ?&l
+		NIP2 STH2r <parse-diary-page>
+		INC2 INC2 GTH2k ?&l
 	POP2 POP2 JMP2r
 
-@parse-diary-page ( to* from* -- )
+@<parse-diary-page> ( to* from* -- )
 	DUP2 #0a00 cswp
 	&l ( -- )
-		parse-diary-line INC2 GTH2k ?&l
+		<parse-diary-line>
+		INC2 GTH2k ?&l
 	POP2 POP2 JMP2r
 
-@parse-diary-line ( line* -- next* )
+@<parse-diary-line> ( line* -- next* )
 	DUP2 parse-log
 	( split ) DUP2 #0900 cswp DUP2 set-diary
-	( event ) DUP2 #0005 ADD2 LDA LIT "+ NEQ ?&no-event
-	DUP2 parse-event
-	&no-event ( -- )
-		;dict/no-photo OVR2 #0006 ADD2 scmp ?&>no-photo
-			DUP2 add-to-journal &>no-photo
-		( eol ) scap/ INC2 scap/ INC2 !scap/
+	( event ) DUP2 #0005 ADD2 LDA LIT "+ NEQ ?&>no-event
+		DUP2 parse-event &>no-event
+	;dict/no-photo OVR2 #0006 ADD2 scmp ?&>no-photo
+		DUP2 add-to-journal &>no-photo
+	( eol ) scap/ INC2 scap/ INC2 !scap/
 
 @parse-log ( event* -- )
 	DUP2 #000a ADD2 ;&term scpy-line
@@ -148,20 +153,24 @@
 	&log-path [ "tmp/log- &term $30 ]
 
 @parse-event ( event* -- )
-	( add to calendar ) ;dict/calendar-path .File2/name DEO2
+	( | add to calendar )
+	;dict/calendar-path .File2/name DEO2
 	( year ) LDAk2 ,&last LDR2 EQU2 ?&no-year
 	;dict/br-tag <w/>
 	LDA2k ,&last STR2
 	&no-year ( -- )
-		( date ) ;dict/code-tag <w>
+		( | date )
+		;dict/code-tag <w>
 		DUP2 #0005 <len>
 		;dict/code-tag </w>
 		#20 <char>
 		scap/ INC2
-		( term ) DUP2 <link>
+		( | term )
+		DUP2 <link>
 		;dict/spacer <str>
 		scap/ INC2
-		( name ) <str>
+		( | name )
+		<str>
 		;dict/br-tag <w/>
 		#0a !<char>
 	&last "17 $1
