@@ -55,7 +55,7 @@
 		&site-path [ "site/ &buf $30 ]
 
 @load-diary ( name* -- )
-	( make path ) ;&file scpy ;&file [ LIT2 20 "_ ] cswp
+	( make path ) ;&buf scpy ;&buf [ LIT2 20 "_ ] cswp
 	( load ) ;&log-path .File/name DEO2
 	#1000 .File/length DEO2
 	;diary
@@ -63,7 +63,7 @@
 	( read ) DUP2 .File/read DEO2
 	( lines ) #0a00 cswp .File/success DEI2 ,&length STR2
 	JMP2r
-	&log-path [ "tmp/log- &file $30 ]
+	&log-path [ "tmp/log- &buf $30 ]
 
 @load-incoming ( name* -- )
 	( paste ) ;&buf STH2k scpy
@@ -79,17 +79,17 @@
 
 @build-page ( name* -- name* )
 	( | render )
-	;dict/doctype <str>
+	;dict/doctype <write-str>
 	;dict/html-tag <write-open>
 	( | head )
 	;dict/head-tag <write-open>
 	;dict/meta-head-path <write-inc>
 	;dict/title-tag <write-open>
-	;dict/title-txt <str>
+	;dict/title-txt <write-str>
 	#20 <char>
-	;dict/mdash-entity-txt <str>
+	;dict/mdash-entity-txt <write-str>
 	#20 <char>
-	DUP2 <str>
+	DUP2 <write-str>
 	;dict/title-tag <write-close>
 	;dict/head-tag <write-close>
 	( | body )
@@ -212,9 +212,9 @@
 	( clip wrap ) ;dict/code-tag <write-auto>
 	( clip restore ) [ LIT "+ ] STH2r STA
 	( event spacer ) #20 <char>
-	;dict/mdash-entity-txt <str>
+	;dict/mdash-entity-txt <write-str>
 	#20 <char>
-	( event name ) DUP2 #09 next-char INC2 #09 next-char INC2 !<str>
+	( event name ) DUP2 #09 next-char INC2 #09 next-char INC2 !<write-str>
 
 @build-module-photo ( diary* -- )
 	LDAk ?&continue
@@ -233,10 +233,10 @@
 		DUP2 #000a ADD2 ;term/name SWP2 sseg ?&skip
 		DUP2 extract-term <write-link>
 		#20 <char>
-		;dict/mdash-entity-txt <str>
+		;dict/mdash-entity-txt <write-str>
 		#20 <char>
 	&skip ( -- )
-		#09 next-char INC2 #09 next-char INC2 <str>
+		#09 next-char INC2 #09 next-char INC2 <write-str>
 		;dict/figcaption-tag <write-close>
 		;dict/figure-tag !<write-close>
 	&diary-path [ "../media/diary/ &buf $20 ]
@@ -258,7 +258,7 @@
 	;incoming LDAk ?&>exists
 		POP2 JMP2r &>exists
 	;dict/p-tag <write-open>
-	;dict/incoming-txt <str>
+	;dict/incoming-txt <write-str>
 	&while ( -- )
 		DUP2 <write-link>
 		#20 <char>
@@ -318,48 +318,47 @@
 
 @<write-img> ( src* alt* -- )
 	[ LIT "< ] <char>
-	;dict/img-tag <str>
+	;dict/img-tag <write-str>
 	;dict/alt-attr <write-attr>
 	;dict/src-attr <write-attr>
 	[ LIT2 "/> ] !<char2>
 
 @<write-link> ( name* -- )
-	[ LIT2 "<a ] <char2>
-	( ) DUP2 ;&link-path scpy
-	( ) ;&link-path [ LIT2 20 "_ ] cswp
-	( ) ;dict/html-ext ;&link-path scat
-	( ) ;&link-path ;dict/href-attr <write-attr>
+	;&a <write-str>
+	DUP2 [ LIT2 20 "_ ] cswp DUP2 <write-str>
+	DUP2 [ LIT2 "_ 20 ] cswp ;dict/html-ext <write-str>
+	LIT "" <char>
 	DUP2 ;term/name scmp #00 EQU ?&>not-self
 		;dict/self-txt ;dict/class-attr <write-attr> &>not-self
 	DUP2 ;term/parent scmp #00 EQU ?&>not-parent
 		;dict/parent-txt ;dict/class-attr <write-attr> &>not-parent
 	[ LIT "> ] <char>
-	<str>
+	<write-str>
 	;dict/a-tag !<write-close>
-	&link-path $30
+	&a "<a 20 "href=" $1
 
 @<write-attr> ( body* attr* -- )
 	#20 <char>
-	<str>
+	<write-str>
 	[ LIT2 "=" ] <char2>
-	<str>
+	<write-str>
 	[ LIT "" ] !<char>
 
 @<write-open> ( tag* -- )
 	LIT "< <char>
-	<str>
+	<write-str>
 	LIT "> !<char>
 
 @<write-auto> ( str* tag* -+ )
 	DUP2 <write-open>
-	SWP2 <str>
+	SWP2 <write-str>
 
 @<write-close> ( tag* -- )
 	[ LIT2 "</ ] <char2>
-	<str>
+	<write-str>
 	LIT "> !<char>
 
-@<str> ( addr* -- )
+@<write-str> ( addr* -- )
 	DUP2 scap/ OVR2 SUB2 .File2/length DEO2
 	.File2/write DEO2
 	JMP2r
@@ -491,7 +490,6 @@
 	&parent-txt "parent $1
 	&title-txt "XXIIVV $1
 	&class-attr "class $1
-	&href-attr "href $1
 	&html-ext ".html $1
 	&htm-ext ".htm $1
 	&jpg-ext ".jpg $1
