@@ -36,4 +36,5 @@ $emu bin/maeve.rom
 $emu bin/oscean.rom
 $emu bin/arvelie.rom
 $emu bin/directory.rom docs/
+$emu bin/directory.rom etc/
 
