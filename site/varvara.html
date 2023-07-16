@@ -67,20 +67,14 @@
 </table>
 
 <pre>
-static void
-system_cmd(Uint8 *ram, Uint16 addr)
-{
-	if(ram[addr] == 0x01) {
-		Uint16 i, length = PEEK2(ram + addr + 1);
-		Uint16 a_page = PEEK2(ram + addr + 1 + 2), a_addr = PEEK2(ram + addr + 1 + 4);
-		Uint16 b_page = PEEK2(ram + addr + 1 + 6), b_addr = PEEK2(ram + addr + 1 + 8);
-		int src = (a_page % RAM_PAGES) * 0x10000, dst = (b_page % RAM_PAGES) * 0x10000;
-		for(i = 0; i < length; i++)
-			ram[dst + (Uint16)(b_addr + i)] = ram[src + (Uint16)(a_addr + i)];
-	}
-}</pre>
+@on-reset ( -> )
+	;cmd .System/expansion DEO2
+	;dst print-str
+	BRK
 
-<!-- <p>Sending an address in memory to the <b>friend*</b> port spawns a new Uxn instance to evaluate it in parallel. Sending a null short, will wait for all threads to finish before continuing, these instances may not communicate with devices. An emulator may choose to not implement threads and evaluate the vectors sequentially.</p> -->
+@cmd [ 01 000b 0000 =src 0000 =dst ]
+@src "Hello 20 "World $1
+@dst $c</pre>
 
 <p>Sending a non-null byte to the <b>debug</b> port will print the content of the stacks or pause the evaluation if the emulator includes a step-debugger.</p>
 
