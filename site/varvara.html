@@ -214,6 +214,19 @@ uxncli file.rom arg1 arg2
 
 <p>The screen <b>vector*</b> is evaluated 60 times per second. The screen device is capable of displaying 2-bit graphics, or <a href='https://en.wikipedia.org/wiki/Four_color_theorem' target='_blank'>four colors</a>, which are defined by the <a href='#system'>system</a> device. The screen is made of two independent layers, the foreground layer treats color0 as transparent.</p>
 
+<pre>
+@on-reset ( -> )
+	;on-screen .Screen/vector DEO2
+	BRK
+
+@on-screen ( -> )
+	[ LIT &frame $1 ] INCk ,&frame STR
+	#01 AND ?&>skip
+		( 30 times per second)
+		&>skip
+	BRK
+</pre>
+
 <p>The <b>width*</b> and <b>height*</b> ports can be set to resize the screen for systems that supports it, but reading from these ports should ALWAYS return the actual sizes. Programs making use of the screen sizes to position graphics on the screen must be written in a way that will adapt to various screen sizes. </p>
 <p>The <b>pixel</b> port defines the pixel or fill mode, the layer to draw on, optional horizontal and vertical flipping for the quadrant to fill, and the color to use. When the fill bit is active, the operation will fill a portion of the screen starting at the x,y position until the edges of the screen. The default quadrant is bottom-right, flipping the x bit will fill the buttom-left quadrant, and so on.</p>
 
@@ -304,6 +317,10 @@ JMP2r
 	<span style='color:#888'>( 2 )</span> 0204 080f 0000 0000 0010 28c4 2810 0000
 </pre>
 
+<ul>
+	<li><a href='https://git.sr.ht/~rabbits/uxn/tree/main/item/projects/examples/devices/screen.tal' target='_blank'>Screen Example</a></li>
+</ul>
+
 <h3 id='audio'>Audio Device <kbd>mask 0x8014</kbd></h3>
 
 <img src='../media/generic/uxn.apu.jpg' style='float:right' width='240' />
@@ -322,7 +339,7 @@ JMP2r
 	<tr><th>37</th><td class='empty'>--</td><th class='bg1'>3f</th><td>pitch</td></tr>
 </table>
 
-<p>When <code>pitch</code> is written to any of the audio devices, it starts playing an audio sample from Uxn's memory, pointed to by <code>addr*</code> and <code>length*</code>. It loops the sample (unless told not to) until it reaches the end of the ADSR envelope defined by <code>adsr*</code>. The audio vector triggers when a note ends.</p>
+<p>When <code>pitch</code> is written to any of the audio devices, it starts playing an audio sample from Uxn's memory, pointed to by <b>addr*</b> and <code>length*</code>. It loops the sample (unless told not to) until it reaches the end of the ADSR envelope defined by <code>adsr*</code>. The audio vector triggers when a note ends.</p>
 
 <p>Several fields contain more than one component:</p>
 
@@ -342,9 +359,7 @@ JMP2r
 
 <h4>Audio Sample Format</h4>
 
-<p>All samples used by the audio devices are mono and unsigned 8-bit (also known as <b>u8</b>), so the space taken up by samples is minimized. The sample rate of the samples depends on <code>length*</code>:</p>
-
-<table border='1'>
+<p>All samples used by the audio devices are mono and unsigned 8-bit (also known as <b>u8</b>), so the space taken up by samples is minimized. The sample rate of the samples depends on <b>length*</b><b>length*</b>='1'>
 	<tr><th><code>length*</code></th><th>Sample type</th><th>Sample rate</th></tr>
 	<tr><td>&gt; 256</td><td>Middle-C pitched sample</td><td>44,100 Hz</td></tr>
 	<tr><td>2–256</td><td>Single wavelength</td><td>Variable</td></tr>
@@ -352,7 +367,7 @@ JMP2r
 
 <p>Long samples are assumed to be already pitched to Middle C and will loop (unless No Loop is 1) until the end of the envelope. To play the sample at the same rate as it was recorded, write the Middle C MIDI note number, <code>#3c</code>, to <code>pitch</code>. To play at double or half speed, for example, write an octave higher or lower to <code>pitch</code>.</p>
 
-<p>The minimum sample size that can be pitched at 44.1 kHz to Middle C with reasonable accuracy is 337 bytes long, which represents two cycles of the 261 Hz wave. The single wavelength mode in Uxn allows much smaller samples to be used, even down to only two bytes for a square wave. In this mode the length of the entire sample is taken to be one cycle of the Middle C note, so the pitch is not heard to vary even if <code>length*</code> were to change between sample plays.</p>
+<p>The minimum sample size that can be pitched at 44.1 kHz to Middle C with reasonable accuracy is 337 bytes long, which represents two cycles of the 261 Hz wave. The single wavelength mode in Uxn allows much smaller samples to be used, even down to only two bytes for a square wave. In this mode the length of the entire sample is taken to be one cycle of the Middle C note, so the pitch is not heard to vary even if <b>length*</b> were to change between sample plays.</p>
 
 <h3 id='controller'>Controller Device <kbd>mask 0x0000</kbd></h3>
 
@@ -457,39 +472,61 @@ JMP2r
 <table border='1'>
 	<tr>
 		<th rowspan='8'><a href='#file'>file</a></th>
-		<th>a0</th><td rowspan="2" class='bg2'>vector*</td><th>a8</th><td rowspan="2">name(addr)*</td>
+		<th>a0</th><td rowspan="2" class='bg2'>vector*</td><th>a8</th><td rowspan="2">name*</td>
 	</tr>
 	<tr><th>a1</th><th class='bg1'>a9</th></tr>
 	<tr><th>a2</th><td rowspan="2">success*</td><th>aa</th><td rowspan="2">length*</td></tr>
 	<tr><th>a3</th><th>ab</th></tr>
-	<tr><th>a4</th><td rowspan="2">stat(addr)*</td><th>ac</th><td rowspan="2">read(addr)*</td></tr>
+	<tr><th>a4</th><td rowspan="2">stat*</td><th>ac</th><td rowspan="2">read*</td></tr>
 	<tr><th class='bg1'>a5</th><th class='bg1'>ad</th></tr>
-	<tr><th class='bg1'>a6</th><td>delete</td><th>ae</th><td rowspan="2">write(addr)*</td></tr>
+	<tr><th class='bg1'>a6</th><td>delete</td><th>ae</th><td rowspan="2">write*</td></tr>
 	<tr><th>a7</th><td>append</td><th class='bg1'>af</th></tr>
 </table>
 
-<p>The file device supports reading and writing files, listing directories, obtaining file information and deleting files. The device may not access files outside of the working directory. The vector is unused. </p>
+<p>The <b>vector*</b> is normally unused, but is reserved for systems where a portable data format(disk, etc..) can be inserted. There is no specs for disk handling at this time.</p>
 
-<p>The general approach is to write <code>name*</code> with the address of the filename in memory, <code>length*</code> with the length of the memory region to use in the data exchange, and finally one of the <code>addr*</code> shorts with the address of that memory region. Once the operation has completed, the <code>success*</code> short can be read to find the number of bytes successfully exchanged.</p>
+<p>When <b>name*</b> resolves to a file, writing the address to <b>read*</b> will read the file's data to the <b>addr*</b> in memory. <b>success*</b> will be less than <b>length*</b> if the file is shorter than <b>length*</b>, and will be zero if the filename is invalid. If the file is longer than <b>length*</b>, subsequent writes to <b>read*</b> will read the next chunk of data into the memory region, so it is possible to read the contents of very large files one chunk at a time.</p>
 
-<p>When <code>name*</code> resolves to a file, writing the address to <code>read(addr)*</code> will read the file's data into the memory region. <code>success*</code> will be less than <code>length*</code> if the file is shorter than <code>length*</code>, and will be zero if the file does not exist or the filename is invalid. If the file is longer than <code>length*</code>, subsequent writes to <code>read(addr)*</code> will read the next chunk of data into the memory region, so it is possible to read the contents of very large files one chunk at a time.</p>
+<pre>
+@on-reset ( -> )
+	;filename .File/name DEO2
+	#0010 .File/length DEO2
+	;buffer .File/read DEO2
+	BRK
 
-<p>When <code>name*</code> resolves to a directory, writing the address to <code>read(addr)*</code> will read the directory as if it were a text file listing each of the directory's contents:</p>
+@filename "in.txt $1
+@buffer $10
+</pre>
+
+<p>When <b>name*</b> resolves to a directory, writing the address to <b>read*</b> will read the directory as if it were a text file listing each of the directory's contents:</p>
 
 <pre>001a file.txt
 ---- directory/
 ???? large file.mp4
 </pre>
 
-<p>The listing has each file or directory on its own line, prefixed with the file size in four hex characters and a space. The ending newline is always present. If the file is too big to fit in four hex characters (&gt; 64 kB) then <code>????</code> will be used instead; for directories, <code>----</code> takes the place of the file size. As for reading file data, if the listing length exceeds <code>length*</code> then subsequent writes to <code>read(addr)*</code> will read more entries. Unlike file data, directory entries will be returned as atomic units that won't be broken across chunks, so <code>success*</code> will usually be lower than <code>length*</code> even when more data is available. When <code>success*</code> reads zero, the listing is complete.</p>
+<p>The listing has each file or directory on its own line, prefixed with the file size in four hex characters and a space. The ending newline is always present. If the file is too big to fit in four hex characters (&gt; 64 kB) then <code>????</code> will be used instead; for directories, <code>----</code> takes the place of the file size. As for reading file data, if the listing length exceeds <b>length*</b> then subsequent writes to <b>read*</b> will read more entries. Unlike file data, directory entries will be returned as atomic units that won't be broken across chunks, so <b>success*</b> will usually be lower than <b>length*</b> even when more data is available. When <b>success*</b> reads zero, the listing is complete.</p>
 
-<p>The directory listing for a single file or directory can be obtained when <code>stat(addr)*</code> is written, and will write the same format as above, including the newline, into the memory buffer. If <code>success*</code> reads zero, the file or directory doesn't exist or the region is too small to fit the line.</p>
+<p>The directory listing for a single file or directory can be obtained when <b>stat*</b> is written, and will write the same format as above, including the newline, into the memory buffer. If <b>success*</b> reads zero, the file or directory doesn't exist or the region is too small to fit the line.</p>
 
-<p>Writing files is performed by writing to <code>write(addr)*</code>. If <code>append</code> is set to 0x01, then the data in the memory region will be written after the end of the file, if it is 0x00 (the default) it will replace the contents of the file. If the file doesn't previously exist then it will be created and <code>append</code> makes no difference. <code>success*</code> will be set to <code>length*</code> if the write was successful, otherwise it will read as zero. As with reading files and directories, subsequent writes to <code>addr(write)*</code> will write more chunks of data to the file.</p>
+<p>Writing files is performed by writing to <b>write*</b>. If <b>append</b> is set to <code>0x01</code>, then the data in the memory region will be written after the end of the file, if it is <code>0x00</code> (the default) it will replace the contents of the file. If the file doesn't previously exist then it will be created and <b>append</b> makes no difference. <b>success*</b> will be set to <b>length*</b> if the write was successful, otherwise it will read as zero. As with reading files and directories, subsequent writes to <b>write*</b> will write more chunks of data to the file.</p>
 
-<p>In all cases, writing to <code>name*</code> closes the file/directory and new calls to the <code>addr*</code> shorts will start from the beginning (or writing after the end when <code>append</code> is 0x01).</p>
+<pre>
+@on-reset ( -> )
+	;filename .File/name DEO2
+	#0005 .File/length DEO2
+	;data .File/write DEO2
+	BRK
 
-<p>Finally, to delete a file, write any value to the <code>delete</code> byte.</p>
+@filename "out.txt $1
+@data "hello $1
+</pre>
+
+<p>Finally, to delete a file, write any value to the <b>delete</b> byte. Writing to <b>name*</b> closes the file/directory. The device may not access files outside of the working directory.</p>
+
+<ul>
+	<li><a href='https://git.sr.ht/~rabbits/uxn/tree/main/item/projects/examples/devices/file.tal' target='_blank'>File Example</a></li>
+</ul>
 
 <h3 id='datetime'>Datetime Device <kbd>mask 0x07ff</kbd></h3>
 
