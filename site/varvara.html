@@ -78,7 +78,21 @@
 
 <p>Sending a non-null byte to the <b>debug</b> port will print the content of the stacks or pause the evaluation if the emulator includes a step-debugger.</p>
 
+<pre>
+@on-reset ( -> )
+	[ LIT2r 1234 ] #abcd
+	#01 .System/debug DEO
+	BRK
+</pre>
+
 <p>Sending a non-null byte to the <b>state</b> port will terminate the application, on systems that can handle exit codes, the error code is the <code>0x7f</code> portion of the byte. So, <code>0x01</code> terminates the program with an error, and <code>0x80</code> terminates the program succesfully.</p>
+
+<pre>
+@on-reset ( -> )
+	( exit code 0, success )
+	#80 .System/state DEO
+	BRK
+</pre>
 
 <p>The <b>metadata*</b> port notifies the emulator that <a href='metadata.html'>metadata</a> about the rom is present at the address specified. The emulator can choose to utilize this information or to ignore it.</p>
 
@@ -107,6 +121,10 @@
 <p>This device is holding 3 shorts to be used for application customization, for simplicity we call them the <b>Red*</b>, <b>Green*</b> and <b>Blue*</b> shorts. These colors are typically used by the <a href='#screen'>screen device</a> to form four application colors.</p>
 
 <pre>
+@on-reset ( -> )
+	set-theme
+	BRK
+
 @set-theme ( -- )
 	#f07f .System/r DEO2
 	#f0e0 .System/g DEO2
@@ -135,7 +153,7 @@
 	<tr><th>17</th><td>type</td><th>1f</th><td class='empty'>--</td></tr>
 </table>
 
-<p>The console <b>vector*</b> is evaluated when a byte is received. The type port holds one of 5 known types: no-queue(0), stdin(1), argument(2), argument-spacer(3), argument-end(4). During the reset vector, a program should be able to query the type port and get a null byte when there is no arguments to be expected.</p>
+<p>The console <b>vector*</b> is evaluated when a byte is received. The <b>type</b> port holds one of 5 known types: no-queue(0), stdin(1), argument(2), argument-spacer(3), argument-end(4). During the reset vector, a program should be able to query the type port and get a null byte when there is no arguments to be expected.</p>
 
 <pre>
 uxncli file.rom arg1 arg2
