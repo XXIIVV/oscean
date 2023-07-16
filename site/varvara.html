@@ -37,7 +37,7 @@
 <table border='1'>
 	<tr>
 		<th rowspan='8'><a href='#system'>system</a></th>
-		<th>00</th><td rowspan="2" class='bg2'>halt*</td><th class='bg1'>08</th><td rowspan="2">red*</td>
+		<th>00</th><td rowspan="2" class='bg2'>catch*</td><th class='bg1'>08</th><td rowspan="2">red*</td>
 	</tr>
 	<tr><th>01</th><th class='bg1'>09</th></tr>
 	<tr><th>02</th><td rowspan='2'>expansion*</td><th class='bg1'>0a</th><td rowspan="2">green*</td></tr>
@@ -48,30 +48,9 @@
 	<tr><th>07</th><th class='bg1'>0f</th><td>state</td></tr>
 </table>
 
-<p>The <b>halt*</b> vector is evaluated when uxn errors. If the vector is unset, the emulator handles the error, if an address in found in the halt port, the vector is evaluated. In that scenario, stacks are emptied, a short of the address where the error occured, a byte of the instruction that errored, and a byte for the error code are put on the working stack.</p>
+<p>The <b>catch*</b> vector is evaluated when uxn errors. If the vector is unset, the emulator handles the error and prints an error message, if an address in found in the <i>catch</i> port, the vector is evaluated. In that scenario, stacks are emptied, a short of the address where the error occured, followed by a byte of the instruction that errored, and a byte for the error code are put on the working stack.</p>
 
-<pre>
-int
-uxn_halt(Uxn *u, Uint8 instr, Uint8 err, Uint16 addr)
-{
-	Uint8 *d = &u->dev[0x00];
-	Uint16 handler = PEEK2(d);
-	if(handler) {
-		u->wst.ptr = 4;
-		u->wst.dat[0] = addr >> 0x8;
-		u->wst.dat[1] = addr & 0xff;
-		u->wst.dat[2] = instr;
-		u->wst.dat[3] = err;
-		return uxn_eval(u, handler);
-	} else {
-		system_inspect(u);
-		fprintf(stderr, "%s %s, by %02x at 0x%04x.\n", (instr & 0x40) ? "Return-stack" : "Working-stack", errors[err - 1], instr, addr);
-	}
-	return 0;
-}
-</pre>
-
-<p>The <b>expansion*</b> port allows to do special memory management operations, it expects an address to an operation. This is used mostly by larger roms that want to keep assets outside of addressable range. An example operation is in the following format:</p>
+<p>The <b>expansion*</b> port expects an address to an <i>operation</i>, it allows basic memory management for roms that must keep information outside of the addressable range, or cache the content of a file in order to seek through the data. There is currently only one such operation:</p>
 
 <table border='1'>
 	<tr><th>name</th><th>operation</th><th colspan='6'>fields</th></tr>
@@ -98,7 +77,7 @@ system_cmd(Uint8 *ram, Uint16 addr)
 
 <p>Sending a non-null byte to the <b>state</b> port will terminate the application, on systems that can handle exit codes, the error code is the <code>0x7f</code> portion of the byte. So, <code>0x01</code> terminates the program with an error, and <code>0x80</code> terminates the program succesfully.</p>
 
-<p>The <b>metadata*</b> port notifies the emulator that <a href='metadata.html'>metadata</a> about the rom is located at that address. The emulator can choose to utilize this information to update the window name.</p>
+<p>The <b>metadata*</b> port notifies the emulator that <a href='metadata.html'>metadata</a> about the rom is present at the address specified. The emulator can choose to utilize this information or to ignore it.</p>
 
 <table border='1' style='float:right;margin-left:15px'>
 	<tr><th>0</th><th>1</th><th>2</th><th>3</th></tr>
