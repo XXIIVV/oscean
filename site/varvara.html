@@ -82,6 +82,18 @@
 
 <p>The <b>metadata*</b> port notifies the emulator that <a href='metadata.html'>metadata</a> about the rom is present at the address specified. The emulator can choose to utilize this information or to ignore it.</p>
 
+<pre>
+@on-reset ( -> )
+	;meta .System/metadata DEO2
+	BRK
+
+@meta 00 &body
+	"Nasu 0a
+	"A 20 "Sprite 20 "Editor 0a
+	"By 20 "Hundred 20 "Rabbits 0a
+	"Jan 20 "8, 20 "2023 $2
+</pre>
+
 <table border='1' style='float:right;margin-left:15px'>
 	<tr><th>0</th><th>1</th><th>2</th><th>3</th></tr>
 	<tr>
@@ -103,8 +115,8 @@
 </pre>
 
 <ul>
-	<li><a href='https://git.sr.ht/~rabbits/uxn/tree/main/item/projects/examples/devices/system.catch.tal' target='_blank'>System/catch Test</a></li>
-	<li><a href='https://git.sr.ht/~rabbits/uxn/tree/main/item/projects/examples/devices/system.expansion.tal' target='_blank'>System/expansion Test</a></li>
+	<li><a href='https://git.sr.ht/~rabbits/uxn/tree/main/item/projects/examples/devices/system.catch.tal' target='_blank'>System/catch Example</a></li>
+	<li><a href='https://git.sr.ht/~rabbits/uxn/tree/main/item/projects/examples/devices/system.expansion.tal' target='_blank'>System/expansion Example</a></li>
 </ul>
 
 <h3 id='console'>Console Device <kbd>mask 0x0300</kbd></h3>
@@ -131,12 +143,25 @@ uxncli file.rom arg1 arg2
                 2   32   4
 </pre>
 
+<p>The <b>read</b> port is used to listen to incoming bytes during a Console vector event, the event type for bytes sent to the program through the console while the program is running is 1.</p>
+
+<pre>
+@on-reset ( -> )
+	;on-console .Console/vector DEO2
+	BRK
+
+@on-console ( -> )
+	.Console/read DEI .Console/write DEO
+	#20 .Console/write DEO
+	BRK
+</pre>
+
 <p>The <b>write</b> port is used to send data through the console. For example, a program sending the text "Hello", will trigger the console's port 5 times; once for each character.</p>
 
 <pre>
 @on-reset ( -> )
 	;text
-	&while
+	&while ( -- )
 		LDAk .Console/write DEO
 		INC2 LDAk ?&while
 	POP2
@@ -144,6 +169,12 @@ uxncli file.rom arg1 arg2
 
 @text "Hello $1
 </pre>
+
+<ul>
+	<li><a href='https://git.sr.ht/~rabbits/uxn/tree/main/item/projects/examples/devices/console.write.tal' target='_blank'>Console/write Example</a></li>
+	<li><a href='https://git.sr.ht/~rabbits/uxn/tree/main/item/projects/examples/devices/console.read.tal' target='_blank'>Console/read Example</a></li>
+	<li><a href='https://git.sr.ht/~rabbits/uxn/tree/main/item/projects/examples/devices/console.tal' target='_blank'>Console/type Example</a></li>
+</ul>
 
 <h3 id='screen'>Screen Device <kbd>mask 0xc028</kbd></h3>
 
