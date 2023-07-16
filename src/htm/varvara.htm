@@ -28,8 +28,6 @@
 
 <h3 id='system'>System Device <kbd>mask 0xff28</kbd></h3>
 
-<p>The System device is used to control the execution of a varvara program.</p>
-
 <table border='1'>
 	<tr>
 		<th rowspan='8'><a href='#system'>system</a></th>
@@ -44,7 +42,7 @@
 	<tr><th>07</th><th class='bg1'>0f</th><td>state</td></tr>
 </table>
 
-<p>The <b>catch*</b> vector is evaluated when uxn errors. If the vector is unset, the emulator handles the error and prints an error message, if an address in found in the <i>catch</i> port, the vector is evaluated. In that scenario, stacks are emptied, a short of the address where the error occured, followed by a byte of the instruction that errored, and a byte for the error code are put on the working stack.</p>
+<p>The <b>System/catch*</b> is evaluated when uxn errors. If the vector is unset, the emulator handles the error and prints an error message, if an address in found in the <i>catch</i> port, the vector is evaluated. In that scenario, stacks are emptied, a short of the address where the error occured, followed by a byte of the instruction that errored, and a byte for the error code are put on the working stack.</p>
 
 <pre>
 @on-reset ( -> )
@@ -55,7 +53,7 @@
 	( handle error )
 	BRK</pre>
 
-<p>The <b>expansion*</b> port expects an address to an <i>operation</i>, it allows basic memory management for roms that must keep information outside of the addressable range, or cache the content of a file in order to seek through the data. There is currently only one such operation:</p>
+<p>The <b>System/expansion*</b> port expects an address to an <i>operation</i>, it allows basic memory management for roms that must keep information outside of the addressable range, or cache the content of a file in order to seek through the data. There is currently only one such operation:</p>
 
 <table border='1'>
 	<tr><th>name</th><th>operation</th><th colspan='6'>fields</th></tr>
@@ -72,7 +70,7 @@
 @src "Hello 20 "World $1
 @dst $c</pre>
 
-<p>Sending a non-null byte to the <b>debug</b> port will print the content of the stacks or pause the evaluation if the emulator includes a step-debugger.</p>
+<p>Sending a non-null byte to the <b>System/debug</b> port will print the content of the stacks or pause the evaluation if the emulator includes a step-debugger.</p>
 
 <pre>
 @on-reset ( -> )
@@ -81,7 +79,7 @@
 	BRK
 </pre>
 
-<p>Sending a non-null byte to the <b>state</b> port will terminate the application, on systems that can handle exit codes, the error code is the <code>0x7f</code> portion of the byte. So, <code>0x01</code> terminates the program with an error, and <code>0x80</code> terminates the program succesfully.</p>
+<p>Sending a non-null byte to the <b>System/state</b> port will terminate the application, on systems that can handle exit codes, the error code is the <code>0x7f</code> portion of the byte. So, <code>0x01</code> terminates the program with an error, and <code>0x80</code> terminates the program succesfully.</p>
 
 <pre>
 @on-reset ( -> )
@@ -90,7 +88,7 @@
 	BRK
 </pre>
 
-<p>The <b>metadata*</b> port notifies the emulator that <a href='metadata.html'>metadata</a> about the rom is present at the address specified. The emulator can choose to utilize this information or to ignore it.</p>
+<p>The <b>System/metadata*</b> port notifies the emulator that <a href='metadata.html'>metadata</a> about the rom is present at the address specified. The emulator can choose to utilize this information or to ignore it.</p>
 
 <pre>
 @on-reset ( -> )
@@ -114,7 +112,7 @@
 	</tr>
 </table>
 
-<p>This device is holding 3 shorts to be used for application customization, for simplicity we call them the <b>Red*</b>, <b>Green*</b> and <b>Blue*</b> shorts. These colors are typically used by the <a href='#screen'>screen device</a> to form four application colors.</p>
+<p>This device is holding 3 shorts to be used for application customization, for simplicity we call them the <b>System/red*</b>, <b>System/green*</b> and <b>System/blue*</b> shorts. These colors are typically used by the <a href='#screen'>screen device</a> to form four application colors.</p>
 
 <pre>
 @on-reset ( -> )
@@ -149,7 +147,7 @@
 	<tr><th>17</th><td>type</td><th>1f</th><td class='empty'>--</td></tr>
 </table>
 
-<p>The console <b>vector*</b> is evaluated when a byte is received. The <b>type</b> port holds one of 5 known types: no-queue(0), stdin(1), argument(2), argument-spacer(3), argument-end(4). During the reset vector, a program should be able to query the type port and get a null byte when there is no arguments to be expected.</p>
+<p>The <b>Console/vector*</b> is evaluated when a byte is received. The <b>Console/type</b> port holds one of 5 known types: no-queue(0), stdin(1), argument(2), argument-spacer(3), argument-end(4). During the reset vector, a program should be able to query the type port and get a null byte when there is no arguments to be expected.</p>
 
 <pre>
 uxncli file.rom arg1 arg2
@@ -157,7 +155,7 @@ uxncli file.rom arg1 arg2
                 2   32   4
 </pre>
 
-<p>The <b>read</b> port is used to listen to incoming bytes during a Console vector event, the event type for bytes sent to the program through the console while the program is running is 1.</p>
+<p>The <b>Console/read</b> port is used to listen to incoming bytes during a Console vector event.</p>
 
 <pre>
 @on-reset ( -> )
@@ -170,7 +168,7 @@ uxncli file.rom arg1 arg2
 	BRK
 </pre>
 
-<p>The <b>write</b> port is used to send data through the console. For example, a program sending the text "Hello", will trigger the console's port 5 times; once for each character.</p>
+<p>The <b>Console/write</b> port is used to send data through the console. For example, a program sending the text "Hello", will trigger the console's port 5 times; once for each character.</p>
 
 <pre>
 @on-reset ( -> )
@@ -208,7 +206,7 @@ uxncli file.rom arg1 arg2
 	<tr><th>27</th><td class='empty'>--</td><th class='bg1'>2f</th><td>sprite</td></tr>
 </table>
 
-<p>The screen <b>vector*</b> is evaluated 60 times per second. The screen device is capable of displaying 2-bit graphics, or <a href='https://en.wikipedia.org/wiki/Four_color_theorem' target='_blank'>four colors</a>, which are defined by the <a href='#system'>system</a> device. The screen is made of two independent layers, the foreground layer treats color0 as transparent.</p>
+<p>The <b>Screen/vector*</b> is evaluated 60 times per second. The screen device is capable of displaying graphics in <a href='https://en.wikipedia.org/wiki/Four_color_theorem' target='_blank'>any four colors</a>, which are defined by the <a href='#system'>system</a> device. The screen is made of two independent layers, the foreground layer treats color0 as transparent.</p>
 
 <pre>
 @on-reset ( -> )
@@ -223,18 +221,17 @@ uxncli file.rom arg1 arg2
 	BRK
 </pre>
 
-<p>The <b>width*</b> and <b>height*</b> ports can be set to resize the screen for systems that supports it, but reading from these ports should ALWAYS return the actual sizes. Programs making use of the screen sizes to position graphics on the screen must be written in a way that will adapt to various screen sizes. </p>
-<p>The <b>pixel</b> port defines the pixel or fill mode, the layer to draw on, optional horizontal and vertical flipping for the quadrant to fill, and the color to use. When the fill bit is active, the operation will fill a portion of the screen starting at the x,y position until the edges of the screen. The default quadrant is bottom-right, flipping the x bit will fill the buttom-left quadrant, and so on.</p>
+<p>The <b>Screen/width*</b> and <b>Screen/height*</b> ports can be set to resize the screen for systems that supports it, but reading from these ports should ALWAYS return the actual sizes. Programs should make use of the screen sizes to position responsive graphics on the screen. </p>
 
 <pre>
-           M L Y X * * C1 C0
- Mode -----+ | | |     |  +---- Color bit 0
- Layer ------+ | |     +------- Color bit 1
-Flip Y --------+ |
-Flip X ---------+
+@on-reset ( -> )
+	.Screen/width DEI2 #01 SFT2 .Screen/x DEO2
+	.Screen/height DEI2 #01 SFT2 .Screen/y DEO2
+	( centered drawing )
+	BRK
 </pre>
 
-<p>The <b>sprite</b> port defines the 1-bit or 2-bit mode, the layer to draw on, optional horizontal and vertical flipping, and the colors to use. The screen can draw 8x8 sprites by first writing an <code>addr*</code> which points to either <a href='icn_format.html'>1-bit</a> or <a href='chr_format.html'>2-bit</a> sprite data in memory. Sprite data is stored as 8 bytes for a 1-bit sprite, and 16 bytes for a 2-bits sprite.</p> 
+<p>The <b>Screen/pixel</b> port defines the pixel or fill mode, the layer to draw on, optional horizontal and vertical flipping for the quadrant to fill, and the color to use. When the fill bit is active, the operation will fill a portion of the screen starting at the x,y position until the edges of the screen. The default quadrant is bottom-right, flipping the x bit will fill the buttom-left quadrant, and so on.</p>
 
 <pre>
            M L Y X B3 B2 B1 B0
@@ -242,6 +239,21 @@ Flip X ---------+
  Layer ------+ | | |  |  +------- Blending bit 1
 Flip Y --------+ | |  +---------- Blending bit 2
 Flip X ----------+ +------------- Blending bit 3
+</pre>
+
+<p>The screen can draw 8x8 sprites located at the location specified in the <b>Screen/addr*</b> port as either <a href='icn_format.html'>1-bit</a> or <a href='chr_format.html'>2-bit</a> graphics. The <b>Screen/sprite</b> port defines the mode, layer to draw on, optional horizontal and vertical flipping, and the colors to use.</p>
+
+<pre>
+@on-reset ( -> )
+	set-theme
+	#0020 .Screen/x DEO2
+	#0040 .Screen/y DEO2
+	;sprite-chr .Screen/addr DEO2
+	#81 .Screen/sprite DEO
+	BRK
+
+@sprite-chr 
+	6cfe fe7c 3810 0000 6cfe fe7c 3810 0000
 </pre>
 
 <table border='1' style='float:right;margin-left:15px'>
@@ -285,7 +297,7 @@ blending[4][16] = {
 
 <!-- <img src='../media/generic/varvara.blending.png' /> -->
 
-<p>The <b>auto</b> port automates the incrementation of the position and sprite address whenever a drawing command is sent, so the program does not need to manually move to the next sprite, or the next position. Pixel drawing will increment the positions by 1, and sprite drawing by either 8 or 16 depending on the mode.</p>
+<p>The <b>Screen/auto</b> port automates the incrementation of the position and sprite address whenever a drawing command is sent, so the program does not need to manually move to the next sprite, or the next position.</p>
 
 <pre>
                 L3 L2 L1 L0 * A Y X
@@ -295,7 +307,7 @@ Length bit 1 ----------+  |   +-------- Auto Addr
 Length bit 0 -------------+
 </pre>
 
-<p>The high nibble of the auto byte is the number of sprites to draw at once minus one. This allows to draw a 2x3 sprite without needing complex logic:</p>
+<p>The high nibble of the auto byte is the number of sprites to draw at once minus one. Pixel drawing will increment the positions by 1, sprite drawing by 8, and the address port by either 8 or 16 depending on the mode.</p>
 
 <pre>
 @paint-sprite
@@ -304,7 +316,7 @@ Length bit 0 -------------+
 	#16 .Screen/auto DEO <span style='float:right; color:#888'>( set length 2 with auto y and addr )</span>
 	;23x-icns .Screen/addr DEO2 <span style='float:right; color:#888'>( set addr )</span>
 	#01 .Screen/sprite DEOk DEOk DEO <span style='float:right; color:#888'>( draw 3 rows of 1-bit sprites )</span>
-JMP2r
+	JMP2r
 
 @23x-icns
 	      <span style='color:#888'>(        0        ) (        1        )</span>
@@ -381,7 +393,7 @@ JMP2r
 	<tr><th>87</th><td class='empty'><i>P4</i></td><th>8f</th><td class='empty'>--</td></tr>
 </table>
 
-<p>The controller <b>vector*</b> is evaluated when a button, is pressed or released, and when a key is pressed.</p>
+<p>The <b>Controller/vector*</b> is evaluated when a button, is pressed or released, and when a key is pressed.</p>
 
 <table border='1'>
 	<tr><td><code>0x01</code></td><td><code class='button'>A</code> <i>Ctrl</i></td><td><code>0x10</code></td><td><code class='button'>Up</code></td></tr>
@@ -390,7 +402,7 @@ JMP2r
 	<tr><td><code>0x08</code></td><td><code class='button'>Start</code> <i>Home</i></td><td><code>0x80</code></td><td><code class='button'>Right</code></td></tr>
 </table>
 
-<p>The <b>button</b> port works similarly to a <a href='https://wiki.nesdev.com/w/index.php/Standard_controller' target='_blank'>NES controller</a>, where there the state of each one of the 8 buttons is stored as a bit in a single byte.</p>
+<p>The <b>Controller/button</b> port works similarly to a <a href='https://wiki.nesdev.com/w/index.php/Standard_controller' target='_blank'>NES controller</a>, where there the state of each one of the 8 buttons is stored as a bit in a single byte.</p>
 
 <pre>
 @on-reset ( -> )
@@ -407,7 +419,7 @@ JMP2r
 @on-dpad-right ( button -> )
 </pre>
 
-<p>The <b>key</b> port holds the character data that is pressed during the vector event.</p>
+<p>The <b>Controller/key</b> port holds the character data that is pressed during the vector event.</p>
 
 <pre>
 @on-controller ( -> )
@@ -439,7 +451,7 @@ JMP2r
 	<tr><th>97</th><td class='empty'>--</td><th>9f</th><td class='empty'>--</td></tr>
 </table>
 
-<p>The <b>mouse*</b> vector is evaluated when the mouse is moved and when a button is pressed or released.</p>
+<p>The <b>Mouse/vector*</b> is evaluated when the mouse is moved and when a button is pressed or released.</p>
 
 <pre>
 @on-reset ( -> )
@@ -457,7 +469,7 @@ JMP2r
 		BRK
 </pre>
 
-<p>The <b>state</b> port holds a byte in which each bit is a button state. The byte value of holding down the mouse1 button is <code>01</code>, and holding down mouse1+mouse3 button is <code>05</code>. The scroll values are signed shorts, normally <code>ffff</code> and <code>0001</code>, for -1 and +1.</p>
+<p>The <b>Mouse/state</b> port holds a byte in which each bit is a button state. The byte value of holding down the mouse1 button is <code>01</code>, and holding down mouse1+mouse3 button is <code>05</code>. The <b>Mouse/scroll-x*</b> and <b>Mouse/scroll-y*</b> values are signed shorts, normally <code>ffff</code> and <code>0001</code>, for -1 and +1.</p>
 
 <ul>
 	<li><a href='https://git.sr.ht/~rabbits/uxn/tree/main/item/projects/examples/devices/mouse.tal' target='_blank'>Mouse Example</a></li>
@@ -479,9 +491,9 @@ JMP2r
 	<tr><th>a7</th><td>append</td><th class='bg1'>af</th></tr>
 </table>
 
-<p>The <b>vector*</b> is normally unused, but is reserved for systems where a portable data format(disk, etc..) can be inserted. There is no specs for disk handling at this time.</p>
+<p>The <b>File/vector*</b> is normally unused, but is reserved for systems where a portable data format(disk, etc..) can be inserted. There is no specs for disk handling at this time.</p>
 
-<p>When <b>name*</b> resolves to a file, writing the address to <b>read*</b> will read the file's data to the <b>addr*</b> in memory. <b>success*</b> will be less than <b>length*</b> if the file is shorter than <b>length*</b>, and will be zero if the filename is invalid. If the file is longer than <b>length*</b>, subsequent writes to <b>read*</b> will read the next chunk of data into the memory region, so it is possible to read the contents of very large files one chunk at a time.</p>
+<p>When <b>File/name*</b> resolves to a file, writing the address to <b>File/read*</b> will read the file's data to the <b>File/addr*</b> in memory. <b>File/success*</b> will be less than <b>length*</b> if the file is shorter than <b>length*</b>, and will be zero if the filename is invalid. If the file is longer than <b>length*</b>, subsequent writes to <b>File/read*</b> will read the next chunk of data into the memory region, so it is possible to read the contents of very large files one chunk at a time.</p>
 
 <pre>
 @on-reset ( -> )
@@ -494,18 +506,18 @@ JMP2r
 @buffer $10
 </pre>
 
-<p>When <b>name*</b> resolves to a directory, writing the address to <b>read*</b> will read the directory as if it were a text file listing each of the directory's contents:</p>
+<p>When <b>File/name*</b> resolves to a directory, writing the address to <b>File/read*</b> will read the directory as if it were a text file listing each of the directory's contents:</p>
 
 <pre>001a file.txt
 ---- directory/
 ???? large file.mp4
 </pre>
 
-<p>The listing has each file or directory on its own line, prefixed with the file size in four hex characters and a space. The ending newline is always present. If the file is too big to fit in four hex characters (&gt; 64 kB) then <code>????</code> will be used instead; for directories, <code>----</code> takes the place of the file size. As for reading file data, if the listing length exceeds <b>length*</b> then subsequent writes to <b>read*</b> will read more entries. Unlike file data, directory entries will be returned as atomic units that won't be broken across chunks, so <b>success*</b> will usually be lower than <b>length*</b> even when more data is available. When <b>success*</b> reads zero, the listing is complete.</p>
+<p>The listing has each file or directory on its own line, prefixed with the file size in four hex characters and a space. The ending newline is always present. If the file is too big to fit in four hex characters (&gt; 64 kB) then <code>????</code> will be used instead; for directories, <code>----</code> takes the place of the file size. As for reading file data, if the listing length exceeds <b>File/length*</b> then subsequent writes to <b>File/read*</b> will read more entries. Unlike file data, directory entries will be returned as atomic units that won't be broken across chunks, so <b>File/success*</b> will usually be lower than <b>File/length*</b> even when more data is available. When <b>File/success*</b> reads zero, the listing is complete.</p>
 
-<p>The directory listing for a single file or directory can be obtained when <b>stat*</b> is written, and will write the same format as above, including the newline, into the memory buffer. If <b>success*</b> reads zero, the file or directory doesn't exist or the region is too small to fit the line.</p>
+<p>The directory listing for a single file or directory can be obtained when <b>File/stat*</b> is written, and will write the same format as above, including the newline, into the memory buffer. If <b>File/success*</b> reads zero, the file or directory doesn't exist or the region is too small to fit the line.</p>
 
-<p>Writing files is performed by writing to <b>write*</b>. If <b>append</b> is set to <code>0x01</code>, then the data in the memory region will be written after the end of the file, if it is <code>0x00</code> (the default) it will replace the contents of the file. If the file doesn't previously exist then it will be created and <b>append</b> makes no difference. <b>success*</b> will be set to <b>length*</b> if the write was successful, otherwise it will read as zero. As with reading files and directories, subsequent writes to <b>write*</b> will write more chunks of data to the file.</p>
+<p>Writing files is performed by writing to <b>File/write*</b>. If <b>File/append</b> is set to <code>0x01</code>, then the data in the memory region will be written after the end of the file, if it is <code>0x00</code> (the default) it will replace the contents of the file. If the file doesn't previously exist then it will be created and <b>File/append</b> makes no difference. <b>File/success*</b> will be set to <b>File/length*</b> if the write was successful, otherwise it will read as zero. As with reading files and directories, subsequent writes to <b>File/write*</b> will write more chunks of data to the file.</p>
 
 <pre>
 @on-reset ( -> )
@@ -518,7 +530,7 @@ JMP2r
 @data "hello $1
 </pre>
 
-<p>Finally, to delete a file, write any value to the <b>delete</b> byte. Writing to <b>name*</b> closes the file/directory. The device may not access files outside of the working directory.</p>
+<p>Finally, to delete a file, write any value to the <b>File/delete</b> byte. Writing to <b>File/name*</b> closes the file/directory. The device may not access files outside of the working directory.</p>
 
 <ul>
 	<li><a href='https://git.sr.ht/~rabbits/uxn/tree/main/item/projects/examples/devices/file.tal' target='_blank'>File Example</a></li>
@@ -541,6 +553,15 @@ JMP2r
 </table>
 
 <p>The week, in the dotw port, begins on sunday.</p>
+
+<pre>
+@print-date-num ( -- )
+	.DateTime/year DEI2k print-dec
+	[ LIT "- ] .Console/write DEO
+	INC INC DEIk INC print-dec-pad
+	[ LIT "- ] .Console/write DEO
+	INC DEI !print-dec-pad
+</pre>
 
 <ul>
 	<li><a href='https://git.sr.ht/~rabbits/uxn/tree/main/item/projects/examples/devices/datetime.tal' target='_blank'>Datetime Example</a></li>
