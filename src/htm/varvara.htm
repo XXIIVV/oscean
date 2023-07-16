@@ -368,16 +368,39 @@ JMP2r
 
 <p>The controller <b>vector*</b> is evaluated when a button, is pressed or released, and when a key is pressed.</p>
 
-<p>The <b>button</b> port works similarly to a <a href='https://wiki.nesdev.com/w/index.php/Standard_controller' target='_blank'>NES controller</a>, where there the state of each one of the 8 buttons is stored as a bit in a single byte.</p>
-
-<p>The <b>key</b> port holds the character data that is pressed during the vector event.</p>
-
 <table border='1'>
 	<tr><td><code>0x01</code></td><td><code class='button'>A</code> <i>Ctrl</i></td><td><code>0x10</code></td><td><code class='button'>Up</code></td></tr>
 	<tr><td><code>0x02</code></td><td><code class='button'>B</code> <i>Alt</i></td><td><code>0x20</code></td><td><code class='button'>Down</code></td></tr>
 	<tr><td><code>0x04</code></td><td><code class='button'>Select</code> <i>Shift</i></td><td><code>0x40</code></td><td><code class='button'>Left</code></td></tr>
 	<tr><td><code>0x08</code></td><td><code class='button'>Start</code> <i>Home</i></td><td><code>0x80</code></td><td><code class='button'>Right</code></td></tr>
 </table>
+
+<p>The <b>button</b> port works similarly to a <a href='https://wiki.nesdev.com/w/index.php/Standard_controller' target='_blank'>NES controller</a>, where there the state of each one of the 8 buttons is stored as a bit in a single byte.</p>
+
+<pre>
+@on-reset ( -> )
+	;on-controller .Controller/vector DEO2
+	BRK
+
+@on-controller ( -> )
+	.Controller/button DEI
+	DUP #20 AND ?on-dpad-down
+	DUP #80 AND ?on-dpad-right
+	POP BRK
+
+@on-dpad-down ( button -> )
+@on-dpad-right ( button -> )
+</pre>
+
+<p>The <b>key</b> port holds the character data that is pressed during the vector event.</p>
+
+<pre>
+@on-controller ( -> )
+	.Controller/key DEI DUP ?on-key POP
+	BRK
+
+@on-key ( key -> )
+</pre>
 
 <p>Would the need for multi-player games arise, the P2, P3 and P4 ports, will host button-type byte values received from the other controllers.</p>
 
@@ -402,6 +425,22 @@ JMP2r
 </table>
 
 <p>The <b>mouse*</b> vector is evaluated when the mouse is moved and when a button is pressed or released.</p>
+
+<pre>
+@on-reset ( -> )
+	;on-mouse .Mouse/vector DEO2
+	BRK
+
+@on-mouse ( -> )
+	.Mouse/state DEI ?&down
+	BRK
+	&down ( -> )
+		.Mouse/x DEI2 print-dec
+		LIT ", .Console/write DEO
+		.Mouse/y DEI2 print-dec
+		#0a .Console/write DEO
+		BRK
+</pre>
 
 <p>The <b>state</b> port holds a byte in which each bit is a button state. The byte value of holding down the mouse1 button is <code>01</code>, and holding down mouse1+mouse3 button is <code>05</code>. The scroll values are signed shorts, normally <code>ffff</code> and <code>0001</code>, for -1 and +1.</p>
 
