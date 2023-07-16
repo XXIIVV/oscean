@@ -215,7 +215,7 @@ uxncli file.rom arg1 arg2
 <p>The screen <b>vector*</b> is evaluated 60 times per second. The screen device is capable of displaying 2-bit graphics, or <a href='https://en.wikipedia.org/wiki/Four_color_theorem' target='_blank'>four colors</a>, which are defined by the <a href='#system'>system</a> device. The screen is made of two independent layers, the foreground layer treats color0 as transparent.</p>
 
 <p>The <b>width*</b> and <b>height*</b> ports can be set to resize the screen for systems that supports it, but reading from these ports should ALWAYS return the actual sizes. Programs making use of the screen sizes to position graphics on the screen must be written in a way that will adapt to various screen sizes. </p>
-<p>The <b>pixel byte</b> defines the pixel or fill mode, the layer to draw on, optional horizontal and vertical flipping for the quadrant to fill, and the color to use. When the fill bit is active, the operation will fill a portion of the screen starting at the x,y position until the edges of the screen. The default quadrant is bottom-right, flipping the x bit will fill the buttom-left quadrant, and so on.</p>
+<p>The <b>pixel</b> port defines the pixel or fill mode, the layer to draw on, optional horizontal and vertical flipping for the quadrant to fill, and the color to use. When the fill bit is active, the operation will fill a portion of the screen starting at the x,y position until the edges of the screen. The default quadrant is bottom-right, flipping the x bit will fill the buttom-left quadrant, and so on.</p>
 
 <pre>
            M L Y X * * C1 C0
@@ -225,7 +225,7 @@ Flip Y --------+ |
 Flip X ---------+
 </pre>
 
-<p>The <b>sprite byte</b> defines the 1-bit or 2-bit mode, the layer to draw on, optional horizontal and vertical flipping, and the colors to use. The screen can draw 8x8 sprites by first writing an <code>addr*</code> which points to either <a href='icn_format.html'>1-bit</a> or <a href='chr_format.html'>2-bit</a> sprite data in memory. Sprite data is stored as 8 bytes for a 1-bit sprite, and 16 bytes for a 2-bits sprite.</p> 
+<p>The <b>sprite</b> port defines the 1-bit or 2-bit mode, the layer to draw on, optional horizontal and vertical flipping, and the colors to use. The screen can draw 8x8 sprites by first writing an <code>addr*</code> which points to either <a href='icn_format.html'>1-bit</a> or <a href='chr_format.html'>2-bit</a> sprite data in memory. Sprite data is stored as 8 bytes for a 1-bit sprite, and 16 bytes for a 2-bits sprite.</p> 
 
 <pre>
            M L Y X B3 B2 B1 B0
@@ -262,7 +262,7 @@ Flip X ----------+ +------------- Blending bit 3
 	</tr>
 </table>
 
-<p>The <b>blending nibble</b> defines which color is drawn for each pixel of a sprite. The following table presents all possible blendings, assuming a sprite has a background of value 0 and three concentric circles of values 1, 2, and 3 (counting from the outside). For 1-bit sprites, only values 0 and 1 are applicable.</p>
+<p>The blending nibble, of the color and sprite ports, defines which color is drawn for each pixel of a sprite. The following table presents all possible blendings, assuming a sprite has a background of value 0 and three concentric circles of values 1, 2, and 3 (counting from the outside). For 1-bit sprites, only values 0 and 1 are applicable.</p>
 
 <pre>
 c = !ch ? (color % 5 ? color >> 2 : 0) : color % 4 + ch == 1 ? 0 : (ch - 2 + (color & 3)) % 3 + 1;
@@ -276,7 +276,7 @@ blending[4][16] = {
 
 <!-- <img src='../media/generic/varvara.blending.png' /> -->
 
-<p>The <b>auto byte</b> automates the incrementation of the position and sprite address whenever a drawing command is sent, so the program does not need to manually move to the next sprite, or the next position. Pixel drawing will increment the positions by 1, and sprite drawing by either 8 or 16 depending on the mode.</p>
+<p>The <b>auto</b> port automates the incrementation of the position and sprite address whenever a drawing command is sent, so the program does not need to manually move to the next sprite, or the next position. Pixel drawing will increment the positions by 1, and sprite drawing by either 8 or 16 depending on the mode.</p>
 
 <pre>
                 L3 L2 L1 L0 * A Y X
@@ -370,7 +370,11 @@ JMP2r
 	<tr><th>87</th><td class='empty'><i>P4</i></td><th>8f</th><td class='empty'>--</td></tr>
 </table>
 
-<p>The button byte works similarly to a <a href='https://wiki.nesdev.com/w/index.php/Standard_controller' target='_blank'>NES controller</a>, where there the state of each one of the 8 buttons is stored as a bit in a single byte. The keys byte contains the ascii character that is currently pressed. The controller vector triggers when a button, is pressed or released, and when a key is pressed.</p>
+<p>The controller <b>vector*</b> is evaluated when a button, is pressed or released, and when a key is pressed.</p>
+
+<p>The <b>button</b> port works similarly to a <a href='https://wiki.nesdev.com/w/index.php/Standard_controller' target='_blank'>NES controller</a>, where there the state of each one of the 8 buttons is stored as a bit in a single byte.</p>
+
+<p>The <b>key</b> port holds the character data that is pressed during the vector event.</p>
 
 <table border='1'>
 	<tr><td><code>0x01</code></td><td><code class='button'>A</code> <i>Ctrl</i></td><td><code>0x10</code></td><td><code class='button'>Up</code></td></tr>
@@ -380,6 +384,10 @@ JMP2r
 </table>
 
 <p>Would the need for multi-player games arise, the P2, P3 and P4 ports, will host button-type byte values received from the other controllers.</p>
+
+<ul>
+	<li><a href='https://git.sr.ht/~rabbits/uxn/tree/main/item/projects/examples/devices/controller.tal' target='_blank'>Controller Example</a></li>
+</ul>
 
 <h3 id='mouse'>Mouse Device <kbd>mask 0x0000</kbd></h3>
 
@@ -397,7 +405,13 @@ JMP2r
 	<tr><th>97</th><td class='empty'>--</td><th>9f</th><td class='empty'>--</td></tr>
 </table>
 
-<p>The mouse device's state port holds a byte in which each bit is a button state. The byte value of holding down the mouse1 button is <code>01</code>, and holding down mouse1+mouse3 button is <code>05</code>. The scroll values are signed shorts, normally <code>ffff</code> and <code>0001</code>, for -1 and +1. The mouse vector triggers when the mouse is moved and when a button is pressed or released.</p>
+<p>The <b>mouse*</b> vector is evaluated when the mouse is moved and when a button is pressed or released.</p>
+
+<p>The <b>state</b> port holds a byte in which each bit is a button state. The byte value of holding down the mouse1 button is <code>01</code>, and holding down mouse1+mouse3 button is <code>05</code>. The scroll values are signed shorts, normally <code>ffff</code> and <code>0001</code>, for -1 and +1.</p>
+
+<ul>
+	<li><a href='https://git.sr.ht/~rabbits/uxn/tree/main/item/projects/examples/devices/mouse.tal' target='_blank'>Mouse Example</a></li>
+</ul>
 
 <h3 id='file'>File Device <kbd>mask 0xa260</kbd></h3>
 
