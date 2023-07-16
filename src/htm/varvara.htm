@@ -95,7 +95,7 @@
 	;meta .System/metadata DEO2
 	BRK
 
-@meta 00 &body
+@meta 00
 	"Nasu 0a
 	"A 20 "Sprite 20 "Editor 0a
 	"By 20 "Hundred 20 "Rabbits 0a
@@ -103,12 +103,12 @@
 </pre>
 
 <table border='1' style='float:right;margin-left:15px'>
-	<tr><th>0</th><th>1</th><th>2</th><th>3</th></tr>
+	<tr><th>color0</th><th>color1</th><th>color2</th><th>color3</th></tr>
 	<tr>
-		<td style='background:#fff'>#fff</td>
-		<td style='background:#000;color:white'>#000</td>
-		<td style='background:#7ec'>#7ec</td>
-		<td style='background:#f00'>#f00</td>
+		<td style='background:#fff'><code>#fff</code></td>
+		<td style='background:#000'><code style='color:white'>#000</code></td>
+		<td style='background:#7ec'><code>#7ec</code></td>
+		<td style='background:#f00'><code>#f00</code></td>
 	</tr>
 </table>
 
@@ -225,9 +225,11 @@ uxncli file.rom arg1 arg2
 
 <pre>
 @on-reset ( -> )
+	set-theme
 	.Screen/width DEI2 #01 SFT2 .Screen/x DEO2
 	.Screen/height DEI2 #01 SFT2 .Screen/y DEO2
-	( centered drawing )
+	( Fill bottom-right foreground layer with color3 )
+	#c3 .Screen/pixel DEO
 	BRK
 </pre>
 
@@ -310,9 +312,9 @@ Length bit 0 -------------+
 <p>The high nibble of the auto byte is the number of sprites to draw at once minus one. Pixel drawing will increment the positions by 1, sprite drawing by 8, and the address port by either 8 or 16 depending on the mode.</p>
 
 <pre>
-@paint-sprite
-	#0020 .Screen/x DEO2 <span style='float:right; color:#888'>( set x position )</span>
-	#0030 .Screen/y DEO2 <span style='float:right; color:#888'>( set y position )</span>
+@paint-sprite ( x* y* -- )
+	.Screen/y DEO2 <span style='float:right; color:#888'>( set y position )</span>
+	.Screen/x DEO2 <span style='float:right; color:#888'>( set x position )</span> 
 	#16 .Screen/auto DEO <span style='float:right; color:#888'>( set length 2 with auto y and addr )</span>
 	;23x-icns .Screen/addr DEO2 <span style='float:right; color:#888'>( set addr )</span>
 	#01 .Screen/sprite DEOk DEOk DEO <span style='float:right; color:#888'>( draw 3 rows of 1-bit sprites )</span>
@@ -347,9 +349,9 @@ Length bit 0 -------------+
 	<tr><th>37</th><td class='empty'>--</td><th class='bg1'>3f</th><td>pitch</td></tr>
 </table>
 
-<p>When <code>pitch</code> is written to any of the audio devices, it starts playing an audio sample from Uxn's memory, pointed to by <b>addr*</b> and <code>length*</code>. It loops the sample (unless told not to) until it reaches the end of the ADSR envelope defined by <code>adsr*</code>. The audio vector triggers when a note ends.</p>
+<p>The <b>Audio/vector*</b> is evaluated when a note ends. All samples used by the audio devices are unsigned 8-bit mono.</p>
 
-<p>Several fields contain more than one component:</p>
+<p>When a byte is written to the <b>Audio/pitch</b> port, any sample that is currently playing will be replaced with the sample defined by all the values set in the device, it starts playing an audio sample from memory located at <b>Audio/addr*</b> with length of <b>Audio/length*</b>. It loops the sample until it reaches the end of the envelope defined by <b>Audio/adsr*</b>. Several fields contain more than one component:</p>
 
 <table border='1'>
 	<tr><th></th><th colspan='4'>ADSR*</th><th colspan='2'>Pitch</th><th colspan='2'>Volume</th></tr>
@@ -357,25 +359,28 @@ Length bit 0 -------------+
 	<tr><th>Size (bits)</th><td>4</td><td>4</td><td>4</td><td>4</td><td>1</td><td>7</td><td>4</td><td>4</td></tr>
 </table>
 
-<p>Each of the ADSR components is measured in 15ths of a second, so writing <code>#ffff</code> to <code>adsr*</code> will play a note that lasts for exactly four seconds, with each section of the envelope lasting one second. If <code>adsr*</code> is <code>#0000</code> then no envelope will be applied: this is most useful for longer samples that are set to play once by setting the most significant bit of <code>pitch</code> to 1.</p>
+<p>Each of the ADSR components is measured in 15ths of a second, so writing <code>#ffff</code> to <b>Audio/adsr*</b> will play a note that lasts for exactly four seconds, with each section of the envelope lasting one second. If <b>Audio/adsr*</b> is <code>#0000</code> then no envelope will be applied: this is most useful for longer samples that are set to play once by setting the most significant bit of <b>Audio/pitch</b> to 1.</p>
 
 <p>The envelope varies the amplitude as follows: starting at 0%, rising to 100% over the Attack section, falling to 50% over the Decay section, remaining at 50% throughout the Sustain section and finally falling to 0% over the Release section. The envelope is linearly interpolated throughout each section.</p>
 
-<p>The two <code>volume</code> components set how loudly the next sample will play. <code>#ff</code> sets maximum volume for both speakers.</p>
+<pre>
+@on-reset ( -> )
+	#0248 .Audio/adsr DEO2
+	#88 .Audio/volume DEO
+	;note-pcm .Audio/addr DEO2
+	#0010 .Audio/length DEO2
+	#30 .Audio/pitch DEO
+	BRK
 
-<p>When <code>pitch</code> is written, any sample that is currently playing will be replaced with the sample defined by all the values set in the device. While the sample is playing, the <code>output</code> byte can be read to find the loudness of the envelope at that moment.</p>
+@square-pcm
+	ff ff ff ff ff ff ff ff 00 00 00 00 00 00 00 00
+</pre>
 
-<h4>Audio Sample Format</h4>
+<p>The two <b>Audio/volume</b> components balance how loudly the next sample will play in each ear. <code>#ff</code> sets maximum volume for both speakers. While the sample is playing, the <b>Audio/output</b> byte can be read to find the loudness of the envelope at that moment.</p>
 
-<p>All samples used by the audio devices are mono and unsigned 8-bit (also known as <b>u8</b>), so the space taken up by samples is minimized. The sample rate of the samples depends on <b>length*</b><b>length*</b>='1'>
-	<tr><th><code>length*</code></th><th>Sample type</th><th>Sample rate</th></tr>
-	<tr><td>&gt; 256</td><td>Middle-C pitched sample</td><td>44,100 Hz</td></tr>
-	<tr><td>2–256</td><td>Single wavelength</td><td>Variable</td></tr>
-</table>
-
-<p>Long samples are assumed to be already pitched to Middle C and will loop (unless No Loop is 1) until the end of the envelope. To play the sample at the same rate as it was recorded, write the Middle C MIDI note number, <code>#3c</code>, to <code>pitch</code>. To play at double or half speed, for example, write an octave higher or lower to <code>pitch</code>.</p>
-
-<p>The minimum sample size that can be pitched at 44.1 kHz to Middle C with reasonable accuracy is 337 bytes long, which represents two cycles of the 261 Hz wave. The single wavelength mode in Uxn allows much smaller samples to be used, even down to only two bytes for a square wave. In this mode the length of the entire sample is taken to be one cycle of the Middle C note, so the pitch is not heard to vary even if <b>length*</b> were to change between sample plays.</p>
+<ul>
+	<li><a href='https://git.sr.ht/~rabbits/uxn/tree/main/item/projects/examples/devices/audio.tal' target='_blank'>Audio Example</a></li>
+</ul>
 
 <h3 id='controller'>Controller Device <kbd>mask 0x0000</kbd></h3>
 
