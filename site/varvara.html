@@ -124,10 +124,18 @@ uxncli file.rom arg1 arg2
                 2   32   4
 </pre>
 
-<p>The <b>write</b> port is used to send data through the console, For example, a program sending the line of text "hello", will trigger the console's vector 6 times; one for each character and a line ending character.</p>
+<p>The <b>write</b> port is used to send data through the console. For example, a program sending the text "Hello", will trigger the console's port 5 times; once for each character.</p>
 
 <pre>
-LIT "H .Console/write DEO <i>( to send the letter "H" )</i>
+@on-reset ( -> )
+	;text
+	&while
+		LDAk .Console/write DEO
+		INC2 LDAk ?&while
+	POP2
+	BRK
+
+@text "Hello $1
 </pre>
 
 <h3 id='screen'>Screen Device <kbd>mask 0xc028</kbd></h3>
