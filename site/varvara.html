@@ -46,6 +46,8 @@
 	<tr><th>07</th><th class='bg1'>0f</th><td>state</td></tr>
 </table>
 
+<pre>|00 @System &catch $2 &expansion $2 &pad $2 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1</pre>
+
 <p>The <b>System/catch*</b> is evaluated when uxn errors. If the vector is unset, the emulator handles the error and prints an error message, if an address in found in the <i>catch</i> port, the vector is evaluated. In that scenario, stacks are emptied, a short of the address where the error occured, followed by a byte of the instruction that errored, and a byte for the error code are put on the working stack.</p>
 
 <pre>
@@ -151,6 +153,8 @@
 	<tr><th>17</th><td>type</td><th>1f</th><td class='empty'>--</td></tr>
 </table>
 
+<pre>|10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1</pre>
+
 <p>The <b>Console/vector*</b> is evaluated when a byte is received. The <b>Console/type</b> port holds one of 5 known types: no-queue(0), stdin(1), argument(2), argument-spacer(3), argument-end(4). During the reset vector, a program should be able to query the type port and get a null byte when there is no arguments to be expected.</p>
 
 <pre>
@@ -192,9 +196,9 @@ uxncli file.rom arg1 arg2
 	<li><a href='https://git.sr.ht/~rabbits/uxn/tree/main/item/projects/examples/devices/console.tal' target='_blank'>Console/type Example</a></li>
 </ul>
 
-<h3 id='screen'>Screen Device <kbd>mask 0xc028</kbd></h3>
+<img src='../media/generic/uxn.ppu.jpg' width='240' />
 
-<img src='../media/generic/uxn.ppu.jpg' style='float:right' width='240' />
+<h3 id='screen'>Screen Device <kbd>mask 0xc028</kbd></h3>
 
 <table border='1'>
 	<tr>
@@ -209,6 +213,8 @@ uxncli file.rom arg1 arg2
 	<tr><th>26</th><td>auto</td><th class='bg1'>2e</th><td>pixel</td></tr>
 	<tr><th>27</th><td class='empty'>--</td><th class='bg1'>2f</th><td>sprite</td></tr>
 </table>
+
+<pre>|20 @Screen &vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1</pre>
 
 <p>The <b>Screen/vector*</b> is evaluated 60 times per second. The screen device is capable of displaying graphics in <a href='https://en.wikipedia.org/wiki/Four_color_theorem' target='_blank'>any four colors</a>, which are defined by the <a href='#system'>system</a> device. The screen is made of two independent layers, the foreground layer treats color0 as transparent.</p>
 
@@ -335,9 +341,9 @@ Length bit 0 -------------+
 	<li><a href='https://git.sr.ht/~rabbits/uxn/tree/main/item/projects/examples/devices/screen.tal' target='_blank'>Screen Example</a></li>
 </ul>
 
-<h3 id='audio'>Audio Device <kbd>mask 0x8014</kbd></h3>
+<img src='../media/generic/uxn.apu.jpg' width='240' />
 
-<img src='../media/generic/uxn.apu.jpg' style='float:right' width='240' />
+<h3 id='audio'>Audio Device <kbd>mask 0x8014</kbd></h3>
 
 <table border='1'>
 	<tr>
@@ -352,6 +358,14 @@ Length bit 0 -------------+
 	<tr><th>36</th><td class='empty'>--</td><th>3e</th><td>volume</td></tr>
 	<tr><th>37</th><td class='empty'>--</td><th class='bg1'>3f</th><td>pitch</td></tr>
 </table>
+
+<pre>
+|30 @Audio0 &vector $2 &position $2 &output $1 &pad $3 &adsr $2 &length $2 &addr $2 &volume $1 &pitch $1
+|40 @Audio1 &vector $2 &position $2 &output $1 &pad $3 &adsr $2 &length $2 &addr $2 &volume $1 &pitch $1
+|50 @Audio2 &vector $2 &position $2 &output $1 &pad $3 &adsr $2 &length $2 &addr $2 &volume $1 &pitch $1
+|60 @Audio3 &vector $2 &position $2 &output $1 &pad $3 &adsr $2 &length $2 &addr $2 &volume $1 &pitch $1
+</pre>
+
 
 <p>The <b>Audio/vector*</b> is evaluated when a note ends. All samples used by the audio devices are unsigned 8-bit mono.</p>
 
@@ -402,6 +416,8 @@ Length bit 0 -------------+
 	<tr><th>87</th><td class='empty'><i>P4</i></td><th>8f</th><td class='empty'>--</td></tr>
 </table>
 
+<pre>|80 @Controller &vector $2 &button $1 &key $1</pre>
+
 <p>The <b>Controller/vector*</b> is evaluated when a button, is pressed or released, and when a key is pressed.</p>
 
 <table border='1'>
@@ -444,6 +460,8 @@ Length bit 0 -------------+
 	<li><a href='https://git.sr.ht/~rabbits/uxn/tree/main/item/projects/examples/devices/controller.tal' target='_blank'>Controller Example</a></li>
 </ul>
 
+<img src='../media/generic/uxn.apu1.jpg' width='240' />
+
 <h3 id='mouse'>Mouse Device <kbd>mask 0x0000</kbd></h3>
 
 <table border='1'>
@@ -459,6 +477,8 @@ Length bit 0 -------------+
 	<tr><th>96</th><td>state</td><th>9e</th><td class='empty'>--</td></tr>
 	<tr><th>97</th><td class='empty'>--</td><th>9f</th><td class='empty'>--</td></tr>
 </table>
+
+<pre>|90 @Mouse &vector $2 &x $2 &y $2 &state $1 &chord $1 &pad $4 &scrolly &scrolly-hb $1 &scrolly-lb $1</pre>
 
 <p>The <b>Mouse/vector*</b> is evaluated when the mouse is moved and when a button is pressed or released.</p>
 
@@ -499,6 +519,11 @@ Length bit 0 -------------+
 	<tr><th class='bg1'>a6</th><td>delete</td><th>ae</th><td rowspan="2">write*</td></tr>
 	<tr><th>a7</th><td>append</td><th class='bg1'>af</th></tr>
 </table>
+
+<pre>
+|a0 @File1 &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|b0 @File2 &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+</pre>
 
 <p>The <b>File/vector*</b> is normally unused, but is reserved for systems where a portable data format(disk, etc..) can be inserted. There is no specs for disk handling at this time.</p>
 
@@ -560,6 +585,8 @@ Length bit 0 -------------+
 	<tr><th class='bg1'>c6</th><td>second</td><th>ce</th><td class='empty'>--</td></tr>
 	<tr><th class='bg1'>c7</th><td>dotw</td><th>cf</th><td class='empty'>--</td></tr>
 </table>
+
+<pre>|c0 @DateTime &year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1</pre>
 
 <p>The week, in the dotw port, begins on sunday.</p>
 
