@@ -234,31 +234,24 @@ uxncli file.rom arg1 arg2
 	set-theme
 	.Screen/width DEI2 #01 SFT2 .Screen/x DEO2
 	.Screen/height DEI2 #01 SFT2 .Screen/y DEO2
-	( Fill bottom-right foreground layer with color3 )
-	#c3 .Screen/pixel DEO
+	#01 .Screen/pixel DEO <i>( paint a black pixel, on background )</i>
+	#03 .Screen/pixel DEO <i>( paint a red pixel, on foreground )</i>
+	#93 .Screen/pixel DEO <i>( fill a red rectangle bottom-left, on background )</i>
+	#e2 .Screen/pixel DEO <i>( fill a cyan rectangle top-right, on foreground )</i>
 	BRK
 </pre>
 
-<p>The <b>Screen/pixel</b> port defines the pixel or fill mode, the layer to draw on, optional horizontal/vertical flipping for the quadrant to fill, and which of the <a href='#system'>four colors</a> to use.</p>
-
-<pre>
-#01 .Screen/pixel DEO <i>( paint a black pixel, on background )</i>
-#03 .Screen/pixel DEO <i>( paint a red pixel, on foreground )</i>
-#93 .Screen/pixel DEO <i>( fill a red rectangle bottom-left, on background )</i>
-#e2 .Screen/pixel DEO <i>( fill a cyan rectangle top-right, on foreground )</i>
-</pre>
-
-<p>When the fill bit is active, the operation will fill a portion of the screen starting at the x,y position until the edges of the screen. The default quadrant is bottom-right, flipping the x bit will fill the buttom-left quadrant, and so on.</p>
+<p>The <b>Screen/pixel</b> port defines the pixel or fill mode, layer to draw on, optional horizontal/vertical flipping of the quadrant to fill, and which of the <a href='#system'>four colors</a> to use. When the fill bit is active, the operation will fill a portion of the screen starting at the x,y position until the edges of the screen. The default quadrant is bottom-right, flipping the x bit will fill the buttom-left quadrant, and so on.</p>
 
 <pre>
            M L Y X B3 B2 B1 B0
-  Mode ----+ | | | |  |  |  +---- Blending bit 0
- Layer ------+ | | |  |  +------- Blending bit 1
-Flip Y --------+ | |  +---------- Blending bit 2
-Flip X ----------+ +------------- Blending bit 3
+  Mode ----+ | | | |  |  |  +---- Color bit 0
+ Layer ------+ | | |  |  +------- Color bit 1
+Flip Y --------+ | |  +---------- Color bit 2
+Flip X ----------+ +------------- Color bit 3
 </pre>
 
-<p>The screen can draw 8x8 sprites located at the location specified in the <b>Screen/addr*</b> port as either <a href='icn_format.html'>1-bit</a>(mode=0) or <a href='chr_format.html'>2-bit</a>(mode=1) graphics. The <b>Screen/sprite</b> port defines the mode, layer to draw on, optional horizontal and vertical flipping, and the colors to use.</p>
+<p>The <b>Screen/sprite</b> port defines the <a href='icn_format.html'>1-bit</a> or <a href='chr_format.html'>2-bit</a> mode, layer to draw on, optional horizontal and vertical flipping of the sprite, and the colors to use. The 8x8 sprite data to draw is specified by writing its location in memory to the <b>Screen/addr*</b> port.</p>
 
 <pre>
 @on-reset ( -> )
@@ -300,7 +293,7 @@ Flip X ----------+ +------------- Blending bit 3
 	</tr>
 </table>
 
-<p>The blending nibble, of the color and sprite ports, defines which color is drawn for each pixel of a sprite. The following table presents all possible blendings, assuming a sprite has a background of value 0 and three concentric circles of values 1, 2, and 3 (counting from the outside). For 1-bit sprites, only values 0 and 1 are applicable.</p>
+<p>The color nibble defines which color is drawn for each pixel of a sprite. The following table presents all possible combinations, assuming a sprite has a background of value 0 and three concentric circles of values 1, 2, and 3 (counting from the outside). For 1-bit sprites, only values 0 and 1 are applicable.</p>
 
 <pre>
 c = !ch ? (color % 5 ? color >> 2 : 0) : color % 4 + ch == 1 ? 0 : (ch - 2 + (color & 3)) % 3 + 1;
@@ -324,7 +317,13 @@ Length bit 1 ----------+  |   +-------- Auto Addr
 Length bit 0 -------------+
 </pre>
 
-<p>The high nibble of the auto byte is the number of sprites to draw at once minus one. Pixel drawing will increment the positions by 1, sprite drawing by 8, and the address port by either 8 or 16 depending on the mode.</p>
+<p>The length nibble controls the number of extra sprites that will be
+drawn in addition to the first, each time the sprite port is written to.
+When set to 0, only a single sprite will be drawn. As many as 16 sprites
+can be drawn at once with a value of 15.</p>
+
+<p>The auto-x and auto-y bits control the increment of the x and y ports respectively, as well as the layout of the extra sprites drawn when the length nibble is not null. The extra sprites are drawn as columns moving rightward for auto-x, and rows moving downward for auto-y. If the auto-addr bit is set, the address port will be incremented for
+each sprite drawn by increments of 8 for 1-bit, and by increments of 16 for 2-bit.</p>
 
 <pre>
 @paint-sprite ( x* y* -- )
