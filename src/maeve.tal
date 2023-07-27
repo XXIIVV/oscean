@@ -47,7 +47,7 @@
 @<parse-lexicon> ( -- )
 	;lexicon
 	( load ) DUP2 #2000 ;dict/lexicon-path load-file
-	( swap ) DUP2 #0a00 cswp
+	( swap ) DUP2 #0a00 <cswp>
 	( range ) .File/success DEI2 ADD2k NIP2 SWP2
 	&l ( -- )
 		<parse-lexicon-line>
@@ -68,10 +68,10 @@
 	!scap/
 
 @<parse-links> ( src* -- )
-	DUP2 ;&term STH2k scpy-line
-	( ) STH2kr [ LIT2 20 "_ ] cswp
-	( ) ;dict/htm-ext STH2r scap/ scpy-line
-	( res ) ;&htm-path ;workarea #8000 ROT2 load-file ,&src STR2
+	DUP2 ;&term STH2k <scpy-line>
+	STH2kr [ LIT2 20 "_ ] <cswp>
+	;dict/htm-ext STH2r scap/ <scpy-line>
+	( res ) ;workarea #8000 ;&htm-path load-file ,&src STR2
 	;workarea .File/success DEI2 ADD2k NIP2 SWP2
 	&l ( -- )
 		;dict/href-attr OVR2 sseg #00 EQU ?&>no-link
@@ -85,8 +85,8 @@
 	( hash ) LDAk LIT "# EQU ?&end
 	( rel ) LDAk LIT ". EQU ?&end
 	( | find broken links )
-	DUP2 ;&buf scpy-line
-	( cswp ) ;&buf [ LIT2 "_ 20 ] cswp
+	DUP2 ;&buf <scpy-line>
+	;&buf [ LIT2 "_ 20 ] <cswp>
 	( ) ;&buf find-term INC2 ORA ?&exists
 	;dict/redlink <print-str>/
 	;&buf <print-str>/
@@ -95,7 +95,8 @@
 	#010f DEO
 	BRK
 	&exists ( src* link* -- )
-		DUP2 ;&term scpy-line ;&term [ LIT2 20 "_ ] cswp
+		DUP2 ;&term <scpy-line>
+		;&term [ LIT2 20 "_ ] <cswp>
 		( res ) ;&map-path .File2/name DEO2
 		OVR2 <str>
 		#0a <char>
@@ -129,7 +130,7 @@
 	POP2 POP2 JMP2r
 
 @<parse-diary-page> ( to* from* -- )
-	DUP2 #0a00 cswp
+	DUP2 #0a00 <cswp>
 	&l ( -- )
 		<parse-diary-line>
 		INC2 GTH2k ?&l
@@ -137,7 +138,8 @@
 
 @<parse-diary-line> ( line* -- next* )
 	DUP2 parse-log
-	( split ) DUP2 #0900 cswp DUP2 set-diary
+	( split ) DUP2 #0900 <cswp>
+	DUP2 set-diary
 	( event ) DUP2 #0005 ADD2 LDA LIT "+ NEQ ?&>no-event
 		DUP2 parse-event &>no-event
 	;dict/no-photo OVR2 #0006 ADD2 scmp ?&>no-photo
@@ -145,8 +147,8 @@
 	( eol ) scap/ INC2 scap/ INC2 !scap/
 
 @parse-log ( event* -- )
-	DUP2 #000a ADD2 ;&term scpy-line
-	( ) ;&term [ LIT2 20 "_ ] cswp
+	DUP2 #000a ADD2 ;&term <scpy-line>
+	;&term [ LIT2 20 "_ ] <cswp>
 	( res ) ;&log-path .File2/name DEO2
 	<str>
 	#0a !<char>
@@ -287,7 +289,7 @@
 (
 @|stdlib )
 
-@cswp ( str* a b -- )
+@<cswp> ( str* a b -- )
 	,&b STR
 	,&a STR
 	&w ( -- )
@@ -311,7 +313,7 @@
 	&e ( a* -- f )
 		LDA LDAr STHr EQU JMP2r
 
-@scpy-line ( src* dst* -- )
+@<scpy-line> ( src* dst* -- )
 	STH2
 	&w ( -- )
 		LDAk STH2kr STA
