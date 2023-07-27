@@ -36,7 +36,7 @@
 (
 @|lexicon )
 
-@load-file ( addr* length* path* -- )
+@<load-file> ( addr* length* path* -- )
 	STH2k .File/name DEO2
 	DUP2 .File/length DEO2
 	SWP2 .File/read DEO2
@@ -46,7 +46,7 @@
 
 @<parse-lexicon> ( -- )
 	;lexicon
-	( load ) DUP2 #2000 ;dict/lexicon-path load-file
+	( load ) DUP2 #2000 ;dict/lexicon-path <load-file>
 	( swap ) DUP2 #0a00 <cswp>
 	( range ) .File/success DEI2 ADD2k NIP2 SWP2
 	&l ( -- )
@@ -71,7 +71,8 @@
 	DUP2 ;&term STH2k <scpy-line>
 	STH2kr [ LIT2 20 "_ ] <cswp>
 	;dict/htm-ext STH2r scap/ <scpy-line>
-	( res ) ;workarea #8000 ;&htm-path load-file ,&src STR2
+	( res ) get-workarea-length ;&htm-path <load-file>
+	,&src STR2
 	;workarea .File/success DEI2 ADD2k NIP2 SWP2
 	&l ( -- )
 		;dict/href-attr OVR2 sseg #00 EQU ?&>no-link
@@ -122,7 +123,8 @@
 	#4000 .File/length DEO2
 	;diary-path-pages/end ;diary-path-pages
 	&l ( -- )
-		LDA2k ;workarea #4000 ROT2 load-file #0000
+		LDA2k get-workarea-length ROT2 <load-file>
+		#0000
 		( to* from* ) ;workarea STH2k .File/success DEI2 ADD2
 		( cap ) STA2k
 		NIP2 STH2r <parse-diary-page>
@@ -196,6 +198,9 @@
 	;dict/figure-tag </w>
 	,&len LDR2 INC2 ,&len STR2
 	#0a !<char>
+
+@get-workarea-length ( -- buf* length* )
+	;workarea #0000 OVR2 SUB2 JMP2r
 
 (
 @|validate )
