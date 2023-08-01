@@ -39,7 +39,7 @@
 	DUP2 <load-incoming>
 	( | verify orphans )
 	.File/success DEI2 ORA ?&>no-orphan
-		DUP2 ;err/orphan <print-warning> &>no-orphan
+		( DUP2 ;err/orphan <print-warning> ) &>no-orphan
 	( | fill name )
 	DUP2 ;term/name <scpy>
 	DUP2 find-parent ;term/parent <scpy>
@@ -251,8 +251,11 @@
 @build-page-incoming ( -- )
 	;incoming LDAk ?&>exists
 		POP2 JMP2r &>exists
-	;dict/p-tag <write-open>
+	;dict/incoming-txt ;dict/p-tag <write-open-class>
+	;dict/b-tag <write-open>
 	;dict/incoming-txt <write-str>
+	;dict/b-tag <write-close>
+	#20 <char>
 	&w ( -- )
 		DUP2 <write-link>
 		#20 <char>
@@ -338,6 +341,12 @@
 	[ LIT2 "=" ] <char2>
 	<write-str>
 	[ LIT "" ] !<char>
+
+@<write-open-class> ( tag* class* -- )
+	LIT "< <char>
+	<write-str>
+	;dict/class-attr <write-attr>
+	LIT "> !<char>
 
 @<write-open> ( tag* -- )
 	LIT "< <char>
@@ -495,6 +504,7 @@
 	&nav-tag "nav $1
 	&main-tag "main $1
 	&p-tag "p $1
+	&b-tag "b $1
 	&ul-tag "ul $1
 	&li-tag "li $1
 	&a-tag "a $1
@@ -505,7 +515,7 @@
 	&src-attr "src $1
 	&alt-attr "alt $1
 	&no-picture "000 $1
-	&incoming-txt "<b>Incoming</b>: 20 $1
+	&incoming-txt "incoming $1
 
 @err &source "-- 20 "Source: 20 $1
 	&orphan "-- 20 "Orphan: 20 $1
