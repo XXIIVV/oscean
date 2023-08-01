@@ -2,13 +2,16 @@
 
 <p>The ability to treat instructions as data makes programs that write programs possible. Self-modifying code(SMC) is generally considered harmful, and is therefore not permitted in most modern computer architectures today.</p>
 
-<p><b>Action at a distance</b> is an anti-pattern in computer science in which behavior in one part of a program modifies operations in another part of the program. This anti-pattern should be avoided whenever possible, but if wielded carefully SMC can become a practical ally when writing Uxntal.</p>
-
 <h3>Caching</h3>
 
-<p>In most cases, SMC is used to cache data that would otherwise be difficult or slow to retrieve &mdash; Such as when writing a responsive application that would make frequent requests to a device, or when data is needed by an operation with a deep stack.</p>
+<p>In most cases, SMC is used to cache data that would otherwise be difficult or
+slow to retrieve, like when writing a responsive application that would make
+frequent requests to a device.</p>
 
-<p>The following example, where we are comparing the state of the mouse device between events, could read/write from a cell in the zero-page, but this both allows to reserve a byte from within the context where it is needed, and is faster by being inlined.</p>
+<p>In the following example, we are comparing the state of the mouse device
+between vector events, we could store the previous state in a zero-page
+variable, but keeping the value locally allows to reserve a byte from within
+the context where it is needed, and is faster by being inlined.</p>
 
 <pre>
 @on-mouse ( -> )
@@ -22,7 +25,11 @@ BRK</pre>
 
 <h3>Callbacks</h3>
 
-<p>To chain operations across vectors, one might try passing the next operation pointer on the stack, but since we cannot be certain which vector will happen next, it is unsafe to rely on a specific stack state between events. A safer way is to write the next operation directly in memory where it will be needed.</p>
+<p>To chain operations across vectors, one might try passing the next operation
+pointer on the stack, but since we cannot be certain which vector will happen
+next, we can't expect a specific stack state between events. A safer
+way is to write the next operation directly in memory where it will be
+needed, ideally preserving the label scope.</p>
 
 <pre>
 @set-animation ( callback* -- )
@@ -48,18 +55,18 @@ BRK
 BRK
 </pre>
 
-<h3>Stack Shaving</h3>
+<h3>Depth Punching</h3>
 
 <p>Routines should try and avoid accessing stack values that are further than 2 or 3 shorts deep on either stacks, but sometimes it cannot be helped. In the following example, we want to run a function over each value of a 2d array. Instead of juggling the stacks on each iteration to bring out the function pointer, it is often more efficient to write the function pointer across the nested loop.</p>
 
 <pre>
-@routine ( fn* -- )
+@each-pixel ( fn* -- )
 
 	,&fn STR2
 	#1000
 	&h
 		STHk
-		#1000
+		#2000
 		&x
 			DUP STHkr [ LIT2 &fn $2 ] JSR2
 			INC GTHk ?&x
@@ -80,4 +87,8 @@ JMP2r
 <p>The opcode can then be modified and utilized when needed by using the following pattern, which effectively pulls the opcode from the stack and writes it at the next address in memory:</p>
 
 <pre>#06 #07 LIT ADD <i>( unquote )</i> #00 STR $1</pre>
+
+<article>
+	<p><b>Action at a distance</b> is an anti-pattern in computer science in which behavior in one part of a program modifies operations in another part of the program. This anti-pattern should be avoided whenever possible, but if wielded carefully SMC can become a practical ally when writing Uxntal.</p>
+</article>
 
