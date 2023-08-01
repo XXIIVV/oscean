@@ -18,23 +18,28 @@ on each byte-long item in memory.</p>
 </pre>
 
 <p>A lambda can be used to store data inline, and ensure that the content is not
-inadvertenly run.</p> 
+inadvertenly run.</p>
 
 <pre>
-{ "hello $1 } print-str
+{ "hello $1 } print-lambda
 </pre>
 
-<p>Under the hood, the lambda block writes, the length to jump by, and that
+<p>Under the hood, the lambda block writes the length to jump by, and that
 length can be read to get the length of the lambda block.</p>
 
 <pre>
-{ 01 02 03 04 } #0001 SUB2 LDA <span style='float:right'>04</span>
+@print-lambda ( {str}* -- )
+	DUP2k #0002 SUB2 LDA2 ADD2 SWP2
+	&l ( -- )
+		LDAk .Console/write DEO
+		INC2 GTH2k ?&l
+	POP2 POP2 JMP2r
 </pre>
 
 <p>Only the outermost layer of a nested lambda is evaluated:</p>
 
 <pre>
-#01 { { "foo $1 } !print-str } JCN2
+#01 { { "foo $1 } !print-lambda } JCN2
 </pre>
 
 <ul></ul><p class="incoming"><b>incoming</b> <a href="uxntal_immediate.html">uxntal immediate</a> </p></main>
