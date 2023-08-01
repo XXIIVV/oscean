@@ -1,0 +1,35 @@
+<h2>Anonymous Functions in Uxntal</h2>
+
+<p>In the context of Uxntal, lambdas are unlabeled inline routines, delimited by
+curlies. A lambda block is jumped over, and a pointer to the start of the
+lambda is pushed to the top of the working stack.</p>
+
+<p>A higher-order function is a function that takes a function as an argument or
+returns one as a result. In the following example, the foreach routine is
+expecting a pointer to a series of bytes, and a pointer to a function to apply
+on each byte-long item in memory.</p>
+
+<pre>
+;bytes { DUP ADD JMP2r } foreach
+</pre>
+
+<p>A lambda can be used to store data inline, and ensure that the content is not
+inadvertenly run.</p> 
+
+<pre>
+{ "hello $1 } print-str
+</pre>
+
+<p>Under the hood, the lambda block writes, the length to jump by, and that
+length can be read to get the length of the lambda block.</p>
+
+<pre>
+{ 01 02 03 04 } #0001 SUB2 LDA <span style='float:right'>04</span>
+</pre>
+
+<p>Only the outermost layer of a nested lambda is evaluated:</p>
+
+<pre>
+#01 { { "foo $1 } !print-str } JCN2
+</pre>
+
