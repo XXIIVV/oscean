@@ -4,24 +4,20 @@
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
 <nav><ul><li><a href="uxntal_opcodes.html">uxntal opcodes</a></li><li><a href="uxntal_stacks.html">uxntal stacks</a></li><li><a href="uxntal_modes.html">uxntal modes</a></li><li><a href="uxntal_syntax.html" class="parent">uxntal syntax</a></li><li><a href="uxntal_immediate.html">uxntal immediate</a></li><li><a href="uxntal_memory.html">uxntal memory</a></li><li><a href="uxntal_state.html">uxntal state</a></li><li><a href="uxntal_devices.html">uxntal devices</a></li><li><a href="uxntal_errors.html">uxntal errors</a></li></ul><ul><li><a href="uxntal_types.html">uxntal types</a></li><li><a href="uxntal_struct.html">uxntal struct</a></li><li><a href="uxntal_lambdas.html" class="self">uxntal lambdas</a></li><li><a href="uxntal_cons.html">uxntal cons</a></li><li><a href="uxntal_library.html">uxntal library</a></li></ul><ul></ul></nav><main><h2>Anonymous Functions in Uxntal</h2>
 
-<p>In the context of Uxntal, lambdas are unlabeled inline routines, delimited by
+<p>In the context of Uxntal, lambdas are unlabeled inline routines delimited by
 curlies. A lambda block is jumped over, and a pointer to the start of the
-lambda is pushed to the top of the working stack.</p>
-
-<p>A higher-order function is a function that takes a function as an argument or
-returns one as a result. In the following example, the foreach routine is
-expecting a pointer to a series of bytes, and a pointer to a function to apply
-on each byte-long item in memory.</p>
+lambda is pushed to the top of the working stack. The body of the lambda can be
+unquoted with the <kbd>JSR2</kbd> opcode.</p>
 
 <pre>
-;bytes { DUP ADD JMP2r } foreach
+#12 #34 { ADD JMP2r } JSR2
 </pre>
 
 <p>A lambda can be used to store data inline, and ensure that the content is not
 inadvertenly run.</p>
 
 <pre>
-{ "hello $1 } print-lambda
+{ "hello } print-lambda
 </pre>
 
 <p>Under the hood, the lambda block writes the length to jump by, and that
@@ -36,7 +32,62 @@ length can be read to get the length of the lambda block.</p>
 	POP2 POP2 JMP2r
 </pre>
 
-<p>Only the outermost layer of a nested lambda is evaluated:</p>
+<p>A higher-order function is a function that takes a function as an argument or
+returns one as a result. In the following example, the foreach routine is
+expecting a pointer to a series of bytes, and a pointer to a function to apply
+on each byte-long item in memory.</p>
+
+<pre>
+{ 01 02 03 04 05 } ;double foreach
+</pre>
+
+<p>The body of the <code>double</code> function reads the value of a cell in
+memory and writes a result equal to twice its value, and the body of the
+<code>foreach</code> function is merely applying a function to each cell in
+memory.</p>
+
+<pre>
+@double ( addr* -- addr* )
+	STH2k LDAk
+	DUP ADD
+	STH2r STA
+	JMP2r
+
+@foreach ( bytes* fn* -- bytes* )
+	,&t STR2
+	DUP2k #0002 SUB2 LDA2 ADD2 SWP2
+	&l ( -- )
+		[ LIT2 &t $2 ] JSR2 INC2 GTH2k ?&l
+	POP2 POP2 JMP2r
+</pre>
+
+<p>Consider that the whole <code>double</code> function can equally be
+inlined:</p>
+
+<pre>
+{ 01 02 03 04 05 } { STH2k LDAk DUP ADD STH2r STA JMP2r } foreach
+</pre>
+
+<p>As another demonstration of the same concept, we can inline a list of items,
+here's an implementation of Lisp's member function that returns the member in a
+list, or <i>nil</i>.</p>
+
+<pre>
+{ =cat =dog =bat } ;rat member
+</pre>
+
+<pre>
+@member ( {items}* target* -- res/-1* )
+	,&t STR2
+	DUP2k #0002 SUB2 LDA2 ADD2 SWP2
+	&l ( -- )
+		LDA2k [ LIT2 &t $2 ] EQU2 ?&found
+		INC2 INC2 GTH2k ?&l
+	POP2 ;nil &found NIP2 JMP2r
+</pre>
+
+<p>Lambdas can also be nested into one another, but remember, only the outermost
+layer of a nested lambda is evaluated at a time:</p>
 
 <pre>
 #01 { { "foo $1 } !print-lambda } JCN2
