@@ -163,18 +163,25 @@ BRK
 
 <p>In the context of Uxntal, lambdas are unlabeled inline routines delimited by
 curlies. A lambda block is jumped over, and a pointer to the start of the
-lambda is pushed to the top of the working stack. The body of the lambda can be
-unquoted with the <kbd>JSR2</kbd> opcode.</p>
+lambda is pushed to the top of the return stack. The body of the lambda can be
+unquoted with the <kbd>STH2r</kbd> and <kbd>JSR2</kbd> opcodes.</p>
 
 <pre>
-#12 #34 { ADD JMP2r } JSR2
+#12 #34 { ADD JMP2r } STH2r JSR2
+</pre>
+
+<p>A lambda block is managed label definition which can be used with standard
+immediate opcodes. For example, to skip over a length of code: </p>
+
+<pre>
+.button LDZ #00 EQU ?{ will-not-eval }
 </pre>
 
 <p>A lambda can be used to store data inline, and ensure that the content is not
 inadvertenly run.</p>
 
 <pre>
-{ "hello } print-lambda
+{ "hello } STH2r print-lambda
 </pre>
 
 <p>Under the hood, the lambda block writes the length to jump by, and that
@@ -195,7 +202,7 @@ expecting a pointer to a series of bytes, and a pointer to a function to apply
 on each byte-long item in memory.</p>
 
 <pre>
-{ 01 02 03 04 05 } ;double foreach
+{ 01 02 03 04 05 } STH2r ;double foreach
 </pre>
 
 <p>The body of the <code>double</code> function reads the value of a cell in
@@ -222,7 +229,7 @@ memory.</p>
 inlined:</p>
 
 <pre>
-{ 01 02 03 04 05 } { STH2k LDAk DUP ADD STH2r STA JMP2r } foreach
+{ 01 02 03 04 05 } STH2r { STH2k LDAk DUP ADD STH2r STA JMP2r } STH2r foreach
 </pre>
 
 <p>As another demonstration of the same concept, we can inline a list of items,
@@ -230,7 +237,7 @@ here's an implementation of Lisp's member function that returns the member in a
 list, or <i>nil</i>.</p>
 
 <pre>
-{ =cat =dog =bat } ;rat member
+{ =cat =dog =bat } STH2r ;rat member
 </pre>
 
 <pre>
@@ -247,7 +254,7 @@ list, or <i>nil</i>.</p>
 layer of a nested lambda is evaluated at a time:</p>
 
 <pre>
-#01 { { "foo $1 } !print-lambda } JCN2
+#01 { { "foo $1 } STH2r !print-lambda } STH2r JCN2
 </pre>
 
 <h2>A cons cell is a data structure which holds both data and the address to the following cell.</h2>
