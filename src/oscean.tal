@@ -38,15 +38,15 @@
 	DUP2 <load-diary>
 	DUP2 <load-incoming>
 	( | verify orphans )
-	.File/success DEI2 ORA ?&>no-orphan
-		( DUP2 ;err/orphan <print-warning> ) &>no-orphan
+	.File/success DEI2 ORA ?{
+		( DUP2 ;err/orphan <print-warning> ) }
 	( | fill name )
 	DUP2 ;term/name <scpy>
 	DUP2 find-parent ;term/parent <scpy>
 	( | fill diary )
-	DUP2 find-diary ORAk #00 EQU ?&>no-pict
+	DUP2 find-diary ORAk #00 EQU ?{
 		DUP2 ;term/diary <scpy>
-		;term/diary [ LIT2 09 00 ] cswp &>no-pict
+		;term/diary [ LIT2 09 00 ] cswp }
 	POP2 JMP2r
 	&site-path [ "site/ &buf $30 ]
 
@@ -126,8 +126,8 @@
 @build-page-main ( name* -- name* )
 	;dict/main-tag <write-open>
 	( | picture )
-	;term/pict LDA #00 EQU ?&>no-picture
-		;term/diary build-module-photo &>no-picture
+	;term/pict LDA #00 EQU ?{
+		;term/diary build-module-photo }
 	( body ) build-page-body
 	( module ) build-page-module
 	( events ) build-page-events
@@ -177,8 +177,8 @@
 		( stop at sibling ) LDAk chex STHkr EQU ?&end
 		( when depth+1 ) LDAk chex STHkr INC NEQ ?&continue
 		INC2k INC2 DUP2 <load-diary>
-		find-diary ORAk #00 EQU ?&>no-diary
-			DUP2 build-module-photo &>no-diary
+		find-diary ORAk #00 EQU ?{
+			DUP2 build-module-photo }
 		POP2
 	&continue ( -- )
 		INC2 INC2
@@ -194,8 +194,8 @@
 	( start after ) scap/ INC2
 	&w ( -- )
 		( stop at sibling ) LDAk chex STHkr EQU ?&end
-		( when depth+1 ) LDAk chex STHkr INC NEQ ?&>continue
-			INC2 INC2 build-page-body &>continue
+		( when depth+1 ) LDAk chex STHkr INC NEQ ?{
+			INC2 INC2 build-page-body }
 		INC2 INC2
 	&eol ( -- )
 		INC2 LDAk ?&eol
@@ -215,8 +215,8 @@
 	( event name ) DUP2 #09 next-char INC2 #09 next-char INC2 !<write-str>
 
 @build-module-photo ( diary* -- )
-	LDAk ?&>continue
-		POP2 JMP2r &>continue
+	LDAk ?{
+		POP2 JMP2r }
 	;dict/figure-tag <write-open>
 	( part 12 ) DUP2 #0006 ADD2 LDA2k ;&buf STH2k STA2
 	( part 3 ) INC2 INC2 LDA STH2r INC2 INC2 STA
@@ -249,8 +249,8 @@
 	&buf $16
 
 @build-page-incoming ( -- )
-	;incoming LDAk ?&>exists
-		POP2 JMP2r &>exists
+	;incoming LDAk ?{
+		POP2 JMP2r }
 	;dict/incoming-txt ;dict/p-tag <write-open-class>
 	;dict/b-tag <write-open>
 	;dict/incoming-txt <write-str>
@@ -281,14 +281,14 @@
 	POP2 #0000 POP2r JMP2r
 
 @find-parent ( term* -- parent* )
-	DUP2 #0002 SUB2 LDA chex ?&>not-root
-		JMP2r &>not-root
+	DUP2 #0002 SUB2 LDA chex ?{
+		JMP2r }
 	#00 prev-char INC2
 	( stash depth ) LDAk chex #01 SUB STH
 	( let's go ) ;lexicon SWP2
 	&l ( -- )
-		#0001 SUB2 #00 prev-char INC2k LDA chex STHkr NEQ ?&>continue
-			NIP2 POPr INC2 INC2 INC2 JMP2r &>continue
+		#0001 SUB2 #00 prev-char INC2k LDA chex STHkr NEQ ?{
+			NIP2 POPr INC2 INC2 INC2 JMP2r }
 		LTH2k ?&l
 	POPr #0002 JMP2r
 
@@ -309,8 +309,8 @@
 		DUP2 .File2/write DEO2
 		INCr !&s
 	&end ( -- )
-		POP2 STHr ?&>no-missing
-			DUP2 ;err/source <print-error> &>no-missing
+		POP2 STHr ?{
+			DUP2 ;err/source <print-error> }
 		POP2 #0001 .File2/length DEO2
 		JMP2r
 
@@ -326,10 +326,10 @@
 	DUP2 [ LIT2 20 "_ ] cswp DUP2 <write-str>
 	DUP2 [ LIT2 "_ 20 ] cswp ;dict/html-ext <write-str>
 	LIT "" <char>
-	DUP2 ;term/name scmp #00 EQU ?&>not-self
-		;dict/self-txt ;dict/class-attr <write-attr> &>not-self
-	DUP2 ;term/parent scmp #00 EQU ?&>not-parent
-		;dict/parent-txt ;dict/class-attr <write-attr> &>not-parent
+	DUP2 ;term/name scmp #00 EQU ?{
+		;dict/self-txt ;dict/class-attr <write-attr> }
+	DUP2 ;term/parent scmp #00 EQU ?{
+		;dict/parent-txt ;dict/class-attr <write-attr> }
 	[ LIT "> ] <char>
 	<write-str>
 	;dict/a-tag !<write-close>
@@ -409,8 +409,8 @@
 	,&b STR
 	,&a STR
 	&w ( -- )
-		LDAk [ LIT &a $1 ] NEQ ?&>no-match
-			STH2k [ LIT &b $1 ] STH2r STA &>no-match
+		LDAk [ LIT &a $1 ] NEQ ?{
+			STH2k [ LIT &b $1 ] STH2r STA }
 		INC2 LDAk ?&w
 	POP2 JMP2r
 
