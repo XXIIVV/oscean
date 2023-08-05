@@ -155,8 +155,8 @@
 
 <pre>
 uxncli file.rom arg1 arg2
-                ^   ^^   ^
-                2   32   4
+^ ^^ ^
+2 32 4
 </pre>
 
 <p>The <b>Console/read</b> port is used to listen to incoming bytes during a Console vector event.</p>
@@ -227,7 +227,10 @@ uxncli file.rom arg1 arg2
 	BRK
 </pre>
 
-<p>The <b>Screen/width*</b> and <b>Screen/height*</b> ports can be set to resize the screen for systems that supports it, but reading from these ports should ALWAYS return the actual sizes, as programs make use of the screen sizes to position responsive graphics on the screen.</p>
+<p>The <b>Screen/width*</b> and <b>Screen/height*</b> ports can be set to resize
+the screen for systems that supports it, but reading from these ports should
+ALWAYS return the actual sizes, as programs make use of the screen sizes to
+position responsive graphics on the screen.</p>
 
 <pre>
 @on-reset ( -> )
@@ -241,17 +244,26 @@ uxncli file.rom arg1 arg2
 	BRK
 </pre>
 
-<p>The <b>Screen/pixel</b> port defines the pixel or fill mode, layer to draw on, optional horizontal/vertical flipping of the quadrant to fill, and which of the <a href='#system'>four colors</a> to use. When the fill bit is active, the operation will fill a portion of the screen starting at the x,y position until the edges of the screen. The default quadrant is bottom-right, flipping the x bit will fill the buttom-left quadrant, and so on.</p>
+<p>The <b>Screen/pixel</b> port defines the pixel or fill mode, layer to draw
+on, optional horizontal/vertical flipping of the quadrant to fill, and which of
+the <a href='#system'>four colors</a> to use. When the fill bit is active, the
+operation will fill a portion of the screen starting at the x,y position until
+the edges of the screen. The default quadrant is bottom-right, flipping the x
+bit will fill the buttom-left quadrant, and so on.</p>
 
 <pre>
-           M L Y X B3 B2 B1 B0
-  Mode ----+ | | | |  |  |  +---- Color bit 0
- Layer ------+ | | |  |  +------- Color bit 1
-Flip Y --------+ | |  +---------- Color bit 2
+M L Y X B3 B2 B1 B0
+Mode ----+ | | | | | | +---- Color bit 0
+Layer ------+ | | | | +------- Color bit 1
+Flip Y --------+ | | +---------- Color bit 2
 Flip X ----------+ +------------- Color bit 3
 </pre>
 
-<p>The <b>Screen/sprite</b> port defines the <a href='icn_format.html'>1-bit</a> or <a href='chr_format.html'>2-bit</a> mode, layer to draw on, optional horizontal and vertical flipping of the sprite, and the colors to use. The 8x8 sprite data to draw is specified by writing its location in memory to the <b>Screen/addr*</b> port.</p>
+<p>The <b>Screen/sprite</b> port defines the <a href='icn_format.html'>1-bit</a>
+or <a href='chr_format.html'>2-bit</a> mode, layer to draw on, optional
+horizontal and vertical flipping of the sprite, and the colors to use. The 8x8
+sprite data to draw is specified by writing its location in memory to the
+<b>Screen/addr*</b> port.</p>
 
 <pre>
 @on-reset ( -> )
@@ -262,7 +274,7 @@ Flip X ----------+ +------------- Color bit 3
 	#81 .Screen/sprite DEO
 	BRK
 
-@sprite-chr 
+@sprite-chr
 	6cfe fe7c 3810 0000 6cfe fe7c 3810 0000
 </pre>
 
@@ -293,7 +305,11 @@ Flip X ----------+ +------------- Color bit 3
 	</tr>
 </table>
 
-<p>The color nibble defines which color is drawn for each pixel of a sprite. The following table presents all possible combinations, assuming a sprite has a background of value 0 and three concentric circles of values 1, 2, and 3 (counting from the outside). For 1-bit sprites, only values 0 and 1 are applicable.</p>
+<p>The color nibble defines which color is drawn for each pixel of a sprite. The
+following table presents all possible combinations, assuming a sprite has a
+background of value 0 and three concentric circles of values 1, 2, and 3
+(counting from the outside). For 1-bit sprites, only values 0 and 1 are
+applicable.</p>
 
 <pre>
 c = !ch ? (color % 5 ? color >> 2 : 0) : color % 4 + ch == 1 ? 0 : (ch - 2 + (color & 3)) % 3 + 1;
@@ -307,13 +323,15 @@ blending[4][16] = {
 
 <!-- <img src='../media/generic/varvara.blending.png' /> -->
 
-<p>The <b>Screen/auto</b> port automates the incrementation of the position and sprite address whenever a drawing command is sent, so the program does not need to manually move to the next sprite, or the next position.</p>
+<p>The <b>Screen/auto</b> port automates the incrementation of the position and
+sprite address whenever a drawing command is sent, so the program does not need
+to manually move to the next sprite, or the next position.</p>
 
 <pre>
-                L3 L2 L1 L0 * A Y X
-Length bit 3 ----+  |  |  |   | | +---- Auto X
-Length bit 2 -------+  |  |   | +------ Auto Y
-Length bit 1 ----------+  |   +-------- Auto Addr
+L3 L2 L1 L0 * A Y X
+Length bit 3 ----+ | | | | | +---- Auto X
+Length bit 2 -------+ | | | +------ Auto Y
+Length bit 1 ----------+ | +-------- Auto Addr
 Length bit 0 -------------+
 </pre>
 
@@ -322,20 +340,25 @@ drawn in addition to the first, each time the sprite port is written to.
 When set to 0, only a single sprite will be drawn. As many as 16 sprites
 can be drawn at once with a value of 15.</p>
 
-<p>The auto-x and auto-y bits control the increment of the x and y ports respectively, as well as the layout of the extra sprites drawn when the length nibble is not null. The extra sprites are drawn as columns moving rightward for auto-x, and rows moving downward for auto-y. If the auto-addr bit is set, the address port will be incremented for
-each sprite drawn by increments of 8 for 1-bit, and by increments of 16 for 2-bit.</p>
+<p>The auto-x and auto-y bits control the increment of the x and y ports
+respectively, as well as the layout of the extra sprites drawn when the length
+nibble is not null. The extra sprites are drawn as columns moving rightward for
+auto-x, and rows moving downward for auto-y. If the flip bits of the sprite
+byte are set, the directions are reversed. If the auto-addr bit is set, the
+address port will be incremented for each sprite drawn by increments of 8 for
+1-bit, and by increments of 16 for 2-bit.</p>
 
 <pre>
 @paint-sprite ( x* y* -- )
 	.Screen/y DEO2 <span style='float:right; color:#888'>( set y position )</span>
-	.Screen/x DEO2 <span style='float:right; color:#888'>( set x position )</span> 
+	.Screen/x DEO2 <span style='float:right; color:#888'>( set x position )</span>
 	#16 .Screen/auto DEO <span style='float:right; color:#888'>( set length 2 with auto y and addr )</span>
 	;23x-icns .Screen/addr DEO2 <span style='float:right; color:#888'>( set addr )</span>
 	#01 .Screen/sprite DEOk DEOk DEO <span style='float:right; color:#888'>( draw 3 rows of 1-bit sprites )</span>
 	JMP2r
 
 @23x-icns
-	      <span style='color:#888'>(        0        ) (        1        )</span>
+	<span style='color:#888'>( 0 ) ( 1 )</span>
 	<span style='color:#888'>( 0 )</span> 0010 2847 2810 0001 0000 00e0 2040 8000
 	<span style='color:#888'>( 1 )</span> 0204 080f 0000 0001 0000 00e0 2040 8000
 	<span style='color:#888'>( 2 )</span> 0204 080f 0000 0000 0010 28c4 2810 0000
@@ -344,6 +367,7 @@ each sprite drawn by increments of 8 for 1-bit, and by increments of 16 for 2-bi
 <ul>
 	<li><a href='https://git.sr.ht/~rabbits/uxn/tree/main/item/projects/examples/devices/screen.tal' target='_blank'>Screen Example</a></li>
 	<li><a href='https://git.sr.ht/~rabbits/uxn/tree/main/item/projects/examples/devices/screen.blending.tal' target='_blank'>Screen/blending Example</a></li>
+	<li><a href='https://git.sr.ht/~rabbits/uxn/tree/main/item/projects/examples/devices/screen.flip.tal' target='_blank'>Screen/flip Example</a></li>
 </ul>
 
 <img src='../media/generic/uxn.apu.jpg' width='240' />
