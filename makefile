@@ -26,9 +26,9 @@ bin/directory.rom: src/directory.tal
 .PHONY: all clean lint run step1 step2 step3 time
 
 step1: bin/maeve.rom
-	mkdir -p tmp && ${EMU} bin/maeve.rom
+	mkdir -p tmp && rm -f tmp/* && ${EMU} bin/maeve.rom
 step2: bin/oscean.rom
-	mkdir -p site && ${EMU} bin/oscean.rom
+	mkdir -p site && rm -f site/* && ${EMU} bin/oscean.rom
 step3: bin/directory.rom
 	${EMU} bin/directory.rom docs/ && ${EMU} bin/directory.rom etc/
 time: bin/arvelie.rom
