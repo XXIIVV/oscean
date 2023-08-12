@@ -24,6 +24,4 @@ bin/arvelie.rom: src/arvelie.tal
 bin/directory.rom: src/directory.tal
 	@ ${ASM} src/directory.tal bin/directory.rom
 
-.PHONY: all clean lint
-
-
+.PHONY: all clean lint run
