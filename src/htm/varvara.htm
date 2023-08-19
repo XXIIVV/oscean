@@ -36,13 +36,13 @@
 	<tr><th>01</th><th class='bg1'>09</th></tr>
 	<tr><th>02</th><td rowspan='2'>expansion*</td><th class='bg1'>0a</th><td rowspan="2">green*</td></tr>
 	<tr><th class='bg1'>03</th><th class='bg1'>0b</th></tr>
-	<tr><th>04</th><td class='empty'>--</td><th class='bg1'>0c</th><td rowspan="2">blue*</td></tr>
-	<tr><th>05</th><td class='empty'>--</td><th class='bg1'>0d</th></tr>
+	<tr><th>04</th><td>wst</td><th class='bg1'>0c</th><td rowspan="2">blue*</td></tr>
+	<tr><th>05</th><td>rst</td><th class='bg1'>0d</th></tr>
 	<tr><th>06</th><td rowspan='2'>metadata*</td><th class='bg1'>0e</th><td>debug</td></tr>
 	<tr><th>07</th><th class='bg1'>0f</th><td>state</td></tr>
 </table>
 
-<pre>|00 @System &catch $2 &expansion $2 &pad $2 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1</pre>
+<pre>|00 @System &catch $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1</pre>
 
 <p>The <b>System/catch*</b> is evaluated when uxn errors. If the vector is unset, the emulator handles the error and prints an error message, if an address in found in the <i>catch</i> port, the vector is evaluated. In that scenario, stacks are emptied, a short of the address where the error occured, followed by a byte of the instruction that errored, and a byte for the error code are put on the working stack.</p>
 
@@ -72,7 +72,7 @@
 @src "Hello 20 "World $1
 @dst $c</pre>
 
-<p>Sending a non-null byte to the <b>System/debug</b> port will print the content of the stacks or pause the evaluation if the emulator includes a step-debugger.</p>
+<p>Reading, and writing, to the <b>System/wst</b> and <b>System/rst</b> will get, or set, a byte value as the working and return stack pointers. Sending a non-null byte to the <b>System/debug</b> port will print the content of the stacks or pause the evaluation if the emulator includes a step-debugger.</p>
 
 <pre>
 @on-reset ( -> )
@@ -127,6 +127,10 @@
 	#f0b2 .System/b DEO2
 	JMP2r
 </pre>
+
+<ul>
+	<li>v2: Added wst/rst ports to read and write to the stack pointer.</li>
+</ul>
 
 <ul>
 	<li><a href='https://git.sr.ht/~rabbits/uxn/tree/main/item/projects/examples/devices/system.catch.tal' target='_blank'>System/catch Example</a></li>
