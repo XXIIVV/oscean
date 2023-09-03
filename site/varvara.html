@@ -35,7 +35,7 @@
 <table border='1'>
 	<tr>
 		<th rowspan='8'><a href='#system'>system</a></th>
-		<th>00</th><td rowspan="2" class='bg2'>catch*</td><th class='bg1'>08</th><td rowspan="2">red*</td>
+		<th>00</th><td rowspan="2"><i>Unused*</i></td><th class='bg1'>08</th><td rowspan="2">red*</td>
 	</tr>
 	<tr><th>01</th><th class='bg1'>09</th></tr>
 	<tr><th>02</th><td rowspan='2'>expansion*</td><th class='bg1'>0a</th><td rowspan="2">green*</td></tr>
@@ -46,18 +46,7 @@
 	<tr><th>07</th><th class='bg1'>0f</th><td>state</td></tr>
 </table>
 
-<pre>|00 @System &catch $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1</pre>
-
-<p>The <b>System/catch*</b> is evaluated when uxn errors. If the vector is unset, the emulator handles the error and prints an error message, if an address in found in the <i>catch</i> port, the vector is evaluated. In that scenario, stacks are emptied, a short of the address where the error occured, followed by a byte of the instruction that errored, and a byte for the error code are put on the working stack.</p>
-
-<pre>
-@on-reset ( -> )
-	;on-error .System/catch DEO2
-	BRK
-
-@on-error ( addr* inst code -> )
-	( handle error )
-	BRK</pre>
+<pre>|00 @System &vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1</pre>
 
 <p>The <b>System/expansion*</b> port expects an address to an <i>operation</i>, it allows basic memory management for roms that must keep information outside of the addressable range, or cache the content of a file in order to seek through the data. There is currently only one such operation:</p>
 
@@ -76,7 +65,10 @@
 @src "Hello 20 "World $1
 @dst $c</pre>
 
-<p>Reading, and writing, to the <b>System/wst</b> and <b>System/rst</b> will get, or set, a byte value as the working and return stack pointers.</p>
+<p>Reading, and writing, to the <b>System/wst</b> and <b>System/rst</b> ports
+will get, or set, a byte value as the working and return stack pointers. Note
+that reading the value in the wst and rst ports will include the resulting
+stack pointer byte, so an empty stack will return 01.</p>
 
 <p>The <b>System/metadata*</b> port notifies the emulator that <a href='metadata.html'>metadata</a> about the rom is present at the address specified. The emulator can choose to utilize this information or to ignore it.</p>
 
