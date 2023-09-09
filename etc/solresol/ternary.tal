@@ -1,0 +1,132 @@
+|a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+
+|0000
+	@buf
+
+|0100
+	load-dict
+	print-res
+	#800f DEO
+	BRK
+
+@load-dict ( -- )
+	{ "ternary.txt $1 } STH2r .File/name DEO2
+	#8000 .File/length DEO2
+	;mem .File/read DEO2
+	( | cap )
+	;mem
+	&w ( -- )
+		LDAk #1f GTH ?{
+			STH2k #00 STH2r STA }
+		INC2 LDAk ?&w
+	POP2
+	JMP2r
+
+@print-res ( -- )
+	#0007 #0000
+	&a ( -- )
+		DUP2 #10 SFT2 ;notes-lut ADD2 LDA2 ,&aa STR2
+		#0007 #0000
+		&b ( -- )
+			DUP2 #10 SFT2 ;notes-lut ADD2 LDA2 STH2k ,&bb STR2
+			#0007 #0000
+			&c ( -- )
+				;dict/<tr> <pstr>
+				[ LIT2 &aa $2 ] ;buf <scpy>
+				[ LIT2 &bb $2 ] ;buf scap <scpy>
+				DUP2 #10 SFT2 ;notes-lut ADD2 LDA2 ;buf scap <scpy>
+				;dict/<td> <pstr>
+				;buf <pstr>
+				;dict/</td> <pstr>
+				;dict/<td> <pstr>
+				;buf find-term scap <pstr>
+				;dict/</td> <pstr>
+				;dict/</tr> <pstr>
+				#0a18 DEO
+				INC2 GTH2k ?&c
+			POP2 POP2
+			INC2 GTH2k ?&b
+		POP2 POP2
+		INC2 GTH2k ?&a
+	POP2 POP2
+	JMP2r
+
+@dict
+	&<tr> "<tr> $1
+	&</tr> "</tr> $1
+	&<td> "<td> $1
+	&</td> "</td> $1
+	&<th-a> "<th> $1
+	&<th-b> "</th> $1
+
+@find-term ( src* -- res* )
+	STH2
+	;mem
+	&w ( -- )
+		DUP2 STH2kr scmp ?&found
+		scap scap INC2 LDAk ?&w
+	POP2
+	POP2r
+	;&unknown
+JMP2r
+	&found ( -- )
+	POP2r JMP2r
+	&unknown "-- $1 "-- $1
+
+@scap ( str* -- end* )
+	&w ( -- )
+		INC2 & LDAk ?&w
+	JMP2r
+
+@slen ( str* -- len* )
+	DUP2 scap/ SWP2 SUB2 JMP2r
+
+@scmp ( a* b* -- f )
+	STH2
+	&l ( a* b* -- f )
+		LDAk LDAkr STHr NEQk ?&d
+		DUP EOR EQUk ?&d
+		POP2 INC2 INC2r !&l
+	&d ( a* c1 c2 b* -- f )
+		NIP2 POP2r EQU JMP2r
+
+@<scpy> ( src* dst* -- )
+	STH2
+	&w ( -- )
+		LDAk #00 STH2kr STA2
+		INC2r INC2 LDAk ?&w
+	POP2 POP2r JMP2r
+
+@<sclr> ( str* -- )
+	#00 ROT ROT
+	&w ( -- )
+		STAk
+		INC2 LDAk ?&w
+	STA
+	JMP2r
+
+
+@notes-lut [
+	=notes/do =notes/re =notes/mi =notes/fa
+	=notes/sol =notes/la =notes/si ]
+
+@notes &do "do $1
+	&re "re $1
+	&mi "mi $1
+	&fa "fa $1
+	&sol "sol $1
+	&la "la $1
+	&si "si $1
+
+@<pstr> ( str* -- )
+	LDAk c2lc #18 DEO
+	INC2 LDAk ?<pstr>
+	POP2 JMP2r
+
+@c2lc ( c -- c )
+	DUP LIT "A SUB #19 GTH ?{ #20 ADD }
+	JMP2r
+
+@mem
+
+
