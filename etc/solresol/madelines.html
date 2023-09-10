@@ -1,0 +1,578 @@
+<html>
+	<head>
+		<title>Solresol Text Renderer</title>
+		<style>
+
+body
+{
+	font-family: serif;
+	font-size: 16px;
+}
+
+h1, h2, h3, h4, h5, h6
+{
+	font-family: sans;
+}
+
+header
+{
+	
+}
+
+footer
+{
+	font-size: 12px;
+}
+
+#wrapper
+{
+}
+
+#text
+{
+	border: 1px solid #999;
+	width: 300px;
+	height: calc(100% - 150px);
+	resize: vertical;
+	display:block;
+	font-family: monospace;
+	font-size: 16px;
+	margin-bottom: 30px
+}
+
+#canvas
+{
+	text-align: left;
+	border: 1px solid #999;
+	width: 400px;
+	height: calc(100% - 150px);
+	overflow: auto;
+	margin-bottom:30px
+}
+
+		</style>
+		<script>
+
+var marginX = 4;
+var marginY = 4;
+var lineHeight = 20;
+var lineSpacing = 0;
+var charSize = 10;
+var wordSpacing = 8;
+var noteSize = 4;
+var noteWidth = 8;
+var colorWidth = 8;
+var colorMargin = 4;
+
+var lineColor = "#DDD";
+var noteLineColor = "#EEE";
+var scriptColor = "#000";
+var charThickness = 1.2;
+var noteThickness = 1;
+
+function renderGlyph(c, next, prev, x, y, context)
+{
+	var width = charSize;
+	var height = charSize;
+	
+	var mx = x;
+	
+	if(c == prev) return [x, y, mx];
+	
+	context.beginPath();
+	
+	if(c == "1")
+	{
+		context.arc(x + width / 2, y, width / 2, Math.PI, Math.PI * 3, false);
+		if(next == c)
+		{
+			context.moveTo(x, y);
+			context.lineTo(x + width, y);
+		}
+		
+		if(next == "6")
+		{
+			x += width / 2;
+			y += height / 2;
+		}
+		else
+		{
+			x += width;
+		}
+		mx += width;
+	}
+	else if(c == "2")
+	{
+		if(next == c)
+		{
+			context.moveTo(x - charSize / 4, y + charSize / 2);
+			context.lineTo(x + charSize / 4, y + charSize / 2);
+		}
+		context.moveTo(x, y);
+		
+		y += height;
+		
+		context.lineTo(x, y);
+	}
+	else if(c == "3")
+	{
+		context.arc(x + width / 2, y, width / 2, Math.PI, Math.PI * 2, false);
+		if(next == c)
+		{
+			context.moveTo(x + charSize / 2, y - charSize / 4 - charSize / 2);
+			context.lineTo(x + charSize / 2, y + charSize / 4 - charSize / 2);
+		}
+		
+		x += width;
+		mx += width;
+	}
+	else if(c == "4")
+	{
+		if(next == c)
+		{
+			context.moveTo(x - charSize / 4 + charSize / 2, y + charSize / 2);
+			context.lineTo(x + charSize / 4 + charSize / 2, y + charSize / 2);
+		}
+		context.moveTo(x, y);
+		
+		x += width;
+		y += height;
+		mx += width;
+		
+		context.lineTo(x, y);
+	}
+	else if(c == "5")
+	{
+		if(next == c)
+		{
+			context.moveTo(x + charSize / 2, y - charSize / 4);
+			context.lineTo(x + charSize / 2, y + charSize / 4);
+		}
+		context.moveTo(x, y);
+		
+		x += width;
+		mx += width;
+		
+		context.lineTo(x, y);
+	}
+	else if(c == "6")
+	{
+		context.arc(x, y + height / 2, width / 2, Math.PI * 0.5, Math.PI * 1.5, false);
+		if(next == c)
+		{
+			context.moveTo(x - charSize / 4 - charSize / 2, y + charSize / 2);
+			context.lineTo(x + charSize / 4 - charSize / 2, y + charSize / 2);
+		}
+		
+		y += height;
+	}
+	else if(c == "7")
+	{
+		if(next == c)
+		{
+			context.moveTo(x - charSize / 4 + charSize / 2, y - charSize / 2);
+			context.lineTo(x + charSize / 4 + charSize / 2, y - charSize / 2);
+		}
+		context.moveTo(x, y);
+		
+		x += width;
+		y -= height;
+		mx += width;
+		
+		context.lineTo(x, y);
+	}
+	
+	context.lineWidth = charThickness;
+	context.stroke();
+	
+	return [x, y, mx];
+}
+
+function renderWord(word, x, y, context)
+{
+	if(word[0] == "7")
+	{
+		y += charSize / 2;
+	}
+	else if(word[0] == "3")
+	{
+		y += charSize / 4;
+	}
+	else if(word[0] == "2" || word[0] == "4" || word[0] == "6")
+	{
+		y -= charSize / 2;
+	}
+	
+	var my = y;
+	var mx = x;
+	for(var i = 0; i < word.length; i++)
+	{
+		var c = word[i];
+		var next = null;
+		var prev = null;
+		if(i < word.length - 1)
+		{
+			next = word[i + 1];
+		}
+		if(i != 0)
+		{
+			prev = word[i - 1];
+		}
+		var result = renderGlyph(c, next, prev, x, y, context);
+		x = result[0];
+		y = result[1];
+		
+		if(y > my) my = y;
+		if(result[2] > mx) mx = result[2];
+	}
+	
+	return [mx, my];
+}
+
+function renderStenograph(line, x, y, context)
+{
+	var oy = y;
+	var my = y;
+	
+	line.trim();
+	var words = line.split(" ");
+	
+	for(var i = 0; i < words.length; i++)
+	{
+		var results = renderWord(words[i], x, oy, context);
+		x = results[0] + wordSpacing;
+		y = results[1];
+		
+		var s = (lineHeight + lineSpacing);
+		x -= s / 2;
+		x /= s;
+		x = Math.ceil(x);
+		x *= s;
+		x += marginX;
+		x += s / 2;
+		
+		if(y > my) my = y;
+	}
+	
+	return [x - (lineHeight + lineSpacing), my];
+}
+
+function download()
+{
+	var filename = "solresol.png";
+	var data = document.getElementById("actualCanvas").toDataURL("image/png");
+    
+    if(navigator.userAgent.toLowerCase().indexOf('firefox') > -1)
+    {
+		window.open(data, filename)
+	}
+	else
+	{
+		var pom = document.createElement("a");
+		pom.setAttribute("href", data);
+		pom.setAttribute("download", filename);
+		pom.click();
+	}
+}
+
+function render(height, width, noteLineWidth, noteLineX, colorAreaWidth)
+{
+	var data = getNumbers();
+	var lines = data.split("\n");
+	var lineCount = lines.length;
+	
+	var canvas = document.getElementById("actualCanvas");
+	canvas.width = width || canvas.width;
+	if(noteLineWidth) canvas.width += noteLineWidth;
+	var width2 = canvas.width;
+	if(colorAreaWidth) canvas.width += colorAreaWidth;
+	canvas.height = height || canvas.height;
+	
+	var drawLineCount = canvas.height / (lineHeight + lineSpacing) - 1;
+	var drawLineCountX = width2 / (lineHeight + lineSpacing) - 1;
+	
+	var context = canvas.getContext("2d");
+	
+	context.fillStyle = "#FFF";
+	context.fillRect(0, 0, canvas.width, canvas.height);
+	
+	for(var i = 0; i < drawLineCountX + 1; i++)
+	{
+		var line = lines[i];
+		var x = i * (lineHeight + lineSpacing) + marginX;
+		
+		context.fillStyle = lineColor;
+		context.fillRect(x, 0, 1, canvas.height);
+	}
+	
+	for(var i = -1; i < drawLineCount; i++)
+	{
+		var line = lines[i];
+		var y = i * (lineHeight + lineSpacing) + marginY;
+		
+		context.fillStyle = lineColor;
+		context.fillRect(0, y + lineHeight - 1, width2, 1);
+		
+		if(noteLineX)
+		{
+			for(var a = 1; a < 4; a++)
+			{
+				context.fillStyle = noteLineColor;
+				context.fillRect(noteLineX, y - 1 + (lineHeight + lineSpacing) / 4 * a, noteLineWidth, 1);
+			}
+		}
+	}
+	
+	var oy = 0;
+	
+	var noteLineWidth2 = noteLineWidth;
+	
+	for(var i = 0; i < lineCount; i++)
+	{
+		var line = lines[i];
+		//var y = i * (lineHeight + lineSpacing);
+		var x = marginX + (lineHeight + lineSpacing) / 2;
+		
+		var lh = (lineHeight + lineSpacing);
+		var y = oy;
+		//y -= (lineHeight + lineSpacing) / 2;
+		y /= lh;
+		y = Math.floor(y - 2);
+		y *= lh;
+		if(i != 0) y += lineSpacing;
+		y += (lineHeight + lineSpacing) + (lineHeight + lineSpacing) / 2;
+		y += marginY + lh / 2;
+		
+		context.fillStyle = scriptColor;
+		var results = renderStenograph(line, x, y + lineHeight / 2, context);
+		x = results[0] + (lineHeight + lineSpacing) / 2;
+		oy = results[1] + lineHeight;
+		
+		context.lineWidth = noteThickness;
+		
+		var ox = noteLineX;
+		var lc = null;
+		var count = 0;
+		for(var a = 0; a < line.length; a++)
+		{
+			var c = line[a];
+			
+			if(lc == c) continue;
+			
+			ox += noteWidth;
+			
+			lc = c;
+			count++;
+			
+			if(c == " ") continue;
+			
+			var nc = null;
+			if(a < line.length - 1)
+			{
+				nc = line[a + 1];
+			}
+			
+			yy = 9 - c * 1;
+			if(yy == 8) yy -= 7;
+			
+			context.beginPath();
+			context.arc(ox + noteSize / 2, y + yy * (lineHeight + lineSpacing) / 8, noteSize / 2, Math.PI, Math.PI * 3, false);
+			context.stroke();
+			if(nc == c) context.fill();
+		}
+		
+		var noteLineWidth = (count + 1) * noteWidth;
+		noteLineWidth /= (lineHeight + lineSpacing);
+		noteLineWidth = Math.ceil(noteLineWidth);
+		noteLineWidth *= (lineHeight + lineSpacing);
+		noteLineWidth -= marginX * 2 - 1;
+		
+		noteLineWidth2 = noteLineWidth2 || noteLineWidth;
+		
+		ox = noteLineX + noteLineWidth2 + noteWidth + colorMargin - colorWidth;
+		
+		for(var a = 0; a < line.length; a++)
+		{
+			var c = line[a];
+			
+			if(c == "1")
+			{
+				context.fillStyle = "#c40233";
+			}
+			else if(c == "2")
+			{
+				context.fillStyle = "#e16b1a";
+			}
+			else if(c == "3")
+			{
+				context.fillStyle = "#eac100";
+			}
+			else if(c == "4")
+			{
+				context.fillStyle = "#00a368";
+			}
+			else if(c == "5")
+			{
+				context.fillStyle = "#00b2b0";
+			}
+			else if(c == "6")
+			{
+				context.fillStyle = "#0088bf";
+			}
+			else if(c == "7")
+			{
+				context.fillStyle = "#624579";
+			}
+			else
+			{
+				context.fillStyle = "#FFF";
+			}
+			
+			context.fillRect(ox, y - marginY + (lineHeight + lineSpacing) / 6, colorWidth, (lineHeight + lineSpacing));
+			
+			ox += colorWidth;
+		}
+		
+		var colorAreaWidth = colorWidth * line.length + colorMargin;
+		
+		var px = Math.floor(x);
+		if(noteLineX) x = noteLineX;
+		
+		if(!noteLineX || px > noteLineX || x + colorAreaWidth + noteLineWidth + noteSize * 2 > canvas.width)
+		{
+			render(height, px, noteLineWidth2 + noteSize * 2, px, colorAreaWidth);
+			return;
+		}
+	
+		if(Math.floor(oy) > canvas.height)
+		{
+			render(oy, width, noteLineWidth2, noteLineX, colorAreaWidth);
+			return;
+		}
+	}
+}
+
+function getText()
+{
+	return document.getElementById("text").value;
+}
+
+function populateDictionary()
+{
+	dictionary = new Object();
+	
+	dictionary["0"] = " ";
+	dictionary["1"] = "1";
+	dictionary["2"] = "2";
+	dictionary["3"] = "3";
+	dictionary["4"] = "4";
+	dictionary["5"] = "5";
+	dictionary["6"] = "6";
+	dictionary["7"] = "7";
+	
+	dictionary["do"] = "1";
+	dictionary["re"] = "2";
+	dictionary["mi"] = "3";
+	dictionary["fa"] = "4";
+	dictionary["la"] = "6";
+	dictionary["l"] = "6";
+	dictionary["sol"] = "5";
+	dictionary["si"] = "7";
+	dictionary["ti"] = "7";
+	
+	dictionary["d"] = "1";
+	dictionary["r"] = "2";
+	dictionary["m"] = "3";
+	dictionary["f"] = "4";
+	dictionary["so"] = "5";
+	dictionary["s"] = "7";
+	dictionary["t"] = "7";
+	
+	dictionary["  "] = " ";
+	dictionary["!"] = ".";
+	dictionary["?"] = ".";
+	//dictionary["\n"] = ".";
+	dictionary[".."] = ".";
+	dictionary[".\n"] = "\n";
+	dictionary["."] = "\n";
+}
+
+function escapeAll(text)
+{
+	var result = "";
+	
+	for(var i = 0; i < text.length; i++)
+	{
+		var c = text.charAt(i);
+		if(c == "." || c == "!" || c == "?")
+		{
+			result += "\\" + c;
+		}
+		else
+		{
+			result += c;
+		}
+	}
+	
+	return result;
+}
+
+function convertToNumbers(text)
+{
+	var result = text;
+	
+	var keys = Object.keys(dictionary);
+	for(var i = 0; i < keys.length; i++)
+	{
+		var key = keys[i];
+		var lastResult = "";
+		while(lastResult != result)
+		{
+			lastResult = result;
+			result = result.replace(new RegExp(escapeAll(key),"gi"), dictionary[key]);
+		}
+	}
+	
+	result = result.replace(new RegExp("[^0-9\\s]","gi"), "");
+	return result.trim();
+}
+
+function getNumbers()
+{
+	return convertToNumbers(getText());
+}
+
+function init()
+{
+	populateDictionary();
+	render();
+}
+
+var dictionary;
+
+		</script>
+	</head>
+	<body>
+		<div id="wrapper">
+			<header>
+				<h1>Solresol Text Renderer</h1>
+			</header>
+			<div id="content">
+				<div id="canvas">
+					<canvas id="actualCanvas" onclick="download();">Browser not supported!</canvas>
+				</div>
+				<textarea id="text" oninput="render();">Dore milasi domi.</textarea>
+			</div>
+			<footer>
+				<a href="http://en.wikipedia.org/wiki/Solresol">What is Solresol?</a>
+				<br>
+				<a href="http://www.sidosi.org/">Sidosi - Solresol Community</a>
+				<br>
+				<br>
+				Programming by Madeline Maple, edited by Devine Lu Linvega
+			</footer>
+			<script>init();</script>
+		</div>
+	</body>
+</html>
+
