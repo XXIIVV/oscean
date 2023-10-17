@@ -205,12 +205,12 @@ arithmetic, see <a href='uxntal_lambdas.html'>lambdas</a>.</p>
 
 <h2>Uxntal Memory</h2>
 
-<p>There are 64kb of addressable memory. Roms are loaded at 0x0100. Once in
-memory, a Uxn program can write over itself, store values among its running
-code, it is not uncommon for a uxntal program to <a
-href='uxntal_state.html'>directly modify</a> the value of a literal in memory,
-or to change an opcode for another instead of branching. When writing or
-reading a short in memory, the position is that of the high byte.</p>
+<p>There are 64kb of addressable memory. Roms are loaded at 0x0100, which is the
+address of the <a href='uxntal_devices.html'>reset vector</a>. Once in memory,
+a Uxn program can write over itself, store values among its running code, it is
+not uncommon for a uxntal program to <a href='uxntal_state.html'>directly
+modify</a> a value in memory. When writing or reading a short in
+memory, the position is that of the high byte.</p>
 
 <pre>
 #12 #0200 STA <span style='float:right'>0x0200=12</span>
@@ -218,7 +218,12 @@ reading a short in memory, the position is that of the high byte.</p>
 #0400 LDA2 <span style='float:right'>34 56</span>
 </pre>
 
-<p>The zero-page is the memory located between 0x0000 and 0x0100, its purpose is to store variables that will be accessed often. It is sligthly faster to read and write from the zero-page using the LDZ and STZ opcodes as they use only a single byte instead of a short. This memory space cannot be pre-filled in the rom prior to assembly.</p>
+<p>The zero-page is the memory located between 0x0000 and 0x0100, its purpose is
+to store variables that will be accessed often. It is sligthly faster to read
+and write from the zero-page using the LDZ and STZ opcodes as they use only a
+single byte instead of a short. Some emulators support soft-reboot which
+preserves the content of the zero-page during a reboot. This memory space
+cannot be pre-filled in the rom prior to assembly.</p>
 
 <pre>
 #1234 #80 STZ2 <span style='float:right'>0x0080=12, 0x0081=34</span>
@@ -323,9 +328,18 @@ JMP2r
 
 <img src="../media/generic/uxn.devices.png" width="300" style="float:right"/>
 
-<p>Uxn can communicate with a maximum of 16 devices, each device has 16 ports, each port handles a specific I/O message. Ports are mapped to the devices memory page, which is located outside of the main addressable memory.</p>
+<p>Uxn can communicate with a maximum of 16 devices, each device has 16 ports,
+each port handles a specific I/O message. Ports are mapped to the devices
+memory page, which is located outside of the main addressable memory.</p>
 
-<p>Uxn is non-interruptible, <b>vectors</b> are locations in programs that are evaluated when certain events occur. A vector is evaluated until a BRK opcode is encountered, no new events will be triggered while a vector is evaluated, but events may be queued. All programs begin by executing the <i>reset vector</i> located at <code>0x100</code>. Only one vector is executed at a time. The content of the stacks are preserved between vectors.</p>
+<p>Uxn is non-interruptible, <b>vectors</b> are locations in programs that are
+evaluated when certain events occur. A vector is evaluated until a BRK opcode
+is encountered, no new events will be triggered while a vector is evaluated,
+but events may be queued.</p>
+
+<p>All programs begin by executing the <b>reset
+vector</b> located at <code>0x100</code>. Only one vector is executed at a
+time. The content of the stacks are preserved between vectors.</p>
 
 <pre>
 |0100
