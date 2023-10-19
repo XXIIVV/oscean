@@ -21,7 +21,11 @@
 
 <h2>Uxntal Opcodes</h2>
 
-<p>Uxn has 64kb of memory, 16 devices, 2 stacks of 255 bytes, 5-bits opcodes and 3 modes. The list below show the standard opcodes and their effect on a given stack <b>a b c</b>, <b>PC</b>: Program Counter, <b>[M]</b>: Memory, <b>[D+*]</b>: Device Memory, and <b>R</b>: Return/Working Stack. </p>
+<p>Uxn has 64kb of memory, 16 devices, 2 stacks of 255 bytes, 5-bits opcodes and
+3 modes. The list below show the standard opcodes and their effect on a given
+stack <kbd>a b c</kbd>. <b>PC</b>: Program Counter, <b>|</b>: Return Stack,
+<b>[M]</b>: Memory, <b>[D+*]</b>: Device Memory, <b>a8</b>: a byte, <b>a16</b>:
+a short. </p>
 
 <pre>
 <b>LIT</b> a b c [PC]
@@ -29,14 +33,14 @@
 <b>JMI</b> a b c {PC+=[PC]}
 <b>JSI</b> a b c | PC {PC+=[PC]}
 
-<b>BRK</b> a b c      <b>EQU</b> a b==c             <b>LDZ</b> a b [c8]       <b>ADD</b> a b+c
-<b>INC</b> a b c+1    <b>NEQ</b> a b!=c             <b>STZ</b> a {[c8]=b}     <b>SUB</b> a b-c
-<b>POP</b> a b        <b>GTH</b> a b&gt;c              <b>LDR</b> a b [PC+c8]    <b>MUL</b> a b*c
-<b>NIP</b> a c        <b>LTH</b> a b&lt;c              <b>STR</b> a {[PC+c8]=b}  <b>DIV</b> a b/c
-<b>SWP</b> a c b      <b>JMP</b> a b {PC+=c}        <b>LDA</b> a b [c16]      <b>AND</b> a b&c
-<b>ROT</b> b c a      <b>JCN</b> a (b8){PC+=c}      <b>STA</b> a {[c16]=b}    <b>ORA</b> a b|c
-<b>DUP</b> a b c c    <b>JSR</b> a b | PC {PC+=c}   <b>DEI</b> a b [D+c8]     <b>EOR</b> a b^c
-<b>OVR</b> a b c b    <b>STH</b> a b | c            <b>DEO</b> a {[D+c8]=b}   <b>SFT</b> a b&gt;&gt;c8l&lt;&lt;c8h
+<b>BRK</b> a b c    <b>EQU</b> a b==c            <b>LDZ</b> a b [c8]       <b>ADD</b> a b+c
+<b>INC</b> a b c+1  <b>NEQ</b> a b!=c            <b>STZ</b> a {[c8]=b}     <b>SUB</b> a b-c
+<b>POP</b> a b      <b>GTH</b> a b&gt;c             <b>LDR</b> a b [PC+c8]    <b>MUL</b> a b*c
+<b>NIP</b> a c      <b>LTH</b> a b&lt;c             <b>STR</b> a {[PC+c8]=b}  <b>DIV</b> a b/c
+<b>SWP</b> a c b    <b>JMP</b> a b {PC+=c}       <b>LDA</b> a b [c16]      <b>AND</b> a b&c
+<b>ROT</b> b c a    <b>JCN</b> a (b8){PC+=c}     <b>STA</b> a {[c16]=b}    <b>ORA</b> a b|c
+<b>DUP</b> a b c c  <b>JSR</b> a b | PC {PC+=c}  <b>DEI</b> a b [D+c8]     <b>EOR</b> a b^c
+<b>OVR</b> a b c b  <b>STH</b> a b | c           <b>DEO</b> a {[D+c8]=b}   <b>SFT</b> a b&gt;&gt;c8l&lt;&lt;c8h
 </pre>
 
 <p>To learn more about each opcode, see the <a href='uxntal_reference.html'>Opcode Reference</a>.</p>
@@ -232,7 +236,16 @@ cannot be pre-filled in the rom prior to assembly.</p>
 
 <h2>Self-Modifying Code</h2>
 
-<p>The ability to treat instructions as data makes programs that write programs possible. Self-modifying code(SMC) is generally considered harmful, and is therefore not permitted in most modern computer architectures today.</p>
+<p>The ability to treat instructions as data makes programs that write programs
+possible. Self-modifying code(SMC) is generally considered harmful, and is
+therefore not permitted in most modern computer architectures today.</p>
+
+<article>
+	<p><b>Action at a distance</b> is an anti-pattern in computer science in which
+behavior in one part of a program modifies operations in another part of the
+program. This anti-pattern should be avoided whenever possible, but if wielded
+carefully SMC can become a practical ally when writing Uxntal.</p>
+</article>
 
 <h3>Caching</h3>
 
@@ -310,36 +323,22 @@ BRK
 JMP2r
 </pre>
 
-<h3>Quoting Opcodes</h3>
-
-<p>Quoting is the act of <a href='https://limited.systems/articles/uxntal-quoting/' target='_blank'>deferring an operation</a>, for example, by <i>literalizing</i> the <kbd>ADD</kbd> opcode, it will remain on the stack as a value and will not immediately compute the result:</p>
-
-<pre>#06 #07 LIT ADD</pre>
-
-<p>The opcode can then be modified and utilized when needed by using the following pattern, which effectively pulls the opcode from the stack and writes it at the next address in memory:</p>
-
-<pre>#06 #07 LIT ADD <i>( unquote )</i> #00 STR $1</pre>
-
-<article>
-	<p><b>Action at a distance</b> is an anti-pattern in computer science in which behavior in one part of a program modifies operations in another part of the program. This anti-pattern should be avoided whenever possible, but if wielded carefully SMC can become a practical ally when writing Uxntal.</p>
-</article>
-
-<h2>Devices & Vectors</h2>
-
-<img src="../media/generic/uxn.devices.png" width="300" style="float:right"/>
-
-<p>Uxn can communicate with a maximum of 16 devices, each device has 16 ports,
-each port handles a specific I/O message. Ports are mapped to the devices
-memory page, which is located outside of the main addressable memory.</p>
+<h2>Devices</h2>
 
 <p>Uxn is non-interruptible, <b>vectors</b> are locations in programs that are
 evaluated when certain events occur. A vector is evaluated until a BRK opcode
-is encountered, no new events will be triggered while a vector is evaluated,
-but events may be queued.</p>
+is encountered. Uxn can communicate with a maximum of 16 devices, each device
+has 16 <b>ports</b>, each port handles a specific I/O message. Ports are mapped to the
+devices memory page, which is located outside of the main addressable
+memory.</p>
 
-<p>All programs begin by executing the <b>reset
-vector</b> located at <code>0x100</code>. Only one vector is executed at a
-time. The content of the stacks are preserved between vectors.</p>
+<img src="../media/generic/uxn.devices.png" width="350" />
+
+
+<p>All programs begin by executing the <b>reset vector</b> located at
+<code>0x100</code>. The content of the stacks are preserved between vectors,
+but it is discouraged to use the stacks to pass <a
+href='uxntal_state.html'>data between vectors</a>.</p>
 
 <pre>
 |0100
@@ -361,7 +360,10 @@ BRK
 BRK
 </pre>
 
-<p>For example, the address stored in the <code>Mouse/vector</code> port points to a part of the program to be evaluated when the cursor is moved, or a button state has changed. </p>
+<p>For example, the address stored in the <a
+href='varvara.html#mouse'>Mouse/vector</a> ports points to a part of the
+program to be evaluated when the cursor is moved, or a button state has
+changed. </p>
 
 <img src="../media/generic/varvara.uxn.png"/>
 
