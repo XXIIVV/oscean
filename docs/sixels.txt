@@ -1,0 +1,923 @@
+		     All About SIXELs
+		Chris_F_Chiesa@cup.portal.com 
+		    4:24 pm  Sep 29, 1990 
+
+    Well,  all,  it's  been  several months  since  I first agreed to write
+something about Sixel graphics.  Sorry it's taken so long,  but that's life
+when you're  a busy  computer jockey!  :-)   (I've actually written another
+couple of Sixel-generating programs since then, too.  How time flies...!)
+
+     I'm going to try to condense  three  years'  worth  of  gleanings from
+manuals,  experiments,  programming,  and  other  investigations,  into one
+document, while trying to remain coherent.  Please bear with me if  I don't
+quite pull  it off.   Feel free to write me back and ask questions.  Having
+said that, let the ramblings commence!
+
+-----
+
+I. GETTING "INTO SIXEL MODE"
+
+    Putting a device  into  Sixel  interpretation  mode  is  performed, not
+surprisingly,  by  means  of  an  escape  sequence.   The particular escape
+sequence which  tells  a  terminal  (or  printer,  or  Sixel interpretation
+software!) "sixel information follows," is 
+
+    DCS p1; p2; p3; q
+
+    ...  where  DCS  is  EITHER  the  eight-bit  "Device  Control Sequence"
+character (decimal value 144), OR  the  two  seven-bit  characters "Escape,
+capital P"  (Escape having  the decimal  value 27).  "P1, p2," and "p3" are
+OPTIONAL parameters,  separated by  semicolons (;)  IF they  appear at all.
+The "q" is a literal, lower-case letter Q.  There are, of course, no spaces
+in the sequence; I've used them here for clarity in your reading.
+
+    The VT340 Programmer's Reference Guide (not the Manual -- I'm referring
+to the short summary thingie) describes these parameters this way:
+
+          P1  is  the  macro  parameter. This parameter indicates the pixel
+          aspect ratio used by the  application  or  terminal.    The pixel
+          aspect ratio  defines the  shape of  the pixel  dots the terminal
+          uses to draw images.  For example, a pixel that is twice  as high
+          as it is wide has an aspect ratio of 2:1.
+
+          NOTE:  The  macro  parameter  is  provided for compatibility with
+          existing Digital software.  New applications  should set  P1 to 0
+          and  use  the  set  raster attributes control, described later in
+          this chapter.
+
+               P1          Pixel Aspect Ratio
+                           (Vertical:Horizontal)
+
+               Omitted     2:1
+               0 or 1      5:1
+               2           3:1
+               3 or 4      2:1
+               5 or 6      2:1
+               7,8, or 9   1:1
+
+          P2 selects how the terminal draws the background color.   You can 3$
+          use one of three values.
+
+               P2          Meaning
+
+               0 or 2      Pixel positions  specified as  0 are  set to the
+                           current background color.
+
+               1           Pixel positions specified as  0 remain  at their
+                           current color.
+
+          P3 is  the horizontal  grid size  parameter.  The horizontal grid
+          size is the horizontal distance  between  two  pixel  dots.   The
+          VT300 ignores  this parameter because the horizontal grid size is
+          fixed at 0.0195 cm (0.0075 in).
+
+
+    Keep in mind that  the above  description is  somewhat specific  to the
+VT340  graphics   terminal;  the  general  idea  of  "what  the  parameters
+represent" is more important than the specifics of how the VT340 happens to
+do things.   (The  "default" pixel aspect ratio of the VT340 and VT240, for
+instance, is 2:1,  but  for  other  devices  or  applications  it  might be
+different.)
+
+II. GETTING "OUT OF SIXEL MODE"
+
+    Officially,  one  exits  Sixel  interpretation  mode by following one's
+Sixel image data with the sequence
+
+    ST
+
+    ... where ST is  either  the  eight-bit  "String  Terminator" character
+(ASCII 156 decimal), OR the sequence "Escape, backslash" (ESC \).
+
+    In  practice,  for  example  when  using the VT240 terminal, ANY escape
+sequence or eight-bit control  character  will  cause  Sixel interpretation
+mode to terminate.  It's still a good idea to use the recommended sequence,
+though, in case someday a particular device, or program, depends on it.
+
+III. SIXEL DATA REPRESENTATION
+
+    Now that  you  know  how  to  put  a  device,  or  program,  into Sixel
+interpretation mode,  it's time  to tell  you what Sixel data IS!  The word
+"sixel" actually means six pixels ("six" + "pixel" = "sixel")  stacked atop
+each other, like this:
+
+        *
+        *
+        *
+        *
+        *
+        *
+
+    Each pixel  in the  sixel can  be either  ON or  OFF, in a single color
+(you'll  see  how  multiple  colors  are  handled,  shortly).    Each pixel
+position is  assigned a numeric power-of-two value, from 1 at the top to 32
+at the bottom; thus, for any given combination  of on  and off  pixels, one
+can add  up the values of the "on" pixels and obtain a unique number in the
+range 0 to 63 decimal.  An offset of 63  decimal is  added to  this numeric
+value to  obtain an  ASCII character  in the  "printable" range,  63 to 126
+decimal, and it is these characters which appear  in a  "Sixel image file."
+You can see that the MINIMUM numeric sixel value 0 gives ASCII code 63, the
+"?" character, and that numeric sixel  value 63  gives ASCII  code 126, the
+"~" character.  Now you know why Sixel graphics files have so many "?"'s in
+them!
+
+    Sixel data display begins at the "upper left corner" of whatever device
+or imaging area is being used; successive sixels display consecutively from
+left to right, building up a horizontal six-pixel-high "band" of imagery.
+
+    You now know all  you need  to know  in order  to produce,  in Sixel, a
+single  "band"  of  monochrome  graphics.    The Sixel graphics format also
+includes several "control" characters -- in the printable  ASCII range, but
+outside the  range of  63-to 126 decimal used for image data -- which allow
+you to change the position where new Sixels will be  displayed, and  to set
+and use a particular "color map.  I'll get to these shortly.
+
+    Before that,  though, there's  one more thing to say about the ordinary
+"data" portion of the  Sixel format.   In  the interest  of efficiency, the
+Sixel format implements a run-length encoding scheme.  The "!" character is
+used as a "repeat count introducer."  A "!" followed  by a  string of digit
+characters "0"  through "9,"  preceding any  valid sixel-data character (63
+to 126 decimal), causes that sixel  to  be  repeated  the  number  of times
+represented by  the decimal  string.  For example, seven repetitions of the
+sixel represented by the letter "A" could be transmitted either as 
+
+    AAAAAAA
+
+or, using a repeat count, as
+
+    !7A
+
+Obviously, the latter form is shorter; note that there is  a tradeoff  at 3
+or 4  repetitions of  a character: sending "!3A" doesn't gain any advantage
+over sending "AAA", and  sending  "!2A"  would  actually  LOSE  ground.   I
+usually  try  to  implement  some  sort  of  "optimization" of this factor,
+myself, although  I've never  run into  any Sixel-eating  device or program
+that cared WHICH way any of this was sent to it!
+
+(Another interesting  side note: when the VT240 is commanded to do a "print
+screen,"  in  ReGIS  graphics  mode,  the  resulting  dump   is  in  Sixel.
+Furthermore, the  VT240 never specifies a repeat-count greater than 255: if
+it wants to send 600 repetitions of the  "empty" sixel  ("?" character), it
+will send
+
+    !255?!255?!90
+
+to "build  up to" the full 600.  I do not know whether this is a limitation
+of the Sixel format itself, or whether it's just an  internal register-size
+limitation of the VT240...)
+
+IV. SIXEL "CONTROL" CHARACTERS
+
+    The material  presented so  far covers  the serial  interpretation of a
+single horizontal band of sixels: each consecutive sixel  is placed  to the
+right of  the last,  indefinitely.   If image data extends to the right (or
+down, when we get to that) beyond the physical range  of the  output device
+(e.g., a  band of  more than  640 sixels is sent to a VT240 terminal), data
+that is "out of range" is NOT displayed.
+
+    Although I've never seen it described in such terms, one can think of a
+sixel  "cursor"  -  the  position  where  the NEXT sixel will be displayed,
+analogous to the  usual  text  cursor.    What  I've  described  so  far is
+equivalent  to  a  text  stream  containing  no Carriage Return or Linefeed
+characters: the "cursor" simply keeps moving "linearly" from left to right.
+But  the   Sixel  format   includes  two   "cursor  repositioning"  control
+characters, one which behaves analogous to  a carriage  return, and another
+which behaves like a "carriage return, linefeed" pair.
+
+    The "-"  (hyphen or  minus sign)  character moves the sixel "cursor" to
+the "beginning of the next line  (or band)"  of image  data.   In short, it
+acts like  a "new  line" (*NIX  lingo) character or, more precisely, like a
+CR/LF pair would in text mode.
+
+    The "$"  (dollar  sign)  character  moves  the  sixel  "cursor"  to the
+"beginning of  the current  (same) line (or band)," analogous to a plain CR
+in text mode.   This allows new sixel data to "overstrike" what has already
+been displayed, a necessity for rendering multiple-color imagery.  (Data of
+a single color is laid down, then a $ character returns the "cursor" to the
+left, then  data for  a new  color is  laid down "on top of" what's already
+there.)
+
+    You now know everything you need in order  to produce  a monochrome, or
+single-bitplane,  Sixel  image.    You  can  enter Sixel mode, format image
+pixels into sixel text characters, reposition  the "Sixel  cursor" to build
+up an  image, and  exit Sixel mode when you're finished.  All there is left
+to cover is COLOR!
+
+    Color Sixel  graphics operate  in "color  map" fashion: color-selection
+sequences  in  the  Sixel  data  stream tell the output device (or program)
+which of a set of "color map registers" is to be used to display subsequent
+data; the  CONTENTS OF that color map register determine the color actually
+used for display of the data.  The VT240, for instance, offers  four color-
+map registers designated by the numbers 0 through 3; Sixel data can thus be
+displayed  in  four  colors  (including  the  background  color).    I read
+somewhere that  the Sixel  format imposes  a limit of 256 colors (color map
+registers 0 through 255),  but this  seems unnecessary:  the nature  of the
+format  is  such  that,  with  appropriate  coding, ANY number of color map
+registers  could  be  supported.    On  real  devices,  it  appears  (in my
+experience) that  if Sixel data specifies a color register beyond the range
+available on a particular device,  the  color  map  number  "wraps around,"
+modulo N,  where N is the number of available color map registers.  (On the
+VT240, for instance, colors 0 through  3  are  available.    If  Sixel data
+specifies color  4, color  0 is  used; if  color 5 is specified, color 1 is
+used, and so on.)
+
+    In  the  Sixel  format,  the  "#"  character  is  the  "color  sequence
+introducer."    It  is  followed  by  a  decimal  string  (string  of digit
+characters in the range "0" through  "9") specifying  a color-map register,
+and  optionally  by  four  semicolon-separated  color-selection parameters.
+Without parameters, e.g.
+
+        #3
+
+the sequence means "USE color-map register"  (in this  example, "use color-
+map register 3") to display subsequent sixels.  WITH parameters, e.g.
+
+        #3;1;30;40;50
+
+the sequence means "SET color-map register contents."
+
+    The meaning  of the  parameters in the "SET" form of the sequence is as
+follows:
+
+    Designating the syntax of the sequence as "#n;p1;p2;p3;p4",
+
+        n = color-map register number to be set
+
+        p1 = color space to be used:
+
+            1 = HLS (Hue, Lightness, Saturation)
+            2 = RGB (Red, Green, Blue)
+
+        p2,p3,p4 = color to be used, in the notation specified by p1:
+
+            HLS:
+                p2 = Hue, as an angle in the range 0 to 360 degrees
+                p3 = Lightness, as a percentage from 0 to 100
+                p4 = Saturation, as a percentage from 0 to 100
+
+            RGB:
+                p2 = Red content, as a percentage from 0 to 100
+                p3 = Green content, as a percentage from 0 to 100
+                p4 = Blue content, as a percentage from 0 to 100
+
+    A few pointers from my practical experience:
+
+        1)  On the VT240 at least, color-map numbers as used in  Sixel mode
+            appear  NOT  to  bear  a  fixed  relationship  to the color-map
+            numbers as  used  in  ReGIS  mode.    I  haven't  been  able to
+            characterize this,  but I  CAN say  that if  I generate a color
+            image in ReGIS graphics, then request a screen  dump (which the
+            VT240 performs in Sixel format), then type out that screen dump
+            back to the  terminal,  the  displayed  color  scheme  is often
+            DIFFERENT than the original image: the same COLORS are present,
+            but they  are assigned  to color  MAP REGISTERS  in a different
+            order.   (If this  color-rotated image  is then dumped a second
+            time, then this second  dumpfile typed  out, the  colors rotate
+            yet again.)   There  are also  some discrepancies between WHICH
+            color-map registers (as designated  in ReGIS)  actually receive
+            the particular  colors requested  in a Sixel data stream.  Play
+            with this yourself and  see if  you can  characterize it better
+            than I've  been able  to; if anyone at DEC reads this who knows
+            the innards  of the  VT240, I'd  be very  interested in hearing
+            what the heck goes on. 
+
+        2)  Before you  even ask,  no, I  DON'T know how to convert between
+            "HLS" and "RGB" color representations.  So far,  I've only made
+            use of the RGB mode in my own programs.
+
+        3)  Characters  outside  the  recognized  range of Sixel data (e.g.
+            characters other than "data" (ASCII 63-126 dec), "#",  "!", "-"
+            and "$", are IGNORED if they appear in the Sixel data stream.
+
+V. EXAMPLE SIXEL IMAGE
+
+    Let's look  at one  very simple  Sixel example.  Suppose we have a very
+short Sixel image file that contains the following:
+
+        <ESC>Pq
+        #0;2;0;0;0#1;2;100;100;0#2;2;0;100;0
+        #1~~@@vv@@~~@@~~$
+        #2??}}GG}}??}}??-
+        #1!14@
+        <ESC>\
+
+    First we see that the introductory  and termination  sequences (lines 1
+and  6)  are  in  seven-bit  form,  and  that  no parameters are explicitly
+specified in the introductory sequence.   (The absence  of parameters means
+that your  device, or  software, will  use its "default" behavior, whatever
+that is.)
+
+    Line 2 sets color-map registers 0,  1,  and  2,  all  in  RGB notation.
+Color 0  is set  to the  RGB triplet  (0,0,0) --  BLACK.  Color 1 is set to
+(100,100,0) -- YELLOW.  Color 2 is set to (0,100,0) -- GREEN.   Color  3 is
+unspecified, so will retain whatever setting it had previously.
+
+    Line 3  supplies, first,  the command  to "use color (map register) 1,"
+then 14 sixels' worth of image data, then the "$" character which  causes a
+"carriage-return" to  the beginning  of this  SAME line -- meaning that the
+next data will OVERSTRIKE this line's data.
+
+    Line 4 performs much as did line 3, except that  it specifies  color 2,
+and that  it ends  with the  "-" character, meaning that line 5's data will
+appear on a new line, rather than being overstruck again.
+
+    Line 5 specifies 14 sixels of value 1 ("@" =  ASCII 64;  64 -  63 = 1),
+by using  a repeat-count  rather than  14 individual  instances of the same
+character.
+
+    If you haven't figured it out yet, this image produces  a 14-by-7-pixel
+yellow rectangle  with the  word "HI"  picked out  on it  in green!  On the
+VT240, with its pixel aspect ratio of 1:2, this rectangle  should appear as
+a SQUARE, if I haven't screwed up somewhere.  Like this:
+
+    ..............
+    ..**..**..**..
+    ..**..**..**..        . = color 1, yellow
+    ..******..**..        * = color 2, green
+    ..**..**..**..
+    ..**..**..**..
+    ..............
+
+    This should  appear on  a black background.  I'm afraid it'll be almost
+too small to see on a VT240 or 340, but you should be at least able to tell
+that it's there...
+
+    That about  does it  for the theory end of it; I'll tack on some source
+code for your enlightenment and edification, and see  if it  makes sense to
+you now...
+
+-----
+
+EXAMPLE 1 --  VAX FORTRAN.
+
+This example is VAX FORTRAN code to generate a single-bitplane (i.e. mono-
+chrome) Sixel image data file.  An array of 800 by 51 bytes is used as a 
+bitplane for drawing; each byte in this array is treated as a SIX-bit rather
+than EIGHT-bit quantity, so that no bit-shuffling is needed in order to 
+convert the bitmap to Sixel: that is, each byte's two most-significant bits
+are unused, leaving each byte to contain only valid-Sixel values (0 to 63 
+decimal) which can be converted DIRECTLY to Sixel.  (If all eight bits of
+each byte were used, the code to convert to Sixel would have to reorganize
+the bits into length-six units, taking time and effort I didn't feel like
+expending.)  This fact makes the Sixel-output routine almost trivially 
+simple.
+
+For the sake of brevity, I've omitted the code which actually generates
+the image -- sets bits in the IMAGE array -- but I can send it to anyone
+who would like to see it.
+
+I'm afraid the architecture of this example is pretty poor: the Sixel-output
+routine receives the "bitmap" array not as an explicit argument, but impli-
+citly through a COMMON block; the explicit argument to the Sixel-output 
+routine is a buffer that isn't used ANYWHERE else in the main program,
+and could have been declared locally in the subroutine.  Looking back now,
+so long after writing this, I can only assume that with my limited knowledge
+of FORTRAN I went for "anything that would WORK," rather than for elegance
+and efficiency.
+
+And now the code:
+C
+C  IMAGE array is the bitmap (800 horizontal pixels by 51x6=306 vertical
+C  pixels) in which the image is "drawn"; if this bitmap were "display
+C  memory" on a microcomputer or VT240 terminal, the image would appear
+C  immediately as the bits were set...
+C
+C  BUFFER is a contiguous area of storage big enough to hold the longest
+C  Sixel band that could ever be produced from the IMAGE array.
+C
+        BYTE            IMAGE(0:799,0:50)
+        CHARACTER*800   BUFFER
+C
+C  For obscure reasons, IMAGE is passed to the DUMPBUFFER Sixel-output
+C  subroutine only by virtue of this COMMON block; BUFFER is the explicit
+C  argument to DUMPBUFFER.  Weird.
+C
+	COMMON /SIXEL/ IMAGE
+C
+C  *****
+C  *
+C  *   IMAGE-GENERATION AND BIT-SETTING CODE WOULD APPEAR HERE.
+C  *   OMITTED FOR BREVITY.
+C  *
+C  *****
+C
+C  The following call, although it's hardly obvious, causes the contents of
+C  the bitplane array IMAGE to be output to a data file in Sixel format.
+C
+	CALL DUMPFILE(BUFFER)
+C
+	STOP 
+	END
+C
+C----------------------------------------------------------------------
+C  Finally, what you've all been waiting for: the Sixel output subroutine!
+C
+C  Note again that A) the argument architecture here is kind of screwy:
+C  BUFFER is passed explicitly, but IMAGE is passed in a COMMON block,
+C  and B) only SIX bits are used of each byte in IMAGE.
+C
+C  Output goes to a sequential output file whose name is hardcoded as
+C  "SIXEL.DAT".  The file is explicitly given a "record length" capable
+C  of containing in ONE record the longest Sixel band the IMAGE array 
+C  could possibly give rise to: 800 characters.
+C
+	SUBROUTINE     DUMPFILE(BUFFER)
+C
+	CHARACTER*1    BUFFER(0:799)
+C
+C  TC is a "temporary character" I found necessary for moving data from
+C    the IMAGES array to the BUFFER output buffer.
+C
+C  X and Y are horizontal and vertical indices, respectively, for retrieval
+C    of data from the IMAGE array.
+C
+	INTEGER*2      TC
+	INTEGER*2      X,Y
+C
+	BYTE           IMAGE(0:799,0:50)
+C
+	COMMON /SIXEL/ IMAGE
+C
+C  Create the output file...
+C
+	OPEN(UNIT=10,FILE='SIXEL.DAT',RECL=800,ORGANIZATION='SEQUENTIAL',
+     *   TYPE='UNKNOWN')
+C
+C  Sixel output starts with the introducer sequence, as documented 'way back
+C  earlier in this posting:
+C
+	write (10,*) char(27),'P9q'
+C
+C  For each BAND (horizontal strip of sixels) in the image -- er, bitmap...
+C
+	do y=0,50
+C
+C    ... and for each SIXEL within each band...
+C
+	  do x=0,799
+C
+C  ... do the following:
+C
+C   Grab the sixel value stored at (X,Y) in the array IMAGE; this is raw
+C   sixel data so we have to add 63 decimal to it to get an ASCII code for
+C   the data file:
+C
+	    tc = image(x,y)+63
+C
+C   Stick the resulting ASCII code into the buffer
+C
+	    buffer(x) = char(tc)
+	  end do
+C
+C  ... and when all Sixels of a band have been stuffed there, write out
+C  the buffer!
+C
+C   NOTE that I made NO attempt to optimize this output: no "color" infor-
+C   mation is written, and NO "REPEAT COUNT" information!  This leads to a
+C   VERY INEFFICIENT Sixel data file!  I didn't feel like implementing these
+C   features at the time I wrote this code, but if YOU implement it I would
+C   appreciate a copy!
+C
+	  write (10,*) (buffer(x), x=0,799),'-'
+	end do
+C
+C   Believe it or not, that's all there is to writing the file.  A Sixel
+C   data stream ends with the "string terminator" sequence or, in this 
+C   case, its seven-bit equivalent:
+C
+	write (10,*) char(27),'\'
+	close (unit=10)
+	return
+	end
+
+-----
+
+EXAMPLE 2 --  AMIGA BASIC.
+
+' (In Amiga BASIC, lines beginning with single quotes (') are COMMENTS.)
+'
+'  The following is a Sixel image viewer written in AmigaBASIC, 
+'  which is Microsoft BASIC with Amiga extensions.  It should be
+'  trivial to port this to the PC, by replacing Amiga-specific 
+'  statements (e.g. MOUSE, SCREEN, and WINDOW) with the equiva-
+'  lent PC-environment statements.  I'll point out statements 
+'  that do particular things, but won't go into detail about what
+'  they do in the Amiga environment.
+'
+'  This program has been VERY heavily commented for this presentation,
+'  with the result that it may be almost impossible to read.  I suggest
+'  you edit out all comment-only lines if you just want to read CODE...
+'
+INPUT "File to display: ",fil$
+MOUSE OFF
+ON MOUSE GOSUB quit
+MOUSE ON
+OPEN fil$ FOR INPUT AS #1
+'
+fil$ = fil$ + " -- Left-Click to exit!"
+'
+'  Set up a four-color graphics screen/window
+'
+SCREEN 1,640,240,2,2
+WINDOW 2,fil$,,0,1
+'
+'  Set default colors, corresponding to the VT240
+'  immediately after reset
+'
+PALETTE 0,0,0,0     ' color 0 = black
+PALETTE 1,0,0,1     ' color 1 = blue
+PALETTE 2,1,0,0     ' color 2 = red
+PALETTE 3,0,1,0     ' color 3 = green
+'
+'  This version of the program, as-is, will override
+'  the default colors above if it finds RGB color-
+'  specification data in the Sixel file.  If you want
+'  an intermediate stage where you, the user, can
+'  "manually" specify colors, un-comment the following
+'  section of code.
+'
+'WINDOW 3,"color setup",(300,20)-(600,80),0,1
+'WINDOW OUTPUT 3
+'PRINT "Color range = 0 to 100"
+'FOR k = 0 TO 3
+'  PRINT "Color ";k; : INPUT " (R,G,B) ";r,g,b
+'  PALETTE k,r/100,g/100,b/100
+'NEXT k
+'WINDOW CLOSE 3
+'
+WINDOW OUTPUT 2
+'
+'====
+'  The Sixel-interpretation process can be considered as
+'  a series of general operations repeated over and over:
+'    - read a data stream, ignoring record/line boundaries.
+'      While there is data, do the following.
+'        - Wait for the Sixel introducer sequence; after
+'          you have seen it, read the rest of the data 
+'          stream, acting as follows while doing so:
+'            - if you encounter a Sixel control character --
+'                "$" => carriage-return-like
+'                "-" => newline-like
+'                "!" => numeric "repeat-count" follows
+'                "#" => color USE or SET command follows
+'                ";" => one command-parameter is ended, and
+'                       another follows
+'              -- perform the defined control operation
+'            - if you encounter a valid Sixel data character,
+'              convert it to pixels and plot them in the current
+'              color at the current position
+'            - if a character is invalid or out of range, ignore
+'              it.
+'====
+'
+'  Here's where Sixel interpretation starts!  I'll note the 
+'  use of variables where they first occur.
+'
+'  X and Y represent the horizontal and vertical position where
+'  the uppermost pixel of the next sixel (stack of six pixels) will
+'  be plotted, measured in PIXELS.  Since the VT240 begins displaying
+'  Sixel graphics in its upper left corner, so do we: initialize X and
+'  Y both to 0.
+'
+x=0
+y=0
+'
+sixelprocess:
+'
+'  The string SIX$ and the index PT are used by the subroutine GETCHAR to
+'  transparently ignore record/line boundaries in the Sixel input file.
+'  More on that below...
+'
+  pt = 1
+  six$ = ""
+'
+'  This first data-fetch primes the pump for the main loop.
+'
+  GOSUB GETCHAR
+'
+'  C is the number of the color to be used for setting pixels.  I don't
+'  recall just what the VT240 does, but I default to color 1 here.
+'
+  c=1
+'
+'  REPEAT is the "repeat count" used by Sixel to achieve a sort of run-
+'  length encoding for data-compression.
+'
+  repeat = 1
+'
+'  The following ten statements comprise the main program loop!
+'
+  xloop:
+'
+'  I should actually recode this to ignore characters UNTIL an
+'  ESC P (or DCS) q is seen; for now, the file should START 
+'  with the 7-bit form of the Sixel introducer sequence.  When
+'  the initial ESC is seen, we ignore everything until the 
+'  terminating "q".
+'
+'  BYTE is the character most recently returned by the GETCHAR subroutine.
+'
+    IF byte = 27 THEN GOSUB header
+'
+'  If the data is "out of range" for Sixel, ignore it and repeat the loop.
+'
+    IF byte < 33 OR byte > 126 THEN GOSUB GETCHAR: GOTO xloop
+'
+'  Since this is the "outermost" level of interpretation, a semicolon is
+'  not valid here, so we ignore it.
+'
+    IF char$ = ";" THEN GOSUB GETCHAR : GOTO xloop
+'
+'  The "#" character indicates color specification or selection to follow,
+'  so we go into a a subroutine to handle it.  Every subroutine invoked
+'  like this must invoke GETCHAR at least once beyond the data it handles,
+'  so that the next character will kbe available at this level.
+'
+    IF char$ = "#" THEN GOSUB processcolor : GOTO xloop
+'
+'  In exactly the same manner, the "!" indicates that we must go process
+'  a repeat-count specification.
+'    
+    IF char$ = "!" THEN GOSUB getrepeat : GOTO xloop
+'
+'  The "-" character says "reposition to the beginning of the NEXT line..."
+'
+    IF char$ = "-" THEN GOSUB linefeed : GOTO xloop
+'
+'  The "$" character says "reposition to the beginning of the CURRENT line"
+'
+    IF char$ = "$" THEN GOSUB carret : GOTO xloop
+'
+'  If the character is neither "out of range," "out of context," nor a 
+'  "control" character, it must be data -- so we go plot it!
+'
+   GOSUB plotbyte
+  GOTO xloop
+'
+'====
+'  The rest of the program consists of support routines.
+'==== 
+'   
+plotbyte:
+'
+'   This routine plots the current sixel data as a stack of six pixels
+'   repeated as many times as the immediately preceding repeat-count says,
+'   or just ONCE if NO repeat-count preceded the data.
+'
+'---
+'   First, remove the +63 "bias" that shifts Sixel data into the
+'   printable character range... this turns the byte into raw binary data.
+'
+  byte = byte - 63
+'
+'   In BASIC, we have to painstakingly loop-and-shift to pick bits out 
+'   of the data byte; this would be easier in almost ANY other language.
+'
+  FOR offset = 5 TO 0 STEP -1
+'
+'  If the high bit was clear, we don't have to set anything and can
+'  skip some processing
+'
+    byte = byte * 2
+    IF byte < 64 THEN GOTO ploop
+'
+'  The high bit was SET, so we chop it off to prepare for the next iter-
+'  ation of the loop
+'
+    byte = byte - 64
+'
+'  A pixel multiplied by a repeat-count equals a LINE; note that the Y
+'  coordinate of the LOWERMOST pixel is offset by the loop counter, so 
+'  that the bits end up stacked.  (You could exchange X and Y in this 
+'  program, and display Sixel data SIDEWAYS!  Other variations are just
+'  as easy...)
+'
+    LINE(x,y+offset)-(x+repeat-1,y+offset),c
+ploop:
+  NEXT offset
+'
+'  Horizontal position must advance by the number of pixels just drawn
+'  
+  x=x+repeat
+'
+'  The repeat-count applies only to the Sixel character immediately 
+'  following it, so we reset it to 1 after using it.
+'
+  repeat = 1
+'
+'  As mentioned in the main loop comments, each subroutine called from
+'  there must read one character BEYOND what it uses.
+'
+  GOSUB GETCHAR
+  RETURN
+'
+'====
+'  
+header:
+'
+'  This routine waits for the Sixel introducer sequence.
+'  This is pretty naive, but it works.  It relies on the 
+'  assumption that we already KNOW we are dealing with a
+'  Sixel data file, and it just waits til the Sixel intro-
+'  ducer sequence termination character ("q") is seen.
+'
+  GOSUB GETCHAR
+  IF char$ <> "q" THEN GOTO header 
+  GOSUB GETCHAR
+  RETURN
+'
+'====
+'  
+processcolor:
+'
+' This procedure processes the two varieties of color control
+' command sequence. 
+'
+cloop:
+'
+'  The GETNUM procedure is a jacket routine that comes in 
+'  handy: it calls GETCHAR repeatedly when a numeric string
+'  is expected, returning the numeric value in NN and the
+'  first non-numeric character in BYTE.
+'
+'  Here, we're getting the first parameter after the "#"
+'  control character, which represents "color number:"
+'
+  GOSUB getnum 
+  c = nn
+'
+'  Just like the VT240, we treat our colors "MODULO 4"
+'
+  WHILE c>3 
+    c = c-4
+   WEND
+'
+'  The "#" character can introduce a color SPECIFICATION or
+'  color SELECTION command.  The former has multiple para-
+'  meters, the latter does not, so we can tell which is 
+'  which by whether or not we see a parameter separator 
+'  (semicolon (;) ).
+' 
+  IF char$ = ";" THEN
+'
+'  Arguments mean this is a command to SET the color.
+'
+    GOSUB getnum        ' Param. 1 ==> color space (RGB or HLS)
+    colorspace = nn
+'
+    GOSUB getnum        ' Param. 2 ==> RED (channel 1) value
+    chan1 = nn
+    GOSUB getnum        ' Param. 3 ==> GREEN (channel 2) value
+    chan2 = nn
+    GOSUB getnum        ' Param. 4 ==> BLUE (channel 3) value
+    chan3 = nn
+'
+'  COLORSPACE will be either 1 for HLS, or 2 for RGB.  The Amiga,
+'  fortunately, operates directly in RGB.  Ideally, there would be
+'  code in the "ELSE" clause here to convert HLS to RGB, but I 
+'  don't know how to do it!  If anyone reading this knows how, write
+'  me at Chris_F_Chiesa@cup.portal.com and explain it to me.
+'    
+    IF colorspace=2 THEN
+'
+'  Comment out the PALETTE statement here to disable interpretation of 
+'  color information fro the sixel file.  Useful if file info is WRONG.
+'
+      PALETTE c,chan1/100,chan2/100,chan3/100
+    END IF
+  END IF
+  RETURN
+'
+'====
+'  
+getrepeat:
+'
+'  This procedure reads the numeric string following a "repeat count
+'  introducer" character ("!"), and converts it to the numeric value of
+'  REPEAT for use in the PLOTBYTE routine.
+'
+'  R$ is a starter string that we can fall back on if the repeat-count 
+'  turns up damaged or missing
+'
+  r$ = "0"
+'
+'  Tack characters onto the end of CHAR$, which is the ASCII string
+'  form of the character returned by GETCHAR, until we hit a non-
+'  numeric character which terminates the read.  (I apparently wrote
+'  this routine before implementing the GETNUM routine, and never
+'  converted it to use GETNUM.)
+'
+gloop:
+  GOSUB GETCHAR
+  n$ = char$
+  IF n$>="0" AND n$<="9" THEN r$=r$+n$ : GOTO gloop
+'
+'  Once we have a numeric string, BASIC makes it easy to convert it to
+'  a truly numeric value...
+'
+  repeat = VAL(r$)
+'
+'  If no numeric characters were seen, or if the repeat-count was 
+'  specified as 0, we assume it should really be 1.
+'
+  IF repeat = 0 THEN repeat = 1
+  RETURN
+  
+linefeed:
+'
+'  This procedure performs a "graphic linefeed" -- repositions us to
+'  the "beginning of the next Sixel band."  Simple - just hack X and Y.
+'
+  x=0
+  y=y+6
+'
+'  I apparently had in mind to disable plotting when I went off the
+'  bottom of the screen, but I don't think I use this anywhere...
+'
+  IF y>ymax THEN plotenable = 0
+  GOSUB GETCHAR
+  RETURN
+'
+'====
+'  
+carret:
+'
+'  This procedure performs a "graphic carriage-return" -- repositions us
+'  to the "beginning of the current Sixel band."  Simple - just hack X.
+'  Note that the "plot enable" flag shows up here too!
+'
+  x=0 : IF y<= ymax THEN plotenable=1
+  GOSUB GETCHAR
+  RETURN
+
+getnum:
+'
+'  Read a number from the string data stream
+'
+  n$ = ""    ' return numeric string value n$,
+  nn = 0     ' numeric value nn, & terminator char$/byte
+  GOSUB GETCHAR   ' get new "char$" and "byte"
+  WHILE char$ <= "9" AND char$ >= "0"
+    n$ = n$ + char$
+    GOSUB GETCHAR
+  WEND
+  IF n$ <> "" THEN nn = VAL(n$)
+  RETURN
+  
+GETCHAR:
+'
+'  Read a character from the string data stream
+'
+'  Have we run out of data in the most-recently-read record/line?
+'
+  IF pt > LEN(six$) THEN
+'
+'  Yes: reset the index and try to read another line --
+'
+    pt = 1 
+    IF EOF(1) THEN         '  -- unless we're at end of file
+      GOTO done
+    ELSE
+      six$=""
+'
+'  If NOT at end-of-file, read until we get a non-empty record.
+'
+      WHILE LEN(six$)<1
+        INPUT #1,six$
+      WEND
+    END IF
+  END IF
+'
+'  We get here with valid data at position PT in string SIX$.
+'
+    char$= MID$(six$,pt,1)       ' Extract ASCII character,
+    byte = ASC(char$)            ' return it also as an integer
+    pt = pt+1                    ' and advance the index
+'
+    RETURN
+
+    
+ PRINT "This should never be printed!"  
+
+'
+'  The origins of the following tidbits are lost in the mists of
+'  time...
+'
+done:
+CLOSE #1
+'
+waitpt:
+ SLEEP
+ GOTO waitpt
+'
+'  We come here when the left mouse button is pressed, closing
+'  and shutting stuff down.
+'
+quit:
+  PRINT "Closing!"
+  WINDOW CLOSE 2
+  SCREEN CLOSE 1
+'    
+END
+/* ---------- */
+

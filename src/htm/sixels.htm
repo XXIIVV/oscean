@@ -1,4 +1,4 @@
-<h2>Sixel is a graphics format made of patterns six pixels high and one wide.</h2>
+<h2>Sixel is a graphics format made of 64 patterns six pixels high and one wide.</h2>
 
 <p>An image is encoded by breaking up the bitmap into a series of 6-pixel high
 strips that is then converted into a single <a href='ascii.html'>ASCII
@@ -6,7 +6,26 @@ character</a>, offset by 0x3f so that the first sixel is encoded as
 <kbd>?</kbd>. This ensures that the sixels remain within the printable
 character range of the ASCII character set. </p>
 
-<h3>Characters</h3>
+<table border='1'>
+	<tr><th rowspan='2'>Enter Sixels Mode</th><td>DCS</td><td>0x90</td><td>Start sequence</td></tr>
+	<tr><td>q</td><td>0x71</td><td>End optional parameters</td></tr>
+	<tr><th rowspan='4'>Sixels Body</th><td>!</td><td>0x21</td><td><a href='#rle'>RLE Encoding</a></td></tr>
+	<tr><td>$</td><td>0x24</td><td>Beginning of current line</td></tr>
+	<tr><td>-</td><td>0x2d</td><td>Beginning of next line</td></tr>
+	<tr><td>?~</td><td>0x3x-0x7f</td><td><a href='#tiles'>Sixels Tiles</a></td></tr>
+	<tr><th>Leave Sixels Mode</th><td>ST</td><td>0x9c</td><td>Terminate sequence</td></tr>
+</table>
+
+<h3 id='rle'>RLE Encoding</h3>
+
+<p>The <kbd>!</kbd> character, followed by a string of decimal digit characters,
+preceding any valid sixel-data character, causes that sixel to be repeated the
+number of times represented by the decimal string. RLE Encoding shouldn't be
+used for less than 4 repetitions. For example, seven repetitions of the sixel
+represented by the letter "A" could be transmitted either as <kbd>AAAAAAA</kbd>
+or <kbd>!7A</kbd>.</p>
+
+<h3 id='tiles'>Tiles</h3>
 
 <p>The pixels can be read as a binary number, with the top pixel being the least
 significant bit. Add the value of the pixels together, which gives a number
@@ -17,20 +36,7 @@ illustrated below.</p>
 
 <img src='../media/refs/sixels.png'/>
 
-<h3>Special characters</h3>
-
-<p>Color is supported using the <kbd>#</kbd> character, followed by a number referring to one of a number of color registers, which varied from device to device.</p>
-
-<ul>
-	<li><kbd>-</kbd> Line Feed</li>
-	<li><kbd>#1</kbd> Color1</li>
-</ul>
-
-<h3>Example</h3>
-
-<pre>???owYn||~ywo??-?IRJaVNn^NVbJRI</pre>
-
-<h3>Implementation</h3>
+<h3>Uxntal Implementation</h3>
 
 <pre>
 @draw-sixels ( str* -- )
