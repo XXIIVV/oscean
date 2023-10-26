@@ -4,7 +4,7 @@
 <title>XXIIVV &mdash; uxntal syntax</title></head><body>
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
 
-<nav><ul><li><a href="uxntal.html" class="parent">uxntal</a></li><li><a href="varvara.html">varvara</a></li></ul><ul><li><a href="uxntal_opcodes.html">uxntal opcodes</a></li><li><a href="uxntal_stacks.html">uxntal stacks</a></li><li><a href="uxntal_modes.html">uxntal modes</a></li><li><a href="uxntal_syntax.html" class="self">uxntal syntax</a></li><li><a href="uxntal_immediate.html">uxntal immediate</a></li><li><a href="uxntal_memory.html">uxntal memory</a></li><li><a href="uxntal_state.html">uxntal state</a></li><li><a href="uxntal_devices.html">uxntal devices</a></li></ul><ul><li><a href="uxntal_types.html">uxntal types</a></li><li><a href="uxntal_struct.html">uxntal struct</a></li><li><a href="uxntal_signed.html">uxntal signed</a></li><li><a href="uxntal_lambdas.html">uxntal lambdas</a></li><li><a href="uxntal_cons.html">uxntal cons</a></li><li><a href="uxntal_library.html">uxntal library</a></li></ul></nav>
+<nav><ul><li><a href="uxntal.html" class="parent">uxntal</a></li><li><a href="varvara.html">varvara</a></li></ul><ul><li><a href="uxntal_opcodes.html">uxntal opcodes</a></li><li><a href="uxntal_stacks.html">uxntal stacks</a></li><li><a href="uxntal_modes.html">uxntal modes</a></li><li><a href="uxntal_syntax.html" class="self">uxntal syntax</a></li><li><a href="uxntal_immediate.html">uxntal immediate</a></li><li><a href="uxntal_memory.html">uxntal memory</a></li><li><a href="uxntal_state.html">uxntal state</a></li><li><a href="uxntal_devices.html">uxntal devices</a></li></ul><ul><li><a href="uxntal_struct.html">uxntal struct</a></li><li><a href="uxntal_signed.html">uxntal signed</a></li><li><a href="uxntal_lambdas.html">uxntal lambdas</a></li><li><a href="uxntal_cons.html">uxntal cons</a></li><li><a href="uxntal_types.html">uxntal types</a></li><li><a href="uxntal_library.html">uxntal library</a></li></ul></nav>
 <main><h2>Uxntal syntax</h2>
 
 <p>Uppercased opcodes are reserved words, hexadecimal bytes and shorts are
@@ -55,115 +55,7 @@ will terminate with <kbd>BRK</kbd>.</p>
 
 <p>Lastly, we encounter <kbd>JMP2r</kbd> which jumps to the absolute address that we left on the return stack when we entered the <kbd>@print-text</kbd> subroutine.</p>
 
-<h2>Typed uxntal is an inference system based on stack effect definitions.</h2>
-
-<p><a href='type_systems.html'>Type inference</a> in <a
-href='uxntal.html'>Uxntal</a> is done by checking the stack effect declarations
-of words, against the sum of stack changes predicted to occur based on the
-items in their bodies.</p>
-
-<ul>
-	<li><kbd>( a -- b )</kbd> Untyped</li>
-	<li><kbd>( a -: b )</kbd> Typed routine</li>
-	<li><kbd>( a -> b )</kbd> Typed vector</li>
-</ul>
-
-<p>Words that do not pass the stack-checker are generating a warning, and so
-essentially this defines a very basic and permissive type system that
-nevertheless catches some invalid programs and enables compiler optimizations.
-</p>
-
-<pre>
-@routine ( a b -: c ) <i>Ok.</i>
-	MUL
-JMP2r
-</pre>
-
-<p>The simplest case is when a piece of code does not have any branches or
-recursion, and merely pushes literals and calls words. Pushing a literal has
-stack effect <code>( -- x )</code>. The stack effect of most words is always
-known statically from the declaration.</p>
-
-<pre>
-@add ( <b style='color:red'>a*</b> b* -- c* ) <i>Warning: Imbalance in @add of +2</i>
-	DUP2 ADD2
-JMP2r
-</pre>
-
-<h3>Branch Validation</h3>
-
-<p>A word calling a subroutine that would force an exit of the parent routine
-with an imbalanced stack also triggers an error.</p>
-
-<pre>
-@routine ( a b -: c ) <i>Warning: Imbalance in @routine of +1</i>
-	EQUk <b style='color:red'>?&sub-routine</b>
-	POP2 #0a JMP2r
-	&sub-routine ( a b -: c*</b> )
-		POP2 #000b JMP2r
-</pre>
-
-<h3>Return-Stack Passing</h3>
-
-<p>The following example shows some extra syntax where stack elements passed
-through the return stack are prefixed with a backtick:</p>
-
-<pre>
-@wcpy ( src* des* -: cap* ) <i>Ok.</i>
-	STH2
-	&w ( src* `des* -: cap* )
-		LDAk STH2kr STA
-		INC2r INC2 LDAk #20 GTH ?&w
-	POP2
-	( cap ) #00 STH2kr STA
-	INC2r STH2r JMP2r
-</pre>
-
-<p>Each jump label must be defined for a routine's body to validate with the
-arity checker, but labels can also be used anywhere in a routine to test
-against a specific arity in time, like you would a breakpoint.</p>
-
-<h3>Fall-through Type</h3>
-
-<p>The fall-through comment allows to validate a <i>tail-less routine</i>(or,
-that does not return or break), by including the stack effect of the following
-routine in memory.</p>
-
-<pre>
-@falling ( a b c -: c ) <i>Ok.</i>
-	POP
-	( >> )
-@next-routine ( a b -: res )
-	ADD
-JMP2r
-</pre>
-
-<p>More research has to be done in this space, but it would be interesting to
-check a routine's purity by making sure that no ST/LD/DE opcodes can be
-reached.</p>
-
-<h3>Runtime Validation</h3>
-
-<p>Lastly, a <b>runtime specific</b> solution to validate the stack state at any
-one point during the execution of a program, is to read the <a
-href='varvara.html#system'>System/wst</a> port and compare it against a given
-stack pointer byte value. Note: that the value in the wst and rst ports include
-the stack pointer byte.</p>
-
-<pre>
-@on-reset ( -> )
-	#abcd DUP2 
-	.System/wst DEI #05 EQU ?{
-		#01 .System/debug DEO
-		}
-	BRK
-</pre>
-
-<ul>
-	<li><a href='https://git.sr.ht/~rabbits/uxnbal' target='_blank'>Uxnbal</a>, Source</li>
-</ul>
-
-<h2>Structs allow to access individual members in a data structure.</h2>
+<h2>Using and defining struct data structures in Uxntal.</h2>
 
 <p>Structs are defined by rolling back the program address with <kbd>|00</kbd>, similarly to how you would define an enum.</p>
 
@@ -199,7 +91,7 @@ BRK
 	&avery "Avery $1
 </pre>
 
-<h2>Uxntal Signed</h2>
+<h2>Using and operating on negative numbers in Uxntal.</h2>
 
 <p>Uxn doesn't have built-in support for negative integers. However, you can
 emulate <a href='https://en.wikipedia.org/wiki/Signed_number_representations'
@@ -220,7 +112,7 @@ following:</p>
 	<th>unsigned</th>
 	<td>0</td><td>1</td><td>2</td>
 	<td>126</td><td>127</td><td>128</td><td>129</td><td>130</td>
-	<td>254</td><td>255</td><td>256</td>
+	<td>253</td><td>254</td><td>255</td>
 	</tr>
 	<tr>
 	<th>signed</th>
@@ -312,7 +204,7 @@ treatment.</p>
 	<li>Guide by <a href='http://plastic-idolatry.com/erik/nxu/math-notes.txt' target='_blank'>d_m</a></li>
 </ul>
 
-<h2>Anonymous Functions in Uxntal</h2>
+<h2>Using anonymous functions in Uxntal</h2>
 
 <p>In the context of Uxntal, lambdas are unlabeled inline routines delimited by
 curlies, not unlike <a href='postscript.html'>Postscript</a>'s anonymous
@@ -324,7 +216,7 @@ unquoted with the <kbd>STH2r</kbd> and <kbd>JSR2</kbd> opcodes.</p>
 #12 #34 { ADD JMP2r } STH2r JSR2
 </pre>
 
-<p>A lambda block is managed label definition which can be used with standard
+<p>A lambda block is a managed label definition which can be used with standard
 immediate opcodes. For example, to skip over a length of code: </p>
 
 <pre>
@@ -411,9 +303,11 @@ layer of a nested lambda is evaluated at a time:</p>
 #01 { { "foo $1 } STH2r !print-lambda } STH2r JCN2
 </pre>
 
-<h2>A cons cell is a data structure which holds both data and the address to the following cell.</h2>
+<h2>Using cons cells and linked lists in Uxntal.</h2>
 
 <p>In functional programming languages, a list is the most versatile data type that can be used to store a collection of similar data items. Uxn uses singular opcodes operating on words of equal length, one might come across a problem that is better addressed with routines that operate on ordered lists of items and nested stacks. This 300 bytes implementation of cons cells gives your project that power.</p>
+
+<p>A cons cell is data structure which holds both data and an address to the next cell.</p>
 
 <p>The data slot is known as the <i>CAR</i>, and the address slot is known as the <i>CDR</i>. The purpose is so that ordered lists can be traversed by going from one cell to the next, it also allows one to change the order of cells without manually moving any of the cells' data. </p>
 
@@ -546,6 +440,114 @@ JMP2r
 <ul>
 	<li><a href='https://paste.sr.ht/~rabbits/17e0bc158c7219c83838b81c2980ab1ec2764087' target='_blank'>Complete source file</a></li>
 	<li><a href='https://git.sr.ht/~rabbits/ornithologics' target='_blank'>Ornithologics</a></li>
+</ul>
+
+<h2>Using stack effect definitions in Uxntal.</h2>
+
+<p><a href='type_systems.html'>Type inference</a> in <a
+href='uxntal.html'>Uxntal</a> is done by checking the stack effect declarations
+of words, against the sum of stack changes predicted to occur based on the
+items in their bodies.</p>
+
+<ul>
+	<li><kbd>( a -- b )</kbd> Untyped</li>
+	<li><kbd>( a -: b )</kbd> Typed routine</li>
+	<li><kbd>( a -> b )</kbd> Typed vector</li>
+</ul>
+
+<p>Words that do not pass the stack-checker are generating a warning, and so
+essentially this defines a very basic and permissive type system that
+nevertheless catches some invalid programs and enables compiler optimizations.
+</p>
+
+<pre>
+@routine ( a b -: c ) <i>Ok.</i>
+	MUL
+JMP2r
+</pre>
+
+<p>The simplest case is when a piece of code does not have any branches or
+recursion, and merely pushes literals and calls words. Pushing a literal has
+stack effect <code>( -- x )</code>. The stack effect of most words is always
+known statically from the declaration.</p>
+
+<pre>
+@add ( <b style='color:red'>a*</b> b* -- c* ) <i>Warning: Imbalance in @add of +2</i>
+	DUP2 ADD2
+JMP2r
+</pre>
+
+<h3>Branch Validation</h3>
+
+<p>A word calling a subroutine that would force an exit of the parent routine
+with an imbalanced stack also triggers an error.</p>
+
+<pre>
+@routine ( a b -: c ) <i>Warning: Imbalance in @routine of +1</i>
+	EQUk <b style='color:red'>?&sub-routine</b>
+	POP2 #0a JMP2r
+	&sub-routine ( a b -: c*</b> )
+		POP2 #000b JMP2r
+</pre>
+
+<h3>Return-Stack Passing</h3>
+
+<p>The following example shows some extra syntax where stack elements passed
+through the return stack are prefixed with a backtick:</p>
+
+<pre>
+@wcpy ( src* des* -: cap* ) <i>Ok.</i>
+	STH2
+	&w ( src* `des* -: cap* )
+		LDAk STH2kr STA
+		INC2r INC2 LDAk #20 GTH ?&w
+	POP2
+	( cap ) #00 STH2kr STA
+	INC2r STH2r JMP2r
+</pre>
+
+<p>Each jump label must be defined for a routine's body to validate with the
+arity checker, but labels can also be used anywhere in a routine to test
+against a specific arity in time, like you would a breakpoint.</p>
+
+<h3>Fall-through Type</h3>
+
+<p>The fall-through comment allows to validate a <i>tail-less routine</i>(or,
+that does not return or break), by including the stack effect of the following
+routine in memory.</p>
+
+<pre>
+@falling ( a b c -: c ) <i>Ok.</i>
+	POP
+	( >> )
+@next-routine ( a b -: res )
+	ADD
+JMP2r
+</pre>
+
+<p>More research has to be done in this space, but it would be interesting to
+check a routine's purity by making sure that no ST/LD/DE opcodes can be
+reached.</p>
+
+<h3>Runtime Validation</h3>
+
+<p>Lastly, a <b>runtime specific</b> solution to validate the stack state at any
+one point during the execution of a program, is to read the <a
+href='varvara.html#system'>System/wst</a> port and compare it against a given
+stack pointer byte value. Note: that the value in the wst and rst ports include
+the stack pointer byte.</p>
+
+<pre>
+@on-reset ( -> )
+	#abcd DUP2 
+	.System/wst DEI #05 EQU ?{
+		#01 .System/debug DEO
+		}
+	BRK
+</pre>
+
+<ul>
+	<li><a href='https://git.sr.ht/~rabbits/uxnbal' target='_blank'>Uxnbal</a>, Source</li>
 </ul>
 
 <h2>A collection of commonly used routines in Uxntal projects.</h2>
