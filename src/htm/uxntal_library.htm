@@ -2,161 +2,80 @@
 
 <p>The following snippets are in the standard format. If you discover faster and smaller helpers, please get in touch with me.</p>
 
-<h3>Numbers</h3>
+<h3>Hexadecimal Numbers</h3>
 
-<p>To print hexadecimal numbers:</p>
+<p>To print an hexadecimal number:</p>
 <pre>
-@print ( v* -- )
-
-	SWP ,&byte JSR
-	&byte ( byte -- ) DUP #04 SFT ,&char JSR
-	&char ( char -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO
-
-JMP2r
+@phex ( short* -- )
+	SWP phex/b
+	&b ( -- )
+		DUP #04 SFT phex/c
+	&c ( -- )
+		#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
+		JMP2r
 </pre>
 
-<p>To print the binary value from a short:</p>
-
+<p>To convert an hexadecimal string to a value:</p>
 <pre>
-@pbin ( v* -- )
-
-	,&t STR2
-	#1000
-	&l
-		#0f OVR SUB [ LIT2 &t $2 ] ROT SFT2
-		NIP #01 AND LIT "0 ADD #18 DEO
-		INC GTHk ?&l
-	POP2
-
-JMP2r
+@shex ( str* -- val* )
+	[ LIT2r 0000 ]
+	&w ( -- )
+		( validate ) LDAk chex INC #00 EQU ?&end
+		( accumulate ) [ LITr 40 ] SFT2r
+		( combine ) LDAk chex [ LITr 00 ] STH ADD2r
+		( continue ) INC2 LDAk ?&w
+	&end POP2 STH2r JMP2r
 </pre>
 
-<p>To print a decimal number from a short, without leading zeroes:</p>
+<p>To convert an hexadecimal character to a nibble:</p>
 <pre>
-@pdec ( v* -- )
+@chex ( c -- val? )
+	( dec ) [ LIT "0 ] SUB DUP #09 GTH ?{ JMP2r }
+	( hex ) #27 SUB DUP #0f GTH ?{ JMP2r }
+	( err ) POP #ff JMP2r
+</pre>
 
-	#00 ,&z STR
-	#2710 ,&parse JSR
-	#03e8 ,&parse JSR
-	#0064 ,&parse JSR
-	#000a ,&parse JSR
-	NIP
-	&emit
-		DUP [ LIT &z $1 ] EQU ,&skip JCN
-			#ff ,&z STR DUP #30 ADD #18 DEO
-			&skip
-	POP
+<h3>Decimal Numbers</h3>
 
-JMP2r
-	&parse
-		DIV2k DUP ,&emit JSR MUL2 SUB2
-	JMP2r
+<p>To convert a decimal string to a value:</p>
+<pre>
+@pdec ( short* -- )
+	#2710 [ LIT2r 00fb ]
+	&w ( -- )
+		DIV2k #000a DIV2k MUL2 SUB2 SWPr EQUk OVR STHkr EQU AND ?{
+			DUP [ LIT "0 ] ADD #19 DEO
+			INCr }
+		POP2 #000a DIV2 SWPr INCr STHkr ?&w
+	POP2r POP2 POP2 JMP2r
 </pre>
 
 <p>To convert a decimal string to a hexadecimal value.</p>
 <pre>
 @sdec ( str* -- val* )
-
-	LIT2r 0000
-	&w
-		LIT2r 000a MUL2r
-		LITr 00
-		LDAk #30 SUB STH ADD2r
-		INC2 LDAk ,&w JCN
-	POP2
-	STH2r
-
-JMP2r
-</pre>
-
-<p>To convert a hexadecimal string to a hexadecimal value.</p>
-<pre>
-@shex ( str* -- val* )
-
-	LIT2r 0000
-	&w
-		LITr 40 SFT2r
-		LITr 00
-		LDAk ,chex JSR STH ADD2r
-		INC2 LDAk ,&w JCN
-	POP2
-	STH2r
-
-JMP2r
-</pre>
-
-<p>To convert a hexadecimal character to a nibble.</p>
-<pre>
-@chex ( c -- val|ff )
-
-	LIT "0 SUB DUP #09 GTH JMP JMP2r
-	#27 SUB DUP #0f GTH JMP JMP2r
-	POP #ff
-
-JMP2r
+	[ LIT2r 0000 ]
+	&w ( -- )
+		( validate ) LDAk [ LIT "0 ] SUB #09 GTH ?&end
+		( accumulate ) [ LIT2r 000a ] MUL2r
+		( combine ) LDAk [ LIT "0 ] SUB [ LITr 00 ] STH ADD2r
+		( continue ) INC2 LDAk ?&w
+	&end POP2 STH2r JMP2r
 </pre>
 
 <h3 id='strings'>Strings</h3>
 
 <p>To print a string.</p>
 <pre>
-|0100
-
-	;string ,pstr JSR
-
-BRK
-
-@string "Hello 20 "World $1
-
 @pstr ( str* -- )
-
-	&w
+	&w ( -- )
 		LDAk #18 DEO
-		INC2 LDAk ,&w JCN
-	POP2
-
-JMP2r
+		INC2 & LDAk ?&w
+	POP2 JMP2r
 </pre>
 
-<p>It was also discovered by <a href='https://yeti.tilde.institute/brain/uxn.html' target='_blank'>Yeti</a> that inline strings can be printed, the following routine was submitted by <a href='http://kira.solar' target='_blank'>Kira</a>: </p>
+<p>Helpers for strings:</p>
 
 <pre>
-|0100
-
-	,pinl JSR "hello 20 "World $1
-
-BRK
-
-@pinl ( -- )
-
-	LDArk STHr DUP #18 DEO
-	INC2r ,pinl JCN
-
-JMP2r
-</pre>
-
-<p>Helpers for strings.</p>
-
-<pre>
-@scap ( str* -- end* ) LDAk #00 NEQ JMP JMP2r &w INC2 LDAk ,&w JCN JMP2r
-@spop ( str* -- ) LDAk ,&n JCN POP2 JMP2r &n ,scap JSR #0001 SUB2 #00 ROT ROT STA JMP2r
-@sput ( chr str* -- ) ,scap JSR INC2k #00 ROT ROT STA STA JMP2r
-@slen ( str* -- len* ) DUP2 ,scap JSR SWP2 SUB2 JMP2r
-@scat ( src* dst* -- ) ,scap JSR
-@scpy ( src* dst* -- ) STH2 &w LDAk STH2kr STA INC2r INC2 LDAk ,&w JCN POP2 #00 STH2r STA JMP2r
-@scmp ( a* b* -- f ) STH2 &l LDAk LDAkr STHr ANDk #00 EQU ,&e JCN NEQk ,&e JCN POP2 INC2 INC2r ,&l JMP &e NIP2 POP2r EQU JMP2r
-@sclr ( str* -- ) LDAk ,&w JCN POP2 JMP2r &w STH2k #00 STH2r STA INC2 LDAk ,&w JCN POP2 JMP2r
-</pre>
-
-<h4>zstr</h4>
-
-<p>For length-prefixed zero-page strings:</p>
-
-<pre>
-@zstr ( zero-page length-prefixed string )
-	&push ( zstr c -- zstr ) OVR LDZk INC SWP STZk ADD STZ JMP2r
-	&pop ( zstr -- zstr ) DUP LDZk #01 SUB SWP STZ JMP2r
-	&print ( zstr -- zstr ) LDZk ADDk NIP SWP &l INC LDZk #18 DEO NEQk ,&l JCN NIP JMP2r
+[TODO]
 </pre>
 
 <h3>Memory</h3>
@@ -164,26 +83,18 @@ JMP2r
 <p>To print an entire page of memory:</p>
 <pre>
 @pmem ( addr* -- )
-
-	STH2
 	#0000
-	&l
-		#00 OVR STH2kr ADD2 LDA ,print/byte JSR
+	&l ( -- )
+		ADD2k LDA phex/b
 		DUP #0f AND #0f NEQ #16 MUL #0a ADD #18 DEO
-		INC NEQk ,&l JCN
-	POP2
-	POP2r
-
-JMP2r
+		INC NEQk ?&l
+	POP2 POP2 JMP2r
 </pre>
 
 <p>Helpers for memory.</p>
 
 <pre>
-@mclr ( src* len* -- ) OVR2 ADD2 SWP2 &l STH2k #00 STH2r STA INC2 GTH2k ,&l JCN POP2 POP2 JMP2r
-@mcpy ( src* dst* len* -- ) SWP2 STH2 OVR2 ADD2 SWP2 &l LDAk STH2kr STA INC2r INC2 GTH2k ,&l JCN POP2 POP2 POP2r JMP2r
-@msfl ( a* b* len* -- ) STH2 SWP2 EQU2k ,&e JCN &l DUP2k STH2kr ADD2 LDA ROT ROT STA INC2 GTH2k ,&l JCN POP2 POP2 &e POP2r JMP2r
-@msfr ( a* b* len* -- ) STH2 EQU2k ,&e JCN &l DUP2 LDAk ROT ROT STH2kr ADD2 STA #0001 SUB2 LTH2k ,&l JCN POP2 POP2 &e POP2r JMP2r
+[TODO]
 </pre>
 
 <p>Helpers for bitwise operations.</p>
@@ -192,27 +103,11 @@ JMP2r
 @popcnt ( byte -- count ) LITr 00 #00 &w SFTk #01 AND STH ADDr INC SFTk ?&w POP2 STHr JMP2r
 </pre>
 
-<p>To shift part of a string using a signed short.</p>
-
-<pre>
-@ssft ( str* len* -- )
-
-	STH2 DUP2k ;slen JSR2 ADD2 STH2r
-	DUP2 #8000 GTH2 ,&l JCN
-	ORAk ,&r JCN
-	POP2 POP2 POP2
-
-JMP2r
-	&l #8000 SWP2 SUB2 #8000 ADD2 ;msfl JSR2 JMP2r
-	&r ;msfr JSR2 JMP2r
-</pre>
-
 <h3>Dates</h3>
 
 <p>To find the day of the week from a given date, <a href='https://c-faq.com/misc/zeller.html' target='_blank'>Tomohiko Sakamoto</a>'s method:</p>
 <pre>
 @dotw ( y* m d -- dotw )
-
 	( y -= m < 3; )
 	OVR STH SWP2 #00 STHr #02 LTH SUB2
 	STH2
@@ -227,27 +122,26 @@ JMP2r
 	ADD2
 	( % 7 )
 	#0007 DIV2k MUL2 SUB2 NIP
-
-JMP2r
-	&t 00 03 02 05 00 03 05 01 04 06 02 04
+	JMP2r
+		&t [ 00 03 02 05 00 03 05 01 04 06 02 04 ]
 </pre>
 
 <p>To find if a year is a leap year:</p>
 <pre>
 @is-leap-year ( year* -- bool )
-
 	( leap year if perfectly divisible by 400 )
-	DUP2 #0190 ( MOD2 ) DIV2k MUL2 SUB2 #0000 EQU2 ,&leap JCN
-	( not leap year if divisible by 100 but not divisible by 400 )
-	DUP2 #0064 ( MOD2 ) DIV2k MUL2 SUB2 #0000 EQU2 ,&not-leap JCN
-	( leap year if not divisible by 100 but divisible by 4 )
-	DUP2 #0003 AND2 #0000 EQU2 ,&leap JCN
+	DUP2 #0190 ( MOD2 ) DIV2k MUL2 SUB2 #0000 EQU2 ?&leap
+	( not a leap year if divisible by 100 )
+	( but not divisible by 400 )
+	DUP2 #0064 ( MOD2 ) DIV2k MUL2 SUB2 #0000 EQU2 ?&not-leap
+	( leap year if not divisible by 100 )
+	( but divisible by 4 )
+	DUP2 #0003 AND2 #0000 EQU2 ?&leap
 	( all other years are not leap years )
 	&not-leap
 	POP2 #00
-
-JMP2r
-	&leap POP2 #01 JMP2r
+	JMP2r
+		&leap POP2 #01 JMP2r
 </pre>
 
 <h3>Random</h3>
