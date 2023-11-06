@@ -65,6 +65,8 @@ roman alphabet. </p>
 <tr><td> 1024 </td><td> 1101221</td><td> 1412</td><td><tt>AJY</tt></td></tr>
 </table>
 
+<img src='../media/refs/oksapmin.png'/>
+
 <p>To convert and print the heptavintimal digits of 5 trybbles from a <a
 href='decimal.html'>decimal</a> integer stored in a 16-bit address space where
 each trit takes 2 bits:</p>
@@ -75,19 +77,16 @@ typedef uint32_t trint16_t;
 int
 ter2bin(trint16_t t)
 {
-	int i, acc = 0;
-	for(i = 0; i < 16; i++) {
-		acc += (t >> 0x1e) & 0x3;
-		if(i != 15)
-			acc *= 3, t <<= 2;
-	}
+	int sft = 1, acc = 0;
+	while(t)
+		acc += sft * (t & 0x3), t >>= 2, sft *= 3;
 	return acc;
 }
 
 trint16_t
 bin2ter(int n)
 {
-	int acc = 0, sft = 0;
+	trint16_t sft = 0, acc = 0;
 	while(n > 0)
 		acc |= (n % 3) << sft, n /= 3, sft += 2;
 	return acc;
@@ -96,8 +95,8 @@ bin2ter(int n)
 trint16_t
 hep2ter(char *str)
 {
-	trint16_t acc = 0;
 	char c;
+	trint16_t acc = 0;
 	while((c = *str++))
 		acc <<= 6, acc |= bin2ter(c ? (c - 'A') + 1 : 0);
 	return acc;
