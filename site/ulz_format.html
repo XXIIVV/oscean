@@ -1,0 +1,113 @@
+<!DOCTYPE html><html><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="../links/main.css" type="text/css" rel="stylesheet"><link href="../media/services/icon.png" type="image/png" rel="shortcut icon">
+<title>XXIIVV &mdash; ulz format</title></head><body>
+<header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
+
+<nav><ul><li><a href="programming_languages.html">programming languages</a></li><li><a href="operating_systems.html">operating systems</a></li><li><a href="file_formats.html" class="parent">file formats</a></li><li><a href="data_encoding.html">data encoding</a></li><li><a href="type_systems.html">type systems</a></li></ul><ul><li><a href="icn_format.html">icn format</a></li><li><a href="chr_format.html">chr format</a></li><li><a href="nmt_format.html">nmt format</a></li><li><a href="gly_format.html">gly format</a></li><li><a href="ufx_format.html">ufx format</a></li><li><a href="ulz_format.html" class="self">ulz format</a></li><li><a href="tga_format.html">tga format</a></li></ul><ul></ul></nav>
+<main><h2>ULZ is a compression format.</h2>
+
+<p>This LZ compression format is designed to be mildly better than RLE but <i>not
+too difficult</i> to host on <a href='uxn.html'>Uxn systems</a>. The compressed
+file contains a stream of commands, not unlike a <a
+href='virtual_machines.html'>virtual machine</a> bytecode. There are two types
+of instructions <b>LIT</b> and <b>DIC</b>.</p>
+
+<table border='1'>
+	<tr><th colspan='3'>Byte</th><th colspan='1'>Byte</th><th colspan='1'>Byte</th></tr>
+	<tr><td colspan='2'>0</td><td><b>LIT</b>(length, 7 bits)</td><td colspan='2'>Bytes to copy at pointer...</td></tr>
+	<tr><td>1</td><td>0</td><td><b>DIC1</b>(length, 6 bits)</td><td>Offset from pointer</td></tr>
+	<tr><td>1</td><td>1</td><td colspan='2'><b>DIC2</b>(length, 14 bits)</td><td>Offset from pointer</td></tr>
+</table>
+
+<h3>Encoded Data</h3>
+
+<pre>
+2842 6c75 6520 6c69 6b65 206d 7920 636f
+7276 6574 7465 2069 7473 2069 6e20 616e
+6420 6f75 7473 6964 650a 8128 2361 7265
+2074 6865 2077 6f72 6473 2049 2073 6179
+0a41 6e64 2077 6861 7420 4920 7468 696e
+6b8a 2909 6665 656c 696e 6773 0a54 8022
+066c 6976 6520 696e 8050 1720 6d65 0a49
+276d 2062 6c75 650a 4461 2062 6120 6465
+6520 6482 0900 69b5 12
+</pre>
+
+<h3>The LIT Instruction</h3>
+
+<p>The <b>LIT</b> instruction appends a number of bytes to the dictionary equal
+to the 7 lower bits of the instruction byte, plus 1.</p>
+
+<pre>
+Blue like my corvette its in and outside
+are the words I say
+And what I thinkfeelings
+Tlive in me
+I'm blue
+Da ba dee di
+</pre>
+
+<h3>The DIC Instruction</h3>
+
+<p>The <b>DIC</b> instruction copies a length of bytes, plus 4, at an offset from the
+dictionary pointer, plus 1.</p>
+
+<pre>
+Blue like my corvette its in and outside
+-----are the words I say
+And what I think--------------feelings
+T----live in---- me
+I'm blue
+Da ba dee d------i--------------------------------------------------------
+</pre>
+
+<p>The resulting 209 bytes of data from the 137 bytes of compressed data.</p>
+
+<pre>
+Blue like my corvette its in and outside
+Blue are the words I say
+And what I think
+Blue are the feelings
+That live inside me
+I'm blue
+Da ba dee da ba di
+Da ba dee da ba di
+Da ba dee da ba di
+Da ba dee da ba di
+</pre>
+
+<h3>Implementation</h3>
+
+<p>Here's an implementation in <a href='ansi_c.html'>C89</a>.</p>
+<pre>
+char *mem, *ptr;
+
+void
+decode_ulz(FILE *src)
+{
+	char c, *copy;
+	short i, length;
+	while((c = getc(src)) != EOF) {
+		if(c & 0x80) { /* DICT */
+			if(c & 0x40)
+				length = (c & 0x3f) << 8 | getc(src);
+			else
+				length = c & 0x3f;
+			copy = ptr - (getc(src) + 1);
+			for(i = 0; i < length + 4; i++)
+				*(ptr++) = *(copy++);
+		} else /* LIT */
+			for(i = 0; i < c + 1; i++)
+				*(ptr++) = getc(src);
+	}
+}
+</pre>
+
+<ul>
+	<li><a href='https://git.sr.ht/~rabbits/uxn-utils/tree/main/item/cli/lz' target='_blank'>Implementations</a></li>
+</ul>
+
+<ul></ul></main>
+<footer><a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.svg" alt="CreativeCommons"/></a> <a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a> <a href="https://merveilles.town/@neauoire" rel="me" target="_blank"><img src="../media/icon/merveilles.svg" alt="Merveilles"/></a> <a href="ethics.html"><img src="../media/icon/dreipfeile.svg" alt="NoNazis!"/></a> <a href="uxn.html"><img src="../media/icon/uxn.svg" alt="UxnPowered"/></a> <span><a href="devine_lu_linvega.html">Devine Lu Linvega</a> &copy; 2023 &mdash; <a href="about.html#license">BY-NC-SA 4.0</a></span></footer>
+</body></html>
