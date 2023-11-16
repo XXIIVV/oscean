@@ -79,15 +79,58 @@ Da ba dee da ba di
 
 <h3>Implementation</h3>
 
-<p>Here's an implementation in <a href='ansi_c.html'>C89</a>.</p>
+<p>Here's an implementation in <a href='uxntal.html'>Uxntal</a>.</p>
+
+<pre>
+@decode_ulz ( str* -- )
+	;mem .ptr STZ2
+	.File/name DEO2
+	&stream ( -- )
+		#0001 .File/length DEO2
+		;&b
+			DUP2 .File/read DEO2
+			.File/success DEI2 ORA ?{ POP2 JMP2r }
+			[ LIT &b $1 ] decode_ulz_byte
+		!&stream
+
+@decode_ulz_byte ( byte -- )
+	DUP #80 AND ?op-dict
+
+@op-lit ( byte -- )
+	#00 SWP INC2
+		DUP2 .File/length DEO2
+	.ptr LDZ2
+		DUP2 .File/read DEO2
+		ADD2 .ptr STZ2
+	JMP2r
+
+@op-dict ( byte -- )
+	#7f AND
+		DUP #40 AND ?&long
+	#00 SWP !&amp;copy
+&long ( byte -- )
+	#3f AND getc
+&amp;copy ( length* -- )
+	.ptr LDZ2 #00 getc INC2 SUB2 STH2
+	#0004 ADD2 #0000
+	&l ( -- )
+		( get ) DUP2 STH2kr ADD2 LDA
+		( put ) .ptr LDZ2 STAk INC2 .ptr STZ2 POP
+		INC2 GTH2k ?&l
+	POP2 POP2 POP2r
+	JMP2r
+</pre>
+
+<p>And an implementation in <a href='ansi_c.html'>C89</a>.</p>
 <pre>
 char *mem, *ptr;
 
-void
+int
 decode_ulz(FILE *src)
 {
 	char c, *copy;
 	short i, length;
+	ptr = mem = malloc(0x10000);
 	while((c = getc(src)) != EOF) {
 		if(c & 0x80) { /* DICT */
 			if(c & 0x40)
@@ -101,6 +144,7 @@ decode_ulz(FILE *src)
 			for(i = 0; i < c + 1; i++)
 				*(ptr++) = getc(src);
 	}
+	return ptr - mem;
 }
 </pre>
 
