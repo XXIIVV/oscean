@@ -4,13 +4,13 @@
 too difficult</i> to host on <a href='uxn.html'>Uxn systems</a>. The compressed
 file contains a stream of commands, not unlike a <a
 href='virtual_machines.html'>virtual machine</a> bytecode. There are two types
-of instructions <b>LIT</b> and <b>DIC</b>.</p>
+of instructions <b>LIT</b> and <b>CPY</b>, the CPY opcode has a short and a longer mode.</p>
 
 <table border='1'>
 	<tr><th colspan='3'>Byte</th><th colspan='1'>Byte</th><th colspan='1'>Byte</th></tr>
 	<tr><td colspan='2'>0</td><td><b>LIT</b>(length, 7 bits)</td><td colspan='2'>Bytes to copy at pointer...</td></tr>
-	<tr><td>1</td><td>0</td><td><b>DIC1</b>(length, 6 bits)</td><td>Offset from pointer</td></tr>
-	<tr><td>1</td><td>1</td><td colspan='2'><b>DIC2</b>(length, 14 bits)</td><td>Offset from pointer</td></tr>
+	<tr><td>1</td><td>0</td><td><b>CPY1</b>(length, 6 bits)</td><td>Offset from pointer</td></tr>
+	<tr><td>1</td><td>1</td><td colspan='2'><b>CPY2</b>(length, 14 bits)</td><td>Offset from pointer</td></tr>
 </table>
 
 <h3>Encoded Data</h3>
@@ -41,9 +41,9 @@ I'm blue
 Da ba dee di
 </pre>
 
-<h3>The DIC Instruction</h3>
+<h3>The CPY Instruction</h3>
 
-<p>The <b>DIC</b> instruction copies a length of bytes, plus 4, at an offset from the
+<p>The <b>CPY</b> instruction copies a length of bytes, plus 4, at a negative offset from the
 dictionary pointer, plus 1.</p>
 
 <pre>
@@ -87,7 +87,7 @@ Da ba dee da ba di
 		!&stream
 
 @decode_ulz_byte ( byte -- )
-	DUP #80 AND ?op-dict
+	DUP #80 AND ?op-cpy
 
 @op-lit ( byte -- )
 	#00 SWP INC2
@@ -97,7 +97,7 @@ Da ba dee da ba di
 		ADD2 .ptr STZ2
 	JMP2r
 
-@op-dict ( byte -- )
+@op-cpy ( byte -- )
 	#7f AND
 		DUP #40 AND ?&long
 	#00 SWP !&amp;copy
@@ -125,7 +125,7 @@ decode_ulz(FILE *src)
 	short i, length;
 	ptr = mem = malloc(0x10000);
 	while((c = getc(src)) != EOF) {
-		if(c & 0x80) { /* DICT */
+		if(c & 0x80) { /* CPY */
 			if(c & 0x40)
 				length = (c & 0x3f) << 8 | getc(src);
 			else
