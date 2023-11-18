@@ -1,10 +1,12 @@
 <h2>ULZ is a compression format.</h2>
 
-<p>This LZ compression format is designed to be mildly better than RLE but <i>not
-too difficult</i> to host on <a href='uxn.html'>Uxn systems</a>. The compressed
-file contains a stream of commands, not unlike a <a
+<p>This LZ lossless compression format is designed to be mildly better than RLE
+but <i>not too difficult</i> to host on <a href='uxn.html'>Uxn systems</a>. The
+compressed file contains a stream of commands, not unlike a <a
 href='virtual_machines.html'>virtual machine</a> bytecode. There are two types
-of instructions <b>LIT</b> and <b>CPY</b>, the CPY opcode has a short and a longer mode. Decoding works by reading the commands from the input until there's no more input.</p>
+of instructions <b>LIT</b> and <b>CPY</b>, the CPY opcode has a short and a
+longer mode. Decoding works by reading the commands from the input until
+there's no more input.</p>
 
 <table border='1'>
 	<tr><th colspan='3'>Byte</th><th>Byte</th><th>Byte</th></tr>
@@ -13,7 +15,10 @@ of instructions <b>LIT</b> and <b>CPY</b>, the CPY opcode has a short and a long
 	<tr><td>1</td><td>1</td><td colspan='2'><b>CPY2</b>(length, 14 bits)</td><td>Offset from pointer</td></tr>
 </table>
 
-<p>As the output file is being assembled, a pointer moves along, and the program appends previously written data at the pointer's position up to a maximum of 256 bytes ago.</p>
+<p>As the output file is being assembled, a pointer moves along, and the program
+appends previously written data at the pointer's position up to a maximum of
+256 bytes ago. When the writing length overflows the distance from the output
+pointer, the bytes loop over the available length.</p>
 
 <h3>Encoded Data</h3>
 
@@ -57,7 +62,9 @@ I'm blue
 Da ba dee d------i--------------------------------------------------------
 </pre>
 
-<p>The resulting 209 bytes of data from the 137 bytes of compressed data.</p>
+<p>The resulting 209 bytes of data from the 137 bytes of compressed data. Note
+that this short example is not long enough to include usage of the CPY2
+instruction.</p>
 
 <pre>
 Blue like my corvette its in and outside
@@ -71,6 +78,19 @@ Da ba dee da ba di
 Da ba dee da ba di
 Da ba dee da ba di
 </pre>
+
+<h3>Image Compression</h3>
+
+<p>The compression works best with tiled assets in the <a
+href='icn_format.html'>icn</a> or <a href='chr_format.html'>chr</a>
+formats.</p>
+
+<table border='1'>
+	<tr>
+		<td rowspan='2'><img src='../media/generic/ako.ulz.png'/></td>
+		<td>Original: 4096 bytes<br/>Compressed: <b>2430 bytes</b>, 59.32%</td>
+	</tr>
+</table>
 
 <h3>Implementation</h3>
 
