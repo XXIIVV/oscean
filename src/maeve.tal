@@ -40,8 +40,7 @@
 	STH2k .File/name DEO2
 	DUP2 .File/length DEO2
 	SWP2 .File/read DEO2
-	( check for size ) .File/success DEI2 NEQ2 ?{
-		STH2kr <print-line> }
+	( check for size ) .File/success DEI2 NEQ2 ?{ STH2kr <print-line> }
 	POP2r JMP2r
 
 @<parse-lexicon> ( -- )
@@ -57,8 +56,7 @@
 @<parse-lexicon-line> ( line* -- next* )
 	INC2 INC2
 	( | do incoming )
-	DUP2k #0001 SUB2 LDA LIT "? EQU ?{
-		DUP2 <parse-links> }
+	DUP2k #0001 SUB2 LDA LIT "? EQU ?{ DUP2 <parse-links> }
 	( | do sitemap )
 	;dict/sitemap-path .File2/name DEO2
 	;dict/li-tag <w>
@@ -126,8 +124,7 @@
 		LDA2k get-workarea-length ROT2 <load-file>
 		#0000
 		( to* from* ) ;workarea STH2k .File/success DEI2 ADD2
-		( cap ) STA2k
-		NIP2 STH2r <parse-diary-page>
+		( cap ) STA2k NIP2 STH2r <parse-diary-page>
 		INC2 INC2 GTH2k ?&l
 	POP2 POP2 JMP2r
 
@@ -142,10 +139,8 @@
 	DUP2 parse-log
 	( split ) DUP2 #0900 <cswp>
 	DUP2 set-diary
-	( event ) DUP2 #0005 ADD2 LDA LIT "+ NEQ ?{
-		DUP2 parse-event }
-	;dict/no-photo OVR2 #0006 ADD2 scmp ?{
-		DUP2 add-to-journal }
+	( event ) DUP2 #0005 ADD2 LDA LIT "+ NEQ ?{ DUP2 parse-event }
+	;dict/no-photo OVR2 #0006 ADD2 scmp ?{ DUP2 add-to-journal }
 	( eol ) scap/ INC2 scap/ INC2 !scap/
 
 @parse-log ( event* -- )
@@ -180,8 +175,7 @@
 
 @add-to-journal ( photo* -- )
 	( | limit to 20 entries )
-	[ LIT2 &len $2 ] #0020 LTH2 ?{
-		POP2 JMP2r }
+	[ LIT2 &len $2 ] #0020 LTH2 ?{ POP2 JMP2r }
 	;dict/journal-path .File2/name DEO2
 	DUP2 #0006 ADD2 ,&pict STR2
 	#000a ADD2 DUP2 ,&term STR2
@@ -206,8 +200,7 @@
 
 @set-diary ( log* -- )
 	( | validate photo id )
-	#0006 ADD2 sdec ORAk ?{
-		POP2 JMP2r }
+	#0006 ADD2 sdec ORAk ?{ POP2 JMP2r }
 	DUP2 get-diary ?&duplicate
 	( bit ) #01 OVR #07 AND #40 SFT SFT STH
 	( res ) #03 SFT2 ;diaries ADD2 LDAk STHr ORA ROT ROT STA
@@ -225,8 +218,7 @@
 @find-available ( -- id* )
 	#0001
 	&w ( -- )
-		DUP2 get-diary ?{
-			JMP2r }
+		DUP2 get-diary ?{ JMP2r }
 		INC2 !&w
 
 (
@@ -279,8 +271,7 @@
 
 @<char> ( chr -- )
 	#0001 .File2/length DEO2
-	;&b STAk
-	.File2/write DEO2
+	;&b STAk .File2/write DEO2
 	POP JMP2r
 	&b $1
 
@@ -299,7 +290,8 @@
 @sdec ( str* -- val* )
 	LIT2r 0000
 	&w ( -- )
-		LIT2r 000a MUL2r LITr 00 LDAk #30 SUB STH ADD2r INC2 LDAk ?&w
+		LIT2r 000a MUL2r LITr 00 LDAk #30 SUB STH
+		ADD2r INC2 LDAk ?&w
 	POP2 STH2r JMP2r
 
 @sseg ( a* b* -- f )
@@ -393,8 +385,7 @@
 @diary-path-pages
 	=diary-paths/3 =diary-paths/2 =diary-paths/1 =diary-paths/0 &end
 
-@header-txt
-	[
+@header-txt [
 	3c68 323e 5468 6520 4361 6c65 6e64 6172
 	2073 686f 7773 2075 7063 6f6d 696e 6720
 	616e 6420 7061 7374 2065 7665 6e74 7320
