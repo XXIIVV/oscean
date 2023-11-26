@@ -7,21 +7,25 @@
 <nav><ul><li><a href="uxntal_opcodes.html">uxntal opcodes</a></li><li><a href="uxntal_stacks.html">uxntal stacks</a></li><li><a href="uxntal_modes.html">uxntal modes</a></li><li><a href="uxntal_syntax.html" class="parent">uxntal syntax</a></li><li><a href="uxntal_immediate.html">uxntal immediate</a></li><li><a href="uxntal_memory.html">uxntal memory</a></li><li><a href="uxntal_state.html">uxntal state</a></li><li><a href="uxntal_devices.html">uxntal devices</a></li></ul><ul><li><a href="uxntal_struct.html">uxntal struct</a></li><li><a href="uxntal_signed.html">uxntal signed</a></li><li><a href="uxntal_lambdas.html" class="self">uxntal lambdas</a></li><li><a href="uxntal_cons.html">uxntal cons</a></li><li><a href="uxntal_types.html">uxntal types</a></li><li><a href="uxntal_library.html">uxntal library</a></li></ul><ul></ul></nav>
 <main><h2>Using anonymous functions in Uxntal</h2>
 
-<p>In the context of Uxntal, lambdas are unlabeled inline routines delimited by
+<p>In the context of Uxntal, lambdas are managed routine labels designated by
 curlies, not unlike <a href='postscript.html'>Postscript</a>'s anonymous
-procedures. A lambda block is jumped over, and a pointer to the start of the
-lambda is pushed to the top of the return stack. The body of the lambda can be
-unquoted with the <kbd>STH2r</kbd> and <kbd>JSR2</kbd> opcodes.</p>
-
-<pre>
-#12 #34 { ADD JMP2r } STH2r JSR2
-</pre>
-
-<p>A lambda block is a managed label definition which can be used with standard
-immediate opcodes. For example, to skip over a length of code: </p>
+procedures. Under the hood, the opening bracket is a way to aquire the address
+at the location in memory of its closing bracket, this allows the destination
+address to be used like any other label such as a JCI <kbd>?{</kbd>, a JMI,
+<kbd>!{</kbd> or a plain literal <kbd>;{</kbd>. Lambdas can also be nested into
+each other.</p>
 
 <pre>
 .button LDZ #00 EQU ?{ will-not-eval }
+</pre>
+
+<p>A lambda block that has no rune will be parsed as a subroutine jump, and so,
+will be jumped over, and a pointer to the start of the lambda will be pushed to
+the top of the return stack. The body of the lambda can be unquoted with the
+<kbd>STH2r</kbd> and <kbd>JSR2</kbd> opcodes.</p>
+
+<pre>
+#12 #34 { ADD JMP2r } STH2r JSR2
 </pre>
 
 <p>A lambda can be used to store data inline, and ensure that the content is not
