@@ -39,14 +39,13 @@
 Uint8 tile[8] = {0x00, 0x3c, 0x42, 0x7e, 0x40, 0x42, 0x3c, 0x00};
 
 void
-draw_icn(Uint32 *dst, int x, int y, Uint8 *sprite, int fg, int bg)
+draw_icn(int x, int y, Uint8 *sprite, Uint32 color)
 {
-	int v, h;
-	for(v = 0; v < 8; v++)
-		for(h = 0; h < 8; h++) {
-			int ch1 = (sprite[v] >> (7 - h)) & 0x1;
-			put_pixel(dst, x + h, y + v, ch1);
-		}
+	int y2 = y + 8, h;
+	for(; y < y2; y++, sprite++)
+		for(h = 0; h < 8; h++)
+			if(*sprite << h & 0x80)
+				draw_pixel(x + h, y, color);
 }
 </pre>
 
