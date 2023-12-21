@@ -5,30 +5,40 @@
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
 
 <nav><ul><li><a href="assembly.html">assembly</a></li><li><a href="forth.html">forth</a></li><li><a href="lisp.html" class="parent">lisp</a></li><li><a href="basic.html">basic</a></li><li><a href="pascal.html">pascal</a></li><li><a href="ansi_c.html">ansi c</a></li><li><a href="postscript.html">postscript</a></li><li><a href="hypertalk.html">hypertalk</a></li></ul><ul><li><a href="secd.html" class="self">secd</a></li></ul><ul></ul></nav>
-<main><h2>A virtual machine intended as a target for functional programming language compilers.</h2>
+<main><h2>An abstract machine intended as a target for functional programming language
+compilers.</h2>
 
-<p>The SECD machine is defined with a set of transitions between its four components:</p>
-
-<ul>
-	<li>A stack register holding a list of intermediate results.</li>
-	<li>An environment register holding the current environment.</li>
-	<li>A control register holding a list of control directives.</li>
-	<li>A dump register holding a list of triples. Each triple contains snapshots of the stack, environment, and control registers.</li>
-</ul>
-
-<h3>Stacks</h3>
-
-<p>Like all internal data-structures, the stack is a list, with the S register pointing at the list's head or beginning. Due to the list structure, the stack need not be a continuous block of memory, so stack space is available as long as there is a single free memory cell. Even when all cells have been used, garbage collection may yield additional free memory. Obviously, specific implementations of the SECD structure can implement the stack as a canonical stack structure, thus improving the overall efficiency of the virtual machine, provided that a strict bound be put on the dimension of the stack.</p>
-<p>The C register points at the head of the code or instruction list that will be evaluated. Once the instruction there has been executed, the C is pointed at the next instruction in the list—it is similar to an instruction pointer (or program counter) in conventional machines, except that subsequent instructions are always specified during execution and are not by default contained in subsequent memory locations, as is the case with the conventional machines.</p>
-<p>The current variable environment is managed by the E register, which points at a list of lists. Each individual list represents one environment level: the parameters of the current function are in the head of the list, variables that are free in the current function, but bound by a surrounding function, are in other elements of E.</p>
-<p>The dump, at whose head the D register points, is used as temporary storage for values of the other registers, for example during function calls. It can be likened to the return stack of other machines. </p>
+<p>The machine is defined with a set of transitions between its four components:</p>
 
 <ul>
-	<li><kbd>s</kbd> Stack used for evaluation of expressions.</li>
-	<li><kbd>e</kbd> Environment used to store the current value list.</li>
-	<li><kbd>c</kbd> Control used to store the instructions.</li>
-	<li><kbd>d</kbd> Dump used to store suspended invocation context.</li>
+	<li><b>Stack</b> register holding a list of intermediate results.</li>
+	<li><b>Environment</b> register holding the current environment.</li>
+	<li><b>Control</b> register holding a list of control directives.</li>
+	<li><b>Dump</b> register holding a list of triples. Each triple contains snapshots of the stack, environment, and control registers.</li>
 </ul>
+
+<p>Like all internal data-structures, the stack is a list, with the <kbd>Stk
+register</kbd> pointing at the list's head. Due to the list structure, the stack
+need not be a continuous block of memory, so stack space is available as long
+as there is a single free memory cell. Even when all cells have been used,
+garbage collection may yield additional free memory. </p>
+
+<p>The current variable environment is managed by the <kbd>Env register</kbd>, which
+points at a list of lists. Each individual list represents one environment
+level: the parameters of the current function are in the head of the list,
+variables that are free in the current function, but bound by a surrounding
+function, are in other elements of E.</p>
+
+<p>The <kbd>Ctl register</kbd> points at the head of the instruction list that will
+be evaluated. Once the instruction there has been executed, the pointer is pointed at
+the next instruction in the list. It is similar to an instruction pointer (or
+program counter) in conventional machines, except that subsequent instructions
+are always specified during execution and are not by default contained in
+subsequent memory locations, as is the case with the conventional machines.</p>
+
+<p>The <kbd>Dum register</kbd>, at whose head the register points, is used as
+temporary storage for values of the other registers, for example during
+function calls. It can be likened to the return stack of other machines. </p>
 
 <h3>Primitives</h3>
 
