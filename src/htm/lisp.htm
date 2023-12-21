@@ -1,133 +1,122 @@
-<h2>Lisp is a family of programming languages with a parenthesized prefix notation.</h2>
+<h2>Lisp is a family of programming languages recognizable by its iconic
+parenthesized prefix notation.</h2>
 
-<p>Operations in Lisp use the format <code>(* 5 5)</code>, as opposed to the infix notation <code>(5 * 5)</code>. A pair of parentheses indicates one step of calculation. A function name comes after the open parenthesis followed by arguments. Atoms are tokens in a list separated by spaces, tabs and newlines.</p>
+<p>Operations in Lisp use the format <code>(* 5 5)</code>, as opposed to the
+infix <a href='notation.html'>notation</a> <code>(5 * 5)</code>. A pair of parentheses indicates one step
+of calculation.</p>
 
 <figure>
 	<img src='../media/refs/vogue-lisp.jpg' width='300'/>
 	<figcaption>&mdash; Typical Lisp Programmer</figcaption>
 </figure>
 
-<h3>Eval & Apply</h3>
+<p>A function name comes after the open parenthesis followed by
+arguments. Atoms are tokens in a list separated by spaces, tabs and
+newlines.</p>
 
-<p><b>apply</b> applies a function to some arguments:</p>
+<h3>Data Types</h3>
 
-<pre>(apply + 1 2 3) => 6</pre>
-
-<p><b>eval</b> evaluates an expression:</p>
-
-<pre>(eval '(+ 1 2 3)) => 6</pre>
-
-<h3>List</h3>
-
-<p>You can create a list of items, and access items in the list by id:</p>
+<p>A <b>number</b> is a signed integer in a machine specific finite range, and the
+representation of a number is a seq uence of decimal digits, optionally
+preceded by a sign.</p>
 
 <pre>
-(define colors
-	(list red yellow green cyan))
-(list-ref colors 2) ; yellow
-</pre>
+45
++137
+-27</pre>
 
-<h3>Logic</h3>
-
-<p>Logic operations are in the format of <code>(if true this that)</code> where the result of the operation will be <code>this</code> if the second parameter is <code>true</code>, otherwise will be <code>that</code>. In Scheme, true is indicated as <code>#t</code>, and falseis indicated as <code>#f</code>.</p>
-
-<pre>
-(define (min a b)
-	(if (< a b) a b))
-</pre>
-
-<img src='../media/refs/fib.png'/>
-
-<h3>Variables</h3>
-
-<p>To define a variable, use <code>define</code>, to print the value of an expression, use <code>display</code>.</p>
+<p>A <b>symbol</b> is represented by a finite sequence of characters, it is not possible
+for the user to type symbols which begin as though they were numbers, although
+digits may appear later in a symbol that begins with, say, a letter. </p>
 
 <pre>
-(define color "red")
-(display color)
-</pre>
+Hello
+Hello-world
+x32 </pre>
 
-<h3>Functions</h3>
-
-<p>To define a function, use <code>define</code>, to add parameters to the function, use <code>lambda</code>. The following functions can thereafter be used like <code>(greet "Alex")</code>.</p>
-
-<pre>
-(define greet (lambda (name)
-	(string-append "Hello " name "!")))
-</pre>
-
-<p>Another example:</p>
+<p>A <b>pair</b> consists of two component called the head and the tail. The
+components of a pair may be any type of value, including pairs, so that pairing
+may be used to construct arbitrarily large data structures. </p>
 
 <pre>
-(define add-three (lambda (a b c)
-	(+ a b c)))
+( 45 . Hello )
+( foo . bar )
+( -12 . ( 34 . 56 ) )
 </pre>
 
-<p>The previous example can also be defined using the following short-form:</p>
+<p>A <b>function</b> is a value which may be applied to arguments, to yield a
+value which depends only on the function and the arguments to which it is
+applied. Given an expression, <b>quote</b> returns that expression as a value.</p>
 
 <pre>
-(define (add-three a b c)
-	(+ a b c))
+(QUOTE 12)
+(REM (QUOTE 19) (QUOTE 24))
+(MUL (QUOTE 2) (ADD (QUOTE 1) X))
 </pre>
 
-<h4>Compare</h4>
+<h3>Built-ins</h3>
 
-<table border="1">
-	<tr><th><code>eq?</code></th><td>Compares addresses of two objects and returns #t if they are same.</td></tr>
-	<tr><th><code>eqv?</code></th><td>Compares types and values of two object stored in the memory space and returns #t if they are same.</td></tr>
-	<tr><th><code>equal?</code></th><td>Compares sequences such as list or string and returns #t if they are same.</td></tr>
-</table>
+<p>A <b>lambda</b> expression allows to name sub-expressions, given an argument list and an expression, returns them as a function.:</p>
 
-<q>The reports of my death are greatly exaggerated.</q>
+<pre>
+(LAMBDA (X Y) (ADD X Y))
+</pre>
 
-<h2>Cons</h2>
+<p>Alternatively, the <b>let</b> expression can also associate a name to an
+expression, given an expression with declarations (as named expressions visible
+in the expression) returns its value:</p>
 
-<p>Cons is a fundamental function, <code>(cons x y)</code>, which stands for <b>constructs memory objects</b> and holds two values or pointers to values. The resulting pair has a left half, referred to as the car (the first element, or contents of the address part of register), and a right half (the second element, or contents of the decrement part of register), referred to as the cdr. </p>
+<pre>
+(LET (QUOTE (aleph 1234)))
+</pre>
+
+<p>The following expression has value <b>True(T)</b> if the value of the
+expression is an <b>atom</b>, a number or a symbol, or has value
+<b>False(F)</b> otherwise. </p>
+
+<pre>(ATOM (QUOTE 123))</pre>
+
+<p>The <b>equality</b> of two atomic expressions may be tested by an expression
+of the following form, and result in a value either T or F provided that the
+values of the expressions being compared are both atoms, and either they are
+both the same number, or they are both the same symbol:</p>
+
+<pre>
+(LAMBDA (X) (EQ (QUOTE foo) X))
+</pre>
+
+<p>Given three expressions returns the value of the second if the value of the
+first is True, otherwise returns the value of the third.</p>
+
+<pre>
+(IF 
+	(EQ (QUOTE 16) X)
+	(QUOTE EQUAL16)
+	(QUOTE NOT-EQUAL16))
+</pre>
 
 <img src='../media/refs/sexp.png'/>
 
-<p>Although cons cells can be used to hold ordered pairs of data, they are more commonly used to construct more complex compound data structures, notably lists and binary trees. For example, the Lisp expression <code>(cons 1 2)</code> constructs a cell holding 1 in its left half (the so-called <b>car</b> field) and 2 in its right half (the <b>cdr</b> field). In Lisp notation, the value (cons 1 2) looks like: </p>
+<h3>Summary</h3>
+<ul>
+	<li><b>car</b>: Returns a pair's first value.</li>
+	<li><b>cdr</b>: Returns a pair's second value.</li>
+	<li><b>atom</b>: Returns T if its value is atomic.</li>
+	<li><b>cons</b>: Returns a value pair consisting of two expressions.</li>
+	<li><b>eq</b>: Returns T if two expressions are equal.</li>
+	<li><b>add</b>: Returns the sum of two numeric values.</li>
+	<li><b>sub</b>: Returns the difference of two numeric values.</li>
+	<li><b>mul</b>: Returns the product of two numeric values.</li>
+	<li><b>div</b>: Returns the quotient of two numeric values.</li>
+	<li><b>rem</b>: Returns the remainder of two numeric values.</li>
+	<li><b>leq</b>: Returns T if the first value is less or equal to the second.</li>
+</ul>
 
-<table border='1'>
-	<tr><td>A list</td><td>(cons 42 (cons 69 (cons 613 nil)))</td><td>(list 42 69 613)</td></tr>
-	<tr><td>A tree</td><td>(cons (cons 1 2) (cons 3 4))</td><td></td></tr>
-</table>
+<q>Writing eval required inventing a notation representing Lisp functions as
+Lisp data, and such a notation was devised for the purposes of the paper with
+no thought that it would be used to express Lisp programs in practice. </q>
 
-<h3>LispKit</h3>
-
-<p>Lispkit is a lexically scoped, purely functional subset of Lisp developed as a testbed for functional programming concepts. It was first used for early experimentation with lazy evaluation.</p>
-
-<dl>
-	<dt>atom</dt><dd>given an expression returns True if its value is atomic; False if not.</dd>
-	<dt>add</dt><dd>given two expressions returns the sum of their numeric values.</dd>
-	<dt>car</dt><dd>given an expression whose value is a pair, returns the pair's first value.</dd>
-	<dt>cdr</dt><dd>given an expression whose value is a pair, returns the pair's second value.</dd>
-	<dt>cons</dt><dd>given two expressions returns a value pair consisting of their values.</dd>
-	<dt>div</dt><dd>given two expressions returns the quotient of their numeric values.</dd>
-	<dt>eq</dt><dd>given two expressions returns True if their values are equal; False if not.</dd>
-	<dt>if</dt><dd>given three expressions returns the value of the second if the value of the first is True, otherwise returns the value of the third.</dd>
-	<dt>lambda</dt><dd>given an argument list and an expression, returns them as a function.</dd>
-	<dt>let</dt><dd>given an expression with declarations (as named expressions visible in the expression) returns its value.</dd>
-	<dt>letrec</dt><dd>like let, except the declared names are also visible in the declarations themselves.</dd>
-	<dt>leq</dt><dd>given two expressions, returns True if the value of the first is numerically less than or equal to the value of the second; False if not.</dd>
-	<dt>mod (or rem)</dt><dd>given two expressions, returns the modulus (also known as the remainder) of their numeric values.</dd>
-	<dt>mul</dt><dd>given two expressions, returns the product of their numeric values.</dd>
-	<dt>quote</dt><dd>given an expression, returns that expression as a value.</dd>
-	<dt>sub</dt><dd>given two expressions, returns the difference of their numeric values.</dd>
-</dl>
-
-<h3>Maxwell's equations of software</h3>
-
-<p>Alan Kay has famously described Lisp as the <i>Maxwell's equations of software</i>. </p>
-
-<article>
-	<p><b>Alan Kay</b>: Yes, that was the big revelation to me when I was in graduate school—when I finally understood that the half page of code on the bottom of page 13 of the Lisp 1.5 manual was Lisp in itself. These were “Maxwell's Equations of Software!” This is the whole world of programming in a few lines that I can put my hand over.</p>
-	<p>I realized that anytime I want to know what I'm doing, I can just write down the kernel of this thing in a half page and it's not going to lose any power. In fact, it's going to gain power by being able to reenter itself much more readily than most systems done the other way can possibly do.</p>
-</article>
-
-<img src='../media/refs/lisp-maxwells.png'/>
-
-<q>Writing eval required inventing a notation representing Lisp functions as Lisp data, and such a notation was devised for the purposes of the paper with no thought that it would be used to express Lisp programs in practice. </q>
+<img src='../media/refs/fib.png' width='400'/>
 
 <ul>
 	<li><a href='http://www.shido.info/lisp/idx_scm_e.html' target='_blank'>Scheme Tutorial</a></li>
