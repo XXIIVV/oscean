@@ -26,8 +26,9 @@ Lisp, sometimes called <i>Pure Lisp</i>, which does <b>not</b> allow for:</p>
 </figure>
 
 <p>In Lisp, a function name comes after the open parenthesis followed by
-arguments. Atoms are tokens in a list separated by spaces, tabs and
-newlines.</p>
+arguments. Atoms are tokens in a list separated by spaces, tabs or newlines.
+For the length of this page, I will use uppercase function names to indicate
+prefabs, and lowercase for user-defined functions.</p>
 
 <h3>Data Types</h3>
 
@@ -119,44 +120,45 @@ first is True, otherwise returns the value of the third.</p>
 
 <h3>Program</h3>
 
-<p>A Pure Lisp program is either a LET, LETREC or LAMBDA expression. The main
+<p>A program is either a LET, LETREC or LAMBDA expression. The program is given an
+expression from the <i>outside world</i>, that we will call <i>INPUT</i> to
+make explicit that this is our program entry function. If the symbol
+"Machiavelli" is used as argument, the program will evaluate to the following
+pair:</p>
+
+<pre>
+(LAMBDA (<i>INPUT</i>)
+	(CONS (QUOTE Hello) <i>INPUT</i>)) <i>; ( Hello . Machiavelli )</i>
+</pre>
+
+<p>Typically, a program will have an entry function's name. For example, the
+previous program could be given a the name <code>greeting</code>. The main
 difference between LET and LETREC is that, with LETREC, the defined symbols are
 also visible in the expressions from the list of cons pairs, not just from the
-main expression. The values of LET and LETREC expressions are values of their
-first argument, calculated after substitutions of symbols with approrpiate
-expressions are made.</p>
+main expression.</p>
 
 <pre>
-(LETREC greeting
-	(greeting LAMBDA (X) (CONS (QUOTE Hello) X)))
+(LETREC <b>greeting</b>
+	(<b>greeting</b> LAMBDA (<i>INPUT</i>)
+		(CONS (QUOTE Hello) <i>INPUT</i>)))
 </pre>
 
-<p>This program could also be written as a simple lambda expression. In both
-cases, if the symbol "Machiavelli" is used as argument, the program will
-evaluate to the following pair:</p>
+<p>Using everything we've seen so far, we can see a more elaborate program, in
+which functions are organized as lambdas so they can be used in other parts of
+the program as follows:</p>
 
 <pre>
-(LAMBDA (X) (CONS (QUOTE Hello) X)) <i>; ( Hello . Machiavelli )</i>
-</pre>
-
-<p>Functions created as lambdas can be used in other parts of the program as
-follows:</p>
-
-<pre>
-(LETREC program
-	(program LAMBDA (X) (incr X))
-	(incr LAMBDA (X) (ADD X (QUOTE 1))))
-</pre>
-
-<p>Now, to create loops in a language that does not have these prefabs, we will use recursion:</p>
-
-<pre>
-(LETREC FOR 
-	(FOR LAMBDA (X Y)
-		(IF (LEQ X Y)
-			(FOR (ADD (QUOTE 1) X) Y)
-			(CONS X (CONS Y (QUOTE NIL)))
-		)))
+(LETREC <b>main</b>
+	(<b>main</b> LAMBDA (<i>INPUT</i>)
+		(<b>loop</b> (QUOTE 0) <i>INPUT</i>))
+	(<b>loop</b> LAMBDA (X Y)
+		(IF
+			(LEQ X Y)
+			(<b>loop</b> (<b>incr</b> X) Y)
+			(CONS X (CONS Y (QUOTE NIL)))))
+	(<b>incr</b> LAMBDA (X)
+		(ADD (QUOTE 1) X))
+)
 </pre>
 
 <q>Writing eval required inventing a notation representing Lisp functions as
