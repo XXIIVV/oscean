@@ -5,13 +5,13 @@
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
 
 <nav><ul><li><a href="programming_languages.html" class="parent">programming languages</a></li><li><a href="operating_systems.html">operating systems</a></li><li><a href="graphical_input.html">graphical input</a></li><li><a href="file_formats.html">file formats</a></li><li><a href="data_encoding.html">data encoding</a></li><li><a href="type_systems.html">type systems</a></li></ul><ul><li><a href="assembly.html">assembly</a></li><li><a href="forth.html">forth</a></li><li><a href="lisp.html" class="self">lisp</a></li><li><a href="basic.html">basic</a></li><li><a href="pascal.html">pascal</a></li><li><a href="ansi_c.html">ansi c</a></li><li><a href="postscript.html">postscript</a></li><li><a href="hypertalk.html">hypertalk</a></li></ul><ul><li><a href="secd.html">secd</a></li></ul></nav>
-<main><h2>Lisp is a family of programming languages recognizable by its iconic
-parenthesized prefix notation.</h2>
+<main><h2>A common trait of all dialects of LISP is the S-expression.</h2>
 
 <p>Operations in Lisp use the <a href='notation.html'>prefix notation</a>
-<code>(* 5 5)</code>, as opposed to the typical infix notation <code>(5 * 5)</code>. A pair of parentheses indicates one step of calculation. This page
-will document a lexically scoped, purely functional subset of Lisp, sometimes
-called <i>Pure Lisp</i>, which does <b>not</b> allow for:</p>
+<code>(* 5 5)</code>, as opposed to the typical infix notation <code>(5 * 5)</code>.
+A pair of parentheses indicates one step of calculation. This page
+will document a portable, lexically scoped, purely functional subset of
+Lisp, sometimes called <i>Pure Lisp</i>, which does <b>not</b> allow for:</p>
 
 <ul>
 	<li>Unbound and global variables</li>
@@ -109,10 +109,41 @@ both the same number, or they are both the same symbol:</p>
 first is True, otherwise returns the value of the third.</p>
 
 <pre>
-(IF 
+(IF
 	(EQ (QUOTE 16) X)
 	(QUOTE EQUAL16)
 	(QUOTE NOT-EQUAL16))
+</pre>
+
+<h3>Programs</h3>
+
+<p>A Pure Lisp program is either a LET, LETREC or LAMBDA expression. The main
+difference between LET and LETREC is that, with LETREC, the defined symbols are
+also visible in the expressions from the list of cons pairs, not just from the
+main expression. The values of LET and LETREC expressions are values of their
+first argument, calculated after substitutions of symbols with approrpiate
+expressions are made.</p>
+
+<pre>
+(LETREC greeting
+	(greeting LAMBDA (X) (CONS (QUOTE Hello) X)))
+</pre>
+
+<p>This program could also be written as a simple lambda expression. In both
+cases, if the symbol "Machiavelli" is used as argument, the program will
+evaluate to the following pair:</p>
+
+<pre>
+(LAMBDA (X) (CONS (QUOTE Hello) X)) <i>; ( Hello . Machiavelli )</i>
+</pre>
+
+<p>Functions created as lambdas can be used in other parts of the program as
+follows:</p>
+
+<pre>
+(LETREC program
+	(program LAMBDA (X) (incr X))
+	(incr LAMBDA (X) (ADD X (QUOTE 1))))
 </pre>
 
 <img src='../media/refs/sexp.png'/>
@@ -179,26 +210,26 @@ follows in which each number is one of the abstract machine opcode:</p>
 	<tr><th>9</th><th>JOIN</th><td>Pops a list reference from the dump and makes this the new value of C. This instruction occurs at the end of both alternatives of a sel.</td></tr>
 </table>
 
-<p>Like all internal data-structures, the stack is a list, with the <kbd>Stk
-register</kbd> pointing at the list's head. Due to the list structure, the stack
-need not be a continuous block of memory, so stack space is available as long
-as there is a single free memory cell. Even when all cells have been used,
-garbage collection may yield additional free memory. </p>
+<p>Like all internal data-structures, the stack is a list, with the <kbd>S</kbd>
+register pointing at the list's head. Due to the list structure, the stack need
+not be a continuous block of memory, so stack space is available as long as
+there is a single free memory cell. Even when all cells have been used, garbage
+collection may yield additional free memory. </p>
 
-<p>The current variable environment is managed by the <kbd>Env register</kbd>, which
+<p>The current variable environment is managed by the <kbd>E</kbd> register, which
 points at a list of lists. Each individual list represents one environment
 level: the parameters of the current function are in the head of the list,
 variables that are free in the current function, but bound by a surrounding
 function, are in other elements of E.</p>
 
-<p>The <kbd>Ctl register</kbd> points at the head of the instruction list that will
+<p>The <kbd>C</kbd> register points at the head of the instruction list that will
 be evaluated. Once the instruction there has been executed, the pointer is pointed at
 the next instruction in the list. It is similar to an instruction pointer (or
 program counter) in conventional machines, except that subsequent instructions
 are always specified during execution and are not by default contained in
 subsequent memory locations, as is the case with the conventional machines.</p>
 
-<p>The <kbd>Dum register</kbd>, at whose head the register points, is used as
+<p>The <kbd>D</kbd> register, at whose head the register points, is used as
 temporary storage for values of the other registers, for example during
 function calls. It can be likened to the return stack of other machines. </p>
 
