@@ -8,14 +8,51 @@
 <main><h2>An abstract machine intended as a target for functional programming language
 compilers.</h2>
 
-<p>The machine is defined with a set of transitions between its four components:</p>
+<p>The SECD is a stack-based runtime with a core of 10 opcodes defined with a set
+of transitions between its four components. Functions take their arguments from
+the stack. The arguments to built-in instructions are encoded immediately after
+them in the instruction stream.</p>
 
 <ul>
-	<li><b>Stack</b> register holding a list of intermediate results.</li>
-	<li><b>Environment</b> register holding the current environment.</li>
-	<li><b>Control</b> register holding a list of control directives.</li>
-	<li><b>Dump</b> register holding a list of triples. Each triple contains snapshots of the stack, environment, and control registers.</li>
+	<li><b>Stack</b> register points to a list of intermediate results.</li>
+	<li><b>Environment</b> register points to the current environment.</li>
+	<li><b>Control</b> register points a location in the program.</li>
+	<li><b>Dump</b> register points to a list of triples. Each triple contains snapshots of the stack, environment, and control registers.</li>
 </ul>
+
+<pre>
+( LAMBDA ( X ) ( ADD ( QUOTE 1 ) X ) )
+</pre>
+
+<p>If we compile the <a href='lisp.html'>Lisp</a> program above, the
+<code>.secd</code> representation of the incrementing lambda program is as
+follows in which each number is one of the abstract machine opcode:</p>
+
+<pre>
+( 3 ( 2 1 1 ( 0 . 0 ) 15 5 ) 4 21 )
+</pre>
+
+<p>If we decode the operation numbers to their mnemonics:</p>
+<pre>
+( LDF ( LDC 1 LD ( 0 . X ) ADD RTN ) AP BRK )
+</pre>
+
+<table border='1'>
+	<tr><th colspan='5'>Basic Instructions</th></tr>
+	<tr><th>0</th><th>NIL</th><td>Pushes a nil pointer onto the stack</td></tr>
+	<tr><th>1</th><th>LD</th><td>Pushes the value of a variable onto the stack. The variable is indicated by the argument, a pair.</td></tr>
+	<tr><th>2</th><th>LDC</th><td>Pushes a constant argument onto the stack</td></tr>
+	<tr><th colspan='5'>Non-recursive function instructions</th></tr>
+	<tr><th>3</th><th>LDF</th><td>Takes one list argument representing a function. It constructs a closure (a pair containing the function and the current environment) and pushes that onto the stack.</td></tr>
+	<tr><th>4</th><th>AP</th><td>Pops a closure and a list of parameter values from the stack. The closure is applied to the parameters by installing its environment as the current one, pushing the parameter list in front of that, clearing the stack, and setting C to the closure's function pointer. The previous values of S, E, and the next value of C are saved on the dump.</td></tr>
+	<tr><th>5</th><th>RTN</th><td>Pops one return value from the stack, restores S, E, and C from the dump, and pushes the return value onto the now-current stack.</td></tr>
+	<tr><th colspan='5'>Recursive function instructions</th></tr>
+	<tr><th>7</th><th>RAP</th><td>Works like a p ap, only that it replaces an occurrence of a dummy environment with the current one, thus making recursive functions possible</td></tr>
+	<tr><th>6</th><th>DUM</th><td>Pushes a "dummy", an empty list, in front of the environment list.</td></tr>
+	<tr><th colspan='5'>Branching instructions</th></tr>
+	<tr><th>8</th><th>SEL</th><td>Expects two list arguments, and pops a value from the stack. The first list is executed if the popped value was non-nil, the second list otherwise. Before one of these list pointers is made the new C, a pointer to the instruction following s e l sel is saved on the dump.</td></tr>
+	<tr><th>9</th><th>JOIN</th><td>Pops a list reference from the dump and makes this the new value of C. This instruction occurs at the end of both alternatives of a sel.</td></tr>
+</table>
 
 <p>Like all internal data-structures, the stack is a list, with the <kbd>Stk
 register</kbd> pointing at the list's head. Due to the list structure, the stack
@@ -40,51 +77,24 @@ subsequent memory locations, as is the case with the conventional machines.</p>
 temporary storage for values of the other registers, for example during
 function calls. It can be likened to the return stack of other machines. </p>
 
-<h3>Primitives</h3>
-
 <table border='1'>
-	<tr><th colspan='5'>Basic Instructions</th></tr>
-	<tr><th>NIL</th><td>pushes a nil pointer onto the stack</td></tr>
-	<tr><th>LD</th><td>pushes the value of a variable onto the stack. The variable is indicated by the argument, a pair.</td></tr>
-	<tr><th>LDC</th><td>pushes a constant argument onto the stack</td></tr>
-	<tr><th colspan='5'>Branching instructions</th></tr>
-	<tr><th>SEL</th><td>expects two list arguments, and pops a value from the stack. The first list is executed if the popped value was non-nil, the second list otherwise. Before one of these list pointers is made the new C, a pointer to the instruction following s e l sel is saved on the dump.</td></tr>
-	<tr><th>JOIN</th><td>pops a list reference from the dump and makes this the new value of C. This instruction occurs at the end of both alternatives of a sel.</td></tr>
-	<tr><th colspan='5'>Non-recursive function instructions</th></tr>
-	<tr><th>LDF</th><td>takes one list argument representing a function. It constructs a closure (a pair containing the function and the current environment) and pushes that onto the stack.</td></tr>
-	<tr><th>AP</th><td>pops a closure and a list of parameter values from the stack. The closure is applied to the parameters by installing its environment as the current one, pushing the parameter list in front of that, clearing the stack, and setting C to the closure's function pointer. The previous values of S, E, and the next value of C are saved on the dump.</td></tr>
-	<tr><th>RTN</th><td>pops one return value from the stack, restores S, E, and C from the dump, and pushes the return value onto the now-current stack.</td></tr>
-	<tr><th colspan='5'>Recursive function instructions</th></tr>
-	<tr><th>RAP</th><td>works like a p ap, only that it replaces an occurrence of a dummy environment with the current one, thus making recursive functions possible</td></tr>
-	<tr><th>DUM</th><td>pushes a "dummy", an empty list, in front of the environment list.</td></tr>
+	<tr><th colspan='5'>Extensions</th></tr>
+	<tr><th>10</th><th>CAR</th><td>Returns a pair's first value.</td></tr>
+	<tr><th>11</th><th>CDR</th><td>Returns a pair's second value.</td></tr>
+	<tr><th>12</th><th>ATOM</th><td>Returns T if its value is atomic.</td></tr>
+	<tr><th>13</th><th>CONS</th><td>Returns a value pair consisting of two expressions.</td></tr>
+	<tr><th colspan='5'>Arithmetic</th></tr>
+	<tr><th>14</th><th>EQ</th><td>Returns T if two expressions are equal.</td></tr>
+	<tr><th>15</th><th>ADD</th><td>Returns the sum of two numeric values.</td></tr>
+	<tr><th>16</th><th>SUB</th><td>Returns the difference of two numeric values.</td></tr>
+	<tr><th>17</th><th>MUL</th><td>Returns the product of two numeric values.</td></tr>
+	<tr><th>18</th><th>DIV</th><td>Returns the quotient of two numeric values.</td></tr>
+	<tr><th>19</th><th>REM</th><td>Returns the remainder of two numeric values.</td></tr>
+	<tr><th>20</th><th>LEQ</th><td>Returns T if the first value is less or equal to the second.</td></tr>
 </table>
 
-<h3>A. Push Objects to Stack</h3>
+<p>This is a work in progress.</p>
 
-<p>Compilation Rules:</p>
-<ul>
-	<li>(a) A nil is compiled to (NIL)</li>
-	<li>(b) A number (or a constant) x is compiled to (LDC x)</li>
-	<li>(c) An identifier is compiled to (LD (i.j)) where (i.j) is an index into stack e.</li>
-</ul>
-
-<p>Stack Operations:</p>
-
-<ul>
-	<li>NIL	s e (NIL.c) d -> (nil.s) e c d</li>
-	<li>LDC	s e (LDC x.c) d -> (x.s) e c d</li>
-	<li>LD	s e (LD (i.j).c) d -> (locate((i.j),e).s) e c d</li>
-</ul>
-
-<p>"Locate" is an auxiliary function. It returns the jth element of the ith sublist in e.</p>
-
-<p>Note: roughly, e is a list of sublists each of which is a list of
-actual parameters. Thus, e corresponds to the value list in
-our interpreter. There will be no name list here, as each occurrence
-of a formal parameter will be compiled to LD (i.j) and by
-locate(i.j) the corresponding actual parameter is found.</p>
-
-<p>"The Mechanical Evaluation of Expressions" by PeterLandin is the original paper that describes the SECD machine.</p>
 
 <ul></ul></main>
 <footer><a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.svg" alt="CreativeCommons"/></a> <a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a> <a href="https://merveilles.town/@neauoire" rel="me" target="_blank"><img src="../media/icon/merveilles.svg" alt="Merveilles"/></a> <a href="ethics.html"><img src="../media/icon/dreipfeile.svg" alt="NoNazis!"/></a> <a href="uxn.html"><img src="../media/icon/uxn.svg" alt="UxnPowered"/></a> <span><a href="devine_lu_linvega.html">Devine Lu Linvega</a> &copy; 2023 &mdash; <a href="about.html#license">BY-NC-SA 4.0</a></span></footer>
