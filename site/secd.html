@@ -21,32 +21,46 @@ empty, overall evaluation has completed with the result on <kbd>S</kbd>. </p>
 	<li><b>Dump</b> <kbd>D</kbd> register points to a list of triples. Each triple contains snapshots of the stack, environment, and control registers.</li>
 </ul>
 
-<pre>
-( LAMBDA ( X ) ( ADD ( QUOTE 1 ) X ) )
-</pre>
-
-<p>If we compile the <a href='lisp.html'>Lisp</a> program above, the
-<code>.secd</code> representation of the incrementing lambda program is as
-follows in which each number is one of the abstract machine opcode:</p>
+<p>The <code>.secd</code> representation of a program encodes the various parts
+of a functional programming language into the abstract machine code, where each
+opcode is represented as a number. For example, if we compile the <a
+href='lisp.html'>Pure Lisp</a> program below:</p>
 
 <pre>
-( 3 ( 2 1 1 ( 0 . 0 ) 15 5 ) 4 21 )
-</pre>
-
-<p>If we decode the operation numbers to their mnemonics:</p>
-<pre>
-( LDF ( LDC 1 LD ( 0 . X ) ADD RTN ) AP BRK )
+<i>Pure Lisp:</i>       (LAMBDA (X) (ADD (QUOTE 1) X))
+<i>SECD(opcodes):</i>   ( 3 ( 2 1 1 ( 0 . 0 ) 15 5 ) 4 21 )
+<i>SECD(mnemonics):</i> ( LDF ( LDC 1 LD ( 0 . X ) ADD RTN ) AP BRK )</i>
 </pre>
 
 <table border='1'>
 	<tr><th colspan='5'>Basic Instructions</th></tr>
-	<tr><th>0</th><th>NIL</th><td>Pushes a nil pointer onto the stack</td></tr>
-	<tr><th>1</th><th>LD</th><td>Pushes the value of a variable onto the stack. The variable is indicated by the argument, a pair.</td></tr>
-	<tr><th>2</th><th>LDC</th><td>Pushes a constant argument onto the stack</td></tr>
-	<tr><th colspan='5'>Non-recursive function instructions</th></tr>
+	<tr><th rowspan='2'>0</th><th rowspan='2'>NIL</th><td>Creates an empty list on the top of the stack register.</td></tr>
+	<tr><td>A nil is compiled to ( NIL ).</td></tr>
+	<tr><th rowspan='2'>1</th><th rowspan='2'>LD</th><td>Pushes the value of a variable onto the stack. The variable is indicated by the argument, a pair.</td></tr>
+	<tr><td>An identifier is compiled to ( LD ( i . j ) ). where ( i . j ) is an index the jth element of the ith sublist in the Environment stack.</td></tr>
+	<tr><th rowspan='2'>2</th><th rowspan='2'>LDC</th><td>Loads a constant on the stack.</td></tr>
+	<tr><td>A number, or a constant, x is compiled to ( LDC x ).</td></tr>
+</table>
+
+<p>Here are a few compilation examples: </p>
+
+<pre>
+(QUOTE A) <i>; (LDC A AP STOP)</i>
+(LAMBDA (X) X) <i>; (LDF (LD (0.0) RTN) AP STOP)</i>
+</pre>
+
+<table border='1'>
+	<tr><th colspan='5'>Stack Instructions</th></tr>
 	<tr><th>3</th><th>LDF</th><td>Takes one list argument representing a function. It constructs a closure (a pair containing the function and the current environment) and pushes that onto the stack.</td></tr>
 	<tr><th>4</th><th>AP</th><td>Pops a closure and a list of parameter values from the stack. The closure is applied to the parameters by installing its environment as the current one, pushing the parameter list in front of that, clearing the stack, and setting C to the closure's function pointer. The previous values of S, E, and the next value of C are saved on the dump.</td></tr>
 	<tr><th>5</th><th>RTN</th><td>Pops one return value from the stack, restores S, E, and C from the dump, and pushes the return value onto the now-current stack.</td></tr>
+</table>
+
+<pre>
+((lambda (x y) (+ x y)) 2 3) <i>; (NIL LDC 3 CONS LDC 2 CONS LDF (LD (1.2) LD (1.1) + RTN) AP)</i>
+</pre>
+
+<table border='1'>
 	<tr><th colspan='5'>Recursive function instructions</th></tr>
 	<tr><th>7</th><th>RAP</th><td>Works like a p ap, only that it replaces an occurrence of a dummy environment with the current one, thus making recursive functions possible</td></tr>
 	<tr><th>6</th><th>DUM</th><td>Pushes a "dummy", an empty list, in front of the environment list.</td></tr>
@@ -54,6 +68,36 @@ follows in which each number is one of the abstract machine opcode:</p>
 	<tr><th>8</th><th>SEL</th><td>Expects two list arguments, and pops a value from the stack. The first list is executed if the popped value was non-nil, the second list otherwise. Before one of these list pointers is made the new C, a pointer to the instruction following s e l sel is saved on the dump.</td></tr>
 	<tr><th>9</th><th>JOIN</th><td>Pops a list reference from the dump and makes this the new value of C. This instruction occurs at the end of both alternatives of a sel.</td></tr>
 </table>
+
+<pre>
+(if (atom 5) 9 7) <i>; (LDC 5 ATOM SEL (LDC 9 JOIN) (LDC 7 JOIN))</i>
+(lambda (x y) (+ x y)) <i>; (LDF (LD (1.2) LD (1.1) + RTN))</i>
+</pre>
+
+<table border='1'>
+	<tr><th colspan='5'>Builtin Extensions</th></tr>
+	<tr><th>10</th><th>CAR</th><td>Returns a pair's first value.</td></tr>
+	<tr><th>11</th><th>CDR</th><td>Returns a pair's second value.</td></tr>
+	<tr><th>12</th><th>ATOM</th><td>Returns T if its value is atomic.</td></tr>
+	<tr><th>13</th><th>CONS</th><td>Returns a value pair consisting of two expressions.</td></tr>
+	<tr><th colspan='5'>Builtin Arithmetic</th></tr>
+	<tr><th>14</th><th>EQ</th><td>Returns T if two expressions are equal.</td></tr>
+	<tr><th>15</th><th>ADD</th><td>Returns the sum of two numeric values.</td></tr>
+	<tr><th>16</th><th>SUB</th><td>Returns the difference of two numeric values.</td></tr>
+	<tr><th>17</th><th>MUL</th><td>Returns the product of two numeric values.</td></tr>
+	<tr><th>18</th><th>DIV</th><td>Returns the quotient of two numeric values.</td></tr>
+	<tr><th>19</th><th>REM</th><td>Returns the remainder of two numeric values.</td></tr>
+	<tr><th>20</th><th>LEQ</th><td>Returns T if the first value is less or equal to the second.</td></tr>
+</table>
+
+<p>The compilation notation for builtins is reverse polish notation. To perform
+an operation is to pop up the front element(s) from <kbd>s</kbd>, perform the
+operation, and put the result back to <kbd>s</kbd>.</p>
+
+<pre>
+(ADD (QUOTE 123) (QUOTE 456)) <i>; ( LDC 123 LDC 456 ADD AP STOP )</i>
+(MUL (ADD (QUOTE 12) (QUOTE 34)) (QUOTE 56)) <i>; ( LDC 12 LDC 34 ADD LDC 56 MUL AP STOP )</i>
+</pre>
 
 <p>Like all internal data-structures, the stack is a list, with the <kbd>S</kbd>
 register pointing at the list's head. Due to the list structure, the stack need
@@ -79,20 +123,26 @@ temporary storage for values of the other registers, for example during
 function calls. It can be likened to the return stack of other machines. </p>
 
 <table border='1'>
-	<tr><th colspan='5'>Extensions</th></tr>
-	<tr><th>10</th><th>CAR</th><td>Returns a pair's first value.</td></tr>
-	<tr><th>11</th><th>CDR</th><td>Returns a pair's second value.</td></tr>
-	<tr><th>12</th><th>ATOM</th><td>Returns T if its value is atomic.</td></tr>
-	<tr><th>13</th><th>CONS</th><td>Returns a value pair consisting of two expressions.</td></tr>
-	<tr><th colspan='5'>Arithmetic</th></tr>
-	<tr><th>14</th><th>EQ</th><td>Returns T if two expressions are equal.</td></tr>
-	<tr><th>15</th><th>ADD</th><td>Returns the sum of two numeric values.</td></tr>
-	<tr><th>16</th><th>SUB</th><td>Returns the difference of two numeric values.</td></tr>
-	<tr><th>17</th><th>MUL</th><td>Returns the product of two numeric values.</td></tr>
-	<tr><th>18</th><th>DIV</th><td>Returns the quotient of two numeric values.</td></tr>
-	<tr><th>19</th><th>REM</th><td>Returns the remainder of two numeric values.</td></tr>
-	<tr><th>20</th><th>LEQ</th><td>Returns T if the first value is less or equal to the second.</td></tr>
+	<tr><th colspan='5'>Special Lispkit Opcodes</th></tr>
+	<tr><th>21</th><th>STOP</th><td></td></tr>
+	<tr><th colspan='5'>Deprecated Opcodes</th></tr>
+	<tr><th>22</th><th>LDE</th><td></td></tr>
+	<tr><th>23</th><th>UPD</th><td>(v) e' (UPD) (5 e c.d) -> rplaca(s,v) e c d</td></tr>
+	<tr><th>24</th><th>AP0</th><td>s e (READ.c) d -> (x.s) e c d</td></tr>
+	<tr><th>25</th><th>READ</th><td>s e (READ.c) d -> (x.s) e c d</td></tr>
+	<tr><th>26</th><th>PRINT</th><td>(\I.s) e (PRINT.c) d -> sec d</td></tr>
+	<tr><th>27</th><th>IMPLODE/CHR</th><td>(n.s) e (CHR.c) d -> (an.s) e cd</td></tr>
+	<tr><th>28</th><th>EXPLODE</th><td></td></tr>
+	<tr><th>31</th><th>OR</th><td></td></tr>
+	<tr><th>32</th><th>NONE</th><td></td></tr>
+	<tr><th>33</th><th>DELAY</th><td></td></tr>
+	<tr><th>34</th><th>DELAY(2)</th><td></td></tr>
+	<tr><th>35</th><th>FORCE</th><td></td></tr>
+	<tr><th>41</th><th>RPLACA</th><td></td></tr>
+	<tr><th>42</th><th>RPLACD</th><td></td></tr>
+	<tr><th>51</th><th>PRINT</th><td></td></tr>
 </table>
+
 
 <p>This is a work in progress.</p>
 

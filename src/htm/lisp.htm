@@ -104,10 +104,10 @@ both the same number, or they are both the same symbol:</p>
 first is True, otherwise returns the value of the third.</p>
 
 <pre>
-(IF
-	(EQ (QUOTE 16) X)
+(IF (EQ (QUOTE 16) X)
 	(QUOTE EQUAL16)
-	(QUOTE NOT-EQUAL16))
+	(QUOTE NOT-EQUAL16)
+)
 </pre>
 
 <img src='../media/refs/sexp.png'/>
@@ -122,7 +122,8 @@ pair:</p>
 
 <pre>
 (LAMBDA (<i>INPUT</i>)
-	(CONS (QUOTE Hello) <i>INPUT</i>)) <i>; ( Hello . Machiavelli )</i>
+	(CONS (QUOTE Hello) <i>INPUT</i>)
+) <i>; ( Hello . Machiavelli )</i>
 </pre>
 
 <p>Typically, a program will have an entry function's name. For example, the
@@ -132,9 +133,14 @@ also visible in the expressions from the list of cons pairs, not just from the
 main expression.</p>
 
 <pre>
-(LETREC <b>greeting</b>
-	(<b>greeting</b> LAMBDA (<i>INPUT</i>)
-		(CONS (QUOTE Hello) <i>INPUT</i>)))
+(LETREC <b>factorial</b>
+	(<b>factorial</b> LAMBDA (<i>INPUT</i>)
+		(IF (EQ <i>INPUT</i> (QUOTE 0))
+			(QUOTE 1)
+			(MUL <i>INPUT</i> (<b>factorial</b> (SUB <i>INPUT</i> (QUOTE 1))))
+		)
+	)
+)
 </pre>
 
 <p>Using everything we've seen so far, we can see a more elaborate program, in
@@ -144,14 +150,16 @@ the program as follows:</p>
 <pre>
 (LETREC <b>main</b>
 	(<b>main</b> LAMBDA (<i>INPUT</i>)
-		(<b>loop</b> (QUOTE 0) <i>INPUT</i>))
+		(<b>loop</b> (QUOTE 0) <i>INPUT</i>)
+	)
 	(<b>loop</b> LAMBDA (X Y)
-		(IF
-			(LEQ X Y)
+		(IF (LEQ X Y)
 			(<b>loop</b> (<b>incr</b> X) Y)
-			(CONS X (CONS Y (QUOTE NIL)))))
+			(CONS X (CONS Y (QUOTE NIL))))
+		)
 	(<b>incr</b> LAMBDA (X)
-		(ADD (QUOTE 1) X))
+		(ADD (QUOTE 1) X)
+	)
 )
 </pre>
 
