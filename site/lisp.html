@@ -4,7 +4,7 @@
 <title>XXIIVV &mdash; lisp</title></head><body>
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
 
-<nav><ul><li><a href="programming_languages.html" class="parent">programming languages</a></li><li><a href="operating_systems.html">operating systems</a></li><li><a href="graphical_input.html">graphical input</a></li><li><a href="file_formats.html">file formats</a></li><li><a href="data_encoding.html">data encoding</a></li><li><a href="type_systems.html">type systems</a></li></ul><ul><li><a href="assembly.html">assembly</a></li><li><a href="forth.html">forth</a></li><li><a href="lisp.html" class="self">lisp</a></li><li><a href="basic.html">basic</a></li><li><a href="pascal.html">pascal</a></li><li><a href="ansi_c.html">ansi c</a></li><li><a href="postscript.html">postscript</a></li><li><a href="hypertalk.html">hypertalk</a></li></ul><ul><li><a href="lisp_library.html">lisp library</a></li><li><a href="church_encoding.html">church encoding</a></li></ul></nav>
+<nav><ul><li><a href="programming_languages.html" class="parent">programming languages</a></li><li><a href="operating_systems.html">operating systems</a></li><li><a href="graphical_input.html">graphical input</a></li><li><a href="file_formats.html">file formats</a></li><li><a href="data_encoding.html">data encoding</a></li><li><a href="type_systems.html">type systems</a></li></ul><ul><li><a href="assembly.html">assembly</a></li><li><a href="forth.html">forth</a></li><li><a href="lisp.html" class="self">lisp</a></li><li><a href="basic.html">basic</a></li><li><a href="pascal.html">pascal</a></li><li><a href="ansi_c.html">ansi c</a></li><li><a href="postscript.html">postscript</a></li><li><a href="hypertalk.html">hypertalk</a></li></ul><ul><li><a href="church_encoding.html">church encoding</a></li><li><a href="lisp_library.html">lisp library</a></li></ul></nav>
 <main><h2>A common trait of all dialects of LISP is the S-expression.</h2>
 
 <p>In Lisp, operations use the <a href='notation.html'>prefix notation</a>.
@@ -187,6 +187,58 @@ thought that it would be used to express Lisp programs in practice. </q>
 	<li><a href='http://www.cb1.com/~john/thesis/thesis.html' target='_blank'>A Lisp through the Looking Glass</a></li>
 </ul>
 
+<h2>Church Numerals are a representation of the natural numbers using lambda
+notation.</h2>
+
+<p>A kind of <i>base1 arithmetic</i>, in which numbers are represented by
+function nesting over an empty list, can be constructed in <a
+href='lisp.html'>Pure Lisp</a> using only very few primtives. This document
+will present Church Numerals through the lens of Lisp, alternatively one might
+prefer to read it coming from the <a href='ornithomicon.html'>Avian
+Numerals</a> tutorial.</p>
+
+<p>The following file contains the basic building blocks as an example:</p>
+
+<pre>
+(LETREC main
+	(main LAMBDA (INPUT)
+		(greater?
+			(incr (incr (incr (incr nil))))
+			(incr (incr (incr nil))))
+	)
+	(nil QUOTE NULL)
+	(#f QUOTE F)
+	(#t QUOTE T)
+	(incr LAMBDA (x)
+		(CONS nil x))
+	(decr LAMBDA (x)
+		(CDR x))
+	(zero? LAMBDA (x)
+		(EQ x nil))
+	(not LAMBDA (x)
+		(IF x #f #t))
+	(plus LAMBDA (x y)
+		(IF (zero? x) y 
+			(plus (decr x) (incr y))))
+	(minus LAMBDA (x y)
+		(IF (zero? y) x 
+			(minus (decr x) (decr y))))
+	(multiply LAMBDA (x y)
+		(IF (zero? x) nil 
+			(plus y (multiply (decr x) y))))
+	(equal? LAMBDA (x y)
+		(IF (zero? x) (zero? y)
+			(IF (zero? y) #f 
+				(equal? (decr x) (decr y)))))
+	(greater? LAMBDA (x y)
+		(IF (zero? x) #f
+			(IF (zero? y) (not (zero? x)) 
+				(greater? (decr x) (decr y)))))
+	(lesser? LAMBDA (x y)
+		(greater? y x))
+)
+</pre>
+
 <h2>Lisp library functions</h2>
 
 <p>...</p>
@@ -239,17 +291,6 @@ thought that it would be used to express Lisp programs in practice. </q>
 </ul>
 
 <img src='../media/refs/lmi.png' width='100'/>
-
-<h2>Church Numerals are a representation of the natural numbers using lambda
-notation.</h2>
-
-<p>Base-1 arithmetic in <a href='lisp.html'>Pure Lisp</a> uses only cons, car,
-cdr, if, null?, lambdas and quote for the restricted purpose of quoting the
-empty list. This document will present Church Numerals through the lens of
-Lisp, alternatively one might prefer to read it coming from the <a
-href='ornithomicon.html'>Avian Numerals</a> tutorial.</p>
-
-<p> </p>
 
 <ul></ul><p class="incoming"><b>incoming</b> <a href="ronin.html">ronin</a> <a href="lain.html">lain</a> <a href="church_encoding.html">church encoding</a> <a href="secd.html">secd</a> </p></main>
 <footer><a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.svg" alt="CreativeCommons"/></a> <a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a> <a href="https://merveilles.town/@neauoire" rel="me" target="_blank"><img src="../media/icon/merveilles.svg" alt="Merveilles"/></a> <a href="ethics.html"><img src="../media/icon/dreipfeile.svg" alt="NoNazis!"/></a> <a href="uxn.html"><img src="../media/icon/uxn.svg" alt="UxnPowered"/></a> <span><a href="devine_lu_linvega.html">Devine Lu Linvega</a> &copy; 2023 &mdash; <a href="about.html#license">BY-NC-SA 4.0</a></span></footer>
