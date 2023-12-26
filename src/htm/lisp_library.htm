@@ -1,50 +1,85 @@
 <h2>Lisp library functions</h2>
 
-<p>...</p>
+<p>Work in progress..</p>
 
-<h3>Library Functions</h3>
+<h3>Logical operators</h3>
+
+<p>Predicate functions, any expression that returns either true or false, will be
+suffixed with <code>?</code>.</p>
+
+<ul>
+	<li><code>(null? e)</code> is T if e is NIL, and is F otherwise.</li>
+	<li><code>(not? x)</code>, T if x is F, else T.</li>
+	<li><code>(or? x y)</code>, T if either arguments are T, else F.</li>
+	<li><code>(and? x y)</code>, T if both arguments are T, else F.</li>
+	<li><code>(unless? x y)</code>, abbreviation for <code>(and (not x) y)</code>.</li>
+</ul>
+
+<pre>
+(<b>null?</b> LAMBDA (X)
+	(EQ X (QUOTE NULL)))
+(<b>not?</b> LAMBDA (X) 
+	(IF X (QUOTE F) (QUOTE T)))
+(<b>or?</b> LAMBDA (X Y)
+	(IF X (QUOTE T) Y))
+(<b>and?</b> LAMBDA (X Y)
+	(IF X Y (QUOTE F)))
+(<b>unless?</b> LAMBDA (X Y)
+	(IF X (QUOTE F) Y))
+</pre>
 
 <h4>List processing junctions</h4>
 <ul>
 	<li><code>(append e1 e2)</code> Is the list obtained by concatenation of its two arguments.</li>
 	<li><code>(member e l)</code> is T if the atom e is present in the list l.</li>
 	<li><code>(equal e1 e2)</code> tests the equality of two non-function data structures.</li>
-	<li><code>(null e)</code> is T if e is NIL, and is F otherwise.</li>
 	<li><code>(length l)</code> is the number of components in the list l.</li>
 	<li><code>(first n l)</code> returns a prefix of the first n components of the list l, or the whole list if shorter.</li>
 	<li><code>(1ist e1 ... en)</code> returns a list of its arguments.</li>
 	<li><code>(transpose m)</code> is the matrix transposition of a list of lists m.</li>
 </ul>
 
-<h4>Logical operators</h4>
-<ul>
-	<li><code>(not c)</code> is T if c is F, and is F if c is T.</li>
-	<li><code>(or cl c2)</code> is T if either of the arguments is T, and is F if both are F.</li>
-	<li><code>(and cl c2)</code> is T if both of the arguments are T, and is F if either is F.</li>
-	<li><code>(unless cl c2)</code> is an abbreviation for <code>(and (not c1) c2)</code>.</li>
-</ul>
-
-<h4>Stream operations</h4>
-<ul>
-	<li><code>(until e l)</code> is the list of components of the stream l which precede the first occurrence of the atom e.</li>
-	<li><code>(untilend I)</code> abbreviates <code>(until (quote end) 1)</code>.</li>
-	<li><code>(alter e I)</code> is the stream of eomponcnls of I which follow the first occurrence of the atom e.</li>
-	<li><code>(aherend I)</code> abbreviates <code>(aher (quote end) I)</code>.</li>
-</ul>
+<pre>
+(<b>length</b> LAMBDA (L)
+	(IF (ATOM L) 
+		(QUOTE 1)
+		(ADD (QUOTE 1) (<b>length</b> (CDR L)))
+	)
+)
+</pre>
 
 <h4>Commonly used higher order functions</h4>
 <ul>
 	<li><code>(map f l)</code> is the list whose components are obtained from those of l by application of f.</li>
 	<li><code>(reduce f l z)</code> Is the continued applicalion of f over the list l with zero z, that is <code>(I (head l) (l (head (tail l)) (l··· z)···))</code>.</li>
 	<li><code>(filter p l)</code> Is the list of those components c of l for which (p c) is T.</li>
-	<li><code>(close r l)</code> is  the first value x in the sequence <code>I, (r l). (r (r l))</code>, for which <code>(equal x (r x))</code>.</li>
+	<li><code>(close r l)</code> is the first value x in the sequence <code>I, (r l). (r (r l))</code>, for which <code>(equal x (r x))</code>.</li>
 </ul>
+
+<pre>
+(<b>map</b> LAMBDA (F L)
+	(IF (ATOM L) 
+		(QUOTE NIL) 
+		(CONS (F (CAR L)) (<b>map</b> F (CDR L)))
+	)
+)
+
+(<b>filter</b> LAMBDA (P L)
+	(IF (ATOM L)
+		(QUOTE NIL)
+		(IF (P (CAR L)) 
+			(CONS (CAR L) (<b>filter</b> P (CDR L)))
+			(<b>filter</b> P(CDR L))
+		)
+	)
+)
+</pre>
 
 <h4>Misc</h4>
 <ul>
 	<li><code>(number x)</code> Is T if x is a numeric atom. and F otherwise.</li>
 	<li><code>(load_code c)</code> is the value represented by the code object c.</li>
-	<li><code>(apply f I)</code> applies the funcllon f to the argument list I 
+	<li><code>(apply f I)</code> applies the funcllon f to the argument list I
 	<li><code>newline</code> an atom which prints as a line break.</li>
 	<li><code>space</code> an atom which prints as a blank space.</li>
 </ul>
