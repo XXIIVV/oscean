@@ -4,7 +4,7 @@
 <title>XXIIVV &mdash; lisp</title></head><body>
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
 
-<nav><ul><li><a href="programming_languages.html" class="parent">programming languages</a></li><li><a href="operating_systems.html">operating systems</a></li><li><a href="graphical_input.html">graphical input</a></li><li><a href="file_formats.html">file formats</a></li><li><a href="data_encoding.html">data encoding</a></li><li><a href="type_systems.html">type systems</a></li></ul><ul><li><a href="assembly.html">assembly</a></li><li><a href="forth.html">forth</a></li><li><a href="lisp.html" class="self">lisp</a></li><li><a href="basic.html">basic</a></li><li><a href="pascal.html">pascal</a></li><li><a href="ansi_c.html">ansi c</a></li><li><a href="postscript.html">postscript</a></li><li><a href="hypertalk.html">hypertalk</a></li></ul><ul><li><a href="church_encoding.html">church encoding</a></li><li><a href="lisp_library.html">lisp library</a></li></ul></nav>
+<nav><ul><li><a href="programming_languages.html" class="parent">programming languages</a></li><li><a href="operating_systems.html">operating systems</a></li><li><a href="graphical_input.html">graphical input</a></li><li><a href="file_formats.html">file formats</a></li><li><a href="data_encoding.html">data encoding</a></li><li><a href="type_systems.html">type systems</a></li></ul><ul><li><a href="assembly.html">assembly</a></li><li><a href="forth.html">forth</a></li><li><a href="lisp.html" class="self">lisp</a></li><li><a href="basic.html">basic</a></li><li><a href="pascal.html">pascal</a></li><li><a href="ansi_c.html">ansi c</a></li><li><a href="postscript.html">postscript</a></li><li><a href="hypertalk.html">hypertalk</a></li></ul><ul><li><a href="lisp_library.html">lisp library</a></li><li><a href="church_encoding.html">church encoding</a></li></ul></nav>
 <main><h2>A common trait of all dialects of LISP is the S-expression.</h2>
 
 <p>In Lisp, operations use the <a href='notation.html'>prefix notation</a>.
@@ -87,8 +87,8 @@ difference between LET and LETREC is that LETREC's defined symbols are
 also visible in the expression itself.</p>
 
 <pre>
-(LETREC is-eight
-	(is-eight LAMBDA (INPUT) (EQ INPUT target))
+(LETREC <b>is-eight</b>
+	(<b>is-eight</b> LAMBDA (<i>INPUT</i>) (EQ <i>INPUT</i> target))
 	(target QUOTE 8)
 	<i>(value2 . exp)</i>
 	<i>(value3 . exp)</i>
@@ -187,6 +187,80 @@ thought that it would be used to express Lisp programs in practice. </q>
 	<li><a href='http://www.cb1.com/~john/thesis/thesis.html' target='_blank'>A Lisp through the Looking Glass</a></li>
 </ul>
 
+<h2>Standard Functions</h2>
+
+<p>The following is a collection of implementations for standard functions in <a
+href='lisp.html'>Pure Lisp</a>. Predicate functions are expressions that
+return either true or false, they will be suffixed with <code>?</code>.</p>
+
+<ul>
+	<li><code>(null? x)</code> is T if x is NIL, and is F otherwise.</li>
+	<li><code>(not? x)</code>, T if x is F, else T.</li>
+	<li><code>(or? x y)</code>, T if either arguments are T, else F.</li>
+	<li><code>(and? x y)</code>, T if both arguments are T, else F.</li>
+	<li><code>(unless? x y)</code>, abbreviation for <code>(and (not x) y)</code>.</li>
+</ul>
+
+<pre>
+(<b>null?</b> LAMBDA (X) (EQ X (QUOTE NIL)))
+(<b>not?</b> LAMBDA (X) (IF X (QUOTE F) (QUOTE T)))
+(<b>or?</b> LAMBDA (X Y) (IF X (QUOTE T) Y))
+(<b>and?</b> LAMBDA (X Y) (IF X Y (QUOTE F)))
+(<b>unless?</b> LAMBDA (X Y) (IF X (QUOTE F) Y))
+</pre>
+
+<h3>List Processing Functions</h3>
+<p><b>Length</b> is the number of components in the list <code>l</code>.</p>
+<pre>
+(<b>length</b> LAMBDA (L)
+	(IF (ATOM L)
+		(QUOTE 1)
+		(ADD (QUOTE 1) (<b>length</b> (CDR L)))
+	)
+)
+</pre>
+
+<ul>
+	<li><code>(append e1 e2)</code> Is the list obtained by concatenation of its two arguments.</li>
+	<li><code>(member e l)</code> is T if the atom e is present in the list l.</li>
+	<li><code>(equal e1 e2)</code> tests the equality of two non-function data structures.</li>
+	<li><code>(first n l)</code> returns a prefix of the first n components of the list l, or the whole list if shorter.</li>
+	<li><code>(1ist e1 ... en)</code> returns a list of its arguments.</li>
+	<li><code>(transpose m)</code> is the matrix transposition of a list of lists m.</li>
+</ul>
+
+<h3>Common Higher-order Functions</h3>
+
+<p><b>Map</b> is the list whose components are obtained from those of <code>l</code> by application of <code>fn</code>.</p>
+<pre>
+(<b>map</b> LAMBDA (Fn L)
+	(IF (ATOM L)
+		(QUOTE NIL)
+		(CONS (Fn (CAR L)) (<b>map</b> Fn (CDR L)))
+	)
+)
+</pre>
+
+<p><b>Filter</b> is the list of those components for which the application of <code>fn</code> is T.</p>
+<pre>
+(<b>filter</b> LAMBDA (Fn L)
+	(IF (ATOM L)
+		(QUOTE NIL)
+		(IF (Fn (CAR L))
+			(CONS (CAR L) (<b>filter</b> Fn (CDR L)))
+			(<b>filter</b> Fn (CDR L))
+		)
+	)
+)
+</pre>
+
+<ul>
+	<li><code>(reduce f l z)</code> Is the continued applicalion of f over the list l with zero z, that is <code>(I (head l) (l (head (tail l)) (l··· z)···))</code>.</li>
+	<li><code>(close r l)</code> is the first value x in the sequence <code>I, (r l). (r (r l))</code>, for which <code>(equal x (r x))</code>.</li>
+</ul>
+
+<img src='../media/refs/lmi.png' width='100'/>
+
 <h2>Church Numerals are a representation of the natural numbers using lambda
 notation.</h2>
 
@@ -239,94 +313,6 @@ Numerals</a> tutorial.</p>
 )
 </pre>
 
-<h2>Lisp library functions</h2>
-
-<p>Work in progress..</p>
-
-<h3>Logical operators</h3>
-
-<p>Predicate functions, any expression that returns either true or false, will be
-suffixed with <code>?</code>.</p>
-
-<ul>
-	<li><code>(null? e)</code> is T if e is NIL, and is F otherwise.</li>
-	<li><code>(not? x)</code>, T if x is F, else T.</li>
-	<li><code>(or? x y)</code>, T if either arguments are T, else F.</li>
-	<li><code>(and? x y)</code>, T if both arguments are T, else F.</li>
-	<li><code>(unless? x y)</code>, abbreviation for <code>(and (not x) y)</code>.</li>
-</ul>
-
-<pre>
-(<b>null?</b> LAMBDA (X)
-	(EQ X (QUOTE NULL)))
-(<b>not?</b> LAMBDA (X) 
-	(IF X (QUOTE F) (QUOTE T)))
-(<b>or?</b> LAMBDA (X Y)
-	(IF X (QUOTE T) Y))
-(<b>and?</b> LAMBDA (X Y)
-	(IF X Y (QUOTE F)))
-(<b>unless?</b> LAMBDA (X Y)
-	(IF X (QUOTE F) Y))
-</pre>
-
-<h4>List processing junctions</h4>
-<ul>
-	<li><code>(append e1 e2)</code> Is the list obtained by concatenation of its two arguments.</li>
-	<li><code>(member e l)</code> is T if the atom e is present in the list l.</li>
-	<li><code>(equal e1 e2)</code> tests the equality of two non-function data structures.</li>
-	<li><code>(length l)</code> is the number of components in the list l.</li>
-	<li><code>(first n l)</code> returns a prefix of the first n components of the list l, or the whole list if shorter.</li>
-	<li><code>(1ist e1 ... en)</code> returns a list of its arguments.</li>
-	<li><code>(transpose m)</code> is the matrix transposition of a list of lists m.</li>
-</ul>
-
-<pre>
-(<b>length</b> LAMBDA (L)
-	(IF (ATOM L) 
-		(QUOTE 1)
-		(ADD (QUOTE 1) (<b>length</b> (CDR L)))
-	)
-)
-</pre>
-
-<h4>Commonly used higher order functions</h4>
-<ul>
-	<li><code>(map f l)</code> is the list whose components are obtained from those of l by application of f.</li>
-	<li><code>(reduce f l z)</code> Is the continued applicalion of f over the list l with zero z, that is <code>(I (head l) (l (head (tail l)) (l··· z)···))</code>.</li>
-	<li><code>(filter p l)</code> Is the list of those components c of l for which (p c) is T.</li>
-	<li><code>(close r l)</code> is the first value x in the sequence <code>I, (r l). (r (r l))</code>, for which <code>(equal x (r x))</code>.</li>
-</ul>
-
-<pre>
-(<b>map</b> LAMBDA (Fn L)
-	(IF (ATOM L) 
-		(QUOTE NIL) 
-		(CONS (Fn (CAR L)) (<b>map</b> Fn (CDR L)))
-	)
-)
-
-(<b>filter</b> LAMBDA (Fn L)
-	(IF (ATOM L)
-		(QUOTE NIL)
-		(IF (Fn (CAR L)) 
-			(CONS (CAR L) (<b>filter</b> Fn (CDR L)))
-			(<b>filter</b> Fn (CDR L))
-		)
-	)
-)
-</pre>
-
-<h4>Misc</h4>
-<ul>
-	<li><code>(number x)</code> Is T if x is a numeric atom. and F otherwise.</li>
-	<li><code>(load_code c)</code> is the value represented by the code object c.</li>
-	<li><code>(apply f I)</code> applies the funcllon f to the argument list I
-	<li><code>newline</code> an atom which prints as a line break.</li>
-	<li><code>space</code> an atom which prints as a blank space.</li>
-</ul>
-
-<img src='../media/refs/lmi.png' width='100'/>
-
-<ul></ul><p class="incoming"><b>incoming</b> <a href="ronin.html">ronin</a> <a href="lain.html">lain</a> <a href="church_encoding.html">church encoding</a> <a href="secd.html">secd</a> </p></main>
+<ul></ul><p class="incoming"><b>incoming</b> <a href="ronin.html">ronin</a> <a href="lain.html">lain</a> <a href="lisp_library.html">lisp library</a> <a href="church_encoding.html">church encoding</a> <a href="secd.html">secd</a> </p></main>
 <footer><a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.svg" alt="CreativeCommons"/></a> <a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a> <a href="https://merveilles.town/@neauoire" rel="me" target="_blank"><img src="../media/icon/merveilles.svg" alt="Merveilles"/></a> <a href="ethics.html"><img src="../media/icon/dreipfeile.svg" alt="NoNazis!"/></a> <a href="uxn.html"><img src="../media/icon/uxn.svg" alt="UxnPowered"/></a> <span><a href="devine_lu_linvega.html">Devine Lu Linvega</a> &copy; 2023 &mdash; <a href="about.html#license">BY-NC-SA 4.0</a></span></footer>
 </body></html>

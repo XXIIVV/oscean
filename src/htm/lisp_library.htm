@@ -1,14 +1,11 @@
-<h2>Lisp library functions</h2>
+<h2>Standard Functions</h2>
 
-<p>Work in progress..</p>
-
-<h3>Logical operators</h3>
-
-<p>Predicate functions, any expression that returns either true or false, will be
-suffixed with <code>?</code>.</p>
+<p>The following is a collection of implementations for standard functions in <a
+href='lisp.html'>Pure Lisp</a>. Predicate functions are expressions that
+return either true or false, they will be suffixed with <code>?</code>.</p>
 
 <ul>
-	<li><code>(null? e)</code> is T if e is NIL, and is F otherwise.</li>
+	<li><code>(null? x)</code> is T if x is NIL, and is F otherwise.</li>
 	<li><code>(not? x)</code>, T if x is F, else T.</li>
 	<li><code>(or? x y)</code>, T if either arguments are T, else F.</li>
 	<li><code>(and? x y)</code>, T if both arguments are T, else F.</li>
@@ -16,58 +13,51 @@ suffixed with <code>?</code>.</p>
 </ul>
 
 <pre>
-(<b>null?</b> LAMBDA (X)
-	(EQ X (QUOTE NULL)))
-(<b>not?</b> LAMBDA (X) 
-	(IF X (QUOTE F) (QUOTE T)))
-(<b>or?</b> LAMBDA (X Y)
-	(IF X (QUOTE T) Y))
-(<b>and?</b> LAMBDA (X Y)
-	(IF X Y (QUOTE F)))
-(<b>unless?</b> LAMBDA (X Y)
-	(IF X (QUOTE F) Y))
+(<b>null?</b> LAMBDA (X) (EQ X (QUOTE NIL)))
+(<b>not?</b> LAMBDA (X) (IF X (QUOTE F) (QUOTE T)))
+(<b>or?</b> LAMBDA (X Y) (IF X (QUOTE T) Y))
+(<b>and?</b> LAMBDA (X Y) (IF X Y (QUOTE F)))
+(<b>unless?</b> LAMBDA (X Y) (IF X (QUOTE F) Y))
 </pre>
 
-<h4>List processing junctions</h4>
-<ul>
-	<li><code>(append e1 e2)</code> Is the list obtained by concatenation of its two arguments.</li>
-	<li><code>(member e l)</code> is T if the atom e is present in the list l.</li>
-	<li><code>(equal e1 e2)</code> tests the equality of two non-function data structures.</li>
-	<li><code>(length l)</code> is the number of components in the list l.</li>
-	<li><code>(first n l)</code> returns a prefix of the first n components of the list l, or the whole list if shorter.</li>
-	<li><code>(1ist e1 ... en)</code> returns a list of its arguments.</li>
-	<li><code>(transpose m)</code> is the matrix transposition of a list of lists m.</li>
-</ul>
-
+<h3>List Processing Functions</h3>
+<p><b>Length</b> is the number of components in the list <code>l</code>.</p>
 <pre>
 (<b>length</b> LAMBDA (L)
-	(IF (ATOM L) 
+	(IF (ATOM L)
 		(QUOTE 1)
 		(ADD (QUOTE 1) (<b>length</b> (CDR L)))
 	)
 )
 </pre>
 
-<h4>Commonly used higher order functions</h4>
 <ul>
-	<li><code>(map f l)</code> is the list whose components are obtained from those of l by application of f.</li>
-	<li><code>(reduce f l z)</code> Is the continued applicalion of f over the list l with zero z, that is <code>(I (head l) (l (head (tail l)) (l··· z)···))</code>.</li>
-	<li><code>(filter p l)</code> Is the list of those components c of l for which (p c) is T.</li>
-	<li><code>(close r l)</code> is the first value x in the sequence <code>I, (r l). (r (r l))</code>, for which <code>(equal x (r x))</code>.</li>
+	<li><code>(append e1 e2)</code> Is the list obtained by concatenation of its two arguments.</li>
+	<li><code>(member e l)</code> is T if the atom e is present in the list l.</li>
+	<li><code>(equal e1 e2)</code> tests the equality of two non-function data structures.</li>
+	<li><code>(first n l)</code> returns a prefix of the first n components of the list l, or the whole list if shorter.</li>
+	<li><code>(1ist e1 ... en)</code> returns a list of its arguments.</li>
+	<li><code>(transpose m)</code> is the matrix transposition of a list of lists m.</li>
 </ul>
 
+<h3>Common Higher-order Functions</h3>
+
+<p><b>Map</b> is the list whose components are obtained from those of <code>l</code> by application of <code>fn</code>.</p>
 <pre>
 (<b>map</b> LAMBDA (Fn L)
-	(IF (ATOM L) 
-		(QUOTE NIL) 
+	(IF (ATOM L)
+		(QUOTE NIL)
 		(CONS (Fn (CAR L)) (<b>map</b> Fn (CDR L)))
 	)
 )
+</pre>
 
+<p><b>Filter</b> is the list of those components for which the application of <code>fn</code> is T.</p>
+<pre>
 (<b>filter</b> LAMBDA (Fn L)
 	(IF (ATOM L)
 		(QUOTE NIL)
-		(IF (Fn (CAR L)) 
+		(IF (Fn (CAR L))
 			(CONS (CAR L) (<b>filter</b> Fn (CDR L)))
 			(<b>filter</b> Fn (CDR L))
 		)
@@ -75,13 +65,9 @@ suffixed with <code>?</code>.</p>
 )
 </pre>
 
-<h4>Misc</h4>
 <ul>
-	<li><code>(number x)</code> Is T if x is a numeric atom. and F otherwise.</li>
-	<li><code>(load_code c)</code> is the value represented by the code object c.</li>
-	<li><code>(apply f I)</code> applies the funcllon f to the argument list I
-	<li><code>newline</code> an atom which prints as a line break.</li>
-	<li><code>space</code> an atom which prints as a blank space.</li>
+	<li><code>(reduce f l z)</code> Is the continued applicalion of f over the list l with zero z, that is <code>(I (head l) (l (head (tail l)) (l··· z)···))</code>.</li>
+	<li><code>(close r l)</code> is the first value x in the sequence <code>I, (r l). (r (r l))</code>, for which <code>(equal x (r x))</code>.</li>
 </ul>
 
 <img src='../media/refs/lmi.png' width='100'/>
