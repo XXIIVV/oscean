@@ -5,7 +5,7 @@
 a closing parenthesis. <b>Atoms</b> are tokens in a list separated by spaces,
 tabs or newlines. A pair of parentheses indicates one step of calculation.</p>
 
-<pre>(function arg1 arg2 arg3)</pre>
+<pre>(<b>function</b> arg1 arg2 arg3)</pre>
 
 <p>For the length of this page, I will use uppercase function names to indicate
 built-in functions, and lowercase for user-defined functions. This page will
@@ -57,7 +57,7 @@ may be used to construct arbitrarily large data structures. </p>
 
 <p>A <b>function</b> is a value which may be applied to arguments, to yield a
 value which depends only on the function and the arguments to which it is
-applied. Given an expression, <b>quote</b> returns that expression as a value.</p>
+applied. Given an expression, <b>quote(')</b> returns that expression as a value.</p>
 
 <pre>
 (QUOTE 12)
@@ -67,7 +67,7 @@ applied. Given an expression, <b>quote</b> returns that expression as a value.</
 
 <h3>Prelude</h3>
 
-<p>A <b>LAMBDA</b> expression allows to name sub-expressions, given an argument
+<p>A <b>lambda(λ)</b> expression allows to name sub-expressions, given an argument
 list and an expression, returns them as a function:</p>
 
 <pre>
@@ -128,23 +128,19 @@ make explicit that this is our program entry function. If the symbol
 pair:</p>
 
 <pre>
-(LAMBDA (<i>INPUT</i>)
-	(CONS (QUOTE Hello) <i>INPUT</i>)
-) <i>; (Hello.Machiavelli)</i>
+(λ (<i>INPUT</i>) (CONS (' Hello) <i>INPUT</i>)) <i>; (Hello.Machiavelli)</i>
 </pre>
 
 <p>Typically, a program will have an entry function's name. For example, the
-previous program could be given a the name <code>greeting</code>.</p>
+following program is wrapped into the factorial symbol:</p>
 
 <pre>
-(LETREC <b>factorial</b>
-	(<b>factorial</b> LAMBDA (<i>INPUT</i>)
-		(IF (EQ <i>INPUT</i> (QUOTE 0))
-			(QUOTE 1)
-			(MUL <i>INPUT</i> (<b>factorial</b> (SUB <i>INPUT</i> (QUOTE 1))))
-		)
+(LETREC <b>factorial</b> (<b>factorial</b> λ (<i>INPUT</i>)
+	(IF (EQ <i>INPUT</i> (' 0))
+		(' 1)
+		(* <i>INPUT</i> (<b>factorial</b> (- <i>INPUT</i> (' 1))))
 	)
-)
+))
 </pre>
 
 <p>Using everything we've seen so far, we can see a more elaborate program, in
@@ -152,17 +148,15 @@ which functions are organized as lambdas so they can be used in other parts of
 the program as follows:</p>
 
 <pre>
-(LETREC <b>main</b>
-	(<b>main</b> LAMBDA (<i>INPUT</i>)
-		(<b>loop</b> (QUOTE 0) <i>INPUT</i>)
-	)
-	(<b>loop</b> LAMBDA (X Y)
-		(IF (LEQ X Y)
+(LETREC <b>main</b> (<b>main</b> λ (<i>INPUT</i>)
+	(<b>loop</b> (' 0) <i>INPUT</i>))
+	(<b>loop</b> λ (X Y)
+		(IF (≤ X Y)
 			(<b>loop</b> (<b>incr</b> X) Y)
-			(CONS X (CONS Y (QUOTE NIL))))
+			(CONS X (CONS Y (' NIL))))
 		)
-	(<b>incr</b> LAMBDA (X)
-		(ADD (QUOTE 1) X)
+	(<b>incr</b> λ (X)
+		(+ (' 1) X)
 	)
 )
 </pre>
