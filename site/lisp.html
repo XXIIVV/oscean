@@ -135,19 +135,14 @@ make explicit that this is our program entry function. If the symbol
 pair:</p>
 
 <pre>
-(λ (<i>INPUT</i>) (CONS (' Hello) <i>INPUT</i>)) <i>; (Hello.Machiavelli)</i>
-</pre>
-
-<p>Typically, a program will have an entry function's name. For example, the
-following program is wrapped into the factorial symbol:</p>
-
-<pre>
-(LETREC <b>factorial</b> (<b>factorial</b> λ (<i>INPUT</i>)
-	(IF (EQ <i>INPUT</i> (' 0))
-		(' 1)
-		(* <i>INPUT</i> (<b>factorial</b> (- <i>INPUT</i> (' 1))))
+(λ (<i>INPUT</i>) 
+	(PRINT
+		(CONS (' Hello)
+		(CONS <i>INPUT</i>
+		(CONS (' \n)
+		(' nil))))
 	)
-))
+) <i>; "Hello Machiavelli"</i>
 </pre>
 
 <p>Using everything we've seen so far, we can see a more elaborate program, in
@@ -155,16 +150,21 @@ which functions are organized as lambdas so they can be used in other parts of
 the program as follows:</p>
 
 <pre>
-(LETREC <b>main</b> (<b>main</b> λ (<i>INPUT</i>)
-	(<b>loop</b> (' 0) <i>INPUT</i>))
-	(<b>loop</b> λ (X Y)
-		(IF (≤ X Y)
-			(<b>loop</b> (<b>incr</b> X) Y)
-			(CONS X (CONS Y (' NIL))))
-		)
-	(<b>incr</b> λ (X)
-		(+ (' 1) X)
+(LETREC <b>main</b>
+	(<b>main</b> λ (X)
+		(PRINT
+			(CONS (<b>fib</b> X)
+			(CONS <b>newline</b>
+			(' nil))))
 	)
+	(<b>fib</b> λ (N)
+		(IF (EQ N (' 0)) (' 0)
+		(IF (EQ N (' 1)) (' 1)
+			(+
+				(<b>fib</b> (- N (' 1)))
+				(<b>fib</b> (- N (' 2))))))
+	)
+	(<b>newline</b> ' \n)
 )
 </pre>
 
