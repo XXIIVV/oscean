@@ -17,7 +17,8 @@ tabs or newlines. A pair of parentheses indicates one step of calculation.</p>
 <p>For the length of this page, I will use uppercase function names to indicate
 built-in functions, and lowercase for user-defined functions. This page will
 document a portable, lexically scoped, purely functional subset of Lisp,
-sometimes called <i>Pure Lisp</i>, which does <b>not</b> allow for:</p>
+sometimes called <a href='https://git.sr.ht/~rabbits/lispkit'
+target='_blank'>Pure Lisp</a>, which does <b>not</b> allow for:</p>
 
 <ul>
 	<li>Unbound and global variables</li>
@@ -31,91 +32,97 @@ sometimes called <i>Pure Lisp</i>, which does <b>not</b> allow for:</p>
 	<figcaption>&mdash; Typical Lisp Programmer</figcaption>
 </figure>
 
-<h3>Data Types</h3>
+<h3>Atoms</h3>
 
-<p>A <b>number</b> is a signed integer in a machine-specific finite range, and the
-representation of a number is a sequence of decimal digits, optionally
-preceded by a sign.</p>
+<p>An <b>atom</b> is either a number or a symbol. A <b>number</b> is a signed
+integer, its representation is a sequence of decimal digits, optionally
+preceded by a sign. </p>
 
 <pre>
 45
 +137
 -27</pre>
 
-<p>A <b>symbol</b> is represented by a finite sequence of characters, it is not
-possible for the user to type symbols which begin as though they were numbers,
-although digits may appear later in a symbol that begins with, say, a letter.
-</p>
+<p>A <b>symbol</b> is represented by a sequence of characters, it cannot begin
+with a number or a sign, although these may appear later in a symbol. </p>
 
 <pre>
 Hello
 Hello-world
 x32 </pre>
 
-<p>A <b>pair</b> consists of two component called the head and the tail. The
-components of a pair may be any type of value, including pairs, so that pairing
-may be used to construct arbitrarily large data structures. </p>
-
-<pre>
-(45.Hello)
-(foo.bar)
-(-12.(34.56))
-</pre>
-
-<p>A <b>function</b> is a value which may be applied to arguments, to yield a
-value which depends only on the function and the arguments to which it is
-applied. Given an expression, <b>quote(')</b> returns that expression as a value.</p>
-
-<pre>
-(QUOTE 12)
-(REM (QUOTE 19) (QUOTE 24))
-(MUL (QUOTE 2) (ADD (QUOTE 1) X))
-</pre>
-
-<h3>Prelude</h3>
-
-<p>A <b>lambda(λ)</b> expression allows to name sub-expressions, given an argument
-list and an expression, returns them as a function:</p>
-
-<pre>
-(LAMBDA (X Y) (SUB (ADD X Y) (QUOTE 2))
-</pre>
-
-<p>A <b>LET</b>, or <b>LETREC</b>, expression can associate pairs of values to an
-expression, given an expression with declarations returns its value. The main
-difference between LET and LETREC is that LETREC's defined symbols are
-also visible in the expression itself.</p>
-
-<pre>
-(LETREC <b>is-eight</b>
-	(<b>is-eight</b> LAMBDA (<i>INPUT</i>) (EQ <i>INPUT</i> target))
-	(target QUOTE 8)
-	<i>(value2 . exp)</i>
-	<i>(value3 . exp)</i>
-	<i>...</i>
-)
-</pre>
-
-<p>The following expression has value <b>True(T)</b> if the value of the
-expression is an <b>atom</b>, a number or a symbol, or has value
-<b>False(F)</b> otherwise. </p>
+<p>The <b>(ATOM exp)</b> procedure return True(<b>T</b>) if the value of the expression
+is an atom or False(<b>F</b>) otherwise.</p>
 
 <pre>
 (ATOM (QUOTE 12)) <i>; T</i>
 (ATOM (CONS (QUOTE 12) (QUOTE 34))) <i>; F</i>
 </pre>
 
-<p>The <b>equality</b> of two atomic expressions may be tested by an expression
-of the following form, and result in a value either T or F provided that the
-values of the expressions being compared are both atoms, and either they are
-both the same number, or they are both the same symbol:</p>
+<h3>Pairs</h3>
+
+<p>A <b>pair</b> joins two arbitrary values. The <b>(CONS a d)</b> procedure
+constructs pairs, the <b>(CAR list)</b> procedure extracts the first elements of
+the pair, and the <b>(CDR list)</b> procedure extracts the second.</p>
+
+<pre>
+(CONS (QUOTE foo) (QUOTE bar)) <i>; (foo.bar)</i>
+(CDR (CONS (QUOTE foo) (QUOTE bar))) <i>; foo</i>
+(CAR (CONS (QUOTE foo) (QUOTE bar))) <i>; bar</i>
+</pre>
+
+<p>A <b>list</b> is a chain of pair that are <i>cons-ed</i> onto one another, ending
+with a <b>nil</b>. The <b>car</b>(head) of a cell is its value, the <b>cdr</b>(tail) is the
+address of the following cell.</p>
+
+<pre>
+(CONS (QUOTE a)
+	(CONS (QUOTE b)
+		(CONS (QUOTE c) (' NIL)))) <i>; [a,b,c]</i>
+</pre>
+
+<h3>Procedures</h3>
+
+<p>A <b>(LAMBDA args expr)</b> expression evaluates to a procedure. The
+environment which is in effect when a lambda expression is evaluated is
+enclosed in the newly created procedure, this is referred to as a closure.
+Given an expression, the <b>(QUOTE exp)</b> procedure returns that expression
+as a value.</p>
+
+<pre>
+(LAMBDA (X) (ADD X (QUOTE 2))) <i>; the procedure itself</i>
+((LAMBDA (X) (ADD X (QUOTE 2))) (QUOTE 14)) <i>; 16</i>
+</pre>
+
+<p>The <b>(LET exp pairs..)</b>, and <b>(LETREC exp pairs..)</b>, expressions can
+associate pairs of values to an expression, given an expression with
+declarations returns its value. The main difference between let and letrec is
+that letrec's definitions are also visible in the expression itself.</p>
+
+<pre>
+(LETREC expr
+	(expr LAMBDA (X Y)
+		(CONS a (CONS b (QUOTE NIL)))
+	)
+	(a QUOTE A)
+	(b QUOTE B)
+	<i>(value2 . exp)</i>
+	<i>(value3 . exp)</i>
+	<i>...</i>
+)
+</pre>
+
+<p>The <b>(EQ a b)</b> procedure results in a value either <b>T</b> or <b>F</b>
+provided that the values of the expressions being compared are both atoms, and
+either they are both the same number, or they are both the same symbol:</p>
 
 <pre>
 (LAMBDA (X) (EQ (QUOTE word) X))
 </pre>
 
-<p>Given three expressions <b>if</b> returns the value of the second if the value
-of the first is True, otherwise returns the value of the third. </p>
+<p>Given three expressions, the <b>(IF true then that)</b> returns the value of
+the second if the value of the first is True, otherwise returns the value of
+the third. </p>
 
 <pre>
 (IF (EQ (QUOTE 16) X)
@@ -130,12 +137,12 @@ of the first is True, otherwise returns the value of the third. </p>
 
 <p>A program is either a LET, LETREC or LAMBDA expression. The program is given an
 expression from the <i>outside world</i>, that we will call <i>INPUT</i> to
-make explicit that this is our program entry function. If the symbol
+make explicit that this is our program entry procedure. If the symbol
 "Machiavelli" is used as argument, the program will evaluate to the following
 pair:</p>
 
 <pre>
-(λ (<i>INPUT</i>) 
+(λ (<i>INPUT</i>)
 	(PRINT
 		(CONS (' Hello)
 		(CONS <i>INPUT</i>
