@@ -7,18 +7,17 @@
 <nav><ul><li><a href="programming_languages.html" class="parent">programming languages</a></li><li><a href="operating_systems.html">operating systems</a></li><li><a href="graphical_input.html">graphical input</a></li><li><a href="file_formats.html">file formats</a></li><li><a href="data_encoding.html">data encoding</a></li><li><a href="type_systems.html">type systems</a></li></ul><ul><li><a href="assembly.html">assembly</a></li><li><a href="forth.html">forth</a></li><li><a href="lisp.html" class="self">lisp</a></li><li><a href="basic.html">basic</a></li><li><a href="pascal.html">pascal</a></li><li><a href="ansi_c.html">ansi c</a></li><li><a href="postscript.html">postscript</a></li><li><a href="hypertalk.html">hypertalk</a></li></ul><ul><li><a href="lisp_library.html">lisp library</a></li><li><a href="church_encoding.html">church encoding</a></li></ul></nav>
 <main><h2>A common trait of all dialects of LISP is the S-expression.</h2>
 
-<p>In Lisp, operations use the <a href='notation.html'>prefix notation</a>.
-<b>Function</b> names come after an open parenthesis followed by arguments, and
-a closing parenthesis. <b>Atoms</b> are tokens in a list separated by spaces,
-tabs or newlines. A pair of parentheses indicates one step of calculation.</p>
+<p>In Lisp, a pair of parentheses indicates one step of calculation, operations
+use the <a href='notation.html'>prefix notation</a>. This page will document a
+portable, lexically scoped, purely functional subset of Lisp
+that compiles to a <a href='secd.html'>virtual machine</a>. I will use
+uppercase function names to indicate built-in functions, and lowercase for
+user-defined functions. </p>
 
-<pre>(<b>function</b> arg1 arg2 arg3)</pre>
-
-<p>For the length of this page, I will use uppercase function names to indicate
-built-in functions, and lowercase for user-defined functions. This page will
-document a portable, lexically scoped, purely functional <a
-href='https://git.sr.ht/~rabbits/lispkit' target='_blank'>subset of Lisp</a>
-that compiles to the <a href='secd.html'>SECD machine</a>.</p>
+<ul>
+	<li>The <a href='https://git.sr.ht/~rabbits/lispkit/tree/master/item/utils/lispkit.lisp' target='_blank'>self-hosted compiler</a> source.</li>
+	<li>The <a href='https://git.sr.ht/~rabbits/lispkit/tree/master/item/src/secd.c' target='_blank'>virtual machine</a> runtine.</li>
+</ul>
 
 <figure>
 	<img src='../media/refs/vogue-lisp.jpg' width='300'/>
@@ -75,6 +74,26 @@ with a <b>nil</b>.</p>
 
 <h3>Procedures</h3>
 
+
+<p>The <b>(EQ a b)</b> procedure results in a value either <b>T</b> or <b>F</b>
+provided that the values of the expressions being compared are both atoms, and
+either they are both the same number, or they are both the same symbol:</p>
+
+<pre>
+(LAMBDA (X) (EQ (QUOTE word) X))
+</pre>
+
+<p>Given three expressions, the <b>(IF true then that)</b> returns the value of
+the second if the value of the first is True, otherwise returns the value of
+the third. </p>
+
+<pre>
+(IF (EQ (QUOTE 16) X)
+	(QUOTE EQUAL16)
+	(QUOTE NOT-EQUAL16)
+)
+</pre>
+
 <p>A <b>(LAMBDA args exp)</b> expression evaluates to a procedure. The
 environment which is in effect when a lambda expression is evaluated is
 enclosed in the newly created procedure, this is referred to as a closure.
@@ -104,25 +123,6 @@ that letrec's definitions are also visible in the expression itself.</p>
 )
 </pre>
 
-<p>The <b>(EQ a b)</b> procedure results in a value either <b>T</b> or <b>F</b>
-provided that the values of the expressions being compared are both atoms, and
-either they are both the same number, or they are both the same symbol:</p>
-
-<pre>
-(LAMBDA (X) (EQ (QUOTE word) X))
-</pre>
-
-<p>Given three expressions, the <b>(IF true then that)</b> returns the value of
-the second if the value of the first is True, otherwise returns the value of
-the third. </p>
-
-<pre>
-(IF (EQ (QUOTE 16) X)
-	(QUOTE EQUAL16)
-	(QUOTE NOT-EQUAL16)
-)
-</pre>
-
 <img src='../media/refs/sexp.png'/>
 
 <h3>Programs</h3>
@@ -137,34 +137,27 @@ for QUOTE, which are part of the <a
 href='https://git.sr.ht/~rabbits/lispkit/tree/master/item/utils/lispkit.lisp'
 target='_blank'>extended Lispkit compiler</a>.</p>
 </article>
-<p>The <b>(PRINT exp)</b> procedure sends the textual representation of an
-expression to the terminal. When an expression is made of a series of atoms, it
-is interpreted as a list of words, otherwise the entire expression is printed.
-If the symbol "Machiavelli" is used as argument, the program will evaluate to
-the following output:</p>
+
+<p>The <b>(WRITE exp)</b> procedure sends an expression to be <a
+href='secd.html#devices'>dispatched to a device</a>, by default, it is printing
+the expression in the console. If the symbol "Machiavelli" is used as argument,
+the program will evaluate to the following output:</p>
 
 <pre>
 (λ (<i>INPUT</i>)
-	(PRINT
-		(CONS (' Hello)
-		(CONS <i>INPUT</i>
-		(CONS (' #\Newline)
-		(' nil))))
-	)
-) <i>; "Hello Machiavelli"</i>
+	(WRITE (CONS (' Hello) <i>INPUT</i>))
+) <i>; "(Hello.Machiavelli)"</i>
 </pre>
 
-<p>Using everything we've seen so far, we can see a more elaborate program, in
-which functions are organized as lambdas so they can be used in other parts of
-the program as follows:</p>
+<p>Prefixing the <a href='secd.html#write'>WRITE</a> expression with the
+<code>:cli</code> symbol routes the expression to the <i>Command Line
+Interface</i>, which handles printing text. The <code>#\Newline</code> sybol
+gets converted to a linebreak during printing.</p>
 
 <pre>
 (LETREC <b>main</b>
-	(<b>main</b> λ (X)
-		(PRINT
-			(CONS (<b>fib</b> X)
-			(CONS <b>linebreak</b>
-			(' nil))))
+	(<b>main</b> λ (<i>INPUT</i>)
+		(<b>print-line</b> (<b>fib</b> <i>INPUT</i>))
 	)
 	(<b>fib</b> λ (N)
 		(IF (EQ N (' 0)) (' 0)
@@ -173,7 +166,14 @@ the program as follows:</p>
 				(<b>fib</b> (- N (' 1)))
 				(<b>fib</b> (- N (' 2))))))
 	)
-	(<b>linebreak</b> ' #\Newline)
+	(<b>print-line</b> λ (text)
+		(WRITE
+			(CONS (' :cli)
+			(CONS text
+			(CONS (' #\Newline)
+			(' NIL))))
+		)
+	)
 )
 </pre>
 
