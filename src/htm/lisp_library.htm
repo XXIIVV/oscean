@@ -12,64 +12,62 @@ href='lisp.html'>Pure Lisp</a>. Predicate functions suffixed with
 </ul>
 
 <pre>
-(<b>null?</b> λ (X) (EQ X (' NIL)))
-(<b>true?</b> λ (X) (IF X (' T) (' F)))
-(<b>not?</b> λ (X) (IF X (' F) (' T)))
-(<b>or?</b> λ (X Y) (IF X (' T) (true? Y)))
-(<b>and?</b> λ (X Y) (IF X (true? Y) (' F)))
+(<b>null?</b> λ (x) (EQ x (' NIL)))
+(<b>true?</b> λ (x) (IF x (' T) (' F)))
+(<b>not?</b> λ (x) (IF x (' F) (' T)))
+(<b>or?</b> λ (x y) (IF x (' T) (true? Y)))
+(<b>and?</b> λ (x y) (IF x (true? y) (' F)))
 </pre>
 
 <h3>List Processing Functions</h3>
 
-<p><b>Length</b> is the number of components in the list <code>l</code>.</p>
+<p><b>Length</b> is the number of components in the list <code>ls</code>.</p>
 
 <pre>
-(<b>length</b> λ (L)
-	(IF (ATOM L)
+(<b>length</b> λ (ls)
+	(IF (ATOM ls)
 		(' 1)
-		(+ (' 1) (<b>length</b> (CDR L)))
+		(+ (' 1) (<b>length</b> (CDR ls)))
 	)
 )
 </pre>
 
-<ul>
-	<li><code>(append e1 e2)</code> Is the list obtained by concatenation of its two arguments.</li>
-	<li><code>(member e l)</code> is T if the atom e is present in the list l.</li>
-	<li><code>(equal e1 e2)</code> tests the equality of two non-function data structures.</li>
-	<li><code>(first n l)</code> returns a prefix of the first n components of the list l, or the whole list if shorter.</li>
-	<li><code>(list e1 ... en)</code> returns a list of its arguments.</li>
-	<li><code>(transpose m)</code> is the matrix transposition of a list of lists m.</li>
-</ul>
+<p><b>Member?</b> returns T if the atom e is present in the list <code>ls</code>.</p>
 
-<h3>Common Higher-order Functions</h3>
-
-<p><b>Map</b> is the list whose components are obtained from those of <code>l</code> by application of <code>fn</code>.</p>
 <pre>
-(<b>map</b> λ (Fn L)
-	(IF (ATOM L)
-		(' NIL)
-		(CONS (Fn (CAR L)) (<b>map</b> Fn (CDR L)))
-	)
+(<b>member?</b> λ (e ls)
+	(IF (ATOM ls) (' F)
+	(IF (EQ (CAR ls) e) (' T)
+		(<b>member?</b> e (CDR ls))))
 )
 </pre>
 
-<p><b>Filter</b> is the list of those components for which the application of <code>fn</code> is T.</p>
+<p><b>Filter</b> is the list of those components for which the application of
+<code>fn</code> is T.</p>
+
 <pre>
-(<b>filter</b> λ (Fn L)
-	(IF (ATOM L)
+(<b>filter</b> λ (fn ls)
+	(IF (ATOM ls)
 		(' NIL)
-		(IF (Fn (CAR L))
-			(CONS (CAR L) (<b>filter</b> Fn (CDR L)))
-			(<b>filter</b> Fn (CDR L))
+		(IF (fn (CAR ls))
+			(CONS (CAR ls) (<b>filter</b> fn (CDR ls)))
+			(<b>filter</b> fn (CDR ls))
 		)
 	)
 )
 </pre>
 
-<ul>
-	<li><code>(reduce f l z)</code> Is the continued applicalion of f over the list l with zero z, that is <code>(I (head l) (l (head (tail l)) (l··· z)···))</code>.</li>
-	<li><code>(close r l)</code> is the first value x in the sequence <code>I, (r l). (r (r l))</code>, for which <code>(equal x (r x))</code>.</li>
-</ul>
+<p><b>Map</b> is the list whose components are obtained from those of
+<code>ls</code> by application of <code>fn</code>.</p>
+
+<pre>
+(<b>map</b> λ (fn ls)
+	(IF (ATOM ls)
+		(' NIL)
+		(CONS (fn (CAR ls)) (<b>map</b> fn (CDR ls)))
+	)
+)
+</pre>
 
 <img src='../media/refs/chine_nual.png' width='120'/>
 
