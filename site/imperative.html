@@ -1,0 +1,1181 @@
+<!DOCTYPE html><html><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="../links/main.css" type="text/css" rel="stylesheet"><link href="../media/services/icon.png" type="image/png" rel="shortcut icon">
+<title>XXIIVV &mdash; imperative</title></head><body>
+<header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
+
+<nav><ul><li><a href="programming_languages.html" class="parent">programming languages</a></li><li><a href="operating_systems.html">operating systems</a></li><li><a href="graphical_input.html">graphical input</a></li><li><a href="file_formats.html">file formats</a></li><li><a href="data_encoding.html">data encoding</a></li><li><a href="type_systems.html">type systems</a></li></ul><ul><li><a href="assembly.html">assembly</a></li><li><a href="concatenative.html">concatenative</a></li><li><a href="applicative.html">applicative</a></li><li><a href="imperative.html" class="self">imperative</a></li><li><a href="esoteric.html">esoteric</a></li></ul><ul><li><a href="basic.html">basic</a></li><li><a href="pascal.html">pascal</a></li><li><a href="ansi_c.html">ansi c</a></li><li><a href="hypertalk.html">hypertalk</a></li></ul></nav>
+<main><h2>A type of programming in which the program is built from procedures and
+subroutines.</h2><h2>10 PRINT "Hello World"</h2>
+
+<p>This guide is written specifically for the <a href='https://git.sr.ht/~rabbits/tiny-basic' target='_blank'>Varvara implementation</a> of the TinyBASIC compiler, but it should still give a general idea of how to use the language's primitives which are also found in most BASIC implementations.</p>
+
+<figure>
+	<img src='../media/refs/vogue-basic.jpg' width='300'/>
+	<figcaption>&mdash; Typical BASIC Programmer</figcaption>
+</figure>
+
+<h3>Introduction</h3>
+
+<img src="../media/refs/basic.png" width='200'>
+
+<p>A BASIC program begins with line numbers, control-flow is done by jumping to absolute line numbers which point to compiled BASIC code data. 0 is not a valid line number.</p>
+
+<pre>
+<span class='line'>15</span> <span class='cmd'>LET</span> A=0
+<span class='line'>20</span> <span class='cmd'>PRINT</span> "Hello BASIC"
+<span class='line'>25</span> <span class='cmd'>LET</span> A=A+1
+<span class='line'>30</span> <span class='cmd'>IF</span> A=10 GOTO 50
+<span class='line'>40</span> <span class='cmd'>GOTO</span> 20
+<span class='line'>50</span> <span class='cmd'>END</span>
+</pre>
+
+<p>Some BASIC compilers will do a light compilation where compiled lines hold a link to the following line in memory, as well as byte opcode for each statement.</p>
+
+<pre>
+<span class='link'>40 09</span> <span class='line'>00 0f</span> <span class='cmd'>80</span> 41 3d 30 00 <span class='link'>40 1c</span> <span class='line'>00 14</span> <span class='cmd'>89</span> 22 48
+65 6c 6c 6f 20 42 41 53 49 43 22 00 <span class='link'>40 27</span> <span class='line'>00 19</span>
+<span class='cmd'>80</span> 41 3d 41 2b 31 00 <span class='link'>40 39</span> <span class='line'>00 1e</span> <span class='cmd'>83</span> 41 3d 31 30
+20 47 4f 54 4f 20 35 30 00 <span class='link'>40 41</span> <span class='line'>00 28</span> <span class='cmd'>81</span> 32 30
+00 <span class='link'>40 47</span> <span class='line'>00 32</span> <span class='cmd'>8a</span> 00 00 00 00 00 00 00 00 00 00
+</pre>
+
+<h3>Expressions</h3>
+
+<p>Expressions can include numbers, variables and arithmetic operators. Numbers are decimal, but can be prefixed with <kbd>$</kbd> for <a href='hexadecimal.html'>hexadecimal</a>, there are no <a href='notation.html'>precedence rules</a>. Valid expressions arithmetic operators are <kbd>+-*/%</kbd>, bitwise operators are <kbd>&|</kbd>, logic operators are <kbd>&lt;&gt;=!</kbd>. The smallest number is -32768, the largest number is 32767.</p>
+
+<pre>
+10 LET A=6+7
+20 PRINT 52+$20*A
+30 END
+</pre>
+
+<h3>Variables</h3>
+
+<p>Variables are single character uppercased letters of the alphabet. Some variables have special properties, here is the complete list:</p>
+
+<ul>
+	<li><kbd>H</kbd>, reads the screen height, or sets the screen height.</li>
+	<li><kbd>P</kbd>, reads a value at address, or sets an address.</li>
+	<li><kbd>R</kbd>, reads a random number, or set the random number boundary.</li>
+	<li><kbd>T</kbd>, reads the time, in seconds.</li>
+	<li><kbd>W</kbd>, reads the screen width, or sets the screen width.</li>
+</ul>
+
+<p>For example, if you wanted to do a program to roll a 6-sided dice using the <kbd>R</kbd> special variable.</p>
+
+<pre>
+10 LET R=6, D=R
+20 PRINT "You rolled " D+1 "."
+30 END
+</pre>
+
+<h3>Interaction</h3>
+
+<p>The <kbd>INPUT</kbd> statement, will halt the execution and wait for an input. This can be used to store a value into a variable. For example, to capture the position of the mouse cursor: </p>
+
+<pre>
+10 PRINT "Touch the screen"
+20 INPUT X, Y
+30 PRINT "You touched at: " X ", " Y
+50 PRINT "Press a button"
+60 INPUT B
+70 PRINT "You pressed: " B
+80 END
+</pre>
+
+<p>To exit an INPUT loop, press the <kbd>home</kbd>, or <kbd>select</kbd> buttons.</p>
+
+<h3>Statements</h3>
+
+<table border='1'>
+	<tr><th rowspan='2'><code>RUN</code></th><td>Used to begin program execution at the lowest line number.</td></tr>
+	<tr><td><pre>RUN</pre></td></tr>
+	<tr><th rowspan='2'><code>REM</code></th><td>Permits to add remarks to a program source.</td></tr>
+	<tr><td><pre>REM This is a comment.</pre></td></tr>
+	<tr><th rowspan='2'><code>LIST</code></th><td>Causes part or all of the user program to be listed. If no parameters are given, the whole program is listed. A single expression parameter in evaluated to a line number which, if it exists, is listed. </td></tr>
+	<tr><td><pre>LIST 200</pre></td></tr>
+	<tr><th rowspan='2'><code>CLEAR</code></th><td>Formats the user program space, deleting any previous programs. If included in a program the program becomes suicidal when the statement is executed.</td></tr>
+	<tr><td><pre>CLEAR</pre></td></tr>
+	<tr><th rowspan='2'><code>INPUT</code></th><td>Halts evaluation, and assigns the result of expressions to each of the variables listed in the argument. Expressions are entered sequencially and separated by a line break, a list of two arguments, will expect two input lines.</td></tr>
+	<tr><td><pre>INPUT X, Y</pre></td></tr>
+	<tr><th rowspan='2'><code>LET</code></th><td>Assigns the value of an expression to a variable.</td></tr>
+	<tr><td><pre>LET A=123/2, B=$20%2</pre></td></tr>
+	<tr><th rowspan='2'><code>IF</code></th><td>If the result of the expression is not zero, the statement is executed; if False, the associated statement is skipped.</td></tr>
+	<tr><td><pre>IF A>B-2 PRINT "A is greater."</pre></td></tr>
+	<tr><th rowspan='2'><code>PRINT</code></th><td>Prints the values of the expressions and/or the contents of the strings in the console. To print the result of an expression as an <a href='ascii.html'>ascii</a> character, use <kbd>'$41</kbd>, to print the character A.</td></tr>
+	<tr><td><pre>PRINT "The result is: " A+B</pre></td></tr>
+	<tr><th rowspan='2'><code>GOTO</code></th><td>Changes the sequence of program execution.</td></tr>
+	<tr><td><pre>GOTO 50+A>B</pre></td></tr>
+	<tr><th rowspan='2'><code>GOSUB</code></th><td>Changes the sequence of program execution, and remembers the line number of the GOSUB statement, so that the next occurrence of a RETURN statement will result in execution proceeding from the statement following the GOSUB.</td></tr>
+	<tr><td><pre>GOSUB 220</pre></td></tr>
+	<tr><th rowspan='2'><code>RETURN</code></th><td>Transfers execution control to the line following the most recent unRETURNed GOSUB.  If there is no matching GOSUB an error stop occurs. </td></tr>
+	<tr><td><pre>RETURN</pre></td></tr>
+	<tr><th rowspan='2'><code>END</code></th><td>Must be the last executable statement in a program.  Failure to include an END statement will result in an error stop after the last line of the program is executed.</td></tr>
+	<tr><td><pre>END</pre></td></tr>
+</table>
+
+<h4>Display</h4>
+
+<p>There is a handful of routines to draw graphics on the screen, to learn more about the limitations of the display, see the Varvara <a href='varvara.html#screen'>Screen Specs</a>.</p>
+
+<table border='1'>
+	<tr><th rowspan='2'><code>COLOR</code></th><td>Sets the interface RGB colors, see <a href='theme.html'>theme</a>.</td></tr>
+	<tr><td><pre>COLOR $50f2, $b0f9, $a0f8</pre></td></tr>
+	<tr><th rowspan='2'><code>CLS</code></th><td>Clears the screen.</td></tr>
+	<tr><td><pre>CLS</pre></td></tr>
+	<tr><th rowspan='2'><code>DRAW</code></th><td>Sets position of drawing.</td></tr>
+	<tr><td><pre>DRAW 100, 320</pre></td></tr>
+	<tr><th rowspan='2'><code>MODE</code></th><td>Sets drawing mode, see <a href='varvara.html#screen'>varvara</a>.</td></tr>
+	<tr><td><pre>MODE 04</pre></td></tr>
+	<tr><th rowspan='2'><code>SPRITE</code></th><td>Draws a <a href='icn_format.html'>sprite</a>, uses MODE.</td></tr>
+	<tr><td><pre>SPRITE $1c1c, $087f, $0814, $2241</pre></td></tr>
+	<tr><th rowspan='2'><code>PICT</code></th><td>Draws a picture from a file, uses MODE.</td></tr>
+	<tr><td><pre>PICT image10x10.icn</pre></td></tr>
+</table>
+
+<h4>Memory</h4>
+
+<p>Varvara BASIC is able to read and write source files, as well as export compatible roms.</p>
+
+<table border='1'>
+	<tr><th rowspan='2'><code>SAVE</code></th><td>Exports your program to example.bas.</td></tr>
+	<tr><td><pre>SAVE example.bas</pre></td></tr>
+	<tr><th rowspan='2'><code>LOAD</code></th><td>Imports the example.bas program, replaces your current program.</td></tr>
+	<tr><td><pre>LOAD example.bas</pre></td></tr>
+	<tr><th rowspan='2'><code>MAKE</code></th><td>Exports your program as a Varvara rom.</td></tr>
+	<tr><td><pre>MAKE game.rom</pre></td></tr>
+	<tr><th rowspan='2'><code>POKE</code></th><td>Writes the value of expression B at address A in memory.</td></tr>
+	<tr><td><pre>POKE A, B</pre></td></tr>
+</table>
+
+<ul>
+	<li><a href='https://git.sr.ht/~rabbits/tiny-basic' target='_blank'>View source</a>, Uxntal.</li>
+	<li><a href='https://rabbits.srht.site/tiny-basic/basic.rom' target='_blank'>Download ROM</a>, 4kb.</li>
+	<li><a href='http://www.ittybittycomputers.com/IttyBitty/TinyBasic/TBuserMan.htm' target='_blank'>TinyBASIC User Manual</a></li>
+	<li><a href='https://www.msx.org/wiki/Category:MSX-BASIC_Instructions' target='_blank'>MSX BASIC Commands</a></li>
+	<li><a href='https://beebwiki.mdfs.net/VDU_23' target='_blank'>BBC Micro VDU 23</a></li>
+</ul>
+
+<style>
+span.line { background:#ff7a6c }
+span.cmd { background:#72dec2 }
+span.link { background:white }
+</style>
+<h2>Pascal is an imperative and procedural programming language designed for teaching students structured programming.</h2>
+
+<p>My main interest in the language is building little <a href='macintosh.html'>Macintosh</a> applications such as <a href='graf3dscene.html'>graf3dscene</a>, and exploring the <a href='http://www.think-pascal.org' target='_blank'>THINK Pascal 4.0.2</a> environment. I have saved many example files in the <a href='https://git.sr.ht/~rabbits/macintosh-cookbook' target='_blank'>Macintosh Cookbook</a> repository.</p>
+
+<figure>
+	<img src='../media/refs/vogue-pascal.jpg' width='300'/>
+	<figcaption>&mdash; Typical Pascal Programmer</figcaption>
+</figure>
+
+<p>THINK Pascal is a development system for the Macintosh, released by Think Technologies in 1986 as Lightspeed Pascal. Think Technologies was bought by Symantec, and the name was changed to Think Pascal. The last official update came 1992, and the product was officially discontinued in 1997.</p>
+
+<img src='../media/refs/tangram.png' width='300'/>
+
+<h3>Styleguide</h3>
+
+<p>A project should include the <code>Runtime.lib</code> library containing all standard Pascal routines such as <code>writeln</code> and <code>sqrt</code>. The <code>interface.lib</code> library contains the <i>glue code</i> for the all Macintosh Toolbox. Since routines from these two libraries are commonly used in almost all Pascal programs on the Macintosh, they are automatically included in the project file.</p>
+
+<p>The standard adopted here concerns the naming of procedures, functions, and variables which both always start with an uppercase letter. Each new word within a name should also start with an uppercase letter. For example, GetNewWindow or SeekSpindle are fine function and procedure names; badPrcName isn't.</p>
+
+<p>Variables always start with a lowercase letter. Use variable names like firstEmployee and currentTime. Global variables(variables accessible to your entire program) should start with a lowercase "g", like gCurrentWindow and gDone. The use of variable names such as glk and swpCk7 is discouraged. </p>
+
+<pre>
+program Example;
+
+  {Comment}
+
+  var
+    name: STRING;
+
+begin
+
+  ShowText;
+  name := 'alice';
+  if (name = 'alice') then
+    Writeln('The name is alice.')
+  else if (a = 'bob') then
+    Writeln('The name is bob.')
+  else
+    Writeln('The name is not alice nor bob.');
+
+end.
+</pre>
+
+<h3>Creating a procedure</h3>
+
+<p>A procedure definition in Pascal consists of a header, local declarations and a body of the procedure. The procedure header consists of the keyword procedure and a name given to the procedure. A procedure does not return anything.</p>
+
+<pre>
+program ExampleProcedure;
+
+ procedure DrawLine (x1, y1, x2, y2: INTEGER);
+ begin
+  Moveto(x1, y1);
+  Lineto(x2, y2);
+ end;
+
+begin
+
+ ShowDrawing;
+ DrawLine(20, 20, 100, 100);
+
+end.
+</pre>
+
+<h3>Creating a function</h3>
+
+<p>A function declaration tells the compiler about a function's name, return type, and parameters. A function definition provides the actual body of the function.</p>
+
+<pre>
+program ExampleFunction;
+
+ function Add (a, b: INTEGER): INTEGER;
+ begin
+  add := a + b;
+ end;
+
+begin
+
+ ShowText;
+ Writeln('5+6=', Add(5, 6));
+
+end.
+</pre>
+
+<h3>Creating a type</h3>
+
+<p>An Object is a special kind of record that contains fields like a record; however, unlike records, objects contain procedures and functions as part of the object. These procedures and functions are held as pointers to the methods associated with the object's type.</p>
+
+<pre>
+program ExampleType;
+
+ type
+  Rectangle = object
+    width, height: INTEGER;
+   end;
+
+ var
+  r1: Rectangle;
+
+begin
+
+ ShowText;
+ New(r1);
+ r1.width := 12;
+ r1.height := 34;
+ Writeln('The rect is ', r1.width : 2, 'x', r1.height : 2);
+
+end.
+</pre>
+
+<h3>Creating a type with a method</h3>
+
+<pre>
+program ExampleMethod;
+
+ type
+  Rectangle = object
+    width, height: INTEGER;
+    procedure setwidth (w: INTEGER);
+   end;
+
+ var
+  r1: Rectangle;
+
+ procedure Rectangle.setwidth (w: INTEGER);
+ begin
+  width := w;
+ end;
+
+begin
+
+ ShowText;
+ New(r1);
+ r1.width := 12;
+ r1.height := 34;
+ Writeln('The rect was ', r1.width : 2, ' x ', r1.height : 2);
+ r1.setWidth(56);
+ Writeln('The rect is now ', r1.width : 2, ' x ', r1.height : 2);
+
+end.
+</pre>
+
+<h3>Creating a unit</h3>
+
+<p>To include the unit in another project, add <code>uses ExampleUnit</code> right after <code>program Example</code>, the procedures declared in the <code>interface</code> will become available.</p>
+
+<pre>
+unit ExampleUnit;
+
+interface
+
+ procedure DrawLine (x1, y1, x2, y2: INTEGER);
+
+implementation
+
+ procedure DrawLine (x1, y1, x2, y2: INTEGER);
+ begin
+  Moveto(x1, y1);
+  Lineto(x2, y2);
+ end;
+
+end.
+</pre>
+
+<h3>Console Program</h3>
+
+<pre>
+program ExampleConsole;
+
+ const
+  message = ' Welcome to the world of Pascal ';
+
+ type
+  name = STRING;
+
+ var
+  firstname, surname: name;
+
+begin
+
+ ShowText;
+ Writeln('Please enter your first name: ');
+ Readln(firstname);
+
+ Writeln('Please enter your surname: ');
+ Readln(surname);
+
+ Writeln;
+ Writeln(message, ' ', firstname, ' ', surname);
+
+end.
+</pre>
+
+<h3>GUI Program</h3>
+
+<pre>
+program ExampleGUI;
+
+ var
+  w: WindowPtr; {A window to draw in}
+  r: Rect; {The bounding box of the window}
+
+begin
+
+ SetRect(r, 50, 50, 200, 100);
+ w := NewWindow(nil, r, '', true, plainDBox, WindowPtr(-1), false, 0);
+ SetPort(w);
+
+ MoveTo(5, 20);
+ DrawString('Hello world!');
+
+ while not Button do
+  begin
+  end;
+
+end.
+</pre>
+
+<h3>Graphics Primitives</h3>
+
+<p>Graphical user interface design rests firmly on the foundation of OOP and illustrates its power and elegance. </p>
+
+<table border='1'>
+  <tr>
+    <td>Object</td>
+    <td>Pascal</td>
+    <td>Description</td>
+  </tr>
+  <tr>
+    <td>Pen</td>
+    <td>PenSize(width, height:INTEGER)</td>
+    <td>Sets the size of the plotting pen, in pixels</td>
+  </tr>
+  <tr>
+    <td>Pen- move absolute</td>
+    <td>MoveTo(h,v: INTEGER)</td>
+    <td>Moves pen (invisibly) to pixel (h,v) (absolute coordinates)</td>
+  </tr>
+  <tr>
+    <td>Pen- move relative</td>
+    <td>Move(dh,dv: INTEGER)</td>
+    <td>Moves pen (invisibly) dh pixels horizontally and dv pixels vertically (relative coordinates)</td>
+  </tr>
+  <tr>
+    <td>Point</td>
+    <td>DrawLine(x1,y1, x1,y1:INTEGER)</td>
+    <td>Draws a line from point (x1,y1) to the second point, (x1,y1), i.e. a point</td>
+  </tr>
+  <tr>
+    <td>Point</td>
+    <td>MoveTo(x1,y1: INTEGER) <p>Procedure LineTo(x1,y1: INTEGER)</p></td>
+    <td>Moves to pixel (x1,y1) and draws a line to (x1,y1), i.e. a point</td>
+  </tr>
+  <tr>
+    <td>Point</td>
+    <td>Line(dx,dy: INTEGER)</td>
+    <td>From the present position of the pen, draw a line a distance (0,0)</td>
+  </tr>
+  <tr>
+    <td>Line - absolute</td>
+    <td>DrawLine(x1,y1, x2,y2:INTEGER)</td>
+    <td>Draws a line from point (x1,y1) to the second point, (x2,y2)</td>
+  </tr>
+  <tr>
+    <td>Line - absolute</td>
+    <td>MoveTo(x1,y1: INTEGER) <p>Procedure LineTo(x2,y2: INTEGER)</p></td>
+    <td>Moves to pixel (x1,y1) and draws a line to (x2,y2)</td>
+  </tr>
+  <tr>
+    <td>Line - relative</td>
+    <td>Line(dx,dy: INTEGER)</td>
+    <td>Draw a line a distance (dx,dy) relative to the present pen position</td>
+  </tr>
+  <tr>
+    <td>Text</td>
+    <td>WriteDraw(p1)</td>
+    <td>The WriteLn equivalent procedure for the drawing window</td>
+  </tr>
+  <tr>
+    <td>Drawing Window</td>
+    <td>Procedure ShowDrawing</td>
+    <td>Opens the Drawing Window</td>
+  </tr>
+</table>
+
+<h3>Graphic Primitives Example</h3>
+
+<pre>
+program Primitives;
+
+  {Program to demonstrate Pascal point & line primitives.}
+
+begin
+
+  ShowDrawing; {Opens Drawing Window}
+
+  {First draw three points by three different functions}
+
+  PenSize(1, 1); {Sets pen size to 1 x 1 pixels}
+  DrawLine(50, 50, 50, 50);
+  WriteDraw(' Point at (50,50) using DrawLine');
+
+  PenSize(2, 2);
+  MoveTo(100, 75); {Absolute move}
+  LineTo(100, 75);
+  WriteDraw(' Point at (100,75) using LineTo');
+
+  PenSize(3, 3);
+  MoveTo(150, 100); {Absolute move}
+  Line(0, 0);
+  WriteDraw(' Point at (150,100) using Line');
+
+  {Now Draw three lines by three different functions}
+
+  MoveTo(150, 175); {Absolute move}
+  WriteDraw('Line drawn with DrawLine');
+  DrawLine(150, 125, 50, 225);
+
+  PenSize(2, 2);
+  Move(0, 25); {Relative move}
+  LineTo(150, 250);
+  WriteDraw('Line drawn by LineTo');
+
+  Pensize(1, 1);
+  Move(0, 25); {Relative move}
+  Line(-100, 50);
+  WriteDraw('Line drawn by Line');
+
+end.
+</pre>
+
+<h3>Graphics Primitives - Geometric Figures</h3>
+
+<table border='1'>
+  <tr>
+    <td width="48"></td>
+    <td width="90">Rectangles<br />(Squares)</td>
+    <td width="90">Ovals<br />(Circles)</td>
+    <td width="106">Rounded-Corner<br />Rectangles</td>
+    <td width="97">Arcs and<br />Wedges</td>
+  </tr>
+  <tr>
+    <td width="48">Frame</td>
+    <td width="81">ProcedureFrameRect(r:Rect)</td>
+    <td width="81">ProcedureFrameOval(r:Rect)</td>
+    <td width="106">Frame Round Rect (r:Rect; ovalWidth, ovalHeight:Integer)</td>
+    <td width="97">FrameArc (r:Rect;startAngle, arcAngle:Integer)</td>
+  </tr>
+  <tr>
+    <td width="48">Paint</td>
+    <td width="81">PaintRect(r:Rect)</td>
+    <td width="81">PaintOval(r:Rect)</td>
+    <td width="106">Paint Round Rect(r:Rect; ovalWidth, ovalHeight:Integer)</td>
+    <td width="97">PaintArc (r:Rect;startAngle, arcAngle:Integer)</td>
+  </tr>
+  <tr>
+    <td width="48">Erase</td>
+    <td width="81">EraseRect(r:Rect)</td>
+    <td width="81">EraseOval(r:Rect)</td>
+    <td width="106">Erase Round Rect(r:Rect; oval Width, ovalHeight:Integer)</td>
+    <td width="97">EraseArc (r:Rect;startAngle, arcAngle:Integer)</td>
+  </tr>
+  <tr>
+    <td width="48">Invert</td>
+    <td width="81">InvertRect(r:Rect)</td>
+    <td width="81">InvertOval(r:Rect)</td>
+    <td width="106">Invert Round Rect(r:Rect; ovalWidth, ovalHeight:Integer)</td>
+    <td width="97">InvertArc (r:Rect;startAngle, arcAngle:Integer)</td>
+  </tr>
+  <tr>
+    <td width="48">Fill</td>
+    <td width="81">FillRect(r:Rect, pat:Pattern)</td>
+    <td width="81">FillOval(r:Rect,pat:Pattern)</td>
+    <td width="106">FillRound Rect(r:Rect; ovalWidth, ovalHeight:Integer, pat:Pattern)</td>
+    <td width="97">FillArc (r:Rect;startAngle, arcAngle:Integer, pat:Pattern)</td>
+  </tr>
+</table>
+
+<h3>Spiral Pattern</h3>
+
+<pre>
+program EulerSpiral;
+
+ const
+  l = 4;
+  a = 11;
+
+ var
+  wx, wy, wa: real;
+  i: INTEGER;
+
+ procedure DrawLineAngle;
+  var
+   t: REAL;
+ begin
+  MoveTo(round(wx), round(wy));
+  t := wa * PI / 180;
+  wx := wx + l * cos(t);
+  wy := wy + l * sin(t);
+  wa := wa + (i * a);
+  LineTo(round(wx), round(wy));
+ end;
+
+begin
+
+ wx := 100;
+ wy := 300;
+ i := 0;
+
+ ShowDrawing;
+ repeat
+  DrawLineAngle;
+  i := i + 1;
+ until i > 20000;
+
+end.
+</pre>
+
+<h3>Button Events</h3>
+
+<table border='1'>
+  <tr>
+    <td width="48">Object</td>
+    <td width="116">Pascal Syntax</td>
+    <td width="104">Example Call</td>
+    <td width="166">Description</td>
+  </tr>
+  <tr>
+    <td width="48">Button
+    </td>
+    <td width="106">Function Button:Boolean</td>
+    <td width="94">if Button then º<br/>elseº</td>
+    <td width="166">The Button function returns <i>True</i> if the mouse button is down; <i>False</i> otherwise</td>
+  </tr>
+  <tr>
+    <td width="48">Button</td>
+    <td width="106">Function StillDown: Boolean</td>
+    <td width="94">if StillDown thenº<br />elseº</p></td>
+    <td width="166">Returns <i>True</i> if the button is still down from the original press; <i>False</i> if it has been released or released and repressed (i.e., mouse event on event queue)</td>
+  </tr>
+  <tr>
+    <td width="48">Button</td>
+    <td width="106">Function WaitMouseUp:Boolean</td>
+    <td width="94">if WaitMouseUp thenº<br />elseº</p>
+    </td>
+    <td width="166">Same as StillDown, but removes previous mouse event from queue before returning False</td>
+  </tr>
+  <tr>
+    <td width="48">Mouse cursor</td>
+    <td width="106">GetMouse(<b>var</b> mouseLoc:Point)</td>
+    <td width="94">GetMouse(p);</td>
+    <td width="166">Returns the present mouse cursor position in local coordinates as a Point type</td>
+  </tr>
+  <tr>
+    <td width="48">Pixel Value</td>
+    <td width="106">Function GetPixel(h,v:point:Integer): Boolean</td>
+    <td width="94">GetPixel(10,10);</td>
+    <td width="166">Returns the pixel at position.</td>
+  </tr>
+  <tr>
+    <td width="48">Keyboard</td>
+    <td width="106">GetKeys(<b>var</b> theKeys:KeyMap)</td>
+    <td width="94">GetKeys(key);</td>
+    <td width="166">Reads the current state of the keyboard and returns a keyMap, a Packed Array[1..127] of Boolean</td>
+  </tr>
+  <tr>
+    <td width="48">Clock</td>
+    <td width="106">Function TickCount:LongInt</td>
+    <td width="94">if TickCount&lt;60 thenº</td>
+    <td width="166">Returns the total amount of a 60th of a second since the computer was powered on.</td>
+  </tr>
+  <tr>
+    <td width="48">Event</td>
+    <td width="106">Function GetNextEvent<br/><p>(eventMask:Integer;<b>var</b> theEvent:EventRecord): Boolean</p></td>
+    <td width="94">if GetNextEvent(2,Rec)<br/><p>thenº<br/></p><p>elseº</p></td>
+    <td width="166">A logical function which returns <i>True</i> if an event of the requested type exists on the event queue; <i>False</i> otherwise. If <i>True</i>, it also returns a descriptive record of the event. (type, location, time, conditions, etc)</td>
+  </tr>
+</table>
+
+<h3>Notes</h3>
+
+<p>A semi-colon is not required after the last statement of a block, adding one adds a "null statement" to the program, which is ignored by the compiler.</p>
+
+<p>The programmer has the freedom to define other commonly used data types (e.g. byte, string, etc.) in terms of the predefined types using Pascal's type declaration facility, for example:</p>
+
+<pre>
+  type
+  byte        = 0..255;
+  signed_byte = -128..127;
+  string      = packed array[1..255] of char;
+</pre>
+
+<p>If you are using decimal (real type) numbers, you can specify the number of decimal places to show with an additional colon:</p>
+
+<pre>Writeln(52.234567:1:3);</pre>
+
+<p>The 'whole number' part of the real number is displayed as is, no matter whether it exceeds the first width (in this case 1) or not, but the decimal part is truncated to the number of decimal places specified in the second width. The previous example will result in 52.234 being written.</p>
+
+<h3>Patterns</h3>
+
+<p>The available patterns are:</p>
+
+<ul>
+  <li>black</li>
+  <li>dkgray</li>
+  <li>gray</li>
+  <li>ltgray</li>
+  <li>white</li>
+</ul>
+
+<p>The following Think Pascal commands will be useful to you in writing interactive graphics programs on the Macintosh. They are listed by type:</p>
+
+<h3>Window Commands</h3>
+
+<table border='1'>
+  <tr><td>ShowDrawing</td><td>Open the drawing window (if not already open) and make it the active window on the screen.  Should be used when first draw to drawing window and anytime shift from text to drawing window.</td></tr>
+  <tr><td>ShowText</td><td>Similarly for the text window.</td></tr>
+  <tr><td>HideAll</td><td>Closes all Think Pascal windows on the screen.</td></tr>
+  <tr><td>SetDrawingRect(WindowRect)</td><td>Set Drawing Window to fit WindowRect</td></tr>
+  <tr><td>SetTextRect(WindowRect)</td><td>Set Text Window to fit WindowRect</td></tr>
+</table>
+
+<h3>Writing words on the screen:</h3>
+
+<table border='1'>
+  <tr><td>Writeln('text')</td><td>Prints  text to the Text Window and moves cursor to next line.</td></tr>
+  <tr><td>Writeln(INTEGER)</td><td>Prints  INTEGER in the Text Window and moves cursor to next line.</td></tr>
+  <tr><td>Writeln(INTEGER : d )</td><td>Prints  INTEGER in the Text Window using at least  d spaces and then moves cursor to next line.</td></tr>
+  <tr><td>Write('text')</td><td>Prints  text to the Text Window but does not move cursor to next line.</td></tr>
+  <tr><td>WriteDraw('text')</td><td>Prints  text to the Drawing Window, starting at the CP.  The CP is left at the lower right corner of the last character drawn.</td></tr>
+</table>
+
+<h3>Builtin Types</h3>
+
+<table border='1'>
+  <tr><td><i>Type</i></td><td><i>Records</i></td></tr>
+  <tr><td>Rect</td><td>left, top, right, bottom : INTEGER</td></tr>
+  <tr><td>Point</td><td>h, v : INTEGER</td></tr>
+</table>
+
+<h3>Builtin Procedures</h3>
+
+<table border='1'>
+  <tr><td>SetPt(VAR pt : Point; h,v : INTEGER)</td><td>Make point,  pt,with coords  (h,v)</td></tr>
+  <tr><td>SetRect(VAR r : Rect; left, top, right, bottom : INTEGER)</td><td>Make rectangle with coords  (left,top) and  (right,bottom) as corners.</td></tr>
+  <tr><td>OffSetRect(VAR r : Rect; left, top : INTEGER)</td><td>Change rectangle to coords (left,top).</td></tr>
+  <tr><td>InSetRect(VAR r : Rect; right, bottom : INTEGER)</td><td>Change rectangle to coords (left,top).</td></tr>
+  <tr><td>Pt2Rect( pt1, pt2 : Point; dstRect : Rect);</td><td>Make rectangle with  pt1 and  pt2 as corners</td></tr>
+  <tr><td>PtInRect(pt:Point; r : Rect) : BOOLEAN;</td><td>Determine if pt is in the rectangle r.</td></tr>
+</table>
+
+<h3>String Procedures</h3>
+
+<table border='1'>
+  <tr><td>NumToString(theNum: LongInt, theString: str255);</td><td>Converts a number to a string.</td></tr>
+  <tr><td>StringToNum(theString: str255, theNum: LongInt);</td><td>Converts a string to a number.</td></tr>
+  <tr><td>Concat(theString1, theString2, theString3, ..: string);</td><td>Combines strings.</td></tr>
+</table>
+
+<h3>Bit Operations</h3>
+
+<table border='1'>
+  <tr><td>Band(n, i : longint) : boolean</td></tr>
+  <tr><td>Btst(n, i : longint) : boolean</td></tr>
+  <tr><td>Bxor(i, j : longint) : longint</td></tr>
+  <tr><td>Bor(n, i : longint) : longint</td></tr>
+  <tr><td>Bsl(n, i : longint) : longint</td></tr>
+  <tr><td>Bsr(n, i : longint) : longint</td></tr>
+</table>
+
+<h3>Syntax</h3>
+
+<ul>
+  <li><code>^Shape</code> is a type which is a pointer to the type Shape</li>
+  <li><code>myShape^</code> takes a ^Shape and dereferences the pointer into a value</li>
+  <li><code>@myShape</code> takes a Shape and captures its address, giving you a ^Shape</li>
+  <li><code>var myShape</code> Shape is part of a argument declaration which means that the argument is passed as a reference, allowing the called procedure to modify it</li>
+</ul>
+
+<h3>Customization</h3>
+
+<p>If you are using <i>THINK Pascal 4.0.2</i>, as opposed to 4.5d4, the <b>select all</b> shortcut will be missing, and the default build shortcut will be ⌘G, instead of ⌘R. To change the menu shortcuts, open THINK Pascal with ResEdit, and add the missing shortcuts to the <a href='https://www.youtube.com/watch?v=mMyG2hBR8OQ' target='_blank' class='external'>MENU resource</a>. Remove the ⌘A shortcut from the Seach Again menu.</p>
+
+<h3>Going Further</h3>
+
+<p>The absolute best books on THINK Pascal are: </p>
+<ul>
+  <li><b>Macintosh Pascal Programming Primer</b>, Dave Mark & Cartwright Reed</li>
+  <li><b>Programming in Macintosh and Think Pascal</b>, Richard A. Rink & Vance B. Wisenbaker</li>
+  <li><b>THINK Pascal: User Manual</b>, Symantec. Inc</li>
+  <li><b>Pascal Reference Manual</b>, Apple Computer. Inc</li>
+</ul>
+
+<img src='../media/refs/pascal.png' width='300'/><ul>
+	<li><a href='https://git.sr.ht/~rabbits/macintosh-cookbook' target='_blank'>macintosh cookbook</a></li>
+	<li><a href='http://pascal-central.com' target='_blank'>pascal central</a></li>
+	<li><a href='https://archive.org/details/THINKPascalUserManual1991/mode/2up' target='_blank'>user manual</a></li>
+	<li><a href='http://pascal.hansotten.com/simplicity' target='_blank'>Pascal and Simplicity</a></li>
+</ul>
+
+<h2>C is the native language of Unix. It has come to dominate systems programming in the computer industry.</h2>
+
+<p>Work on the first official C standard began in 1983. The major functional additions to the language were settled by the end of 1986, at which point it became common for programmers to distinguish between "K&R C" and <a href='https://en.wikipedia.org/wiki/ANSI_C' target='_blank'>ANSI C</a>.</p>
+
+<p>People use C because it <i>feels</i> faster. If you build a catapult that can hurl a bathtub with someone inside from London to New York, it will <i>feel very fast</i> both on take-off and landing, and probably during the ride, too, while a comfortable seat in business class on a transatlantic airliner would probably take less time but you would not <i>feel</i> the speed nearly as much. <a href='https://groups.google.com/group/comp.lang.lisp/browse_thread/thread/567df5923ced5a94/52564cc186195b05#52564cc186195b05' target="_blank">~</a></p>
+
+<figure>
+	<img src='../media/refs/vogue-ansic.jpg' width='300'/>
+	<figcaption>&mdash; Typical C89 Programmer</figcaption>
+</figure>
+
+<p>One good reason to learn C, even if your programming needs are satisfied by a higher-level language, is that it can help you learn to think at hardware-architecture level. For notes specific to the <a href='plan9.html'>Plan9</a>'s C compiler, see <a href='plan9_c.html'>Plan9 C</a>.</p>
+
+<h3>Compile</h3>
+
+<p>To convert source to an executable binary one uses a compiler. My compiler of choice is <a href='https://bellard.org/tcc' target='_blank'>tcc</a>, but more generally <a href='https://gcc.gnu.org/' target='_blank'>gcc</a> is what most toolchains will use on <a href='linux.html'>Linux</a>.</p>
+
+<pre>cc -Wall -lm -o main main.c</pre>
+
+<pre>
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;math.h&gt;
+
+int count = 10;
+
+int
+add_together(int x, int y)
+{
+	int result = x + y;
+	return result;
+}
+
+typedef struct {
+	int x;
+	int y;
+	int z;
+} point;
+
+void
+print_point(point point)
+{
+	printf("the point is: (%d,%d,%d)\n",point.x,point.y,point.z);
+}
+
+int
+main(int argc, char** argv)
+{
+	point p;
+	p.x = 2;
+	p.y = 3;
+	p.z = 4;
+
+	float length = sqrt(p.x * p.x + p.y * p.y);
+
+	printf("float: %.6f\n", length);
+	printf("int: %d\n", p.z);
+
+	print_point(p);
+
+	return 0;
+}
+</pre>
+
+<h3>Include</h3>
+
+<p>Generally, projects will include <code>.h</code> files which in turn will include their own <code>.c</code> files. The following form is used for system header files. It searches for a file named <code>file</code> in a standard list of system directories. </p>
+
+<pre>#include &lt;file&gt;</pre>
+
+<p>The following form is used for header files of your own program. It searches for a file named <code>folder/file.h</code> in the directory containing the current file. </p>
+
+<pre>#include "folder/file.h"</pre>
+
+<h3>IO</h3>
+
+<p>One way to get input into a program or to display output from a program is to use standard input and standard output, respectively. The following two programs can be used with the unix pipe <code>./o | ./i</code></p>
+
+<h4>o.c</h4>
+<pre>
+#include &lt;stdio.h&gt;
+
+int
+main()
+{
+	printf("(output hello)");
+	return 0;
+}
+</pre>
+
+<h4>i.c</h4>
+
+<pre>
+#include &lt;stdio.h&gt;
+
+int
+main()
+{
+	char line[256];
+	if(fgets(line, 256, stdin) != NULL) {
+		printf("(input: %s)\n", line);
+	}
+	return 0;
+}
+</pre>
+
+<h3>Threads</h3>
+
+<p>Threads are a way that a program can spawn concurrent operations that can then be delegated by the operating system to multiple processing cores. </p>
+
+<pre>cc threads.c -o threads && ./threads</pre>
+
+<pre>
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+
+#define NTHREADS 5
+
+void
+*myFun(void *x)
+{
+	int tid;
+	tid = *((int *) x);
+	printf("Hi from thread %d!\n", tid);
+	return NULL;
+}
+
+int
+main(int argc, char *argv[])
+{
+	pthread_t threads[NTHREADS];
+	int thread_args[NTHREADS];
+	int rc, i;
+
+	/* spawn the threads */
+	for (i=0; i&lt;NTHREADS; ++i)
+	{
+		thread_args[i] = i;
+		printf("spawning thread %d\n", i);
+		rc = pthread_create(&threads[i], NULL, myFun, (void *) &thread_args[i]);
+	}
+
+	/* wait for threads to finish */
+	for (i=0; i&lt;NTHREADS; ++i) {
+		rc = pthread_join(threads[i], NULL);
+	}
+
+	return 1;
+}
+</pre>
+
+<h3>SDL</h3>
+
+<pre>cc demo.c -I/usr/local/include -L/usr/local/lib -lSDL2 -o demo</pre>
+
+<p>To compile the following example, place a <code>graphic.bmp</code> file in the same location as the c file, or remove the image block.</p>
+
+<pre>
+#include &lt;SDL2/SDL.h&gt;
+#include &lt;stdio.h&gt;
+
+int
+error(char* msg, const char* err)
+{
+	printf("Error %s: %s\n", msg, err);
+	return 1;
+}
+
+int
+main()
+{
+	SDL_Window* window = NULL;
+	SDL_Surface* surface = NULL;
+	SDL_Surface* image = NULL;
+
+	if(SDL_Init(SDL_INIT_VIDEO) < 0)
+	return error("init", SDL_GetError());
+
+	window = SDL_CreateWindow("Blank Window",
+	SDL_WINDOWPOS_UNDEFINED,
+	SDL_WINDOWPOS_UNDEFINED,
+	640,
+	480,
+	SDL_WINDOW_SHOWN);
+
+	if(window == NULL)
+		return error("window", SDL_GetError());
+
+	surface = SDL_GetWindowSurface(window);
+	SDL_FillRect(surface, NULL,
+	SDL_MapRGB(surface->format, 0x72, 0xDE, 0xC2));
+
+	/* Display an image */
+	image = SDL_LoadBMP("graphic.bmp");
+
+	if(image == NULL)
+		return error("image", SDL_GetError());
+
+	SDL_BlitSurface(image, NULL, surface, NULL);
+
+	/* Draw canvas */
+	SDL_UpdateWindowSurface(window);
+	SDL_Delay(2000);
+
+	/* close */
+	SDL_FreeSurface(surface);
+	surface = NULL;
+	SDL_DestroyWindow(window);
+	window = NULL;
+	SDL_Quit();
+
+	return 0;
+}
+</pre>
+
+<h3>Misc</h3>
+
+<p>String padding: <code>|Hello |</code></p>
+
+<pre>
+printf("|%-10s|", "Hello");
+</pre>
+
+<h3>Macros</h3>
+
+<pre>
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+#define ABS(a) (((a) < 0) ? -(a) : (a))
+#define CLAMP(x, low, high) (((x) > (high)) ? (high) : (((x) < (low)) ? (low) : (x)))
+</pre>
+
+<q>People use C because it feels faster. Like, if you build a catapult strong enough that it can hurl a bathtub with someone crouching inside it from London to New York, it will feel very fast both on take-off and landing, and probably during the ride, too, while a comfortable seat in business class on a transatlantic airliner would probably take less time but you would not feel the speed nearly as much.</q>
+<cite>Erik Naggum</cite>
+
+<ul>
+	<li><a href='https://ftrv.se/3' target='_blank'>Sigrid on C</a></li>
+	<li><a href='https://aiju.de/misc/c-style' target='_blank'>Aiju on C</a></li>
+</ul>
+
+<h2>Hypertalk is the programming language used in the mac software Hypercard.</h2>
+
+<p>Hypertalk can be emulated easily using a <a href='macintosh.html'>Macintosh</a> emulator, the default Hypercard canvas size is <a href='https://hundredrabbits.github.io/Noodle/#512x342' target='_blank'>512x342</a>.</p>
+<p>For most basic operations including mathematical computations, HyperTalk favored natural-language ordering of predicates over the ordering used in mathematical notation. For example, in HyperTalk's put assignment command, the variable was placed at the end of the statement:</p>
+<pre>put 5 * 4 into theResult</pre>
+
+<figure>
+	<img src='../media/refs/vogue-hypertalk.jpg' width='300'/>
+	<figcaption>Typical Hypertalk Programmer</figcaption>
+</figure>
+
+<h3>Go</h3>
+
+<p>The go command can be used in two ways. It can allow the user to go to any card in the stack that it is  in or to any card of any other stack that is available.</p>
+
+<pre>
+visual effect dissolve
+go to card id 3807
+</pre>
+
+<h3>Put/Set</h3>
+
+<p>To change the text value, or textstyle of a field:</p>
+
+<pre>
+on mouseUp
+  put random(100) into card field "target"
+  set the textstyle of card field "Title" to italic
+end mouseUp
+</pre>
+
+<p>Alternative, one can use the "type" command if the programmer wants to simulate someone typing something into a field. The type command will do very well here:</p>
+
+<pre>
+on mouseUp
+  select before first line of card field "target"
+  type "hello there"
+end mouseUp
+</pre>
+
+<h3>Show/Hide</h3>
+
+<p>The hide command can be used to hide any object. Some examples are: buttons, fields, and the menubar. The opposite of the hide command is  the show command, and it can be used to make an object show up again. </p>
+
+<pre>
+-- a comment
+onmouseUp 
+  hide card field "title" 
+  wait 5 seconds 
+  show card field "title" 
+endmouseUp
+</pre>
+
+<h3>Choose</h3>
+
+<p>Each of the tools in the tool menu has a name that can be used with this command.</p>
+
+<pre>
+onmouseUp 
+  choose spray can tool 
+  set dragSpeed to 150 
+  drag from 300,100 to 400, 200 
+  wait 1 second 
+  choose eraser tool 
+  drag from 300,100 to 400, 200 
+  choose browse tool 
+endmouseUp
+</pre>
+
+<p>The available tools are:</p>
+
+<ul style='columns:3'>
+  <li>browse</li>
+  <li>brush</li>
+  <li>bucket</li>
+  <li>button</li>
+  <li>curve</li>
+  <li>eraser</li>
+  <li>field</li>
+  <li>lasso</li>
+  <li>line</li>
+  <li>oval</li>
+  <li>pencil</li>
+  <li>rect[angle]</li>
+  <li>reg[ular] poly[gon]</li>
+  <li>round rect[angle]</li>
+  <li>select</li>
+  <li>spray</li>
+  <li>text</li>
+</ul>
+
+<h3>Modal</h3>
+
+<h4>Basic</h4>
+
+<pre>
+on mouseUp
+  ask "What is your name?"
+  put it into response
+  answer "You said " & response
+end mouseUp
+</pre>
+
+<h4>Logic with input</h4>
+
+<pre>
+on mouseUp
+  ask "What is your name?"
+  put it into response
+  if response is "blue" then 
+    answer "correct."
+  else
+    answer "incorrect."
+  end if
+end mouseUp
+</pre>
+
+<h4>Logic with choices</h4>
+
+<pre>
+on mouseUp
+  answer "Which color?" with "cyan" or "magenta" or "yellow"
+  if it is "cyan" then 
+    answer "You selected cyan."
+  else
+    answer "You did not select cyan."
+  end if
+end mouseUp
+</pre>
+
+<h3>Play</h3>
+
+<p>The play command plays the specified sequence of notes with the specified sampled sounds. The tempo parameter specifies the number of quarter notes per minute; the default value is 120. </p>
+
+<pre>play "harpsichord" "c4 a3 f c4 a3 f c4 d c c c"</pre>
+
+<h3>Globals</h3>
+
+<p>The global command is  used to specify variables which will be available to other scripts within the stack or even in another stack. Unless variables are declared a global, they are considered by HyperTalk as local which means that they may only be used within a single script. If they are global, they may be carried to other scripts. Variables must be identified before they are used in order for them to become global. </p>
+
+<pre>
+-- allow access to globals
+global var1, var2, ..
+answer "hello " & var1 & "."
+</pre>
+
+<h3>Summary</h3>
+
+<pre>
+-- Let's put it altogether now
+on mouseUp
+  put random of 100 into n
+  repeat 6
+    ask "please input number(1-100)?"
+    if it < n then
+      answer "more than" && it
+    else if it > n then
+      answer "less than" && it
+    else if it is n then
+      answer "perfect!"
+    exit mouseUp
+    end if
+  end repeat
+  answer "You lose, myy answer is " && n 
+end mouseUp
+</pre>
+
+<ul>
+	<li><a href='https://opus.uleth.ca/bitstream/handle/10133/856/Christmas_Kevin_G.pdf' target='_blank'>tutorial guide</a></li>
+	<li><a href='https://www.youtube.com/watch?v=LVq67vYyAqo' target='_blank'>tutorial video</a></li>
+	<li><a href='http://www.jaedworks.com/hypercard/HT-Masters/scripting.html' target='_blank'>tips and tricks</a></li>
+</ul>
+
+<ul></ul></main>
+<footer><a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.svg" alt="CreativeCommons"/></a> <a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a> <a href="https://merveilles.town/@neauoire" rel="me" target="_blank"><img src="../media/icon/merveilles.svg" alt="Merveilles"/></a> <a href="ethics.html"><img src="../media/icon/dreipfeile.svg" alt="NoNazis!"/></a> <a href="uxn.html"><img src="../media/icon/uxn.svg" alt="UxnPowered"/></a> <span><a href="devine_lu_linvega.html">Devine Lu Linvega</a> &copy; 2023 &mdash; <a href="about.html#license">BY-NC-SA 4.0</a></span></footer>
+</body></html>

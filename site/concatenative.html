@@ -1,11 +1,163 @@
 <!DOCTYPE html><html><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <link href="../links/main.css" type="text/css" rel="stylesheet"><link href="../media/services/icon.png" type="image/png" rel="shortcut icon">
-<title>XXIIVV &mdash; postscript</title></head><body>
+<title>XXIIVV &mdash; concatenative</title></head><body>
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
 
-<nav><ul><li><a href="assembly.html">assembly</a></li><li><a href="concatenative.html" class="parent">concatenative</a></li><li><a href="applicative.html">applicative</a></li><li><a href="imperative.html">imperative</a></li><li><a href="esoteric.html">esoteric</a></li></ul><ul><li><a href="forth.html">forth</a></li><li><a href="postscript.html" class="self">postscript</a></li></ul><ul></ul></nav>
-<main><figure><img alt="Postscript on Plan9" src="../media/diary/724.jpg"><figcaption>Postscript on Plan9</figcaption></figure>
+<nav><ul><li><a href="programming_languages.html" class="parent">programming languages</a></li><li><a href="operating_systems.html">operating systems</a></li><li><a href="graphical_input.html">graphical input</a></li><li><a href="file_formats.html">file formats</a></li><li><a href="data_encoding.html">data encoding</a></li><li><a href="type_systems.html">type systems</a></li></ul><ul><li><a href="assembly.html">assembly</a></li><li><a href="concatenative.html" class="self">concatenative</a></li><li><a href="applicative.html">applicative</a></li><li><a href="imperative.html">imperative</a></li><li><a href="esoteric.html">esoteric</a></li></ul><ul><li><a href="forth.html">forth</a></li><li><a href="postscript.html">postscript</a></li></ul></nav>
+<main><h2>Expressions in a point-free language denote functions, and the
+juxtaposition of expressions denotes function composition.</h2>
+
+<p>The point-free programming paradigm is where function definitions do not
+identify the arguments on which they operate. Instead the definitions merely
+compose other functions, among which are combinators that manipulate the
+arguments.</p>
+
+<img src='../media/refs/rpn.png' width='40'/>
+
+<h2>Forth is a programming language that uses two stacks and a dictionary of words.</h2>
+
+<p>A Forth environment combines the compiler with an interactive shell, where the user defines and runs subroutines called words. Words can be tested, redefined, and debugged as the source is entered without recompiling or restarting the whole program.</p>
+
+<p>Forth programmers enjoy the immediacy of an interpreter while at the same time the performance and efficiency of a compiler. </p>
+
+<figure>
+	<img src='../media/refs/vogue.jpg' width='300'/>
+	<figcaption>&mdash; Typical Forth Programmer</figcaption>
+</figure>
+
+<p>My principal forth environment is <a href='http://www.call-with-current-continuation.org/uf/uf.html' target='_blank'>Felix Winkelmann's UF</a>, a wonderful little graphical forth environment running on the <a href='uxn.html'>Uxn</a> virtual machine. I also sometimes use a custom version of the <code>lbforth.c</code> REPL, modified to work on <a href='plan9.html'>Plan9(ARM)</a> which can be downloaded <a href='../etc/lbforth9.c.txt' target='_blank'>here</a>.</p>
+
+<h3>Basics</h3>
+
+<p>Forth reads from left to right, spaces are separators, when you wish to quit, type <code>BYE</code>. A stack is a way of managing data. With a stack, data is added to and taken from the "top", as with a stack of dishes. The acronym for this is LIFO: <i>Last In First Out</i>.</p>
+
+<p>To inspect the stack, type <code>.S</code></p>
+
+<pre>
+10 20 30 .S
+30 20 10 <b>OK</b>
+DROP .S
+20 10 <b>OK</b>
+BYE
+</pre>
+
+<p>Forth has no operator precedence, and does not need parentheses.</p>
+
+<table border='1'>
+	<tr><th>Reverse Polish</th><th>Infix</th></tr>
+	<tr><td>3 4 + 2 *</td><td>(3 + 4) * 2</td></tr>
+	<tr><td>2 3 4 * +</td><td>(3 * 4) + 2</td></tr>
+	<tr><td>2 3 * 4 +</td><td>(2 * 3) + 4</td></tr>
+	<tr><td>5 6 + 7 *</td><td>(5 + 6) * 7</td></tr>
+</table>
+
+<h3>Words</h3>
+
+<p>The dictionary comes with the Forth system. The programmer writes a program by adding to the dictionary words defined in terms of words in the dictionary. As a rule, Forth finds a word by starting with the most recently defined word and working backwards. If two or more words in the dictionary have the same name, Forth will find the most recently defined and be satisfied. </p>
+
+<p>A colon definition starts with the Forth word <code>:</code></p>
+
+<pre>
+: HELLO ." Hi! " ;  
+HELLO
+Hi!  OK
+</pre>
+
+<p>Because in Forth data is passed implicitly, it is considered insane to define a word without documenting what data it takes from the stack and what data it returns to the stack. The canonical way of doing this is to use the Forth word <code>(</code> which tells the system to ignore what follows up to and including the next <code>)</code>. Expectations ("before") and results ("after") are separated by --. The resulting ( before -- after ) is a "stack-effect comment".</p>
+
+<pre>
+: SQUARED DUP * ;
+5 SQUARED .
+25
+</pre>
+
+<p>You program in Forth by teaching a machine new actions that you and the machine know by name. Each new action is a novel arrangement of known actions, perhaps mixing in some data. By being added to the dictionary the new action can be used to teach still newer actions.</p>
+
+<pre>
+: SQUARED  ( n -- n**2 )  DUP * ;
+: CUBED  ( n -- n**3 )  DUP SQUARED * ;
+: 4TH  ( n -- n**4 )  SQUARED SQUARED ;
+</pre>
+
+<h3>Logic</h3>
+
+<p>There’s actually no boolean type in Forth. The number <code>0</code> is treated as false, and any other number is true, although the canonical true value is <code>-1</code> (all boolean operators return <code>0</code> or <code>-1</code>). Conditionals in Forth can only be used inside definitions. </p>
+
+<p>The simplest conditional statement in Forth is <code>if then</code>, which is equivalent to a standard <code>if</code> statement in most languages. Here’s an example of a definition using <code>if then</code>. In this example, we’re also
+using the <code>mod</code> word, which returns the modulo of the top two numbers on the stack. In this case, the top number is 5, and the other is whatever was placed on the stack before calling <code>buzz?</code>. Therefore, <code>5 mod 0 =</code> is a boolean expression that checks to see if the top of the stack is divisible by 5.</p>
+
+<pre>
+: BUZZ? 5 MOD 0 = IF ." BUZZ" THEN ;
+</pre>
+
+<h3>Loops</h3>
+
+<pre>
+: STAR [CHAR] * EMIT ;
+: STARS 0 DO STAR LOOP CR ;
+10 STARS
+**********
+</pre>
+
+<h3>Stack Primitives</h3>
+
+<p>Stack machines are arguably the simplest kind architecture. Their LIFO structure is quite suitable for block-oriented languages. The code size for a stack machine can be very compact because most instructions have no operand field.</p>
+
+<ul>
+	<li><code>POP</code> Remove an item at index, closing the hole left in the stack.</li>
+	<li><code>ROLL</code> Remove an item at index, push it on top of the stack.</li>
+	<li><code>PICK</code> Copy an item at index, push it on top of the stack.</li>
+</ul>
+
+<p>Given the <i>Last In First Out</i> stack <code>a b c</code>, here are the resulting stacks after each primitive:</p>
+
+<table border='1'>
+	<tr><td colspan="2">Primary</td><td colspan="2">Secondary</td><td>Definition</td></tr>
+	<tr><th rowspan="2">POP</th><td>0</td><th>DROP</th><td>a b</td><td>Discard top item.</td></tr>
+	<tr><td>1</td><th>NIP</th><td>a c</td><td>Discard second item.</td></tr>
+	<tr><th rowspan="2">ROLL</th><td>0</td><th>SWAP</th><td>a c b</td><td>Bring second item to top.</td></tr>
+	<tr><td>1</td><th>ROT</th><td>b c a</td><td>Bring third item to top.</td></tr>
+	<tr><th rowspan="2">PICK</th><td>0</td><th>DUP</th><td>a b c c</td><td>Copy top item.</td></tr>
+	<tr><td>1</td><th>OVER</th><td>a b c b</td><td>Copy second item to top.</td></tr>
+</table>
+
+<img src="../media/refs/swap.png" alt="Swap operation by Leo Brodie">
+
+<h3>Extra operators</h3>
+
+<table border='1'>
+	<tr><th>Tuck</th><td>SWAP OVER</td></tr>
+</table>
+
+<h3>Machine Forth</h3>
+
+<p>Chuck Moore also uses a pared down Forth for his custom minimal-instruction set processors. They are an inspiration for designing other minimal languages. For example, his latest designs have five-bit instructions, for 32 possible opcodes:</p>
+
+<table border='1'>
+	<tr><th>Stack</th><td>DROP, DUP, OVER, PUSH, POP</td></tr>
+	<tr><th>Math</th><td>+, AND, XOR, NOT, 2*, 2/, multiply-step</td></tr>
+	<tr><th>Call</th><td>JUMP, CALL, RETURN, IF, -IF</td></tr>
+	<tr><th>Loop</th><td>NEXT, UNEXT</td></tr>
+	<tr><th>Register</th><td>A, A!, B!</td></tr>
+	<tr><th>Memory</th><td>@, !, @+, !+, @B, !B, @P, !P</td></tr>
+	<tr><th>NO-OP</th><td>.</td></tr>
+</table>
+
+<ul>
+	<li><a href='http://www.murphywong.net/hello/simple.htm' target='_blank'>Forth Tutorial</a></li>
+	<li><a href='https://gist.github.com/lbruder/10007431' target='_blank'>Original lbforth</a></li>
+	<li><a href='http://www.ultratechnology.com/method.htm' target='_blank'>Forth Methodology</a></li>
+	<li><a href='https://users.ece.cmu.edu/~koopman/stack_computers/appb.html' target='_blank'>Forth Primitives</a></li>
+	<li><a href='https://patorjk.com/programming/articles/forththoughts.htm' target='_blank'>Language for Thoughtful Programming</a></li>
+	<li><a href='https://colorforth.github.io/HOPL.html' target='_blank'>Forth History</a></li>
+	<li><a href='https://www.bradrodriguez.com/papers/moving1.htm' target='_blank'>Design Decisions in the Forth Kernel</a></li>
+	<li><a href='https://wiki.forth-ev.de/lib/exe/fetch.php/en:projects:a-start-with-forth:3_instruction_forth.pdf' target='_blank'>3 Instructions Forth</a></li>
+	<li><a href='https://plover.com/~mjd/misc/hbaker-archive/ForthStack.html' target='_blank'>Linear Logic and Permutation Stacks</a></li>
+	<li><a href='http://ratfactor.com/forth/the_programming_language_that_writes_itself.html' target='_blank'>The Language That Writes Itself</a>, by Ratfactor</li>
+	<li><a href='http://www.call-with-current-continuation.org/articles/forth.txt' target='_blank'>Thoughts</a>, by Felix Winkelmann</li>
+</ul>
+
 <h2>Postscript is a programming language that was designed to specify the layout of the printed page.</h2>
 
 <p>The Postscript language uses a <a href='notation.html'>postfix</a> syntax similar to <a href='forth.html'>Forth</a>. The <a href='dotgrid.html'>Dotgrid</a> language was designed to be a subset of the Postscript toolkit.</p>
@@ -348,6 +500,6 @@ showpage
 	<li><a href='https://www.math.ubc.ca/~cass/graphics/manual/' target='_blank'>tutorials</a></li>
 </ul>
 
-<ul></ul><p class="incoming"><b>incoming</b> <a href="dotgrid.html">dotgrid</a> <a href="uxntal_lambdas.html">uxntal lambdas</a> </p></main>
+<ul></ul></main>
 <footer><a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.svg" alt="CreativeCommons"/></a> <a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a> <a href="https://merveilles.town/@neauoire" rel="me" target="_blank"><img src="../media/icon/merveilles.svg" alt="Merveilles"/></a> <a href="ethics.html"><img src="../media/icon/dreipfeile.svg" alt="NoNazis!"/></a> <a href="uxn.html"><img src="../media/icon/uxn.svg" alt="UxnPowered"/></a> <span><a href="devine_lu_linvega.html">Devine Lu Linvega</a> &copy; 2023 &mdash; <a href="about.html#license">BY-NC-SA 4.0</a></span></footer>
 </body></html>
