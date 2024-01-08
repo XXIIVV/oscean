@@ -4,20 +4,85 @@
 <title>XXIIVV &mdash; uxntal</title></head><body>
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
 
-<nav><ul><li><a href="chip8.html">chip8</a></li><li><a href="turquoise.html">turquoise</a></li><li><a href="uxn.html" class="parent">uxn</a></li><li><a href="secd.html">secd</a></li></ul><ul><li><a href="uxntal.html" class="self">uxntal</a></li><li><a href="varvara.html">varvara</a></li></ul><ul><li><a href="uxntal_opcodes.html">uxntal opcodes</a></li><li><a href="uxntal_stacks.html">uxntal stacks</a></li><li><a href="uxntal_modes.html">uxntal modes</a></li><li><a href="uxntal_syntax.html">uxntal syntax</a></li><li><a href="uxntal_immediate.html">uxntal immediate</a></li><li><a href="uxntal_memory.html">uxntal memory</a></li><li><a href="uxntal_state.html">uxntal state</a></li><li><a href="uxntal_devices.html">uxntal devices</a></li><li><a href="uxntal_software.html">uxntal software</a></li></ul></nav>
+<nav><ul><li><a href="chip8.html">chip8</a></li><li><a href="turquoise.html">turquoise</a></li><li><a href="uxn.html" class="parent">uxn</a></li><li><a href="secd.html">secd</a></li></ul><ul><li><a href="uxntal.html" class="self">uxntal</a></li><li><a href="varvara.html">varvara</a></li></ul><ul><li><a href="uxntal_syntax.html">uxntal syntax</a></li><li><a href="uxntal_opcodes.html">uxntal opcodes</a></li><li><a href="uxntal_stacks.html">uxntal stacks</a></li><li><a href="uxntal_modes.html">uxntal modes</a></li><li><a href="uxntal_immediate.html">uxntal immediate</a></li><li><a href="uxntal_memory.html">uxntal memory</a></li><li><a href="uxntal_state.html">uxntal state</a></li><li><a href="uxntal_devices.html">uxntal devices</a></li><li><a href="uxntal_software.html">uxntal software</a></li></ul></nav>
 <main><figure><img alt="Rostiger's Uxn Zine" src="../media/diary/804.jpg"><figcaption>Rostiger's Uxn Zine</figcaption></figure>
 <h2>Tal is the programming language for the Uxn virtual machine.</h2>
 
 <img src="../media/generic/uxn.beet.png" style="float:right; margin-left: 15px;" width="200">
 
-<p>Uxn programs are written in a stack-based flavor of assembly designed especially for this virtual machine. TAL files are human-readable source files, ROM files are uxn-compatible binary program files; applications that transform TAL files into ROM files are called <i>Assemblers</i>.</p>
+<p>Uxn programs are written in a stack-based flavor of assembly designed
+especially for this virtual machine. TAL files are human-readable source files,
+ROM files are uxn-compatible binary program files; applications that transform
+TAL files into ROM files are called <i>Assemblers</i>.</p>
 
-<p>To get started, equip yourself with an emulator and assembler for your system.</p>
+<p>To get started, equip yourself with an emulator and assembler for your
+system.</p>
 
 <ul>
 	<li><a href='https://100r.co/site/uxn.html' target='_blank'>Download emulator & assembler</a>, 40kb</li>
 	<li><a href='https://compudanzas.net/uxn_tutorial.html' target='_blank'>Introduction to Uxntal</a>, online book</li>
 </ul>
+
+<h2>Uxntal Syntax</h2>
+
+<p>In <a href='https://concatenative.org/wiki/view/Concatenative%20language'
+target='_blank'>concatenative programming</a>, there are no precedence rules,
+the calculations are merely performed in the sequence in which they are
+presented. The order with which elements come off a stack is known as <b>last
+in, first out</b>. In the stack <i>a b c</i>, the <i>c</i> item was the last to
+be added, and will be the first to be removed.</p>
+
+<pre>
+#01 DUP ADD #03 MUL<span style='float:right'>06</span>
+</pre>
+
+<p>Uppercased opcodes are reserved words, lowercase hexadecimal numbers are bytes
+and shorts, parentheses are comments, curlies are <a
+href='uxntal_lambdas.html'>lambdas</a>, and square brackets are used for
+organization.</p>
+
+<iframe src="../etc/uxnrepl/index.html" frameborder="0" style='overflow: hidden; height: 450px; margin-bottom: 15px; border: 1px solid #000; border-radius: 3px;'></iframe>
+
+<style>
+.example span.label { font-weight: bold;background: #fff;color: #000;padding: 2px 4px; }
+.example span.comment { color:#777 }
+</style>
+
+<p>The first line begins with a <b>padding</b> of <kbd>|10</kbd> to the <a
+href='varvara.html#console'>Console device</a>, followed by the
+<i>enumeration</i> of the device's ports. This <b>enum</b> will allow us to
+refer to the console by name, as opposed to using the port numbers
+directly.</p>
+
+<p>The second line pads to <kbd>|0100</kbd>, which is where the first page of
+memory ends, and where all Uxn programs begin. Next is a <b>comment</b>, the
+arrow symbol indicates that the following operation is a <b>vector</b>, and
+will terminate with <kbd>BRK</kbd>.</p>
+
+<img src="../media/generic/uxn.team.png" style="margin:0 auto 30px" width="300">
+
+<p>We push the <b>absolute address</b>, made of two bytes, of the label <kbd>@hello-world</kbd> to the stack, which points to a series of characters in memory. A hexadecimal number or label pushed to the stack in this fashion is called a <b>literal</b>, as opposed to a value stored in memory. Next, we jump to the <kbd>@print-text</kbd> subroutine, and leave a return address onto the return stack.</p>
+
+<p>Both <kbd>&while</kbd> and <kbd>@while</kbd> are ways to define <b>labels</b>, but using <code>&while</code> will automatically prefix our new label with the name of the last <code>@label</code>, in this example <code>print-text/while</code>. </p>
+
+<table border="1">
+	<tr><th colspan="4">Padding Runes</th><th colspan="4">Literal Hex Rune</th></tr>
+	<tr><td><code>|</code></td><td>absolute</td><td><code>$</code></td><td>relative</td><td><code>#</code></td><td colspan="3">literal hex</td></tr>
+	<tr><th colspan="4">Label Runes</th><th colspan="4">Ascii Runes</th></tr>
+	<tr><td><code>@</code></td><td>parent</td><td><code>&</code></td><td>child</td><td><code>&quot;</code></td><td colspan="3">raw ascii</td></tr>
+	<tr><th colspan="4">Addressing Runes</th><th colspan="4">Pre-processor Runes</th></tr>
+	<tr><td><code>,</code></td><td>literal relative</td><td><code>_</code></td><td>raw relative</td><td><code>%</code></td><td>macro-define</td><td><code>~</code></td><td>include</td></tr>
+	<tr><td><code>.</code></td><td>literal zero-page</td><td><code>-</code></td><td>raw zero-page</td></tr>
+	<tr><td><code>;</code></td><td>literal absolute</td><td><code>=</code></td><td>raw absolute</td></tr>
+	<tr><th colspan="4">Immediate Runes</th></tr>
+	<tr><td><code>!</code></td><td>jmi</td><td><code>?</code></td><td>jci</td></tr>
+</table>
+
+<p>Next, the <kbd>LDAk</kbd> opcode takes the absolute address on the stack, and loads the byte in memory found at that address to the top of the stack, in this case, the <a href='ascii.html'>ASCII</a> value of the letter H. That value is sent to the device port #18, defined by our Console enum, which prints that character to the terminal.</p>
+
+<p>We increment the absolute address found on top of the stack with <kbd>INC2</kbd>, because the address is made of two bytes. We load the incremented value, next we do a conditional jump with <kbd>?&while</kbd> for as long as the item on the stack is not zero. We use <kbd>POP2</kbd> to remove the address on the stack and keep the stack clean at the end of the subroutine.</p>
+
+<p>Lastly, we encounter <kbd>JMP2r</kbd> which jumps to the absolute address that we left on the return stack when we entered the <kbd>@print-text</kbd> subroutine.</p>
 
 <h2>Uxntal Opcodes</h2>
 
@@ -46,17 +111,6 @@ a short. </p>
 <p>To learn more about each opcode, see the <a href='uxntal_reference.html'>Opcode Reference</a>.</p>
 
 <h2>Uxntal stacks</h2>
-
-<p>In <a href='https://concatenative.org/wiki/view/Concatenative%20language'
-target='_blank'>concatenative programming</a>, there are no precedence rules,
-the calculations are merely performed in the sequence in which they are
-presented. The order with which elements come off a stack is known as <b>last
-in, first out</b>. In the stack <i>a b c</i>, the <i>c</i> item was the last to
-be added, and will be the first to be removed.</p>
-
-<pre>
-#01 #02 #03 ADD<span style='float:right'>01 05</span>
-</pre>
 
 <p>All programming in Unxtal is done by manipulating the <i>working stack</i>,
 and <i>return stack</i>. Each stack contains 256 bytes, items from one stack
@@ -130,56 +184,6 @@ href='uxntal_types.html'>programs validation</a>.</p>
 JMP2r</pre>
 
 <img src="../media/generic/uxn.crew.png" width="400"/>
-
-<h2>Uxntal syntax</h2>
-
-<p>Uppercased opcodes are reserved words, hexadecimal bytes and shorts are
-always lowercase. Parentheses are comments, curlies are <a
-href='uxntal_lambdas.html'>lambdas</a>, and square brackets are used for
-organization.</p>
-
-<iframe src="../etc/uxnrepl/index.html" frameborder="0" style='overflow:hidden; height:440px; margin-bottom:15px'></iframe>
-
-<style>
-.example span.label { font-weight: bold;background: #fff;color: #000;padding: 2px 4px; }
-.example span.comment { color:#777 }
-</style>
-
-<p>The first line begins with a <b>padding</b> of <kbd>|10</kbd> to the <a
-href='varvara.html#console'>Console device</a>, followed by the
-<i>enumeration</i> of the device's ports. This <b>enum</b> will allow us to
-refer to the console by name, as opposed to using the port numbers
-directly.</p>
-
-<p>The second line pads to <kbd>|0100</kbd>, which is where the first page of
-memory ends, and where all Uxn programs begin. Next is a <b>comment</b>, the
-arrow symbol indicates that the following operation is a <b>vector</b>, and
-will terminate with <kbd>BRK</kbd>.</p>
-
-<img src="../media/generic/uxn.team.png" style="margin:0 auto 30px" width="300">
-
-<p>We push the <b>absolute address</b>, made of two bytes, of the label <kbd>@hello-world</kbd> to the stack, which points to a series of characters in memory. A hexadecimal number or label pushed to the stack in this fashion is called a <b>literal</b>, as opposed to a value stored in memory. Next, we jump to the <kbd>@print-text</kbd> subroutine, and leave a return address onto the return stack.</p>
-
-<p>Both <kbd>&while</kbd> and <kbd>@while</kbd> are ways to define <b>labels</b>, but using <code>&while</code> will automatically prefix our new label with the name of the last <code>@label</code>, in this example <code>print-text/while</code>. </p>
-
-<table border="1">
-	<tr><th colspan="4">Padding Runes</th><th colspan="4">Literal Hex Rune</th></tr>
-	<tr><td><code>|</code></td><td>absolute</td><td><code>$</code></td><td>relative</td><td><code>#</code></td><td colspan="3">literal hex</td></tr>
-	<tr><th colspan="4">Label Runes</th><th colspan="4">Ascii Runes</th></tr>
-	<tr><td><code>@</code></td><td>parent</td><td><code>&</code></td><td>child</td><td><code>&quot;</code></td><td colspan="3">raw ascii</td></tr>
-	<tr><th colspan="4">Addressing Runes</th><th colspan="4">Pre-processor Runes</th></tr>
-	<tr><td><code>,</code></td><td>literal relative</td><td><code>_</code></td><td>raw relative</td><td><code>%</code></td><td>macro-define</td><td><code>~</code></td><td>include</td></tr>
-	<tr><td><code>.</code></td><td>literal zero-page</td><td><code>-</code></td><td>raw zero-page</td></tr>
-	<tr><td><code>;</code></td><td>literal absolute</td><td><code>=</code></td><td>raw absolute</td></tr>
-	<tr><th colspan="4">Immediate Runes</th></tr>
-	<tr><td><code>!</code></td><td>jmi</td><td><code>?</code></td><td>jci</td></tr>
-</table>
-
-<p>Next, the <kbd>LDAk</kbd> opcode takes the absolute address on the stack, and loads the byte in memory found at that address to the top of the stack, in this case, the <a href='ascii.html'>ASCII</a> value of the letter H. That value is sent to the device port #18, defined by our Console enum, which prints that character to the terminal.</p>
-
-<p>We increment the absolute address found on top of the stack with <kbd>INC2</kbd>, because the address is made of two bytes. We load the incremented value, next we do a conditional jump with <kbd>?&while</kbd> for as long as the item on the stack is not zero. We use <kbd>POP2</kbd> to remove the address on the stack and keep the stack clean at the end of the subroutine.</p>
-
-<p>Lastly, we encounter <kbd>JMP2r</kbd> which jumps to the absolute address that we left on the return stack when we entered the <kbd>@print-text</kbd> subroutine.</p>
 
 <h2>Immediate opcodes</h2>
 
