@@ -4,7 +4,7 @@
 <title>XXIIVV &mdash; uxntal notation</title></head><body>
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
 
-<nav><ul><li><a href="uxntal_syntax.html" class="parent">uxntal syntax</a></li><li><a href="uxntal_opcodes.html">uxntal opcodes</a></li><li><a href="uxntal_stacks.html">uxntal stacks</a></li><li><a href="uxntal_modes.html">uxntal modes</a></li><li><a href="uxntal_immediate.html">uxntal immediate</a></li><li><a href="uxntal_memory.html">uxntal memory</a></li><li><a href="uxntal_state.html">uxntal state</a></li><li><a href="uxntal_devices.html">uxntal devices</a></li><li><a href="uxntal_software.html">uxntal software</a></li></ul><ul><li><a href="uxntal_struct.html">uxntal struct</a></li><li><a href="uxntal_signed.html">uxntal signed</a></li><li><a href="uxntal_notation.html" class="self">uxntal notation</a></li><li><a href="uxntal_types.html">uxntal types</a></li><li><a href="uxntal_lambdas.html">uxntal lambdas</a></li><li><a href="uxntal_cons.html">uxntal cons</a></li><li><a href="uxntal_library.html">uxntal library</a></li></ul><ul></ul></nav>
+<nav><ul><li><a href="uxntal_syntax.html" class="parent">uxntal syntax</a></li><li><a href="uxntal_opcodes.html">uxntal opcodes</a></li><li><a href="uxntal_stacks.html">uxntal stacks</a></li><li><a href="uxntal_modes.html">uxntal modes</a></li><li><a href="uxntal_immediate.html">uxntal immediate</a></li><li><a href="uxntal_memory.html">uxntal memory</a></li><li><a href="uxntal_state.html">uxntal state</a></li><li><a href="uxntal_devices.html">uxntal devices</a></li><li><a href="uxntal_software.html">uxntal software</a></li></ul><ul><li><a href="uxntal_struct.html">uxntal struct</a></li><li><a href="uxntal_signed.html">uxntal signed</a></li><li><a href="uxntal_notation.html" class="self">uxntal notation</a></li><li><a href="uxntal_lambdas.html">uxntal lambdas</a></li><li><a href="uxntal_cons.html">uxntal cons</a></li><li><a href="uxntal_library.html">uxntal library</a></li></ul><ul><li><a href="uxntal_types.html">uxntal types</a></li></ul></nav>
 <main><h2>Using stack effect definitions in Uxntal.</h2>
 
 <p>The Uxntal notation follows that of the <a href='forth.html'>Forth</a>
@@ -47,6 +47,114 @@ brackets.</p>
 
 <p>Further notation is available for <a href='uxntal_types.html'>program
 verification</a>.</p>
+
+<h2>Using program validation in Uxntal.</h2>
+
+<p><a href='type_systems.html'>Type inference</a> in <a
+href='uxntal.html'>Uxntal</a> is done by checking the <a
+href='uxntal_notation.html'>stack effect notation</a> of words, against the sum
+of stack changes predicted to occur based on the items in their bodies.</p>
+
+<ul>
+	<li><kbd>( a -- b )</kbd> Untyped</li>
+	<li><kbd>( a -: b )</kbd> Typed routine</li>
+	<li><kbd>( a -> b )</kbd> Typed vector</li>
+</ul>
+
+<p>Words that do not pass the stack-checker are generating a warning, and so
+essentially this defines a very basic and permissive type system that
+nevertheless catches some invalid programs and enables compiler optimizations.
+</p>
+
+<pre>
+@routine ( a b -: c ) <i>Ok.</i>
+	MUL
+JMP2r
+</pre>
+
+<p>The simplest case is when a piece of code does not have any branches or
+recursion, and merely pushes literals and calls words. Pushing a literal has
+stack effect <code>( -- x )</code>. The stack effect of most words is always
+known statically from the declaration.</p>
+
+<pre>
+@add ( <b style='color:red'>a*</b> b* -- c* ) <i>Warning: Imbalance in @add of +2</i>
+	DUP2 ADD2
+JMP2r
+</pre>
+
+<h3>Branch Validation</h3>
+
+<p>A word calling a subroutine that would force an exit of the parent routine
+with an imbalanced stack also triggers an error.</p>
+
+<pre>
+@routine ( a b -: c ) <i>Warning: Imbalance in @routine of +1</i>
+	EQUk <b style='color:red'>?&sub-routine</b>
+	POP2 #0a JMP2r
+	&sub-routine ( a b -: c*</b> )
+		POP2 #000b JMP2r
+</pre>
+
+<h3>Return-Stack Passing</h3>
+
+<p>The following example shows some extra syntax where stack elements passed
+through the return stack are separated with a pipe:</p>
+
+<pre>
+@wcpy ( src* des* -: cap* ) <i>Ok.</i>
+	STH2
+	&w ( src* | des* -: cap* )
+		LDAk STH2kr STA
+		INC2r INC2 LDAk #20 GTH ?&w
+	POP2
+	( cap ) #00 STH2kr STA
+	INC2r STH2r JMP2r
+</pre>
+
+<p>Each jump label must be defined for a routine's body to validate with the
+arity checker, but labels can also be used anywhere in a routine to test
+against a specific arity in time, like you would a breakpoint.</p>
+
+<h3>Fall-through Type</h3>
+
+<p>The fall-through comment allows to validate a <i>tail-less routine</i>(or,
+that does not return or break), by including the stack effect of the following
+routine in memory.</p>
+
+<pre>
+@falling ( a b c -: c ) <i>Ok.</i>
+	POP
+	( >> )
+@next-routine ( a b -: res )
+	ADD
+JMP2r
+</pre>
+
+<p>More research has to be done in this space, but it would be interesting to
+check a routine's purity by making sure that no ST/LD/DE opcodes can be
+reached.</p>
+
+<h3>Runtime Validation</h3>
+
+<p>Lastly, a <b>runtime specific</b> solution to validate the stack state at any
+one point during the execution of a program, is to read the <a
+href='varvara.html#system'>System/wst</a> port and compare it against a given
+stack pointer byte value. Note: that the value in the wst and rst ports include
+the stack pointer byte.</p>
+
+<pre>
+@on-reset ( -> )
+	#abcd DUP2 
+	.System/wst DEI #05 EQU ?{
+		#01 .System/debug DEO
+		}
+	BRK
+</pre>
+
+<ul>
+	<li><a href='https://git.sr.ht/~rabbits/uxnbal' target='_blank'>Uxnbal</a>, Source</li>
+</ul>
 
 <ul></ul><p class="incoming"><b>incoming</b> <a href="uxntal_syntax.html" class="parent">uxntal syntax</a> <a href="uxntal_types.html">uxntal types</a> </p></main>
 <footer><a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.svg" alt="CreativeCommons"/></a> <a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a> <a href="https://merveilles.town/@neauoire" rel="me" target="_blank"><img src="../media/icon/merveilles.svg" alt="Merveilles"/></a> <a href="ethics.html"><img src="../media/icon/dreipfeile.svg" alt="NoNazis!"/></a> <a href="uxn.html"><img src="../media/icon/uxn.svg" alt="UxnPowered"/></a> <span><a href="devine_lu_linvega.html">Devine Lu Linvega</a> &copy; 2023 &mdash; <a href="about.html#license">BY-NC-SA 4.0</a></span></footer>
