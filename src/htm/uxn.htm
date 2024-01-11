@@ -56,8 +56,7 @@ are some resources to get started:</p>
 
 <p>Here is an example implementation in 150 lines of <a href='ansi_c.html'>ANSI C</a> that passes the opcode tests and include the <a href='varvara.html#console'>Console device</a>.</p>
 
-<pre style='width:800px'>
-<span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span>
+<pre style='width:800px'><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span>
 
 <span class="keyword">typedef</span> <span class="type">unsigned</span> <span class="type">char</span> Uint8;
 <span class="keyword">typedef</span> <span class="type">signed</span> <span class="type">char</span> Sint8;
@@ -77,9 +76,9 @@ are some resources to get started:</p>
 <span class="type">int</span>
 <span class="title function_">console_input</span><span class="params">(Uxn *u, <span class="type">char</span> c, <span class="type">int</span> type)</span>
 {
-	Uint8 *d = &amp;u-&gt;dev[<span class="number">0x10</span>];
-	d[<span class="number">0x2</span>] = c, d[<span class="number">0x7</span>] = type;
-	<span class="keyword">return</span> uxn_eval(u, PEEK2(d));
+	Uint16 <span class="built_in">vector</span> = u-&gt;dev[<span class="number">0x10</span>] &lt;&lt; <span class="number">8</span> | u-&gt;dev[<span class="number">0x11</span>];
+	u-&gt;dev[<span class="number">0x12</span>] = c, u-&gt;dev[<span class="number">0x17</span>] = type;
+	<span class="keyword">return</span> uxn_eval(u, <span class="built_in">vector</span>);
 }
 
 Uint8
@@ -98,8 +97,6 @@ Uint8
 	}
 }
 
-<span class="meta">#<span class="keyword">define</span> PEEK2(d) (*(d) &lt;&lt; 8 | (d)[1])</span>
-<span class="meta">#<span class="keyword">define</span> POKE2(d, v) { *(d) = (v) &gt;&gt; 8; (d)[1] = (v); }</span>
 <span class="meta">#<span class="keyword">define</span> FLIP     { s = ins &amp; 0x40 ? &amp;u-&gt;wst : &amp;u-&gt;rst; }</span>
 <span class="meta">#<span class="keyword">define</span> JUMP(x)  { <span class="keyword">if</span>(m2) pc = (x); <span class="keyword">else</span> pc += (Sint8)(x); }</span>
 <span class="meta">#<span class="keyword">define</span> POP1(o)  { o = s-&gt;dat[--*sp]; }</span>
@@ -129,8 +126,8 @@ Uint8
 		<span class="keyword">switch</span>(ins) {
 			<span class="keyword">case</span> <span class="number">0x00</span>: <span class="comment">/* BRK */</span> <span class="keyword">return</span> <span class="number">1</span>;
 			<span class="keyword">case</span> <span class="number">0x20</span>: <span class="comment">/* JCI */</span> POP1(b) <span class="keyword">if</span>(!b) { pc += <span class="number">2</span>; <span class="keyword">break</span>; }
-			<span class="keyword">case</span> <span class="number">0x40</span>: <span class="comment">/* JMI */</span> pc += PEEK2(ram + pc) + <span class="number">2</span>; <span class="keyword">break</span>;
-			<span class="keyword">case</span> <span class="number">0x60</span>: <span class="comment">/* JSI */</span> PUSH2(pc + <span class="number">2</span>) pc += PEEK2(ram + pc) + <span class="number">2</span>; <span class="keyword">break</span>;
+			<span class="keyword">case</span> <span class="number">0x40</span>: <span class="comment">/* JMI */</span> a = ram[pc++] &lt;&lt; <span class="number">8</span> | ram[pc++]; pc += a; <span class="keyword">break</span>;
+			<span class="keyword">case</span> <span class="number">0x60</span>: <span class="comment">/* JSI */</span> PUSH2(pc + <span class="number">2</span>) a = ram[pc++] &lt;&lt; <span class="number">8</span> | ram[pc++]; pc += a; <span class="keyword">break</span>;
 			<span class="keyword">case</span> <span class="number">0x80</span>: <span class="keyword">case</span> <span class="number">0xc0</span>: <span class="comment">/* LIT  */</span> PUSH1(ram[pc++]) <span class="keyword">break</span>;
 			<span class="keyword">case</span> <span class="number">0xa0</span>: <span class="keyword">case</span> <span class="number">0xe0</span>: <span class="comment">/* LIT2 */</span> PUSH1(ram[pc++]) PUSH1(ram[pc++]) <span class="keyword">break</span>;
 		} <span class="keyword">break</span>;
