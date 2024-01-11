@@ -10,7 +10,7 @@ heart of the <a href='varvara.html'>Varvara</a> personal computer.</p>
 
 <ul>
 	<li><a href='drifblim.html'>Self-hosted assembler</a>, Uxntal</li>
-	<li><a href='https://git.sr.ht/~rabbits/uxn11/blob/main/src/uxn.c' target='_blank'>150 lines implementation</a>, ANSI C</li>
+	<li><a href='https://git.sr.ht/~rabbits/uxn-utils/blob/main/ref/uxn.c' target='_blank'>150 lines implementation</a>, ANSI C</li>
 </ul>
 
 <p>This <a href='about.html'>wiki</a> and most of the audio-visual works
@@ -25,7 +25,8 @@ peripherals</a>, such as <a href='varvara.html#screen'>screens</a>, <a
 href='varvara.html#controller'>controllers</a>, or even other <i>Uxns</i>. Each
 instance has its own stack and device memory, but share a common 64kb of
 addressable <a href='uxntal_memory.html'>working memory</a>. Any sequence of
-bytes is a valid program, no operations can trigger errors.</p>
+bytes is a valid program, no operations can trigger errors. Uxn has no undefined
+behaviors.</p>
 
 <table border='1'>
 	<tr><th><i>Shared</i></th><th>Memory</th><td>RAM</td><td>Data</td><td>64kb pages</td></tr>
@@ -53,9 +54,162 @@ are some resources to get started:</p>
 	<li>Need a hand? Ask for help on <a href='https://lists.sr.ht/~rabbits/uxn' target='_blank'>mailing list</a>.</li>
 </ul>
 
-<p style='background: #eee; padding: 15px;'>While this project aspires to act as
-a target that may last, it is in its infancy, the design could still change and
-break compatibility.</p>
+<p>Here is an example implementation in 150 lines of <a href='ansi_c.html'>ANSI C</a> that passes the opcode tests and include the <a href='varvara.html#console'>Console device</a>.</p>
+
+<pre style='width:800px'>
+<span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span>
+
+<span class="keyword">typedef</span> <span class="type">unsigned</span> <span class="type">char</span> Uint8;
+<span class="keyword">typedef</span> <span class="type">signed</span> <span class="type">char</span> Sint8;
+<span class="keyword">typedef</span> <span class="type">unsigned</span> <span class="type">short</span> Uint16;
+
+<span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> {</span>
+	Uint8 dat[<span class="number">0x100</span>], ptr;
+} Stack;
+
+<span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">Uxn</span> {</span>
+	Uint8 ram[<span class="number">0x10000</span>], dev[<span class="number">0x100</span>];
+	Stack wst, rst;
+} Uxn;
+
+<span class="type">int</span> <span class="title function_">uxn_eval</span><span class="params">(Uxn *u, Uint16 pc)</span>;
+
+<span class="type">int</span>
+<span class="title function_">console_input</span><span class="params">(Uxn *u, <span class="type">char</span> c, <span class="type">int</span> type)</span>
+{
+	Uint8 *d = &amp;u-&gt;dev[<span class="number">0x10</span>];
+	d[<span class="number">0x2</span>] = c, d[<span class="number">0x7</span>] = type;
+	<span class="keyword">return</span> uxn_eval(u, PEEK2(d));
+}
+
+Uint8
+<span class="title function_">emu_dei</span><span class="params">(Uxn *u, Uint8 addr)</span>
+{
+	<span class="keyword">return</span> u-&gt;dev[addr];
+}
+
+<span class="type">void</span>
+<span class="title function_">emu_deo</span><span class="params">(Uxn *u, Uint8 addr, Uint8 value)</span>
+{
+	u-&gt;dev[addr] = value;
+	<span class="keyword">switch</span>(addr) {
+	<span class="keyword">case</span> <span class="number">0x18</span>: fputc(u-&gt;dev[<span class="number">0x18</span>], <span class="built_in">stdout</span>), fflush(<span class="built_in">stdout</span>); <span class="keyword">return</span>;
+	<span class="keyword">case</span> <span class="number">0x19</span>: fputc(u-&gt;dev[<span class="number">0x19</span>], <span class="built_in">stderr</span>), fflush(<span class="built_in">stderr</span>); <span class="keyword">return</span>;
+	}
+}
+
+<span class="meta">#<span class="keyword">define</span> PEEK2(d) (*(d) &lt;&lt; 8 | (d)[1])</span>
+<span class="meta">#<span class="keyword">define</span> POKE2(d, v) { *(d) = (v) &gt;&gt; 8; (d)[1] = (v); }</span>
+<span class="meta">#<span class="keyword">define</span> FLIP     { s = ins &amp; 0x40 ? &amp;u-&gt;wst : &amp;u-&gt;rst; }</span>
+<span class="meta">#<span class="keyword">define</span> JUMP(x)  { <span class="keyword">if</span>(m2) pc = (x); <span class="keyword">else</span> pc += (Sint8)(x); }</span>
+<span class="meta">#<span class="keyword">define</span> POP1(o)  { o = s-&gt;dat[--*sp]; }</span>
+<span class="meta">#<span class="keyword">define</span> POP2(o)  { o = s-&gt;dat[--*sp] | (s-&gt;dat[--*sp] &lt;&lt; 0x8); }</span>
+<span class="meta">#<span class="keyword">define</span> POPx(o)  { <span class="keyword">if</span>(m2) { POP2(o) } <span class="keyword">else</span> POP1(o) }</span>
+<span class="meta">#<span class="keyword">define</span> PUSH1(y) { s-&gt;dat[s-&gt;ptr++] = (y); }</span>
+<span class="meta">#<span class="keyword">define</span> PUSH2(y) { tt = (y); s-&gt;dat[s-&gt;ptr++] = tt &gt;&gt; 0x8; s-&gt;dat[s-&gt;ptr++] = tt; }</span>
+<span class="meta">#<span class="keyword">define</span> PUSHx(y) { <span class="keyword">if</span>(m2) { PUSH2(y) } <span class="keyword">else</span> PUSH1(y) }</span>
+<span class="meta">#<span class="keyword">define</span> PEEK(o, x, r) { <span class="keyword">if</span>(m2) { r = (x); o = ram[r++] &lt;&lt; 8 | ram[r]; } <span class="keyword">else</span> o = ram[(x)]; }</span>
+<span class="meta">#<span class="keyword">define</span> POKE(x, y, r) { <span class="keyword">if</span>(m2) { r = (x); ram[r++] = y &gt;&gt; 8; ram[r] = y; } <span class="keyword">else</span> ram[(x)] = (y); }</span>
+<span class="meta">#<span class="keyword">define</span> DEVR(o, p)    { <span class="keyword">if</span>(m2) { o = (emu_dei(u, p) &lt;&lt; 8) | emu_dei(u, p + 1); } <span class="keyword">else</span> o = emu_dei(u, p); }</span>
+<span class="meta">#<span class="keyword">define</span> DEVW(p, y)    { <span class="keyword">if</span>(m2) { emu_deo(u, p, y &gt;&gt; 8); emu_deo(u, p + 1, y); } <span class="keyword">else</span> emu_deo(u, p, y); }</span>
+
+<span class="type">int</span>
+<span class="title function_">uxn_eval</span><span class="params">(Uxn *u, Uint16 pc)</span>
+{
+	Uint8 t, kp, *sp, *ram = u-&gt;ram;
+	Uint16 tt, a, b, c;
+	<span class="keyword">if</span>(!pc || u-&gt;dev[<span class="number">0x0f</span>]) <span class="keyword">return</span> <span class="number">0</span>;
+	<span class="keyword">for</span>(;;) {
+		Uint8 ins = ram[pc++], m2 = ins &amp; <span class="number">0x20</span>;
+		Stack *s = ins &amp; <span class="number">0x40</span> ? &amp;u-&gt;rst : &amp;u-&gt;wst;
+		<span class="keyword">if</span>(ins &amp; <span class="number">0x80</span>) kp = s-&gt;ptr, sp = &amp;kp;
+		<span class="keyword">else</span> sp = &amp;s-&gt;ptr;
+		<span class="keyword">switch</span>(ins &amp; <span class="number">0x1f</span>) {
+		<span class="keyword">case</span> <span class="number">0x00</span>: <span class="keyword">case</span> <span class="number">0x20</span>:
+		<span class="keyword">switch</span>(ins) {
+			<span class="keyword">case</span> <span class="number">0x00</span>: <span class="comment">/* BRK */</span> <span class="keyword">return</span> <span class="number">1</span>;
+			<span class="keyword">case</span> <span class="number">0x20</span>: <span class="comment">/* JCI */</span> POP1(b) <span class="keyword">if</span>(!b) { pc += <span class="number">2</span>; <span class="keyword">break</span>; }
+			<span class="keyword">case</span> <span class="number">0x40</span>: <span class="comment">/* JMI */</span> pc += PEEK2(ram + pc) + <span class="number">2</span>; <span class="keyword">break</span>;
+			<span class="keyword">case</span> <span class="number">0x60</span>: <span class="comment">/* JSI */</span> PUSH2(pc + <span class="number">2</span>) pc += PEEK2(ram + pc) + <span class="number">2</span>; <span class="keyword">break</span>;
+			<span class="keyword">case</span> <span class="number">0x80</span>: <span class="keyword">case</span> <span class="number">0xc0</span>: <span class="comment">/* LIT  */</span> PUSH1(ram[pc++]) <span class="keyword">break</span>;
+			<span class="keyword">case</span> <span class="number">0xa0</span>: <span class="keyword">case</span> <span class="number">0xe0</span>: <span class="comment">/* LIT2 */</span> PUSH1(ram[pc++]) PUSH1(ram[pc++]) <span class="keyword">break</span>;
+		} <span class="keyword">break</span>;
+		<span class="keyword">case</span> <span class="number">0x01</span>: <span class="comment">/* INC */</span> POPx(a) PUSHx(a + <span class="number">1</span>) <span class="keyword">break</span>;
+		<span class="keyword">case</span> <span class="number">0x02</span>: <span class="comment">/* POP */</span> POPx(a) <span class="keyword">break</span>;
+		<span class="keyword">case</span> <span class="number">0x03</span>: <span class="comment">/* NIP */</span> POPx(a) POPx(b) PUSHx(a) <span class="keyword">break</span>;
+		<span class="keyword">case</span> <span class="number">0x04</span>: <span class="comment">/* SWP */</span> POPx(a) POPx(b) PUSHx(a) PUSHx(b) <span class="keyword">break</span>;
+		<span class="keyword">case</span> <span class="number">0x05</span>: <span class="comment">/* ROT */</span> POPx(a) POPx(b) POPx(c) PUSHx(b) PUSHx(a) PUSHx(c) <span class="keyword">break</span>;
+		<span class="keyword">case</span> <span class="number">0x06</span>: <span class="comment">/* DUP */</span> POPx(a) PUSHx(a) PUSHx(a) <span class="keyword">break</span>;
+		<span class="keyword">case</span> <span class="number">0x07</span>: <span class="comment">/* OVR */</span> POPx(a) POPx(b) PUSHx(b) PUSHx(a) PUSHx(b) <span class="keyword">break</span>;
+		<span class="keyword">case</span> <span class="number">0x08</span>: <span class="comment">/* EQU */</span> POPx(a) POPx(b) PUSH1(b == a) <span class="keyword">break</span>;
+		<span class="keyword">case</span> <span class="number">0x09</span>: <span class="comment">/* NEQ */</span> POPx(a) POPx(b) PUSH1(b != a) <span class="keyword">break</span>;
+		<span class="keyword">case</span> <span class="number">0x0a</span>: <span class="comment">/* GTH */</span> POPx(a) POPx(b) PUSH1(b &gt; a) <span class="keyword">break</span>;
+		<span class="keyword">case</span> <span class="number">0x0b</span>: <span class="comment">/* LTH */</span> POPx(a) POPx(b) PUSH1(b &lt; a) <span class="keyword">break</span>;
+		<span class="keyword">case</span> <span class="number">0x0c</span>: <span class="comment">/* JMP */</span> POPx(a) JUMP(a) <span class="keyword">break</span>;
+		<span class="keyword">case</span> <span class="number">0x0d</span>: <span class="comment">/* JCN */</span> POPx(a) POP1(b) <span class="keyword">if</span>(b) JUMP(a) <span class="keyword">break</span>;
+		<span class="keyword">case</span> <span class="number">0x0e</span>: <span class="comment">/* JSR */</span> POPx(a) FLIP <span class="title function_">PUSH2</span><span class="params">(pc)</span> <span class="title function_">JUMP</span><span class="params">(a)</span> <span class="keyword">break</span>;
+		<span class="keyword">case</span> <span class="number">0x0f</span>: <span class="comment">/* STH */</span> POPx(a) FLIP <span class="title function_">PUSHx</span><span class="params">(a)</span> <span class="keyword">break</span>;
+		<span class="keyword">case</span> <span class="number">0x10</span>: <span class="comment">/* LDZ */</span> POP1(a) PEEK(b, a, t) PUSHx(b) <span class="keyword">break</span>;
+		<span class="keyword">case</span> <span class="number">0x11</span>: <span class="comment">/* STZ */</span> POP1(a) POPx(b) POKE(a, b, t) <span class="keyword">break</span>;
+		<span class="keyword">case</span> <span class="number">0x12</span>: <span class="comment">/* LDR */</span> POP1(a) PEEK(b, pc + (Sint8)a, tt) PUSHx(b) <span class="keyword">break</span>;
+		<span class="keyword">case</span> <span class="number">0x13</span>: <span class="comment">/* STR */</span> POP1(a) POPx(b) POKE(pc + (Sint8)a, b, tt) <span class="keyword">break</span>;
+		<span class="keyword">case</span> <span class="number">0x14</span>: <span class="comment">/* LDA */</span> POP2(a) PEEK(b, a, tt) PUSHx(b) <span class="keyword">break</span>;
+		<span class="keyword">case</span> <span class="number">0x15</span>: <span class="comment">/* STA */</span> POP2(a) POPx(b) POKE(a, b, tt) <span class="keyword">break</span>;
+		<span class="keyword">case</span> <span class="number">0x16</span>: <span class="comment">/* DEI */</span> POP1(a) DEVR(b, a) PUSHx(b) <span class="keyword">break</span>;
+		<span class="keyword">case</span> <span class="number">0x17</span>: <span class="comment">/* DEO */</span> POP1(a) POPx(b) DEVW(a, b) <span class="keyword">break</span>;
+		<span class="keyword">case</span> <span class="number">0x18</span>: <span class="comment">/* ADD */</span> POPx(a) POPx(b) PUSHx(b + a) <span class="keyword">break</span>;
+		<span class="keyword">case</span> <span class="number">0x19</span>: <span class="comment">/* SUB */</span> POPx(a) POPx(b) PUSHx(b - a) <span class="keyword">break</span>;
+		<span class="keyword">case</span> <span class="number">0x1a</span>: <span class="comment">/* MUL */</span> POPx(a) POPx(b) PUSHx(b * a) <span class="keyword">break</span>;
+		<span class="keyword">case</span> <span class="number">0x1b</span>: <span class="comment">/* DIV */</span> POPx(a) POPx(b) PUSHx(a ? b / a : <span class="number">0</span>) <span class="keyword">break</span>;
+		<span class="keyword">case</span> <span class="number">0x1c</span>: <span class="comment">/* AND */</span> POPx(a) POPx(b) PUSHx(b &amp; a) <span class="keyword">break</span>;
+		<span class="keyword">case</span> <span class="number">0x1d</span>: <span class="comment">/* ORA */</span> POPx(a) POPx(b) PUSHx(b | a) <span class="keyword">break</span>;
+		<span class="keyword">case</span> <span class="number">0x1e</span>: <span class="comment">/* EOR */</span> POPx(a) POPx(b) PUSHx(b ^ a) <span class="keyword">break</span>;
+		<span class="keyword">case</span> <span class="number">0x1f</span>: <span class="comment">/* SFT */</span> POP1(a) POPx(b) PUSHx(b &gt;&gt; (a &amp; <span class="number">0xf</span>) &lt;&lt; (a &gt;&gt; <span class="number">4</span>)) <span class="keyword">break</span>;
+		}
+	}
+}
+
+<span class="type">int</span>
+<span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> **argv)</span>
+{
+	FILE *f;
+	<span class="type">int</span> i = <span class="number">1</span>;
+	Uxn u = {<span class="number">0</span>};
+	<span class="keyword">if</span>(i == argc) {
+		<span class="built_in">fprintf</span>(<span class="built_in">stdout</span>, <span class="string">"usage: %s file.rom [args..]\n"</span>, argv[<span class="number">0</span>]);
+		<span class="keyword">return</span> <span class="number">0</span>;
+	}
+	f = fopen(argv[i++], <span class="string">"rb"</span>);
+	<span class="keyword">if</span>(!f) {
+		<span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"Failed to initialize %s\n"</span>, argv[<span class="number">1</span>]);
+		<span class="keyword">return</span> <span class="number">0</span>;
+	}
+	fread(&amp;u.ram[<span class="number">0x0100</span>], <span class="number">0xff00</span>, <span class="number">1</span>, f);
+	fclose(f);
+	u.dev[<span class="number">0x17</span>] = argc - i;
+	<span class="keyword">if</span>(uxn_eval(&amp;u, <span class="number">0x0100</span>)) {
+		<span class="keyword">for</span>(; i &lt; argc; i++) {
+			<span class="type">char</span> *p = argv[i];
+			<span class="keyword">while</span>(*p) console_input(&amp;u, *p++, <span class="number">0x2</span>);
+			console_input(&amp;u, <span class="string">'\n'</span>, i == argc - <span class="number">1</span> ? <span class="number">0x4</span> : <span class="number">0x3</span>);
+		}
+		<span class="keyword">while</span>(!u.dev[<span class="number">0x0f</span>]) {
+			<span class="type">char</span> c = fgetc(<span class="built_in">stdin</span>);
+			<span class="keyword">if</span>(c == EOF) {
+				console_input(&amp;u, <span class="number">0x00</span>, <span class="number">0x4</span>);
+				<span class="keyword">break</span>;
+			}
+			console_input(&amp;u, (Uint8)c, <span class="number">0x1</span>);
+		}
+	}
+	<span class="keyword">return</span> u.dev[<span class="number">0x0f</span>] &amp; <span class="number">0x7f</span>;
+}
+</pre>
+
+<style>
+span.comment { color: #777 }
+span.keyword { font-weight:bold }
+</style>
 
 <p>Because Uxn was explicitly created to be hosted on <a
 href='permacomputing.html'>pre-existing hardware</a>, the design was advised
@@ -68,6 +222,12 @@ one can comfortably write programs directly in assembly to tackle most
 computation projects without having to rely on higher-level languages.</p>
 
 <img src='../media/generic/varvara.chill.png' width='200'/>
+
+<article>
+	<p>While this project aspires to act as
+a target that may last, it is in its infancy, the design could still change and
+break compatibility.</p>
+</article>
 
 <p>With only 64kb of memory, it will never run Chrome, TensorFlow or a
 blockchain. It sucks at doing most modern computing activities. It's more about
