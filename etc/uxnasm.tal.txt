@@ -1,0 +1,402 @@
+( usage: cat file.tal | drifloon.rom > output.rom )
+
+|10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
+
+|0000
+
+	@sublabel $80
+	@head $2
+	@scope $2
+	@length $2
+	@token $2
+	@halt $1
+	@scan $1
+
+|0100
+
+@on-reset ( -> )
+	;on-console .Console/vector DEO2
+	BRK
+
+@on-console ( -> )
+	.Console/read DEI DUP ?{ POP <assemble>
+		BRK }
+	<read>
+	BRK
+
+(
+@|loader )
+
+@<read> ( chr -- )
+	( normalize ) #20 GTHk [ JMP SWP POP ]
+	( join ) [ LIT &last-a 20 ] OVR ,&last-a STR
+	( skip ) DUP2 #2020 EQU2 ?&end
+	#20 NEQ ?{
+		DUP [ LIT "[ ] EQU ?&skip
+		DUP [ LIT "] ] EQU ?&skip
+		DUP [ LIT "( ] EQU ?<toggle-mute>
+		DUP [ LIT ") ] EQU ?<toggle-mute> }
+	[ LIT &mute 01 ] ?{ &skip POP JMP2r }
+	( join ) [ LIT &last-b 20 ] OVR ,&last-b STR
+	( skip ) DUP2 #2020 EQU2 ?&end
+	POP #00 [ LIT2 &ptr =input-buf ] STA2k INC2 ,&ptr STR2
+	&end ( chr last -- )
+		POP2 JMP2r
+
+@<toggle-mute> ( chr -- )
+	[ LIT "( ] SUB ;<read>/mute STA
+	JMP2r
+
+(
+@|assembly )
+
+@<assemble> ( -- )
+	;<read>/ptr LDA2 INC2
+	( ) DUP2 ;<create-symbol>/ptr STA2
+	( ) ;find-symbol/ptr STA2
+	;input-buf <sexp>
+	#01 handle-pass ?crash
+	#00 handle-pass ?crash
+
+@write-rom ( -- )
+	;rom .length LDZ2 INC2 ADD2 ;rom/output
+	&l ( -- )
+		LDAk #18 DEO
+		INC2 NEQ2k ?&l
+	POP2 POP2
+	( >> )
+
+@print-unused ( -- )
+	;<create-symbol>/ptr LDA2 ;find-symbol/ptr LDA2
+	&l ( -- )
+		INC2k INC2 LDA ?&>skip
+		#0003 ADD2 LDAk [ LIT "A ] SUB #1a LTH ?&>skip
+		DUP2 ;dict/reset scmp ?&>skip
+			;dict/unused <pstr>/
+			DUP2 <pstr>/
+			#0a19 DEO &>skip
+		scap/ INC2 GTH2k ?&l
+	POP2 POP2 JMP2r
+
+@crash ( -- )
+	#800f DEO
+	JMP2r
+
+@handle-pass ( scan -- err )
+	.scan STZ
+	#0100 <set-head>
+	#00 ;lambda/count STA
+	;dict/reset <set-scope>
+	;input-buf
+	&w ( -- )
+		DUP2 .token STZ2
+		DUP2 <parse-token>
+		.halt LDZ ?&end
+		scap/ INC2 LDAk ?&w
+	&end POP2 .halt LDZ JMP2r
+
+(
+@|tokenizer )
+
+@<parse-token> ( t* -- )
+	LDAk ,&rune STR
+	;runes/end ;runes
+	&l ( -- )
+		LDAk [ LIT &rune $1 ] NEQ ?{
+			NIP2 INC2 LDA2
+			( * ) JMP2 }
+		#0003 ADD2 GTH2k ?&l
+	POP2 POP2
+	( | non-runic )
+	is-hex ?<write-rawhex>
+	is-opcode ?<write-opcode>
+	!lib/litjsi
+
+@lib &padabs INC2 get-any !<set-head>
+	&padrel INC2 get-any .head LDZ2 ADD2 !<set-head>
+	&toplab INC2 !<set-scope>
+	&sublab INC2 get-sublabel !<create-symbol>
+	&litrel #80 <write>
+	&rawrel INC2 get-rel !<write>
+	&litzep #80 <write>
+	&rawzep INC2 get-ref NIP !<write>
+	&litabs #a0 <write>
+	&rawabs INC2 get-ref !<write-short>
+	&litjci INC2 #20 !<write-call>
+	&litjmi INC2 #40 !<write-call>
+	&litjsi #60 !<write-call>
+	&lithex INC2 !<write-lithex>
+	&rawstr INC2 !<write-str>/
+	&lambda POP2 !lambda/pop
+
+(
+@|primitives )
+
+@<write-str> ( str* -: )
+	LDAk <write>
+	INC2 & LDAk ?<write-str>
+	POP2 JMP2r
+
+@<write-opcode> ( str* -: )
+	find-opcode !<write>
+
+@<write-lithex> ( str* -- )
+	DUP2 slen NIP
+	( LIT ) DUP #04 EQU #50 SFT #80 ORA <write>
+	!<write-hex>
+
+@<write-rawhex> ( str* -- )
+	DUP2 slen NIP
+	( >> )
+
+@<write-hex> ( str* len -- )
+	DUP #02 NEQ ?{
+		POP shex NIP !<write> }
+	#04 NEQ ?{ shex !<write-short> }
+	POP2 ;err/number !<set-error>
+
+@<write-call> ( str* opc -: )
+	<write>
+	get-ref .head LDZ2 INC2 INC2 SUB2
+	( >> )
+
+@<write-short> ( short* -: )
+	SWP <write>
+	( >> )
+
+@<write> ( byte -: )
+	DUP .head LDZ2 INC2k STH2
+	;rom ADD2 STA
+	<set-length>
+	STH2r
+	( >> )
+
+@<set-head> ( v* -: )
+	.head STZ2
+	JMP2r
+
+@<set-error> ( name* -- )
+	;err <pstr>
+	<pstr>
+	#2019 DEO
+	.token LDZ2 <pstr>/
+	[ LIT ": 19 ] DEO
+	.scope LDZ2 <pstr>/
+	#0a19 DEO
+	[ LIT2 01 -halt ] STZ
+	JMP2r
+
+@<set-length> ( byte -- )
+	?{ JMP2r }
+	.scan LDZ ?{ JMP2r }
+	.head LDZ2
+	( ) DUP2 OVR ?{ ;err/zeropage <set-error> }
+	( ) #8000 LTH2 ?{ ;err/length <set-error> }
+	.length STZ2
+	JMP2r
+
+(
+@|labels )
+
+@get-sublabel ( name* -- sublabel* )
+	[ LIT2 &ptr $2 ] <scpy>
+	;sublabel JMP2r
+
+@<set-scope> ( t* -- )
+	DUP2 .scope STZ2
+	DUP2 ;sublabel STH2k <scpy>
+	[ LIT2 "/ 00 ] STH2r scap/ STH2k STA2
+	STH2r INC ,get-sublabel/ptr STR2
+	( >> )
+
+@<create-symbol> ( name* -- )
+	.scan LDZ ?{ POP2 JMP2r }
+	is-hex ?&invalid
+	is-opcode ?&invalid
+	DUP2 find-symbol INC2 ORA ?&not-unique
+	( addr* ) .head LDZ2 [ LIT2 &ptr $2 ] STH2k INC2r INC2r STA2
+	( refs ) #00 STH2kr INC2r STA
+	( name[] ) DUP2 STH2kr <scpy>
+	slen STH2r ADD2 INC2 ,&ptr STR2
+	[ LIT2 &count $2 ] INC2 ,&count STR2
+	JMP2r
+	&invalid ( name* -- )
+		POP2 ;err/symbol !<set-error>
+	&not-unique ( name* -- )
+		POP2 ;err/duplicate !<set-error>
+
+@find-symbol ( name* -- <addr>* )
+	,&t STR2
+	;<create-symbol>/ptr LDA2 [ LIT2 &ptr $2 ]
+	&l ( -- )
+		EQU2k ?&end
+		DUP2 #0003 ADD2 [ LIT2 &t $2 ] scmp ?&found
+		scap/ INC2 GTH2k ?&l
+	&end POP2 POP2 #ffff JMP2r
+	&found ( symbols* -- <addr>* )
+		NIP2 JMP2r
+
+@get-any ( str* -- value* )
+	is-hex ?shex
+	!get-ref/eager
+
+@get-ref ( token* -- addr* )
+	LDAk [ LIT "{ ] NEQ ?{ POP2 lambda/push }
+	.scan LDZ ?&scan
+	&eager LDAk [ LIT "& ] NEQ ?{ INC2 get-sublabel }
+	find-symbol INC2k #0000 EQU2 ?{
+		INC2k INC2 LDAk INC ROT ROT STA
+		LDA2 &scan JMP2r }
+	;err/reference !<set-error>
+
+@get-rel ( label* -- distance )
+	get-ref .head LDZ2 INC2 INC2 SUB2
+	( ) DUP2 #0080 ADD2 POP ?{ NIP JMP2r }
+	( ) .scan LDZ ?{ ;err/distance <set-error> }
+	POP2 #ff JMP2r
+
+@lambda
+	&push ( -- name* )
+		[ LIT &count $1 ] INCk ,&count STR
+		DUP [ LIT2 &ptr =lambda-buf ] INC2k ,&ptr STR2
+		STA
+		( >> )
+	&name ( id -- str* )
+		#21 ADD ,&id STR
+		;&sym JMP2r
+	&pop ( -- )
+		,&ptr LDR2 #0001 SUB2 LDAk lambda/name <create-symbol>
+		,&ptr STR2
+		JMP2r
+		&sym cebb &id $2
+
+(
+@|helpers )
+
+@is-hex ( str* -- str* f )
+	DUP2
+	&w ( -- )
+		LDAk chex INC ?{ POP2 #00 JMP2r }
+		INC2 LDAk ?&w
+	POP2 #01 JMP2r
+
+@is-opcode ( str* -- str* f )
+	DUP2 find-opcode ?{ DUP2 ;opcodes/brk !scmp3 }
+	#01 JMP2r
+
+@find-opcode ( name* -- byte )
+	DUP2 ,&t STR2
+	#2000
+	&l ( -- )
+		#00 OVR #03 MUL ;opcodes ADD2 [ LIT2 &t $2 ] scmp3 ?&on-found
+		INC GTHk ?&l
+	POP2 POP2 #00 JMP2r
+	&on-found ( name* bounds* -- byte )
+		( LITk ) NIP DUP #00 EQU #70 SFT ORA STH
+		( modes ) #0003 ADD2
+	&w ( -- )
+		LDAk ?{ POP2 STHr JMP2r }
+		LDAk [ LIT "2 ] NEQ ?{ LITr 20 ORAr }
+		LDAk [ LIT "k ] NEQ ?{ LITr 80 ORAr }
+		LDAk [ LIT "r ] NEQ ?{ LITr 40 ORAr }
+		INC2 !&w
+
+(
+@|stdlib )
+
+@scap ( str* -: end* )
+	INC2 & LDAk ?scap
+	JMP2r
+
+@slen ( str* -: len* )
+	DUP2 scap/ SWP2 SUB2 JMP2r
+
+@scmp ( a* b* -- f )
+	STH2
+	&l ( -- )
+		LDAk ?{
+			&d LDA LDAr STHr EQU JMP2r }
+		LDAk LDAkr STHr NEQ ?&d
+	INC2 INC2r !&l
+
+@scmp3 ( a* b* -- f )
+	STH2
+	LDAkr LDAk STHr NEQ ?{ INC2r INC2 }
+	LDA2r LDA2 STH2r EQU2 JMP2r
+
+@chex ( c -: <val> )
+	[ LIT "0 ] SUB DUP #0a LTH ?&>end
+	#27 SUB DUP #10 LTH ?&>end
+		POP #ff &>end
+	JMP2r
+
+@shex ( str* -: value* )
+	[ LIT2r 0000 ]
+	&w ( `i* -- )
+		( acc ) [ LITr 40 ] SFT2r
+		( res ) LDAk chex [ LITr 00 ] STH
+		ADD2r INC2 LDAk ?&w
+	POP2 STH2r JMP2r
+
+@<sexp> ( str* -- )
+	#00 ROT ROT
+	&w ( -- )
+		LDAk #20 GTH ?{ STAk }
+		INC2 LDAk ?&w
+	STA
+	JMP2r
+
+@<scpy> ( src* dst* -: )
+	STH2
+	&w ( src* `dst* -- )
+		LDAk #00 STH2kr STA2
+		INC2r INC2 LDAk ?&w
+	POP2 POP2r JMP2r
+
+@<pstr> ( str* -: )
+	LDAk #19 DEO
+	INC2 & LDAk ?<pstr>
+	POP2 JMP2r
+
+(
+@|assets )
+
+@dict &unused "-- 20 "Unused: 20 $1
+	&reset "QQ_ $1
+
+@err
+	"!! 20 "Error: 20 $1
+	&duplicate "Duplicate $1
+	&number "Number $1
+	&length "Length $1
+	&reference "Reference $1
+	&distance "Distance $1
+	&symbol "Symbol $1
+	&zeropage "Zero-page $1
+
+@opcodes [
+	"LIT "INC "POP "NIP "SWP "ROT "DUP "OVR
+	"EQU "NEQ "GTH "LTH "JMP "JCN "JSR "STH
+	"LDZ "STZ "LDR "STR "LDA "STA "DEI "DEO
+	"ADD "SUB "MUL "DIV "AND "ORA "EOR "SFT
+	&brk "BRK ]
+
+@runes [
+	"| =lib/padabs "$ =lib/padrel
+	"@ =lib/toplab "& =lib/sublab
+	"# =lib/lithex "} =lib/lambda
+	", =lib/litrel "_ =lib/rawrel
+	". =lib/litzep "- =lib/rawzep
+	"; =lib/litabs "= =lib/rawabs
+	"? =lib/litjci "! =lib/litjmi
+	"" =lib/rawstr ] &end
+
+@lambda-buf $100
+
+@input-buf $2000
+
+|8000
+
+@rom $100
+	&output
+
