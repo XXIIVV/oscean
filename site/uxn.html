@@ -17,12 +17,12 @@ portable <a href='roms.html'>graphical tools and games</a>. It lives at the
 heart of the <a href='varvara.html'>Varvara</a> personal computer.</p>
 
 <ul>
-	<li><a href='drifblim.html'>Self-hosted assembler</a>, Uxntal</li>
-	<li><a href='https://git.sr.ht/~rabbits/uxn-utils/blob/main/ref/uxn.c' target='_blank'>150 lines implementation</a>, ANSI C</li>
+	<li><b>Uxn Instructions</b>: <a href='uxntal_opcodes.html'>Reference</a>, <a href='https://git.sr.ht/~rabbits/uxn-utils/tree/main/item/cli/opctest/opctest.tal' target='_blank'>Tests</a></li>
+	<li><b>Varvara Devices</b>: <a href='varvara.html'>Reference</a>, <a href='https://git.sr.ht/~rabbits/uxn/tree/main/item/projects/examples/devices' target='_blank'>Tests</a></li>
 </ul>
 
 <p>This <a href='about.html'>wiki</a> and most of the audio-visual works
-documented on it were created with Uxn-powered tools.</p>
+documented on it were created with Uxn-powered tools. </p>
 
 <h3>Memory</h3>
 
@@ -45,49 +45,40 @@ behaviors.</p>
 	<tr><th>IO</th><td>Devices</td><td>Data</td><td>256 bytes</td></tr>
 </table>
 
-<p>The <a href='https://en.wikipedia.org/wiki/Instruction_set_architecture'
-target='_blank'>instruction set</a> has 32 stack-machine opcodes, and 4
-immediate opcodes. If you're interested in implementing your own emulator, here
-are some resources to get started:</p>
-
-<ul>
-	<li><a href='uxntal_opcodes.html' target='_blank'>Instructions reference</a></li>
-	<li><a href='https://git.sr.ht/~rabbits/uxn-utils/tree/main/item/cli/opctest/opctest.tal' target='_blank'>Instructions testing program</a></li>
-	<li><a href='varvara.html' target='_blank'>Devices reference</a></li>
-	<li><a href='https://git.sr.ht/~rabbits/uxn/tree/main/item/projects/examples/devices' target='_blank'>Devices testing programs</a></li>
-	<li><a href='https://github.com/hundredrabbits/awesome-uxn#emulators' target='_blank'>Implementations in other languages</a></li>
-	<li><a href='https://git.sr.ht/~rabbits/uxn-utils/tree/main/item/cli/uxnvm/vm.tal' target='_blank'>Implementation in Uxntal</a></li>
-	<li>Need a hand? Ask for help on <a href='https://lists.sr.ht/~rabbits/uxn' target='_blank'>mailing list</a>.</li>
-</ul>
-
 <h3>Basic Emulator</h3>
 
-<p>Here is a 18kb implementation of the in <a href='../etc/uxncli.c.txt' target='_blank'>150 lines of C</a>, that passes the opcode tests and include the <a href='varvara.html#console'>Console device</a>.</p>
+<p>Here is an implementation of a basic Uxn emulator in <a
+href='../etc/uxncli.c.txt' target='_blank'>150 lines of C</a> which includes
+the <a href='varvara.html#console'>Console device</a> and passes the opcode
+tests.</p>
 
 <pre>cc uxncli.c -o uxncli</pre>
 
-<iframe src='../etc/uxncli.c.txt' style="height:400px; background:#eee; border:2px solid black; border-radius:3px"></iframe>
+<iframe src='../etc/uxncli.c.txt' style="height:400px; background:#eee; border:2px solid black; border-radius:3px">
+</iframe>
 
-<h3>Basic Self-Hosted Assembler</h3>
+<h3>Basic Assembler</h3>
 
-<p>Here is a 1.3kb implementation of the in <a href='../etc/uxnasm.tal.txt' target='_blank'>400 lines of Uxntal</a>, that can assemble itself and most source files without pre-processor runes.</p>
+<p>Here is a self-hosted implementation of the assembler in <a
+href='../etc/uxnasm.tal.txt' target='_blank'>400 lines of Uxntal</a>, capable
+of assembling itself and most source files without pre-processor runes.</p>
 
-<pre>cat program.tal | uxncli drifloon.bin > output.rom
-uxncli output.rom</pre>
+<pre>cat uxnasm.tal | uxncli uxnasm.bin > uxnasm-bootstrap.rom</pre>
 
-<iframe src='../etc/uxnasm.tal.txt' style="height:400px; background:#eee; border:2px solid black; border-radius:3px"></iframe>
+<iframe src='../etc/uxnasm.tal.txt' style="height:400px; background:#eee; border:2px solid black; border-radius:3px">
+</iframe>
 
-<h3>Basic Self-Hosted Assembler(binary)</h3>
+<p>Software is bootstrappable when it does not depend on a binary seed that
+cannot be built from source. Software that is not bootstrappable, even if it is
+free software, is a serious security risk. The goal is to start from a minimal,
+easily inspectable binary which should be readable as source and bootstrap into
+a practical user interface. </p>
 
-<p>Here is the binary data of the self-hosted assembler above.</p>
+<p>Here is the 1.4kb binary data of the assembler above designed to be used with
+the emulator.</p>
 
-<iframe src='../etc/uxnasm.rom.txt' style="height:400px; background:#eee; border:2px solid black; border-radius:3px"></iframe>
-
-<p>Because Uxn was explicitly created to be hosted on <a
-href='permacomputing.html'>pre-existing hardware</a>, the design was advised
-primarily by relative software complexity; generating novel electronics being
-at odds with the project. Features were weighted against the difficulty they
-would add to programmers implementing their own emulators.</p>
+<iframe src='../etc/uxnasm.rom.txt' style="height:400px; background:#eee; border:2px solid black; border-radius:3px">
+</iframe>
 
 <p>Stack-machines are ideal candidates for this scale of personal computing as
 one can comfortably write programs directly in assembly to tackle most
@@ -95,20 +86,10 @@ computation projects without having to rely on higher-level languages.</p>
 
 <img src='../media/generic/varvara.chill.png' width='200'/>
 
-<article>
-	<p>While this project aspires to act as
-a target that may last, it is in its infancy, the design could still change and
-break compatibility.</p>
-</article>
-
-<p>With only 64kb of memory, it will never run Chrome, TensorFlow or a
-blockchain. It sucks at doing most modern computing activities. It's more about
-finding novel things that can be made in such a restricted system.</p>
-
 <p>Original illustrations created by <a href='https://kokorobot.ca/'
 target='_blank'>Rekka Bellum</a>.</p>
 
-<img src='../media/identity/uxn64.png'/>
+<img src='../media/identity/uxn64.png' style='float:right'/>
 
 <ul>
 	<li><a href='https://100r.co/site/uxn.html' target='_blank'>download emulator</a></li>
