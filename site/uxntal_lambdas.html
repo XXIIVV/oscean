@@ -7,36 +7,28 @@
 <nav><ul><li><a href="uxntal_syntax.html" class="parent">uxntal syntax</a></li><li><a href="uxntal_opcodes.html">uxntal opcodes</a></li><li><a href="uxntal_stacks.html">uxntal stacks</a></li><li><a href="uxntal_modes.html">uxntal modes</a></li><li><a href="uxntal_immediate.html">uxntal immediate</a></li><li><a href="uxntal_memory.html">uxntal memory</a></li><li><a href="uxntal_state.html">uxntal state</a></li><li><a href="uxntal_devices.html">uxntal devices</a></li><li><a href="uxntal_software.html">uxntal software</a></li></ul><ul><li><a href="uxntal_struct.html">uxntal struct</a></li><li><a href="uxntal_signed.html">uxntal signed</a></li><li><a href="uxntal_notation.html">uxntal notation</a></li><li><a href="uxntal_lambdas.html" class="self">uxntal lambdas</a></li><li><a href="uxntal_cons.html">uxntal cons</a></li><li><a href="uxntal_library.html">uxntal library</a></li></ul><ul></ul></nav>
 <main><h2>Using anonymous functions in Uxntal</h2>
 
-<p>In the context of Uxntal, lambdas are managed routine labels designated by
-curlies, not unlike <a href='postscript.html'>Postscript</a>'s anonymous
-procedures. Under the hood, the opening bracket is a way to aquire the address
-at the location in memory of its closing bracket, this allows the destination
-address to be used like any other label such as a JCI <kbd>?{</kbd>, a JMI,
-<kbd>!{</kbd> or a plain literal <kbd>;{</kbd>. Lambdas can also be nested into
-each other.</p>
+<p>In the context of Uxntal, lambdas is a label designated by a curly bracket
+that points to its associated closing bracket, and can be nested. Under the
+hood, the opening bracket assembles to the address of the closing bracket which
+allows the destination address to be used like any other label such as a JCI
+<kbd>?{</kbd>, a JMI, <kbd>!{</kbd> or a plain literal <kbd>;{</kbd>. </p>
 
-<pre>
-.button LDZ #00 EQU ?{ will-not-eval }
-</pre>
-
-<p>A lambda block that has no rune will be parsed as a subroutine jump, and so,
-will be jumped over, and a pointer to the start of the lambda will be pushed to
-the top of the return stack. The body of the lambda can be unquoted with the
-<kbd>STH2r</kbd> and <kbd>JSR2</kbd> opcodes.</p>
-
-<pre>
-#12 #34 { ADD JMP2r } STH2r JSR2
-</pre>
-
-<p>A lambda can be used to store data inline, and ensure that the content is not
-inadvertenly run.</p>
+<h3>Inline Strings</h3>
+<p>A lambda can be used to store data, such a text, amongst code. The JSI Lambda
+<kbd>{</kbd> assembles to a subroutine, and puts the return address, or in this
+case, the location of the data in memory, on the return stack. </p>
 
 <pre>
 { "hello $1 } STH2r print-lambda
 </pre>
 
-<p>Under the hood, the lambda block writes the length to jump by, and that
-length can be read to get the length of the lambda block.</p>
+<p>In other words, a lambda block that has no rune will be parsed as a subroutine
+jump, and so, will be jumped over, and a pointer to the start of the lambda
+will be pushed to the top of the return stack. The body of the lambda can be
+unquoted with the <kbd>STH2r</kbd> and <kbd>JSR2</kbd> opcodes.</p>
+
+<p>The lambda jump writes the length to jump by, and that length can be read to
+get the length of the lambda block.</p>
 
 <pre>
 @print-lambda ( {str}* -- )
@@ -46,6 +38,43 @@ length can be read to get the length of the lambda block.</p>
 		INC2 GTH2k ?&l
 	POP2 POP2 JMP2r
 </pre>
+
+<h3>Data Structures</h3>
+
+<p>We can inline a list of items, here's an implementation a function that
+returns the member in a list, or <i>nil</i>.</p>
+
+<pre>
+{ =cat =dog =bat } STH2r ;rat member?
+</pre>
+
+<pre>
+@member? ( {items}* target* -- res* )
+	,&t STR2
+	DUP2k #0002 SUB2 LDA2 ADD2 SWP2
+	&l ( -- )
+		LDA2k [ LIT2 &t $2 ] EQU2 ?&found
+		INC2 INC2 GTH2k ?&l
+	POP2 ;nil &found NIP2 JMP2r
+</pre>
+
+<h3>Anonymous Blocks</h3>
+
+<p>It is important to notice that a in the case of a conditional jump, the
+lambda's content is <b>jumped over when the flag byte is true</b>.</p>
+
+<pre>
+.button LDZ #00 EQU ?{ will-not-eval }
+</pre>
+
+<p>Lambdas can also be nested into one another, only the outermost layer of a
+nested lambda is evaluated at a time:</p>
+
+<pre>
+#01 { { "foo $1 } STH2r !print-lambda } STH2r JCN2
+</pre>
+
+<h3>Higher Order Functions</h3>
 
 <p>A higher-order function is a function that takes a function as an argument or
 returns one as a result. In the following example, the foreach routine is
@@ -76,37 +105,6 @@ memory.</p>
 	POP2 POP2 JMP2r
 </pre>
 
-<p>Consider that the whole <code>double</code> function can equally be
-inlined:</p>
-
-<pre>
-{ 01 02 03 04 05 } STH2r { STH2k LDAk DUP ADD STH2r STA JMP2r } STH2r foreach
-</pre>
-
-<p>As another demonstration of the same concept, we can inline a list of items,
-here's an implementation of Lisp's member function that returns the member in a
-list, or <i>nil</i>.</p>
-
-<pre>
-{ =cat =dog =bat } STH2r ;rat member
-</pre>
-
-<pre>
-@member ( {items}* target* -- res/-1* )
-	,&t STR2
-	DUP2k #0002 SUB2 LDA2 ADD2 SWP2
-	&l ( -- )
-		LDA2k [ LIT2 &t $2 ] EQU2 ?&found
-		INC2 INC2 GTH2k ?&l
-	POP2 ;nil &found NIP2 JMP2r
-</pre>
-
-<p>Lambdas can also be nested into one another, but remember, only the outermost
-layer of a nested lambda is evaluated at a time:</p>
-
-<pre>
-#01 { { "foo $1 } STH2r !print-lambda } STH2r JCN2
-</pre>
 
 <ul></ul><p class="incoming"><b>incoming</b> <a href="uxntal_syntax.html" class="parent">uxntal syntax</a> <a href="uxntal_immediate.html">uxntal immediate</a> <a href="drifblim.html">drifblim</a> </p></main>
 <footer><a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.svg" alt="CreativeCommons"/></a> <a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a> <a href="https://merveilles.town/@neauoire" rel="me" target="_blank"><img src="../media/icon/merveilles.svg" alt="Merveilles"/></a> <a href="ethics.html"><img src="../media/icon/dreipfeile.svg" alt="NoNazis!"/></a> <a href="uxn.html"><img src="../media/icon/uxn.svg" alt="UxnPowered"/></a> <span><a href="devine_lu_linvega.html">Devine Lu Linvega</a> &copy; 2023 &mdash; <a href="about.html#license">BY-NC-SA 4.0</a></span></footer>
