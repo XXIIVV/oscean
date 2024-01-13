@@ -43,20 +43,20 @@
 	&end ( chr last -- )
 		POP2 JMP2r
 
-@<toggle-mute> ( chr -- )
+@<toggle-mute> ( chr -: )
 	[ LIT "( ] SUB ;<read>/mute STA
 	JMP2r
 
 (
 @|assembly )
 
-@<assemble> ( -- )
+@<assemble> ( -: )
 	;<read>/ptr LDA2 INC2
 	( ) DUP2 ;<create-symbol>/ptr STA2
 	( ) ;find-symbol/ptr STA2
 	;input-buf <sexp>
-	#01 handle-pass ?crash
-	#00 handle-pass ?crash
+	#01 handle-pass ?exit
+	#00 handle-pass ?exit
 
 @write-rom ( -- )
 	;rom .length LDZ2 INC2 ADD2 ;rom/output
@@ -76,10 +76,10 @@
 			DUP2 <pstr>/
 			#0a19 DEO &>skip
 		scap/ INC2 GTH2k ?&l
-	POP2 POP2 JMP2r
+	POP2 POP2 ( >> )
 
-@crash ( -- )
-	#800f DEO
+@exit ( -- )
+	[ 80 -halt ] LDZ ORA #0f DEO
 	JMP2r
 
 @handle-pass ( scan -- err )
@@ -140,12 +140,12 @@
 @<write-opcode> ( str* -: )
 	find-opcode !<write>
 
-@<write-lithex> ( str* -- )
+@<write-lithex> ( str* -: )
 	DUP2 slen NIP
 	( LIT ) DUP #04 EQU #50 SFT #80 ORA <write>
 	!<write-hex>
 
-@<write-rawhex> ( str* -- )
+@<write-rawhex> ( str* -: )
 	DUP2 slen NIP
 	( >> )
 
@@ -198,18 +198,18 @@
 (
 @|labels )
 
-@get-sublabel ( name* -- sublabel* )
+@get-sublabel ( name* -: sublabel* )
 	[ LIT2 &ptr $2 ] <scpy>
 	;sublabel JMP2r
 
-@<set-scope> ( t* -- )
+@<set-scope> ( t* -: )
 	DUP2 .scope STZ2
 	DUP2 ;sublabel STH2k <scpy>
 	[ LIT2 "/ 00 ] STH2r scap/ STH2k STA2
 	STH2r INC ,get-sublabel/ptr STR2
 	( >> )
 
-@<create-symbol> ( name* -- )
+@<create-symbol> ( name* -: )
 	.scan LDZ ?{ POP2 JMP2r }
 	is-hex ?&invalid
 	is-opcode ?&invalid
@@ -230,11 +230,11 @@
 	;<create-symbol>/ptr LDA2 [ LIT2 &ptr $2 ]
 	&l ( -- )
 		EQU2k ?&end
-		DUP2 #0003 ADD2 [ LIT2 &t $2 ] scmp ?&found
+		#0003 ADD2 DUP2 [ LIT2 &t $2 ] scmp ?&found
 		scap/ INC2 GTH2k ?&l
 	&end POP2 POP2 #ffff JMP2r
 	&found ( symbols* -- <addr>* )
-		NIP2 JMP2r
+		#0003 SUB2 NIP2 JMP2r
 
 @get-any ( str* -- value* )
 	is-hex ?shex
