@@ -1,0 +1,1989 @@
+( app/turye : font editor )
+
+( TODOs:
+	> move edit status in filepath
+	> add block in scrollbar corner
+	> add tool so 2 button mouse can use )
+
+|00 @System &vector $2 &pad $6 &r $2 &g $2 &b $2
+|10 @Console &vector $2 &read $1 &pad $5 &write $1
+|20 @Screen &vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
+|80 @Controller &vector $2 &button $1 &key $1
+|90 @Mouse &vector $2 &x $2 &y $2 &state $1 &pad $3 &scrollx $2 &scrolly $2
+|a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+
+|0000
+
+	@state &timer $2
+	@glyph $1
+	@guide $1
+	@cursor &x $2 &y $2
+	@src $40
+	@pangrams-view &x $2 &y $2 &x2 $2 &y2 $2
+	@editor-view &x $2 &y $2 &x2 $2 &y2 $2
+	@collection-view &x $2 &y $2 &x2 $2 &y2 $2
+	@preview &x $2 &y $2 &x2 $2 &y2 $2
+
+|0100 ( -> )
+
+	( meta )
+	;meta #06 DEO2
+
+	( theme )
+	#d70f .System/r DEO2
+	#dc0f .System/g DEO2
+	#d90f .System/b DEO2
+	( size )
+	#01b8 .Screen/width DEO2
+	#0178 .Screen/height DEO2
+	#15 .Screen/auto DEO
+	( place )
+	#0010 .pangrams-view/x STZ2 .Screen/width DEI2 #0010 SUB2 .pangrams-view/x2 STZ2
+	#0018 DUP2 .pangrams-view/y STZ2 #0040 ADD2 .pangrams-view/y2 STZ2
+	#0010 DUP2 .editor-view/x STZ2 #0088 ADD2 .editor-view/x2 STZ2
+	.pangrams-view/y2 LDZ2 #0010 ADD2 DUP2 .editor-view/y STZ2 #0088 ADD2 .editor-view/y2 STZ2
+	#00a8 DUP2 .collection-view/x STZ2 #0100 ADD2 .collection-view/x2 STZ2
+	.editor-view/y LDZ2 DUP2 .collection-view/y STZ2 #0100 ADD2 .collection-view/y2 STZ2
+	#0010 DUP2 .preview/x STZ2 #0040 ADD2 .preview/x2 STZ2
+	#0110 DUP2 .preview/y STZ2 #0020 ADD2 .preview/y2 STZ2
+
+	load-theme
+
+	( init )
+	;untitled-txt ;src #000c mcpy
+	#0b .guide STZ
+	LIT "A select-glyph
+
+	draw-menu
+	redraw-all
+	( vectors )
+	;on-console .Console/vector DEO2
+	untrap
+
+BRK
+
+@meta 00
+	( name ) "Turye 0a
+	( details ) "A 20 "Font 20 "Editor 0a
+	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
+	( date ) "Apr 20 "23, 20 "2023 00
+	01
+		( icon ) 83 =appicon
+
+@manifest
+
+	06 "Turye $1
+		01 "n =file-new "New $1
+		01 "r =trap "Rename $1
+		01 "o =file-open "Open $1
+		01 "s =file-save "Save $1
+		01 "e =file-export "Export $1
+		01 "q =exit "Exit $1
+	06 "Edit $1
+		01 "c =edit-copy "Copy $1
+		01 "v =edit-paste "Paste $1
+		01 "x =edit-cut "Cut $1
+		00 08 =edit-erase "Erase $1
+		12 00 =edit-incr-guide "UpGuide $1
+		22 00 =edit-decr-guide "DownGuide $1
+	06 "Glyph $1
+		11 00 =edit-drag-up "DragUp $1
+		21 00 =edit-drag-down "DragDown $1
+		41 00 =edit-shift-left "ShiftLeft $1
+		81 00 =edit-shift-right "ShiftRight $1
+		42 00 =edit-decr-width "DecrWidth $1
+		82 00 =edit-incr-width "IncrWidth $1
+	04 "Move $1
+		10 00 =move-up "Up $1
+		20 00 =move-down "Down $1
+		40 00 =move-left "Left $1
+		80 00 =move-right "Right $1
+	$1
+
+(
+@|vectors )
+
+@trap ( -- )
+
+	;on-frame-trap .Screen/vector DEO2
+	;on-button-trap .Controller/vector DEO2
+	;on-mouse-trap .Mouse/vector DEO2
+	#00 .Mouse/state DEO
+	#40
+
+!draw-cursor
+
+@untrap ( -- )
+
+	;on-frame .Screen/vector DEO2
+	;on-button .Controller/vector DEO2
+	;on-mouse .Mouse/vector DEO2
+	#00 .Mouse/state DEO
+	#0a
+
+!draw-filepath
+
+@on-console ( -> )
+
+	#00 draw-filepath
+	( start )
+	[ LIT &listening $1 ] ?&no-start
+		#01 ,&listening STR
+		;src #0040 mclr
+		&no-start
+	( end )
+	.Console/read DEI
+	DUP #1f GTH OVR #7f LTH AND ?&no-end
+		#00 ,&listening STR
+		&no-end
+	( capture )
+	capture-trap
+	#0a draw-filepath
+
+BRK
+
+@on-button-trap ( -> )
+
+	#00 draw-filepath
+	.Controller/key DEI DUP #0d EQU #03 MUL SUB capture-trap
+	#0a draw-filepath
+
+BRK
+
+@capture-trap ( button -- )
+
+	DUP ?&no-null POP JMP2r &no-null
+	[ #08 ] NEQk NIP ?&no-pop ;src spop POP JMP2r &no-pop
+	[ #0a ] NEQk NIP ?&no-load file-open &no-load
+	[ #7f ] NEQk NIP ?&no-delete ;src #0040 mclr POP JMP2r &no-delete
+	[ #20 ] GTHk NIP ?&no-special untrap POP JMP2r &no-special
+	;src slen NIP #3f EQU ?&no-push DUP ;src sput &no-push
+	POP
+
+JMP2r
+
+@on-mouse-trap ( -> )
+
+	( release on touch )
+	.Mouse/state DEI #00 NEQ [ JMP BRK ]
+	untrap
+
+BRK
+
+@on-frame-trap ( -> )
+
+	.state/timer LDZk
+	DUP #07 AND ?&no-blink
+		DUP #03 SFT #01 AND STH #0a05 STHr JMP SWP POP draw-filepath
+		&no-blink
+	INC SWP STZ
+
+BRK
+
+@on-frame ( -> )
+
+	( inactive )
+
+BRK
+
+@on-button ( -> )
+
+	.Controller/button DEI2 find-modkey ORAk #00 EQU ?&skip
+		DUP2 JSR2 POP2 BRK
+		&skip
+	POP2
+
+	.Controller/key DEI DUP #00 EQU ?&no-key
+		DUP select-glyph
+		&no-key
+	POP
+
+BRK
+
+@on-mouse ( -> )
+
+	.Mouse/y DEI2 #0014 LTH2 ;trap-menu JCN2
+	.Mouse/scrolly DEI2 DUP2 #0000 NEQ2 ?&on-scrolly POP2
+	.Mouse/scrollx DEI2 DUP2 #0000 NEQ2 ?&on-scrollx POP2
+
+	( clear last cursor )
+	;fill-icn .Screen/addr DEO2
+	#40 draw-cursor
+
+	( draw new cursor )
+	.Mouse/x DEI2 DUP2 .cursor/x STZ2 .Screen/x DEO2
+	.Mouse/y DEI2 DUP2 .cursor/y STZ2 .Screen/y DEO2
+	;cursor-icn .Screen/addr DEO2
+	.Mouse/state DEI #00 NEQ DUP ADD #41 ADD .Screen/sprite DEO
+
+	.Mouse/x DEI2 .Mouse/y DEI2
+	OVR2 OVR2 .editor-view within-rect ;on-touch-editor JCN2
+	OVR2 OVR2 .collection-view within-rect ;on-touch-collection JCN2
+	POP2 POP2
+
+BRK
+
+&on-scrollx ( x* -> )
+
+	NIP .glyph LDZ ADD select-glyph
+
+BRK
+
+&on-scrolly ( y* -> )
+
+	NIP #01 EQU STH #10f0 STHr JMP SWP POP .glyph LDZ ADD select-glyph
+
+BRK
+
+@on-touch-editor ( x* y* -> )
+
+	.Mouse/state DEI ?&continue
+		POP2 POP2 BRK
+		&continue
+	.Mouse/state DEI #02 EQU ?&set-width
+	.editor-view/y LDZ2 SUB2 #03 SFT2 NIP STH
+	.editor-view/x LDZ2 SUB2 #03 SFT2 NIP STHr
+	DUP #10 EQU ?&scroll-x
+	OVR #10 EQU ?&scroll-y
+	( toggle pixel )
+	#40 SFT ADD get-selection ROT toggle-pixel
+
+BRK
+
+&set-width ( x y -> )
+
+	.editor-view/y LDZ2 #0006 ADD2 SUB2 #03 SFT2 NIP .guide STZ
+	.editor-view/x LDZ2 #0002 SUB2 SUB2 #03 SFT2 NIP .glyph LDZ SWP
+		set-width
+
+BRK
+
+&scroll-x ( x y -> )
+
+	POP #0f AND .glyph LDZ #f0 AND ORA select-glyph
+
+BRK
+
+&scroll-y ( x y -> )
+
+	NIP #40 SFT .glyph LDZ #0f AND ORA select-glyph
+
+BRK
+
+@on-touch-collection ( x* y* -> )
+
+	.Mouse/state DEI ?&continue
+		POP2 POP2 BRK
+		&continue
+
+	.collection-view/y LDZ2 SUB2 #04 SFT2 NIP #40 SFT STH
+	.collection-view/x LDZ2 SUB2 #04 SFT2 NIP STHr
+	ORA select-glyph
+
+
+BRK
+
+(
+@|helpers )
+
+@get-width ( glyph -- width )
+
+	#00 SWP ;font ADD2 LDA
+	DUP ?&exists
+		POP #08
+		&exists
+
+JMP2r
+
+@get-selection ( -- addr* )
+
+	.glyph LDZ
+
+@get-addr ( glyph -- addr* )
+
+	#00 SWP #50 SFT2 ;font/glyphs ADD2
+
+JMP2r
+
+@set-width ( glyph width -- )
+
+	( DUP2 SWP get-width NEQ ?&changed
+		POP2 JMP2r
+		&changed )
+	#00 ROT ;font ADD2 STA
+
+!redraw
+
+@select-glyph ( glyph -- )
+
+	DUP .glyph LDZ NEQ ?&changed POP JMP2r &changed
+	.glyph STZ
+
+!redraw
+
+@get-pixel ( addr* yx -- mask )
+
+	STHk
+	( addr ) [ #0f AND #13 SFT ] STHkr #07 SFT ADD #30 SFT
+	( offset ) STHkr #04 SFT #07 AND ADD
+	( load ) #00 SWP ADD2 LDA
+	( pixel ) STHr #07 AND #07 SWP SUB SFT #01 AND
+
+JMP2r
+
+@toggle-pixel ( addr* yx -- )
+
+	STHk
+	( addr ) [ #0f AND #13 SFT ] STHkr #07 SFT ADD #30 SFT
+	( offset ) STHkr #04 SFT #07 AND ADD
+	( load ) #00 SWP ADD2 LDAk
+	( mask ) #01 [ #07 STHr #07 AND SUB #40 SFT ] SFT
+	.Mouse/state DEI #01 GTH ?&erase
+		ORA ROT ROT STA redraw #02 ;draw-state JMP2
+	&erase
+		#ff EOR AND ROT ROT STA redraw #02 ;draw-state JMP2
+
+@move-up ( -- ) .glyph LDZ #10 SUB ;select-glyph JMP2
+@move-down ( -- ) .glyph LDZ #10 ADD ;select-glyph JMP2
+@move-left ( -- ) .glyph LDZ #01 SUB ;select-glyph JMP2
+@move-right ( -- ) .glyph LDZ INC ;select-glyph JMP2
+
+(
+@|drawing )
+
+@redraw-all ( -- )
+
+	( erase menu )
+	#0000 .Screen/x DEO2
+	#0018 .Screen/y DEO2
+	#a0 .Screen/pixel DEO
+	( dotted line )
+	#01 .Screen/auto DEO
+	.pangrams-view/x LDZ2 .Screen/x DEO2
+	#0012 .Screen/y DEO2
+	;dotted-icn .Screen/addr DEO2
+	.pangrams-view/x2 LDZ2 .pangrams-view/x LDZ2 SUB2 #03 SFT2 NIP #00
+	&loop
+		#03 .Screen/sprite DEO
+		INC GTHk ?&loop
+	POP2
+	#15 .Screen/auto DEO
+
+	#01 draw-state
+	draw-menu
+
+@redraw ( -- )
+
+	#0a draw-filepath
+	draw-pangrams
+	draw-editor-frame
+	draw-preview
+
+!draw-collection-frame
+
+@draw-preview ( -- )
+
+	.preview/x LDZ2 #0008 SUB2 .Screen/x DEO2
+	.preview/y LDZ2 #0008 SUB2 .Screen/y DEO2
+	;frame-chr #110a draw-frame
+
+	.preview/x LDZ2 #0002 SUB2 .Screen/x DEO2
+	.preview/y LDZ2 #0011 SUB2 .Screen/y DEO2
+	#0a ;draw-chr/color STA
+	;dict/preview draw-tab
+
+	( fill )
+	.preview/x LDZ2 .Screen/x DEO2
+	.preview/y LDZ2 .Screen/y DEO2
+	#a1 .Screen/auto DEO
+	;fill-icn .Screen/addr DEO2
+	#ef &l #03 .Screen/sprite DEO INC DUP ?&l POP
+
+	( guide line )
+	#f2 .Screen/auto DEO
+	.preview/x LDZ2 #0004 ADD2 .Screen/x DEO2
+	.preview/y LDZ2 #0028 ADD2 .Screen/y DEO2
+	;doth-icn .Screen/addr DEO2
+	#05 .Screen/sprite DEO
+
+	( find total width )
+	[ LITr 00 ]
+	#0900
+	&l1
+		DUP #01 AND #50 SFT
+		OVR #01 SFT .glyph LDZ #02 SUB ADD
+			ADD #00 SWP ;font ADD2 LDA STH ADDr
+		INC GTHk ?&l1
+	POP2
+
+	( text )
+	#15 .Screen/auto DEO
+	.preview/x LDZ2 #0044 ADD2 #00 STHr #01 SFT2 SUB2 .Screen/x DEO2
+	.preview/y LDZ2 #001f ADD2 #00 #0f .guide LDZ SUB ADD2 .Screen/y DEO2
+	#0900
+	&l2
+		DUP #01 AND #50 SFT
+		OVR #01 SFT .glyph LDZ #02 SUB ADD
+			ADD draw-chr
+		INC GTHk ?&l2
+	POP2
+
+JMP2r
+
+@draw-tab ( str* -- )
+
+	STH2k #00 STH2r get-strw NIP #03 SFT #02 ADD SUB
+
+	.Screen/x DEI2 ROT
+	#15 .Screen/auto DEO
+	;tab-chr/a .Screen/addr DEO2
+	#81 .Screen/sprite DEO
+	&l
+		;tab-chr/b .Screen/addr DEO2
+		#85 .Screen/sprite DEO
+		INC DUP ?&l POP
+	#81 .Screen/sprite DEOk DEO
+	#0008 ADD2 .Screen/x DEO2
+	draw-str POP2
+
+JMP2r
+
+@draw-tool ( addr* -- )
+
+	#11 .Screen/auto DEO
+	;fill-icn .Screen/addr DEO2
+	#03 .Screen/sprite DEOk DEO
+
+	#00 .Screen/auto DEO
+	.Screen/x DEI2k #000c SUB2 ROT DEO2
+	.Screen/y DEI2k #0004 ADD2 ROT DEO2
+	.Screen/addr DEO2
+	#05 .Screen/sprite DEO
+	.Screen/x DEI2k #000c ADD2 ROT DEO2
+	.Screen/y DEI2k #0004 SUB2 ROT DEO2
+
+JMP2r
+
+@draw-filepath ( color -- )
+
+	.collection-view/x LDZ2 #0002 SUB2 .Screen/x DEO2
+	.collection-view/y LDZ2 #0011 SUB2 .Screen/y DEO2
+	;draw-chr/color STA
+	;src draw-tab
+
+JMP2r
+
+@draw-state ( color -- )
+
+	.Screen/width DEI2 #0016 SUB2 .Screen/x DEO2
+	#0004 .Screen/y DEO2
+	;state-icn .Screen/addr DEO2
+	.Screen/sprite DEO
+
+JMP2r
+
+@draw-pangrams ( -- )
+
+	.pangrams-view/x LDZ2 .Screen/x DEO2
+	.pangrams-view/y LDZ2 #0008 ADD2 .Screen/y DEO2
+	;pangrams-txt
+	&while
+		LDAk .glyph LDZ EQU STH #0802 STHr JMP SWP POP ;draw-chr/color STA
+		LDAk draw-chr
+		( linebreak )
+		LDAk #0a NEQ ?&no-lb
+			.Screen/y DEI2k #0010 ADD2 ROT DEO2
+			.pangrams-view/x LDZ2 .Screen/x DEO2
+			&no-lb
+		INC2 LDAk ?&while
+	POP2
+
+JMP2r
+
+@buf &hn $1 &ln $2
+
+@hexc ( hex -- char ) #0f AND DUP #09 GTH #07 MUL ADD #30 ADD JMP2r
+
+@draw-editor-frame ( -- )
+
+	.editor-view/x LDZ2 #0008 SUB2 .Screen/x DEO2
+	.editor-view/y LDZ2 #0008 SUB2 .Screen/y DEO2
+	;frame-chr #1110 draw-frame
+	.editor-view/x LDZ2 #0002 SUB2 .Screen/x DEO2
+	.editor-view/y LDZ2 #0011 SUB2 .Screen/y DEO2
+	.glyph LDZ
+		DUP #04 SFT hexc ;buf/hn STA
+		hexc ;buf/ln STA
+	#0a ;draw-chr/color STA
+	;buf draw-tab
+
+@draw-editor ( -- )
+
+	#00 .Screen/auto DEO
+	#0000
+	&loop
+		( x ) #00 OVR #0f AND #30 SFT2 .editor-view/x LDZ2 ADD2 .Screen/x DEO2
+		( y ) #00 OVR #34 SFT2 .editor-view/y LDZ2 ADD2 .Screen/y DEO2
+		( pixel ) DUP get-selection ROT get-pixel #00 SWP #30 SFT2 ;pixel-icn ADD2 .Screen/addr DEO2
+		#0e .Screen/sprite DEO
+		INC NEQk ?&loop
+	POP2
+	( grid )
+	#0800
+	&v
+		#00 OVR #40 SFT .editor-view/y LDZ2 ADD2 #0010 ADD2 .Screen/y DEO2
+		#0801
+		&h
+			#00 OVR #40 SFT .editor-view/x LDZ2 ADD2 .Screen/x DEO2
+			#02 .Screen/pixel DEO
+			INC GTHk ?&h
+		POP2
+		INC GTHk ?&v
+	POP2
+
+	( width draw )
+	#f1 .Screen/auto DEO
+	#0000 .glyph LDZ ;font ADD2 LDA #30 SFT2 .editor-view/x LDZ2 ADD2 .Screen/x DEO2
+	.editor-view/y LDZ2 #0008 ADD2 .Screen/y DEO2
+	;dashv-icn .Screen/addr DEO2
+	#0a .Screen/sprite DEO
+	( arrow )
+	#00 .Screen/auto DEO
+	.Screen/x DEI2k #000b SUB2 ROT DEO2
+	.editor-view/y LDZ2 .Screen/y DEO2
+	;width-icn .Screen/addr DEO2
+	#0a .Screen/sprite DEO
+
+	( guide line )
+	#f2 .Screen/auto DEO
+	.editor-view/x LDZ2 .Screen/x DEO2
+	.editor-view/y LDZ2 #00 .guide LDZ #30 SFT2 ADD2 INC2 .Screen/y DEO2
+	;dashh-icn .Screen/addr DEO2
+	#05 .Screen/sprite DEO
+
+	draw-vscroll
+	draw-hscroll
+
+	#15 .Screen/auto DEO
+
+JMP2r
+
+@draw-vscroll ( -- )
+
+	.editor-view/x2 LDZ2 #0008 SUB2 .Screen/x DEO2
+	.editor-view/y LDZ2 .Screen/y DEO2
+	;scrollbar-icn/bg .Screen/addr DEO2
+	#02 .Screen/auto DEO
+	#f0 &v #0e .Screen/sprite DEO INC DUP ?&v POP
+
+	.editor-view/x2 LDZ2 #0008 SUB2 .Screen/x DEO2
+	.editor-view/y LDZ2 .Screen/y DEO2
+	;scrollbar-icn/v-arrow .Screen/addr DEO2
+	#0e .Screen/sprite DEO
+
+	#02 .Screen/auto DEO
+	.editor-view/y LDZ2 #0078 ADD2 .Screen/y DEO2
+	;scrollbar-icn/v-arrow .Screen/addr DEO2
+	#2e .Screen/sprite DEO
+
+	( marker )
+	.editor-view/y LDZ2 #0008 ADD2
+		#00 .glyph LDZ STH2k #34 SFT2 ADD2
+		STH2r #04 SFT2 SUB2
+		.Screen/y DEO2
+	;scrollbar-icn/fg .Screen/addr DEO2
+	#02 .Screen/sprite DEO
+
+JMP2r
+
+@draw-hscroll ( -- )
+
+	.editor-view/x LDZ2 .Screen/x DEO2
+	.editor-view/y2 LDZ2 #0008 SUB2 .Screen/y DEO2
+	;scrollbar-icn/bg .Screen/addr DEO2
+	#01 .Screen/auto DEO
+	#f1 &v #0e .Screen/sprite DEO INC DUP ?&v POP
+
+	.editor-view/x LDZ2 .Screen/x DEO2
+	;scrollbar-icn/h-arrow .Screen/addr DEO2
+	#0e .Screen/sprite DEO
+
+	.editor-view/x2 LDZ2 #0010 SUB2 .Screen/x DEO2
+	;scrollbar-icn/h-arrow .Screen/addr DEO2
+	#1e .Screen/sprite DEO
+
+	.editor-view/x LDZ2 #0008 ADD2
+		#00 .glyph LDZ #0f AND STH2k #30 SFT2 ADD2
+		STH2r SUB2
+		.Screen/x DEO2
+	;scrollbar-icn/fg .Screen/addr DEO2
+	#02 .Screen/sprite DEO
+
+JMP2r
+
+@draw-collection-frame ( -- )
+
+	.collection-view/x LDZ2 #0008 SUB2 .Screen/x DEO2
+	.collection-view/y LDZ2 #0008 SUB2 .Screen/y DEO2
+	;frame2-chr #201f draw-frame
+	#0a draw-filepath
+
+@draw-collection ( -- )
+
+	#15 .Screen/auto DEO
+	.collection-view/y LDZ2 #0010 SUB2 .Screen/y DEO2
+	#0000
+	&loop
+		#00 OVR #0f AND #40 SFT2 .collection-view/x LDZ2 ADD2 .Screen/x DEO2
+		#00 OVR #04 SFT #40 SFT2 .collection-view/y LDZ2 ADD2 .Screen/y DEO2
+		DUP draw-collection/item
+		INC NEQk ?&loop
+	POP2
+	( grid )
+	#00 .Screen/auto DEO
+	#2000
+	&v
+		#00 OVR #30 SFT .collection-view/y LDZ2 ADD2 .Screen/y DEO2
+		STHk
+		#2000
+		&h
+			DUP STHkr get-grid .Screen/addr DEO2
+			#00 OVR #30 SFT .collection-view/x LDZ2 ADD2 .Screen/x DEO2
+			#0a .Screen/sprite DEO
+			INC GTHk ?&h
+		POP2
+		POPr
+		INC GTHk ?&v
+	POP2
+
+JMP2r
+
+&item ( byte -- )
+
+	#00 OVR ;font ADD2 LDA ?&has-width
+		;empty-icn .Screen/addr DEO2
+		.glyph LDZ EQU STH #060c STHr JMP SWP POP .Screen/sprite DEOk DEO
+		JMP2r
+		&has-width
+	DUP get-addr .Screen/addr DEO2
+	.glyph LDZ EQU STH #060e STHr JMP SWP POP .Screen/sprite DEOk DEO
+
+JMP2r
+
+@get-grid ( x y -- addr* )
+
+	DUP2 #1f1f EQU2 ?&blank
+	OVR #1f EQU ?&limit-x
+	DUP #1f EQU ?&limit-y
+	#01 AND #10 SFT SWP #01 AND ORA
+	#30 SFT #00 SWP ;grid-icn ADD2
+
+JMP2r
+	&limit-x ( x y -- addr* )
+	NIP #01 AND #10 SFT
+	#30 SFT #00 SWP ;grid-icn ADD2
+JMP2r
+&limit-y ( x y -- addr* )
+	POP #01 AND
+	#30 SFT #00 SWP ;grid-icn ADD2
+JMP2r
+&blank
+	POP2 ;grid-icn JMP2r
+
+@draw-byte ( byte -- )
+
+	DUP #04 SFT draw-hex #0f AND
+
+@draw-hex ( char -- )
+
+	#0f AND DUP #09 GTH #07 MUL ADD #30 ADD
+
+@draw-chr ( char -- )
+
+	STHk
+	( addr ) DUP get-addr
+	#00 STHr ;font ADD2 LDA ?&exists
+		POP2 ;null-icn
+		&exists
+		.Screen/addr DEO2
+	#00 SWP get-width STHk .Screen/x DEI2 ADD2
+	[ LIT &color $1 ] .Screen/sprite DEOk STHr #08 LTH ?&thin DEOk &thin POP2
+	.Screen/x DEO2
+
+JMP2r
+
+@draw-str-right ( text* -- )
+
+	DUP2 get-strw STH2
+	.Screen/x DEI2k STH2r SUB2 ROT DEO2
+
+@draw-str ( str* -- str* )
+
+	LDAk #00 EQU ?&skip
+	#15 .Screen/auto DEO
+	&while
+		LDAk draw-chr
+		INC2 LDAk ?&while
+	&skip
+	INC2
+
+JMP2r
+
+@draw-frame ( w h chr* -- )
+
+	,&h STR ,&w STR
+	.Screen/addr DEO2
+	( tr )
+	.Screen/x DEI2 .Screen/y DEI2
+	#05 .Screen/auto DEO #81 .Screen/sprite DEO
+	#00 [ LIT &w $1 ] SUB #01 draw-frame/repeat
+	#04 .Screen/auto DEO #81 .Screen/sprite DEO
+	#06 .Screen/auto DEO #81 .Screen/sprite DEO
+	#00 [ LIT &h $1 ] SUB #02 draw-frame/repeat
+	#06 .Screen/auto DEO #81 .Screen/sprite DEO
+	( bl )
+	#0008 ADD2 .Screen/y DEO2 .Screen/x DEO2
+	#00 ,&h LDR SUB #02 draw-frame/repeat
+	#06 .Screen/auto DEO #81 .Screen/sprite DEO
+	#05 .Screen/auto DEO #81 .Screen/sprite DEO
+	#00 ,&w LDR SUB #01 draw-frame/repeat
+	#04 .Screen/auto DEO #81 .Screen/sprite DEO
+	#81 .Screen/sprite DEO
+
+JMP2r
+
+&repeat ( -length auto -- )
+
+	.Screen/auto DEO
+	&l #81 .Screen/sprite DEO
+		INC DUP ?&l
+	POP
+
+JMP2r
+
+@get-strw ( str* -- width* )
+
+	LIT2r 0000
+	&while
+		LDAk #0000 ROT ;font ADD2 LDA STH2 ADD2r
+		INC2 LDAk ?&while
+	POP2
+	STH2r
+
+JMP2r
+
+@clear-screen ( -- )
+
+	#0000 .Screen/x DEO2
+	#0000 .Screen/y DEO2
+	#80 .Screen/pixel DEO
+
+JMP2r
+
+(
+@|etc )
+
+@within-rect ( x* y* rect -- flag )
+
+	STH
+	( y < rect.y1 ) DUP2 STHkr INC INC LDZ2 LTH2 ?&skip
+	( y > rect.y2 ) DUP2 STHkr #06 ADD LDZ2 #0001 SUB2 GTH2 ?&skip
+	SWP2
+	( x < rect.x1 ) DUP2 STHkr LDZ2 LTH2 ?&skip
+	( x > rect.x2 ) DUP2 STHkr #04 ADD LDZ2 #0001 SUB2 GTH2 ?&skip
+	POP2 POP2 POPr
+	#01
+JMP2r
+	&skip
+	POP2 POP2 POPr
+	#00
+
+JMP2r
+
+( file )
+
+@file-new ( -- )
+
+	( TODO )
+
+JMP2r
+
+@file-open ( -- )
+
+	clear-screen
+	;src .File/name DEO2
+	#2100 .File/length DEO2
+	;font .File/read DEO2
+
+!redraw-all
+
+@file-save ( -- )
+
+	;src .File/name DEO2
+	#2100 .File/length DEO2
+	;font .File/write DEO2
+	#01
+
+!draw-state
+
+@file-export ( -- )
+
+	;src scap STH2
+	;dict/tal-ext STH2kr scpy
+	;src .File/name DEO2
+	#0001 .File/length DEO2
+	;dict/font fstr
+	( sizes )
+	;font #0080 fmem
+	#0a fchr
+	( glyphs )
+	;dict/glyphs fstr
+	[ ;font/glyphs #0400 ADD2 ] #0c00 fmem
+	#0a fchr
+	#00 STH2r STA
+
+JMP2r
+
+@fmem ( addr* len* -- )
+
+	ADD2k NIP2 SWP2
+	&l
+		SUB2k #000f AND2 NIP #00 EQU
+		#0a20 ROT [ JMP SWP POP ] fchr
+		LDA2k fhex
+		INC2 INC2 GTH2k ?&l
+	POP2 POP2
+
+JMP2r
+
+( snarf )
+
+@snarf-txt ".snarf $1
+
+@edit-copy ( -- )
+
+	;snarf-txt .File/name DEO2
+	#0020 .File/length DEO2
+	get-selection .File/write DEO2
+
+JMP2r
+
+@edit-paste ( -- )
+
+	;snarf-txt .File/name DEO2
+	#2100 .File/length DEO2
+	get-selection .File/read DEO2
+	redraw
+	#02
+
+!draw-state
+
+@edit-cut ( -- )
+
+	edit-copy
+
+@edit-erase ( -- )
+
+	get-selection #0020 mclr
+	#02 draw-state
+
+!redraw
+
+@edit-drag-up ( -- )
+
+	get-selection STH2
+	#2000
+	&loop
+		( load ) #00 OVR STH2kr ADD2 INC2k LDA
+		( save ) ROT ROT STA
+		INC GTHk ?&loop
+	POP2
+	( cap ) #00 STH2r #001f ADD2 STA
+
+!redraw
+
+@edit-drag-down ( -- )
+
+	get-selection STH2
+	#2000
+	&loop
+		( load ) #00 OVR #1f SWP SUB STH2kr ADD2 DUP2 LDA
+		( save ) ROT ROT INC2 STA
+		INC GTHk ?&loop
+	POP2
+	#00 STH2r STA
+
+!redraw
+
+@edit-shift-left ( -- )
+
+	#10 ,edit-shift JMP
+
+@edit-shift-right ( -- )
+
+	#01
+
+@edit-shift ( dir -- )
+
+	,&dir STR
+	get-selection STH2
+	#1000
+	&loop
+		#00 OVR STH2kr ADD2
+		( left* right* ) DUP2 #0010 ADD2
+		( load ) LDAk STH SWP2 LDAk STHr
+		( shift ) [ LIT &dir $1 ] SFT2
+		( save ) STH ROT ROT STA STHr ROT ROT STA
+		INC GTHk ?&loop
+	POP2
+	POP2r
+
+!redraw
+
+@edit-decr-width ( -- )
+
+	.glyph LDZ DUP get-width #01 SUB set-width
+
+JMP2r
+
+@edit-incr-width ( -- )
+
+	.glyph LDZ DUP get-width INC set-width
+
+JMP2r
+
+@edit-incr-guide ( -- )
+
+	.guide LDZ #01 SUB .guide STZ
+
+!redraw
+
+@edit-decr-guide ( -- )
+
+	.guide LDZ INC .guide STZ
+
+!redraw
+
+(
+@|stdlib )
+
+@fhex ( short* -- ) SWP ,&b JSR &b DUP #04 SFT ,&c JSR &c #0f AND DUP #09 GTH #27 MUL ADD #30 ADD
+@fchr ( chr -- ) ,&b STR #0001 .File/length DEO2 ;&b .File/write DEO2 JMP2r &b $1
+@fstr ( str* -- ) DUP2 slen .File/length DEO2 .File/write DEO2 JMP2r
+@mcpy ( src* dst* len* -- ) SWP2 STH2 OVR2 ADD2 SWP2 &loop LDAk STH2kr STA INC2r INC2 GTH2k ?&loop POP2 POP2 POP2r JMP2r
+
+(
+@|assets )
+
+@untitled-txt "untitled.uf2 $1
+
+@dict
+	&font "@font $1
+	&glyphs "&glyphs $1
+	&tal-ext ".tal $1
+	&preview "Preview $1
+
+@pangrams-txt
+	"Gaza 20 "frequens 20 "Lybicum 20 "duxit 20 "Karthago 20 "triumphum. 0a
+	"Portez 20 "ce 20 "vieux 20 "whisky, 20 "au 20 "juge 20 "blond 20 "qui 20 "fume? 0a
+	09 "The 20 "five 20 "boxing 20 "wizards 20 "jump 20 "quickly! $1
+
+@state-icn [
+	0000 0000 0010 387c
+	3810 0000 0000 0000 ]
+@dashv-icn [
+	8080 8000 8080 8000 ]
+@dashh-icn [
+	0000 0000 0000 00ee ]
+@hor-icn [
+	aa00 0000 0000 0000 ]
+@ver-icn [
+	8000 8000 8000 8000 ]
+@cursor-icn [
+	80c0 e0f0 f8e0 1000 ]
+@pixel-icn [
+	0000 0000 0000 0000
+	003e 7f7f 7f7f 7f3e ]
+@width-icn [
+	7c38 1000 1010 1000 ]
+@dotted-icn [
+	0000 0000 0000 00aa ]
+@null-icn [
+	0000 fe82 8282 8282
+	8282 8282 82fe 0000
+	0000 0000 0000 0000
+	0000 0000 0000 0000 ]
+@doth-icn [
+	0000 0000 0000 00aa ]
+@special-chr [
+	007e 425a 5a42 7e00 ffff ffff ffff ffff ]
+@empty-icn [
+	003f 4040 4040 4040 4040 4040 403f 0000
+	00f8 0404 0404 0404 0404 0404 04f8 0000 ]
+@brush-icn [
+	0070 6844 2211 0906 ]
+@select-icn [
+	0040 6070 787c 7008 ]
+@scrollbar-icn
+	&bg [ aa55 aa55 aa55 aa55 ]
+	&fg [ ffff ffff ffff ffff ]
+	&v-arrow [ 0018 3c7e 1818 1800 ]
+	&h-arrow [ 0010 307e 7e30 1000 ]
+@grid-icn [
+	0000 0000 0000 0000
+	0100 0100 0100 0100
+	0000 0000 0000 00aa
+	0100 0100 0100 01aa ]
+@tab-chr
+	&a [
+	003f 7f7f 7f7f 7f7f 3f7f ffff ffff ffff
+	7f7f 7f7f 7f7f 7f7f ffff ffff ffff ffff ]
+	&b [
+	00ff ffff ffff ffff ffff ffff ffff ffff
+	ffff ffff ffff ffff ffff ffff ffff ffff ]
+	&c [
+	0000 8080 8080 8080 0080 c0c0 c0c0 c0c0
+	8080 8080 8080 80c0 c0c0 c0c0 c0c0 c0ff
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 00ff ]
+@appicon [
+003f 7f7f 7f7e 7d7a 3f7f ffff ffff ffff 00ff ffff ffa8 50a0 ffff ffff ffff ffff
+00fc fefe fe3e 1e0e fcfe ffff ffff ffff 757f 7f7c 7870 7071 ffff ffff ffff ffff
+ffff ff00 0000 ffff ffff ffff ffff ffff 0e8e 8e0e 0e0e 0e8e ffff ffff ffff ffff
+7070 787c 7f7f 3f00 ffff ffff ffff 7f3f ff00 0000 ffff ff00 ffff ffff ffff ffff
+0e0e 0e8e fefe fc00 ffff ffff ffff fefc ]
+@frame-chr [
+	0000 0000 0000 0001 0000 0000 0000 0303
+	0000 0000 0000 00ff 0000 0000 0000 ffff
+	0000 0000 0000 0080 0000 0000 0000 c0e0
+	8080 8080 8080 8080 f0f0 f0f0 f0f0 f0f0
+	0101 0101 0101 0101 0303 0303 0303 0303
+	0100 0000 0000 0000 0303 0100 0000 0000
+	ff00 0000 0000 0000 ffff ffff 0000 0000
+	8000 0000 0000 0000 f0f0 f0f0 0000 0000 ]
+@frame2-chr [
+	0000 0000 0000 0001 0000 0000 0000 0103
+	0000 0000 0000 00ff 0000 0000 0000 ffff
+	0000 0000 0000 0080 0000 0000 0000 80c0
+	8080 8080 8080 8080 c0c0 c0c0 c0c0 c0c0
+	0101 0101 0101 0101 0303 0303 0303 0303
+	0100 0000 0000 0000 0301 0000 0000 0000
+	ff00 0000 0000 0000 ffff 0000 0000 0000
+	8000 0000 0000 0000 c080 0000 0000 0000 ]
+
+
+
+( manifest )
+
+@trap-menu ( -> )
+
+	;on-mouse-menu .Mouse/vector DEO2
+	;on-control-menu .Controller/vector DEO2
+
+	#40 ;draw-cursor JSR2
+
+BRK
+
+@on-mouse-menu ( -> )
+
+	#42 .Mouse/state DEI #00 NEQ ADD ;hand-icn ;update-cursor JSR2
+	( when touch cat )
+	.Mouse/state DEI #00 EQU ,&no-touch-cat JCN
+	.Mouse/y DEI2 #0014 GTH2 ,&no-touch-cat JCN
+		.Mouse/x DEI2 ;get-xcat JSR2 ;menu-select JSR2
+		( release ) #00 .Mouse/state DEO
+		BRK
+		&no-touch-cat
+	( when sub active )
+	;draw-menu/sel LDA #ff EQU ,&no-sub JCN
+		( when sel changed )
+		.Mouse/y DEI2 #0004 SUB2 #04 SFT2 NIP #01 SUB
+		DUP ;draw-sub/sel LDA EQU ,&no-change JCN
+			DUP ;draw-sub/sel STA
+			;draw-menu/sel LDA #ff ;draw-sub JSR2
+			&no-change
+		POP
+		( when touch sub )
+		.Mouse/state DEI #00 EQU ,&no-touch-sub JCN
+			;draw-sub/sel LDA ;menu-select-sub JSR2
+			( release ) #00 .Mouse/state DEO
+			&no-touch-sub
+		BRK
+		&no-sub
+	( don't leave if menu is active )
+	;draw-menu/sel LDA #ff NEQ ,&no-leave JCN
+	.Mouse/y DEI2 #0014 LTH2 ,&no-leave JCN
+		,menu-close JSR
+		&no-leave
+
+BRK
+
+@menu-close ( -- )
+
+	;untrap JSR2
+	;draw-menu/sel LDA
+	DUP #ff EQU ,&no-clear JCN
+		DUP #00 ;draw-sub JSR2
+		#ff ;draw-menu/sel STA
+		;redraw-all JSR2
+		;draw-menu JSR2
+	&no-clear
+	POP
+
+JMP2r
+
+@menu-select ( cat -- )
+
+	( exists )
+	DUP ;get-cat JSR2 ORA ,&exists JCN
+		POP JMP2r
+		&exists
+	( clear )
+	;draw-menu/sel LDA
+	( unchanged ) EQUk ,menu-deselect JCN
+	( unselected ) DUP #ff EQU ,&no-clear JCN
+		DUP #00 ;draw-sub JSR2
+		&no-clear
+	POP
+	( draw )
+	;redraw-all JSR2
+	#ff ;draw-sub/sel STA
+	DUP ;draw-menu/sel STA
+	#ff ;draw-sub JSR2
+	;draw-menu ( .. )
+
+JMP2
+
+@menu-deselect ( cat cat -- )
+
+	POP2 ;menu-close ( .. )
+
+JMP2
+
+@menu-select-sub ( sub -- )
+
+	;get-sub JSR2
+	;menu-close JSR2
+	ORAk ROT ROT JCN2
+
+JMP2r
+
+@on-control-menu ( -> )
+
+	( TODO )
+
+BRK
+
+@get-cat ( cat -- cat* )
+
+	STH
+	#00 ,&id STR
+	;draw-menu/manifest LDA2
+	&cat
+		[ LIT &id 00 ] STHkr EQU ,&end JCN
+		;skip-sub JSR2
+		,&id LDR INC ,&id STR
+		LDAk ,&cat JCN
+	POP2
+	#0000
+	&end
+	POPr
+
+JMP2r
+
+@get-sub ( sub -- sub* )
+
+	STH
+	;draw-menu/sel LDA ;get-cat JSR2
+	LDAk STH INC2 ;skip-str JSR2
+	STHr #00
+	&subcat
+		DUP STHkr EQU ,&end JCN
+		SWP2 #0004 ADD2 ;skip-str JSR2 SWP2
+		INC GTHk ,&subcat JCN
+	POP2 POP2
+	( TODO: merge tails )
+	POPr
+	#0000
+	JMP2r
+	&end
+	POP2
+	INC2 INC2 LDA2
+	POPr
+
+JMP2r
+
+@get-catx ( cat -- x* )
+
+	LIT2r 0000
+	,&target STR
+	#00 ,&id STR
+	;draw-menu/manifest LDA2
+	&cat
+		[ LIT &id 00 ] [ LIT &target $1 ] EQU ,&end JCN
+		INC2k ;get-strw JSR2 #0008 ADD2 STH2 ADD2r
+		;skip-sub JSR2
+		,&id LDR INC ,&id STR
+		LDAk ,&cat JCN
+	POP2
+	&end
+	STH2r
+	#0010 ADD2
+
+JMP2r
+
+@get-xcat ( x* -- <cat> )
+
+	#0010 SUB2
+	LIT2r 0000
+	,&target STR2
+	#00 ,&id STR
+	;draw-menu/manifest LDA2
+	&cat
+		INC2k ;get-strw JSR2 #0008 ADD2 STH2r ADD2
+		DUP2 [ LIT2 &target $2 ] LTH2 ,&continue JCN
+			POP2 POP2 [ LIT &id 00 ] JMP2r
+			&continue
+			STH2
+		;skip-sub JSR2
+		,&id LDR INC ,&id STR
+		LDAk ,&cat JCN
+	POP2
+	POP2r
+	#ff
+
+JMP2r
+
+@find-modkey ( mod key -- fn* )
+
+	ORAk ,&no-null JCN JMP2r &no-null
+	( not null )
+	,&mk STR2
+	;draw-menu/manifest LDA2
+	&cat
+		LDAk STH INC2 ,skip-str JSR
+		STHr #00
+		&subcat
+			OVR2 LDA2 [ LIT2 &mk $2 ] NEQ2 ,&continue JCN
+				POP2 INC2 INC2 LDA2 JMP2r
+				&continue
+			SWP2 #0004 ADD2 ,skip-str JSR SWP2
+			INC GTHk ,&subcat JCN
+		POP2
+		LDAk ,&cat JCN
+	POP2
+	#0000
+
+JMP2r
+
+@skip-sub ( sub* -- sub* )
+
+	LDAk STH INC2 ;skip-str JSR2
+	STHr #00
+	&subcat
+		SWP2 #0004 ADD2 ,skip-str JSR SWP2
+		INC GTHk ,&subcat JCN
+	POP2
+
+JMP2r
+
+@skip-str ( str* -- str* )
+
+	&skip INC2 LDAk ,&skip JCN INC2
+
+JMP2r
+
+@draw-menu ( mask -- )
+
+	#0010 .Screen/x DEO2
+	#0004 .Screen/y DEO2
+	#00 ,&id STR
+	[ LIT2 &manifest =manifest ]
+	&cat
+		#0802 [ LIT &sel ff ] [ LIT &id $1 ] EQU [ JMP SWP POP ] ;draw-chr/color STA
+		INC2k ;draw-str JSR2 POP2 .Screen/x DEI2k #0008 ADD2 ROT DEO2
+		;skip-sub JSR2
+		,&id LDR INC ,&id STR
+		LDAk ,&cat JCN
+	POP2
+
+JMP2r
+
+@draw-sub ( cat mask -- )
+
+	,&mask STR POP
+	;draw-menu/sel LDA ;get-cat JSR2
+	ORAk #00 EQU ,&skip JCN
+	;draw-menu/sel LDA ;get-catx JSR2 ,&anchor STR2
+	LDAk STH INC2 ;skip-str JSR2
+	STHr #00
+	&subcat
+		STHk #0608 STHr [ LIT &sel ff ] EQU [ JMP SWP POP ] [ LIT &mask $1 ] AND ;draw-chr/color STA
+		[ LIT2 &anchor $2 ] .Screen/x DEO2
+		#00 OVR INC #40 SFT2 #0004 ADD2 .Screen/y DEO2
+		SWP2 ;draw-label JSR2 SWP2
+		INC GTHk ,&subcat JCN
+	POP2 POP2
+	&skip
+	POP2
+
+JMP2r
+
+@draw-label ( label* -- next-label* )
+
+	.Screen/x DEI2
+	.Screen/y DEI2
+		.Screen/auto DEI
+			#f2 .Screen/auto DEO
+			;fill-icn ;blank-icn ;draw-chr/color LDA #00 EQU [ JMP SWP2 POP2 ] .Screen/addr DEO2
+			;draw-chr/color LDA .Screen/sprite DEOk DEO
+		.Screen/auto DEO
+	.Screen/y DEO2
+	( mod )
+	STH2k #0078 ADD2 .Screen/x DEO2
+	LDA2k ;get-modkey-str JSR2 ;draw-str-right JSR2 POP2
+	STH2r .Screen/x DEO2
+	#0004 ADD2 ;draw-str ( .. )
+
+JMP2
+
+@get-modkey-str ( mod key -- str* )
+
+	;&buf #0008 ;mclr JSR2
+	( mod )
+	SWP STH
+	#0800
+	&loop
+		STHkr OVR SFT #01 AND #00 EQU ,&no-button JCN
+			#00 OVR ;&buttons ADD2 LDA ;&buf ;sput JSR2
+			&no-button
+		INC GTHk ,&loop JCN
+	POP2
+	( mix )
+	DUP #00 NEQ STHr #00 NEQ #0101 NEQ2 ,&no-mod JCN
+		LIT "+ ;&buf ;sput JSR2
+		&no-mod
+	( key )
+	DUP #08 NEQ ,&no-bsp JCN ;&bsp ,&cat JMP &no-bsp
+	DUP #09 NEQ ,&no-tab JCN ;&tab ,&cat JMP &no-tab
+	DUP #0d NEQ ,&no-ent JCN ;&ent ,&cat JMP &no-ent
+	DUP #20 NEQ ,&no-spc JCN ;&spc ,&cat JMP &no-spc
+	DUP #1b NEQ ,&no-esc JCN ;&esc ,&cat JMP &no-esc
+	DUP #7f NEQ ,&no-del JCN ;&del ,&cat JMP &no-del
+	DUP ;&buf ;sput JSR2
+	&end
+	POP
+	;&buf
+
+JMP2r
+	&buf $8
+	&buttons "ABsSUDLR $1
+	&cat ;&buf ;scat JSR2 ,&end JMP
+	&bsp "bsp $1 &tab "tab $1 &ent "ent $1 &spc "spc $1 &esc "esc $1 &del "del $1
+
+@update-cursor ( color addr* -- )
+
+	#00 .Screen/auto DEO
+	;fill-icn .Screen/addr DEO2
+	#40 ,draw-cursor JSR
+	.Mouse/x DEI2 DUP2 .cursor/x STZ2 .Screen/x DEO2
+	.Mouse/y DEI2 DUP2 .cursor/y STZ2 .Screen/y DEO2
+	.Screen/addr DEO2
+	.Screen/sprite DEO
+
+JMP2r
+
+@draw-cursor ( color -- )
+
+	.cursor/x LDZ2 .Screen/x DEO2
+	.cursor/y LDZ2 .Screen/y DEO2
+	.Screen/sprite DEO
+
+JMP2r
+
+( theme )
+
+@load-theme ( -- )
+
+	;&path .File/name DEO2
+	#0002 .File/length DEO2
+	;&r .File/read DEO2
+	;&g .File/read DEO2
+	;&b .File/read DEO2
+	.File/success DEI2 ORA #01 JCN JMP2r
+	LIT2 &r $2 .System/r DEO2
+	LIT2 &g $2 .System/g DEO2
+	LIT2 &b $2 .System/b DEO2
+
+JMP2r
+	&path ".theme $1
+
+(
+@|stdlib )
+
+@scap ( str* -- end* ) LDAk #00 NEQ JMP JMP2r &w INC2 LDAk ,&w JCN JMP2r
+@spop ( str* -- ) LDAk ,&n JCN POP2 JMP2r &n ,scap JSR #0001 SUB2 #00 ROT ROT STA JMP2r
+@sput ( chr str* -- ) ,scap JSR INC2k #00 ROT ROT STA STA JMP2r
+@slen ( str* -- len* ) DUP2 ,scap JSR SWP2 SUB2 JMP2r
+@scat ( src* dst* -- ) ,scap JSR
+@scpy ( src* dst* -- ) STH2 &w LDAk STH2kr STA INC2r INC2 LDAk ,&w JCN POP2 #00 STH2r STA JMP2r
+@mclr ( src* len* -- ) OVR2 ADD2 SWP2 &l STH2k #00 STH2r STA INC2 GTH2k ,&l JCN POP2 POP2 JMP2r
+
+@phex ( short* -- )
+
+	SWP ,&b JSR
+	&b ( byte -- ) DUP #04 SFT ,&c JSR
+	&c ( char -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO
+
+JMP2r
+
+@exit ( -- )
+
+	#010f DEO
+
+JMP2r
+
+( assets )
+
+@hand-icn
+	2020 20b8 7c7c 3838
+@blank-icn
+	0000 0000 0000 0000
+@fill-icn
+	ffff ffff ffff ffff
+
+
+
+@font ( NewYork14 )
+0000 0000 0000 0000 0000 0800 0000 0000
+000b 0b09 0b00 0000 0000 0000 0000 0000
+0406 070a 070b 0a03 0505 0707 0407 0407
+0808 0808 0808 0808 0808 0404 0608 0608
+0b08 0808 0807 0708 0806 0709 070c 0908
+0808 0807 0608 080c 0808 0805 0705 0808
+0608 0807 0808 0608 0804 0608 040c 0808
+0808 0607 0608 080c 0808 0805 0505 0808
+0808 0807 0908 0808 0808 0808 0808 0808
+0808 0606 0606 0808 0808 0808 0808 0808
+0506 0709 0707 0909 0a0a 0b05 0609 0b09
+0e07 0606 0a0a 0809 0a0b 0607 070a 0c08
+0806 070c 060a 0909 090e 0808 0808 0b0c
+060a 0707 0404 0709 0800 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+&glyphs
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0031 4a4a 3f0a 3f4a 4a31 0000 0000
+0000 0080 4040 8000 8040 4080 0000 0000
+0000 0000 0000 0103 466c 3810 0000 0000
+0000 0000 40c0 8000 0000 0000 0000 0000
+0000 0000 081c 3e7f 3e1c 0800 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0003 0604 3b7f 7f7f 7f7f 3f1b 0000 0000
+0000 0000 80c0 0000 c0c0 8000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0030 3030 3030 3000 3030 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0028 2828 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0909 3f12 127f 2424 0000 0000 0000
+0000 0000 8000 0000 0000 0000 0000 0000
+0000 1038 5470 7038 1c1c 5438 1000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 3749 4a32 0404 090a 1211 0000 0000
+0000 0000 0000 0000 8040 4080 0000 0000
+0000 003c 6666 3067 6666 663c 0000 0000
+0000 0000 0080 8000 0000 0000 0000 0000
+0000 0040 4040 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 1020 6060 6060 6060 6020 1000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 4020 3030 3030 3030 3020 4000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0010 5438 5410 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0010 107c 1010 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 6060 2040 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 007c 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 6060 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0404 0808 1010 2020 4040 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 003c 6666 6666 6666 663c 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0018 3818 1818 1818 1818 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 003c 4606 060c 1830 607e 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 007e 0c18 3c06 0606 463c 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0006 0e16 2646 7f06 0606 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 007e 6060 7c06 0606 463c 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 001c 3060 7c66 6666 663c 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 007e 0606 060c 1818 1818 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 003c 6666 663c 6666 663c 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 003c 6666 6666 3e06 0c38 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0060 6000 0000 6060 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0060 6000 0000 6060 2040 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 1830 60c0 6030 1800 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 7e00 7e00 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 c060 3018 3060 c000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 003c 4606 0c18 1800 1818 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 1f20 4e52 524d 201f 0000 0000
+0000 0000 0080 4040 4080 0000 0000 0000
+0000 003c 6666 667e 6666 6666 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 007c 6666 667c 6666 667c 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 003c 6260 6060 6060 623c 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 007c 6666 6666 6666 667c 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 007c 6060 6078 6060 607c 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 007c 6060 6078 6060 6060 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 003c 6260 606e 6666 663c 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0066 6666 667e 6666 6666 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0030 3030 3030 3030 3030 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 000c 0c0c 0c0c cccc cc78 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0063 666c 7870 786c 6663 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0060 6060 6060 6060 607c 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0040 6070 795f 4e44 4040 0000 0000
+0000 0020 60e0 e060 6060 6060 0000 0000
+0000 0041 6171 795d 4f47 4341 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 003c 6666 6666 6666 663c 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 007c 6666 667c 6060 6060 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 003c 6666 6666 6666 663c 0600 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 007c 6666 667c 6666 6666 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0038 6460 7038 1c0c 4c38 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 00fc 3030 3030 3030 3030 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0066 6666 6666 6666 663c 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0066 6666 6666 6666 6478 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0066 6666 6666 6666 667f 0000 0000
+0000 0060 6060 6060 6060 4080 0000 0000
+0000 0066 6666 663c 6666 6666 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0066 6666 663c 1818 1818 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 007e 0606 0c18 3060 607e 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 7060 6060 6060 6060 6060 7000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 4040 2020 1010 0808 0404 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 7030 3030 3030 3030 3030 7000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0008 1422 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 00ff 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 4020 1000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 003c 463e 6666 663e 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0060 607c 6666 6666 667c 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0038 6460 6060 6438 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0006 063e 6666 6666 663e 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 003c 6666 7e60 623c 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 001c 3078 3030 3030 3030 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 003e 6666 6666 663e 0646 3c00
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0060 607c 6666 6666 6666 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0060 0060 6060 6060 6060 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0018 0018 1818 1818 1818 1898 7000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0060 6066 6c78 7078 6c66 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0060 6060 6060 6060 6060 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 007f 6666 6666 6666 0000 0000
+0000 0000 00c0 6060 6060 6060 0000 0000
+0000 0000 007c 6666 6666 6666 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 003c 6666 6666 663c 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 007c 6666 6666 667c 6060 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 003e 6666 6666 663e 0606 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 006c 7060 6060 6060 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0038 6470 381c 4c38 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0030 3078 3030 3030 3018 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0066 6666 6666 663e 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0066 6666 6666 6478 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0066 6666 6666 667f 0000 0000
+0000 0000 0060 6060 6060 4080 0000 0000
+0000 0000 0066 6666 3c66 6666 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0066 6666 6666 663e 0646 3c00
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 007e 060c 1830 607e 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 1020 2020 2040 2020 2020 1000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 2020 2020 2020 2020 2020 2000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 4020 2020 2010 2020 2020 4000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0032 4c00 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0024 003c 6666 667e 6666 6666 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+1824 243c 6666 667e 6666 6666 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 003c 6260 6060 6060 623c 1808 1000
+0000 0000 0000 0000 0000 0000 0000 0000
+0810 007c 6060 6078 6060 607c 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+324c 0041 6171 795d 4f47 4341 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0024 003c 6666 6666 6666 663c 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0024 0066 6666 6666 6666 663c 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0810 003c 463e 6666 663e 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 1008 003c 463e 6666 663e 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 1824 003c 463e 6666 663e 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0024 003c 463e 6666 663e 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 324c 003c 463e 6666 663e 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+1824 2418 003c 463e 6666 663e 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 003c 6260 6060 623c 1808 1000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0810 003c 6666 7e60 623c 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 1008 003c 6666 7e60 623c 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 1824 003c 6666 7e60 623c 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0024 003c 6666 7e60 623c 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 1020 0030 3030 3030 3030 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 2010 0030 3030 3030 3030 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 3048 0030 3030 3030 3030 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0048 0030 3030 3030 3030 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 324c 007c 6666 6666 6666 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0810 003c 6666 6666 663c 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 1008 003c 6666 6666 663c 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 1824 003c 6666 6666 663c 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0024 003c 6666 6666 663c 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 324c 003c 6666 6666 663c 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0810 0066 6666 6666 663e 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 1008 0066 6666 6666 663e 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 1824 0066 6666 6666 663e 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0024 0066 6666 6666 663e 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0020 7020 2020 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0030 4848 3000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 1038 5450 5054 3810 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 001c 3230 3078 3030 317e 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 3844 6030 584c 6434 180c 4438 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0038 7c7c 7c38 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 003f 6565 653d 0505 0505 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 001e 3333 3633 3333 3376 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 001e 215c 525c 5252 211e 0000 0000
+0000 0000 0080 8080 8080 0000 0000 0000
+0000 001e 214c 5250 524c 211e 0000 0000
+0000 0000 0080 8080 8080 0000 0000 0000
+0000 0074 2625 2400 0000 0000 0000 0000
+0000 0040 c040 4000 0000 0000 0000 0000
+0000 0010 2040 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0048 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0004 7f08 7f10 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 003f 6666 667f 6666 6667 0000 0000
+0000 00c0 0000 0080 0000 00c0 0000 0000
+0000 001e 3333 373b 3333 739e 0000 0000
+0000 0080 0000 0000 0000 0000 0000 0000
+0000 0000 0038 4543 463c 0000 0000 0000
+0000 0000 00f0 8808 8870 0000 0000 0000
+0000 0000 0010 107c 1010 007c 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0010 2040 2010 0078 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0020 1008 1020 0078 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0061 337f 0c7f 0c0c 0c0c 0000 0000
+0000 0080 0080 0080 0000 0000 0000 0000
+0000 0000 0033 3333 3333 333e 2040 0000
+0000 0000 0000 0000 0000 0080 0000 0000
+0000 0000 380c 1e36 6666 6438 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 007f 3118 0c06 0c18 317f 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 007f 3333 3333 3333 3333 0000 0000
+0000 0080 0000 0000 0000 0000 0000 0000
+0000 0000 003f 5919 1919 1911 0000 0000
+0000 0000 4080 8080 8080 8000 0000 0000
+0000 0018 3030 3030 3030 3030 3060 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0038 4c3c 6c6c 3c00 7c00 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0038 6c6c 6c6c 3800 7c00 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 001e 3361 6161 2112 1233 0000 0000
+0000 0000 0080 8080 0000 0000 0000 0000
+0000 0000 003f 463e 6766 663f 0000 0000
+0000 0000 00c0 6060 e000 20c0 0000 0000
+0000 0000 003d 6666 6e76 66bc 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0018 1800 1818 3060 623c 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0030 3000 3030 3030 3030 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 007c 0404 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0101 2262 1414 0808 0000 0000
+0000 e080 0000 0000 0000 0000 0000 0000
+0000 0018 3030 7830 3030 3030 3060 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0001 1e21 1e20 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0808 1414 2222 417f 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0009 1224 4824 1209 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0048 2412 0912 2448 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 3333 0000 0000
+0000 0000 0000 0000 0000 3030 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+1008 003c 6666 667e 6666 6666 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+324c 003c 6666 667e 6666 6666 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+324c 003c 6666 6666 6666 663c 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 003f 6666 6667 6666 663f 0000 0000
+0000 00c0 0000 0080 0000 00c0 0000 0000
+0000 0000 003f 6666 6766 663f 0000 0000
+0000 0000 00c0 6060 e000 20c0 0000 0000
+0000 0000 0000 0078 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 007f 0000 0000 0000 0000
+0000 0000 0000 0080 0000 0000 0000 0000
+0000 0024 486c 6c00 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 006c 6c24 4800 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0020 4060 6000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0060 6020 4000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0010 007c 0010 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0814 2241 2214 0800 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0024 0066 6666 6666 663e 0646 3c00
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+
+@data $2100
+
