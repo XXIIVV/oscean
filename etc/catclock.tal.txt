@@ -1,0 +1,370 @@
+( catclock )
+
+|00 @System &vector $2 &wst $1 &rst $1 &pad $4 &r $2 &g $2 &b $2 &debug $1 &halt $1
+|20 @Screen &vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
+|c0 @DateTime &year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
+
+|0000
+
+	@timer &frame $1 &anim $1 &last $1
+	@center &x $2 &y $2
+	@needles &hx $2 &hy $2 &mx $2 &my $2 &sx $2 &sy $2
+
+(
+@|vectors )
+
+|0100
+
+@on-reset ( -> )
+	( | meta )
+	;meta #06 DEO2
+	( | theme )
+	#0ff0 .System/r DEO2
+	#0f00 .System/g DEO2
+	#0f00 .System/b DEO2
+	( | vectors )
+	;on-frame .Screen/vector DEO2
+	( | resize )
+	#0060 .Screen/width DEO2
+	#00c0 .Screen/height DEO2
+	( | center )
+	.Screen/width DEI2 #01 SFT2 .center/x STZ2
+	.Screen/height DEI2 #01 SFT2 #0018 ADD2 .center/y STZ2
+	( | init )
+	[ LIT2 05 -timer/frame ] STZ
+	<clear-screen>
+	.center/y LDZ2 #0050 SUB2 .Screen/y DEO2
+	#08 ;head-icn <draw-body>
+	#05 ;body-icn <draw-body>
+
+@on-frame ( -> )
+	( | once per second )
+	.DateTime/second DEI DUP .timer/last LDZ EQU ?{
+		update-needles <draw-needles>
+		DUP .timer/last STZ }
+	POP
+	( | every 5th frame )
+	[ LIT2 05 -timer/frame ] LDZ NEQ ?{
+		.timer/anim LDZ <draw-animation>
+		.timer/anim LDZk INC #0f AND SWP STZ
+		[ LIT2 00 -timer/frame ] STZ }
+	.timer/frame LDZk INC SWP STZ
+	BRK
+
+@meta $1
+	( name ) "Catclock 0a
+	( details ) "Tic 20 "Tac 20 "Cat 20 "Clock 0a
+	( author ) "By 20 "Hundred 20 "Rabbits 0a
+	( date ) "18 20 "Dec 20 "2023 $1
+	( elements ) 01
+	( > icon ) 83 =appicon
+
+(
+@|helpers )
+
+@update-needles ( -- )
+	( | seconds )
+	[ LIT2 00 -DateTime/second ] DEI DUP2 ADD2 ;sin60 ADD2 LDA2
+	( ) #0090 circle .needles/sx STZ2
+	.needles/sy STZ2
+	( | minutes )
+	[ LIT2 00 -DateTime/minute ] DEI DUP2 ADD2 ;sin60 ADD2 LDA2
+	( ) #0090 circle .needles/mx STZ2
+	.needles/my STZ2
+	( | hours )
+	[ LIT2 00 -DateTime/hour ] DEI #0c DIVk MUL SUB #20 SFTk NIP ADD
+	( | minutes )
+	[ LIT2 00 -DateTime/minute ] DEI #0f DIV ADD2 DUP2 ADD2 ;sin60 ADD2 LDA2
+	( ) #00b0 circle .needles/hx STZ2
+	.needles/hy STZ2
+	JMP2r
+
+@circle ( cx cy radius* -- y* x* )
+	STH2
+	SWP
+	( ) #00 SWP #40 SFT2 STH2kr DIV2
+	( ) .center/x LDZ2 ADD2 #0800 STH2kr DIV2 SUB2 STH2
+	SWP2r
+	( ) #00 SWP #40 SFT2 STH2kr DIV2
+	( ) .center/y LDZ2 ADD2 #0800 STH2kr DIV2 SUB2 POP2r STH2r JMP2r
+
+@<draw-animation> ( state -- )
+	STHk [ LIT2 04 -Screen/auto ] DEO
+	( eyes )
+	( reverse ) DUP #08 LTH ?{ #0f SWP SUB }
+	#0c MUL #00 SWP #30 SFT2 ;eyes-icn ADD2 .Screen/addr DEO2
+	[ LIT2 56 -Screen/auto ] DEO
+	.center/x LDZ2 #0018 SUB2 .Screen/x DEO2
+	.center/y LDZ2 #0030 SUB2 .Screen/y DEO2
+	#0201 <draw-times>
+	( | tail )
+	[ LIT2 36 -Screen/auto ] DEO
+	STHr #0f AND
+	( ) DUP #07 AND #0c MUL #00 SWP #30 SFT2 ;tail-icn ADD2 .Screen/addr DEO2
+	.center/y LDZ2 #0015 ADD2 .Screen/y DEO2
+	#07 GTH ?&tail-reverse
+	( | forward )
+	.center/x LDZ2 #0010 SUB2 .Screen/x DEO2
+	#0304 !<draw-times>
+	&tail-reverse ( -- )
+		.center/x LDZ2 #0008 ADD2 .Screen/x DEO2
+		#0314 !<draw-times>
+
+@<draw-needles> ( mask -- )
+	( clear ) .center/x LDZ2 #0010 SUB2 .Screen/x DEO2
+	.center/y LDZ2 #0010 SUB2 .Screen/y DEO2
+	;fill-icn .Screen/addr DEO2
+	[ LIT2 31 -Screen/auto ] DEO
+	#0440 <draw-times>
+	[ LIT2 00 -Screen/auto ] DEO
+	.center/x LDZ2 .center/y LDZ2 OVR2 OVR2 .needles/sx LDZ2 .needles/sy LDZ2 #42 <draw-line>
+	OVR2 OVR2 .needles/mx LDZ2 .needles/my LDZ2 #43 <draw-line>
+	OVR2 OVR2 .needles/hx LDZ2 .needles/hy LDZ2 #43 <draw-line>
+	( | middle )
+	;middle-icn .Screen/addr DEO2
+	#0001 SUB2 .Screen/y DEO2
+	#0001 SUB2 .Screen/x DEO2
+	[ LIT2 4a -Screen/sprite ] DEO
+	JMP2r
+
+@<draw-body> ( height addr* -- )
+	[ LIT2 76 -Screen/auto ] DEO
+	.center/x LDZ2 #0020 SUB2 .Screen/x DEO2
+	.Screen/addr DEO2
+	#04
+
+@<draw-times> ( times color -- )
+	STH
+	#00 SWP SUB
+	&ver ( -- )
+		STHkr .Screen/sprite DEO
+		INC DUP ?&ver
+	POP POPr JMP2r
+
+@<draw-line> ( x1* y1* x2* y2* color -- )
+	,&color STR
+	,&y STR2
+	,&x STR2
+	,&y2 STR2
+	,&x2 STR2
+	,&x LDR2 ,&x2 LDR2 SUB2 abs2 ,&dx STR2
+	#0000 ,&y LDR2 ,&y2 LDR2 SUB2 abs2 SUB2 ,&dy STR2
+	#ffff [ LIT2 00 _&x2 ] LDR2 ,&x LDR2 lts2 DUP2 ADD2 ADD2 ,&sx STR2
+	#ffff [ LIT2 00 _&y2 ] LDR2 ,&y LDR2 lts2 DUP2 ADD2 ADD2 ,&sy STR2
+	[ LIT2 &dx $2 ] [ LIT2 &dy $2 ] ADD2 STH2
+	&while ( -- )
+		[ LIT2 &x2 $2 ] DUP2 .Screen/x DEO2
+		[ LIT2 &x $2 ] EQU2 [ LIT2 &y2 $2 ] DUP2 .Screen/y DEO2
+		[ LIT2 &y $2 ] EQU2 [ LIT2 &color $1 -Screen/pixel ] DEO
+		AND ?&end
+		STH2kr DUP2 ADD2 DUP2 ,&dy LDR2 lts2 ?&skipy
+		STH2r ,&dy LDR2 ADD2 STH2
+		,&x2 LDR2 [ LIT2 &sx $2 ] ADD2 ,&x2 STR2
+	&skipy ( -- )
+		,&dx LDR2 gts2 ?&while
+	STH2r ,&dx LDR2 ADD2 STH2
+	,&y2 LDR2 [ LIT2 &sy $2 ] ADD2 ,&y2 STR2
+	!&while
+	&end POP2r JMP2r
+
+@<clear-screen> ( -- )
+	#0000 DUP2 .Screen/x DEO2
+	.Screen/y DEO2
+	[ LIT2 81 -Screen/pixel ] DEO
+	JMP2r
+
+(
+@|stdlib )
+
+@abs2 ( a* -- f )
+	DUP2 #0f SFT2 EQU ?{ #0000 SWP2 SUB2 }
+	JMP2r
+
+@lts2 ( a* b* -- f )
+	#8000 STH2k ADD2 SWP2 STH2r ADD2 GTH2 JMP2r
+
+@gts2 ( a* b* -- f )
+	#8000 STH2k ADD2 SWP2 STH2r ADD2 LTH2 JMP2r
+
+
+
+@sin60 ( 60 positions on a circle ) [
+	8000 8d00 9a02 a706 b40b c011 cb18 d520
+	df2a e734 ee40 f44b f958 fd65 ff72 ff80
+	ff8d fd9a f9a7 f4b4 eec0 e7cb dfd5 d5df
+	cbe7 c0ee b4f4 a7f9 9afd 8dff 80ff 72ff
+	65fd 58f9 4bf4 40ee 34e7 2adf 20d5 18cb
+	11c0 0bb4 06a7 029a 008d 0080 0072 0265
+	0658 0b4b 113f 1834 202a 2a20 3418 3f11
+	4b0b 5806 6502 7200 ]
+
+@fill-icn [ ffff ffff ffff ffff ]
+
+@middle-icn [ 40e0 4000 0000 0000 ]
+
+@head-icn [
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0103 070f 0f1f 0000 80c0 c0e0 e0f0
+	0000 0103 0307 070f 0000 80c0 e0f0 f0f8
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0001
+	3f3f 7f7f 7fff fffd f0f0 f8f8 fcfc fefe
+	0f0f 1f1f 3f3f 7f7f fcfc fefe feff ffbf
+	0000 0000 0000 0080 0000 0000 0000 0000
+	0000 0001 0101 0000 0101 01c1 e1f3 f77f
+	fcfc f8f8 ffff ffff ffff 7f7f ffff ffff
+	ffff fefe ffff ffff 3f3f 1f1f ffff ffff
+	8080 8083 87cf effe 0000 0080 8080 0000
+	0707 0703 0001 0307 3fbf ffff ffff ffff
+	ffff ffff ffff ff0f ffff ffff efc7 efff
+	ffff ffff f7e3 f7ff ffff ffff ffff fff0
+	fcfd ffff ffff ffff e0e0 e0c0 0080 c0e0
+	070f 1f1f 3f3f 3f3f f800 0000 0000 0000
+	0000 0000 0000 0000 ff00 0000 0000 0000
+	ff00 0000 0000 0000 0000 0000 0000 0000
+	1f00 0000 0000 0000 e0f0 f8f8 fcfc fcfc
+	3f3f 3f3f 3f3f 3f20 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 fcfc fcfc fcfc fc04
+	1010 0908 0402 0100 0010 8c03 4090 10c0
+	0000 01fe 0000 0102 0049 8600 0000 e017
+	0092 6100 0000 07e8 0000 807f 0000 8040
+	0008 31c0 0209 0803 0808 9010 2040 8000
+	0000 0000 0000 0000 3807 0001 0608 1020
+	02fe 9e26 0f07 0f7f 0808 3808 088f f000
+	1010 1c10 10f1 0f00 407f 7964 f0e0 f0fe
+	1ce0 0080 6010 0804 0000 0000 0000 0000 ]
+
+@eyes-icn [
+	0f3f 7361 c1c3 c3c3 ffff ffff ffff ffff
+	80c0 e0f0 f0f0 f8fb 0103 070e 0c1c 1cdc
+	ffff 3f1f 1f3f 3f3f f0fc fefe ffff ffff
+	c3c3 c3c3 c161 73bf ffff ffff ffff ffff
+	fbfb fbfb f7f6 efde dcdc dcdc ec6e f77b
+	3f3f 3f3f 1f1f 3fff ffff ffff fefe fdff
+	0f3f 7970 e0e1 e1e1 ffff ffff ffff ffff
+	80c0 e0f0 f0f0 f8fb 0103 070f 0e1e 1ede
+	ffff 9f0f 0f1f 1f1f f0fc fefe ffff ffff
+	e1e1 e1e1 e070 79bf ffff ffff ffff ffff
+	fbfb fbfb f7f6 efde dede dede ee6f f77b
+	1f1f 1f1f 0f0f 9fff ffff ffff fefe fdff
+	0f3f 7e7c f8f8 f8f8 ffff 7f3f 3f3f 3f3f
+	80c0 e0f0 f0f0 f8fb 0103 070f 0f1f 1fdf
+	ffff e7c3 8383 8383 f0fc fefe ffff ffff
+	f8f8 f8f8 f87c 7ebf 3f3f 3f3f 3f3f 7fff
+	fbfb fbfb f7f6 efde dfdf dfdf ef6f f77b
+	8383 8383 83c3 e7ff ffff ffff fefe fdff
+	0f3f 7f7f fefe fefe ffff 9f0f 0707 0707
+	80c0 e0f0 f0f0 f8fb 0103 070f 0f1f 1fdf
+	ffff f9f0 e0e0 e0e0 f0fc fefe 7f7f 7f7f
+	fefe fefe fe7f 7fbf 0707 0707 070f 9fff
+	fbfb fbfb f7f6 efde dfdf dfdf ef6f f77b
+	e0e0 e0e0 e0f0 f9ff 7f7f 7f7f 7efe fdff
+	0f3f 7f7f ffff ffff ffff e7c3 c1c1 c1c1
+	80c0 e0f0 f0f0 f8fb 0103 070f 0f1f 1fdf
+	ffff fefc fcfc fcfc f0fc 7e3e 1f1f 1f1f
+	ffff ffff ff7f 7fbf c1c1 c1c1 c1c3 e7ff
+	fbfb fbfb f7f6 efde dfdf dfdf ef6f f77b
+	fcfc fcfc fcfc feff 1f1f 1f1f 1e3e 7dff
+	0f3f 7f7f ffff ffff ffff f9f0 f0f0 f8f8
+	80c0 e0f0 7070 787b 0103 070f 0f1f 1fdf
+	ffff ffff ffff ffff f0fc 9e0e 0787 8787
+	ffff ffff ff7f 7fbf f8f8 f8f0 f0f0 f9ff
+	7b7b 7b7b 77f6 efde dfdf dfdf ef6f f77b
+	ffff ffff ffff ffff 8787 8707 060e 9dff
+	0f3f 7f7f ffff ffff ffff fcf8 f8fc fcfc
+	80c0 e070 3030 383b 0103 070f 0f1f 1fdf
+	ffff ffff ffff ffff f0fc ce86 83c3 c3c3
+	ffff ffff ff7f 7fbf fcfc fcfc f8f8 fcff
+	3b3b 3b3b 3776 efde dfdf dfdf ef6f f77b
+	ffff ffff ffff ffff c3c3 c3c3 8286 cdff
+	0f3f 7f7f ffff ffff ffff fefc fcfe fefe
+	80c0 6030 1010 181b 0103 070f 0f1f 1fdf
+	ffff ffff ffff ffff f0fc e6c2 c1e1 e1e1
+	ffff ffff ff7f 7fbf fefe fefe fcfc feff
+	1b1b 1b1b 1736 6fde dfdf dfdf ef6f f77b
+	ffff ffff ffff ffff e1e1 e1e1 c0c2 e5ff ]
+
+@body-icn [
+	0000 0000 0000 0000 4041 8387 4f3f 1f3f
+	fcf8 f1e1 c181 0100 0202 4242 4240 4000
+	c020 6181 e101 0100 3f1f 0f07 0301 0000
+	0282 c1e1 f2fc f8fc 0000 0000 0000 0000
+	0000 0000 0000 0000 3e7e 7c7c fcf8 f8f9
+	4854 5454 4800 8040 0000 0000 0000 0000
+	0000 0000 0000 0000 1804 0c10 1c00 0300
+	7c7e 3e3e 3f1f 1f9f 0000 0000 0000 0000
+	0000 0000 1f28 2430 f8f8 f8f8 7cfc 7c3e
+	c040 8000 0010 2810 0000 0000 0000 0000
+	0000 0000 0000 0000 0300 0300 0004 0c14
+	1f9f 1f1f 3e3f 3e7c 0000 0000 f814 240c
+	2810 1008 0402 0100 1e0f 0733 3919 8163
+	2810 80c0 e0f0 f8fe 0000 7010 2141 4100
+	0000 03c2 0380 4380 1e04 8103 078f 1f7f
+	78f0 e0cc 9c98 81c6 1408 0810 2040 8000
+	0000 0000 0000 0000 1c00 0000 0000 0000
+	ff7f 1f07 0000 0000 e0ff ffff ff00 0000
+	07ff ffff ff00 0000 fffe f8e0 0000 0000
+	3800 0000 0000 0000 0000 0000 0000 0000 ]
+
+@tail-icn [
+	0000 0000 0000 0000 0101 0303 0303 0303
+	0080 80c0 c0c0 c0c0 0000 0000 0000 0000
+	0000 0000 0000 0000 0303 0303 0707 0707
+	c0c0 c0c0 e0e0 e0e0 0000 0000 0000 0000
+	0000 0000 0000 0000 0707 0707 0301 0000
+	e0e0 e0e0 c080 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0103 070f 1f1e 3e3c
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 7c7c 7cfc fcfc fefe
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 7f7f 3f1f 0e00 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0001 0303 0107 1f7f fefc f8f0
+	0080 8000 0000 0000 0000 0000 0000 0000
+	0707 0707 0707 0707 f0e0 e0e0 e0f0 f0f0
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0303 0100 0000 0000 f0f0 e000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0007 1f3f 7f7f 0107 ffff fef8 e000
+	0080 8000 0000 0000 0000 0000 0000 0000
+	fefc fcfe fefe 7e3c 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 071f 3f7f fffe 01ff ffff fec0 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	fcfc fefe fe7c 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0103 0707 0f1f 3efe
+	0080 8000 0000 0000 0000 0000 0000 0000
+	033f 7fff ffff 7e00 fcfc f8f0 e080 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0103 0303 0707 0f0f
+	0080 8080 8000 0000 0000 0000 0000 0000
+	0000 0000 0107 0f1f 1f3f 7efe fcfc f8f8
+	0000 0000 0000 0000 0000 0000 0000 0000
+	1f1f 0f00 0000 0000 f0c0 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0101 0103 0303 0707
+	0080 8080 8080 8080 0000 0000 0000 0000
+	0000 0000 0000 0103 0f1f 1f3f 7fff fefc
+	8080 8000 0000 0000 0000 0000 0000 0000
+	0707 0707 0300 0000 fcf8 f0e0 8000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000 ]
+
+@appicon [
+	0000 0000 0000 0000 1f7f 7fff ffff ffff
+	0000 0000 0000 0000 ffff ffff ffff ffff
+	0000 0000 0000 0000 f8fe feff ffff ffff
+	0000 0000 0000 0000 ffff ffff ffff ffff
+	0018 0018 0099 6600 ffff ffff ffff ffff
+	0000 0000 0000 0000 ffff ffff ffff ffff
+	0000 0000 0000 0000 ffff ffff ff7f 7f1f
+	0000 0000 0000 0000 ffff ffff ffff ffff
+	0000 0000 0000 0000 ffff ffff fffe fef8 ]
