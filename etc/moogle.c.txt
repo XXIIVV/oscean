@@ -1,8 +1,8 @@
 #include <SDL2/SDL.h>
-#include <stdio.h>
 #include <math.h>
+#include <stdio.h>
 
-/* 
+/*
 Copyright (c) 2020 Devine Lu Linvega
 
 Permission to use, copy, modify, and distribute this software for any
@@ -13,10 +13,10 @@ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
 WITH REGARD TO THIS SOFTWARE.
 */
 
-#define HOR 32
-#define VER 16
-#define PAD 8
-#define SZ (HOR * VER * 16)
+#define HOR 0x40
+#define VER 0x28
+#define TITLE "out40x28.icn"
+#define SZ (HOR * VER * 8)
 
 #define VLIMIT 256
 #define ELIMIT 512
@@ -52,10 +52,8 @@ typedef struct {
 	Mesh meshes[MLIMIT];
 } Scene;
 
-typedef enum {
-	ISOMETRIC,
-	PERSPECTIVE
-} Projection;
+typedef enum { ISOMETRIC,
+	PERSPECTIVE } Projection;
 
 typedef struct {
 	double range;
@@ -63,31 +61,22 @@ typedef struct {
 	Projection projection;
 } Camera;
 
-static int WIDTH = 8 * HOR + PAD * 2;
-static int HEIGHT = 8 * (VER + 2) + PAD * 2;
-static int FPS = 30, GUIDES = 1, ZOOM = 2;
+typedef struct {
+	Uint8 down;
+	double x, y;
+} Mouse;
+
+static int WIDTH = 8 * HOR;
+static int HEIGHT = 8 * VER;
+static int FPS = 30, ZOOM = 1;
 
 static Scene scn;
 static Camera cam;
+static Mouse mouse;
 
 /* interface */
 
-static Uint32 theme[] = {
-	0x000000,
-	0xFFFFFF,
-	0x72DEC2,
-	0x666666,
-	0x222222};
-
-static Uint8 icons[][8] = {
-	{0x10, 0x28, 0x44, 0x92, 0x44, 0x28, 0x10, 0x00},
-	{0x10, 0x28, 0x44, 0x82, 0x82, 0x82, 0xd6, 0x00},
-	{0x1e, 0x22, 0x40, 0x82, 0x40, 0x22, 0x1e, 0x00},
-	{0x04, 0x08, 0x50, 0xa4, 0x50, 0x08, 0x04, 0x00},
-	{0x1e, 0x20, 0x40, 0xa2, 0x40, 0x20, 0x1e, 0x00},
-	{0x00, 0x00, 0x00, 0x82, 0x44, 0x38, 0x00, 0x00}, /* eye open */
-	{0x00, 0x38, 0x44, 0x92, 0x28, 0x10, 0x00, 0x00}  /* eye closed */
-};
+static Uint32 theme[] = {0XFFFFFF, 0X000000, 0x55BBAA, 0xFF0000};
 
 static SDL_Window *gWindow = NULL;
 static SDL_Renderer *gRenderer = NULL;
@@ -95,6 +84,12 @@ static SDL_Texture *gTexture = NULL;
 static Uint32 *pixels;
 
 /* helpers */
+
+double
+clamp(double val, double min, double max)
+{
+	return (val >= min) ? (val <= max) ? val : max : min;
+}
 
 static Point2d
 Pt2d(double x, double y)
@@ -134,24 +129,14 @@ Sc3d(void)
 }
 
 static Camera
-Cm3d(double pitch, double yaw, double roll)
+Cm3d(double pitch, double yaw, double roll, double range)
 {
 	Camera c;
 	set3d(&c.rotation, pitch, yaw, roll);
 	set3d(&c.trotation, pitch, yaw, roll);
 	c.projection = PERSPECTIVE;
-	c.range = 50;
+	c.range = range;
 	return c;
-}
-
-static int
-colortheme(Uint32 hex)
-{
-	int i = 0;
-	for(i = 0; i < 5; ++i)
-		if(theme[i] == hex)
-			return i;
-	return 0;
 }
 
 /* geometry */
@@ -159,9 +144,9 @@ colortheme(Uint32 hex)
 static double
 interpolate(double a, double b, double speed, double range)
 {
-	if(a < b - range || a > b + range) {
+	if(a < b - range || a > b + range)
 		a += (b - a) / speed;
-	} else
+	else
 		a = b;
 	return a;
 }
@@ -270,7 +255,7 @@ addvertex(Mesh *m, double x, double y, double z)
 	int i;
 	Point3d v = Pt3d(x, y, z);
 	if(m->verticeslen == VLIMIT) {
-		printf("Warning: Reached vertex limit\n");
+		fprintf(stderr, "Warning: Reached vertex limit\n");
 		return NULL;
 	}
 	translate3d(&v, &scn.position);
@@ -286,76 +271,13 @@ static Edge *
 addedge(Mesh *m, Point3d *a, Point3d *b, int color)
 {
 	if(m->edgeslen == ELIMIT) {
-		printf("Warning: Reached edge limit\n");
+		fprintf(stderr, "Warning: Reached edge limit\n");
 		return NULL;
 	}
 	m->edges[m->edgeslen].a = a;
 	m->edges[m->edgeslen].b = b;
 	m->edges[m->edgeslen].color = color;
 	return &m->edges[m->edgeslen++];
-}
-
-static Mesh *
-addmesh(Scene *s)
-{
-	if(s->len == MLIMIT) {
-		printf("Warning: Reached mesh limit\n");
-		return NULL;
-	}
-	return &s->meshes[s->len++];
-}
-
-/* transforms */
-
-static Mesh *
-translate(Mesh *m, double x, double y, double z)
-{
-	int i;
-	Point3d t = Pt3d(x, y, z);
-	for(i = 0; i < m->verticeslen; i++)
-		translate3d(&m->vertices[i], &t);
-	return m;
-}
-
-static Mesh *
-scale(Mesh *m, double x, double y, double z)
-{
-	int i;
-	Point3d t = Pt3d(x, y, z);
-	for(i = 0; i < m->verticeslen; i++)
-		scale3d(&m->vertices[i], &t);
-	return m;
-}
-
-static Mesh *
-rotate(Mesh *m, double pitch, double yaw, double roll)
-{
-	int i;
-	Point3d t = Pt3d(pitch, yaw, roll);
-	for(i = 0; i < m->verticeslen; i++)
-		rotate3d(&m->vertices[i], &m->position, &t);
-	return m;
-}
-
-static Mesh *
-extrude(Mesh *m, Point3d t, int color)
-{
-	int i, j, vl = m->verticeslen, el = m->edgeslen;
-	for(i = 0; i < vl; i++) {
-		Point3d *a = &m->vertices[i];
-		addedge(m, &m->vertices[i], addvertex(m, a->x + t.x, a->y + t.y, a->z + t.z), color);
-	}
-	for(i = 0; i < el; i++) {
-		Edge *e0 = &m->edges[i];
-		Edge *e1 = addedge(m, e0->a, e0->b, e0->color);
-		for(j = 0; j < vl; j++) {
-			if(e0->a == &m->vertices[j])
-				e1->a = &m->vertices[vl + j];
-			else if(e0->b == &m->vertices[j])
-				e1->b = &m->vertices[vl + j];
-		}
-	}
-	return m;
 }
 
 /* Primitives */
@@ -402,21 +324,28 @@ addshape(Mesh *m, double radius, int segs, int color)
 static void
 clear(Uint32 *dst)
 {
-	int i, j;
-	for(i = 0; i < HEIGHT; i++)
-		for(j = 0; j < WIDTH; j++)
-			dst[i * WIDTH + j] = theme[0];
+	int i;
+	for(i = 0; i < WIDTH * HEIGHT; i++)
+		dst[i] = theme[0];
 }
 
 static void
-putpixel(Uint32 *dst, int x, int y, int color)
+putpixel(Uint32 *dst, int x, int y, Uint32 color)
 {
-	if(x >= 0 && x < WIDTH - 8 && y >= 0 && y < HEIGHT - 8)
-		dst[(y + PAD) * WIDTH + (x + PAD)] = theme[color];
+	if(x > 0 && y > 0 && x < WIDTH && y < HEIGHT)
+		dst[y * WIDTH + x] = color;
+}
+
+static Uint32
+getpixel(Uint32 *src, int x, int y)
+{
+	if(x < WIDTH && y < HEIGHT)
+		return src[y * WIDTH + x];
+	return 0;
 }
 
 static void
-line(Uint32 *dst, Point2d p0, Point2d p1, int color)
+line(Uint32 *dst, Point2d p0, Point2d p1, Uint32 color)
 {
 	int p0x = (int)p0.x, p0y = (int)p0.y;
 	int p1x = (int)p1.x, p1y = (int)p1.y;
@@ -439,35 +368,12 @@ line(Uint32 *dst, Point2d p0, Point2d p1, int color)
 	}
 }
 
-static void
-drawicon(Uint32 *dst, int x, int y, Uint8 *icon, int color)
-{
-	int v, h;
-	for(v = 0; v < 8; v++)
-		for(h = 0; h < 8; h++) {
-			int c = (icon[v] >> (8 - h)) & 0x1;
-			putpixel(dst, x + h, y + v, c ? color : 0);
-		}
-}
-
-static void
-drawui(Uint32 *dst)
-{
-	int bottom = VER * 8 + 8;
-	drawicon(dst, 0 * 8, bottom, icons[0], equpt3d(cam.rotation, VIEWFRONT) ? 1 : 2);
-	drawicon(dst, 1 * 8, bottom, icons[1], equpt3d(cam.rotation, VIEWTOP) ? 1 : 2);
-	drawicon(dst, 2 * 8, bottom, icons[2], equpt3d(cam.rotation, VIEWSIDE) ? 1 : 2);
-	drawicon(dst, 4 * 8, bottom, icons[cam.projection == ISOMETRIC ? 4 : 3], 1);
-	drawicon(dst, 5 * 8, bottom, icons[GUIDES ? 6 : 5], GUIDES ? 1 : 2);
-}
-
 static Point2d
 project(Camera *c, Point3d v)
 {
 	double r;
 	if(c->projection == ISOMETRIC)
-		return Pt2d(
-			(WIDTH / 2) + v.x * (10 - c->range / 10),
+		return Pt2d((WIDTH / 2) + v.x * (10 - c->range / 10),
 			(HEIGHT / 2) + v.y * (10 - c->range / 10));
 	r = 200 / (v.z + c->range);
 	return Pt2d(WIDTH / 2 + r * v.x, HEIGHT / 2 + r * v.y);
@@ -486,13 +392,9 @@ redraw(Uint32 *dst)
 			Point3d b = add3d(edge->b, &m->position);
 			rotate3d(&a, &cam.origin, &cam.rotation);
 			rotate3d(&b, &cam.origin, &cam.rotation);
-			line(dst,
-				project(&cam, add3d(&cam.origin, &a)),
-				project(&cam, add3d(&cam.origin, &b)),
-				edge->color);
+			line(dst, project(&cam, add3d(&cam.origin, &a)), project(&cam, add3d(&cam.origin, &b)), theme[edge->color]);
 		}
 	}
-	drawui(dst);
 	SDL_UpdateTexture(gTexture, NULL, dst, WIDTH * sizeof(Uint32));
 	SDL_RenderClear(gRenderer);
 	SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);
@@ -504,7 +406,7 @@ redraw(Uint32 *dst)
 static int
 error(char *msg, const char *err)
 {
-	printf("Error %s: %s\n", msg, err);
+	fprintf(stderr, "Error %s: %s\n", msg, err);
 	return 0;
 }
 
@@ -512,23 +414,16 @@ static void
 update(Camera *c, double speed)
 {
 	if(!equpt3d(c->rotation, c->trotation) || !equpt3d(c->origin, c->torigin)) {
-		set3d(&c->rotation,
-			interpolate(c->rotation.x, c->trotation.x, speed, 1),
-			interpolate(c->rotation.y, c->trotation.y, speed, 1),
-			interpolate(c->rotation.z, c->trotation.z, speed, 1));
-		set3d(&c->origin,
-			interpolate(c->origin.x, c->torigin.x, speed, 1),
-			interpolate(c->origin.y, c->torigin.y, speed, 1),
-			interpolate(c->origin.z, c->torigin.z, speed, 1));
+		set3d(&c->rotation, interpolate(c->rotation.x, c->trotation.x, speed, 1), interpolate(c->rotation.y, c->trotation.y, speed, 1), interpolate(c->rotation.z, c->trotation.z, speed, 1));
+		set3d(&c->origin, interpolate(c->origin.x, c->torigin.x, speed, 1), interpolate(c->origin.y, c->torigin.y, speed, 1), interpolate(c->origin.z, c->torigin.z, speed, 1));
 		redraw(pixels);
 	}
 }
 
 static void
-modzoom(int mod)
+setzoom(int val)
 {
-	if((mod > 0 && ZOOM < 4) || (mod < 0 && ZOOM > 1))
-		ZOOM += mod;
+	ZOOM = val;
 	SDL_SetWindowSize(gWindow, WIDTH * ZOOM, HEIGHT * ZOOM);
 	redraw(pixels);
 }
@@ -537,13 +432,6 @@ static void
 toggleprojection(Camera *c)
 {
 	c->projection = c->projection == ISOMETRIC ? PERSPECTIVE : ISOMETRIC;
-	redraw(pixels);
-}
-
-static void
-setguides(int v)
-{
-	GUIDES = v;
 	redraw(pixels);
 }
 
@@ -557,69 +445,31 @@ modrange(int mod)
 }
 
 static void
-selectoption(int option)
+export_icn(Uint32 *src, int width, int height, char *filename)
 {
-	switch(option) {
-	case 0: set3d(&cam.trotation, VIEWFRONT.x, VIEWFRONT.y, VIEWFRONT.z); break;
-	case 1: set3d(&cam.trotation, VIEWTOP.x, VIEWTOP.y, VIEWTOP.z); break;
-	case 2: set3d(&cam.trotation, VIEWSIDE.x, VIEWSIDE.y, VIEWSIDE.z); break;
-	case 4: toggleprojection(&cam); break;
-	case 5: setguides(!GUIDES); break;
+	int i, x, y;
+	Uint8 icnbuf[SZ];
+	FILE *f = fopen(filename, "wb");
+	/* clean */
+	for(i = 0; i < SZ; ++i)
+		icnbuf[i] = 0;
+	/* write pixels */
+	for(y = 0; y < height; y++) {
+		for(x = 0; x <= width; x++) {
+			int color = getpixel(src, x, y);
+			if(!color) {
+				int col = x & 7, row = y & 7;
+				int byte = (x & ~7) + (y & ~7) * width / 8 + row;
+				if(byte < SZ)
+					icnbuf[byte] |= 1 << (7 - col);
+			}
+		}
 	}
-}
-
-static void
-putchr(Uint8 *chrbuf, int row, int col, int color)
-{
-	if(row < 0 || row > SZ - 8)
-		return;
-	if(color == 0 || color == 2)
-		chrbuf[row] &= ~(1UL << (7 - col));
-	else
-		chrbuf[row] |= 1UL << (7 - col);
-	if(color == 0 || color == 1)
-		chrbuf[row + 8] &= ~(1UL << (7 - col));
-	else
-		chrbuf[row + 8] |= 1UL << (7 - col);
-}
-
-static void
-exportchr(void)
-{
-	int h, v, x, y;
-	Uint8 chrbuf[SZ];
-	FILE *f = fopen("moogle-export.chr", "wb");
-	setguides(0);
-	for(v = 0; v < VER; ++v)
-		for(h = 0; h < HOR; ++h)
-			for(y = 0; y < 8; ++y)
-				for(x = 0; x < 8; ++x) {
-					int row = y + (h + v * HOR) * 16;
-					int col = x;
-					int clr = pixels[(v * 8 + y + PAD) * WIDTH + (h * 8 + x + PAD)];
-					putchr(chrbuf, row, col, colortheme(clr));
-				}
-	if(!fwrite(chrbuf, sizeof(chrbuf), 1, f))
-		error("Save", "Invalid output file");
+	/* save */
+	if(!fwrite(icnbuf, sizeof(icnbuf), 1, f))
+		fprintf(stderr, "Failed: %s!\n", filename);
 	fclose(f);
-	puts("Exported moogle-export.chr");
-}
-
-static void
-renderbmp(void)
-{
-	SDL_Surface *surface = SDL_GetWindowSurface(gWindow);
-	setguides(0);
-	SDL_RenderReadPixels(gRenderer,
-		NULL,
-		SDL_PIXELFORMAT_ARGB8888,
-		surface->pixels,
-		surface->pitch);
-	if(SDL_SaveBMP(surface, "moogle-render.bmp"))
-		printf("SDL_SaveBMP failed: %s\n", SDL_GetError());
-	else
-		puts("Rendered moogle-render.bmp");
-	SDL_FreeSurface(surface);
+	fprintf(stderr, "Export: %s\n", filename);
 }
 
 static void
@@ -637,36 +487,29 @@ quit(void)
 }
 
 static void
-domouse(SDL_Event *event)
+handle_key(SDL_Event *event)
 {
-	switch(event->type) {
-	case SDL_MOUSEBUTTONUP:
-		break;
-	case SDL_MOUSEBUTTONDOWN:
-		if(event->motion.y / ZOOM / 8 == VER + 2)
-			selectoption(event->motion.x / ZOOM / 8 - 1);
-		break;
-	case SDL_MOUSEMOTION:
-		break;
-	}
-}
-
-static void
-dokey(SDL_Event *event)
-{
-	int shift = SDL_GetModState() & KMOD_LSHIFT || SDL_GetModState() & KMOD_RSHIFT;
+	int shift =
+		SDL_GetModState() & KMOD_LSHIFT || SDL_GetModState() & KMOD_RSHIFT;
 	switch(event->key.keysym.sym) {
-	case SDLK_EQUALS:
-	case SDLK_PLUS: modzoom(1); break;
-	case SDLK_UNDERSCORE:
-	case SDLK_MINUS: modzoom(-1); break;
-	case SDLK_TAB: toggleprojection(&cam); break;
-	case SDLK_1: set3d(&cam.trotation, VIEWFRONT.x, VIEWFRONT.y, VIEWFRONT.z); break;
-	case SDLK_2: set3d(&cam.trotation, VIEWTOP.x, VIEWTOP.y, VIEWTOP.z); break;
-	case SDLK_3: set3d(&cam.trotation, VIEWSIDE.x, VIEWSIDE.y, VIEWSIDE.z); break;
-	case SDLK_e: exportchr(); break;
-	case SDLK_r: renderbmp(); break;
-	case SDLK_h: setguides(!GUIDES); break;
+	case SDLK_F1:
+		setzoom((ZOOM == 1) + 1);
+		break;
+	case SDLK_TAB:
+		toggleprojection(&cam);
+		break;
+	case SDLK_1:
+		set3d(&cam.trotation, VIEWFRONT.x, VIEWFRONT.y, VIEWFRONT.z);
+		break;
+	case SDLK_2:
+		set3d(&cam.trotation, VIEWTOP.x, VIEWTOP.y, VIEWTOP.z);
+		break;
+	case SDLK_3:
+		set3d(&cam.trotation, VIEWSIDE.x, VIEWSIDE.y, VIEWSIDE.z);
+		break;
+	case SDLK_e:
+		export_icn(pixels, WIDTH, HEIGHT, TITLE);
+		break;
 	case SDLK_UP:
 	case SDLK_w:
 		if(shift)
@@ -693,7 +536,7 @@ dokey(SDL_Event *event)
 		if(shift)
 			addpt3d(&cam.torigin, -2.5, 0, 0);
 		else
-			addpt3d(&cam.trotation, 0, 3.0, 0);
+			addpt3d(&cam.trotation, 0, 5, 0);
 		break;
 	case SDLK_f:
 		set3d(&cam.torigin, 0, 0, 0);
@@ -703,13 +546,13 @@ dokey(SDL_Event *event)
 		if(shift)
 			addpt3d(&cam.torigin, 0, 0, 2.5);
 		else
-			modrange(3.0);
+			addpt3d(&cam.trotation, 0, 0, 5);
 		break;
 	case SDLK_x:
 		if(shift)
 			addpt3d(&cam.torigin, 0, 0, -2.5);
 		else
-			modrange(-3.0);
+			addpt3d(&cam.trotation, 0, 0, 5);
 		break;
 	}
 	redraw(pixels);
@@ -720,22 +563,13 @@ init(void)
 {
 	if(SDL_Init(SDL_INIT_VIDEO) < 0)
 		return error("Init", SDL_GetError());
-	gWindow = SDL_CreateWindow("Moogle",
-		SDL_WINDOWPOS_UNDEFINED,
-		SDL_WINDOWPOS_UNDEFINED,
-		WIDTH * ZOOM,
-		HEIGHT * ZOOM,
-		SDL_WINDOW_SHOWN);
+	gWindow = SDL_CreateWindow("Moogle", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH * ZOOM, HEIGHT * ZOOM, SDL_WINDOW_SHOWN);
 	if(gWindow == NULL)
 		return error("Window", SDL_GetError());
 	gRenderer = SDL_CreateRenderer(gWindow, -1, 0);
 	if(gRenderer == NULL)
 		return error("Renderer", SDL_GetError());
-	gTexture = SDL_CreateTexture(gRenderer,
-		SDL_PIXELFORMAT_ARGB8888,
-		SDL_TEXTUREACCESS_STATIC,
-		WIDTH,
-		HEIGHT);
+	gTexture = SDL_CreateTexture(gRenderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, WIDTH, HEIGHT);
 	if(gTexture == NULL)
 		return error("Texture", SDL_GetError());
 	pixels = (Uint32 *)malloc(WIDTH * HEIGHT * sizeof(Uint32));
@@ -745,9 +579,97 @@ init(void)
 	return 1;
 }
 
-/* Primitives */
+/* transforms */
+
+Mesh *
+translate(Mesh *m, double x, double y, double z)
+{
+	int i;
+	Point3d t = Pt3d(x, y, z);
+	for(i = 0; i < m->verticeslen; i++)
+		translate3d(&m->vertices[i], &t);
+	return m;
+}
+
+Mesh *
+scale(Mesh *m, double x, double y, double z)
+{
+	int i;
+	Point3d t = Pt3d(x, y, z);
+	for(i = 0; i < m->verticeslen; i++)
+		scale3d(&m->vertices[i], &t);
+	return m;
+}
+
+Mesh *
+rotate(Mesh *m, double pitch, double yaw, double roll)
+{
+	int i;
+	Point3d t = Pt3d(pitch, yaw, roll);
+	for(i = 0; i < m->verticeslen; i++)
+		rotate3d(&m->vertices[i], &m->position, &t);
+	return m;
+}
+
+Mesh *
+extrude(Mesh *m, double x, double y, double z, int color)
+{
+	int i, vl = m->verticeslen, el = m->edgeslen;
+	for(i = 0; i < vl; i++)
+		addedge(m, &m->vertices[i], addvertex(m, m->vertices[i].x + x, m->vertices[i].y + y, m->vertices[i].z + z), color);
+	for(i = 0; i < el; i++)
+		addedge(m, &m->vertices[vl + m->edges[i].a - &m->vertices[0]], &m->vertices[vl + m->edges[i].b - &m->vertices[0]], color);
+	return m;
+}
+
+Mesh *
+symmetry(Mesh *m, double x, double y, double z, int color)
+{
+	int i, el = m->edgeslen, vl = m->verticeslen;
+	for(i = 0; i < vl; ++i)
+		m->vertices[vl + i] =
+			Pt3d(m->vertices[i].x * x, m->vertices[i].y * y, m->vertices[i].z * z);
+	m->verticeslen += vl;
+	for(i = 0; i < el; i++)
+		addedge(m, &m->vertices[vl + m->edges[i].a - &m->vertices[0]], &m->vertices[vl + m->edges[i].b - &m->vertices[0]], color);
+	return m;
+}
 
 /* Primitives */
+
+Mesh *
+addmesh(Scene *s)
+{
+	if(s->len == MLIMIT) {
+		fprintf(stderr, "Warning: Reached mesh limit\n");
+		return NULL;
+	}
+	return &s->meshes[s->len++];
+}
+
+Mesh *
+copymesh(Scene *s, Mesh *a)
+{
+	int i;
+	Mesh *b = addmesh(s);
+	b->verticeslen = a->verticeslen;
+	b->edgeslen = a->edgeslen;
+	b->position = a->position;
+	for(i = 0; i < a->verticeslen; ++i)
+		b->vertices[i] = a->vertices[i];
+	for(i = 0; i < a->edgeslen; ++i) {
+		b->edges[i].color = a->edges[i].color;
+		b->edges[i].a = &b->vertices[a->edges[i].a - &a->vertices[0]];
+		b->edges[i].b = &b->vertices[a->edges[i].b - &a->vertices[0]];
+	}
+	return b;
+}
+
+Mesh *
+createshape(Scene *s, double radius, double segs, int color)
+{
+	return addarc(addmesh(s), radius, segs, 360, color);
+}
 
 Mesh *
 createfrustum(Scene *s, double radius, int segs, double depth, double cap, int color)
@@ -781,29 +703,35 @@ createprism(Scene *s, double radius, int segs, double depth, int color)
 }
 
 Mesh *
+createsphere(Scene *s, double radius, double segs, double ssegs, int color)
+{
+	double i;
+	Mesh *m = addmesh(s);
+	for(i = 0; i < segs; i++) {
+		double j = i - segs / 2;
+		addshape(m, sqrt(radius * radius - j * j), ssegs, color);
+		moveto(s, 0, 0, i + 1 - segs / 2);
+	}
+	reset(s);
+	return m;
+}
+
+Mesh *
 createplane(Scene *s, double width, double height, double xsegs, double ysegs, int color)
 {
 	int ix, iy;
 	Mesh *m = addmesh(s);
 	for(ix = 0; ix < xsegs + 1; ix++)
-		addline(m,
-			Pt3d(ix * (width / xsegs) - width / 2, height / 2, 0),
-			Pt3d(ix * (width / xsegs) - width / 2, -height / 2, 0),
-			color);
+		addline(m, Pt3d(ix * (width / xsegs) - width / 2, height / 2, 0), Pt3d(ix * (width / xsegs) - width / 2, -height / 2, 0), color);
 	for(iy = 0; iy < ysegs + 1; iy++)
-		addline(m,
-			Pt3d(width / 2, iy * (height / ysegs) - height / 2, 0),
-			Pt3d(-width / 2, iy * (height / ysegs) - height / 2, 0),
-			color);
+		addline(m, Pt3d(width / 2, iy * (height / ysegs) - height / 2, 0), Pt3d(-width / 2, iy * (height / ysegs) - height / 2, 0), color);
 	return m;
 }
 
 Mesh *
 createbox(Scene *s, double width, double height, double depth, int color)
 {
-	Mesh *m = createplane(s, width, height, 1, 1, color);
-	extrude(m, Pt3d(0, 0, depth), color);
-	return m;
+	return extrude(createplane(s, width, height, 1, 1, color), 0, 0, depth, color);
 }
 
 Mesh *
@@ -872,11 +800,14 @@ main(void)
 {
 	int ticknext = 0;
 	scn = Sc3d();
-	cam = Cm3d(180, 20, 0);
+	cam = Cm3d(180, 0, 0, 30);
 	if(!init())
 		return error("Init", "Failure");
+
 	createumbrella(&scn);
-	/* createicosaedron(&scn, 10, 3); */
+
+	/* Begin */
+
 	redraw(pixels);
 	while(1) {
 		int tick = SDL_GetTicks();
@@ -887,11 +818,27 @@ main(void)
 		update(&cam, 5);
 		while(SDL_PollEvent(&event) != 0) {
 			switch(event.type) {
-			case SDL_QUIT: quit(); break;
+			case SDL_QUIT:
+				quit();
+				break;
+			case SDL_MOUSEWHEEL:
+				modrange(event.wheel.y / -1);
+				break;
 			case SDL_MOUSEBUTTONUP:
+				mouse.down = 0;
+				break;
 			case SDL_MOUSEBUTTONDOWN:
-			case SDL_MOUSEMOTION: domouse(&event); break;
-			case SDL_KEYDOWN: dokey(&event); break;
+				mouse.down = 1;
+				mouse.x = event.motion.x;
+				mouse.y = event.motion.y;
+				break;
+			case SDL_MOUSEMOTION:
+				if(mouse.down)
+					addpt3d(&cam.trotation, (event.motion.y - mouse.y) / 4, (event.motion.x - mouse.x) / 4, 0);
+				break;
+			case SDL_KEYDOWN:
+				handle_key(&event);
+				break;
 			case SDL_WINDOWEVENT:
 				if(event.window.event == SDL_WINDOWEVENT_EXPOSED)
 					redraw(pixels);

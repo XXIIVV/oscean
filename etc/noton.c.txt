@@ -357,7 +357,6 @@ endwire(Brush *b)
 {
 	Wire *newwire;
 	Gate *gatefrom, *gateto;
-	Point2d offset = Pt2d(b->pos.x - 4, b->pos.y - 4);
 	if(b->wire.len < 1)
 		return abandon(b);
 	gatefrom = nearestgate(&noton, b->wire.points[0]);
@@ -365,7 +364,7 @@ endwire(Brush *b)
 		return abandon(b);
 	if(gatefrom->type == OUTPUT)
 		return abandon(b);
-	gateto = nearestgate(&noton, offset);
+	gateto = nearestgate(&noton, b->pos);
 	if(!gateto || gateto->inlen >= PORTMAX)
 		return abandon(b);
 	if(gateto->type == INPUT || gatefrom == gateto)
@@ -431,7 +430,7 @@ drawgate(Uint32 *dst, Gate *g)
 		drawicn(dst, g->pos.x, g->pos.y, icons[0], g->polarity + 1, 0);
 		break;
 	case POOL:
-		drawicn(dst, g->pos.x, g->pos.y, icons[3], g->polarity + 1, 0);
+		drawicn(dst, g->pos.x, g->pos.y, icons[3], 1, 0);
 		break;
 	case BASIC:
 		drawicn(dst, g->pos.x, g->pos.y, icons[3], g->polarity < 0 ? 3 : g->polarity + 1, 0);
@@ -448,8 +447,7 @@ drawwire(Uint32 *dst, Wire *w, int color)
 	for(i = 0; i < w->len - 1; i++) {
 		Point2d *p1 = &w->points[i];
 		Point2d *p2 = &w->points[i + 1];
-		line(dst, p1->x, p1->y, p2->x, p2->y, w->polarity == -1 ? 4 : (int)(noton.frame / 3) % w->len != i ? w->polarity + 1
-																										   : color);
+		line(dst, p1->x, p1->y, p2->x, p2->y, (int)(noton.frame / 3) % w->len != i ? w->polarity + 1 : color);
 	}
 }
 
@@ -488,7 +486,7 @@ redraw(Uint32 *dst)
 	for(i = 0; i < noton.glen; i++)
 		drawgate(dst, &noton.gates[i]);
 	for(i = 0; i < noton.wlen; i++)
-		drawwire(dst, &noton.wires[i], 3);
+		drawwire(dst, &noton.wires[i], 2);
 	drawwire(dst, &brush.wire, 3);
 	drawui(dst);
 	SDL_UpdateTexture(gTexture, NULL, dst, WIDTH * sizeof(Uint32));
@@ -597,9 +595,9 @@ quit(void)
 #pragma mark - Triggers
 
 void
-domouse(SDL_Event *event)
+domouse(SDL_Event *event, Brush *b)
 {
-	setpt2d(&brush.pos,
+	setpt2d(&b->pos,
 		(event->motion.x - (PAD * 8 * ZOOM)) / ZOOM,
 		(event->motion.y - (PAD * 8 * ZOOM)) / ZOOM);
 	switch(event->type) {
@@ -610,59 +608,59 @@ domouse(SDL_Event *event)
 		}
 		if(event->button.button == SDL_BUTTON_RIGHT)
 			break;
-		brush.down = 1;
-		if(beginwire(&brush))
+		b->down = 1;
+		if(beginwire(b))
 			redraw(pixels);
 		break;
 	case SDL_MOUSEMOTION:
 		if(event->button.button == SDL_BUTTON_RIGHT)
 			break;
-		if(brush.down) {
-			if(extendwire(&brush))
+		if(b->down) {
+			if(extendwire(b))
 				redraw(pixels);
 		}
 		break;
 	case SDL_MOUSEBUTTONUP:
 		if(event->button.button == SDL_BUTTON_RIGHT) {
-			if(brush.pos.x < 24 || brush.pos.x > HOR * 8 - 72)
+			if(b->pos.x < 24 || b->pos.x > HOR * 8 - 72)
 				return;
-			if(brush.pos.x > HOR * 8 || brush.pos.y > VER * 8)
+			if(b->pos.x > HOR * 8 || b->pos.y > VER * 8)
 				return;
-			if(!gateat(&noton, *clamp2d(&brush.pos, 8)))
-				addgate(&noton, BASIC, -1, *clamp2d(&brush.pos, 8));
+			if(!gateat(&noton, *clamp2d(&b->pos, 8)))
+				addgate(&noton, BASIC, -1, *clamp2d(&b->pos, 8));
 			redraw(pixels);
 			break;
 		}
-		brush.down = 0;
-		if(endwire(&brush))
+		b->down = 0;
+		if(endwire(b))
 			redraw(pixels);
 		break;
 	}
 }
 
 void
-dokey(SDL_Event *event)
+dokey(Noton *n, SDL_Event *event)
 {
 	switch(event->key.keysym.sym) {
 	case SDLK_EQUALS:
 	case SDLK_PLUS: modzoom(1); break;
 	case SDLK_UNDERSCORE:
 	case SDLK_MINUS: modzoom(-1); break;
-	case SDLK_BACKSPACE: reset(&noton); break;
-	case SDLK_SPACE: pause(&noton); break;
-	case SDLK_UP: modoct(&noton, 1); break;
-	case SDLK_DOWN: modoct(&noton, -1); break;
-	case SDLK_LEFT: modspeed(&noton, 5); break;
-	case SDLK_RIGHT: modspeed(&noton, -5); break;
-	case SDLK_1: selchan(&noton, 0); break;
-	case SDLK_2: selchan(&noton, 1); break;
-	case SDLK_3: selchan(&noton, 2); break;
-	case SDLK_4: selchan(&noton, 3); break;
-	case SDLK_5: selchan(&noton, 4); break;
-	case SDLK_6: selchan(&noton, 5); break;
-	case SDLK_7: selchan(&noton, 6); break;
-	case SDLK_8: selchan(&noton, 7); break;
-	case SDLK_9: selchan(&noton, 8); break;
+	case SDLK_BACKSPACE: reset(n); break;
+	case SDLK_SPACE: pause(n); break;
+	case SDLK_UP: modoct(n, 1); break;
+	case SDLK_DOWN: modoct(n, -1); break;
+	case SDLK_LEFT: modspeed(n, 5); break;
+	case SDLK_RIGHT: modspeed(n, -5); break;
+	case SDLK_1: selchan(n, 0); break;
+	case SDLK_2: selchan(n, 1); break;
+	case SDLK_3: selchan(n, 2); break;
+	case SDLK_4: selchan(n, 3); break;
+	case SDLK_5: selchan(n, 4); break;
+	case SDLK_6: selchan(n, 5); break;
+	case SDLK_7: selchan(n, 6); break;
+	case SDLK_8: selchan(n, 7); break;
+	case SDLK_9: selchan(n, 8); break;
 	}
 }
 
@@ -730,18 +728,19 @@ main(int argc, char **argv)
 		}
 
 		while(SDL_PollEvent(&event) != 0) {
-			switch(event.type) {
-			case SDL_QUIT: quit(); break;
-			case SDL_MOUSEBUTTONUP:
-			case SDL_MOUSEBUTTONDOWN:
-			case SDL_MOUSEMOTION: domouse(&event); break;
-			case SDL_KEYDOWN: dokey(&event); break;
-			case SDL_WINDOWEVENT:
+			if(event.type == SDL_QUIT)
+				quit();
+			else if(event.type == SDL_MOUSEBUTTONUP ||
+				event.type == SDL_MOUSEBUTTONDOWN ||
+				event.type == SDL_MOUSEMOTION) {
+				domouse(&event, &brush);
+			} else if(event.type == SDL_KEYDOWN)
+				dokey(&noton, &event);
+			else if(event.type == SDL_WINDOWEVENT)
 				if(event.window.event == SDL_WINDOWEVENT_EXPOSED)
 					redraw(pixels);
-				break;
-			}
 		}
+
 		begintime = endtime;
 		endtime = SDL_GetTicks();
 	}
