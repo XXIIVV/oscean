@@ -72,20 +72,30 @@
 		INC2k INC2 LDA ?&>skip
 		#0003 ADD2 LDAk [ LIT "A ] SUB #1a LTH ?&>skip
 		DUP2 ;dict/reset scmp ?&>skip
-			;dict/unused <pstr>/
+			;dict/unused <pstr>
 			DUP2 <pstr>/
 			#0a19 DEO &>skip
 		scap/ INC2 GTH2k ?&l
-	POP2 POP2 ( >> )
+	POP2 POP2
+	( >> )
+
+@print-summary ( -- )
+	;dict/assembled <pstr>
+	.length LDZ2 #00ff SUB2 <pdec>
+	;dict/bytes <pstr>
+	;<create-symbol>/count LDA2 <pdec>
+	;dict/labels <pstr>
+	;dict/end <pstr>
+	( >> )
 
 @exit ( -- )
-	[ 80 -halt ] LDZ ORA #0f DEO
+	[ LIT2 80 -halt ] LDZ ORA #0f DEO
 	JMP2r
 
 @handle-pass ( scan -- err )
 	.scan STZ
 	#0100 <set-head>
-	#00 ;lambda/count STA
+	#00 ;push-lambda/count STA
 	;dict/reset <set-scope>
 	;input-buf
 	&w ( -- )
@@ -127,7 +137,7 @@
 	&litjsi #60 !<write-call>
 	&lithex INC2 !<write-lithex>
 	&rawstr INC2 !<write-str>/
-	&lambda POP2 !lambda/pop
+	&lambda POP2 !pop-lambda
 
 (
 @|primitives )
@@ -180,8 +190,9 @@
 	<pstr>
 	#2019 DEO
 	.token LDZ2 <pstr>/
-	[ LIT ": 19 ] DEO
+	;dict/in <pstr>
 	.scope LDZ2 <pstr>/
+	[ LIT2 ". 19 ] DEO
 	#0a19 DEO
 	[ LIT2 01 -halt ] STZ
 	JMP2r
@@ -241,7 +252,7 @@
 	!get-ref/eager
 
 @get-ref ( token* -- addr* )
-	LDAk [ LIT "{ ] NEQ ?{ POP2 lambda/push }
+	LDAk [ LIT "{ ] NEQ ?{ POP2 push-lambda }
 	.scan LDZ ?&scan
 	&eager LDAk [ LIT "& ] NEQ ?{ INC2 get-sublabel }
 	find-symbol INC2k #0000 EQU2 ?{
@@ -254,24 +265,6 @@
 	( ) DUP2 #0080 ADD2 POP ?{ NIP JMP2r }
 	( ) .scan LDZ ?{ ;err/distance <set-error> }
 	POP2 #ff JMP2r
-
-@lambda
-	&push ( -- name* )
-		[ LIT &count $1 ] INCk ,&count STR
-		DUP [ LIT2 &ptr =lambda-buf ] INC2k ,&ptr STR2
-		STA
-		( >> )
-	&name ( id -- str* )
-		#21 ADD ,&id STR
-		;&sym JMP2r
-	&pop ( -- )
-		,&ptr LDR2 #0001 SUB2 LDAk lambda/name <create-symbol>
-		,&ptr STR2
-		JMP2r
-		&sym cebb &id $2
-
-(
-@|helpers )
 
 @is-hex ( str* -- str* f )
 	DUP2
@@ -300,6 +293,25 @@
 		LDAk [ LIT "k ] NEQ ?{ LITr 80 ORAr }
 		LDAk [ LIT "r ] NEQ ?{ LITr 40 ORAr }
 		INC2 !&w
+
+(
+@|lambda )
+
+@push-lambda ( -- name* )
+	[ LIT &count $1 ] INCk ,&count STR
+	DUP [ LIT2 &ptr =lambda-buf ] INC2k ,&ptr STR2
+	STA
+	( >> )
+
+@name-lambda ( id -- str* )
+	#21 ADD ,&id STR
+	;&sym JMP2r
+	&sym cebb &id $2
+
+@pop-lambda ( -- )
+	,push-lambda/ptr LDR2 #0001 SUB2 LDAk name-lambda <create-symbol>
+	,push-lambda/ptr STR2
+	JMP2r
 
 (
 @|stdlib )
@@ -358,11 +370,25 @@
 	INC2 & LDAk ?<pstr>
 	POP2 JMP2r
 
+@<pdec> ( short* -- )
+	#2710 [ LIT2r 00fb ]
+	&w ( -- )
+		DIV2k #000a DIV2k MUL2 SUB2 SWPr EQUk OVR STHkr EQU AND ?{
+			DUP [ LIT "0 ] ADD #19 DEO
+			INCr }
+		POP2 #000a DIV2 SWPr INCr STHkr ?&w
+	POP2r POP2 POP2 JMP2r
+
 (
 @|assets )
 
 @dict &unused "-- 20 "Unused: 20 $1
-	&reset "QQ_ $1
+	&reset "RESET $1
+	&assembled "Assembled 20 $1
+	&in 20 "in 20 $1
+	&bytes 20 "bytes( $1
+	&end "). 0a $1
+	&labels 20 "labels $1
 
 @err
 	"!! 20 "Error: 20 $1
