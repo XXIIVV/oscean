@@ -1,0 +1,754 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+/*
+Copyright (c) 2011  A. Carl Douglas
+Copyright (c) 2024  Devine Lu Linvega
+
+Permission to use, copy, modify, and distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE.
+*/
+
+union Object;
+typedef union Object Object;
+
+enum { EMPTY,
+	NUMBER,
+	SYMBOL,
+	CONS };
+
+struct Cons {
+	Object *car, *cdr;
+};
+
+union Object {
+	long num;
+	const char *sym;
+	struct Cons Cons;
+};
+
+struct GCHeader {
+	int size, type, marked, id;
+};
+
+Object *_rS, *_rE, *_rC, *_rD;
+Object *_t, *_f, *_nil;
+Object *cons(Object *, Object *);
+Object *car(Object *);
+Object *cdr(Object *);
+Object *newnum(int);
+Object *newsym(const char *);
+
+void gc_collect_garbage();
+
+#define ciws(c) (c == ' ' || c == '\n' || c == '\t' || c == '\r')
+#define gc_header(o) ((struct GCHeader *)o - 1)
+#define gettype(o) gc_header(o)->type
+#define isnum(o) (gettype(o) == NUMBER)
+#define issym(o) (gettype(o) == SYMBOL)
+#define iscons(o) (gettype(o) == CONS)
+#define isatom(o) (issym(o) || isnum(o))
+#define istrue(o) (o->sym != _f->sym)
+#define isnull(o) (o == _nil)
+
+void
+crash(char *err, const char *value, const char *id)
+{
+	fprintf(stderr, err, value, id);
+	exit(-1);
+}
+
+void
+crashnum(char *err, int id)
+{
+	fprintf(stderr, err, id);
+	exit(-1);
+}
+
+/* - GC -------------------------------------- */
+
+#define NUM_CELLS 65535
+
+unsigned alloc_counter;
+unsigned collect_counter;
+unsigned num_cells;
+
+void *mem;
+Object **cells, *ff;
+
+void
+gc_mark(Object *object)
+{
+	if(gc_header(object)->marked == 0) {
+		gc_header(object)->marked = 1;
+		if(isatom(object) == 0) {
+			gc_mark(car(object));
+			gc_mark(cdr(object));
+		}
+	}
+}
+
+void
+gc_init()
+{
+	const unsigned cell_size = sizeof(struct GCHeader) + sizeof(Object);
+	unsigned char *ptr;
+	unsigned i;
+
+	num_cells = getenv("LISPKIT_MEMORY") ? atoi(getenv("LISPKIT_MEMORY")) : NUM_CELLS;
+
+	mem = calloc(num_cells, cell_size);
+	cells = calloc(num_cells, sizeof(Object *));
+
+	alloc_counter = 0;
+	collect_counter = 0;
+
+	ff = NULL;
+
+	for(i = 0, ptr = mem; i < num_cells; i++, ptr += cell_size) {
+		cells[i] = (Object *)((struct GCHeader *)ptr + 1);
+		cells[i]->Cons.cdr = ff;
+		ff = cells[i];
+	}
+}
+
+void
+gc_exit()
+{
+	free(mem);
+	free(cells);
+}
+
+Object *
+gc_alloc()
+{
+	Object *object;
+
+	if(ff == NULL)
+		gc_collect_garbage();
+
+	object = ff;
+	ff = ff->Cons.cdr;
+	gc_header(object)->type = 0;
+
+	alloc_counter++;
+
+	return object;
+}
+
+void
+gc_collect()
+{
+	int i;
+	for(i = 0; i < NUM_CELLS; i++) {
+		if(gc_header(cells[i])->marked == 0) {
+			cells[i]->Cons.cdr = ff;
+			ff = cells[i];
+			collect_counter++;
+		}
+	}
+}
+
+void
+gc_collect_garbage()
+{
+	int i;
+	for(i = 0; i < NUM_CELLS; i++)
+		gc_header(cells[i])->marked = 0;
+	gc_mark(_rS);
+	gc_mark(_rE);
+	gc_mark(_rC);
+	gc_mark(_rD);
+	gc_mark(_t);
+	gc_mark(_f);
+	gc_mark(_nil);
+	gc_collect();
+	if(ff == NULL)
+		crash("Error: Out of memory", "GC", "");
+}
+
+void
+gc_stats()
+{
+	fprintf(stderr, "Cells:     %u\n", num_cells);
+	fprintf(stderr, "Allocates: %u\n", alloc_counter);
+	fprintf(stderr, "Collects:  %u\n", collect_counter);
+}
+
+/* - LISPKIT --------------------------------- */
+
+#define DICTLEN 0x8000
+
+static char dict_buf[DICTLEN], *dict_end;
+static int needws;
+
+static void
+putreader(FILE *dest, const char *s)
+{
+	if(s[0] == '\\') s++;
+	if(!strcmp(s, "Newline"))
+		putc('\n', dest);
+	else if(!strcmp(s, "Space"))
+		putc(' ', dest);
+	else if(!strcmp(s, "Tab"))
+		putc('\t', dest);
+	else
+		fprintf(dest, s);
+}
+
+static void
+putexp(Object *obj)
+{
+	if(!obj || obj == _nil)
+		return;
+	if(needws) {
+		putc(' ', stdout);
+		needws = 0;
+	}
+	if(isnum(obj)) {
+		printf("%ld", obj->num), needws = 1;
+		return;
+	} else if(issym(obj)) {
+		printf("%s", obj->sym), needws = 1;
+		return;
+	}
+	if(!iscons(car(obj)) && !iscons(cdr(obj)) && !isnull(cdr(obj)))
+		putexp(car(obj)), putc('.', stdout), needws = 0;
+	else if(iscons(car(obj)))
+		putc('(', stdout), putexp(car(obj)), putc(')', stdout);
+	else
+		putexp(car(obj));
+	putexp(cdr(obj));
+}
+
+static void
+putline(FILE *dest, Object *obj)
+{
+	Object *atom;
+	needws = 0;
+	while(obj && obj != _nil) {
+		if(obj->sym == _nil->sym || !isatom(car(obj)))
+			return;
+		atom = car(obj);
+		if(needws) {
+			putc(' ', dest);
+			needws = 0;
+		}
+		if(isnum(atom))
+			fprintf(dest, "%ld", atom->num), needws = 1;
+		else if(issym(atom)) {
+			if(atom->sym[0] == '#')
+				putreader(dest, atom->sym + 1);
+			else
+				fprintf(dest, "%s", atom->sym), needws = 1;
+		}
+		obj = cdr(obj);
+	}
+}
+
+/* dict */
+
+void
+dict_init(void)
+{
+	int i;
+	/* clear buffer */
+	for(i = 0; dict_buf[i] && i < DICTLEN; i++)
+		dict_buf[i] = 0;
+	dict_end = &dict_buf[0];
+}
+
+const char *
+dict_alloc(const char *src)
+{
+	char *ptr;
+	int len = strlen(src);
+	/* search */
+	for(ptr = &dict_buf[0]; ptr < dict_end; ptr++)
+		if(!strcmp(ptr, src))
+			return ptr;
+	/* create */
+	if(len + dict_end - dict_buf >= DICTLEN)
+		crash("Error: Out of memory", "DICT", "");
+	dict_end += len + 1;
+	return strcpy(ptr, src);
+}
+
+/* primitives */
+
+Object *
+cons(Object *_car, Object *_cdr)
+{
+	Object *obj = gc_alloc();
+	gettype(obj) = CONS;
+	obj->Cons.car = _car;
+	obj->Cons.cdr = _cdr;
+	return obj;
+}
+
+const char *
+gettypestr(Object *obj)
+{
+	switch(gettype(obj)) {
+	case CONS: return "Cons";
+	case NUMBER: return "Number";
+	case SYMBOL: return "Symbol";
+	}
+	return "Unknown";
+}
+
+Object *
+car(Object *obj)
+{
+	if(!iscons(obj))
+		crash("Error: CAR not possible on <%s> %s.\n", obj->sym, gettypestr(obj));
+	return obj->Cons.car;
+}
+
+Object *
+cdr(Object *obj)
+{
+	if(!iscons(obj))
+		crash("Error: CDR not possible on <%s> %s.\n", obj->sym, gettypestr(obj));
+	return obj->Cons.cdr;
+}
+
+Object *
+newnum(int value)
+{
+	Object *obj = gc_alloc();
+	gettype(obj) = NUMBER;
+	obj->num = value;
+	return obj;
+}
+
+Object *
+newsym(const char *value)
+{
+	Object *obj = gc_alloc();
+	gettype(obj) = SYMBOL;
+	obj->sym = dict_alloc(value);
+	return obj;
+}
+
+int
+isequ(Object *a, Object *b)
+{
+	int at = gettype(a), bt = gettype(b);
+	if(at == bt) {
+		if(at == NUMBER) return a->num == b->num;
+		if(at == SYMBOL) return a->sym == b->sym;
+	}
+	return 0;
+}
+
+Object *
+implode(Object *obj)
+{
+	char buf[0x80];
+	char *ptr = &buf[0];
+	while(obj && obj != _nil) {
+		*ptr++ = (char)car(obj)->num;
+		obj = cdr(obj);
+	}
+	*ptr = '\0';
+	return newsym(buf);
+}
+
+Object *
+explode(Object *obj)
+{
+	int l;
+	const char *str;
+	Object *list = _nil;
+	if(issym(obj))
+		for(str = obj->sym, l = strlen(str); l--;)
+			list = cons(newnum(str[l]), list);
+	return list;
+}
+
+void
+device_write(Object *obj)
+{
+	Object *head = car(obj);
+	needws = 0;
+	if(iscons(head)) {
+		Object *key = car(head);
+		if(issym(key) && key->sym[0] == ':') {
+			if(!strcmp(key->sym + 1, "cli")) {
+				putline(stdout, cdr(head));
+				return;
+			}
+		}
+	}
+	putexp(obj), putc('\n', stdout);
+}
+
+/* - SECD ------------------------------------ */
+
+#define A car(_rS)
+#define B car(cdr(_rS))
+
+Object *_rS, *_rE, *_rC, *_rD;
+Object *_t, *_f, *_nil;
+
+void
+secd_init(void)
+{
+	_t = newsym("T");
+	_f = newsym("F");
+	_nil = newsym("NIL");
+	_rS = _rC = _rE = _rD = _nil;
+}
+
+Object *
+secd_eval(Object *fn, Object *args)
+{
+	Object *_work, *_a, *_b;
+	int live = 1, i;
+	_rS = cons(args, _nil);
+	_rC = fn;
+	while(live) {
+		switch(car(_rC)->num) {
+		case 0: /* NIL */
+			break;
+		case 1: /* LD */
+			i = 0;
+			_work = _rE;
+			for(i = 1; i <= car(car(cdr(_rC)))->num; ++i)
+				_work = cdr(_work);
+			_work = car(_work);
+			for(i = 1; i <= cdr(car(cdr(_rC)))->num; ++i)
+				_work = cdr(_work);
+			_work = car(_work);
+			_rS = cons(_work, _rS);
+			_rC = cdr(cdr(_rC));
+			break;
+		case 2: /* LDC */
+			_rS = cons(car(cdr(_rC)), _rS);
+			_rC = cdr(cdr(_rC));
+			break;
+		case 3: /* LDF */
+			_rS = cons(cons(car(cdr(_rC)), _rE), _rS);
+			_rC = cdr(cdr(_rC));
+			break;
+		case 4: /* AP */
+			_rD = cons(cdr(_rC), _rD);
+			_rD = cons(_rE, _rD);
+			_rD = cons(cdr(cdr(_rS)), _rD);
+			_rE = cons(B, cdr(car(_rS)));
+			_rC = car(car(_rS));
+			_rS = _nil;
+			break;
+		case 5: /* RTN */
+			_rS = cons(car(_rS), car(_rD));
+			_rE = car(cdr(_rD));
+			_rC = car(cdr(cdr(_rD)));
+			_rD = cdr(cdr(cdr(_rD)));
+			break;
+		case 6: /* DUM */
+			_rE = cons(_nil, _rE);
+			_rC = cdr(_rC);
+			break;
+		case 7: /* RAP */
+			_rD = cons(cdr(_rC), _rD);
+			_rD = cons(cdr(_rE), _rD);
+			_rD = cons(cdr(cdr(_rS)), _rD);
+			_rE = cdr(car(_rS));
+			_rE->Cons.car = B;
+			_rC = car(car(_rS));
+			_rS = _nil;
+			break;
+		case 8: /* SEL */
+			_rD = cons(cdr(cdr(cdr(_rC))), _rD);
+			_rC = car(cdr(istrue(car(_rS)) ? _rC : cdr(_rC)));
+			_rS = cdr(_rS);
+			break;
+		case 9: /* JOIN */
+			_rC = car(_rD);
+			_rD = cdr(_rD);
+			break;
+		case 10: /* CAR */
+			_rS = cons(car(car(_rS)), cdr(_rS));
+			_rC = cdr(_rC);
+			break;
+		case 11: /* CDR */
+			_rS = cons(cdr(car(_rS)), cdr(_rS));
+			_rC = cdr(_rC);
+			break;
+		case 12: /* ATOM */
+			_rS = cons(isatom(A) ? _t : _f, cdr(_rS));
+			_rC = cdr(_rC);
+			break;
+		case 13: /* CONS */
+			_rS = cons(cons(A, B), cdr(cdr(_rS)));
+			_rC = cdr(_rC);
+			break;
+		case 14: /* EQ */
+			_rS = cons(isequ(A, B) ? _t : _f, cdr(cdr(_rS)));
+			_rC = cdr(_rC);
+			break;
+		case 15: /* ADD */
+			_a = A, _b = B;
+			_rS = cons(isnum(_a) && isnum(_b) ? newnum(_b->num + _a->num) : _nil, cdr(cdr(_rS)));
+			_rC = cdr(_rC);
+			break;
+		case 16: /* SUB */
+			_a = A, _b = B;
+			_rS = cons(isnum(_a) && isnum(_b) ? newnum(_b->num - _a->num) : _nil, cdr(cdr(_rS)));
+			_rC = cdr(_rC);
+			break;
+		case 17: /* MUL */
+			_a = A, _b = B;
+			_rS = cons(isnum(_a) && isnum(_b) ? newnum(_b->num * _a->num) : _nil, cdr(cdr(_rS)));
+			_rC = cdr(_rC);
+			break;
+		case 18: /* DIV */
+			_a = A, _b = B;
+			_rS = cons(isnum(_a) && isnum(_b) ? newnum(_b->num / _a->num) : _nil, cdr(cdr(_rS)));
+			_rC = cdr(_rC);
+			break;
+		case 19: /* REM */
+			_a = A, _b = B;
+			_rS = cons(isnum(_a) && isnum(_b) ? newnum(_b->num % _a->num) : _nil, cdr(cdr(_rS)));
+			_rC = cdr(_rC);
+			break;
+		case 20: /* LEQ */
+			_a = A, _b = B;
+			_rS = cons(isnum(_a) && isnum(_b) ? (_b->num <= _a->num ? _t : _f) : _nil, cdr(cdr(_rS)));
+			_rC = cdr(_rC);
+			break;
+		case 21: /* BRK */
+			live = 0;
+			break;
+		case 26: /* WRITE */
+			device_write(_rS);
+			_rC = cdr(_rC);
+			break;
+		case 27: /* IMP */
+			_rS = cons(implode(A), cdr(_rS));
+			_rC = cdr(_rC);
+			break;
+		case 28: /* EXP */
+			_rS = cons(explode(A), cdr(_rS));
+			_rC = cdr(_rC);
+			break;
+		default: /* ERR */
+			crashnum("Error: Unknown opcode <%d>\n", car(_rC)->num);
+			return _rS;
+		}
+	}
+	return _rS;
+}
+
+/* - PARSER ---------------------------------- */
+
+struct Token {
+	FILE *fp;
+	char *file, *str;
+	unsigned line, pos, word;
+};
+
+enum {
+	T_SYMBOL = 1,
+	T_NUMBER = 2,
+	T_DOT = 3,
+	T_LEFTPAREN = 4,
+	T_RIGHTPAREN = 5,
+	T_END
+};
+
+Object *get_exp(FILE *fp);
+Object *get_exp_list(FILE *fp);
+
+#define BUFLEN 80
+
+static char buffer[BUFLEN];
+static struct Token token;
+static Object *s_exp(void);
+static Object *s_exp_list(void);
+
+static void
+walk_whitespaces(void)
+{
+	int ch;
+	for(; !feof(token.fp); token.pos++) {
+		ch = fgetc(token.fp);
+		if(!ciws(ch)) {
+			ungetc(ch, token.fp);
+			break;
+		}
+		if(ch == '\n')
+			token.line++, token.pos = 0;
+	}
+}
+
+static void
+walk_comment(void)
+{
+	int ch;
+	ch = fgetc(token.fp);
+	if(ch == ';') {
+		for(; !feof(token.fp); token.pos++) {
+			ch = fgetc(token.fp);
+			if(ch == '\n') {
+				token.line++, token.pos = 0;
+				break;
+			}
+		}
+	} else
+		ungetc(ch, token.fp);
+	walk_whitespaces();
+}
+
+static void
+tokenize(void)
+{
+	int i, ch, next_ch;
+	char *ptr = buffer;
+	token.str = NULL;
+	/* clear buffer */
+	for(i = 0; buffer[i] && i < BUFLEN; i++)
+		buffer[i] = 0;
+	walk_whitespaces();
+	walk_comment();
+	/* parse token */
+	for(; !feof(token.fp); token.pos++) {
+		ch = fgetc(token.fp);
+		*ptr++ = (char)ch, *ptr = '\0';
+		if(ch == '(' || ch == ')' || ch == '.')
+			break;
+		next_ch = fgetc(token.fp);
+		ungetc(next_ch, token.fp);
+		if(ciws(next_ch) || next_ch == '(' || next_ch == ')' || next_ch == '.')
+			break;
+	}
+	if(strlen(buffer) > 0)
+		token.str = buffer;
+}
+
+static void
+scan(FILE *fp)
+{
+	token.fp = fp;
+	token.line = token.pos = token.word = 0;
+	tokenize();
+}
+
+static const char *
+token_name(int type)
+{
+	switch(type) {
+	case T_SYMBOL: return "Symbol";
+	case T_NUMBER: return "Number";
+	case T_DOT: return "Dot";
+	case T_LEFTPAREN: return "Left parenthesis";
+	case T_RIGHTPAREN: return "Right parenthesis";
+	case T_END: return "End of file";
+	}
+	return "Unknown token type";
+}
+
+static int
+token_type(void)
+{
+	if(token.str == NULL) return T_END;
+	switch(token.str[0]) {
+	case '.': return T_DOT;
+	case '(': return T_LEFTPAREN;
+	case ')': return T_RIGHTPAREN;
+	case '0':
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9': return T_NUMBER;
+	default: return T_SYMBOL;
+	}
+}
+
+static void
+match(int type)
+{
+	if(type == token_type()) {
+		tokenize();
+		return;
+	}
+	fprintf(stderr, "Parsing Error: Unexpected token '%s', expected %s, at %d:%d.\n", token.str, token_name(type), token.line, token.pos);
+	exit(-1);
+}
+
+static Object *
+s_exp(void)
+{
+	Object *cell = _nil;
+	switch(token_type()) {
+	case T_NUMBER: cell = newnum(atoi(token.str)), match(T_NUMBER); break;
+	case T_SYMBOL: cell = newsym(token.str), match(T_SYMBOL); break;
+	case T_LEFTPAREN: match(T_LEFTPAREN), cell = s_exp_list(), match(T_RIGHTPAREN); break;
+	case T_END: break;
+	default:
+		fprintf(stderr, "Parsing Error: Unexpected token '%s', at %d:%d.\n", token.str, token.line, token.pos);
+		exit(-1);
+	}
+	return cell;
+}
+
+static Object *
+s_exp_list(void)
+{
+	Object *cell = _nil;
+	cell = cons(s_exp(), _nil);
+	switch(token_type()) {
+	case T_RIGHTPAREN: break;
+	case T_DOT: match(T_DOT), cell->Cons.cdr = s_exp(); break;
+	case T_END: break;
+	default: cell->Cons.cdr = s_exp_list(); break;
+	}
+	return cell;
+}
+
+Object *
+get_exp(FILE *fp)
+{
+	scan(fp);
+	return s_exp();
+}
+
+Object *
+get_exp_list(FILE *fp)
+{
+	scan(fp);
+	return s_exp_list();
+}
+
+int
+main(int argc, char *argv[])
+{
+	int fpi, arg;
+	FILE *fp[] = {stdin, stdin};
+	if(argc < 2) {
+		printf("Usage: %s file.secd [file.secd]\n", argv[0]);
+		return 0;
+	}
+	for(fpi = 0, arg = optind; (arg < argc) && (fpi < 2); arg++, fpi++) {
+		fp[fpi] = fopen(argv[arg], "ra");
+		if(fp[fpi] == NULL || ferror(fp[fpi]) != 0)
+			crash("Error: Could not load '%s'\n", argv[arg], "");
+	}
+	gc_init(), dict_init(), secd_init();
+	secd_eval(get_exp(fp[0]), get_exp_list(fp[1]));
+	gc_exit();
+	fclose(fp[0]), fclose(fp[1]);
+	return 0;
+}
