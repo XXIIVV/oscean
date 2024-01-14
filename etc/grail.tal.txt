@@ -1,0 +1,363 @@
+|00 @System &vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
+|20 @Screen &vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
+|90 @Mouse &vector $2 &x $1 &lx $1 &y $1 &ly $1 &state $1 &chord $1 &pad $4 &scrolly &scrolly-hb $1 &scrolly-lb $1
+|a0 @File &vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+
+|0000
+
+	@L $1
+	@D $1
+	@R $1
+	@U $1
+
+|0000
+
+	@mode $1
+
+|0100
+
+@on-reset ( -> )
+	;meta #06 DEO2
+	( | theme )
+	#2e5f .System/r DEO2
+	#2e59 .System/g DEO2
+	#2e56 .System/b DEO2
+	<load-theme>
+	( | size )
+	#0100 .Screen/width DEO2
+	#0100 .Screen/height DEO2
+	<clear>
+	;on-mouse .Mouse/vector DEO2
+	BRK
+
+@on-mouse ( -> )
+	[ LIT2 00 -Mouse/state ] DEI NEQ #41 ADD ;cursor-icn <update-cursor>
+	[ LIT2 &last $1 -Mouse/state ] DEI #00 NEQ DUP ,&last STR
+	DUP2 #0001 EQU2 ?on-mouse-down
+	DUP2 #0101 EQU2 ?on-mouse-drag
+	DUP2 #0100 EQU2 ?on-mouse-up
+	POP2 BRK
+
+@on-mouse-down ( states* -> )
+	POP2
+	( | regions )
+	.Mouse/ly DEI DUP get-mode <set-mode>
+	( | setup )
+	.Mouse/lx DEI SWP <start-stroke>
+	BRK
+
+@on-mouse-drag ( states* -> )
+	POP2
+	( | push )
+	.Mouse/lx DEI .Mouse/ly DEI <push-point>
+	BRK
+
+@on-mouse-up ( states* -> )
+	POP2
+	( | draw )
+	;<push-point>/last-pos LDA2 .Mouse/lx DEI .Mouse/ly DEI DUP2 #0f <draw-point>
+	<draw-stroke>
+	( | toggle punctuation mode )
+	;<push-point>/last-dir LDA INC ?{
+		[ LIT2 02 -mode ] LDZ NEQ ?{
+			[ LIT ". ] <send>
+			BRK }
+		BRK }
+	( | cap )
+	<end-stroke>
+	( release ) #00 <set-mode>
+	BRK
+
+@meta $1
+	( name ) "Grail 0a
+	( desc ) "Shorthand 20 "Recognnizer 0a
+	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
+	( date ) "18 20 "Dec 20 "2023 $1
+	( exts ) 00
+
+(
+@|core )
+
+@get-bounds ( -- end* dict* )
+	[ LIT2 02 -mode ] LDZ EQU ?&punctuation
+	[ LIT2 03 -mode ] LDZ EQU ?&control
+	;core/end ;core JMP2r
+	&punctuation ( -- end* dict* )
+		;punctuation/end ;punctuation JMP2r
+	&control ( -- end* dict* )
+		;control/end ;control JMP2r
+
+@<validate-live> ( -- )
+	[ LITr 00 ] get-bounds
+	&l ( -- )
+		LDA2k find-match #ffff EQU2 ?{ INCr }
+		INC2 INC2 GTH2k ?&l
+	POP2 POP2 STHkr ?&found
+	( | no candidates )
+	POPr #03 !<draw-directions>
+	&found ( -- )
+		STHr #01 EQU ?{ JMP2r }
+		find-valid INC2k ORA ?{ POP2 JMP2r }
+		LDA <send>
+		!<start-stroke>/resume
+
+@<send> ( char -- )
+	[ LIT2 00 -mode ] LDZ EQU ?{ capitalize }
+	#18 DEO
+	#02 !<draw-directions>
+
+@find-valid ( -- addr* )
+	;<push-direction>/ptr LDA2 ;directions SUB2 NIP ,&tlen STR
+	get-bounds
+	&l ( -- )
+		LDA2k INC2 LDA INC [ LIT &tlen $1 ] NEQ ?{
+			LDA2k find-match INC2k ORA ?&found
+			POP2 }
+		INC2 INC2 GTH2k ?&l
+	POP2 POP2 #ffff JMP2r
+	&found ( -- )
+		NIP2 NIP2 JMP2r
+
+@find-match ( lib* -- ptr* )
+	INC2k INC2 STH2
+	;<push-direction>/ptr LDA2 ;directions
+	&l ( -- )
+		LDAk LDAkr STHr NEQ ?&fail
+		INC2r INC2 GTH2k ?&l
+	POP2 POP2 POP2r JMP2r
+	&fail ( -- )
+		POP2 POP2 POP2 POP2r #ffff JMP2r
+
+@<start-stroke> ( x y -- )
+	<clear>
+	DUP2 #0a <draw-point>
+	DUP2 ;<push-point>/last-pos STA2
+	#ff ;<push-point>/last-dir STA
+	<push-point>
+	&resume ( -- )
+		;stroke ;<push-point>/ptr STA2
+		;directions ;<push-direction>/ptr STA2
+		JMP2r
+
+@<end-stroke> ( -- )
+	find-valid DUP2 #ffff EQU2 ?{ LDAk <send> }
+	POP2 JMP2r
+
+@get-direction ( x1 y1 -- color )
+	( 0 ) STH2k GTH
+	( 1 ) STH2kr abs GTH ADD
+	( 2 ) STH2r SWP abs SWP GTH ADD JMP2r
+
+@get-mode ( y -- mode )
+	.Mouse/state DEI #02 LTH ?{ POP #03 JMP2r }
+	( ) DUP #3f GTH ?{ POP #01 JMP2r }
+	( ) DUP #c0 LTH ?{ POP #02 JMP2r }
+	POP #00 JMP2r
+
+@<set-mode> ( mode -- )
+	.mode STZ
+	!<draw-mode>
+
+@thin ( x1 y1 x2 y2 -- f )
+	ROT SUB abs STH
+	SUB abs STHr ADD
+	( ) #01 SFT #04 LTH JMP2r
+
+@<push-point> ( x y -- )
+	( | thin )
+	DUP2 [ LIT2 &last-pos &lastx $1 &lasty $1 ] thin ?{
+		[ LIT2 &ptr =stroke ] STA2k INC2 INC2 ,&ptr STR2
+		( | get direction )
+		( ) DUP2 ,&lasty LDR SUB #80 ADD SWP
+		( ) ,&lastx LDR SUB #80 ADD SWP get-direction [ LIT &last-dir $1 ]
+		( | stroke )
+		OVR2 ,&last-pos LDR2 <draw-stroke>
+		EQUk ?{
+			OVR <push-direction>
+			OVR2 #05 <draw-point> }
+		POP ,&last-dir STR
+		DUP2 ,&last-pos STR2 }
+	POP2 <validate-live>
+	JMP2r
+
+@<push-direction> ( dir -- )
+	[ LIT2 &ptr =directions ] STAk INC2 ,&ptr STR2
+	POP #05 !<draw-directions>
+
+(
+@|drawing )
+
+@<clear> ( -- )
+	#0000 DUP2 .Screen/x DEO2
+	.Screen/y DEO2
+	[ LIT2 80 -Screen/pixel ] DEO
+	#0040 .Screen/y DEO2
+	<draw-guide>
+	#00c0 .Screen/y DEO2
+	<draw-guide>
+	( >> )
+
+@<draw-mode> ( -- )
+	#0008 .Screen/x DEO2
+	#00e8 .Screen/y DEO2
+	;button-icn .Screen/addr DEO2
+	[ LIT2 16 -Screen/auto ] DEO
+	[ LIT2 01 -Screen/sprite ] DEOk DEO
+	( | icon )
+	#000c .Screen/x DEO2
+	#00ec .Screen/y DEO2
+	[ LIT2 00 -mode ] LDZ #30 SFT2 ;modes-icn ADD2 .Screen/addr DEO2
+	[ LIT2 00 -Screen/auto ] DEO
+	[ LIT2 00 -mode ] LDZ NEQ INC .Screen/sprite DEO
+	JMP2r
+
+@<draw-guide> ( -- )
+	;dash-icn .Screen/addr DEO2
+	[ LIT2 f2 -Screen/auto ] DEO
+	#0000 .Screen/x DEO2
+	[ LIT2 02 -Screen/sprite ] DEO
+	.Screen/y DEI2k #0008 SUB2 ROT DEO2
+	#0080 .Screen/x DEO2
+	[ LIT2 02 -Screen/sprite ] DEO
+	JMP2r
+
+@<draw-directions> ( color -- )
+	,&color STR
+	#0020 .Screen/x DEO2
+	#00ec .Screen/y DEO2
+	[ LIT2 01 -Screen/auto ] DEO
+	;<push-direction>/ptr LDA2 ;directions
+	&l ( -- )
+		EQU2k ?&end
+		LDAk #00 SWP #30 SFT2 ;arrows-icn ADD2 .Screen/addr DEO2
+		[ LIT2 &color $1 -Screen/sprite ] DEO
+		INC2 GTH2k ?&l
+	&end POP2 POP2 JMP2r
+
+@<draw-stroke> ( a* b* -- )
+	STH2
+	prom STH2r prom #01 !<draw-line>
+
+@<draw-point> ( x y color -- )
+	STH
+	prom #0002 SUB2 .Screen/y DEO2
+	#0002 SUB2 .Screen/x DEO2
+	;point-icn .Screen/addr DEO2
+	STHr .Screen/sprite DEO
+	JMP2r
+
+@<update-cursor> ( color addr* -- )
+	[ LIT2 00 -Screen/auto ] DEO
+	;fill-icn .Screen/addr DEO2
+	#40 <draw-cursor>
+	.Mouse/x DEI2 ,<draw-cursor>/x STR2
+	.Mouse/y DEI2 ,<draw-cursor>/y STR2
+	.Screen/addr DEO2
+
+@<draw-cursor> ( color -- )
+	[ LIT2 &x $2 ] .Screen/x DEO2
+	[ LIT2 &y $2 ] .Screen/y DEO2
+	.Screen/sprite DEO
+	JMP2r
+
+@<draw-line> ( x1* y1* x2* y2* color -- )
+	,&color STR
+	,&y STR2
+	,&x STR2
+	,&y2 STR2
+	,&x2 STR2
+	,&x LDR2 ,&x2 LDR2 SUB2 abs2 ,&dx STR2
+	#0000 ,&y LDR2 ,&y2 LDR2 SUB2 abs2 SUB2 ,&dy STR2
+	#ffff [ LIT2 00 _&x2 ] LDR2 ,&x LDR2 lts2 DUP2 ADD2 ADD2 ,&sx STR2
+	#ffff [ LIT2 00 _&y2 ] LDR2 ,&y LDR2 lts2 DUP2 ADD2 ADD2 ,&sy STR2
+	[ LIT2 &dx $2 ] [ LIT2 &dy $2 ] ADD2 STH2
+	&while ( -- )
+		[ LIT2 &x2 $2 ] DUP2 .Screen/x DEO2
+		[ LIT2 &x $2 ] EQU2 [ LIT2 &y2 $2 ] DUP2 .Screen/y DEO2
+		[ LIT2 &y $2 ] EQU2 [ LIT2 &color $1 -Screen/pixel ] DEO
+		AND ?&end
+		STH2kr DUP2 ADD2 DUP2 ,&dy LDR2 lts2 ?&skipy
+		STH2r ,&dy LDR2 ADD2 STH2
+		,&x2 LDR2 [ LIT2 &sx $2 ] ADD2 ,&x2 STR2
+	&skipy ( -- )
+		,&dx LDR2 gts2 ?&while
+	STH2r ,&dx LDR2 ADD2 STH2
+	,&y2 LDR2 [ LIT2 &sy $2 ] ADD2 ,&y2 STR2
+	!&while
+	&end POP2r JMP2r
+
+(
+@|theme )
+
+@<load-theme> ( -- )
+	;&path .File/name DEO2
+	#0002 .File/length DEO2
+	[ LIT2 -System/debug -System/r ]
+	&l ( -- )
+		;&buf .File/read DEO2
+		[ LIT2 00 -File/success-lb ] DEI EQU ?{
+			[ LIT2r &buf $2 ] STHk DEO2r
+			INC INC NEQk ?&l }
+	POP2 JMP2r
+	&path ".theme $1
+
+(
+@|stdlib )
+
+@abs ( a -- b )
+	DUP #80 AND #00 EQU ?{ #00 SWP SUB }
+	JMP2r
+
+@prom ( a b -- a* b* )
+	,&b STR
+	,&a STR
+	[ LIT2 00 &a $1 ] [ LIT2 00 &b $1 ] JMP2r
+
+@abs2 ( a* -- f )
+	DUP2 #0f SFT2 EQU ?{ #0000 SWP2 SUB2 }
+	JMP2r
+
+@lts2 ( a* b* -- f )
+	#8000 STH2k ADD2 SWP2 STH2r ADD2 GTH2 JMP2r
+
+@gts2 ( a* b* -- f )
+	#8000 STH2k ADD2 SWP2 STH2r ADD2 LTH2 JMP2r
+
+@capitalize ( char -- char )
+	DUP [ LIT "a ] LTH ?&skip
+	DUP [ LIT "z ] GTH ?&skip
+	#20 SUB &skip JMP2r
+
+@<phex> ( short* -- )
+	SWP <phex>/b
+	&b ( -- )
+		DUP #04 SFT <phex>/c
+	&c ( -- )
+		#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
+		JMP2r
+
+(
+@|assets )
+
+@cursor-icn [ 80c0 e0f0 f8e0 1000 ]
+
+@fill-icn [ ffff ffff ffff ffff ]
+
+@point-icn [ 2070 f870 2000 0000 ]
+
+@dash-icn [ ee00 0000 0000 0000 ]
+
+@button-icn [
+	001f 2040 4040 4040 00f8 0402 0202 0202
+	4040 4040 4020 1f00 0202 0202 0204 f800 ]
+
+@modes-icn [
+	0000 183c 3c18 0000 0018 3c7e 1818 1800
+	0000 3838 3808 1000 0018 1866 6618 1800 ]
+
+@arrows-icn [
+	0010 307e 7e30 1000 0018 1818 7e3c 1800
+	0008 0c7e 7e0c 0800 0018 3c7e 1818 1800 ]
+
+~src/grail.assets.tal
+

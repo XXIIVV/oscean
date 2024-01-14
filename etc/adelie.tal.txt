@@ -1,0 +1,2337 @@
+( Adelie )
+
+|00 @System &vector $2 &wst $1 &rst $1 &eaddr $2 &ecode $1 &pad $1 &r $2 &g $2 &b $2 &debug $1 &halt $1
+|10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
+|20 @Screen &vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
+|80 @Controller &vector $2 &button $1 &key $1 &func $1
+|90 @Mouse &vector $2 &x $2 &y $2 &state $1 &pad $3 &scrollx $2 &scrolly $2
+|a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|c0 @DateTime &year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
+
+|0000
+
+	@src $40
+	@pen &x $2 &y $2 &auto $1 &mode $1
+	@center &x $2 &y $2
+	@slide $2
+	@eof $2
+	@watch $2
+	@interface $1
+	@links &length $1 &data $50
+
+|0100
+
+@on-reset ( -> )
+	( | meta )
+	;meta #06 DEO2
+	( | detect soft reboot )
+	.src LDZ ?on-path
+	( | startup )
+	.Console/type DEI ?{
+		;dict/usage <print-str>/
+		#010f DEO }
+	( | unlock )
+	;&await-src .Console/vector DEO2
+	BRK
+	&await-src ( -> )
+		.Console/read DEI .src skey ?on-path
+		BRK
+
+@on-path ( -> )
+	( | theme )
+	#05af ;<animate-theme>/r STA2
+	#05af ;<animate-theme>/g STA2
+	#05af ;<animate-theme>/b STA2
+	( | size )
+	( 768 ) #0300 .Screen/width DEO2
+	( 448 ) #01c0 .Screen/height DEO2
+	( | center )
+	.Screen/width DEI2 #01 SFT2 .center/x STZ2
+	.Screen/height DEI2 #01 SFT2 .center/y STZ2
+	;on-button .Controller/vector DEO2
+	;on-mouse .Mouse/vector DEO2
+	;on-frame .Screen/vector DEO2
+	;src load-file start BRK
+
+@meta
+	00
+	( name ) "Adelie 0a
+	( details ) "A 20 "Slideshow 20 "Program 0a
+	( author ) "By 20 "Hundred 20 "Rabbits 0a
+	( date ) "Sep 20 "17, 20 "2023 00
+	( > ) 02
+	( icon ) 83 =appicon
+	( mask ) 41 1705
+
+(
+@|vectors )
+
+@on-frame ( -> )
+	( | animate )
+	[ LIT &rate $1 ] INCk ,&rate STR
+	#01 AND ?{ <animate-theme> }
+	[ LIT &wait $1 ] DUP ?&on-timer
+	[ LIT &f $1 ] INCk ,&f STR
+	#3f AND ?{ <draw-interface> }
+	POP BRK
+	&on-timer ( time -> )
+		#01 SUB DUP ,&wait STR
+		?{ next-slide }
+		BRK
+
+@on-button ( -> )
+	.Controller/button DEI DUP #00 EQU ?{
+		DUP #01 NEQ ?{ next-slide }
+		DUP #02 NEQ ?{ prev-slide }
+		DUP #04 NEQ ?{ toggle-interface }
+		DUP #08 NEQ ?{ restart }
+		DUP #40 NEQ ?{ prev-slide }
+		DUP #80 NEQ ?{ next-slide }
+		}
+	POP BRK
+
+@on-mouse ( -> )
+	[ LIT2 00 -Mouse/state ] DEI NEQ #41 ADD ;cursor-icn <update-cursor>
+	.Mouse/state DEI DUP ?&on-touch
+	POP BRK
+	&on-touch ( touch -> )
+		( release ) [ LIT2 00 -Mouse/state ] DEO
+		DUP #02 EQU ?&on-mouse2
+		#04 EQU ?&on-mouse3
+		.Mouse/x DEI2 .Mouse/y DEI2 find-link ORAk ?&on-link
+		POP2 next-slide BRK
+	&on-mouse2 ( touch -> )
+		POP <draw-marker>
+		BRK
+	&on-mouse3 ( -> )
+		prev-slide BRK
+	&on-link ( name* -> )
+		find-slide view-slide BRK
+
+@on-mouse-brush ( -> )
+	[ LIT2 00 -Mouse/state ] DEI NEQ #41 ADD ;brush-icn <update-cursor>
+	[ LIT &last $1 ] .Mouse/state DEI DUP ,&last STR
+	DUP2 #0001 EQU2 ?&on-down
+	AND ?&on-drag
+	BRK
+	&on-down ( states* -> )
+		.Mouse/x DEI2 ,&x1 STR2
+		.Mouse/y DEI2 ,&y1 STR2
+		POP2 BRK
+	&on-drag ( -> )
+		[ LIT2 &x1 $2 ] [ LIT2 &y1 $2 ]
+		( x2 ) .Mouse/x DEI2 DUP2 ,&x1 STR2
+		( y2 ) .Mouse/y DEI2 DUP2 ,&y1 STR2
+		#01 <draw-line>
+		BRK
+
+(
+@|operations )
+
+@load-file ( src* -- )
+	.File/name DEO2
+	#fff0 ;slides SUB2 STH2k .File/length DEO2
+	;slides .File/read DEO2
+	( | check size )
+	.File/success DEI2
+	( ) DUP2 STH2r EQU2 ?&err-limit
+	( ) DUP2 #0000 EQU2 ?&err-empty
+	#fff0 ;slides SUB2 OVR2 SUB2 <print-dec>
+	;dict/bytes-free <print-str>/
+	( | print free bytes )
+	;slides ADD2 .eof STZ2
+	( | replace 0a with 00 )
+	#00 ;slides
+	&w ( -- )
+		LDAk #0a NEQ ?{ STAk }
+		INC2 LDAk ?&w
+	POP2 POP JMP2r
+	&err-limit ( size* -> )
+		POP2 ;errors/file-max <print-str>/
+		#010f DEO
+		BRK
+	&err-empty ( size* -> )
+		POP2 ;errors/empty <print-str>/
+		#010f DEO
+		BRK
+
+@restart ( -- )
+	;src load-file
+
+@start ( -- )
+	<start-watch>
+	;slides
+	&w ( -- )
+		DUP2 find-op JSR2 scap/ INC2 & ;dict/name OVR2 sseg #00 EQU ?&w
+	( >> )
+
+(
+@|controls )
+
+@view-slide ( addr* -- )
+	#40 ;cursor-icn <update-cursor>
+	#00 .links/length STZ
+	DUP2 .slide STZ2
+	&w ( -- )
+		DUP2 find-op JSR2 scap/ INC2 ;dict/name OVR2 sseg #00 EQU ?&w
+	POP2 !<draw-interface>
+
+@prev-slide ( -- )
+	.slide LDZ2 is-stopped/ ?&e
+	;slides .slide LDZ2 #0001 SUB2 !&
+	&w ( -- )
+		LDAk ?&
+		INC2k ;dict/name SWP2 sseg ?&jump
+		& #0001 SUB2 LTH2k ?&w
+	POP2 POP2 &e JMP2r
+	&jump ( eof* slide* -- )
+		NIP2 INC2 !view-slide
+
+@next-slide ( -- )
+	#00 ;on-frame/wait STA
+	.slide LDZ2 is-stopped/ ?&e
+	.eof LDZ2 .slide LDZ2 !&
+	&w ( -- )
+		;dict/name OVR2 sseg ?&jump
+		& scap/ INC2 GTH2k ?&w
+	POP2 POP2 &e JMP2r
+	&jump ( eof* slide* -- )
+		NIP2 !view-slide
+
+@find-next-slide ( -- slide* )
+	.eof LDZ2 .slide LDZ2 !&
+	&w ( -- )
+		;dict/name OVR2 sseg ?&jump
+		& scap/ INC2 GTH2k ?&w
+	POP2 .slide LDZ2
+	&jump ( eof* slide* -- )
+		NIP2 JMP2r
+
+@find-slide ( name* -- <addr>* )
+	,&t STR2
+	.eof LDZ2 ;slides
+	&w ( -- )
+		;dict/name OVR2 sseg #00 EQU ?{
+			DUP2 next-word [ LIT2 &t $2 ] scmp ?&found }
+		scap/ INC2 GTH2k ?&w
+	POP2 POP2 .slide LDZ2 JMP2r
+	&found ( eof* slides* -- )
+		NIP2 JMP2r
+
+@toggle-interface ( -- )
+	.interface LDZ #00 EQU STHk .interface STZ
+	;on-mouse-brush ;on-mouse STHr [ JMP SWP2 POP2 ] .Mouse/vector DEO2
+	( | clear )
+	#0000 .Screen/x DEO2
+	#0030 .Screen/y DEO2
+	[ LIT2 a3 -Screen/pixel ] DEO
+	.slide LDZ2 view-slide !<draw-interface>
+
+(
+@|watch )
+
+@<start-watch> ( -- )
+	get-sec .watch STZ2
+	JMP2r
+
+@get-sec ( s* m* h* -- sec* )
+	( s ) [ LIT2 00 -DateTime/second ] DEI
+	( m ) [ LIT2 00 -DateTime/minute ] DEI #003c MUL2 ADD2
+	( h ) [ LIT2 00 -DateTime/hour ] DEI #000c DIV2k MUL2 SUB2 #0e10 MUL2 ADD2 JMP2r
+
+(
+@|helpers )
+
+@is-stopped ( slide* -- f )
+	&w ( -- )
+		;dict/stop OVR2 sseg ?&end
+		;dict/name OVR2 sseg ?&end
+		& scap/ INC2 LDAk ?&w
+	&end ;dict/stop SWP2 !sseg
+
+@find-link ( x* y* -- name* )
+	,&y STR2
+	,&x STR2
+	.links/length LDZ #00 OVR #00 EQU ?&skip
+	&l ( -- )
+		STHk [ LIT2 &x $2 ] [ LIT2 &y $2 ] STHr #0a MUL .links/data ADD within-rect ?&found
+		INC GTHk ?&l
+	&skip POP2 #0000 JMP2r
+	&found ( -- )
+		NIP #0a MUL .links/data ADD #08 ADD LDZ2 JMP2r
+
+@find-op ( addr* -- cmd )
+	STH2 #1000
+	&l ( -- )
+		#00 OVRk ADD2 ;op-tbl ADD2 LDA2 STH2kr sseg #01 NEQ ?{ NIP !&end }
+		INC GTHk ?&l
+	POP2 #00 &end POP2r #00 SWP DUP2 ADD2 ;fnc-tbl ADD2 LDA2 JMP2r
+
+@within-rect ( x* y* rect -- flag )
+	STH
+	( y LTH rect.y1 ) DUP2 STHkr INC2 INC2 LDZ2 LTH2 ?&skip
+	( y GTH rect.y2 ) DUP2 STHkr #06 ADD LDZ2 GTH2 ?&skip
+	SWP2
+	( x LTH rect.x1 ) DUP2 STHkr LDZ2 LTH2 ?&skip
+	( x GTH rect.x2 ) DUP2 STHkr #04 ADD LDZ2 GTH2 ?&skip
+	POP2 POP2 POPr #01 JMP2r
+	&skip ( -- )
+		POP2 POP2 POPr #00 JMP2r
+
+@add-link ( addr* -- )
+	.links/length LDZ #08 NEQ ?{ ;errors/links-max !<print-str>/ }
+	;links/data #00 .links/length LDZ #0a MUL ADD2 #000a mcpy
+	( + ) .links/length LDZ INC .links/length STZ
+	JMP2r
+
+@read-point ( 00x00* -- w h )
+	INC2k INC2 INC2 shex STH shex STHr JMP2r
+
+@next-word ( str* -- next* )
+	wcap/ INC2 !&
+	&w INC2 & LDAk #21 LTH ?&w
+	JMP2r
+
+(
+@|operations )
+
+@op-name ( addr* -- addr* )
+	next-word LDAk #5b EQU ?&skip
+	DUP2 <print-str>/
+	;<draw-title>/spacer-txt <print-str>/
+	find-next-slide next-word <print-line>
+	#0a18 DEO
+	( | print speaker's notes )
+	.eof LDZ2 OVR2
+	&w ( -- )
+		LDAk #09 NEQ ?{ DUP2 <print-line> }
+		;dict/name OVR2 sseg ?&end
+		scap/ INC2 GTH2k ?&w
+	&end POP2 POP2 #0a18 DEO
+	&skip JMP2r
+
+@op-pict ( addr* -- addr* )
+	.pen/x LDZ2 .Screen/x DEO2
+	.pen/y LDZ2 .Screen/y DEO2
+	next-word DUP2 file-exists #00 EQU ?&err
+	DUP2 wcap/ #0004 SUB2 ;&tga-ext scmp ?&tga
+	DUP2 !<draw-icn>
+	&tga DUP2 !<draw-tga>
+	&tga-ext ".tga $1
+	&err ( addr* -- )
+		;errors/file-missing <print-str>/
+		DUP2 <print-str>/
+		#0a18 DEO
+		JMP2r
+
+@file-exists ( name* -- f )
+	.File/name DEO2
+	#0001 .File/length DEO2
+	;&b .File/read DEO2
+	.File/success DEI2 ORA JMP2r
+	&b $1
+
+@op-goto ( addr* -- addr* )
+	[ LIT2 00 -pen/auto ] STZ
+	next-word
+	( set auto ) DUP2 ;&auto-txt scmp #00 EQU ?{
+		[ LIT2 01 -pen/auto ] STZ
+		JMP2r }
+	DUP2 shex #00 SWP #30 SFT2 .pen/x STZ2
+	#0003 ADD2 DUP2 shex #00 SWP #30 SFT2 .pen/y STZ2
+	JMP2r
+	&auto-txt "auto $1
+
+@op-move ( addr* -- addr* )
+	[ LIT2 00 -pen/auto ] STZ
+	#0005 ADD2 DUP2 shex #00 SWP #30 SFT2 .pen/x LDZ2 ADD2 .pen/x STZ2
+	#0003 ADD2 DUP2 shex #00 SWP #30 SFT2 .pen/y LDZ2 ADD2 .pen/y STZ2
+	JMP2r
+
+@op-head ( addr* -- addr* )
+	.pen/x LDZ2 .Screen/x DEO2
+	.pen/y LDZ2 .Screen/y DEO2
+	next-word DUP2 <draw-uf5>
+	.pen/y LDZ2k #0028 ADD2 ROT STZ2
+	JMP2r
+
+@op-text ( addr* -- addr* )
+	.pen/x LDZ2 #0004 ADD2 .Screen/x DEO2
+	.pen/y LDZ2 .Screen/y DEO2
+	next-word DUP2 <draw-uf2>
+	.pen/y LDZ2k #0018 ADD2 ROT STZ2
+	JMP2r
+
+@op-mode ( addr* -- addr* )
+	next-word DUP2 shex .pen/mode STZ
+	JMP2r
+
+@op-patt ( addr* -- addr* )
+	next-word STH2k #0800
+	&l ( -- )
+		#00 OVR #03 MUL STH2kr ADD2 shex STH #00 OVR ;patt-icn ADD2 STHr ROT ROT STA
+		INC GTHk ?&l
+	POP2 POP2r JMP2r
+
+@op-rect ( addr* -- addr* )
+	.pen/x LDZ2 .Screen/x DEO2
+	.pen/y LDZ2 .Screen/y DEO2
+	( ) #0005 ADD2 DUP2 shex STH
+	( ) #0003 ADD2 DUP2 shex STH
+	( ) #0003 ADD2 DUP2 shex STH
+	( ) ROTr ROTr STH2r ;patt-icn STHr !<draw-rect>
+
+@op-rgb4 ( addr* -- addr* )
+	next-word DUP2 shex2 ;<animate-theme>/r STA2
+	next-word DUP2 shex2 ;<animate-theme>/g STA2
+	next-word DUP2 shex2 ;<animate-theme>/b STA2
+	JMP2r
+
+@op-fill ( addr* -- addr* )
+	next-word DUP2 shex !<draw-fill>
+
+@op-size ( addr* -- addr* )
+	next-word
+	( w ) DUP2 shex #00 SWP #40 SFT2 .Screen/width DEO2
+	#0003 ADD2
+	( h ) DUP2 shex #00 SWP #40 SFT2 .Screen/height DEO2
+	JMP2r
+
+@op-link ( addr* -- addr* )
+	.pen/x LDZ2 ,&x STR2
+	.pen/y LDZ2 ,&y STR2
+	#0a18 DEO
+	next-word DUP2 read-point
+	( y ) #00 SWP #30 SFT2 .pen/y LDZ2 ADD2 ,&y2 STR2
+	( x ) #00 SWP #30 SFT2 .pen/x LDZ2 ADD2 ,&x2 STR2
+	( name ) next-word DUP2 ,&name STR2
+	( ui ) ;&link DUP2 add-link .interface LDZ ?<draw-link>
+	POP2 JMP2r
+	&link &x $2
+	&y $2
+	&x2 $2
+	&y2 $2
+	&name $2
+
+@op-stop ( addr* -- addr* )
+	JMP2r
+
+@op-wait ( addr* -- addr* )
+	next-word DUP2 shex ;on-frame/wait STA
+	JMP2r
+
+@op-null ( addr* -- addr* )
+	JMP2r
+
+(
+@|drawing )
+
+@<draw-marker> ( -- )
+	[ LIT2 01 -Screen/auto ] DEO
+	.Mouse/x DEI2 #03 SFT2 DUP ,&x STR
+	#30 SFT2 #0004 SUB2 .Screen/x DEO2
+	.Mouse/y DEI2 #03 SFT2 DUP ,&y STR
+	#30 SFT2 #0004 SUB2 .Screen/y DEO2
+	;marker-icn .Screen/addr DEO2
+	#05 .Screen/sprite DEO
+	[ LIT2 15 -Screen/auto ] DEO
+	#07 ;<draw-uf2-char>/color STA
+	,&x LDR <draw-byte>
+	LIT ", <draw-uf2-char>
+	,&y LDR <draw-byte>
+	JMP2r
+	&x $1
+	&y $1
+
+@<draw-byte> ( byte -- )
+	DUP #04 SFT hexc <draw-uf2-char>
+	#0f AND hexc !<draw-uf2-char>
+
+@<update-cursor> ( color addr* -- )
+	[ LIT2 00 -Screen/auto ] DEO
+	;fill-icn .Screen/addr DEO2
+	#40 <draw-cursor>
+	.Mouse/x DEI2 ,<draw-cursor>/x STR2
+	.Mouse/y DEI2 ,<draw-cursor>/y STR2
+	.Screen/addr DEO2
+
+@<draw-cursor> ( color -- )
+	[ LIT2 &x $2 ] .Screen/x DEO2
+	[ LIT2 &y $2 ] .Screen/y DEO2
+	.Screen/sprite DEO
+	JMP2r
+
+@<draw-interface>
+	.interface LDZ ?{ JMP2r }
+	( | clear )
+	#0000 .Screen/x DEO2
+	#0030 .Screen/y DEO2
+	[ LIT2 a3 -Screen/pixel ] DEO
+	( pop ) .pen/mode LDZ
+	( temp ) [ LIT2 05 -pen/mode ] STZ
+	<draw-time>
+	<draw-title>
+	( push ) .pen/mode STZ
+	JMP2r
+
+@<draw-title> ( -- )
+	#0060 .Screen/x DEO2
+	#0010 .Screen/y DEO2
+	.slide LDZ2 next-word <draw-uf2>
+	;&spacer-txt <draw-uf2>
+	find-next-slide next-word !<draw-uf2>
+	&spacer-txt 2020 2020 "> 2020 2020 $1
+
+@<draw-time> ( -- )
+	#0010 DUP2 .Screen/x DEO2
+	.Screen/y DEO2
+	[ LIT2 15 -Screen/auto ] DEO
+	#05 ;<draw-uf2-char>/color STA
+	get-sec .watch LDZ2 SUB2
+	( h ) DUP2 #0e10 DIV2 NIP <draw-dec>
+	LIT ": <draw-uf2-char>
+	( m ) DUP2 #003c DIV2 NIP <draw-dec>
+	LIT ": <draw-uf2-char>
+	( m ) #003c DIV2k MUL2 SUB2 NIP
+	( >> )
+
+@<draw-dec> ( dec -- )
+	DUP #0a DIV LIT "0 ADD <draw-uf2-char>
+	#0a DIVk MUL SUB LIT "0 ADD !<draw-uf2-char>
+
+@<draw-link> ( addr* -- )
+	LDA2k DUP2 .Screen/x DEO2
+	STH2 INC2 INC2 LDA2k DUP2 .Screen/y DEO2
+	STH2 SWP2r INC2 INC2 LDA2k STH2r SUB2 #03 SFT2 NIP ,&w STR
+	INC2 INC2 LDA2k STH2r SUB2 #03 SFT2 NIP ,&h STR
+	[ LIT &w $1 ] [ LIT &h $1 ] ;halftone-icn #0a <draw-rect>
+	INC2 INC2 LDA2
+	( >> )
+
+@<draw-uf2> ( text* -- )
+	.pen/mode LDZ ,<draw-uf2-char>/color STR
+	[ LIT2 15 -Screen/auto ] DEO
+	&w ( -- )
+		( | tab )
+		LDAk #09 NEQ ?{
+			.Screen/x DEI2 #0080 ADD2 #77 SFT2 .Screen/x DEO2
+			!&resume }
+		( draw ) LDAk <draw-uf2-char>
+		&resume INC2 LDAk ?&w
+	POP2 JMP2r
+
+@<draw-uf2-char> ( char -- )
+	#20 SUB #00 SWP DUP2 #50 SFT2 ;font-uf2/glyphs ADD2 .Screen/addr DEO2
+	;font-uf2 ADD2 LDA #00 SWP .Screen/x DEI2 ADD2 [ LIT &color $1 ] .Screen/sprite DEOk
+	DEO
+	.Screen/x DEO2
+	JMP2r
+
+@<draw-uf5> ( text* -- )
+	.pen/mode LDZ ,&color STR
+	[ LIT2 45 -Screen/auto ] DEO
+	&w ( -- )
+		( | tab )
+		LDAk #09 NEQ ?{
+			.Screen/x DEI2 #0080 ADD2 #77 SFT2 .Screen/x DEO2
+			!&resume }
+		( draw ) LDAk #20 SUB #00 SWP DUP2 #00c8 MUL2 ;font-uf5/glyphs ADD2 .Screen/addr DEO2
+		;font-uf5 ADD2 LDA #00 SWP .Screen/x DEI2 ADD2 [ LIT &color $1 ] .Screen/sprite DEOk
+		DEOk
+		DEOk
+		DEOk
+		DEO
+		#0002 SUB2 .Screen/x DEO2
+		&resume INC2 LDAk ?&w
+	POP2 JMP2r
+
+@<draw-fill> ( color -- )
+	STH #0000 DUP2 .Screen/x DEO2
+	.Screen/y DEO2
+	.Screen/width DEI2 #03 SFT2 NIP .Screen/height DEI2 #03 SFT2 NIP ;patt-icn STHr
+
+@<draw-rect> ( w h patt* color -- )
+	,&color STR
+	.Screen/addr DEO2
+	.Screen/x DEI2 ,&x STR2
+	[ LIT2 01 -Screen/auto ] DEO
+	SWP STH #00
+	&hloop ( -- )
+		[ LIT2 &x $2 ] .Screen/x DEO2
+		STHkr #00
+	&wloop ( -- )
+		[ LIT &color 0f ] .Screen/sprite DEO
+		INC GTHk ?&wloop
+	POP2 .Screen/y DEI2k #0008 ADD2 ROT DEO2
+	INC GTHk ?&hloop
+	POP2 POPr ,&x LDR2 .Screen/x DEO2
+	JMP2r
+
+@<draw-icn> ( name* -- )
+	[ LIT2 01 -Screen/auto ] DEO
+	DUP2 .File/name DEO2
+	#0008 .File/length DEO2
+	;&buf .Screen/addr DEO2
+	scap/ #0009 SUB2 read-point
+	( ) ,&h STR
+	( ) ,&w STR
+	( | is pos auto )
+	.pen/auto LDZ #00 EQU ?{
+		.center/x LDZ2 #00 ,&w LDR #30 SFT2 #01 SFT2 SUB2 .Screen/x DEO2
+		.center/y LDZ2 #00 ,&h LDR #30 SFT2 #01 SFT2 SUB2 .Screen/y DEO2 }
+	( | anchor )
+	.Screen/x DEI2 ,&anchor STR2
+	[ LIT2 00 &h $1 ] SUB
+	&y ( -- )
+		[ LIT2 00 &w $1 ] SUB
+	&x ( -- )
+		;&buf .File/read DEO2
+		.pen/mode LDZ .Screen/sprite DEO
+		INC DUP ?&x
+	POP
+	( x = 0 ) [ LIT2 &anchor $2 ] .Screen/x DEO2
+	( y + 8 ) .Screen/y DEI2k #0008 ADD2 ROT DEO2
+	INC DUP ?&y
+	POP JMP2r
+	&buf $8
+
+@<draw-line> ( x1* y1* x2* y2* color -- )
+	,&color STR
+	,&y STR2
+	,&x STR2
+	,&y2 STR2
+	,&x2 STR2
+	,&x LDR2 ,&x2 LDR2 SUB2 abs2 ,&dx STR2
+	#0000 ,&y LDR2 ,&y2 LDR2 SUB2 abs2 SUB2 ,&dy STR2
+	#ffff [ LIT2 00 _&x2 ] LDR2 ,&x LDR2 lts2 DUP2 ADD2 ADD2 ,&sx STR2
+	#ffff [ LIT2 00 _&y2 ] LDR2 ,&y LDR2 lts2 DUP2 ADD2 ADD2 ,&sy STR2
+	[ LIT2 &dx $2 ] [ LIT2 &dy $2 ] ADD2 STH2
+	&while ( -- )
+		[ LIT2 &x2 $2 ] DUP2 .Screen/x DEO2
+		[ LIT2 &x $2 ] EQU2 [ LIT2 &y2 $2 ] DUP2 .Screen/y DEO2
+		[ LIT2 &y $2 ] EQU2 [ LIT2 &color $1 -Screen/pixel ] DEO
+		AND ?&end
+		STH2kr DUP2 ADD2 DUP2 ,&dy LDR2 lts2 ?&skipy
+		STH2r ,&dy LDR2 ADD2 STH2 ,&x2 LDR2 [ LIT2 &sx $2 ] ADD2 ,&x2 STR2
+	&skipy ( -- )
+		,&dx LDR2 gts2 ?&while
+	STH2r ,&dx LDR2 ADD2 STH2 ,&y2 LDR2 [ LIT2 &sy $2 ] ADD2 ,&y2 STR2
+	!&while
+	&end POP2r JMP2r
+
+(
+@|stdlib )
+
+@abs2 ( a* -- f )
+	DUP2 #0f SFT2 EQU ?{ #0000 SWP2 SUB2 }
+	JMP2r
+
+@lts2 ( a* b* -- f )
+	#8000 STH2k ADD2 SWP2 STH2r ADD2 GTH2 JMP2r
+
+@gts2 ( a* b* -- f )
+	#8000 STH2k ADD2 SWP2 STH2r ADD2 LTH2 JMP2r
+
+@hexc ( hex -- char )
+	#0f AND DUP #09 GTH #27 MUL ADD #30 ADD JMP2r
+
+@shex2 ( string* -- short )
+	DUP2 shex ROT ROT INC2 INC2
+
+@shex ( string* -- byte )
+	( hn ) LDAk chex #40 SFT STH INC2
+	( ln ) LDA chex STHr ADD JMP2r
+
+@chex ( c -- <val> )
+	( hex ) LIT "0 SUB DUP #09 GTH [ JMP JMP2r ]
+	( dec ) #27 SUB DUP #0f GTH [ JMP JMP2r ] POP #ff JMP2r
+
+@skey ( key buf -- proc )
+	OVR #21 LTH ?&eval
+	#00 SWP sput #00 JMP2r
+	&eval ( -- )
+		POP2 #01 JMP2r
+
+@scap ( str* -- end* )
+	&w ( -- )
+		INC2 & LDAk ?&w
+	JMP2r
+
+@wcap ( str* -- end* )
+	&w ( -- )
+		INC2 & LDAk #20 GTH ?&w
+	JMP2r
+
+@sput ( chr str* -- )
+	scap/ STA
+	JMP2r
+
+@scmp ( a* b* -- f )
+	STH2
+	&l ( a* `b* -- f )
+		LDAk LDAkr STHr NEQk ?&d
+		DUP EOR EQUk ?&d
+		POP2 INC2 INC2r !&l
+	&d ( a* c1 c2 `b*  f )
+		NIP2 POP2r EQU JMP2r
+
+@sseg ( a-cap* b* -- f )
+	STH2
+	&l ( -- )
+		LDAk LDAkr STHr NEQ ?&e
+		INC2k LDA #00 EQU ?&e
+		INC2 INC2r !&l
+	&e LDA LDAr STHr EQU JMP2r
+
+@mcpy ( src* dst* len* -- )
+	SWP2 STH2 OVR2 ADD2 SWP2
+	&l ( -- )
+		LDAk STH2kr STA
+		INC2r INC2 GTH2k ?&l
+	POP2 POP2 POP2r JMP2r
+
+@<print-dec> ( short* -- )
+	#2710 [ LIT2r 00fb ]
+	&w ( -- )
+		DIV2k #000a DIV2k MUL2 SUB2 SWPr EQUk OVR STHkr EQU AND ?{
+			DUP LIT "0 ADD #18 DEO
+			INCr }
+		POP2 #000a DIV2 SWPr INCr STHkr ?&w
+	POP2r POP2 POP2 JMP2r
+
+@<print-hex> ( short* -- )
+	SWP <print-hex>/b
+	&b ( -- )
+		DUP #04 SFT <print-hex>/c
+	&c ( -- )
+		#0f AND DUP #09 GTH #27 MUL ADD LIT "0 ADD #18 DEO
+		JMP2r
+
+@<print-str> ( str* -- )
+	&w ( -- )
+		LDAk #18 DEO
+		INC2 & LDAk ?&w
+	POP2 JMP2r
+
+@<print-line> ( str* -- )
+	<print-str>/
+	#0a18 DEO
+	JMP2r
+
+(
+@| theme )
+
+@load-theme ( -- )
+	;&path .File/name DEO2
+	#0002 .File/length DEO2
+	[ LIT2 -System/debug -System/r ]
+	&l ( -- )
+		;&buf .File/read DEO2
+		.File/success DEI2 ORA ?&end
+		POP2 JMP2r
+	&end ( -- )
+		DUP [ LIT2 &buf $2 ] ROT DEO2
+		INC INC NEQk ?&l
+	POP2 JMP2r
+	&path ".theme $1
+
+@<animate-theme> ( -- )
+	( | r )
+	.System/r DEI2 [ LIT2 &r $2 ] EQU2k ?&>r-ok
+		transition-color .System/r DEO2 &>r-ok
+	POP2 POP2
+	( | g )
+	.System/g DEI2 [ LIT2 &g $2 ] EQU2k ?&>g-ok
+		transition-color .System/g DEO2 &>g-ok
+	POP2 POP2
+	( | b )
+	.System/b DEI2 [ LIT2 &b $2 ] EQU2k ?&>b-ok
+		transition-color .System/b DEO2 &>b-ok
+	POP2 POP2 JMP2r
+
+@transition-color ( a* b* -- a* b* c* )
+	OVR2 OVR2 ,&b STR2
+	,&a STR2
+	[ LIT2r 0000 ] #1000
+	&l ( -- )
+		STHk
+		( a* ) [ LIT2 &a $2 ] STHkr SFT2 #000f AND2
+		( b* ) [ LIT2 &b $2 ] STHkr SFT2 #000f AND2
+		( res ) acrement STHr #40 SFT SFT2 STH2 ORA2r
+		( ) #04 ADD GTHk ?&l
+	POP2 STH2r JMP2r
+
+@acrement ( a* b* -- c* )
+	GTH2k ?&g
+	LTH2k ?&l
+	POP2 JMP2r
+	&l POP2 INC2 JMP2r
+	&g POP2 #0001 SUB2 JMP2r
+
+(
+@|assets )
+
+@dict &usage "usage: 20 "adelie.rom 20 "slides.txt 0a $1
+	&null "NULL $1
+	&name "NAME $1
+	&goto "GOTO $1
+	&pict "PICT $1
+	&head "HEAD $1
+	&text "TEXT $1
+	&move "MOVE $1
+	&mode "MODE $1
+	&fill "FILL $1
+	&size "SIZE $1
+	&link "LINK $1
+	&patt "PATT $1
+	&rect "RECT $1
+	&rgb4 "RGB4 $1
+	&stop "STOP $1
+	&wait "WAIT $1
+	&bytes-free 20 "bytes 20 "free. 0a0a $1
+
+@errors &empty "Slides 20 "File 20 "Missing 0a $1
+	&links-max "Links 20 "Limit 20 "Exceeded 0a $1
+	&file-max "File-size 20 "Limit 20 "Exceeded 0a $1
+	&file-missing "!! 20 "File 20 "missing: 20 $1
+
+@op-tbl [
+	=dict/null =dict/name =dict/goto =dict/pict
+	=dict/head =dict/text =dict/move =dict/mode
+	=dict/fill =dict/size =dict/link =dict/patt
+	=dict/rect =dict/rgb4 =dict/stop =dict/wait ]
+
+@fnc-tbl [
+	=op-null =op-name =op-goto =op-pict
+	=op-head =op-text =op-move =op-mode
+	=op-fill =op-size =op-link =op-patt
+	=op-rect =op-rgb4 =op-stop =op-wait ]
+
+
+( tga )
+
+@tga &id-length $1
+	&color-map $1
+	&image-type $1
+	&map $5
+	&position &x $2
+	&y $2
+	&size &w $2
+	&h $2
+	&depth $1
+	&descriptor $1
+
+@<draw-tga> ( addr* -- )
+	( | header )
+	.File/name DEO2
+	#0012 .File/length DEO2
+	;tga .File/read DEO2
+	( | flip endianness )
+	;tga/x STH2k LDA2 SWP STH2r STA2
+	;tga/y STH2k LDA2 SWP STH2r STA2
+	;tga/w STH2k LDA2 SWP STH2r STA2
+	;tga/h STH2k LDA2 SWP STH2r STA2
+	( | is pos auto )
+	.pen/auto LDZ #00 EQU ?&>no-auto
+		.center/x LDZ2 ;tga/w LDA2 #01 SFT2 SUB2 .Screen/x DEO2
+		.center/y LDZ2 ;tga/h LDA2 #01 SFT2 SUB2 .Screen/y DEO2 &>no-auto
+	( | get parser )
+	;tga/image-type LDA
+	( ) DUP #02 EQU ?&rawt
+	( ) DUP #03 EQU ?&rawm
+	POP
+	( | error )
+	;&error-txt <print-str>/
+	#00 ;tga/image-type LDA DUP ADD ;tga-types ADD2 LDA2 <print-str>/
+	#0a18 DEO
+	JMP2r
+	&rawt ( type -- )
+		POP ;tga-rawt #0004 !parse-tga
+	&rawm ( type -- )
+		POP ;tga-rawm #0001 !parse-tga
+	&error-txt ( err )
+		"Unsupported 20 "image-type: 20 $1
+
+@parse-tga ( filter* length* -- )
+	( | cache size )
+	.File/length DEO2
+	,&filter STR2
+	.Screen/x DEI2 ,&x STR2
+	.Screen/y DEI2 ,&y STR2
+	;tga/w LDA2 ,&w STR2
+	;tga/h LDA2 ,&h STR2
+	( | paint )
+	#01 .Screen/auto DEO
+	#0000
+	&stream ( -- )
+		;&pixel .File/read DEO2
+		.File/success DEI2 #0000 EQU2 ?&end
+		;&pixel [ LIT2 &filter $2 ] JSR2 .Screen/pixel DEO
+		INC2 DUP2 [ LIT2 &w $2 ] NEQ2 ?&stream
+		( | linebreak )
+		POP2 #0000
+		[ LIT2 &x $2 ] .Screen/x DEO2
+		.Screen/y DEI2k INC2 ROT DEO2k
+		POP [ LIT2 &y $2 ] SUB2 [ LIT2 &h $2 ] NEQ2 ?&stream
+	&end POP2 JMP2r
+	&pixel $4
+
+(
+@|filters )
+
+@tga-rawt ( rgba* -- color )
+	STH2
+	( b ) #00 LDAkr STHr INC2r
+	( g ) #00 LDAkr STHr INC2r
+	( r ) #00 LDAr STHr
+	( res ) ADD2 ADD2 #0003 DIV2 NIP #06 SFT JMP2r
+
+@tga-rawm ( grey* -- color )
+	( res ) LDA #06 SFT JMP2r
+
+(
+@|luts )
+
+@tga-types-txts &null "missing-type $1
+	&rawc "RAW-color $1
+	&rawt "RAW-true $1
+	&rawm "RAW-mono $1
+	&rlec "RLE-color $1
+	&rlet "RLE-true $1
+	&rlem "RLE-mono $1
+	&void "unknown-type $1
+
+@tga-types
+	[ 
+	=tga-types-txts/null =tga-types-txts/rawc 
+	=tga-types-txts/rawt =tga-types-txts/rawm 
+	=tga-types-txts/void =tga-types-txts/void 
+	=tga-types-txts/void =tga-types-txts/void 
+	=tga-types-txts/void =tga-types-txts/rlec 
+	=tga-types-txts/rlet =tga-types-txts/rlem ]
+
+
+
+( warning, this file is larger than 64kb )
+
+@fill-icn
+	ffff ffff ffff ffff
+@cursor-icn
+	80c0 e0f0 f8e0 1000
+@brush-icn
+    0070 6844 2211 0906
+@halftone-icn
+	8800 2200 8800 2200
+@marker-icn
+	1010 10ee 1010 1000
+@patt-icn
+	ffff ffff ffff ffff
+
+@font-uf2 ( NewYork14 )
+	0405 0509 070b 0b04 0606 0708 0408 0308
+	0a0a 0a0a 0a0a 0a0a 0a0a 0404 0608 0609
+	0b0c 0a09 0908 080a 0a06 050a 080c 0a09
+	0909 0a09 080b 0c0e 0a0a 0804 0704 0707
+	0508 0907 0908 0508 0a04 0508 040e 0a08
+	0909 0807 060a 0a0c 080a 0705 0305 0801
+	&glyphs
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 2020 2020 2020 2020 2000 2000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 5050 5000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0a3f 147e 2800 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 1038 5450 3018 1414 1454 3810 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 3f48 4849 3204 0912 2222 2100 0000
+	0000 c040 8000 0000 8040 4040 8000 0000
+	0000 1824 2428 1028 4442 4122 1c00 0000
+	0000 0000 0000 0000 c080 0080 c000 0000
+	0000 4040 4000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0010 2020 4040 4040 4040 4020 2010 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0020 1010 0808 0808 0808 0810 1020 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 1054 3854 1000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 1010 10fe 1010 1000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 2020 4000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 007e 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 4000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0002 0204 0408 0810 1020 2000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 1e21 4040 4040 4040 4021 1e00 0000
+	0000 0000 8080 8080 8080 8000 0000 0000
+	0000 0818 0808 0808 0808 0808 1c00 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 1e21 4000 0102 0408 1020 7f00 0000
+	0000 0000 8080 0000 0000 0080 8000 0000
+	0000 1e21 0101 0206 0100 0040 211e 0000
+	0000 0000 0000 0000 0080 8080 0000 0000
+	0000 0204 0812 2242 7f02 0202 0700 0000
+	0000 0000 0000 0000 8000 0000 0000 0000
+	0000 3f20 2020 3e01 0000 0000 0106 3800
+	0000 0000 0000 0000 8080 8080 0000 0000
+	000c 1020 405e 6140 4040 4021 1e00 0000
+	0000 0000 0000 0080 8080 8000 0000 0000
+	0000 7f40 0101 0202 0404 0808 0800 0000
+	0000 8080 0000 0000 0000 0000 0000 0000
+	0000 1e21 2121 1e21 4040 4040 211e 0000
+	0000 0000 0000 0000 8080 8080 0000 0000
+	0000 1e21 4040 4040 211e 0001 021c 0000
+	0000 0000 8080 8080 8080 8000 0000 0000
+	0000 0000 0000 2000 0000 0000 2000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 2000 0000 0000 2020 4000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0008 1020 4020 1008 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 7e00 007e 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0040 2010 0810 2040 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 1c22 4141 0204 0808 0800 0800 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 001f 204e 5252 4d20 1e00 0000
+	0000 0000 0000 8040 4040 8000 0000 0000
+	0000 0404 0a0a 1111 203f 4040 e000 0000
+	0000 0000 0000 0000 8080 4040 e000 0000
+	0000 fc42 4141 7e41 4040 4041 fe00 0000
+	0000 0000 0000 0000 8080 8000 0000 0000
+	0000 3e43 8180 8080 8080 8142 3c00 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 fc42 4141 4141 4141 4142 fc00 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 fe42 4040 4878 4840 4042 fe00 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 fe42 4240 4878 4840 4040 e000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 3e43 8180 8083 8181 8142 3c00 0000
+	0000 0000 0000 0080 0000 0000 0000 0000
+	0000 e341 4141 417f 4141 4141 e300 0000
+	0000 8000 0000 0000 0000 0000 8000 0000
+	0000 7020 2020 2020 2020 2020 7000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 7020 2020 2020 2020 2020 2020 20c0
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 e742 4448 5060 5048 4442 e700 0000
+	0000 8000 0000 0000 0000 0000 8000 0000
+	0000 e040 4040 4040 4040 4042 fe00 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 c040 6060 5151 4a4a 4444 e000 0000
+	0000 6040 c0c0 4040 4040 4040 e000 0000
+	0000 e361 5151 4949 4545 4343 e100 0000
+	0000 8000 0000 0000 0000 0000 0000 0000
+	0000 3c42 8181 8181 8181 8142 3c00 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 fc42 4141 4142 7c40 4040 e000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 3c42 8181 8181 8181 8142 3c08 0600
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 fc42 4141 4142 7c44 4241 e300 0000
+	0000 0000 0000 0000 0000 0000 8000 0000
+	0000 3d43 8180 6018 0681 81c2 bc00 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 fe92 1010 1010 1010 1010 3800 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 e140 4040 4040 4040 4021 1e00 0000
+	0000 c080 8080 8080 8080 8000 0000 0000
+	0000 e040 4020 2011 110a 0a04 0400 0000
+	0000 e040 4080 8000 0000 0000 0000 0000
+	0000 ee44 4422 2215 1515 0808 0800 0000
+	0000 3810 1020 2040 4040 8080 8000 0000
+	0000 e341 2222 1408 1422 2241 e300 0000
+	0000 8000 0000 0000 0000 0000 8000 0000
+	0000 e341 2222 1414 0808 0808 1c00 0000
+	0000 8000 0000 0000 0000 0000 0000 0000
+	0000 fe82 0408 0810 2020 4082 fe00 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0060 4040 4040 4040 4040 4040 4060 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0040 4020 2010 1008 0804 0400 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0060 2020 2020 2020 2020 2020 2060 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0010 2844 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 fe00 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 4020 1000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0038 448c 3444 848c 7200 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 40c0 405c 6241 4141 4162 5c00 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0038 4480 8080 8044 3800 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0602 023a 4682 8282 8247 3a00 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0038 4482 fe80 8244 3800 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 3040 40e0 4040 4040 4040 e000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 023a 4482 8244 7880 7c82 827c
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 40c0 405c 6241 4141 4141 e300 0000
+	0000 0000 0000 0000 0000 0000 8000 0000
+	0000 0040 0040 c040 4040 4040 e000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0020 0020 6020 2020 2020 2020 4080
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 40c0 404c 4850 6050 4844 ee00 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0040 c040 4040 4040 4040 e000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0058 e542 4242 4242 e700 0000
+	0000 0000 00c0 2010 1010 1010 3800 0000
+	0000 0000 005c e241 4141 4141 e300 0000
+	0000 0000 0000 0000 0000 0000 8000 0000
+	0000 0000 0038 4482 8282 8244 3800 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 00dc 6241 4141 4162 5c40 40e0
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 003a 4682 8282 8246 3a02 0207
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 005c e240 4040 4040 e000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0078 8480 6018 0484 7800 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0040 40e0 4040 4040 4048 3000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 00c3 4141 4141 4123 1d00 0000
+	0000 0000 0000 0000 0000 0000 8000 0000
+	0000 0000 00e3 4122 2214 1408 0800 0000
+	0000 0000 0080 0000 0000 0000 0000 0000
+	0000 0000 00e0 4444 2a2a 1111 1100 0000
+	0000 0000 00e0 4040 8080 0000 0000 0000
+	0000 0000 00ee 4428 1010 2844 ee00 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 00e3 4122 2214 1408 0810 3020
+	0000 0000 0080 0000 0000 0000 0000 0000
+	0000 0000 00fc 8408 1020 4084 fc00 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 1020 2020 2020 4020 2020 2020 1000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 4040 4040 4040 4040 4040 4040 4000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 4020 2020 2020 1020 2020 2020 4000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0032 4c00 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+
+@font-uf5 ( NewYork34 )
+	0c0c 1218 1820 200a 1010 1014 0c14 0c14
+	1818 1818 1818 1818 1818 0c0c 1014 1014
+	2020 1818 1c18 1818 1c10 141c 1820 1c1c
+	181c 1814 181c 1c23 1818 140c 140c 1018
+	0c14 1814 1814 1014 1810 0c18 1020 1814
+	1818 1414 1018 141c 1818 1410 0810 1000
+	&glyphs
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0307
+	0707 0707 0707 0303 0303 0303 0303 0101
+	0101 0100 0103 0303 0100 0000 0000 0000
+	0000 0000 0000 80c0 c0c0 c0c0 c0c0 8080
+	8080 8080 8080 0000 0000 0000 0080 8080
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0606 0606 0600 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 3030
+	3030 3000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0700 0000 001f 0101 0202 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 1010 2020 ff41 4182 82ff
+	0404 0808 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 4040
+	8080 f800 0000 00e0 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0001 0303 0707 0703 0301
+	0000 0000 0000 0000 0000 0404 0607 0703
+	0000 0000 0000 0000 0000 0012 1212 7f92
+	1212 1212 1292 d2f2 fa7e 1f17 1312 1212
+	1212 1212 1212 92d2 ff12 1212 0000 0000
+	0000 0000 0000 80e0 7030 1000 0000 0000
+	0000 80c0 e0f0 7038 3838 3838 3030 60c0
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 001c 2263 6363 6363 221c
+	0000 0000 0001 0102 0204 0408 0810 1020
+	2000 0000 0000 0000 0000 0000 0000 0002
+	0204 0408 0810 1020 2040 4080 8000 0000
+	1c22 6363 6363 6322 1c00 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0101 0303 0303 0101
+	0000 0001 0307 060e 0e0e 0e0e 0707 0301
+	0000 0000 0000 0000 0000 0000 0000 3fe1
+	c080 8080 8183 ccf0 f078 bc9e 0f07 0301
+	0000 0000 0080 e1ff 7c00 0000 0000 0000
+	0000 0000 0000 0080 c0c0 c0c0 8000 0000
+	0000 0701 0182 c2e4 f478 3c1e 2fc7 8301
+	0700 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 c000 0000 0000
+	0000 0000 0080 c0e0 f800 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0c0c
+	0c0c 0c0c 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0001 0103 0306 0606
+	0606 0606 0606 0606 0606 0603 0301 0100
+	0000 0000 0000 0000 0000 0000 1020 40c0
+	8080 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 8080 c040 2010 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0804 0203
+	0101 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0101 0302 0408 0000 0000
+	0000 0000 0000 0000 0080 80c0 c060 6060
+	6060 6060 6060 6060 6060 60c0 c080 8000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0008 0402 013f 0102 0408
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0080 8088
+	90a0 c0fe c0a0 9088 8080 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 000f 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0020
+	2020 2020 20ff 2020 2020 2020 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0080 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 040e 0e0e
+	0604 0800 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 001f 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 00ff 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 040e 0e0e
+	0400 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0001
+	0102 0204 0408 0810 1000 0000 0000 0000
+	0000 0000 0000 0001 0102 0204 0408 0810
+	1020 2040 4080 8000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0080 8000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0001 0306 060c 0c1c 1c1c
+	1c1c 1c1c 1c1c 1c1c 1c1c 0c0c 0606 0301
+	0000 0000 0000 0000 0000 0000 0000 7c83
+	0100 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0183 7c00 0000 0000 0000
+	0000 0000 0000 0000 80c0 c060 6070 7070
+	7070 7070 7070 7070 7070 6060 c0c0 8000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0c1c 3cfc 1c1c 1c1c 1c1c
+	1c1c 1c1c 1c1c 1c1c 1c1c 1c1c 1c1c 1c1c
+	ff00 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 8000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0001 0204 0808 0000 0000
+	0000 0000 0000 0000 0001 0204 0408 0f1f
+	1f00 0000 0000 0000 0000 0000 0000 7fff
+	0300 0000 0000 0000 0101 0307 0e1c 3860
+	c080 0000 0000 ffff ff00 0000 0000 0000
+	0000 0000 0000 00c0 e0e0 7070 7070 f0e0
+	e0c0 8000 0000 0000 0000 0010 1030 f0f0
+	f000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0001
+	0302 0000 0000 0000 0000 0300 0000 0000
+	0000 0000 0000 0c1c 1e1e 0f03 0000 0000
+	0000 0000 0000 ffc3 0101 0101 0303 060c
+	3eff 0701 0000 0000 0000 0000 0000 0000
+	0103 07fc 0000 0000 0000 0000 0000 0080
+	c0c0 c080 8000 0000 0080 c0e0 e0f0 7070
+	7070 7070 7060 e0c0 c080 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0103 060c 1830 3f3f 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0103 060c 1830 60c1 8101 0101 0101 ffff
+	0101 0101 0101 0101 0f00 0000 0000 0000
+	0000 0000 0000 60c0 8000 0000 0000 c0c0
+	c0c0 c0c0 c0c0 f8f8 c0c0 c0c0 c0c0 c0c0
+	f800 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0107
+	0706 0404 0407 0707 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 001f 0000 0000
+	0000 0000 033f fffc c000 0000 00f0 feff
+	3f07 0301 0000 0000 0000 0000 0000 0001
+	030e 38c0 0000 0000 0000 0000 8080 8000
+	0000 0000 0000 0000 80c0 c0e0 e0f0 f070
+	7070 7060 60c0 c080 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0103 0706 0e0e 0c1c
+	1c1c 1c1c 1c1c 1c1c 1c1c 1c0e 0e07 0301
+	0000 0000 0000 0000 0000 0000 071c 70e0
+	c080 0000 0000 0000 3e7f 8301 0000 0000
+	0000 0000 0000 81e3 7c00 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0080 c0e0 e0f0 7070 7070 7060 e0c0 8000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 1f1f
+	1f10 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 ffff ff00 0000 0000 0000
+	0001 0102 0204 0408 0810 1020 2040 4080
+	8000 0000 0000 0000 0000 0000 0000 f8f8
+	f810 1020 2040 4080 8000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0001 0302 0606 0606 0303
+	0100 0001 070e 0e1c 1c1c 1c1c 1c0e 0e03
+	0000 0000 0000 0000 0000 0000 0000 7c87
+	0301 0101 0103 0387 eef8 7e8f 0301 0000
+	0000 0000 0000 0183 7e00 0000 0000 0000
+	0000 0000 0000 0000 8080 c0c0 c080 8000
+	0000 0080 c0e0 e070 7070 7070 60e0 c080
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0001
+	0306 0e0c 1c1c 1c1c 1c1e 0e0f 0703 0000
+	0000 0000 0000 0000 0000 0100 0000 0000
+	0000 0000 0000 7c8f 0301 0000 0000 0000
+	0000 0000 82fc f800 0000 0000 0103 070e
+	1c70 c000 0000 0000 0000 0000 0000 0000
+	80c0 e0e0 7070 7070 7070 7070 7070 7070
+	60e0 e0c0 c080 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0004
+	0e0e 0e04 0000 0000 0000 0000 040e 0e0e
+	0400 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0004 0e0e 0e04 0000 0000
+	0000 0000 040e 0e0e 0604 0800 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0001 0306 0c18 0c06 0301 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0018 3060 c080 0000 0000 0000
+	0080 c060 3018 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 1f1f 0000 001f
+	1f00 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 ffff 0000 00ff ff00 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 c0c0 0000 00c0
+	c000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0018 0c06
+	0301 0000 0000 0000 0001 0306 0c18 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0080 c060 3018 3060
+	c080 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 070f
+	0e0e 0c04 0000 0000 0000 0000 0001 0101
+	0101 0100 0103 0303 0100 0000 0000 0000
+	0000 0000 0000 f008 0402 0203 0303 0707
+	0e1e 3c78 f0e0 c080 0000 0000 0080 8080
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0001 0103 0307 0707 0707 0707 0703 0301
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 001f 78e0 c083 860c 0c1c
+	1c1c 1c1c 0c07 8080 e03f 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 00fc
+	0703 01f1 3838 3838 3838 3828 4987 0000
+	0080 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0080 c0c0 e0e0 e0e0
+	e0e0 e0c0 8000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0300 0000 0000 0000
+	0000 0000 0000 0000 0001 0101 0202 0204
+	0404 0808 0810 101f 2020 2040 4040 8080
+	e000 0000 0000 0000 0000 0000 0000 c0c0
+	e0e0 e070 7070 3838 381c 1c1c 0e0e 0eff
+	0707 0303 0301 0101 0700 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 8080 80c0 c0c0
+	f000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 1f07 0707 0707 0707 0707
+	0707 0707 0707 0707 0707 0707 0707 0707
+	1f00 0000 0000 0000 0000 0000 0000 fe01
+	0000 0000 0000 0000 00ff 0000 0000 0000
+	0000 0000 0000 0081 fe00 0000 0000 0000
+	0000 0000 0000 0080 c060 6070 7070 6060
+	c080 c060 7030 3838 3838 3838 7070 e080
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0307 0f0e 1e1e 1c3c 3c3c 3c3c 3c3c 3c3c
+	1c1e 1e0e 0f07 0300 0000 0000 0000 0000
+	0000 0000 0000 3fc0 8000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 80c0
+	3f00 0000 0000 0000 0000 0000 0000 c0f0
+	7838 1808 0000 0000 0000 0000 0000 0000
+	0008 1818 3838 70c0 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0f03 0303 0303 0303 0303
+	0303 0303 0303 0303 0303 0303 0303 0303
+	0f00 0000 0000 0000 0000 0000 0000 fe81
+	8080 8080 8080 8080 8080 8080 8080 8080
+	8080 8080 8080 8081 fe00 0000 0000 0000
+	0000 0000 0000 00c0 7038 181c 0c0e 0607
+	0707 0707 0707 0707 0706 0e0c 1c38 70c0
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 1f07
+	0707 0707 0707 0707 0707 0707 0707 0707
+	0707 0707 0707 0707 1f00 0000 0000 0000
+	0000 0000 0000 ff81 0000 0000 0000 0000
+	0001 ff01 0000 0000 0000 0000 0000 0080
+	ff00 0000 0000 0000 0000 0000 0000 e0f0
+	7030 1010 0000 0080 8080 8080 8080 0000
+	0000 0808 1818 38f8 f000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 1f07 0707 0707 0707 0707
+	0707 0707 0707 0707 0707 0707 0707 0707
+	1f00 0000 0000 0000 0000 0000 0000 ff81
+	0000 0000 0000 0000 0001 ff01 0000 0000
+	0000 0000 0000 0080 e000 0000 0000 0000
+	0000 0000 0000 e0f0 7030 1010 0000 0080
+	8080 8080 8080 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0307 0f0e 1e1e 1c3c 3c3c 3c3c 3c3c 3c3c
+	1c1e 1e0e 0f07 0300 0000 0000 0000 0000
+	0000 0000 0000 3fc0 8000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 80c0
+	3f00 0000 0000 0000 0000 0000 0000 c0f0
+	7838 1808 0000 0000 0000 0000 fe38 3838
+	3838 3838 3830 60c0 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 1f07 0707 0707 0707 0707
+	0707 0707 0707 0707 0707 0707 0707 0707
+	1f00 0000 0000 0000 0000 0000 0000 c000
+	0000 0000 0000 0000 0000 ff00 0000 0000
+	0000 0000 0000 0000 c000 0000 0000 0000
+	0000 0000 0000 3f0e 0e0e 0e0e 0e0e 0e0e
+	0e0e fe0e 0e0e 0e0e 0e0e 0e0e 0e0e 0e0e
+	3f00 0000 0000 0000 0000 0000 0000 8000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 8000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0f03
+	0303 0303 0303 0303 0303 0303 0303 0303
+	0303 0303 0303 0303 0f00 0000 0000 0000
+	0000 0000 0000 e080 8080 8080 8080 8080
+	8080 8080 8080 8080 8080 8080 8080 8080
+	e000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0008 1c1c 1e0f 0000 0000 0000 3f0e
+	0e0e 0e0e 0e0e 0e0e 0e0e 0e0e 0e0e 0e0e
+	0e0e 0e0e 0e0e 0e0e 0e0e 0e0c 0c18 30c0
+	0000 0000 0000 8000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 1f07
+	0707 0707 0707 0707 0707 0707 0707 0707
+	0707 0707 0707 0707 1f00 0000 0000 0000
+	0000 0000 0000 e000 0000 0001 0306 0c18
+	3878 dc9c 0e0e 0707 0303 0101 0000 0000
+	e100 0000 0000 0000 0000 0000 0000 7f18
+	3060 c080 0000 0000 0000 0000 0000 0000
+	8080 c0c0 e0e0 7078 ff00 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 1f07 0707 0707 0707 0707
+	0707 0707 0707 0707 0707 0707 0707 0707
+	1f00 0000 0000 0000 0000 0000 0000 c000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0080 ff00 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0808 1818 38f8
+	f800 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 1f07
+	0705 0504 0404 0404 0404 0404 0404 0404
+	0404 0404 0404 0404 1f00 0000 0000 0000
+	0000 0000 0000 8080 c0c0 c0e0 e070 7070
+	3838 381c 1c1c 0e0e 0e07 0707 0303 0301
+	0100 0000 0000 0000 0000 0000 0000 0001
+	0102 0202 0404 0408 0808 1010 1020 2020
+	4040 4080 8080 0000 0300 0000 0000 0000
+	0000 0000 0000 f8e0 e0e0 e0e0 e0e0 e0e0
+	e0e0 e0e0 e0e0 e0e0 e0e0 e0e0 e0e0 e0e0
+	f800 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0f03 0303 0302 0202 0202
+	0202 0202 0202 0202 0202 0202 0202 0202
+	0f00 0000 0000 0000 0000 0000 0000 0080
+	c0c0 e0f0 f078 3c3c 1e0f 0f07 0303 0100
+	0000 0000 0000 0000 c000 0000 0000 0000
+	0000 0000 0000 1f02 0202 0202 0202 0202
+	0202 0282 c2c2 e2f2 f27a 3e3e 1e0e 0e06
+	0200 0000 0000 0000 0000 0000 0000 c000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0103 0707 0e0e 1c1c 1c1c 1c1c 1c1c 1c1c
+	1c0e 0e07 0703 0100 0000 0000 0000 0000
+	0000 0000 0000 1f60 c080 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0080 c060
+	1f00 0000 0000 0000 0000 0000 0000 00c0
+	7038 1c1c 0e0e 0707 0707 0707 0707 0707
+	070e 0e1c 1c38 70c0 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 3f0e 0e0e 0e0e 0e0e 0e0e
+	0e0e 0e0f 0e0e 0e0e 0e0e 0e0e 0e0e 0e0e
+	3f00 0000 0000 0000 0000 0000 0000 fe01
+	0000 0000 0000 0000 0000 0003 ff3f 0000
+	0000 0000 0000 0000 8000 0000 0000 0000
+	0000 0000 0000 0080 e070 7038 3838 3838
+	7870 f0e0 c000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0103 0707 0e0e 1c1c 1c1c 1c1c 1c1c 1c1c
+	1c0e 0e07 0703 0100 0000 0000 0000 0000
+	0000 0000 0000 1f60 c080 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0080 c060
+	1f0e 0e0e 0707 0300 0000 0000 0000 00c0
+	7038 1c1c 0e0e 0707 0707 0707 0707 0707
+	070e 0e1c 1c38 70c0 0000 0000 0084 f8f0
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 7f0e 0e0e 0e0e 0e0e 0e0e
+	0e0e 0f0e 0e0e 0e0e 0e0e 0e0e 0e0e 0e0e
+	7f00 0000 0000 0000 0000 0000 0000 fc03
+	0100 0000 0000 0000 0103 fe1c 0e07 0703
+	0301 0100 0000 0000 c000 0000 0000 0000
+	0000 0000 0000 0000 80c0 c0e0 e0e0 e0c0
+	c080 0000 0000 0080 80c0 c0e0 e070 7038
+	3e00 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0106
+	0c18 1838 3838 3c1e 1f0f 0300 0000 0000
+	0000 2020 3038 3c1f 0700 0000 0000 0000
+	0000 0000 0000 fe0f 0301 0100 0000 0000
+	80c0 f0fc 7e1f 0703 0301 0101 0101 0306
+	f800 0000 0000 0000 0000 0000 0000 0080
+	8080 8080 0000 0000 0000 0000 0000 8080
+	c0c0 c0c0 8080 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0020 3f38 3020 2000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0100 0000 0000 0000 0000 0000 0000 ff38
+	3838 3838 3838 3838 3838 3838 3838 3838
+	3838 3838 3838 387c ff00 0000 0000 0000
+	0000 0000 0004 fc1c 0c04 0400 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 1f07
+	0303 0303 0303 0303 0303 0303 0303 0303
+	0303 0303 0301 0100 0000 0000 0000 0000
+	0000 0000 0000 f0c0 8080 8080 8080 8080
+	8080 8080 8080 8080 8080 80c0 c0e0 f0fc
+	3f00 0000 0000 0000 0000 0000 0000 0701
+	0101 0101 0101 0101 0101 0101 0101 0101
+	0101 0101 0202 0418 e000 0000 0000 0000
+	0000 0000 0000 c000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 1f07 0703 0303 0101 0100
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 c000
+	0080 8080 c0c0 c0e0 e0e0 7070 7038 3838
+	1c1c 1c0e 0f0f 0706 0200 0000 0000 0000
+	0000 0000 0000 0f03 0202 0404 0408 0808
+	1010 1020 2020 4040 4080 8080 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 c000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 1f07
+	0703 0303 0301 0101 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 cf03 0381 8181 81c0 c0c0
+	e0e0 e0e0 7070 7131 393a 3a1e 1c1c 0808
+	0800 0000 0000 0000 0000 0000 0000 ef82
+	8284 c4c4 c8e8 e8f0 7070 70b0 b8b8 3818
+	1d1d 1d0e 0e0e 0404 0400 0000 0000 0000
+	0000 0000 0000 9f04 0408 0808 1010 1020
+	2020 4040 4080 8080 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 3f0e 0e07 0703 0301 0100
+	0000 0000 0000 0000 0001 0102 0204 040c
+	3f00 0000 0000 0000 0000 0000 0000 8300
+	0001 0182 82c4 c4e8 e870 7038 385c 5c8e
+	8e07 0703 0301 0100 0300 0000 0000 0000
+	0000 0000 0000 f0c0 8000 0000 0000 0000
+	0000 0000 0000 0000 0000 0080 80c0 c0e0
+	f800 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 7f1e
+	0e0f 0707 0303 0101 0000 0000 0000 0000
+	0000 0000 0000 0000 0100 0000 0000 0000
+	0000 0000 0000 8000 0000 0080 80c1 c1e2
+	e2f4 7c78 3838 3838 3838 3838 3838 3838
+	ff00 0000 0000 0000 0000 0000 0000 fc30
+	2040 4080 8000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0004 0f1c 1830 2000 0000 0000
+	0000 0001 0103 0307 070e 0e1c 1c38 3870
+	7f00 0000 0000 0000 0000 0000 0000 ff07
+	070e 0e1c 1c38 3870 70e0 e0c0 c080 8000
+	0000 0000 0000 0001 ff00 0000 0000 0000
+	0000 0000 0000 8000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0040 4040 c0c0
+	c000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 000f 0e0e 0e0e
+	0e0e 0e0e 0e0e 0e0e 0e0e 0e0e 0e0e 0e0e
+	0e0e 0e0e 0e0e 0e0e 0e0e 0e0f 0000 0000
+	0000 0080 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0080 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0010 1008 0804 0402 0201 0100
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0080 8040 4020 2010 1008
+	0804 0402 0201 0100 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0080
+	8000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 001f 0707 0707
+	0707 0707 0707 0707 0707 0707 0707 0707
+	0707 0707 0707 0707 0707 071f 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0102 0408 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0080
+	4020 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 ff00 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	ff00 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 ff00 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0008 0402 0100 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0001 060c 1838 3830 0000 0107
+	0e1c 1c38 3838 3c1f 0f00 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 00fc 1e0e
+	0e0e 0e1e 3ece 8e0e 0e0e 0e0e 1e3e 6ecf
+	0700 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 20c0 8000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 060e 1e0e 0e0e 0e0e 0e0e
+	0f0f 0e0e 0e0e 0e0e 0e0e 0e0e 0e0f 0f0c
+	0800 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 001e 7fc3 8100 0000 0000 0000
+	0000 0000 0000 80c1 3e00 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 80c0
+	e0e0 f070 7070 7070 7070 7070 60e0 c080
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0306 0c1c 1838 3838 3838
+	3838 3c1c 1e0f 0703 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 00fe 8f07
+	0301 0000 0000 0000 0000 0000 0001 c3fe
+	f800 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0103
+	060e 0c1c 1c1c 1c1c 1c1c 1c1c 0e0e 0703
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0001 0000 0078 8601 0000 0000 0000 0000
+	0000 0000 0001 83fe f800 0000 0000 0000
+	0000 0000 0000 2060 e0e0 e0e0 e0e0 e0e0
+	e0e0 e0e0 e0e0 e0e0 e0e0 e0e0 e8f0 e0c0
+	8000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0001 070e 0c1c 1838 383f 3838
+	3838 383c 1c1e 0f07 0100 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 00f0 0c06
+	0303 0303 07ff 0000 0000 0000 0103 0efc
+	f000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 8080 8080 0000
+	0000 0080 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0103 0606 0e0e 0e1f 3f0e
+	0e0e 0e0e 0e0e 0e0e 0e0e 0e0e 0e0e 0e0e
+	3f00 0000 0000 0000 0000 0000 0000 f83c
+	1c08 0000 00c0 c000 0000 0000 0000 0000
+	0000 0000 0000 0000 8000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0001 060c 0c1c 1c1c 1c1c 0c0c
+	0603 060c 1f0f 070c 1838 3838 1c0f 0300
+	0000 0000 0000 0000 0000 0000 00e0 1f0c
+	0c0e 0e0e 0e0e 0c0c 18e0 0000 fcff ff03
+	0100 0000 0106 f800 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 80c0 c0c0 c080 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0103 070f 0707 0707 0707
+	0707 0707 0707 0707 0707 0707 0707 0707
+	1f00 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 000f 3f61 8000 0000 0000 0000
+	0000 0000 0000 0000 c100 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 c0e0
+	e070 7070 7070 7070 7070 7070 7070 7070
+	fc00 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0103
+	0303 0100 0000 0103 0703 0303 0303 0303
+	0303 0303 0303 0303 0f00 0000 0000 0000
+	0000 0000 0000 0080 8080 0000 0080 8080
+	8080 8080 8080 8080 8080 8080 8080 8080
+	e000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0103 0303 0100 0000 0103
+	0703 0303 0303 0303 0303 0303 0303 0303
+	0303 0303 0302 0418 0000 0000 0000 0080
+	8080 0000 0080 8080 8080 8080 8080 8080
+	8080 8080 8080 8080 8080 8080 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0103
+	070f 0707 0707 0707 0707 0707 0707 0707
+	0707 0707 0707 0707 1f00 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0003 0001
+	0204 0810 2040 c0e0 7038 1c0e 0703 0100
+	c300 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 00f0 8000 0000 0000 0000 0000
+	0000 0000 0080 c0e0 f800 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0001 0307 0303 0303 0303
+	0303 0303 0303 0303 0303 0303 0303 0303
+	0f00 0000 0000 0000 0000 0000 0000 8080
+	8080 8080 8080 8080 8080 8080 8080 8080
+	8080 8080 8080 8080 e000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0004 0c1d 3e1c 1c1c 1c1c 1c1c
+	1c1c 1c1c 1c1c 1c1c 7f00 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0038 fe87
+	0303 0303 0303 0303 0303 0303 0303 0303
+	0f00 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 000f 3f60 8080 8080 8080 8080
+	8080 8080 8080 8080 e100 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 c0e0
+	6070 7070 7070 7070 7070 7070 7070 7070
+	fc00 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0002 060e
+	1f0e 0e0e 0e0e 0e0e 0e0e 0e0e 0e0e 0e0e
+	3f00 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 001e 7fc3 0100 0000 0000 0000
+	0000 0000 0000 0000 8300 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 80c0
+	c0e0 e0e0 e0e0 e0e0 e0e0 e0e0 e0e0 e0e0
+	f800 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0306 0c1c 1838 3838 3838
+	3838 3818 1c0c 0603 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 00f0 0c06
+	0303 0101 0101 0101 0101 0101 0303 060c
+	f000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0080 80c0 c0c0 c0c0
+	c0c0 c080 8000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0002 060e
+	1f0e 0e0e 0e0e 0e0e 0e0e 0e0e 0e0e 0f0e
+	0e0e 0e0e 0e0e 3f00 0000 0000 0000 0000
+	0000 0000 001c 7fc7 0100 0000 0000 0000
+	0000 0000 0000 01c3 3c00 0000 0000 8000
+	0000 0000 0000 0000 0000 0000 0000 0080
+	c0c0 e060 7070 7070 7070 6060 c0c0 8000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0103 0606 0c0c 1c1c 1c1c
+	1c1c 0c0e 0607 0301 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0078 8601
+	0000 0000 0000 0000 0000 0000 0001 c6fc
+	7000 0000 0000 0300 0000 0000 0000 0000
+	0000 0000 0020 60e0 e0e0 e0e0 e0e0 e0e0
+	e0e0 e0e0 e0e0 e0e0 e0e0 e0e0 e0e0 f800
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0001 0307
+	0f07 0707 0707 0707 0707 0707 0707 0707
+	1f00 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 001f 2743 8300 0000 0000 0000
+	0000 0000 0000 0000 c000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 8080
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0306 040c 0e07 0703 0000
+	0000 0008 080c 0e07 0300 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 00fc 0e06
+	0200 0000 c0e0 f87c 1e0e 0703 0302 068c
+	f000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0001 0103 070f 1f07
+	0707 0707 0707 0707 0707 0707 0707 0703
+	0100 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 00e0 e000 0000 0000 0000 0000
+	0000 0000 0000 0890 e000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 003e 0e0e 0e0e 0e0e 0e0e 0e0e
+	0e0e 0e0e 0e07 0703 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0003 0000
+	0000 0000 0000 0000 0000 0000 0001 86fc
+	f000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 00e0 e0e0 e0e0 e0e0 e0e0 e0e0
+	e0e0 e0e0 e0f0 e0c0 8000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 007f 1c1c
+	0e0e 0e07 0703 0303 0101 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0003 0000 0101 0102 0282 8484
+	c4c8 e8e8 f070 7020 2000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 00e0 8080
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 007f 1c1c 0e0e 0e07 0703 0303
+	0101 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 007f 1c1c
+	0e0e 0e07 0783 8383 c5c5 e8e8 e870 7020
+	2000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0003 0000 0101 0102 0282 8484
+	c4c8 e8e8 f070 7020 2000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 00e0 8080
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 003f 0f07
+	0303 0100 0000 0000 0000 0001 0102 040c
+	3f00 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 00c1 0000 81c1 c2e4 f478 383c
+	5c4e 8f07 0303 0100 0300 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 00f8 4080
+	0000 0000 0000 0000 0000 0000 80c0 c0e0
+	f800 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 007f 1c0e 0e07 0703 0301 0100
+	0000 0000 0000 0000 0000 0000 0307 0300
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0080 80c0 c0e1 e172 723c 3c18 1810
+	1020 2040 c080 0000 0000 0000 0000 0000
+	0000 0000 003e 0810 1020 2040 4080 8000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 080f 1f18
+	3020 0000 0000 0001 0303 0706 0e1c 1c38
+	3f00 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 00ff ff0e 1c1c 3870 70e0 c0c0
+	8080 0000 0000 0103 ff00 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 8080 8080
+	8000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0001
+	0103 0303 0303 0303 0303 020c 0203 0303
+	0303 0303 0303 0301 0100 0000 0000 0000
+	0000 0000 3040 8080 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	8080 4030 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 1818 1818 1818 1818 1818 1818
+	1818 1818 1818 1818 1818 1818 1818 1818
+	1818 1818 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0c02 0101
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0101 020c 0000 0000
+	0000 0000 0000 0080 80c0 c0c0 c0c0 c0c0
+	c0c0 4030 40c0 c0c0 c0c0 c0c0 c0c0 c080
+	8000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0e11 2000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0810
+	e000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+
+@appicon ( 3x3 )
+	0000 0307 1f0f 0707 0003 071f 3f1f 0f0f 00fe ffff ffff ffff feff ffff c7ff ffff 
+	0000 0080 c0c0 e0e0 0000 80c0 e0e0 f0f0 000f 0f1f 1f3f 3f3f 0f1f 1f3f 3f7f 7f7f 
+	7f9f efef f7f7 f7f7 ffff ffff ffff ffff e0f0 f0f0 f0f0 b0b0 f0f8 f8f8 f8f8 f8f8 
+	3f3f 3f1f 1f0f 0300 7f7f 7f3f 3f1f 0f03 f7f7 fbfd fe7f bf00 ffff ffff ffff ffff 
+	b0b0 b0d0 1070 7800 f8f8 f8f8 f8f8 fcfe
+
+@slides ( buf )

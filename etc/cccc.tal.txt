@@ -1,0 +1,1408 @@
+( app/cccc : graphical calculator 52428 )
+
+|00 @System &vector $2 &pad $6 &r $2 &g $2 &b $2
+|10 @Console &vector $2 &read $1 &pad $5 &write $1
+|20 @Screen &vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
+|30 @Audio0 &vector $2 &position $2 &output $1 &pad $3 &adsr $2 &length $2 &addr $2 &volume $1 &pitch $1
+|80 @Controller &vector $2 &button $1 &key $1
+|90 @Mouse &vector $2 &x $2 &y $2 &state $1 &chord $1
+|a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+
+|0000
+
+	@mode &dec $1 &dot $1 &mute $1
+	@cursor &x $2 &y $2 &d &dx $1 &dy $1
+	@input &num $2 &den $2
+	@length $2
+
+|0100 @on-reset ( -> )
+
+	( meta )
+	;meta #06 DEO2
+	( theme )
+	#50f2 .System/r DEO2
+	#b0f9 .System/g DEO2
+	#a0f8 .System/b DEO2
+	load-theme
+	( frame size e0xf0 )
+	#00e0 .Screen/width DEO2
+	#00f0 .Screen/height DEO2
+	( setup synth )
+	#1006 .Audio0/adsr DEO2
+	;tone .Audio0/addr DEO2
+	#0100 .Audio0/length DEO2
+	#ff .Audio0/volume DEO ( TODO: toggle ON/OFF )
+	( defaults )
+	#0001 .input/den STZ2
+	#0101 .mode STZ2
+	( initial draw )
+	redraw
+	( vectors )
+	;on-console .Console/vector DEO2
+	;on-button .Controller/vector DEO2
+	;on-mouse .Mouse/vector DEO2
+	;on-frame .Screen/vector DEO2
+
+BRK
+
+@meta
+	$1
+	( name ) "CCCC 0a
+	( details ) "A 20 "Desktop 20 "Calculator 0a
+	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
+	( date ) "28 20 "Nov 20 "2023 $1 00
+
+(
+@|vectors )
+
+@on-console ( -> )
+
+	.Console/read DEI listen
+
+BRK
+
+@on-button ( -> )
+
+	.Controller/button DEI2 #01 LIT "v NEQ2 ?&no-paste
+		snarf-paste
+		&no-paste
+
+	( buttons )
+	.Controller/button DEI
+	DUP #10 NEQ ?&no-u ( up ) .cursor/dx LDZ .cursor/dy LDZ #01 SUB set-sel &no-u
+	DUP #20 NEQ ?&no-d ( down ) .cursor/dx LDZ .cursor/dy LDZ INC set-sel &no-d
+	DUP #40 NEQ ?&no-l ( left ) .cursor/dx LDZ #01 SUB .cursor/dy LDZ set-sel &no-l
+	DUP #80 NEQ ?&no-r ( right ) .cursor/dx LDZ INC .cursor/dy LDZ set-sel &no-r
+	DUP #01 NEQ ?&no-a ( A ) press-sel &no-a
+	DUP #02 NEQ ?&no-b ( B ) erase &no-b
+	POP
+	( keys )
+	.Controller/key DEI listen
+
+BRK
+
+@on-frame ( -> )
+
+	( delay )
+	[ LIT &f 00 ] INCk ,&f STR #03 AND #00 EQU [ JMP BRK ]
+
+	( find buttons )
+	;buttons/end ;buttons
+	&loop
+		#0008 ADD2 LDAk #00 EQU ?&continue
+			( decr time )
+			DUP2 LDAk #01 SUB ROT ROT STA
+			( release button )
+			LDAk ?&continue
+				DUP2 #0008 SUB2 #00 press-button/release
+			&continue
+		INC2 GTH2k ?&loop
+	POP2 POP2
+
+BRK
+
+@on-mouse ( -> )
+
+	[ LIT2 00 -Mouse/state ] DEI NEQ #42 ADD ;cursor-icn <update-cursor>
+
+	.Mouse/state DEI ?on-mouse-touch
+
+BRK
+
+@on-mouse-touch ( -> )
+
+	.Mouse/x DEI2 #0010 SUB2 #03 SFT2 NIP #03 DIV
+	.Mouse/y DEI2 #0078 SUB2 #03 SFT2 NIP
+
+	( release ) #00 .Mouse/state DEO
+
+	OVR #07 GTH ?&skip
+	DUP #fd GTH ?on-touch-bitpad
+	DUP #f1 EQU ?on-touch-top
+	DUP #f2 EQU ?on-touch-top
+	DUP #0b GTH ?&skip
+	OVR #02 LTH ?on-touch-fncpad
+	OVR #06 LTH ?on-touch-numpad
+	OVR #08 LTH ?on-touch-modpad
+	&skip
+	POP2
+
+BRK
+
+@on-touch-top ( x y -- )
+
+	POP2 toggle-mute
+
+BRK
+
+@on-touch-bitpad ( x y -- )
+
+	POP2
+
+	.Mouse/x DEI2 #0033 GTH2 ?&continue
+		BRK
+		&continue
+
+	#0001
+	( shift )
+	#000f
+	.Mouse/x DEI2 #0038 SUB2 #03 SFT2
+		DUP2 #0005 DIV2 SUB2 SUB2
+	#40 SFT NIP
+	( mask )
+	SFT2 .input LDZ2 EOR2
+		 .input STZ2
+	update-input
+
+BRK
+
+@on-touch-fncpad ( x/3 y -> )
+
+	#01 SFT SWP #06 MUL ADD
+	#00 SWP DUP ADD ;fncpad ADD2
+		LDA2 JSR2
+
+BRK
+
+@on-touch-numpad ( x/3 y -> )
+
+	SWP #02 SUB SWP
+	#03 DIV #20 SFT ADD 
+	#00 SWP DUP ADD ;numpad ADD2
+		LDA2 JSR2
+
+BRK
+
+@on-touch-modpad ( x/3 y -> )
+
+	#03 DIV SWP #06 SUB #20 SFT ADD
+	#00 SWP DUP ADD ;modpad ADD2
+		LDA2 JSR2
+
+BRK
+
+(
+@|main )
+
+@listen ( c -- )
+
+	STHk
+	#00 EQU ?&skip
+
+	;keys/end ;keys
+	&loop
+		LDAk STHkr NEQ ?&continue
+			INC2k LDA2 JSR2 !&end
+			&continue
+		INC2 INC2 INC2 GTH2k ?&loop
+	&end
+	POP2 POP2
+	&skip
+	POPr
+
+JMP2r
+
+@eval ( -- )
+
+	;buttons/push press-button
+	.input LDZ2 #0001 push
+	#0000 .input STZ2
+	update-input
+
+!draw-display
+
+@append ( val -- )
+
+	#00 SWP 
+	.input LDZ2 
+		#00 #0a10 .mode/dec LDZ [ JMP SWP POP ] MUL2 ADD2 
+		.input STZ2
+
+!draw-input
+
+@erase ( -- )
+
+	( clamp )
+	.input LDZ2 ORA ?&has-input
+		;buttons/pop press-button
+		.length LDZ2 ORA #01 [ JCN JMP2r ]
+		pop POP2 .input/num STZ2
+		update-input
+		!draw-display
+		&has-input
+
+	.input LDZ2 
+		#00 #0a10 .mode/dec LDZ [ JMP SWP POP ] DIV2
+		.input STZ2
+
+!update-input
+
+@clear ( -- )
+
+	;buttons/clr press-button
+	#0000 .length STZ2
+	#0000 .input STZ2
+	draw-display
+
+!update-input
+
+@toggle-mute ( -- )
+
+	.mode/mute LDZk #00 EQU SWP STZ
+
+!draw-mute
+
+@toggle-mode ( -- )
+
+	;buttons/mode press-button
+	.mode/dec LDZk INC #01 AND SWP STZ
+	.mode/dot LDZk .mode/dec LDZ #00 EQU ADD #01 AND SWP STZ
+	draw-display
+	update-input
+
+!draw-mode
+
+@set-dec ( -- )
+
+	#01 .mode/dec STZ
+	draw-display
+
+!draw-mode
+
+@set-hex ( -- )
+
+	#00 .mode/dec STZ
+	draw-display
+
+!draw-mode
+
+@set-sel ( x y -- )
+
+	( erase last sel )
+	#00 draw-sel
+
+	( store new sel )
+	#03 AND .cursor/dy STZ
+	#07 AND .cursor/dx STZ
+
+	#81 
+
+!draw-sel
+
+@press-sel ( -- )
+
+	#00 .cursor/d LDZ2 #30 SFT ADD #20 SFT2
+		;layout ADD2 INC2 INC2 LDA2 ( .. )
+
+JMP2
+
+@gcd ( num* den* -- d* )
+
+	ORAk ?&ok POP2 JMP2r &ok SWP2 OVR2 
+	( MOD2 ) [ DIV2k MUL2 SUB2 ]
+
+!gcd
+
+@push ( num* den* -- )
+
+	OVR2 #0000 EQU2 ?&invalid
+	ORAk #00 EQU ?&invalid
+	( reduce )
+	OVR2 OVR2 gcd STH2k DIV2 SWP2 STH2r DIV2
+	( store )
+	.length LDZ2 #20 SFT2 ;memory ADD2 STH2k STA2
+	STH2r INC2 INC2 STA2
+	( inc ) .length LDZ2k INC2 ROT STZ2
+
+JMP2r
+	&invalid POP2 POP2 JMP2r
+
+@pop ( -- num* den* )
+
+	( dec ) .length LDZ2k #0001 SUB2 ROT STZ2
+	.length LDZ2 #20 SFT2 ;memory ADD2
+	LDA2k SWP2 INC2 INC2 LDA2
+
+JMP2r
+
+(
+@|operations )
+
+@dup ( -- )
+
+	;buttons/dup press-button eval
+	.length LDZ2 #0001 LTH2 ?&skip
+
+	pop OVR2 OVR2 push push
+	draw-display
+	&skip
+
+JMP2r
+
+@swp ( -- )
+
+	;buttons/swp press-button eval
+	.length LDZ2 #0002 LTH2 ?&skip
+
+	pop pop ROT2 STH2 ROT2 STH2r push push
+	draw-display
+	&skip
+
+JMP2r
+
+@vid ( -- )
+
+	;buttons/vid press-button eval
+	.length LDZ2 #0001 LTH2 ?&skip
+
+	.length LDZ2 #20 SFT2 #0002 SUB2 ;memory ADD2 LDA2 #0001 EQU2 ?&skip
+	pop SWP2 #0001 push
+	#0001 push
+	draw-display
+	&skip
+
+JMP2r
+
+@inv ( -- )
+
+	;buttons/inv press-button eval
+	.length LDZ2 #0001 LTH2 ?&skip
+
+	pop SWP2 push
+	draw-display
+	&skip
+
+JMP2r
+
+@do-add ( -- )
+
+	;buttons/add press-button eval
+	.length LDZ2 #0002 LTH2 ?&skip
+
+	pop ,&bd STR2 ,&bn STR2
+	pop ,&ad STR2 ,&an STR2
+	[ LIT2 &an $2 ] [ LIT2 &bd $2 ] MUL2
+	[ LIT2 &ad $2 ] [ LIT2 &bn $2 ] MUL2 ADD2
+	,&ad LDR2 ,&bd LDR2 MUL2 push
+	draw-display
+	&skip
+
+JMP2r
+
+@do-sub ( -- )
+
+	;buttons/sub press-button eval
+	.length LDZ2 #0002 LTH2 ?&skip
+
+	pop ,&bd STR2 ,&bn STR2
+	pop ,&ad STR2 ,&an STR2
+	[ LIT2 &an $2 ] [ LIT2 &bd $2 ] MUL2
+	[ LIT2 &ad $2 ] [ LIT2 &bn $2 ] MUL2 SUB2
+	,&ad LDR2 ,&bd LDR2 MUL2 push
+	draw-display
+	&skip
+
+JMP2r
+
+@do-mul ( -- )
+
+	;buttons/mul press-button eval
+	.length LDZ2 #0002 LTH2 ?&skip
+
+	pop ,&bd STR2 ,&bn STR2
+	pop ,&ad STR2 ,&an STR2
+	[ LIT2 &an $2 ] [ LIT2 &bn $2 ] MUL2
+	[ LIT2 &ad $2 ] [ LIT2 &bd $2 ] MUL2
+		push
+	draw-display
+	&skip
+
+JMP2r
+
+@do-div ( -- )
+
+	;buttons/div press-button eval
+	.length LDZ2 #0002 LTH2 ?&skip
+
+	pop ,&bd STR2 ,&bn STR2
+	pop ,&ad STR2 ,&an STR2
+	[ LIT2 &an $2 ] [ LIT2 &bd $2 ] MUL2
+	[ LIT2 &ad $2 ] [ LIT2 &bn $2 ] MUL2
+		push
+	draw-display
+	&skip
+
+JMP2r
+
+@do-and ( -- )
+
+	;buttons/and press-button eval
+	.length LDZ2 #0002 LTH2 ?&skip
+
+	pop ,&bd STR2 ,&bn STR2
+	pop ,&ad STR2 ,&an STR2
+	[ LIT2 &an $2 ] [ LIT2 &bd $2 ] MUL2
+	[ LIT2 &ad $2 ] [ LIT2 &bn $2 ] MUL2 AND2
+	,&ad LDR2 ,&bd LDR2 MUL2 push
+	draw-display
+	&skip
+
+JMP2r
+
+@do-ora ( -- )
+
+	;buttons/ora press-button eval
+	.length LDZ2 #0002 LTH2 ?&skip
+
+	pop ,&bd STR2 ,&bn STR2
+	pop ,&ad STR2 ,&an STR2
+	[ LIT2 &an $2 ] [ LIT2 &bd $2 ] MUL2
+	[ LIT2 &ad $2 ] [ LIT2 &bn $2 ] MUL2 ORA2
+	,&ad LDR2 ,&bd LDR2 MUL2 push
+	draw-display
+	&skip
+
+JMP2r
+
+@do-sfl ( -- )
+
+	;buttons/sfl press-button eval
+	.length LDZ2 #0001 LTH2 ?&skip
+
+	pop SWP2 DUP2 ADD2 SWP2 push
+	draw-display
+	&skip
+
+JMP2r
+
+@do-sfr ( -- )
+
+	;buttons/sfr press-button eval
+	.length LDZ2 #0001 LTH2 ?&skip
+
+	pop SWP2 #01 SFT2 SWP2 push
+	draw-display
+	&skip
+
+JMP2r
+
+@put
+	&0 ( -- ) #000b ;buttons/0 !press-number
+	&1 ( -- ) #010c ;buttons/1 !press-number
+	&2 ( -- ) #020e ;buttons/2 !press-number
+	&3 ( -- ) #0310 ;buttons/3 !press-number
+	&4 ( -- ) #0411 ;buttons/4 !press-number
+	&5 ( -- ) #0513 ;buttons/5 !press-number
+	&6 ( -- ) #0615 ;buttons/6 !press-number
+	&7 ( -- ) #0717 ;buttons/7 !press-number
+	&8 ( -- ) #0818 ;buttons/8 !press-number
+	&9 ( -- ) #091a ;buttons/9 !press-number
+	&a ( -- ) #0a09 ;buttons/a !press-number
+	&b ( -- ) #0b07 ;buttons/b !press-number
+	&c ( -- ) #0c21 ;buttons/c !press-number
+	&d ( -- ) #0d1f ;buttons/d !press-number
+	&e ( -- ) #0e1d ;buttons/e !press-number
+	&f ( -- ) #0f1c ;buttons/f !press-number
+
+@press-number ( value note button* -- )
+
+	press-button play-note
+	( ignore hex keys in dec mode )
+	DUP #09 GTH .mode/dec LDZ AND ?&skip
+
+!append
+	&skip POP JMP2r
+
+@press-button ( button* -- )
+
+	( set timer )
+	DUP2 #0008 ADD2 #04 ROT ROT STA
+	#01
+	&release ( button* state -- )
+	STH
+	LDA2k .Screen/x DEO2
+	INC2 INC2 LDA2k .Screen/y DEO2
+	INC2 INC2 LDA2k ( icon )
+	SWP2 INC2 INC2 LDA2 STHr ROT ROT ( .. )
+
+JMP2
+
+@play-note ( pitch -- )
+
+	.mode/mute LDZ ?&skip
+		DUP #18 ADD .Audio0/pitch DEO
+		&skip
+	POP
+
+JMP2r
+
+(
+@|drawing )
+
+@redraw ( -- )
+
+	#04 ;buttons/ctl draw-pad
+	#08 ;buttons/mod draw-pad
+	#04 ;buttons/wst draw-pad
+	#10 ;buttons/num draw-pad
+	draw-mode
+	draw-display
+	update-input
+
+	( frame )
+	#0000 DUP2
+	#1a
+	.Screen/height DEI2 #03 SFT2 NIP #02 SUB
+	;outline-frame
+		draw-frame
+
+	( mute )
+	draw-mute
+
+	( decal )
+	#16 .Screen/auto DEO
+	#0018 .Screen/x DEO2
+	#0003 .Screen/y DEO2
+	;decal-icn .Screen/addr DEO2
+	#01 .Screen/sprite DEO
+
+	( logo )
+	#01 .Screen/auto DEO
+	#00b0 .Screen/x DEO2
+	.Screen/height DEI2 #000a SUB2 .Screen/y DEO2
+	;logo-icn .Screen/addr DEO2
+	#01 .Screen/sprite DEOk DEOk DEOk DEO
+
+JMP2r
+
+@update-input ( -- )
+
+	#11 .Screen/auto DEO
+	#0018 .Screen/x DEO2
+	#0050 .Screen/y DEO2
+	;fill-icn .Screen/addr DEO2
+
+	#1600
+	&loop
+		#01 .Screen/sprite DEO
+		INC GTHk ?&loop
+	POP2
+
+@draw-input ( -- )
+
+	&res
+	#0018 .Screen/x DEO2
+	#0050 .Screen/y DEO2
+	#04 ;draw-num/color STA
+	;input draw-fraction
+
+	( draw binary )
+	#05 .Screen/auto DEO
+	#0038 .Screen/x DEO2
+	#006c .Screen/y DEO2
+
+	#1000
+	&loop
+		#0f OVR SUB .input LDZ2 ROT SFT2
+			#0001 AND2 #30 SFT2 ;binary-icns ADD2 .Screen/addr DEO2
+		#01 .Screen/sprite DEO
+		INCk #03 AND ?&no-space
+			#00 .Screen/sprite DEO
+			&no-space
+		INC GTHk ?&loop
+	POP2
+
+JMP2r
+
+@draw-display ( -- )
+
+	#0010 DUP2 #1609 ;display-frame draw-frame
+	#0018 .Screen/x DEO2
+	#0018 .Screen/y DEO2
+	#1606 ;fill-icn #01 draw-patt
+
+	#0018 .Screen/x DEO2
+	#16 draw-dotted
+
+	#06 ;draw-num/color STA
+	( memory )
+	#0300
+	&loop
+		#00 OVR INC .length LDZ2 GTH2 ?&end
+		#0018 .Screen/x DEO2
+		#00 OVR #40 SFT2 #0038 SWP2 SUB2 .Screen/y DEO2
+		#00 OVR INC .length LDZ2 SWP2 SUB2 #20 SFT2 ;memory ADD2 draw-fraction
+		INC GTHk ?&loop
+		&end
+	POP2
+
+JMP2r
+
+@draw-mode ( -- )
+
+	#05 .Screen/auto DEO
+	#0010 .Screen/x DEO2
+	#006c .Screen/y DEO2
+	#00 .mode/dec LDZ #40 SFT2 ;mode-icns ADD2 .Screen/addr DEO2
+	#01 .Screen/sprite DEOk DEO
+	#00 .mode/dot LDZ #30 SFT2 ;mode-icns/dot ADD2 .Screen/addr DEO2
+	#01 .Screen/sprite DEO
+
+JMP2r
+
+@draw-patt ( w h patt* color -- )
+
+	,&color STR
+	.Screen/addr DEO2
+	.Screen/x DEI2 ,&x STR2
+	#01 .Screen/auto DEO
+	SWP STH
+	#00
+	&hloop
+		[ LIT2 &x $2 ] .Screen/x DEO2
+		STHkr #00
+		&wloop
+			[ LIT &color 0f ] .Screen/sprite DEO
+			INC GTHk ?&wloop
+		POP2
+		.Screen/y DEI2k #0008 ADD2 ROT DEO2
+		INC GTHk ?&hloop
+	POP2
+	POPr
+	,&x LDR2 .Screen/x DEO2
+	#00 .Screen/auto DEO
+
+JMP2r
+
+@draw-pad ( length sprites* -- )
+
+	STH2
+	#00
+	&loop
+		#00 OVR #0009 MUL2 STH2kr ADD2 #00 ;press-button/release JSR2
+		INC GTHk ?&loop
+	POP2
+	POP2r
+
+JMP2r
+
+@draw-mute ( -- )
+
+	#00 .Screen/auto DEO
+	.Screen/width DEI2 #0020 SUB2 .Screen/x DEO2
+	#0003 .Screen/y DEO2
+	;mute-chr #00 .mode/mute LDZ #40 SFT2 ADD2 .Screen/addr DEO2
+	#81 .Screen/sprite DEO
+
+JMP2r
+
+@draw-button-clr ( icon* state -- )
+
+	#09 ,draw-button-small/color STR
+	,draw-button-small JSR
+	#0b ,draw-button-small/color STR
+
+JMP2r
+
+@draw-button-small ( icon* state -- )
+
+	#00 NEQ STH
+	#26 .Screen/auto DEO
+	;button-icns/alt ;button-icns/def
+		STHkr [ JMP SWP2 POP2 ] STH2k .Screen/addr DEO2
+	#81 .Screen/sprite DEO
+	STH2r #0060 ADD2 .Screen/addr DEO2
+	#81 .Screen/sprite DEO
+	( icon )
+	.Screen/x DEI2 #0008 ADD2 .Screen/x DEO2
+	.Screen/y DEI2 #000c SUB2 #00 STHkr ADD2 .Screen/y DEO2
+	#00 .Screen/auto DEO
+	.Screen/addr DEO2
+	#09 [ LIT &color 0b ] STHr [ JMP SWP POP ] .Screen/sprite DEOk DEO
+
+JMP2r
+
+@draw-button-tall ( icon* state -- )
+
+	#00 NEQ STH
+	#26 .Screen/auto DEO
+	;button-icns/alt ;button-icns/def
+		STHkr [ JMP SWP2 POP2 ] STH2k .Screen/addr DEO2
+	#81 .Screen/sprite DEO
+	( body )
+	#0400
+	&loop
+		STH2kr #0030 ADD2 .Screen/addr DEO2
+		#81 .Screen/sprite DEO
+		INC GTHk ?&loop
+	POP2
+	STH2r #0060 ADD2 .Screen/addr DEO2
+	#81 .Screen/sprite DEO
+	( icon )
+	.Screen/x DEI2 #0008 ADD2 .Screen/x DEO2
+	.Screen/y DEI2 #0010 SUB2 #00 STHkr ADD2 .Screen/y DEO2
+	#00 .Screen/auto DEO
+	.Screen/addr DEO2
+	#090b STHr [ JMP SWP POP ] .Screen/sprite DEOk DEO
+
+JMP2r
+
+@draw-button-hex ( icon* state -- )
+
+	#09 ,draw-button/color STR
+	,draw-button JSR
+	#0b ,draw-button/color STR
+
+JMP2r
+
+@draw-button ( icon* state -- )
+
+	#00 NEQ STH
+	#26 .Screen/auto DEO
+	;button-icns/alt ;button-icns/def
+		STHkr [ JMP SWP2 POP2 ] .Screen/addr DEO2
+	#81 .Screen/sprite DEOk DEOk DEO
+	( icon )
+	.Screen/x DEI2 #0004 ADD2 .Screen/x DEO2
+	.Screen/y DEI2 #0014 SUB2 #00 STHkr ADD2 .Screen/y DEO2
+	#16 .Screen/auto DEO
+	.Screen/addr DEO2
+	#09 [ LIT &color 0b ] STHr [ JMP SWP POP ] .Screen/sprite DEOk DEO
+
+JMP2r
+
+@draw-fraction ( addr* -- )
+
+	#01 .Screen/auto DEO
+	LDA2k SWP2 INC2 INC2 LDA2
+	DUP2 #0001 EQU2 ?&whole
+	GTH2k ?&mixed
+
+&proper ( num* den* -- )
+
+	.mode/dot LDZ ?&proper-dot
+	SWP2 ,draw-value JSR
+	draw-slash
+
+!draw-value
+
+&proper-dot ( num* den* -- )
+
+	#00 draw-num
+	draw-dot
+	SWP2 #03e8 #1000 .mode/dec LDZ [ JMP SWP2 POP2 ] MUL2 SWP2 DIV2
+
+!draw-value
+
+&mixed ( num* den* -- )
+
+	.mode/dot LDZ ?&mixed-dot
+	DIV2k ,draw-value JSR
+	draw-quote
+	STH2k ( MOD2 ) [ DIV2k MUL2 SUB2 ] STH2r
+
+!&proper
+
+&mixed-dot ( num* den* -- )
+
+	DIV2k ,draw-value JSR
+	draw-dot
+	STH2k ( MOD2 ) [ DIV2k MUL2 SUB2 ] STH2r
+	SWP2 #03e8 #1000 .mode/dec LDZ [ JMP SWP2 POP2 ] MUL2 SWP2 DIV2
+
+!draw-value
+
+&whole ( num* den* -- )
+
+	POP2
+
+@draw-value ( short* -- )
+
+	ORAk ?&no-null
+		POP2 #00 !draw-num
+		&no-null
+
+	.mode/dec LDZ ?draw-dec
+
+@draw-hex ( short* -- )
+
+	#00 ,&z STR
+	,&parse JSR
+	,&parse JSR
+	,&parse JSR
+	,&parse JSR POP2
+
+JMP2r
+	&parse
+		OVR #04 SFT DUP [ LIT &z $1 ] EQU ?&skip
+			#ff ,&z STR DUP draw-num
+			&skip
+		POP #40 SFT2
+	JMP2r
+
+@draw-dec ( short* -- )
+
+	#00 ,&z STR
+	#2710 ,&parse JSR
+	#03e8 ,&parse JSR
+	#0064 ,&parse JSR
+	#000a ,&parse JSR
+	NIP
+	&emit
+		DUP [ LIT &z $1 ] EQU ?&skip
+		#ff ,&z STR DUP draw-num
+		&skip
+	POP
+
+JMP2r
+	&parse
+		DIV2k DUP ,&emit JSR MUL2 SUB2
+	JMP2r
+
+@hex-char ( hex -- char )
+
+	#0f AND DUP #09 GTH #27 MUL ADD #30 ADD
+
+JMP2r
+
+@draw-num ( num -- )
+
+	#00 SWP #50 SFT2 ;num-icns ADD2 .Screen/addr DEO2
+	#16 .Screen/auto DEOk DEO
+	[ LIT &color 01 ] .Screen/sprite DEOk DEO
+	.Screen/y DEI2k #0010 SUB2 ROT DEO2
+	.Screen/x DEI2k #000d ADD2 ROT DEO2
+
+JMP2r
+
+@draw-dot ( -- )
+
+	;dot-icns !draw-type
+
+@draw-quote ( -- )
+
+	;quote-icns !draw-type
+
+@draw-slash ( -- )
+
+	;slash-icns
+
+@draw-type ( addr* -- )
+
+	.Screen/addr DEO2
+	.Screen/x DEI2k INC2 INC2 INC2 ROT DEO2
+	#15 .Screen/auto DEOk DEO
+	#04 .Screen/sprite DEO
+
+JMP2r
+
+@draw-dotted ( w -- )
+
+	#01 .Screen/auto DEO
+	;&icn .Screen/addr DEO2
+	#00
+	&loop
+		#04 .Screen/sprite DEO
+		INC GTHk ?&loop
+	POP2
+
+JMP2r
+	&icn 0000 0055 0000 0000
+
+@draw-frame ( x* y* w h sprite* -- )
+
+	.Screen/addr DEO2
+	,&h STR ,&w STR
+	DUP2 .Screen/y DEO2 ,&y STR2
+	DUP2 .Screen/x DEO2 ,&x STR2
+	#01 .Screen/auto DEO
+	#81 .Screen/sprite DEO
+	,&next JSR [ LIT &w $1 ] ,&repeat JSR
+	#02 .Screen/auto DEO
+	,&next JSR #81 .Screen/sprite DEO
+	,&next JSR [ LIT &h $1 ] ,&repeat JSR
+	( left )
+	[ LIT2 &y $2 ] #0008 ADD2 .Screen/y DEO2
+	[ LIT2 &x $2 ] .Screen/x DEO2
+	,&next JSR ,&h LDR ,&repeat JSR
+	#01 .Screen/auto DEO
+	,&next JSR #81 .Screen/sprite DEO
+	,&next JSR ,&w LDR ,&repeat JSR
+	,&next JSR #81 .Screen/sprite DEO
+	( fill )
+	,&next JSR
+	,&x LDR2 #0008 ADD2 .Screen/x DEO2
+	,&y LDR2 #0008 ADD2 .Screen/y DEO2
+
+JMP2r
+	&next
+		.Screen/addr DEI2k #0010 ADD2 ROT DEO2
+	JMP2r
+	&repeat
+		#00
+		&repeat-loop
+			#81 .Screen/sprite DEO
+			INC GTHk ?&repeat-loop
+		POP2
+	JMP2r
+
+@draw-sel ( color -- )
+
+	#00 .Screen/auto DEO
+	;dpad-chr .Screen/addr DEO2
+	#00 .cursor/d LDZ2 #30 SFT ADD #20 SFT2
+		;layout ADD2 LDA2 LDA2k #0008 ADD2 .Screen/x DEO2
+		INC2 INC2 LDA2 #0002 SUB2 .Screen/y DEO2
+	#40 ADD .Screen/sprite DEO
+
+JMP2r
+
+@<update-cursor> ( color addr* -- )
+	[ LIT2 00 -Screen/auto ] DEO
+	;fill-icn .Screen/addr DEO2
+	#40 <draw-cursor>
+	.Mouse/x DEI2 ,<draw-cursor>/x STR2
+	.Mouse/y DEI2 ,<draw-cursor>/y STR2
+	.Screen/addr DEO2
+
+@<draw-cursor> ( color -- )
+	[ LIT2 &x $2 ] .Screen/x DEO2
+	[ LIT2 &y $2 ] .Screen/y DEO2
+	.Screen/sprite DEO
+	JMP2r
+
+(
+@|printing )
+
+@print ( -- )
+
+	.length LDZ2 ORA ?&no-empty
+		;empty-txt print-str #0a18 DEO
+		JMP2r
+		&no-empty
+
+	.length LDZ2 #0001 SUB2 #20 SFT2 ;memory ADD2
+
+@print-fraction ( addr* -- )
+
+	LDA2k SWP2 INC2 INC2 LDA2
+	DUP2 #0001 EQU2 ?&whole
+	GTH2k ?&mixed
+
+&proper ( num* den* -- )
+
+	SWP2 ,print-value JSR
+	LIT "/ #18 DEO
+	print-value #0a18 DEO
+
+JMP2r
+
+&mixed ( num* den* -- )
+
+	DIV2k print-value STH2k ( MOD2 ) [ DIV2k MUL2 SUB2 ] STH2r
+	LIT "' #18 DEO !&proper ( .. )
+
+&whole ( num* den* -- )
+
+	POP2 print-value #0a18 DEO
+
+JMP2r
+
+@print-value ( short* -- )
+
+	ORAk ?&no-null
+		LIT "0 #18 DEO JMP2r
+		&no-null
+
+	.mode/dec LDZ ?print-dec
+
+@print-hex ( short* -- )
+
+	#00 ,&z STR
+	,&parse JSR
+	,&parse JSR
+	,&parse JSR
+	,&parse JSR POP2
+
+JMP2r
+	&parse
+		OVR #04 SFT DUP [ LIT &z $1 ] EQU ?&skip
+			#ff ,&z STR DUP hex-char #18 DEO
+			&skip
+		POP #40 SFT2
+	JMP2r
+
+@print-dec ( short* -- )
+
+	#00 ,&z STR
+	#2710 ,&parse JSR
+	#03e8 ,&parse JSR
+	#0064 ,&parse JSR
+	#000a ,&parse JSR
+	NIP
+	&emit
+		DUP [ LIT &z $1 ] EQU ?&skip
+		#ff ,&z STR DUP #30 ADD #18 DEO
+		&skip
+	POP
+
+JMP2r
+	&parse
+		DIV2k DUP ,&emit JSR MUL2 SUB2
+	JMP2r
+
+@print-str ( str* -- )
+
+	&w
+		LDAk #18 DEO
+		INC2 LDAk ?&w
+	POP2
+
+JMP2r
+
+(
+@|ecosystem )
+
+@snarf-paste ( -- )
+
+	;&snarf-txt .File/name DEO2
+	#0001 .File/length DEO2
+	&stream
+		;&buf .File/read DEO2
+		.File/success DEI2 #0000 EQU2 ?&end
+		[ LIT &buf 20 ] listen
+		!&stream
+	&end
+
+JMP2r
+	&snarf-txt ".snarf $1
+
+( theme )
+
+@load-theme ( -- )
+
+	;&path .File/name DEO2
+	#0002 .File/length DEO2
+	;&r .File/read DEO2
+	;&g .File/read DEO2
+	;&b .File/read DEO2
+	.File/success DEI2 ORA #01 [ JCN JMP2r ]
+	LIT2 &r $2 .System/r DEO2
+	LIT2 &g $2 .System/g DEO2
+	LIT2 &b $2 .System/b DEO2
+
+JMP2r
+	&path ".theme $1
+
+@empty-txt "Empty 20 "Stack $1
+
+(
+@|tables )
+
+@fncpad
+	=clear =swp =dup =erase =erase =erase
+	=toggle-mode =inv =vid =eval =eval =eval
+
+@numpad
+	=put/7 =put/8 =put/9 =put/f
+	=put/4 =put/5 =put/6 =put/e
+	=put/1 =put/2 =put/3 =put/d
+	=put/0 =put/a =put/b =put/c
+
+@modpad
+	=do-div =do-mul =do-sub =do-add
+	=do-and =do-ora =do-sfl =do-sfr
+
+@keys
+	"~ =clear 09 =toggle-mode "? =inv "@ =vid
+	"+ =do-add "- =do-sub "* =do-mul "/ =do-div
+	"& =do-and "| =do-ora "< =do-sfl "> =do-sfr
+	20 =eval 08 =erase "% =swp "" =dup
+	"7 =put/7 "8 =put/8 "9 =put/9 "f =put/f
+	"4 =put/4 "5 =put/5 "6 =put/6 "e =put/e
+	"1 =put/1 "2 =put/2 "3 =put/3 "d =put/d
+	"0 =put/0 "a =put/a "b =put/b "c =put/c
+	0d =eval
+	"! =erase
+	". =print
+	1b =clear
+	"# =set-hex
+	"$ =set-dec
+	&end
+
+@layout
+	=buttons/clr =clear
+	=buttons/mode =toggle-mode
+	=buttons/7 =put/7
+	=buttons/8 =put/8
+	=buttons/9 =put/9
+	=buttons/f =put/f
+	=buttons/div =do-div
+	=buttons/and =do-and
+	=buttons/swp =swp
+	=buttons/inv =inv
+	=buttons/4 =put/4
+	=buttons/5 =put/5
+	=buttons/6 =put/6
+	=buttons/e =put/e
+	=buttons/mul =do-mul
+	=buttons/ora =do-ora
+	=buttons/dup =dup
+	=buttons/vid =vid
+	=buttons/1 =put/1
+	=buttons/2 =put/2
+	=buttons/3 =put/3
+	=buttons/d =put/d
+	=buttons/sub =do-sub
+	=buttons/sfl =do-sfl
+	=buttons/pop =erase
+	=buttons/push =eval
+	=buttons/0 =put/0
+	=buttons/a =put/a
+	=buttons/b =put/b
+	=buttons/c =put/b
+	=buttons/add =do-add
+	=buttons/sfr =do-sfr
+
+@buttons ( x* y* icon* size* state )
+	&ctl
+	&clr  0010 0078 =ctl-icns/clr =draw-button-clr 00
+	&swp  0010 0088 =wst-icns/swp =draw-button-small 00
+	&dup  0010 0098 =wst-icns/dup =draw-button-small 00
+	&pop  0010 00a8 =wst-icns/pop =draw-button-tall 00
+	&wst
+	&mode 0028 0078 =ctl-icns/mode =draw-button-small 00
+	&inv  0028 0088 =ctl-icns/inv =draw-button-small 00
+	&vid  0028 0098 =ctl-icns/vid =draw-button-small 00
+	&push 0028 00a8 =wst-icns/push =draw-button-tall 00
+	&num
+	&7   0040 0078 =num-icns/7 =draw-button 00
+	&8   0058 0078 =num-icns/8 =draw-button 00
+	&9   0070 0078 =num-icns/9 =draw-button 00
+	&f   0088 0078 =num-icns/f =draw-button-hex 00
+	&4   0040 0090 =num-icns/4 =draw-button 00
+	&5   0058 0090 =num-icns/5 =draw-button 00
+	&6   0070 0090 =num-icns/6 =draw-button 00
+	&e   0088 0090 =num-icns/e =draw-button-hex 00
+	&1   0040 00a8 =num-icns/1 =draw-button 00
+	&2   0058 00a8 =num-icns/2 =draw-button 00
+	&3   0070 00a8 =num-icns/3 =draw-button 00
+	&d   0088 00a8 =num-icns/d =draw-button-hex 00
+	&0   0040 00c0 =num-icns/0 =draw-button 00
+	&a   0058 00c0 =num-icns/a =draw-button-hex 00
+	&b   0070 00c0 =num-icns/b =draw-button-hex 00
+	&c   0088 00c0 =num-icns/c =draw-button-hex 00
+	&mod
+	&div 00a0 0078 =mod-icns/div =draw-button 00
+	&mul 00a0 0090 =mod-icns/mul =draw-button 00
+	&sub 00a0 00a8 =mod-icns/sub =draw-button 00
+	&add 00a0 00c0 =mod-icns/add =draw-button 00
+	&and 00b8 0078 =mod-icns/and =draw-button 00
+	&ora 00b8 0090 =mod-icns/ora =draw-button 00
+	&sfl 00b8 00a8 =mod-icns/sfl =draw-button 00
+	&sfr 00b8 00c0 =mod-icns/sfr =draw-button 00
+	&end
+
+(
+@|assets )
+
+@cursor-icn [ 80c0 e0f0 f8e0 1000 ]
+
+@fill-icn [ ffff ffff ffff ffff ]
+
+
+
+@logo-icn
+1824 40df 4024 1800
+
+@patt-icn
+8800 2200 8800 2200
+aa55 aa55 aa55 aa55
+
+@decal-icn
+001c 22c1 0000 0000
+0000 0007 8870 0000
+
+@mode-icns ( hex/dec )
+0018 7818 1818 7e00
+003c 607c 6666 3c00
+0018 7818 1818 7e00
+003c 6666 6666 3c00
+&dot
+( f ) 007e 6060 7c60 6000
+( d ) 007c 6666 6666 7c00
+@binary-icns
+003c 6666 6666 3c00
+0018 7818 1818 7e00
+
+@button-icns
+&def
+001f 2040 4040 4040 0000 1f3f 3f3f 3f3f 
+00ff 0000 0000 0000 0000 ffff ffff ffff 
+00f8 0402 0202 0202 0000 f8fc fcfc fcfc 
+4040 4040 4040 4040 3f3f 3f3f 3f3f 3f3f 
+0000 0000 0000 0000 ffff ffff ffff ffff 
+0202 0202 0202 0202 fcfc fcfc fcfc fcfc 
+4040 4040 4020 1f00 3f3f 3f3f 1f00 0000 
+0000 0000 0000 ff00 ffff ffff ff00 0000 
+0202 0202 0204 f800 fcfc fcfc f800 0000 
+&alt
+001f 2040 4040 4040 0000 001f 3f3f 3f3f 
+00ff 0000 0000 0000 0000 00ff ffff ffff 
+00f8 0402 0202 0202 0000 00f8 fcfc fcfc 
+4040 4040 4040 4040 3f3f 3f3f 3f3f 3f3f 
+0000 0000 0000 0000 ffff ffff ffff ffff 
+0202 0202 0202 0202 fcfc fcfc fcfc fcfc 
+4040 4040 4020 1f00 3f3f 3f3f 3f1f 0000 
+0000 0000 0000 ff00 ffff ffff ffff 0000 
+0202 0202 0204 f800 fcfc fcfc fcf8 0000 
+
+@display-frame
+001f 205f 5f5f 5f5f 0000 1f20 2020 2020 
+00ff 00ff ffff ffff 0000 ff00 0000 0000 
+00f8 04fa fafa fafa 0000 f804 0404 0404 
+fafa fafa fafa fafa 0404 0404 0404 0404 
+5f5f 5f5f 5f5f 5f5f 2020 2020 2020 2020 
+5f5f 5f5f 5f20 1f00 2020 2020 201f 0000 
+ffff ffff ff00 ff00 0000 0000 00ff 0000 
+fafa fafa fa04 f800 0404 0404 04f8 0000
+
+@outline-frame
+0000 0000 0000 0001 0000 0000 0000 0000 
+0000 0000 0000 ff00 0000 0000 0000 0000 
+0000 0000 0000 0080 0000 0000 0000 0000 
+4040 4040 4040 4040 0000 0000 0000 0000 
+0202 0202 0202 0202 0000 0000 0000 0000 
+0100 0000 0000 0000 0000 0000 0000 0000 
+00ff 0000 0000 0000 0000 0000 0000 0000 
+8000 0000 0000 0000 0000 0000 0000 0000 
+
+@ctl-icns
+&clr 0000 183c 3c18 0000
+&mode 0000 007f fe00 0000
+&inv 006c 6666 6666 3600
+&vid 0033 6666 6666 cc00
+
+@wst-icns
+&push 0018 3c7e 1818 1800
+&pop 0018 1818 7e3c 1800
+&swp 007c 7e02 407e 3e00
+&dup 003c 6666 6666 6c00
+
+@mod-icns
+	&and
+	0000 000f 1f18 180f 0000 00e0 e000 00f8
+	0f18 181f 0f00 0000 f860 60e0 e000 0000
+	&ora
+	0000 0001 0101 0101 0000 0080 8080 8080
+	0101 0101 0100 0000 8080 8080 8000 0000
+	&sfl
+	0000 0006 060c 0c19 0000 0060 60c0 c080
+	190c 0c06 0600 0000 80c0 c060 6000 0000
+	&sfr
+	0000 0006 0603 0301 0000 0060 6030 3098
+	0103 0306 0600 0000 9830 3060 6000 0000
+	&add
+	0000 0001 0101 011f 0000 0080 8080 80f8
+	1f01 0101 0100 0000 f880 8080 8000 0000
+	&sub
+	0000 0000 0000 001f 0000 0000 0000 00f8
+	1f00 0000 0000 0000 f800 0000 0000 0000
+	&mul
+	0000 0018 1806 0601 0000 0018 1860 6080
+	0106 0618 1800 0000 8060 6018 1800 0000
+	&div
+	0000 0001 0100 001f 0000 0080 8000 00f8
+	1f00 0001 0100 0000 f800 0080 8000 0000
+
+@num-icns
+	&0
+	0000 000f 1f18 1818 0000 00f0 f818 1818
+	1818 181f 0f00 0000 1818 18f8 f000 0000
+	&1
+	0000 0003 0307 0701 0000 0080 8080 8080
+	0101 0101 0100 0000 8080 8080 8000 0000
+	&2
+	0000 001f 1f00 000f 0000 00f0 f818 18f8
+	1f18 181f 1f00 0000 f000 00f8 f800 0000
+	&3
+	0000 001f 1f00 001f 0000 00f0 f818 18f0
+	1f00 001f 1f00 0000 f018 18f8 f000 0000
+	&4
+	0000 0018 1818 181f 0000 0018 1818 18f8
+	0f00 0000 0000 0000 f818 1818 1800 0000
+	&5
+	0000 001f 1f18 181f 0000 00f8 f800 00f0
+	0f00 001f 1f00 0000 f818 18f8 f000 0000
+	&6
+	0000 0018 1818 181f 0000 0000 0000 00f0
+	1f18 181f 0f00 0000 f818 18f8 f000 0000
+	&7
+	0000 001f 1f00 0000 0000 00f8 f818 1830
+	0000 0000 0000 0000 3060 60c0 c000 0000
+	&8
+	0000 000f 1f18 180f 0000 00f0 f818 18f0
+	0f18 181f 0f00 0000 f018 18f8 f000 0000
+	&9
+	0000 000f 1f18 181f 0000 00f0 f818 18f8
+	0f00 0000 0000 0000 f818 1818 1800 0000
+	&a
+	0000 000f 1f18 181f 0000 00f0 f818 18f8
+	1f18 1818 1800 0000 f818 1818 1800 0000
+	&b
+	0000 001f 1f18 181f 0000 00f0 f818 18f0
+	1f18 181f 1f00 0000 f018 18f8 f000 0000
+	&c
+	0000 000f 1f18 1818 0000 00f8 f800 0000
+	1818 181f 0f00 0000 0000 00f8 f800 0000
+	&d
+	0000 001f 1f18 1818 0000 00f0 f818 1818
+	1818 181f 1f00 0000 1818 18f8 f000 0000
+	&e
+	0000 001f 1f18 181f 0000 00f8 f800 00f8
+	1f18 181f 1f00 0000 f800 00f8 f800 0000
+	&f
+	0000 000f 1f18 181f 0000 00f8 f800 0080
+	1f18 1818 1800 0000 8000 0000 0000 0000
+
+@slash-icns
+0000 0006 060c 0c18
+1830 3060 6000 0000
+
+@dot-icns
+0000 0000 0000 0000
+0000 0018 1800 0000
+
+@quote-icns
+0000 0018 1818 0800
+0000 0000 0000 0000
+
+@mute-chr
+0038 4483 4438 0000 0000 387c 3800 0000
+0038 4483 4438 0000 0000 0000 0000 0000
+@dpad-chr
+0000 ff81 8142 2418 0000 007e 7e3c 1800
+
+@tone 
+8eae b5b9 c0ce dbdc cdb6 a295 8b80 7364 
+5953 5256 585a 5d62 686f 7579 7d7e 8183 
+8585 8483 8587 8b96 9d9e 9282 7876 7674 
+706b 696c 7479 7d81 8385 898d 8d8d 8c8a 
+8a88 8684 8180 7f7e 7d7c 7c7c 7c7c 7a74 
+6445 221d 4179 a2b4 b7bc c7d6 ddd5 c0aa 
+9b8f 867a 6b5e 5553 5456 585c 6065 6c73 
+787c 7e80 8284 8484 8484 8589 919a a098 
+897c 7676 7572 6e6a 6b6f 777d 7f81 8587 
+8c8e 8e8d 8c8a 8988 8584 817f 7e7d 7e7d 
+7c7d 7c7c 786d 5530 1a2d 5e91 aeb7 b9c1 
+cfdc dacb b4a0 948b 8072 6458 5354 5558 
+5a5e 636a 7076 7a7d 7f82 8484 8584 8485 
+878d 969e 9d91 8177 7575 7470 6b69 6c74 
+7a7e 8182 8589 8d8e 8e8d 8a8a 8887 8582 
+807e 7e7d 7c7c 7c7c 7d7b 7463 4121 1e46 
+
+(
+@|memory )
+
+@memory ( den*, num*, den*, num*, .. )
+
