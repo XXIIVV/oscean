@@ -6,10 +6,13 @@ EMU=uxncli
 all: bin/maeve.rom bin/oscean.rom bin/arvelie.rom bin/directory.rom
 
 clean:
-	@ rm -f bin/oscean.rom bin/oscean.rom.sym bin/maeve.rom bin/maeve.rom.sym bin/arvelie.rom bin/arvelie.rom.sym && rm -f tmp/* && rm -f site/*
+	@ rm -f bin/* && rm -f tmp/* && rm -f site/*
 lint:
-	@ ${LIN} src/oscean.tal && ${LIN} src/maeve.tal && ${LIN} src/arvelie.tal
-run: bin/maeve.rom bin/oscean.rom bin/directory.rom bin/arvelie.rom
+	@ ${LIN} src/oscean.tal
+	@ ${LIN} src/maeve.tal
+	@ ${LIN} src/arvelie.tal
+	@ ${LIN} src/directory.tal
+run: all
 	@ mkdir -p tmp && rm -f tmp/* && ${EMU} bin/maeve.rom
 	@ mkdir -p site && rm -f site/* && ${EMU} bin/oscean.rom
 	@ ${EMU} bin/directory.rom docs/ && ${EMU} bin/directory.rom etc/
