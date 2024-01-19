@@ -15,7 +15,8 @@ lint:
 run: all
 	@ mkdir -p tmp && rm -f tmp/* && ${EMU} bin/maeve.rom
 	@ mkdir -p site && rm -f site/* && ${EMU} bin/oscean.rom
-	@ ${EMU} bin/directory.rom docs/ && ${EMU} bin/directory.rom etc/
+	@ ${EMU} bin/directory.rom docs/ 
+	@ ${EMU} bin/directory.rom etc/
 	@ ${EMU} bin/arvelie.rom
 
 bin/maeve.rom: src/maeve.tal
