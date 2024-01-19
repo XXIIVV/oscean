@@ -29,7 +29,7 @@
 	#f0aa .System/b DEO2
 	load-theme
 	( | size )
-	#02a0 .Screen/width DEO2
+	#02a8 .Screen/width DEO2
 	#0172 .Screen/height DEO2
 	.filepath LDZ ?&soft
 	( | cache position )
@@ -61,7 +61,7 @@
 	( name ) "Left 0a
 	( details ) "A 20 "Text 20 "Editor 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "9 20 "Jan 20 "2024 $1
+	( date ) "16 20 "Jan 20 "2024 $1
 	01
 	( > ) 83 =appicon
 
@@ -83,11 +83,13 @@
 	02 "Go $1
 	( > ) 01 "/ =go-directory "Directory $1
 	( > ) 01 0d =go-selection "Selection $1
-	04 "Format $1
+	06 "Format $1
 	( > ) 01 "t =format-strip "Strip $1
 	( > ) 01 "i =format-trim "Trim $1
 	( > ) 01 "y =transform-clip "Clip $1
 	( > ) 01 "j =transform-join "Join $1
+	( > ) 00 09 =tab "Tab $1
+	( > ) 02 09 =untab "Untab $1
 	04 "Select $1
 	( > ) 01 09 =select-current-word "Word $1
 	( > ) 01 "g =select-current-symbol "Symbol $1
@@ -198,7 +200,8 @@
 		POP .scroll/x LDZ2 #0040 SUB2 <scroll-to-x>
 		BRK
 	&on-shift ( button -> )
-		.selection/b LDZ2 ROT arrow-to-addr select-b BRK
+		.selection/b LDZ2 ROT arrow-to-addr <select-b>
+		BRK
 	&on-au ( button -> )
 		POP select-prev-marker BRK
 	&on-ad ( button -> )
@@ -214,7 +217,8 @@
 	DUP ?{ POP BRK }
 	DUP #1b NEQ ?{ POP edit-inject BRK }
 	.search skey ?{ update-nav BRK }
-	#00 select-marker BRK
+	#00 <select-marker>
+	BRK
 
 @on-mouse ( -> )
 	.Mouse/y DEI2
@@ -252,9 +256,11 @@
 		touch-to-addr <select-a>
 		!&end
 	&on-drag ( a b -> )
-		touch-to-addr select-b !&end
+		touch-to-addr <select-b>
+		!&end
 	&on-down2 ( a b -> )
-		touch-to-addr select-symbol [ LIT2 00 -Mouse/state ] DEO
+		touch-to-addr <select-symbol>
+		[ LIT2 00 -Mouse/state ] DEO
 		!&end
 	&on-down3 ( a b -> )
 		capture-selection [ LIT2 00 -Mouse/state ] DEO
@@ -279,7 +285,8 @@
 	[ LIT2 00 -Mouse/state ] DEI NEQ #41 ADD ;hand-icn <update-cursor>
 	.Mouse/y DEI2 #04 SFT2 NIP #02 SUB .Mouse/state DEI DUP ?{ POP2 BRK }
 	[ LIT2 00 -Mouse/state ] DEO
-	#01 GTH ?{ select-marker BRK }
+	#01 GTH ?{ <select-marker>
+		BRK }
 	get-marker addr-to-line <set-scroll-y>
 	BRK
 
@@ -300,7 +307,8 @@
 	!update-nav
 
 @view-symbol ( -- )
-	get-from select-symbol !capture-selection
+	get-from <select-symbol>
+	!capture-selection
 
 @reset-each ( -- )
 	.selection/a LDZ2 .selection/b LDZ2 NEQ2 ?&reset-selection
@@ -308,7 +316,7 @@
 	.search LDZ ?<reset-search>
 	JMP2r
 	&reset-selection ( -- )
-		get-from DUP2 !select-range
+		get-from DUP2 !<select-range>
 	&reset-scroll ( -- )
 		#0094 !<scroll-to-x>
 
@@ -337,7 +345,7 @@
 		DUP #04 NEQ ?{ POP !find-prev-special-top }
 		DUP #08 NEQ ?{ POP !find-next-special }
 		POP JMP2r
-
+	
 (
 @|editing )
 
@@ -387,6 +395,11 @@
 		#0001 mod-length STH2kr STA
 		STH2r INC2 !<select-a>
 
+@insert-char ( c addr* -- )
+	STH2k #0001 SUB2 get-eof #0001 <msfr>
+	#0001 mod-length STH2r STA
+	JMP2r
+
 @erase ( -- )
 	has-length ?&block
 	get-from DUP2 ;text GTH2 ?&single
@@ -405,6 +418,29 @@
 	&single ( from* -- )
 		DUP2 cut-char !<select-a>
 
+@tab ( -- )
+	has-length ?&block
+	#09 !insert
+	&block ( -- )
+		( a ) get-from find-line-start
+		( b ) get-to find-line-end OVR2 #0001 SUB2
+		( i ) [ LIT2r 0000 ]
+	&l ( -- )
+		LDAk #0a NEQ ?{
+			INC2r INC2 STH2k #09 STH2r insert-char }
+		INC2 GTH2k ?&l
+	POP2 #0001 SUB2 STH2r ADD2 !<select-range>
+
+@untab ( -- )
+	( a ) get-from find-line-start
+	( b ) get-to find-line-end OVR2 #0001 SUB2
+	&l ( -- )
+		LDA2k #0a09 NEQ2 ?{
+			INC2k get-eof #0001 <msfl>
+			SWP2 #0001 SUB2 SWP2 }
+		INC2 GTH2k ?&l
+	NIP2 #0001 SUB2 !<select-range>
+
 (
 @|selection )
 
@@ -415,38 +451,39 @@
 	get-from
 	( >> )
 
-@select-symbol ( addr* -- )
+@<select-symbol> ( addr* -- )
 	DUP2 find-prev-special/ SWP2 find-next-special/
 	( | text reselection )
 	OVR2 get-from EQU2 STH
 	DUP2 get-to EQU2 STHr AND ?&reselect
-	!select-range
-	&reselect POP2 !select-word
+	!<select-range>
+	&reselect POP2 !<select-word>
 
 @select-current-word ( -- )
 	get-from
 	( >> )
 
-@select-word ( addr* -- )
-	DUP2 find-prev-spacer SWP2 find-next-spacer/ !select-range
+@<select-word> ( addr* -- )
+	DUP2 find-prev-spacer SWP2 find-next-spacer/ !<select-range>
 
 @select-prev-marker ( -- )
 	get-from get-current-marker
 	( jump over label )
 	&l ( -- )
 		#01 SUB DUP get-marker INC2 LDA LIT "| EQU ?&l
-	!select-marker
+	!<select-marker>
 
 @select-next-marker ( -- )
 	get-from get-current-marker
 	( jump over label )
 	&l ( -- )
 		INC DUP get-marker INC2 LDA LIT "| EQU ?&l
+	( >> )
 
-@select-marker ( id -- )
-	get-marker DUP2 ;search slen ADD2 !select-range
+@<select-marker> ( id -- )
+	get-marker DUP2 ;search slen ADD2 !<select-range>
 
-@select-b ( addr* -- )
+@<select-b> ( addr* -- )
 	LITr 00 clamp-addr DUP2 .selection/b LDZ2 EQU2 ?{ INCr }
 	.selection/b STZ2
 	STHr ?selection-changed
@@ -458,7 +495,7 @@
 @<select-a> ( addr* -- )
 	DUP2
 
-@select-range ( from* to* -- )
+@<select-range> ( from* to* -- )
 	( changed ) LITr 00
 	( | to )
 	clamp-addr DUP2 .selection/b LDZ2 EQU2 ?{ INCr }
@@ -644,7 +681,7 @@
 		POP #09 JMP2r
 
 @capture-selection ( -- )
-	has-length ?{ get-to !select-word }
+	has-length ?{ get-to !<select-word> }
 	( dst ) [ LITr -search ]
 	( from ) get-from
 	( to ) get-length #002f LTH2k ?{ SWP2 }
@@ -895,7 +932,7 @@
 	&e ( cap buffer )
 		#00 STHr STZ
 		POP2 POP2 !file-open
-
+	
 (
 @|document )
 
@@ -1060,7 +1097,7 @@
 	&l ( -- )
 		join-spaces STH2
 		ADD2r INC2 GTH2k ?&l
-	POP2 STH2r SUB2 !select-b
+	POP2 STH2r SUB2 !<select-b>
 
 @transform-clip ( -- )
 	[ LITr 00 ] get-to get-from
