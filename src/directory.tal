@@ -3,31 +3,28 @@
 |10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
 |a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 
-|00 @path $40
+|0000
 
-(
-@|vectors )
+	@path $40
 
-|0100 @on-reset
-	.Console/type DEI ?&on-arg
-	;Dict/usage perr
-	#010f DEO
-BRK
-	&on-arg ( -> )
-		;await-src .Console/vector DEO2
-BRK
+|0100
 
-@await-src ( -> )
-	.Console/read DEI .path skey ?on-ready
-BRK
+@on-reset ( -> )
+	.Console/type DEI ?{
+		;Dict/usage perr #010f DEO
+		BRK }
+	;on-source-await .Console/vector DEO2
+	BRK
 
-@on-ready ( -> )
-	;path
-		DUP2 load-dir
-		;Dict/index OVR2 scap scpy
-		render
+@on-source-await ( -> )
+	.Console/read DEI .path skey ?on-source-ready
+	BRK
+
+@on-source-ready ( -> )
+	;path DUP2 load-dir ;Dict/index OVR2 scap/ <scpy>
+	<render>
 	#800f DEO
-BRK
+	BRK
 
 (
 @|core )
@@ -36,50 +33,35 @@ BRK
 	.File/name DEO2
 	#8000 .File/length DEO2
 	;dir .File/read DEO2
-JMP2r
+	JMP2r
 
-@render ( path* -- )
+@<render> ( path* -- )
 	.File/name DEO2
-	( head )
-	;El/<head> wstr
-		;El/<title> wstr
-			;path wstr
-		;El/</title> wstr
-	;El/</head> wstr
-	( body )
-	;El/<body> wstr
-		;El/<pre> wstr
-			;dir &w write-line LDAk ?&w POP2
-		;El/</pre> wstr
-	;El/</body>
-!wstr
+	( head ) ;El/<head> wstr ;El/<title> wstr ;path wstr ;El/</title> wstr ;El/</head> wstr
+	( body ) ;El/<body> wstr ;El/<pre> wstr ;dir
+	&w ( -- )
+		write-line LDAk ?&w
+	POP2 ;El/</pre> wstr ;El/</body> !wstr
 
 @write-line ( line* -- next* )
-	LDA2k LIT2 "-- EQU2 ?&skip
-	( length )
-	#0005 write-length
-	( link )
-	write-link INC2
-	;El/<br/>
-!wstr
-	&skip wcap INC2 wcap INC2
-JMP2r
+	LDA2k [ LIT2 "-- ] EQU2 ?{
+		( length ) #0005 write-length
+		( link ) write-link INC2 ;El/<br/> !wstr }
+	wcap/ INC2 wcap/ INC2 JMP2r
 
 @write-link ( word* -- next* )
-	;El/a1 wstr
-	DUP2 write-word POP2
-	;El/a2 wstr
-	write-word
-	;El/a3
-!wstr
+	;El/a1 wstr DUP2
+	( ) write-word POP2
+	( ) ;El/a2 wstr write-word ;El/a3 !wstr
 
 @write-word ( str* -- next* )
-	DUP2 DUP2 wcap SWP2 SUB2
+	DUP2 DUP2 wcap/ SWP2 SUB2
+	( >> )
+
 @write-length ( str* length* -- next* )
 	DUP2 .File/length DEO2
 	OVR2 .File/write DEO2
-	ADD2
-JMP2r
+	ADD2 JMP2r
 
 (
 @|stdlib )
@@ -87,63 +69,58 @@ JMP2r
 @wstr ( str* -- next* )
 	DUP2 slen .File/length DEO2
 	.File/write DEO2
-JMP2r
+	JMP2r
 
 @wcap ( str* -- end* )
-	!&a
-	&w ( ~- )
-		INC2 &a LDAk #20 GTH ?&w
-JMP2r
+	INC2 & LDAk #20 GTH ?wcap
+	JMP2r
 
 @scap ( str* -- end* )
-	LDAk ?&w JMP2r
-	&w ( ~- )
-		INC2 LDAk ?&w
-JMP2r
+	INC2 & LDAk ?scap
+	JMP2r
 
 @slen ( str* -- len* )
-	DUP2 scap SWP2 SUB2
-JMP2r
+	DUP2 scap/ SWP2 SUB2 JMP2r
 
 @perr ( err* -- )
-	LDAk ?&w POP2 JMP2r
-	&w ( err* ~- )
-	LDAk #19 DEO INC2 LDAk ?&w POP2
-JMP2r
+	LDAk #19 DEO
+	INC2 LDAk ?perr
+	POP2 JMP2r
 
 @skey ( key buf -- proc )
-	OVR #21 LTH ?&eval #00 SWP sput #00 JMP2r
-	&eval POP2 #01 JMP2r
+	OVR #21 LTH ?{
+		#00 SWP sput #00 JMP2r }
+	POP2 #01 JMP2r
 
 @sput ( chr str* -- )
-	scap INC2k #00 ROT ROT STA STA JMP2r
+	scap/ INC2k #00 ROT ROT STA
+	STA
+	JMP2r
 
-@scpy ( src* dst* -- )
+@<scpy> ( src* dst* -: )
 	STH2
-	&w LDAk #00 STH2kr STA2 INC2r INC2 LDAk ?&w
-		POP2 POP2r
-JMP2r
+	&w ( src* `dst* -- )
+		LDAk #00 STH2kr STA2
+		INC2r INC2 LDAk ?&w
+	POP2 POP2r JMP2r
 
 (
 @|assets )
 
-@Dict
-	&usage "usage: 20 "directory.rom 20 "folder/ 0a $1
-	&index "index.html $1
+@Dict &usage "usage: 20 "directory.rom 20 "folder/ 0a $1 &index "index.html $1
 
-@El ( HTML elements )
-	&<head> "<head> $1
-	&</head> "</head> $1
-	&<title> "<title> $1
-	&</title> "</title> $1
-	&<body> "<body> $1
-	&</body> "</body> $1
-	&<br/> "<br/> $1
-	&<pre> "<pre> $1
-	&</pre> "</pre> $1
-	&a1 "<a 20 "href=' $1
-	&a2 "'> $1
-	&a3 "</a> $1
+@El [
+	&<head> "<head> $1 &</head>
+	"</head> $1 &<title> "<title>
+	$1 &</title> "</title> $1
+	&<body> "<body> $1 &</body>
+	"</body> $1 &<br/> "<br/>
+	$1 &<pre> "<pre> $1
+	&</pre> "</pre> $1 &a1
+	"<a 20 "href=' $1
+	&a2 "'> $1 &a3
+	"</a> $1 ]
 
 @dir
+
 
