@@ -61,7 +61,7 @@
 	( name ) "Left 0a
 	( details ) "A 20 "Text 20 "Editor 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "16 20 "Jan 20 "2024 $1
+	( date ) "8 20 "Feb 20 "2024 $1
 	01
 	( > ) 83 =appicon
 
@@ -345,7 +345,7 @@
 		DUP #04 NEQ ?{ POP !find-prev-special-top }
 		DUP #08 NEQ ?{ POP !find-next-special }
 		POP JMP2r
-	
+
 (
 @|editing )
 
@@ -361,7 +361,12 @@
 		JMP2r }
 	POP2 POP JMP2r
 
-@cut-char ( addr* -- )
+@<insert-char> ( c addr* -- )
+	DUP2 #0001 SUB2 get-eof #0001 <msfr>
+	STA
+	#0001 !mod-length
+
+@<cut-char> ( addr* -- )
 	get-eof #0001 <msfl>
 	#ffff
 	( >> )
@@ -378,7 +383,8 @@
 	LIT2r 0000
 	&w ( -- )
 		LDA2k #2020 NEQ2 ?{
-			DUP2 cut-char INC2r !&w }
+			DUP2 <cut-char>
+			INC2r !&w }
 	STH2r JMP2r
 
 @insert ( char -- )
@@ -391,14 +397,8 @@
 		erase-selection
 		( >> )
 	&single ( c -- )
-		get-from STH2k #0001 SUB2 get-eof #0001 <msfr>
-		#0001 mod-length STH2kr STA
+		get-from STH2k <insert-char>
 		STH2r INC2 !<select-a>
-
-@insert-char ( c addr* -- )
-	STH2k #0001 SUB2 get-eof #0001 <msfr>
-	#0001 mod-length STH2r STA
-	JMP2r
 
 @erase ( -- )
 	has-length ?&block
@@ -407,7 +407,8 @@
 	&block ( -- )
 		erase-selection !select-reset
 	&single ( from* -- )
-		#0001 SUB2 DUP2 cut-char !<select-a>
+		#0001 SUB2 DUP2 <cut-char>
+		!<select-a>
 
 @delete ( -- )
 	has-length ?&block
@@ -416,7 +417,8 @@
 	&block ( -- )
 		erase-selection !select-reset
 	&single ( from* -- )
-		DUP2 cut-char !<select-a>
+		DUP2 <cut-char>
+		!<select-a>
 
 @tab ( -- )
 	has-length ?&block
@@ -424,22 +426,22 @@
 	&block ( -- )
 		( a ) get-from find-line-start
 		( b ) get-to find-line-end OVR2 #0001 SUB2
-		( i ) [ LIT2r 0000 ]
 	&l ( -- )
 		LDAk #0a NEQ ?{
-			INC2r INC2 STH2k #09 STH2r insert-char }
+			INC2 STH2k #09 STH2r <insert-char>
+			SWP2 INC2 SWP2 }
 		INC2 GTH2k ?&l
-	POP2 #0001 SUB2 STH2r ADD2 !<select-range>
+	POP2 #0001 SUB2 !<select-range>
 
 @untab ( -- )
 	( a ) get-from find-line-start
 	( b ) get-to find-line-end OVR2 #0001 SUB2
 	&l ( -- )
 		LDA2k #0a09 NEQ2 ?{
-			INC2k get-eof #0001 <msfl>
+			INC2k <cut-char>
 			SWP2 #0001 SUB2 SWP2 }
 		INC2 GTH2k ?&l
-	NIP2 #0001 SUB2 !<select-range>
+	POP2 #0001 SUB2 !<select-range>
 
 (
 @|selection )
@@ -739,7 +741,7 @@
 	( a ) LITr 00 get-scroll-addr
 	&ver ( -- )
 		EQUkr STHr ?&ver-end
-		detect-state LDAk #0a NEQ ?{ INCr }
+		scan-state LDAk #0a NEQ ?{ INCr }
 		next-glyph LDAk ?&ver
 	&ver-end POP2r
 	( | goto x )
@@ -747,7 +749,7 @@
 	( a ) LIT2r 0000
 	&hor ( -- )
 		LDAk #0a EQU ?&hor-end
-		detect-state get-glyph-width STH2
+		scan-state get-glyph-width STH2
 		ADD2r LTH2kr STHr ?&hor-end
 		next-glyph LDAk ?&hor
 	&hor-end POP2r POP2r #0000 .state STZ2
@@ -757,7 +759,7 @@
 	<reset-state>
 	[ LIT2r 0000 ] get-scroll-addr !&
 	&l ( -- )
-		detect-state get-glyph-width STH2
+		scan-state get-glyph-width STH2
 		ADD2r LDAk #0a NEQ ?{ POP2r LIT2r 0000 }
 		next-glyph & GTH2k ?&l
 	POP2 POP2 STH2r JMP2r
@@ -790,7 +792,7 @@
 	&skip ( addr* -- addr* match )
 		POP2 POP2 #00 JMP2r
 
-@detect-state ( addr* -- addr* )
+@scan-state ( addr* -- addr* )
 	( | parentesis match )
 	[ LIT2 00 -state/match ] STZ
 	LDAk [ LIT 28 ] NEQ ?{ match-parfwd .state/match STZ }
@@ -892,9 +894,11 @@
 		LDAk #20 SUB #00 SWP #40 SFT2 ;font-mono/glyphs ADD2 JMP2r
 
 @next-glyph ( addr* -- addr* )
-	LDAk #c0 LTH ?{
-		LDAk #04 SFT #03 AND INC #00 SWP ADD2 }
-	INC2 JMP2r
+	LDAk #c0 LTH ?&1
+	LDAk #e0 LTH ?&2
+	LDAk #f0 LTH ?&3
+	LDAk #f0 SUB #00 SWP ;utf8-lengths ADD2 LDA #00 SWP ADD2 JMP2r
+	&3 INC2 &2 INC2 &1 INC2 JMP2r
 
 (
 @|go )
@@ -932,7 +936,7 @@
 	&e ( cap buffer )
 		#00 STHr STZ
 		POP2 POP2 !file-open
-	
+
 (
 @|document )
 
@@ -1083,12 +1087,18 @@
 @format-strip ( -- )
 	get-eof ;text
 	&l ( -- )
-		LDA2k #0920 NEQ2 ?{ INC2k cut-char !&l }
-	LDA2k #2009 NEQ2 ?{ DUP2 cut-char !&l }
-	LDA2k #2020 NEQ2 ?{ INC2k cut-char !&l }
-	LDA2k #200a NEQ2 ?{ DUP2 cut-char !&l }
-	LDA2k #090a NEQ2 ?{ DUP2 cut-char !&l }
-	LDA2k #0a20 NEQ2 ?{ INC2k cut-char !&l }
+		LDA2k #0920 NEQ2 ?{ INC2k <cut-char>
+			!&l }
+	LDA2k #2009 NEQ2 ?{ DUP2 <cut-char>
+		!&l }
+	LDA2k #2020 NEQ2 ?{ INC2k <cut-char>
+		!&l }
+	LDA2k #200a NEQ2 ?{ DUP2 <cut-char>
+		!&l }
+	LDA2k #090a NEQ2 ?{ DUP2 <cut-char>
+		!&l }
+	LDA2k #0a20 NEQ2 ?{ INC2k <cut-char>
+		!&l }
 	INC2 GTH2k ?&l
 	POP2 POP2 select-reset update-nav !reqdraw-textarea
 
@@ -1170,7 +1180,7 @@
 		JMP2r
 
 @<draw-character> ( addr* -- addr* )
-	detect-state get-glyph-addr .Screen/addr DEO2
+	scan-state get-glyph-addr .Screen/addr DEO2
 	get-color ,&c STR
 	[ LIT2r &anchor $2 ] LITr -Screen/x DEO2kr
 	( | draw normal )
@@ -1856,6 +1866,7 @@
 	070f 0f0f 0f0f 0f0f 0f0f 0f0f 0f0f 0f07 ]
 &end [
 	80c0 e0f0 f8fc feff fffe fcf8 f0e0 c080 ]
+
 @rune-icns [
 0000 0000 0010 6c82 9282 6c10 0000 0000
 0000 0000 0010 7cfe eefe 7c10 0000 0000
@@ -1865,6 +1876,9 @@
 0000 0000 00fe fefe 82fe fefe 0000 0000
 0000 0000 0010 18fc 7efc 1810 0000 0000
 0000 0000 0010 18fc 02fc 1810 0000 0000 ]
+
+@utf8-lengths [
+	04 04 04 04 04 04 04 04 05 05 05 05 06 06 01 01 ]
 
 @font ( cream12 )
 0707 0707 0707 0707 070e 0707 0707 0707 0707 0707 0707 0707 0707 0707 0707 0707
