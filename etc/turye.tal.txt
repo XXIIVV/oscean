@@ -1,9 +1,8 @@
 ( app/turye : font editor )
-
-( TODOs:
-	> move edit status in filepath
-	> add block in scrollbar corner
-	> add tool so 2 button mouse can use )
+	( > move edit status in filepath )
+	( > add block in scrollbar corner )
+	( > add tool so 2 button mouse can use )
+	( > Toggle grid )
 
 |00 @System &vector $2 &pad $6 &r $2 &g $2 &b $2
 |10 @Console &vector $2 &read $1 &pad $5 &write $1
@@ -24,1034 +23,856 @@
 	@collection-view &x $2 &y $2 &x2 $2 &y2 $2
 	@preview &x $2 &y $2 &x2 $2 &y2 $2
 
-|0100 ( -> )
+|0100
 
-	( meta )
+@on-reset ( -> )
+	( | meta )
 	;meta #06 DEO2
-
-	( theme )
+	( | theme )
 	#d70f .System/r DEO2
 	#dc0f .System/g DEO2
 	#d90f .System/b DEO2
-	( size )
-	#01b8 .Screen/width DEO2
+	( | size )
+	#01c0 .Screen/width DEO2
 	#0178 .Screen/height DEO2
 	#15 .Screen/auto DEO
-	( place )
-	#0010 .pangrams-view/x STZ2 .Screen/width DEI2 #0010 SUB2 .pangrams-view/x2 STZ2
-	#0018 DUP2 .pangrams-view/y STZ2 #0040 ADD2 .pangrams-view/y2 STZ2
-	#0010 DUP2 .editor-view/x STZ2 #0088 ADD2 .editor-view/x2 STZ2
-	.pangrams-view/y2 LDZ2 #0010 ADD2 DUP2 .editor-view/y STZ2 #0088 ADD2 .editor-view/y2 STZ2
-	#00a8 DUP2 .collection-view/x STZ2 #0100 ADD2 .collection-view/x2 STZ2
-	.editor-view/y LDZ2 DUP2 .collection-view/y STZ2 #0100 ADD2 .collection-view/y2 STZ2
-	#0010 DUP2 .preview/x STZ2 #0040 ADD2 .preview/x2 STZ2
-	#0110 DUP2 .preview/y STZ2 #0020 ADD2 .preview/y2 STZ2
-
+	( | place )
+	#0010 .pangrams-view/x STZ2
+	.Screen/width DEI2 #0010 SUB2 .pangrams-view/x2 STZ2
+	#0018 DUP2 .pangrams-view/y STZ2
+	#0040 ADD2 .pangrams-view/y2 STZ2
+	#0010 DUP2 .editor-view/x STZ2
+	#0090 ADD2 .editor-view/x2 STZ2
+	.pangrams-view/y2 LDZ2 #0010 ADD2 DUP2 .editor-view/y STZ2
+	#0090 ADD2 .editor-view/y2 STZ2
+	#00b0 DUP2 .collection-view/x STZ2
+	#0100 ADD2 .collection-view/x2 STZ2
+	.editor-view/y LDZ2 DUP2 .collection-view/y STZ2
+	#0100 ADD2 .collection-view/y2 STZ2
+	#0010 DUP2 .preview/x STZ2
+	#0040 ADD2 .preview/x2 STZ2
+	#0110 DUP2 .preview/y STZ2
+	#0020 ADD2 .preview/y2 STZ2
 	load-theme
-
-	( init )
-	;untitled-txt ;src #000c mcpy
-	#0b .guide STZ
-	LIT "A select-glyph
-
-	draw-menu
-	redraw-all
-	( vectors )
+	( | init )
+	;untitled-txt ;src #000c mcpy #0c .guide STZ
+	LIT "A <select-glyph>
+	draw-menu redraw-all
+	( | vectors )
 	;on-console .Console/vector DEO2
-	untrap
+	untrap BRK
 
-BRK
-
-@meta 00
+@meta
+	00
 	( name ) "Turye 0a
 	( details ) "A 20 "Font 20 "Editor 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "Apr 20 "23, 20 "2023 00
-	01
-		( icon ) 83 =appicon
+	( date ) "Feb 20 "9, 20 "2024 00 01
+	( icon ) 83 =appicon
 
 @manifest
-
 	06 "Turye $1
-		01 "n =file-new "New $1
-		01 "r =trap "Rename $1
-		01 "o =file-open "Open $1
-		01 "s =file-save "Save $1
-		01 "e =file-export "Export $1
-		01 "q =exit "Exit $1
+	( > ) 01 "n =file-new "New $1
+	( > ) 01 "r =trap "Rename $1
+	( > ) 01 "o =file-open "Open $1
+	( > ) 01 "s =file-save "Save $1
+	( > ) 01 "e =file-export "Export $1
+	( > ) 01 "q =exit "Exit $1
 	06 "Edit $1
-		01 "c =edit-copy "Copy $1
-		01 "v =edit-paste "Paste $1
-		01 "x =edit-cut "Cut $1
-		00 08 =edit-erase "Erase $1
-		12 00 =edit-incr-guide "UpGuide $1
-		22 00 =edit-decr-guide "DownGuide $1
+	( > ) 01 "c =edit-copy "Copy $1
+	( > ) 01 "v =edit-paste "Paste $1
+	( > ) 01 "x =edit-cut "Cut $1
+	( > ) 00 08 =edit-erase "Erase $1
+	( > ) 12 00 =edit-incr-guide "UpGuide $1
+	( > ) 22 00 =edit-decr-guide "DownGuide $1
 	06 "Glyph $1
-		11 00 =edit-drag-up "DragUp $1
-		21 00 =edit-drag-down "DragDown $1
-		41 00 =edit-shift-left "ShiftLeft $1
-		81 00 =edit-shift-right "ShiftRight $1
-		42 00 =edit-decr-width "DecrWidth $1
-		82 00 =edit-incr-width "IncrWidth $1
+	( > ) 11 00 =edit-drag-up "DragUp $1
+	( > ) 21 00 =edit-drag-down "DragDown $1
+	( > ) 41 00 =edit-shift-left "ShiftLeft $1
+	( > ) 81 00 =edit-shift-right "ShiftRight $1
+	( > ) 42 00 =edit-decr-width "DecrWidth $1
+	( > ) 82 00 =edit-incr-width "IncrWidth $1
 	04 "Move $1
-		10 00 =move-up "Up $1
-		20 00 =move-down "Down $1
-		40 00 =move-left "Left $1
-		80 00 =move-right "Right $1
+	( > ) 10 00 =move-up "Up $1
+	( > ) 20 00 =move-down "Down $1
+	( > ) 40 00 =move-left "Left $1
+	( > ) 80 00 =move-right "Right $1
 	$1
 
 (
 @|vectors )
 
 @trap ( -- )
-
 	;on-frame-trap .Screen/vector DEO2
 	;on-button-trap .Controller/vector DEO2
 	;on-mouse-trap .Mouse/vector DEO2
-	#00 .Mouse/state DEO
-	#40
-
-!draw-cursor
+	[ LIT2 00 -Mouse/state ] DEO
+	#40 !draw-cursor
 
 @untrap ( -- )
-
 	;on-frame .Screen/vector DEO2
 	;on-button .Controller/vector DEO2
 	;on-mouse .Mouse/vector DEO2
-	#00 .Mouse/state DEO
-	#0a
-
-!draw-filepath
+	[ LIT2 00 -Mouse/state ] DEO
+	#0a !<draw-filepath>
 
 @on-console ( -> )
-
-	#00 draw-filepath
-	( start )
-	[ LIT &listening $1 ] ?&no-start
+	#00 <draw-filepath>
+	( | start )
+	[ LIT &listening $1 ] ?{
 		#01 ,&listening STR
-		;src #0040 mclr
-		&no-start
-	( end )
-	.Console/read DEI
-	DUP #1f GTH OVR #7f LTH AND ?&no-end
-		#00 ,&listening STR
-		&no-end
-	( capture )
-	capture-trap
-	#0a draw-filepath
-
-BRK
+		;src #0040 mclr }
+	( | end )
+	.Console/read DEI DUP #1f GTH OVR #7f LTH AND ?{ #00 ,&listening STR }
+	( | capture )
+	capture-trap #0a <draw-filepath>
+	BRK
 
 @on-button-trap ( -> )
-
-	#00 draw-filepath
-	.Controller/key DEI DUP #0d EQU #03 MUL SUB capture-trap
-	#0a draw-filepath
-
-BRK
+	#00 <draw-filepath>
+	.Controller/key DEI DUP #0d EQU #03 MUL SUB capture-trap #0a <draw-filepath>
+	BRK
 
 @capture-trap ( button -- )
-
-	DUP ?&no-null POP JMP2r &no-null
-	[ #08 ] NEQk NIP ?&no-pop ;src spop POP JMP2r &no-pop
-	[ #0a ] NEQk NIP ?&no-load file-open &no-load
-	[ #7f ] NEQk NIP ?&no-delete ;src #0040 mclr POP JMP2r &no-delete
-	[ #20 ] GTHk NIP ?&no-special untrap POP JMP2r &no-special
-	;src slen NIP #3f EQU ?&no-push DUP ;src sput &no-push
-	POP
-
-JMP2r
+	DUP ?{ POP JMP2r }
+	[ #08 ] NEQk NIP ?{
+		;src spop POP JMP2r }
+	[ #0a ] NEQk NIP ?{ file-open }
+	[ #7f ] NEQk NIP ?{
+		;src #0040 mclr POP JMP2r }
+	[ #20 ] GTHk NIP ?{ untrap POP JMP2r }
+	;src slen NIP #3f EQU ?{ DUP ;src sput }
+	POP JMP2r
 
 @on-mouse-trap ( -> )
-
-	( release on touch )
-	.Mouse/state DEI #00 NEQ [ JMP BRK ]
-	untrap
-
-BRK
+	( | release on touch )
+	.Mouse/state DEI #00 NEQ [ JMP BRK ] untrap BRK
 
 @on-frame-trap ( -> )
-
-	.state/timer LDZk
-	DUP #07 AND ?&no-blink
-		DUP #03 SFT #01 AND STH #0a05 STHr JMP SWP POP draw-filepath
-		&no-blink
+	.state/timer LDZk DUP #07 AND ?{
+		DUP #03 SFT #01 AND STH
+		#0a05 STHr JMP
+		SWP POP <draw-filepath> }
 	INC SWP STZ
-
-BRK
+	BRK
 
 @on-frame ( -> )
-
-	( inactive )
-
-BRK
+	( inactive ) BRK
 
 @on-button ( -> )
-
 	.Controller/button DEI2 find-modkey ORAk #00 EQU ?&skip
-		DUP2 JSR2 POP2 BRK
-		&skip
-	POP2
-
-	.Controller/key DEI DUP #00 EQU ?&no-key
-		DUP select-glyph
-		&no-key
-	POP
-
-BRK
+	DUP2 JSR2 POP2 BRK &skip POP2 .Controller/key DEI DUP #00 EQU ?{ DUP <select-glyph> }
+	POP BRK
 
 @on-mouse ( -> )
-
-	.Mouse/y DEI2 #0014 LTH2 ;trap-menu JCN2
-	.Mouse/scrolly DEI2 DUP2 #0000 NEQ2 ?&on-scrolly POP2
-	.Mouse/scrollx DEI2 DUP2 #0000 NEQ2 ?&on-scrollx POP2
-
-	( clear last cursor )
+	.Mouse/y DEI2 #0014 LTH2 ?trap-menu
+	.Mouse/scrolly DEI2 DUP2 #0000 NEQ2 ?&on-scrolly
+	POP2 .Mouse/scrollx DEI2 DUP2 #0000 NEQ2 ?&on-scrollx
+	POP2
+	( | clear last cursor )
 	;fill-icn .Screen/addr DEO2
 	#40 draw-cursor
-
-	( draw new cursor )
-	.Mouse/x DEI2 DUP2 .cursor/x STZ2 .Screen/x DEO2
-	.Mouse/y DEI2 DUP2 .cursor/y STZ2 .Screen/y DEO2
+	( | draw new cursor )
+	.Mouse/x DEI2 DUP2 .cursor/x STZ2
+	.Screen/x DEO2
+	.Mouse/y DEI2 DUP2 .cursor/y STZ2
+	.Screen/y DEO2
 	;cursor-icn .Screen/addr DEO2
 	.Mouse/state DEI #00 NEQ DUP ADD #41 ADD .Screen/sprite DEO
-
-	.Mouse/x DEI2 .Mouse/y DEI2
-	OVR2 OVR2 .editor-view within-rect ;on-touch-editor JCN2
-	OVR2 OVR2 .collection-view within-rect ;on-touch-collection JCN2
-	POP2 POP2
-
-BRK
-
-&on-scrollx ( x* -> )
-
-	NIP .glyph LDZ ADD select-glyph
-
-BRK
-
-&on-scrolly ( y* -> )
-
-	NIP #01 EQU STH #10f0 STHr JMP SWP POP .glyph LDZ ADD select-glyph
-
-BRK
+	.Mouse/x DEI2 .Mouse/y DEI2 OVR2 OVR2 .editor-view within-rect ?on-touch-editor
+	OVR2 OVR2 .collection-view within-rect ?on-touch-collection
+	POP2 POP2 BRK
+	&on-scrollx ( x* -> )
+		NIP .glyph LDZ ADD <select-glyph>
+		BRK
+	&on-scrolly ( y* -> )
+		NIP #01 EQU STH
+		#10f0 STHr JMP
+		SWP POP .glyph LDZ ADD <select-glyph>
+		BRK
 
 @on-touch-editor ( x* y* -> )
-
-	.Mouse/state DEI ?&continue
-		POP2 POP2 BRK
-		&continue
-	.Mouse/state DEI #02 EQU ?&set-width
+	.Mouse/state DEI ?{ POP2 POP2 BRK }
 	.editor-view/y LDZ2 SUB2 #03 SFT2 NIP STH
 	.editor-view/x LDZ2 SUB2 #03 SFT2 NIP STHr
-	DUP #10 EQU ?&scroll-x
-	OVR #10 EQU ?&scroll-y
-	( toggle pixel )
-	#40 SFT ADD get-selection ROT toggle-pixel
-
-BRK
-
-&set-width ( x y -> )
-
-	.editor-view/y LDZ2 #0006 ADD2 SUB2 #03 SFT2 NIP .guide STZ
-	.editor-view/x LDZ2 #0002 SUB2 SUB2 #03 SFT2 NIP .glyph LDZ SWP
-		set-width
-
-BRK
-
-&scroll-x ( x y -> )
-
-	POP #0f AND .glyph LDZ #f0 AND ORA select-glyph
-
-BRK
-
-&scroll-y ( x y -> )
-
-	NIP #40 SFT .glyph LDZ #0f AND ORA select-glyph
-
-BRK
+	( ) DUP #00 EQU ?&ruleh
+	( ) OVR #00 EQU ?&rulev
+	( ) DUP #11 EQU ?&scroll-x
+	( ) OVR #11 EQU ?&scroll-y
+	#01 SUB SWP #01 SUB SWP
+	( | toggle pixel )
+	#40 SFT ADD get-selection ROT toggle-pixel BRK
+	&rulev ( x y -> )
+		DUP #11 EQU ?{
+			NIP .guide STZ
+			[ LIT2 00 -Mouse/state ] DEO
+			redraw BRK }
+	&scroll-x ( x y -> )
+		POP [ LIT2 00 -Mouse/state ] DEO
+		( left ) DUP #00 NEQ ?{
+			POP .glyph LDZ STHk #01 SUB #0f AND STHr #f0 AND ORA <select-glyph>
+			BRK }
+		( right ) DUP #10 NEQ ?{
+			POP .glyph LDZ STHk INC #0f AND STHr #f0 AND ORA <select-glyph>
+			BRK }
+		POP2 BRK
+	&ruleh ( x y -> )
+		OVR #11 EQU ?{
+			POP .glyph LDZ SWP <set-width>
+			[ LIT2 00 -Mouse/state ] DEO
+			BRK }
+	&scroll-y ( x y -> )
+		NIP [ LIT2 00 -Mouse/state ] DEO
+		( up ) DUP #00 NEQ ?{
+			POP .glyph LDZ #10 SUB <select-glyph>
+			BRK }
+		( down ) DUP #10 NEQ ?{
+			POP .glyph LDZ #10 ADD <select-glyph>
+			BRK }
+		POP2 BRK BRK
 
 @on-touch-collection ( x* y* -> )
-
-	.Mouse/state DEI ?&continue
-		POP2 POP2 BRK
-		&continue
-
+	.Mouse/state DEI ?{ POP2 POP2 BRK }
 	.collection-view/y LDZ2 SUB2 #04 SFT2 NIP #40 SFT STH
-	.collection-view/x LDZ2 SUB2 #04 SFT2 NIP STHr
-	ORA select-glyph
-
-
-BRK
+	.collection-view/x LDZ2 SUB2 #04 SFT2 NIP STHr ORA <select-glyph>
+	BRK
 
 (
 @|helpers )
 
 @get-width ( glyph -- width )
-
-	#00 SWP ;font ADD2 LDA
-	DUP ?&exists
-		POP #08
-		&exists
-
-JMP2r
+	#00 SWP ;font ADD2 LDA DUP ?&exists
+	POP #08 &exists JMP2r
 
 @get-selection ( -- addr* )
-
 	.glyph LDZ
 
 @get-addr ( glyph -- addr* )
+	#00 SWP #50 SFT2 ;font/glyphs ADD2 JMP2r
 
-	#00 SWP #50 SFT2 ;font/glyphs ADD2
-
-JMP2r
-
-@set-width ( glyph width -- )
-
-	( DUP2 SWP get-width NEQ ?&changed
-		POP2 JMP2r
-		&changed )
+@<set-width> ( glyph width -- )
 	#00 ROT ;font ADD2 STA
+	!redraw
 
-!redraw
-
-@select-glyph ( glyph -- )
-
-	DUP .glyph LDZ NEQ ?&changed POP JMP2r &changed
-	.glyph STZ
-
-!redraw
+@<select-glyph> ( glyph -- )
+	DUP .glyph LDZ NEQ ?&changed
+	POP JMP2r
+	&changed .glyph STZ
+	!redraw
 
 @get-pixel ( addr* yx -- mask )
-
 	STHk
 	( addr ) [ #0f AND #13 SFT ] STHkr #07 SFT ADD #30 SFT
 	( offset ) STHkr #04 SFT #07 AND ADD
 	( load ) #00 SWP ADD2 LDA
-	( pixel ) STHr #07 AND #07 SWP SUB SFT #01 AND
-
-JMP2r
+	( pixel ) STHr #07 AND #07 SWP SUB SFT #01 AND JMP2r
 
 @toggle-pixel ( addr* yx -- )
-
 	STHk
 	( addr ) [ #0f AND #13 SFT ] STHkr #07 SFT ADD #30 SFT
 	( offset ) STHkr #04 SFT #07 AND ADD
 	( load ) #00 SWP ADD2 LDAk
-	( mask ) #01 [ #07 STHr #07 AND SUB #40 SFT ] SFT
-	.Mouse/state DEI #01 GTH ?&erase
-		ORA ROT ROT STA redraw #02 ;draw-state JMP2
-	&erase
-		#ff EOR AND ROT ROT STA redraw #02 ;draw-state JMP2
+	( mask ) #01 [ #07 STHr #07 AND SUB #40 SFT ] SFT .Mouse/state DEI #01 GTH ?&erase
+	ORA ROT ROT STA
+	redraw #02 !draw-state
+	&erase #ff EOR AND ROT ROT STA
+	redraw #02 !draw-state
 
-@move-up ( -- ) .glyph LDZ #10 SUB ;select-glyph JMP2
-@move-down ( -- ) .glyph LDZ #10 ADD ;select-glyph JMP2
-@move-left ( -- ) .glyph LDZ #01 SUB ;select-glyph JMP2
-@move-right ( -- ) .glyph LDZ INC ;select-glyph JMP2
+@move-up ( -- )
+	.glyph LDZ #10 SUB !<select-glyph>
+
+@move-down ( -- )
+	.glyph LDZ #10 ADD !<select-glyph>
+
+@move-left ( -- )
+	.glyph LDZ #01 SUB !<select-glyph>
+
+@move-right ( -- )
+	.glyph LDZ INC !<select-glyph>
 
 (
 @|drawing )
 
 @redraw-all ( -- )
-
-	( erase menu )
+	( | erase menu )
 	#0000 .Screen/x DEO2
 	#0018 .Screen/y DEO2
-	#a0 .Screen/pixel DEO
-	( dotted line )
+	[ LIT2 a0 -Screen/pixel ] DEO
+	( | dotted line )
 	#01 .Screen/auto DEO
 	.pangrams-view/x LDZ2 .Screen/x DEO2
 	#0012 .Screen/y DEO2
 	;dotted-icn .Screen/addr DEO2
 	.pangrams-view/x2 LDZ2 .pangrams-view/x LDZ2 SUB2 #03 SFT2 NIP #00
-	&loop
+	&loop ( -- )
 		#03 .Screen/sprite DEO
 		INC GTHk ?&loop
-	POP2
-	#15 .Screen/auto DEO
-
-	#01 draw-state
-	draw-menu
+	POP2 #15 .Screen/auto DEO
+	#01 draw-state draw-menu
 
 @redraw ( -- )
+	#0a <draw-filepath>
+	<draw-pangrams>
+	<draw-editor-frame>
+	<draw-preview>
+	!<draw-collection-frame>
 
-	#0a draw-filepath
-	draw-pangrams
-	draw-editor-frame
-	draw-preview
-
-!draw-collection-frame
-
-@draw-preview ( -- )
-
+@<draw-preview> ( -- )
 	.preview/x LDZ2 #0008 SUB2 .Screen/x DEO2
 	.preview/y LDZ2 #0008 SUB2 .Screen/y DEO2
-	;frame-chr #110a draw-frame
-
+	;frame-chr #120a <draw-frame>
 	.preview/x LDZ2 #0002 SUB2 .Screen/x DEO2
 	.preview/y LDZ2 #0011 SUB2 .Screen/y DEO2
-	#0a ;draw-chr/color STA
-	;dict/preview draw-tab
-
-	( fill )
+	#0a ;<draw-chr>/color STA
+	;dict/preview <draw-tab>
+	( | fill )
 	.preview/x LDZ2 .Screen/x DEO2
 	.preview/y LDZ2 .Screen/y DEO2
-	#a1 .Screen/auto DEO
+	[ LIT2 a1 -Screen/auto ] DEO
 	;fill-icn .Screen/addr DEO2
-	#ef &l #03 .Screen/sprite DEO INC DUP ?&l POP
-
-	( guide line )
+	#03ee <draw-times>
+	( | guide line )
 	#f2 .Screen/auto DEO
 	.preview/x LDZ2 #0004 ADD2 .Screen/x DEO2
-	.preview/y LDZ2 #0028 ADD2 .Screen/y DEO2
+	.preview/y LDZ2 #0027 ADD2 .Screen/y DEO2
 	;doth-icn .Screen/addr DEO2
 	#05 .Screen/sprite DEO
-
-	( find total width )
-	[ LITr 00 ]
-	#0900
-	&l1
-		DUP #01 AND #50 SFT
-		OVR #01 SFT .glyph LDZ #02 SUB ADD
-			ADD #00 SWP ;font ADD2 LDA STH ADDr
-		INC GTHk ?&l1
+	( | find total width )
+	[ LITr 00 ] #0900 &l1 DUP #01 AND #50 SFT OVR #01 SFT .glyph LDZ #02 SUB ADD ADD #00 SWP ;font ADD2 LDA STH
+	ADDr INC GTHk ?&l1
 	POP2
-
-	( text )
+	( | text )
 	#15 .Screen/auto DEO
 	.preview/x LDZ2 #0044 ADD2 #00 STHr #01 SFT2 SUB2 .Screen/x DEO2
 	.preview/y LDZ2 #001f ADD2 #00 #0f .guide LDZ SUB ADD2 .Screen/y DEO2
-	#0900
-	&l2
-		DUP #01 AND #50 SFT
-		OVR #01 SFT .glyph LDZ #02 SUB ADD
-			ADD draw-chr
-		INC GTHk ?&l2
-	POP2
+	#0900 &l2 DUP #01 AND #50 SFT OVR #01 SFT .glyph LDZ #02 SUB ADD ADD <draw-chr>
+	INC GTHk ?&l2
+	POP2 JMP2r
 
-JMP2r
-
-@draw-tab ( str* -- )
-
-	STH2k #00 STH2r get-strw NIP #03 SFT #02 ADD SUB
-
-	.Screen/x DEI2 ROT
-	#15 .Screen/auto DEO
+@<draw-tab> ( str* -- )
+	STH2k #00 STH2r get-strw NIP #03 SFT #02 ADD SUB .Screen/x DEI2 ROT #15 .Screen/auto DEO
 	;tab-chr/a .Screen/addr DEO2
 	#81 .Screen/sprite DEO
-	&l
+	&l ( -- )
 		;tab-chr/b .Screen/addr DEO2
 		#85 .Screen/sprite DEO
-		INC DUP ?&l POP
-	#81 .Screen/sprite DEOk DEO
+		INC DUP ?&l
+	POP #81 .Screen/sprite DEOk DEO
 	#0008 ADD2 .Screen/x DEO2
-	draw-str POP2
+	draw-str POP2 JMP2r
 
-JMP2r
-
-@draw-tool ( addr* -- )
-
-	#11 .Screen/auto DEO
-	;fill-icn .Screen/addr DEO2
-	#03 .Screen/sprite DEOk DEO
-
-	#00 .Screen/auto DEO
-	.Screen/x DEI2k #000c SUB2 ROT DEO2
-	.Screen/y DEI2k #0004 ADD2 ROT DEO2
-	.Screen/addr DEO2
-	#05 .Screen/sprite DEO
-	.Screen/x DEI2k #000c ADD2 ROT DEO2
-	.Screen/y DEI2k #0004 SUB2 ROT DEO2
-
-JMP2r
-
-@draw-filepath ( color -- )
-
+@<draw-filepath> ( color -- )
 	.collection-view/x LDZ2 #0002 SUB2 .Screen/x DEO2
 	.collection-view/y LDZ2 #0011 SUB2 .Screen/y DEO2
-	;draw-chr/color STA
-	;src draw-tab
-
-JMP2r
+	;<draw-chr>/color STA
+	;src <draw-tab>
+	JMP2r
 
 @draw-state ( color -- )
-
 	.Screen/width DEI2 #0016 SUB2 .Screen/x DEO2
 	#0004 .Screen/y DEO2
 	;state-icn .Screen/addr DEO2
 	.Screen/sprite DEO
+	JMP2r
 
-JMP2r
-
-@draw-pangrams ( -- )
-
+@<draw-pangrams> ( -- )
 	.pangrams-view/x LDZ2 .Screen/x DEO2
 	.pangrams-view/y LDZ2 #0008 ADD2 .Screen/y DEO2
 	;pangrams-txt
-	&while
-		LDAk .glyph LDZ EQU STH #0802 STHr JMP SWP POP ;draw-chr/color STA
-		LDAk draw-chr
-		( linebreak )
-		LDAk #0a NEQ ?&no-lb
+	&while ( -- )
+		LDAk .glyph LDZ EQU STH
+		#0802 STHr JMP
+		SWP POP ;<draw-chr>/color STA
+		LDAk <draw-chr>
+		( linebreak ) LDAk #0a NEQ ?{
 			.Screen/y DEI2k #0010 ADD2 ROT DEO2
-			.pangrams-view/x LDZ2 .Screen/x DEO2
-			&no-lb
+			.pangrams-view/x LDZ2 .Screen/x DEO2 }
 		INC2 LDAk ?&while
-	POP2
+	POP2 JMP2r
 
-JMP2r
-
-@buf &hn $1 &ln $2
-
-@hexc ( hex -- char ) #0f AND DUP #09 GTH #07 MUL ADD #30 ADD JMP2r
-
-@draw-editor-frame ( -- )
-
+@<draw-editor-frame> ( -- )
 	.editor-view/x LDZ2 #0008 SUB2 .Screen/x DEO2
 	.editor-view/y LDZ2 #0008 SUB2 .Screen/y DEO2
-	;frame-chr #1110 draw-frame
+	;frame-chr #1211 <draw-frame>
 	.editor-view/x LDZ2 #0002 SUB2 .Screen/x DEO2
 	.editor-view/y LDZ2 #0011 SUB2 .Screen/y DEO2
-	.glyph LDZ
-		DUP #04 SFT hexc ;buf/hn STA
-		hexc ;buf/ln STA
-	#0a ;draw-chr/color STA
-	;buf draw-tab
+	.glyph LDZ DUP #04 SFT hexc ;buf/hn STA
+	hexc ;buf/ln STA
+	#0a ;<draw-chr>/color STA
+	;buf <draw-tab>
 
 @draw-editor ( -- )
-
-	#00 .Screen/auto DEO
+	[ LIT2 00 -Screen/auto ] DEO
+	.editor-view/x LDZ2 .Screen/x DEO2
+	.editor-view/y LDZ2 .Screen/y DEO2
+	;fill-icn .Screen/addr DEO2
+	[ LIT2 03 -Screen/sprite ] DEO
+	( | content )
 	#0000
-	&loop
-		( x ) #00 OVR #0f AND #30 SFT2 .editor-view/x LDZ2 ADD2 .Screen/x DEO2
-		( y ) #00 OVR #34 SFT2 .editor-view/y LDZ2 ADD2 .Screen/y DEO2
-		( pixel ) DUP get-selection ROT get-pixel #00 SWP #30 SFT2 ;pixel-icn ADD2 .Screen/addr DEO2
-		#0e .Screen/sprite DEO
+	&loop ( -- )
+		#00 OVR #0f AND #30 SFT2 .editor-view/x LDZ2 ADD2 #0008 ADD2 .Screen/x DEO2
+		#00 OVR #34 SFT2 .editor-view/y LDZ2 ADD2 #0008 ADD2 .Screen/y DEO2
+		STHk get-selection STHr get-pixel #00 SWP #30 SFT ;pixel-icn ADD2 .Screen/addr DEO2
+		[ LIT2 0e -Screen/sprite ] DEO
 		INC NEQk ?&loop
 	POP2
-	( grid )
+	( | grid )
 	#0800
-	&v
-		#00 OVR #40 SFT .editor-view/y LDZ2 ADD2 #0010 ADD2 .Screen/y DEO2
+	&v ( -- )
+		#00 OVR #40 SFT .editor-view/y LDZ2 ADD2 #000f ADD2 .Screen/y DEO2
 		#0801
-		&h
-			#00 OVR #40 SFT .editor-view/x LDZ2 ADD2 .Screen/x DEO2
-			#02 .Screen/pixel DEO
-			INC GTHk ?&h
-		POP2
-		INC GTHk ?&v
+	&h ( -- )
+		#00 OVR #40 SFT .editor-view/x LDZ2 #0007 ADD2 ADD2 .Screen/x DEO2
+		[ LIT2 02 -Screen/pixel ] DEO
+		INC GTHk ?&h
+	POP2 INC GTHk ?&v
 	POP2
-
-	( width draw )
-	#f1 .Screen/auto DEO
+	( | width bar )
+	.editor-view/x LDZ2 #0008 ADD2 .Screen/x DEO2
+	.editor-view/y LDZ2 .Screen/y DEO2
+	[ LIT2 f2 -Screen/auto ] DEO
+	;rulerh-icn .Screen/addr DEO2
+	[ LIT2 0e -Screen/sprite ] DEO
+	( | width line )
+	[ LIT2 f1 -Screen/auto ] DEO
 	#0000 .glyph LDZ ;font ADD2 LDA #30 SFT2 .editor-view/x LDZ2 ADD2 .Screen/x DEO2
 	.editor-view/y LDZ2 #0008 ADD2 .Screen/y DEO2
 	;dashv-icn .Screen/addr DEO2
-	#0a .Screen/sprite DEO
-	( arrow )
-	#00 .Screen/auto DEO
-	.Screen/x DEI2k #000b SUB2 ROT DEO2
+	[ LIT2 0a -Screen/sprite ] DEO
+	( | width arrow )
+	[ LIT2 00 -Screen/auto ] DEO
+	.Screen/x DEI2k #0004 SUB2 ROT DEO2
 	.editor-view/y LDZ2 .Screen/y DEO2
 	;width-icn .Screen/addr DEO2
-	#0a .Screen/sprite DEO
-
-	( guide line )
-	#f2 .Screen/auto DEO
+	[ LIT2 0a -Screen/sprite ] DEO
+	( | baseline bar )
 	.editor-view/x LDZ2 .Screen/x DEO2
-	.editor-view/y LDZ2 #00 .guide LDZ #30 SFT2 ADD2 INC2 .Screen/y DEO2
+	.editor-view/y LDZ2 #0008 ADD2 .Screen/y DEO2
+	[ LIT2 f1 -Screen/auto ] DEO
+	;rulerv-icn .Screen/addr DEO2
+	[ LIT2 0d -Screen/sprite ] DEO
+	( | baseline )
+	[ LIT2 f2 -Screen/auto ] DEO
+	.editor-view/x LDZ2 .Screen/x DEO2
+	.editor-view/y LDZ2 [ LIT2 00 -guide ] LDZ #30 SFT2 ADD2 .Screen/y DEO2
 	;dashh-icn .Screen/addr DEO2
-	#05 .Screen/sprite DEO
+	[ LIT2 05 -Screen/sprite ] DEO
+	<draw-vscroll>
+	<draw-hscroll>
+	[ LIT2 15 -Screen/auto ] DEO
+	JMP2r
 
-	draw-vscroll
-	draw-hscroll
-
-	#15 .Screen/auto DEO
-
-JMP2r
-
-@draw-vscroll ( -- )
-
+@<draw-vscroll> ( -- )
+	[ LIT2 02 -Screen/auto ] DEO
 	.editor-view/x2 LDZ2 #0008 SUB2 .Screen/x DEO2
 	.editor-view/y LDZ2 .Screen/y DEO2
+	( | arrow )
+	;scrollbar-icn/v-arrow .Screen/addr DEO2
+	[ LIT2 0e -Screen/sprite ] DEO
+	( | bg )
 	;scrollbar-icn/bg .Screen/addr DEO2
-	#02 .Screen/auto DEO
-	#f0 &v #0e .Screen/sprite DEO INC DUP ?&v POP
-
-	.editor-view/x2 LDZ2 #0008 SUB2 .Screen/x DEO2
-	.editor-view/y LDZ2 .Screen/y DEO2
+	#0ef1 <draw-times>
+	( | arrow )
 	;scrollbar-icn/v-arrow .Screen/addr DEO2
-	#0e .Screen/sprite DEO
-
-	#02 .Screen/auto DEO
-	.editor-view/y LDZ2 #0078 ADD2 .Screen/y DEO2
-	;scrollbar-icn/v-arrow .Screen/addr DEO2
-	#2e .Screen/sprite DEO
-
-	( marker )
-	.editor-view/y LDZ2 #0008 ADD2
-		#00 .glyph LDZ STH2k #34 SFT2 ADD2
-		STH2r #04 SFT2 SUB2
-		.Screen/y DEO2
+	[ LIT2 2e -Screen/sprite ] DEO
+	( | marker )
 	;scrollbar-icn/fg .Screen/addr DEO2
-	#02 .Screen/sprite DEO
+	.editor-view/y LDZ2 #0008 ADD2
+	( ) [ LIT2 00 -glyph ] LDZ #34 SFT2 ADD2 .Screen/y DEO2
+	[ LIT2 02 -Screen/sprite ] DEO
+	JMP2r
 
-JMP2r
-
-@draw-hscroll ( -- )
-
+@<draw-hscroll> ( -- )
+	[ LIT2 01 -Screen/auto ] DEO
 	.editor-view/x LDZ2 .Screen/x DEO2
 	.editor-view/y2 LDZ2 #0008 SUB2 .Screen/y DEO2
+	( | arrow )
+	;scrollbar-icn/h-arrow .Screen/addr DEO2
+	[ LIT2 0e -Screen/sprite ] DEO
+	( | bg )
 	;scrollbar-icn/bg .Screen/addr DEO2
-	#01 .Screen/auto DEO
-	#f1 &v #0e .Screen/sprite DEO INC DUP ?&v POP
-
-	.editor-view/x LDZ2 .Screen/x DEO2
+	#0ef1 <draw-times>
+	( | arrow )
 	;scrollbar-icn/h-arrow .Screen/addr DEO2
-	#0e .Screen/sprite DEO
-
-	.editor-view/x2 LDZ2 #0010 SUB2 .Screen/x DEO2
-	;scrollbar-icn/h-arrow .Screen/addr DEO2
-	#1e .Screen/sprite DEO
-
-	.editor-view/x LDZ2 #0008 ADD2
-		#00 .glyph LDZ #0f AND STH2k #30 SFT2 ADD2
-		STH2r SUB2
-		.Screen/x DEO2
+	[ LIT2 1e -Screen/sprite ] DEO
+	( | marker )
 	;scrollbar-icn/fg .Screen/addr DEO2
-	#02 .Screen/sprite DEO
+	.editor-view/x LDZ2 #0008 ADD2
+	( ) [ LIT2 00 -glyph ] LDZ #000f AND2 #30 SFT2 ADD2 .Screen/x DEO2
+	[ LIT2 02 -Screen/sprite ] DEO
+	JMP2r
 
-JMP2r
+@<draw-times> ( color times -- )
+	OVR .Screen/sprite DEO
+	INC DUP ?<draw-times>
+	POP2 JMP2r
 
-@draw-collection-frame ( -- )
-
+@<draw-collection-frame> ( -- )
 	.collection-view/x LDZ2 #0008 SUB2 .Screen/x DEO2
 	.collection-view/y LDZ2 #0008 SUB2 .Screen/y DEO2
-	;frame2-chr #201f draw-frame
-	#0a draw-filepath
+	;frame2-chr #201f <draw-frame>
+	#0a <draw-filepath>
 
-@draw-collection ( -- )
-
-	#15 .Screen/auto DEO
+@<draw-collection> ( -- )
+	( | grid )
+	[ LIT2 00 -Screen/auto ] DEO
+	#2000
+	&v ( -- )
+		#00 OVR #30 SFT .collection-view/y LDZ2 ADD2 .Screen/y DEO2
+		STHk #2000
+	&h ( -- )
+		DUP STHkr get-grid .Screen/addr DEO2
+		#00 OVR #30 SFT .collection-view/x LDZ2 ADD2 .Screen/x DEO2
+		[ LIT2 0c -Screen/sprite ] DEO
+		INC GTHk ?&h
+	POP2 POPr INC GTHk ?&v
+	POP2
+	( | items )
+	[ LIT2 15 -Screen/auto ] DEO
 	.collection-view/y LDZ2 #0010 SUB2 .Screen/y DEO2
 	#0000
-	&loop
-		#00 OVR #0f AND #40 SFT2 .collection-view/x LDZ2 ADD2 .Screen/x DEO2
-		#00 OVR #04 SFT #40 SFT2 .collection-view/y LDZ2 ADD2 .Screen/y DEO2
-		DUP draw-collection/item
+	&loop ( -- )
+		#00 OVR DUP2 #0f AND #40 SFT2 .collection-view/x LDZ2 ADD2 .Screen/x DEO2
+		#04 SFT #40 SFT2 .collection-view/y LDZ2 ADD2 .Screen/y DEO2
+		DUP <draw-collection>/item
 		INC NEQk ?&loop
-	POP2
-	( grid )
-	#00 .Screen/auto DEO
-	#2000
-	&v
-		#00 OVR #30 SFT .collection-view/y LDZ2 ADD2 .Screen/y DEO2
-		STHk
-		#2000
-		&h
-			DUP STHkr get-grid .Screen/addr DEO2
-			#00 OVR #30 SFT .collection-view/x LDZ2 ADD2 .Screen/x DEO2
-			#0a .Screen/sprite DEO
-			INC GTHk ?&h
-		POP2
-		POPr
-		INC GTHk ?&v
-	POP2
-
-JMP2r
-
-&item ( byte -- )
-
-	#00 OVR ;font ADD2 LDA ?&has-width
-		;empty-icn .Screen/addr DEO2
-		.glyph LDZ EQU STH #060c STHr JMP SWP POP .Screen/sprite DEOk DEO
+	POP2 JMP2r
+	&item ( byte -- )
+		#00 OVR ;font ADD2 LDA ?{
+			;empty-icn .Screen/addr DEO2
+			.glyph LDZ EQU STH
+			#0500 STHr [ JMP SWP POP ] .Screen/sprite DEOk DEO
+			JMP2r }
+		DUP get-addr .Screen/addr DEO2
+		.glyph LDZ EQU STH
+		#050a STHr [ JMP SWP POP ] .Screen/sprite DEOk DEO
 		JMP2r
-		&has-width
-	DUP get-addr .Screen/addr DEO2
-	.glyph LDZ EQU STH #060e STHr JMP SWP POP .Screen/sprite DEOk DEO
-
-JMP2r
 
 @get-grid ( x y -- addr* )
-
 	DUP2 #1f1f EQU2 ?&blank
 	OVR #1f EQU ?&limit-x
 	DUP #1f EQU ?&limit-y
-	#01 AND #10 SFT SWP #01 AND ORA
-	#30 SFT #00 SWP ;grid-icn ADD2
-
-JMP2r
+	#01 AND #10 SFT SWP #01 AND ORA #30 SFT #00 SWP ;grid-icn ADD2 JMP2r
 	&limit-x ( x y -- addr* )
-	NIP #01 AND #10 SFT
-	#30 SFT #00 SWP ;grid-icn ADD2
-JMP2r
-&limit-y ( x y -- addr* )
-	POP #01 AND
-	#30 SFT #00 SWP ;grid-icn ADD2
-JMP2r
-&blank
-	POP2 ;grid-icn JMP2r
+		NIP #01 AND #10 SFT #30 SFT #00 SWP ;grid-icn ADD2 JMP2r
+	&limit-y ( x y -- addr* )
+		POP #01 AND #30 SFT #00 SWP ;grid-icn ADD2 JMP2r
+		&blank POP2 ;grid-icn JMP2r
 
 @draw-byte ( byte -- )
-
 	DUP #04 SFT draw-hex #0f AND
 
 @draw-hex ( char -- )
-
 	#0f AND DUP #09 GTH #07 MUL ADD #30 ADD
 
-@draw-chr ( char -- )
-
+@<draw-chr> ( char -- )
 	STHk
-	( addr ) DUP get-addr
-	#00 STHr ;font ADD2 LDA ?&exists
-		POP2 ;null-icn
-		&exists
-		.Screen/addr DEO2
-	#00 SWP get-width STHk .Screen/x DEI2 ADD2
-	[ LIT &color $1 ] .Screen/sprite DEOk STHr #08 LTH ?&thin DEOk &thin POP2
-	.Screen/x DEO2
-
-JMP2r
+	( addr ) DUP get-addr #00 STHr ;font ADD2 LDA ?&exists
+	POP2 ;null-icn &exists .Screen/addr DEO2
+	#00 SWP get-width STHk .Screen/x DEI2 ADD2 [ LIT &color $1 ] .Screen/sprite DEOk STHr #08 LTH ?&thin
+	DEOk &thin POP2 .Screen/x DEO2
+	JMP2r
 
 @draw-str-right ( text* -- )
-
 	DUP2 get-strw STH2
 	.Screen/x DEI2k STH2r SUB2 ROT DEO2
 
 @draw-str ( str* -- str* )
-
 	LDAk #00 EQU ?&skip
 	#15 .Screen/auto DEO
-	&while
-		LDAk draw-chr
+	&while ( -- )
+		LDAk <draw-chr>
 		INC2 LDAk ?&while
-	&skip
-	INC2
+	&skip INC2 JMP2r
 
-JMP2r
-
-@draw-frame ( w h chr* -- )
-
-	,&h STR ,&w STR
+@<draw-frame> ( w h chr* -- )
+	,&h STR
+	,&w STR
 	.Screen/addr DEO2
-	( tr )
-	.Screen/x DEI2 .Screen/y DEI2
-	#05 .Screen/auto DEO #81 .Screen/sprite DEO
-	#00 [ LIT &w $1 ] SUB #01 draw-frame/repeat
-	#04 .Screen/auto DEO #81 .Screen/sprite DEO
-	#06 .Screen/auto DEO #81 .Screen/sprite DEO
-	#00 [ LIT &h $1 ] SUB #02 draw-frame/repeat
-	#06 .Screen/auto DEO #81 .Screen/sprite DEO
-	( bl )
-	#0008 ADD2 .Screen/y DEO2 .Screen/x DEO2
-	#00 ,&h LDR SUB #02 draw-frame/repeat
-	#06 .Screen/auto DEO #81 .Screen/sprite DEO
-	#05 .Screen/auto DEO #81 .Screen/sprite DEO
-	#00 ,&w LDR SUB #01 draw-frame/repeat
-	#04 .Screen/auto DEO #81 .Screen/sprite DEO
+	( tr ) .Screen/x DEI2 .Screen/y DEI2 #05 .Screen/auto DEO
 	#81 .Screen/sprite DEO
-
-JMP2r
-
-&repeat ( -length auto -- )
-
-	.Screen/auto DEO
-	&l #81 .Screen/sprite DEO
+	#00 [ LIT &w $1 ] SUB #01 <draw-frame>/repeat
+	#04 .Screen/auto DEO
+	#81 .Screen/sprite DEO
+	#06 .Screen/auto DEO
+	#81 .Screen/sprite DEO
+	#00 [ LIT &h $1 ] SUB #02 <draw-frame>/repeat
+	#06 .Screen/auto DEO
+	#81 .Screen/sprite DEO
+	( bl ) #0008 ADD2 .Screen/y DEO2
+	.Screen/x DEO2
+	#00 ,&h LDR SUB #02 <draw-frame>/repeat
+	#06 .Screen/auto DEO
+	#81 .Screen/sprite DEO
+	#05 .Screen/auto DEO
+	#81 .Screen/sprite DEO
+	#00 ,&w LDR SUB #01 <draw-frame>/repeat
+	#04 .Screen/auto DEO
+	#81 .Screen/sprite DEO
+	#81 .Screen/sprite DEO
+	JMP2r
+	&repeat ( -length auto -- )
+		.Screen/auto DEO
+	&l ( -- )
+		#81 .Screen/sprite DEO
 		INC DUP ?&l
-	POP
-
-JMP2r
+	POP JMP2r
 
 @get-strw ( str* -- width* )
-
 	LIT2r 0000
-	&while
-		LDAk #0000 ROT ;font ADD2 LDA STH2 ADD2r
-		INC2 LDAk ?&while
-	POP2
-	STH2r
+	&while ( -- )
+		LDAk #0000 ROT ;font ADD2 LDA STH2
+		ADD2r INC2 LDAk ?&while
+	POP2 STH2r JMP2r
 
-JMP2r
-
-@clear-screen ( -- )
-
-	#0000 .Screen/x DEO2
-	#0000 .Screen/y DEO2
-	#80 .Screen/pixel DEO
-
-JMP2r
+@<clear-screen> ( -- )
+	#0000 DUP2 .Screen/x DEO2
+	.Screen/y DEO2
+	[ LIT2 80 -Screen/pixel ] DEO
+	JMP2r
 
 (
 @|etc )
 
 @within-rect ( x* y* rect -- flag )
-
 	STH
 	( y < rect.y1 ) DUP2 STHkr INC INC LDZ2 LTH2 ?&skip
 	( y > rect.y2 ) DUP2 STHkr #06 ADD LDZ2 #0001 SUB2 GTH2 ?&skip
 	SWP2
 	( x < rect.x1 ) DUP2 STHkr LDZ2 LTH2 ?&skip
 	( x > rect.x2 ) DUP2 STHkr #04 ADD LDZ2 #0001 SUB2 GTH2 ?&skip
-	POP2 POP2 POPr
-	#01
-JMP2r
-	&skip
-	POP2 POP2 POPr
-	#00
-
-JMP2r
-
-( file )
+	POP2 POP2 POPr #01 JMP2r
+	&skip POP2 POP2 POPr #00 JMP2r
+	( file )
 
 @file-new ( -- )
-
-	( TODO )
-
-JMP2r
+	( TODO ) JMP2r
 
 @file-open ( -- )
-
-	clear-screen
+	<clear-screen>
 	;src .File/name DEO2
 	#2100 .File/length DEO2
 	;font .File/read DEO2
-
-!redraw-all
+	!redraw-all
 
 @file-save ( -- )
-
 	;src .File/name DEO2
 	#2100 .File/length DEO2
 	;font .File/write DEO2
-	#01
-
-!draw-state
+	#01 !draw-state
 
 @file-export ( -- )
-
 	;src scap STH2
-	;dict/tal-ext STH2kr scpy
-	;src .File/name DEO2
+	;dict/tal-ext STH2kr scpy ;src .File/name DEO2
 	#0001 .File/length DEO2
 	;dict/font fstr
-	( sizes )
-	;font #0080 fmem
-	#0a fchr
-	( glyphs )
-	;dict/glyphs fstr
-	[ ;font/glyphs #0400 ADD2 ] #0c00 fmem
-	#0a fchr
-	#00 STH2r STA
-
-JMP2r
+	( | sizes )
+	;font #0080 fmem #0a fchr
+	( | glyphs )
+	;dict/glyphs fstr [ ;font/glyphs #0400 ADD2 ] #0c00 fmem #0a fchr #00 STH2r STA
+	JMP2r
 
 @fmem ( addr* len* -- )
-
 	ADD2k NIP2 SWP2
-	&l
-		SUB2k #000f AND2 NIP #00 EQU
-		#0a20 ROT [ JMP SWP POP ] fchr
-		LDA2k fhex
-		INC2 INC2 GTH2k ?&l
-	POP2 POP2
+	&l ( -- )
+		SUB2k #000f AND2 NIP #00 EQU #0a20 ROT [ JMP SWP POP ] fchr LDA2k fhex INC2 INC2 GTH2k ?&l
+	POP2 POP2 JMP2r
+	( snarf )
 
-JMP2r
-
-( snarf )
-
-@snarf-txt ".snarf $1
+@snarf-txt
+	".snarf $1
 
 @edit-copy ( -- )
-
 	;snarf-txt .File/name DEO2
 	#0020 .File/length DEO2
 	get-selection .File/write DEO2
-
-JMP2r
+	JMP2r
 
 @edit-paste ( -- )
-
 	;snarf-txt .File/name DEO2
 	#2100 .File/length DEO2
 	get-selection .File/read DEO2
-	redraw
-	#02
-
-!draw-state
+	redraw #02 !draw-state
 
 @edit-cut ( -- )
-
 	edit-copy
 
 @edit-erase ( -- )
-
-	get-selection #0020 mclr
-	#02 draw-state
-
-!redraw
+	get-selection #0020 mclr #02 draw-state !redraw
 
 @edit-drag-up ( -- )
-
 	get-selection STH2
 	#2000
-	&loop
+	&loop ( -- )
 		( load ) #00 OVR STH2kr ADD2 INC2k LDA
 		( save ) ROT ROT STA
 		INC GTHk ?&loop
 	POP2
 	( cap ) #00 STH2r #001f ADD2 STA
-
-!redraw
+	!redraw
 
 @edit-drag-down ( -- )
-
 	get-selection STH2
 	#2000
-	&loop
+	&loop ( -- )
 		( load ) #00 OVR #1f SWP SUB STH2kr ADD2 DUP2 LDA
 		( save ) ROT ROT INC2 STA
 		INC GTHk ?&loop
-	POP2
-	#00 STH2r STA
-
-!redraw
+	POP2 #00 STH2r STA
+	!redraw
 
 @edit-shift-left ( -- )
-
 	#10 ,edit-shift JMP
 
 @edit-shift-right ( -- )
-
 	#01
 
 @edit-shift ( dir -- )
-
 	,&dir STR
 	get-selection STH2
 	#1000
-	&loop
+	&loop ( -- )
 		#00 OVR STH2kr ADD2
 		( left* right* ) DUP2 #0010 ADD2
-		( load ) LDAk STH SWP2 LDAk STHr
+		( load ) LDAk STH
+		SWP2 LDAk STHr
 		( shift ) [ LIT &dir $1 ] SFT2
-		( save ) STH ROT ROT STA STHr ROT ROT STA
+		( save ) STH
+		ROT ROT STA
+		STHr ROT ROT STA
 		INC GTHk ?&loop
-	POP2
-	POP2r
-
-!redraw
+	POP2 POP2r !redraw
 
 @edit-decr-width ( -- )
-
-	.glyph LDZ DUP get-width #01 SUB set-width
-
-JMP2r
+	.glyph LDZ DUP get-width #01 SUB <set-width>
+	JMP2r
 
 @edit-incr-width ( -- )
-
-	.glyph LDZ DUP get-width INC set-width
-
-JMP2r
+	.glyph LDZ DUP get-width INC <set-width>
+	JMP2r
 
 @edit-incr-guide ( -- )
-
 	.guide LDZ #01 SUB .guide STZ
-
-!redraw
+	!redraw
 
 @edit-decr-guide ( -- )
-
 	.guide LDZ INC .guide STZ
-
-!redraw
+	!redraw
 
 (
 @|stdlib )
 
-@fhex ( short* -- ) SWP ,&b JSR &b DUP #04 SFT ,&c JSR &c #0f AND DUP #09 GTH #27 MUL ADD #30 ADD
-@fchr ( chr -- ) ,&b STR #0001 .File/length DEO2 ;&b .File/write DEO2 JMP2r &b $1
-@fstr ( str* -- ) DUP2 slen .File/length DEO2 .File/write DEO2 JMP2r
-@mcpy ( src* dst* len* -- ) SWP2 STH2 OVR2 ADD2 SWP2 &loop LDAk STH2kr STA INC2r INC2 GTH2k ?&loop POP2 POP2 POP2r JMP2r
+@buf &hn $1
+	&ln $2
+
+@hexc ( hex -- char )
+	#0f AND DUP #09 GTH #07 MUL ADD #30 ADD JMP2r
+
+@fhex ( short* -- )
+	SWP ,&b JSR &b DUP #04 SFT ,&c JSR &c #0f AND DUP #09 GTH #27 MUL ADD #30 ADD
+
+@fchr ( chr -- )
+	,&b STR
+	#0001 .File/length DEO2
+	;&b .File/write DEO2
+	JMP2r
+	&b $1
+
+@fstr ( str* -- )
+	DUP2 slen .File/length DEO2
+	.File/write DEO2
+	JMP2r
+
+@mcpy ( src* dst* len* -- )
+	SWP2 STH2
+	OVR2 ADD2 SWP2 &loop LDAk STH2kr STA
+	INC2r INC2 GTH2k ?&loop
+	POP2 POP2 POP2r JMP2r
 
 (
 @|assets )
 
-@untitled-txt "untitled.uf2 $1
+@untitled-txt
+	"untitled.uf2 $1
 
-@dict
-	&font "@font $1
+@dict &font "@font $1
 	&glyphs "&glyphs $1
 	&tal-ext ".tal $1
 	&preview "Preview $1
 
 @pangrams-txt
-	"Gaza 20 "frequens 20 "Lybicum 20 "duxit 20 "Karthago 20 "triumphum. 0a
-	"Portez 20 "ce 20 "vieux 20 "whisky, 20 "au 20 "juge 20 "blond 20 "qui 20 "fume? 0a
-	09 "The 20 "five 20 "boxing 20 "wizards 20 "jump 20 "quickly! $1
+	"Gaza 20 "frequens 20 "Lybicum 20 "duxit 20 "Karthago 20 "triumphum. 0a "Portez 20 "ce 20 "vieux 20 "whisky, 20 "au 20 "juge 20 "blond 20 "qui 20 "fume? 0a 09 "The 20 "five 20 "boxing 20 "wizards 20 "jump 20 "quickly! $1
 
 @state-icn [
-	0000 0000 0010 387c
-	3810 0000 0000 0000 ]
-@dashv-icn [
-	8080 8000 8080 8000 ]
-@dashh-icn [
-	0000 0000 0000 00ee ]
-@hor-icn [
-	aa00 0000 0000 0000 ]
-@ver-icn [
-	8000 8000 8000 8000 ]
-@cursor-icn [
-	80c0 e0f0 f8e0 1000 ]
+	0000 0000 0010 387c 3810 0000 0000 0000 ]
+
+@dashv-icn [ 0101 0100 0101 0100 ]
+
+@dashh-icn [ 0000 0000 0000 00ee ]
+
+@hor-icn [ aa00 0000 0000 0000 ]
+
+@ver-icn [ 8000 8000 8000 8000 ]
+
+@cursor-icn [ 80c0 e0f0 f8e0 1000 ]
+
 @pixel-icn [
-	0000 0000 0000 0000
-	003e 7f7f 7f7f 7f3e ]
-@width-icn [
-	7c38 1000 1010 1000 ]
-@dotted-icn [
-	0000 0000 0000 00aa ]
+	0000 0000 0000 0000 7cfe fefe fefe 7c00 ]
+
+@width-icn [ 7c38 1000 1010 1000 ]
+
+@dotted-icn [ 0000 0000 0000 00aa ]
+
 @null-icn [
-	0000 fe82 8282 8282
-	8282 8282 82fe 0000
-	0000 0000 0000 0000
-	0000 0000 0000 0000 ]
-@doth-icn [
-	0000 0000 0000 00aa ]
+	0000 fe82 8282 8282 8282 8282 82fe 0000
+	0000 0000 0000 0000 0000 0000 0000 0000 ]
+
+@doth-icn [ 0000 0000 0000 00aa ]
+
 @special-chr [
 	007e 425a 5a42 7e00 ffff ffff ffff ffff ]
+
+
+
+@brush-icn [ 0070 6844 2211 0906 ]
+
+@select-icn [ 0040 6070 787c 7008 ]
+
+@rulerh-icn [ 1111 0101 0100 0000 ]
+
+@rulerv-icn [ 0000 00c0 0000 00f8 ]
+
+@scrollbar-icn &bg [ aa55 aa55 aa55 aa55 ] &fg [ ffff ffff ffff ffff ] &v-arrow [ 0018 3c7e 1818 1800 ] &h-arrow [ 0010 307e 7e30 1000 ]
+
 @empty-icn [
-	003f 4040 4040 4040 4040 4040 403f 0000
-	00f8 0404 0404 0404 0404 0404 04f8 0000 ]
-@brush-icn [
-	0070 6844 2211 0906 ]
-@select-icn [
-	0040 6070 787c 7008 ]
-@scrollbar-icn
-	&bg [ aa55 aa55 aa55 aa55 ]
-	&fg [ ffff ffff ffff ffff ]
-	&v-arrow [ 0018 3c7e 1818 1800 ]
-	&h-arrow [ 0010 307e 7e30 1000 ]
+	8040 2010 0804 0201 0102 0408 1020 4080
+	0102 0408 1020 4080 8040 2010 0804 0201 ]
+
 @grid-icn [
-	0000 0000 0000 0000
-	0100 0100 0100 0100
-	0000 0000 0000 00aa
-	0100 0100 0100 01aa ]
-@tab-chr
-	&a [
+	0000 0000 0000 0000 0100 0100 0100 0100
+	0000 0000 0000 00aa 0100 0100 0100 01aa ]
+
+@tab-chr &a [
 	003f 7f7f 7f7f 7f7f 3f7f ffff ffff ffff
-	7f7f 7f7f 7f7f 7f7f ffff ffff ffff ffff ]
-	&b [
+	7f7f 7f7f 7f7f 7f7f ffff ffff ffff ffff ] &b [
 	00ff ffff ffff ffff ffff ffff ffff ffff
-	ffff ffff ffff ffff ffff ffff ffff ffff ]
-	&c [
+	ffff ffff ffff ffff ffff ffff ffff ffff ] &c [
 	0000 8080 8080 8080 0080 c0c0 c0c0 c0c0
 	8080 8080 8080 80c0 c0c0 c0c0 c0c0 c0ff
 	0000 0000 0000 0000 0000 0000 0000 0000
 	0000 0000 0000 0000 0000 0000 0000 00ff ]
+
 @appicon [
-003f 7f7f 7f7e 7d7a 3f7f ffff ffff ffff 00ff ffff ffa8 50a0 ffff ffff ffff ffff
-00fc fefe fe3e 1e0e fcfe ffff ffff ffff 757f 7f7c 7870 7071 ffff ffff ffff ffff
-ffff ff00 0000 ffff ffff ffff ffff ffff 0e8e 8e0e 0e0e 0e8e ffff ffff ffff ffff
-7070 787c 7f7f 3f00 ffff ffff ffff 7f3f ff00 0000 ffff ff00 ffff ffff ffff ffff
-0e0e 0e8e fefe fc00 ffff ffff ffff fefc ]
+	003f 7f7f 7f7e 7d7a 3f7f ffff ffff ffff
+	00ff ffff ffa8 50a0 ffff ffff ffff ffff
+	00fc fefe fe3e 1e0e fcfe ffff ffff ffff
+	757f 7f7c 7870 7071 ffff ffff ffff ffff
+	ffff ff00 0000 ffff ffff ffff ffff ffff
+	0e8e 8e0e 0e0e 0e8e ffff ffff ffff ffff
+	7070 787c 7f7f 3f00 ffff ffff ffff 7f3f
+	ff00 0000 ffff ff00 ffff ffff ffff ffff
+	0e0e 0e8e fefe fc00 ffff ffff ffff fefc ]
+
 @frame-chr [
 	0000 0000 0000 0001 0000 0000 0000 0303
 	0000 0000 0000 00ff 0000 0000 0000 ffff
@@ -1061,6 +882,7 @@ ffff ff00 0000 ffff ffff ffff ffff ffff 0e8e 8e0e 0e0e 0e8e ffff ffff ffff ffff
 	0100 0000 0000 0000 0303 0100 0000 0000
 	ff00 0000 0000 0000 ffff ffff 0000 0000
 	8000 0000 0000 0000 f0f0 f0f0 0000 0000 ]
+
 @frame2-chr [
 	0000 0000 0000 0001 0000 0000 0000 0103
 	0000 0000 0000 00ff 0000 0000 0000 ffff
@@ -1300,7 +1122,7 @@ JMP2r
 	#00 ,&id STR
 	[ LIT2 &manifest =manifest ]
 	&cat
-		#0802 [ LIT &sel ff ] [ LIT &id $1 ] EQU [ JMP SWP POP ] ;draw-chr/color STA
+		#0802 [ LIT &sel ff ] [ LIT &id $1 ] EQU [ JMP SWP POP ] ;<draw-chr>/color STA
 		INC2k ;draw-str JSR2 POP2 .Screen/x DEI2k #0008 ADD2 ROT DEO2
 		;skip-sub JSR2
 		,&id LDR INC ,&id STR
@@ -1318,7 +1140,7 @@ JMP2r
 	LDAk STH INC2 ;skip-str JSR2
 	STHr #00
 	&subcat
-		STHk #0608 STHr [ LIT &sel ff ] EQU [ JMP SWP POP ] [ LIT &mask $1 ] AND ;draw-chr/color STA
+		STHk #0608 STHr [ LIT &sel ff ] EQU [ JMP SWP POP ] [ LIT &mask $1 ] AND ;<draw-chr>/color STA
 		[ LIT2 &anchor $2 ] .Screen/x DEO2
 		#00 OVR INC #40 SFT2 #0004 ADD2 .Screen/y DEO2
 		SWP2 ;draw-label JSR2 SWP2
@@ -1335,8 +1157,8 @@ JMP2r
 	.Screen/y DEI2
 		.Screen/auto DEI
 			#f2 .Screen/auto DEO
-			;fill-icn ;blank-icn ;draw-chr/color LDA #00 EQU [ JMP SWP2 POP2 ] .Screen/addr DEO2
-			;draw-chr/color LDA .Screen/sprite DEOk DEO
+			;fill-icn ;blank-icn ;<draw-chr>/color LDA #00 EQU [ JMP SWP2 POP2 ] .Screen/addr DEO2
+			;<draw-chr>/color LDA .Screen/sprite DEOk DEO
 		.Screen/auto DEO
 	.Screen/y DEO2
 	( mod )
