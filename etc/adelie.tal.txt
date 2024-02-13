@@ -58,7 +58,7 @@
 	( name ) "Adelie 0a
 	( details ) "A 20 "Slideshow 20 "Program 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "Sep 20 "17, 20 "2023 00
+	( date ) "Feb 20 "13, 20 "2024 00
 	( > ) 02
 	( icon ) 83 =appicon
 	( mask ) 41 1705
@@ -170,7 +170,7 @@
 
 @view-slide ( addr* -- )
 	#40 ;cursor-icn <update-cursor>
-	#00 .links/length STZ
+	[ LIT2 00 -links/length ] STZ
 	DUP2 .slide STZ2
 	&w ( -- )
 		DUP2 find-op JSR2 scap/ INC2 ;dict/name OVR2 sseg #00 EQU ?&w
@@ -219,7 +219,7 @@
 		NIP2 JMP2r
 
 @toggle-interface ( -- )
-	.interface LDZ #00 EQU STHk .interface STZ
+	[ LIT2 00 -interface ] LDZ EQU STHk .interface STZ
 	;on-mouse-brush ;on-mouse STHr [ JMP SWP2 POP2 ] .Mouse/vector DEO2
 	( | clear )
 	#0000 .Screen/x DEO2
@@ -261,7 +261,8 @@
 		NIP #0a MUL .links/data ADD #08 ADD LDZ2 JMP2r
 
 @find-op ( addr* -- cmd )
-	STH2 #1000
+	STH2
+	#1000
 	&l ( -- )
 		#00 OVRk ADD2 ;op-tbl ADD2 LDA2 STH2kr sseg #01 NEQ ?{ NIP !&end }
 		INC GTHk ?&l
@@ -279,13 +280,14 @@
 		POP2 POP2 POPr #00 JMP2r
 
 @add-link ( addr* -- )
-	.links/length LDZ #08 NEQ ?{ ;errors/links-max !<print-str>/ }
-	;links/data #00 .links/length LDZ #0a MUL ADD2 #000a mcpy
+	[ LIT2 08 -links/length ] LDZ NEQ ?{ ;errors/links-max !<print-str>/ }
+	;links/data #00 [ LIT2 0a -links/length ] LDZ MUL ADD2 #000a mcpy
 	( + ) .links/length LDZ INC .links/length STZ
 	JMP2r
 
 @read-point ( 00x00* -- w h )
-	INC2k INC2 INC2 shex STH shex STHr JMP2r
+	INC2k INC2 INC2 shex STH
+	shex STHr JMP2r
 
 @next-word ( str* -- next* )
 	wcap/ INC2 !&
@@ -369,7 +371,8 @@
 @op-patt ( addr* -- addr* )
 	next-word STH2k #0800
 	&l ( -- )
-		#00 OVR #03 MUL STH2kr ADD2 shex STH #00 OVR ;patt-icn ADD2 STHr ROT ROT STA
+		#00 OVR #03 MUL STH2kr ADD2 shex STH
+		#00 OVR ;patt-icn ADD2 STHr ROT ROT STA
 		INC GTHk ?&l
 	POP2 POP2r JMP2r
 
@@ -433,13 +436,12 @@
 	.Mouse/y DEI2 #03 SFT2 DUP ,&y STR
 	#30 SFT2 #0004 SUB2 .Screen/y DEO2
 	;marker-icn .Screen/addr DEO2
-	#05 .Screen/sprite DEO
+	[ LIT2 05 -Screen/sprite ] DEO
 	[ LIT2 15 -Screen/auto ] DEO
 	#07 ;<draw-uf2-char>/color STA
 	,&x LDR <draw-byte>
 	LIT ", <draw-uf2-char>
-	,&y LDR <draw-byte>
-	JMP2r
+	,&y LDR !<draw-byte>
 	&x $1
 	&y $1
 
@@ -501,8 +503,10 @@
 
 @<draw-link> ( addr* -- )
 	LDA2k DUP2 .Screen/x DEO2
-	STH2 INC2 INC2 LDA2k DUP2 .Screen/y DEO2
-	STH2 SWP2r INC2 INC2 LDA2k STH2r SUB2 #03 SFT2 NIP ,&w STR
+	STH2
+	INC2 INC2 LDA2k DUP2 .Screen/y DEO2
+	STH2
+	SWP2r INC2 INC2 LDA2k STH2r SUB2 #03 SFT2 NIP ,&w STR
 	INC2 INC2 LDA2k STH2r SUB2 #03 SFT2 NIP ,&h STR
 	[ LIT &w $1 ] [ LIT &h $1 ] ;halftone-icn #0a <draw-rect>
 	INC2 INC2 LDA2
@@ -522,8 +526,7 @@
 
 @<draw-uf2-char> ( char -- )
 	#20 SUB #00 SWP DUP2 #50 SFT2 ;font-uf2/glyphs ADD2 .Screen/addr DEO2
-	;font-uf2 ADD2 LDA #00 SWP .Screen/x DEI2 ADD2 [ LIT &color $1 ] .Screen/sprite DEOk
-	DEO
+	;font-uf2 ADD2 LDA #00 SWP .Screen/x DEI2 ADD2 [ LIT &color $1 ] .Screen/sprite DEOk DEO
 	.Screen/x DEO2
 	JMP2r
 
@@ -536,17 +539,14 @@
 			.Screen/x DEI2 #0080 ADD2 #77 SFT2 .Screen/x DEO2
 			!&resume }
 		( draw ) LDAk #20 SUB #00 SWP DUP2 #00c8 MUL2 ;font-uf5/glyphs ADD2 .Screen/addr DEO2
-		;font-uf5 ADD2 LDA #00 SWP .Screen/x DEI2 ADD2 [ LIT &color $1 ] .Screen/sprite DEOk
-		DEOk
-		DEOk
-		DEOk
-		DEO
+		;font-uf5 ADD2 LDA #00 SWP .Screen/x DEI2 ADD2 [ LIT &color $1 ] .Screen/sprite DEOk DEOk DEOk DEOk DEO
 		#0002 SUB2 .Screen/x DEO2
 		&resume INC2 LDAk ?&w
 	POP2 JMP2r
 
 @<draw-fill> ( color -- )
-	STH #0000 DUP2 .Screen/x DEO2
+	STH
+	#0000 DUP2 .Screen/x DEO2
 	.Screen/y DEO2
 	.Screen/width DEI2 #03 SFT2 NIP .Screen/height DEI2 #03 SFT2 NIP ;patt-icn STHr
 
@@ -555,7 +555,8 @@
 	.Screen/addr DEO2
 	.Screen/x DEI2 ,&x STR2
 	[ LIT2 01 -Screen/auto ] DEO
-	SWP STH #00
+	SWP STH
+	#00
 	&hloop ( -- )
 		[ LIT2 &x $2 ] .Screen/x DEO2
 		STHkr #00
@@ -576,9 +577,9 @@
 	( ) ,&h STR
 	( ) ,&w STR
 	( | is pos auto )
-	.pen/auto LDZ #00 EQU ?{
-		.center/x LDZ2 #00 ,&w LDR #30 SFT2 #01 SFT2 SUB2 .Screen/x DEO2
-		.center/y LDZ2 #00 ,&h LDR #30 SFT2 #01 SFT2 SUB2 .Screen/y DEO2 }
+	[ LIT2 00 -pen/auto ] LDZ EQU ?{
+		.center/x LDZ2 [ LIT2 00 _&w ] LDR #30 SFT2 #01 SFT2 SUB2 .Screen/x DEO2
+		.center/y LDZ2 [ LIT2 00 _&h ] LDR #30 SFT2 #01 SFT2 SUB2 .Screen/y DEO2 }
 	( | anchor )
 	.Screen/x DEI2 ,&anchor STR2
 	[ LIT2 00 &h $1 ] SUB
@@ -612,10 +613,12 @@
 		[ LIT2 &y $2 ] EQU2 [ LIT2 &color $1 -Screen/pixel ] DEO
 		AND ?&end
 		STH2kr DUP2 ADD2 DUP2 ,&dy LDR2 lts2 ?&skipy
-		STH2r ,&dy LDR2 ADD2 STH2 ,&x2 LDR2 [ LIT2 &sx $2 ] ADD2 ,&x2 STR2
+		STH2r ,&dy LDR2 ADD2 STH2
+		,&x2 LDR2 [ LIT2 &sx $2 ] ADD2 ,&x2 STR2
 	&skipy ( -- )
 		,&dx LDR2 gts2 ?&while
-	STH2r ,&dx LDR2 ADD2 STH2 ,&y2 LDR2 [ LIT2 &sy $2 ] ADD2 ,&y2 STR2
+	STH2r ,&dx LDR2 ADD2 STH2
+	,&y2 LDR2 [ LIT2 &sy $2 ] ADD2 ,&y2 STR2
 	!&while
 	&end POP2r JMP2r
 
@@ -639,7 +642,8 @@
 	DUP2 shex ROT ROT INC2 INC2
 
 @shex ( string* -- byte )
-	( hn ) LDAk chex #40 SFT STH INC2
+	( hn ) LDAk chex #40 SFT STH
+	INC2
 	( ln ) LDA chex STHr ADD JMP2r
 
 @chex ( c -- <val> )
@@ -672,7 +676,7 @@
 		LDAk LDAkr STHr NEQk ?&d
 		DUP EOR EQUk ?&d
 		POP2 INC2 INC2r !&l
-	&d ( a* c1 c2 `b*  f )
+	&d ( a* c1 c2 `b* -- f )
 		NIP2 POP2r EQU JMP2r
 
 @sseg ( a-cap* b* -- f )
@@ -684,7 +688,8 @@
 	&e LDA LDAr STHr EQU JMP2r
 
 @mcpy ( src* dst* len* -- )
-	SWP2 STH2 OVR2 ADD2 SWP2
+	SWP2 STH2
+	OVR2 ADD2 SWP2
 	&l ( -- )
 		LDAk STH2kr STA
 		INC2r INC2 GTH2k ?&l
@@ -757,7 +762,8 @@
 		STHk
 		( a* ) [ LIT2 &a $2 ] STHkr SFT2 #000f AND2
 		( b* ) [ LIT2 &b $2 ] STHkr SFT2 #000f AND2
-		( res ) acrement STHr #40 SFT SFT2 STH2 ORA2r
+		( res ) acrement STHr #40 SFT SFT2 STH2
+		ORA2r
 		( ) #04 ADD GTHk ?&l
 	POP2 STH2r JMP2r
 
@@ -808,6 +814,7 @@
 	=op-rect =op-rgb4 =op-stop =op-wait ]
 
 
+
 ( tga )
 
 @tga &id-length $1
@@ -832,9 +839,9 @@
 	;tga/w STH2k LDA2 SWP STH2r STA2
 	;tga/h STH2k LDA2 SWP STH2r STA2
 	( | is pos auto )
-	.pen/auto LDZ #00 EQU ?&>no-auto
+	.pen/auto LDZ #00 EQU ?{
 		.center/x LDZ2 ;tga/w LDA2 #01 SFT2 SUB2 .Screen/x DEO2
-		.center/y LDZ2 ;tga/h LDA2 #01 SFT2 SUB2 .Screen/y DEO2 &>no-auto
+		.center/y LDZ2 ;tga/h LDA2 #01 SFT2 SUB2 .Screen/y DEO2 }
 	( | get parser )
 	;tga/image-type LDA
 	( ) DUP #02 EQU ?&rawt
@@ -861,18 +868,16 @@
 	;tga/w LDA2 ,&w STR2
 	;tga/h LDA2 ,&h STR2
 	( | paint )
-	#01 .Screen/auto DEO
+	[ LIT2 01 -Screen/auto ] DEO
 	#0000
 	&stream ( -- )
 		;&pixel .File/read DEO2
 		.File/success DEI2 #0000 EQU2 ?&end
 		;&pixel [ LIT2 &filter $2 ] JSR2 .Screen/pixel DEO
 		INC2 DUP2 [ LIT2 &w $2 ] NEQ2 ?&stream
-		( | linebreak )
-		POP2 #0000
-		[ LIT2 &x $2 ] .Screen/x DEO2
-		.Screen/y DEI2k INC2 ROT DEO2k
-		POP [ LIT2 &y $2 ] SUB2 [ LIT2 &h $2 ] NEQ2 ?&stream
+	( | linebreak )
+	POP2 #0000 [ LIT2 &x $2 ] .Screen/x DEO2
+	.Screen/y DEI2k INC2 ROT DEO2k POP [ LIT2 &y $2 ] SUB2 [ LIT2 &h $2 ] NEQ2 ?&stream
 	&end POP2 JMP2r
 	&pixel $4
 
@@ -901,13 +906,12 @@
 	&rlem "RLE-mono $1
 	&void "unknown-type $1
 
-@tga-types
-	[ 
-	=tga-types-txts/null =tga-types-txts/rawc 
-	=tga-types-txts/rawt =tga-types-txts/rawm 
-	=tga-types-txts/void =tga-types-txts/void 
-	=tga-types-txts/void =tga-types-txts/void 
-	=tga-types-txts/void =tga-types-txts/rlec 
+@tga-types [
+	=tga-types-txts/null =tga-types-txts/rawc
+	=tga-types-txts/rawt =tga-types-txts/rawm
+	=tga-types-txts/void =tga-types-txts/void
+	=tga-types-txts/void =tga-types-txts/void
+	=tga-types-txts/void =tga-types-txts/rlec
 	=tga-types-txts/rlet =tga-types-txts/rlem ]
 
 
