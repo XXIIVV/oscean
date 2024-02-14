@@ -1,10 +1,28 @@
-<h2>Using and defining struct data structures in Uxntal.</h2>
+<h2>Using and defining data structures in Uxntal.</h2>
 
-<p>Structs are defined by rolling back the program address with <kbd>|00</kbd>,
-similarly to how you would define an enum.</p>
+<p><b>Enums</b> are labels with unique values that can be used as constants in a
+program, they begin by rolling back the program address with
+<kbd>|00</kbd>:</p>
 
 <pre>
+<i>( definition )</i>
+|00 @Suit &clubs $1 &diamonds $1 &hearts $1 &spades
+
+<i>( usage )</i>
+[ LIT2 -Suit/clubs -suit ] LDZ EQU
+</pre>
+
+<p><b>Structs</b> define padded labels, for example the <code>;person/age</code>
+label holds a value of 2, using that offset allows to access specific members
+of a data structure by applying the sublabels to a pointer:</p>
+
+<pre>
+<i>( definition )</i>
 |00 @person &name $2 &age $1 &height $2 &length
+
+<i>( usage )</i>
+@members =dict/melany 2a 008c
+<i>( get height* )</i> ;members ;person/height ADD2 LDA2
 </pre>
 
 <p><b>Pro Tip</b>: Labels can also be used with the padding runes to define a
@@ -14,35 +32,6 @@ members of a struct, a value can be specified as follow:</p>
 <pre>
 |30 @length
 |00 @struct &field $length
-</pre>
-
-<p>The <code>length</code> member of the struct holds the total size of the
-struct, and allows to jump to a specific item in a datastructure. The idea here
-is that you define padded labels, for example the <code>;person/age</code>
-label holds the value of <code>$0002</code>, naming that offset allows to
-access specific members of a data structure by applying the sublabels of the
-enum to a pointer.</p>
-
-<pre>
-|0100 @reset
-
-	<i>( get second person )</i> ;family #0001 ;person/length MUL2 ADD2
-		<i>( get name* )</i> DUP2 ;person/name ADD2 LDA2 print-string
-		<i>( get age )</i> DUP2 ;person/age ADD2 LDA print-byte
-		<i>( get height* )</i> ;person/height ADD2 LDA2 print-short
-
-BRK
-
-@family <i>( name* age height* )</i>
-	=dict/melany 2a 008c
-	=dict/emily 14 0073
-	=dict/avery 09 0091
-	&end
-
-@dict
-	&melany "Melany $1
-	&emily "Emily $1
-	&avery "Avery $1
 </pre>
 
 
