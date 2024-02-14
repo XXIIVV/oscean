@@ -61,7 +61,7 @@
 	( name ) "Left 0a
 	( details ) "A 20 "Text 20 "Editor 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "8 20 "Feb 20 "2024 $1
+	( date ) "14 20 "Feb 20 "2024 $1
 	01
 	( > ) 83 =appicon
 
@@ -127,8 +127,19 @@
 @|vectors )
 
 @on-console ( -> )
-	.Console/read DEI DUP #08 NEQ ?{ POP erase BRK }
+	.Console/read DEI
+	( | handle bytes )
+	DUP #11 EQU ?&move
+	DUP #12 EQU ?&move
+	DUP #13 EQU ?&move
+	DUP #14 EQU ?&move
+	DUP #08 NEQ ?{ POP erase BRK }
+	DUP #7f NEQ ?{ POP delete BRK }
 	insert BRK
+	&move ( byte -- )
+		( convert to arrow ) #11 SUB #40 SFT #10 SWP SFT
+		( ) .selection/a LDZ2 ROT arrow-to-addr <select-a>
+		BRK
 
 @on-console-arg ( -> )
 	.Console/read DEI .filepath skey ?{ BRK }
@@ -137,7 +148,9 @@
 
 @on-button-trap ( -> )
 	<clear-filepath>
-	.Controller/key DEI DUP #1b EQU ?&escape
+	.Controller/key DEI
+	( | handle bytes )
+	DUP #1b EQU ?&escape
 	DUP .filepath skey ?&open
 	POP #01 <draw-filepath>
 	BRK
@@ -239,6 +252,8 @@
 		POP2 !trap-menu
 
 @on-mouse-scroll ( y* -> )
+	[ LIT2 04 -Controller/button ] DEI NEQ ?{ <scroll-by-x>
+		BRK }
 	<scroll-by-y>
 	BRK
 
@@ -331,9 +346,8 @@
 	( | default )
 	DUP #01 NEQ ?{ POP !find-line-prev }
 	DUP #02 NEQ ?{ POP !find-line-next }
-	DUP #04 NEQ ?{
-		POP #0001 SUB2 JMP2r }
-	DUP #08 NEQ ?{ POP INC2 JMP2r }
+	DUP #04 NEQ ?{ POP !prev-glyph }
+	DUP #08 NEQ ?{ POP !next-glyph }
 	&ctrl ( addr* button -- addr* )
 		#04 SFT
 		( | ctrl )
@@ -401,21 +415,24 @@
 		STH2r INC2 !<select-a>
 
 @erase ( -- )
-	has-length ?&block
+	has-length ?erase-block
 	get-from DUP2 ;text GTH2 ?&single
-	POP2
-	&block ( -- )
-		erase-selection !select-reset
+	POP2 JMP2r
 	&single ( from* -- )
-		#0001 SUB2 DUP2 <cut-char>
+		#0001 SUB2 LDAk #06 SFT #02 EQU ?&single-utf8
+		DUP2 <cut-char>
 		!<select-a>
+	&single-utf8 ( from* -- )
+		prev-glyph get-to <select-range>
+		( >> )
+
+@erase-block ( -- )
+	erase-selection !select-reset
 
 @delete ( -- )
-	has-length ?&block
+	has-length ?erase-block
 	get-from INC2k get-eof NEQ2 ?&single
 	POP2 JMP2r
-	&block ( -- )
-		erase-selection !select-reset
 	&single ( from* -- )
 		DUP2 <cut-char>
 		!<select-a>
@@ -583,6 +600,11 @@
 
 (
 @|scroll )
+
+@<scroll-by-x> ( x* -- )
+	?{ POP JMP2r }
+	#0010 ROT ?{ POP2 #fff0 }
+	.scroll/x LDZ2 ADD2
 
 @<scroll-to-x> ( line* -- )
 	DUP2 .scroll/x LDZ2 EQU2 ?&end
@@ -899,12 +921,15 @@
 	&fixed ( -- glyph* )
 		LDAk #20 SUB #00 SWP #40 SFT2 ;font-mono/glyphs ADD2 JMP2r
 
+@prev-glyph ( addr* -- addr* )
+	#0001 SUB2 LDAk
+	( utf8 continuation ) #06 SFT #02 EQU ?prev-glyph
+	JMP2r
+
 @next-glyph ( addr* -- addr* )
-	LDAk #c0 LTH ?&1
-	LDAk #e0 LTH ?&2
-	LDAk #f0 LTH ?&3
-	LDAk #f0 SUB #00 SWP ;utf8-lengths ADD2 LDA #00 SWP ADD2 JMP2r
-	&3 INC2 &2 INC2 &1 INC2 JMP2r
+	INC2 LDAk
+	( utf8 continuation ) #06 SFT #02 EQU ?next-glyph
+	JMP2r
 
 (
 @|go )
@@ -1884,9 +1909,6 @@
 0000 0000 00fe fefe 82fe fefe 0000 0000
 0000 0000 0010 18fc 7efc 1810 0000 0000
 0000 0000 0010 18fc 02fc 1810 0000 0000 ]
-
-@utf8-lengths [
-	04 04 04 04 04 04 04 04 05 05 05 05 06 06 01 01 ]
 
 @font ( cream12 )
 0707 0707 0707 0707 070e 0707 0707 0707 0707 0707 0707 0707 0707 0707 0707 0707
