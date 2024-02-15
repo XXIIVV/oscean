@@ -14,35 +14,15 @@ function Console(emu)
 	}
 
 	this.input = (char) => {
-		// Get vector
-		let vec = emu.uxn.peek16(emu.uxn.dev + 0x10)
-		// Set char
-		emu.uxn.poke8(emu.uxn.dev + 0x12, char)
-		if(!vec)
-			console.warn("No console vector")
-		emu.uxn.eval(vec)
+		emu.uxn.dev[0x12] = char
+		emu.uxn.eval(emu.uxn.dev[0x10] << 8 | emu.uxn.dev[0x11])
 	}
 }
 
 function Emu ()
 {
-	this.debug = 0
 	this.uxn = new Uxn(this)
 	this.console = new Console(this)
-
-	let opcodes = [
-		"LIT", "INC", "POP", "NIP", "SWP", "ROT", "DUP", "OVR",
-		"EQU", "NEQ", "GTH", "LTH", "JMP", "JCN", "JSR", "STH",
-		"LDZ", "STZ", "LDR", "STR", "LDA", "STA", "DEI", "DEO",
-		"ADD", "SUB", "MUL", "DIV", "AND", "ORA", "EOR", "SFT",
-		"BRK"]
-
-	function getname(byte) {
-		let m2 = !!(byte & 0x20) ? "2" : ""
-		let mr = !!(byte & 0x40) ? "r" : ""
-		let mk = !!(byte & 0x80) ? "k" : ""
-		return opcodes[byte & 0x1f] + m2 + mk + mr
-	}
 
 	this.debugger = () => {
 		if(!this.uxn.wst.ptr())
@@ -55,17 +35,12 @@ function Emu ()
 		console.warn(buf)
 	}
 
-	this.onStep = (pc, instr) => {
-		if(this.debug)
-			console.log(getname(instr), pc)
-	}
-
 	this.dei = (port) => {
-		return this.uxn.getdev(port)
+		return this.uxn.dev[port]
 	}
 
 	this.deo = (port, val) => {
-		this.uxn.setdev(port, val)
+		this.uxn.dev[port] = val
 		if(port == 0x10 || port == 0x11) {
 			console.log("Set console vector")
 		}

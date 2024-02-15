@@ -14,12 +14,9 @@ function Stack(u)
 function Uxn (emu)
 {
 	this.ram = new Uint8Array(0x13000)
+	this.dev = new Uint8Array(0x100)
 	this.wst = new Stack(this)
 	this.rst = new Stack(this)
-	this.dev = 0x12000
-
-	this.getdev = (port) => { return this.ram[this.dev + port] }
-	this.setdev = (port, val) => { this.ram[this.dev + port] = val }
 
 	this.pop = () => {
 		return this.r2 ? this.src.pop16() : this.src.pop8()
@@ -89,7 +86,6 @@ function Uxn (emu)
 		if(!pc || this.dev[0x0f])
 			return 0;
 		while((instr = this.ram[pc++])) {
-			emu.onStep(pc, instr)
 			// registers
 			this.r2 = instr & 0x20
 			this.rr = instr & 0x40
