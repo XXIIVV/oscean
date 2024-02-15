@@ -23,14 +23,14 @@ function Uxn (emu)
 	this.popx = () => { return this.r2 ? this.src.pop2() : this.src.pop1() }
 	this.push1 = (x) => { this.src.push1(x) }
 	this.push2 = (x) => { this.src.push2(x) }
-	this.pushx = (val) => { if(this.r2) this.push2(val); else this.push1(val) }
+	this.pushx = (x) => { if(this.r2) this.push2(x); else this.push1(x) }
 
 	this.peek1 = (addr) => { return this.ram[addr] }
 	this.peek2 = (addr) => { return (this.ram[addr] << 8) | this.ram[addr + 1] }
 	this.peekx = (addr) => { return this.r2 ? this.peek2(addr) : this.peek1(addr) }
-	this.poke1 = (addr, val) => { this.ram[addr] = val }
-	this.poke2 = (addr, val) => { this.ram[addr] = val >> 8; this.ram[addr + 1] = val; }
-	this.poke = (addr, val) => { if(this.r2) this.poke2(addr, val); else this.poke1(addr, val) }
+	this.poke1 = (addr, x) => { this.ram[addr] = x }
+	this.poke2 = (addr, x) => { this.ram[addr] = x >> 8; this.ram[addr + 1] = x; }
+	this.pokex = (addr, x) => { if(this.r2) this.poke2(addr, x); else this.poke1(addr, x) }
 
 	this.jump = (addr, pc) => { return (this.r2 ? addr : pc + rel(addr)) & 0xffff }
 	this.move = (distance, pc) => { return (pc + distance) & 0xffff }
@@ -98,14 +98,14 @@ function Uxn (emu)
 			case 0x0c: /* JMP */ pc = this.jump(this.popx(), pc); break;
 			case 0x0d: /* JCN */ a = this.popx(); if(this.pop1()) pc = this.jump(a, pc); break;
 			case 0x0e: /* JSR */ this.dst.push2(pc); pc = this.jump(this.popx(), pc); break;
-			case 0x0f: /* STH */ if(this.r2){ this.dst.push2(this.pop2()); } else{ this.dst.push1(this.pop1()); } break;
+			case 0x0f: /* STH */ if(this.r2){ this.dst.push2(this.pop2()) } else{ this.dst.push1(this.pop1()) } break;
 			// Memory
 			case 0x10: /* LDZ */ this.pushx(this.peekx(this.pop1())); break;
-			case 0x11: /* STZ */ this.poke(this.pop1(), this.popx()); break;
+			case 0x11: /* STZ */ this.pokex(this.pop1(), this.popx()); break;
 			case 0x12: /* LDR */ this.pushx(this.peekx(pc + rel(this.pop1()))); break;
-			case 0x13: /* STR */ this.poke(pc + rel(this.pop1()), this.popx()); break;
+			case 0x13: /* STR */ this.pokex(pc + rel(this.pop1()), this.popx()); break;
 			case 0x14: /* LDA */ this.pushx(this.peekx(this.pop2())); break;
-			case 0x15: /* STA */ this.poke(this.pop2(), this.popx()); break;
+			case 0x15: /* STA */ this.pokex(this.pop2(), this.popx()); break;
 			case 0x16: /* DEI */ this.pushx(this.devr(this.pop1())); break;
 			case 0x17: /* DEO */ this.devw(this.pop1(), this.popx()); break;
 			// Arithmetic
