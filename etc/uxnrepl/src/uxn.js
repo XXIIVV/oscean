@@ -1,21 +1,21 @@
 'use strict'
 
-function Stack(u, addr)
+function Stack(u)
 {
-	this.ram = new Uint8Array(0x100)
+	let ram = new Uint8Array(0x100)
 	this.ptr = 0
 	this.ptrk = 0
-	this.pop8 = () => { return this.ram[(u.rk ? --this.ptrk : --this.ptr) & 0xff] }
+	this.pop8 = () => { return ram[(u.rk ? --this.ptrk : --this.ptr) & 0xff] }
 	this.pop16 = () => { return this.pop8() | (this.pop8() << 8) }
-	this.push8 = (val) => { this.ram[this.ptr++ & 0xff] = val }
+	this.push8 = (val) => { ram[this.ptr++ & 0xff] = val }
 	this.push16 = (val) => { this.push8(val >> 8), this.push8(val & 0xff) }
 }
 
 function Uxn (emu)
 {
 	this.ram = new Uint8Array(0x13000)
-	this.wst = new Stack(this, 0x10000)
-	this.rst = new Stack(this, 0x11000)
+	this.wst = new Stack(this)
+	this.rst = new Stack(this)
 	this.dev = 0x12000
 
 	this.getdev = (port) => { return this.ram[this.dev + port] }
@@ -148,7 +148,7 @@ function Uxn (emu)
 			case 0x18: /* ADD */ a = this.pop(); b = this.pop(); this.push(b + a); break;
 			case 0x19: /* SUB */ a = this.pop(); b = this.pop(); this.push(b - a); break;
 			case 0x1a: /* MUL */ a = this.pop(); b = this.pop(); this.push(b * a); break;
-			case 0x1b: /* DIV */ a = this.pop(); b = this.pop(); if(!a) return this.halt(3); this.push(b / a); break;
+			case 0x1b: /* DIV */ a = this.pop(); b = this.pop(); this.push(a ? b / a : 0); break;
 			case 0x1c: /* AND */ a = this.pop(); b = this.pop(); this.push(b & a); break;
 			case 0x1d: /* ORA */ a = this.pop(); b = this.pop(); this.push(b | a); break;
 			case 0x1e: /* EOR */ a = this.pop(); b = this.pop(); this.push(b ^ a); break;
@@ -161,21 +161,6 @@ function Uxn (emu)
 		for (let i = 0; i <= program.length; i++)
 			this.ram[0x100 + i] = program[i];
 		return this
-	}
-
-	this.errors = [
-		"underflow",
-		"overflow",
-		"division by zero"
-	]
-
-	this.halt = (err) => {
-		let vec = this.peek16(emu.uxn.dev)
-		if(vec)
-			this.eval(vec)
-		else
-			emu.console.error_el.innerHTML = "<b>Error</b>: " + (this.rr ? "Return-stack" : "Working-stack") + " " + this.errors[err] + "."
-		this.pc = 0x0000
 	}
 
 	function rel(val) {
