@@ -2,40 +2,13 @@
 
 function Stack(u, addr)
 {
-	this.addr = addr
+	this.ram = new Uint8Array(0x100)
 	this.ptr = 0
 	this.ptrk = 0
-
-	this.get = (index) => {
-		return u.ram[this.addr + index]
-	}
-
-	this.inc = () => {
-		return this.ptr++
-	}
-
-	this.dec = () => {
-		return u.rk ? --this.ptrk : --this.ptr
-	}
-
-	this.pop8 = () => {
-		return this.ptr == 0x00 ? u.halt(1) : u.ram[this.addr + (u.rk ? --this.ptrk : --this.ptr)]
-	}
-
-	this.push8 = (val) => {
-		if(this.ptr == 0xff)
-			return u.halt(2)
-		u.ram[this.addr + this.ptr++] = val
-	}
-
-	this.pop16 = () => {
-		return this.pop8() + (this.pop8() << 8)
-	}
-
-	this.push16 = (val) => {
-		this.push8(val >> 0x08)
-		this.push8(val & 0xff)
-	}
+	this.pop8 = () => { return this.ram[(u.rk ? --this.ptrk : --this.ptr) & 0xff] }
+	this.pop16 = () => { return this.pop8() | (this.pop8() << 8) }
+	this.push8 = (val) => { this.ram[this.ptr++ & 0xff] = val }
+	this.push16 = (val) => { this.push8(val >> 8), this.push8(val & 0xff) }
 }
 
 function Uxn (emu)
