@@ -3,31 +3,29 @@
 function Stack(u, addr)
 {
 	this.addr = addr
+	this.ptr = 0
+	this.ptrk = 0
 
 	this.get = (index) => {
 		return u.ram[this.addr + index]
 	}
 
-	this.ptr = () => {
-		return this.get(0xff)
-	}
-
 	this.inc = () => {
-		return u.ram[this.addr + 0xff]++
+		return this.ptr++
 	}
 
 	this.dec = () => {
-		return u.rk ? --this.pk : --u.ram[this.addr + 0xff]
+		return u.rk ? --this.ptrk : --this.ptr
 	}
 
 	this.pop8 = () => {
-		return this.ptr() == 0x00 ? u.halt(1) : u.ram[this.addr + this.dec()]
+		return this.ptr == 0x00 ? u.halt(1) : u.ram[this.addr + (u.rk ? --this.ptrk : --this.ptr)]
 	}
 
 	this.push8 = (val) => {
-		if(this.ptr() == 0xff)
+		if(this.ptr == 0xff)
 			return u.halt(2)
-		u.ram[this.addr + this.inc()] = val
+		u.ram[this.addr + this.ptr++] = val
 	}
 
 	this.pop16 = () => {
@@ -124,8 +122,8 @@ function Uxn (emu)
 			this.rr = instr & 0x40
 			this.rk = instr & 0x80
 			if(this.rk) {
-				this.wst.pk = this.wst.ptr()
-				this.rst.pk = this.rst.ptr()
+				this.wst.ptrk = this.wst.ptr
+				this.rst.ptrk = this.rst.ptr
 			}
 			if(this.rr) {
 				this.src = this.rst
