@@ -7,76 +7,64 @@
 
 	@src $40
 
-|0100 ( -> )
+|0100
 
+@on-reset ( -> )
 	;on-console .Console/vector DEO2
-
-BRK
+	BRK
 
 @on-console ( -> )
-
 	;src STH2
-	( read input )
-	.Console/read DEI
-	DUP #20 LTH OVR #7f GTH ORA ,&end JCN
-	STH2kr ,slen JSR #003f GTH2 ,&end JCN
-		STH2kr ,scap JSR STA POP2r BRK
-		&end
-	POP
-	STH2r .File/name DEO2
-	#0001 .File/length DEO2
-	;header-txt ;print-str JSR2
-	LIT2r 0000
-	&stream
+	( | read input )
+	.Console/read DEI DUP #20 LTH OVR #7f GTH ORA ?&end
+	STH2kr slen #003f GTH2 ?&end
+	STH2kr scap/ STA
+	POP2r BRK
+	&end ( c -- )
+		POP STH2r .File/name DEO2
+		#0001 .File/length DEO2
+		;header-txt <pstr>
+		LIT2r 0000
+	&stream ( -- )
 		#00 ,&buf STR
-		;&buf
-			DUP2 .File/read DEO2
-			LIT "0 #18 DEO LIT "x #18 DEO
-			LDA ,print/byte JSR LIT ", #18 DEO #2018 DEO
+		;&buf DUP2 .File/read DEO2
+		LIT "0 #18 DEO
+		LIT "x #18 DEO
+		LDA <phex>/byte
+		LIT ", #18 DEO
+		#2018 DEO
 		INC2r
-		( linebreak )
-		STH2kr #0007 AND2 ORA ,&no-lb JCN
-			#0a18 DEO #0918 DEO
-			&no-lb
-		.File/success DEI2 ORA ,&stream JCN
-	POP2r
-	;footer-txt ;print-str JSR2
+		( linebreak ) STH2kr #000f AND2 ORA ?{
+			#0a18 DEO
+			#0918 DEO }
+		.File/success DEI2 ORA ?&stream
+	POP2r ;footer-txt <pstr>
 	#0a18 DEO
 	#010f DEO
-
-BRK
-	&buf $1
+	BRK &buf $1
 
 @slen ( str* -- len* )
-
-	DUP2 ,scap JSR SWP2 SUB2
-
-JMP2r
+	DUP2 scap/ SWP2 SUB2 JMP2r
 
 @scap ( str* -- end* )
+	INC2 & LDAk ?scap
+	JMP2r
 
-	LDAk #00 NEQ JMP JMP2r
-	&while
-		INC2 LDAk ,&while JCN
+@<phex> ( short* -- )
+	SWP <phex>/byte
+	&byte ( byte -- )
+		DUP #04 SFT <phex>/char
+	&char ( char -- )
+		#0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO
+		JMP2r
 
-JMP2r
+@<pstr> ( str* -- )
+	LDAk DUP ?{ POP2 JMP2r }
+	#18 DEO
+	INC2 !<pstr>
 
-@print ( short* -- )
+@header-txt
+	"const 20 "assembler 20 "= 20 "new 20 "Uint8Array([ 0a 09 00
 
-	SWP ,&byte JSR
-	&byte ( byte -- ) DUP #04 SFT ,&char JSR
-	&char ( char -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO
-
-JMP2r
-
-@print-str ( str* -- )
-
-	&while
-		LDAk #18 DEO
-		INC2 LDAk ,&while JCN
-	POP2
-
-JMP2r
-
-@header-txt "const 20 "rom 20 "= 20 "new 20 "Uint8Array([ 0a 09 00
-@footer-txt "0x00]) 00
+@footer-txt
+	"0x00]) 00
