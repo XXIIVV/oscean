@@ -13,7 +13,7 @@ function Stack(u)
 
 function Uxn (emu)
 {
-	this.ram = new Uint8Array(0x13000)
+	this.ram = new Uint8Array(0x10000)
 	this.dev = new Uint8Array(0x100)
 	this.wst = new Stack(this)
 	this.rst = new Stack(this)

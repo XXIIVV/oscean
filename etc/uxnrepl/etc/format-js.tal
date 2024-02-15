@@ -1,0 +1,82 @@
+( usage: uxncli format-js.rom file.bin )
+
+|10 @Console &vector $2 &read $1 &pad $5 &write $1 &error $1
+|a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+
+|0000
+
+	@src $40
+
+|0100 ( -> )
+
+	;on-console .Console/vector DEO2
+
+BRK
+
+@on-console ( -> )
+
+	;src STH2
+	( read input )
+	.Console/read DEI
+	DUP #20 LTH OVR #7f GTH ORA ,&end JCN
+	STH2kr ,slen JSR #003f GTH2 ,&end JCN
+		STH2kr ,scap JSR STA POP2r BRK
+		&end
+	POP
+	STH2r .File/name DEO2
+	#0001 .File/length DEO2
+	;header-txt ;print-str JSR2
+	LIT2r 0000
+	&stream
+		#00 ,&buf STR
+		;&buf
+			DUP2 .File/read DEO2
+			LIT "0 #18 DEO LIT "x #18 DEO
+			LDA ,print/byte JSR LIT ", #18 DEO #2018 DEO
+		INC2r
+		( linebreak )
+		STH2kr #0007 AND2 ORA ,&no-lb JCN
+			#0a18 DEO #0918 DEO
+			&no-lb
+		.File/success DEI2 ORA ,&stream JCN
+	POP2r
+	;footer-txt ;print-str JSR2
+	#0a18 DEO
+	#010f DEO
+
+BRK
+	&buf $1
+
+@slen ( str* -- len* )
+
+	DUP2 ,scap JSR SWP2 SUB2
+
+JMP2r
+
+@scap ( str* -- end* )
+
+	LDAk #00 NEQ JMP JMP2r
+	&while
+		INC2 LDAk ,&while JCN
+
+JMP2r
+
+@print ( short* -- )
+
+	SWP ,&byte JSR
+	&byte ( byte -- ) DUP #04 SFT ,&char JSR
+	&char ( char -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO
+
+JMP2r
+
+@print-str ( str* -- )
+
+	&while
+		LDAk #18 DEO
+		INC2 LDAk ,&while JCN
+	POP2
+
+JMP2r
+
+@header-txt "const 20 "rom 20 "= 20 "new 20 "Uint8Array([ 0a 09 00
+@footer-txt "0x00]) 00
