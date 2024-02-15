@@ -24,17 +24,6 @@ function Emu ()
 	this.uxn = new Uxn(this)
 	this.console = new Console(this)
 
-	this.debugger = () => {
-		if(!this.uxn.wst.ptr())
-			console.log("Stack is clean")
-		// Stack
-		let buf = ""
-		for (let i = 0; i < this.uxn.wst.ptr(); i++) {
-			buf += this.uxn.wst.get(i).toString(16)+" "
-		}
-		console.warn(buf)
-	}
-
 	this.dei = (port) => {
 		return this.uxn.dev[port]
 	}
