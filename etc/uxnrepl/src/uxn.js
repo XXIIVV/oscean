@@ -2,12 +2,12 @@
 
 function Stack(u)
 {
-	let ram = new Uint8Array(0x100)
+	this.ram = new Uint8Array(0x100)
 	this.ptr = 0
 	this.ptrk = 0
-	this.pop8 = () => { return ram[(u.rk ? --this.ptrk : --this.ptr) & 0xff] }
+	this.pop8 = () => { return this.ram[(u.rk ? --this.ptrk : --this.ptr) & 0xff] }
 	this.pop16 = () => { return this.pop8() | (this.pop8() << 8) }
-	this.push8 = (val) => { ram[this.ptr++ & 0xff] = val }
+	this.push8 = (val) => { this.ram[this.ptr++ & 0xff] = val }
 	this.push16 = (val) => { this.push8(val >> 8), this.push8(val & 0xff) }
 }
 
