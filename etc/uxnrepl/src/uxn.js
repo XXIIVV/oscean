@@ -127,6 +127,10 @@ function Uxn (emu)
 		return this
 	}
 
+	this.init = () => {
+		return Promise.resolve();
+	}
+
 	function rel(val) {
 		return (val > 0x80 ? val - 256 : val)
 	}
