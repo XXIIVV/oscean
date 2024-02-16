@@ -33,13 +33,17 @@ function Uxn (emu)
 	this.pokex = (addr, x, m = 0xffff) => { if(this.r2) this.poke2(addr, x, m); else this.poke1(addr, x, m) }
 
 	this.devr = (port) => { 
-		if(this.r2) return (emu.dei(port) << 8) | emu.dei((port + 1) & 0xff)
-		else return emu.dei(port)
+		if(this.r2)
+			return (emu.dei(port) << 8) | emu.dei((port + 1) & 0xff)
+		else
+			return emu.dei(port)
 	}
 
 	this.devw = (port, val) => {
-		if(this.r2) emu.deo(port, val >> 8), emu.deo((port + 1) & 0xff, val & 0xff)
-		else emu.deo(port, val)
+		if(this.r2)
+			emu.deo(port, val >> 8), emu.deo((port + 1) & 0xff, val & 0xff)
+		else
+			emu.deo(port, val)
 	}
 
 	this.eval = (pc) => {
