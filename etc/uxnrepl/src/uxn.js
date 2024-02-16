@@ -18,22 +18,20 @@ function Uxn (emu)
 	this.wst = new Stack(this)
 	this.rst = new Stack(this)
 
+	this.move = (distance, pc) => { return (pc + distance) & 0xffff }
+	this.jump = (addr, pc) => { return this.r2 ? addr : this.move(rel(addr), pc) }
 	this.pop1 = () => { return this.src.pop1() }
 	this.pop2 = () => { return this.src.pop2() }
 	this.popx = () => { return this.r2 ? this.src.pop2() : this.src.pop1() }
 	this.push1 = (x) => { this.src.push1(x) }
 	this.push2 = (x) => { this.src.push2(x) }
 	this.pushx = (x) => { if(this.r2) this.push2(x); else this.push1(x) }
-
 	this.peek1 = (addr, m = 0xffff) => { return this.ram[addr] }
 	this.peek2 = (addr, m = 0xffff) => { return (this.ram[addr] << 8) | this.ram[(addr + 1) & m] }
 	this.peekx = (addr, m = 0xffff) => { return this.r2 ? this.peek2(addr, m) : this.peek1(addr, m) }
 	this.poke1 = (addr, x, m = 0xffff) => { this.ram[addr] = x }
 	this.poke2 = (addr, x, m = 0xffff) => { this.ram[addr] = x >> 8; this.ram[(addr + 1) & m] = x }
 	this.pokex = (addr, x, m = 0xffff) => { if(this.r2) this.poke2(addr, x, m); else this.poke1(addr, x, m) }
-
-	this.jump = (addr, pc) => { return (this.r2 ? addr : pc + rel(addr)) & 0xffff }
-	this.move = (distance, pc) => { return (pc + distance) & 0xffff }
 
 	this.devr = (port) => { 
 		if(this.r2)
