@@ -8,7 +8,7 @@ function Stack(u)
 	this.pop1 = () => { return this.ram[(u.rk ? --this.ptrk : --this.ptr) & 0xff] }
 	this.pop2 = () => { return this.pop1() | (this.pop1() << 8) }
 	this.push1 = (val) => { this.ram[this.ptr++ & 0xff] = val }
-	this.push2 = (val) => { this.push1(val >> 8), this.push1(val & 0xff) }
+	this.push2 = (val) => { this.push1(val >> 8), this.push1(val) }
 }
 
 function Uxn (emu)
@@ -123,15 +123,11 @@ function Uxn (emu)
 
 	this.load = (program) => {
 		for (let i = 0; i <= program.length; i++)
-			this.ram[0x100 + i] = program[i];
+			this.ram[0x100 + i] = program[i]
 		return this
 	}
 
-	this.init = () => {
-		return Promise.resolve();
-	}
-
 	function rel(val) {
-		return (val > 0x80 ? val - 256 : val)
+		return val > 0x80 ? val - 256 : val
 	}
 }
