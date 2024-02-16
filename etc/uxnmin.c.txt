@@ -15,14 +15,6 @@ typedef struct Uxn {
 
 int uxn_eval(Uxn *u, Uint16 pc);
 
-int
-console_input(Uxn *u, char c, int type)
-{
-	Uint16 vector = u->dev[0x10] << 8 | u->dev[0x11];
-	u->dev[0x12] = c, u->dev[0x17] = type;
-	return uxn_eval(u, vector);
-}
-
 Uint8
 emu_dei(Uxn *u, Uint8 addr)
 {
@@ -108,24 +100,30 @@ uxn_eval(Uxn *u, Uint16 pc)
 	}
 }
 
+void
+console_input(Uxn *u, char c, int type)
+{
+	u->dev[0x12] = c, u->dev[0x17] = type;
+	uxn_eval(u, u->dev[0x10] << 8 | u->dev[0x11]);
+}
+
 int
 main(int argc, char **argv)
 {
 	FILE *f;
 	int i = 1;
 	Uxn u = {0};
-	if(i == argc) {
+	if(argc < 2) {
 		fprintf(stdout, "usage: %s file.rom [args..]\n", argv[0]);
 		return 0;
 	}
 	f = fopen(argv[i++], "rb");
 	if(!f) {
-		fprintf(stderr, "Failed to initialize %s\n", argv[1]);
+		fprintf(stderr, "uxnmin: Error %s\n", argv[1]);
 		return 0;
 	}
-	fread(&u.ram[0x0100], 0xff00, 1, f);
-	fclose(f);
 	u.dev[0x17] = argc - i;
+	fread(&u.ram[0x0100], 0xff00, 1, f), fclose(f);
 	if(uxn_eval(&u, 0x0100) && (u.dev[0x10] << 8 | u.dev[0x11])) {
 		for(; i < argc; i++) {
 			char *p = argv[i];
