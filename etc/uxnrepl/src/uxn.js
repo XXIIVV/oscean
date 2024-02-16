@@ -17,7 +17,6 @@ function Uxn (emu)
 	this.dev = new Uint8Array(0x100)
 	this.wst = new Stack(this)
 	this.rst = new Stack(this)
-
 	this.move = (distance, pc) => { return (pc + distance) & 0xffff }
 	this.jump = (addr, pc) => { return this.r2 ? addr : this.move(rel(addr), pc) }
 	this.pop1 = () => { return this.src.pop1() }
@@ -34,40 +33,30 @@ function Uxn (emu)
 	this.pokex = (addr, x, m = 0xffff) => { if(this.r2) this.poke2(addr, x, m); else this.poke1(addr, x, m) }
 
 	this.devr = (port) => { 
-		if(this.r2)
-			return (emu.dei(port) << 8) | emu.dei((port + 1) & 0xff)
-		else 
-			return emu.dei(port)
+		if(this.r2) return (emu.dei(port) << 8) | emu.dei((port + 1) & 0xff)
+		else return emu.dei(port)
 	}
 
 	this.devw = (port, val) => {
-		if(this.r2) {
-			emu.deo(port, val >> 8);
-			emu.deo((port + 1) & 0xff, val & 0xff)
-		} else
-			emu.deo(port, val)
+		if(this.r2) emu.deo(port, val >> 8), emu.deo((port + 1) & 0xff, val & 0xff)
+		else emu.deo(port, val)
 	}
 
 	this.eval = (pc) => {
 		let a, b, c, instr, opcode
 		if(!pc || this.dev[0x0f])
-			return 0;
+			return 0
 		while((instr = this.ram[pc++])) {
 			// registers
 			this.r2 = instr & 0x20
 			this.rr = instr & 0x40
 			this.rk = instr & 0x80
-			if(this.rk) {
-				this.wst.ptrk = this.wst.ptr
-				this.rst.ptrk = this.rst.ptr
-			}
-			if(this.rr) {
-				this.src = this.rst
-				this.dst = this.wst
-			} else {
-				this.src = this.wst
-				this.dst = this.rst
-			}
+			if(this.rr) 
+				this.src = this.rst, this.dst = this.wst
+			else 
+				this.src = this.wst, this.dst = this.rst
+			if(this.rk) 
+				this.src.ptrk = this.src.ptr
 			opcode = instr & 0x1f;
 			switch(opcode - (!opcode * (instr >> 5))) {
 			/* Literals/Calls */
