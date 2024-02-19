@@ -47,23 +47,23 @@ emu_deo(Uxn *u, Uint8 addr, Uint8 value)
 int
 uxn_eval(Uxn *u, Uint16 pc)
 {
-	Uint8 t, kp, *sp, *ram = u->ram;
-	Uint16 tt, a, b, c;
+	Uint8 *ram = u->ram;
 	if(!pc || u->dev[0x0f]) return 0;
 	for(;;) {
-		Uint8 ins = ram[pc++], m2 = ins & 0x20;
-		Stack *s = ins & 0x40 ? &u->rst : &u->wst;
-		if(ins & 0x80) kp = s->ptr, sp = &kp;
-		else sp = &s->ptr;
+		Uint16 tt, a, b, c;
+		Uint8 t, kp, *sp, ins = ram[pc++];
+		/* 2 */ Uint8 m2 = ins & 0x20;
+		/* r */ Stack *s = ins & 0x40 ? &u->rst : &u->wst;
+		/* k */ if(ins & 0x80) kp = s->ptr, sp = &kp; else sp = &s->ptr;
 		switch(ins & 0x1f) {
-		case 0x00: case 0x20:
+		case 0x00:
 		switch(ins) {
 			case 0x00: /* BRK */ return 1;
-			case 0x20: /* JCI */ POP1(b) if(!b) { pc += 2; break; }
+			case 0x20: /* JCI */ POP1(b) if(!b) { pc += 2; break; } /* fall */
 			case 0x40: /* JMI */ a = ram[pc++] << 8 | ram[pc++]; pc += a; break;
 			case 0x60: /* JSI */ PUSH2(pc + 2) a = ram[pc++] << 8 | ram[pc++]; pc += a; break;
+			case 0xa0: case 0xe0: /* LIT2 */ PUSH1(ram[pc++]) /* fall */
 			case 0x80: case 0xc0: /* LIT  */ PUSH1(ram[pc++]) break;
-			case 0xa0: case 0xe0: /* LIT2 */ PUSH1(ram[pc++]) PUSH1(ram[pc++]) break;
 		} break;
 		case 0x01: /* INC */ POPx(a) PUSHx(a + 1) break;
 		case 0x02: /* POP */ POPx(a) break;
