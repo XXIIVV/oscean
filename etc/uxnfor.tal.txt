@@ -4,20 +4,17 @@
 |10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
 |a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |b0 @File2 &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
-
-|0000
+|000
 
 	@pad $10
 	@src $40
 	@dst $40
 	@last $1
-	@zp $1
 	@err $1
+	@nobrk $1
+	@inzp $1
 
-(
-@|vectors )
-
-|0100
+|100
 
 @on-reset ( -> )
 	;meta #06 DEO2
@@ -31,7 +28,7 @@
 	( name ) "Uxnfor 0a
 	( desc ) "Uxntal 20 "Formatter 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "10 20 "Feb 20 "2024 $1
+	( date ) "23 20 "Feb 20 "2024 $1
 	( exts ) 00
 
 @await-src ( -> )
@@ -81,14 +78,15 @@
 	eval-scope !scope/put
 
 @eval-scope ( -- )
-	.zp LDZ ?eval-zpscope
 	;mem/scope
 	( first scope ) LDAk [ LIT "@ ] NEQ ?&w
 	#01 ;<emit-break-tab>/nest STA
+	( | pad zp )
+	.inzp LDZ #00 EQU ?{ #09 <emit> }
 	( | definition )
 	<emit-word>/
-	INC2k LDA #28 NEQ ?{
-		<emit-comment>
+	#20 <emit>
+	INC2k LDA #28 NEQ ?{ <emit-comment>
 		INC2 <emit-break-tab>
 		!&w }
 	INC2 LDAk [ LIT "& ] NEQ ?{ <emit-space>
@@ -97,7 +95,6 @@
 		!&w }
 	LDAk [ LIT "$ ] NEQ ?{ <emit-space>
 		!&w }
-	<emit-break-tab>
 	&w ( -- )
 		DUP2 #0001 SUB2 LDA #20 NEQ ?{
 			LDAk #28 EQU ?handle-comment
@@ -116,53 +113,40 @@
 		!&continue
 		&collapse LDAk <emit>
 		&continue INC2 LDAk ?&w
+	.nobrk LDZ ?&join
+	.inzp LDZ ?{ #0a <emit> }
 	#0a <emit>
-	#0a <emit>
-	&end POP2 !scope/new
-
-@eval-zpscope ( -- )
-	<emit-break-tab>
-	;mem/scope
-	&w ( -- )
-		DUP2 #0001 SUB2 LDA #20 NEQ ?{
-			LDAk [ LIT "| ] EQU ?handle-padabs
-			LDAk #28 EQU ?handle-comment }
-		LDAk <emit>
-		INC2 LDAk ?&w
 	POP2 !scope/new
+	&join ( -- )
+		[ LIT2 00 -nobrk ] STZ
+		#20 <emit>
+		POP2 !scope/new
 
 @handle-padabs ( addr* -- addr* )
-	#01 ;<emit-break-tab>/nest STA
-	INC2k is-pad-zp ?&zp
-	INC2k is-pad-reset ?&reset
-	DUP2 #0002 SUB2 LDA #29 NEQ ?{ #0a <emit> }
 	#0a <emit>
-	DUP2 <emit-word>/
+	DUP2 wrew wrew INC2 LDA [ LIT ") ] NEQ ?{ #0a <emit> }
+	INC2k slen #0004 EQU2 ?&page
+	[ LIT2 01 -nobrk ] STZ
+	<emit-word>/
 	<emit-space>
-	( | if end of scope, no breaks )
-	SWP2 wlen #0005 EQU2 ?eval-scope/continue
-	INC2k LDA #00 EQU ?eval-scope/end
 	!eval-scope/continue
-	&zp ( -- )
-		[ LIT2 01 -zp ] STZ
-		#0a <emit>
-		#0a <emit>
+	&page ( addr* -- addr* )
+		INC2k LDA2 [ LIT2 "00 ] EQU2 .inzp STZ
 		<emit-word>/
-		!eval-scope/continue
-	&reset ( -- )
-		[ LIT2 00 -zp ] STZ
 		#0a <emit>
-		#0a <emit>
-		<emit-word>/
 		!eval-scope/continue
 
 @handle-padrel ( addr* -- addr* )
 	<emit-word>/
-	;mem/scope INC2 LDA ciuc ?&collapse
-	INC2k LDA #00 EQU ?&collapse
-	<emit-break-tab>
-	!eval-scope/continue
-	&collapse ( addr* -- addr* )
+	;mem/scope INC2 LDA ciuc ?&space-after
+	INC2k LDA #00 EQU ?&space-after
+	DUP2 wcap/ INC2 LDA [ LIT "& ] NEQ ?&break-after
+	DUP2 wrew wrew INC2 LDA [ LIT "& ] EQU ?&space-after
+	DUP2 wrew wrew LDA [ LIT "@ ] EQU ?&space-after
+	&break-after ( addr* -- addr* )
+		<emit-break-tab>
+		!eval-scope/continue
+	&space-after ( addr* -- addr* )
 		<emit-space>
 		!eval-scope/continue
 
@@ -211,7 +195,7 @@
 	;<emit-break-tab>/lambda LDA INC ;<emit-break-tab>/lambda STA
 	<emit-word>/
 	<emit-space>
-	DUP2 count-lambda #0005 LTH2 ?{ <emit-break-tab> }
+	DUP2 count-lambda #0006 LTH2 ?{ <emit-break-tab> }
 	!eval-scope/continue
 
 @handle-lambda-end ( addr* -- addr* )
@@ -292,14 +276,6 @@
 	( a ) LDAk [ LIT "& ] EQU STH
 	( b ) wcap/ INC2 LDA #28 EQU
 	( res ) STHr AND JMP2r
-
-@is-pad-zp ( str* -: f )
-	( hb ) LDA2k LIT2 "00 EQU2 STH
-	( lb ) INC2 INC2 LDA2 LIT2 "00 EQU2 STHr AND JMP2r
-
-@is-pad-reset ( str* -: f )
-	( hb ) LDA2k LIT2 "01 EQU2 STH
-	( lb ) INC2 INC2 LDA2 LIT2 "00 EQU2 STHr AND JMP2r
 
 @scan-for-skip ( addr* -- f )
 	&w ( -- )
@@ -436,6 +412,9 @@
 @ciuc ( c -: f )
 	[ LIT "A ] SUB #19 LTH JMP2r
 
+@slen ( str* -: len* )
+	DUP2 scap/ SWP2 SUB2 JMP2r
+
 @scap ( str* -: end* )
 	INC2 & LDAk ?scap
 	JMP2r
@@ -534,7 +513,5 @@
 	20
 
 @mem ( static buffers )
-	&scope $800
-	&scope-cap $2
-	&result
+	&scope $4000 &scope-cap $2 &result
 
