@@ -1,8 +1,7 @@
 ( usage: cat file.tal | drifloon.rom > output.rom )
 
 |10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
-
-|0000
+|000
 
 	@sublabel $80
 	@head $2
@@ -12,7 +11,7 @@
 	@halt $1
 	@scan $1
 
-|0100
+|100
 
 @on-reset ( -> )
 	;on-console .Console/vector DEO2
@@ -161,8 +160,7 @@
 	( >> )
 
 @<write-hex> ( str* len -- )
-	DUP #02 NEQ ?{
-		POP shex NIP !<write> }
+	DUP #02 NEQ ?{ POP shex NIP !<write> }
 	#04 NEQ ?{ shex !<write-short> }
 	POP2 ;err/number !<set-error>
 
@@ -216,9 +214,16 @@
 
 @<set-scope> ( t* -: )
 	DUP2 .scope STZ2
-	DUP2 ;sublabel STH2k <scpy>
-	[ LIT2 "/ 00 ] STH2r scap/ STH2k STA2
-	STH2r INC ,get-sublabel/ptr STR2
+	( | copy scope into sublabel )
+	DUP2 [ LITr -sublabel ]
+	&w ( -- )
+		LDAk [ LIT "/ ] EQU ?&end
+		LDAk STHkr STZ
+		INCr INC2 LDAk ?&w
+	&end POP2 #00 STHr STZ
+	( | prepare sublabel pointer )
+	[ LIT2 "/ 00 ] ;sublabel scap/ STH2k STA2
+	;sublabel INC ,get-sublabel/ptr STR2
 	( >> )
 
 @<create-symbol> ( name* -: )
@@ -391,8 +396,7 @@
 	&end "). 0a $1
 	&labels 20 "labels $1
 
-@err
-	"!! 20 "Error: 20 $1
+@err "!! 20 "Error: 20 $1
 	&duplicate "Duplicate $1
 	&number "Number $1
 	&length "Length $1
@@ -416,14 +420,12 @@
 	". =lib/litzep "- =lib/rawzep
 	"; =lib/litabs "= =lib/rawabs
 	"? =lib/litjci "! =lib/litjmi
-	"" =lib/rawstr "~ =lib/ignore ] &end
+	"" =lib/rawstr "~ =lib/ignore ]
+	&end
 
 @lambda-buf $100
 
 @input-buf $2000
 
-|8000
-
-@rom $100
-	&output
+|8000 @rom $100 &output
 
