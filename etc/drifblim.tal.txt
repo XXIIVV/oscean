@@ -46,7 +46,7 @@
 	[ LIT2 00 -halt ] STZ
 	#0000 .length STZ2
 	;mem/symbols ;<create-symbol>/ptr STA2
-	;lambda-buf ;lambda/ptr STA2
+	;Lambda/buf ;Lambda/ptr STA2
 	#0000 ;<create-symbol>/count STA2
 	<assemble>
 	BRK
@@ -75,7 +75,7 @@
 @handle-pass ( scan -: err )
 	.scan STZ
 	#0100 <set-head>
-	#00 ;lambda/count STA
+	#00 ;Lambda/count STA
 	;dict/reset <set-scope>
 	;src/buf handle-file .halt LDZ JMP2r
 
@@ -134,7 +134,7 @@
 	&litjsi #60 !<write-call>
 	&lithex INC2 !<write-lithex>
 	&rawstr INC2 !<write-str>/
-	&lambda POP2 !lambda/pop
+	&lambda POP2 !Lambda/pop
 	&inc INC2k ;mem/include STH2k <scpy>
 	<sclr>
 	STH2r !handle-file
@@ -254,7 +254,7 @@
 @|labels )
 
 @get-sublabel ( name* -- sublabel* )
-	DUP zlen .sublabel zlen ADD #30 LTH ?{ ;err/sublabel !<set-error> }
+	DUP2 slen ;sublabel slen ADD2 #0030 LTH2 ?{ ;err/sublabel !<set-error> }
 	[ LIT2 &ptr $2 ] <scpy>
 	;sublabel JMP2r
 
@@ -267,15 +267,17 @@
 		INCr INC2 LDAk ?&w
 	&end POP2 #00 STHr STZ
 	( | prepare sublabel pointer )
-	;scope ;sublabel STHk <scpy>
-	[ LIT2 "/ 00 ] STHr zcap/ STHk STZ2
-	#00 STHr INC ,get-sublabel/ptr STR2
+	;scope ;sublabel <scpy>
+	[ LIT2 "/ 00 ] ;sublabel scap/
+	( ptr ) INC2k ,get-sublabel/ptr STR2
+	( cap ) STA2
 	( >> )
 
 @<create-symbol> ( name* -- )
 	.scan LDZ ?{ POP2 JMP2r }
 	is-hex ?&invalid
 	is-opcode ?&invalid
+	is-runic ?&invalid
 	DUP2 find-symbol INC2 ORA ?&not-unique
 	( addr* ) .head LDZ2 [ LIT2 &ptr =mem/symbols ] STH2k INC2r INC2r STA2
 	( refs ) #00 STH2kr INC2r STA
@@ -304,7 +306,7 @@
 	!get-ref/eager
 
 @get-ref ( token* -- addr* )
-	LDAk [ LIT "{ ] NEQ ?{ POP2 lambda/push }
+	LDAk [ LIT "{ ] NEQ ?{ POP2 Lambda/push }
 	.scan LDZ ?&scan
 	&eager ( -- )
 		LDAk [ LIT "/ ] NEQ ?{ INC2 get-sublabel }
@@ -321,17 +323,17 @@
 	( ) .scan LDZ ?{ ;err/distance <set-error> }
 	POP2 #ff JMP2r
 
-@lambda
+@Lambda
 	&push ( -- name* )
 		[ LIT &count $1 ] INCk ,&count STR
-		DUP [ LIT2 &ptr =lambda-buf ] INC2k ,&ptr STR2
+		DUP [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
 		STA
 		( >> )
 	&name ( id -- str* )
 		#21 ADD ,&id STR
 		;&sym JMP2r
 	&pop ( -- )
-		,&ptr LDR2 #0001 SUB2 LDAk lambda/name <create-symbol>
+		,&ptr LDR2 #0001 SUB2 LDAk Lambda/name <create-symbol>
 		,&ptr STR2
 		JMP2r
 		&sym cebb &id $2
@@ -349,6 +351,14 @@
 @is-opcode ( str* -- str* f )
 	DUP2 find-opcode ?{ DUP2 ;opcodes/brk !scmp3 }
 	#01 JMP2r
+
+@is-runic ( str* -- str* f )
+	LDAk ,&rune STR
+	;runes/end ;runes
+	&l ( -- )
+		LDAk [ LIT &rune $1 ] EQU ?&end
+		#0003 ADD2 GTH2k ?&l
+	&end NEQ2 JMP2r
 
 @find-opcode ( name* -- byte )
 	STH2
@@ -390,13 +400,6 @@
 	&eval ( key ztr -- proc )
 		NIP LDZk #00 ROT STZ
 		JMP2r
-
-@zcap ( ztr/buf -: ztr/cap )
-	INC & LDZk ?zcap
-	JMP2r
-
-@zlen ( ztr/buf -: len )
-	DUP zcap/ SWP SUB JMP2r
 
 @scap ( str* -: end* )
 	INC2 & LDAk ?scap
@@ -510,7 +513,7 @@
 @|mem )
 
 
-@lambda-buf $100
+@Lambda/buf $100
 
 @mem ( buffers )
 	&include $30
