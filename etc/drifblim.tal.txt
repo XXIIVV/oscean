@@ -55,7 +55,7 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "23 20 "Feb 20 "2024 $1
+	( date ) "25 20 "Feb 20 "2024 $1
 	( exts ) 00
 
 (
@@ -306,12 +306,14 @@
 @get-ref ( token* -- addr* )
 	LDAk [ LIT "{ ] NEQ ?{ POP2 lambda/push }
 	.scan LDZ ?&scan
-	&eager LDAk [ LIT "& ] NEQ ?{ INC2 get-sublabel }
-	find-symbol INC2k #0000 EQU2 ?{
-		INC2k INC2 LDAk INC ROT ROT STA
-		LDA2 JMP2r }
-	;err/reference <set-error>
-	&scan JMP2r
+	&eager ( -- )
+		LDAk [ LIT "/ ] NEQ ?{ INC2 get-sublabel }
+		LDAk [ LIT "& ] NEQ ?{ INC2 get-sublabel }
+		find-symbol INC2k #0000 EQU2 ?{
+			INC2k INC2 LDAk INC ROT ROT STA
+			LDA2 JMP2r }
+		;err/reference <set-error>
+		&scan JMP2r
 
 @get-rel ( label* -- distance )
 	get-ref .head LDZ2 INC2 INC2 SUB2
