@@ -3,9 +3,9 @@
 |10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
 |000
 
-	@sublabel $80
+	@scope $30
+	@sublabel $30
 	@head $2
-	@scope $2
 	@length $2
 	@token $2
 	@halt $1
@@ -94,7 +94,7 @@
 @handle-pass ( scan -- err )
 	.scan STZ
 	#0100 <set-head>
-	#00 ;push-lambda/count STA
+	#00 ;Lambda/count STA
 	;dict/reset <set-scope>
 	;input-buf
 	&w ( -- )
@@ -136,7 +136,7 @@
 	&litjsi #60 !<write-call>
 	&lithex INC2 !<write-lithex>
 	&rawstr INC2 !<write-str>/
-	&lambda POP2 !pop-lambda
+	&lambda POP2 !Lambda/pop
 	&ignore JMP2r
 
 (
@@ -208,15 +208,24 @@
 (
 @|labels )
 
-@get-sublabel ( name* -: sublabel* )
+@get-sublabel ( name* -- sublabel* )
+	DUP2 slen ;sublabel slen ADD2 #0030 LTH2 ?{ ;err/sublabel !<set-error> }
 	[ LIT2 &ptr $2 ] <scpy>
 	;sublabel JMP2r
 
-@<set-scope> ( t* -: )
-	DUP2 .scope STZ2
-	DUP2 ;sublabel STH2k <scpy>
-	[ LIT2 "/ 00 ] STH2r scap/ STH2k STA2
-	STH2r INC ,get-sublabel/ptr STR2
+@<set-scope> ( t* -- )
+	( | copy scope until sublabel )
+	DUP2 [ LITr -scope ]
+	&w ( -- )
+		LDAk [ LIT "/ ] EQU ?&end
+		LDAk STHkr STZ
+		INCr INC2 LDAk ?&w
+	&end POP2 #00 STHr STZ
+	( | prepare sublabel pointer )
+	;scope ;sublabel <scpy>
+	[ LIT2 "/ 00 ] ;sublabel scap/
+	( ptr ) INC2k ,get-sublabel/ptr STR2
+	( cap ) STA2
 	( >> )
 
 @<create-symbol> ( name* -: )
@@ -251,13 +260,15 @@
 	!get-ref/eager
 
 @get-ref ( token* -- addr* )
-	LDAk [ LIT "{ ] NEQ ?{ POP2 push-lambda }
+	LDAk [ LIT "{ ] NEQ ?{ POP2 Lambda/push }
 	.scan LDZ ?&scan
-	&eager LDAk [ LIT "& ] NEQ ?{ INC2 get-sublabel }
-	find-symbol INC2k #0000 EQU2 ?{
-		INC2k INC2 LDAk INC ROT ROT STA
-		LDA2 &scan JMP2r }
-	;err/reference !<set-error>
+	&eager ( -- )
+		LDAk [ LIT "& ] NEQ ?{ INC2 get-sublabel }
+		LDAk [ LIT "/ ] NEQ ?{ INC2 get-sublabel }
+		find-symbol INC2k #0000 EQU2 ?{
+			INC2k INC2 LDAk INC ROT ROT STA
+			LDA2 &scan JMP2r }
+		;err/reference !<set-error>
 
 @get-rel ( label* -- distance )
 	get-ref .head LDZ2 INC2 INC2 SUB2
@@ -296,21 +307,20 @@
 (
 @|lambda )
 
-@push-lambda ( -- name* )
-	[ LIT &count $1 ] INCk ,&count STR
-	DUP [ LIT2 &ptr =lambda-buf ] INC2k ,&ptr STR2
-	STA
-	( >> )
-
-@name-lambda ( id -- str* )
-	#21 ADD ,&id STR
-	;&sym JMP2r
-	&sym cebb &id $2
-
-@pop-lambda ( -- )
-	,push-lambda/ptr LDR2 #0001 SUB2 LDAk name-lambda <create-symbol>
-	,push-lambda/ptr STR2
-	JMP2r
+@Lambda
+	&push ( -- name* )
+		[ LIT &count $1 ] INCk ,&count STR
+		DUP [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+		STA
+		( >> )
+	&name ( id -- str* )
+		#21 ADD ,&id STR
+		;&sym JMP2r
+	&pop ( -- )
+		,&ptr LDR2 #0001 SUB2 LDAk Lambda/name <create-symbol>
+		,&ptr STR2
+		JMP2r
+		&sym cebb &id $2
 
 (
 @|stdlib )
@@ -394,6 +404,7 @@
 	&number "Number $1
 	&length "Length $1
 	&reference "Reference $1
+	&sublabel "Sublabel $1
 	&distance "Distance $1
 	&symbol "Symbol $1
 	&zeropage "Zero-page $1
@@ -416,8 +427,9 @@
 	"" =lib/rawstr "~ =lib/ignore ]
 	&end
 
-@lambda-buf $100
+@Lambda/buf $100
 
 @input-buf $2000
 
 |8000 @rom $100 &output
+
