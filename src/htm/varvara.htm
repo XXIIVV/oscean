@@ -72,7 +72,7 @@ through the data. There is currently only one such operation:</p>
 </table>
 
 <pre>
-@on-reset ( -> )
+@on-reset <i>( -> )</i>
 	;cmd .System/expansion DEO2
 	;dst print-str
 	BRK
@@ -89,7 +89,7 @@ stack index byte, so an empty stack will return 01.</p>
 <p>The <b>System/metadata*</b> port notifies the emulator that <a href='metadata.html'>metadata</a> about the rom is present at the address specified. The emulator can choose to utilize this information or to ignore it.</p>
 
 <pre>
-@on-reset ( -> )
+@on-reset <i>( -> )</i>
 	;meta .System/metadata DEO2
 	BRK
 
@@ -113,7 +113,7 @@ stack index byte, so an empty stack will return 01.</p>
 <p>This device is holding 3 shorts to be used for application customization, for simplicity we call them the <b>System/red*</b>, <b>System/green*</b> and <b>System/blue*</b> shorts. These colors are typically used by the <a href='#screen'>screen device</a> to form four application colors.</p>
 
 <pre>
-@on-reset ( -> )
+@on-reset <i>( -> )</i>
 	set-theme
 	BRK
 
@@ -124,19 +124,24 @@ stack index byte, so an empty stack will return 01.</p>
 	JMP2r
 </pre>
 
-<p>Sending a non-null byte to the <b>System/debug</b> port will print the content of the stacks or pause the evaluation if the emulator includes a step-debugger. </p>
+<p>Sending a non-null byte to the <b>System/debug</b> port will print the content
+of the stacks or pause the evaluation if the emulator includes a step-debugger.
+The recommended output for the <kbd>#01</kbd> debug value, with a working stack
+containing 3 items, is as follow:</p>
 
 <pre>
-@on-reset ( -> )
-	[ LIT2r 1234 ] #abcd
-	#01 .System/debug DEO
-	BRK
+WST 00 00 00 00 00|12 34 56 < 
+RST 00 00 00 00 00 00 00 00|<
 </pre>
 
-<p>Sending a non-null byte to the <b>System/state</b> port will terminate the application, on systems that can handle exit codes, the error code is the <code>0x7f</code> portion of the byte. So, <code>0x01</code> terminates the program with an error, and <code>0x80</code> terminates the program succesfully.</p>
+<p>Sending a non-null byte to the <b>System/state</b> port will terminate the
+application, on systems that can handle exit codes, the error code is the
+<code>0x7f</code> portion of the byte. So, <code>0x01</code> terminates the
+program with an error, and <code>0x80</code> terminates the program
+succesfully.</p>
 
 <pre>
-@on-reset ( -> )
+@on-reset <i>( -> )</i>
 	( exit code 0, success )
 	#80 .System/state DEO
 	BRK
@@ -179,11 +184,11 @@ uxncli file.rom arg1 arg2
 <p>The <b>Console/read</b> port is used to listen to incoming bytes during a Console vector event.</p>
 
 <pre>
-@on-reset ( -> )
+@on-reset <i>( -> )</i>
 	;on-console .Console/vector DEO2
 	BRK
 
-@on-console ( -> )
+@on-console <i>( -> )</i>
 	.Console/read DEI .Console/write DEO
 	#20 .Console/write DEO
 	BRK
@@ -192,9 +197,9 @@ uxncli file.rom arg1 arg2
 <p>The <b>Console/write</b> port is used to send data through the console. For example, a program sending the text "Hello", will trigger the console's port 5 times; once for each character.</p>
 
 <pre>
-@on-reset ( -> )
+@on-reset <i>( -> )</i>
 	;text
-	&while ( -- )
+	&while <i>( -- )</i>
 		LDAk .Console/write DEO
 		INC2 LDAk ?&while
 	POP2
@@ -232,11 +237,11 @@ uxncli file.rom arg1 arg2
 <p>The <b>Screen/vector*</b> is evaluated 60 times per second. The screen device is capable of displaying graphics in <a href='theme.html'>any four colors</a>, which are defined by the <a href='#system'>system</a> device. The screen is made of two independent layers, the foreground layer treats color0 as transparent.</p>
 
 <pre>
-@on-reset ( -> )
+@on-reset <i>( -> )</i>
 	;on-screen .Screen/vector DEO2
 	BRK
 
-@on-screen ( -> )
+@on-screen <i>( -> )</i>
 	[ LIT &frame $1 ] INCk ,&frame STR
 	#01 AND ?&>skip
 		( 30 times per second)
@@ -250,7 +255,7 @@ ALWAYS return the actual sizes, as programs make use of the screen sizes to
 position responsive graphics on the screen.</p>
 
 <pre>
-@on-reset ( -> )
+@on-reset <i>( -> )</i>
 	set-theme
 	.Screen/width DEI2 #01 SFT2 .Screen/x DEO2
 	.Screen/height DEI2 #01 SFT2 .Screen/y DEO2
@@ -283,7 +288,7 @@ sprite data to draw is specified by writing its location in memory to the
 <b>Screen/addr*</b> port.</p>
 
 <pre>
-@on-reset ( -> )
+@on-reset <i>( -> )</i>
 	set-theme
 	#0020 .Screen/x DEO2
 	#0040 .Screen/y DEO2
@@ -428,7 +433,7 @@ address port will be incremented for each sprite drawn by increments of 8 for
 <p>The envelope varies the amplitude as follows: starting at 0%, rising to 100% over the Attack section, falling to 50% over the Decay section, remaining at 50% throughout the Sustain section and finally falling to 0% over the Release section. The envelope is linearly interpolated throughout each section.</p>
 
 <pre>
-@on-reset ( -> )
+@on-reset <i>( -> )</i>
 	#0248 .Audio/adsr DEO2
 	#88 .Audio/volume DEO
 	;note-pcm .Audio/addr DEO2
@@ -476,28 +481,28 @@ address port will be incremented for each sprite drawn by increments of 8 for
 <p>The <b>Controller/button</b> port works similarly to a <a href='https://wiki.nesdev.com/w/index.php/Standard_controller' target='_blank'>NES controller</a>, where there the state of each one of the 8 buttons is stored as a bit in a single byte.</p>
 
 <pre>
-@on-reset ( -> )
+@on-reset <i>( -> )</i>
 	;on-controller .Controller/vector DEO2
 	BRK
 
-@on-controller ( -> )
+@on-controller <i>( -> )</i>
 	.Controller/button DEI
 	DUP #20 AND ?on-dpad-down
 	DUP #80 AND ?on-dpad-right
 	POP BRK
 
-@on-dpad-down ( button -> )
-@on-dpad-right ( button -> )
+@on-dpad-down <i>( button -> )</i>
+@on-dpad-right <i>( button -> )</i>
 </pre>
 
 <p>The <b>Controller/key</b> port holds the character data that is pressed during the vector event.</p>
 
 <pre>
-@on-controller ( -> )
+@on-controller <i>( -> )</i>
 	.Controller/key DEI DUP ?on-key POP
 	BRK
 
-@on-key ( key -> )
+@on-key <i>( key -> )</i>
 </pre>
 
 <p>Would the need for multi-player games arise, the P2, P3 and P4 ports, will host button-type byte values received from the other controllers.</p>
@@ -529,14 +534,14 @@ address port will be incremented for each sprite drawn by increments of 8 for
 <p>The <b>Mouse/vector*</b> is evaluated when the mouse is moved and when a button is pressed or released.</p>
 
 <pre>
-@on-reset ( -> )
+@on-reset <i>( -> )</i>
 	;on-mouse .Mouse/vector DEO2
 	BRK
 
-@on-mouse ( -> )
+@on-mouse <i>( -> )</i>
 	.Mouse/state DEI ?&down
 	BRK
-	&down ( -> )
+	&down <i>( -> )</i>
 		.Mouse/x DEI2 print-dec
 		LIT ", .Console/write DEO
 		.Mouse/y DEI2 print-dec
@@ -582,7 +587,7 @@ the memory region, so it is possible to read the contents of very large files
 one chunk at a time.</p>
 
 <pre>
-@on-reset ( -> )
+@on-reset <i>( -> )</i>
 	;filename .File/name DEO2
 	#0010 .File/length DEO2
 	;buffer .File/read DEO2
@@ -618,7 +623,7 @@ stat written will always fill the requested length, so a directory result will
 be dashes for the requested length.</p>
 
 <pre>
-@is-folder ( name* -- bool )
+@is-folder <i>( name* -- bool )</i>
 	.File/name DEO2
 	#0001 .File/length DEO2
 	;&b .File/stat DEO2
@@ -628,7 +633,7 @@ be dashes for the requested length.</p>
 <p>Writing files is performed by writing to <b>File/write*</b>. If <b>File/append</b> is set to <code>0x01</code>, then the data in the memory region will be written after the end of the file, if it is <code>0x00</code> (the default) it will replace the contents of the file. If the file doesn't previously exist then it will be created and <b>File/append</b> makes no difference. <b>File/success*</b> will be set to <b>File/length*</b> if the write was successful, otherwise it will read as zero. As with reading files and directories, subsequent writes to <b>File/write*</b> will write more chunks of data to the file.</p>
 
 <pre>
-@on-reset ( -> )
+@on-reset <i>( -> )</i>
 	;filename .File/name DEO2
 	#0005 .File/length DEO2
 	;data .File/write DEO2
