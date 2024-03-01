@@ -13,12 +13,19 @@ be added, and will be the first to be removed.</p>
 
 <h3>Example Program</h3>
 
-<p>The first line of the following example begins with the <b>absolute padding</b>
-token <kbd>|10</kbd> which moves the program writing location to the address 0x0010,
-and will allow us to define <kbd>@labels</kbd> and <kbd>&sublabels</kbd> for
-the various ports of the <a href='varvara.html#console'>Console device</a> so
-that we can reference them in our code by name. To learn more, see <a
-href='uxntal_struct.html'>Uxntal Structs</a>.</p>
+<p>The first line of our example begins with the <a href='#runes'>padding</a>
+token <kbd>|10</kbd> which moves the program writing location to the address
+0x0010, and will allow us to define <kbd>@labels</kbd>, <kbd>&sublabels</kbd>
+and <kbd>$length</kbd> for the various ports of the <a
+href='varvara.html#console'>Console device</a> so that we can reference them in
+our code by name. To learn more, see <a href='uxntal_struct.html'>Uxntal
+Structs</a>.</p>
+
+<article>
+	<p>The following program is <b>not the most efficient way</b> of printing a
+string, merely a length of code that covers most basic functionalities of the
+language.</p>
+</article>
 
 <iframe src="../etc/uxnrepl/index.html" frameborder="0" class='frame'></iframe>
 
@@ -30,34 +37,37 @@ href='uxntal_struct.html'>Uxntal Structs</a>.</p>
 
 <p>The second segment moves the program location to the address 0x0100, which is
 where the first page of memory ends, and <a href='uxntal_memory.html'>where all
-Uxn programs begin</a>. Next is a <b>comment</b>, the arrow symbol indicates
-that the following operation is a <a href='uxntal_devices.html'>vector</a>, and
-will terminate with <kbd>BRK</kbd>. To learn more, see <a
+Uxn programs begin</a>. Next, inside parentheses, is a <b>comment</b> with the
+arrow symbol indicating that the following operation is a <a
+href='uxntal_devices.html'>vector</a>. To learn more, see <a
 href='uxntal_notation.html'>Uxntal Notation</a>.</p>
 
 <p>The <kbd>;hello-world</kbd> token pushes an <b>absolute address</b>, made of
-two bytes, onto the stack and which points to a series of characters in memory.
-A hexadecimal number or label pushed to the stack in this fashion is called a
-<b>literal</b>, as opposed to a value stored in memory. Next, we call the
+two bytes, on the stack pointing to a series of letters in memory. Values
+pushed to the stack in this fashion are called a <i>literals</i>, as opposed to
+values stored in memory which are called <i>immediates</i>. Next, we call the
 <kbd>@print-text</kbd> routine.</p>
 
 <p>Both <kbd>&while</kbd> and <kbd>@while</kbd> are ways to define <b>labels</b>,
 but using the ampersand rune will prefix our new label with the name of the
 last parent label, creating <kbd>@print-text/while</kbd>. </p>
 
-<p>Next, the <kbd>LDAk</kbd> opcode copies the absolute address on the stack, and
-loads the byte in memory found at that address to the top of the stack, in this
-case, the <a href='ascii.html'>ASCII</a> value of the letter H. That value is
-sent to the <a href='varvara.html#console'>device port #18</a> with
-<kbd>DEO</kbd>, defined by our Console label and its sublabels, which prints
-that character to the terminal.</p>
+<p>Next, the <a href='uxntal_opcodes.html#lda'><kbd>LDAk</kbd></a> opcode loads
+the byte in memory found at that address; the <a href='ascii.html'>ASCII</a>
+letter H, to the top of the stack. The <a href='uxntal_modes.html'>k-mode</a>
+indicates that the operation will not consume the address. That value is sent
+to the <a href='varvara.html#console'>device port #18</a>, defined by our
+Console label and its sublabels, with <a
+href='uxntal_opcodes.html#deo'><kbd>DEO</kbd></a> which prints that character
+to the terminal.</p>
 
-<p>We increment the absolute address found on top of the stack with
-<kbd>INC2</kbd>, because the address is made of two bytes. We load the
-incremented value, next we do a conditional immediate jump with
-<kbd>?&while</kbd> for as long as the item on the stack is not zero. We use
-<kbd>POP2</kbd> to remove the address on the stack and keep the stack clean at
-the end of the subroutine.</p>
+<p>We then increment the absolute address found on top of the stack with <a
+href='uxntal_opcodes.html#inc'><kbd>INC2</kbd></a>, we used the <a
+href='uxntal_modes.html'>2-mode</a> because the address is made of two bytes.
+We load the byte at the incremented value and do a conditional immediate jump
+with <kbd>?&while</kbd> for as long as the item on the stack is not zero. We
+use <kbd>POP2</kbd> to remove the address on the stack and keep the stack clean
+at the end of the subroutine.</p>
 
 <p>Lastly, we encounter <kbd>JMP2r</kbd> which jumps to the absolute address
 that we left on the return stack when we entered the <kbd>@print-text</kbd>
@@ -71,7 +81,7 @@ href='uxntal_lambdas.html'>lambdas</a>, and square brackets are used for
 organization. Runes are special characters at the start of a word that define
 its meaning, here is the full list:</p>
 
-<table border="1">
+<table border="1" id='runes'>
 	<tr><th colspan="4">Padding Runes</th><th colspan="4">Literal Hex Rune</th></tr>
 	<tr><td><code>|</code></td><td>absolute</td><td><code>$</code></td><td>relative</td><td><code>#</code></td><td colspan="3">literal hex</td></tr>
 	<tr><th colspan="4">Label Runes</th><th colspan="4">Ascii Runes</th></tr>
