@@ -209,7 +209,7 @@ a short. </p>
 <p>To better understand how the opcode modes are used, here is a 22 bytes long implementation of the function to generate numbers in the <a href='https://en.wikipedia.org/wiki/Fibonacci_Sequence' target='_blank'>Fibonacci sequence</a>. Notice how only a single literal is created to perform the operation.</p>
 
 <pre>
-@fib <i>( num* -- numfib* )</i>
+@fib <i>( num* -: numfib* )</i>
 	#0001 GTH2k ?{ POP2 JMP2r }
 	SUB2k fib STH2 INC2
 	SUB2 fib STH2r ADD2
@@ -304,23 +304,19 @@ but it is discouraged to use the stacks to pass <a
 href='uxntal_state.html'>data between vectors</a>.</p>
 
 <pre>
-|0100
-
-	<i>( set a vector )</i>
+@on-reset <i>( -> )</i>
+	<i>( set vector )</i>
 	;on-mouse .Mouse/vector DEO2
+	BRK
 
-BRK
+@on-mouse <i>( -> )</i>
+	<i>( read state )</i>
+	.Mouse/state DEI ?&on-touch
+	BRK
 
-@on-mouse ( -> )
-
-	<i>( read mouse state )</i>
-	.Mouse/state DEI ?&on-touch BRK 
-
-&on-touch ( -> )
-
-	<i>( A mouse button was pressed )</i>
-
-BRK
+&on-touch <i>( -> )</i>
+	<i>( A mouse button is pressed )</i>
+	BRK
 </pre>
 
 <p>For example, the address stored in the <a
