@@ -6,37 +6,47 @@
 	<script src="src/asm.js"></script>
 	<script src="src/emu.js"></script>
 	<script src="src/uxn.js"></script>
+	<script src="src/examples.js"></script>
 </head>
 <body>
 	<textarea id="editor" spellcheck="false">|10 @Console &vector $2 &read $1 &pad $5 &write $1 &error $1
 
-|0100 ( -> )
+|100
 
-	;hello-world print-text
-
-BRK
+@on-reset ( -> )
+	;my-string print-text
+	BRK
 
 @print-text ( str* -- )
-
 	&while
 		LDAk .Console/write DEO
 		INC2 LDAk ?&while
 	POP2
+	JMP2r
 
-JMP2r
-
-@hello-world "Hello 20 "World! 00</textarea>
+@my-string
+	"Hello 20 "World! 00
+</textarea>
 	<div id='term'>Press <b>Run</b> to evaluate this program</div>
-	<div id='stack'>
+	<div id='menu'>
 		<input type="button" id="run" value="Run">
 		<span id='wst'>Ready.</span>
+		<select name="cars" id="examples">
+			<option value="hello_tal">Basic Program</option>
+			<option value="loop_tal">Loop</option>
+			<option value="ifelse_tal">If/Else</option>
+			<option value="lambda_tal">Lambda</option>
+			<option value="fizzbuzz_tal">FizzBuzz</option>
+			<option value="cond_tal">Review Program</option>
+		</select>
 	</div>
 	<script type="text/javascript">
 		'use strict'
+		
+		let term_el = document.getElementById("term")
+		let editor_el = document.getElementById("editor")
 
 		document.body.className = "active"
-
-		let term_el = document.getElementById("term")
 
 		function assemble(query, program) {
 			let emulator = new Emu()
@@ -62,7 +72,6 @@ JMP2r
 		}
 
 		function run() {
-			let editor_el = document.getElementById("editor")
 			let program = new Uint8Array(0x10000)
 			assemble(editor_el.value.replace(/(\r\n|\n|\r|\t)/gm, " "), program)
 			let emulator = new Emu()
@@ -87,16 +96,24 @@ JMP2r
 		});
 
 		document.getElementById("run").addEventListener("click", run)
+
+		// Examples
+
+		document.getElementById('examples').addEventListener('change', (e) => {
+			editor_el.value = examples[e.currentTarget.value]
+		}, true);
+
 	</script>
 	<style>
 		body { font-family:monospace; overflow:hidden; height:100vh; padding:0; margin:0 }
 		body ::selection { background-color:#000;color:#fff;text-decoration:none }
-		textarea { resize:none; width:100%; height:100vh; border:0; padding:10px; margin:0px; background:#efefef }
+		textarea { resize:none; width:calc(100vw - 20px); height:100vh; border:0; padding:10px; margin:0px; background:#efefef }
 		textarea:focus { outline: none !important; }
-		div#term { width:100%; background:#a4f4e0; padding:10px; color:black; height:55px; overflow-y:scroll; white-space:pre; display:none }
-		div#stack { width:100%; height:25px; background:#72dec2; padding:10px; margin-bottom:20px;font-weight:bold; display:none }
+		div#term { background:#a4f4e0; padding:10px; color:black; height:55px; overflow-y:scroll; white-space:pre; display:none }
+		div#menu { height:25px; background:#72dec2; padding:10px; margin-bottom:20px;font-weight:bold; display:none }
+		div#menu select { float:right }
 		body.active textarea { height:calc(100% - 140px); }
-		body.active div#term, body.active div#stack { display:block }
+		body.active div#term, body.active div#menu { display:block }
 		#run { cursor:pointer; background:#000; color:white; border:0px; border-radius:100px; line-height:24px; padding:0px 10px }
 		#run:hover { background:#fff; color:#000}
 	</style>
