@@ -1,4 +1,4 @@
-<h2>Uxntal State</h2>
+<h2>Uxntal Doors</h2>
 
 <p>The ability to treat instructions as data makes programs that write programs
 possible. <b>Self-modifying code</b>(SMC) is generally considered harmful, and is
@@ -11,13 +11,13 @@ program. This anti-pattern should be avoided whenever possible, but if wielded
 carefully SMC can become a practical ally when writing Uxntal.</p>
 </article>
 
-<h3>Caching</h3>
+<h3>Caching Doors</h3>
 
 <p>In most cases, SMC is used to cache data that would otherwise be difficult or
 slow to retrieve, like when writing a responsive application that would make
 frequent requests to a device.</p>
 
-<p>In the following example, we are comparing the state of the mouse device
+<p>In the following door, we are comparing the state of the mouse device
 between vector events, we could store the previous state in a zero-page
 variable, but keeping the value locally allows to reserve a byte from within
 the context where it is needed, and is faster by being inlined.</p>
@@ -37,7 +37,7 @@ BRK</pre>
 <p>To chain operations across vectors, one might try passing the next operation
 pointer on the stack, but since we cannot be certain which vector will happen
 next, we can't expect a specific stack state between events. A safer
-way is to write the next operation directly in memory where it will be
+way is to write the next operation directly into a door where it will be
 needed, ideally preserving the label scope.</p>
 
 <pre>
@@ -66,7 +66,12 @@ BRK
 
 <h3>Depth Punching</h3>
 
-<p>Routines should try and avoid accessing stack values that are further than 2 or 3 shorts deep on either stacks, but sometimes it cannot be helped. In the following example, we want to run a function over each value of a 2d array. Instead of juggling the stacks on each iteration to bring out the function pointer, it is often more efficient to write the function pointer across the nested loop.</p>
+<p>Routines should try and avoid accessing stack values that are further than 2
+or 3 shorts deep on either stacks, but sometimes it cannot be helped. In the
+following example, we want to run a function over each value of a 2d array.
+Instead of juggling the stacks on each iteration to bring out the function
+pointer, it is often more efficient to write the function pointer across the
+nested loop.</p>
 
 <pre>
 @each-pixel ( fn* -- )
