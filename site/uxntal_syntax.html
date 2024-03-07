@@ -110,11 +110,11 @@ program, they begin by rolling back the program address with
 <kbd>|00</kbd>:</p>
 
 <pre>
-<i>( definition )</i>
 |00 @Suit &clubs $1 &diamonds $1 &hearts $1 &spades
 
-<i>( usage )</i>
-[ LIT2 -Suit/clubs -suit ] LDZ EQU
+@is-diamond ( suit -- f )
+	.Suit/clubs EQU
+	JMP2r
 </pre>
 
 <p><b>Structs</b> define padded labels, for example the <code>;person/age</code>
@@ -122,24 +122,24 @@ label holds a value of 2, using that offset allows to access specific members
 of a data structure by applying the sublabels to a pointer:</p>
 
 <pre>
-<i>( definition )</i>
 |00 @Person &name $2 &age $1 &height $2
 @members
 	=dict/melanye 2a 008c
 	=dict/alexane 2c 009a
 
-<i>( usage )</i>
-;members ;Person/height ADD2 LDA2
+@get-height ( member* -- height* )
+	;Person/height ADD2 LDA2
+	JMP2r
 </pre>
 
 <p><b>Constants</b> are labels that hold a specific value through the entire execution of the program. They allow to create label that can be used in place of a number, making the code more readable.</p>
 
 <pre>
-<i>( definition )</i>
 |1400 @limit
 
-<i>( usage )</i>
-.count LDZ2 ;limit LTH2
+@within-limit ( value* -- f )
+	;limit LTH2
+	JMP2r
 </pre>
 
 <p><b>Pro Tip</b>: Labels can also be used with the padding runes to define a
