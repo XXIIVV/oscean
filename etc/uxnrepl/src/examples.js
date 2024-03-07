@@ -1,8 +1,6 @@
 let examples = {
 
-"hello_tal": `( Print Hello World )
-
-|10 @Console &vector $2 &read $1 &pad $5 &write $1 &error $1
+"hello_tal": `|10 @Console &vector $2 &read $1 &pad $5 &write $1 &error $1
 
 |100
 
