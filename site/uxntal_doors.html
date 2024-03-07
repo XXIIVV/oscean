@@ -40,15 +40,13 @@ the context where it is needed, and is faster by being inlined.</p>
 
 <pre>
 @on-mouse ( -> )
-
 	[ LIT2 &last $1 -Mouse/state ] DEI 
 		DUP ,&last STR
 		EORk ?&changed 
 	POP2
+	BRK</pre>
 
-BRK</pre>
-
-<h3>Callbacks</h3>
+<h3>Callback Doors</h3>
 
 <p>To chain operations across vectors, one might try passing the next operation
 pointer on the stack, but since we cannot be certain which vector will happen
@@ -58,29 +56,23 @@ needed, ideally preserving the label scope.</p>
 
 <pre>
 @set-animation ( callback* -- )
-
 	,&callback STR2
 	;&run .Screen/vector DEO2
-
-JMP2r
+	JMP2r
 
 &run ( -> )
-
 	[ LIT &time f0 ] 
 		INCk ,&time STR
 		#00 EQU ?&done
 	try-redraw
-
-BRK
+	BRK
 
 &done ( -> )
-
 	[ LIT2 &callback $2 ] JSR2
-
-BRK
+	BRK
 </pre>
 
-<h3>Depth Punching</h3>
+<h3>Depth-Punching Doors</h3>
 
 <p>Routines should try and avoid accessing stack values that are further than 2
 or 3 shorts deep on either stacks, but sometimes it cannot be helped. In the
@@ -91,7 +83,6 @@ nested loop.</p>
 
 <pre>
 @each-pixel ( fn* -- )
-
 	,&fn STR2
 	#1000
 	&h
@@ -104,8 +95,7 @@ nested loop.</p>
 		POPr
 		INC GTHk ?&h
 	POP2
-
-JMP2r
+	JMP2r
 </pre>
 
 <ul></ul><p class="incoming"><b>incoming</b> <a href="uxntal_memory.html">uxntal memory</a> <a href="uxntal_devices.html">uxntal devices</a> </p></main>
