@@ -13,36 +13,28 @@ hood, the opening bracket assembles to the address of the closing bracket which
 allows the destination address to be used like any other label such as a JCI
 <kbd>?{</kbd>, a JMI, <kbd>!{</kbd> or a plain literal <kbd>;{</kbd>. </p>
 
-<h3>Inline Strings</h3>
-<p>A lambda can be used to store data, such a text, amongst code. The JSI Lambda
-<kbd>{</kbd> assembles to a subroutine, and puts the return address, or in this
-case, the location of the data in memory, on the return stack. </p>
+<h3>Counted Strings</h3>
+<p>Similarly to counted strings, lambdas can encode strings in memory by preceeding their content by the address of the end of the string, so the reading of that string data is not looking for a null byte, but running until reaching the bounds. The advantage is that the address of the next character to append is readily available.</p>
 
 <pre>
-{ "hello $1 } STH2r print-lambda
-</pre>
+@on-reset ( -> )
+    ;cstr print-counted
+    BRK
 
-<p>In other words, a lambda block that has no rune will be parsed as a subroutine
-jump, and so, will be jumped over, and a pointer to the start of the lambda
-will be pushed to the top of the return stack. The body of the lambda can be
-unquoted with the <kbd>STH2r</kbd> and <kbd>JSR2</kbd> opcodes.</p>
+@cstr ={ "foo 20 "bar }
 
-<p>The lambda jump writes the length to jump by, and that length can be read to
-get the length of the lambda block.</p>
-
-<pre>
-@print-lambda ( {str}* -- )
-	DUP2k #0002 SUB2 LDA2 ADD2 SWP2
-	&l ( -- )
-		LDAk .Console/write DEO
-		INC2 GTH2k ?&l
-	POP2 POP2 JMP2r
+@print-counted ( cstr* -- )
+    LDA2k SWP2 INC2 INC2
+    &l ( -- )
+        LDAk #18 DEO
+        INC2 GTH2k ?&l
+    POP2 POP2 JMP2r
 </pre>
 
 <h3>Data Structures</h3>
 
 <p>We can inline a list of items, here's an implementation a function that
-returns the member in a list, or <i>nil</i>.</p>
+returns the member in a list, or <i>nil</i>. Notice how the lambda jump requires the list address to be moved from the return stack.</p>
 
 <pre>
 { =cat =dog =bat } STH2r ;rat member?
@@ -55,16 +47,17 @@ returns the member in a list, or <i>nil</i>.</p>
 	&l ( -- )
 		LDA2k [ LIT2 &t $2 ] EQU2 ?&found
 		INC2 INC2 GTH2k ?&l
-	POP2 ;nil &found NIP2 JMP2r
+	POP2 ;nil &found NIP2
+	JMP2r
 </pre>
 
-<h3>Anonymous Blocks</h3>
+<h3>Unless Blocks</h3>
 
 <p>It is important to notice that a in the case of a conditional jump, the
 lambda's content is <b>jumped over when the flag byte is true</b>.</p>
 
 <pre>
-.button LDZ #00 EQU ?{ will-not-eval }
+.button LDZ ?{ skipped-on-button }
 </pre>
 
 <p>Lambdas can also be nested into one another, only the outermost layer of a
@@ -74,7 +67,7 @@ nested lambda is evaluated at a time:</p>
 #01 { { "foo $1 } STH2r !print-lambda } STH2r JCN2
 </pre>
 
-<h3>Higher Order Functions</h3>
+<h3>Higher-Order Functions</h3>
 
 <p>A higher-order function is a function that takes a function as an argument or
 returns one as a result. In the following example, the foreach routine is
@@ -102,7 +95,8 @@ memory.</p>
 	DUP2k #0002 SUB2 LDA2 ADD2 SWP2
 	&l ( -- )
 		[ LIT2 &t $2 ] JSR2 INC2 GTH2k ?&l
-	POP2 POP2 JMP2r
+	POP2 POP2
+	JMP2r
 </pre>
 
 
