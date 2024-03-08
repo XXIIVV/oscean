@@ -28,7 +28,7 @@
 	( name ) "Uxnfor 0a
 	( desc ) "Uxntal 20 "Formatter 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "26 20 "Feb 20 "2024 $1
+	( date ) "8 20 "Mar 20 "2024 $1
 	( exts ) 00
 
 @await-src ( -> )
@@ -52,17 +52,17 @@
 	#0001 .File/length DEO2
 	[ LIT2 00 -err ] STZ
 	result/new
-	&s ( -- )
+	&>s ( -- )
 		;&c feof ?&eof
 		.err LDZ ?&fail
-		[ LIT &c $1 ] walk-char !&s
+		[ LIT &c $1 ] walk-char !&>s
 	&eof ( -- )
-		eval-scope !save-file
+	eval-scope !save-file
 	&fail ( -- )
-		;dict/err <sprint>
-		;mem/scope <wprint>/
-		#0a19 DEO
-		JMP2r
+	;dict/err <sprint>
+	;mem/scope <wprint>/
+	#0a19 DEO
+	JMP2r
 
 @walk-char ( c -- c )
 	( norm ws ) #20 GTHk [ JMP SWP POP ]
@@ -78,9 +78,9 @@
 	eval-scope !scope/put
 
 @eval-scope ( -- )
+	<reset-depth>
 	;mem/scope
 	( first scope ) LDAk [ LIT "@ ] NEQ ?&w
-	#01 ;<emit-break-tab>/nest STA
 	( | pad zp )
 	.inzp LDZ #00 EQU ?{ #09 <emit> }
 	( | definition )
@@ -96,45 +96,44 @@
 	LDAk [ LIT "$ ] NEQ ?{ <emit-space>
 		!&w }
 	&w ( -- )
-		DUP2 #0001 SUB2 LDA #20 NEQ ?{
-			LDAk #28 EQU ?handle-comment
-			LDAk #5b EQU ?handle-block
-			LDAk [ LIT "| ] EQU ?handle-padabs
-			LDAk [ LIT "$ ] EQU ?handle-padrel
-			LDAk [ LIT "& ] EQU ?handle-sublab
-			LDAk [ LIT "{ ] EQU ?handle-lambda
-			LDAk [ LIT "} ] EQU ?handle-lambda-end
-			LDAk [ LIT "? ] EQU ?handle-jxi
-			LDAk [ LIT "! ] EQU ?handle-jxi
-			LDAk [ LIT "~ ] EQU ?handle-include }
-		LDAk #20 NEQ ?&collapse
-		DUP2 wrew INC2 is-breaking #00 EQU ?&collapse
-		<emit-break-tab>
-		!&continue
-		&collapse LDAk <emit>
-		&continue INC2 LDAk ?&w
+	DUP2 #0001 SUB2 LDA #20 NEQ ?{
+		LDAk #28 EQU ?handle-comment
+		LDAk #5b EQU ?handle-block
+		LDAk [ LIT "| ] EQU ?handle-padabs
+		LDAk [ LIT "$ ] EQU ?handle-padrel
+		LDAk [ LIT "& ] EQU ?handle-sublab
+		LDAk [ LIT "{ ] EQU ?handle-lambda
+		LDAk [ LIT "} ] EQU ?handle-lambda-end
+		LDAk [ LIT "? ] EQU ?handle-jxi
+		LDAk [ LIT "! ] EQU ?handle-jxi
+		LDAk [ LIT "~ ] EQU ?handle-include }
+	LDAk #20 NEQ ?&collapse
+	DUP2 wrew INC2 is-breaking #00 EQU ?&collapse
+	<emit-break-tab>
+	!&continue
+	&collapse LDAk <emit>
+	&continue INC2 LDAk ?&w
 	.nobrk LDZ ?&join
 	.inzp LDZ ?{ #0a <emit> }
 	#0a <emit>
 	POP2 !scope/new
 	&join ( -- )
-		[ LIT2 00 -nobrk ] STZ
-		#20 <emit>
-		POP2 !scope/new
+	[ LIT2 00 -nobrk ] STZ
+	#20 <emit>
+	POP2 !scope/new
 
 @handle-padabs ( addr* -- addr* )
 	#0a <emit>
 	DUP2 wrew wrew INC2 LDA [ LIT ") ] NEQ ?{ #0a <emit> }
-	INC2k slen #0004 EQU2 ?&page
-	[ LIT2 01 -nobrk ] STZ
-	<emit-word>/
-	<emit-space>
-	!eval-scope/continue
-	&page ( addr* -- addr* )
-		INC2k LDA2 [ LIT2 "00 ] EQU2 .inzp STZ
+	INC2k slen #0004 EQU2 ?{
+		[ LIT2 01 -nobrk ] STZ
 		<emit-word>/
-		#0a <emit>
-		!eval-scope/continue
+		<emit-space>
+		!eval-scope/continue }
+	INC2k LDA2 [ LIT2 "00 ] EQU2 .inzp STZ
+	<emit-word>/
+	#0a <emit>
+	!eval-scope/continue
 
 @handle-padrel ( addr* -- addr* )
 	<emit-word>/
@@ -144,41 +143,32 @@
 	DUP2 wrew wrew INC2 LDA [ LIT "& ] EQU ?&space-after
 	DUP2 wrew wrew LDA [ LIT "@ ] EQU ?&space-after
 	&break-after ( addr* -- addr* )
-		<emit-break-tab>
-		!eval-scope/continue
+	<emit-break-tab>
+	!eval-scope/continue
 	&space-after ( addr* -- addr* )
-		<emit-space>
-		!eval-scope/continue
+	<emit-space>
+	!eval-scope/continue
 
 @handle-sublab ( addr* -- addr* )
 	DUP2 #0002 SUB2 LDA LIT "] NEQ ?{ <emit-break-tab> }
-	LDA2k LIT2 "&> EQU2 ?&tail
 	LDA2k LIT2 "& 20 EQU2 ?&anon
 	DUP2 wcap/ INC2 LDA #28 EQU ?&defined
 	<emit-word>/
 	<emit-space>
 	!eval-scope/continue
-	&tail ( -- )
-		<emit-word>/
-		( | Do not break when followed by label )
-		DUP2 wcap/ INC2 LDA [ LIT "& ] EQU ?eval-scope/w
-		DUP2 wcap/ INC2 LDA #28 EQU ?eval-scope/w
-		<emit-break-tab>
-		!eval-scope/w
 	&anon ( -- )
-		<emit-word>/
-		<emit-space>
-		INC2 LDAk #28 NEQ ?{ <emit-comment> }
-		!eval-scope/w
+	<emit-word>/
+	<emit-space>
+	INC2 LDAk #28 NEQ ?{ <emit-comment> }
+	!eval-scope/w
 	&defined ( -- )
-		#01 ;<emit-break-tab>/nest STA
-		<emit-break-once>
-		<emit-word>/
-		#00 ;<emit-break-tab>/nest STA
-		INC2 <emit-space>
-		<emit-comment>
-		<emit-break-tab>
-		INC2 !eval-scope/w
+	<emit-break-once>
+	LDA2k [ LIT2 "&> ] NEQ2 ?{ <inc-depth> }
+	<emit-word>/
+	INC2 <emit-space>
+	<emit-comment>
+	<emit-break-tab>
+	INC2 !eval-scope/w
 
 @handle-block ( addr* -- addr* )
 	<emit-block>
@@ -192,14 +182,14 @@
 	!eval-scope/continue
 
 @handle-lambda ( addr* -- addr* )
-	;<emit-break-tab>/lambda LDA INC ;<emit-break-tab>/lambda STA
+	<inc-depth>
 	<emit-word>/
 	<emit-space>
 	DUP2 count-lambda #0006 LTH2 ?{ <emit-break-tab> }
 	!eval-scope/continue
 
 @handle-lambda-end ( addr* -- addr* )
-	;<emit-break-tab>/lambda LDA #01 SUB ;<emit-break-tab>/lambda STA
+	<dec-depth>
 	<emit-word>/
 	<emit-space>
 	<emit-break-tab>
@@ -207,7 +197,7 @@
 
 @handle-jxi ( addr* -- addr* )
 	INC2k LDA [ LIT "{ ] EQU ?handle-lambda
-	INC2k is-defined-before #00 EQU ?{ #01 ;<emit-break-tab>/nest STA }
+	INC2k LDA2 [ LIT2 "&> ] NEQ2 ?{ <dec-depth> }
 	<emit-word>/
 	<emit-space>
 	INC2k LDA [ LIT "} ] EQU ?eval-scope/continue
@@ -222,40 +212,32 @@
 	!eval-scope/continue
 
 @save-file ( -- )
-	( overwrite file ) .err LDZ ?&cancel
-	;src .File/name DEO2
-	#0001 .File/length DEO2
-	;mem/result
-	&w ( -- )
-		LDAk ,&b STR
-		LDA2k #200a EQU2 ?&>skip
-		LDA2k #2020 EQU2 ?&>skip
-		LDA2k #090a EQU2 ?&>skip
-		DUP2 #0001 SUB2 LDA2 #0920 EQU2 ?&>skip
-			;&b .File/write DEO2 &>skip
-		INC2 LDAk ?&w
-	POP2 &cancel JMP2r
+	.err LDZ ?{
+		;src .File/name DEO2
+		#0001 .File/length DEO2
+		;mem/result
+		&>w ( -- )
+			LDAk ,&b STR
+			LDA2k #200a EQU2 ?&skip
+			LDA2k #2020 EQU2 ?&skip
+			LDA2k #090a EQU2 ?&skip
+			DUP2 #0001 SUB2 LDA2 #0920 EQU2 ?&skip
+			;&b .File/write DEO2
+			&skip INC2 LDAk ?&>w
+		POP2 }
+	JMP2r
 	&b $1
 
 (
 @|utils )
 
-@is-defined-before ( target* -- f )
-	DUP2 ,&t STR2
-	;mem/scope
-	&l ( -- )
-		LDAk #20 NEQ ?{
-			INC2k [ LIT2 &t $2 ] wcmp ?&found }
-		INC2 GTH2k ?&l
-	POP2 POP2 #00 JMP2r
-	&found ( -- )
-		POP2 POP2 #01 JMP2r
-
 @is-breaking ( str* -- bool )
 	DUP2 wcap/ INC2 LDA [ LIT "} ] EQU ?&ignore
 	DUP2 wcap/ INC2 LDA2 LIT2 "&> EQU2 ?&ignore
 	DUP2 wcap/ INC2 LDA #00 EQU ?&ignore
-	DUP2 wcap/ #0001 SUB2 LDA [ LIT "> ] EQU ?&pass
+	LDAk [ LIT "" ] EQU ?&ignore
+	LDAk [ LIT "< ] EQU ?&pass
+	DUP2 wcap/ #0002 SUB2 LDA2 [ LIT "> ] EQU SWP [ LIT "> ] EQU ORA ?&pass
 	DUP2 ;dict/sth wcmp ?&special-opcode
 	DUP2 ;dict/sth2 wcmp ?&special-opcode
 	DUP2 ;dict/deo scmp3 ?&special-opcode
@@ -265,43 +247,25 @@
 	DUP2 ;dict/jmp scmp3 ?&special-opcode
 	DUP2 ;dict/jcn scmp3 ?&special-opcode
 	&ignore ( -- )
-		POP2 #00 JMP2r
+	POP2 #00 JMP2r
 	&special-opcode ( -- )
-		DUP2 wcap/ #0001 SUB2 LDA [ LIT "k ] EQU ?&ignore
+	DUP2 wcap/ #0001 SUB2 LDA [ LIT "k ] EQU ?&ignore
 	&pass ( -- )
-		POP2 #01 JMP2r
-
-@is-sub-def ( addr* -: f )
-	( a ) LDAk [ LIT "& ] EQU STH
-	( b ) wcap/ INC2 LDA #28 EQU
-	( res ) STHr AND JMP2r
-
-@scan-for-skip ( addr* -- f )
-	&w ( -- )
-		INC2k LDAk LIT "? EQU STH
-		INC2 LDA2 LIT2 "&> EQU2 STHr AND ?&fail
-		LDAk #20 NEQ ?&>no-ws
-			INC2k LDA2 LIT2 "&> EQU2 ?&pass
-			&>no-ws
-		INC2 LDAk ?&w
-	&fail ( addr* -- f )
-		POP2 #00 JMP2r
-	&pass ( addr* -- f )
-		POP2 #01 JMP2r
+	POP2 #01 JMP2r
 
 @count-block ( str* -- length* )
 	[ LIT2r 0000 ]
-	&w ( -- )
+	&>w ( -- )
 		LDAk #5d EQU ?&end
-		INC2r INC2 LDAk ?&w
+		INC2r INC2 LDAk ?&>w
 	&end POP2 STH2r JMP2r
 
 @count-lambda ( str* -- length* )
 	LIT2r 0000
-	&w ( -- )
+	&>w ( -- )
 		LDAk [ LIT "} ] EQU ?&end
 		LDAk #20 NEQ ?{ INC2r }
-		INC2 LDAk ?&w
+		INC2 LDAk ?&>w
 	&end POP2 STH2r JMP2r
 
 @get-block-width ( len* -- and )
@@ -318,10 +282,10 @@
 
 @<emit-block> ( str* -- str* )
 	DUP2 count-block #0027 GTH2 ?<emit-long-block>
-	&w ( -- )
+	&>w ( -- )
 		LDAk <emit>
 		LDAk #5d EQU ?&end
-		INC2 LDAk ?&w
+		INC2 LDAk ?&>w
 	LDAk <emit>
 	&end INC2 JMP2r
 
@@ -331,31 +295,31 @@
 	( b ) wcap/ INC2 wlen STH2r GTH2k [ JMP SWP2 POP2 ]
 	( res ) get-block-width ,&lb STR
 	LIT2r 0000
-	&w ( -- )
+	&>w ( -- )
 		LDAk <emit>
-		LDAk #20 NEQ ?&>no-ws
-		STHkr [ LIT &lb $1 ] AND ?&>no-spacer
-		INC2k LDA #5d EQU ?&>no-spacer
-			<emit-break-tab> &>no-spacer
-			INC2r &>no-ws
+		LDAk #20 NEQ ?{
+			STHkr [ LIT &lb $1 ] AND ?&no-spacer
+			INC2k LDA #5d EQU ?&no-spacer
+			<emit-break-tab>
+			&no-spacer INC2r }
 		LDAk #00 EQU ?&end
-		INC2 LDAk #5d NEQ ?&w
+		INC2 LDAk #5d NEQ ?&>w
 	LDAk <emit>
 	&end INC2 POP2r JMP2r
 
 @<emit-comment> ( str* -- str* )
 	INC2k INC2 LDA2 LIT2 "@| EQU2 ?<emit-mark>
 	INC2k LDA2 LIT2 20 "| EQU2 ?<emit-line-comment>
-	&w ( -- )
+	&>w ( -- )
 		LDAk <emit>
 		LDAk #00 EQU ?&end
-		INC2 LDAk #29 NEQ ?&w
+		INC2 LDAk #29 NEQ ?&>w
 	LDAk <emit>
 	&end ( str* -- str* )
-		INC2 JMP2r
+	INC2 JMP2r
 
 @<emit-line-comment> ( str* -- str* )
-	<emit-comment>/w
+	<emit-comment>/>w
 	DUP2 wcap/ INC2 LDA #28 EQU ?{ <emit-break-tab> }
 	JMP2r
 
@@ -363,28 +327,36 @@
 	#0a <emit>
 	LDAk <emit>
 	#0a <emit>
-	INC2 INC2 !<emit-comment>/w
+	INC2 INC2 !<emit-comment>/>w
 
 @<emit-break-once> ( -: )
 	;result/ptr LDA2 #0001 SUB2 LDA #1f GTH ?<emit-break-tab>
 	JMP2r
 
+@<reset-depth> ( -- )
+	#00 ;<emit-break-tab>/depth STA
+	JMP2r
+
+@<inc-depth> ( -- )
+	;<emit-break-tab>/depth LDA INC ;<emit-break-tab>/depth STA
+	JMP2r
+
+@<dec-depth> ( -- )
+	;<emit-break-tab>/depth LDA DUP ?{ POP JMP2r }
+	#01 SUB ;<emit-break-tab>/depth STA
+	JMP2r
+
 @<emit-break-tab> ( -- )
 	#0a <emit>
 	#09 <emit>
-	( | skip pad )
-	DUP2 scan-for-skip #00 EQU ?{ #09 <emit> }
-	( | nest pad )
-	DUP2 wcap/ INC2 is-sub-def ?&>no-nest
-	[ LIT &nest $1 ] ?&>no-nest
-		#09 <emit> &>no-nest
-	( | lambda )
-	[ LIT &lambda $1 ] #00 EQUk ?&skip-lambda
-	OVR #10 GTH ?&skip-lambda
-	&l ( -- )
-		#09 <emit>
-		INC GTHk ?&l
-	&skip-lambda POP2 JMP2r
+	( | depth )
+	[ LIT2 &depth $1 00 ] EQUk ?{
+		OVR #10 GTH ?{
+			&>l ( -- )
+				#09 <emit>
+				INC GTHk ?&>l }
+		}
+	POP2 JMP2r
 
 @<emit-word> ( str* -: str* )
 	LDAk <emit>
@@ -398,10 +370,10 @@
 
 @<emit> ( c -- )
 	DUP ?{ POP JMP2r }
-	DUP #0a NEQ ?&>no-lb
+	DUP #0a NEQ ?{
 		[ LIT &lb $1 ] INCk ,&lb STR
 		#02 LTH ?result/put
-		POP JMP2r &>no-lb
+		POP JMP2r }
 	result/put [ LIT2 00 _&lb ] STR
 	JMP2r
 
@@ -420,17 +392,16 @@
 
 @<sclr> ( str* -: )
 	#00 ROT ROT
-	&w ( cap str* -- )
-		STAk INC2 LDAk ?&w
+	&>w ( cap str* -- )
+		STAk INC2 LDAk ?&>w
 	STA
 	JMP2r
 
 @skey ( key buf -: proc )
-	OVR #21 LTH ?&eval
-	#00 SWP scap/ STA
-	#00 JMP2r
-	&eval ( key buf -: proc )
-		POP2 #01 JMP2r
+	OVR #21 LTH ?{
+		#00 SWP scap/ STA
+		#00 JMP2r }
+	POP2 #01 JMP2r
 
 @scmp3 ( a* b* -- f )
 	STH2
@@ -439,12 +410,12 @@
 
 @wcmp ( a* b* -- f )
 	STH2
-	&w ( -- )
+	&>w ( -- )
 		LDAk LDAkr STHr DUP2 #2020 EQU2 ?&end
 		NEQk ?&end
-		POP2 INC2 INC2r !&w
+		POP2 INC2 INC2r !&>w
 	&end ( a b cc -- f )
-		NIP2 POP2r EQU JMP2r
+	NIP2 POP2r EQU JMP2r
 
 @wrew ( w* -- rew* )
 	DUP2 ;mem/scope EQU2 ?{
@@ -477,26 +448,26 @@
 
 @scope
 	&new ( -- )
-		;mem/scope DUP2 ,&ptr STR2
-		!<sclr>
+	;mem/scope DUP2 ,&ptr STR2
+	!<sclr>
 	&put ( c -- )
-		#00 [ LIT2 &ptr =mem/scope ]
-		( ) DUP2 ;mem/scope-cap EQU2 ?&overflow
-		( ) INC2k ,&ptr STR2
-		STA2
-		JMP2r
+	#00 [ LIT2 &ptr =mem/scope ]
+	( ) DUP2 ;mem/scope-cap EQU2 ?&overflow
+	( ) INC2k ,&ptr STR2
+	STA2
+	JMP2r
 	&overflow ( c* ptr* -- )
-		POP2 POP2 [ LIT2 01 -err ] STZ
-		JMP2r
+	POP2 POP2 [ LIT2 01 -err ] STZ
+	JMP2r
 
 @result
 	&new ( -- )
-		;mem/result ,&ptr STR2
-		JMP2r
+	;mem/result ,&ptr STR2
+	JMP2r
 	&put ( c -- )
-		#00 [ LIT2 &ptr =mem/result ] INC2k ,&ptr STR2
-		STA2
-		JMP2r
+	#00 [ LIT2 &ptr =mem/result ] INC2k ,&ptr STR2
+	STA2
+	JMP2r
 
 @dict ( localization )
 	&usage "usage: 20 "uxnfor.rom 20 "source.tal 0a $1
