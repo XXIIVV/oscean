@@ -198,7 +198,7 @@
 		DUP2 #03 SFT2 EOR2
 	[ LIT2 &y $2 ] DUP2 ,&x STR2
 		DUP2 #01 SFT2 EOR2 EOR2
-		,&y STR2k POP 
+		,&y STR2k POP
 	JMP2r
 </pre>
 
@@ -212,30 +212,21 @@
 @smax ( x* y* -> smax* ) EOR2k POP #80 AND ?min !max
 @min ( x* y* -> min* ) LTH2k JMP SWP2 POP2 JMP2r
 @max ( x* y* -> max* ) LTH2k JMP SWP2 NIP2 JMP2r
-
-( Arithmetic macros )
-
-%MOD { DIVk MUL SUB }
-%MOD2 { DIV2k MUL2 SUB2 }
-%MIN2 { LTH2k JMP SWP2 POP2 }
-%MAX2 { GTH2k JMP SWP2 POP2 }
+@mod ( x y -- z ) DIVk MUL SUB JMP2r
+@mod2 ( x* y* -- z* ) DIV2k MUL2 SUB2 JMP2r
 
 ( Signed macros )
 
-@abs DUP2k #1f SFT2 MUL2 SUB2 JMP2r
-
-%LTS2 { #8000 STH2k ADD2 SWP2 STH2r ADD2 GTH2 }
-%GTS2 { #8000 STH2k ADD2 SWP2 STH2r ADD2 LTH2 }
+@abs ( a -- b ) DUP #80 AND #00 EQU ?{ #00 SWP SUB } JMP2r
+@abs2 ( a* -- b* ) DUP2k #1f SFT2 MUL2 SUB2 JMP2r
+@lts2 ( a* b* -- f ) #8000 STH2k ADD2 SWP2 STH2r ADD2 GTH2 JMP2r
+@gts2 ( a* b* -- f ) #8000 STH2k ADD2 SWP2 STH2r ADD2 LTH2 JMP2r
 
 ( Binary macros )
 
-%ROL { DUP #07 SFT SWP #10 SFT ADD }
-%ROR { DUP #70 SFT SWP #01 SFT ADD }
-%ROL2 { DUP2 #0f SFT2 SWP2 #10 SFT2 ADD2 }
-%ROR2 { DUP2 #f0 SFT2 SWP2 #01 SFT2 ADD2 }
-
-( A clever hack )
-
-%PC { #00 JSR STH2r }
+@rol ( x y -- z ) DUP #07 SFT SWP #10 SFT ADD JMP2r
+@ror ( x y -- z ) DUP #70 SFT SWP #01 SFT ADD JMP2r
+@rol2 ( x* y* -- z* ) DUP2 #0f SFT2 SWP2 #10 SFT2 ADD2 JMP2r
+@ror2 ( x* y* -- z* ) DUP2 #f0 SFT2 SWP2 #01 SFT2 ADD2 JMP2r
 </pre>
 
