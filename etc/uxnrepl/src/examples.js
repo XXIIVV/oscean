@@ -38,7 +38,7 @@ let examples = {
 |100
 
 @on-reset ( -> )
-	#0a #0a EQU 
+	#0a #0a EQU
 	?{ ;false print BRK }
 	;true print BRK
 
@@ -89,7 +89,7 @@ let examples = {
 
 @on-reset ( -> )
 	;array
-	( double values ) 
+	( double values )
 	{ STH2k LDAk DUP ADD STH2r STA JMP2r } STH2r each
 	;print-num each
 	POP2 BRK
@@ -151,4 +151,56 @@ let examples = {
 
 @Dict ( strings )
 	&fizz "Fizz $1 &buzz "Buzz $1
+`,
+"shortcircuit_tal": ` ( Print called routines and result of short-circuit and/or. )
+|66 @F   |74 @T
+
+|100
+	( x ?{ JMP2r } y ?{ JMP2r } body )
+	;d-&&/ff <pstr>  <f-&&-f> <cr>
+	;d-&&/ft <pstr>  <f-&&-t> <cr>
+	;d-&&/tf <pstr>  <t-&&-f> <cr>
+	;d-&&/tt <pstr>  <t-&&-t> <cr>
+	<cr>
+	( x ?{ y ?{ JMP2r } } body )
+	;d-||/ff <pstr>  <f-||-f> <cr>
+	;d-||/ft <pstr>  <f-||-t> <cr>
+	;d-||/tf <pstr>  <t-||-f> <cr>
+	;d-||/tt <pstr>  <t-||-t> <cr>
+BRK
+
+@<f-&&-f> ( -- ) .F x ?{ !<f> } .F y ?{ !<f> } !<t>
+@<f-&&-t> ( -- ) .F x ?{ !<f> } .T y ?{ !<f> } !<t>
+@<t-&&-f> ( -- ) .T x ?{ !<f> } .F y ?{ !<f> } !<t>
+@<t-&&-t> ( -- ) .T x ?{ !<f> } .T y ?{ !<f> } !<t>
+
+@<f-||-f> ( -- ) .F x ?{ .F y ?{ !<f> } } !<t>
+@<f-||-t> ( -- ) .F x ?{ .T y ?{ !<f> } } !<t>
+@<t-||-f> ( -- ) .T x ?{ .F y ?{ !<f> } } !<t>
+@<t-||-t> ( -- ) .T x ?{ .T y ?{ !<f> } } !<t>
+
+@x ( ? -- ? ) ;sx !<pstr>
+@y ( ? -- ? ) ;sy !<pstr>
+@<f> ( -- ) .F !<emit>
+@<t> ( -- ) .T !<emit>
+
+@<cr> ( -- ) #0a ( >> )
+@<emit> ( char -- ) #18 DEO JMP2r
+@<pstr> ( str* -- ) LDAk <emit> INC2 LDAk ?<pstr> POP2 JMP2r
+
+( data )
+@sx "(x) $1
+@sy "(y) $1
+
+@d-&&
+	&ff "f 20 "&& 20 "f 20 "= 20 $1
+	&ft "f 20 "&& 20 "t 20 "= 20 $1
+	&tf "t 20 "&& 20 "f 20 "= 20 $1
+	&tt "t 20 "&& 20 "t 20 "= 20 $1
+
+@d-||
+	&ff "f 20 "|| 20 "f 20 "= 20 $1
+	&ft "f 20 "|| 20 "t 20 "= 20 $1
+	&tf "t 20 "|| 20 "f 20 "= 20 $1
+	&tt "t 20 "|| 20 "t 20 "= 20 $1
 `}
