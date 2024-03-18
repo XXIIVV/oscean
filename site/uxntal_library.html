@@ -13,30 +13,29 @@
 
 <p>To print an hexadecimal number:</p>
 <pre>
-@phex ( short* -- )
-	SWP phex/b
-	&b ( -- )
-		DUP #04 SFT phex/c
-	&c ( -- )
+@&lt;phex&gt; ( short* -: )
+	SWP /b
+	&b ( byte -: )
+		DUP #04 SFT /c
+	&c ( byte -: )
 		#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
 		JMP2r
 </pre>
 
 <p>To convert an hexadecimal string to a value:</p>
 <pre>
-@shex ( str* -- val* )
+@shex ( str* -: val* )
 	[ LIT2r 0000 ]
-	&w ( -- )
-		( validate ) LDAk chex INC #00 EQU ?&end
-		( accumulate ) [ LITr 40 ] SFT2r
-		( combine ) LDAk chex [ LITr 00 ] STH ADD2r
-		( continue ) INC2 LDAk ?&w
-	&end POP2 STH2r JMP2r
+	&w ( str* `acc* -: val* )
+	LDAk chex INC #00 EQU ?{
+		[ LITr 40 ] SFT2r LDAk chex [ LITr 00 ] STH
+		ADD2r INC2 LDAk ?&w }
+	POP2 STH2r JMP2r
 </pre>
 
 <p>To convert an hexadecimal character to a nibble:</p>
 <pre>
-@chex ( c -- val? )
+@chex ( c -: val! )
 	( dec ) [ LIT "0 ] SUB DUP #09 GTH ?{ JMP2r }
 	( hex ) #27 SUB DUP #0f GTH ?{ JMP2r }
 	( err ) POP #ff JMP2r
@@ -87,10 +86,9 @@
 
 <p>To print a string.</p>
 <pre>
-@pstr ( str* -- )
-	&w ( -- )
-		LDAk #18 DEO
-		INC2 & LDAk ?&w
+@&lt;pstr&gt; ( str* -: )
+	LDAk #18 DEO
+	INC2 & LDAk ?&lt;pstr&gt;
 	POP2 JMP2r
 </pre>
 

@@ -72,11 +72,16 @@ that do not need to be part of the specs, or other Uxn/Varvara instances.</p>
 <p>The <b>System/expansion*</b> port expects an address to an <i>operation</i>,
 it allows basic memory management for roms that must keep information outside
 of the addressable range, or cache the content of a file in order to seek
-through the data. There is currently only one such operation:</p>
+through the data.</p>
 
 <table border='1'>
 	<tr><th>name</th><th>operation</th><th colspan='6'>fields</th></tr>
-	<tr><th>copy</td><td>01</td><td>length*</td><td>src bank*</td><td>src addr*</td><td>dst bank*</td><td>dst addr*</td></tr>
+	<tr><th>fill</td><td>00</td><td>length*</td><td>bank*</td><td>addr*</td><td colspan='2'>value</td></tr>
+	<tr><td colspan='7'>Fill a length of memory with a value, starting at address.</td></tr>
+	<tr><th>cpyl</td><td>01</td><td>length*</td><td>src bank*</td><td>src addr*</td><td>dst bank*</td><td>dst addr*</td></tr>
+	<tr><td colspan='7'>Copy memory starting by the first byte.</td></tr>
+	<tr><th>cpyr</td><td>02</td><td>length*</td><td>src bank*</td><td>src addr*</td><td>dst bank*</td><td>dst addr*</td></tr>
+	<tr><td colspan='7'>Copy memory starting by the last byte.</td></tr>
 </table>
 
 <pre>
@@ -157,6 +162,7 @@ succesfully.</p>
 
 <ul>
 	<li>v2: Added wst/rst ports to read and write to the stack index.</li>
+	<li>v3: Added fill and cpyr expansion commands.</li>
 </ul>
 
 <ul>
@@ -283,16 +289,26 @@ bit will fill the buttom-left quadrant, and so on.</p>
 
 <pre>
            M L Y X 3 2 1 0
-Mode   ----+ | | | | | | +---- Color bit 0
+Fill   ----+ | | | | | | +---- Color bit 0
+Layer  ------+ | | | | +------ Color bit 1
+Flip Y --------+ | | +-------- Unused
+Flip X ----------+ +---------- Unused
+</pre>
+
+<p>The <b>Screen/sprite</b> port defines the <a href='icn_format.html'>1-bit</a>
+or <a href='chr_format.html'>2-bit</a> mode, layer to draw on, optional
+horizontal and vertical flipping of the sprite, and the colors to use.</p>
+
+<pre>
+           M L Y X 3 2 1 0
+2bpp   ----+ | | | | | | +---- Color bit 0
 Layer  ------+ | | | | +------ Color bit 1
 Flip Y --------+ | | +-------- Color bit 2
 Flip X ----------+ +---------- Color bit 3
 </pre>
 
-<p>The <b>Screen/sprite</b> port defines the <a href='icn_format.html'>1-bit</a>
-or <a href='chr_format.html'>2-bit</a> mode, layer to draw on, optional
-horizontal and vertical flipping of the sprite, and the colors to use. The 8x8
-sprite data to draw is specified by writing its location in memory to the
+<p>The 8x8 sprite data to draw is specified by writing its location in memory to the
+<b>Screen/addr*</b> port. The 8x8 sprite data to draw is specified by writing its location in memory to the
 <b>Screen/addr*</b> port.</p>
 
 <pre>
