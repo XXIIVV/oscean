@@ -121,45 +121,85 @@ be an equally Herculean task to build an <i>emulator and assembler</i> for a
 machine with thousands of instructions; or a single instruction machine
 building abstract logic from thousands of primitive parts.</p>
 
-<article>
-	<p>The complexity of our virtual machine runtime and toolchain implementation
+<p>The complexity of our virtual machine runtime and toolchain implementation
 cannot exceed that which can be done within a weekend.</p>
-</article>
 
 <h3>III. Things Betwixt</h3>
 
-<!-- <p>
-We shall call this definition of a computer that fits on a napkin, capable of
-self-hosting in a few hundred lines of its own assembly &mdash; <b><i>A
-One-page Computer</i></b>.</p> -->
+<p>In 1964, a computer scientist proposed an abstract machine with <a
+href='secd.html'>10 instructions</a> and 4 stacks. The superficially documented
+implementation specifies a list processing system capable or hosting functional
+languages. The system was later expanded with arithmetic and IO operations, but
+rests on an intricate and inefficient garbage collected system.</p>
 
-<p>A <a href='paper_computer.html'>paper computer</a> was created in the early 1980s, when computer access was not yet widespread, it consists of a piece of paper with 21 lines of code on the left and eight registers on the right. The instruction set of five commands(inc, dec, jmp, isz, stp) is small but <a href='https://en.wikipedia.org/wiki/Turing_completeness' target='_blank'>Turing complete</a>, meaning that it can approximately simulate the computational aspects of any other real-world general-purpose computer, and is therefore enough to represent all mathematical functions.</p>
+<p>In 1977, a programmer wrote a small virtual machine with <a
+href='chip8.html'>36 instructions</a>, 16 registers and 4096 bytes of memory.
+It had no mouse device, its controller is 16 keys organized in a square, the
+screen is barely capable of displaying readable text, but I was able to write
+an emulator and an assembler for it, in an weekend.</p>
 
 <img src="../media/refs/computers.png" width="300">
 
-<p>In 1977, a programmer wrote a small virtual machine with <a href='chip8.html'>36 instructions</a>, 16 registers and 4096 bytes of memory. It has no mouse, the screen is barely capable of displaying readable text, its controller is a nightmare. &mdash; But I was able to write an emulator and an assembler for it, in an afternoon.</p>
+<p>In the early 1980s , when computer access was still not yet widespread, a <a
+href='paper_computer.html'>paper computer</a> was designed, consisting of a
+piece of paper with 21 lines of <i>code</i> and eight registers. The
+instruction set of five commands(inc, dec, jmp, isz, stp) is small but <a
+href='https://en.wikipedia.org/wiki/Turing_completeness' target='_blank'>Turing
+complete</a>, meaning that it can approximately simulate the computational
+aspects of any other real-world general-purpose computer, and is therefore
+enough to represent all mathematical functions.</p>
 
-<img src='../media/refs/ma.png' style='float:right; margin-left:30px; width:100px'/>
-
-<p>There is a type of electronics relevant to emulation that <a href='https://excamera.com/sphinx/fpga-j1.html'>has no chips</a>, no instruction set, but instead the programmer designs the hardware circuit in software. As much fun as it would be to create a design that maps well onto these machines, it would make for a poor emulation on my existing devices as it would use nearly none of the optimizations available on the host computer. </p>
-
-<p>Somewhere along this voyage into finding a suitable host for my programs, I began thinking about <a href='collapse.html'>electronic waste</a>, and I couldn't justify surrounding myself with <a href='salvage_computing.html'>yet more electronics</a>. This dream platform would therefore be designed to be emulated, its complexity would be designed around the complexity of software and not that of hardware.</p>
+<article>
+	<img src='../media/refs/ma.png' style='float:right; margin-left:30px; width:100px'/>
+	<p>Somewhere along this voyage into finding a suitable host for my programs, I
+began thinking about <a href='collapse.html'>electronic waste</a>, and I
+couldn't justify surrounding myself with <a href='salvage_computing.html'>yet
+more electronics</a>. This dream platform would therefore be designed to be
+emulated, its complexity would be designed around the complexity of software
+and not that of hardware.</p>
+</article>
 
 <h3>IV. Back & Forth</h3>
 
-<p>The balancing act of virtual machine instructions, assembler, emulator and the resulting capabilities of its language revealed the stack machines as ideal systems. </p>
+<p>The balancing act of virtual machine instructions, assembler, emulator and the
+resulting capabilities of its language eventually brought me back to stack machines.</p>
 
 <img src="../media/refs/swap.png" alt="Swap operation by Leo Brodie">
 
-<p><a href='forth.html'>Forth</a> is a programming language that consists simply
-of splitting text into a list of words, breaking on whitespace, and to
-interpret each word, words are often combinations of other words combined to
-create more complex words.</p>
+<p><a href='concatenative.html'>Concatenative languages</a> consist of breaking a
+program into a list of words, and to interpret each word, words are often
+combinations of other words, combined to create more complex words. Brackets
+and parentheses are unnecessary: the program merely performs calculations in
+the order that is required, letting the automatic stack store intermediate
+results on the fly for later use. Likewise, there is no requirement for
+precedence rules.</p>
 
-<p>Brackets and parentheses are unnecessary: the program merely performs
-calculations in the order that is required, letting the automatic stack store
-intermediate results on the fly for later use. Likewise, there is no
-requirement for precedence rules.</p>
+<table border="1">
+	<tr><td><i>operation</i></td><th>3</th><th>10</th><th>5</th><th>+</th><th>*</th></tr>
+	<tr><td rowspan="3"><i>stack</i></td><td rowspan="3">3</td><td>10</td><td>5</td><td>15</td><td rowspan="3">45</td></tr>
+	<tr><td rowspan="2">3</td><td>10</td><td rowspan="2">3</td></tr>
+	<tr><td>3</td></tr>
+</table>
+
+<p>In <a href='forth.html'>Forth</a>, memory is made of blocks of cells, which
+are typically <a href='binary.html'>16-bits in length</a>, meaning that each
+piece of data is a number from 0 to 65535. For this specific imaginary system,
+I wanted the memory to consist of cells of 8-bit, or numbers from 0 to 255. For
+example, the <code>12 / (34 - 12)</code> sequence is equivalent to the 6
+bytes:</p>
+
+<pre>
+uxntal |  #  12  34 OVR SUB DIV
+binary | a0  12  34  07  19  1b
+</pre>
+
+<p>Using stack-machine operations as primitives, along with enough arithmetic and
+bitwise functions as to not require to abstract computation to a higher level
+language, in order words to keep the assembly programming pleasant, we find the
+resulting <a href='uxn.html'>virtual machine</a> and <a
+href='uxntal_reference.html'>32 opcodes</a>. The result is an expressive and
+extendable virtual machine that can be implemented in an afternoon exposing a
+user programmable assembly running at a reasonable speed. </p>
 
 <pre>
 <b>LIT</b> a b c [PC]
@@ -177,30 +217,14 @@ requirement for precedence rules.</p>
 <b>OVR</b> a b c b    <b>STH</b> a b | c            <b>DEO</b> a {[D+c8]=b}   <b>SFT</b> a b&gt;&gt;c8l&lt;&lt;c8h
 </pre>
 
-<p>In Forth, memory is made of blocks of cells, which are typically <a
-href='binary.html'>16-bits in length</a>, meaning that each piece of data is a
-number from 0 to 65535. For this specific imaginary system, I wanted the memory
-to consist of cells of 8-bit, or numbers from 0 to 255. For example, the
-<code>12 / (34 - 12)</code> sequence is equivalent to the 6 bytes:</p>
-
-<pre>
-uxntal |  #  12  34 OVR SUB DIV
-binary | a0  12  34  07  19  1b
-</pre>
-
-<p>The result is an expressive and extendable virtual machine that can be
-implemented in an afternoon exposing a user programmable assembly running at a
-reasonable speed. Using stack-machine operations as primitives, along with a
-handful of arithmetic and bitwise functions, we find the resulting <a
-href='uxn.html'>virtual machine</a> and <a href='uxntal_reference.html'>32
-opcodes</a>.</p>
-
-<p>Uxn cannot error and has no <a
+<p>An implementation of the runtime, capable of running the self-hosted assembler
+is about <a href="../etc/uxnmin.c.txt" target="_blank">150 lines of C</a>. Uxn
+cannot error and has no <a
 href='https://git.sr.ht/~rabbits/uxn-utils/tree/main/item/cli/opctest/opctest.tal'
-target='_blank'>unspecified behaviors</a> or edge cases. Its documentation encourages re-implementation instead
-of the adoption of a specific implementation. It operates on bytes as to remain portable
-on small systems, abstracting I/O entirely to the host system via dedicated opcodes.</p> 
-
+target='_blank'>unspecified behaviors</a>. Its documentation encourages
+re-implementation instead of adoption of a specific implementation. It operates
+on bytes as to remain portable on small systems, abstracting I/O entirely to
+the host system via dedicated opcodes. </p> 
 
 <h2>A programming language</h2>
 
