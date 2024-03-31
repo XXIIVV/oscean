@@ -12,21 +12,21 @@
 <p>A pattern/replacement can be:</p>
 
 <ul>
-	<li><b>A token</b>: foo, bar, baz</li>
-	<li><b>A variable</b>: ?foo, ?bar, ?baz</li>
-	<li><b>A sequence of the above</b>: (foo bar baz), (foo ?bar baz), foo (bar (baz))</li>         
+	<li><a href='#tokens'>Tokens</a>: foo, bar, baz</li>
+	<li><a href='#variables'>Variables</a>: ?foo, ?bar, ?baz</li>
+	<li><a href='#sequences'>Sequences</a>: (foo bar baz), (foo ?bar baz), foo (bar (baz))</li>         
 </ul>
 
-<h3>Tokens</h3>
+<h3 id='tokens'>Tokens</h3>
 
-<p>To define a rule, we use the <code>define</code> token followed by a rule:</p>
+<p>To define a rule, we use the <code>define</code> keyword, followed by the two arguments to replace:</p>
 
 <pre><b>define</b> hello bye
 ::> hello world
 
 bye world</pre>
 
-<h3>Variables</h3>
+<h3 id='variables'>Variables</h3>
 
 <p>A replacement can only use variables that have been used in
 a pattern.</p>
@@ -45,7 +45,7 @@ corresponding tokens/sequences in said tree.</p>
 
 (bar foo)</pre>
 
-
+<h3 id='sequences'>Sequences</h3>
 
 <p>For example, consider the following:</p>
 
@@ -323,8 +323,63 @@ square ?x -> ?x * ?x;
 reduce (s ?x)    -> s (reduce ?x);
 reduce (0)       -> (0);
 reduce (?h : ?t) -> ?h : (reduce ?t);
-reduce (nil)     -> nil;</pre>
+reduce (nil)     -> nil;
 
+</pre>
+
+<h3>Modal Machine</h3>
+<p>There are only a few components to a Modal machine, and every single one of them is a queue of symbols:</p>
+
+<ul>
+    <li>The pattern queue, holding the string-under-rewrite. This is your "main memory".</li>
+    <li>A number of "register" queues. These are your variables.</li>
+    <li>A number of "rules" queues, holding strings of the form ?left ?right.</li>
+</ul>
+
+
+
+<!--
+
+
+<p>Any queue can be peeked at, enqueued to, dequeued from, and "rolled" (enqueue(dequeue())).
+
+Every "tick" (the underlying circuitry was clockless, so "tick" means global component handshakes), you'd step through the "rules" queues, one by one, and roll both the rule queue and the pattern queue.
+
+Before matching, we enqueue a special symbol (SRT, or "start") to keep track of where we were so we can seek to it on success or failure, resetting the queue state for both the rule and the pattern.
+
+If the symbols at the read-head of the pattern queue and the currently selected rule queue are equal, we roll both queues. If they aren't equal, we seek to that special SRT symbol and move on to the next rule.
+
+If we reach the SRT symbol in the rule queue, we can say the rule has matched. We then enqueue an END symbol to the pattern queue, seek to the SRT symbol in the pattern queue, and then remove everything between SRT and END. Then we remove SRT and END, and enqueue the right-hand side of the rule.
+</p>
+
+
+::> (hello) -> (good bye) hello
+Reducing...
+<>:    ( hello ) -> ( good bye ) hello  
+<>:    hello  define ( hello ) ( good bye )  ::: ?x -> ?y 
+<>:     define ( hello ) ( good bye ) hello 
+<>:    define ( hello ) ( good bye ) hello  
+<>:    hello   ::: define ?left ?right 
+<>:     good bye  ::: hello 
+<>:    good bye  
+<>:    bye  good 
+<>:     good bye 
+
+That's why you see bye good, with a weird space between them. That's the invisible SRT token.
+And that's the interpreter rolling through the pattern queue.
+If you encounter a "register" symbol when evaluating a rule, you extract that delimited string symbol-by-symbol and put it in its corresponding register.
+So (foo ?x ?y) -> (bar ?y ?x) looks like (foo R0 R1) (bar R1 R0) internally.
+Each rule firing clears the registers.
+There are some flaws with this machinery, namely that the register queues must be roughly the same size as the pattern queue if they're going to hold large strings.
+
+One thing I'm removing from the implementation apart from arbitrary symbols is the concept of equality on the LHS of a rule. It's pre-defined/assumed that if you do foo ?x ?x, you want to assert equality instead of rebinding x to a new value.
+
+Means you can do...
+
+(?x == ?x) -> (true)
+(?x == ?y) -> (false)
+
+-->
 <ul>
 	<li><a href='https://git.sr.ht/~rabbits/modal' target='_blank'>sources</a>, python</li>
 	<li><a href='https://wryl.tech/' target='_blank'>wryl</a>, Immediate Mode Technologies(as of 2019).</li>
