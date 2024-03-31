@@ -1,0 +1,368 @@
+<!DOCTYPE html><html><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="../links/main.css" type="text/css" rel="stylesheet"><link href="../media/services/icon.png" type="image/png" rel="shortcut icon">
+<title>XXIIVV &mdash; rewriting</title></head><body>
+<header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
+
+<nav><ul><li><a href="programming_languages.html" class="parent">programming languages</a></li><li><a href="operating_systems.html">operating systems</a></li><li><a href="graphical_input.html">graphical input</a></li><li><a href="file_formats.html">file formats</a></li><li><a href="data_encoding.html">data encoding</a></li><li><a href="type_systems.html">type systems</a></li><li><a href="versioning.html">versioning</a></li></ul><ul><li><a href="assembly.html">assembly</a></li><li><a href="concatenative.html">concatenative</a></li><li><a href="applicative.html">applicative</a></li><li><a href="flow-based.html">flow-based</a></li><li><a href="imperative.html">imperative</a></li><li><a href="rewriting.html" class="self">rewriting</a></li><li><a href="esoteric.html">esoteric</a></li></ul><ul><li><a href="thue.html">thue</a></li><li><a href="modal.html">modal</a></li></ul></nav>
+<main><h2>A string rewriting system is a system that replaces lengths of strings in a given string.</h2>
+
+<h2>Thue is a matrioshka esoteric computer based on string rewriting rules.</h2>
+
+<p>A Thue program consists of two parts: a list of <a
+href='logic.html'>substitution rules</a>, which is terminated with a line
+having both sides of the operator empty, followed by a string representing the
+initial program state.</p>
+
+<pre>
+#::=<span style='color:#777'>Unused rules are comments</span>
+a::=~Hello Thue!
+::=
+[a] <span style='color:#777; float:right'>[]</span>
+</pre>
+
+<p>Execution consists of picking, from the list of rules, an arbitrary rule whose original string exists as a substring somewhere in the program state, and replacing that substring by the rule's replacement string. This process repeats until there are no rules that can be applied, at which point, the program ends. </p>
+
+<pre>
+#::=<span style='color:#777'>Increment binary number</span>
+1_::=1++
+0_::=1
+01++::=10
+11++::=1++0
+_0::=_
+_1++::=10
+::=
+_10010011_ <span style='color:#777; float:right'>_10010100</span>
+</pre>
+
+<p>Thue represents one of the simplest possible constraint-based programming
+language. It is to the constraint-based paradigm what languages like OISC are
+to the imperative paradigm. </p>
+
+<img src='../media/refs/bthennota.png' width='100'/>
+
+<h3>Input</h3>
+
+<p>Added to this simple system are two strings which are used to permit Thue to communicate with the outside world. The first of these is the input symbol (":::").  The input symbol is actually the lhs of an implicit rule of which the user (or system's "input stream") is a component.  The input symbol, therefore, is replaced by a line of text received from the "input stream."</p>
+
+<h3>Output</h3>
+
+<p>As a counterpart of input, the output symbol ("~") is supplied.  Like the input symbol, the output symbol triggers an implicit rule which, in this case, encompasses the "output stream."  The specific effect is that all text to the right of the output symbol in the rhs of a production is sent to the output stream.</p>
+
+<p>Note that either (or both) of these implicit rules may be overridden by providing explicit rules that perform some other task.</p>
+
+<pre>
+#::=<span style='color:#777'>Sierpinski's triangle, backticks are linebreaks</span>
+X::=~_
+Y::=~*
+Z::=~`
+_.::=._X
+_*::=*_Y
+._|::=.Z-|
+*_|::=Z
+..-::=.-.
+**-::=*-.
+*.-::=*-*
+.*-::=.-*
+@.-::=@_.
+@*-::=@_*
+::=
+@_*...............................|
+</pre>
+
+<q>It is pitch black. You are likely to be eaten by a Thue.</q>
+
+<ul>
+	<li><a href='https://esolangs.org/wiki/Thue' target='_blank'>On Esolangs</a></li>
+	<li><a href='https://git.sr.ht/~rabbits/thuesday' target='_blank'>Interpreter</a>, written in Uxntal. <a href='https://www.youtube.com/watch?v=A8f7IsQ8ENQ' target='_blank'>Video</a></li>
+	<li><a href='https://git.catseye.tc/Wanda/' target='_blank'>Wanda</a>, concatenative language meets string rewriting.</li>
+</ul>
+<h2>Modal is a language based a model of computation that uses pattern matching and replacement to rewrite trees.</h2>
+
+<p>All Modal code is represented as a series of rules applied to a given tree, formatted textually as tokens delimited with parenthesis, which gets continually modified until no rules match any given part of the tree.</p>
+
+<p>A pattern/replacement can be:</p>
+
+<ul>
+	<li><b>A token</b>: foo, bar, baz</li>
+	<li><b>A variable</b>: ?foo, ?bar, ?baz</li>
+	<li><b>A sequence of the above</b>: (foo bar baz), (foo ?bar baz), foo (bar (baz))</li>         
+</ul>
+
+<p>A replacement can only use variables that have been used in
+a pattern. When a variable is used in a pattern, and when we try
+to match a given tree with a pattern, any variables are bound to their
+corresponding tokens/sequences in said tree.
+    For example, consider the following:</p>
+
+<pre>define (square ?x) (?x * ?x)
+</pre>
+<p>This defines a rule with the pattern `square ?x`. Let's try to
+apply this pattern to a given tree.</p>
+
+<pre>
+square (square (25))
+</pre>
+<p>Upon feeding this particular tree to Modal, Modal will run through
+the list of rules that have been defined and try to match each rule's pattern
+with the tree. Modal will crawl along the tree using a hybrid of depth-first
+and breadth-first search. When Modal tries to apply the rule to the above tree,
+the variable...</p>
+
+<pre>
+?x
+</pre>
+
+<p>...is bound, and it now has the value...</p>
+<pre>
+(square (25))
+</pre>
+<p>From here, now that Modal has found a match, it eliminates part of the
+tree that it matched and replaces it with the right-hand side of a given rule.
+If the above rule is applied, we end up with a new tree:</p>
+<pre>
+(square (25)) * (square (25))
+</pre>
+<p>From here, we run through our defined rules once more, and we end up with
+the following tree:</p>
+<pre>
+((25) * (25)) * ((25) * (25))
+</pre>
+<p>This is then further reduced using built-in operations. I encourage you to
+try it for yourself. Modal always works on a single global tree, and patterns
+are applied to various points in that tree. Modal traverses the tree by storing
+its textual form in a queue, and at any given moment, Modal tries to match the
+head of that queue with a rule from its supplied ruleset.</p>
+
+<p>Q: How do I write common structures, like loops, conditional statements, etc.?<br />
+A: Loops map to recursive patterns, and because Modal has a "loose" syntax,
+   you can write your own control flow structures.</p>
+<pre>
+Let's go through an example.
+
+define (if      (true)  ?branch)      (?branch)
+define (if      (false) ?branch)      ()
+define (if/else (true)  ?true ?false) (?true)
+define (if/else (false) ?true ?false) (?false)
+</pre>
+<p>The above patterns define both a single and double branch expression.
+The latter is an example of a ternary statement, where the 'else' branch is
+always required. These two control structures can be combined with boolean
+operations, as defined below.</p>
+<pre>
+define ((true)  and (true))  (true)
+define ((true)  and (false)) (false)
+define ((false) and (true))  (false)
+define ((false) and (false)) (false)
+
+define ((true)  or (true))  (true)
+define ((true)  or (false)) (true)
+define ((false) or (true))  (true)
+define ((false) or (false)) (false)
+
+define (not (true))  (false)
+define (not (false)) (true)
+</pre>
+<p>The above defines truth tables for conditional statements. We can use
+these in conjunction with if and if/else to form arbitrarily nested conditions.</p>
+<pre>
+if (
+        if/else (
+                    (true) and ((false) or (true))
+                )
+                (
+                    not (true)
+                )
+                (
+                    not (false)
+                )
+   )
+   (
+        (true) and (true)
+   )
+</pre>
+<p>Here's the above, in a more compact form.</p>
+<pre>
+if
+    (if/else
+        ((true) and ((false) or (true)))
+        (not (true))
+        (not (false)))
+    ((true) and (true))
+</pre>
+<p>However, there's a problem. Due to Modal's queue-based execution,
+if the condition for if and if/else isn't fully reduced to 'true' or 'false',
+Modal skips over it entirely and evaluates the branches. This leads to some
+unexpected behavior, as you end up performing unneeded calculations and
+selecting between them at a later point.</p>
+<p>It's possible to circumvent this. By defining multiple patterns,
+you can use Modal's pattern matching features to perform conditional checks.
+Let's try to define the factorial pattern using this method.</p>
+<pre>
+define (factorial (num 1)) (num 1)
+define (factorial (num ?x))  ((num ?x) * (factorial ((num ?x) - (1))))
+</pre>
+<p>Here, we've written two possible branches for our factorial pattern
+in the form of two rules. Since Modal will always use rules defined prior
+in the ruleset, we can organize rules according to priority, such that
+earlier rules match prior to later ones. This allows us to write
+complex conditionals that would otherwise be impossible to write properly.</p>
+
+<p>I hope this has inspired you to give Modal a try. This was a small
+taste of what Modal has to offer. Modal's prelude (prelude.modal) includes
+a lot of built-in rules that you can use when writing code. It also includes
+some examples of custom syntax.</p>
+
+<h3>Prelude</h3>
+
+<pre>
+1 -> (s (0));
+
+
+neg (neg ?x) -> ?x;
+neg (0)      -> 0;
+
+
+add (s ?x) (s ?y) -> s (add ?x (s ?y));
+add (0)    (s ?x) -> s ?x;
+add (s ?x) (0)    -> s ?x;
+add (0)    (0)    -> 0;
+
+
+?x + ?y + ?z -> (?x + ?y) + ?z;
+
+
+?x + ?y -> add ?x ?y;
+
+
+sub (s ?x) (s ?y) -> sub ?x ?y;
+sub (s ?x) (0)    -> s ?x;
+sub (0)    (s ?x) -> neg (s ?x);
+sub (0)    (0)    -> 0;
+
+
+?x - ?y -> sub ?x ?y;
+
+
+mul (s ?x) (s ?y)  -> (s ?x) + (mul (s ?x) ((s ?y) - 1));
+mul (s ?x) (s (0)) -> s ?x;
+mul (s ?x) (0)     -> 0;
+mul (0)    (s ?x)  -> 0;
+
+
+?x * ?y -> mul ?x ?y;
+
+
+Ensures that a list or a number has been reduced to its normal form. ;
+
+reduced (0)       -> true;
+reduced (nil)     -> true;
+reduced (s ?x)    -> reduced ?x;
+reduced (?h : ?t) -> reduced ?t;
+reduced ?x        -> false;
+
+
+Because there may be conflicts with expressions that
+are currently being reduced, we need to fold over reduced
+lists, i.e ones that have already been fully generated. ;
+
+fold       (?f) ?i ?l           -> fold reduced ?l (?f) ?i ?l;
+fold true  (?f) ?i (nil)        -> ?i;
+fold true  (?f) ?i (?h : (nil)) -> ?f ?i ?h;
+fold true  (?f) ?i (?h : ?t)    -> ?f ?i (fold (?f) ?h ?t);
+fold false (?f) ?i ?l           -> fold (?f) ?i ?l;
+
+
+factorial (s (0)) -> s (0);
+factorial (s ?x)  -> (s ?x) * (factorial ((s ?x) - 1));
+
+
+sum (?h : ?t) -> fold (add) (0) (?h : ?t);
+
+
+range ?x (s (0)) -> ?x : (nil);
+range ?x (s ?y)  -> ?x : (range (?x + 1) ((s ?y) - 1));
+
+
+Disgusting (yet valid) hack for currying.
+We need lambdas. ;
+
+unpack (?h : nil) -> ?h;
+unpack (?h : ?t)  -> ?h unpack ?t;
+unpack (?x)       -> ?x;
+unpack (?x .      -> ?x unpack (;
+
+
+:: (?f) ?a -> ?f unpack ?a;
+
+
+mapp (?f) ?a (nil)        -> nil;
+mapp (?f) ?a (?h : (nil)) -> (?f unpack ?a ?h) : (nil);
+mapp (?f) ?a (?h : ?t)    -> (?f unpack ?a ?h) : (mapp (?f) ?a ?t);
+
+
+map (?f) (nil)      -> nil;
+map (?f) (?h : nil) -> (?f ?h) : (nil);
+map (?f) (?h : ?t)  -> (?f ?h) : (map (?f) ?t);
+
+
+product ?x -> fold (mul) 1 ?x;
+
+
+factorial2 ?x -> product (range 1 ?x);
+
+
+contains ?x (nil)     -> false;
+contains ?x (?x : ?t) -> true;
+contains ?x (?h : ?t) -> contains ?x ?t;
+
+
+unique       (nil)     -> nil;
+unique false (?h : ?t) -> ?h : (unique ?t);
+unique true  (?h : ?t) -> unique ?t;
+unique       (?h : ?t) -> unique contains ?h ?t (?h : ?t);
+
+
+length (nil)     -> 0;
+length (?h : ?t) -> s (length ?t);
+
+
+zipWith (?f) (nil)       (nil)       -> nil;
+zipWith (?f) (?h : ?t)   (nil)       -> nil;
+zipWith (?f) (nil)       (?h : ?t)   -> nil;
+zipWith (?f) (?h1 : ?t1) (?h2 : ?t2) -> (?f ?h1 ?h2) : (zipWith (?f) ?t1 ?t2);
+
+
+evens ?x -> zipWith (add) (range (0) ?x) (range (0) ?x);
+
+
+not (not ?x) -> ?x;
+not true     -> false;
+not false    -> true;
+
+
+any ?x -> contains true ?x;
+
+
+all ?x -> not contains false ?x;
+
+
+none ?x -> not any ?x;
+
+
+add1 ?x -> add ?x 1;
+
+
+square ?x -> ?x * ?x;
+
+
+reduce (s ?x)    -> s (reduce ?x);
+reduce (0)       -> (0);
+reduce (?h : ?t) -> ?h : (reduce ?t);
+reduce (nil)     -> nil;</pre>
+
+<ul>
+	<li><a href='https://wryl.tech/' target='_blank'>wryl</a>, Immediate Mode Technologies(as of 2019).</li>
+</ul><ul></ul></main>
+<footer><a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.svg" alt="CreativeCommons"/></a><a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a><a href="https://merveilles.town/@neauoire" rel="me" target="_blank"><img src="../media/icon/merveilles.svg" alt="Merveilles"/></a><a href="ethics.html"><img src="../media/icon/dreipfeile.svg" alt="NoNazis!"/></a><a href="uxn.html"><img src="../media/icon/uxn.svg" alt="UxnPowered"/></a><span><a href="devine_lu_linvega.html">Devine Lu Linvega</a> &copy; 2023 &mdash; <a href="about.html#license">BY-NC-SA 4.0</a></span></footer>
+</body></html>
