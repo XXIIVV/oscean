@@ -80,14 +80,14 @@ _*::=*_Y
 </ul>
 <h2>Modal is a matrioshka language based on pattern-matching to rewrite trees.</h2>
 
-<p>All Modal code is represented as a series of rules, formatted as tokens delimited with parenthesis, applied to a given tree which gets continually modified until no rules match any given part of the tree. </p>
+<p>All Modal code is represented as a series of rules, formatted as tokens delimited with delimiters, applied to a given tree which gets continually modified until no rules match any given part of the tree. </p>
 
 <p>Rules are made of:</p>
 
 <ul>
 	<li><a href='#tokens'>Tokens</a>: foo, bar, baz</li>
 	<li><a href='#variables'>Variables</a>: ?foo, ?bar, ?baz</li>
-	<li><a href='#sequences'>Sequences</a>: (foo bar baz), (foo ?bar baz), foo (bar (baz))</li>         
+	<li><a href='#sequences'>Sequences</a>: (foo bar baz), (foo ?bar [baz]), foo {bar (baz)}</li>         
 </ul>
 
 <h3 id='tokens'>Tokens</h3>
@@ -120,19 +120,19 @@ corresponding tokens/sequences in said tree.</p>
 
 <h3 id='sequences'>Sequences</h3>
 
-<p>Modal operates beyond programming paradigms, it can be shaped to mimic an other programming language syntax or style. Any choice made in regard to syntax beyond this point is completely arbitrary. To demonstrate, we'll define a comment syntax and a new define syntax:</p>
+<p>Modal operates beyond programming paradigms, it can be shaped to mimic an other programming language syntax or style. Any choice made in regard to syntax beyond this point is completely arbitrary. To demonstrate, we'll define a comment syntax and a new define syntax, notice how we use curlies for the right-side, delimiters are interchangeable:</p>
 
 <pre>
-<b>define</b> (;; ?x) ()
+<b>define</b> (;; ?x) {}
 ;; (this is a comment)
-<b>define</b> (?x -> ?y) (define ?x ?y)
-(swap ?x ?y) -> (?y ?x)
+<b>define</b> (?x -> ?y) {define ?x ?y}
+(swap ?x ?y) -> {?y ?x}
 
 ::> swap fox rat
 rat fox
 </pre>
 
-<p>To generate a list of numbers counting down from 10 to zero, in the prefix notation, we can define these three rules, notice how we use curlies for the right-side, delimiters are interchangeable:</p>
+<p>To generate a list of numbers counting down from 10 to zero, in the prefix notation, we can define these three rules:</p>
 
 <pre>
 <b>define</b> (0 range) {0}
@@ -142,6 +142,15 @@ rat fox
 ::> (10 range)
 (10 9 8 7 6 5 4 3 2 1 0)
 </pre>
+
+<p>Recursion in string-rewriting, is emulated with multiple rules:</p>
+
+<pre>
+<b>define</b> (factorial (1)) (1)
+<b>define</b> (factorial (?n)) (?n * (factorial (?n - 1)))
+
+::> factorial (5)
+120</pre>
 
 <h3>Logic</h3>
 
