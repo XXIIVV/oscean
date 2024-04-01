@@ -4,12 +4,12 @@
 <title>XXIIVV &mdash; modal</title></head><body>
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
 
-<nav><ul><li><a href="assembly.html">assembly</a></li><li><a href="concatenative.html">concatenative</a></li><li><a href="applicative.html">applicative</a></li><li><a href="flow-based.html">flow-based</a></li><li><a href="imperative.html">imperative</a></li><li><a href="rewriting.html" class="parent">rewriting</a></li><li><a href="esoteric.html">esoteric</a></li></ul><ul><li><a href="thue.html">thue</a></li><li><a href="modal.html" class="self">modal</a></li></ul><ul></ul></nav>
-<main><h2>Modal is a programming language based on pattern-matching to rewrite trees.</h2>
+<nav><ul><li><a href="assembly.html">assembly</a></li><li><a href="concatenative.html">concatenative</a></li><li><a href="applicative.html">applicative</a></li><li><a href="flow-based.html">flow-based</a></li><li><a href="imperative.html">imperative</a></li><li><a href="matrioshka.html" class="parent">matrioshka</a></li><li><a href="esoteric.html">esoteric</a></li></ul><ul><li><a href="thue.html">thue</a></li><li><a href="modal.html" class="self">modal</a></li></ul><ul></ul></nav>
+<main><h2>Modal is a matrioshka language based on pattern-matching to rewrite trees.</h2>
 
-<p>All Modal code is represented as a series of rules applied to a given tree, formatted textually as tokens delimited with parenthesis, which gets continually modified until no rules match any given part of the tree.</p>
+<p>All Modal code is represented as a series of rules, formatted as tokens delimited with parenthesis, applied to a given tree which gets continually modified until no rules match any given part of the tree. </p>
 
-<p>A pattern/replacement can be:</p>
+<p>Rules are made of:</p>
 
 <ul>
 	<li><a href='#tokens'>Tokens</a>: foo, bar, baz</li>
@@ -22,8 +22,8 @@
 <p>To define a rule, we use the <b>define</b> keyword, followed by the two arguments to replace:</p>
 
 <pre><b>define</b> hello bye
-::> hello world
 
+::> hello world
 bye world</pre>
 
 <h3 id='variables'>Variables</h3>
@@ -32,154 +32,90 @@ bye world</pre>
 a pattern.</p>
 
 <pre><b>define</b> (copy ?a) (?a ?a)
-::> (copy foo)
 
-(foo foo)</pre>
+::> (copy cat)
+(cat cat)</pre>
 
 <p>When a variable is used in a pattern, and when we try
 to match a given tree with a pattern, any variables are bound to their
 corresponding tokens/sequences in said tree.</p>
 
 <pre><b>define</b> (swap ?x ?y) (?y ?x)
-::> (swap foo bar)
 
-(bar foo)</pre>
+::> (swap fox rat)
+(rat fox)</pre>
 
 <h3 id='sequences'>Sequences</h3>
 
-<p>For example, consider the following:</p>
-
-<pre>define (square ?x) (?x * ?x)
-</pre>
-<p>This defines a rule with the pattern `square ?x`. Let's try to
-apply this pattern to a given tree.</p>
+<p>Modal operates beyond programming paradigms, it can be shaped to mimic an other programming language syntax or style. Any choice made in regard to syntax beyond this point is completely arbitrary. To demonstrate, we'll define a comment syntax and a new define syntax:</p>
 
 <pre>
-square (square (25))
-</pre>
-<p>Upon feeding this particular tree to Modal, Modal will run through
-the list of rules that have been defined and try to match each rule's pattern
-with the tree. Modal will crawl along the tree using a hybrid of depth-first
-and breadth-first search. When Modal tries to apply the rule to the above tree,
-the variable...</p>
+<b>define</b> (;; ?x) ()
+;; (this is a comment)
+<b>define</b> (?x -> ?y) (define ?x ?y)
+(swap ?x ?y) -> (?y ?x)
 
-<pre>
-?x
+::> swap fox rat
+rat fox
 </pre>
 
-<p>...is bound, and it now has the value...</p>
-<pre>
-(square (25))
-</pre>
-<p>From here, now that Modal has found a match, it eliminates part of the
-tree that it matched and replaces it with the right-hand side of a given rule.
-If the above rule is applied, we end up with a new tree:</p>
-<pre>
-(square (25)) * (square (25))
-</pre>
-<p>From here, we run through our defined rules once more, and we end up with
-the following tree:</p>
-<pre>
-((25) * (25)) * ((25) * (25))
-</pre>
-<p>This is then further reduced using built-in operations. I encourage you to
-try it for yourself. Modal always works on a single global tree, and patterns
-are applied to various points in that tree. Modal traverses the tree by storing
-its textual form in a queue, and at any given moment, Modal tries to match the
-head of that queue with a rule from its supplied ruleset.</p>
-
-<p>Q: How do I write common structures, like loops, conditional statements, etc.?<br />
-A: Loops map to recursive patterns, and because Modal has a "loose" syntax,
-   you can write your own control flow structures.</p>
-<pre>
-Let's go through an example.
-
-define (if      (true)  ?branch)      (?branch)
-define (if      (false) ?branch)      ()
-define (if/else (true)  ?true ?false) (?true)
-define (if/else (false) ?true ?false) (?false)
-</pre>
-<p>The above patterns define both a single and double branch expression.
-The latter is an example of a ternary statement, where the 'else' branch is
-always required. These two control structures can be combined with boolean
-operations, as defined below.</p>
-<pre>
-define ((true)  and (true))  (true)
-define ((true)  and (false)) (false)
-define ((false) and (true))  (false)
-define ((false) and (false)) (false)
-
-define ((true)  or (true))  (true)
-define ((true)  or (false)) (true)
-define ((false) or (true))  (true)
-define ((false) or (false)) (false)
-
-define (not (true))  (false)
-define (not (false)) (true)
-</pre>
-<p>The above defines truth tables for conditional statements. We can use
-these in conjunction with if and if/else to form arbitrarily nested conditions.</p>
-<pre>
-if (
-        if/else (
-                    (true) and ((false) or (true))
-                )
-                (
-                    not (true)
-                )
-                (
-                    not (false)
-                )
-   )
-   (
-        (true) and (true)
-   )
-</pre>
-<p>Here's the above, in a more compact form.</p>
-<pre>
-if
-    (if/else
-        ((true) and ((false) or (true)))
-        (not (true))
-        (not (false)))
-    ((true) and (true))
-</pre>
-<p>However, there's a problem. Due to Modal's queue-based execution,
-if the condition for if and if/else isn't fully reduced to 'true' or 'false',
-Modal skips over it entirely and evaluates the branches. This leads to some
-unexpected behavior, as you end up performing unneeded calculations and
-selecting between them at a later point.</p>
-<p>It's possible to circumvent this. By defining multiple patterns,
-you can use Modal's pattern matching features to perform conditional checks.
-Let's try to define the factorial pattern using this method.</p>
-<pre>
-define (factorial (num 1)) (num 1)
-define (factorial (num ?x))  ((num ?x) * (factorial ((num ?x) - (1))))
-</pre>
-<p>Here, we've written two possible branches for our factorial pattern
-in the form of two rules. Since Modal will always use rules defined prior
-in the ruleset, we can organize rules according to priority, such that
-earlier rules match prior to later ones. This allows us to write
-complex conditionals that would otherwise be impossible to write properly.</p>
-
-<p>I hope this has inspired you to give Modal a try. This was a small
-taste of what Modal has to offer. Modal's prelude (prelude.modal) includes
-a lot of built-in rules that you can use when writing code. It also includes
-some examples of custom syntax.</p>
-
-<h3>Adding block comment syntax</h3>
-
-<p>Like everything else, comments can be implemented as rules that remove a length of characters. For example <code>/* This is a comment. */</code>.</p>
+<p>To generate a list of numbers counting down from 10:</p>
 
 <pre>
-(/* ?x) -> (/*)
-(?x */) -> (*/)
-(/* */) -> ()
+<b>define</b> (0 range) {}
+<b>define</b> (?n range) {?n ?n - 1 range}
+::> (10 range)
+
+(10 9 8 7 6 5 4 3 2 1)
 </pre>
+
+<h3>Logic</h3>
+
+<p>Let us build a logic system, starting by comparing two things, notice how we use curlies for the right-side, delimiters are interchangeable:</p>
+
+<pre>
+<b>define</b> (eq ?x ?x) {#t}
+<b>define</b> (eq ?x ?y) {#f}
+
+::> eq fox owl
+#f</pre>
+
+<p>Building on the comparison rule above, we can write conditionals: </p>
+<pre>
+<b>define</b> (if (#t) ?branch) {?branch}
+<b>define</b> (if (#f) ?branch) {}
+
+::> if (eq bat bat) reached!
+reached!</pre>
+
+<p>We can implement the boolean truth tables by defining each cases:</p>
+
+<pre>
+<b>define</b> (and (#t) (#t)) (#t)
+<b>define</b> (and (#t) (#f)) (#f)
+<b>define</b> (and (#f) (#t)) (#f)
+<b>define</b> (and (#f) (#f)) (#f)
+<b>define</b> (or (#t) (#t)) (#t)
+<b>define</b> (or (#t) (#f)) (#t)
+<b>define</b> (or (#f) (#t)) (#t)
+<b>define</b> (or (#f) (#f)) (#f)
+<b>define</b> (not (#t)) (#f)
+<b>define</b> (not (#f)) (#t)
+
+::> if (or (eq cat bat) (eq fox fox))
+#t</pre>
+
+<p>Going further, we can create a rule that expects a ternary statement: </p>
+<pre>
+<b>define</b> (ifelse (#t) ?t ?f) {?t}
+<b>define</b> (ifelse (#f) ?t ?f) {?f}
+
+::> ifelse (eq cat fox) is-catfox not-catfox
+not-catfox</pre>
 
 <h3>Modal as language definition</h3>
 
-<p>We can use rules to define entire languages, for example, this specifies a small <a href='concatenative.html'>concatenative</a> language:</p>
+<p>We can use rules to define entire languages, for example, this specifies a small <a href='concatenative.html'>concatenative</a> language with a postfix syntax:</p>
 
 <pre>
 define (: ?x ?y ;) (define ?x ?y)
@@ -192,157 +128,11 @@ define (: ?x ?y ;) (define ?x ?y)
 10 square
 </pre>
 
-<h3>Prelude</h3>
 
-<pre>
-1 -> (s (0));
 
+<!--
 
-neg (neg ?x) -> ?x;
-neg (0)      -> 0;
-
-
-add (s ?x) (s ?y) -> s (add ?x (s ?y));
-add (0)    (s ?x) -> s ?x;
-add (s ?x) (0)    -> s ?x;
-add (0)    (0)    -> 0;
-
-
-?x + ?y + ?z -> (?x + ?y) + ?z;
-
-
-?x + ?y -> add ?x ?y;
-
-
-sub (s ?x) (s ?y) -> sub ?x ?y;
-sub (s ?x) (0)    -> s ?x;
-sub (0)    (s ?x) -> neg (s ?x);
-sub (0)    (0)    -> 0;
-
-
-?x - ?y -> sub ?x ?y;
-
-
-mul (s ?x) (s ?y)  -> (s ?x) + (mul (s ?x) ((s ?y) - 1));
-mul (s ?x) (s (0)) -> s ?x;
-mul (s ?x) (0)     -> 0;
-mul (0)    (s ?x)  -> 0;
-
-
-?x * ?y -> mul ?x ?y;
-
-
-Ensures that a list or a number has been reduced to its normal form. ;
-
-reduced (0)       -> true;
-reduced (nil)     -> true;
-reduced (s ?x)    -> reduced ?x;
-reduced (?h : ?t) -> reduced ?t;
-reduced ?x        -> false;
-
-
-Because there may be conflicts with expressions that
-are currently being reduced, we need to fold over reduced
-lists, i.e ones that have already been fully generated. ;
-
-fold       (?f) ?i ?l           -> fold reduced ?l (?f) ?i ?l;
-fold true  (?f) ?i (nil)        -> ?i;
-fold true  (?f) ?i (?h : (nil)) -> ?f ?i ?h;
-fold true  (?f) ?i (?h : ?t)    -> ?f ?i (fold (?f) ?h ?t);
-fold false (?f) ?i ?l           -> fold (?f) ?i ?l;
-
-
-factorial (s (0)) -> s (0);
-factorial (s ?x)  -> (s ?x) * (factorial ((s ?x) - 1));
-
-
-sum (?h : ?t) -> fold (add) (0) (?h : ?t);
-
-
-range ?x (s (0)) -> ?x : (nil);
-range ?x (s ?y)  -> ?x : (range (?x + 1) ((s ?y) - 1));
-
-
-Disgusting (yet valid) hack for currying.
-We need lambdas. ;
-
-unpack (?h : nil) -> ?h;
-unpack (?h : ?t)  -> ?h unpack ?t;
-unpack (?x)       -> ?x;
-unpack (?x .      -> ?x unpack (;
-
-
-:: (?f) ?a -> ?f unpack ?a;
-
-
-mapp (?f) ?a (nil)        -> nil;
-mapp (?f) ?a (?h : (nil)) -> (?f unpack ?a ?h) : (nil);
-mapp (?f) ?a (?h : ?t)    -> (?f unpack ?a ?h) : (mapp (?f) ?a ?t);
-
-
-map (?f) (nil)      -> nil;
-map (?f) (?h : nil) -> (?f ?h) : (nil);
-map (?f) (?h : ?t)  -> (?f ?h) : (map (?f) ?t);
-
-
-product ?x -> fold (mul) 1 ?x;
-
-
-factorial2 ?x -> product (range 1 ?x);
-
-
-contains ?x (nil)     -> false;
-contains ?x (?x : ?t) -> true;
-contains ?x (?h : ?t) -> contains ?x ?t;
-
-
-unique       (nil)     -> nil;
-unique false (?h : ?t) -> ?h : (unique ?t);
-unique true  (?h : ?t) -> unique ?t;
-unique       (?h : ?t) -> unique contains ?h ?t (?h : ?t);
-
-
-length (nil)     -> 0;
-length (?h : ?t) -> s (length ?t);
-
-
-zipWith (?f) (nil)       (nil)       -> nil;
-zipWith (?f) (?h : ?t)   (nil)       -> nil;
-zipWith (?f) (nil)       (?h : ?t)   -> nil;
-zipWith (?f) (?h1 : ?t1) (?h2 : ?t2) -> (?f ?h1 ?h2) : (zipWith (?f) ?t1 ?t2);
-
-
-evens ?x -> zipWith (add) (range (0) ?x) (range (0) ?x);
-
-
-not (not ?x) -> ?x;
-not true     -> false;
-not false    -> true;
-
-
-any ?x -> contains true ?x;
-
-
-all ?x -> not contains false ?x;
-
-
-none ?x -> not any ?x;
-
-
-add1 ?x -> add ?x 1;
-
-
-square ?x -> ?x * ?x;
-
-
-reduce (s ?x)    -> s (reduce ?x);
-reduce (0)       -> (0);
-reduce (?h : ?t) -> ?h : (reduce ?t);
-reduce (nil)     -> nil;
-
-</pre>
-
-<h3>Modal Machine</h3>
+<h3>Modal Architecture</h3>
 <p>There are only a few components to a Modal machine, and every single one of them is a queue of symbols:</p>
 
 <ul>
@@ -351,21 +141,13 @@ reduce (nil)     -> nil;
     <li>A number of "rules" queues, holding strings of the form ?left ?right.</li>
 </ul>
 
+<p>Every "tick" (the underlying circuitry was clockless, so "tick" means global component handshakes), you'd step through the "rules" queues, one by one, and roll both the rule queue and the pattern queue.</p>
 
+<p>Before matching, we enqueue a special symbol (SRT, or "start") to keep track of where we were so we can seek to it on success or failure, resetting the queue state for both the rule and the pattern.</p>
 
-<!--
+<p>If the symbols at the read-head of the pattern queue and the currently selected rule queue are equal, we roll both queues. If they aren't equal, we seek to that special SRT symbol and move on to the next rule.</p>
 
-
-<p>Any queue can be peeked at, enqueued to, dequeued from, and "rolled" (enqueue(dequeue())).
-
-Every "tick" (the underlying circuitry was clockless, so "tick" means global component handshakes), you'd step through the "rules" queues, one by one, and roll both the rule queue and the pattern queue.
-
-Before matching, we enqueue a special symbol (SRT, or "start") to keep track of where we were so we can seek to it on success or failure, resetting the queue state for both the rule and the pattern.
-
-If the symbols at the read-head of the pattern queue and the currently selected rule queue are equal, we roll both queues. If they aren't equal, we seek to that special SRT symbol and move on to the next rule.
-
-If we reach the SRT symbol in the rule queue, we can say the rule has matched. We then enqueue an END symbol to the pattern queue, seek to the SRT symbol in the pattern queue, and then remove everything between SRT and END. Then we remove SRT and END, and enqueue the right-hand side of the rule.
-</p>
+<p>If we reach the SRT symbol in the rule queue, we can say the rule has matched. We then enqueue an END symbol to the pattern queue, seek to the SRT symbol in the pattern queue, and then remove everything between SRT and END. Then we remove SRT and END, and enqueue the right-hand side of the rule.</p>
 
 
 ::> (hello) -> (good bye) hello
