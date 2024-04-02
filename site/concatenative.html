@@ -167,13 +167,62 @@ using the <code>mod</code> word, which returns the modulo of the top two numbers
 
 <img src="../media/refs/swap.png" alt="Swap operation by Leo Brodie">
 
-<h3>Extra operators</h3>
+<h3 id='minforth'>Minimal Forth Architectures</h3>
 
-<table border='1'>
-	<tr><th>Tuck</th><td>SWAP OVER</td></tr>
-</table>
+<p>In <a href='https://leahneukirchen.org/blog/archive/2020/04/brute-forthing-minimal-programs-for-stack-arrangements.html' target='_blank'>The Road Towards A Minimal Forth Architecture</a>, Mikael Patel builds toward a forth from only a handful of arithmetic and stack primitives. Here is an implementation of some of these primitives in <a href='uxntal_macros.html'>Uxntal macros</a>.</p>
 
-<h3>Machine Forth</h3>
+<pre>
+%t! ( v -- ) { .t STZ }
+%t@ ( -- v ) { .t LDZ }
+%r> ( | v -- v ) { STHr }
+%>r ( v -- | v ) { STH }
+%1+ ( x -- x+1 ) { INC }
+%0= ( x -- flag ) { #00 EQU }
+%nand ( x y -- z ) { AND #ff EOR }
+%exit ( -- ) { BRK }
+%minint { #80 }
+
+%drop ( v -- ) { t! }
+%dup ( v -- vv ) { t! t@ t@ }
+%swap ( ab -- ba ) { t! >r t@ r> }
+%nip ( ab -- b ) { >r t! r> }
+%over ( ab -- aba ) { >r t! t@ r> t@ }
+%tuck ( ab -- bab ) { t! >r t@ r> t@ }
+%rot ( abc -- bca ) { >r >r t! r> r> t@ }
+%2swap ( abcd -- cdab ) { >r t! >r >r t@ r> r> r> t! >r >r t@ r> r> }
+%2dup ( ab -- abab ) { t! t@ t@ >r >r t! t@ r> t@ r> }
+%2over ( abcd -- abcdab ) { >r >r 2dup r> r> 2swap }
+%2drop ( ab -- ) { t! t! }
+%3rev ( abc -- cba ) { t! >r t@ >r t! r> r> t@ }
+%4rev ( abcd -- dcba ) { t! >r t@ >r t! r> r> t@ >r >r >r t! r> r> r> t@ }
+%third ( abcd -- abca ) { >r >r t! t@ r> r> t@ }
+%fourth ( abcd -- abcda ) { >r >r >r t! t@ r> r> r> t@ }
+%3dup ( abc -- abcabc ) { third third third }
+
+%not ( a -- b ) { dup nand }
+%and ( a b -- c ) { nand not }
+%or ( a b -- c ) { not swap not nand }
+%xor ( a b -- c ) { over over not nand >r swap not nand r> nand }
+
+%r@ ( | x -- x | x ) { r> r> dup >r swap >r }
+%1- ( x -- y ) { not 1+ not }
+%2+ ( x -- y ) { 1+ 1+ }
+%2- ( x -- y ) { not 2+ not }
+%negate ( x -- y ) { not 1+ }
+%boolean ( x -- flag ) { 0= 0= }
+%0< ( x -- flag ) { minint and boolean }
+%0> ( x -- flag ) { dup 0< swap 0= or not }
+%sub ( x y -- z ) { negate ADD } ( bypass )
+%equal ( x y -- flag ) { sub 0= }
+%lesser ( x y -- flag ) { sub 0< }
+%greater ( x y -- flag ) { sub 0> }
+
+|000 @t $1
+|100
+	#06 2-
+	#010e DEO
+BRK
+</pre>
 
 <p>Chuck Moore also uses a pared down Forth for his custom minimal-instruction set processors. They are an inspiration for designing other minimal languages. For example, his latest designs have five-bit instructions, for 32 possible opcodes:</p>
 
