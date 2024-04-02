@@ -104,14 +104,27 @@ its meaning, here is the full list:</p>
 	<tr><td><code>!</code></td><td>jmi</td><td><code>?</code></td><td>jci</td></tr>
 </table><h2>Using inline functions in Uxntal.</h2>
 
-<p>Macros in Uxntal need to be defined before their usage, and are defined as follow: </p>
+<p>A macro is a way of defining inline routines, it needs to be defined before its usage as follow: </p>
 
 <pre>
-%square ( x* -- x* ) {
-	DUP2 MUL2
+%modulo ( num denum -- res ) {
+	DIVk MUL SUB
 }
+
+@routine ( -- c* )
+	#18 #03 modulo
+	JMP2r
 </pre>
-<h2>Using and defining data structures in Uxntal.</h2>
+
+<p>In the previous example, the token <kbd>modulo</kbd> will get replaced by the body of the macro during assembly:</p>
+
+<pre>
+@routine ( -- c* )
+	#18 #03 DIVk MUL SUB
+	JMP2r
+</pre>
+
+<p><b>Note:</b> A macro does not have a <a href='uxntal_scope.html'>scope</a>, so it may not contain sublabels if the macro is to be used multiple time within a single parent label, <a href='uxntal_lambdas.html'>lambdas</a> are immune to this limitation.</p><h2>Using and defining data structures in Uxntal.</h2>
 
 <p><b>Enums</b> are labels with unique values that can be used as constants in a
 program, they begin by rolling back the program address with
