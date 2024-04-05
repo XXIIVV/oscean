@@ -13,58 +13,67 @@
 
 <ul>
 	<li><a href='#tokens'>Tokens</a>: foo, bar</li>
-	<li><a href='#variables'>Variables</a>: ?foo, ?bar</li>
-	<li><a href='#sequences'>Sequences</a>: (foo ?bar [baz]), foo {bar (baz)}</li>         
+	<li><a href='#registers'>Registers</a>: ?foo, ?bar</li>
+	<li><a href='#sequences'>Sequences</a>: (foo ?bar (baz)), foo (bar (baz))</li>         
 </ul>
 
 <h3 id='tokens'>Tokens</h3>
 
-<p>To define a rule, we use the <b>define</b> keyword, followed by the two arguments to replace:</p>
+<p>To define a rule, we start a line with <kbd>&lt;&gt;</kbd>, followed by a <i>left</i> and <i>right</i> sequence:</p>
 
-<pre><b>define</b> hello bye
+<pre><b>&lt;&gt;</b> hello bye
 
-::> hello world
-bye world</pre>
+.. hello world
+00 bye world</pre>
 
-<h3 id='variables'>Variables</h3>
+<h3 id='registers'>Registers</h3>
 
-<p>A replacement can only use variables that have been used in
-a pattern.</p>
+<p>Registers can hold an address in a pattern and be used in rules during rewriting:</p>
 
-<pre><b>define</b> (copy ?a) (?a ?a)
+<pre><b>&lt;&gt;</b> (copy ?a) (?a ?a)
 
-::> (copy cat)
-(cat cat)</pre>
+.. copy cat
+00 cat cat</pre>
 
-<p>When a variable is used in a pattern, and when we try
-to match a given tree with a pattern, any variables are bound to their
-corresponding tokens/sequences in said tree.</p>
+<p>When a register is used in a pattern, and when we try
+to match a given tree with a pattern, each register is bound to a
+corresponding an address and referenced in either side of a rule:</p>
 
-<pre><b>define</b> (swap ?x ?y) (?y ?x)
+<pre><b>&lt;&gt;</b> (swap ?x ?y) (?y ?x)
 
-::> (swap fox rat)
-(rat fox)</pre>
+.. (swap fox rat)
+00 (rat fox)</pre>
+
+<p>A register cannot be reassigned during rewriting, it is treated as an equality check:</p>
+
+<pre><b>&lt;&gt;</b> (?x ?x) same
+
+.. (fox fox)
+00 (same)
+</pre>
 
 <h3 id='sequences'>Sequences</h3>
 
-<p>This allow programs to mimic other programming languages. Any choice made in regard to syntax beyond this point is completely arbitrary. To demonstrate, the following code defines a comment syntax and a new definition syntax, notice how we use curlies for the right-side, delimiters are interchangeable:</p>
+<p>This allow programs to mimic other programming languages. Any choice made in regard to syntax beyond this point is completely arbitrary. To demonstrate, the following code defines a concatenative syntax:</p>
 
 <pre>
-<b>define</b> (;; ?x) {}
-;; (this is a comment)
-<b>define</b> (?x -> ?y) {define ?x ?y}
-(swap ?x ?y) -> {?y ?x}
+<b>&lt;&gt;</b> (?x dup) (?x ?x)
+<b>&lt;&gt;</b> (?x ?y swap) (?y ?x)
+<b>&lt;&gt;</b> ( ?x pop) ()
 
-::> swap fox rat
-rat fox
+.. (1 2 3) (4 5 6) swap pop dup
+01 (4 5 6) (1 2 3) pop dup
+02 (4 5 6) dup
+00 (4 5 6) (4 5 6)
 </pre>
 
+<!--
 <p>To generate a list of numbers counting down from 10 to zero, in the prefix notation, we can define these three rules:</p>
 
 <pre>
-<b>define</b> (0 range) {0}
-<b>define</b> (?n range) {?n ?n - 1 range}
-<b>define</b> (range ?n) {?n range}
+<b>&lt;&gt;</b> (0 range) {0}
+<b>&lt;&gt;</b> (?n range) {?n ?n - 1 range}
+<b>&lt;&gt;</b> (range ?n) {?n range}
 
 ::> (10 range)
 (10 9 8 7 6 5 4 3 2 1 0)
@@ -73,66 +82,74 @@ rat fox
 <p>Recursion in string-rewriting, is emulated with multiple rules:</p>
 
 <pre>
-<b>define</b> (factorial (1)) (1)
-<b>define</b> (factorial (?n)) (?n * (factorial (?n - 1)))
+<b>&lt;&gt;</b> (factorial (1)) (1)
+<b>&lt;&gt;</b> (factorial (?n)) (?n * (factorial (?n - 1)))
 
 ::> factorial (5)
 120</pre>
 
+-->
 <h3>Logic</h3>
 
-<p>Let us build a logic system, starting by comparing two variables:</p>
+<p>Let us build a logic system, starting by comparing two registers:</p>
 
 <pre>
-<b>define</b> (eq ?x ?x) {#t}
-<b>define</b> (eq ?x ?y) {#f}
+<b>&lt;&gt;</b> (eq ?x ?x) (#t)
+<b>&lt;&gt;</b> (eq ?x ?y) (#f)
 
-::> eq fox owl
-#f</pre>
-
-<p>Building on the comparison rule above, we can write conditionals: </p>
-<pre>
-<b>define</b> (if (#t) ?branch) {?branch}
-<b>define</b> (if (#f) ?branch) {}
-
-::> if (eq bat bat) reached!
-reached!</pre>
+.. (eq fox bat)
+01 (#f)
+</pre>
 
 <p>We can implement the truth tables by defining each case:</p>
 
 <pre>
-<b>define</b> (and (#t) (#t)) {#t}
-<b>define</b> (and (#t) (#f)) {#f}
-<b>define</b> (and (#f) (#t)) {#f}
-<b>define</b> (and (#f) (#f)) {#f}
-<b>define</b> (or (#t) (#t)) {#t}
-<b>define</b> (or (#t) (#f)) {#t}
-<b>define</b> (or (#f) (#t)) {#t}
-<b>define</b> (or (#f) (#f)) {#f}
-<b>define</b> (not (#t)) {#f}
-<b>define</b> (not (#f)) {#t}
+<b>&lt;&gt;</b> (and (#t) (#t)) (#t)
+<b>&lt;&gt;</b> (and (#t) (#f)) (#f)
+<b>&lt;&gt;</b> (and (#f) (#t)) (#f)
+<b>&lt;&gt;</b> (and (#f) (#f)) (#f)
+<b>&lt;&gt;</b> (or (#t) (#t)) (#t)
+<b>&lt;&gt;</b> (or (#t) (#f)) (#t)
+<b>&lt;&gt;</b> (or (#f) (#t)) (#t)
+<b>&lt;&gt;</b> (or (#f) (#f)) (#t)
+<b>&lt;&gt;</b> (not (#t)) (#f)
+<b>&lt;&gt;</b> (not (#f)) (#t)
 
-::> or (eq cat bat) (eq fox fox)
-#t</pre>
+.. (or (eq cat bat) (eq fox fox))
+11 (or (#f) (eq fox fox))
+10 (or (#f) (#t))
+06 (#t)
+</pre>
+
+<p>Building on the comparison rule above, we can write conditionals: </p>
+<pre>
+<b>&lt;&gt;</b> (if (#t) ?b) (?b)
+<b>&lt;&gt;</b> (if (#f) ?b) ()
+
+.. (if (eq bat bat) reached!)
+02 (if (#t) reached!)
+00 (reached!)
+</pre>
 
 <p>Going further, we can create a rule that expects a ternary statement: </p>
 <pre>
-<b>define</b> (ifelse (#t) ?t ?f) {?t}
-<b>define</b> (ifelse (#f) ?t ?f) {?f}
+<b>&lt;&gt;</b> (ifelse (#t) ?t ?f) (?t)
+<b>&lt;&gt;</b> (ifelse (#f) ?t ?f) (?f)
 
-::> ifelse (eq cat fox) is-catfox not-catfox
-not-catfox</pre>
+.. (ifelse (eq cat fox) on-equal on-unequal)
+03 (ifelse (#f) on-equal on-unequal)
+01 (on-unequal)
+</pre>
 
 <h3 id='types'>Type Systems</h3>
 
 <p>Creating a type system is merely a matter of creating stricter rules expecting a specific grammar, for example: </p>
 
 <pre>
-<b>define</b> (+ (Int ?x) (Int ?y)) (Int ?x + ?y)
-<b>define</b> (print-int (Int ?x)) (?x)
+<b>&lt;&gt;</b> (join (String ?x) (String ?y)) (?x ?y)
 
-::> (print-int (+ (Int 12) (Int 34)))
-(46)
+.. (join (String hello) (String world)) (join foo bar)
+00 (hello world) (join foo bar)
 </pre>
 
 <h3>Mimics</h3>
@@ -140,7 +157,7 @@ not-catfox</pre>
 <p>We can use rules to define entire languages, for example, this specifies a small <a href='concatenative.html'>concatenative</a> language with a postfix syntax:</p>
 
 <pre>
-<b>define</b> (: ?x ?y ;) {define ?x ?y}
+<b>&lt;&gt;</b> (: ?x ?y ;) {define ?x ?y}
 : (?x dup) {?x ?x} ;
 : (?x ?y swap) {?y ?x} ;
 : (?x ?y over) {?x ?y ?x} ;
@@ -154,7 +171,7 @@ not-catfox</pre>
 <p>Or, a sort of <a href='lisp.html'>lisp</a>.</p>
 
 <pre>
-<b>define</b> (defun ?id ?res) (define ?id ?res)
+<b>&lt;&gt;</b> (defun ?id ?res) (define ?id ?res)
 (defun (sub ?x ?y) (?x + ?y))
 (defun (mul ?x ?y) (?x * ?y))
 (defun (not ?x) (0 - ?x))
@@ -167,7 +184,7 @@ not-catfox</pre>
 <p>Or, even <a href='logic.html'>combinatory logic</a>.</p>
 
 <pre>
-<b>define</b> (?x -> ?y) {define ?x ?y}
+<b>&lt;&gt;</b> (?x -> ?y) {define ?x ?y}
 (M ?x) -> (?x ?x)
 (KI ?x ?y) -> (?y)
 (T ?x ?y) -> (?y ?y)
@@ -182,58 +199,24 @@ not-catfox</pre>
 x z
 </pre>
 
+<h3>Implementation</h3>
 
-<!--
-
-<h3>Modal Architecture</h3>
-<p>There are only a few components to a Modal machine, and every single one of them is a queue of symbols:</p>
+<div class='codeview'>
+	<iframe src='../etc/modal.c.txt'></iframe>
+	<pre>cc modal.c -o modal <a href='../etc/modal.c.txt' target='_blank'>view raw</a></pre>
+</div>
 
 <ul>
-    <li>The pattern queue, holding the string-under-rewrite. This is your "main memory".</li>
-    <li>A number of "register" queues. These are your variables.</li>
-    <li>A number of "rules" queues, holding strings of the form ?left ?right.</li>
-</ul>
-
-<p>Every "tick" (the underlying circuitry was clockless, so "tick" means global component handshakes), you'd step through the "rules" queues, one by one, and roll both the rule queue and the pattern queue.</p>
-
-<p>Before matching, we enqueue a special symbol (SRT, or "start") to keep track of where we were so we can seek to it on success or failure, resetting the queue state for both the rule and the pattern.</p>
-
-<p>If the symbols at the read-head of the pattern queue and the currently selected rule queue are equal, we roll both queues. If they aren't equal, we seek to that special SRT symbol and move on to the next rule.</p>
-
-<p>If we reach the SRT symbol in the rule queue, we can say the rule has matched. We then enqueue an END symbol to the pattern queue, seek to the SRT symbol in the pattern queue, and then remove everything between SRT and END. Then we remove SRT and END, and enqueue the right-hand side of the rule.</p>
-
-
-::> (hello) -> (good bye) hello
-Reducing...
-<>:    ( hello ) -> ( good bye ) hello  
-<>:    hello  define ( hello ) ( good bye )  ::: ?x -> ?y 
-<>:     define ( hello ) ( good bye ) hello 
-<>:    define ( hello ) ( good bye ) hello  
-<>:    hello   ::: define ?left ?right 
-<>:     good bye  ::: hello 
-<>:    good bye  
-<>:    bye  good 
-<>:     good bye 
-
-That's why you see bye good, with a weird space between them. That's the invisible SRT token.
-And that's the interpreter rolling through the pattern queue.
-If you encounter a "register" symbol when evaluating a rule, you extract that delimited string symbol-by-symbol and put it in its corresponding register.
-So (foo ?x ?y) -> (bar ?y ?x) looks like (foo R0 R1) (bar R1 R0) internally.
-Each rule firing clears the registers.
-There are some flaws with this machinery, namely that the register queues must be roughly the same size as the pattern queue if they're going to hold large strings.
-
-One thing I'm removing from the implementation apart from arbitrary symbols is the concept of equality on the LHS of a rule. It's pre-defined/assumed that if you do foo ?x ?x, you want to assert equality instead of rebinding x to a new value.
-
-Means you can do...
-
-(?x == ?x) -> (true)
-(?x == ?y) -> (false)
-
--->
-<ul>
-	<li><a href='https://git.sr.ht/~rabbits/modal' target='_blank'>sources</a>, python.</li>
+	<li><a href='https://git.sr.ht/~rabbits/modal' target='_blank'>view sources</a>, ANSI C.</li>
 	<li><a href='https://discord.gg/9e7vaVTSVs' target='_blank'>discord channel</a>, in the concatenative server.</li>
 	<li>Original creation of <a href='https://wryl.tech/' target='_blank'>wryl</a>.</li>
-</ul><ul></ul></main>
+</ul>
+
+<style>
+	div.codeview { background:#eee; border:2px solid black; border-radius:4px }
+	div.codeview iframe { height:405px; border:0; margin:0; display:block }
+	div.codeview pre { margin:0; background:#000; color:#fff }
+	div.codeview pre a { float:right; color:#72dec2; text-decoration:none }
+</style><ul></ul></main>
 <footer><a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.svg" alt="CreativeCommons"/></a><a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a><a href="https://merveilles.town/@neauoire" rel="me" target="_blank"><img src="../media/icon/merveilles.svg" alt="Merveilles"/></a><a href="ethics.html"><img src="../media/icon/dreipfeile.svg" alt="NoNazis!"/></a><a href="uxn.html"><img src="../media/icon/uxn.svg" alt="UxnPowered"/></a><span><a href="devine_lu_linvega.html">Devine Lu Linvega</a> &copy; 2023 &mdash; <a href="about.html#license">BY-NC-SA 4.0</a></span></footer>
 </body></html>

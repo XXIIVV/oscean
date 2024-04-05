@@ -149,7 +149,8 @@ walkfile(FILE *f, Context *ctx)
 		else
 			return error_asm("Token too long");
 	}
-	return 1;
+	*cptr++ = 0;
+	return parse(token, f, ctx);
 }
 
 static char *
@@ -303,7 +304,7 @@ parse(char *w, FILE *f, Context *ctx)
 	case '@': return makelabel(w + 1, 1, ctx);
 	case '&': return makelabel(w, 0, ctx);
 	case '}': return makelabel(makelambda(lambda_stack[--lambda_ptr]), 0, ctx);
-	case '#': return ishex(w + 1) && writehex(w, ctx);
+	case '#': return writehex(w, ctx);
 	case '_': return makeref(w + 1, w[0], ptr) && writebyte(0xff, ctx);
 	case ',': return makeref(w + 1, w[0], ptr + 1) && writebyte(findopcode("LIT"), ctx) && writebyte(0xff, ctx);
 	case '-': return makeref(w + 1, w[0], ptr) && writebyte(0xff, ctx);
@@ -403,7 +404,7 @@ main(int argc, char *argv[])
 {
 	ptr = PAGE;
 	copy("on-reset", scope, 0);
-	if(argc == 2 && scmp(argv[1], "-v", 2)) return !printf("Uxnasm - Uxntal Assembler, 2 Apr 2024.\n");
+	if(argc == 2 && scmp(argv[1], "-v", 2)) return !printf("Uxnasm - Uxntal Assembler, 3 Apr 2024.\n");
 	if(argc != 3) return error_top("usage", "uxnasm [-v] input.tal output.rom");
 	if(!assemble(argv[1])) return 1;
 	if(!resolve(argv[2])) return 1;

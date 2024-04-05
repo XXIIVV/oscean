@@ -1,0 +1,211 @@
+#include <stdio.h>
+
+typedef struct {
+	char *a, *b;
+} Rule;
+
+static int rules_len;
+static Rule rules[0x100];
+static char dict[0x8000], *dict_ = dict;
+static char prog[0x1000], *prog_ = prog;
+static char outp[0x1000], *outp_ = outp;
+static char *regs[0x100];
+
+#define spacer(c) (c == ' ' || c == '(' || c == ')')
+
+static char *
+walk(char *s)
+{
+	char c;
+	int depth = 0;
+	if(s[0] == '(') {
+		while((c = *s++)) {
+			if(c == '(') depth++;
+			if(c == ')') --depth;
+			if(!depth) return s;
+		}
+	}
+	while(!spacer(s[0]) && (c = *s++))
+		;
+	return s;
+}
+
+static int
+compare(char *a, char *b)
+{
+	int i = 0, al = walk(a) - a, bl = walk(b) - b;
+	if(al != bl) return 0;
+	while(a[i] == b[i])
+		if(!a[i] || ++i >= al) return 1;
+	return 0;
+}
+
+static char *
+match(char *p, Rule *r)
+{
+	int i;
+	char c, *a = r->a, *b = p;
+	for(i = 0x21; i < 0x7f; i++)
+		regs[i] = 0;
+	while((c = *a)) {
+		if(c == '?') {
+			int id = (int)*(++a);
+			if(regs[id]) {
+				if(!compare(regs[id], b))
+					return NULL;
+			} else
+				regs[id] = b;
+			a++, b = walk(b), c = *b;
+		}
+		if(!a[0]) return b;
+		if(c != *b) return NULL;
+		a++, b++;
+	}
+	return b;
+}
+
+static void
+writereg(char r)
+{
+	int depth = 0;
+	char c, *s = regs[(int)r];
+	if(s[0] == '(') {
+		while((c = *s++)) {
+			if(c == '(') depth++;
+			*outp_++ = c;
+			if(c == ')') --depth;
+			if(!depth) return;
+		}
+	}
+	while(!spacer(s[0]) && (*outp_++ = *s++))
+		;
+	return;
+}
+
+static void
+save(int rule)
+{
+	int i, end = outp_ - outp;
+	/* todo: change pointer instead of copying memory */
+	for(i = 0; i <= end; i++) prog[i] = outp[i];
+	prog_ = prog, outp_ = outp;
+	printf("%02d %s\n", rule, prog);
+}
+
+static int
+rewrite(void)
+{
+	char c, *p = prog;
+	while((c = *p)) {
+		int i;
+		for(i = 0; i < rules_len; i++) {
+			Rule *r = &rules[i];
+			char *res = match(p, r);
+			if(res != NULL) {
+				char cc, *b = r->b;
+				while((cc = *b++)) {
+					if(cc == '?')
+						writereg(*b++);
+					else
+						*outp_++ = cc;
+				}
+				while((*outp_++ = *res++))
+					;
+				*outp_++ = 0;
+				save(i);
+				return 1;
+			}
+		}
+		*outp_++ = c;
+		p++;
+	}
+	*outp_++ = 0;
+	return 0;
+}
+
+static void
+print_rules(void)
+{
+	int i;
+	for(i = 0; i < rules_len; i++)
+		printf("<> (%s) (%s)\n", rules[i].a, rules[i].b);
+	printf("\n");
+}
+
+static char *
+parse_rulefrag(char *line)
+{
+	int depth = 0;
+	char c, *s = line, *res = dict_;
+	if(s[0] == '(') {
+		while((c = *s++)) {
+			if(c == '(') {
+				depth++;
+				if(depth == 1) continue;
+			}
+			if(c == ')') {
+				--depth;
+				if(!depth) {
+					*dict_++ = 0;
+					return res;
+				}
+			}
+			*dict_++ = c;
+		}
+	}
+	while(!spacer(s[0]) && (*dict_++ = *s++))
+		;
+	*dict_++ = 0;
+	return res;
+}
+
+static int
+parse_line(char *line)
+{
+	if(line[0] == 0) return 1;
+	if(line[0] == '<' && line[1] == '>') {
+		Rule *r = &rules[rules_len++];
+		line += 3;
+		r->a = parse_rulefrag(line);
+		line = walk(line) + 1;
+		r->b = parse_rulefrag(line);
+		return 1;
+	}
+	while((*prog_++ = *line++))
+		;
+	*prog_++ = 0xa;
+	return 1;
+}
+
+static int
+parse(char *path)
+{
+	FILE *f;
+	char c, line[0x400], *line_ = line;
+	if(!(f = fopen(path, "r")))
+		return !printf("Invalid file: %s\n", path);
+	while(f && fread(&c, 1, 1, f)) {
+		if(c == 0xa)
+			*line_++ = 0x00, parse_line(line), line_ = line;
+		else if(line_ - line < 0x400)
+			*line_++ = c;
+	}
+	*line_++ = 0x00, parse_line(line), line_ = line;
+	fclose(f);
+	return 1;
+}
+
+int
+main(int argc, char **argv)
+{
+	if(argc < 2)
+		return !printf("usage: modal [-v] source.modal\n");
+	if(argc < 3 && argv[1][0] == '-' && argv[1][1] == 'v')
+		return !printf("Modal - Modal Interpreter, 4 Apr 2024.\n");
+	parse(argv[1]);
+	print_rules();
+	printf(".. %s\n", prog);
+	while(rewrite())
+		;
+	return 0;
+}
