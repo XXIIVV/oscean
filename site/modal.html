@@ -17,6 +17,8 @@
 	<li><a href='#sequences'>Sequences</a>: (foo ?bar (baz)), foo (bar (baz))</li>         
 </ul>
 
+<q><b>modal</b>(adj.): of, or relating to structure as opposed to substance.</q>
+
 <h3 id='tokens'>Tokens</h3>
 
 <p>To define a rule, we start a line with <kbd>&lt;&gt;</kbd>, followed by a <i>left</i> and <i>right</i> sequence:</p>
@@ -154,49 +156,22 @@ corresponding an address and referenced in either side of a rule:</p>
 
 <h3>Mimics</h3>
 
-<p>We can use rules to define entire languages, for example, this specifies a small <a href='concatenative.html'>concatenative</a> language with a postfix syntax:</p>
+<p>We can use rules to define entire languages, for example, we saw above how this can specify a <a href='concatenative.html'>concatenative</a> language with a postfix syntax. Modal enforces no specific notation, for example, we could easily make a <a href='lisp.html'>lisp</a> or <a href='logic.html'>combinatory logic</a>:</p>
 
 <pre>
-<b>&lt;&gt;</b> (: ?x ?y ;) {define ?x ?y}
-: (?x dup) {?x ?x} ;
-: (?x ?y swap) {?y ?x} ;
-: (?x ?y over) {?x ?y ?x} ;
-: (?x drop) {} ;
-: (?x ?y add) {?x + ?y} ;
+<b>&lt;&gt;</b> (M ?x) (?x ?x)
+<b>&lt;&gt;</b> (KI ?x ?y) (?y)
+<b>&lt;&gt;</b> (T ?x ?y) (?y ?y)
+<b>&lt;&gt;</b> (W ?x ?y) (?x ?y ?y)
+<b>&lt;&gt;</b> (K ?x ?y) (?x)
+<b>&lt;&gt;</b> (C ?x ?y ?z) (?x ?z ?y)
+<b>&lt;&gt;</b> (B ?x ?y ?z) (?x (?y ?z))
+<b>&lt;&gt;</b> (I ?x) (?x)
+<b>&lt;&gt;</b> (S ?x ?y ?z) (?x ?z (?y ?z))
 
-::> 1 2 swap 3 over 4 add
-2 1 3 5
-</pre>
-
-<p>Or, a sort of <a href='lisp.html'>lisp</a>.</p>
-
-<pre>
-<b>&lt;&gt;</b> (defun ?id ?res) (define ?id ?res)
-(defun (sub ?x ?y) (?x + ?y))
-(defun (mul ?x ?y) (?x * ?y))
-(defun (not ?x) (0 - ?x))
-(defun (square ?x) (mul ?x ?x))
-
-::>  (not (mul 2 (square 5)))
-(-50)
-</pre>
-
-<p>Or, even <a href='logic.html'>combinatory logic</a>.</p>
-
-<pre>
-<b>&lt;&gt;</b> (?x -> ?y) {define ?x ?y}
-(M ?x) -> (?x ?x)
-(KI ?x ?y) -> (?y)
-(T ?x ?y) -> (?y ?y)
-(W ?x ?y) -> (?x ?y ?y)
-(K ?x ?y) -> (?x)
-(C ?x ?y ?z) -> (?x ?z ?y)
-(B ?x ?y ?z) -> (?x (?y ?z))
-(I ?x) -> (?x)
-(S ?x ?y ?z) -> (?x ?z (?y ?z))
-
-::> C KI x y z
-x z
+.. C KI x y z
+05 KI y x z
+01 x z
 </pre>
 
 <h3>Implementation</h3>
