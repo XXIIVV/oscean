@@ -36,9 +36,9 @@ static int
 compare(char *a, char *b)
 {
 	int i = 0, al = walk(a) - a, bl = walk(b) - b;
-	if(al != bl) return 0;
-	while(a[i] == b[i])
-		if(!a[i] || ++i >= al) return 1;
+	if(al != bl)
+		while(a[i] == b[i])
+			if(!a[i] || ++i >= al) return 1;
 	return 0;
 }
 
@@ -67,7 +67,7 @@ match(char *p, Rule *r)
 }
 
 static void
-writereg(char r)
+bind(char r)
 {
 	int depth = 0;
 	char c, *s = regs[(int)r];
@@ -125,7 +125,7 @@ rewrite(void)
 				char cc, *b = r->b;
 				while((cc = *b++)) {
 					if(cc == '?')
-						writereg(*b++);
+						bind(*b++);
 					else
 						*outp_++ = cc;
 				}
@@ -179,44 +179,17 @@ parse_rulefrag(char *line)
 	return res;
 }
 
-static int
-parse_line(char *line)
-{
-	char c;
-	if(line[0] == 0) return 1;
-	if(line[0] == '<' && line[1] == '>')
-		return !!addrule(line);
-	while((c = *line++))
-		*prog_++ = c;
-	return 1;
-}
-
-static int
-parse(char *path)
-{
-	FILE *f;
-	char c, line[0x400], *line_ = line;
-	if(!(f = fopen(path, "r")))
-		return !printf("Invalid file: %s\n", path);
-	while(f && fread(&c, 1, 1, f)) {
-		if(c == 0xa)
-			*line_++ = 0x00, parse_line(line), line_ = line;
-		else if(line_ - line < 0x400)
-			*line_++ = c;
-	}
-	*line_++ = 0x00, parse_line(line), line_ = line;
-	fclose(f);
-	return 1;
-}
-
 int
 main(int argc, char **argv)
 {
+	FILE *f;
 	if(argc < 2)
 		return !printf("usage: modal [-v] source.modal\n");
 	if(argc < 3 && argv[1][0] == '-' && argv[1][1] == 'v')
 		return !printf("Modal - Modal Interpreter, 4 Apr 2024.\n");
-	parse(argv[1]);
+	if(!(f = fopen(argv[1], "r")))
+		return !printf("Invalid file: %s\n", argv[1]);
+	fread(&prog, 1, 0x1000, f), fclose(f);
 	print_rules();
 	printf(".. %s\n", prog);
 	while(rewrite())
