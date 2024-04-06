@@ -71,8 +71,7 @@ bind(char r)
 {
 	int depth = 0;
 	char c, *s = regs[(int)r];
-	if(!s)
-		return !printf("!! Reading from invalid register: ?%c\n", r);
+	if(!s) return !printf("?%c Empty\n", r);
 	if(s[0] == '(') {
 		while((c = *s++)) {
 			if(c == '(') depth++;
@@ -93,7 +92,11 @@ save(int rule)
 		prog_ = bank_b, outp_ = bank_a;
 	else
 		prog_ = bank_a, outp_ = bank_b;
-	printf("%02d %s\n", rule, direction ? bank_b : bank_a);
+	if(rule >= 0) {
+		char *program = direction ? bank_b : bank_a;
+		while(program[1] && program[0] < 0x21) program++;
+		printf("%02d %s\n", rule, program);
+	}
 }
 
 static char *
@@ -139,8 +142,13 @@ rewrite(void)
 	char c, *p = direction ? bank_b : bank_a;
 	while((c = *p)) {
 		int i;
-		if(p[0] == '<' && p[1] == '>')
-			p = addrule(p) + 1, c = *p;
+		if(p[0] == '<' && p[1] == '>') {
+			p = addrule(p) + 1;
+			while((*outp_++ = *p++))
+				;
+			save(-1);
+			return 1;
+		}
 		if(p == bank_a || p == bank_b || spacer(*(p - 1))) {
 			for(i = 0; i < rules_len; i++) {
 				Rule *r = &rules[i];
@@ -172,53 +180,25 @@ static void
 print_rules(void)
 {
 	int i;
+	printf("\n");
 	for(i = 0; i < rules_len; i++)
 		printf("<> (%s) (%s)\n", rules[i].a, rules[i].b);
 	printf("\n");
 }
 
-static int
-parse_line(char *line)
-{
-	char c;
-	if(line[0] == 0) return 1;
-	if(line[0] == '<' && line[1] == '>')
-		return !!addrule(line);
-	while((c = *line++))
-		*prog_++ = c;
-	return 1;
-}
-
-static int
-parse(char *path)
-{
-	FILE *f;
-	char c, line[0x400], *line_ = line;
-	if(!(f = fopen(path, "r")))
-		return 0;
-	while(f && fread(&c, 1, 1, f)) {
-		if(c == 0xa)
-			*line_++ = 0x00, parse_line(line), line_ = line;
-		else if(line_ - line < 0x400)
-			*line_++ = c;
-	}
-	*line_++ = 0x00, parse_line(line), line_ = line;
-	fclose(f);
-	return 1;
-}
-
 int
 main(int argc, char **argv)
 {
+	FILE *f;
 	if(argc < 2)
 		return !printf("usage: modal [-v] source.modal\n");
 	if(argc < 3 && argv[1][0] == '-' && argv[1][1] == 'v')
 		return !printf("Modal - Modal Interpreter, 4 Apr 2024.\n");
-	if(!parse(argv[1]))
+	if(!(f = fopen(argv[1], "r")))
 		return !printf("Invalid Modal file: %s.\n", argv[1]);
-	print_rules();
-	printf(".. %s\n", bank_a);
+	fread(bank_a, 1, 0x1000, f), fclose(f);
 	while(rewrite())
 		;
+	print_rules();
 	return 0;
 }
