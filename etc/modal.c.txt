@@ -11,7 +11,7 @@ static char bank_a[0x1000], *prog_ = bank_a;
 static char bank_b[0x1000], *outp_ = bank_b;
 static char *regs[0x100];
 
-#define spacer(c) (c == ' ' || c == '(' || c == ')' || c == 0)
+#define spacer(c) (c < 0x21 || c == '(' || c == ')')
 
 static char *parse_rulefrag(char *line);
 
@@ -36,9 +36,9 @@ static int
 compare(char *a, char *b)
 {
 	int i = 0, al = walk(a) - a, bl = walk(b) - b;
-	if(al != bl) return 0;
-	while(a[i] == b[i])
-		if(!a[i] || ++i >= al) return 1;
+	if(al == bl)
+		while(a[i] == b[i])
+			if(!a[i] || ++i >= al) return 1;
 	return 0;
 }
 
@@ -128,10 +128,8 @@ addrule(char *s)
 {
 	Rule *r = &rules[rules_len++];
 	s += 3;
-	r->a = parse_rulefrag(s);
-	s = walk(s) + 1;
-	r->b = parse_rulefrag(s);
-	s = walk(s);
+	r->a = parse_rulefrag(s), s = walk(s) + 1;
+	r->b = parse_rulefrag(s), s = walk(s);
 	return s;
 }
 
