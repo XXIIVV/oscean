@@ -4,11 +4,11 @@ typedef struct {
 	char *a, *b;
 } Rule;
 
-static int rules_len, direction = 0;
+static int rules_len, direction, queue;
 static Rule rules[0x100];
 static char dict[0x8000], *dict_ = dict;
-static char bank_a[0x1000], *prog_ = bank_a;
-static char bank_b[0x1000], *outp_ = bank_b;
+static char bank_a[0x4000], *prog_ = bank_a;
+static char bank_b[0x4000], *outp_ = bank_b;
 static char *regs[0x100];
 
 #define spacer(c) (c < 0x21 || c == '(' || c == ')')
@@ -42,6 +42,14 @@ compare(char *a, char *b)
 	return 0;
 }
 
+static void
+call(char *s)
+{
+	char *ss = walk(s);
+	if(*s == '(') s++, --ss;
+	while(s < ss) putc(*(s++), stdout);
+}
+
 static char *
 match(char *p, Rule *r)
 {
@@ -55,7 +63,9 @@ match(char *p, Rule *r)
 			if(regs[id]) {
 				if(!compare(regs[id], b))
 					return NULL;
-			} else
+			} else if(id == ':')
+				call(b);
+			else
 				regs[id] = b;
 			a++, b = walk(b), c = *b;
 		}
@@ -67,11 +77,12 @@ match(char *p, Rule *r)
 }
 
 static int
-bind(char r)
+bind(char r, char *incoming)
 {
 	int depth = 0;
 	char c, *s = regs[(int)r];
-	if(!s) return !printf("?%c Empty\n", r);
+	if(r == ':' && incoming != NULL) s = incoming, queue++;
+	if(!s) return !fprintf(stderr, "?%c Empty\n", r);
 	if(s[0] == '(') {
 		while((c = *s++)) {
 			if(c == '(') depth++;
@@ -95,7 +106,7 @@ save(int rule)
 	if(rule >= 0) {
 		char *program = direction ? bank_b : bank_a;
 		while(program[1] && program[0] < 0x21) program++;
-		printf("%02d %s\n", rule, program);
+		fprintf(stderr, "%02d %s\n", rule, program);
 	}
 }
 
@@ -137,7 +148,7 @@ addrule(char *s)
 }
 
 static int
-rewrite(void)
+rewrite(char *incoming)
 {
 	char c, *p = direction ? bank_b : bank_a;
 	while((c = *p)) {
@@ -157,7 +168,7 @@ rewrite(void)
 					char cc, *b = r->b;
 					while((cc = *b++)) {
 						if(cc == '?')
-							bind(*b++);
+							bind(*b++, incoming);
 						else
 							*outp_++ = cc;
 					}
@@ -180,10 +191,10 @@ static void
 print_rules(void)
 {
 	int i;
-	printf("\n");
+	fprintf(stderr, "\n");
 	for(i = 0; i < rules_len; i++)
-		printf("<> (%s) (%s)\n", rules[i].a, rules[i].b);
-	printf("\n");
+		fprintf(stderr, "<> (%s) (%s)\n", rules[i].a, rules[i].b);
+	fprintf(stderr, "\n");
 }
 
 int
@@ -196,8 +207,9 @@ main(int argc, char **argv)
 		return !printf("Modal - Modal Interpreter, 4 Apr 2024.\n");
 	if(!(f = fopen(argv[1], "r")))
 		return !printf("Invalid Modal file: %s.\n", argv[1]);
+	queue = 2;
 	fread(bank_a, 1, 0x1000, f), fclose(f);
-	while(rewrite())
+	while(rewrite(argv[queue]))
 		;
 	print_rules();
 	return 0;
