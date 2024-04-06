@@ -13,6 +13,8 @@ static char *regs[0x100];
 
 #define spacer(c) (c == ' ' || c == '(' || c == ')')
 
+static char *parse_rulefrag(char *line);
+
 static char *
 walk(char *s)
 {
@@ -69,6 +71,10 @@ writereg(char r)
 {
 	int depth = 0;
 	char c, *s = regs[(int)r];
+	if(!s) {
+		printf("!! Reading from invalid register: ?%c\n", r);
+		return;
+	}
 	if(s[0] == '(') {
 		while((c = *s++)) {
 			if(c == '(') depth++;
@@ -92,12 +98,26 @@ save(int rule)
 	printf("%02d %s\n", rule, prog);
 }
 
+static char *
+addrule(char *s)
+{
+	Rule *r = &rules[rules_len++];
+	s += 3;
+	r->a = parse_rulefrag(s);
+	s = walk(s) + 1;
+	r->b = parse_rulefrag(s);
+	s = walk(s);
+	return s;
+}
+
 static int
 rewrite(void)
 {
 	char c, *p = prog;
 	while((c = *p)) {
 		int i;
+		if(p[0] == '<' && p[1] == '>')
+			p = addrule(p) + 1, c = *p;
 		for(i = 0; i < rules_len; i++) {
 			Rule *r = &rules[i];
 			char *res = match(p, r);
@@ -162,18 +182,12 @@ parse_rulefrag(char *line)
 static int
 parse_line(char *line)
 {
+	char c;
 	if(line[0] == 0) return 1;
-	if(line[0] == '<' && line[1] == '>') {
-		Rule *r = &rules[rules_len++];
-		line += 3;
-		r->a = parse_rulefrag(line);
-		line = walk(line) + 1;
-		r->b = parse_rulefrag(line);
-		return 1;
-	}
-	while((*prog_++ = *line++))
-		;
-	*prog_++ = 0xa;
+	if(line[0] == '<' && line[1] == '>')
+		return !!addrule(line);
+	while((c = *line++))
+		*prog_++ = c;
 	return 1;
 }
 
