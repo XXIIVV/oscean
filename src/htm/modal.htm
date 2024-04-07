@@ -64,6 +64,15 @@ corresponding an address and referenced in either side of a rule:</p>
 00 (4 5 6) (4 5 6)
 </pre>
 
+<p>Modal is <a href='https://en.wikipedia.org/wiki/Homoiconicity' target='_blank'>homoiconic</a> similarly to how Lisp languages are, only moreso, as any string is a potential program and new rules can be composed directly during the evaluation:</p>
+
+<pre>
+<b>&lt;&gt;</b> ((eval ?x)) (?x)
+
+(eval (<b>&lt;&gt;</b> (join (?x) (?y)) (?x ?y)))
+(join (foo) (bar))
+</pre>
+
 <h3>Logic</h3>
 
 <p>Let us build a logic system, starting by comparing two registers:</p>
@@ -169,19 +178,35 @@ factorial (s (s (s (s (s (0))))))
 <pre>
 <b>&lt;&gt;</b> ((send ?:)) ()
 
-(send (hello world))
+.. (send (hello world))
 
 <b>> hello world</b>
+</pre>
+
+<p>To create text representation that can be modified natively, we can store them in a similar scheme to the church numerals above, and print them to the console with these recursive rules:</p>
+
+<pre>
+<b>&lt;&gt;</b> (print (?: (?x ?y))) (print (?x ?y))
+<b>&lt;&gt;</b> (print (?:)) ()
+
+.. (print (a (b (c (d (e))))))
+00 (print (b (c (d (e)))))
+00 (print (c (d (e))))
+00 (print (d (e)))
+00 (print (e))
+00 ()
+
+<b>> abcde</b>
 </pre>
 
 <p>To read an incoming string with the <kbd>?:</kbd> special register, and print it out again:</p>
 
 <pre>
 <b>&lt;&gt;</b> ((read)) (?:)
-<b>&lt;&gt;</b>  ((send ?:)) ()
+<b>&lt;&gt;</b> ((send ?:)) ()
 <b>&lt;&gt;</b> (?x ?y catswap) ((?y ?x))
 
-(send (You said: )) (read) send catswap
+.. (send (You said: )) (read) send catswap
 
 <b>> You said: arg1</b>
 </pre>

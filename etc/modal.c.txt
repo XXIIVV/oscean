@@ -137,16 +137,6 @@ parse_rulefrag(char *line)
 	return res;
 }
 
-static char *
-addrule(char *s)
-{
-	Rule *r = &rules[rules_len++];
-	s += 3;
-	r->a = parse_rulefrag(s), s = walk(s) + 1;
-	r->b = parse_rulefrag(s), s = walk(s);
-	return s;
-}
-
 static int
 rewrite(char *incoming)
 {
@@ -154,7 +144,10 @@ rewrite(char *incoming)
 	while((c = *p)) {
 		int i;
 		if(p[0] == '<' && p[1] == '>') {
-			p = addrule(p) + 1;
+			Rule *r = &rules[rules_len++];
+			p += 3;
+			r->a = parse_rulefrag(p), p = walk(p) + 1;
+			r->b = parse_rulefrag(p), p = walk(p);
 			while((*outp_++ = *p++))
 				;
 			save(-1);
