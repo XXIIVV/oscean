@@ -13,8 +13,6 @@ static char *regs[0x100];
 
 #define spacer(c) (c < 0x21 || c == '(' || c == ')')
 
-static char *parse_rulefrag(char *line);
-
 static char *
 walk(char *s)
 {
@@ -27,7 +25,7 @@ walk(char *s)
 			if(!depth) return s;
 		}
 	}
-	while(!spacer(s[0]) && (c = *s++))
+	while(!spacer(s[0]) && *s++)
 		;
 	return s;
 }
@@ -67,23 +65,50 @@ match(char *p, Rule *r)
 				call(b);
 			else
 				regs[id] = b;
-			a++, b = walk(b), c = *b;
+			a++, b = walk(b);
 		}
 		if(!*a && spacer(*b)) return b;
-		if(c != *b) return NULL;
+		if(*a != *b) return NULL;
 		a++, b++;
 	}
 	return spacer(*b) ? b : NULL;
 }
 
+static char *
+plode(char *s)
+{
+	int i, depth = 0;
+	char c;
+	if(s[0] == '(') { /* implode */
+		while((c = *s++)) {
+			if(c == '(') depth++;
+			if(!spacer(c)) *outp_++ = c;
+			if(c == ')') --depth;
+			if(!depth) return s;
+		}
+	} else { /* explode */
+		*outp_++ = *s++, *outp_++ = ' ';
+		while((c = *s++) && !spacer(c)) {
+			*outp_++ = '(', *outp_++ = c, depth++;
+			if(!spacer(*s))
+				*outp_++ = ' ';
+		}
+		for(i = 0; i < depth; i++)
+			*outp_++ = ')';
+	}
+	return s;
+}
+
 static int
-bind(char r, char *incoming)
+commit(char r, char *incoming)
 {
 	int depth = 0;
 	char c, *s = regs[(int)r];
 	if(r == ':' && incoming != NULL) s = incoming, queue++;
 	if(!s) return !fprintf(stderr, "?%c Empty\n", r);
-	if(s[0] == '(') {
+	if(r == '*')
+		s = plode(s);
+	else if(s[0] == '(') {
 		while((c = *s++)) {
 			if(c == '(') depth++;
 			*outp_++ = c;
@@ -96,18 +121,19 @@ bind(char r, char *incoming)
 	return 1;
 }
 
-static void
-save(int rule)
+static int
+save(int rule, char *s)
 {
+	while((*outp_++ = *s++))
+		;
+	*outp_++ = 0;
 	if((direction = !direction))
 		prog_ = bank_b, outp_ = bank_a;
 	else
 		prog_ = bank_a, outp_ = bank_b;
-	if(rule >= 0) {
-		char *program = direction ? bank_b : bank_a;
-		while(program[1] && program[0] < 0x21) program++;
-		fprintf(stderr, "%02d %s\n", rule, program);
-	}
+	if(rule >= 0)
+		fprintf(stderr, "%02d %s\n", rule, prog_);
+	return 1;
 }
 
 static char *
@@ -141,6 +167,7 @@ static int
 rewrite(char *incoming)
 {
 	char c, *p = direction ? bank_b : bank_a;
+	while((c = *p) && c <= ' ') p++;
 	while((c = *p)) {
 		int i;
 		if(p[0] == '<' && p[1] == '>') {
@@ -148,10 +175,7 @@ rewrite(char *incoming)
 			p += 3;
 			r->a = parse_rulefrag(p), p = walk(p) + 1;
 			r->b = parse_rulefrag(p), p = walk(p);
-			while((*outp_++ = *p++))
-				;
-			save(-1);
-			return 1;
+			return save(-1, p);
 		}
 		if(p == bank_a || p == bank_b || spacer(*(p - 1))) {
 			for(i = 0; i < rules_len; i++) {
@@ -161,15 +185,11 @@ rewrite(char *incoming)
 					char cc, *b = r->b;
 					while((cc = *b++)) {
 						if(cc == '?')
-							bind(*b++, incoming);
+							commit(*b++, incoming);
 						else
 							*outp_++ = cc;
 					}
-					while((*outp_++ = *res++))
-						;
-					*outp_++ = 0;
-					save(i);
-					return 1;
+					return save(i, res);
 				}
 			}
 		}
@@ -194,14 +214,24 @@ int
 main(int argc, char **argv)
 {
 	FILE *f;
+	char c, *w = bank_a;
 	if(argc < 2)
 		return !printf("usage: modal [-v] source.modal\n");
 	if(argc < 3 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !printf("Modal - Modal Interpreter, 4 Apr 2024.\n");
+		return !printf("Modal - Modal Interpreter, 7 Apr 2024.\n");
 	if(!(f = fopen(argv[1], "r")))
 		return !printf("Invalid Modal file: %s.\n", argv[1]);
+	while(fread(&c, 1, 1, f)) {
+		if(w > bank_a) {
+			if(c == ' ' && *(w - 1) == '(') continue;
+			if(c == ')' && *(w - 1) == ' ') w--;
+			if(c == ' ' && *(w - 1) == ' ') w--;
+		}
+		*w++ = c;
+	}
+	*w++ = 0;
+	fclose(f);
 	queue = 2;
-	fread(bank_a, 1, 0x1000, f), fclose(f);
 	while(rewrite(argv[queue]))
 		;
 	print_rules();
