@@ -65,7 +65,11 @@ set_reg(int r, char *b)
 	} else if(r == ':') {
 		char *bb = walk(b);
 		if(*b == '(') b++, --bb;
-		while(b < bb) putc(*(b++), stdout);
+		while(b < bb) {
+			char c = *(b++);
+			if(c == '\\' && *(b++) == 'n') c = 0xa;
+			putc(c, stdout);
+		}
 	} else
 		regs[r] = b;
 	return 1;
@@ -194,7 +198,7 @@ main(int argc, char **argv)
 	if(argc < 2)
 		return !printf("usage: modal [-v] source.modal\n");
 	if(argc < 3 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !printf("Modal - Modal Interpreter, 8 Apr 2024.\n");
+		return !printf("Modal Interpreter, 8 Apr 2024.\n");
 	if(!(f = fopen(argv[1], "r")))
 		return !printf("Invalid Modal file: %s.\n", argv[1]);
 	while(fread(&c, 1, 1, f)) {
