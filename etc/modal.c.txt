@@ -1,11 +1,12 @@
 #include <stdio.h>
 
 typedef struct {
+	int id;
 	char *a, *b;
 } Rule;
 
-static int rules_len, direction;
-static Rule rules[0x100];
+static int direction;
+static Rule rules[0x1000], *rules_ = rules;
 static char dict[0x8000], *dict_ = dict;
 static char bank_a[0x4000], *prog_ = bank_a;
 static char bank_b[0x4000], *outp_ = bank_b;
@@ -25,54 +26,9 @@ walk(char *s)
 			if(!depth) return s;
 		}
 	}
-	while(!spacer(s[0]) && *s++)
+	while((c = *s) && !spacer(c) && *s++)
 		;
 	return s;
-}
-
-static int
-compare(char *a, char *b)
-{
-	int i = 0, al = walk(a) - a, bl = walk(b) - b;
-	if(al == bl)
-		while(a[i] == b[i])
-			if(!a[i] || ++i >= al) return 1;
-	return 0;
-}
-
-static void
-call(char *s)
-{
-	char *ss = walk(s);
-	if(*s == '(') s++, --ss;
-	while(s < ss) putc(*(s++), stdout);
-}
-
-static char *
-match(char *p, Rule *r)
-{
-	int i;
-	char c, *a = r->a, *b = p;
-	for(i = 0x21; i < 0x7f; i++)
-		if((char)i != ':')
-			regs[i] = 0;
-	while((c = *a)) {
-		if(c == '?') {
-			int id = (int)*(++a);
-			if(regs[id]) {
-				if(!compare(regs[id], b))
-					return NULL;
-			} else if(id == ':')
-				call(b);
-			else
-				regs[id] = b;
-			a++, b = walk(b);
-		}
-		if(!*a && spacer(*b)) return b;
-		if(*a != *b) return NULL;
-		a++, b++;
-	}
-	return spacer(*b) ? b : NULL;
 }
 
 static char *
@@ -90,8 +46,8 @@ plode(char *s)
 	} else { /* explode */
 		*outp_++ = *s++, *outp_++ = ' ';
 		while((c = *s++) && !spacer(c)) {
-			*outp_++ = '(', *outp_++ = c, depth++;
-			if(!spacer(*s))
+			*outp_++ = '(', *outp_++ = c, depth++, c = *s;
+			if(!spacer(c))
 				*outp_++ = ' ';
 		}
 		for(i = 0; i < depth; i++)
@@ -101,27 +57,59 @@ plode(char *s)
 }
 
 static int
-commit(char r)
+bind_reg(int r, char *b)
 {
-	int depth = 0;
-	char c, *s = regs[(int)r];
-	if(r == '*')
-		s = plode(s);
-	else if(s[0] == '(') {
-		while((c = *s++)) {
-			if(c == '(') depth++;
-			*outp_++ = c;
-			if(c == ')') --depth;
-			if(!depth) return 1;
-		}
-	}
-	while(!spacer(s[0]) && (*outp_++ = *s++))
-		;
+	if(regs[r]) {
+		char *a = regs[r], *aa = walk(a), *bb = walk(b);
+		while(a < aa && b < bb)
+			if(*a++ != *b++) return 0;
+	} else if(r == ':') {
+		char *bb = walk(b);
+		if(*b == '(') b++, --bb;
+		while(b < bb) putc(*(b++), stdout);
+	} else
+		regs[r] = b;
 	return 1;
 }
 
 static int
-save(int rule, char *s)
+write_reg(char r)
+{
+	char *s = regs[(int)r];
+	if(r == '*')
+		s = plode(s);
+	else if(s) {
+		char *ss = walk(s);
+		while((s < ss) && (*outp_++ = *s++))
+			;
+	} else
+		*outp_++ = r;
+	return 1;
+}
+
+static char *
+match_rule(char *p, Rule *r)
+{
+	int i;
+	char c, *a = r->a, *b = p;
+	for(i = 0x21; i < 0x7f; i++)
+		if((char)i != ':')
+			regs[i] = 0;
+	while((c = *a)) {
+		if(c == '?') {
+			if(!bind_reg(*(++a), b)) return NULL;
+			a++, b = walk(b);
+			continue;
+		}
+		if(*a != *b) return NULL;
+		a++, b++;
+	}
+	c = *b;
+	return spacer(c) ? b : NULL;
+}
+
+static int
+commit_rule(Rule *r, char *s)
 {
 	while((*outp_++ = *s++))
 		;
@@ -130,70 +118,61 @@ save(int rule, char *s)
 		prog_ = bank_b, outp_ = bank_a;
 	else
 		prog_ = bank_a, outp_ = bank_b;
-	if(rule >= 0)
-		fprintf(stderr, "%02d %s\n", rule, prog_);
+	if(r != NULL)
+		fprintf(stderr, "%02d %s\n", r->id, prog_);
 	return 1;
 }
 
 static char *
-parse_rulefrag(char *line)
+parse_rule(char *s)
 {
-	int depth = 0;
-	char c, *s = line, *res = dict_;
-	if(s[0] == '(') {
-		while((c = *s++)) {
-			if(c == '(') {
-				depth++;
-				if(depth == 1) continue;
-			}
-			if(c == ')') {
-				--depth;
-				if(!depth) {
-					*dict_++ = 0;
-					return res;
-				}
-			}
-			*dict_++ = c;
-		}
-	}
-	while(!spacer(s[0]) && (*dict_++ = *s++))
+	char *ss = walk(s), *d = dict_;
+	if(*s == '(') s++, ss--;
+	while((s < ss) && (*dict_++ = *s++))
 		;
 	*dict_++ = 0;
-	return res;
+	return d;
+}
+
+static int
+add_rule(char *p)
+{
+	char c;
+	Rule *r = rules_++;
+	p += 2;
+	while((c = *p) && c <= ' ') p++;
+	r->a = parse_rule(p), p = walk(p);
+	while((c = *p) && c <= ' ') p++;
+	r->b = parse_rule(p), p = walk(p);
+	return commit_rule(NULL, p);
 }
 
 static int
 rewrite(void)
 {
-	char c, *p = direction ? bank_b : bank_a, *o = p;
+	char c, last = 0, *p = direction ? bank_b : bank_a;
 	while((c = *p) && c <= ' ') p++;
 	while((c = *p)) {
-		int i;
-		if(p[0] == '<' && p[1] == '>') {
-			Rule *r = &rules[rules_len++];
-			p += 3;
-			r->a = parse_rulefrag(p), p = walk(p) + 1;
-			r->b = parse_rulefrag(p), p = walk(p);
-			return save(-1, p);
-		}
-		if(p == o || spacer(*(p - 1))) {
-			for(i = 0; i < rules_len; i++) {
-				Rule *r = &rules[i];
-				char *res = match(p, r);
+		if(p[0] == '<' && p[1] == '>')
+			return add_rule(p);
+		if(spacer(last)) {
+			Rule *r;
+			for(r = rules; r < rules_; r++) {
+				char *res = match_rule(p, r);
 				if(res != NULL) {
 					char cc, *b = r->b;
-					if(!*b && outp_ != bank_a && outp_ != bank_b) outp_--;
+					if(!*b && last == ' ') outp_--;
 					while((cc = *b++)) {
-						if(cc == '?' && regs[(int)b[0]])
-							commit(*b++);
+						if(cc == '?')
+							write_reg(*b++);
 						else
 							*outp_++ = cc;
 					}
-					return save(i, res);
+					return commit_rule(r, res);
 				}
 			}
 		}
-		*outp_++ = c;
+		*outp_++ = last = c;
 		p++;
 	}
 	*outp_++ = 0;
@@ -203,10 +182,10 @@ rewrite(void)
 static void
 print_rules(void)
 {
-	int i;
+	Rule *r;
 	fprintf(stderr, "\n");
-	for(i = 0; i < rules_len; i++)
-		fprintf(stderr, "<> (%s) (%s)\n", rules[i].a, rules[i].b);
+	for(r = rules; r < rules_; r++)
+		fprintf(stderr, "<> (%s) (%s)\n", r->a, r->b);
 	fprintf(stderr, "\n");
 }
 
@@ -218,7 +197,7 @@ main(int argc, char **argv)
 	if(argc < 2)
 		return !printf("usage: modal [-v] source.modal\n");
 	if(argc < 3 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !printf("Modal - Modal Interpreter, 7 Apr 2024.\n");
+		return !printf("Modal - Modal Interpreter, 8 Apr 2024.\n");
 	if(!(f = fopen(argv[1], "r")))
 		return !printf("Invalid Modal file: %s.\n", argv[1]);
 	while(fread(&c, 1, 1, f)) {
