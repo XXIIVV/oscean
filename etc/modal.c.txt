@@ -4,7 +4,7 @@ typedef struct {
 	char *a, *b;
 } Rule;
 
-static int rules_len, direction, queue;
+static int rules_len, direction;
 static Rule rules[0x100];
 static char dict[0x8000], *dict_ = dict;
 static char bank_a[0x4000], *prog_ = bank_a;
@@ -54,7 +54,8 @@ match(char *p, Rule *r)
 	int i;
 	char c, *a = r->a, *b = p;
 	for(i = 0x21; i < 0x7f; i++)
-		regs[i] = 0;
+		if((char)i != ':')
+			regs[i] = 0;
 	while((c = *a)) {
 		if(c == '?') {
 			int id = (int)*(++a);
@@ -100,12 +101,10 @@ plode(char *s)
 }
 
 static int
-commit(char r, char *incoming)
+commit(char r)
 {
 	int depth = 0;
 	char c, *s = regs[(int)r];
-	if(r == ':' && incoming != NULL) s = incoming, queue++;
-	if(!s) return !fprintf(stderr, "?%c Empty\n", r);
 	if(r == '*')
 		s = plode(s);
 	else if(s[0] == '(') {
@@ -164,7 +163,7 @@ parse_rulefrag(char *line)
 }
 
 static int
-rewrite(char *incoming)
+rewrite(void)
 {
 	char c, *p = direction ? bank_b : bank_a;
 	while((c = *p) && c <= ' ') p++;
@@ -183,9 +182,10 @@ rewrite(char *incoming)
 				char *res = match(p, r);
 				if(res != NULL) {
 					char cc, *b = r->b;
+					if(!*b) outp_--;
 					while((cc = *b++)) {
-						if(cc == '?')
-							commit(*b++, incoming);
+						if(cc == '?' && regs[(int)b[0]])
+							commit(*b++);
 						else
 							*outp_++ = cc;
 					}
@@ -231,8 +231,8 @@ main(int argc, char **argv)
 	}
 	*w++ = 0;
 	fclose(f);
-	queue = 2;
-	while(rewrite(argv[queue]))
+	regs[':'] = argv[2];
+	while(rewrite())
 		;
 	print_rules();
 	return 0;
