@@ -26,8 +26,7 @@ walk(char *s)
 			if(!depth) return s;
 		}
 	}
-	while((c = *s) && !spacer(c) && *s++)
-		;
+	while((c = *s) && !spacer(c)) s++;
 	return s;
 }
 
@@ -57,7 +56,7 @@ plode(char *s)
 }
 
 static int
-bind_reg(int r, char *b)
+set_reg(int r, char *b)
 {
 	if(regs[r]) {
 		char *a = regs[r], *aa = walk(a), *bb = walk(b);
@@ -73,15 +72,14 @@ bind_reg(int r, char *b)
 }
 
 static int
-write_reg(char r)
+put_reg(char r)
 {
 	char *s = regs[(int)r];
 	if(r == '*')
 		s = plode(s);
 	else if(s) {
 		char *ss = walk(s);
-		while((s < ss) && (*outp_++ = *s++))
-			;
+		while((s < ss)) *outp_++ = *s++;
 	} else
 		*outp_++ = r;
 	return 1;
@@ -97,7 +95,7 @@ match_rule(char *p, Rule *r)
 			regs[i] = 0;
 	while((c = *a)) {
 		if(c == '?') {
-			if(!bind_reg(*(++a), b)) return NULL;
+			if(!set_reg(*(++a), b)) return NULL;
 			a++, b = walk(b);
 			continue;
 		}
@@ -128,8 +126,7 @@ parse_rule(char *s)
 {
 	char *ss = walk(s), *d = dict_;
 	if(*s == '(') s++, ss--;
-	while((s < ss) && (*dict_++ = *s++))
-		;
+	while((s < ss)) *dict_++ = *s++;
 	*dict_++ = 0;
 	return d;
 }
@@ -164,7 +161,7 @@ rewrite(void)
 					if(!*b && last == ' ') outp_--;
 					while((cc = *b++)) {
 						if(cc == '?')
-							write_reg(*b++);
+							put_reg(*b++);
 						else
 							*outp_++ = cc;
 					}
