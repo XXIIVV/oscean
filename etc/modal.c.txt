@@ -165,7 +165,7 @@ parse_rulefrag(char *line)
 static int
 rewrite(void)
 {
-	char c, *p = direction ? bank_b : bank_a;
+	char c, *p = direction ? bank_b : bank_a, *o = p;
 	while((c = *p) && c <= ' ') p++;
 	while((c = *p)) {
 		int i;
@@ -176,13 +176,13 @@ rewrite(void)
 			r->b = parse_rulefrag(p), p = walk(p);
 			return save(-1, p);
 		}
-		if(p == bank_a || p == bank_b || spacer(*(p - 1))) {
+		if(p == o || spacer(*(p - 1))) {
 			for(i = 0; i < rules_len; i++) {
 				Rule *r = &rules[i];
 				char *res = match(p, r);
 				if(res != NULL) {
 					char cc, *b = r->b;
-					if(!*b) outp_--;
+					if(!*b && outp_ != bank_a && outp_ != bank_b) outp_--;
 					while((cc = *b++)) {
 						if(cc == '?' && regs[(int)b[0]])
 							commit(*b++);
