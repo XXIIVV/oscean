@@ -62,14 +62,6 @@ set_reg(int r, char *b)
 		char *a = regs[r], *aa = walk(a), *bb = walk(b);
 		while(a < aa && b < bb)
 			if(*a++ != *b++) return 0;
-	} else if(r == ':') {
-		char *bb = walk(b);
-		if(*b == '(') b++, --bb;
-		while(b < bb) {
-			char c = *(b++);
-			if(c == '\\' && *(b++) == 'n') c = 0xa;
-			putc(c, stdout);
-		}
 	} else
 		regs[r] = b;
 	return 1;
@@ -81,7 +73,15 @@ put_reg(char r)
 	char *s = regs[(int)r];
 	if(r == '*')
 		s = plode(s);
-	else if(s) {
+	else if(r == ':') {
+		char *bb = walk(s);
+		if(*s == '(') s++, --bb;
+		while(s < bb) {
+			char c = *(s++);
+			if(c == '\\' && *(s++) == 'n') c = 0xa;
+			putc(c, stdout);
+		}
+	} else if(s) {
 		char *ss = walk(s);
 		while((s < ss)) *outp_++ = *s++;
 	} else
@@ -95,8 +95,7 @@ match_rule(char *p, Rule *r)
 	int i;
 	char c, *a = r->a, *b = p;
 	for(i = 0x21; i < 0x7f; i++)
-		if((char)i != ':')
-			regs[i] = 0;
+		regs[i] = 0;
 	while((c = *a)) {
 		if(c == '?') {
 			if(!set_reg(*(++a), b)) return NULL;
@@ -211,7 +210,6 @@ main(int argc, char **argv)
 	}
 	while(*(--w) <= ' ') *w = 0;
 	fclose(f);
-	regs[':'] = argv[2];
 	while(rewrite())
 		;
 	print_rules();
