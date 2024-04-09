@@ -73,7 +73,11 @@ put_reg(char r)
 	char *s = regs[(int)r];
 	if(r == '*')
 		s = plode(s);
-	else if(s) {
+	else if(r == '~') {
+		char buf;
+		while(fread(&buf, 1, 1, stdin) && buf >= ' ')
+			*outp_++ = buf;
+	} else if(s) {
 		char *ss = walk(s);
 		if(r == ':') {
 			if(*s == '(') s++, --ss;
@@ -110,7 +114,7 @@ match_rule(char *p, Rule *r)
 }
 
 static int
-commit_rule(Rule *r, char *s)
+commit_rule(Rule *r, char *s, int create)
 {
 	while((*outp_++ = *s++))
 		;
@@ -119,7 +123,9 @@ commit_rule(Rule *r, char *s)
 		prog_ = bank_b, outp_ = bank_a;
 	else
 		prog_ = bank_a, outp_ = bank_b;
-	if(r != NULL)
+	if(create)
+		fprintf(stderr, "<> (%s) (%s)\n", r->a, r->b);
+	else
 		fprintf(stderr, "%02d %s\n", r->id, prog_);
 	return 1;
 }
@@ -144,7 +150,7 @@ add_rule(char *p)
 	r->a = parse_rule(p), p = walk(p);
 	while((c = *p) && c <= ' ') p++;
 	r->b = parse_rule(p), p = walk(p);
-	return commit_rule(NULL, p);
+	return commit_rule(r, p, 1);
 }
 
 static int
@@ -168,7 +174,7 @@ rewrite(void)
 						else
 							*outp_++ = cc;
 					}
-					return commit_rule(r, res);
+					return commit_rule(r, res, 0);
 				}
 			}
 		}
@@ -177,16 +183,6 @@ rewrite(void)
 	}
 	*outp_++ = 0;
 	return 0;
-}
-
-static void
-print_rules(void)
-{
-	Rule *r;
-	fprintf(stderr, "\n");
-	for(r = rules; r < rules_; r++)
-		fprintf(stderr, "<> (%s) (%s)\n", r->a, r->b);
-	fprintf(stderr, "\n");
 }
 
 int
@@ -212,6 +208,5 @@ main(int argc, char **argv)
 	fclose(f);
 	while(rewrite())
 		;
-	print_rules();
 	return 0;
 }
