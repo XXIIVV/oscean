@@ -73,17 +73,17 @@ put_reg(char r)
 	char *s = regs[(int)r];
 	if(r == '*')
 		s = plode(s);
-	else if(r == ':') {
-		char *bb = walk(s);
-		if(*s == '(') s++, --bb;
-		while(s < bb) {
-			char c = *(s++);
-			if(c == '\\' && *(s++) == 'n') c = 0xa;
-			putc(c, stdout);
-		}
-	} else if(s) {
+	else if(s) {
 		char *ss = walk(s);
-		while((s < ss)) *outp_++ = *s++;
+		if(r == ':') {
+			if(*s == '(') s++, --ss;
+			while(s < ss) {
+				char c = *(s++);
+				if(c == '\\' && *(s++) == 'n') c = 0xa;
+				putc(c, stdout);
+			}
+		} else
+			while((s < ss)) *outp_++ = *s++;
 	} else
 		*outp_++ = r;
 	return 1;
