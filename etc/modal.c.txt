@@ -94,7 +94,7 @@ put_reg(char r)
 }
 
 static char *
-match_rule(char *p, Rule *r)
+match_rule(Rule *r, char *p)
 {
 	int i;
 	char c, *a = r->a, *b = p;
@@ -144,10 +144,11 @@ parse_frag(char *s)
 }
 
 static int
-write(Rule *r, char last, char *res){
+write(Rule *r, char last, char *res)
+{
 	char cc, *b = r->b;
 	if(!*b && last == ' ') outp_--;
-	while((cc = *b++)) 
+	while((cc = *b++))
 		if(cc == '?')
 			put_reg(*b++);
 		else
@@ -162,7 +163,7 @@ rewrite(void)
 	while((c = *p) && c <= ' ') p++;
 	while((c = *p)) {
 		if(spacer(last)) {
-			Rule *r = NULL, lambda;
+			Rule *r;
 			if(p[0] == '<' && p[1] == '>') {
 				r = rules_++;
 				r->id = rules_ - rules - 1;
@@ -170,15 +171,16 @@ rewrite(void)
 				return commit_rule(r, p, 1);
 			}
 			if(p[0] == '?' && p[1] == '(') {
-				r = &lambda;
-				p += 2, r->a = dict_, p = parse_frag(p), r->b = dict_, p = parse_frag(p);
+				Rule lambda;
+				lambda.id = -1;
+				p += 2, lambda.a = dict_, p = parse_frag(p), lambda.b = dict_, p = parse_frag(p);
 				p++;
 				while((c = *p) && c <= ' ') p++;
-				if((res = match_rule(p, r)) != NULL) 
-					return write(r, last, res);
+				if((res = match_rule(&lambda, p)) != NULL)
+					return write(&lambda, last, res);
 			}
-			for(r = rules; r < rules_; r++) 
-				if((res = match_rule(p, r)) != NULL) 
+			for(r = rules; r < rules_; r++)
+				if((res = match_rule(r, p)) != NULL)
 					return write(r, last, res);
 		}
 		*outp_++ = last = c;
