@@ -34,21 +34,17 @@ static char *
 plode(char *s)
 {
 	int i, depth = 0;
-	char c;
-	if(s[0] == '(') { /* implode */
-		while((c = *s++)) {
-			if(c == '(') depth++;
+	char c, *ss;
+	/* implode */
+	if(s[0] == '(') {
+		ss = walk(s);
+		while(s < ss && (c = *(s++)))
 			if(!spacer(c)) *outp_++ = c;
-			if(c == ')') --depth;
-			if(!depth) return s;
-		}
-	} else { /* explode */
-		*outp_++ = *s++;
-		if(!spacer(*s)) *outp_++ = ' ';
-		while((c = *s++) && !spacer(c)) {
-			*outp_++ = '(', *outp_++ = c, depth++, c = *s;
-			if(!spacer(c)) *outp_++ = ' ';
-		}
+	}
+	/* explode */
+	else {
+		while((c = *s++) && !spacer(c))
+			*outp_++ = c, *outp_++ = ' ', *outp_++ = '(', depth++;
 		for(i = 0; i < depth; i++)
 			*outp_++ = ')';
 	}
@@ -168,28 +164,28 @@ create_rule(Rule *r, int id, char *s)
 static int
 rewrite(void)
 {
-	char c, last = 0, *p = dst ? bank_b : bank_a, *res;
-	while((c = *p) && c <= ' ') p++;
-	while((c = *p)) {
+	char c, last = 0, *s = dst ? bank_b : bank_a, *res;
+	while((c = *s) && c <= ' ') s++;
+	while((c = *s)) {
 		if(spacer(last)) {
 			Rule *r;
-			if(p[0] == '<' && p[1] == '>') {
+			if(s[0] == '<' && s[1] == '>') {
 				r = rules_++;
-				p = create_rule(r, rules_ - rules - 1, p);
-				return commit_rule(r, p, 1);
+				s = create_rule(r, rules_ - rules - 1, s);
+				return commit_rule(r, s, 1);
 			}
-			if(p[0] == '?' && p[1] == '(') {
+			if(s[0] == '?' && s[1] == '(') {
 				r = &lambda;
-				p = create_rule(&lambda, -1, p) + 1;
-				if((res = match_rule(&lambda, p)) != NULL)
+				s = create_rule(&lambda, -1, s) + 1;
+				if((res = match_rule(&lambda, s)) != NULL)
 					return write_rule(&lambda, last, res);
 			}
 			for(r = rules; r < rules_; r++)
-				if((res = match_rule(r, p)) != NULL)
+				if((res = match_rule(r, s)) != NULL)
 					return write_rule(r, last, res);
 		}
 		*outp_++ = last = c;
-		p++;
+		s++;
 	}
 	*outp_++ = 0;
 	return 0;
