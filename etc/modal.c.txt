@@ -38,7 +38,7 @@ plode(char *s)
 	/* implode */
 	if(s[0] == '(') {
 		ss = walk(s);
-		while(s < ss && (c = *(s++)))
+		while(s < ss && (c = *s++))
 			if(!spacer(c)) *outp_++ = c;
 	}
 	/* explode */
@@ -78,12 +78,12 @@ put_reg(char r)
 		if(r == ':') {
 			if(*s == '(') s++, --ss;
 			while(s < ss) {
-				char c = *(s++);
-				if(c == '\\' && *(s++) == 'n') c = 0xa;
+				char c = *s++;
+				if(c == '\\' && *s++ == 'n') c = 0xa;
 				putc(c, stdout);
 			}
 		} else
-			while((s < ss)) *outp_++ = *s++;
+			while(s < ss) *outp_++ = *s++;
 	} else
 		*outp_++ = r;
 }
@@ -145,7 +145,7 @@ parse_frag(char *s)
 	while((c = *s) && c <= ' ') s++;
 	ss = walk(s);
 	if(*s == '(') s++, ss--;
-	while((s < ss)) *dict_++ = *s++;
+	while(s < ss) *dict_++ = *s++;
 	*dict_++ = 0;
 	s++;
 	return s;
@@ -175,8 +175,8 @@ rewrite(void)
 				return commit_rule(r, s, 1);
 			}
 			if(s[0] == '?' && s[1] == '(') {
-				cap = walk(s+1);
-				r = &lambda, create_rule(&lambda, -1, s), s = cap;
+				r = &lambda, cap = walk(s + 1);
+				create_rule(&lambda, -1, s), s = cap;
 				while((c = *s) && c <= ' ') s++;
 				if((res = match_rule(&lambda, s)) != NULL)
 					return write_rule(&lambda, last, res);
