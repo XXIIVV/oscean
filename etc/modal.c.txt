@@ -164,7 +164,7 @@ create_rule(Rule *r, int id, char *s)
 static int
 rewrite(void)
 {
-	char c, last = 0, *s = dst ? bank_b : bank_a, *res;
+	char c, last = 0, *cap, *s = dst ? bank_b : bank_a, *res;
 	while((c = *s) && c <= ' ') s++;
 	while((c = *s)) {
 		if(spacer(last)) {
@@ -175,8 +175,8 @@ rewrite(void)
 				return commit_rule(r, s, 1);
 			}
 			if(s[0] == '?' && s[1] == '(') {
-				r = &lambda;
-				s = create_rule(&lambda, -1, s) + 1;
+				cap = walk(s+1);
+				r = &lambda, create_rule(&lambda, -1, s), s = cap;
 				while((c = *s) && c <= ' ') s++;
 				if((res = match_rule(&lambda, s)) != NULL)
 					return write_rule(&lambda, last, res);
