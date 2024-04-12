@@ -19,7 +19,7 @@ walk(char *s)
 {
 	char c;
 	int depth = 0;
-	if(s[0] == '(') {
+	if(*s == '(') {
 		while((c = *s++)) {
 			if(c == '(') depth++;
 			if(c == ')') --depth;
@@ -36,7 +36,7 @@ plode(char *s)
 	int i, depth = 0;
 	char c, *ss;
 	/* implode */
-	if(s[0] == '(') {
+	if(*s == '(') {
 		ss = walk(s);
 		while(s < ss && (c = *s++))
 			if(!spacer(c)) *outp_++ = c;
@@ -79,30 +79,36 @@ put_reg(char r)
 			if(*s == '(') s++, --ss;
 			while(s < ss) {
 				char c = *s++;
-				if(c == '\\' && *s++ == 'n') c = 0xa;
-				putc(c, stdout);
+				if(c == '\\') {
+					switch(*s++) {
+					case 't': putc(0x09, stdout); break;
+					case 'n': putc(0x0a, stdout); break;
+					case 's': putc(0x20, stdout); break;
+					}
+				} else
+					putc(c, stdout);
 			}
 		} else
 			while(s < ss) *outp_++ = *s++;
 	} else
-		*outp_++ = r;
+		*outp_++ = '?', *outp_++ = r;
 }
 
 static char *
 match_rule(Rule *r, char *p)
 {
 	int i;
-	char c, *a = r->a, *b = p;
+	char c, last = 0, *a = r->a, *b = p;
 	for(i = 0x21; i < 0x7f; i++)
 		regs[i] = 0;
 	while((c = *a)) {
-		if(c == '?') {
+		if(spacer(last) && c == '?') {
 			if(!set_reg(*(++a), b)) return NULL;
 			a++, b = walk(b);
 			continue;
 		}
 		if(*a != *b) return NULL;
-		a++, b++;
+		a++, b++, last = c;
 	}
 	c = *b;
 	return spacer(c) ? b : NULL;
@@ -128,13 +134,13 @@ commit_rule(Rule *r, char *s, int create)
 static int
 write_rule(Rule *r, char last, char *res)
 {
-	char cc, *b = r->b;
-	if(!*b && last == ' ') outp_--;
-	while((cc = *b++))
-		if(cc == '?')
+	char c, *b = r->b, *origin = outp_;
+	while((c = *b++))
+		if(spacer(last) && c == '?')
 			put_reg(*b++);
 		else
-			*outp_++ = cc;
+			*outp_++ = c, last = c;
+	if(last == ' ' && outp_ - origin == 0) outp_--;
 	return commit_rule(r, res, 0);
 }
 
@@ -143,21 +149,22 @@ parse_frag(char *s)
 {
 	char c, *ss;
 	while((c = *s) && c <= ' ') s++;
-	ss = walk(s);
-	if(*s == '(') s++, ss--;
-	while(s < ss) *dict_++ = *s++;
+	if(*s != ')' && *s != '<' && s[1] != '>') {
+		ss = walk(s);
+		if(*s == '(') s++, ss--;
+		while(s < ss) *dict_++ = *s++;
+		s++;
+	}
 	*dict_++ = 0;
-	s++;
 	return s;
 }
 
 static char *
 create_rule(Rule *r, int id, char *s)
 {
-	char c;
 	r->id = id, s += 2;
-	r->a = dict_, s = parse_frag(s), r->b = dict_, s = parse_frag(s);
-	while((c = *s) && c <= ' ') s++;
+	r->a = dict_, s = parse_frag(s);
+	r->b = dict_, s = parse_frag(s);
 	return s;
 }
 
@@ -169,12 +176,13 @@ rewrite(void)
 	while((c = *s)) {
 		if(spacer(last)) {
 			Rule *r;
-			if(s[0] == '<' && s[1] == '>') {
+			if(*s == '<' && s[1] == '>') {
 				r = rules_++;
 				s = create_rule(r, rules_ - rules - 1, s);
+				while((c = *s) && c <= ' ') s++;
 				return commit_rule(r, s, 1);
 			}
-			if(s[0] == '?' && s[1] == '(') {
+			if(*s == '?' && s[1] == '(') {
 				r = &lambda, cap = walk(s + 1);
 				create_rule(&lambda, -1, s), s = cap;
 				while((c = *s) && c <= ' ') s++;
@@ -200,10 +208,11 @@ main(int argc, char **argv)
 	if(argc < 2)
 		return !printf("usage: modal [-v] source.modal\n");
 	if(argc < 3 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !printf("Modal Interpreter, 11 Apr 2024.\n");
+		return !printf("Modal Interpreter, 12 Apr 2024.\n");
 	if(!(f = fopen(argv[1], "r")))
 		return !printf("Invalid Modal file: %s.\n", argv[1]);
 	while(fread(&c, 1, 1, f)) {
+		c = c <= 0x20 ? 0x20 : c;
 		if(w > bank_a) {
 			if(c == ' ' && *(w - 1) == '(') continue;
 			if(c == ')' && *(w - 1) == ' ') w--;
