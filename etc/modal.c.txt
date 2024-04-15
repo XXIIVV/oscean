@@ -45,45 +45,41 @@ set_reg(int r, char *b)
 static void
 put_reg(char r)
 {
-	char c, *s = regs[(int)r];
-	if(r == '~') {
-		/* special stdin */
+	char c, *s = regs[(int)r], *ss;
+	if(!s) {
+		*outp_++ = '?', *outp_++ = r;
+		return;
+	}
+	ss = walk(s);
+	if(r == '*') {
+		if(*s == '(') { /* special implode */
+			while(s < ss && (c = *s++))
+				if(!spacer(c)) *outp_++ = c;
+		} else { /* special explode */
+			int i, depth = 0;
+			while((c = *s++) && !spacer(c))
+				*outp_++ = c, *outp_++ = ' ', *outp_++ = '(', depth++;
+			for(i = 0; i < depth; i++)
+				*outp_++ = ')';
+		}
+	} else if(r == ':') { /* special stdout */
+		if(*s == '(') s++, --ss;
+		while(s < ss) {
+			c = *s++;
+			if(c == '\\') {
+				switch(*s++) {
+				case 't': putc(0x09, stdout); break;
+				case 'n': putc(0x0a, stdout); break;
+				case 's': putc(0x20, stdout); break;
+				}
+			} else
+				putc(c, stdout);
+		}
+	} else if(r == '~') { /* special stdin */
 		while(fread(&c, 1, 1, stdin) && c >= ' ')
 			*outp_++ = c;
-	} else if(s) {
-		char *ss = walk(s);
-		if(r == '*') {
-			/* special implode */
-			if(*s == '(') {
-				while(s < ss && (c = *s++))
-					if(!spacer(c)) *outp_++ = c;
-			}
-			/* special explode */
-			else {
-				int i, depth = 0;
-				while((c = *s++) && !spacer(c))
-					*outp_++ = c, *outp_++ = ' ', *outp_++ = '(', depth++;
-				for(i = 0; i < depth; i++)
-					*outp_++ = ')';
-			}
-		} else if(r == ':') {
-			/* special stdout */
-			if(*s == '(') s++, --ss;
-			while(s < ss) {
-				c = *s++;
-				if(c == '\\') {
-					switch(*s++) {
-					case 't': putc(0x09, stdout); break;
-					case 'n': putc(0x0a, stdout); break;
-					case 's': putc(0x20, stdout); break;
-					}
-				} else
-					putc(c, stdout);
-			}
-		} else
-			while(s < ss) *outp_++ = *s++;
 	} else
-		*outp_++ = '?', *outp_++ = r;
+		while(s < ss) *outp_++ = *s++;
 }
 
 static char *
@@ -132,7 +128,8 @@ write_rule(Rule *r, char last, char *res)
 			put_reg(*b++);
 		else
 			*outp_++ = c, last = c;
-	if(last == ' ' && outp_ - origin == 0) outp_--;
+	if(outp_ - origin == 0)
+		while(*res == ' ') res++;
 	return commit_rule(r, res, 0);
 }
 
@@ -200,7 +197,7 @@ main(int argc, char **argv)
 	if(argc < 2)
 		return !printf("usage: modal [-v] source.modal\n");
 	if(argc < 3 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !printf("Modal Interpreter, 13 Apr 2024.\n");
+		return !printf("Modal Interpreter, 14 Apr 2024.\n");
 	if(!(f = fopen(argv[1], "r")))
 		return !printf("Invalid Modal file: %s.\n", argv[1]);
 	while(fread(&c, 1, 1, f)) {
