@@ -5,11 +5,11 @@ typedef struct {
 	char *a, *b;
 } Rule;
 
-static int dst;
+static int flip;
 static Rule rules[0x1000], lambda, *rules_ = rules;
 static char dict[0x8000], *dict_ = dict;
-static char bank_a[0x4000], *prog_ = bank_a;
-static char bank_b[0x4000], *outp_ = bank_b;
+static char bank_a[0x4000], *src_ = bank_a;
+static char bank_b[0x4000], *dst_ = bank_b;
 static char *regs[0x100];
 
 #define spacer(c) (c <= ' ' || c == '(' || c == ')')
@@ -47,20 +47,20 @@ put_reg(char r)
 {
 	char c, *s = regs[(int)r], *ss;
 	if(!s) {
-		*outp_++ = '?', *outp_++ = r;
+		*dst_++ = '?', *dst_++ = r;
 		return;
 	}
 	ss = walk(s);
 	if(r == '*') {
 		if(*s == '(') { /* special implode */
 			while(s < ss && (c = *s++))
-				if(!spacer(c)) *outp_++ = c;
+				if(!spacer(c)) *dst_++ = c;
 		} else { /* special explode */
 			int i, depth = 0;
 			while((c = *s++) && !spacer(c))
-				*outp_++ = c, *outp_++ = ' ', *outp_++ = '(', depth++;
+				*dst_++ = c, *dst_++ = ' ', *dst_++ = '(', depth++;
 			for(i = 0; i < depth; i++)
-				*outp_++ = ')';
+				*dst_++ = ')';
 		}
 	} else if(r == ':') { /* special stdout */
 		if(*s == '(') s++, --ss;
@@ -77,9 +77,9 @@ put_reg(char r)
 		}
 	} else if(r == '~') { /* special stdin */
 		while(fread(&c, 1, 1, stdin) && c >= ' ')
-			*outp_++ = c;
+			*dst_++ = c;
 	} else
-		while(s < ss) *outp_++ = *s++;
+		while(s < ss) *dst_++ = *s++;
 }
 
 static char *
@@ -105,30 +105,30 @@ match_rule(Rule *r, char *p)
 static int
 commit_rule(Rule *r, char *s, int create)
 {
-	while((*outp_++ = *s++))
+	while((*dst_++ = *s++))
 		;
-	*outp_++ = 0;
-	if((dst = !dst))
-		prog_ = bank_b, outp_ = bank_a;
+	*dst_++ = 0;
+	if((flip = !flip))
+		src_ = bank_b, dst_ = bank_a;
 	else
-		prog_ = bank_a, outp_ = bank_b;
+		src_ = bank_a, dst_ = bank_b;
 	if(create)
 		fprintf(stderr, "<> (%s) (%s)\n", r->a, r->b);
 	else
-		fprintf(stderr, "%02d %s\n", r->id, prog_);
+		fprintf(stderr, "%02d %s\n", r->id, src_);
 	return 1;
 }
 
 static int
 write_rule(Rule *r, char last, char *res)
 {
-	char c, *b = r->b, *origin = outp_;
+	char c, *b = r->b, *origin = dst_;
 	while((c = *b++))
 		if(spacer(last) && c == '?')
 			put_reg(*b++);
 		else
-			*outp_++ = c, last = c;
-	if(outp_ - origin == 0)
+			*dst_++ = c, last = c;
+	if(dst_ == origin)
 		while(*res == ' ') res++;
 	return commit_rule(r, res, 0);
 }
@@ -160,7 +160,7 @@ create_rule(Rule *r, int id, char *s)
 static int
 rewrite(void)
 {
-	char c, last = 0, *cap, *s = dst ? bank_b : bank_a, *res;
+	char c, last = 0, *cap, *s = src_, *res;
 	while((c = *s) && c <= ' ') s++;
 	while((c = *s)) {
 		if(spacer(last)) {
@@ -182,10 +182,10 @@ rewrite(void)
 				if((res = match_rule(r, s)) != NULL)
 					return write_rule(r, last, res);
 		}
-		*outp_++ = last = c;
+		*dst_++ = last = c;
 		s++;
 	}
-	*outp_++ = 0;
+	*dst_++ = 0;
 	return 0;
 }
 
