@@ -5,7 +5,7 @@ typedef struct {
 	char *a, *b;
 } Rule;
 
-static int flip;
+static int flip, cycles = 0x10000;
 static Rule rules[0x1000], lambda, *rules_ = rules;
 static char dict[0x8000], *dict_ = dict;
 static char bank_a[0x4000], *src_ = bank_a;
@@ -138,11 +138,14 @@ parse_frag(char *s)
 {
 	char c, *ss;
 	while((c = *s) && c <= ' ') s++;
-	if(*s != ')' && *s != '<' && s[1] != '>') {
+	if(*s != ')' && !(*s == '<' && s[1] == '>')) {
 		ss = walk(s);
-		if(*s == '(') s++, ss--;
-		while(s < ss) *dict_++ = *s++;
-		s++;
+		if(*s == '(') {
+			s++;
+			while(s < ss - 1) *dict_++ = *s++;
+			s++;
+		} else
+			while(s < ss) *dict_++ = *s++;
 	}
 	*dict_++ = 0;
 	return s;
@@ -197,9 +200,9 @@ main(int argc, char **argv)
 	if(argc < 2)
 		return !printf("usage: modal [-v] source.modal\n");
 	if(argc < 3 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !printf("Modal Interpreter, 14 Apr 2024.\n");
+		return !printf("Modal Interpreter, 16 Apr 2024.\n");
 	if(!(f = fopen(argv[1], "r")))
-		return !printf("Invalid Modal file: %s.\n", argv[1]);
+		return !fprintf(stderr, "Invalid Modal file: %s.\n", argv[1]);
 	while(fread(&c, 1, 1, f)) {
 		c = c <= 0x20 ? 0x20 : c;
 		if(w > bank_a) {
@@ -212,6 +215,6 @@ main(int argc, char **argv)
 	while(*(--w) <= ' ') *w = 0;
 	fclose(f);
 	while(rewrite())
-		;
+		if(!cycles--) return !fprintf(stderr, "Cycle limit exceeded.\n");
 	return 0;
 }
