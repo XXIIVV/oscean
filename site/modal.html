@@ -18,10 +18,10 @@
 <ul>
 	<li><a href='#rules'>Rules</a>: <b>&lt;&gt;</b> left right</li>
 	<li><a href='#registers'>Registers</a>: ?x, ?y, ?z</li>
-	<li><a href='#sequences'>Sequences</a>: (foo ?2 (baz)), foo (bar (baz))</li>         
+	<li><a href='#trees'>Trees</a>: (foo ?2 (baz)), foo (bar (baz))</li>         
 </ul>
 
-<p>The following documentation displays the examples as a series of rules, followed by the rewriting steps in the following format:</p>
+<p>The documentation below displays the examples as a series of rules, followed by the rewriting steps in the following format:</p>
 
 <pre>
 <b>&lt;&gt;</b> A rule
@@ -39,7 +39,7 @@
 .. hello world
 00 bye world</pre>
 
-<p>A new rule definition syntax can also be created to suit a specific notation, for instance, here is a rule to define new rules with an <a href='notation.html'>infix syntax</a>:</p>
+<p>Rules can also be created procedurally, a new definition syntax can be created to suit a specific notation. Homoiconicity is a property of some programming languages that treats code as data, when the internal and external representation of a program is the same. Modal is homoiconic, as any string is a potential program and new rules can be composed directly during the evaluation. For instance, here is a rule to define new rules with an <a href='notation.html'>infix syntax</a>:</p>
 
 <pre>
 <b>&lt;&gt;</b> ((?x -> ?y)) (<b>&lt;&gt;</b> ?x ?y)
@@ -52,7 +52,7 @@
 02 apple banana
 03 fruit-salad</pre>
 
-<p id='lambda'>A lambda is created by using the <kbd>?(body)</kbd> special register. Rules created that way exist only for the length of one rewrite and must match what is found immediately after: </p>
+<p id='lambda'>A <b>lambda</b> is created by using the <kbd>?(body)</kbd> special register. Rules created that way exist only for the length of one rewrite and must match what is found immediately after: </p>
 
 <pre>
 .. ?((?x ?y) (?y ?x)) foo bar
@@ -79,34 +79,123 @@ corresponding an address and referenced in either side of a rule:</p>
 
 <p>When a register appears more than once in a rule, each instance is bound to the first address:</p>
 
-<pre><b>&lt;&gt;</b> (?x ?x) same
+<pre><b>&lt;&gt;</b> (?x ?x ?x) triplet
 
-.. (fox fox)
-00 (same)
+.. (fox fox fox)
+00 (triplet)
 </pre>
 
-<h3 id='sequences'>Sequences</h3>
+<p><b>Special registers</b> are registers that do more than simply store a reference, they allow implementations to choose which special behavior is needed by the host platform, without impacting the core of the language:</p>
 
-<p>This allow programs to mimic other programming languages. Any choice made in regard to syntax beyond this point is completely arbitrary. To demonstrate, the following code defines a concatenative syntax:</p>
+<table border='1' class='registers'>
+	<tr><th colspan='3'>Substrings</th></tr>
+	<tr><td>Explode token</td><td>?(?* ?*) abc</td><td>a (b (c ()))</td></tr>
+	<tr><td>Explode tuple</td><td>?(?* ?*) (abc def ghi)</td><td>abc (def (ghi ()))</td></tr>
+	<tr><td>Unpack</td><td>?(?. ?.) (abc def)</td><td>abc def</td></tr>
+	<tr><td>Join</td><td>?(?^ ?^) (abc def ghi)</td><td>abcdefghi</td></tr>
+	<tr><th colspan='3'>IO</th></tr>
+	<tr><td>Read</td><td>?~</td><td>Read from devices</td></tr>
+	<tr><td>Send</td><td>?:</td><td>Send to devices</td></tr>
+</table>
+
+<style>
+.registers tr * { font-family:mono;font-size:smaller }</style>
+
+<h3 id='trees'>Trees</h3>
+
+<p>Trees are rules with nested tokens that can be targetted specifically:</p>
 
 <pre>
-<b>&lt;&gt;</b> (?x dup) (?x ?x)
-<b>&lt;&gt;</b> (?x ?y swap) (?y ?x)
-<b>&lt;&gt;</b> (?x pop) ()
+<> (foo (?x) bar) (?x (bar) baz)
 
-.. (1 2 3) (4 5 6) swap pop dup
-01 (4 5 6) (1 2 3) pop dup
-02 (4 5 6) dup
-00 (4 5 6) (4 5 6)
+.. (foo (foo) bar)
+00 (foo (bar) baz)
 </pre>
 
-<p>Homoiconicity is a property of some programming languages that treats code as data, when the internal and external representation of a program is the same. Modal is homoiconic, as any string is a potential program and new rules can be composed directly during the evaluation:</p>
+<h3 id='recursion'>Recursion</h3>
+
+<p>To create text representation that can be modified natively, we can store them in a list of lists, and print them to the console with these recursive rules:</p>
 
 <pre>
-<b>&lt;&gt;</b> ((eval ?x)) (?x)
+<b>&lt;&gt;</b> (putrec (?: ?x)) (putrec ?:?x)
+<b>&lt;&gt;</b> ((putrec (?:))) (?:)
 
-(eval (<b>&lt;&gt;</b> (join (?x) (?y)) (?x ?y)))
-(join (foo) (bar))
+.. (putrec (a (b (c (d (e))))))
+00 (putrec (b (c (d (e)))))
+00 (putrec (c (d (e))))
+00 (putrec (d (e)))
+00 (putrec (e))
+01 
+
+<b>> abcde</b>
+</pre>
+
+<p>To print a string to the console with the <kbd>?:</kbd> special register:</p>
+
+<pre>
+<b>&lt;&gt;</b> (print ?:) (?:)
+
+.. print (hello world\n)
+
+<b>> hello world</b>
+</pre>
+
+<p>To read an incoming string with the <kbd>?~</kbd> special register, and print it out again:</p>
+
+<pre>
+<b>&lt;&gt;</b> (read ?~) (?~)
+<b>&lt;&gt;</b> (?: print ') (?:)
+<b>&lt;&gt;</b> (' ?x) (?x ')
+
+(Tell me three things: \n) print '
+
+' (You said: read stdin
+then, you continued: read stdin
+finaly, you concluded: read stdin) print
+</pre>
+
+<h3>Higher-Order Functions</h3>
+
+<p>A recursive map function can be defined in two rules:</p>
+
+<pre>
+<b>&lt;&gt;</b> (map ?x (?h)) (?x ?h)
+<b>&lt;&gt;</b> (map ?x (?h ?t)) (?x ?h (map ?x ?t))
+
+.. map foo (1 (2 (3)))
+01 foo 1 (map foo (2 (3)))
+01 foo 1 (foo 2 (map foo (3)))
+00 foo 1 (foo 2 (foo 3))
+</pre>
+
+<h3 id='types'>Type Systems</h3>
+
+<p>Creating a type system is merely a matter of creating stricter rules expecting a specific grammar, for example: </p>
+
+<pre>
+<b>&lt;&gt;</b> (join (String ?x) (String ?y)) (?x ?y)
+
+.. (join (String hello) (String world)) (join foo bar)
+00 (hello world) (join foo bar)
+</pre>
+
+<h3 id='strings'>Substrings</h3>
+
+<p>Explode a token into a list of characters with the <kbd>?*</kbd> special register, notice how the following program makes use of a Type system to ensure a specific evaluation order:</p>
+
+<pre>
+<b>&lt;&gt;</b> (reverse List () ?^) (?^)
+<b>&lt;&gt;</b> (reverse (?*)) (reverse List (?*) ())
+<b>&lt;&gt;</b> (reverse List (?x ?y) ?z) (reverse List ?y (?x ?z))
+
+.. (reverse (modal))
+01 (reverse List (m (o (d (a (l ()))))) ())
+02 (reverse List (o (d (a (l ())))) (m ()))
+02 (reverse List (d (a (l ()))) (o (m ())))
+02 (reverse List (a (l ())) (d (o (m ()))))
+02 (reverse List (l ()) (a (d (o (m ())))))
+02 (reverse List () (l (a (d (o (m ()))))))
+00 (ladom)
 </pre>
 
 <h3>Logic</h3>
@@ -196,95 +285,9 @@ corresponding an address and referenced in either side of a rule:</p>
 factorial (s (s (s (s (s (0))))))
 </pre>
 
-<h3>Higher-Order Functions</h3>
-
-<p>A recursive map function can be defined in two rules:</p>
-
-<pre>
-<b>&lt;&gt;</b> (map ?x (?h)) (?x ?h)
-<b>&lt;&gt;</b> (map ?x (?h ?t)) (?x ?h (map ?x ?t))
-
-.. map foo (1 (2 (3)))
-01 foo 1 (map foo (2 (3)))
-01 foo 1 (foo 2 (map foo (3)))
-00 foo 1 (foo 2 (foo 3))
-</pre>
-
-<h3 id='types'>Type Systems</h3>
-
-<p>Creating a type system is merely a matter of creating stricter rules expecting a specific grammar, for example: </p>
-
-<pre>
-<b>&lt;&gt;</b> (join (String ?x) (String ?y)) (?x ?y)
-
-.. (join (String hello) (String world)) (join foo bar)
-00 (hello world) (join foo bar)
-</pre>
-
-<h3 id='strings'>Substrings</h3>
-
-<p>To explode or implode a string with the <kbd>?*</kbd> special register, notice how the following program makes use of a Type system to ensure a specific evaluation order:</p>
-
-<pre>
-<b>&lt;&gt;</b> (reverse List () ?*) (?*)
-<b>&lt;&gt;</b> (reverse (?*)) (reverse List (?*) ())
-<b>&lt;&gt;</b> (reverse List (?x ?y) ?z) (reverse List ?y (?x ?z))
-
-.. (reverse (modal))
-01 (reverse List (m (o (d (a (l ()))))) ())
-02 (reverse List (o (d (a (l ())))) (m ()))
-02 (reverse List (d (a (l ()))) (o (m ())))
-02 (reverse List (a (l ())) (d (o (m ()))))
-02 (reverse List (l ()) (a (d (o (m ())))))
-02 (reverse List () (l (a (d (o (m ()))))))
-00 (ladom)
-</pre>
-
-<h3 id='io'>IO</h3>
-
-<p>To print a string to the console with the <kbd>?:</kbd> special register:</p>
-
-<pre>
-<b>&lt;&gt;</b> (print ?:) (?:)
-
-.. print (hello world\n)
-
-<b>> hello world</b>
-</pre>
-
-<p>To create text representation that can be modified natively, we can store them in a similar scheme to the church numerals above, and print them to the console with these recursive rules:</p>
-
-<pre>
-<b>&lt;&gt;</b> (putrec (?: ?x)) (putrec ?:?x)
-<b>&lt;&gt;</b> ((putrec (?:))) (?:)
-
-.. (putrec (a (b (c (d (e))))))
-00 (putrec (b (c (d (e)))))
-00 (putrec (c (d (e))))
-00 (putrec (d (e)))
-00 (putrec (e))
-01 
-
-<b>> abcde</b>
-</pre>
-
-<p>To read an incoming string with the <kbd>?~</kbd> special register, and print it out again:</p>
-
-<pre>
-<b>&lt;&gt;</b> (read ?~) (?~)
-<b>&lt;&gt;</b> (?: print ') (?:)
-<b>&lt;&gt;</b> (' ?x) (?x ')
-
-(Tell me three things: \n) print '
-
-' (You said: read stdin
-then, you continued: read stdin
-finaly, you concluded: read stdin) print
-</pre>
-
 <h3>Mimics</h3>
 
-<p>We can use rules to define entire languages, for example, we saw above how this can specify a <a href='concatenative.html'>concatenative</a> language with a postfix syntax. Modal enforces no specific notation, for example, we could easily make a <a href='lisp.html'>lisp</a> or <a href='logic.html'>combinatory logic</a>:</p>
+<p>We can use rules to define entire languages, Modal enforces no specific notation, for example, we could easily make a <a href='lisp.html'>lisp</a> or <a href='logic.html'>combinatory logic</a>:</p>
 
 <pre>
 <b>&lt;&gt;</b> (M ?x) (?x ?x)
@@ -300,6 +303,20 @@ finaly, you concluded: read stdin) print
 .. C KI x y z
 05 KI y x z
 01 x z
+</pre>
+
+
+<p>This allow programs to mimic other programming languages. Any choice made in regard to syntax beyond this point is completely arbitrary. To demonstrate, the following code defines a <a href='concatenative.html'>concatenative</a> syntax:</p>
+
+<pre>
+<b>&lt;&gt;</b> (?x dup) (?x ?x)
+<b>&lt;&gt;</b> (?x ?y swap) (?y ?x)
+<b>&lt;&gt;</b> (?x pop) ()
+
+.. (1 2 3) (4 5 6) swap pop dup
+01 (4 5 6) (1 2 3) pop dup
+02 (4 5 6) dup
+00 (4 5 6) (4 5 6)
 </pre>
 
 <h3>Implementation</h3>
