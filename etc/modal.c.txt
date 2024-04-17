@@ -5,7 +5,7 @@ typedef struct {
 	char *a, *b;
 } Rule;
 
-static int flip, cycles = 0x10000;
+static int flip, rmin = 0xff, rmax = 0x00, cycles = 0x10000;
 static Rule rules[0x1000], lambda, *rules_ = rules;
 static char dict[0x8000], *dict_ = dict;
 static char bank_a[0x4000], *src_ = bank_a;
@@ -37,8 +37,11 @@ set_reg(int r, char *b)
 		char *a = regs[r], *aa = walk(a), *bb = walk(b);
 		while(a < aa && b < bb)
 			if(*a++ != *b++) return 0;
-	} else
+	} else {
 		regs[r] = b;
+		if(r < rmin) rmin = r;
+		if(r > rmax) rmax = r;
+	}
 	return 1;
 }
 
@@ -52,16 +55,31 @@ put_reg(char r)
 	}
 	ss = walk(s);
 	if(r == '*') {
-		if(*s == '(') { /* special implode */
-			while(s < ss && (c = *s++))
-				if(!spacer(c)) *dst_++ = c;
-		} else { /* special explode */
-			int i, depth = 0;
+		int i, depth = 0;
+		if(*s == '(') { /* special explode tuple */
+			s++;
+			while(s < ss) {
+				while((c = *s) && !spacer(c))
+					*dst_++ = c, s++;
+				*dst_++ = ' ';
+				*dst_++ = '(', s++, depth++;
+			}
+		} else { /* special explode token */
 			while((c = *s++) && !spacer(c))
 				*dst_++ = c, *dst_++ = ' ', *dst_++ = '(', depth++;
-			for(i = 0; i < depth; i++)
-				*dst_++ = ')';
 		}
+		for(i = 0; i < depth; i++)
+			*dst_++ = ')';
+	} else if(r == '.') { /* special unpack */
+		if(*s == '(') s++, --ss;
+		while(s < ss) *dst_++ = *s++;
+	} else if(r == '^') { /* special join */
+		if(*s == '(') s++, --ss;
+		while(s < ss && (c = *s++))
+			if(!spacer(c)) *dst_++ = c;
+	} else if(r == '~') { /* special stdin */
+		while(fread(&c, 1, 1, stdin) && c >= ' ')
+			*dst_++ = c;
 	} else if(r == ':') { /* special stdout */
 		if(*s == '(') s++, --ss;
 		while(s < ss) {
@@ -75,9 +93,6 @@ put_reg(char r)
 			} else
 				putc(c, stdout);
 		}
-	} else if(r == '~') { /* special stdin */
-		while(fread(&c, 1, 1, stdin) && c >= ' ')
-			*dst_++ = c;
 	} else
 		while(s < ss) *dst_++ = *s++;
 }
@@ -87,15 +102,18 @@ match_rule(Rule *r, char *p)
 {
 	int i;
 	char c, last = 0, *a = r->a, *b = p;
-	for(i = 0x21; i < 0x7f; i++)
-		regs[i] = 0;
+	if(rmax) {
+		for(i = rmin; i <= rmax; i++)
+			regs[i] = 0;
+		rmin = 0xff, rmax = 0x00;
+	}
 	while((c = *a)) {
 		if(spacer(last) && c == '?') {
 			if(!set_reg(*(++a), b)) return NULL;
 			a++, b = walk(b);
 			continue;
 		}
-		if(*a != *b) return NULL;
+		if(c != *b) return NULL;
 		a++, b++, last = c;
 	}
 	c = *b;
@@ -128,8 +146,10 @@ write_rule(Rule *r, char last, char *res)
 			put_reg(*b++);
 		else
 			*dst_++ = c, last = c;
-	if(dst_ == origin)
+	if(dst_ == origin) {
 		while(*res == ' ') res++;
+		if(*res == ')' && *(dst_ - 1) == ' ') dst_--;
+	}
 	return commit_rule(r, res, 0);
 }
 
@@ -200,7 +220,7 @@ main(int argc, char **argv)
 	if(argc < 2)
 		return !printf("usage: modal [-v] source.modal\n");
 	if(argc < 3 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !printf("Modal Interpreter, 16 Apr 2024.\n");
+		return !printf("Modal Interpreter, 17 Apr 2024.\n");
 	if(!(f = fopen(argv[1], "r")))
 		return !fprintf(stderr, "Invalid Modal file: %s.\n", argv[1]);
 	while(fread(&c, 1, 1, f)) {
