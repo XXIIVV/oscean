@@ -35,7 +35,7 @@ set_reg(int r, char *b)
 {
 	if(regs[r]) {
 		char *a = regs[r], *aa = walk(a), *bb = walk(b);
-		while(a < aa && b < bb)
+		while(a < aa || b < bb)
 			if(*a++ != *b++) return 0;
 	} else {
 		regs[r] = b;
@@ -48,12 +48,7 @@ set_reg(int r, char *b)
 static void
 put_reg(char r)
 {
-	char c, *s = regs[(int)r], *ss;
-	if(!s) {
-		*dst_++ = '?', *dst_++ = r;
-		return;
-	}
-	ss = walk(s);
+	char c, *s = regs[(int)r], *ss = walk(s);
 	if(r == '*') {
 		int i, depth = 0;
 		if(*s == '(') { /* special explode tuple */
@@ -89,6 +84,7 @@ put_reg(char r)
 				case 't': putc(0x09, stdout); break;
 				case 'n': putc(0x0a, stdout); break;
 				case 's': putc(0x20, stdout); break;
+				case '?': putc(0x3f, stdout); break;
 				}
 			} else
 				putc(c, stdout);
@@ -108,7 +104,7 @@ match_rule(Rule *r, char *p)
 		rmin = 0xff, rmax = 0x00;
 	}
 	while((c = *a)) {
-		if(spacer(last) && c == '?') {
+		if(c == '?' && spacer(last) && spacer(a[2])) {
 			if(!set_reg(*(++a), b)) return NULL;
 			a++, b = walk(b);
 			continue;
@@ -142,7 +138,7 @@ write_rule(Rule *r, char last, char *res)
 {
 	char c, *b = r->b, *origin = dst_;
 	while((c = *b++))
-		if(spacer(last) && c == '?')
+		if(c == '?' && last != '\\' && regs[(int)*b])
 			put_reg(*b++);
 		else
 			*dst_++ = c, last = c;
@@ -158,9 +154,9 @@ parse_frag(char *s)
 {
 	char c, *ss;
 	while((c = *s) && c <= ' ') s++;
-	if(*s != ')' && !(*s == '<' && s[1] == '>')) {
+	if(c != ')' && !(c == '<' && s[1] == '>')) {
 		ss = walk(s);
-		if(*s == '(') {
+		if(c == '(') {
 			s++;
 			while(s < ss - 1) *dict_++ = *s++;
 			s++;
@@ -188,13 +184,13 @@ rewrite(void)
 	while((c = *s)) {
 		if(spacer(last)) {
 			Rule *r;
-			if(*s == '<' && s[1] == '>') {
+			if(c == '<' && s[1] == '>') {
 				r = rules_++;
 				s = create_rule(r, rules_ - rules - 1, s);
 				while((c = *s) && c <= ' ') s++;
 				return commit_rule(r, s, 1);
 			}
-			if(*s == '?' && s[1] == '(') {
+			if(c == '?' && s[1] == '(') {
 				r = &lambda, cap = walk(s + 1);
 				create_rule(&lambda, -1, s), s = cap;
 				while((c = *s) && c <= ' ') s++;
@@ -222,7 +218,7 @@ main(int argc, char **argv)
 		return !printf("usage: modal [-vqn] source.modal\n");
 	for(i = 1; i < argc && *argv[i] == '-'; i++) {
 		switch(argv[i][1]) {
-		case 'v': /* version */ return !printf("Modal Interpreter, 18 Apr 2024.\n");
+		case 'v': /* version */ return !printf("Modal Interpreter, 20 Apr 2024.\n");
 		case 'q': /* quiet */ fclose(stderr); break;
 		case 'n': /* infinite */ cycles = 0xffffffff; break;
 		}

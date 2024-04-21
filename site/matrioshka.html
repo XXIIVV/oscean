@@ -91,7 +91,7 @@ continually modified until no rules match any given part of the tree. </p>
 <p>Elements of modal are:</p>
 
 <ul>
-	<li><a href='#rules'>Rules</a>: <b>&lt;&gt;</b> left right</li>
+	<li><a href='#rules'>Rules</a>: &lt;&gt; left right</li>
 	<li><a href='#registers'>Registers</a>: ?x, ?y, ?z</li>
 	<li><a href='#trees'>Trees</a>: word, (a tuple), a (cons (list))</li>
 </ul>
@@ -100,7 +100,7 @@ continually modified until no rules match any given part of the tree. </p>
 by the rewriting steps in the following format:</p>
 
 <pre>
-<b>&lt;&gt;</b> A rule
+&lt;&gt; A rule
 
 .. The input program
 04 The result of applying rule #4
@@ -114,7 +114,7 @@ href='#tree'>tree</a>. The program evaluation starts at the first character of
 the string and walks through to the end trying to match a transformation rule
 from that location:</p>
 
-<pre><b>&lt;&gt;</b> hello (good bye)  <i>This is a rule</i>
+<pre>&lt;&gt; hello (good bye)  <i>This is a rule</i>
 
 .. hello world       <i>This is program data</i>
 00 good bye world    <i>This is the result</i></pre>
@@ -124,7 +124,7 @@ from that location:</p>
 <p>Registers are single-character identifiers bound to an address in a pattern
 used in rewriting:</p>
 
-<pre><b>&lt;&gt;</b> (copy ?a) (?a ?a)
+<pre>&lt;&gt; (copy ?a) (?a ?a)
 
 .. copy cat
 00 cat cat</pre>
@@ -133,7 +133,7 @@ used in rewriting:</p>
 to match a given tree with a pattern, each register is bound to a
 corresponding an address and referenced in either side of a rule:</p>
 
-<pre><b>&lt;&gt;</b> (swap ?x ?y) (?y ?x)
+<pre>&lt;&gt; (swap ?x ?y) (?y ?x)
 
 .. (swap fox rat)
 00 (rat fox)</pre>
@@ -141,7 +141,7 @@ corresponding an address and referenced in either side of a rule:</p>
 <p>When a register appears more than once in a rule, each instance is bound to
 the first address:</p>
 
-<pre><b>&lt;&gt;</b> (?x ?x ?x) triplet
+<pre>&lt;&gt; (?x ?x ?x) triplet
 
 .. (fox fox fox)
 00 (triplet)
@@ -154,7 +154,7 @@ and nested trees. Rules can match specific trees and rewrite their content in a
 new sequence.</p>
 
 <pre>
-<b>&lt;&gt;</b> (rotate ?x (?y) ?z) (?y (?z) ?x)
+&lt;&gt; (rotate ?x (?y) ?z) (?y (?z) ?x)
 
 .. rotate foo (bar) baz
 00 bar (baz) foo
@@ -166,8 +166,8 @@ similarly to Lisp's car and cdr primitives. To print each element of such a
 structure, we can use the following recursive rules:</p>
 
 <pre>
-<b>&lt;&gt;</b> (putrec (?: ?x)) (putrec ?:?x)
-<b>&lt;&gt;</b> ((putrec (?:))) (?:)
+&lt;&gt; (putrec (?: ?x)) (putrec ?:?x)
+&lt;&gt; ((putrec (?:))) (?:)
 
 .. (putrec (a (b (c (d (e))))))
 00 (putrec (b (c (d (e)))))
@@ -214,9 +214,9 @@ register, notice how the following program makes use the <a href='#types'>List
 type</a> to ensure a specific evaluation order:</p>
 
 <pre>
-<b>&lt;&gt;</b> (reverse List () ?^) (?^)
-<b>&lt;&gt;</b> (reverse (?*)) (reverse List (?*) ())
-<b>&lt;&gt;</b> (reverse List (?x ?y) ?z) (reverse List ?y (?x ?z))
+&lt;&gt; (reverse List () ?^) (?^)
+&lt;&gt; (reverse (?*)) (reverse List (?*) ())
+&lt;&gt; (reverse List (?x ?y) ?z) (reverse List ?y (?x ?z))
 
 .. (reverse (modal))
 01 (reverse List (m (o (d (a (l ()))))) ())
@@ -232,7 +232,7 @@ type</a> to ensure a specific evaluation order:</p>
 register, it sends a word or a tree to be handled by a device:</p>
 
 <pre>
-<b>&lt;&gt;</b> (print ?:) (?:)
+&lt;&gt; (print ?:) (?:)
 
 .. print (hello world\n)
 
@@ -243,8 +243,8 @@ register, it sends a word or a tree to be handled by a device:</p>
 <kbd>?~</kbd> special register:</p>
 
 <pre>
-<b>&lt;&gt;</b> (?: print) (?:)
-<b>&lt;&gt;</b> (READ ?~) ((You said: ?~ \n) print)
+&lt;&gt; (?: print) (?:)
+&lt;&gt; (READ ?~) ((You said: ?~ \n) print)
 
 .. (READ stdin)
 
@@ -258,8 +258,8 @@ important to become proficient with Modal. Creating a type system is merely a
 matter of creating stricter rules expecting a specific grammar.</p>
 
 <pre>
-<b>&lt;&gt;</b> (join ?^) (?^)
-<b>&lt;&gt;</b> (join-strings (String ?x) (String ?y)) (join (?x ?y))
+&lt;&gt; (join ?^) (?^)
+&lt;&gt; (join-strings (String ?x) (String ?y)) (join (?x ?y))
 
 .. join-strings (String foo) (String bar)
 01 join (foo bar)
@@ -278,8 +278,8 @@ typed words. Without typed inputs, the rule is not matched.</p>
 <p>Let us build a logic system, starting by comparing two registers:</p>
 
 <pre>
-<b>&lt;&gt;</b> (eq ?x ?x) (#t)
-<b>&lt;&gt;</b> (eq ?x ?y) (#f)
+&lt;&gt; (eq ?x ?x) (#t)
+&lt;&gt; (eq ?x ?y) (#f)
 
 .. (eq fox bat)
 01 (#f)
@@ -288,11 +288,11 @@ typed words. Without typed inputs, the rule is not matched.</p>
 <p>We can implement the truth tables by defining each case:</p>
 
 <pre>
-<b>&lt;&gt;</b> (and #t #t) #t <b>&lt;&gt;</b> (or #t #t) #t 
-<b>&lt;&gt;</b> (and #t #f) #f <b>&lt;&gt;</b> (or #t #f) #t
-<b>&lt;&gt;</b> (and #f #t) #f <b>&lt;&gt;</b> (or #f #t) #t 
-<b>&lt;&gt;</b> (and #f #f) #f <b>&lt;&gt;</b> (or #f #f) #f
-<b>&lt;&gt;</b> (not #t) #f    <b>&lt;&gt;</b> (not #f) #t
+&lt;&gt; (and #t #t) #t &lt;&gt; (or #t #t) #t 
+&lt;&gt; (and #t #f) #f &lt;&gt; (or #t #f) #t
+&lt;&gt; (and #f #t) #f &lt;&gt; (or #f #t) #t 
+&lt;&gt; (and #f #f) #f &lt;&gt; (or #f #f) #f
+&lt;&gt; (not #t) #f    &lt;&gt; (not #f) #t
 
 .. (or #f #t)
 08 (#t)
@@ -300,9 +300,9 @@ typed words. Without typed inputs, the rule is not matched.</p>
 
 <p>Building on the comparison rule above, we can write conditionals with a ternary statement: </p>
 <pre>
-<b>&lt;&gt;</b> (ife #t ?t ?f) (?t)
-<b>&lt;&gt;</b> (ife #f ?t ?f) (?f)
-<b>&lt;&gt;</b> (print ?:) (?:)
+&lt;&gt; (ife #t ?t ?f) (?t)
+&lt;&gt; (ife #f ?t ?f) (?f)
+&lt;&gt; (print ?:) (?:)
 
 .. ife #f (print True!) (print False!)
 13 (print False!)
@@ -314,32 +314,32 @@ typed words. Without typed inputs, the rule is not matched.</p>
 <p>The language does not accommodate for any specific numerical system, but allows for the notion of numbers to be implemented with Peano Numerals:</p>
 
 <pre>
-<b>&lt;&gt;</b> (add (s ?x) (s ?y)) (s (add ?x (s ?y)))
-<b>&lt;&gt;</b> (add (s ?x) (0)) (s ?x)
-<b>&lt;&gt;</b> (add (0) (s ?y)) (s ?y)
-<b>&lt;&gt;</b> (add (0) (0)) (0)
-<b>&lt;&gt;</b> (sub (s ?x) (s ?y)) (sub ?x ?y)
-<b>&lt;&gt;</b> (sub (s ?x) (0)) (s ?x)
-<b>&lt;&gt;</b> (sub (0) (s ?y)) (s ?y)
-<b>&lt;&gt;</b> (sub (0) (0)) (0)
-<b>&lt;&gt;</b> (mul (s ?x) (s ?y)) (add (s ?x) (mul (s ?x) (sub (s ?y) (s (0)))))
-<b>&lt;&gt;</b> (mul (s ?x) (s (0))) (s ?x)
-<b>&lt;&gt;</b> (mul (s (0)) (s ?y)) (s ?y)
-<b>&lt;&gt;</b> (mul (s ?x) (0)) (0)
-<b>&lt;&gt;</b> (mul (0) (s ?x)) (0)
+&lt;&gt; (add (s ?x) (s ?y)) (s (add ?x (s ?y)))
+&lt;&gt; (add (s ?x) (0)) (s ?x)
+&lt;&gt; (add (0) (s ?y)) (s ?y)
+&lt;&gt; (add (0) (0)) (0)
+&lt;&gt; (sub (s ?x) (s ?y)) (sub ?x ?y)
+&lt;&gt; (sub (s ?x) (0)) (s ?x)
+&lt;&gt; (sub (0) (s ?y)) (s ?y)
+&lt;&gt; (sub (0) (0)) (0)
+&lt;&gt; (mul (s ?x) (s ?y)) (add (s ?x) (mul (s ?x) (sub (s ?y) (s (0)))))
+&lt;&gt; (mul (s ?x) (s (0))) (s ?x)
+&lt;&gt; (mul (s (0)) (s ?y)) (s ?y)
+&lt;&gt; (mul (s ?x) (0)) (0)
+&lt;&gt; (mul (0) (s ?x)) (0)
 </pre>
 
 <p>To convert from prefix notation to infix: </p>
 <pre>
-<b>&lt;&gt;</b> (?x + ?y) (add ?x ?y)
-<b>&lt;&gt;</b> (?x - ?y) (sub ?x ?y)
-<b>&lt;&gt;</b> (?x * ?y) (mul ?x ?y)
+&lt;&gt; (?x + ?y) (add ?x ?y)
+&lt;&gt; (?x - ?y) (sub ?x ?y)
+&lt;&gt; (?x * ?y) (mul ?x ?y)
 </pre>
 
 <p>Altogether, we have enough parts to implement factorial: </p>
 <pre>
-<b>&lt;&gt;</b> (factorial (s (0))) ((s (0)))
-<b>&lt;&gt;</b> (factorial (s ?x)) (((s ?x) * factorial ((s ?x) - (s (0)))))
+&lt;&gt; (factorial (s (0))) ((s (0)))
+&lt;&gt; (factorial (s ?x)) (((s ?x) * factorial ((s ?x) - (s (0)))))
 
 factorial (s (s (s (s (s (0))))))
 </pre>
@@ -349,15 +349,15 @@ factorial (s (s (s (s (s (0))))))
 <p>We can use rules to define entire languages, Modal enforces no specific notation, for example, we could easily make a <a href='logic.html'>combinatory logic</a> playground:</p>
 
 <pre>
-<b>&lt;&gt;</b> (M ?x) (?x ?x)
-<b>&lt;&gt;</b> (KI ?x ?y) (?y)
-<b>&lt;&gt;</b> (T ?x ?y) (?y ?y)
-<b>&lt;&gt;</b> (W ?x ?y) (?x ?y ?y)
-<b>&lt;&gt;</b> (K ?x ?y) (?x)
-<b>&lt;&gt;</b> (C ?x ?y ?z) (?x ?z ?y)
-<b>&lt;&gt;</b> (B ?x ?y ?z) (?x (?y ?z))
-<b>&lt;&gt;</b> (I ?x) (?x)
-<b>&lt;&gt;</b> (S ?x ?y ?z) (?x ?z (?y ?z))
+&lt;&gt; (M ?x) (?x ?x)
+&lt;&gt; (KI ?x ?y) (?y)
+&lt;&gt; (T ?x ?y) (?y ?y)
+&lt;&gt; (W ?x ?y) (?x ?y ?y)
+&lt;&gt; (K ?x ?y) (?x)
+&lt;&gt; (C ?x ?y ?z) (?x ?z ?y)
+&lt;&gt; (B ?x ?y ?z) (?x (?y ?z))
+&lt;&gt; (I ?x) (?x)
+&lt;&gt; (S ?x ?y ?z) (?x ?z (?y ?z))
 
 .. C KI x y z
 05 KI y x z
@@ -368,9 +368,9 @@ factorial (s (s (s (s (s (0))))))
 <p>Any choice made in regard to syntax is completely arbitrary. To demonstrate, the following code defines a <a href='concatenative.html'>concatenative</a> syntax:</p>
 
 <pre>
-<b>&lt;&gt;</b> (?x dup) (?x ?x)
-<b>&lt;&gt;</b> (?x ?y swap) (?y ?x)
-<b>&lt;&gt;</b> (?x pop) ()
+&lt;&gt; (?x dup) (?x ?x)
+&lt;&gt; (?x ?y swap) (?y ?x)
+&lt;&gt; (?x pop) ()
 
 .. (1 2 3) (4 5 6) swap pop dup
 01 (4 5 6) (1 2 3) pop dup
@@ -385,7 +385,7 @@ composed directly during the evaluation. For instance, here is a rule to define
 new rules with an <a href='notation.html'>infix syntax</a>:</p>
 
 <pre>
-<b>&lt;&gt;</b> ((?x -> ?y)) (<b>&lt;&gt;</b> ?x ?y)
+&lt;&gt; ((?x -> ?y)) (&lt;&gt; ?x ?y)
 (a -> apple)
 (b -> banana)
 ((apple banana) -> (fruit-salad))
