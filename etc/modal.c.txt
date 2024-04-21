@@ -97,20 +97,22 @@ static char *
 match_rule(Rule *r, char *p)
 {
 	int i;
-	char c, last = 0, *a = r->a, *b = p;
+	char c, *a = r->a, *b = p;
 	if(rmax) {
 		for(i = rmin; i <= rmax; i++)
 			regs[i] = 0;
 		rmin = 0xff, rmax = 0x00;
 	}
 	while((c = *a)) {
-		if(c == '?' && spacer(last) && spacer(a[2])) {
+		if(c == '?' && !spacer(c)) {
 			if(!set_reg(*(++a), b)) return NULL;
 			a++, b = walk(b);
+			if(!spacer(*a))
+				while((c = *a) && !spacer(c)) a++;
 			continue;
 		}
 		if(c != *b) return NULL;
-		a++, b++, last = c;
+		a++, b++;
 	}
 	c = *b;
 	return spacer(c) ? b : NULL;
@@ -134,9 +136,9 @@ commit_rule(Rule *r, char *s, int create)
 }
 
 static int
-write_rule(Rule *r, char last, char *res)
+write_rule(Rule *r, char *res)
 {
-	char c, *b = r->b, *origin = dst_;
+	char c, last = 0, *b = r->b, *origin = dst_;
 	while((c = *b++))
 		if(c == '?' && last != '\\' && regs[(int)*b])
 			put_reg(*b++);
@@ -195,11 +197,11 @@ rewrite(void)
 				create_rule(&lambda, -1, s), s = cap;
 				while((c = *s) && c <= ' ') s++;
 				if((res = match_rule(&lambda, s)) != NULL)
-					return write_rule(&lambda, last, res);
+					return write_rule(&lambda, res);
 			}
 			for(r = rules; r < rules_; r++)
 				if((res = match_rule(r, s)) != NULL)
-					return write_rule(r, last, res);
+					return write_rule(r, res);
 		}
 		*dst_++ = last = c;
 		s++;
