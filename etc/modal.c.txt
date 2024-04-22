@@ -30,21 +30,6 @@ walk(char *s)
 	return s;
 }
 
-static int
-set_reg(int r, char *b)
-{
-	if(regs[r]) {
-		char *a = regs[r], *aa = walk(a), *bb = walk(b);
-		while(a < aa || b < bb)
-			if(*a++ != *b++) return 0;
-	} else {
-		regs[r] = b;
-		if(r < rmin) rmin = r;
-		if(r > rmax) rmax = r;
-	}
-	return 1;
-}
-
 static void
 put_reg(char r, char *reg)
 {
@@ -96,25 +81,35 @@ static char *
 match_rule(Rule *r, char *p)
 {
 	int i;
-	char c, *a = r->a, *b = p;
+	char c, *a = r->a;
 	if(rmax) {
 		for(i = rmin; i <= rmax; i++)
 			regs[i] = 0;
 		rmin = 0xff, rmax = 0x00;
 	}
 	while((c = *a)) {
-		if(c == '?' && !spacer(c)) {
-			if(!set_reg(*(++a), b)) return NULL;
-			a++, b = walk(b);
+		if(c == '?') {
+			int regid = (int)*(++a);
+			char *pcap = walk(p), *reg = regs[regid];
+			if(reg) { /* reg cmp */
+				char *rcap = walk(reg), *pp = p;
+				while(reg < rcap || pp < pcap)
+					if(*reg++ != *pp++) return NULL;
+			} else { /* reg set */
+				regs[regid] = p;
+				if(regid < rmin) rmin = regid;
+				if(regid > rmax) rmax = regid;
+			}
+			a++, p = pcap;
 			if(!spacer(*a))
 				while((c = *a) && !spacer(c)) a++;
 			continue;
 		}
-		if(c != *b) return NULL;
-		a++, b++;
+		if(c != *p) return NULL;
+		a++, p++;
 	}
-	c = *b;
-	return spacer(c) ? b : NULL;
+	c = *p;
+	return spacer(c) ? p : NULL;
 }
 
 static int
@@ -213,7 +208,7 @@ main(int argc, char **argv)
 		return !printf("usage: modal [-vqn] source.modal\n");
 	for(i = 1; i < argc && *argv[i] == '-'; i++) {
 		switch(argv[i][1]) {
-		case 'v': /* version */ return !printf("Modal Interpreter, 21 Apr 2024.\n");
+		case 'v': /* version */ return !printf("Modal Interpreter, 22 Apr 2024.\n");
 		case 'q': /* quiet */ fclose(stderr); break;
 		case 'n': /* infinite */ cycles = 0xffffffff; break;
 		}
