@@ -6,7 +6,7 @@ typedef struct {
 } Rule;
 
 static int flip, quiet, rmin = 0xff, rmax = 0x00, cycles = 0x10000;
-static Rule rules[0x1000], *rules_ = rules + 1;
+static Rule rules[0x1000], *rules_ = rules, lambda;
 static char dict[0x8000], *dict_ = dict;
 static char bank_a[0x4000], *src_ = bank_a;
 static char bank_b[0x4000], *dst_ = bank_b;
@@ -34,33 +34,8 @@ static void
 write_reg(char r, char *reg)
 {
 	char c, *cap = walk(reg);
-	if(r == '*') {
-		int i, depth = 0;
-		if(*reg == '(') { /* special explode tuple */
-			reg++;
-			while(reg < cap) {
-				while((c = *reg) && !spacer(c))
-					*dst_++ = c, reg++;
-				*dst_++ = ' ';
-				*dst_++ = '(', reg++, depth++;
-			}
-		} else { /* special explode token */
-			while((c = *reg++) && !spacer(c))
-				*dst_++ = c, *dst_++ = ' ', *dst_++ = '(', depth++;
-		}
-		for(i = 0; i < depth; i++)
-			*dst_++ = ')';
-	} else if(r == '.') { /* special unpack */
-		if(*reg == '(') reg++, --cap;
-		while(reg < cap) *dst_++ = *reg++;
-	} else if(r == '^') { /* special join */
-		if(*reg == '(') reg++, --cap;
-		while(reg < cap && (c = *reg++))
-			if(!spacer(c)) *dst_++ = c;
-	} else if(r == '~') { /* special stdin */
-		while(fread(&c, 1, 1, stdin) && c >= ' ')
-			*dst_++ = c;
-	} else if(r == ':') { /* special stdout */
+	switch(r) {
+	case ':': /* op: output */
 		if(*reg == '(') reg++, --cap;
 		while(reg < cap) {
 			c = *reg++;
@@ -73,8 +48,40 @@ write_reg(char r, char *reg)
 			} else
 				putc(c, stdout);
 		}
-	} else
+		return;
+	case '~': /* op: input */
+		while(fread(&c, 1, 1, stdin) && c >= ' ')
+			*dst_++ = c;
+		return;
+	case '^': /* op: join */
+		if(*reg == '(') reg++, --cap;
+		while(reg < cap && (c = *reg++))
+			if(!spacer(c)) *dst_++ = c;
+		return;
+	case '.': /* op: unwrap */
+		if(*reg == '(') reg++, --cap;
 		while(reg < cap) *dst_++ = *reg++;
+		return;
+	case '*': { /* op: explode */
+		int i, depth = 0;
+		if(*reg == '(') { /* tuple */
+			reg++;
+			while(reg < cap) {
+				while((c = *reg) && !spacer(c))
+					*dst_++ = c, reg++;
+				*dst_++ = ' ';
+				*dst_++ = '(', reg++, depth++;
+			}
+		} else { /* token */
+			while((c = *reg++) && !spacer(c))
+				*dst_++ = c, *dst_++ = ' ', *dst_++ = '(', depth++;
+		}
+		for(i = 0; i < depth; i++) *dst_++ = ')';
+		return;
+	}
+	default:
+		while(reg < cap) *dst_++ = *reg++;
+	}
 }
 
 static int
@@ -179,14 +186,13 @@ rewrite(void)
 			}
 			if(c == '?' && s[1] == '(') { /* lambda */
 				cap = walk(s + 1);
-				r = &rules[0], r->id = -1;
-				r->a = dict_, s = parse_frag(s + 2);
-				r->b = dict_, parse_frag(s), s = cap;
+				lambda.id = -1;
+				lambda.a = dict_, s = parse_frag(s + 2);
+				lambda.b = dict_, parse_frag(s), s = cap;
 				while(*s == ' ') s++;
-				return run_rule(r, s);
+				return run_rule(&lambda, s);
 			}
-
-			for(r = rules + 1; r < rules_; r++)
+			for(r = rules; r < rules_; r++)
 				if(run_rule(r, s)) return 1;
 		}
 		*dst_++ = last = c;
