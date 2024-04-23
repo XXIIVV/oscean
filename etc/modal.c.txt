@@ -30,7 +30,7 @@ walk(char *s)
 	return s;
 }
 
-static void
+static int
 write_reg(char r, char *reg)
 {
 	char c, *cap = walk(reg);
@@ -48,20 +48,20 @@ write_reg(char r, char *reg)
 			} else
 				putc(c, stdout);
 		}
-		return;
+		return 0;
 	case '~': /* op: input */
 		while(fread(&c, 1, 1, stdin) && c >= ' ')
 			*dst_++ = c;
-		return;
+		return 1;
 	case '^': /* op: join */
 		if(*reg == '(') reg++, --cap;
 		while(reg < cap && (c = *reg++))
 			if(!spacer(c)) *dst_++ = c;
-		return;
+		return 1;
 	case '.': /* op: unwrap */
 		if(*reg == '(') reg++, --cap;
 		while(reg < cap) *dst_++ = *reg++;
-		return;
+		return 1;
 	case '*': { /* op: explode */
 		int i, depth = 0;
 		if(*reg == '(') { /* tuple */
@@ -77,10 +77,11 @@ write_reg(char r, char *reg)
 				*dst_++ = c, *dst_++ = ' ', *dst_++ = '(', depth++;
 		}
 		for(i = 0; i < depth; i++) *dst_++ = ')';
-		return;
+		return 1;
 	}
 	default:
 		while(reg < cap) *dst_++ = *reg++;
+		return 1;
 	}
 }
 
@@ -137,9 +138,9 @@ apply_rule(Rule *r, char *s)
 	if(!(c = *s) || spacer(c)) { /* phase: write rule */
 		char *b = r->b, *reg, *origin = dst_;
 		while((c = *b++))
-			if(c == '?' && (reg = regs[(int)*b]))
-				write_reg(*b++, reg);
-			else
+			if(c == '?' && (reg = regs[(int)*b])) {
+				if(!write_reg(*b++, reg) && dst_ != origin) dst_--;
+			} else
 				*dst_++ = c;
 		if(dst_ == origin) {
 			while(*s == ' ') s++;
