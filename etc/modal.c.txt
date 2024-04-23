@@ -1,11 +1,11 @@
 #include <stdio.h>
 
 typedef struct {
-	int id;
+	int id, refs;
 	char *a, *b;
 } Rule;
 
-static int flip, rmin = 0xff, rmax = 0x00, cycles = 0x10000;
+static int flip, quiet, rmin = 0xff, rmax = 0x00, cycles = 0x10000;
 static Rule rules[0x1000], lambda, *rules_ = rules;
 static char dict[0x8000], *dict_ = dict;
 static char bank_a[0x4000], *src_ = bank_a;
@@ -31,7 +31,7 @@ walk(char *s)
 }
 
 static void
-put_reg(char r, char *reg)
+write_reg(char r, char *reg)
 {
 	char c, *cap = walk(reg);
 	if(r == '*') {
@@ -77,43 +77,8 @@ put_reg(char r, char *reg)
 		while(reg < cap) *dst_++ = *reg++;
 }
 
-static char *
-match_rule(Rule *r, char *p)
-{
-	int i;
-	char c, *a = r->a;
-	if(rmax) {
-		for(i = rmin; i <= rmax; i++)
-			regs[i] = 0;
-		rmin = 0xff, rmax = 0x00;
-	}
-	while((c = *a)) {
-		if(c == '?') {
-			int regid = (int)*(++a);
-			char *pcap = walk(p), *reg = regs[regid];
-			if(reg) { /* reg cmp */
-				char *rcap = walk(reg), *pp = p;
-				while(reg < rcap || pp < pcap)
-					if(*reg++ != *pp++) return NULL;
-			} else { /* reg set */
-				regs[regid] = p;
-				if(regid < rmin) rmin = regid;
-				if(regid > rmax) rmax = regid;
-			}
-			a++, p = pcap;
-			if(!spacer(*a))
-				while((c = *a) && !spacer(c)) a++;
-			continue;
-		}
-		if(c != *p) return NULL;
-		a++, p++;
-	}
-	c = *p;
-	return spacer(c) ? p : NULL;
-}
-
 static int
-commit_rule(Rule *r, char *s, int create)
+write_rule(Rule *r, char *s, int create)
 {
 	while((*dst_++ = *s++))
 		;
@@ -122,27 +87,60 @@ commit_rule(Rule *r, char *s, int create)
 		src_ = bank_b, dst_ = bank_a;
 	else
 		src_ = bank_a, dst_ = bank_b;
-	if(create)
-		fprintf(stderr, "<> (%s) (%s)\n", r->a, r->b);
-	else
-		fprintf(stderr, "%02d %s\n", r->id, src_);
+	if(!quiet) {
+		if(create)
+			fprintf(stderr, "<> (%s) (%s)\n", r->a, r->b);
+		else
+			fprintf(stderr, "%02d %s\n", r->id, src_), ++r->refs;
+	}
 	return 1;
 }
 
 static int
-write_rule(Rule *r, char *s)
+run_rule(Rule *r, char *s)
 {
-	char c, *b = r->b, *reg, *origin = dst_;
-	while((c = *b++))
-		if(c == '?' && (reg = regs[(int)*b]))
-			put_reg(*b++, reg);
-		else
-			*dst_++ = c;
-	if(dst_ == origin) {
-		while(*s == ' ') s++;
-		if(*s == ')' && *(dst_ - 1) == ' ') dst_--;
+	char c, *a = r->a;
+	if(rmax) { /* clean registers */
+		int i;
+		for(i = rmin; i <= rmax; i++)
+			regs[i] = 0;
+		rmin = 0xff, rmax = 0x00;
 	}
-	return commit_rule(r, s, 0);
+	while((c = *a)) { /* find match */
+		if(c == '?') {
+			int regid = (int)*(++a);
+			char *pcap = walk(s), *reg = regs[regid];
+			if(reg) { /* reg cmp */
+				char *rcap = walk(reg), *pp = s;
+				while(reg < rcap || pp < pcap)
+					if(*reg++ != *pp++) return 0;
+			} else { /* reg set */
+				regs[regid] = s;
+				if(regid < rmin) rmin = regid;
+				if(regid > rmax) rmax = regid;
+			}
+			a++, s = pcap;
+			if(!spacer(*a))
+				while((c = *a) && !spacer(c)) a++;
+			continue;
+		}
+		if(c != *s) return 0;
+		a++, s++;
+	}
+	if((c = *s) && spacer(c)) { /* write match */
+		char *b = r->b, *reg, *origin = dst_;
+		while((c = *b++))
+			if(c == '?' && (reg = regs[(int)*b]))
+				write_reg(*b++, reg);
+			else
+				*dst_++ = c;
+		if(dst_ == origin) { /* trim */
+			while(*s == ' ') s++;
+			if(*s == ')' && *(dst_ - 1) == ' ') dst_--;
+		}
+		return write_rule(r, s, 0);
+	}
+	return 0;
 }
 
 static char *
@@ -166,30 +164,28 @@ parse_frag(char *s)
 static int
 rewrite(void)
 {
-	char c, last = 0, *cap, *s = src_, *res;
+	char c, last = 0, *cap, *s = src_;
 	while(*s == ' ') s++;
 	while((c = *s)) {
 		if(spacer(last)) {
 			Rule *r;
-			if(c == '<' && s[1] == '>') {
+			if(c == '<' && s[1] == '>') { /* rule */
 				r = rules_++, r->id = rules_ - rules - 1;
 				r->a = dict_, s = parse_frag(s + 2);
 				r->b = dict_, s = parse_frag(s);
 				while(*s == ' ') s++;
-				return commit_rule(r, s, 1);
+				return write_rule(r, s, 1);
 			}
-			if(c == '?' && s[1] == '(') {
+			if(c == '?' && s[1] == '(') { /* lambda */
 				cap = walk(s + 1);
 				r = &lambda, r->id = -1;
 				r->a = dict_, s = parse_frag(s + 2);
 				r->b = dict_, parse_frag(s), s = cap;
 				while(*s == ' ') s++;
-				if((res = match_rule(&lambda, s)) != NULL)
-					return write_rule(&lambda, res);
+				if(run_rule(r, s)) return 1;
 			}
 			for(r = rules; r < rules_; r++)
-				if((res = match_rule(r, s)) != NULL)
-					return write_rule(r, res);
+				if(run_rule(r, s)) return 1;
 		}
 		*dst_++ = last = c;
 		s++;
@@ -209,7 +205,7 @@ main(int argc, char **argv)
 	for(i = 1; i < argc && *argv[i] == '-'; i++) {
 		switch(argv[i][1]) {
 		case 'v': /* version */ return !printf("Modal Interpreter, 22 Apr 2024.\n");
-		case 'q': /* quiet */ fclose(stderr); break;
+		case 'q': /* quiet */ quiet = 1; break;
 		case 'n': /* infinite */ cycles = 0xffffffff; break;
 		}
 	}
@@ -232,5 +228,7 @@ main(int argc, char **argv)
 		return !fprintf(stdout, "Modal program imbalanced.\n");
 	while(rewrite())
 		if(!cycles--) return !fprintf(stdout, "Modal rewrites exceeded.\n");
+	while(rules_-- > rules && !quiet)
+		if(!rules_->refs) printf("-- Unused rule: %d <> (%s) (%s)\n", rules_->refs, rules_->a, rules_->b);
 	return 0;
 }
