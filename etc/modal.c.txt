@@ -104,38 +104,37 @@ write_rule(Rule *r, char *s, int create)
 }
 
 static int
-run_rule(Rule *r, char *s)
+apply_rule(Rule *r, char *s)
 {
 	int i;
-	char c, *a = r->a, *p = s;
+	char c, *a = r->a;
 	if(rmax) {
 		for(i = rmin; i <= rmax; i++)
 			regs[i] = 0;
 		rmin = 0xff, rmax = 0x00;
 	}
-	while((c = *a)) {
+	while((c = *a)) { /* phase: match rule */
 		if(c == '?') {
 			int regid = (int)*(++a);
-			char *pcap = walk(p), *reg = regs[regid];
+			char *pcap = walk(s), *reg = regs[regid];
 			if(reg) { /* reg cmp */
-				char *rcap = walk(reg), *pp = p;
+				char *rcap = walk(reg), *pp = s;
 				while(reg < rcap || pp < pcap)
 					if(*reg++ != *pp++) return 0;
 			} else { /* reg set */
-				regs[regid] = p;
+				regs[regid] = s;
 				if(regid < rmin) rmin = regid;
 				if(regid > rmax) rmax = regid;
 			}
-			a++, p = pcap;
+			a++, s = pcap;
 			if(!spacer(*a))
 				while((c = *a) && !spacer(c)) a++;
 			continue;
 		}
-		if(c != *p) return 0;
-		a++, p++;
+		if(c != *s) return 0;
+		a++, s++;
 	}
-	c = *p;
-	if(spacer(c)) {
+	if(!(c = *s) || spacer(c)) { /* phase: write rule */
 		char *b = r->b, *reg, *origin = dst_;
 		while((c = *b++))
 			if(c == '?' && (reg = regs[(int)*b]))
@@ -143,10 +142,10 @@ run_rule(Rule *r, char *s)
 			else
 				*dst_++ = c;
 		if(dst_ == origin) {
-			while(*p == ' ') p++;
-			if(*p == ')' && *(dst_ - 1) == ' ') dst_--;
+			while(*s == ' ') s++;
+			if(*s == ')' && *(dst_ - 1) == ' ') dst_--;
 		}
-		return write_rule(r, p, 0);
+		return write_rule(r, s, 0);
 	}
 	return 0;
 }
@@ -190,10 +189,10 @@ rewrite(void)
 				lambda.a = dict_, s = parse_frag(s + 2);
 				lambda.b = dict_, parse_frag(s), s = cap;
 				while(*s == ' ') s++;
-				return run_rule(&lambda, s);
+				return apply_rule(&lambda, s);
 			}
 			for(r = rules; r < rules_; r++)
-				if(run_rule(r, s)) return 1;
+				if(apply_rule(r, s)) return 1;
 		}
 		*dst_++ = last = c;
 		s++;
