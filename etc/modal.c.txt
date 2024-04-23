@@ -6,7 +6,7 @@ typedef struct {
 } Rule;
 
 static int flip, quiet, rmin = 0xff, rmax = 0x00, cycles = 0x10000;
-static Rule rules[0x1000], lambda, *rules_ = rules;
+static Rule rules[0x1000], *rules_ = rules + 1;
 static char dict[0x8000], *dict_ = dict;
 static char bank_a[0x4000], *src_ = bank_a;
 static char bank_b[0x4000], *dst_ = bank_b;
@@ -99,46 +99,47 @@ write_rule(Rule *r, char *s, int create)
 static int
 run_rule(Rule *r, char *s)
 {
-	char c, *a = r->a;
-	if(rmax) { /* clean registers */
-		int i;
+	int i;
+	char c, *a = r->a, *p = s;
+	if(rmax) {
 		for(i = rmin; i <= rmax; i++)
 			regs[i] = 0;
 		rmin = 0xff, rmax = 0x00;
 	}
-	while((c = *a)) { /* find match */
+	while((c = *a)) {
 		if(c == '?') {
 			int regid = (int)*(++a);
-			char *pcap = walk(s), *reg = regs[regid];
+			char *pcap = walk(p), *reg = regs[regid];
 			if(reg) { /* reg cmp */
-				char *rcap = walk(reg), *pp = s;
+				char *rcap = walk(reg), *pp = p;
 				while(reg < rcap || pp < pcap)
 					if(*reg++ != *pp++) return 0;
 			} else { /* reg set */
-				regs[regid] = s;
+				regs[regid] = p;
 				if(regid < rmin) rmin = regid;
 				if(regid > rmax) rmax = regid;
 			}
-			a++, s = pcap;
+			a++, p = pcap;
 			if(!spacer(*a))
 				while((c = *a) && !spacer(c)) a++;
 			continue;
 		}
-		if(c != *s) return 0;
-		a++, s++;
+		if(c != *p) return 0;
+		a++, p++;
 	}
-	if((c = *s) && spacer(c)) { /* write match */
+	c = *p;
+	if(spacer(c)) {
 		char *b = r->b, *reg, *origin = dst_;
 		while((c = *b++))
 			if(c == '?' && (reg = regs[(int)*b]))
 				write_reg(*b++, reg);
 			else
 				*dst_++ = c;
-		if(dst_ == origin) { /* trim */
-			while(*s == ' ') s++;
-			if(*s == ')' && *(dst_ - 1) == ' ') dst_--;
+		if(dst_ == origin) {
+			while(*p == ' ') p++;
+			if(*p == ')' && *(dst_ - 1) == ' ') dst_--;
 		}
-		return write_rule(r, s, 0);
+		return write_rule(r, p, 0);
 	}
 	return 0;
 }
@@ -178,13 +179,14 @@ rewrite(void)
 			}
 			if(c == '?' && s[1] == '(') { /* lambda */
 				cap = walk(s + 1);
-				r = &lambda, r->id = -1;
+				r = &rules[0], r->id = -1;
 				r->a = dict_, s = parse_frag(s + 2);
 				r->b = dict_, parse_frag(s), s = cap;
 				while(*s == ' ') s++;
-				if(run_rule(r, s)) return 1;
+				return run_rule(r, s);
 			}
-			for(r = rules; r < rules_; r++)
+
+			for(r = rules + 1; r < rules_; r++)
 				if(run_rule(r, s)) return 1;
 		}
 		*dst_++ = last = c;
