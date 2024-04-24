@@ -2,7 +2,7 @@
 
 typedef struct {
 	unsigned int id, refs, ptr;
-	char *a, *b, key[0x10];
+	char *a, *b, reg[0x10];
 } Rule;
 
 static int flip, quiet, cycles = 0x10000;
@@ -88,7 +88,7 @@ write_rule(Rule *r, char *s, int create)
 {
 	while((*dst_++ = *s++))
 		;
-	*dst_++ = 0;
+	*dst_ = 0;
 	if((flip = !flip))
 		src_ = bank_b, dst_ = bank_a;
 	else
@@ -105,12 +105,16 @@ write_rule(Rule *r, char *s, int create)
 static int
 apply_rule(Rule *r, char *s)
 {
-	char c, *a = r->a, *regs[0x08] = {NULL}, *reg;
+	unsigned int i, id;
+	char c, *a = r->a, *regs[0x08], *reg;
+	/* phase: clean registers */
+	for(i = 0; i < r->ptr; i++)
+		regs[i] = NULL;
 	/* phase: match rule */
 	while((c = *a)) {
 		if(c == '?') {
 			char *pcap = walk(s);
-			unsigned int id = *(++a) - '0';
+			id = *(++a) - '0';
 			if((reg = regs[id])) { /* reg cmp */
 				char *rcap = walk(reg), *pp = s;
 				while(reg < rcap || pp < pcap)
@@ -130,11 +134,10 @@ apply_rule(Rule *r, char *s)
 		char *b = r->b, *origin = dst_;
 		while((c = *b++)) {
 			if(c == '?') {
-				unsigned int id = *b - '0';
-				if(id < 9 && (reg = regs[id])) {
-					b++;
-					if(!write_reg(r->key[id], reg) && dst_ != origin) dst_--;
-				} else
+				id = *b - '0';
+				if(id < 9 && (reg = regs[id]))
+					b++, write_reg(r->reg[id], reg);
+				else
 					*dst_++ = c;
 			} else
 				*dst_++ = c;
@@ -153,7 +156,7 @@ find_register(Rule *r, char reg)
 {
 	int i;
 	for(i = 0; i < (int)r->ptr; i++)
-		if(r->key[i] == reg) return i;
+		if(r->reg[i] == reg) return i;
 	return -1;
 }
 
@@ -163,7 +166,7 @@ compile_rule(Rule *r, int id, char *src)
 	char c, *cap;
 	int wrapped, reg;
 	r->id = id, r->ptr = 0, r->a = &empty, r->b = &empty;
-	/* phase: left */
+	/* phase: compile left */
 	while((c = *src) && c == ' ') src++;
 	if(c == ')' || (c == '<' && src[1] == '>')) return src;
 	r->a = dict_, cap = walk(src), wrapped = c == '(';
@@ -173,12 +176,12 @@ compile_rule(Rule *r, int id, char *src)
 		if(c == '?') {
 			reg = find_register(r, *src);
 			if(reg == -1 && *src != '(')
-				r->key[r->ptr] = *src, reg = r->ptr++;
+				r->reg[r->ptr] = *src, reg = r->ptr++;
 			*dict_++ = '0' + reg;
 		}
 	}
 	src += wrapped, *dict_++ = 0;
-	/* phase: right */
+	/* phase: compile right */
 	while((c = *src) && c == ' ') src++;
 	if(c == ')' || (c == '<' && src[1] == '>')) return src;
 	r->b = dict_, cap = walk(src), wrapped = c == '(';
@@ -203,19 +206,22 @@ rewrite(void)
 	while((c = *s)) {
 		if(spacer(last)) {
 			Rule *r = NULL;
-			if(c == '<' && s[1] == '>') { /* rule */
+			/* phase: rule */
+			if(c == '<' && s[1] == '>') {
 				r = rules_++;
 				s = compile_rule(r, rules_ - rules - 1, s + 2);
 				while(*s == ' ') s++;
 				return write_rule(r, s, 1);
 			}
-			if(c == '?' && s[1] == '(') { /* lambda */
+			/* phase: lambda */
+			if(c == '?' && s[1] == '(') {
 				cap = walk(s + 1);
 				compile_rule(&lambda, -1, s + 2);
 				s = cap;
 				while(*s == ' ') s++;
 				return apply_rule(&lambda, s);
 			}
+			/* phase: match */
 			for(r = rules; r < rules_; r++)
 				if(apply_rule(r, s)) return 1;
 		}
