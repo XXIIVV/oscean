@@ -1,8 +1,8 @@
 #include <stdio.h>
 
 typedef struct {
-	int id, refs;
-	char *a, *b;
+	unsigned int id, refs, ptr;
+	char *a, *b, key[0x10];
 } Rule;
 
 static int flip, quiet, cycles = 0x10000;
@@ -11,12 +11,7 @@ static char dict[0x8000], *dict_ = dict;
 static char bank_a[0x4000], *src_ = bank_a;
 static char bank_b[0x4000], *dst_ = bank_b;
 
-/* clang-format off */
-
 #define spacer(c) (c <= ' ' || c == '(' || c == ')')
-#define get_reg(x) { regid = x; for(i = 0; i < rptr; i++) if(rkey[i] == regid) { reg = rval[i]; break; } }
-
-/* clang-format on */
 
 static char *
 walk(char *s)
@@ -110,18 +105,18 @@ write_rule(Rule *r, char *s, int create)
 static int
 apply_rule(Rule *r, char *s)
 {
-	int i, regid, rptr = 0;
-	char c, *a = r->a, rkey[0x10], *rval[0x10];
-	while((c = *a)) { /* phase: match rule */
+	char c, *a = r->a, *regs[0x08] = {NULL}, *reg;
+	/* phase: match rule */
+	while((c = *a)) {
 		if(c == '?') {
-			char *pcap = walk(s), *reg = NULL;
-			get_reg(*(++a));
-			if(reg) { /* reg cmp */
+			char *pcap = walk(s);
+			unsigned int id = *(++a) - '0';
+			if((reg = regs[id])) { /* reg cmp */
 				char *rcap = walk(reg), *pp = s;
 				while(reg < rcap || pp < pcap)
 					if(*reg++ != *pp++) return 0;
 			} else /* reg set */
-				rkey[rptr] = regid, rval[rptr++] = s;
+				regs[id] = s;
 			a++, s = pcap;
 			if(!spacer(*a))
 				while((c = *a) && !spacer(c)) a++;
@@ -130,14 +125,15 @@ apply_rule(Rule *r, char *s)
 		if(c != *s) return 0;
 		a++, s++;
 	}
-	if(!(c = *s) || spacer(c)) { /* phase: write rule */
+	/* phase: write rule */
+	if(!(c = *s) || spacer(c)) {
 		char *b = r->b, *origin = dst_;
 		while((c = *b++)) {
 			if(c == '?') {
-				char *reg = NULL;
-				get_reg(*b);
-				if(reg) {
-					if(!write_reg(*b++, reg) && dst_ != origin) dst_--;
+				unsigned int id = *b - '0';
+				if(id < 9 && (reg = regs[id])) {
+					b++;
+					if(!write_reg(r->key[id], reg) && dst_ != origin) dst_--;
 				} else
 					*dst_++ = c;
 			} else
@@ -171,24 +167,61 @@ parse_frag(char *s)
 }
 
 static int
+find_register(Rule *r, char reg)
+{
+	int i;
+	for(i = 0; i < (int)r->ptr; i++)
+		if(r->key[i] == reg)
+			return i;
+	return -1;
+}
+
+static char *
+compile_rule(Rule *r, int id, char *src)
+{
+	char c, *s;
+	r->id = id, r->ptr = 0;
+	r->a = dict_, src = parse_frag(src);
+	s = r->a;
+	while((c = *s++)) { /* left */
+		if(c == '?') {
+			int reg = find_register(r, *s);
+			if(reg < 0 && *s != '(')
+				r->key[r->ptr] = *s, reg = r->ptr++;
+			*s = '0' + reg;
+		}
+	}
+	r->b = dict_, src = parse_frag(src);
+	s = r->b;
+	while((c = *s++)) { /* right */
+		if(c == '?') {
+			int reg = find_register(r, *s);
+			if(reg >= 0)
+				*s = '0' + reg;
+		}
+	}
+	return src;
+}
+
+static int
 rewrite(void)
 {
 	char c, last = 0, *cap, *s = src_;
 	while(*s == ' ') s++;
 	while((c = *s)) {
 		if(spacer(last)) {
-			Rule *r;
+			Rule *r = NULL;
 			if(c == '<' && s[1] == '>') { /* rule */
-				r = rules_++, r->id = rules_ - rules - 1;
-				r->a = dict_, s = parse_frag(s + 2);
-				r->b = dict_, s = parse_frag(s);
+				r = rules_++;
+				s = compile_rule(r,rules_ - rules - 1, s + 2);
 				while(*s == ' ') s++;
 				return write_rule(r, s, 1);
 			}
 			if(c == '?' && s[1] == '(') { /* lambda */
-				cap = walk(s + 1), lambda.id = -1;
-				lambda.a = dict_, s = parse_frag(s + 2);
-				lambda.b = dict_, parse_frag(s), s = cap;
+				cap = walk(s + 1);
+				r = &lambda;
+				compile_rule(r, -1, s + 2);
+				s = cap;
 				while(*s == ' ') s++;
 				return apply_rule(&lambda, s);
 			}
@@ -212,7 +245,7 @@ main(int argc, char **argv)
 		return !printf("usage: modal [-vqn] source.modal\n");
 	for(i = 1; i < argc && *argv[i] == '-'; i++) {
 		switch(argv[i][1]) {
-		case 'v': /* version */ return !printf("Modal Interpreter, 23 Apr 2024.\n");
+		case 'v': /* version */ return !printf("Modal Interpreter, 24 Apr 2024.\n");
 		case 'q': /* quiet */ quiet = 1; break;
 		case 'n': /* infinite */ cycles = 0xffffffff; break;
 		}
