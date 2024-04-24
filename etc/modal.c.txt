@@ -5,14 +5,18 @@ typedef struct {
 	char *a, *b;
 } Rule;
 
-static int flip, quiet, rmin = 0xff, rmax = 0x00, cycles = 0x10000;
+static int flip, quiet, cycles = 0x10000;
 static Rule rules[0x1000], *rules_ = rules, lambda;
 static char dict[0x8000], *dict_ = dict;
 static char bank_a[0x4000], *src_ = bank_a;
 static char bank_b[0x4000], *dst_ = bank_b;
-static char *regs[0x100];
+
+/* clang-format off */
 
 #define spacer(c) (c <= ' ' || c == '(' || c == ')')
+#define get_reg(x) { regid = x; for(i = 0; i < rptr; i++) if(rkey[i] == regid) { reg = rval[i]; break; } }
+
+/* clang-format on */
 
 static char *
 walk(char *s)
@@ -64,7 +68,7 @@ write_reg(char r, char *reg)
 		return 1;
 	case '*': { /* op: explode */
 		int i, depth = 0;
-		if(*reg == '(') { /* tuple */
+		if(*reg == '(' && reg[1] != ')') { /* tuple */
 			reg++;
 			while(reg < cap) {
 				while((c = *reg) && !spacer(c))
@@ -72,10 +76,9 @@ write_reg(char r, char *reg)
 				*dst_++ = ' ';
 				*dst_++ = '(', reg++, depth++;
 			}
-		} else { /* token */
+		} else /* token */
 			while((c = *reg++) && !spacer(c))
 				*dst_++ = c, *dst_++ = ' ', *dst_++ = '(', depth++;
-		}
 		for(i = 0; i < depth; i++) *dst_++ = ')';
 		return 1;
 	}
@@ -107,26 +110,18 @@ write_rule(Rule *r, char *s, int create)
 static int
 apply_rule(Rule *r, char *s)
 {
-	int i;
-	char c, *a = r->a;
-	if(rmax) {
-		for(i = rmin; i <= rmax; i++)
-			regs[i] = 0;
-		rmin = 0xff, rmax = 0x00;
-	}
+	int i, regid, rptr = 0;
+	char c, *a = r->a, rkey[0x10], *rval[0x10];
 	while((c = *a)) { /* phase: match rule */
 		if(c == '?') {
-			int regid = (int)*(++a);
-			char *pcap = walk(s), *reg = regs[regid];
+			char *pcap = walk(s), *reg = NULL;
+			get_reg(*(++a));
 			if(reg) { /* reg cmp */
 				char *rcap = walk(reg), *pp = s;
 				while(reg < rcap || pp < pcap)
 					if(*reg++ != *pp++) return 0;
-			} else { /* reg set */
-				regs[regid] = s;
-				if(regid < rmin) rmin = regid;
-				if(regid > rmax) rmax = regid;
-			}
+			} else /* reg set */
+				rkey[rptr] = regid, rval[rptr++] = s;
 			a++, s = pcap;
 			if(!spacer(*a))
 				while((c = *a) && !spacer(c)) a++;
@@ -136,12 +131,18 @@ apply_rule(Rule *r, char *s)
 		a++, s++;
 	}
 	if(!(c = *s) || spacer(c)) { /* phase: write rule */
-		char *b = r->b, *reg, *origin = dst_;
-		while((c = *b++))
-			if(c == '?' && (reg = regs[(int)*b])) {
-				if(!write_reg(*b++, reg) && dst_ != origin) dst_--;
+		char *b = r->b, *origin = dst_;
+		while((c = *b++)) {
+			if(c == '?') {
+				char *reg = NULL;
+				get_reg(*b);
+				if(reg) {
+					if(!write_reg(*b++, reg) && dst_ != origin) dst_--;
+				} else
+					*dst_++ = c;
 			} else
 				*dst_++ = c;
+		}
 		if(dst_ == origin) {
 			while(*s == ' ') s++;
 			if(*s == ')' && *(dst_ - 1) == ' ') dst_--;
@@ -185,8 +186,7 @@ rewrite(void)
 				return write_rule(r, s, 1);
 			}
 			if(c == '?' && s[1] == '(') { /* lambda */
-				cap = walk(s + 1);
-				lambda.id = -1;
+				cap = walk(s + 1), lambda.id = -1;
 				lambda.a = dict_, s = parse_frag(s + 2);
 				lambda.b = dict_, parse_frag(s), s = cap;
 				while(*s == ' ') s++;
@@ -212,7 +212,7 @@ main(int argc, char **argv)
 		return !printf("usage: modal [-vqn] source.modal\n");
 	for(i = 1; i < argc && *argv[i] == '-'; i++) {
 		switch(argv[i][1]) {
-		case 'v': /* version */ return !printf("Modal Interpreter, 22 Apr 2024.\n");
+		case 'v': /* version */ return !printf("Modal Interpreter, 23 Apr 2024.\n");
 		case 'q': /* quiet */ quiet = 1; break;
 		case 'n': /* infinite */ cycles = 0xffffffff; break;
 		}
@@ -225,9 +225,9 @@ main(int argc, char **argv)
 			if(c == ' ' && *(w - 1) == '(') continue;
 			if(c == ')' && *(w - 1) == ' ') w--;
 			if(c == ' ' && *(w - 1) == ' ') w--;
-			if(c == '(') pl++;
-			if(c == ')') pr++;
 		}
+		if(c == '(') pl++;
+		if(c == ')') pr++;
 		*w++ = c;
 	}
 	while(*(--w) <= ' ') *w = 0;
