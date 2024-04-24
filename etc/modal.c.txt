@@ -7,7 +7,7 @@ typedef struct {
 
 static int flip, quiet, cycles = 0x10000;
 static Rule rules[0x1000], *rules_ = rules, lambda;
-static char dict[0x8000], *dict_ = dict;
+static char dict[0x8000], *dict_ = dict, empty;
 static char bank_a[0x4000], *src_ = bank_a;
 static char bank_b[0x4000], *dst_ = bank_b;
 
@@ -148,58 +148,50 @@ apply_rule(Rule *r, char *s)
 	return 0;
 }
 
-static char *
-parse_frag(char *s)
-{
-	char c, *cap;
-	while((c = *s) && c == ' ') s++;
-	if(c != ')' && !(c == '<' && s[1] == '>')) {
-		cap = walk(s);
-		if(c == '(') {
-			s++;
-			while(s < cap - 1) *dict_++ = *s++;
-			s++;
-		} else
-			while(s < cap) *dict_++ = *s++;
-	}
-	*dict_++ = 0;
-	return s;
-}
-
 static int
 find_register(Rule *r, char reg)
 {
 	int i;
 	for(i = 0; i < (int)r->ptr; i++)
-		if(r->key[i] == reg)
-			return i;
+		if(r->key[i] == reg) return i;
 	return -1;
 }
 
 static char *
 compile_rule(Rule *r, int id, char *src)
 {
-	char c, *s;
-	r->id = id, r->ptr = 0;
-	r->a = dict_, src = parse_frag(src);
-	s = r->a;
-	while((c = *s++)) { /* left */
+	char c, *cap;
+	int wrapped, reg;
+	r->id = id, r->ptr = 0, r->a = &empty, r->b = &empty;
+	/* phase: left */
+	while((c = *src) && c == ' ') src++;
+	if(c == ')' || (c == '<' && src[1] == '>')) return src;
+	r->a = dict_, cap = walk(src), wrapped = c == '(';
+	if(wrapped) src++, cap--;
+	while(src < cap) {
+		c = *src, *dict_++ = *src++;
 		if(c == '?') {
-			int reg = find_register(r, *s);
-			if(reg < 0 && *s != '(')
-				r->key[r->ptr] = *s, reg = r->ptr++;
-			*s = '0' + reg;
+			reg = find_register(r, *src);
+			if(reg == -1 && *src != '(')
+				r->key[r->ptr] = *src, reg = r->ptr++;
+			*dict_++ = '0' + reg;
 		}
 	}
-	r->b = dict_, src = parse_frag(src);
-	s = r->b;
-	while((c = *s++)) { /* right */
+	src += wrapped, *dict_++ = 0;
+	/* phase: right */
+	while((c = *src) && c == ' ') src++;
+	if(c == ')' || (c == '<' && src[1] == '>')) return src;
+	r->b = dict_, cap = walk(src), wrapped = c == '(';
+	if(wrapped) src++, cap--;
+	while(src < cap) {
+		c = *src, *dict_++ = *src++;
 		if(c == '?') {
-			int reg = find_register(r, *s);
-			if(reg >= 0)
-				*s = '0' + reg;
+			reg = find_register(r, *src);
+			*dict_++ = reg != -1 ? '0' + reg : *src;
+			src++;
 		}
 	}
+	src += wrapped, *dict_++ = 0;
 	return src;
 }
 
@@ -213,14 +205,13 @@ rewrite(void)
 			Rule *r = NULL;
 			if(c == '<' && s[1] == '>') { /* rule */
 				r = rules_++;
-				s = compile_rule(r,rules_ - rules - 1, s + 2);
+				s = compile_rule(r, rules_ - rules - 1, s + 2);
 				while(*s == ' ') s++;
 				return write_rule(r, s, 1);
 			}
 			if(c == '?' && s[1] == '(') { /* lambda */
 				cap = walk(s + 1);
-				r = &lambda;
-				compile_rule(r, -1, s + 2);
+				compile_rule(&lambda, -1, s + 2);
 				s = cap;
 				while(*s == ' ') s++;
 				return apply_rule(&lambda, s);
