@@ -111,23 +111,22 @@ apply_rule(Rule *r, char *s)
 	for(i = 0; i < r->ptr; i++)
 		regs[i] = NULL;
 	/* phase: match rule */
-	while((c = *a)) {
+	while((c = *a++)) {
 		if(c == '?') {
 			char *pcap = walk(s);
-			id = *(++a) - '0';
+			id = *a - '0';
 			if((reg = regs[id])) { /* reg cmp */
 				char *rcap = walk(reg), *pp = s;
 				while(reg < rcap || pp < pcap)
 					if(*reg++ != *pp++) return 0;
 			} else /* reg set */
 				regs[id] = s;
-			a++, s = pcap;
-			if(!spacer(*a))
+			c = *a++, s = pcap;
+			if(!spacer(c))
 				while((c = *a) && !spacer(c)) a++;
 			continue;
 		}
-		if(c != *s) return 0;
-		a++, s++;
+		if(c != *s++) return 0;
 	}
 	/* phase: write rule */
 	if(!(c = *s) || spacer(c)) {
@@ -174,9 +173,9 @@ compile_rule(Rule *r, int id, char *src)
 	while(src < cap) {
 		c = *src, *dict_++ = *src++;
 		if(c == '?') {
-			reg = find_register(r, *src);
-			if(reg == -1 && *src != '(')
-				r->reg[r->ptr] = *src, reg = r->ptr++;
+			c = *src, reg = find_register(r, c);
+			if(reg == -1 && c != '(')
+				r->reg[r->ptr] = c, reg = r->ptr++;
 			*dict_++ = '0' + reg;
 		}
 	}
@@ -189,9 +188,8 @@ compile_rule(Rule *r, int id, char *src)
 	while(src < cap) {
 		c = *src, *dict_++ = *src++;
 		if(c == '?') {
-			reg = find_register(r, *src);
-			*dict_++ = reg != -1 ? '0' + reg : *src;
-			src++;
+			c = *src++, reg = find_register(r, c);
+			*dict_++ = reg != -1 ? '0' + reg : c;
 		}
 	}
 	src += wrapped, *dict_++ = 0;
