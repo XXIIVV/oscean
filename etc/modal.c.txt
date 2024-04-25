@@ -103,10 +103,10 @@ write_rule(Rule *r, char *s, int create)
 }
 
 static int
-apply_rule(Rule *r, char *s)
+apply_rule(Rule *r, char **regs, char *s)
 {
 	unsigned int i, id;
-	char c, *a = r->a, *regs[0x08], *reg;
+	char c, *a = r->a, *b = r->b, *origin = dst_, *reg;
 	/* phase: clean registers */
 	for(i = 0; i < r->ptr; i++)
 		regs[i] = NULL;
@@ -129,25 +129,21 @@ apply_rule(Rule *r, char *s)
 		if(c != *s++) return 0;
 	}
 	/* phase: write rule */
-	if(!(c = *s) || spacer(c)) {
-		char *b = r->b, *origin = dst_;
-		while((c = *b++)) {
-			if(c == '?') {
-				id = *b - '0';
-				if(id < 9 && (reg = regs[id]))
-					b++, write_reg(r->reg[id], reg);
-				else
-					*dst_++ = c;
-			} else
+	while((c = *b++)) {
+		if(c == '?') {
+			id = *b - '0';
+			if(id < 9 && (reg = regs[id]))
+				b++, write_reg(r->reg[id], reg);
+			else
 				*dst_++ = c;
-		}
-		if(dst_ == origin) {
-			while(*s == ' ') s++;
-			if(*s == ')' && *(dst_ - 1) == ' ') dst_--;
-		}
-		return write_rule(r, s, 0);
+		} else
+			*dst_++ = c;
 	}
-	return 0;
+	if(dst_ == origin) {
+		while(*s == ' ') s++;
+		if(*s == ')' && *(dst_ - 1) == ' ') dst_--;
+	}
+	return write_rule(r, s, 0);
 }
 
 static int
@@ -199,7 +195,7 @@ compile_rule(Rule *r, int id, char *src)
 static int
 rewrite(void)
 {
-	char c, last = 0, *cap, *s = src_;
+	char c, last = 0, *cap, *s = src_, *regs[0x08];
 	while(*s == ' ') s++;
 	while((c = *s)) {
 		if(spacer(last)) {
@@ -213,15 +209,13 @@ rewrite(void)
 			}
 			/* phase: lambda */
 			if(c == '?' && s[1] == '(') {
-				cap = walk(s + 1);
-				compile_rule(&lambda, -1, s + 2);
-				s = cap;
+				cap = walk(s + 1), compile_rule(&lambda, -1, s + 2), s = cap;
 				while(*s == ' ') s++;
-				return apply_rule(&lambda, s);
+				return apply_rule(&lambda, regs, s);
 			}
 			/* phase: match */
 			for(r = rules; r < rules_; r++)
-				if(apply_rule(r, s)) return 1;
+				if(apply_rule(r, regs, s)) return 1;
 		}
 		*dst_++ = last = c;
 		s++;
@@ -240,7 +234,7 @@ main(int argc, char **argv)
 		return !printf("usage: modal [-vqn] source.modal\n");
 	for(i = 1; i < argc && *argv[i] == '-'; i++) {
 		switch(argv[i][1]) {
-		case 'v': /* version */ return !printf("Modal Interpreter, 24 Apr 2024.\n");
+		case 'v': /* version */ return !printf("Modal Interpreter, 25 Apr 2024.\n");
 		case 'q': /* quiet */ quiet = 1; break;
 		case 'n': /* infinite */ cycles = 0xffffffff; break;
 		}
