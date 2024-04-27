@@ -2,7 +2,7 @@
 
 typedef struct {
 	unsigned int id, refs, ptr;
-	char *a, *b, reg[0x10];
+	char *a, *b, reg[0x8];
 } Rule;
 
 static int flip, quiet, cycles = 0x10000;
@@ -87,7 +87,7 @@ write_reg(char r, char *reg)
 }
 
 static int
-write_rule(Rule *r, char *s, int create)
+write_rule(Rule *r, char *s)
 {
 	while((*dst_++ = *s++))
 		;
@@ -96,12 +96,7 @@ write_rule(Rule *r, char *s, int create)
 		src_ = bank_b, dst_ = bank_a;
 	else
 		src_ = bank_a, dst_ = bank_b;
-	if(!quiet) {
-		if(create)
-			fprintf(stderr, "<> (%s) (%s)\n", r->a, r->b);
-		else
-			fprintf(stderr, "%02d %s\n", r->id, src_), ++r->refs;
-	}
+	if(!quiet && r) fprintf(stderr, "%02d %s\n", r->id, src_), ++r->refs;
 	return 1;
 }
 
@@ -109,7 +104,7 @@ static int
 apply_rule(Rule *r, char *s)
 {
 	unsigned int i, id;
-	char c, *a = r->a, *b = r->b, *origin = dst_, *reg, *regs[0x08];
+	char c, *a = r->a, *b = r->b, *origin = dst_, *reg, *regs[0x8];
 	/* phase: clean registers */
 	for(i = 0; i < r->ptr; i++)
 		regs[i] = NULL;
@@ -145,7 +140,7 @@ apply_rule(Rule *r, char *s)
 		while(*s == ' ') s++;
 		if(*s == ')' && *(dst_ - 1) == ' ') dst_--;
 	}
-	return write_rule(r, s, 0);
+	return write_rule(r, s);
 }
 
 static int
@@ -194,6 +189,21 @@ compile_rule(Rule *r, int id, char *src)
 	return src;
 }
 
+static Rule *
+find_rule(char *s, char *cap)
+{
+	Rule *r = rules;
+	if(*s == '(') s++, cap--;
+	while(r < rules_) {
+		char *ss = s, *a = r->a;
+		if(a)
+			while(*ss++ == *a++)
+				if(!*a) return r;
+		r++;
+	}
+	return r;
+}
+
 static int
 rewrite(void)
 {
@@ -202,23 +212,33 @@ rewrite(void)
 	while((c = *s)) {
 		if(c == '(' || spacer(last)) {
 			Rule *r = NULL;
-			/* phase: rule */
-			if(c == '<' && s[1] == '>') {
-				r = rules_++;
-				s = compile_rule(r, rules_ - rules - 1, s + 2);
-				while(*s == ' ') s++;
-				return write_rule(r, s, 1);
-			}
 			/* phase: lambda */
 			if(c == '?' && s[1] == '(') {
 				cap = walk(s + 1), compile_rule(&lambda, -1, s + 2), s = cap;
 				while(*s == ' ') s++;
-				if(!apply_rule(&lambda, s)) write_rule(&lambda, s, 0);
+				if(!apply_rule(&lambda, s)) write_rule(&lambda, s);
 				return 1;
+			}
+			/* phase: define */
+			if(c == '<' && s[1] == '>') {
+				r = rules_++;
+				s = compile_rule(r, rules_ - rules - 1, s + 2);
+				if(!quiet && r->a) fprintf(stderr, "<> (%s) (%s)\n", r->a, r->b);
+				while(*s == ' ') s++;
+				return write_rule(NULL, s);
+			}
+			/* phase: undefine */
+			if(c == '>' && s[1] == '<') {
+				s += 2;
+				while(*s == ' ') s++;
+				cap = walk(s), r = find_rule(s, cap), r->a = 0;
+				if(!quiet && r->a) fprintf(stderr, ">< (%s)\n", r->a);
+				while(*cap == ' ') cap++;
+				return write_rule(NULL, cap);
 			}
 			/* phase: match */
 			for(r = rules; r < rules_; r++)
-				if(apply_rule(r, s)) return 1;
+				if(r->a && apply_rule(r, s)) return 1;
 		}
 		*dst_++ = last = c;
 		s++;
@@ -262,7 +282,7 @@ main(int argc, char **argv)
 	while(rewrite())
 		if(!cycles--) return !fprintf(stdout, "Modal rewrites exceeded.\n");
 	while(rules_-- > rules && !quiet)
-		if(!rules_->refs) printf("-- Unused rule: %d <> (%s) (%s)\n", rules_->refs, rules_->a, rules_->b);
+		if(!rules_->refs && rules_->a) printf("-- Unused rule: %d <> (%s) (%s)\n", rules_->refs, rules_->a, rules_->b);
 	if(!quiet) printf(".. %s\n", src_);
 	return 0;
 }
