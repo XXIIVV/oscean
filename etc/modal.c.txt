@@ -1,15 +1,17 @@
 #include <stdio.h>
 
 typedef struct {
-	unsigned int id, refs, ptr;
-	char *a, *b, reg[8];
+	unsigned int id, refs;
+	char *a, *b;
 } Rule;
 
+static unsigned char rmin = 0xff, rmax = 0x00;
 static int flip, quiet, cycles = 0x10000;
 static Rule rules[0x1000], *rules_ = rules, lambda;
 static char dict[0x8000], *dict_ = dict, empty;
 static char bank_a[0x4000], *src_ = bank_a;
 static char bank_b[0x4000], *dst_ = bank_b;
+static char *regs[0x100];
 
 #define spacer(c) (c <= ' ' || c == '(' || c == ')')
 
@@ -102,22 +104,28 @@ write_tail(char *s)
 static int
 apply_rule(Rule *r, char *s)
 {
-	unsigned int i, rid;
-	char c, *a = r->a, *b = r->b, *origin = dst_, *reg, *regs[8];
+	unsigned char i, rid;
+	char c, *a = r->a, *b = r->b, *origin = dst_, *reg;
 	/* phase: clean regs */
-	for(i = 0; i < r->ptr; i++)
-		regs[i] = NULL;
+	if(rmax) {
+		for(i = 0; i <= rmax; i++)
+			regs[i] = 0;
+		rmin = 0xff, rmax = 0x00;
+	}
 	/* phase: match rule */
 	while((c = *a++)) {
 		if(c == '?') {
 			char *pcap = walk(s);
-			rid = *a++ - '0';
+			rid = *a++;
 			if((reg = regs[rid])) { /* reg cmp */
 				char *rcap = walk(reg), *pp = s;
 				while(reg < rcap || pp < pcap)
 					if(*reg++ != *pp++) return 0;
-			} else /* reg set */
+			} else { /* reg set */
 				regs[rid] = s;
+				if(rid < rmin) rmin = rid;
+				if(rid > rmax) rmax = rid;
+			}
 			s = pcap;
 		} else if(c != *s++)
 			return 0;
@@ -127,9 +135,9 @@ apply_rule(Rule *r, char *s)
 	/* phase: write rule */
 	while((c = *b++)) {
 		if(c == '?') {
-			rid = *b - '0';
-			if(rid < 9 && (reg = regs[rid]))
-				b++, write_reg(r->reg[rid], reg);
+			rid = *b;
+			if((reg = regs[rid]))
+				b++, write_reg(rid, reg);
 			else
 				*dst_++ = c;
 		} else
@@ -143,48 +151,24 @@ apply_rule(Rule *r, char *s)
 	return write_tail(s);
 }
 
-static int
-find_reg(Rule *r, char reg)
-{
-	int rid;
-	for(rid = 0; rid < (int)r->ptr; rid++)
-		if(r->reg[rid] == reg) return rid;
-	return -1;
-}
-
 static char *
-compile_rule(Rule *r, int id, char *src)
+parse_frag(Rule *r, int side, char *src)
 {
+	int wrapped;
 	char c, *cap;
-	int wrapped, reg;
-	r->id = id, r->ptr = 0, r->a = &empty, r->b = &empty;
-	/* phase: compile left */
+	if(side)
+		r->b = &empty;
+	else
+		r->a = &empty;
 	while((c = *src) && c == ' ') src++;
 	if(c == ')' || (c == '<' && src[1] == '>')) return src;
-	r->a = dict_, cap = walk(src), wrapped = c == '(';
+	if(side)
+		r->b = dict_;
+	else
+		r->a = dict_;
+	cap = walk(src), wrapped = c == '(';
 	if(wrapped) src++, cap--;
-	while(src < cap) {
-		c = *src, *dict_++ = *src++;
-		if(c == '?') {
-			c = *src++, reg = find_reg(r, c);
-			if(reg == -1 && c != '(')
-				r->reg[r->ptr] = c, reg = r->ptr++;
-			*dict_++ = '0' + reg;
-		}
-	}
-	src += wrapped, *dict_++ = 0;
-	/* phase: compile right */
-	while((c = *src) && c == ' ') src++;
-	if(c == ')' || (c == '<' && src[1] == '>')) return src;
-	r->b = dict_, cap = walk(src), wrapped = c == '(';
-	if(wrapped) src++, cap--;
-	while(src < cap) {
-		c = *src, *dict_++ = *src++;
-		if(c == '?') {
-			c = *src++, reg = find_reg(r, c);
-			*dict_++ = reg != -1 ? '0' + reg : c;
-		}
-	}
+	while(src < cap) c = *src, *dict_++ = *src++;
 	src += wrapped, *dict_++ = 0;
 	return src;
 }
@@ -204,20 +188,6 @@ find_rule(char *s, char *cap)
 	return r;
 }
 
-static void
-echo_rule(Rule *r, char *s)
-{
-	char c;
-	putc('(', stdout);
-	while((c = *s++)) {
-		unsigned int rid;
-		putc(c, stdout);
-		if(c == '?')
-			c = *s++, rid = c - '0', putc(rid < 9 ? r->reg[rid] : c, stdout);
-	}
-	putc(')', stdout), putc(' ', stdout);
-}
-
 static int
 rewrite(void)
 {
@@ -228,11 +198,14 @@ rewrite(void)
 			Rule *r = NULL;
 			/* phase: define */
 			if(c == '<' && s[1] == '>') {
-				r = rules_++;
-				s = compile_rule(r, rules_ - rules - 1, s + 2);
-				if(!quiet && r->a)
-					printf("<> "), echo_rule(r, r->a), echo_rule(r, r->b), putc('\n', stdout);
-				while(*s == ' ') s++;
+				r = rules_, r->id = rules_ - rules - 1;
+				s = parse_frag(r, 1, parse_frag(r, 0, s + 2));
+				if(*r->a) {
+					if(!quiet && r->a)
+						printf("<> (%s) (%s)\n", r->a, r->b);
+					while(*s == ' ') s++;
+					rules_++;
+				}
 				return write_tail(s);
 			}
 			/* phase: undefine */
@@ -241,14 +214,17 @@ rewrite(void)
 				while(*s == ' ') s++;
 				cap = walk(s), r = find_rule(s, cap);
 				if(!quiet && r->a)
-					printf(">< "), echo_rule(r, r->a), echo_rule(r, r->b), putc('\n', stdout);
+					printf(">< (%s) (%s)\n", r->a, r->b);
 				r->a = 0;
 				while(*cap == ' ') cap++;
 				return write_tail(cap);
 			}
 			/* phase: lambda */
 			if(c == '?' && s[1] == '(') {
-				cap = walk(s + 1), compile_rule(&lambda, -1, s + 2), s = cap;
+				cap = walk(s + 1);
+				r = &lambda, r->id = -1;
+				parse_frag(r, 1, parse_frag(r, 0, s + 2));
+				s = cap;
 				while(*s == ' ') s++;
 				if(!apply_rule(&lambda, s)) write_tail(s);
 				return 1;
