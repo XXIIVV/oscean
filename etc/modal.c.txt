@@ -6,7 +6,7 @@ typedef struct {
 } Rule;
 
 static unsigned char rmin = 0xff, rmax = 0x00;
-static int flip, quiet, cycles = 0x10000;
+static int flip, quiet, debug, cycles = 0x10000;
 static Rule rules[0x1000], *rules_ = rules, lambda;
 static char dict[0x8000], *dict_ = dict, empty;
 static char bank_a[0x4000], *src_ = bank_a;
@@ -147,7 +147,7 @@ apply_rule(Rule *r, char *s)
 		while(*s == ' ') s++;
 		if(*s == ')' && *(dst_ - 1) == ' ') dst_--;
 	}
-	if(!quiet && r) printf("%02d %s\n", r->id, src_), ++r->refs;
+	if(!quiet && r) fprintf(stderr, "%02d %s\n", r->id, src_), ++r->refs;
 	return write_tail(s);
 }
 
@@ -198,7 +198,7 @@ rewrite(void)
 				cap = walk(s), r = find_rule(s, cap);
 				if(r != NULL){
 					if(!quiet)
-						printf(">< (%s) (%s)\n", r->a, r->b);
+						fprintf(stderr, ">< (%s) (%s)\n", r->a, r->b);
 					r->a = 0;
 				}
 				while(*cap == ' ') cap++;
@@ -210,7 +210,7 @@ rewrite(void)
 				s = parse_frag(&r->b, parse_frag(&r->a, s + 2));
 				if(*r->a){
 					if(!quiet)
-						printf("<> (%s) (%s)\n", r->a, r->b);
+						fprintf(stderr, "<> (%s) (%s)\n", r->a, r->b);
 					rules_++;
 				}
 				while(*s == ' ') s++;
@@ -247,8 +247,9 @@ main(int argc, char **argv)
 		return !printf("usage: modal [-vqn] source.modal\n");
 	for(i = 1; i < argc && *argv[i] == '-'; i++) {
 		switch(argv[i][1]) {
-		case 'v': /* version */ return !printf("Modal Interpreter, 27 Apr 2024.\n");
+		case 'v': /* version */ return !printf("Modal Interpreter, 28 Apr 2024.\n");
 		case 'q': /* quiet */ quiet = 1; break;
+		case 'p': /* debug */ debug = 1; break;
 		case 'n': /* infinite */ cycles = 0xffffffff; break;
 		}
 	}
@@ -268,14 +269,17 @@ main(int argc, char **argv)
 	while(*(--w) <= ' ') *w = 0;
 	fclose(f);
 	if(pr != pl)
-		return !printf("Modal program imbalanced.\n");
+		return !fprintf(stderr, "Modal program imbalanced.\n");
 	while(rewrite() && ++rw)
-		if(!cycles--) return !printf("Modal rewrites exceeded.\n");
+		if(!cycles--) return !fprintf(stderr, "Modal rewrites exceeded.\n");
 	if(!quiet) {
-		while(rules_-- > rules)
+		while(rules_-- > rules){
 			if(!rules_->refs && rules_->a)
-				printf("-- Unused rule: %d <> (%s) (%s)\n", rules_->refs, rules_->a, rules_->b);
-		printf(".. %s\nCompleted in %d rewrites.\n", src_, rw);
+				fprintf(stderr, "-- Unused rule: %d <> (%s) (%s)\n", rules_->id, rules_->a, rules_->b);
+			if(debug && rules_->a)
+				fprintf(stderr, "   (%s) (%s), %d times.\n", rules_->a, rules_->b, rules_->refs);
+		}
+		fprintf(stderr, ".. %s\nCompleted in %d rewrites.\n", src_, rw);
 	}
 	return 0;
 }
