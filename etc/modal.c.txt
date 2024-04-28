@@ -152,21 +152,16 @@ apply_rule(Rule *r, char *s)
 }
 
 static char *
-parse_frag(Rule *r, int side, char *src)
+parse_frag(char **side, char *src)
 {
 	int wrapped;
 	char c, *cap;
-	if(side)
-		r->b = &empty;
-	else
-		r->a = &empty;
 	while((c = *src) && c == ' ') src++;
-	if(c == ')' || (c == '<' && src[1] == '>')) return src;
-	if(side)
-		r->b = dict_;
-	else
-		r->a = dict_;
-	cap = walk(src), wrapped = c == '(';
+	if(c == ')' || (c == '<' && src[1] == '>')) {
+		*side = &empty;
+		return src;
+	}
+	*side = dict_, cap = walk(src), wrapped = c == '(';
 	if(wrapped) src++, cap--;
 	while(src < cap) c = *src, *dict_++ = *src++;
 	src += wrapped, *dict_++ = 0;
@@ -185,7 +180,7 @@ find_rule(char *s, char *cap)
 				if(!*a && ss == cap) return r;
 		r++;
 	}
-	return r;
+	return NULL;
 }
 
 static int
@@ -196,34 +191,36 @@ rewrite(void)
 	while((c = *s)) {
 		if(c == '(' || spacer(last)) {
 			Rule *r = NULL;
-			/* phase: define */
-			if(c == '<' && s[1] == '>') {
-				r = rules_, r->id = rules_ - rules - 1;
-				s = parse_frag(r, 1, parse_frag(r, 0, s + 2));
-				if(*r->a) {
-					if(!quiet && r->a)
-						printf("<> (%s) (%s)\n", r->a, r->b);
-					while(*s == ' ') s++;
-					rules_++;
-				}
-				return write_tail(s);
-			}
 			/* phase: undefine */
 			if(c == '>' && s[1] == '<') {
 				s += 2;
 				while(*s == ' ') s++;
 				cap = walk(s), r = find_rule(s, cap);
-				if(!quiet && r->a)
-					printf(">< (%s) (%s)\n", r->a, r->b);
-				r->a = 0;
+				if(r != NULL){
+					if(!quiet && r->a)
+						printf(">< (%s) (%s)\n", r->a, r->b);
+					r->a = 0;
+				}
 				while(*cap == ' ') cap++;
 				return write_tail(cap);
+			}
+			/* phase: define */
+			if(c == '<' && s[1] == '>') {
+				r = rules_, r->id = rules_ - rules - 1;
+				s = parse_frag(&r->b, parse_frag(&r->a, s + 2));
+				if(*r->a){
+					if(!quiet)
+						printf("<> (%s) (%s)\n", r->a, r->b);
+					rules_++;
+				}
+				while(*s == ' ') s++;
+				return write_tail(s);
 			}
 			/* phase: lambda */
 			if(c == '?' && s[1] == '(') {
 				cap = walk(s + 1);
 				r = &lambda, r->id = -1;
-				parse_frag(r, 1, parse_frag(r, 0, s + 2));
+				parse_frag(&r->b, parse_frag(&r->a, s + 2));
 				s = cap;
 				while(*s == ' ') s++;
 				if(!apply_rule(&lambda, s)) write_tail(s);
