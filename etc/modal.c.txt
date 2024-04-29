@@ -34,10 +34,11 @@ walk(char *s)
 static int
 sint(char *s)
 {
-	int r = 0;
 	char c;
+	int r = 0, n = 1;
+	if(*s == '-') { n = -1, s++; }
 	while((c = *s++) && c > 0x20) r = r * 10 + c - '0';
-	return r;
+	return r * n;
 }
 
 static void
@@ -49,18 +50,18 @@ device_write(char *s)
 		int acc = sint(*reg++);
 		/* clang-format off */
 		switch(c) {
-		case '+': for(;*reg != 0; reg++) acc += sint(*reg); break;
-		case '-': for(;*reg != 0; reg++) acc -= sint(*reg); break;
-		case '*': for(;*reg != 0; reg++) acc *= sint(*reg); break;
-		case '/': for(;*reg != 0; reg++) acc /= sint(*reg); break;
-		case '%': for(;*reg != 0; reg++) acc %= sint(*reg); break;
-		case '&': for(;*reg != 0; reg++) acc &= sint(*reg); break;
-		case '^': for(;*reg != 0; reg++) acc ^= sint(*reg); break;
-		case '|': for(;*reg != 0; reg++) acc |= sint(*reg); break;
-		case '=': for(;*reg != 0; reg++) acc = acc == sint(*reg); break;
-		case '!': for(;*reg != 0; reg++) acc = acc != sint(*reg); break;
-		case '>': for(;*reg != 0; reg++) acc = acc > sint(*reg); break;
-		case '<': for(;*reg != 0; reg++) acc = acc < sint(*reg); break;
+		case '+': while(*reg) acc += sint(*reg++); break;
+		case '-': while(*reg) acc -= sint(*reg++); break;
+		case '*': while(*reg) acc *= sint(*reg++); break;
+		case '/': while(*reg) acc /= sint(*reg++); break;
+		case '%': while(*reg) acc %= sint(*reg++); break;
+		case '&': while(*reg) acc &= sint(*reg++); break;
+		case '^': while(*reg) acc ^= sint(*reg++); break;
+		case '|': while(*reg) acc |= sint(*reg++); break;
+		case '=': while(*reg) acc = acc == sint(*reg++); break;
+		case '!': while(*reg) acc = acc != sint(*reg++); break;
+		case '>': while(*reg) acc = acc > sint(*reg++); break;
+		case '<': while(*reg) acc = acc < sint(*reg++); break;
 		}
 		/* clang-format on */
 		dst_ += snprintf(dst_, 0x10, "%d", acc);
@@ -250,7 +251,7 @@ rewrite(void)
 			}
 			/* phase: define */
 			if(c == '<' && s[1] == '>') {
-				r = rules_, r->id = rules_ - rules - 1;
+				r = rules_, r->id = rules_ - rules;
 				s = parse_frag(&r->b, parse_frag(&r->a, s + 2));
 				if(*r->a) {
 					if(!quiet) fprintf(stderr, "<> (%s) (%s)\n", r->a, r->b);
@@ -290,7 +291,7 @@ main(int argc, char **argv)
 		return !printf("usage: modal [-vqn] source.modal\n");
 	for(i = 1; i < argc && *argv[i] == '-'; i++) {
 		switch(argv[i][1]) {
-		case 'v': /* version */ return !printf("Modal Interpreter, 28 Apr 2024.\n");
+		case 'v': /* version */ return !printf("Modal Interpreter, 29 Apr 2024.\n");
 		case 'q': /* quiet */ quiet = 1; break;
 		case 'p': /* debug */ debug = 1; break;
 		case 'n': /* infinite */ cycles = 0xffffffff; break;
@@ -317,12 +318,15 @@ main(int argc, char **argv)
 		if(!cycles--) return !fprintf(stderr, "Modal rewrites exceeded.\n");
 	if(!quiet) {
 		while(rules_-- > rules) {
-			if(!rules_->refs && rules_->a)
-				fprintf(stderr, "-- Unused rule: %d <> (%s) (%s)\n", rules_->id, rules_->a, rules_->b);
-			if(debug && rules_->a)
-				fprintf(stderr, "   (%s) (%s), %d times.\n", rules_->a, rules_->b, rules_->refs);
+			if(rules_->a) {
+				if(!rules_->refs)
+					fprintf(stderr, "-- Unused rule: %d <> (%s) (%s)\n", rules_->id, rules_->a, rules_->b);
+				if(debug)
+					fprintf(stderr, "   (%s) (%s), %d times.\n", rules_->a, rules_->b, rules_->refs);
+			}
 		}
-		fprintf(stderr, ".. %s\nCompleted in %d rewrites.\n", src_, rw);
+		if(rw)
+			fprintf(stderr, "Completed in %d rewrites.\n", rw - 1);
 	}
 	return 0;
 }
