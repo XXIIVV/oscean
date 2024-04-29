@@ -167,7 +167,7 @@ structure, we can use the following recursive rules:</p>
 
 <h3 id='types'>Types</h3>
 
-<p>Understanding how to use types to guard rules for specific evaluation order is
+<p>Understanding how to use <i>typeguard</i> to reach a specific evaluation order is
 important to become proficient with Modal. Creating a type system is merely a
 matter of creating stricter rules expecting a specific grammar. Notice in the example below, how join-strings expects to match two String
 typed words. Without typed inputs, the rule is not matched.</p>
@@ -235,7 +235,7 @@ register, it sends a word or a tree to be handled by a device:</p>
 </pre>
 
 <p>The <kbd>?*</kbd> special
-register explodes a token or tuple, into a nested list, notice how the following program makes use the <a href='#types'>List
+register explodes a token or tuple into a nested list, and the <kbd>?^</kbd> register to join it back into a single word. Notice how the following program makes use the <a href='#types'>List
 type</a> to ensure a specific evaluation order:</p>
 
 <pre>
@@ -252,6 +252,36 @@ type</a> to ensure a specific evaluation order:</p>
 02 (reverse List () (l (a (d (o (m ()))))))
 00 (ladom)
 </pre>
+
+<h3 id='arithmetic'>Arithmetic</h3>
+
+<p>The Modal virtual machine has a basic arithmetic engine(<a href='https://en.wikipedia.org/wiki/Arithmetic_logic_unit' target='_blank'>ALU</a>) located in the I/O port that allows it to use numbers. As to not enforce a specific notation, assignment of values and operators is done entirely through numeral and I/O registers:</p>
+
+<pre>
+?((?: ?0 ?1 ?2) ?:) + 1 2 3    <i>6 (suffix notation)</i> 
+?((?0 ?: ?1) ?:) 16 - 3        <i>13 (infix notation)</i>
+?((?0 ?1 ?:) ?:) 12 10 *       <i>120 (postfix notation)</i>
+</pre>
+
+<p>Using what we have seen above, we can make sure that a token is a number by testing it against its value plus zero:</p>
+
+<pre>
+<> (?x ?x eq) (#t)
+<> (?x ?y eq) (#f)
+<> (is-number ?x) (?((?1 ?0 ?:) ?:) ?x 0 + ?x eq)
+
+.. is-number 123 <i>#t</i>
+.. is-number pig <i>#f</i></pre>
+
+<p>The program can <i>typeguard</i> a against an adversary evaluation order by differentiating between intermediate results:</p>
+
+<pre>
+<> (`?: ?0 ?1) ((Int ?:))
+<> (fib ?n) (?n (Int 0) (Int 1) Fib) 
+<> ((Int 0) (Int ?0) (Int ?1) Fib) ?0
+<> ((Int ?x) (Int ?y) (Int ?z) Fib) (`- ?x 1 (Int ?z) `+ ?z ?y Fib)  
+
+.. fib (Int 11) <i>89</i></pre>
 
 <h3>Mimics</h3>
 
