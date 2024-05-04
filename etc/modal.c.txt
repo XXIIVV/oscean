@@ -5,13 +5,12 @@ typedef struct {
 	char *a, *b;
 } Rule;
 
-static unsigned char rmin = 0xff, rmax = 0x00;
 static int flip, quiet, debug, cycles = 0x10000;
 static Rule rules[0x1000], *rules_ = rules, lambda;
 static char dict[0x8000], *dict_ = dict, empty;
 static char bank_a[0x4000], *src_ = bank_a;
 static char bank_b[0x4000], *dst_ = bank_b;
-static char *regs[0x100];
+static char *regs[0x100], stack[0x10], *stack_ = stack;
 
 #define spacer(c) (c <= ' ' || c == '(' || c == ')')
 
@@ -31,70 +30,67 @@ walk(char *s)
 	return s;
 }
 
-static void
-echo(char *s)
-{
-	char *cap = walk(s);
-	if(*s == '(') s++, --cap;
-	for(; s < cap; s++) {
-		if(*s == '\\') {
-			switch(*++s) {
-			case 't': putc(0x09, stdout); break;
-			case 'n': putc(0x0a, stdout); break;
-			case 's': putc(0x20, stdout); break;
-			}
-		} else
-			putc(*s, stdout);
-	}
-}
-
 static int
 sint(char *s)
 {
 	char c;
 	int r = 0, n = 1;
 	if(*s == '-') { n = -1, s++; }
-	while((c = *s++) && c > 0x20) r = r * 10 + c - '0';
+	while((c = *s++) && !spacer(c)) r = r * 10 + c - '0';
 	return r * n;
 }
 
 static void
-interrupt(char *s)
+device_write(char *s)
 {
-	char c = *s, **arg = regs + '0';
-	if(c == 'i') {
-		char in, *origin = dst_;
-		while(fread(&in, 1, 1, stdin) && in >= ' ')
-			*dst_++ = in;
-		if(feof(stdin))
-			*dst_++ = 'E', *dst_++ = 'O', *dst_++ = 'F';
-		if(dst_ - origin == 0)
-			dst_--;
-	} else if(c == 'o') {
-		char *outstr;
-		for(outstr = *arg; (outstr = *arg); arg++)
-			echo(outstr);
-	} else if(*arg) {
-		int acc = sint(*arg++);
+	char c = *s, *cap = walk(s), **reg = regs + '0';
+	/* phase: ALU */
+	if(*reg) {
+		int acc = sint(*reg++);
 		/* clang-format off */
 		switch(c) {
-		case '+': while(*arg) acc += sint(*arg++); break;
-		case '-': while(*arg) acc -= sint(*arg++); break;
-		case '*': while(*arg) acc *= sint(*arg++); break;
-		case '/': while(*arg) acc /= sint(*arg++); break;
-		case '%': while(*arg) acc %= sint(*arg++); break;
-		case '&': while(*arg) acc &= sint(*arg++); break;
-		case '^': while(*arg) acc ^= sint(*arg++); break;
-		case '|': while(*arg) acc |= sint(*arg++); break;
-		case '=': while(*arg) acc = acc == sint(*arg++); break;
-		case '!': while(*arg) acc = acc != sint(*arg++); break;
-		case '>': while(*arg) acc = acc > sint(*arg++); break;
-		case '<': while(*arg) acc = acc < sint(*arg++); break;
+		case '+': while(*reg) acc += sint(*reg++); break;
+		case '-': while(*reg) acc -= sint(*reg++); break;
+		case '*': while(*reg) acc *= sint(*reg++); break;
+		case '/': while(*reg) acc /= sint(*reg++); break;
+		case '%': while(*reg) acc %= sint(*reg++); break;
+		case '&': while(*reg) acc &= sint(*reg++); break;
+		case '^': while(*reg) acc ^= sint(*reg++); break;
+		case '|': while(*reg) acc |= sint(*reg++); break;
+		case '=': while(*reg) acc = acc == sint(*reg++); break;
+		case '!': while(*reg) acc = acc != sint(*reg++); break;
+		case '>': while(*reg) acc = acc > sint(*reg++); break;
+		case '<': while(*reg) acc = acc < sint(*reg++); break;
 		}
 		/* clang-format on */
 		dst_ += snprintf(dst_, 0x10, "%d", acc);
-	} else
-		echo(s);
+		return;
+	}
+	/* phase: string */
+	if(*s == '(') s++, --cap;
+	while(s < cap) {
+		c = *s++;
+		if(c == '\\') {
+			switch(*s++) {
+			case 't': putc(0x09, stdout); break;
+			case 'n': putc(0x0a, stdout); break;
+			case 's': putc(0x20, stdout); break;
+			}
+		} else
+			putc(c, stdout);
+	}
+}
+
+static void
+device_read(void)
+{
+	char c, *origin = dst_;
+	while(fread(&c, 1, 1, stdin) && c >= ' ')
+		*dst_++ = c;
+	if(feof(stdin))
+		*dst_++ = 'E', *dst_++ = 'O', *dst_++ = 'F';
+	if(dst_ - origin == 0)
+		dst_--;
 }
 
 static void
@@ -102,9 +98,8 @@ write_reg(char r, char *reg)
 {
 	char c, *cap = walk(reg);
 	switch(r) {
-	case ':': /* op: interrupt */
-		interrupt(reg);
-		return;
+	case ':': device_write(reg); return;
+	case '~': device_read(); return;
 	case '^': /* op: join */
 		if(*reg == '(') reg++, --cap;
 		while(reg < cap && (c = *reg++))
@@ -152,14 +147,10 @@ write_tail(char *s)
 static int
 apply_rule(Rule *r, char *s)
 {
-	unsigned char i, rid;
+	unsigned char rid;
 	char c, *a = r->a, *b = r->b, *origin = dst_, *reg;
 	/* phase: clean regs */
-	if(rmax) {
-		for(i = 0; i <= rmax; i++)
-			regs[i] = 0;
-		rmin = 0xff, rmax = 0x00;
-	}
+	while(stack_ != stack) regs[(int)*(--stack_)] = 0;
 	/* phase: match rule */
 	while((c = *a++)) {
 		if(c == '?') {
@@ -169,11 +160,8 @@ apply_rule(Rule *r, char *s)
 				char *rcap = walk(reg), *pp = s;
 				while(reg < rcap || pp < pcap)
 					if(*reg++ != *pp++) return 0;
-			} else { /* reg set */
-				regs[rid] = s;
-				if(rid < rmin) rmin = rid;
-				if(rid > rmax) rmax = rid;
-			}
+			} else /* reg set */
+				regs[rid] = s, *stack_++ = rid;
 			s = pcap;
 		} else if(c != *s++)
 			return 0;
@@ -264,6 +252,7 @@ rewrite(void)
 			}
 			/* phase: lambda */
 			if(c == '?' && s[1] == '(') {
+				char *d_ = dict_;
 				cap = walk(s + 1);
 				r = &lambda, r->id = -1;
 				parse_frag(&r->b, parse_frag(&r->a, s + 2));
@@ -273,6 +262,7 @@ rewrite(void)
 					if(!quiet) fprintf(stderr, "%02d %s\n", r->id, src_), ++r->refs;
 					write_tail(s);
 				}
+				dict_ = d_;
 				return 1;
 			}
 			/* phase: match */
@@ -296,7 +286,7 @@ main(int argc, char **argv)
 		return !printf("usage: modal [-vqn] source.modal\n");
 	for(i = 1; i < argc && *argv[i] == '-'; i++) {
 		switch(argv[i][1]) {
-		case 'v': /* version */ return !printf("Modal Interpreter, 2 May 2024.\n");
+		case 'v': /* version */ return !printf("Modal Interpreter, 4 May 2024.\n");
 		case 'q': /* quiet */ quiet = 1; break;
 		case 'p': /* debug */ debug = 1; break;
 		case 'n': /* infinite */ cycles = 0xffffffff; break;
