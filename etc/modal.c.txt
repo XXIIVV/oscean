@@ -31,6 +31,23 @@ walk(char *s)
 	return s;
 }
 
+static void
+echo(char *s)
+{
+	char *cap = walk(s);
+	if(*s == '(') s++, --cap;
+	for(; s < cap; s++) {
+		if(*s == '\\') {
+			switch(*++s) {
+			case 't': putc(0x09, stdout); break;
+			case 'n': putc(0x0a, stdout); break;
+			case 's': putc(0x20, stdout); break;
+			}
+		} else
+			putc(*s, stdout);
+	}
+}
+
 static int
 sint(char *s)
 {
@@ -42,56 +59,42 @@ sint(char *s)
 }
 
 static void
-device_write(char *s)
+interrupt(char *s)
 {
-	char c = *s, *cap = walk(s), **reg = regs + '0';
-	/* phase: ALU */
-	if(*reg) {
-		int acc = sint(*reg++);
+	char c = *s, **arg = regs + '0';
+	if(c == 'i') {
+		char in, *origin = dst_;
+		while(fread(&in, 1, 1, stdin) && in >= ' ')
+			*dst_++ = in;
+		if(feof(stdin))
+			*dst_++ = 'E', *dst_++ = 'O', *dst_++ = 'F';
+		if(dst_ - origin == 0)
+			dst_--;
+	} else if(c == 'o') {
+		char *outstr;
+		for(outstr = *arg; (outstr = *arg); arg++)
+			echo(outstr);
+	} else if(*arg) {
+		int acc = sint(*arg++);
 		/* clang-format off */
 		switch(c) {
-		case '+': while(*reg) acc += sint(*reg++); break;
-		case '-': while(*reg) acc -= sint(*reg++); break;
-		case '*': while(*reg) acc *= sint(*reg++); break;
-		case '/': while(*reg) acc /= sint(*reg++); break;
-		case '%': while(*reg) acc %= sint(*reg++); break;
-		case '&': while(*reg) acc &= sint(*reg++); break;
-		case '^': while(*reg) acc ^= sint(*reg++); break;
-		case '|': while(*reg) acc |= sint(*reg++); break;
-		case '=': while(*reg) acc = acc == sint(*reg++); break;
-		case '!': while(*reg) acc = acc != sint(*reg++); break;
-		case '>': while(*reg) acc = acc > sint(*reg++); break;
-		case '<': while(*reg) acc = acc < sint(*reg++); break;
+		case '+': while(*arg) acc += sint(*arg++); break;
+		case '-': while(*arg) acc -= sint(*arg++); break;
+		case '*': while(*arg) acc *= sint(*arg++); break;
+		case '/': while(*arg) acc /= sint(*arg++); break;
+		case '%': while(*arg) acc %= sint(*arg++); break;
+		case '&': while(*arg) acc &= sint(*arg++); break;
+		case '^': while(*arg) acc ^= sint(*arg++); break;
+		case '|': while(*arg) acc |= sint(*arg++); break;
+		case '=': while(*arg) acc = acc == sint(*arg++); break;
+		case '!': while(*arg) acc = acc != sint(*arg++); break;
+		case '>': while(*arg) acc = acc > sint(*arg++); break;
+		case '<': while(*arg) acc = acc < sint(*arg++); break;
 		}
 		/* clang-format on */
 		dst_ += snprintf(dst_, 0x10, "%d", acc);
-		return;
-	}
-	/* phase: string */
-	if(*s == '(') s++, --cap;
-	while(s < cap) {
-		c = *s++;
-		if(c == '\\') {
-			switch(*s++) {
-			case 't': putc(0x09, stdout); break;
-			case 'n': putc(0x0a, stdout); break;
-			case 's': putc(0x20, stdout); break;
-			}
-		} else
-			putc(c, stdout);
-	}
-}
-
-static void
-device_read(void)
-{
-	char c, *origin = dst_;
-	while(fread(&c, 1, 1, stdin) && c >= ' ')
-		*dst_++ = c;
-	if(feof(stdin))
-		*dst_++ = 'E', *dst_++ = 'O', *dst_++ = 'F';
-	if(dst_ - origin == 0)
-		dst_--;
+	} else
+		echo(s);
 }
 
 static void
@@ -99,10 +102,9 @@ write_reg(char r, char *reg)
 {
 	char c, *cap = walk(reg);
 	switch(r) {
-	case '>': /* op: output */
-	case ':': device_write(reg); return;
-	case '<': /* op: input */
-	case '~': device_read(); return;
+	case ':': /* op: interrupt */
+		interrupt(reg);
+		return;
 	case '^': /* op: join */
 		if(*reg == '(') reg++, --cap;
 		while(reg < cap && (c = *reg++))
@@ -135,7 +137,7 @@ write_reg(char r, char *reg)
 }
 
 static int
-write_tail(char *s, Rule *r)
+write_tail(char *s)
 {
 	while((*dst_++ = *s++))
 		;
@@ -144,7 +146,6 @@ write_tail(char *s, Rule *r)
 		src_ = bank_b, dst_ = bank_a;
 	else
 		src_ = bank_a, dst_ = bank_b;
-	if(!quiet && r) fprintf(stderr, "%02d %s\n", r->id, src_), ++r->refs;
 	return 1;
 }
 
@@ -194,7 +195,8 @@ apply_rule(Rule *r, char *s)
 		while(*s == ' ') s++;
 		if(*s == ')' && *(dst_ - 1) == ' ') dst_--;
 	}
-	return write_tail(s, r);
+	if(!quiet) fprintf(stderr, "%02d %s\n", r->id, src_), ++r->refs;
+	return write_tail(s);
 }
 
 static char *
@@ -247,7 +249,7 @@ rewrite(void)
 					r->a = 0;
 				}
 				while(*cap == ' ') cap++;
-				return write_tail(cap, NULL);
+				return write_tail(cap);
 			}
 			/* phase: define */
 			if(c == '<' && s[1] == '>') {
@@ -258,7 +260,7 @@ rewrite(void)
 					rules_++;
 				}
 				while(*s == ' ') s++;
-				return write_tail(s, NULL);
+				return write_tail(s);
 			}
 			/* phase: lambda */
 			if(c == '?' && s[1] == '(') {
@@ -267,7 +269,10 @@ rewrite(void)
 				parse_frag(&r->b, parse_frag(&r->a, s + 2));
 				s = cap;
 				while(*s == ' ') s++;
-				if(!apply_rule(&lambda, s)) write_tail(s, r);
+				if(!apply_rule(&lambda, s)) {
+					if(!quiet) fprintf(stderr, "%02d %s\n", r->id, src_), ++r->refs;
+					write_tail(s);
+				}
 				return 1;
 			}
 			/* phase: match */
@@ -291,7 +296,7 @@ main(int argc, char **argv)
 		return !printf("usage: modal [-vqn] source.modal\n");
 	for(i = 1; i < argc && *argv[i] == '-'; i++) {
 		switch(argv[i][1]) {
-		case 'v': /* version */ return !printf("Modal Interpreter, 29 Apr 2024.\n");
+		case 'v': /* version */ return !printf("Modal Interpreter, 2 May 2024.\n");
 		case 'q': /* quiet */ quiet = 1; break;
 		case 'p': /* debug */ debug = 1; break;
 		case 'n': /* infinite */ cycles = 0xffffffff; break;
