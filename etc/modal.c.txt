@@ -5,8 +5,8 @@ typedef struct {
 	char *a, *b;
 } Rule;
 
-static int flip, quiet, debug, cycles = 0x10000;
-static Rule rules[0x1000], *rules_ = rules, lambda;
+static int flip, quiet, debug, cycles = 0x200000;
+static Rule rules[0x1000], *rules_ = rules;
 static char dict[0x8000], *dict_ = dict, empty;
 static char bank_a[0x4000], *src_ = bank_a;
 static char bank_b[0x4000], *dst_ = bank_b;
@@ -252,17 +252,17 @@ rewrite(void)
 			}
 			/* phase: lambda */
 			if(c == '?' && s[1] == '(') {
-				char *d_ = dict_;
+				char *d = dict_;
 				cap = walk(s + 1);
-				r = &lambda, r->id = -1;
+				r = rules_, r->id = -1;
 				parse_frag(&r->b, parse_frag(&r->a, s + 2));
 				s = cap;
 				while(*s == ' ') s++;
-				if(!apply_rule(&lambda, s)) {
+				if(!apply_rule(r, s)) {
 					if(!quiet) fprintf(stderr, "%02d %s\n", r->id, src_), ++r->refs;
 					write_tail(s);
 				}
-				dict_ = d_;
+				dict_ = d;
 				return 1;
 			}
 			/* phase: match */
@@ -286,7 +286,7 @@ main(int argc, char **argv)
 		return !printf("usage: modal [-vqn] source.modal\n");
 	for(i = 1; i < argc && *argv[i] == '-'; i++) {
 		switch(argv[i][1]) {
-		case 'v': /* version */ return !printf("Modal Interpreter, 4 May 2024.\n");
+		case 'v': /* version */ return !printf("Modal Interpreter, 7 May 2024.\n");
 		case 'q': /* quiet */ quiet = 1; break;
 		case 'p': /* debug */ debug = 1; break;
 		case 'n': /* infinite */ cycles = 0xffffffff; break;

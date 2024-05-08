@@ -278,13 +278,36 @@ rewrite and must match what is found immediately after: </p>
 -1 bar foo
 </pre>
 
+<h3>Outgoing Events</h3>
+
+<p>Sending a message is done with the <kbd>?:</kbd> special register, it sends a word or a tree to be handled by a device:</p>
+
+<pre>
+&lt;&gt; (print ?:) (?:)
+
+.. print (hello world\n)
+
+<b>hello world</b>
+</pre>
+
+<h3>Incoming Events</h3>
+
+<p>Similarly, listening to incoming messages is done with the <kbd>?~</kbd> special register:</p>
+
+<pre>
+&lt;&gt; (?: print) (?:)
+&lt;&gt; (READ ?~) ((You said: ?~ \n) print)
+
+.. (READ stdin)
+
+<b>You said: </b>
+</pre>
+
 <img src='../media/refs/soulages2.png' style='margin:30px auto; display:block' title='Pierre Soulages | Lithographie n°19 (1968)'/>
 
 <q><b>modal</b>(adj.): of, or relating to structure as opposed to substance.</q>
 
-<h3>I/O</h3>
-
-<p>The philosophy behind Modal's I/O is that <i>if it can't be done in rewriting alone, it's an I/O operation</i>. Special registers are registers that do more than simply store a reference, they allow implementations to choose which special behavior is needed by the host platform, without impacting the core of the language:</p>
+<h3>Spcial Registers Reference</h3>
 
 <table border='1' class='registers'>
 	<tr><th colspan='3'>IO</th></tr>
@@ -298,29 +321,6 @@ rewrite and must match what is found immediately after: </p>
 </table>
 
 <style>.registers tr * { font-family:mono;font-size:smaller }</style>
-
-<p>Sending a message to a device is done with the <kbd>?:</kbd> special
-register, it sends a word or a tree to be handled by a device:</p>
-
-<pre>
-&lt;&gt; (print ?:) (?:)
-
-.. print (hello world\n)
-
-<b>hello world</b>
-</pre>
-
-<p>Similarly, reading an incoming message from a device is done with the
-<kbd>?~</kbd> special register:</p>
-
-<pre>
-&lt;&gt; (?: print) (?:)
-&lt;&gt; (READ ?~) ((You said: ?~ \n) print)
-
-.. (READ stdin)
-
-<b>You said: </b>
-</pre>
 
 <p>The <kbd>?*</kbd> special
 register explodes a token or tuple into a nested list, and the <kbd>?^</kbd> register to join it back into a single word. Notice how the following program makes use the <a href='#types'>List
@@ -339,69 +339,6 @@ type</a> to ensure a specific evaluation order:</p>
 02 (reverse List (l ()) (a (d (o (m ())))))
 02 (reverse List () (l (a (d (o (m ()))))))
 00 (ladom)
-</pre>
-
-<h3 id='arithmetic'>Arithmetic</h3>
-
-<p>The Modal virtual machine has a basic arithmetic engine(<a href='https://en.wikipedia.org/wiki/Arithmetic_logic_unit' target='_blank'>ALU</a>) located in the I/O port that allows it to use numbers. As to not enforce a specific notation, assignment of values and operators is done entirely through numeral and I/O registers:</p>
-
-<pre>
-?((?: ?0 ?1 ?2) ?:) + 1 2 3    <i>6 (suffix notation)</i> 
-?((?0 ?: ?1) ?:) 16 - 3        <i>13 (infix notation)</i>
-?((?0 ?1 ?:) ?:) 12 10 *       <i>120 (postfix notation)</i>
-</pre>
-
-<p>Using what we have seen above, we can make sure that a token is a number by testing it against its value plus zero:</p>
-
-<pre>
-<> (?x ?x eq) (#t)
-<> (?x ?y eq) (#f)
-<> (is-number ?x) (?((?1 ?0 ?:) ?:) ?x 0 + ?x eq)
-
-.. is-number 123 <i>#t</i>
-.. is-number pig <i>#f</i></pre>
-
-<p>The program can <i>typeguard</i> a against an adversary evaluation order by differentiating between intermediate results:</p>
-
-<pre>
-<> (`?: ?0 ?1) ((Int ?:))
-<> (fib ?n) (?n (Int 0) (Int 1) Fib) 
-<> ((Int 0) (Int ?0) (Int ?1) Fib) ?0
-<> ((Int ?x) (Int ?y) (Int ?z) Fib) (`- ?x 1 (Int ?z) `+ ?z ?y Fib)  
-
-.. fib (Int 11) <i>89</i></pre>
-
-<h3>Mimics</h3>
-
-<p>We can use rules to define entire languages, Modal enforces no specific notation, for example, we could easily make a <a href='logic.html'>combinatory logic</a> playground:</p>
-
-<pre>
-&lt;&gt; (M ?x) (?x ?x)
-&lt;&gt; (KI ?x ?y) (?y)
-&lt;&gt; (T ?x ?y) (?y ?y)
-&lt;&gt; (W ?x ?y) (?x ?y ?y)
-&lt;&gt; (K ?x ?y) (?x)
-&lt;&gt; (C ?x ?y ?z) (?x ?z ?y)
-&lt;&gt; (B ?x ?y ?z) (?x (?y ?z))
-&lt;&gt; (I ?x) (?x)
-&lt;&gt; (S ?x ?y ?z) (?x ?z (?y ?z))
-
-.. C KI x y z
-05 KI y x z
-01 x z
-</pre>
-
-<p>Any choice made in regard to syntax is completely arbitrary. To demonstrate, the following code defines a <a href='concatenative.html'>concatenative</a> syntax:</p>
-
-<pre>
-&lt;&gt; (?x dup) (?x ?x)
-&lt;&gt; (?x ?y swap) (?y ?x)
-&lt;&gt; (?x pop) ()
-
-.. (1 2 3) (4 5 6) swap pop dup
-01 (4 5 6) (1 2 3) pop dup
-02 (4 5 6) dup
-00 (4 5 6) (4 5 6)
 </pre>
 
 <h3>sierpiński.modal</h3>

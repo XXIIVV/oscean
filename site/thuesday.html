@@ -1,0 +1,165 @@
+<!DOCTYPE html><html><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="../links/main.css" type="text/css" rel="stylesheet"><link href="../media/services/icon.png" type="image/png" rel="shortcut icon">
+<title>XXIIVV &mdash; thuesday</title></head><body>
+<header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
+
+<nav><ul><li><a href="thue.html">thue</a></li><li><a href="modal.html" class="parent">modal</a></li></ul><ul><li><a href="thuesday.html" class="self">thuesday</a></li></ul><ul><li><a href="modal_arithmetic.html">modal arithmetic</a></li></ul></nav>
+<main><h2>Thuesday is a I/O specification for a string rewriting computer.</h2>
+
+<p>The philosophy behind <a href='modal.html'>Modal</a>'s I/O is that <i>if it can't be done in rewriting alone, it's an I/O operation</i>. Special registers are registers that do more than store a reference, they allow implementations to choose which special behavior is needed by the host platform, without impacting the core of the language. The specification below is for a collection of event handlers is called <b>Thuesday</b>.</p>
+
+<h3>ALU</h3>
+
+<p>The Thuesday system has a basic arithmetic engine(<a href='https://en.wikipedia.org/wiki/Arithmetic_logic_unit' target='_blank'>ALU</a>) located in the I/O port that allows it to use numbers. As to not enforce a specific notation, assignment of values and operators is done entirely through numeral and I/O registers:</p>
+
+<pre>
+?((?: ?0 ?1 ?2) ?:) + 1 2 3 <i>6     suffix notation</i> 
+?((?0 ?: ?1) ?:) 16 - 3     <i>13    infix notation</i>
+?((?0 ?1 ?:) ?:) 12 10 *    <i>120   postfix notation</i>
+
+<> (?0 ?1 `?:) ?:                 <i>postfix generalized</i>
+12 34 `+                    <i>46</i>
+</pre>
+
+<p>Using what we have seen above, we can make sure that a token is a number by testing it against its value plus zero:</p>
+
+<pre>
+<> (?x ?x eq) (#t)
+<> (?x ?y eq) (#f)
+<> (is-number ?x) (?((?1 ?0 ?:) ?:) ?x 0 + ?x eq)
+
+.. is-number 123 <i>#t</i>
+.. is-number pig <i>#f</i></pre>
+
+<p>The program can <i>typeguard</i> a against an adversary evaluation order by differentiating between intermediate results:</p>
+
+<pre>
+<> (`?: ?0 ?1) ((Int ?:))
+<> (fib ?n) (?n (Int 0) (Int 1) Fib) 
+<> ((Int 0) (Int ?0) (Int ?1) Fib) ?0
+<> ((Int ?x) (Int ?y) (Int ?z) Fib) (`- ?x 1 (Int ?z) `+ ?z ?y Fib)  
+
+.. fib (Int 11) <i>89</i></pre>
+
+<h3>Viewport</h3>
+
+<p>Drawing is done using the same design as the ALU, where each numeric register represent an argument. Each argument in the shapes reference is ordered by register number, so the first word is bound to <kbd>?0</kbd>, the second to <kbd>?1</kbd>, and so on.</p>
+
+<table border='1' class='registers' width='100%'>
+	<tr><th colspan='3'>Write</th></tr>
+	<tr><td>size</td><td>w h</td><td>Set the screen size to w,h.</td></tr>
+	<tr><td>pixel</td><td>x y color</td><td>Draw a pixel at x,y.</td></tr>
+	<tr><td>line</td><td>x1 y1 x2 y2 color</td><td>Draw a line from x,y to x2,y2.</td></tr>
+	<tr><td>rect</td><td>x y w h color</td><td>Draw a lined rectangle at x,y of size w,h.</td></tr>
+	<tr><td>fill-rect</td><td>x y w h color</td><td>Draw a filled rectangle at x,y of size w,h.</td></tr>
+	<tr><td>circ</td><td>x y r color</td><td>Draw a lined circle at x,y of radius r.</td></tr>
+	<tr><td>fill-circ</td><td>x y r color</td><td>Draw a filled circle at x,y of radius r.</td></tr>
+	<tr><th colspan='3'>Read</th></tr>
+	<tr><td>@pixel</td><td>x y</td><td>Get the pixel color at x,y.</td></tr>
+	<tr><td>@size</td><td></td><td>Get the screen size.</td></tr>
+</table>
+
+<img src='../media/refs/viznut.png' alt='abs(((x + y) & (x - y)) % 24) > 9' style='float:right;margin-left:30px'>
+
+<p>For example, the following program draws the <a href='https://concatenative.org/wiki/view/Viznut'>Viznut bitart pattern</a>:</p>
+
+<hr style='border:0'/> 
+
+<pre>
+<> (?0 ?1 `?:) ?:
+<> (?2 ?0 ?1 ?: draw) ?:
+
+<> ((?x ?y) Eval) (
+	?x ?y `+ ?x ?y `- `& 24 `% 9 `> #ffffff `* ?x ?y pixel draw 
+	(?x ?y) Viznut)
+
+<> ((?x 256) Viznut) ()
+<> ((256 ?y) Viznut) ((0 ?((?0 ?1 ?:) ?:) ?y 1 +) Eval)
+<> ((?x ?y) Viznut) ((?((?0 ?1 ?:) ?:) ?x 1 + ?y) Eval)
+
+?((?0 ?1 ?:) ?:) 256 256 size
+(0 0) Viznut
+</pre>
+
+<h3>Event Loop</h3>
+
+<p>Events are incoming events that trigger an evaluation, an evaluation will rewrite until a no rule match is reached.</p>
+
+<table border='1' class='registers' width='100%'>
+	<tr><th colspan='3'>Mouse</th></tr>
+	<tr><td>(Move (x y buttons))</td><td>When mouse is moved.</td></tr>
+	<tr><td>(Touch (x y buttons))</td><td>When mouse button is changed.</td></tr>
+	<tr><th colspan='3'>Keyboard</th></tr>
+	<tr><td>(Key (mod char))</td><td>When character button is pressed.</td></tr>
+	<tr><td>(Dpad (mod char))</td><td>When mod button is changed.</td></tr>
+	<tr><th colspan='3'>Time</th></tr>
+	<tr><td>(Tic 0-59)</td><td>When a frame is requested, 60 times per second.</td></tr>
+</table>
+
+<p>Here is an example that creates a game loop and capture mouse and keyboard events to creates a basic drawing program:</p>
+
+<pre>
+<> (`?: ?0 ?1 ?2 ?3 (?4)) (?:)
+
+?(?-) (Mouse handlers)
+
+<> ((Last ?v ?w) handle-event (Touch (?x ?y ?z))) 
+	((Last ?x ?y))
+<> ((Last ?v ?w) handle-event (Move (?x ?y 1)))
+	((Last ?x ?y) `line ?v ?w ?x ?y (#ff0000))
+
+?(?-) (Keyboard events)
+
+<> (handle-event (Key (?x q))) (?(?: ?:) quit)
+
+?(?-) (Discard unknown events)
+
+<> (handle-event ?x) ()
+
+<> (on-event ?~) (handle-event ?~ on-event Any)
+
+(Last 0 0) on-event Any
+</pre>
+
+<!-- 
+
+<h3>Mimics</h3>
+
+<p>We can use rules to define entire languages, Modal enforces no specific notation, for example, we could easily make a <a href='logic.html'>combinatory logic</a> playground:</p>
+
+<pre>
+&lt;&gt; (M ?x) (?x ?x)
+&lt;&gt; (KI ?x ?y) (?y)
+&lt;&gt; (T ?x ?y) (?y ?y)
+&lt;&gt; (W ?x ?y) (?x ?y ?y)
+&lt;&gt; (K ?x ?y) (?x)
+&lt;&gt; (C ?x ?y ?z) (?x ?z ?y)
+&lt;&gt; (B ?x ?y ?z) (?x (?y ?z))
+&lt;&gt; (I ?x) (?x)
+&lt;&gt; (S ?x ?y ?z) (?x ?z (?y ?z))
+
+.. C KI x y z
+05 KI y x z
+01 x z
+</pre>
+
+<p>Any choice made in regard to syntax is completely arbitrary. To demonstrate, the following code defines a <a href='concatenative.html'>concatenative</a> syntax:</p>
+
+<pre>
+&lt;&gt; (?x dup) (?x ?x)
+&lt;&gt; (?x ?y swap) (?y ?x)
+&lt;&gt; (?x pop) ()
+
+.. (1 2 3) (4 5 6) swap pop dup
+01 (4 5 6) (1 2 3) pop dup
+02 (4 5 6) dup
+00 (4 5 6) (4 5 6)
+</pre>
+-->
+
+<ul>
+	<li><a href='https://git.sr.ht/~rabbits/thuesday' target='_blank'>view sources</a>, C99(X11).</li>
+</ul><ul></ul></main>
+<footer><a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.svg" alt="CreativeCommons"/></a><a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a><a href="https://merveilles.town/@neauoire" rel="me" target="_blank"><img src="../media/icon/merveilles.svg" alt="Merveilles"/></a><a href="ethics.html"><img src="../media/icon/dreipfeile.svg" alt="NoNazis!"/></a><a href="uxn.html"><img src="../media/icon/uxn.svg" alt="UxnPowered"/></a><span><a href="devine_lu_linvega.html">Devine Lu Linvega</a> &copy; 2023 &mdash; <a href="about.html#license">BY-NC-SA 4.0</a></span></footer>
+</body></html>
