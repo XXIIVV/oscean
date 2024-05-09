@@ -43,12 +43,12 @@ sint(char *s)
 static void
 device_write(char *s)
 {
-	char c = *s, *cap = walk(s), **reg = regs + '0';
+	char **reg = regs + '0';
 	/* phase: ALU */
 	if(*reg) {
 		int acc = sint(*reg++);
 		/* clang-format off */
-		switch(c) {
+		switch(*s) {
 		case '+': while(*reg) acc += sint(*reg++); break;
 		case '-': while(*reg) acc -= sint(*reg++); break;
 		case '*': while(*reg) acc *= sint(*reg++); break;
@@ -65,19 +65,21 @@ device_write(char *s)
 		/* clang-format on */
 		dst_ += snprintf(dst_, 0x10, "%d", acc);
 		return;
-	}
-	/* phase: string */
-	if(*s == '(') s++, --cap;
-	while(s < cap) {
-		c = *s++;
-		if(c == '\\') {
-			switch(*s++) {
-			case 't': putc(0x09, stdout); break;
-			case 'n': putc(0x0a, stdout); break;
-			case 's': putc(0x20, stdout); break;
-			}
-		} else
-			putc(c, stdout);
+	} else {
+		/* phase: string */
+		char *cap = walk(s);
+		if(*s == '(') s++, --cap;
+		while(s < cap) {
+			char c = *s++;
+			if(c == '\\') {
+				switch(*s++) {
+				case 't': putc(0x09, stdout); break;
+				case 'n': putc(0x0a, stdout); break;
+				case 's': putc(0x20, stdout); break;
+				}
+			} else
+				putc(c, stdout);
+		}
 	}
 }
 
@@ -96,21 +98,25 @@ device_read(void)
 static void
 write_reg(char r, char *reg)
 {
-	char c, *cap = walk(reg);
 	switch(r) {
 	case ':': device_write(reg); return;
 	case '~': device_read(); return;
-	case '^': /* op: join */
+	case '^': { /* op: join */
+		char c, *cap = walk(reg);
 		if(*reg == '(') reg++, --cap;
 		while(reg < cap && (c = *reg++))
 			if(!spacer(c)) *dst_++ = c;
 		return;
-	case '.': /* op: unwrap */
+	}
+	case '.': { /* op: unwrap */
+		char *cap = walk(reg);
 		if(*reg == '(') reg++, --cap;
 		while(reg < cap) *dst_++ = *reg++;
 		return;
+	}
 	case '*': { /* op: explode */
 		int i, depth = 0;
+		char c, *cap = walk(reg);
 		if(*reg == '(' && reg[1] != ')') { /* tuple */
 			reg++;
 			while(reg < cap) {
@@ -125,9 +131,11 @@ write_reg(char r, char *reg)
 		for(i = 0; i < depth; i++) *dst_++ = ')';
 		return;
 	}
-	default:
+	default: {
+		char *cap = walk(reg);
 		while(reg < cap) *dst_++ = *reg++;
 		return;
+	}
 	}
 }
 
@@ -170,13 +178,9 @@ apply_rule(Rule *r, char *s)
 	if(!spacer(c)) return 0;
 	/* phase: write rule */
 	while((c = *b++)) {
-		if(c == '?') {
-			rid = *b;
-			if((reg = regs[rid]))
-				b++, write_reg(rid, reg);
-			else
-				*dst_++ = c;
-		} else
+		if(c == '?' && (rid = *b) && (reg = regs[rid]))
+			write_reg(rid, reg), b++;
+		else
 			*dst_++ = c;
 	}
 	if(dst_ == origin) {
@@ -269,8 +273,7 @@ rewrite(void)
 			for(r = rules; r < rules_; r++)
 				if(r->a && apply_rule(r, s)) return 1;
 		}
-		*dst_++ = last = c;
-		s++;
+		*dst_++ = last = c, s++;
 	}
 	*dst_++ = 0;
 	return 0;
@@ -280,13 +283,13 @@ int
 main(int argc, char **argv)
 {
 	FILE *f;
-	int i, pl = 0, pr = 0, rw = 0;
+	int i, pr = 0, rw = 0;
 	char c, last = 0, *w = bank_a;
 	if(argc < 2)
 		return !printf("usage: modal [-vqn] source.modal\n");
 	for(i = 1; i < argc && *argv[i] == '-'; i++) {
 		switch(argv[i][1]) {
-		case 'v': /* version */ return !printf("Modal Interpreter, 7 May 2024.\n");
+		case 'v': /* version */ return !printf("Modal Interpreter, 9 May 2024.\n");
 		case 'q': /* quiet */ quiet = 1; break;
 		case 'p': /* debug */ debug = 1; break;
 		case 'n': /* infinite */ cycles = 0xffffffff; break;
@@ -299,15 +302,14 @@ main(int argc, char **argv)
 		if(c == ' ' && last == '(') continue;
 		if(c == ')' && last == ' ') w--;
 		if(c == ' ' && last == ' ') w--;
-		if(c == '(') pl++;
-		if(c == ')') pr++;
+		if(c == '(') pr++;
+		if(c == ')') pr--;
 		if(c == '(' && last != '?' && !spacer(last)) *w++ = ' ';
 		if(last == ')' && !spacer(c)) *w++ = ' ';
 		*w++ = last = c;
 	}
-	while(*(--w) <= ' ') *w = 0;
 	fclose(f);
-	if(pr != pl)
+	if(pr)
 		return !fprintf(stderr, "Modal program imbalanced.\n");
 	while(rewrite() && ++rw)
 		if(!cycles--) return !fprintf(stderr, "Modal rewrites exceeded.\n");
