@@ -18,8 +18,8 @@ WITH REGARD TO THIS SOFTWARE.
 typedef unsigned char Uint8;
 typedef signed char Sint8;
 typedef unsigned short Uint16;
-typedef struct { char *name, rune, *content; Uint16 addr, refs; } Item;
 typedef struct { int line; char *path; } Context;
+typedef struct { char *name, rune, *data; Uint16 addr, refs, line; } Item;
 
 static int ptr, length;
 static char token[0x40], scope[0x40], lambda[0x05];
@@ -37,12 +37,12 @@ static char ops[][4] = {
 	"ADD", "SUB", "MUL", "DIV", "AND", "ORA", "EOR", "SFT"
 };
 
-static int   find(char *s, char t) { int i = 0; char c; while((c = *s++)) { if(c == t) return i; i++; } return -1; } /* chr in str */
-static int   shex(char *s) { int n = 0; char c; while((c = *s++)) { if(find(hexad, c) < 0) return -1; n = n << 4, n |= find(hexad, c); } return n; } /* str to hex */
-static int   scmp(char *a, char *b, int len) { int i = 0; while(a[i] == b[i]) if(!a[i] || ++i >= len) return 1; return 0; } /* str compare */
-static char *copy(char *src, char *dst, char c) { while(*src && *src != c) *dst++ = *src++; *dst++ = 0; return dst; } /* str copy */
-static char *save(char *s, char c) { char *o = dictnext; while((*dictnext++ = *s++) && *s); *dictnext++ = c; return o; } /* save to dict */
-static char *join(char *a, char j, char *b) { char *res = dictnext; save(a, j), save(b, 0); return res; } /* join two str */
+static int   find(char *s, char t) { int i = 0; char c; while((c = *s++)) { if(c == t) return i; i++; } return -1; }
+static int   shex(char *s) { int d, n = 0; char c; while((c = *s++)) { d = find(hexad, c); if(d < 0) return d; n = n << 4, n |= d; } return n; }
+static int   scmp(char *a, char *b, int len) { int i = 0; while(a[i] == b[i]) if(!a[i] || ++i >= len) return 1; return 0; }
+static char *copy(char *src, char *dst, char c) { while(*src && *src != c) *dst++ = *src++; *dst++ = 0; return dst; }
+static char *save(char *s, char c) { char *o = dictnext; while((*dictnext++ = *s++) && *s); *dictnext++ = c; return o; }
+static char *join(char *a, char j, char *b) { char *res = dictnext; save(a, j), save(b, 0); return res; }
 
 #define ishex(x) (shex(x) >= 0)
 #define isopc(x) (findopcode(x) || scmp(x, "BRK", 4))
@@ -50,8 +50,9 @@ static char *join(char *a, char j, char *b) { char *res = dictnext; save(a, j), 
 #define writeshort(x) (writebyte(x >> 8, ctx) && writebyte(x & 0xff, ctx))
 #define findlabel(x) finditem(x, labels, labels_len)
 #define findmacro(x) finditem(x, macros, macro_len)
-#define error_top(name, msg) !printf("%s: %s\n", name, msg)
-#define error_asm(name) !printf("%s: %s in @%s, %s:%d.\n", name, token, scope, ctx->path, ctx->line)
+#define error_top(id, msg) !printf("%s: %s\n", id, msg)
+#define error_asm(id) !printf("%s: %s in @%s, %s:%d.\n", id, token, scope, ctx->path, ctx->line)
+#define error_ref(id) !printf("%s: %s, %s:%d\n", id, r->name, r->data, r->line)
 
 /* clang-format on */
 
@@ -111,7 +112,7 @@ walkcomment(FILE *f, Context *ctx)
 	char c;
 	int depth = 1;
 	while(f && fread(&c, 1, 1, f)) {
-		if(c == 0xa) ctx->line += 1;
+		if(c == 0xa) ctx->line++;
 		if(c == '(') depth++;
 		if(c == ')' && --depth < 1) return 1;
 	}
@@ -121,8 +122,9 @@ walkcomment(FILE *f, Context *ctx)
 static int
 walkmacro(Item *m, Context *ctx)
 {
-	char c, *contentptr = m->content, *cptr = token;
-	while((c = *contentptr++)) {
+	unsigned char c;
+	char *dataptr = m->data, *cptr = token;
+	while((c = *dataptr++)) {
 		if(c < 0x21) {
 			*cptr++ = 0x00;
 			if(token[0] && !parse(token, NULL, ctx)) return 0;
@@ -136,13 +138,13 @@ walkmacro(Item *m, Context *ctx)
 static int
 walkfile(FILE *f, Context *ctx)
 {
-	char c, *cptr = token;
+	unsigned char c;
+	char *cptr = token;
 	while(f && fread(&c, 1, 1, f)) {
-		if(c == 0xa) ctx->line += 1;
 		if(c < 0x21) {
 			*cptr++ = 0x00;
-			if(token[0] && !parse(token, f, ctx))
-				return 0;
+			if(token[0] && !parse(token, f, ctx)) return 0;
+			if(c == 0xa) ctx->line++;
 			cptr = token;
 		} else if(cptr - token < 0x3f)
 			*cptr++ = c;
@@ -174,17 +176,17 @@ makemacro(char *name, FILE *f, Context *ctx)
 	if(findmacro(name)) return error_asm("Macro is duplicate");
 	m = &macros[macro_len++];
 	m->name = push(name, 0);
-	m->content = dictnext;
+	m->data = dictnext;
 	while(f && fread(&c, 1, 1, f) && c != '{')
-		if(c == 0xa) ctx->line += 1;
+		if(c == 0xa) ctx->line++;
 	while(f && fread(&c, 1, 1, f)) {
-		if(c == 0xa) ctx->line += 1;
-		if(c == '%') return error_top("Macro nested", name);
+		if(c == 0xa) ctx->line++;
+		if(c == '%') return error_asm("Macro nested");
 		if(c == '{') depth++;
 		if(c == '}' && --depth) break;
-		if(c == '(' && !walkcomment(f, ctx))
-			return 0;
-		else
+		if(c == '(') {
+			if(!walkcomment(f, ctx)) return 0;
+		} else
 			*dictnext++ = c;
 	}
 	*dictnext++ = 0;
@@ -209,10 +211,10 @@ makelabel(char *name, int setscope, Context *ctx)
 }
 
 static int
-makeref(char *label, char rune, Uint16 addr)
+makeref(char *label, char rune, Uint16 addr, Context *ctx)
 {
 	Item *r;
-	if(refs_len >= 0x1000) return error_top("References limit exceeded", label);
+	if(refs_len >= 0x1000) return error_asm("References limit exceeded");
 	r = &refs[refs_len++];
 	if(label[0] == '{') {
 		lambda_stack[lambda_ptr++] = lambda_len;
@@ -223,6 +225,8 @@ makeref(char *label, char rune, Uint16 addr)
 		r->name = push(label, 0);
 	r->rune = rune;
 	r->addr = addr;
+	r->line = ctx->line;
+	r->data = ctx->path;
 	return 1;
 }
 
@@ -299,21 +303,22 @@ parse(char *w, FILE *f, Context *ctx)
 {
 	Item *m;
 	switch(w[0]) {
+	case 0x0: return 1;
 	case '(': return walkcomment(f, ctx);
 	case '%': return makemacro(w + 1, f, ctx);
 	case '@': return makelabel(w + 1, 1, ctx);
 	case '&': return makelabel(w, 0, ctx);
 	case '}': return makelabel(makelambda(lambda_stack[--lambda_ptr]), 0, ctx);
 	case '#': return writehex(w, ctx);
-	case '_': return makeref(w + 1, w[0], ptr) && writebyte(0xff, ctx);
-	case ',': return makeref(w + 1, w[0], ptr + 1) && writebyte(findopcode("LIT"), ctx) && writebyte(0xff, ctx);
-	case '-': return makeref(w + 1, w[0], ptr) && writebyte(0xff, ctx);
-	case '.': return makeref(w + 1, w[0], ptr + 1) && writebyte(findopcode("LIT"), ctx) && writebyte(0xff, ctx);
+	case '_': return makeref(w + 1, w[0], ptr, ctx) && writebyte(0xff, ctx);
+	case ',': return makeref(w + 1, w[0], ptr + 1, ctx) && writebyte(findopcode("LIT"), ctx) && writebyte(0xff, ctx);
+	case '-': return makeref(w + 1, w[0], ptr, ctx) && writebyte(0xff, ctx);
+	case '.': return makeref(w + 1, w[0], ptr + 1, ctx) && writebyte(findopcode("LIT"), ctx) && writebyte(0xff, ctx);
 	case ':': printf("Deprecated rune %s, use =%s\n", w, w + 1); /* fall-through */
-	case '=': return makeref(w + 1, w[0], ptr) && writeshort(0xffff);
-	case ';': return makeref(w + 1, w[0], ptr + 1) && writebyte(findopcode("LIT2"), ctx) && writeshort(0xffff);
-	case '?': return makeref(w + 1, w[0], ptr + 1) && writebyte(0x20, ctx) && writeshort(0xffff);
-	case '!': return makeref(w + 1, w[0], ptr + 1) && writebyte(0x40, ctx) && writeshort(0xffff);
+	case '=': return makeref(w + 1, w[0], ptr, ctx) && writeshort(0xffff);
+	case ';': return makeref(w + 1, w[0], ptr + 1, ctx) && writebyte(findopcode("LIT2"), ctx) && writeshort(0xffff);
+	case '?': return makeref(w + 1, w[0], ptr + 1, ctx) && writebyte(0x20, ctx) && writeshort(0xffff);
+	case '!': return makeref(w + 1, w[0], ptr + 1, ctx) && writebyte(0x40, ctx) && writeshort(0xffff);
 	case '"': return writestring(w + 1, ctx);
 	case '~': return !assemble(w + 1) ? error_asm("Include missing") : 1;
 	case '$':
@@ -324,7 +329,7 @@ parse(char *w, FILE *f, Context *ctx)
 	if(ishex(w)) return writehex(w, ctx);
 	if(isopc(w)) return writebyte(findopcode(w), ctx);
 	if((m = findmacro(w))) return walkmacro(m, ctx);
-	return makeref(w, ' ', ptr + 1) && writebyte(0x60, ctx) && writeshort(0xffff);
+	return makeref(w, ' ', ptr + 1, ctx) && writebyte(0x60, ctx) && writeshort(0xffff);
 }
 
 static int
@@ -335,13 +340,13 @@ resolve(char *filename)
 	for(i = 0; i < refs_len; i++) {
 		Item *r = &refs[i], *l = findlabel(r->name);
 		Uint8 *rom = data + r->addr;
-		if(!l) return error_top("Label unknown", r->name);
+		if(!l) return error_ref("Label unknown");
 		switch(r->rune) {
 		case '_':
 		case ',':
 			*rom = rel = l->addr - r->addr - 2;
 			if((Sint8)data[r->addr] != rel)
-				return error_top("Relative reference too far", r->name);
+				return error_ref("Relative reference too far");
 			break;
 		case '-':
 		case '.':
@@ -404,7 +409,7 @@ main(int argc, char *argv[])
 {
 	ptr = PAGE;
 	copy("on-reset", scope, 0);
-	if(argc == 2 && scmp(argv[1], "-v", 2)) return !printf("Uxnasm - Uxntal Assembler, 3 Apr 2024.\n");
+	if(argc == 2 && scmp(argv[1], "-v", 2)) return !printf("Uxnasm - Uxntal Assembler, 10 May 2024.\n");
 	if(argc != 3) return error_top("usage", "uxnasm [-v] input.tal output.rom");
 	if(!assemble(argv[1])) return 1;
 	if(!resolve(argv[2])) return 1;

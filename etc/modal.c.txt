@@ -99,23 +99,24 @@ device_read(void)
 	if(dst_ - origin == 0) dst_--;
 }
 
-static void
-file_import(char *path)
+static char *
+file_import(char *path, char *ptr)
 {
 	FILE *f;
 	int pr = 0;
-	char c;
 	if((f = fopen(path, "r"))) {
+		char c;
 		while(fread(&c, 1, 1, f)) {
 			c = c <= 0x20 ? 0x20 : c;
 			if(c == '(') pr++;
 			if(c == ')') pr--;
-			*dst_++ = c;
+			*ptr++ = c;
 		}
 		fclose(f);
 		if(pr) fprintf(stderr, "Modal program imbalanced.\n");
-	} else
-		dst_ = copy("NAF", dst_, 3);
+		return ptr;
+	}
+	return copy("NAF", ptr, 3);
 }
 
 static void
@@ -127,7 +128,7 @@ write_reg(char r, char *reg)
 	case '_': {
 		char filepath[0x80];
 		copy(reg, filepath, walk(reg) - reg);
-		file_import(filepath);
+		dst_ = file_import(filepath, dst_);
 		return;
 	}
 	case '^': { /* op: join */
@@ -220,20 +221,21 @@ apply_rule(Rule *r, char *s)
 }
 
 static char *
-parse_frag(char **side, char *src)
+parse_frag(char **side, char *s)
 {
-	int wrapped;
 	char c, *cap;
-	while((c = *src) && c == ' ') src++;
-	if(c == ')' || (c == '<' && src[1] == '>')) {
+	while((c = *s) && c == ' ') s++;
+	if(c == ')' || (c == '<' || c == '>'))
 		*side = &empty;
-		return src;
+	else {
+		cap = walk(s), *side = dict_;
+		if(c == '(')
+			dict_ = copy(s + 1, dict_, cap - s - 2);
+		else
+			dict_ = copy(s, dict_, cap - s);
+		s = cap, *dict_++ = 0;
 	}
-	*side = dict_, cap = walk(src), wrapped = c == '(';
-	if(wrapped) src++, cap--;
-	while(src < cap) *dict_++ = *src++;
-	src += wrapped, *dict_++ = 0;
-	return src;
+	return s;
 }
 
 static Rule *
@@ -290,10 +292,7 @@ rewrite(void)
 				parse_frag(&r->b, parse_frag(&r->a, s + 2));
 				s = cap;
 				while(*s == ' ') s++;
-				if(!apply_rule(r, s)) {
-					if(!quiet) fprintf(stderr, "%02d %s\n", r->id, src_), ++r->refs;
-					write_tail(s);
-				}
+				if(r->a && !apply_rule(r, s)) write_tail(s);
 				dict_ = d;
 				return 1;
 			}
@@ -322,7 +321,7 @@ main(int argc, char **argv)
 		case 'n': /* infinite */ cycles = 0xffffffff; break;
 		}
 	}
-	dst_ = bank_a, file_import(argv[i]), dst_ = bank_b;
+	file_import(argv[i], src_);
 	while(rewrite() && ++rw)
 		if(!cycles--) return !fprintf(stderr, "Modal rewrites exceeded.\n");
 	if(!quiet) {
