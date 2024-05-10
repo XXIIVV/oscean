@@ -7,7 +7,7 @@ typedef struct {
 
 static int flip, quiet, debug, access, cycles = 0x200000;
 static Rule rules[0x1000], *rules_ = rules;
-static char dict[0x8000], *dict_ = dict, empty;
+static char dict[0x8000], *dict_ = dict;
 static char bank_a[0x4000], *src_ = bank_a;
 static char bank_b[0x4000], *dst_ = bank_b;
 static char *regs[0x100], stack[0x10], *stack_ = stack;
@@ -206,11 +206,12 @@ apply_rule(Rule *r, char *s)
 	c = *s;
 	if(!spacer(c)) return 0;
 	/* phase: write rule */
-	while((c = *b++)) {
-		if(c == '?' && (rid = *b) && (reg = regs[rid]))
-			write_reg(rid, reg), b++;
-		else
-			*dst_++ = c;
+	if(b != NULL) {
+		while((c = *b++))
+			if(c == '?' && (rid = *b) && (reg = regs[rid]))
+				write_reg(rid, reg), b++;
+			else
+				*dst_++ = c;
 	}
 	if(dst_ == origin) {
 		while(*s == ' ') s++;
@@ -225,8 +226,8 @@ parse_frag(char **side, char *s)
 {
 	char c, *cap;
 	while((c = *s) && c == ' ') s++;
-	if(c == ')' || (c == '<' || c == '>'))
-		*side = &empty;
+	if(c == ')' || c == '<' || c == '>' || (c == '(' && s[1] == ')'))
+		*side = NULL;
 	else {
 		cap = walk(s), *side = dict_;
 		if(c == '(')
@@ -277,7 +278,7 @@ rewrite(void)
 			if(c == '<' && s[1] == '>') {
 				r = rules_, r->id = rules_ - rules;
 				s = parse_frag(&r->b, parse_frag(&r->a, s + 2));
-				if(*r->a) {
+				if(r->a != NULL) {
 					if(!quiet) fprintf(stderr, "<> (%s) (%s)\n", r->a, r->b);
 					rules_++;
 				}
@@ -292,13 +293,13 @@ rewrite(void)
 				parse_frag(&r->b, parse_frag(&r->a, s + 2));
 				s = cap;
 				while(*s == ' ') s++;
-				if(r->a && !apply_rule(r, s)) write_tail(s);
+				if(r->a == NULL || !apply_rule(r, s)) write_tail(s);
 				dict_ = d;
 				return 1;
 			}
 			/* phase: match */
 			for(r = rules; r < rules_; r++)
-				if(r->a && apply_rule(r, s)) return 1;
+				if(r->a != NULL && apply_rule(r, s)) return 1;
 		}
 		*dst_++ = last = c, s++;
 	}
@@ -314,7 +315,7 @@ main(int argc, char **argv)
 		return !printf("usage: modal [-vqn] source.modal\n");
 	for(i = 1; i < argc && *argv[i] == '-'; i++) {
 		switch(argv[i][1]) {
-		case 'v': /* version */ return !printf("Modal Interpreter, 9 May 2024.\n");
+		case 'v': /* version */ return !printf("Modal Interpreter, 10 May 2024.\n");
 		case 'q': /* quiet */ quiet = 1; break;
 		case 'p': /* debug */ debug = 1; break;
 		case 'a': /* access */ access = 1; break;
