@@ -5,7 +5,7 @@ typedef struct {
 	char *a, *b;
 } Rule;
 
-static int flip, quiet, debug, cycles = 0x200000;
+static int flip, quiet, debug, access, cycles = 0x200000;
 static Rule rules[0x1000], *rules_ = rules;
 static char dict[0x8000], *dict_ = dict, empty;
 static char bank_a[0x4000], *src_ = bank_a;
@@ -13,6 +13,23 @@ static char bank_b[0x4000], *dst_ = bank_b;
 static char *regs[0x100], stack[0x10], *stack_ = stack;
 
 #define spacer(c) (c <= ' ' || c == '(' || c == ')')
+
+static char *
+copy(char *src, char *dst, int length)
+{
+	while(length--) *dst++ = *src++;
+	return dst;
+}
+
+static int
+sint(char *s)
+{
+	char c;
+	int r = 0, n = 1;
+	if(*s == '-') { n = -1, s++; }
+	while((c = *s++) && !spacer(c)) r = r * 10 + c - '0';
+	return r * n;
+}
 
 static char *
 walk(char *s)
@@ -28,16 +45,6 @@ walk(char *s)
 	}
 	while((c = *s) && !spacer(c)) s++;
 	return s;
-}
-
-static int
-sint(char *s)
-{
-	char c;
-	int r = 0, n = 1;
-	if(*s == '-') { n = -1, s++; }
-	while((c = *s++) && !spacer(c)) r = r * 10 + c - '0';
-	return r * n;
 }
 
 static void
@@ -87,12 +94,28 @@ static void
 device_read(void)
 {
 	char c, *origin = dst_;
-	while(fread(&c, 1, 1, stdin) && c >= ' ')
-		*dst_++ = c;
-	if(feof(stdin))
-		*dst_++ = 'E', *dst_++ = 'O', *dst_++ = 'F';
-	if(dst_ - origin == 0)
-		dst_--;
+	while(fread(&c, 1, 1, stdin) && c >= ' ') *dst_++ = c;
+	if(feof(stdin)) dst_ = copy("EOF", dst_, 3);
+	if(dst_ - origin == 0) dst_--;
+}
+
+static void
+file_import(char *path)
+{
+	FILE *f;
+	int pr = 0;
+	char c;
+	if((f = fopen(path, "r"))) {
+		while(fread(&c, 1, 1, f)) {
+			c = c <= 0x20 ? 0x20 : c;
+			if(c == '(') pr++;
+			if(c == ')') pr--;
+			*dst_++ = c;
+		}
+		fclose(f);
+		if(pr) fprintf(stderr, "Modal program imbalanced.\n");
+	} else
+		dst_ = copy("NAF", dst_, 3);
 }
 
 static void
@@ -101,6 +124,12 @@ write_reg(char r, char *reg)
 	switch(r) {
 	case ':': device_write(reg); return;
 	case '~': device_read(); return;
+	case '_': {
+		char filepath[0x80];
+		copy(reg, filepath, walk(reg) - reg);
+		file_import(filepath);
+		return;
+	}
 	case '^': { /* op: join */
 		char c, *cap = walk(reg);
 		if(*reg == '(') reg++, --cap;
@@ -111,7 +140,7 @@ write_reg(char r, char *reg)
 	case '.': { /* op: unwrap */
 		char *cap = walk(reg);
 		if(*reg == '(') reg++, --cap;
-		while(reg < cap) *dst_++ = *reg++;
+		dst_ = copy(reg, dst_, cap - reg);
 		return;
 	}
 	case '*': { /* op: explode */
@@ -132,8 +161,7 @@ write_reg(char r, char *reg)
 		return;
 	}
 	default: {
-		char *cap = walk(reg);
-		while(reg < cap) *dst_++ = *reg++;
+		dst_ = copy(reg, dst_, walk(reg) - reg);
 		return;
 	}
 	}
@@ -203,7 +231,7 @@ parse_frag(char **side, char *src)
 	}
 	*side = dict_, cap = walk(src), wrapped = c == '(';
 	if(wrapped) src++, cap--;
-	while(src < cap) c = *src, *dict_++ = *src++;
+	while(src < cap) *dict_++ = *src++;
 	src += wrapped, *dict_++ = 0;
 	return src;
 }
@@ -282,9 +310,7 @@ rewrite(void)
 int
 main(int argc, char **argv)
 {
-	FILE *f;
-	int i, pr = 0, rw = 0;
-	char c, last = 0, *w = bank_a;
+	int i, rw = 0;
 	if(argc < 2)
 		return !printf("usage: modal [-vqn] source.modal\n");
 	for(i = 1; i < argc && *argv[i] == '-'; i++) {
@@ -292,36 +318,17 @@ main(int argc, char **argv)
 		case 'v': /* version */ return !printf("Modal Interpreter, 9 May 2024.\n");
 		case 'q': /* quiet */ quiet = 1; break;
 		case 'p': /* debug */ debug = 1; break;
+		case 'a': /* access */ access = 1; break;
 		case 'n': /* infinite */ cycles = 0xffffffff; break;
 		}
 	}
-	if(!(f = fopen(argv[i], "r")))
-		return !printf("Modal file invalid: %s.\n", argv[i]);
-	while(fread(&c, 1, 1, f)) {
-		c = c <= 0x20 ? 0x20 : c;
-		if(c == ' ' && last == '(') continue;
-		if(c == ')' && last == ' ') w--;
-		if(c == ' ' && last == ' ') w--;
-		if(c == '(') pr++;
-		if(c == ')') pr--;
-		if(c == '(' && last != '?' && !spacer(last)) *w++ = ' ';
-		if(last == ')' && !spacer(c)) *w++ = ' ';
-		*w++ = last = c;
-	}
-	fclose(f);
-	if(pr)
-		return !fprintf(stderr, "Modal program imbalanced.\n");
+	dst_ = bank_a, file_import(argv[i]), dst_ = bank_b;
 	while(rewrite() && ++rw)
 		if(!cycles--) return !fprintf(stderr, "Modal rewrites exceeded.\n");
 	if(!quiet) {
-		while(rules_-- > rules) {
-			if(rules_->a) {
-				if(!rules_->refs)
-					fprintf(stderr, "-- Unused rule: %d <> (%s) (%s)\n", rules_->id, rules_->a, rules_->b);
-				if(debug)
-					fprintf(stderr, "   (%s) (%s), %d times.\n", rules_->a, rules_->b, rules_->refs);
-			}
-		}
+		while(rules_-- > rules)
+			if(rules_->a && !rules_->refs)
+				fprintf(stderr, "-- Unused rule: %d <> (%s) (%s)\n", rules_->id, rules_->a, rules_->b);
 		if(rw)
 			fprintf(stderr, ".. %s\nCompleted in %d rewrites.\n", src_, rw);
 	}
