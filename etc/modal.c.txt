@@ -90,14 +90,6 @@ device_write(char *s)
 	}
 }
 
-static void
-device_read(void)
-{
-	char c, *origin = dst_;
-	while(fread(&c, 1, 1, stdin) && c >= ' ') *dst_++ = c;
-	if(feof(stdin)) dst_ = copy("EOF", dst_, 3);
-}
-
 static char *
 file_import(char *path, char *ptr)
 {
@@ -123,7 +115,12 @@ write_reg(char r, char *reg)
 {
 	switch(r) {
 	case ':': device_write(reg); return;
-	case '~': device_read(); return;
+	case '~': {
+		unsigned char c;
+		while(fread(&c, 1, 1, stdin) && c >= ' ') *dst_++ = c;
+		if(feof(stdin)) dst_ = copy("EOF", dst_, 3);
+		return;
+	}
 	case '_': {
 		char filepath[0x80];
 		copy(reg, filepath, walk(reg) - reg);
@@ -148,11 +145,10 @@ write_reg(char r, char *reg)
 		char c, *cap = walk(reg);
 		if(*reg == '(' && reg[1] != ')') { /* tuple */
 			reg++;
-			while(reg < cap) {
+			while(reg < cap - 1) {
 				while((c = *reg) && !spacer(c))
 					*dst_++ = c, reg++;
-				*dst_++ = ' ';
-				*dst_++ = '(', reg++, depth++;
+				*dst_++ = ' ', *dst_++ = '(', reg++, depth++;
 			}
 		} else /* token */
 			while((c = *reg++) && !spacer(c))
