@@ -96,7 +96,6 @@ device_read(void)
 	char c, *origin = dst_;
 	while(fread(&c, 1, 1, stdin) && c >= ' ') *dst_++ = c;
 	if(feof(stdin)) dst_ = copy("EOF", dst_, 3);
-	if(dst_ - origin == 0) dst_--;
 }
 
 static char *
@@ -226,9 +225,13 @@ parse_frag(char **side, char *s)
 {
 	char c, *cap;
 	while((c = *s) && c == ' ') s++;
-	if(c == ')' || c == '<' || c == '>' || (c == '(' && s[1] == ')'))
+	if(c == ')') {
 		*side = NULL;
-	else {
+		return s;
+	} else if((c == '<' && s[1] == '>') || (c == '>' && s[1] == '<') || (c == '(' && s[1] == ')')) {
+		*side = NULL;
+		return s + 2;
+	} else {
 		cap = walk(s), *side = dict_;
 		if(c == '(')
 			dict_ = copy(s + 1, dict_, cap - s - 2);
@@ -268,7 +271,7 @@ rewrite(void)
 				while(*s == ' ') s++;
 				cap = walk(s), r = find_rule(s, cap);
 				if(r != NULL) {
-					if(!quiet) fprintf(stderr, ">< (%s) (%s)\n", r->a, r->b);
+					if(!quiet) fprintf(stderr, ">< (%s) (%s)\n", r->a ? r->a : "", r->b ? r->b : "");
 					r->a = 0;
 				}
 				while(*cap == ' ') cap++;
@@ -279,7 +282,7 @@ rewrite(void)
 				r = rules_, r->id = rules_ - rules;
 				s = parse_frag(&r->b, parse_frag(&r->a, s + 2));
 				if(r->a != NULL) {
-					if(!quiet) fprintf(stderr, "<> (%s) (%s)\n", r->a, r->b);
+					if(!quiet) fprintf(stderr, "<> (%s) (%s)\n", r->a ? r->a : "", r->b ? r->b : "");
 					rules_++;
 				}
 				while(*s == ' ') s++;
