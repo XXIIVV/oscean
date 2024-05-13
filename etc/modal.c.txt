@@ -13,22 +13,13 @@ static char bank_b[0x4000], *dst_ = bank_b;
 static char *regs[0x100], stack[0x10], *stack_ = stack;
 
 #define spacer(c) (c <= ' ' || c == '(' || c == ')')
+#define chex(c) (0xf & (c - (c <= '9' ? '0' : 0x57)))
 
 static char *
 copy(char *src, char *dst, int length)
 {
 	while(length--) *dst++ = *src++;
 	return dst;
-}
-
-static int
-sint(char *s)
-{
-	char c;
-	int r = 0, n = 1;
-	if(*s == '-') { n = -1, s++; }
-	while((c = *s++) && !spacer(c)) r = r * 10 + c - '0';
-	return r * n;
 }
 
 static char *
@@ -47,13 +38,28 @@ walk(char *s)
 	return s;
 }
 
+static int
+sint(char *s)
+{
+	char c = *s, *cap = walk(s);
+	int r = 0, n = 1;
+	if(c == '#') {
+		s++;
+		while((c = *s) && s++ < cap) r = (r << 4) | chex(c);
+		return r;
+	}
+	if(c == '-') { n = -1, s++; }
+	while((c = *s) && s++ < cap) r = r * 10 + c - '0';
+	return r * n;
+}
+
 static void
 device_write(char *s)
 {
 	char **reg = regs + '0';
 	/* phase: ALU */
 	if(*reg) {
-		int acc = sint(*reg++);
+		int hex = **reg == '#', acc = sint(*reg++);
 		/* clang-format off */
 		switch(*s) {
 		case '+': while(*reg) acc += sint(*reg++); break;
@@ -70,19 +76,20 @@ device_write(char *s)
 		case '<': while(*reg) acc = acc < sint(*reg++); break;
 		}
 		/* clang-format on */
-		dst_ += snprintf(dst_, 0x10, "%d", acc);
+		dst_ += snprintf(dst_, 0x10, hex ? "#%x" : "%d", acc);
 		return;
 	} else {
 		/* phase: string */
 		char *cap = walk(s);
 		if(*s == '(') s++, --cap;
 		while(s < cap) {
-			char c = *s++;
+			char c = *s++, hb, lb;
 			if(c == '\\') {
 				switch(*s++) {
 				case 't': putc(0x09, stdout); break;
 				case 'n': putc(0x0a, stdout); break;
 				case 's': putc(0x20, stdout); break;
+				case '#': hb = *s++, lb = *s++, putc((chex(hb) << 4) | chex(lb), stdout); break;
 				}
 			} else
 				putc(c, stdout);
@@ -314,7 +321,7 @@ main(int argc, char **argv)
 		return !printf("usage: modal [-vqn] source.modal\n");
 	for(i = 1; i < argc && *argv[i] == '-'; i++) {
 		switch(argv[i][1]) {
-		case 'v': /* version */ return !printf("Modal Interpreter, 10 May 2024.\n");
+		case 'v': /* version */ return !printf("Modal Interpreter, 13 May 2024.\n");
 		case 'q': /* quiet */ quiet = 1; break;
 		case 'p': /* debug */ debug = 1; break;
 		case 'a': /* access */ access = 1; break;
