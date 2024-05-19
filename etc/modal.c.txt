@@ -103,12 +103,17 @@ file_import(char *path, char *ptr)
 	FILE *f;
 	int pr = 0;
 	if((f = fopen(path, "r"))) {
-		unsigned char c;
+		unsigned char c, last = 0;
 		while(fread(&c, 1, 1, f)) {
 			c = c <= 0x20 ? 0x20 : c;
 			if(c == '(') pr++;
 			if(c == ')') pr--;
-			*ptr++ = c;
+			if(c == ' ' && last == '(') continue;
+			if(c == ')' && last == ' ') ptr--;
+			if(c == ' ' && last == ' ') ptr--;
+			if(c == '(' && last != '?' && !spacer(last)) *ptr++ = ' ';
+			if(last == ')' && !spacer(c)) *ptr++ = ' ';
+			*ptr++ = last = c;
 		}
 		fclose(f);
 		if(pr) fprintf(stderr, "Modal program imbalanced.\n");
@@ -321,7 +326,7 @@ main(int argc, char **argv)
 		return !printf("usage: modal [-vqn] source.modal\n");
 	for(i = 1; i < argc && *argv[i] == '-'; i++) {
 		switch(argv[i][1]) {
-		case 'v': /* version */ return !printf("Modal Interpreter, 13 May 2024.\n");
+		case 'v': /* version */ return !printf("Modal Interpreter, 17 May 2024.\n");
 		case 'q': /* quiet */ quiet = 1; break;
 		case 'p': /* debug */ debug = 1; break;
 		case 'a': /* access */ access = 1; break;
