@@ -115,6 +115,7 @@ file_import(char *path, char *ptr)
 			if(last == ')' && !spacer(c)) *ptr++ = ' ';
 			*ptr++ = last = c;
 		}
+		while(*(--ptr) <= ' ') *ptr = 0;
 		fclose(f);
 		if(pr) fprintf(stderr, "Modal program imbalanced.\n");
 		return ptr;
@@ -176,7 +177,7 @@ write_reg(char r, char *reg)
 }
 
 static int
-write_tail(char *s)
+write_tail(char *s, Rule *r)
 {
 	while((*dst_++ = *s++))
 		;
@@ -185,6 +186,7 @@ write_tail(char *s)
 		src_ = bank_b, dst_ = bank_a;
 	else
 		src_ = bank_a, dst_ = bank_b;
+	if(r && !quiet) fprintf(stderr, "%02d %s\n", r->id, src_), ++r->refs;
 	return 1;
 }
 
@@ -213,19 +215,16 @@ apply_rule(Rule *r, char *s)
 	c = *s;
 	if(!spacer(c)) return 0;
 	/* phase: write rule */
-	if(b != NULL) {
-		while((c = *b++))
-			if(c == '?' && (rid = *b) && (reg = regs[rid]))
-				write_reg(rid, reg), b++;
-			else
-				*dst_++ = c;
-	}
+	while((c = *b++))
+		if(c == '?' && (rid = *b) && (reg = regs[rid]))
+			write_reg(rid, reg), b++;
+		else
+			*dst_++ = c;
 	if(dst_ == origin) {
 		while(*s == ' ') s++;
 		if(*s == ')' && *(dst_ - 1) == ' ') dst_--;
 	}
-	if(!quiet) fprintf(stderr, "%02d %s\n", r->id, src_), ++r->refs;
-	return write_tail(s);
+	return write_tail(s, r);
 }
 
 static char *
@@ -233,12 +232,9 @@ parse_frag(char **side, char *s)
 {
 	char c, *cap;
 	while((c = *s) && c == ' ') s++;
-	if(c == ')') {
-		*side = NULL;
+	if(c == ')' || (c == '<' && s[1] == '>') || (c == '>' && s[1] == '<')) {
+		*side = dict_, *dict_++ = 0;
 		return s;
-	} else if((c == '<' && s[1] == '>') || (c == '>' && s[1] == '<') || (c == '(' && s[1] == ')')) {
-		*side = NULL;
-		return s + 2;
 	} else {
 		cap = walk(s), *side = dict_;
 		if(c == '(')
@@ -257,12 +253,29 @@ find_rule(char *s, char *cap)
 	if(*s == '(') s++, cap--;
 	while(r < rules_) {
 		char *ss = s, *a = r->a;
-		if(a)
-			while(*ss++ == *a++)
-				if(!*a && ss == cap) return r;
+		while(*ss++ == *a++)
+			if(!*a && ss == cap) return r;
 		r++;
 	}
 	return NULL;
+}
+
+static void
+remove_rule(Rule *r)
+{
+	if(r < rules_ - 1) {
+		char *memsrc = (r + 1)->a;
+		int distance = (r + 1)->a - r->a;
+		copy(memsrc, r->a, dict_ - memsrc);
+		while(r < rules_ - 1) {
+			Rule *next = r + 1;
+			r->id = next->id, r->refs = next->refs;
+			r->a = next->a - distance;
+			r->b = next->b - distance;
+			r++;
+		}
+	}
+	rules_--;
 }
 
 static int
@@ -272,7 +285,7 @@ rewrite(void)
 	while(*s == ' ') s++;
 	while((c = *s)) {
 		if(c == '(' || spacer(last)) {
-			Rule *r = NULL;
+			Rule *r;
 			/* phase: undefine */
 			if(c == '>' && s[1] == '<') {
 				s += 2;
@@ -280,21 +293,21 @@ rewrite(void)
 				cap = walk(s), r = find_rule(s, cap);
 				if(r != NULL) {
 					if(!quiet) fprintf(stderr, ">< (%s) (%s)\n", r->a ? r->a : "", r->b ? r->b : "");
-					r->a = 0;
+					remove_rule(r);
 				}
 				while(*cap == ' ') cap++;
-				return write_tail(cap);
+				return write_tail(cap, NULL);
 			}
 			/* phase: define */
 			if(c == '<' && s[1] == '>') {
 				r = rules_, r->id = rules_ - rules;
 				s = parse_frag(&r->b, parse_frag(&r->a, s + 2));
-				if(r->a != NULL) {
+				if(*r->a) {
 					if(!quiet) fprintf(stderr, "<> (%s) (%s)\n", r->a ? r->a : "", r->b ? r->b : "");
 					rules_++;
 				}
 				while(*s == ' ') s++;
-				return write_tail(s);
+				return write_tail(s, NULL);
 			}
 			/* phase: lambda */
 			if(c == '?' && s[1] == '(') {
@@ -304,13 +317,13 @@ rewrite(void)
 				parse_frag(&r->b, parse_frag(&r->a, s + 2));
 				s = cap;
 				while(*s == ' ') s++;
-				if(r->a == NULL || !apply_rule(r, s)) write_tail(s);
+				if(!(*r->a) || !apply_rule(r, s)) write_tail(s, NULL);
 				dict_ = d;
 				return 1;
 			}
 			/* phase: match */
 			for(r = rules; r < rules_; r++)
-				if(r->a != NULL && apply_rule(r, s)) return 1;
+				if(apply_rule(r, s)) return 1;
 		}
 		*dst_++ = last = c, s++;
 	}
@@ -326,7 +339,7 @@ main(int argc, char **argv)
 		return !printf("usage: modal [-vqn] source.modal\n");
 	for(i = 1; i < argc && *argv[i] == '-'; i++) {
 		switch(argv[i][1]) {
-		case 'v': /* version */ return !printf("Modal Interpreter, 17 May 2024.\n");
+		case 'v': /* version */ return !printf("Modal Interpreter, 24 May 2024.\n");
 		case 'q': /* quiet */ quiet = 1; break;
 		case 'p': /* debug */ debug = 1; break;
 		case 'a': /* access */ access = 1; break;
