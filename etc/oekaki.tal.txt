@@ -7,15 +7,14 @@
 |90 @Mouse &vector $2 &x $2 &y $2 &state $1 &pad $3 &modx $2 &mody $2
 |a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |c0 @DateTime &year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
-
-|0000
+|000
 
 	@src $1 &buf $30
 	@canvas &width $2 &height $2 &length $2 &x $2 &y $2
-	@brush &color $1 &shape $1 &patt $1 &blend $1 &tool $1 &flow $1 &natural $1 &init $1
+	@brush &color $1 &shape $1 &patt $1 &blend $1 &tool $1 &natural $1 &init $1
 	@menu &hide $1
 
-|0100
+|100
 
 @on-reset ( -> )
 	;meta #06 DEO2
@@ -52,7 +51,7 @@
 	( name ) "Oekaki 0a
 	( desc ) "Drawing 20 "Program 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "14 20 "Jan 20 "2023 $1
+	( date ) "26 20 "May 20 "2024 $1
 	( exts ) 00
 
 (
@@ -62,8 +61,8 @@
 	.Console/read DEI .src zkey ?&open
 	BRK
 	&open ( -> )
-		;src/buf <open-file>
-		BRK
+	;src/buf <open-file>
+	BRK
 
 @on-control ( -> )
 	.Controller/button DEI
@@ -73,8 +72,7 @@
 	( | keys )
 	DUP #5b NEQ ?{
 		.brush/shape LDZ #01 SUB <set-shape> }
-	DUP #5d NEQ ?{
-		.brush/shape LDZ INC <set-shape> }
+	DUP #5d NEQ ?{ .brush/shape LDZ INC <set-shape> }
 	DUP [ LIT "1 ] NEQ ?{ #00 <set-color> }
 	DUP [ LIT "2 ] NEQ ?{ #01 <set-color> }
 	DUP [ LIT "3 ] NEQ ?{ #02 <set-color> }
@@ -132,7 +130,7 @@
 		BRK }
 	( | spacer )
 	DUP #08 NEQ ?{
-		.brush/shape LDZ #08 ADD <set-shape>
+		[ LIT2 08 -brush/shape ] LDZ ADD <set-shape>
 		<release-mouse> }
 	#09 SUB
 	( | patt )
@@ -142,12 +140,6 @@
 	( | spacer )
 	DUP #09 NEQ ?{ POP BRK }
 	#0a SUB
-	( | flow )
-	DUP ?{
-		.brush/flow LDZ INC <set-flow>
-		<release-mouse>
-		BRK }
-	#01 SUB
 	( | blending )
 	DUP ?{ <toggle-blend>
 		<release-mouse> }
@@ -192,10 +184,6 @@
 	.brush/blend STZ
 	!<draw-menu>
 
-@<set-flow> ( blend -- )
-	#03 AND .brush/flow STZ
-	!<draw-menu>
-
 @<set-color> ( color -- )
 	.brush/color STZ
 	<draw-pointer>
@@ -229,19 +217,19 @@
 	( ch0 with ) SWP SWP2r SFTr STHr MUL ORA STH2r STA
 	JMP2r
 	&outside ( `color* -- )
-		POP2r JMP2r
+	POP2r JMP2r
 
 @<flip-horizontal> ( -- )
 	.canvas/height LDZ2 #0000
-	&v ( -- )
+	&>v ( -- )
 		STH2k .canvas/width LDZ2 #01 SFT2 #0000
-	&h ( -- )
-		( a ) DUP2 STH2kr get-pixel STH
-		( b ) OVR2 INC2 .canvas/width LDZ2 SWP2 SUB2 SWP2 get-pixel STH
-		( a ) SWPr STHr <set-pixel>
-		( b ) NIP2 STHr <set-pixel>
-		POP2 POP2 INC2 GTH2k ?&h
-	POP2 POP2 POP2r INC2 GTH2k ?&v
+		&>h ( -- )
+			( a ) DUP2 STH2kr get-pixel STH
+			( b ) OVR2 INC2 .canvas/width LDZ2 SWP2 SUB2 SWP2 get-pixel STH
+			( a ) SWPr STHr <set-pixel>
+			( b ) NIP2 STHr <set-pixel>
+			POP2 POP2 INC2 GTH2k ?&>h
+		POP2 POP2 POP2r INC2 GTH2k ?&>v
 	POP2 POP2 !<redraw-all>
 
 (
@@ -295,89 +283,90 @@
 
 @pen
 	&hover ( -- )
-		JMP2r
+	JMP2r
 	&down ( -- )
-		[ LIT2 04 -Controller/button ] DEI AND ?&down-shift
-		( natural ) [ LIT2 00 -brush/natural ] LDZ EQU ?{ #0000 ;natural/last STA2 }
-		get-touch-x #0003 SUB2 ,&last-x STR2
-		get-touch-y #0003 SUB2 ,&last-y STR2
-		JMP2r
+	[ LIT2 04 -Controller/button ] DEI AND ?&down-shift
+	( natural ) [ LIT2 00 -brush/natural ] LDZ EQU ?{ #0000 ;natural/last STA2 }
+	get-touch-x #0003 SUB2 ,&last-x STR2
+	get-touch-y #0003 SUB2 ,&last-y STR2
+	JMP2r
 	&down-shift ( -- )
-		( ) ,&last-x LDR2 ,&last-y LDR2
-		( natural ) [ LIT2 00 -brush/natural ] LDZ EQU ?{ natural }
-		( ) get-touch-x #0003 SUB2
-		( ) get-touch-y #0003 SUB2 ;<paint-dot> <do-line>
-		<release-mouse>
-		JMP2r
+	( ) ,&last-x LDR2 ,&last-y LDR2
+	( natural ) [ LIT2 00 -brush/natural ] LDZ EQU ?{ natural }
+	( ) get-touch-x #0003 SUB2
+	( ) get-touch-y #0003 SUB2 ;<paint-dot>
+	<do-line>
+	!<release-mouse>
 	&up ( -- )
-		JMP2r
+	JMP2r
 	&drag ( -- )
-		[ LIT2 &last-x $2 ] [ LIT2 &last-y $2 ]
-		( natural ) [ LIT2 00 -brush/natural ] LDZ EQU ?{ natural }
-		( ) get-touch-x #0003 SUB2 DUP2 ,&last-x STR2
-		( ) get-touch-y #0003 SUB2 DUP2 ,&last-y STR2
-		( ) ;<paint-dot> <do-line>
-		JMP2r
+	[ LIT2 &last-x $2 ] [ LIT2 &last-y $2 ]
+	( natural ) [ LIT2 00 -brush/natural ] LDZ EQU ?{ natural }
+	( ) get-touch-x #0003 SUB2 DUP2 ,&last-x STR2
+	( ) get-touch-y #0003 SUB2 DUP2 ,&last-y STR2
+	( ) ;<paint-dot>
+	!<do-line>
 
 @line
 	&hover ( -- )
-		JMP2r
+	JMP2r
 	&down ( -- )
-		.Mouse/x DEI2 ,&x STR2
-		.Mouse/y DEI2 ,&y STR2
-		get-touch-x #0003 SUB2 ,&real-x STR2
-		get-touch-y #0003 SUB2 ,&real-y STR2
-		JMP2r
+	.Mouse/x DEI2 ,&x STR2
+	.Mouse/y DEI2 ,&y STR2
+	get-touch-x #0003 SUB2 ,&real-x STR2
+	get-touch-y #0003 SUB2 ,&real-y STR2
+	JMP2r
 	&up ( -- )
-		<clear-guide>
-		( ) [ LIT2 &real-x $2 ] [ LIT2 &real-y $2 ]
-		( ) get-touch-x #0003 SUB2
-		( ) get-touch-y #0003 SUB2 ;<paint-dot> !<do-line>
+	<clear-guide>
+	( ) [ LIT2 &real-x $2 ] [ LIT2 &real-y $2 ]
+	( ) get-touch-x #0003 SUB2
+	( ) get-touch-y #0003 SUB2 ;<paint-dot>
+	!<do-line>
 	&drag ( -- )
-		<clear-guide>
-		( ) [ LIT2 &x $2 ] [ LIT2 &y $2 ]
-		( ) .Mouse/x DEI2 .Mouse/y DEI2 ;<guide-dot> <do-line>
-		!<draw-pointer>
+	<clear-guide>
+	( ) [ LIT2 &x $2 ] [ LIT2 &y $2 ]
+	( ) .Mouse/x DEI2 .Mouse/y DEI2 ;<guide-dot>
+	<do-line>
+	!<draw-pointer>
 
 @rect
 	&hover ( -- )
-		JMP2r
+	JMP2r
 	&down ( -- )
-		.Mouse/x DEI2 ,&x STR2
-		.Mouse/y DEI2 ,&y STR2
-		get-touch-x ,&real-x STR2
-		get-touch-y ,&real-y STR2
-		JMP2r
+	.Mouse/x DEI2 ,&x STR2
+	.Mouse/y DEI2 ,&y STR2
+	get-touch-x #0003 SUB2 ,&real-x STR2
+	get-touch-y #0003 SUB2 ,&real-y STR2
+	JMP2r
 	&up ( -- )
-		<clear-guide>
-		( ) [ LIT2 &real-x $2 ] [ LIT2 &real-y $2 ]
-		( ) get-touch-x INC2 get-touch-y INC2 !<paint-rect>
+	<clear-guide>
+	( ) [ LIT2 &real-x $2 ] [ LIT2 &real-y $2 ]
+	( ) get-touch-x INC2 get-touch-y INC2 !<paint-rect>
 	&drag ( -- )
-		<clear-guide>
-		( ) [ LIT2 &x $2 ] [ LIT2 &y $2 ]
-		( ) .Mouse/x DEI2 .Mouse/y DEI2 !<guide-rect>
+	<clear-guide>
+	( ) [ LIT2 &x $2 ] [ LIT2 &y $2 ]
+	( ) .Mouse/x DEI2 .Mouse/y DEI2 !<guide-rect>
 
 @move
 	&hover ( -- )
-		( draw cursor ) #43 ;hand-icn <update-cursor>
-		JMP2r
+	( draw cursor ) #43 ;hand-icn !<update-cursor>
 	&down ( -- )
-		( draw cursor ) #42 ;hand-icn/down <update-cursor>
-		.Mouse/x DEI2 ,&x STR2
-		.Mouse/y DEI2 ,&y STR2
-		( set origin ) JMP2r
+	( draw cursor ) #42 ;hand-icn/down <update-cursor>
+	.Mouse/x DEI2 ,&x STR2
+	.Mouse/y DEI2 ,&y STR2
+	( set origin ) JMP2r
 	&up ( -- )
-		( draw cursor ) #43 ;hand-icn <update-cursor>
-		!<redraw-all>
+	( draw cursor ) #43 ;hand-icn <update-cursor>
+	!<redraw-all>
 	&drag ( -- )
-		( draw cursor ) #42 ;hand-icn/down <update-cursor>
-		.Mouse/x DEI2
-		( ) DUP2 [ LIT2 &x $2 ] SUB2 .canvas/x LDZ2 ADD2 .canvas/x STZ2
-		( ) ,&x STR2
-		.Mouse/y DEI2
-		( ) DUP2 [ LIT2 &y $2 ] SUB2 .canvas/y LDZ2 ADD2 .canvas/y STZ2
-		( ) ,&y STR2
-		!<redraw-all>
+	( draw cursor ) #42 ;hand-icn/down <update-cursor>
+	.Mouse/x DEI2
+	( ) DUP2 [ LIT2 &x $2 ] SUB2 .canvas/x LDZ2 ADD2 .canvas/x STZ2
+	( ) ,&x STR2
+	.Mouse/y DEI2
+	( ) DUP2 [ LIT2 &y $2 ] SUB2 .canvas/y LDZ2 ADD2 .canvas/y STZ2
+	( ) ,&y STR2
+	!<redraw-all>
 
 (
 @|filters )
@@ -392,8 +381,7 @@
 
 @inc-pixel ( x* y* -- )
 	patt-pixel ?{ POP2 POP2 JMP2r }
-	.brush/blend LDZ ?{
-		.brush/color LDZ <set-pixel>
+	.brush/blend LDZ ?{ .brush/color LDZ <set-pixel>
 		!<redraw-tile> }
 	get-pixel INCk
 	( >> )
@@ -418,18 +406,18 @@
 	#ffff [ LIT2 00 _&x2 ] LDR2 ,&x LDR2 lts2 DUP2 ADD2 ADD2 ,&sx STR2
 	#ffff [ LIT2 00 _&y2 ] LDR2 ,&y LDR2 lts2 DUP2 ADD2 ADD2 ,&sy STR2
 	[ LIT2 &dx $2 ] [ LIT2 &dy $2 ] ADD2 STH2
-	&while ( -- )
+	&>w ( -- )
 		( ) [ LIT2 &y2 $2 ] STH2k [ LIT2 &y $2 ] EQU2
 		( ) [ LIT2 &x2 $2 ] STH2k [ LIT2 &x $2 ] EQU2 STH2r STH2r
 		( ) [ LIT2 &fn $2 ] JSR2 AND ?&end
 		STH2kr DUP2 ADD2 DUP2 ,&dy LDR2 lts2 ?&skipy
 		STH2r ,&dy LDR2 ADD2 STH2
 		,&x2 LDR2 [ LIT2 &sx $2 ] ADD2 ,&x2 STR2
-	&skipy ( -- )
-		,&dx LDR2 gts2 ?&while
+		&skipy ( -- )
+		,&dx LDR2 gts2 ?&>w
 	STH2r ,&dx LDR2 ADD2 STH2
 	,&y2 LDR2 [ LIT2 &sy $2 ] ADD2 ,&y2 STR2
-	!&while
+	!&>w
 	&end POP2r JMP2r
 
 @<guide-dot> ( x* y* -- )
@@ -439,27 +427,19 @@
 	JMP2r
 
 @<paint-dot> ( x* y* -- )
-	( | flow )
-	[ LIT &flow $1 ] INCk ,&flow STR
-	.brush/flow LDZ INC DIVk MUL SUB #00 EQU ?{ POP2 POP2 JMP2r }
 	get-brush-type ,&fn STR2
 	get-brush-shape ,&patt STR2
 	,&y STR2
 	,&x STR2
 	#4000
-	&l ( -- )
+	&>l ( -- )
 		#00 OVR
 		( addr* ) DUP2 #03 SFT [ LIT2 &patt $2 ] ADD2 LDA STH
-		( mask ) #80 OVR #07 AND SFT STHr AND #00 EQU ?&>no-pixel
-			( x* ) DUP2 #07 AND [ LIT2 &x $2 ] ADD2
-			( y* ) OVR2 #03 SFT [ LIT2 &y $2 ] ADD2
-			( fn ) [ LIT2 &fn $2 ] JSR2 &>no-pixel
-		POP2 INC GTHk ?&l
+		( mask ) #80 OVR #07 AND SFT STHr AND #00 EQU ?&no-pixel
+		( x* ) DUP2 #07 AND [ LIT2 &x $2 ] ADD2
+		( y* ) OVR2 #03 SFT [ LIT2 &y $2 ] ADD2
+		( fn ) [ LIT2 &fn $2 ] JSR2 &no-pixel POP2 INC GTHk ?&>l
 	POP2 JMP2r
-
-@<paint-fill> ( x* y* -- )
-	patt-pixel #00 EQU ?{ .brush/color LDZ <set-pixel> }
-	!<redraw-tile>
 
 @natural ( x* y* -- x* y* )
 	( speed ) OVR2 OVR2 get-touch-x get-touch-y get-speed
@@ -519,12 +499,12 @@
 	#0008 .File/length DEO2
 	;pict ,&ptr STR2
 	&s ( -- )
-		[ LIT2 &ptr $2 ] DUP2 #0010 ADD2 ,&ptr STR2
-		feof ?&end
-		!&s
+	[ LIT2 &ptr $2 ] DUP2 #0010 ADD2 ,&ptr STR2
+	feof ?&end
+	!&s
 	&end ( -- )
-		( drop icn ext ) ;dict/chr-ext ;src/buf scap/ #0004 SUB2 <scpy>
-		!<redraw-all>
+	( drop icn ext ) ;dict/chr-ext ;src/buf scap/ #0004 SUB2 <scpy>
+	!<redraw-all>
 
 @<open-tga> ( name* -- )
 	.File/name DEO2
@@ -551,11 +531,11 @@
 	#0a18 DEO
 	JMP2r
 	&rawt ( type -- )
-		POP ;tga-rawt #0004 !parse-tga
+	POP ;tga-rawt #0004 !parse-tga
 	&rawm ( type -- )
-		POP ;tga-rawm #0001 !parse-tga
+	POP ;tga-rawm #0001 !parse-tga
 	&error-txt ( err )
-		"Unsupported 20 "image-type: 20 $1
+	"Unsupported 20 "image-type: 20 $1
 
 @parse-tga ( filter* length* -- )
 	( | cache size )
@@ -566,9 +546,9 @@
 	[ LIT2 01 -Screen/auto ] DEO
 	#0000 [ LIT2r 0000 ]
 	&stream ( -- )
-		;&pixel feof ?&end
-		STH2kr ;&pixel [ LIT2 &filter $2 ] JSR2 <set-pixel>
-		POP2 INC2 DUP2 [ LIT2 &w $2 ] NEQ2 ?&stream
+	;&pixel feof ?&end
+	STH2kr ;&pixel [ LIT2 &filter $2 ] JSR2 <set-pixel>
+	POP2 INC2 DUP2 [ LIT2 &w $2 ] NEQ2 ?&stream
 	( lb ) POP2 #0000 INC2r !&stream
 	&end POP2 POP2r !<redraw-all>
 	&pixel $4
@@ -628,15 +608,15 @@
 	;pict .Screen/addr DEO2
 	[ LIT2 05 -Screen/auto ] DEO
 	.canvas/height LDZ2 #03 SFT2 NIP #00
-	&v ( -- )
+	&>v ( -- )
 		.canvas/width LDZ2 #03 SFT2 NIP #00
-	&h ( -- )
-		[ LIT2 81 -Screen/sprite ] DEO
-		INC GTHk ?&h
-	POP2
-	( ) [ LIT2 &anchor $2 ] .Screen/x DEO2
-	( ) .Screen/y DEI2k #0008 ADD2 ROT DEO2
-	INC GTHk ?&v
+		&>h ( -- )
+			[ LIT2 81 -Screen/sprite ] DEO
+			INC GTHk ?&>h
+		POP2
+		( ) [ LIT2 &anchor $2 ] .Screen/x DEO2
+		( ) .Screen/y DEI2k #0008 ADD2 ROT DEO2
+		INC GTHk ?&>v
 	POP2
 
 @<draw-menu> ( -- )
@@ -653,34 +633,30 @@
 	;tools-icns .Screen/addr DEO2
 	#0400
 	&l-tools ( -- )
-		#00 OVR #000a MUL2 INC2 INC2 .Screen/y DEO2
-		DUP .brush/tool LDZ NEQ #0a MUL .Screen/sprite DEO
-		INC GTHk ?&l-tools
+	#00 OVR #000a MUL2 INC2 INC2 .Screen/y DEO2
+	DUP .brush/tool LDZ NEQ #0a MUL .Screen/sprite DEO
+	INC GTHk ?&l-tools
 	POP2
 	( | shapes )
 	;shapes-icns [ LIT2 00 -brush/shape ] LDZ #63 SFT2 ADD2 .Screen/addr DEO2
 	#0800
 	&l-shapes ( -- )
-		#00 OVR #05 ADD #000a MUL2 INC2 INC2 .Screen/y DEO2
-		DUP [ LIT2 07 -brush/shape ] LDZ AND NEQ #0a MUL
-		( override ) [ LIT2 00 -brush/natural ] LDZ EQU ?{ POP #00 }
-		.Screen/sprite DEO
-		INC GTHk ?&l-shapes
+	#00 OVR #05 ADD #000a MUL2 INC2 INC2 .Screen/y DEO2
+	DUP [ LIT2 07 -brush/shape ] LDZ AND NEQ #0a MUL
+	( override ) [ LIT2 00 -brush/natural ] LDZ EQU ?{ POP #00 }
+	.Screen/sprite DEO
+	INC GTHk ?&l-shapes
 	POP2
 	( | patterns )
 	;patterns-icns .Screen/addr DEO2
 	#0900
 	&l-patterns ( -- )
-		#00 OVR #0e ADD #000a MUL2 INC2 INC2 .Screen/y DEO2
-		DUP .brush/patt LDZ NEQ #0a MUL .Screen/sprite DEO
-		INC GTHk ?&l-patterns
+	#00 OVR #0e ADD #000a MUL2 INC2 INC2 .Screen/y DEO2
+	DUP .brush/patt LDZ NEQ #0a MUL .Screen/sprite DEO
+	INC GTHk ?&l-patterns
 	POP2
-	( | flow )
-	.Screen/y DEI2k #000c ADD2 ROT DEO2
-	;flow-icns [ LIT2 00 -brush/flow ] LDZ #30 SFT ADD2 .Screen/addr DEO2
-	[ LIT2 0a -Screen/sprite ] DEO
 	( | blend )
-	.Screen/y DEI2k #0004 ADD2 ROT DEO2
+	.Screen/y DEI2k #000c ADD2 ROT DEO2
 	;blend-icns [ LIT2 00 -brush/blend ] LDZ #30 SFT ADD2 .Screen/addr DEO2
 	[ LIT2 0a -Screen/sprite ] DEO
 	JMP2r
@@ -697,7 +673,7 @@
 	[ LIT2 81 -Screen/sprite ] DEO
 	JMP2r
 	&skip ( x* y* -- )
-		POP2 POP2 JMP2r
+	POP2 POP2 JMP2r
 
 @<guide-rect> ( x* y* x* y* -- )
 	normalize-rect STH2
@@ -724,30 +700,30 @@
 	.Screen/auto DEO
 	STH
 	#0000 SWP2 SUB2
-	&u ( -- )
+	&>u ( -- )
 		STHkr .Screen/pixel DEO
-		INC2 ORAk ?&u
+		INC2 ORAk ?&>u
 	POP2 POPr JMP2r
 
 @<paint-rect> ( x1* y1* x2* y2* -- )
 	normalize-rect SWP2 ,&x2 STR2
 	ROT2 ,&x1 STR2
 	SWP2
-	&v ( -- )
+	&>v ( -- )
 		STH2k [ LIT2 &x2 $2 ] [ LIT2 &x1 $2 ]
-	&h ( -- )
-		DUP2 STH2kr <paint-fill>
-		INC2 GTH2k ?&h
-	POP2 POP2 POP2r INC2 GTH2k ?&v
+		&>h ( -- )
+			DUP2 STH2kr <paint-dot>
+			INC2 GTH2k ?&>h
+		POP2 POP2 POP2r INC2 GTH2k ?&>v
 	POP2 POP2 JMP2r
 
 @update-spray ( -- )
 	prng ,&seed STR2
 	#0800
-	&l ( -- )
+	&>l ( -- )
 		( patt ) prng [ LIT2 &seed $2 ] AND2 AND
 		( save ) OVR #00 SWP ;spray ADD2 STA
-		INC GTHk ?&l
+		INC GTHk ?&>l
 	POP2 JMP2r
 
 @<clear-guide> ( -- )
@@ -761,10 +737,10 @@
 	#0000 .Screen/y DEO2
 	[ LIT2 93 -Screen/pixel ] DEO
 	.canvas/height LDZ2 #0000
-	&y ( -- )
+	&>y ( -- )
 		#0000 OVR2 <redraw-tile>
 		#0008 OVR2 <redraw-tile>
-		#0008 ADD2 GTH2k ?&y
+		#0008 ADD2 GTH2k ?&>y
 	POP2 POP2 JMP2r
 
 @<draw-pointer> ( -- )
@@ -816,9 +792,9 @@
 
 @mclr ( src* len* -- )
 	OVR2 ADD2 SWP2
-	&l ( -- )
+	&>l ( -- )
 		LITr 00 STH2k STAr
-		INC2 GTH2k ?&l
+		INC2 GTH2k ?&>l
 	POP2 POP2 JMP2r
 
 @zkey ( key ztr -- proc )
@@ -829,30 +805,30 @@
 	( incr len ) STHr LDZk INC SWP STZ
 	#00 JMP2r
 	&overflow ( key ztr -- proc )
-		( ;err/token <set-error> )
+	( ;err/token <set-error> )
 	&eval ( key ztr -- proc )
-		NIP LDZk #00 ROT STZ
-		JMP2r
+	NIP LDZk #00 ROT STZ
+	JMP2r
 
 @scap ( str* -- end* )
-	&w ( -- )
-		INC2 & LDAk ?&w
+	&>w ( -- )
+		INC2 & LDAk ?&>w
 	JMP2r
 
 @scmp ( a* b* -- f )
 	STH2
-	&l ( a* b* -- f )
+	&>l ( a* b* -- f )
 		LDAk LDAkr STHr NEQk ?&d
 		DUP EOR EQUk ?&d
-		POP2 INC2 INC2r !&l
+		POP2 INC2 INC2r !&>l
 	&d ( a* c1 c2 b* -- f )
-		NIP2 POP2r EQU JMP2r
+	NIP2 POP2r EQU JMP2r
 
 @<scpy> ( src* dst* -- )
 	STH2
-	&w ( -- )
+	&>w ( -- )
 		LDAk #00 STH2kr STA2
-		INC2r INC2 LDAk ?&w
+		INC2r INC2 LDAk ?&>w
 	POP2 POP2r JMP2r
 
 @feof ( buf* -- eof )
@@ -863,20 +839,20 @@
 	;&path .File/name DEO2
 	#0002 .File/length DEO2
 	[ LIT2 -System/debug -System/r ]
-	&l ( -- )
+	&>l ( -- )
 		;&buf feof ?&end
 		DUP [ LIT2 &buf $2 ] ROT DEO2
-		INC INC NEQk ?&l
+		INC INC NEQk ?&>l
 	&end POP2 JMP2r
 	&path ".theme $1
 
 @<phex> ( short* -- )
 	SWP <phex>/b
 	&b ( -- )
-		DUP #04 SFT <phex>/c
+	DUP #04 SFT <phex>/c
 	&c ( -- )
-		#0f AND DUP #09 GTH #27 MUL ADD LIT "0 ADD #18 DEO
-		JMP2r
+	#0f AND DUP #09 GTH #27 MUL ADD LIT "0 ADD #18 DEO
+	JMP2r
 
 @<pstr> ( str* -- )
 	LDAk #18 DEO
@@ -892,7 +868,8 @@
 
 @eraser-icn [ c0e0 7038 1c0a 0400 ]
 
-@hand-icn [ 4040 787c fcfc 7c38 ] &down [ 0000 787c fcfc 7c38 ]
+@hand-icn [ 4040 787c fcfc 7c38 ]
+	&down [ 0000 787c fcfc 7c38 ]
 
 @shapes-icns [
 	0000 0010 0000 0000 0000 0018 1800 0000
@@ -921,15 +898,11 @@
 	0055 00aa 0055 00aa 0044 0000 0011 0000
 	0044 0011 0044 0011 0000 0011 0000 0011
 	1122 4488 1122 4488 8844 2211 8844 2211
-	a55a a55a 5aa5 5aa5 ]
+	3225 5288 88c8 88f8 ]
 
 @tools-icns [
 	0205 02f8 7838 5888 0215 2220 2020 20c0
 	0205 0208 1020 4080 02f5 aad4 aad6 aafe ]
-
-@flow-icns [
-	ff81 00ff ff00 81ff ff81 00e7 e700 81ff
-	ff81 00db db00 81ff ff81 0018 1800 81ff ]
 
 @blend-icns [
 	0f09 090f 10a0 c0e0 e0c0 a010 060f 0f06 ]
@@ -945,19 +918,9 @@
 (
 @|memory )
 
-@tga &id-length $1
-	&color-map $1
-	&image-type $1
-	&map $5
-	&position &x $2
-	&y $2
-	&size &w $2
-	&h $2
-	&depth $1
-	&descriptor $1
+@tga &id-length $1 &color-map $1 &image-type $1 &map $5 &position &x $2 &y $2 &size &w $2 &h $2 &depth $1 &descriptor $1
 
 @spray $8
 
 @pict
-
 

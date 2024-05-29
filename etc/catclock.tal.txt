@@ -3,8 +3,7 @@
 |00 @System &vector $2 &wst $1 &rst $1 &pad $4 &r $2 &g $2 &b $2 &debug $1 &halt $1
 |20 @Screen &vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
 |c0 @DateTime &year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
-
-|0000
+|000
 
 	@timer &frame $1 &anim $1 &last $1
 	@center &x $2 &y $2
@@ -13,7 +12,7 @@
 (
 @|vectors )
 
-|0100
+|100
 
 @on-reset ( -> )
 	( | meta )
@@ -55,7 +54,7 @@
 	( name ) "Catclock 0a
 	( details ) "Tic 20 "Tac 20 "Cat 20 "Clock 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "18 20 "Dec 20 "2023 $1
+	( date ) "26 20 "May 20 "2024 $1
 	( elements ) 01
 	( > icon ) 83 =appicon
 
@@ -102,13 +101,11 @@
 	STHr #0f AND
 	( ) DUP #07 AND #0c MUL #00 SWP #30 SFT2 ;tail-icn ADD2 .Screen/addr DEO2
 	.center/y LDZ2 #0015 ADD2 .Screen/y DEO2
-	#07 GTH ?&tail-reverse
-	( | forward )
-	.center/x LDZ2 #0010 SUB2 .Screen/x DEO2
-	#0304 !<draw-times>
-	&tail-reverse ( -- )
-		.center/x LDZ2 #0008 ADD2 .Screen/x DEO2
-		#0314 !<draw-times>
+	#07 GTH ?{
+		.center/x LDZ2 #0010 SUB2 .Screen/x DEO2
+		#0304 !<draw-times> }
+	.center/x LDZ2 #0008 ADD2 .Screen/x DEO2
+	#0314 !<draw-times>
 
 @<draw-needles> ( mask -- )
 	( clear ) .center/x LDZ2 #0010 SUB2 .Screen/x DEO2
@@ -135,11 +132,11 @@
 
 @<draw-times> ( times color -- )
 	STH
-	#00 SWP SUB
-	&ver ( -- )
-		STHkr .Screen/sprite DEO
-		INC DUP ?&ver
-	POP POPr JMP2r
+	[ LITr -Screen/sprite ] #00 SWP SUB
+	&>ver ( -- )
+		DEOkr
+		INC DUP ?&>ver
+	POP POP2r JMP2r
 
 @<draw-line> ( x1* y1* x2* y2* color -- )
 	,&color STR
@@ -152,19 +149,18 @@
 	#ffff [ LIT2 00 _&x2 ] LDR2 ,&x LDR2 lts2 DUP2 ADD2 ADD2 ,&sx STR2
 	#ffff [ LIT2 00 _&y2 ] LDR2 ,&y LDR2 lts2 DUP2 ADD2 ADD2 ,&sy STR2
 	[ LIT2 &dx $2 ] [ LIT2 &dy $2 ] ADD2 STH2
-	&while ( -- )
+	&>while ( -- )
 		[ LIT2 &x2 $2 ] DUP2 .Screen/x DEO2
 		[ LIT2 &x $2 ] EQU2 [ LIT2 &y2 $2 ] DUP2 .Screen/y DEO2
 		[ LIT2 &y $2 ] EQU2 [ LIT2 &color $1 -Screen/pixel ] DEO
 		AND ?&end
-		STH2kr DUP2 ADD2 DUP2 ,&dy LDR2 lts2 ?&skipy
-		STH2r ,&dy LDR2 ADD2 STH2
-		,&x2 LDR2 [ LIT2 &sx $2 ] ADD2 ,&x2 STR2
-	&skipy ( -- )
-		,&dx LDR2 gts2 ?&while
+		STH2kr DUP2 ADD2 DUP2 ,&dy LDR2 lts2 ?{
+			STH2r ,&dy LDR2 ADD2 STH2
+			,&x2 LDR2 [ LIT2 &sx $2 ] ADD2 ,&x2 STR2 }
+		,&dx LDR2 gts2 ?&>while
 	STH2r ,&dx LDR2 ADD2 STH2
 	,&y2 LDR2 [ LIT2 &sy $2 ] ADD2 ,&y2 STR2
-	!&while
+	!&>while
 	&end POP2r JMP2r
 
 @<clear-screen> ( -- )
