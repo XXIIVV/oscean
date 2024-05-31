@@ -55,19 +55,19 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "14 20 "Mar 20 "2024 $1
+	( date ) "30 20 "May 20 "2024 $1
 	( exts ) 00
 
 (
 @|generics )
 
 @<assemble> ( -- )
-	( scan pass ) #01 handle-pass ?&clean
-	( write pass ) #00 handle-pass ?&clean
+	( scan ) #01 handle-pass ?&fail
+	( make ) #00 handle-pass ?&fail
 	<write-rom>
 	<write-sym>
 	!<print-summary>
-	&clean ( -- )
+	&fail ( -- )
 	;dst/buf .File/name DEO2
 	[ LIT2 01 -File/delete ] DEO
 	JMP2r
@@ -152,6 +152,7 @@
 	find-opcode !<write>
 
 @<write-lithex> ( str* -: )
+	is-hex ?{ ;err/number <set-error> }
 	DUP2 slen NIP
 	( LIT ) DUP #04 EQU #50 SFT #80 ORA <write>
 	!<write-hex>
@@ -333,7 +334,7 @@
 	#21 ADD ,&id STR
 	;&sym JMP2r
 	&pop ( -- )
-	,&ptr LDR2 #0001 SUB2 LDAk Lambda/name <create-symbol>
+	,&ptr LDR2 #0001 SUB2 LDAk /name <create-symbol>
 	,&ptr STR2
 	JMP2r
 	&sym cebb &id $2
@@ -377,8 +378,8 @@
 		DUP ADD OVR [ LIT "k ] EQU ?&end
 		DUP ADD OVR #00 EQU ?&end
 		;err/opcode <set-error>
-		&end NIP STH
-		ORAr INC2 LDAk ?&>w
+		&end STH
+		POP ORAr INC2 LDAk ?&>w
 	POP2 STHr ADD JMP2r
 
 (

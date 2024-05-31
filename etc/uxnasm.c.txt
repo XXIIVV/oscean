@@ -266,12 +266,13 @@ writehex(char *w, Context *ctx)
 {
 	if(*w == '#')
 		writebyte(findopcode("LIT") | !!(++w)[2] << 5, ctx);
-	if(w[1] && !w[2])
-		return writebyte(shex(w), ctx);
-	else if(w[3] && !w[4])
-		return writeshort(shex(w));
-	else
-		return error_asm("Hexadecimal invalid");
+	if(ishex(w)) {
+		if(w[1] && !w[2])
+			return writebyte(shex(w), ctx);
+		else if(w[3] && !w[4])
+			return writeshort(shex(w));
+	}
+	return error_asm("Hexadecimal invalid");
 }
 
 static int
@@ -409,7 +410,7 @@ main(int argc, char *argv[])
 {
 	ptr = PAGE;
 	copy("on-reset", scope, 0);
-	if(argc == 2 && scmp(argv[1], "-v", 2)) return !printf("Uxnasm - Uxntal Assembler, 10 May 2024.\n");
+	if(argc == 2 && scmp(argv[1], "-v", 2)) return !printf("Uxnasm - Uxntal Assembler, 30 May 2024.\n");
 	if(argc != 3) return error_top("usage", "uxnasm [-v] input.tal output.rom");
 	if(!assemble(argv[1])) return 1;
 	if(!resolve(argv[2])) return 1;
