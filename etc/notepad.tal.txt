@@ -38,7 +38,7 @@
 	( name ) "Note 20 "Pad 0a
 	( details ) "Original 20 "by 20 "Donn 20 "Denman 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "May 20 "29, 20 "2024 00 01
+	( date ) "3 20 "Jun, 20 "2024 00 01
 	( icon ) 83 =appicon
 
 (
@@ -117,26 +117,29 @@
 	POP BRK
 
 @on-mouse-sketch ( -> )
-	[ LIT2 00 -Mouse/state ] DEI NEQ #41 ADD ;mouse-icn <update-cursor>
+	[ LIT2 00 -Mouse/state ] DEI STHk NEQ #41 ADD ;eraser-icn ;pen-icn STHr #01 GTH ?{ SWP2 }
+	POP2 <update-cursor>
 	( | handle states )
-	[ LIT &last $1 ] .Mouse/state DEI DUP ,&last STR
-	( ) DUP2 #0100 NEQ2 ?{ file-save }
-	( ) DUP2 #0200 NEQ2 ?{ file-save }
-	DUP2 #0200 NEQ2 ?{
-		( from ) ,&x1 LDR2 ,&y1 LDR2
-		( to ) .Mouse/x DEI2 .Mouse/y DEI2 #0012 SUB2
-		( paint ) #01 <paint-line>
-		<draw-sketch> }
-	DUP2 #00 NEQ #0001 NEQ2 ?{
+	[ LIT &last $1 ] .Mouse/state DEI DUP #02 LTH ?{ POP #02 }
+	DUP ,&last STR
+	( ) SWPk #00 NEQ #0001 NEQ2 ?{ file-save }
+	DUP2 #0001 NEQ2 ?{
+		( | down mouse1 )
 		.Mouse/x DEI2 DUP2 ,&x1 STR2
 		.Mouse/y DEI2 #0012 SUB2 DUP2 ,&y1 STR2
-		#01 set-pixel <draw-sketch> }
-	DUP2 #0101 NEQ2 ?{
+		#01 <set-pixel>
+		<draw-sketch> }
+	DUP #01 NEQ ?{
+		( release/drag mouse1 )
 		( from* ) [ LIT2 &x1 $2 ] [ LIT2 &y1 $2 ]
 		( to ) .Mouse/x DEI2 DUP2 ,&x1 STR2
 		.Mouse/y DEI2 #0012 SUB2 DUP2 ,&y1 STR2
 		( paint ) #01 <paint-line>
 		<draw-sketch> }
+	DUP #02 NEQ ?{
+		( | release/drag mouse2 )
+		.Mouse/x DEI2 .Mouse/y DEI2 #0012 SUB2 <eraser>
+		<redraw> }
 	POP2 BRK
 
 @on-mouse-foot ( -> )
@@ -182,9 +185,11 @@
 
 @delete ( -- )
 	#00 ;on-frame/f STA
-	get-eof get-from SUB2 ORA #01 [ JCN JMP2r ] .selection/length LDZ2 #0000 EQU2 ?{ erase-selection !<select-reset> }
-	get-from cut-char <redraw>
-	!file-save
+	.selection/length LDZ2 ORA ?{
+		get-from INC2k get-eof NEQ2 ?{ POP2 JMP2r }
+		cut-char <redraw>
+		!file-save }
+	erase-selection !<select-reset>
 
 @get-eof ( -- addr* )
 	get-page !scap/
@@ -197,7 +202,8 @@
 
 @toggle-sketch ( -- )
 	.selection/sketch LDZk #01 EOR SWP STZ
-	JMP2r
+	#41 ;pen-icn ;caret-icn .selection/sketch LDZ ?{ SWP2 }
+	POP2 !<update-cursor>
 
 @erase-sketch ( -- )
 	;&mcpy .System/expansion DEO2
@@ -207,47 +213,68 @@
 @get-row ( x* y* -- row* )
 	STH2k #03 SFT2 SWP2 #03 SFT2 SWP2 #001c MUL2 ADD2 #30 SFT2 STH2r #0007 AND2 ADD2 ;sketch ADD2 JMP2r
 
-@set-pixel ( x* y* color -- )
-	?add-pixel
+@<set-pixel> ( x* y* color -- )
+	?<add-pixel>
 	( >> )
 
-@remove-pixel ( x* y* -- )
+@<remove-pixel> ( x* y* -- )
 	( keep x* ) OVR2 NIP #07 AND STH
 	( get byte ) get-row LDAk
 	( mask ) #0107 STHr SUB #40 SFT SFT #ff EOR AND
 	( save ) ROT ROT STA
 	JMP2r
 
-@add-pixel ( x* y* -- )
+@<add-pixel> ( x* y* -- )
 	( keep x* ) OVR2 NIP #07 AND STH
 	( get byte ) get-row LDAk
 	( mask ) #0107 STHr SUB #40 SFT SFT ORA
 	( save ) ROT ROT STA
 	JMP2r
 
-@<paint-line> ( x1* y1* x2* y2* color -- )
-	,&color STR
+@<eraser> ( x* y* -- )
 	,&y STR2
 	,&x STR2
+	#000a #0000
+	&>v ( -- )
+		STH2k #0006 #0000
+		&>h ( -- )
+			( x ) DUP2 [ LIT2 &x $2 ] ADD2
+			( y ) STH2kr [ LIT2 &y $2 ] ADD2 <remove-pixel>
+			INC2 GTH2k ?&>h
+		POP2 POP2 POP2r INC2 GTH2k ?&>v
+	POP2 POP2 JMP2r
+
+@<paint-line> ( x1* y1* x2* y2* color -- )
+	,&color STR
 	,&y2 STR2
 	,&x2 STR2
-	,&x LDR2 ,&x2 LDR2 SUB2 abs2 ,&dx STR2
-	#0000 ,&y LDR2 ,&y2 LDR2 SUB2 abs2 SUB2 ,&dy STR2
-	#ffff [ LIT2 00 _&x2 ] LDR2 ,&x LDR2 lts2 DUP2 ADD2 ADD2 ,&sx STR2
-	#ffff [ LIT2 00 _&y2 ] LDR2 ,&y LDR2 lts2 DUP2 ADD2 ADD2 ,&sy STR2
-	[ LIT2 &dx $2 ] [ LIT2 &dy $2 ] ADD2 STH2
+	STH2
+	STH2
+	( | x )
+	#0001 #ffff ,&x2 LDR2 STH2kr SUB2k abs2 ,&dx STR2
+	SWP2 lts2 [ JMP SWP2 POP2 ] ,&sx STR2
+	SWP2r
+	( | y )
+	#0001 #ffff ,&y2 LDR2 STH2kr SUB2k abs2 #0000 SWP2 SUB2 ,&dy STR2
+	SWP2 lts2 [ JMP SWP2 POP2 ] ,&sy STR2
+	,&dx LDR2 ,&dy LDR2 ADD2
 	&>while ( -- )
-		( draw ) ,&x2 LDR2 ,&y2 LDR2 [ LIT &color $1 ] set-pixel
-		( x ) [ LIT2 &x2 $2 ] [ LIT2 &x $2 ] EQU2
-		( y ) [ LIT2 &y2 $2 ] [ LIT2 &y $2 ] EQU2 AND ?&end
-		STH2kr DUP2 ADD2 DUP2 ,&dy LDR2 lts2 ?{
-			STH2r ,&dy LDR2 ADD2 STH2
-			,&x2 LDR2 [ LIT2 &sx $2 ] ADD2 ,&x2 STR2 }
-		,&dx LDR2 gts2 ?&>while
-	STH2r ,&dx LDR2 ADD2 STH2
-	,&y2 LDR2 [ LIT2 &sy $2 ] ADD2 ,&y2 STR2
-	!&>while
-	&end POP2r JMP2r
+		( draw ) OVR2r STH2r STH2kr [ LIT &color $1 ] <set-pixel>
+		( y ) STH2kr [ LIT2 &y2 $2 ] NEQ2 ?{
+			( x ) OVR2r STH2r [ LIT2 &x2 $2 ] EQU2 ?&end }
+		( e -> e2 ) DUP2k ADD2 DUP2
+		( y ) [ LIT2 &dy $2 ] lts2 ?{
+			( e+dy ) SWP2 ,&dy LDR2 ADD2 SWP2
+			( x1+sx ) SWP2r [ LIT2r &sx $2 ] ADD2r SWP2r }
+		( x ) [ LIT2 &dx $2 ] gts2 ?{
+			( e+dx ) ,&dx LDR2 ADD2
+			( y1+sy ) [ LIT2r &sy $2 ] ADD2r }
+		!&>while
+	&end POP2 POP2r POP2r JMP2r
+
+@snap ( x1* x2* -- x* )
+	SUB2k abs2 #0008 LTH2 ?{ NIP2 JMP2r }
+	POP2 JMP2r
 
 (
 @|selection )
@@ -605,7 +632,6 @@
 		.Screen/y DEI2k #0008 ADD2 ROT DEO2
 		INC GTHk ?&>h
 	POP2 JMP2r
-	&patt [ aa55 aa55 aa55 aa55 ]
 
 @<draw-footer> ( -- )
 	[ LIT2 00 -collapsed ] LDZ EQU ?{ JMP2r }
@@ -719,11 +745,17 @@
 	DUP2 #0f SFT2 EQU ?{ #0000 SWP2 SUB2 }
 	JMP2r
 
+@LTS2k ( a* b* -- f )
+	SUB2k POP #07 SFT JMP2r
+
+@GTS2k ( a* b* -- f )
+	SWP2k SUB2 POP #07 SFT JMP2r
+
 @lts2 ( a* b* -- f )
-	#8000 STH2k ADD2 SWP2 STH2r ADD2 GTH2 JMP2r
+	SUB2 POP #07 SFT JMP2r
 
 @gts2 ( a* b* -- f )
-	#8000 STH2k ADD2 SWP2 STH2r ADD2 LTH2 JMP2r
+	SWP2 SUB2 POP #07 SFT JMP2r
 
 (
 @|strings )
@@ -750,6 +782,12 @@
 
 @mouse-icn [
 	80c0 e0f0 f8fc feff f8d8 8c0c 0606 0000 ]
+
+@pen-icn [
+	c0e0 9090 4848 2424 1212 0909 0600 0000 ]
+
+@eraser-icn [
+	7e81 8181 8181 8181 8181 8181 7e00 0000 ]
 
 @bar-icn &a [
 	0000 007e 007e 007e 007e 007e 007e 0000 ]

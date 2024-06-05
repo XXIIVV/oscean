@@ -54,7 +54,7 @@
 	( name ) "Catclock 0a
 	( details ) "Tic 20 "Tac 20 "Cat 20 "Clock 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "26 20 "May 20 "2024 $1
+	( date ) "5 20 "Jun 20 "2024 $1
 	( elements ) 01
 	( > icon ) 83 =appicon
 
@@ -140,28 +140,33 @@
 
 @<draw-line> ( x1* y1* x2* y2* color -- )
 	,&color STR
-	,&y STR2
-	,&x STR2
 	,&y2 STR2
 	,&x2 STR2
-	,&x LDR2 ,&x2 LDR2 SUB2 abs2 ,&dx STR2
-	#0000 ,&y LDR2 ,&y2 LDR2 SUB2 abs2 SUB2 ,&dy STR2
-	#ffff [ LIT2 00 _&x2 ] LDR2 ,&x LDR2 lts2 DUP2 ADD2 ADD2 ,&sx STR2
-	#ffff [ LIT2 00 _&y2 ] LDR2 ,&y LDR2 lts2 DUP2 ADD2 ADD2 ,&sy STR2
-	[ LIT2 &dx $2 ] [ LIT2 &dy $2 ] ADD2 STH2
+	STH2
+	STH2
+	( | x )
+	[ LIT2 ADD2r SUB2r ] ,&x2 LDR2 STH2kr SUB2k abs2 ,&dx STR2
+	SWP2 lts2 [ JMP SWP POP ] ,&sx STR
+	SWP2r
+	( | y )
+	[ LIT2 ADD2r SUB2r ] ,&y2 LDR2 STH2kr SUB2k abs2 #0000 SWP2 SUB2 ,&dy STR2
+	SWP2 lts2 [ JMP SWP POP ] ,&sy STR
+	,&dx LDR2 ,&dy LDR2 ADD2
 	&>while ( -- )
-		[ LIT2 &x2 $2 ] DUP2 .Screen/x DEO2
-		[ LIT2 &x $2 ] EQU2 [ LIT2 &y2 $2 ] DUP2 .Screen/y DEO2
-		[ LIT2 &y $2 ] EQU2 [ LIT2 &color $1 -Screen/pixel ] DEO
-		AND ?&end
-		STH2kr DUP2 ADD2 DUP2 ,&dy LDR2 lts2 ?{
-			STH2r ,&dy LDR2 ADD2 STH2
-			,&x2 LDR2 [ LIT2 &sx $2 ] ADD2 ,&x2 STR2 }
-		,&dx LDR2 gts2 ?&>while
-	STH2r ,&dx LDR2 ADD2 STH2
-	,&y2 LDR2 [ LIT2 &sy $2 ] ADD2 ,&y2 STR2
-	!&>while
-	&end POP2r JMP2r
+		DUP2r [ LITr -Screen/y ] DEO2r
+		OVR2r [ LITr -Screen/x ] DEO2r
+		[ LIT2 &color $1 -Screen/pixel ] DEO
+		( y ) STH2kr [ LIT2 &y2 $2 ] NEQ2 ?{
+			( x ) OVR2r STH2r [ LIT2 &x2 $2 ] EQU2 ?&end }
+		( e -> e2 ) DUP2k ADD2 DUP2
+		( y ) [ LIT2 &dy $2 ] lts2 ?{
+			( e+dy ) SWP2 ,&dy LDR2 ADD2 SWP2
+			( x1+sx ) SWP2r [ LIT2r 0001 ] [ &sx $1 ] SWP2r }
+		( x ) [ LIT2 &dx $2 ] gts2 ?{
+			( e+dx ) ,&dx LDR2 ADD2
+			( y1+sy ) [ LIT2r 0001 ] [ &sy $1 ] }
+		!&>while
+	&end POP2 POP2r POP2r JMP2r
 
 @<clear-screen> ( -- )
 	#0000 DUP2 .Screen/x DEO2
@@ -177,10 +182,10 @@
 	JMP2r
 
 @lts2 ( a* b* -- f )
-	#8000 STH2k ADD2 SWP2 STH2r ADD2 GTH2 JMP2r
+	SUB2 POP #07 SFT JMP2r
 
 @gts2 ( a* b* -- f )
-	#8000 STH2k ADD2 SWP2 STH2r ADD2 LTH2 JMP2r
+	SWP2 SUB2 POP #07 SFT JMP2r
 
 
 
