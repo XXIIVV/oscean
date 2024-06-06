@@ -131,19 +131,23 @@
 		<release-mouse> }
 	#09 SUB
 	( | patt )
-	DUP #08 GTH ?{ <set-patt>
+	DUP #04 GTH ?{ <set-patt>
 		<release-mouse>
 		BRK }
-	( | spacer )
-	DUP #09 NEQ ?{ POP BRK }
-	#0a SUB
+	#06 SUB
 	( | nature )
 	DUP #02 GTH ?{ <set-nature>
 		<release-mouse>
 		BRK }
 	( | blending )
-	DUP #04 NEQ ?{ <toggle-blend>
+	DUP #03 NEQ ?{ <toggle-blend>
 		<release-mouse> }
+	#07 SUB
+	( | swatch )
+	DUP #03 GTH ?{
+		#03 SWP SUB <set-color>
+		<release-mouse>
+		BRK }
 	POP BRK
 
 (
@@ -263,7 +267,7 @@
 	;shapes-icns [ LIT2 00 -brush/shape ] LDZ #30 SFT2 ADD2 JMP2r
 
 @get-brush-patt ( -- addr* )
-	[ LIT2 08 -brush/patt ] LDZ NEQ ?{ update-spray ;spray JMP2r }
+	[ LIT2 04 -brush/patt ] LDZ NEQ ?{ update-spray ;spray JMP2r }
 	;patterns-icns [ LIT2 00 -brush/patt ] LDZ #30 SFT2 ADD2 JMP2r
 
 @get-brush-type ( -- fn* )
@@ -636,7 +640,7 @@
 	#000e .Screen/x DEO2
 	[ LIT2 91 -Screen/pixel ] DEO
 	#0003 .Screen/x DEO2
-	[ LIT2 06 -Screen/auto ] DEO
+	[ LIT2 04 -Screen/auto ] DEO
 	( | tools )
 	;tools-icns .Screen/addr DEO2
 	#0400
@@ -655,7 +659,7 @@
 	POP2
 	( | patterns )
 	;patterns-icns .Screen/addr DEO2
-	#0900
+	#0500
 	&>l-patterns ( -- )
 		#00 OVR #0e ADD #000a MUL2 INC2 INC2 .Screen/y DEO2
 		DUP .brush/patt LDZ NEQ #0a MUL .Screen/sprite DEO
@@ -665,7 +669,7 @@
 	;nature-icns .Screen/addr DEO2
 	#0300
 	&>l-nature ( -- )
-		#00 OVR #18 ADD #000a MUL2 INC2 INC2 .Screen/y DEO2
+		#00 OVR #14 ADD #000a MUL2 INC2 INC2 .Screen/y DEO2
 		DUP .brush/natural LDZ NEQ #0a MUL .Screen/sprite DEO
 		INC GTHk ?&>l-nature
 	POP2
@@ -673,7 +677,16 @@
 	.Screen/y DEI2k #000c ADD2 ROT DEO2
 	;blend-icns [ LIT2 00 -brush/blend ] LDZ #30 SFT ADD2 .Screen/addr DEO2
 	[ LIT2 0a -Screen/sprite ] DEO
-	JMP2r
+	( | swatches )
+	#0400
+	&>l-swatch ( -- )
+		;swatch-icn .Screen/addr DEO2
+		#00 OVR #1b ADD #000a MUL2 INC2 INC2 .Screen/y DEO2
+		#03 OVR SUB #05 MUL .Screen/sprite DEO
+		;swatchout-icn .Screen/addr DEO2
+		#0a OVR .brush/color LDZ #03 SWP SUB EQU #05 MUL ADD .Screen/sprite DEO
+		INC GTHk ?&>l-swatch
+	POP2 JMP2r
 
 @<redraw-tile> ( x* y* -- )
 	.menu/hide LDZ ?{
@@ -913,9 +926,7 @@
 
 @patterns-icns [
 	ffff ffff ffff ffff aa55 aa55 aa55 aa55
-	0055 00aa 0055 00aa 0044 0000 0011 0000
-	0044 0011 0044 0011 0000 0011 0000 0011
-	1122 4488 1122 4488 8844 2211 8844 2211
+	aa00 5500 aa00 5500 8800 2200 8800 2200
 	3225 5288 88c8 88f8 ]
 
 @tools-icns [
@@ -924,6 +935,10 @@
 
 @blend-icns [
 	0f09 090f 10a0 c0e0 e0c0 a010 060f 0f06 ]
+
+@swatch-icn [ ffff ffff ffff fefc ]
+
+@swatchout-icn [ ff81 8181 8181 82fc ]
 
 @dict &default "pict40x28.chr $1
 	&save "Saved 20 $1
