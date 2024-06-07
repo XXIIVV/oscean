@@ -5,7 +5,7 @@
 |20 @Screen &vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
 |80 @Controller &vector $2 &button $1 &key $1
 |90 @Mouse &vector $2 &x $2 &y $2 &state $1 &pad $3 &modx $2 &mody $2
-|a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|a0 @File &vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |c0 @DateTime &year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
 |000
 
@@ -22,7 +22,9 @@
 	#fb70 .System/r DEO2
 	#fb70 .System/g DEO2
 	#fb70 .System/b DEO2
-	load-theme prng-init
+	<load-theme>
+	<load-patterns>
+	prng-init
 	( | size 512x320 )
 	#0200 #0140 <set-size>
 	( | vectors )
@@ -51,7 +53,7 @@
 	( name ) "Oekaki 0a
 	( desc ) "Drawing 20 "Program 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "5 20 "Jun 20 "2024 $1
+	( date ) "6 20 "Jun 20 "2024 $1
 	( exts ) 00
 
 (
@@ -68,9 +70,6 @@
 	#01 AND ?on-control-options
 	.Controller/key DEI
 	( | keys )
-	DUP #5b NEQ ?{
-		.brush/shape LDZ #01 SUB <set-shape> }
-	DUP #5d NEQ ?{ .brush/shape LDZ INC <set-shape> }
 	DUP [ LIT "1 ] NEQ ?{ #00 <set-color> }
 	DUP [ LIT "2 ] NEQ ?{ #01 <set-color> }
 	DUP [ LIT "3 ] NEQ ?{ #02 <set-color> }
@@ -85,6 +84,9 @@
 	DUP [ LIT "f ] NEQ ?{ #02 <set-tool> }
 	DUP [ LIT "h ] NEQ ?{ <flip-horizontal> }
 	DUP [ LIT "n ] NEQ ?{ <change-nature> }
+	DUP #5b NEQ ?{
+		.brush/shape LDZ #01 SUB <set-shape> }
+	DUP #5d NEQ ?{ .brush/shape LDZ INC <set-shape> }
 	DUP #08 NEQ ?{ <make-file> }
 	DUP #09 NEQ ?{ <toggle-menu> }
 	DUP #1b NEQ ?{ <center> }
@@ -466,11 +468,12 @@
 	DUP2 #0f SFT2 EQU ?{ #0000 SWP2 SUB2 }
 	JMP2r
 
+@gts2 ( a* b* -- f )
+	SWP2
+	( >> )
+
 @lts2 ( a* b* -- f )
 	SUB2 POP #07 SFT JMP2r
-
-@gts2 ( a* b* -- f )
-	SWP2 SUB2 POP #07 SFT JMP2r
 
 @normalize-rect ( x1* y1* x2* y2* -- )
 	STH2
@@ -796,6 +799,14 @@
 	.Screen/sprite DEO
 	JMP2r
 
+@<load-patterns> ( -- )
+	( | ...continue after loading theme )
+	#0020 .File/length DEO2
+	;patterns-icns .File/read DEO2
+	#0080 .File/length DEO2
+	;shapes-icns .File/read DEO2
+	JMP2r
+
 (
 @|stdlib )
 
@@ -820,7 +831,7 @@
 @mclr ( src* len* -- )
 	OVR2 ADD2 SWP2
 	&>l ( -- )
-		LITr 00 STH2k STAr
+		[ LIT2r 0000 ] STH2k STA2r
 		INC2 GTH2k ?&>l
 	POP2 POP2 JMP2r
 
@@ -862,15 +873,17 @@
 	.File/read DEO2
 	.File/success DEI2 #0000 EQU2 JMP2r
 
-@load-theme ( -- )
+@<load-theme> ( -- )
 	;&path .File/name DEO2
 	#0002 .File/length DEO2
-	[ LIT2 -System/debug -System/r ]
-	&>l ( -- )
-		;&buf feof ?&end
-		DUP [ LIT2 &buf $2 ] ROT DEO2
-		INC INC NEQk ?&>l
-	&end POP2 JMP2r
+	;&r .File/read DEO2
+	;&g .File/read DEO2
+	;&b .File/read DEO2
+	[ LIT2 00 -File/success-lb ] DEI EQU ?{
+		[ LIT2 &r $2 ] .System/r DEO2
+		[ LIT2 &g $2 ] .System/g DEO2
+		[ LIT2 &b $2 ] .System/b DEO2 }
+	JMP2r
 	&path ".theme $1
 
 @<phex> ( short* -- )
@@ -889,18 +902,14 @@
 (
 @|assets )
 
-@fill-icn [ ffff ffff ffff ffff ]
-
-@pointer-icn [ 80c0 e0f0 f8e0 1000 ]
-
-@eraser-icn [ c0e0 7038 1c0a 0400 ]
-
-@hand-icn [ 4040 787c fcfc 7c38 ]
-	&down [ 0000 787c fcfc 7c38 ]
-
 @nature-icns [
 	0e1f 3b7f fefc f870 0e1f 1b3f 3e78 6080
 	0106 1e7c fcd8 f870 ]
+
+@patterns-icns [
+	ffff ffff ffff ffff aa55 aa55 aa55 aa55
+	aa00 5500 aa00 5500 8800 2200 8800 2200
+	3225 5288 88c8 88f8 ]
 
 @shapes-icns [
 	0000 0010 0000 0000 0000 0018 1800 0000
@@ -924,17 +933,21 @@
 	0004 0e1c 3870 2000 0006 0e1c 3870 6000
 	0207 0e1c 3870 e040 0307 0e1c 3870 e0c0 ]
 
-@patterns-icns [
-	ffff ffff ffff ffff aa55 aa55 aa55 aa55
-	aa00 5500 aa00 5500 8800 2200 8800 2200
-	3225 5288 88c8 88f8 ]
-
 @tools-icns [
 	0205 02f8 7838 5888 0215 2220 2020 20c0
 	0205 0208 1020 4080 02f5 aad4 aad6 aafe ]
 
 @blend-icns [
 	0f09 090f 10a0 c0e0 e0c0 a010 060f 0f06 ]
+
+@fill-icn [ ffff ffff ffff ffff ]
+
+@pointer-icn [ 80c0 e0f0 f8e0 1000 ]
+
+@eraser-icn [ c0e0 7038 1c0a 0400 ]
+
+@hand-icn [ 4040 787c fcfc 7c38 ]
+	&down [ 0000 787c fcfc 7c38 ]
 
 @swatch-icn [ ffff ffff ffff fefc ]
 
