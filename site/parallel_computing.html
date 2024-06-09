@@ -4,7 +4,7 @@
 <title>XXIIVV &mdash; parallel computing</title></head><body>
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
 
-<nav><ul><li><a href="logic.html">logic</a></li><li><a href="arithmetic.html">arithmetic</a></li><li><a href="geometry.html">geometry</a></li><li><a href="astronomy.html">astronomy</a></li><li><a href="language.html">language</a></li><li><a href="computation.html" class="parent">computation</a></li><li><a href="hardware.html">hardware</a></li></ul><ul><li><a href="paper_computing.html">paper computing</a></li><li><a href="ternary_computing.html">ternary computing</a></li><li><a href="parallel_computing.html" class="self">parallel computing</a></li><li><a href="reversible_computing.html">reversible computing</a></li><li><a href="programming.html">programming</a></li><li><a href="virtual_machines.html">virtual machines</a></li></ul><ul><li><a href="interaction_nets.html">interaction nets</a></li><li><a href="cellular_automata.html">cellular automata</a></li></ul></nav>
+<nav><ul><li><a href="logic.html">logic</a></li><li><a href="arithmetic.html">arithmetic</a></li><li><a href="geometry.html">geometry</a></li><li><a href="astronomy.html">astronomy</a></li><li><a href="language.html">language</a></li><li><a href="computation.html" class="parent">computation</a></li><li><a href="hardware.html">hardware</a></li></ul><ul><li><a href="paper_computing.html">paper computing</a></li><li><a href="ternary_computing.html">ternary computing</a></li><li><a href="parallel_computing.html" class="self">parallel computing</a></li><li><a href="reversible_computing.html">reversible computing</a></li><li><a href="programming.html">programming</a></li><li><a href="virtual_machines.html">virtual machines</a></li></ul><ul><li><a href="interaction_nets.html">interaction nets</a></li><li><a href="cellular_automata.html">cellular automata</a></li><li><a href="tuple_space.html">tuple space</a></li></ul></nav>
 <main><h2>Computation in which many calculations are carried out simultaneously.</h2>
 
 <p>A <b>concurrent program</b> needs to perform several possibly unrelated tasks at the same time. In contrast, a <b>parallel program</b> solves a single problem.</p>
@@ -167,6 +167,32 @@ sx * y = (x + y) + y               0 * y = 0
 
 <p>One way to simulate a two-dimensional cellular automaton is with an infinite sheet of graph paper along with a set of rules for the cells to follow.</p>
 
-<p>In a cellular automaton, a Garden of Eden is a configuration that has no predecessor. It can be the initial configuration of the automaton but cannot arise in any other way. John Tukey named these configurations after the Garden of Eden in Abrahamic religions, which was created out of nowhere.</p><ul></ul><p class="incoming"><b>incoming</b> <a href="interaction_nets.html">interaction nets</a> </p></main>
+<p>In a cellular automaton, a Garden of Eden is a configuration that has no predecessor. It can be the initial configuration of the automaton but cannot arise in any other way. John Tukey named these configurations after the Garden of Eden in Abrahamic religions, which was created out of nowhere.</p><h2>Tuple spaces is a coordination model for communication in parallel computing environments.</h2>
+
+<p>A tuple space is a place where processes can put, read, and take tuples, which are in turn just sequences of values. For example, <code>("job", 12, 1.23)</code> is a tuple made up of a string, an integer, and a floating-point number; a tuple space can contain zero or more copies of that tuple, or of tuples containing other types of values, simple or complex.</p>
+
+<p>A process puts something in tuple space with <code>put(a, b, c, ...)</code>, take something out with <code>take(a, b, c, ...)</code>, or copy something leaving the original in tuple space with <code>copy(a, b, c, ...)</code>. The arguments to <code>take</code> and <code>copy</code> are either actual values, or variables with specific types; values match themselves, while types match things of that type. For example:</p>
+
+<ul>
+	<li><code>put("job", 12, 1.23)</code> puts the tuple ("job", 12, 1.23) in the tuple space</li>
+	<li>if f is a floating point variable, <code>take("job", 12, ?f)</code> takes that tuple out of tuple space, assigning 1.23 to f</li>
+	<li>but <code>take("job", 15, ?f)</code> blocks, because there is no tuple in tuple space matching the pattern (12 doesn't match 15)</li>
+	<li>and if i is an integer variable, <code>copy("job", ?i, ?f)</code> assigns 12 to i and 1.23 to f, but leaves the tuple in tuple space.</li>
+</ul>
+
+<p>There are non-blocking versions of <code>take</code> and <code>copy</code> called <code>try_take</code> and <code>try_copy</code> that either match right away and return true, assigning values to variables in their patterns, or fail to match, don't do any assignment, and return false.</p>
+
+<h3>Summary</h3>
+<ul>
+	<li><code>put</code>: Puts a tuple into the tuplespace</li>
+	<li><code>take</code>: Takes out a tuple that matches a given pattern from the tuplespace (if there's no match, the operation is blocked)</li>
+	<li><code>copy</code>: Copies a tuple that matches a given pattern from the tuplespace (if there's no match, the operation is blocked)</li>
+	<li><code>try_take</code>: A non-blocking version of <code>in</code> (if there's no match, an error message is returned)</li>
+	<li><code>try_copy</code>: A non-blocking version of <code>rd</code> (if there's no match, an error message is returned)</li>
+</ul>
+
+<ul>
+	<li><a href='https://carpentries.org/blog/2011/03/tuple-spaces-or-good-ideas-dont-always-win/' target='_blank'>Tuple Spaces (or, Good Ideas Don't Always Win)</a></li>
+</ul><ul></ul><p class="incoming"><b>incoming</b> <a href="interaction_nets.html">interaction nets</a> </p></main>
 <footer><a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a><a href="https://merveilles.town/@neauoire" rel="me" target="_blank"><img src="../media/icon/merveilles.svg" alt="Merveilles"/></a><a href="ethics.html"><img src="../media/icon/dreipfeile.svg" alt="NoNazis!"/></a><a href="uxn.html"><img src="../media/icon/uxn.svg" alt="UxnPowered"/></a><span> <a href="devine_lu_linvega.html">Devine Lu Linvega</a> &copy; 2008-2024</span><div class="right"><a href="about.html#license">BY-NC-SA 4.0</a><a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.svg" alt="CreativeCommons"/></a></div><hr/></footer>
 </body></html>
