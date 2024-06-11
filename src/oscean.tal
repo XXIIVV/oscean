@@ -118,10 +118,7 @@
 			;dict/li-tag <write-open>
 			INC2k INC2 <write-link>
 			;dict/li-tag <write-close> }
-		INC2 INC2
-		&eol ( -- )
-		INC2 LDAk ?&eol
-		INC2 LDAk ?&>w
+		INC2 INC2 scap/ INC2 LDAk ?&>w
 	&end ( -- )
 	POP2 POPr ;dict/ul-tag !<write-close>
 
@@ -152,13 +149,11 @@
 	;dict/ul-tag <write-open>
 	;diary
 	&>w ( -- )
-		DUP2 #0005 ADD2 LDA [ LIT "+ ] NEQ ?&eol
-		;dict/li-tag <write-open>
-		DUP2 <build-module-event>
-		;dict/li-tag <write-close>
-		&eol ( -- )
-		INC2 LDAk ?&eol
-		INC2 LDAk ?&>w
+		DUP2 #0005 ADD2 LDA [ LIT "+ ] NEQ ?{
+			;dict/li-tag <write-open>
+			DUP2 <build-module-event>
+			;dict/li-tag <write-close> }
+		scap/ INC2 LDAk ?&>w
 	POP2 ;dict/ul-tag <write-close>
 	STH2r JMP2r
 
@@ -166,12 +161,10 @@
 	STH2
 	;diary
 	&>w ( -- )
-		( is blank ) DUP2 ;dict/no-picture log-has-picture ?&eol
-		( is head ) DUP2 ;term/pict log-has-picture ?&eol
-		DUP2 <build-module-photo>
-		&eol ( -- )
-		INC2 LDAk ?&eol
-		INC2 LDAk ?&>w
+		( is blank ) DUP2 ;dict/no-picture log-has-picture ?{
+			( is head ) DUP2 ;term/pict log-has-picture ?{ DUP2 <build-module-photo> }
+			}
+		scap/ INC2 LDAk ?&>w
 	POP2 STH2r JMP2r
 
 @<build-module-portal> ( -- )
@@ -184,10 +177,7 @@
 			INC2k INC2 DUP2 <load-diary>
 			find-diary DUP2 #ffff EQU2 ?{ DUP2 <build-module-photo> }
 			POP2 }
-		INC2 INC2
-		&eol ( -- )
-		INC2 LDAk ?&eol
-		INC2 LDAk ?&>w
+		INC2 INC2 scap/ INC2 LDAk ?&>w
 	&end ( -- )
 	POP2 POPr
 	( restore diary ) DUP2 !<load-diary>
@@ -198,10 +188,7 @@
 	&>w ( -- )
 		( stop at sibling ) LDAk chex STHkr EQU ?&end
 		( when depth+1 ) LDAk chex STHkr INC NEQ ?{ INC2 INC2 <build-page-body> }
-		INC2 INC2
-		&eol ( -- )
-		INC2 LDAk ?&eol
-		INC2 LDAk ?&>w
+		INC2 INC2 scap/ INC2 LDAk ?&>w
 	&end ( -- )
 	POP2 POPr JMP2r
 
@@ -260,9 +247,7 @@
 	&>w ( -- )
 		DUP2 <write-link>
 		#20 <char>
-		&eol ( -- )
-		INC2 LDAk ?&eol
-		INC2 LDAk ?&>w
+		scap/ INC2 LDAk ?&>w
 	POP2 ;dict/p-tag !<write-close>
 
 @<make-path-ext> ( ext* buf* str* -- )
@@ -276,18 +261,15 @@
 	STH2
 	;diary
 	&>w ( -- )
-		( skip events ) DUP2 ;dict/no-picture log-has-picture ?&eol
-		POP2r JMP2r
-		&eol INC2 LDAk ?&eol
-		INC2 LDAk ?&>w
+		( skip events ) DUP2 ;dict/no-picture log-has-picture ?{ POP2r JMP2r }
+		scap/ INC2 LDAk ?&>w
 	POP2 #ffff POP2r JMP2r
 
 @count-diaries ( -- count* )
 	[ LIT2r 0000 ] ;diary
 	&>w ( -- )
-		DUP2 ;dict/no-picture log-has-picture ?&eol
-		INC2r &eol INC2 LDAk ?&eol
-		INC2 LDAk ?&>w
+		DUP2 ;dict/no-picture log-has-picture ?{ INC2r }
+		scap/ INC2 LDAk ?&>w
 	POP2 STH2r JMP2r
 
 @find-parent ( term* -- parent* )
