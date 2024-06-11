@@ -1,0 +1,221 @@
+|10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
+|a0 @File &vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|000
+
+	@src $40
+
+|100
+
+@on-reset ( -> )
+	;meta #06 DEO2
+	;await-src .Console/vector DEO2
+	.Console/type DEI ?{ ;dict/usage <pstr>
+		#000f DEO }
+	BRK
+
+@await-src ( -> )
+	[ LIT2 04 -Console/type ] DEI NEQ ?{
+		;src <load-rom>
+		[ LIT ". ] src/<append>
+		[ LIT "s ] src/<append>
+		[ LIT "y ] src/<append>
+		[ LIT "m ] src/<append>
+		;src <load-sym>
+		( | print result )
+		,<load-rom>/ptr LDR2 ;rom
+		&>l ( -- )
+			<print-line>
+			INC2 GTH2k ?&>l
+		POP2 POP2 #800f DEO
+		BRK }
+	.Console/read DEI src/<append>
+	BRK
+
+@src/<append> ( char -- )
+	[ LIT &ptr -src ] INCk ,&ptr STR
+	STZ
+	JMP2r
+
+@<load-rom> ( src* -- )
+	.File/name DEO2
+	#0001 .File/length DEO2
+	&>stream ( -- )
+		;&b .File/read DEO2
+		[ LIT2 00 -File/success-lb ] DEI EQU ?{
+			[ LIT &b $1 ] [ LIT2 &ptr =rom ] INC2k ,&ptr STR2
+			STA
+			!&>stream }
+	JMP2r
+
+@<load-sym> ( src* -- )
+	.File/name DEO2
+	#4000 .File/length DEO2
+	;sym .File/read DEO2
+	.File/success DEI2 #0000 EQU2 ;find-sym/null STA
+	JMP2r
+
+@<print-line> ( addr* -- addr* )
+	( ) DUP2 ;rom SUB2
+	( ) DUP2 #0100 ADD2 find-sym DUP2 #ffff EQU2 ?{
+		#0a18 DEO
+		[ LIT2 "@ 18 ] DEO
+		DUP2 <pstr>
+		#0a18 DEO }
+	POP2
+	( ) <print-address>
+	<print-opcode>
+	#0a18 DEO
+	JMP2r
+
+@<print-address> ( addr* -- )
+	<phex>
+	[ LIT2 ": 18 ] DEO
+	#03 !<print-pad>
+
+@<print-1-byte> ( addr* -- addr* )
+	LDAk <phex>/b
+	#09 !<print-pad>
+
+@<print-2-byte> ( addr* -- addr* )
+	LDAk <print-byte>
+	INC2k LDA <print-byte>
+	#05 !<print-pad>
+
+@<print-3-byte> ( addr* -- addr* )
+	LDAk <print-byte>
+	INC2k LDA <print-byte>
+	INC2k INC2 LDA <print-byte>
+	#02 !<print-pad>
+
+@<print-byte> ( byte -- )
+	<phex>/b
+	#2018 DEO
+	JMP2r
+
+@<print-opcode> ( addr* -- addr* )
+	LDAk ?{ <print-1-byte>
+		;opcodes/brk !<pstr> }
+	LDAk #9f AND ?{
+		<print-3-byte>
+		LDAk #03 SFT #00 SWP ;opcodes/brk ADD2 <pstr>
+		#2018 DEO
+		DUP2 INC2k LDA2 <print-rel>
+		INC2 INC2 JMP2r }
+	LDAk DUP #80 NEQ SWP #c0 NEQ AND ?{
+		<print-2-byte>
+		;opcodes <pstr>
+		LDAk #80 EOR <print-mode>
+		#2018 DEO
+		INC2 LDAk !<phex>/b }
+	LDAk DUP #a0 NEQ SWP #e0 NEQ AND ?{
+		<print-3-byte>
+		;opcodes <pstr>
+		LDAk #80 EOR <print-mode>
+		#2018 DEO
+		INC2 LDA2k find-sym DUP2 #ffff EQU2 ?{ <pstr>
+			INC2 JMP2r }
+		POP2 LDA2k <phex>
+		INC2 JMP2r }
+	<print-1-byte>
+	LDAk #1f AND #00 SWP #20 SFT2 ;opcodes ADD2 <pstr>
+	LDAk
+	( >> )
+
+@<print-mode> ( byte -- )
+	DUP #20 AND #00 EQU ?{
+		[ LIT2 "2 18 ] DEO }
+	DUP #80 AND #00 EQU ?{
+		[ LIT2 "k 18 ] DEO }
+	#40 AND #00 EQU ?{
+		[ LIT2 "r 18 ] DEO }
+	JMP2r
+
+@<print-rel> ( addr* value* -- )
+	( | find sym )
+	SWP2 ;rom SUB2 #0103 ADD2 OVR2 ADD2 find-sym
+	( ) INC2k ORA ?{
+		POP2 OVR #80 AND ?<pdec>
+		[ LIT2 "+ 18 ] DEO
+		!<pdec> }
+	NIP2 !<pstr>
+
+@<print-pad> ( count -- )
+	#00
+	&>l ( -- )
+		#2018 DEO
+		INC GTHk ?&>l
+	POP2 JMP2r
+
+@find-sym ( addr* -- sym* )
+	,&t STR2
+	[ LIT &null 01 ] ?&skip
+	;sym
+	&>w ( -- )
+		LDA2k [ LIT2 &t $2 ] NEQ2 ?{ INC2 INC2 JMP2r }
+		INC2 INC2 scap/ INC2 INC2k INC2 LDA ?&>w
+	POP2 &skip #ffff JMP2r
+
+(
+@|stdlib )
+
+@<pdec> ( short* -- )
+	( | sign )
+	OVR #80 AND #00 EQU ?{
+		[ LIT2 "- 18 ] DEO
+		#8000 SWP2 SUB2 #7fff AND2 }
+	[ LIT2 00 _&z ] STR
+	#2710 /p #03e8 /p #0064 /p #000a /p NIP !<pnum>
+	&p ( -- )
+	DIV2k DUPk [ LIT &z $1 ] EQU ?{
+		DUP <pnum>
+		[ LIT2 ff _&z ] STR }
+	POP MUL2 SUB2 JMP2r
+
+@<phex> ( short* -: )
+	SWP /b
+	&b ( byte -: )
+	DUP #04 SFT /c
+	&c ( byte -: )
+	#0f AND DUP #09 GTH #27 MUL ADD
+	( >> )
+
+@<pnum> ( num -- )
+	[ LIT "0 ] ADD #18 DEO
+	JMP2r
+
+@<pstr> ( str* -- )
+	LDAk #18 DEO
+	INC2 LDAk ?<pstr>
+	POP2 JMP2r
+
+@scap ( str* -: end* )
+	INC2 & LDAk ?scap
+	JMP2r
+
+(
+@|assets )
+
+@meta $1
+	( name ) "Uxndis 0a
+	( desc ) "Uxntal 20 "Disassembler 0a
+	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
+	( date ) "11 20 "Jun 20 "2024 $2
+
+@opcodes [
+	"LIT 00 "INC 00 "POP 00 "NIP 00
+	"SWP 00 "ROT 00 "DUP 00 "OVR 00
+	"EQU 00 "NEQ 00 "GTH 00 "LTH 00
+	"JMP 00 "JCN 00 "JSR 00 "STH 00
+	"LDZ 00 "STZ 00 "LDR 00 "STR 00
+	"LDA 00 "STA 00 "DEI 00 "DEO 00
+	"ADD 00 "SUB 00 "MUL 00 "DIV 00
+	"AND 00 "ORA 00 "EOR 00 "SFT 00
+	&brk "BRK 00 &jci "JCI 00 &jmi "JMI
+	00 &jsi "JSI 00 ]
+
+@dict &usage "usage: 20 "uxndis.rom 20 "input.rom 0a $1
+
+@rom $8000
+
+@sym
+
