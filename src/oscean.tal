@@ -295,10 +295,10 @@
 	#00 prev-char INC2
 	( stash depth ) LDAk chex #01 SUB STH
 	( let's go ) ;lexicon SWP2
-	&l ( -- )
-	#0001 SUB2 #00 prev-char INC2k LDA chex STHkr NEQ ?{
-		NIP2 POPr INC2 INC2 INC2 JMP2r }
-	LTH2k ?&l
+	&>l ( -- )
+		#0001 SUB2 #00 prev-char INC2k LDA chex STHkr NEQ ?{
+			NIP2 POPr INC2 INC2 INC2 JMP2r }
+		LTH2k ?&>l
 	POPr #0002 JMP2r
 
 @log-has-picture ( log* picture* -- flag )
@@ -310,13 +310,13 @@
 @<write-inc> ( path* -- )
 	DUP2 .File/name DEO2
 	#8000 .File/length DEO2
-	LITr 00 ;workarea
-	&s ( -- )
-	DUP2 .File/read DEO2
-	.File/success DEI2 DUP2 .File2/length DEO2
-	#0000 EQU2 ?&end
-	DUP2 .File2/write DEO2
-	INCr !&s
+	[ LITr 00 ] ;workarea
+	&>s ( -- )
+		DUP2 .File/read DEO2
+		.File/success DEI2 DUP2 .File2/length DEO2
+		#0000 EQU2 ?&end
+		DUP2 .File2/write DEO2
+		INCr !&>s
 	&end ( -- )
 	POP2 STHr ?{ DUP2 ;err/source <print-error> }
 	POP2 #0001 .File2/length DEO2
@@ -333,7 +333,7 @@
 	;&a <write-str>
 	DUP2 [ LIT2 20 "_ ] cswp DUP2 <write-str>
 	DUP2 [ LIT2 "_ 20 ] cswp ;dict/html-ext <write-str>
-	LIT "" <char>
+	[ LIT "" ] <char>
 	DUP2 ;term/name scmp #00 EQU ?{ ;dict/self-txt ;dict/class-attr <write-attr> }
 	DUP2 ;term/parent scmp #00 EQU ?{ ;dict/parent-txt ;dict/class-attr <write-attr> }
 	[ LIT "> ] <char>
@@ -349,24 +349,25 @@
 	[ LIT "" ] !<char>
 
 @<write-open-class> ( tag* class* -- )
-	LIT "< <char>
+	[ LIT "< ] <char>
 	<write-str>
 	;dict/class-attr <write-attr>
-	LIT "> !<char>
+	[ LIT "> ] !<char>
 
 @<write-open> ( tag* -- )
-	LIT "< <char>
+	[ LIT "< ] <char>
 	<write-str>
-	LIT "> !<char>
+	[ LIT "> ] !<char>
 
 @<write-auto> ( str* tag* -- )
 	DUP2 <write-open>
 	SWP2 <write-str>
+	( >> )
 
 @<write-close> ( tag* -- )
 	[ LIT2 "</ ] <char2>
 	<write-str>
-	LIT "> !<char>
+	[ LIT "> ] !<char>
 
 @<write-str> ( addr* -- )
 	DUP2 scap/ OVR2 SUB2 .File2/length DEO2
@@ -419,8 +420,7 @@
 	POP2 JMP2r
 
 @scap ( str* -- end* )
-	&>w ( -- )
-		INC2 & LDAk ?&>w
+	INC2 & LDAk ?scap
 	JMP2r
 
 @scat ( src* dst* -- )
@@ -435,26 +435,26 @@
 
 @scmp ( a* b* -- f )
 	STH2
-	&l ( -- )
-	LDAk ?{
-		&d LDA LDAr STHr EQU JMP2r }
-	LDAk LDAkr STHr NEQ ?&d
-	INC2 INC2r !&l
+	&>l ( -- )
+		LDAk ?{
+			&d LDA LDAr STHr EQU JMP2r }
+		LDAk LDAkr STHr NEQ ?&d
+		INC2 INC2r !&>l
 
 @sseg ( a* b* -- f )
 	STH2
-	&l ( -- )
-	LDAk LDAkr STHr NEQ ?&e
-	INC2k LDA #00 EQU ?&e
-	INC2 INC2r !&l
+	&>l ( -- )
+		LDAk LDAkr STHr NEQ ?&e
+		INC2k LDA #00 EQU ?&e
+		INC2 INC2r !&>l
 	&e ( -- )
 	LDA LDAr STHr EQU JMP2r
 
 @<mclr> ( src* len* -- )
 	OVR2 ADD2 SWP2
-	&l ( -- )
-	LITr 00 STH2k STAr
-	INC2 GTH2k ?&l
+	&>l ( -- )
+		LITr 00 STH2k STAr
+		INC2 GTH2k ?&>l
 	POP2 POP2 JMP2r
 
 @<print-hex> ( hex* -- )
