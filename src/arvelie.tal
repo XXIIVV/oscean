@@ -2,12 +2,11 @@
 
 |10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
 |c0 @DateTime &year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
+|000
 
-|0000
+	@buf $40
 
-	@buf
-
-|0100
+|100
 
 @on-reset ( -> )
 	.Console/type DEI ?on-params
@@ -24,58 +23,57 @@
 	BRK
 
 @on-console ( -> )
-	.Console/read DEI DUP #21 LTH ?&validate
-	.buf zcap STZ
-	BRK
-	&validate ( c -> )
-		POP .buf parse BRK
+	.Console/read DEI DUP #21 LTH ?{ .buf zcap/ STZ
+		BRK }
+	POP .buf parse BRK
 
 (
 @|core )
 
 @parse ( ztr -- )
-	DUP zlen #05 EQU ?&on-arvgre
-	DUP zlen #0a EQU ?&on-grearv
+	DUP zlen #05 EQU ?do-arvgre
+	DUP zlen #0a EQU ?do-grearv
 	( | print-error )
 	;&err
-	&w ( -- )
+	&>w ( -- )
 		LDAk #19 DEO
-		INC2 LDAk ?&w
+		INC2 LDAk ?&>w
 	POP2
 	( err ) #010f DEO
 	JMP2r
-	&on-arvgre ( ztr -- )
-		( m ) INCk INC LDZk [ LIT "A ] SUB #00 SWP #000e MUL2 STH2
-		( d ) INC bytedec STH2r ADD2 INC2
-		( y ) ROT bytedec #07d6 ADD2 <emit-gre>
-		#0a18 DEO
-		( end ) #800f DEO
-		JMP2r
-	&on-grearv ( ztr -- )
-		( y ) STHk shortdec LIT2r 0005 ADD2r DUP2
-		( m ) STHkr bytedec INCr INCr INCr
-		( d ) STHr bytedec #0001 SUB2 doty SWP2 <emit-arv>
-		#0a18 DEO
-		( end ) #800f DEO
-		JMP2r
-		&err "usage: 20 "arvelie.rom 20 "YYYY-MM-DD 0a $1
+	&err "usage: 20 "arvelie.rom 20 "YYYY-MM-DD 0a $1
+
+@do-arvgre ( ztr -- )
+	( m ) INCk INC LDZk [ LIT "A ] SUB #00 SWP #000e MUL2 STH2
+	( d ) INC bytedec STH2r ADD2 INC2
+	( y ) ROT bytedec #07d6 ADD2 <emit-gre>
+	#0a18 DEO
+	( end ) #800f DEO
+	JMP2r
+
+@do-grearv ( ztr -- )
+	( y ) STHk shortdec LIT2r 0005 ADD2r DUP2
+	( m ) STHkr bytedec INCr INCr INCr
+	( d ) STHr bytedec #0001 SUB2 doty SWP2 <emit-arv>
+	#0a18 DEO
+	( end ) #800f DEO
+	JMP2r
 
 @<emit-gre> ( doty* year* -- )
 	DUP2 <emit-dec2>
 	[ LIT2 "- 18 ] DEO
 	,&y STR2
-	STH2 #0c00
-	&l ( -- )
+	STH2
+	#0c00
+	&>l ( -- )
 		DUP [ LIT2 &y $2 ] ROT diam #00 SWP DUP2 STH2kr GTH2 ?&>skip
-			STH2k SUB2r !&>continue
-			&>skip
-			POP2 !&end
-			&>continue
-		POP2 INC GTHk ?&l
+	STH2k SUB2r !&>continue
+	&>skip POP2 !&end
+	&>continue POP2 INC GTHk ?&>l
 	&end ( -- )
-		NIP INC <emit-dec>
-		[ LIT2 "- 18 ] DEO
-		STHr POPr INC !<emit-dec>
+	NIP INC <emit-dec>
+	[ LIT2 "- 18 ] DEO
+	STHr POPr INC !<emit-dec>
 
 @<emit-arv> ( doty* year* -- )
 	#07d6 SUB2 NIP
@@ -90,6 +88,7 @@
 @<emit-dec> ( byte -- )
 	DUP #0a DIV <emit-num>
 	#0a DIVk MUL SUB
+	( >> )
 
 @<emit-num> ( num -- )
 	[ LIT "0 ] ADD #18 DEO
@@ -100,13 +99,16 @@
 
 @doty ( year* month* day* -- doty* )
 	ROT2 ,&y STR2
-	LIT2r 0000 SWP2 NIP #01 SUB #00 EQUk ?&skip
-	&l #00 OVR [ LIT2 &y $2 ] ROT diam STH2 ADD2r INC GTHk ?&l
+	[ LIT2r 0000 ] SWP2 NIP #01 SUB #00 EQUk ?&skip
+	&>l ( -- )
+		#00 OVR [ LIT2 &y $2 ] ROT diam STH2
+		ADD2r INC GTHk ?&>l
 	&skip POP2 STH2r ADD2 JMP2r
 
 @diam ( year* month -- days )
-	#00 OVR ;diam-lut ADD2 LDA SWP #01 NEQ ?&>no-feb
-		STH DUP2 is-leap-year STHr ADD &>no-feb
+	#00 OVR ;diam-lut ADD2 LDA SWP #01 NEQ ?{
+		STH
+		DUP2 is-leap-year STHr ADD }
 	NIP NIP JMP2r
 
 @is-leap-year ( year* -- bool )
@@ -116,9 +118,9 @@
 	( mod2 ) DIV2k MUL2 SUB2 #0000 EQU2 ?&not-leap
 	( leap year if not divisible by 100, but by 4 ) #0003 AND2 #0000 EQU2 JMP2r
 	&not-leap ( -- )
-		POP2 #00 JMP2r
+	POP2 #00 JMP2r
 	&leap ( -- )
-		POP2 #01 JMP2r
+	POP2 #01 JMP2r
 
 @shortdec ( zp -- dec* )
 	( a ) STHk bytedec #0064 MUL2
@@ -133,12 +135,10 @@
 @|stdlib )
 
 @zlen ( ztr -- len )
-	DUP zcap SWP SUB JMP2r
+	DUP zcap/ SWP SUB JMP2r
 
 @zcap ( ztr -- end )
-	!&a
-	&w ( -- )
-		INC &a LDZk ?&w
+	INC & LDZk ?zcap
 	JMP2r
 
 (
