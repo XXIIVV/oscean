@@ -1,5 +1,6 @@
 ( The Bequest Globe )
 
+|00 @System &vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
 |a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |b0 @File2 &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |000
@@ -14,7 +15,7 @@
 	#2000 .File/length DEO2
 	;lexicon
 	( ) DUP2 .File/read DEO2
-	( ) DUP2 #0a00 cswp
+	( ) DUP2 #0a00 <cswp>
 	( )
 	&>w ( -- )
 		INC2 INC2 <init-page>
@@ -43,33 +44,35 @@
 	( | fill diary )
 	DUP2 find-diary DUP2 #ffff EQU2 ?{
 		DUP2 ;term/diary <scpy>
-		;term/diary [ LIT2 09 00 ] cswp }
+		;term/diary [ LIT2 09 00 ] <cswp> }
 	POP2 JMP2r
 	&site-path [ "site/ &buf $30 ]
 
 @<load-diary> ( name* -- )
 	( | make path )
 	;&buf <scpy>
-	;&buf [ LIT2 20 "_ ] cswp
+	;&buf [ LIT2 20 "_ ] <cswp>
 	( | load )
 	;&log-path .File/name DEO2
 	#1000 .File/length DEO2
 	;diary
 	( clear ) DUP2 [ LIT2 &length $2 ] <mclr>
 	( read ) DUP2 .File/read DEO2
-	( lines ) #0a00 cswp .File/success DEI2 ,&length STR2
+	( lines ) #0a00 <cswp>
+	.File/success DEI2 ,&length STR2
 	JMP2r
 	&log-path [ "tmp/log- &buf $30 ]
 
 @<load-incoming> ( name* -- )
 	( paste ) ;&buf STH2k <scpy>
-	( cswp ) STH2r [ LIT2 20 "_ ] cswp
+	( <cswp> ) STH2r [ LIT2 20 "_ ] <cswp>
 	( load ) ;&map-path .File/name DEO2
 	#1000 .File/length DEO2
 	;incoming
 	( clear ) DUP2 [ LIT2 &length $2 ] <mclr>
 	( read ) DUP2 .File/read DEO2
-	( split lines ) #0a00 cswp .File/success DEI2 ,&length STR2
+	( split lines ) #0a00 <cswp>
+	.File/success DEI2 ,&length STR2
 	JMP2r
 	&map-path [ "tmp/map- &buf $30 ]
 
@@ -161,8 +164,8 @@
 	STH2
 	;diary
 	&>w ( -- )
-		( is blank ) DUP2 ;dict/no-picture log-has-picture ?{
-			( is head ) DUP2 ;term/pict log-has-picture ?{ DUP2 <build-module-photo> }
+		DUP2 ;dict/no-picture log-has-picture ?{
+			DUP2 ;term/pict log-has-picture ?{ DUP2 <build-module-photo> }
 			}
 		scap/ INC2 LDAk ?&>w
 	POP2 STH2r JMP2r
@@ -252,7 +255,8 @@
 
 @<make-path-ext> ( ext* buf* str* -- )
 	OVR2 <scpy>
-	DUP2 [ LIT2 20 "_ ] cswp !scat
+	DUP2 [ LIT2 20 "_ ] <cswp>
+	!scat
 
 (
 @|tools )
@@ -295,8 +299,9 @@
 	[ LITr 00 ] ;workarea
 	&>s ( -- )
 		DUP2 .File/read DEO2
-		.File/success DEI2 DUP2 .File2/length DEO2
-		#0000 EQU2 ?&end
+		.File/success DEI2
+		( ) DUP2 .File2/length DEO2
+		( ) #0000 EQU2 ?&end
 		DUP2 .File2/write DEO2
 		INCr !&>s
 	&end ( -- )
@@ -313,8 +318,10 @@
 
 @<write-link> ( name* -- )
 	;&a <write-str>
-	DUP2 [ LIT2 20 "_ ] cswp DUP2 <write-str>
-	DUP2 [ LIT2 "_ 20 ] cswp ;dict/html-ext <write-str>
+	DUP2 [ LIT2 20 "_ ] <cswp>
+	DUP2 <write-str>
+	DUP2 [ LIT2 "_ 20 ] <cswp>
+	;dict/html-ext <write-str>
 	[ LIT "" ] <char>
 	DUP2 ;term/name scmp #00 EQU ?{ ;dict/self-txt ;dict/class-attr <write-attr> }
 	DUP2 ;term/parent scmp #00 EQU ?{ ;dict/parent-txt ;dict/class-attr <write-attr> }
@@ -371,17 +378,13 @@
 @prev-char ( addr* char -- addr* )
 	,&t STR
 	&>w ( -- )
-		LDAk [ LIT &t $1 ] EQU ?&end
-		#0001 SUB2 LDAk ?&>w
-	&end ( -- )
+		LDAk [ LIT &t $1 ] EQU ?{ #0001 SUB2 LDAk ?&>w }
 	JMP2r
 
 @next-char ( addr* char -- addr* )
 	,&t STR
 	&>w ( -- )
-		LDAk [ LIT &t $1 ] EQU ?&end
-		INC2 LDAk ?&>w
-	&end ( -- )
+		LDAk [ LIT &t $1 ] EQU ?{ INC2 LDAk ?&>w }
 	JMP2r
 
 (
@@ -392,7 +395,7 @@
 	( hex ) #27 SUB DUP #0f GTH [ JMP JMP2r ]
 	( err ) POP #ff JMP2r
 
-@cswp ( str* a b -- )
+@<cswp> ( str* a b -- )
 	,&b STR
 	,&a STR
 	&>w ( -- )
@@ -432,12 +435,12 @@
 	&e ( -- )
 	LDA LDAr STHr EQU JMP2r
 
-@<mclr> ( src* len* -- )
-	OVR2 ADD2 SWP2
-	&>l ( -- )
-		LITr 00 STH2k STAr
-		INC2 GTH2k ?&>l
-	POP2 POP2 JMP2r
+@<mclr> ( dst* len* -- )
+	,&length STR2
+	,&dst STR2
+	;&mmu .System/expansion DEO2
+	JMP2r
+	&mmu [ 00 &length $2 0000 &dst $2 00 ]
 
 @<print-hex> ( hex* -- )
 	SWP <print-hex>/b
