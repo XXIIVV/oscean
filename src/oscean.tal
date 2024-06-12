@@ -139,14 +139,14 @@
 	&htm-path [ "src/htm/ &buf $30 ]
 
 @<build-page-module> ( term* -- term* )
-	DUP2 #0001 SUB2 LDA [ LIT ", ] EQU ?<build-module-album>
+	DUP2 #0001 SUB2 LDA
+	( ) DUP [ LIT ", ] NEQ ?{ POP !<build-module-album> }
 	count-diaries #0002 LTH2 ?{ ;term/name ;err/hidden <print-warning> }
-	DUP2 #0001 SUB2 LDA [ LIT "; ] EQU ?<build-module-portal>
-	DUP2 #0001 SUB2 LDA [ LIT ": ] EQU ?<build-module-archive>
+	( ) DUP [ LIT "; ] NEQ ?{ POP !<build-module-portal> }
+	( ) [ LIT ": ] NEQ ?{ !<build-module-archive> }
 	JMP2r
 
 @<build-page-events> ( name* -- name* )
-	STH2
 	;dict/ul-tag <write-open>
 	;diary
 	&>w ( -- )
@@ -156,17 +156,16 @@
 			;dict/li-tag <write-close> }
 		scap/ INC2 LDAk ?&>w
 	POP2 ;dict/ul-tag <write-close>
-	STH2r JMP2r
+	JMP2r
 
 @<build-module-album> ( name* -- name* )
-	STH2
 	;diary
 	&>w ( -- )
 		DUP2 ;dict/no-picture log-has-picture ?{
 			DUP2 ;term/pict log-has-picture ?{ DUP2 <build-module-photo> }
 			}
 		scap/ INC2 LDAk ?&>w
-	POP2 STH2r JMP2r
+	POP2 JMP2r
 
 @<build-module-portal> ( -- )
 	( name* -- name* )
