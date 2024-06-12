@@ -142,11 +142,25 @@
 
 @parse-log ( event* -- )
 	DUP2 #000a ADD2 ;&term <scpy-line>
+	( | does it exists? )
+	;&term find-term #ffff NEQ2 ?{
+		;dict/warn-unknown <print-str>
+		DUP2 <print-str>/ #0a18 DEO
+	}
 	;&term [ LIT2 20 "_ ] <cswp>
 	( res ) ;&log-path .File2/name DEO2
 	<str>
 	#0a !<char>
 	&log-path [ "tmp/log- &term $30 ]
+
+@<phex> ( short* -: )
+	SWP /b
+	&b ( byte -: )
+		DUP #04 SFT /c
+	&c ( byte -: )
+		#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
+		JMP2r
+
 
 @parse-event ( event* -- )
 	( | add to calendar )
@@ -202,7 +216,7 @@
 		( bit ) #01 OVR #07 AND #40 SFT SFT STH
 		( res ) #03 SFT2 ;diaries ADD2 LDAk STHr ORA ROT ROT STA
 		JMP2r }
-	;dict/duplicate <print-str>/
+	;dict/warn-duplicate <print-str>/
 	<print-dec>
 	#0a18 DEO
 	JMP2r
@@ -368,8 +382,9 @@
 	&sitemap-path "src/htm/sitemap.htm $1
 	&calendar-path "src/htm/calendar.htm $1
 	&redlink "!! 20 "Redlink: 20 $1
-	&available-txt "-- 20 "Available 20 "diary: 20 $1
-	&duplicate "-- 20 "Duplicate 20 "diary: 20 $1
+	&available-txt ".. 20 "Available 20 "diary: 20 $1
+	&warn-duplicate "-- 20 "Duplicate 20 "diary: 20 $1
+	&warn-unknown "-- 20 "Unknown 20 "diary: 20 $1
 	&in 20 "in 20 $1
 
 @diary-paths &3 "src/tables/diary/15-19 $1
