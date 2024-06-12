@@ -40,7 +40,7 @@
 	DUP2 ;term/name <scpy>
 	DUP2 find-parent ;term/parent <scpy>
 	( | fill diary )
-	DUP2 find-diary DUP2 #ffff EQU2 ?{
+	find-diary DUP2 #ffff EQU2 ?{
 		DUP2 ;term/diary <scpy>
 		;term/diary [ LIT2 09 00 ] <cswp> }
 	POP2 JMP2r
@@ -155,8 +155,7 @@
 			DUP2 <build-module-event>
 			;dict/li-tag <write-close> }
 		scap/ INC2 LDAk ?&>w
-	POP2 ;dict/ul-tag <write-close>
-	JMP2r
+	POP2 ;dict/ul-tag !<write-close>
 
 @<build-module-album> ( name* -- name* )
 	;diary
@@ -168,13 +167,12 @@
 	POP2 JMP2r
 
 @<build-module-portal> ( -- )
-	( name* -- name* )
 	( stash depth ) DUP2k #0002 SUB2 LDA chex STH
 	( start after ) scap/ INC2
 	&>w ( -- )
 		( stop at sibling ) LDAk chex STHkr EQU ?&end
 		( when depth+1 ) LDAk chex STHkr INC NEQ ?{
-			INC2k INC2 DUP2 <load-diary>
+			INC2k INC2 <load-diary>
 			find-diary DUP2 #ffff EQU2 ?{ DUP2 <build-module-photo> }
 			POP2 }
 		INC2 INC2 scap/ INC2 LDAk ?&>w
@@ -212,12 +210,11 @@
 	;&diary-path
 	( make alt* ) OVR2 #09 next-char INC2 #09 next-char INC2 <write-img>
 	;dict/figcaption-tag <write-open>
-	DUP2 #000a ADD2 ;term/name SWP2 sseg ?&skip
-	DUP2 extract-term <write-link>
-	#20 <char>
-	;dict/mdash-entity-txt <write-str>
-	#20 <char>
-	&skip ( -- )
+	;term/name OVR2 #000a ADD2 sseg ?{
+		DUP2 extract-term <write-link>
+		#20 <char>
+		;dict/mdash-entity-txt <write-str>
+		#20 <char> }
 	#09 next-char INC2 #09 next-char INC2 <write-str>
 	;dict/figcaption-tag <write-close>
 	;dict/figure-tag <write-close>
@@ -259,12 +256,11 @@
 @|tools )
 
 @find-diary ( name* -- diary* )
-	STH2
 	;diary
 	&>w ( -- )
-		( skip events ) DUP2 ;dict/no-picture log-has-picture ?{ POP2r JMP2r }
+		( skip events ) DUP2 ;dict/no-picture log-has-picture ?{ JMP2r }
 		scap/ INC2 LDAk ?&>w
-	POP2 #ffff POP2r JMP2r
+	POP2 #ffff JMP2r
 
 @count-diaries ( -- count* )
 	[ LIT2r 0000 ] ;diary
@@ -276,16 +272,16 @@
 @find-parent ( term* -- parent* )
 	DUP2 #0002 SUB2 LDA chex ?{ JMP2r }
 	#00 prev-char INC2
-	( stash depth ) LDAk chex #01 SUB STH
+	( stash depth ) LDAk chex #01 SUB ,&depth STR
 	( let's go ) ;lexicon SWP2
 	&>l ( -- )
-		#0001 SUB2 #00 prev-char INC2k LDA chex STHkr NEQ ?{
-			NIP2 POPr INC2 INC2 INC2 JMP2r }
+		#0001 SUB2 #00 prev-char INC2k LDA chex [ LIT &depth $1 ] NEQ ?{
+			NIP2 INC2 INC2 INC2 JMP2r }
 		LTH2k ?&>l
-	POPr #0002 JMP2r
+	#0002 JMP2r
 
 @log-has-picture ( log* picture* -- flag )
-	SWP2 #0006 ADD2 !sseg
+	SWP2 #0006 ADD2 !scmp3
 
 (
 @|framework )
@@ -414,6 +410,11 @@
 		LDAk #00 STH2kr STA2
 		INC2r INC2 LDAk ?&>w
 	POP2 POP2r JMP2r
+
+@scmp3 ( a* b* -- f )
+	STH2
+	LDAkr LDAk STHr NEQ ?{ INC2r INC2 }
+	LDA2r LDA2 STH2r EQU2 JMP2r
 
 @scmp ( a* b* -- f )
 	STH2
