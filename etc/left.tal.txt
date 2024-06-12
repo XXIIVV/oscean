@@ -61,7 +61,7 @@
 	( name ) "Left 0a
 	( details ) "A 20 "Text 20 "Editor 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "26 20 "May 20 "2024 $1
+	( date ) "11 20 "Jun 20 "2024 $1
 	01
 	( > ) 83 =appicon
 
@@ -1369,7 +1369,7 @@
 @<clear-filepath> ( -- )
 	#07 get-cat-x #0004 ADD2 .Screen/x DEO2
 	#0004 .Screen/y DEO2
-	#00 ;filepath get-strw #03 SFT2 NIP #06 SUB ;fill-icn #11 !<draw-times>
+	#0000 ;filepath get-strw #03 SFT2 NIP #06 ADD SUB ;fill-icn #11 !<draw-times>
 
 @<draw-filepath> ( color -- )
 	#07 get-cat-x #0004 ADD2 .Screen/x DEO2
@@ -1548,13 +1548,14 @@
 @load-theme ( -- )
 	;&path .File/name DEO2
 	#0002 .File/length DEO2
-	[ LIT2 -System/debug -System/r ]
-	&>l ( -- )
-		;&buf .File/read DEO2
-		[ LIT2 00 -File/success-lb ] DEI EQU ?{
-			[ LIT2r &buf $2 ] STHk DEO2r
-			INC INC NEQk ?&>l }
-	POP2 JMP2r
+	;&r .File/read DEO2
+	;&g .File/read DEO2
+	;&b .File/read DEO2
+	[ LIT2 00 -File/success-lb ] DEI EQU ?{
+		[ LIT2 &r $2 ] .System/r DEO2
+		[ LIT2 &g $2 ] .System/g DEO2
+		[ LIT2 &b $2 ] .System/b DEO2 }
+	JMP2r
 	&path ".theme $1
 
 (
@@ -1799,7 +1800,16 @@
 @<clear-sub> ( cat -- )
 	DUP get-cat-x .Screen/x DEO2
 	#0014 .Screen/y DEO2
-	get-cat LDA DUP ADD #00 SWP ;fill-icn #f2 !<draw-times>
+	get-cat LDA DUP ADD #00 SWP ;fill-icn #f2
+	( >> )
+
+@<draw-times> ( color times addr* auto -- )
+	.Screen/auto DEO
+	.Screen/addr DEO2
+	&>l ( -- )
+		OVR .Screen/sprite DEO
+		INC DUP ?&>l
+	POP2 JMP2r
 
 @<draw-label-top> ( str* sel -- )
 	[ LIT2 15 -Screen/auto ] DEO
@@ -1872,14 +1882,6 @@
 	[ LIT2 &y $2 ] .Screen/y DEO2
 	.Screen/sprite DEO
 	JMP2r
-
-@<draw-times> ( color times addr* auto -- )
-	.Screen/auto DEO
-	.Screen/addr DEO2
-	&>l ( -- )
-		OVR .Screen/sprite DEO
-		INC DUP ?&>l
-	POP2 JMP2r
 
 (
 @|stdlib )
