@@ -47,29 +47,25 @@
 	&site-path [ "site/ &buf $30 ]
 
 @<load-diary> ( name* -- )
-	( | make path )
 	;&buf <scpy>
 	;&buf [ LIT2 20 "_ ] <cswp>
-	( | load )
 	;&log-path .File/name DEO2
 	#1000 .File/length DEO2
-	;diary
-	( clear ) DUP2 [ LIT2 &length $2 ] <mclr>
-	( read ) DUP2 .File/read DEO2
-	( lines ) #0a00 <cswp>
+	;diary DUP2 [ LIT2 &length $2 ] <mclr>
+	DUP2 .File/read DEO2
+	#0a00 <cswp>
 	.File/success DEI2 ,&length STR2
 	JMP2r
 	&log-path [ "tmp/log- &buf $30 ]
 
 @<load-incoming> ( name* -- )
-	( paste ) ;&buf STH2k <scpy>
-	( <cswp> ) STH2r [ LIT2 20 "_ ] <cswp>
-	( load ) ;&map-path .File/name DEO2
+	;&buf STH2k <scpy>
+	STH2r [ LIT2 20 "_ ] <cswp>
+	;&map-path .File/name DEO2
 	#1000 .File/length DEO2
-	;incoming
-	( clear ) DUP2 [ LIT2 &length $2 ] <mclr>
-	( read ) DUP2 .File/read DEO2
-	( split lines ) #0a00 <cswp>
+	;incoming DUP2 [ LIT2 &length $2 ] <mclr>
+	DUP2 .File/read DEO2
+	#0a00 <cswp>
 	.File/success DEI2 ,&length STR2
 	JMP2r
 	&map-path [ "tmp/map- &buf $30 ]
@@ -100,12 +96,13 @@
 
 @<build-page-nav> ( name* -- name* )
 	;dict/nav-tag <write-open>
-	DUP2 #0002 SUB2 LDA chex #00 EQU ?&>no-siblings
-	DUP2 #0002 SUB2 LDA chex #02 LTH ?&>no-parents
-	DUP2 find-parent find-parent <build-children>
-	POP2 &>no-parents DUP2 #0002 SUB2 LDA chex #00 EQU ?&>no-siblings
-	DUP2 find-parent <build-children>
-	POP2 &>no-siblings <build-children>
+	DUP2 #0002 SUB2 LDA chex STHk #00 EQU ?{
+		STHkr #02 LTH ?{
+			DUP2 find-parent find-parent <build-children>
+			POP2 }
+		DUP2 find-parent <build-children>
+		POP2 }
+	POPr <build-children>
 	;dict/nav-tag <write-close>
 	#0a !<char>
 
