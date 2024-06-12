@@ -266,9 +266,8 @@
 
 @find-parent ( term* -- parent* )
 	DUP2 #0002 SUB2 LDA chex ?{ JMP2r }
-	#00 prev-char INC2
-	( stash depth ) LDAk chex #01 SUB ,&depth STR
-	( let's go ) ;lexicon SWP2
+	#00 prev-char INC2 LDAk chex #01 SUB ,&depth STR
+	;lexicon SWP2
 	&>l ( -- )
 		#0001 SUB2 #00 prev-char INC2k LDA chex [ LIT &depth $1 ] NEQ ?{
 			NIP2 INC2 INC2 INC2 JMP2r }
@@ -344,18 +343,19 @@
 @<write-close> ( tag* -- )
 	[ LIT2 "</ ] <char2>
 	<write-str>
-	[ LIT "> ] !<char>
-
-@<write-str> ( addr* -- )
-	DUP2 scap/ OVR2 SUB2 .File2/length DEO2
-	.File2/write DEO2
-	JMP2r
+	[ LIT "> ]
+	( >> )
 
 @<char> ( char -- )
 	#0001 .File2/length DEO2
 	;&b STAk .File2/write DEO2
 	POP JMP2r
 	&b $1
+
+@<write-str> ( addr* -- )
+	DUP2 scap/ OVR2 SUB2 .File2/length DEO2
+	.File2/write DEO2
+	JMP2r
 
 @<char2> ( c1 c2 -- )
 	#0002 .File2/length DEO2

@@ -36,11 +36,11 @@
 @|lexicon )
 
 @<load-file> ( addr* length* path* -- )
-	STH2k .File/name DEO2
+	.File/name DEO2
 	DUP2 .File/length DEO2
 	SWP2 .File/read DEO2
-	( check for size ) .File/success DEI2 NEQ2 ?{ STH2kr <print-line> }
-	POP2r JMP2r
+	( check for size ) .File/success DEI2 NEQ2 ?{ .File/name DEI2 !<print-line> }
+	JMP2r
 
 @<parse-lexicon> ( -- )
 	;lexicon
@@ -48,21 +48,17 @@
 	( swap ) DUP2 #0a00 <cswp>
 	( range ) .File/success DEI2 ADD2k NIP2 SWP2
 	&>l ( -- )
-		<parse-lexicon-line>
-		INC2 GTH2k ?&>l
+		INC2 INC2
+		( | do incoming )
+		DUP2k #0001 SUB2 LDA [ LIT "? ] EQU ?{ DUP2 <parse-links> }
+		( | do sitemap )
+		;dict/sitemap-path .File2/name DEO2
+		;dict/li-tag <w>
+		<link>
+		;dict/li-tag </w>
+		#0a <char>
+		scap/ INC2 GTH2k ?&>l
 	POP2 POP2 JMP2r
-
-@<parse-lexicon-line> ( line* -- next* )
-	INC2 INC2
-	( | do incoming )
-	DUP2k #0001 SUB2 LDA LIT "? EQU ?{ DUP2 <parse-links> }
-	( | do sitemap )
-	;dict/sitemap-path .File2/name DEO2
-	;dict/li-tag <w>
-	<link>
-	;dict/li-tag </w>
-	#0a <char>
-	!scap/
 
 @<parse-links> ( src* -- )
 	DUP2 ;&term STH2k <scpy-line>
@@ -133,34 +129,22 @@
 	POP2 POP2 JMP2r
 
 @<parse-diary-line> ( line* -- next* )
-	DUP2 parse-log
+	DUP2 DUP2 #000a ADD2 ;&term <scpy-line>
+	( | does it exists? )
+	;&term find-term INC2 ORA ?{
+		;dict/warn-unknown <print-str>
+		DUP2 <print-str>/
+		#0a18 DEO }
+	;&term [ LIT2 20 "_ ] <cswp>
+	( res ) ;&log-path .File2/name DEO2
+	<str>
+	#0a <char>
 	( split ) DUP2 #0900 <cswp>
 	DUP2 set-diary
 	( event ) DUP2 #0005 ADD2 LDA [ LIT "+ ] NEQ ?{ DUP2 parse-event }
 	;dict/no-photo OVR2 #0006 ADD2 scmp ?{ DUP2 add-to-journal }
 	( eol ) scap/ INC2 scap/ INC2 !scap/
-
-@parse-log ( event* -- )
-	DUP2 #000a ADD2 ;&term <scpy-line>
-	( | does it exists? )
-	;&term find-term #ffff NEQ2 ?{
-		;dict/warn-unknown <print-str>
-		DUP2 <print-str>/ #0a18 DEO
-	}
-	;&term [ LIT2 20 "_ ] <cswp>
-	( res ) ;&log-path .File2/name DEO2
-	<str>
-	#0a !<char>
 	&log-path [ "tmp/log- &term $30 ]
-
-@<phex> ( short* -: )
-	SWP /b
-	&b ( byte -: )
-		DUP #04 SFT /c
-	&c ( byte -: )
-		#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
-		JMP2r
-
 
 @parse-event ( event* -- )
 	( | add to calendar )
