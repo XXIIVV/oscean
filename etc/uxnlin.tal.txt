@@ -2,8 +2,7 @@
 
 |10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
 |a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
-
-|0000
+|000
 
 	@src $40
 	@token $30 &last $30 &last2 $30
@@ -13,7 +12,7 @@
 (
 @|vectors )
 
-|0100
+|100
 
 @on-reset ( -> )
 	;meta #06 DEO2
@@ -27,7 +26,7 @@
 	( name ) "Uxnlin 0a
 	( desc ) "Uxntal 20 "Linter 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "11 20 "Feb 20 "2024 $1
+	( date ) "12 20 "Jun 20 "2024 $1
 	( exts ) 00
 
 @await-src ( -> )
@@ -53,20 +52,20 @@
 @<lint> ( src* -- )
 	.File/name DEO2
 	#0001 .File/length DEO2
-	&s ( -- )
+	&>s ( -- )
 		;&c .File/read DEO2
 		.File/success DEI2 ORA ?{ !<print-summary> }
-		[ LIT &c $1 ] walk !&s
+		[ LIT &c $1 ] walk !&>s
 
 @walk ( char -- )
 	DUP #0a NEQ ?{
 		.stats/lines LDZ2k INC2 ROT STZ2 }
 	DUP #20 GTH ?&append
-	POP ;token DUP2 slen ORA ?parse-token
-	JMP2r
+	POP ;token LDAk ?parse-token
+	POP2 JMP2r
 	&append ( char -- )
-		;token slen NIP #30 LTH ?{ POP ;tokenlen !<print-warn> }
-		;token !sput
+	;token slen NIP #30 LTH ?{ POP ;tokenlen !<print-warn> }
+	;token !sput
 
 @walk-comment ( t* -- )
 	;&c feof ?<sclr>
@@ -77,8 +76,7 @@
 @walk-block ( t* -- )
 	;&c feof ?<sclr>
 	[ LIT2 &c $1 "[ ] INC INC NEQ ?walk-block
-	reset
-	!<sclr>
+	reset !<sclr>
 
 @parse-token ( t* -- )
 	LDAk [ LIT "( ] EQU ?walk-comment
@@ -88,46 +86,42 @@
 	( new scope ) DUP2 is-scope #00 EQU ?{ INC2k ;scope <scpy> }
 	( include ) LDA [ LIT "~ ] EQU ?include
 	;rules2/end ;rules2
-	&loop2 ( -- )
+	&>loop2 ( -- )
 		( a ) DUP2 ;token/last scmp-wild STH
 		scap/ INC2
 		( b ) DUP2 ;token scmp-wild STH
 		scap/ INC2 ANDr STHr #00 EQU ?{ LDA2k <print-warn2> }
-		INC2 INC2 GTH2k ?&loop2
+		INC2 INC2 GTH2k ?&>loop2
 	POP2 POP2
 	( | 3 elements )
 	;rules3/end ;rules3
-	&loop3 ( -- )
+	&>loop3 ( -- )
 		( a ) DUP2 ;token/last2 scmp-wild STH
 		scap/ INC2
 		( b ) DUP2 ;token/last scmp-wild STH
 		scap/ INC2
 		( c ) DUP2 ;token scmp-wild STH
 		scap/ INC2 ANDr ANDr STHr #00 EQU ?{ LDA2k <print-warn3> }
-		INC2 INC2 GTH2k ?&loop3
+		INC2 INC2 GTH2k ?&>loop3
 	POP2 POP2
 	( | literal duplicates: #1234 #1234 )
-	;token is-static #00 EQU ?&>no-lit
-	;token ;token/last scmp #00 EQU ?&>no-lit
-		;static-dup <print-warn2> &>no-lit
-	( | tail-call )
-	;token/last LDA cilc #00 EQU ?&>no-tail
-	;token ;jmp scmp3 #00 EQU ?&>no-tail
-	;token/last is-opcode ?&>no-tail
-		;tailcall <print-warn2> &>no-tail
+	;token is-static #00 EQU ?{
+		;token ;token/last scmp #00 EQU ?{ ;static-dup <print-warn2> }
+		}
 	( | fall-through )
-	;token LDA [ LIT "@ NEQ ] ?&>no-fall
-	;token/last is-jump #00 EQU ?&>no-fall
-	;token INC2 ;token/last INC2 scmp #00 EQU ?&>no-fall
-		;fall-through <print-warn2> &>no-fall
+	;token LDA [ LIT "@ NEQ ] ?{
+		;token/last is-jump #00 EQU ?{
+			;token INC2 ;token/last INC2 scmp #00 EQU ?{ ;fall-through <print-warn2> }
+			}
+		}
 	( | dead-region )
-	;token/last is-jump/strict #00 EQU ?&>no-dead
-	;token is-static ;token is-opcode ORA #00 EQU ?&>no-dead
-		;dead-region <print-warn2> &>no-dead
+	;token/last is-jump/strict #00 EQU ?{
+		;token is-static ;token is-opcode ORA #00 EQU ?{ ;dead-region <print-warn2> }
+		}
 	&cleanup ( -- )
-		;token/last ;token/last2 <scpy>
-		;token DUP2 ;token/last <scpy>
-		!<sclr>
+	;token/last ;token/last2 <scpy>
+	;token DUP2 ;token/last <scpy>
+	!<sclr>
 
 @reset ( -- )
 	;token <sclr>
@@ -150,17 +144,17 @@
 	INC2k LDA ciuc ?&fail
 	POP2 #01 JMP2r
 	&fail ( str* -- flag )
-		POP2 #00 JMP2r
+	POP2 #00 JMP2r
 
 @is-jump ( str* -- flag )
 	DUP2 ;brk scmp ?&pass
 	DUP2 ;jmp scmp3 ?&pass
 	LDAk [ LIT "? ] EQU ?&pass
 	&strict ( str* -- flag )
-		LDAk [ LIT "! ] EQU ?&pass
-		POP2 #00 JMP2r
+	LDAk [ LIT "! ] EQU ?&pass
+	POP2 #00 JMP2r
 	&pass ( str* -- flag )
-		POP2 #01 JMP2r
+	POP2 #01 JMP2r
 
 @is-litbyte ( str* -- flag )
 	LDAk [ LIT ", ] EQU ?&pass
@@ -168,18 +162,21 @@
 	LDAk [ LIT "# ] EQU ?&hex
 	POP2 #00 JMP2r
 	&hex ( str* -- flag )
-		slen NIP #03 EQU JMP2r
+	slen NIP #03 EQU JMP2r
 	&pass ( str* -- flag )
-		POP2 #01 JMP2r
+	POP2 #01 JMP2r
+
+@is-routine ( str* -- flag )
+	LDA !cilc
 
 @is-litshort ( str* -- flag )
 	LDAk [ LIT "; ] EQU ?&pass
 	LDAk [ LIT "# ] EQU ?&hex
 	POP2 #00 JMP2r
 	&hex ( str* -- flag )
-		slen NIP #05 EQU JMP2r
+	slen NIP #05 EQU JMP2r
 	&pass ( str* -- flag )
-		POP2 #01 JMP2r
+	POP2 #01 JMP2r
 
 @is-static ( token* -- flag )
 	( ) STH2k is-litshort
@@ -187,13 +184,14 @@
 
 @is-opcode ( string* -- f )
 	DUP2 ;opcodes/brk scmp3 ?find-opcode/on-found
+	( >> )
 
 @find-opcode ( name* -- byte )
 	,&t STR2
 	#2000
-	&l ( -- )
+	&>l ( -- )
 		#00 OVR #03 MUL ;opcodes ADD2 [ LIT2 &t $2 ] scmp3 ?&on-found
-		INC GTHk ?&l
+		INC GTHk ?&>l
 	POP2 #00 JMP2r
 	&on-found POP2 #01 JMP2r
 
@@ -205,19 +203,20 @@
 @scmp-lut ( a* b* -- flag )
 	SWP2 ,&t STR2
 	;dictionaries/end ;dictionaries
-	&l ( -- )
+	&>l ( -- )
 		LDA2k [ LIT2 &t $2 ] scmp ?&dict-match
-		#0004 ADD2 GTH2k ?&l
+		#0004 ADD2 GTH2k ?&>l
 	,&t LDR2 <pstr>
 	#0a18 DEO
 	POP2 POP2 POP2 #00 JMP2r
 	&dict-match ( target* to* from* -- flag )
-		NIP2 INC2 INC2 LDA2 SWP2 afnd INC2 ORA JMP2r
+	NIP2 INC2 INC2 LDA2 SWP2 afnd INC2 ORA JMP2r
 
 @scmp-template ( a* b* -- flag )
 	SWP2 INC2 LDA
 	( ) DUP [ LIT "1 ] NEQ ?{ POP !is-litbyte }
 	( ) DUP [ LIT "2 ] NEQ ?{ POP !is-litshort }
+	( ) DUP [ LIT "% ] NEQ ?{ POP !is-routine }
 	POP JMP2r
 
 (
@@ -303,8 +302,7 @@
 	[ LIT "a ] SUB #1a LTH JMP2r
 
 @scap ( str* -- end* )
-	&w ( -- )
-		INC2 & LDAk ?&w
+	INC2 & LDAk ?scap
 	JMP2r
 
 @sput ( chr str* -- )
@@ -316,37 +314,38 @@
 
 @scmp-star ( a* b* -- f )
 	STH2
-	&l ( -- )
+	&>l ( -- )
 		LDAk [ LIT "* ] EQU ?&pass
 		LDAkr [ LITr "* ] EQUr STHr ?&pass
 		LDAk LDAkr STHr ANDk #00 EQU ?&e
 		NEQk ?&e
-		POP2 INC2 INC2r !&l
+		POP2 INC2 INC2r !&>l
 	&e ( -- )
-		NIP2 POP2r EQU JMP2r
-	&pass ( a* | b* -- f )
-		POP2 POP2r #01 JMP2r
+	NIP2 POP2r EQU JMP2r
+	&pass ( a*
+	| b* -- f )
+	POP2 POP2r #01 JMP2r
 
 @scmp ( a* b* -- f )
 	STH2
-	&l ( -- )
+	&>l ( -- )
 		LDAk ?{
 			&d LDA LDAr STHr EQU JMP2r }
 		LDAk LDAkr STHr NEQ ?&d
-	INC2 INC2r !&l
+		INC2 INC2r !&>l
 
 @<sclr> ( str* -- )
 	#00 ROT ROT
 	&w ( -- )
-		STAk INC2 LDAk ?&w
+	STAk INC2 LDAk ?&w
 	STA
 	JMP2r
 
 @<scpy> ( src* dst* -- )
 	STH2
 	&w ( -- )
-		LDAk #00 STH2kr STA2
-		INC2r INC2 LDAk ?&w
+	LDAk #00 STH2kr STA2
+	INC2r INC2 LDAk ?&w
 	POP2 POP2r JMP2r
 
 @skey ( key buf -- proc )
@@ -362,14 +361,14 @@
 @afnd ( array* target* -- <index>* )
 	,&t STR2
 	&w ( -- )
-		DUP2 [ LIT2 &t $2 ] scmp ?&end
-		scap/ INC2 LDAk ?&w
+	DUP2 [ LIT2 &t $2 ] scmp ?&end
+	scap/ INC2 LDAk ?&w
 	POP2 #ffff &end JMP2r
 
 @<clear-zeropage> ( -- )
 	#0000
-	&w ( -- )
-		STZk INC NEQk ?&w
+	&>w ( -- )
+		STZk INC NEQk ?&>w
 	POP2 JMP2r
 
 @<pdec> ( short* -- )
@@ -377,23 +376,21 @@
 		POP2 [ LIT2 "0 18 ] DEO
 		JMP2r }
 	#2710 [ LIT2r 00fb ]
-	&w ( -- )
+	&>w ( -- )
 		DIV2k #000a DIV2k MUL2 SUB2 SWPr EQUk OVR STHkr EQU AND ?{
 			DUP [ LIT "0 ] ADD #19 DEO
 			INCr }
-		POP2 #000a DIV2 SWPr INCr STHkr ?&w
+		POP2 #000a DIV2 SWPr INCr STHkr ?&>w
 	POP2r POP2 POP2 JMP2r
 
 @<pstr> ( str* -- )
-	&w ( -- )
-		LDAk #18 DEO
-		INC2 LDAk ?&w
+	LDAk #18 DEO
+	INC2 LDAk ?<pstr>
 	POP2 JMP2r
 
 @<perr> ( str* -- )
-	&w ( -- )
-		LDAk #19 DEO
-		INC2 LDAk ?&w
+	LDAk #19 DEO
+	INC2 LDAk ?<perr>
 	POP2 JMP2r
 
 
@@ -674,6 +671,8 @@
 	"#* $1 "JSR $1 =unsafe
 	"{1} $1 "INC $1 =static
 	"{2} $1 "INC2 $1 =static
+	"{1} $1 "STHk $1 =static
+	"{2} $1 "STH2k $1 =static
 	"SWP $1 "POP $1 =nip
 	"SWP2 $1 "POP2 $1 =nip2
 	"#01 $1 "ADD $1 =inc
@@ -761,11 +760,16 @@
 	"<any-12> $1 "STH2 $1 =latestack
 	"SWP $1 "<noswp> $1 =redundance
 	"SWP2 $1 "<noswp2> $1 =redundance
+	"<any-12> $1 "NIP $1 =redundance
+	"<any-12> $1 "POP $1 =redundance
+	"LDA2 $1 "NIP $1 =redundance
+	"LDA2 $1 "POP $1 =redundance
+	"LDA2k $1 "NIP $1 =redundance
+	"LDA2k $1 "POP $1 =redundance
 	( unkept )
 	"DUP $1 "<any-1x> $1 =keep
 	"DUP2 $1 "<any2-1x> $1 =keep
 	"DUP2 $1 "<any-2x> $1 =keep
-	"DUP2k $1 "<any2-2x> $1 =keep
 	( static )
 	"{2} $1 "<ari1-2x> $1 =static
 	"{1} $1 "<any-1x> $1 =static
@@ -773,6 +777,7 @@
 	( prejump label )
 	"&* $1 "!* $1 =tailjump
 	"@* $1 "!* $1 =tailjump
+	"{%} $1 "JMP* $1 =tailcall
 	( redundant padding )
 	"|* $1 "|* $1 =redundance
 	&end
@@ -829,9 +834,36 @@
 	( stash to short )
 	"{1} $1 "SWP $1 "STH2 $1 =latestack
 	"{1} $1 "SWP $1 "STH $1 =latestack
+	( eager nip )
+	"NIP $1 "{1} $1 "STR $1 =eagerstack
+	"NIP $1 "{1} $1 "STZ $1 =eagerstack
+	"NIP $1 "{1} $1 "DEO $1 =eagerstack
+	"NIP2 $1 "{2} $1 "STA2 $1 =eagerstack
+	( transfer )
+	"STHr $1 "{1} $1 "DEO $1 =eagerstack
+	"STH2r $1 "{1} $1 "DEO2 $1 =eagerstack
+	"STHr $1 "{1} $1 "STR $1 =eagerstack
+	"STH2r $1 "{1} $1 "STR2 $1 =eagerstack
+	"STHr $1 "{1} $1 "STZ $1 =eagerstack
+	"STH2r $1 "{1} $1 "STZ2 $1 =eagerstack
+	"STHr $1 "{2} $1 "STA $1 =eagerstack
+	"STH2r $1 "{2} $1 "STA2 $1 =eagerstack
+	( transfer with keep )
+	"STHkr $1 "{1} $1 "DEO $1 =eagerstack
+	"STH2kr $1 "{1} $1 "DEO2 $1 =eagerstack
+	"STHkr $1 "{1} $1 "STR $1 =eagerstack
+	"STH2kr $1 "{1} $1 "STR2 $1 =eagerstack
+	"STHkr $1 "{1} $1 "STZ $1 =eagerstack
+	"STH2kr $1 "{1} $1 "STZ2 $1 =eagerstack
+	"STHkr $1 "{2} $1 "STA $1 =eagerstack
+	"STH2kr $1 "{2} $1 "STA2 $1 =eagerstack
 	( static )
 	"{2} $1 "ADD2 $1 "INC2 $1 =static
 	"{1} $1 "ADD $1 "INC $1 =static
 	"{2} $1 "SUB2 $1 "INC2 $1 =static
 	"{1} $1 "SUB $1 "INC $1 =static
+	( tailcall )
+	"{%} $1 "} $1 "JMP* $1 =tailcall
+	"{%} $1 "@ $1 "JMP* $1 =tailcall
+	"{%} $1 "& $1 "JMP* $1 =tailcall
 	&end
