@@ -201,9 +201,10 @@
 @<build-module-photo> ( diary* -- )
 	LDAk ?{ POP2 JMP2r }
 	;dict/figure-tag <write-open>
-	( part 12 ) DUP2 #0006 ADD2 LDA2k ;&buf STA2
-	( part 3 ) INC2 INC2 LDA ;&buf INC2 INC2 STA
-	( | )
+	( | copy number )
+	DUP2 #0006 ADD2
+	( > x00 ) LDAk ;&bufa STA
+	( > 0xx ) INC2 LDA2 ;&bufb STA2
 	;&diary-path
 	( make alt* ) OVR2 #09 next-char INC2 #09 next-char INC2 <write-img>
 	;dict/figcaption-tag <write-open>
@@ -216,7 +217,11 @@
 	;dict/figcaption-tag <write-close>
 	;dict/figure-tag <write-close>
 	#0a !<char>
-	&diary-path [ "../media/diary/ &buf $3 ".jpg $1 ]
+	&diary-path [
+	"../media/diary/ &bufa
+	$1 &bufb
+	$2 ".jpg
+	$1 ]
 
 (
 @|helpers )
