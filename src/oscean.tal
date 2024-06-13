@@ -198,6 +198,10 @@
 	#20 <char>
 	( event name ) DUP2 #09 next-char INC2 #09 next-char INC2 !<write-str>
 
+@walk-seg ( str* -- next* )
+	INC2 LDAk #1f GTH ?walk-seg
+	INC2 JMP2r
+
 @<build-module-photo> ( diary* -- )
 	LDAk ?{ POP2 JMP2r }
 	;dict/figure-tag <write-open>
@@ -206,22 +210,22 @@
 	( > x00 ) LDAk ;&bufa STA
 	( > 0xx ) INC2 LDA2 ;&bufb STA2
 	;&diary-path
-	( make alt* ) OVR2 #09 next-char INC2 #09 next-char INC2 <write-img>
+	( + image ) OVR2 #000a ADD2 walk-seg STH2k <write-img>
 	;dict/figcaption-tag <write-open>
 	;term/name OVR2 #000a ADD2 sseg ?{
 		DUP2 extract-term <write-link>
 		#20 <char>
 		;dict/mdash-entity-txt <write-str>
 		#20 <char> }
-	#09 next-char INC2 #09 next-char INC2 <write-str>
+	( + title ) STH2r <write-str>
+	;dict/right-txt ;dict/span-tag <write-open-class>
+	( + date ) #0005 <write-len>
+	;dict/span-tag <write-close>
 	;dict/figcaption-tag <write-close>
 	;dict/figure-tag <write-close>
 	#0a !<char>
-	&diary-path [
-	"../media/diary/ &bufa
-	$1 &bufb
-	$2 ".jpg
-	$1 ]
+	&diary-path "../media/diary/ &bufa $1 &bufb $2
+	".jpg $1
 
 (
 @|helpers )
@@ -356,6 +360,13 @@
 	;&b STAk .File2/write DEO2
 	POP JMP2r
 	&b $1
+
+@<write-len> ( src* length* -- )
+	OVR2 ADD2 SWP2
+	&>l ( -- )
+		LDAk <char>
+		INC2 GTH2k ?&>l
+	POP2 POP2 JMP2r
 
 @<write-str> ( addr* -- )
 	DUP2 scap/ OVR2 SUB2 .File2/length DEO2
@@ -493,6 +504,7 @@
 	&ul-tag "ul $1
 	&li-tag "li $1
 	&a-tag "a $1
+	&span-tag "span $1
 	&img-tag "img $1
 	&code-tag "code $1
 	&figure-tag "figure $1
@@ -501,6 +513,7 @@
 	&alt-attr "alt $1
 	&no-picture "000 $1
 	&incoming-txt "incoming $1
+	&right-txt "right $1
 
 @err &source "-- 20 "Source: 20 $1
 	&orphan "-- 20 "Orphan: 20 $1
