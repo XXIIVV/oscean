@@ -1,15 +1,14 @@
 ( usage: drifblim.rom input.tal output.rom )
 
 |10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
-|a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|a0 @File &vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |000
 
-	@src $1 &buf $30
-	@dst $1 &buf $30
-	@token $1 &buf $30
+	@src $30
+	@dst $30
+	@token $30
 	@scope $30
 	@sublabel $30
-	@live $1
 	@scan $1
 	@head $2
 	@halt $1
@@ -19,44 +18,35 @@
 
 @on-reset ( -> )
 	;meta #06 DEO2
-	.Console/type DEI ?{
-		;dict/usage <pstr>
-		[ LIT2 01 -live ] STZ }
-	;on-init-src .Console/vector DEO2
+	;await-src
+	( >> )
+
+@<await> ( addr* -> )
+	.Console/vector DEO2
+	.Console/type DEI ?{ ;dict/usage <pstr>
+		#010f DEO }
 	BRK
 
-@on-init-src ( -> )
-	.Console/read DEI .src zkey ?{ BRK }
-	;on-init-dst .Console/vector DEO2
+@await-src ( -> )
+	.Console/read DEI
+	( ) DUP #20 GTH ?{ POP ;await-dst !<await> }
+	[ LIT2 00 &ptr -src ] INCk ,&ptr STR
+	STZ2
 	BRK
 
-@on-init-dst ( -> )
-	.Console/read DEI .dst zkey ?{ BRK }
-	<assemble>
-	.live LDZ ?{
-		[ LIT2 80 -halt ] LDZ ORA #0f DEO
+@await-dst ( -> )
+	.Console/read DEI
+	( ) DUP #20 GTH ?{ POP <assemble>
 		BRK }
-	;dict/live <pstr>
-	;on-live .Console/vector DEO2
-	BRK
-
-@on-live ( -> )
-	.Console/read DEI .src zkey ?{ BRK }
-	( | cleanup )
-	[ LIT2 00 -halt ] STZ
-	#0000 .length STZ2
-	;mem/symbols ;<create-symbol>/ptr STA2
-	;Lambda/buf ;Lambda/ptr STA2
-	#0000 ;<create-symbol>/count STA2
-	<assemble>
+	[ LIT2 00 &ptr -dst ] INCk ,&ptr STR
+	STZ2
 	BRK
 
 @meta $1
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "30 20 "May 20 "2024 $1
-	( exts ) 00
+	( date ) "12 20 "Jun 20 "2024 $2
 
 (
 @|generics )
@@ -66,10 +56,12 @@
 	( make ) #00 handle-pass ?&fail
 	<write-rom>
 	<write-sym>
+	#800f DEO
 	!<print-summary>
 	&fail ( -- )
-	;dst/buf .File/name DEO2
+	;dst .File/name DEO2
 	[ LIT2 01 -File/delete ] DEO
+	#010f DEO
 	JMP2r
 
 @handle-pass ( scan -: err )
@@ -77,7 +69,7 @@
 	#0100 <set-head>
 	#00 ;Lambda/count STA
 	;dict/reset <set-scope>
-	;src/buf handle-file .halt LDZ JMP2r
+	;src handle-file .halt LDZ JMP2r
 
 @handle-file ( f* -- )
 	.File/name DEO2
@@ -88,18 +80,23 @@
 		INC2 [ LIT &c $1 ] handle-char !&>s
 	&end ( len* -- )
 	ORA ?{
-		;mem/include ;token/buf <scpy>
-		;err/file <set-error> }
+		;mem/include ;token <scpy>
+		;err/file !<set-error> }
 	JMP2r
 
 @handle-char ( c -- )
-	.token zkey ?{ JMP2r }
-	;token/buf DUP2 parse-token !<sclr>
+	DUP #20 GTH ?{
+		POP ;token
+		( ) LDAk ?{ POP2 JMP2r }
+		DUP2 <parse-token>
+		!<sclr> }
+	#00 ;token scap/ STA2
+	JMP2r
 
 (
 @|tokenizer )
 
-@parse-token ( t* -- )
+@<parse-token> ( t* -- )
 	LDAk ,&rune STR
 	;runes/end ;runes
 	&>l ( -- )
@@ -135,9 +132,9 @@
 	&lithex INC2 !<write-lithex>
 	&rawstr INC2 !<write-str>/
 	&lambda POP2 !Lambda/pop
-	&inc INC2k ;mem/include STH2k <scpy>
+	&inc INC2k ;mem/include <scpy>
 	<sclr>
-	STH2r !handle-file
+	;mem/include !handle-file
 	&ignore POP2 JMP2r
 
 (
@@ -190,7 +187,7 @@
 	;err <pstr>
 	<pstr>
 	#2018 DEO
-	;token/buf <pstr>
+	;token <pstr>
 	;dict/in <pstr>/
 	;scope <pstr>/
 	#0a18 DEO
@@ -210,13 +207,13 @@
 @|output )
 
 @<write-rom> ( -: )
-	;dst/buf .File/name DEO2
+	;dst .File/name DEO2
 	.length LDZ2 #00ff SUB2 .File/length DEO2
 	;rom/output .File/write DEO2
 	JMP2r
 
 @<write-sym> ( -- )
-	;dst/buf DUP2 scap/ ;dict/sym-ext OVR2 <scpy>
+	;dst DUP2 scap/ ;dict/sym-ext OVR2 <scpy>
 	SWP2 .File/name DEO2
 	;mem/symbols
 	&>w ( -- )
@@ -243,7 +240,7 @@
 	POP2 POP2
 	( | result )
 	;dict/assembled <pstr>/
-	;dst/buf <pstr>/
+	;dst <pstr>/
 	( | length )
 	;dict/in <pstr>/
 	.length LDZ2 #00ff SUB2 <pdec>
@@ -331,13 +328,13 @@
 	STA
 	( >> )
 	&name ( id -- str* )
-	#21 ADD ,&id STR
+	DUP #04 SFT hexc SWP hexc ,&id STR2
 	;&sym JMP2r
 	&pop ( -- )
 	,&ptr LDR2 #0001 SUB2 LDAk /name <create-symbol>
 	,&ptr STR2
 	JMP2r
-	&sym cebb &id $2
+	&sym cebb &id 0000 $1
 
 (
 @|helpers )
@@ -387,20 +384,7 @@
 
 @feof ( addr* -: f )
 	.File/read DEO2
-	.File/success DEI2 #0000 EQU2 JMP2r
-
-@zkey ( key ztr -- proc )
-	OVR #21 LTH ?&eval
-	LDZk #2f EQU ?&overflow
-	( write char ) STH
-	#00 STHkr LDZk ADD INC STZ2
-	( incr len ) STHr LDZk INC SWP STZ
-	#00 JMP2r
-	&overflow ( key ztr -- proc )
-	;err/token <set-error>
-	&eval ( key ztr -- proc )
-	NIP LDZk #00 ROT STZ
-	JMP2r
+	[ LIT2 00 -File/success-lb ] DEI EQU JMP2r
 
 @scap ( str* -: end* )
 	INC2 & LDAk ?scap
@@ -426,6 +410,11 @@
 	[ LIT "0 ] SUB DUP #0a LTH ?&end
 	#27 SUB DUP #10 LTH ?&end
 	POP #ff &end JMP2r
+
+@hexc ( hex -- char )
+	#0f AND #0a LTHk ?{
+		SUB [ LIT "a ] ADD JMP2r }
+	POP [ LIT "0 ] ADD JMP2r
 
 @shex ( str* -: value* )
 	[ LIT2r 0000 ]
@@ -474,7 +463,6 @@
 	&bytes 20 "bytes( $1
 	&labels 20 "labels). 0a $1
 	&sym-ext ".sym $1
-	&live "Listening.. 0a $1
 
 @err "!! 20 "Error: 20 $1
 	&file "File $1

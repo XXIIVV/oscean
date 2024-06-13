@@ -21,10 +21,9 @@
 	#f00f .System/r DEO2
 	#f00f .System/g DEO2
 	#f00f .System/b DEO2
-	load-theme
-	( | size )
 	#00e0 .Screen/width DEO2
 	#00f8 .Screen/height DEO2
+	<load-theme>
 	( | unlock )
 	;on-console .Console/vector DEO2
 	;on-mouse-body .Mouse/vector DEO2
@@ -38,8 +37,9 @@
 	( name ) "Note 20 "Pad 0a
 	( details ) "Original 20 "by 20 "Donn 20 "Denman 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "6 20 "Jun, 20 "2024 00 01
-	( icon ) 83 =appicon
+	( date ) "12 20 "Jun, 20 "2024 $1
+	( fields ) 01
+	( > icon ) 83 =appicon
 
 (
 @|vectors )
@@ -150,7 +150,7 @@
 	BRK
 	&down ( -> )
 	[ LIT2 00 -Mouse/state ] DEO
-	.Mouse/y DEI2 #00da SUB2 NIP [ LIT2 18 -Mouse/x ] DEI2 NIP SUB ADD #18 LTH ?&go-next
+	.Mouse/y DEI2 #00da SUB2 NIP [ LIT2 18 -Mouse/lx ] DEI SUB ADD #18 LTH ?&go-next
 	prev-page BRK &go-next next-page BRK
 
 @on-frame ( -> )
@@ -396,7 +396,7 @@
 	DUP2 file-size ORAk ?{ POP2 POP2 JMP2r }
 	STH2
 	.File/name DEO2
-	STH2kr .File/length DEO2
+	DUP2r [ LITr -File/length ] DEO2r
 	( | erase when selection length )
 	.selection/length LDZ2 #0000 EQU2 ?{
 		get-from get-eof .selection/length LDZ2 <msfl> }
@@ -713,7 +713,7 @@
 	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
 	JMP2r
 
-@load-theme ( -- )
+@<load-theme> ( -- )
 	;theme-path .File/name DEO2
 	#0002 .File/length DEO2
 	;&r .File/read DEO2
@@ -744,12 +744,6 @@
 @abs2 ( a* -- f )
 	DUP2 #0f SFT2 EQU ?{ #0000 SWP2 SUB2 }
 	JMP2r
-
-@LTS2k ( a* b* -- f )
-	SUB2k POP #07 SFT JMP2r
-
-@GTS2k ( a* b* -- f )
-	SWP2k SUB2 POP #07 SFT JMP2r
 
 @lts2 ( a* b* -- f )
 	SUB2 POP #07 SFT JMP2r
