@@ -79,9 +79,9 @@
 	;dict/meta-head-path <write-inc>
 	;dict/title-tag <write-open>
 	;dict/title-txt <write-str>
-	#20 <char>
+	<space>
 	;dict/mdash-entity-txt <write-str>
-	#20 <char>
+	<space>
 	DUP2 <write-str>
 	;dict/title-tag <write-close>
 	;dict/head-tag <write-close>
@@ -193,14 +193,10 @@
 	( clip start ) #00 STH2kr STA
 	( clip wrap ) ;dict/code-tag <write-auto>
 	( clip restore ) [ LIT "+ ] STH2r STA
-	( event spacer ) #20 <char>
+	( event spacer ) <space>
 	;dict/mdash-entity-txt <write-str>
-	#20 <char>
+	<space>
 	( event name ) DUP2 #09 next-char INC2 #09 next-char INC2 !<write-str>
-
-@walk-seg ( str* -- next* )
-	INC2 LDAk #1f GTH ?walk-seg
-	INC2 JMP2r
 
 @<build-module-photo> ( diary* -- )
 	LDAk ?{ POP2 JMP2r }
@@ -214,9 +210,9 @@
 	;dict/figcaption-tag <write-open>
 	;term/name OVR2 #000a ADD2 sseg ?{
 		DUP2 extract-term <write-link>
-		#20 <char>
+		<space>
 		;dict/mdash-entity-txt <write-str>
-		#20 <char> }
+		<space> }
 	( + title ) STH2r <write-str>
 	;dict/right-txt ;dict/span-tag <write-open-class>
 	( + date ) #0005 <write-len>
@@ -229,6 +225,10 @@
 
 (
 @|helpers )
+
+@walk-seg ( str* -- next* )
+	INC2 LDAk #1f GTH ?walk-seg
+	INC2 JMP2r
 
 @extract-term ( diary* -- term* )
 	#00 ;&buf STA
@@ -244,10 +244,10 @@
 	;incoming LDAk ?{ POP2 JMP2r }
 	;dict/incoming-txt ;dict/p-tag <write-open-class>
 	;dict/incoming-txt ;dict/b-tag <write-auto>
-	#20 <char>
+	<space>
 	&>w ( -- )
 		DUP2 <write-link>
-		#20 <char>
+		<space>
 		scap/ INC2 LDAk ?&>w
 	POP2 ;dict/p-tag !<write-close>
 
@@ -327,7 +327,7 @@
 	&a "<a 20 "href=" $1
 
 @<write-attr> ( body* attr* -- )
-	#20 <char>
+	<space>
 	<write-str>
 	[ LIT2 "=" ] <char2>
 	<write-str>
@@ -360,6 +360,12 @@
 	;&b STAk .File2/write DEO2
 	POP JMP2r
 	&b $1
+
+@<space> ( -- )
+	#0001 .File2/length DEO2
+	;&b .File2/write DEO2
+	JMP2r
+	&b 20
 
 @<write-len> ( src* length* -- )
 	OVR2 ADD2 SWP2
