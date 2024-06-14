@@ -1,0 +1,239 @@
+( app/neralie : clock with arvelie date )
+
+|00 @System &vector $2 &pad $6 &r $2 &g $2 &b $2
+|10 @Console &vector $2 &read $1 &pad $5 &write $1 &error $1
+|20 @Screen &vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
+|c0 @DateTime &year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
+
+|000
+
+	@fps &current $1 &next $1 &second $1
+	@neralie &n0123 $2 &n4 $1 &n5 $1 &n6 $1 &n7 $1 &n8 $1 &n9 $1 &color $1 &x $2 &y $2 &w $2 &h $2
+	@mul &ahi $1 &alo $1 &bhi $1 &blo $1
+	@frame &x1 $2 &x2 $2 &y1 $2 &y2 $2
+
+|100
+
+@on-reset ( -> )
+	( | theme )
+	#0f3d .System/r DEO2
+	#0fe3 .System/g DEO2
+	#0fb2 .System/b DEO2
+	( | vectors )
+	;on-screen .Screen/vector DEO2
+	[ LIT2 01 -fps/current ] STZ
+	( | set size )
+	#0018 ( padding )
+	DUP2 .frame/x1 STZ2
+	DUP2 .frame/y1 STZ2
+	DUP2 .Screen/width DEI2 SWP2 SUB2 #0001 SUB2 .frame/x2 STZ2
+	.Screen/height DEI2 SWP2 SUB2 .frame/y2 STZ2
+	( | draw frame )
+	[ LIT2 41 -neralie/color ] STZ
+	.frame/x1 LDZ2 .frame/x2 LDZ2
+	OVR2 OVR2 .frame/y1 LDZ2 <draw-hor>
+	.frame/y2 LDZ2 <draw-hor>
+	.frame/y1 LDZ2 #0001 SUB2 .frame/y2 LDZ2 INC2
+	OVR2 OVR2 .frame/x1 LDZ2 <draw-ver>
+	.frame/x2 LDZ2 <draw-ver>
+
+(
+@|vectors )
+
+@on-screen ( -> )
+	( | update fps )
+	update-fps
+	( | clear )
+	#0000 DUP2 .Screen/x DEO2
+	.Screen/y DEO2
+	[ LIT2 80 -Screen/pixel ] DEO
+	( | draw )
+	update-time
+	[ LIT2 01 -neralie/color ] STZ
+	<draw-date>
+	<draw-clock>
+	BRK
+
+@update-fps ( -- )
+	.fps/next LDZ INC .fps/next STZ
+	.DateTime/second DEI .fps/second LDZ NEQ ?{ JMP2r }
+	.DateTime/second DEI .fps/second STZ
+	.fps/next LDZ .fps/current STZ
+	[ LIT2 00 -fps/next ] STZ
+	JMP2r
+
+@update-time ( -- )
+	( | add up fractions of a pulse, store tenths in n6 )
+	( ) #0120 [ LIT2 00 -DateTime/hour ] DEI MUL2
+	( ) #00c0 [ LIT2 00 -DateTime/minute ] DEI MUL2 ADD2
+	( ) #00f8 [ LIT2 00 -DateTime/second ] DEI MUL2 ADD2
+	( ) #0271 [ LIT2 00 -fps/next ] LDZ MUL2 [ LIT2 00 -fps/current ] LDZ DIV2 #30 SFT2 ADD2
+	( ) #01b0 modf SWP2 #0017 MUL2 #03e8 DIV2 .neralie/n6 STZ POP
+	( | add up units and tens of pulses, store in n5 and n4 )
+	( ) #0042 [ LIT2 00 -DateTime/hour ] DEI MUL2 ADD2
+	( ) #005e [ LIT2 00 -DateTime/minute ] DEI MUL2 ADD2
+	( ) #000b [ LIT2 00 -DateTime/second ] DEI MUL2 ADD2
+	( ) #000a modf SWP2 .neralie/n5 STZ POP
+	( ) #000a modf SWP2 .neralie/n4 STZ POP
+	( | add up hundreds of pulses + 10 x beats, store in n0123 )
+	( ) #01a0 [ LIT2 00 -DateTime/hour ] DEI MUL2 ADD2
+	( ) #0006 [ LIT2 00 -DateTime/minute ] DEI MUL2 ADD2 .neralie/n0123 STZ2
+	JMP2r
+
+(
+@|drawing )
+
+@<draw-date> ( -- )
+	( auto x ) [ LIT2 01 -Screen/auto ] DEO
+	.Screen/width DEI2 #01 SFT2 #0034 SUB2 .Screen/x DEO2
+	.Screen/height DEI2 #0010 SUB2 .Screen/y DEO2
+	( | arvelie )
+	.DateTime/year DEI2 #07d6 SUB2 NIP
+		DUP #0a DIV #00 SWP #30 SFT2 ;font-numbers ADD2 .Screen/addr DEO2
+			[ LIT2 01 -Screen/sprite ] DEO
+		#0a DIVk MUL SUB #00 SWP #30 SFT2 ;font-numbers ADD2 .Screen/addr DEO2
+			[ LIT2 01 -Screen/sprite ] DEO
+	.DateTime/doty DEI2
+		DUP2 #000e DIV2 #30 SFT2 ;font-letters ADD2 .Screen/addr DEO2
+			[ LIT2 01 -Screen/sprite ] DEO
+		#000e DIV2k MUL2 SUB2
+		DUP2 #000a DIV2 <draw-digit>
+		#000a DIV2k MUL2 SUB2 <draw-digit>
+	.Screen/x DEI2 #0008 ADD2 .Screen/x DEO2
+	( | neralie )
+	.neralie/n0123 LDZ2
+	#03e8 modf <draw-digit>
+	#0064 modf <draw-digit>
+	#000a modf <draw-digit>
+	#000b <draw-digit>
+	<draw-digit>
+	[ LIT2 00 -neralie/n4 ] LDZ <draw-digit>
+	[ LIT2 00 -neralie/n5 ] LDZ <draw-digit>
+	( auto none ) [ LIT2 00 -Screen/auto ] DEO
+	JMP2r
+
+@<draw-digit> ( index* -- )
+	#30 SFT2 ;font-numbers ADD2 .Screen/addr DEO2
+	[ LIT2 01 -Screen/sprite ] DEO
+	JMP2r
+
+@<draw-clock> ( -- )
+	.frame/x2 LDZ2 .frame/x1 LDZ2
+		DUP2 .neralie/x STZ2 SUB2 .neralie/w STZ2
+	.frame/y2 LDZ2 .frame/y1 LDZ2
+		DUP2 .neralie/y STZ2 SUB2 .neralie/h STZ2
+
+	;neralie/n4 NIP .neralie/n0123 LDZ2
+
+	DUP2 /h
+
+	/next #0008 .Screen/x DEO2
+	.neralie/y LDZ2 #0003 SUB2 .Screen/y DEO2
+	<draw-digit>
+
+	DUP2 /v
+	#04 ;<draw-line>/spacing STA
+	.frame/y1 LDZ2 #0003 SUB2 .neralie/y LDZ2 .neralie/x LDZ2 <draw-ver>
+	#01 ;<draw-line>/spacing STA
+	/next #0008 .Screen/y DEO2
+	.neralie/x LDZ2 #0003 SUB2 .Screen/x DEO2
+	<draw-digit>
+	DUP2 /h
+	/next .Screen/width DEI2 #0010 SUB2 .Screen/x DEO2
+	.neralie/y LDZ2 #0003 SUB2 .Screen/y DEO2
+	<draw-digit>
+	DUP2 /v
+	/next POP2
+	DUP2 /h
+	/next POP2
+	DUP2 /v
+	POP2 POP
+	JMP2r
+
+	&next ( digit-addr number* -- next-digit-addr next-number* prev-digit* )
+	#03e8 modf STH2 #000a MUL2
+	ROT STHk INC ROT ROT
+	#00 STHr LDZ ADD2
+	STH2r
+	JMP2r
+
+	&h ( number* -- )
+	scale
+	.neralie/h LDZ2 mul2hi
+	ORAk ?{ POP2 JMP2r }
+	DUP2 .neralie/y LDZ2 ADD2 .neralie/y STZ2
+	.neralie/h LDZ2 SWP2 SUB2 .neralie/h STZ2
+	.neralie/x LDZ2 DUP2 .neralie/w LDZ2 ADD2 .neralie/y LDZ2 !<draw-hor>
+
+	&v ( number* -- )
+	scale
+	.neralie/w LDZ2 mul2hi
+	ORAk ?{ POP2 JMP2r }
+	DUP2 .neralie/x LDZ2 ADD2 .neralie/x STZ2
+	.neralie/w LDZ2 SWP2 SUB2 .neralie/w STZ2
+	.neralie/y LDZ2 DUP2 .neralie/h LDZ2 ADD2 .neralie/x LDZ2 !<draw-ver>
+
+@<draw-hor> ( x1* x2* y* -- )
+	.Screen/y DEO2
+	.Screen/x ;<draw-line>/port STA
+	!<draw-line>
+
+@<draw-ver> ( y1* y2* x* -- )
+	.Screen/x DEO2
+	.Screen/y ;<draw-line>/port STA
+	( >> )
+
+@<draw-line> ( v1* v2* -- )
+	LTH2k ?{ SWP2 }
+	STH2
+	&>loop ( -- )
+		[ LIT2 00 &spacing 01 ] ADD2
+		DUP2 DUP2r STH2r LTH2 ?{ POP2 POP2r JMP2r }
+		DUP2 [ LIT &port $1 ] DEO2
+		.neralie/color LDZ .Screen/pixel DEO
+		!&>loop
+
+@scale ( 0..10000* -- 0..65535* )
+	DUP2 #8db8 mul2hi
+	SWP2 #0006 MUL2 ADD2
+	JMP2r
+
+@modf ( dividend* divisor* SUB2 remainder* quotient* )
+	DIV2k STH2k MUL2 SUB2 STH2r JMP2r
+
+@mul2hi ( a* b* -- product-top-16-bits* )
+	;mul/bhi STA2 ;mul/ahi STA2
+	#0000
+	[ LIT2 00 -mul/alo ] LDZ [ LIT2 00 -mul/blo ] LDZ MUL2
+	POP
+	[ LIT2 00 -mul/ahi ] LDZ [ LIT2 00 -mul/blo ] LDZ MUL2 /adc
+	[ LIT2 00 -mul/alo ] LDZ [ LIT2 00 -mul/bhi ] LDZ MUL2 /adc
+	POP
+	[ LIT2 00 -mul/ahi ] LDZ [ LIT2 00 -mul/bhi ] LDZ MUL2 ADD2
+	JMP2r
+	&adc ( 31..24 a* b* -- 31..24 sum* )
+	OVR2 ADD2 SWP2 OVR2
+	GTH2 ?{ JMP2r }
+	ROT INC ROT ROT
+	JMP2r
+
+(
+@|assets )
+
+@font-numbers [
+	7cc6 ced6 e6c6 7c00 1838 1818 1818 7e00 3c66 063c 6066 7e00
+	3c66 061c 0666 3c00 1c3c 6ccc fe0c 1e00 7e62 607c 0666 3c00
+	3c66 607c 6666 3c00 7e66 060c 1818 1800 3c66 663c 6666 3c00
+	3c66 663e 0666 3c00 7cc6 ced6 e6c6 7c00 0018 1800 1818 0000 ]
+
+@font-letters [
+	183c 6666 7e66 6600 fc66 667c 6666 fc00 3c66 c0c0 c066 3c00
+	f86c 6666 666c f800 fe62 6878 6862 fe00 fe62 6878 6860 f000
+	3c66 c0c0 ce66 3e00 6666 667e 6666 6600 7e18 1818 1818 7e00
+	1e0c 0c0c cccc 7800 e666 6c78 6c66 e600 f060 6060 6266 fe00
+	c6ee fefe d6c6 c600 c6e6 f6de cec6 c600 386c c6c6 c66c 3800
+	fc66 667c 6060 f000 386c c6c6 dacc 7600 fc66 667c 6c66 e600
+	3c66 603c 0666 3c00 7e5a 1818 1818 3c00 6666 6666 6666 3c00
+	6666 6666 663c 1800 c6c6 c6d6 feee c600 c66c 3838 6cc6 c600
+	6666 663c 1818 3c00 fec6 8c18 3266 fe00 0018 187e 1818 0000 ]
+
