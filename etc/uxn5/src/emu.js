@@ -71,9 +71,9 @@ function Emu ()
 	}
 
 	this.pointer_moved = (event) => {
-		const bounds = emulator.bgCanvas.getBoundingClientRect()
-		const x = emulator.bgCanvas.width * (event.clientX - bounds.left) / bounds.width
-		const y = emulator.bgCanvas.height * (event.clientY - bounds.top) / bounds.height
+		const bounds = this.screen.bgCanvas.getBoundingClientRect()
+		const x = this.screen.bgCanvas.width * (event.clientX - bounds.left) / bounds.width
+		const y = this.screen.bgCanvas.height * (event.clientY - bounds.top) / bounds.height
 		this.mouse.move(x, y)
 		event.preventDefault()
 	}
@@ -98,16 +98,15 @@ function Emu ()
 	}
 
 	this.set_zoom = (zoom) => {
-		let content_el = document.getElementById("content")
-		let screen_el = document.getElementById("screen")
-		screen_el.style.marginLeft = -(this.screen.width / 2 * zoom) + "px"
-		screen_el.style.width = (this.screen.width * zoom) + "px"
-		screen_el.style.height = (this.screen.height * zoom) + "px"
-		emulator.bgCanvas.style.width = emulator.fgCanvas.style.width = (this.screen.width * zoom) + "px"
+		this.screen.el.style.marginLeft = -(this.screen.width / 2 * zoom) + "px"
+		this.screen.el.style.width = (this.screen.width * zoom) + "px"
+		this.screen.el.style.height = (this.screen.height * zoom) + "px"
+		this.screen.bgCanvas.style.width = this.screen.fgCanvas.style.width = (this.screen.width * zoom) + "px"
 		this.zoom = zoom
 	}
 
 	this.init = () => {
+		this.screen.init()
 		return this.uxn.init(this);
 	}
 }

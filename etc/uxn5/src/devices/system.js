@@ -42,10 +42,12 @@ function System(emu)
 
 	this.metadata = (address) => {
 		let str = ""
-		/* body */ address++;
-		while(emu.uxn.ram[address]){
-			str += String.fromCharCode(emu.uxn.ram[address++]);
+		if(!emu.uxn.ram[address++]) {
+			while(emu.uxn.ram[address]){
+				let byte = emu.uxn.ram[address++]
+				str += byte == 0xa ? "<br />" : String.fromCharCode(byte);
+			}
+			document.getElementById("metarom").innerHTML = str
 		}
-		console.log(str)
 	}
 }

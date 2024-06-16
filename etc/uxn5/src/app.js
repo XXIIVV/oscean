@@ -1,30 +1,26 @@
 'use strict'
 
-let isEmbed = window.self !== window.top;
-
+const content_el = document.getElementById("content")
+const share_el = document.getElementById("share")
 const emulator = new Emu()
 
+/* Detect Embed */
+let isEmbed = window.self !== window.top;
 if (!isEmbed) {
 	document.body.className = "";
 }
 
-document.getElementById("content").style.display = "block"
+/* misc */
 
-emulator.bgCanvas = document.getElementById("bgcanvas");
-emulator.fgCanvas = document.getElementById("fgcanvas");
-emulator.screen.bgctx = emulator.bgCanvas.getContext("2d", {"willReadFrequently": true})
-emulator.screen.fgctx = emulator.fgCanvas.getContext("2d", {"willReadFrequently": true})
-emulator.screen.init()
-
-const share = new ShareView(document.getElementById("share"));
-const target_fps = 60;
+content_el.style.display = "block"
+const share = new ShareView(share_el);
 
 emulator.init().then(() => {
 	emulator.console.write_el = document.getElementById("console_std")
 	emulator.console.error_el = document.getElementById("console_err")
-	document.getElementById("screen").addEventListener("pointermove", emulator.pointer_moved)
-	document.getElementById("screen").addEventListener("pointerdown", emulator.pointer_down)
-	document.getElementById("screen").addEventListener("pointerup", emulator.pointer_up)
+	emulator.screen.el.addEventListener("pointermove", emulator.pointer_moved)
+	emulator.screen.el.addEventListener("pointerdown", emulator.pointer_down)
+	emulator.screen.el.addEventListener("pointerup", emulator.pointer_up)
 	window.addEventListener("keydown", emulator.controller.keyevent);
 	window.addEventListener("keyup", emulator.controller.keyevent);
 
@@ -47,7 +43,7 @@ emulator.init().then(() => {
 
 	setInterval(() => {
 		window.requestAnimationFrame(step);
-	}, 1000 / target_fps);
+	}, 1000 / 60);
 
 	if(!isEmbed) {
 		// Support dropping files
@@ -81,7 +77,7 @@ emulator.init().then(() => {
 	if (m) {
 		let rom = b64decode(m[2]);
 		if (!m[1]) {
-		rom = decodeUlz(rom);
+			rom = decodeUlz(rom);
 		}
 		loadROM(rom);
 	}
@@ -89,14 +85,9 @@ emulator.init().then(() => {
 });
 
 function loadROM(rom) {
-	emulator.bgCanvas.style.width = ''
 	emulator.set_zoom(1)
 	emulator.uxn.load(rom).eval(0x0100);
 	share.setROM(rom);
-	}
-
-function toggle_zoom() {
-	emulator.toggle_zoom()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -107,24 +98,24 @@ function ShareView(el) {
 	let rom;
 
 	async function toggleSharePopup() {
-	if (popupEl.style.display === "none") {
-	popupEl.style.display = "block";
-	inputEl.value = "...";
-	copyButtonEl.disabled = true;
-	const hash = "#r=" + await b64encode(encodeUlz(rom));
-	inputEl.value = `${window.location.protocol}//${window.location.host}${window.location.pathname}${window.location.search}${hash}`;
-	copyButtonEl.disabled = false;
-	} else {
-	popupEl.style.display = "none";
-	}
+		if (popupEl.style.display === "none") {
+			popupEl.style.display = "block";
+			inputEl.value = "...";
+			copyButtonEl.disabled = true;
+			const hash = "#r=" + await b64encode(encodeUlz(rom));
+			inputEl.value = `${window.location.protocol}//${window.location.host}${window.location.pathname}${window.location.search}${hash}`;
+			copyButtonEl.disabled = false;
+		} else {
+			popupEl.style.display = "none";
+		}
 	}
 
 	const shareButtonEl = document.createElement("button");
 	shareButtonEl.disabled = true;
 	shareButtonEl.innerHTML = `Share`
 	shareButtonEl.addEventListener("click", (ev) => {
-	ev.preventDefault();
-	toggleSharePopup();
+		ev.preventDefault();
+		toggleSharePopup();
 	});
 	el.appendChild(shareButtonEl);
 
@@ -138,18 +129,18 @@ function ShareView(el) {
 	popupEl.appendChild(inputEl);
 	const copyButtonEl = document.createElement("button");
 	copyButtonEl.addEventListener("click", async (ev) => {
-	ev.preventDefault();
-	await navigator.clipboard.writeText(inputEl.value);
-	toggleSharePopup();
+		ev.preventDefault();
+		await navigator.clipboard.writeText(inputEl.value);
+		toggleSharePopup();
 	});
 	copyButtonEl.innerHTML = `Copy`
 	popupEl.appendChild(copyButtonEl);
 
 	this.setROM = (v) => {
-	rom = v;
-	shareButtonEl.disabled = false;
-	popupEl.style.display = "none";
-		document.getElementById("share").style.display = "initial"
+		rom = v;
+		shareButtonEl.disabled = false;
+		popupEl.style.display = "none";
+		share_el.style.display = "initial"
 	}
 }
 

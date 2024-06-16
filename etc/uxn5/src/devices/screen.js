@@ -13,12 +13,13 @@ function Screen(emu)
 	this.colors = [{r: 0, g: 0, b:0}];
 
 	this.init = () => {
-		if (!isEmbed) {
-			this.set_size(512, 320);
-		}
-		else{
-			this.set_size(window.innerWidth, window.innerHeight);
-		}
+		this.el = document.getElementById("screen")
+		this.bgCanvas = document.getElementById("bgcanvas");
+		this.fgCanvas = document.getElementById("fgcanvas");
+		this.bgctx = this.bgCanvas.getContext("2d", {"willReadFrequently": true})
+		this.fgctx = this.fgCanvas.getContext("2d", {"willReadFrequently": true})
+		if (!isEmbed) { this.set_size(512, 320); }
+		else{ this.set_size(window.innerWidth, window.innerHeight); }
 	}
 
 	this.blank_screen = () => {
@@ -104,8 +105,8 @@ function Screen(emu)
 	}
 
 	this.set_width = (w) => {
-		document.getElementById("screen").style.marginLeft = -(w/2) + "px"
-		document.getElementById("screen").style.width = w + "px"
+		this.el.style.marginLeft = -(w/2) + "px"
+		this.el.style.width = w + "px"
 		this.fgctx.canvas.width = w;
 		this.bgctx.canvas.width = w;
 		this.width = w;
@@ -113,7 +114,7 @@ function Screen(emu)
 	}
 
 	this.set_height = (h) => {
-		document.getElementById("screen").style.height = h + "px"
+		this.el.style.height = h + "px"
 		this.bgctx.canvas.height = h;
 		this.fgctx.canvas.height = h;
 		this.height = h;
