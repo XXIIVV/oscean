@@ -31,23 +31,24 @@ function Emu ()
 		this.uxn.dev[port] = val
 		switch(port) {
 		// System
+		case 0x07: /* metadata */ this.system.metadata(peek16(this.uxn.dev, 0x06)); break;
 		case 0x03: this.system.expansion(peek16(this.uxn.dev, 0x02)); break;
 		case 0x08:
 		case 0x09:
 		case 0x0a:
 		case 0x0b:
-		case 0x0c: 
+		case 0x0c:
 		case 0x0d: this.screen.update_palette(); break;
 		case 0x0f: console.warn("Program ended."); break;
 		// Console
 		case 0x18: this.console.write(val); break;
 		case 0x19: this.console.error(val); break;
 		// Screen
-		case 0x22, 0x23: 
+		case 0x22, 0x23:
 			this.screen.set_width(peek16(this.uxn.dev, 0x22))
 			this.set_zoom(this.zoom)
 			break;
-		case 0x24, 0x25: 
+		case 0x24, 0x25:
 			this.screen.set_height(peek16(this.uxn.dev, 0x24))
 			this.set_zoom(this.zoom)
 			break;
@@ -89,7 +90,6 @@ function Emu ()
 	}
 
 	this.screen_callback = () => {
-		console.log("callback")
 		this.uxn.eval(peek16(this.uxn.dev, 0x20))
 	}
 

@@ -39,4 +39,13 @@ function System(emu)
 				emu.uxn.ram[dst + ((dst_addr + i) & 0xffff)] = emu.uxn.ram[src + ((src_addr + i) & 0xffff)];
 		}
 	}
+
+	this.metadata = (address) => {
+		let str = ""
+		/* body */ address++;
+		while(emu.uxn.ram[address]){
+			str += String.fromCharCode(emu.uxn.ram[address++]);
+		}
+		console.log(str)
+	}
 }

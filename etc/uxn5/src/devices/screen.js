@@ -47,9 +47,9 @@ function Screen(emu)
 		else {
 			a? ctx.fillRect(x, y, 1, 1) : ctx.clearRect(x, y, 1, 1)
 		}
-		if (move & 0x1) 
+		if (move & 0x1)
 			poke16(emu.uxn.dev, 0x28, x + 1);
-		if (move & 0x2) 
+		if (move & 0x2)
 			poke16(emu.uxn.dev, 0x2a, y + 1);
 	}
 
@@ -86,7 +86,7 @@ function Screen(emu)
 						imDat.data[imdati+3] = (!b && (ctrl & 0x40)) ? 0 : 255 // alpha
 					}
 				}
-			}	
+			}
 			ctx.putImageData(imDat, x1, y1);
 			ptr += addr_incr;
 		}
