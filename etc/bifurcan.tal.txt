@@ -5,14 +5,13 @@
 |90 @Mouse &vector $2 &x $2 &y $2 &state $1 &wheel $1
 |c0 @DateTime &year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
 |80 @Controller &vector $2 &button $1 &key $1
-
-|0000
+|000
 
 	@last $1
 	@style $1
 	@center &x $2 &y $2
 
-|0100
+|100
 
 @on-reset ( -> )
 	( | theme )
@@ -24,8 +23,8 @@
 	;on-mouse .Mouse/vector DEO2
 	;on-button .Controller/vector DEO2
 	( | find center )
-	.Screen/width DEI2 #01 SFT2 .center/x STZ2
-	.Screen/height DEI2 #01 SFT2 .center/y STZ2
+	.Screen/width DEI2 #01 SFT2 #33 SFT2 .center/x STZ2
+	.Screen/height DEI2 #01 SFT2 #33 SFT2 .center/y STZ2
 	( | background )
 	;tiles <cover-pattern>
 	<redraw>
@@ -54,6 +53,9 @@
 	;tiles [ LIT2 00 -style ] LDZ #40 SFT ADD2 <cover-pattern>
 	( >> )
 
+(
+@|drawing )
+
 @<redraw> ( -- )
 	( | hrs )
 	[ .center/x LDZ2 #0018 SUB2 ] [ .center/y LDZ2 #0048 SUB2 ] .DateTime/hour DEI #0a DIV <draw-number>
@@ -70,7 +72,7 @@
 	,&y STR2
 	,&x STR2
 	#0f00
-	&loop ( -- )
+	&>loop ( -- )
 		( save-x ) DUP #03 DIVk MUL SUB #00 SWP #30 SFT2 [ LIT2 &x $2 ] ADD2 .Screen/x DEO2
 		( save-y ) DUP #03 DIV #00 SWP #30 SFT2 [ LIT2 &y $2 ] ADD2 .Screen/y DEO2
 		( get digit* ) DUP [ LIT &digit $1 ] DUP ADD #00 SWP ;digits ADD2 LDA2
@@ -78,22 +80,22 @@
 		( set tile ) #30 SFT2 ;tiles ADD2
 		( set style ) .style LDZ #40 SFT #00 SWP ADD2 .Screen/addr DEO2
 		( draw ) [ LIT2 01 -Screen/sprite ] DEO
-		INC GTHk ?&loop
+		INC GTHk ?&>loop
 	POP2 JMP2r
 
 @<cover-pattern> ( addr* -- )
 	.Screen/addr DEO2
-	.Screen/height DEI2 #03 SFT2 NIP ,&h STR
-	.Screen/width DEI2 #03 SFT2 NIP ,&w STR
-	[ LIT &h $1 ] #00
-	&ver ( -- )
+	.Screen/height DEI2 #03 SFT2 ,&h STR
+	POP .Screen/width DEI2 #03 SFT2 ,&w STR
+	POP [ LIT &h $1 ] #00
+	&>ver ( -- )
 		#00 OVR #30 SFT2 .Screen/y DEO2
 		[ LIT &w $1 ] #00
-	&hor ( -- )
-		#00 OVR #30 SFT2 .Screen/x DEO2
-		[ LIT2 01 -Screen/sprite ] DEO
-		INC GTHk ?&hor
-	POP2 INC GTHk ?&ver
+		&>hor ( -- )
+			#00 OVR #30 SFT2 .Screen/x DEO2
+			[ LIT2 01 -Screen/sprite ] DEO
+			INC GTHk ?&>hor
+		POP2 INC GTHk ?&>ver
 	POP2 JMP2r
 
 @<update-cursor> ( color addr* -- )
@@ -103,12 +105,16 @@
 	.Mouse/x DEI2 ,<draw-cursor>/x STR2
 	.Mouse/y DEI2 ,<draw-cursor>/y STR2
 	.Screen/addr DEO2
+	( >> )
 
 @<draw-cursor> ( color -- )
 	[ LIT2 &x $2 ] .Screen/x DEO2
 	[ LIT2 &y $2 ] .Screen/y DEO2
 	.Screen/sprite DEO
 	JMP2r
+
+(
+@|assets )
 
 @cursor-icn [ 80c0 e0f0 f8e0 1000 ]
 
