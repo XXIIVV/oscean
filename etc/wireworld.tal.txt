@@ -1,0 +1,231 @@
+( wireworld )
+
+|00 @System &vector $2 &wst $1 &rst $1 &pad $4 &r $2 &g $2 &b $2 &debug $1 &halt $1
+|20 @Screen &vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
+|80 @Controller &vector $2 &button $1 &key $1 &func $1
+|90 @Mouse &vector $2 &x $2 &y $2 &state $1 &pad $3 &modx $2 &mody $2
+|000
+
+	@color $1
+	@pointer &x $2 &y $2
+	@timer &play $1
+
+(
+@|vectors )
+
+|100
+
+@on-reset ( -> )
+	( | theme )
+	#07fe .System/r DEO2
+	#07c6 .System/g DEO2
+	#0fc6 .System/b DEO2
+	( | size )
+	#0200 .Screen/width DEO2
+	#0100 .Screen/height DEO2
+	( | vectors )
+	;on-frame .Screen/vector DEO2
+	;on-mouse .Mouse/vector DEO2
+	;on-button .Controller/vector DEO2
+	( | setup )
+	[ LIT2 01 -timer/play ] STZ
+	#01 <set-color>
+	( | start )
+	;world ;get-addr/current STA2
+	#1000 ;run/future STA2
+	( | base world )
+	#01 #0010 #0010 make-addr STA
+	#01 #0011 #000f make-addr STA
+	#02 #0012 #000f make-addr STA
+	#03 #0013 #000f make-addr STA
+	#01 #0014 #0010 make-addr STA
+	#01 #0011 #0011 make-addr STA
+	#01 #0012 #0011 make-addr STA
+	#01 #0013 #0011 make-addr STA
+	#01 #0014 #0010 make-addr STA
+	#01 #0015 #0010 make-addr STA
+	#01 #0016 #0010 make-addr STA
+	( | up )
+	#01 #0017 #000f make-addr STA
+	#01 #0018 #000e make-addr STA
+	#01 #0019 #000d make-addr STA
+	#01 #0019 #000c make-addr STA
+	#01 #0018 #000b make-addr STA
+	#01 #0019 #000b make-addr STA
+	#01 #001a #000b make-addr STA
+	#01 #0018 #000a make-addr STA
+	#01 #001a #000a make-addr STA
+	#01 #0019 #0009 make-addr STA
+	#01 #0019 #0008 make-addr STA
+	#01 #0019 #0007 make-addr STA
+	( | down )
+	#01 #0017 #0011 make-addr STA
+	#01 #0018 #0012 make-addr STA
+	#01 #0019 #0013 make-addr STA
+	#01 #0019 #0014 make-addr STA
+	#01 #0018 #0015 make-addr STA
+	#01 #001a #0015 make-addr STA
+	#01 #0018 #0016 make-addr STA
+	#01 #0019 #0016 make-addr STA
+	#01 #001a #0016 make-addr STA
+	#01 #0019 #0017 make-addr STA
+	#01 #0019 #0018 make-addr STA
+	#01 #0019 #0019 make-addr STA
+	<redraw>
+	BRK
+
+@on-frame ( -> )
+	.Mouse/state DEI #00 EQU [ JMP BRK ] .timer/play LDZ [ JMP BRK ]
+	( | every 4th )
+	[ LIT &f $1 ] INCk ,&f STR
+	#03 AND ?{ run }
+	BRK
+
+@on-mouse ( -> )
+	;pointer-icn .Screen/addr DEO2
+	( | clear last cursor )
+	.pointer/x LDZ2 .Screen/x DEO2
+	.pointer/y LDZ2 .Screen/y DEO2
+	[ LIT2 40 -Screen/sprite ] DEO
+	( | draw new cursor )
+	.Mouse/x DEI2 DUP2 .pointer/x STZ2
+	.Screen/x DEO2
+	.Mouse/y DEI2 DUP2 .pointer/y STZ2
+	.Screen/y DEO2
+	[ LIT2 40 -color ] LDZ ADD .Screen/sprite DEO
+	( | paint )
+	.Mouse/state DEI ?{ BRK }
+	.Mouse/y DEI2 #03 SFT2 NIP #02 NEQ ?&no-menu
+	.Mouse/x DEI2 #03 SFT2 NIP
+	( ) DUP #02 NEQ ?{ #01 <set-color> }
+	( ) DUP #03 NEQ ?{ #02 <set-color> }
+	( ) DUP #04 NEQ ?{ #03 <set-color> }
+	( ) DUP #06 NEQ ?{
+		.timer/play LDZk #00 EQU SWP STZ
+		[ LIT2 00 -Mouse/state ] DEO
+		<draw-ui> }
+	POP
+	&no-menu ( color )
+	.color LDZ .Mouse/state DEI #01 GTH #00 EQU MUL
+	( cell* ) .Mouse/x DEI2 #03 SFT2 .Mouse/y DEI2 #03 SFT2 make-addr STA
+	<redraw>
+	BRK
+
+@on-button ( -> )
+	.Controller/button DEI
+	( ) [ #01 ] NEQk NIP ?{ #01 <set-color> }
+	( ) [ #02 ] NEQk NIP ?{ #02 <set-color> }
+	( ) [ #04 ] NEQk NIP ?{ #03 <set-color> }
+	( ) [ #08 ] NEQk NIP ?{ ;world #2000 <mclr>
+		<redraw> }
+	POP
+	( | space )
+	.Controller/key DEI #20 NEQ ?{
+		.timer/play LDZk #00 EQU SWP STZ }
+	BRK
+
+(
+@|core )
+
+@<set-color> ( color -- )
+	.color STZ
+	.pointer/x LDZ2 .Screen/x DEO2
+	.pointer/y LDZ2 .Screen/y DEO2
+	;pointer-icn .Screen/addr DEO2
+	[ LIT2 40 -color ] LDZ ADD .Screen/sprite DEO
+	[ LIT2 00 -Mouse/state ] DEO
+	JMP2r
+
+@run ( -- )
+	#2000
+	&>ver ( -- )
+		STHk #4000
+		&>hor ( -- )
+			( x,y ) DUP STHkr
+			( cell ) DUP2 get-addr STH2k LDA
+			( transform ) transform STH2r [ LIT2 &future $2 ] ADD2 STA
+			INC GTHk ?&>hor
+		POP2 POPr INC GTHk ?&>ver
+	POP2
+	( | Swap worlds )
+	;get-addr/current LDA2k ;run/future LDA2 STH2k ADD2 SWP2 STA2
+	#0000 STH2r SUB2 ;run/future STA2
+	!<redraw>
+
+@get-addr ( x y -- addr* )
+	#00 SWP #60 SFT2 ROT #00 SWP ADD2 [ LIT2 &current $2 ] ADD2 JMP2r
+
+@transform ( xy cell -- cell )
+	DUP ?{ NIP NIP JMP2r }
+	DUP #03 NEQ ?{ POP POP2 #02 JMP2r }
+	DUP #02 NEQ ?{ POP POP2 #01 JMP2r }
+	DUP #01 NEQ ?{
+		POP LITr 00 DUP2 #01 SUB get-addr
+		( tl ) #0001 SUB2 LDAk #03 [ NEQ JMP INCr ]
+		( tc ) INC2 LDAk #03 [ NEQ JMP INCr ]
+		( tr ) INC2 LDA #03 [ NEQ JMP INCr ] DUP2 get-addr
+		( ml ) #0001 SUB2 LDAk #03 [ NEQ JMP INCr ]
+		( mr ) INC2 INC2 LDA #03 [ NEQ JMP INCr ] INC get-addr
+		( bl ) #0001 SUB2 LDAk #03 [ NEQ JMP INCr ]
+		( bc ) INC2 LDAk #03 [ NEQ JMP INCr ]
+		( br ) INC2 LDA #03 [ NEQ JMP INCr ]
+		( .. ) STHkr #02 EQU STHr #01 EQU ORA DUP ADD INC JMP2r }
+	( unknown ) NIP NIP JMP2r
+
+@<mclr> ( addr* len* -- )
+	OVR2 ADD2 SWP2
+	&>loop ( -- )
+		STH2k #00 STH2r STA
+		INC2 GTH2k ?&>loop
+	POP2 POP2 JMP2r
+
+@make-addr ( x* y* -- addr* )
+	#60 SFT2 ADD2 ;get-addr/current LDA2 ADD2 JMP2r
+
+(
+@|drawing )
+
+@<redraw> ( -- )
+	;cell-icn .Screen/addr DEO2
+	[ LIT2 01 -Screen/auto ] DEO
+	#0000 DUP2 .Screen/x DEO2
+	.Screen/y DEO2
+	#0800 #0000
+	&>l ( -- )
+		( x ) DUP2 #003f AND2
+		( y ) OVR2 #06 SFT2 make-addr LDA .Screen/sprite DEO
+		INCk #3f AND ?{
+			#0000 .Screen/x DEO2
+			.Screen/y DEI2 #0008 ADD2 .Screen/y DEO2 }
+		INC2 GTH2k ?&>l
+	POP2 POP2
+
+@<draw-ui> ( -- )
+	( colors ) [ LIT2 01 -Screen/auto ] DEO
+	#0010 DUP2 .Screen/x DEO2
+	.Screen/y DEO2
+	;cell-icn .Screen/addr DEO2
+	[ LIT2 01 -Screen/sprite ] DEO
+	[ LIT2 02 -Screen/sprite ] DEO
+	[ LIT2 03 -Screen/sprite ] DEO
+	( | toggle )
+	#0030 .Screen/x DEO2
+	;toggle-icn [ LIT2 00 -timer/play ] LDZ #30 SFT2 ADD2 .Screen/addr DEO2
+	[ LIT2 01 -Screen/sprite ] DEO
+	JMP2r
+
+(
+@|assets )
+
+@pointer-icn [ 80c0 e0f0 f8e0 1000 ]
+
+@cell-icn [ 7cfe fefe fefe 7c00 ]
+
+@toggle-icn [
+	6666 6666 6666 6600 4666 767e 7666 4600 ]
+
+@world ( I live in the atom with the happy protons and neutrons. )
+	( I'm also so negative all the freakin time. )
+	( What do I do? )
+	( How do I find peace? )
+
