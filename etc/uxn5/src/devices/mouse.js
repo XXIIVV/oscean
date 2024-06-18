@@ -1,6 +1,7 @@
 'use strict'
 
-function Mouse(emu) {
+function Mouse(emu)
+{
 	this.down = (state) => {
 		emu.uxn.dev[0x96] = state
 		emu.uxn.eval(peek16(emu.uxn.dev, 0x90))

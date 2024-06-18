@@ -1,6 +1,5 @@
 'use strict'
 
-
 function Screen(emu)
 {
 	const blending = [
@@ -101,7 +100,7 @@ function Screen(emu)
 						imDat.data[imdati] = c.r
 						imDat.data[imdati+1] = c.g
 						imDat.data[imdati+2] = c.b
-						imDat.data[imdati+3] = (!b && (ctrl & 0x40)) ? 0 : 255 // alpha
+						imDat.data[imdati+3] = (!b && (ctrl & 0x40)) ? 0 : 0xff // alpha
 					}
 				}
 			}
@@ -149,7 +148,7 @@ function Screen(emu)
 			case 0x23: return this.width & 0xff;
 			case 0x24: return this.height >> 8;
 			case 0x25: return this.height & 0xff;
-			default: return emulator.uxn.dev[port];
+			default: return emu.uxn.dev[port];
 		}
 	}
 

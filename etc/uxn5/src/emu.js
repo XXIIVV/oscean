@@ -137,6 +137,9 @@ function poke16(mem, addr, val) {
 // Sharing
 ////////////////////////////////////////////////////////////////////////////////
 
+const share_el = document.getElementById("share")
+const share = new ShareView(share_el);
+
 function ShareView(el) {
 	let rom;
 

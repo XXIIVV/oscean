@@ -1,4 +1,5 @@
 'use strict'
 
-function FileDvc(emu) {
+function FileDvc(emu)
+{
 }

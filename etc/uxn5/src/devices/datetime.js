@@ -1,14 +1,7 @@
 'use strict'
 
-function doty() {
-	let now = new Date();
-	let start = new Date(now.getFullYear(), 0, 0);
-	let diff = (now - start) + ((start.getTimezoneOffset() - now.getTimezoneOffset()) * 60 * 1000);
-	let oneDay = 1000 * 60 * 60 * 24;
-	return Math.floor(diff / oneDay) - 1;
-}
-
-function DateTime(emu) {
+function DateTime(emu)
+{
 	this.dei = (port) => {
 		const now = new Date();
 		switch (port) {
@@ -25,5 +18,13 @@ function DateTime(emu) {
 			// case 0xca https://stackoverflow.com/a/56429156
 		}
 		return 1;
-	};
+	}
+
+	function doty() {
+		let now = new Date()
+		let start = new Date(now.getFullYear(), 0, 0)
+		let diff = (now - start) + ((start.getTimezoneOffset() - now.getTimezoneOffset()) * 60 * 1000)
+		let oneDay = 1000 * 60 * 60 * 24
+		return Math.floor(diff / oneDay) - 1
+	}
 }

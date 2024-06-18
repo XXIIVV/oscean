@@ -1,6 +1,7 @@
 'use strict'
 
-function Controller(emu) {
+function Controller(emu)
+{
 	this.state = 0
 
 	this.init = () => {
