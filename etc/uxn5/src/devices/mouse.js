@@ -16,4 +16,23 @@ function Mouse(emu) {
 		poke16(emu.uxn.dev, 0x94, y)
 		emu.uxn.eval(peek16(emu.uxn.dev, 0x90))
 	}
+
+	this.on_move = (event) => {
+		const bounds = emu.screen.bgCanvas.getBoundingClientRect()
+		const x = emu.screen.bgCanvas.width * (event.clientX - bounds.left) / bounds.width
+		const y = emu.screen.bgCanvas.height * (event.clientY - bounds.top) / bounds.height
+		this.move(x, y)
+		event.preventDefault()
+	}
+
+	this.on_down = (event) => {
+		this.on_move(event)
+		this.down(event.buttons)
+		event.preventDefault()
+	}
+
+	this.on_up = (event) => {
+		this.up(event.buttons)
+		event.preventDefault();
+	}
 }

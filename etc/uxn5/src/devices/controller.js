@@ -1,8 +1,14 @@
 'use strict'
 
 function Controller(emu) {
-	this.keys = 0
-	this.keyevent = (event) => {
+	this.state = 0
+
+	this.init = () => {
+		window.addEventListener("keydown", this.on_keybutton)
+		window.addEventListener("keyup", this.on_keybutton)	
+	}
+
+	this.on_keybutton = (event) => {
 		let mask = 0;
 		switch (event.keyCode) {
 		case 17: // Control
@@ -32,7 +38,7 @@ function Controller(emu) {
 		}
 		let charCode = 0;
 		if (event.type == "keydown") {
-				this.keys |= mask;
+			this.state |= mask;
 			if (event.key.length == 1) {
 				charCode = event.key.charCodeAt(0);
 			} else if (mask == 0 && event.keyCode < 20) {
@@ -40,12 +46,12 @@ function Controller(emu) {
 			}
 			emu.uxn.dev[0x83] = charCode;
 		} else {
-			this.keys &= ~mask;
+			this.state &= ~mask;
 		}
 		if(event.target == window.document.body) {
 			event.preventDefault(); 
 		}
-		emu.uxn.dev[0x82] = this.keys;
+		emu.uxn.dev[0x82] = this.state;
 		emu.uxn.eval(peek16(emu.uxn.dev, 0x80))
 	}
 }

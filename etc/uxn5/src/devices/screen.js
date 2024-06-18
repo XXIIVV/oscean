@@ -1,25 +1,42 @@
 'use strict'
 
-const blending = [
-	[0, 0, 0, 0, 1, 0, 1, 1, 2, 2, 0, 2, 3, 3, 3, 0],
-	[0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3],
-	[1, 2, 3, 1, 1, 2, 3, 1, 1, 2, 3, 1, 1, 2, 3, 1],
-	[2, 3, 1, 2, 2, 3, 1, 2, 2, 3, 1, 2, 2, 3, 1, 2]];
 
 function Screen(emu)
 {
+	const blending = [
+		[0, 0, 0, 0, 1, 0, 1, 1, 2, 2, 0, 2, 3, 3, 3, 0],
+		[0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3],
+		[1, 2, 3, 1, 1, 2, 3, 1, 1, 2, 3, 1, 1, 2, 3, 1],
+		[2, 3, 1, 2, 2, 3, 1, 2, 2, 3, 1, 2, 2, 3, 1, 2]];
+
+	this.zoom = 1
 	this.width = 512
 	this.height = 320
 	this.colors = [{r: 0, g: 0, b:0}];
-
+	
 	this.init = () => {
 		this.el = document.getElementById("screen")
 		this.bgCanvas = document.getElementById("bgcanvas");
 		this.fgCanvas = document.getElementById("fgcanvas");
 		this.bgctx = this.bgCanvas.getContext("2d", {"willReadFrequently": true})
 		this.fgctx = this.fgCanvas.getContext("2d", {"willReadFrequently": true})
-		if (!isEmbed) { this.set_size(512, 320); }
-		else{ this.set_size(window.innerWidth, window.innerHeight); }
+		this.el.addEventListener("pointermove", emu.mouse.on_move)
+		this.el.addEventListener("pointerdown", emu.mouse.on_down)
+		this.el.addEventListener("pointerup", emu.mouse.on_up)
+		if (emu.embed) { this.set_size(window.innerWidth, window.innerHeight) }
+		else{ this.set_size(512, 320) }
+	}
+
+	this.toggle_zoom = () => {
+		this.set_zoom(this.zoom == 2 ? 1 : 2)
+	}
+
+	this.set_zoom = (zoom) => {
+		this.el.style.marginLeft = -(this.width / 2 * zoom) + "px"
+		this.el.style.width = (this.width * zoom) + "px"
+		this.el.style.height = (this.height * zoom) + "px"
+		this.bgCanvas.style.width = this.fgCanvas.style.width = (this.width * zoom) + "px"
+		this.zoom = zoom
 	}
 
 	this.blank_screen = () => {
