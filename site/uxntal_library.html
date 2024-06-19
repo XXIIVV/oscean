@@ -238,24 +238,21 @@
 <h2>I have reordered time. I have turned the world upside down, and I have done
 it all for you!</h2>
 
-<h3>Self-Generating</h3>
+<p>This program will emit its own bytecode when run:</p>
 
-<p>The following program will emit its own bytecode when run:</p>
-<pre>
+<!-- a001 0fa0 0100 9480 1817 21aa 20ff f7 -->
+
+<div class="codeview">
+<pre class='src'>
 @q ;&end ;q &l LDAk #18 DEO INC2 GTH2k ?&l &end
-
-<i>$ uxncli gen.rom > gen-self.rom</i>
-
-<i>a001 0fa0 0100 9480 1817 21aa 20ff f7</i>
 </pre>
+<pre class='cmd'>uxnasm src.tal seed.rom && uxncli seed.rom > res.rom</pre>
+</div>
 
-<img src='../media/refs/the_all_is_one.png' width='120'/>
+<p>This program will emit a second program that emits its own bytecode as
+hexadecimal ascii characters, which is also a valid program source:</p>
 
-<h3>Self-Printing</h3>
-
-<p>The following program will emit a program that emits its own bytecode as
-hexadecimal ascii characters, which is also valid source code:</p>
-<pre>
+<!--
 @q ( -> )
 	;end ;q
 	&l LDA2k phex #2018 DEO INC2 INC2 GTH2k ?&l
@@ -266,62 +263,69 @@ hexadecimal ascii characters, which is also valid source code:</p>
 	&c #0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
 	JMP2r
 @end
+-->
 
-<i>$ uxncli selfprint.rom</i>
-
-<i>a001 32a0 0100 b460 000b a020 1817 2121 
+<div class="codeview">
+<pre class='src'>
+a001 32a0 0100 b460 000b a020 1817 2121 
 aa20 fff2 0004 6000 0006 8004 1f60 0000 
 800f 1c06 8009 0a80 271a 1880 3018 8018 
-176c</i>
+176c
 </pre>
+<pre class='cmd'>uxnasm src.tal seed.rom && uxncli seed.rom > src.tal</pre>
+</div>
 
-<h3>Maze</h3>
+<p>This program produces exactly 1 copy of itself, names the copy "4", does not execute the copied file, and prints the number 4. It is my 19 bytes entry to  <a href='https://binary.golf/4/' target='_blank'>Binary Golf 4</a>:</p>
+
+<div class="codeview">
+<pre class='src'>
+|a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|100
+	[ LIT2 13 -File/length ] DEO2
+	INC [ LIT2 -&filename -File/name ] DEO2
+	INC SWP .File/write DEO2
+	[ LIT2 "4 18 ] DEO
+	&filename "4
+</pre>
+<pre class='cmd'>uxnasm src.tal seed.rom && uxncli seed.rom</pre>
+</div>
+
+<img src='../media/refs/the_all_is_one.png' width='120'/>
 
 <p>A small program to print the iconic Commodore 64 maze:</p>
 
-<pre>
-@maze ( -> )
-	( seed ) #c5 DEI2 ,&seed STR2
-	&w ( -- )
-		[ LIT2 "/\ ] [ LIT2 &seed &x $1 &y $1 ]
-		( rand x ) ADDk #50 SFT EOR DUP #03 SFT EOR DUP ,&x STR
-		( rand y ) SUBk #01 SFT EOR EOR DUP ,&y STR
-		( emit ) #01 AND [ JMP SWP POP ] #18 DEO !&w
+<div class="codeview">
+<pre class='src'>
+( seed ) #c5 DEI2 ,&seed STR2
+[ LIT2 "/\ ] #f800
+&>w ( -- )
+	( break ) DUP #3f AND ?{ #0a18 DEO }
+	( seed ) OVR2 [ LIT2 &seed &x $1 &y $1 ]
+	( randx ) ADDk #50 SFT EOR DUP #03 SFT EOR DUP ,&x STR
+	( randy ) SUBk #01 SFT EOR EOR DUP ,&y STR
+	( emit ) #01 AND [ LIT POP ] ADD [ #00 STR $1 ] #18 DEO
+	INC2 ORAk ?&>w
+POP2 POP2
 </pre>
+<pre class='cmd'>uxnasm src.tal res.rom && uxncli res.rom</pre>
+</div>
 
-<h3>Binary Golf 4(19 bytes)</h3>
-
-<p>Create the smallest <a href='https://binary.golf/4/' target='_blank'>self-replicating file</a> that:</p>
-<ul>
-	<li>Produces exactly 1 copy of itself.</li>
-	<li>Names the copy "4".</li>
-	<li>Does not execute the copied file.</li>
-	<li>Prints, returns, or displays the number 4.</li>
-</ul>
-
-<pre>
-[ LIT2 13 -File/length ] DEO2
-INC [ LIT2 -&filename -File/name ] DEO2
-INC SWP .File/write DEO2
-[ LIT2 "4 18 ] DEO
-&filename "4
-
-<i>$ uxncli bggp4.rom</i>
-
-<i>a013 aa37 01a0 12a8 3701 0480 ae37 a034
-1817 34</i></pre>
-
-<h3>Where Are We?</h3>
-
-<p>From anywhere during a program's execution, the location of the program
-counter can be pushed onto the working stack with the following snippet:</p>
-<pre>[ LITr 00 ] JSRr</pre>
+<q style='font-size:28px'>LITr 00 JSRr</q>
 
 <img src='../media/refs/bruno.png' alt="A young girl looks at a boy swinging from a vine. Illustration by Harry Furniss in Caroll's Sylvie and Bruno"/>
 
 <ul>
 	<li><a href='https://susam.net/self-printing-machine-code.html' target='_blank'>Self-Printing Machine Code</a></li>
 </ul>
+
+
+<style>
+	div.codeview { background:#eee; border:2px solid black; border-radius:4px }
+	div.codeview iframe { height:405px; border:0; margin:0; display:block }
+	div.codeview pre { margin:0; background:#000; color:#fff }
+	div.codeview pre.src { background:#efefef; color:black}
+	div.codeview pre a { float:right; color:#72dec2; text-decoration:none }
+</style>
 <ul></ul></main>
 <footer><a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a><a href="https://merveilles.town/@neauoire" rel="me" target="_blank"><img src="../media/icon/merveilles.svg" alt="Merveilles"/></a><a href="ethics.html"><img src="../media/icon/dreipfeile.svg" alt="NoNazis!"/></a><a href="uxn.html"><img src="../media/icon/uxn.svg" alt="UxnPowered"/></a><span> <a href="devine_lu_linvega.html">Devine Lu Linvega</a> &copy; 2008-2024</span><div class="right"><a href="about.html#license">BY-NC-SA 4.0</a><a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.svg" alt="CreativeCommons"/></a></div><hr/></footer>
 </body></html>
