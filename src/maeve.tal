@@ -30,6 +30,7 @@
 	#0a18 DEO
 	( | halt. )
 	#800f DEO
+	#010e DEO
 	BRK
 
 (
@@ -50,15 +51,29 @@
 	&>l ( -- )
 		INC2 INC2
 		( | do incoming )
-		DUP2k #0001 SUB2 LDA [ LIT "? ] EQU ?{ DUP2 <parse-links> }
-		( | do sitemap )
-		;dict/sitemap-path .File2/name DEO2
-		;dict/li-tag <w>
-		<link>
-		;dict/li-tag </w>
-		#0a <char>
+		DUP2 #0001 SUB2 LDA [ LIT "? ] EQU ?{ DUP2 <parse-links> }
 		scap/ INC2 GTH2k ?&>l
-	POP2 POP2 JMP2r
+	POP2 POP2
+	( | sitemap )
+	;dict/sitemap-path .File2/name DEO2
+	( start at home ) ;lexicon <write-children-rec>
+	POP2 JMP2r
+
+@<write-children-rec> ( addr* -- next* )
+	( | take depth )
+	LDAk STH
+	( | name )
+	;dict/li-tag <w>
+	INC2 INC2 DUP2 <link>
+	;dict/li-tag </w>
+	#0a <char>
+	scap/ INC2
+	( | children )
+	LDAk STHkr INC NEQ ?{
+		;dict/ul-tag <w>
+		<write-children-rec>
+		;dict/ul-tag </w> }
+	POPr JMP2r
 
 @<parse-links> ( src* -- )
 	DUP2 ;&term <scpy-line>
