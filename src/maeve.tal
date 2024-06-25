@@ -141,12 +141,12 @@
 	#0a <char>
 	( split ) DUP2 #0900 <cswp>
 	DUP2 set-diary
-	( event ) DUP2 #0005 ADD2 LDA [ LIT "+ ] NEQ ?{ DUP2 parse-event }
-	;dict/no-photo OVR2 #0006 ADD2 scmp ?{ DUP2 add-to-journal }
+	( event ) DUP2 #0005 ADD2 LDA [ LIT "+ ] NEQ ?{ DUP2 <parse-event> }
+	;dict/no-photo OVR2 #0006 ADD2 scmp ?{ DUP2 <add-to-journal> }
 	( eol ) scap/ INC2 scap/ INC2 !scap/
 	&log-path [ "tmp/log- &term $30 ]
 
-@parse-event ( event* -- )
+@<parse-event> ( event* -- )
 	( | add to calendar )
 	;dict/calendar-path .File2/name DEO2
 	( year ) LDAk2 ,&last LDR2 EQU2 ?{
@@ -168,7 +168,7 @@
 	#0a !<char>
 	&last "17 $1
 
-@add-to-journal ( photo* -- )
+@<add-to-journal> ( photo* -- )
 	( | limit to 20 entries )
 	[ LIT2 &len $2 ] #0020 LTH2 ?{ POP2 JMP2r }
 	;dict/journal-path .File2/name DEO2
@@ -188,7 +188,7 @@
 	#0a !<char>
 
 @get-workarea-length ( -- buf* length* )
-	;workarea #0000 OVR2 SUB2 JMP2r
+	;workarea #0000 ;workarea SUB2 JMP2r
 
 (
 @|validate )

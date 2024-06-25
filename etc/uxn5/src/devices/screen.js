@@ -31,7 +31,6 @@ function Screen(emu)
 	}
 
 	this.set_zoom = (zoom) => {
-		this.el.style.marginLeft = -(this.width / 2 * zoom) + "px"
 		this.el.style.width = (this.width * zoom) + "px"
 		this.el.style.height = (this.height * zoom) + "px"
 		this.bgCanvas.style.width = this.fgCanvas.style.width = (this.width * zoom) + "px"
@@ -121,7 +120,6 @@ function Screen(emu)
 	}
 
 	this.set_width = (w) => {
-		this.el.style.marginLeft = -(w/2) + "px"
 		this.el.style.width = w + "px"
 		this.fgctx.canvas.width = w;
 		this.bgctx.canvas.width = w;
