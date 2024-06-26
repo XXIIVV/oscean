@@ -1,0 +1,62 @@
+( 3900 saturdays )
+
+|00 @System &vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
+|20 @Screen &vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
+|c0 @DateTime &year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
+|000
+
+	@spent $2
+
+|100
+
+@on-reset ( -> )
+	( | theme )
+	#04f0 DUP2 .System/r DEO2
+	DUP2 .System/g DEO2
+	.System/b DEO2
+	( | size )
+	#0196 .Screen/width DEO2
+	#0126 .Screen/height DEO2
+	;on-frame .Screen/vector DEO2
+	( calc )
+	( years ) .DateTime/year DEI2 #07c2 SUB2 #0034 MUL2
+	( year ) .DateTime/doty DEI2 #0007 DIV2 ADD2 .spent STZ2
+	<redraw>
+	#010e DEO
+	BRK
+
+@on-frame ( -> )
+	[ LIT &f $1 ] INCk ,&f STR
+	#0f NEQ ?{
+		.spent LDZ2 <set-pen>
+		[ LIT2 00 &color $1 ] EQU DUP ,&color STR
+		#05 MUL .Screen/sprite DEO
+		[ LIT2 00 _&f ] STR }
+	BRK
+
+@<redraw> ( -- )
+	;marble-icn .Screen/addr DEO2
+	#0f3c #0000
+	&>l ( -- )
+		DUP2 <set-pen>
+		DUP2 .spent LDZ2 GTH2 INC #05 MUL .Screen/sprite DEO
+		INC2 GTH2k ?&>l
+	POP2 POP2 JMP2r
+
+@<set-pen> ( marble* -- )
+	#0034
+	( x ) DIV2k DUP2 #0001 AND2 #0003 MUL2 STH2
+	( stagger ) #0005 MUL2 #0010 ADD2 .Screen/x DEO2
+	( y ) DIV2k MUL2 SUB2 #0005 MUL2 STH2r ADD2 #0010 ADD2 .Screen/y DEO2
+	JMP2r
+
+@<phex> ( short* -: )
+	SWP /b
+	&b ( byte -: )
+	DUP #04 SFT /c
+	&c ( byte -: )
+	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
+	JMP2r
+
+@marble-icn [ 60f0 f060 0000 0000 ]
+
