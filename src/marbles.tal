@@ -45,25 +45,39 @@
 		INC2 GTH2k ?&>l
 	POP2 POP2
 	( | text )
+	[ LIT2 15 -Screen/auto ] DEO
 	#0010 .Screen/x DEO2
 	.Screen/height DEI2 #0018 SUB2 .Screen/y DEO2
+	#0f3c .spent LDZ2 SUB2 <draw-dec>
 	;&text <draw-uf2>
 	( | reset pen )
 	[ LIT2 00 -Screen/auto ] DEO
 	;marble-icn .Screen/addr DEO2
 	JMP2r
-	&text "Marbles 20 "Left. $1
+	&text 20 "Marbles 20 "Left. $1
 
 @<draw-uf2> ( text* -- )
-	[ LIT2 15 -Screen/auto ] DEO
 	&>while ( -- )
-		LDAk #20 SUB #00 SWP
-		( addr ) DUP2 #50 SFT2 ;font/glyphs ADD2 .Screen/addr DEO2
-		( move-x ) ;font ADD2 LDA #00 SWP .Screen/x DEI2 ADD2
-		( draw ) [ LIT2 01 -Screen/sprite ] DEOk DEO
-		.Screen/x DEO2
+		LDAk <draw-char>
 		INC2 LDAk ?&>while
 	POP2 JMP2r
+
+@<draw-char> ( char -- )
+	#20 SUB #00 SWP
+	( addr ) DUP2 #50 SFT2 ;font/glyphs ADD2 .Screen/addr DEO2
+	( move-x ) ;font ADD2 LDA #00 SWP .Screen/x DEI2 ADD2
+	( draw ) [ LIT2 01 -Screen/sprite ] DEOk DEO
+	.Screen/x DEO2
+	JMP2r
+
+@<draw-dec> ( value* -- )
+	#2710 [ LIT2r 00fb ]
+	&w ( -- )
+	DIV2k #000a DIV2k MUL2 SUB2 SWPr EQUk OVR STHkr EQU AND ?{
+		DUP [ LIT "0 ] ADD <draw-char>
+		INCr }
+	POP2 #000a DIV2 SWPr INCr STHkr ?&w
+	POP2r POP2 POP2 JMP2r
 
 @<set-pen> ( marble* -- )
 	#0034
