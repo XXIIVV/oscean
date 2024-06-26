@@ -23,7 +23,9 @@
 	( 1986 ) #07c2 SUB2
 	( 54 ) #0034 MUL2
 	( days ) .DateTime/doty DEI2 #0007 DIV2 ADD2
-	( birth ) #07c2 #0003 #0016 doty #0001 SUB2 #0007 DIV2 SUB2 .spent STZ2
+	( birth ) #07c2 #0003 #0016 doty #0001 SUB2 #0007 DIV2 SUB2 DUP2 .spent STZ2
+	<pdec>
+	;dict/marbles <pstr>
 	<draw-grid>
 	BRK
 
@@ -49,12 +51,11 @@
 	#0010 .Screen/x DEO2
 	.Screen/height DEI2 #0018 SUB2 .Screen/y DEO2
 	#0f3c .spent LDZ2 SUB2 <draw-dec>
-	;&text <draw-uf2>
+	;dict/marbles <draw-uf2>
 	( | reset pen )
 	[ LIT2 00 -Screen/auto ] DEO
 	;marble-icn .Screen/addr DEO2
 	JMP2r
-	&text 20 "Marbles 20 "Left. $1
 
 @<draw-uf2> ( text* -- )
 	&>while ( -- )
@@ -115,16 +116,24 @@
 	&leap ( -- )
 	POP2 #01 JMP2r
 
-@<phex> ( short* -: )
-	SWP /b
-	&b ( byte -: )
-	DUP #04 SFT /c
-	&c ( byte -: )
-	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
-	JMP2r
+@<pstr> ( str* -: )
+	LDAk #18 DEO
+	INC2 LDAk ?<pstr>
+	POP2 JMP2r
+
+@<pdec> ( short* -- )
+	#2710 [ LIT2r 00fb ]
+	&w ( -- )
+	DIV2k #000a DIV2k MUL2 SUB2 SWPr EQUk OVR STHkr EQU AND ?{
+		DUP [ LIT "0 ] ADD #19 DEO
+		INCr }
+	POP2 #000a DIV2 SWPr INCr STHkr ?&w
+	POP2r POP2 POP2 JMP2r
 
 (
 @|assets )
+
+@dict &marbles 20 "Marbles 20 "Left 0a $1
 
 @marble-icn [ 60f0 f060 0000 0000 ]
 

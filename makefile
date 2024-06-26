@@ -3,7 +3,7 @@ ASM=uxncli ${DIR}/drifblim.rom
 LIN=uxncli ${DIR}/uxnlin.rom
 EMU=uxncli
 
-all: bin/maeve.rom bin/oscean.rom bin/arvelie.rom bin/directory.rom
+all: bin/maeve.rom bin/oscean.rom bin/arvelie.rom bin/directory.rom bin/marbles.rom
 
 clean:
 	@ rm -f bin/* && rm -f tmp/* && rm -f site/*
@@ -13,6 +13,7 @@ lint:
 	@ ${LIN} src/maeve.tal
 	@ ${LIN} src/arvelie.tal
 	@ ${LIN} src/directory.tal
+	@ ${LIN} src/marbles.tal
 
 run: all
 	@ mkdir -p tmp && rm -f tmp/* && ${EMU} bin/maeve.rom
@@ -20,6 +21,7 @@ run: all
 	@ ${EMU} bin/directory.rom docs/ 
 	@ ${EMU} bin/directory.rom etc/
 	@ ${EMU} bin/arvelie.rom
+	@ ${EMU} bin/marbles.rom
 
 grab:
 	@ mkdir -p etc/uxn5
@@ -33,5 +35,7 @@ bin/arvelie.rom: src/arvelie.tal
 	@ ${ASM} src/arvelie.tal bin/arvelie.rom
 bin/directory.rom: src/directory.tal
 	@ ${ASM} src/directory.tal bin/directory.rom
+bin/marbles.rom: src/marbles.tal
+	@ ${ASM} src/marbles.tal bin/marbles.rom
 
 .PHONY: all clean grab lint run
