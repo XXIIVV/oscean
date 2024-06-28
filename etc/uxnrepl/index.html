@@ -30,7 +30,7 @@
 </textarea>
 	<div id='term'>Press <b>Run</b> to evaluate this program</div>
 	<div id='menu'>
-		<input type="button" id="run" value="Run">
+		<input type="button" id="run" value="Run"> <input type="button" id="step" value="Step">
 		<span id='wst'>Ready.</span>
 		<select name="cars" id="examples">
 			<option value="hello_tal">Hello World</option>
@@ -42,68 +42,89 @@
 		</select>
 	</div>
 	<script type="text/javascript">
-		'use strict'
-		
-		let term_el = document.getElementById("term")
-		let editor_el = document.getElementById("editor")
+	'use strict'
+	
+	let term_el = document.getElementById("term")
+	let editor_el = document.getElementById("editor")
 
-		document.body.className = "active"
+	document.body.className = "active"
 
-		function assemble(query, program) {
-			let emulator = new Emu()
-			let length = 0
-			emulator.console.write = (char) => { program[length++] = char }
-			emulator.console.error = (char) => { term_el.innerHTML += String.fromCharCode(char) }
-			emulator.uxn.load(assembler).eval(0x0100)
-			term_el.innerHTML = ""
-			for (let i = 0; i < query.length; i++)
-				emulator.console.input(query.charAt(i).charCodeAt(0))
-			emulator.console.input(0x0a)
-			emulator.console.input(0x00)
+	function assemble(query, program) {
+		let emulator = new Emu()
+		let length = 0
+		emulator.console.write = (char) => { program[length++] = char }
+		emulator.console.error = (char) => { term_el.innerHTML += String.fromCharCode(char) }
+		emulator.uxn.load(assembler).eval(0x0100)
+		term_el.innerHTML = ""
+		for (let i = 0; i < query.length; i++)
+			emulator.console.input(query.charAt(i).charCodeAt(0))
+		emulator.console.input(0x0a)
+		emulator.console.input(0x00)
+	}
+
+	function print_stack(stack) {
+		let wst_el = document.getElementById("wst")
+		wst_el.innerHTML = "WST " 
+		for(let i = stack.ptr - 8; i != stack.ptr; i++){
+			wst_el.innerHTML += ('0' + stack.ram[i & 0xff].toString(16)).slice(-2)
+			wst_el.innerHTML += ((i+1) & 0xff) ? ' ' : '|'
 		}
+		wst_el.innerHTML += "<" 
+	}
 
-		function print_stack(stack) {
-			let wst_el = document.getElementById("wst")
-			wst_el.innerHTML = "WST " 
-			for(let i = stack.ptr - 8; i != stack.ptr; i++){
-				wst_el.innerHTML += ('0' + stack.ram[i & 0xff].toString(16)).slice(-2)
-				wst_el.innerHTML += ((i+1) & 0xff) ? ' ' : '|'
-			}
-			wst_el.innerHTML += "<" 
-		}
+	let step_count = 0
+	let started = 0
+	let emulator
 
-		function run() {
+	function run() {
+		let program = new Uint8Array(0x10000)
+		assemble(editor_el.value.replace(/(\r\n|\n|\r|\t)/gm, " "), program)
+		emulator = new Emu()
+		emulator.console.write_el = term_el
+		emulator.console.error_el = term_el
+		emulator.uxn.load(program).eval(0x0100)
+		print_stack(emulator.uxn.wst)
+		started = 0
+		document.getElementById("step").value = `Step`
+	}
+
+	function step() {
+		if(!started){
 			let program = new Uint8Array(0x10000)
 			assemble(editor_el.value.replace(/(\r\n|\n|\r|\t)/gm, " "), program)
-			let emulator = new Emu()
+			emulator = new Emu()
 			emulator.console.write_el = term_el
 			emulator.console.error_el = term_el
-			emulator.uxn.load(program).eval(0x0100)
-			print_stack(emulator.uxn.wst)
+			emulator.uxn.load(program).init()
+			started = 1, step_count = 0
 		}
+		step_count += emulator.uxn.step()
+		print_stack(emulator.uxn.wst)
+		document.getElementById("step").value = `Step #${step_count}`
+	}
 
-		// Editor
+	// Editor
 
-		const editor = document.getElementById("editor")
+	const editor = document.getElementById("editor")
 
-		editor.addEventListener("keydown", (e) => {
-			let { keyCode } = e
-			let { value, selectionStart, selectionEnd } = editor
-			if (keyCode === 9) {  // TAB = 9
-			  e.preventDefault()
-			  editor.value = value.slice(0, selectionStart) + "\t" + value.slice(selectionEnd);
-			  editor.setSelectionRange(selectionStart+1, selectionStart+1)
-			}
-		});
+	editor.addEventListener("keydown", (e) => {
+		let { keyCode } = e
+		let { value, selectionStart, selectionEnd } = editor
+		if (keyCode === 9) {  // TAB = 9
+		  e.preventDefault()
+		  editor.value = value.slice(0, selectionStart) + "\t" + value.slice(selectionEnd);
+		  editor.setSelectionRange(selectionStart+1, selectionStart+1)
+		}
+	});
 
-		document.getElementById("run").addEventListener("click", run)
+	document.getElementById("run").addEventListener("click", run)
+	document.getElementById("step").addEventListener("click", step)
 
-		// Examples
+	// Examples
 
-		document.getElementById('examples').addEventListener('change', (e) => {
-			editor_el.value = examples[e.currentTarget.value]
-		}, true);
-
+	document.getElementById('examples').addEventListener('change', (e) => {
+		editor_el.value = examples[e.currentTarget.value]
+	}, true);
 	</script>
 	<style>
 		body { font-family:monospace; overflow:hidden; height:100vh; padding:0; margin:0 }
@@ -115,8 +136,10 @@
 		div#menu select { float:right }
 		body.active textarea { height:calc(100% - 140px); }
 		body.active div#term, body.active div#menu { display:block }
-		#run { cursor:pointer; background:#000; color:white; border:0px; border-radius:100px; line-height:24px; padding:0px 10px }
-		#run:hover { background:#fff; color:#000}
+		#run, #step { cursor:pointer; background:#000; color:white; border:0px; border-radius:100px; line-height:24px; padding:0px 10px }
+		#step { background: #fff; color:black}
+		#run:hover, #step:hover { background: #58ac96;  color:#000}
+		
 	</style>
 </body>
 </html> 
