@@ -72,6 +72,21 @@
 		wst_el.innerHTML += "<" 
 	}
 
+	let opcodes = [
+	"LIT", "INC", "POP", "NIP", "SWP", "ROT", "DUP", "OVR",
+	"EQU", "NEQ", "GTH", "LTH", "JMP", "JCN", "JSR", "STH",
+	"LDZ", "STZ", "LDR", "STR", "LDA", "STA", "DEI", "DEO",
+	"ADD", "SUB", "MUL", "DIV", "AND", "ORA", "EOR", "SFT"]
+
+	function make_opcode(byte){
+		if(byte == 0x00) return "BRK"
+		if(byte == 0x20) return "JCI"
+		if(byte == 0x40) return "JMI"
+		if(byte == 0x60) return "JSI"
+		if((byte & 0x1f) == 0) return "LIT" + (byte & 0x20 ? "2" : "") + (byte & 0x40 ? "r" : "")
+		return opcodes[byte & 0x1f] + (byte & 0x20 ? "2" : "") + (byte & 0x80 ? "k" : "") + (byte & 0x40 ? "r" : "")
+	}
+
 	let step_count = 0
 	let started = 0
 	let emulator
@@ -82,9 +97,11 @@
 		emulator = new Emu()
 		emulator.console.write_el = term_el
 		emulator.console.error_el = term_el
-		emulator.uxn.load(program).eval(0x0100)
-		print_stack(emulator.uxn.wst)
+		emulator.uxn.load(program).eval(0x100)
+		started = 1, step_count = 0
+		while(emulator.uxn.step());
 		started = 0
+		print_stack(emulator.uxn.wst)
 		document.getElementById("step").value = `Step`
 	}
 
@@ -98,9 +115,14 @@
 			emulator.uxn.load(program).init()
 			started = 1, step_count = 0
 		}
+		let byte = emulator.uxn.ram[emulator.uxn.pc]
+		let opcode = make_opcode(byte)
+		
 		step_count += emulator.uxn.step()
 		print_stack(emulator.uxn.wst)
-		document.getElementById("step").value = `Step #${step_count}`
+		
+
+		document.getElementById("step").value = `Step #${step_count} ${opcode}`
 	}
 
 	// Editor
