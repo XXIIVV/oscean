@@ -13,25 +13,27 @@ typedef struct Uxn {
 	Stack wst, rst;
 } Uxn;
 
-int uxn_eval(Uxn *u, Uint16 pc);
+Uxn uxn;
+
+int uxn_eval(Uint16 pc);
 
 Uint8
-emu_dei(Uxn *u, Uint8 addr)
+emu_dei(Uint8 addr)
 {
-	return u->dev[addr];
+	return uxn.dev[addr];
 }
 
 void
-emu_deo(Uxn *u, Uint8 addr, Uint8 value)
+emu_deo(Uint8 addr, Uint8 value)
 {
-	u->dev[addr] = value;
+	uxn.dev[addr] = value;
 	switch(addr) {
-	case 0x18: fputc(u->dev[0x18], stdout), fflush(stdout); return;
-	case 0x19: fputc(u->dev[0x19], stderr), fflush(stderr); return;
+	case 0x18: fputc(uxn.dev[0x18], stdout), fflush(stdout); return;
+	case 0x19: fputc(uxn.dev[0x19], stderr), fflush(stderr); return;
 	}
 }
 
-#define FLIP     { s = ins & 0x40 ? &u->wst : &u->rst; }
+#define FLIP     { s = ins & 0x40 ? &uxn.wst : &uxn.rst; }
 #define JUMP(x)  { if(m2) pc = (x); else pc += (Sint8)(x); }
 #define POP1(o)  { o = s->dat[--*sp]; }
 #define POP2(o)  { o = s->dat[--*sp] | (s->dat[--*sp] << 0x8); }
@@ -39,31 +41,30 @@ emu_deo(Uxn *u, Uint8 addr, Uint8 value)
 #define PUSH1(y) { s->dat[s->ptr++] = (y); }
 #define PUSH2(y) { tt = (y); s->dat[s->ptr++] = tt >> 0x8; s->dat[s->ptr++] = tt; }
 #define PUSHx(y) { if(m2) { PUSH2(y) } else PUSH1(y) }
-#define PEEK(o, x, r) { if(m2) { r = (x); o = ram[r++] << 8 | ram[r]; } else o = ram[(x)]; }
-#define POKE(x, y, r) { if(m2) { r = (x); ram[r++] = y >> 8; ram[r] = y; } else ram[(x)] = (y); }
-#define DEVR(o, p)    { if(m2) { o = (emu_dei(u, p) << 8) | emu_dei(u, p + 1); } else o = emu_dei(u, p); }
-#define DEVW(p, y)    { if(m2) { emu_deo(u, p, y >> 8); emu_deo(u, p + 1, y); } else emu_deo(u, p, y); }
+#define PEEK(o, x, r) { if(m2) { r = (x); o = uxn.ram[r++] << 8 | uxn.ram[r]; } else o = uxn.ram[(x)]; }
+#define POKE(x, y, r) { if(m2) { r = (x); uxn.ram[r++] = y >> 8; uxn.ram[r] = y; } else uxn.ram[(x)] = (y); }
+#define DEVR(o, p)    { if(m2) { o = (emu_dei(p) << 8) | emu_dei(p + 1); } else o = emu_dei(p); }
+#define DEVW(p, y)    { if(m2) { emu_deo(p, y >> 8); emu_deo(p + 1, y); } else emu_deo(p, y); }
 
 int
-uxn_eval(Uxn *u, Uint16 pc)
+uxn_eval(Uint16 pc)
 {
-	Uint8 *ram = u->ram;
-	if(!pc || u->dev[0x0f]) return 0;
+	if(!pc || uxn.dev[0x0f]) return 0;
 	for(;;) {
 		Uint16 tt, a, b, c;
-		Uint8 t, kp, *sp, ins = ram[pc++];
+		Uint8 t, kp, *sp, ins = uxn.ram[pc++];
 		/* 2 */ Uint8 m2 = ins & 0x20;
-		/* r */ Stack *s = ins & 0x40 ? &u->rst : &u->wst;
+		/* r */ Stack *s = ins & 0x40 ? &uxn.rst : &uxn.wst;
 		/* k */ if(ins & 0x80) kp = s->ptr, sp = &kp; else sp = &s->ptr;
 		switch(ins & 0x1f) {
 		case 0x00:
 		switch(ins) {
 			case 0x00: /* BRK */ return 1;
 			case 0x20: /* JCI */ POP1(b) if(!b) { pc += 2; break; } /* fall */
-			case 0x40: /* JMI */ a = ram[pc++] << 8 | ram[pc++]; pc += a; break;
-			case 0x60: /* JSI */ PUSH2(pc + 2) a = ram[pc++] << 8 | ram[pc++]; pc += a; break;
-			case 0xa0: case 0xe0: /* LIT2 */ PUSH1(ram[pc++]) /* fall */
-			case 0x80: case 0xc0: /* LIT  */ PUSH1(ram[pc++]) break;
+			case 0x40: /* JMI */ a = uxn.ram[pc++] << 8 | uxn.ram[pc++]; pc += a; break;
+			case 0x60: /* JSI */ PUSH2(pc + 2) a = uxn.ram[pc++] << 8 | uxn.ram[pc++]; pc += a; break;
+			case 0xa0: case 0xe0: /* LIT2 */ PUSH1(uxn.ram[pc++]) /* fall */
+			case 0x80: case 0xc0: /* LIT  */ PUSH1(uxn.ram[pc++]) break;
 		} break;
 		case 0x01: /* INC */ POPx(a) PUSHx(a + 1) break;
 		case 0x02: /* POP */ POPx(a) break;
@@ -101,10 +102,10 @@ uxn_eval(Uxn *u, Uint16 pc)
 }
 
 void
-console_input(Uxn *u, char c, int type)
+console_input(char c, int type)
 {
-	u->dev[0x12] = c, u->dev[0x17] = type;
-	uxn_eval(u, u->dev[0x10] << 8 | u->dev[0x11]);
+	uxn.dev[0x12] = c, uxn.dev[0x17] = type;
+	uxn_eval(uxn.dev[0x10] << 8 | uxn.dev[0x11]);
 }
 
 int
@@ -112,7 +113,6 @@ main(int argc, char **argv)
 {
 	FILE *f;
 	int i = 1;
-	Uxn u = {0};
 	if(argc < 2) {
 		fprintf(stdout, "usage: %s file.rom [args..]\n", argv[0]);
 		return 0;
@@ -122,22 +122,22 @@ main(int argc, char **argv)
 		fprintf(stderr, "uxnmin: Error %s\n", argv[1]);
 		return 0;
 	}
-	u.dev[0x17] = argc - i;
-	fread(&u.ram[0x0100], 0xff00, 1, f), fclose(f);
-	if(uxn_eval(&u, 0x0100) && (u.dev[0x10] << 8 | u.dev[0x11])) {
+	uxn.dev[0x17] = argc - i;
+	fread(&uxn.ram[0x0100], 0xff00, 1, f), fclose(f);
+	if(uxn_eval(0x0100) && (uxn.dev[0x10] << 8 | uxn.dev[0x11])) {
 		for(; i < argc; i++) {
 			char *p = argv[i];
-			while(*p) console_input(&u, *p++, 0x2);
-			console_input(&u, '\n', i == argc - 1 ? 0x4 : 0x3);
+			while(*p) console_input(*p++, 0x2);
+			console_input('\n', i == argc - 1 ? 0x4 : 0x3);
 		}
-		while(!u.dev[0x0f]) {
+		while(!uxn.dev[0x0f]) {
 			int c = fgetc(stdin);
 			if(c == EOF) {
-				console_input(&u, 0x00, 0x4);
+				console_input(0x00, 0x4);
 				break;
 			}
-			console_input(&u, (Uint8)c, 0x1);
+			console_input((Uint8)c, 0x1);
 		}
 	}
-	return u.dev[0x0f] & 0x7f;
+	return uxn.dev[0x0f] & 0x7f;
 }
