@@ -61,7 +61,7 @@
 	( name ) "Left 0a
 	( details ) "A 20 "Text 20 "Editor 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "11 20 "Jun 20 "2024 $1
+	( date ) "6 20 "Jul 20 "2024 $1
 	01
 	( > ) 83 =appicon
 
@@ -661,7 +661,9 @@
 	;search LDA ?update-nav-search
 	get-eof get-scroll-addr find-first-marker
 	&>l ( -- )
-		LDA2k [ LIT2 0a "@ ] NEQ2 ?{ INC2k add-marker }
+		LDAk #0a NEQ ?{
+			INC2k LDA DUP [ LIT "@ ] NEQ SWP [ LIT "% NEQ ] AND ?{ INC2k add-marker }
+			}
 		( | reached bottom )
 		.nav/len LDZ #17 GTH ?&end
 		INC2 GTH2k ?&>l
@@ -857,6 +859,7 @@
 		.state/comment LDZ ?{
 			LDAk [ LIT "@ ] EQU ?&label
 			LDAk [ LIT "& ] EQU ?&label
+			LDAk [ LIT "% ] EQU ?&label
 			get-rune INC2 ORA ?&rune }
 		JMP2r }
 	POP2
