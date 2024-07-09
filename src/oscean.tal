@@ -3,6 +3,7 @@
 |00 @System &vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
 |a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |b0 @File2 &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+
 |000
 
 	@term &name $16 &parent $16 &diary $6 &pict $4
@@ -34,9 +35,7 @@
 	( cleanup ) #0000 #0100 <mclr>
 	DUP2 <load-diary>
 	DUP2 <load-incoming>
-	( verify orphans )
-	( .File/success DEI2 ORA ?{ DUP2 ;err/orphan <print-warning> } )
-	( | fill name )
+	( verify orphans ) ( .File/success DEI2 ORA ?{ DUP2 ;err/orphan <print-warning> } ) ( | fill name )
 	DUP2 ;term/name <scpy>
 	DUP2 find-parent ;term/parent <scpy>
 	( | fill diary )
@@ -44,6 +43,7 @@
 		DUP2 ;term/diary <scpy>
 		;term/diary [ LIT2 09 00 ] <cswp> }
 	POP2 JMP2r
+
 	&site-path [ "site/ &buf $30 ]
 
 @<load-diary> ( name* -- )
@@ -56,6 +56,7 @@
 	#0a00 <cswp>
 	.File/success DEI2 ,&length STR2
 	JMP2r
+
 	&log-path [ "tmp/log- &buf $30 ]
 
 @<load-incoming> ( name* -- )
@@ -68,6 +69,7 @@
 	#0a00 <cswp>
 	.File/success DEI2 ,&length STR2
 	JMP2r
+
 	&map-path [ "tmp/map- &buf $30 ]
 
 @<build-page> ( name* -- name* )
@@ -133,6 +135,7 @@
 @<build-page-body> ( name* -- name* )
 	STH2k ;dict/htm-ext ;&buf STH2r <make-path-ext>
 	;&htm-path !<write-inc>
+
 	&htm-path [ "src/htm/ &buf $30 ]
 
 @<build-page-module> ( term* -- term* )
@@ -158,8 +161,7 @@
 	;diary
 	&>w ( -- )
 		DUP2 ;dict/no-picture log-has-picture ?{
-			DUP2 ;term/pict log-has-picture ?{ DUP2 <build-module-photo> }
-			}
+			DUP2 ;term/pict log-has-picture ?{ DUP2 <build-module-photo> } }
 		scap/ INC2 LDAk ?&>w
 	POP2 JMP2r
 
@@ -219,8 +221,8 @@
 	;dict/figcaption-tag <write-close>
 	;dict/figure-tag <write-close>
 	#0a !<char>
-	&diary-path "../media/diary/ &bufa $1 &bufb $2
-	".jpg $1
+
+	&diary-path "../media/diary/ &bufa $1 &bufb $2 ".jpg $1
 
 (
 @|helpers )
@@ -252,8 +254,7 @@
 
 @<make-path-ext> ( ext* buf* str* -- )
 	OVR2 <scpy>
-	DUP2 [ LIT2 20 "_ ] <cswp>
-	!scat
+	DUP2 [ LIT2 20 "_ ] <cswp> !scat
 
 (
 @|tools )
@@ -299,6 +300,7 @@
 		( ) #0000 EQU2 ?&end
 		DUP2 .File2/write DEO2
 		INCr !&>s
+
 	&end ( -- )
 	POP2 STHr ?{ DUP2 ;err/source <print-error> }
 	POP2 #0001 .File2/length DEO2
@@ -323,6 +325,7 @@
 	[ LIT "> ] <char>
 	<write-str>
 	;dict/a-tag !<write-close>
+
 	&a "<a 20 "href=" $1
 
 @<write-attr> ( body* attr* -- )
@@ -364,6 +367,7 @@
 	#0001 .File2/length DEO2
 	;&b .File2/write DEO2
 	JMP2r
+
 	&b 20
 
 @<write-len> ( src* length* -- )
@@ -435,8 +439,7 @@
 @scmp ( a* b* -- f )
 	STH2
 	&>l ( -- )
-		LDAk ?{
-			&d LDA LDAr STHr EQU JMP2r }
+		LDAk ?{ &d LDA LDAr STHr EQU JMP2r }
 		LDAk LDAkr STHr NEQ ?&d
 		INC2 INC2r !&>l
 
@@ -446,6 +449,7 @@
 		LDAk LDAkr STHr NEQ ?&e
 		INC2k LDA #00 EQU ?&e
 		INC2 INC2r !&>l
+
 	&e ( -- )
 	LDA LDAr STHr EQU JMP2r
 
@@ -454,6 +458,7 @@
 	,&dst STR2
 	;&mmu .System/expansion DEO2
 	JMP2r
+
 	&mmu [ 00 &length $2 0000 &dst $2 00 ]
 
 @<print-hex> ( hex* -- )
@@ -465,6 +470,7 @@
 	JMP2r
 
 @<print-str> ( str* -- )
+
 	&>w ( -- )
 		LDAk #18 DEO
 		INC2 & LDAk ?&>w
@@ -486,7 +492,8 @@
 (
 @|dict )
 
-@dict &meta-head-path "src/htm/meta_head.htm $1
+@dict
+	&meta-head-path "src/htm/meta_head.htm $1
 	&meta-header-path "src/htm/meta_header.htm $1
 	&meta-footer-path "src/htm/meta_footer.htm $1
 	&lexicon-path "src/tables/lexicon $1
@@ -520,7 +527,8 @@
 	&incoming-txt "incoming $1
 	&right-txt "right $1
 
-@err &source "-- 20 "Source: 20 $1
+@err
+	&source "-- 20 "Source: 20 $1
 	&orphan "-- 20 "Orphan: 20 $1
 	&hidden "-- 20 "Hidden: 20 $1
 

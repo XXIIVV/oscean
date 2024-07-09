@@ -2,6 +2,7 @@
 
 |a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |b0 @File2 &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+
 |100
 
 @on-reset ( -> )
@@ -88,6 +89,7 @@
 			[ LIT2 &src $2 ] OVR2 #0006 ADD2 <parse-link> }
 		INC2 GTH2k ?&>l
 	POP2 POP2 JMP2r
+
 	&htm-path [ "src/htm/ &term $30 ]
 
 @<parse-link> ( src* link* -- )
@@ -111,7 +113,8 @@
 	#0a <char>
 	&end ( -- )
 	POP2 POP2 JMP2r
-	&buf $30 &map-path [ "tmp/map- &term $30 ]
+	&buf $30
+	&map-path [ "tmp/map- &term $30 ]
 
 @find-term ( link* -- term* )
 	,&t STR2
@@ -160,6 +163,7 @@
 	( event ) DUP2 #0005 ADD2 LDA [ LIT "+ ] NEQ ?{ DUP2 <parse-event> }
 	;dict/no-photo OVR2 #0006 ADD2 scmp ?{ DUP2 <add-to-journal> }
 	( eol ) scap/ INC2 scap/ INC2 !scap/
+
 	&log-path [ "tmp/log- &term $30 ]
 
 @<parse-event> ( event* -- )
@@ -182,6 +186,7 @@
 	<str>
 	;dict/br-tag <w>
 	#0a !<char>
+
 	&last "17 $1
 
 @<add-to-journal> ( photo* -- )
@@ -251,6 +256,7 @@
 	;&b <str>
 	<str>
 	;&c !<str>
+
 	&a "<img 20 "alt=" $1
 	&b "" 20 "src="../media/diary/ $1
 	&c ".jpg"> $1
@@ -261,11 +267,13 @@
 	;&b <str>
 	<str>
 	;&c !<str>
+
 	&a "<a 20 "href=' $1
 	&b ".html'> $1
 	&c "</a> $1
 
 @<path> ( str* -- )
+
 	&>w ( -- )
 		LDAk [ LIT "_ ] OVR #20 NEQ [ JMP SWP POP ] <char>
 		INC2 LDAk ?&>w
@@ -311,6 +319,7 @@
 		LDAk LDAkr STHr NEQ ?&e
 		INC2k LDA #00 EQU ?&e
 		INC2 INC2r !&>l
+
 	&e ( a* -- f )
 	LDA LDAr STHr EQU JMP2r
 
@@ -325,8 +334,7 @@
 @scmp ( a* b* -- f )
 	STH2
 	&>l ( -- )
-		LDAk ?{
-			&d LDA LDAr STHr EQU JMP2r }
+		LDAk ?{ &d LDA LDAr STHr EQU JMP2r }
 		LDAk LDAkr STHr NEQ ?&d
 		INC2 INC2r !&>l
 
@@ -343,6 +351,7 @@
 	JMP2r
 
 @<print-str> ( str* -- )
+
 	&>w ( -- )
 		LDAk #18 DEO
 		INC2 & LDAk ?&>w
@@ -365,7 +374,8 @@
 (
 @|assets )
 
-@dict &no-photo "000 $1
+@dict
+	&no-photo "000 $1
 	&spacer 20 "&mdash; 20 $1
 	&journal-path "src/htm/journal.htm $1
 	&http-txt "http $1
@@ -387,7 +397,8 @@
 	&warn-unknown "-- 20 "Unknown 20 "diary: 20 $1
 	&in 20 "in 20 $1
 
-@diary-paths &3 "src/tables/diary/15-19 $1
+@diary-paths
+	&3 "src/tables/diary/15-19 $1
 	&2 "src/tables/diary/10-14 $1
 	&1 "src/tables/diary/05-09 $1
 	&0 "src/tables/diary/00-04 $1
