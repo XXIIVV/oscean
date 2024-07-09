@@ -7,6 +7,7 @@
 |90 @Mouse &vector $2 &x $2 &y $2 &state $1 &pad $3 &modx $2 &mody $2
 |a0 @File &vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |c0 @DateTime &year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
+
 |000
 
 	@src $40
@@ -52,7 +53,7 @@
 	( name ) "Oekaki 0a
 	( desc ) "Drawing 20 "Program 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "5 20 "Jul 20 "2024 $1
+	( date ) "9 20 "Jul 20 "2024 $1
 	( exts ) 00
 
 (
@@ -119,21 +120,25 @@
 	.Mouse/y DEI2 #0002 SUB2 #000a DIV2 NIP
 	( | tool )
 	DUP #05 GTH ?{ <set-tool>
+		<release-mouse>
 		BRK }
 	#06 SUB
 	( | shape )
 	DUP #07 GTH ?{
 		.brush/shape LDZ #33 SFT ADD <set-shape>
+		<release-mouse>
 		BRK }
 	#09 SUB
 	( | nature )
 	DUP #02 GTH ?{ <set-nature>
+		<release-mouse>
 		BRK }
 	#04 SUB
 	( | patt )
-	DUP #04 GTH ?{ <set-patt>
+	DUP #0a GTH ?{ <set-patt>
+		<release-mouse>
 		BRK }
-	#06 SUB #04 SUB DUP #06 NEQ ?{ <save-file>
+	#0a SUB #01 NEQ ?{ <save-file>
 		<release-mouse>
 		BRK }
 	POP BRK
@@ -163,9 +168,8 @@
 	JMP2r
 
 @src/<cat> ( str* -- )
-	&>w ( -- )
-		LDAk src/<push>
-		INC2 LDAk ?&>w
+	LDAk src/<push>
+	INC2 LDAk ?&<cat>
 	POP2 JMP2r
 
 (
@@ -176,8 +180,7 @@
 	JMP2r
 
 @<toggle-menu> ( -- )
-	.menu/hide LDZk #00 EQU SWP STZ
-	!<redraw-all>
+	.menu/hide LDZk #00 EQU SWP STZ !<redraw-all>
 
 @<change-nature> ( -- )
 	.brush/natural LDZ INC
@@ -185,34 +188,28 @@
 
 @<set-nature> ( val -- )
 	DUP .brush/natural LDZ NEQ ?{ POP JMP2r }
-	#03 DIVk MUL SUB .brush/natural STZ
-	!<draw-menu>
+	#03 DIVk MUL SUB .brush/natural STZ !<draw-menu>
 
 @<hide-menu> ( -- )
-	[ LIT2 01 -menu/hide ] STZ
-	!<clear-menu>
+	[ LIT2 01 -menu/hide ] STZ !<clear-menu>
 
 @<set-tool> ( tool -- )
 	DUP #05 LTH ?{ POP JMP2r }
 	DUP .brush/tool LDZ NEQ ?{ POP JMP2r }
-	.brush/tool STZ
-	!<draw-menu>
+	.brush/tool STZ !<draw-menu>
 
 @<set-shape> ( size -- )
 	#28 DIVk MUL SUB .brush/shape STZ
-	[ LIT2 00 -brush/natural ] STZ
-	!<draw-menu>
+	[ LIT2 00 -brush/natural ] STZ !<draw-menu>
 
 @<set-patt> ( patt -- )
 	DUP .brush/patt LDZ NEQ ?{ POP JMP2r }
-	.brush/patt STZ
-	!<draw-menu>
+	.brush/patt STZ !<draw-menu>
 
 @<set-color> ( color -- )
 	DUP .brush/color LDZ NEQ ?{ POP JMP2r }
 	.brush/color STZ
-	<draw-pointer>
-	!<draw-menu>
+	<draw-pointer> !<draw-menu>
 
 @<set-size> ( w* h* -- )
 	.Screen/height DEO2
@@ -243,8 +240,7 @@
 
 @<set-state> ( state -- )
 	DUP .canvas/changed LDZ EQU ?{
-		( set ) .canvas/changed STZ
-		!<draw-state> }
+		( set ) .canvas/changed STZ !<draw-state> }
 	POP JMP2r
 
 @<flip-horizontal> ( -- )
@@ -283,7 +279,7 @@
 	.Mouse/y DEI2 .canvas/y LDZ2 SUB2 JMP2r
 
 @get-brush-patt ( -- addr* )
-	[ LIT2 04 -brush/patt ] LDZ NEQ ?{ update-spray ;spray JMP2r }
+	[ LIT2 09 -brush/patt ] LDZ NEQ ?{ update-spray ;spray JMP2r }
 	;patterns-icns [ LIT2 00 -brush/patt ] LDZ #30 SFT2 ADD2 JMP2r
 
 @get-speed ( x1* y1* x2* y2* -- distance* )
@@ -306,45 +302,49 @@
 @pen
 	&hover ( -- )
 	!<draw-pointer>
+
 	&down ( -- )
 	[ LIT2 04 -Controller/button ] DEI AND ?&down-shift
 	( natural ) [ LIT2 00 -brush/natural ] LDZ EQU ?{ #0000 ;natural/last STA2 }
 	get-touch-x #0003 SUB2 ,&last-x STR2
 	get-touch-y #0003 SUB2 ,&last-y STR2
 	JMP2r
+
 	&down-shift ( -- )
 	( ) ,&last-x LDR2 ,&last-y LDR2
 	( natural ) [ LIT2 00 -brush/natural ] LDZ EQU ?{ natural }
 	( ) get-touch-x #0003 SUB2
 	( ) get-touch-y #0003 SUB2 ;<paint-dot>
-	<do-line>
-	!<release-mouse>
+	<do-line> !<release-mouse>
+
 	&up ( -- )
 	JMP2r
+
 	&drag ( -- )
 	[ LIT2 &last-x $2 ] [ LIT2 &last-y $2 ] OVR2 #0010 GTH2 ?{ <hide-menu> }
 	( natural ) [ LIT2 00 -brush/natural ] LDZ EQU ?{ natural }
 	( ) get-touch-x #0003 SUB2 DUP2 ,&last-x STR2
 	( ) get-touch-y #0003 SUB2 DUP2 ,&last-y STR2
 	( ) ;<paint-dot>
-	<do-line>
-	!<draw-pointer>
+	<do-line> !<draw-pointer>
 
 @line
 	&hover ( -- )
 	#41 ;selector-icn !<update-cursor>
+
 	&down ( -- )
 	.Mouse/x DEI2 ,&x STR2
 	.Mouse/y DEI2 ,&y STR2
 	get-touch-x #0003 SUB2 ,&real-x STR2
 	get-touch-y #0003 SUB2 ,&real-y STR2
 	JMP2r
+
 	&up ( -- )
 	<clear-guide>
 	( ) [ LIT2 &real-x $2 ] [ LIT2 &real-y $2 ]
 	( ) get-touch-x #0003 SUB2
-	( ) get-touch-y #0003 SUB2 ;<paint-dot>
-	!<do-line>
+	( ) get-touch-y #0003 SUB2 ;<paint-dot> !<do-line>
+
 	&drag ( -- )
 	<clear-guide>
 	( ) [ LIT2 &x $2 ] [ LIT2 &y $2 ]
@@ -355,16 +355,19 @@
 @rect
 	&hover ( -- )
 	#41 ;selector-icn !<update-cursor>
+
 	&down ( -- )
 	.Mouse/x DEI2 ,&x STR2
 	.Mouse/y DEI2 ,&y STR2
 	get-touch-x #0003 SUB2 ,&real-x STR2
 	get-touch-y #0003 SUB2 ,&real-y STR2
 	JMP2r
+
 	&up ( -- )
 	<clear-guide>
 	( ) [ LIT2 &real-x $2 ] [ LIT2 &real-y $2 ]
 	( ) get-touch-x INC2 get-touch-y INC2 !<paint-rect>
+
 	&drag ( -- )
 	<clear-guide>
 	( ) [ LIT2 &x $2 ] [ LIT2 &y $2 ]
@@ -374,14 +377,16 @@
 @move
 	&hover ( -- )
 	( draw cursor ) #41 ;hand-icn !<update-cursor>
+
 	&down ( -- )
 	( draw cursor ) #43 ;hand-icn/down <update-cursor>
 	.Mouse/x DEI2 ,&x STR2
 	.Mouse/y DEI2 ,&y STR2
 	( set origin ) JMP2r
+
 	&up ( -- )
-	( draw cursor ) #43 ;hand-icn <update-cursor>
-	!<redraw-all>
+	( draw cursor ) #43 ;hand-icn <update-cursor> !<redraw-all>
+
 	&drag ( -- )
 	( draw cursor ) #42 ;hand-icn/down <update-cursor>
 	.Mouse/x DEI2
@@ -389,12 +394,12 @@
 	( ) ,&x STR2
 	.Mouse/y DEI2
 	( ) DUP2 [ LIT2 &y $2 ] SUB2 .canvas/y LDZ2 ADD2 .canvas/y STZ2
-	( ) ,&y STR2
-	!<redraw-all>
+	( ) ,&y STR2 !<redraw-all>
 
 @selector
 	&hover ( -- )
 	#41 ;selector-icn !<update-cursor>
+
 	&down ( -- )
 	( record mode ) [ LIT2 01 -Mouse/state ] DEI EQU ,&paste STR
 	.Mouse/x DEI2 ,&x STR2
@@ -402,11 +407,13 @@
 	get-touch-x ,&real-x STR2
 	get-touch-y ,&real-y STR2
 	JMP2r
+
 	&up ( -- )
 	[ LIT &paste $1 ] ?{ !<paste-snarf> }
 	<clear-guide>
 	( ) [ LIT2 &real-x $2 ] #33 SFT2 [ LIT2 &real-y $2 ] #33 SFT2
 	( ) get-touch-x #33 SFT2 get-touch-y #33 SFT2 !<snarf-rect>
+
 	&drag ( -- )
 	,&paste LDR ?{ JMP2r }
 	<clear-guide>
@@ -526,8 +533,7 @@
 @|file )
 
 @<make-file> ( -- )
-	;pict .canvas/length LDZ2 mclr #00 <set-state>
-	!<redraw-all>
+	;pict .canvas/length LDZ2 mclr #00 <set-state> !<redraw-all>
 
 @<save-file> ( -- )
 	;src .File/name DEO2
@@ -541,8 +547,7 @@
 	#00 ;src/ptr LDA #0004 SUB2 ;dict/tga-ext scmp ?<open-tga>
 	;src .File/name DEO2
 	.canvas/length LDZ2 .File/length DEO2
-	;pict .File/read DEO2
-	!<redraw-all>
+	;pict .File/read DEO2 !<redraw-all>
 
 @<open-icn> ( -- )
 	;src .File/name DEO2
@@ -552,10 +557,10 @@
 		[ LIT2 &ptr $2 ] DUP2 #0010 ADD2 ,&ptr STR2
 		feof ?&end
 		!&>s
+
 	&end ( -- )
 	( | cat chr ext )
-	;dict/chr-ext src/<cat>
-	!<redraw-all>
+	;dict/chr-ext src/<cat> !<redraw-all>
 
 @<open-tga> ( -- )
 	;src .File/name DEO2
@@ -578,10 +583,13 @@
 	#00 ;tga/image-type LDA DUP ADD ;tga-types ADD2 LDA2 <pstr>/
 	#0a18 DEO
 	JMP2r
+
 	&rawt ( type -- )
 	POP ;tga-rawt #0004 !parse-tga
+
 	&rawm ( type -- )
 	POP ;tga-rawm #0001 !parse-tga
+
 	&error-txt ( err )
 	"Unsupported 20 "image-type: 20 $1
 
@@ -656,7 +664,8 @@
 (
 @|luts )
 
-@tga-types-txts &null "missing-type $1
+@tga-types-txts
+	&null "missing-type $1
 	&rawc "RAW-color $1
 	&rawt "RAW-true $1
 	&rawm "RAW-mono $1
@@ -742,7 +751,7 @@
 	POP2
 	( | patterns )
 	;patterns-icns .Screen/addr DEO2
-	#0500
+	#0a00
 	&>l-patterns ( -- )
 		#00 OVR #13 ADD #000a MUL2 INC2 INC2 .Screen/y DEO2
 		DUP .brush/patt LDZ NEQ #0a MUL .Screen/sprite DEO
@@ -926,6 +935,7 @@
 		LDAk LDAkr STHr NEQk ?&d
 		DUP EOR EQUk ?&d
 		POP2 INC2 INC2r !&>l
+
 	&d ( a* c1 c2 b* -- f )
 	NIP2 POP2r EQU JMP2r
 
@@ -951,6 +961,7 @@
 		[ LIT2 &g $2 ] .System/g DEO2
 		[ LIT2 &b $2 ] .System/b DEO2 }
 	JMP2r
+
 	&path ".theme $1
 
 @<phex> ( short* -- )
@@ -975,8 +986,10 @@
 
 @patterns-icns [
 	ffff ffff ffff ffff aa55 aa55 aa55 aa55
-	aa00 5500 aa00 5500 8800 2200 8800 2200
-	3225 5288 88c8 88f8 ]
+	aa00 aa00 aa00 aa00 8800 0000 8800 0000
+	8844 2211 8844 2211 8811 2244 8811 2244
+	aa00 5500 aa00 5500 8800 4400 2200 1100
+	8800 1100 2200 4400 3225 5288 88c8 88f8 ]
 
 @shapes-icns [
 	0000 0010 0000 0000 0000 0018 1800 0000
@@ -1018,7 +1031,8 @@
 
 @state-icn [ 183c 66c3 c366 3c18 ]
 
-@dict &default "pict40x28.chr $1
+@dict
+	&default "pict40x28.chr $1
 	&icn-ext ".icn $1
 	&chr-ext ".chr $1
 	&tga-ext ".tga $1
