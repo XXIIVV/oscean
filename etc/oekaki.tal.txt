@@ -12,7 +12,7 @@
 
 	@src $40
 	@canvas &width $2 &height $2 &length $2 &x $2 &y $2 &changed $1
-	@brush &color $1 &shape $1 &patt $1 &tool $1 &natural $1 &erase $1
+	@brush &color $1 &shape $1 &patt $1 &tool $1 &natural $1 &erase $1 &blend $1
 	@menu &hide $1
 
 |100
@@ -133,12 +133,16 @@
 	DUP #02 GTH ?{ <set-nature>
 		<release-mouse>
 		BRK }
-	#04 SUB
+	DUP #03 NEQ ?{ <toggle-blend>
+		<release-mouse> }
+	#05 SUB
 	( | patt )
 	DUP #0a GTH ?{ <set-patt>
 		<release-mouse>
 		BRK }
-	#0a SUB #01 NEQ ?{ <save-file>
+	#0a SUB
+	( | save )
+	DUP #01 NEQ ?{ <save-file>
 		<release-mouse>
 		BRK }
 	POP BRK
@@ -181,6 +185,9 @@
 
 @<toggle-menu> ( -- )
 	.menu/hide LDZk #00 EQU SWP STZ !<redraw-all>
+
+@<toggle-blend> ( -- )
+	[ LIT2 00 -brush/blend ] LDZ EQU .brush/blend STZ !<draw-menu>
 
 @<change-nature> ( -- )
 	.brush/natural LDZ INC
@@ -279,7 +286,7 @@
 	.Mouse/y DEI2 .canvas/y LDZ2 SUB2 JMP2r
 
 @get-brush-patt ( -- addr* )
-	[ LIT2 09 -brush/patt ] LDZ NEQ ?{ update-spray ;spray JMP2r }
+	[ LIT2 08 -brush/patt ] LDZ NEQ ?{ update-spray ;spray JMP2r }
 	;patterns-icns [ LIT2 00 -brush/patt ] LDZ #30 SFT2 ADD2 JMP2r
 
 @get-speed ( x1* y1* x2* y2* -- distance* )
@@ -428,6 +435,12 @@
 	( y* ) DUP2 #0007 AND2 get-brush-patt ADD2 LDA STH
 	( ) OVR2 NIP #80 SWP #07 AND SFT STHr AND JMP2r
 
+@set-pixel ( x* y* -- )
+	DUP2 .canvas/height LDZ2 LTH2 ?{ POP2 POP2 JMP2r }
+	OVR2 .canvas/width LDZ2 LTH2 ?{ POP2 POP2 JMP2r }
+	patt-pixel ?{ POP2 POP2 JMP2r }
+	.brush/color LDZ !<blend-pixel>/force
+
 @dec-pixel ( x* y* -- )
 	DUP2 .canvas/height LDZ2 LTH2 ?{ POP2 POP2 JMP2r }
 	OVR2 .canvas/width LDZ2 LTH2 ?{ POP2 POP2 JMP2r }
@@ -445,6 +458,7 @@
 
 @<blend-pixel> ( x* y* color -- )
 	DUP .brush/color LDZ INC LTH ?{ POP POP2 POP2 JMP2r }
+	&force ( x* y* color -- )
 	STH
 	[ LITr 01 ]
 	( x y ) OVR2 OVR2 <push-request>
@@ -495,7 +509,8 @@
 
 @<paint-dot> ( x* y* -- )
 	( | brush type )
-	;dec-pixel ;inc-pixel .brush/erase LDZ ?{ SWP2 }
+	;set-pixel ;dec-pixel ;inc-pixel .brush/erase LDZ ?{ SWP2 }
+	POP2 .brush/blend LDZ ?{ SWP2 }
 	POP2 ,&fn STR2
 	( | brush shape )
 	;shapes-icns [ LIT2 00 -brush/shape ] LDZ #30 SFT2 ADD2 ,&patt STR2
@@ -749,11 +764,15 @@
 		DUP .brush/natural LDZ NEQ #0a MUL .Screen/sprite DEO
 		INC GTHk ?&>l-nature
 	POP2
+	( | blend )
+	;blend-icns [ LIT2 00 -brush/blend ] LDZ #30 SFT2 ADD2 .Screen/addr DEO2
+	#00b6 .Screen/y DEO2
+	[ LIT2 0a -Screen/sprite ] DEO
 	( | patterns )
 	;patterns-icns .Screen/addr DEO2
-	#0a00
+	#0900
 	&>l-patterns ( -- )
-		#00 OVR #13 ADD #000a MUL2 INC2 INC2 .Screen/y DEO2
+		#00 OVR #14 ADD #000a MUL2 INC2 INC2 .Screen/y DEO2
 		DUP .brush/patt LDZ NEQ #0a MUL .Screen/sprite DEO
 		INC GTHk ?&>l-patterns
 	POP2
@@ -984,12 +1003,15 @@
 	0e1f 3b7f fefc f870 0e1f 1b3f 3e78 6080
 	0106 1e7c fcd8 f870 ]
 
+@blend-icns [
+	0102 050a 152b 57af 0103 070f 1f3f 7fff ]
+
 @patterns-icns [
 	ffff ffff ffff ffff aa55 aa55 aa55 aa55
-	aa00 aa00 aa00 aa00 8800 0000 8800 0000
-	8844 2211 8844 2211 8811 2244 8811 2244
-	aa00 5500 aa00 5500 8800 4400 2200 1100
-	8800 1100 2200 4400 3225 5288 88c8 88f8 ]
+	aa00 aa00 aa00 aa00 8844 2211 8844 2211
+	1122 4488 1122 4488 aa00 5500 aa00 5500
+	8800 4400 2200 1100 8800 1100 2200 4400
+	3225 5288 88c8 88f8 ]
 
 @shapes-icns [
 	0000 0010 0000 0000 0000 0018 1800 0000
