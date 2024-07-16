@@ -27,7 +27,7 @@
 	( name ) "Uxnfor 0a
 	( desc ) "Uxntal 20 "Formatter 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "9 20 "Jul 20 "2024 $2
+	( date ) "13 20 "Jul 20 "2024 $2
 
 @await-src ( -> )
 	.Console/read DEI DUP #20 GTH ?{
@@ -55,14 +55,12 @@
 	;src .File/name DEO2
 	#0001 .File/length DEO2
 	[ LIT2 00 -err ] STZ
-	result/new
+	Result/new
 	&>s ( -- )
-		;&c feof ?&eof
-		.err LDZ ?&fail
-		[ LIT &c $1 ] walk-char !&>s
-
-	&eof ( -- )
-	eval-scope !save-file
+		;&c feof ?{
+			.err LDZ ?&fail
+			[ LIT &c $1 ] walk-char !&>s }
+	eval-scope !<write-file>
 
 	&fail ( -- )
 	;dict/err <sprint>
@@ -154,7 +152,6 @@
 	DUP2 wcap/ INC2 LDA
 	( a method ) DUP [ LIT "( ] NEQ ?{ <emit-break-tab> }
 	( a string ) DUP [ LIT "" ] NEQ ?{ <emit-break-tab> }
-	( a block ) DUP chex #ff EQU ?{ <emit-break-tab> }
 	POP
 	( | continue )
 	LDA2k [ LIT2 "&> ] NEQ2 ?{ <inc-depth> }
@@ -184,7 +181,8 @@
 @handle-lambda-end ( addr* -- addr* )
 	<dec-depth>
 	<emit-word>/
-	INC2k LDA [ LIT "} ] NEQ ?{ <emit-space> !eval-scope/continue }
+	<emit-space>
+	INC2k LDA [ LIT "} ] NEQ ?{ !eval-scope/continue }
 	INC2k LDA [ LIT "& ] EQU ?eval-scope/continue
 	INC2k LDA #00 EQU ?eval-scope/continue
 	<emit-break-tab> !eval-scope/continue
@@ -212,19 +210,11 @@
 	#0a <emit>
 	<emit-word>/ !eval-scope/continue
 
-@save-file ( -- )
+@<write-file> ( -- )
 	.err LDZ ?{
 		;src .File/name DEO2
-		#0001 .File/length DEO2
-		;mem/result
-		&>w ( -- )
-			LDAk ,&b STR
-			LDA2k #200a EQU2 ?&skip
-			LDA2k #2020 EQU2 ?&skip
-			LDA2k #090a EQU2 ?&skip
-			DUP2 #0001 SUB2 LDA2 #0920 EQU2 ?&skip
-			;&b .File/write DEO2 &skip INC2 LDAk ?&>w
-		POP2 }
+		;mem/result ;Result/ptr LDA2 OVR2 SUB2 .File/length DEO2
+		.File/write DEO2 }
 	JMP2r
 	&b $1
 
@@ -326,7 +316,7 @@
 	INC2 JMP2r
 
 @<emit-break-once> ( -: )
-	;result/ptr LDA2 #0001 SUB2 LDA #1f GTH ?<emit-break-tab>
+	;Result/ptr LDA2 #0001 SUB2 LDA #1f GTH ?<emit-break-tab>
 	JMP2r
 
 @<reset-depth> ( -- )
@@ -365,12 +355,20 @@
 
 @<emit> ( c -- )
 	DUP ?{ POP JMP2r }
+	DUP #20 NEQ ?{
+		( ws ws ) Result/get-last #20 EQU ?&ignore
+		( tb ws ) Result/get-last #09 EQU ?&ignore }
 	DUP #0a NEQ ?{
+		( ws lb <- ) Result/get-last #20 NEQ ?{ Result/rew }
+		( tb lb <- ) Result/get-last #09 NEQ ?{ Result/rew }
 		[ LIT &lb $1 ] INCk ,&lb STR
-		#02 LTH ?result/put
+		#02 LTH ?Result/put
 		POP JMP2r }
-	result/put [ LIT2 00 _&lb ] STR
+	Result/put [ LIT2 00 _&lb ] STR
 	JMP2r
+
+	&ignore ( c last -- )
+	POP JMP2r
 
 (
 @|stdlib )
@@ -451,7 +449,7 @@
 	POP2 POP2 [ LIT2 01 -err ] STZ
 	JMP2r
 
-@result
+@Result
 	&new ( -- )
 	;mem/result ,&ptr STR2
 	JMP2r
@@ -460,6 +458,13 @@
 	#00 [ LIT2 &ptr =mem/result ] INC2k ,&ptr STR2
 	STA2
 	JMP2r
+
+	&rew ( -- )
+	,&ptr LDR2 #0001 SUB2 ,&ptr STR2
+	JMP2r
+
+	&get-last ( -- c )
+	,&ptr LDR2 #0001 SUB2 LDA JMP2r
 
 @dict
 	&usage "usage: 20 "uxnfor.rom 20 "source.tal 0a $1
