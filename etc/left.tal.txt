@@ -63,7 +63,7 @@
 	( name ) "Left 0a
 	( details ) "A 20 "Text 20 "Editor 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "15 20 "Jul 20 "2024 $1 01
+	( date ) "17 20 "Jul 20 "2024 $1 01
 	( > ) 83 =appicon
 
 @manifest 07 "Left $1
@@ -425,7 +425,7 @@
 	( >> )
 
 @erase-block ( -- )
-	erase-selection !select-reset
+	erase-selection !<select-reset>
 
 @delete ( -- )
 	has-length? ?erase-block
@@ -498,7 +498,7 @@
 @<select-marker> ( id -- )
 	get-marker DUP2 ;search slen ADD2 !<select-range>
 
-@select-reset ( -- )
+@<select-reset> ( -- )
 	get-from
 	( >> )
 
@@ -1040,23 +1040,25 @@
 
 @file-reopen ( -- )
 	;text <sclr>
-	;filepath DUP2 file-is-bin? ?file-open-binary
+	;filepath DUP2 fbin? ?file-open-binary
 	.File/name DEO2
 	#fff0 ;text SUB2 .File/length DEO2
 	;text .File/read DEO2
 	.File/success DEI2 INC2 .textarea/length STZ2
 	file-detect
 	( | draw )
-	update-scrollbar update-nav select-reset #01 <draw-filepath>
+	update-scrollbar update-nav <select-reset>
+	#01 <draw-filepath>
 	#05 <draw-state> !reqdraw-textarea
 
 @file-open-binary ( path* -- )
 	.File/name DEO2
-	#0001 .File/length DEO2
-	;text inject-binary ;text SUB2 .textarea/length STZ2
+	;text <inject-binary>
+	;text SUB2 .textarea/length STZ2
 	( | continue )
 	[ LIT2 01 -textarea/highlight ] STZ
-	select-reset #01 <draw-filepath>
+	<select-reset>
+	#01 <draw-filepath>
 	#0a <draw-state> !reqdraw-textarea
 
 @file-save ( -- )
@@ -1078,36 +1080,32 @@
 	JMP2r
 
 @file-build ( -- )
-	;filepath pstr #0a18 DEO
+	;filepath <pstr>
+	#0a18 DEO
 	JMP2r
 
-@file-size ( path* -- size* )
-	.File/name DEO2
-	#0001 .File/length DEO2
-	[ LIT2r 0000 ]
-	&s ( -- )
-	;&b feof? ?&eof
-	INC2r !&s
-	&eof STH2r JMP2r
-	&b $1
-
 @file-inject ( name* -- )
-	DUP2 file-is-bin? ?file-inject-binary
-	DUP2 file-size ORAk ?{ POP2 POP2 JMP2r }
-	STH2k .File/length DEO2
-	.File/name DEO2
-	( | erase when selection length )
-	has-empty? ?{ erase-selection }
+	DUP2 fbin? ?file-inject-binary
+	( skip if empty ) DUP2 flen ORAk ?{ POP2 POP2 JMP2r }
+	( erase sel ) has-empty? ?{ erase-selection }
+	( | name* addr* )
+	SWP2 .File/name DEO2
+	( stash length ) STH2k .File/length DEO2
 	( push right ) get-from STH2kr <msfr>
 	STH2kr <mod-length>
 	get-from .File/read DEO2
 	get-from STH2r ADD2 !<select-a>
 
 @file-inject-binary ( name* -- )
-	get-from STH2k OVR2 file-size DUP2 ADD2 DUP2 #02 SFT2 ADD2 <msfr>
-	.File/name DEO2
-	#0001 .File/length DEO2
-	STH2r inject-binary DUP2 get-from SUB2 <mod-length> !<select-a>
+	( skip if empty ) DUP2 flen ORAk ?{ POP2 POP2 JMP2r }
+	( erase sel ) has-empty? ?{ erase-selection }
+	( | name* addr* )
+	SWP2 .File/name DEO2
+	( stash length ) DUP2 ADD2 DUP2 #02 SFT2 ADD2 STH2
+	( push right ) get-from STH2kr <msfr>
+	STH2kr <mod-length>
+	get-from <inject-binary>
+	POP2 get-from STH2r ADD2 !<select-a>
 
 @file-detect ( -- )
 	file-is-dir? ?&dir
@@ -1134,21 +1132,8 @@
 
 	&tal-ext ".tal $1
 
-@file-is-bin? ( path* -- bool )
-	.File/name DEO2
+@<inject-binary> ( addr* -- addr* )
 	#0001 .File/length DEO2
-	&s ( -- )
-	;&b feof? ?{
-		[ LIT &b $1 ] ?&s
-		#01 JMP2r
-		!&s }
-	#00 JMP2r
-
-@feof? ( buf* -- eof )
-	.File/read DEO2
-	.File/success DEI2 #0000 EQU2 JMP2r
-
-@inject-binary ( addr* -- addr* )
 	STH2
 	#0000
 	&s ( -- )
@@ -1165,7 +1150,7 @@
 
 @edit-cut ( -- )
 	has-length? ?{ JMP2r }
-	edit-copy erase-selection select-reset !reqdraw-textarea
+	edit-copy erase-selection <select-reset> !reqdraw-textarea
 
 @edit-copy ( -- )
 	has-length? ?{ JMP2r }
@@ -1190,7 +1175,8 @@
 	LDA2k #090a NEQ2 ?{ DUP2 <cut-char> !&>l }
 	LDA2k #0a20 NEQ2 ?{ INC2k <cut-char> !&>l }
 	INC2 GTH2k ?&>l
-	POP2 POP2 select-reset update-nav !reqdraw-textarea
+	POP2 POP2 <select-reset>
+	update-nav !reqdraw-textarea
 
 @format-trim ( -- )
 	[ LIT2r 0000 ] get-to get-from
@@ -1461,7 +1447,7 @@
 	[ LIT2 00 -Screen/sprite ] DEO
 	#000c ADD2 .Screen/x DEO2
 	INC2 .Screen/width DEI2 #0080 SUB2 #02 draw-word-until
-	( ) walk-blank LDAk [ LIT "& ] EQU ?{ draw-sym-field }
+	( ) walk-blank LDAk [ LIT "& ] EQU ?{ <draw-sym-field> }
 	<draw-sym-fill>
 	walk-blank
 	( | fields )
@@ -1473,8 +1459,9 @@
 		LDAk #20 LTH ?{
 			LDAk [ LIT "& ] NEQ ?{
 				[ LIT2 &anchor $2 ] .Screen/x DEO2
-				INC2 #01 draw-sym-key walk-blank
-				( ) LDAk [ LIT "@ ] EQU ?{ draw-sym-field }
+				INC2 #01 <draw-sym-key>
+				walk-blank
+				( ) LDAk [ LIT "@ ] EQU ?{ <draw-sym-field> }
 				<draw-sym-fill>
 				walk-blank !&>l }
 		walk-word/ }
@@ -1497,14 +1484,14 @@
 	.Screen/y DEI2k #0008 ADD2 ROT DEO2
 	JMP2r
 
-@draw-sym-key ( addr* color -- addr* )
+@<draw-sym-key> ( addr* color -- addr* )
 	;blinker-icn .Screen/addr DEO2
 	[ LIT2 01 -Screen/sprite ] DEO
 	;tab-icn .Screen/addr DEO2
 	[ LIT2 01 -Screen/sprite ] DEO
 	.Screen/width DEI2 #0028 SUB2 ROT !draw-word-until
 
-@draw-sym-field ( addr* -- addr* )
+@<draw-sym-field> ( addr* -- addr* )
 	.Screen/x DEI2k #0004 ADD2 ROT DEO2
 	LDAk [ LIT "( ] EQU ?{
 		.Screen/width DEI2 #0018 SUB2 #03 !draw-word-until }
@@ -1580,10 +1567,44 @@
 (
 @|stdlib )
 
+@chex ( c -: <val> )
+	[ LIT "0 ] SUB DUP #0a LTH ?&end
+	#27 SUB DUP #10 LTH ?&end
+	POP #ff &end JMP2r
+
+@shex ( str* -: value* )
+	[ LIT2r 0000 ]
+	&>w ( `i* -- )
+		( acc ) [ LITr 40 ] SFT2r
+		( res ) LDAk chex [ LITr 00 ] STH
+		ADD2r INC2 LDAk ?&>w
+	POP2 STH2r JMP2r
+
 @hexc ( hex -- char )
 	#0f AND #0a LTHk ?{
 		SUB [ LIT "a ] ADD JMP2r }
 	POP [ LIT "0 ] ADD JMP2r
+
+@flen ( path* -- size* )
+	.File/name DEO2
+	#0100 .File/length DEO2
+	#ff00 .File/stat DEO2
+	#00 #ff04 STA
+	#ff00 !shex
+
+@fbin? ( path* -- bool )
+	.File/name DEO2
+	#0001 .File/length DEO2
+	&s ( -- )
+	;&b feof? ?{
+		[ LIT &b $1 ] ?&s
+		#01 JMP2r
+		!&s }
+	#00 JMP2r
+
+@feof? ( buf* -- eof )
+	.File/read DEO2
+	.File/success DEI2 #0000 EQU2 JMP2r
 
 @clab? ( c -- bool )
 	DUP LIT "0 SUB #0a LTH ?&ok
@@ -1958,9 +1979,9 @@
 	#0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO
 	JMP2r
 
-@pstr ( str* -- )
+@<pstr> ( str* -- )
 	LDAk #18 DEO
-	INC2 LDAk ?pstr
+	INC2 LDAk ?<pstr>
 	POP2 JMP2r
 
 @exit ( -- )
