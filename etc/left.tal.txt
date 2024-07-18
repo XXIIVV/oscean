@@ -1094,9 +1094,8 @@
 @file-inject ( name* -- )
 	DUP2 file-is-bin? ?file-inject-binary
 	DUP2 file-size ORAk ?{ POP2 POP2 JMP2r }
-	STH2
+	STH2k .File/length DEO2
 	.File/name DEO2
-	STH2kr .File/length DEO2
 	( | erase when selection length )
 	has-empty? ?{ erase-selection }
 	( push right ) get-from STH2kr <msfr>
@@ -1611,11 +1610,7 @@
 	POP2 get-eof SWP2 SUB2 ,&length STR2
 	;&mmu .System/expansion DEO2
 	JMP2r
-
-	&mmu 01
-	&length 0000 0000
-	&src 0000 0000
-	&dst 0000
+	&mmu 01 &length 0000 0000 &src 0000 0000 &dst 0000
 
 @<msfr> ( a* distance* -- )
 	ADD2k ,&dst STR2
@@ -1623,11 +1618,7 @@
 	POP2 get-eof SWP2 SUB2 ,&length STR2
 	;&mmu .System/expansion DEO2
 	JMP2r
-
-	&mmu 02
-	&length 0000 0000
-	&src 0000 0000
-	&dst 0000
+	&mmu 02 &length 0000 0000 &src 0000 0000 &dst 0000
 
 @sseg? ( a* b* -- bool )
 	STH2
@@ -1697,6 +1688,7 @@
 	.Mouse/x DEI2 #0004 ADD2 get-x-cat menu-select-cat
 	( release ) [ LIT2 00 -Mouse/state ] DEO
 	BRK
+
 	&no-touch-cat ( when sub active )
 	;<draw-menu>/sel LDA #ff EQU ?&no-sub
 	( | when sel changed )
@@ -1704,13 +1696,12 @@
 	( | changed )
 	DUP ;<draw-sub>/sel LDA EQU ?&no-change
 	DUP ;<draw-sub>/sel STA
-	;<draw-menu>/sel LDA <draw-sub>
-	&no-change POP
+	;<draw-menu>/sel LDA <draw-sub> &no-change POP
 	( | when touch sub )
 	[ LIT2 00 -Mouse/state ] DEI EQU ?&no-touch-sub
 	;<draw-sub>/sel LDA menu-select-sub
-	( release ) [ LIT2 00 -Mouse/state ] DEO
-	&no-touch-sub BRK
+	( release ) [ LIT2 00 -Mouse/state ] DEO &no-touch-sub BRK
+
 	&no-sub ( don't leave if menu is active )
 	;<draw-menu>/sel LDA INC ?&no-leave
 	.Mouse/y DEI2 #0018 LTH2 ?&no-leave
@@ -1738,8 +1729,7 @@
 	( | draw )
 	redraw-all #ff ;<draw-sub>/sel STA
 	DUP ;<draw-menu>/sel STA
-	<draw-sub>
-	!<draw-menu>
+	<draw-sub> !<draw-menu>
 
 @menu-select-sub ( sub -- )
 	,&t STR
@@ -1770,8 +1760,7 @@
 		[ LIT2 &t $1 &id 00 ] INCk ,&id STR
 		EQU ?&end
 		INC2k get-strw #0008 ADD2 STH2
-		ADD2r skip-cat LDAk ?&>w
-	&end POP2 STH2r
+		ADD2r skip-cat LDAk ?&>w &end POP2 STH2r
 	( left padding + 4 ) #000e ADD2 JMP2r
 
 @get-x-cat ( x* -- <cat> )
@@ -1840,10 +1829,12 @@
 @<draw-times> ( color times addr* auto -- )
 	.Screen/auto DEO
 	.Screen/addr DEO2
+	SWP STH
+	[ LITr -Screen/sprite ]
 	&>l ( -- )
-		OVR .Screen/sprite DEO
+		DEOkr
 		INC DUP ?&>l
-	POP2 JMP2r
+	POP POP2r JMP2r
 
 @<draw-label-top> ( str* sel -- )
 	[ LIT2 15 -Screen/auto ] DEO
@@ -1893,8 +1884,9 @@
 	DUP #1b NEQ ?{ ;&esc !&cat }
 	DUP #7f NEQ ?{ ;&del !&cat }
 	DUP ;&buf sput &end POP ;&buf JMP2r
-	&buf $8 &buttons "ABsSUDLR $1
-	&cat ;&buf scat !&end
+	&buf $8
+	&buttons "ABsSUDLR $1 &cat ;&buf scat !&end
+
 	&bsp "bsp $1
 	&tab "tab $1
 	&ent "ent $1
@@ -1921,8 +1913,7 @@
 @|stdlib )
 
 @scap ( str* -- end* )
-	&>w ( -- )
-		INC2 & LDAk ?&>w
+	INC2 & LDAk ?scap
 	JMP2r
 
 @sput ( chr str* -- )
@@ -1942,10 +1933,11 @@
 
 @scat ( src* dst* -- )
 	scap/
+	( >> )
 
 @scpy ( src* dst* -- )
-	STH2
-	!&
+	STH2 !&
+
 	&>w ( -- )
 		LDAk #00 STH2kr STA2
 		INC2r INC2 & LDAk ?&>w
@@ -1967,9 +1959,8 @@
 	JMP2r
 
 @pstr ( str* -- )
-	&>w ( -- )
-		LDAk #18 DEO
-		INC2 LDAk ?&>w
+	LDAk #18 DEO
+	INC2 LDAk ?pstr
 	POP2 JMP2r
 
 @exit ( -- )
