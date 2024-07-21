@@ -50,6 +50,13 @@ Uxn programs begin</a>. Next, inside parentheses, is a <b>comment</b> with the
 arrow symbol indicating that the following operation is a vector. To learn
 more, see <a href='uxntal_notation.html'>Uxntal Notation</a>.</p>
 
+<pre>
+@on-reset
+0100:   a0 01 12   LIT2 my-string
+0103:   60 00 01   JSI print-text
+0106:   00         BRK
+</pre>
+
 <p>The <kbd>;my-string</kbd> token pushes an <b>absolute address</b>, made of
 two bytes, pointing to a series of letters in memory. Values
 pushed to the stack in this fashion are called a <i>literals</i>, as opposed to
@@ -60,6 +67,18 @@ values stored in memory which are called <i>immediates</i>. Next, we call the
 but using the ampersand rune will prefix our new label with the name of the
 last parent label, creating <kbd>@print-text/while</kbd>. To learn more, see <a
 href='uxntal_scope.html'>Uxntal Scope</a>.</p>
+
+<pre>
+@print-text/while
+0107:   94         LDAk
+0108:   80 18      LIT 18
+010a:   17         DEO
+010b:   21         INC2
+010c:   94         LDAk
+010d:   20 ff f7   JCI print-text/while
+0110:   22         POP2
+0111:   6c         JMP2r
+</pre>
 
 <p>Next, the <a href='uxntal_opcodes.html#lda'><kbd>LDAk</kbd></a> opcode loads
 the byte in memory found at that address; the <a href='ascii.html'>ASCII</a>
@@ -103,7 +122,8 @@ its meaning, here is the full list:</p>
 	<tr><td><code>;</code></td><td>literal absolute</td><td><code>=</code></td><td>raw absolute</td></tr>
 	<tr><th colspan="4">Immediate Runes</th></tr>
 	<tr><td><code>!</code></td><td>jmi</td><td><code>?</code></td><td>jci</td></tr>
-</table><h2>Using inline functions in Uxntal.</h2>
+</table>
+<h2>Using inline functions in Uxntal.</h2>
 
 <p>A macro is a way of defining inline routines, it allows to create new words that will be replaced by the body of the macro, as opposed to a jump where the program counter will move to a routine and back, therefore it needs to be defined before its usage, as follow: </p>
 
