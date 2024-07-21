@@ -273,10 +273,8 @@
 	&c "</a> $1
 
 @<path> ( str* -- )
-
-	&>w ( -- )
-		LDAk [ LIT "_ ] OVR #20 NEQ [ JMP SWP POP ] <char>
-		INC2 LDAk ?&>w
+	LDAk [ LIT "_ ] OVR #20 NEQ [ JMP SWP POP ] <char>
+	INC2 LDAk ?<path>
 	POP2 JMP2r
 
 @<str> ( str* -- )
@@ -286,12 +284,13 @@
 @<len> ( str* len* -- )
 	.File2/length DEO2
 	.File2/write DEO2
+	( restore ) #0001 .File2/length DEO2
 	JMP2r
 
 @<char> ( chr -- )
-	#0001 .File2/length DEO2
-	;&b STAk .File2/write DEO2
-	POP JMP2r
+	;&b STA
+	;&b .File2/write DEO2
+	JMP2r
 	&b $1
 
 (
@@ -307,7 +306,7 @@
 	POP2 JMP2r
 
 @sdec ( str* -- val* )
-	LIT2r 0000
+	[ LIT2r 0000 ]
 	&>w ( -- )
 		LIT2r 000a MUL2r LITr 00 LDAk #30 SUB STH
 		ADD2r INC2 LDAk ?&>w
@@ -316,11 +315,8 @@
 @sseg ( a* b* -- f )
 	STH2
 	&>l ( a* -- f )
-		LDAk LDAkr STHr NEQ ?&e
-		INC2k LDA #00 EQU ?&e
-		INC2 INC2r !&>l
-
-	&e ( a* -- f )
+		LDAk LDAkr STHr NEQ ?{
+			INC2k LDA #00 EQU ?{ INC2 INC2r !&>l } }
 	LDA LDAr STHr EQU JMP2r
 
 @<scpy-line> ( src* dst* -- )
@@ -375,8 +371,7 @@
 @|assets )
 
 @dict
-	&no-photo "000 $1
-	&spacer 20 "&mdash; 20 $1
+	&no-photo "000 $1 &spacer 20 "&mdash; 20 $1
 	&journal-path "src/htm/journal.htm $1
 	&http-txt "http $1
 	&htm-ext ".htm $1
@@ -394,8 +389,7 @@
 	&redlink "!! 20 "Redlink: 20 $1
 	&available-txt ".. 20 "Available 20 "diary: 20 $1
 	&warn-duplicate "-- 20 "Duplicate 20 "diary: 20 $1
-	&warn-unknown "-- 20 "Unknown 20 "diary: 20 $1
-	&in 20 "in 20 $1
+	&warn-unknown "-- 20 "Unknown 20 "diary: 20 $1 &in 20 "in 20 $1
 
 @diary-paths
 	&3 "src/tables/diary/15-19 $1

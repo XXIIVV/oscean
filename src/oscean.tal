@@ -297,13 +297,12 @@
 		DUP2 .File/read DEO2
 		.File/success DEI2
 		( ) DUP2 .File2/length DEO2
-		( ) #0000 EQU2 ?&end
-		DUP2 .File2/write DEO2
-		INCr !&>s
-
-	&end ( -- )
+		( ) #0000 EQU2 ?{
+			DUP2 .File2/write DEO2
+			INCr !&>s }
 	POP2 STHr ?{ DUP2 ;err/source <print-error> }
-	POP2 #0001 .File2/length DEO2
+	POP2
+	( restore ) #0001 .File2/length DEO2
 	JMP2r
 
 @<write-img> ( src* alt* -- )
@@ -358,16 +357,21 @@
 	( >> )
 
 @<char> ( char -- )
-	#0001 .File2/length DEO2
 	;&b STAk .File2/write DEO2
 	POP JMP2r
 	&b $1
 
 @<space> ( -- )
-	#0001 .File2/length DEO2
 	;&b .File2/write DEO2
 	JMP2r
 	&b 20
+
+@<char2> ( c1 c2 -- )
+	;&b STA2
+	;&b1 .File2/write DEO2
+	;&b2 .File2/write DEO2
+	JMP2r
+	&b &b1 $1 &b2 $1
 
 @<write-len> ( src* length* -- )
 	OVR2 ADD2 SWP2
@@ -379,13 +383,8 @@
 @<write-str> ( addr* -- )
 	DUP2 scap/ OVR2 SUB2 .File2/length DEO2
 	.File2/write DEO2
+	( restore ) #0001 .File2/length DEO2
 	JMP2r
-
-@<char2> ( c1 c2 -- )
-	#0002 .File2/length DEO2
-	;&b STA2k .File2/write DEO2
-	POP2 JMP2r
-	&b $2
 
 @prev-char ( addr* char -- addr* )
 	,&t STR
