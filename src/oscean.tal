@@ -367,7 +367,6 @@
 	#0001 .File2/length DEO2
 	;&b .File2/write DEO2
 	JMP2r
-
 	&b 20
 
 @<write-len> ( src* length* -- )
@@ -446,11 +445,8 @@
 @sseg ( a* b* -- f )
 	STH2
 	&>l ( -- )
-		LDAk LDAkr STHr NEQ ?&e
-		INC2k LDA #00 EQU ?&e
-		INC2 INC2r !&>l
-
-	&e ( -- )
+		LDAk LDAkr STHr NEQ ?{
+			INC2k LDA #00 EQU ?{ INC2 INC2r !&>l } }
 	LDA LDAr STHr EQU JMP2r
 
 @<mclr> ( dst* len* -- )
@@ -470,10 +466,8 @@
 	JMP2r
 
 @<print-str> ( str* -- )
-
-	&>w ( -- )
-		LDAk #18 DEO
-		INC2 & LDAk ?&>w
+	LDAk #18 DEO
+	INC2 & LDAk ?<print-str>
 	POP2 JMP2r
 
 @<print-warning> ( name* msg* -- )
