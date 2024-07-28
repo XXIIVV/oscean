@@ -3245,7 +3245,7 @@ dofala	left(side)
 dofasi	adore, worship*
 dosoldo	nature, abundance
 dosolre	belief, faith, hope
-dosolmi	above, north, beyond
+dosolmi	??
 dosolfa	awake
 dosolsol	april
 dosolla	??
@@ -3341,7 +3341,7 @@ mifafa	fifteen
 mifasol	to hold, to take
 mifala	desire, wish, want, desirous*
 mifasi	error, incorrigible
-misoldo	south, below, behind
+misoldo	??
 misolre	enter
 misolmi	taste
 misolfa	benevolence, affability, goodwill, amiability, kind
@@ -3452,7 +3452,7 @@ sollami	forgive, pardon, amnesty, mercy, forgiveness
 sollafa	favor, favorite, favorable, prefer
 sollasol	experience, skill
 sollala	hour
-sollasi	to see, to hear
+sollasi	to climb, ascend, to go north
 solsido	run, gallop, race, runner
 solsire	to be happy, joy, playfulness, elation, merrily, cheerfully
 solsimi	to be unlucky, misfortune, disaster, unfortunate
@@ -3548,7 +3548,7 @@ silado	compare, comparison, similarity, similitude, comparable
 silare	liquid, soft
 silami	hate, detest, abhor, hatred, animosity, aversion
 silafa	unable, unfit, incapable, inept*
-silasol	to show, to tell
+silasol	to go down, descent, to go south
 silala	sky, firmament
 silasi	direction
 sisido	??
