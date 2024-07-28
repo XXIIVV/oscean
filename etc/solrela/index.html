@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8">
+<head>
+	<meta charset="utf-8"/>
+	<title>Solresol Translator</title>
+	<script src="src/dict.js"></script>
+</head>
+<body>
+	<noscript>The search requires Javascript.</noscript>
+	<input type="text" id="search" placeholder="blue">
+	<input type="button" id="button" value="Search" onclick="myFunction()"/>
+	<span id='summary'></span>
+	<br />
+	<ul id="result"></ul>
+	<p id='dict'></p>
+	<p><small>Translated from François Sudre's original definitions by Garrison Osteen<br />
+Gradually modified and edited by the Solresol Community<br />
+In memory of Daniel Parson(1989-2023)<br />
+	<span style='color:#a4f'>&bull;</span><span style='color:#f00'>&bull;</span><span style='color:#a4f'>&bull;</span></small></p>
+</body>
+<script type="text/javascript">
+	'use strict'
+	// Parse dictionary
+	let file = "https://git.sr.ht/~rabbits/solrela"
+	let count = 0
+	let source
+	let data = {
+		sr: {},
+		en: {}
+	};
+	let notes = ['do', 're', 'mi', 'fa', 'sol', 'la', 'si']
+	dict.split('\n').forEach((value) => {
+		if(!value) return
+		let parts = value.split('\t')
+		// Set origin
+		if (parts[0] == ";;") {
+			source = parts[1]
+			return
+		}
+		let sr = parts.shift().trim().toLowerCase()
+		if(parts[0]) {
+			// Create solresol field
+			if(!data.sr[sr]) data.sr[sr] = {}
+			parts[0].split(",").filter((word) => word.length > 0).forEach((item) => {
+				let en = item.replace('"', '').trim().toLowerCase()
+				if(!data.sr[sr][en]) data.sr[sr][en] = []
+				data.sr[sr][en].push(source)
+				// Create english field
+				if (!data.en[en]) data.en[en] = {}
+				if (!data.en[en][sr]) data.en[en][sr] = []
+				data.en[en][sr].push(source)
+				count++;
+			})
+		}
+	})
+	document.getElementById("dict").innerHTML = `Solrela knows <a href='${file}' target='_blank'>${count} words</a>.`
+	// Connect interface
+	document.getElementById("search").addEventListener("keyup", (event) => {
+		if (event.key === "Enter") findword(event.target.value.toLowerCase())
+	});
+	document.getElementById("button").onclick = (event) => {
+		findword(document.getElementById("search").value.toLowerCase())
+	}
+	// Read anchor tag on start
+	if (window.location.hash.substring(1))
+		findword(window.location.hash.substring(1))
+
+	function explode_srs(w){
+		let count = 0
+		let segments = []
+		while(w.length > 0 && count++ < 10){
+			if(!w.indexOf("do")) segments.push(0), w = w.substr(2)
+			else if(!w.indexOf("re")) segments.push(1), w = w.substr(2)
+			else if(!w.indexOf("mi")) segments.push(2), w = w.substr(2)
+			else if(!w.indexOf("fa")) segments.push(3), w = w.substr(2)
+			else if(!w.indexOf("sol")) segments.push(4), w = w.substr(3)
+			else if(!w.indexOf("la")) segments.push(5), w = w.substr(2)
+			else if(!w.indexOf("si")) segments.push(6), w = w.substr(2)
+			else if(!w.indexOf(" ")) segments.push(-1), w = w.substr(1)
+			else return 0
+		}
+		return segments
+	}
+
+	function explode_ses(w){
+		let count = 0
+		let segments = []
+		while(w.length > 0 && count++ < 10){
+			if(!w.indexOf("d")) segments.push(0), w = w.substr(1)
+			else if(!w.indexOf("r")) segments.push(1), w = w.substr(1)
+			else if(!w.indexOf("m")) segments.push(2), w = w.substr(1)
+			else if(!w.indexOf("f")) segments.push(3), w = w.substr(1)
+			else if(!w.indexOf("s")) segments.push(4), w = w.substr(1)
+			else if(!w.indexOf("l")) segments.push(5), w = w.substr(1)
+			else if(!w.indexOf("t")) segments.push(6), w = w.substr(1)
+			else if(!w.indexOf("ou")) segments.push(4), w = w.substr(2)
+			else if(!w.indexOf("au")) segments.push(5), w = w.substr(2)
+			else if(!w.indexOf("iu")) segments.push(6), w = w.substr(2)
+			else if(!w.indexOf("o")) segments.push(0), w = w.substr(1)
+			else if(!w.indexOf("e")) segments.push(1), w = w.substr(1)
+			else if(!w.indexOf("i")) segments.push(2), w = w.substr(1)
+			else if(!w.indexOf("a")) segments.push(3), w = w.substr(1)
+			else if(!w.indexOf(" ")) segments.push(-1), w = w.substr(1)
+			else return 0
+		}
+		return segments
+	}
+
+	function sha(w){
+		let res = ""
+		let segs = explode_srs(w)
+		let ss = ['𐑴', '𐑦', '𐑵', '𐑳', '𐑯', '𐑤', '𐑨']
+		let dd = ['̭', '̤', '̣', '_', '̇', '̈', '̌']
+		let last = 0
+		if(!segs) return ""
+		segs.forEach((v, id) => {
+			let offset = v - last
+			if(offset < -3) offset = offset + 7
+			else if(offset > 3) offset = offset - 7
+			
+			if(id & 1) res += offset ? dd[offset+3] : ss[v]
+			else res += ss[v]
+			last = v
+		})
+		return res
+	}
+
+	function unses(w){
+		let res = ""
+		let segs = explode_ses(w)
+		if(!segs) return ""
+		segs.forEach((s) => { res += notes[s] })
+		return res
+	}
+
+	function ses(w){
+		let res = ""
+		let segs = explode_srs(w)
+		let cc = ['d', 'r', 'm', 'f', 's', 'l', 't']
+		let vv = ['o', 'e', 'i', 'a', 'ou', 'au', 'iu']
+		if(!segs) return ""
+		if(segs.length == 1)
+			return vv[segs[0]]
+		segs.forEach((v, id) => {
+			if(id & 1) res += vv[v]
+			else res += cc[v]
+		})
+		return res
+	}
+
+	function ses_pretty(w){
+		let res = ""
+		let segs = explode_srs(w)
+		let cc = ['d', 'r', 'm', 'f', 's', 'l', 't']
+		let vv = ['o', 'e', 'i', 'a', 'ou', 'au', 'iu']
+		let colors = ['c-do','c-re','c-mi','c-fa','c-sol','c-la', 'c-si']
+		if(segs.length == 1)
+			return vv[segs[0]]
+		segs.forEach((v, id) => {
+			res += `<span class='${colors[v]}'>`
+			if(id & 1) res += vv[v]
+			else res += cc[v]
+			res += `</span>`
+		})
+		return res
+	}
+
+	function summarize(w){
+		let html = ""
+		let shavian = ""
+		w.split(' ').forEach((t) => { html += ses(t) + " " })
+		w.split(' ').forEach((t) => { shavian += sha(t) })
+		return `<i>${html}</i> ${shavian}`
+	}
+
+	function echoword(lang, target, cl){
+		let html = ""
+		if(!target) return ""
+		// Merge sources
+		let sources = {}
+		Object.keys(data[lang][target]).forEach((k) => {
+			data[lang][target][k].forEach((value) => {
+				if(!sources[value]) sources[value] = []
+				sources[value].push(k)
+			})
+		});
+		// Print
+		Object.keys(sources).forEach((s) => {
+			let anchors = ""
+			sources[s].forEach((w, id) => {
+				anchors += `<a onclick="findword('${w}')">${w}</a>${id < sources[s].length-1 ? ',' : ''} `
+			})
+			html += `<li class='${lang} ${cl}'><span class='source'>${s}</span><b>${target}${lang == 'sr' ? ', '+ses_pretty(target) : ''}</b>:<br /> ${anchors} </li>`
+		});
+		return html
+	}
+
+	// Find value
+	function findword(target) {
+		let count = 0
+		let res = document.getElementById("result")
+		document.getElementById("search").value = target
+		document.getElementById("summary").innerHTML = ""
+		res.innerHTML = ""
+
+		if (target.length < 2)
+			return
+
+		// Unpack
+		if(!data.sr[target] && unses(target) && data.sr[unses(target)])
+			target = unses(target)
+
+		if(explode_srs(target))
+			document.getElementById("summary").innerHTML = summarize(target)
+		
+		// Search for English match
+		if (data.en[target]) {
+			res.innerHTML += echoword("en", target, "match")
+		}
+		// Search for Solresol match
+		if (data.sr[target]) {
+			res.innerHTML += echoword("sr", target, "match")
+		}
+		// Search English
+		Object.keys(data.en).forEach((k) => {
+			if (k.includes(target) && k != target && count < 40)
+				res.innerHTML += echoword("en", k, " "), count++
+
+		});
+		// Search Solresol
+		Object.keys(data.sr).forEach((k) => {
+			if (k.includes(target) && k != target && count < 40)
+				res.innerHTML += echoword("sr", k, " "), count++
+		});
+		window.location.hash = target
+	}
+</script>
+
+<style>
+	body { padding: 30px; margin:0px auto; font-family: sans-serif}
+	body a { color: #000; cursor:pointer }
+	body a:hover { text-decoration: underline }
+	body ul { padding: 0px }
+	body ul li { list-style-type: none; padding:5px 10px; margin-bottom:1px; border-radius:2px; border-bottom:1px solid #d0c0df }
+	body #search { text-transform: lowercase; padding:5px }
+	body #button { text-transform: lowercase; padding:5px }
+	body #button:hover { cursor:pointer }
+	body ul li.match { background:#eee9f2 }
+	body ul li .source { float:right;font-style:italic;color:#756584 }
+	body #summary { line-height: 32px;float: right; font-size: 30px;font-family:serif }
+	body ul .en { }
+	body ul .sr { }
+	.c-do { color: #c40233; }
+	.c-re { color: #e16b1a; }
+	.c-mi { color: #eac100; }
+	.c-fa { color: #00a368; }
+	.c-sol { color: #00b2b0; }
+	.c-la { color: #0088bf; }
+	.c-si { color: #624579; }
+</style>
+
+</html>
