@@ -3468,7 +3468,7 @@ ladosol	book, volume, tome*
 ladola	capacity, charge, momentum
 ladosi	book, word, term*
 laredo	alphabet, alphabetical(ly)
-larere	red(hue)
+larere	??
 laremi	spell, spelling*
 larefa	syllable, syllabic, monosyllable, monosyllabic*
 laresol	lesson, instruction*
@@ -3476,7 +3476,7 @@ larela	visibility
 laresi	distraction, inattention, inadvertently, inattentive, carelessness, disapplied
 lamido	temporary, fleeting
 lamire	write, writing, writer*
-lamimi	green(hue)
+lamimi	??
 lamifa	dry, barren, thin
 lamisol	forget, overlook, neglect, forgetful, omit
 lamila	acceleration
@@ -3484,7 +3484,7 @@ lamisi	difficulty, trouble
 lafado	right(side)
 lafare	page, leaf, flip/thumb through*
 lafami	notebook, portfolio*
-lafafa	blue(hue)
+lafafa	??
 lafasol	block, halt, stop, deny
 lafala	intensity
 lafasi	subject, topic, thesis, theme*
