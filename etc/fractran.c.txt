@@ -1,7 +1,7 @@
 #include <stdio.h>
 
-/* 
-Copyright (c) 2020 Devine Lu Linvega
+/*
+Copyright (c) 2020-2024 Devine Lu Linvega
 
 Permission to use, copy, modify, and distribute this software for any
 purpose with or without fee is hereby granted, provided that the above
@@ -15,16 +15,24 @@ typedef struct Fraction {
 	unsigned int num, den;
 } Fraction;
 
-typedef struct Machine {
-	int len;
-	Fraction acc, program[256];
-} Machine;
+typedef struct Label {
+	char name[0x40];
+	unsigned int addr;
+} Label;
+
+typedef struct Reference {
+	Fraction *f;
+	Label *l;
+} Reference;
+
+Fraction program[0x1000], *_program = &program[0], *pc = &program[0], acc;
+Label labels[0x100], *_label = &labels[0];
+Reference refs[0x100], *_refs = &refs[0];
 
 static int
 gcd(int a, int b)
 {
-	if(b == 0)
-		return a;
+	if(b == 0) return a;
 	return gcd(b, a % b);
 }
 
@@ -39,85 +47,226 @@ Frac(unsigned int num, unsigned int den)
 }
 
 static void
-printstate(Machine *m)
+print_registers(unsigned int num)
 {
-	unsigned int fac = 2, num = m->acc.num;
-	printf("[%d] ", num);
+	unsigned int fac = 2;
 	while(num > 1) {
 		if(num % fac == 0) {
 			unsigned int pow = 1;
-			printf("r%02u=", fac);
+			printf("%u^", fac);
 			num /= fac;
-			while(!(num % fac)) {
-				num /= fac;
-				pow++;
-			}
-			printf("%02u", pow);
-			if(num != 1)
-				putchar(' ');
+			while(!(num % fac)) num /= fac, pow++;
+			printf("%u", pow);
+			if(num != 1) putchar(' ');
 		} else
 			fac++;
 	}
-	putchar('\n');
 }
 
 static void
-run(Machine *m)
+eval(void)
 {
-	int i = 0, steps = 0;
-	while(i < m->len && m->acc.num) {
-		Fraction res, *f = &m->program[i++];
-		res = Frac(m->acc.num * f->num, m->acc.den * f->den);
-		printf("%u × %u/%u = %u/%u \n",
-			m->acc.num,
-			f->num,
-			f->den,
-			res.num,
-			res.den);
-		if(res.den == 1) {
-			m->acc = res;
-			printstate(m);
-			i = 0;
+	int count = 0;
+	for(;;) {
+		Fraction *f = pc, res;
+		printf("%02d | ", (unsigned int)(pc - &program[0]));
+		if(!f->num && !f->den) { /* halt: 0/0 */
+			printf("%d, ", acc.num), print_registers(acc.num), putchar('\n');
+			printf("Completed in %d cycles.\n", count);
+			return;
+		} else if(!f->num) { /* accu: 0/X */
+			acc.num = f->den, acc.den = 1;
+			printf("%u, ", acc.num), print_registers(acc.num), putchar('\n');
+			pc++;
+		} else if(!f->num) { /* jump: X/0 */
+			pc = &program[f->num];
+			printf("%u -> %d\n", acc.num, f->num);
+		} else {
+			res = Frac(acc.num * f->num, acc.den * f->den);
+			printf("%u × %u/%u = %u/%u, ", acc.num, f->num, f->den, res.num, res.den);
+			if(res.den == 1) {
+				acc = res, pc++, f = pc;
+				print_registers(acc.num);
+				if(f->num && !f->den) { /* jump: X/0 */
+					pc = &program[f->num];
+					printf(" ->%d ", f->num);
+				}
+				putchar('\n');
+			} else {
+				pc++, f = pc;
+				if(f->num && !f->den) { /* stay: X/0 */
+					pc++;
+					printf(".. \n");
+				}
+			}
 		}
-		steps++;
-	}
-	if(steps) {
-		printstate(m);
-		printf("Completed in %d steps.\n", steps);
+		if(count++ > 0x100 || !acc.num || !acc.den) return;
 	}
 }
 
-static void
-push(Machine *m, char *w)
+/* Helpers */
+
+static int
+walk_comment(FILE *f)
 {
-	Fraction f;
-	if(!m->acc.den) {
-		if(sscanf(w, "%u", &m->acc.num) > 0)
-			m->acc.den = 1;
-		return;
-	}
-	if(sscanf(w, "%u/%u", &f.num, &f.den) > 0)
-		m->program[m->len++] = f;
+	char c;
+	while(f && fread(&c, 1, 1, f))
+		if(c == 0xa) break;
+	return 1;
 }
 
-static Machine m;
+static int
+find(char *s, char t)
+{
+	int i = 0;
+	char c;
+	while((c = *s++)) {
+		if(c == t) return i;
+		i++;
+	}
+	return -1;
+}
+
+static int
+scmp(char *a, char *b, int len)
+{
+	int i = 0;
+	while(a[i] == b[i])
+		if(!a[i] || ++i >= len) return 1;
+	return 0;
+}
+
+static char *
+copy(char *src, char *dst, char c)
+{
+	while(*src && *src != c) *dst++ = *src++;
+	*dst++ = 0;
+	return dst;
+}
+
+/* Compiler */
+
+static Label *
+find_label(char *name, int len)
+{
+	Label *ptr = &labels[0];
+	while(ptr < _label) {
+		if(scmp(name, ptr->name, len))
+			return ptr;
+		ptr++;
+	}
+	return NULL;
+}
+
+static int
+create_label(char *s)
+{
+	Label *l = find_label(s, find(s, ':'));
+	if(l != NULL) {
+		l->addr = (unsigned int)(_program - &program[0]);
+		return 1;
+	}
+	copy(s, _label->name, ':');
+	_label->addr = (unsigned int)(_program - &program[0]), _label++;
+	return 1;
+}
+
+static int
+push_jump(char *s)
+{
+	Label *l = find_label(s, 0x40);
+	if(!s[0]) {
+		printf("Invalid jump\n");
+		return 0;
+	}
+	if(l != NULL) {
+		_program->num = l->addr, _program->den = 0;
+		return !!_program++;
+	}
+	_refs->l = _label, _refs->f = _program, _refs++;
+	copy(s, _label->name, ':');
+	_label++;
+	return !!_program++;
+}
+
+static int
+push_accu(char *w)
+{
+	unsigned int num;
+	if(sscanf(w, "%u", &num) > 0) {
+		_program->num = 0, _program->den = num;
+		return !!_program++;
+	}
+	return !printf("Invalid accumulator: %s\n", w);
+}
+
+static int
+push_frac(char *w)
+{
+	if(sscanf(w, "%u/%u", &_program->num, &_program->den) > 0)
+		return !!_program++;
+	return !printf("Invalid fraction: %s\n", w);
+}
+
+static int
+parse(char *token, FILE *f)
+{
+	if(token[0] == ';')
+		return walk_comment(f);
+	if(find(token, ':') != -1)
+		return create_label(token);
+	if(find(token, '/') != -1)
+		return push_frac(token);
+	if(token[0] == '-' && token[1] == '>')
+		return push_jump(token + 2);
+	return token[0] ? push_accu(token) : 1;
+}
+
+static int
+resolve(void)
+{
+	Reference *r = &refs[0];
+	while(r < _refs)
+		r->f->num = r->l->addr, r++;
+	return 1;
+}
+
+static int
+tokenize(FILE *f)
+{
+	unsigned char c;
+	char token[0x40], *_token = token;
+	while(f && fread(&c, 1, 1, f)) {
+		c = c == ',' ? ' ' : c;
+		if(c < 0x21) {
+			*_token++ = 0x00;
+			if(token[0] && !parse(token, f))
+				return 0;
+			_token = token;
+		} else if(_token - token < 0x3f)
+			*_token++ = c;
+		else
+			return !printf("Token too long");
+	}
+	*_token++ = 0;
+	parse(token, f);
+	resolve();
+	return 1;
+}
 
 int
-main(void)
+main(int argc, char *argv[])
 {
-	int len = 0;
-	char c, word[64];
-	while((c = fgetc(stdin)) != EOF) {
-		if(c == ' ' || c == '\n') {
-			word[len] = '\0';
-			len = 0;
-			push(&m, word);
-		} else
-			word[len++] = c;
-		if(c == '\n')
-			break;
-	}
-	printstate(&m);
-	run(&m);
-	return 0;
+	FILE *f;
+	int res = 0;
+	if(argc < 2)
+		return !printf("Fractran - Fractran Interpreter, 15 Aug 2024.\n");
+	if(argc != 2)
+		return !printf("usage: fractran input.fra\n");
+	if(!(f = fopen(argv[1], "r")))
+		return !printf("Source missing: %s\n", argv[1]);
+	res = tokenize(f);
+	fclose(f);
+	if(res) eval();
+	return !res;
 }

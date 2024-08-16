@@ -35,41 +35,18 @@ unassigned. </p>
 	<tr><th>5402250</th><td>1</td><td>2</td><td>3</td><td>4</td></tr>
 </table>
 
-<h3>The Operator</h3>
+<h3>The Operand</h3>
 
 <img src='../media/refs/fractran.adder1.jpg' width='140px'/>
 
-<p>An <b>Operator</b> is a positive fraction, each fraction represents an
+<p>An <b>Operand</b> is a positive fraction, each fraction represents an
 instruction that tests one or more registers, represented by the prime factors
-of its denominator. The Fractran computer goes through each fraction in order,
-in terms of our current accumulator value.</p>
+of its numerator and denominator. For example, to evaluate the result of
+holding 18 in the accumulator with a fraction operand of <code>2/3</code>, we
+will take the state of the accumulator, if multiplying it by this fraction will
+give us an integer, we will update the accumulator with the result.</p>
 
-<pre>18(2<sup>1</sup> × 3<sup>2</sup>) <b>2/3</b> = 8(2<sup>3</sup>) <i>addition r2+r3->r2</i></pre>
-
-<p>To run the <i>adder operation</i>(<code>2/3</code>), we will take the state
-of the accumulator. If multiplying it by this fraction will give us an integer,
-we will do so and start again at the beginning of the program. Otherwise, we
-will stop and consider the program complete. We will do this repeatedly until
-we can no longer produce an integer with this method. </p>
-
-<table border='1'>
-	<tr><th rowspan='2'>steps</th><th rowspan='2'>state</th><th colspan='2'>registers</th></tr>
-	<tr><th>r2</th><th>r3</th></tr>
-	<tr><td>1</td><th>18</th><td>1</td><td>2</td><td>18 × 2/3 = 12/1</td><td>INT, RESTART</td></tr>
-	<tr><td>2</td><th>12</th><td>2</td><td>1</td><td>12 × 2/3 = 8/1</td><td>INT, RESTART</td></tr>
-	<tr><td>3</td><th>8</th><td>3</td><td></td><td>8 × 2/3 = 16/3</td><td>NOT INT, END</td></tr>
-</table>
-
-<p>To add the values 1 and 2, we will store the values in registers 2 and 3, our
-starting state is therefore 18(2<sup>1</sup> × 3<sup>2</sup>).</p>
-
-<p>For each step of the program, we will multiply our state with the program(18
-× 2/3 = 12, 12 × 2/3 = 8, ..) until our our working value cannot be reduced
-to a whole number(16/3), we have exhausted the program. Alternatively, the
-program <code>3/2</code> will do the same operation but store the result in the
-register 3. </p>
-
-<pre>576(2<sup>6</sup> × 3<sup>2</sup>) <b>1/6</b> = 16(2<sup>4</sup>) <i>subtraction r2-r3->r2</i></pre>
+<pre>18(2<sup>1</sup> × 3<sup>2</sup>) <b>2/3</b>(2<sup>+1</sup>, 3<sup>-1</sup>) = 12(2<sup>2</sup> × 3<sup>1</sup>)</pre>
 
 <p>Operations become more readable when broken down into their primes. We can
 think of every prime number as having a register which can take on non-negative
@@ -118,13 +95,6 @@ if(<span class='denreg'>r2</span> >= <span class='denval'>2</span> && <span clas
 	</tr>
 </table>
 
-<p>You can interpret a fraction as saying if the current value of each register
-is greater than or equal to the value specified by the denominator, you
-subtract from the registers all of the values in the denominator, add all the
-values specified in the numerator, and then jump back to the first instruction.
-Otherwise, if any register is less than the value specified in the denominator,
-continue to the next fraction.</p>
-
 <h3>The Program</h3>
 
 <p>A <b>Program</b> is a list of fractions distributed over lines together with
@@ -134,19 +104,29 @@ a line might have the form:</p>
 <img src='../media/refs/fractran.adder3.jpg' width='220px'/>
 
 <pre>
-line 1: 1/7 -> 2, 1/3 -> 1
-line 2: 10/3 -> 2, 1/1 -> 3
-line 3: 3/5 -> 3, 1/1 -> 1
+210
+1: 1/7 ->2, 1/3 ->1
+2: 10/3 ->2, 1/1 ->3
+3: 3/5 ->3
 </pre>
 
-<p>In the example below, the machine replaces the Accumulator(A) by the result of
-2/3 × A, if this is again an integer, the evaluation goes to line 7. If the
-result is not an integer, but 4/5 × A is, we instead replace A by the result
-of 4/5 × A and go to line 14. If neither result in an integral, we stop at
-line 13.</p>
+<p>You can interpret a fraction as saying if the current value of each register
+is greater than or equal to the value specified by the denominator, you
+subtract from the registers all of the values in the denominator, add all the
+values specified in the numerator. If any register is less than the value
+specified in the denominator, continue to the next fraction.</p>
 
 <pre>
-line 13: 2/3 -> 7, 4/5 -> 14
+00 | 210, 2^1 3^1 5^1 7^1
+01 | 210 × 1/7 = 30/1, 2^1 3^1 5^1 ->5 
+05 | 30 × 10/3 = 100/1, 2^2 5^2 ->5 
+05 | 100 × 10/3 = 1000/3, .. 
+07 | 100 × 1/1 = 100/1, 2^2 5^2 ->9 
+09 | 100 × 3/5 = 60/1, 2^2 3^1 5^1 ->9 
+09 | 60 × 3/5 = 36/1, 2^2 3^2 ->9 
+09 | 36 × 3/5 = 108/5, .. 
+11 | 36, 2^2 3^2
+Completed in 8 cycles.
 </pre>
 
 <ul>
@@ -154,54 +134,23 @@ line 13: 2/3 -> 7, 4/5 -> 14
     <li>Repeat this rule until no fraction in the list produces an integer when multiplied by the accumulator, then halt.</li>
 </ul>
 
-<p>Let's put together an adder program similar from the one above(<code>2/3</code>) but which writes to a third register. The following program first moves the content in r2 to r3, and then the content of r3 to r5.</p>
+<h3>Implementation</h3>
 
-<pre>18(2<sup>1</sup> × 3<sup>2</sup>) <b>3/2 5/3</b> = 125(5<sup>3</sup>) <i>addition r2+r3->r5(9 steps)</i></pre>
+<p>The language runtime can be implemented in about <a href='ansi_c.html'>300
+lines</a>.</p>
 
-<p>Alternatively, a faster way to do this would be to directly move powers of 2 over to 5, then powers of 3.</p>
+<div class='codeview'>
+	<iframe src='../etc/fractran.c.txt'></iframe>
+	<pre>cc fractran.c -o fractran <a href='../etc/fractran.c.txt' target='_blank'>view raw</a></pre>
+</div>
 
-<pre>18(2<sup>1</sup> × 3<sup>2</sup>) <b>5/2 5/3</b> = 125(5<sup>3</sup>) <i>addition r2+r3->r5(7 steps)</i></pre>
-
-<p>Each of the 7 steps of this last program looks like: </p>
+<p>The runtime expects a program in the format:</p>
 
 <pre>
-18 5/2 5/3           [18]  r2=01 r3=02
-------------------   -----------------
-18 × 5/2 = 45/1      [45]  r3=02 r5=01
-45 × 5/2 = 225/2 
-45 × 5/3 = 75/1      [75]  r3=01 r5=02
-75 × 5/2 = 375/2 
-75 × 5/3 = 125/1     [125] r5=03
-125 × 5/2 = 625/2 
-125 × 5/3 = 625/3    [125] r5=03
+18                          ; Set accumulator
+loop: 2/3 ->loop, 5/2 ->end ; Loop adding values of r2 and r3, and jump to 2
+end: 0/0                    ; Terminate.
 </pre>
-
-<p>Both of these programs are destructive, meaning that they drain the registers of their original values. We can make (<code>2/3</code>) less destructive with (<code>10/3</code>) by storing a copy of r3 in r5. And we can create a non-destructive adder but this requires coming in with the program with the flag r7 set: </p>
-
-<pre>126(2<sup>1</sup> × 3<sup>2</sup> × 7<sup>1</sup>) <b>7/11 715/14 935/21 1/7 2/13 3/17</b> = 2250(2<sup>1</sup> × 3<sup>2</sup> × 5<sup>3</sup>)</pre>
-
-<p>As an extra demonstration, let us consider the following programs representing all the <a href='binary.html'>logic gates</a>: </p>
-
-<table border='1'>
-	<tr><th></th><th>Program</th><td><code>07</code></td><td><code>14</code></td><td><code>21</code></td><td><code>42</code></td></tr>
-	<tr><th>AND Gate</th><td><code>5/42 1/21 1/14 1/7</code></td><td>1</td><td>1</td><td>1</td><td>5</td></tr>
-	<tr><th>OR Gate</th><td><code>5/42 5/21 5/14 1/7</code></td><td>1</td><td>5</td><td>5</td><td>5</td></tr>
-	<tr><th>XOR Gate</th><td><code>1/42 5/21 5/14 1/7</code></td><td>1</td><td>5</td><td>5</td><td>1</td></tr>
-	<tr><th>NAND Gate</th><td><code>1/42 5/21 5/14 5/7</code></td><td>5</td><td>5</td><td>5</td><td>1</td></tr>
-	<tr><th>NOR Gate</th><td><code>1/42 1/21 1/14 5/7</code></td><td>5</td><td>1</td><td>1</td><td>1</td></tr>
-	<tr><th>XNOR Gate</th><td><code>5/42 1/21 1/14 5/7</code></td><td>5</td><td>1</td><td>1</td><td>5</td></tr>
-</table>
-
-<h3>Extras</h3>
-
-<p>I've been scratching at trying to fit a fractran-inspired vm hosted in uxn's 16-bit space where these fractions operate differently to facilitate running with low values in registers.</p>
-
-<table border='1'>
-	<tr><th><code>*/*</code></th><td>Jump</td></tr>
-	<tr><th><code>*/0</code></th><td>Push Acc/Load from memory</td></tr>
-	<tr><th><code>0/*</code></th><td>Pop Acc/Save in memory</td></tr>
-	<tr><th><code>0/0</code></th><td>Pop, or Break</td></tr>
-</table>
 
 <q>A wise person marvels at the commonplace.</q>
 <cite>Confucius</cite>

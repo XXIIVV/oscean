@@ -99,7 +99,7 @@ controller.</p>
 code by writing emulation software for each new platform, the specifications
 should be painless to implement. Let's use the time one would need to write a
 passable emulator as a limit in complexity for this system. Could a computer
-science student implement a mediocre emulation of the 6502 instructions in an
+science student implement an emulation of the 6502 instructions in an
 afternoon? Could that design be simplified, changed in some way to make it more
 approachable for would-be implementers?</p>
 
@@ -153,7 +153,12 @@ aspects of any other real-world general-purpose computer, and is therefore
 enough to represent all mathematical functions.</p>
 
 <article>
-	<p>So, why not <b>Pico-8</b>? The Pico-8 comparison feels like people are conflating Uxn with <a href='varvara.html'>Varvara</a>. A better comparison would be Uxn and the Lua VM, that Pico-8 embeds, which isn't intended to be targeted directly and its opcodes are an internal implementation detail that regularly breaks between versions. On the other hand, Uxn is a VM focused on long term stability, reimplantation, and portability.</p>
+	<p>So, why not <b>Pico-8</b>? The Pico-8 comparison comes from people
+conflating Uxn with <a href='varvara.html'>Varvara</a>. A better comparison
+would be Uxn and the Lua VM, that Pico-8 runs on, which isn't intended to be
+targeted directly and its opcodes are an internal implementation detail that
+regularly breaks between versions. On the other hand, Uxn is a VM focused on
+long term stability, reimplantation, and portability.</p>
 </article>
 
 <img src='../media/refs/ma.png' style='float:right; margin-left:30px; width:100px'/>
@@ -234,10 +239,9 @@ the host system via dedicated opcodes. </p>
 <h2>A programming language</h2>
 
 <p>It is fair to assume that programming with so few primitives, will make it
-difficult for compilers, and related tooling, to infer meaning from a program's
-source files. But we can still convey a lot of details about the intent of
-various data structures by encoding information in the few tools at our
-disposal.</p>
+difficult for software tools, to infer meaning from a program's source files.
+But we can still convey a lot of details about the intent of various data
+structures by encoding information in the few tools at our disposal.</p>
 
 <h3>I. Structural Editing</h3>
 
@@ -355,7 +359,7 @@ nevertheless catches some invalid programs and enables compiler optimizations.
 		POP2 #000b JMP2r
 </pre>
 
-<h3>III. Graph Reduction</h3>
+<h3>III. Peephole Optimization</h3>
 
 <p>Routines are sequences of combinators that ingest values from the stacks,
 some permutations of these combinators are obviously redundant and <a
@@ -363,35 +367,33 @@ href='uxnlin.html'>reducing</a> these
 extraneous transformations can be done on source files, for example: </p>
 
 <pre>
-#12 #34 <b>SWP POP</b> -> #1234 NIP 
+#12 #34 <b>SWP POP</b> -> NIP 
 </pre>
 
-<p>Tail-call optimization can be understood as a form of graph reduction, where
-jumps to subroutines followed by subroutine returns can be replaced instead by
-a single jump. </p>
+<p>Tail-call optimization happen where jumps to subroutines are followed by
+subroutine returns and can be replaced instead by a single jump. </p>
 
 <pre>
 @routine ( a b -: c )
-	SWP ;function <b>JSR2 JMP2r</b> -> SWP ;function JMP2
+	SWP ;function <b>JSR2 JMP2r</b> -> JMP2
 </pre>
 
-<p>Going one step further, routines that would otherwise terminate in a
-tail-call optimisation could even be relocated before their tail's location in
-memory and do away with the ending jump altogether. Incidentally, we see here a
-comment marker to indicate to the stack-effect checker that the routine's tail
-will fall-through.</p>
+<p>Going one step further, routines that would otherwise terminate in a tail-call
+optimization could even be relocated before their tail's location in memory and
+do away with the ending jump altogether. Incidentally, we leave here a comment
+marker to indicate to the stack-effect checker that the routine's tail will
+fall-through.</p>
 
 <pre>
 @routine ( a b -: c )
-	SWP <b>;function JMP2</b> -> SWP ( >> )
+	SWP <b>;function JMP2</b> -> ( >> )
 
-@function ( a b -: c )
-	ADD JMP2r
+@function ( b a -: c )
+	DIV JMP2r
 </pre>
 
-<p>I feel like I've only just begun to scratch the surface of what can be done
-with the language, and will update this document as new things are
-uncovered.</p>
+<p>These are just a handful of examples, <br />there is still many <a
+href='uxntal_labyrinth.html'>more things to explore</a>.</p>
 
 <img src='../media/generic/varvara.potato.png' width='200'/>
 
@@ -417,19 +419,17 @@ illustration.</p>
 
 <img src='../media/refs/de_pictura.png' alt='De Pictura, Leon Battista Alberti. 1963' width='400'/>
 
-<p>This romantic vision of the <a href='anarchy.html'>luddite</a>, potentially
+<p>A romantic vision of the <a href='anarchy.html'>luddite</a>, potentially
 emancipating, power of computing was promptly smothered by military drones,
 surveillance hardware and the advertisement machinery. Suffice to say, that
 nowadays, to most of my friends, computing evokes either encroaching social
 networks or the drudgery of data entry.</p>
 
-<img src='../media/refs/hello.png' alt='Hello, on Macintosh.' width='100'/>
-
 <p>Perhaps I'm making it more difficult than necessary by using the term
 <i>personal computer</i>, and not finding a more apt word to describe what I
-have in mind. This devlog is a summary of notes on the creation of a personal
-computer built upon the virtual machine documented in the <a
-href='uxn_devlog.html'>previous post</a>.</p>
+have in mind.</p>
+
+<img src='../media/refs/hello.png' alt='Hello, on Macintosh.' width='100'/>
 
 <h3>I. Personal</h3>
 
@@ -437,7 +437,7 @@ href='uxn_devlog.html'>previous post</a>.</p>
 fictional computer to be a sort of <i>model</i> that others could adapt to
 their own <a href='marvelous_pursuit.html'>designs</a>, a call to encourage
 individuals to conjure up <b>their own vision of a computing machine</b>,
-tailored to suit their own needs; And Uxn, a demonstration of the potential of
+tailored to suit their own needs; And Varvara, a demonstration of the potential of
 personal computing systems, and not as a platform that should be adopted and
 adapted to fit broader computing needs.</p>
 
@@ -461,8 +461,8 @@ href='commodity.html'>disposable laptops</a>, each equally adorned of
 that which needs to be mended; a venture which, thanks to the ever
 complexifying <a href='stack.html'>stack</a> upon which modern computing is
 built, will have you promptly laughed out of the room. But just for the sake of
-our talking about virtual machines, our required understanding of the system
-shall end at its bytecode.</p>
+this article, the required understanding of a system shall end at its
+bytecode bedrock.</p>
 
 <img src='../media/generic/varvara.chill.png' width="200" />
 
@@ -474,7 +474,7 @@ and care.</p>
 
 <h3>II. Computer</h3>
 
-<p>Our definition of a computer is the sum of potential I/O communications with
+<p>The computer in this case is the sum of potential I/O communications with
 the underlying virtual machine. In this case, the VM can communicate with up to
 16 devices at once, but has no knowledge of what a screen or a keyboard might
 be, these devices are what make up the <i>computer</i>.</p>

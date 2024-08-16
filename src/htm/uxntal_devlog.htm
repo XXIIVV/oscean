@@ -1,10 +1,9 @@
 <h2>A programming language</h2>
 
 <p>It is fair to assume that programming with so few primitives, will make it
-difficult for compilers, and related tooling, to infer meaning from a program's
-source files. But we can still convey a lot of details about the intent of
-various data structures by encoding information in the few tools at our
-disposal.</p>
+difficult for software tools, to infer meaning from a program's source files.
+But we can still convey a lot of details about the intent of various data
+structures by encoding information in the few tools at our disposal.</p>
 
 <h3>I. Structural Editing</h3>
 
@@ -122,7 +121,7 @@ nevertheless catches some invalid programs and enables compiler optimizations.
 		POP2 #000b JMP2r
 </pre>
 
-<h3>III. Graph Reduction</h3>
+<h3>III. Peephole Optimization</h3>
 
 <p>Routines are sequences of combinators that ingest values from the stacks,
 some permutations of these combinators are obviously redundant and <a
@@ -130,35 +129,33 @@ href='uxnlin.html'>reducing</a> these
 extraneous transformations can be done on source files, for example: </p>
 
 <pre>
-#12 #34 <b>SWP POP</b> -> #1234 NIP 
+#12 #34 <b>SWP POP</b> -> NIP 
 </pre>
 
-<p>Tail-call optimization can be understood as a form of graph reduction, where
-jumps to subroutines followed by subroutine returns can be replaced instead by
-a single jump. </p>
+<p>Tail-call optimization happen where jumps to subroutines are followed by
+subroutine returns and can be replaced instead by a single jump. </p>
 
 <pre>
 @routine ( a b -: c )
-	SWP ;function <b>JSR2 JMP2r</b> -> SWP ;function JMP2
+	SWP ;function <b>JSR2 JMP2r</b> -> JMP2
 </pre>
 
-<p>Going one step further, routines that would otherwise terminate in a
-tail-call optimisation could even be relocated before their tail's location in
-memory and do away with the ending jump altogether. Incidentally, we see here a
-comment marker to indicate to the stack-effect checker that the routine's tail
-will fall-through.</p>
+<p>Going one step further, routines that would otherwise terminate in a tail-call
+optimization could even be relocated before their tail's location in memory and
+do away with the ending jump altogether. Incidentally, we leave here a comment
+marker to indicate to the stack-effect checker that the routine's tail will
+fall-through.</p>
 
 <pre>
 @routine ( a b -: c )
-	SWP <b>;function JMP2</b> -> SWP ( >> )
+	SWP <b>;function JMP2</b> -> ( >> )
 
-@function ( a b -: c )
-	ADD JMP2r
+@function ( b a -: c )
+	DIV JMP2r
 </pre>
 
-<p>I feel like I've only just begun to scratch the surface of what can be done
-with the language, and will update this document as new things are
-uncovered.</p>
+<p>These are just a handful of examples, <br />there is still many <a
+href='uxntal_labyrinth.html'>more things to explore</a>.</p>
 
 <img src='../media/generic/varvara.potato.png' width='200'/>
 
