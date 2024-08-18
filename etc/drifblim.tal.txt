@@ -62,7 +62,7 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "16 20 "Aug 20 "2024 $2
+	( date ) "17 20 "Aug 20 "2024 $2
 
 (
 @|Core )
@@ -86,9 +86,10 @@
 		( ! ) DUP2 ;err/file <set-error-scope> }
 	POP2 JMP2r
 
-@<set-error> ( name* -- )
+@<set-error> ( token* name* -- )
 	[ LIT2 01 -halt ] STZ
 	<pstr>
+	[ LIT2 ": 18 ] DEO
 	#2018 DEO
 	<pstr>
 	#0a18 DEO
@@ -202,7 +203,15 @@
 	POPr JMP2r
 
 @lib/macros ( t* -- )
-	INC2 macros/<push-string>
+	INC2
+	( | validate )
+	is-hex ?&macro-invalid
+	is-opcode ?&macro-invalid
+	is-runic ?&macro-invalid
+	DUP2 syms/find INC2 ORA ?&macro-duplicate
+	DUP2 macros/find INC2 ORA ?&macro-duplicate
+	( | record )
+	macros/<push-string>
 	#20 ;macros/last STA
 	( walk to macro start )
 	&>sm ( -- )
@@ -213,6 +222,14 @@
 		;&cb feof ?{ [ LIT2 "} &cb $1 ] EQUk ?{ DUP macros/<append> }
 			EQU ?{ !&>sb } }
 	#00 !macros/<push-byte>
+
+	&macro-invalid ( t* -- )
+	POP2
+	( ! ) ;token ;err/macro !<set-error>
+
+	&macro-duplicate ( t* -- )
+	POP2
+	( ! ) ;token ;err/duplicate !<set-error>
 
 (
 @|Lambda )
@@ -287,6 +304,7 @@
 	NIP2 JMP2r
 
 @syms/<create> ( name* -- )
+	DUP2 macros/find INC2 ORA ?&duplicate
 	DUP2 /find INC2k ORA ?{
 		( alloc ) POP2 .SymType/declared rom/get-head !/<push> }
 	( | name* sym* -- )
@@ -294,8 +312,10 @@
 		( addr* ) rom/get-head OVR2 STA2
 		( type ) INC2 INC2 LDAk .SymType/declared ORA ROT ROT STA
 		( name* ) POP2 JMP2r }
-	POP2 POP2
-	( ! ) ;token ;err/duplicate !<set-error-scope>
+	POP2
+	&duplicate ( name* -- )
+	POP2
+	( ! ) ;token ;err/duplicate !<set-error>
 
 @syms/get-bounds ( -- to* from* )
 	,&ptr LDR2 ;&mem JMP2r
@@ -652,6 +672,7 @@
 	&hex "Hexadecimal 20 "invalid $1
 	&opcode "Opcode 20 "invalid $1
 	&reference "Reference 20 "invalid $1
+	&macro "Macro 20 "invalid $1
 	&zeropage "Writing 20 "zero-page $1
 	&distance "Reference 20 "too 20 "far $1
 	&empty "Output 20 "empty $1
