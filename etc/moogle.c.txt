@@ -18,7 +18,6 @@ WITH REGARD TO THIS SOFTWARE.
 #define TITLE "out40x28.icn"
 #define SZ (HOR * VER * 8)
 
-#define VLIMIT 256
 #define ELIMIT 512
 #define MLIMIT 128
 #define PI 3.14159265358979323846
@@ -42,8 +41,8 @@ typedef struct {
 
 typedef struct {
 	int verticeslen, edgeslen;
-	Point3d position, vertices[VLIMIT];
-	Edge edges[ELIMIT];
+	Point3d position, *vertices;
+	Edge *edges;
 } Mesh;
 
 typedef struct {
@@ -65,6 +64,9 @@ typedef struct {
 	Uint8 down;
 	double x, y;
 } Mouse;
+
+static Point3d vertices[0x10000], *_vertices = &vertices[0];
+static Edge edges[0x8000], *_edges = &edges[0];
 
 static int WIDTH = 8 * HOR;
 static int HEIGHT = 8 * VER;
@@ -254,30 +256,24 @@ addvertex(Mesh *m, double x, double y, double z)
 {
 	int i;
 	Point3d v = Pt3d(x, y, z);
-	if(m->verticeslen == VLIMIT) {
-		fprintf(stderr, "Warning: Reached vertex limit\n");
-		return NULL;
-	}
 	translate3d(&v, &scn.position);
 	scale3d(&v, &scn.scale);
 	rotate3d(&v, &scn.position, &scn.rotation);
 	for(i = 0; i < m->verticeslen; ++i)
 		if(equpt3d(m->vertices[i], v))
 			return &m->vertices[i];
-	return set3d(&m->vertices[m->verticeslen++], v.x, v.y, v.z);
+	m->verticeslen++;
+	return set3d(_vertices++, v.x, v.y, v.z);
 }
 
 static Edge *
 addedge(Mesh *m, Point3d *a, Point3d *b, int color)
 {
-	if(m->edgeslen == ELIMIT) {
-		fprintf(stderr, "Warning: Reached edge limit\n");
-		return NULL;
-	}
-	m->edges[m->edgeslen].a = a;
-	m->edges[m->edgeslen].b = b;
-	m->edges[m->edgeslen].color = color;
-	return &m->edges[m->edgeslen++];
+	_edges->a = a;
+	_edges->b = b;
+	_edges->color = color;
+	m->edgeslen++;
+	return _edges++;
 }
 
 /* Primitives */
@@ -644,6 +640,8 @@ addmesh(Scene *s)
 		fprintf(stderr, "Warning: Reached mesh limit\n");
 		return NULL;
 	}
+	s->meshes[s->len].vertices = _vertices;
+	s->meshes[s->len].edges = _edges;
 	return &s->meshes[s->len++];
 }
 
@@ -805,6 +803,7 @@ main(void)
 		return error("Init", "Failure");
 
 	createumbrella(&scn);
+	translate(createbox(&scn, 20, 20, 20, 3), 0, 0, -10);
 
 	/* Begin */
 
