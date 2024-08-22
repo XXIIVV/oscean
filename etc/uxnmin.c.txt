@@ -54,8 +54,8 @@ emu_deo(Uint8 addr, Uint8 value)
 #define INC(s) uxn.s.dat[uxn.s.ptr++]
 #define DEC(s) uxn.s.dat[--uxn.s.ptr]
 #define POx(o) if(_2) { PO2(o) } else PO1(o)
-#define PO1(o) if(_r) o = DEC(rst); else o = DEC(wst);
-#define PO2(o) if(_r) o = DEC(rst) | (DEC(rst) << 8); else o = DEC(wst) | (DEC(wst) << 8);
+#define PO1(o) o = _r ? DEC(rst) : DEC(wst);
+#define PO2(o) PO1(o) o |= (_r ? DEC(rst) : DEC(wst)) << 8;
 #define PUx(i) if(_2) { c = (i); PU1(c >> 8) PU1(c) } else PU1(i)
 #define PU1(i) if(_r) INC(rst) = i; else INC(wst) = i;
 #define RP1(i) if(_r) INC(wst) = i; else INC(rst) = i;
