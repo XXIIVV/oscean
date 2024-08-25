@@ -27,7 +27,7 @@
 	( name ) "Uxnfor 0a
 	( desc ) "Uxntal 20 "Formatter 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "13 20 "Jul 20 "2024 $2
+	( date ) "25 20 "Aug 20 "2024 $2
 
 @await-src ( -> )
 	.Console/read DEI DUP #20 GTH ?{
@@ -78,19 +78,24 @@
 	DUP #29 NEQ ?{
 		[ LIT2 00 _&mute ] STR }
 	[ LIT &mute $1 ] ?scope/put
-	DUP [ LIT "@ ] NEQ ?scope/put
+	DUP [ LIT "@ ] NEQ OVR [ LIT "% ] NEQ AND ?scope/put
 	eval-scope !scope/put
 
 @eval-scope ( -- )
 	<reset-depth>
 	;mem/scope
-	( first scope ) LDAk [ LIT "@ ] NEQ ?&w
 	( | pad zp )
 	.inzp LDZ #00 EQU ?{ #09 <emit> }
-	( | definition )
+	( | label/macro )
 	<emit-word>/
 	#20 <emit>
-	INC2k LDA #28 NEQ ?{ <emit-comment>
+	( | definition )
+	INC2k LDA #28 NEQ ?{
+		<emit-comment>
+		( | definition for macro joins brackets )
+		INC2k LDA [ LIT "{ ] NEQ ?{
+			#20 <emit>
+			INC2 LDAk <emit> }
 		INC2 <emit-break-tab> !&w }
 	INC2 LDAk [ LIT "& ] NEQ ?{ <emit-space> !&w }
 	LDAk #5b NEQ ?{ <emit-space> !&w }
@@ -152,6 +157,7 @@
 	DUP2 wcap/ INC2 LDA
 	( a method ) DUP [ LIT "( ] NEQ ?{ <emit-break-tab> }
 	( a string ) DUP [ LIT "" ] NEQ ?{ <emit-break-tab> }
+	( a block ) DUP [ LIT "[ ] NEQ ?{ <emit-break-tab> }
 	POP
 	( | continue )
 	LDA2k [ LIT2 "&> ] NEQ2 ?{ <inc-depth> }
@@ -216,7 +222,6 @@
 		;mem/result ;Result/ptr LDA2 OVR2 SUB2 .File/length DEO2
 		.File/write DEO2 }
 	JMP2r
-	&b $1
 
 (
 @|utils )
@@ -275,7 +280,7 @@
 @|emitters )
 
 @<emit-block> ( str* -- str* )
-	DUP2 count-block #0027 GTH2 ?<emit-long-block>
+	DUP2 count-block #002a GTH2 ?<emit-long-block>
 	&>w ( -- )
 		LDAk <emit>
 		LDAk #5d EQU ?&end
