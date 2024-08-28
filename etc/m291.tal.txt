@@ -1,0 +1,1277 @@
+( Well, I wasn't going to call it m7b )
+
+|10 @Console &vector $2
+|12 &read $1
+|17 &type $1
+|18 &write $1
+|19 &error $1
+|1c &addr $2
+|1e &mode $1
+|1f &exec $1
+|00 @System &vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
+|20 @Screen &vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
+|80 @Controller &vector $2 &button $1 &key $1
+|90 @Mouse &vector $2 &x $2 &y $2 &state $1 &chord $1 &pad $4 &scrolly &scrolly-hb $1 &scrolly-lb $1
+|a0 @File &vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+
+|000
+
+	@selection $1 &mod $1 &track $1 &scroll $1
+	@path $2 &null $80
+	@lines &folders $1 &tracks $1
+	@playing $1
+	@paused $1
+	@secfrom $2
+	@secto $2
+	@secprog $2
+	@frames &a $2 &b $2
+
+|100
+
+@on-reset ( -> )
+	;meta #06 DEO2
+	( | theme )
+	#e1e1 DUP2 .System/r DEO2
+	DUP2 .System/g DEO2
+	.System/b DEO2
+	<load-theme>
+	( | size )
+	#0100 .Screen/width DEO2
+	( | .. )
+	message/<new>
+	;dict/mpg-cmd .Console/addr DEO2
+	[ LIT2 03 -Console/mode ] DEO
+	[ LIT2 01 -Console/exec ] DEO
+	[ LIT2 00 -playing ] STZ
+	;dict/home-path path/<set>
+	<refresh-dir>
+	( | unlock )
+	;on-mouse .Mouse/vector DEO2
+	;on-control .Controller/vector DEO2
+	;on-console .Console/vector DEO2
+	BRK
+
+@meta $1
+	( name ) "m291 0a
+	( desc ) "Audio 20 "Player 0a
+	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
+	( date ) "27 20 "Aug 20 "2024 $2
+
+(
+@|vectors )
+
+@on-console ( -> brk )
+	[ LIT2 01 -Console/type ] DEI EQU ?{ BRK }
+	[ LIT2 0a -Console/read ] DEI EQUk ?{ message/<append>
+		POP BRK }
+	POP2 message/<parse>
+	BRK
+
+@on-mouse-locked ( -> )
+	#c1 ;touch-chr/down ;touch-chr .Mouse/state DEI
+	( unlock ) DUP ?{ ;on-mouse .Mouse/vector DEO2 }
+	( assets ) ?{ SWP2 }
+	POP2 <update-cursor>
+	BRK
+
+@on-mouse ( -> )
+	.Mouse/scrolly-lb DEI DUP ?&scroll
+	POP
+	( | cursor )
+	#c1 ;touch-chr/down ;touch-chr .Mouse/state DEI ?{ SWP2 }
+	POP2 <update-cursor>
+	( | route events )
+	.Mouse/y DEI2
+	( > ) DUP2 #0014 LTH2 ?&status-bar
+	( > ) [ LIT2 00 -playing ] LDZ EQU ?{ DUP2 #0098 LTH2 ?&player }
+	( | on list )
+	<y-id>
+	.Mouse/state DEI ?{ <select>
+		BRK }
+	<pick>
+	;on-mouse-locked .Mouse/vector DEO2
+	BRK
+
+	&status-bar ( y* -> )
+	POP2 BRK
+
+	&player ( y* -> )
+	.Mouse/state DEI ?{ POP2 BRK }
+	#0050 SUB2 DUP2 #0020 LTH2 ?&controls
+	#0030 SUB2 #0010 LTH2 ?&seeker
+	BRK
+
+	&controls ( y* -> )
+	POP2 .Mouse/x DEI2 #0010 SUB2 #05 SFT2 NIP
+	( > ) DUP #02 NEQ ?{ <skip-prev>
+		;on-mouse-locked .Mouse/vector DEO2 }
+	( > ) DUP #03 NEQ ?{ <send-pause>
+		;on-mouse-locked .Mouse/vector DEO2 }
+	( > ) #04 NEQ ?{ <skip-next>
+		;on-mouse-locked .Mouse/vector DEO2 }
+	BRK
+
+	&seeker ( -> )
+	.Mouse/x DEI2 #0008 SUB2 DUP2 #00e7 GTH2 ?{ DUP2 <seek> }
+	POP2 BRK
+
+	&scroll ( distance -> )
+	.selection/scroll LDZ ADD
+	( above ) DUP #ff EQU ?{
+		( below ) DUP #18 ADD .lines/tracks LDZ GTH ?{ DUP .selection/scroll STZ
+			<redraw-dir> } }
+	POP BRK
+
+@on-control ( -> )
+	( | mod )
+	[ LIT2 04 -Controller/button ] DEI AND #00 NEQ .selection/mod STZ
+	( | key )
+	.Controller/key DEI
+	( esc ) DUP #1b NEQ ?{ <escape> }
+	( enter ) DUP #0d NEQ ?{ .selection LDZ <pick> }
+	( space ) DUP #20 NEQ ?{ <send-pause> }
+	POP
+	( | button )
+	.Controller/button DEI
+	( up ) DUP #10 NEQ ?{ #ff <move> }
+	( down ) DUP #20 NEQ ?{ #01 <move> }
+	( left ) DUP #40 NEQ ?{ <escape> }
+	( right ) DUP #80 NEQ ?{ .selection LDZ <pick> }
+	( A ) DUP #01 NEQ ?{ .selection LDZ <pick> }
+	POP BRK
+
+(
+@|message )
+
+@message/<parse> ( -- )
+	#00 /<append>
+	( | parse line )
+	;&buf LDAk [ LIT "@ ] EQU ?{ POP2 JMP2r }
+	INC2 LDAk
+	( | route )
+	DUP [ LIT "F ] EQU ?handle-frame
+	DUP [ LIT "S ] EQU ?handle-status
+	DUP [ LIT "I ] EQU ?handle-id3
+	DUP [ LIT "P ] EQU ?handle-pause
+	DUP [ LIT "R ] EQU ?handle-revision
+	DUP [ LIT "J ] EQU ?handle-jump
+	POP
+	( | not-handled )
+	<perr>
+	#0a19 DEO
+	( >> )
+
+@message/<new> ( -- )
+	( reset ) ;&buf ,&ptr STR2
+	JMP2r
+
+@message/<append> ( c -- )
+	[ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	STA
+	JMP2r
+
+(
+@|controls )
+
+@<skip-prev> ( -- )
+	.lines/tracks LDZ ?{ JMP2r }
+	.selection/track LDZ #01 SUB INCk ?{
+		POP .lines/tracks LDZ #01 SUB }
+	!<pick>/tracks
+
+@<skip-next> ( -- )
+	.lines/tracks LDZ ?{ JMP2r }
+	.selection/track LDZ INC .lines/tracks LDZ DIVk MUL SUB !<pick>/tracks
+
+@<seek> ( x* -- )
+	;dict/jump-cmd <pstr>
+	.frames/a LDZ2 .frames/b LDZ2 ADD2 #00e7 DIV2
+	( At least 1 ) DUP2 #0000 EQU2 #00 SWP ADD2 MUL2 <pdec>
+	#0a18 DEO
+	JMP2r
+
+@<send-load> ( file* -- )
+	DUP2 <tags-autofill>
+	[ LIT2 01 -playing ] STZ
+	<fit-window>
+	( | request )
+	;dict/load-cmd <pstr>
+	;path <pstr>
+	<pstr>/
+	#0a18 DEO
+	JMP2r
+
+@<send-pause> ( -- )
+	[ LIT2 02 -paused ] LDZ ORA .paused STZ
+	;dict/pause-cmd <pstr> !<draw-play>
+
+@<move> ( mod -- )
+	.selection LDZ ADD INCk ?{
+		POP count-lines #01 SUB !<select> }
+	count-lines DIVk MUL SUB
+	( >> )
+
+@<select> ( id -- )
+	[ LIT &last ff ] NEQk ?{ POP2 JMP2r }
+	POP DUP ,&last STR
+	.selection STZ !<redraw-dir>
+
+@<pick> ( alt id -- )
+	DUP .lines/folders LDZ LTH ?&folder
+	.lines/folders LDZ SUB DUP .lines/tracks LDZ LTH ?&tracks
+	POP JMP2r
+
+	&tracks ( id -- )
+	.selection/scroll LDZ ADD DUP .selection/track STZ
+	#00 SWP
+	( CELLSIZE ) #70 SFT2 ;mem/tracks ADD2 !<send-load>
+
+	&folder ( id -- )
+	#00 SWP
+	( CELLSIZE ) #70 SFT2 ;mem/folders ADD2
+	( > ) [ LIT2 00 -selection ] STZ
+	( > ) [ LIT2 00 -selection/scroll ] STZ
+	path/<push> !<refresh-dir>
+
+@<escape> ( -- )
+	( > ) [ LIT2 00 -selection/scroll ] STZ
+	;path/null LDA ?{ JMP2r }
+	path/pop !<refresh-dir>
+
+(
+@|events )
+
+@handle-revision ( buf* char -- )
+	POP POP2 !message/<new>
+
+@handle-jump ( buf* char -- )
+	POP POP2 !message/<new>
+
+@handle-status ( buf* char -- )
+	[ LIT2 01 -playing ] STZ
+	( | force redraws )
+	<fit-window>
+	POP POP2 <redraw-player> !message/<new>
+
+@handle-frame ( buf* char -- )
+	POP
+	( skip key ) INC2 INC2
+	( curr-frame ) parse-dec .frames/a STZ2
+	INC2
+	( next-frame ) parse-dec .frames/b STZ2
+	INC2
+	( | <curr-secs> )
+	parse-dec STH2k .secfrom STZ2
+	INC2 LDAk [ LIT "5 ] LTH ?{ INC2r }
+	#20 find-next INC2
+	( | <remaining-secs> )
+	parse-dec STH2k .secto STZ2
+	INC2 LDAk [ LIT "5 ] LTH ?{ INC2r }
+	POP2 STH2r STH2r SWP2 OVR2 ADD2 SWP2
+	( | print )
+	calc-width .secprog STZ2
+	<draw-progress> !message/<new>
+
+@handle-id3 ( buf* char -- )
+	POP [ LIT ". ] find-next INC2 LDA2k
+	( | parse lines )
+	DUP2 [ LIT2 "ti ] NEQ2 ?{
+		OVR2 [ LIT ": ] find-next INC2 ;id3/title <scpy> }
+	DUP2 [ LIT2 "ar ] NEQ2 ?{
+		OVR2 [ LIT ": ] find-next INC2 ;id3/artist <scpy> }
+	DUP2 [ LIT2 "al ] NEQ2 ?{
+		OVR2 [ LIT ": ] find-next INC2 ;id3/album <scpy> }
+	POP2 POP2 !message/<new>
+
+@handle-pause ( buf* char -- )
+	POP INC2 INC2 LDA
+	( stop ) DUP [ LIT "0 ] NEQ ?{ }
+	( paused ) DUP [ LIT "1 ] NEQ ?{
+		[ LIT2 01 -paused ] STZ }
+	( playing ) DUP [ LIT "2 ] NEQ ?{
+		[ LIT2 00 -paused ] STZ }
+	( end ) DUP [ LIT "3 ] NEQ ?{ <skip-next> }
+	POP <draw-play> !message/<new>
+
+(
+@|core )
+
+@<y-id> ( y* -- id )
+	[ LIT2 00 -playing ] LDZ EQU ?{ #0080 SUB2 }
+	#0018 SUB2
+	( | above )
+	DUP2 #8000 GTH2 ?&outside
+	( | spacer )
+	has-spacer #00 EQU ?{
+		DUP2 [ LIT2 00 -lines/folders ] LDZ #40 SFT2 SUB2 #0008 LTH2 ?&outside
+		DUP2 [ LIT2 00 -lines/folders ] LDZ #40 SFT2 GTH2 #00 SWP #30 SFT2 SUB2 }
+	#04 SFT2 NIP
+	( | below )
+	DUP count-lines LTH ?{ POP #ff }
+	JMP2r
+
+	&outside ( y* -- id )
+	POP2 #ff JMP2r
+
+@<refresh-dir> ( -- )
+	;path .File/name DEO2
+	#2000 .File/length DEO2
+	;mem/dir .File/read DEO2
+	( | clean )
+	[ LIT2 00 -lines/folders ] STZ
+	[ LIT2 00 -lines/tracks ] STZ
+	( | parse )
+	;mem/dir
+	&w ( -- )
+	DUP2 <parse-line>
+	lcap/ INC2 LDAk ?&w
+	POP2
+	( >> )
+
+@<fit-window> ( -- )
+	#00
+	( folders ) .lines/folders LDZ
+	( tracks ) .lines/tracks LDZ
+	( scroll ) #18 LTHk [ JMP SWP ] POP ADD
+	( empty ) DUP #00 EQU ADD #40 SFT2
+	( no-folder spacer ) has-spacer #00 EQU ?{ #0008 ADD2 }
+	( padding ) #0020 ADD2
+	( playing ) [ LIT2 00 -playing ] LDZ EQU ?{ #0080 ADD2 }
+	.Screen/height DEO2
+	<draw-path>
+	<redraw-player> !<redraw-dir>
+
+@<parse-line> ( line* -- )
+	#0005 ADD2 LDAk [ LIT ". ] EQU ?&hidden
+	is-folder ?&folder
+	is-mp3 ?&mp3
+	POP2 JMP2r
+
+	&folder ( line* -- )
+	;mem/folders [ LIT2 00 -lines/folders ] LDZ
+	( CELLSIZE ) #70 SFT2 ADD2 <lcpy>
+	.lines/folders LDZ INC .lines/folders STZ
+	JMP2r
+
+	&mp3 ( line* -- )
+	;mem/tracks [ LIT2 00 -lines/tracks ] LDZ
+	( CELLSIZE ) #70 SFT2 ADD2 <lcpy>
+	.lines/tracks LDZ INC .lines/tracks STZ
+	JMP2r
+
+	&hidden ( line* -- )
+	POP2 JMP2r
+
+@count-lines ( -- lines )
+	.lines/folders LDZ .lines/tracks LDZ ADD JMP2r
+
+@has-spacer ( -- f )
+	[ LIT2 00 -lines/folders ] LDZ NEQ [ LIT2 00 -lines/tracks ] LDZ NEQ AND JMP2r
+
+@is-folder ( line* -- line* f )
+	DUP2 lcap/ #0001 SUB2 LDA [ LIT "/ ] EQU JMP2r
+
+@is-mp3 ( line* -- line*f )
+	DUP2 lcap/ #0003 SUB2 ;dict/mp3-ext !scmp3
+
+@calc-width ( total* curr* -- width* )
+	STH2
+	DUP2 #011b LTH2 ?{
+		&scale ( -- )
+		DUP2 #0237 LTH2 ?{
+			#01 SFT2 LITr 01 SFT2r !&scale }
+		INC2 #01 SFT2 INC2r LITr 01 SFT2r }
+	[ LIT2r 00e7 ] MUL2r STH2r SWP2 DIV2 JMP2r
+
+@find-next ( buf* c -- index* )
+	,&t STR
+	&>loop ( -- )
+		LDAk [ LIT &t $1 ] EQU ?{ INC2 !&>loop }
+	JMP2r
+
+@parse-dec ( buf* -- end* res* )
+	[ LIT2r 000a ] [ LIT2r 0000 ]
+	&>loop ( -- )
+		LDAk [ LIT "0 ] SUB DUP #09 GTH ?{
+			OVR2r MUL2r [ LITr 00 ] STH
+			ADD2r INC2 !&>loop }
+	POP STH2r POP2r JMP2r
+
+@<tags-autofill> ( file* -- )
+	;dict/no-album ;id3/album <scpy>
+	( | find spacer )
+	DUP2 find-spacer INC2 ORA ?{
+		;id3/title <scpy>
+		;dict/no-artist ;id3/artist !<scpy> }
+	( | copy artist )
+	[ LIT2r =id3/artist ]
+	&>artist ( -- )
+		LDA2k [ LIT2 20 "- ] EQU2 ?{
+			LDAk #00 STH2kr INC2r STA2
+			INC2 LDAk ?&>artist }
+	POP2r INC2 INC2 INC2
+	( | copy title )
+	[ LIT2r =id3/title ]
+	&>title ( -- )
+		LDA2k [ LIT2 ".m ] EQU2 ?{
+			LDAk #00 STH2kr INC2r STA2
+			INC2 LDAk ?&>title }
+	POP2r POP2 JMP2r
+
+@find-spacer ( file* -- <file>* )
+	LDA2k [ LIT2 20 "- ] NEQ2 ?{ JMP2r }
+	INC2 LDAk ?find-spacer
+	POP2 #ffff JMP2r
+
+(
+@|path )
+
+@path/<set> ( path* -- )
+	;path !<scpy>
+
+@path/<push> ( subpath* -- )
+	;path scap/ !<scpy>
+
+@path/pop ( -- )
+	;path scap/ #0001 SUB2
+	&>w ( -- )
+		;path/null LDA ?{ POP2 JMP2r }
+		#0001 SUB2 LDAk [ LIT "/ ] NEQ ?{
+			LITr 00 STH2
+			INC2r STAr
+			JMP2r }
+		!&>w
+
+(
+@|drawing )
+
+@<redraw-dir> ( -- )
+	#0000 .Screen/x DEO2
+	#0018 [ LIT2 00 -playing ] LDZ EQU ?{ #0080 ADD2 }
+	.Screen/y DEO2
+	[ LIT2 80 -Screen/pixel ] DEO
+	( | content )
+	#001c [ LIT2 00 -playing ] LDZ EQU ?{ #0080 ADD2 }
+	.Screen/y DEO2
+	( | empty )
+	count-lines ?{
+		#0008 .Screen/x DEO2
+		;dict/empty #0f !<draw-uf2> }
+	( | folders )
+	;mem/folders .lines/folders LDZ .selection LDZ <draw-folders>
+	[ LIT2 00 -lines/folders ] LDZ EQU ?{ ;dash-icn <draw-spacer> }
+	;mem/tracks .lines/tracks LDZ .selection LDZ .lines/folders LDZ SUB
+	( >> )
+
+@<draw-files> ( addr* length selection -- )
+	,&sel STR
+	DUP ?{ POP2 POP JMP2r }
+	#0008 .Screen/x DEO2
+	#00 SWP2 ,&t STR2
+	&>l ( -- )
+		( scroll ) DUP #18 LTH ?{ POP2 JMP2r }
+		[ LITr 05 ]
+		( | selected )
+		DUP [ LIT &sel $1 ] NEQ ?{
+			POPr [ LITr 06 ] ;fill-icn <draw-background> }
+		( | marker )
+		DUP .selection/scroll LDZ ADD .selection/track LDZ NEQ ?{
+			[ LIT2 15 -Screen/auto ] DEO
+			#0000 .Screen/x DEO2
+			;poke-icn .Screen/addr DEO2
+			DUPr [ LITr -Screen/sprite ] DEOr }
+		( | normal )
+		#0008 .Screen/x DEO2
+		#00 OVR .selection/scroll LDZ ADD
+		( CELLSIZE ) #70 SFT2 [ LIT2 &t $2 ] ADD2 STHr <draw-uf2>
+		.Screen/y DEI2k #0010 ADD2 ROT DEO2
+		INC GTHk ?&>l
+	POP2 JMP2r
+
+@<draw-path> ( -- )
+	( | clear )
+	#0000 .Screen/x DEO2
+	#0014 .Screen/y DEO2
+	[ LIT2 a0 -Screen/pixel ] DEO
+	( | draw )
+	#0008 .Screen/x DEO2
+	#0004 .Screen/y DEO2
+	;path #01 <draw-uf2>
+	( | spacer )
+	#0014 .Screen/y DEO2
+	;line-icn !<draw-spacer>
+
+@<redraw-player> ( -- )
+	#ffff ;<draw-timestamp>/last STA2
+	#ffff ;<draw-progress>/last STA2
+	<draw-title>
+	<draw-artist>
+	<draw-album>
+	<draw-prev>
+	<draw-play>
+	<draw-next>
+	<draw-progress> !<draw-timestamp>
+
+@<draw-title> ( -- )
+	( | clear )
+	#0020 .Screen/y DEO2
+	<clear-line>
+	( | draw )
+	#0020 .Screen/y DEO2
+	;id3/title get-uf2-width #00d0 LTH2 ?{
+		#0008 .Screen/x DEO2
+		;id3/title #01 !<draw-uf2> }
+	( | center )
+	#0080 .Screen/x DEO2
+	;id3/title #01 !<draw-uf2-center>
+
+@<draw-artist> ( -- )
+	( | clear )
+	#0030 .Screen/y DEO2
+	<clear-line>
+	( | draw )
+	#0030 .Screen/y DEO2
+	;id3/artist get-uf2-width #00d0 LTH2 ?{
+		#0008 .Screen/x DEO2
+		;id3/artist #01 !<draw-uf2> }
+	( | center )
+	#0080 .Screen/x DEO2
+	;id3/artist #01 !<draw-uf2-center>
+
+@<draw-album> ( -- )
+	( | clear )
+	#0040 .Screen/y DEO2
+	<clear-line>
+	( | draw )
+	#0080 .Screen/x DEO2
+	#0040 .Screen/y DEO2
+	;id3/album #01 !<draw-uf2-center>
+
+@<draw-play> ( -- )
+	#0070 .Screen/x DEO2
+	#0050 .Screen/y DEO2
+	[ LIT2 36 -Screen/auto ] DEO
+	;button-icn .Screen/addr DEO2
+	[ LIT2 03 -Screen/sprite ] DEOk DEOk DEOk DEO
+	( | icon )
+	[ LIT2 16 -Screen/auto ] DEO
+	#0078 .Screen/x DEO2
+	#0058 .Screen/y DEO2
+	;pause-icn [ LIT2 00 -paused ] LDZ #50 SFT2 ADD2 .Screen/addr DEO2
+	[ LIT2 01 -Screen/sprite ] DEOk DEO
+	JMP2r
+
+@<draw-prev> ( -- )
+	[ LIT2 16 -Screen/auto ] DEO
+	#0058 .Screen/x DEO2
+	#0058 .Screen/y DEO2
+	;prev-icn .Screen/addr DEO2
+	[ LIT2 01 -Screen/sprite ] DEOk DEO
+	JMP2r
+
+@<draw-next> ( -- )
+	[ LIT2 16 -Screen/auto ] DEO
+	#0098 .Screen/x DEO2
+	#0058 .Screen/y DEO2
+	;next-icn .Screen/addr DEO2
+	[ LIT2 01 -Screen/sprite ] DEOk DEO
+	JMP2r
+
+@<draw-progress> ( -- )
+	.secprog LDZ2
+	( | catch redraws )
+	DUP2 [ LIT2 &last $2 ] NEQ2 ?{ POP2 JMP2r }
+	DUP2 ,&last STR2
+	[ LIT2 01 -Screen/auto ] DEO
+	#0004 .Screen/x DEO2
+	#0088 .Screen/y DEO2
+	( | cap left )
+	;progress-icn/left .Screen/addr DEO2
+	[ LIT2 03 -Screen/sprite ] DEO
+	( | fill )
+	#e3
+	&>t ( -- )
+		;progress-icn/middle .Screen/addr DEO2
+		[ LIT2 03 -Screen/sprite ] DEO
+		INC DUP ?&>t
+	POP
+	( | cap right )
+	;progress-icn/right .Screen/addr DEO2
+	[ LIT2 03 -Screen/sprite ] DEO
+	( | fill )
+	#0008 .Screen/x DEO2
+	[ LIT2 00 -Screen/auto ] DEO
+	;progress-icn/fill .Screen/addr DEO2
+	#0000
+	&>l ( -- )
+		[ LIT2 05 -Screen/sprite ] DEO
+		.Screen/x DEI2 INC2 .Screen/x DEO2
+		INC2 GTH2k ?&>l
+	POP2 POP2
+	( >> )
+
+@<draw-timestamp> ( -- )
+	.secfrom LDZ2
+	( | catch redraws )
+	DUP2 [ LIT2 &last $2 ] NEQ2 ?{ POP2 JMP2r }
+	DUP2 ,&last STR2
+	( | clear )
+	#0070 .Screen/y DEO2
+	<clear-line>
+	( | from )
+	[ LIT2 15 -Screen/auto ] DEO
+	#0008 .Screen/x DEO2
+	#0070 .Screen/y DEO2
+	#01 ;<draw-glyph>/color STA
+	<draw-time>
+	( | to )
+	[ LIT2 15 -Screen/auto ] DEO
+	#8000 .Screen/x DEO2
+	#0070 .Screen/y DEO2
+	.secto LDZ2 .Screen/width DEI2 OVR2 <draw-time>
+	.Screen/x DEI2 #7ff8 SUB2 SUB2 .Screen/x DEO2
+	#01 ;<draw-glyph>/color STA
+	( >> )
+
+@<draw-time> ( time* -- )
+	DUP2 #0e10 LTH2 ?{
+		( x0:00:00 ) DUP2 #8ca0 DIV2 NIP #06 DIVk MUL SUB <draw-dec>
+		( 0x:00:00 ) DUP2 #0e10 DIV2 NIP <draw-dec>
+		[ LIT ": ] <draw-glyph> }
+	( 00:x0:00 ) DUP2 #0258 DIV2 NIP #06 DIVk MUL SUB <draw-dec>
+	( 00:0x:00 ) DUP2 #003c DIV2 NIP <draw-dec>
+	[ LIT ": ] <draw-glyph>
+	( 00:00:x0 ) DUP2 #000a DIV2 NIP #06 DIVk MUL SUB <draw-dec>
+	( 00:00:0x ) NIP
+	( >> )
+
+@<draw-dec> ( value -- )
+	#0a DIVk MUL SUB [ LIT "0 ] ADD !<draw-glyph>
+
+@<clear-line> ( -- )
+	[ LITr -Screen/y ] DEI2r
+	( ) #0000 .Screen/x DEO2
+	;fill-icn .Screen/addr DEO2
+	[ LIT2 f2 -Screen/auto ] DEO
+	[ LIT2 00 -Screen/sprite ] DEOk DEOk
+	( ) [ LITr -Screen/y ] DEO2r
+	#0080 .Screen/x DEO2
+	DEOk DEO
+	JMP2r
+
+@<draw-spacer> ( addr* -- )
+	#0000 .Screen/x DEO2
+	.Screen/addr DEO2
+	[ LIT2 f2 -Screen/auto ] DEO
+	[ LIT2 0f -Screen/sprite ] DEOk #0080 .Screen/x DEO2
+	.Screen/y DEI2 #0008 SUB2 .Screen/y DEO2
+	DEO
+	JMP2r
+
+@<draw-background> ( tile* -- )
+	#0000 .Screen/x DEO2
+	.Screen/y DEI2
+	( > ) SWP2 .Screen/addr DEO2
+	[ LIT2 f2 -Screen/auto ] DEO
+	[ LIT2 01 -Screen/sprite ] DEOk DEOk
+	( | .. )
+	.Screen/x DEI2 #0080 ADD2 .Screen/x DEO2
+	.Screen/y DEI2 #0010 SUB2 .Screen/y DEO2
+	DEOk DEO
+	.Screen/y DEO2
+	JMP2r
+
+@<draw-folders> ( addr* length selection -- )
+	,&sel STR
+	DUP ?{ POP2 POP JMP2r }
+	#0008 .Screen/x DEO2
+	#00 SWP2 ,&t STR2
+	&>l ( -- )
+		[ LITr 05 ]
+		( | selected )
+		DUP [ LIT &sel $1 ] NEQ ?{
+			POPr [ LITr 06 ] ;fill-icn <draw-background> }
+		( | gizmo )
+		.Screen/y DEI2 [ LIT2 15 -Screen/auto ] DEO
+		.Screen/width DEI2 #0010 SUB2 .Screen/x DEO2
+		[ LIT2 00 "> ] #20 SUB #50 SFT2 ;font/glyphs ADD2 .Screen/addr DEO2
+		DUPr [ LITr -Screen/sprite ] DEOr
+		.Screen/y DEO2
+		( | normal )
+		#0008 .Screen/x DEO2
+		#00 OVR
+		( CELLSIZE ) #70 SFT2 [ LIT2 &t $2 ] ADD2 STHr <draw-uf2>
+		.Screen/y DEI2k #0010 ADD2 ROT DEO2
+		INC GTHk ?&>l
+	POP2 JMP2r
+
+@get-uf2-width ( text* -- width* )
+	[ LIT2r 0000 ]
+	&>while ( -- )
+		LDAk #20 SUB #0000 ROT ;font ADD2 LDA STH2
+		ADD2r next-glyph LDAk ?&>while
+	POP2 STH2r JMP2r
+
+@<draw-uf2-center> ( text* color -- )
+	STH
+	.Screen/x DEI2 OVR2 get-uf2-width #01 SFT2 SUB2 .Screen/x DEO2
+	STHr
+	( >> )
+
+@<draw-uf2> ( text* color -- )
+	,<draw-glyph>/color STR
+	[ LIT2 15 -Screen/auto ] DEO
+	.Screen/width DEI2 #0018 SUB2 ,&bound STR2
+	&>w ( -- )
+		LDAk <draw-glyph>
+		( | trim )
+		.Screen/x DEI2 [ LIT2 &bound $2 ] LTH2 ?{
+			POP2 [ LIT ". ] <draw-glyph>
+			[ LIT ". ] !<draw-glyph> }
+		next-glyph LDAk ?&>w
+	POP2 JMP2r
+
+@next-glyph ( addr* -- addr* )
+	INC2 LDAk
+	( utf8 ) #06 SFT #02 EQU ?next-glyph
+	JMP2r
+
+@<draw-glyph> ( char -- )
+	DUP #7f LTH ?{
+		POP ;check-icn .Screen/addr DEO2
+		,&color LDR .Screen/sprite DEO
+		JMP2r }
+	#20 SUB #00 SWP
+	( ) DUP2 #50 SFT2 ;font/glyphs ADD2 .Screen/addr DEO2
+	( ) ;font ADD2 LDA #00 SWP .Screen/x DEI2 ADD2
+	( ) [ LIT &color 05 ] .Screen/sprite DEOk DEO
+	.Screen/x DEO2
+	JMP2r
+
+@<update-cursor> ( color addr* -- )
+	;fill-icn .Screen/addr DEO2
+	#40 <draw-cursor>
+	.Screen/addr DEO2
+	.Mouse/x DEI2 ,<draw-cursor>/x STR2
+	.Mouse/y DEI2 ,<draw-cursor>/y STR2
+	( >> )
+
+@<draw-cursor> ( color -- )
+	[ LIT2 16 -Screen/auto ] DEO
+	[ LIT2 &x $2 ] .Screen/x DEO2
+	[ LIT2 &y $2 ] .Screen/y DEO2
+	.Screen/sprite DEOk DEO
+	JMP2r
+
+(
+@|stdlib )
+
+@scap ( str* -- end* )
+	INC2 & LDAk ?scap
+	JMP2r
+
+@scmp3 ( a* b* -- f )
+	STH2
+	LDAkr LDAk STHr NEQ ?{ INC2r INC2 }
+	LDA2r LDA2 STH2r EQU2 JMP2r
+
+@<scpy> ( src* dst* -: )
+	STH2
+	&>w ( src* `dst* -- )
+		LDAk #00 STH2kr STA2
+		INC2r INC2 LDAk ?&>w
+	POP2 POP2r JMP2r
+
+@lcap ( str* -- next-line* )
+	LDAk #0a EQU ?{ INC2 & LDAk ?lcap }
+	JMP2r
+
+@<lcpy> ( src* dst* -- )
+	STH2
+	&w ( -- )
+	LDAk #1f GTH ?{
+		POP2 #00 STH2r STA
+		JMP2r }
+	LDAk #00 STH2kr STA2
+	INC2r INC2 !&w
+
+@<pdec> ( short* -- )
+	ORAk ?{
+		POP2 [ LIT2 "0 18 ] DEO
+		JMP2r }
+	#2710 [ LIT2r 00fb ]
+	&>w ( -- )
+		DIV2k #000a DIV2k MUL2 SUB2 SWPr EQUk OVR STHkr EQU AND ?{
+			DUP [ LIT "0 ] ADD #18 DEO
+			INCr }
+		POP2 #000a DIV2 SWPr INCr STHkr ?&>w
+	POP2r POP2 POP2 JMP2r
+
+@<pstr> ( str* -- )
+	LDAk #18 DEO
+	INC2 & LDAk ?<pstr>
+	POP2 JMP2r
+
+@<perr> ( str* -- )
+	LDAk #19 DEO
+	INC2 & LDAk ?<perr>
+	POP2 JMP2r
+
+@<phex> ( short* -: )
+	SWP /b
+	&b ( byte -: )
+	DUP #04 SFT /c
+	&c ( byte -: )
+	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #19 DEO
+	JMP2r
+
+(
+@|theme )
+
+@<load-theme> ( -- )
+	;&path .File/name DEO2
+	#0002 .File/length DEO2
+	;&r .File/read DEO2
+	;&g .File/read DEO2
+	;&b .File/read DEO2
+	[ LIT2 00 -File/success-lb ] DEI EQU ?{
+		[ LIT2 &r $2 ] .System/r DEO2
+		[ LIT2 &g $2 ] .System/g DEO2
+		[ LIT2 &b $2 ] .System/b DEO2 }
+	JMP2r
+
+	&path ".theme $1
+
+(
+@|assets )
+
+@dict
+	&home-path "./ $1
+	&mp3-ext "mp3 $1
+	&empty "(empty) $1
+	&mpg-cmd "mpg123 20 "-R $1
+	&load-cmd "load 20 $1
+	&jump-cmd "jump 20 $1
+	&pause-cmd "pause 0a $1
+	&no-title "Unknown 20 "Title $1
+	&no-artist "Unknown 20 "Artist $1
+	&no-album "Unknown 20 "Album $1
+
+
+
+( assets )
+
+@touch-chr [
+	0000 0000 0814 1417 0000 0000 0008 0808
+	0000 0000 0000 00c0 0000 0000 0000 0000
+	1010 2010 1008 0700 0f0f 1f0f 0f07 0000
+	2010 1010 2020 c000 c0e0 e0e0 c0c0 0000 ]
+	&down [
+	0000 0000 0000 0817 0000 0000 0000 0008
+	0000 0000 0000 00c0 0000 0000 0000 0000
+	1010 2010 1008 0700 0f0f 1f0f 0f07 0000
+	2010 1010 2020 c000 c0e0 e0e0 c0c0 0000 ]
+
+@progress-icn
+	&left [ 0102 0404 0404 0201 ]
+	&middle [ ff00 0000 0000 00ff ]
+	&right [ 8040 2020 2020 4080 ]
+	&fill [ 0000 0c1e 1e0c 0000 ]
+
+@button-icn [
+	0000 0000 0102 0408 0000 1f60 8000 0000
+	0000 f806 0100 0000 0000 0000 8040 2010
+	0810 1020 2020 2020 0000 0000 0000 0000
+	0000 0000 0000 0000 1008 0804 0404 0404
+	2020 2020 2010 1008 0000 0000 0000 0000
+	0000 0000 0000 0000 0404 0404 0408 0810
+	0804 0201 0000 0000 0000 0080 601f 0000
+	0000 0001 06f8 0000 1020 4080 0000 0000 ]
+
+@pause-icn [
+	0000 001e 1e1e 1e1e 0000 0078 7878 7878
+	1e1e 1e1e 1e00 0000 7878 7878 7800 0000 ]
+
+@play-icn [
+	0000 000c 0f0f 0f0f 0000 0000 00c0 f0fc
+	0f0f 0f0f 0c00 0000 fcf0 c000 0000 0000 ]
+
+@play-wait-icn [
+	0000 000c 0b08 0808 0000 0000 00c0 300c
+	0808 080b 0c00 0000 0c30 c000 0000 0000 ]
+
+@next-icn [
+	0000 0018 1c1e 1f1f 0000 0018 1818 1898
+	1f1f 1e1c 1800 0000 9818 1818 1800 0000 ]
+
+@prev-icn [
+	0000 0018 1818 1819 0000 0018 3878 f8f8
+	1918 1818 1800 0000 f8f8 7838 1800 0000 ]
+
+@fill-icn [
+	ffff ffff ffff ffff ffff ffff ffff ffff
+	ffff ffff ffff ffff ffff ffff ffff ffff ]
+
+@poke-icn [ 0000 0000 80c0 e0f0 e0c0 8000 0000 0000 ]
+
+@dash-icn [ 0000 00aa 0000 0000 ]
+
+@line-icn [ 0000 00ff 0000 0000 ]
+
+@check-icn [ aa55 aa55 aa55 aa55 aa55 aa55 aa55 aa55 ]
+
+@font [
+	0406 070a 070b 0a03 0505 0707 0407 0407
+	0808 0808 0808 0808 0808 0404 0608 0608
+	0b08 0808 0807 0708 0806 0709 070c 0908
+	0808 0807 0608 080c 0808 0805 0705 0808
+	0608 0807 0808 0608 0804 0608 040c 0808
+	0808 0607 0608 080c 0808 0805 0505 0808 ]
+	&glyphs [
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0030 3030 3030 3000 3030 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0028 2828 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0909 3f12 127f 2424 0000 0000 0000
+	0000 0000 8000 0000 0000 0000 0000 0000
+	0000 1038 5470 7038 1c1c 5438 1000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 3749 4a32 0404 090a 1211 0000 0000
+	0000 0000 0000 0000 8040 4080 0000 0000
+	0000 003c 6666 3067 6666 663c 0000 0000
+	0000 0000 0080 8000 0000 0000 0000 0000
+	0000 0040 4040 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 1020 6060 6060 6060 6020 1000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 4020 3030 3030 3030 3020 4000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0010 5438 5410 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0010 107c 1010 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 6060 2040 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 007c 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 6060 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0404 0808 1010 2020 4040 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 003c 6666 6666 6666 663c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0018 3818 1818 1818 1818 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 003c 4606 060c 1830 607e 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 007e 0c18 3c06 0606 463c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0006 0e16 2646 7f06 0606 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 007e 6060 7c06 0606 463c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 001c 3060 7c66 6666 663c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 007e 0606 060c 1818 1818 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 003c 6666 663c 6666 663c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 003c 6666 6666 3e06 0c38 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0060 6000 0000 6060 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0060 6000 0000 6060 2040 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 1830 60c0 6030 1800 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 7e00 7e00 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 c060 3018 3060 c000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 003c 4606 0c18 1800 1818 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 1f20 4e52 524d 201f 0000 0000
+	0000 0000 0080 4040 4080 0000 0000 0000
+	0000 003c 6666 667e 6666 6666 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 007c 6666 667c 6666 667c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 003c 6260 6060 6060 623c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 007c 6666 6666 6666 667c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 007c 6060 6078 6060 607c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 007c 6060 6078 6060 6060 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 003c 6260 606e 6666 663c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0066 6666 667e 6666 6666 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0030 3030 3030 3030 3030 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 000c 0c0c 0c0c cccc cc78 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0063 666c 7870 786c 6663 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0060 6060 6060 6060 607c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0040 6070 795f 4e44 4040 0000 0000
+	0000 0020 60e0 e060 6060 6060 0000 0000
+	0000 0041 6171 795d 4f47 4341 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 003c 6666 6666 6666 663c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 007c 6666 667c 6060 6060 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 003c 6666 6666 6666 663c 0600 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 007c 6666 667c 6666 6666 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0038 6460 7038 1c0c 4c38 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 00fc 3030 3030 3030 3030 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0066 6666 6666 6666 663c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0066 6666 6666 6666 6478 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0066 6666 6666 6666 667f 0000 0000
+	0000 0060 6060 6060 6060 4080 0000 0000
+	0000 0066 6666 663c 6666 6666 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0066 6666 663c 1818 1818 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 007e 0606 0c18 3060 607e 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 7060 6060 6060 6060 6060 7000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 4040 2020 1010 0808 0404 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 7030 3030 3030 3030 3030 7000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0008 1422 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 00ff 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 4020 1000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 003c 463e 6666 663e 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0060 607c 6666 6666 667c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0038 6460 6060 6438 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0006 063e 6666 6666 663e 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 003c 6666 7e60 623c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 001c 3078 3030 3030 3030 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 003e 6666 6666 663e 0646 3c00
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0060 607c 6666 6666 6666 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0060 0060 6060 6060 6060 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0018 0018 1818 1818 1818 1898 7000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0060 6066 6c78 7078 6c66 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0060 6060 6060 6060 6060 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 007f 6666 6666 6666 0000 0000
+	0000 0000 00c0 6060 6060 6060 0000 0000
+	0000 0000 007c 6666 6666 6666 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 003c 6666 6666 663c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 007c 6666 6666 667c 6060 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 003e 6666 6666 663e 0606 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 006c 7060 6060 6060 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0038 6470 381c 4c38 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0030 3078 3030 3030 3018 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0066 6666 6666 663e 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0066 6666 6666 6478 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0066 6666 6666 667f 0000 0000
+	0000 0000 0060 6060 6060 4080 0000 0000
+	0000 0000 0066 6666 3c66 6666 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0066 6666 6666 663e 0646 3c00
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 007e 060c 1830 607e 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 1020 2020 2040 2020 2020 1000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 2020 2020 2020 2020 2020 2000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 4020 2020 2010 2020 2020 4000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0032 4c00 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0024 003c 6666 667e 6666 6666 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	1824 243c 6666 667e 6666 6666 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 003c 6260 6060 6060 623c 1808 1000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0810 007c 6060 6078 6060 607c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	324c 0041 6171 795d 4f47 4341 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0024 003c 6666 6666 6666 663c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0024 0066 6666 6666 6666 663c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0810 003c 463e 6666 663e 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 1008 003c 463e 6666 663e 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 1824 003c 463e 6666 663e 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0024 003c 463e 6666 663e 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 324c 003c 463e 6666 663e 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	1824 2418 003c 463e 6666 663e 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 003c 6260 6060 623c 1808 1000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0810 003c 6666 7e60 623c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 1008 003c 6666 7e60 623c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 1824 003c 6666 7e60 623c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0024 003c 6666 7e60 623c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 1020 0030 3030 3030 3030 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 2010 0030 3030 3030 3030 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 3048 0030 3030 3030 3030 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0048 0030 3030 3030 3030 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 324c 007c 6666 6666 6666 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0810 003c 6666 6666 663c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 1008 003c 6666 6666 663c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 1824 003c 6666 6666 663c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0024 003c 6666 6666 663c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 324c 003c 6666 6666 663c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0810 0066 6666 6666 663e 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 1008 0066 6666 6666 663e 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 1824 0066 6666 6666 663e 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0024 0066 6666 6666 663e 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0020 7020 2020 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0030 4848 3000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 1038 5450 5054 3810 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 001c 3230 3078 3030 317e 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 3844 6030 584c 6434 180c 4438 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0038 7c7c 7c38 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 003f 6565 653d 0505 0505 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 001e 3333 3633 3333 3376 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 001e 215c 525c 5252 211e 0000 0000
+	0000 0000 0080 8080 8080 0000 0000 0000
+	0000 001e 214c 5250 524c 211e 0000 0000
+	0000 0000 0080 8080 8080 0000 0000 0000
+	0000 0074 2625 2400 0000 0000 0000 0000
+	0000 0040 c040 4000 0000 0000 0000 0000
+	0000 0010 2040 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0048 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0004 7f08 7f10 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 003f 6666 667f 6666 6667 0000 0000
+	0000 00c0 0000 0080 0000 00c0 0000 0000
+	0000 001e 3333 373b 3333 739e 0000 0000
+	0000 0080 0000 0000 0000 0000 0000 0000
+	0000 0000 0038 4543 463c 0000 0000 0000
+	0000 0000 00f0 8808 8870 0000 0000 0000
+	0000 0000 0010 107c 1010 007c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0010 2040 2010 0078 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0020 1008 1020 0078 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0061 337f 0c7f 0c0c 0c0c 0000 0000
+	0000 0080 0080 0080 0000 0000 0000 0000
+	0000 0000 0033 3333 3333 333e 2040 0000
+	0000 0000 0000 0000 0000 0080 0000 0000
+	0000 0000 380c 1e36 6666 6438 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 007f 3118 0c06 0c18 317f 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 007f 3333 3333 3333 3333 0000 0000
+	0000 0080 0000 0000 0000 0000 0000 0000
+	0000 0000 003f 5919 1919 1911 0000 0000
+	0000 0000 4080 8080 8080 8000 0000 0000
+	0000 0018 3030 3030 3030 3030 3060 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0038 4c3c 6c6c 3c00 7c00 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0038 6c6c 6c6c 3800 7c00 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 001e 3361 6161 2112 1233 0000 0000
+	0000 0000 0080 8080 0000 0000 0000 0000
+	0000 0000 003f 463e 6766 663f 0000 0000
+	0000 0000 00c0 6060 e000 20c0 0000 0000
+	0000 0000 003d 6666 6e76 66bc 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0018 1800 1818 3060 623c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0030 3000 3030 3030 3030 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 007c 0404 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0101 2262 1414 0808 0000 0000
+	0000 e080 0000 0000 0000 0000 0000 0000
+	0000 0018 3030 7830 3030 3030 3060 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0001 1e21 1e20 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0808 1414 2222 417f 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0009 1224 4824 1209 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0048 2412 0912 2448 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 3333 0000 0000
+	0000 0000 0000 0000 0000 3030 0000 0000 ]
+
+@message &buf $200
+
+@id3 &title $100 &artist $100 &album $100
+
+@mem &dir $2000 &folders $3000 &tracks
+
