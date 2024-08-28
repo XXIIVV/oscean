@@ -13,6 +13,7 @@
 |80 @Controller &vector $2 &button $1 &key $1
 |90 @Mouse &vector $2 &x $2 &y $2 &state $1 &chord $1 &pad $4 &scrolly &scrolly-hb $1 &scrolly-lb $1
 |a0 @File &vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|c0 @DateTime &year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
 
 |000
 
@@ -20,6 +21,7 @@
 	@path $2 &null $80
 	@lines &folders $1 &tracks $1
 	@playing $1
+	@mode $1
 	@paused $1
 	@secfrom $2
 	@secto $2
@@ -45,6 +47,7 @@
 	[ LIT2 00 -playing ] STZ
 	;dict/home-path path/<set>
 	<refresh-dir>
+	<prng-init>
 	( | unlock )
 	;on-mouse .Mouse/vector DEO2
 	;on-control .Controller/vector DEO2
@@ -55,7 +58,7 @@
 	( name ) "m291 0a
 	( desc ) "Audio 20 "Player 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "27 20 "Aug 20 "2024 $2
+	( date ) "28 20 "Aug 20 "2024 $2
 
 (
 @|vectors )
@@ -93,7 +96,11 @@
 	BRK
 
 	&status-bar ( y* -> )
-	POP2 BRK
+	POP2 .Mouse/state DEI ?{ BRK }
+	.Mouse/x DEI2 .Screen/width DEI2 #0018 SUB2 GTH2 ?{ BRK }
+	<change-mode>
+	;on-mouse-locked .Mouse/vector DEO2
+	BRK
 
 	&player ( y* -> )
 	.Mouse/state DEI ?{ POP2 BRK }
@@ -181,6 +188,11 @@
 
 @<skip-next> ( -- )
 	.lines/tracks LDZ ?{ JMP2r }
+	( | random )
+	[ LIT2 01 -mode ] LDZ NEQ ?{
+		prng ADD .lines/tracks LDZ DIVk MUL SUB !<pick>/tracks }
+	( | repeat )
+	[ LIT2 02 -mode ] LDZ NEQ ?{ .selection/track LDZ !<pick>/tracks }
 	.selection/track LDZ INC .lines/tracks LDZ DIVk MUL SUB !<pick>/tracks
 
 @<seek> ( x* -- )
@@ -224,11 +236,11 @@
 	&tracks ( id -- )
 	.selection/scroll LDZ ADD DUP .selection/track STZ
 	#00 SWP
-	( CELLSIZE ) #70 SFT2 ;mem/tracks ADD2 !<send-load>
+	( CELLSIZE ) #60 SFT2 ;mem/tracks ADD2 !<send-load>
 
 	&folder ( id -- )
 	#00 SWP
-	( CELLSIZE ) #70 SFT2 ;mem/folders ADD2
+	( CELLSIZE ) #60 SFT2 ;mem/folders ADD2
 	( > ) [ LIT2 00 -selection ] STZ
 	( > ) [ LIT2 00 -selection/scroll ] STZ
 	path/<push> !<refresh-dir>
@@ -237,6 +249,9 @@
 	( > ) [ LIT2 00 -selection/scroll ] STZ
 	;path/null LDA ?{ JMP2r }
 	path/pop !<refresh-dir>
+
+@<change-mode> ( -- )
+	.mode LDZk INC #03 DIVk MUL SUB SWP STZ !<draw-mode>
 
 (
 @|events )
@@ -270,7 +285,8 @@
 	POP2 STH2r STH2r SWP2 OVR2 ADD2 SWP2
 	( | print )
 	calc-width .secprog STZ2
-	<draw-progress> !message/<new>
+	<draw-progress>
+	<draw-timestamp> !message/<new>
 
 @handle-id3 ( buf* char -- )
 	POP [ LIT ". ] find-next INC2 LDA2k
@@ -348,14 +364,16 @@
 	POP2 JMP2r
 
 	&folder ( line* -- )
+	DUP2 llen #003f LTH2 ?{ POP2 JMP2r }
 	;mem/folders [ LIT2 00 -lines/folders ] LDZ
-	( CELLSIZE ) #70 SFT2 ADD2 <lcpy>
+	( CELLSIZE ) #60 SFT2 ADD2 <lcpy>
 	.lines/folders LDZ INC .lines/folders STZ
 	JMP2r
 
 	&mp3 ( line* -- )
+	DUP2 llen #003f LTH2 ?{ POP2 JMP2r }
 	;mem/tracks [ LIT2 00 -lines/tracks ] LDZ
-	( CELLSIZE ) #70 SFT2 ADD2 <lcpy>
+	( CELLSIZE ) #60 SFT2 ADD2 <lcpy>
 	.lines/tracks LDZ INC .lines/tracks STZ
 	JMP2r
 
@@ -366,7 +384,8 @@
 	.lines/folders LDZ .lines/tracks LDZ ADD JMP2r
 
 @has-spacer ( -- f )
-	[ LIT2 00 -lines/folders ] LDZ NEQ [ LIT2 00 -lines/tracks ] LDZ NEQ AND JMP2r
+	[ LIT2 00 -lines/folders ] LDZ NEQ
+	( .. ) [ LIT2 00 -lines/tracks ] LDZ NEQ AND JMP2r
 
 @is-folder ( line* -- line* f )
 	DUP2 lcap/ #0001 SUB2 LDA [ LIT "/ ] EQU JMP2r
@@ -459,7 +478,7 @@
 		;dict/empty #0f !<draw-uf2> }
 	( | folders )
 	;mem/folders .lines/folders LDZ .selection LDZ <draw-folders>
-	[ LIT2 00 -lines/folders ] LDZ EQU ?{ ;dash-icn <draw-spacer> }
+	has-spacer #00 EQU ?{ ;dash-icn <draw-spacer> }
 	;mem/tracks .lines/tracks LDZ .selection LDZ .lines/folders LDZ SUB
 	( >> )
 
@@ -483,7 +502,7 @@
 		( | normal )
 		#0008 .Screen/x DEO2
 		#00 OVR .selection/scroll LDZ ADD
-		( CELLSIZE ) #70 SFT2 [ LIT2 &t $2 ] ADD2 STHr <draw-uf2>
+		( CELLSIZE ) #60 SFT2 [ LIT2 &t $2 ] ADD2 STHr <draw-uf2>
 		.Screen/y DEI2k #0010 ADD2 ROT DEO2
 		INC GTHk ?&>l
 	POP2 JMP2r
@@ -497,9 +516,18 @@
 	#0008 .Screen/x DEO2
 	#0004 .Screen/y DEO2
 	;path #01 <draw-uf2>
+	<draw-mode>
 	( | spacer )
 	#0014 .Screen/y DEO2
 	;line-icn !<draw-spacer>
+
+@<draw-mode> ( -- )
+	[ LIT2 16 -Screen/auto ] DEO
+	#0004 .Screen/y DEO2
+	.Screen/width DEI2 #0014 SUB2 .Screen/x DEO2
+	;mode-icns [ LIT2 00 -mode ] LDZ #50 SFT2 ADD2 .Screen/addr DEO2
+	[ LIT2 03 -Screen/sprite ] DEOk DEO
+	JMP2r
 
 @<redraw-player> ( -- )
 	#ffff ;<draw-timestamp>/last STA2
@@ -607,8 +635,7 @@
 		[ LIT2 05 -Screen/sprite ] DEO
 		.Screen/x DEI2 INC2 .Screen/x DEO2
 		INC2 GTH2k ?&>l
-	POP2 POP2
-	( >> )
+	POP2 POP2 JMP2r
 
 @<draw-timestamp> ( -- )
 	.secfrom LDZ2
@@ -700,7 +727,7 @@
 		( | normal )
 		#0008 .Screen/x DEO2
 		#00 OVR
-		( CELLSIZE ) #70 SFT2 [ LIT2 &t $2 ] ADD2 STHr <draw-uf2>
+		( CELLSIZE ) #60 SFT2 [ LIT2 &t $2 ] ADD2 STHr <draw-uf2>
 		.Screen/y DEI2k #0010 ADD2 ROT DEO2
 		INC GTHk ?&>l
 	POP2 JMP2r
@@ -782,6 +809,9 @@
 		INC2r INC2 LDAk ?&>w
 	POP2 POP2r JMP2r
 
+@llen ( str* -- length* )
+	DUP2 lcap/ SWP2 SUB2 JMP2r
+
 @lcap ( str* -- next-line* )
 	LDAk #0a EQU ?{ INC2 & LDAk ?lcap }
 	JMP2r
@@ -825,6 +855,24 @@
 	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #19 DEO
 	JMP2r
 
+@<prng-init> ( -- )
+	( > ) [ LIT2 00 -DateTime/second ] DEI
+	( > ) [ LIT2 00 -DateTime/minute ] DEI #60 SFT2 EOR2
+	( > ) [ LIT2 00 -DateTime/hour ] DEI #c0 SFT2 EOR2 ,prng/x STR2
+	( > ) [ LIT2 00 -DateTime/hour ] DEI #04 SFT2
+	( > ) [ LIT2 00 -DateTime/day ] DEI #10 SFT2 EOR2
+	( > ) [ LIT2 00 -DateTime/month ] DEI #60 SFT2 EOR2
+	( > ) .DateTime/year DEI2 #a0 SFT2 EOR2 ,prng/y STR2
+	JMP2r
+
+@prng ( -- number* )
+	( > ) [ LIT2 &x $2 ]
+	( > ) DUP2 #50 SFT2 EOR2
+	( > ) DUP2 #03 SFT2 EOR2
+	( > ) [ LIT2 &y $2 ] DUP2 ,&x STR2
+	( > ) DUP2 #01 SFT2 EOR2 EOR2
+	( > ) ,&y STR2k POP JMP2r
+
 (
 @|theme )
 
@@ -853,7 +901,6 @@
 	&load-cmd "load 20 $1
 	&jump-cmd "jump 20 $1
 	&pause-cmd "pause 0a $1
-	&no-title "Unknown 20 "Title $1
 	&no-artist "Unknown 20 "Artist $1
 	&no-album "Unknown 20 "Album $1
 
@@ -887,6 +934,14 @@
 	0000 0000 0000 0000 0404 0404 0408 0810
 	0804 0201 0000 0000 0000 0080 601f 0000
 	0000 0001 06f8 0000 1020 4080 0000 0000 ]
+
+@mode-icns [
+	0000 001f 1f00 0000 0010 18fc fc18 1000
+	0000 001f 1f00 0000 0010 18fc fc18 1000
+	0000 001f 1f01 0101 0010 187c bc98 9080
+	0101 011d 1e00 0000 8090 98fc fc18 1000
+	0000 000f 1f18 1818 0010 18fc fc18 1008
+	1818 181f 0f00 0000 1818 18f8 f000 0000 ]
 
 @pause-icn [
 	0000 001e 1e1e 1e1e 0000 0078 7878 7878
