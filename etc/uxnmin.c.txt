@@ -36,14 +36,14 @@ emu_deo(Uint8 addr, Uint8 value)
 /* Unroll */
 
 #define OPC(opc, init, body) {\
-	case 0x00|opc: {enum{_2=0,_r=0};init body;} break;\
-	case 0x20|opc: {enum{_2=1,_r=0};init body;} break;\
-	case 0x40|opc: {enum{_2=0,_r=1};init body;} break;\
-	case 0x60|opc: {enum{_2=1,_r=1};init body;} break;\
-	case 0x80|opc: {enum{_2=0,_r=0};int k=uxn.wst.ptr;init uxn.wst.ptr= k;body;} break;\
-	case 0xa0|opc: {enum{_2=1,_r=0};int k=uxn.wst.ptr;init uxn.wst.ptr= k;body;} break;\
-	case 0xc0|opc: {enum{_2=0,_r=1};int k=uxn.rst.ptr;init uxn.rst.ptr= k;body;} break;\
-	case 0xe0|opc: {enum{_2=1,_r=1};int k=uxn.rst.ptr;init uxn.rst.ptr= k;body;} break;\
+	case 0x00|opc: {const int _2=0,_r=0;init body;} break;\
+	case 0x20|opc: {const int _2=1,_r=0;init body;} break;\
+	case 0x40|opc: {const int _2=0,_r=1;init body;} break;\
+	case 0x60|opc: {const int _2=1,_r=1;init body;} break;\
+	case 0x80|opc: {const int _2=0,_r=0;int k=uxn.wst.ptr;init uxn.wst.ptr= k;body;} break;\
+	case 0xa0|opc: {const int _2=1,_r=0;int k=uxn.wst.ptr;init uxn.wst.ptr= k;body;} break;\
+	case 0xc0|opc: {const int _2=0,_r=1;int k=uxn.rst.ptr;init uxn.rst.ptr= k;body;} break;\
+	case 0xe0|opc: {const int _2=1,_r=1;int k=uxn.rst.ptr;init uxn.rst.ptr= k;body;} break;\
 }
 
 /* Microcode */
@@ -82,7 +82,7 @@ uxn_eval(Uint16 pc)
 		/* L2r */ case 0xe0: INC(rst) = uxn.ram[pc++];
 		/* LIr */ case 0xc0: INC(rst) = uxn.ram[pc++]; break;
 		/* INC */ OPC(0x01, POx(a), PUx(a + 1))
-		/* POP */ OPC(0x02, REM, 0)
+		/* POP */ OPC(0x02, REM, {})
 		/* NIP */ OPC(0x03, GET(x) REM,PUT(x))
 		/* SWP */ OPC(0x04, GET(x) GET(y),PUT(x) PUT(y))
 		/* ROT */ OPC(0x05, GET(x) GET(y) GET(z),PUT(y) PUT(x) PUT(z))

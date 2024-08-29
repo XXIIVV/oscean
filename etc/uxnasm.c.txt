@@ -61,7 +61,7 @@ static int parse(char *w, FILE *f, Context *ctx);
 static char *
 push(char *s, char c)
 {
-	char *d = dict;
+	char *d;
 	for(d = dict; d < dictnext; d++) {
 		char *ss = s, *dd = d, a, b;
 		while((a = *dd++) == (b = *ss++))
@@ -126,7 +126,7 @@ walkmacro(Item *m, Context *ctx)
 	char *dataptr = m->data, *_token = token;
 	while((c = *dataptr++)) {
 		if(c < 0x21) {
-			*_token++ = 0x00;
+			*_token = 0x00;
 			if(token[0] && !parse(token, NULL, ctx)) return 0;
 			_token = token;
 		} else if(_token - token < 0x2f)
@@ -144,7 +144,7 @@ walkfile(FILE *f, Context *ctx)
 	char *_token = token;
 	while(f && fread(&c, 1, 1, f)) {
 		if(c < 0x21) {
-			*_token++ = 0x00;
+			*_token = 0x00;
 			if(token[0] && !parse(token, f, ctx)) return 0;
 			if(c == 0xa) ctx->line++;
 			_token = token;
@@ -153,7 +153,7 @@ walkfile(FILE *f, Context *ctx)
 		else
 			return error_asm("Token size exceeded");
 	}
-	*_token++ = 0;
+	*_token = 0;
 	return parse(token, f, ctx);
 }
 
@@ -293,7 +293,7 @@ static int
 assemble(char *filename)
 {
 	FILE *f;
-	int res = 0;
+	int res;
 	Context ctx;
 	ctx.line = 1;
 	ctx.path = push(filename, 0);
@@ -415,7 +415,7 @@ main(int argc, char *argv[])
 {
 	ptr = PAGE;
 	copy("on-reset", scope, 0);
-	if(argc == 2 && scmp(argv[1], "-v", 2)) return !printf("Uxnasm - Uxntal Assembler, 25 Aug 2024.\n");
+	if(argc == 2 && scmp(argv[1], "-v", 2)) return !printf("Uxnasm - Uxntal Assembler, 29 Aug 2024.\n");
 	if(argc != 3) return error_top("usage", "uxnasm [-v] input.tal output.rom");
 	if(!assemble(argv[1])) return 1;
 	if(!resolve(argv[2])) return 1;

@@ -50,8 +50,8 @@
 @meta $1
 	( name ) "m291 0a
 	( desc ) "Audio 20 "Player 0a
-	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "28 20 "Aug 20 "2024 $2
+	( auth ) "By 20 "Linvega 20 "& 20 "d6 0a
+	( date ) "29 20 "Aug 20 "2024 $2
 
 (
 @|vectors )
@@ -213,17 +213,8 @@
 
 @<move> ( mod -- )
 	.selection LDZ ADD
-	( | follow )
-	DUP .lines/folders LDZ SUB
-	( up ) DUP #80 LTH ?{
-		.selection/scroll LDZ ADD #80 LTH ?{ POP !<redraw-dir> }
-		.selection/scroll LDZk #01 SUB SWP STZ
-		POP !<redraw-dir> }
-	( down ) DUP #18 LTH ?{
-		.selection/scroll LDZ ADD .lines/tracks LDZ NEQ ?{ POP !<redraw-dir> }
-		.selection/scroll LDZk INC SWP STZ
-		POP !<redraw-dir> }
-	POP
+	( top ) DUP .selection/scroll LDZ #ff00 NEQ2 ?{ POP JMP2r }
+	( bottom ) DUP .lines/folders LDZ .lines/tracks LDZ ADD NEQ ?{ POP JMP2r }
 	( >> )
 
 @<select> ( id -- )
@@ -344,7 +335,7 @@
 	&w ( -- )
 	DUP2 <parse-line>
 	lcap/ INC2 LDAk ?&w
-	POP2
+	POP2 sort-folders sort-tracks
 	( >> )
 
 @<fit-window> ( -- )
@@ -387,6 +378,39 @@
 
 	&hidden ( line* -- )
 	POP2 JMP2r
+
+@str-lth ( a* b* -- a>b )
+	STH2
+	&>loop ( -- )
+		LDAk LDAkr STHr SUBk ?&done
+		DUP2 #0000 EQU2 ?&done
+		POP2 INC2 INC2r !&>loop
+	&done NIP2 LTH POP2r JMP2r
+
+@sort-folders ( -- )
+	;mem/folders DUP2 LIT2 [ 00 -lines/folders ] LDZ #01 SUB #70 SFT2 ADD2 !sort-tracks-0
+
+@sort-tracks ( -- )
+	;mem/tracks DUP2 LIT2 [ 00 -lines/tracks ] LDZ #01 SUB #70 SFT2 ADD2
+	( >> )
+
+@sort-tracks-0 ( first* last* -- )
+	SWP2 &loop GTH2k ?&ok
+	POP2 POP2 JMP2r
+	&ok OVR2 OVR2 STH2k #0080 ADD2 &loop2 LTH2k ?&done
+	DUP2 STH2kr str-lth ?&replace
+	!&inc
+	&replace POP2r STH2k &inc #0080 ADD2 !&loop2
+	&done POP2 POP2 DUP2 STH2r swap-tracks #0080 ADD2 !&loop
+
+@swap-tracks ( src* dst* -- )
+	EQU2k ?&skip
+	DUP2 ;tmp <scpy>
+	OVR2 STH2
+	<scpy>
+	;tmp STH2r <scpy>
+	JMP2r
+	&skip POP2 POP2 JMP2r
 
 @count-lines ( -- lines )
 	.lines/folders LDZ .lines/tracks LDZ ADD JMP2r
@@ -1339,6 +1363,8 @@
 @message &buf $200
 
 @id3 &title $100 &artist $100 &album $100
+
+@tmp $81
 
 @mem &dir $2000 &folders $3000 &tracks
 
