@@ -4,7 +4,7 @@
 |00 @System &vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
 |20 @Screen &vector $2 &width $2 &height $2 &auto $2 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
 |80 @Controller &vector $2 &button $1 &key $1
-|90 @Mouse &vector $2 &x $2 &y $2 &state $5 &scrolly &scrolly-hb $1 &scrolly-lb $1
+|90 @Mouse &vector $2 &x $2 &y $2 &state $6 &scrolly &scrolly-hb $1 &scrolly-lb $1
 |a0 @File &vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |c0 @DateTime &year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
 
@@ -190,9 +190,9 @@
 	.selection/track LDZ INC .lines/tracks LDZ DIVk MUL SUB !<pick>/tracks
 
 @<seek> ( x* -- )
-	;dict/jump-cmd <pstr>
-	.frames/a LDZ2 .frames/b LDZ2 ADD2 #00e7 DIV2
-	( At least 1 ) DUP2 #0000 EQU2 #00 SWP ADD2 MUL2 <pdec>
+	pos-to-seconds DUP2 #00e7 LTH2 #00 SWP ADD2 ;dict/jump-cmd <pstr>
+	<pdec>
+	LIT2 "s 18 DEO
 	#0a18 DEO
 	JMP2r
 
@@ -212,9 +212,18 @@
 	;dict/pause-cmd <pstr> !<draw-play>
 
 @<move> ( mod -- )
-	.selection LDZ ADD INCk ?{
-		POP count-lines #01 SUB !<select> }
-	count-lines DIVk MUL SUB
+	.selection LDZ ADD
+	( | follow )
+	DUP .lines/folders LDZ SUB
+	( up ) DUP #80 LTH ?{
+		.selection/scroll LDZ ADD #80 LTH ?{ POP !<redraw-dir> }
+		.selection/scroll LDZk #01 SUB SWP STZ
+		POP !<redraw-dir> }
+	( down ) DUP #18 LTH ?{
+		.selection/scroll LDZ ADD .lines/tracks LDZ NEQ ?{ POP !<redraw-dir> }
+		.selection/scroll LDZk INC SWP STZ
+		POP !<redraw-dir> }
+	POP
 	( >> )
 
 @<select> ( id -- )
@@ -230,11 +239,11 @@
 	&tracks ( id -- )
 	.selection/scroll LDZ ADD DUP .selection/track STZ
 	#00 SWP
-	( CELLSIZE ) #60 SFT2 ;mem/tracks ADD2 !<send-load>
+	( CELLSIZE ) #70 SFT2 ;mem/tracks ADD2 !<send-load>
 
 	&folder ( id -- )
 	#00 SWP
-	( CELLSIZE ) #60 SFT2 ;mem/folders ADD2
+	( CELLSIZE ) #70 SFT2 ;mem/folders ADD2
 	( > ) [ LIT2 00 -selection ] STZ
 	( > ) [ LIT2 00 -selection/scroll ] STZ
 	path/<push> !<refresh-dir>
@@ -360,14 +369,19 @@
 	&folder ( line* -- )
 	DUP2 llen #003f LTH2 ?{ POP2 JMP2r }
 	;mem/folders [ LIT2 00 -lines/folders ] LDZ
-	( CELLSIZE ) #60 SFT2 ADD2 <lcpy>
+	( | max folders = 3000 / 80 = 60 )
+	DUP #60 LTH ?{ POP POP2 JMP2r }
+	( CELLSIZE ) #70 SFT2 ADD2 <lcpy>
 	.lines/folders LDZ INC .lines/folders STZ
 	JMP2r
 
 	&mp3 ( line* -- )
-	DUP2 llen #003f LTH2 ?{ POP2 JMP2r }
+	DUP2 llen
+	( CELLSIZE ) #007f LTH2 ?{ POP2 JMP2r }
 	;mem/tracks [ LIT2 00 -lines/tracks ] LDZ
-	( CELLSIZE ) #60 SFT2 ADD2 <lcpy>
+	( | max tracks = 80 )
+	DUP #80 LTH ?{ POP JMP2r }
+	( CELLSIZE ) #70 SFT2 ADD2 <lcpy>
 	.lines/tracks LDZ INC .lines/tracks STZ
 	JMP2r
 
@@ -386,6 +400,10 @@
 
 @is-mp3 ( line* -- line*f )
 	DUP2 lcap/ #0003 SUB2 ;dict/mp3-ext !scmp3
+
+@pos-to-seconds ( pos* -- seconds* )
+	.secfrom LDZ2 .secto LDZ2 ADD2 #00e7 DIV2k STH2k MUL2 SUB2 OVR2 STH2
+	MUL2r MUL2 #00e7 DIV2 STH2r ADD2 JMP2r
 
 @calc-width ( total* curr* -- width* )
 	STH2
@@ -496,7 +514,7 @@
 		( | normal )
 		#0008 .Screen/x DEO2
 		#00 OVR .selection/scroll LDZ ADD
-		( CELLSIZE ) #60 SFT2 [ LIT2 &t $2 ] ADD2 STHr <draw-uf2>
+		( CELLSIZE ) #70 SFT2 [ LIT2 &t $2 ] ADD2 STHr <draw-uf2>
 		.Screen/y DEI2k #0010 ADD2 ROT DEO2
 		INC GTHk ?&>l
 	POP2 JMP2r
@@ -721,7 +739,7 @@
 		( | normal )
 		#0008 .Screen/x DEO2
 		#00 OVR
-		( CELLSIZE ) #60 SFT2 [ LIT2 &t $2 ] ADD2 STHr <draw-uf2>
+		( CELLSIZE ) #70 SFT2 [ LIT2 &t $2 ] ADD2 STHr <draw-uf2>
 		.Screen/y DEI2k #0010 ADD2 ROT DEO2
 		INC GTHk ?&>l
 	POP2 JMP2r
