@@ -130,6 +130,7 @@
 	( esc ) DUP #1b NEQ ?{ <escape> }
 	( enter ) DUP #0d NEQ ?{ .selection LDZ <pick> }
 	( space ) DUP #20 NEQ ?{ <send-pause> }
+	DUP #20 SUB #5f GTH ?{ DUP <find-any> }
 	POP
 	( | button )
 	.Controller/button DEI
@@ -192,7 +193,7 @@
 @<seek> ( x* -- )
 	pos-to-seconds DUP2 #00e7 LTH2 #00 SWP ADD2 ;dict/jump-cmd <pstr>
 	<pdec>
-	LIT2 "s 18 DEO
+	[ LIT2 "s 18 ] DEO
 	#0a18 DEO
 	JMP2r
 
@@ -247,6 +248,15 @@
 @<change-mode> ( -- )
 	.mode LDZk INC #03 DIVk MUL SUB SWP STZ !<draw-mode>
 
+@<find-any> ( letter -- )
+	( case insensitive ) cflc STH
+	( | folders )
+	.lines/folders LDZ #00
+	&>folders ( -- )
+		#00 OVR #70 SFT2 ;mem/folders ADD2 LDA cflc STHkr NEQ ?{ POPr NIP !<select> }
+		INC GTHk ?&>folders
+	POP2 POPr JMP2r
+
 (
 @|events )
 
@@ -279,6 +289,7 @@
 	POP2 STH2r STH2r SWP2 OVR2 ADD2 SWP2
 	( | print )
 	calc-width .secprog STZ2
+	<draw-title-scroll>
 	<draw-progress>
 	<draw-timestamp> !message/<new>
 
@@ -382,35 +393,41 @@
 @str-lth ( a* b* -- a>b )
 	STH2
 	&>loop ( -- )
-		LDAk LDAkr STHr SUBk ?&done
-		DUP2 #0000 EQU2 ?&done
-		POP2 INC2 INC2r !&>loop
-	&done NIP2 LTH POP2r JMP2r
+		LDAk LDAkr STHr SUBk ?{
+			DUP2 #0000 EQU2 ?{ POP2 INC2 INC2r !&>loop } }
+	NIP2 LTH POP2r JMP2r
 
 @sort-folders ( -- )
-	;mem/folders DUP2 LIT2 [ 00 -lines/folders ] LDZ #01 SUB #70 SFT2 ADD2 !sort-tracks-0
+	.lines/folders LDZ ?{ JMP2r }
+	;mem/folders DUP2 LIT2 [ 00 -lines/folders ] LDZ #01 SUB #70 SFT2 ADD2 !sort-files
 
 @sort-tracks ( -- )
+	.lines/tracks LDZ ?{ JMP2r }
 	;mem/tracks DUP2 LIT2 [ 00 -lines/tracks ] LDZ #01 SUB #70 SFT2 ADD2
 	( >> )
 
-@sort-tracks-0 ( first* last* -- )
-	SWP2 &loop GTH2k ?&ok
-	POP2 POP2 JMP2r
-	&ok OVR2 OVR2 STH2k #0080 ADD2 &loop2 LTH2k ?&done
-	DUP2 STH2kr str-lth ?&replace
-	!&inc
-	&replace POP2r STH2k &inc #0080 ADD2 !&loop2
-	&done POP2 POP2 DUP2 STH2r swap-tracks #0080 ADD2 !&loop
+@sort-files ( first* last* -- )
+	SWP2
+	&>loop ( -- )
+		GTH2k ?{ POP2 POP2 JMP2r }
+		OVR2 OVR2 STH2k #0080 ADD2
+		&>loop2 ( -- )
+			LTH2k ?&done
+			DUP2 STH2kr str-lth ?&replace
+			!{
+			&replace POP2r STH2k }
+		#0080 ADD2 !&>loop2
+
+	&done ( -- )
+	POP2 POP2 DUP2 STH2r swap-tracks #0080 ADD2 !&>loop
 
 @swap-tracks ( src* dst* -- )
-	EQU2k ?&skip
-	DUP2 ;tmp <scpy>
-	OVR2 STH2
-	<scpy>
-	;tmp STH2r <scpy>
-	JMP2r
-	&skip POP2 POP2 JMP2r
+	EQU2k ?{
+		DUP2 ;tmp <scpy>
+		OVR2 STH2
+		<scpy>
+		;tmp STH2r !<scpy> }
+	POP2 POP2 JMP2r
 
 @count-lines ( -- lines )
 	.lines/folders LDZ .lines/tracks LDZ ADD JMP2r
@@ -576,10 +593,23 @@
 	<draw-next>
 	<draw-progress> !<draw-timestamp>
 
+@<draw-title-scroll> ( -- )
+	;id3/title get-uf2-width #00d0 LTH2 ?{
+		[ LIT2 &f $2 ] INC2k ,&f STR2
+		DUP #0f AND ?{
+			#0020 .Screen/y DEO2
+			<clear-line>
+			#0001 .Screen/x DEO2
+			#0020 .Screen/y DEO2
+			#04 SFT2 ;id3/title !<draw-uf2-scroll> }
+		POP2 }
+	JMP2r
+
 @<draw-title> ( -- )
 	( | clear )
 	#0020 .Screen/y DEO2
 	<clear-line>
+	#0000 ;<draw-title-scroll>/f STA2
 	( | draw )
 	#0020 .Screen/y DEO2
 	;id3/title get-uf2-width #00d0 LTH2 ?{
@@ -775,6 +805,17 @@
 		ADD2r next-glyph LDAk ?&>while
 	POP2 STH2r JMP2r
 
+@<draw-uf2-scroll> ( offset* text* -- )
+	[ LIT2 15 -Screen/auto ] DEO
+	.Screen/width DEI2 ,&bound STR2
+	STH2k llen DIV2k MUL2 SUB2 STH2kr ADD2
+	&>w ( -- )
+		.Screen/x DEI2 [ LIT2 &bound $2 ] LTH2 ?{ POP2 POP2r JMP2r }
+		LDAk DUP ?{
+			POP2 POP STH2kr #20 <draw-glyph> !&>w }
+	<draw-glyph>
+	next-glyph !&>w
+
 @<draw-uf2-center> ( text* color -- )
 	STH
 	.Screen/x DEI2 OVR2 get-uf2-width #01 SFT2 SUB2 .Screen/x DEO2
@@ -828,6 +869,10 @@
 
 (
 @|stdlib )
+
+@cflc ( c -- lowercase )
+	DUP #41 SUB #1a GTH ?{ #20 ADD }
+	JMP2r
 
 @scap ( str* -- end* )
 	INC2 & LDAk ?scap
