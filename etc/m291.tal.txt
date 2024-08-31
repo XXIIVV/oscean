@@ -51,7 +51,7 @@
 	( name ) "m291 0a
 	( desc ) "Audio 20 "Player 0a
 	( auth ) "By 20 "Linvega 20 "& 20 "d6 0a
-	( date ) "29 20 "Aug 20 "2024 $2
+	( date ) "31 20 "Aug 20 "2024 $2
 
 (
 @|vectors )
@@ -78,7 +78,7 @@
 	POP2 <update-cursor>
 	( | route events )
 	.Mouse/y DEI2
-	( > ) DUP2 #0014 LTH2 ?&status-bar
+	( > ) DUP2 #0018 LTH2 ?&status-bar
 	( > ) [ LIT2 00 -playing ] LDZ EQU ?{ DUP2 #0098 LTH2 ?&player }
 	( | on list )
 	<y-id>
@@ -116,11 +116,12 @@
 	POP2 BRK
 
 	&scroll ( distance -> )
-	.selection/scroll LDZ ADD
-	( above ) DUP #ff EQU ?{
-		( below ) DUP #18 ADD .lines/tracks LDZ GTH ?{ DUP .selection/scroll STZ
-			<redraw-dir> } }
-	POP BRK
+	.selection/scroll LDZ ADD INCk ?{ POP BRK }
+	.lines/folders LDZ .lines/tracks LDZ ADD #18 SUB
+	( needs scroll ) DUP #80 LTH ?{ POP2 BRK }
+	( max scroll ) LTHk [ JMP SWP POP ] .selection/scroll STZ
+	<redraw-dir>
+	BRK
 
 @on-control ( -> )
 	( | mod )
@@ -209,16 +210,26 @@
 	JMP2r
 
 @<send-pause> ( -- )
+	.playing LDZ ?{ JMP2r }
 	[ LIT2 02 -paused ] LDZ ORA .paused STZ
 	;dict/pause-cmd <pstr> !<draw-play>
 
 @<move> ( mod -- )
 	.selection LDZ ADD
-	( top ) DUP .selection/scroll LDZ #ff00 NEQ2 ?{ POP JMP2r }
+	( top ) INCk ?{ POP JMP2r }
 	( bottom ) DUP .lines/folders LDZ .lines/tracks LDZ ADD NEQ ?{ POP JMP2r }
 	( >> )
 
 @<select> ( id -- )
+	( | follow )
+	DUP .selection/scroll LDZ SUB
+	( top ) DUP #80 AND #00 EQU ?{
+		DUP .selection/scroll LDZ ADD .selection/scroll STZ !&resume }
+	( bottom ) DUP #18 LTH ?{
+		DUP .selection/scroll LDZ ADD #17 SUB .selection/scroll STZ }
+	&resume ( id scroll -- )
+	POP
+	( | continue )
 	[ LIT &last ff ] NEQk ?{ POP2 JMP2r }
 	POP DUP ,&last STR
 	.selection STZ !<redraw-dir>
@@ -229,7 +240,7 @@
 	POP JMP2r
 
 	&tracks ( id -- )
-	.selection/scroll LDZ ADD DUP .selection/track STZ
+	DUP .selection/track STZ
 	#00 SWP
 	( CELLSIZE ) #70 SFT2 ;mem/tracks ADD2 !<send-load>
 
@@ -241,8 +252,8 @@
 	path/<push> !<refresh-dir>
 
 @<escape> ( -- )
-	( > ) [ LIT2 00 -selection/scroll ] STZ
 	;path/null LDA ?{ JMP2r }
+	[ LIT2 00 -selection/scroll ] STZ
 	path/pop !<refresh-dir>
 
 @<change-mode> ( -- )
@@ -253,13 +264,15 @@
 	( | folders )
 	.lines/folders LDZ #00
 	&>folders ( -- )
-		#00 OVR #70 SFT2 ;mem/folders ADD2 LDA cflc STHkr NEQ ?{ POPr NIP !<select> }
+		#00 OVR
+		( CELLSIZE ) #70 SFT2 ;mem/folders ADD2 LDA cflc STHkr NEQ ?{ POPr NIP !<select> }
 		INC GTHk ?&>folders
 	POP2
-	( | folders )
+	( | tracks )
 	.lines/tracks LDZ #00
 	&>tracks ( -- )
-		#00 OVR #70 SFT2 ;mem/folders ADD2 LDA cflc STHkr NEQ ?{
+		#00 OVR
+		( CELLSIZE ) #70 SFT2 ;mem/tracks ADD2 LDA cflc STHkr NEQ ?{
 			POPr NIP .lines/folders LDZ ADD !<select> }
 		INC GTHk ?&>tracks
 	POP2 POPr JMP2r
@@ -326,20 +339,7 @@
 
 @<y-id> ( y* -- id )
 	[ LIT2 00 -playing ] LDZ EQU ?{ #0080 SUB2 }
-	#0018 SUB2
-	( | above )
-	DUP2 #8000 GTH2 ?&outside
-	( | spacer )
-	has-spacer #00 EQU ?{
-		DUP2 [ LIT2 00 -lines/folders ] LDZ #40 SFT2 SUB2 #0008 LTH2 ?&outside
-		DUP2 [ LIT2 00 -lines/folders ] LDZ #40 SFT2 GTH2 #00 SWP #30 SFT2 SUB2 }
-	#04 SFT2 NIP
-	( | below )
-	DUP count-lines LTH ?{ POP #ff }
-	JMP2r
-
-	&outside ( y* -- id )
-	POP2 #ff JMP2r
+	#0018 SUB2 #04 SFT2 NIP .selection/scroll LDZ ADD JMP2r
 
 @<refresh-dir> ( -- )
 	;path .File/name DEO2
@@ -359,10 +359,9 @@
 @<fit-window> ( -- )
 	#00
 	( folders ) .lines/folders LDZ
-	( tracks ) .lines/tracks LDZ
-	( scroll ) #18 LTHk [ JMP SWP ] POP ADD
+	( tracks ) .lines/tracks LDZ ADD
+	( scroll ) #18 LTHk [ JMP SWP ] POP
 	( empty ) DUP #00 EQU ADD #40 SFT2
-	( no-folder spacer ) has-spacer #00 EQU ?{ #0008 ADD2 }
 	( padding ) #0020 ADD2
 	( playing ) [ LIT2 00 -playing ] LDZ EQU ?{ #0080 ADD2 }
 	.Screen/height DEO2
@@ -406,11 +405,13 @@
 
 @sort-folders ( -- )
 	.lines/folders LDZ ?{ JMP2r }
-	;mem/folders DUP2 LIT2 [ 00 -lines/folders ] LDZ #01 SUB #70 SFT2 ADD2 !sort-files
+	;mem/folders DUP2 LIT2 [ 00 -lines/folders ] LDZ #01 SUB
+	( CELLSIZE ) #70 SFT2 ADD2 !sort-files
 
 @sort-tracks ( -- )
 	.lines/tracks LDZ ?{ JMP2r }
-	;mem/tracks DUP2 LIT2 [ 00 -lines/tracks ] LDZ #01 SUB #70 SFT2 ADD2
+	;mem/tracks DUP2 LIT2 [ 00 -lines/tracks ] LDZ #01 SUB
+	( CELLSIZE ) #70 SFT2 ADD2
 	( >> )
 
 @sort-files ( first* last* -- )
@@ -438,10 +439,6 @@
 
 @count-lines ( -- lines )
 	.lines/folders LDZ .lines/tracks LDZ ADD JMP2r
-
-@has-spacer ( -- f )
-	[ LIT2 00 -lines/folders ] LDZ NEQ
-	( .. ) [ LIT2 00 -lines/tracks ] LDZ NEQ AND JMP2r
 
 @is-folder ( line* -- line* f )
 	DUP2 lcap/ #0001 SUB2 LDA [ LIT "/ ] EQU JMP2r
@@ -537,32 +534,54 @@
 		#0008 .Screen/x DEO2
 		;dict/empty #0f !<draw-uf2> }
 	( | folders )
-	;mem/folders .lines/folders LDZ .selection LDZ <draw-folders>
-	has-spacer #00 EQU ?{ ;dash-icn <draw-spacer> }
-	;mem/tracks .lines/tracks LDZ .selection LDZ .lines/folders LDZ SUB
+	<draw-folders>
 	( >> )
 
-@<draw-files> ( addr* length selection -- )
-	,&sel STR
-	DUP ?{ POP2 POP JMP2r }
+@<draw-tracks> ( -- )
+	.selection LDZ .lines/folders LDZ SUB ,&sel STR
 	#0008 .Screen/x DEO2
-	#00 SWP2 ,&t STR2
+	.lines/tracks LDZ #00 NEQk ?{ POP2 JMP2r }
+	.selection/scroll LDZ .lines/folders LDZ LTH ?{
+		.selection/scroll LDZ .lines/folders LDZ SUB ADD }
 	&>l ( -- )
-		( scroll ) DUP #18 LTH ?{ POP2 JMP2r }
 		[ LITr 05 ]
 		( | selected )
 		DUP [ LIT &sel $1 ] NEQ ?{
 			POPr [ LITr 06 ] ;fill-icn <draw-background> }
 		( | marker )
-		DUP .selection/scroll LDZ ADD .selection/track LDZ NEQ ?{
+		DUP .selection/track LDZ NEQ ?{
 			[ LIT2 15 -Screen/auto ] DEO
 			#0000 .Screen/x DEO2
 			;poke-icn .Screen/addr DEO2
 			DUPr [ LITr -Screen/sprite ] DEOr }
 		( | normal )
 		#0008 .Screen/x DEO2
-		#00 OVR .selection/scroll LDZ ADD
-		( CELLSIZE ) #70 SFT2 [ LIT2 &t $2 ] ADD2 STHr <draw-uf2>
+		#00 OVR
+		( CELLSIZE ) #70 SFT2 ;mem/tracks ADD2 STHr <draw-uf2>
+		.Screen/y DEI2k #0010 ADD2 ROT DEO2
+		INC GTHk ?&>l
+	POP2 JMP2r
+
+@<draw-folders> ( -- )
+	.selection LDZ ,&sel STR
+	#0008 .Screen/x DEO2
+	.lines/folders LDZ #00 NEQk ?{ POP2 JMP2r }
+	.selection/scroll LDZ ADD GTHk ?{ POP2 JMP2r }
+	&>l ( -- )
+		[ LITr 05 ]
+		( | selected )
+		DUP [ LIT &sel $1 ] NEQ ?{
+			POPr [ LITr 06 ] ;fill-icn <draw-background> }
+		( | gizmo )
+		.Screen/y DEI2 [ LIT2 15 -Screen/auto ] DEO
+		.Screen/width DEI2 #0010 SUB2 .Screen/x DEO2
+		[ LIT2 00 "> ] #20 SUB #50 SFT2 ;font/glyphs ADD2 .Screen/addr DEO2
+		DUPr [ LITr -Screen/sprite ] DEOr
+		.Screen/y DEO2
+		( | normal )
+		#0008 .Screen/x DEO2
+		#00 OVR
+		( CELLSIZE ) #70 SFT2 ;mem/folders ADD2 STHr <draw-uf2>
 		.Screen/y DEI2k #0010 ADD2 ROT DEO2
 		INC GTHk ?&>l
 	POP2 JMP2r
@@ -780,30 +799,6 @@
 	DEOk DEO
 	.Screen/y DEO2
 	JMP2r
-
-@<draw-folders> ( addr* length selection -- )
-	,&sel STR
-	DUP ?{ POP2 POP JMP2r }
-	#0008 .Screen/x DEO2
-	#00 SWP2 ,&t STR2
-	&>l ( -- )
-		[ LITr 05 ]
-		( | selected )
-		DUP [ LIT &sel $1 ] NEQ ?{
-			POPr [ LITr 06 ] ;fill-icn <draw-background> }
-		( | gizmo )
-		.Screen/y DEI2 [ LIT2 15 -Screen/auto ] DEO
-		.Screen/width DEI2 #0010 SUB2 .Screen/x DEO2
-		[ LIT2 00 "> ] #20 SUB #50 SFT2 ;font/glyphs ADD2 .Screen/addr DEO2
-		DUPr [ LITr -Screen/sprite ] DEOr
-		.Screen/y DEO2
-		( | normal )
-		#0008 .Screen/x DEO2
-		#00 OVR
-		( CELLSIZE ) #70 SFT2 [ LIT2 &t $2 ] ADD2 STHr <draw-uf2>
-		.Screen/y DEI2k #0010 ADD2 ROT DEO2
-		INC GTHk ?&>l
-	POP2 JMP2r
 
 @get-uf2-width ( text* -- width* )
 	[ LIT2r 0000 ]
