@@ -3,11 +3,11 @@
 |10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
 |a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 
-|0000
+|000
 
 	@path $40
 
-|0100
+|100
 
 @on-reset ( -> )
 	.Console/type DEI ?{
@@ -37,11 +37,18 @@
 
 @<render> ( path* -- )
 	.File/name DEO2
-	( head ) ;El/<head> wstr ;El/<title> wstr ;path wstr ;El/</title> wstr ;El/</head> wstr
-	( body ) ;El/<body> wstr ;El/<pre> wstr ;dir
-	&w ( -- )
-		write-line LDAk ?&w
-	POP2 ;El/</pre> wstr ;El/</body> !wstr
+	( head ) ;El/<head>
+	wstr ;El/<title>
+	wstr ;path wstr ;El/</title>
+	wstr ;El/</head>
+	wstr
+	( body ) ;El/<body>
+	wstr ;El/<pre>
+	wstr ;dir
+	&>w ( -- )
+		write-line LDAk ?&>w
+	POP2 ;El/</pre>
+	wstr ;El/</body> !wstr
 
 @write-line ( line* -- next* )
 	LDA2k [ LIT2 "-- ] EQU2 ?{
@@ -99,28 +106,31 @@
 
 @<scpy> ( src* dst* -: )
 	STH2
-	&w ( src* `dst* -- )
+	&>w ( src* `dst* -- )
 		LDAk #00 STH2kr STA2
-		INC2r INC2 LDAk ?&w
+		INC2r INC2 LDAk ?&>w
 	POP2 POP2r JMP2r
 
 (
 @|assets )
 
-@Dict &usage "usage: 20 "directory.rom 20 "folder/ 0a $1 &index "index.html $1
+@Dict
+	&usage "usage: 20 "directory.rom 20 "folder/ 0a $1
+	&index "index.html $1
 
-@El [
-	&<head> "<head> $1 &</head>
-	"</head> $1 &<title> "<title>
-	$1 &</title> "</title> $1
-	&<body> "<body> $1 &</body>
-	"</body> $1 &<br/> "<br/>
-	$1 &<pre> "<pre> $1
-	&</pre> "</pre> $1 &a1
-	"<a 20 "href=' $1
-	&a2 "'> $1 &a3
-	"</a> $1 ]
+@El
+	&<head> "<head> $1
+	&</head> "</head> $1
+	&<title> "<title> $1
+	&</title> "</title> $1
+	&<body> "<body> $1
+	&</body> "</body> $1
+	&<br/> 0a $1
+	&<pre> "<pre> $1
+	&</pre> "</pre> $1
+	&a1 "<a 20 "href=' $1
+	&a2 "'> $1
+	&a3 "</a> $1
 
 @dir
-
 

@@ -106,21 +106,35 @@ make_symbol(char *s)
 }
 
 static char *
+parse_comment(char *_s)
+{
+	char c;
+	int depth = 0;
+	while((c = *_s++)) {
+		if(c == '(') depth++;
+		if(c == ')') {
+			depth--;
+			if(!depth) break;
+		}
+	}
+	return _s + 1;
+}
+
+static char *
 parse_rule(char *_s)
 {
 	char c;
 	int side = 0;
 	Rule *r = _rules++;
 	while((c = *_s)) {
-		_s = walk_ws(_s);
-		if(c == '>')
-			side = 1;
+		while((c = *_s) && (c == 0x09 || c == 0x20)) _s++;
+		if(*_s == 0xa) break;
+		if(*_s == '>')
+			side = 1, _s++;
 		else if(side)
 			r->b[r->_b++] = make_symbol(_s), _s = walk_token(_s);
 		else
 			r->a[r->_a++] = make_symbol(_s), _s = walk_token(_s);
-		if(*_s == 0xa) break;
-		_s++;
 	}
 	return _s;
 }
@@ -167,7 +181,6 @@ static int
 eval(void)
 {
 	int i, pc = 0;
-	printf("%d symbols available.\n", PRM_SZ);
 	for(i = 0; i < _rules - &rules[0]; i++)
 		print_rule(&rules[i]);
 	printf("\nAC %d ", acc), print_registers(acc);
@@ -193,22 +206,25 @@ main(int argc, char *argv[])
 	char c, *_src = src;
 	FILE *f;
 	if(argc < 2)
-		return !printf("Fractran - Fractran Interpreter, 15 Aug 2024.\n");
+		return !printf("Fractran - Fractran Rewriting, 31 Aug 2024.\n");
 	if(argc != 2)
 		return !printf("usage: fractran input.fra\n");
 	if(!(f = fopen(argv[1], "r")))
 		return !printf("Source missing: %s\n", argv[1]);
-	else
-		fread(&src, 1, SRC_SZ, f), fclose(f);
+	i = fread(&src, 1, SRC_SZ, f), fclose(f), src[i] = 0x0a;
 	/* memorize */
 	for(i = 2; i < PRM_SZ; i++)
 		if(is_prime(i)) *_prime_lut++ = i;
 	/* tokenize */
-	while((c = *_src))
-		if(_src[0] == ':' && _src[1] == ':')
-			_src = parse_rule(walk_ws(_src) + 2), _src++;
+	while((c = *_src)) {
+		_src = walk_ws(_src);
+		if(*_src == '(')
+			_src = parse_comment(_src);
+		else if(_src[0] == ':' && _src[1] == ':')
+			_src = parse_rule(_src + 2), _src++;
 		else
-			_src = parse_symbol(walk_ws(_src)), _src++;
+			_src = parse_symbol(_src), _src++;
+	}
 	/* compile */
 	for(i = 0; i < _rules - &rules[0]; i++) {
 		Rule *r = &rules[i];
