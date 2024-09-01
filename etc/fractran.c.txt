@@ -11,8 +11,8 @@ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
 WITH REGARD TO THIS SOFTWARE.
 */
 
-#define PRM_SZ 0x80
 #define TOK_SZ 0x30
+#define PRM_SZ 0x80
 #define RUL_SZ 0x80
 #define SRC_SZ 0x4000
 #define PRIME(x) prime_lut[(x - symbols[0]) / TOK_SZ]
@@ -27,10 +27,11 @@ typedef struct Rule {
 	Fraction f;
 } Rule;
 
-Rule rules[RUL_SZ], *_rules = &rules[0];
-char src[SRC_SZ], symbols[PRM_SZ][TOK_SZ], *accsym[PRM_SZ];
-int last_sym, last_acc, acc;
-int prime_lut[PRM_SZ], *_prime_lut = &prime_lut[0];
+Rule rules[RUL_SZ], *_rules = rules;
+int prime_lut[PRM_SZ], *_prime_lut = prime_lut;
+char *accumulator[PRM_SZ], **_accumulator = accumulator;
+char symbols[PRM_SZ][TOK_SZ];
+int symbols_len;
 
 static int
 gcd(int a, int b)
@@ -43,7 +44,7 @@ static Fraction
 Frac(unsigned int num, unsigned int den)
 {
 	Fraction f;
-	unsigned int d = gcd(num, den);
+	int d = gcd(num, den);
 	f.num = num / d, f.den = den / d;
 	return f;
 }
@@ -51,10 +52,9 @@ Frac(unsigned int num, unsigned int den)
 static int
 is_prime(int num)
 {
-	int i = 2;
-	while(i < num)
-		if(Frac(num, i++).den == 1)
-			return 0;
+	int i = 1;
+	while(++i < num)
+		if(gcd(i, num) > 1) return 0;
 	return 1;
 }
 
@@ -78,7 +78,7 @@ static int
 find_prime(int prime)
 {
 	int i = 0;
-	for(i = 0; i < PRM_SZ && prime_lut[i] != prime; i++);
+	for(i = 0; i < PRM_SZ && prime_lut[i] != prime; i++) {};
 	return i;
 }
 
@@ -86,7 +86,7 @@ static char *
 find_symbol(char *token)
 {
 	int i;
-	for(i = 0; i < last_sym; i++) {
+	for(i = 0; i < symbols_len; i++) {
 		char *_a = token, *_b = symbols[i];
 		while(*_a == *_b) _a++, _b++;
 		if(*_b == 0 && *_a < 0x21) return symbols[i];
@@ -100,7 +100,8 @@ make_symbol(char *s)
 	int i = 0;
 	char c, *sym = find_symbol(s);
 	if(sym != NULL) return sym;
-	sym = symbols[last_sym++];
+	if(symbols_len >= PRM_SZ) return NULL;
+	sym = symbols[symbols_len++];
 	while((c = *s++) && c > 0x20) sym[i++] = c;
 	return sym;
 }
@@ -126,41 +127,32 @@ parse_rule(char *_s)
 	char c;
 	int side = 0;
 	Rule *r = _rules++;
-	while((c = *_s)) {
+	while(*_s) {
 		while((c = *_s) && (c == 0x09 || c == 0x20)) _s++;
 		if(*_s == 0xa) break;
-		if(*_s == '>')
+		if(*_s == '(')
+			_s = parse_comment(_s);
+		else if(*_s == '>')
 			side = 1, _s++;
-		else if(side)
-			r->b[r->_b++] = make_symbol(_s), _s = walk_token(_s);
-		else
-			r->a[r->_a++] = make_symbol(_s), _s = walk_token(_s);
+		else if(*_s > 0x20) {
+			if(side)
+				r->b[r->_b++] = make_symbol(_s), _s = walk_token(_s);
+			else
+				r->a[r->_a++] = make_symbol(_s), _s = walk_token(_s);
+		}
 	}
-	return _s;
+	return _s + 1;
 }
 
 static char *
 parse_symbol(char *_s)
 {
-	accsym[last_acc++] = make_symbol(_s);
-	return walk_token(_s);
+	*_accumulator++ = make_symbol(_s);
+	return walk_token(_s) + 1;
 }
 
 static void
-print_rule(Rule *r)
-{
-	int i;
-	printf(":: %d/%d ", r->f.num, r->f.den);
-	for(i = 0; i < r->_a; i++)
-		printf("%s.%d ", r->a[i], PRIME(r->a[i]));
-	printf("> ");
-	for(i = 0; i < r->_b; i++)
-		printf("%s.%d ", r->b[i], PRIME(r->b[i]));
-	printf("\n");
-}
-
-static void
-print_registers(unsigned int num)
+printregs(unsigned int num, int debug)
 {
 	unsigned int i = 0, fac = 2;
 	while(num > 1) {
@@ -170,43 +162,23 @@ print_registers(unsigned int num)
 			num /= fac;
 			while(!(num % fac)) num /= fac, pow++;
 			for(i = 0; i < pow; i++)
-				printf("%s ", symbol);
+				if(debug)
+					printf("%s.%d ", symbol, fac);
+				else
+					printf("%s ", symbol);
 		} else
 			fac++;
 	}
-	printf("\n");
-}
-
-static int
-eval(void)
-{
-	int i, pc = 0;
-	for(i = 0; i < _rules - &rules[0]; i++)
-		print_rule(&rules[i]);
-	printf("\nAC %d ", acc), print_registers(acc);
-	while(1) {
-		Rule *r = &rules[pc];
-		Fraction res = Frac(acc * r->f.num, r->f.den);
-		if(res.den == 1) {
-			printf("%02d %u × %u/%u = %u/%u, ", pc, acc, r->f.num, r->f.den, res.num, res.den);
-			acc = res.num, pc = 0;
-			print_registers(acc);
-		} else {
-			pc++;
-			if(pc == _rules - &rules[0]) break;
-		}
-	}
-	return 1;
 }
 
 int
 main(int argc, char *argv[])
 {
-	int i, j;
-	char c, *_src = src;
+	int i, j, acc = 1, pc = 0, fuel = 0x1000;
+	char src[SRC_SZ], *_src = src;
 	FILE *f;
 	if(argc < 2)
-		return !printf("Fractran - Fractran Rewriting, 31 Aug 2024.\n");
+		return !printf("Fractran - Fractran Rewriting, 1 Sep 2024.\n");
 	if(argc != 2)
 		return !printf("usage: fractran input.fra\n");
 	if(!(f = fopen(argv[1], "r")))
@@ -216,17 +188,17 @@ main(int argc, char *argv[])
 	for(i = 2; i < PRM_SZ; i++)
 		if(is_prime(i)) *_prime_lut++ = i;
 	/* tokenize */
-	while((c = *_src)) {
+	while(*_src) {
 		_src = walk_ws(_src);
 		if(*_src == '(')
 			_src = parse_comment(_src);
 		else if(_src[0] == ':' && _src[1] == ':')
-			_src = parse_rule(_src + 2), _src++;
-		else
-			_src = parse_symbol(_src), _src++;
+			_src = parse_rule(_src + 2);
+		else if(*_src)
+			_src = parse_symbol(_src);
 	}
 	/* compile */
-	for(i = 0; i < _rules - &rules[0]; i++) {
+	for(i = 0; i < _rules - rules; i++) {
 		Rule *r = &rules[i];
 		r->f.num = 1, r->f.den = 1;
 		for(j = 0; j < r->_a; j++)
@@ -234,8 +206,27 @@ main(int argc, char *argv[])
 		for(j = 0; j < r->_b; j++)
 			r->f.num *= PRIME(r->b[j]);
 	}
-	acc = 1;
-	for(i = 0; i < last_acc; i++)
-		acc *= PRIME(accsym[i]);
-	return !eval();
+	/* print */
+	for(i = 0; i < _rules - rules; i++) {
+		Rule *r = &rules[i];
+		printf(":: %d/%d ", r->f.num, r->f.den), printregs(r->f.den, 1), printf("> "), printregs(r->f.num, 1), printf("\n");
+	}
+	/* init */
+	for(i = 0; i < _accumulator - accumulator; i++)
+		acc *= PRIME(accumulator[i]);
+	printf("\nAC %d ", acc), printregs(acc, 0), printf("\n");
+	/* eval */
+	while(fuel--) {
+		Rule *r = &rules[pc];
+		if(acc % r->f.den) {
+			pc++;
+			if(pc == _rules - rules) return 0;
+		} else {
+			Fraction res = Frac(acc * r->f.num, r->f.den);
+			printf("%02d %u × %u/%u = %u, ", pc, acc, r->f.num, r->f.den, res.num);
+			printregs(res.num, 0), printf("\n");
+			acc = res.num, pc = 0;
+		}
+	}
+	return 1;
 }
