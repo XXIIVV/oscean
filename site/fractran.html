@@ -224,6 +224,40 @@ AC 576 x x x x x x y y
 01 250 × 5/2 = 625, r r r r
 </pre>
 
+<p>You can <b>multiply</b> two registers by keeping an intermediate result and state register. Keeping the resulting product in the first register prevents the accumulator grow too much in size:</p>
+
+<pre>
+@r @acc @x @y 
+
+:: iter acc > x iter
+:: iter >
+:: x y > r acc y 
+:: y > iter
+:: x > 
+
+AC 8575 x x y y y 
+02 8575 × 42/35 = 10290, r acc x y y y 
+02 10290 × 42/35 = 12348, r r acc acc y y y 
+03 12348 × 11/7 = 19404, r r acc acc y y iter 
+00 19404 × 55/33 = 32340, r r acc x y y iter 
+00 32340 × 55/33 = 53900, r r x x y y iter 
+01 53900 × 1/11 = 4900, r r x x y y 
+02 4900 × 42/35 = 5880, r r r acc x y y 
+02 5880 × 42/35 = 7056, r r r r acc acc y y 
+03 7056 × 11/7 = 11088, r r r r acc acc y iter 
+00 11088 × 55/33 = 18480, r r r r acc x y iter 
+00 18480 × 55/33 = 30800, r r r r x x y iter 
+01 30800 × 1/11 = 2800, r r r r x x y 
+02 2800 × 42/35 = 3360, r r r r r acc x y 
+02 3360 × 42/35 = 4032, r r r r r r acc acc y 
+03 4032 × 11/7 = 6336, r r r r r r acc acc iter 
+00 6336 × 55/33 = 10560, r r r r r r acc x iter 
+00 10560 × 55/33 = 17600, r r r r r r x x iter 
+01 17600 × 1/11 = 1600, r r r r r r x x 
+04 1600 × 1/5 = 320, r r r r r r x 
+04 320 × 1/5 = 64, r r r r r r
+</pre>
+
 <h3>Roman Numerals & Tally Marks</h3>
 
 <p>Keeping numbers in registers quickly explodes beyond the allocated space for integers in a computer, so we can condense these values into bases, which distribute the numbers over multiple bases.</p>
