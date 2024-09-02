@@ -4,7 +4,7 @@
 <title>XXIIVV &mdash; parallel computing</title></head><body>
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
 
-<nav><ul><li><a href="logic.html">logic</a></li><li><a href="arithmetic.html">arithmetic</a></li><li><a href="geometry.html">geometry</a></li><li><a href="astronomy.html">astronomy</a></li><li><a href="language.html">language</a></li><li><a href="computation.html" class="parent">computation</a></li><li><a href="hardware.html">hardware</a></li><li><a href="time.html">time</a></li></ul><ul><li><a href="paper_computing.html">paper computing</a></li><li><a href="ternary_computing.html">ternary computing</a></li><li><a href="parallel_computing.html" class="self">parallel computing</a></li><li><a href="reversible_computing.html">reversible computing</a></li><li><a href="programming.html">programming</a></li><li><a href="virtual_machines.html">virtual machines</a></li></ul><ul><li><a href="interaction_nets.html">interaction nets</a></li><li><a href="cellular_automata.html">cellular automata</a></li><li><a href="tuple_space.html">tuple space</a></li></ul></nav>
+<nav><ul><li><a href="logic.html">logic</a></li><li><a href="arithmetic.html">arithmetic</a></li><li><a href="geometry.html">geometry</a></li><li><a href="astronomy.html">astronomy</a></li><li><a href="language.html">language</a></li><li><a href="computation.html" class="parent">computation</a></li><li><a href="hardware.html">hardware</a></li><li><a href="time.html">time</a></li></ul><ul><li><a href="paper_computing.html">paper computing</a></li><li><a href="ternary_computing.html">ternary computing</a></li><li><a href="parallel_computing.html" class="self">parallel computing</a></li><li><a href="reversible_computing.html">reversible computing</a></li><li><a href="programming.html">programming</a></li><li><a href="virtual_machines.html">virtual machines</a></li></ul><ul><li><a href="cellular_automata.html">cellular automata</a></li><li><a href="tuple_space.html">tuple space</a></li></ul></nav>
 <main><h2>Computation in which many calculations are carried out simultaneously.</h2>
 
 <p>A <b>concurrent program</b> needs to perform several possibly unrelated tasks at the same time. In contrast, a <b>parallel program</b> solves a single problem.</p>
@@ -52,115 +52,6 @@ a serious mismatch.</q>
 	<li><a href='https://book.realworldhaskell.org/read/concurrent-and-multicore-programming.html' target='_blank'>Concurrent and multicore programming</a>, Haskell</li>
 	<li><a href='https://www.bradrodriguez.com/papers/mtasking.html' target='_blank'>Forth multitasking in a nutshell</a></li>
 	<li><a href='https://dreamsongs.com/10ideas.html' target='_blank'>The Design of Parallel Programming Languages</a>, Richard P. Gabriel</li>
-</ul>
-
-<h2>Interaction nets are a graphical model of computation.</h2>
-
-<p><b>Interaction nets</b> can capture all computable functions with rewriting rules, no external machinery such as copying a chunk of memory, or a garbage collector, is needed. Unlike models such as Turing machines, Lambda calculus, cellular automata, or <a href='logic.html'>combinators</a>, an interaction net computational step can be defined as a constant time operation, and the model allows for <a href='parallel_computing.html'>parallelism</a> in which many steps can take place at the same time.</p>
-
-<h3 id='agents'>1. Agents</h3>
-
-<p>An <b>agent</b>(<i>a</i>) is a cell that has one <i>principal port</i> and a number of <b>auxiliary ports</b>(<i>n</i>). A pair of agents connected together on their principal ports is called an <i>active pair</i>. Graphically, principal ports are distinguished by arrows.</p>
-
-<img src='../media/refs/in_cell.png' width='350'/>
-
-<p>The examples on this page will make use of four agents: <b>Successor</b>(increments a natural number), <b>Zero</b>, <b>Add</b> & <b>Mul</b>.</p>
-
-<img src='../media/refs/in_ari.png' width='475'/>
-
-<h3 id='nets'>2. Interaction Nets</h3>
-
-<p>A <b>net</b> is an undirected graph of agents where each port is connected to another one by means of a <b>wire</b>. The following net has three free ports, <i>x</i>, <i>y</i>, and <i>z</i>. Note that a wire may connect two ports of the same agent. A rewriting of a net is performed only on an active pair according to an <a href='#rules'>interaction rule</a>.</p>
-
-<img src='../media/refs/in_net.png' width='300'/>
-
-<h3 id='rules'>3. Rewriting Rules</h3>
-
-<p>Here, <i>rewriting</i> is just a convenient word to express a very concrete notion of <a href='https://www.youtube.com/watch?v=_uIGQ1biCXY' target='_blank'>interaction</a>, which we shall make precise by requiring some properties of rules:</p>
-
-<ul>
-	<li>Agents interact only through their principal port.</li>
-	<li>Each variable in a rule occurs exactly twice, once on each side.</li>
-	<li>There is at most one rule for each pair of distinct symbols.</li>
-</ul>
-
-<p>In an agent definition, the first port is the principal port,  the rest of the ports are listed in the order obtained by moving anticlockwise round the agent. The following definition follows the interaction net at the left side of the <a href='../media/refs/in_add_rule2.png'>rule 2 figure</a>.</p>
-
-<pre>
-<b>Net:</b>
-	Add(u,y,z), S(u,x)
-</pre>
-
-<table border='1'>
-	<tr>
-		<th>Rule 1</th>
-		<th>Rule 2</th>
-	</tr>
-	<tr>
-		<td><img src='../media/refs/in_add_rule1.png' width='350'/></td>
-		<td><img src='../media/refs/in_add_rule2.png' width='350'/></td>
-	</tr>
-</table>
-
-<p>In the following notation, an interaction rule consists of a pair of net descriptions separated by an arrow. Agents are capitalized, and free ports are lowercase.</p>
-
-<pre>
-<b>Rules:</b>
-	Add(u,y,z), Z(u)   --> z-y
-	Add(u,y,z), S(u,x) --> S(z,w), Add(x,y,w)
-</pre>
-
-<p>An interaction net to compute the result of 1 + 1 with the rules defined above, is shown below, where one active pair has been generated. We then show two reductions, which use the previous two rules. The final net, on the right-hand side, is of course the representation of 2, which is the expected answer.</p>
-
-<img src='../media/refs/in_add_res.png' width='550'/>
-
-<h3>Programming</h3>
-
-<p>From now on, we will use <a href='https://github.com/inpla/inpla' target='_blank'>Inpla</a>'s notation for rules in which the principal ports are taken out of the brackets and their equivalent connection written as <kbd>&gt;&lt;</kbd>. When an agent has an arity of 0, the brackets are removed altogether. Thus, we can write the entire addition program as:</p>
-
-<pre>
-<b>Rules:</b>
-	add(y, z) >< Z => y~z;
-	add(y, z) >< S(x) => add(y, S(z))~x;
-<b>Exec:</b>
-	add(res,S(Z))~S(S(Z)); <span style='color:#777'>1 + 2</span>
-	res; 
-<b>Result:</b>
-	<span style='color:#777'>S(S(S(Z))), or 3</span>
-</pre>
-
-<p>When defining multiplication, note that the argument <i>y</i> is used twice in the first equation, and it is not used at all in the second one. For that reason, two extra symbols are needed <i>duplicate</i> and <i>erase</i>. </p>
-
-<pre>
-sx * y = (x + y) + y               0 * y = 0
-</pre>
-<img src='../media/refs/in_mul.png' width='450'/>
-
-<p>The idea is that a net representing a natural number should be duplicated when it is connected to the principal port of a <i>duplicate</i>, and it should be erased when it is connected to the principal port of an <i>erase</i>.</p>
-
-<img src='../media/refs/in_dupera.png' width='450'/>
-
-<p>The system of interaction combinators consists of three symbols, called combinators: <i>y</i>(constructor), <i>d</i>(duplicator), and <i>e</i>(eraser). The six interaction rules below are of two kinds: commutation when the two cells carry different symbols (<i>yd</i>, <i>ye</i>, <i>de</i>) and annihilation when they carry the same symbol (<i>yy</i>, <i>dd</i>, <i>ee</i>).</p>
-
-<img src='../media/refs/in_comb.png' width='800' style='max-width:800px'/>
-
-<p>Note that the annihilations for <i>y</i> and <i>d</i> are not the same. Furthermore, if one numbers the auxiliary ports, one realizes that it is <i>yy</i>, not <i>dd</i>, which exchanges the ports:</p>
-
-<img src='../media/refs/in_swp.png' width='450'/>
-
-<q>The fundamental laws of computation are <b>commutation</b> and <b>annihilation</b>.</q>
-
-<img src='../media/refs/oiseau_det.png' style='float:right'/>
-
-<ul>
-	<li><a href='https://dl.acm.org/doi/pdf/10.1145/96709.96718' target='_blank'>Interaction Nets</a></li>
-	<li><a href='https://raw.githubusercontent.com/cicada-lang/inet/master/docs/papers/interaction-combinators.pdf' target='_blank'>Interaction Combinators</a></li>
-	<li><a href='http://sro.sussex.ac.uk/id/eprint/54469/1/Sato%2C_Shinya.pdf' target='_blank'>Implementation of a low-level language for interaction nets</a>, Shinya Sato</li>
-	<li><a href='https://github.com/inpla/inpla' target='_blank'>Inpla</a>, Interaction Nets as Programming Language</li>
-	<li><a href='https://www.sciencedirect.com/sdfe/reader/pii/S1571066105050176/pdf' target='_blank'>Towards a Programming Language for Interaction Nets</a>, Ian Mackie</li>
-	<li><a href='https://arxiv.org/pdf/1505.07164.pdf' target='_blank'>An Implementation Model for Interaction Nets</a></li>
-	<li><a href='https://github.com/cicada-lang/inet' target='_blank'>Interaction Nets Playground</a></li>
-	<li><a href='https://github.com/asperti/BOHM1.1' target='_blank'>Bologna Optimal Higher-Order Machine</a></li>
 </ul>
 
 <h2>A cellular automaton is a collection of cells on a grid that evolves over time.</h2>
