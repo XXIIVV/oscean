@@ -23,7 +23,7 @@ typedef struct Fraction {
 
 typedef struct Rule {
 	char *a[0x10], *b[0x10];
-	int _a, _b;
+	unsigned int _a, _b;
 	Fraction f;
 } Rule;
 
@@ -147,12 +147,15 @@ parse_rule(char *_s)
 static char *
 parse_symbol(char *_s)
 {
-	*_accumulator++ = make_symbol(_s);
+	if(*_s == '@')
+		make_symbol(_s + 1);
+	else
+		*_accumulator++ = make_symbol(_s);
 	return walk_token(_s) + 1;
 }
 
 static void
-printregs(unsigned int num, int debug)
+print_r(unsigned int num, int debug)
 {
 	unsigned int i = 0, fac = 2;
 	while(num > 1) {
@@ -174,7 +177,7 @@ printregs(unsigned int num, int debug)
 int
 main(int argc, char *argv[])
 {
-	int i, j, acc = 1, pc = 0, fuel = 0x1000;
+	unsigned int i, j, acc = 1, pc = 0, fuel = 0x1000;
 	char src[SRC_SZ], *_src = src;
 	FILE *f;
 	if(argc < 2)
@@ -209,12 +212,12 @@ main(int argc, char *argv[])
 	/* print */
 	for(i = 0; i < _rules - rules; i++) {
 		Rule *r = &rules[i];
-		printf(":: %d/%d ", r->f.num, r->f.den), printregs(r->f.den, 1), printf("> "), printregs(r->f.num, 1), printf("\n");
+		printf(":: %d/%d ", r->f.num, r->f.den), print_r(r->f.den, 1), printf("> "), print_r(r->f.num, 1), printf("\n");
 	}
 	/* init */
 	for(i = 0; i < _accumulator - accumulator; i++)
 		acc *= PRIME(accumulator[i]);
-	printf("\nAC %d ", acc), printregs(acc, 0), printf("\n");
+	printf("\nAC %d ", acc), print_r(acc, 0), printf("\n");
 	/* eval */
 	while(fuel--) {
 		Rule *r = &rules[pc];
@@ -224,7 +227,7 @@ main(int argc, char *argv[])
 		} else {
 			Fraction res = Frac(acc * r->f.num, r->f.den);
 			printf("%02d %u × %u/%u = %u, ", pc, acc, r->f.num, r->f.den, res.num);
-			printregs(res.num, 0), printf("\n");
+			print_r(res.num, 0), printf("\n");
 			acc = res.num, pc = 0;
 		}
 	}
