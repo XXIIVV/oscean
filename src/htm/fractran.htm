@@ -11,7 +11,7 @@ register and their exponent is their value. </p>
 	<figcaption>Typical Fractran Programmer</figcaption>
 </figure>
 
-<h3>The Accumulator</h3>
+<h3>The Accumulator(AC)</h3>
 
 <table border='1' style='float: right;margin-left: 30px;'>
 	<tr><th rowspan='2'>Accumulator</th><th colspan='4'>Registers</th></tr>
@@ -29,19 +29,17 @@ value 4, r3 has the value 2, r7 has the value 1, and all other registers are
 unassigned. </p>
 
 <pre style='clear:both'>
-<i>(The accumulator with r2 named x, and r3 named y)</i>
-
-AC 18 x x y
+AC 18 x x y <i>(Register names: r2 = x, r3 = y)</i>
 </pre>
 
-<h3>The Operand</h3>
+<h3>The Rules(::)</h3>
 
 <img src='../media/refs/fractran.adder1.png' width='140px' style='float:right;margin-left:30px'/>
 
-<p>An <b>Operand</b> is a <a href='fractions.html'>fraction</a> that represents an
+<p>An <b>Rule</b> is a <a href='fractions.html'>fraction</a> that represents an
 instruction that tests one or more registers by the prime factors
 of its numerator and denominator. To evaluate the result of
-an operand we take the state of the accumulator, if multiplying it by this fraction will
+a rule we take the state of the accumulator, if multiplying it by this fraction will
 give us an integer, we will update the accumulator with the result.</p>
 
 <table border='1'>
@@ -92,16 +90,11 @@ integer values. Each fraction is an instruction that operates on some of the
 registers.</p>
 
 <pre>
-<i>(Two named registers)</i>
-@x @y
+:: 3/2 x.2 > y.3 
 
-<i>(A compiled operand)</i>
-:: 2/3 y.3 > x.2
-
-<i>(The evaluation)</i>
-AC 18 x y y 
-00 18 × 2/3 = 12, x x y 
-00 12 × 2/3 = 8, x x x 
+AC 36 x x y y 
+00 36 × 3/2 = 54, x y y y 
+00 54 × 3/2 = 81, y y y y
 </pre>
 
 <h3>The Program</h3>
@@ -188,33 +181,27 @@ AC 30 x y and
 
 <h3>Arithmetic</h3>
 
-<p>You can <b>add</b> two registers by writing the sum into a third, either one at a time, or two at once:</p>
+<p>You can get the <b>sum</b> of two registers by moving the value of one register into the other. The naming of the x register in advance ensures that the highest number will be stored in the lowest register:</p>
 
 <pre>
-:: x y > r r
-:: x > r
-:: y > r
+@x
+
+:: y > x
 
 AC 144 x x x x y y 
-00 144 × 25/6 = 600, x x x y r r 
-00 600 × 25/6 = 2500, x x r r r r 
-01 2500 × 5/2 = 6250, x r r r r r 
-01 6250 × 5/2 = 15625, r r r r r r
+00 144 × 2/3 = 96, x x x x x y 
+00 96 × 2/3 = 64, x x x x x x
 </pre>
 
-<p>You can <b>subtract</b> two registers by writing the sum into a third, by consuming the value of two registers at once, and moving the remains to a third register:</p>
+<p>You can get the <b>difference</b> between two registers by consuming the value of two registers at once, and moving the remains to the first:</p>
 
 <pre>
 :: x y >
-:: x > r
+:: y > x
 
 AC 576 x x x x x x y y 
 00 576 × 1/6 = 96, x x x x x y 
-00 96 × 1/6 = 16, x x x x 
-01 16 × 5/2 = 40, x x x r 
-01 40 × 5/2 = 100, x x r r 
-01 100 × 5/2 = 250, x r r r 
-01 250 × 5/2 = 625, r r r r
+00 96 × 1/6 = 16, x x x x
 </pre>
 
 <p>You can <b>multiply</b> two registers by keeping an intermediate result and state register. Keeping the resulting product in the first register prevents the accumulator grow too much in size:</p>
@@ -253,7 +240,7 @@ AC 8575 x x y y y
 
 <h3>Roman Numerals & Tally Marks</h3>
 
-<p>Keeping numbers in registers quickly explodes beyond the allocated space for integers in a computer, so we can condense these values into bases, which distribute the numbers over multiple bases.</p>
+<p>Keeping numbers in registers quickly explodes beyond the allocated space for integers in a computer, so we can condense these values into bases, which distribute the numbers over multiple registers, and use the lowest registers for holding values we expect to be the highest.</p>
 
 <pre>
 :: I IX > X
