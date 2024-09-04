@@ -141,16 +141,15 @@ parse_rule(char *_s)
 				r->a[r->_a++] = make_symbol(_s), _s = walk_token(_s);
 		}
 	}
+	if(!side)
+		_rules--, r->_a = 0, r->_b = 0;
 	return _s + 1;
 }
 
 static char *
 parse_symbol(char *_s)
 {
-	if(*_s == '@')
-		make_symbol(_s + 1);
-	else
-		*_accumulator++ = make_symbol(_s);
+	*_accumulator++ = make_symbol(_s);
 	return walk_token(_s) + 1;
 }
 
@@ -177,11 +176,12 @@ print_r(unsigned int num, int debug)
 int
 main(int argc, char *argv[])
 {
-	unsigned int i, j, acc = 1, pc = 0, fuel = 0x1000;
+	unsigned long long int acc = 1;
+	unsigned int i, j, pc = 0, fuel = 0x1000;
 	char src[SRC_SZ], *_src = src;
 	FILE *f;
 	if(argc < 2)
-		return !printf("Fractran - Fractran Rewriting, 1 Sep 2024.\n");
+		return !printf("Fractran - Fractran Rewriting, 3 Sep 2024.\n");
 	if(argc != 2)
 		return !printf("usage: fractran input.fra\n");
 	if(!(f = fopen(argv[1], "r")))
@@ -217,7 +217,7 @@ main(int argc, char *argv[])
 	/* init */
 	for(i = 0; i < _accumulator - accumulator; i++)
 		acc *= PRIME(accumulator[i]);
-	printf("\nAC %d ", acc), print_r(acc, 0), printf("\n");
+	printf("\nAC %ld ", acc), print_r(acc, 0), printf("\n");
 	/* eval */
 	if(_rules == rules) return 0;
 	while(fuel--) {
@@ -228,7 +228,7 @@ main(int argc, char *argv[])
 			pc++;
 		else {
 			Fraction res = Frac(acc * r->f.num, r->f.den);
-			printf("%02d %u × %u/%u = %u, ", pc, acc, r->f.num, r->f.den, res.num);
+			printf("%02d %lu × %u/%u = %u, ", pc, acc, r->f.num, r->f.den, res.num);
 			print_r(res.num, 0), printf("\n");
 			acc = res.num, pc = 0;
 		}
