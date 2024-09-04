@@ -112,13 +112,13 @@ parse_comment(char *_s)
 	char c;
 	int depth = 0;
 	while((c = *_s++)) {
-		if(c == '(') depth++;
-		if(c == ')') {
+		if(c == '(')
+			depth++;
+		else if(c == ')')
 			depth--;
-			if(!depth) break;
-		}
+		if(!depth) return _s + 1;
 	}
-	return _s + 1;
+	return _s;
 }
 
 static char *
@@ -141,16 +141,9 @@ parse_rule(char *_s)
 				r->a[r->_a++] = make_symbol(_s), _s = walk_token(_s);
 		}
 	}
-	if(!side)
+	if(!side) /* forward declarations */
 		_rules--, r->_a = 0, r->_b = 0;
-	return _s + 1;
-}
-
-static char *
-parse_symbol(char *_s)
-{
-	*_accumulator++ = make_symbol(_s);
-	return walk_token(_s) + 1;
+	return _s;
 }
 
 static void
@@ -176,7 +169,7 @@ print_r(unsigned int num, int debug)
 int
 main(int argc, char *argv[])
 {
-	unsigned long long int acc = 1;
+	unsigned long int acc = 1;
 	unsigned int i, j, pc = 0, fuel = 0x1000;
 	char src[SRC_SZ], *_src = src;
 	FILE *f;
@@ -198,7 +191,7 @@ main(int argc, char *argv[])
 		else if(_src[0] == ':' && _src[1] == ':')
 			_src = parse_rule(_src + 2);
 		else if(*_src)
-			_src = parse_symbol(_src);
+			*_accumulator++ = make_symbol(_src), _src = walk_token(_src);
 	}
 	/* compile */
 	for(i = 0; i < _rules - rules; i++) {
