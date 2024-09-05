@@ -23,7 +23,7 @@ typedef struct Fraction {
 
 typedef struct Rule {
 	char *a[0x10], *b[0x10];
-	unsigned int _a, _b;
+	unsigned int _a, _b, io;
 	Fraction f;
 } Rule;
 
@@ -132,9 +132,10 @@ parse_rule(char *_s)
 		if(*_s == 0xa || (_s[0] == ':' && _s[1] == ':')) break;
 		if(*_s == '(')
 			_s = parse_comment(_s);
-		else if(*_s == '>')
+		else if(*_s == '>') {
 			side = 1, _s++;
-		else if(*_s > 0x20) {
+			if(*_s == '>') r->io = 1, _s++;
+		} else if(*_s > 0x20) {
 			if(side)
 				r->b[r->_b++] = make_symbol(_s), _s = walk_token(_s);
 			else
@@ -147,7 +148,7 @@ parse_rule(char *_s)
 }
 
 static void
-print_r(unsigned int num, int debug)
+print_r(FILE *f, unsigned int num, int debug)
 {
 	unsigned int i = 0, fac = 2;
 	while(num > 1) {
@@ -158,9 +159,9 @@ print_r(unsigned int num, int debug)
 			while(!(num % fac)) num /= fac, pow++;
 			for(i = 0; i < pow; i++)
 				if(debug)
-					printf("%s.%d ", symbol, fac);
+					fprintf(f, "%s.%d ", symbol, fac);
 				else
-					printf("%s ", symbol);
+					fprintf(f, "%s ", symbol);
 		} else
 			fac++;
 	}
@@ -205,12 +206,12 @@ main(int argc, char *argv[])
 	/* print */
 	for(i = 0; i < _rules - rules; i++) {
 		Rule *r = &rules[i];
-		printf(":: %d/%d ", r->f.num, r->f.den), print_r(r->f.den, 1), printf("> "), print_r(r->f.num, 1), printf("\n");
+		fprintf(stderr, ":: %d/%d ", r->f.num, r->f.den), print_r(stderr, r->f.den, 1), fprintf(stderr, "> "), print_r(stderr, r->f.num, 1), fprintf(stderr, "\n");
 	}
 	/* init */
 	for(i = 0; i < _accumulator - accumulator; i++)
 		acc *= PRIME(accumulator[i]);
-	printf("\nAC %ld ", acc), print_r(acc, 0), printf("\n");
+	fprintf(stderr, "\nAC %ld ", acc), print_r(stderr, acc, 0), fprintf(stderr, "\n");
 	/* eval */
 	if(_rules == rules) return 0;
 	while(fuel--) {
@@ -221,8 +222,9 @@ main(int argc, char *argv[])
 			pc++;
 		else {
 			Fraction res = Frac(acc * r->f.num, r->f.den);
-			printf("%02d %lu × %u/%u = %u, ", pc, acc, r->f.num, r->f.den, res.num);
-			print_r(res.num, 0), printf("\n");
+			if(r->io) print_r(stdout, acc * r->f.num, 0);
+			fprintf(stderr, "%02d %lu × %u/%u = %u, ", pc, acc, r->f.num, r->f.den, res.num);
+			print_r(stderr, res.num, 0), fprintf(stderr, "\n");
 			acc = res.num, pc = 0;
 		}
 	}

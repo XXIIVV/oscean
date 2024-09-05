@@ -16,6 +16,7 @@
 	@playing $1
 	@mode $1
 	@paused $1
+	@prefix &folders $1 &tracks $1
 	@secfrom $2
 	@secto $2
 	@secprog $2
@@ -353,7 +354,7 @@
 	&w ( -- )
 	DUP2 <parse-line>
 	lcap/ INC2 LDAk ?&w
-	POP2 sort-folders sort-tracks
+	POP2 <post-refresh>
 	( >> )
 
 @<fit-window> ( -- )
@@ -403,6 +404,23 @@
 			DUP2 #0000 EQU2 ?{ POP2 INC2 INC2r !&>loop } }
 	NIP2 LTH POP2r JMP2r
 
+@str-len ( a* -- len^ )
+	LITr 00 &loop LDAk ?{ POP2 STHr JMP2r } INCr INC2 !&loop
+
+@str-prefix ( a* b* -- len^ )
+	STH2 DUP2 ,&a0 STR2               ( a* [b*] ; a0<-a )
+	&loop LDAk LDAkr STHr NEQk ?&done ( a1* ca^ cb^ [b1*] )
+	DUP2 #0000 EQU2 ?&done            ( a1* ca^ cb^ [b1*] )
+	POP2 INC2 INC2r !&loop            ( a1+1* [b1+1*] )
+	&done POP2 POP2r                  ( a1* )
+	LIT2 [ &a0 $2 ] SUB2 NIP JMP2r    ( len^ )
+
+@<post-refresh> ( -- )
+	common-folder-prefix .prefix/folders STZ
+	common-track-prefix .prefix/tracks STZ
+	sort-folders
+	!sort-tracks
+
 @sort-folders ( -- )
 	.lines/folders LDZ ?{ JMP2r }
 	;mem/folders DUP2 LIT2 [ 00 -lines/folders ] LDZ #01 SUB
@@ -436,6 +454,26 @@
 		<scpy>
 		;tmp STH2r !<scpy> }
 	POP2 POP2 JMP2r
+
+@min ( x^ y^ -- min^ )
+	LTHk JMP SWP POP JMP2r
+
+@common-folder-prefix ( -- )
+	.lines/folders LDZ ?{ JMP2r }
+	;mem/folders DUP2 LIT2 [ 00 -lines/folders ] LDZ #70 SFT2 ADD2
+	!common-prefix-0
+
+@common-track-prefix ( -- )
+	.lines/tracks LDZ ?{ JMP2r }
+	;mem/tracks DUP2 LIT2 [ 00 -lines/tracks ] LDZ #70 SFT2 ADD2
+	( >> )
+
+@common-prefix-0 ( first* limit* -- )
+	SWP2 DUP2k str-len STH                ( limit* first* first* [len^] )
+	,&s0 STR2 #0080 ADD2                  ( limit* first+128* [len^] )
+	&loop GTH2k ?&ok POP2 POP2 STHr JMP2r ( len^ )
+	&ok DUP2 LIT2 [ &s0 $2 ] str-prefix   ( limit* curr* p^ [len^] )
+	STHr min STH #0080 ADD2 !&loop        ( last* next+128* [min-p-len2^] )
 
 @count-lines ( -- lines )
 	.lines/folders LDZ .lines/tracks LDZ ADD JMP2r
@@ -557,7 +595,7 @@
 		( | normal )
 		#0008 .Screen/x DEO2
 		#00 OVR
-		( CELLSIZE ) #70 SFT2 ;mem/tracks ADD2 STHr <draw-uf2>
+		( CELLSIZE ) #70 SFT2 ;mem/tracks ADD2 STHr <draw-uf2-track>
 		.Screen/y DEI2k #0010 ADD2 ROT DEO2
 		INC GTHk ?&>l
 	POP2 JMP2r
@@ -581,7 +619,7 @@
 		( | normal )
 		#0008 .Screen/x DEO2
 		#00 OVR
-		( CELLSIZE ) #70 SFT2 ;mem/folders ADD2 STHr <draw-uf2>
+		( CELLSIZE ) #70 SFT2 ;mem/folders ADD2 STHr <draw-uf2-folder>
 		.Screen/y DEI2k #0010 ADD2 ROT DEO2
 		INC GTHk ?&>l
 	POP2 JMP2r
@@ -822,7 +860,18 @@
 	STH
 	.Screen/x DEI2 OVR2 get-uf2-width #01 SFT2 SUB2 .Screen/x DEO2
 	STHr
-	( >> )
+	!<draw-uf2>
+
+@<draw-uf2-folder> ( text* color -- )
+	STH .prefix/folders LDZ #03 GTH ?{ STHr !<draw-uf2> }
+	;dict/ellipses STHkr <draw-uf2>
+	LIT2 [ 00 -prefix/folders ] LDZ ADD2 STHr
+	!<draw-uf2>
+
+@<draw-uf2-track> ( text* color -- )
+	STH .prefix/tracks LDZ #03 GTH ?{ STHr !<draw-uf2> }
+	;dict/ellipses STHkr <draw-uf2>
+	LIT2 [ 00 -prefix/tracks ] LDZ ADD2 STHr
 
 @<draw-uf2> ( text* color -- )
 	,<draw-glyph>/color STR
@@ -986,6 +1035,7 @@
 	&pause-cmd "pause 0a $1
 	&no-artist "Unknown 20 "Artist $1
 	&no-album "Unknown 20 "Album $1
+	&ellipses "... $1
 
 
 
