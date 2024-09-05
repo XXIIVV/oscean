@@ -52,12 +52,12 @@
 	( name ) "m291 0a
 	( desc ) "Audio 20 "Player 0a
 	( auth ) "By 20 "Linvega 20 "& 20 "d6 0a
-	( date ) "31 20 "Aug 20 "2024 $2
+	( date ) "5 20 "Sep 20 "2024 $2
 
 (
 @|vectors )
 
-@on-console ( -> brk )
+@on-console ( -> )
 	[ LIT2 01 -Console/type ] DEI EQU ?{ BRK }
 	[ LIT2 0a -Console/read ] DEI EQUk ?{ message/<append>
 		POP BRK }
@@ -404,31 +404,33 @@
 			DUP2 #0000 EQU2 ?{ POP2 INC2 INC2r !&>loop } }
 	NIP2 LTH POP2r JMP2r
 
-@str-len ( a* -- len^ )
-	LITr 00 &loop LDAk ?{ POP2 STHr JMP2r } INCr INC2 !&loop
+@str-len ( a* -- len )
+	[ LITr 00 ]
+	&>loop ( -- )
+		LDAk ?{ POP2 STHr JMP2r }
+		INCr INC2 !&>loop
 
-@str-prefix ( a* b* -- len^ )
-	STH2 DUP2 ,&a0 STR2               ( a* [b*] ; a0<-a )
-	&loop LDAk LDAkr STHr NEQk ?&done ( a1* ca^ cb^ [b1*] )
-	DUP2 #0000 EQU2 ?&done            ( a1* ca^ cb^ [b1*] )
-	POP2 INC2 INC2r !&loop            ( a1+1* [b1+1*] )
-	&done POP2 POP2r                  ( a1* )
-	LIT2 [ &a0 $2 ] SUB2 NIP JMP2r    ( len^ )
+@str-prefix ( a* b* -- len )
+	STH2
+	DUP2 ,&a0 STR2
+	&>loop ( -- )
+		LDAk LDAkr STHr NEQk ?{
+			DUP2 #0000 EQU2 ?{ POP2 INC2 INC2r !&>loop } }
+	POP2 POP2r [ LIT2 &a0 $2 ] SUB2 NIP JMP2r
 
 @<post-refresh> ( -- )
 	common-folder-prefix .prefix/folders STZ
 	common-track-prefix .prefix/tracks STZ
-	sort-folders
-	!sort-tracks
+	sort-folders !sort-tracks
 
 @sort-folders ( -- )
 	.lines/folders LDZ ?{ JMP2r }
-	;mem/folders DUP2 LIT2 [ 00 -lines/folders ] LDZ #01 SUB
+	;mem/folders DUP2 [ LIT2 00 -lines/folders ] LDZ #01 SUB
 	( CELLSIZE ) #70 SFT2 ADD2 !sort-files
 
 @sort-tracks ( -- )
 	.lines/tracks LDZ ?{ JMP2r }
-	;mem/tracks DUP2 LIT2 [ 00 -lines/tracks ] LDZ #01 SUB
+	;mem/tracks DUP2 [ LIT2 00 -lines/tracks ] LDZ #01 SUB
 	( CELLSIZE ) #70 SFT2 ADD2
 	( >> )
 
@@ -455,25 +457,26 @@
 		;tmp STH2r !<scpy> }
 	POP2 POP2 JMP2r
 
-@min ( x^ y^ -- min^ )
-	LTHk JMP SWP POP JMP2r
+%min ( x y -- min ) {
+	LTHk [ JMP SWP POP ] }
 
-@common-folder-prefix ( -- )
-	.lines/folders LDZ ?{ JMP2r }
-	;mem/folders DUP2 LIT2 [ 00 -lines/folders ] LDZ #70 SFT2 ADD2
-	!common-prefix-0
+@common-folder-prefix ( -- len )
+	.lines/folders LDZ ?{ #00 JMP2r }
+	;mem/folders DUP2 [ LIT2 00 -lines/folders ] LDZ #70 SFT2 ADD2 !common-prefix-0
 
-@common-track-prefix ( -- )
-	.lines/tracks LDZ ?{ JMP2r }
-	;mem/tracks DUP2 LIT2 [ 00 -lines/tracks ] LDZ #70 SFT2 ADD2
+@common-track-prefix ( -- len )
+	.lines/tracks LDZ ?{ #00 JMP2r }
+	;mem/tracks DUP2 [ LIT2 00 -lines/tracks ] LDZ #70 SFT2 ADD2
 	( >> )
 
-@common-prefix-0 ( first* limit* -- )
-	SWP2 DUP2k str-len STH                ( limit* first* first* [len^] )
-	,&s0 STR2 #0080 ADD2                  ( limit* first+128* [len^] )
-	&loop GTH2k ?&ok POP2 POP2 STHr JMP2r ( len^ )
-	&ok DUP2 LIT2 [ &s0 $2 ] str-prefix   ( limit* curr* p^ [len^] )
-	STHr min STH #0080 ADD2 !&loop        ( last* next+128* [min-p-len2^] )
+@common-prefix-0 ( first* limit* -- len )
+	SWP2 DUP2k str-len STH
+	,&s0 STR2
+	#0080 ADD2
+	&>loop ( -- )
+		GTH2k ?{ POP2 POP2 STHr JMP2r }
+		DUP2 [ LIT2 &s0 $2 ] str-prefix STHr min STH
+		#0080 ADD2 !&>loop
 
 @count-lines ( -- lines )
 	.lines/folders LDZ .lines/tracks LDZ ADD JMP2r
@@ -859,19 +862,20 @@
 @<draw-uf2-center> ( text* color -- )
 	STH
 	.Screen/x DEI2 OVR2 get-uf2-width #01 SFT2 SUB2 .Screen/x DEO2
-	STHr
-	!<draw-uf2>
+	STHr !<draw-uf2>
 
 @<draw-uf2-folder> ( text* color -- )
-	STH .prefix/folders LDZ #03 GTH ?{ STHr !<draw-uf2> }
+	STH
+	.prefix/folders LDZ #03 GTH ?{ STHr !<draw-uf2> }
 	;dict/ellipses STHkr <draw-uf2>
-	LIT2 [ 00 -prefix/folders ] LDZ ADD2 STHr
-	!<draw-uf2>
+	[ LIT2 00 -prefix/folders ] LDZ ADD2 STHr !<draw-uf2>
 
 @<draw-uf2-track> ( text* color -- )
-	STH .prefix/tracks LDZ #03 GTH ?{ STHr !<draw-uf2> }
+	STH
+	.prefix/tracks LDZ #03 GTH ?{ STHr !<draw-uf2> }
 	;dict/ellipses STHkr <draw-uf2>
-	LIT2 [ 00 -prefix/tracks ] LDZ ADD2 STHr
+	[ LIT2 00 -prefix/tracks ] LDZ ADD2 STHr
+	( >> )
 
 @<draw-uf2> ( text* color -- )
 	,<draw-glyph>/color STR

@@ -17,14 +17,9 @@ WITH REGARD TO THIS SOFTWARE.
 #define SRC_SZ 0x4000
 #define PRIME(x) prime_lut[(x - symbols[0]) / TOK_SZ]
 
-typedef struct Fraction {
-	unsigned int num, den;
-} Fraction;
-
 typedef struct Rule {
 	char *a[0x10], *b[0x10];
-	unsigned int _a, _b, io;
-	Fraction f;
+	unsigned int _a, _b, io, num, den;
 } Rule;
 
 Rule rules[RUL_SZ], *_rules = rules;
@@ -38,15 +33,6 @@ gcd(int a, int b)
 {
 	if(b == 0) return a;
 	return gcd(b, a % b);
-}
-
-static Fraction
-Frac(unsigned int num, unsigned int den)
-{
-	Fraction f;
-	int d = gcd(num, den);
-	f.num = num / d, f.den = den / d;
-	return f;
 }
 
 static int
@@ -197,17 +183,15 @@ main(int argc, char *argv[])
 	/* compile */
 	for(i = 0; i < _rules - rules; i++) {
 		Rule *r = &rules[i];
-		r->f.num = 1, r->f.den = 1;
-		for(j = 0; j < r->_a; j++)
-			r->f.den *= PRIME(r->a[j]);
-		for(j = 0; j < r->_b; j++)
-			r->f.num *= PRIME(r->b[j]);
+		r->num = 1, r->den = 1;
+		for(j = 0; j < r->_a; j++) r->den *= PRIME(r->a[j]);
+		for(j = 0; j < r->_b; j++) r->num *= PRIME(r->b[j]);
 	}
 	/* print */
 	for(i = 0; i < _rules - rules; i++) {
 		Rule *r = &rules[i];
-		fprintf(stderr, ":: %d/%d ", r->f.num, r->f.den), print_r(stderr, r->f.den, 1);
-		fprintf(stderr, "> "), print_r(stderr, r->f.num, 1), fprintf(stderr, "\n");
+		fprintf(stderr, ":: %d/%d ", r->num, r->den), print_r(stderr, r->den, 1);
+		fprintf(stderr, "> "), print_r(stderr, r->num, 1), fprintf(stderr, "\n");
 	}
 	/* init */
 	for(i = 0; i < _accumulator - accumulator; i++)
@@ -217,16 +201,16 @@ main(int argc, char *argv[])
 	if(_rules == rules) return 0;
 	while(fuel--) {
 		Rule *r = &rules[pc];
-		if(!acc || !r->f.den)
+		if(!acc || !r->den)
 			return 0;
-		else if(acc % r->f.den)
+		else if(acc % r->den)
 			pc++;
 		else {
-			Fraction res = Frac(acc * r->f.num, r->f.den);
-			if(r->io) print_r(stdout, r->f.den, 0), fprintf(stdout, "\n");
-			fprintf(stderr, "%02d %lu × %u/%u = %u, ", pc, acc, r->f.num, r->f.den, res.num);
-			print_r(stderr, res.num, 0), fprintf(stderr, "\n");
-			acc = res.num, pc = 0;
+			unsigned long int num = acc * r->num, res = num / gcd(num, r->den);
+			if(r->io) print_r(stdout, gcd(r->num, r->den), 0), fprintf(stdout, "\n");
+			fprintf(stderr, "%02d %lu × %u/%u = %lu, ", pc, acc, r->num, r->den, res);
+			print_r(stderr, res, 0), fprintf(stderr, "\n");
+			acc = res, pc = 0;
 		}
 	}
 	return 1;
