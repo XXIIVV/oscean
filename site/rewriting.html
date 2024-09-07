@@ -16,19 +16,24 @@
 <pre>swap foo bar <i>; bar foo</i></pre>
 
 <img src='../media/refs/grue.png' style='width:300px' title='Bivotar & Juranda, Zork'/>
-<h2>Fractran is a computer operated entirely by multiplying fractions.</h2>
+<h2>Fractran is a computer architecture based entirely on the multiplication of fractions.</h2>
 
-<p>Any number that can't be divided by any other number, apart from itself and
-one, is <a href='primes.html'>prime</a>. Since primes can't be divided, we can
-think of them as the DNA of other numbers. In Fractran, each prime is a
-register and their exponent is their value.</p>
+<p>A <b>prime</b> is a number that can only be divided by itself one, since these
+numbers can't be divided, they can considered the DNA of other numbers. The
+factoring of a number into <a href='primes.html'>prime numbers</a>, for example: 18 = 2 × 3<sup>2</sup>,
+exposes values which Fractran utilizes as <i>registers</i>. There are two parts to a Fractran program:</p>
+
+<ol>
+	<li><a href='#acc'>The Accumulator</a></li>
+	<li><a href='#rules'>The Fractions</a></li>
+</ol>
 
 <figure>
 	<img src='../media/refs/vogue-fractran.jpg' width='300'/>
 	<figcaption>Typical Fractran Programmer</figcaption>
 </figure>
 
-<h3>The Accumulator(AC)</h3>
+<h3 id='acc'>The Accumulator</h3>
 
 <table border='1' style='float: right;margin-left: 30px;'>
 	<tr><th rowspan='2'>Accumulator</th><th colspan='4'>Registers</th></tr>
@@ -39,38 +44,20 @@ register and their exponent is their value.</p>
 	<tr><th>5402250</th><td>1</td><td>2</td><td>3</td><td>4</td></tr>
 </table>
 
-<p>The state of the <b>Accumulator</b> is held as a single number, whose prime
-factorization holds the value of registers(2, 3, 5, 7, 11, 13, 17, ..). For
-example, if the state of the accumulator is 1008(2⁴ × 3² × 7), r2 has the
-value 4, r3 has the value 2, r7 has the value 1, and all other registers are
-unassigned. </p>
+<p>The <b>Accumulator</b> is a single number whose prime factorization holds the
+value of registers(2, 3, 5, 7, 11, 13, 17, ..). For example, if the state of
+the accumulator is 1008(2⁴ × 3² × 7), r2 has the value 4, r3 has the value
+2, r7 has the value 1, and all other registers are unassigned.</p>
 
-<pre style='clear:both'>
-AC 18 x x y <i>(Register names: r2 = x, r3 = y)</i>
-</pre>
-
-<h3>The Rules(::)</h3>
+<h3>The Fraction</h3>
 
 <img src='../media/refs/fractran.adder1.png' width='140px' style='float:right;margin-left:30px'/>
 
-<p>An <b>Rule</b> is a <a href='fractions.html'>fraction</a> that represents an
-instruction that tests one or more registers by the prime factors
-of its numerator and denominator. To evaluate the result of
-a rule we take the state of the accumulator, if multiplying it by this fraction will
-give us an integer, we will update the accumulator with the result.</p>
-
-<pre>
-:: x > y
-
-AC 36 x x y y 
-00 36 × 3/2 = 54, x y y y 
-00 54 × 3/2 = 81, y y y y
-</pre>
-
-<p>Operations become more readable when broken down into their primes. We can
-think of every prime number as having a register which can take on non-negative
-integer values. Each fraction is an instruction that operates on some of the
-registers.</p>
+<p>A <b>Fraction</b> represents an instruction that tests one or more
+registers by the prime factors of its numerator and denominator. To evaluate
+the result of a rule we take the the accumulator, if multiplying it by this
+<a href='fractions.html'>fraction</a> will give us an integer, we will update the accumulator with the
+result.</p>
 
 <table border='1'>
 	<tr>
@@ -114,12 +101,37 @@ if(<span class='denreg'>r2</span> >= <span class='denval'>2</span> && <span clas
 	</tr>
 </table>
 
-<h3>The Program</h3>
+<p>Operations become more readable when broken down into their primes. We can
+think of every prime number as having a register which can take on non-negative
+integer values. Each fraction is an instruction that operates on some of the
+registers.</p>
 
-<p>A <b>Program</b> is a list of rewrite rules distributed over lines starting with <code>::</code>, and
-an accumulator input.</p>
+<h3 id='notation'>A Notation</h3>
+
+<p>While Fractran is commonly reduced to just another opaque esoteric language,
+portraying it as such is doing a disservice to the relatively simple idea at
+its core and to the researchers who might otherwise benefit by venturing deeper
+into a relatively unexplored field of computation.</p>
+
+<p><a href='https://wryl.tech' target='_blank'>Wryl</a>, who created <a href='modal.html'>Modal</a>, demonstrated to me an interesting connection between Fractran and <a href='rewriting.html'>rewriting languages</a>. We need only to compile our rules and point the prime registers to symbols in a dictionary to see this relationship more clearly.</p>
+
+<pre style='clear:both'>
+:: left side > right side <i>(compiled: 15/6 left.2 side.3 > side.3 right.5)</i>
+
+AC 6 left side <i>(initial state)</i>
+00 6 × 15/6 = 15, side right <i>(result state)</i>
+</pre>
+
+<p>This documentation will represent registers with names(x, y, foo-bar, baz, ..). Fractions will be
+written as rewrite rules starting with <code>::</code>, a left-side, a
+spacer(>) and a right-side. The notation indicates which registers to replace
+on the left-side, and what to replace them with on the right-side.</p>
 
 <img src='../media/refs/fractran.multiply.png' width='220px'/>
+
+<h3>Programming In Fractran</h3>
+
+<p>In a rule definition, we find symbols to the left-side of the spacer(>) to be rewritten by what is found on the right-side. Each new symbol is added to the dictionary and represented internally as a prime number.</p>
 
 <pre>
 :: flour sugar apples > apple-cake
@@ -129,11 +141,7 @@ an accumulator input.</p>
 sugar oranges apples cherries flour apples
 </pre>
 
-<p>You can interpret a fraction as saying if the current value of each register
-is greater than or equal to the value specified by the denominator, you
-subtract from the registers all of the values in the denominator, add all the
-values specified in the numerator. If any register is less than the value
-specified in the denominator, continue to the next fraction.</p>
+<p>Rules are tested in a sequence from the first to the last, when a valid rewrite rule is encountered, the accumulator is updated, and the PC moved back at the first rule. In other words, it helps to visualize the fractions in a program as a list of rewrite rules that tests the accumulator against its left-side, and starts back at the top of the list after updating the accumulator when it is a match, or keep going when it does not.</p>
 
 <pre>
 AC 21450 flour sugar apples apples oranges cherries 
@@ -143,7 +151,7 @@ AC 21450 flour sugar apples apples oranges cherries
 </pre>
 
 <ul>
-    <li>For each fraction in the list for which the multiplication of the accumulator and the fraction is an integer, replace the accumulator by the result of that multiplication.</li>
+    <li>For each rule in the list for which the multiplication of the accumulator and the fraction is an integer, replace the accumulator by the result of that multiplication.</li>
     <li>Repeat this rule until no fraction in the list produces an integer when multiplied by the accumulator, then halt.</li>
 </ul>
 
@@ -151,37 +159,6 @@ AC 21450 flour sugar apples apples oranges cherries
 	<img src='../media/refs/fractran.png' width='340'/>
 	<figcaption>The Book of Numbers, <a href='https://en.wikipedia.org/wiki/John_Horton_Conway' target='_blank'>John Conway</a></figcaption>
 </figure>
-
-<h3>Rewriting</h3>
-
-<p><a href='https://wryl.tech' target='_blank'>Wryl</a>, who created <a href='modal.html'>Modal</a>, demonstrated to me an interesting connection between Fractran and <a href='rewriting.html'>rewriting languages</a>. We need only to compile our rules and point the prime registers to symbols in a dictionary to see this relationship more clearly.</p>
-
-<pre>
-:: purple orange > brown
-:: blue red > purple
-:: yellow red > orange
-
-blue yellow red red
-</pre>
-
-<p>In a rule definition, we find symbols to the left-side of the spacer(>) to be rewritten by what is found on the right-side. Each new symbol is added to the dictionary and represented internally as a prime number. The previous program will compile to something like the following internal representation:</p>
-
-<pre>
-:: 5/6 purple.2 orange.3 > brown.5 
-:: 2/77 blue.7 red.11 > purple.2 
-:: 3/143 yellow.13 red.11 > orange.3 
-
-AC 11011 blue red red yellow
-</pre>
-
-<p>Rules are tested in a sequence from the first to the last, when a valid rewrite rule is encountered, the accumulator is updated, and the PC moved back at the first rule:</p>
-
-<pre>
-AC 11011 blue red red yellow 
-01 11011 × 2/77 = 286, purple red yellow 
-02 286 × 3/143 = 6, purple orange 
-00 6 × 5/6 = 5, brown
-</pre>
 
 <h3>Logic</h3>
 

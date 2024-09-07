@@ -52,7 +52,10 @@
 	( name ) "m291 0a
 	( desc ) "Audio 20 "Player 0a
 	( auth ) "By 20 "Linvega 20 "& 20 "d6 0a
-	( date ) "5 20 "Sep 20 "2024 $2
+	( date ) "6 20 "Sep 20 "2024 $2
+
+%min ( x y -- min ) {
+	LTHk [ JMP SWP POP ] }
 
 (
 @|vectors )
@@ -120,7 +123,7 @@
 	.selection/scroll LDZ ADD INCk ?{ POP BRK }
 	.lines/folders LDZ .lines/tracks LDZ ADD #18 SUB
 	( needs scroll ) DUP #80 LTH ?{ POP2 BRK }
-	( max scroll ) LTHk [ JMP SWP POP ] .selection/scroll STZ
+	( max scroll ) min .selection/scroll STZ
 	<redraw-dir>
 	BRK
 
@@ -340,7 +343,7 @@
 
 @<y-id> ( y* -- id )
 	[ LIT2 00 -playing ] LDZ EQU ?{ #0080 SUB2 }
-	#0018 SUB2 #04 SFT2 NIP .selection/scroll LDZ ADD JMP2r
+	#0018 SUB2 #04 SFT2 NIP #17 min .selection/scroll LDZ ADD JMP2r
 
 @<refresh-dir> ( -- )
 	;path .File/name DEO2
@@ -457,15 +460,12 @@
 		;tmp STH2r !<scpy> }
 	POP2 POP2 JMP2r
 
-%min ( x y -- min ) {
-	LTHk [ JMP SWP POP ] }
-
 @common-folder-prefix ( -- len )
-	.lines/folders LDZ ?{ #00 JMP2r }
+	[ LIT2 01 -lines/folders ] LDZ LTH ?{ #00 JMP2r }
 	;mem/folders DUP2 [ LIT2 00 -lines/folders ] LDZ #70 SFT2 ADD2 !common-prefix-0
 
 @common-track-prefix ( -- len )
-	.lines/tracks LDZ ?{ #00 JMP2r }
+	[ LIT2 01 -lines/tracks ] LDZ LTH ?{ #00 JMP2r }
 	;mem/tracks DUP2 [ LIT2 00 -lines/tracks ] LDZ #70 SFT2 ADD2
 	( >> )
 
@@ -882,18 +882,13 @@
 	[ LIT2 15 -Screen/auto ] DEO
 	.Screen/width DEI2 #0018 SUB2 ,&bound STR2
 	&>w ( -- )
+		LDAk [ LIT ". ] NEQ ?{ INC2k ;dict/mp3-ext scmp3 ?&end }
 		LDAk <draw-glyph>
 		( | trim )
 		.Screen/x DEI2 [ LIT2 &bound $2 ] LTH2 ?{
 			POP2 [ LIT ". ] <draw-glyph>
 			[ LIT ". ] !<draw-glyph> }
-		next-glyph LDAk ?&>w
-	POP2 JMP2r
-
-@next-glyph ( addr* -- addr* )
-	INC2 LDAk
-	( utf8 ) #06 SFT #02 EQU ?next-glyph
-	JMP2r
+		next-glyph LDAk ?&>w &end POP2 JMP2r
 
 @<draw-glyph> ( char -- )
 	DUP #7f LTH ?{
@@ -905,6 +900,11 @@
 	( ) ;font ADD2 LDA #00 SWP .Screen/x DEI2 ADD2
 	( ) [ LIT &color 05 ] .Screen/sprite DEOk DEO
 	.Screen/x DEO2
+	JMP2r
+
+@next-glyph ( addr* -- addr* )
+	INC2 LDAk
+	( utf8 ) #06 SFT #02 EQU ?next-glyph
 	JMP2r
 
 @<update-cursor> ( color addr* -- )
@@ -1039,7 +1039,7 @@
 	&pause-cmd "pause 0a $1
 	&no-artist "Unknown 20 "Artist $1
 	&no-album "Unknown 20 "Album $1
-	&ellipses "... $1
+	&ellipses "... 20 $1
 
 
 
