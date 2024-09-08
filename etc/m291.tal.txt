@@ -52,7 +52,7 @@
 	( name ) "m291 0a
 	( desc ) "Audio 20 "Player 0a
 	( auth ) "By 20 "Linvega 20 "& 20 "d6 0a
-	( date ) "6 20 "Sep 20 "2024 $2
+	( date ) "7 20 "Sep 20 "2024 $2
 
 %min ( x y -- min ) {
 	LTHk [ JMP SWP POP ] }
@@ -143,8 +143,8 @@
 	( down ) DUP #20 NEQ ?{ #01 <move> }
 	( left ) DUP #40 NEQ ?{ <escape> }
 	( right ) DUP #80 NEQ ?{ .selection LDZ <pick> }
-	( A ) DUP #01 NEQ ?{ .selection LDZ <pick> }
-	( B ) DUP #02 NEQ ?{ <send-pause> }
+	( select [shift] ) DUP #04 NEQ ?{ <send-pause> }
+	( start [home] ) DUP #08 NEQ ?{ .selection LDZ <pick> }
 	POP BRK
 
 (
@@ -251,13 +251,16 @@
 	&folder ( id -- )
 	#00 SWP
 	( CELLSIZE ) #70 SFT2 ;mem/folders ADD2
-	( > ) [ LIT2 00 -selection ] STZ
 	( > ) [ LIT2 00 -selection/scroll ] STZ
+	( > ) [ LIT2 00 -selection ] STZ
+	#ff ;<select>/last STA
 	path/<push> !<refresh-dir>
 
 @<escape> ( -- )
 	;path/null LDA ?{ JMP2r }
 	[ LIT2 00 -selection/scroll ] STZ
+	[ LIT2 00 -selection ] STZ
+	#ff ;<select>/last STA
 	path/pop !<refresh-dir>
 
 @<change-mode> ( -- )
