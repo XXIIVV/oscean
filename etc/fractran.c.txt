@@ -19,7 +19,7 @@ WITH REGARD TO THIS SOFTWARE.
 
 typedef struct Rule {
 	char *a[0x10], *b[0x10];
-	unsigned long int _a, _b, io, num, den;
+	unsigned long int _a, _b, num, den;
 } Rule;
 
 Rule rules[RUL_SZ], *_rules = rules;
@@ -74,7 +74,7 @@ find_symbol(char *token)
 	int i;
 	for(i = 0; i < symbols_len; i++) {
 		char *_a = token, *_b = symbols[i];
-		while(*_a == *_b) _a++, _b++;
+		while(*_a == *_b && *_a && *_b) _a++, _b++;
 		if(*_b == 0 && *_a < 0x21) return symbols[i];
 	}
 	return NULL;
@@ -119,10 +119,7 @@ parse_rule(char *_s)
 		if(*_s == '(')
 			_s = parse_comment(_s);
 		else if(*_s == '>')
-			if(side)
-				r->io = 1, _s++;
-			else
-				side = 1, _s++;
+			side = 1, _s++;
 		else if(*_s > 0x20) {
 			if(side)
 				r->b[r->_b++] = make_symbol(_s), _s = walk_token(_s);
@@ -164,9 +161,7 @@ main(int argc, char *argv[])
 	char src[SRC_SZ], *_src = src;
 	FILE *f;
 	if(argc < 2)
-		return !printf("Fractran - Fractran Rewriting, 5 Sep 2024.\n");
-	if(argc != 2)
-		return !printf("usage: fractran input.fra\n");
+		return !printf("Fractran Rewriting, 9 Sep 2024.\nusage: fractran input.fra [arguments..]\n");
 	if(!(f = fopen(argv[1], "r")))
 		return !printf("Source missing: %s\n", argv[1]);
 	i = fread(&src, 1, SRC_SZ, f), fclose(f), src[i] = 0x0a;
@@ -183,6 +178,8 @@ main(int argc, char *argv[])
 		else if(*_src)
 			*_accumulator++ = make_symbol(_src), _src = walk_token(_src);
 	}
+	for(i = 2; i < (unsigned int)argc; i++)
+		*_accumulator++ = make_symbol(argv[i]);
 	/* compile */
 	for(i = 0; i < _rules - rules; i++) {
 		Rule *r = &rules[i];
@@ -205,16 +202,16 @@ main(int argc, char *argv[])
 	while(fuel--) {
 		Rule *r = &rules[pc];
 		if(!acc || !r->den)
-			return 0;
+			break;
 		else if(acc % r->den)
 			pc++;
 		else {
 			unsigned long num = acc * r->num, res = num / gcd(num, r->den);
-			if(r->io) print_r(stdout, res, 0), fprintf(stdout, "\n");
 			fprintf(stderr, "%02d %lu × %lu/%lu = %lu, ", pc, acc, r->num, r->den, res);
 			print_r(stderr, res, 0), fprintf(stderr, "\n");
 			acc = res, pc = 0;
 		}
 	}
-	return 1;
+	print_r(stdout, acc, 0), fprintf(stdout, "\n");
+	return 0;
 }
