@@ -52,7 +52,7 @@
 	( name ) "m291 0a
 	( desc ) "Audio 20 "Player 0a
 	( auth ) "By 20 "Linvega 20 "& 20 "d6 0a
-	( date ) "7 20 "Sep 20 "2024 $2
+	( date ) "8 20 "Sep 20 "2024 $2
 
 %min ( x y -- min ) {
 	LTHk [ JMP SWP POP ] }
@@ -68,10 +68,9 @@
 	BRK
 
 @on-mouse-locked ( -> )
-	#c1 ;touch-chr/down ;touch-chr .Mouse/state DEI
-	( unlock ) DUP ?{ ;on-mouse .Mouse/vector DEO2 }
-	( assets ) ?{ SWP2 }
-	POP2 <update-cursor>
+	#c1 ;touch-chr/down .Mouse/state DEI
+	( unlock ) ?{ ;on-mouse .Mouse/vector DEO2 }
+	<update-cursor>
 	BRK
 
 @on-mouse ( -> )
@@ -576,7 +575,7 @@
 	( | empty )
 	count-lines ?{
 		#0008 .Screen/x DEO2
-		;dict/empty #0f !<draw-uf2> }
+		;dict/empty #05 !<draw-uf2> }
 	( | folders )
 	<draw-folders>
 	( >> )
@@ -715,7 +714,7 @@
 	#0070 .Screen/x DEO2
 	#0050 .Screen/y DEO2
 	[ LIT2 36 -Screen/auto ] DEO
-	;button-icn .Screen/addr DEO2
+	;button-icn #00 [ LIT2 01 -paused ] LDZ AND #70 SFT2 ADD2 .Screen/addr DEO2
 	[ LIT2 03 -Screen/sprite ] DEOk DEOk DEOk DEO
 	( | icon )
 	[ LIT2 16 -Screen/auto ] DEO
@@ -826,7 +825,7 @@
 	#0000 .Screen/x DEO2
 	.Screen/addr DEO2
 	[ LIT2 f2 -Screen/auto ] DEO
-	[ LIT2 0f -Screen/sprite ] DEOk #0080 .Screen/x DEO2
+	[ LIT2 05 -Screen/sprite ] DEOk #0080 .Screen/x DEO2
 	.Screen/y DEI2 #0008 SUB2 .Screen/y DEO2
 	DEO
 	JMP2r
@@ -847,8 +846,11 @@
 @get-uf2-width ( text* -- width* )
 	[ LIT2r 0000 ]
 	&>while ( -- )
-		LDAk #20 SUB #0000 ROT ;font ADD2 LDA STH2
-		ADD2r next-glyph LDAk ?&>while
+		LDAk #7f LTH ?{
+			[ LIT2r 0008 ]
+			( > ) ADD2r next-glyph LDAk ?&>while }
+	LDAk #20 SUB #0000 ROT ;font ADD2 LDA STH2
+	( > ) ADD2r next-glyph LDAk ?&>while
 	POP2 STH2r JMP2r
 
 @<draw-uf2-scroll> ( offset* text* -- )
@@ -1060,12 +1062,21 @@
 	2010 1010 2020 c000 c0e0 e0e0 c0c0 0000 ]
 
 @progress-icn
-	&left [ 0102 0404 0404 0201 ]
+	&left [ 0304 0404 0404 0403 ]
 	&middle [ ff00 0000 0000 00ff ]
-	&right [ 8040 2020 2020 4080 ]
-	&fill [ 0000 0c1e 1e0c 0000 ]
+	&right [ c020 2020 2020 20c0 ]
+	&fill [ 003f 3f3f 3f3f 3f00 ]
 
 @button-icn [
+	0000 0000 0102 050a 0000 1f60 9f60 8000
+	0000 f806 f906 0100 0000 0000 8040 a050
+	0a14 1428 2828 2828 0000 0000 0000 0000
+	0000 0000 0000 0000 5028 2814 1414 1414
+	2828 2828 2814 140a 0000 0000 0000 0000
+	0000 0000 0000 0000 1414 1414 1428 2850
+	0a05 0201 0000 0000 0080 609f 601f 0000
+	0001 06f9 06f8 0000 50a0 4080 0000 0000 ]
+	&active [
 	0000 0000 0102 0408 0000 1f60 8000 0000
 	0000 f806 0100 0000 0000 0000 8040 2010
 	0810 1020 2020 2020 0000 0000 0000 0000
