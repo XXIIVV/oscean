@@ -32,6 +32,11 @@ int symbols_len;
 static char *
 scap(char *s)
 {
+	if(*s == '"') {
+		s++;
+		while(*s >= 0x20 && *s != '"') s++;
+		return s + 1;
+	}
 	while(*s > 0x20) s++;
 	return s;
 }
@@ -47,8 +52,9 @@ scpy(char *a, char *b)
 static int
 scmp(char *a, char *b)
 {
-	while(*a && *b && *a == *b) a++, b++;
-	return *b == 0 && *a < 0x21;
+	char *acap = scap(a), *bcap = scap(b);
+	while(a < acap && b < bcap && *a == *b) a++, b++;
+	return a == acap && b == bcap;
 }
 
 static unsigned long
@@ -76,7 +82,7 @@ find_prime(unsigned long prime)
 }
 
 static char *
-make_symbol(char **dst, char *s)
+parse_symbol(char **dst, char *s)
 {
 	int i;
 	for(i = 0; i < symbols_len; i++)
@@ -89,21 +95,6 @@ make_symbol(char **dst, char *s)
 }
 
 static char *
-parse_comment(char *_s)
-{
-	char c;
-	int depth = 0;
-	while((c = *_s++)) {
-		if(c == '(')
-			depth++;
-		else if(c == ')')
-			depth--;
-		if(!depth) return _s + 1;
-	}
-	return _s;
-}
-
-static char *
 parse_rule(char *_s)
 {
 	char c;
@@ -112,12 +103,10 @@ parse_rule(char *_s)
 	while(*_s) {
 		while((c = *_s) && (c == 0x09 || c == 0x20)) _s++;
 		if(*_s == 0xa || (_s[0] == ':' && _s[1] == ':')) break;
-		if(*_s == '(')
-			_s = parse_comment(_s);
-		else if(*_s == '>')
+		if(*_s == '>')
 			side = 1, _s++;
 		else if(*_s > 0x20)
-			_s = make_symbol(side ? &r->b[r->_b++] : &r->a[r->_a++], _s);
+			_s = parse_symbol(side ? &r->b[r->_b++] : &r->a[r->_a++], _s);
 	}
 	if(!side) /* forward declarations */
 		_rules--, r->_a = 0, r->_b = 0;
@@ -163,15 +152,13 @@ main(int argc, char *argv[])
 	/* tokenize */
 	while(*_src) {
 		while(*_src && *_src < 0x21) _src++;
-		if(*_src == '(')
-			_src = parse_comment(_src);
-		else if(_src[0] == ':' && _src[1] == ':')
+		if(_src[0] == ':' && _src[1] == ':')
 			_src = parse_rule(_src + 2);
 		else if(*_src)
-			_src = make_symbol(_accumulator++, _src);
+			_src = parse_symbol(_accumulator++, _src);
 	}
 	for(i = 2; i < argc; i++)
-		make_symbol(_accumulator++, argv[i]);
+		parse_symbol(_accumulator++, argv[i]);
 	/* compile */
 	for(i = 0; i < _rules - rules; i++) {
 		Rule *r = &rules[i];
