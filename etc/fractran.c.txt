@@ -25,9 +25,9 @@ typedef struct Rule {
 
 Rule rules[RUL_SZ], *_rules = rules;
 unsigned long prime_lut[PRM_SZ], *_prime_lut = prime_lut;
-char *accumulator[PRM_SZ], **_accumulator = accumulator;
 char symbols[PRM_SZ][TOK_SZ];
 int symbols_len;
+unsigned long acc = 1;
 
 static char *
 scap(char *s)
@@ -98,7 +98,7 @@ static char *
 parse_rule(char *_s)
 {
 	char c;
-	int side = 0;
+	int side = 0, i;
 	Rule *r = _rules++;
 	while(*_s) {
 		while((c = *_s) && (c == 0x09 || c == 0x20)) _s++;
@@ -108,7 +108,11 @@ parse_rule(char *_s)
 		else if(*_s > 0x20)
 			_s = parse_symbol(side ? &r->b[r->_b++] : &r->a[r->_a++], _s);
 	}
-	if(!side) /* forward declarations */
+	if(side) {
+		r->num = 1, r->den = 1;
+		for(i = 0; i < r->_a; i++) r->den *= PRIME(r->a[i]);
+		for(i = 0; i < r->_b; i++) r->num *= PRIME(r->b[i]);
+	} else /* forward declarations */
 		_rules--, r->_a = 0, r->_b = 0;
 	return _s;
 }
@@ -134,50 +138,24 @@ print_r(FILE *f, unsigned long num, int debug)
 	}
 }
 
-int
-main(int argc, char *argv[])
+static void
+tokenize(char *buf)
 {
-	unsigned long acc = 1;
-	int i, j, pc = 0, fuel = 0x1000;
-	char src[SRC_SZ], *_src = src;
-	FILE *f;
-	if(argc < 2)
-		return !printf("Fractran Rewriting, 9 Sep 2024.\nusage: fractran input.fra [arguments..]\n");
-	if(!(f = fopen(argv[1], "r")))
-		return !printf("Source missing: %s\n", argv[1]);
-	i = fread(&src, 1, SRC_SZ, f), fclose(f), src[i] = 0x0a;
-	/* memorize */
-	for(i = 2; i < PRM_SZ; i++)
-		if(is_prime(i)) *_prime_lut++ = i;
-	/* tokenize */
-	while(*_src) {
-		while(*_src && *_src < 0x21) _src++;
-		if(_src[0] == ':' && _src[1] == ':')
-			_src = parse_rule(_src + 2);
-		else if(*_src)
-			_src = parse_symbol(_accumulator++, _src);
+	char *_buf = buf, *sym;
+	while(*_buf) {
+		while(*_buf && *_buf < 0x21) _buf++;
+		if(_buf[0] == ':' && _buf[1] == ':')
+			_buf = parse_rule(_buf + 2);
+		else if(*_buf)
+			_buf = parse_symbol(&sym, _buf), acc *= PRIME(sym);
 	}
-	for(i = 2; i < argc; i++)
-		parse_symbol(_accumulator++, argv[i]);
-	/* compile */
-	for(i = 0; i < _rules - rules; i++) {
-		Rule *r = &rules[i];
-		r->num = 1, r->den = 1;
-		for(j = 0; j < r->_a; j++) r->den *= PRIME(r->a[j]);
-		for(j = 0; j < r->_b; j++) r->num *= PRIME(r->b[j]);
-	}
-	/* print */
-	for(i = 0; i < _rules - rules; i++) {
-		Rule *r = &rules[i];
-		fprintf(stderr, ":: %ld/%ld ", r->num, r->den), print_r(stderr, r->den, 1);
-		fprintf(stderr, "> "), print_r(stderr, r->num, 1), fprintf(stderr, "\n");
-	}
-	/* init */
-	for(i = 0; i < _accumulator - accumulator; i++)
-		acc *= PRIME(accumulator[i]);
-	fprintf(stderr, "\nAC %ld ", acc), print_r(stderr, acc, 0), fprintf(stderr, "\n");
-	/* eval */
-	if(_rules == rules) return 0;
+}
+
+static void
+eval(int fuel)
+{
+	int pc = 0;
+	if(_rules == rules) return;
 	while(fuel--) {
 		Rule *r = &rules[pc];
 		if(!acc || !r->den)
@@ -192,5 +170,45 @@ main(int argc, char *argv[])
 		}
 	}
 	print_r(stdout, acc, 0), fprintf(stdout, "\n");
+}
+
+static void
+listen(void)
+{
+	char c, buf[0x200], *_buf = buf;
+	while(fread(&c, 1, 1, stdin))
+		if(c == 0xa) {
+			tokenize(buf), eval(0x1000);
+			_buf = buf, buf[0] = buf[1] = 0;
+		} else
+			*_buf++ = c;
+}
+
+int
+main(int argc, char *argv[])
+{
+	int i;
+	char src[SRC_SZ];
+	FILE *f;
+	if(argc < 2)
+		return !printf("Fractran Rewriting, 10 Sep 2024.\nusage: fractran input.fra [arguments..]\n");
+	if(!(f = fopen(argv[1], "r")))
+		return !printf("Source missing: %s\n", argv[1]);
+	i = fread(&src, 1, SRC_SZ, f), fclose(f), src[i] = 0x0a;
+	/* memorize */
+	for(i = 2; i < PRM_SZ; i++)
+		if(is_prime(i)) *_prime_lut++ = i;
+	/* tokenize */
+	tokenize(src);
+	for(i = 2; i < argc; i++)
+		tokenize(argv[i]);
+	/* print */
+	for(i = 0; i < _rules - rules; i++) {
+		Rule *r = &rules[i];
+		fprintf(stderr, ":: %ld/%ld ", r->num, r->den), print_r(stderr, r->den, 1);
+		fprintf(stderr, "> "), print_r(stderr, r->num, 1), fprintf(stderr, "\n");
+	}
+	fprintf(stderr, "\nAC %ld ", acc), print_r(stderr, acc, 0), fprintf(stderr, "\n");
+	eval(0x1000), listen();
 	return 0;
 }
