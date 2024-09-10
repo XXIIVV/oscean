@@ -20,7 +20,7 @@ WITH REGARD TO THIS SOFTWARE.
 typedef struct Rule {
 	char *a[0x10], *b[0x10];
 	int _a, _b;
-	unsigned long int num, den;
+	unsigned long num, den;
 } Rule;
 
 Rule rules[RUL_SZ], *_rules = rules;
@@ -130,8 +130,17 @@ print_r(FILE *f, unsigned long num, int debug)
 			for(i = 0; i < pow; i++) {
 				if(debug)
 					fprintf(f, "%s.%ld ", symbol, fac);
-				else if(symbol[0] != '?' || f != stdout)
-					fprintf(f, "%s ", symbol);
+				else if(f != stdout) {
+					char *_symbol = symbol;
+					while(*_symbol && *_symbol != '#') {
+						if(*_symbol == '\\' && _symbol[1] == 'n')
+							putchar(0xa), _symbol++;
+						else
+							putchar(*_symbol);
+						_symbol++;
+					}
+					putchar(' ');
+				}
 			}
 		} else
 			fac++;
@@ -147,7 +156,7 @@ tokenize(char *buf)
 		if(_buf[0] == ':' && _buf[1] == ':')
 			_buf = parse_rule(_buf + 2);
 		else if(*_buf)
-			_buf = parse_symbol(&sym, _buf), acc *= PRIME(sym);
+			_buf = parse_symbol(&sym, _buf), acc = (unsigned long long)(acc * PRIME(sym));
 	}
 }
 
