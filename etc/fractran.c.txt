@@ -19,7 +19,8 @@ WITH REGARD TO THIS SOFTWARE.
 
 typedef struct Rule {
 	char *a[0x10], *b[0x10];
-	unsigned long int _a, _b, num, den;
+	int _a, _b;
+	unsigned long int num, den;
 } Rule;
 
 Rule rules[RUL_SZ], *_rules = rules;
@@ -27,6 +28,28 @@ unsigned long prime_lut[PRM_SZ], *_prime_lut = prime_lut;
 char *accumulator[PRM_SZ], **_accumulator = accumulator;
 char symbols[PRM_SZ][TOK_SZ];
 int symbols_len;
+
+static char *
+scap(char *s)
+{
+	while(*s > 0x20) s++;
+	return s;
+}
+
+static char *
+scpy(char *a, char *b)
+{
+	char *s = b, *cap = scap(a);
+	while(a < cap) *b++ = *a++;
+	return s;
+}
+
+static int
+scmp(char *a, char *b)
+{
+	while(*a && *b && *a == *b) a++, b++;
+	return *b == 0 && *a < 0x21;
+}
 
 static unsigned long
 gcd(long a, long b)
@@ -44,22 +67,6 @@ is_prime(unsigned int num)
 	return 1;
 }
 
-static char *
-walk_ws(char *_s)
-{
-	char c;
-	while((c = *_s) && c < 0x21) _s++;
-	return _s;
-}
-
-static char *
-walk_token(char *_s)
-{
-	char c;
-	while((c = *_s) && c > 0x20) _s++;
-	return _s;
-}
-
 static unsigned long
 find_prime(unsigned long prime)
 {
@@ -69,27 +76,16 @@ find_prime(unsigned long prime)
 }
 
 static char *
-find_symbol(char *token)
+make_symbol(char **dst, char *s)
 {
 	int i;
-	for(i = 0; i < symbols_len; i++) {
-		char *_a = token, *_b = symbols[i];
-		while(*_a == *_b && *_a && *_b) _a++, _b++;
-		if(*_b == 0 && *_a < 0x21) return symbols[i];
-	}
-	return NULL;
-}
-
-static char *
-make_symbol(char *s)
-{
-	int i = 0;
-	char c, *sym = find_symbol(s);
-	if(sym != NULL) return sym;
-	if(symbols_len >= PRM_SZ) return NULL;
-	sym = symbols[symbols_len++];
-	while((c = *s++) && c > 0x20) sym[i++] = c;
-	return sym;
+	for(i = 0; i < symbols_len; i++)
+		if(scmp(s, symbols[i])) {
+			*dst = symbols[i];
+			return scap(s);
+		}
+	*dst = scpy(s, symbols[symbols_len++]);
+	return scap(s);
 }
 
 static char *
@@ -120,12 +116,8 @@ parse_rule(char *_s)
 			_s = parse_comment(_s);
 		else if(*_s == '>')
 			side = 1, _s++;
-		else if(*_s > 0x20) {
-			if(side)
-				r->b[r->_b++] = make_symbol(_s), _s = walk_token(_s);
-			else
-				r->a[r->_a++] = make_symbol(_s), _s = walk_token(_s);
-		}
+		else if(*_s > 0x20)
+			_s = make_symbol(side ? &r->b[r->_b++] : &r->a[r->_a++], _s);
 	}
 	if(!side) /* forward declarations */
 		_rules--, r->_a = 0, r->_b = 0;
@@ -157,7 +149,7 @@ int
 main(int argc, char *argv[])
 {
 	unsigned long acc = 1;
-	unsigned int i, j, pc = 0, fuel = 0x1000;
+	int i, j, pc = 0, fuel = 0x1000;
 	char src[SRC_SZ], *_src = src;
 	FILE *f;
 	if(argc < 2)
@@ -170,16 +162,16 @@ main(int argc, char *argv[])
 		if(is_prime(i)) *_prime_lut++ = i;
 	/* tokenize */
 	while(*_src) {
-		_src = walk_ws(_src);
+		while(*_src && *_src < 0x21) _src++;
 		if(*_src == '(')
 			_src = parse_comment(_src);
 		else if(_src[0] == ':' && _src[1] == ':')
 			_src = parse_rule(_src + 2);
 		else if(*_src)
-			*_accumulator++ = make_symbol(_src), _src = walk_token(_src);
+			_src = make_symbol(_accumulator++, _src);
 	}
-	for(i = 2; i < (unsigned int)argc; i++)
-		*_accumulator++ = make_symbol(argv[i]);
+	for(i = 2; i < argc; i++)
+		make_symbol(_accumulator++, argv[i]);
 	/* compile */
 	for(i = 0; i < _rules - rules; i++) {
 		Rule *r = &rules[i];
