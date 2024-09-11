@@ -81,6 +81,81 @@ find_prime(unsigned long prime)
 	return i;
 }
 
+static void
+print_s(FILE *f, char *symbol);
+
+static char *
+find_symbol(char *s)
+{
+	int i;
+	for(i = 0; i < symbols_len; i++)
+		if(scmp(s, symbols[i]))
+			return symbols[i];
+	return NULL;
+}
+
+static char *
+format_template(FILE *f, char *s)
+{
+	int i;
+	char *symbol;
+	while(*s && *s != '}') {
+		while(*s && *s < 0x21) s++;
+		symbol = find_symbol(s);
+		if(symbol != NULL) {
+			if(acc % PRIME(symbol) == 0) {
+				print_s(f, symbol);
+				while(*s && *s != '}') s++;
+				return s + 1;
+			}
+			s = scap(s);
+		} else
+			while(*s && *s != '}' && *s > 0x21) fprintf(f, "%c", *s++);
+	}
+	return s + 1;
+}
+
+static void
+print_s(FILE *f, char *symbol)
+{
+	char *_symbol = symbol;
+	while(*_symbol) {
+		if(*_symbol == '\\' && _symbol[1] == 'n') {
+			fprintf(f, "\n"), _symbol += 2;
+			continue;
+		}
+		if(*_symbol == '{') {
+			_symbol = format_template(f, _symbol + 1);
+			continue;
+		}
+		if(*_symbol == '#')
+			break;
+		if(*_symbol != '"')
+			fprintf(f, "%c", *_symbol);
+		_symbol++;
+	}
+}
+
+static void
+print_r(FILE *f, unsigned long num, int debug)
+{
+	unsigned long i = 0, fac = 2;
+	while(num > 1) {
+		if(num % fac == 0) {
+			unsigned long pow = 1;
+			char *symbol = symbols[find_prime(fac)];
+			num /= fac;
+			while(!(num % fac)) num /= fac, pow++;
+			for(i = 0; i < pow; i++)
+				if(debug)
+					fprintf(f, "%s.%ld ", symbol, fac);
+				else
+					print_s(f, symbol), fprintf(f, " ");
+		} else
+			fac++;
+	}
+}
+
 static char *
 parse_symbol(char **dst, char *s)
 {
@@ -118,36 +193,6 @@ parse_rule(char *_s)
 }
 
 static void
-print_r(FILE *f, unsigned long num, int debug)
-{
-	unsigned long i = 0, fac = 2;
-	while(num > 1) {
-		if(num % fac == 0) {
-			unsigned long pow = 1;
-			char *symbol = symbols[find_prime(fac)];
-			num /= fac;
-			while(!(num % fac)) num /= fac, pow++;
-			for(i = 0; i < pow; i++) {
-				if(debug)
-					fprintf(f, "%s.%ld ", symbol, fac);
-				else if(f != stdout) {
-					char *_symbol = symbol;
-					while(*_symbol && *_symbol != '#') {
-						if(*_symbol == '\\' && _symbol[1] == 'n')
-							putchar(0xa), _symbol++;
-						else
-							putchar(*_symbol);
-						_symbol++;
-					}
-					putchar(' ');
-				}
-			}
-		} else
-			fac++;
-	}
-}
-
-static void
 tokenize(char *buf)
 {
 	char *_buf = buf, *sym;
@@ -156,7 +201,7 @@ tokenize(char *buf)
 		if(_buf[0] == ':' && _buf[1] == ':')
 			_buf = parse_rule(_buf + 2);
 		else if(*_buf)
-			_buf = parse_symbol(&sym, _buf), acc = (unsigned long long)(acc * PRIME(sym));
+			_buf = parse_symbol(&sym, _buf), acc = (unsigned long)(acc * PRIME(sym));
 	}
 }
 
@@ -200,12 +245,12 @@ main(int argc, char *argv[])
 	char src[SRC_SZ];
 	FILE *f;
 	if(argc < 2)
-		return !printf("Fractran Rewriting, 10 Sep 2024.\nusage: fractran input.fra [arguments..]\n");
+		return !printf("Fractran Rewriting, 11 Sep 2024.\nusage: fractran input.fra [arguments..]\n");
 	if(!(f = fopen(argv[1], "r")))
 		return !printf("Source missing: %s\n", argv[1]);
 	i = fread(&src, 1, SRC_SZ, f), fclose(f), src[i] = 0x0a;
 	/* memorize */
-	for(i = 2; i < PRM_SZ; i++)
+	for(i = 2; _prime_lut - prime_lut < PRM_SZ; i++)
 		if(is_prime(i)) *_prime_lut++ = i;
 	/* tokenize */
 	tokenize(src);
@@ -217,7 +262,7 @@ main(int argc, char *argv[])
 		fprintf(stderr, ":: %ld/%ld ", r->num, r->den), print_r(stderr, r->den, 1);
 		fprintf(stderr, "> "), print_r(stderr, r->num, 1), fprintf(stderr, "\n");
 	}
-	fprintf(stderr, "\nAC %ld ", acc), print_r(stderr, acc, 0), fprintf(stderr, "\n");
+	fprintf(stderr, "\nAC %ld ", acc), print_r(stderr, acc, 1), fprintf(stderr, "\n");
 	eval(0x1000), listen();
 	return 0;
 }
