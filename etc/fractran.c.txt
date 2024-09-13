@@ -11,25 +11,24 @@ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
 WITH REGARD TO THIS SOFTWARE.
 */
 
-#define UL unsigned long
 #define PRM_SZ 0x80
 #define RUL_SZ 0x80
-#define TOK_SZ 0x100
+#define REP_SZ 0x100
 #define DIC_SZ 0x1000
 #define SRC_SZ 0x4000
 
 typedef struct Rule {
 	char *a[0x10], *b[0x10];
 	int _a, _b;
-	UL num, den;
+	unsigned long num, den;
 } Rule;
 
 char dict[DIC_SZ], *_dict = dict;
 Rule rules[RUL_SZ], *_rules = rules;
-UL prime_lut[PRM_SZ], *_prime_lut = prime_lut;
+unsigned long prime_lut[PRM_SZ], *_prime_lut = prime_lut;
 char *syms[PRM_SZ];
 int symbols_len;
-UL acc = 1;
+unsigned long acc = 1;
 
 static char *
 scap(char *s)
@@ -59,8 +58,8 @@ scmp(char *a, char *b)
 	return a == acap && b == bcap;
 }
 
-static UL
-gcd(UL a, UL b)
+static unsigned long
+gcd(unsigned long a, unsigned long b)
 {
 	if(b == 0) return a;
 	return gcd(b, a % b);
@@ -75,8 +74,8 @@ is_prime(unsigned int num)
 	return 1;
 }
 
-static UL
-find_prime(UL prime)
+static unsigned long
+find_prime(unsigned long prime)
 {
 	int i = 0;
 	for(i = 0; i < PRM_SZ; i++)
@@ -84,13 +83,13 @@ find_prime(UL prime)
 	return i;
 }
 
-static char *
+static char **
 find_symbol(char *s)
 {
 	int i;
 	for(i = 0; i < symbols_len; i++) {
 		if(scmp(s, syms[i]))
-			return syms[i];
+			return &syms[i];
 	}
 	return NULL;
 }
@@ -110,13 +109,13 @@ static void print_s(FILE *f, char *symbol);
 static char *
 print_template(FILE *f, char *s)
 {
-	char *symbol;
+	char **symbol;
 	while(*s && *s != '}') {
 		while(*s && *s < 0x21) s++;
 		symbol = find_symbol(s);
 		if(symbol != NULL) {
-			if(acc % PRIME(symbol) == 0) {
-				print_s(f, symbol);
+			if(acc % prime_lut[symbol - syms] == 0) {
+				print_s(f, *symbol);
 				while(*s && *s != '}') s++;
 				return s + 1;
 			}
@@ -149,12 +148,12 @@ print_s(FILE *f, char *symbol)
 }
 
 static void
-print_r(FILE *f, UL num, int debug)
+print_r(FILE *f, unsigned long num, int debug)
 {
-	UL i = 0, fac = 2;
+	unsigned long i = 0, fac = 2;
 	while(num > 1) {
 		if(num % fac == 0) {
-			UL pow = 1;
+			unsigned long pow = 1;
 			char *symbol = syms[find_prime(fac)];
 			num /= fac;
 			while(!(num % fac)) num /= fac, pow++;
@@ -171,9 +170,9 @@ print_r(FILE *f, UL num, int debug)
 static char *
 parse_symbol(char **dst, char *s)
 {
-	char *sym = find_symbol(s);
+	char **sym = find_symbol(s);
 	if(sym != NULL)
-		*dst = sym;
+		*dst = *sym;
 	else
 		*dst = syms[symbols_len++] = _dict, _dict = scpy(s, _dict);
 	return scap(s);
@@ -228,7 +227,7 @@ eval(int fuel)
 		else if(acc % r->den)
 			pc++;
 		else {
-			UL num = acc * r->num, res = num / gcd(num, r->den);
+			unsigned long num = acc * r->num, res = num / gcd(num, r->den);
 			fprintf(stderr, "%02d %lu × %lu/%lu = %lu, ", pc, acc, r->num, r->den, res);
 			print_r(stderr, res, 0), fprintf(stderr, "\n");
 			acc = res, pc = 0;
@@ -237,23 +236,11 @@ eval(int fuel)
 	print_r(stdout, acc, 0), fprintf(stdout, "\n");
 }
 
-static void
-listen(void)
-{
-	char c, buf[0x200], *_buf = buf;
-	while(fread(&c, 1, 1, stdin))
-		if(c == 0xa) {
-			tokenize(buf), eval(0x1000);
-			_buf = buf, buf[0] = buf[1] = 0;
-		} else
-			*_buf++ = c;
-}
-
 int
 main(int argc, char *argv[])
 {
 	int i;
-	char src[SRC_SZ];
+	char c, src[SRC_SZ], buf[REP_SZ], *_buf = buf;
 	FILE *f;
 	if(argc < 2)
 		return !printf("Fractran Rewriting, 13 Sep 2024.\nusage: fractran input.fra [arguments..]\n");
@@ -268,6 +255,13 @@ main(int argc, char *argv[])
 	for(i = 2; i < argc; i++)
 		tokenize(argv[i]);
 	fprintf(stderr, "\n   %lu ", acc), print_r(stderr, acc, 1), fprintf(stderr, "\n");
-	eval(0x1000), listen();
+	/* repl */
+	eval(0x1000);
+	while(fread(&c, 1, 1, stdin))
+		if(c == 0xa) {
+			tokenize(buf), eval(0x1000);
+			_buf = buf, *_buf = 0;
+		} else
+			*_buf++ = c, *_buf = 0;
 	return 0;
 }
