@@ -18,7 +18,7 @@ WITH REGARD TO THIS SOFTWARE.
 #define HLT_SZ 0x100000
 
 typedef struct Frag {
-	unsigned char regs[PRM_SZ], *_regs;
+	unsigned char regs[PRM_SZ];
 } Frag;
 
 typedef struct Rule {
@@ -29,7 +29,6 @@ typedef struct Rule {
 char dict[DIC_SZ], *_dict = dict, *syms[PRM_SZ];
 unsigned long prime_lut[PRM_SZ], *_prime_lut = prime_lut;
 int symbols_len;
-
 Rule rules[RUL_SZ], *_rules = rules;
 Frag accu;
 
@@ -80,7 +79,7 @@ is_prime(unsigned int num)
 static unsigned long
 find_prime(unsigned long prime)
 {
-	int i = 0;
+	int i;
 	for(i = 0; i < PRM_SZ; i++)
 		if(prime_lut[i] == prime) break;
 	return i;
@@ -90,7 +89,6 @@ static int
 mask(Frag *frag, unsigned long num)
 {
 	unsigned long fac = 2;
-	frag->_regs = frag->regs;
 	while(num > 1) {
 		if(num % fac == 0) {
 			unsigned long pow = 1;
@@ -107,7 +105,6 @@ static void
 create(Frag *frag, unsigned long num)
 {
 	unsigned long fac = 2;
-	frag->_regs = frag->regs;
 	while(num > 1) {
 		if(num % fac == 0) {
 			unsigned long pow = 1;
@@ -294,10 +291,9 @@ main(int argc, char *argv[])
 	FILE *f;
 	if(argc < 2)
 		return !printf("Fractran Rewriting, 14 Sep 2024.\nusage: fractran input.fra [arguments..]\n");
-	if(!(f = fopen(argv[1], "r")))
+	if(!(f = fopen(argv[1], "r")) || !fread(&src, 1, SRC_SZ, f))
 		return !printf("Source missing: %s\n", argv[1]);
-	create(&accu, 1);
-	i = fread(&src, 1, SRC_SZ, f), fclose(f), src[i] = 0x0a;
+	create(&accu, 1), fclose(f);
 	/* memorize */
 	for(i = 2; _prime_lut - prime_lut < PRM_SZ; i++)
 		if(is_prime(i)) *_prime_lut++ = i;
