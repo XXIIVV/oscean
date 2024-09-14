@@ -11,10 +11,9 @@ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
 WITH REGARD TO THIS SOFTWARE.
 */
 
-#define PRM_SZ 0x400
-#define RUL_SZ 0x800
-#define REP_SZ 0x100
-#define DIC_SZ 0x1000
+#define PRM_SZ 0x200
+#define RUL_SZ 0x200
+#define DIC_SZ 0x400
 #define SRC_SZ 0x8000
 #define HLT_SZ 0x100000
 
@@ -30,6 +29,7 @@ typedef struct Rule {
 char dict[DIC_SZ], *_dict = dict, *syms[PRM_SZ];
 unsigned long prime_lut[PRM_SZ], *_prime_lut = prime_lut;
 int symbols_len;
+
 Rule rules[RUL_SZ], *_rules = rules;
 Frag accu;
 
@@ -185,10 +185,6 @@ print_s(FILE *f, char *symbol)
 {
 	char *_symbol = symbol;
 	while(*_symbol) {
-		if(*_symbol == '\\' && _symbol[1] == 'n') {
-			fprintf(f, "\n"), _symbol += 2;
-			continue;
-		}
 		if(*_symbol == '{') {
 			_symbol = print_template(f, _symbol + 1);
 			continue;
@@ -294,7 +290,7 @@ int
 main(int argc, char *argv[])
 {
 	int i;
-	char c, src[SRC_SZ], buf[REP_SZ], *_buf = buf;
+	char c, src[SRC_SZ], *_src = src;
 	FILE *f;
 	if(argc < 2)
 		return !printf("Fractran Rewriting, 14 Sep 2024.\nusage: fractran input.fra [arguments..]\n");
@@ -306,7 +302,7 @@ main(int argc, char *argv[])
 	for(i = 2; _prime_lut - prime_lut < PRM_SZ; i++)
 		if(is_prime(i)) *_prime_lut++ = i;
 	/* tokenize */
-	tokenize(src);
+	tokenize(src), src[0] = 0;
 	for(i = 2; i < argc; i++)
 		tokenize(argv[i]);
 	fprintf(stderr, "\n   "), print_frag(stderr, &accu, 0), fprintf(stderr, "\n");
@@ -314,9 +310,9 @@ main(int argc, char *argv[])
 	eval(HLT_SZ);
 	while(fread(&c, 1, 1, stdin))
 		if(c == 0xa) {
-			tokenize(buf), eval(HLT_SZ);
-			_buf = buf, *_buf = 0;
+			tokenize(src), eval(HLT_SZ);
+			_src = src, *_src = 0;
 		} else
-			*_buf++ = c, *_buf = 0;
+			*_src++ = c, *_src = 0;
 	return 0;
 }
