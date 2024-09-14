@@ -11,24 +11,27 @@ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
 WITH REGARD TO THIS SOFTWARE.
 */
 
-#define PRM_SZ 0x80
-#define RUL_SZ 0x80
+#define PRM_SZ 0x400
+#define RUL_SZ 0x800
 #define REP_SZ 0x100
 #define DIC_SZ 0x1000
-#define SRC_SZ 0x4000
+#define SRC_SZ 0x8000
+#define HLT_SZ 0x100000
+
+typedef struct Frag {
+	unsigned char regs[PRM_SZ], *_regs;
+} Frag;
 
 typedef struct Rule {
-	char *a[0x10], *b[0x10];
-	int _a, _b;
 	unsigned long num, den;
+	Frag fnum, fden;
 } Rule;
 
-char dict[DIC_SZ], *_dict = dict;
-Rule rules[RUL_SZ], *_rules = rules;
+char dict[DIC_SZ], *_dict = dict, *syms[PRM_SZ];
 unsigned long prime_lut[PRM_SZ], *_prime_lut = prime_lut;
-char *syms[PRM_SZ];
 int symbols_len;
-unsigned long acc = 1;
+Rule rules[RUL_SZ], *_rules = rules;
+Frag accu;
 
 static char *
 scap(char *s)
@@ -83,25 +86,76 @@ find_prime(unsigned long prime)
 	return i;
 }
 
+static int
+mask(Frag *frag, unsigned long num)
+{
+	unsigned long fac = 2;
+	frag->_regs = frag->regs;
+	while(num > 1) {
+		if(num % fac == 0) {
+			unsigned long pow = 1;
+			num /= fac;
+			while(!(num % fac)) num /= fac, pow++;
+			if(frag->regs[fac] < pow) return 0;
+		} else
+			fac++;
+	}
+	return 1;
+}
+
+static void
+create(Frag *frag, unsigned long num)
+{
+	unsigned long fac = 2;
+	frag->_regs = frag->regs;
+	while(num > 1) {
+		if(num % fac == 0) {
+			unsigned long pow = 1;
+			num /= fac;
+			while(!(num % fac)) num /= fac, pow++;
+			frag->regs[fac] = (char)pow;
+		} else
+			fac++;
+	}
+}
+
+static void
+additive(Frag *frag, unsigned long num)
+{
+	unsigned long fac = 2;
+	while(num > 1) {
+		if(num % fac == 0) {
+			unsigned long pow = 1;
+			num /= fac;
+			while(!(num % fac)) num /= fac, pow++;
+			frag->regs[fac] += (char)pow;
+		} else
+			fac++;
+	}
+}
+
+static void
+subtractive(Frag *frag, unsigned long num)
+{
+	unsigned long fac = 2;
+	while(num > 1) {
+		if(num % fac == 0) {
+			unsigned long pow = 1;
+			num /= fac;
+			while(!(num % fac)) num /= fac, pow++;
+			frag->regs[fac] -= (char)pow;
+		} else
+			fac++;
+	}
+}
+
 static char **
 find_symbol(char *s)
 {
 	int i;
-	for(i = 0; i < symbols_len; i++) {
-		if(scmp(s, syms[i]))
-			return &syms[i];
-	}
-	return NULL;
-}
-
-static unsigned long
-PRIME(char *x)
-{
-	int i;
 	for(i = 0; i < symbols_len; i++)
-		if(scmp(x, syms[i]))
-			return prime_lut[i];
-	return 0;
+		if(scmp(s, syms[i])) return &syms[i];
+	return NULL;
 }
 
 static void print_s(FILE *f, char *symbol);
@@ -114,7 +168,7 @@ print_template(FILE *f, char *s)
 		while(*s && *s < 0x21) s++;
 		symbol = find_symbol(s);
 		if(symbol != NULL) {
-			if(acc % prime_lut[symbol - syms] == 0) {
+			if(mask(&accu, prime_lut[symbol - syms])) {
 				print_s(f, *symbol);
 				while(*s && *s != '}') s++;
 				return s + 1;
@@ -148,23 +202,17 @@ print_s(FILE *f, char *symbol)
 }
 
 static void
-print_r(FILE *f, unsigned long num, int debug)
+print_frag(FILE *f, Frag *frag, int debug)
 {
-	unsigned long i = 0, fac = 2;
-	while(num > 1) {
-		if(num % fac == 0) {
-			unsigned long pow = 1;
-			char *symbol = syms[find_prime(fac)];
-			num /= fac;
-			while(!(num % fac)) num /= fac, pow++;
-			for(i = 0; i < pow; i++)
+	int i, j;
+	for(i = 0; i < PRM_SZ; i++)
+		if(frag->regs[i]) {
+			for(j = 0; j < frag->regs[i]; j++)
 				if(debug)
-					fprintf(f, "%s.%lu ", symbol, fac);
+					fprintf(f, "%s.%d ", syms[find_prime(i)], i);
 				else
-					print_s(f, symbol), fprintf(f, " ");
-		} else
-			fac++;
-	}
+					print_s(f, syms[find_prime(i)]), fprintf(f, " ");
+		}
 }
 
 static char *
@@ -181,24 +229,29 @@ parse_symbol(char **dst, char *s)
 static char *
 parse_rule(char *_s)
 {
-	char c;
-	int side = 0, i;
+	char c, *sym;
+	int side = 0;
 	Rule *r = _rules++;
+	r->num = r->den = 1;
 	while(*_s) {
 		while((c = *_s) && (c == 0x09 || c == 0x20)) _s++;
 		if(*_s == 0xa || (_s[0] == ':' && _s[1] == ':')) break;
 		if(*_s == '>')
 			side = 1, _s++;
-		else if(*_s > 0x20)
-			_s = parse_symbol(side ? &r->b[r->_b++] : &r->a[r->_a++], _s);
+		else if(*_s > 0x20) {
+			_s = parse_symbol(&sym, _s);
+			if(side)
+				r->num *= prime_lut[find_symbol(sym) - syms];
+			else
+				r->den *= prime_lut[find_symbol(sym) - syms];
+		}
 	}
 	if(side) {
-		for(i = 0, r->den = 1; i < r->_a; i++) r->den *= PRIME(r->a[i]);
-		for(i = 0, r->num = 1; i < r->_b; i++) r->num *= PRIME(r->b[i]);
-		fprintf(stderr, ":: %lu/%lu ", r->num, r->den), print_r(stderr, r->den, 1);
-		fprintf(stderr, "> "), print_r(stderr, r->num, 1), fprintf(stderr, "\n");
+		create(&r->fnum, r->num), create(&r->fden, r->den);
+		fprintf(stderr, ":: %lu/%lu ", r->num, r->den), print_frag(stderr, &r->fden, 1);
+		fprintf(stderr, "> "), print_frag(stderr, &r->fnum, 1), fprintf(stderr, "\n");
 	} else /* forward declarations */
-		_rules--, r->_a = 0, r->_b = 0;
+		_rules--;
 	return _s;
 }
 
@@ -210,8 +263,10 @@ tokenize(char *buf)
 		while(*_buf && *_buf < 0x21) _buf++;
 		if(_buf[0] == ':' && _buf[1] == ':')
 			_buf = parse_rule(_buf + 2);
-		else if(*_buf)
-			_buf = parse_symbol(&sym, _buf), acc *= PRIME(sym);
+		else if(*_buf) {
+			_buf = parse_symbol(&sym, _buf);
+			additive(&accu, prime_lut[find_symbol(sym) - syms]);
+		}
 	}
 }
 
@@ -219,21 +274,20 @@ static void
 eval(int fuel)
 {
 	int pc = 0;
-	if(_rules == rules) return;
 	while(fuel--) {
 		Rule *r = &rules[pc];
-		if(!acc || !r->den)
+		if(!r->den)
 			break;
-		else if(acc % r->den)
+		else if(!mask(&accu, r->den))
 			pc++;
 		else {
-			unsigned long num = acc * r->num, res = num / gcd(num, r->den);
-			fprintf(stderr, "%02d %lu × %lu/%lu = %lu, ", pc, acc, r->num, r->den, res);
-			print_r(stderr, res, 0), fprintf(stderr, "\n");
-			acc = res, pc = 0;
+			subtractive(&accu, r->den), additive(&accu, r->num);
+			fprintf(stderr, "%02d %lu/%lu ", pc, r->num, r->den);
+			print_frag(stderr, &accu, 0), fprintf(stderr, "\n");
+			pc = 0;
 		}
 	}
-	print_r(stdout, acc, 0), fprintf(stdout, "\n");
+	print_frag(stdout, &accu, 0), fprintf(stdout, "\n");
 }
 
 int
@@ -243,9 +297,10 @@ main(int argc, char *argv[])
 	char c, src[SRC_SZ], buf[REP_SZ], *_buf = buf;
 	FILE *f;
 	if(argc < 2)
-		return !printf("Fractran Rewriting, 13 Sep 2024.\nusage: fractran input.fra [arguments..]\n");
+		return !printf("Fractran Rewriting, 14 Sep 2024.\nusage: fractran input.fra [arguments..]\n");
 	if(!(f = fopen(argv[1], "r")))
 		return !printf("Source missing: %s\n", argv[1]);
+	create(&accu, 1);
 	i = fread(&src, 1, SRC_SZ, f), fclose(f), src[i] = 0x0a;
 	/* memorize */
 	for(i = 2; _prime_lut - prime_lut < PRM_SZ; i++)
@@ -254,12 +309,12 @@ main(int argc, char *argv[])
 	tokenize(src);
 	for(i = 2; i < argc; i++)
 		tokenize(argv[i]);
-	fprintf(stderr, "\n   %lu ", acc), print_r(stderr, acc, 1), fprintf(stderr, "\n");
+	fprintf(stderr, "\n   "), print_frag(stderr, &accu, 0), fprintf(stderr, "\n");
 	/* repl */
-	eval(0x1000);
+	eval(HLT_SZ);
 	while(fread(&c, 1, 1, stdin))
 		if(c == 0xa) {
-			tokenize(buf), eval(0x1000);
+			tokenize(buf), eval(HLT_SZ);
 			_buf = buf, *_buf = 0;
 		} else
 			*_buf++ = c, *_buf = 0;
