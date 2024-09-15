@@ -105,10 +105,10 @@ into a relatively unexplored field of computation.</p>
 <p><a href='https://wryl.tech' target='_blank'>Wryl</a>, who created <a href='modal.html'>Modal</a>, demonstrated to me an interesting connection between Fractran and <a href='rewriting.html'>rewriting languages</a>. We need only to compile our rules and point the prime registers to symbols in a dictionary to see this relationship more clearly.</p>
 
 <pre style='clear:both'>
-:: left side > right side <i>(compiled: 15/6 left.2 side.3 > side.3 right.5)</i>
+:: left side > right side  <i>15/6 left.2 side.3 > side.3 right.5</i>
 
-AC 6 left side <i>(initial state)</i>
-00 6 × 15/6 = 15, side right <i>(result state)</i>
+AC 6 left side  <i>accumulator</i>
+00 6 × 15/6 = 15, side right  <i>result</i>
 </pre>
 
 <p>This documentation will represent registers with names(x, y, foo-bar, baz, ..). Fractions will be
@@ -120,7 +120,7 @@ on the left-side, and what to replace them with on the right-side.</p>
 
 <h3>Programming In Fractran</h3>
 
-<p>In a rule definition, we find symbols to the left-side of the spacer(>) to be rewritten by what is found on the right-side. Each new symbol is added to the dictionary and represented internally as a prime number.</p>
+<p>In a rule definition, which is a fraction where prime factorization is written as symbols, we find symbols to the left-side of the spacer(>) to be rewritten by what is found on the right-side. Each new symbol is added to the dictionary and represented internally as a prime number.</p>
 
 <pre>
 :: flour sugar apples > apple-cake
@@ -130,7 +130,8 @@ on the left-side, and what to replace them with on the right-side.</p>
 sugar oranges apples cherries flour apples
 </pre>
 
-<p>Rules are tested in a sequence from the first to the last, when a valid rewrite rule is encountered, the accumulator is updated, and the PC moved back at the first rule. In other words, it helps to visualize the fractions in a program as a list of rewrite rules that tests the accumulator against its left-side, and starts back at the top of the list after updating the accumulator when it is a match, or keep going when it does not.</p>
+<p>Rules are tested in a sequence from the first to the last, when a valid rewrite rule is encountered, the accumulator is updated by the product of the multiplication of the accumulator with the fraction, and search for the next rule starts back again from the beginning.</p>
+<p>In other words, it helps to visualize the fractions in a program as a list of rewrite rules that tests the accumulator against its left-side, and starts back at the top of the list after updating the accumulator when it is a match, or keep going when it does not.</p>
 
 <pre>
 AC 21450 flour sugar apples apples oranges cherries 
@@ -169,10 +170,12 @@ AC 30 x y and
 <p>You can get the <b>sum</b> of two registers by moving the value of one register into the other. The <i>naming</i> of the x register in advance ensures that the highest number will be stored in the lowest register:</p>
 
 <pre>
-:: x <i>(Naming)</i>
+:: x
 :: y > x
 
-x x x x y y
+AC 144 x^4 y^2
+00 144 × 2/3 = 96, x^5 y
+00 96 × 2/3 = 64, x^6
 </pre>
 
 <p>You can get the <b>difference</b> between two registers by consuming the value of two registers at once, and moving the remains to the first:</p>
@@ -181,15 +184,15 @@ x x x x y y
 :: x y >
 :: y > x
 
-AC 576 x x x x x x y y 
-00 576 × 1/6 = 96, x x x x x y 
-00 96 × 1/6 = 16, x x x x
+AC 576 x^6 y^2
+00 576 × 1/6 = 96, x^5 y 
+00 96 × 1/6 = 16, x^4
 </pre>
 
-<p>You can get the <b>product</b> of two registers by keeping an intermediate result and state register. Keeping the resulting product, by <i>naming</i> the first register, prevents the accumulator grow too much in size:</p>
+<p>You can get the <b>product</b> of two registers by keeping an intermediate result and state register. Keeping the resulting product, by <i>naming</i> the first register for the result, prevents the accumulator grow too much in size:</p>
 
 <pre>
-:: r acc x y <i>(Naming)</i>
+:: r acc x y
 :: iter acc > x iter
 :: iter >
 :: x y > r acc y 
@@ -219,24 +222,69 @@ AC 8575 x x y y y
 04 320 × 1/5 = 64, r r r r r r
 </pre>
 
-<h3>I/O</h3>
+<h3>Example: Tic-Tac-Toe</h3>
 
 <p>To handle <b>output</b>, nothing special is to be done, the resulting accumulator at the end of an evaluation is a valid output value, some have offered schemes like <a href='https://malisper.me/building-fizzbuzz-fractran-bottom/' target='_blank'>assigning an alphabet</a> to a series of registers. The advantage with symbolic rewriting is that registers are already assigned whole tokens, so we shall use those instead.</p>
 
-<pre>
-:: print-message > "hello world"
-
-print-message <i>>> hello world</i>
-</pre>
-
-<p>To handle <b>input</b>, rules can match for specific registers injected into the program via the accumulator once evaluation has halted.</p>
+<p>To handle <b>input</b>, we can type in new symbol tokens and appending their value to the accumulator when evaluation halts. We can implement a <i>tic-tac-toe</i> in a mere 16 rules:</p>
 
 <pre>
-:: detect-input ButtonA > "You pressed the A button."
-:: ButtonA >
+<i>Reserve the first registers for the player moves:</i>
 
-detect-input <i>>> You pressed the A button.</i>
+:: x#a o#a x#b o#b x#c o#c
+:: x#d o#d x#e o#e x#f o#f
+:: x#g o#g x#h o#h x#i o#i
+
+<i>This register remains active until the game ends:</i>
+
+game
+
+<i>A template draws the value of registers in a grid:</i>
+
+"
+
+  Set move in the format x#a, o#b, x#c, etc:
+
+  a b c  |  {x#a o#a .} {x#b o#b .} {x#c o#c .}
+  d e f  |  {x#d o#d .} {x#e o#e .} {x#f o#f .}
+  g h i  |  {x#g o#g .} {x#h o#h .} {x#i o#i .}
+
+ "
+
+<i>Rules for each possible victory states:</i>
+
+:: game x#a x#b x#c > x#a x#b x#c "Player X wins!" 
+:: game o#a o#b o#c > o#a o#b o#c "Player O wins!"
+:: game x#d x#e x#f > x#d x#e x#f "Player X wins!" 
+:: game o#d o#e o#f > o#d o#e o#f "Player O wins!"
+:: game x#g x#h x#i > x#g x#h x#i "Player X wins!" 
+:: game o#g o#h o#i > o#g o#h o#i "Player O wins!"
+:: game x#a x#e x#i > x#a x#e x#i "Player X wins!" 
+:: game o#a o#e o#i > o#a o#e o#i "Player O wins!"
+:: game x#g x#e x#c > x#g x#e x#c "Player X wins!" 
+:: game o#g o#e o#c > o#g o#e o#c "Player O wins!"
+:: game x#a x#d x#g > x#a x#d x#g "Player X wins!" 
+:: game o#a o#d o#g > o#a o#d o#g "Player O wins!"
+:: game x#b x#e x#h > x#b x#e x#h "Player X wins!" 
+:: game o#b o#e o#h > o#b o#e o#h "Player O wins!"
+:: game x#c x#f x#i > x#c x#f x#i "Player X wins!" 
+:: game o#c o#f o#i > o#c o#f o#i "Player O wins!"
 </pre>
+
+<p>The program allows players to input moves in the format x#a, o#b, x#c, etc, which are existing register names in the game and will be interpreted as moves on the grid.</p>
+
+<pre>
+  Set move in the format x#a, o#b, x#c, etc:
+
+  a b c  |  x o o
+  d e f  |  . x .
+  g h i  |  . . x
+
+  Player X wins!
+</pre>
+
+
+<h3>Notes</h3>
 
 <p>Fractran operators are <a href='reversible_computing.html'>reversible</a>, meaning that a program can be ran backward, back to its original state. To undo an operation, evaluation is undone by inverting the numerator and denumerator:</p>
 

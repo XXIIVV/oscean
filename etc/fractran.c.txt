@@ -88,11 +88,10 @@ find_prime(unsigned long prime)
 static int
 mask(Frag *frag, unsigned long num)
 {
-	unsigned long fac = 2;
+	unsigned long fac = 2, pow;
 	while(num > 1) {
 		if(num % fac == 0) {
-			unsigned long pow = 1;
-			num /= fac;
+			pow = 1, num /= fac;
 			while(!(num % fac)) num /= fac, pow++;
 			if(frag->regs[fac] < pow) return 0;
 		} else
@@ -104,11 +103,10 @@ mask(Frag *frag, unsigned long num)
 static void
 create(Frag *frag, unsigned long num)
 {
-	unsigned long fac = 2;
+	unsigned long fac = 2, pow;
 	while(num > 1) {
 		if(num % fac == 0) {
-			unsigned long pow = 1;
-			num /= fac;
+			pow = 1, num /= fac;
 			while(!(num % fac)) num /= fac, pow++;
 			frag->regs[fac] = (char)pow;
 		} else
@@ -119,11 +117,10 @@ create(Frag *frag, unsigned long num)
 static void
 additive(Frag *frag, unsigned long num)
 {
-	unsigned long fac = 2;
+	unsigned long fac = 2, pow;
 	while(num > 1) {
 		if(num % fac == 0) {
-			unsigned long pow = 1;
-			num /= fac;
+			pow = 1, num /= fac;
 			while(!(num % fac)) num /= fac, pow++;
 			frag->regs[fac] += (char)pow;
 		} else
@@ -134,11 +131,10 @@ additive(Frag *frag, unsigned long num)
 static void
 subtractive(Frag *frag, unsigned long num)
 {
-	unsigned long fac = 2;
+	unsigned long fac = 2, pow;
 	while(num > 1) {
 		if(num % fac == 0) {
-			unsigned long pow = 1;
-			num /= fac;
+			pow = 1, num /= fac;
 			while(!(num % fac)) num /= fac, pow++;
 			frag->regs[fac] -= (char)pow;
 		} else
@@ -163,8 +159,7 @@ print_template(FILE *f, char *s)
 	char **symbol;
 	while(*s && *s != '}') {
 		while(*s && *s < 0x21) s++;
-		symbol = find_symbol(s);
-		if(symbol != NULL) {
+		if((symbol = find_symbol(s)) != NULL) {
 			if(mask(&accu, prime_lut[symbol - syms])) {
 				print_s(f, *symbol);
 				while(*s && *s != '}') s++;
@@ -180,14 +175,13 @@ print_template(FILE *f, char *s)
 static void
 print_s(FILE *f, char *symbol)
 {
+	int is_str = *symbol == '"';
 	char *_symbol = symbol;
-	while(*_symbol) {
+	while(*_symbol && !(*_symbol == '#' && !is_str)) {
 		if(*_symbol == '{') {
 			_symbol = print_template(f, _symbol + 1);
 			continue;
 		}
-		if(*_symbol == '#')
-			break;
 		if(*_symbol != '"')
 			fprintf(f, "%c", *_symbol);
 		_symbol++;
