@@ -149,7 +149,7 @@ AC 21450 flour sugar apples apples oranges cherries
 
 <h3>Logic & Arithmetic</h3>
 
-<p>Logic in rewrite rules is typically implemented as multiple rules, where each one is a potential combination, here is <b>logical and</b> as example:</p>
+<p>Logic in rewrite rules is typically implemented as multiple rules, where each one is a potential location in the <a href='logic.html'>truth table</a>, here is <b>logical and</b> between two registers(x&y) as example:</p>
 
 <pre>
 :: x y and > true
@@ -160,7 +160,7 @@ AC 30 x y and
 00 30 × 7/30 = 7, true
 </pre>
 
-<p>You can get the <b>sum</b> of two registers by moving the value of one register into the other. The <i>naming</i> of the x register in advance ensures that the highest number will be stored in the lowest register:</p>
+<p>You can get the <b>sum</b> of two registers(x+y) by moving the value of one register into the other. The <i>naming</i> of the x register in advance ensures that the highest number will be stored in the lowest register:</p>
 
 <pre>
 :: x
@@ -171,7 +171,7 @@ AC 144 x^4 y^2
 00 96 × 2/3 = 64, x^6
 </pre>
 
-<p>You can get the <b>difference</b> between two registers by consuming the value of two registers at once, and moving the remains to the first:</p>
+<p>You can get the <b>difference</b> between two registers(x-y) by consuming the value of two registers at once, and moving the remains to the first:</p>
 
 <pre>
 :: x y >
@@ -182,38 +182,40 @@ AC 576 x^6 y^2
 00 96 × 1/6 = 16, x^4
 </pre>
 
-<p>You can get the <b>product</b> of two registers by keeping an intermediate result and state register. Keeping the resulting product, by <i>naming</i> the first register for the result, prevents the accumulator grow too much in size:</p>
+<p>You can get the <b>product</b> of two registers(x*y) by keeping an intermediate result and state register. Keeping the resulting product, by <i>naming</i> the first register for the result, prevents the accumulator grow too much in size:</p>
 
 <pre>
 :: r acc x y
+
 :: iter acc > x iter
 :: iter >
 :: x y > r acc y 
 :: y > iter
 :: x > 
 
-AC 8575 x x y y y 
-02 8575 × 42/35 = 10290, r acc x y y y 
-02 10290 × 42/35 = 12348, r r acc acc y y y 
-03 12348 × 11/7 = 19404, r r acc acc y y iter 
-00 19404 × 55/33 = 32340, r r acc x y y iter 
-00 32340 × 55/33 = 53900, r r x x y y iter 
-01 53900 × 1/11 = 4900, r r x x y y 
-02 4900 × 42/35 = 5880, r r r acc x y y 
-02 5880 × 42/35 = 7056, r r r r acc acc y y 
-03 7056 × 11/7 = 11088, r r r r acc acc y iter 
-00 11088 × 55/33 = 18480, r r r r acc x y iter 
-00 18480 × 55/33 = 30800, r r r r x x y iter 
-01 30800 × 1/11 = 2800, r r r r x x y 
-02 2800 × 42/35 = 3360, r r r r r acc x y 
-02 3360 × 42/35 = 4032, r r r r r r acc acc y 
-03 4032 × 11/7 = 6336, r r r r r r acc acc iter 
-00 6336 × 55/33 = 10560, r r r r r r acc x iter 
-00 10560 × 55/33 = 17600, r r r r r r x x iter 
-01 17600 × 1/11 = 1600, r r r r r r x x 
-04 1600 × 1/5 = 320, r r r r r r x 
-04 320 × 1/5 = 64, r r r r r r
+AC 8575 x^2 y^2
+.. r^6
 </pre>
+
+<p>Similarly to the multiplication, you can get the <b>quotient</b> and <b>remainder</b> of two registers(x/y) by doing a series of subtractions:</p>
+
+<pre>
+:: x y res rem div1 acc1 div2 acc2
+
+:: x y div1 > rem acc1
+:: acc1 > div1
+:: y div1 > 
+:: div1 > res div2
+:: rem div2 > y acc2
+:: acc2 > div2
+:: div2 > div1
+:: y >
+
+AC x^7 y^2 div1
+.. res^3 rem
+</pre>
+
+<p>Lastly, static arithmetic operations can be encoded as rules:</p>
 
 <h3>Example: Tic-Tac-Toe</h3>
 
