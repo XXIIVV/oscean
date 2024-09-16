@@ -76,6 +76,16 @@ is_prime(unsigned int num)
 	return 1;
 }
 
+static unsigned long
+frag_int(Frag *frag)
+{
+	unsigned long res = 1;
+	unsigned int i, j;
+	for(i = 0; i < PRM_SZ; i++)
+		for(j = 0; j < frag->regs[i]; j++) res *= i;
+	return res;
+}
+
 static int
 mask(Frag *frag, unsigned long num)
 {
@@ -261,9 +271,12 @@ eval(int fuel)
 		if(!mask(&accu, r->den))
 			pc++;
 		else {
+			unsigned long a = frag_int(&accu);
 			subtractive(&accu, r->den), additive(&accu, r->num);
-			fprintf(stderr, "%02d %lu/%lu ", pc, r->num, r->den);
-			print_frag(stderr, &accu, 0), fprintf(stderr, "\n");
+			if(r->den) {
+				fprintf(stderr, "%02d %lu × %lu/%lu = %lu, ", pc, a, r->num, r->den, frag_int(&accu));
+				print_frag(stderr, &accu, 0), fprintf(stderr, "\n");
+			}
 			pc = 0;
 		}
 	}
@@ -276,7 +289,7 @@ main(int argc, char *argv[])
 	FILE *f;
 	int i, a = 1, repl = 0;
 	char c, src[SRC_SZ], *_src = src;
-	if(argc < 2) return !printf("Fractran Rewriting, 15 Sep 2024.\nusage: fractran [-i] input.fra [arguments..]\n");
+	if(argc < 2) return !printf("Fractran Rewriting, 16 Sep 2024.\nusage: fractran [-i] input.fra [arguments..]\n");
 	if(argv[a][0] == '-' && argv[a][1] == 'i') repl = 1, a++;
 	if(!(f = fopen(argv[a], "r"))) return !printf("Source missing: %s\n", argv[a]);
 	if(!fread(&src, 1, SRC_SZ, f)) return !printf("Source empty: %s\n", argv[a]);
@@ -288,7 +301,7 @@ main(int argc, char *argv[])
 	tokenize(src), src[0] = 0;
 	for(i = a + 1; i < argc; i++)
 		tokenize(argv[i]);
-	fprintf(stderr, "\nAC "), print_frag(stderr, &accu, 0), fprintf(stderr, "\n");
+	fprintf(stderr, "\nAC %lu, ", frag_int(&accu)), print_frag(stderr, &accu, 0), fprintf(stderr, "\n");
 	/* repl */
 	eval(HLT_SZ);
 	while(repl && fread(&c, 1, 1, stdin))
