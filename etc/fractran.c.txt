@@ -76,15 +76,6 @@ is_prime(unsigned int num)
 	return 1;
 }
 
-static unsigned long
-find_prime(unsigned long prime)
-{
-	int i;
-	for(i = 0; i < PRM_SZ; i++)
-		if(prime_lut[i] == prime) break;
-	return i;
-}
-
 static int
 mask(Frag *frag, unsigned long num)
 {
@@ -191,15 +182,18 @@ print_s(FILE *f, char *symbol)
 static void
 print_frag(FILE *f, Frag *frag, int debug)
 {
-	int i, j;
-	for(i = 0; i < PRM_SZ; i++)
-		if(frag->regs[i]) {
-			for(j = 0; j < frag->regs[i]; j++)
-				if(debug)
-					fprintf(f, "%s.%d ", syms[find_prime(i)], i);
-				else
-					print_s(f, syms[find_prime(i)]), fprintf(f, " ");
+	unsigned int i, j;
+	for(i = 0; i < PRM_SZ; i++) {
+		int count = frag->regs[i];
+		if(count) {
+			for(j = 0; j < PRM_SZ; j++)
+				if(prime_lut[j] == i) break;
+			print_s(f, syms[j]);
+			if(debug) fprintf(f, ".%d", i);
+			if(count > 1) fprintf(f, "^%d", count);
+			fprintf(f, " ");
 		}
+	}
 }
 
 static char *
