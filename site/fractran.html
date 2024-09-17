@@ -227,14 +227,6 @@ AC x^7 y^2 div1
 .. res^3 rem
 </pre>
 
-<p>To explore Fractran further, have a look at some of the examples:</p>
-
-<ul>
-	<li><a href='https://git.sr.ht/~rabbits/fractran/tree/main/item/examples/fizzbuzz.fra' target='_blank'>Fizzbuzz</a></li>
-	<li><a href='https://git.sr.ht/~rabbits/fractran/tree/main/item/examples/tictactoe.fra' target='_blank'>Tic-Tac-Toe</a></li>
-	<li><a href='https://git.sr.ht/~rabbits/fractran/tree/main/item/examples/life.fra' target='_blank'>Game Of Life</a>(<a href='https://www.youtube.com/watch?v=KcL1qriy5Ho' target='_blank'>video</a>)</li>
-</ul>
-
 <h3>Example: Tic-Tac-Toe</h3>
 
 <p>Fractran's <b>output</b> capability is limited to the resulting accumulator at the end of an evaluation. The advantage of symbolic rewriting is that registers are already assigned names, so we shall print those instead. As for <b>input</b>, we can type in new symbol tokens and appending their value to the accumulator between evaluations. We can implement a <i>tic-tac-toe</i> in a mere 16 rules:</p>
@@ -296,16 +288,91 @@ game
 
 <p>A Fractran program specifies the wiring and logic of an interactive application, registers point to symbols in memory and so the bytecode itself is never localized as these strings reside in the application's front-end far from its logic.</p>
 
-<h3>Notes</h3>
+<h3>Example: Fizzbuzz</h3>
 
-<p>Fractran operators are <a href='reversible_computing.html'>reversible</a>, meaning that some programs can be run backward, back to its original state. To undo an operation, evaluation is undone by inverting the numerator and denumerator:</p>
+<p>Alternatively to getting the resulting program state at the end of an evaluation, we can emit the accumulator at a specific rate during the evaluation by checking if a register is active or not.</p>
 
 <pre>
-AC 19, fruit-cake
-02 19 × 119/19 = 119, apple-cake fruit-salad
-01 119 × 715/17 = 5005, apples apple-cake oranges cherries
-00 5005 × 30/7 = 21450, apples apples flour sugar oranges cherries
+<i>Reserve the first registers for the increments and base-10:</i>
+
+:: +5 +3
+:: 1# 2# 3# 4# 5# 6# 7# 8# 9# 0
+:: 1  2  3  4  5  6  7  8  9
+:: print:
+
+<i>Leave the printing register for no more than one rewrite:</i>
+
+:: print: fizz >
+:: print: buzz >
+:: print: fizzbuzz >
+:: print: "{1# 2# 3# 4# 5# 6# 7# 8# 9# 0}{1 2 3 4 5 6 7 8 9}" > 
+
+<i>Fizzbuzz logic:</i>
+
+:: eval +3 +3 +3 +5 +5 +5 +5 +5 > print: fizzbuzz
+:: eval +3 +3 +3 > print: fizz
+:: eval +5 +5 +5 +5 +5 > print: buzz
+:: eval > print: "{1# 2# 3# 4# 5# 6# 7# 8# 9# 0}{1 2 3 4 5 6 7 8 9}"
+
+<i>Base-10 numbers:</i>
+
+:: 1# 9 > 2# 0 +3 +5 eval
+:: 2# 9 > 3# 0 +3 +5 eval
+:: 3# 9 > 4# 0 +3 +5 eval
+:: 4# 9 > 5# 0 +3 +5 eval
+:: 5# 9 > 6# 0 +3 +5 eval
+:: 6# 9 > 7# 0 +3 +5 eval
+:: 7# 9 > 8# 0 +3 +5 eval
+:: 8# 9 > 9# 0 +3 +5 eval
+:: 9# 9 > 
+
+:: 0 > 1 +3 +5 eval
+:: 1 > 2 +3 +5 eval
+:: 2 > 3 +3 +5 eval
+:: 3 > 4 +3 +5 eval
+:: 4 > 5 +3 +5 eval
+:: 5 > 6 +3 +5 eval
+:: 6 > 7 +3 +5 eval
+:: 7 > 8 +3 +5 eval
+:: 8 > 9 +3 +5 eval
+:: 9 > 1# 0 +3 +5 eval
+
+<i>The initial state:</i>
+
+0
 </pre>
+
+<p>During the evaluation, these 27 fractions will toggle <code>r79(print:)</code> giving us a trigger when the accumulator state might be read. This is demonstrated here as an alternative approach for emitting programs and debugging where the runtime is masking lower registers to the printing register.</p>
+
+<pre>
+07 25338 × 7979/103 = 1962834      01 
+07 159444 × 7979/103 = 12351492    02 
+05 1045656 × 6557/2781 = 2465432   fizz 
+07 262032 × 7979/103 = 20298576    04 
+06 1750176 × 7031/3296 = 3733461   buzz 
+05 339282 × 6557/2781 = 799954     fizz 
+07 82812 × 7979/103 = 6415116      07 
+07 526536 × 7979/103 = 40788648    08 
+05 3248208 × 6557/2781 = 7658576   fizz 
+06 1829280 × 7031/3296 = 3902205   buzz 
+07 380070 × 7979/103 = 29442510    11 
+05 2391660 × 6557/2781 = 5639020   fizz 
+07 580920 × 7979/103 = 45001560    13 
+07 3930480 × 7979/103 = 304478640  14 
+04 26252640 × 7663/88992 = 2260585 fizzbuzz 
+07 188490 × 7979/103 = 14601570    16 
+07 1242180 × 7979/103 = 96226740   17 
+05 7898040 × 6557/2781 = 18621880  fizz
+..
+</pre>
+
+<p>To explore further, try running these <a href='https://git.sr.ht/~rabbits/fractran/tree/main/item/examples' target='_blank'>examples</a> yourself:</p>
+
+<ul>
+	<li><a href='https://git.sr.ht/~rabbits/fractran/tree/main/item/examples/life.fra' target='_blank'>Conway's Game Of Life in Conway's Fractran</a>(<a href='https://www.youtube.com/watch?v=KcL1qriy5Ho' target='_blank'>video</a>)</li>
+	<li><a href='https://git.sr.ht/~rabbits/fractran/tree/main/item/examples/fizzbuzz.fra' target='_blank'>Fizzbuzz</a></li>
+	<li><a href='https://git.sr.ht/~rabbits/fractran/tree/main/item/examples/tictactoe.fra' target='_blank'>Tic-Tac-Toe</a></li>
+</ul>
 
 <h3>Implementation</h3>
 
@@ -316,6 +383,17 @@ lines</a>.</p>
 	<iframe src='../etc/fractran.c.txt'></iframe>
 	<pre>cc fractran.c -o fractran <a href='../etc/fractran.c.txt' target='_blank'>view raw</a></pre>
 </div>
+
+<h3>Notes</h3>
+
+<p>Fractran operators are <a href='reversible_computing.html'>reversible</a>, meaning that some programs can be run backward, back to its original state. To undo an operation, evaluation is undone by inverting the numerator and denumerator:</p>
+
+<pre>
+AC 19, fruit-cake
+02 19 × 119/19 = 119, apple-cake fruit-salad
+01 119 × 715/17 = 5005, apples apple-cake oranges cherries
+00 5005 × 30/7 = 21450, apples apples flour sugar oranges cherries
+</pre>
 
 <q>The wise marvels at the commonplace.</q>
 <cite>Confucius</cite>
