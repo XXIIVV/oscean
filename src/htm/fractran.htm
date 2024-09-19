@@ -165,7 +165,7 @@ AC 30 x y and
 00 30 × 7/30 = 7, true
 </pre>
 
-<p>You can get the <b>sum</b> of two registers(x+y) by moving the value of one register into the other. The <i>naming</i> of the x register in advance ensures that the highest number will be stored in the lowest register:</p>
+<p>The <b>sum</b> of two registers(x+y) can be reached by moving the value of one register into the other. The <i>naming</i> of the x register in advance ensures that the highest number will be stored in the lowest register:</p>
 
 <pre>
 :: x
@@ -176,7 +176,7 @@ AC 144 x^4 y^2
 00 96 × 2/3 = 64, x^6
 </pre>
 
-<p>You can get the <b>difference</b> between two registers(x-y) by consuming the value of two registers at once, and moving the remains to the first:</p>
+<p>The <b>difference</b> between two registers(x-y) can be reached by consuming the value of two registers at once, and moving the remains to the first:</p>
 
 <pre>
 :: x y >
@@ -187,38 +187,44 @@ AC 576 x^6 y^2
 00 96 × 1/6 = 16, x^4
 </pre>
 
-<p>You can get the <b>product</b> of two registers(x*y) by keeping an intermediate result and state register. Keeping the resulting product, by <i>naming</i> the first register for the result, prevents the accumulator grow too much in size:</p>
+<p>The <b>doubling</b> of a register(x*2) can be reached by keeping an operator register <i>double</i> and a temporary accumulator(A):</p>
 
 <pre>
-:: r acc x y
+:: x double > A A double
+:: double > 
+:: A A > x x
 
-:: iter acc > x iter
-:: iter >
-:: x y > r acc y 
-:: y > iter
-:: x > 
-
-AC 8575 x^2 y^3
-.. r^6
+AC 48, x^4 double 
+00 48 × 75/6 = 600, x^3 double A^2 
+00 600 × 75/6 = 7500, x^2 double A^4 
+00 7500 × 75/6 = 93750, x double A^6 
+00 93750 × 75/6 = 1171875, double A^8 
+01 1171875 × 1/3 = 390625, A^8 
+02 390625 × 4/25 = 62500, x^2 A^6 
+02 62500 × 4/25 = 10000, x^4 A^4 
+02 10000 × 4/25 = 1600, x^6 A^2 
+02 1600 × 4/25 = 256, x^8
 </pre>
 
-<p>Similarly to the multiplication, you can get the <b>quotient</b> and <b>remainder</b> of two registers(x/y) by doing a series of subtractions:</p>
+<p>The <b>halving</b> of a register(x/2) can be reached by keeping an operator register <i>half</i> and a temporary accumulator(A)</p>
 
 <pre>
-:: x y res rem div1 acc1 div2 acc2
+:: half x x > A half
+:: half > 
+:: A > x
 
-:: x y div1 > rem acc1
-:: acc1 > div1
-:: y div1 > 
-:: div1 > res div2
-:: rem div2 > y acc2
-:: acc2 > div2
-:: div2 > div1
-:: y >
+AC 1458, half x^6 
+00 1458 × 10/18 = 810, half x^4 A 
+00 810 × 10/18 = 450, half x^2 A^2 
+00 450 × 10/18 = 250, half A^3 
+01 250 × 1/2 = 125, A^3 
+02 125 × 3/5 = 75, x A^2 
+02 75 × 3/5 = 45, x^2 A 
+02 45 × 3/5 = 27, x^3 
 
-AC x^7 y^2 div1
-.. res^3 rem
+x^3 
 </pre>
+
 
 <h3>Example: Tic-Tac-Toe</h3>
 
@@ -362,8 +368,8 @@ game
 
 <ul>
 	<li><a href='https://git.sr.ht/~rabbits/fractran/tree/main/item/examples/life.fra' target='_blank'>Conway's Game Of Life in Conway's Fractran</a>(<a href='https://www.youtube.com/watch?v=KcL1qriy5Ho' target='_blank'>video</a>)</li>
-	<li><a href='https://git.sr.ht/~rabbits/fractran/tree/main/item/examples/fizzbuzz.fra' target='_blank'>Fizzbuzz</a></li>
-	<li><a href='https://git.sr.ht/~rabbits/fractran/tree/main/item/examples/tictactoe.fra' target='_blank'>Tic-Tac-Toe</a></li>
+	<li><a href='https://git.sr.ht/~rabbits/fractran/tree/main/item/examples/mul.fra' target='_blank'>Multiply</a></li>
+	<li><a href='https://git.sr.ht/~rabbits/fractran/tree/main/item/examples/div.fra' target='_blank'>Divide</a></li>
 </ul>
 
 <h3>Implementation</h3>
@@ -375,6 +381,53 @@ lines</a>.</p>
 	<iframe src='../etc/fractran.c.txt'></iframe>
 	<pre>cc fractran.c -o fractran <a href='../etc/fractran.c.txt' target='_blank'>view raw</a></pre>
 </div>
+
+<h3>Stacking in all the wrong places</h3>
+
+<p>A <a href='concatenative.html'>stack-machine</a> can be implemented in Fractran, but it's <i>not for the faint of heart</i>. The theory is that we can keep a stack of zeros and ones in a single register using a binary encoding for that number, think of it a little bit like <a href='church_encoding.html'>Church encoding</a> but with bit-shifting, except we have to implement bit shifting ourselves.</p>
+
+<ul>
+	<li>Pushing a zero onto the stack is equivalent to doubling the number.</li>
+	<li>Pushing a one is equivalent to doubling and adding 1.</li>
+	<li>Popping is equivalent to dividing by 2, where the remainder is a one, otherwise a zero.</li>
+</ul>
+
+<p>If we begin with <b>push</b>, we can see that we are doubling the x register, same as demonstrated above, but for pushing 1, we increment it by 1.</p>
+
+<pre>
+:: x
+
+:: push 1 x > x1 x2 push 1
+:: push 1 > x
+:: push 0 x > x1 x2 push 0
+:: push 0 >
+:: x1 x2 > x x
+
+x    push 1 = x^3
+x^3  push 0 = x^6
+x^6  push 1 = x^13
+x^13 push 0 = x^26
+x^26 push 0 = x^52
+
+Stack 1 0 1 0 0 _
+</pre>
+
+<p>Now, for <b>pop</b>, we can see that we are halving the x register, again, same as demonstrated above, and toggling a register for =0, and a register for =1.</p>
+
+<pre>
+:: x
+
+:: pop x x > x1 pop
+:: pop > pop-ok
+:: pop-ok x1 x1 > pop-ok x x
+:: pop-ok x1 > =1
+:: pop-ok > =0
+
+x^52 pop =0 x^26
+x^26 pop =1 x^12
+x^12 pop =0 x^6
+x^6  pop =1 x^2
+</pre>
 
 <h3>Notes</h3>
 
