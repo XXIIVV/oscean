@@ -390,24 +390,14 @@ game
 	<li><a href='https://git.sr.ht/~rabbits/fractran/tree/main/item/examples/div.fra' target='_blank'>Divide</a></li>
 </ul>
 
-<h3>Implementation</h3>
-
-<p>The rewriting implementation of the runtime can be implemented in about <a href='ansi_c.html'>300
-lines</a>.</p>
-
-<div class='codeview'>
-	<iframe src='../etc/fractran.c.txt'></iframe>
-	<pre>cc fractran.c -o fractran <a href='../etc/fractran.c.txt' target='_blank'>view raw</a></pre>
-</div>
-
-<h3 id='stack'>Stacking in all the wrong places</h3>
+<h3 id='stack'>Hard Mode: Stacking Machines</h3>
 
 <p>A <a href='concatenative.html'>stack-machine</a> can be implemented in Fractran, but it's <i>not for the faint of heart</i>. The theory is that we can keep a stack of zeros and ones in a single register using a <a href='binary.html'>binary encoding</a> for that number, think of it a little bit like <a href='church_encoding.html'>Church encoding</a> but with bit-shifting.</p>
 
 <ul>
 	<li>Pushing a <kbd>0</kbd> onto the stack is equivalent to doubling the number.</li>
 	<li>Pushing a <kbd>1</kbd> is equivalent to doubling and adding 1.</li>
-	<li>Popping is equivalent to dividing by 2, where the remainder is a one, otherwise a zero.</li>
+	<li>Popping is equivalent to dividing by 2, where the remainder is the number.</li>
 </ul>
 
 <p>If we begin with <b>push</b>, we can see that we are doubling the x register, same as demonstrated above, but for pushing 1, we increment it by 1. After the evaluation, our LIFO stack has a value of 30, and is equal to <kbd>1</kbd> <kbd>1</kbd> <kbd>1</kbd> <kbd>0</kbd>, where the right-most one is the item on top.</p>
@@ -432,15 +422,24 @@ x^13 push 0 = x^30
 :: pop x > =1
 :: pop > =0
 :: A > x
-:: =0 > 
-:: =1 > 
 
 x^30 pop =0 x^15
 x^15 pop =1 x^7
 x^7  pop =1 x^3
-x^3  pop =1 x^1
+x^3  pop =1 x
 </pre>
 
+<h3>Implementation</h3>
+
+<p>The rewriting implementation of the runtime can be implemented in about <a href='ansi_c.html'>300
+lines</a>.</p>
+
+<div class='codeview'>
+	<iframe src='../etc/fractran.c.txt'></iframe>
+	<pre>cc fractran.c -o fractran <a href='../etc/fractran.c.txt' target='_blank'>view raw</a></pre>
+</div>
+
+<!--
 <h3>Notes</h3>
 
 <p>Fractran operators are <a href='reversible_computing.html'>reversible</a>, meaning that some programs can be run backward, back to its original state. To undo an operation, evaluation is undone by inverting the numerator and denumerator:</p>
@@ -451,6 +450,8 @@ AC 19, fruit-cake
 01 119 × 715/17 = 5005, apples apple-cake oranges cherries
 00 5005 × 30/7 = 21450, apples apples flour sugar oranges cherries
 </pre>
+
+-->
 
 <q>The wise marvels at the commonplace.</q>
 <cite>Confucius</cite>
