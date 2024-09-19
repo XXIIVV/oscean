@@ -391,49 +391,43 @@ lines</a>.</p>
 
 <h3>Stacking in all the wrong places</h3>
 
-<p>A <a href='concatenative.html'>stack-machine</a> can be implemented in Fractran, but it's <i>not for the faint of heart</i>. The theory is that we can keep a stack of zeros and ones in a single register using a binary encoding for that number, think of it a little bit like <a href='church_encoding.html'>Church encoding</a> but with bit-shifting, except we have to implement bit shifting ourselves.</p>
+<p>A <a href='concatenative.html'>stack-machine</a> can be implemented in Fractran, but it's <i>not for the faint of heart</i>. The theory is that we can keep a stack of zeros and ones in a single register using a <a href='binary.html'>binary encoding</a> for that number, think of it a little bit like <a href='church_encoding.html'>Church encoding</a> but with bit-shifting.</p>
 
 <ul>
-	<li>Pushing a zero onto the stack is equivalent to doubling the number.</li>
-	<li>Pushing a one is equivalent to doubling and adding 1.</li>
+	<li>Pushing a <kbd>0</kbd> onto the stack is equivalent to doubling the number.</li>
+	<li>Pushing a <kbd>1</kbd> is equivalent to doubling and adding 1.</li>
 	<li>Popping is equivalent to dividing by 2, where the remainder is a one, otherwise a zero.</li>
 </ul>
 
-<p>If we begin with <b>push</b>, we can see that we are doubling the x register, same as demonstrated above, but for pushing 1, we increment it by 1.</p>
+<p>If we begin with <b>push</b>, we can see that we are doubling the x register, same as demonstrated above, but for pushing 1, we increment it by 1. After the evaluation, our LIFO stack has a value of 30, and is equal to <kbd>1</kbd> <kbd>1</kbd> <kbd>1</kbd> <kbd>0</kbd>, where the right-most one is the item on top.</p>
 
 <pre>
-:: x
-
-:: push 1 x > x1 x2 push 1
+:: push 1 x > A A push 1
 :: push 1 > x
-:: push 0 x > x1 x2 push 0
+:: push 0 x > A A push 0
 :: push 0 >
-:: x1 x2 > x x
+:: A A > x x
 
 x    push 1 = x^3
-x^3  push 0 = x^6
-x^6  push 1 = x^13
-x^13 push 0 = x^26
-x^26 push 0 = x^52
-
-Stack 1 0 1 0 0 _
+x^3  push 1 = x^7
+x^7  push 1 = x^15
+x^13 push 0 = x^30
 </pre>
 
-<p>Now, for <b>pop</b>, we can see that we are halving the x register, again, same as demonstrated above, and toggling a register for =0, and a register for =1.</p>
+<p>Now, for <b>pop</b>, we can see that we are halving the x register, again, same as demonstrated above, and keeping the result of the value in a register for =0, and a register for =1.</p>
 
 <pre>
-:: x
+:: pop x x > A pop
+:: pop x > =1
+:: pop > =0
+:: A > x
+:: =0 > 
+:: =1 > 
 
-:: pop x x > x1 pop
-:: pop > pop-ok
-:: pop-ok x1 x1 > pop-ok x x
-:: pop-ok x1 > =1
-:: pop-ok > =0
-
-x^52 pop =0 x^26
-x^26 pop =1 x^12
-x^12 pop =0 x^6
-x^6  pop =1 x^2
+x^30 pop =0 x^15
+x^15 pop =1 x^7
+x^7  pop =1 x^3
+x^3  pop =1 x^1
 </pre>
 
 <h3>Notes</h3>
