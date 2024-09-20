@@ -53,7 +53,7 @@
 	( name ) "Oekaki 0a
 	( desc ) "Drawing 20 "Program 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "4 20 "Aug 20 "2024 $1
+	( date ) "19 20 "Sep 20 "2024 $1
 	( exts ) 00
 
 (
@@ -147,20 +147,34 @@
 		BRK }
 	POP BRK
 
+@<draw-pict-rect> ( xmin xmax ymin ymax -- )
+	INC ,&yn STR
+	,&yi STR
+	INC ,&xn STR
+	,&xi STR
+	[ LIT2 05 -Screen/auto ] DEO
+	[ LIT2 &yn $1 &yi $1 ]
+	&>v ( -- )
+		[ LIT2 &xn $1 &xi $1 ]
+		( xi yi ) ROTk ROT POP
+		( *x *y ) SWP #00 SWP #30 SFT2 ROT #00 SWP #30 SFT2 get-tile-addr .Screen/addr DEO2
+		.canvas/y LDZ2 ADD2 .Screen/y DEO2
+		.canvas/x LDZ2 ADD2 .Screen/x DEO2
+		&>h ( -- )
+			[ LIT2 81 -Screen/sprite ] DEO
+			INC GTHk ?&>h
+		POP2 INC GTHk ?&>v
+	POP2 JMP2r
+
 @on-frame ( -> )
 	[ LIT2 00 &reqdraw $1 ] EQU ?{
-		( | draw request stack )
-		;<push-request>/ptr LDA2 ;requests
-		&>l ( -- )
-			LDA2k #00 SWP #30 SFT2 ROT #00 SWP #30 SFT2
-			( ) get-tile-addr .Screen/addr DEO2
-			.canvas/y LDZ2 ADD2 .Screen/y DEO2
-			.canvas/x LDZ2 ADD2 .Screen/x DEO2
-			[ LIT2 81 -Screen/sprite ] DEO
-			INC2 INC2 GTH2k ?&>l
-		POP2 POP2 ;requests ;<push-request>/ptr STA2
-		<draw-state>
-		[ LIT2 00 _&reqdraw ] STR }
+		( x ) [ LIT2 &rect/xmin ff &rect/xmax 00 ]
+		( y ) [ LIT2 &rect/ymin ff &rect/ymax 00 ] <draw-pict-rect>
+		[ LIT2 00 _&reqdraw ] STR
+		[ LIT2 ff _&rect/xmin ] STR
+		[ LIT2 ff _&rect/ymin ] STR
+		[ LIT2 00 _&rect/xmax ] STR
+		[ LIT2 00 _&rect/ymax ] STR }
 	BRK
 
 (
@@ -198,7 +212,9 @@
 	#03 DIVk MUL SUB .brush/natural STZ !<draw-menu>
 
 @<hide-menu> ( -- )
-	[ LIT2 01 -menu/hide ] STZ !<clear-menu>
+	.menu/hide LDZ ?{
+		[ LIT2 01 -menu/hide ] STZ !<redraw-all> }
+	JMP2r
 
 @<set-tool> ( tool -- )
 	DUP #05 LTH ?{ POP JMP2r }
@@ -328,7 +344,8 @@
 	JMP2r
 
 	&drag ( -- )
-	[ LIT2 &last-x $2 ] [ LIT2 &last-y $2 ] OVR2 #0010 GTH2 ?{ <hide-menu> }
+	( ) .Mouse/x DEI2 #0010 GTH2 ?{ <hide-menu> }
+	[ LIT2 &last-x $2 ] [ LIT2 &last-y $2 ]
 	( natural ) [ LIT2 00 -brush/natural ] LDZ EQU ?{ natural }
 	( ) get-touch-x #0003 SUB2 DUP2 ,&last-x STR2
 	( ) get-touch-y #0003 SUB2 DUP2 ,&last-y STR2
@@ -353,6 +370,7 @@
 	( ) get-touch-y ;<paint-dot> !<do-line>
 
 	&drag ( -- )
+	( ) .Mouse/x DEI2 #0010 GTH2 ?{ <hide-menu> }
 	<clear-guide>
 	( ) [ LIT2 &x $2 ] [ LIT2 &y $2 ]
 	( ) .Mouse/x DEI2 #0003 ADD2 .Mouse/y DEI2 #0003 ADD2 ;<guide-dot>
@@ -376,6 +394,7 @@
 	( ) get-touch-x INC2 get-touch-y INC2 !<paint-rect>
 
 	&drag ( -- )
+	( ) .Mouse/x DEI2 #0010 GTH2 ?{ <hide-menu> }
 	<clear-guide>
 	( ) [ LIT2 &x $2 ] [ LIT2 &y $2 ]
 	( ) .Mouse/x DEI2 #0003 ADD2 .Mouse/y DEI2 #0003 ADD2 <guide-rect>
@@ -395,6 +414,7 @@
 	( draw cursor ) #43 ;hand-icn <update-cursor> !<redraw-all>
 
 	&drag ( -- )
+	( ) .Mouse/x DEI2 #0010 GTH2 ?{ <hide-menu> }
 	( draw cursor ) #42 ;hand-icn/down <update-cursor>
 	.Mouse/x DEI2
 	( ) DUP2 [ LIT2 &x $2 ] SUB2 .canvas/x LDZ2 ADD2 .canvas/x STZ2
@@ -422,6 +442,7 @@
 	( ) get-touch-x #33 SFT2 get-touch-y #33 SFT2 !<snarf-rect>
 
 	&drag ( -- )
+	( ) .Mouse/x DEI2 #0010 GTH2 ?{ <hide-menu> }
 	,&paste LDR ?{ JMP2r }
 	<clear-guide>
 	( ) [ LIT2 &x $2 ] [ LIT2 &y $2 ]
@@ -461,7 +482,7 @@
 	&force ( x* y* color -- )
 	STH
 	[ LITr 01 ]
-	( x y ) OVR2 OVR2 <push-request>
+	( x y ) OVR2 OVR2 <push-reqdraw>
 	( get tile addr ) get-tile-addr STH2
 	( get glyph vertical offset ) DUP2 #0007 AND2 STH2
 	ADD2r
@@ -731,7 +752,7 @@
 	POP2
 
 @<draw-menu> ( -- )
-	.menu/hide LDZ ?<clear-menu>
+	[ LIT2 00 -menu/hide ] LDZ EQU ?{ JMP2r }
 	( | background )
 	#000f .Screen/x DEO2
 	#0000 .Screen/y DEO2
@@ -844,17 +865,6 @@
 	[ LIT2 c0 -Screen/pixel ] DEO
 	JMP2r
 
-@<clear-menu> ( -- )
-	#000c .Screen/x DEO2
-	#0000 .Screen/y DEO2
-	[ LIT2 93 -Screen/pixel ] DEO
-	.canvas/height LDZ2 #0000
-	&>y ( -- )
-		( ) #0000 OVR2 <push-request>
-		( ) #0008 OVR2 <push-request>
-		#0008 ADD2 GTH2k ?&>y
-	POP2 POP2 JMP2r
-
 @<draw-pointer> ( -- )
 	[ LIT2 00 -brush/color ] LDZ EQU ?&eraser
 	.brush/erase LDZ ?&eraser
@@ -891,21 +901,15 @@
 (
 @|requests )
 
-@<push-request> ( x* y* -- )
-	( x ) #03 SFT2 ,&x STR
+@<push-reqdraw> ( x* y* -- )
+	( y >> 3 ) #03 SFT2 NIP DUPk
+	( y < y1 ) ;on-frame/rect/ymin LDA GTH ?{ DUP ;on-frame/rect/ymin STA }
+	( y > y2 ) ;on-frame/rect/ymax LDA LTH ?{ DUP ;on-frame/rect/ymax STA }
 	POP
-	( y ) #03 SFT2 ,&y STR
-	POP
-	( | find duplicate )
-	[ LIT2 &ptr =requests ] ;requests EQU2k ?{
-		&>l ( -- )
-			LDA2k [ LIT2 &t &x $1 &y $1 ] NEQ2 ?{ POP2 POP2 JMP2r }
-			INC2 INC2 GTH2k ?&>l }
-	POP2 POP2
-	( | push )
-	,&t LDR2 ,&ptr LDR2 INC2k INC2 ,&ptr STR2
-	STA2
-	#01 ;on-frame/reqdraw STA
+	( x >> 3 ) #03 SFT2 NIP DUPk
+	( x < x1 ) ;on-frame/rect/xmin LDA GTH ?{ DUP ;on-frame/rect/xmin STA }
+	( x > x2 ) ;on-frame/rect/xmax LDA LTH ?{ DUP ;on-frame/rect/xmax STA }
+	POP #01 ;on-frame/reqdraw STA
 	JMP2r
 
 (
@@ -1066,6 +1070,4 @@
 @spray $8
 
 @pict $a400
-
-@requests
 

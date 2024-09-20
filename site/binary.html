@@ -131,6 +131,61 @@ num &= ~(1 << 5);
 <pre>(3.8 << 8) / 2.0</pre>
 
 <img src='../media/refs/binary.png'/>
+
+<h3 id='stack'>Binary Stack Encoding</h3>
+
+<p>A <a href='concatenative.html'>stack</a> of zeros and ones can be encoded in a single number by keeping with bit-shifting and incrementing.</p>
+
+<ul>
+	<li>Pushing a <kbd>0</kbd> onto the stack is equivalent to doubling the number.</li>
+	<li>Pushing a <kbd>1</kbd> is equivalent to doubling and adding 1.</li>
+	<li>Popping is equivalent to dividing by 2, where the remainder is the number.</li>
+</ul>
+
+<pre>
+int
+push(int stack, int bit) {
+	return (stack << 1) + bit;
+}
+
+int
+pop(int stack, int *acc) {
+	*acc = stack & 0x1;
+	return stack >> 1;
+}
+
+int
+dup(int stack) {
+	int a, res = pop(stack, &a);
+	return push(push(res, a), a);
+}
+
+int
+swap(int stack) {
+	int a, b, res = pop(pop(stack, &a), &b);
+	return push(push(res, a), b);
+}
+
+int
+echo(int stack) {
+	int bit;
+	printf(" .. ");
+	while(stack > 1)
+		stack = pop(stack, &bit), printf("%d ", bit);
+	printf("< \n");
+}
+</pre>
+
+<p>The above defines the primitives of a small stack machine that utilizes a single number as memory, this strategy is at the core of the <a href='fractran.html#stack'>Fractran stack machine</a>.</p>
+<pre>
+echo(dup(swap(push(push(push(push(1, 0), 1), 0), 1))));
+
+<i>0 1 0 1 swap dup .</i>
+</pre>
+
+
+
+
 <ul></ul><p class="incoming"><b>incoming</b> <a href="noton.html">noton</a> <a href="nibble_dice.html">nibble dice</a> <a href="ternary.html">ternary</a> <a href="fractran.html">fractran</a> <a href="vga.html">vga</a> <a href="uxn_devlog.html">uxn devlog</a> </p></main>
 <footer><a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a><a href="https://merveilles.town/@neauoire" rel="me" target="_blank"><img src="../media/icon/merveilles.svg" alt="Merveilles"/></a><a href="ethics.html"><img src="../media/icon/dreipfeile.svg" alt="NoNazis!"/></a><a href="uxn.html"><img src="../media/icon/uxn.svg" alt="UxnPowered"/></a><span> <a href="devine_lu_linvega.html">Devine Lu Linvega</a> &copy; 2008-2024</span><div class="right"><a href="about.html#license">BY-NC-SA 4.0</a><a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank"><img src="../media/icon/cc.svg" alt="CreativeCommons"/></a></div><hr/></footer>
 </body></html>
