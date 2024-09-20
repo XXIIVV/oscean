@@ -374,7 +374,7 @@ game
 
 <h3 id='stack'>Hard Mode: Stacking Machines</h3>
 
-<p>A <a href='concatenative.html'>stack-machine</a> can be implemented in Fractran, but it's <i>not for the faint of heart</i>. The theory is that we can keep a stack of zeros and ones in a single register using a <a href='binary.html#stack'>binary encoding</a> for that number.</p>
+<p>A <a href='concatenative.html'>stack-machine</a> can be implemented, but it's <i>not for the faint of heart</i>, considering that Fractran is a computation model where the program state is kept in a single number, and allocate a whole stack into a single of its prime encoded register. The theory is that we can keep a stack of zeros and ones in a single register using a <a href='binary.html#stack'>binary encoding</a> for that number.</p>
 
 <ul>
 	<li>Pushing a <kbd>0</kbd> onto the stack is equivalent to doubling the number.</li>
@@ -382,33 +382,59 @@ game
 	<li>Popping is equivalent to dividing by 2, where the remainder is the number.</li>
 </ul>
 
-<p>If we begin with <b>push</b>, we can see that we are doubling the x register, same as demonstrated above, but for pushing 1, we increment it by 1. After the evaluation, our LIFO stack has a value of 30, and is equal to <kbd>1</kbd> <kbd>1</kbd> <kbd>1</kbd> <kbd>0</kbd>, where the right-most one is the item on top.</p>
+<p>If we begin with <b>push</b>, we can see that we are doubling the x register, same as demonstrated above. After the evaluation, our LIFO stack has a value of 30, and is equal to <kbd>1</kbd> <kbd>1</kbd> <kbd>1</kbd> <kbd>0</kbd>, where the right-most one is the item on top. Now, for <b>pop</b>, we can halve the x register, again, same as demonstrated above, and keeping the result of the value in a register for 0, and a register for 1.</p>
 
 <pre>
 :: push 1 x > A A push 1
 :: push 1 > x
 :: push 0 x > A A push 0
 :: push 0 >
+
+:: pop x x > A pop
+:: pop x   > 1
+:: pop     > 0
+
 :: A A > x x
+:: A > x
 <i>
 x    push 1 = x^3
 x^3  push 1 = x^7
 x^7  push 1 = x^15
-x^13 push 0 = x^30</i>
-</pre>
+x^13 push 0 = x^30
 
-<p>Now, for <b>pop</b>, we can see that we are halving the x register, again, same as demonstrated above, and keeping the result of the value in a register for =0, and a register for =1.</p>
-
-<pre>
-:: pop x x > A pop
-:: pop x > 1
-:: pop > 0
-:: A > x
-<i>
 x^30 pop : 0 x^15
 x^15 pop : 1 x^7
 x^7  pop : 1 x^3
 x^3  pop : 1 x</i>
+</pre>
+
+<p>In the rest of the program, we can define two temporary register to keep the result of popping, the extra stack primitives such as <b>dup</b> and <b>swap</b>, and little state machine with the stack operations:</p>
+
+<pre>
+:: ?#a 0 > 0#a :: ?#a 1 > 1#a
+:: ?#b 0 > 0#b :: ?#b 1 > 1#b
+
+:: dup > pop ?#a dup-next
+:: dup-next 0#a > 0#a 0#a push-a push-a 
+:: dup-next 1#a > 1#a 1#a push-a push-a 
+
+:: swap > swap-next pop ?#a 
+:: swap-next > swap-last pop ?#b push-a
+:: swap-last > push-b
+
+:: push-a 0#a > push 0
+:: push-a 1#a > push 1
+:: push-b 0#b > push 0
+:: push-b 1#b > push 1
+
+:: 1) > push 1 2) <i>1</i>
+:: 2) > push 1 3) <i>1 1</i>
+:: 3) > push 1 4) <i>1 1 1</i>
+:: 4) > push 0 5) <i>1 1 1 0</i>
+:: 5) > swap   6) <i>1 1 0 1</i>
+:: 6) > dup       <i>1 1 0 1 1</i>
+
+1) x 
 </pre>
 
 <h3>Implementation</h3>
