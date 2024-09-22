@@ -107,7 +107,7 @@ integer values. Each fraction is an instruction that operates on some of the
 registers.</p>
 
 <article>
-	<p>John Conway's Fractran traditionally compares the accumulator against reduced fractions, but computationally-speaking,  getting to the gcd of a fraction spends more cycles with little effect other than getting rid of otherwise valuable information for matching fractions, and since there is no clear explanation as to why fractions are reduced in the first place, this variance will allow for prime factors to be present on both sides of a fraction.</p>
+	<p>Contrary to John Conway's original specification of Fractran, unreduced fractions are <a href='#strict'>allowed</a>.</p>
 </article>
 
 <h3 id='notation'>A Notation</h3>
@@ -424,7 +424,7 @@ game
 	</figcaption>
 </figure>
 
-<h3 id='stack'>Hard Mode: Stacking Machines</h3>
+<h3 id='stack'>Nested Stack Machines</h3>
 
 <p>A <a href='concatenative.html'>stack-machine</a> can be implemented in Fractran, but it's <i>not for the faint of heart</i>. This computation model keeps an entire program state in a single number, and the following stack machine allocates a whole stack into a single register of that number. The theory is that it is possible to keep a stack of zeros and ones in a single register using a <a href='binary.html#stack'>binary encoding</a> for that number.</p>
 
@@ -497,6 +497,21 @@ x^3  pop : 1 x</i>
 		&mdash; Jacek is upset with earth's computers.
 	</figcaption>
 </figure>
+
+<h3 id='strict'>Strict Mode</h3>
+
+<p>Fractran traditionally compares the accumulator against reduced fractions, but computationally-speaking, getting to the gcd of a fraction has little effect beyond getting rid of otherwise valuable information used during comparison to match against a <b>restricted set of fractions</b>, and since there is <a href='https://toinspiremath.com/is-simplifying-fractions-important/' target='_blank'>no clear explanation</a> as to why fractions are reduced in the first place, a strict mode must allow for prime factors to be present on both sides of a fraction.</p>
+
+<p>The following two fractions are not equal and reducing the first into the second, eliminates the capability to match against it only when <code>green</code> is present in the accumulator:</p>
+
+<pre>
+:: 15/6 red green > green blue
+:: 5/2 red > blue
+
+red green
+</pre>
+
+<p>Reducing, in the context of Fractran, is akin to stripping a codebase of data types, if we reduce 3:15pm, which is really 3/12 and 15/60, to 0.25 and 0.25, what we lose in the translation is the size of units which specified what we are talking about.</>
 
 <h3>Implementation</h3>
 
