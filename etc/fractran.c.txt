@@ -252,7 +252,9 @@ tokenize(char *buf)
 	char *_buf = buf, *sym;
 	while(*_buf) {
 		while(*_buf && *_buf < 0x21) _buf++;
-		if(_buf[0] == ':' && _buf[1] == ':')
+		if(*_buf == '(')
+			while(*(_buf++) != ')');
+		else if(_buf[0] == ':' && _buf[1] == ':')
 			_buf = parse_rule(_buf + 2);
 		else if(*_buf) {
 			_buf = parse_symbol(&sym, _buf);
@@ -289,7 +291,7 @@ main(int argc, char *argv[])
 	FILE *f;
 	int i, a = 1, repl = 0;
 	char c, src[SRC_SZ], *_src = src;
-	if(argc < 2) return !printf("Fractran Rewriting, 16 Sep 2024.\nusage: fractran [-i] input.fra [arguments..]\n");
+	if(argc < 2) return !printf("Fractran Rewriting, 24 Sep 2024.\nusage: fractran [-i] input.fra [arguments..]\n");
 	if(argv[a][0] == '-' && argv[a][1] == 'i') repl = 1, a++;
 	if(!(f = fopen(argv[a], "r"))) return !printf("Source missing: %s\n", argv[a]);
 	if(!fread(&src, 1, SRC_SZ, f)) return !printf("Source empty: %s\n", argv[a]);
@@ -310,6 +312,5 @@ main(int argc, char *argv[])
 			_src = src, *_src = 0;
 		} else
 			*_src++ = c, *_src = 0;
-	printf("\n");
 	return 0;
 }
