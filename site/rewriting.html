@@ -140,7 +140,7 @@ registers.</p>
 
 <p>While Fractran is commonly reduced to just another opaque esoteric language,
 portraying it as such is doing a disservice to the relatively simple idea at
-its core and to the researchers who might otherwise benefit by venturing deeper
+its core and to the researchers who might otherwise benefit to venture deeper
 into a relatively unexplored field of computation.</p>
 
 <p><a href='https://wryl.tech' target='_blank'>Wryl</a>, who created <a href='modal.html'>Modal</a>, demonstrated to me an interesting connection between Fractran and <a href='rewriting.html'>rewriting languages</a> which is made clearer by using a notation where prime registers are automatically assigned names, and fractions are defined in terms of transformations of these names:</p>
@@ -155,7 +155,7 @@ AC 6 left side  <i>accumulator</i>
 <p>This documentation will represent registers with names(x, y, foo-bar, baz, ..). Fractions will be
 written as rewrite rules starting with <code>::</code>, a left-side, a
 spacer(>) and a right-side. The notation indicates which registers to replace
-on the left-side, and what to replace them with on the right-side. Unlike John Conway's original specification of Fractran, fractions are <a href='#strict'>not reduced</a>.</p>
+on the denumerator left-side, and what to replace them with on the numerator right-side. Unlike John Conway's original specification of Fractran, fractions are <a href='#strict'>not reduced</a>.</p>
 
 <q>Multiset sounds too technical.<br />
 Dijkstra's bag, not technical enough.</q>
@@ -174,7 +174,7 @@ Dijkstra's bag, not technical enough.</q>
 sugar oranges apples cherries flour apples
 </pre>
 
-<p>Rules are tested in a sequence from the first to the last, when a valid rewrite rule is encountered, the accumulator is updated by the product of the multiplication of the accumulator with the fraction, and search for the next rule starts back again from the beginning.</p>
+<p>Rules are tested in a sequence from the first to the last, when a rewrite rule gives us an integer when when multiplied by the accumulator, the accumulator is updated by the product of that multiplication, and search for the next rule starts back again from the beginning.</p>
 
 <pre>
 :: 7/30 flour.2 sugar.3 apples.5 > apple-cake.7 
@@ -226,7 +226,7 @@ AC 576 x^6 y^2
 00 96 × 1/6 = 16, x^4
 </pre>
 
-<p>The <b>doubling</b> of a register(x*2) can be reached by keeping a temporary <i>catalyst</i> register which keeps the evaluation in a specific state. When using catalysts, to keep the accumulator size small, the example will reserve the lower registers by creating a pseudo-rule without a right side:</p>
+<p>The <b>doubling</b> of a register(x*2) can be reached by using a temporary <i>catalyst</i> register which keeps the evaluation in a specific state.To keep the accumulator size small, we can reserve lower registers by creating a pseudo-rule without a right-side:</p>
 
 <pre>
 :: x A
@@ -295,15 +295,13 @@ AC 20250, gth x^4 y^3
 04 1447875 × 1/11 = 131625, x^4 y^3 true
 </pre>
 
-<h3 id='combinations'>Example: Arithmetic Combinations</h3>
-
-<p>Now let's put it all together! Programs are made of the combination of operations. In rewrite systems, we need to ensure that the evaluation is done in the right order, which is not necessarily the order in which rules are defined. Say we want to do this operation, the nesting of the operations is the order in which we want to join the results:</p>
+<p id='combinations'>Now, let's put it all together! Programs are made of the combination of operations. In rewrite systems, we need to ensure that the evaluation is done in the right order, which is not necessarily the order in which rules are defined. Say we want to get the result of the following nested operations:</p>
 
 <pre>
 (- (+ 2 (* 4 6)) (+ 3 5 7))
 </pre>
 
-<p>For the arithmetic operations defined above, we'll add catalysts(mul, add, sub, etc..) to make them reusable in a larger context, and create a state machine that will run the combination in the correct sequence. Here is how a larger program can be organized, including comments within parenthesis for the various functions.</p>
+<p>We've looked at a handful of arithmetic operations, we'll add catalysts(mul, add, sub, etc..) in order to make them reusable in a larger context, and create a state-machine that will run the combination of operations in the correct sequence. Here is how a larger program can be organized, including comments within parenthesis for the various functions:</p>
 
 <pre>
 :: res x y z A t
@@ -339,12 +337,14 @@ AC 20250, gth x^4 y^3
 	:: 3) > x x x y y y y y z z z z z z z add res-y t-x 4)
 	:: 4) > sub
 
-1)
+AC 47, 1)
+.. 
+12 59392 × 1/29 = 2048, res^11 
 </pre>
 
 <h3 id='fib'>Example: Fibonacci</h3>
 
-<p>Let's have a look at a <i>real program</i> to generate the Fibonacci Sequence(1, 1, 2, 3, 5, 8, 13, 21, 34..). This program uses registers to keep the program state, which has 3 phases(shift, move and back to fib). Type-guarding the rules allows for the program to enforce something like an evaluation order:</p>
+<p>Let's have a look at a <i>real program</i> to generate the Fibonacci Sequence(1, 1, 2, 3, 5, 8, 13, 21, 34..). This program uses catalysts(fib, fib.shift, fib.move) to keep the program state which has 3 phases(shift, move and back to fib) and ensures the correct evaluation order:</p>
 
 <pre>
 <i>(Keep going while the n register is present)</i>
