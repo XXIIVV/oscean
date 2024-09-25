@@ -155,23 +155,11 @@ AC 21450 flour sugar apples apples oranges cherries
 	<figcaption>The Book of Numbers, <a href='https://en.wikipedia.org/wiki/John_Horton_Conway' target='_blank'>John Conway</a></figcaption>
 </figure>
 
-<h3>Logic & Arithmetic</h3>
+<h3>Arithmetic & Logic</h3>
 
-<p>Logic in rewrite rules is typically implemented as multiple rules, where each one is a potential location in the <a href='logic.html'>truth table</a>, here is <b>logical and</b> between two registers(x&y) as example:</p>
-
-<pre>
-:: x y and > true
-:: x and > false
-:: y and > false
-
-AC 30 x y and 
-00 30 × 7/30 = 7, true
-</pre>
-
-<p>The <b>sum</b> of two registers(x+y) can be reached by moving the value of one register into the other. The <i>naming</i> of the x register in advance ensures that the highest number will be stored in the lowest register:</p>
+<p>The <b>sum</b> of two registers(x+y) can be reached by moving the value of one register into the other:</p>
 
 <pre>
-:: x
 :: y > x
 
 AC 144 x^4 y^2
@@ -179,7 +167,7 @@ AC 144 x^4 y^2
 00 96 × 2/3 = 64, x^6
 </pre>
 
-<p>The <b>difference</b> between two registers(x-y) can be reached by consuming the value of two registers at once, and moving the remains to the first:</p>
+<p>The <b>difference</b> between two registers(x-y) can be reached by consuming the value of two registers at once, and moving the remains to the first if we want the result inside x:</p>
 
 <pre>
 :: x y >
@@ -190,64 +178,120 @@ AC 576 x^6 y^2
 00 96 × 1/6 = 16, x^4
 </pre>
 
-<p>The <b>doubling</b> of a register(x*2) can be reached by keeping an operator register <i>double</i> and a temporary accumulator(A):</p>
+<p>The <b>doubling</b> of a register(x*2) can be reached by keeping a temporary <i>catalyst</i> register which keeps the evaluation in a specific state. When using catalysts, to keep the accumulator size small, the example will reserve the lower registers by creating a pseudo-rule without a right side:</p>
 
 <pre>
-:: x double > A A double
-:: double > 
+:: x A
+:: double x > double A A 
+:: double   > 
 :: A A > x x
 
-AC 48, x^4 double 
-00 48 × 75/6 = 600, x^3 double A^2 
-00 600 × 75/6 = 7500, x^2 double A^4 
-00 7500 × 75/6 = 93750, x double A^6 
-00 93750 × 75/6 = 1171875, double A^8 
-01 1171875 × 1/3 = 390625, A^8 
-02 390625 × 4/25 = 62500, x^2 A^6 
-02 62500 × 4/25 = 10000, x^4 A^4 
-02 10000 × 4/25 = 1600, x^6 A^2 
-02 1600 × 4/25 = 256, x^8
+AC 80, x^4 double 
+00 80 × 45/10 = 360, x^3 A^2 double 
+00 360 × 45/10 = 1620, x^2 A^4 double 
+00 1620 × 45/10 = 7290, x A^6 double 
+00 7290 × 45/10 = 32805, A^8 double 
+01 32805 × 1/5 = 6561, A^8 
+02 6561 × 4/9 = 2916, x^2 A^6 
+02 2916 × 4/9 = 1296, x^4 A^4 
+02 1296 × 4/9 = 576, x^6 A^2 
+02 576 × 4/9 = 256, x^8 
 </pre>
 
-<p>The <b>halving</b> of a register(x/2) can be reached by keeping an operator register <i>half</i> and a temporary accumulator(A)</p>
+<p>The <b>halving</b> of a register(x/2) can be reached by keeping a <i>catalyst</i> register and a temporary accumulator(A)</p>
 
 <pre>
-:: half x x > A half
-:: half > 
+:: x A
+:: half x x > half A
+:: half     > 
 :: A > x
 
-AC 1458, half x^6 
-00 1458 × 10/18 = 810, half x^4 A 
-00 810 × 10/18 = 450, half x^2 A^2 
-00 450 × 10/18 = 250, half A^3 
-01 250 × 1/2 = 125, A^3 
-02 125 × 3/5 = 75, x A^2 
-02 75 × 3/5 = 45, x^2 A 
-02 45 × 3/5 = 27, x^3 
+AC 320, x^6 half 
+00 320 × 15/20 = 240, x^4 A half 
+00 240 × 15/20 = 180, x^2 A^2 half 
+00 180 × 15/20 = 135, A^3 half 
+01 135 × 1/5 = 27, A^3 
+02 27 × 2/3 = 18, x A^2 
+02 18 × 2/3 = 12, x^2 A 
+02 12 × 2/3 = 8, x^3
+</pre>
 
-x^3 
+<p>Logic in rewrite rules is typically implemented as multiple rules, where each one is a potential location in the <a href='logic.html'>truth table</a>, here is <b>logical and</b> between two registers(x&y) as example:</p>
+
+<pre>
+:: and x y > true
+:: and x   > false
+:: and y   > false
+
+AC 30, and x y 
+00 30 × 7/30 = 7, true
 </pre>
 
 <p>The comparison operation <b>greather-than</b> of two registers(x>y) can be implemented in a non-destructive way that doesn't consume the inputs and returns the program to its initial state with the answer.</p>
 
 <pre>
-:: x y gth > A gth
-:: x gth > true x gth?
-:: gth > false gth?
-:: A gth? > x y gth?
-:: gth? > 
+:: gth x y > gth A 
+:: gth x   > gth? true x 
+:: gth     > gth? false 
+:: gth? A  > gth? x y 
+:: gth?    > 
 
-AC 2160, x^4 y^3 gth 
-00 2160 × 35/30 = 2520, x^3 y^2 gth A 
-00 2520 × 35/30 = 2940, x^2 y gth A^2 
-00 2940 × 35/30 = 3430, x gth A^3 
-01 3430 × 286/10 = 98098, x A^3 true gth? 
-03 98098 × 78/91 = 84084, x^2 y A^2 true gth? 
-03 84084 × 78/91 = 72072, x^3 y^2 A true gth? 
-03 72072 × 78/91 = 61776, x^4 y^3 true gth? 
-04 61776 × 1/13 = 4752, x^4 y^3 true 
+AC 20250, gth x^4 y^3 
+00 20250 × 14/30 = 9450, gth x^3 y^2 A 
+00 9450 × 14/30 = 4410, gth x^2 y A^2 
+00 4410 × 14/30 = 2058, gth x A^3 
+01 2058 × 429/6 = 147147, x A^3 gth? true 
+03 147147 × 165/77 = 315315, x^2 y A^2 gth? true 
+03 315315 × 165/77 = 675675, x^3 y^2 A gth? true 
+03 675675 × 165/77 = 1447875, x^4 y^3 gth? true 
+04 1447875 × 1/11 = 131625, x^4 y^3 true
+</pre>
 
-x^4 y^3 true
+<h3 id='combinations'>Example: Arithmetic Combinations</h3>
+
+<p>Now let's put it all together! Programs are made of the combination of operations. In rewrite systems, we need to ensure that the evaluation is done in the right order, which is not necessarily the order in which rules are defined. Say we want to do this operation, the nesting of the operations is the order in which we want to join the results:</p>
+
+<pre>
+(- (+ 2 (* 4 6)) (+ 3 5 7))
+</pre>
+
+<p>For the arithmetic operations defined above, we'll add catalysts(mul, add, sub, etc..) to make them reusable in a larger context, and create a state machine that will run the combination in the correct sequence. Here is how a larger program can be organized, including comments within parenthesis for the various functions.</p>
+
+<pre>
+:: res x y z A t
+
+<i>(mul x y .. res=x*y)</i>
+	:: mul.move A > mul.move y
+	:: mul.move   > mul
+	:: mul x y    > mul x A res
+	:: mul x      > mul.move
+	:: mul y      > mul
+	:: mul > 
+
+<i>(add x y z .. res=x+y+z)</i>
+	:: add x > add res
+	:: add y > add res
+	:: add z > add res
+	:: add > 
+
+<i>(sub x y .. res=x-y)</i>
+	:: sub x y > sub
+	:: sub x   > sub res
+	:: sub >
+
+<i>(moving intermediate results)</i>
+	:: res-x res > res-x x :: res-x > 
+	:: res-t res > res-t t :: res-t > 
+	:: res-y res > res-y y :: res-y > 
+	:: t-x t > t-x x :: t-x > 
+
+<i>(main)</i>
+	:: 1) > x x x x y y y y y y mul res-x 2)
+	:: 2) > y y add res-t 3)
+	:: 3) > x x x y y y y y z z z z z z z add res-y t-x 4)
+	:: 4) > sub
+
+1)
 </pre>
 
 <h3 id='fib'>Example: Fibonacci</h3>
@@ -255,28 +299,28 @@ x^4 y^3 true
 <p>Let's have a look at a <i>real program</i> to generate the Fibonacci Sequence(1, 1, 2, 3, 5, 8, 13, 21, 34..). This program uses registers to keep the program state, which has 3 phases(shift, move and back to fib). Type-guarding the rules allows for the program to enforce something like an evaluation order:</p>
 
 <pre>
-<i>Keep going while the n register is present:</i>
+<i>(Keep going while the n register is present)</i>
 
 :: fib n > fib.shift
 
-<i>Shift the scrolling window to show two numbers:</i>
+<i>(Shift the scrolling window to show two numbers)</i>
 
 :: fib.shift last > fib.shift B
-:: fib.shift res > fib.shift A B
-:: fib.shift > fib.move
+:: fib.shift res  > fib.shift A B
+:: fib.shift      > fib.move
 
-<i>Move the temporary registers back by one number:</i>
+<i>(Move the temporary registers back by one number)</i>
 
 :: fib.move A > fib.move last
 :: fib.move B > fib.move res
-:: fib.move > fib
+:: fib.move   > fib
 
-<i>Cleanup temporary registers at the end of the progam:</i>
+<i>(Cleanup temporary registers at the end of the program)</i>
 
 :: last > 
-:: fib > 
+:: fib  > 
 
-<i>Find the fib() number equal to the value in n register:</i>
+<i>(Find the fib number equal to the value in n register)</i>
 
 AC 6240, n^5 last res fib
 ..
@@ -288,17 +332,17 @@ AC 6240, n^5 last res fib
 <p>Fractran's <b>output</b> capability is limited to the resulting accumulator at the end of an evaluation. The advantage of symbolic rewriting is that registers are already assigned names, so we shall print those instead. As for <b>input</b>, we can type in new symbol tokens and appending their value to the accumulator between evaluations. We can implement a <i>tic-tac-toe</i> in a mere 16 rules:</p>
 
 <pre>
-<i>Reserve the first registers for the player moves:</i>
+<i>(Reserve the first registers for the player moves)</i>
 
 :: x#a o#a x#b o#b x#c o#c
 :: x#d o#d x#e o#e x#f o#f
 :: x#g o#g x#h o#h x#i o#i
 
-<i>This register remains active until the game ends:</i>
+<i>(This register remains active until the game ends)</i>
 
 game
 
-<i>A symbol to draw the value of registers in a grid:</i>
+<i>(A symbol to draw the value of registers in a grid)</i>
 
 "
 
@@ -310,7 +354,7 @@ game
 
  "
 
-<i>Rules for each possible victory states:</i>
+<i>(Rules for each possible victory states)</i>
 
 :: game x#a x#b x#c > x#a x#b x#c "Player X wins!" 
 :: game o#a o#b o#c > o#a o#b o#c "Player O wins!"
@@ -349,27 +393,27 @@ game
 <p>Alternatively to getting the resulting program state at the end of an evaluation, we can emit the accumulator at a specific rate during the evaluation by checking if a register is active or not.</p>
 
 <pre>
-<i>Reserve the first registers for the increments and base-10:</i>
+<i>(Reserve the first registers for the increments and base-10)</i>
 
 :: +5 +3
 :: 1# 2# 3# 4# 5# 6# 7# 8# 9# 0
 :: 1  2  3  4  5  6  7  8  9
 
-<i>Leave the printing register for no more than one rewrite:</i>
+<i>(Leave the printing register for no more than one rewrite)</i>
 
 :: print: fizz >
 :: print: buzz >
 :: print: fizzbuzz >
 :: print: "{1# 2# 3# 4# 5# 6# 7# 8# 9# 0}{1 2 3 4 5 6 7 8 9}" > 
 
-<i>Fizzbuzz logic:</i>
+<i>(Fizzbuzz logic)</i>
 
 :: eval +3 +3 +3 +5 +5 +5 +5 +5 > print: fizzbuzz
 :: eval +3 +3 +3 > print: fizz
 :: eval +5 +5 +5 +5 +5 > print: buzz
 :: eval > print: "{1# 2# 3# 4# 5# 6# 7# 8# 9# 0}{1 2 3 4 5 6 7 8 9}"
 
-<i>Base-10 numbers:</i>
+<i>(Base-10 numbers)</i>
 
 :: 1# 9 > 2# 0 +3 +5 eval
 :: 2# 9 > 3# 0 +3 +5 eval
@@ -392,7 +436,7 @@ game
 :: 8 > 9 +3 +5 eval
 :: 9 > 1# 0 +3 +5 eval
 
-<i>The initial state:</i>
+<i>(The initial state)</i>
 
 0
 </pre>
