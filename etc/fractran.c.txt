@@ -40,7 +40,7 @@ scap(char *s)
 		while(*s && *s != '"') s++;
 		return s + 1;
 	}
-	while(*s > 0x20) s++;
+	while(*s > 0x20 && *s != '}') s++;
 	return s;
 }
 
@@ -160,6 +160,7 @@ print_template(FILE *f, char *s)
 	char **symbol;
 	while(*s && *s != '}') {
 		while(*s && *s < 0x21) s++;
+		symbol = find_symbol(s);
 		if((symbol = find_symbol(s)) != NULL) {
 			if(mask(&accu, prime_lut[symbol - syms])) {
 				print_s(f, *symbol);
@@ -168,7 +169,7 @@ print_template(FILE *f, char *s)
 			}
 			s = scap(s);
 		} else
-			while(*s && *s != '}' && *s > 0x21) fprintf(f, "%c", *s++);
+			while(*s && *s != '}' && *s > 0x20) fprintf(f, "%c", *s++);
 	}
 	return s + 1;
 }
@@ -220,16 +221,21 @@ parse_symbol(char **dst, char *s)
 static char *
 parse_rule(char *_s)
 {
-	char c, *sym;
+	char c, *sym, *lhs;
 	int side = 0;
 	Rule *r = _rules++;
 	r->num = r->den = 1;
 	while(*_s) {
 		while((c = *_s) && (c == 0x09 || c == 0x20)) _s++;
 		if(*_s == 0xa || (_s[0] == ':' && _s[1] == ':')) break;
-		if(*_s == '>')
+		if(*_s == '>') {
+			if(side) {
+				_s = parse_rule(lhs);
+				break;
+			} else
+				lhs = _s + 2;
 			side = 1, _s++;
-		else if(*_s > 0x20) {
+		} else if(*_s > 0x20) {
 			_s = parse_symbol(&sym, _s);
 			if(side)
 				r->num *= prime_lut[find_symbol(sym) - syms];
@@ -291,7 +297,7 @@ main(int argc, char *argv[])
 	FILE *f;
 	int i, a = 1, repl = 0;
 	char c, src[SRC_SZ], *_src = src;
-	if(argc < 2) return !printf("Fractran Rewriting, 24 Sep 2024.\nusage: fractran [-i] input.fra [arguments..]\n");
+	if(argc < 2) return !printf("Fractran Rewriting, 30 Sep 2024.\nusage: fractran [-i] input.fra [arguments..]\n");
 	if(argv[a][0] == '-' && argv[a][1] == 'i') repl = 1, a++;
 	if(!(f = fopen(argv[a], "r"))) return !printf("Source missing: %s\n", argv[a]);
 	if(!fread(&src, 1, SRC_SZ, f)) return !printf("Source empty: %s\n", argv[a]);
