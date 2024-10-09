@@ -64,7 +64,7 @@
 	( name ) "Left 0a
 	( details ) "A 20 "Text 20 "Editor 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "19 20 "Sep 20 "2024 $1 02
+	( date ) "9 20 "Oct 20 "2024 $1 02
 	( > ) 83 =appicon
 	( > ) 0a =manifest
 
@@ -1090,6 +1090,7 @@
 @file-inject ( name* -- )
 	DUP2 fbin? ?file-inject-binary
 	( skip if empty ) DUP2 flen ORAk ?{ POP2 POP2 JMP2r }
+
 	( erase sel ) has-empty? ?{ erase-selection }
 	( | name* addr* )
 	SWP2 .File/name DEO2
@@ -1594,7 +1595,14 @@
 @flen ( path* -- size* )
 	.File/name DEO2
 	#0004 .File/length DEO2
-	;&buf DUP2 .File/stat DEO2 !shex
+	;&buf DUP2 .File/stat DEO2
+	LDAk [ LIT "- ] EQU ?&fail
+	LDAk [ LIT "? ] EQU ?&fail
+	LDAk [ LIT "! ] EQU ?&fail
+	!shex
+
+	&fail ( buf* -- size* )
+	POP2 #0000 JMP2r
 
 @fbin? ( path* -- bool )
 	.File/name DEO2
@@ -2391,7 +2399,7 @@ aa55 aa55 aa55 aa55 aa55 aa55 aa55 aa55 0000 0000 0000 0000 0000 0000 0000 0000
 0000 1028 0044 c444 444c 5526 0000 0000
 0000 0028 0044 c444 444c 5526 0000 0000
 0000 0810 0044 c444 444c 5424 0408 3000
-0000 0000 4040 5864 4444 6458 4040 0000
+0000 0000 8080 b0c8 8888 c8b0 8080 0000
 0000 0028 0044 c444 444c 5424 0408 3000 ]
 
 @appicon ( 3x3 ) [
