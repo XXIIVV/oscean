@@ -19,9 +19,6 @@ function Screen(emu)
 		this.fgCanvas = document.getElementById("fgcanvas");
 		this.bgctx = this.bgCanvas.getContext("2d", {"willReadFrequently": true})
 		this.fgctx = this.fgCanvas.getContext("2d", {"willReadFrequently": true})
-		this.el.addEventListener("pointermove", emu.mouse.on_move)
-		this.el.addEventListener("pointerdown", emu.mouse.on_down)
-		this.el.addEventListener("pointerup", emu.mouse.on_up)
 		if (emu.embed) { this.set_size(window.innerWidth, window.innerHeight) }
 		else{ this.set_size(512, 320) }
 	}

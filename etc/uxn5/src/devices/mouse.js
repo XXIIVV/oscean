@@ -36,4 +36,14 @@ function Mouse(emu)
 		this.up(event.buttons)
 		event.preventDefault();
 	}
+
+	this.on_scroll = (event) => {
+		if(event.wheelDelta > 0)
+			poke16(emu.uxn.dev, 0x9c, 0xffff)
+		else 
+			poke16(emu.uxn.dev, 0x9c, 0x0001)
+		emu.uxn.eval(peek16(emu.uxn.dev, 0x90))
+		poke16(emu.uxn.dev, 0x9c, 0x0000)
+		event.preventDefault();
+	}
 }
