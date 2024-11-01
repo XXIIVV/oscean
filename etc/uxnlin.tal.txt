@@ -26,7 +26,7 @@
 	( name ) "Uxnlin 0a
 	( desc ) "Uxntal 20 "Linter 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "22 20 "Jun 20 "2024 $1
+	( date ) "1 20 "Nov 20 "2024 $1
 	( exts ) 00
 
 @await-src ( -> )
@@ -590,6 +590,7 @@
 	@00neq "#00 20 "NEQ $1
 	@0000equ2 "#0000 20 "EQU2 $1
 	@00equ "#00 20 "EQU $1
+	@inc2lda "INC2 20 "LDA $1
 	@ldz0equ "LDZ 20 "#00 20 "EQU $1
 	@lda0equ "LDA 20 "#00 20 "EQU $1
 	@ldr0equ "LDR 20 "#00 20 "EQU $1
@@ -679,6 +680,7 @@
 	"#0001 $1 "ADD2 $1 =inc2
 	"#02 $1 "ADD $1 =inc-twice
 	"#0002 $1 "ADD2 $1 =inc2-twice
+	"LDA2 $1 "NIP $1 =inc2lda
 	"POP $1 "POP $1 =pop2
 	"NIP $1 "POP $1 =pop2
 	"NIP $1 "STH $1 =latestack
@@ -763,10 +765,16 @@
 	"SWP2 $1 "<noswp2> $1 =redundance
 	"<any-12> $1 "NIP $1 =redundance
 	"<any-12> $1 "POP $1 =redundance
-	"LDA2 $1 "NIP $1 =redundance
-	"LDA2 $1 "POP $1 =redundance
-	"LDA2k $1 "NIP $1 =redundance
-	"LDA2k $1 "POP $1 =redundance
+	"LDZ2 $1 "NIP $1 =static
+	"LDZ2 $1 "POP $1 =static
+	"LDR2 $1 "NIP $1 =static
+	"LDR2 $1 "POP $1 =static
+	"LDA2 $1 "NIP $1 =static
+	"LDA2 $1 "POP $1 =static
+	"LDA2* $1 "NIP $1 =static
+	"LDA2* $1 "POP $1 =static
+	"DEI2 $1 "POP $1 =static
+	"DEI2 $1 "NIP $1 =static
 	( unkept )
 	"DUP $1 "<any-1x> $1 =keep
 	"DUP2 $1 "<any2-1x> $1 =keep
@@ -807,6 +815,8 @@
 	"STHr $1 "DIV $1 "STH $1 =redundance
 	"#00 $1 "NEQ $1 "?* $1 =redundance
 	"#00 $1 "GTH $1 "?* $1 =redundance
+	"SFT $1 "DUP $1 "ADD $1 =redundance
+	"SFT2 $1 "DUP2 $1 "ADD2 $1 =redundance
 	"#00 $1 "NEQ $1 "JMP $1 =1jcn
 	"#01 $1 "EQU $1 "JMP $1 =1jcn
 	"#00 $1 "GTH $1 "JMP $1 =1jcn
@@ -834,38 +844,44 @@
 	"LDR $1 "{1} $1 "<noswp> $1 =cmporder
 	"LDZ $1 "{1} $1 "<noswp> $1 =cmporder
 	"DEI $1 "{1} $1 "<noswp> $1 =cmporder
+	"LDR $1 "{1} $1 "SWP $1 =cmporder
+	"LDZ $1 "{1} $1 "SWP $1 =cmporder
+	"DEI $1 "{1} $1 "SWP $1 =cmporder
 	( stash to short )
 	"{1} $1 "SWP $1 "STH2 $1 =latestack
 	"{1} $1 "SWP $1 "STH $1 =latestack
+	"{1} $1 "DEI $1 "STH $1 =latestack
+	"{1} $1 "DEI2 $1 "STH2 $1 =latestack
 	( eager nip )
 	"NIP $1 "{1} $1 "STR $1 =eagerstack
 	"NIP $1 "{1} $1 "STZ $1 =eagerstack
 	"NIP $1 "{1} $1 "DEO $1 =eagerstack
 	"NIP2 $1 "{2} $1 "STA2 $1 =eagerstack
 	( transfer )
-	"STHr $1 "{1} $1 "DEO $1 =eagerstack
-	"STH2r $1 "{1} $1 "DEO2 $1 =eagerstack
+	"STHr $1 "{1} $1 "DEO* $1 =eagerstack
+	"STH2r $1 "{1} $1 "DEO2* $1 =eagerstack
 	"STHr $1 "{1} $1 "STR $1 =eagerstack
 	"STH2r $1 "{1} $1 "STR2 $1 =eagerstack
-	"STHr $1 "{1} $1 "STZ $1 =eagerstack
-	"STH2r $1 "{1} $1 "STZ2 $1 =eagerstack
-	"STHr $1 "{2} $1 "STA $1 =eagerstack
-	"STH2r $1 "{2} $1 "STA2 $1 =eagerstack
+	"STHr $1 "{1} $1 "STZ* $1 =eagerstack
+	"STH2r $1 "{1} $1 "STZ2* $1 =eagerstack
+	"STHr $1 "{2} $1 "STA* $1 =eagerstack
+	"STH2r $1 "{2} $1 "STA2* $1 =eagerstack
 	( transfer with keep )
-	"STHkr $1 "{1} $1 "DEO $1 =eagerstack
-	"STH2kr $1 "{1} $1 "DEO2 $1 =eagerstack
+	"STHkr $1 "{1} $1 "DEO* $1 =eagerstack
+	"STH2kr $1 "{1} $1 "DEO2* $1 =eagerstack
 	"STHkr $1 "{1} $1 "STR $1 =eagerstack
 	"STH2kr $1 "{1} $1 "STR2 $1 =eagerstack
-	"STHkr $1 "{1} $1 "STZ $1 =eagerstack
-	"STH2kr $1 "{1} $1 "STZ2 $1 =eagerstack
-	"STHkr $1 "{2} $1 "STA $1 =eagerstack
-	"STH2kr $1 "{2} $1 "STA2 $1 =eagerstack
+	"STHkr $1 "{1} $1 "STZ* $1 =eagerstack
+	"STH2kr $1 "{1} $1 "STZ2* $1 =eagerstack
+	"STHkr $1 "{2} $1 "STA* $1 =eagerstack
+	"STH2kr $1 "{2} $1 "STA2* $1 =eagerstack
 	( static )
 	"{2} $1 "ADD2 $1 "INC2 $1 =static
 	"{1} $1 "ADD $1 "INC $1 =static
 	"{2} $1 "SUB2 $1 "INC2 $1 =static
 	"{1} $1 "SUB $1 "INC $1 =static
 	( tailcall )
+	"JMP2r $1 "} $1 "JMP2r $1 =fall-through
 	"{%} $1 "} $1 "JMP* $1 =tailcall
 	"{%} $1 "@ $1 "JMP* $1 =tailcall
 	"{%} $1 "& $1 "JMP* $1 =tailcall
