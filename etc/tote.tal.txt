@@ -377,6 +377,7 @@
 	( erase ) ORAk ?{ Symbol/<erase> }
 	( snarf ) DUP2 #0100 NEQ2 ?{ Snarf/<write> }
 	( paste ) DUP2 #0200 NEQ2 ?{ Snarf/<read> }
+	( dir ) DUP2 #0400 NEQ2 ?{ Symbol/<change-dir> }
 	( hide ) DUP2 #0500 NEQ2 ?{ Symbol/<toggle-hide> }
 	( eval ) DUP2 #0600 NEQ2 ?{ Symbol/<toggle-eval> }
 	( lock ) DUP2 #0700 NEQ2 ?{ Symbol/<toggle-lock> }
@@ -572,18 +573,41 @@
 	Bag/<clear>
 	[ LITr 00 ] [ LIT2 -Acc/bufend -Acc/buf ]
 	&>bag-loop ( -- )
-		( | check if has anchor )
-		#00 OVR .Acc/buf SUB id-to-anchor DUP2 #0000 EQU2 ?{
-			( y ) #00 OVR #40 SFT2 #0010 ADD2 ;Bag/anchor-y STA2
-			SWP
-			( x ) #00 OVR #40 SFT2 #00f8 ADD2 ;Bag/anchor-x STA2 }
-		( x anchor pos ) POP2
+		#00 OVR .Acc/buf SUB
+		( ) DUP2 <set-anchor>
+		Bag/<set-dir>
 		( ) LDZk #00 EQUk ?{
 			&>bag-loop2 ( -- )
 				STHkr Bag/<push-auto>
 				INC GTHk ?&>bag-loop2 }
 		POP2 INCr INC GTHk ?&>bag-loop
 	POP2 POPr JMP2r
+
+@<set-anchor> ( id* -- )
+	id-to-anchor ORAk ?{ POP2 JMP2r }
+	( y ) #00 SWP #40 SFT2 #0010 ADD2 ;Bag/anchor-y STA2
+	( x ) #00 SWP #40 SFT2 #00f8 ADD2 ;Bag/anchor-x STA2
+	JMP2r
+
+@Bag/<set-dir> ( id* -- )
+	;masks ADD2 LDAk ?{ POP2 JMP2r }
+	LDA #06 SFT
+	( north ) DUP #03 NEQ ?{
+		#0000 ;&dir-x STA2
+		#fff0 ;&dir-y STA2
+		POP JMP2r }
+	( west ) DUP #02 NEQ ?{
+		#fff0 ;&dir-x STA2
+		#0000 ;&dir-y STA2
+		POP JMP2r }
+	( south ) #01 NEQ ?{
+		#0000 ;&dir-x STA2
+		#0010 ;&dir-y STA2
+		JMP2r }
+	( | east )
+	#0010 ;&dir-x STA2
+	#0000 ;&dir-y STA2
+	JMP2r
 
 (
 @|Bag )
@@ -620,9 +644,11 @@
 	/find-free STH2
 	[ LIT2 &anchor-x 00f8 ] DUP2 .Screen/width DEI2 #0018 SUB2 LTH2 ?{
 		POP2 #00f8 ,&anchor-y LDR2 #0010 ADD2 ,&anchor-y STR2 }
-	DUP2 #0010 ADD2 ,&anchor-x STR2
+	DUP2 [ LIT2 &dir-x 0010 ] ADD2 ,&anchor-x STR2
 	STH2kr INC2r INC2r STA2
-	[ LIT2 &anchor-y 0010 ] STH2kr INC2r INC2r STA2
+	[ LIT2 &anchor-y 0010 ]
+	( ) DUP2 [ LIT2 &dir-y 0010 ] ADD2 ,&anchor-y STR2
+	STH2kr INC2r INC2r STA2
 	STH2r STA
 	JMP2r
 
@@ -768,6 +794,9 @@
 	( changed? ) LDA2k STH2r EQU2 ?{ STA2 !<reqdraw-paint> }
 	POP2 POP2 JMP2r
 
+@Symbol/<change-dir> ( -- )
+	selected-mask LDAk #06 SFT INC #60 SFT ROT ROT STA !<reqdraw-paint>
+
 @Symbol/<toggle-hide> ( -- )
 	selected-mask LDAk #04 EOR ROT ROT STA !<reqdraw-paint>
 
@@ -802,6 +831,8 @@
 	;erase-icn #0010 #00a0 <draw-icon-at>
 	;copy-icn #0020 #00a0 <draw-icon-at>
 	;paste-icn #0030 #00a0 <draw-icon-at>
+	;dir-icn selected-mask LDA #06 SFT #00 SWP #50 SFT2 ADD2
+	( ) #0050 #00a0 <draw-icon-at>
 	;visible-icn selected-mask LDA #04 AND ?{ #0020 ADD2 }
 	#0060 #00a0 <draw-icon-at>
 	;eval-icn selected-mask LDA #02 AND ?{ #0020 ADD2 }
@@ -1172,6 +1203,16 @@
 	003f 2021 2121 2723 00fc 0484 8484 e4c4
 	2120 2020 2020 3f00 8404 7c48 5060 c000 ]
 
+@dir-icn [
+	0000 0000 0004 063f 0000 0000 0000 183c
+	3f06 0400 0000 0000 3c18 0000 0000 0000
+	0000 0101 0107 0301 0000 8080 80e0 c080
+	0000 0103 0301 0000 0000 80c0 c080 0000
+	0000 0000 0000 183c 0000 0000 0020 60fc
+	3c18 0000 0000 0000 fc60 2000 0000 0000
+	0000 0103 0301 0000 0000 80c0 c080 0000
+	0103 0701 0101 0000 80c0 e080 8080 0000 ]
+
 @eval-icn [
 	0000 0010 181c 1e1f 0000 0080 c0e0 f0f8
 	1f1e 1c18 1000 0000 f8f0 e0c0 8000 0000
@@ -1356,7 +1397,7 @@
 	$80 $80 $80 $80 $80 $80 $80 $80
 	$80 $80 $80 $80 $80 $80 $80 $80 &end
 @Bag &buf $3e8 &bufend $18 ( x* y* id )
-@masks $20 ( bitmask: - - - - - - eval lock )
+@masks $20 ( bitmask: dir-x dir-y - - - hide eval lock )
 @rules/meta $30 ( bitmask: - - - - - - - - )
 @Project/bufend
 
