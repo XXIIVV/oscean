@@ -18,6 +18,7 @@
 	@scroll $2
 	@Acc/buf $40 &bufend
 	@Bag/count $1
+	@timers &step $1 &unstep $1 &organize $1 &clear $1
 
 |100
 
@@ -48,7 +49,7 @@
 	( name ) "Tote 0a
 	( details ) "A 20 "Multiset 20 "Playground 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "6 20 "Nov 20 "2024 $1 00
+	( date ) "8 20 "Nov 20 "2024 $1 00
 
 (
 @|helpers )
@@ -105,6 +106,18 @@
 	( | 30fps )
 	[ LIT2 00 &f $1 ] EQU DUP ,&f STR
 	?{ BRK }
+	( | step timer )
+	[ LIT2 00 -timers/step ] LDZ EQUk ?{
+		#01 SUBk .timers/step STZ
+		NEQk ?{ <draw-step-button> }
+		POP }
+	POP2
+	( | unstep timer )
+	[ LIT2 00 -timers/unstep ] LDZ EQUk ?{
+		#01 SUBk .timers/unstep STZ
+		NEQk ?{ <draw-unstep-button> }
+		POP }
+	POP2
 	( | redraw )
 	[ LIT &reqdraw 01 ] ?{ BRK }
 	[ LIT2 00 _&reqdraw ] STR
@@ -306,6 +319,19 @@
 @on-frame-paint ( -> )
 	( 30fps ) [ LIT2 00 &f $1 ] EQUk ,&f STR
 	ORA ?{ BRK }
+	( | organize timer )
+	[ LIT2 00 -timers/organize ] LDZ EQUk ?{
+		#01 SUBk .timers/organize STZ
+		NEQk ?{ <draw-organize-button> }
+		POP }
+	POP2
+	( | clear timer )
+	[ LIT2 00 -timers/clear ] LDZ EQUk ?{
+		#01 SUBk .timers/clear STZ
+		NEQk ?{ <draw-clear-button> }
+		POP }
+	POP2
+	( | redraw )
 	[ LIT &reqdraw 01 ] ?{ BRK }
 	[ LIT2 00 _&reqdraw ] STR
 	<redraw-paint>
@@ -329,6 +355,8 @@
 	( ) DUP #d0 GTH ?&menu-close
 	( ) DUP #a8 GTH ?&menu-organize
 	&menu-clear ( x* -- )
+	[ LIT2 04 -timers/clear ] STZ
+	<draw-clear-button>
 	POP2 Bag/<clear>
 	Bag/<update>
 	Project/<write>
@@ -340,6 +368,8 @@
 	BRK
 
 	&menu-organize ( x* -- )
+	[ LIT2 04 -timers/organize ] STZ
+	<draw-organize-button>
 	POP2 Bag/<organize>
 	BRK
 
@@ -470,15 +500,20 @@
 	POP2 POP2 POP2r JMP2r
 
 @validate-rule ( rule* -- flag )
-	;rules SWP2 DUP2 ,&src STR2
+	;rules OVR2 DUP2 ,&src STR2
 	&>l ( -- )
-		#0080 SUB2 GTH2k ?&end
-		DUP2 [ LIT2 &src $2 ] compare-rules ?&found
+		#0080 SUB2 GTH2k ?&reachable
+		DUP2 [ LIT2 &src $2 ] compare-rules ?&unreachable
 		!&>l
-	&end POP2 POP2 #00 JMP2r
-	&found POP2 POP2 #01 JMP2r
 
-@compare-rules ( lhs* src* -- match )
+	&reachable ( to* from* -- flag )
+	POP2 POP2
+	( grows? ) DUP2 #0040 ADD2 compare-rules DUP ADD INC JMP2r
+
+	&unreachable ( to* from* -- flag )
+	POP2 POP2 POP2 #02 JMP2r
+
+@compare-rules ( b* a* -- match )
 	[ LIT2r 0000 ] SWP2 STH2
 	DUP2 #0040 ADD2 SWP2
 	&>mask-loop ( -- )
@@ -512,6 +547,8 @@
 
 @<unstep> ( -- )
 	[ LIT2 ff -valid/bwd ] LDZ NEQ ?{ JMP2r }
+	[ LIT2 04 -timers/unstep ] STZ
+	<draw-unstep-button>
 	[ LIT2 00 -valid/bwd ] LDZ id-to-rule
 	( | unapply )
 	[ LITr -Acc/buf ]
@@ -527,6 +564,8 @@
 
 @<step> ( -- )
 	[ LIT2 ff -valid/fwd ] LDZ NEQ ?{ JMP2r }
+	[ LIT2 04 -timers/step ] STZ
+	<draw-step-button>
 	[ LIT2 00 -valid/fwd ] LDZ id-to-rule
 	( | apply )
 	[ LITr -Acc/buf ]
@@ -843,18 +882,14 @@
 	;lock-icn selected-mask LDA #01 AND ?{ #0020 ADD2 }
 	#0080 #00a0 <draw-icon-at>
 	<draw-bag>
+	<draw-clear-button>
+	<draw-organize-button>
 	( | clear bag )
-	.Screen/width DEI2 #0080 SUB2 .Screen/x DEO2
-	.Screen/height DEI2 #0030 SUB2 .Screen/y DEO2
-	;clear-icn .Bag/count LDZ <draw-button>
 	( | organize button )
-	.Screen/width DEI2 #0058 SUB2 .Screen/x DEO2
-	.Screen/height DEI2 #0030 SUB2 .Screen/y DEO2
-	;organize-icn .Bag/count LDZ <draw-button>
 	( | close button )
 	.Screen/width DEI2 #0030 SUB2 .Screen/x DEO2
 	.Screen/height DEI2 #0030 SUB2 .Screen/y DEO2
-	;close-icn <draw-button-active>
+	;close-icn #00 <draw-button-active>
 	( | anchors )
 	[ LIT2 16 -Screen/auto ] DEO
 	#2000
@@ -876,39 +911,33 @@
 	#0048 <draw-pane-create>
 	<draw-bag>
 	<draw-rules>
-	( | transmute button )
-	.Screen/width DEI2 #0030 SUB2 .Screen/x DEO2
-	.Screen/height DEI2 #0030 SUB2 .Screen/y DEO2
-	;Symbols/transmute .valid/fwd LDZ INC <draw-button>
-	( | reverse button )
-	.Screen/width DEI2 #0058 SUB2 .Screen/x DEO2
-	.Screen/height DEI2 #0030 SUB2 .Screen/y DEO2
-	;Symbols/reverse .valid/bwd LDZ INC
-	( >> )
+	<draw-step-button> !<draw-unstep-button>
 
-@<draw-button> ( addr* state -- )
+@<draw-button> ( addr* down state -- )
 	?<draw-button-active>
+	POP
 	( | inactive )
 	[ LIT2 36 -Screen/auto ] DEO
 	;button-disabled-icn .Screen/addr DEO2
 	[ LIT2 0a -Screen/sprite ] DEOk DEOk DEOk DEO
 	( | foreground )
 	[ LIT2 16 -Screen/auto ] DEO
-	.Screen/x DEI2k #0008 ADD2 ROT DEO2
-	.Screen/y DEI2k #0018 SUB2 ROT DEO2
+	.Screen/x DEI2 #0008 ADD2 .Screen/x DEO2
+	.Screen/y DEI2 #0018 SUB2 .Screen/y DEO2
 	.Screen/addr DEO2
 	[ LIT2 0a -Screen/sprite ] DEOk DEO
 	JMP2r
 
-@<draw-button-active> ( addr* -- )
+@<draw-button-active> ( addr* down -- )
+	#00 NEQ #10 SFT [ LITr 00 ] STH
 	( | background )
 	[ LIT2 36 -Screen/auto ] DEO
-	;button-enabled-chr .Screen/addr DEO2
-	[ LIT2 85 -Screen/sprite ] DEOk DEOk DEOk DEO
+	;button-enabled-chr STH2kr #70 SFT2 ADD2 .Screen/addr DEO2
+	[ LIT2 81 -Screen/sprite ] DEOk DEOk DEOk DEO
 	( | foreground )
 	[ LIT2 16 -Screen/auto ] DEO
 	( x* ) .Screen/x DEI2 #0008 ADD2
-	( y* ) .Screen/y DEI2 #0018 SUB2 !<draw-icon-at>
+	( y* ) .Screen/y DEI2 #0018 SUB2 STH2r ADD2 !<draw-icon-at>
 
 @<draw-pane-create> ( x* -- )
 	( | background )
@@ -1012,7 +1041,7 @@
 	&>l ( -- )
 		( | skip outside of view )
 		.Screen/y DEI2 #0010 ADD2 .Screen/width DEI2 GTH2 ?{
-			#0a05 #00 STHkr ;reachable ADD2 LDA [ JMP SWP POP ] ;<draw-icon>/color STA
+			#00 STHkr ;reachable ADD2 LDA #05 MUL ;<draw-icon>/color STA
 			( | fwd arrow )
 			STHkr .valid/fwd LDZ NEQ ?{
 				#0046 .Screen/x DEO2
@@ -1051,14 +1080,15 @@
 	POP POP2r JMP2r
 
 @<draw-hs> ( addr* -- )
-	,&a STR2
-	#4000
+	[ LITr 00 ]
+	( ) DUP2 #0040 ADD2 SWP2
 	&>l ( -- )
-		STHk #00 OVR [ LIT2 &a $2 ] ADD2 LDAk #00 EQU ?{ LDAk STHkr <draw-register> }
-		POP2 POPr INC GTHk ?&>l
-	POP2 JMP2r
+		LDAk STHkr <draw-register>
+		INCr INC2 GTH2k ?&>l
+	POP2 POP2 POPr JMP2r
 
 @<draw-register> ( count id -- )
+	( empty ) OVR ?{ POP2 JMP2r }
 	#00 SWP id-to-sym ,&addr STR2
 	[ LITr -Screen/y ] DEI2kr ROTr
 	( ) #00 SWP SUB
@@ -1071,13 +1101,33 @@
 
 @<draw-arrow> ( id -- )
 	( meta ) #00 OVR ;rules/meta ADD2 LDA
-	( meta sprite ) #00 SWP #0020 MUL2 ;arrows-icn ADD2 .Screen/addr DEO2
+	( meta sprite ) #00 SWP #50 SFT2 ;arrows-icn ADD2 .Screen/addr DEO2
 	( x ) [ LITr -Screen/x ] DEI2r
 	( y ) [ LITr -Screen/y ] DEI2r
 	( draw ) .valid/craft LDZ EQU #0a MUL #05 ADD .Screen/sprite DEOk DEO
 	( y ) [ LITr -Screen/y ] DEO2r
 	( x ) [ LIT2r 0012 ] ADD2r [ LITr -Screen/x ] DEO2r
 	JMP2r
+
+@<draw-clear-button> ( -- )
+	.Screen/width DEI2 #0080 SUB2 .Screen/x DEO2
+	.Screen/height DEI2 #0030 SUB2 .Screen/y DEO2
+	;clear-icn .timers/clear LDZ .Bag/count LDZ !<draw-button>
+
+@<draw-organize-button> ( -- )
+	.Screen/width DEI2 #0058 SUB2 .Screen/x DEO2
+	.Screen/height DEI2 #0030 SUB2 .Screen/y DEO2
+	;organize-icn .timers/organize LDZ .Bag/count LDZ !<draw-button>
+
+@<draw-step-button> ( -- )
+	.Screen/width DEI2 #0030 SUB2 .Screen/x DEO2
+	.Screen/height DEI2 #0030 SUB2 .Screen/y DEO2
+	;Symbols/transmute .timers/step LDZ .valid/fwd LDZ INC !<draw-button>
+
+@<draw-unstep-button> ( -- )
+	.Screen/width DEI2 #0058 SUB2 .Screen/x DEO2
+	.Screen/height DEI2 #0030 SUB2 .Screen/y DEO2
+	;Symbols/reverse .timers/unstep LDZ .valid/bwd LDZ INC !<draw-button>
 
 @<draw-icon-at> ( addr* x* y* -- )
 	.Screen/y DEO2
@@ -1287,6 +1337,24 @@
 	0000 0000 0000 00ff ffff ffff ffff ff00
 	0000 0000 0000 00ff ffff ffff ffff ff00
 	0101 0101 0202 0cf0 fefe fefe fcfc f000 ]
+&down [ 
+	0000 0f30 4040 8080 0000 000f 3f3f 7f7f
+	0000 ff00 0000 0000 0000 00ff ffff ffff
+	0000 ff00 0000 0000 0000 00ff ffff ffff
+	0000 f00c 0202 0101 0000 00f0 fcfc fefe
+	8080 8080 8080 8080 7f7f 7f7f 7f7f 7f7f
+	0000 0000 0000 0000 ffff ffff ffff ffff
+	0000 0000 0000 0000 ffff ffff ffff ffff
+	0101 0101 0101 0101 fefe fefe fefe fefe
+	8080 8080 8080 8080 7f7f 7f7f 7f7f 7f7f
+	0000 0000 0000 0000 ffff ffff ffff ffff
+	0000 0000 0000 0000 ffff ffff ffff ffff
+	0101 0101 0101 0101 fefe fefe fefe fefe
+	8080 8080 4040 300f 7f7f 7f7f 3f3f 0f00
+	0000 0000 0000 00ff ffff ffff ffff ff00
+	0000 0000 0000 00ff ffff ffff ffff ff00
+	0101 0101 0202 0cf0 fefe fefe fcfc f000 ] 
+
 
 @fill-icn [
 	ffff ffff ffff ffff ffff ffff ffff ffff
