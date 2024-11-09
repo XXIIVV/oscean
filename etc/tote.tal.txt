@@ -14,6 +14,7 @@
 	@valid &fwd $1 &bwd $1 &craft $1
 	@touch-origin &x $2 &y $2
 	@bagged-mask $1
+	@overlay $1
 	@selection $2
 	@scroll $2
 	@Acc/buf $40 &bufend
@@ -49,7 +50,7 @@
 	( name ) "Tote 0a
 	( details ) "A 20 "Multiset 20 "Playground 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "8 20 "Nov 20 "2024 $1 00
+	( date ) "9 20 "Nov 20 "2024 $1 00
 
 (
 @|helpers )
@@ -137,8 +138,9 @@
 	POP2
 	( | picking )
 	[ LIT2 &last $1 -Mouse/state ] DEI DUP ,&last STR
-	DUP2 #0001 NEQ2 ?{ <start-drag> }
+	DUP2 #0001 NEQ2 ?{ <handle-touch> }
 	DUP2 #0101 NEQ2 ?{ <handle-drag> }
+	DUP2 #0000 NEQ2 ?{ <handle-hover> }
 	#0100 NEQ2 ?{ <drop> }
 	BRK
 
@@ -153,7 +155,7 @@
 	<redraw-edit>
 	BRK
 
-@<start-drag> ( -- )
+@<handle-touch> ( -- )
 	.Mouse/x DEI2 .touch-origin/x STZ2
 	.Mouse/y DEI2 .touch-origin/y STZ2
 	[ LIT2 00 -bagged-mask ] STZ
@@ -170,8 +172,9 @@
 	Bag/pick .drag STZ2 !<redraw-edit>
 
 	&menu ( -- )
-	.Mouse/x DEI2 .size/w LDZ2 #0058 SUB2 SUB2 #0028 DIV2 NIP ?<step>
-	!<unstep>
+	.Mouse/x DEI2 .size/w LDZ2 #0058 SUB2 SUB2 #0028 DIV2 NIP ?{ !<unstep> }
+	<step>
+	!Bag/<organize>
 
 @<start-drag-spawn> ( -- )
 	( x ) .Mouse/x DEI2 #0008 SUB2 #45 SFT2
@@ -233,6 +236,12 @@
 @is-click ( -- flag )
 	( x ) .Mouse/x DEI2 .touch-origin/x LDZ2 SUB2 ABS2
 	( y ) .Mouse/y DEI2 .touch-origin/y LDZ2 SUB2 ABS2 ADD2 #0004 LTH2 JMP2r
+
+@<handle-hover> ( -- )
+	.Mouse/x DEI2 #0050 SUB2 #0098 GTH2 ?{
+		( | rules )
+		.Mouse/y DEI2 #0010 SUB2 .scroll LDZ2 ADD2 #0018 DIV2 NIP !<set-overlay> }
+	#ff !<set-overlay>
 
 @<handle-drag> ( -- )
 	.drag LDZ2 INC2k ORA ?{ POP2 JMP2r }
@@ -306,6 +315,10 @@
 	<run-craft>
 	Bag/<to-acc>
 	Bag/<update> !<reqdraw-edit>
+
+@<set-overlay> ( rule -- )
+	DUP .overlay LDZ EQU ?{ .overlay STZ !<reqdraw-edit> }
+	POP JMP2r
 
 (
 @|paint-mode )
@@ -609,6 +622,7 @@
 	&>l ( -- )
 		#00 STHkr ;rules/meta ADD2 LDA #03 NEQ ?{
 			DUP2 ;Acc/buf compare-rules #00 EQU ?{
+				Bag/<to-acc>
 				POP2 POP2 [ LITr -valid/fwd ] STZr
 				<step> !<reqdraw-edit> } }
 		INCr #0080 ADD2 GTH2k ?&>l
@@ -628,9 +642,7 @@
 	Bag/<clear>
 	[ LITr 00 ] [ LIT2 -Acc/bufend -Acc/buf ]
 	&>bag-loop ( -- )
-		#00 OVR .Acc/buf SUB
-		( ) DUP2 <set-anchor>
-		Bag/<set-dir>
+		#00 OVR .Acc/buf SUB Bag/<set-dir>
 		( ) LDZk #00 EQUk ?{
 			&>bag-loop2 ( -- )
 				STHkr Bag/<push-auto>
@@ -695,6 +707,7 @@
 	Bag/<to-acc> !&<update>
 
 @Bag/<push-auto> ( id -- )
+	#00 OVR <set-anchor>
 	/find-free STH2
 	[ LIT2 &anchor-x 00f8 ]
 	( ) DUP2 [ LIT2 &dir-x 0010 ] ADD2 ,&anchor-x STR2
@@ -989,6 +1002,7 @@
 	#3381 !<draw-times>
 
 @<draw-bag> ( -- )
+	<draw-bag-overlay>
 	;Bag/bufend ;Bag/buf
 	&>l ( -- )
 		DUP2 <draw-thing>
@@ -1001,6 +1015,24 @@
 	( x ) #00 SWP #40 SFT2 #00f8 ADD2 .Screen/x DEO2
 	( addr ) ;drop-chr .Screen/addr DEO2
 	[ LIT2 85 -Screen/sprite ] DEO
+	JMP2r
+
+@<draw-bag-overlay> ( -- )
+	.overlay LDZ ?{ JMP2r }
+	[ LITr 00 ] [ LIT2 00 -overlay ] LDZ #70 SFT2 ;rules ADD2 DUP2 #0040 ADD2 SWP2
+	&>l ( -- )
+		DUP2 #0040 ADD2 LDA #00 EQU ?{ #0a00 STHkr <draw-thing-anchored> }
+		LDAk #00 EQU ?{ #0f00 STHkr <draw-thing-anchored> }
+		INCr INC2 GTH2k ?&>l
+	POP2 POP2 POPr JMP2r
+
+@<draw-thing-anchored> ( color id* -- )
+	[ LIT2 16 -Screen/auto ] DEO
+	DUP2 id-to-anchor
+	( y ) #00 SWP #40 SFT2 #0010 ADD2 .Screen/y DEO2
+	( x ) #00 SWP #40 SFT2 #00f8 ADD2 .Screen/x DEO2
+	id-to-sym .Screen/addr DEO2
+	.Screen/sprite DEOk DEO
 	JMP2r
 
 @<draw-thing> ( addr* -- )
