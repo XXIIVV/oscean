@@ -1,0 +1,667 @@
+#define _XOPEN_SOURCE 500
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <dirent.h>
+#include <errno.h>
+#include <limits.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <time.h>
+
+/*
+Copyright (c) 2021-2024 Devine Lu Linvega, Andrew Alderwick
+
+Permission to use, copy, modify, and distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE.
+*/
+
+#define RAM_PAGES 0x10
+#define STEP_MAX 0x80000000
+#define PAGE_PROGRAM 0x0100
+
+typedef unsigned char Uint8;
+typedef signed char Sint8;
+typedef unsigned short Uint16;
+typedef signed short Sint16;
+typedef unsigned int Uint32;
+
+typedef struct {
+	Uint8 dat[0x100], ptr;
+} Stack;
+
+typedef struct Uxn {
+	Uint8 *ram, dev[0x100];
+	Stack wst, rst;
+} Uxn;
+
+/*
+@|Uxn
+*/
+
+Uxn uxn;
+Uint8 emu_dei(Uxn *u, Uint8 addr);
+void emu_deo(Uxn *u, Uint8 addr, Uint8 value);
+
+/* clang-format off */
+
+#define PEEK2(d) (*(d) << 8 | (d)[1])
+#define POKE2(d, v) { *(d) = (v) >> 8; (d)[1] = (v); }
+
+#define OPC(opc, init, body) {\
+	case 0x00|opc: {const int _2=0,_r=0;init body;} break;\
+	case 0x20|opc: {const int _2=1,_r=0;init body;} break;\
+	case 0x40|opc: {const int _2=0,_r=1;init body;} break;\
+	case 0x60|opc: {const int _2=1,_r=1;init body;} break;\
+	case 0x80|opc: {const int _2=0,_r=0,k=u->wst.ptr;init u->wst.ptr=k;body;} break;\
+	case 0xa0|opc: {const int _2=1,_r=0,k=u->wst.ptr;init u->wst.ptr=k;body;} break;\
+	case 0xc0|opc: {const int _2=0,_r=1,k=u->rst.ptr;init u->rst.ptr=k;body;} break;\
+	case 0xe0|opc: {const int _2=1,_r=1,k=u->rst.ptr;init u->rst.ptr=k;body;} break;\
+}
+
+#define JMI a = u->ram[pc] << 8 | u->ram[pc + 1], pc += a + 2;
+#define REM if(_r) u->rst.ptr -= 1 + _2; else u->wst.ptr -= 1 + _2;
+#define INC(s) u->s.dat[u->s.ptr++]
+#define DEC(s) u->s.dat[--u->s.ptr]
+#define JMP(i) pc = _2 ? i : pc + (Sint8)i;
+#define PO1(o) o = _r ? DEC(rst) : DEC(wst);
+#define PO2(o) o = _r ? DEC(rst) | DEC(rst) << 8 : DEC(wst) | DEC(wst) << 8;
+#define POx(o) { if(_2) PO2(o) else PO1(o) }
+#define PU1(i) { if(_r) INC(rst) = i; else INC(wst) = i; }
+#define RP1(i) { if(_r) INC(wst) = i; else INC(rst) = i; }
+#define PUx(i) { if(_2) { c = (i); PU1(c >> 8) PU1(c) } else PU1(i) }
+#define GET(o) { if(_2) PO1(o[1]) PO1(o[0]) }
+#define PUT(i) { PU1(i[0]) if(_2) PU1(i[1]) }
+#define DEI(i,o) o[0] = emu_dei(u, i); if(_2) o[1] = emu_dei(u, i + 1); PUT(o)
+#define DEO(i,j) emu_deo(u, i, j[0]); if(_2) emu_deo(u, i + 1, j[1]);
+#define PEK(i,o,m) o[0] = u->ram[i]; if(_2) o[1] = u->ram[(i + 1) & m]; PUT(o)
+#define POK(i,j,m) u->ram[i] = j[0]; if(_2) u->ram[(i + 1) & m] = j[1];
+
+int
+uxn_eval(Uxn *u, Uint16 pc)
+{
+	unsigned int a, b, c, x[2], y[2], z[2], step;
+	if(!pc || u->dev[0x0f]) return 0;
+	for(step = STEP_MAX; step; step--) {
+		switch(u->ram[pc++]) {
+		/* BRK */ case 0x00: return 1;
+		/* JCI */ case 0x20: if(DEC(wst)) { JMI break; } pc += 2; break;
+		/* JMI */ case 0x40: JMI break;
+		/* JSI */ case 0x60: c = pc + 2; INC(rst) = c >> 8; INC(rst) = c; JMI break;
+		/* LI2 */ case 0xa0: INC(wst) = u->ram[pc++]; /* fall-through */
+		/* LIT */ case 0x80: INC(wst) = u->ram[pc++]; break;
+		/* L2r */ case 0xe0: INC(rst) = u->ram[pc++]; /* fall-through */
+		/* LIr */ case 0xc0: INC(rst) = u->ram[pc++]; break;
+		/* INC */ OPC(0x01,POx(a),PUx(a + 1))
+		/* POP */ OPC(0x02,REM ,{})
+		/* NIP */ OPC(0x03,GET(x) REM ,PUT(x))
+		/* SWP */ OPC(0x04,GET(x) GET(y),PUT(x) PUT(y))
+		/* ROT */ OPC(0x05,GET(x) GET(y) GET(z),PUT(y) PUT(x) PUT(z))
+		/* DUP */ OPC(0x06,GET(x),PUT(x) PUT(x))
+		/* OVR */ OPC(0x07,GET(x) GET(y),PUT(y) PUT(x) PUT(y))
+		/* EQU */ OPC(0x08,POx(a) POx(b),PU1(b == a))
+		/* NEQ */ OPC(0x09,POx(a) POx(b),PU1(b != a))
+		/* GTH */ OPC(0x0a,POx(a) POx(b),PU1(b > a))
+		/* LTH */ OPC(0x0b,POx(a) POx(b),PU1(b < a))
+		/* JMP */ OPC(0x0c,POx(a),JMP(a))
+		/* JCN */ OPC(0x0d,POx(a) PO1(b),if(b) JMP(a))
+		/* JSR */ OPC(0x0e,POx(a),RP1(pc >> 8) RP1(pc) JMP(a))
+		/* STH */ OPC(0x0f,GET(x),RP1(x[0]) if(_2) RP1(x[1]))
+		/* LDZ */ OPC(0x10,PO1(a),PEK(a, x, 0xff))
+		/* STZ */ OPC(0x11,PO1(a) GET(y),POK(a, y, 0xff))
+		/* LDR */ OPC(0x12,PO1(a),PEK(pc + (Sint8)a, x, 0xffff))
+		/* STR */ OPC(0x13,PO1(a) GET(y),POK(pc + (Sint8)a, y, 0xffff))
+		/* LDA */ OPC(0x14,PO2(a),PEK(a, x, 0xffff))
+		/* STA */ OPC(0x15,PO2(a) GET(y),POK(a, y, 0xffff))
+		/* DEI */ OPC(0x16,PO1(a),DEI(a, x))
+		/* DEO */ OPC(0x17,PO1(a) GET(y),DEO(a, y))
+		/* ADD */ OPC(0x18,POx(a) POx(b),PUx(b + a))
+		/* SUB */ OPC(0x19,POx(a) POx(b),PUx(b - a))
+		/* MUL */ OPC(0x1a,POx(a) POx(b),PUx(b * a))
+		/* DIV */ OPC(0x1b,POx(a) POx(b),PUx(a ? b / a : 0))
+		/* AND */ OPC(0x1c,POx(a) POx(b),PUx(b & a))
+		/* ORA */ OPC(0x1d,POx(a) POx(b),PUx(b | a))
+		/* EOR */ OPC(0x1e,POx(a) POx(b),PUx(b ^ a))
+		/* SFT */ OPC(0x1f,PO1(a) POx(b),PUx(b >> (a & 0xf) << (a >> 4)))
+		}
+	}
+	return 0;
+}
+
+/* clang-format on */
+
+/*
+@|00:System
+*/
+
+static int
+system_boot(Uint8 *ram, char *filename)
+{
+	FILE *f = fopen(filename, "rb");
+	if(f) {
+		int i = 0, l = fread(ram + PAGE_PROGRAM, 0x10000 - PAGE_PROGRAM, 1, f);
+		while(l && ++i < RAM_PAGES)
+			l = fread(ram + 0x10000 * i, 0x10000, 1, f);
+		uxn.ram = ram, fclose(f);
+	}
+	return !!f;
+}
+
+static void
+system_printstack(char *name, Stack *s)
+{
+	Uint8 i;
+	fprintf(stderr, "%s ", name);
+	for(i = s->ptr - 8; i != (Uint8)(s->ptr); i++)
+		fprintf(stderr, "%02x%c", s->dat[i], i == 0xff ? '|' : ' ');
+	fprintf(stderr, "< \n");
+}
+
+static Uint8
+system_dei(Uint8 addr)
+{
+	switch(addr) {
+	case 0x4: return uxn.wst.ptr;
+	case 0x5: return uxn.rst.ptr;
+	default: return uxn.dev[addr];
+	}
+}
+
+static void
+system_deo(Uint8 port)
+{
+	switch(port) {
+	case 0x3: {
+		Uint16 addr = PEEK2(uxn.dev + 2);
+		if(uxn.ram[addr] == 0x0) {
+			Uint8 value = uxn.ram[addr + 7];
+			Uint16 i, length = PEEK2(uxn.ram + addr + 1);
+			Uint16 dst_page = PEEK2(uxn.ram + addr + 3), dst_addr = PEEK2(uxn.ram + addr + 5);
+			int dst = (dst_page % RAM_PAGES) * 0x10000;
+			for(i = 0; i < length; i++)
+				uxn.ram[dst + (Uint16)(dst_addr + i)] = value;
+		} else if(uxn.ram[addr] == 0x1) {
+			Uint16 i, length = PEEK2(uxn.ram + addr + 1);
+			Uint16 a_page = PEEK2(uxn.ram + addr + 3), a_addr = PEEK2(uxn.ram + addr + 5);
+			Uint16 b_page = PEEK2(uxn.ram + addr + 7), b_addr = PEEK2(uxn.ram + addr + 9);
+			int src = (a_page % RAM_PAGES) * 0x10000, dst = (b_page % RAM_PAGES) * 0x10000;
+			for(i = 0; i < length; i++)
+				uxn.ram[dst + (Uint16)(b_addr + i)] = uxn.ram[src + (Uint16)(a_addr + i)];
+		} else if(uxn.ram[addr] == 0x2) {
+			Uint16 i, length = PEEK2(uxn.ram + addr + 1);
+			Uint16 a_page = PEEK2(uxn.ram + addr + 3), a_addr = PEEK2(uxn.ram + addr + 5);
+			Uint16 b_page = PEEK2(uxn.ram + addr + 7), b_addr = PEEK2(uxn.ram + addr + 9);
+			int src = (a_page % RAM_PAGES) * 0x10000, dst = (b_page % RAM_PAGES) * 0x10000;
+			for(i = length - 1; i != 0xffff; i--)
+				uxn.ram[dst + (Uint16)(b_addr + i)] = uxn.ram[src + (Uint16)(a_addr + i)];
+		} else
+			fprintf(stderr, "Unknown Expansion Command 0x%02x\n", uxn.ram[addr]);
+		break;
+	}
+	case 0x4:
+		uxn.wst.ptr = uxn.dev[4];
+		break;
+	case 0x5:
+		uxn.rst.ptr = uxn.dev[5];
+		break;
+	case 0xe:
+		system_printstack("WST", &uxn.wst);
+		system_printstack("RST", &uxn.rst);
+		break;
+	}
+}
+
+/*
+@|10:Console
+*/
+
+#define CONSOLE_STD 0x1
+#define CONSOLE_ARG 0x2
+#define CONSOLE_EOA 0x3
+#define CONSOLE_END 0x4
+
+static int
+console_input(Uint8 c, int type)
+{
+	uxn.dev[0x12] = c;
+	uxn.dev[0x17] = type;
+	return uxn_eval(&uxn, PEEK2(&uxn.dev[0x10]));
+}
+
+static void
+console_deo(Uint8 addr)
+{
+	FILE *fd;
+	switch(addr) {
+	case 0x18: fd = stdout, fputc(uxn.dev[0x18], fd), fflush(fd); break;
+	case 0x19: fd = stderr, fputc(uxn.dev[0x19], fd), fflush(fd); break;
+	}
+}
+
+/*
+@|a0:File
+@|b0:File
+*/
+
+#define DIR_SEP_CHAR '/'
+#define DIR_SEP_STR "/"
+#define pathcmp(path1, path2, length) strncmp(path1, path2, length)
+#define notdriveroot(file_name) (file_name[0] != DIR_SEP_CHAR)
+#define mkdir(file_name) (mkdir(file_name, 0755) == 0)
+#define PATH_MAX 4096
+
+typedef struct {
+	FILE *f;
+	DIR *dir;
+	char current_filename[PATH_MAX];
+	struct dirent *de;
+	enum { IDLE,
+		FILE_READ,
+		FILE_WRITE,
+		DIR_READ,
+		DIR_WRITE
+	} state;
+	int outside_sandbox;
+} UxnFile;
+
+static UxnFile uxn_file[2];
+
+static void
+file_reset(UxnFile *c)
+{
+	if(c->f != NULL)
+		fclose(c->f), c->f = NULL;
+	if(c->dir != NULL)
+		closedir(c->dir), c->dir = NULL;
+	c->de = NULL;
+	c->state = IDLE;
+	c->outside_sandbox = 0;
+}
+
+static Uint16
+file_get_entry(char *p, Uint16 len, const char *pathname, const char *basename, int fail_nonzero)
+{
+	struct stat st;
+	if(len < strlen(basename) + 8)
+		return 0;
+	if(stat(pathname, &st))
+		return fail_nonzero ? snprintf(p, len, "!!!! %s\n", basename) : 0;
+	else if(S_ISDIR(st.st_mode))
+		return snprintf(p, len, "---- %s/\n", basename);
+	else if(st.st_size < 0x10000)
+		return snprintf(p, len, "%04x %s\n", (unsigned int)st.st_size, basename);
+	else
+		return snprintf(p, len, "???? %s\n", basename);
+}
+
+static Uint16
+file_read_dir(UxnFile *c, char *dest, Uint16 len)
+{
+	static char pathname[4352];
+	char *p = dest;
+	if(c->de == NULL) c->de = readdir(c->dir);
+	for(; c->de != NULL; c->de = readdir(c->dir)) {
+		Uint16 n;
+		if(c->de->d_name[0] == '.' && c->de->d_name[1] == '\0')
+			continue;
+		if(strcmp(c->de->d_name, "..") == 0) {
+			char cwd[PATH_MAX] = {'\0'}, *t;
+			getcwd(cwd, sizeof(cwd));
+			t = realpath(c->current_filename, NULL);
+			if(strcmp(cwd, t) == 0) {
+				free(t);
+				continue;
+			}
+			free(t);
+		}
+		if(strlen(c->current_filename) + 1 + strlen(c->de->d_name) < sizeof(pathname))
+			snprintf(pathname, sizeof(pathname), "%s/%s", c->current_filename, c->de->d_name);
+		else
+			pathname[0] = '\0';
+		n = file_get_entry(p, len, pathname, c->de->d_name, 1);
+		if(!n) break;
+		p += n;
+		len -= n;
+	}
+	return p - dest;
+}
+
+static char *
+file_retry_realpath(const char *file_name)
+{
+	char *r, p[PATH_MAX] = {'\0'}, *x;
+	int fnlen;
+	if(file_name == NULL) {
+		errno = EINVAL;
+		return NULL;
+	} else if((fnlen = strlen(file_name)) >= PATH_MAX) {
+		errno = ENAMETOOLONG;
+		return NULL;
+	}
+	if(notdriveroot(file_name)) {
+		getcwd(p, sizeof(p));
+		if(strlen(p) + strlen(DIR_SEP_STR) + fnlen >= PATH_MAX) {
+			errno = ENAMETOOLONG;
+			return NULL;
+		}
+		strcat(p, DIR_SEP_STR);
+	}
+	strcat(p, file_name);
+	while((r = realpath(p, NULL)) == NULL) {
+		if(errno != ENOENT)
+			return NULL;
+		x = strrchr(p, DIR_SEP_CHAR);
+		if(x)
+			*x = '\0';
+		else
+			return NULL;
+	}
+	return r;
+}
+
+static void
+file_check_sandbox(UxnFile *c)
+{
+	char *x, *rp, cwd[PATH_MAX] = {'\0'};
+	x = getcwd(cwd, sizeof(cwd));
+	rp = file_retry_realpath(c->current_filename);
+	if(rp == NULL || (x && pathcmp(cwd, rp, strlen(cwd)) != 0)) {
+		c->outside_sandbox = 1;
+		fprintf(stderr, "file warning: blocked attempt to access %s outside of sandbox\n", c->current_filename);
+	}
+	free(rp);
+}
+
+static Uint16
+file_init(UxnFile *c, char *filename, size_t max_len)
+{
+	char *p = c->current_filename;
+	size_t len = sizeof(c->current_filename);
+	file_reset(c);
+	if(len > max_len) len = max_len;
+	while(len) {
+		if((*p++ = *filename++) == '\0') {
+			file_check_sandbox(c);
+			return 0;
+		}
+		len--;
+	}
+	c->current_filename[0] = '\0';
+	return 0;
+}
+
+static Uint16
+file_read(UxnFile *c, void *dest, int len)
+{
+	if(c->outside_sandbox) return 0;
+	if(c->state != FILE_READ && c->state != DIR_READ) {
+		file_reset(c);
+		if((c->dir = opendir(c->current_filename)) != NULL)
+			c->state = DIR_READ;
+		else if((c->f = fopen(c->current_filename, "rb")) != NULL)
+			c->state = FILE_READ;
+	}
+	if(c->state == FILE_READ)
+		return fread(dest, 1, len, c->f);
+	if(c->state == DIR_READ)
+		return file_read_dir(c, dest, len);
+	return 0;
+}
+
+static int
+file_is_dir_path(char *p)
+{
+	char c;
+	int saw_slash = 0;
+	while((c = *p++))
+		saw_slash = c == DIR_SEP_CHAR;
+	return saw_slash;
+}
+
+static int
+file_dir_exists(char *p)
+{
+	struct stat st;
+	return stat(p, &st) == 0 && S_ISDIR(st.st_mode);
+}
+
+static int
+file_ensure_parent_dirs(char *p)
+{
+	int ok = 1;
+	char c, *s = p;
+	for(; ok && (c = *p); p++) {
+		if(c == DIR_SEP_CHAR) {
+			*p = '\0';
+			ok = file_dir_exists(s) || mkdir(s);
+			*p = c;
+		}
+	}
+	return ok;
+}
+
+static Uint16
+file_write(UxnFile *c, void *src, Uint16 len, Uint8 flags)
+{
+	Uint16 ret = 0;
+	if(c->outside_sandbox) return 0;
+	file_ensure_parent_dirs(c->current_filename);
+	if(c->state != FILE_WRITE && c->state != DIR_WRITE) {
+		file_reset(c);
+		if(file_is_dir_path(c->current_filename))
+			c->state = DIR_WRITE;
+		else if((c->f = fopen(c->current_filename, (flags & 0x01) ? "ab" : "wb")) != NULL)
+			c->state = FILE_WRITE;
+	}
+	if(c->state == FILE_WRITE) {
+		if((ret = fwrite(src, 1, len, c->f)) > 0 && fflush(c->f) != 0)
+			ret = 0;
+	}
+	if(c->state == DIR_WRITE) {
+		ret = file_dir_exists(c->current_filename);
+	}
+	return ret;
+}
+
+static Uint16
+file_stat_fill(Uint8 *dest, Uint16 len, char c)
+{
+	Uint16 i;
+	for(i = 0; i < len; i++) *(dest++) = c;
+	return len;
+}
+
+static Uint16
+file_stat_size(Uint8 *dest, Uint16 len, off_t size)
+{
+	Uint16 i;
+	dest += len - 1;
+	for(i = 0; i < len; i++) {
+		*(dest--) = "0123456789abcdef"[(Uint8)(size & 0xf)];
+		size = size >> 4;
+	}
+	return size == 0 ? len : file_stat_fill(dest, len, '?');
+}
+
+static Uint16
+file_stat(UxnFile *c, void *dest, Uint16 len)
+{
+	struct stat st;
+	if(c->outside_sandbox)
+		return 0;
+	else if(stat(c->current_filename, &st))
+		return file_stat_fill(dest, len, '!');
+	else if(S_ISDIR(st.st_mode))
+		return file_stat_fill(dest, len, '-');
+	else
+		return file_stat_size(dest, len, st.st_size);
+}
+
+static Uint16
+file_delete(UxnFile *c)
+{
+	return c->outside_sandbox ? 0 : unlink(c->current_filename);
+}
+
+static void
+file_deo(Uint8 port)
+{
+	Uint16 addr, len, res;
+	switch(port) {
+	case 0xa5:
+		addr = PEEK2(&uxn.dev[0xa4]);
+		len = PEEK2(&uxn.dev[0xaa]);
+		if(len > 0x10000 - addr)
+			len = 0x10000 - addr;
+		res = file_stat(&uxn_file[0], &uxn.ram[addr], len);
+		POKE2(&uxn.dev[0xa2], res);
+		break;
+	case 0xa6:
+		res = file_delete(&uxn_file[0]);
+		POKE2(&uxn.dev[0xa2], res);
+		break;
+	case 0xa9:
+		addr = PEEK2(&uxn.dev[0xa8]);
+		res = file_init(&uxn_file[0], (char *)&uxn.ram[addr], 0x10000 - addr);
+		POKE2(&uxn.dev[0xa2], res);
+		break;
+	case 0xad:
+		addr = PEEK2(&uxn.dev[0xac]);
+		len = PEEK2(&uxn.dev[0xaa]);
+		if(len > 0x10000 - addr)
+			len = 0x10000 - addr;
+		res = file_read(&uxn_file[0], &uxn.ram[addr], len);
+		POKE2(&uxn.dev[0xa2], res);
+		break;
+	case 0xaf:
+		addr = PEEK2(&uxn.dev[0xae]);
+		len = PEEK2(&uxn.dev[0xaa]);
+		if(len > 0x10000 - addr)
+			len = 0x10000 - addr;
+		res = file_write(&uxn_file[0], &uxn.ram[addr], len, uxn.dev[0xa7]);
+		POKE2(&uxn.dev[0xa2], res);
+		break;
+	/* File 2 */
+	case 0xb5:
+		addr = PEEK2(&uxn.dev[0xb4]);
+		len = PEEK2(&uxn.dev[0xba]);
+		if(len > 0x10000 - addr)
+			len = 0x10000 - addr;
+		res = file_stat(&uxn_file[1], &uxn.ram[addr], len);
+		POKE2(&uxn.dev[0xb2], res);
+		break;
+	case 0xb6:
+		res = file_delete(&uxn_file[1]);
+		POKE2(&uxn.dev[0xb2], res);
+		break;
+	case 0xb9:
+		addr = PEEK2(&uxn.dev[0xb8]);
+		res = file_init(&uxn_file[1], (char *)&uxn.ram[addr], 0x10000 - addr);
+		POKE2(&uxn.dev[0xb2], res);
+		break;
+	case 0xbd:
+		addr = PEEK2(&uxn.dev[0xbc]);
+		len = PEEK2(&uxn.dev[0xba]);
+		if(len > 0x10000 - addr)
+			len = 0x10000 - addr;
+		res = file_read(&uxn_file[1], &uxn.ram[addr], len);
+		POKE2(&uxn.dev[0xb2], res);
+		break;
+	case 0xbf:
+		addr = PEEK2(&uxn.dev[0xbe]);
+		len = PEEK2(&uxn.dev[0xba]);
+		if(len > 0x10000 - addr)
+			len = 0x10000 - addr;
+		res = file_write(&uxn_file[1], &uxn.ram[addr], len, uxn.dev[0xb7]);
+		POKE2(&uxn.dev[0xb2], res);
+		break;
+	}
+}
+
+/*
+@|c0:Datetime
+*/
+
+static Uint8
+datetime_dei(Uint8 addr)
+{
+	time_t seconds = time(NULL);
+	struct tm zt = {0}, *t = localtime(&seconds);
+	if(t == NULL)
+		t = &zt;
+	switch(addr) {
+	case 0xc0: return (t->tm_year + 1900) >> 8;
+	case 0xc1: return (t->tm_year + 1900);
+	case 0xc2: return t->tm_mon;
+	case 0xc3: return t->tm_mday;
+	case 0xc4: return t->tm_hour;
+	case 0xc5: return t->tm_min;
+	case 0xc6: return t->tm_sec;
+	case 0xc7: return t->tm_wday;
+	case 0xc8: return t->tm_yday >> 8;
+	case 0xc9: return t->tm_yday;
+	case 0xca: return t->tm_isdst;
+	default: return uxn.dev[addr];
+	}
+}
+
+/*
+@|Emu
+*/
+
+Uint8
+emu_dei(Uxn *u, Uint8 addr)
+{
+	switch(addr & 0xf0) {
+	case 0x00: return system_dei(addr);
+	case 0xc0: return datetime_dei(addr);
+	}
+	return u->dev[addr];
+}
+
+void
+emu_deo(Uxn *u, Uint8 addr, Uint8 value)
+{
+	u->dev[addr] = value;
+	switch(addr & 0xf0) {
+	case 0x00: system_deo(addr); break;
+	case 0x10: console_deo(addr); break;
+	case 0xa0: file_deo(addr); break;
+	case 0xb0: file_deo(addr); break;
+	}
+}
+
+int
+main(int argc, char **argv)
+{
+	int i = 1;
+	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
+		return !fprintf(stdout, "Uxn11(cli) - Varvara Emulator, 14 Nov 2024.\n");
+	else if(argc == 1)
+		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
+	else if(!system_boot((Uint8 *)calloc(0x10000 * RAM_PAGES, sizeof(Uint8)), argv[i++]))
+		return !fprintf(stdout, "Could not load %s.\n", argv[i - 1]);
+	uxn.dev[0x17] = argc - 2;
+	if(uxn_eval(&uxn, PAGE_PROGRAM) && uxn.dev[0x10]) {
+		/* arguments input */
+		for(; i < argc; i++) {
+			char *p = argv[i];
+			while(*p) console_input(*p++, CONSOLE_ARG);
+			console_input('\n', i == argc - 1 ? CONSOLE_END : CONSOLE_EOA);
+		}
+		/* console input */
+		while(!uxn.dev[0x0f]) {
+			int c = fgetc(stdin);
+			if(c == EOF) {
+				console_input(0x00, CONSOLE_END);
+				break;
+			}
+			console_input(c, CONSOLE_STD);
+		}
+	}
+	return uxn.dev[0x0f] & 0x7f;
+}

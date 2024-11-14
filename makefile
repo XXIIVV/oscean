@@ -1,7 +1,7 @@
 DIR=~/roms
-ASM=uxncli ${DIR}/drifblim.rom
-LIN=uxncli ${DIR}/uxnlin.rom
 EMU=uxncli
+ASM=${EMU} ${DIR}/drifblim.rom
+LIN=${EMU} ${DIR}/uxnlin.rom
 
 all: bin/maeve.rom bin/oscean.rom bin/arvelie.rom bin/directory.rom bin/marbles.rom
 
