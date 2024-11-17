@@ -243,7 +243,8 @@
 @on-button-alt ( key -> )
 	DUP ?{ POP BRK }
 	DUP #1b NEQ ?{ POP edit-inject BRK }
-	.search skey ?{ update-nav BRK }
+	.search skey ?{ <draw-search>
+		update-nav BRK }
 	#00 <select-marker>
 	BRK
 
@@ -525,12 +526,10 @@
 	scroll-follow update-wrap update-nav !reqdraw-textarea
 
 @get-from ( -- addr* )
-	.selection/b LDZ2 .selection/a LDZ2 LTH2k ?{ SWP2 }
-	POP2 JMP2r
+	.selection/b LDZ2 .selection/a LDZ2 LTH2k [ JMP SWP2 ] POP2 JMP2r
 
 @get-to ( -- addr* )
-	.selection/a LDZ2 .selection/b LDZ2 GTH2k ?{ SWP2 }
-	POP2 JMP2r
+	.selection/a LDZ2 .selection/b LDZ2 GTH2k [ JMP SWP2 ] POP2 JMP2r
 
 @get-length ( -- length* )
 	get-to get-from SUB2 JMP2r
@@ -601,8 +600,7 @@
 	JMP2r
 
 @find-symbol ( sym* -- addr* )
-	LDAk [ LIT "@ ] NEQ ?{ INC2 }
-	,&t STR2
+	LDAk [ LIT "@ ] NEQ [ JMP INC2 ] ,&t STR2
 	;text
 	&>w ( -- )
 		LDAk DUP [ LIT "@ ] NEQ SWP [ LIT "% ] NEQ AND ?{
@@ -645,8 +643,7 @@
 	[ LIT2r 0000 ] ;text
 	&>w ( -- )
 		EQU2kr STHr ?&end
-		LDAk #0a NEQ ?{ INC2r }
-		INC2 LDAk ?&>w &end POP2r POP2r JMP2r
+		LDAk #0a NEQ [ JMP INC2r ] INC2 LDAk ?&>w &end POP2r POP2r JMP2r
 
 @get-scroll-addr ( -- addr* )
 	.scroll/addr LDZ2 ;text ADD2 JMP2r
@@ -718,8 +715,7 @@
 	has-length? ?{ get-to !<select-word> }
 	( dst ) [ LITr -search ]
 	( from ) get-from
-	( to ) get-length #002f LTH2k ?{ SWP2 }
-	POP2 ADD2k NIP2 SWP2
+	( to ) get-length #002f LTH2k [ JMP SWP2 ] POP2 ADD2k NIP2 SWP2
 	&>l ( -- )
 		LDAk STHkr STZ
 		INCr INC2 GTH2k ?&>l
@@ -755,15 +751,13 @@
 @count-lines ( -- line* )
 	[ LITr -scroll/y ] LDZ2r get-scroll-addr
 	&>w ( -- )
-		LDAk #0a NEQ ?{ INC2r }
-		INC2 LDAk ?&>w
+		LDAk #0a NEQ [ JMP INC2r ] INC2 LDAk ?&>w
 	POP2 STH2r JMP2r
 
 @addr-to-line ( addr* -- line* )
 	LIT2r 0000 ;text EQU2k ?&end
 	&>l ( -- )
-		LDAk #0a NEQ ?{ INC2r }
-		INC2 GTH2k ?&>l &end POP2 POP2 STH2r JMP2r
+		LDAk #0a NEQ [ JMP INC2r ] INC2 GTH2k ?&>l &end POP2 POP2 STH2r JMP2r
 
 @touch-to-addr ( -- addr* )
 	<reset-state>
@@ -772,8 +766,7 @@
 	( a ) [ LITr 00 ] get-scroll-addr
 	&>ver ( -- )
 		EQUkr STHr ?&ver-end
-		scan-state LDAk #0a NEQ ?{ INCr }
-		next-glyph LDAk ?&>ver &ver-end POP2r
+		scan-state LDAk #0a NEQ [ JMP INCr ] next-glyph LDAk ?&>ver &ver-end POP2r
 	( goto x ) ( b ) .Mouse/x DEI2 .scroll/x LDZ2 SUB2 STH2
 	( a ) LIT2r 0000
 	&>hor ( -- )
@@ -823,10 +816,8 @@
 	POP2 &end-r POP2 POPr JMP2r
 
 @clamp-addr ( addr* -- addr* )
-	( min ) ;text GTH2k ?{ SWP2 }
-	POP2
-	( max ) get-eof #0001 SUB2 LTH2k ?{ SWP2 }
-	POP2 JMP2r
+	( min ) ;text GTH2k [ JMP SWP2 ] POP2
+	( max ) get-eof #0001 SUB2 LTH2k [ JMP SWP2 ] POP2 JMP2r
 
 @<reset-state> ( -- )
 	[ LIT2 00 -state/underline ] STZ
@@ -835,10 +826,6 @@
 	[ LIT2 00 -state/rune ] STZ
 	[ LIT2 00 -state/raw ] STZ
 	JMP2r
-
-@walk-blank ( addr* -- addr* )
-	LDAk DUP #00 NEQ SWP #21 LTH AND ?{ JMP2r }
-	INC2 !walk-blank
 
 @walk-word ( addr* -- addr* )
 	INC2 & LDAk #20 GTH ?walk-word
@@ -1022,8 +1009,7 @@
 	get-to get-from SUB2k #0002 GTH2 ?{ POP2 POP2 get-eof ;text }
 	&>l ( -- )
 		( | merge whitespaces )
-		LDAk #20 GTHk ?{ SWP }
-		POP DUP #20 EQU OVR [ LIT &last 20 ] EQU AND ?{ DUP #18 DEO }
+		LDAk #20 GTHk [ JMP SWP ] POP DUP #20 EQU OVR [ LIT &last 20 ] EQU AND ?{ DUP #18 DEO }
 		,&last STR
 		INC2 GTH2k ?&>l
 	POP2 POP2
@@ -1220,8 +1206,7 @@
 	[ LITr -Screen/x ] DEI2r get-glyph-width STH2
 	( glyph* ) get-glyph-addr .Screen/addr DEO2
 	( draw2 ) [ LIT2r &color 01 -Screen/sprite ] DEOkr
-	( tab width ) LDAk #09 NEQ ?{ DEOkr }
-	DEOr
+	( tab width ) LDAk #09 NEQ [ JMP DEOkr ] DEOr
 	( | underline )
 	[ LIT2 00 -state/underline ] LDZ EQU ?{
 		OVR2r [ LITr -Screen/x ] DEO2r
@@ -1348,8 +1333,7 @@
 	DUP2 get-scroll-addr LTH2 ?&hidden
 	DUP2 addr-to-x .scroll/x LDZ2 ADD2 .Screen/x DEO2
 	addr-to-line .scroll/y LDZ2 SUB2 #0018 MUL2 #0030 ADD2 #0028
-	( min ) GTH2k ?{ SWP2 }
-	POP2 .Screen/y DEO2
+	( min ) GTH2k [ JMP SWP2 ] POP2 .Screen/y DEO2
 	JMP2r
 
 	&hidden ( pos* -- )
@@ -1360,7 +1344,10 @@
 @<draw-widget-pos> ( -- )
 	get-to DUP2 get-from SUB2 DUP2 #001f GTH2 ?{ POP2 POP2 JMP2r }
 	SWP2 <draw-atcursor>
-	( bubble ) [ LIT2 02 -Screen/auto ] DEO
+	( | clamp left )
+	.Screen/x DEI2 #0107 GTH2k [ JMP SWP2 ] POP2 .Screen/x DEO2
+	( | bubble )
+	[ LIT2 02 -Screen/auto ] DEO
 	.Screen/x DEI2k #0003 SUB2 ROT DEO2
 	.Screen/y DEI2k #000c ADD2 ROT DEO2
 	;bubble-icn .Screen/addr DEO2
@@ -1375,8 +1362,7 @@
 	[ LIT2 15 -Screen/sprite ] DEO
 	JMP2r
 
-@<draw-sym> ( -- )
-	;search find-symbol ORAk ?{ POP2 JMP2r }
+@<draw-frange> ( -- )
 	( | background )
 	#0100 .Screen/x DEO2
 	#0028 .Screen/y DEO2
@@ -1396,21 +1382,29 @@
 	#0100 .Screen/x DEO2
 	#0028 .Screen/y DEO2
 	[ LIT2 25 -Screen/auto ] DEO
-	INC2 .Screen/width DEI2 #0080 SUB2 #02 draw-word-until walk-blank <draw-sym-field>
+	JMP2r
+
+@<draw-search> ( -- )
+	.search LDZ ?{ JMP2r }
+	#01 ;<draw-glyph-plain>/color STA
+	<draw-frange>
+	;search <draw-str>
 	POP2 JMP2r
 
-@<draw-sym-field> ( addr* -- addr* )
-	.Screen/x DEI2k #0004 ADD2 ROT DEO2
-	LDAk [ LIT "( ] EQU ?{
-		.Screen/width DEI2 #0018 SUB2 #03 !draw-word-until }
-	( | comment )
+@<draw-sym> ( -- )
+	;search find-symbol ORAk ?{ POP2 !<draw-search> }
+	<draw-frange>
+	( | key )
+	<reset-state>
+	INC2 .Screen/width DEI2 #0080 SUB2 #02 draw-word-until
+	( | value )
 	#03 ;<draw-glyph-plain>/color STA
-	.Screen/width DEI2 #0018 SUB2 ,&x STR2
 	&>w ( -- )
-		.Screen/x DEI2 [ LIT2 &x $2 ] GTH2 ?{ LDAk <draw-glyph-plain> }
-		LDAk [ LIT ") ] EQU ?{ INC2 LDAk ?&>w
-		INC2 }
-	JMP2r
+		LDAk #0a EQU ?&end
+		LDAk <draw-glyph-plain>
+		next-glyph LDAk ?&>w
+	&end ( string* -- )
+	POP2 JMP2r
 
 @<draw-str-right> ( text* -- )
 	DUP2 get-strw STH2
