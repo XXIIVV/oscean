@@ -34,7 +34,7 @@ typedef struct {
 	Uint8 dat[0x100], ptr;
 } Stack;
 
-typedef struct Uxn {
+typedef struct {
 	Uint8 *ram, dev[0x100];
 	Stack wst, rst;
 } Uxn;
@@ -44,8 +44,8 @@ typedef struct Uxn {
 */
 
 Uxn uxn;
-Uint8 emu_dei(Uxn *u, Uint8 addr);
-void emu_deo(Uxn *u, Uint8 addr, Uint8 value);
+Uint8 emu_dei(Uint8 addr);
+void emu_deo(Uint8 addr, Uint8 value);
 
 /* clang-format off */
 
@@ -57,16 +57,16 @@ void emu_deo(Uxn *u, Uint8 addr, Uint8 value);
 	case 0x20|opc: {const int _2=1,_r=0;init body;} break;\
 	case 0x40|opc: {const int _2=0,_r=1;init body;} break;\
 	case 0x60|opc: {const int _2=1,_r=1;init body;} break;\
-	case 0x80|opc: {const int _2=0,_r=0,k=u->wst.ptr;init u->wst.ptr=k;body;} break;\
-	case 0xa0|opc: {const int _2=1,_r=0,k=u->wst.ptr;init u->wst.ptr=k;body;} break;\
-	case 0xc0|opc: {const int _2=0,_r=1,k=u->rst.ptr;init u->rst.ptr=k;body;} break;\
-	case 0xe0|opc: {const int _2=1,_r=1,k=u->rst.ptr;init u->rst.ptr=k;body;} break;\
+	case 0x80|opc: {const int _2=0,_r=0,k=uxn.wst.ptr;init uxn.wst.ptr=k;body;} break;\
+	case 0xa0|opc: {const int _2=1,_r=0,k=uxn.wst.ptr;init uxn.wst.ptr=k;body;} break;\
+	case 0xc0|opc: {const int _2=0,_r=1,k=uxn.rst.ptr;init uxn.rst.ptr=k;body;} break;\
+	case 0xe0|opc: {const int _2=1,_r=1,k=uxn.rst.ptr;init uxn.rst.ptr=k;body;} break;\
 }
 
-#define JMI a = u->ram[pc] << 8 | u->ram[pc + 1], pc += a + 2;
-#define REM if(_r) u->rst.ptr -= 1 + _2; else u->wst.ptr -= 1 + _2;
-#define INC(s) u->s.dat[u->s.ptr++]
-#define DEC(s) u->s.dat[--u->s.ptr]
+#define JMI a = uxn.ram[pc] << 8 | uxn.ram[pc + 1], pc += a + 2;
+#define REM if(_r) uxn.rst.ptr -= 1 + _2; else uxn.wst.ptr -= 1 + _2;
+#define INC(s) uxn.s.dat[uxn.s.ptr++]
+#define DEC(s) uxn.s.dat[--uxn.s.ptr]
 #define JMP(i) pc = _2 ? i : pc + (Sint8)i;
 #define PO1(o) o = _r ? DEC(rst) : DEC(wst);
 #define PO2(o) o = _r ? DEC(rst) | DEC(rst) << 8 : DEC(wst) | DEC(wst) << 8;
@@ -76,26 +76,26 @@ void emu_deo(Uxn *u, Uint8 addr, Uint8 value);
 #define PUx(i) { if(_2) { c = (i); PU1(c >> 8) PU1(c) } else PU1(i) }
 #define GET(o) { if(_2) PO1(o[1]) PO1(o[0]) }
 #define PUT(i) { PU1(i[0]) if(_2) PU1(i[1]) }
-#define DEI(i,o) o[0] = emu_dei(u, i); if(_2) o[1] = emu_dei(u, i + 1); PUT(o)
-#define DEO(i,j) emu_deo(u, i, j[0]); if(_2) emu_deo(u, i + 1, j[1]);
-#define PEK(i,o,m) o[0] = u->ram[i]; if(_2) o[1] = u->ram[(i + 1) & m]; PUT(o)
-#define POK(i,j,m) u->ram[i] = j[0]; if(_2) u->ram[(i + 1) & m] = j[1];
+#define DEI(i,o) o[0] = emu_dei(i); if(_2) o[1] = emu_dei(i + 1); PUT(o)
+#define DEO(i,j) emu_deo(i, j[0]); if(_2) emu_deo(i + 1, j[1]);
+#define PEK(i,o,m) o[0] = uxn.ram[i]; if(_2) o[1] = uxn.ram[(i + 1) & m]; PUT(o)
+#define POK(i,j,m) uxn.ram[i] = j[0]; if(_2) uxn.ram[(i + 1) & m] = j[1];
 
 int
-uxn_eval(Uxn *u, Uint16 pc)
+uxn_eval(Uint16 pc)
 {
 	unsigned int a, b, c, x[2], y[2], z[2], step;
-	if(!pc || u->dev[0x0f]) return 0;
+	if(!pc || uxn.dev[0x0f]) return 0;
 	for(step = STEP_MAX; step; step--) {
-		switch(u->ram[pc++]) {
+		switch(uxn.ram[pc++]) {
 		/* BRK */ case 0x00: return 1;
 		/* JCI */ case 0x20: if(DEC(wst)) { JMI break; } pc += 2; break;
 		/* JMI */ case 0x40: JMI break;
 		/* JSI */ case 0x60: c = pc + 2; INC(rst) = c >> 8; INC(rst) = c; JMI break;
-		/* LI2 */ case 0xa0: INC(wst) = u->ram[pc++]; /* fall-through */
-		/* LIT */ case 0x80: INC(wst) = u->ram[pc++]; break;
-		/* L2r */ case 0xe0: INC(rst) = u->ram[pc++]; /* fall-through */
-		/* LIr */ case 0xc0: INC(rst) = u->ram[pc++]; break;
+		/* LI2 */ case 0xa0: INC(wst) = uxn.ram[pc++]; /* fall-through */
+		/* LIT */ case 0x80: INC(wst) = uxn.ram[pc++]; break;
+		/* L2r */ case 0xe0: INC(rst) = uxn.ram[pc++]; /* fall-through */
+		/* LIr */ case 0xc0: INC(rst) = uxn.ram[pc++]; break;
 		/* INC */ OPC(0x01,POx(a),PUx(a + 1))
 		/* POP */ OPC(0x02,REM ,{})
 		/* NIP */ OPC(0x03,GET(x) REM ,PUT(x))
@@ -209,8 +209,7 @@ system_deo(Uint8 port)
 		uxn.rst.ptr = uxn.dev[5];
 		break;
 	case 0xe:
-		system_printstack("WST", &uxn.wst);
-		system_printstack("RST", &uxn.rst);
+		system_printstack("WST", &uxn.wst), system_printstack("RST", &uxn.rst);
 		break;
 	}
 }
@@ -229,7 +228,7 @@ console_input(Uint8 c, int type)
 {
 	uxn.dev[0x12] = c;
 	uxn.dev[0x17] = type;
-	return uxn_eval(&uxn, PEEK2(&uxn.dev[0x10]));
+	return uxn_eval(PEEK2(&uxn.dev[0x10]));
 }
 
 static void
@@ -614,19 +613,19 @@ datetime_dei(Uint8 addr)
 */
 
 Uint8
-emu_dei(Uxn *u, Uint8 addr)
+emu_dei(Uint8 addr)
 {
 	switch(addr & 0xf0) {
 	case 0x00: return system_dei(addr);
 	case 0xc0: return datetime_dei(addr);
 	}
-	return u->dev[addr];
+	return uxn.dev[addr];
 }
 
 void
-emu_deo(Uxn *u, Uint8 addr, Uint8 value)
+emu_deo(Uint8 addr, Uint8 value)
 {
-	u->dev[addr] = value;
+	uxn.dev[addr] = value;
 	switch(addr & 0xf0) {
 	case 0x00: system_deo(addr); break;
 	case 0x10: console_deo(addr); break;
@@ -646,7 +645,7 @@ main(int argc, char **argv)
 	else if(!system_boot((Uint8 *)calloc(0x10000 * RAM_PAGES, sizeof(Uint8)), argv[i++]))
 		return !fprintf(stdout, "Could not load %s.\n", argv[i - 1]);
 	uxn.dev[0x17] = argc - 2;
-	if(uxn_eval(&uxn, PAGE_PROGRAM) && uxn.dev[0x10]) {
+	if(uxn_eval(PAGE_PROGRAM) && uxn.dev[0x10]) {
 		/* arguments input */
 		for(; i < argc; i++) {
 			char *p = argv[i];
