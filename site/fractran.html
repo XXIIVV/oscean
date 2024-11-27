@@ -266,7 +266,26 @@ AC 2160, x^4 y^3 gth
 
 <h3>Arithmetic</h3>
 
-<p>The <b>sum</b> of two registers(x+y) can be reached by moving the value of one register into the other:</p>
+<p>The <b>sum</b> of two registers(x+y) can be reached by writing
+the result in a third register(sum):</p>
+
+<pre>
+:: x add > add sum
+:: y add > add sum
+::   add >
+
+AC 2352, x^4 add y^2 
+00 2352 × 15/6 = 5880, x^3 add sum y^2 
+00 5880 × 15/6 = 14700, x^2 add sum^2 y^2 
+00 14700 × 15/6 = 36750, x add sum^3 y^2 
+00 36750 × 15/6 = 91875, add sum^4 y^2 
+01 91875 × 15/21 = 65625, add sum^5 y 
+01 65625 × 15/21 = 46875, add sum^6 
+02 46875 × 1/3 = 15625, sum^6
+</pre>
+
+<p>Alternatively, the result can also be reached by moving the value of one
+register into the other:</p>
 
 <pre>
 :: y > x
@@ -276,11 +295,33 @@ AC 144 x^4 y^2
 00 96 × 2/3 = 64, x^6
 </pre>
 
-<p>The <b>difference</b> between two registers(x-y) can be reached by consuming the value of two registers at once, and moving the remains to the first if we want the result inside x:</p>
+<p>The <b>difference</b> between two registers(x-y) can be reached by consuming
+the value of two registers at once, and moving the remains into a third(pos)
+and fourth(neg) to get the signed result:</p>
+
+<pre>
+:: x y sub > sub
+:: x sub   > sub pos
+:: y sub   > sub neg
+:: sub     >
+
+AC 58320, x^4 y^6 sub 
+00 58320 × 5/30 = 9720, x^3 y^5 sub 
+00 9720 × 5/30 = 1620, x^2 y^4 sub 
+00 1620 × 5/30 = 270, x y^3 sub 
+00 270 × 5/30 = 45, y^2 sub 
+02 45 × 55/15 = 165, y sub neg 
+02 165 × 55/15 = 605, sub neg^2 
+03 605 × 1/5 = 121, neg^2 
+</pre>
+
+<p>Alternatively, the result can also be reached by consuming
+the value of two registers at once, and moving the remains to the first if we
+want the result inside x:</p>
 
 <pre>
 :: x y >
-:: y > x
+:: y   > x
 
 AC 576 x^6 y^2
 00 576 × 1/6 = 96, x^5 y 
