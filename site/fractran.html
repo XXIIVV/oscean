@@ -207,6 +207,57 @@ AC 7, spring
 </pre>
 <img src='../media/refs/multiset.png' width='130'/>
 
+<h3 id='logic'>Logic</h3>
+
+<p>Binary logic is typically implemented as multiple rules, where each is a
+potential location in the <a href='binary.html'>truth table</a>:</p>
+
+<pre>
+:: x y and > true
+:: x   and > false
+:: y   and > false
+::     and > false
+
+:: x y or > true
+:: x   or > true
+:: y   or > true
+::     or > false
+
+:: x y xor > false
+:: x   xor > true
+:: y   xor > false
+::     xor > false
+
+:: true  not > false
+:: false not > true
+
+AC 30, x y and 
+00 30 × 7/30 = 7, true
+</pre>
+
+<p>The comparison operations are implemented using a loop:</p>
+
+<pre>
+:: x y gth > gth
+:: x   gth > true
+::     gth > false
+
+:: x y lth > lth
+:: y   lth > true
+::     lth > false
+
+:: x y equ > equ
+:: x   equ > false
+:: y   equ > false
+::     equ > true
+
+AC 2160, x^4 y^3 gth 
+00 2160 × 5/30 = 360, x^3 y^2 gth 
+00 360 × 5/30 = 60, x^2 y gth 
+00 60 × 5/30 = 10, x gth 
+01 10 × 7/10 = 7, true 
+</pre>
+
 <h3>Arithmetic</h3>
 
 <p>The <b>sum</b> of two registers(x+y) can be reached by moving the value of one register into the other:</p>
@@ -266,56 +317,6 @@ AC 320, x^6 half
 02 27 × 2/3 = 18, x A^2 
 02 18 × 2/3 = 12, x^2 A 
 02 12 × 2/3 = 8, x^3
-</pre>
-
-<h3 id='logic'>Logic</h3>
-
-<p>Binary logic is typically implemented as multiple rules, where each is a
-potential location in the <a href='binary.html'>truth table</a>:</p>
-
-<pre>
-:: x y and > true
-:: x   and > false
-:: y   and > false
-::     and > false
-
-:: x y or > true
-:: x   or > true
-:: y   or > true
-::     or > false
-
-:: x y xor > false
-:: x   xor > true
-:: y   xor > false
-::     xor > false
-
-:: true  not > false
-:: false not > true
-
-AC 30, x y and 
-00 30 × 7/30 = 7, true
-</pre>
-
-<p>The comparison operation <b>greather-than</b> of two registers(x>y) can be
-implemented in a non-destructive way that doesn't consume the inputs and
-returns the program to its initial state with the answer.</p>
-
-<pre>
-:: gth x y > gth A 
-:: gth x   > gth? true x 
-:: gth     > gth? false 
-:: gth? A  > gth? x y 
-:: gth?    > 
-
-AC 20250, gth x^4 y^3 
-00 20250 × 14/30 = 9450, gth x^3 y^2 A 
-00 9450 × 14/30 = 4410, gth x^2 y A^2 
-00 4410 × 14/30 = 2058, gth x A^3 
-01 2058 × 429/6 = 147147, x A^3 gth? true 
-03 147147 × 165/77 = 315315, x^2 y A^2 gth? true 
-03 315315 × 165/77 = 675675, x^3 y^2 A gth? true 
-03 675675 × 165/77 = 1447875, x^4 y^3 gth? true 
-04 1447875 × 1/11 = 131625, x^4 y^3 true
 </pre>
 
 <p id='combinations'>Now, let's put it all together! Programs are made of the combination of operations. In rewrite systems, we need to ensure that the evaluation is done in the right order, which is not necessarily the order in which rules are defined. Say we want to get the result of the following nested operations:</p>
