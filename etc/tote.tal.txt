@@ -50,7 +50,7 @@
 	( name ) "Tote 0a
 	( details ) "A 20 "Multiset 20 "Playground 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "9 20 "Nov 20 "2024 $1 00
+	( date ) "28 20 "Nov 20 "2024 $1 00
 
 (
 @|helpers )
@@ -94,6 +94,7 @@
 	( | vectors )
 	;on-mouse-edit .Mouse/vector DEO2
 	;on-frame-edit .Screen/vector DEO2
+	;on-button-edit .Controller/vector DEO2
 	Bag/<to-acc>
 	Bag/<update>
 	<update-rules>
@@ -130,6 +131,12 @@
 	[ LIT2 00 _&reqdraw ] STR
 	<redraw-edit>
 	BRK
+
+@on-button-edit ( -> )
+	.Controller/key DEI
+	( bs ) DUP #08 NEQ ?{
+		[ LIT2 00 -overlay ] LDZ id-to-rule <clear-rule> }
+	POP BRK
 
 @on-mouse-edit ( -> )
 	<draw-cursor-touch>
@@ -312,8 +319,7 @@
 	INC2 INC2 LDA2 ;Bag/anchor-y STA2
 	#01 <validate-craft>
 	<run-craft>
-	Bag/<to-acc>
-	Bag/<update> !<reqdraw-edit>
+	Bag/<organize> !<reqdraw-edit>
 
 @<set-overlay> ( rule -- )
 	DUP .overlay LDZ EQU ?{ .overlay STZ !<reqdraw-edit> }
@@ -452,6 +458,13 @@
 		LDAk STH
 		ADDr INC2 GTH2k ?&>l
 	POP2 POP2 STHr JMP2r
+
+@<clear-rule> ( rule* -- )
+	DUP2 #0080 ADD2 SWP2
+	&>l ( -- )
+		#0000 OVR2 STA2
+		INC2 INC2 GTH2k ?&>l
+	POP2 POP2 !<reqdraw-edit>
 
 @<validate> ( -- )
 	<validate-bwd>
@@ -643,6 +656,7 @@
 	&>bag-loop ( -- )
 		#00 OVR .Acc/buf SUB Bag/<set-dir>
 		( ) LDZk #00 EQUk ?{
+			#00 STHkr <set-anchor>
 			&>bag-loop2 ( -- )
 				STHkr Bag/<push-auto>
 				INC GTHk ?&>bag-loop2 }
@@ -706,7 +720,6 @@
 	Bag/<to-acc> !&<update>
 
 @Bag/<push-auto> ( id -- )
-	#00 OVR <set-anchor>
 	/find-free STH2
 	[ LIT2 &anchor-x 00f8 ]
 	( ) DUP2 [ LIT2 &dir-x 0010 ] ADD2 ,&anchor-x STR2
