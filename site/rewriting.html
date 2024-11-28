@@ -400,55 +400,21 @@ AC 48, x^4 half
 01 75 × 1/3 = 25, res^2
 </pre>
 
-<p id='combinations'>Now, let's put it all together! Programs are made of the
-combination of operations. In rewrite systems, we need to ensure that the
-evaluation is done in the right order, which is not necessarily the order in
-which rules are defined. Say we want to get the result of the following nested
-operations:</p>
+<p id='precedence'>To find the result of x*(y+z), in which a sequence of
+operation is needed to find the correct answer, the <b>operator precedence</b>, or
+order in which operators will be evaluated, is dictated by the rules order:</p>
 
 <pre>
-(- (+ 2 (* 4 6)) (+ 3 5 7))
-</pre>
+:: add z      > add y 
 
-<p>We've looked at a handful of arithmetic operations, we'll add catalysts(mul, add, sub, etc..) in order to make them reusable in a larger context, and create a state-machine that will run the combination of operations in the correct sequence. Here is how a larger program can be organized, including comments within parenthesis for the various functions:</p>
+:: mul x y    > mul x acc res
+:: mul        > mulrec
+:: mulrec acc > mulrec y
+:: mulrec x   > mul
 
-<pre>
-:: res x y z A t
-
-<i>(mul x y .. res=x*y)</i>
-	:: mul.move A > mul.move y
-	:: mul.move   > mul
-	:: mul x y    > mul x A res
-	:: mul x      > mul.move
-	:: mul y      > mul
-	:: mul > 
-
-<i>(add x y z .. res=x+y+z)</i>
-	:: add x > add res
-	:: add y > add res
-	:: add z > add res
-	:: add > 
-
-<i>(sub x y .. res=x-y)</i>
-	:: sub x y > sub
-	:: sub x   > sub res
-	:: sub >
-
-<i>(moving intermediate results)</i>
-	:: res-x res > res-x x :: res-x > 
-	:: res-t res > res-t t :: res-t > 
-	:: res-y res > res-y y :: res-y > 
-	:: t-x t > t-x x :: t-x > 
-
-<i>(main)</i>
-	:: 1) > mul x x x x y y y y y y res-x 2)
-	:: 2) > add y y res-t 3)
-	:: 3) > add x x x y y y y y z z z z z z z res-y t-x 4)
-	:: 4) > sub
-
-AC 47, 1)
-.. 
-12 59392 × 1/29 = 2048, res^11 
+x^2 y^3 z^4 add mul
+x^2 y^7 mul
+res^14
 </pre>
 
 <h3 id='fib'>Example: Fibonacci</h3>
