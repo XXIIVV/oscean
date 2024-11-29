@@ -159,10 +159,12 @@ AC 6 left side  <i>accumulator</i>
 	<p>A compiler assigns the symbols <i>left</i>, <i>side</i> and <i>right</i> to the prime numbers 2, 3 and 5. The product of <i>left</i>(2) and <i>side</i>(3) for the denominator, <i>side</i>(3) and <i>right</i>(5) for the numerator, result in the fraction 15/6.</p>
 </article>
 
-<p>This documentation will represent registers with names(x, y, foo-bar, baz, ..). Fractions will be
-written as rewrite rules starting with <code>::</code>, a left-side, a
-spacer(>) and a right-side. The notation indicates which registers to replace
-on the denominator left-side, and what to replace them with on the numerator right-side. Unlike John Conway's original specification of Fractran, fractions are <a href='#strict'>not reduced</a>.</p>
+<p>This documentation will represent registers with names(x, y, foo-bar, baz,
+..). Fractions will be written as rewrite rules starting with <code>::</code>,
+a left-side, a spacer(>) and a right-side. The notation indicates which
+registers to replace on the denominator left-side, and what to replace them
+with on the numerator right-side. Unlike John Conway's original specification
+of Fractran, fractions are <a href='#reduction'>not reduced</a>.</p>
 
 <q>Multiset sounds too technical.<br />
 Dijkstra's bag, not technical enough.</q>
@@ -605,9 +607,33 @@ game
 	</figcaption>
 </figure>
 
+<h3 id='reduction'>Reduction & Catalysts</h3>
+
+<p>Conway's Fractran traditionally compared the accumulator against <a
+href='fractions.html#reduction'>reduced fractions</a>, but
+computationally-speaking, getting to the gcd of a fraction does little more
+than getting rid of otherwise valuable information used during comparison to
+match against a restricted set of fractions. The support for <a
+href='rewriting.html#catalyst'>catalysts</a>, symbols found on both sides of a
+rewrite rule, makes for a simpler implementation and a more usable runtime.</p>
+
+<p>The following two fractions are not equal and reducing the first into the
+second, eliminates the capability to match against it <b>only</b> when the
+catalyst <code>green</code> is present in the accumulator:</p>
+
+<pre>
+:: 15/6 red green > green blue
+:: 5/2 red > blue
+
+red green
+</pre>
+
 <h3 id='reversibility'>Reversibility</h3>
 
-<p>Fractran operators are <a href='reversible_computing.html'>reversible</a>, meaning that a some programs can run backward to their original state. Evaluation is undone by applying rules by inverting their numerator and denominator, or right and left sides.</p>
+<p>Fractran operators are <a href='reversible_computing.html'>reversible</a>,
+meaning that a some programs can run backward to their original state.
+Evaluation is undone by applying rules and inverting their numerator and
+denominator, or right and left sides.</p>
 
 <pre>
 AC 19, fruit-cake
@@ -616,26 +642,16 @@ AC 19, fruit-cake
 00 5005 × 30/7 = 21450, apples apples flour sugar oranges cherries
 </pre>
 
-<p>For a program to be reversible, two rules may <b>not</b> share identical numerators or denominators. The implementation of a reversible CNOT logic gate differs from the non-reversible logic gates in that we cannot rely on the absence of registers, rules must contain symbols for their absence:</p>
+<p>For a program to be reversible, two rules may <b>not</b> share identical
+numerators or denominators. The implementation of a reversible CNOT logic gate
+differs from the non-reversible logic gates in that we cannot rely on the
+absence of registers, rules must contain symbols for their absence:</p>
 
 <pre>
 :: c+ t+ cnot > c+ t- cnot
 :: c+ t- cnot > c+ t+ cnot
 :: c- t+ cnot > c- t+ cnot
 :: c- t- cnot > c- t- cnot
-</pre>
-
-<h3 id='strict'>Catalysts</h3>
-
-<p>Fractran traditionally compares the accumulator against <a href='fractions.html#reduction'>reduced fractions</a>, but computationally-speaking, getting to the gcd of a fraction does little more than getting rid of otherwise valuable information used during comparison to match against a <b>restricted set of fractions</b>. A strict mode allows for <a href='rewriting.html#catalyst'>catalysts</a> which are symbols found on both sides of a rewrite rule.</p>
-
-<p>The following two fractions are not equal and reducing the first into the second, eliminates the capability to match against it <b>only</b> when the catalyst <code>green</code> is present in the accumulator:</p>
-
-<pre>
-:: 15/6 red green > green blue
-:: 5/2 red > blue
-
-red green
 </pre>
 
 <h3 id='stack'>Nested Stack Machines</h3>
