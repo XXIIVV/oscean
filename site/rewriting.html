@@ -4,7 +4,7 @@
 <title>XXIIVV &mdash; rewriting</title></head><body>
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
 
-<nav><ul><li><a href="programming_languages.html" class="parent">programming languages</a></li><li><a href="operating_systems.html">operating systems</a></li><li><a href="graphical_input.html">graphical input</a></li><li><a href="file_formats.html">file formats</a></li><li><a href="data_encoding.html">data encoding</a></li><li><a href="type_systems.html">type systems</a></li><li><a href="versioning.html">versioning</a></li></ul><ul><li><a href="assembly.html">assembly</a></li><li><a href="two_dimensional.html">two dimensional</a></li><li><a href="concatenative.html">concatenative</a></li><li><a href="functional.html">functional</a></li><li><a href="imperative.html">imperative</a></li><li><a href="rewriting.html" class="self">rewriting</a></li></ul><ul><li><a href="fractran.html">fractran</a></li><li><a href="interaction_nets.html">interaction nets</a></li><li><a href="thue.html">thue</a></li><li><a href="modal.html">modal</a></li></ul></nav>
+<nav><ul><li><a href="programming_languages.html" class="parent">programming languages</a></li><li><a href="operating_systems.html">operating systems</a></li><li><a href="graphical_input.html">graphical input</a></li><li><a href="file_formats.html">file formats</a></li><li><a href="data_encoding.html">data encoding</a></li><li><a href="type_systems.html">type systems</a></li><li><a href="versioning.html">versioning</a></li></ul><ul><li><a href="assembly.html">assembly</a></li><li><a href="two_dimensional.html">two dimensional</a></li><li><a href="concatenative.html">concatenative</a></li><li><a href="functional.html">functional</a></li><li><a href="imperative.html">imperative</a></li><li><a href="rewriting.html" class="self">rewriting</a></li></ul><ul><li><a href="fractran.html">fractran</a></li><li><a href="interaction_nets.html">interaction nets</a></li><li><a href="thue.html">thue</a></li><li><a href="vera.html">vera</a></li><li><a href="modal.html">modal</a></li></ul></nav>
 <main><h2>Rewriting languages are typically made of rules and a starting state.</h2>
 
 <p>These languages often have two phases; the first gives <b>a set of rules</b>, and the second provides <b>an accumulator</b> on which those rules are to be applied. For example, a program for a string rewriting system with wildcards begins with a series of rules which define strings to match, a relation(->), and the resulting transformation.</p>
@@ -282,7 +282,7 @@ AC 30, x y and
 </pre>
 
 <p>The comparison operations are implemented using a loop that drains the
-registers until and offset remains:</p>
+registers until only the offset remains:</p>
 
 <pre>
 :: x y gth > gth
@@ -741,7 +741,6 @@ lines</a>:</p>
 	<pre>cc fractran.c -o fractran <a href='../etc/fractran.c.txt' target='_blank'>view raw</a></pre>
 </div>
 
-
 <q>The wise marvels at the commonplace.</q>
 <cite>Confucius</cite>
 
@@ -934,6 +933,79 @@ _*::=*_Y
 	<li><a href='https://git.sr.ht/~rabbits/uxn-games/tree/main/item/thue' target='_blank'>Interpreter</a>, written in Uxntal. <a href='https://www.youtube.com/watch?v=A8f7IsQ8ENQ' target='_blank'>Video</a></li>
 	<li><a href='https://git.catseye.tc/Wanda/' target='_blank'>Wanda</a>, concatenative language meets string rewriting.</li>
 </ul>
+<h2>Vera is a multiset rewriting system.</h2>
+
+<p>Vera is a multiset rewriting system designed to converse with computers,
+created by the same author as <a href='modal.html'>Modal</a>. A program is made
+entirely of facts and rules:</p>
+
+<pre>
+|| The first character in a file assigns a spacer glyph.
+
+|| A program has rules and facts.
+| A rule has a left side | And a right side.
+
+|| An empty rule creates new facts:
+|| Facts are separated by commas, a matchbox, a log, paper
+
+| a matchbox | a match, a match, a box
+| a match, paper | a flame
+| a flame, a log | a warm fire
+</pre>
+
+<h3>Facts</h3>
+<p>A fact is the name for an item in the multiset, facts are comma separated.</p>
+<pre>
+|| a fact, another fact
+|| one more fact,
+	yet another,
+	a last fact
+</pre>
+
+<h3>Rules</h3>
+<p>A rule is made of a left and right side.</p>
+<pre>
+| a fact, another fact | the result
+| another rule | another result
+</pre>
+
+<h3>Evaluation</h3>
+<p>Each rule is matched against the facts, starting from the first rule, when a
+rule's left-hand side is found in the bag, the facts are replaced by the rule's
+right-hand side, and match is started from the start. </p>
+
+<pre>
+|flour, sugar, apples| apple cake
+|apples, oranges, cherries| fruit salad
+|fruit salad, apple cake| fruit cake
+
+|| sugar, oranges, apples, apples, cherries, flour
+</pre>
+
+<p>Vera will match any amount found in the left-hand side, unlike <a
+href='fractran.html'>Fractran</a> which must specify the amount of facts to
+match against. The following two rules are equivalent in Vera:</p>
+
+<pre>
+| an apple, hunger | a core
+| an apple, an apple, an apple, hunger | a core
+</pre>
+
+<h3>Implementation</h3>
+<p>The language runtime can be implemented in about <a href='ansi_c.html'>200 lines</a>.</p>
+
+<div class='codeview'>
+	<iframe src='../etc/vera.c.txt'></iframe>
+	<pre>cc vera.c -o vera <a href='../etc/vera.c.txt' target='_blank'>view raw</a></pre>
+</div>
+
+<ul>
+	<li><a href='https://git.sr.ht/~rabbits/vera' target='_blank'>Vera Interpreter(C89)</a>, used for this documentation.</li>
+	<li><a href='https://git.casuallyblue.dev/nova/wiki/wiki/A-Raven's-Flyby-of-Vera' target='_blank'>A Raven's Flyby</a>, tutorial.</li>
+	<li><a href='https://wiki.nova-lang.net/index.php?title=Main_Page' target='_blank'>Vera Wiki</a></li>
+</ul>
+
+
 <h2>Modal is a programming language based on string rewriting.</h2>
 
 <img src='../media/refs/soulages.png' style='float:right;width:200px' title='Pierre Soulages | Lithographie n°30 (1972)'/>
