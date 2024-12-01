@@ -29,15 +29,33 @@ walk_ws(char *s)
 	return s;
 }
 
+static char *
+scap(char *s)
+{
+	while(*s) s++;
+	return s;
+}
+
+static void
+trim(char **s)
+{
+	char *cap = scap(*s) - 1;
+	while(*cap) {
+		if(*cap > 0x20) break;
+		*cap = 0;
+		cap--;
+	}
+}
+
 static int
 scmp(char *a, char *b)
 {
 	while(*a && *b) {
-		if(*a == ',' || *a == 0xa) break;
-		if(*a != *b) return 0;
+		if(*a == ',' && !*b) break;
+		if(*a != *b) break;
 		a++, b++;
 	}
-	return 1;
+	return !*b && (*a == ',' || *a == key || *a <= 0x20);
 }
 
 static int
@@ -63,6 +81,7 @@ walk_symbol(char *s, int *id)
 	*_syms = _dict;
 	while(s[0] && s[0] != key && s[0] != ',' && s[0] != 0xa && s[0] != key)
 		*_dict++ = *s++;
+	trim(_syms);
 	*_dict++ = 0, *id = _syms - &syms[0], _syms++;
 	return s;
 }
@@ -83,8 +102,9 @@ walk_rule(char *s)
 	/* rhs */
 	if(s[0] != key)
 		printf("Broken rule?!\n");
-	valid = 1;
 	s++;
+	s = walk_ws(s);
+	valid = s[0] != key;
 	while(valid) {
 		s = walk_symbol(s, &id);
 		rules[_rules][id + SYM_SZ]++;
@@ -94,7 +114,7 @@ walk_rule(char *s)
 			valid = 0;
 	}
 	_rules++;
-	return s;
+	return walk_ws(s);
 }
 
 static char *
@@ -123,9 +143,9 @@ parse(char *s)
 				s = walk_fact(s + 2);
 			else
 				s = walk_rule(s + 1);
-		} else {
-			printf("Unexpected ending: %s\n", s);
-			break;
+		} else if(s[0]) {
+			printf("Unexpected ending: [%c]%s\n", s[0], s);
+			return 0;
 		}
 	}
 	return 1;
@@ -139,7 +159,7 @@ prinths(int *hs)
 		if(hs[i] > 1)
 			printf("%s^%d ", syms[i], hs[i]);
 		else if(hs[i])
-			printf("%s ", syms[i]);
+			printf("%s, ", syms[i]);
 	}
 	printf("\n");
 }
@@ -155,11 +175,11 @@ match(int *a, int *b)
 	return 1;
 }
 
-static int
+static void
 eval(void)
 {
 	int i, r = 0, steps = 0;
-	printf(".... "), prinths(acc);
+	printf("AC "), prinths(acc);
 	while(r < _rules) {
 		if(match(acc, rules[r])) {
 			for(i = 0; i < SYM_SZ; i++) {
@@ -168,13 +188,11 @@ eval(void)
 				if(rules[r][SYM_SZ + i])
 					acc[i] += 1;
 			}
-			printf("%04d ", steps), prinths(acc);
+			printf("%02d ", r), prinths(acc);
 			r = 0, steps++;
 		} else
 			r++;
 	}
-
-	return 1;
 }
 
 int
@@ -189,7 +207,8 @@ main(int argc, char *argv[])
 		return !printf("Source missing: %s\n", argv[a]);
 	if(!fread(&src, 1, SRC_SZ, f))
 		return !printf("Source empty: %s\n", argv[a]);
-	parse(src), fclose(f);
-	eval();
+	if(parse(src))
+		eval();
+	fclose(f);
 	return 0;
 }
