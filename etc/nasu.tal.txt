@@ -10,7 +10,7 @@
 |000
 
 	@state &timer $1 &changed $1
-	@settings &depth $1 &color $1 &blend $1 &ratio $1 &tool $1 &focus $2 &zoom $1 &brush $1
+	@settings &depth $1 &color $1 &blend $1 &ratio $1 &tool $1 &focus $2 &zoom $1 &brush $1 &dir $1
 	@cursor &x $2 &y $2 &last $1
 	@selection &x1 $1 &y1 $1 &x2 $1 &y2 $1 &zx $1 &zy $1 &a $1
 	@frame &x1 $2 &y1 $2 &x2 $2 &y2 $2 &width $2 &height $2
@@ -31,9 +31,9 @@
 	( | meta )
 	;meta #06 DEO2
 	( | theme )
-	#970f .System/r DEO2
-	#7d0f .System/g DEO2
-	#dc0f .System/b DEO2
+	#079f .System/r DEO2
+	#0d7f .System/g DEO2
+	#0cdf .System/b DEO2
 	( | size )
 	#012e .Screen/width DEO2
 	#00f0 .Screen/height DEO2
@@ -42,12 +42,12 @@
 	( | set defaults )
 	#0108 .frame/width STZ2
 	#00c8 .frame/height STZ2
-	#01 .settings/depth STZ
-	#01 .settings/color STZ
-	#81 .settings/blend STZ
-	#32 .settings/ratio STZ
-	#01 .settings/tool STZ
-	#00 .settings/brush STZ
+	[ LIT2 01 -settings/depth ] STZ
+	[ LIT2 01 -settings/color ] STZ
+	[ LIT2 81 -settings/blend ] STZ
+	[ LIT2 32 -settings/ratio ] STZ
+	[ LIT2 01 -settings/tool ] STZ
+	[ LIT2 00 -settings/brush ] STZ
 	<set-focus>
 	( | place )
 	.Screen/width DEI2 #01 SFT2 .frame/width LDZ2 #01 SFT2 SUB2 #001b .frame/width LDZ2 .frame/height LDZ2 ;frame <set-size>
@@ -70,7 +70,7 @@
 	"Nasu 0a
 	( details ) "A 20 "Sprite 20 "Editor 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "16 20 "Jul 20 "2024 00 01
+	( date ) "1 20 "Dec 20 "2024 00 01
 	( icon ) 83 =appicon
 
 @manifest ( ... )
@@ -94,8 +94,9 @@
 	( - ) 00 "c =edit-colorize "Colorize $1
 	( - ) 00 00 =edit-flipx "Horizontal $1
 	( - ) 00 00 =edit-flipy "Veritcal $1
-	( >>> ) 01 "View $1
+	( >>> ) 02 "Options $1
 	( - ) 02 00 =toggle-zoom "Zoom $1
+	( - ) 00 "d =toggle-dir "Direction $1
 	( >>> ) 0a "Move $1
 	( - ) 10 00 =move-up "Up $1
 	( - ) 20 00 =move-down "Down $1
@@ -269,7 +270,8 @@
 		POP
 		( release mouse ) [ LIT2 00 -Mouse/state ] DEO !&finish }
 	.Mouse/x DEI2 .zoomview/x1 LDZ2 SUB2 #02 SFT2 #00 .selection/x1 LDZ #30 SFT2 ADD2
-	( ) .Mouse/y DEI2 .zoomview/y1 LDZ2 SUB2 #02 SFT2 #00 .selection/y1 LDZ #30 SFT2 ADD2 .settings/color LDZ .Mouse/state DEI #01 EQU MUL <put-pixel> &finish [ LIT2 01 -state/changed ] STZ
+	( ) .Mouse/y DEI2 .zoomview/y1 LDZ2 SUB2 #02 SFT2 #00 .selection/y1 LDZ #30 SFT2 ADD2 .settings/color LDZ .Mouse/state DEI #01 EQU MUL <put-pixel>
+	&finish [ LIT2 01 -state/changed ] STZ
 	<draw-state>
 	<redraw>
 	BRK
@@ -316,6 +318,9 @@
 
 (
 @|helpers )
+
+@toggle-dir ( -- )
+	[ LIT2 00 -settings/dir ] LDZ EQU .settings/dir STZ !<draw-tileview>
 
 @toggle-zoom ( -- )
 	.settings/zoom LDZk #00 EQU SWP STZ
@@ -499,12 +504,23 @@
 @|map )
 
 @<run> ( op* -- )
+	.settings/dir LDZ ?<run-ver>
 	,&fn STR2
 	.selection/y2 LDZ INC .selection/y1 LDZ
 	&>ver ( -- )
 		.selection/x2 LDZ INC .selection/x1 LDZ
 		&>hor ( -- )
 			OVR2 NIP OVR SWP get-tile-addr [ LIT2 &fn $2 ] JSR2 INC GTHk ?&>hor
+		POP2 INC GTHk ?&>ver
+	POP2 JMP2r
+
+@<run-ver> ( op* -- )
+	,&fn STR2
+	.selection/x2 LDZ INC .selection/x1 LDZ
+	&>ver ( -- )
+		.selection/y2 LDZ INC .selection/y1 LDZ
+		&>hor ( -- )
+			OVR2 NIP OVR get-tile-addr [ LIT2 &fn $2 ] JSR2 INC GTHk ?&>hor
 		POP2 INC GTHk ?&>ver
 	POP2 JMP2r
 
@@ -626,12 +642,17 @@
 		INC GTHk ?&>loop-sel
 	POP2 [ LIT2 01 -Screen/auto ] DEO
 	( | draw selection size )
-	.selection/x2 LDZ .selection/x1 LDZ SUB #02 LTH ?&no-label
-	.selection/y2 LDZ #0f EQU ?&no-label
-	#00 .selection/x1 LDZ #30 SFT2 .tileview/x1 LDZ2 ADD2 .Screen/x DEO2
-	#00 .selection/y2 LDZ INC #30 SFT2 .tileview/y1 LDZ2 ADD2 .Screen/y DEO2
-	#04 ;<draw-chr>/color STA
-	.selection/x2 LDZ .selection/x1 LDZ SUB INC #40 SFT .selection/y2 LDZ .selection/y1 LDZ SUB INC ORA <draw-byte> &no-label JMP2r
+	.selection/y2 LDZ #0f EQU ?{
+		.selection/x2 LDZ .selection/x1 LDZ SUB #02 LTH ?{
+			( x ) [ LIT2 00 -selection/x1 ] LDZ #30 SFT2 .tileview/x1 LDZ2 ADD2 .Screen/x DEO2
+			( y ) [ LIT2 00 -selection/y2 ] LDZ INC #30 SFT2 .tileview/y1 LDZ2 ADD2 .Screen/y DEO2
+			#04 ;<draw-chr>/color STA
+			( w ) .selection/x2 LDZ .selection/x1 LDZ SUB INC #40 SFT
+			( h ) .selection/y2 LDZ .selection/y1 LDZ SUB INC ORA <draw-byte>
+			( | draw dir )
+			;dir-icn #00 .settings/dir LDZ #30 SFT2 ADD2 .Screen/addr DEO2
+			[ LIT2 05 -Screen/sprite ] DEO } }
+	JMP2r
 
 @<draw-tileview-zoom> ( -- )
 	( | clear )
@@ -1657,38 +1678,41 @@ JMP2r
 
 
 @bigpixel-icn
-    f0f0 f0f0 0000 0000
+	f0f0 f0f0 0000 0000
 @halftone-icn
-    aa55 aa55 aa55 aa55
+	aa55 aa55 aa55 aa55
 @brush-icn
-    0070 6844 2211 0906
+	0070 6844 2211 0906
 @select-icn
-    0040 6070 787c 7008
+	0040 6070 787c 7008
 @zoom-icn
-    0030 4884 8448 3402
+	0030 4884 8448 3402
 @pixel-icn
-    7cfe fefe fefe 7c00
+	7cfe fefe fefe 7c00
 @save-icn
-    0008 2a14 6314 2a08
+	0008 2a14 6314 2a08
 @make-icn
-    007f 4141 4142 457a
+	007f 4141 4142 457a
 @load-icn
-    007f 556b 556a 557a
+	007f 556b 556a 557a
 @zoom-icns
-    0030 4884 8448 3402
-    0032 4582 8448 3402
+	0030 4884 8448 3402
+	0032 4582 8448 3402
 @slider-icns
-    f0f0 f0f0 f0f0 f000
-    50a0 50a0 50a0 5000
+	f0f0 f0f0 f0f0 f000
+	50a0 50a0 50a0 5000
 @circle-icns
-    001c 2241 4141 221c
-    001c 3e7f 7f7f 3e1c
+	001c 2241 4141 221c
+	001c 3e7f 7f7f 3e1c
 @arrow-hor-icns
-    080c 0e7f 0e0c 0800
-    0818 387f 3818 0800
+	080c 0e7f 0e0c 0800
+	0818 387f 3818 0800
 @arrow-ver-icns
-    081c 3e7f 0808 0800
-    0808 087f 3e1c 0800
+	081c 3e7f 0808 0800
+	0808 087f 3e1c 0800
+@dir-icn
+	007e 007e 0070 0000
+	0054 5454 5050 5000
 
 @frame1-chr
 	( e ) 0000 0000 070f 0f0f 0000 0007 0f1f 1f1f
@@ -1696,66 +1720,66 @@ JMP2r
 	( v ) f0f0 f0f0 f0f0 f0f0 f8f8 f8f8 f8f8 f8f8
 
 @frame2-chr
-	( e ) 0000 0000 0000 0000 0000 0000 0001 0204 
-	( h ) 0000 0000 0000 0000  0000 0000 00ff 0000 
-	( v ) 0000 0000 0000 0000 2020 2020 2020 2020 
+	( e ) 0000 0000 0000 0000 0000 0000 0001 0204
+	( h ) 0000 0000 0000 0000 0000 0000 00ff 0000
+	( v ) 0000 0000 0000 0000 2020 2020 2020 2020
 
 @appicon
-0000 0000 0000 0000 0000 0000 0000 0003 0007 1f3f 7f7e 7e7d 071f 3f7f ffff ffff 
-0000 0000 1e7e fefe 8080 809f ffff ffff 0307 0f0f 0f0f 0f0f 0408 1010 1010 1010 
-7bbf ffc7 e0e0 f0ff ff7f 3f3f 1710 0f0f fcfc f8e0 0000 0000 fefe fcf8 e000 0080 
-0f0f 0707 0301 0000 1010 080f 0703 0100 ffff ffff ffff 7f00 1f1f 7fff ffff ff7f 
-80c0 c0c0 c080 0000 c0e0 e0e0 e0c0 8000
-
+	0000 0000 0000 0000 0000 0000 0000 0003 0007 1f3f 7f7e 7e7d 071f 3f7f ffff ffff
+	0000 0000 1e7e fefe 8080 809f ffff ffff 0307 0f0f 0f0f 0f0f 0408 1010 1010 1010
+	7bbf ffc7 e0e0 f0ff ff7f 3f3f 1710 0f0f fcfc f8e0 0000 0000 fefe fcf8 e000 0080
+	0f0f 0707 0301 0000 1010 080f 0703 0100 ffff ffff ffff 7f00 1f1f 7fff ffff ff7f
+	80c0 c0c0 c080 0000 c0e0 e0e0 e0c0 8000
+	
 @font ( atari8 )
-0000 0000 0000 0000 6060 6060 6000 6000
-6666 6600 0000 0000 006c fe6c 6cfe 6c00
-183e 603c 067c 1800 0066 6c18 3066 4600
-386c 3870 decc 7600 6060 6000 0000 0000
-1c30 3030 3030 1c00 380c 0c0c 0c0c 3800
-0066 3cff 3c66 0000 0018 187e 1818 0000
-0000 0000 0030 3060 0000 007e 0000 0000
-0000 0000 0018 1800 0306 0c18 3060 c000
-3c66 6e76 6666 3c00 1838 1818 1818 7e00
-3c66 060c 1830 7e00 7e0c 180c 0666 3c00
-0c1c 3c6c 7e0c 0c00 7e60 7c06 0666 3c00
-3c60 607c 6666 3c00 7e06 0c18 3030 3000
-3c66 663c 6666 3c00 3c66 663e 060c 3800
-0018 1800 0018 1800 0018 1800 1818 3000
-0c18 3060 3018 0c00 0000 7e00 007e 0000
-3018 0c06 0c18 3000 3c66 060c 1800 1800
-3c66 6e6a 6e60 3e00 183c 6666 7e66 6600
-7c66 667c 6666 7c00 3c66 6060 6066 3c00
-786c 6666 666c 7800 7e60 607c 6060 7e00
-7e60 607c 6060 6000 3e60 606e 6666 3e00
-6666 667e 6666 6600 3c18 1818 1818 3c00
-3e06 0606 0666 3c00 666c 7870 786c 6600
-6060 6060 6060 7e00 c6ee fed6 c6c6 c600
-6676 7e7e 6e66 6600 3c66 6666 6666 3c00
-7c66 667c 6060 6000 3c66 6666 766c 3600
-7c66 667c 6c66 6600 3c66 603c 0666 3c00
-7e18 1818 1818 1800 6666 6666 6666 3e00
-6666 6666 663c 1800 c6c6 c6d6 feee c600
-6666 3c18 3c66 6600 6666 663c 1818 1800
-7e06 0c18 3060 7e00 3c30 3030 3030 3c00
-c060 3018 0c06 0300 3c0c 0c0c 0c0c 3c00
-1038 6cc6 0000 0000 0000 0000 0000 fe00
-0060 3018 0000 0000 0000 3c06 3e66 3e00
-6060 7c66 6666 7c00 0000 3c60 6060 3c00
-0606 3e66 6666 3e00 0000 3c66 7e60 3c00
-1c30 7c30 3030 3000 0000 3e66 663e 067c
-6060 7c66 6666 6600 1800 3818 1818 3c00
-1800 1818 1818 1870 6060 666c 786c 6600
-3818 1818 1818 3c00 0000 ecfe d6c6 c600
-0000 7c66 6666 6600 0000 3c66 6666 3c00
-0000 7c66 6666 7c60 0000 3e66 6666 3e06
-0000 7c66 6060 6000 0000 3e60 3c06 7c00
-0018 7e18 1818 0e00 0000 6666 6666 3e00
-0000 6666 663c 1800 0000 c6c6 d67c 6c00
-0000 663c 183c 6600 0000 6666 663e 067c
-0000 7e0c 1830 7e00 1c30 3060 3030 1c00
-1818 1818 1818 1818 380c 0c06 0c0c 3800
-0000 60f2 9e0c 0000 3c42 9985 8599 423c
-
+	0000 0000 0000 0000 6060 6060 6000 6000
+	6666 6600 0000 0000 006c fe6c 6cfe 6c00
+	183e 603c 067c 1800 0066 6c18 3066 4600
+	386c 3870 decc 7600 6060 6000 0000 0000
+	1c30 3030 3030 1c00 380c 0c0c 0c0c 3800
+	0066 3cff 3c66 0000 0018 187e 1818 0000
+	0000 0000 0030 3060 0000 007e 0000 0000
+	0000 0000 0018 1800 0306 0c18 3060 c000
+	3c66 6e76 6666 3c00 1838 1818 1818 7e00
+	3c66 060c 1830 7e00 7e0c 180c 0666 3c00
+	0c1c 3c6c 7e0c 0c00 7e60 7c06 0666 3c00
+	3c60 607c 6666 3c00 7e06 0c18 3030 3000
+	3c66 663c 6666 3c00 3c66 663e 060c 3800
+	0018 1800 0018 1800 0018 1800 1818 3000
+	0c18 3060 3018 0c00 0000 7e00 007e 0000
+	3018 0c06 0c18 3000 3c66 060c 1800 1800
+	3c66 6e6a 6e60 3e00 183c 6666 7e66 6600
+	7c66 667c 6666 7c00 3c66 6060 6066 3c00
+	786c 6666 666c 7800 7e60 607c 6060 7e00
+	7e60 607c 6060 6000 3e60 606e 6666 3e00
+	6666 667e 6666 6600 3c18 1818 1818 3c00
+	3e06 0606 0666 3c00 666c 7870 786c 6600
+	6060 6060 6060 7e00 c6ee fed6 c6c6 c600
+	6676 7e7e 6e66 6600 3c66 6666 6666 3c00
+	7c66 667c 6060 6000 3c66 6666 766c 3600
+	7c66 667c 6c66 6600 3c66 603c 0666 3c00
+	7e18 1818 1818 1800 6666 6666 6666 3e00
+	6666 6666 663c 1800 c6c6 c6d6 feee c600
+	6666 3c18 3c66 6600 6666 663c 1818 1800
+	7e06 0c18 3060 7e00 3c30 3030 3030 3c00
+	c060 3018 0c06 0300 3c0c 0c0c 0c0c 3c00
+	1038 6cc6 0000 0000 0000 0000 0000 fe00
+	0060 3018 0000 0000 0000 3c06 3e66 3e00
+	6060 7c66 6666 7c00 0000 3c60 6060 3c00
+	0606 3e66 6666 3e00 0000 3c66 7e60 3c00
+	1c30 7c30 3030 3000 0000 3e66 663e 067c
+	6060 7c66 6666 6600 1800 3818 1818 3c00
+	1800 1818 1818 1870 6060 666c 786c 6600
+	3818 1818 1818 3c00 0000 ecfe d6c6 c600
+	0000 7c66 6666 6600 0000 3c66 6666 3c00
+	0000 7c66 6666 7c60 0000 3e66 6666 3e06
+	0000 7c66 6060 6000 0000 3e60 3c06 7c00
+	0018 7e18 1818 0e00 0000 6666 6666 3e00
+	0000 6666 663c 1800 0000 c6c6 d67c 6c00
+	0000 663c 183c 6600 0000 6666 663e 067c
+	0000 7e0c 1830 7e00 1c30 3060 3030 1c00
+	1818 1818 1818 1818 380c 0c06 0c0c 3800
+	0000 60f2 9e0c 0000 3c42 9985 8599 423c
+	
 @nametable $300
 @spritesheet
