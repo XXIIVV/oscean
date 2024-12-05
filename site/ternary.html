@@ -14,13 +14,6 @@ cultural preference for base 10 and the engineering advantages of base 2 have
 nothing to do with any intrinsic properties of the decimal and binary numbering
 systems.</p>
 
-<table border='1'>
-	<tr><th>Truth value</th><th>Unsigned</th><th>Balanced</th></tr>
-	<tr><td>false</td><td>0</td><td>-</td></tr>
-	<tr><td>unknown</td><td>1</td><td>0</td></tr>
-	<tr><td>truth</td><td>2</td><td>+</td></tr>
-</table>
-
 <p>Base 3, on the other hand, does have a genuine mathematical distinction in
 its favor. By one plausible measure, it is the most efficient of all integer
 bases; it offers the most economical way of representing numbers as it is
@@ -28,11 +21,14 @@ closer than binary to the most economical radix base(2.718) to represent
 arbitrary numbers, when economy is measured as the product of the radix and the
 number of digits needed to express a given range of values.</p>
 
-<img src='../media/refs/3eyes.jpg' width='200'/>
+<table border='1'>
+	<tr><th>Truth value</th><th>Unsigned trit</th><th>Balanced trit</th></tr>
+	<tr><td>false</td><td>0</td><td>-</td></tr>
+	<tr><td>unknown</td><td>1</td><td>0</td></tr>
+	<tr><td>truth</td><td>2</td><td>+</td></tr>
+</table>
 
-<p>While you can see at a glance whether a binary number is even or odd by
-looking at the last digit, it is subtler with ternary in which a numeral
-represents an even number if the numeral has an even number of 1s. </p>
+<img src='../media/refs/3eyes.jpg' width='200'/>
 
 <h3>Balanced Ternary</h3>
 
@@ -60,6 +56,25 @@ the same operation: Just negate one number and then add. Negation itself is
 also effortless: Change every N into a 1, and vice versa. Rounding is mere
 truncation: Setting the least-significant trits to 0 automatically rounds to
 the closest power of 3.</p>
+
+<h3>Encoding</h3>
+<p>Five trits can be stored in a byte by using modulo and division, this
+technique can store 243 possible values in a byte:</p>
+<pre>
+(n % 3) + '0', n /= 3;
+</pre>
+
+<p>If the number is encoded first into something like a float, it makes
+unpacking <a href='https://compilade.net/blog/ternary-packing'
+target='_blank'>possible without division</a>:</p>
+<pre>
+uint8_t q = (((uint16_t) i) * 256 + (243 - 1)) / 243;
+for (int j = 0; j < 5; ++j) {
+	uint16_t m = q * 3;
+	s2[j] = (m >> 8) + '0';
+	q = m & 0xFF;
+}
+</pre>
 
 <q>Perhaps the prettiest number system of all is the balanced ternary notation.</q>
 <cite>Donald E. Knuth, The Art of Computer Programming</cite>
