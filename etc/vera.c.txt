@@ -53,6 +53,8 @@ scmp(char *a, char *b)
 	while(*a && *b) {
 		if(*a == ',' && !*b) break;
 		if(*a != *b) break;
+		if(*a == ' ') a = walk_ws(a);
+		if(*b == ' ') b = walk_ws(b);
 		a++, b++;
 	}
 	return !*b && (*a == ',' || *a == key || *a <= 0x20);
@@ -79,8 +81,11 @@ walk_symbol(char *s, int *id)
 		return s;
 	}
 	*_syms = _dict;
-	while(s[0] && s[0] != key && s[0] != ',' && s[0] != 0xa && s[0] != key)
+	while(s[0] && s[0] != key && s[0] != ',' && s[0] != 0xa && s[0] != key) {
 		*_dict++ = *s++;
+		if(*s == ' ')
+			s = walk_ws(s), *_dict++ = ' ';
+	}
 	trim(_syms);
 	*_dict++ = 0, *id = _syms - &syms[0], _syms++;
 	return s;
@@ -202,7 +207,7 @@ main(int argc, char *argv[])
 	int a = 1;
 	if(argc < 2)
 		return !printf(
-			"Vera, 30 Nov 2024.\nusage: vera input.vera\n");
+			"Vera, 6 Dec 2024.\nusage: vera input.vera\n");
 	if(!(f = fopen(argv[a], "r")))
 		return !printf("Source missing: %s\n", argv[a]);
 	if(!fread(&src, 1, SRC_SZ, f))
