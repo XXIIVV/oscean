@@ -32,10 +32,13 @@
 	.Screen/height DEI2 #01 SFT2 #0018 ADD2 .center/y STZ2
 	( | init )
 	[ LIT2 05 -timer/frame ] STZ
-	<clear-screen>
+	#0000 DUP2 .Screen/x DEO2
+	.Screen/y DEO2
+	[ LIT2 81 -Screen/pixel ] DEO
 	.center/y LDZ2 #0050 SUB2 .Screen/y DEO2
 	#08 ;head-icn <draw-body>
 	#05 ;body-icn <draw-body>
+	BRK
 
 @on-frame ( -> )
 	( | once per second )
@@ -55,7 +58,7 @@
 	( name ) "Catclock 0a
 	( details ) "Tic 20 "Tac 20 "Cat 20 "Clock 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "13 20 "Jul 20 "2024 $1
+	( date ) "8 20 "Dec 20 "2024 $1
 	( elements ) 01
 	( > icon ) 83 =appicon
 
@@ -109,7 +112,8 @@
 	#0314 !<draw-times>
 
 @<draw-needles> ( mask -- )
-	( clear ) .center/x LDZ2 #0010 SUB2 .Screen/x DEO2
+	( | clear )
+	.center/x LDZ2 #0010 SUB2 .Screen/x DEO2
 	.center/y LDZ2 #0010 SUB2 .Screen/y DEO2
 	;fill-icn .Screen/addr DEO2
 	[ LIT2 31 -Screen/auto ] DEO
@@ -130,6 +134,7 @@
 	.center/x LDZ2 #0020 SUB2 .Screen/x DEO2
 	.Screen/addr DEO2
 	#04
+	( >> )
 
 @<draw-times> ( times color -- )
 	STH
@@ -139,6 +144,15 @@
 		INC DUP ?&>ver
 	POP POP2r JMP2r
 
+%abs2 ( a* -- res* ) {
+	DUP2k #1f SFT2 MUL2 SUB2 }
+
+%lts2 ( a* b* -- f ) {
+	SUB2 POP #07 SFT }
+
+%gts2 ( a* b* -- f ) {
+	SWP2 lts2 }
+
 @<draw-line> ( x1* y1* x2* y2* color -- )
 	,&color STR
 	,&y2 STR2
@@ -147,13 +161,13 @@
 	STH2
 	( | x )
 	[ LIT2 ADD2r SUB2r ] ,&x2 LDR2 STH2kr SUB2k abs2 ,&dx STR2
-	SWP2 lts2 [ JMP SWP POP ] ,&sx STR
+	gts2 [ JMP SWP POP ] ,&sx STR
 	SWP2r
 	( | y )
 	[ LIT2 ADD2r SUB2r ] ,&y2 LDR2 STH2kr SUB2k abs2 #0000 SWP2 SUB2 ,&dy STR2
-	SWP2 lts2 [ JMP SWP POP ] ,&sy STR
+	gts2 [ JMP SWP POP ] ,&sy STR
 	,&dx LDR2 ,&dy LDR2 ADD2
-	&>while ( -- )
+	&>while ( x+y* | x* y* -- )
 		DUP2r [ LITr -Screen/y ] DEO2r
 		OVR2r [ LITr -Screen/x ] DEO2r
 		[ LIT2 &color $1 -Screen/pixel ] DEO
@@ -168,26 +182,6 @@
 			( y1+sy ) [ LIT2r 0001 ] [ &sy $1 ] }
 		!&>while
 	&end POP2 POP2r POP2r JMP2r
-
-@<clear-screen> ( -- )
-	#0000 DUP2 .Screen/x DEO2
-	.Screen/y DEO2
-	[ LIT2 81 -Screen/pixel ] DEO
-	JMP2r
-
-(
-@|stdlib )
-
-@abs2 ( a* -- f )
-	DUP2 #0f SFT2 EQU ?{ #0000 SWP2 SUB2 }
-	JMP2r
-
-@gts2 ( a* b* -- f )
-	SWP2
-	( >> )
-
-@lts2 ( a* b* -- f )
-	SUB2 POP #07 SFT JMP2r
 
 
 

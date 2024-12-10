@@ -6,6 +6,7 @@
 |80 @Controller &vector $2 &button $1 &key $1
 |90 @Mouse &vector $2 &x $1 &lx $1 &y $1 &ly $1 &state $1 &chord $1
 |a0 @File &vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+
 |000
 
 	@page $1
@@ -37,7 +38,7 @@
 	( name ) "Note 20 "Pad 0a
 	( details ) "Original 20 "by 20 "Donn 20 "Denman 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "12 20 "Jun, 20 "2024 $1
+	( date ) "9 20 "Dec 20 "2024 $1
 	( fields ) 01
 	( > icon ) 83 =appicon
 
@@ -101,8 +102,7 @@
 	<draw-header>
 	( release on close button ) .Mouse/state DEI ?&unchanged
 	.Mouse/x DEI2 #0008 SUB2 #000a GTH2 ?&unchanged
-	( exit ) #800f DEO
-	&unchanged BRK
+	( exit ) #800f DEO &unchanged BRK
 
 @on-mouse-body ( -> )
 	<trap-mouse>
@@ -130,8 +130,7 @@
 		#01 <set-pixel>
 		<draw-sketch> }
 	DUP #01 NEQ ?{
-		( release/drag mouse1 )
-		( from* ) [ LIT2 &x1 $2 ] [ LIT2 &y1 $2 ]
+		( release/drag mouse1 ) ( from* ) [ LIT2 &x1 $2 ] [ LIT2 &y1 $2 ]
 		( to ) .Mouse/x DEI2 DUP2 ,&x1 STR2
 		.Mouse/y DEI2 #0012 SUB2 DUP2 ,&y1 STR2
 		( paint ) #01 <paint-line>
@@ -148,10 +147,12 @@
 	( | continue )
 	[ LIT2 00 -Mouse/state ] DEI NEQ .Mouse/x DEI2 #0018 LTH2 AND ?&down
 	BRK
+
 	&down ( -> )
 	[ LIT2 00 -Mouse/state ] DEO
 	.Mouse/y DEI2 #00da SUB2 NIP [ LIT2 18 -Mouse/lx ] DEI SUB ADD #18 LTH ?&go-next
-	prev-page BRK &go-next next-page BRK
+	prev-page BRK
+	&go-next next-page BRK
 
 @on-frame ( -> )
 	[ LIT2 &last $1 &f $1 ] INCk ,&f STR
@@ -170,25 +171,21 @@
 	DUP #0d EQU #03 MUL SUB .selection/length LDZ2 #0000 EQU2 ?{ erase-selection }
 	get-from STH2k #0001 SUB2 get-eof #0001 <msfr>
 	STH2kr STA
-	STH2r INC2 <select-from>
-	!file-save
+	STH2r INC2 <select-from> !file-save
 
 @erase ( -- )
 	#00 ;on-frame/f STA
 	.selection/length LDZ2 #0000 EQU2 ?{ erase-selection !<select-reset> }
-	get-from get-page NEQ2 [ JMP JMP2r ] get-from #0001 SUB2 DUP2 cut-char <select-from>
-	!file-save
+	get-from get-page NEQ2 [ JMP JMP2r ] get-from #0001 SUB2 DUP2 cut-char <select-from> !file-save
 
 @erase-selection ( -- )
-	get-from get-eof .selection/length LDZ2 <msfl>
-	!file-save
+	get-from get-eof .selection/length LDZ2 <msfl> !file-save
 
 @delete ( -- )
 	#00 ;on-frame/f STA
 	.selection/length LDZ2 ORA ?{
 		get-from INC2k get-eof NEQ2 ?{ POP2 JMP2r }
-		cut-char <redraw>
-		!file-save }
+		cut-char <redraw> !file-save }
 	erase-selection !<select-reset>
 
 @get-eof ( -- addr* )
@@ -206,8 +203,8 @@
 	POP2 !<update-cursor>
 
 @erase-sketch ( -- )
-	;&mcpy .System/expansion DEO2
-	!<redraw>
+	;&mcpy .System/expansion DEO2 !<redraw>
+
 	&mcpy [ 00 1500 0000 =sketch 00 ]
 
 @get-row ( x* y* -- row* )
@@ -289,13 +286,11 @@
 
 @<select-from> ( addr* -- )
 	clamp-selection DUP2 .selection/a STZ2
-	.selection/b STZ2
-	!select
+	.selection/b STZ2 !select
 
 @<select-to> ( addr* -- )
 	clamp-selection DUP2 .selection/b LDZ2 NEQ2 ?{ POP2 JMP2r }
-	.selection/b STZ2
-	!select
+	.selection/b STZ2 !select
 
 @<select-word> ( addr* -- )
 	DUP2
@@ -306,15 +301,23 @@
 		INC2 LDAk #20 GTH ?&>next
 	OVR2 OVR2 is-selection ?{
 		.selection/b STZ2
-		.selection/a STZ2
-		!select }
+		.selection/a STZ2 !select }
 	POP2
 	( >> )
 
 @<select-line> ( addr* -- )
-	DUP2 find-line-start .selection/a STZ2
-	find-line-end .selection/b STZ2
-	!select
+	DUP2 find-line-start
+	( | marker )
+	LDAk [ LIT "> ] NEQ ?{
+		STH2
+		[ LIT "- ] STH2r STA
+		POP2 <select-reset> !file-save }
+	LDAk [ LIT "- ] NEQ ?{
+		STH2
+		[ LIT "> ] STH2r STA
+		POP2 <select-reset> !file-save }
+	.selection/a STZ2
+	find-line-end .selection/b STZ2 !select
 
 @<select-all> ( -- )
 	get-page DUP2 .selection/a STZ2
@@ -323,8 +326,7 @@
 
 @select ( -- )
 	get-to get-from SUB2 .selection/length STZ2
-	#00 ;on-frame/f STA
-	!<redraw>
+	#00 ;on-frame/f STA !<redraw>
 
 @<select-left> ( -- )
 	.selection/length LDZ2 #0000 EQU2 [ LIT2 04 -Controller/button ] DEI AND #00 NEQ ORA ?{ get-from !<select-from> }
@@ -373,6 +375,7 @@
 		#20 STH2r STA
 		INC GTHk ?&>l
 	POP2 JMP2r
+
 	&mcpy [ 01 0100 0000 =placeholder 0000 =mem ]
 
 @file-save ( -- )
@@ -405,8 +408,7 @@
 	get-from STH2r ADD2 !<select-from>
 
 @edit-cut ( -- )
-	.selection/length LDZ2 #0001 GTH2 [ JMP JMP2r ] edit-copy erase-selection <select-reset>
-	!file-save
+	.selection/length LDZ2 #0001 GTH2 [ JMP JMP2r ] edit-copy erase-selection <select-reset> !file-save
 
 @edit-copy ( -- )
 	.selection/length LDZ2 #0001 GTH2 [ JMP JMP2r ] ;snarf-path .File/name DEO2
@@ -466,8 +468,7 @@
 	&>walk-char ( -- )
 		.Screen/x DEI2 [ LIT2 &x $2 ] GTH2 ?&end-char
 		walk-char ?&end-char
-		INC2 LDAk ?&>walk-char
-	&end-char JMP2r
+		INC2 LDAk ?&>walk-char &end-char JMP2r
 
 @walk-char ( addr* -- addr* lb )
 	( | wrap )
@@ -481,8 +482,9 @@
 	( lb line ) DUP2 #013e NEQ2 ?{ POP2 #01 #0011 !<draw-linebreak> }
 	( lb caret ) DUP2 #012d NEQ2 ?{ POP2 #01 #0012 !<draw-linebreak> }
 	POP2 #01 #0008 !<draw-linebreak>
+
 	&no-wrap ( char )
-	LDAk char-width .Screen/x DEI2 ADD2 .Screen/x DEO2
+	char-width .Screen/x DEI2 ADD2 .Screen/x DEO2
 	( | tab )
 	LDAk #09 NEQ ?{ #00 !<draw-tab> }
 	( | linebreak )
@@ -504,15 +506,20 @@
 	&marker POP2 ;marker-icn JMP2r
 	&bullet POP2 ;bullet-icn JMP2r
 
-@char-width ( char -- width* )
-	DUP #7e GTH ?{
+@char-width ( addr* -- addr* width* )
+	LDAk DUP #7e GTH ?{
+		( | marker )
+		DUP [ LIT "> ] EQU OVR [ LIT "- ] EQU ORA #00 EQU ?{
+			STH
+			DUP2 #0001 SUB2 LDA #1f GTH ?{ POPr #0010 JMP2r }
+			STHr }
 		#20 SUB #00 SWP ;font ADD2 LDA #00 SWP JMP2r }
 	POP #0008 JMP2r
 
 @word-width ( str* -- length* )
 	[ LIT2r 0000 ]
 	&>w ( -- )
-		LDAk char-width STH2
+		char-width STH2
 		ADD2r INC2 LDAk #20 GTH ?&>w
 	POP2 STH2r JMP2r
 
@@ -520,30 +527,26 @@
 	;mem #0001 SUB2 SWP2
 	&>l ( -- )
 		#0001 SUB2 LDAk DUP #0a EQU SWP #00 EQU ORA ?&end
-		LTH2k ?&>l
-	&end NIP2 INC2 JMP2r
+		LTH2k ?&>l &end NIP2 INC2 JMP2r
 
 @find-line-end ( addr* -- addr* )
 	get-eof SWP2
 	&>l ( -- )
 		LDAk #0a EQU ?&end
 		LDAk #00 EQU ?&end
-		INC2 GTH2k ?&>l
-	&end NIP2 JMP2r
+		INC2 GTH2k ?&>l &end NIP2 JMP2r
 
 @find-word-start ( addr* -- addr* )
 	;mem SWP2
 	&>l ( -- )
 		#0001 SUB2 LDAk #21 LTH ?&end
-		LTH2k ?&>l
-	&end NIP2 INC2 JMP2r
+		LTH2k ?&>l &end NIP2 INC2 JMP2r
 
 @find-word-end ( addr* -- addr* )
 	get-eof SWP2
 	&>l ( -- )
 		LDAk #21 LTH ?&end
-		INC2 GTH2k ?&>l
-	&end NIP2 JMP2r
+		INC2 GTH2k ?&>l &end NIP2 JMP2r
 
 (
 @|drawing )
@@ -586,8 +589,7 @@
 	#0000 .Screen/x DEO2
 	#0018 .Screen/y DEO2
 	[ LIT2 80 -Screen/pixel ] DEO
-	<draw-note>
-	!<draw-footer>
+	<draw-note> !<draw-footer>
 
 @<draw-note> ( -- )
 	[ LIT2 00 -collapsed ] LDZ EQU ?{ JMP2r }
@@ -612,8 +614,7 @@
 		;on-frame/last LDA #01 AND ?&block
 		;blink-icn .Screen/addr DEO2
 		[ LIT2 05 -Screen/sprite ] DEO
-		.Screen/x DEI2k #0008 SUB2 ROT DEO2
-		&block walk-char POP INC2 LDAk ?&>w
+		.Screen/x DEI2k #0008 SUB2 ROT DEO2 &block walk-char POP INC2 LDAk ?&>w
 	POP2
 	( >> )
 
@@ -701,8 +702,7 @@
 @|stdlib )
 
 @scap ( str* -- end* )
-	&>w ( -- )
-		INC2 & LDAk ?&>w
+	INC2 & LDAk ?scap
 	JMP2r
 
 @<phex> ( short* -: )
@@ -791,12 +791,12 @@
 	0000 00fe 00fe 00fe 00fe 00fe 00fe 0000 ]
 
 @marker-icn [
-	0000 0000 0000 4060 7060 4000 0000 0000
-	0000 0000 0000 0000 0000 0000 0000 0000 ]
+	0007 1823 2f4f 5f5f 5f5f 4f2f 2318 0700
+	00e0 18c4 f4f2 fafa fafa f2f4 c418 e000 ]
 
 @bullet-icn [
-	0000 0000 0000 3078 7830 0000 0000 0000
-	0000 0000 0000 0000 0000 0000 0000 0000 ]
+	0007 1820 2040 4040 4040 4020 2018 0700
+	00e0 1804 0402 0202 0202 0204 0418 e000 ]
 
 @etc-icn [
 	0000 0000 0000 0000 0000 0000 0054 0000 ]

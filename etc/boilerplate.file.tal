@@ -1,0 +1,88 @@
+( .. )
+
+|00 @System &vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
+|10 @Console &vector $2 &read $5 &type $1 &write $1 &error $1
+|a0 @File1 &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|b0 @File2 &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+
+|000
+
+	@src/buf $40
+	@dst/buf $40
+
+|100
+
+@on-reset ( -> )
+	;src/on-console
+	( >> )
+
+@<await> ( addr* -> )
+	.Console/vector DEO2
+	.Console/type DEI ?{ ;dict/usage <pstr>
+		#800f DEO }
+	BRK
+
+(
+@|vectors )
+
+@src/on-console ( -> )
+	.Console/read DEI
+	( end ) DUP #20 GTH ?{ POP ;dst/on-console !<await> }
+	[ LIT2 00 &ptr -src/buf ] INCk ,&ptr STR
+	STZ2
+	BRK
+
+@dst/on-console ( -> )
+	.Console/read DEI
+	( end ) DUP #20 GTH ?{ POP !<compile> }
+	[ LIT2 00 &ptr -dst/buf ] INCk ,&ptr STR
+	STZ2
+	BRK
+
+(
+@|core )
+
+@<compile> ( -> )
+	src/load ?{
+		;dict/err-empty <perr>
+		;src/buf <perr>
+		#0a19 DEO
+		#010f DEO
+		BRK }
+	;src/buf <pstr>
+	#2018 DEO
+	;dst/buf <pstr>
+	#0a18 DEO
+	#800f DEO
+	BRK
+
+@src/load ( -- succ )
+	;src/buf .File1/name DEO2
+	#4000 .File1/length DEO2
+	;src/content .File1/read DEO2
+	.File1/success DEI2 ORA JMP2r
+
+@<phex> ( short* -: )
+	SWP /b
+	&b ( byte -: )
+	DUP #04 SFT /c
+	&c ( byte -: )
+	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
+	JMP2r
+
+@<pstr> ( str* -: )
+	LDAk #18 DEO
+	INC2 & LDAk ?<pstr>
+	POP2 JMP2r
+
+@<perr> ( str* -- )
+	LDAk #19 DEO
+	INC2 & LDAk ?<pstr>
+	POP2 JMP2r
+
+@dict
+	&usage "usage: 20 "uxncli 20 "compiler.rom 20 "in.fra 20 "out.rom 0a $1
+	&err-empty "File 20 "not 20 "found: 20 $1
+
+@src/content $4000
+
