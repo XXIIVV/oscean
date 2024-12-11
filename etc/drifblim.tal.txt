@@ -23,7 +23,7 @@
 	;await-src
 	( >> )
 
-@<await> ( addr* -> )
+@<on-await> ( addr* -> )
 	.Console/vector DEO2
 	.Console/type DEI ?{ ;dict/usage <pstr>
 		#010f DEO }
@@ -31,27 +31,30 @@
 
 @await-src ( -> )
 	.Console/read DEI
-	( ) DUP #20 GTH ?{ POP ;await-dst !<await> }
+	( ) DUP #20 GTH ?{ POP ;await-dst !<on-await> }
 	[ LIT2 00 &ptr -src ] INCk ,&ptr STR
 	STZ2
 	BRK
 
 @await-dst ( -> )
 	.Console/read DEI
-	( ) DUP #20 GTH ?{
-		POP <assemble>
-		refs/<resolve>
-		( | handle error )
-		.halt LDZ ?{
-			.rom/length LDZ2 ORA ?on-success
-			;dst ;err/empty <set-error-scope> }
-		#010f DEO
-		BRK }
+	( ) DUP #20 GTH ?{ POP !<on-ready> }
 	[ LIT2 00 &ptr -dst ] INCk ,&ptr STR
 	STZ2
 	BRK
 
-@on-success ( -> )
+@<on-ready> ( -> )
+	#0100 rom/<set-head>
+	;dict/reset <set-scope>
+	;src <handle-file>
+	refs/<resolve>
+	.halt LDZ ?{
+		.rom/length LDZ2 ORA ?<on-success>
+		;dst ;err/empty <set-error-scope> }
+	#010f DEO
+	BRK
+
+@<on-success> ( -> )
 	rom/<save>
 	syms/<save>
 	<print-info>
@@ -62,16 +65,10 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "17 20 "Aug 20 "2024 $2
+	( date ) "11 20 "Dec 20 "2024 $2
 
 (
 @|Core )
-
-@<assemble> ( -- )
-	#0100 rom/<set-head>
-	;dict/reset <set-scope>
-	;src
-	( >> )
 
 @<handle-file> ( f* -- )
 	DUP2 .File/name DEO2
@@ -206,8 +203,8 @@
 	INC2
 	( | validate )
 	is-hex ?&macro-invalid
-	is-opcode ?&macro-invalid
 	is-runic ?&macro-invalid
+	is-opcode ?&macro-invalid
 	DUP2 syms/find INC2 ORA ?&macro-duplicate
 	DUP2 macros/find INC2 ORA ?&macro-duplicate
 	( | record )
@@ -269,8 +266,7 @@
 
 @macros/<append> ( c -- )
 	( | normalize )
-	#20 GTHk ?{ SWP }
-	POP
+	#20 GTHk [ JMP SWP POP ]
 	( | join spaces )
 	DUP #20 NEQ ?{
 		DUP [ LIT &last 20 ] NEQ ?{ POP JMP2r } }
@@ -325,8 +321,8 @@
 	( lb ) /<push-byte>
 	( type ) /<push-byte>
 	is-hex ?&invalid
-	is-opcode ?&invalid
 	is-runic ?&invalid
+	is-opcode ?&invalid
 	( >> )
 
 @syms/<push-string> ( word* -- )
@@ -480,7 +476,16 @@
 	POP2 JMP2r
 
 @rom/<write-opcode> ( str* -: )
-	find-opcode !&<write-byte>
+	match-opcode NIP #63 SWP SUB #03 DIV #1f AND STH
+	LDA2k [ LIT2 "LI ] EQU2 #70 SFT STH
+	ORAr #0003 ADD2
+	&>w ( -- )
+		LDAk #21 LTH ?{
+			LDAk [ LIT "k ] NEQ ?{ LITr 80 ORAr !&r }
+			LDAk [ LIT "r ] NEQ ?{ LITr 40 ORAr !&r }
+			LDAk [ LIT "2 ] NEQ ?{ LITr 20 ORAr !&r }
+			;token ;err/opcode <set-error-scope> &r INC2 !&>w }
+	POP2 STHr !&<write-byte>
 
 @rom/<write-lithex> ( str* -: )
 	is-hex ?{
@@ -548,27 +553,17 @@
 	POP2 POP2 #ffff JMP2r
 
 @is-opcode ( str* -- str* f )
-	DUP2 find-opcode ?{ DUP2 ;opcodes/brk !scmp3 }
-	#01 JMP2r
+	match-opcode INC2 ORA JMP2r
 
-@find-opcode ( name* -- byte )
-	,&t STR2
-	#2000
+@match-opcode ( str* -- str* opcode* )
+	LDA2k ,&xxo STR2
+	INC2k INC2 LDA ,&oox STR
+	;opcodes/end ;opcodes
 	&>l ( -- )
-		#00 OVR #03 MUL ;opcodes ADD2 [ LIT2 &t $2 ] scmp3 ?{
-			INC GTHk ?&>l
-		POP2 #00 JMP2r }
-	( add keep mode to LIT ) NIP DUP #00 EQU #70 SFT ORA
-	( move to modes ) ,&t LDR2 #0003 ADD2
-	( keep flag ) [ LITr 00 ]
-	&>w ( -- )
-		LDAk #20 OVR [ LIT "2 ] EQU ?&end
-		DUP ADD OVR [ LIT "r ] EQU ?&end
-		DUP ADD OVR [ LIT "k ] EQU ?&end
-		DUP ADD OVR #00 EQU ?&end
-		( ! ) ;token ;err/opcode <set-error-scope> &end STH
-		POP ORAr INC2 LDAk ?&>w
-	POP2 STHr ADD JMP2r
+		LDA2k [ LIT2 &xxo $2 ] NEQ2 ?{
+			INC2k INC2 LDA [ LIT &oox $1 ] NEQ ?{ SUB2 JMP2r } }
+		#0003 ADD2 GTH2k ?&>l
+	POP2 POP2 #ffff JMP2r
 
 @is-hex ( str* -- str* f )
 	DUP2
@@ -586,11 +581,6 @@
 
 @slen ( str* -: len* )
 	DUP2 scap/ SWP2 SUB2 JMP2r
-
-@scmp3 ( a* b* -- f )
-	STH2
-	LDAkr LDAk STHr NEQ ?{ INC2r INC2 }
-	LDA2r LDA2 STH2r EQU2 JMP2r
 
 @shex ( str* -: value* )
 	[ LIT2r 0000 ]
@@ -688,7 +678,7 @@
 	"EQU "NEQ "GTH "LTH "JMP "JCN "JSR "STH
 	"LDZ "STZ "LDR "STR "LDA "STA "DEI "DEO
 	"ADD "SUB "MUL "DIV "AND "ORA "EOR "SFT
-	&brk "BRK ]
+	"BRK ] &end
 
 @runes [
 	"| =lib/padabs "$ =lib/padrel
