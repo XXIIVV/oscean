@@ -218,6 +218,16 @@ parse_symbol(char **dst, char *s)
 	return scap(s);
 }
 
+static void
+validate(Rule *r)
+{
+	int i;
+	for(i = r - rules - 1; i >= 0; i--)
+		if(mask(&r->fden, rules[i].den))
+			fprintf(stdout, "(unreachable)\n");
+	r++;
+}
+
 static char *
 parse_rule(char *_s)
 {
@@ -246,7 +256,7 @@ parse_rule(char *_s)
 	if(side && r->den > 1) {
 		create(&r->fnum, r->num), create(&r->fden, r->den);
 		fprintf(stderr, ":: %lu/%lu ", r->num, r->den), print_frag(stderr, &r->fden, 1);
-		fprintf(stderr, "> "), print_frag(stderr, &r->fnum, 1), fprintf(stderr, "\n");
+		fprintf(stderr, "> "), print_frag(stderr, &r->fnum, 1), validate(r), fprintf(stderr, "\n");
 	} else /* forward declarations */
 		_rules--;
 	return _s;
@@ -295,7 +305,7 @@ main(int argc, char *argv[])
 	FILE *f;
 	int i, a = 1, repl = 0;
 	char c, src[SRC_SZ], *_src = src;
-	if(argc < 2) return !printf("Fractran Rewriting, 9 Dec 2024.\nusage: fractran [-i] input.fra [arguments..]\n");
+	if(argc < 2) return !printf("Fractran Rewriting, 13 Dec 2024.\nusage: fractran [-i] input.fra [arguments..]\n");
 	if(argv[a][0] == '-' && argv[a][1] == 'i') repl = 1, a++;
 	if(!(f = fopen(argv[a], "r"))) return !printf("Source missing: %s\n", argv[a]);
 	if(!fread(&src, 1, SRC_SZ, f)) return !printf("Source empty: %s\n", argv[a]);

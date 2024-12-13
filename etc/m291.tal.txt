@@ -24,6 +24,10 @@
 
 |100
 
+@WIDTH
+
+|100
+
 @on-reset ( -> )
 	;meta #06 DEO2
 	( | theme )
@@ -32,7 +36,7 @@
 	.System/b DEO2
 	<load-theme>
 	( | size )
-	#0100 .Screen/width DEO2
+	;WIDTH .Screen/width DEO2
 	( | .. )
 	message/<new>
 	;dict/mpg-cmd .Console/addr DEO2
@@ -52,7 +56,7 @@
 	( name ) "m291 0a
 	( desc ) "Audio 20 "Player 0a
 	( auth ) "By 20 "Linvega 20 "& 20 "d6 0a
-	( date ) "15 20 "Sep 20 "2024 $2
+	( date ) "12 20 "Dec 20 "2024 $2
 
 %min ( x y -- min ) {
 	LTHk [ JMP SWP POP ] }
@@ -93,7 +97,7 @@
 
 	&status-bar ( y* -> )
 	POP2 .Mouse/state DEI ?{ BRK }
-	.Mouse/x DEI2 .Screen/width DEI2 #0018 SUB2 GTH2 ?{ BRK }
+	.Mouse/x DEI2 ;WIDTH #0018 SUB2 GTH2 ?{ BRK }
 	<change-mode>
 	;on-mouse-locked .Mouse/vector DEO2
 	BRK
@@ -366,7 +370,7 @@
 	#00
 	( folders ) .lines/folders LDZ
 	( tracks ) .lines/tracks LDZ ADD
-	( scroll ) #18 LTHk [ JMP SWP ] POP
+	( scroll ) #18 LTHk [ JMP SWP POP ]
 	( empty ) DUP #00 EQU ADD #40 SFT2
 	( padding ) #0020 ADD2
 	( playing ) [ LIT2 00 -playing ] LDZ EQU ?{ #0080 ADD2 }
@@ -620,7 +624,7 @@
 			POPr [ LITr 06 ] ;fill-icn <draw-background> }
 		( | gizmo )
 		.Screen/y DEI2 [ LIT2 15 -Screen/auto ] DEO
-		.Screen/width DEI2 #0010 SUB2 .Screen/x DEO2
+		;WIDTH #0010 SUB2 .Screen/x DEO2
 		[ LIT2 00 "> ] #20 SUB #50 SFT2 ;font/glyphs ADD2 .Screen/addr DEO2
 		DUPr [ LITr -Screen/sprite ] DEOr
 		.Screen/y DEO2
@@ -649,7 +653,7 @@
 @<draw-mode> ( -- )
 	[ LIT2 16 -Screen/auto ] DEO
 	#0004 .Screen/y DEO2
-	.Screen/width DEI2 #0014 SUB2 .Screen/x DEO2
+	;WIDTH #0014 SUB2 .Screen/x DEO2
 	;mode-icns [ LIT2 00 -mode ] LDZ #50 SFT2 ADD2 .Screen/addr DEO2
 	[ LIT2 03 -Screen/sprite ] DEOk DEO
 	JMP2r
@@ -793,7 +797,7 @@
 	[ LIT2 15 -Screen/auto ] DEO
 	#8000 .Screen/x DEO2
 	#0070 .Screen/y DEO2
-	.secto LDZ2 .Screen/width DEI2 OVR2 <draw-time>
+	.secto LDZ2 ;WIDTH OVR2 <draw-time>
 	.Screen/x DEI2 #7ff8 SUB2 SUB2 .Screen/x DEO2
 	#01 ;<draw-glyph-ascii>/color STA
 	( >> )
@@ -885,7 +889,7 @@
 
 @<draw-uf2-scroll> ( offset* text* -- )
 	[ LIT2 15 -Screen/auto ] DEO
-	.Screen/width DEI2 ,&bound STR2
+	;WIDTH ,&bound STR2
 	STH2k llen DIV2k MUL2 SUB2 STH2kr ADD2
 	&>w ( -- )
 		.Screen/x DEI2 [ LIT2 &bound $2 ] LTH2 ?{ POP2 POP2r JMP2r }
@@ -915,10 +919,12 @@
 @<draw-uf2> ( text* color -- )
 	,<draw-glyph-utf8>/color STR
 	[ LIT2 15 -Screen/auto ] DEO
-	.Screen/width DEI2 #0018 SUB2 ,&bound STR2
+	;WIDTH #0018 SUB2 ,&bound STR2
 	&>w ( -- )
+		( | trim mp3 )
+		LDAk [ LIT ". ] NEQ ?{ INC2k ;dict/mp3-ext scmp3 ?&end }
 		<draw-glyph-utf8>
-		( | trim )
+		( | trim length )
 		.Screen/x DEI2 [ LIT2 &bound $2 ] LTH2 ?{
 			POP2 ;dict/ellipses <draw-glyph-utf8>
 			<draw-glyph-utf8>
@@ -1006,16 +1012,14 @@
 	INC2r INC2 !&w
 
 @<pdec> ( short* -- )
-	ORAk ?{
-		POP2 [ LIT2 "0 18 ] DEO
-		JMP2r }
-	#2710 [ LIT2r 00fb ]
-	&>w ( -- )
-		DIV2k #000a DIV2k MUL2 SUB2 SWPr EQUk OVR STHkr EQU AND ?{
-			DUP [ LIT "0 ] ADD #18 DEO
-			INCr }
-		POP2 #000a DIV2 SWPr INCr STHkr ?&>w
-	POP2r POP2 POP2 JMP2r
+	#000a SWP2 [ LITr ff ]
+	&>get ( -- )
+		SWP2k DIV2k MUL2 SUB2 STH
+		POP OVR2 DIV2 ORAk ?&>get
+	POP2 POP2
+	&>put ( -- )
+		STHr INCk ?{ POP JMP2r }
+		[ LIT "0 ] ADD #18 DEO !&>put
 
 @<pstr> ( str* -- )
 	LDAk #18 DEO
