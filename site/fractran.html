@@ -405,7 +405,7 @@ AC 6240, n^5 last res fib
 08 15869140625 × 1/13 = 1220703125, res^13 
 </pre>
 
-<h3>Example: Tic-Tac-Toe</h3>
+<h3 id='tictactoe'>Example: Tic-Tac-Toe</h3>
 
 <p>Fractran's <b>output</b> capability is limited to the resulting accumulator at the end of an evaluation. The advantage of symbolic rewriting is that registers are already assigned names, so we shall print those instead. As for <b>input</b>, we can type in new symbol tokens and appending their value to the accumulator between evaluations. We can implement a <i>tic-tac-toe</i> in a mere 16 rules:</p>
 
@@ -466,7 +466,7 @@ game
 
 <p>A Fractran program specifies the wiring and logic of an interactive application, registers point to symbols in memory and so the bytecode itself is never localized as these strings reside in the application's front-end far from its logic.</p>
 
-<h3>Example: Fizzbuzz</h3>
+<h3 id='fizzbuzz'>Example: Fizzbuzz</h3>
 
 <p>Alternatively to getting the resulting program state at the end of an evaluation, we can emit the accumulator at a specific rate during the evaluation by checking if a register is active or not.</p>
 
@@ -543,92 +543,7 @@ game
 ..
 </pre>
 
-<p>To explore further, try running these <a href='https://git.sr.ht/~rabbits/fractran/tree/main/item/examples' target='_blank'>examples</a> yourself:</p>
-
-<ul>
-	<li><a href='https://git.sr.ht/~rabbits/fractran/tree/main/item/examples/life.fra' target='_blank'>Conway's Game Of Life in Conway's Fractran</a>(<a href='https://www.youtube.com/watch?v=KcL1qriy5Ho' target='_blank'>video</a>)</li>
-	<li><a href='https://git.sr.ht/~rabbits/fractran/tree/main/item/examples/collatz.fra' target='_blank'>The Collatz Sequence</a></li>
-	<li><a href='https://git.sr.ht/~rabbits/fractran/tree/main/item/examples/div.fra' target='_blank'>Divide</a></li>
-</ul>
-
-<figure>
-	<img 
-		src="../media/refs/jacek.jpg"
-		alt="Jacek, from Na srebrnym globie"/>
-	<figcaption>
-		&mdash; Jacek, an accomplished Fractran programmer.
-	</figcaption>
-</figure>
-
-<h3 id='reduction'>Reduction & Catalysts</h3>
-
-<p>Conway's Fractran traditionally compared the accumulator against <a
-href='fractions.html#reduction'>reduced fractions</a>, but
-computationally-speaking, getting to the gcd of a fraction does little more
-than getting rid of otherwise valuable information used during comparison to
-match against a restricted set of fractions. The support for <a
-href='rewriting.html#catalyst'>catalysts</a>, symbols found on both sides of a
-rewrite rule, makes for a simpler implementation and a more usable runtime.</p>
-
-<p>The following two fractions are not equal and reducing the first into the
-second, eliminates the capability to match against it <b>only</b> when the
-catalyst <code>green</code> is present in the accumulator:</p>
-
-<pre>
-:: 15/6 red green > green blue
-:: 5/2 red > blue
-
-red green
-</pre>
-
-<h3>Deadcode Elimination</h3>
-
-<p>An unreachable rule is created when a rule's left-hand side is part of the left-hand side of a rule below it:</p>
-
-<pre>
-:: foo > baz
-<i>:: foo bar > baz</i>
-
-foo bar
-</pre>
-
-<p>For a rule to be <i>reachable</i>, all the symbols in the left-hand side must be present in either the right-hand side of an other valid rule, or in the accumulator.</p>
-<pre>
-:: violet > red
-<i>:: purple > violet</i>
-
-violet
-</pre>
-
-<p>Rules that are unreachable are considered comments and should not be part of the ruleset during evaluation.</p>
-
-<h3 id='reversibility'>Reversibility</h3>
-
-<p>Fractran operators are <a href='reversible_computing.html'>reversible</a>,
-meaning that a some programs can run backward to their original state.
-Evaluation is undone by applying rules and inverting their numerator and
-denominator, or right and left sides.</p>
-
-<pre>
-AC 19, fruit-cake
-02 19 × 119/19 = 119, apple-cake fruit-salad
-01 119 × 715/17 = 5005, apples apple-cake oranges cherries
-00 5005 × 30/7 = 21450, apples apples flour sugar oranges cherries
-</pre>
-
-<p>For a program to be reversible, two rules may <b>not</b> share identical
-numerators or denominators. The implementation of a reversible CNOT logic gate
-differs from the non-reversible logic gates in that we cannot rely on the
-absence of registers, rules must contain symbols for their absence:</p>
-
-<pre>
-:: c+ t+ cnot > c+ t- cnot
-:: c+ t- cnot > c+ t+ cnot
-:: c- t+ cnot > c- t+ cnot
-:: c- t- cnot > c- t- cnot
-</pre>
-
-<h3 id='stack'>Nested Stack Machines</h3>
+<h3 id='stack'>Example: Stack Machines</h3>
 
 <p>A <a href='concatenative.html'>stack-machine</a> can be implemented in Fractran, but it's <i>not for the faint of heart</i>. This computation model keeps an entire program state in a single number, and the following stack machine allocates a whole stack into a single register of that number. The theory is that it is possible to keep a stack of zeros and ones in a single register using a <a href='binary.html#stack'>binary encoding</a> for that number.</p>
 
@@ -693,15 +608,115 @@ x^3  pop : 1 x</i>
 1) x 
 </pre>
 
-<h3>Nested Syntax</h3>
-<p>Rules could be organized in collections reagents, this syntax is currently not supported by the interpreter but might be worthwhile to consider as a extension in the future.</p>
+<p>To explore further, try running these <a href='https://git.sr.ht/~rabbits/fractran/tree/main/item/examples' target='_blank'>examples</a> yourself:</p>
+
+<ul>
+	<li><a href='https://git.sr.ht/~rabbits/fractran/tree/main/item/examples/life.fra' target='_blank'>Conway's Game Of Life in Conway's Fractran</a>(<a href='https://www.youtube.com/watch?v=KcL1qriy5Ho' target='_blank'>video</a>)</li>
+	<li><a href='https://git.sr.ht/~rabbits/fractran/tree/main/item/examples/collatz.fra' target='_blank'>The Collatz Sequence</a></li>
+	<li><a href='https://git.sr.ht/~rabbits/fractran/tree/main/item/examples/div.fra' target='_blank'>Divide</a></li>
+</ul>
+
+<figure>
+	<img 
+		src="../media/refs/jacek.jpg"
+		alt="Jacek, from Na srebrnym globie"/>
+	<figcaption>
+		&mdash; Jacek, an accomplished Fractran programmer.
+	</figcaption>
+</figure>
+
+<h3 id='reduction'>Reduction & Catalysts</h3>
+
+<p>Conway's Fractran traditionally compared the accumulator against <a
+href='fractions.html#reduction'>reduced fractions</a>, but
+computationally-speaking, getting to the gcd of a fraction does little more
+than getting rid of otherwise valuable information used during comparison to
+match against a restricted set of fractions. The support for <a
+href='rewriting.html#catalyst'>catalysts</a>, symbols found on both sides of a
+rewrite rule, makes for a simpler implementation and a more usable runtime.</p>
+
 <pre>
-:: and {
-	x y > true
-	x   > false
-	  y > false
-	    > false
-}
+:: 15/6 red green > green blue
+:: 5/2 red > blue
+
+red green
+</pre>
+
+<p>These two fractions are not equal and reducing the first into the
+second, eliminates the capability to match against it <b>only</b> when the
+catalyst <code>green</code> is present in the accumulator:</p>
+
+<h3>Deadcode Elimination</h3>
+
+<p>An unreachable rule is created when a rule's left-hand side is part of the left-hand side of a rule below it:</p>
+
+<pre>
+:: foo > baz
+<i>:: foo bar > baz</i>
+
+foo bar
+</pre>
+
+<p>For a rule to be <i>reachable</i>, all the symbols in the left-hand side must be present in either the right-hand side of an other valid rule, or in the accumulator.</p>
+<pre>
+:: violet > red
+<i>:: purple > violet</i>
+
+violet
+</pre>
+
+<p>Rules that are unreachable are considered comments and should not be part of the ruleset during evaluation.</p>
+
+<h3 id='exhaustive'>Exhaustive Rules</h3>
+<p>When moving values between registers, each move takes one rewriting and thus can quickly become computationally expensive:</p>
+<pre>
+:: a > res
+:: b > res
+
+AC 1000, a^3 b^3 
+00 1000 × 3/2 = 1500, a^2 res b^3 
+00 1500 × 3/2 = 2250, a res^2 b^3 
+00 2250 × 3/2 = 3375, res^3 b^3 
+01 3375 × 3/5 = 2025, res^4 b^2 
+01 2025 × 3/5 = 1215, res^5 b 
+01 1215 × 3/5 = 729, res^6 
+
+Completed in 6 steps.
+</pre>
+
+<p>A rule with a right-hand side that does not include symbols present in any of the left-hand sides of the rules above it can be run exhaustively and perform many applications without having to look for the next applicable rule:</p>
+<pre>
+AC 1000, a^3 b^3 
+00 1000 × 3/2 = 3375, res^3 b^3 
+01 3375 × 3/5 = 729, res^6 
+
+Completed in 2 steps.
+</pre>
+
+<h3 id='reversibility'>Reversibility</h3>
+
+<p>Fractran operators are <a href='reversible_computing.html'>reversible</a>,
+meaning that a some programs can run backward to their original state.
+Evaluation is undone by applying rules and inverting their numerator and
+denominator, or right and left sides.</p>
+
+<pre>
+AC 19, fruit-cake
+02 19 × 119/19 = 119, apple-cake fruit-salad
+01 119 × 715/17 = 5005, apples apple-cake oranges cherries
+00 5005 × 30/7 = 21450, apples apples flour sugar oranges cherries
+</pre>
+
+<p>For a program to be reversible, two rules may <b>not</b> share identical
+numerators or denominators. The implementation of a reversible CNOT logic gate
+differs from the non-reversible logic gates in that we cannot rely on the
+absence of registers, rules must contain symbols for their absence:</p>
+
+<pre>
+:: c+ t+ cnot > c+ t- cnot
+:: c+ t- cnot > c+ t+ cnot
+:: c- t+ cnot > c- t+ cnot
+:: c- t- cnot > c- t- cnot
 </pre>
 
 <figure>
