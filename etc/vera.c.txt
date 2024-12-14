@@ -62,21 +62,36 @@ find_symbol(char *s)
 }
 
 static char *
-walk_symbol(char *s, int *id)
+walk_number(char *s, int *count)
+{
+	int value = 0;
+	s = walk_ws(s + 1);
+	while(*s && *s >= '0' && *s <= '9')
+		value *= 10, value += *s - '0', s++;
+	*count = value;
+	return s;
+}
+
+static char *
+walk_symbol(char *s, int *id, int *count)
 {
 	s = walk_ws(s);
 	*id = find_symbol(s);
 	if(*id > -1) {
-		while(s[0] && s[0] != key && s[0] != ',')
-			*s++;
+		while(s[0] && s[0] != key && s[0] != ',' && s[0] != ':')
+			s++;
+		if(s[0] == ':')
+			s = walk_number(s, count);
 		return s;
 	}
 	*_syms = _dict;
-	while(s[0] && s[0] != key && s[0] != ',') {
+	while(s[0] && s[0] != key && s[0] != ',' && s[0] != ':') {
 		*_dict++ = *s++;
 		if(*s == ' ')
 			s = walk_ws(s), *_dict++ = ' ';
 	}
+	if(s[0] == ':')
+		s = walk_number(s, count);
 	trim(_syms);
 	*_dict++ = 0, *id = _syms - &syms[0], _syms++;
 	return s;
@@ -85,11 +100,11 @@ walk_symbol(char *s, int *id)
 static char *
 walk_rule(char *s)
 {
-	int id, valid = 1;
+	int id, valid = 1, count = 1;
 	/* lhs */
 	while(valid) {
-		s = walk_symbol(s, &id);
-		rules[_rules][id]++;
+		s = walk_symbol(s, &id, &count);
+		rules[_rules][id] += count;
 		if(s[0] == ',')
 			s++, valid = 1;
 		else
@@ -102,8 +117,8 @@ walk_rule(char *s)
 	s = walk_ws(s);
 	valid = s[0] != key;
 	while(valid) {
-		s = walk_symbol(s, &id);
-		rules[_rules][id + SYM_SZ]++;
+		s = walk_symbol(s, &id, &count);
+		rules[_rules][id + SYM_SZ] += count;
 		if(s[0] == ',')
 			s++, valid = 1;
 		else
@@ -116,9 +131,9 @@ walk_rule(char *s)
 static char *
 walk_fact(char *s)
 {
-	int id, valid = 1;
+	int id, valid = 1, count = 1;
 	while(valid) {
-		s = walk_symbol(s, &id), acc[id]++;
+		s = walk_symbol(s, &id, &count), acc[id] += count;
 		if(s[0] == ',')
 			s++, valid = 1;
 		else
@@ -153,7 +168,7 @@ prinths(int *hs)
 	int i;
 	for(i = 0; i < SYM_SZ; i++) {
 		if(hs[i] > 1)
-			printf("%s^%d ", syms[i], hs[i]);
+			printf("%s:%d ", syms[i], hs[i]);
 		else if(hs[i])
 			printf("%s, ", syms[i]);
 	}
