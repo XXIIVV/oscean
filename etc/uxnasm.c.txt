@@ -14,6 +14,15 @@ WITH REGARD TO THIS SOFTWARE.
 /* clang-format off */
 
 #define PAGE 0x0100
+#define ishex(x) (shex(x) >= 0)
+#define isopc(x) (findopcode(x) || scmp(x, "BRK", 4))
+#define isinvalid(x) (!x[0] || ishex(x) || isopc(x) || find(runes, x[0]) >= 0)
+#define writeshort(x) (writebyte(x >> 8, ctx) && writebyte(x & 0xff, ctx))
+#define findlabel(x) finditem(x, labels, labels_len)
+#define findmacro(x) finditem(x, macros, macro_len)
+#define error_top(id, msg) !printf("%s: %s\n", id, msg)
+#define error_asm(id) !printf("%s: %s in @%s, %s:%d.\n", id, token, scope, ctx->path, ctx->line)
+#define error_ref(id) !printf("%s: %s, %s:%d\n", id, r->name, r->data, r->line)
 
 typedef unsigned char Uint8;
 typedef signed char Sint8;
@@ -37,26 +46,66 @@ static char ops[][4] = {
 	"ADD", "SUB", "MUL", "DIV", "AND", "ORA", "EOR", "SFT"
 };
 
-static int   find(char *s, char t) { int i = 0; char c; while((c = *s++)) { if(c == t) return i; i++; } return -1; }
-static int   shex(char *s) { int d, n = 0; char c; while((c = *s++)) { d = find(hexad, c); if(d < 0) return d; n = n << 4, n |= d; } return n; }
-static int   scmp(char *a, char *b, int len) { int i = 0; while(a[i] == b[i]) if(!a[i] || ++i >= len) return 1; return 0; }
-static char *copy(char *src, char *dst, char c) { while(*src && *src != c) *dst++ = *src++; *dst++ = 0; return dst; }
-static char *save(char *s, char c) { char *o = dictnext; while((*dictnext++ = *s++) && *s); *dictnext++ = c; return o; }
-static char *join(char *a, char j, char *b) { char *res = dictnext; save(a, j), save(b, 0); return res; }
-
-#define ishex(x) (shex(x) >= 0)
-#define isopc(x) (findopcode(x) || scmp(x, "BRK", 4))
-#define isinvalid(x) (!x[0] || ishex(x) || isopc(x) || find(runes, x[0]) >= 0)
-#define writeshort(x) (writebyte(x >> 8, ctx) && writebyte(x & 0xff, ctx))
-#define findlabel(x) finditem(x, labels, labels_len)
-#define findmacro(x) finditem(x, macros, macro_len)
-#define error_top(id, msg) !printf("%s: %s\n", id, msg)
-#define error_asm(id) !printf("%s: %s in @%s, %s:%d.\n", id, token, scope, ctx->path, ctx->line)
-#define error_ref(id) !printf("%s: %s, %s:%d\n", id, r->name, r->data, r->line)
-
 /* clang-format on */
 
-static int parse(char *w, FILE *f, Context *ctx);
+static int
+find(char *s, char t)
+{
+	int i = 0;
+	char c;
+	while((c = *s++)) {
+		if(c == t) return i;
+		i++;
+	}
+	return -1;
+}
+
+static int
+shex(char *s)
+{
+	int d, n = 0;
+	char c;
+	while((c = *s++)) {
+		d = find(hexad, c);
+		if(d < 0) return d;
+		n = n << 4, n |= d;
+	}
+	return n;
+}
+
+static int
+scmp(char *a, char *b, int len)
+{
+	int i = 0;
+	while(a[i] == b[i])
+		if(!a[i] || ++i >= len) return 1;
+	return 0;
+}
+
+static char *
+copy(char *src, char *dst, char c)
+{
+	while(*src && *src != c) *dst++ = *src++;
+	*dst++ = 0;
+	return dst;
+}
+
+static char *
+save(char *s, char c)
+{
+	char *o = dictnext;
+	while((*dictnext++ = *s++) && *s);
+	*dictnext++ = c;
+	return o;
+}
+
+static char *
+join(char *a, char j, char *b)
+{
+	char *res = dictnext;
+	save(a, j), save(b, 0);
+	return res;
+}
 
 static char *
 push(char *s, char c)
@@ -118,6 +167,8 @@ walkcomment(FILE *f, Context *ctx)
 	}
 	return error_asm("Comment incomplete");
 }
+
+static int parse(char *w, FILE *f, Context *ctx);
 
 static int
 walkmacro(Item *m, Context *ctx)
@@ -415,10 +466,7 @@ main(int argc, char *argv[])
 {
 	ptr = PAGE;
 	copy("on-reset", scope, 0);
-	if(argc == 2 && scmp(argv[1], "-v", 2)) return !printf("Uxnasm - Uxntal Assembler, 29 Aug 2024.\n");
+	if(argc == 2 && scmp(argv[1], "-v", 2)) return !printf("Uxnasm - Uxntal Assembler, 14 Nov 2024.\n");
 	if(argc != 3) return error_top("usage", "uxnasm [-v] input.tal output.rom");
-	if(!assemble(argv[1])) return 1;
-	if(!resolve(argv[2])) return 1;
-	if(!build(argv[2])) return 1;
-	return 0;
+	return !assemble(argv[1]) || !resolve(argv[2]) || !build(argv[2]);
 }

@@ -24,27 +24,19 @@ static int acc[SYM_SZ], rules[RUL_SZ][SYM_SZ * 2], _rules = 0;
 static char *
 walk_ws(char *s)
 {
-	while(s[0] && s[0] <= 0x20)
+	while(*s && *s <= 0x20)
 		s++;
-	return s;
-}
-
-static char *
-scap(char *s)
-{
-	while(*s) s++;
 	return s;
 }
 
 static void
 trim(char **s)
 {
-	char *cap = scap(*s) - 1;
-	while(*cap) {
-		if(*cap > 0x20) break;
-		*cap = 0;
-		cap--;
-	}
+	char *cap = *s;
+	while(*cap) cap++;
+	cap = cap - 1;
+	while(*cap && *cap <= 0x20)
+		*cap-- = 0;
 }
 
 static int
@@ -53,9 +45,8 @@ scmp(char *a, char *b)
 	while(*a && *b) {
 		if(*a == ',' && !*b) break;
 		if(*a != *b) break;
-		if(*a == ' ') a = walk_ws(a);
-		if(*b == ' ') b = walk_ws(b);
-		a++, b++;
+		a = *a == ' ' ? walk_ws(a) : a + 1;
+		b = *b == ' ' ? walk_ws(b) : b + 1;
 	}
 	return !*b && (*a == ',' || *a == key || *a <= 0x20);
 }
@@ -76,12 +67,12 @@ walk_symbol(char *s, int *id)
 	s = walk_ws(s);
 	*id = find_symbol(s);
 	if(*id > -1) {
-		while(s && s[0] != key && s[0] != ',' && s[0] != 0xa && s[0] != key)
+		while(s[0] && s[0] != key && s[0] != ',')
 			*s++;
 		return s;
 	}
 	*_syms = _dict;
-	while(s[0] && s[0] != key && s[0] != ',' && s[0] != 0xa && s[0] != key) {
+	while(s[0] && s[0] != key && s[0] != ',') {
 		*_dict++ = *s++;
 		if(*s == ' ')
 			s = walk_ws(s), *_dict++ = ' ';
@@ -207,7 +198,7 @@ main(int argc, char *argv[])
 	int a = 1;
 	if(argc < 2)
 		return !printf(
-			"Vera, 6 Dec 2024.\nusage: vera input.vera\n");
+			"Vera, 14 Dec 2024.\nusage: vera input.vera\n");
 	if(!(f = fopen(argv[a], "r")))
 		return !printf("Source missing: %s\n", argv[a]);
 	if(!fread(&src, 1, SRC_SZ, f))

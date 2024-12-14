@@ -223,12 +223,11 @@ system_deo(Uint8 port)
 #define CONSOLE_EOA 0x3
 #define CONSOLE_END 0x4
 
-static int
+static void
 console_input(Uint8 c, int type)
 {
-	uxn.dev[0x12] = c;
-	uxn.dev[0x17] = type;
-	return uxn_eval(PEEK2(&uxn.dev[0x10]));
+	uxn.dev[0x12] = c, uxn.dev[0x17] = type;
+	uxn_eval(uxn.dev[0x10] << 8 | uxn.dev[0x11]);
 }
 
 static void
@@ -236,8 +235,8 @@ console_deo(Uint8 addr)
 {
 	FILE *fd;
 	switch(addr) {
-	case 0x18: fd = stdout, fputc(uxn.dev[0x18], fd), fflush(fd); break;
-	case 0x19: fd = stderr, fputc(uxn.dev[0x19], fd), fflush(fd); break;
+	case 0x18: fd = stdout, fputc(uxn.dev[addr], fd), fflush(fd); break;
+	case 0x19: fd = stderr, fputc(uxn.dev[addr], fd), fflush(fd); break;
 	}
 }
 
@@ -639,7 +638,7 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "Uxn11(cli) - Varvara Emulator, 14 Nov 2024.\n");
+		return !fprintf(stdout, "Uxn11(cli) - Varvara Emulator, 14 Dec 2024.\n");
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
 	else if(!system_boot((Uint8 *)calloc(0x10000 * RAM_PAGES, sizeof(Uint8)), argv[i++]))
