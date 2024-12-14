@@ -29,8 +29,8 @@ typedef struct Rule {
 
 char dict[DIC_SZ], *_dict = dict, *syms[PRM_SZ];
 unsigned long prime_lut[PRM_SZ], *_prime_lut = prime_lut;
-int symbols_len;
 Rule rules[RUL_SZ], *_rules = rules;
+int symbols_len;
 Frag accu;
 
 static char *
@@ -43,22 +43,6 @@ scap(char *s)
 	}
 	while(*s > 0x20 && *s != '}') s++;
 	return s;
-}
-
-static char *
-scpy(char *a, char *b)
-{
-	char *cap = scap(a);
-	while(a < cap) *b++ = *a++;
-	return b + 1;
-}
-
-static int
-scmp(char *a, char *b)
-{
-	char *acap = scap(a), *bcap = scap(b);
-	while(a < acap && b < bcap && *a == *b) a++, b++;
-	return a == acap && b == bcap;
 }
 
 static unsigned long
@@ -144,13 +128,18 @@ subtractive(Frag *frag, unsigned long num)
 	}
 }
 
-static char **
+static int
 find_symbol(char *s)
 {
 	int i;
-	for(i = 0; i < symbols_len; i++)
-		if(scmp(s, syms[i])) return &syms[i];
-	return NULL;
+	for(i = 0; i < symbols_len; i++) {
+		char *a = s, *b = syms[i];
+		char *acap = scap(a), *bcap = scap(b);
+		while(a < acap && b < bcap && *a == *b) a++, b++;
+		if(a == acap && b == bcap)
+			return i;
+	}
+	return -1;
 }
 
 static void print_s(FILE *f, char *symbol);
@@ -160,9 +149,10 @@ print_template(FILE *f, char *s)
 {
 	char **symbol;
 	while(*s && *s != '}') {
+		int sid;
 		while(*s && *s < 0x21) s++;
-		symbol = find_symbol(s);
-		if((symbol = find_symbol(s)) != NULL) {
+		if((sid = find_symbol(s)) >= 0) {
+			symbol = &syms[sid];
 			if(mask(&accu, prime_lut[symbol - syms])) {
 				print_s(f, *symbol);
 				while(*s && *s != '}') s++;
@@ -211,11 +201,15 @@ print_frag(FILE *f, Frag *frag, int debug)
 static char *
 parse_symbol(char **dst, char *s)
 {
-	char **sym = find_symbol(s);
-	if(sym != NULL)
-		*dst = *sym;
-	else
-		*dst = syms[symbols_len++] = _dict, _dict = scpy(s, _dict);
+	int sid = find_symbol(s);
+	if(sid >= 0)
+		*dst = syms[sid];
+	else {
+		char *cap = scap(s);
+		*dst = syms[symbols_len++] = _dict;
+		while(s < cap) *_dict++ = *s++;
+		_dict++;
+	}
 	return scap(s);
 }
 
@@ -256,9 +250,9 @@ parse_rule(char *_s)
 		} else if(*_s > 0x20) {
 			_s = parse_symbol(&sym, _s);
 			if(side)
-				r->num *= prime_lut[find_symbol(sym) - syms];
+				r->num *= prime_lut[find_symbol(sym)];
 			else
-				r->den *= prime_lut[find_symbol(sym) - syms];
+				r->den *= prime_lut[find_symbol(sym)];
 		}
 	}
 	if(side && r->den > 1) {
@@ -280,7 +274,7 @@ tokenize(char *buf)
 			_buf = parse_rule(_buf + 2);
 		else if(*_buf) {
 			_buf = parse_symbol(&sym, _buf);
-			additive(&accu, prime_lut[find_symbol(sym) - syms]);
+			additive(&accu, prime_lut[find_symbol(sym)]);
 		}
 	}
 }
@@ -317,7 +311,7 @@ main(int argc, char *argv[])
 	FILE *f;
 	int i, a = 1, repl = 0;
 	char c, src[SRC_SZ], *_src = src;
-	if(argc < 2) return !printf("Fractran Rewriting, 13 Dec 2024.\nusage: fractran [-i] input.fra [arguments..]\n");
+	if(argc < 2) return !printf("Fractran Rewriting, 14 Dec 2024.\nusage: fractran [-i] input.fra [arguments..]\n");
 	if(argv[a][0] == '-' && argv[a][1] == 'i') repl = 1, a++;
 	if(!(f = fopen(argv[a], "r"))) return !printf("Source missing: %s\n", argv[a]);
 	if(!fread(&src, 1, SRC_SZ, f)) return !printf("Source empty: %s\n", argv[a]);
