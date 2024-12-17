@@ -1,0 +1,66 @@
+( )
+
+|00 @System &vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
+|10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
+|20 @Screen &vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
+
+|100
+
+@on-reset ( -> )
+	#f0ef DUP2 .System/r DEO2
+	DUP2 .System/g DEO2
+	.System/b DEO2
+	[ LIT2 02 -Screen/auto ] DEO
+	#0010 DUP2 .Screen/x DEO2
+	.Screen/y DEO2
+	;on-console .Console/vector DEO2
+	BRK
+
+@on-console ( -> )
+	.Console/read DEI <draw-sixel>
+	BRK
+
+@on-rle ( -> )
+	.Console/read DEI [ LIT "0 ] SUBk #09 GTH ?{
+		( | capture dec length )
+		SUB [ LIT2 0a &len $1 ] MUL ADD ,&len STR
+		BRK }
+	( | draw length )
+	POP [ LIT2 00 _&len ] LDR SUB
+	&>w ( -- )
+		OVR <draw-sixel>
+		INC DUP ?&>w
+	POP2
+	( | recover )
+	[ LIT2 00 _&len ] STR
+	;on-console .Console/vector DEO2
+	BRK
+
+@<draw-sixel> ( byte -- )
+	DUP [ LIT "$ ] EQU ?<op-over>
+	DUP [ LIT "- ] EQU ?<op-line>
+	DUP [ LIT "! ] EQU ?<op-rle>
+	( + y ) LITr -Screen/y ] DEI2r
+	( + byte ) [ LIT "? ] SUB STH
+	#0600
+	&>l ( -- )
+		STHkr OVR SFT #01 AND .Screen/pixel DEO
+		INC GTHk ?&>l
+	POP2
+	( - byte ) POPr
+	( - y ) [ LITr -Screen/y ] DEO2r
+	.Screen/x DEI2k INC2 ROT DEO2
+	JMP2r
+
+@<op-line> ( char -- )
+	.Screen/y DEI2k #0006 ADD2 ROT DEO2
+	( >> )
+
+@<op-over> ( char -- )
+	POP #0010 .Screen/x DEO2
+	JMP2r
+
+@<op-rle> ( char -- )
+	;on-rle .Console/vector DEO2
+	POP JMP2r
+
