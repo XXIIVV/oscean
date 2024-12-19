@@ -23,6 +23,10 @@ run: all
 	@ ${EMU} bin/arvelie.rom
 	@ ${EMU} bin/marbles.rom
 
+push: all
+	@ git commit -am '*'
+	@ git push
+
 grab:
 	@ mkdir -p etc/uxn5
 	@ cp -r ../uxn5/index.html ../uxn5/src/ ../uxn5/pyur.svg etc/uxn5/

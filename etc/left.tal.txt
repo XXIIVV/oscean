@@ -64,7 +64,7 @@
 	( name ) "Left 0a
 	( details ) "A 20 "Text 20 "Editor 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "11 20 "Dec 20 "2024 $1 02
+	( date ) "19 20 "Dec 20 "2024 $1 02
 	( > ) 83 =appicon
 	( > ) 0a =manifest
 
@@ -76,13 +76,14 @@
 	( > ) 01 "p =file-send "Send $1
 	( > ) 01 "b =file-build "Build $1
 	( > ) 01 "q =exit "Exit $1
-	( >>>>> ) 06 "Edit $1
+	( >>>>> ) 07 "Edit $1
 	( > ) 01 "c =edit-copy "Copy $1
 	( > ) 01 "v =edit-paste "Paste $1
 	( > ) 05 "V =edit-paste-binary "Paste 20 "Binary $1
 	( > ) 01 "x =edit-cut "Cut $1
 	( > ) 00 08 =erase "Erase $1
 	( > ) 00 7f =delete "Delete $1
+	( > ) 05 "U =start-unicode "Unicode $1
 	( >>>>> ) 02 "Go $1
 	( . ) 01 "/ =go-directory "Directory $1
 	( . ) 01 0d =go-selection "Selection $1
@@ -124,6 +125,28 @@
 	( | if filepath is empty, reset to untitled )
 	;filepath LDA ?{ ;untitled-txt ;filepath scpy }
 	#01 !<draw-filepath>
+
+@start-unicode ( -- )
+	;on-button-unicode .Controller/vector DEO2
+	;unicode/buf <sclr>
+	[ LIT2 00 _on-button-unicode/ptr ] STR
+	;unicode/buf !<draw-widget-unicode>
+
+@on-button-unicode ( -> )
+	.Controller/key DEI
+	( | handlers )
+	DUP ?{ POP BRK }
+	DUP #0d NEQ ?{
+		;unicode/buf shex <insert-unicode>
+		untrap BRK }
+	DUP #08 NEQ ?{ POP untrap reqdraw-textarea BRK }
+	DUP #1b NEQ ?{ POP untrap reqdraw-textarea BRK }
+	DUP chex INC ?{ POP BRK }
+	( | append )
+	[ LIT2 00 &ptr 00 ] INCk #01 AND ,&ptr STR
+	;unicode/buf ADD2 STA
+	;unicode/buf <draw-widget-unicode>
+	BRK
 
 (
 @|vectors )
@@ -343,7 +366,8 @@
 	#0100 !<scroll-to-x>
 
 @<reset-search> ( -- )
-	#0000 .search STZ2 !update-nav
+	#0000 .search STZ2
+	reqdraw-textarea !update-nav
 
 @arrow-to-addr ( addr* button -- addr* )
 	DUP #01 AND ?&ctrl
@@ -372,6 +396,9 @@
 @<put-byte> ( byte addr* -- )
 	ROT DUP #04 SFT hexc SWP hexc SWP2 STA2
 	JMP2r
+
+@<insert-unicode> ( addr* -- )
+	#c2c0 ADD2 SWP insert !insert
 
 @<insert-char> ( c addr* -- )
 	DUP2 #0001 <msfr>
@@ -557,52 +584,42 @@
 	( >> )
 
 @find-line-start ( addr* -- addr* )
-	;text SWP2
-	&>w ( -- )
-		EQU2k ?{
-			#0001 SUB2 LDAk #0a NEQ ?&>w
-		INC2 }
-	NIP2 JMP2r
+	;text #0001 SUB2 SWP2
+	&>l ( -- )
+		prev-glyph LDAk #0a EQU ?{ LTH2k ?&>l }
+	NIP2 INC2 JMP2r
 
 @find-line-end ( addr* -- addr* )
 	get-eof SWP2
 	&>w ( -- )
 		EQU2k ?{
-			INC2 LDAk #0a NEQ ?&>w }
+			next-glyph LDAk #0a NEQ ?&>w }
 	NIP2 JMP2r
 
 @find-prev-spacer ( addr* -- addr* )
-
-	&>w ( -- )
-		#0001 SUB2 LDAk #20 GTH ?&>w
+	prev-glyph LDAk #20 GTH ?find-prev-spacer
 	INC2 JMP2r
 
 @find-next-spacer ( addr* -- addr* )
-
-	&>w ( -- )
-		INC2 & LDAk #20 GTH ?&>w
+	next-glyph & LDAk #20 GTH ?find-next-spacer
 	JMP2r
 
 @find-prev-special-top ( addr* -- addr* )
 	#0001 SUB2
 
 @find-prev-special ( addr* -- addr* )
-
-	&>w ( -- )
-		#0001 SUB2 & LDAk clab? ?&>w
+	prev-glyph & LDAk clab? ?find-prev-special
 	INC2 JMP2r
 
 @find-next-special ( addr* -- addr* )
-
-	&>w ( -- )
-		INC2 & LDAk clab? ?&>w
+	next-glyph & LDAk clab? ?find-next-special
 	JMP2r
 
 @find-first-marker ( addr* -- addr* )
 	#0002 SUB2
 	&>w ( -- )
 		DUP2 ;text LTH2 ?{
-			#0001 SUB2 LDA2k [ LIT2 0a "@ ] NEQ2 ?&>w }
+			prev-glyph LDA2k [ LIT2 0a "@ ] NEQ2 ?&>w }
 	JMP2r
 
 @find-symbol ( sym* -- addr* )
@@ -611,7 +628,7 @@
 	&>w ( -- )
 		LDAk DUP [ LIT "@ ] NEQ SWP [ LIT "% ] NEQ AND ?{
 			[ LIT2 &t $2 ] OVR2 INC2 wcmp ?&end }
-		INC2 LDAk ?&>w
+		next-glyph LDAk ?&>w
 	POP2 #0000 &end JMP2r
 
 (
@@ -655,7 +672,12 @@
 	.scroll/addr LDZ2 ;text ADD2 JMP2r
 
 @scroll-follow ( -- )
-	get-to addr-to-line .scroll/y LDZ2 LTH2k ?&move
+	get-to
+	( | horizontal )
+	DUP2 addr-to-x .scroll/x LDZ2 ADD2 .Screen/width DEI2 LTH2 ?{
+		( follow by steps of 40 ) #0040 <scroll-by-x> }
+	( | vertical )
+	addr-to-line .scroll/y LDZ2 LTH2k ?&move
 	[ LIT2 &lines $2 ] ADD2 GTH2k ?&move
 	POP2 POP2 JMP2r
 
@@ -783,13 +805,11 @@
 	JMP2r
 
 @addr-to-x ( addr* -- x* )
-	<reset-state>
-	[ LIT2r 0000 ] get-scroll-addr !&
-
-	&>l ( -- )
-		scan-state get-glyph-width STH2
-		ADD2r LDAk #0a NEQ ?{ POP2r LIT2r 0000 }
-		next-glyph & GTH2k ?&>l
+	[ LIT2r 0000 ]
+	( ) DUP2 find-line-start EQU2k ?{
+		&>l ( -- )
+			get-glyph-width STH2
+			ADD2r next-glyph GTH2k ?&>l }
 	POP2 POP2 STH2r JMP2r
 
 @balance-wrap ( c -- offset )
@@ -1319,7 +1339,7 @@
 @<clear-filepath> ( -- )
 	#07 get-cat-x #0004 ADD2 .Screen/x DEO2
 	#0004 .Screen/y DEO2
-	#0000 ;filepath get-strw #03 SFT2 NIP #06 ADD SUB ;fill-icn #21 !<draw-times>
+	#0000 ;filepath get-strw #000c MUL2 NIP #08 ADD SUB ;fill-icn #21 !<draw-times>
 
 @<draw-filepath> ( color -- )
 	#07 get-cat-x #0004 ADD2 .Screen/x DEO2
@@ -1357,6 +1377,18 @@
 @<draw-widget-pos> ( -- )
 	get-to DUP2 get-from SUB2 DUP2 #001f GTH2 ?{ POP2 POP2 JMP2r }
 	SWP2 <draw-atcursor>
+	<draw-widget>/left
+	#04 <draw-decimal> !<draw-widget>/right
+
+@<draw-widget-unicode> ( str* -- )
+	get-to <draw-atcursor>
+	#04 ;<draw-glyph-plain>/color STA
+	<draw-widget>/left
+	<draw-str>
+	POP2 !<draw-widget>/right
+
+@<draw-widget>
+	&left ( -- )
 	( | clamp left )
 	.Screen/x DEI2 #0107 GTH2k [ JMP SWP2 ] POP2 .Screen/x DEO2
 	( | bubble )
@@ -1369,37 +1401,27 @@
 	[ LIT2 25 -Screen/auto ] DEO
 	;marker-icns .Screen/addr DEO2
 	[ LIT2 05 -Screen/sprite ] DEO
-	#04 <draw-decimal>
+	JMP2r
+
+	&right ( -- )
 	.Screen/x DEI2k #0002 ADD2 ROT DEO2
 	;marker-icns .Screen/addr DEO2
 	[ LIT2 15 -Screen/sprite ] DEO
 	JMP2r
 
 @<draw-frange> ( -- )
-	( | background )
 	#0100 .Screen/x DEO2
-	#0028 .Screen/y DEO2
-	[ LIT2 35 -Screen/auto ] DEO
-	[ LIT2r 00 -Screen/sprite ]
-	( ) .Screen/width DEI2 #0100 SUB2 #03 SFT2 SUB DUP
-	&>l ( -- )
-		;frange-icn .Screen/addr DEO2
-		DEOkr
-		INC DUP ?&>l
-	POP POP2r
-	( | foreground )
-	#0100 .Screen/x DEO2
-	#0040 .Screen/y DEO2
-	#05 SWP ;frangeline-icn #01 <draw-times>
+	.Screen/height DEI2 #0020 SUB2 .Screen/y DEO2
+	[ LIT2 81 -Screen/pixel ] DEO
 	( | name )
-	#0100 .Screen/x DEO2
-	#0028 .Screen/y DEO2
+	#0104 .Screen/x DEO2
+	.Screen/y DEI2k #0006 ADD2 ROT DEO2
 	[ LIT2 25 -Screen/auto ] DEO
 	JMP2r
 
 @<draw-search> ( -- )
 	.search LDZ ?{ JMP2r }
-	#01 ;<draw-glyph-plain>/color STA
+	#04 ;<draw-glyph-plain>/color STA
 	<draw-frange>
 	;search <draw-str>
 	POP2 JMP2r
@@ -1409,9 +1431,9 @@
 	<draw-frange>
 	( | key )
 	<reset-state>
-	INC2 .Screen/width DEI2 #0080 SUB2 #02 draw-word-until
+	INC2 .Screen/width DEI2 #0080 SUB2 #0a draw-word-until
 	( | value )
-	#03 ;<draw-glyph-plain>/color STA
+	#0f ;<draw-glyph-plain>/color STA
 	&>w ( -- )
 		LDAk #0a EQU ?&end
 		LDAk <draw-glyph-plain>
@@ -1949,10 +1971,6 @@
 &end [
 	c0e0 e0f0 f0f8 f8fc fcfe feff fffe fefc
 	fcf8 f8f0 f0e0 e0c0 ]
-@frange-icn [
-	ffff ffff ffff ffff ffff ffff ffff ffff
-	ffff ffff ffff ffff ffff ffff ff7e 3c18 ]
-@frangeline-icn [ 0000 0000 8142 2418 ]
 
 @font
 ( ?? )
@@ -2247,9 +2265,9 @@ d0d0 d0d0 d0d0 f060 0010 3060 c000 0000
 0303 031f 0000 0000 00e0 0000 0000 0000
 0000 0000 0000 0000 0000 00e0 0000 0000
 ( J )
-000f 0101 0101 0101 0101 0101 0101 0101
-0121 7171 331e 0000 00f0 8080 8080 8080
-8080 8080 8080 8080 8080 8080 0000 0000
+001f 0303 0303 0303 0303 0303 0303 0303
+0303 43e3 e366 3c00 00e0 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
 ( K )
 0079 3030 3031 3133 3636 3e3b 3331 3130
 3030 3078 0000 0000 00f0 6040 c080 0000
@@ -2372,13 +2390,13 @@ f0c0 c0c0 c080 0000 00e0 f030 3060 c000
 3030 3078 0000 0000 0000 0000 0000 0000
 80c0 6060 6060 6060 6060 60f0 0000 0000
 ( i )
-0003 0703 0000 0000 0f03 0303 0303 0303
-0303 031f 0000 0000 0000 8000 0000 0000
+0003 0707 0300 0000 0f03 0303 0303 0303
+0303 031f 0000 0000 0000 8080 0000 0000
 0000 0000 0000 0000 0000 00e0 0000 0000
 ( j )
-0001 0301 0000 0000 0701 0101 0101 0101
-0101 0131 3133 1e00 0080 c080 0000 0000
-8080 8080 8080 8080 8080 8080 0000 0000
+0003 0707 0300 0000 0f03 0303 0303 0303
+0303 43e3 e366 3c00 0000 8080 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
 ( k )
 0070 3030 3030 3030 3130 3133 373f 3931
 3030 3078 0000 0000 0000 0000 0000 0000
@@ -2589,9 +2607,9 @@ aa55 aa55 aa55 aa55 aa55 aa55 aa55 aa55 ]
 0001 0300 7830 3018 180c 0c0c 0607 0303
 0303 030f 0000 0000 e0c0 0000 7020 2060
 4040 c080 8080 0000 0000 00c0 0000 0000
-( p )
-0078 3030 3037 3c30 3030 3030 3030 303c
-3730 3078 0000 0000 0000 0000 0080 e060
+( thorn uc )
+0078 3030 303f 3030 3030 3030 3030 3030
+3f30 3078 0000 0000 0000 0000 0080 e060
 3030 3030 3030 60e0 8000 0000 0000 0000
 ( S ger )
 001f 3030 3030 3030 3031 3130 3030 3030
@@ -2717,7 +2735,7 @@ e060 6060 6060 6060 6060 e070 0000 0000
 0000 0103 0000 0000 7830 3018 1818 0c0c
 0607 0703 6266 3c00 00e0 c000 0000 0000
 7020 2060 4040 c080 8080 0000 0000 0000
-( p )
+( thorn lc )
 0000 0000 0078 3030 373c 3030 3030 3030
 3030 3c37 3030 7800 0000 0000 0000 0000
 80e0 6030 3030 3030 3060 e080 0000 0000
@@ -2732,6 +2750,8 @@ e060 6060 6060 6060 6060 e070 0000 0000
 0808 08ff ffff ffff 1414 f700 0000 0000 0000 0080 e0f0 f0f8 0000 8060 1008 0804
 0f0f 0f07 0703 0000 1010 1008 0c07 0300 ffff ffff ffff ff00 0080 c17f 0000 ffff
 f8f8 f8f0 f0e0 8000 0484 8408 1870 e080 ]
+
+@unicode/buf $3
 
 ( memory ) $1 @text
 
