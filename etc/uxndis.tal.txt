@@ -1,8 +1,11 @@
+( uxncli uxndis.rom input.rom )
+
 |10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
 |a0 @File &vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+
 |000
 
-	@src $40
+	@Src &buf $40
 
 |100
 
@@ -15,12 +18,12 @@
 
 @await-src ( -> )
 	[ LIT2 04 -Console/type ] DEI NEQ ?{
-		;src <load-rom>
-		[ LIT ". ] src/<append>
-		[ LIT "s ] src/<append>
-		[ LIT "y ] src/<append>
-		[ LIT "m ] src/<append>
-		;src <load-sym>
+		;Src/buf <load-rom>
+		[ LIT ". ] Src/<append>
+		[ LIT "s ] Src/<append>
+		[ LIT "y ] Src/<append>
+		[ LIT "m ] Src/<append>
+		;Src/buf <load-sym>
 		( | print result )
 		,<load-rom>/ptr LDR2 ;rom
 		&>l ( -- )
@@ -28,11 +31,11 @@
 			INC2 GTH2k ?&>l
 		POP2 POP2 #800f DEO
 		BRK }
-	.Console/read DEI src/<append>
+	.Console/read DEI Src/<append>
 	BRK
 
-@src/<append> ( char -- )
-	[ LIT &ptr -src ] INCk ,&ptr STR
+@Src/<append> ( char -- )
+	[ LIT &ptr -Src/buf ] INCk ,&ptr STR
 	STZ
 	JMP2r
 
@@ -43,8 +46,7 @@
 		;&b .File/read DEO2
 		[ LIT2 00 -File/success-lb ] DEI EQU ?{
 			[ LIT &b $1 ] [ LIT2 &ptr =rom ] INC2k ,&ptr STR2
-			STA
-			!&>stream }
+			STA !&>stream }
 	JMP2r
 
 @<load-sym> ( src* -- )
@@ -68,7 +70,7 @@
 	JMP2r
 
 @<print-address> ( addr* -- )
-	<phex>
+	#0100 ADD2 <phex>
 	[ LIT2 ": 18 ] DEO
 	#03 !<print-pad>
 
@@ -134,9 +136,8 @@
 	( | find sym )
 	SWP2 ;rom SUB2 #0103 ADD2 OVR2 ADD2 find-sym
 	( ) INC2k ORA ?{
-		POP2 OVR #80 AND ?<pdec>
-		[ LIT2 "+ 18 ] DEO
-		!<pdec> }
+		POP2 OVR #80 AND ?<pdec-signed>
+		[ LIT2 "+ 18 ] DEO !<pdec> }
 	NIP2 !<pstr>
 
 @<print-pad> ( count -- )
@@ -158,29 +159,28 @@
 (
 @|stdlib )
 
-@<pdec> ( short* -- )
-	( | sign )
+@<pdec-signed> ( short* -- )
 	OVR #80 AND #00 EQU ?{
 		[ LIT2 "- 18 ] DEO
 		#8000 SWP2 SUB2 #7fff AND2 }
-	[ LIT2 00 _&z ] STR
-	#2710 /p #03e8 /p #0064 /p #000a /p NIP !<pnum>
-	&p ( -- )
-	DIV2k DUPk [ LIT &z $1 ] EQU ?{
-		DUP <pnum>
-		[ LIT2 ff _&z ] STR }
-	POP MUL2 SUB2 JMP2r
+	( >> )
+
+@<pdec> ( short* -- )
+	[ LIT2r ff00 ]
+	&>read ( -- )
+		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?&>read
+	POP2
+	&>write ( -- )
+		NIP #30 ADD #19 DEO
+		OVRr ADDr STHkr ?&>write
+	POP2r JMP2r
 
 @<phex> ( short* -: )
 	SWP /b
 	&b ( byte -: )
 	DUP #04 SFT /c
 	&c ( byte -: )
-	#0f AND DUP #09 GTH #27 MUL ADD
-	( >> )
-
-@<pnum> ( num -- )
-	[ LIT "0 ] ADD #18 DEO
+	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
 	JMP2r
 
 @<pstr> ( str* -- )
@@ -199,7 +199,7 @@
 	( name ) "Uxndis 0a
 	( desc ) "Uxntal 20 "Disassembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "11 20 "Jun 20 "2024 $2
+	( date ) "20 20 "Dec 20 "2024 $2
 
 @opcodes [
 	"LIT 00 "INC 00 "POP 00 "NIP 00
@@ -213,7 +213,8 @@
 	&brk "BRK 00 &jci "JCI 00 &jmi "JMI
 	00 &jsi "JSI 00 ]
 
-@dict &usage "usage: 20 "uxndis.rom 20 "input.rom 0a $1
+@dict
+	&usage "usage: 20 "uxndis.rom 20 "input.rom 0a $1
 
 @rom $8000
 
