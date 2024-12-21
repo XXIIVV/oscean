@@ -1,20 +1,22 @@
+( )
+
 |00 @System &vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
 |20 @Screen &vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
 |90 @Mouse &vector $2 &x $1 &lx $1 &y $1 &ly $1 &state $1 &chord $1 &pad $4 &scrolly &scrolly-hb $1 &scrolly-lb $1
 |a0 @File &vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 
-|0000
+|000
 
 	@L $1
 	@D $1
 	@R $1
 	@U $1
 
-|0000
+|000
 
 	@mode $1
 
-|0100
+|100
 
 @on-reset ( -> )
 	;meta #06 DEO2
@@ -72,7 +74,7 @@
 	( name ) "Grail 0a
 	( desc ) "Shorthand 20 "Recognnizer 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "18 20 "Dec 20 "2023 $1
+	( date ) "20 20 "Dec 20 "2024 $1
 	( exts ) 00
 
 (
@@ -82,24 +84,26 @@
 	[ LIT2 02 -mode ] LDZ EQU ?&punctuation
 	[ LIT2 03 -mode ] LDZ EQU ?&control
 	;core/end ;core JMP2r
+
 	&punctuation ( -- end* dict* )
-		;punctuation/end ;punctuation JMP2r
+	;punctuation/end ;punctuation JMP2r
+
 	&control ( -- end* dict* )
-		;control/end ;control JMP2r
+	;control/end ;control JMP2r
 
 @<validate-live> ( -- )
 	[ LITr 00 ] get-bounds
-	&l ( -- )
+	&>l ( -- )
 		LDA2k find-match #ffff EQU2 ?{ INCr }
-		INC2 INC2 GTH2k ?&l
+		INC2 INC2 GTH2k ?&>l
 	POP2 POP2 STHkr ?&found
 	( | no candidates )
 	POPr #03 !<draw-directions>
+
 	&found ( -- )
-		STHr #01 EQU ?{ JMP2r }
-		find-valid INC2k ORA ?{ POP2 JMP2r }
-		LDA <send>
-		!<start-stroke>/resume
+	STHr #01 EQU ?{ JMP2r }
+	find-valid INC2k ORA ?{ POP2 JMP2r }
+	LDA <send> !<start-stroke>/resume
 
 @<send> ( char -- )
 	[ LIT2 00 -mode ] LDZ EQU ?{ capitalize }
@@ -109,24 +113,26 @@
 @find-valid ( -- addr* )
 	;<push-direction>/ptr LDA2 ;directions SUB2 NIP ,&tlen STR
 	get-bounds
-	&l ( -- )
+	&>l ( -- )
 		LDA2k INC2 LDA INC [ LIT &tlen $1 ] NEQ ?{
 			LDA2k find-match INC2k ORA ?&found
 			POP2 }
-		INC2 INC2 GTH2k ?&l
+		INC2 INC2 GTH2k ?&>l
 	POP2 POP2 #ffff JMP2r
+
 	&found ( -- )
-		NIP2 NIP2 JMP2r
+	NIP2 NIP2 JMP2r
 
 @find-match ( lib* -- ptr* )
 	INC2k INC2 STH2
 	;<push-direction>/ptr LDA2 ;directions
-	&l ( -- )
+	&>l ( -- )
 		LDAk LDAkr STHr NEQ ?&fail
-		INC2r INC2 GTH2k ?&l
+		INC2r INC2 GTH2k ?&>l
 	POP2 POP2 POP2r JMP2r
+
 	&fail ( -- )
-		POP2 POP2 POP2 POP2r #ffff JMP2r
+	POP2 POP2 POP2 POP2r #ffff JMP2r
 
 @<start-stroke> ( x y -- )
 	<clear>
@@ -135,9 +141,9 @@
 	#ff ;<push-point>/last-dir STA
 	<push-point>
 	&resume ( -- )
-		;stroke ;<push-point>/ptr STA2
-		;directions ;<push-direction>/ptr STA2
-		JMP2r
+	;stroke ;<push-point>/ptr STA2
+	;directions ;<push-direction>/ptr STA2
+	JMP2r
 
 @<end-stroke> ( -- )
 	find-valid DUP2 #ffff EQU2 ?{ LDAk <send> }
@@ -155,8 +161,7 @@
 	POP #00 JMP2r
 
 @<set-mode> ( mode -- )
-	.mode STZ
-	!<draw-mode>
+	.mode STZ !<draw-mode>
 
 @thin ( x1 y1 x2 y2 -- f )
 	ROT SUB abs STH
@@ -227,12 +232,11 @@
 	#00ec .Screen/y DEO2
 	[ LIT2 01 -Screen/auto ] DEO
 	;<push-direction>/ptr LDA2 ;directions
-	&l ( -- )
+	&>l ( -- )
 		EQU2k ?&end
 		LDAk #00 SWP #30 SFT2 ;arrows-icn ADD2 .Screen/addr DEO2
 		[ LIT2 &color $1 -Screen/sprite ] DEO
-		INC2 GTH2k ?&l
-	&end POP2 POP2 JMP2r
+		INC2 GTH2k ?&>l &end POP2 POP2 JMP2r
 
 @<draw-stroke> ( a* b* -- )
 	STH2
@@ -271,19 +275,18 @@
 	#ffff [ LIT2 00 _&x2 ] LDR2 ,&x LDR2 lts2 DUP2 ADD2 ADD2 ,&sx STR2
 	#ffff [ LIT2 00 _&y2 ] LDR2 ,&y LDR2 lts2 DUP2 ADD2 ADD2 ,&sy STR2
 	[ LIT2 &dx $2 ] [ LIT2 &dy $2 ] ADD2 STH2
-	&while ( -- )
-		[ LIT2 &x2 $2 ] DUP2 .Screen/x DEO2
-		[ LIT2 &x $2 ] EQU2 [ LIT2 &y2 $2 ] DUP2 .Screen/y DEO2
-		[ LIT2 &y $2 ] EQU2 [ LIT2 &color $1 -Screen/pixel ] DEO
-		AND ?&end
-		STH2kr DUP2 ADD2 DUP2 ,&dy LDR2 lts2 ?&skipy
-		STH2r ,&dy LDR2 ADD2 STH2
-		,&x2 LDR2 [ LIT2 &sx $2 ] ADD2 ,&x2 STR2
+	&w ( -- )
+	[ LIT2 &x2 $2 ] DUP2 .Screen/x DEO2
+	[ LIT2 &x $2 ] EQU2 [ LIT2 &y2 $2 ] DUP2 .Screen/y DEO2
+	[ LIT2 &y $2 ] EQU2 [ LIT2 &color $1 -Screen/pixel ] DEO
+	AND ?&end
+	STH2kr DUP2 ADD2 DUP2 ,&dy LDR2 lts2 ?&skipy
+	STH2r ,&dy LDR2 ADD2 STH2
+	,&x2 LDR2 [ LIT2 &sx $2 ] ADD2 ,&x2 STR2
 	&skipy ( -- )
-		,&dx LDR2 gts2 ?&while
+	,&dx LDR2 gts2 ?&w
 	STH2r ,&dx LDR2 ADD2 STH2
-	,&y2 LDR2 [ LIT2 &sy $2 ] ADD2 ,&y2 STR2
-	!&while
+	,&y2 LDR2 [ LIT2 &sy $2 ] ADD2 ,&y2 STR2 !&w
 	&end POP2r JMP2r
 
 (
@@ -293,12 +296,13 @@
 	;&path .File/name DEO2
 	#0002 .File/length DEO2
 	[ LIT2 -System/debug -System/r ]
-	&l ( -- )
+	&>l ( -- )
 		;&buf .File/read DEO2
 		[ LIT2 00 -File/success-lb ] DEI EQU ?{
 			[ LIT2r &buf $2 ] STHk DEO2r
-			INC INC NEQk ?&l }
+			INC INC NEQk ?&>l }
 	POP2 JMP2r
+
 	&path ".theme $1
 
 (
@@ -318,10 +322,10 @@
 	JMP2r
 
 @lts2 ( a* b* -- f )
-	#8000 STH2k ADD2 SWP2 STH2r ADD2 GTH2 JMP2r
+	SUB2 POP #07 SFT JMP2r
 
 @gts2 ( a* b* -- f )
-	#8000 STH2k ADD2 SWP2 STH2r ADD2 LTH2 JMP2r
+	SWP2 SUB2 POP #07 SFT JMP2r
 
 @capitalize ( char -- char )
 	DUP [ LIT "a ] LTH ?&skip
@@ -331,10 +335,10 @@
 @<phex> ( short* -- )
 	SWP <phex>/b
 	&b ( -- )
-		DUP #04 SFT <phex>/c
+	DUP #04 SFT <phex>/c
 	&c ( -- )
-		#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
-		JMP2r
+	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
+	JMP2r
 
 (
 @|assets )
@@ -359,5 +363,132 @@
 	0010 307e 7e30 1000 0018 1818 7e3c 1800
 	0008 0c7e 7e0c 0800 0018 3c7e 1818 1800 ]
 
-~src/grail.assets.tal
+
+
+@lib
+(
+@|numbers )
+&0 "0 _{ -R -D -L -U } &0a "0 _{ -D -L -U -R }
+&1 "1 _{ -D -L -R } &1a "1 _{ -L -R -D }
+&2 "2 _{ -R -D -L -D -R } &2a "2 _{ -R -D -R }
+&3 "3 _{ -R -L -R -D -L } &3a "3 _{ -R -D -L -R -D -L }
+&4 "4 _{ -D -R -U -D } &4a "4 _{ -D -R -D }
+&5 "5 _{ -L -D -R -D -L } &5a "5 _{ -L -D -R -L }
+&6 "6 _{ -D -R -U -L }
+&7 "7 _{ -R -D }
+&8 "8 _{ -D -R -D -L -U -R -U -L } &8a "8 _{ -D -L -U -R -U -L }
+&9 "9 _{ -L -U -R -D } &9a "9 _{ -L -D -R -D }
+(
+@|alphabet )
+&a "a _{ -L -D -R -U -D }
+&b "b _{ -D -U -R -D -L }
+&c "c _{ -L -D -R }
+&d "d _{ -D -U -L -D -R }
+&e "e _{ -R -U -L -D -R }
+&f "f _{ -L -D -L -U -R }
+&g "g _{ -L -D -R -U -D -L }
+&h "h _{ -D -U -R -D }
+&i "i _{ -U }
+&j "j _{ -D -L }
+&k "k _{ -D -U -R }
+&l "l _{ -D } &la "l _{ -D -R }
+&m "m _{ -U -D -U -D } &ma "m _{ -U -R -D -U -R -D }
+&n "n _{ -U -D } &na "n _{ -U -R -D }
+&o "o _{ -L -D -R -U } &oa "o _{ -L -D -R -U -L }
+&p "p _{ -U -R -D -L }
+&q "q _{ -U -L -D -R }
+&r "r _{ -U -R }
+&s "s _{ -L -R -L }
+&t "t _{ -R -L -D } &ta "t _{ -L -D }
+&u "u _{ -D -R -U }
+&v "v _{ -D -U }
+&w "w _{ -D -U -D -U }
+&x "x _{ -R -U -D } &xa "x _{ -R -U -L -D }
+&y "y _{ -D -U -D } &ya "y _{ -D -U -D -L }
+&z "z _{ -R -L -R } &za "z _{ -L -D -L }
+(
+@|special )
+&mrk "? _{ -R -D -L -D }
+&bsp 08 _{ -L }
+&wsp 20 _{ -R }
+&tab 09 _{ -U -R }
+&brk 0a _{ -D -R }
+(
+@|punctuation )
+&lth "< _{ -L -R }
+&gth "> _{ -R -L }
+&mul "* _{ -R -U -D }
+&add "+ _{ -D -U -L -R }
+&equ "= _{ -R -L -R }
+&div "/ _{ -D -L -D }
+&and "& _{ -U -L -D -R -D }
+&adr "@ _{ -U -L -D -R }
+&dash "- _{ -R }
+&undr "_ _{ -L }
+&hash "# _{ -U -R -D -L }
+&pipe "| _{ -U }
+&excl "! _{ -D }
+&apos "' _{ -D -U }
+&comma ", _{ -D -L }
+&colon ": _{ -U -L -R }
+&semic "; _{ -D -L -R }
+&caret "^ _{ -U -D }
+&tilde "~ _{ -R -D -R }
+&quote "" _{ -D -U -D }
+&parena "( _{ -L -D -R }
+&parenb ") _{ -R -D -L }
+&bracka "[ _{ -L -U -R }
+&brackb "] _{ -R -U -L }
+&bracea "{ _{ -L -R -D }
+&braceb "} _{ -R -L -D }
+&dollar "$ _{ -L -D -R -D -L }
+&percent "% _{ -D -R -D }
+(
+@|control )
+&sela 06 _{ -U -R }
+&moveu 11 _{ -U }
+&moved 12 _{ -D }
+&movel 13 _{ -L }
+&mover 14 _{ -R }
+&selb 06 _{ -U -L }
+
+@core [
+	=lib/0 =lib/1 =lib/2 =lib/3
+	=lib/4 =lib/5 =lib/6 =lib/7
+	=lib/8 =lib/9 =lib/a =lib/b
+	=lib/c =lib/d =lib/e =lib/f
+	=lib/g =lib/h =lib/i =lib/j
+	=lib/k =lib/l =lib/m =lib/n
+	=lib/o =lib/p =lib/q =lib/r
+	=lib/s =lib/t =lib/u =lib/v
+	=lib/w =lib/x =lib/y =lib/z
+	=lib/0a =lib/1a =lib/2a =lib/3a
+	=lib/4a =lib/5a =lib/8a =lib/9a
+	=lib/la =lib/ma =lib/na =lib/oa
+	=lib/ta =lib/xa =lib/ya =lib/za
+	=lib/mrk
+	=lib/wsp =lib/bsp ] &end
+
+@punctuation [
+	=lib/lth =lib/gth =lib/mul =lib/div
+	=lib/add =lib/equ =lib/and =lib/adr
+	=lib/hash =lib/pipe =lib/excl =lib/apos
+	=lib/comma =lib/colon =lib/semic
+	=lib/caret =lib/tilde =lib/quote
+	=lib/parena =lib/parenb
+	=lib/bracea =lib/braceb
+	=lib/bracka =lib/brackb
+	=lib/dollar =lib/percent
+	=lib/dash =lib/undr
+	=lib/tab =lib/brk ] &end
+
+@control [
+	=lib/moveu =lib/moved =lib/movel =lib/mover
+	=lib/sela =lib/selb ] &end
+
+(
+@|buffers )
+
+@directions $100
+@stroke $400
 
