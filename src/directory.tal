@@ -17,7 +17,10 @@
 	BRK
 
 @on-source-await ( -> )
-	.Console/read DEI .path skey ?on-source-ready
+	.Console/read DEI
+	( ) DUP #20 GTH ?{ POP !on-source-ready }
+	[ LIT2 00 &ptr -path ] INCk ,&ptr STR
+	STZ2
 	BRK
 
 @on-source-ready ( -> )
@@ -74,7 +77,7 @@
 @|stdlib )
 
 @wstr ( str* -- next* )
-	DUP2 slen .File/length DEO2
+	DUP2 DUP2 scap/ SWP2 SUB2 .File/length DEO2
 	.File/write DEO2
 	JMP2r
 
@@ -86,23 +89,10 @@
 	INC2 & LDAk ?scap
 	JMP2r
 
-@slen ( str* -- len* )
-	DUP2 scap/ SWP2 SUB2 JMP2r
-
 @perr ( err* -- )
 	LDAk #19 DEO
 	INC2 LDAk ?perr
 	POP2 JMP2r
-
-@skey ( key buf -- proc )
-	OVR #21 LTH ?{
-		#00 SWP sput #00 JMP2r }
-	POP2 #01 JMP2r
-
-@sput ( chr str* -- )
-	scap/ INC2k #00 ROT ROT STA
-	STA
-	JMP2r
 
 @<scpy> ( src* dst* -: )
 	STH2
