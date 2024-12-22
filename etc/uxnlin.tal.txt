@@ -1,7 +1,8 @@
 ( Usage: uxncli uxnlin.rom src.tal )
 
 |10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
-|a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|a0 @File &vector $2 &success $1 &succ-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+
 |000
 
 	@src $40
@@ -16,35 +17,32 @@
 
 @on-reset ( -> )
 	;meta #06 DEO2
-	;await-src .Console/vector DEO2
 	.Console/type DEI ?{
 		;dict/usage <perr>
-		;on-interactive .Console/vector DEO2 }
+		#010f DEO
+		BRK }
+	;await-src .Console/vector DEO2
+	BRK
+
+@await-src ( -> )
+	.Console/read DEI
+	( ) DUP #20 GTH ?{ POP !<on-ready> }
+	[ LIT2 00 &ptr -src ] INCk ,&ptr STR
+	STZ2
+	BRK
+
+@<on-ready> ( -> )
+	;dict/default-scope ;scope <scpy>
+	;src <lint>
+	( halt ) #800f DEO
 	BRK
 
 @meta $1
 	( name ) "Uxnlin 0a
 	( desc ) "Uxntal 20 "Linter 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "1 20 "Nov 20 "2024 $1
+	( date ) "21 20 "Dec 20 "2024 $1
 	( exts ) 00
-
-@await-src ( -> )
-	.Console/read DEI .src skey ?{ BRK }
-	;dict/default-scope ;scope <scpy>
-	;src <lint>
-	( halt ) #800f DEO
-	BRK
-
-@on-interactive ( -> )
-	.Console/read DEI .src skey ?{ BRK }
-	;dict/default-scope ;scope <scpy>
-	;src DUP2 <lint>
-	<pstr>
-	#0a18 DEO
-	( | cleanup )
-	<clear-zeropage>
-	BRK
 
 (
 @|core )
@@ -52,9 +50,9 @@
 @<lint> ( src* -- )
 	.File/name DEO2
 	#0001 .File/length DEO2
+	;&c .File/read
 	&>s ( -- )
-		;&c .File/read DEO2
-		.File/success DEI2 ORA ?{ !<print-summary> }
+		DEO2k .File/succ-lb DEI ?{ POP2 POP !<print-summary> }
 		[ LIT &c $1 ] walk !&>s
 
 @walk ( char -- )
@@ -63,6 +61,7 @@
 	DUP #20 GTH ?&append
 	POP ;token LDAk ?parse-token
 	POP2 JMP2r
+
 	&append ( char -- )
 	;token slen NIP #30 LTH ?{ POP ;tokenlen !<print-warn> }
 	;token !sput
@@ -106,22 +105,16 @@
 	POP2 POP2
 	( | literal duplicates: #1234 #1234 )
 	;token is-static #00 EQU ?{
-		;token ;token/last scmp #00 EQU ?{ ;static-dup <print-warn2> }
-		}
+		;token ;token/last scmp #00 EQU ?{ ;static-dup <print-warn2> } }
 	( | fall-through )
 	;token LDA [ LIT "@ NEQ ] ?{
 		;token/last is-jump #00 EQU ?{
-			;token INC2 ;token/last INC2 scmp #00 EQU ?{ ;fall-through <print-warn2> }
-			}
-		}
+			;token INC2 ;token/last INC2 scmp #00 EQU ?{ ;fall-through <print-warn2> } } }
 	( | dead-region )
 	;token/last is-jump/strict #00 EQU ?{
-		;token is-static ;token is-opcode ORA #00 EQU ?{ ;dead-region <print-warn2> }
-		}
-	&cleanup ( -- )
+		;token is-static ;token is-opcode ORA #00 EQU ?{ ;dead-region <print-warn2> } }
 	;token/last ;token/last2 <scpy>
-	;token DUP2 ;token/last <scpy>
-	!<sclr>
+	;token DUP2 ;token/last <scpy> !<sclr>
 
 @reset ( -- )
 	;token <sclr>
@@ -143,6 +136,7 @@
 	LDAk [ LIT "@ ] NEQ ?&fail
 	INC2k LDA ciuc ?&fail
 	POP2 #01 JMP2r
+
 	&fail ( str* -- flag )
 	POP2 #00 JMP2r
 
@@ -153,6 +147,7 @@
 	&strict ( str* -- flag )
 	LDAk [ LIT "! ] EQU ?&pass
 	POP2 #00 JMP2r
+
 	&pass ( str* -- flag )
 	POP2 #01 JMP2r
 
@@ -161,8 +156,10 @@
 	LDAk [ LIT ". ] EQU ?&pass
 	LDAk [ LIT "# ] EQU ?&hex
 	POP2 #00 JMP2r
+
 	&hex ( str* -- flag )
 	slen NIP #03 EQU JMP2r
+
 	&pass ( str* -- flag )
 	POP2 #01 JMP2r
 
@@ -173,8 +170,10 @@
 	LDAk [ LIT "; ] EQU ?&pass
 	LDAk [ LIT "# ] EQU ?&hex
 	POP2 #00 JMP2r
+
 	&hex ( str* -- flag )
 	slen NIP #05 EQU JMP2r
+
 	&pass ( str* -- flag )
 	POP2 #01 JMP2r
 
@@ -183,10 +182,7 @@
 	( ) STH2r is-litbyte ORA JMP2r
 
 @is-opcode ( string* -- f )
-	DUP2 ;opcodes/brk scmp3 ?find-opcode/on-found
-	( >> )
-
-@find-opcode ( name* -- byte )
+	DUP2 ;opcodes/brk scmp3 ?&on-found
 	,&t STR2
 	#2000
 	&>l ( -- )
@@ -209,6 +205,7 @@
 	,&t LDR2 <pstr>
 	#0a18 DEO
 	POP2 POP2 POP2 #00 JMP2r
+
 	&dict-match ( target* to* from* -- flag )
 	NIP2 INC2 INC2 LDA2 SWP2 afnd INC2 ORA JMP2r
 
@@ -230,8 +227,7 @@
 	#2019 DEO
 	[ LIT2 "" 19 ] DEO
 	<perr>
-	[ LIT2 "" 19 ] DEO
-	!<print-line>
+	[ LIT2 "" 19 ] DEO !<print-line>
 
 @<print-warn2> ( str* -- )
 	.stats/warnings LDZ2k INC2 ROT STZ2
@@ -243,8 +239,7 @@
 	#2019 DEO
 	[ LIT2 "" 19 ] DEO
 	<perr>
-	[ LIT2 "" 19 ] DEO
-	!<print-line>
+	[ LIT2 "" 19 ] DEO !<print-line>
 
 @<print-warn3> ( str* -- )
 	.stats/warnings LDZ2k INC2 ROT STZ2
@@ -320,8 +315,10 @@
 		LDAk LDAkr STHr ANDk #00 EQU ?&e
 		NEQk ?&e
 		POP2 INC2 INC2r !&>l
+
 	&e ( -- )
 	NIP2 POP2r EQU JMP2r
+
 	&pass ( a*
 	| b* -- f )
 	POP2 POP2r #01 JMP2r
@@ -329,8 +326,7 @@
 @scmp ( a* b* -- f )
 	STH2
 	&>l ( -- )
-		LDAk ?{
-			&d LDA LDAr STHr EQU JMP2r }
+		LDAk ?{ &d LDA LDAr STHr EQU JMP2r }
 		LDAk LDAkr STHr NEQ ?&d
 		INC2 INC2r !&>l
 
@@ -348,11 +344,6 @@
 	INC2r INC2 LDAk ?&w
 	POP2 POP2r JMP2r
 
-@skey ( key buf -- proc )
-	OVR #21 LTH ?&eval
-	#00 SWP sput #00 JMP2r
-	&eval POP2 #01 JMP2r
-
 @scmp3 ( a* b* -- f )
 	STH2
 	LDAkr LDAk STHr NEQ ?{ INC2r INC2 }
@@ -365,23 +356,15 @@
 		scap/ INC2 LDAk ?&>w
 	POP2 #ffff &end POP2r JMP2r
 
-@<clear-zeropage> ( -- )
-	#0000
-	&>w ( -- )
-		STZk INC NEQk ?&>w
-	POP2 JMP2r
-
 @<pdec> ( short* -- )
-	ORAk ?{
-		POP2 [ LIT2 "0 18 ] DEO
-		JMP2r }
-	#2710 [ LIT2r 00fb ]
-	&>w ( -- )
-		DIV2k #000a DIV2k MUL2 SUB2 SWPr EQUk OVR STHkr EQU AND ?{
-			DUP [ LIT "0 ] ADD #19 DEO
-			INCr }
-		POP2 #000a DIV2 SWPr INCr STHkr ?&>w
-	POP2r POP2 POP2 JMP2r
+	[ LIT2r ff00 ]
+	&>read ( -- )
+		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?&>read
+	POP2
+	&>write ( -- )
+		NIP #30 ADD #18 DEO
+		OVRr ADDr STHkr ?&>write
+	POP2r JMP2r
 
 @<pstr> ( str* -- )
 	LDAk #18 DEO

@@ -9,8 +9,8 @@
 
 |000
 
-	@filepath $2f &end $1
-	@search $30
+	@Source &buf $30
+	@Search &buf $30
 	@selection &a $2 &b $2
 	@textarea &highlight $1 &length $2
 	@scroll &x $2 &y $2 &addr $2 &ratio $2
@@ -33,7 +33,7 @@
 	( | size )
 	#0550 .Screen/width DEO2
 	#02de .Screen/height DEO2
-	.filepath LDZ ?&soft
+	.Source/buf LDZ ?&soft
 	( | cache position )
 	.Screen/height DEI2 #0028 SUB2
 	( ) DUP2 #0018 DIV2 ;scroll-follow/lines STA2
@@ -64,7 +64,7 @@
 	( name ) "Left 0a
 	( details ) "A 20 "Text 20 "Editor 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "19 20 "Dec 20 "2024 $1 02
+	( date ) "21 20 "Dec 20 "2024 $1 02
 	( > ) 83 =appicon
 	( > ) 0a =manifest
 
@@ -123,7 +123,7 @@
 	;on-mouse .Mouse/vector DEO2
 	[ LIT2 00 -Mouse/state ] DEO
 	( | if filepath is empty, reset to untitled )
-	;filepath LDA ?{ ;untitled-txt ;filepath scpy }
+	.Source/buf LDZ ?{ ;untitled-txt ;Source/buf scpy }
 	#01 !<draw-filepath>
 
 @start-unicode ( -- )
@@ -154,21 +154,12 @@
 @on-console ( -> )
 	.Console/read DEI
 	( | handle bytes )
-	DUP #11 EQU ?&move
-	DUP #12 EQU ?&move
-	DUP #13 EQU ?&move
-	DUP #14 EQU ?&move
 	DUP #08 NEQ ?{ POP erase BRK }
 	DUP #7f NEQ ?{ POP delete BRK }
 	insert BRK
 
-	&move ( byte -- )
-	( convert to arrow ) #11 SUB #40 SFT #10 SWP SFT
-	( ) .selection/a LDZ2 ROT arrow-to-addr <select-a>
-	BRK
-
 @on-console-arg ( -> )
-	.Console/read DEI .filepath skey ?{ BRK }
+	.Console/read DEI .Source/buf skey ?{ BRK }
 	;on-console .Console/vector DEO2
 	file-open untrap BRK
 
@@ -177,7 +168,7 @@
 	.Controller/key DEI
 	( | handle bytes )
 	DUP #1b EQU ?&escape
-	DUP .filepath skey ?&open
+	DUP .Source/buf skey ?&open
 	POP #01 <draw-filepath>
 	BRK
 
@@ -267,7 +258,7 @@
 @on-button-alt ( key -> )
 	DUP ?{ POP BRK }
 	DUP #1b NEQ ?{ POP edit-inject BRK }
-	.search skey ?{ <draw-search>
+	.Search/buf skey ?{ <draw-search>
 		update-nav BRK }
 	#00 <select-marker>
 	BRK
@@ -356,7 +347,7 @@
 @reset-each ( -- )
 	has-length? ?&reset-selection
 	.scroll/x LDZ2 #0100 NEQ2 ?&reset-scroll
-	.search LDZ ?<reset-search>
+	.Search/buf LDZ ?<reset-search>
 	JMP2r
 
 	&reset-selection ( -- )
@@ -366,7 +357,7 @@
 	#0100 !<scroll-to-x>
 
 @<reset-search> ( -- )
-	#0000 .search STZ2
+	#0000 .Search/buf STZ2
 	reqdraw-textarea !update-nav
 
 @arrow-to-addr ( addr* button -- addr* )
@@ -529,7 +520,7 @@
 	( >> )
 
 @<select-marker> ( id -- )
-	get-marker DUP2 ;search slen ADD2 !<select-range>
+	get-marker DUP2 ;Search/buf slen ADD2 !<select-range>
 
 @<select-reset> ( -- )
 	get-from
@@ -693,7 +684,7 @@
 
 @update-nav ( -- )
 	[ LIT2 00 -nav/len ] STZ
-	;search LDA ?update-nav-search
+	.Search/buf LDZ ?update-nav-search
 	get-eof get-scroll-addr find-first-marker
 	&>l ( -- )
 		LDAk #0a NEQ ?{
@@ -707,7 +698,7 @@
 	&>l ( -- )
 		LDA2k [ LIT2 0a "@ ] NEQ2 ?&no-flabel
 		INC2k LDA2 [ LIT2 "@| ] NEQ2 ?&no-flabel
-		INC2k add-marker &no-flabel ;search OVR2 sseg? #00 EQU ?&no-find
+		INC2k add-marker &no-flabel ;Search/buf OVR2 sseg? #00 EQU ?&no-find
 		DUP2 add-marker &no-find .nav/len LDZ #20 GTH ?&end
 		INC2 GTH2k ?&>l &end POP2 POP2 !reqdraw-navbar
 
@@ -741,7 +732,7 @@
 
 @capture-selection ( -- )
 	has-length? ?{ get-to !<select-word> }
-	( dst ) [ LITr -search ]
+	( dst ) [ LITr -Search/buf ]
 	( from ) get-from
 	( to ) get-length #002f LTH2k [ JMP SWP2 ] POP2 ADD2k NIP2 SWP2
 	&>l ( -- )
@@ -919,7 +910,7 @@
 	.state/comment LDZ ?&comment
 	.state/raw LDZ ?&comment
 	.state/label LDZ ?&label &skip #01 JMP2r
-	&selected .search LDZ ?{ #09 JMP2r }
+	&selected .Search/buf LDZ ?{ #09 JMP2r }
 	#0d JMP2r
 	&label #02 JMP2r
 	&comment #03 JMP2r
@@ -953,36 +944,32 @@
 (
 @|go )
 
+@zcap ( zstr -- zstr )
+	LDZk ?{ JMP2r }
+	INC !zcap
+
 @go-directory ( -- )
 	<clear-filepath>
-	;filepath DUP2 scap/ #0001 SUB2 EQU2k ?&skip
+	.Source/buf DUP zcap EQUk ?&go-root
+	#01 SUB EQUk ?&go-root
 	&>w ( -- )
-		#0001 SUB2 LDAk [ LIT "/ ] NEQ ?{
-			NIP2
-			( null ) [ LITr 00 ] STH2
-			INC2r STAr !file-open }
-		NEQ2k ?&>w
-	&skip ( -- )
-	POP2 [ LIT2 ". 00 ] SWP2 STA2 !file-open
+		#01 SUB LDZk [ LIT "/ ] EQU ?{
+			NEQk ?&>w
+		&go-root [ LIT2 ". 00 ] ROT STZ2
+		POP !file-open }
+	#00 SWP INC STZ
+	POP !file-open
 
 @go-selection ( -- )
-	get-from LDA2 [ LIT2 ".. ] EQU2 ?go-directory
-	get-length #0001 GTH2 ?{ JMP2r }
-	( | append to path, if path is folder )
-	[ LITr -filepath ] #00 STHkr scap/ #0001 SUB2 LDAk LIT "/ NEQ ?&no-append
-	POPr INCk STH &no-append POP2 <clear-filepath>
-	( | copy selection to filepath )
-	get-to get-from
-	&>w ( -- )
-		( end of buffer ) STHkr .filepath/end EQU ?&e
-		( end of selection ) EQU2k ?&e
-		( whitespace ) LDAk #21 LTH ?&e
-		LDAk STHkr STZ
-		INC2 INCr !&>w
-
-	&e ( cap buffer )
-	#00 STHr STZ
-	POP2 POP2 !file-open
+	get-to get-from EQU2k ?{
+		<clear-filepath>
+		( | append if in folder )
+		.Source/buf DUP zcap DUP #01 SUB LDZ [ LIT "/ ] NEQ [ JMP SWP POP ] STH
+		&>l ( -- )
+			LDAk STHkr STZ
+			INCr INC2 GTH2k ?&>l
+		POP2 POP2 #00 STHr STZ !file-open }
+	JMP2r
 
 (
 @|document )
@@ -993,7 +980,7 @@
 	;text <sclr>
 	#0001 .textarea/length STZ2
 	( | rename to untitled.txt )
-	;untitled-txt ;filepath scpy
+	;untitled-txt ;Source/buf scpy
 	( | reset position )
 	#05 <draw-state>
 	;text <select-a>
@@ -1011,7 +998,7 @@
 
 @file-reopen ( -- )
 	;text <sclr>
-	;filepath DUP2 fbin? ?file-open-binary
+	;Source/buf DUP2 fbin? ?file-open-binary
 	.File/name DEO2
 	#fff0 ;text SUB2 .File/length DEO2
 	;text .File/read DEO2
@@ -1033,7 +1020,7 @@
 	#0a <draw-state> !reqdraw-textarea
 
 @file-save ( -- )
-	;filepath .File/name DEO2
+	;Source/buf .File/name DEO2
 	;text DUP2 slen .File/length DEO2
 	.File/write DEO2
 	#05 !<draw-state>
@@ -1050,7 +1037,7 @@
 	JMP2r
 
 @file-build ( -- )
-	;filepath <pstr>
+	;Source/buf <pstr>
 	#0a18 DEO
 	JMP2r
 
@@ -1092,10 +1079,10 @@
 	JMP2r
 
 @file-is-dir? ( -- bool )
-	;filepath scap/ #0001 SUB2 LDA DUP LIT "/ EQU SWP LIT ". EQU ORA JMP2r
+	.Source/buf zcap #01 SUB LDZ DUP [ LIT "/ ] EQU SWP [ LIT ". ] EQU ORA JMP2r
 
 @file-is-tal? ( -- bool )
-	;filepath scap/ #0004 SUB2 ;&tal-ext !scmp?
+	;Source/buf scap/ #0004 SUB2 ;&tal-ext !scmp?
 
 	&tal-ext ".tal $1
 
@@ -1133,7 +1120,7 @@
 	;snarf-txt !file-inject-binary
 
 @edit-inject ( -- )
-	;search !file-inject
+	;Search/buf !file-inject
 
 @format-strip ( -- )
 	get-eof ;text
@@ -1231,7 +1218,7 @@
 	POP2 get-from <draw-atcursor>
 	.Screen/y DEI2k #0008 SUB2 ROT DEO2
 	;blinker-icn .Screen/addr DEO2
-	#0f0a .search LDZ ?{ SWP }
+	#0f0a .Search/buf LDZ ?{ SWP }
 	POP .Screen/sprite DEO
 	JMP2r
 
@@ -1311,14 +1298,14 @@
 @<draw-navbar-empty> ( range* -- )
 	POP2 #0010 .Screen/x DEO2
 	#0028 .Screen/y DEO2
-	.search LDZ ?&search
+	.Search/buf LDZ ?&search
 	#03 ;<draw-glyph-plain>/color STA
 	;dict/empty <draw-str>
 	POP2 <draw-scrollbar> !<draw-cat>
 
 	&search ( -- )
 	#02 ;<draw-glyph-plain>/color STA
-	;search <draw-str>/
+	;Search/buf <draw-str>/
 	POP2 <draw-scrollbar> !<draw-cat>
 
 @<draw-state> ( state -- )
@@ -1339,14 +1326,14 @@
 @<clear-filepath> ( -- )
 	#07 get-cat-x #0004 ADD2 .Screen/x DEO2
 	#0004 .Screen/y DEO2
-	#0000 ;filepath get-strw #000c MUL2 NIP #08 ADD SUB ;fill-icn #21 !<draw-times>
+	#0000 ;Source/buf get-strw #000c MUL2 NIP #08 ADD SUB ;fill-icn #21 !<draw-times>
 
 @<draw-filepath> ( color -- )
 	#07 get-cat-x #0004 ADD2 .Screen/x DEO2
 	#0004 .Screen/y DEO2
 	[ LIT2 25 -Screen/auto ] DEO
 	;<draw-glyph-plain>/color STA
-	;filepath <draw-str>/
+	;Source/buf <draw-str>/
 	POP2 .Screen/x DEI2 ,<draw-position>/anchor STR2
 	( >> )
 
@@ -1420,14 +1407,14 @@
 	JMP2r
 
 @<draw-search> ( -- )
-	.search LDZ ?{ JMP2r }
+	.Search/buf LDZ ?{ JMP2r }
 	#04 ;<draw-glyph-plain>/color STA
 	<draw-frange>
-	;search <draw-str>
+	;Search/buf <draw-str>
 	POP2 JMP2r
 
 @<draw-sym> ( -- )
-	;search find-symbol ORAk ?{ POP2 !<draw-search> }
+	;Search/buf find-symbol ORAk ?{ POP2 !<draw-search> }
 	<draw-frange>
 	( | key )
 	<reset-state>
@@ -1614,7 +1601,7 @@
 	OVR #7f NEQ ?{
 		NIP #00 SWP <sclr>
 		#00 JMP2r }
-	OVR #21 LTH ?{
+	OVR #20 LTH ?{
 		#00 SWP sput #00 JMP2r }
 	POP JMP2r
 

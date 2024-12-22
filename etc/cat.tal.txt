@@ -1,0 +1,33 @@
+( uxncli cat.rom a.txt b.txt c.txt )
+
+|10 @Console &vector $2 &read $5 &type $1 &write $1 &error $1
+|a0 @File &vector $2 &success $1 &succ-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+
+|000
+
+	@buf
+
+|100
+
+@on-reset ( -> )
+	;listen .Console/vector DEO2
+	BRK
+
+@listen ( -> )
+	.Console/read DEI DUP #1f GTH ?{
+		POP <emit-file>
+		[ LIT2 -buf _&ptr ] STR
+		[ LIT2 03 -Console/type ] DEI EQU ?{ #800f DEO }
+		BRK }
+	[ LIT2 00 &ptr -buf ] INCk ,&ptr STR
+	STZ2
+	BRK
+
+@<emit-file> ( -> )
+	;buf .File/name DEO2
+	#0001 .File/length DEO2
+	;&c .File/read
+	&>s ( -- )
+		DEO2k .File/succ-lb DEI ?{ POP POP2 JMP2r }
+		[ LIT2 &c $1 18 ] DEO !&>s
+
