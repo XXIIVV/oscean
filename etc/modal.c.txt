@@ -5,7 +5,7 @@ typedef struct {
 	char *a, *b;
 } Rule;
 
-static int flip, quiet, debug, access, cycles = 0x200000;
+static int flip, quiet, debug, cycles = 0x200000;
 static Rule rules[0x1000], *rules_ = rules;
 static char dict[0x8000], *dict_ = dict;
 static char bank_a[0x4000], *src_ = bank_a;
@@ -127,31 +127,33 @@ static void
 write_reg(char r, char *reg)
 {
 	switch(r) {
-	case ':': device_write(reg); return;
+	case ':': device_write(reg); break;
 	case '~': {
 		unsigned char c;
+		char *origin = dst_;
 		while(fread(&c, 1, 1, stdin) && c >= ' ') *dst_++ = c;
 		if(feof(stdin)) dst_ = copy("EOF", dst_, 3);
-		return;
+		if(origin == dst_) dst_--;
+		break;
 	}
 	case '_': {
 		char filepath[0x80];
 		copy(reg, filepath, walk(reg) - reg);
 		dst_ = file_import(filepath, dst_);
-		return;
+		break;
 	}
 	case '^': { /* op: join */
 		char c, *cap = walk(reg);
 		if(*reg == '(') reg++, --cap;
 		while(reg < cap && (c = *reg++))
 			if(!spacer(c)) *dst_++ = c;
-		return;
+		break;
 	}
 	case '.': { /* op: unwrap */
 		char *cap = walk(reg);
 		if(*reg == '(') reg++, --cap;
 		dst_ = copy(reg, dst_, cap - reg);
-		return;
+		break;
 	}
 	case '*': { /* op: explode */
 		int i, depth = 0;
@@ -167,12 +169,9 @@ write_reg(char r, char *reg)
 			while((c = *reg++) && !spacer(c))
 				*dst_++ = c, *dst_++ = ' ', *dst_++ = '(', depth++;
 		for(i = 0; i < depth; i++) *dst_++ = ')';
-		return;
+		break;
 	}
-	default: {
-		dst_ = copy(reg, dst_, walk(reg) - reg);
-		return;
-	}
+	default: dst_ = copy(reg, dst_, walk(reg) - reg);
 	}
 }
 
@@ -232,10 +231,9 @@ parse_frag(char **side, char *s)
 {
 	char c, *cap;
 	while((c = *s) && c == ' ') s++;
-	if(c == ')' || (c == '<' && s[1] == '>') || (c == '>' && s[1] == '<')) {
+	if(c == ')' || (c == '<' && s[1] == '>') || (c == '>' && s[1] == '<'))
 		*side = dict_, *dict_++ = 0;
-		return s;
-	} else {
+	else {
 		cap = walk(s), *side = dict_;
 		if(c == '(')
 			dict_ = copy(s + 1, dict_, cap - s - 2);
@@ -339,10 +337,9 @@ main(int argc, char **argv)
 		return !printf("usage: modal [-vqn] source.modal\n");
 	for(i = 1; i < argc && *argv[i] == '-'; i++) {
 		switch(argv[i][1]) {
-		case 'v': /* version */ return !printf("Modal Interpreter, 24 May 2024.\n");
+		case 'v': /* version */ return !printf("Modal Interpreter, 23 Dec 2024.\n");
 		case 'q': /* quiet */ quiet = 1; break;
 		case 'p': /* debug */ debug = 1; break;
-		case 'a': /* access */ access = 1; break;
 		case 'n': /* infinite */ cycles = 0xffffffff; break;
 		}
 	}

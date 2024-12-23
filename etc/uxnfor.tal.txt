@@ -2,13 +2,12 @@
 
 |00 @System &vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
 |10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
-|a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|a0 @File &vector $2 &success $1 &succ-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |b0 @File2 &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 
 |000
 
-	@pad $20
-	@src $40
+	@src/buf $40
 	@err $1
 	@nobrk $1
 	@inzp $1
@@ -27,7 +26,7 @@
 	( name ) "Uxnfor 0a
 	( desc ) "Uxntal 20 "Formatter 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "25 20 "Aug 20 "2024 $2
+	( date ) "23 20 "Dec 20 "2024 $2
 
 @await-src ( -> )
 	.Console/read DEI DUP #20 GTH ?{
@@ -39,28 +38,28 @@
 	BRK
 
 @src/<append> ( char -- )
-	[ LIT2 00 &ptr -src ] INCk ,&ptr STR
+	[ LIT2 00 &ptr -src/buf ] INCk ,&ptr STR
 	STZ2
 	JMP2r
 
 @src/<clear> ( -- )
-	[ LIT2 -src _&ptr ] STR
-	#0000 .src STZ2
+	[ LIT2 -src/buf _&ptr ] STR
+	#0000 .src/buf STZ2
 	JMP2r
 
 (
 @|core )
 
 @<format-file> ( -- )
-	;src .File/name DEO2
+	;src/buf .File/name DEO2
 	#0001 .File/length DEO2
 	[ LIT2 00 -err ] STZ
 	Result/new
 	&>s ( -- )
-		;&c feof ?{
-			.err LDZ ?&fail
-			[ LIT &c $1 ] walk-char !&>s }
-	eval-scope !<write-file>
+		;&c .File/read DEO2
+		.File/succ-lb DEI ?{ eval-scope !<write-file> }
+		.err LDZ ?&fail
+		[ LIT &c $1 ] walk-char !&>s
 
 	&fail ( -- )
 	;dict/err <sprint>
@@ -85,7 +84,7 @@
 	<reset-depth>
 	;mem/scope
 	( | pad zp )
-	.inzp LDZ #00 EQU ?{ #09 <emit> }
+	[ LIT2 00 -inzp ] LDZ EQU ?{ #09 <emit> }
 	( | label/macro )
 	<emit-word>/
 	#20 <emit>
@@ -218,7 +217,7 @@
 
 @<write-file> ( -- )
 	.err LDZ ?{
-		;src .File/name DEO2
+		;src/buf .File/name DEO2
 		;mem/result ;Result/ptr LDA2 OVR2 SUB2 .File/length DEO2
 		.File/write DEO2 }
 	JMP2r
@@ -421,10 +420,6 @@
 
 @wlen ( w* -: len* )
 	DUP2 wcap/ SWP2 SUB2 JMP2r
-
-@feof ( addr* -: f )
-	.File/read DEO2
-	.File/success DEI2 #0000 EQU2 JMP2r
 
 @<sprint> ( str* -: )
 	LDAk #19 DEO
