@@ -9,7 +9,7 @@
 
 	@src $30
 	@dst $30
-	@token $2f &cap $1
+	@token &buf $2f &cap $1
 	@scope $30
 	@sublabel $30
 	@halt $1
@@ -54,6 +54,20 @@
 	#010f DEO
 	BRK
 
+@<handle-file> ( f* -- )
+	.File/name DEO2
+	#0001 .File/length DEO2
+	token/<new>
+	#0000
+	&>s ( len* -- )
+		.halt LDZ ?&end
+		;&c .File/read DEO2
+		.File/success-lb DEI ?{
+			ORAk ?{ ;src ;err/file <set-error-scope> }
+			&end ( i* -- )
+			POP2 JMP2r }
+		INC2 [ LIT &c $1 ] token/<push> !&>s
+
 @<on-success> ( -> )
 	rom/<save>
 	syms/<save>
@@ -65,22 +79,10 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "12 20 "Dec 20 "2024 $2
+	( date ) "28 20 "Dec 20 "2024 $2
 
 (
 @|Core )
-
-@<handle-file> ( f* -- )
-	DUP2 .File/name DEO2
-	#0001 .File/length DEO2
-	token/<new>
-	#0000
-	&>s ( len* -- )
-		;&c feof ?{
-			INC2 [ LIT &c $1 ] token/<push>
-			[ LIT2 00 -halt ] LDZ EQU ?&>s }
-	ORA ?{ DUP2 ;err/file <set-error-scope> }
-	POP2 JMP2r
 
 @<set-error> ( token* name* -- )
 	[ LIT2 01 -halt ] STZ
@@ -92,7 +94,7 @@
 	JMP2r
 
 @<set-error-scope-token> ( name* -- )
-	;token SWP2
+	;token/buf SWP2
 	( >> )
 
 @<set-error-scope> ( keyword* name* -- )
@@ -124,28 +126,22 @@
 	.rom/length LDZ2 #00ff SUB2 <pdec>
 	;dict/bytes <pstr>/
 	( labels ) STH2r #0001 SUB2 <pdec>
-	;dict/labels <pstr>/
-	( symbols ) ;syms/mem-end ;syms/ptr LDA2 SUB2 <pdec>
-	;dict/syms-free <pstr>/
-	( references ) ;refs/mem-end ;refs/ptr LDA2 SUB2 <pdec>
-	;dict/refs-free <pstr>/
-	( macros ) ;macros/mem-end ;macros/ptr LDA2 SUB2 <pdec>
-	;dict/macros-free !<pstr>/
+	;dict/labels !<pstr>/
 
 (
 @|Tokenizer )
 
 @token/<new> ( -- )
-	[ LIT2 -token _&ptr ] STR
-	#0000 .token STZ2
+	[ LIT2 -&buf _&ptr ] STR
+	[ LIT2 00 -&buf ] STZ
 	JMP2r
 
 @token/<push> ( c -- )
 	DUP #20 GTH ?{
-		POP ;token LDZk ?{ POP2 JMP2r }
-		token/<parse> !&<new> }
+		POP ;&buf LDZk ?{ POP2 JMP2r }
+		/<parse> !&<new> }
 	( | append )
-	[ LIT2 00 &ptr -token ]
+	[ LIT2 00 &ptr -&buf ]
 	( overflow ) DUP .&cap NEQ ?{
 		( ! ) ;err/token-mem <set-error-scope-token> }
 	( move ptr ) INCk ,&ptr STR
@@ -153,22 +149,25 @@
 	JMP2r
 
 @token/<parse> ( t* -- )
-	LDZk find-rune INC2k ORA ?{
-		POP2
-		( | non-runic )
-		is-hex ?rom/<write-rawhex>
-		is-opcode ?rom/<write-opcode>
-		( | macros )
-		DUP2 macros/find INC2k ORA ?&<parse-macro>
-		POP2
-		( immediate word ) !lib/litjsi }
-	( call ) INC2 LDA2 JMP2
+	LDAk [ LIT "( ] NEQ ?{
+		,&mute LDR INC ,&mute STR }
+	[ LIT &mute $1 ] ?{
+		LDZk find-rune INC2k ORA ?{
+			POP2 is-hex ?rom/<write-rawhex>
+			is-opcode ?rom/<write-opcode>
+			DUP2 macros/find INC2k ORA ?&<parse-macro>
+			POP2
+			( immediate ) !lib/litjsi }
+		( runic ) INC2 LDA2 JMP2 }
+	LDA [ LIT ") ] NEQ ?{
+		[ LIT2 ff _&mute ] LDR ADD ,&mute STR }
+	JMP2r
 
 @token/<parse-macro> ( t* macro* -- )
-	token/<new>
+	/<new>
 	scap/ INC2
 	&>w ( -- )
-		LDAk token/<push>
+		LDAk /<push>
 		INC2 LDAk ?&>w
 	POP2 POP2 #20 !token/<push>
 
@@ -193,17 +192,6 @@
 	;include/mem !<handle-file>
 	&ignore POP2 JMP2r
 
-@lib/comment ( t* -- )
-	POP2
-	( depth ) [ LITr 00 ]
-	&>sc ( -- )
-		;&c feof ?{
-			[ LIT2 &c $1 "( ] NEQk ?{ INCr }
-			POP [ LIT ") ] NEQ ?{ STHkr ?{ POPr JMP2r }
-				[ LITr 01 ] SUBr }
-			!&>sc }
-	POPr JMP2r
-
 @lib/macros ( t* -- )
 	INC2
 	( | validate )
@@ -227,11 +215,11 @@
 
 	&macro-invalid ( t* -- )
 	POP2
-	( ! ) ;token ;err/macro !<set-error>
+	( ! ) ;token/buf ;err/macro !<set-error>
 
 	&macro-duplicate ( t* -- )
 	POP2
-	( ! ) ;token ;err/duplicate !<set-error>
+	( ! ) ;token/buf ;err/duplicate !<set-error>
 
 (
 @|Lambda )
@@ -316,7 +304,7 @@
 	POP2
 	&duplicate ( name* -- )
 	POP2
-	( ! ) ;token ;err/duplicate !<set-error>
+	( ! ) ;token/buf ;err/duplicate !<set-error>
 
 @syms/get-bounds ( -- to* from* )
 	,&ptr LDR2 ;&mem JMP2r
@@ -633,14 +621,14 @@
 	POP2 JMP2r
 
 @<pdec> ( short* -- )
-	#000a SWP2 [ LITr ff ]
-	&>get ( -- )
-		SWP2k DIV2k MUL2 SUB2 STH
-		POP OVR2 DIV2 ORAk ?&>get
-	POP2 POP2
-	&>put ( -- )
-		STHr INCk ?{ POP JMP2r }
-		[ LIT "0 ] ADD #18 DEO !&>put
+	[ LIT2r ff00 ]
+	&>read ( -- )
+		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?&>read
+	POP2
+	&>write ( -- )
+		NIP #30 ADD #18 DEO
+		OVRr ADDr STHkr ?&>write
+	POP2r JMP2r
 
 (
 @|Assets )
@@ -650,7 +638,7 @@
 	&unused "-- 20 "Unused: 20 $1
 	&reset "RESET $1
 	&sym-ext ".sym $1
-	&assembled "Assembled 20 $1 &in 20 "in 20 $1 &bytes 20 "bytes( $1 &labels 20 "labels, 20 $1 &syms-free 20 "syms 20 "free, 20 $1 &refs-free 20 "refs 20 "free, 20 $1 &macros-free 20 "macros 20 "free). 0a $1
+	&assembled "Assembled 20 $1 &in 20 "in 20 $1 &bytes 20 "bytes( $1 &labels 20 "labels). 0a $1
 
 @err
 	&file "File 20 "missing $1
@@ -679,7 +667,6 @@
 
 @runes [
 	"| =lib/padabs "$ =lib/padrel
-	"} =lib/lambda "( =lib/comment
 	"@ =lib/toplab "& =lib/sublab
 	", =lib/litrel "_ =lib/rawrel
 	". =lib/litzep "- =lib/rawzep
@@ -687,7 +674,8 @@
 	"? =lib/litjci "! =lib/litjmi
 	5b =lib/ignore 5d =lib/ignore
 	"# =lib/lithex "" =lib/rawstr
-	"~ =lib/inctal "% =lib/macros ]
+	"} =lib/lambda "% =lib/macros
+	"~ =lib/inctal ]
 	&end
 (
 @|Buffers )
@@ -709,5 +697,5 @@
 @rom/mem ( zeropage )
 	$100
 
-@rom/output $7f00 &mem-end
+@rom/output
 

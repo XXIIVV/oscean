@@ -1,0 +1,64 @@
+( uxncli 123/456 )
+
+|10 @Console &vector $2 &read $5 &type $1 &write $1 &error $1
+
+|100
+
+@on-reset ( -> )
+	;on-console .Console/vector DEO2
+	( keep accu on return stack ) [ LIT2r 0000 ] BRK
+
+@on-console ( -> )
+	.Console/read DEI
+	( | push )
+	DUP [ LIT "0 ] SUB #09 GTH ?{
+		[ LIT "0 ] SUB #00 SWP STH2r #000a MUL2 ADD2 STH2
+		BRK }
+	( | print )
+	[ LIT2 01 _<spacer>/init ] STR
+	STH2r <factorize>
+	[ LIT2r 0000 ] #2018 DEO
+	DUP #18 DEO
+	DUP #0a NEQ ?{ POP #800f DEO
+		BRK }
+	#2018 DEO
+	BRK
+
+@<factorize> ( value* -- )
+	( count ) [ LIT2r 0000 ]
+	( value ) [ LIT2r 0002 ]
+	&>w ( -- )
+		DUP2 STH2kr DIV2k MUL2 SUB2 ORA ?{
+			( count+1 ) SWP2r INC2r SWP2r
+			( apply ) STH2kr DIV2 DUP2 #0001 NEQ2 ?&>w
+		POP2 STH2r STH2r SWP2 !<emit> }
+	( print ) STH2r STH2r OVR2 <emit>
+	( reset ) INC2 [ LIT2r 0000 ] STH2 !&>w
+
+@<spacer> ( -- )
+	[ LIT &init $1 ] ?{
+		#2018 DEOk #c318 DEO
+		#9718 DEO
+		DEO }
+	[ LIT2 00 _&init ] STR
+	JMP2r
+
+@<emit> ( count* value* -- )
+	OVR2 #0000 EQU2 ?{
+		<spacer>
+		<pdec>
+		DUP2 #0001 EQU2 ?{
+			[ LIT2 "^ 18 ] DEO !<pdec> }
+		POP2 JMP2r }
+	POP2 POP2 JMP2r
+
+@<pdec> ( short* -- )
+	[ LIT2r ff00 ]
+	&>read ( -- )
+		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?&>read
+	POP2
+	&>write ( -- )
+		NIP #30 ADD #18 DEO
+		OVRr ADDr STHkr ?&>write
+	POP2r JMP2r
+
