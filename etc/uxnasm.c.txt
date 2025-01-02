@@ -158,12 +158,15 @@ findopcode(char *s)
 static int
 walkcomment(FILE *f, Context *ctx)
 {
-	char c;
+	char c, last = 0;
 	int depth = 1;
 	while(f && fread(&c, 1, 1, f)) {
 		if(c == 0xa) ctx->line++;
-		if(c == '(') depth++;
-		if(c == ')' && --depth < 1) return 1;
+		if(last <= 0x20){
+			if(c == '(') depth++;
+			if(c == ')' && --depth < 1) return 1;
+		}
+		last = c;
 	}
 	return error_asm("Comment incomplete");
 }
@@ -466,7 +469,7 @@ main(int argc, char *argv[])
 {
 	ptr = PAGE;
 	copy("on-reset", scope, 0);
-	if(argc == 2 && scmp(argv[1], "-v", 2)) return !printf("Uxnasm - Uxntal Assembler, 14 Nov 2024.\n");
+	if(argc == 2 && scmp(argv[1], "-v", 2)) return !printf("Uxnasm - Uxntal Assembler, 31 Dec 2024.\n");
 	if(argc != 3) return error_top("usage", "uxnasm [-v] input.tal output.rom");
 	return !assemble(argv[1]) || !resolve(argv[2]) || !build(argv[2]);
 }
