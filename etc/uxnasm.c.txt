@@ -161,12 +161,15 @@ walkcomment(FILE *f, Context *ctx)
 	char c, last = 0;
 	int depth = 1;
 	while(f && fread(&c, 1, 1, f)) {
-		if(c == 0xa) ctx->line++;
-		if(last <= 0x20){
-			if(c == '(') depth++;
-			if(c == ')' && --depth < 1) return 1;
-		}
-		last = c;
+		if(c <= 0x20) {
+			if(c == 0xa) ctx->line++;
+			if(last == '(') depth++;
+			else if(last == ')' && --depth < 1) return 1;
+			last = 0;
+		} else if(last <= 0x20)
+			last = c;
+		else
+			last = '~';
 	}
 	return error_asm("Comment incomplete");
 }
@@ -364,7 +367,7 @@ parse(char *w, FILE *f, Context *ctx)
 	Item *m;
 	switch(w[0]) {
 	case 0x0: return 1;
-	case '(': return walkcomment(f, ctx);
+	case '(': if (w[1] <= 0x20) return walkcomment(f, ctx); else return error_asm("Invalid word");
 	case '%': return makemacro(w + 1, f, ctx);
 	case '@': return makelabel(w + 1, 1, ctx);
 	case '&': return makelabel(w, 0, ctx);
