@@ -6,18 +6,20 @@
 |80 @Controller &vector $2 &button $1 &key $1
 |90 @Mouse &vector $2 &x $2 &y $2 &state $1 &pad $3 &scrollx $2 &scrolly $2
 |a0 @File &vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|0178 @nav/width
+|0160 @nav/max
 
 |000
 
 	@Source &buf $30
-	@Search &buf $30
+	@search &buf $30
 	@selection &a $2 &b $2
 	@textarea &highlight $1 &length $2
 	@scroll &x $2 &y $2 &addr $2 &ratio $2
 	@scrollbar &height $2
 	@wrap &left $2 &right $2
 	@state &comment $1 &underline $1 &label $1 &rune $1 &raw $1
-	@nav &cat $1 &len $1 &buf $60
+	@nav &cat $1 &buf $60 &bufend
 	@flen/buf $5
 
 |100
@@ -41,7 +43,7 @@
 	#07 get-cat-x #0004 ADD2 ;<draw-filepath>/x STA2
 	( | defaults )
 	#0001 .scroll/ratio STZ2
-	#0100 .scroll/x STZ2
+	;nav/width .scroll/x STZ2
 	;text <select-a>
 	[ LIT2 01 -nav/cat ] STZ
 	( | begin )
@@ -65,7 +67,7 @@
 	( name ) "Left 0a
 	( details ) "A 20 "Text 20 "Editor 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "23 20 "Dec 20 "2024 $1 02
+	( date ) "6 20 "Jan 20 "2024 $1 02
 	( > ) 83 =appicon
 	( > ) 0a =manifest
 
@@ -77,14 +79,13 @@
 	( > ) 01 "p =file-send "Send $1
 	( > ) 01 "b =file-build "Build $1
 	( > ) 01 "q =exit "Exit $1
-	( >>>>> ) 07 "Edit $1
+	( >>>>> ) 06 "Edit $1
 	( > ) 01 "c =edit-copy "Copy $1
 	( > ) 01 "v =edit-paste "Paste $1
 	( > ) 05 "V =edit-paste-binary "Paste 20 "Binary $1
 	( > ) 01 "x =edit-cut "Cut $1
 	( > ) 00 08 =erase "Erase $1
 	( > ) 00 7f =delete "Delete $1
-	( > ) 05 "U =start-unicode "Unicode $1
 	( >>>>> ) 02 "Go $1
 	( . ) 01 "/ =go-directory "Directory $1
 	( . ) 01 0d =go-selection "Selection $1
@@ -102,7 +103,7 @@
 	( . ) 01 "a =select-all "All $1
 	( . ) 00 1b =reset-each "Reset $1
 	( >>>>> ) 01 "Find $1
-	( . ) 01 "f =Search/<capture>
+	( . ) 01 "f =search/<capture>
 	"Selection $1
 	( >>>>> ) 03 "View $1
 	( . ) 01 "h =toggle-highlight "Hint $1
@@ -127,28 +128,6 @@
 	( | if filepath is empty, reset to untitled )
 	.Source/buf LDZ ?{ ;untitled-txt ;Source/buf scpy }
 	#01 !<draw-filepath>
-
-@start-unicode ( -- )
-	;on-button-unicode .Controller/vector DEO2
-	;unicode/buf <sclr>
-	[ LIT2 00 _on-button-unicode/ptr ] STR
-	;unicode/buf !<draw-widget-unicode>
-
-@on-button-unicode ( -> )
-	.Controller/key DEI
-	( | handlers )
-	DUP ?{ POP BRK }
-	DUP #0d NEQ ?{
-		;unicode/buf shex <insert-unicode>
-		untrap BRK }
-	DUP #08 NEQ ?{ POP untrap reqdraw-textarea BRK }
-	DUP #1b NEQ ?{ POP untrap reqdraw-textarea BRK }
-	DUP chex INC ?{ POP BRK }
-	( | append )
-	[ LIT2 00 &ptr 00 ] INCk #01 AND ,&ptr STR
-	;unicode/buf ADD2 STA
-	;unicode/buf <draw-widget-unicode>
-	BRK
 
 (
 @|vectors )
@@ -191,12 +170,13 @@
 
 @on-frame-draw ( -> )
 	#0000 .Screen/vector DEO2
-	[ LIT &textarea $1 ] ?{
+	[ LIT &textarea 00 ] ?{
 		<draw-textarea>
 		<draw-widget>
 		[ LIT2 01 _&textarea ] STR }
-	[ LIT &navbar $1 ] ?{
-		<draw-navbar>
+	[ LIT &navbar 00 ] ?{
+		nav/<redraw>
+		<draw-scrollbar>
 		[ LIT2 01 _&navbar ] STR }
 	BRK
 
@@ -255,10 +235,17 @@
 
 @on-button-alt ( key -> )
 	DUP ?{ POP BRK }
-	DUP #1b NEQ ?{ POP edit-inject BRK }
-	.Search/buf skey ?{
-		reqdraw-textarea update-nav BRK }
+	DUP #09 EQU ?&inject-file
+	DUP #1b EQU ?&inject-unicode
+	.search/buf skey ?{ reqdraw-textarea nav/update BRK }
 	#00 <select-marker>
+	BRK
+
+	&inject-file ( key -> )
+	POP edit-inject BRK
+
+	&inject-unicode ( key -> )
+	POP ;search/buf shex <insert-unicode>
 	BRK
 
 @on-mouse ( -> )
@@ -269,9 +256,9 @@
 	POP2
 	( | regions )
 	.Mouse/x DEI2
-	( ) DUP2 #0100 GTH2 ?on-mouse-textarea
+	( ) DUP2 ;nav/width GTH2 ?on-mouse-textarea
 	( ) DUP2 #000d LTH2 ?on-mouse-scrollbar
-	( ) #00f8 LTH2 ?on-mouse-navbar
+	( ) ;nav/width #0008 SUB2 LTH2 ?on-mouse-navbar
 	&void ( -- )
 	#43 <update-cursor>
 	[ LIT2 00 -Mouse/state ] DEO
@@ -292,7 +279,7 @@
 	( ) ANDk ?&on-drag
 	( ) DUP #01 EQU ?&on-down1
 	( ) DUP #02 NEQ ?{ touch-to-addr <select-symbol> }
-	( ) DUP #04 NEQ ?{ Search/<capture> }
+	( ) DUP #04 NEQ ?{ search/<capture> }
 	POP2 [ LIT2 00 -Mouse/state ] DEO
 	BRK
 
@@ -326,7 +313,7 @@
 	[ LIT2 00 -Mouse/state ] DEO
 	#01 GTH ?{ <select-marker>
 		BRK }
-	get-marker addr-to-line <set-scroll-y>
+	nav/id-to-addr addr-to-line <set-scroll-y>
 	BRK
 
 (
@@ -337,22 +324,22 @@
 
 @toggle-categories ( -- )
 	.nav/cat LDZk #01 EOR SWP STZ
-	<draw-cat> !update-nav
+	nav/<draw-mode> !nav/update
 
 @view-symbol ( -- )
-	get-from <select-symbol> !Search/<capture>
+	get-from <select-symbol> !search/<capture>
 
 @reset-each ( -- )
 	has-length? ?&reset-selection
-	.scroll/x LDZ2 #0100 NEQ2 ?&reset-scroll
-	.Search/buf LDZ ?Search/<reset>
+	.scroll/x LDZ2 ;nav/width NEQ2 ?&reset-scroll
+	.search/buf LDZ ?search/<reset>
 	JMP2r
 
 	&reset-selection ( -- )
 	get-from DUP2 !<select-range>
 
 	&reset-scroll ( -- )
-	#0100 !<scroll-to-x>
+	;nav/width !<scroll-to-x>
 
 @arrow-to-addr ( addr* button -- addr* )
 	DUP #01 AND ?&ctrl
@@ -401,7 +388,7 @@
 
 @erase-selection ( -- )
 	get-from get-length STH2k <msfl>
-	update-nav #0000 STH2r SUB2 !<mod-length>
+	nav/update #0000 STH2r SUB2 !<mod-length>
 
 @join-spaces ( addr* -- addr* )
 	[ LIT2r 0000 ]
@@ -502,19 +489,19 @@
 	DUP2 find-prev-spacer SWP2 find-next-spacer/ !<select-range>
 
 @select-prev-marker ( -- )
-	get-from get-current-marker
+	get-from nav/addr-to-id
 	&>l ( -- )
-		#01 SUB DUP get-marker INC2 LDA [ LIT "| ] EQU ?&>l
+		#01 SUB DUP nav/id-to-addr INC2 LDA [ LIT "| ] EQU ?&>l
 	!<select-marker>
 
 @select-next-marker ( -- )
-	get-from get-current-marker
+	get-from nav/addr-to-id
 	&>l ( -- )
-		INC DUP get-marker INC2 LDA [ LIT "| ] EQU ?&>l
+		INC DUP nav/id-to-addr INC2 LDA [ LIT "| ] EQU ?&>l
 	( >> )
 
 @<select-marker> ( id -- )
-	get-marker DUP2 ;Search/buf slen ADD2 !<select-range>
+	nav/id-to-addr DUP2 ;search/buf slen ADD2 !<select-range>
 
 @<select-reset> ( -- )
 	get-from
@@ -541,7 +528,7 @@
 	( >> )
 
 @selection-changed ( -- )
-	scroll-follow update-wrap update-nav !reqdraw-textarea
+	scroll-follow update-wrap nav/update !reqdraw-textarea
 
 @get-from ( -- addr* )
 	.selection/b LDZ2 .selection/a LDZ2 LTH2k [ JMP SWP2 ] POP2 JMP2r
@@ -561,11 +548,11 @@
 (
 @|search )
 
-@Search/<reset> ( -- )
+@search/<reset> ( -- )
 	#0000 .&buf STZ2
-	reqdraw-textarea !update-nav
+	reqdraw-textarea !nav/update
 
-@Search/<capture> ( -- )
+@search/<capture> ( -- )
 	has-length? ?{ get-to !<select-word> }
 	( dst ) [ LITr -&buf ]
 	( from ) get-from
@@ -575,7 +562,7 @@
 		INCr INC2 GTH2k ?&>l
 	POP2 POP2
 	( cap ) #00 STHr STZ
-	update-nav reqdraw-textarea !reqdraw-navbar
+	nav/update reqdraw-navbar !reqdraw-textarea
 
 (
 @|find )
@@ -619,6 +606,14 @@
 	next-glyph & LDAk clab? ?find-next-special
 	JMP2r
 
+@find-next-slash ( addr* -- addr* )
+	next-glyph LDAk [ LIT "/ ] NEQ ?find-next-slash
+	JMP2r
+
+@find-next-parenb ( addr* -- addr* )
+	next-glyph LDAk [ LIT ") ] NEQ ?find-next-parenb
+	JMP2r
+
 @find-first-marker ( addr* -- addr* )
 	#0002 SUB2
 	&>w ( -- )
@@ -637,7 +632,7 @@
 
 @<scroll-to-x> ( line* -- )
 	DUP2 .scroll/x LDZ2 EQU2 ?&end
-	DUP2 #0101 SUB2 #8000 LTH2 ?&end
+	DUP2 #0179 SUB2 #8000 LTH2 ?&end
 	.scroll/x STZ2
 	reqdraw-navbar !reqdraw-textarea
 	&end POP2 JMP2r
@@ -653,7 +648,7 @@
 		;text SUB2 .scroll/addr STZ2
 		.scroll/y STZ2
 		<draw-position>
-		reqdraw-textarea !update-nav }
+		reqdraw-textarea !nav/update }
 	POP2 POP2 JMP2r
 
 @line-to-addr ( line* -- addr* )
@@ -686,59 +681,142 @@
 (
 @|nav )
 
-@update-nav ( -- )
-	[ LIT2 00 -nav/len ] STZ
-	.Search/buf LDZ ?update-nav-search
-	get-eof get-scroll-addr find-first-marker
-	&>l ( -- )
-		LDAk #0a NEQ ?{
-			INC2k LDA DUP [ LIT "@ ] NEQ SWP [ LIT "% NEQ ] AND ?{ INC2k add-marker } }
-		( | reached bottom )
-		.nav/len LDZ #20 GTH ?&end
-		INC2 GTH2k ?&>l &end POP2 POP2 !reqdraw-navbar
+@nav/id-to-addr ( id -- addr* )
+	;&ptr LDA #01 SUB .&buf SUB #01 SFT
+	( max ) [ LTHk JMP SWP POP ]
+	( addr* ) DUP ADD .&buf ADD LDZ2 JMP2r
 
-@update-nav-search ( -- )
-	get-eof ;text
-	&>l ( -- )
-		LDA2k [ LIT2 0a "@ ] NEQ2 ?&no-flabel
-		INC2k LDA2 [ LIT2 "@| ] NEQ2 ?&no-flabel
-		INC2k add-marker &no-flabel ;Search/buf OVR2 sseg? #00 EQU ?&no-find
-		DUP2 add-marker &no-find .nav/len LDZ #20 GTH ?&end
-		INC2 GTH2k ?&>l &end POP2 POP2 !reqdraw-navbar
+@nav/addr-to-id ( addr* -- id )
+	[ LITr 00 ] ,&t STR2
+	;&ptr LDA .&buf EQUk ?{
+		&>la ( -- )
+			LDZ2k [ LIT2 &t $2 ] GTH2 ?{
+				INCr INC INC GTHk ?&>la } }
+	POP2 STHr #01 SUB JMP2r
 
-@add-marker ( addr* -- )
+@nav/id-to-color ( id sel -- color )
+	OVR EQU ?{
+		/id-to-addr INC2 LDA [ LIT "| ] EQU #03 MUL INC JMP2r }
+	POP #09 JMP2r
+
+@nav/<push> ( addr* -- )
 	( | toggle categories )
-	INC2k LDA [ LIT "| ] NEQ .nav/cat LDZ ORA ?{ POP2 JMP2r }
-	.nav/len LDZk INCk ROT STZ
-	DUP ADD .nav/buf ADD STZ2
+	INC2k LDA [ LIT "| ] NEQ .&cat LDZ ORA ?{ POP2 JMP2r }
+	( | push )
+	[ LIT &ptr -&buf ] STZ2k INC INC
+	( | catch overflow )
+	DUP .&bufend LTH ?{ POP POP2 JMP2r }
+	,&ptr STR
+	POP2 JMP2r
+
+@nav/update ( -- )
+	[ LIT2 -&buf _&ptr ] STR
+	.search/buf LDZ ?&update-search
+	get-eof get-scroll-addr find-first-marker
+	&>lu ( -- )
+		LDA2k [ LIT2 0a "@ ] NEQ2 ?{ INC2k /<push> }
+		LDA2k [ LIT2 0a "% ] NEQ2 ?{ INC2k /<push> }
+		;&ptr LDA .&bufend GTH ?{ INC2 wcap GTH2k ?&>lu }
+	POP2 POP2 !reqdraw-navbar
+
+@nav/update-symbol ( -- )
+	[ LIT2 -&buf _&ptr ] STR
+	( scope marker ) [ LITr 01 ] get-eof ;text
+	&>l ( -- )
+		LDAk [ LIT "& ] NEQ ?{ STHkr ?{ DUP2 /<push> } }
+		LDAk [ LIT "@ ] NEQ ?{
+			[ POPr LITr 01 ]
+			( ) ;search/buf OVR2 INC2 sseg #00 EQU ?{
+				[ POPr LITr 00 ]
+				( ) ;search/buf slen INC2 ADD2 LDAk [ LIT "/ ] NEQ ?{
+					( ) INC2k /<push> } } }
+		wcap INC2 GTH2k ?&>l
+	POP2 POP2 POPr
+	( >> )
+
+@nav/update-search ( -- )
+	get-eof ;text
+	&>ls ( -- )
+		LDAk #0a NEQ ?{
+			INC2k LDA2 [ LIT2 "@| ] NEQ2 ?{ INC2k /<push> } }
+		;search/buf OVR2 sseg #00 EQU ?{ DUP2 /<push> }
+		;&ptr LDA .&bufend GTH ?{ INC2 GTH2k ?&>ls }
+	POP2 POP2 !reqdraw-navbar
+
+@nav/<redraw> ( -- )
+	( | clear )
+	;nav/width .Screen/x DEO2
+	#0028 .Screen/y DEO2
+	[ LIT2 90 -Screen/pixel ] DEO
+	( | draw )
+	<reset-state>
+	[ LIT2 25 -Screen/auto ] DEO
+	get-from INC2 /addr-to-id ,&sel STR
+	;&ptr LDA .&buf EQUk ?<draw-navbar-empty>
+	&>ld ( -- )
+		[ LIT &sel $1 ] /<draw-label>
+		<draw-lb>
+		INC INC GTHk ?&>ld
+	POP2
+	( >> )
+
+@nav/<draw-mode> ( -- )
+	[ LIT2 00 -Screen/auto ] DEO
+	#0004 .Screen/x DEO2
+	.Screen/height DEI2 #000c SUB2 .Screen/y DEO2
+	;cat-icn [ LIT2 00 -&cat ] LDZ #30 SFT2 ADD2 .Screen/addr DEO2
+	[ LIT2 01 -Screen/sprite ] DEO
 	JMP2r
 
-@get-marker ( id -- addr*/sel* )
-	( | no markers )
-	.nav/len LDZ ?{ POP !get-from }
-	( | reached end )
-	DUP .nav/len LDZ LTH ?{ POP !get-from }
-	DUP ADD .nav/buf ADD LDZ2 JMP2r
+@nav/<draw-label> ( ztr* selected -- ztr* )
+	OVR .&buf SUB #01 SFT SWP /id-to-color
+	( | left spacer )
+	#000a .Screen/x DEO2
+	;marker-icns .Screen/addr DEO2
+	DUP #02 SFT .Screen/sprite DEO
+	( | text )
+	STHk ;draw-glyph-utf8/color STA
+	LDZ2k find-prev-spacer
+	( spacer ) LDA2k [ LIT2 "@| ] NEQ2 ?{ INC2 INC2 }
+	( label )
+	&>w ( -- )
+		.Screen/x DEI2 ;nav/max GTH2 ?{
+			draw-glyph-utf8 next-glyph LDAk #20 GTH ?&>w }
+	( |right spacer )
+	;marker-icns/end .Screen/addr DEO2
+	STHr #02 SFT .Screen/sprite DEO
+	walk-ws
+	( | handlers )
+	LDAk [ LIT "( ] EQU ?/<draw-scope>
+	LDAk [ LIT ") ] NEQ ?{ POP2 JMP2r }
+	LDAk [ LIT "$ ] EQU ?{ POP2 JMP2r }
+	( | value )
+	#02 ;draw-glyph-utf8/color STA
+	&>wv ( -- )
+		.Screen/x DEI2 ;nav/max GTH2 ?{
+			draw-glyph-utf8 next-glyph LDAk #20 GTH ?&>wv }
+	POP2 .Screen/x DEI2 ;nav/max LTH2 ?{
+		.Screen/x DEI2k #000c SUB2 ROT DEO2 !<draw-halftone> }
+	JMP2r
 
-@get-current-marker ( addr* -- id )
-	STH2
-	.nav/len LDZ #00
-	&>l ( -- )
-		DUP get-marker #0001 SUB2 STH2kr GTH2 ?&end
-		INC GTHk ?&>l &end NIP #01 SUB POP2r JMP2r
-
-@get-marker-color ( id sel -- color )
-	OVR EQU ?&selected
-	get-marker INC2 LDA [ LIT "| ] EQU #03 MUL INC JMP2r
-
-	&selected ( id -- color )
-	POP #09 JMP2r
+@nav/<draw-scope> ( str* -- )
+	#03 ;draw-glyph-utf8/color STA
+	&>ws ( -- )
+		.Screen/x DEI2 ;nav/max GTH2 ?{
+			draw-glyph-utf8 LDAk [ LIT ") ] EQU ?{ next-glyph LDAk ?&>ws } }
+	POP2 .Screen/x DEI2 ;nav/max LTH2 ?{
+		.Screen/x DEI2k #000c SUB2 ROT DEO2 !<draw-halftone> }
+	JMP2r
 
 (
 @|helpers )
 
 %get-glyph-width ( addr* -- addr* width* ) {
 	LDAk #09 NEQ #0018 ROT SFT2 }
+
+@walk-ws ( str* -- word* )
+	LDAk #20 GTH ?{ next-glyph LDAk ?walk-ws }
+	JMP2r
 
 @get-strw ( str* -- width* )
 	[ LIT2r 0000 ] LDAk #00 EQU ?{
@@ -836,10 +914,6 @@
 	[ LIT2 00 -state/raw ] STZ
 	JMP2r
 
-@walk-word ( addr* -- addr* )
-	INC2 & LDAk #20 GTH ?walk-word
-	JMP2r
-
 @scan-state ( addr* -- addr* )
 	.textarea/highlight LDZ ?&skip
 	( | reset always )
@@ -902,7 +976,7 @@
 	.state/comment LDZ ?&comment
 	.state/raw LDZ ?&comment
 	.state/label LDZ ?&label &skip #01 JMP2r
-	&selected .Search/buf LDZ ?{ #09 JMP2r }
+	&selected .search/buf LDZ ?{ #09 JMP2r }
 	#0d JMP2r
 	&label #02 JMP2r
 	&comment #03 JMP2r
@@ -935,10 +1009,6 @@
 
 (
 @|go )
-
-@zcap ( zstr -- zstr )
-	LDZk ?{ JMP2r }
-	INC !zcap
 
 @go-directory ( -- )
 	<clear-filepath>
@@ -978,13 +1048,13 @@
 	#0000 <set-scroll-y>
 	( | draw )
 	#01 <draw-filepath>
-	update-nav !reqdraw-textarea
+	nav/update !reqdraw-textarea
 
 @file-open ( -- )
 	#0000 <set-scroll-y>
-	#0100 <scroll-to-x>
+	;nav/width <scroll-to-x>
 	;text <select-a>
-	Search/<reset>
+	search/<reset>
 	( >> )
 
 @file-reopen ( -- )
@@ -996,7 +1066,7 @@
 	.File/success DEI2 INC2 .textarea/length STZ2
 	file-detect
 	( | draw )
-	update-scrollbar update-nav <select-reset>
+	update-scrollbar nav/update <select-reset>
 	#01 <draw-filepath>
 	#05 <draw-state> !reqdraw-textarea
 
@@ -1111,7 +1181,7 @@
 	;snarf-txt !file-inject-binary
 
 @edit-inject ( -- )
-	;Search/buf !file-inject
+	;search/buf !file-inject
 
 @format-strip ( -- )
 	get-eof ;text
@@ -1124,7 +1194,7 @@
 	LDA2k #0a20 NEQ2 ?{ INC2k <cut-char> !&>l }
 	INC2 GTH2k ?&>l
 	POP2 POP2 <select-reset>
-	update-nav !reqdraw-textarea
+	nav/update !reqdraw-textarea
 
 @format-trim ( -- )
 	[ LIT2r 0000 ] get-to get-from
@@ -1140,14 +1210,14 @@
 		INC2k wlen NIP STHkr ADD #50 LTH ?&no-ws
 		STH2k #0a STH2r STA
 		POPr LITr 00 &no-ws INC2 INC2r GTH2k ?&>l
-	POP2 POP2 POPr update-nav !reqdraw-textarea
+	POP2 POP2 POPr nav/update !reqdraw-textarea
 
 @transform-join ( -- )
 	get-to get-from
 	&>l ( -- )
 		LDAk #20 GTH ?{ STH2k #20 STH2r STA }
 		INC2 GTH2k ?&>l
-	POP2 POP2 update-nav !reqdraw-textarea
+	POP2 POP2 nav/update !reqdraw-textarea
 
 (
 @|handlers )
@@ -1173,11 +1243,13 @@
 	#01 <draw-filepath>
 	<draw-spacer>
 	( | draw )
-	<draw-navbar>
+	nav/<redraw>
+	<draw-scrollbar>
+	( >> )
 
 @<draw-textarea> ( -- )
 	( | clear )
-	#0100 .Screen/x DEO2
+	;nav/width .Screen/x DEO2
 	#0028 .Screen/y DEO2
 	[ LIT2 80 -Screen/pixel ] DEO
 	( | reset state )
@@ -1204,7 +1276,7 @@
 	POP2 get-from <draw-atcursor>
 	.Screen/y DEI2k #0008 SUB2 ROT DEO2
 	;blinker-icn .Screen/addr DEO2
-	#0f0a .Search/buf LDZ ?{ SWP }
+	#0f0a .search/buf LDZ ?{ SWP }
 	POP .Screen/sprite DEO
 	JMP2r
 
@@ -1228,65 +1300,34 @@
 	[ LITr -Screen/x ] DEO2r
 	JMP2r
 
-@<draw-glyph-icon> ( length* addr* -- )
-	.Screen/addr DEO2
-	.Screen/x DEI2
-	( ) ;draw-glyph-utf8/color LDA .Screen/sprite DEO
-	ADD2 .Screen/x DEO2
+@<draw-halftone> ( -- )
+	;halftone-icn .Screen/addr DEO2k
+	( ) [ LIT2r 00 -Screen/sprite ] DEOkr
+	DEO2
+	DEOr
 	JMP2r
-
-@draw-word-until ( str* x* color -- str* )
-	;draw-glyph-utf8/color STA
-	,&x STR2
-	&>w ( -- )
-		.Screen/x DEI2 [ LIT2 &x $2 ] LTH2 ?{
-			walk-word/
-			( ) #0006 ;dotdot-icn !<draw-glyph-icon> }
-		draw-glyph-utf8 next-glyph LDAk #20 GTH ?&>w
-	JMP2r
-
-@<draw-navbar> ( -- )
-	( | clear )
-	#0100 .Screen/x DEO2
-	#0028 .Screen/y DEO2
-	[ LIT2 90 -Screen/pixel ] DEO
-	<reset-state>
-	( | draw )
-	[ LIT2 25 -Screen/auto ] DEO
-	get-from get-current-marker ,&sel STR
-	.nav/len LDZ #00 EQUk ?<draw-navbar-empty>
-	&>l ( -- )
-		#000a .Screen/x DEO2
-		DUP [ LIT &sel $1 ] get-marker-color STH
-		( cap ) ;marker-icns .Screen/addr DEO2
-		STHkr #02 SFT .Screen/sprite DEO
-		DUP get-marker find-prev-spacer
-		( label ) LDA2k [ LIT2 "@| ] NEQ2 ?{ INC2 INC2 }
-		#00e0 STHkr draw-word-until POP2
-		( cap ) ;marker-icns/end .Screen/addr DEO2
-		STHr #02 SFT .Screen/sprite DEO
-		<draw-lb>
-		INC GTHk ?&>l
-	POP2 <draw-cat>
-	( >> )
 
 @<draw-scrollbar> ( -- )
 	#0004 .Screen/x DEO2
 	( | bg )
 	#0028 .Screen/y DEO2
 	[ LIT2 04 -scrollbar/height ] LDZ2 #03 SFT2 SUB
-	( ) ;checkered-icn #02 <draw-times>
+	( ) ;halftone-icn #02 <draw-times>
 	( | fg )
 	#0028 .scroll/y LDZ2 .scroll/ratio LDZ2 STH2k DIV2 ADD2 .Screen/y DEO2
 	[ LIT2 05 -Screen/height ] DEI2 count-lines STH2r DIV2 SUB2 #0028 SUB2 #03 SFT2 SUB
 	( ) ;fill-icn #02 !<draw-times>
+
+@draw-range ( to* from* -- to* )
+	draw-glyph-utf8 next-glyph GTH2k ?draw-range
+	POP2 JMP2r
 
 @<draw-navbar-empty> ( range* -- )
 	POP2 #0010 .Screen/x DEO2
 	#0028 .Screen/y DEO2
 	#03 ;<draw-glyph-plain>/color STA
 	;dict/empty <draw-str>
-	POP2 <draw-scrollbar> !<draw-cat>
+	POP2 <draw-scrollbar> !nav/<draw-mode>
 
 @<draw-state> ( state -- )
 	#0002 .Screen/x DEO2
@@ -1294,13 +1335,6 @@
 	[ LIT2 25 -Screen/auto ] DEO
 	;font/diamond .Screen/addr DEO2
 	.Screen/sprite DEOk DEO
-	JMP2r
-
-@<draw-cat> ( -- )
-	#0004 .Screen/x DEO2
-	.Screen/height DEI2 #000a SUB2 .Screen/y DEO2
-	;cat-icn [ LIT2 00 -nav/cat ] LDZ #30 SFT2 ADD2 .Screen/addr DEO2
-	[ LIT2 01 -Screen/sprite ] DEO
 	JMP2r
 
 @<draw-filepath> ( color -- )
@@ -1343,7 +1377,7 @@
 	JMP2r
 
 @<draw-widget> ( -- )
-	.Search/buf LDZ ?<draw-widget-search>
+	.search/buf LDZ ?<draw-widget-search>
 	get-to DUP2 get-from SUB2 DUP2 #001f GTH2 ?{ POP2 POP2 JMP2r }
 	SWP2 <draw-atcursor>
 	<draw-widget-parts>/left
@@ -1353,14 +1387,7 @@
 	get-to <draw-atcursor>
 	#04 ;<draw-glyph-plain>/color STA
 	<draw-widget-parts>/left
-	;Search/buf <draw-str>
-	POP2 !<draw-widget-parts>/right
-
-@<draw-widget-unicode> ( str* -- )
-	get-to <draw-atcursor>
-	#04 ;<draw-glyph-plain>/color STA
-	<draw-widget-parts>/left
-	<draw-str>
+	;search/buf <draw-str>
 	POP2 !<draw-widget-parts>/right
 
 @<draw-widget-parts>
@@ -1437,10 +1464,14 @@
 (
 @|stdlib )
 
+@zcap ( zstr -- zstr )
+	LDZk ?{ JMP2r }
+	INC !zcap
+
 @chex ( c -: <val> )
-	[ LIT "0 ] SUB DUP #0a LTH ?&end
-	#27 SUB DUP #10 LTH ?&end
-	POP #ff &end JMP2r
+	[ LIT "0 ] SUB DUP #0a LTH ?{
+		#27 SUB DUP #10 LTH ?{ POP #ff } }
+	JMP2r
 
 @shex ( str* -: value* )
 	[ LIT2r 0000 ]
@@ -1516,7 +1547,7 @@
 	JMP2r
 	&mmu 02 &length 0000 0000 &src 0000 0000 &dst 0000
 
-@sseg? ( a* b* -- bool )
+@sseg ( a* b* -- bool )
 	STH2
 	&>l ( -- )
 		LDAk LDAkr STHr NEQ ?&end
@@ -1529,6 +1560,10 @@
 	&>w ( -- )
 		INC2 LDAk #20 GTH ?&>w
 	SWP2 SUB2 JMP2r
+
+@wcap ( str* -- str* )
+	LDAk #20 GTH ?{ JMP2r }
+	INC2 !wcap
 
 @<sclr> ( str* -- )
 	#00 ROT ROT
@@ -1885,12 +1920,9 @@
 	0000 ff81 81ff 81ff 0000 ff81 81ff ffff ]
 @bubble-icn
 	[ 0000 0000 0008 1c3e ]
-@dotdot-icn [
-	0000 0000 0000 0000
-	0000 0000 0000 0000
-	0000 0048 0000 0000 ]
-@checkered-icn [
-	aa55 aa55 aa55 aa55 aa55 aa55 aa55 aa55 ]
+@halftone-icn [
+	aa55 aa55 aa55 aa55 aa55 aa55 aa55 aa55
+	aa55 aa55 aa55 aa55 ]
 @blinker-icn [
 	c0c0 c0c0 c0c0 c0c0 c0c0 c0c0 c0c0 c0c0
 	c0c0 c0c0 c0c0 c0c0 ]
@@ -2680,7 +2712,10 @@ e060 6060 6060 6060 6060 e070 0000 0000
 0f0f 0f07 0703 0000 1010 1008 0c07 0300 ffff ffff ffff ff00 0080 c17f 0000 ffff
 f8f8 f8f0 f0e0 8000 0484 8408 1870 e080 ]
 
-@unicode/buf $3
+(
+@|memory ) $1
 
-( memory ) $1 @text
+@symbolview/mem $80
+
+@text
 
