@@ -7,6 +7,7 @@
 |90 @Mouse &vector $2 &x $2 &y $2 &state $6 &scrolly &scrolly-hb $1 &scrolly-lb $1
 |a0 @File &vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |c0 @DateTime &year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
+|0100 @WIDTH
 
 |000
 
@@ -21,10 +22,6 @@
 	@secto $2
 	@secprog $2
 	@frames &a $2 &b $2
-
-|100
-
-@WIDTH
 
 |100
 
@@ -56,10 +53,28 @@
 	( name ) "m291 0a
 	( desc ) "Audio 20 "Player 0a
 	( auth ) "By 20 "Linvega 20 "& 20 "d6 0a
-	( date ) "12 20 "Dec 20 "2024 $2
+	( date ) "10 20 "Jan 20 "2025 $2
+
+(
+@|macros )
 
 %min ( x y -- min ) {
 	LTHk [ JMP SWP POP ] }
+
+%llen ( str* -- length* ) {
+	DUP2 lcap/ SWP2 SUB2 }
+
+%count-lines ( -- lines ) {
+	.lines LDZ2 ADD }
+
+%is-folder ( line* -- line* f ) {
+	DUP2 lcap/ #0001 SUB2 LDA [ LIT "/ ] EQU }
+
+%is-mp3 ( line* -- line*f ) {
+	DUP2 lcap/ #0003 SUB2 ;dict/mp3-ext scmp3 }
+
+%MOD2 ( n* mod* -- n* ) {
+	DIV2k MUL2 SUB2 }
 
 (
 @|vectors )
@@ -124,7 +139,7 @@
 
 	&scroll ( distance -> )
 	.selection/scroll LDZ ADD INCk ?{ POP BRK }
-	.lines/folders LDZ .lines/tracks LDZ ADD #18 SUB
+	count-lines #18 SUB
 	( needs scroll ) DUP #80 LTH ?{ POP2 BRK }
 	( max scroll ) min .selection/scroll STZ
 	<redraw-dir>
@@ -224,7 +239,7 @@
 @<move> ( mod -- )
 	.selection LDZ ADD
 	( top ) INCk ?{ POP JMP2r }
-	( bottom ) DUP .lines/folders LDZ .lines/tracks LDZ ADD NEQ ?{ POP JMP2r }
+	( bottom ) DUP count-lines NEQ ?{ POP JMP2r }
 	( >> )
 
 @<select> ( id -- )
@@ -369,8 +384,7 @@
 @<fit-window> ( -- )
 	#00
 	( folders ) .lines/folders LDZ
-	( tracks ) .lines/tracks LDZ ADD
-	( scroll ) #18 LTHk [ JMP SWP POP ]
+	( tracks ) .lines/tracks LDZ ADD #18 min
 	( empty ) DUP #00 EQU ADD #40 SFT2
 	( padding ) #0020 ADD2
 	( playing ) [ LIT2 00 -playing ] LDZ EQU ?{ #0080 ADD2 }
@@ -417,7 +431,7 @@
 	[ LITr 00 ]
 	&>loop ( -- )
 		LDAk ?{ POP2 STHr JMP2r }
-		INCr INC2 !&>loop
+		INCr next-glyph !&>loop
 
 @str-prefix ( a* b* -- len )
 	STH2
@@ -483,15 +497,6 @@
 		GTH2k ?{ POP2 POP2 STHr JMP2r }
 		DUP2 [ LIT2 &s0 $2 ] str-prefix STHr min STH
 		#0080 ADD2 !&>loop
-
-@count-lines ( -- lines )
-	.lines/folders LDZ .lines/tracks LDZ ADD JMP2r
-
-@is-folder ( line* -- line* f )
-	DUP2 lcap/ #0001 SUB2 LDA [ LIT "/ ] EQU JMP2r
-
-@is-mp3 ( line* -- line*f )
-	DUP2 lcap/ #0003 SUB2 ;dict/mp3-ext !scmp3
 
 @pos-to-seconds ( pos* -- seconds* )
 	.secfrom LDZ2 .secto LDZ2 ADD2 #00e7 DIV2k STH2k MUL2 SUB2 OVR2 STH2
@@ -670,14 +675,15 @@
 	<draw-progress> !<draw-timestamp>
 
 @<draw-title-scroll> ( -- )
-	;id3/title get-uf2-width #00d0 LTH2 ?{
+	;id3/title get-uf2-width ;WIDTH LTH2 ?{
 		[ LIT2 &f $2 ] INC2k ,&f STR2
 		DUP #0f AND ?{
 			#0020 .Screen/y DEO2
 			<clear-line>
 			#0001 .Screen/x DEO2
 			#0020 .Screen/y DEO2
-			#04 SFT2 ;id3/title !<draw-uf2-scroll> }
+			#01 ;<draw-glyph-utf8>/color STA
+			#04 SFT2 #00 ;id3/title str-len MOD2 ;id3/title !<draw-uf2-scroll> }
 		POP2 }
 	JMP2r
 
@@ -688,7 +694,7 @@
 	#0000 ;<draw-title-scroll>/f STA2
 	( | draw )
 	#0020 .Screen/y DEO2
-	;id3/title get-uf2-width #00d0 LTH2 ?{
+	;id3/title get-uf2-width ;WIDTH LTH2 ?{
 		#0008 .Screen/x DEO2
 		;id3/title #01 !<draw-uf2> }
 	( | center )
@@ -701,7 +707,7 @@
 	<clear-line>
 	( | draw )
 	#0030 .Screen/y DEO2
-	;id3/artist get-uf2-width #00d0 LTH2 ?{
+	;id3/artist get-uf2-width ;WIDTH LTH2 ?{
 		#0008 .Screen/x DEO2
 		;id3/artist #01 !<draw-uf2> }
 	( | center )
@@ -888,15 +894,18 @@
 	POP2 STH2r JMP2r
 
 @<draw-uf2-scroll> ( offset* text* -- )
-	[ LIT2 15 -Screen/auto ] DEO
-	;WIDTH ,&bound STR2
-	STH2k llen DIV2k MUL2 SUB2 STH2kr ADD2
-	&>w ( -- )
-		.Screen/x DEI2 [ LIT2 &bound $2 ] LTH2 ?{ POP2 POP2r JMP2r }
-		LDAk DUP ?{
-			POP2 POP STH2kr #20 <draw-glyph-ascii> !&>w }
-	<draw-glyph-ascii>
-	next-glyph !&>w
+	STH2k next-nth-glyph #01 <draw-uf2>
+	.Screen/x DEI2k #0004 ADD2 ROT DEO2
+	STH2r #01 !<draw-uf2>
+
+@next-nth-glyph ( offset* text* -- text* )
+	STH2
+	DUP2r #0000 EQU2k ?{
+		&>l ( -- )
+			STH2r next-glyph LDAk ?{ POP2 STH2kr }
+			STH2
+			INC2 GTH2k ?&>l }
+	POP2 POP2 STH2r POP2r JMP2r
 
 @<draw-uf2-center> ( text* color -- )
 	STH
@@ -919,16 +928,16 @@
 @<draw-uf2> ( text* color -- )
 	,<draw-glyph-utf8>/color STR
 	[ LIT2 15 -Screen/auto ] DEO
-	;WIDTH #0018 SUB2 ,&bound STR2
+	;WIDTH #0010 SUB2 ,&bound STR2
 	&>w ( -- )
-		( | trim mp3 )
-		LDAk [ LIT ". ] NEQ ?{ INC2k ;dict/mp3-ext scmp3 ?&end }
-		<draw-glyph-utf8>
 		( | trim length )
 		.Screen/x DEI2 [ LIT2 &bound $2 ] LTH2 ?{
 			POP2 ;dict/ellipses <draw-glyph-utf8>
 			<draw-glyph-utf8>
 			POP2 JMP2r }
+		( | trim mp3 )
+		LDAk [ LIT ". ] NEQ ?{ INC2k ;dict/mp3-ext scmp3 ?&end }
+		<draw-glyph-utf8>
 		next-glyph LDAk ?&>w &end POP2 JMP2r
 
 @<draw-glyph-utf8> ( addr* -- addr* )
@@ -995,9 +1004,6 @@
 		INC2r INC2 LDAk ?&>w
 	POP2 POP2r JMP2r
 
-@llen ( str* -- length* )
-	DUP2 lcap/ SWP2 SUB2 JMP2r
-
 @lcap ( str* -- next-line* )
 	LDAk #0a EQU ?{ INC2 & LDAk ?lcap }
 	JMP2r
@@ -1014,7 +1020,7 @@
 @<pdec> ( short* -- )
 	#000a SWP2 [ LITr ff ]
 	&>get ( -- )
-		SWP2k DIV2k MUL2 SUB2 STH
+		SWP2k MOD2 STH
 		POP OVR2 DIV2 ORAk ?&>get
 	POP2 POP2
 	&>put ( -- )

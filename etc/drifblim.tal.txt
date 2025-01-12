@@ -9,7 +9,7 @@
 |000
 
 	@token/buf $2f &cap $1
-	@scope/buf $30
+	@scope/buf $2f &cap $1
 	@src/buf $2f &cap $1
 	@dst/buf $2f &cap $1
 
@@ -38,8 +38,7 @@
 
 @dst/on-console ( -> )
 	.Console/read DEI
-	( ) DUP #20 GTH ?{ ;src/buf <handle-file>
-		<assemble> }
+	( ) DUP #20 GTH ?{ <assemble> }
 	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
 	DUP .&cap LTH ?{ ;&buf ;dict/exceeded ;dict/Path <set-error> }
 	STZ2
@@ -57,17 +56,17 @@
 			ORAk ?{ ;src/buf ;dict/missing ;dict/File <set-error> }
 			&end ( i* -- )
 			POP2 JMP2r }
-		INC2 [ LIT &c $1 ] token/<push-char> !&>s
+		INC2 [ LIT &c $1 ] token/<push-byte> !&>s
 
 (
 @|Core )
 
 @<assemble> ( -- )
+	;src/buf <handle-file>
 	.System/state DEI ?{
 		refs/<resolve>
 		.System/state DEI ?{ <print-summary>
-			rom/<save>
-			syms/<save> } }
+			rom/<save> } }
 	JMP2r
 
 @<print-summary> ( -- )
@@ -78,7 +77,7 @@
 				;dict/unused <pstr>/
 				DUP2 #0003 ADD2 <pstr>/
 				#0a19 DEO } }
-		INC2r #0003 ADD2 scap/ INC2 GTH2k ?&>l
+		INC2r #0003 ADD2 scap/ GTH2k ?&>l
 	POP2 POP2
 	( | result )
 	;dict/assembled <pstr>/
@@ -116,7 +115,7 @@
 	[ LIT2 00 -&buf ] STZ
 	JMP2r
 
-@token/<push-char> ( c -- )
+@token/<push-byte> ( c -- )
 	DUP #20 GTH ?{
 		POP ;&buf LDZk ?{ POP2 JMP2r }
 		[ LIT2 &mode =asm-default ] JSR2 !&<new> }
@@ -128,19 +127,28 @@
 	STZ2
 	JMP2r
 
+@scope/<push-byte> ( c -- )
+	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
+	DUP .&cap LTH ?{ ;&buf ;dict/exceeded ;dict/Symbol <set-error> }
+	STZ2
+	JMP2r
+
 @scope/<set-label> ( str* -- )
 	[ LIT2 -&buf _&ptr ] STR
 	&>w ( -- )
 		LDAk [ LIT "/ ] EQU ?{
-			LDAk [ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
-			STZ2
+			LDAk /<push-byte>
 			INC2 LDAk ?&>w }
-	POP2 JMP2r
+	POP2 ,&ptr LDR ,&anchor STR
+	JMP2r
 
 @scope/label ( name* -- scope/label* )
-	[ LIT2 00 _&ptr ] LDR [ LIT2 "/ 00 ] OVR2 STA2
-	INC2 <scpy>
-	;&buf JMP2r
+	[ LIT2 &anchor $1 _&ptr ] STR
+	[ LIT "/ ] /<push-byte>
+	&>wl ( -- )
+		LDAk /<push-byte>
+		INC2 LDAk ?&>wl
+	POP2 ;&buf JMP2r
 
 (
 @|Assembly )
@@ -235,7 +243,7 @@
 	,&ptr LDR2 ;&mem
 	&>l ( -- )
 		DUP2 STH2kr wcmp ?{
-			scap/ INC2 GTH2k ?&>l
+			scap/ GTH2k ?&>l
 		POP2 #ffff }
 	NIP2 POP2r JMP2r
 
@@ -261,7 +269,7 @@
 	;&ptr LDA2 ;&mem
 	&>l ( -- )
 		DUP2 #0003 ADD2 STH2kr wcmp ?{
-			#0003 ADD2 scap/ INC2 GTH2k ?&>l
+			#0003 ADD2 scap/ GTH2k ?&>l
 		POP2 #ffff }
 	NIP2 POP2r JMP2r
 
@@ -311,20 +319,6 @@
 @syms/invalid ( name* -- )
 	/<push-string>
 	( ! ) ;dict/invalid ;dict/Symbol !<set-error-token>
-
-@syms/<save> ( -- )
-	( add ext ) ;dst/buf DUP2 scap/ ;dict/sym-ext OVR2 <scpy>
-	SWP2 .File/name DEO2
-	;syms/mem-end ;syms/mem
-	&>w ( -- )
-		( addr ) #0002 .File/length DEO2
-		DUP2 .File/write DEO2
-		( name ) #0003 ADD2 DUP2k scap/ SWP2 SUB2 INC2 STH2k .File/length DEO2
-		DUP2 .File/write DEO2
-		STH2r ADD2 GTH2k ?&>w
-	POP2 POP2
-	( rem ext ) #00 ROT ROT STA
-	JMP2r
 
 (
 @|References )
@@ -437,9 +431,9 @@
 		INC2 LDAk #20 GTH ?&>wcap
 	INC2
 	&>body ( body* -- cap* )
-		LDAk token/<push-char>
+		LDAk token/<push-byte>
 		INC2 LDAk ?&>body
-	NIP2 LDA !token/<push-char>
+	NIP2 LDA !token/<push-byte>
 
 @rom/<write-str> ( str* -- )
 	LDAk /<write-byte>
@@ -533,7 +527,7 @@
 
 @scap ( str* -- end* )
 	INC2 & LDAk ?scap
-	JMP2r
+	INC2 JMP2r
 
 @zlen ( ztr -- ztr len )
 	DUP [ LITr 00 ]
@@ -547,13 +541,6 @@
 		LDAk #21 LTH ?{
 			LDAk LDAkr STHr NEQ ?{ INC2 INC2r !&>l } }
 	LDA #21 LTH LDAr STHr #21 LTH AND JMP2r
-
-@<scpy> ( src* dst* -- )
-	STH2
-	&>w ( src* `dst* -- )
-		LDAk #00 STH2kr STA2
-		INC2r INC2 LDAk ?&>w
-	POP2 POP2r JMP2r
 
 @<pstr> ( str* -- )
 	LDAk #19 DEO
@@ -615,14 +602,13 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "4 20 "Jan 20 "2025 $2
+	( date ) "11 20 "Jan 20 "2025 $2
 
 @dict
 	&usage "usage: 20 "drifblim.rom 20 "in.tal 20 "out.rom 0a $1
 	&assembled "Assembled 20 $1 &in 20 "in 20 $1 &bytes 20 "bytes( $1 &labels 20 "labels). 0a $1
 	&unused "-- 20 "Unused: 20 $1
 	&reset "RESET $1
-	&sym-ext ".sym $1
 	&File "File $1
 	&Token "Token $1
 	&Symbol "Symbol $1
