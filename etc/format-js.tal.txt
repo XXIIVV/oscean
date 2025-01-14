@@ -1,0 +1,59 @@
+( usage: uxncli format-js.rom file.bin )
+
+|10 @Console &vector $2 &read $1 &pad $5 &write $1 &error $1
+|a0 @File &vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+
+|000
+
+	@src/buf $100
+
+|100
+
+@on-reset ( -> )
+	;src/on-console .Console/vector DEO2
+	BRK
+
+@src/on-console ( -> )
+	.Console/read DEI DUP #20 GTH ?{ POP ;&buf <render>
+		BRK }
+	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
+	STZ2
+	BRK
+
+@<render> ( src* -- )
+	DUP2 .File/name DEO2
+	#0001 .File/length DEO2
+	;dict/const-txt <pstr>
+	( src* ) <pstr>
+	;dict/header-txt <pstr>
+	#00
+	&>stream ( -- )
+		;&buf .File/read DEO2
+		.File/success-lb DEI ?{
+			POP #800f DEO
+			;dict/footer-txt !<pstr> }
+		[ LIT2 "0 18 ] DEO
+		[ LIT2 "x 18 ] DEO
+		[ LIT &buf $1 ] <phex-byte>
+		[ LIT2 ", 18 ] DEO
+		#2018 DEO
+		INC DUP #07 AND ?{ #0a18 DEO
+			#0918 DEO }
+		!&>stream
+
+@<phex-byte> ( byte -- )
+	DUP #04 SFT /char
+	( >> )
+	&char ( char -- )
+	#0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO
+	JMP2r
+
+@<pstr> ( str* -- )
+	LDAk #18 DEO
+	INC2 LDAk ?<pstr>
+	POP2 JMP2r
+
+@dict
+	&const-txt "const 20 00 &header-txt 20 "= 20 "new 20 "Uint8Array([ 0a 09 00
+	&footer-txt "0x00]) 0a 00
+
