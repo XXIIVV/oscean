@@ -59,7 +59,7 @@
 	( name ) "Left 0a
 	( details ) "A 20 "Text 20 "Editor 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "11 20 "Jan 20 "2024 $1 02
+	( date ) "13 20 "Jan 20 "2024 $1 02
 	( > ) 83 =appicon
 	( > ) 0a =manifest
 
@@ -161,6 +161,11 @@
 	DUP #7f NEQ ?{ POP delete BRK }
 	<insert-char>
 	BRK
+
+@reqdraw-nav ( -- )
+	[ LIT2 00 _on-frame-draw/navbar ] STR
+	;on-frame-draw .Screen/vector DEO2
+	JMP2r
 
 @reqdraw-both ( -- )
 	[ LIT2 00 _on-frame-draw/navbar ] STR
@@ -735,10 +740,14 @@
 	&>l ( -- )
 		caret/scan scan-state get-color ;utf8/color STA
 		utf8/draw
-		( linebreak ) LDAk #0a NEQ ?{
+		( | linebreak )
+		LDAk #0a NEQ ?{
 			<draw-lb>
 			.Screen/y DEI2 .Screen/height DEI2 #0010 SUB2 GTH2 ?&end
 			/get-anchor .Screen/x DEO2 }
+		( | offscreen )
+		LDAk LIT "/ GTH ?{
+			.Screen/x DEI2 .Screen/width DEI2 LTH2 ?{ find-line-end #0001 SUB2 } }
 		utf8/next LDAk ?&>l
 	( | draw size left )
 	/get-anchor .Screen/x DEO2
@@ -929,7 +938,7 @@
 
 @nav/toggle-categories ( -- )
 	.&cat LDZk #01 EOR SWP STZ
-	/<draw-mode> !/<update>
+	/<draw-mode> !reqdraw-nav
 
 @nav/toggle-sidebar ( -- )
 	.&visible LDZk #01 EOR SWP STZ

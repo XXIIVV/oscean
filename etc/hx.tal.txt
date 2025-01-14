@@ -5,53 +5,54 @@
 
 |000
 
-	@src
+	@src/buf $100
 
 |100
 
 @on-reset ( -> )
 	.Console/type DEI ?{
-		;Dict/usage <perr>
+		;dict/usage <perr>
 		#010f DEO
 		BRK }
-	;await-src .Console/vector DEO2
+	;src/on-console .Console/vector DEO2
 	BRK
 
-@await-src ( -> )
+@src/on-console ( -> )
 	.Console/read DEI
 	( ) DUP #20 GTH ?{ POP !on-ready }
-	[ LIT2 00 &ptr -src ] INCk ,&ptr STR
+	[ LIT2 00 &ptr -src/buf ] INCk ,&ptr STR
 	STZ2
 	BRK
 
 @on-ready ( -> )
-	;src .File/name DEO2
+	;src/buf DUP2 .File/name DEO2
 	#0001 .File/length DEO2
-	#0a19 DEO
+	( lb ) [ LIT2r 0a19 ] DEOkr
 	#0000
 	&>stream ( -- )
 		;&b .File/read DEO2
-		[ LIT2 00 -File/succ-lb ] DEI EQU ?{
-			[ LIT &b $1 ] <pbyte>
-			INC2 DUP <print-spacer> !&>stream }
-	#0a19 DEOk DEO
-	<pdec>
-	;Dict/bytes <perr>
-	;src <perr>
-	#0a19 DEO
-	#800f DEO
-	BRK
+		[ LIT -File/succ-lb ] DEI ?{
+			( lb ) DEOkr
+			( lb ) DEOkr
+			<pdec>
+			;dict/bytes <perr>
+			<perr>
+			( lb ) DEOr
+			#800f DEO
+			BRK }
+		[ LIT &b $1 ] <pbyte>
+		INC2 print-spacer !&>stream
 
-@<print-spacer> ( id -- )
-	DUP #0f AND ?{ POP #0a18 DEO
+@print-spacer ( id -- id )
+	DUP #0f AND ?{ #0a18 DEO
 		JMP2r }
-	#01 AND ?{ #2018 DEO }
+	DUP #01 AND ?{ #2018 DEO }
 	JMP2r
 
 (
 @|stdlib )
 
-@<pbyte> ( short* -- )
+@<pbyte> ( byte -- )
 	DUP #04 SFT /c
 	&c ( -- )
 	#0f AND DUP #09 GTH #27 MUL ADD LIT "0 ADD #18 DEO
@@ -75,6 +76,6 @@
 (
 @|res )
 
-@Dict
+@dict
 	&usage "usage: 20 "hx.rom 20 "input.bin 0a $1 &bytes 20 "bytes 20 "in 20 $1
 

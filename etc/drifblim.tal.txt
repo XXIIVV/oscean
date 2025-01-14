@@ -3,7 +3,7 @@
 |00 @System &vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
 |10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
 |a0 @File &vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
-|00 @RefType &abs-byte $1 &abs-short $1 &rel-byte $1 &rel-short $1
+|00 @RefType &ab $1 &as $1 &rb $1 &rs $1
 |00 @SymType $40 &used $40 &declared
 
 |000
@@ -17,30 +17,27 @@
 
 @on-reset ( -> )
 	;meta #06 DEO2
-	;dict/reset scope/<set-label>
 	;src/on-console
 	( >> )
 
 @bind ( vector* -> )
 	.Console/vector DEO2
-	.Console/type DEI ?{
+	[ LIT2 03 -Console/type ] DEI AND ?{
 		;dict/usage <pstr>
 		[ LIT2 01 -System/state ] DEO }
 	BRK
 
 @src/on-console ( -> )
-	.Console/read DEI
-	( ) DUP #20 GTH ?{ POP ;dst/on-console !bind }
+	.Console/read DEI DUP #20 GTH ?{ POP ;dst/on-console !bind }
 	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
-	DUP .&cap LTH ?{ ;&buf ;dict/exceeded ;dict/Path <set-error> }
+	DUP .&cap LTH ?{ ;dict/exceeded ;dict/Path ;&buf <set-error> }
 	STZ2
 	BRK
 
 @dst/on-console ( -> )
-	.Console/read DEI
-	( ) DUP #20 GTH ?{ <assemble> }
+	.Console/read DEI DUP #20 GTH ?{ <assemble> }
 	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
-	DUP .&cap LTH ?{ ;&buf ;dict/exceeded ;dict/Path <set-error> }
+	DUP .&cap LTH ?{ ;dict/exceeded ;dict/Path ;&buf <set-error> }
 	STZ2
 	BRK
 
@@ -53,7 +50,7 @@
 		.System/state DEI ?&end
 		;&c .File/read DEO2
 		.File/success-lb DEI ?{
-			ORAk ?{ ;src/buf ;dict/missing ;dict/File <set-error> }
+			ORAk ?{ ;dict/missing ;dict/File ;src/buf <set-error> }
 			&end ( i* -- )
 			POP2 JMP2r }
 		INC2 [ LIT &c $1 ] token/<push-byte> !&>s
@@ -62,9 +59,10 @@
 @|Core )
 
 @<assemble> ( -- )
+	;dict/reset scope/<set-label>
 	;src/buf <handle-file>
 	.System/state DEI ?{
-		refs/<resolve>
+		refs/<resolve-all>
 		.System/state DEI ?{ <print-summary>
 			rom/<save> } }
 	JMP2r
@@ -73,10 +71,11 @@
 	[ LIT2r 0000 ] ;syms/ptr LDA2 ;syms/mem
 	&>l ( -- )
 		( used ) INC2k INC2 LDA .SymType/used AND ?{
-			( upper ) DUP2 #0003 ADD2 LDA [ LIT "A ] SUB #1a LTH ?{
+			( upper ) DUP2 #0003 ADD2 LDAk [ LIT "A ] SUB #1a LTH ?{
 				;dict/unused <pstr>/
-				DUP2 #0003 ADD2 <pstr>/
-				#0a19 DEO } }
+				DUP2 <pstr>/
+				#0a19 DEO }
+			POP2 }
 		INC2r #0003 ADD2 scap/ GTH2k ?&>l
 	POP2 POP2
 	( | result )
@@ -90,14 +89,17 @@
 	[ LIT2 80 -System/state ] DEO
 	JMP2r
 
+@<set-error-ref> ( adj* name* -- )
+	[ LIT2 &ref $2 ] #0003 ADD2 !<set-error>
+
 @<set-error-token> ( adj* name* -- )
-	;token/buf ROT2 ROT2
+	;token/buf
 	( >> )
 
-@<set-error> ( keyword* adj* name* -- )
-	<pstr>
+@<set-error> ( adj* name* keyword* -- )
+	SWP2 <pstr>
 	#2019 DEO
-	<pstr>
+	SWP2 <pstr>
 	[ LIT2 ": 19 ] DEO
 	#2019 DEO
 	<pstr>
@@ -129,7 +131,7 @@
 
 @scope/<push-byte> ( c -- )
 	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
-	DUP .&cap LTH ?{ ;&buf ;dict/exceeded ;dict/Symbol <set-error> }
+	DUP .&cap LTH ?{ ;dict/exceeded ;dict/Symbol ;&buf <set-error> }
 	STZ2
 	JMP2r
 
@@ -142,7 +144,7 @@
 	POP2 ,&ptr LDR ,&anchor STR
 	JMP2r
 
-@scope/label ( name* -- scope/label* )
+@scope/make-name ( name* -- scope/label* )
 	[ LIT2 &anchor $1 _&ptr ] STR
 	[ LIT "/ ] /<push-byte>
 	&>wl ( -- )
@@ -198,13 +200,13 @@
 	JMP2r
 
 @lib ( runics )
-	&padabs INC2 get-any !rom/<set-head>
-	&padrel INC2 get-any !rom/<set-head-rel>
+	&padabs INC2 refs/get-any !rom/<set-head>
+	&padrel INC2 refs/get-any !rom/<set-head-rel>
 	&toplab INC2 DUP2 scope/<set-label> !syms/<new>
-	&sublab INC2 scope/label !syms/<new>
-	&litrel #80 rom/<write-byte> &rawrel INC2 refs/get-rel-byte !rom/<write-byte>
-	&litzep #80 rom/<write-byte> &rawzep INC2 refs/get-abs-byte !rom/<write-byte>
-	&litabs #a0 rom/<write-byte> &rawabs INC2 refs/get-abs-short !rom/<write-short>
+	&sublab INC2 scope/make-name !syms/<new>
+	&litrel #80 rom/<write-byte> &rawrel INC2 refs/get-rb !rom/<write-byte>
+	&litzep #80 rom/<write-byte> &rawzep INC2 refs/get-ab !rom/<write-byte>
+	&litabs #a0 rom/<write-byte> &rawabs INC2 refs/get-as !rom/<write-short>
 	&litjci INC2 #20 !rom/<write-call>
 	&litjmi INC2 #40 !rom/<write-call>
 	&litjsi #60 !rom/<write-call>
@@ -219,7 +221,7 @@
 (
 @|Lambda )
 
-@lambda/push ( -- name* )
+@lambda/make-name ( -- name* )
 	[ LIT &count $1 ] INCk ,&count STR
 	DUP [ LIT2 &ptr =&mem ] INC2k ,&ptr STR2
 	STA
@@ -323,93 +325,117 @@
 (
 @|References )
 
-@get-any ( str* -- value* )
+@refs/get-any ( str* -- value* )
 	is-hex ?shex
-	!get-ref
+	!/get-ref
 
-@get-ref-type ( token* type -- addr* )
-	,get-ref/type STR
+@refs/get-type ( token* type -- addr* )
+	,&type STR
 	( >> )
 
-@get-ref ( token* -- addr* )
-	LDA2k [ LIT2 "{ 00 ] NEQ2 ?{ POP2 lambda/push }
-	LDAk [ LIT "/ ] NEQ ?{ INC2 scope/label }
-	LDAk [ LIT "& ] NEQ ?{ INC2 scope/label }
+@refs/get-ref ( token* -- addr* )
+	LDA2k [ LIT2 "{ 00 ] NEQ2 ?{ POP2 lambda/make-name }
+	LDAk [ LIT "/ ] NEQ ?{ INC2 scope/make-name }
+	LDAk [ LIT "& ] NEQ ?{ INC2 scope/make-name }
 	( | find symbol or create it )
 	syms/find-alloc
 	( | check if declared )
 	INC2k INC2 STH2k LDA .SymType/declared AND ?{
-		STH2k [ LIT &type $1 ] STH2r rom/get-head refs/<new> }
+		STH2k [ LIT &type $1 ] STH2r rom/get-head
+		( addr* ) refs/<push-short>
+		( value* ) refs/<push-short>
+		( type ) refs/<push-byte> }
 	( | mark as used )
 	LDAkr STHr .SymType/used ORA STH2r STA
 	LDA2 JMP2r
 
-@refs/<new> ( type value* addr* -- )
-	[ LIT2 &ptr =&mem ] STH2k
-	( addr* ) STA2
-	( value* ) INC2r INC2r STH2kr STA2
-	( type ) INC2r INC2r STH2kr STA
-	( save ) INC2r [ LITr _&ptr ] STR2r
-	( | check overflow )
-	,&ptr LDR2 ;&mem-end LTH2 ?{
+@refs/<push-short> ( -- )
+	SWP /<push-byte>
+	( >> )
+
+@refs/<push-byte> ( byte -- )
+	[ LIT2 &ptr =&mem ] INC2k ,&ptr STR2
+	DUP2 ;&mem-end LTH2 ?{
 		( ! ) ;dict/exceeded ;dict/References !<set-error-token> }
+	STA
 	JMP2r
 
-@refs/<resolve> ( -- )
+@refs/<resolve-all> ( -- )
 	,&ptr LDR2 ;&mem
 	&>l ( -- )
+		INC2k INC2 LDA2 ;<set-error-ref>/ref STA2
 		.System/state DEI ?{
-			STH2k
-			( | route )
-			DUP2 #0004 ADD2 LDA
-			( ) DUP .RefType/abs-byte NEQ ?{ STH2kr /resolve-abs STA
-				POP }
-			( ) DUP .RefType/abs-short NEQ ?{ STH2kr /resolve-abs STA2 }
-			( ) DUP .RefType/rel-byte NEQ ?{
-				STH2kr /resolve-rel
-				( | validate distance )
-				OVR2 #0080 ADD2 POP #00 EQU ?{
-					( sym* ) STH2kr INC2 INC2 LDA2
-					( sym/name* ) #0003 ADD2 ;dict/too-far ;dict/Reference <set-error> }
-				STA
-				POP }
-			( ) DUP .RefType/rel-short NEQ ?{ STH2kr /resolve-rel STA2 }
-			POP POP2r
-			( ) #0005 ADD2 GTH2k ?&>l }
+			/<resolve>
+			#0005 ADD2 GTH2k ?&>l }
 	POP2 POP2 JMP2r
+
+@refs/<resolve> ( addr* -- addr* )
+	DUP2 DUP2 #0004 ADD2 LDA
+	( | handlers )
+	DUP .RefType/ab EQU ?/<set-ab>
+	DUP .RefType/as EQU ?/<set-as>
+	DUP .RefType/rb EQU ?/<set-rb>
+	DUP .RefType/rs EQU ?/<set-rs>
+	POP JMP2r
+
+@refs/<set-ab> ( ref* type -- )
+	POP /resolve-abs STA
+	POP JMP2r
+
+@refs/<set-as> ( ref* type -- )
+	POP /resolve-abs STA2
+	JMP2r
+
+@refs/<set-rs> ( ref* type -- )
+	POP /resolve-rel STA2
+	JMP2r
+
+@refs/<set-rb> ( ref* type -- )
+	POP /resolve-rel
+	( | validate distance )
+	OVR2 #0080 ADD2 POP #00 EQU ?{
+		( ! ) ;dict/too-far ;dict/Reference <set-error-ref> }
+	STA
+	POP JMP2r
 
 @refs/resolve-sym ( ref* -- ref* addr* )
 	( sym* ) INC2k INC2 LDA2
 	( sym/addr* ) LDA2k INC2k ORA ?{
-		( ! ) OVR2 #0003 ADD2 ;dict/invalid ;dict/Reference <set-error> }
+		( ! ) ;dict/invalid ;dict/Reference <set-error-ref> }
 	( | sym* addr* )
 	NIP2 JMP2r
 
 @refs/resolve-abs ( ref* -- value* addr* )
-	( value* ) /resolve-sym
-	( addr* ) SWP2 LDA2 ;rom/mem ADD2 JMP2r
+	( value* ) /resolve-sym !/resolve
 
 @refs/resolve-rel ( ref* -- value* addr* )
-	( value* ) /resolve-sym OVR2 LDA2 INC2 INC2 SUB2
+	( value* ) /resolve-sym OVR2 LDA2 /get-distance
+	( >> )
+
+@refs/resolve ( ref* -- value* addr* )
 	( addr* ) SWP2 LDA2 ;rom/mem ADD2 JMP2r
 
-@refs/get-abs-byte ( label* -- addr )
-	.RefType/abs-byte get-ref-type NIP JMP2r
+@refs/get-ab ( label* -- addr )
+	.RefType/ab /get-type NIP JMP2r
 
-@refs/get-abs-short ( label* -- addr* )
-	.RefType/abs-short !get-ref-type
+@refs/get-as ( label* -- addr* )
+	.RefType/as !/get-type
 
-@refs/get-rel-byte ( label* -- distance )
-	.RefType/rel-byte get-ref-type INC2k ORA ?{
+@refs/get-rb ( label* -- distance )
+	.RefType/rb /get-type INC2k ORA ?{
 		( undefined ) POP2 #00 JMP2r }
-	rom/get-head INC2 INC2 SUB2
+	rom/get-head /get-distance
 	( | check distance )
 	DUP2 #0080 ADD2 POP ?{ NIP JMP2r }
 	NIP
 	( ! ) ;dict/too-far ;dict/Reference !<set-error-token>
 
-@refs/get-rel-short ( label* -- distance* )
-	.RefType/rel-short get-ref-type rom/get-head INC2 INC2 SUB2 JMP2r
+@refs/get-rs ( label* -- distance* )
+	.RefType/rs /get-type rom/get-head
+	( >> )
+
+@refs/get-distance ( addr* -- distance* )
+	( ) INC2 INC2 SUB2 JMP2r
 
 (
 @|Rom )
@@ -468,7 +494,7 @@
 
 @rom/<write-call> ( str* opc -- )
 	/<write-byte>
-	refs/get-rel-short
+	refs/get-rs
 	( >> )
 
 @rom/<write-short> ( short* -- )
@@ -602,7 +628,7 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "11 20 "Jan 20 "2025 $2
+	( date ) "14 20 "Jan 20 "2025 $2
 
 @dict
 	&usage "usage: 20 "drifblim.rom 20 "in.tal 20 "out.rom 0a $1
