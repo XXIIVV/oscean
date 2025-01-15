@@ -55,6 +55,10 @@ function Emu (embed)
 				}
 				emulator.load(rom, true);
 			}
+			// Get boot rom
+			else if(boot_rom){
+				emulator.load(boot_rom, true);
+			}
 			// Start screen vector
 			setInterval(() => {
 				window.requestAnimationFrame(() => {
@@ -73,7 +77,7 @@ function Emu (embed)
 	}
 
 	this.load = (rom, fromURL = false) => {
-		this.screen.set_zoom(1)
+		this.screen.set_zoom(default_zoom ? default_zoom : 1)
 		this.uxn.load(rom).eval(0x0100);
 		share.setROM(rom);
 		if (fromURL) {
@@ -154,10 +158,8 @@ function SaveView(el) {
 	saveButtonEl.disabled = true;
 	saveButtonEl.style.display = "none"
 	saveButtonEl.innerHTML = `Save`
-
 	saveButtonEl.addEventListener("click", (ev) => {
 		ev.preventDefault();
-
 		let blob = new Blob([rom]);
 		let blobUrl = URL.createObjectURL(blob);
 		let link = document.createElement("a");
@@ -168,7 +170,6 @@ function SaveView(el) {
 		link.remove()
 	});
 	el.appendChild(saveButtonEl);
-
 	this.setROM = (v) => {
 		rom = v;
 		saveButtonEl.disabled = false;

@@ -53,6 +53,11 @@ function Controller(emu)
 			event.preventDefault(); 
 		}
 		emu.uxn.dev[0x82] = this.state;
-		emu.uxn.eval(peek16(emu.uxn.dev, 0x80))
+		if(mask || event.type == "keydown") {
+			emu.uxn.eval(peek16(emu.uxn.dev, 0x80))
+		}
+		if(event.type == "keydown") {
+			emu.uxn.dev[0x83] = 0;
+		}
 	}
 }
