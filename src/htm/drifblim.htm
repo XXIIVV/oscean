@@ -8,7 +8,10 @@ href='uxn.html'>virtual machine</a>.</p>
 
 <h3>Drifblim Standard</h3>
 
-<p>This styleguide specifies a restricted Uxntal target aimed at compatibility with most assemblers. To validate your own assembler, see the <a href='https://git.sr.ht/~rabbits/drifblim/tree/main/item/tests' target='_blank'>tests</a>.</p>
+<p>This styleguide specifies a restricted Uxntal target aimed at compatibility
+with most assemblers. To validate your own assembler, see the <a
+href='https://git.sr.ht/~rabbits/drifblim/tree/main/item/tests'
+target='_blank'>tests</a>.</p>
 
 <ul>
 	<li>Limit of 48 bytes per token.</li>
@@ -17,36 +20,87 @@ href='uxn.html'>virtual machine</a>.</p>
 	<li>Only one include per file, must be last token of file.</li>
 </ul>
 
-<p>Beyond features support, Drifblim expects the <a href='uxntal_notation.html'>standard notation</a>:</p>
+<p>Beyond features support, Drifblim expects the <a
+href='uxntal_notation.html'>standard notation</a>:</p>
 
 <ul>
 	<li>Routines are indicated in the <code>( a b -- c )</code> style.</li>
 	<li>Vectors are indicated with the <code>( -> )</code> spacer.</li>
 	<li>Routine definitions using shorts use asterix, like <code>( a* -- b* )</code>.</li>
 	<li>Source is indented with tabulators.</li>
-	<li>Device labels are capitalized.</li>
+	<li>Struct labels are capitalized.</li>
 </ul>
 
 <img src="../media/refs/drifblim.png" alt="Drawing by Rekka Bellum">
 
-<p><i>Drifblim is strong enough to lift Pokemon or people but has no control over its flight. This causes it to drift with the wind and end up anywhere.</i></p>
+<article>
+	<p><i>Drifblim is strong enough to lift Pokemon or people but has no control
+over its flight. This causes it to drift with the wind and end up
+anywhere.</i></p>
+</article>
 
 <h3>drifblim.tal</h3>
 
-<p>Since the assembler is written in the language it is assembling, you have two
-choices, download a pre-assembled <a
-href='https://rabbits.srht.site/drifblim/drifblim.rom'
-target="_blank">drifblim.rom</a>(2kb), or assemble it with <a
-href='https://git.sr.ht/~rabbits/uxn/tree/main/item/src/uxnasm.c'
-target="_blank">uxnasm.c</a>. </p>
+<p>Since the assembler is written in the language it is assembling, you have a few
+choices:</p>
 
-<iframe src="../etc/drifblim.tal.txt" height='500'></iframe>
+<ol>
+	<li>Download a pre-assembled <a href='https://rabbits.srht.site/drifblim/drifblim.rom' target="_blank">drifblim.rom</a>.</li>
+	<li>Assemble your own with <a href='https://git.sr.ht/~rabbits/uxn/tree/main/item/src/uxnasm.c' target="_blank">uxnasm.c</a></li>
+	<li>Bootstrap from a <a href='#bootstrap'>hexdump</a></li>
+</ol>
 
-<h3>drifblim.rom</h3>
+<div class="codeview">
+	<iframe src="../etc/drifblim.tal.txt"></iframe>
+	<pre>uxnasm drifblim.tal drifblim.rom <a href="../etc/drifblim.tal.txt" target="_blank">view raw</a></pre>
+</div>
 
-<p>This is the hexadecimal data of the drifblim assembler above, I am keeping a copy of it here just in case.</p>
+<h3 id='bootstrap'>Bootstrap Tools</h3>
 
-<iframe src="../etc/drifblim.rom.txt" height='500'></iframe>
+<p>If you are unable to assemble your own copy of drifblim, lost its source
+file, or simply want to make sure that the assembler is unaltered, you will
+need a copy of the hexdump:</p>
+
+<div class="codeview">
+	<iframe src="../etc/drifblim.rom.txt" style='height:240px'></iframe>
+	<pre>cat drifblim.rom.txt | uxncli xh.rom > drifblim.rom <a href="../etc/drifblim.rom.txt" target="_blank">view raw</a></pre>
+</div>
+
+<p>This is the hexadecimal data of the drifblim assembler above, I am keeping a
+copy of it here just in case. Here are some easily inspectable tools to help
+with the bootstrapping process on non-unix systems.</p>
+
+<h4>xh.rom</h4>
+<p>If for some reason you do not have access to the unix <kbd>xxd</kbd> command,
+you can convert hexadecimal dump to a rom with the <a
+href='../etc/xh.tal.txt'>xh.rom</a>. The xh rom reads a console stream of
+hexadecimal text and output the actual bytes through the console.</p>
+
+<pre>
+a001 0a80 1037 e001 0100 8012 1680 3019
+0680 0a0b 2000 0c80 2719 0680 100b 2000
+0202 0041 dc4f 2000 0480 401f 001d 8018
+1700
+
+<i>cat drifblim.rom.txt | uxncli xh.rom > drifblim.rom</i>
+</pre>
+
+<h4>cat.rom</h4>
+<p>If for some reason you do not have access to the unix <kbd>cat</kbd> program,
+you can read files and output their content through the console with the <a
+href='../etc/cat.tal.txt'>cat.rom</a>. The cat rom reads a file and outputs the
+content via the console.</p>
+
+<pre>
+a001 0780 1037 0080 1216 0680 1f0a 2000
+1502 6000 1aa0 000f 13a0 0317 1608 2000
+04a0 800f 1700 a000 0081 80fb 1331 00a0
+0000 80a8 37a0 0001 80aa 37a0 014b 80ac
+b780 a316 2000 0302 226c a000 1817 40ff
+ef
+
+<i>uxncli cat.rom drifblim.rom.txt | uxncli xh.rom > drifblim.rom</i>
+</pre>
 
 <ul>
 	<li><a href='https://git.sr.ht/~rabbits/drifblim' target='_blank'>View Source</a></li>
