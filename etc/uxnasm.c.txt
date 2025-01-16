@@ -163,8 +163,10 @@ walkcomment(FILE *f, Context *ctx)
 	while(f && fread(&c, 1, 1, f)) {
 		if(c <= 0x20) {
 			if(c == 0xa) ctx->line++;
-			if(last == '(') depth++;
-			else if(last == ')' && --depth < 1) return 1;
+			if(last == '(')
+				depth++;
+			else if(last == ')' && --depth < 1)
+				return 1;
 			last = 0;
 		} else if(last <= 0x20)
 			last = c;
@@ -244,10 +246,7 @@ makemacro(char *name, FILE *f, Context *ctx)
 		if(c == '%') return error_asm("Macro nested");
 		if(c == '{') depth++;
 		if(c == '}' && --depth) break;
-		if(c == '(') {
-			if(!walkcomment(f, ctx)) return 0;
-		} else
-			*dictnext++ = c;
+		*dictnext++ = c;
 	}
 	*dictnext++ = 0;
 	return 1;
@@ -367,7 +366,11 @@ parse(char *w, FILE *f, Context *ctx)
 	Item *m;
 	switch(w[0]) {
 	case 0x0: return 1;
-	case '(': if (w[1] <= 0x20) return walkcomment(f, ctx); else return error_asm("Invalid word");
+	case '(':
+		if(w[1] <= 0x20)
+			return walkcomment(f, ctx);
+		else
+			return error_asm("Invalid word");
 	case '%': return makemacro(w + 1, f, ctx);
 	case '@': return makelabel(w + 1, 1, ctx);
 	case '&': return makelabel(w, 0, ctx);
@@ -472,7 +475,7 @@ main(int argc, char *argv[])
 {
 	ptr = PAGE;
 	copy("on-reset", scope, 0);
-	if(argc == 2 && scmp(argv[1], "-v", 2)) return !printf("Uxnasm - Uxntal Assembler, 31 Dec 2024.\n");
+	if(argc == 2 && scmp(argv[1], "-v", 2)) return !printf("Uxnasm - Uxntal Assembler, 15 Jan 2025.\n");
 	if(argc != 3) return error_top("usage", "uxnasm [-v] input.tal output.rom");
 	return !assemble(argv[1]) || !resolve(argv[2]) || !build(argv[2]);
 }
