@@ -46,7 +46,7 @@
 	;src/buf <handle-file>
 	.System/state DEI ?{
 		refs/<resolve-all>
-		.System/state DEI ?{ <finish> } }
+		.System/state DEI ?{ rom/<finish> } }
 	JMP2r
 
 @lib/inctal INC2
@@ -66,19 +66,20 @@
 			POP2 JMP2r }
 		INC2 [ LIT &c $1 ] token/<push-byte> !&>s
 
-@<finish> ( -- )
-	syms/<summary>
+@rom/<finish> ( -- )
+	( +length ) [ LIT2 &length $2 ]
+	( +labels ) syms/<summary>
 	;dict/assembled <pstr>
 	;dst/buf <pstr>/
 	;dict/in <pstr>
-	;rom/length LDA2 #00ff SUB2 <pdec>
+	OVR2 #00ff SUB2 <pdec>
 	;dict/bytes <pstr>
-	( labels ) <pdec>
+	( -labels ) <pdec>
 	;dict/labels <pstr>
 	( | export )
 	;dst/buf .File/name DEO2
-	;rom/length LDA2 #00ff SUB2 .File/length DEO2
-	;rom/output .File/write DEO2
+	( -length ) #00ff SUB2 .File/length DEO2
+	;&output .File/write DEO2
 	( | success )
 	[ LIT2 80 -System/state ] DEO
 	JMP2r
@@ -107,7 +108,7 @@
 
 
 
-( @|Core )
+( Core )
 
 @<set-error-ref> ( adj* name* -- )
 	[ LIT2 &ref $2 ] #0003 ADD2 !<set-error>
@@ -539,9 +540,8 @@
 		( ! ) ;dict/invalid ;dict/Writing <set-error-token> }
 	( ) DUP2 #8000 LTH2 ?{
 		( ! ) ;dict/exceeded ;dict/File <set-error-token> }
-	,&length STR2
+	;&length STA2
 	JMP2r
-	&length $2
 
 (
 @|Stdlib )

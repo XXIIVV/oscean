@@ -22,18 +22,19 @@
 	.Console/read DEI token/<push-byte>
 	[ LIT2 04 -Console/type ] DEI EQU ?{ BRK }
 	refs/<resolve-all>
-	.System/state DEI ?{ <finish> }
+	.System/state DEI ?{ rom/<finish> }
 	BRK
 
-@<finish> ( -- )
-	syms/<summary>
+@rom/<finish> ( -- )
+	( +length ) [ LIT2 &length $2 ]
+	( +labels ) syms/<summary>
 	;dict/assembled <pstr>
 	;rom/length LDA2 #00ff SUB2 <pdec>
 	;dict/bytes <pstr>
-	( labels ) <pdec>
+	( -labels ) <pdec>
 	;dict/labels <pstr>
 	( | output )
-	;rom/mem ;rom/length LDA2 ADD2 ;rom/output
+	( -length ) ;rom/mem SWP2 ADD2 ;rom/output
 	&>l ( -- )
 		LDAk #18 DEO
 		INC2 GTH2k ?&>l
@@ -60,7 +61,7 @@
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
 	( date ) "18 20 "Jan 20 "2025 $2
 
-( @|Core )
+( Core )
 
 @<set-error-ref> ( adj* name* -- )
 	[ LIT2 &ref $2 ] #0003 ADD2 !<set-error>
@@ -492,9 +493,8 @@
 		( ! ) ;dict/invalid ;dict/Writing <set-error-token> }
 	( ) DUP2 #8000 LTH2 ?{
 		( ! ) ;dict/exceeded ;dict/File <set-error-token> }
-	,&length STR2
+	;&length STA2
 	JMP2r
-	&length $2
 
 (
 @|Stdlib )
