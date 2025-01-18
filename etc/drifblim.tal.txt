@@ -17,6 +17,7 @@
 
 @on-reset ( -> )
 	;meta #06 DEO2
+	;dict/reset scope/<set-label>
 	;src/on-console
 	( >> )
 
@@ -41,6 +42,16 @@
 	STZ2
 	BRK
 
+@<assemble> ( -- )
+	;src/buf <handle-file>
+	.System/state DEI ?{
+		refs/<resolve-all>
+		.System/state DEI ?{ <finish> } }
+	JMP2r
+
+@lib/inctal INC2
+	( >> )
+
 @<handle-file> ( f* -- )
 	.File/name DEO2
 	#0001 .File/length DEO2
@@ -50,44 +61,53 @@
 		.System/state DEI ?&end
 		;&c .File/read DEO2
 		.File/success-lb DEI ?{
-			ORAk ?{ ;dict/missing ;dict/File ;src/buf <set-error> }
+			ORAk ?{ ;dict/invalid ;dict/File ;src/buf <set-error> }
 			&end ( i* -- )
 			POP2 JMP2r }
 		INC2 [ LIT &c $1 ] token/<push-byte> !&>s
 
-(
-@|Core )
-
-@<assemble> ( -- )
-	;dict/reset scope/<set-label>
-	;src/buf <handle-file>
-	.System/state DEI ?{
-		refs/<resolve-all>
-		.System/state DEI ?{ <print-summary>
-			rom/<save> } }
-	JMP2r
-
-@<print-summary> ( -- )
-	[ LIT2r 0000 ] ;syms/ptr LDA2 ;syms/mem
-	&>l ( -- )
-		( used ) INC2k INC2 LDA .SymType/used AND ?{
-			( upper ) DUP2 #0003 ADD2 LDAk [ LIT "A ] SUB #1a LTH ?{
-				;dict/unused <pstr>/
-				DUP2 <pstr>/
-				#0a19 DEO }
-			POP2 }
-		INC2r #0003 ADD2 scap/ GTH2k ?&>l
-	POP2 POP2
-	( | result )
-	;dict/assembled <pstr>/
+@<finish> ( -- )
+	syms/<summary>
+	;dict/assembled <pstr>
 	;dst/buf <pstr>/
-	;dict/in <pstr>/
+	;dict/in <pstr>
 	;rom/length LDA2 #00ff SUB2 <pdec>
-	;dict/bytes <pstr>/
-	STH2r #0001 SUB2 <pdec>
-	;dict/labels <pstr>/
+	;dict/bytes <pstr>
+	( labels ) <pdec>
+	;dict/labels <pstr>
+	( | export )
+	;dst/buf .File/name DEO2
+	;rom/length LDA2 #00ff SUB2 .File/length DEO2
+	;rom/output .File/write DEO2
+	( | success )
 	[ LIT2 80 -System/state ] DEO
 	JMP2r
+
+@runes/db [
+	"| =lib/padabs "$ =lib/padrel
+	"@ =lib/toplab "& =lib/sublab
+	"% =lib/macros "( =lib/coment
+	", =lib/litrel "_ =lib/rawrel
+	". =lib/litzep "- =lib/rawzep
+	"; =lib/litabs "= =lib/rawabs
+	"? =lib/litjci "! =lib/litjmi
+	"# =lib/lithex "" =lib/rawstr
+	"} =lib/lambda "~ =lib/inctal
+	5b =lib/ignore 5d =lib/ignore ] &db-end
+
+@dict/usage "usage: 20 "drifblim.rom 20 "in.tal 20 "out.rom 0a $1
+
+@dict/Path "Path $1
+
+@meta $1
+	( name ) "Drifblim 0a
+	( desc ) "Uxntal 20 "Assembler 0a
+	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
+	( date ) "18 20 "Jan 20 "2025 $2
+
+
+
+( @|Core )
 
 @<set-error-ref> ( adj* name* -- )
 	[ LIT2 &ref $2 ] #0003 ADD2 !<set-error>
@@ -123,15 +143,13 @@
 		[ LIT2 &mode =asm-default ] JSR2 !&<new> }
 	( | append )
 	[ LIT2 00 &ptr -&buf ]
-	( overflow ) DUP .&cap NEQ ?{
-		( ! ) ;dict/exceeded ;dict/Token <set-error-token> }
-	( move ptr ) INCk ,&ptr STR
+	( overflow ) DUP .&cap EQU ?{ INCk ,&ptr STR }
 	STZ2
 	JMP2r
 
 @scope/<push-byte> ( c -- )
 	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
-	DUP .&cap LTH ?{ ;dict/exceeded ;dict/Symbol ;&buf <set-error> }
+	( overflow ) DUP .&cap LTH ?{ ;dict/exceeded ;dict/Symbol ;&buf <set-error> }
 	STZ2
 	JMP2r
 
@@ -174,10 +192,10 @@
 	JMP2r
 
 @asm-comment ( t* -- )
-	[ LITr &depth $1 ] LDA DUP
+	[ LITr &depth $1 ] LDA2 DUP2
 	( | nested comments )
-	[ LIT ") ] NEQ ?{ LITr 01 SUBr }
-	[ LIT "( ] NEQ ?{ INCr }
+	[ LIT2 ") 00 ] NEQ2 ?{ LITr 01 SUBr }
+	[ LIT2 "( 00 ] NEQ2 ?{ INCr }
 	STHkr [ LITr _&depth ] STRr
 	?{ !<set-default> }
 	JMP2r
@@ -215,7 +233,6 @@
 	&lambda POP2 !lambda/pop
 	&coment POP2 !<set-comment>
 	&macros INC2 macros/<push-word> !<set-macro>
-	&inctal INC2 !<handle-file>
 	&ignore POP2 JMP2r
 
 (
@@ -321,6 +338,18 @@
 @syms/invalid ( name* -- )
 	/<push-string>
 	( ! ) ;dict/invalid ;dict/Symbol !<set-error-token>
+
+@syms/<summary> ( -- )
+	[ LIT2r ffff ] ;&ptr LDA2 ;&mem
+	&>ls ( -- )
+		( used ) INC2k INC2 LDA .SymType/used AND ?{
+			( upper ) DUP2 #0003 ADD2 LDAk [ LIT "A ] SUB #1a LTH ?{
+				;dict/unused <pstr>
+				DUP2 <pstr>/
+				#0a19 DEO }
+			POP2 }
+		INC2r #0003 ADD2 scap/ GTH2k ?&>ls
+	POP2 POP2 STH2r JMP2r
 
 (
 @|References )
@@ -512,12 +541,7 @@
 		( ! ) ;dict/exceeded ;dict/File <set-error-token> }
 	,&length STR2
 	JMP2r
-
-@rom/<save> ( -- )
-	;dst/buf .File/name DEO2
-	[ LIT2 &length $2 ] #00ff SUB2 .File/length DEO2
-	;&output .File/write DEO2
-	JMP2r
+	&length $2
 
 (
 @|Stdlib )
@@ -612,33 +636,12 @@
 		POP2 #ffff }
 	NIP2 POPr JMP2r
 
-@runes/db [
-	"| =lib/padabs "$ =lib/padrel
-	"@ =lib/toplab "& =lib/sublab
-	"% =lib/macros "( =lib/coment
-	", =lib/litrel "_ =lib/rawrel
-	". =lib/litzep "- =lib/rawzep
-	"; =lib/litabs "= =lib/rawabs
-	"? =lib/litjci "! =lib/litjmi
-	"# =lib/lithex "" =lib/rawstr
-	"} =lib/lambda "~ =lib/inctal
-	5b =lib/ignore 5d =lib/ignore ] &db-end
-
-@meta $1
-	( name ) "Drifblim 0a
-	( desc ) "Uxntal 20 "Assembler 0a
-	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "14 20 "Jan 20 "2025 $2
-
 @dict
-	&usage "usage: 20 "drifblim.rom 20 "in.tal 20 "out.rom 0a $1
 	&assembled "Assembled 20 $1 &in 20 "in 20 $1 &bytes 20 "bytes( $1 &labels 20 "labels). 0a $1
 	&unused "-- 20 "Unused: 20 $1
 	&reset "RESET $1
 	&File "File $1
-	&Token "Token $1
 	&Symbol "Symbol $1
-	&Path "Path $1
 	&Reference "Reference $1
 	&Opcode "Opcode $1
 	&Number "Number $1
@@ -649,7 +652,6 @@
 	&exceeded "exceeded $1
 	&invalid "invalid $1
 	&duplicate "duplicate $1
-	&missing "missing $1
 	&too-far "too 20 "far $1
 
 (
