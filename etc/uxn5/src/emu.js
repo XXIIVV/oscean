@@ -23,13 +23,14 @@ function Emu (embed)
 		/* start devices */
 		this.console.init()
 		this.screen.init()
-		this.controller.init()
 		/* start cpu */
 		this.uxn.init(this).then(() => {
 			this.screen.el.addEventListener("pointermove", this.mouse.on_move)
 			this.screen.el.addEventListener("pointerdown", this.mouse.on_down)
 			this.screen.el.addEventListener("pointerup", this.mouse.on_up)
 			this.screen.el.addEventListener("wheel", this.mouse.on_scroll)
+			window.addEventListener("keydown", this.controller.on_keybutton)
+			window.addEventListener("keyup", this.controller.on_keybutton)
 
 			/* Reveal */
 			document.body.className = emulator.embed ? "embed" : "default"
