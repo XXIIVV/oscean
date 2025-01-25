@@ -5,8 +5,8 @@ function Controller(emu)
 	this.state = 0
 
 	this.init = () => {
-		window.addEventListener("keydown", this.on_keybutton)
-		window.addEventListener("keyup", this.on_keybutton)	
+		document.addEventListener("keydown", this.on_keybutton)
+		document.addEventListener("keyup", this.on_keybutton)	
 	}
 
 	this.on_keybutton = (event) => {

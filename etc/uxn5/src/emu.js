@@ -34,6 +34,7 @@ function Emu (embed)
 			/* Reveal */
 			document.body.className = emulator.embed ? "embed" : "default"
 			document.title = "Varvara Emulator"
+
 			// Enable drag/drop load
 			document.body.addEventListener("dragover", (e) => {
 				e.preventDefault();
@@ -42,10 +43,12 @@ function Emu (embed)
 				e.preventDefault();
 				emulator.load_file(e.dataTransfer.files[0])
 			});
+
 			// Enable button load
 			document.getElementById("browser").addEventListener("change", (e) => {
 				emulator.load_file(e.target.files[0])
 			});
+
 			// Decode rom in url
 			const rom_url = window.location.hash.match(/r(om)?=([^&]+)/);
 			if (rom_url) {
@@ -63,6 +66,13 @@ function Emu (embed)
 			setInterval(() => {
 				window.requestAnimationFrame(() => {
 					this.uxn.eval(peek16(this.uxn.dev, 0x20))
+					if(this.screen.changed()) {
+						let x = this.screen.x1 * this.screen.scale, y = this.screen.y1 * this.screen.scale;
+						let w = this.screen.x2 * this.screen.scale - x, h = this.screen.y2 * this.screen.scale - y;
+						this.screen.redraw()
+						const imagedata = new ImageData(this.screen.pixels, this.screen.width, this.screen.height)
+						this.screen.displayctx.putImageData(imagedata,0,0,x,y,w,h);
+					}
 				});
 			}, 1000 / 60);
 		})
@@ -104,35 +114,14 @@ function Emu (embed)
 		case 0x0a:
 		case 0x0b:
 		case 0x0c:
-		case 0x0d: this.screen.update_palette(); break;
+		case 0x0d: this.screen.update_palette(); this.screen.update_palette(); break;
 		case 0x0f: console.warn("Program ended."); break;
 		// Console
 		case 0x18: this.console.write(val); break;
 		case 0x19: this.console.error(val); break;
-		// Screen
-		case 0x22, 0x23:
-			this.screen.set_width(peek16(this.uxn.dev, 0x22))
-			this.screen.set_zoom(this.screen.zoom)
-			break;
-		case 0x24, 0x25:
-			this.screen.set_height(peek16(this.uxn.dev, 0x24))
-			this.screen.set_zoom(this.screen.zoom)
-			break;
-		case 0x2e: {
-			const x = peek16(this.uxn.dev, 0x28)
-			const y = peek16(this.uxn.dev, 0x2a)
-			const move = this.uxn.dev[0x26]
-			const ctrl = this.uxn.dev[0x2e]
-			this.screen.draw_pixel(ctrl, x, y, move);
-			break; }
-		case 0x2f: {
-			const x = peek16(this.uxn.dev, 0x28)
-			const y = peek16(this.uxn.dev, 0x2a)
-			const move = this.uxn.dev[0x26]
-			const ctrl = this.uxn.dev[0x2f]
-			const ptr = peek16(this.uxn.dev, 0x2c)
-			this.screen.draw_sprite(ctrl, x, y, move, ptr);
-			break; }
+		}
+		switch(port & 0xf0) {
+			case 0x20: this.screen.deo(port); break;
 		}
 	}
 }
