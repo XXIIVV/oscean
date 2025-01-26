@@ -5,7 +5,7 @@ function Screen(emu)
 	function MAR(x) { return x + 0x8; }
 	function MAR2(x) { return x + 0x10; }
 	function clamp(v,a,b) { if(v < a) return a; else if(v >= b) return b; else return v; }
-	function twos(v) { if(v & 0x8000) return v - 0x10000;  return v; }
+	function twos(v) { if(v & 0x8000) return v - 0x10000; return v; }
 
 	const blending = [
 		[0, 0, 0, 0, 1, 0, 1, 1, 2, 2, 0, 2, 3, 3, 3, 0],
@@ -20,15 +20,21 @@ function Screen(emu)
 	this.layers = {fg: 0, bg: 0};
 	this.palette = [[],[],[],[]]
 	this.x1 = this.y1 = this.x2 = this.y2 = 0
+	this.vector = 0
 
 	this.init = () => {
-		this.el = document.getElementById("screen")
 		this.display = document.getElementById("display");
 		this.displayctx = this.display.getContext("2d", {"willReadFrequently": true})
+		this.display.addEventListener("pointermove", emu.mouse.on_move)
+		this.display.addEventListener("pointerdown", emu.mouse.on_down)
+		this.display.addEventListener("pointerup", emu.mouse.on_up)
+		this.display.addEventListener("wheel", emu.mouse.on_scroll)
+		window.addEventListener("keydown", emu.controller.on_keybutton)
+		window.addEventListener("keyup", emu.controller.on_keybutton)
 		this.set_zoom(1)
 		this.resize(512, 320, 1)
 	}
-	
+
 	this.changed = () => {
 		this.x1 = clamp(this.x1, 0, this.width);
 		this.y1 = clamp(this.y1, 0, this.height);
@@ -36,7 +42,7 @@ function Screen(emu)
 		this.y2 = clamp(this.y2, 0, this.height);
 		return this.x2 > this.x1 && this.y2 > this.y1;
 	}
-	
+
 	this.change = (x1, y1, x2, y2) => {
 		if(x1 < this.x1) this.x1 = x1;
 		if(y1 < this.y1) this.y1 = y1;
@@ -82,7 +88,7 @@ function Screen(emu)
 		this.displayctx.canvas.height = height;
 		this.set_zoom(this.zoom)
 	}
-	
+
 	this.redraw = () => {
 		let i, x, y, k, l;
 		for(y = this.y1; y < this.y2; y++) {
@@ -127,7 +133,7 @@ function Screen(emu)
 		case 0x21: this.vector = emu.uxn.dev[0x20] << 8 | emu.uxn.dev[0x21]; return;
 		case 0x23: this.resize(emu.uxn.dev[0x22] << 8 | emu.uxn.dev[0x23], this.height, this.scale); return;
 		case 0x25: this.resize(this.width, emu.uxn.dev[0x24] << 8 | emu.uxn.dev[0x25], this.scale); return;
-		case 0x26: 
+		case 0x26:
 			rMX = emu.uxn.dev[0x26] & 0x1;
 			rMY = emu.uxn.dev[0x26] & 0x2;
 			rMA = emu.uxn.dev[0x26] & 0x4;
@@ -229,8 +235,6 @@ function Screen(emu)
 
 	this.set_zoom = (zoom) => {
 		this.zoom = zoom
-		this.el.style.width = `${(this.width * this.zoom)}px`
-		this.el.style.height = `${(this.height * this.zoom)}px`
 		this.display.style.width = `${(this.width * this.zoom)}px`
 		this.display.style.height = `${(this.height * this.zoom)}px`
 	}

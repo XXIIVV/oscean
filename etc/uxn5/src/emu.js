@@ -1,5 +1,13 @@
 'use strict'
 
+function peek16(mem, addr) {
+	return (mem[addr] << 8) + mem[addr + 1]
+}
+
+function poke16(mem, addr, val) {
+	mem[addr] = val >> 8, mem[addr + 1] = val;
+}
+
 function Emu (embed)
 {
 	this.embed = embed
@@ -20,22 +28,13 @@ function Emu (embed)
 	}
 
 	this.init = (embed) => {
-		/* start devices */
-		this.console.init()
-		this.screen.init()
-		/* start cpu */
 		this.uxn.init(this).then(() => {
-			this.screen.el.addEventListener("pointermove", this.mouse.on_move)
-			this.screen.el.addEventListener("pointerdown", this.mouse.on_down)
-			this.screen.el.addEventListener("pointerup", this.mouse.on_up)
-			this.screen.el.addEventListener("wheel", this.mouse.on_scroll)
-			window.addEventListener("keydown", this.controller.on_keybutton)
-			window.addEventListener("keyup", this.controller.on_keybutton)
-
+			/* start devices */
+			this.console.init()
+			this.screen.init()
 			/* Reveal */
 			document.body.className = emulator.embed ? "embed" : "default"
 			document.title = "Varvara Emulator"
-
 			// Enable drag/drop load
 			document.body.addEventListener("dragover", (e) => {
 				e.preventDefault();
@@ -44,32 +43,29 @@ function Emu (embed)
 				e.preventDefault();
 				emulator.load_file(e.dataTransfer.files[0])
 			});
-
 			// Enable button load
 			document.getElementById("browser").addEventListener("change", (e) => {
 				emulator.load_file(e.target.files[0])
 			});
-
 			// Decode rom in url
 			const rom_url = window.location.hash.match(/r(om)?=([^&]+)/);
 			if (rom_url) {
 				let rom = b64decode(rom_url[2]);
-				if(!rom_url[1]) {
+				if(!rom_url[1])
 					rom = decodeUlz(rom);
-				}
 				emulator.load(rom, true);
 			}
-			// Get boot rom
-			else if(boot_rom){
+			// Or, get boot rom
+			else if(boot_rom)
 				emulator.load(boot_rom, true);
-			}
 			// Start screen vector
 			setInterval(() => {
 				window.requestAnimationFrame(() => {
-					this.uxn.eval(peek16(this.uxn.dev, 0x20))
-					if(this.screen.changed()) {
-						let x = this.screen.x1 * this.screen.scale, y = this.screen.y1 * this.screen.scale;
-						let w = this.screen.x2 * this.screen.scale - x, h = this.screen.y2 * this.screen.scale - y;
+					if(this.screen.vector)
+						this.uxn.eval(this.screen.vector)
+					if(this.screen.x2 && this.screen.y2 && this.screen.changed()) {
+						let x = this.screen.x1, y = this.screen.y1;
+						let w = this.screen.x2 - x, h = this.screen.y2 - y;
 						this.screen.redraw()
 						const imagedata = new ImageData(this.screen.pixels, this.screen.width, this.screen.height)
 						this.screen.displayctx.putImageData(imagedata,0,0,x,y,w,h);
@@ -106,33 +102,12 @@ function Emu (embed)
 
 	this.deo = (port, val) => {
 		this.uxn.dev[port] = val
-		switch(port) {
-		// System
-		case 0x07: this.system.metadata(peek16(this.uxn.dev, 0x06)); break;
-		case 0x03: this.system.expansion(peek16(this.uxn.dev, 0x02)); break;
-		case 0x08:
-		case 0x09:
-		case 0x0a:
-		case 0x0b:
-		case 0x0c:
-		case 0x0d: this.screen.update_palette(); this.screen.update_palette(); break;
-		case 0x0f: console.warn("Program ended."); break;
-		// Console
-		case 0x18: this.console.write(val); break;
-		case 0x19: this.console.error(val); break;
-		}
 		switch(port & 0xf0) {
+			case 0x00: this.system.deo(port); break;
+			case 0x10: this.console.deo(port); break;
 			case 0x20: this.screen.deo(port); break;
 		}
 	}
-}
-
-function peek16(mem, addr) {
-	return (mem[addr] << 8) + mem[addr + 1]
-}
-
-function poke16(mem, addr, val) {
-	mem[addr] = val >> 8, mem[addr + 1] = val;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

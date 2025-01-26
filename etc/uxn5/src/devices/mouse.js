@@ -39,7 +39,7 @@ function Mouse(emu)
 	this.on_scroll = (event) => {
 		if(event.wheelDelta > 0)
 			poke16(emu.uxn.dev, 0x9c, 0xffff)
-		else 
+		else
 			poke16(emu.uxn.dev, 0x9c, 0x0001)
 		emu.uxn.eval(peek16(emu.uxn.dev, 0x90))
 		poke16(emu.uxn.dev, 0x9c, 0x0000)

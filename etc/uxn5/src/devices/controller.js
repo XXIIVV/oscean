@@ -41,14 +41,13 @@ function Controller(emu)
 				charCode = event.keyCode;
 			}
 			emu.uxn.dev[0x83] = charCode;
-		} else 
+		} else
 			this.state &= ~mask;
-		if(event.target == window.document.body) 
-			event.preventDefault(); 
 		emu.uxn.dev[0x82] = this.state;
-		if(mask || event.type == "keydown") 
+		if(mask || event.type == "keydown")
 			emu.uxn.eval(peek16(emu.uxn.dev, 0x80))
-		if(event.type == "keydown") 
+		if(event.type == "keydown")
 			emu.uxn.dev[0x83] = 0;
+		event.preventDefault();
 	}
 }

@@ -39,4 +39,11 @@ function Console(emu)
 		emu.uxn.dev[0x17] = type
 		if(vec) emu.uxn.eval(vec)
 	}
+	
+	this.deo = (addr) => {
+		switch(addr) {
+			case 0x18: this.console.write(emu.uxn.dev[0x18]); break;
+			case 0x19: this.console.error(emu.uxn.dev[0x19]); break;
+		}
+	}
 }
