@@ -199,18 +199,35 @@ print_frag(FILE *f, Frag *frag, int debug)
 }
 
 static char *
-parse_symbol(char **dst, char *s)
+walk_number(char *s, int *count)
+{
+	int value = 0;
+	while(*s && *s >= '0' && *s <= '9')
+		value *= 10, value += *s - '0', s++;
+	*count = value;
+	return s;
+}
+
+static char *
+parse_symbol(char **dst, char *s, int *count)
 {
 	int sid = find_symbol(s);
-	if(sid >= 0)
+	if(sid >= 0) {
 		*dst = syms[sid];
-	else {
+		return scap(s);
+	} else {
 		char *cap = scap(s);
 		*dst = syms[symbols_len++] = _dict;
-		while(s < cap) *_dict++ = *s++;
+		while(s < cap) {
+			if(*s == '^') {
+				s = walk_number(s + 1, count);
+				break;
+			}
+			*_dict++ = *s++;
+		}
 		_dict++;
 	}
-	return scap(s);
+	return s;
 }
 
 static void
@@ -248,11 +265,13 @@ parse_rule(char *_s)
 				lhs = _s + 2;
 			side = 1, _s++;
 		} else if(*_s > 0x20) {
-			_s = parse_symbol(&sym, _s);
-			if(side)
-				r->num *= prime_lut[find_symbol(sym)];
-			else
-				r->den *= prime_lut[find_symbol(sym)];
+			int count = 1;
+			_s = parse_symbol(&sym, _s, &count);
+			while(count--)
+				if(side)
+					r->num *= prime_lut[find_symbol(sym)];
+				else
+					r->den *= prime_lut[find_symbol(sym)];
 		}
 	}
 	if(side && r->den > 1) {
@@ -273,8 +292,10 @@ tokenize(char *buf)
 		if(_buf[0] == ':' && _buf[1] == ':')
 			_buf = parse_rule(_buf + 2);
 		else if(*_buf) {
-			_buf = parse_symbol(&sym, _buf);
-			additive(&accu, prime_lut[find_symbol(sym)]);
+			int count = 1;
+			_buf = parse_symbol(&sym, _buf, &count);
+			while(count--)
+				additive(&accu, prime_lut[find_symbol(sym)]);
 		}
 	}
 }
