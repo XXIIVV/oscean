@@ -369,21 +369,57 @@ AC 384, x^7 even?
 01 6 × 5/6 = 5, false 
 </pre>
 
-<p id='precedence'>To find the result of x*(y+z), in which a sequence of
-operation is needed to find the correct answer, the <b>operator precedence</b>, or
-order in which operators will be evaluated, is dictated by the rules order:</p>
+<h3 id='precedence'>Operator Precedence</h3>
+
+<p>To find the result of <code>3*(4+5)-6</code>, in which a specific sequence of
+operation is needed to find the correct answer, the
+order in which operators will be evaluated can be specified with the order in which the rules are created:</p>
 
 <pre>
-:: add z      > add y 
+:: +5     > x^5
+:: *3 x   > *3 y^3
+:: *3     >
+:: -6 y^6 > 
 
-:: mul x y    > mul x acc res
-:: mul        > mulrec
-:: mulrec acc > mulrec y
-:: mulrec x   > mul
+x^4 +5 *3 -6
 
-x^2 y^3 z^4 add mul
-x^2 y^7 mul
-res^14
+AC 27664, x^4 +5 *3 -6 
+00 27664 × 32/7 = 126464, x^9 *3 -6 
+01 126464 × 351/26 = 1883522578791789, y^27 *3 -6 
+02 1883522578791789 × 1/13 = 144886352214753, y^27 -6 
+03 144886352214753 × 1/13851 = 10460353203, y^21
+</pre>
+
+<h3 id='stack'>A Stack Machine</h3>
+
+<p>A <a href='concatenative.html'>stack-machine</a> can be implemented in Fractran, by allocating a number of registers to store the items in the stack. We can push a value stored in x to the top of the stack by shifting the content from one register to the next.</p>
+
+<pre>
+:: push > move-de
+:: move-de d > move-de e :: move-de > move-cd
+:: move-cd c > move-cd d :: move-cd > move-bc
+:: move-bc b > move-bc c :: move-bc > move-ab
+:: move-ab a > move-ab b :: move-ab > move-xa
+:: move-xa x > move-xa a :: move-xa > 
+
+:: a) > push x^1 b)
+:: b) > push x^2 c)
+:: c) > push x^3 
+
+a)
+</pre>
+
+<p>In that same way, we can pop, and store in x, the value at the top of the stack by shifting content the other way.</p>
+
+<pre>
+:: pop > move-ax
+:: move-ax a > move-ax x :: move-ax > move-ba
+:: move-ba b > move-ba a :: move-ba > move-cb
+:: move-cb c > move-cb b :: move-cb > move-dc
+:: move-dc d > move-dc c :: move-dc > move-ed
+:: move-ed e > move-ed d :: move-ed > 
+
+a^1 b^2 c^3 pop
 </pre>
 
 <h3 id='fib'>Example: Fibonacci</h3>
@@ -553,7 +589,8 @@ game
 ..
 </pre>
 
-<h3 id='stack'>Example: Stack Machines</h3>
+<!--
+<h3 id='stack_hard'>Example: Stack, The Hard Way</h3>
 
 <p>A <a href='concatenative.html'>stack-machine</a> can be implemented in Fractran, but it's <i>not for the faint of heart</i>. This computation model keeps an entire program state in a single number, and the following stack machine allocates a whole stack into a single register of that number. The theory is that it is possible to keep a stack of zeros and ones in a single register using a <a href='binary.html#stack'>binary encoding</a> for that number.</p>
 
@@ -617,6 +654,7 @@ x^3  pop : 1 x</i>
 
 1) x 
 </pre>
+-->
 
 <p>To explore further, try running these <a href='https://git.sr.ht/~rabbits/fractran/tree/main/item/examples' target='_blank'>examples</a> yourself:</p>
 
