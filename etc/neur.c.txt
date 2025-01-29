@@ -13,9 +13,9 @@ WITH REGARD TO THIS SOFTWARE.
 
 typedef struct Neuron {
 	char *name;
-	int alive, sleep, length, fibers_inhi[0x10];
+	int alive, sleep, excilen, inhilen;
 	int arity, saturation;
-	struct Neuron *fibers[0x10];
+	struct Neuron *exci[0x10], *inhi[0x10];
 } Neuron;
 
 static char dict[0x2000], *_dict = dict;
@@ -83,9 +83,10 @@ parse(char *src)
 					Neuron **_r = rhs, *n = *_l++;
 					while(_r < _rhs) {
 						Neuron *nn = *_r++;
-						n->fibers[n->length] = nn;
-						n->fibers_inhi[n->length] = inhibitor;
-						n->length++;
+						if(inhibitor)
+							n->inhi[n->inhilen++] = nn;
+						else
+							n->exci[n->excilen++] = nn;
 						if(!nn->alive)
 							nn->arity = arity, nn->alive = 1;
 					}
@@ -115,14 +116,15 @@ step(int count)
 		printf("%s/%d ", n->name, n->arity);
 		if(!n->arity)
 			*_excited++ = n;
-		for(i = 0; i < n->length; i++) {
-			Neuron *nn = n->fibers[i];
-			nn->saturation++;
-			if(n->fibers_inhi[i])
-				nn->sleep = 1;
+		for(i = 0; i < n->inhilen; i++) {
+			Neuron *nn = n->inhi[i];
+			nn->sleep = 1, *_dirty++ = nn;
+		}
+		for(i = 0; i < n->excilen; i++) {
+			Neuron *nn = n->exci[i];
+			nn->saturation++, *_dirty++ = nn;
 			if(nn->saturation == nn->arity)
 				*_excited++ = nn;
-			*_dirty++ = nn;
 		}
 		_l++;
 	}
