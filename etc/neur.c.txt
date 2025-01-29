@@ -13,8 +13,9 @@ WITH REGARD TO THIS SOFTWARE.
 
 typedef struct Neuron {
 	char *name;
-	struct Neuron *axon[0x10];
-	int axon_inhi[0x10], inhibited, len, arity, ini, saturation;
+	int alive, sleep, length, fibers_inhi[0x10];
+	int arity, saturation;
+	struct Neuron *fibers[0x10];
 } Neuron;
 
 static char dict[0x2000], *_dict = dict;
@@ -22,22 +23,30 @@ static Neuron net[0x200], *_net = net;
 static Neuron *live[0x200], **_live = live;
 
 static int
-wcmp(char *s, char *name)
+wcompare(char *s, char *name)
 {
 	char *_s = s, *_n = name;
-	while(*_s == *_n)
-		_s++, _n++;
+	while(*_s == *_n) _s++, _n++;
 	return *_s == '*' && *_n == 0;
 }
 
+static char *
+wrewind(char *s)
+{
+	char c;
+	while((c = *(--s)) && c > 0x20)
+		if(c == '*' || c == ':' || c == ';') break;
+	return ++s;
+}
+
 static Neuron *
-get_neuron(char *s)
+nfind(char *s)
 {
 	char *name;
 	/* Search Neuron */
 	Neuron *n = net;
 	while(n < _net) {
-		if(wcmp(s, n->name))
+		if(wcompare(s, n->name))
 			return n;
 		n++;
 	}
@@ -50,34 +59,23 @@ get_neuron(char *s)
 	return _net++;
 }
 
-static char *
-rewind_token(char *s)
-{
-	while(*s && *s > 0x20) {
-		s--;
-		if(*s == '*') break;
-		if(*s == ':') break;
-		if(*s == ';') break;
-	}
-	return ++s;
-}
-
 static void
 parse(char *src)
 {
+	char c;
 	int right = 0, inhibitor = 0;
 	Neuron *lhs[0x20], **_lhs = lhs, *rhs[0x20], **_rhs = rhs;
-	while(*src) {
-		if(src[0] == '*') {
+	while((c = *src)) {
+		if(c == '*') {
 			if(right)
-				*_rhs = get_neuron(rewind_token(src)), _rhs++;
+				*_rhs = nfind(wrewind(src)), _rhs++;
 			else
-				*_lhs = get_neuron(rewind_token(src)), _lhs++;
-		} else if(src[0] == ':')
+				*_lhs = nfind(wrewind(src)), _lhs++;
+		} else if(c == ':')
 			right = 1;
-		else if(src[0] == ';')
+		else if(c == ';')
 			right = 1, inhibitor = 1;
-		else if(src[0] == '.') {
+		else if(c == '.') {
 			if(right) {
 				Neuron **_l = lhs;
 				int arity = _lhs - _l;
@@ -85,17 +83,17 @@ parse(char *src)
 					Neuron **_r = rhs, *n = *_l++;
 					while(_r < _rhs) {
 						Neuron *nn = *_r++;
-						n->axon[n->len] = nn;
-						n->axon_inhi[n->len] = inhibitor;
-						n->len++;
-						if(!nn->ini)
-							nn->arity = arity, nn->ini = 1;
+						n->fibers[n->length] = nn;
+						n->fibers_inhi[n->length] = inhibitor;
+						n->length++;
+						if(!nn->alive)
+							nn->arity = arity, nn->alive = 1;
 					}
 				}
 			} else {
 				Neuron **_l = lhs;
 				while(_l < _lhs)
-					*_live++ = *_l, (*_l)->ini++, _l++;
+					*_live++ = *_l, (*_l)->alive++, _l++;
 			}
 			_lhs = lhs, _rhs = rhs, right = 0, inhibitor = 0;
 		}
@@ -113,16 +111,15 @@ step(int count)
 	printf("%02d ", count);
 	while(_l < _live) {
 		Neuron *n = *_l;
-		int i, len = n->len;
+		int i;
 		printf("%s/%d ", n->name, n->arity);
 		if(!n->arity)
 			*_excited++ = n;
-		for(i = 0; i < len; i++) {
-			int inhibitor = n->axon_inhi[i];
-			Neuron *nn = n->axon[i];
+		for(i = 0; i < n->length; i++) {
+			Neuron *nn = n->fibers[i];
 			nn->saturation++;
-			if(inhibitor)
-				nn->inhibited = 1;
+			if(n->fibers_inhi[i])
+				nn->sleep = 1;
 			if(nn->saturation == nn->arity)
 				*_excited++ = nn;
 			*_dirty++ = nn;
@@ -133,13 +130,13 @@ step(int count)
 	/* respond */
 	_live = live;
 	while(_e < _excited) {
-		if(!(*_e)->inhibited)
+		if(!(*_e)->sleep)
 			*_live++ = *_e;
 		_e++;
 	}
 	/* clean */
 	while(_d < _dirty)
-		(*_d)->saturation = 0, (*_d)->inhibited = 0, _d++;
+		(*_d)->saturation = 0, (*_d)->sleep = 0, _d++;
 	return _live != live;
 }
 
@@ -147,7 +144,7 @@ int
 main(int argc, char *argv[])
 {
 	FILE *f;
-	int a = 1, count = 0;
+	int a = 1, t = 0;
 	char src[0x20000];
 	if(argc < 2)
 		return !printf("Neur Graph, 29 Jan 2025.\nusage: neur [-i] input.fra [arguments..]\n");
@@ -158,6 +155,6 @@ main(int argc, char *argv[])
 	if(!fread(&src, 1, 0x20000, f))
 		return !printf("Source empty: %s\n", argv[a]);
 	parse(src), fclose(f);
-	while(step(count++) && count < 0x30);
+	while(step(t++) && t < 0x30);
 	return 0;
 }
