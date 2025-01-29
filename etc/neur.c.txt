@@ -1,0 +1,161 @@
+#include <stdio.h>
+
+/*
+Copyright (c) 2025 Devine Lu Linvega
+
+Permission to use, copy, modify, and distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE.
+*/
+
+typedef struct Neuron {
+	char *name;
+	struct Neuron *axon[0x10];
+	int axon_inhi[0x10], inhibited, len, arity, ini, saturation;
+} Neuron;
+
+static char dict[0x2000], *_dict = dict;
+static Neuron net[0x200], *_net = net;
+static Neuron *live[0x200], **_live = live;
+
+static int
+wcmp(char *s, char *name)
+{
+	char *_s = s, *_n = name;
+	while(*_s == *_n)
+		_s++, _n++;
+	return *_s == '*' && *_n == 0;
+}
+
+static Neuron *
+get_neuron(char *s)
+{
+	char *name;
+	/* Search Neuron */
+	Neuron *n = net;
+	while(n < _net) {
+		if(wcmp(s, n->name))
+			return n;
+		n++;
+	}
+	/* Create Neuron */
+	name = _dict;
+	while(*s != '*')
+		*_dict++ = s[0], s++;
+	*_dict++ = 0;
+	_net->name = name;
+	return _net++;
+}
+
+static char *
+rewind_token(char *s)
+{
+	while(*s && *s > 0x20 && *s != ':') {
+		s--;
+		if(*s == '*') break;
+	}
+	return ++s;
+}
+
+static void
+parse(char *src)
+{
+	int right = 0, inhibitor = 0;
+	Neuron *lhs[0x20], **_lhs = lhs, *rhs[0x20], **_rhs = rhs;
+	while(*src) {
+		if(src[0] == '*') {
+			if(right)
+				*_rhs = get_neuron(rewind_token(src)), _rhs++;
+			else
+				*_lhs = get_neuron(rewind_token(src)), _lhs++;
+		} else if(src[0] == ':')
+			right = 1;
+		else if(src[0] == ';')
+			right = 1, inhibitor = 1;
+		else if(src[0] == '.') {
+			if(right) {
+				Neuron **_l = lhs;
+				int arity = _lhs - _l;
+				while(_l < _lhs) {
+					Neuron **_r = rhs, *n = *_l++;
+					while(_r < _rhs) {
+						Neuron *nn = *_r++;
+						n->axon[n->len] = nn;
+						n->axon_inhi[n->len] = inhibitor;
+						n->len++;
+						if(!nn->ini)
+							nn->arity = arity, nn->ini = 1;
+					}
+				}
+			} else {
+				Neuron **_l = lhs;
+				while(_l < _lhs)
+					*_live++ = *_l, (*_l)->ini++, _l++;
+			}
+			_lhs = lhs, _rhs = rhs, right = 0, inhibitor = 0;
+		}
+		src++;
+	}
+}
+
+static int
+step(int count)
+{
+	Neuron **_l = live;
+	Neuron *excited[0x200], **_excited = excited, **_e = excited;
+	Neuron *dirty[0x200], **_dirty = dirty, **_d = dirty;
+	/* saturate */
+	printf("%02d ", count);
+	while(_l < _live) {
+		Neuron *n = *_l;
+		int i, len = n->len;
+		printf("%s/%d ", n->name, n->arity);
+		if(!n->arity)
+			*_excited++ = n;
+		for(i = 0; i < len; i++) {
+			int inhibitor = n->axon_inhi[i];
+			Neuron *nn = n->axon[i];
+			nn->saturation++;
+			if(inhibitor)
+				nn->inhibited = 1;
+			if(nn->saturation == nn->arity)
+				*_excited++ = nn;
+			*_dirty++ = nn;
+		}
+		_l++;
+	}
+	printf("\n");
+	/* respond */
+	_live = live;
+	while(_e < _excited) {
+		if(!(*_e)->inhibited)
+			*_live++ = *_e;
+		_e++;
+	}
+	/* clean */
+	while(_d < _dirty)
+		(*_d)->saturation = 0, (*_d)->inhibited = 0, _d++;
+	return _live != live;
+}
+
+int
+main(int argc, char *argv[])
+{
+	FILE *f;
+	int a = 1, count = 0;
+	char src[0x20000];
+	if(argc < 2)
+		return !printf("Neur Graph, 28 Jan 2025.\nusage: neur [-i] input.fra [arguments..]\n");
+	if(argv[a][0] == '-' && argv[a][1] == 'i')
+		a++;
+	if(!(f = fopen(argv[a], "r")))
+		return !printf("Source missing: %s\n", argv[a]);
+	if(!fread(&src, 1, 0x20000, f))
+		return !printf("Source empty: %s\n", argv[a]);
+	parse(src), fclose(f);
+	while(step(count++) && count < 0x30);
+	return 0;
+}
