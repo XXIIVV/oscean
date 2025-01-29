@@ -43,6 +43,13 @@ Print hello-world*, and turn itself off.
 
 <p>A program will most likely involve starting a program with an initial <code>signal/1</code>. To do so, we can fork the self-deactivating <code>init*</code> neuron into a second connection to the rest of our program:</p>
 
+<table border='1'>
+<tr>
+<th width='300'>Network</th>
+<th>Evaluation</th>
+</tr>
+<tr>
+<td>
 <pre>
 init*; init*.
 init*: signal*.
@@ -52,6 +59,53 @@ The signal* will fire once:
 
 init* my program.
 </pre>
+</td>
+<td>
+<pre>
+00 init/1 
+01 signal/1 
+02 program/1
+</pre>
+</td>
+</tr>
+</table>
+
+<h3>Loops</h3>
+
+<p>Loops can be created by connecting neurons in a circle. In the following program, 3 neurons are connected in a circle, and whenever the <code>c/1</code> neuron fires, a neuron <code>bang/1</code> triggers.</p>
+
+<table border='1'>
+<tr>
+<th width='300'>Network</th>
+<th>Evaluation</th>
+</tr>
+<tr>
+<td>
+<pre>
+init*; init*.
+init*: a*.
+
+a*: b*.
+b*: c*.
+c*: a* bang*.
+
+init* my loop.
+</pre>
+</td><td>
+<pre>
+00 init/1 
+01 a/1 
+02 b/1 
+03 c/1 
+04 a/1 bang/1 
+05 b/1 
+06 c/1 
+07 a/1 bang/1 
+08 b/1 
+..</pre>
+</td>
+</tr>
+</table>
 
 <h3>Implementation</h3>
 <p>An implementation of the full symbolic runtime is about <a href='ansi_c.html'>150
