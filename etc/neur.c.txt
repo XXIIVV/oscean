@@ -60,7 +60,7 @@ nfind(char *s)
 }
 
 static void
-connect_net(Neuron **lhs, Neuron **_lhs, Neuron **rhs, Neuron **_rhs, int inhibitor)
+nconnect(Neuron **lhs, Neuron **_lhs, Neuron **rhs, Neuron **_rhs, int inhibitor)
 {
 	Neuron **_l = lhs;
 	int arity = _lhs - _l;
@@ -94,9 +94,9 @@ parse(char *src)
 			right = !right;
 			if(depth++) {
 				if(!right)
-					connect_net(lhs, _lhs, rhs, _rhs, inhibitor), _lhs = lhs;
+					nconnect(lhs, _lhs, rhs, _rhs, inhibitor), _lhs = lhs;
 				else
-					connect_net(rhs, _rhs, lhs, _lhs, inhibitor), _rhs = rhs;
+					nconnect(rhs, _rhs, lhs, _lhs, inhibitor), _rhs = rhs;
 			}
 			inhibitor = c == ';';
 		} else if(c == '.') {
@@ -105,9 +105,9 @@ parse(char *src)
 				while(_l < _lhs)
 					*_live++ = *_l, (*_l)->alive++, _l++;
 			} else if(right)
-				connect_net(lhs, _lhs, rhs, _rhs, inhibitor);
+				nconnect(lhs, _lhs, rhs, _rhs, inhibitor);
 			else
-				connect_net(rhs, _rhs, lhs, _lhs, inhibitor);
+				nconnect(rhs, _rhs, lhs, _lhs, inhibitor);
 			_lhs = lhs, _rhs = rhs, right = inhibitor = depth = 0;
 		}
 		src++;
