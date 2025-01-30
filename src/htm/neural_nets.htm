@@ -13,11 +13,12 @@
 A neuron*. <i style='float:right'>neuron/0</i>
 </pre>
 
-<p>In a rule, a neuron is specified by ending a word with a star, an excitatory connection is separated by a colon, an inhibitory connection is separated by a semi-colon, a rule is terminated by a comma, everything else is ignored. For example, the <code>fire/2</code> neuron is the same as the drawing above.</p>
+<p>In a rule, a neuron is specified with a star suffic, an excitatory connection is separated by a colon, an inhibitory connection is separated by a semi-colon, a rule is terminated by a comma, rules can be chained, everything else is ignored. For example, the <code>fire/2</code> neuron is the same as the drawing above.</p>
 
 <pre>
 I have matches*, and some kindling*:
-	I can make a fire*. <i style='float:right'>fire/2</i>
+	I can make a fire*: <i style='float:right'>fire/2</i>
+	which in turn emits light*. <i style='float:right'>light/1</i>
 
 But if it's raining*;
 	I cannot make a fire*.
@@ -67,7 +68,7 @@ init* my program.
 
 <h3>Loops</h3>
 
-<p>Loops can be created by connecting neurons in a circle. In the following program, 3 neurons are connected in a circle, and whenever the <code>c/1</code> neuron fires, a neuron <code>bang/1</code> triggers.</p>
+<p>Loops can be created by connecting neurons in a circle. In the following program, 3 neurons are connected in a circle, and whenever the <code>c/1</code> neuron fires, a neuron <code>bang/1</code> is awakened.</p>
 
 <table border='1'>
 <tr>
@@ -77,26 +78,30 @@ init* my program.
 <tr>
 <td>
 <pre>
-init*; init*.
-init*: a*.
+init*; init*: f0* b0*.
 
-a*: b*.
-b*: c*.
-c*: a* bang*.
+The fizz network.
+f0*: f1*: f2*: f0* fizz*.
 
-init* my loop.
+The buzz network.
+b0*: b1*: b2*: b3*: b4*: b0* buzz*.
+
+init* my fizzbuzz program.
 </pre>
 </td><td>
 <pre>
-00 init/1 
-01 a/1 
-02 b/1 
-03 c/1 
-04 a/1 bang/1 
-05 b/1 
-06 c/1 
-07 a/1 bang/1 
-08 b/1 
+08 f2/1 b3/1 
+09 f0/1 b4/1 fizz/1
+10 f1/1 b0/1 buzz/1 
+11 f2/1 b1/1 
+12 f0/1 b2/1 fizz/1
+13 f1/1 b3/1 
+14 f2/1 b4/1 
+15 f0/1 b0/1 fizz/1 buzz/1 
+16 f1/1 b1/1 
+17 f2/1 b2/1 
+18 f0/1 b3/1 fizz/1
+19 f1/1 b4/1 
 ..</pre>
 </td>
 </tr>
@@ -122,38 +127,13 @@ b*: OR*.
 Activate both a* & b*.
 </pre>
 
-<h3>Fizzbuzz</h3>
-
-<p>Different parts of a program can run mostly isolated from each other, for example, in a program that prints <i>fizz</i> at t%3, and <i>buzz</i> at t%5, do not need to be connected to each other other:</p>
-
-<pre>
-init-f*; init-f*. init-f*: f0*.
-init-b*; init-b*. init-b*: b0*.
-
-The fizz network.
-
-f0*: f1*.
-f1*: f2*.
-f2*: f0* fizz*.
-
-The buzz network.
-
-b0*: b1*.
-b1*: b2*.
-b2*: b3*.
-b3*: b4*.
-b4*: b0* buzz*.
-
-First off, init-f* and init-b* in the fizzbuzz program.
-</pre>
-
 <!--
 <h3>Arithmetic</h3>
 -->
 
 <h3>Implementation</h3>
 <p>An implementation of the full symbolic runtime is about <a href='ansi_c.html'>150
-lines</a>:</p>
+lines of C89</a>:</p>
 
 <div class='codeview'>
 	<iframe src='../etc/neur.c.txt'></iframe>
