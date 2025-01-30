@@ -26,8 +26,8 @@ static int
 wcompare(char *s, char *name)
 {
 	char *_s = s, *_n = name;
-	while(*_s == *_n) _s++, _n++;
-	return *_s == '*' && *_n == 0;
+	while(*_s == *_n && *_n != '/') _s++, _n++;
+	return *_s == '*' && (*_n == 0 || *_n == '/');
 }
 
 static char *
@@ -52,10 +52,12 @@ nfind(char *s)
 	}
 	/* Create Neuron */
 	name = _dict;
-	while(*s != '*')
+	while(*s != '*' && *s != '/')
 		*_dict++ = s[0], s++;
 	*_dict++ = 0;
 	_net->name = name;
+	if(*s == '/')
+		_net->arity = s[1] - '0', _net->alive = 1;
 	return _net++;
 }
 
@@ -161,7 +163,7 @@ main(int argc, char *argv[])
 	int a = 1, t = 0;
 	char src[0x20000];
 	if(argc < 2)
-		return !printf("Neur Graph, 29 Jan 2025.\nusage: neur [-i] input.fra [arguments..]\n");
+		return !printf("Neur Graph, 30 Jan 2025.\nusage: neur [-i] input.fra [arguments..]\n");
 	if(argv[a][0] == '-' && argv[a][1] == 'i')
 		a++;
 	if(!(f = fopen(argv[a], "r")))
