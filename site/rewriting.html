@@ -3,7 +3,7 @@
 <link href="../links/main.css" type="text/css" rel="stylesheet"><link href="../media/services/icon.png" type="image/png" rel="shortcut icon">
 <title>XXIIVV &mdash; rewriting</title></head><body>
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
-<nav><ul><li><a href="programming_languages.html" class="parent">programming languages</a></li><li><a href="operating_systems.html">operating systems</a></li><li><a href="graphical_input.html">graphical input</a></li><li><a href="file_formats.html">file formats</a></li><li><a href="data_encoding.html">data encoding</a></li><li><a href="type_systems.html">type systems</a></li><li><a href="versioning.html">versioning</a></li></ul><ul><li><a href="assembly.html">assembly</a></li><li><a href="two_dimensional.html">two dimensional</a></li><li><a href="concatenative.html">concatenative</a></li><li><a href="functional.html">functional</a></li><li><a href="imperative.html">imperative</a></li><li><a href="rewriting.html" class="self">rewriting</a></li></ul><ul><li><a href="fractran.html">fractran</a></li><li><a href="vera.html">vera</a></li><li><a href="neural_nets.html">neural nets</a></li><li><a href="interaction_nets.html">interaction nets</a></li><li><a href="thue.html">thue</a></li><li><a href="modal.html">modal</a></li></ul></nav>
+<nav><ul><li><a href="programming_languages.html" class="parent">programming languages</a></li><li><a href="operating_systems.html">operating systems</a></li><li><a href="graphical_input.html">graphical input</a></li><li><a href="file_formats.html">file formats</a></li><li><a href="data_encoding.html">data encoding</a></li><li><a href="type_systems.html">type systems</a></li><li><a href="versioning.html">versioning</a></li></ul><ul><li><a href="assembly.html">assembly</a></li><li><a href="imperative.html">imperative</a></li><li><a href="concatenative.html">concatenative</a></li><li><a href="rewriting.html" class="self">rewriting</a></li><li><a href="functional.html">functional</a></li><li><a href="neural_nets.html">neural nets</a></li><li><a href="graphical.html">graphical</a></li></ul><ul><li><a href="fractran.html">fractran</a></li><li><a href="vera.html">vera</a></li><li><a href="interaction_nets.html">interaction nets</a></li><li><a href="thue.html">thue</a></li><li><a href="modal.html">modal</a></li></ul></nav>
 <main><h2>Rewriting languages are typically made of rules and a starting state.</h2>
 
 <p>These languages often have two phases; the first gives <b>a set of rules</b>, and the second provides <b>an accumulator</b> on which those rules are to be applied. For example, a program for a string rewriting system with wildcards begins with a series of rules which define strings to match, a relation(->), and the resulting transformation.</p>
@@ -964,153 +964,6 @@ present in any rule's right-hand side or declared as facts.</p>
 </ul>
 
 
-<h2>In a neural net, synthetic neurons are used as the base computational unit.</h2>
-
-<p>A <b>neuron</b> has a given number of incoming and outgoing connections to other neurons, it gives out an output that stimulates or inhibits other neurons when the sum of its inputs goes over a threshold arity value. A neuron with an arity of zero will always fire.</p>
-
-<img src='../media/refs/neuron.png' height='60'/>
-<cite style='max-width:400px'>A neuron connected by two excitatory fibers, one inhibitory fiber, with an arity of two.</cite>
-
-<h3>A Notation</h3>
-
-<p>Typically, neural networks are programmed with flow diagrams, I found those to be prone to clutter. Instead, this documentation will use a rule-based textual representation, which allows networks to be created more rapidly and precisely.</p>
-
-<pre>
-A neuron*. <i style='float:right'>neuron/0</i>
-</pre>
-
-<p>In a rule, a neuron is specified with a star suffix, an excitatory connection is separated by a colon, an inhibitory connection is separated by a semi-colon, a rule is terminated by a comma, rules can be chained, everything else is ignored.</p>
-
-<pre>
-I have matches*, and some kindling*:
-	I can make a fire*: <i style='float:right'>fire/2</i>
-	which in turn emits light*. <i style='float:right'>light/1</i>
-
-But if it's raining*;
-	I cannot make a fire*.
-
-I have matches* and kindling*. <i style='float:right'>matches/0, kindling/0</i>
-</pre>
-
-<img src='../media/refs/bigtop.png'/>
-
-<h3>Programming with Neural Nets</h3>
-
-<p>In the example above, for each step of the evaluation, the <code>matches/0</code> and <code>kindling/0</code> will send excitatory signals to the <code>fire/2</code> neuron. But, let's say we want a neuron to fire once and turn off, we can connect it back onto itself with an inhibitory fiber:</p>
-
-<pre>
-hello-world*; hello-world*.
-
-Print hello-world*, and turn itself off.
-</pre>
-
-<p>A program will most likely involve starting a program with an initial <code>signal/1</code>. To do so, we can fork the signal from the self-deactivating <code>init/1</code> neuron toward the rest of our program:</p>
-
-<table border='1'>
-<tr>
-<th width='300'>Network</th>
-<th>Evaluation</th>
-</tr>
-<tr>
-<td>
-<pre>
-init*; init*: signal*.
-
-The signal* will fire once:
-	and activate the program*.
-
-init* my program.
-</pre>
-</td>
-<td>
-<pre>
-00 init/1 
-01 signal/1 
-02 program/1
-</pre>
-</td>
-</tr>
-</table>
-
-<h3>Loops</h3>
-
-<p>Loops can be created by connecting neurons in a circle. In the following program, two such circles are created, in one, 3 neurons are connected in a circle, and whenever the <code>f2/1</code> neuron fires, a neuron <code>fizz/1</code> is awakened. In the second loop of 5 neurons, whenever the <code>b4/1</code> neuron fires, a neuron <code>buzz/1</code> is awakened.</p>
-
-<table border='1'>
-<tr>
-<th width='300'>Network</th>
-<th>Evaluation</th>
-</tr>
-<tr>
-<td>
-<pre>
-init*; init*: f0* b0*.
-
-The fizz network.
-f0*: f1*: f2*: f0* fizz*.
-
-The buzz network.
-b0*: b1*: b2*: b3*: b4*: b0* buzz*.
-
-init* my fizzbuzz program.
-</pre>
-</td><td>
-<pre>
-08 f2/1 b3/1 
-09 f0/1 b4/1 fizz/1
-10 f1/1 b0/1 buzz/1 
-11 f2/1 b1/1 
-12 f0/1 b2/1 fizz/1
-13 f1/1 b3/1 
-14 f2/1 b4/1 
-15 f0/1 b0/1 fizz/1 buzz/1 
-16 f1/1 b1/1 
-17 f2/1 b2/1 
-18 f0/1 b3/1 fizz/1
-19 f1/1 b4/1 
-..</pre>
-</td>
-</tr>
-</table>
-
-
-<h3>Logic</h3>
-
-<p>Logic is implemented by a combination of inhibitory and excitatory fibers.</p>
-
-<img src='../media/refs/neuron_logic.png'/>
-
-<p>Here are the implementation of a <code>AND/2</code> and <code>OR/1</code> gates.</p>
-<pre>
-a*; a*.
-b*; b*.
-
-a* b*: AND*.
-
-a*: OR*.
-b*: OR*.
-
-Activate both a* & b*.
-</pre>
-
-<h3>Arithmetic</h3>
-<p>TODO.<br/>Come back soon.</p>
-
-<h3>Implementation</h3>
-<p>An implementation of the full symbolic runtime is about <a href='ansi_c.html'>150
-lines of C89</a>:</p>
-
-<div class='codeview'>
-	<iframe src='../etc/neur.c.txt'></iframe>
-	<pre>cc neur.c -o neur <a href='../etc/neur.c.txt' target='_blank'>view raw</a></pre>
-</div>
-
-<p>By virtue of the similarities this system shares with other <a href='rewriting.html'>rewriting systems</a>, by being programmed by specifying rules and an initial state, resembles a rewriting language enough that I thought it should classified as such.</p>
-
-<ul>
-	<li><a href='https://www.i-programmer.info/babbages-bag/325-mcculloch-pitts-neural-networks.html' target='_blank'>The McCulloch-Pitts Neuron</a></li>
-	<li><a href='https://justinmeiners.github.io/neural-nets-sim' target='_blank'>Simulator</a></li>
-</ul>
 <h2>Interaction nets are a graph rewriting system.</h2>
 
 <p><b>Interaction nets</b> can capture all computable functions with <a href='rewriting.html'>rewriting rules</a>, no external machinery such as copying a chunk of memory, or a garbage collector, is needed. Unlike models such as Turing machines, Lambda calculus, cellular automata, or <a href='logic.html'>combinators</a>, an interaction net computational step can be defined as a constant time operation, and the model allows for <a href='parallel_computing.html'>parallelism</a> in which many steps can take place at the same time.</p>
@@ -1584,7 +1437,7 @@ type</a> to ensure a specific evaluation order:</p>
 
 <style>
 	.registers tr * { font-family:mono;font-size:smaller }
-</style><ul></ul><p class="incoming"><b>incoming</b> <a href="pocket_rewriting.html">pocket rewriting</a> <a href="tote.html">tote</a> <a href="parade.html">parade</a> <a href="logic.html">logic</a> <a href="two_dimensional.html">two dimensional</a> <a href="fractran.html">fractran</a> <a href="fractran.html">fractran</a> <a href="neural_nets.html">neural nets</a> <a href="interaction_nets.html">interaction nets</a> <a href="thue.html">thue</a> </p></main>
+</style><ul></ul><p class="incoming"><b>incoming</b> <a href="pocket_rewriting.html">pocket rewriting</a> <a href="tote.html">tote</a> <a href="parade.html">parade</a> <a href="logic.html">logic</a> <a href="fractran.html">fractran</a> <a href="fractran.html">fractran</a> <a href="interaction_nets.html">interaction nets</a> <a href="thue.html">thue</a> <a href="mcculloch_pitts.html">mcculloch pitts</a> <a href="graphical.html">graphical</a> </p></main>
 <footer>
 	<a href="ethics.html"><img src="../media/icon/3arrows.svg" alt="NoNazis!"/></a>
 	<a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a>
