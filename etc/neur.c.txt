@@ -60,10 +60,29 @@ nfind(char *s)
 }
 
 static void
+connect_net(Neuron **lhs, Neuron **_lhs, Neuron **rhs, Neuron **_rhs, int inhibitor)
+{
+	Neuron **_l = lhs;
+	int arity = _lhs - _l;
+	while(_l < _lhs) {
+		Neuron **_r = rhs, *n = *_l++;
+		while(_r < _rhs) {
+			Neuron *nn = *_r++;
+			if(inhibitor)
+				n->inhi[n->inhilen++] = nn;
+			else
+				n->exci[n->excilen++] = nn;
+			if(!nn->alive)
+				nn->arity = arity, nn->alive = 1;
+		}
+	}
+}
+
+static void
 parse(char *src)
 {
 	char c;
-	int right = 0, inhibitor = 0;
+	int right = 0, inhibitor = 0, depth = 0;
 	Neuron *lhs[0x20], **_lhs = lhs, *rhs[0x20], **_rhs = rhs;
 	while((c = *src)) {
 		if(c == '*') {
@@ -71,32 +90,25 @@ parse(char *src)
 				*_rhs = nfind(wrewind(src)), _rhs++;
 			else
 				*_lhs = nfind(wrewind(src)), _lhs++;
-		} else if(c == ':')
-			right = 1;
-		else if(c == ';')
-			right = 1, inhibitor = 1;
-		else if(c == '.') {
-			if(right) {
-				Neuron **_l = lhs;
-				int arity = _lhs - _l;
-				while(_l < _lhs) {
-					Neuron **_r = rhs, *n = *_l++;
-					while(_r < _rhs) {
-						Neuron *nn = *_r++;
-						if(inhibitor)
-							n->inhi[n->inhilen++] = nn;
-						else
-							n->exci[n->excilen++] = nn;
-						if(!nn->alive)
-							nn->arity = arity, nn->alive = 1;
-					}
-				}
-			} else {
+		} else if(c == ':' || c == ';') {
+			right = !right;
+			if(depth++) {
+				if(!right)
+					connect_net(lhs, _lhs, rhs, _rhs, inhibitor), _lhs = lhs;
+				else
+					connect_net(rhs, _rhs, lhs, _lhs, inhibitor), _rhs = rhs;
+			}
+			inhibitor = c == ';';
+		} else if(c == '.') {
+			if(!depth) {
 				Neuron **_l = lhs;
 				while(_l < _lhs)
 					*_live++ = *_l, (*_l)->alive++, _l++;
-			}
-			_lhs = lhs, _rhs = rhs, right = 0, inhibitor = 0;
+			} else if(right)
+				connect_net(lhs, _lhs, rhs, _rhs, inhibitor);
+			else
+				connect_net(rhs, _rhs, lhs, _lhs, inhibitor);
+			_lhs = lhs, _rhs = rhs, right = inhibitor = depth = 0;
 		}
 		src++;
 	}
@@ -157,6 +169,6 @@ main(int argc, char *argv[])
 	if(!fread(&src, 1, 0x20000, f))
 		return !printf("Source empty: %s\n", argv[a]);
 	parse(src), fclose(f);
-	while(step(t++) && t < 0x30);
+	while(step(t++) && t < 0x10);
 	return 0;
 }
