@@ -13,13 +13,13 @@
 
 <h3>A Notation</h3>
 
-<p>Typically, neural networks are programmed with flow diagrams, I found those to be prone to clutter. Instead, this documentation will use a rule-based textual representation, which allows networks to be created more rapidly and precisely.</p>
+<p>Neural networks are typically programmed with flow diagrams, I found those to be prone to clutter. Instead, this documentation will use a textual representation, which allows networks to be created more rapidly and precisely.</p>
 
 <pre>
 A neuron*. <i style='float:right'>neuron/0</i>
 </pre>
 
-<p>In a rule, a neuron is specified with a star suffix, an excitatory connection is separated by a colon, an inhibitory connection is separated by a semi-colon, a rule is terminated by a comma, rules can be chained, everything else is ignored.</p>
+<p>In a rule, a neuron is specified with a star suffix, an excitatory connection is separated by a colon, an inhibitory connection is separated by a semi-colon, a segment is terminated by a comma, segments can be chained, everything else is ignored.</p>
 
 <pre>
 I have matches*, and some kindling*:
@@ -72,9 +72,32 @@ Init*.
 </tr>
 </table>
 
+<h3>Logic</h3>
+
+<p><a href='binary.html'>Binary logic</a> is implemented by a combination of inhibitory and excitatory fibers, the system welcomes the implementation of <a href='ternary.html'>ternary logic</a> gates as well. Here are the implementation of a few logic gates:</p>
+
+<pre>
+a*; a*.
+b*; b*.
+
+a*   ; NOT/0*.
+a* b*: AND*.
+a* b*: OR/1*.
+a* b*; NOR/0*.
+
+Activate both a* & b*.
+</pre>
+
+<img src='../media/refs/neuron_logic.png'/>
+
 <h3>Loops</h3>
 
-<p>Loops can be created by connecting neurons in a circle. In the following program, two such circles are created, in one, 3 neurons are connected in a circle, and whenever the <code>f2/1</code> neuron fires, a neuron <code>fizz/1</code> is awakened. In the second loop of 5 neurons, whenever the <code>b4/1</code> neuron fires, a neuron <code>buzz/1</code> is awakened.</p>
+<p>Loops can be created by connecting neurons in a circle. In the following program, two such circles are created:</p>
+
+<ul>
+	<li>3 neurons in a circle, whenever <code>f2/1</code> fires, <code>fizz/1</code> is awakened. </li>
+	<li>5 neurons in a circle, whenever <code>b4/1</code> fires, <code>buzz/1</code> is awakened.</li>
+</ul>
 
 <table border='1'>
 <tr>
@@ -113,29 +136,11 @@ Init* my fizzbuzz program.
 </tr>
 </table>
 
-<h3>Logic</h3>
-
-<p><a href='binary.html'>Binary logic</a> is implemented by a combination of inhibitory and excitatory fibers, the system welcomes the implementation of <a href='ternary.html'>ternary logic</a> gates as well. Here are the implementation of a few logic gates:</p>
-
-<pre>
-a*; a*.
-b*; b*.
-
-a*   ; NOT/0*.
-a* b*: AND*.
-a* b*: OR/1*.
-a* b*; NOR/0*.
-
-Activate both a* & b*.
-</pre>
-
-<img src='../media/refs/neuron_logic.png'/>
-
-<h3>Memory</h3>
+<h3>Memory Neurons</h3>
 
 <img src='../media/refs/neuron_memory.png' style='float:right;height:120px;margin-left:30px'/>
 
-<p>A <code>Neuron/1</code> can store a single bit of information by using an excitatory <i>feedback</i> fiber connected onto itself, and a excitatory <i>start</i> fiber and inhibitory <i>stop</i> fiber. Delaying a signal is the same as remembering it for a length of time, making neurons the ideal memory storage.</p>
+<p>A <code>Neuron/1</code> can store a single bit of information by using an excitatory <i>feedback</i> fiber connected onto itself. To set the value of that neuron, use an a excitatory <i>start</i> fiber and inhibitory <i>stop</i> fiber. Delaying a signal is the same as remembering it for a length of time, making <b>memory neurons</b> the ideal memory storage.</p>
 
 <pre style='clear:both'>
 Bit*: Bit*.
@@ -145,7 +150,51 @@ controls:
 - stop*; Bit*.
 </pre>
 
-<p>Connecting these memory neurons in a sequence, we can create a capacitor that will accumulate pulses until it reaches its storage limit, output a signal, and start over.</p>
+<p>Each neuron threshold delays the signal by one moment, signals may go out of sync if parts of a program require two signals to converge, but <b>memory neurons</b> can synchronize signals.</p>
+
+<img src='../media/refs/neuron_delay.png' height='150'/>
+
+<p><b>Memory neurons</b> can hold on a signal until the rest of the network is ready to use it. In the program below, the <code>a</code> network is 4 times slower than the <code>b</code> network, to insure that both signals can be used together, the <code>Fast/1</code> and <code>Slow/1</code> neurons will synchronize the delayed signal and only fire the gate neuron once both are active.</p>
+
+<table border='1'>
+<tr>
+<th width='300'>Network</th>
+<th>Evaluation</th>
+</tr>
+<tr>
+<td>
+<pre>
+Init*; Init*: a0* b0*.
+
+Two signals coming in at different speeds.
+a0*: a1*: a2*: a3*: Slow*: Slow*.
+b0*:                Fast*: Fast*.
+
+The signals from Fast* and Slow* converge into:
+	the gate* which waits for both:
+	and then lights up the output*.
+
+The gate* will then turn off;
+	 the Fast* and Slow* neurons.
+
+Init*.
+</pre>
+</td><td>
+<pre>
+00 Init/1 
+01 a0/1 b0/1 
+02 a1/1 Fast/1 
+03 a2/1 Fast/1 
+04 a3/1 Fast/1 
+05 Slow/1 Fast/1 
+06 Slow/1 Fast/1 gate/2 
+07 gate/2 output/1 
+08 output/1</pre>
+</td>
+</tr>
+</table>
+
+<p>Connecting these <b>memory neurons</b> in a sequence, we can create a capacitor that will accumulate pulses until it reaches its storage limit, output a signal, and start over.</p>
 
 <pre>
 Init*; Init*: t0*.
@@ -173,50 +222,7 @@ Let's Init* our program.
 
 <img src='../media/refs/neuron_capacitor.png'/>
 
-<h3>Synchronization</h3>
-<p>Each neuron threshold delays the signal by one moment, signals may go out of sync if parts of a program require two signals to converge, but memory retaining neurons can be used to synchronize signals.</p>
 
-<img src='../media/refs/neuron_delay.png' height='160'/>
-
-<p>Memory neurons can hold on a signal until the rest of the network is ready to use it. In the program below, the <code>a</code> network is 4 times slower than the <code>b</code> network, to insure that both signals can be used together, the <code>Fast/1</code> and <code>Slow/1</code> neurons will synchronize the delayed signal and only fire the gate neuron once both are active.</p>
-
-<table border='1'>
-<tr>
-<th width='300'>Network</th>
-<th>Evaluation</th>
-</tr>
-<tr>
-<td>
-<pre>
-Init*; Init*: a0* b0*.
-
-Let's have two signals coming in at different speeds.
-a0*: a1*: a2*: a3*: Slow*: Slow*.
-b0*:                Fast*: Fast*.
-
-The signals from Fast* and Slow* converge into:
-	the gate* which waits for both:
-	and then lights up the output*.
-
-The gate* will then turn off;
-	 the Fast* and Slow* neurons.
-
-Init*.
-</pre>
-</td><td>
-<pre>
-00 Init/1 
-01 a0/1 b0/1 
-02 a1/1 Fast/1 
-03 a2/1 Fast/1 
-04 a3/1 Fast/1 
-05 Slow/1 Fast/1 
-06 Slow/1 Fast/1 gate/2 
-07 gate/2 output/1 
-08 output/1</pre>
-</td>
-</tr>
-</table>
 
 <!--
 <h3>Arithmetic</h3>
