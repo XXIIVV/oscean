@@ -36,15 +36,15 @@ I have matches* and kindling*. <i style='float:right'>matches/0, kindling/0</i>
 
 <h3>Programming with Neural Nets</h3>
 
-<p>In the example above, for each step of the evaluation, the <code>matches/0</code> and <code>kindling/0</code> will send excitatory signals to the <code>fire/2</code> neuron. But, let's say we want a neuron to fire once and turn off, we can connect it back onto itself with an inhibitory fiber:</p>
+<p>In the example above, for each step of the evaluation, the <code>matches/0</code> and <code>kindling/0</code> will send excitatory signals to <code>fire/2</code>. Let's say we want a neuron to fire once and turn off, we can connect it back onto itself with an inhibitory fiber:</p>
 
 <pre>
-hello-world*; hello-world*.
+Neuron*; Neuron*.
 
-Print hello-world*, and turn itself off.
+The Neuron* will fire, and turn itself off.
 </pre>
 
-<p>A program will most likely involve starting a program with an initial <code>signal/1</code>. To do so, we can fork the signal from the self-deactivating <code>init/1</code> neuron toward the rest of our program:</p>
+<p>A program will most likely involve starting a program with an initial signal. To do so, we can fork the signal from the self-deactivating <code>Init/1</code> toward the rest of our program:</p>
 
 <table border='1'>
 <tr>
@@ -54,17 +54,17 @@ Print hello-world*, and turn itself off.
 <tr>
 <td>
 <pre>
-init*; init*: signal*.
+Init*; Init*: signal*.
 
 The signal* will fire once:
 	and activate the program*.
 
-init* my program.
+Init*.
 </pre>
 </td>
 <td>
 <pre>
-00 init/1 
+00 Init/1 
 01 signal/1 
 02 program/1
 </pre>
@@ -84,7 +84,7 @@ init* my program.
 <tr>
 <td>
 <pre>
-init*; init*: f0* b0*.
+Init*; Init*: f0* b0*.
 
 The fizz network.
 f0*: f1*: f2*: f0* fizz*.
@@ -92,7 +92,7 @@ f0*: f1*: f2*: f0* fizz*.
 The buzz network.
 b0*: b1*: b2*: b3*: b4*: b0* buzz*.
 
-init* my fizzbuzz program.
+Init* my fizzbuzz program.
 </pre>
 </td><td>
 <pre>
@@ -135,20 +135,20 @@ Activate both a* & b*.
 
 <img src='../media/refs/neuron_memory.png' style='float:right;height:120px;margin-left:30px'/>
 
-<p>A <code>neuron/1</code> can store a single bit of information by using an excitatory <i>feedback</i> fiber connected onto itself, and a excitatory <i>start</i> fiber and inhibitory <i>stop</i> fiber. Delaying a signal is the same as remembering it for a length of time, making neurons the ideal memory storage.</p>
+<p>A <code>Neuron/1</code> can store a single bit of information by using an excitatory <i>feedback</i> fiber connected onto itself, and a excitatory <i>start</i> fiber and inhibitory <i>stop</i> fiber. Delaying a signal is the same as remembering it for a length of time, making neurons the ideal memory storage.</p>
 
 <pre style='clear:both'>
-bit*: bit*.
+Bit*: Bit*.
 
 controls:
-- start*: bit.
-- stop*; bit.
+- start*: Bit*.
+- stop*; Bit*.
 </pre>
 
 <p>Connecting these memory neurons in a sequence, we can create a capacitor that will accumulate pulses until it reaches its storage limit, output a signal, and start over.</p>
 
 <pre>
-init*; init*: t0*.
+Init*; Init*: t0*.
 
 Timer.
 t0*: t1*: t2*: t4*: t0*.
@@ -168,13 +168,60 @@ Connect neurons on themselves and reset.
 reset* will turn off all counting neurons;
 	m0* m1* m2* m3*.
 
-Let's init* our program.
+Let's Init* our program.
 </pre>
 
 <img src='../media/refs/neuron_capacitor.png'/>
 
+<h3>Synchronization</h3>
+<p>Each neuron threshold delays the signal by one moment, signals may go out of sync if parts of a program require two signals to converge, but memory retaining neurons can be used to synchronize signals.</p>
+
+<img src='../media/refs/neuron_delay.png' height='160'/>
+
+<p>Memory neurons can hold on a signal until the rest of the network is ready to use it. In the program below, the <code>a</code> network is 4 times slower than the <code>b</code> network, to insure that both signals can be used together, the <code>Fast/1</code> and <code>Slow/1</code> neurons will synchronize the delayed signal and only fire the gate neuron once both are active.</p>
+
+<table border='1'>
+<tr>
+<th width='300'>Network</th>
+<th>Evaluation</th>
+</tr>
+<tr>
+<td>
+<pre>
+Init*; Init*: a0* b0*.
+
+Let's have two signals coming in at different speeds.
+a0*: a1*: a2*: a3*: Slow*: Slow*.
+b0*:                Fast*: Fast*.
+
+The signals from Fast* and Slow* converge into:
+	the gate* which waits for both:
+	and then lights up the output*.
+
+The gate* will then turn off;
+	 the Fast* and Slow* neurons.
+
+Init*.
+</pre>
+</td><td>
+<pre>
+00 Init/1 
+01 a0/1 b0/1 
+02 a1/1 Fast/1 
+03 a2/1 Fast/1 
+04 a3/1 Fast/1 
+05 Slow/1 Fast/1 
+06 Slow/1 Fast/1 gate/2 
+07 gate/2 output/1 
+08 output/1</pre>
+</td>
+</tr>
+</table>
+
+<!--
 <h3>Arithmetic</h3>
 <p>TODO.<br/>Come back soon.</p>
+-->
 
 <h3>Implementation</h3>
 <p>An implementation of the full symbolic runtime is about <a href='ansi_c.html'>150
