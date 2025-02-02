@@ -136,9 +136,11 @@ step(int count)
 		}
 		for(i = 0; i < n->excilen; i++) {
 			Neuron *nn = n->exci[i];
-			nn->saturation++, *_dirty++ = nn;
-			if(nn->saturation == nn->arity)
-				*_excited++ = nn;
+			if(!nn->sleep) {
+				nn->saturation++, *_dirty++ = nn;
+				if(nn->saturation == nn->arity)
+					*_excited++ = nn;
+			}
 		}
 		_l++;
 	}
@@ -163,7 +165,7 @@ main(int argc, char *argv[])
 	int a = 1, t = 0;
 	char src[0x20000];
 	if(argc < 2)
-		return !printf("Neur Graph, 30 Jan 2025.\nusage: neur [-i] input.fra [arguments..]\n");
+		return !printf("Neur Graph, 31 Jan 2025.\nusage: neur [-i] input.fra [arguments..]\n");
 	if(argv[a][0] == '-' && argv[a][1] == 'i')
 		a++;
 	if(!(f = fopen(argv[a], "r")))
