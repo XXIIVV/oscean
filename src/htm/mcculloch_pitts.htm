@@ -1,9 +1,9 @@
-<h2>A McCulloch-Pitts neuron uses arity saturation, excitatory and inhibitory fibers.</h2>
+<h2>A McCulloch-Pitts neuron uses threshold saturation, excitatory and inhibitory fibers.</h2>
 
-<p>A <b>neuron</b> has a given number of incoming and outgoing connections to other neurons, it gives out an output that stimulates or inhibits other neurons when the sum of its inputs goes over a threshold arity value. A neuron with an arity of zero will always fire.</p>
+<p>A <b>neuron</b> has incoming and outgoing connections to other neurons, it fires an output that stimulates or inhibits other neurons when it is not inhibited and the sum of its excitatory inputs is equal or higher than its <i>threshold</i>. A neuron with a threshold of zero will always fire.</p>
 
 <img src='../media/refs/neuron.png' height='60'/>
-<cite style='max-width:400px'>A neuron connected by two excitatory fibers, one inhibitory fiber, with an arity of two.</cite>
+<cite style='max-width:400px'>A neuron connected by two excitatory fibers, one inhibitory fiber, with a threshold of two.</cite>
 
 <h3>A Notation</h3>
 
@@ -13,12 +13,12 @@
 A neuron*. <i style='float:right'>neuron/0</i>
 </pre>
 
-<p>In a rule, a neuron is specified with a star suffix, an excitatory connection is separated by a colon, an inhibitory connection is separated by a semi-colon, a segment is terminated by a comma, segments can be chained, everything else is ignored.</p>
+<p>In a rule, a neuron is specified with a star suffix, an excitatory connection is separated by a colon, an inhibitory connection is separated by a semi-colon, a segment is terminated by a comma, segments can be chained, everything else is ignored. A rule with no right-hand side will create neurons with a threshold of zero.</p>
 
 <pre>
-I have matches*, and some kindling*:
+If I have matches*, and some kindling*:
 	I can make a fire*: <i style='float:right'>fire/2</i>
-	which in turn emits light*. <i style='float:right'>light/1</i>
+	and have some light*. <i style='float:right'>light/1</i>
 
 But if it's raining*;
 	I cannot make a fire*.
@@ -26,54 +26,33 @@ But if it's raining*;
 I have matches* and kindling*. <i style='float:right'>matches/0, kindling/0</i>
 </pre>
 
+<p>In the example above, for each step of the evaluation, the <code>matches/0</code> and <code>kindling/0</code> will send excitatory pulses to <code>fire/2</code> and not terminate.</p>
+
 <img src='../media/refs/bigtop.png'/>
 
 <h3>Programming with Neural Nets</h3>
 
-<p>In the example above, for each step of the evaluation, the <code>matches/0</code> and <code>kindling/0</code> will send excitatory signals to <code>fire/2</code>. Let's say we want a neuron to fire once and turn off, we can connect it back onto itself with an inhibitory fiber:</p>
+<img src='../media/refs/neuron_init.png' style='float:right;width:120px'/>
+
+<p>A program will most likely involve an initial pulse. Let's say we want a neuron to fire once and turn itself off, we can connect it back onto itself with a inhibitory <i>feedback</i> fiber, and run an excitatory fiber toward the rest of the program:</p>
 
 <pre>
-Neuron*; Neuron*.
+Neuron*; Neuron*: output*.
 
 The Neuron* will fire, and turn itself off.
 </pre>
-
-<p>A program will most likely involve starting a program with an initial signal. To do so, we can fork the signal from the self-deactivating <code>Init/1</code> toward the rest of our program:</p>
-
-<table border='1'>
-<tr>
-<th width='300'>Network</th>
-<th>Evaluation</th>
-</tr>
-<tr>
-<td>
-<pre>
-Init*; Init*: signal*.
-
-The signal* will fire once:
-	and activate the program*.
-
-Init*.
-</pre>
-</td>
-<td>
-<pre>
-00 Init/1 
-01 signal/1 
-02 program/1
-</pre>
-</td>
-</tr>
-</table>
 
 <h3>Logic</h3>
 
 <p><a href='binary.html'>Binary logic</a> is implemented by a combination of inhibitory and excitatory fibers, the system welcomes the implementation of <a href='ternary.html'>ternary logic</a> gates as well. Here are the implementation of a few logic gates:</p>
 
+<img src='../media/refs/neuron_logic.png'/>
 <pre>
+Create single-pulse neurons.
 a*; a*.
 b*; b*.
 
+Route them to a few gates.
 a*   ; NOT/0*.
 a* b*: AND*.
 a* b*: OR/1*.
@@ -81,8 +60,6 @@ a* b*; NOR/0*.
 
 Activate both a* & b*.
 </pre>
-
-<img src='../media/refs/neuron_logic.png'/>
 
 <h3>Loops</h3>
 
@@ -132,9 +109,9 @@ Init* my fizzbuzz program.
 
 <h3>Memory Neurons</h3>
 
-<img src='../media/refs/neuron_memory.png' style='float:right;height:120px;margin-left:30px'/>
+<img src='../media/refs/neuron_memory.png' style='float:right;height:140px;margin-left:15px'/>
 
-<p>A <code>Neuron/1</code> can store a single bit of information by using an excitatory <i>feedback</i> fiber connected onto itself. To set the value of that neuron, use an a excitatory <i>start</i> fiber and inhibitory <i>stop</i> fiber. Delaying a signal is the same as remembering it for a length of time, making <b>memory neurons</b> the ideal memory storage.</p>
+<p>Delaying a pulse is the same as remembering it for a length of time, and so we'll call a <b>memory neuron</b> a <code>Neuron/1</code> that store a single bit of information by using an excitatory <i>feedback</i> fiber connected onto itself. To set the value of that neuron, use an a excitatory <i>start</i> fiber and inhibitory <i>stop</i> fiber. </p>
 
 <pre style='clear:both'>
 Bit*: Bit*.
@@ -144,11 +121,13 @@ controls:
 - stop*; Bit*.
 </pre>
 
-<p>Each neuron threshold delays the signal by one moment, signals may go out of sync if parts of a program require two signals to converge, but <b>memory neurons</b> can synchronize signals.</p>
+<h3>Synchronization</h3>
+
+<p>Each neuron delays a pulse by one moment, pulses may go out of sync if parts of a program require two pulses to converge, but <b>memory neurons</b> can synchronize pulses by holding it until another part of the network is ready to use it.</p>
 
 <img src='../media/refs/neuron_delay.png' height='150'/>
 
-<p><b>Memory neurons</b> can hold on a signal until the rest of the network is ready to use it. In the program below, the <code>a</code> network is 4 times slower than the <code>b</code> network, to insure that both signals can be used together, the <code>Fast/1</code> and <code>Slow/1</code> neurons will synchronize the delayed signal and only fire the gate neuron once both are active.</p>
+<p>In the program below, the <code>a</code> network is 4 times slower than the <code>b</code> network, to insure that both pulses can be used together, the <code>Fast/1</code> and <code>Slow/1</code> neurons will synchronize the delayed pulse and only fire the gate neuron once both are active.</p>
 
 <table border='1'>
 <tr>
@@ -160,11 +139,11 @@ controls:
 <pre>
 Init*; Init*: a0* b0*.
 
-Two signals coming in at different speeds.
+Two pulses coming in at different speeds.
 a0*: a1*: a2*: a3*: Slow*: Slow*.
 b0*:                Fast*: Fast*.
 
-The signals from Fast* and Slow* converge into:
+The pulses from Fast* and Slow* converge into:
 	the gate* which waits for both:
 	and then lights up the output*.
 
@@ -188,8 +167,46 @@ Init*.
 </tr>
 </table>
 
-<p>Connecting these <b>memory neurons</b> in a sequence, we can create a capacitor that will accumulate pulses until it reaches its storage limit, output a signal, and start over.</p>
+<h3>Capacitors</h3>
 
+<p>Alternatively, connecting <b>memory neurons</b> in a sequence can create a capacitor that will accumulate pulses until it reaches its storage limit, output a pulse, and start over. Here is a <i>binary scaler</i> that, for every two incoming pulses, will output one pulse.</p>
+
+<table border='1'>
+<tr>
+<th width='300'>Network</th>
+<th>Evaluation</th>
+</tr>
+<tr>
+<td>
+<pre>
+Init*; Init*: delay* split*.
+
+Let's delay* the second pulse: 
+	and connect it to split*.
+
+The split* will share the signal: 
+	with our two memory neurons A/2* B/1*.
+
+B*: B*: A*.
+A*; A*; B*.
+
+For every two pulses entering A* and B: 
+	it will fire once to output*.
+
+Init*.
+</pre>
+</td><td>
+<pre>
+00 Init/1 
+01 delay/1 split/1 
+02 split/1 B/1 
+03 B/1 A/2 
+04 output/1</pre>
+</td>
+</tr>
+</table>
+
+<p>This technique can be adapted to collect more pulses at once, here is a capacitor with four memory neurons:</p>
 <pre>
 Init*; Init*: t0*.
 
@@ -203,20 +220,18 @@ Connect input*:
 	to m0/1* m1/2* m2/2* m3/2*.
 
 Connect neurons on themselves and reset.
-	m0*:m0* m1*.
-	m1*:m1* m2*.
-	m2*:m2* m3*.
-	m3*:m3* reset* bang*.
+	m0*: m0* m1*.
+	m1*: m1* m2*.
+	m2*: m2* m3*.
+	m3*: bang*.
 
-reset* will turn off all counting neurons;
+m3* will turn off all counting neurons;
 	m0* m1* m2* m3*.
 
 Let's Init* our program.
 </pre>
 
 <img src='../media/refs/neuron_capacitor.png'/>
-
-
 
 <!--
 <h3>Arithmetic</h3>
@@ -239,4 +254,5 @@ lines of C89</a>:</p>
 	<li><a href='https://git.sr.ht/~rabbits/neur' target='_blank'>Runtime Implementation</a>, C89.</li>
 	<li><a href='https://codeberg.org/CapitalEx/luneur' target='_blank'>Runtime Implementation</a>, lua.</li>
 	<li><a href='https://justinmeiners.github.io/neural-nets-sim' target='_blank'>Simulator</a></li>
+	<li>Illustrations from Marvin Minsky's Finite & Infinite Machines.</li>
 </ul>
