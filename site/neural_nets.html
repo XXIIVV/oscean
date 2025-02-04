@@ -58,23 +58,19 @@ Activate both a* & b*. <i style='float:right'>a/1 b/1</i>
 
 <h3>Loops</h3>
 
-<p>Loops can be created by connecting neurons in a circle. In the following program, two such circles are created:</p>
+<p>Loops can be implemented by connecting neurons in a circle and using fibers from neurons in that loop to trigger events at specific intervals. In the following program, two such circles are created:</p>
 
-<pre>
+<pre style="float:left;margin-right:1px;padding-right:45px">
 The fizz loop.
-f0*: f1*: f2*: f0* fizz*.
+f0*: f1*: f2*: 
+	f0* every third -> fizz*.
 
 The buzz loop.
-b0*: b1*: b2*: b3*: b4*: b0* buzz*.
+b0*: b1*: b2*: b3*: b4*: 
+	b0* every fifth -> buzz*.
 
 Initialize both f0* and b0* loops.
 </pre>
-
-<ul>
-	<li>3 neurons in a circle, whenever <code>f2/1</code> fires, <code>fizz/1</code> is awakened. </li>
-	<li>5 neurons in a circle, whenever <code>b4/1</code> fires, <code>buzz/1</code> is awakened.</li>
-</ul>
-
 <pre>
 08 f2/1 b3/1 
 09 f0/1 b4/1 fizz/1
@@ -84,7 +80,6 @@ Initialize both f0* and b0* loops.
 13 f1/1 b3/1 
 14 f2/1 b4/1 
 15 f0/1 b0/1 fizz/1 buzz/1 
-16 f1/1 b1/1 
 ..</pre>
 
 <h3>Memory Neurons</h3>
@@ -109,7 +104,7 @@ controls:
 
 <p>In the program below, the <code>a</code> network is 4 times slower than the <code>b</code> network, to insure that both pulses can be used together, the <code>Fast/1</code> and <code>Slow/1</code> neurons will synchronize the delayed pulse and only fire the gate neuron once both are active.</p>
 
-<pre>
+<pre style="float:left;margin-right:1px;padding-right:45px">
 Two pulses coming in at different speeds.
 a0*: a1*: a2*: a3*: Slow*: Slow*.
 b0*:                Fast*: Fast*.
@@ -123,8 +118,6 @@ The gate* will then turn off;
 
 Initialize a0* b0*.
 </pre>
-
-<p>Each step</p>
 <pre>
 00 Init/1 
 01 a0/1 b0/1 
@@ -134,7 +127,11 @@ Initialize a0* b0*.
 05 Slow/1 Fast/1 
 06 Slow/1 Fast/1 gate/2 
 07 gate/2 output/1 
-08 output/1</pre>
+08 output/1
+
+
+
+</pre>
 </td>
 </tr>
 </table>
@@ -143,7 +140,7 @@ Initialize a0* b0*.
 
 <p>Alternatively, connecting <b>memory neurons</b> in a sequence can create a capacitor that will accumulate pulses until it reaches its storage limit, output a pulse, and start over. Here is a <i>binary scaler</i> that, for every two incoming pulses, will output one pulse.</p>
 
-<pre>
+<pre style="float:left;margin-right:1px;padding-right:45px">
 Let's delay* the second pulse: 
 	and connect it to split*.
 
@@ -158,41 +155,107 @@ For every two pulses entering A* and B:
 
 delay* split*.
 </pre>
-<p>Each step</p>
 <pre>
 00 Init/1 
 01 delay/1 split/1 
 02 split/1 B/1 
 03 B/1 A/2 
-04 output/1</pre>
+04 output/1
+
+
+
+
+
+
+
+
+</pre>
 
 <p>This technique can be adapted to collect more pulses at once, here is a capacitor with four memory neurons:</p>
-<img src='../media/refs/neuron_capacitor.png'/>
-<pre>
+<img src='../media/refs/neuron_capacitor.png' height='170'/>
+
+<pre style="float:left;margin-right:1px;padding-right:45px">
 Timer.
-t0*: t1*: t2*: t4*: t0*.
+t0*: t1*: t2*: t4*: t0* in*.
 
-Fork every fourth t0*:
-	to input*.
-
-Connect input*:
+Connect in*:
 	to m0/1* m1/2* m2/2* m3/2*.
 
-Connect neurons on themselves and reset.
+Connect memories to themselves.
 	m0*: m0* m1*.
 	m1*: m1* m2*.
 	m2*: m2* m3*.
-	m3*: bang*.
+	m3*: out*.
 
-m3* will turn off all counting neurons;
+Turn off all memories from m3*;
 	m0* m1* m2* m3*.
 
 Let's begin at t0*.
 </pre>
+<pre>
+04 t0/1 in/1 
+08 t0/1 in/1 m0/1 
+09 t1/1 m0/1 m1/2 
+10 t2/1 m0/1 m1/2 
+11 t4/1 m0/1 m1/2 
+12 t0/1 in/1 m0/1 m1/2 
+13 t1/1 m0/1 m1/2 m2/2 
+14 t2/1 m0/1 m1/2 m2/2 
+15 t4/1 m0/1 m1/2 m2/2 
+16 t0/1 in/1 m0/1 m1/2 m2/2 
+17 t1/1 m0/1 m1/2 m2/2 m3/2 
+18 t2/1 out/1 
+19 t4/1 
+20 t0/1 in/1 
+21 t1/1 m0/1 
+..
+</pre>
 
+<h3>Example: Tic-Tac-Toe</h3>
+<p>Let's have a look at a an example declarative programming in which we define winning moves and gradually fire the neuron corresponding to player moves:</p>
 
-<h3>Arithmetic</h3>
-<p>TODO.<br/>Come back soon.</p>
+<pre style="float:left;margin-right:1px;padding-right:45px">
+Winning states for X player.
+xa* xb* xc*: win-xabc*: win-x*.
+xd* xe* xf*: win-xdef*: win-x*.
+xg* xh* xi*: win-xghi*: win-x*.
+xa* xe* xi*: win-xaei*: win-x*.
+xg* xe* xc*: win-xgec*: win-x*.
+xa* xd* xg*: win-xadg*: win-x*.
+xb* xe* xh*: win-xbeh*: win-x*.
+xc* xf* xi*: win-xcfi*: win-x*.
+
+Winning states for O player.
+oa* ob* oc*: win-oabc*: win-o*.
+od* oe* of*: win-odef*: win-o*.
+og* oh* oi*: win-oghi*: win-o*.
+oa* oe* oi*: win-oaei*: win-o*.
+og* oe* oc*: win-ogec*: win-o*.
+oa* od* og*: win-oadg*: win-o*.
+ob* oe* oh*: win-obeh*: win-o*.
+oc* of* oi*: win-ocfi*: win-o*.
+</pre>
+<pre>
+Set move in the format xa, ob, xc, etc
+
+	a | b | c
+	--+---+--
+	d | e | f
+	--+---+--
+	g | h | i .
+
+Play oc*.
+Play xb*.
+Play oe*.
+Play xh*.
+Play og*.
+
+--
+
+00 oc/1 xb/1 oe/1 xh/1 og/1 
+01 win-ogec/3 
+02 win-o/1
+</pre>
 
 <img src='../media/refs/kirie.png' alt="Kirie from Uzumaki, by Junji Ito"/>
 
