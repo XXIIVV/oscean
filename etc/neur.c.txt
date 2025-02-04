@@ -13,8 +13,8 @@ WITH REGARD TO THIS SOFTWARE.
 
 typedef struct Neuron {
 	char *name;
-	int alive, sleep, excilen, inhilen;
-	int arity, saturation;
+	int alive, inhibited, threshold, saturation;
+	int excilen, inhilen;
 	struct Neuron *exci[0x10], *inhi[0x10];
 } Neuron;
 
@@ -26,7 +26,8 @@ static int
 wcompare(char *s, char *name)
 {
 	char *_s = s, *_n = name;
-	while(*_s == *_n && *_n != '/') _s++, _n++;
+	while(*_s == *_n && *_n != '/')
+		_s++, _n++;
 	return *_s == '*' && (*_n == 0 || *_n == '/');
 }
 
@@ -57,7 +58,7 @@ nfind(char *s)
 	*_dict++ = 0;
 	_net->name = name;
 	if(*s == '/')
-		_net->arity = s[1] - '0', _net->alive = 1;
+		_net->threshold = s[1] - '0', _net->alive = 1;
 	return _net++;
 }
 
@@ -65,7 +66,7 @@ static void
 nconnect(Neuron **lhs, Neuron **_lhs, Neuron **rhs, Neuron **_rhs, int inhibitor)
 {
 	Neuron **_l = lhs;
-	int arity = _lhs - _l;
+	int threshold = _lhs - _l;
 	while(_l < _lhs) {
 		Neuron **_r = rhs, *n = *_l++;
 		while(_r < _rhs) {
@@ -75,7 +76,7 @@ nconnect(Neuron **lhs, Neuron **_lhs, Neuron **rhs, Neuron **_rhs, int inhibitor
 			else
 				n->exci[n->excilen++] = nn;
 			if(!nn->alive)
-				nn->arity = arity, nn->alive = 1;
+				nn->threshold = threshold, nn->alive = 1;
 		}
 	}
 }
@@ -105,7 +106,7 @@ parse(char *src)
 			if(!depth) {
 				Neuron **_l = lhs;
 				while(_l < _lhs)
-					*_live++ = *_l, (*_l)->alive++, (*_l)->arity = 1, _l++;
+					*_live++ = *_l, (*_l)->alive++, (*_l)->threshold = 1, _l++;
 			} else if(right)
 				nconnect(lhs, _lhs, rhs, _rhs, inhibitor);
 			else
@@ -127,18 +128,18 @@ step(int count)
 	while(_l < _live) {
 		Neuron *n = *_l;
 		int i;
-		printf("%s/%d ", n->name, n->arity);
-		if(!n->arity)
+		printf("%s/%d ", n->name, n->threshold);
+		if(!n->threshold)
 			*_excited++ = n;
 		for(i = 0; i < n->inhilen; i++) {
 			Neuron *nn = n->inhi[i];
-			nn->sleep = 1, *_dirty++ = nn;
+			nn->inhibited = 1, *_dirty++ = nn;
 		}
 		for(i = 0; i < n->excilen; i++) {
 			Neuron *nn = n->exci[i];
-			if(!nn->sleep) {
+			if(!nn->inhibited) {
 				nn->saturation++, *_dirty++ = nn;
-				if(nn->saturation == nn->arity)
+				if(nn->saturation == nn->threshold)
 					*_excited++ = nn;
 			}
 		}
@@ -148,13 +149,13 @@ step(int count)
 	/* respond */
 	_live = live;
 	while(_e < _excited) {
-		if(!(*_e)->sleep)
+		if(!(*_e)->inhibited)
 			*_live++ = *_e;
 		_e++;
 	}
 	/* clean */
 	while(_d < _dirty)
-		(*_d)->saturation = 0, (*_d)->sleep = 0, _d++;
+		(*_d)->saturation = 0, (*_d)->inhibited = 0, _d++;
 	return _live != live;
 }
 
