@@ -9,20 +9,31 @@
 <p>This is model of the neuron that doesn't capture all of its properties and behavior but just enough to capture the way it performs computation.</p>
 <h2>A McCulloch-Pitts neuron uses threshold saturation, excitatory and inhibitory fibers.</h2>
 
-<p>A <b>neuron</b> has incoming and outgoing connections to other neurons, it fires an output that stimulates or inhibits other neurons when it is not inhibited and the sum of its excitatory inputs is equal or higher than its <i>threshold</i>. A neuron with a threshold of zero will always fire.</p>
+<p>A <b>neuron</b> has incoming and outgoing connections to other neurons, it
+fires an output that stimulates or inhibits other neurons when it is not
+inhibited and the sum of its excitatory inputs is equal or higher than its
+<i>threshold</i>. A neuron with a threshold of zero will always fire.</p>
 
 <img src='../media/refs/neuron.png' height='50'/>
-<cite style='max-width:400px'>A neuron connected by two excitatory fibers, one inhibitory fiber, with a threshold of two.</cite>
+<cite style='max-width:400px'>A neuron connected by two excitatory fibers, one
+inhibitory fiber, with a threshold of two.</cite>
 
 <h3>A Notation</h3>
 
-<p>Neural networks are typically programmed with flow diagrams, I found those to be prone to clutter. Instead, this documentation will use a textual representation, which allows networks to be created more rapidly and precisely.</p>
+<p>Neural networks are typically programmed with flow diagrams, I found those to
+be prone to clutter. Instead, this documentation will use a textual
+representation, which allows networks to be created more rapidly and
+precisely.</p>
 
 <pre>
 A neuron*. <i style='float:right'>neuron/1</i>
 </pre>
 
-<p>In a rule, a neuron is specified with a star suffix, an excitatory connection is separated by a colon, an inhibitory connection is separated by a semi-colon. A rule with no right-hand side will create live neurons with a threshold of one. A rule is terminated by a period, rules can be chained, everything else is ignored. </p>
+<p>In a rule, a neuron is specified with a star suffix, an excitatory connection
+is separated by a colon, an inhibitory connection is separated by a semi-colon.
+A rule with no right-hand side will create live neurons with a threshold of
+one. A rule is terminated by a period, rules can be chained, everything else is
+ignored. </p>
 
 <pre>
 If I have matches*, and some kindling*:
@@ -37,16 +48,19 @@ I have matches* and kindling*. <i style='float:right'>matches/1 kindling/1</i>
 
 <h3>Programming with Neural Nets</h3>
 
-<p>A program will most likely involve an initial pulse. Let's say we want a <code>program/1</code> to wake up two other neurons via excitatory fibers:</p>
+<p>A program will most likely involve an initial pulse. Let's say we want a
+<code>program/1</code> to wake up two other neurons via excitatory fibers:</p>
 
 <pre>
 The program* will wake up:
 	both hello* and world*. <i style='float:right'>hello/1 world/1</i>
 
-Let's wake up our program*. <i style='float:right'>program/1</i>
+Let's start our program*. <i style='float:right'>program/1</i>
 </pre>
 
-<p>Logic in neural nets is implemented by combining thresholds, inhibitory and excitatory fibers. Arity can be hardcoded by specifying it in the symbol name. Here are the implementation of a few logic gates:</p>
+<p>Logic in neural nets is implemented by combining thresholds, inhibitory and
+excitatory fibers. Arity can be hardcoded by specifying it in the symbol name.
+Here are the implementation of a few logic gates:</p>
 
 <img src='../media/refs/neuron_logic.png'/>
 <pre>
@@ -58,7 +72,9 @@ Activate both a* & b*. <i style='float:right'>a/1 b/1</i>
 
 <h3>Loops</h3>
 
-<p>Loops can be implemented by connecting neurons in a circle and using fibers from neurons in that loop to trigger events at specific intervals. In the following program, two such circles are created:</p>
+<p>Loops can be implemented by connecting neurons in a circle and using fibers
+from neurons in that loop to trigger events at specific intervals. In the
+following program, two such circles are created:</p>
 
 <pre style="float:left;margin-right:1px;padding-right:45px">
 The fizz loop.
@@ -86,7 +102,11 @@ Initialize both f0* and b0* loops.
 
 <img src='../media/refs/neuron_memory.png' style='float:right;height:140px;margin-left:15px'/>
 
-<p>Delaying a pulse is the same as remembering it for a length of time, and so we'll call a <b>memory neuron</b> a <code>Neuron/1</code> that store a single bit of information by using an excitatory <i>feedback</i> fiber connected onto itself. To set the value of that neuron, use an a excitatory <i>start</i> fiber and inhibitory <i>stop</i> fiber. </p>
+<p>Delaying a pulse is the same as remembering it for a length of time, and so
+we'll call a <b>memory neuron</b> a <code>Neuron/1</code> that store a single
+bit of information by using an excitatory <i>feedback</i> fiber connected onto
+itself. To set the value of that neuron, use an a excitatory <i>start</i> fiber
+and inhibitory <i>stop</i> fiber. </p>
 
 <pre style='clear:both'>
 Bit*: Bit*.
@@ -98,11 +118,17 @@ controls:
 
 <h3>Synchronization</h3>
 
-<p>Each neuron delays a pulse by one moment, pulses may go out of sync if parts of a program require two pulses to converge, but <b>memory neurons</b> can synchronize pulses by holding it until another part of the network is ready to use it.</p>
+<p>Each neuron delays a pulse by one moment, pulses may go out of sync if parts
+of a program require two pulses to converge, but <b>memory neurons</b> can
+synchronize pulses by holding it until another part of the network is ready to
+use it.</p>
 
 <img src='../media/refs/neuron_delay.png' height='150'/>
 
-<p>In the program below, the <code>a</code> network is 4 times slower than the <code>b</code> network, to insure that both pulses can be used together, the <code>Fast/1</code> and <code>Slow/1</code> neurons will synchronize the delayed pulse and only fire the gate neuron once both are active.</p>
+<p>In the program below, the <code>a</code> network is 4 times slower than the
+<code>b</code> network, to insure that both pulses can be used together, the
+<code>Fast/1</code> and <code>Slow/1</code> neurons will synchronize the
+delayed pulse and only fire the gate neuron once both are active.</p>
 
 <pre style="float:left;margin-right:1px;padding-right:45px">
 Two pulses coming in at different speeds.
@@ -116,7 +142,7 @@ The pulses from Fast* and Slow* converge into:
 The gate* will then turn off;
 	the Fast* and Slow* neurons.
 
-Initialize a0* b0*.
+Send the pulses for a0* and b0*.
 </pre>
 <pre>
 00 Init/1 
@@ -138,7 +164,10 @@ Initialize a0* b0*.
 
 <h3>Capacitors</h3>
 
-<p>Alternatively, connecting <b>memory neurons</b> in a sequence can create a capacitor that will accumulate pulses until it reaches its storage limit, output a pulse, and start over. Here is a <i>binary scaler</i> that, for every two incoming pulses, will output one pulse.</p>
+<p>Alternatively, connecting <b>memory neurons</b> in a sequence can build up to
+a capacitor that will accumulate pulses until it reaches its storage limit,
+output a pulse, and start over. Here is a <i>binary scaler</i> that, for every
+two incoming pulses, will output one pulse.</p>
 
 <pre style="float:left;margin-right:1px;padding-right:45px">
 Let's delay* the second pulse: 
@@ -171,44 +200,49 @@ delay* split*.
 
 </pre>
 
-<p>This technique can be adapted to collect more pulses at once, here is a capacitor with four memory neurons:</p>
+<p>This technique can be adapted to collect more pulses at once. Gathering
+pulses can lead to signal synchronization, as well as building blocks for
+arithmetic systems.</p>
+
 <img src='../media/refs/neuron_capacitor.png' height='170'/>
 
+<p>Here is a capacitor with four memory neurons, when all four at holding a pulse, a single signal is sent through <code>out/1</code>:</p>
+
 <pre style="float:left;margin-right:1px;padding-right:45px">
-Timer.
-t0*: t1*: t2*: t4*: t0* in*.
+Connect 5 delay nodes.
+d0*: d1*: d2*: d3*: d4*: in*.
 
 Connect in*:
 	to m0/1* m1/2* m2/2* m3/2*.
 
-Connect memories to themselves.
-	m0*: m0* m1*.
-	m1*: m1* m2*.
-	m2*: m2* m3*.
-	m3*: out*.
+Connect each to themselves and neighbor.
+m0*: m0* m1*.
+m1*: m1* m2*.
+m2*: m2* m3*.
+m3*: out*.
 
 Turn off all memories from m3*;
-	m0* m1* m2* m3*.
+m0* m1* m2* m3*.
 
-Let's begin at t0*.
+Create 5 pulses d0*, d1*, d2*, d3*, d4*.
 </pre>
 <pre>
-04 t0/1 in/1 
-08 t0/1 in/1 m0/1 
-09 t1/1 m0/1 m1/2 
-10 t2/1 m0/1 m1/2 
-11 t4/1 m0/1 m1/2 
-12 t0/1 in/1 m0/1 m1/2 
-13 t1/1 m0/1 m1/2 m2/2 
-14 t2/1 m0/1 m1/2 m2/2 
-15 t4/1 m0/1 m1/2 m2/2 
-16 t0/1 in/1 m0/1 m1/2 m2/2 
-17 t1/1 m0/1 m1/2 m2/2 m3/2 
-18 t2/1 out/1 
-19 t4/1 
-20 t0/1 in/1 
-21 t1/1 m0/1 
-..
+00 d0/1 d1/1 d2/1 d3/1 d4/1 
+01 d1/1 d2/1 d3/1 d4/1 in/1 
+02 d2/1 d3/1 d4/1 in/1 m0/1 
+03 d3/1 d4/1 in/1 m0/1 m1/2 
+04 d4/1 in/1 m0/1 m1/2 m2/2 
+05 in/1 m0/1 m1/2 m2/2 m3/2 
+06 out/1
+
+
+
+
+
+
+
+
+
 </pre>
 
 <h3>Example: Tic-Tac-Toe</h3>
