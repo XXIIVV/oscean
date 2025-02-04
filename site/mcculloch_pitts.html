@@ -69,31 +69,28 @@ Activate both a* & b*. <i style='float:right'>a/1 b/1</i>
 
 <h3>Loops</h3>
 
-<p>Loops can be implemented by connecting neurons in a circle and using fibers
-from neurons in that loop to trigger events at specific intervals. In the
-following program, two such circles are created:</p>
+<p>Loops can be implemented by connecting neurons in a circle. In the
+following program, two such circles are created, notice how this makes use of
+anonymous neurons:</p>
 
 <pre style="float:left;margin-right:1px;padding-right:45px">
-The fizz loop.
-f0*: f1*: f2*: 
-	f0* every third -> fizz*.
+fizz*: 
+	*: *: fizz*.
+buzz*: 
+	*: *: *: *: buzz*.
 
-The buzz loop.
-b0*: b1*: b2*: b3*: b4*: 
-	b0* every fifth -> buzz*.
+Initialize both fizz* & buzz*.
 
-Initialize both f0* and b0* loops.
 </pre>
 <pre>
-08 f2/1 b3/1 
-09 f0/1 b4/1 fizz/1
-10 f1/1 b0/1 buzz/1 
-11 f2/1 b1/1 
-12 f0/1 b2/1 fizz/1
-13 f1/1 b3/1 
-14 f2/1 b4/1 
-15 f0/1 b0/1 fizz/1 buzz/1 
-..</pre>
+10 */1 buzz/1 
+11 */1 */1 
+12 fizz/1 */1 
+13 */1 */1 
+14 */1 */1 
+15 fizz/1 buzz/1 
+16 */1 */1 
+</pre>
 
 <h3>Memory Neurons</h3>
 
@@ -129,8 +126,8 @@ delayed pulse and only fire the gate neuron once both are active.</p>
 
 <pre style="float:left;margin-right:1px;padding-right:45px">
 Two pulses coming in at different speeds.
-a0*: a1*: a2*: a3*: Slow*: Slow*.
-b0*:                Fast*: Fast*.
+a*:*:*:*: Slow*: Slow*.
+b*:       Fast*: Fast*.
 
 The pulses from Fast* and Slow* converge into:
 	the gate* which waits for both:
@@ -139,18 +136,18 @@ The pulses from Fast* and Slow* converge into:
 The gate* will then turn off;
 	the Fast* and Slow* neurons.
 
-Send the pulses for a0* and b0*.
+Fire the a* and b* signals.
 </pre>
 <pre>
-00 Init/1 
-01 a0/1 b0/1 
-02 a1/1 Fast/1 
-03 a2/1 Fast/1 
-04 a3/1 Fast/1 
-05 Slow/1 Fast/1 
-06 Slow/1 Fast/1 gate/2 
-07 gate/2 output/1 
-08 output/1
+00 a/1 b/1 
+01 */1 Fast/1 
+02 */1 Fast/1 
+03 */1 Fast/1 
+04 Slow/1 Fast/1 
+05 Slow/1 Fast/1 gate/2 
+06 gate/2 output/1 
+07 output/1
+
 
 
 
@@ -247,24 +244,24 @@ Create 5 pulses d0*, d1*, d2*, d3*, d4*.
 
 <pre style="float:left;margin-right:1px;padding-right:45px">
 Winning states for X player.
-xa* xb* xc*: win-xabc*: win-x*.
-xd* xe* xf*: win-xdef*: win-x*.
-xg* xh* xi*: win-xghi*: win-x*.
-xa* xe* xi*: win-xaei*: win-x*.
-xg* xe* xc*: win-xgec*: win-x*.
-xa* xd* xg*: win-xadg*: win-x*.
-xb* xe* xh*: win-xbeh*: win-x*.
-xc* xf* xi*: win-xcfi*: win-x*.
+xa* xb* xc*: *: win-x*.
+xd* xe* xf*: *: win-x*.
+xg* xh* xi*: *: win-x*.
+xa* xe* xi*: *: win-x*.
+xg* xe* xc*: *: win-x*.
+xa* xd* xg*: *: win-x*.
+xb* xe* xh*: *: win-x*.
+xc* xf* xi*: *: win-x*.
 
 Winning states for O player.
-oa* ob* oc*: win-oabc*: win-o*.
-od* oe* of*: win-odef*: win-o*.
-og* oh* oi*: win-oghi*: win-o*.
-oa* oe* oi*: win-oaei*: win-o*.
-og* oe* oc*: win-ogec*: win-o*.
-oa* od* og*: win-oadg*: win-o*.
-ob* oe* oh*: win-obeh*: win-o*.
-oc* of* oi*: win-ocfi*: win-o*.
+oa* ob* oc*: *: win-o*.
+od* oe* of*: *: win-o*.
+og* oh* oi*: *: win-o*.
+oa* oe* oi*: *: win-o*.
+og* oe* oc*: *: win-o*.
+oa* od* og*: *: win-o*.
+ob* oe* oh*: *: win-o*.
+oc* of* oi*: *: win-o*.
 </pre>
 <pre>
 Set move in the format xa, ob, xc, etc
@@ -284,7 +281,7 @@ Play og*.
 --
 
 00 oc/1 xb/1 oe/1 xh/1 og/1 
-01 win-ogec/3 
+01 */3 
 02 win-o/1
 </pre>
 

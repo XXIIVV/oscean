@@ -44,8 +44,13 @@ static Neuron *
 nfind(char *s)
 {
 	char *name;
-	/* Search Neuron */
 	Neuron *n = net;
+	/* Anonymous neuron */
+	if(s[0] == '*') {
+		_net->name = &dict[0];
+		return _net++;
+	}
+	/* Search Neuron */
 	while(n < _net) {
 		if(wcompare(s, n->name))
 			return n;
@@ -87,6 +92,7 @@ parse(char *src)
 	char c;
 	int right = 0, inhibitor = 0, depth = 0;
 	Neuron *lhs[0x20], **_lhs = lhs, *rhs[0x20], **_rhs = rhs;
+	*_dict++ = '*', *_dict++ = 0;
 	while((c = *src)) {
 		if(c == '*') {
 			if(right)
@@ -166,7 +172,7 @@ main(int argc, char *argv[])
 	int a = 1, t = 0;
 	char src[0x20000];
 	if(argc < 2)
-		return !printf("Neur Graph, 31 Jan 2025.\nusage: neur [-i] input.fra [arguments..]\n");
+		return !printf("Neur Graph, 4 Feb 2025.\nusage: neur [-i] input.neu [arguments..]\n");
 	if(argv[a][0] == '-' && argv[a][1] == 'i')
 		a++;
 	if(!(f = fopen(argv[a], "r")))
