@@ -11,7 +11,7 @@
 
 <p>A <b>neuron</b> has incoming and outgoing connections to other neurons, it fires an output that stimulates or inhibits other neurons when it is not inhibited and the sum of its excitatory inputs is equal or higher than its <i>threshold</i>. A neuron with a threshold of zero will always fire.</p>
 
-<img src='../media/refs/neuron.png' height='60'/>
+<img src='../media/refs/neuron.png' height='50'/>
 <cite style='max-width:400px'>A neuron connected by two excitatory fibers, one inhibitory fiber, with a threshold of two.</cite>
 
 <h3>A Notation</h3>
@@ -19,10 +19,10 @@
 <p>Neural networks are typically programmed with flow diagrams, I found those to be prone to clutter. Instead, this documentation will use a textual representation, which allows networks to be created more rapidly and precisely.</p>
 
 <pre>
-A neuron*. <i style='float:right'>neuron/0</i>
+A neuron*. <i style='float:right'>neuron/1</i>
 </pre>
 
-<p>In a rule, a neuron is specified with a star suffix, an excitatory connection is separated by a colon, an inhibitory connection is separated by a semi-colon, a segment is terminated by a comma, segments can be chained, everything else is ignored. A rule with no right-hand side will create neurons with a threshold of zero.</p>
+<p>In a rule, a neuron is specified with a star suffix, an excitatory connection is separated by a colon, an inhibitory connection is separated by a semi-colon. A rule with no right-hand side will create live neurons with a threshold of one. A rule is terminated by a period, rules can be chained, everything else is ignored. </p>
 
 <pre>
 If I have matches*, and some kindling*:
@@ -32,72 +32,49 @@ If I have matches*, and some kindling*:
 But if it's raining*;
 	I cannot make a fire*.
 
-I have matches* and kindling*. <i style='float:right'>matches/0, kindling/0</i>
+I have matches* and kindling*. <i style='float:right'>matches/1 kindling/1</i>
 </pre>
-
-<p>In the example above, for each step of the evaluation, the <code>matches/0</code> and <code>kindling/0</code> will send excitatory pulses to <code>fire/2</code> and not terminate.</p>
-
-<img src='../media/refs/bigtop.png'/>
 
 <h3>Programming with Neural Nets</h3>
 
-<img src='../media/refs/neuron_init.png' style='float:right;width:120px'/>
-
-<p>A program will most likely involve an initial pulse. Let's say we want a neuron to fire once and turn itself off, we can connect it back onto itself with a inhibitory <i>feedback</i> fiber, and run an excitatory fiber toward the rest of the program:</p>
+<p>A program will most likely involve an initial pulse. Let's say we want a <code>program/1</code> to wake up two other neurons via excitatory fibers:</p>
 
 <pre>
-Neuron*; Neuron*: output*.
+The program* will wake up:
+	both hello* and world*. <i style='float:right'>hello/1 world/1</i>
 
-The Neuron* will fire, and turn itself off.
+Let's wake up our program*. <i style='float:right'>program/1</i>
 </pre>
 
-<h3>Logic</h3>
-
-<p><a href='binary.html'>Binary logic</a> is implemented by a combination of inhibitory and excitatory fibers, the system welcomes the implementation of <a href='ternary.html'>ternary logic</a> gates as well. Here are the implementation of a few logic gates:</p>
+<p>Logic in neural nets is implemented by combining thresholds, inhibitory and excitatory fibers. Arity can be hardcoded by specifying it in the symbol name. Here are the implementation of a few logic gates:</p>
 
 <img src='../media/refs/neuron_logic.png'/>
 <pre>
-Create single-pulse neurons.
-a*; a*.
-b*; b*.
+a* b*: AND*. <i style='float:right'>AND/2</i>
+a* b*: OR/1*. <i style='float:right'>OR/1</i>
 
-Route them to a few gates.
-a*   ; NOT/0*.
-a* b*: AND*.
-a* b*: OR/1*.
-a* b*; NOR/0*.
-
-Activate both a* & b*.
+Activate both a* & b*. <i style='float:right'>a/1 b/1</i>
 </pre>
 
 <h3>Loops</h3>
 
 <p>Loops can be created by connecting neurons in a circle. In the following program, two such circles are created:</p>
 
+<pre>
+The fizz loop.
+f0*: f1*: f2*: f0* fizz*.
+
+The buzz loop.
+b0*: b1*: b2*: b3*: b4*: b0* buzz*.
+
+Initialize both f0* and b0* loops.
+</pre>
+
 <ul>
 	<li>3 neurons in a circle, whenever <code>f2/1</code> fires, <code>fizz/1</code> is awakened. </li>
 	<li>5 neurons in a circle, whenever <code>b4/1</code> fires, <code>buzz/1</code> is awakened.</li>
 </ul>
 
-<table border='1'>
-<tr>
-<th width='300'>Network</th>
-<th>Evaluation</th>
-</tr>
-<tr>
-<td>
-<pre>
-Init*; Init*: f0* b0*.
-
-The fizz network.
-f0*: f1*: f2*: f0* fizz*.
-
-The buzz network.
-b0*: b1*: b2*: b3*: b4*: b0* buzz*.
-
-Init* my fizzbuzz program.
-</pre>
-</td><td>
 <pre>
 08 f2/1 b3/1 
 09 f0/1 b4/1 fizz/1
@@ -108,13 +85,7 @@ Init* my fizzbuzz program.
 14 f2/1 b4/1 
 15 f0/1 b0/1 fizz/1 buzz/1 
 16 f1/1 b1/1 
-17 f2/1 b2/1 
-18 f0/1 b3/1 fizz/1
-19 f1/1 b4/1 
 ..</pre>
-</td>
-</tr>
-</table>
 
 <h3>Memory Neurons</h3>
 
@@ -138,16 +109,7 @@ controls:
 
 <p>In the program below, the <code>a</code> network is 4 times slower than the <code>b</code> network, to insure that both pulses can be used together, the <code>Fast/1</code> and <code>Slow/1</code> neurons will synchronize the delayed pulse and only fire the gate neuron once both are active.</p>
 
-<table border='1'>
-<tr>
-<th width='300'>Network</th>
-<th>Evaluation</th>
-</tr>
-<tr>
-<td>
 <pre>
-Init*; Init*: a0* b0*.
-
 Two pulses coming in at different speeds.
 a0*: a1*: a2*: a3*: Slow*: Slow*.
 b0*:                Fast*: Fast*.
@@ -157,11 +119,12 @@ The pulses from Fast* and Slow* converge into:
 	and then lights up the output*.
 
 The gate* will then turn off;
-	 the Fast* and Slow* neurons.
+	the Fast* and Slow* neurons.
 
-Init*.
+Initialize a0* b0*.
 </pre>
-</td><td>
+
+<p>Each step</p>
 <pre>
 00 Init/1 
 01 a0/1 b0/1 
@@ -180,16 +143,7 @@ Init*.
 
 <p>Alternatively, connecting <b>memory neurons</b> in a sequence can create a capacitor that will accumulate pulses until it reaches its storage limit, output a pulse, and start over. Here is a <i>binary scaler</i> that, for every two incoming pulses, will output one pulse.</p>
 
-<table border='1'>
-<tr>
-<th width='300'>Network</th>
-<th>Evaluation</th>
-</tr>
-<tr>
-<td>
 <pre>
-Init*; Init*: delay* split*.
-
 Let's delay* the second pulse: 
 	and connect it to split*.
 
@@ -202,23 +156,19 @@ A*; A*; B*.
 For every two pulses entering A* and B: 
 	it will fire once to output*.
 
-Init*.
+delay* split*.
 </pre>
-</td><td>
+<p>Each step</p>
 <pre>
 00 Init/1 
 01 delay/1 split/1 
 02 split/1 B/1 
 03 B/1 A/2 
 04 output/1</pre>
-</td>
-</tr>
-</table>
 
 <p>This technique can be adapted to collect more pulses at once, here is a capacitor with four memory neurons:</p>
+<img src='../media/refs/neuron_capacitor.png'/>
 <pre>
-Init*; Init*: t0*.
-
 Timer.
 t0*: t1*: t2*: t4*: t0*.
 
@@ -237,15 +187,14 @@ Connect neurons on themselves and reset.
 m3* will turn off all counting neurons;
 	m0* m1* m2* m3*.
 
-Let's Init* our program.
+Let's begin at t0*.
 </pre>
 
-<img src='../media/refs/neuron_capacitor.png'/>
 
-<!--
 <h3>Arithmetic</h3>
 <p>TODO.<br/>Come back soon.</p>
--->
+
+<img src='../media/refs/kirie.png' alt="Kirie from Uzumaki, by Junji Ito"/>
 
 <h3>Implementation</h3>
 <p>An implementation of the full symbolic runtime is about <a href='ansi_c.html'>150
@@ -256,8 +205,6 @@ lines of C89</a>:</p>
 	<pre>cc neur.c -o neur <a href='../etc/neur.c.txt' target='_blank'>view raw</a></pre>
 </div>
 
-<p>By virtue of the similarities this system shares with other <a href='rewriting.html'>rewriting systems</a>, by being programmed by specifying rules and an initial state, resembles a rewriting language enough that I thought it should classified as such.</p>
-
 <ul>
 	<li><a href='https://www.i-programmer.info/babbages-bag/325-mcculloch-pitts-neural-networks.html' target='_blank'>The McCulloch-Pitts Neuron</a></li>
 	<li><a href='https://git.sr.ht/~rabbits/neur' target='_blank'>Runtime Implementation</a>, C89.</li>
@@ -265,7 +212,8 @@ lines of C89</a>:</p>
 	<li><a href='https://justinmeiners.github.io/neural-nets-sim' target='_blank'>Simulator</a></li>
 	<li>Illustrations from Marvin Minsky's Finite & Infinite Machines.</li>
 </ul>
-<ul></ul></main>
+
+<img src='../media/refs/bigtop.png'/><ul></ul></main>
 <footer>
 	<a href="ethics.html"><img src="../media/icon/3arrows.svg" alt="NoNazis!"/></a>
 	<a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a>
