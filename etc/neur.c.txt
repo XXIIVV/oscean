@@ -90,22 +90,21 @@ static void
 parse(char *src)
 {
 	char c;
-	int right = 0, inhibitor = 0, depth = 0;
+	int inhibitor = 0, depth = 0;
 	Neuron *lhs[0x20], **_lhs = lhs, *rhs[0x20], **_rhs = rhs;
 	*_dict++ = '*', *_dict++ = 0;
 	while((c = *src)) {
 		if(c == '*') {
-			if(right)
+			if(depth & 1)
 				*_rhs = nfind(wrewind(src)), _rhs++;
 			else
 				*_lhs = nfind(wrewind(src)), _lhs++;
 		} else if(c == ':' || c == ';') {
-			right = !right;
 			if(depth++) {
-				if(!right)
-					nconnect(lhs, _lhs, rhs, _rhs, inhibitor), _lhs = lhs;
-				else
+				if(depth & 1)
 					nconnect(rhs, _rhs, lhs, _lhs, inhibitor), _rhs = rhs;
+				else
+					nconnect(lhs, _lhs, rhs, _rhs, inhibitor), _lhs = lhs;
 			}
 			inhibitor = c == ';';
 		} else if(c == '.') {
@@ -113,11 +112,11 @@ parse(char *src)
 				Neuron **_l = lhs;
 				while(_l < _lhs)
 					*_live++ = *_l, (*_l)->alive++, (*_l)->threshold = 1, _l++;
-			} else if(right)
+			} else if(depth & 1)
 				nconnect(lhs, _lhs, rhs, _rhs, inhibitor);
 			else
 				nconnect(rhs, _rhs, lhs, _lhs, inhibitor);
-			_lhs = lhs, _rhs = rhs, right = inhibitor = depth = 0;
+			_lhs = lhs, _rhs = rhs, inhibitor = depth = 0;
 		}
 		src++;
 	}
@@ -172,7 +171,7 @@ main(int argc, char *argv[])
 	int a = 1, t = 0;
 	char src[0x20000];
 	if(argc < 2)
-		return !printf("Neur Graph, 4 Feb 2025.\nusage: neur [-i] input.neu [arguments..]\n");
+		return !printf("Neur Graph, 5 Feb 2025.\nusage: neur [-i] input.neu [arguments..]\n");
 	if(argv[a][0] == '-' && argv[a][1] == 'i')
 		a++;
 	if(!(f = fopen(argv[a], "r")))

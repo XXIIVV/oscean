@@ -1,0 +1,351 @@
+( hey kirie! )
+
+|00 @System &vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
+|10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
+|a0 @File &vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|00 @Neuron &name $2 &state $1 &threshold $1 &saturation $1 &ilen $1 &inhi $20 &elen $1 &exci $20 &size
+|00 @State $1 &alive $1 &inhibited
+
+|000
+
+	@src/buf $2f &cap $1
+	@rule/right $1
+	@rule/depth $1
+	@rule/inhibitor $1
+
+|100
+
+@on-reset ( -> )
+	;meta #06 DEO2
+	.Console/type DEI ?{
+		;hello-txt <pstr>
+		;repl/on-console .Console/vector DEO2
+		BRK }
+	;src/on-console .Console/vector DEO2
+	BRK
+
+@src/on-console ( -> )
+	.Console/read DEI
+	( ) DUP #20 GTH ?{
+		POP /<parse>
+		live/<eval>
+		#800f DEO
+		BRK }
+	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
+	STZ2
+	BRK
+
+@src/<parse> ( -- )
+	;src/buf .File/name DEO2
+	#0001 .File/length DEO2
+	&>s ( -- )
+		;&c .File/read DEO2
+		.File/success-lb DEI ?{ JMP2r }
+		[ LIT &c $1 ] rule/<push-byte> !&>s
+
+@repl/on-console ( -> )
+	.Console/read DEI DUP rule/<push-byte>
+	DUP [ LIT ". ] NEQ ?{ live/<eval> }
+	#0a NEQ ?{ ;hello-txt/prompt <pstr> }
+	BRK
+
+@hello-txt "Hello 20 "Neur, &prompt 0a "?- 20 $1
+
+(
+@|Parser )
+
+@rule/<bind> ( inhi -- )
+	[ LIT2 00 -&depth ] LDZ INCk .&depth STZ
+	EQU ?{ /<connect> }
+	[ LIT2 00 -&right ] LDZ EQU .&right STZ
+	.&inhibitor STZ
+	JMP2r
+
+@rule/<push-byte> ( c -- )
+	DUP [ LIT ". ] EQU ?/<parse>
+	#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	STA2
+	JMP2r
+
+@rule/<parse> ( dot -- )
+	POP
+	( | let's go! )
+	[ LIT2 00 -&right ] STZ
+	[ LIT2 00 -&depth ] STZ
+	[ LIT2 00 -&inhibitor ] STZ
+	lhs/<init>
+	rhs/<init>
+	;&buf
+	&>w ( -- )
+		LDAk [ LIT "* ] NEQ ?{ DUP2 /<bind-neuron> }
+		LDAk [ LIT ": ] NEQ ?{ #00 /<bind> }
+		LDAk [ LIT "; ] NEQ ?{ #01 /<bind> }
+		INC2 LDAk ?&>w
+	POP2
+	( | reset )
+	;&buf ,&ptr STR2
+	( | when the rule has no RHS )
+	.&depth LDZ ?{ !lhs/<spawn> }
+	( >> )
+
+@rule/<connect> ( -- )
+	/get-from-range
+	( | infer threshold )
+	SUB2k #01 SFT2 ,&threshold STR
+	POP
+	&>la ( -- )
+		LDA2k STH2
+		/get-to-range
+		&>lb ( -- )
+			( | set alive & threshold )
+			LDA2k ;Neuron/state ADD2 LDAk .State/alive AND ?{
+				.State/alive [ LIT &threshold $1 ] OVR2 STA2 }
+			POP2
+			( | bind )
+			LDA2k STH2kr ;Neuron/ilen ;Neuron/elen .&inhibitor LDZ [ JMP SWP2 POP2 ] ADD2
+			( inc ) STH2k LDA INCk STH2kr STA
+			( put ) #00 SWP DUP ADD INC2r STH2r ADD2 STA2
+			INC2 INC2 GTH2k ?&>lb
+		POP2 POP2 POP2r
+		( ) INC2 INC2 GTH2k ?&>la
+	POP2 POP2
+	( | Reinit )
+	.&right LDZ ?lhs/<init>
+	!rhs/<init>
+
+@rule/<bind-neuron> ( n* -- )
+	net/find-neuron .rule/right LDZ ?rhs/<push-neuron>
+	!lhs/<push-neuron>
+
+@rule/get-from-range ( -- to* from* )
+	.&right LDZ ?lhs/get-range
+	!rhs/get-range
+
+@rule/get-to-range ( -- to* from* )
+	.&right LDZ ?rhs/get-range
+	!lhs/get-range
+
+@lhs/<init> ( -- )
+	;&buf ,&ptr STR2
+	JMP2r
+
+@lhs/<push-neuron> ( n* -- )
+	[ LIT2 &ptr =&buf ] INC2k INC2 ,&ptr STR2
+	STA2
+	JMP2r
+
+@lhs/get-range ( -- to* from* )
+	,&ptr LDR2 ;&buf JMP2r
+
+@lhs/<spawn> ( -- )
+	,&ptr LDR2 ;&buf
+	&>ls ( -- )
+		( | set defaults alive & threshold 1 )
+		LDA2k ;Neuron/state ADD2 .State/alive #01 SWP2 STA2
+		LDA2k live/<push-neuron>
+		INC2 INC2 GTH2k ?&>ls
+	POP2 POP2 JMP2r
+
+@rhs/<init> ( -- )
+	;&buf ,&ptr STR2
+	JMP2r
+
+@rhs/<push-neuron> ( n* -- )
+	[ LIT2 &ptr =&buf ] INC2k INC2 ,&ptr STR2
+	STA2
+	JMP2r
+
+@rhs/get-range ( -- to* from* )
+	,&ptr LDR2 ;&buf JMP2r
+
+@dict/push-word ( str* -- cap* )
+	LDAk [ LIT "* ] EQU ?&end
+	LDAk [ LIT "/ ] EQU ?&end
+	LDAk /<push-byte>
+	INC2 LDAk ?/push-word
+	&end ( -- )
+	#00
+	( >> )
+
+@dict/<push-byte> ( c -- )
+	#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	STA2
+	JMP2r
+
+@net/find-neuron ( name* -- neuron* )
+	( | rewind )
+	#0001 SUB2 LDAk
+	( | test byte )
+	DUP #21 LTH ?&end
+	DUP [ LIT "* ] EQU ?&end
+	DUP [ LIT ": ] EQU ?&end
+	DUP [ LIT "; ] EQU ?&end
+	POP !/find-neuron
+	&end POP INC2
+	( | anonymous neuron )
+	LDAk [ LIT "* ] NEQ ?{ POP2 ;anon-name !/<push-name> }
+	( | search neuron )
+	STH2
+	,&ptr LDR2 ;&buf EQU2k ?{
+		&>lf ( -- )
+			LDA2k STH2kr SWP2 compare ?{ POP2r NIP2 JMP2r }
+			;Neuron/size ADD2 GTH2k ?&>lf }
+	POP2 POP2
+	( | create neuron )
+	;dict/ptr LDA2 STH2r dict/push-word
+	( | set threshold manually )
+	LDAk [ LIT "/ ] NEQ ?{
+		( get value ) INC2k LDA [ LIT "0 ] SUB #01 SWP
+		( save ) ;&ptr LDA2 ;Neuron/state ADD2 STA2 }
+	POP2
+	( >> )
+
+@net/<push-name> ( name* -- )
+	[ LIT2 &ptr =&buf ] DUP2 ;Neuron/size ADD2 ,&ptr STR2
+	STA2k NIP2 JMP2r
+
+(
+@|Runtime )
+
+@live/<eval> ( -- )
+	;/ptr LDA2 ;/buf EQU2 ?{
+		[ LIT2 80 &step $1 ] INCk ,&step STR
+		DUP <phex>/b
+		#2018 DEO
+		excited/<init>
+		dirty/<init>
+		/<saturate>
+		excited/<preserve>
+		dirty/<clean>
+		#0a18 DEO
+		NEQ ?/<eval> }
+	JMP2r
+
+@live/<saturate> ( -- )
+	,&ptr LDR2 ;&buf EQU2k ?{
+		&>l ( -- )
+			LDA2k <print-name>
+			( | no threshold are always excited )
+			LDA2k ;Neuron/threshold ADD2 LDA ?{ LDA2k excited/<push-neuron> }
+			( | inhi connections )
+			LDA2k ;Neuron/ilen get-bounds EQU2k ?{
+				&>l-inhi ( -- )
+					LDA2k dirty/<push-neuron>
+					;Neuron/state ADD2 #03 ROT ROT STA
+					INC2 INC2 GTH2k ?&>l-inhi }
+			POP2 POP2
+			( | exci connections )
+			LDA2k ;Neuron/elen get-bounds EQU2k ?{
+				&>l-exci ( -- )
+					LDA2k dirty/<push-neuron>
+					DUP2 ;Neuron/saturation ADD2 LDAk INC ROT ROT STA
+					DUP2 ;Neuron/threshold ADD2 LDA2 GTH ?{ DUP2 excited/<push-neuron> }
+					POP2 INC2 INC2 GTH2k ?&>l-exci }
+			POP2 POP2
+			( ) INC2 INC2 GTH2k ?&>l }
+	POP2 POP2
+	( reset ) ;&buf ,&ptr STR2
+	JMP2r
+
+@live/<push-neuron> ( n* -- )
+	[ LIT2 &ptr =&buf ] INC2k INC2 ,&ptr STR2
+	STA2
+	JMP2r
+
+@excited/<init> ( -- )
+	;&buf ,&ptr STR2
+	JMP2r
+
+@excited/<push-neuron> ( n* -- )
+	[ LIT2 &ptr =&buf ] INC2k INC2 ,&ptr STR2
+	STA2
+	JMP2r
+
+@excited/<preserve> ( -- )
+	,&ptr LDR2 ;&buf EQU2k ?{
+		&>l ( -- )
+			LDA2k ;Neuron/state ADD2 LDA .State/inhibited AND ?{
+				( live ) LDA2k live/<push-neuron> }
+			INC2 INC2 GTH2k ?&>l }
+	POP2 POP2 JMP2r
+
+@dirty/<init> ( -- )
+	;&buf ,&ptr STR2
+	JMP2r
+
+@dirty/<push-neuron> ( n* -- n* )
+	DUP2 [ LIT2 &ptr =&buf ] INC2k INC2 ,&ptr STR2
+	STA2
+	JMP2r
+
+@dirty/<clean> ( -- )
+	,&ptr LDR2 ;&buf EQU2k ?{
+		&>l ( -- )
+			( new state ) LDA2k ;Neuron/state ADD2 #01 ROT ROT STA
+			( new saturation ) LDA2k ;Neuron/saturation ADD2 #00 ROT ROT STA
+			INC2 INC2 GTH2k ?&>l }
+	POP2 POP2 JMP2r
+
+@get-bounds ( arr[len..]* offset* -- to* from* )
+	ADD2 INC2k STH2
+	LDA DUP ADD #00 SWP STH2kr ADD2 STH2r JMP2r
+
+@compare ( a* b* -- f )
+	STH2
+	&>w ( -- )
+		LDAk LDAkr STHr NEQ ?{
+			LDAkr STHr [ LIT "/ ] EQU ?{ INC2 INC2r !&>w } }
+	( s == * ) LDA [ LIT "* ] EQU ?{ POP2r #01 JMP2r }
+	( n != 0 ) LDAr STHr DUP ?{ POP #00 JMP2r }
+	( n == / ) [ LIT "/ ] NEQ JMP2r
+
+(
+@|etc )
+
+@<print-name> ( addr* -- )
+	LDA2k <pstr>
+	[ LIT2 "/ 18 ] DEO
+	;Neuron/threshold ADD2 LDA #0f AND [ LIT "0 ] ADD #18 DEO
+	#2018 DEO
+	JMP2r
+
+@<pstr> ( str* -- )
+	LDAk #18 DEO
+	INC2 LDAk ?<pstr>
+	POP2 JMP2r
+
+@<phex> ( short* -: )
+	SWP /b
+	&b ( byte -: )
+	DUP #04 SFT /c
+	&c ( byte -: )
+	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
+	JMP2r
+
+(
+@|assets )
+
+@anon-name "* $1
+
+@meta $1
+	( name ) "Neur 0a
+	( desc ) "Neural 20 "Nets 20 "Language 0a
+	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
+	( date ) "5 20 "Feb 20 "2025 $2
+
+@lhs/buf $40
+
+@rhs/buf $40
+
+@excited/buf $40
+
+@dirty/buf $40
+
+@live/buf $40
+
+@rule/buf $200
+
+@dict/buf $4000
+
+@net/buf
+|ff00 &cap 
