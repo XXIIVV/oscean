@@ -28,6 +28,7 @@
 	.Console/read DEI
 	( ) DUP #20 GTH ?{
 		POP /<parse>
+		net/<spawn>
 		live/<eval>
 		#800f DEO
 		BRK }
@@ -140,8 +141,7 @@
 @lhs/<spawn> ( -- )
 	,&ptr LDR2 ;&buf EQU2k ?{
 		&>ls ( -- )
-			LDA2k ;Neuron/state ADD2 .State/alive #01 SWP2 STA2
-			LDA2k live/<push-neuron>
+			LDA2k ;Neuron/state ADD2 #0501 SWP2 STA2
 			INC2 INC2 GTH2k ?&>ls }
 	POP2 POP2 JMP2r
 
@@ -202,6 +202,14 @@
 @net/<push-name> ( name* -- )
 	[ LIT2 &ptr =&buf ] DUP2 ;Neuron/size ADD2 ,&ptr STR2
 	STA2k NIP2 JMP2r
+
+@net/<spawn> ( -- )
+	,&ptr LDR2 ;&buf EQU2k ?{
+		&>lk ( -- )
+			DUP2 ;Neuron/state ADD2 LDA #05 NEQ ?{
+				( push ) DUP2 live/<push-neuron> }
+			;Neuron/size ADD2 GTH2k ?&>lk }
+	POP2 POP2 JMP2r
 
 (
 @|Runtime )
