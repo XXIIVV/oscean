@@ -28,7 +28,7 @@ wcompare(char *s, char *name)
 	char *_s = s, *_n = name;
 	while(*_s == *_n && *_n != '/')
 		_s++, _n++;
-	return *_s == '*' && (*_n == 0 || *_n == '/');
+	return (*_s == '*' || *_s == '/') && *_n == 0;
 }
 
 static char *
@@ -91,7 +91,7 @@ parse(char *src)
 {
 	char c;
 	int inhibitor = 0, depth = 0;
-	Neuron *lhs[0x20], **_lhs = lhs, *rhs[0x20], **_rhs = rhs;
+	Neuron *lhs[0x20], **_lhs = lhs, *rhs[0x20], **_rhs = rhs, *_n = _net;
 	*_dict++ = '*', *_dict++ = 0;
 	while((c = *src)) {
 		if(c == '*') {
@@ -111,7 +111,7 @@ parse(char *src)
 			if(!depth) {
 				Neuron **_l = lhs;
 				while(_l < _lhs)
-					*_live++ = *_l, (*_l)->alive++, (*_l)->threshold = 1, _l++;
+					(*_l)->alive = 2, (*_l)->threshold = 1, _l++;
 			} else if(depth & 1)
 				nconnect(lhs, _lhs, rhs, _rhs, inhibitor);
 			else
@@ -119,6 +119,12 @@ parse(char *src)
 			_lhs = lhs, _rhs = rhs, inhibitor = depth = 0;
 		}
 		src++;
+	}
+	/* initialize live neurons */
+	while(_n < _net) {
+		if(_n->alive == 2)
+			*_live++ = _n;
+		_n++;
 	}
 }
 
@@ -171,7 +177,7 @@ main(int argc, char *argv[])
 	int a = 1, t = 0;
 	char src[0x20000];
 	if(argc < 2)
-		return !printf("Neur Graph, 5 Feb 2025.\nusage: neur [-i] input.neu [arguments..]\n");
+		return !printf("Neur Graph, 8 Feb 2025.\nusage: neur [-i] input.neu [arguments..]\n");
 	if(argv[a][0] == '-' && argv[a][1] == 'i')
 		a++;
 	if(!(f = fopen(argv[a], "r")))
