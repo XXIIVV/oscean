@@ -36,7 +36,7 @@
 	( | cache position )
 	.Screen/height DEI2 #0028 SUB2
 	( ) DUP2 #0018 DIV2 ;textarea/max-lines STA2
-	( ) #0008 SUB2 .scrollbar/height STZ2
+	( ) .scrollbar/height STZ2
 	#07 get-cat-x #0004 ADD2 ;filepath/anchor STA2
 	#0001 .scrollbar/ratio STZ2
 	[ LIT2 01 -nav/cat ] STZ
@@ -59,7 +59,7 @@
 	( name ) "Left 0a
 	( details ) "A 20 "Text 20 "Editor 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "13 20 "Jan 20 "2024 $1 02
+	( date ) "9 20 "Feb 20 "2025 $1 02
 	( > ) 83 =appicon
 	( > ) 0a =manifest
 
@@ -637,17 +637,16 @@
 
 @scrollbar/on-mouse ( -> )
 	[ LIT2 00 -Mouse/state ] DEI NEQ #42 ADD <update-cursor>
-	.Mouse/y DEI2 .Mouse/state DEI [ LIT &last $1 ]
-	( | on drag )
-	ANDk #01 NEQ ?{
-		OVR2 [ LIT2 &drag $2 ] SUB2 .&ratio LDZ2 MUL2 /<mod-y> }
-	OVR #01 NEQ ?{
-		OVR2 .&height LDZ2 SUB2 #0028 SUB2 #0008 GTH2 ?{
-			[ LIT2 00 -Mouse/state ] DEO
-			nav/toggle-categories }
-		OVR2 ,&drag STR2 }
-	POP ,&last STR
-	POP2 BRK
+	.Mouse/state DEI ?{ BRK }
+	;&on-mouse-lock .Mouse/vector DEO2
+	BRK
+
+@scrollbar/on-mouse-lock ( -> )
+	.Mouse/state DEI ?{ ;&on-mouse .Mouse/vector DEO2
+		BRK }
+	.Mouse/y DEI2 DUP2 [ LIT2 &drag $2 ] SUB2 .&ratio LDZ2 MUL2 /<mod-y>
+	,&drag STR2
+	BRK
 
 @scrollbar/<draw> ( -- )
 	#0004 .Screen/x DEO2
@@ -719,7 +718,7 @@
 	scrollbar/<mod-y>
 	BRK
 
-@textarea/erase ( -- )
+@textarea/<erase> ( -- )
 	;&buf .&length LDZ2 !<mclr>
 
 @textarea/get-anchor ( -- x* )
@@ -873,23 +872,14 @@
 		[ LIT &sel $1 ] /<draw-label>
 		<draw-lb>
 		INC INC GTHk ?&>ld
-	POP2
-	( >> )
-
-@nav/<draw-mode> ( -- )
-	[ LIT2 00 -Screen/auto ] DEO
-	#0004 .Screen/x DEO2
-	.Screen/height DEI2 #000c SUB2 .Screen/y DEO2
-	;cat-icn [ LIT2 00 -&cat ] LDZ #30 SFT2 ADD2 .Screen/addr DEO2
-	[ LIT2 01 -Screen/sprite ] DEO
-	JMP2r
+	POP2 JMP2r
 
 @nav/<draw-empty> ( range* -- )
 	POP2 #0010 .Screen/x DEO2
 	#0028 .Screen/y DEO2
 	#03 ;<draw-glyph-plain>/color STA
 	;dict/empty <draw-str>
-	POP2 !nav/<draw-mode>
+	POP2 JMP2r
 
 @nav/<draw-label> ( ztr selected -- ztr )
 	OVR .&buf SUB #01 SFT SWP /id-to-color
@@ -937,8 +927,7 @@
 	JMP2r
 
 @nav/toggle-categories ( -- )
-	.&cat LDZk #01 EOR SWP STZ
-	/<draw-mode> !reqdraw-nav
+	.&cat LDZk #01 EOR SWP STZ !reqdraw-nav
 
 @nav/toggle-sidebar ( -- )
 	.&visible LDZk #01 EOR SWP STZ
@@ -1002,7 +991,7 @@
 	/<clear>
 	get-to-from EQU2k ?{
 		( | append if in folder )
-		;&ptr LDA #01 SUB LDZ [ LIT "/ ] EQU ?{ /pop-file }
+		,&ptr LDR #01 SUB LDZ [ LIT "/ ] EQU ?{ /pop-file }
 		&>l ( -- )
 			LDAk /push INC2 GTH2k ?&>l
 		POP2 POP2 !file-open }
@@ -1020,16 +1009,15 @@
 	#01 !/<draw>
 
 @filepath/pop ( -- )
-	[ LIT2 00 _&ptr ] LDR
-	( clamp ) DUP .&buf NEQ ?{ POP2 JMP2r }
+	[ LIT2 -&buf _&ptr ] LDR NEQk ?{ POP2 JMP2r }
 	#01 SUB DUP ,&ptr STR
-	STZ
-	#01 !/<draw>
+	#00 SWP STZ
+	POP #01 !/<draw>
 
 @filepath/pop-file ( -- )
-	.&buf ;&ptr LDA
 	( | remove trailing slash )
-	DUP #01 SUB LDZ [ LIT "/ ] NEQ ?{ /pop }
+	,&ptr LDR #01 SUB LDZ [ LIT "/ ] NEQ ?{ /pop }
+	[ LIT2 -&buf _&ptr ] LDR
 	&>wp ( -- )
 		#01 SUB EQUk ?{
 			LDZk [ LIT "/ ] EQU ?{ /pop LTHk ?&>wp }
@@ -1038,7 +1026,7 @@
 
 @filepath/pop-folder ( -- )
 	/<clear>
-	/pop-file .&buf ;&ptr LDA NEQ ?{
+	/pop-file [ LIT2 -&buf _&ptr ] LDR NEQ ?{
 		[ LIT ". ] /push }
 	!file-open
 
@@ -1076,7 +1064,8 @@
 
 @file-new ( -- )
 	( | clear )
-	textarea/erase #0001 .textarea/length STZ2
+	textarea/<erase>
+	#0001 .textarea/length STZ2
 	filepath/<reset>
 	( | reset position )
 	#05 menu/<draw-state>
@@ -1092,8 +1081,8 @@
 	( >> )
 
 @file-reopen ( -- )
-	textarea/erase ;filepath/buf DUP2 fbin ?file-open-binary
-	.File/name DEO2
+	textarea/<erase>
+	;filepath/buf .File/name DEO2
 	#fff0 ;textarea/buf SUB2 .File/length DEO2
 	;textarea/buf .File/read DEO2
 	.File/success DEI2 INC2 .textarea/length STZ2
@@ -1103,16 +1092,6 @@
 	selection/<reset>
 	#01 filepath/<draw>
 	#05 menu/<draw-state> !reqdraw-both
-
-@file-open-binary ( path* -- )
-	.File/name DEO2
-	;textarea/buf <inject-binary>
-	;textarea/buf SUB2 .textarea/length STZ2
-	( | continue )
-	[ LIT2 01 -textarea/highlight ] STZ
-	selection/<reset>
-	#01 filepath/<draw>
-	#0a menu/<draw-state> !reqdraw-both
 
 @file-save ( -- )
 	;filepath/buf .File/name DEO2
@@ -1137,7 +1116,6 @@
 	JMP2r
 
 @file-inject ( name* -- )
-	DUP2 fbin ?file-inject-binary
 	( skip if empty ) DUP2 flen ORAk ?{ POP2 POP2 JMP2r }
 	( erase sel ) has-empty ?{ selection/erase }
 	( | name* addr* )
@@ -1794,16 +1772,6 @@
 
 	&fail ( buf* -- size* )
 	POP2 #0000 JMP2r
-
-@fbin ( path* -- bool )
-	.File/name DEO2
-	#0001 .File/length DEO2
-	&s ( -- )
-	;&b feof ?{
-		[ LIT &b $1 ] ?&s
-		#01 JMP2r
-		!&s }
-	#00 JMP2r
 
 @feof ( buf* -- eof )
 	.File/read DEO2
