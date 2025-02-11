@@ -59,7 +59,7 @@
 	( name ) "Left 0a
 	( details ) "A 20 "Text 20 "Editor 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "9 20 "Feb 20 "2025 $1 02
+	( date ) "10 20 "Feb 20 "2025 $1 02
 	( > ) 83 =appicon
 	( > ) 0a =manifest
 
@@ -636,12 +636,17 @@
 @|scroll )
 
 @scrollbar/on-mouse ( -> )
-	[ LIT2 00 -Mouse/state ] DEI NEQ #42 ADD <update-cursor>
-	.Mouse/state DEI ?{ BRK }
-	;&on-mouse-lock .Mouse/vector DEO2
+	#42 <update-cursor>
+	.Mouse/state DEI ?&on-down
 	BRK
 
-@scrollbar/on-mouse-lock ( -> )
+	&on-down ( -> )
+	.Mouse/y DEI2 ,&drag STR2
+	;&on-mouse-drag .Mouse/vector DEO2
+	BRK
+
+@scrollbar/on-mouse-drag ( -> )
+	#43 <update-cursor>/no-refocus
 	.Mouse/state DEI ?{ ;&on-mouse .Mouse/vector DEO2
 		BRK }
 	.Mouse/y DEI2 DUP2 [ LIT2 &drag $2 ] SUB2 .&ratio LDZ2 MUL2 /<mod-y>
@@ -692,30 +697,36 @@
 @|textarea )
 
 @textarea/on-mouse ( -> )
-	[ LIT2 00 -Mouse/state ] DEI NEQ #41 ADD <update-cursor>
+	#41 <update-cursor>
 	( | scroll )
 	.Mouse/scrolly DEI2 DUP ?&on-scroll
 	POP2
 	( | touch )
-	[ LIT2 &last $1 -Mouse/state ] DEI DUP ,&last STR
-	( ) ANDk ?&on-drag
-	( ) DUP #01 EQU ?&on-down1
-	( ) DUP #02 NEQ ?{ touch-to-addr <select-symbol> }
-	( ) DUP #04 NEQ ?{ search/capture }
-	POP2 [ LIT2 00 -Mouse/state ] DEO
+	.Mouse/state DEI ?&on-touch
 	BRK
-
-	&on-down1 ( a b -> )
-	[ LIT2 04 -Controller/button ] DEI EQU ?&on-drag
-	touch-to-addr selection/<set-a>
-	POP2 BRK
-
-	&on-drag ( a b -> )
-	touch-to-addr selection/<set-b>
-	POP2 BRK
 
 	&on-scroll ( y* -> )
 	scrollbar/<mod-y>
+	BRK
+
+	&on-touch ( -> )
+	.Mouse/state DEI
+	( | handlers )
+	DUP #01 NEQ ?{
+		touch-to-addr selection/<set-a>
+		;&on-mouse-drag .Mouse/vector DEO2 }
+	DUP #02 NEQ ?{
+		touch-to-addr <select-symbol>
+		[ LIT2 00 -Mouse/state ] DEO }
+	#04 NEQ ?{
+		search/capture [ LIT2 00 -Mouse/state ] DEO }
+	BRK
+
+@textarea/on-mouse-drag ( -> )
+	#43 <update-cursor>/no-refocus
+	.Mouse/state DEI ?{ ;&on-mouse .Mouse/vector DEO2
+		BRK }
+	touch-to-addr selection/<set-b>
 	BRK
 
 @textarea/<erase> ( -- )
@@ -966,14 +977,12 @@
 @filepath/trap ( -- )
 	;&on-frame .Screen/vector DEO2
 	;&on-button .Controller/vector DEO2
-	[ LIT2 00 -Mouse/state ] DEO
 	#40 !<draw-cursor>
 
 @filepath/untrap ( -- )
 	;on-frame-draw .Screen/vector DEO2
 	;on-button .Controller/vector DEO2
 	;on-console .Console/vector DEO2
-	[ LIT2 00 -Mouse/state ] DEO
 	( | if is empty, reset to untitled )
 	.&buf LDZ ?{ /<reset> }
 	#01 !/<draw>
@@ -1726,7 +1735,8 @@
 	.Screen/width DEO2
 	menu/<draw>
 	( | responsive )
-	.Screen/width DEI2 #0300 GTH2 .nav/visible STZ !reqdraw-both
+	.Screen/width DEI2 #0300 GTH2 .nav/visible STZ
+	.Screen/height DEI2 #0028 SUB2 .scrollbar/height STZ2 !reqdraw-both
 
 @window/toggle-expand ( -- )
 	.Screen/width DEI2 #0550 EQU2 ?{ !/<set-default-size> }
