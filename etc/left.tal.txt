@@ -12,17 +12,17 @@
 
 |000
 
-	@filepath &buf $2f &bufend $1
-	@search &buf $2f &bufend $1
-	@selection &a $2 &b $2
-	@textarea &highlight $1 &length $2
-	@scroll &y $2 &addr $2
-	@scrollbar &height $2 &ratio $2
-	@wrap &left $2 &right $2
-	@state &comment $1 &underline $1 &label $1 &rune $1 &raw $1
-	@nav &visible $1 &cat $1 &buf $60 &bufend
+	@filepath/buf $2f &bufend $1
+	@search/buf $2f &bufend $1
 	@flen/buf $5
+	@nav/buf $60 &bufend $1 &scroll $1 &visible $1 &cat $1
 	@autocomplete/addr $2
+	@wrap/left $2 &right $2
+	@selection/a $2 &b $2
+	@scroll/y $2 &addr $2
+	@scrollbar/height $2 &ratio $2
+	@state/comment $1 &underline $1 &label $1 &rune $1 &raw $1
+	@textarea/highlight $1 &length $2
 
 |100
 
@@ -59,7 +59,7 @@
 	( name ) "Left 0a
 	( details ) "A 20 "Text 20 "Editor 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "10 20 "Feb 20 "2025 $1 02
+	( date ) "11 20 "Feb 20 "2025 $1 02
 	( > ) 83 =appicon
 	( > ) 0a =manifest
 
@@ -399,6 +399,10 @@
 @selection/set-all ( -- )
 	;textarea/buf DUP2 .textarea/length LDZ2 ADD2 #0001 SUB2 !/<set>
 
+@selection/<set-any> ( addr* -- )
+	[ LIT2 04 -Controller/button ] DEI EQU ?selection/<set-b>
+	!selection/<set-a>
+
 @selection/<reset> ( -- )
 	get-from
 	( >> )
@@ -690,6 +694,7 @@
 	POP2r POP2r DUP2 get-eof #0002 SUB2 GTH2 ?{
 		;textarea/buf SUB2 .scroll/addr STZ2
 		.scroll/y STZ2
+		#00 nav/<set-y>
 		filepath/<draw-position> !reqdraw-both }
 	POP2 POP2 JMP2r
 
@@ -713,7 +718,7 @@
 	.Mouse/state DEI
 	( | handlers )
 	DUP #01 NEQ ?{
-		touch-to-addr selection/<set-a>
+		touch-to-addr selection/<set-any>
 		;&on-mouse-drag .Mouse/vector DEO2 }
 	DUP #02 NEQ ?{
 		touch-to-addr <select-symbol>
@@ -812,12 +817,29 @@
 
 @nav/on-mouse ( -> )
 	[ LIT2 00 -Mouse/state ] DEI NEQ #41 ADD <update-cursor>
-	.Mouse/y DEI2 #0028 SUB2 #0018 DIV2 NIP .Mouse/state DEI DUP ?{ POP2 BRK }
+	( | scroll )
+	.Mouse/scrolly DEI2 DUP ?&on-scroll
+	POP2 .Mouse/y DEI2 #0028 SUB2 #0018 DIV2 NIP .Mouse/state DEI DUP ?{ POP2 BRK }
 	[ LIT2 00 -Mouse/state ] DEO
-	#01 GTH ?{ <select-marker>
+	#01 GTH ?{
+		.&scroll LDZ ADD <select-marker>
 		BRK }
 	nav/id-to-addr addr-to-line scrollbar/<set-y>
 	BRK
+
+	&on-scroll ( y* -> )
+	/<mod-y>
+	POP BRK
+
+@nav/<mod-y> ( y -- )
+	.&scroll LDZ ADD
+	( >> )
+
+@nav/<set-y> ( y -- )
+	DUP ;&ptr LDA INC .&buf SUB #01 SFT LTH ?{
+		#80 LTH ?{ #ffff !scrollbar/<mod-y> }
+		JMP2r }
+	.&scroll STZ !reqdraw-nav
 
 @nav/id-to-addr ( id -- addr* )
 	;&ptr LDA #01 SUB .&buf SUB #01 SFT
@@ -879,6 +901,7 @@
 	[ LIT2 25 -Screen/auto ] DEO
 	get-from INC2 /addr-to-id ,&sel STR
 	;&ptr LDA .&buf EQUk ?&<draw-empty>
+	.&scroll LDZ DUP ADD ADD
 	&>ld ( -- )
 		[ LIT &sel $1 ] /<draw-label>
 		<draw-lb>
@@ -1351,7 +1374,7 @@
 		LDAk #0a EQU ?&hor-end
 		scan-state utf8/get-width STH2
 		ADD2r LTH2kr STHr ?&hor-end
-		utf8/next LDAk ?&>hor &hor-end POP2r POP2r #0000 .state STZ2
+		utf8/next LDAk ?&>hor &hor-end POP2r POP2r #0000 .state/comment STZ2
 	JMP2r
 
 @clamp-addr ( addr* -- addr* )
@@ -1902,8 +1925,6 @@
 &right [
 	e0f0 f0f0 f0f0 f0f0 f0f0 f0f0 f0f0 f0f0
 	f0f0 f0f0 f0f0 f8fc ]
-@cat-icn [
-	0000 ff81 81ff 81ff 0000 ff81 81ff ffff ]
 @bubble-icn
 	[ 0000 0000 0008 1c3e ]
 @halftone-icn [
