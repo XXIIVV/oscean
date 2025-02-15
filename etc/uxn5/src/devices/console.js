@@ -42,8 +42,8 @@ function Console(emu)
 	
 	this.deo = (addr) => {
 		switch(addr) {
-			case 0x18: this.console.write(emu.uxn.dev[0x18]); break;
-			case 0x19: this.console.error(emu.uxn.dev[0x19]); break;
+			case 0x18: this.write(emu.uxn.dev[0x18]); break;
+			case 0x19: this.error(emu.uxn.dev[0x19]); break;
 		}
 	}
 }
