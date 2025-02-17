@@ -15,23 +15,23 @@
 	@path $2 &null $80
 	@lines &folders $1 &tracks $1
 	@playing $1
-	@mode $1
 	@paused $1
 	@prefix &folders $1 &tracks $1
 	@secfrom $2
 	@secto $2
 	@secprog $2
 	@frames &a $2 &b $2
+	@controls/repeat $1 &shuffle $1
 
 |100
 
 @on-reset ( -> )
 	;meta #06 DEO2
 	( | theme )
-	#e1e1 DUP2 .System/r DEO2
+	#f0f0 DUP2 .System/r DEO2
 	DUP2 .System/g DEO2
 	.System/b DEO2
-	<load-theme>
+	theme/<load>
 	( | size )
 	;WIDTH .Screen/width DEO2
 	( | .. )
@@ -44,7 +44,7 @@
 	<refresh-dir>
 	<prng-init>
 	( | unlock )
-	;on-mouse .Mouse/vector DEO2
+	;on-mouse-body .Mouse/vector DEO2
 	;on-control .Controller/vector DEO2
 	;on-console .Console/vector DEO2
 	BRK
@@ -53,7 +53,7 @@
 	( name ) "m291 0a
 	( desc ) "Audio 20 "Player 0a
 	( auth ) "By 20 "Linvega 20 "& 20 "d6 0a
-	( date ) "10 20 "Jan 20 "2025 $2
+	( date ) "17 20 "Feb 20 "2025 $2
 
 (
 @|macros )
@@ -87,33 +87,23 @@
 	BRK
 
 @on-mouse-locked ( -> )
-	#c1 ;touch-chr/down .Mouse/state DEI
-	( unlock ) ?{ ;on-mouse .Mouse/vector DEO2 }
-	<update-cursor>
+	.Mouse/state DEI ?{ ;on-mouse-body .Mouse/vector DEO2 }
 	BRK
 
-@on-mouse ( -> )
+@on-mouse-body ( -> )
 	.Mouse/scrolly-lb DEI DUP ?&scroll
 	POP
 	( | cursor )
 	#c1 ;touch-chr/down ;touch-chr .Mouse/state DEI ?{ SWP2 }
-	POP2 <update-cursor>
+	POP2 cursor/<update>
 	( | route events )
 	.Mouse/y DEI2
-	( > ) DUP2 #0018 LTH2 ?&status-bar
 	( > ) [ LIT2 00 -playing ] LDZ EQU ?{ DUP2 #0098 LTH2 ?&player }
 	( | on list )
 	<y-id>
 	.Mouse/state DEI ?{ <select>
 		BRK }
 	<pick>
-	;on-mouse-locked .Mouse/vector DEO2
-	BRK
-
-	&status-bar ( y* -> )
-	POP2 .Mouse/state DEI ?{ BRK }
-	.Mouse/x DEI2 ;WIDTH #0018 SUB2 GTH2 ?{ BRK }
-	<change-mode>
 	;on-mouse-locked .Mouse/vector DEO2
 	BRK
 
@@ -125,16 +115,21 @@
 
 	&controls ( y* -> )
 	POP2 .Mouse/x DEI2 #0010 SUB2 #05 SFT2 NIP
+	( > ) DUP #01 NEQ ?{ controls/<toggle-repeat>
+		;on-mouse-locked .Mouse/vector DEO2 }
 	( > ) DUP #02 NEQ ?{ <skip-prev>
 		;on-mouse-locked .Mouse/vector DEO2 }
 	( > ) DUP #03 NEQ ?{ <send-pause>
 		;on-mouse-locked .Mouse/vector DEO2 }
-	( > ) #04 NEQ ?{ <skip-next>
+	( > ) DUP #04 NEQ ?{ <skip-next>
 		;on-mouse-locked .Mouse/vector DEO2 }
-	BRK
+	( > ) DUP #05 NEQ ?{ controls/<toggle-shuffle>
+		;on-mouse-locked .Mouse/vector DEO2 }
+	POP BRK
 
 	&seeker ( -> )
-	.Mouse/x DEI2 #0008 SUB2 DUP2 #00e7 GTH2 ?{ DUP2 <seek> }
+	.Mouse/x DEI2 #0008 SUB2 DUP2 #00e7 GTH2 ?{ DUP2 <seek>
+		DUP2 progress/<force> }
 	POP2 BRK
 
 	&scroll ( distance -> )
@@ -164,6 +159,10 @@
 	( select [shift] ) DUP #04 NEQ ?{ <send-pause> }
 	( start [home] ) DUP #08 NEQ ?{ .selection LDZ <pick> }
 	POP BRK
+
+@<quit> ( -- )
+	#800f DEO
+	JMP2r
 
 (
 @|message )
@@ -206,11 +205,11 @@
 
 @<skip-next> ( -- )
 	.lines/tracks LDZ ?{ JMP2r }
-	( | random )
-	[ LIT2 01 -mode ] LDZ NEQ ?{
+	( | shuffle )
+	[ LIT2 01 -controls/shuffle ] LDZ NEQ ?{
 		prng ADD .lines/tracks LDZ DIVk MUL SUB !<pick>/tracks }
 	( | repeat )
-	[ LIT2 02 -mode ] LDZ NEQ ?{ .selection/track LDZ !<pick>/tracks }
+	[ LIT2 01 -controls/repeat ] LDZ NEQ ?{ .selection/track LDZ !<pick>/tracks }
 	.selection/track LDZ INC .lines/tracks LDZ DIVk MUL SUB !<pick>/tracks
 
 @<seek> ( x* -- )
@@ -234,7 +233,7 @@
 @<send-pause> ( -- )
 	.playing LDZ ?{ JMP2r }
 	[ LIT2 02 -paused ] LDZ ORA .paused STZ
-	;dict/pause-cmd <pstr> !<draw-play>
+	;dict/pause-cmd <pstr> !controls/<draw-play>
 
 @<move> ( mod -- )
 	.selection LDZ ADD
@@ -280,9 +279,6 @@
 	[ LIT2 00 -selection ] STZ
 	#ff ;<select>/last STA
 	path/pop !<refresh-dir>
-
-@<change-mode> ( -- )
-	.mode LDZk INC #03 DIVk MUL SUB SWP STZ !<draw-mode>
 
 @<find-any> ( letter -- )
 	( case insensitive ) cflc STH
@@ -335,8 +331,8 @@
 	( | print )
 	calc-width .secprog STZ2
 	<draw-title-scroll>
-	<draw-progress>
-	<draw-timestamp> !message/<new>
+	progress/<draw>
+	chicago/<draw-timestamp> !message/<new>
 
 @handle-id3 ( buf* char -- )
 	POP [ LIT ". ] find-next INC2 LDA2k
@@ -357,7 +353,7 @@
 	( playing ) DUP [ LIT "2 ] NEQ ?{
 		[ LIT2 00 -paused ] STZ }
 	( end ) DUP [ LIT "3 ] NEQ ?{ <skip-next> }
-	POP <draw-play> !message/<new>
+	POP controls/<draw-play> !message/<new>
 
 (
 @|core )
@@ -389,7 +385,7 @@
 	( padding ) #0020 ADD2
 	( playing ) [ LIT2 00 -playing ] LDZ EQU ?{ #0080 ADD2 }
 	.Screen/height DEO2
-	<draw-path>
+	#00 header/<draw>
 	<redraw-player> !<redraw-dir>
 
 @<parse-line> ( line* -- )
@@ -576,6 +572,17 @@
 (
 @|drawing )
 
+@<draw-times-addr> ( color times addr* auto -- )
+	.Screen/auto DEO
+	,&addr STR2
+	SWP STH
+	[ LITr -Screen/sprite ]
+	&>l ( -- )
+		[ LIT2 &addr $2 ] .Screen/addr DEO2
+		DEOkr
+		INC DUP ?&>l
+	POP POP2r JMP2r
+
 @<redraw-dir> ( -- )
 	#0000 .Screen/x DEO2
 	#0018 [ LIT2 00 -playing ] LDZ EQU ?{ #0080 ADD2 }
@@ -587,7 +594,7 @@
 	( | empty )
 	count-lines ?{
 		#0008 .Screen/x DEO2
-		;dict/empty #05 !<draw-uf2> }
+		;dict/empty #05 !chicago/<draw-left-color> }
 	( | folders )
 	<draw-folders>
 	( >> )
@@ -630,7 +637,7 @@
 		( | gizmo )
 		.Screen/y DEI2 [ LIT2 15 -Screen/auto ] DEO
 		;WIDTH #0010 SUB2 .Screen/x DEO2
-		[ LIT2 00 "> ] #20 SUB #50 SFT2 ;font/glyphs ADD2 .Screen/addr DEO2
+		[ LIT2 00 "> ] #20 SUB #50 SFT2 ;chicago/glyphs ADD2 .Screen/addr DEO2
 		DUPr [ LITr -Screen/sprite ] DEOr
 		.Screen/y DEO2
 		( | normal )
@@ -641,187 +648,157 @@
 		INC GTHk ?&>l
 	POP2 JMP2r
 
-@<draw-path> ( -- )
-	( | clear )
-	#0000 .Screen/x DEO2
-	#0014 .Screen/y DEO2
-	[ LIT2 a0 -Screen/pixel ] DEO
-	( | draw )
-	#0008 .Screen/x DEO2
-	#0004 .Screen/y DEO2
-	;path #01 <draw-uf2>
-	<draw-mode>
-	( | spacer )
-	#0014 .Screen/y DEO2
-	;line-icn !<draw-spacer>
-
-@<draw-mode> ( -- )
-	[ LIT2 16 -Screen/auto ] DEO
-	#0004 .Screen/y DEO2
-	;WIDTH #0014 SUB2 .Screen/x DEO2
-	;mode-icns [ LIT2 00 -mode ] LDZ #50 SFT2 ADD2 .Screen/addr DEO2
-	[ LIT2 03 -Screen/sprite ] DEOk DEO
-	JMP2r
-
 @<redraw-player> ( -- )
-	#ffff ;<draw-timestamp>/last STA2
-	#ffff ;<draw-progress>/last STA2
-	<draw-title>
-	<draw-artist>
-	<draw-album>
-	<draw-prev>
-	<draw-play>
-	<draw-next>
-	<draw-progress> !<draw-timestamp>
+	#ffff ;chicago/last STA2
+	#ffff ;progress/last STA2
+	track/<draw-title>
+	track/<draw-artist>
+	track/<draw-album>
+	controls/<draw-repeat>
+	controls/<draw-prev>
+	controls/<draw-play>
+	controls/<draw-next>
+	controls/<draw-shuffle>
+	progress/<draw> !chicago/<draw-timestamp>
 
 @<draw-title-scroll> ( -- )
-	;id3/title get-uf2-width ;WIDTH LTH2 ?{
+	;id3/title chicago/get-str-width ;WIDTH LTH2 ?{
 		[ LIT2 &f $2 ] INC2k ,&f STR2
 		DUP #0f AND ?{
 			#0020 .Screen/y DEO2
 			<clear-line>
 			#0001 .Screen/x DEO2
 			#0020 .Screen/y DEO2
-			#01 ;<draw-glyph-utf8>/color STA
-			#04 SFT2 #00 ;id3/title str-len MOD2 ;id3/title !<draw-uf2-scroll> }
+			#01 ;chicago/color STA
+			#04 SFT2 #00 ;id3/title str-len MOD2 ;id3/title STH2k next-nth-glyph #01 chicago/<draw-left-color>
+			.Screen/x DEI2k #0004 ADD2 ROT DEO2
+			STH2r #01 !chicago/<draw-left-color> }
 		POP2 }
 	JMP2r
 
-@<draw-title> ( -- )
+@track/<draw-title> ( -- )
 	( | clear )
 	#0020 .Screen/y DEO2
 	<clear-line>
 	#0000 ;<draw-title-scroll>/f STA2
 	( | draw )
 	#0020 .Screen/y DEO2
-	;id3/title get-uf2-width ;WIDTH LTH2 ?{
+	;id3/title chicago/get-str-width ;WIDTH LTH2 ?{
 		#0008 .Screen/x DEO2
-		;id3/title #01 !<draw-uf2> }
+		;id3/title #01 !chicago/<draw-left-color> }
 	( | center )
 	#0080 .Screen/x DEO2
-	;id3/title #01 !<draw-uf2-center>
+	;id3/title #01 !chicago/<draw-center-color>
 
-@<draw-artist> ( -- )
+@track/<draw-artist> ( -- )
 	( | clear )
 	#0030 .Screen/y DEO2
 	<clear-line>
 	( | draw )
 	#0030 .Screen/y DEO2
-	;id3/artist get-uf2-width ;WIDTH LTH2 ?{
+	;id3/artist chicago/get-str-width ;WIDTH LTH2 ?{
 		#0008 .Screen/x DEO2
-		;id3/artist #01 !<draw-uf2> }
+		;id3/artist #01 !chicago/<draw-left-color> }
 	( | center )
 	#0080 .Screen/x DEO2
-	;id3/artist #01 !<draw-uf2-center>
+	;id3/artist #01 !chicago/<draw-center-color>
 
-@<draw-album> ( -- )
+@track/<draw-album> ( -- )
 	( | clear )
 	#0040 .Screen/y DEO2
 	<clear-line>
 	( | draw )
 	#0080 .Screen/x DEO2
 	#0040 .Screen/y DEO2
-	;id3/album #01 !<draw-uf2-center>
+	;id3/album #01 !chicago/<draw-center-color>
 
-@<draw-play> ( -- )
+(
+@|controls )
+
+@controls/<toggle-repeat> ( -- )
+	#00 .&repeat LDZ EQU .&repeat STZ !/<draw-repeat>
+
+@controls/<toggle-shuffle> ( -- )
+	#00 .&shuffle LDZ EQU .&shuffle STZ !/<draw-shuffle>
+
+@controls/<draw-repeat> ( -- )
+	[ LIT2 16 -Screen/auto ] DEO
+	#0040 .Screen/x DEO2
+	#0058 .Screen/y DEO2
+	[ LIT2 00 -&repeat ] LDZ #50 SFT2 ;&repeat-icn ADD2 .Screen/addr DEO2
+	[ LIT2 01 -Screen/sprite ] DEOk DEO
+	JMP2r
+
+@controls/<draw-prev> ( -- )
+	[ LIT2 16 -Screen/auto ] DEO
+	#0058 .Screen/x DEO2
+	#0058 .Screen/y DEO2
+	;&prev-icn .Screen/addr DEO2
+	[ LIT2 01 -Screen/sprite ] DEOk DEO
+	JMP2r
+
+@controls/<draw-play> ( -- )
 	#0070 .Screen/x DEO2
 	#0050 .Screen/y DEO2
 	[ LIT2 36 -Screen/auto ] DEO
 	;button-icn #00 [ LIT2 01 -paused ] LDZ AND #70 SFT2 ADD2 .Screen/addr DEO2
-	[ LIT2 03 -Screen/sprite ] DEOk DEOk DEOk DEO
+	[ LIT2 01 -Screen/sprite ] DEOk DEOk DEOk DEO
 	( | icon )
 	[ LIT2 16 -Screen/auto ] DEO
 	#0078 .Screen/x DEO2
 	#0058 .Screen/y DEO2
-	;pause-icn [ LIT2 00 -paused ] LDZ #50 SFT2 ADD2 .Screen/addr DEO2
+	;&pause-icn [ LIT2 00 -paused ] LDZ #50 SFT2 ADD2 .Screen/addr DEO2
 	[ LIT2 01 -Screen/sprite ] DEOk DEO
 	JMP2r
 
-@<draw-prev> ( -- )
-	[ LIT2 16 -Screen/auto ] DEO
-	#0058 .Screen/x DEO2
-	#0058 .Screen/y DEO2
-	;prev-icn .Screen/addr DEO2
-	[ LIT2 01 -Screen/sprite ] DEOk DEO
-	JMP2r
-
-@<draw-next> ( -- )
+@controls/<draw-next> ( -- )
 	[ LIT2 16 -Screen/auto ] DEO
 	#0098 .Screen/x DEO2
 	#0058 .Screen/y DEO2
-	;next-icn .Screen/addr DEO2
+	;&next-icn .Screen/addr DEO2
 	[ LIT2 01 -Screen/sprite ] DEOk DEO
 	JMP2r
 
-@<draw-progress> ( -- )
+@controls/<draw-shuffle> ( -- )
+	[ LIT2 16 -Screen/auto ] DEO
+	#00b0 .Screen/x DEO2
+	#0058 .Screen/y DEO2
+	[ LIT2 00 -&shuffle ] LDZ #50 SFT2 ;&shuffle-icn ADD2 .Screen/addr DEO2
+	[ LIT2 01 -Screen/sprite ] DEOk DEO
+	JMP2r
+
+@progress/<draw> ( -- )
 	.secprog LDZ2
 	( | catch redraws )
 	DUP2 [ LIT2 &last $2 ] NEQ2 ?{ POP2 JMP2r }
+	&<force> ( x* -- )
 	DUP2 ,&last STR2
-	[ LIT2 01 -Screen/auto ] DEO
+	[ LIT2 15 -Screen/auto ] DEO
 	#0004 .Screen/x DEO2
-	#0088 .Screen/y DEO2
+	#0084 .Screen/y DEO2
 	( | cap left )
-	;progress-icn/left .Screen/addr DEO2
-	[ LIT2 03 -Screen/sprite ] DEO
-	( | fill )
+	;&left-icn .Screen/addr DEO2
+	[ LIT2 01 -Screen/sprite ] DEO
+	( | cap middle )
 	#e3
 	&>t ( -- )
-		;progress-icn/middle .Screen/addr DEO2
-		[ LIT2 03 -Screen/sprite ] DEO
+		;&middle-icn .Screen/addr DEO2
+		[ LIT2 01 -Screen/sprite ] DEO
 		INC DUP ?&>t
 	POP
 	( | cap right )
-	;progress-icn/right .Screen/addr DEO2
-	[ LIT2 03 -Screen/sprite ] DEO
+	;&right-icn .Screen/addr DEO2
+	[ LIT2 01 -Screen/sprite ] DEO
 	( | fill )
 	#0008 .Screen/x DEO2
-	[ LIT2 00 -Screen/auto ] DEO
-	;progress-icn/fill .Screen/addr DEO2
+	[ LIT2 15 -Screen/auto ] DEO
 	#0000
 	&>l ( -- )
+		DUP2 #0008 ADD2 .Screen/x DEO2
+		;&fill-icn .Screen/addr DEO2
 		[ LIT2 05 -Screen/sprite ] DEO
-		.Screen/x DEI2 INC2 .Screen/x DEO2
 		INC2 GTH2k ?&>l
 	POP2 POP2 JMP2r
-
-@<draw-timestamp> ( -- )
-	.secfrom LDZ2
-	( | catch redraws )
-	DUP2 [ LIT2 &last $2 ] NEQ2 ?{ POP2 JMP2r }
-	DUP2 ,&last STR2
-	( | clear )
-	#0070 .Screen/y DEO2
-	<clear-line>
-	( | from )
-	[ LIT2 15 -Screen/auto ] DEO
-	#0008 .Screen/x DEO2
-	#0070 .Screen/y DEO2
-	#01 ;<draw-glyph-ascii>/color STA
-	<draw-time>
-	( | to )
-	[ LIT2 15 -Screen/auto ] DEO
-	#8000 .Screen/x DEO2
-	#0070 .Screen/y DEO2
-	.secto LDZ2 ;WIDTH OVR2 <draw-time>
-	.Screen/x DEI2 #7ff8 SUB2 SUB2 .Screen/x DEO2
-	#01 ;<draw-glyph-ascii>/color STA
-	( >> )
-
-@<draw-time> ( time* -- )
-	DUP2 #0e10 LTH2 ?{
-		( x0:00:00 ) DUP2 #8ca0 DIV2 NIP #06 DIVk MUL SUB <draw-dec>
-		( 0x:00:00 ) DUP2 #0e10 DIV2 NIP <draw-dec>
-		[ LIT ": ] <draw-glyph-ascii> }
-	( 00:x0:00 ) DUP2 #0258 DIV2 NIP #06 DIVk MUL SUB <draw-dec>
-	( 00:0x:00 ) DUP2 #003c DIV2 NIP <draw-dec>
-	[ LIT ": ] <draw-glyph-ascii>
-	( 00:00:x0 ) DUP2 #000a DIV2 NIP #06 DIVk MUL SUB <draw-dec>
-	( 00:00:0x ) NIP
-	( >> )
-
-@<draw-dec> ( value -- )
-	#0a DIVk MUL SUB [ LIT "0 ] ADD !<draw-glyph-ascii>
 
 @<clear-line> ( -- )
 	[ LITr -Screen/y ] DEI2r
@@ -832,15 +809,6 @@
 	( ) [ LITr -Screen/y ] DEO2r
 	#0080 .Screen/x DEO2
 	DEOk DEO
-	JMP2r
-
-@<draw-spacer> ( addr* -- )
-	#0000 .Screen/x DEO2
-	.Screen/addr DEO2
-	[ LIT2 f2 -Screen/auto ] DEO
-	[ LIT2 05 -Screen/sprite ] DEOk #0080 .Screen/x DEO2
-	.Screen/y DEI2 #0008 SUB2 .Screen/y DEO2
-	DEO
 	JMP2r
 
 @<draw-background> ( tile* -- )
@@ -856,47 +824,22 @@
 	.Screen/y DEO2
 	JMP2r
 
-@get-high-addr ( addr* -- addr* glyph* )
-	LDAk #c3 NEQ ?{
-		INC2k LDA #80 SUB #00 SWP #50 SFT2 ;latin2/glyphs ADD2 JMP2r }
-	LDAk #d0 NEQ ?{
-		INC2k LDA #90 SUB #00 SWP #50 SFT2 ;cyrillic/glyphs ADD2 JMP2r }
-	LDAk #d1 NEQ ?{
-		INC2k LDA #50 SUB #00 SWP #50 SFT2 ;cyrillic/glyphs ADD2 JMP2r }
-	( >> )
+@<draw-uf2-folder> ( text* color -- )
+	STH
+	.prefix/folders LDZ #03 GTH ?{ STHr !chicago/<draw-left-color> }
+	;dict/ellipses STHkr chicago/<draw-left-color>
+	[ LIT2 00 -prefix/folders ] LDZ ADD2 STHr !chicago/<draw-left-color>
 
-@get-ctrl-addr ( addr* -- addr* glyph* )
-	;check-icn JMP2r
+@<draw-uf2-track> ( text* color -- )
+	STH
+	.prefix/tracks LDZ #03 GTH ?{ STHr !chicago/<draw-left-color> }
+	;dict/ellipses STHkr chicago/<draw-left-color>
+	[ LIT2 00 -prefix/tracks ] LDZ ADD2 STHr !chicago/<draw-char>
 
-@get-utf8-addr ( addr* -- addr* glyph* )
-	LDAk #20 LTH ?get-ctrl-addr
-	LDAk #7f GTH ?get-high-addr
-	LDAk #20 SUB #00 SWP #50 SFT2 ;font/glyphs ADD2 JMP2r
-
-@get-high-width ( addr* -- addr* width* )
-	LDAk #c3 NEQ ?{
-		INC2k LDA #80 SUB #00 SWP ;latin2/widths ADD2 LDA #00 SWP JMP2r }
-	LDAk #d0 NEQ ?{
-		INC2k LDA #90 SUB #00 SWP ;cyrillic/widths ADD2 LDA #00 SWP JMP2r }
-	LDAk #d1 NEQ ?{
-		INC2k LDA #50 SUB #00 SWP ;cyrillic/widths ADD2 LDA #00 SWP JMP2r }
-	#0008 JMP2r
-
-@get-utf8-width ( addr* -- addr* width* )
-	LDAk #7f GTH ?get-high-width
-	LDAk #20 SUB #0000 ROT ;font ADD2 LDA JMP2r
-
-@get-uf2-width ( text* -- width* )
-	[ LIT2r 0000 ]
-	&>while ( -- )
-		get-utf8-width STH2
-		( > ) ADD2r next-glyph LDAk ?&>while
-	POP2 STH2r JMP2r
-
-@<draw-uf2-scroll> ( offset* text* -- )
-	STH2k next-nth-glyph #01 <draw-uf2>
-	.Screen/x DEI2k #0004 ADD2 ROT DEO2
-	STH2r #01 !<draw-uf2>
+@next-glyph ( addr* -- addr* )
+	INC2 LDAk
+	( utf8 ) #06 SFT #02 EQU ?next-glyph
+	JMP2r
 
 @next-nth-glyph ( offset* text* -- text* )
 	STH2
@@ -907,78 +850,180 @@
 			INC2 GTH2k ?&>l }
 	POP2 POP2 STH2r POP2r JMP2r
 
-@<draw-uf2-center> ( text* color -- )
-	STH
-	.Screen/x DEI2 OVR2 get-uf2-width #01 SFT2 SUB2 .Screen/x DEO2
-	STHr !<draw-uf2>
+(
+@|header )
 
-@<draw-uf2-folder> ( text* color -- )
-	STH
-	.prefix/folders LDZ #03 GTH ?{ STHr !<draw-uf2> }
-	;dict/ellipses STHkr <draw-uf2>
-	[ LIT2 00 -prefix/folders ] LDZ ADD2 STHr !<draw-uf2>
+@header/on-mouse ( -> )
+	#c1 ;touch-chr/down ;touch-chr .Mouse/state DEI ?{ SWP2 }
+	POP2 cursor/<update>
+	[ LIT &last $1 ] .Mouse/state DEI NEQ ?{ BRK }
+	.Mouse/state DEI ,&last STR
+	.Mouse/x DEI2 #0008 SUB2 #000c GTH2 ?{
+		.Mouse/y DEI2 #0002 SUB2 #000c GTH2 ?{
+			[ LIT2 00 -Mouse/state ] DEI NEQ /<draw>
+			.Mouse/state DEI ?{ <quit> } } }
+	BRK
 
-@<draw-uf2-track> ( text* color -- )
-	STH
-	.prefix/tracks LDZ #03 GTH ?{ STHr !<draw-uf2> }
-	;dict/ellipses STHkr <draw-uf2>
-	[ LIT2 00 -prefix/tracks ] LDZ ADD2 STHr
+@header/<draw> ( toggle -- )
+	( | a )
+	#0000 DUP2 .Screen/x DEO2
+	.Screen/y DEO2
+	[ LIT2 15 -Screen/auto ] DEO
+	;&left-icn .Screen/addr DEO2
+	[ LIT2 09 -Screen/sprite ] DEO
+	( | close )
+	#00 SWP #50 SFT2 ;close-icn ADD2 .Screen/addr DEO2
+	[ LIT2 09 -Screen/sprite ] DEOk DEO
+	( | lead )
+	#09bb ;&middle-icn #15 <draw-times-addr>
+	( | line )
+	#0000 .Screen/x DEO2
+	#0010 .Screen/y DEO2
+	#81b8 ;border-chr #01 <draw-times-addr>
+	( | draw path )
+	#0080 .Screen/x DEO2
+	#0001 .Screen/y DEO2
+	;path LDAk [ LIT ". ] NEQ ?{ INC2 }
+	.Screen/x DEI2 OVR2 chicago/get-str-width #01 SFT2 SUB2 #000a SUB2 .Screen/x DEO2
+	[ LIT2 15 -Screen/auto ] DEO
+	#09 ;chicago/color STA
+	#20 chicago/<draw-char>
+	#20 chicago/<draw-char>
+	#09 chicago/<draw-left-color>
+	#20 !chicago/<draw-char>
+
+(
+@|cursor )
+
+@cursor/<refocus> ( -- )
+	.Mouse/y DEI2 #0012 GTH2 ?{
+		( ) ;header/on-mouse .Mouse/vector DEO2
+		JMP2r }
+	;on-mouse-body .Mouse/vector DEO2
+	JMP2r
+
+@cursor/<update> ( color addr* -- )
+	;fill-icn .Screen/addr DEO2
+	#40 /<draw>
+	/<refocus>
+	.Screen/addr DEO2
+	.Mouse/x DEI2 ,&x STR2
+	.Mouse/y DEI2 ,&y STR2
 	( >> )
 
-@<draw-uf2> ( text* color -- )
-	,<draw-glyph-utf8>/color STR
+@cursor/<draw> ( color -- )
+	[ LIT2 16 -Screen/auto ] DEO
+	[ LIT2 &x $2 ] .Screen/x DEO2
+	[ LIT2 &y $2 ] .Screen/y DEO2
+	.Screen/sprite DEOk DEO
+	JMP2r
+
+(
+@|chicago )
+
+@chicago/get-utf8-addr ( addr* -- addr* glyph* )
+	LDAk #20 LTH ?{
+		LDAk #7f GTH ?{
+			LDAk #20 SUB #00 SWP #50 SFT2 ;/glyphs ADD2 JMP2r }
+		LDAk #c3 NEQ ?{
+			INC2k LDA #80 SUB #00 SWP #50 SFT2 ;/latin2-glyphs ADD2 JMP2r }
+		LDAk #d0 NEQ ?{
+			INC2k LDA #90 SUB #00 SWP #50 SFT2 ;/cyrillic-glyphs ADD2 JMP2r }
+		LDAk #d1 NEQ ?{
+			INC2k LDA #50 SUB #00 SWP #50 SFT2 ;/cyrillic-glyphs ADD2 JMP2r } }
+	;check-icn JMP2r
+
+@chicago/get-utf8-width ( addr* -- addr* width* )
+	LDAk #7f GTH ?{
+		LDAk #20 SUB #0000 ROT ;/widths ADD2 LDA JMP2r }
+	LDAk #c3 NEQ ?{
+		INC2k LDA #80 SUB #00 SWP ;/latin2-widths ADD2 LDA #00 SWP JMP2r }
+	LDAk #d0 NEQ ?{
+		INC2k LDA #90 SUB #00 SWP ;/cyrillic-widths ADD2 LDA #00 SWP JMP2r }
+	LDAk #d1 NEQ ?{
+		INC2k LDA #50 SUB #00 SWP ;/cyrillic-widths ADD2 LDA #00 SWP JMP2r }
+	#0008 JMP2r
+
+@chicago/get-str-width ( text* -- width* )
+	[ LIT2r 0000 ]
+	&>ww ( -- )
+		/get-utf8-width STH2
+		( > ) ADD2r next-glyph LDAk ?&>ww
+	POP2 STH2r JMP2r
+
+@chicago/<draw-timestamp> ( -- )
+	.secfrom LDZ2
+	( | catch redraws )
+	DUP2 [ LIT2 &last $2 ] NEQ2 ?{ POP2 JMP2r }
+	DUP2 ,&last STR2
+	( | clear )
+	#0070 .Screen/y DEO2
+	<clear-line>
+	( | from )
+	[ LIT2 15 -Screen/auto ] DEO
+	#0008 .Screen/x DEO2
+	#0070 .Screen/y DEO2
+	#01 ;&color STA
+	/<draw-time>
+	( | to )
+	[ LIT2 15 -Screen/auto ] DEO
+	#8000 .Screen/x DEO2
+	#0070 .Screen/y DEO2
+	.secto LDZ2 ;WIDTH OVR2 /<draw-time>
+	.Screen/x DEI2 #7ff8 SUB2 SUB2 .Screen/x DEO2
+	#01 ;&color STA
+	( >> )
+
+@chicago/<draw-time> ( time* -- )
+	DUP2 #0e10 LTH2 ?{
+		( x0:00:00 ) DUP2 #8ca0 DIV2 NIP #06 DIVk MUL SUB /<draw-min>
+		( 0x:00:00 ) DUP2 #0e10 DIV2 NIP /<draw-min>
+		[ LIT ": ] /<draw-char> }
+	( 00:x0:00 ) DUP2 #0258 DIV2 NIP #06 DIVk MUL SUB /<draw-min>
+	( 00:0x:00 ) DUP2 #003c DIV2 NIP /<draw-min>
+	[ LIT ": ] /<draw-char>
+	( 00:00:x0 ) DUP2 #000a DIV2 NIP #06 DIVk MUL SUB /<draw-min>
+	( 00:00:0x ) NIP
+	( >> )
+
+@chicago/<draw-min> ( value -- )
+	#0a DIVk MUL SUB [ LIT "0 ] ADD !/<draw-char>
+
+@chicago/<draw-center-color> ( text* color -- )
+	STH
+	.Screen/x DEI2 OVR2 /get-str-width #01 SFT2 SUB2 .Screen/x DEO2
+	STHr !/<draw-left-color>
+
+@chicago/<draw-left-color> ( text* color -- )
+	,&color STR
 	[ LIT2 15 -Screen/auto ] DEO
 	;WIDTH #0010 SUB2 ,&bound STR2
-	&>w ( -- )
+	&>wsc ( -- )
 		( | trim length )
 		.Screen/x DEI2 [ LIT2 &bound $2 ] LTH2 ?{
-			POP2 ;dict/ellipses <draw-glyph-utf8>
-			<draw-glyph-utf8>
+			POP2 ;dict/ellipses /<draw-utf8>
+			/<draw-utf8>
 			POP2 JMP2r }
 		( | trim mp3 )
 		LDAk [ LIT ". ] NEQ ?{ INC2k ;dict/mp3-ext scmp3 ?&end }
-		<draw-glyph-utf8>
-		next-glyph LDAk ?&>w &end POP2 JMP2r
+		/<draw-utf8>
+		next-glyph LDAk ?&>wsc &end POP2 JMP2r
 
-@<draw-glyph-utf8> ( addr* -- addr* )
+@chicago/<draw-utf8> ( addr* -- addr* )
 	[ LITr -Screen/x ] DEI2r
-	( glyph* ) get-utf8-addr .Screen/addr DEO2
-	( width* ) get-utf8-width STH2
+	( glyph* ) /get-utf8-addr .Screen/addr DEO2
+	( width* ) /get-utf8-width STH2
 	( draw2 ) [ LIT2 &color 01 -Screen/sprite ]
 	( draw1 ) DUPr [ LITr 08 LTHr JMPr DEOk ] DEO
 	ADD2r [ LITr -Screen/x ] DEO2r
 	JMP2r
 
-@<draw-glyph-ascii> ( char -- )
-	DUP #7f LTH ?{
-		POP ;check-icn .Screen/addr DEO2
-		,&color LDR .Screen/sprite DEO
-		JMP2r }
+@chicago/<draw-char> ( char -- )
 	#20 SUB #00 SWP
-	( ) DUP2 #50 SFT2 ;font/glyphs ADD2 .Screen/addr DEO2
-	( ) ;font ADD2 LDA #00 SWP .Screen/x DEI2 ADD2
-	( ) [ LIT &color 05 ] .Screen/sprite DEOk DEO
+	( ) DUP2 #50 SFT2 ;&glyphs ADD2 .Screen/addr DEO2
+	( ) ;&widths ADD2 LDA #00 SWP .Screen/x DEI2 ADD2
+	( ) ,&color LDR .Screen/sprite DEOk DEO
 	.Screen/x DEO2
-	JMP2r
-
-@next-glyph ( addr* -- addr* )
-	INC2 LDAk
-	( utf8 ) #06 SFT #02 EQU ?next-glyph
-	JMP2r
-
-@<update-cursor> ( color addr* -- )
-	;fill-icn .Screen/addr DEO2
-	#40 <draw-cursor>
-	.Screen/addr DEO2
-	.Mouse/x DEI2 ,<draw-cursor>/x STR2
-	.Mouse/y DEI2 ,<draw-cursor>/y STR2
-	( >> )
-
-@<draw-cursor> ( color -- )
-	[ LIT2 16 -Screen/auto ] DEO
-	[ LIT2 &x $2 ] .Screen/x DEO2
-	[ LIT2 &y $2 ] .Screen/y DEO2
-	.Screen/sprite DEOk DEO
 	JMP2r
 
 (
@@ -1066,7 +1111,7 @@
 (
 @|theme )
 
-@<load-theme> ( -- )
+@theme/<load> ( -- )
 	;&path .File/name DEO2
 	#0002 .File/length DEO2
 	;&r .File/read DEO2
@@ -1099,6 +1144,19 @@
 
 ( assets )
 
+@header
+	&left-icn [
+	0000 007e 007e 007e 007e 007e 007e 0000 ]
+	&middle-icn [
+	0000 00ff 00ff 00ff 00ff 00ff 00ff 0000
+	0000 00fe 00fe 00fe 00fe 00fe 00fe 0000 ]
+@close-icn [
+	0000 00ff 8080 8080 8080 8080 80ff 0000
+	0000 00ef 202f 202f 202f 202f 20ef 0000
+	0000 00ff 84a4 9580 f180 95a4 84ff 0000
+	0000 00ef 20af 202f e02f 20af 20ef 0000 ]
+@border-chr [ 00ff 0000 0000 0000 ff00 0000 0000 0000 ]
+
 @touch-chr [
 	0000 0000 0814 1417 0000 0000 0008 0808
 	0000 0000 0000 00c0 0000 0000 0000 0000
@@ -1110,58 +1168,55 @@
 	1010 2010 1008 0700 0f0f 1f0f 0f07 0000
 	2010 1010 2020 c000 c0e0 e0e0 c0c0 0000 ]
 
-@progress-icn
-	&left [ 0304 0404 0404 0403 ]
-	&middle [ ff00 0000 0000 00ff ]
-	&right [ c020 2020 2020 20c0 ]
-	&fill [ 003f 3f3f 3f3f 3f00 ]
+@progress/left-icn [ 0000 0000 0102 0202 0202 0201 0000 0000 ]
+@progress/middle-icn [ 0000 00ff 0000 0000 0000 0000 ff00 0000 ]
+@progress/right-icn [ 0000 0000 8040 4040 4040 4080 0000 0000 ]
+@progress/fill-icn [ 0000 003c 7eff ffff ffff ff7e 3c00 0000 ]
 
 @button-icn [
-	0000 0000 0102 050a 0000 1f60 9f60 8000
-	0000 f806 f906 0100 0000 0000 8040 a050
-	0a14 1428 2828 2828 0000 0000 0000 0000
-	0000 0000 0000 0000 5028 2814 1414 1414
-	2828 2828 2814 140a 0000 0000 0000 0000
-	0000 0000 0000 0000 1414 1414 1428 2850
-	0a05 0201 0000 0000 0080 609f 601f 0000
-	0001 06f9 06f8 0000 50a0 4080 0000 0000 ]
+	0000 0208 1000 2020 0000 ee00 0000 0000
+	0000 ee00 0000 0000 0000 c010 0800 0404
+	0020 2020 0020 2020 0000 0000 0000 0000
+	0000 0000 0000 0000 0004 0404 0004 0404
+	0020 2020 0020 2020 0000 0000 0000 0000
+	0000 0000 0000 0000 0400 0404 0400 0404
+	0020 0010 0803 0000 0000 0000 0077 0000
+	0000 0000 0077 0000 0004 0008 1040 0000 ]
 	&active [
-	0000 0000 0102 0408 0000 1f60 8000 0000
-	0000 f806 0100 0000 0000 0000 8040 2010
-	0810 1020 2020 2020 0000 0000 0000 0000
-	0000 0000 0000 0000 1008 0804 0404 0404
-	2020 2020 2010 1008 0000 0000 0000 0000
-	0000 0000 0000 0000 0404 0404 0408 0810
-	0804 0201 0000 0000 0000 0080 601f 0000
-	0000 0001 06f8 0000 1020 4080 0000 0000 ]
+	0000 030c 1010 2020 0000 ff00 0000 0000
+	0000 ff00 0000 0000 0000 c030 0808 0404
+	2020 2020 2020 2020 0000 0000 0000 0000
+	0000 0000 0000 0000 0404 0404 0404 0404
+	2020 2020 2020 2020 0000 0000 0000 0000
+	0000 0000 0000 0000 0404 0404 0404 0404
+	2020 1010 0c03 0000 0000 0000 00ff 0000
+	0000 0000 00ff 0000 0404 0808 30c0 0000 ]
 
-@mode-icns [
-	0000 001f 1f00 0000 0010 18fc fc18 1000
-	0000 001f 1f00 0000 0010 18fc fc18 1000
-	0000 001f 1f01 0101 0010 187c bc98 9080
-	0101 011d 1e00 0000 8090 98fc fc18 1000
+@controls/repeat-icn [
+	0000 000f 1f18 1000 0010 18fc fc18 1000
+	0008 183f 3f18 0800 0008 18f8 f000 0000 
 	0000 000f 1f18 1818 0010 18fc fc18 1008
 	1818 181f 0f00 0000 1818 18f8 f000 0000 ]
-
-@pause-icn [
+@controls/shuffle-icn [
+	0000 001f 1f00 0000 0010 18fc fc18 1000
+	0000 001f 1f00 0000 0010 18fc fc18 1000 
+	0000 001f 1f01 0101 0010 187c bc98 9080
+	0101 011d 1e00 0000 8090 98fc fc18 1000 ]
+@controls/pause-icn [
 	0000 001e 1e1e 1e1e 0000 0078 7878 7878
-	1e1e 1e1e 1e00 0000 7878 7878 7800 0000 ]
-
-@play-icn [
+	1e1e 1e1e 1e00 0000 7878 7878 7800 0000
 	0000 000c 0f0f 0f0f 0000 0000 00c0 f0fc
 	0f0f 0f0f 0c00 0000 fcf0 c000 0000 0000 ]
+@controls/next-icn [
+	0000 0018 1c1e 1f1f 0000 0018 1818 1898
+	1f1f 1e1c 1800 0000 9818 1818 1800 0000 ]
+@controls/prev-icn [
+	0000 0018 1818 1819 0000 0018 3878 f8f8
+	1918 1818 1800 0000 f8f8 7838 1800 0000 ]
 
 @play-wait-icn [
 	0000 000c 0b08 0808 0000 0000 00c0 300c
 	0808 080b 0c00 0000 0c30 c000 0000 0000 ]
-
-@next-icn [
-	0000 0018 1c1e 1f1f 0000 0018 1818 1898
-	1f1f 1e1c 1800 0000 9818 1818 1800 0000 ]
-
-@prev-icn [
-	0000 0018 1818 1819 0000 0018 3878 f8f8
-	1918 1818 1800 0000 f8f8 7838 1800 0000 ]
 
 @fill-icn [
 	ffff ffff ffff ffff ffff ffff ffff ffff
@@ -1169,19 +1224,14 @@
 
 @poke-icn [ 0000 0000 80c0 e0f0 e0c0 8000 0000 0000 ]
 
-@dash-icn [ 0000 00aa 0000 0000 ]
-
-@line-icn [ 0000 00ff 0000 0000 ]
-
 @check-icn [ aa55 aa55 aa55 aa55 aa55 aa55 aa55 aa55 ] $10
 
-@cyrillic
-	&widths [
+@chicago/cyrillic-widths [
 	0808 0807 0807 0907 0909 0907 0c08 0808
 	0808 0608 0908 0808 0909 0809 0808 0908
 	0808 0807 0808 0908 0909 0907 0909 0808
 	0807 0608 0908 0808 0909 0709 0808 0908 ]
-	&glyphs [
+@chicago/cyrillic-glyphs [
 	0000 003c 6666 667e 6666 6666 0000 0000
 	0000 0000 0000 0000 0000 0000 0000 0000
 	0000 007c 6060 607c 6666 667c 0000 0000
@@ -1311,13 +1361,12 @@
 	0000 0000 003e 6666 3e66 6666 0000 0000
 	0000 0000 0000 0000 0000 0000 0000 0000 ]
 
-@latin2
-	&widths [
+@chicago/latin2-widths [
 	0808 0808 0808 0b08 0707 0707 0606 0606
 	0809 0808 0808 0807 0908 0808 0808 0809
 	0808 0808 0808 0c08 0808 0808 0606 0606
 	0808 0808 0808 0807 0808 0808 0808 0808 ]
-	&glyphs [
+@chicago/latin2-glyphs [
 	1008 003c 6666 667e 6666 6666 0000 0000
 	0000 0000 0000 0000 0000 0000 0000 0000
 	0810 003c 6666 667e 6666 6666 0000 0000
@@ -1447,14 +1496,14 @@
 	0000 0024 0066 6666 6666 663e 0646 3c00
 	0000 0000 0000 0000 0000 0000 0000 0000 ]
 
-@font [
+@chicago/widths [
 	0406 070a 070b 0a03 0505 0707 0407 0407
 	0808 0808 0808 0808 0808 0404 0608 0608
 	0b08 0808 0807 0708 0806 0709 070c 0908
 	0808 0807 0608 080c 0808 0805 0705 0808
 	0608 0807 0808 0608 0804 0608 040c 0808
 	0808 0607 0608 080c 0808 0805 0505 0808 ]
-	&glyphs [
+@chicago/glyphs [
 	0000 0000 0000 0000 0000 0000 0000 0000
 	0000 0000 0000 0000 0000 0000 0000 0000
 	0000 0030 3030 3030 3000 3030 0000 0000
