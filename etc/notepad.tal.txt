@@ -435,7 +435,7 @@
 		<draw-footer>
 		[ LIT2 01 _&note ] STR }
 	[ LIT &header 00 ] ?{
-		#00 header/<force-draw>
+		#00 header/<draw>
 		[ LIT2 01 _&header ] STR }
 	BRK
 
@@ -512,40 +512,6 @@
 		STHr INCk ?{ POP JMP2r }
 		[ LIT "0 ] ADD /<draw-char> !&>put
 
-(
-@|cursor )
-
-@cursor/<refocus> ( -- )
-	.Mouse/y DEI2 #0012 GTH2 ?{
-		( ) ;header/on-mouse .Mouse/vector DEO2
-		JMP2r }
-	.Mouse/x DEI2 #0016 GTH2 ?{
-		.Mouse/y DEI2 .Screen/height DEI2 #001c SUB2 LTH2 ?{
-			( ) ;corner/on-mouse .Mouse/vector DEO2
-			JMP2r } }
-	;on-mouse-body .Mouse/vector DEO2
-	JMP2r
-
-@cursor/<update> ( color addr* -- )
-	[ LIT2 15 -Screen/auto ] DEO
-	;fill-icn .Screen/addr DEO2
-	#40 /<draw>
-	/<refocus>
-	.Mouse/x DEI2 ,&x STR2
-	.Mouse/y DEI2 ,&y STR2
-	.Screen/addr DEO2
-	( >> )
-
-@cursor/<draw> ( color -- )
-	[ LIT2 &x $2 ] .Screen/x DEO2
-	[ LIT2 &y $2 ] .Screen/y DEO2
-	.Screen/sprite DEO
-	JMP2r
-
-@<quit> ( -- )
-	#800f DEO
-	JMP2r
-
 @<draw-times-addr> ( color times addr* auto -- )
 	.Screen/auto DEO
 	,&addr STR2
@@ -573,6 +539,40 @@
 	.DateTime/year DEI2 #09 !chicago/<draw-dec>
 
 (
+@|cursor )
+
+@cursor/<refocus> ( -- )
+	.Mouse/y DEI2 #0012 GTH2 ?{
+		( ) ;header/on-mouse .Mouse/vector DEO2
+		JMP2r }
+	.Mouse/x DEI2 #0016 GTH2 ?{
+		.Mouse/y DEI2 .Screen/height DEI2 #001e SUB2 LTH2 ?{
+			( ) ;corner/on-mouse .Mouse/vector DEO2
+			JMP2r } }
+	;on-mouse-body .Mouse/vector DEO2
+	JMP2r
+
+@cursor/<update> ( color addr* -- )
+	[ LIT2 15 -Screen/auto ] DEO
+	;fill-icn .Screen/addr DEO2
+	#40 /<draw>
+	/<refocus>
+	.Mouse/x DEI2 ,&x STR2
+	.Mouse/y DEI2 ,&y STR2
+	.Screen/addr DEO2
+	( >> )
+
+@cursor/<draw> ( color -- )
+	[ LIT2 &x $2 ] .Screen/x DEO2
+	[ LIT2 &y $2 ] .Screen/y DEO2
+	.Screen/sprite DEO
+	JMP2r
+
+@<quit> ( -- )
+	#800f DEO
+	JMP2r
+
+(
 @|header )
 
 @header/on-mouse ( -> )
@@ -598,14 +598,9 @@
 	( >> )
 
 @header/<draw> ( toggle -- )
-	DUP [ LIT &down ff ] NEQ ?{ POP JMP2r }
-	&<force-draw> ( toggle -- )
-	DUP ,&down STR
-	( | line )
 	#0000 .Screen/x DEO2
 	#0010 .Screen/y DEO2
 	#81e4 ;&border-chr #01 <draw-times-addr>
-	( | left )
 	#0000 .Screen/x DEO2
 	#0000 .Screen/y DEO2
 	[ LIT2 15 -Screen/auto ] DEO

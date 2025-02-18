@@ -238,6 +238,7 @@
 
 @header/<draw> ( toggle -- )
 	DUP [ LIT &down ff ] NEQ ?{ POP JMP2r }
+	&<force-draw> ( toggle -- )
 	DUP ,&down STR
 	( | line )
 	#0000 .Screen/x DEO2
@@ -320,7 +321,7 @@
 @select/<month> ( year* m -- )
 	.month STZ
 	.year STZ2
-	.year LDZ2 .month LDZ diam .diam STZ
+	[ LIT2 00 -month ] LDZ .year LDZ2 diam .diam STZ
 	.year LDZ2 .month LDZ #01 dotw .offset STZ
 	( | adjust selection )
 	[ LIT2 7f -day ] LDZ NEQ ?{ .offset LDZ .day STZ }
@@ -444,14 +445,14 @@
 
 (
 @|drawing )
-$10
+
 @<draw-page> ( -- )
 	( | clear )
 	#0000 .Screen/x DEO2
 	#0018 .Screen/y DEO2
 	[ LIT2 80 -Screen/pixel ] DEO
 	( | start day )
-	#00 header/<draw>
+	#00 header/<force-draw>
 	<draw-weekline>
 	( | draw days )
 	.DateTime/day DEI ;&today STA
@@ -569,7 +570,6 @@ $10
 	JMP2r
 
 @<draw-header-title> ( -- )
-	( | draw date )
 	.month LDZ .DateTime/month DEI EQU ?{
 		#00f8 .Screen/x DEO2
 		#0001 .Screen/y DEO2
@@ -673,7 +673,13 @@ $10
 		[ LIT "0 ] ADD /<draw-char> !&>put
 
 (
-@|utils ) ( Tomohiko Sakamoto Method )
+@|utils )
+
+@diam ( month* year* -- days )
+	is-leap-year STH
+	DUP #01 EQU STH
+	;&m ADD2 LDA ANDr STHr ADD JMP2r
+	&m 1f 1c 1f 1e 1f 1e 1f 1f 1e 1f 1e 1f
 
 @dotw ( y* m d -- dotw )
 	( y -= m < 3; ) OVR STH
@@ -682,12 +688,6 @@ $10
 	( y + y/4 - y/100 + y/400 ) STH2kr STH2kr #02 SFT2 ADD2 STH2kr #0064 DIV2 SUB2 STH2r #0190 DIV2 ADD2 ADD2
 	( % 7 ) #0007 DIV2k MUL2 SUB2 NIP JMP2r
 	&t 00 03 02 05 00 03 05 01 04 06 02 04
-
-@diam ( year* month -- days )
-	#00 OVR ;&m ADD2 LDA SWP #01 NEQ ?&no-feb
-	STH
-	DUP2 is-leap-year STHr ADD &no-feb NIP NIP JMP2r
-	&m 1f 1c 1f 1e 1f 1e 1f 1f 1e 1f 1e 1f
 
 @is-leap-year ( year* -- bool )
 	( leap year if perfectly divisible by 400 ) DUP2 #0190
