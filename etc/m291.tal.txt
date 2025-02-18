@@ -12,7 +12,7 @@
 |000
 
 	@selection $1 &mod $1 &track $1 &scroll $1
-	@path $2 &null $80
+	@path/buf $2 &null $80
 	@lines &folders $1 &tracks $1
 	@playing $1
 	@paused $1
@@ -225,7 +225,7 @@
 	<fit-window>
 	( | request )
 	;dict/load-cmd <pstr>
-	;path <pstr>
+	;path/buf <pstr>
 	<pstr>/
 	#0a18 DEO
 	JMP2r
@@ -363,7 +363,7 @@
 	#0018 SUB2 #04 SFT2 NIP #17 min .selection/scroll LDZ ADD JMP2r
 
 @<refresh-dir> ( -- )
-	;path .File/name DEO2
+	;path/buf .File/name DEO2
 	#2000 .File/length DEO2
 	;mem/dir .File/read DEO2
 	( | clean )
@@ -554,13 +554,13 @@
 @|path )
 
 @path/<set> ( path* -- )
-	;path !<scpy>
+	;path/buf !<scpy>
 
 @path/<push> ( subpath* -- )
-	;path scap/ !<scpy>
+	;path/buf scap/ !<scpy>
 
 @path/pop ( -- )
-	;path scap/ #0001 SUB2
+	;path/buf scap/ #0001 SUB2
 	&>w ( -- )
 		;path/null LDA ?{ POP2 JMP2r }
 		#0001 SUB2 LDAk [ LIT "/ ] NEQ ?{
@@ -568,6 +568,12 @@
 			INC2r STAr
 			JMP2r }
 		!&>w
+
+@path/get-location ( -- str* )
+	;path/buf ;path/buf scap/ #0001 SUB2
+	&>wg ( -- )
+		#0001 SUB2 LDAk [ LIT "/ ] EQU ?{ NEQ2k ?&>wg }
+	NIP2 INC2 JMP2r
 
 (
 @|drawing )
@@ -851,10 +857,9 @@
 	POP2 POP2 STH2r POP2r JMP2r
 
 @<draw-header-title> ( -- )
-	#0080 .Screen/x DEO2
+	path/get-location #0080 OVR2 chicago/get-str-width #01 SFT2 SUB2
+	( ) #000a SUB2 .Screen/x DEO2
 	#0001 .Screen/y DEO2
-	;path LDAk [ LIT ". ] NEQ ?{ INC2 }
-	.Screen/x DEI2 OVR2 chicago/get-str-width #01 SFT2 SUB2 #000a SUB2 .Screen/x DEO2
 	[ LIT2 15 -Screen/auto ] DEO
 	#09 ;chicago/color STA
 	#20 chicago/<draw-char>

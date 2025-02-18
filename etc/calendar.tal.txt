@@ -167,19 +167,19 @@
 
 @input/<draw> ( -- )
 	( | bg )
-	#005c .Screen/x DEO2
+	#0020 .Screen/x DEO2
 	.Screen/height DEI2 #001e SUB2 .Screen/y DEO2
-	#03c5 ;underline-icn #15 <draw-times-addr>
+	#01c5 ;underline-icn #15 <draw-times-addr>
 	( | fg )
-	#005c .Screen/x DEO2
-	#0f ;chicago/color STA
+	#0020 .Screen/x DEO2
+	#05 ;chicago/color STA
 	;&buf #000b ADD2 chicago/<draw-str>
 	#0f ;chicago/color STA
 	[ LIT "| ] !chicago/<draw-char>
 
 @input/<unlock> ( -- )
 	;on-button .Controller/vector DEO2
-	;on-mouse .Mouse/vector DEO2 !select/<current-month>
+	;on-mouse .Mouse/vector DEO2 !select/<reselect>
 
 (
 @|cursor )
@@ -237,14 +237,9 @@
 	( >> )
 
 @header/<draw> ( toggle -- )
-	DUP [ LIT &down ff ] NEQ ?{ POP JMP2r }
-	&<force-draw> ( toggle -- )
-	DUP ,&down STR
-	( | line )
 	#0000 .Screen/x DEO2
 	#0010 .Screen/y DEO2
 	#81b8 ;&border-chr #01 <draw-times-addr>
-	( | left )
 	#0000 .Screen/x DEO2
 	#0000 .Screen/y DEO2
 	[ LIT2 15 -Screen/auto ] DEO
@@ -308,6 +303,9 @@
 	.day LDZ #07 ADD
 	( clamp ) DUP .offset LDZ SUB .diam LDZ LTH ?{ POP !/<next-month> }
 	.day STZ !<draw-page>
+
+@select/<reselect> ( -- )
+	.year LDZ2 .month LDZ !select/<month>
 
 @select/<today> ( -- )
 	.DateTime/year DEI2 .DateTime/month DEI #01 dotw .offset STZ
@@ -383,7 +381,7 @@
 	&>ler ( -- )
 		DUP2 is-selected ?{ DUP2 /<save-event> }
 		lcap GTH2k ?&>ler
-	POP2 POP2 !select/<current-month>
+	POP2 POP2 !select/<reselect>
 
 @events/<copy> ( -- )
 	;select/filepath .File/name DEO2
@@ -395,7 +393,7 @@
 			.File2/write DEO2
 			POP2 POP2 JMP2r }
 		lcap GTH2k ?&>lco
-	POP2 POP2 !select/<current-month>
+	POP2 POP2 !select/<reselect>
 
 @events/<cut> ( -- )
 	;select/filepath .File/name DEO2
@@ -407,7 +405,7 @@
 			.File2/write DEO2
 			POP2 POP2 !/<erase> }
 		lcap GTH2k ?&>lcu
-	POP2 POP2 !select/<current-month>
+	POP2 POP2 !select/<reselect>
 
 @events/<paste> ( -- )
 	input/<start>
@@ -452,7 +450,7 @@
 	#0018 .Screen/y DEO2
 	[ LIT2 80 -Screen/pixel ] DEO
 	( | start day )
-	#00 header/<force-draw>
+	#00 header/<draw>
 	<draw-weekline>
 	( | draw days )
 	.DateTime/day DEI ;&today STA
@@ -527,7 +525,7 @@
 
 @<draw-full-event> ( event* -- )
 	INC2k ORA ?{ POP2 JMP2r }
-	#005c .Screen/x DEO2
+	#0020 .Screen/x DEO2
 	.Screen/height DEI2 #001e SUB2 .Screen/y DEO2
 	#01 ;chicago/color STA
 	#000b ADD2 !chicago/<draw-str>
@@ -570,18 +568,16 @@
 	JMP2r
 
 @<draw-header-title> ( -- )
+	#0001 .Screen/y DEO2
+	#09 ;chicago/color STA
 	.month LDZ .DateTime/month DEI EQU ?{
 		#00f8 .Screen/x DEO2
-		#0001 .Screen/y DEO2
-		#01 ;chicago/color STA
 		#20 chicago/<draw-char>
 		#20 chicago/<draw-char>
 		[ LIT2 00 -month ] LDZ #20 SFT ;dict/months-txt ADD2 chicago/<draw-str>
 		#20 chicago/<draw-char>
-		.year LDZ2 #01 !chicago/<draw-dec> }
+		.year LDZ2 #09 !chicago/<draw-dec> }
 	#00e8 .Screen/x DEO2
-	#0001 .Screen/y DEO2
-	#09 ;chicago/color STA
 	#20 chicago/<draw-char>
 	#20 chicago/<draw-char>
 	[ LIT2 00 -DateTime/dotw ] DEI #20 SFT ;dict/dotw-txt ADD2 chicago/<draw-str>
@@ -630,7 +626,7 @@
 	.Screen/x DEI2k INC2 ROT DEO2
 	[ LIT2 92 -Screen/auto ] DEO
 	;fill-icn .Screen/addr DEO2
-	#02 .Screen/sprite DEOk DEO
+	[ LIT2 02 -Screen/sprite ] DEOk DEO
 	( | fg )
 	.Screen/y DEI2k #0010 SUB2 ROT DEO2
 	.Screen/x DEI2k #0003 ADD2 ROT DEO2
@@ -675,12 +671,6 @@
 (
 @|utils )
 
-@diam ( month* year* -- days )
-	is-leap-year STH
-	DUP #01 EQU STH
-	;&m ADD2 LDA ANDr STHr ADD JMP2r
-	&m 1f 1c 1f 1e 1f 1e 1f 1f 1e 1f 1e 1f
-
 @dotw ( y* m d -- dotw )
 	( y -= m < 3; ) OVR STH
 	SWP2 #00 STHr #02 LTH SUB2 STH2
@@ -688,6 +678,12 @@
 	( y + y/4 - y/100 + y/400 ) STH2kr STH2kr #02 SFT2 ADD2 STH2kr #0064 DIV2 SUB2 STH2r #0190 DIV2 ADD2 ADD2
 	( % 7 ) #0007 DIV2k MUL2 SUB2 NIP JMP2r
 	&t 00 03 02 05 00 03 05 01 04 06 02 04
+
+@diam ( month* year* -- days )
+	is-leap-year STH
+	DUP #01 EQU STH
+	;&m ADD2 LDA ANDr STHr ADD JMP2r
+	&m 1f 1c 1f 1e 1f 1e 1f 1f 1e 1f 1e 1f
 
 @is-leap-year ( year* -- bool )
 	( leap year if perfectly divisible by 400 ) DUP2 #0190
