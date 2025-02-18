@@ -43,7 +43,7 @@
 	( name ) "Calendar 0a
 	( details ) "Inspired 20 "by 20 "Donn 20 "Denman 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "16 20 "Feb 20 "2025 $1
+	( date ) "17 20 "Feb 20 "2025 $1
 	( fields ) 00
 
 (
@@ -216,41 +216,44 @@
 
 @header/on-mouse ( -> )
 	#41 ;mouse-icn cursor/<update>
-	[ LIT &last $1 ] .Mouse/state DEI NEQ ?{ BRK }
-	.Mouse/state DEI ,&last STR
+	[ LIT2 &last $1 -Mouse/state ] DEI
+	( | handlers )
+	DUP2 #0001 NEQ2 ?{ /outside-quit ?{ /<press-quit> } }
+	DUP2 #0100 NEQ2 ?{ /<release-quit> }
+	,&last STR
+	POP BRK
+
+@header/outside-quit ( -- f )
 	.Mouse/x DEI2 #0008 SUB2 #000c GTH2 ?{
-		.Mouse/y DEI2 #0002 SUB2 #000c GTH2 ?{
-			[ LIT2 00 -Mouse/state ] DEI NEQ /<draw>
-			.Mouse/state DEI ?{ <quit> } } }
-	BRK
+		.Mouse/y DEI2 #0002 SUB2 #000c GTH2 ?{ #00 JMP2r } }
+	#01 JMP2r
+
+@header/<release-quit> ( -- )
+	/outside-quit ?{ <quit> }
+	#00 !/<draw>
+
+@header/<press-quit> ( -- )
+	#01
+	( >> )
 
 @header/<draw> ( toggle -- )
-	( | a )
-	#0000 DUP2 .Screen/x DEO2
-	.Screen/y DEO2
-	[ LIT2 15 -Screen/auto ] DEO
-	;&left-icn .Screen/addr DEO2
-	[ LIT2 09 -Screen/sprite ] DEO
-	( | close )
-	#00 SWP #50 SFT2 ;close-icn ADD2 .Screen/addr DEO2
-	[ LIT2 09 -Screen/sprite ] DEOk DEO
-	( | lead )
-	#09bb ;&middle-icn #15 <draw-times-addr>
+	DUP [ LIT &down ff ] NEQ ?{ POP JMP2r }
+	DUP ,&down STR
 	( | line )
 	#0000 .Screen/x DEO2
 	#0010 .Screen/y DEO2
-	#81b8 ;border-chr #01 <draw-times-addr>
-	( | draw date )
-	.month LDZ .DateTime/month DEI EQU ?<draw-current-date>
-	#00f8 .Screen/x DEO2
-	#0001 .Screen/y DEO2
+	#81b8 ;&border-chr #01 <draw-times-addr>
+	( | left )
+	#0000 .Screen/x DEO2
+	#0000 .Screen/y DEO2
 	[ LIT2 15 -Screen/auto ] DEO
-	#01 ;chicago/color STA
-	#20 chicago/<draw-char>
-	#20 chicago/<draw-char>
-	[ LIT2 00 -month ] LDZ #20 SFT ;dict/months-txt ADD2 chicago/<draw-str>
-	#20 chicago/<draw-char>
-	.year LDZ2 #01 !chicago/<draw-dec>
+	;&left-icn .Screen/addr DEO2
+	[ LIT2 09 -Screen/sprite ] DEO
+	#00 SWP #50 SFT2 ;&close-icn ADD2 .Screen/addr DEO2
+	[ LIT2 09 -Screen/sprite ] DEOk DEO
+	#09bc ;&middle-icn #15 <draw-times-addr>
+	;&right-icn .Screen/addr DEO2
+	[ LIT2 09 -Screen/sprite ] DEO !<draw-header-title>
 
 (
 @|corner )
@@ -442,21 +445,6 @@
 (
 @|drawing )
 
-@<draw-current-date> ( -- )
-	#00e8 .Screen/x DEO2
-	#0001 .Screen/y DEO2
-	[ LIT2 15 -Screen/auto ] DEO
-	#09 ;chicago/color STA
-	#20 chicago/<draw-char>
-	#20 chicago/<draw-char>
-	[ LIT2 00 -DateTime/dotw ] DEI #20 SFT ;dict/dotw-txt ADD2 chicago/<draw-str>
-	#20 chicago/<draw-char>
-	[ LIT2 00 -DateTime/day ] DEI #09 chicago/<draw-dec>
-	#20 chicago/<draw-char>
-	[ LIT2 00 -DateTime/month ] DEI #20 SFT ;dict/months-txt ADD2 chicago/<draw-str>
-	#20 chicago/<draw-char>
-	.DateTime/year DEI2 #09 !chicago/<draw-dec>
-
 @<draw-page> ( -- )
 	( | clear )
 	#0000 .Screen/x DEO2
@@ -579,6 +567,30 @@
 	;bullet-icn .Screen/addr DEO2
 	[ LIT2 0f -Screen/sprite ] DEO
 	JMP2r
+
+@<draw-header-title> ( -- )
+	( | draw date )
+	.month LDZ .DateTime/month DEI EQU ?{
+		#00f8 .Screen/x DEO2
+		#0001 .Screen/y DEO2
+		#01 ;chicago/color STA
+		#20 chicago/<draw-char>
+		#20 chicago/<draw-char>
+		[ LIT2 00 -month ] LDZ #20 SFT ;dict/months-txt ADD2 chicago/<draw-str>
+		#20 chicago/<draw-char>
+		.year LDZ2 #01 !chicago/<draw-dec> }
+	#00e8 .Screen/x DEO2
+	#0001 .Screen/y DEO2
+	#09 ;chicago/color STA
+	#20 chicago/<draw-char>
+	#20 chicago/<draw-char>
+	[ LIT2 00 -DateTime/dotw ] DEI #20 SFT ;dict/dotw-txt ADD2 chicago/<draw-str>
+	#20 chicago/<draw-char>
+	[ LIT2 00 -DateTime/day ] DEI #09 chicago/<draw-dec>
+	#20 chicago/<draw-char>
+	[ LIT2 00 -DateTime/month ] DEI #20 SFT ;dict/months-txt ADD2 chicago/<draw-str>
+	#20 chicago/<draw-char>
+	.DateTime/year DEI2 #09 !chicago/<draw-dec>
 
 @<draw-line-ver> ( addr* -- )
 	STH2
@@ -733,20 +745,22 @@
 		LDAk #0a NEQ ?{ INC2 JMP2r }
 		INC2 !&>w
 
-
-
-( assets )
+(
+@|dict )
 
 @dict
 	&snarf-txt ".snarf $1
-	&dotw-txt
-	[ "Sun $1 "Mon $1 "Tue $1 "Wed $1 "Thu $1 "Fri $1 "Sat $1 ]
-	&months-txt
-	[ "Jan $1 "Feb $1 "Mar $1 "Apr $1 "May $1 "Jun $1 "Jul $1
-	"Aug $1 "Sep $1 "Oct $1 "Nov $1 "Dec $1 ]
-	
-(
-@|assets )
+	&dotw-txt [
+	"Sun $1 "Mon $1 "Tue $1 "Wed $1
+	"Thu $1 "Fri $1 "Sat $1 ]
+	&months-txt [
+	"Jan $1 "Feb $1 "Mar $1 "Apr $1
+	"May $1 "Jun $1 "Jul $1 "Aug $1
+	"Sep $1 "Oct $1 "Nov $1 "Dec $1 ]
+
+
+
+( assets )
 
 @fill-icn [
 	ffff ffff ffff ffff ffff ffff ffff ffff ]
@@ -768,19 +782,19 @@
 	&left-icn [
 	0000 007e 007e 007e 007e 007e 007e 0000 ]
 	&middle-icn [
-	0000 00ff 00ff 00ff 00ff 00ff 00ff 0000
+	0000 00ff 00ff 00ff 00ff 00ff 00ff 0000 ]
+	&right-icn [
 	0000 00fe 00fe 00fe 00fe 00fe 00fe 0000 ]
-
-@mouse-icn [
-	80c0 e0f0 f8fc feff f8d8 8c0c 0606 0000 ]
-
-@border-chr [ 00ff 0000 0000 0000 ff00 0000 0000 0000 ]
-
-@close-icn [
+	&border-chr [ 
+	00ff 0000 0000 0000 ff00 0000 0000 0000 ]
+	&close-icn [
 	0000 00ff 8080 8080 8080 8080 80ff 0000
 	0000 00ef 202f 202f 202f 202f 20ef 0000
 	0000 00ff 84a4 9580 f180 95a4 84ff 0000
 	0000 00ef 20af 202f e02f 20af 20ef 0000 ]
+
+@mouse-icn [
+	80c0 e0f0 f8fc feff f8d8 8c0c 0606 0000 ]
 
 @corner/default-chr [
 0000 00ff 4020 1008 0000 0000 3f1f 0f07
