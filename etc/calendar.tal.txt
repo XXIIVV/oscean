@@ -1,11 +1,12 @@
-( uxnemu calendar.rom )
+( build: uxnasm src/calendar.tal calendar.ram
+| start: uxnemu calendar.rom )
 
 |00 @System/vector $2 &pad $6 &r $2 &g $2 &b $2
 |10 @Console/vector $2 &read $1 &pad $5 &write $1
 |20 @Screen/vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
 |80 @Controller/vector $2 &button $1 &key $1
 |90 @Mouse/vector $2 &x $1 &lx $1 &y $1 &ly $1 &state $1 &chord $1
-|a0 @File/vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|a0 @File/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |b0 @File2/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |c0 @DateTime/year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
 
@@ -25,9 +26,6 @@
 	( | meta )
 	;meta #06 DEO2
 	( | theme )
-	#f0f0 .System/r DEO2
-	#f0f0 .System/g DEO2
-	#f0f0 .System/b DEO2
 	theme/<load>
 	( | size 3bx25 )
 	#0240 .Screen/width DEO2
@@ -43,7 +41,7 @@
 	( name ) "Calendar 0a
 	( details ) "Inspired 20 "by 20 "Donn 20 "Denman 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "17 20 "Feb 20 "2025 $1
+	( date ) "18 20 "Feb 20 "2025 $1
 	( fields ) 00
 
 (
@@ -157,9 +155,7 @@
 	( | cap )
 	,&ptr LDR .&buf #0c ADD LTH ?/<unlock>
 	( | save )
-	;select/filepath .File/name DEO2
-	;events/ptr LDA2 ;events/buf SUB2 .File/length DEO2
-	;events/buf .File/write DEO2
+	;select/filepath events/<export>
 	( | push )
 	#0a /<push>
 	#00 ,&ptr LDR .&buf SUB .File/length DEO2
@@ -249,7 +245,29 @@
 	[ LIT2 09 -Screen/sprite ] DEOk DEO
 	#09bc ;&middle-icn #15 <draw-times-addr>
 	;&right-icn .Screen/addr DEO2
-	[ LIT2 09 -Screen/sprite ] DEO !<draw-header-title>
+	[ LIT2 09 -Screen/sprite ] DEO
+	( >> )
+
+@header/<draw-title> ( -- )
+	#0001 .Screen/y DEO2
+	#09 ;chicago/color STA
+	.month LDZ .DateTime/month DEI EQU ?{
+		#00f8 .Screen/x DEO2
+		#20 chicago/<draw-char>
+		#20 chicago/<draw-char>
+		[ LIT2 00 -month ] LDZ #20 SFT ;dict/months-txt ADD2 chicago/<draw-str>
+		#20 chicago/<draw-char>
+		.year LDZ2 #09 !chicago/<draw-dec> }
+	#00e8 .Screen/x DEO2
+	#20 chicago/<draw-char>
+	#20 chicago/<draw-char>
+	[ LIT2 00 -DateTime/dotw ] DEI #20 SFT ;dict/dotw-txt ADD2 chicago/<draw-str>
+	#20 chicago/<draw-char>
+	[ LIT2 00 -DateTime/day ] DEI #09 chicago/<draw-dec>
+	#20 chicago/<draw-char>
+	[ LIT2 00 -DateTime/month ] DEI #20 SFT ;dict/months-txt ADD2 chicago/<draw-str>
+	#20 chicago/<draw-char>
+	.DateTime/year DEI2 #09 !chicago/<draw-dec>
 
 (
 @|corner )
@@ -281,6 +299,16 @@
 (
 @|select )
 
+%to-dec {
+		#000a DIV2k MUL2 SUB2 [ LIT "0 ] ADD }
+
+@is-selected ( event* -- f )
+	.day LDZ .offset LDZ SUB INC ,&day STR
+	DUP2 wildcard-year ?{
+		DUP2 wildcard-month ?{
+			DUP2 #0008 ADD2 sdec [ LIT2 00 &day $1 ] NEQ2 ?{ POP2 #01 JMP2r } } }
+	POP2 #00 JMP2r
+
 @select/<prev-day> ( -- )
 	.day LDZ #01 SUB
 	( clamp ) DUP .offset LDZ SUB #80 LTH ?{ POP !/<prev-month> }
@@ -295,9 +323,6 @@
 	.day LDZ #07 SUB
 	( clamp ) DUP .offset LDZ SUB #80 LTH ?{ POP !/<prev-month> }
 	.day STZ !<draw-page>
-
-%to-dec {
-		#000a DIV2k MUL2 SUB2 [ LIT "0 ] ADD }
 
 @select/<next-week> ( -- )
 	.day LDZ #07 ADD
@@ -336,10 +361,7 @@
 	( 000x ) #000a DIV2k MUL2 SUB2 to-dec .&000x STZ
 	POP
 	( | load )
-	;&filepath .File/name DEO2
-	#8000 .File/length DEO2
-	;events/buf .File/read DEO2
-	;events/buf .File/success DEI2 ADD2 .events/ptr STZ2 !<draw-page>
+	;&filepath events/import !<draw-page>
 
 @select/<prev-month> ( -- )
 	[ LIT2 ff -day ] STZ
@@ -365,15 +387,20 @@
 	DUP2 #07 MUL ADD .day STZ
 	,&last STR2 !<draw-page>
 
-@is-selected ( event* -- f )
-	.day LDZ .offset LDZ SUB INC ,&day STR
-	DUP2 wildcard-year ?{
-		DUP2 wildcard-month ?{
-			DUP2 #0008 ADD2 sdec [ LIT2 00 &day $1 ] NEQ2 ?{ POP2 #01 JMP2r } } }
-	POP2 #00 JMP2r
-
 (
 @|events )
+
+%is-month ( year* month -- bool ) {
+	.DateTime/month DEI EQU STH
+	.DateTime/year DEI2 EQU2 STHr AND }
+
+@wildcard-year ( str* -- f )
+	LDAk [ LIT "* ] NEQ ?{ POP2 #00 JMP2r }
+	sdec .year LDZ2 NEQ2 JMP2r
+
+@wildcard-month ( str* -- f )
+	#0005 ADD2 LDAk [ LIT "* ] NEQ ?{ POP2 #00 JMP2r }
+	sdec [ LIT2 00 -month ] LDZ INC NEQ2 JMP2r
 
 @events/<erase> ( -- )
 	;select/filepath .File/name DEO2
@@ -422,6 +449,19 @@
 	.File/write DEO2
 	JMP2r
 
+@events/import ( filepath* -- )
+	.File/name DEO2
+	#8000 .File/length DEO2
+	;&buf DUP2 .File/read DEO2
+	.File/success DEI2 ADD2 .&ptr STZ2
+	JMP2r
+
+@events/<export> ( filepath* -- )
+	.File/name DEO2
+	;&buf ;&ptr LDA2 OVR2 SUB2 .File/length DEO2
+	.File/write DEO2
+	JMP2r
+
 @events/find ( -- {event}* )
 	.&ptr LDZ2 ;&buf
 	&>lf ( -- )
@@ -429,91 +469,9 @@
 		lcap GTH2k ?&>lf
 	POP2 POP2 #ffff JMP2r
 
-%is-month ( year* month -- bool ) {
-	.DateTime/month DEI EQU STH
-	.DateTime/year DEI2 EQU2 STHr AND }
-
-@wildcard-year ( str* -- f )
-	LDAk [ LIT "* ] NEQ ?{ POP2 #00 JMP2r }
-	sdec .year LDZ2 NEQ2 JMP2r
-
-@wildcard-month ( str* -- f )
-	#0005 ADD2 LDAk [ LIT "* ] NEQ ?{ POP2 #00 JMP2r }
-	sdec [ LIT2 00 -month ] LDZ INC NEQ2 JMP2r
-
-(
-@|drawing )
-
-@<draw-page> ( -- )
-	( | clear )
-	#0000 .Screen/x DEO2
-	#0018 .Screen/y DEO2
-	[ LIT2 80 -Screen/pixel ] DEO
-	( | start day )
-	#00 header/<draw>
-	<draw-weekline>
-	( | draw days )
-	.DateTime/day DEI ;&today STA
-	.year LDZ2 .month LDZ is-month ;&is-month STA
-	#2a00
-	&>ld ( -- )
-		DUP .offset LDZ SUB .diam LDZ LTH ?{
-			#00 OVR #07 DIVk MUL SUB #0050 MUL2 #0008 ADD2 .Screen/x DEO2
-			#00 OVR #07 DIV #0028 MUL2 #0030 ADD2 .Screen/y DEO2
-			<draw-cell-hash> !&resume }
-		( | bullet )
-		[ LIT2 00 &is-month $1 ] EQU ?{
-			INCk .offset LDZ SUB [ LIT &today $1 ] NEQ ?{
-				#00 OVR #07 DIVk MUL SUB #0050 MUL2 #004b ADD2 .Screen/x DEO2
-				#00 OVR #07 DIV #0028 MUL2 #0030 ADD2 .Screen/y DEO2
-				<draw-bullet> } }
-		#00 OVR #07 DIVk MUL SUB #0050 MUL2 #000b ADD2 .Screen/x DEO2
-		#00 OVR #07 DIV #0028 MUL2 #0032 ADD2 .Screen/y DEO2
-		#00 OVR .offset LDZ SUB INC #05 chicago/<draw-dec>
-		( | event )
-		.Screen/y DEI2k #0010 ADD2 ROT DEO2
-		#00 OVR #07 DIVk MUL SUB #0050 MUL2 #0008 ADD2 .Screen/x DEO2
-		#00 OVR .offset LDZ SUB INC <draw-event>
-		( | selection box )
-		DUP .day LDZ NEQ ?{
-			#00 OVR #07 DIVk MUL SUB #0050 MUL2 #0008 ADD2 .Screen/x DEO2
-			#00 OVR #07 DIV #0028 MUL2 #0030 ADD2 .Screen/y DEO2
-			<draw-cell-selection> } &resume INC GTHk ?&>ld
-	POP2 <draw-frame>
-	( | footer )
-	corner/<draw>
-	#0018 .Screen/x DEO2
-	.Screen/height DEI2 #0008 SUB2 .Screen/y DEO2
-	#01ba ;bottom-icn #01 <draw-times>
-	( | events )
-	events/find !<draw-full-event>
-
-@<draw-frame> ( -- )
-	( | draw line ver )
-	#0701
-	&>llv ( -- )
-		#00 OVR #0050 MUL2 #0008 ADD2 .Screen/x DEO2
-		;line-ver-icn/dotted <draw-line-ver>
-		INC GTHk ?&>llv
-	POP2
-	( | ver borders )
-	#0008 .Screen/x DEO2
-	;line-ver-icn <draw-line-ver>
-	#0007 #0050 MUL2 #0008 ADD2 .Screen/x DEO2
-	;line-ver-icn <draw-line-ver>
-	( | draw line hor )
-	#0601
-	&>llh ( -- )
-		DUP ;line-hor-icn/dotted <draw-line-hor>
-		INC GTHk ?&>llh
-	POP2
-	( | hor borders )
-	#00 ;line-hor-icn <draw-line-hor>
-	#06 ;line-hor-icn !<draw-line-hor>
-
-@<draw-event> ( day* -- )
+@events/<draw-event> ( day* -- )
 	,&day STR2
-	.events/ptr LDZ2 ;events/buf EQU2k ?{
+	.&ptr LDZ2 ;&buf EQU2k ?{
 		&>l ( -- )
 			LDAk ?{ POP2 POP2 JMP2r }
 			DUP2 wildcard-year ?{
@@ -523,103 +481,57 @@
 			lcap GTH2k ?&>l }
 	POP2 POP2 JMP2r
 
-@<draw-full-event> ( event* -- )
-	INC2k ORA ?{ POP2 JMP2r }
-	#0020 .Screen/x DEO2
-	.Screen/height DEI2 #001e SUB2 .Screen/y DEO2
+(
+@|frame )
+
+@frame/<draw> ( -- )
+	( | weekline )
+	#001a .Screen/y DEO2
 	#01 ;chicago/color STA
-	#000b ADD2 !chicago/<draw-str>
-
-@<draw-cell-selection> ( -- )
-	.Screen/x DEI2 .Screen/y DEI2 OVR2 .Screen/x DEO2
-	DUP2 .Screen/y DEO2
-	#05fb ;border-ver-icn #02 <draw-times>
-	OVR2 .Screen/x DEO2
-	DUP2 .Screen/y DEO2
-	#05f6 ;border-hor-icn #01 <draw-times>
-	OVR2 .Screen/x DEO2
-	DUP2 #0027 ADD2 .Screen/y DEO2
-	#05f6 ;border-hor-icn #01 <draw-times>
-	.Screen/y DEO2
-	#004f ADD2 .Screen/x DEO2
-	#05fb ;border-ver-icn #02 !<draw-times>
-
-@<draw-cell-hash> ( -- )
-	#0ff6 ;hash-icn #41 !<draw-times>
-
-@<draw-weekline> ( -- )
-	#01 ;chicago/color STA
-	.DateTime/dotw DEI ,&today STR
 	#0700
 	&>lw ( -- )
-		#001a .Screen/y DEO2
 		#00 OVR #0050 MUL2 #0008 ADD2 .Screen/x DEO2
 		#00 OVR #20 SFT2 ;dict/dotw-txt ADD2 chicago/<draw-str>
-		DUP [ LIT &today $1 ] NEQ ?{
-			#00 OVR #0050 MUL2 #004b ADD2 .Screen/x DEO2
-			<draw-bullet> }
 		INC GTHk ?&>lw
-	POP2 JMP2r
-
-@<draw-bullet> ( -- )
+	POP2
+	( | weekline bullet )
+	#00 .DateTime/dotw DEI #0050 MUL2 #004b ADD2 .Screen/x DEO2
 	[ LIT2 15 -Screen/auto ] DEO
 	;bullet-icn .Screen/addr DEO2
 	[ LIT2 0f -Screen/sprite ] DEO
-	JMP2r
+	( | hor )
+	#0701
+	&>llv ( -- )
+		DUP ;line-ver-icn/dotted /<draw-line-ver>
+		INC GTHk ?&>llv
+	POP2
+	( | ver )
+	#0601
+	&>llh ( -- )
+		DUP ;line-hor-icn/dotted /<draw-line-hor>
+		INC GTHk ?&>llh
+	POP2
+	( | edges )
+	#00 ;line-ver-icn /<draw-line-ver>
+	#07 ;line-ver-icn /<draw-line-ver>
+	#00 ;line-hor-icn /<draw-line-hor>
+	#06 ;line-hor-icn
+	( >> )
 
-@<draw-header-title> ( -- )
-	#0001 .Screen/y DEO2
-	#09 ;chicago/color STA
-	.month LDZ .DateTime/month DEI EQU ?{
-		#00f8 .Screen/x DEO2
-		#20 chicago/<draw-char>
-		#20 chicago/<draw-char>
-		[ LIT2 00 -month ] LDZ #20 SFT ;dict/months-txt ADD2 chicago/<draw-str>
-		#20 chicago/<draw-char>
-		.year LDZ2 #09 !chicago/<draw-dec> }
-	#00e8 .Screen/x DEO2
-	#20 chicago/<draw-char>
-	#20 chicago/<draw-char>
-	[ LIT2 00 -DateTime/dotw ] DEI #20 SFT ;dict/dotw-txt ADD2 chicago/<draw-str>
-	#20 chicago/<draw-char>
-	[ LIT2 00 -DateTime/day ] DEI #09 chicago/<draw-dec>
-	#20 chicago/<draw-char>
-	[ LIT2 00 -DateTime/month ] DEI #20 SFT ;dict/months-txt ADD2 chicago/<draw-str>
-	#20 chicago/<draw-char>
-	.DateTime/year DEI2 #09 !chicago/<draw-dec>
-
-@<draw-line-ver> ( addr* -- )
-	STH2
-	#0030 .Screen/y DEO2
-	#05e2 STH2r #02 !<draw-times>
-
-@<draw-line-hor> ( x addr* -- )
+@frame/<draw-line-hor> ( x addr* -- )
 	STH2
 	#0008 .Screen/x DEO2
 	#00 SWP #0028 MUL2 #0030 ADD2 .Screen/y DEO2
-	#05ba STH2r #01
-	( >> )
+	#05ba STH2r #01 !<draw-times>
 
-@<draw-times> ( color times addr* auto -- )
-	.Screen/auto DEO
-	.Screen/addr DEO2
-	SWP STH
-	[ LITr -Screen/sprite ]
-	&>l ( -- )
-		DEOkr
-		INC DUP ?&>l
-	POP POP2r JMP2r
+@frame/<draw-line-ver> ( x addr* -- )
+	STH2
+	#00 SWP #0050 MUL2 #0008 ADD2 .Screen/x DEO2
+	#0030 .Screen/y DEO2
+	#05e2 STH2r #02 !<draw-times>
 
-@<draw-times-addr> ( color times addr* auto -- )
-	.Screen/auto DEO
-	,&addr STR2
-	SWP STH
-	[ LITr -Screen/sprite ]
-	&>l ( -- )
-		[ LIT2 &addr $2 ] .Screen/addr DEO2
-		DEOkr
-		INC DUP ?&>l
-	POP POP2r JMP2r
+(
+@|chicago )
 
 @chicago/<draw-label> ( str* -- )
 	( | bg )
@@ -669,6 +581,114 @@
 		[ LIT "0 ] ADD /<draw-char> !&>put
 
 (
+@|theme )
+
+@theme/<reset> ( -- )
+	#f0f0 #f0f0 #f0f0
+	( >> )
+
+@theme/<set> ( r* g* b* -- )
+	.System/b DEO2
+	.System/g DEO2
+	.System/r DEO2
+	JMP2r
+
+@theme/<load> ( -- )
+	;&path .File/name DEO2
+	#0002 .File/length DEO2
+	;&r .File/read DEO2
+	;&g .File/read DEO2
+	;&b .File/read DEO2
+	.File/success-lb DEI ?{ !theme/<reset> }
+	[ LIT2 &r $2 ] [ LIT2 &g $2 ] [ LIT2 &b $2 ] !theme/<set>
+
+	&path ".theme $1
+
+(
+@|drawing )
+
+@<draw-page> ( -- )
+	( | clear )
+	#0000 .Screen/x DEO2
+	#0018 .Screen/y DEO2
+	[ LIT2 80 -Screen/pixel ] DEO
+	( | start day )
+	#00 header/<draw>
+	( | draw days )
+	.DateTime/day DEI ;&today STA
+	.year LDZ2 .month LDZ is-month ;&is-month STA
+	#2a00
+	&>ld ( -- )
+		DUP .offset LDZ SUB .diam LDZ LTH ?{
+			#00 OVR #07 DIVk MUL SUB #0050 MUL2 #0008 ADD2 .Screen/x DEO2
+			#00 OVR #07 DIV #0028 MUL2 #0030 ADD2 .Screen/y DEO2
+			#0ff6 ;hash-icn #41 <draw-times> !&resume }
+		( | bullet )
+		[ LIT2 00 &is-month $1 ] EQU ?{
+			INCk .offset LDZ SUB [ LIT &today $1 ] NEQ ?{
+				#00 OVR #07 DIVk MUL SUB #0050 MUL2 #004b ADD2 .Screen/x DEO2
+				#00 OVR #07 DIV #0028 MUL2 #0030 ADD2 .Screen/y DEO2
+				[ LIT2 15 -Screen/auto ] DEO
+				;bullet-icn .Screen/addr DEO2
+				[ LIT2 0f -Screen/sprite ] DEO } }
+		#00 OVR #07 DIVk MUL SUB #0050 MUL2 #000b ADD2 .Screen/x DEO2
+		#00 OVR #07 DIV #0028 MUL2 #0032 ADD2 .Screen/y DEO2
+		#00 OVR .offset LDZ SUB INC #05 chicago/<draw-dec>
+		( | event )
+		.Screen/y DEI2k #0010 ADD2 ROT DEO2
+		#00 OVR #07 DIVk MUL SUB #0050 MUL2 #0008 ADD2 .Screen/x DEO2
+		#00 OVR .offset LDZ SUB INC events/<draw-event>
+		( | selection box )
+		DUP .day LDZ NEQ ?{
+			#00 OVR #07 DIVk MUL SUB #0050 MUL2 #0008 ADD2 .Screen/x DEO2
+			#00 OVR #07 DIV #0028 MUL2 #0030 ADD2 .Screen/y DEO2
+			.Screen/x DEI2 .Screen/y DEI2 OVR2 .Screen/x DEO2
+			DUP2 .Screen/y DEO2
+			#05fb ;border-ver-icn #02 <draw-times>
+			OVR2 .Screen/x DEO2
+			DUP2 .Screen/y DEO2
+			#05f6 ;border-hor-icn #01 <draw-times>
+			OVR2 .Screen/x DEO2
+			DUP2 #0027 ADD2 .Screen/y DEO2
+			#05f6 ;border-hor-icn #01 <draw-times>
+			.Screen/y DEO2
+			#004f ADD2 .Screen/x DEO2
+			#05fb ;border-ver-icn #02 <draw-times> } &resume INC GTHk ?&>ld
+	POP2 frame/<draw>
+	( | footer )
+	corner/<draw>
+	#0018 .Screen/x DEO2
+	.Screen/height DEI2 #0008 SUB2 .Screen/y DEO2
+	#01ba ;bottom-icn #01 <draw-times>
+	( | events )
+	events/find INC2k ORA ?{ POP2 JMP2r }
+	#0020 .Screen/x DEO2
+	.Screen/height DEI2 #001e SUB2 .Screen/y DEO2
+	#01 ;chicago/color STA
+	#000b ADD2 !chicago/<draw-str>
+
+@<draw-times> ( color times addr* auto -- )
+	.Screen/auto DEO
+	.Screen/addr DEO2
+	SWP STH
+	[ LITr -Screen/sprite ]
+	&>l ( -- )
+		DEOkr
+		INC DUP ?&>l
+	POP POP2r JMP2r
+
+@<draw-times-addr> ( color times addr* auto -- )
+	.Screen/auto DEO
+	,&addr STR2
+	SWP STH
+	[ LITr -Screen/sprite ]
+	&>l ( -- )
+		[ LIT2 &addr $2 ] .Screen/addr DEO2
+		DEOkr
+		INC DUP ?&>l
+	POP POP2r JMP2r
+
+(
 @|utils )
 
 @dotw ( y* m d -- dotw )
@@ -693,22 +713,6 @@
 	( leap year if not divisible by 100 ) ( but divisible by 4 ) DUP2 #0003 AND2 #0000 EQU2 ?&leap
 	( all other years are not leap years ) &not-leap POP2 #00 JMP2r
 	&leap POP2 #01 JMP2r
-	( theme )
-
-@theme/<load> ( -- )
-	;&path .File/name DEO2
-	#0002 .File/length DEO2
-	;&r .File/read DEO2
-	;&g .File/read DEO2
-	;&b .File/read DEO2
-	.File/success DEI2 ORA #01 JCN
-	JMP2r
-	LIT2 &r $2 .System/r DEO2
-	LIT2 &g $2 .System/g DEO2
-	LIT2 &b $2 .System/b DEO2
-	JMP2r
-
-	&path ".theme $1
 
 @sdec ( str* -- val* )
 	[ LIT2r 0000 ]

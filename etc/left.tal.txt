@@ -59,7 +59,7 @@
 	( name ) "Left 0a
 	( details ) "A 20 "Text 20 "Editor 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "13 20 "Feb 20 "2025 $1 02
+	( date ) "18 20 "Feb 20 "2025 $1 02
 	( > ) 83 =appicon
 	( > ) 0a =manifest
 
@@ -95,12 +95,13 @@
 	( . ) 00 1b =reset-each "Reset $1
 	( >>>>> ) 01 "Find $1
 	( . ) 01 "f =search/capture "Selection $1
-	( >>>>> ) 05 "View $1
+	( >>>>> ) 06 "View $1
 	( . ) 01 "h =highlight/toggle "Highlight $1
 	( . ) 01 20 =search/capture-word "Symbol $1
 	( . ) 01 "l =nav/toggle-categories "Categories $1
 	( . ) 01 "d =nav/toggle-sidebar "Navbar $1
-	( . ) 01 "m =window/toggle-expand "Expand $1 $1
+	( . ) 01 "m =window/toggle-expand "Expand $1
+	( . ) 00 00 =theme/<reset> "Reset 20 "Theme $1 $1
 
 (
 @|macros )
@@ -1783,14 +1784,8 @@
 (
 @|elements )
 
-@theme/<load> ( -- )
-	;&path .File/name DEO2
-	#0002 .File/length DEO2
-	;&r .File/read DEO2
-	;&g .File/read DEO2
-	;&b .File/read DEO2
-	.File/success-lb DEI ?{ #e048 #e0a7 #e097 !theme/<set> }
-	[ LIT2 &r $2 ] [ LIT2 &g $2 ] [ LIT2 &b $2 ]
+@theme/<reset> ( -- )
+	#e048 #e0a7 #e097
 	( >> )
 
 @theme/<set> ( r* g* b* -- )
@@ -1798,6 +1793,15 @@
 	.System/g DEO2
 	.System/r DEO2
 	JMP2r
+
+@theme/<load> ( -- )
+	;&path .File/name DEO2
+	#0002 .File/length DEO2
+	;&r .File/read DEO2
+	;&g .File/read DEO2
+	;&b .File/read DEO2
+	.File/success-lb DEI ?{ !theme/<reset> }
+	[ LIT2 &r $2 ] [ LIT2 &g $2 ] [ LIT2 &b $2 ] !theme/<set>
 
 	&path ".theme $1
 
