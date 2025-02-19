@@ -29,9 +29,6 @@
 @on-reset ( -> )
 	;meta #06 DEO2
 	( | theme )
-	#f0f0 .System/r DEO2
-	#f0f0 .System/g DEO2
-	#f0f0 .System/b DEO2
 	theme/<load>
 	( | size )
 	;WIDTH .Screen/width DEO2
@@ -160,10 +157,6 @@
 	( select [shift] ) DUP #04 NEQ ?{ <send-pause> }
 	( start [home] ) DUP #08 NEQ ?{ .selection LDZ <pick> }
 	POP BRK
-
-@<quit> ( -- )
-	#800f DEO
-	JMP2r
 
 (
 @|message )
@@ -887,7 +880,7 @@
 	#01 JMP2r
 
 @header/<release-quit> ( -- )
-	/outside-quit ?{ <quit> }
+	/outside-quit ?{ #800f DEO }
 	#00 !/<draw>
 
 @header/<press-quit> ( -- )
@@ -1128,17 +1121,24 @@
 (
 @|theme )
 
+@theme/<reset> ( -- )
+	#f0f0 #f0f0 #f0f0
+	( >> )
+
+@theme/<set> ( r* g* b* -- )
+	.System/b DEO2
+	.System/g DEO2
+	.System/r DEO2
+	JMP2r
+
 @theme/<load> ( -- )
 	;&path .File/name DEO2
 	#0002 .File/length DEO2
 	;&r .File/read DEO2
 	;&g .File/read DEO2
 	;&b .File/read DEO2
-	[ LIT2 00 -File/success-lb ] DEI EQU ?{
-		[ LIT2 &r $2 ] .System/r DEO2
-		[ LIT2 &g $2 ] .System/g DEO2
-		[ LIT2 &b $2 ] .System/b DEO2 }
-	JMP2r
+	.File/success-lb DEI ?{ !theme/<reset> }
+	[ LIT2 &r $2 ] [ LIT2 &g $2 ] [ LIT2 &b $2 ] !theme/<set>
 
 	&path ".theme $1
 
@@ -1187,10 +1187,14 @@
 	1010 2010 1008 0700 0f0f 1f0f 0f07 0000
 	2010 1010 2020 c000 c0e0 e0e0 c0c0 0000 ]
 
-@progress/left-icn [ 0000 0000 0102 0202 0202 0201 0000 0000 ]
-@progress/middle-icn [ 0000 00ff 0000 0000 0000 0000 ff00 0000 ]
-@progress/right-icn [ 0000 0000 8040 4040 4040 4080 0000 0000 ]
-@progress/fill-icn [ 0000 003c 7eff ffff ffff ff7e 3c00 0000 ]
+@progress/left-icn [
+	0000 0000 0102 0202 0202 0201 0000 0000 ]
+@progress/middle-icn [
+	0000 00ff 0000 0000 0000 0000 ff00 0000 ]
+@progress/right-icn [
+	0000 0000 8040 4040 4040 4080 0000 0000 ]
+@progress/fill-icn [
+	0000 003c 7eff ffff ffff ff7e 3c00 0000 ]
 
 @button-icn [
 	0000 0208 1000 2020 0000 ee00 0000 0000

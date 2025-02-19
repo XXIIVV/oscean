@@ -13,7 +13,7 @@
 
 	@page $1
 	@collapsed $1
-	@selection &a $2 &b $2 &length $2 &sketch $1
+	@selection &a $2 &b $2 &length $2
 
 |100
 
@@ -21,12 +21,10 @@
 	( | meta )
 	;meta #06 DEO2
 	( | theme )
-	#f0f0 .System/r DEO2
-	#f0f0 .System/g DEO2
-	#f0f0 .System/b DEO2
+	theme/<load>
+	( | size )
 	#00e0 .Screen/width DEO2
 	#00f8 .Screen/height DEO2
-	<load-theme>
 	( | unlock )
 	;on-console .Console/vector DEO2
 	;on-mouse-body .Mouse/vector DEO2
@@ -77,13 +75,8 @@
 	DUP #11 NEQ OVR #41 NEQ AND ?{ <prev-page> }
 	POP
 	( | key )
-	DUP #1b NEQ ?{ toggle-sketch POP BRK }
-	DUP #08 NEQ ?{
-		.selection/sketch LDZ ?{ erase POP BRK }
-		erase-sketch POP BRK }
-	DUP #7f NEQ ?{
-		.selection/sketch LDZ ?{ delete POP BRK }
-		erase-sketch POP BRK }
+	DUP #08 NEQ ?{ erase POP BRK }
+	DUP #7f NEQ ?{ delete POP BRK }
 	DUP #09 LTH ?{ DUP insert }
 	POP BRK
 
@@ -96,6 +89,29 @@
 	DUP2 #0101 NEQ2 ?{ get-position <select-to> }
 	,&last STR
 	POP BRK
+
+@on-frame-draw ( -> )
+	#0000 .Screen/vector DEO2
+	[ LIT &note 00 ] ?{
+		#0000 .Screen/x DEO2
+		#0018 .Screen/y DEO2
+		[ LIT2 80 -Screen/pixel ] DEO
+		<draw-note>
+		<draw-footer>
+		[ LIT2 01 _&note ] STR }
+	[ LIT &header 00 ] ?{
+		#00 header/<draw>
+		[ LIT2 01 _&header ] STR }
+	BRK
+
+@<reqdraw-all> ( -- )
+	[ LIT2 00 _on-frame-draw/header ] STR
+	( >> )
+
+@<reqdraw-note> ( -- )
+	[ LIT2 00 _on-frame-draw/note ] STR
+	;on-frame-draw .Screen/vector DEO2
+	JMP2r
 
 (
 @|editor )
@@ -128,17 +144,6 @@
 
 @cut-char ( addr* -- )
 	get-eof #0001 !<msfl>
-
-(
-@|sketch )
-
-@toggle-sketch ( -- )
-	JMP2r
-
-@erase-sketch ( -- )
-	;&mcpy .System/expansion DEO2 !<reqdraw-all>
-
-	&mcpy [ 00 1500 0000 =sketch 00 ]
 
 (
 @|selection )
@@ -426,28 +431,7 @@
 	( | detect resize )
 	.Screen/y DEI2 !<reqresize>
 
-@on-frame-draw ( -> )
-	#0000 .Screen/vector DEO2
-	[ LIT &note 00 ] ?{
-		#0000 .Screen/x DEO2
-		#0018 .Screen/y DEO2
-		[ LIT2 80 -Screen/pixel ] DEO
-		<draw-note>
-		<draw-footer>
-		[ LIT2 01 _&note ] STR }
-	[ LIT &header 00 ] ?{
-		#00 header/<draw>
-		[ LIT2 01 _&header ] STR }
-	BRK
 
-@<reqdraw-all> ( -- )
-	[ LIT2 00 _on-frame-draw/header ] STR
-	( >> )
-
-@<reqdraw-note> ( -- )
-	[ LIT2 00 _on-frame-draw/note ] STR
-	;on-frame-draw .Screen/vector DEO2
-	JMP2r
 
 @<reqresize> ( size* -- )
 	( min ) #00d0 GTH2k [ JMP SWP2 ] POP2
@@ -486,6 +470,35 @@
 	.Screen/y DEI2k #0010 ADD2 ROT DEO2
 	JMP2r
 
+@<draw-times-addr> ( color times addr* auto -- )
+	.Screen/auto DEO
+	,&addr STR2
+	SWP STH
+	[ LITr -Screen/sprite ]
+	&>l ( -- )
+		[ LIT2 &addr $2 ] .Screen/addr DEO2
+		DEOkr
+		INC DUP ?&>l
+	POP POP2r JMP2r
+
+@<draw-header-title> ( -- )
+	#0030 .Screen/x DEO2
+	#0001 .Screen/y DEO2
+	[ LIT2 15 -Screen/auto ] DEO
+	#09 ;chicago/color STA
+	#20 chicago/<draw-char>
+	#20 chicago/<draw-char>
+	[ LIT2 00 -DateTime/dotw ] DEI #20 SFT ;dict/dotw-txt ADD2 chicago/<draw-str>
+	#20 chicago/<draw-char>
+	[ LIT2 00 -DateTime/day ] DEI #09 chicago/<draw-dec>
+	#20 chicago/<draw-char>
+	[ LIT2 00 -DateTime/month ] DEI #20 SFT ;dict/months-txt ADD2 chicago/<draw-str>
+	#20 chicago/<draw-char>
+	.DateTime/year DEI2 #09 !chicago/<draw-dec>
+
+(
+@|chicago )
+
 @chicago/<draw-str> ( str* -- )
 	[ LIT2 15 -Screen/auto ] DEO
 	&>w ( -- )
@@ -512,32 +525,6 @@
 	&>put ( -- )
 		STHr INCk ?{ POP JMP2r }
 		[ LIT "0 ] ADD /<draw-char> !&>put
-
-@<draw-times-addr> ( color times addr* auto -- )
-	.Screen/auto DEO
-	,&addr STR2
-	SWP STH
-	[ LITr -Screen/sprite ]
-	&>l ( -- )
-		[ LIT2 &addr $2 ] .Screen/addr DEO2
-		DEOkr
-		INC DUP ?&>l
-	POP POP2r JMP2r
-
-@<draw-header-title> ( -- )
-	#0030 .Screen/x DEO2
-	#0001 .Screen/y DEO2
-	[ LIT2 15 -Screen/auto ] DEO
-	#09 ;chicago/color STA
-	#20 chicago/<draw-char>
-	#20 chicago/<draw-char>
-	[ LIT2 00 -DateTime/dotw ] DEI #20 SFT ;dict/dotw-txt ADD2 chicago/<draw-str>
-	#20 chicago/<draw-char>
-	[ LIT2 00 -DateTime/day ] DEI #09 chicago/<draw-dec>
-	#20 chicago/<draw-char>
-	[ LIT2 00 -DateTime/month ] DEI #20 SFT ;dict/months-txt ADD2 chicago/<draw-str>
-	#20 chicago/<draw-char>
-	.DateTime/year DEI2 #09 !chicago/<draw-dec>
 
 (
 @|cursor )
@@ -569,10 +556,6 @@
 	.Screen/sprite DEO
 	JMP2r
 
-@<quit> ( -- )
-	#800f DEO
-	JMP2r
-
 (
 @|header )
 
@@ -591,7 +574,7 @@
 	#01 JMP2r
 
 @header/<release-quit> ( -- )
-	/outside-quit ?{ <quit> }
+	/outside-quit ?{ #800f DEO }
 	#00 !/<draw>
 
 @header/<press-quit> ( -- )
@@ -641,6 +624,30 @@
 	JMP2r
 
 (
+@|theme )
+
+@theme/<reset> ( -- )
+	#f0f0 #f0f0 #f0f0
+	( >> )
+
+@theme/<set> ( r* g* b* -- )
+	.System/b DEO2
+	.System/g DEO2
+	.System/r DEO2
+	JMP2r
+
+@theme/<load> ( -- )
+	;&path .File/name DEO2
+	#0002 .File/length DEO2
+	;&r .File/read DEO2
+	;&g .File/read DEO2
+	;&b .File/read DEO2
+	.File/success-lb DEI ?{ !theme/<reset> }
+	[ LIT2 &r $2 ] [ LIT2 &g $2 ] [ LIT2 &b $2 ] !theme/<set>
+
+	&path ".theme $1
+
+(
 @|stdlib )
 
 @scap ( str* -- end* )
@@ -653,18 +660,6 @@
 	DUP #04 SFT /c
 	&c ( byte -: )
 	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
-	JMP2r
-
-@<load-theme> ( -- )
-	;theme-path .File/name DEO2
-	#0002 .File/length DEO2
-	;&r .File/read DEO2
-	;&g .File/read DEO2
-	;&b .File/read DEO2
-	[ LIT2 00 -File/success-lb ] DEI EQU ?{
-		[ LIT2 &r $2 ] .System/r DEO2
-		[ LIT2 &g $2 ] .System/g DEO2
-		[ LIT2 &b $2 ] .System/b DEO2 }
 	JMP2r
 
 @<msfl> ( b* a* len* -- )
@@ -685,8 +680,6 @@
 
 (
 @|strings )
-
-@theme-path ".theme $1
 
 @notepad-path ".notepad $1
 
@@ -1362,6 +1355,6 @@
 @placeholder "Keep 20 "up 20 "to 20 "eight 20 "pages 20 "of 20 "notes 20 "in 20 "the 20 "Note 20 "Pad. 20 "Click 20 "on 20 "the 20 "dog-ear 20 "to 20 "turn 20 "to 20 "the 20 "next 20 "following 20 "page. 20 "Click 20 "in 20 "the 20 "lower 20 "left 20 "corner 20 "to 20 "turn 20 "to 20 "the 20 "next 20 "previous 20 "page. 20 $1
 
 @mem $8000
-@sketch
+
 
 
