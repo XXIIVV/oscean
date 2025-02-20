@@ -1,148 +1,111 @@
-( catclock )
+( build: uxnasm src/catclock.tal catclock.ram
+| start: uxnemu catclock.rom )
 
-|00 @System &vector $2 &wst $1 &rst $1 &pad $4 &r $2 &g $2 &b $2 &debug $1 &halt $1
-|20 @Screen &vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
+|00 @System/vector $2 &wst $1 &rst $1 &pad $4 &r $2 &g $2 &b $2 &debug $1 &halt $1
+|20 @Screen/vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
+|a0 @File/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |c0 @DateTime &year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
 
 |000
 
-	@timer &frame $1 &anim $1 &last $1
-	@center &x $2 &y $2
-	@needles &hx $2 &hy $2 &mx $2 &my $2 &sx $2 &sy $2
-
-(
-@|vectors )
+	@center/x $2 &y $2
 
 |100
 
 @on-reset ( -> )
-	( | meta )
 	;meta #06 DEO2
-	( | theme )
-	#0ff0 .System/r DEO2
-	#0f00 .System/g DEO2
-	#0f00 .System/b DEO2
-	( | vectors )
-	;on-frame .Screen/vector DEO2
-	( | resize )
+	theme/<load>
 	#0060 .Screen/width DEO2
 	#00c0 .Screen/height DEO2
 	( | center )
 	.Screen/width DEI2 #01 SFT2 .center/x STZ2
 	.Screen/height DEI2 #01 SFT2 #0018 ADD2 .center/y STZ2
 	( | init )
-	[ LIT2 05 -timer/frame ] STZ
-	#0000 DUP2 .Screen/x DEO2
-	.Screen/y DEO2
-	[ LIT2 81 -Screen/pixel ] DEO
 	.center/y LDZ2 #0050 SUB2 .Screen/y DEO2
-	#08 ;head-icn <draw-body>
-	#05 ;body-icn <draw-body>
+	#08 ;head-icn body/<draw>
+	#05 ;body-icn body/<draw>
+	;on-frame .Screen/vector DEO2
 	BRK
 
 @on-frame ( -> )
-	( | once per second )
-	.DateTime/second DEI DUP .timer/last LDZ EQU ?{
-		update-needles <draw-needles>
-		DUP .timer/last STZ }
-	POP
-	( | every 5th frame )
-	[ LIT2 05 -timer/frame ] LDZ NEQ ?{
-		.timer/anim LDZ <draw-animation>
-		.timer/anim LDZk INC #0f AND SWP STZ
-		[ LIT2 00 -timer/frame ] STZ }
-	.timer/frame LDZk INC SWP STZ
+	[ LIT2 05 &frame 05 ] INCk ,&frame STR
+	NEQ ?{
+		( | on second change )
+		[ LIT2 &last $1 -DateTime/second ] DEI EQUk ?{ <draw-needles>
+			DUP ,&last STR }
+		( | every 5th frame )
+		POP2 [ LIT2 0f &timer $1 ] INCk ,&timer STR
+		AND body/<animate>
+		[ LIT2 00 _&frame ] STR }
 	BRK
 
-@meta $1
-	( name ) "Catclock 0a
-	( details ) "Tic 20 "Tac 20 "Cat 20 "Clock 0a
-	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "8 20 "Dec 20 "2024 $1
-	( elements ) 01
-	( > icon ) 83 =appicon
-
 (
-@|helpers )
+@|body )
 
-@update-needles ( -- )
-	( | seconds )
-	[ LIT2 00 -DateTime/second ] DEI DUP2 ADD2 ;sin60 ADD2 LDA2
-	( ) #0090 circle .needles/sx STZ2
-	.needles/sy STZ2
-	( | minutes )
-	[ LIT2 00 -DateTime/minute ] DEI DUP2 ADD2 ;sin60 ADD2 LDA2
-	( ) #0090 circle .needles/mx STZ2
-	.needles/my STZ2
-	( | hours )
-	[ LIT2 00 -DateTime/hour ] DEI #0c DIVk MUL SUB #20 SFTk NIP ADD
-	( | minutes )
-	[ LIT2 00 -DateTime/minute ] DEI #0f DIV ADD2 DUP2 ADD2 ;sin60 ADD2 LDA2
-	( ) #00b0 circle .needles/hx STZ2
-	.needles/hy STZ2
-	JMP2r
+@body/<draw> ( height addr* -- )
+	.center/x LDZ2 #0020 SUB2 .Screen/x DEO2
+	.Screen/addr DEO2
+	#0176 !<draw-times>
 
-@circle ( cx cy radius* -- y* x* )
-	STH2
-	SWP
-	( ) #00 SWP #40 SFT2 STH2kr DIV2
-	( ) .center/x LDZ2 ADD2 #0800 STH2kr DIV2 SUB2 STH2
-	SWP2r
-	( ) #00 SWP #40 SFT2 STH2kr DIV2
-	( ) .center/y LDZ2 ADD2 #0800 STH2kr DIV2 SUB2 POP2r STH2r JMP2r
-
-@<draw-animation> ( state -- )
+@body/<animate> ( timer -- )
 	STHk [ LIT2 04 -Screen/auto ] DEO
 	( | eyes )
-	( reverse ) DUP #08 LTH ?{ #0f SWP SUB }
-	#0c MUL #00 SWP #30 SFT2 ;eyes-icn ADD2 .Screen/addr DEO2
-	[ LIT2 56 -Screen/auto ] DEO
+	DUP #08 LTH ?{ #0f SWP SUB }
+	#0c MUL #00 SWP #30 SFT2
+	( ) ;eyes-icn ADD2 .Screen/addr DEO2
 	.center/x LDZ2 #0018 SUB2 .Screen/x DEO2
 	.center/y LDZ2 #0030 SUB2 .Screen/y DEO2
-	#0201 <draw-times>
+	#0204 #56 <draw-times>
 	( | tail )
-	[ LIT2 36 -Screen/auto ] DEO
-	STHr #0f AND
-	( ) DUP #07 AND #0c MUL #00 SWP #30 SFT2 ;tail-icn ADD2 .Screen/addr DEO2
+	STHr #0f AND DUP #07 AND #0c MUL #00 SWP #30 SFT2
+	( ) ;tail-icn ADD2 .Screen/addr DEO2
 	.center/y LDZ2 #0015 ADD2 .Screen/y DEO2
 	#07 GTH ?{
 		.center/x LDZ2 #0010 SUB2 .Screen/x DEO2
-		#0304 !<draw-times> }
+		#0301 #36 !<draw-times> }
 	.center/x LDZ2 #0008 ADD2 .Screen/x DEO2
-	#0314 !<draw-times>
-
-@<draw-needles> ( mask -- )
-	( | clear )
-	.center/x LDZ2 #0010 SUB2 .Screen/x DEO2
-	.center/y LDZ2 #0010 SUB2 .Screen/y DEO2
-	;fill-icn .Screen/addr DEO2
-	[ LIT2 31 -Screen/auto ] DEO
-	#0440 <draw-times>
-	[ LIT2 00 -Screen/auto ] DEO
-	.center/x LDZ2 .center/y LDZ2 OVR2 OVR2 .needles/sx LDZ2 .needles/sy LDZ2 #42 <draw-line>
-	OVR2 OVR2 .needles/mx LDZ2 .needles/my LDZ2 #43 <draw-line>
-	OVR2 OVR2 .needles/hx LDZ2 .needles/hy LDZ2 #43 <draw-line>
-	( | middle )
-	;middle-icn .Screen/addr DEO2
-	#0001 SUB2 .Screen/y DEO2
-	#0001 SUB2 .Screen/x DEO2
-	[ LIT2 4a -Screen/sprite ] DEO
-	JMP2r
-
-@<draw-body> ( height addr* -- )
-	[ LIT2 76 -Screen/auto ] DEO
-	.center/x LDZ2 #0020 SUB2 .Screen/x DEO2
-	.Screen/addr DEO2
-	#04
+	#0311 #36
 	( >> )
 
-@<draw-times> ( times color -- )
+@<draw-times> ( times color auto -- )
+	.Screen/auto DEO
 	STH
 	[ LITr -Screen/sprite ] #00 SWP SUB
 	&>ver ( -- )
 		DEOkr
 		INC DUP ?&>ver
 	POP POP2r JMP2r
+
+(
+@|needles )
+
+@plot ( cx cy radius* -- x* y* )
+	STH2
+	SWP
+	( ) #00 SWP #40 SFT2 STH2kr DIV2
+	( ) .center/x LDZ2 ADD2 #0800 STH2kr DIV2 SUB2 STH2
+	SWP2r
+	( ) #00 SWP #40 SFT2 STH2kr DIV2
+	( ) .center/y LDZ2 ADD2 #0800 STH2kr DIV2 SUB2 POP2r STH2r SWP2 JMP2r
+
+@<draw-needles> ( -- )
+	( | clear )
+	.center/x LDZ2 #0010 SUB2 .Screen/x DEO2
+	.center/y LDZ2 #0010 SUB2 .Screen/y DEO2
+	;fill-icn .Screen/addr DEO2
+	#0440 #31 <draw-times>
+	( | draw m & h needles )
+	[ LIT2 00 -Screen/auto ] DEO
+	[ LIT2 00 -DateTime/minute ] DEI DUP2 ADD2 ;sin60 ADD2 LDA2 #0090 plot #41 <draw-needle>
+	[ LIT2 00 -DateTime/hour ] DEI #0c DIVk MUL SUB #20 SFTk NIP ADD [ LIT2 00 -DateTime/minute ] DEI #0f DIV ADD2 DUP2 ADD2 ;sin60 ADD2 LDA2 #00b0 plot #41 <draw-needle>
+	( | draw pivot )
+	;middle-icn .Screen/addr DEO2
+	.center/x LDZ2 #0001 SUB2 .Screen/x DEO2
+	.center/y LDZ2 #0001 SUB2 .Screen/y DEO2
+	[ LIT2 45 -Screen/sprite ] DEO
+	( | draw s needle )
+	[ LIT2 00 -DateTime/second ] DEI DUP2 ADD2 ;sin60 ADD2 LDA2 #0090 plot #43 <draw-needle>
+	JMP2r
 
 %abs2 ( a* -- res* ) {
 	DUP2k #1f SFT2 MUL2 SUB2 }
@@ -153,10 +116,10 @@
 %gts2 ( a* b* -- f ) {
 	SWP2 lts2 }
 
-@<draw-line> ( x1* y1* x2* y2* color -- )
+@<draw-needle> ( x1* y1* x2* y2* color -- )
 	,&color STR
-	,&y2 STR2
-	,&x2 STR2
+	.center/y LDZ2 ,&y2 STR2
+	.center/x LDZ2 ,&x2 STR2
 	STH2
 	STH2
 	( | x )
@@ -167,7 +130,8 @@
 	[ LIT2 ADD2r SUB2r ] ,&y2 LDR2 STH2kr SUB2k abs2 #0000 SWP2 SUB2 ,&dy STR2
 	gts2 [ JMP SWP POP ] ,&sy STR
 	,&dx LDR2 ,&dy LDR2 ADD2
-	&>while ( x+y* | x* y* -- )
+	&>while ( x+y*
+		| x* y* -- )
 		DUP2r [ LITr -Screen/y ] DEO2r
 		OVR2r [ LITr -Screen/x ] DEO2r
 		[ LIT2 &color $1 -Screen/pixel ] DEO
@@ -182,6 +146,38 @@
 			( y1+sy ) [ LIT2r 0001 ] [ &sy $1 ] }
 		!&>while
 	&end POP2 POP2r POP2r JMP2r
+
+(
+@|theme )
+
+@theme/<reset> ( -- )
+	#f0ff #f0f0 #f0f0
+	( >> )
+
+@theme/<set> ( r* g* b* -- )
+	.System/b DEO2
+	.System/g DEO2
+	.System/r DEO2
+	JMP2r
+
+@theme/<load> ( -- )
+	;&path .File/name DEO2
+	#0002 .File/length DEO2
+	;&r .File/read DEO2
+	;&g .File/read DEO2
+	;&b .File/read DEO2
+	.File/success-lb DEI ?{ !theme/<reset> }
+	[ LIT2 &r $2 ] [ LIT2 &g $2 ] [ LIT2 &b $2 ] !theme/<set>
+
+	&path ".theme $1
+
+@meta $1
+	( name ) "Catclock 0a
+	( details ) "Tic 20 "Tac 20 "Cat 20 "Clock 0a
+	( author ) "By 20 "Hundred 20 "Rabbits 0a
+	( date ) "19 20 "Feb 20 "2025 $1
+	( elements ) 01
+	( > icon ) 83 =appicon
 
 
 
