@@ -31,7 +31,7 @@
 	;on-button .Controller/vector DEO2
 	;grid/on-mouse .Mouse/vector DEO2
 	( | loader )
-	.Console/type DEI ?{ file/<new>
+	.Console/type DEI ?{ data/<new>
 		BRK }
 	;src/on-console .Console/vector DEO2
 	BRK
@@ -48,9 +48,9 @@
 	DUP #44 NEQ ?{ select/<size-l> }
 	DUP #84 NEQ ?{ select/<size-r> }
 	( | ctrl )
-	DUP2 [ LIT2 "n 01 ] NEQ2 ?{ file/<new> }
-	DUP2 [ LIT2 "o 01 ] NEQ2 ?{ file/<load> }
-	DUP2 [ LIT2 "s 01 ] NEQ2 ?{ file/<save> }
+	DUP2 [ LIT2 "n 01 ] NEQ2 ?{ data/<new> }
+	DUP2 [ LIT2 "o 01 ] NEQ2 ?{ ;src/buf data/<load> }
+	DUP2 [ LIT2 "s 01 ] NEQ2 ?{ ;src/buf data/<save> }
 	DUP2 [ LIT2 0d 01 ] NEQ2 ?{ .select/b LDZ2 cmd/<inject-rect> }
 	( | key )
 	?{
@@ -61,22 +61,6 @@
 		DUP #0d NEQ ?{ select/<next> }
 		DUP #20 LTH OVR #7e GTH ORA ?{ DUP .select/b LDZ2 cmd/<insert> } }
 	POP BRK
-
-(
-@|tools )
-
-@data/get-addr ( x y -- addr* )
-	STH2
-	#0000 ,&pos STR2
-	;&buf
-	&>w ( -- )
-		,&pos LDR2 STH2kr NEQ2 ?{ POP2r JMP2r }
-		LDAk [ LIT ", ] EQU ,&x LDR ADD ,&x STR
-		LDAk #0a NEQ ?{
-			#00 ,&y LDR INC ,&pos STR2 }
-		INC2 LDAk ?&>w
-	POP2 POP2r ;&buf JMP2r
-	&pos &x $1 &y $1
 
 (
 @|clip )
@@ -105,7 +89,7 @@
 	.Console/read DEI
 	( ) DUP #20 GTH ?{
 		POP #0000 .Console/vector DEO2
-		file/<load>
+		;src/buf data/<load>
 		BRK }
 	/<push>
 	BRK
@@ -143,7 +127,9 @@
 	select/<size-u> !select/<write-rect>
 
 @cmd/<insert-str> ( str* x y -- )
-	DUP2 /do-delete SWP2 STH2k slen STH2
+	DUP2 /do-delete SWP2 STH2k slen
+	( save length ) DUP2 data/<mod-length>
+	STH2
 	( | insert )
 	data/get-addr
 	( shift ) DUP2 STH2kr <msfr>
@@ -154,7 +140,7 @@
 	POP2 POP2 POP2r !grid/<draw>
 
 @cmd/<insert> ( c x y -- )
-	data/get-addr cap-cell DUP2 #0001 SUB2 ;data/buf scap msfr STA
+	data/get-addr cap-cell DUP2 #0001 SUB2 data/<insert>
 	grid/<draw>
 	[ LIT2 01 -&inserted ] STZ
 	( draw ) !/<draw>
@@ -162,7 +148,8 @@
 @cmd/<erase> ( x y -- )
 	DUP2 data/get-addr cap-cell #0001 SUB2 STH2k LDA DUP LIT ", EQU ?{
 		DUP #20 LTH ?{
-			POP STH2r ;data/buf scap msfl POP2 grid/<draw> !/<draw> } }
+			POP STH2r data/<erase>
+			POP2 grid/<draw> !/<draw> } }
 	POP POP2 POP2r JMP2r
 
 @cmd/do-delete ( x y -- )
@@ -204,21 +191,27 @@
 	!/<move-r>
 
 @select/<move-u> ( -- )
-	.&a LDZ2 #01 SUB .&a STZ2
+	.&a LDZ2
+	( clamp ) DUP #00 GTH ?{ POP2 JMP2r }
+	#01 SUB .&a STZ2
 	&<size-u> ( -- )
 	.&b LDZ2 #01 SUB !/<set-b>
 
 @select/<move-d> ( -- )
+	( clamp ) .&by LDZ #2f LTH ?{ JMP2r }
 	.&a LDZ2 INC .&a STZ2
 	&<size-d> ( -- )
 	.&b LDZ2 INC !/<set-b>
 
 @select/<move-l> ( -- )
-	.&a LDZ2 #0100 SUB2 .&a STZ2
+	.&a LDZ2
+	( clamp ) OVR #00 GTH ?{ POP2 JMP2r }
+	#0100 SUB2 .&a STZ2
 	&<size-l> ( -- )
 	.&b LDZ2 #0100 SUB2 !/<set-b>
 
 @select/<move-r> ( -- )
+	( clamp ) .&bx LDZ #07 LTH ?{ JMP2r }
 	.&a LDZ2 #0100 ADD2 .&a STZ2
 	&<size-r> ( -- )
 	.&b LDZ2 #0100 ADD2 !/<set-b>
@@ -289,7 +282,8 @@
 @grid/on-mouse ( -> )
 	#41 ;mouse-icn cursor/<update>
 	( | scroll )
-	.Mouse/sy-lb DEI .select/scroll LDZ ADD /<scroll-to>
+	.Mouse/sy-lb DEI DUP ?&on-scroll
+	POP
 	( | touch )
 	[ LIT2 &last $1 -Mouse/state ] DEI DUP ,&last STR
 	( | handlers )
@@ -299,16 +293,9 @@
 	DUP2 #0100 EQU2 ?&on-up
 	POP2 BRK
 
-@grid/get-touch ( -- x y )
-	( x ) .Mouse/x DEI2 #06 SFT2 NIP #01 SUB
-	( y ) .Mouse/y DEI2 #0012 SUB2 #04 SFT2 NIP #01 SUB .select/scroll LDZ ADD JMP2r
-
-@grid/<scroll-to> ( change -- )
-	DUP #ff EQU ?&fail
-	DUP #10 GTH ?&fail
-	DUP .select/scroll LDZ EQU ?&fail
-	.select/scroll STZ !/<draw>
-	&fail POP JMP2r
+@grid/on-scroll ( v -> )
+	.select/scroll LDZ ADD /<scroll-to>
+	BRK
 
 @grid/on-down ( touch* -> )
 	POP2 /get-touch select/<set-a>
@@ -325,6 +312,17 @@
 @grid/on-up ( touch* -> )
 	POP2 /get-touch select/<set-b>
 	BRK
+
+@grid/get-touch ( -- x y )
+	( x ) .Mouse/x DEI2 #06 SFT2 NIP #01 SUB
+	( y ) .Mouse/y DEI2 #0012 SUB2 #04 SFT2 NIP #01 SUB .select/scroll LDZ ADD JMP2r
+
+@grid/<scroll-to> ( change -- )
+	DUP #ff EQU ?&fail
+	DUP [ LIT2 30 -viewport/h ] LDZ #02 SUB SUB GTH ?&fail
+	DUP .select/scroll LDZ EQU ?&fail
+	.select/scroll STZ !/<draw>
+	&fail POP JMP2r
 
 @grid/<draw> ( -- )
 	#0000 .Screen/x DEO2
@@ -489,10 +487,7 @@
 	[ LIT "0 ] SUB #0a LTH }
 
 %rect-unpack ( rect* -- bx ax by ay ) {
-	( rect* bx by ) INC2k INC2 LDA2
-	( rect* bx+1 by+1 ) #0101 ADD2
-	( bx+1 by+1 ax ay ) SWP2 LDA2
-	( bx+1 ax by+1 ay ) STH
+	INC2k INC2 LDA2 #0101 ADD2 SWP2 LDA2 STH
 	SWP STHr }
 
 @calc/parse-point ( str* -- cap* x y )
@@ -552,35 +547,80 @@
 	/run ;chicago/<draw-char> !x32-draw
 
 (
-@|file )
+@|data )
 
-@file/<new> ( -- )
+@data/get-ptr ( -- )
+	,&ptr LDR2 JMP2r
+
+@data/<mod-length> ( mod* -- )
+	,&ptr LDR2 ADD2 ,&ptr STR2
+	JMP2r
+
+@data/<push> ( c -- )
+	#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	STA2
+	JMP2r
+
+@data/<insert> ( c addr* -- )
+	/get-ptr
+	&>li ( -- )
+		INC2k STH2
+		LDAk STH2r STA
+		#0001 SUB2 LTH2k ?&>li
+	POP2 POP2 STA
+	#0001 !/<mod-length>
+
+@data/<erase> ( addr* -- )
+	/get-ptr SWP2
+	&>le ( -- )
+		STH2k INC2k LDA STH2r STA
+		INC2 GTH2k ?&>le
+	POP2 POP2 #ffff !/<mod-length>
+
+@data/<new> ( -- )
 	src/<reset>
-	cmd/<draw>
-	( | erase data )
-	;data/buf DUP2 slen <mclr>
-	( | blank )
-	;data/buf DUP2 #0100 ADD2 SWP2
-	&>l ( -- )
-		STH2k LIT ", STH2r STA
-		DUP2 ;data/buf SUB2 #0007 AND2 #0007 NEQ2 ?{ STH2k #0a STH2r STA }
-		INC2 GTH2k ?&>l
-	POP2 POP2
+	( | clear )
+	;&buf ,&ptr STR2
+	( | fill )
+	#3000
+	&>v ( -- )
+		#0700
+		&>h ( -- )
+			[ LIT ", ] /<push>
+			INC GTHk ?&>h
+		#0a /<push>
+		POP2 INC GTHk ?&>v
+	POP2 #0a /<push>
+	#00 /<push>
 	( | draw )
 	cmd/<draw>
 	#00 header/<draw> !grid/<draw>
 
-@file/<load> ( -- )
-	;src/buf .File/name DEO2
+@data/<save> ( src* -- )
+	.File/name DEO2
+	;&buf slen .File/length DEO2
+	;&buf .File/write DEO2
+	JMP2r
+
+@data/<load> ( src* -- )
+	.File/name DEO2
 	#8000 .File/length DEO2
-	;data/buf .File/read DEO2
+	;&buf .File/read DEO2
+	.File/success DEI2 ;&buf ADD2 ;&ptr STA2
 	#00 header/<draw> !grid/<draw>
 
-@file/<save> ( -- )
-	;src/buf .File/name DEO2
-	;data/buf slen .File/length DEO2
-	;data/buf .File/write DEO2
-	JMP2r
+@data/get-addr ( x y -- addr* )
+	STH2
+	#0000 ,&pos STR2
+	;&buf
+	&>w ( -- )
+		,&pos LDR2 STH2kr NEQ2 ?{ POP2r JMP2r }
+		LDAk [ LIT ", ] EQU ,&x LDR ADD ,&x STR
+		LDAk #0a NEQ ?{
+			#00 ,&y LDR INC ,&pos STR2 }
+		INC2 LDAk ?&>w
+	POP2 POP2r ;&buf JMP2r
+	&pos &x $1 &y $1
 
 (
 @|chicago )
@@ -738,35 +778,10 @@
 (
 @|stdlib )
 
-@<mclr> ( addr* len* -- )
-	OVR2 ADD2 SWP2
-	&>l ( -- )
-		STH2k #00 STH2r STA
-		INC2 GTH2k ?&>l
-	POP2 POP2 JMP2r
-
-@msfl ( origin* length* -- )
-	SWP2
-	&>l ( -- )
-		STH2k INC2k LDA STH2r STA
-		INC2 GTH2k ?&>l
-	POP2 POP2 JMP2r
-
-@msfr ( origin* length* -- )
-
-	&>l ( -- )
-		INC2k STH2
-		LDAk STH2r STA
-		#0001 SUB2 LTH2k ?&>l
-	POP2 POP2 JMP2r
-
-@get-eof ( -- )
-	;data/buf !scap
-
 @<msfl> ( a* distance* -- )
 	OVR2 ,&dst STR2
 	ADD2k ,&src STR2
-	POP2 get-eof SWP2 SUB2 ,&length STR2
+	POP2 data/get-ptr SWP2 SUB2 ,&length STR2
 	;&mmu .System/expansion DEO2
 	JMP2r
 	&mmu 01 &length 0000 0000 &src 0000 0000 &dst 0000
@@ -774,7 +789,7 @@
 @<msfr> ( a* distance* -- )
 	ADD2k ,&dst STR2
 	OVR2 ,&src STR2
-	POP2 get-eof SWP2 SUB2 ,&length STR2
+	POP2 data/get-ptr SWP2 SUB2 ,&length STR2
 	;&mmu .System/expansion DEO2
 	JMP2r
 	&mmu 02 &length 0000 0000 &src 0000 0000 &dst 0000
