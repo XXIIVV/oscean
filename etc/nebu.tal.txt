@@ -8,6 +8,7 @@
 |a0 @File/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |0240 @WIDTH
 |0012 @header/height
+|0060 @LINES
 
 |000
 
@@ -169,7 +170,7 @@
 	.&b LDZ2 #01 SUB !/<set-b>
 
 @select/<move-d> ( -- )
-	( clamp ) .&by LDZ #2f LTH ?{ JMP2r }
+	( clamp ) .&by LDZ .LINES #01 SUB LTH ?{ JMP2r }
 	.&a LDZ2 INC .&a STZ2
 	&<size-d> ( -- )
 	.&b LDZ2 INC !/<set-b>
@@ -214,7 +215,7 @@
 
 @select/<set-col> ( x -- )
 	DUP [ LIT2 00 -&a ] STZ2
-	#30 !/<set-b>
+	.LINES !/<set-b>
 
 @select/<set-row> ( y -- )
 	#00 OVR .&a STZ2
@@ -298,7 +299,7 @@
 
 @grid/<scroll-to> ( change -- )
 	DUP #ff EQU ?&fail
-	DUP [ LIT2 30 -viewport/h ] LDZ #02 SUB SUB GTH ?&fail
+	DUP [ LIT2 -LINES -viewport/h ] LDZ #02 SUB SUB GTH ?&fail
 	DUP .select/scroll LDZ EQU ?&fail
 	.select/scroll STZ !/<draw>
 	&fail POP JMP2r
@@ -538,8 +539,11 @@
 
 @cells/<new> ( -- )
 	src/<reset>
-	;&buf #3000 <mclr>
+	/<clear>
 	#00 header/<draw> !grid/<draw>
+
+@cells/<clear> ( -- )
+	;&buf [ LIT2 00 -LINES ] #0100 MUL2 !<mclr>
 
 @cells/find-bounds ( -- x y )
 	[ LIT2r 0000 ] #4000
@@ -573,7 +577,7 @@
 	POP2 JMP2r
 
 @cells/<load> ( src* -- )
-	;&buf #3000 <mclr>
+	/<clear>
 	#0000 SWP2
 	( >> )
 
