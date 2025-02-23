@@ -11,13 +11,12 @@
 
 |000
 
-	@src/buf $40 &cap $1
+	@src/buf $40 &cap $1 &spacer $1
 	@viewport/w-hb $1 &w $1 &h-hb $1 &h $1
 	@select/a &ax $1 &ay $1 &b &bx $1 &by $1 &scroll $1
 	@select/is-rect $1 &rect-a &rect-ax $1 &rect-ay $1 &rect-b &rect-bx $1 &rect-by $1
 	@cmd/inserted $1
 	@rect/buf $8
-	@clip/buf $30 &cap $1
 
 |100
 
@@ -26,12 +25,14 @@
 	theme/<load>
 	#0240 .Screen/width DEO2
 	#0163 .Screen/height DEO2
-	.Screen/width DEI2 .Screen/height DEI2 viewport/<set-size>
+	.Screen/height DEI2 ;header/height SUB2 #04 SFT2 .viewport/h-hb STZ2
+	.Screen/width DEI2 #06 SFT2 .viewport/w-hb STZ2
+	[ LIT2 ", -src/spacer ] STZ
 	( | unlock )
 	;on-button .Controller/vector DEO2
 	;grid/on-mouse .Mouse/vector DEO2
 	( | loader )
-	.Console/type DEI ?{ data/<new>
+	.Console/type DEI ?{ cells/<new>
 		BRK }
 	;src/on-console .Console/vector DEO2
 	BRK
@@ -48,13 +49,15 @@
 	DUP #44 NEQ ?{ select/<size-l> }
 	DUP #84 NEQ ?{ select/<size-r> }
 	( | ctrl )
-	DUP2 [ LIT2 "n 01 ] NEQ2 ?{ data/<new> }
-	DUP2 [ LIT2 "o 01 ] NEQ2 ?{ ;src/buf data/<load> }
-	DUP2 [ LIT2 "s 01 ] NEQ2 ?{ ;src/buf data/<save> }
+	DUP2 [ LIT2 "n 01 ] NEQ2 ?{ cells/<new> }
+	DUP2 [ LIT2 "o 01 ] NEQ2 ?{ ;src/buf cells/<load> }
+	DUP2 [ LIT2 "s 01 ] NEQ2 ?{ ;src/buf cells/<save> }
+	DUP2 [ LIT2 "c 01 ] NEQ2 ?{ snarf/<copy> }
+	DUP2 [ LIT2 "v 01 ] NEQ2 ?{ snarf/<paste> }
 	DUP2 [ LIT2 0d 01 ] NEQ2 ?{ .select/b LDZ2 cmd/<inject-rect> }
 	( | key )
-	?{
-		DUP [ LIT ", ] NEQ ?{ POP #20 }
+	#fb AND ?{
+		DUP .src/spacer LDZ NEQ ?{ POP #20 }
 		DUP #1b NEQ ?{ select/<reset> }
 		DUP #08 NEQ ?{ .select/b LDZ2 cmd/<erase> }
 		DUP #7f NEQ ?{ ;cmd/do-delete cmd/<apply> }
@@ -63,33 +66,13 @@
 	POP BRK
 
 (
-@|clip )
-
-@clip/<create> ( data* -- buf* )
-	[ LIT2 00 -&buf ] STZ
-	.&buf ,&ptr STR
-	&>w ( -- )
-		LDAk [ LIT ", ] EQU ?&end
-		LDAk ?{ &end POP2 ;&buf JMP2r }
-		LDAk [ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
-		STZ2
-		INC2 !&>w
-
-@clip/<create-num> ( data* -- buf* )
-	/<create>
-	LDAk ?{ POP2 ;&fill }
-	JMP2r
-
-	&fill "0 $1
-
-(
 @|src )
 
 @src/on-console ( -> )
 	.Console/read DEI
 	( ) DUP #20 GTH ?{
 		POP #0000 .Console/vector DEO2
-		;src/buf data/<load>
+		;src/buf cells/<load>
 		BRK }
 	/<push>
 	BRK
@@ -116,66 +99,54 @@
 	#0000 .Screen/x DEO2
 	.Screen/height DEI2 #0011 SUB2 .Screen/y DEO2
 	#01b8 ;line-icn #15 <draw-times-addr>
-	#0042 .Screen/x DEO2
-	.select/b LDZ2 data/get-addr LDAk [ LIT ", ] NEQ ?{ POP2 JMP2r }
-	clip/<create>
-	#05 chicago/<draw-left-color>
-	[ LIT "| ] !chicago/<draw-char>
+	#0040 .Screen/x DEO2
+	.select/b LDZ2 cells/get-addr #05 chicago/<draw-left-color>
+	;caret-icn .Screen/addr DEO2
+	#05 .Screen/sprite DEO
+	JMP2r
 
 @cmd/<inject-rect> ( x y -- )
 	.select/a LDZ2 .select/b LDZ2 NEQ2 ?{ POP2 JMP2r }
 	select/<size-u> !select/<write-rect>
 
-@cmd/<insert-str> ( str* x y -- )
-	DUP2 /do-delete SWP2 STH2k slen
-	( save length ) DUP2 data/<mod-length>
+@cmd/<insert-text> ( str* cell* -- )
 	STH2
-	( | insert )
-	data/get-addr
-	( shift ) DUP2 STH2kr <msfr>
-	( range ) DUP2 STH2r ADD2 SWP2
-	&>li ( -- )
-		DUP2 LDAkr STHr INC2r ROT ROT STA
-		INC2 GTH2k ?&>li
-	POP2 POP2 POP2r !grid/<draw>
+	&>wi ( -- )
+		LDAk #00 STH2kr STA2
+		INC2r INC2 LDAk ?&>wi
+	POP2 POP2r !grid/<draw>
 
 @cmd/<insert> ( c x y -- )
-	data/get-addr cap-cell DUP2 #0001 SUB2 data/<insert>
+	cells/get-addr scap STA
 	grid/<draw>
-	[ LIT2 01 -&inserted ] STZ
-	( draw ) !/<draw>
+	[ LIT2 01 -&inserted ] STZ !/<draw>
 
 @cmd/<erase> ( x y -- )
-	DUP2 data/get-addr cap-cell #0001 SUB2 STH2k LDA DUP LIT ", EQU ?{
-		DUP #20 LTH ?{
-			POP STH2r data/<erase>
-			POP2 grid/<draw> !/<draw> } }
-	POP POP2 POP2r JMP2r
+	cells/get-addr scap #0001 SUB2 #0000 SWP2 STA2
+	grid/<draw> !/<draw>
 
 @cmd/do-delete ( x y -- )
-	data/get-addr DUP2 DUP2 cap-cell SWP2 SUB2 !<msfl>
+	cells/get-addr #0020 !<mclr>
 
 @cmd/<apply> ( fn* -- )
 	,&fn STR2
-	.select/by LDZ INC .select/ay LDZ
+	select/get-rect
 	&>lv ( -- )
-		.select/bx LDZ INC .select/ax LDZ
+		OVR2
 		&>lh ( -- )
 			DUP OVR2 POP [ LIT2 &fn $2 ] JSR2
 			( ) INC GTHk ?&>lh
 		POP2 INC GTHk ?&>lv
-	POP2 !grid/<draw>
-
-@cap-cell ( cell* -- end-of-cell* )
-	LDAk LIT ", EQU ?{
-		LDAk #0a EQU ?{ INC2 LDAk ?cap-cell } }
-	JMP2r
+	POP2 POP2 !grid/<draw>
 
 (
 @|select )
 
 %exists ( index* -- f ) {
 	INC2k ORA }
+
+@select/get-rect ( -- )
+	.select/bx LDZ INC .select/ax LDZ .select/by LDZ INC .select/ay LDZ JMP2r
 
 @select/<reset> ( -- )
 	.cmd/inserted LDZ ?{
@@ -192,7 +163,7 @@
 
 @select/<move-u> ( -- )
 	.&a LDZ2
-	( clamp ) DUP #00 GTH ?{ POP2 JMP2r }
+	( clamp ) DUP ?{ POP2 JMP2r }
 	#01 SUB .&a STZ2
 	&<size-u> ( -- )
 	.&b LDZ2 #01 SUB !/<set-b>
@@ -205,7 +176,7 @@
 
 @select/<move-l> ( -- )
 	.&a LDZ2
-	( clamp ) OVR #00 GTH ?{ POP2 JMP2r }
+	( clamp ) OVR ?{ POP2 JMP2r }
 	#0100 SUB2 .&a STZ2
 	&<size-l> ( -- )
 	.&b LDZ2 #0100 SUB2 !/<set-b>
@@ -238,15 +209,16 @@
 	[ LIT2 01 -&is-rect ] STZ
 	JMP2r
 
-@select/<draw-pos> ( -- )
-	#0004 .Screen/x DEO2
-	#0012 .Screen/y DEO2
-	rect/<create>
-	;rect/buf #05 !chicago/<draw-left-color>
-
 @select/<write-rect> ( x y -- )
-	rect/<create>
-	;rect/buf OVR2 cmd/<insert-str> !/<set-a>
+	rect/create OVR2 cells/get-addr cmd/<insert-text> !/<set-a>
+
+@select/<set-col> ( x -- )
+	DUP [ LIT2 00 -&a ] STZ2
+	#30 !/<set-b>
+
+@select/<set-row> ( y -- )
+	#00 OVR .&a STZ2
+	#08 SWP !/<set-b>
 
 (
 @|rect )
@@ -256,11 +228,12 @@
 	STZ2
 	JMP2r
 
-@rect/<create> ( -- )
-	.&buf ,&ptr STR
+@rect/create ( -- rect* )
+	[ LIT2 -&buf _&ptr ] STR
 	.select/ay LDZ .select/ax LDZ /<push-point>
 	[ LIT ": ] /<push-char>
-	.select/by LDZ .select/bx LDZ !/<push-point>
+	.select/by LDZ .select/bx LDZ /<push-point>
+	;&buf JMP2r
 
 @rect/<push-point> ( x y -- )
 	[ LIT "A ] ADD /<push-char>
@@ -298,7 +271,13 @@
 	BRK
 
 @grid/on-down ( touch* -> )
-	POP2 /get-touch select/<set-a>
+	POP2 /get-touch
+	( | rules )
+	DUP INC ?{ POP select/<set-col>
+		BRK }
+	OVR INC ?{ NIP select/<set-row>
+		BRK }
+	select/<set-a>
 	BRK
 
 @grid/on-down2 ( touch* -> )
@@ -327,8 +306,9 @@
 @grid/<draw> ( -- )
 	#0000 .Screen/x DEO2
 	;header/height .Screen/y DEO2
-	#00 cell/<draw-fill>
-	select/<draw-pos>
+	#03 cell/<draw-fill>
+	#0004 .Screen/x DEO2
+	rect/create #05 chicago/<draw-left-color>
 	( | )
 	#0000 .Screen/x DEO2
 	;header/height .Screen/y DEO2
@@ -440,9 +420,7 @@
 	( >> )
 
 @cell/<draw-val> ( x y -- )
-	data/get-addr LDAk [ LIT ", ] NEQ ?{ POP2 JMP2r }
-	clip/<create>
-	LDAk #20 LTH ?{ #05 !chicago/<draw-left-color> }
+	cells/get-addr LDAk #20 LTH ?{ #05 !chicago/<draw-left-color> }
 	POP2 JMP2r
 
 @cell/<draw-type-selected> ( x y -- )
@@ -497,7 +475,7 @@
 	INC2 sdec NIP STHr SWP JMP2r
 
 @calc/parse-rect ( x y -- <rect>* )
-	data/get-addr /parse-point exists ?{ NIP2 JMP2r }
+	cells/get-addr /parse-point exists ?{ NIP2 JMP2r }
 	( str* point* ) ,&a STR2
 	( str* ) LDAk [ LIT ": ] EQU ?{ POP2 #ffff JMP2r }
 	( str* ) INC2 /parse-point exists ?{ NIP2 JMP2r }
@@ -514,7 +492,8 @@
 
 @calc/get-value ( x y -- res** )
 	DUP2 /parse-rect OVR2 /validate exists ?{
-		( is a rect ) POP2 data/get-addr clip/<create-num> !x32-parse }
+		( is a rect ) POP2 cells/get-addr LDAk ?{ POP2 ;&zero-str }
+		!x32-parse }
 	NIP2
 	( >> )
 
@@ -546,81 +525,99 @@
 	[ LIT2 15 -Screen/auto ] DEO
 	/run ;chicago/<draw-char> !x32-draw
 
+@calc/zero-str "0 $1
+
 (
-@|data )
+@|cells )
 
-@data/get-ptr ( -- )
-	,&ptr LDR2 JMP2r
+%PROM ( x y -- x* y* ) {
+	[ STH #00 SWP #00 STHr ] }
 
-@data/<mod-length> ( mod* -- )
-	,&ptr LDR2 ADD2 ,&ptr STR2
-	JMP2r
+@cells/get-addr ( x y -- addr* )
+	PROM #30 SFT2 ADD2 #50 SFT2 ;&buf ADD2 JMP2r
 
-@data/<push> ( c -- )
-	#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
-	STA2
-	JMP2r
-
-@data/<insert> ( c addr* -- )
-	/get-ptr
-	&>li ( -- )
-		INC2k STH2
-		LDAk STH2r STA
-		#0001 SUB2 LTH2k ?&>li
-	POP2 POP2 STA
-	#0001 !/<mod-length>
-
-@data/<erase> ( addr* -- )
-	/get-ptr SWP2
-	&>le ( -- )
-		STH2k INC2k LDA STH2r STA
-		INC2 GTH2k ?&>le
-	POP2 POP2 #ffff !/<mod-length>
-
-@data/<new> ( -- )
+@cells/<new> ( -- )
 	src/<reset>
-	( | clear )
-	;&buf ,&ptr STR2
-	( | fill )
-	#3000
-	&>v ( -- )
-		#0700
-		&>h ( -- )
-			[ LIT ", ] /<push>
-			INC GTHk ?&>h
-		#0a /<push>
-		POP2 INC GTHk ?&>v
-	POP2 #0a /<push>
-	#00 /<push>
-	( | draw )
-	cmd/<draw>
+	;&buf #3000 <mclr>
 	#00 header/<draw> !grid/<draw>
 
-@data/<save> ( src* -- )
+@cells/find-bounds ( -- x y )
+	[ LIT2r 0000 ] #4000
+	&>lfv ( -- )
+		#0800
+		&>lfh ( -- )
+			DUP OVR2 POP DUP2 /get-addr LDA #00 EQU ?{
+				( y ) DUP STHr GTHk [ JMP SWP ] POP STH
+				( . ) SWP SWPr
+				( x ) DUP STHr GTHk [ JMP SWP ] POP STH
+				( . ) SWPr }
+			POP2 INC GTHk ?&>lfh
+		POP2 INC GTHk ?&>lfv
+	POP2 STH2r JMP2r
+
+@cells/<save> ( src* -- )
 	.File/name DEO2
-	;&buf slen .File/length DEO2
-	;&buf .File/write DEO2
+	( | find bounds )
+	/find-bounds INC ,&y2 STR
+	INC ,&x2 STR
+	( | save )
+	[ LIT2 &y2 $1 00 ]
+	&>lv ( -- )
+		[ LIT2 &x2 $1 00 ]
+		&>lh ( -- )
+			DUP OVR2 POP /get-addr File/<save-text>
+			.src/spacer LDZ File/<save-char>
+			INC GTHk ?&>lh
+		[ LIT 0a ] File/<save-char>
+		POP2 INC GTHk ?&>lv
+	POP2 JMP2r
+
+@cells/<load> ( src* -- )
+	;&buf #3000 <mclr>
+	#0000 SWP2
+	( >> )
+
+@cells/<load-at> ( x y src* -- )
+	DUP2 /find-filetype .File/name DEO2
+	/<reset>
+	#0001 .File/length DEO2
+	&>sl ( -- )
+		;&b .File/read DEO2
+		.File/success-lb DEI ?{ #00 header/<draw> !grid/<draw> }
+		[ LIT &b $1 ] /<push> !&>sl
+
+@cells/<push> ( c -- )
+	DUP .src/spacer LDZ EQU ?/move-x
+	DUP #0a EQU ?/move-y
+	#00
+	( char ) [ LIT2 00 &c $1 ] INCk ,&c STR
+	( x y ) [ LIT2 &x $1 &y $1 ] /get-addr ADD2 STA2
 	JMP2r
 
-@data/<load> ( src* -- )
-	.File/name DEO2
-	#8000 .File/length DEO2
-	;&buf .File/read DEO2
-	.File/success DEI2 ;&buf ADD2 ;&ptr STA2
-	#00 header/<draw> !grid/<draw>
+	&move-x ( c -- )
+	[ LIT2 00 _&c ] STR
+	,&x LDR INC ,&x STR
+	POP JMP2r
 
-@data/get-addr ( x y -- addr* )
-	STH2
-	#0000 ,&pos STR2
-	;&buf
-	&>w ( -- )
-		,&pos LDR2 STH2kr NEQ2 ?{ POP2r JMP2r }
-		LDAk [ LIT ", ] EQU ,&x LDR ADD ,&x STR
-		LDAk #0a NEQ ?{
-			#00 ,&y LDR INC ,&pos STR2 }
-		INC2 LDAk ?&>w
-	POP2 POP2r ;&buf JMP2r
-	&pos &x $1 &y $1
+	&move-y ( c -- )
+	[ LIT2 00 _&c ] STR
+	[ LIT2 &anchor $1 _&x ] STR
+	,&y LDR INC ,&y STR
+	POP JMP2r
+
+@cells/<reset> ( x y -- )
+	,&y STR
+	DUP ,&x STR
+	,&anchor STR
+	[ LIT2 00 _&c ] STR
+	JMP2r
+
+@cells/find-filetype ( str* -- )
+	scap #0002 SUB2 LDA2k [ LIT2 "sv ] NEQ2 ?{
+		DUP2 #0001 SUB2 LDA [ LIT "t ] NEQ ?{
+			[ LIT2 09 -src/spacer ] STZ } }
+	[ LIT2 ", -src/spacer ] STZ
+	POP2 JMP2r
 
 (
 @|chicago )
@@ -647,9 +644,9 @@
 	,&color STR
 	[ LIT2 15 -Screen/auto ] DEO
 	&>wsc ( -- )
+		LDAk ?{ POP2 JMP2r }
 		/<draw-utf8>
-		next-glyph LDAk ?&>wsc
-	POP2 JMP2r
+		next-glyph !&>wsc
 
 @chicago/<draw-utf8> ( addr* -- addr* )
 	[ LITr -Screen/x ] DEI2r
@@ -768,31 +765,50 @@
 	&path ".theme $1
 
 (
-@|viewport )
+@|snarf )
 
-@viewport/<set-size> ( w* h* -- )
-	;header/height SUB2 #04 SFT2 .viewport/h-hb STZ2
-	#06 SFT2 .viewport/w-hb STZ2
+@snarf/<copy> ( -- )
+	;&filepath .File/name DEO2
+	( | save )
+	select/get-rect
+	&>lv ( -- )
+		OVR2
+		&>lh ( -- )
+			DUP OVR2 POP cells/get-addr File/<save-text>
+			DUP2 INC EQU ?{ .src/spacer LDZ File/<save-char> }
+			INC GTHk ?&>lh
+		[ LIT 0a ] File/<save-char>
+		POP2 INC GTHk ?&>lv
+	POP2 POP2 JMP2r
+
+@snarf/<paste> ( -- )
+	.select/a LDZ2 ;&filepath !cells/<load-at>
+
+@snarf/filepath ".snarf $1
+
+(
+@|File )
+
+@File/<save-text> ( text* -- )
+	DUP2 slen .&length DEO2
+	.&write DEO2
 	JMP2r
+
+@File/<save-char> ( c -- )
+	#0001 .&length DEO2
+	;&b STAk .&write DEO2
+	POP JMP2r
+	&b $1
 
 (
 @|stdlib )
 
-@<msfl> ( a* distance* -- )
-	OVR2 ,&dst STR2
-	ADD2k ,&src STR2
-	POP2 data/get-ptr SWP2 SUB2 ,&length STR2
+@<mclr> ( src* len* -- )
+	,&length STR2
+	,&addr STR2
 	;&mmu .System/expansion DEO2
 	JMP2r
-	&mmu 01 &length 0000 0000 &src 0000 0000 &dst 0000
-
-@<msfr> ( a* distance* -- )
-	ADD2k ,&dst STR2
-	OVR2 ,&src STR2
-	POP2 data/get-ptr SWP2 SUB2 ,&length STR2
-	;&mmu .System/expansion DEO2
-	JMP2r
-	&mmu 02 &length 0000 0000 &src 0000 0000 &dst 0000
+	&mmu 00 &length $2 0000 &addr $2 00
 
 @slen ( str* -- len* )
 	DUP2 scap SWP2 SUB2 JMP2r
@@ -827,13 +843,6 @@
 	INC2 LDAk ?<pstr>
 	POP2 JMP2r
 
-@<pcell> ( str* -- )
-	LDAk LIT ", EQU ?{
-		LDAk #0a EQU ?{
-			LDAk #18 DEO
-			INC2 LDAk ?<pcell> } }
-	POP2 JMP2r
-
 (
 @|assets )
 
@@ -841,7 +850,7 @@
 	( name ) "Nebu 0a
 	( desc ) "Spreadsheet 20 "Editor 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "22 20 "Feb 20 "2025 $2
+	( date ) "23 20 "Feb 20 "2025 $2
 
 
 
@@ -1443,6 +1452,7 @@
 @hash-icn [ aa55 aa55 aa55 aa55 aa55 aa55 aa55 aa55 ]
 @diag-icn [ 1122 4488 1122 4488 1122 4488 1122 4488 ]
 @dotted-icn [ 8800 2200 8800 2200 8800 2200 8800 2200 ]
+@caret-icn [ 0000 8080 8080 8080 8080 8080 8080 8080 ]
 
 @mouse-icn [ 80c0 e0f0 f8fc feff f8d8 8c0c 0606 0000 ]
 @line-icn [ aa00 0000 0000 0000 0000 0000 0000 0000 ]
@@ -1665,5 +1675,5 @@
 	0000 0000 0000 0000 0000 0000 0000 0000
 	0000 0000 0032 4c00 0000 0000 0000 0000
 
-@data/buf
+@cells/buf ( cell[0x20] ) $3000
 
