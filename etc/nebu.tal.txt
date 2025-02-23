@@ -1,0 +1,1654 @@
+( Nebu )
+
+|00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
+|10 @Console/vector $2 &read $5 &type $1 &write $1 &error $1
+|20 @Screen/vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
+|80 @Controller/vector $2 &button $1 &key $1
+|90 @Mouse/vector $2 &x $2 &y $2 &state $1 &pad $3 &sx $2 &sy $1 &sy-lb $1
+|a0 @File/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|0240 @WIDTH
+|0012 @header/height
+
+|000
+
+	@src/buf $40 &cap $1
+	@viewport/w-hb $1 &w $1 &h-hb $1 &h $1
+	@select/a &ax $1 &ay $1 &b &bx $1 &by $1 &scroll $1
+	@select/is-rect $1 &rect-a &rect-ax $1 &rect-ay $1 &rect-b &rect-bx $1 &rect-by $1
+	@cmd/inserted $1
+	@rect/buf $8
+	@clip/buf $30 &cap $1
+
+|100
+
+@on-reset ( -> )
+	;meta #06 DEO2
+	theme/<load>
+	#0240 .Screen/width DEO2
+	#0163 .Screen/height DEO2
+	.Screen/width DEI2 .Screen/height DEI2 viewport/<set-size>
+	( | unlock )
+	;on-button .Controller/vector DEO2
+	;grid/on-mouse .Mouse/vector DEO2
+	( | loader )
+	.Console/type DEI ?{ file/<new>
+		BRK }
+	;src/on-console .Console/vector DEO2
+	BRK
+
+@on-button ( -> )
+	.Controller/key DEI .Controller/button DEI
+	( | handlers )
+	DUP #10 NEQ ?{ select/<move-u> }
+	DUP #20 NEQ ?{ select/<move-d> }
+	DUP #40 NEQ ?{ select/<move-l> }
+	DUP #80 NEQ ?{ select/<move-r> }
+	DUP #14 NEQ ?{ select/<size-u> }
+	DUP #24 NEQ ?{ select/<size-d> }
+	DUP #44 NEQ ?{ select/<size-l> }
+	DUP #84 NEQ ?{ select/<size-r> }
+	( | ctrl )
+	DUP2 [ LIT2 "n 01 ] NEQ2 ?{ file/<new> }
+	DUP2 [ LIT2 "o 01 ] NEQ2 ?{ file/<load> }
+	DUP2 [ LIT2 "s 01 ] NEQ2 ?{ file/<save> }
+	DUP2 [ LIT2 0d 01 ] NEQ2 ?{ .select/b LDZ2 cmd/<inject-rect> }
+	( | key )
+	?{
+		DUP [ LIT ", ] NEQ ?{ POP #20 }
+		DUP #1b NEQ ?{ select/<reset> }
+		DUP #08 NEQ ?{ .select/b LDZ2 cmd/<erase> }
+		DUP #7f NEQ ?{ ;cmd/do-delete cmd/<apply> }
+		DUP #0d NEQ ?{ select/<next> }
+		DUP #20 LTH OVR #7e GTH ORA ?{ DUP .select/b LDZ2 cmd/<insert> } }
+	POP BRK
+
+(
+@|tools )
+
+@data/get-addr ( x y -- addr* )
+	STH2
+	#0000 ,&pos STR2
+	;&buf
+	&>w ( -- )
+		,&pos LDR2 STH2kr NEQ2 ?{ POP2r JMP2r }
+		LDAk [ LIT ", ] EQU ,&x LDR ADD ,&x STR
+		LDAk #0a NEQ ?{
+			#00 ,&y LDR INC ,&pos STR2 }
+		INC2 LDAk ?&>w
+	POP2 POP2r ;&buf JMP2r
+	&pos &x $1 &y $1
+
+(
+@|clip )
+
+@clip/<create> ( data* -- buf* )
+	[ LIT2 00 -&buf ] STZ
+	.&buf ,&ptr STR
+	&>w ( -- )
+		LDAk [ LIT ", ] EQU ?&end
+		LDAk ?{ &end POP2 ;&buf JMP2r }
+		LDAk [ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
+		STZ2
+		INC2 !&>w
+
+@clip/<create-num> ( data* -- buf* )
+	/<create>
+	LDAk ?{ POP2 ;&fill }
+	JMP2r
+
+	&fill "0 $1
+
+(
+@|src )
+
+@src/on-console ( -> )
+	.Console/read DEI
+	( ) DUP #20 GTH ?{
+		POP #0000 .Console/vector DEO2
+		file/<load>
+		BRK }
+	/<push>
+	BRK
+
+@src/<push> ( c -- )
+	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
+	STZ2
+	JMP2r
+
+@src/<reset> ( -- )
+	[ LIT2 -&buf _&ptr ] STR
+	;&default-name
+	&>w ( -- )
+		LDAk /<push>
+		INC2 LDAk ?&>w
+	POP2 JMP2r
+
+	&default-name "untitled.csv $1
+
+(
+@|cmd )
+
+@cmd/<draw> ( -- )
+	#0000 .Screen/x DEO2
+	.Screen/height DEI2 #0011 SUB2 .Screen/y DEO2
+	#01b8 ;line-icn #15 <draw-times-addr>
+	#0042 .Screen/x DEO2
+	.select/b LDZ2 data/get-addr LDAk [ LIT ", ] NEQ ?{ POP2 JMP2r }
+	clip/<create>
+	#05 chicago/<draw-left-color>
+	[ LIT "| ] !chicago/<draw-char>
+
+@cmd/<inject-rect> ( x y -- )
+	.select/a LDZ2 .select/b LDZ2 NEQ2 ?{ POP2 JMP2r }
+	select/<size-u> !select/<write-rect>
+
+@cmd/<insert-str> ( str* x y -- )
+	DUP2 /do-delete SWP2 STH2k slen STH2
+	( | insert )
+	data/get-addr
+	( shift ) DUP2 STH2kr <msfr>
+	( range ) DUP2 STH2r ADD2 SWP2
+	&>li ( -- )
+		DUP2 LDAkr STHr INC2r ROT ROT STA
+		INC2 GTH2k ?&>li
+	POP2 POP2 POP2r !grid/<draw>
+
+@cmd/<insert> ( c x y -- )
+	data/get-addr cap-cell DUP2 #0001 SUB2 ;data/buf scap msfr STA
+	grid/<draw>
+	[ LIT2 01 -&inserted ] STZ
+	( draw ) !/<draw>
+
+@cmd/<erase> ( x y -- )
+	DUP2 data/get-addr cap-cell #0001 SUB2 STH2k LDA DUP LIT ", EQU ?{
+		DUP #20 LTH ?{
+			POP STH2r ;data/buf scap msfl POP2 grid/<draw> !/<draw> } }
+	POP POP2 POP2r JMP2r
+
+@cmd/do-delete ( x y -- )
+	data/get-addr DUP2 DUP2 cap-cell SWP2 SUB2 !<msfl>
+
+@cmd/<apply> ( fn* -- )
+	,&fn STR2
+	.select/by LDZ INC .select/ay LDZ
+	&>lv ( -- )
+		.select/bx LDZ INC .select/ax LDZ
+		&>lh ( -- )
+			DUP OVR2 POP [ LIT2 &fn $2 ] JSR2
+			( ) INC GTHk ?&>lh
+		POP2 INC GTHk ?&>lv
+	POP2 !grid/<draw>
+
+@cap-cell ( cell* -- end-of-cell* )
+	LDAk LIT ", EQU ?{
+		LDAk #0a EQU ?{ INC2 LDAk ?cap-cell } }
+	JMP2r
+
+(
+@|select )
+
+%exists ( index* -- f ) {
+	INC2k ORA }
+
+@select/<reset> ( -- )
+	.cmd/inserted LDZ ?{
+		.&a LDZ2 .&b STZ2 !grid/<draw> }
+	.&b LDZ2 .&a STZ2 !grid/<draw>
+
+@select/<next> ( -- )
+	#04 .Controller/button DEI EQU ?{
+		( | default )
+		.cmd/inserted LDZ ?/<size-d>
+		!/<move-d> }
+	.cmd/inserted LDZ ?/<size-r>
+	!/<move-r>
+
+@select/<move-u> ( -- )
+	.&a LDZ2 #01 SUB .&a STZ2
+	&<size-u> ( -- )
+	.&b LDZ2 #01 SUB !/<set-b>
+
+@select/<move-d> ( -- )
+	.&a LDZ2 INC .&a STZ2
+	&<size-d> ( -- )
+	.&b LDZ2 INC !/<set-b>
+
+@select/<move-l> ( -- )
+	.&a LDZ2 #0100 SUB2 .&a STZ2
+	&<size-l> ( -- )
+	.&b LDZ2 #0100 SUB2 !/<set-b>
+
+@select/<move-r> ( -- )
+	.&a LDZ2 #0100 ADD2 .&a STZ2
+	&<size-r> ( -- )
+	.&b LDZ2 #0100 ADD2 !/<set-b>
+
+@select/<set-a> ( x y -- )
+	DUP2 .&a LDZ2 NEQ2 ?{ POP2 JMP2r }
+	DUP2 .&a STZ2
+	( >> )
+
+@select/<set-b> ( x y -- )
+	DUP2 .&b LDZ2 NEQ2 ?{ POP2 JMP2r }
+	INCk .&ay LDZ GTH ?{ POP2 JMP2r }
+	OVR INC .&ax LDZ GTH ?{ POP2 JMP2r }
+	.&b STZ2
+	/<update-rect> !grid/<draw>
+
+@select/<update-rect> ( -- )
+	.&a LDZ2 calc/parse-rect
+	( val ) .&a LDZ2 calc/validate exists ?{
+		POP2 [ LIT2 00 -&is-rect ] STZ
+		JMP2r }
+	LDA2k .&rect-a STZ2
+	INC2 INC2 LDA2 .&rect-b STZ2
+	[ LIT2 01 -&is-rect ] STZ
+	JMP2r
+
+@select/<draw-pos> ( -- )
+	#0004 .Screen/x DEO2
+	#0012 .Screen/y DEO2
+	rect/<create>
+	;rect/buf #05 !chicago/<draw-left-color>
+
+@select/<write-rect> ( x y -- )
+	rect/<create>
+	;rect/buf OVR2 cmd/<insert-str> !/<set-a>
+
+(
+@|rect )
+
+@rect/<push-char> ( c -- )
+	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
+	STZ2
+	JMP2r
+
+@rect/<create> ( -- )
+	.&buf ,&ptr STR
+	.select/ay LDZ .select/ax LDZ /<push-point>
+	[ LIT ": ] /<push-char>
+	.select/by LDZ .select/bx LDZ !/<push-point>
+
+@rect/<push-point> ( x y -- )
+	[ LIT "A ] ADD /<push-char>
+	#00 SWP !/<push-dec>
+
+@rect/<push-dec> ( short* -- )
+	#000a SWP2 [ LITr ff ]
+	&>get ( -- )
+		SWP2k DIV2k MUL2 SUB2 STH
+		POP OVR2 DIV2 ORAk ?&>get
+	POP2 POP2
+	&>put ( -- )
+		STHr INCk ?{ POP JMP2r }
+		[ LIT "0 ] ADD /<push-char> !&>put
+
+(
+@|grid )
+
+@grid/on-mouse ( -> )
+	#41 ;mouse-icn cursor/<update>
+	( | scroll )
+	.Mouse/sy-lb DEI .select/scroll LDZ ADD /<scroll-to>
+	( | touch )
+	[ LIT2 &last $1 -Mouse/state ] DEI DUP ,&last STR
+	( | handlers )
+	DUP2 #0002 EQU2 ?&on-down2
+	DUP2 #0001 EQU2 ?&on-down
+	DUP2 #0101 EQU2 ?&on-drag
+	DUP2 #0100 EQU2 ?&on-up
+	POP2 BRK
+
+@grid/get-touch ( -- x y )
+	( x ) .Mouse/x DEI2 #06 SFT2 NIP #01 SUB
+	( y ) .Mouse/y DEI2 #0012 SUB2 #04 SFT2 NIP #01 SUB .select/scroll LDZ ADD JMP2r
+
+@grid/<scroll-to> ( change -- )
+	DUP #ff EQU ?&fail
+	DUP #10 GTH ?&fail
+	DUP .select/scroll LDZ EQU ?&fail
+	.select/scroll STZ !/<draw>
+	&fail POP JMP2r
+
+@grid/on-down ( touch* -> )
+	POP2 /get-touch select/<set-a>
+	BRK
+
+@grid/on-down2 ( touch* -> )
+	POP2 /get-touch select/<write-rect>
+	BRK
+
+@grid/on-drag ( touch* -> )
+	POP2 /get-touch select/<set-b>
+	BRK
+
+@grid/on-up ( touch* -> )
+	POP2 /get-touch select/<set-b>
+	BRK
+
+@grid/<draw> ( -- )
+	#0000 .Screen/x DEO2
+	;header/height .Screen/y DEO2
+	#00 cell/<draw-fill>
+	select/<draw-pos>
+	( | )
+	#0000 .Screen/x DEO2
+	;header/height .Screen/y DEO2
+	#05 ;chicago/color STA
+	.viewport/w LDZ #01 SUB #00
+	&>rx ( -- )
+		#00 OVR INC #60 SFT2 .Screen/x DEO2
+		DUP cell/<draw-hor>
+		INC GTHk ?&>rx
+	POP2
+	( | body )
+	.viewport/h LDZ #02 SUB #00
+	&>y ( -- )
+		#0000 .Screen/x DEO2
+		#00 OVR INC #40 SFT2 ;header/height ADD2 .Screen/y DEO2
+		DUP .select/scroll LDZ ADD DUP ,&ay STR
+		cell/<draw-ver>
+		.viewport/w LDZ #01 SUB #00
+		&>x ( -- )
+			#00 OVR INC #60 SFT2 .Screen/x DEO2
+			DUP [ LIT &ay $1 ] cell/<draw>
+			INC GTHk ?&>x
+		POP2 INC GTHk ?&>y
+	POP2 !cmd/<draw>
+
+@cell/<draw-hor> ( id -- )
+	STH
+	.Screen/x DEI2
+	( | draw background )
+	[ LIT2 03 -select/ax ] LDZ STHkr GTH ?{
+		.select/bx LDZ STHkr LTH ?{ POP #02 } }
+	/<draw-fill>
+	( | border )
+	[ LIT2 11 -Screen/auto ] DEO
+	;frame-icns/rx .Screen/addr DEO2
+	[ LIT2 05 -Screen/sprite ] DEO
+	( | id )
+	[ LIT2 15 -Screen/auto ] DEO
+	#0034 ADD2 .Screen/x DEO2
+	STHr #41 ADD !chicago/<draw-char>
+
+@cell/<draw-ver> ( id -- )
+	STH
+	.Screen/y DEI2 .Screen/x DEI2
+	( | fill )
+	[ LIT2 03 -select/ay ] LDZ STHkr GTH ?{
+		.select/by LDZ STHkr LTH ?{ POP #02 } }
+	/<draw-fill>
+	( | border )
+	[ LIT2 72 -Screen/auto ] DEO
+	;frame-icns/ry .Screen/addr DEO2
+	[ LIT2 05 -Screen/sprite ] DEO
+	( | id )
+	[ LIT2 15 -Screen/auto ] DEO
+	#002c ADD2 .Screen/x DEO2
+	.Screen/y DEO2
+	STHkr #0a DIV #30 ADD chicago/<draw-char>
+	STHr #0a DIVk MUL SUB #30 ADD !chicago/<draw-char>
+
+@cell/is-selected ( x y -- f )
+	DUP .select/ay LDZ LTH ?{
+		DUP .select/by LDZ GTH ?{
+			SWP DUP .select/ax LDZ LTH ?{
+				DUP .select/bx LDZ GTH ?{ POP2 #01 JMP2r } } } }
+	POP2 #00 JMP2r
+
+@cell/is-incoming ( x y -- f )
+	.select/is-rect LDZ ?{ POP2 #00 JMP2r }
+	DUP .select/rect-ay LDZ LTH ?{
+		DUP .select/rect-by LDZ GTH ?{
+			SWP DUP .select/rect-ax LDZ LTH ?{
+				DUP .select/rect-bx LDZ GTH ?{ POP2 #01 JMP2r } } } }
+	POP2 #00 JMP2r
+
+@cell/<draw-fill> ( color -- )
+	;fill-icn
+	( >> )
+
+@cell/<draw-patt> ( color patt* -- )
+	( store ) [ LITr -Screen/y ] DEI2kr
+	( fill ) LIT2 72 -Screen/auto ] DEO
+	.Screen/addr DEO2
+	.Screen/sprite DEOk DEO
+	( recover ) ROTr DEO2r
+	JMP2r
+
+@cell/<draw-line> ( -- )
+	( store ) [ LITr -Screen/y ] DEI2kr
+	( line ) [ LIT2 15 -Screen/auto ] DEO
+	;frame-icns .Screen/addr DEO2
+	[ LIT2 05 -Screen/sprite ] DEO
+	[ LIT2 62 -Screen/auto ] DEO
+	[ LIT2 05 -Screen/sprite ] DEO
+	( recover ) ROTr DEO2r
+	JMP2r
+
+@cell/<draw> ( x y -- )
+	DUP2 /is-selected ?/<draw-type-selected>
+	DUP2 /is-incoming ?/<draw-type-incoming>
+	DUP2 calc/parse-rect
+	( val ) OVR2 calc/validate exists ?/<draw-type-calc>
+	POP2 STH2
+	.Screen/x DEI2
+	( | fill )
+	#00 /<draw-fill>
+	/<draw-line>
+	#0004 ADD2 .Screen/x DEO2
+	STH2r
+	( >> )
+
+@cell/<draw-val> ( x y -- )
+	data/get-addr LDAk [ LIT ", ] NEQ ?{ POP2 JMP2r }
+	clip/<create>
+	LDAk #20 LTH ?{ #05 !chicago/<draw-left-color> }
+	POP2 JMP2r
+
+@cell/<draw-type-selected> ( x y -- )
+	#02 /<draw-fill>
+	/<draw-line>
+	.Screen/x DEI2k #0004 SUB2 ROT DEO2
+	DUP2 calc/parse-rect
+	( val ) OVR2 calc/validate
+	( calc? ) exists ?{ POP2 !/<draw-val> }
+	NIP2 !calc/<draw-res>
+
+@cell/<draw-type-incoming> ( x y -- )
+	#02 ;diag-icn /<draw-patt>
+	/<draw-line>
+	.Screen/x DEI2k #0004 SUB2 ROT DEO2 !/<draw-val>
+
+@cell/<draw-type-calc> ( x y rect* -- )
+	#03 /<draw-fill>
+	/<draw-line>
+	#05 ;chicago/color STA
+	.Screen/x DEI2k #0004 SUB2 ROT DEO2
+	NIP2 !calc/<draw-res>
+
+@<draw-times-addr> ( color times addr* auto -- )
+	.Screen/auto DEO
+	,&addr STR2
+	SWP STH
+	[ LITr -Screen/sprite ]
+	&>l ( -- )
+		[ LIT2 &addr $2 ] .Screen/addr DEO2
+		DEOkr
+		INC DUP ?&>l
+	POP POP2r JMP2r
+
+(
+@|calc )
+
+%char-is-uc ( c -- f ) {
+	[ LIT "A ] SUB #1a LTH }
+
+%char-is-num ( c -- f ) {
+	[ LIT "0 ] SUB #0a LTH }
+
+%rect-unpack ( rect* -- bx ax by ay ) {
+	( rect* bx by ) INC2k INC2 LDA2
+	( rect* bx+1 by+1 ) #0101 ADD2
+	( bx+1 by+1 ax ay ) SWP2 LDA2
+	( bx+1 ax by+1 ay ) STH
+	SWP STHr }
+
+@calc/parse-point ( str* -- cap* x y )
+	LDAk char-is-uc ?{ #ffff JMP2r }
+	INC2k LDA char-is-num ?{ #ffff JMP2r }
+	LDAk [ LIT "A ] SUB STH
+	INC2 sdec NIP STHr SWP JMP2r
+
+@calc/parse-rect ( x y -- <rect>* )
+	data/get-addr /parse-point exists ?{ NIP2 JMP2r }
+	( str* point* ) ,&a STR2
+	( str* ) LDAk [ LIT ": ] EQU ?{ POP2 #ffff JMP2r }
+	( str* ) INC2 /parse-point exists ?{ NIP2 JMP2r }
+	( str* point* ) ,&b STR2
+	LDA ,&op STR
+	;&rect JMP2r
+	&rect &a $2 &b $2 &op $1
+
+@calc/validate ( rect* x y -- rect* )
+	STH2
+	exists ?{ POP2r JMP2r }
+	INC2k INC2 LDA2 STHr LTH SWP STHr LTH ORA ?{ POP2 #ffff }
+	JMP2r
+
+@calc/get-value ( x y -- res** )
+	DUP2 /parse-rect OVR2 /validate exists ?{
+		( is a rect ) POP2 data/get-addr clip/<create-num> !x32-parse }
+	NIP2
+	( >> )
+
+@calc/run ( rect* -- res** )
+	( opc ) DUP2 #0004 ADD2 LDA STH
+	( opc ini acc** ) [ LITr 00 LIT2r $2 LIT2r $2 ]
+	( .. ) rect-unpack
+	&>lv ( -- )
+		OVR2
+		&>lh ( -- )
+			DUP OVR2 POP
+			( x y ) STH2r STH2r ROT2
+			( hs* ls* x y ) /get-value
+			( hs* ls* x y ini ) STHr ?{
+				( no-op ) [ LITr 01 STH2 STH2 ] POP2 POP2 !&resume }
+			STHkr /get-op JSR2 [ LITr 01 STH2 STH2 ]
+			&resume ( -- )
+			INC GTHk ?&>lh
+		POP2 INC GTHk ?&>lv
+	POP2 POP2 STH2r STH2r POP2r JMP2r
+
+@calc/get-op ( c -- fn* )
+	DUP [ LIT "- ] NEQ ?{ POP ;x32-sub JMP2r }
+	DUP [ LIT "* ] NEQ ?{ POP ;x32-mul JMP2r }
+	DUP [ LIT "/ ] NEQ ?{ POP ;x32-div JMP2r }
+	POP ;x32-add JMP2r
+
+@calc/<draw-res> ( rect* -- )
+	[ LIT2 15 -Screen/auto ] DEO
+	/run ;chicago/<draw-char> !x32-draw
+
+(
+@|file )
+
+@file/<new> ( -- )
+	src/<reset>
+	cmd/<draw>
+	( | erase data )
+	;data/buf DUP2 slen <mclr>
+	( | blank )
+	;data/buf DUP2 #0100 ADD2 SWP2
+	&>l ( -- )
+		STH2k LIT ", STH2r STA
+		DUP2 ;data/buf SUB2 #0007 AND2 #0007 NEQ2 ?{ STH2k #0a STH2r STA }
+		INC2 GTH2k ?&>l
+	POP2 POP2
+	( | draw )
+	cmd/<draw>
+	#00 header/<draw> !grid/<draw>
+
+@file/<load> ( -- )
+	;src/buf .File/name DEO2
+	#8000 .File/length DEO2
+	;data/buf .File/read DEO2
+	#00 header/<draw> !grid/<draw>
+
+@file/<save> ( -- )
+	;src/buf .File/name DEO2
+	;data/buf slen .File/length DEO2
+	;data/buf .File/write DEO2
+	JMP2r
+
+(
+@|chicago )
+
+@chicago/get-utf8-addr ( addr* -- addr* glyph* )
+	LDAk #20 LTH ?{
+		LDAk #7f GTH ?{
+			LDAk #20 SUB #00 SWP #50 SFT2 ;/glyphs ADD2 JMP2r } }
+	;check-icn JMP2r
+
+@chicago/get-utf8-width ( addr* -- addr* width* )
+	LDAk #7f GTH ?{
+		LDAk #0000 ROT ;/widths ADD2 LDA JMP2r }
+	#0008 JMP2r
+
+@chicago/get-str-width ( text* -- width* )
+	[ LIT2r 0000 ]
+	&>ww ( -- )
+		/get-utf8-width STH2
+		( > ) ADD2r next-glyph LDAk ?&>ww
+	POP2 STH2r JMP2r
+
+@chicago/<draw-left-color> ( text* color -- )
+	,&color STR
+	[ LIT2 15 -Screen/auto ] DEO
+	&>wsc ( -- )
+		/<draw-utf8>
+		next-glyph LDAk ?&>wsc
+	POP2 JMP2r
+
+@chicago/<draw-utf8> ( addr* -- addr* )
+	[ LITr -Screen/x ] DEI2r
+	( glyph* ) /get-utf8-addr .Screen/addr DEO2
+	( width* ) /get-utf8-width STH2
+	( draw2 ) [ LIT2 &color 01 -Screen/sprite ]
+	( draw1 ) DUPr [ LITr 08 LTHr JMPr DEOk ] DEO
+	ADD2r [ LITr -Screen/x ] DEO2r
+	JMP2r
+
+@chicago/<draw-char> ( char -- )
+	#00 SWP
+	( ) DUP2 #20 SUB #50 SFT2 ;&glyphs ADD2 .Screen/addr DEO2
+	( ) ;&widths ADD2 LDA #00 SWP .Screen/x DEI2 ADD2
+	( ) ,&color LDR .Screen/sprite DEOk DEO
+	.Screen/x DEO2
+	JMP2r
+
+(
+@|header )
+
+@header/on-mouse ( -> )
+	#41 ;mouse-icn cursor/<update>
+	[ LIT2 &last $1 -Mouse/state ] DEI
+	( | handlers )
+	DUP2 #0001 NEQ2 ?{ /outside-quit ?{ /<press-quit> } }
+	DUP2 #0100 NEQ2 ?{ /<release-quit> }
+	,&last STR
+	POP BRK
+
+@header/outside-quit ( -- f )
+	.Mouse/x DEI2 #0008 SUB2 #000c GTH2 ?{
+		.Mouse/y DEI2 #0002 SUB2 #000c GTH2 ?{ #00 JMP2r } }
+	#01 JMP2r
+
+@header/<release-quit> ( -- )
+	/outside-quit ?{ #800f DEO }
+	#00 !/<draw>
+
+@header/<press-quit> ( -- )
+	#01
+	( >> )
+
+@header/<draw> ( toggle -- )
+	#0000 .Screen/x DEO2
+	#0010 .Screen/y DEO2
+	#85b8 ;&border-chr #01 <draw-times-addr>
+	#0000 .Screen/x DEO2
+	#0000 .Screen/y DEO2
+	[ LIT2 15 -Screen/auto ] DEO
+	;&left-icn .Screen/addr DEO2
+	[ LIT2 09 -Screen/sprite ] DEO
+	#00 SWP #50 SFT2 ;&close-icn ADD2 .Screen/addr DEO2
+	[ LIT2 09 -Screen/sprite ] DEOk DEO
+	#09bc ;&middle-icn #15 <draw-times-addr>
+	;&right-icn .Screen/addr DEO2
+	[ LIT2 09 -Screen/sprite ] DEO
+	( >> )
+
+@header/<draw-title> ( -- )
+	#0001 .Screen/y DEO2
+	;WIDTH #01 SFT2 .Screen/x DEO2
+	#09 ;chicago/color STA
+	.Screen/x DEI2 ;src/buf chicago/get-str-width #01 SFT2 SUB2 .Screen/x DEO2
+	#20 chicago/<draw-char>
+	;src/buf #09 !chicago/<draw-left-color>
+
+(
+@|cursor )
+
+@cursor/<refocus> ( -- )
+	.Mouse/y DEI2 ;header/height GTH2 ?{
+		( ) ;header/on-mouse .Mouse/vector DEO2
+		JMP2r }
+	;grid/on-mouse .Mouse/vector DEO2
+	JMP2r
+
+@cursor/<update> ( color addr* -- )
+	[ LIT2 15 -Screen/auto ] DEO
+	;fill-icn .Screen/addr DEO2
+	#40 /<draw>
+	/<refocus>
+	.Mouse/x DEI2 ,&x STR2
+	.Mouse/y DEI2 ,&y STR2
+	.Screen/addr DEO2
+	( >> )
+
+@cursor/<draw> ( color -- )
+	[ LIT2 &x $2 ] .Screen/x DEO2
+	[ LIT2 &y $2 ] .Screen/y DEO2
+	.Screen/sprite DEO
+	JMP2r
+
+(
+@|theme )
+
+@theme/<reset> ( -- )
+	#f0ad #f0ef #f0be
+	( >> )
+
+@theme/<set> ( r* g* b* -- )
+	.System/b DEO2
+	.System/g DEO2
+	.System/r DEO2
+	JMP2r
+
+@theme/<load> ( -- )
+	;&path .File/name DEO2
+	#0002 .File/length DEO2
+	;&r .File/read DEO2
+	;&g .File/read DEO2
+	;&b .File/read DEO2
+	.File/success-lb DEI ?{ !theme/<reset> }
+	[ LIT2 &r $2 ] [ LIT2 &g $2 ] [ LIT2 &b $2 ] !theme/<set>
+
+	&path ".theme $1
+
+(
+@|viewport )
+
+@viewport/<set-size> ( w* h* -- )
+	;header/height SUB2 #04 SFT2 .viewport/h-hb STZ2
+	#06 SFT2 .viewport/w-hb STZ2
+	JMP2r
+
+(
+@|stdlib )
+
+@<mclr> ( addr* len* -- )
+	OVR2 ADD2 SWP2
+	&>l ( -- )
+		STH2k #00 STH2r STA
+		INC2 GTH2k ?&>l
+	POP2 POP2 JMP2r
+
+@msfl ( origin* length* -- )
+	SWP2
+	&>l ( -- )
+		STH2k INC2k LDA STH2r STA
+		INC2 GTH2k ?&>l
+	POP2 POP2 JMP2r
+
+@msfr ( origin* length* -- )
+
+	&>l ( -- )
+		INC2k STH2
+		LDAk STH2r STA
+		#0001 SUB2 LTH2k ?&>l
+	POP2 POP2 JMP2r
+
+@get-eof ( -- )
+	;data/buf !scap
+
+@<msfl> ( a* distance* -- )
+	OVR2 ,&dst STR2
+	ADD2k ,&src STR2
+	POP2 get-eof SWP2 SUB2 ,&length STR2
+	;&mmu .System/expansion DEO2
+	JMP2r
+	&mmu 01 &length 0000 0000 &src 0000 0000 &dst 0000
+
+@<msfr> ( a* distance* -- )
+	ADD2k ,&dst STR2
+	OVR2 ,&src STR2
+	POP2 get-eof SWP2 SUB2 ,&length STR2
+	;&mmu .System/expansion DEO2
+	JMP2r
+	&mmu 02 &length 0000 0000 &src 0000 0000 &dst 0000
+
+@slen ( str* -- len* )
+	DUP2 scap SWP2 SUB2 JMP2r
+
+@scap ( str* -- end* )
+	LDAk ?{ JMP2r }
+	INC2 !scap
+
+@sdec ( str* -- cap* hex* )
+	[ LIT2r 0000 ]
+	&>w ( -- )
+		LDAk [ LIT "0 ] LTH ?&end
+		LDAk #39 GTH ?&end
+		LDAk [ LIT "0 ] SUB #00 SWP STH2r #000a MUL2 ADD2 STH2
+		INC2 LDAk ?&>w &end STH2r JMP2r
+
+@next-glyph ( addr* -- addr* )
+	INC2 LDAk
+	( utf8 ) #06 SFT #02 EQU ?next-glyph
+	JMP2r
+
+@<phex> ( short* -: )
+	SWP /b
+	&b ( byte -: )
+	DUP #04 SFT /c
+	&c ( byte -: )
+	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
+	JMP2r
+
+@<pstr> ( str* -: )
+	LDAk #18 DEO
+	INC2 LDAk ?<pstr>
+	POP2 JMP2r
+
+@<pcell> ( str* -- )
+	LDAk LIT ", EQU ?{
+		LDAk #0a EQU ?{
+			LDAk #18 DEO
+			INC2 LDAk ?<pcell> } }
+	POP2 JMP2r
+
+(
+@|assets )
+
+@meta $1
+	( name ) "Nebu 0a
+	( desc ) "Spreadsheet 20 "Editor 0a
+	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
+	( date ) "22 20 "Feb 20 "2025 $2
+
+
+
+( fix32.tal )
+( )
+( 32-bit fixed point using 1000 as a denominator. )
+( )
+( LONG                FRACTION        DECIMAL )
+( 0000 0000             0/1000          0.000 )
+( 0000 0001             1/1000          0.001 )
+( 0000 000a            10/1000          0.010 )
+( 0000 0064           100/1000          0.100 )
+( 0000 00fa           250/1000          0.250 )
+( 0000 01f4           500/1000          0.500 )
+( 0000 03e8          1000/1000          1.000 )
+( 0000 3e80         16000/1000         16.000 )
+( 0001 0000         65536/1000         65.536 )
+( 7fff ffff    2147483647/1000    2147483.647 )
+( 8000 0000            invalid        invalid )
+( 8000 0001   -2147483647/1000   -2147483.647 )
+( ffff fc18         -1000/1000         -1.000 )
+( ffff ffff            -1/1000         -0.001 )
+( )
+( instead of overflowing operations will saturate )
+( at the maximum/minimum values. )
+( )
+( rounding caused by division will round toward )
+( the nearest even value. for example: )
+( )
+(     0.000 / 2 = 0.000 )
+(     0.001 / 2 = 0.000 )
+(     0.002 / 2 = 0.001 )
+(     0.003 / 2 = 0.002 )
+(     0.004 / 2 = 0.002 )
+(     0.005 / 2 = 0.002 )
+(     0.006 / 2 = 0.003 )
+(     0.007 / 2 = 0.004 )
+( )
+( this is done to prevent numerical bias. it is also )
+( called banker's rounding, or round-half-to-even. )
+( )
+( x/** signifies a 32-bit fixed point value. )
+( x** signfiies a 32-bit value of any kind. )
+
+%DUP4 { OVR2 OVR2 }
+%POP4 { POP2 POP2 }
+%POP4r { POP2r POP2r }
+%POP8 { POP2 POP2 POP2 POP2 }
+%STH4 { STH2 STH2 }
+%STH4r { STH2r STH2r }
+%DENOM16 { #03e8 }
+%DENOM32 { #0000 #03e8 }
+
+( numerical constants )
+( )
+( to compute a constant, multiply the value you want )
+( by 1000 and take its hex representation. )
+( )
+( example: python -c 'print(hex(round(13.5 * 1000)))' )
+
+%x32-hundredth { #0000 #000a } (  0.01 )
+%x32-tenth     { #0000 #0064 } (  0.1 )
+%x32-half      { #0000 #01f4 } (  0.5 )
+%x32-one       { #0000 #03e8 } (  1.0 )
+%x32-two       { #0000 #07d0 } (  2.0 )
+%x32-three     { #0000 #0bb8 } (  3.0 )
+%x32-four      { #0000 #0fa0 } (  4.0 )
+%x32-five      { #0000 #1388 } (  5.0 )
+%x32-ten       { #0000 #2710 } ( 10.0 )
+
+%x32-sqrt2 { #0000 #0586 } ( 1.414 ~ sqrt[2] )
+%x32-sqrt3 { #0000 #06c4 } ( 1.732 ~ sqrt[3] )
+%x32-e     { #0000 #0a9e } ( 2.718 ~ e )
+%x32-pi/2  { #0000 #0623 } ( 1.571 ~ pi/2 )
+%x32-pi    { #0000 #0c46 } ( 3.142 ~ pi )
+%x32-3pi/2 { #0000 #1268 } ( 4.712 ~ 3pi/2 )
+%x32-2pi   { #0000 #188b } ( 6.283 ~ 2pi )
+
+@x32-eq ( x/** y/** -> bool^ ) !u32-eq
+@x32-ne ( x/** y/** -> bool^ ) !u32-ne
+
+@x32-is-zero ( x/** -> bool^ ) !u32-is-zero
+@x32-non-zero ( x/** -> bool^ ) !u32-non-zero
+@x32-is-positive ( x/** -> bool^ ) POP2 #8000 LTH2 JMP2r
+@x32-is-negative ( x/** -> bool^ ) POP2 #7fff GTH2 JMP2r
+
+@x32-is-nan ( x/** -> bool^ )
+    #0000 EQU2 STH #8000 EQU2 STHr AND JMP2r
+
+@x32-not-nan ( x/** -> bool^ )
+    #0000 NEQ2 STH #8000 NEQ2 STHr ORA JMP2r
+
+@x32-from-u8 ( x^ -> x/** )
+    #00 SWP ( >> )
+@x32-from-u16 ( x* -> x/** )
+    #0000 SWP2 ( >> )
+@x32-from-u32 ( x** -> x/** )
+    DENOM32 !u32-mul
+
+@x32-from-s8 ( x^ -> x/** )
+    DUP #80 AND #07 SFT #ff MUL SWP ( >> )
+@x32-from-s16 ( x* -> x/** )
+    DUP2 #8000 AND2 #0f SFT2 #ffff MUL2 SWP2 ( >> )
+@x32-from-s32 ( x** -> x/** )
+    DENOM32 !u32-mul
+
+@x32-signed-op ( x** y** f* -> f[x,y]** )
+    STH2 LIT2r 0001                      ( x** y** [f* 0^ 1^] )
+    OVR2 #8000 LTH2 ?{ u32-negate SWPr } ( x** y** [f* ab*] )
+    ROT2 STH2 ROT2 STH2r                 ( y** x** [f* ab*] )
+    OVR2 #8000 LTH2 ?{ u32-negate SWPr } ( y** x** [f* cd*] )
+    ROT2 STH2 ROT2 STH2r SWP2r           ( x** y** [cd* f*] )
+    STH2r JSR2                           ( f[x,y]** [cd*] )
+    NIPr STHr ?{ u32-negate } JMP2r      ( z** )
+
+@x32-prepare-cmp ( x/** y/** -> x/** y/** xp^ yp^ )
+    OVR2 #8000 LTH2 ,&yp STR STH4
+    OVR2 #8000 LTH2 ,&xp STR STH4r
+    LIT2 [ &xp $1 &yp $1 ] JMP2r
+
+( TODO: test these implementations )
+@x32-lt-old ( x** y** -> x<y^ )
+    STH2 SWP2 STH2 EOR2k #8000 LTH2 ?{ ( ; do x and y have different signs? )
+        POP4r POP2 #8000 GTH2 JMP2r    ( ; signs differ, is x negative? )
+    } GTH2r STHr ?{                    ( ; same signs, is xlo < ylo? )
+        LTH2 JMP2r                     ( ; no, is xhi < yhi? )
+    } GTH2 #00 EQU JMP2r               ( ; yes, is xhi <= yhi? )
+
+( TODO: test these implementations )
+@x32-gt-old ( x** y** -> x<y^ )
+    STH2 SWP2 STH2 EOR2k #8000 LTH2 ?{ ( ; do x and y have different signs? )
+        POP4r POP2 #8000 LTH2 JMP2r    ( ; signs differ, is x positive? )
+    } LTH2r STHr ?{                    ( ; same signs, is xlo > ylo? )
+        GTH2 JMP2r                     ( ; no, is xhi > yhi? )
+    } LTH2 #00 EQU JMP2r               ( ; yes, is xhi >= yhi? )
+
+@x32-lt ( x/** y/** -> bool^ )
+    x32-prepare-cmp NEQk ?{ POP2 !u32-lt } LTH STH POP8 STHr JMP2r
+
+@x32-gt ( x/** y/** -> bool^ )
+    x32-prepare-cmp NEQk ?{ POP2 !u32-gt } GTH STH POP8 STHr JMP2r
+
+@x32-lteq ( x/** y/** -> bool^ )
+    x32-prepare-cmp NEQk ?{ POP2 !u32-lteq } LTH STH POP8 STHr JMP2r
+
+@x32-gteq ( x/** y/** -> bool^ )
+    x32-prepare-cmp NEQk ?{ POP2 !u32-gteq } GTH STH POP8 STHr JMP2r
+
+( TODO: support saturation at +/- infinity )
+( TODO: support signed operations )
+
+@x32-add ( x/** y/** -> z/** )
+    STH4 OVR2 #8000 AND2           ( x** xs* [ylo* yhi*] )
+    STH2kr #8000 AND2              ( x** xs* ys* [ylo* yhi*] )
+    EQU2k ?{ POP4 STH4r !u32-add } ( z** xs* ys* [ylo* yhi*] )
+    POP2 ROT2 ROT2 STH4r           ( sign* x** y** )
+    u32-add ROT2 STH2              ( z** [sign*] )
+    OVR2 #8000 AND2 STH2kr         ( z** zs* sign* [sign*] )
+    NEQ2 ?{ POP2r JMP2r }          ( z** [sign*] )
+    POP4 POPr STHr ?&negative      ( )
+    #7fff #ffff JMP2r              ( 7fff* ffff* )
+    &negative #8000 #0001 JMP2r    ( 8000* 0001* )
+
+@x32-sub ( x/** y/** -> z/** )
+    u32-negate !x32-add
+
+@x32-negate ( x/** y/** -> z/** )
+    !u32-negate
+
+@x32-mul ( x/** y/** -> z/** )
+    ;x32-mul-unsigned !x32-signed-op
+
+( [x*y]/1000 = floor[x/1000] + [[x%1000]*y]/1000 )
+@x32-mul-unsigned ( x/** y/** -> z/** )
+    STH4 DENOM32 u32-divmod     ( q=x/1000** r=x%1000** [ylo* yhi*] )
+    STH2kr OVR2r STH2r u32-mul  ( q** ry** [ylo* yhi*] )
+    DENOM32 u32-divmod          ( q** rq=ry/1000** rr=ry%1000** [ylo* yhi*] )
+    NIP2 ,&r1 STR2              ( q** rq** [ylo* yhi*] ; <-rr1 )
+    ROT2 STH2 ROT2 STH2r        ( ry/1000** q** [ylo* yhi*] )
+    STH4r u32-mul               ( ry/1000** qy** )
+    u32-add                     ( z=qy+ry/1000** )
+    DUP2 #0001 AND2 STH2        ( z** [odd*] )
+    #0000 LIT2 [ &r1 $2 ]       ( z** rr** [odd*] )
+    STH2r ADD2 #01f3 ADD2       ( z** rr+odd+499** )
+    DENOM32 u32-div             ( z** b=rr+odd+499/1000** )
+    !u32-add                    ( z+b** )
+
+@x32-div ( x/** y/** -> z/** )
+    ;x32-div-unsigned !x32-signed-op
+
+( [x*1000]/y = floor[x/y]*1000 + [[x%y]*1000]/y )
+@x32-div-unsigned ( x/** y/** -> z/** )
+    STH2k OVR2 STH2                 ( x/** y/** [ylo* yhi*] )
+    u32-divmod                      ( q=x/y** r=x%y** [ylo* yhi*] )
+    DENOM32 u32-mul                 ( q** r1000** [ylo* yhi*] )
+    STH2kr OVR2r STH2r u32-divmod   ( q** rq** rr** [ylo* yhi*] )
+    ,&r1 STR2 ,&r0 STR2             ( q** rq** ; <-rr0 <-rr1 [ylo* yhi*] )
+    ROT2 STH2 ROT2 STH2r            ( rq** q** [ylo* yhi*] )
+    DENOM32 u32-mul                 ( rq** q1000** [ylo* yhi*] )
+    u32-add                         ( z=rq+q1000** [ylo* yhi*] )
+    DUP ,&e STR                     ( z** ; e<-z3^ [ylo* yhi*] )
+    LIT2 [ &r0 $2 ] LIT2 [ &r1 $2 ] ( z** rr** [ylo* yhi*] )
+    LIT [ &e $1 ] #01 AND           ( z** rr** e^ )
+    #00 SWP #0000 SWP2              ( z** rr** e** [ylo* yhi*] )
+    u32-add                         ( z** w=rr+e** [ylo* yhi*] )
+    STH2kr OVR2r STH2r              ( z** w** y** [ylo* yhi*] )
+    #0000 #0001 u32-sub             ( z** w** y-1** [ylo* yhi*] )
+    #01 u32-rshift u32-add          ( z** v=w+y-1/2** [ylo* yhi*] )
+    STH4r u32-div !u32-add          ( z+v/y** )
+
+( print an x32 number to stdout )
+@x32-emit ( x/** -> )
+    ;x32-emit/draw-ch !x32-draw
+    &draw-ch ( c^ -> ) #18 DEO JMP2r
+
+@x32-draw-nan ( x/** draw-char* -> )
+    STH2 POP2 POP2
+    LIT "n STH2kr JSR2
+    LIT "a STH2kr JSR2
+    LIT "n STH2r JMP2
+
+@x32-draw ( x/** draw-char* -> )
+    STH2 DUP4 x32-not-nan ?{ STH2r !x32-draw-nan }
+    OVR2 #8000 LTH2 ?{
+        LIT "- STH2kr JSR2
+        u32-negate
+    }
+    STH2r ( >> )
+
+( draw an x32 number using the given character-drawing subroutine )
+@x32-draw-unsigned ( x/** draw-char* -> )
+    ,&f STR2 LITr 00             ( x** [0^] )
+    &loop                        ( x1** [... count^] )
+        #0000 #000a u32-divmod   ( q** r** )
+        NIP2 NIP INCr            ( q** r^ [... count+1^] )
+        LIT "0 ADD STH SWPr      ( q** [... c^ count+1^] )
+        STHkr #03 NEQ ?&next     ( q** [... c^ count+1^] )
+        INCr LITr ". SWPr        ( q** [... c^ dot^ count+2^] )
+    &next                        ( q** [... count+n^ )
+        DUP4                     ( q** q** [... count+n^] )
+        u32-non-zero ?&loop POP4 ( [... count+n^] )
+    &pad                         ( [... count+n^] )
+        STHkr #04 GTH ?&unroll   ( [... count+n^] )
+        STHkr #03 NEQ ?{ INCr LITr ". SWPr }
+        INCr LITr "0 SWPr !&pad  ( [... 0^ count+n+1^] )
+    &unroll                      ( [... x0^] )
+        STHr                     ( x0^ [...] )
+    &uloop                       ( x^ [... z^] )
+        STHr LIT2 [ &f $2 ] JSR2 ( x^ [...] ; call f[z] )
+        #01 SUB DUP ?&uloop      ( x-1^ [...] )
+    POP JMP2r                    ( )
+
+( returns nan [8000 0000] on error )
+@x32-parse ( pos* -> x/** )
+    ( negate leading - ; ignore leading + )
+    LDAk LIT "- NEQ ?{ INC2 x32-parse/run !x32-negate } ( pos* )
+    LDAk LIT "+ NEQ ?{ INC2 !x32-parse/run }            ( pos* )
+    LDAk #00 EQU ?&error0                               ( pos* )
+&run                                                    ( pos* )
+    ( accumulate on rst ; reverse shorts )
+    LIT2r 0000 LIT2r 0000       ( pos* [lo* hi*] )
+
+    ( trim leading zeros )
+    &trim LDAk LIT "0 NEQ ?&whole INC2 !&trim ( pos* [lo* hi*] )
+
+    ( accumulate whole part )
+    &whole                             ( pos* [wlo* whi*] )
+        LDAk #00 EQU ?&whole-done      ( pos* [wlo* whi*] )
+        LDAk #2e EQU ?&dot             ( pos* [wlo* whi*] )
+        LDAk #30 LTH ?&error1          ( pos* [wlo* whi*] )
+        LDAk #39 GTH ?&error1          ( pos* [wlo* whi*] )
+        LDAk #30 SUB                   ( pos* digit^ [wlo* whi*] )
+        #00 SWP #0000 SWP2 STH2r STH2r ( pos* digit** w** )
+        #0000 #000a u32-mul            ( pos* digit** 10w** )
+        u32-add STH2 STH2 INC2 !&whole ( pos+1* [wlo2* whi2*] )
+    &whole-done                        ( pos* [lo* hi*] )
+        POP2 STH2r STH2r !x32-from-u32 ( res/** )
+    &dot                               ( pos* [wlo* whi*] )
+        DUP2 #0004 ADD2 SWP2           ( limit* pos* [wlo* whi*] )
+        INC2 LIT2r 0000                ( limit* pos+1* [wlo* whi* s*] )
+    &fraction                          ( limit* pos* [wlo* whi* s*] )
+        LDAk #00 EQU ?&dotend          ( limit* pos* [wlo* whi* s*] )
+        LDAk #30 LTH ?&error2          ( limit* pos* [wlo* whi* s*] )
+        LDAk #39 GTH ?&error2          ( limit* pos* [wlo* whi* s*] )
+        LDAk #30 SUB #00 SWP           ( limit* pos* digit* [wlo* whi* s*] )
+        LIT2r 000a MUL2r STH2 ADD2r    ( limit* pos* [wlo* whi* 10s+digit*] )
+        INC2 GTH2k ?&fraction !&round  ( limit* pos+1 [wlo* whi* 10s+digit*] )
+    &dotend                            ( limit* pos* [wlo* whi* s*] )
+        LIT2r 000a MUL2r               ( limit* pos* [wlo* whi* 10s*] )
+        INC2 GTH2k ?&dotend !&finish   ( limit* pos+1* [wlo* whi* 10s*] )
+    &round                             ( limit* limit* [wlo* whi* s*] )
+        LDAk #00 EQU ?&finish          ( limit* limit* [wlo* whi* s*] )
+        LDAk #30 LTH ?&error2          ( limit* limit* [wlo* whi* s*] )
+        LDAk #39 GTH ?&error2          ( limit* limit* [wlo* whi* s*] )
+        LDAk #30 SUB #00 SWP           ( limit* limit* digit* [wlo* whi* s*] )
+        STH2kr #0001 AND2 ADD2         ( limit* limit* digit+odd* [wlo* whi* s*] )
+        #0004 ADD2 #000a DIV2          ( limit* limit* rnd* [wlo* whi* s*] )
+        STH2 ADD2r                     ( limit* limit* [wlo* whi* s+rnd*] )
+    &finish                            ( limit* limit* [wlo* whi* s*] )
+        POP2 POP2 #0000 STH2r          ( s/** [wlo* whi*] )
+        STH2r STH2r x32-from-u32       ( s/** w/** )
+        !x32-add                       ( res/** )
+    &error2                            ( limit* pos* [wlo* whi* s*] )
+        POP2r POP2                     ( limit* [wlo* whi*] )
+    &error1                            ( pos* [wlo* whi*] )
+        POP4r                          ( pos* )
+    &error0 POP2 #8000 #0000 JMP2r     ( 8000 0000 )
+
+
+( math32.tal                                                      )
+(                                                                 )
+( This library supports arithmetic on 32-bit unsigned integers,   )
+( also known as long values.                                      )
+(                                                                 )
+( 32-bit long values are represented by two 16-bit short values:  )
+(                                                                 )
+(      decimal  hexadecimal  uxn literals                         )
+(            0   0x00000000   #0000 #0000                         )
+(            1   0x00000001   #0000 #0001                         )
+(         4660   0x00001234   #0000 #1234                         )
+(        65535   0x0000ffff   #0000 #ffff                         )
+(        65536   0x00010000   #0001 #0000                         )
+(     16777215   0x00ffffff   #00ff #ffff                         )
+(   4294967295   0xffffffff   #ffff #ffff                         )
+(                                                                 )
+( The most significant 16-bit, the "high bits", are stored first. )
+( We document long values as x** -- equivalent to xhi* xlo*.      )
+(                                                                 )
+( Operations supported:                                           )
+(                                                                 )
+(   NAME            STACK EFFECT        DEFINITION                )
+(   u32-add         x** y** -> z**      x + y                     )
+(   u32-sub         x** y** -> z**      x - y                     )
+(   u32-mul         x** y** -> z**      x * y                     )
+(   u32-mul16       x*  y*  -> z**      x * y                     )
+(   u32-div         x** y** -> q**      x / y                     )
+(   u32-mod         x** y** -> r**      x % y                     )
+(   u32-divmod      x** y** -> q** r**  x / y, x % y              )
+(   u32-gcd         x** y** -> z**      gcd[x, y]                 )
+(   u32-negate      x**     -> z**      -x                        )
+(   u32-lshift      x** n^  -> z**      x<<n                      )
+(   u32-rshift      x** n^  -> z**      x>>n                      )
+(   u32-and         x** y** -> z**      x & y                     )
+(   u32-or          x** y** -> z**      x | y                     )
+(   u32-xor         x** y** -> z**      x ^ y                     )
+(   u32-complement  x**     -> z**                              )
+(   u32-eq          x** y** -> bool^    x == y                    )
+(   u32-ne          x** y** -> bool^    x != y                    )
+(   u32-is-zero     x**     -> bool^    x == 0                    )
+(   u32-non-zero    x**     -> bool^    x != 0                    )
+(   u32-lt          x** y** -> bool^    x < y                     )
+(   u32-gt          x** y** -> bool^    x > y                     )
+(   u32-lteq        x** y** -> bool^    x <= y                    )
+(   u32-gteq        x** y** -> bool^    x >= y                    )
+(   u8-bitcount     x^      -> bool^    floor[log2[x]]+1          )
+(   u16-bitcount    x*      -> bool^    floor[log2[x]]+1          )
+(   u32-bitcount    x**     -> bool^    floor[log2[x]]+1          )
+(                                                                 )
+( bitcount: number of bits needed to represent the number.        )
+( this is equivalent to floor[log2[x]] + 1 )
+
+@u8-bitcount ( x^ -> n^ )
+    LITr 00 &loop DUP ?{ POP STHr JMP2r } #01 SFT INCr !&loop
+
+@u16-bitcount ( x* -> n^ )
+    LITr 00 &loop ORAk ?{ POP2 STHr JMP2r } #01 SFT2 INCr !&loop
+
+@u32-bitcount ( x** -> n^ )
+    SWP2 u16-bitcount DUP ?{ POP !u16-bitcount } #10 NIP2 ADD JMP2r
+
+( -- equality )
+
+( x == y )
+@u32-eq ( xhi* xlo* yhi* ylo* -> bool^ )
+    ROT2 EQU2 STH EQU2 STHr AND JMP2r
+
+( x != y )
+@u32-ne ( xhi* xlo* yhi* ylo* -> bool^ )
+    ROT2 NEQ2 STH NEQ2 STHr ORA JMP2r
+
+( x == 0 )
+@u32-is-zero ( x** -> bool^ )
+    ORA2 #0000 EQU2 JMP2r
+
+( x != 0 )
+@u32-non-zero ( x** -> bool^ )
+    ORA2 ORA JMP2r
+
+( -- comparisons )
+
+( x < y )
+@u32-lt ( x** y** -> bool^ )
+    ROT2 SWP2 LTH2 ?{ LTH2 JMP2r } GTH2 #00 EQU JMP2r
+
+( x <= y )
+@u32-lteq ( x** y** -> bool^ )
+    ROT2 SWP2 GTH2 ?{ GTH2 #00 EQU JMP2r } LTH2 JMP2r
+
+( x > y )
+@u32-gt ( x** y** -> bool^ )
+    ROT2 SWP2 GTH2 ?{ GTH2 JMP2r } LTH2 #00 EQU JMP2r
+
+( x > y )
+@u32-gteq ( x** y** -> bool^ )
+    ROT2 SWP2 LTH2 ?{ LTH2 #00 EQU JMP2r } GTH2 JMP2r
+
+( -- bitwise operations )
+
+( x & y )
+@u32-and ( xhi* xlo* yhi* ylo* -> xhi&yhi* xlo&ylo* )
+    ROT2 AND2 STH2 AND2 STH2r JMP2r
+
+( x | y )
+@u32-or ( xhi* xlo* yhi* ylo* -> xhi|yhi* xlo|ylo* )
+    ROT2 ORA2 STH2 ORA2 STH2r JMP2r
+
+( x ^ y )
+@u32-xor ( xhi* xlo* yhi* ylo* -> xhi^yhi* xlo^ylo* )
+    ROT2 EOR2 STH2 EOR2 STH2r JMP2r
+
+(  )
+@u32-complement ( x** ->  ~xlo* )
+    SWP2 #ffff EOR2 SWP2 #ffff EOR2 JMP2r
+
+( -- bit-shifting )
+
+( x >> n )
+@u32-rshift ( x** n^ -> x>>n )
+    DUP #08 LTH ?u32-shift-0 ( x n )
+    DUP #10 LTH ?u32-rshift-1 ( x n )
+    DUP #18 LTH ?u32-rshift-2 ( x n )
+    !u32-rshift-3 ( x n )
+
+( shift by 0-7 bits; used by both lshift and rshift )
+@u32-shift-0 ( x** n^ -> x>>n )
+    STH DUP2 STHkr SFT2                       ,&z2 STR2
+    POP DUP2 STHkr SFT2 ,&z2 LDR ORA ,&z2 STR ,&z1 STR
+    POP      STHr  SFT2 ,&z1 LDR ORA ,&z1 STR
+    LIT [ &z1 $1 ] LIT2 [ &z2 $2 ] JMP2r
+
+( shift right by 8-15 bits )
+@u32-rshift-1 ( x** n^ -> x>>n )
+    #08 SUB STH                 ( stash [n>>8] )
+    POP DUP2 STHkr SFT2 ,&z2 STR2
+    POP      STHr  SFT2 ,&z2 LDR ORA ,&z2 STR
+    #00 SWP LIT2 [ &z2 $2 ] JMP2r
+
+( shift right by 16-23 bits )
+@u32-rshift-2 ( x** n^ -> x>>n )
+    #10 SUB STH                 ( stash [n>>16] )
+    POP2 STHr SFT2 #0000 SWP2 JMP2r
+
+( shift right by 16-23 bits )
+@u32-rshift-3 ( x** n^ -> x>>n )
+    #18 SUB STH                 ( stash [n>>24] )
+    POP2 POP STH SWPr SFTr #00 #0000 STHr JMP2r
+
+( x << n )
+@u32-lshift ( x** n^ -> x<<n )
+    DUP #08 LTH ?u32-lshift-0 ( x n )
+    DUP #10 LTH ?u32-lshift-1 ( x n )
+    DUP #18 LTH ?u32-lshift-2 ( x n )
+    !u32-lshift-3 ( x n )
+
+( shift left by 0-7 bits )
+@u32-lshift-0 ( x** n^ -> x<<n )
+    #40 SFT !u32-shift-0
+
+( shift left by 8-15 bits )
+@u32-lshift-1 ( x** n^ -> x<<n )
+    #08 SUB #40 SFT STH ( stash [n-8]<<4 )
+        DUP2 STHkr SFT2 ,&z1 STR2
+    POP      STHr  SFT2 ,&z1 LDR ORA ,&z1 STR
+    NIP LIT2 [ &z1 $1 &z2 $1 ] #00 JMP2r
+
+( shift left by 16-23 bits )
+@u32-lshift-2 ( x** n^ -> x<<n )
+    #10 SUB #40 SFT STH ( stash [n-16]<<4 )
+    NIP2 STHr SFT2 #0000 JMP2r
+
+( shift left by 24-31 bits )
+@u32-lshift-3 ( x** n^ -> x<<n )
+    #18 SUB #40 SFT ( stash [n-24]<<4 )
+    SFT NIP2 NIP #0000 #00 JMP2r
+
+( -- arithmetic )
+
+( x + y )
+@u32-add ( xhi* xlo* yhi* ylo* -> zhi* zlo* )
+    ROT2 STH2k ADD2 STH2k ROT2 ROT2 GTH2r #00 STHr ADD2 ADD2 SWP2 JMP2r
+
+( -x )
+@u32-negate ( x** -> -x** )
+    u32-complement INC2 ORAk ?{ SWP2 INC2 SWP2 } JMP2r
+
+( x - y )
+@u32-sub ( x** y** -> z** )
+    ROT2 STH2k SWP2 SUB2 STH2k ROT2 ROT2 LTH2r #00 STHr ADD2 SUB2 SWP2 JMP2r
+
+( 16-bit multiplication )
+@u32-mul16 ( x* y* -> z** )
+    ,&y1 STR ,&y0 STR ( save ylo, yhi )
+    ,&x1 STR ,&x0 STR ( save xlo, xhi )
+    #0000 ,&z1 STR ,&w0 STR ( reset z1 and w0 )
+
+    ( x1 * y1 => z1z2 )
+    LIT2 00 [ &x1 $1 ] LIT2 00 [ &y1 $1 ] MUL2 ,&z3 STR ,&z2 STR
+
+    ( x0 * y1 => z0z1 )
+    #00 ,&x0 LDR #00 ,&y1 LDR MUL2 ,&z1 LDR2 ADD2 ,&z1 STR2
+
+    ( x1 * y0 => w1w2 )
+    #00 ,&x1 LDR #00 ,&y0 LDR MUL2 ,&w2 STR ,&w1 STR
+
+    ( x0 * y0 => w0w1 )
+    LIT2 00 [ &x0 $1 ] LIT2 00 [ &y0 $1 ] MUL2 ,&w0 LDR2 ADD2 ,&w0 STR2
+
+    ( add z and a<<8 )
+    #00 LIT2 [ &z1 $1 &z2 $1 ] LIT [ &z3 $1 ]
+    LIT2 [ &w0 $1 &w1 $1 ] LIT [ &w2 $1 ] #00
+    !u32-add
+
+( x * y )
+@u32-mul ( x** y** -> z** )
+    ROT2k ( x0* x1* y0* y1* y0* y1* x1* )
+    u32-mul16 ,&z1 STR2 ,&z0 STR2 POP2 ( x0* x1* y0* y1* ; sum = [x1*y1] )
+    STH2 ROT2 STH2                 ( x1* y0* [y1* x0*] )
+    MUL2r MUL2 STH2r ADD2          ( x1*y0+y1*x0* )
+    ( [x0*y0]<<32 will completely overflow )
+    LIT2 [ &z0 $2 ] ADD2 ( sum += [x0*y1+x1*y0]<<16 )
+    LIT2 [ &z1 $2 ] JMP2r
+
+( x / y )
+@u32-div ( x** y** -> q** )
+    z_u32-divmod ;z_u32-divmod/quo0 LDA2 ;z_u32-divmod/quo1 LDA2 JMP2r
+
+( x % y )
+@u32-mod ( x** y** -> r** )
+    z_u32-divmod ;z_u32-divmod/rem0 LDA2 ;z_u32-divmod/rem1 LDA2 JMP2r
+
+( x / y, x % y )
+@u32-divmod ( x** y** -> q** r** )
+    z_u32-divmod
+    ;z_u32-divmod/quo0 LDA2 ;z_u32-divmod/quo1 LDA2
+    ;z_u32-divmod/rem0 LDA2 ;z_u32-divmod/rem1 LDA2
+    JMP2r
+
+( private: calculate and store x / y and x % y )
+@z_u32-divmod ( x** y** -> )
+    ( ; store y and x for repeated use )
+    #0000 DUP2 ,&quo0 STR2 ,&quo1 STR2      ( x** y**         ; quo<-0 )
+    STH2k ,&div1 STR2 STH2k ,&div0 STR2     ( x** [ylo* yhi*] ; div<-y )
+    OVR2 OVR2 ,&rem1 STR2 ,&rem0 STR2       ( x** [ylo* yhi*] ; rem<-x )
+    OVR2 OVR2 STH2r STH2r                   ( x** x** y** )
+    OVR2 OVR2 STH2 STH2                     ( x** x** y** [ylo* yhi*] )
+    u32-gteq ?{ POP2 POP2 POP2r POP2r JMP2r } ( x** [ylo* yhi*] ; return if x < y )
+
+    ( ; bitcount[x] - bitcount[y] determines largest multiple of y to try )
+    u32-bitcount STH2r STH2r u32-bitcount SUB ( shift=rbits-dits^ )
+    #00 DUP2                              ( shift^ 0^ shift^ 0^ )
+    #0000 INC2k ROT2 POP                  ( shift^ 0^ 0* 1* shift^ )
+    u32-lshift ,&cur1 STR2 ,&cur0 STR2      ( shift^ 0^ ; cur<-1<<shift )
+    ,&div0 LDR2 ,&div1 LDR2 ROT2 POP      ( div** shift^ )
+    u32-lshift ,&div1 STR2 ,&div0 STR2      ( ; div<-div<<shift )
+
+    &loop
+      ( ; if rem >= cur [current divisor], we can subtract it and add to quotient )
+      ( ; otherwise, skip that iteration and reduce cur. )
+      LIT2 [ &rem0 $2 ] LIT2 [ &rem1 $2 ] ,&div0 LDR2 ,&div1 LDR2
+      u32-lt ?{
+        ( ; since rem >= div, we have found a multiple of y that divides x )
+        ,&rem0 LDR2 ,&rem1 LDR2             ( rem** )
+        LIT2 [ &div0 $2 ] LIT2 [ &div1 $2 ] ( rem** div** )
+        u32-sub ,&rem1 STR2 ,&rem0 STR2       ( ; rem<-rem-div** )
+        LIT2 [ &quo0 $2 ] LIT2 [ &quo1 $2 ] ( quo** )
+        LIT2 [ &cur0 $2 ] LIT2 [ &cur1 $2 ] ( quo** cur** )
+        u32-add ,&quo1 STR2 ,&quo0 STR2       ( ; quo<-quo+cur** )
+      }
+      ,&div0 LDR2 ,&div1 LDR2 #01 u32-rshift ( div>>1** )
+      ,&div1 STR2 ,&div0 STR2              ( ; div<-div>>1 )
+      ,&cur0 LDR2 ,&cur1 LDR2 #01 u32-rshift ( cur>>1** )
+      OVR2 OVR2 ,&cur1 STR2 ,&cur0 STR2    ( cur>>1** ; cur<-cur>>1 )
+      u32-non-zero ?&loop JMP2r              ( ; loop if cur>0, else we're done )
+
+( greatest common divisor - euclidean algorithm )
+@u32-gcd ( x** y** -> z** )
+    &loop OVR2 OVR2 u32-is-zero ?{ ( x** y** )
+        OVR2 OVR2 STH2 STH2      ( x** y** [y**] )
+        u32-mod                    ( r=x%y** [y**] )
+        STH2r ROT2 ROT2          ( yhi* rhi* rlo* [ylo*] )
+        STH2r ROT2 ROT2 !&loop   ( y** r** )
+    } POP2 POP2 JMP2r            ( z** )
+
+
+
+( Assets )
+
+@fill-icn [ ffff ffff ffff ffff ffff ffff ffff ffff ]
+@hash-icn [ aa55 aa55 aa55 aa55 aa55 aa55 aa55 aa55 ]
+@diag-icn [ 1122 4488 1122 4488 1122 4488 1122 4488 ]
+@dotted-icn [ 8800 2200 8800 2200 8800 2200 8800 2200 ]
+
+@mouse-icn [ 80c0 e0f0 f8fc feff f8d8 8c0c 0606 0000 ]
+@line-icn [ aa00 0000 0000 0000 0000 0000 0000 0000 ]
+@check-icn [ aa55 aa55 aa55 aa55 aa55 aa55 aa55 aa55 ]
+
+@header
+	&left-icn [ 0000 007e 007e 007e 007e 007e 007e 0000 ]
+	&middle-icn [ 0000 00ff 00ff 00ff 00ff 00ff 00ff 0000 ]
+	&right-icn [ 0000 00fe 00fe 00fe 00fe 00fe 00fe 0000 ]
+	&border-chr [ 00ff 0000 0000 0000 ff00 0000 0000 0000 ]
+	&close-icn [
+	0000 00ff 8080 8080 8080 8080 80ff 0000
+	0000 00ef 202f 202f 202f 202f 20ef 0000
+	0000 00ff 84a4 9580 f180 95a4 84ff 0000
+	0000 00ef 20af 202f e02f 20af 20ef 0000 ]
+
+@frame-icns [
+	ff80 8080 8080 8080 8080 8080 8080 8080
+	ff00 0000 0000 0000 ]
+	&rx [ 0080 0080 0080 0080 ]
+	&ry [ 5500 0000 0000 0000 ]
+
+@chicago/widths
+	0000 0000 0000 0000 0008 0000 0000 0000
+	000b 0b09 0b00 0000 0000 0000 0000 0000
+	0406 070a 070b 0a03 0505 0707 0407 0407
+	0808 0808 0808 0808 0808 0404 0608 0608
+	0b08 0808 0807 0708 0806 0709 070c 0908
+	0808 0807 0608 080c 0808 0805 0705 0808
+	0608 0807 0808 0608 0804 0608 040c 0808
+	0808 0607 0608 080c 0808 0805 0505 0808
+	&glyphs
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0030 3030 3030 3000 3030 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0028 2828 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0909 3f12 127f 2424 0000 0000 0000
+	0000 0000 8000 0000 0000 0000 0000 0000
+	0000 1038 5470 7038 1c1c 5438 1000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 3749 4a32 0404 090a 1211 0000 0000
+	0000 0000 0000 0000 8040 4080 0000 0000
+	0000 003c 6666 3067 6666 663c 0000 0000
+	0000 0000 0080 8000 0000 0000 0000 0000
+	0000 0040 4040 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 1020 6060 6060 6060 6020 1000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 4020 3030 3030 3030 3020 4000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0010 5438 5410 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0010 107c 1010 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 6060 2040 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 007c 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 6060 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0404 0808 1010 2020 4040 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 003c 6666 6666 6666 663c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0018 3818 1818 1818 1818 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 003c 4606 060c 1830 607e 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 007e 0c18 3c06 0606 463c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0006 0e16 2646 7f06 0606 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 007e 6060 7c06 0606 463c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 001c 3060 7c66 6666 663c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 007e 0606 060c 1818 1818 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 003c 6666 663c 6666 663c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 003c 6666 6666 3e06 0c38 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0060 6000 0000 6060 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0060 6000 0000 6060 2040 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 1830 60c0 6030 1800 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 7e00 7e00 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 c060 3018 3060 c000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 003c 4606 0c18 1800 1818 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 1f20 4e52 524d 201f 0000 0000
+	0000 0000 0080 4040 4080 0000 0000 0000
+	0000 003c 6666 667e 6666 6666 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 007c 6666 667c 6666 667c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 003c 6260 6060 6060 623c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 007c 6666 6666 6666 667c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 007c 6060 6078 6060 607c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 007c 6060 6078 6060 6060 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 003c 6260 606e 6666 663c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0066 6666 667e 6666 6666 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0030 3030 3030 3030 3030 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 000c 0c0c 0c0c cccc cc78 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0063 666c 7870 786c 6663 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0060 6060 6060 6060 607c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0040 6070 795f 4e44 4040 0000 0000
+	0000 0020 60e0 e060 6060 6060 0000 0000
+	0000 0041 6171 795d 4f47 4341 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 003c 6666 6666 6666 663c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 007c 6666 667c 6060 6060 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 003c 6666 6666 6666 663c 0600 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 007c 6666 667c 6666 6666 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0038 6460 7038 1c0c 4c38 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 00fc 3030 3030 3030 3030 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0066 6666 6666 6666 663c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0066 6666 6666 6666 6478 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0066 6666 6666 6666 667f 0000 0000
+	0000 0060 6060 6060 6060 4080 0000 0000
+	0000 0066 6666 663c 6666 6666 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0066 6666 663c 1818 1818 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 007e 0606 0c18 3060 607e 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 7060 6060 6060 6060 6060 7000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 4040 2020 1010 0808 0404 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 7030 3030 3030 3030 3030 7000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0008 1422 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 00ff 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 4020 1000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 003c 463e 6666 663e 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0060 607c 6666 6666 667c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0038 6460 6060 6438 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0006 063e 6666 6666 663e 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 003c 6666 7e60 623c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 001c 3078 3030 3030 3030 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 003e 6666 6666 663e 0646 3c00
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0060 607c 6666 6666 6666 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0060 0060 6060 6060 6060 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0018 0018 1818 1818 1818 1898 7000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0060 6066 6c78 7078 6c66 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0060 6060 6060 6060 6060 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 007f 6666 6666 6666 0000 0000
+	0000 0000 00c0 6060 6060 6060 0000 0000
+	0000 0000 007c 6666 6666 6666 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 003c 6666 6666 663c 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 007c 6666 6666 667c 6060 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 003e 6666 6666 663e 0606 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 006c 7060 6060 6060 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0038 6470 381c 4c38 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0030 3078 3030 3030 3018 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0066 6666 6666 663e 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0066 6666 6666 6478 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0066 6666 6666 667f 0000 0000
+	0000 0000 0060 6060 6060 4080 0000 0000
+	0000 0000 0066 6666 3c66 6666 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0066 6666 6666 663e 0646 3c00
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 007e 060c 1830 607e 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 1020 2020 2040 2020 2020 1000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 2020 2020 2020 2020 2020 2000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 4020 2020 2010 2020 2020 4000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0032 4c00 0000 0000 0000 0000
+
+@data/buf
+

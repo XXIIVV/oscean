@@ -16,25 +16,41 @@
 
 @on-reset ( -> )
 	;meta #06 DEO2
-	;await-src .Console/vector DEO2
 	.Console/type DEI ?{
 		;dict/usage <sprint>
-		#01 ;await-src/interactive STA }
+		;src/on-console-live .Console/vector DEO2
+		BRK }
+	;src/on-console-once .Console/vector DEO2
 	BRK
 
 @meta $1
 	( name ) "Uxnfor 0a
 	( desc ) "Uxntal 20 "Formatter 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "23 20 "Dec 20 "2024 $2
+	( date ) "7 20 "Feb 20 "2025 $2
 
-@await-src ( -> )
+@on-console ( -> )
+	[ LIT2 0a -Console/read ] DEI EQU ?{ BRK }
+	<format-file>
+	BRK
+
+@src/on-console-live ( -> )
 	.Console/read DEI DUP #20 GTH ?{
 		POP <format-file>
-		src/<clear>
-		[ LIT &interactive $1 ] ?{ #800f DEO }
+		;dict/bound <sprint>
+		;/buf <sprint>
+		;on-console .Console/vector DEO2
 		BRK }
-	src/<append>
+	/<append>
+	BRK
+
+@src/on-console-once ( -> )
+	.Console/read DEI DUP #20 GTH ?{
+		POP <format-file>
+		/<clear>
+		#800f DEO
+		BRK }
+	/<append>
 	BRK
 
 @src/<append> ( char -- )
@@ -378,7 +394,7 @@
 @|stdlib )
 
 @ciuc ( c -: f )
-	[ LIT "A ] SUB #19 LTH JMP2r
+	[ LIT "A ] SUB #1a LTH JMP2r
 
 @slen ( str* -: len* )
 	DUP2 scap/ SWP2 SUB2 JMP2r
@@ -469,6 +485,7 @@
 @dict
 	&usage "usage: 20 "uxnfor.rom 20 "source.tal 0a $1
 	&err "!! 20 "Error: 20 "Scope 20 "too 20 "large: 20 $1
+	&bound "bound: 20 $1
 	&deo "DEO $1
 	&sta "STA $1
 	&stz "STZ $1
