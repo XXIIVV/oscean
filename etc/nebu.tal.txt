@@ -136,12 +136,18 @@
 	POP2 POP2r !grid/<draw>
 
 @cmd/<insert> ( c x y -- )
-	cells/get-addr scap STA
+	cells/get-addr DUP2 scap
+	( clamp ) SWP2k SUB2 NIP #1f LTH ?{ POP2 POP2 POP JMP2r }
+	NIP2
+	( save ) STA
 	grid/<draw>
 	[ LIT2 01 -&inserted ] STZ !/<draw>
 
 @cmd/<erase> ( x y -- )
-	cells/get-addr scap #0001 SUB2 #0000 SWP2 STA2
+	cells/get-addr DUP2 scap
+	( clamp ) NEQ2k ?{ POP2 POP2 JMP2r }
+	NIP2
+	( save ) #0001 SUB2 #0000 SWP2 STA2
 	grid/<draw> !/<draw>
 
 @cmd/do-delete ( x y -- )
@@ -161,7 +167,7 @@
 (
 @|select )
 
-@select/get-rect ( -- )
+@select/get-rect ( -- bx ax by ay )
 	.select/bx LDZ INC .select/ax LDZ .select/by LDZ INC .select/ay LDZ JMP2r
 
 @select/<reset> ( -- )
@@ -573,7 +579,7 @@
 @cells/<clear> ( -- )
 	;&buf [ LIT2 00 -LINES ] #80 SFT2 !<mclr>
 
-@cells/find-bounds ( -- x y )
+@cells/find-bounds ( -- x 0 y 0 )
 	[ LIT2r 0000 ] #4000
 	&>lfv ( -- )
 		#0800
@@ -585,24 +591,26 @@
 				( . ) SWPr }
 			POP2 INC GTHk ?&>lfh
 		POP2 INC GTHk ?&>lfv
-	POP2 STH2r JMP2r
+	POP2 SWPr
+	( x ) STHr INC #00
+	( y ) STHr INC #00 JMP2r
 
 @cells/<save> ( src* -- )
+	STH2
+	/find-bounds STH2r
+	( >> )
+
+@cells/<save-rect> ( bx ax by ay src* -- )
 	.File/name DEO2
-	( | find bounds )
-	/find-bounds INC ,&y2 STR
-	INC ,&x2 STR
-	( | save )
-	[ LIT2 &y2 $1 00 ]
 	&>lv ( -- )
-		[ LIT2 &x2 $1 00 ]
+		OVR2
 		&>lh ( -- )
 			DUP OVR2 POP /get-addr File/<save-text>
-			.src/spacer LDZ File/<save-char>
+			DUP2 INC EQU ?{ .src/spacer LDZ File/<save-char> }
 			INC GTHk ?&>lh
 		[ LIT 0a ] File/<save-char>
 		POP2 INC GTHk ?&>lv
-	POP2 JMP2r
+	POP2 POP2 JMP2r
 
 @cells/<load> ( src* -- )
 	/<clear>
@@ -613,14 +621,20 @@
 	DUP2 /find-filetype .File/name DEO2
 	/<reset>
 	#0001 .File/length DEO2
+	;&bufcap ;&buf
 	&>sl ( -- )
 		;&b .File/read DEO2
-		.File/success-lb DEI ?{ #00 header/<draw> !grid/<draw> }
-		[ LIT &b $1 ] /<push> !&>sl
+		.File/success-lb DEI ?{
+			POP2 POP2 #00 header/<draw> !grid/<draw> }
+		[ LIT &b $1 ] /<push>
+		INC2 GTH2k ?&>sl
+	;dict/err-size <perr>
+	POP2 POP2 #00 header/<draw> !grid/<draw>
 
 @cells/<push> ( c -- )
 	DUP .src/spacer LDZ EQU ?/move-x
 	DUP #0a EQU ?/move-y
+	[ LIT2 1f _&c ] LDR NEQ ?{ POP JMP2r }
 	#00
 	( char ) [ LIT2 00 &c $1 ] INCk ,&c STR
 	( x y ) [ LIT2 &x $1 &y $1 ] /get-addr ADD2 STA2
@@ -647,7 +661,8 @@
 @cells/find-filetype ( str* -- )
 	scap #0002 SUB2 LDA2k [ LIT2 "sv ] NEQ2 ?{
 		DUP2 #0001 SUB2 LDA [ LIT "t ] NEQ ?{
-			[ LIT2 09 -src/spacer ] STZ } }
+			POP2 [ LIT2 09 -src/spacer ] STZ
+			JMP2r } }
 	[ LIT2 ", -src/spacer ] STZ
 	POP2 JMP2r
 
@@ -806,24 +821,13 @@
 @|snarf )
 
 @snarf/<copy> ( -- )
-	;&filepath .File/name DEO2
-	( | save )
-	select/get-rect
-	&>lv ( -- )
-		OVR2
-		&>lh ( -- )
-			DUP OVR2 POP cells/get-addr File/<save-text>
-			DUP2 INC EQU ?{ .src/spacer LDZ File/<save-char> }
-			INC GTHk ?&>lh
-		[ LIT 0a ] File/<save-char>
-		POP2 INC GTHk ?&>lv
-	POP2 POP2 JMP2r
+	select/get-rect ;&filepath !cells/<save-rect>
 
 @snarf/<paste> ( -- )
 	.select/a LDZ2 ;&filepath !cells/<load-at>
 
 @snarf/<cut> ( -- )
-	snarf/<copy>
+	/<copy>
 	;cmd/do-delete !cmd/<apply>
 
 @snarf/filepath ".snarf $1
@@ -889,19 +893,21 @@
 	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
 	JMP2r
 
-@<pstr> ( str* -: )
-	LDAk #18 DEO
-	INC2 LDAk ?<pstr>
+@<perr> ( str* -: )
+	LDAk #19 DEO
+	INC2 LDAk ?<perr>
 	POP2 JMP2r
 
 (
 @|assets )
 
+@dict/err-size "File 20 "size 20 "exceeded. 0a $1
+
 @meta $1
 	( name ) "Nebu 0a
 	( desc ) "Spreadsheet 20 "Editor 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "23 20 "Feb 20 "2025 $2
+	( date ) "24 20 "Feb 20 "2025 $2
 
 
 
@@ -1728,3 +1734,4 @@
 
 @cells/buf ( cell[0x20] ) $3000
 
+|ff80 @cells/bufcap
