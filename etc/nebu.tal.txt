@@ -107,15 +107,22 @@
 	INC2k INC2 LDA2 #0101 ADD2 SWP2 LDA2 STH
 	SWP STHr }
 
+%exists ( index* -- f ) {
+	INC2k ORA }
+
 @cmd/<draw> ( -- )
 	#0000 .Screen/x DEO2
 	[ LIT2 00 -viewport/h ] LDZ #40 SFT2 INC2 INC2 .Screen/y DEO2
 	#01b8 ;line-icn #15 <draw-times-addr>
 	#0040 .Screen/x DEO2
 	.select/b LDZ2 cells/get-addr #05 chicago/<draw-left-color>
-	;caret-icn .Screen/addr DEO2
-	[ LIT2 05 -Screen/sprite ] DEO
-	JMP2r
+	( | rect preview )
+	.select/b LDZ2 DUP2 calc/parse-rect
+	( val ) OVR2 calc/validate exists ?{ POP2 POP2 JMP2r }
+	.Screen/x DEI2k #0006 ADD2 ROT DEO2
+	;arrow-icn .Screen/addr DEO2
+	[ LIT2 0a -Screen/sprite ] DEO
+	NIP2 !cell/<draw-res>
 
 @cmd/<inject-rect> ( x y -- )
 	.select/a LDZ2 .select/b LDZ2 NEQ2 ?{ POP2 JMP2r }
@@ -153,9 +160,6 @@
 
 (
 @|select )
-
-%exists ( index* -- f ) {
-	INC2k ORA }
 
 @select/get-rect ( -- )
 	.select/bx LDZ INC .select/ax LDZ .select/by LDZ INC .select/ay LDZ JMP2r
@@ -405,7 +409,7 @@
 	( recover ) ROTr DEO2r
 	JMP2r
 
-@cell/<draw-line> ( -- )
+@cell/<draw-frame> ( -- )
 	( store ) [ LITr -Screen/y ] DEI2kr
 	( line ) [ LIT2 15 -Screen/auto ] DEO
 	;frame-icns .Screen/addr DEO2
@@ -424,7 +428,7 @@
 	.Screen/x DEI2
 	( | fill )
 	#00 /<draw-fill>
-	/<draw-line>
+	/<draw-frame>
 	#0004 ADD2 .Screen/x DEO2
 	STH2r
 	( >> )
@@ -433,26 +437,32 @@
 	cells/get-addr LDAk #20 LTH ?{ #05 !chicago/<draw-left-color> }
 	POP2 JMP2r
 
-@cell/<draw-type-selected> ( x y -- )
-	#02 /<draw-fill>
-	/<draw-line>
-	.Screen/x DEI2k #0004 SUB2 ROT DEO2
-	DUP2 calc/parse-rect
-	( val ) OVR2 calc/validate
-	( calc? ) exists ?{ POP2 !/<draw-val> }
-	NIP2 !calc/<draw-res>
-
 @cell/<draw-type-incoming> ( x y -- )
 	#02 ;diag-icn /<draw-patt>
-	/<draw-line>
+	/<draw-frame>
 	.Screen/x DEI2k #0004 SUB2 ROT DEO2 !/<draw-val>
 
 @cell/<draw-type-calc> ( x y rect* -- )
 	#03 /<draw-fill>
-	/<draw-line>
+	/<draw-frame>
 	#05 ;chicago/color STA
 	.Screen/x DEI2k #0004 SUB2 ROT DEO2
-	NIP2 !calc/<draw-res>
+	NIP2 !/<draw-res>
+
+@cell/<draw-type-selected> ( x y -- )
+	#02 /<draw-fill>
+	/<draw-frame>
+	.Screen/x DEI2k #0004 SUB2 ROT DEO2
+	DUP2 calc/parse-rect
+	( val ) OVR2 calc/validate
+	( calc? ) exists ?{ POP2 !/<draw-val> }
+	NIP2
+	( >> )
+
+@cell/<draw-res> ( rect* -- )
+	[ LIT2 15 -Screen/auto ] DEO
+	DUP2 #0004 ADD2 LDA [ LIT "" ] EQU ?calc/run-cat
+	calc/run ;chicago/<draw-char> !x32-draw
 
 @<draw-times-addr> ( color times addr* auto -- )
 	.Screen/auto DEO
@@ -489,6 +499,22 @@
 	exists ?{ POP2r JMP2r }
 	INC2k INC2 LDA2 STHr LTH SWP STHr LTH ORA ?{ POP2 #ffff }
 	JMP2r
+
+@calc/get-cat ( x y -- )
+	DUP2 /parse-rect OVR2 /validate exists ?{
+		( ) POP2 cells/get-addr !chicago/<draw-left> }
+	NIP2
+	( >> )
+
+@calc/run-cat ( rect* -- )
+	rect-unpack
+	&>lcv ( -- )
+		OVR2
+		&>lch ( -- )
+			DUP OVR2 POP /get-cat
+			( ) INC GTHk ?&>lch
+		POP2 INC GTHk ?&>lcv
+	POP2 POP2 JMP2r
 
 @calc/get-value ( x y -- res** )
 	DUP2 /parse-rect OVR2 /validate exists ?{
@@ -527,21 +553,6 @@
 	DUP [ LIT "* ] NEQ ?{ POP !x32-mul }
 	DUP [ LIT "/ ] NEQ ?{ POP !x32-div }
 	POP !x32-add
-
-@calc/<draw-res> ( rect* -- )
-	[ LIT2 15 -Screen/auto ] DEO
-	DUP2 #0004 ADD2 LDA [ LIT "" ] EQU ?/<draw-cat>
-	/run ;chicago/<draw-char> !x32-draw
-
-@calc/<draw-cat> ( rect* -- )
-	rect-unpack
-	&>lcv ( -- )
-		OVR2
-		&>lch ( -- )
-			DUP OVR2 POP cells/get-addr chicago/<draw-left>
-			INC GTHk ?&>lch
-		POP2 INC GTHk ?&>lcv
-	POP2 POP2 JMP2r
 
 @calc/zero-str "0 $1
 
@@ -1492,7 +1503,7 @@
 @hash-icn [ aa55 aa55 aa55 aa55 aa55 aa55 aa55 aa55 ]
 @diag-icn [ 1122 4488 1122 4488 1122 4488 1122 4488 ]
 @dotted-icn [ 8800 2200 8800 2200 8800 2200 8800 2200 ]
-@caret-icn [ 0000 8080 8080 8080 8080 8080 8080 8000 ]
+@arrow-icn [ 0000 0000 80c0 e0f0 e0c0 8000 0000 0000 ]
 
 @mouse-icn [ 80c0 e0f0 f8fc feff f8d8 8c0c 0606 0000 ]
 @line-icn [ aa00 0000 0000 0000 0000 0000 0000 0000 ]
