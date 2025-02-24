@@ -26,7 +26,7 @@
 	theme/<load>
 	#0240 .Screen/width DEO2
 	#0162 .Screen/height DEO2
-	.Screen/height DEI2 ;header/height SUB2 #04 SFT2 .viewport/h-hb STZ2
+	.Screen/height DEI2 ;header/height SUB2 #04 SFT2 #03 SUB .viewport/h-hb STZ2
 	.Screen/width DEI2 #06 SFT2 .viewport/w-hb STZ2
 	[ LIT2 ", -src/spacer ] STZ
 	( | unlock )
@@ -104,15 +104,14 @@
 	[ LIT "0 ] SUB #0a LTH }
 
 %rect-unpack ( rect* -- bx ax by ay ) {
-	INC2k INC2 LDA2 #0101 ADD2 SWP2 LDA2 STH
-	SWP STHr }
+	INC2k INC2 LDA2 #0101 ADD2 SWP2 LDA2 ROT SWP }
 
 %exists ( index* -- f ) {
 	INC2k ORA }
 
 @cmd/<draw> ( -- )
 	#0000 .Screen/x DEO2
-	[ LIT2 00 -viewport/h ] LDZ #40 SFT2 INC2 INC2 .Screen/y DEO2
+	[ LIT2 00 -viewport/h ] LDZ #03 ADD #40 SFT2 .Screen/y DEO2
 	#01b8 ;line-icn #15 <draw-times-addr>
 	#0040 .Screen/x DEO2
 	.select/b LDZ2 cells/get-addr #05 chicago/<draw-left-color>
@@ -186,13 +185,20 @@
 @select/<move-u> ( -- )
 	.&a LDZ2
 	( clamp ) DUP ?{ POP2 JMP2r }
-	#01 SUB .&a STZ2
+	#01 SUB
+	( | follow )
+	DUP .select/scroll LDZ GTH ?{ DUP .select/scroll STZ }
+	.&a STZ2
 	&<size-u> ( -- )
 	.&b LDZ2 #01 SUB !/<set-b>
 
 @select/<move-d> ( -- )
 	( clamp ) .&by LDZ .LINES #01 SUB LTH ?{ JMP2r }
-	.&a LDZ2 INC .&a STZ2
+	.&a LDZ2 INC
+	( | follow )
+	DUP .viewport/h LDZ .select/scroll LDZ ADD LTH ?{
+		DUP .viewport/h LDZ SUB .select/scroll STZ }
+	.&a STZ2
 	&<size-d> ( -- )
 	.&b LDZ2 INC !/<set-b>
 
@@ -320,7 +326,7 @@
 
 @grid/<scroll-to> ( change -- )
 	DUP #ff EQU ?&fail
-	DUP [ LIT2 -LINES -viewport/h ] LDZ #02 SUB SUB GTH ?&fail
+	DUP [ LIT2 -LINES -viewport/h ] LDZ INC SUB GTH ?&fail
 	DUP .select/scroll LDZ EQU ?&fail
 	.select/scroll STZ !/<draw>
 	&fail POP JMP2r
@@ -335,20 +341,20 @@
 	#0000 .Screen/x DEO2
 	;header/height .Screen/y DEO2
 	#05 ;chicago/color STA
-	.viewport/w LDZ #01 SUB #00
+	.viewport/w LDZ #00
 	&>rx ( -- )
 		#00 OVR INC #60 SFT2 .Screen/x DEO2
 		DUP cell/<draw-hor>
 		INC GTHk ?&>rx
 	POP2
 	( | body )
-	.viewport/h LDZ #02 SUB #00
+	.viewport/h LDZ INC #00
 	&>y ( -- )
 		#0000 .Screen/x DEO2
 		#00 OVR INC #40 SFT2 ;header/height ADD2 .Screen/y DEO2
 		DUP .select/scroll LDZ ADD DUP ,&ay STR
 		cell/<draw-ver>
-		.viewport/w LDZ #01 SUB #00
+		.viewport/w LDZ #00
 		&>x ( -- )
 			#00 OVR INC #60 SFT2 .Screen/x DEO2
 			DUP [ LIT &ay $1 ] cell/<draw>
@@ -566,7 +572,7 @@
 @|cells )
 
 %PROM ( x y -- x* y* ) {
-	[ STH #00 SWP #00 STHr ] }
+	#0000 SWP2 ROT SWP }
 
 @cells/get-addr ( x y -- addr* )
 	PROM #30 SFT2 ADD2 #50 SFT2 ;&buf ADD2 JMP2r
