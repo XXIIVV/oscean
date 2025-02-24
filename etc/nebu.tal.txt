@@ -55,6 +55,7 @@
 	DUP2 [ LIT2 "s 01 ] NEQ2 ?{ ;src/buf cells/<save> }
 	DUP2 [ LIT2 "c 01 ] NEQ2 ?{ snarf/<copy> }
 	DUP2 [ LIT2 "v 01 ] NEQ2 ?{ snarf/<paste> }
+	DUP2 [ LIT2 "x 01 ] NEQ2 ?{ snarf/<cut> }
 	DUP2 [ LIT2 0d 01 ] NEQ2 ?{ .select/b LDZ2 cmd/<inject-rect> }
 	( | key )
 	#fb AND ?{
@@ -96,10 +97,20 @@
 (
 @|cmd )
 
+%char-is-uc ( c -- f ) {
+	[ LIT "A ] SUB #1a LTH }
+
+%char-is-num ( c -- f ) {
+	[ LIT "0 ] SUB #0a LTH }
+
+%rect-unpack ( rect* -- bx ax by ay ) {
+	INC2k INC2 LDA2 #0101 ADD2 SWP2 LDA2 STH
+	SWP STHr }
+
 @cmd/<draw> ( -- )
 	#0000 .Screen/x DEO2
 	[ LIT2 00 -viewport/h ] LDZ #40 SFT2 INC2 INC2 .Screen/y DEO2
-	#09b8 ;line-icn #15 <draw-times-addr>
+	#01b8 ;line-icn #15 <draw-times-addr>
 	#0040 .Screen/x DEO2
 	.select/b LDZ2 cells/get-addr #05 chicago/<draw-left-color>
 	;caret-icn .Screen/addr DEO2
@@ -457,16 +468,6 @@
 (
 @|calc )
 
-%char-is-uc ( c -- f ) {
-	[ LIT "A ] SUB #1a LTH }
-
-%char-is-num ( c -- f ) {
-	[ LIT "0 ] SUB #0a LTH }
-
-%rect-unpack ( rect* -- bx ax by ay ) {
-	INC2k INC2 LDA2 #0101 ADD2 SWP2 LDA2 STH
-	SWP STHr }
-
 @calc/parse-point ( str* -- cap* x y )
 	LDAk char-is-uc ?{ #ffff JMP2r }
 	INC2k LDA char-is-num ?{ #ffff JMP2r }
@@ -497,7 +498,10 @@
 	( >> )
 
 @calc/run ( rect* -- res** )
-	( opc ) DUP2 #0004 ADD2 LDA STH
+	( opc ) DUP2 #0004 ADD2 LDA
+	( | special handlers )
+	DUP [ LIT "# ] EQU ?/run-len
+	STH
 	( opc ini acc** ) [ LITr 00 LIT2r $2 LIT2r $2 ]
 	( .. ) rect-unpack
 	&>lv ( -- )
@@ -508,21 +512,36 @@
 			( hs* ls* x y ) /get-value
 			( hs* ls* x y ini ) STHr ?{
 				( no-op ) [ LITr 01 STH2 STH2 ] POP2 POP2 !&resume }
-			STHkr /get-op JSR2 [ LITr 01 STH2 STH2 ]
+			STHkr /run-op [ LITr 01 STH2 STH2 ]
 			&resume ( -- )
 			INC GTHk ?&>lh
 		POP2 INC GTHk ?&>lv
 	POP2 POP2 STH2r STH2r POP2r JMP2r
 
-@calc/get-op ( c -- fn* )
-	DUP [ LIT "- ] NEQ ?{ POP ;x32-sub JMP2r }
-	DUP [ LIT "* ] NEQ ?{ POP ;x32-mul JMP2r }
-	DUP [ LIT "/ ] NEQ ?{ POP ;x32-div JMP2r }
-	POP ;x32-add JMP2r
+@calc/run-len ( rect* op -- res** )
+	POP rect-unpack SUB STH
+	SUB STHr MUL !x32-from-u8
+
+@calc/run-op ( acc* val** c -- res** )
+	DUP [ LIT "- ] NEQ ?{ POP !x32-sub }
+	DUP [ LIT "* ] NEQ ?{ POP !x32-mul }
+	DUP [ LIT "/ ] NEQ ?{ POP !x32-div }
+	POP !x32-add
 
 @calc/<draw-res> ( rect* -- )
 	[ LIT2 15 -Screen/auto ] DEO
+	DUP2 #0004 ADD2 LDA [ LIT "" ] EQU ?/<draw-cat>
 	/run ;chicago/<draw-char> !x32-draw
+
+@calc/<draw-cat> ( rect* -- )
+	rect-unpack
+	&>lcv ( -- )
+		OVR2
+		&>lch ( -- )
+			DUP OVR2 POP cells/get-addr chicago/<draw-left>
+			INC GTHk ?&>lch
+		POP2 INC GTHk ?&>lcv
+	POP2 POP2 JMP2r
 
 @calc/zero-str "0 $1
 
@@ -791,6 +810,10 @@
 
 @snarf/<paste> ( -- )
 	.select/a LDZ2 ;&filepath !cells/<load-at>
+
+@snarf/<cut> ( -- )
+	snarf/<copy>
+	;cmd/do-delete !cmd/<apply>
 
 @snarf/filepath ".snarf $1
 
