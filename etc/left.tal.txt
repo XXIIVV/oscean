@@ -1,11 +1,11 @@
 ( Left )
 
-|00 @System &vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
-|10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
-|20 @Screen &vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
-|80 @Controller &vector $2 &button $1 &key $1
-|90 @Mouse &vector $2 &x $2 &y $2 &state $1 &pad $3 &scrollx $2 &scrolly $2
-|a0 @File &vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
+|10 @Console/vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
+|20 @Screen/vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
+|80 @Controller/vector $2 &button $1 &key $1
+|90 @Mouse/vector $2 &x $2 &y $2 &state $1 &pad $3 &scrollx $2 &scrolly $2
+|a0 @File/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |0178 @nav/width
 |0170 @nav/width-8
 |0160 @nav/width-inner
@@ -45,7 +45,7 @@
 	autocomplete/<reset>
 	Mouse/<update-focus>
 	.Console/type DEI ?{
-		;on-console .Console/vector DEO2
+		;textarea/on-console .Console/vector DEO2
 		file-new filepath/untrap BRK }
 	( | listen )
 	;filepath/on-console .Console/vector DEO2
@@ -59,7 +59,7 @@
 	( name ) "Left 0a
 	( details ) "A 20 "Text 20 "Editor 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "18 20 "Feb 20 "2025 $1 02
+	( date ) "24 20 "Feb 20 "2025 $1 02
 	( > ) 83 =appicon
 	( > ) 0a =manifest
 
@@ -101,7 +101,8 @@
 	( . ) 01 "l =nav/toggle-categories "Categories $1
 	( . ) 01 "d =nav/toggle-sidebar "Navbar $1
 	( . ) 01 "m =window/toggle-expand "Expand $1
-	( . ) 00 00 =theme/<reset> "Reset 20 "Theme $1 $1
+	( . ) 00 00 =theme/<reset>
+	"Reset 20 "Theme $1 $1
 
 (
 @|macros )
@@ -130,9 +131,6 @@
 %get-eof ( -- addr* ) {
 	;textarea/buf .textarea/length LDZ2 ADD2 }
 
-%sput ( chr str* -- ) {
-	scap/ ROT #00 SWP2 STA2 }
-
 (
 @|vectors )
 
@@ -154,14 +152,6 @@
 	DUP2 ,&last STR2
 	.&vector DEO2
 	JMP2r
-
-@on-console ( -> )
-	.Console/read DEI
-	( | handle bytes )
-	DUP #08 NEQ ?{ POP erase BRK }
-	DUP #7f NEQ ?{ POP delete BRK }
-	<insert-char>
-	BRK
 
 @reqdraw-nav ( -- )
 	[ LIT2 00 _on-frame-draw/navbar ] STR
@@ -260,106 +250,6 @@
 @null/on-mouse ( -> )
 	#43 <update-cursor>
 	BRK
-
-(
-@|editing )
-
-@<insert-char> ( char -- )
-	DUP #09 LTH ?{
-		( convert lb ) DUP #0d EQU #03 MUL SUB
-		( ) has-length ?&block
-		( ) get-eof #fff0 NEQ2 ?&single }
-	POP JMP2r
-
-	&block ( c -- )
-	selection/erase
-	( >> )
-	&single ( c -- )
-	get-from STH2k <insert-char-at>
-	STH2r INC2 selection/<set-a> !autocomplete/update
-
-@<insert-char-at> ( c addr* -- )
-	DUP2 #0001 <msfr>
-	STA
-	#0001 !<mod-length>
-
-@<insert-word> ( word* -- )
-	( | move memory )
-	get-to OVR2 wlen DUP2 STH2k <mod-length>
-	<msfr>
-	( | add offset )
-	get-to LTH2k ?{ SWP2 STH2kr ADD2 SWP2 }
-	POP2r STH2
-	&>w ( -- )
-		LDAk STH2kr STA
-		INC2r INC2 LDAk #20 GTH ?&>w
-	POP2 STH2r DUP2 !selection/<set>
-
-@erase ( -- )
-	has-length ?&block
-	get-from DUP2 ;textarea/buf GTH2 ?&single
-	POP2 JMP2r
-
-	&single ( from* -- )
-	#0001 SUB2 LDAk #06 SFT #02 EQU ?&single-utf8
-	DUP2 <cut-char-at> !selection/<set-a>
-
-	&single-utf8 ( from* -- )
-	utf8/prev get-to selection/<set>
-	( >> )
-	&block ( -- )
-	selection/erase !selection/<reset>
-
-@delete ( -- )
-	has-length ?erase/block
-	get-from INC2k get-eof NEQ2 ?&single
-	POP2 JMP2r
-
-	&single ( from* -- )
-	DUP2 <cut-char-at> !selection/<set-a>
-
-@tab ( -- )
-	.autocomplete/addr LDZ2 INC2 ORA ?autocomplete/<insert>
-	has-length ?selection/<tab>
-	#09 !<insert-char>
-
-@untab ( -- )
-	has-length ?selection/<untab>
-	#09 !<insert-char>
-
-@<cut-char-at> ( addr* -- )
-	#0001 <msfl>
-	#ffff
-	( >> )
-
-@<mod-length> ( change* -- )
-	.textarea/length LDZ2 ADD2 .textarea/length STZ2
-	reqdraw-both #0a !menu/<draw-state>
-
-@join-spaces ( addr* -- addr* )
-	[ LIT2r 0000 ]
-	&>w ( -- )
-		LDA2k #2020 NEQ2 ?{ DUP2 <cut-char-at>
-			INC2r !&>w }
-	STH2r JMP2r
-
-@format-strip ( -- )
-	get-eof ;textarea/buf
-	&>l ( -- )
-		LDA2k #0920 NEQ2 ?{ INC2k <cut-char-at> !&>l }
-	LDA2k #2009 NEQ2 ?{ DUP2 <cut-char-at> !&>l }
-	LDA2k #2020 NEQ2 ?{ INC2k <cut-char-at> !&>l }
-	LDA2k #200a NEQ2 ?{ DUP2 <cut-char-at> !&>l }
-	LDA2k #090a NEQ2 ?{ DUP2 <cut-char-at> !&>l }
-	LDA2k #0a20 NEQ2 ?{ INC2k <cut-char-at> !&>l }
-	INC2 GTH2k ?&>l
-	POP2 POP2 selection/<reset> !reqdraw-both
-
-@snarf/paste ( -- )
-	;snarf-txt !file-inject
-
-@snarf/paste-binary ( -- )
-	;snarf-txt !file-inject-binary
 
 (
 @|selection )
@@ -496,7 +386,7 @@
 		get-to get-from SUB2 DUP2 #001f GTH2 ?{ POP2 JMP2r }
 		;&widget-fn #05 !widget/<draw> }
 	JMP2r
-	&widget-fn #04 !ascii/<draw-decimal>
+	&widget-fn #04 !ank/<draw-dec>
 
 (
 @|search )
@@ -546,7 +436,7 @@
 @search/<draw-widget> ( -- )
 	caret/is-invisible ?{ ;&widget-fn #05 !widget/<draw> }
 	JMP2r
-	&widget-fn ;&buf #04 !utf8/<draw-str>
+	&widget-fn ;&buf #04 !ank/<draw-str>
 
 (
 @|autocomplete )
@@ -560,7 +450,7 @@
 @autocomplete/<draw-widget> ( -- )
 	caret/is-invisible ?{ ;&widget-fn #0a !widget/<draw> }
 	JMP2r
-	&widget-fn .&addr LDZ2 DUP2 find-next-spacer SWP2 #08 !utf8/<draw-range>
+	&widget-fn .&addr LDZ2 DUP2 find-next-spacer SWP2 #08 !ank/<draw-range-color>
 
 @autocomplete/update ( -- )
 	/<reset>
@@ -630,6 +520,16 @@
 			utf8/prev LDA2k [ LIT2 0a "@ ] NEQ2 ?&>w }
 	JMP2r
 
+@utf8/prev ( addr* -- addr* )
+	#0001 SUB2 LDAk
+	( utf8 continuation ) #06 SFT #02 EQU ?&prev
+	JMP2r
+
+@utf8/next ( addr* -- addr* )
+	INC2 LDAk
+	( utf8 continuation ) #06 SFT #02 EQU ?&next
+	JMP2r
+
 (
 @|scroll )
 
@@ -694,6 +594,14 @@
 
 (
 @|textarea )
+
+@textarea/on-console ( -> )
+	.Console/read DEI
+	( | handle bytes )
+	DUP #08 NEQ ?{ POP erase BRK }
+	DUP #7f NEQ ?{ POP delete BRK }
+	<insert-char>
+	BRK
 
 @textarea/on-mouse ( -> )
 	#41 <update-cursor>
@@ -764,8 +672,8 @@
 	( | draw size left )
 	/get-anchor .Screen/x DEO2
 	<draw-lb>
-	#0000 OVR2 SUB2 #0f ascii/<draw-decimal>
-	;dict/bytes-free #0f ascii/<draw-str> &end POP2
+	#0000 OVR2 SUB2 #0f ank/<draw-dec>
+	;dict/bytes-free #0f ank/<draw-str> &end POP2
 	( | draw caret )
 	has-length ?{
 		caret/is-invisible ?{
@@ -930,7 +838,7 @@
 @nav/<draw-empty> ( range* -- )
 	POP2 #0010 .Screen/x DEO2
 	#0028 .Screen/y DEO2
-	;dict/empty #03 !ascii/<draw-str>
+	;dict/empty #03 !ank/<draw-str>
 
 @nav/<draw-label> ( ztr selected -- ztr )
 	OVR .&buf SUB #01 SFT SWP /id-to-color
@@ -939,13 +847,13 @@
 	;marker-icns .Screen/addr DEO2
 	DUP #02 SFT .Screen/sprite DEO
 	( | text )
-	STHk ;utf8/color STA
+	STHk ;ank/color-utf8 STA
 	LDZ2k .nav/symbol LDZ ?{ find-prev-spacer }
 	( spacer ) LDA2k [ LIT2 "@| ] NEQ2 ?{ INC2 INC2 }
 	( label )
 	&>w ( -- )
 		.Screen/x DEI2 ;&width-inner GTH2 ?{
-			utf8/draw utf8/next LDAk #20 GTH ?&>w }
+			ank/draw-utf8 utf8/next LDAk #20 GTH ?&>w }
 	( |right spacer )
 	;marker-icns/end .Screen/addr DEO2
 	STHr #02 SFT .Screen/sprite DEO
@@ -957,17 +865,17 @@
 	LDAk [ LIT "& ] NEQ ?{ POP2 JMP2r }
 	LDAk [ LIT "| ] NEQ ?{ POP2 JMP2r }
 	( | value )
-	#02 ;utf8/color STA
+	#02 ;ank/color-utf8 STA
 	&>wv ( -- )
 		.Screen/x DEI2 ;&width-inner GTH2 ?{
-			utf8/draw utf8/next LDAk #20 GTH ?&>wv }
+			ank/draw-utf8 utf8/next LDAk #20 GTH ?&>wv }
 	POP2 !/<draw-halftone>
 
 @nav/<draw-scope> ( str* -- )
-	#03 ;utf8/color STA
+	#03 ;ank/color-utf8 STA
 	&>ws ( -- )
 		.Screen/x DEI2 ;&width-inner GTH2 ?{
-			utf8/draw LDAk [ LIT ") ] EQU ?{ utf8/next LDAk ?&>ws } }
+			ank/draw-utf8 LDAk [ LIT ") ] EQU ?{ utf8/next LDAk ?&>ws } }
 	POP2
 	( >> )
 
@@ -1024,7 +932,7 @@
 @filepath/untrap ( -- )
 	;on-frame-draw .Screen/vector DEO2
 	;on-button .Controller/vector DEO2
-	;on-console .Console/vector DEO2
+	;textarea/on-console .Console/vector DEO2
 	( | if is empty, reset to untitled )
 	.&buf LDZ ?{ /<reset> }
 	#01 !/<draw>
@@ -1091,7 +999,7 @@
 	[ LIT2 &anchor $2 ] .Screen/x DEO2
 	#0004 .Screen/y DEO2
 	[ LIT2 25 -Screen/auto ] DEO
-	;&buf ROT ascii/<draw-str>
+	;&buf ROT ank/<draw-str>
 	.Screen/x DEI2 ,&anchor-position STR2
 	( >> )
 
@@ -1099,8 +1007,8 @@
 	[ LIT2 &anchor-position $2 ] .Screen/x DEO2
 	#0004 .Screen/y DEO2
 	[ LIT2 25 -Screen/auto ] DEO
-	;&spacer #03 ascii/<draw-str>
-	( ) .scroll/y LDZ2 INC2 #03 ascii/<draw-decimal>
+	;&spacer #03 ank/<draw-str>
+	( ) .scroll/y LDZ2 INC2 #03 ank/<draw-dec>
 	( pad ) [ LIT2 21 -Screen/auto ] DEO
 	;fill-icn .Screen/addr DEO2
 	[ LIT2 00 -Screen/sprite ] DEOk DEOk DEO
@@ -1202,103 +1110,84 @@
 	POP2 STH2r JMP2r
 
 (
-@|utf8/ascii )
+@|ank )
 
-%utf8/get-width ( addr* -- addr* width* ) {
+%ank/get-width ( addr* -- addr* width* ) {
 	LDAk #09 NEQ #0018 ROT SFT2 }
 
-@utf8/prev ( addr* -- addr* )
-	#0001 SUB2 LDAk
-	( utf8 continuation ) #06 SFT #02 EQU ?&prev
+@ank/get-addr ( addr* -- addr* glyph* )
+	LDAk #80 LTH ?&get-ascii
+	LDAk #c3 EQU ?&get-latin
+	;&blank JMP2r
+
+	&get-ascii ( addr* -- addr* glyph* )
+	[ LIT &rune $1 ] ?{
+		LDAk #00 SWP #0030 MUL2 ;&glyphs ADD2 JMP2r }
+	[ LIT2 00 _&rune ] LDR #0030 MUL2 ;&runes ADD2 [ LIT2 00 _&rune ] STR
 	JMP2r
 
-@utf8/next ( addr* -- addr* )
-	INC2 LDAk
-	( utf8 continuation ) #06 SFT #02 EQU ?&next
-	JMP2r
+	&get-latin ( addr* -- addr* glyph* )
+	LDA2k #c380 SUB2 #0030 MUL2 ;&latin-high ADD2 JMP2r
 
-@utf8/<draw-str> ( str* color -- )
-	,&color STR
-	[ LIT2 25 -Screen/auto ] DEO
+@ank/get-strw ( str* -- width* )
+	[ LIT2r 0000 ]
 	&>w ( -- )
-		LDAk ?{ POP2 JMP2r }
-		/draw /next !&>w
+		LDAk ?{ POP2 STH2r JMP2r }
+		ank/get-width STH2
+		ADD2r INC2 !&>w
 
-@utf8/<draw-range> ( to* from* color -- )
-	,&color STR
+@ank/<draw-str-right> ( text* color -- text* )
+	STH
+	DUP2 /get-strw STH2
+	.Screen/x DEI2k STH2r SUB2 ROT DEO2
+	STHr !/<draw-str>
+
+@ank/<draw-range-color> ( to* from* color -- )
+	,&color-utf8 STR
 	[ LIT2 25 -Screen/auto ] DEO
 	EQU2k ?{
 		&>l ( -- )
-			/draw /next GTH2k ?&>l }
+			/draw-utf8 utf8/next GTH2k ?&>l }
 	POP2 POP2 JMP2r
 
-@utf8/draw ( addr* -- addr* )
-	[ LITr -Screen/x ] DEI2r utf8/get-width STH2
+@ank/<draw-str> ( str* color -- )
+	,&color-utf8 STR
+	[ LIT2 25 -Screen/auto ] DEO
+	&>wd ( -- )
+		LDAk ?{ POP2 JMP2r }
+		/draw-utf8 utf8/next !&>wd
+
+@ank/draw-str ( str* color -- cap* )
+	,&color-utf8 STR
+	[ LIT2 25 -Screen/auto ] DEO
+	&>wd2 ( -- )
+		LDAk ?{ INC2 JMP2r }
+		/draw-utf8 utf8/next !&>wd2
+
+@ank/draw-utf8 ( addr* -- addr* )
+	[ LITr -Screen/x ] DEI2r ank/get-width STH2
 	( glyph* ) /get-addr .Screen/addr DEO2
-	( draw2 ) [ LIT2r &color 01 -Screen/sprite ] DEOkr
+	( draw2 ) [ LIT2r &color-utf8 01 -Screen/sprite ] DEOkr
 	( tab width ) LDAk #09 NEQ [ JMP DEOkr ] DEOr
 	ADD2r [ LITr -Screen/x ] DEO2r
 	JMP2r
 
-@utf8/draw-ul ( addr* color -- addr* )
+@ank/draw-utf8ul ( addr* color -- addr* )
 	,&color-ul STR
-	[ LITr -Screen/x ] DEI2r utf8/get-width STH2
+	[ LITr -Screen/x ] DEI2r ank/get-width STH2
 	( glyph* ) /get-addr .Screen/addr DEO2
 	( draw2 ) [ LIT2r &color-ul 01 -Screen/sprite ] DEOkr
 	( tab width ) LDAk #09 NEQ [ JMP DEOkr ] DEOr
 	( | underline )
 	[ LIT &no-underline $1 ] ?{
 		OVR2r [ LITr -Screen/x ] DEO2r
-		;font/underline .Screen/addr DEO2
+		;&underline .Screen/addr DEO2
 		[ LIT2 05 -Screen/sprite ] DEOk DEO }
 	ADD2r [ LITr -Screen/x ] DEO2r
 	JMP2r
 
-@utf8/get-addr ( addr* -- addr* glyph* )
-	LDAk #80 LTH ?&ascii
-	LDAk #c3 EQU ?&latin-high
-	;font/blank JMP2r
-
-	&ascii ( addr* -- addr* glyph* )
-	[ LIT &rune $1 ] ?{
-		LDAk #00 SWP #0030 MUL2 ;font ADD2 JMP2r }
-	[ LIT2 00 _&rune ] LDR #0030 MUL2 ;font/runes ADD2 [ LIT2 00 _&rune ] STR
-	JMP2r
-
-	&latin-high ( addr* -- addr* glyph* )
-	LDA2k #c380 SUB2 #0030 MUL2 ;latin-high ADD2 JMP2r
-
-@ascii/<draw> ( char -- )
-	[ LITr -Screen/x ] DEI2r [ LIT2r 000c ] ADD2r
-	( glyph* ) #00 SWP #0030 MUL2 ;font ADD2 .Screen/addr DEO2
-	( draw2 ) [ LIT2 &color 01 -Screen/sprite ] DEOk DEO
-	[ LITr -Screen/x ] DEO2r
-	JMP2r
-
-@ascii/draw-str-right ( text* color -- text* )
-	STH
-	DUP2 get-strw STH2
-	.Screen/x DEI2k STH2r SUB2 ROT DEO2
-	STHr !/draw-str
-
-@ascii/draw-str ( str* color -- str* )
-	,&color STR
-	[ LIT2 25 -Screen/auto ] DEO
-	&>w ( -- )
-		LDAk ?{ INC2 JMP2r }
-		LDAk /<draw>
-		INC2 !&>w
-
-@ascii/<draw-str> ( str* color -- )
-	,&color STR
-	[ LIT2 25 -Screen/auto ] DEO
-	&>ww ( -- )
-		LDAk ?{ POP2 JMP2r }
-		LDAk /<draw>
-		INC2 !&>ww
-
-@ascii/<draw-decimal> ( short* color -- )
-	,&color STR
+@ank/<draw-dec> ( short* color -- )
+	,&color-ascii STR
 	#000a SWP2 [ LITr ff ]
 	&>get ( -- )
 		SWP2k DIV2k MUL2 SUB2 STH
@@ -1306,36 +1195,14 @@
 	POP2 POP2
 	&>put ( -- )
 		STHr INCk ?{ POP JMP2r }
-		[ LIT "0 ] ADD /<draw> !&>put
+		[ LIT "0 ] ADD /<draw-ascii> !&>put
 
-@wrap/balance ( c -- offset )
-	DUP LIT "( EQU ?&a
-	DUP LIT "[ EQU ?&a
-	DUP LIT "{ EQU ?&a
-	DUP LIT ") EQU ?&b
-	DUP LIT "] EQU ?&b
-	DUP LIT "} EQU ?&b
-	POP #00 JMP2r
-	&a POP #ff JMP2r
-	&b POP #01 JMP2r
-
-@wrap/update ( -- )
-	#0000 .&left STZ2k INC INC STZ2
-	.selection/b LDZ2
-	( | left )
-	[ LITr 01 ] .scroll/addr LDZ2 ;textarea/buf ADD2 #0001 SUB2 OVR2 #0001 SUB2 EQU2k ?{
-		&l ( -- )
-		LDAk /balance STH
-		ADDr STHkr ?{ .&left STZ2 !&end-l }
-		utf8/prev LTH2k ?&l }
-	POP2 &end-l POP2 POPr
-	( | right )
-	[ LITr 01 ] get-eof SWP2 EQU2k ?{
-		&r ( -- )
-		LDAk /balance STH
-		SUBr STHkr ?{ .&right STZ2 !&end-r }
-		utf8/next GTH2k ?&r }
-	POP2 &end-r POP2 POPr JMP2r
+@ank/<draw-ascii> ( char -- )
+	[ LITr -Screen/x ] DEI2r [ LIT2r 000c ] ADD2r
+	( glyph* ) #00 SWP #0030 MUL2 ;&glyphs ADD2 .Screen/addr DEO2
+	( draw2 ) [ LIT2 &color-ascii 01 -Screen/sprite ] DEOk DEO
+	[ LITr -Screen/x ] DEO2r
+	JMP2r
 
 (
 @|state )
@@ -1348,7 +1215,7 @@
 	( >> )
 
 @highlight/<reset-always> ( -- )
-	#01 ;utf8/no-underline STA
+	#01 ;ank/no-underline STA
 	[ LIT2 00 -&label ] STZ
 	[ LIT2 00 -&raw ] STZ
 	JMP2r
@@ -1390,17 +1257,17 @@
 	.&comment LDZ ?/<draw-comment>
 	.&raw LDZ ?/<draw-comment>
 	.&label LDZ ?/<draw-label>
-	#01 !utf8/draw-ul
+	#01 !ank/draw-utf8ul
 
 @highlight/<draw-label> ( addr* -- addr* )
-	#02 !utf8/draw-ul
+	#02 !ank/draw-utf8ul
 
 @highlight/<draw-comment> ( addr* -- addr* )
-	#03 !utf8/draw-ul
+	#03 !ank/draw-utf8ul
 
 @highlight/<draw-selected> ( addr* -- addr* )
-	.search/buf LDZ ?{ #09 !utf8/draw-ul }
-	#0d !utf8/draw-ul
+	.search/buf LDZ ?{ #09 !ank/draw-utf8ul }
+	#0d !ank/draw-utf8ul
 
 @highlight/comment-start ( -- )
 	.&comment LDZk INC SWP STZ !/<draw>
@@ -1412,22 +1279,151 @@
 	POP [ LIT2 01 -&label ] STZ !/<draw>
 
 @highlight/take-litruneul ( c rune -- )
-	#00 ;utf8/no-underline STA
+	#00 ;ank/no-underline STA
 	( >> )
 
 @highlight/take-litrune ( c rune -- )
-	;utf8/rune STA
+	;ank/rune STA
 	POP !/<draw>
 
 @highlight/take-rawrune ( c rune -- )
-	;utf8/rune STA
+	;ank/rune STA
 	( >> )
 
 @highlight/take-raw ( c -- )
 	POP [ LIT2 01 -&raw ] STZ !/<draw>
 
 (
-@|drawing )
+@|snarf )
+
+@snarf/paste ( -- )
+	;snarf-txt !file-inject
+
+@snarf/paste-binary ( -- )
+	;snarf-txt !file-inject-binary
+
+@wrap/balance ( c -- offset )
+	DUP LIT "( EQU ?&a
+	DUP LIT "[ EQU ?&a
+	DUP LIT "{ EQU ?&a
+	DUP LIT ") EQU ?&b
+	DUP LIT "] EQU ?&b
+	DUP LIT "} EQU ?&b
+	POP #00 JMP2r
+	&a POP #ff JMP2r
+	&b POP #01 JMP2r
+
+@wrap/update ( -- )
+	#0000 .&left STZ2k INC INC STZ2
+	.selection/b LDZ2
+	( | left )
+	[ LITr 01 ] .scroll/addr LDZ2 ;textarea/buf ADD2 #0001 SUB2 OVR2 #0001 SUB2 EQU2k ?{
+		&l ( -- )
+		LDAk /balance STH
+		ADDr STHkr ?{ .&left STZ2 !&end-l }
+		utf8/prev LTH2k ?&l }
+	POP2 &end-l POP2 POPr
+	( | right )
+	[ LITr 01 ] get-eof SWP2 EQU2k ?{
+		&r ( -- )
+		LDAk /balance STH
+		SUBr STHkr ?{ .&right STZ2 !&end-r }
+		utf8/next GTH2k ?&r }
+	POP2 &end-r POP2 POPr JMP2r
+
+(
+@|editing )
+
+@<insert-char> ( char -- )
+	DUP #09 LTH ?{
+		( convert lb ) DUP #0d EQU #03 MUL SUB
+		( ) has-length ?&block
+		( ) get-eof #fff0 NEQ2 ?&single }
+	POP JMP2r
+
+	&block ( c -- )
+	selection/erase
+	( >> )
+	&single ( c -- )
+	get-from STH2k <insert-char-at>
+	STH2r INC2 selection/<set-a> !autocomplete/update
+
+@<insert-char-at> ( c addr* -- )
+	DUP2 #0001 <msfr>
+	STA
+	#0001 !<mod-length>
+
+@<insert-word> ( word* -- )
+	( | move memory )
+	get-to OVR2 wlen DUP2 STH2k <mod-length>
+	<msfr>
+	( | add offset )
+	get-to LTH2k ?{ SWP2 STH2kr ADD2 SWP2 }
+	POP2r STH2
+	&>w ( -- )
+		LDAk STH2kr STA
+		INC2r INC2 LDAk #20 GTH ?&>w
+	POP2 STH2r DUP2 !selection/<set>
+
+@erase ( -- )
+	has-length ?&block
+	get-from DUP2 ;textarea/buf GTH2 ?&single
+	POP2 JMP2r
+
+	&single ( from* -- )
+	#0001 SUB2 LDAk #06 SFT #02 EQU ?&single-utf8
+	DUP2 <cut-char-at> !selection/<set-a>
+
+	&single-utf8 ( from* -- )
+	utf8/prev get-to selection/<set>
+	( >> )
+	&block ( -- )
+	selection/erase !selection/<reset>
+
+@delete ( -- )
+	has-length ?erase/block
+	get-from INC2k get-eof NEQ2 ?&single
+	POP2 JMP2r
+
+	&single ( from* -- )
+	DUP2 <cut-char-at> !selection/<set-a>
+
+@tab ( -- )
+	.autocomplete/addr LDZ2 INC2 ORA ?autocomplete/<insert>
+	has-length ?selection/<tab>
+	#09 !<insert-char>
+
+@untab ( -- )
+	has-length ?selection/<untab>
+	#09 !<insert-char>
+
+@<cut-char-at> ( addr* -- )
+	#0001 <msfl>
+	#ffff
+	( >> )
+
+@<mod-length> ( change* -- )
+	.textarea/length LDZ2 ADD2 .textarea/length STZ2
+	reqdraw-both #0a !menu/<draw-state>
+
+@join-spaces ( addr* -- addr* )
+	[ LIT2r 0000 ]
+	&>w ( -- )
+		LDA2k #2020 NEQ2 ?{ DUP2 <cut-char-at>
+			INC2r !&>w }
+	STH2r JMP2r
+
+@format-strip ( -- )
+	get-eof ;textarea/buf
+	&>l ( -- )
+		LDA2k #0920 NEQ2 ?{ INC2k <cut-char-at> !&>l }
+	LDA2k #2009 NEQ2 ?{ DUP2 <cut-char-at> !&>l }
+	LDA2k #2020 NEQ2 ?{ INC2k <cut-char-at> !&>l }
+	LDA2k #200a NEQ2 ?{ DUP2 <cut-char-at> !&>l }
+	LDA2k #090a NEQ2 ?{ DUP2 <cut-char-at> !&>l }
+	LDA2k #0a20 NEQ2 ?{ INC2k <cut-char-at> !&>l }
+	INC2 GTH2k ?&>l
+	POP2 POP2 selection/<reset> !reqdraw-both
 
 @redraw-all ( -- )
 	( | clear menu )
@@ -1455,9 +1451,6 @@
 	;marker-icns .Screen/addr DEO2
 	#10 ORA .Screen/sprite DEO
 	JMP2r
-
-(
-@|helpers )
 
 @reset-each ( -- )
 	[ LIT2 00 -nav/symbol ] STZ
@@ -1507,15 +1500,16 @@
 	POP
 	( a ) [ LITr 00 ] get-scroll-addr
 	&>ver ( -- )
-		EQUkr STHr ?&ver-end
-		LDAk #0a NEQ [ JMP INCr ] utf8/next LDAk ?&>ver &ver-end POP2r
+		EQUkr STHr ?{
+			LDAk #0a NEQ [ JMP INCr ] utf8/next LDAk ?&>ver }
+	POP2r
 	( goto x ) ( b ) .Mouse/x DEI2 textarea/get-anchor SUB2 STH2
 	( a ) LIT2r 0000
 	&>hor ( -- )
-		LDAk #0a EQU ?&hor-end
-		utf8/get-width STH2
-		ADD2r LTH2kr STHr ?&hor-end
-		utf8/next LDAk ?&>hor &hor-end POP2r POP2r #0000 .highlight/comment STZ2
+		LDAk #0a EQU ?{
+			ank/get-width STH2
+			ADD2r LTH2kr STHr ?{ utf8/next LDAk ?&>hor } }
+	POP2r POP2r #0000 .highlight/comment STZ2
 	JMP2r
 
 @is-selected ( addr* -- f )
@@ -1523,16 +1517,11 @@
 		INC2k get-to GTH2 ?{ #01 JMP2r } }
 	#00 JMP2r
 
-@get-strw ( str* -- width* )
-	[ LIT2r 0000 ] LDAk #00 EQU ?{
-		&>w ( -- )
-			utf8/get-width STH2
-			ADD2r INC2 LDAk ?&>w }
-	POP2 STH2r JMP2r
-
 
 
 ( manifest )
+
+
 
 @menu/on-mouse ( -> )
 	[ LIT2 00 -Mouse/state ] DEI NEQ #42 ADD <update-cursor>/no-refocus
@@ -1575,7 +1564,7 @@
 	#0002 .Screen/x DEO2
 	#0004 .Screen/y DEO2
 	[ LIT2 25 -Screen/auto ] DEO
-	;font/diamond .Screen/addr DEO2
+	;ank/diamond .Screen/addr DEO2
 	.Screen/sprite DEOk DEO
 	JMP2r
 
@@ -1619,7 +1608,7 @@
 	&>w ( -- )
 		[ LIT2 &t $1 &id 00 ] INCk ,&id STR
 		EQU ?&end
-		INC2k get-strw #0008 ADD2 STH2
+		INC2k ank/get-strw #0008 ADD2 STH2
 		ADD2r skip-cat LDAk ?&>w &end POP2 STH2r
 	( left padding + 4 ) #0010 ADD2 JMP2r
 
@@ -1627,7 +1616,7 @@
 	( left padding + 4 ) #0004 ADD2 #0010 SUB2 ,&t STR2
 	[ LITr 00 ] [ LIT2r 0000 ] ;<draw-menu>/manifest LDA2
 	&>w ( -- )
-		INC2k get-strw #0008 ADD2 STH2r ADD2 DUP2 [ LIT2 &t $2 ] LTH2 ?{ POP2 POP2 STHr JMP2r }
+		INC2k ank/get-strw #0008 ADD2 STH2r ADD2 DUP2 [ LIT2 &t $2 ] LTH2 ?{ POP2 POP2 STHr JMP2r }
 		INCr STH2
 		skip-cat LDAk ?&>w
 	POP2 POP2r POPr #ff JMP2r
@@ -1704,7 +1693,7 @@
 	[ LIT2 25 -Screen/auto ] DEO
 	;menu-icn .Screen/addr DEO2
 	STHk .Screen/sprite DEO
-	#0401 STHkr [ JMP SWP ] POP ascii/<draw-str>
+	#0401 STHkr [ JMP SWP ] POP ank/<draw-str>
 	;menu-icn/right .Screen/addr DEO2
 	[ LITr -Screen/sprite ] DEOr
 	.Screen/x DEI2 #0010 SUB2 .Screen/x DEO2
@@ -1719,10 +1708,13 @@
 	( | right )
 	[ LITr -Screen/x ] DEI2r
 	( ) DUP2r [ LIT2r 00f8 ] ADD2r [ LITr -Screen/x ] DEO2r
-	LDA2k get-modkey-str #0f ascii/draw-str-right POP2
+	LDA2k get-modkey-str #0f ank/<draw-str-right>
 	( | left )
 	[ LIT2r 0004 ] ADD2r [ LITr -Screen/x ] DEO2r
-	#0004 ADD2 #00 !ascii/draw-str
+	#0004 ADD2 #00 !ank/draw-str
+
+%sput ( chr str* -- ) {
+	scap/ ROT #00 SWP2 STA2 }
 
 @get-modkey-str ( mod key -- str* )
 	;&buf #0008 <mclr>
@@ -1991,7 +1983,17 @@
 	c0e0 e0f0 f0f8 f8fc fcfe feff fffe fefc
 	fcf8 f8f0 f0e0 e0c0 ]
 
-@font
+@appicon ( 3x3 ) [
+0000 0000 0000 0000 0000 0000 0000 0000 0008 0808 4838 1808 0814 14d4 b444 2414
+0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0307 070f 0000 0003 0408 0810
+0808 08ff ffff ffff 1414 f700 0000 0000 0000 0080 e0f0 f0f8 0000 8060 1008 0804
+0f0f 0f07 0703 0000 1010 1008 0c07 0300 ffff ffff ffff ff00 0080 c17f 0000 ffff
+f8f8 f8f0 f0e0 8000 0484 8408 1870 e080 ]
+
+(
+@|ank )
+
+@ank/glyphs
 ( ?? )
 0000 0000 0000 0000 0000 0000 0000 0000
 0000 0000 0000 0000 0000 0000 0000 0000
@@ -2505,7 +2507,7 @@ aa55 aa55 aa55 aa55 aa55 aa55 aa55 aa55
 aa55 aa55 aa55 aa55 aa55 aa55 aa55 aa55
 aa55 aa55 aa55 aa55 aa55 aa55 aa55 aa55 ]
 
-@latin-high
+@ank/latin-high
 ( A grave )
 1c0e 0300 0303 0705 050d 0908 181f 1010
 3020 2078 0000 0000 0000 0000 0000 0080
@@ -2763,12 +2765,7 @@ e060 6060 6060 6060 6060 e070 0000 0000
 0607 0703 6266 3c00 0060 f060 0000 0000
 7020 2060 4040 c080 8080 0000 0000 0000
 
-@appicon ( 3x3 ) [
-0000 0000 0000 0000 0000 0000 0000 0000 0008 0808 4838 1808 0814 14d4 b444 2414
-0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0307 070f 0000 0003 0408 0810
-0808 08ff ffff ffff 1414 f700 0000 0000 0000 0080 e0f0 f0f8 0000 8060 1008 0804
-0f0f 0f07 0703 0000 1010 1008 0c07 0300 ffff ffff ffff ff00 0080 c17f 0000 ffff
-f8f8 f8f0 f0e0 8000 0484 8408 1870 e080 ]
+
 
 (
 @|memory ) $1

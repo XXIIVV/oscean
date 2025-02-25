@@ -7,8 +7,8 @@
 |90 @Mouse/vector $2 &x $2 &y $2 &state $1 &pad $3 &sx $2 &sy $1 &sy-lb $1
 |a0 @File/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |0240 @WIDTH
-|0012 @header/height
 |0080 @LINES
+|0012 @header/height
 
 |000
 
@@ -24,7 +24,7 @@
 @on-reset ( -> )
 	;meta #06 DEO2
 	theme/<load>
-	#0240 .Screen/width DEO2
+	;WIDTH .Screen/width DEO2
 	#0162 .Screen/height DEO2
 	.Screen/height DEI2 ;header/height SUB2 #04 SFT2 #03 SUB .viewport/h-hb STZ2
 	.Screen/width DEI2 #06 SFT2 .viewport/w-hb STZ2
@@ -57,9 +57,11 @@
 	DUP2 [ LIT2 "v 01 ] NEQ2 ?{ snarf/<paste> }
 	DUP2 [ LIT2 "x 01 ] NEQ2 ?{ snarf/<cut> }
 	DUP2 [ LIT2 0d 01 ] NEQ2 ?{ .select/b LDZ2 cmd/<inject-rect> }
+	( | spacer key )
+	OVR .src/spacer LDZ NEQ ?{ POP2 select/<move-r>
+		BRK }
 	( | key )
 	#fb AND ?{
-		DUP .src/spacer LDZ NEQ ?{ POP #20 }
 		DUP #1b NEQ ?{ select/<reset> }
 		DUP #08 NEQ ?{ .select/b LDZ2 cmd/<erase> }
 		DUP #7f NEQ ?{ ;cmd/do-delete cmd/<apply> }
@@ -109,20 +111,6 @@
 %exists ( index* -- f ) {
 	INC2k ORA }
 
-@cmd/<draw> ( -- )
-	#0000 .Screen/x DEO2
-	[ LIT2 00 -viewport/h ] LDZ #03 ADD #40 SFT2 .Screen/y DEO2
-	#01b8 ;line-icn #15 <draw-times-addr>
-	#0040 .Screen/x DEO2
-	.select/b LDZ2 cells/get-addr #05 chicago/<draw-left-color>
-	( | rect preview )
-	.select/b LDZ2 DUP2 calc/parse-rect
-	( val ) OVR2 calc/validate exists ?{ POP2 POP2 JMP2r }
-	.Screen/x DEI2k #0006 ADD2 ROT DEO2
-	;arrow-icn .Screen/addr DEO2
-	[ LIT2 0a -Screen/sprite ] DEO
-	NIP2 !cell/<draw-res>
-
 @cmd/<inject-rect> ( x y -- )
 	.select/a LDZ2 .select/b LDZ2 NEQ2 ?{ POP2 JMP2r }
 	select/<size-u> !select/<write-rect>
@@ -162,6 +150,21 @@
 			( ) INC GTHk ?&>lh
 		POP2 INC GTHk ?&>lv
 	POP2 POP2 !grid/<draw>
+
+@cmd/<draw> ( -- )
+	#0000 .Screen/x DEO2
+	[ LIT2 00 -viewport/h ] LDZ #03 ADD #40 SFT2 .Screen/y DEO2
+	#01b8 ;line-icn #15 <draw-times-addr>
+	#0040 .Screen/x DEO2
+	.Screen/y DEI2k INC2 ROT DEO2
+	.select/b LDZ2 cells/get-addr #05 chicago/<draw-left-color>
+	( | rect preview )
+	.select/b LDZ2 DUP2 calc/parse-rect
+	( val ) OVR2 calc/validate exists ?{ POP2 POP2 JMP2r }
+	.Screen/x DEI2k #0006 ADD2 ROT DEO2
+	;arrow-icn .Screen/addr DEO2
+	[ LIT2 0a -Screen/sprite ] DEO
+	NIP2 !cell/<draw-res>
 
 (
 @|select )
@@ -557,8 +560,14 @@
 	POP2 POP2 STH2r STH2r POP2r JMP2r
 
 @calc/run-len ( rect* op -- res** )
-	POP rect-unpack SUB STH
-	SUB STHr MUL !x32-from-u8
+	POP rect-unpack [ LITr 00 ]
+	&>lvl ( -- )
+		OVR2
+		&>lhl ( -- )
+			DUP OVR2 POP /get-value x32-is-zero ?{ INCr }
+			INC GTHk ?&>lhl
+		POP2 INC GTHk ?&>lvl
+	POP2 POP2 STHr !x32-from-u8
 
 @calc/run-op ( acc* val** c -- res** )
 	DUP [ LIT "- ] NEQ ?{ POP !x32-sub }
@@ -913,7 +922,7 @@
 	( name ) "Nebu 0a
 	( desc ) "Spreadsheet 20 "Editor 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "24 20 "Feb 20 "2025 $2
+	( date ) "25 20 "Feb 20 "2025 $2
 
 
 
