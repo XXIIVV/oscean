@@ -1,15 +1,11 @@
 #include <stdio.h>
 
-typedef signed char Sint8;
-typedef unsigned char Uint8;
-typedef unsigned short Uint16;
-
 typedef struct {
-	Uint8 dat[0x100], ptr;
+	unsigned char dat[0x100], ptr;
 } Stack;
 
 typedef struct {
-	Uint8 ram[0x10000], dev[0x100];
+	unsigned char ram[0x10000], dev[0x100];
 	Stack wst, rst;
 } Uxn;
 
@@ -17,14 +13,14 @@ Uxn uxn;
 
 /* I/O */
 
-Uint8
-emu_dei(Uint8 addr)
+unsigned char
+emu_dei(unsigned char addr)
 {
 	return uxn.dev[addr];
 }
 
 void
-emu_deo(Uint8 addr, Uint8 value)
+emu_deo(unsigned char addr, unsigned char value)
 {
 	uxn.dev[addr] = value;
 	switch(addr) {
@@ -52,7 +48,7 @@ emu_deo(Uint8 addr, Uint8 value)
 #define REM if(_r) uxn.rst.ptr -= 1 + _2; else uxn.wst.ptr -= 1 + _2;
 #define INC(s) uxn.s.dat[uxn.s.ptr++]
 #define DEC(s) uxn.s.dat[--uxn.s.ptr]
-#define JMP(i) { if(_2) pc = i; else pc += (Sint8)i; }
+#define JMP(i) { if(_2) pc = i; else pc += (signed char)i; }
 #define PO1(o) { o = _r ? DEC(rst) : DEC(wst); }
 #define PO2(o) { if(_r) o = DEC(rst), o |= DEC(rst) << 8; else o = DEC(wst), o |= DEC(wst) << 8; }
 #define POx(o) { if(_2) PO2(o) else PO1(o) }
@@ -67,7 +63,7 @@ emu_deo(Uint8 addr, Uint8 value)
 #define POK(i,j,m) uxn.ram[i] = j[0]; if(_2) uxn.ram[(i + 1) & m] = j[1];
 
 int
-uxn_eval(Uint16 pc)
+uxn_eval(unsigned short pc)
 {
 	unsigned int a, b, c, x[2], y[2], z[2], step = 0x80000;
 	if(!pc || uxn.dev[0x0f]) return 0;
@@ -98,8 +94,8 @@ uxn_eval(Uint16 pc)
 		/* STH */ OPC(0x0f,GET(x),PUr(x[0]) if(_2) PUr(x[1]))
 		/* LDZ */ OPC(0x10,PO1(a),PEK(a, x, 0xff))
 		/* STZ */ OPC(0x11,PO1(a) GET(y),POK(a, y, 0xff))
-		/* LDR */ OPC(0x12,PO1(a),PEK(pc + (Sint8)a, x, 0xffff))
-		/* STR */ OPC(0x13,PO1(a) GET(y),POK(pc + (Sint8)a, y, 0xffff))
+		/* LDR */ OPC(0x12,PO1(a),PEK(pc + (signed char)a, x, 0xffff))
+		/* STR */ OPC(0x13,PO1(a) GET(y),POK(pc + (signed char)a, y, 0xffff))
 		/* LDA */ OPC(0x14,PO2(a),PEK(a, x, 0xffff))
 		/* STA */ OPC(0x15,PO2(a) GET(y),POK(a, y, 0xffff))
 		/* DEI */ OPC(0x16,PO1(a),DEI(a, x))
@@ -133,7 +129,7 @@ main(int argc, char **argv)
 	if(argc < 2)
 		fprintf(stdout, "usage: %s file.rom [args..]\n", argv[0]);
 	else if(!(f = fopen(argv[1], "rb")))
-		fprintf(stderr, "uxnmin: Error %s\n", argv[1]);
+		fprintf(stderr, "uxnmin: %s not found.\n", argv[1]);
 	else {
 		uxn.dev[0x17] = argc > 2;
 		fread(&uxn.ram[0x0100], 0xff00, 1, f), fclose(f);
