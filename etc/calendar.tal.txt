@@ -32,8 +32,7 @@
 	( | theme )
 	theme/<load>
 	( | size 3bx25 )
-	#0240 .Screen/width DEO2
-	#0178 .Screen/height DEO2
+	#0240 #0178 window/<set-size>
 	( | initial position )
 	select/<today>
 	( | unlock )
@@ -45,7 +44,7 @@
 	( name ) "Calendar 0a
 	( details ) "Inspired 20 "by 20 "Donn 20 "Denman 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "25 20 "Feb 20 "2025 $2
+	( date ) "1 20 "Mar 20 "2025 $2
 
 (
 @|vectors )
@@ -224,10 +223,14 @@
 (
 @|header )
 
+%Mouse/release ( -- ) {
+	[ LIT2 00 -Mouse/state ] DEO }
+
 @header/on-mouse ( -> )
 	#41 ;mouse-icn cursor/<update>
 	[ LIT2 &last $1 -Mouse/state ] DEI
 	( | handlers )
+	DUP2 #0002 NEQ2 ?{ window/toggle-shade Mouse/release }
 	DUP2 #0001 NEQ2 ?{ /outside-quit ?{ /<press-quit> } }
 	DUP2 #0100 NEQ2 ?{ /<release-quit> }
 	,&last STR
@@ -372,7 +375,7 @@
 	( 000x ) #000a DIV2k MUL2 SUB2 to-dec .&000x STZ
 	POP
 	( | load )
-	;&filepath events/import !<draw-page>
+	;&filepath events/import #00 header/<draw> !<draw-page>
 
 @select/<prev-month> ( -- )
 	[ LIT2 ff -day ] STZ
@@ -604,6 +607,22 @@
 	POP2 POP2r JMP2r
 
 (
+@|window )
+
+@window/<set-size> ( width* height* -- )
+	DUP2 ,&height STR2
+	.Screen/height DEO2
+	.Screen/width DEO2
+	JMP2r
+
+@window/toggle-shade ( -- )
+	#0011 .Screen/height DEI2 EQU2 ?{
+		#0011 .Screen/height DEO2
+		#00 !header/<draw> }
+	[ LIT2 &height $2 ] .Screen/height DEO2
+	#00 header/<draw> !<redraw-all>
+
+(
 @|theme )
 
 @theme/<reset> ( -- )
@@ -630,13 +649,14 @@
 (
 @|drawing )
 
+@<redraw-all> ( -- )
+	( >> )
+
 @<draw-page> ( -- )
 	( | clear )
 	#0000 .Screen/x DEO2
 	#0018 .Screen/y DEO2
 	[ LIT2 80 -Screen/pixel ] DEO
-	( | start day )
-	#00 header/<draw>
 	( | draw days )
 	.DateTime/day DEI .today STZ
 	.year LDZ2 .month LDZ is-month .is-month STZ

@@ -1,4 +1,5 @@
-( Nebu )
+( build: uxnasm src/nebu.tal nebu.rom
+| start: uxnemu nebu.rom )
 
 |00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
 |10 @Console/vector $2 &read $5 &type $1 &write $1 &error $1
@@ -12,7 +13,7 @@
 
 |000
 
-	@src/buf $40 &cap $1 &spacer $1
+	@src/buf $40 &cap $1 &spacer $1 &changed $1
 	@viewport/w-hb $1 &w $1 &h-hb $1 &h $1
 	@select/a &ax $1 &ay $1 &b &bx $1 &by $1 &scroll $1
 	@select/is-rect $1 &rect-a &rect-ax $1 &rect-ay $1 &rect-b &rect-bx $1 &rect-by $1
@@ -24,8 +25,7 @@
 @on-reset ( -> )
 	;meta #06 DEO2
 	theme/<load>
-	;WIDTH .Screen/width DEO2
-	#0162 .Screen/height DEO2
+	;WIDTH #0162 window/<set-size>
 	.Screen/height DEI2 ;header/height SUB2 #04 SFT2 #03 SUB .viewport/h-hb STZ2
 	.Screen/width DEI2 #06 SFT2 .viewport/w-hb STZ2
 	[ LIT2 ", -src/spacer ] STZ
@@ -96,6 +96,17 @@
 
 	&default-name "untitled.csv $1
 
+@src/change ( -- )
+	.&changed LDZ ?{
+		[ LIT2 01 -&changed ] STZ
+		#00 !header/<draw> }
+	JMP2r
+
+@src/<unchange> ( -- )
+	.&changed LDZ ?{ JMP2r }
+	[ LIT2 00 -&changed ] STZ
+	#00 !header/<draw>
+
 (
 @|cmd )
 
@@ -113,14 +124,15 @@
 
 @cmd/<inject-rect> ( x y -- )
 	.select/a LDZ2 .select/b LDZ2 NEQ2 ?{ POP2 JMP2r }
-	select/<size-u> !select/<write-rect>
+	select/<size-u>
+	( -- )
 
-@cmd/<insert-text> ( str* cell* -- )
-	STH2
+@cmd/<write-rect> ( x y -- )
+	rect/create OVR2 cells/get-addr STH2
 	&>wi ( -- )
 		LDAk #00 STH2kr STA2
 		INC2r INC2 LDAk ?&>wi
-	POP2 POP2r !grid/<draw>
+	POP2 POP2r src/change !select/<set-a>
 
 @cmd/<insert> ( c x y -- )
 	cells/get-addr DUP2 scap
@@ -128,17 +140,18 @@
 	NIP2
 	( save ) STA
 	grid/<draw>
-	[ LIT2 01 -&inserted ] STZ !/<draw>
+	src/change [ LIT2 01 -&inserted ] STZ !/<draw>
 
 @cmd/<erase> ( x y -- )
 	cells/get-addr DUP2 scap
 	( clamp ) NEQ2k ?{ POP2 POP2 JMP2r }
 	NIP2
 	( save ) #0001 SUB2 #0000 SWP2 STA2
-	grid/<draw> !/<draw>
+	src/change grid/<draw> !/<draw>
 
 @cmd/do-delete ( x y -- )
-	cells/get-addr #0020 !<mclr>
+	cells/get-addr LDAk ?{ POP2 JMP2r }
+	src/change #0020 !<mclr>
 
 @cmd/<apply> ( fn* -- )
 	,&fn STR2
@@ -240,9 +253,6 @@
 	[ LIT2 01 -&is-rect ] STZ
 	JMP2r
 
-@select/<write-rect> ( x y -- )
-	rect/create OVR2 cells/get-addr cmd/<insert-text> !/<set-a>
-
 @select/<set-col> ( x -- )
 	DUP [ LIT2 00 -&a ] STZ2
 	.LINES !/<set-b>
@@ -312,7 +322,7 @@
 	BRK
 
 @grid/on-down2 ( touch* -> )
-	POP2 /get-touch select/<write-rect>
+	POP2 /get-touch cmd/<write-rect>
 	BRK
 
 @grid/on-drag ( touch* -> )
@@ -612,6 +622,7 @@
 
 @cells/<save> ( src* -- )
 	STH2
+	src/<unchange>
 	/find-bounds STH2r
 	( >> )
 
@@ -629,6 +640,7 @@
 
 @cells/<load> ( src* -- )
 	/<clear>
+	src/<unchange>
 	#0000 SWP2
 	( >> )
 
@@ -736,10 +748,14 @@
 (
 @|header )
 
+%Mouse/release ( -- ) {
+	[ LIT2 00 -Mouse/state ] DEO }
+
 @header/on-mouse ( -> )
 	#41 ;mouse-icn cursor/<update>
 	[ LIT2 &last $1 -Mouse/state ] DEI
 	( | handlers )
+	DUP2 #0002 NEQ2 ?{ window/toggle-shade Mouse/release }
 	DUP2 #0001 NEQ2 ?{ /outside-quit ?{ /<press-quit> } }
 	DUP2 #0100 NEQ2 ?{ /<release-quit> }
 	,&last STR
@@ -778,9 +794,12 @@
 	#0001 .Screen/y DEO2
 	;WIDTH #01 SFT2 .Screen/x DEO2
 	#09 ;chicago/color STA
-	.Screen/x DEI2 ;src/buf chicago/get-str-width #01 SFT2 SUB2 .Screen/x DEO2
+	.Screen/x DEI2 ;src/buf chicago/get-str-width #0008 ADD2 #01 SFT2 SUB2 .Screen/x DEO2
 	#20 chicago/<draw-char>
-	;src/buf #09 !chicago/<draw-left-color>
+	#20 chicago/<draw-char>
+	;src/buf #09 chicago/<draw-left-color>
+	.src/changed LDZ ?{ JMP2r }
+	[ LIT "* ] !chicago/<draw-char>
 
 (
 @|cursor )
@@ -807,6 +826,27 @@
 	[ LIT2 &y $2 ] .Screen/y DEO2
 	.Screen/sprite DEO
 	JMP2r
+
+(
+@|window )
+
+@window/<set-size> ( width* height* -- )
+	DUP2 ,&height STR2
+	.Screen/height DEO2
+	.Screen/width DEO2
+	JMP2r
+
+@window/toggle-shade ( -- )
+	#0011 .Screen/height DEI2 EQU2 ?/expand
+	( >> )
+
+@window/shade ( -- )
+	#0011 .Screen/height DEO2
+	#00 !header/<draw>
+
+@window/expand ( -- )
+	[ LIT2 &height $2 ] .Screen/height DEO2
+	#00 header/<draw> !grid/<draw>
 
 (
 @|theme )
@@ -922,7 +962,7 @@
 	( name ) "Nebu 0a
 	( desc ) "Spreadsheet 20 "Editor 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "25 20 "Feb 20 "2025 $2
+	( date ) "1 20 "Mar 20 "2025 $2
 
 
 

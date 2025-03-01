@@ -31,7 +31,7 @@
 	( | theme )
 	theme/<load>
 	( | size )
-	;WIDTH .Screen/width DEO2
+	;WIDTH #0080 window/<set-size>
 	( | .. )
 	message/<new>
 	;dict/mpg-cmd .Console/addr DEO2
@@ -51,7 +51,7 @@
 	( name ) "m291 0a
 	( desc ) "Audio 20 "Player 0a
 	( auth ) "By 20 "Linvega 20 "& 20 "d6 0a
-	( date ) "17 20 "Feb 20 "2025 $2
+	( date ) "1 20 "Mar 20 "2025 $2
 
 (
 @|macros )
@@ -378,9 +378,7 @@
 	( empty ) DUP #00 EQU ADD #40 SFT2
 	( padding ) #0020 ADD2
 	( playing ) [ LIT2 00 -playing ] LDZ EQU ?{ #0080 ADD2 }
-	.Screen/height DEO2
-	#00 header/<draw>
-	<redraw-player> !<redraw-dir>
+	!window/<set-height>
 
 @<parse-line> ( line* -- )
 	#0005 ADD2 LDAk [ LIT ". ] EQU ?&hidden
@@ -572,16 +570,9 @@
 (
 @|drawing )
 
-@<draw-times-addr> ( color times addr* auto -- )
-	.Screen/auto DEO
-	,&addr STR2
-	SWP STH
-	[ LITr -Screen/sprite ]
-	&>l ( -- )
-		[ LIT2 &addr $2 ] .Screen/addr DEO2
-		DEOkr
-		INC DUP ?&>l
-	POP POP2r JMP2r
+@<redraw-all> ( -- )
+	<redraw-player>
+	( >> )
 
 @<redraw-dir> ( -- )
 	#0000 .Screen/x DEO2
@@ -619,10 +610,26 @@
 		( | normal )
 		#0008 .Screen/x DEO2
 		#00 OVR
-		( CELLSIZE ) #70 SFT2 ;mem/tracks ADD2 STHr <draw-uf2-track>
+		( CELLSIZE ) #70 SFT2 ;mem/tracks ADD2 STHr <draw-track>
 		.Screen/y DEI2k #0010 ADD2 ROT DEO2
 		INC GTHk ?&>l
 	POP2 JMP2r
+
+@<draw-track> ( text* color -- )
+	STH
+	.prefix/tracks LDZ #03 GTH ?{ STHr !chicago/<draw-left-color> }
+	[ LIT2 00 -prefix/tracks ] LDZ ADD2 STHr !chicago/<draw-left-color>
+
+@<draw-times-addr> ( color times addr* auto -- )
+	.Screen/auto DEO
+	,&addr STR2
+	SWP STH
+	[ LITr -Screen/sprite ]
+	&>l ( -- )
+		[ LIT2 &addr $2 ] .Screen/addr DEO2
+		DEOkr
+		INC DUP ?&>l
+	POP POP2r JMP2r
 
 @<draw-folders> ( -- )
 	.selection LDZ ,&sel STR
@@ -643,7 +650,7 @@
 		( | normal )
 		#0008 .Screen/x DEO2
 		#00 OVR
-		( CELLSIZE ) #70 SFT2 ;mem/folders ADD2 STHr <draw-uf2-folder>
+		( CELLSIZE ) #70 SFT2 ;mem/folders ADD2 STHr <draw-folder>
 		.Screen/y DEI2k #0010 ADD2 ROT DEO2
 		INC GTHk ?&>l
 	POP2 JMP2r
@@ -824,17 +831,11 @@
 	.Screen/y DEO2
 	JMP2r
 
-@<draw-uf2-folder> ( text* color -- )
+@<draw-folder> ( text* color -- )
 	STH
 	.prefix/folders LDZ #03 GTH ?{ STHr !chicago/<draw-left-color> }
 	;dict/ellipses STHkr chicago/<draw-left-color>
 	[ LIT2 00 -prefix/folders ] LDZ ADD2 STHr !chicago/<draw-left-color>
-
-@<draw-uf2-track> ( text* color -- )
-	STH
-	.prefix/tracks LDZ #03 GTH ?{ STHr !chicago/<draw-left-color> }
-	;dict/ellipses STHkr chicago/<draw-left-color>
-	[ LIT2 00 -prefix/tracks ] LDZ ADD2 STHr !chicago/<draw-char>
 
 @next-glyph ( addr* -- addr* )
 	INC2 LDAk
@@ -864,11 +865,15 @@
 (
 @|header )
 
+%Mouse/release ( -- ) {
+	[ LIT2 00 -Mouse/state ] DEO }
+
 @header/on-mouse ( -> )
 	#c1 ;touch-chr/down ;touch-chr .Mouse/state DEI ?{ SWP2 }
 	POP2 cursor/<update>
 	[ LIT2 &last $1 -Mouse/state ] DEI
 	( | handlers )
+	DUP2 #0002 NEQ2 ?{ window/toggle-shade Mouse/release }
 	DUP2 #0001 NEQ2 ?{ /outside-quit ?{ /<press-quit> } }
 	DUP2 #0100 NEQ2 ?{ /<release-quit> }
 	,&last STR
@@ -1119,10 +1124,31 @@
 	( > ) ,&y STR2k POP JMP2r
 
 (
+@|window )
+
+@window/<set-size> ( width* height* -- )
+	DUP2 ,&height STR2
+	.Screen/height DEO2
+	.Screen/width DEO2
+	JMP2r
+
+@window/<set-height> ( height* -- )
+	DUP2 ,&height STR2
+	.Screen/height DEO2
+	#00 header/<draw> !<redraw-all>
+
+@window/toggle-shade ( -- )
+	#0011 .Screen/height DEI2 EQU2 ?{
+		#0011 .Screen/height DEO2
+		#00 !header/<draw> }
+	[ LIT2 &height $2 ] .Screen/height DEO2
+	#00 header/<draw> !<redraw-all>
+
+(
 @|theme )
 
 @theme/<reset> ( -- )
-	#f0f0 #f0f0 #f0f0
+	#f0ad #f0ef #f0be
 	( >> )
 
 @theme/<set> ( r* g* b* -- )

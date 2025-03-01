@@ -12,7 +12,6 @@
 |000
 
 	@page $1
-	@collapsed $1
 	@selection &a $2 &b $2 &length $2
 
 |100
@@ -23,16 +22,13 @@
 	( | theme )
 	theme/<load>
 	( | size )
-	#00e0 .Screen/width DEO2
-	#00f8 .Screen/height DEO2
+	#00e0 #00f8 window/<set-size>
 	( | unlock )
 	;on-console .Console/vector DEO2
 	;on-mouse-body .Mouse/vector DEO2
 	;on-control .Controller/vector DEO2
 	( | let's go! )
 	file-init #00 <change-page>
-	<draw-note>
-	<reqdraw-all>
 	BRK
 
 @meta 00
@@ -91,25 +87,11 @@
 	POP BRK
 
 @on-frame-draw ( -> )
+	<redraw-all>
 	#0000 .Screen/vector DEO2
-	[ LIT &note 00 ] ?{
-		#0000 .Screen/x DEO2
-		#0018 .Screen/y DEO2
-		[ LIT2 80 -Screen/pixel ] DEO
-		<draw-note>
-		<draw-footer>
-		[ LIT2 01 _&note ] STR }
-	[ LIT &header 00 ] ?{
-		#00 header/<draw>
-		[ LIT2 01 _&header ] STR }
 	BRK
 
 @<reqdraw-all> ( -- )
-	[ LIT2 00 _on-frame-draw/header ] STR
-	( >> )
-
-@<reqdraw-note> ( -- )
-	[ LIT2 00 _on-frame-draw/note ] STR
 	;on-frame-draw .Screen/vector DEO2
 	JMP2r
 
@@ -136,7 +118,7 @@
 @delete ( -- )
 	.selection/length LDZ2 ORA ?{
 		get-from INC2k get-eof NEQ2 ?{ POP2 JMP2r }
-		cut-char <reqdraw-note> !file-save }
+		cut-char <reqdraw-all> !file-save }
 	erase-selection !<select-reset>
 
 @get-eof ( -- addr* )
@@ -195,7 +177,7 @@
 	( >> )
 
 @select ( -- )
-	get-to get-from SUB2 .selection/length STZ2 !<reqdraw-note>
+	get-to get-from SUB2 .selection/length STZ2 !<reqdraw-all>
 
 @<select-left> ( -- )
 	.selection/length LDZ2 #0000 EQU2 [ LIT2 04 -Controller/button ] DEI AND #00 NEQ ORA ?{ get-from !<select-from> }
@@ -409,8 +391,13 @@
 (
 @|drawing )
 
+@<redraw-all> ( -- )
+	#0000 .Screen/x DEO2
+	#0018 .Screen/y DEO2
+	[ LIT2 80 -Screen/pixel ] DEO
+	<draw-note> !<draw-footer>
+
 @<draw-note> ( -- )
-	[ LIT2 00 -collapsed ] LDZ EQU ?{ JMP2r }
 	[ LIT2 15 -Screen/auto ] DEO
 	#0008 .Screen/x DEO2
 	#0018 .Screen/y DEO2
@@ -429,19 +416,9 @@
 		.Screen/x DEI2k #0008 SUB2 ROT DEO2 &block walk-char POP INC2 LDAk ?&>w
 	POP2
 	( | detect resize )
-	.Screen/y DEI2 !<reqresize>
-
-
-
-@<reqresize> ( size* -- )
-	( min ) #00d0 GTH2k [ JMP SWP2 ] POP2
-	( changed? ) DUP2 [ LIT2 &last $2 ] NEQ2 ?{ POP2 JMP2r }
-	DUP2 ,&last STR2
-	#0030 ADD2 .Screen/height DEO2
-	<draw-note> !<reqdraw-all>
+	.Screen/y DEI2 !window/<reqresize>
 
 @<draw-footer> ( -- )
-	[ LIT2 00 -collapsed ] LDZ EQU ?{ JMP2r }
 	corner/<draw>
 	( | across )
 	[ LIT2 01 -Screen/auto ] DEO
@@ -559,10 +536,14 @@
 (
 @|header )
 
+%Mouse/release ( -- ) {
+	[ LIT2 00 -Mouse/state ] DEO }
+
 @header/on-mouse ( -> )
 	#41 ;mouse-icn cursor/<update>
 	[ LIT2 &last $1 -Mouse/state ] DEI
 	( | handlers )
+	DUP2 #0002 NEQ2 ?{ window/toggle-shade Mouse/release }
 	DUP2 #0001 NEQ2 ?{ /outside-quit ?{ /<press-quit> } }
 	DUP2 #0100 NEQ2 ?{ /<release-quit> }
 	,&last STR
@@ -622,6 +603,33 @@
 	#00 ,&last LDR #00c0 MUL2 ;corner/default-chr ADD2 .Screen/addr DEO2
 	[ LIT2 85 -Screen/sprite ] DEOk DEOk DEOk DEO
 	JMP2r
+
+(
+@|window )
+
+@window/<set-size> ( width* height* -- )
+	DUP2 ,&height STR2
+	.Screen/height DEO2
+	.Screen/width DEO2
+	#00 header/<draw> !<redraw-all>
+
+@window/<set-height> ( height* -- )
+	DUP2 ,&height STR2
+	.Screen/height DEO2
+	#00 header/<draw> !<redraw-all>
+
+@window/toggle-shade ( -- )
+	#0011 .Screen/height DEI2 EQU2 ?{
+		#0011 .Screen/height DEO2
+		#00 !header/<draw> }
+	[ LIT2 &height $2 ] .Screen/height DEO2
+	#00 header/<draw> !<redraw-all>
+
+@window/<reqresize> ( size* -- )
+	( min ) #00d0 GTH2k [ JMP SWP2 ] POP2
+	( changed? ) DUP2 [ LIT2 &last $2 ] NEQ2 ?{ POP2 JMP2r }
+	DUP2 ,&last STR2
+	#0030 ADD2 !/<set-height>
 
 (
 @|theme )
