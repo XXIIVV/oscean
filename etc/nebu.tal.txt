@@ -579,7 +579,18 @@
 		POP2 INC GTHk ?&>lvl
 	POP2 POP2 STHr !x32-from-u8
 
-@calc/run-op ( acc* val** c -- res** )
+@calc/is-num ( val** -- val** f )
+	OVR2 #8000 NEQ2 ?{
+		ORAk ?{ #00 JMP2r } }
+	#01 JMP2r
+
+@calc/run-op ( acc** val** c -- res** )
+	[ STH /is-num ] ?{
+		( val** ) POPr ROT2 POP2 ROT2 POP2 JMP2r }
+	[ STH2 STH2 /is-num ] ?{
+		( acc** ) POPr POP2r POP2r JMP2r }
+	STH2r STH2r STHr
+	( | handlers )
 	DUP [ LIT "- ] NEQ ?{ POP !x32-sub }
 	DUP [ LIT "* ] NEQ ?{ POP !x32-mul }
 	DUP [ LIT "/ ] NEQ ?{ POP !x32-div }
@@ -962,7 +973,7 @@
 	( name ) "Nebu 0a
 	( desc ) "Spreadsheet 20 "Editor 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "1 20 "Mar 20 "2025 $2
+	( date ) "2 20 "Mar 20 "2025 $2
 
 
 
