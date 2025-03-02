@@ -1,4 +1,5 @@
-( Usage: uxncli uxnlin.rom src.tal )
+( build: uxnasm src/uxnlin.tal uxnlin.rom
+| start: uxnemu uxnlin.rom input.tal )
 
 |10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
 |a0 @File &vector $2 &success $1 &succ-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
@@ -21,34 +22,31 @@
 		;dict/usage <perr>
 		#010f DEO
 		BRK }
-	;await-src .Console/vector DEO2
+	;src/on-console .Console/vector DEO2
 	BRK
 
-@await-src ( -> )
+@src/on-console ( -> )
 	.Console/read DEI
-	( ) DUP #20 GTH ?{ POP !<on-ready> }
+	( ) DUP #20 GTH ?{
+		POP <lint>
+		#800f DEO
+		BRK }
 	[ LIT2 00 &ptr -src ] INCk ,&ptr STR
 	STZ2
-	BRK
-
-@<on-ready> ( -> )
-	;dict/default-scope ;scope <scpy>
-	;src <lint>
-	( halt ) #800f DEO
 	BRK
 
 @meta $1
 	( name ) "Uxnlin 0a
 	( desc ) "Uxntal 20 "Linter 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "12 20 "Feb 20 "2025 $1
-	( exts ) 00
+	( date ) "1 20 "Mar 20 "2025 $2
 
 (
 @|core )
 
-@<lint> ( src* -- )
-	.File/name DEO2
+@<lint> ( -- )
+	;dict/default-scope ;scope <scpy>
+	;src .File/name DEO2
 	#0001 .File/length DEO2
 	;&c .File/read
 	&>s ( -- )
@@ -68,8 +66,7 @@
 
 @walk-comment ( t* -- )
 	;&c feof ?<sclr>
-	[ LIT2 &c $1 "( ] NEQk ?{ ;dict/nested <print-warn> }
-	INC NEQ ?walk-comment
+	[ LIT2 &c $1 "( ] INC NEQ ?walk-comment
 	!<sclr>
 
 @walk-block ( t* -- )

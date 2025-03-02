@@ -8,10 +8,10 @@
 
 |000
 
-	@token/buf $2f &cap $1
-	@scope/buf $2f &cap $1
 	@src/buf $2f &cap $1
 	@dst/buf $2f &cap $1
+	@token/buf $2f &cap $1
+	@scope/buf $2f &cap $1
 
 |100
 
@@ -29,17 +29,20 @@
 	BRK
 
 @src/on-console ( -> )
-	.Console/read DEI DUP #20 GTH ?{ POP ;dst/on-console !bind }
-	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
-	DUP .&cap LTH ?{ ;dict/exceeded ;dict/Path ;&buf <set-error> }
-	STZ2
-	BRK
+	[ LIT2 02 -Console/type ] DEI LTH ?{
+		.Console/read DEI [ LIT2 -&cap &ptr -&buf ] INCk ,&ptr STR
+		NEQk ?{ ;dict/exceeded ;dict/Path ;&buf <set-error> }
+		NIP STZ
+		BRK }
+	;dst/on-console !bind
 
 @dst/on-console ( -> )
-	.Console/read DEI DUP #20 GTH ?{ <assemble> }
-	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
-	DUP .&cap LTH ?{ ;dict/exceeded ;dict/Path ;&buf <set-error> }
-	STZ2
+	[ LIT2 02 -Console/type ] DEI LTH ?{
+		.Console/read DEI [ LIT2 -&cap &ptr -&buf ] INCk ,&ptr STR
+		NEQk ?{ ;dict/exceeded ;dict/Path ;&buf <set-error> }
+		NIP STZ
+		BRK }
+	<assemble>
 	BRK
 
 @<assemble> ( -- )
@@ -72,13 +75,13 @@
 	;dict/assembled <pstr>
 	;dst/buf <pstr>/
 	;dict/in <pstr>
-	OVR2 #00ff SUB2 <pdec>
+	OVR2 #0100 SUB2 <pdec>
 	;dict/bytes <pstr>
 	( -labels ) <pdec>
 	;dict/labels <pstr>
 	( | export )
 	;dst/buf .File/name DEO2
-	( -length ) #00ff SUB2 .File/length DEO2
+	( -length ) #0100 SUB2 .File/length DEO2
 	;&output .File/write DEO2
 	( | success )
 	[ LIT2 80 -System/state ] DEO
@@ -104,7 +107,7 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "18 20 "Jan 20 "2025 $2
+	( date ) "1 20 "Mar 20 "2025 $2
 
 
 
@@ -182,9 +185,9 @@
 	LDZk runes/find INC2k ORA ?{
 		POP2
 		( hex ) is-hex ?rom/<write-rawhex>
-		( opc ) opcodes/find INC ?rom/<write-opcode>
 		( mac ) DUP2 macros/find INC2k ORA ?rom/<write-macro>
-		( imm ) POP2 !lib/litjsi }
+		( opc ) POP2 opcodes/find INC ?rom/<write-opcode>
+		( imm ) !lib/litjsi }
 	INC2 LDA2 JMP2
 
 @<set-comment> ( -- )
@@ -233,7 +236,7 @@
 	&rawstr INC2 !rom/<write-str>
 	&lambda POP2 !lambda/pop
 	&coment POP2 !<set-comment>
-	&macros INC2 macros/<push-word> !<set-macro>
+	&macros INC2 !macros/<new>
 	&ignore POP2 JMP2r
 
 (
@@ -257,6 +260,11 @@
 
 (
 @|Macros )
+
+@macros/<new> ( name* -- name* )
+	DUP2 /find INC2 ORA ?{
+		DUP2 syms/find INC2 ORA ?{ macros/<push-word> !<set-macro> } }
+	POP2 ;dict/duplicate ;dict/Macro !<set-error-token>
 
 @macros/find ( name* -- <addr>* )
 	STH2
@@ -284,6 +292,20 @@
 (
 @|Syms )
 
+@syms/<new> ( name* -- )
+	DUP2 macros/find INC2 ORA ?&duplicate
+	DUP2 /find INC2k ORA ?{
+		( alloc ) POP2 .SymType/declared rom/get-head !/<push> }
+	( | name* sym* -- )
+	INC2k INC2 LDA .SymType/declared AND ?{
+		( addr* ) rom/get-head OVR2 STA2
+		( type ) INC2 INC2 LDAk .SymType/declared ORA ROT ROT STA
+		( name* ) POP2 JMP2r }
+	POP2
+	&duplicate ( name* -- )
+	POP2
+	( ! ) ;dict/duplicate ;dict/Symbol !<set-error-token>
+
 @syms/find ( name* -- <addr>* )
 	STH2
 	;&ptr LDA2 ;&mem
@@ -298,20 +320,6 @@
 		( null* -> ptr* ) POP2 ,&ptr LDR2
 		( alloc ) OVR2 .SymType/used #ffff /<push> }
 	NIP2 JMP2r
-
-@syms/<new> ( name* -- )
-	DUP2 macros/find INC2 ORA ?&duplicate
-	DUP2 /find INC2k ORA ?{
-		( alloc ) POP2 .SymType/declared rom/get-head !/<push> }
-	( | name* sym* -- )
-	INC2k INC2 LDA .SymType/declared AND ?{
-		( addr* ) rom/get-head OVR2 STA2
-		( type ) INC2 INC2 LDAk .SymType/declared ORA ROT ROT STA
-		( name* ) POP2 JMP2r }
-	POP2
-	&duplicate ( name* -- )
-	POP2
-	( ! ) ;dict/duplicate ;dict/Symbol !<set-error-token>
 
 @syms/<push> ( name* type addr* -- )
 	( hb ) SWP /<push-byte>
@@ -400,7 +408,7 @@
 	POP2 POP2 JMP2r
 
 @refs/<resolve> ( addr* -- addr* )
-	DUP2 DUP2 #0004 ADD2 LDA
+	DUP2k #0004 ADD2 LDA
 	( | handlers )
 	DUP .RefType/ab EQU ?/<set-ab>
 	DUP .RefType/as EQU ?/<set-as>
@@ -647,6 +655,7 @@
 	&Number "Number $1
 	&Writing "Writing $1
 	&Macros "Macros $1
+	&Macro "Macro $1
 	&Symbols "Symbols $1
 	&References "References $1
 	&exceeded "exceeded $1

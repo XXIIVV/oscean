@@ -1,4 +1,6 @@
-( cat input.tal | uxncli drifloon.rom > output.rom )
+( cat input.tal
+| uxncli drifloon.rom >
+	output.rom )
 
 |00 @System &vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
 |10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
@@ -29,12 +31,12 @@
 	( +length ) [ LIT2 &length $2 ]
 	( +labels ) syms/<summary>
 	;dict/assembled <pstr>
-	;rom/length LDA2 #00ff SUB2 <pdec>
+	;rom/length LDA2 #0100 SUB2 <pdec>
 	;dict/bytes <pstr>
 	( -labels ) <pdec>
 	;dict/labels <pstr>
 	( | output )
-	( -length ) ;rom/mem SWP2 ADD2 ;rom/output
+	( -length ) ;rom/mem ADD2 ;rom/output
 	&>l ( -- )
 		LDAk #18 DEO
 		INC2 GTH2k ?&>l
@@ -59,7 +61,7 @@
 	( name ) "Drifloon 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "18 20 "Jan 20 "2025 $2
+	( date ) "1 20 "Mar 20 "2025 $2
 
 ( Core )
 
@@ -135,9 +137,9 @@
 	LDZk runes/find INC2k ORA ?{
 		POP2
 		( hex ) is-hex ?rom/<write-rawhex>
-		( opc ) opcodes/find INC ?rom/<write-opcode>
 		( mac ) DUP2 macros/find INC2k ORA ?rom/<write-macro>
-		( imm ) POP2 !lib/litjsi }
+		( opc ) POP2 opcodes/find INC ?rom/<write-opcode>
+		( imm ) !lib/litjsi }
 	INC2 LDA2 JMP2
 
 @<set-comment> ( -- )
@@ -186,7 +188,7 @@
 	&rawstr INC2 !rom/<write-str>
 	&lambda POP2 !lambda/pop
 	&coment POP2 !<set-comment>
-	&macros INC2 macros/<push-word> !<set-macro>
+	&macros INC2 !macros/<new>
 	&ignore POP2 JMP2r
 
 (
@@ -210,6 +212,11 @@
 
 (
 @|Macros )
+
+@macros/<new> ( name* -- name* )
+	DUP2 /find INC2 ORA ?{
+		DUP2 syms/find INC2 ORA ?{ macros/<push-word> !<set-macro> } }
+	POP2 ;dict/duplicate ;dict/Macro !<set-error-token>
 
 @macros/find ( name* -- <addr>* )
 	STH2
@@ -237,6 +244,20 @@
 (
 @|Syms )
 
+@syms/<new> ( name* -- )
+	DUP2 macros/find INC2 ORA ?&duplicate
+	DUP2 /find INC2k ORA ?{
+		( alloc ) POP2 .SymType/declared rom/get-head !/<push> }
+	( | name* sym* -- )
+	INC2k INC2 LDA .SymType/declared AND ?{
+		( addr* ) rom/get-head OVR2 STA2
+		( type ) INC2 INC2 LDAk .SymType/declared ORA ROT ROT STA
+		( name* ) POP2 JMP2r }
+	POP2
+	&duplicate ( name* -- )
+	POP2
+	( ! ) ;dict/duplicate ;dict/Symbol !<set-error-token>
+
 @syms/find ( name* -- <addr>* )
 	STH2
 	;&ptr LDA2 ;&mem
@@ -251,20 +272,6 @@
 		( null* -> ptr* ) POP2 ,&ptr LDR2
 		( alloc ) OVR2 .SymType/used #ffff /<push> }
 	NIP2 JMP2r
-
-@syms/<new> ( name* -- )
-	DUP2 macros/find INC2 ORA ?&duplicate
-	DUP2 /find INC2k ORA ?{
-		( alloc ) POP2 .SymType/declared rom/get-head !/<push> }
-	( | name* sym* -- )
-	INC2k INC2 LDA .SymType/declared AND ?{
-		( addr* ) rom/get-head OVR2 STA2
-		( type ) INC2 INC2 LDAk .SymType/declared ORA ROT ROT STA
-		( name* ) POP2 JMP2r }
-	POP2
-	&duplicate ( name* -- )
-	POP2
-	( ! ) ;dict/duplicate ;dict/Symbol !<set-error-token>
 
 @syms/<push> ( name* type addr* -- )
 	( hb ) SWP /<push-byte>
@@ -353,7 +360,7 @@
 	POP2 POP2 JMP2r
 
 @refs/<resolve> ( addr* -- addr* )
-	DUP2 DUP2 #0004 ADD2 LDA
+	DUP2k #0004 ADD2 LDA
 	( | handlers )
 	DUP .RefType/ab EQU ?/<set-ab>
 	DUP .RefType/as EQU ?/<set-as>
@@ -600,6 +607,7 @@
 	&Number "Number $1
 	&Writing "Writing $1
 	&Macros "Macros $1
+	&Macro "Macro $1
 	&Symbols "Symbols $1
 	&References "References $1
 	&exceeded "exceeded $1
