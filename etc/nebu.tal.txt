@@ -1055,6 +1055,12 @@
 @x32-not-nan ( x/** -> bool^ )
     #0000 NEQ2 STH #8000 NEQ2 STHr ORA JMP2r
 
+@x32-not-pos-inf ( x/** -> bool^ )
+    #ffff NEQ2 STH #7fff NEQ2 STHr ORA JMP2r
+
+@x32-not-neg-inf ( x/** -> bool^ )
+    #0001 NEQ2 STH #8000 NEQ2 STHr ORA JMP2r
+
 @x32-from-u8 ( x^ -> x/** )
     #00 SWP ( >> )
 @x32-from-u16 ( x* -> x/** )
@@ -1111,9 +1117,6 @@
 @x32-gteq ( x/** y/** -> bool^ )
     x32-prepare-cmp NEQk ?{ POP2 !u32-gteq } GTH STH POP8 STHr JMP2r
 
-( TODO: support saturation at +/- infinity )
-( TODO: support signed operations )
-
 @x32-add ( x/** y/** -> z/** )
     STH4 OVR2 #8000 AND2           ( x** xs* [ylo* yhi*] )
     STH2kr #8000 AND2              ( x** xs* ys* [ylo* yhi*] )
@@ -1134,6 +1137,8 @@
 
 @x32-mul ( x/** y/** -> z/** )
     ;x32-mul-unsigned !x32-signed-op
+
+( TODO: support saturation at +/- infinity )
 
 ( [x*y]/1000 = floor[x/1000] + [[x%1000]*y]/1000 )
 @x32-mul-unsigned ( x/** y/** -> z/** )
@@ -1184,8 +1189,24 @@
     LIT "a STH2kr JSR2
     LIT "n STH2r JMP2
 
+@x32-draw-pos-inf ( x/** draw-char* -> )
+    STH2 POP2 POP2
+    LIT "+ STH2kr JSR2
+    LIT "i STH2kr JSR2
+    LIT "n STH2kr JSR2
+    LIT "f STH2r JMP2
+
+@x32-draw-neg-inf ( x/** draw-char* -> )
+    STH2 POP2 POP2
+    LIT "- STH2kr JSR2
+    LIT "i STH2kr JSR2
+    LIT "n STH2kr JSR2
+    LIT "f STH2r JMP2
+
 @x32-draw ( x/** draw-char* -> )
     STH2 DUP4 x32-not-nan ?{ STH2r !x32-draw-nan }
+    DUP4 x32-not-pos-inf ?{ STH2r !x32-draw-pos-inf }
+    DUP4 x32-not-neg-inf ?{ STH2r !x32-draw-neg-inf }
     OVR2 #8000 LTH2 ?{
         LIT "- STH2kr JSR2
         u32-negate
@@ -1211,9 +1232,25 @@
     &unroll                      ( [... x0^] )
         STHr                     ( x0^ [...] )
     &uloop                       ( x^ [... z^] )
-        STHr LIT2 [ &f $2 ] JSR2 ( x^ [...] ; call f[z] )
+        STHkr LIT ". NEQ ?&udraw ( x^ [... z^] ; are we at the period yet? )
+    &trim                        ( x^ [c^ b^ a^ "."] ; how much to print? )
+        OVR2r STH2r              ( x^ c^ b^ [c^ b^ a^ "."] )
+        SWP LIT "0 NEQ ?&trim-0  ( x^ b^ [c^ b^ a^ "."] ; is c zero? )
+        LIT "0 NEQ ?&trim-1      ( x^ [c^ b^ a^ "."] ; is b zero? )
+        OVRr STHr                ( x^ a^ [c^ b^ a^ "."] )
+        LIT "0 NEQ ?&trim-2      ( x^ [c^ b^ a^ "."] ; is a zero? )
+        POP POP2r POP2r JMP2r    ( ; all zeros, we're done )
+    &trim-2                      ( x^ [c^ b^ a^ "."] ; remove c and b )
+        #02 SUB NIP2r !&udraw    ( x-2^ [a^ "."] )
+    &trim-1                      ( x^ [c^ b^ a^ "."] ; remove c )
+        #01 SUB STH2r NIPr STH2  ( x-1^ [b^ a^ "."] )
+        !&udraw                  ( x-1^ [b^ a^ "."] )
+    &trim-0                      ( x^ b^ [c^ b^ a^ "."] ; fix stack )
+        POP                      ( x^ [c^ b^ a^ "."] )
+    &udraw                       ( x^ [... z^] )
+        STHr LIT2 [ &f $2 ] JSR2 ( x^ [... z^] ; call f[z] )
         #01 SUB DUP ?&uloop      ( x-1^ [...] )
-    POP JMP2r                    ( )
+    POP JMP2r                ( )
 
 ( returns nan [8000 0000] on error )
 @x32-parse ( pos* -> x/** )
@@ -1270,6 +1307,7 @@
     &error1                            ( pos* [wlo* whi*] )
         POP4r                          ( pos* )
     &error0 POP2 #8000 #0000 JMP2r     ( 8000 0000 )
+
 
 
 ( math32.tal                                                      )
