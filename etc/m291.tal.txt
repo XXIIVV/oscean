@@ -92,8 +92,7 @@
 	.Mouse/scrolly-lb DEI DUP ?&scroll
 	POP
 	( | cursor )
-	#c1 ;touch-chr/down ;touch-chr .Mouse/state DEI ?{ SWP2 }
-	POP2 cursor/<update>
+	cursor/<update>
 	( | route events )
 	.Mouse/y DEI2
 	( > ) [ LIT2 00 -playing ] LDZ EQU ?{ DUP2 #0098 LTH2 ?&player }
@@ -354,7 +353,7 @@
 
 @<y-id> ( y* -- id )
 	[ LIT2 00 -playing ] LDZ EQU ?{ #0080 SUB2 }
-	#0018 SUB2 #04 SFT2 NIP #17 min .selection/scroll LDZ ADD JMP2r
+	#001c SUB2 #04 SFT2 NIP #17 min .selection/scroll LDZ ADD JMP2r
 
 @<refresh-dir> ( -- )
 	;path/buf .File/name DEO2
@@ -869,8 +868,7 @@
 	[ LIT2 00 -Mouse/state ] DEO }
 
 @header/on-mouse ( -> )
-	#c1 ;touch-chr/down ;touch-chr .Mouse/state DEI ?{ SWP2 }
-	POP2 cursor/<update>
+	cursor/<update>
 	[ LIT2 &last $1 -Mouse/state ] DEI
 	( | handlers )
 	DUP2 #0002 NEQ2 ?{ window/toggle-shade Mouse/release }
@@ -917,19 +915,20 @@
 	;on-mouse-body .Mouse/vector DEO2
 	JMP2r
 
-@cursor/<update> ( color addr* -- )
-	;fill-icn .Screen/addr DEO2
-	#40 /<draw>
-	/<refocus>
-	.Screen/addr DEO2
+@cursor/<update> ( -- )
+	[ LIT2 12 -Screen/auto ] DEO
+	#40 ;fill-icn /<draw>
+	[ LIT2 16 -Screen/auto ] DEO
+	#c1 ;&down-chr .Mouse/state DEI ?{ POP2 ;&up-chr }
 	.Mouse/x DEI2 ,&x STR2
 	.Mouse/y DEI2 ,&y STR2
+	/<refocus>
 	( >> )
 
-@cursor/<draw> ( color -- )
-	[ LIT2 16 -Screen/auto ] DEO
-	[ LIT2 &x $2 ] .Screen/x DEO2
-	[ LIT2 &y $2 ] .Screen/y DEO2
+@cursor/<draw> ( color addr* -- )
+	.Screen/addr DEO2
+	[ LIT2 &x $2 ] #0004 SUB2 .Screen/x DEO2
+	[ LIT2 &y $2 ] #0004 SUB2 .Screen/y DEO2
 	.Screen/sprite DEOk DEO
 	JMP2r
 
@@ -1202,12 +1201,12 @@
 	0000 00ff 84a4 9580 f180 95a4 84ff 0000
 	0000 00ef 20af 202f e02f 20af 20ef 0000 ]
 
-@touch-chr [
+@cursor/up-chr [
 	0000 0000 0814 1417 0000 0000 0008 0808
 	0000 0000 0000 00c0 0000 0000 0000 0000
 	1010 2010 1008 0700 0f0f 1f0f 0f07 0000
 	2010 1010 2020 c000 c0e0 e0e0 c0c0 0000 ]
-	&down [
+@cursor/down-chr [
 	0000 0000 0000 0817 0000 0000 0000 0008
 	0000 0000 0000 00c0 0000 0000 0000 0000
 	1010 2010 1008 0700 0f0f 1f0f 0f07 0000

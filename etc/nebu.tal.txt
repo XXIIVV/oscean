@@ -294,7 +294,7 @@
 @|grid )
 
 @grid/on-mouse ( -> )
-	#41 ;mouse-icn cursor/<update>
+	cursor/<update>
 	( | scroll )
 	.Mouse/sy-lb DEI DUP ?&on-scroll
 	POP
@@ -580,8 +580,7 @@
 	POP2 POP2 STHr !x32-from-u8
 
 @calc/is-num ( val** -- val** f )
-	OVR2 #8000 NEQ2 ?{
-		ORAk ?{ #00 JMP2r } }
+	OVR2 #8000 NEQ2 ?{ ORAk ?{ #00 JMP2r } }
 	#01 JMP2r
 
 @calc/run-op ( acc** val** c -- res** )
@@ -763,7 +762,7 @@
 	[ LIT2 00 -Mouse/state ] DEO }
 
 @header/on-mouse ( -> )
-	#41 ;mouse-icn cursor/<update>
+	cursor/<update>
 	[ LIT2 &last $1 -Mouse/state ] DEI
 	( | handlers )
 	DUP2 #0002 NEQ2 ?{ window/toggle-shade Mouse/release }
@@ -822,20 +821,21 @@
 	;grid/on-mouse .Mouse/vector DEO2
 	JMP2r
 
-@cursor/<update> ( color addr* -- )
-	[ LIT2 15 -Screen/auto ] DEO
-	;fill-icn .Screen/addr DEO2
-	#40 /<draw>
-	/<refocus>
+@cursor/<update> ( -- )
+	[ LIT2 12 -Screen/auto ] DEO
+	#40 ;fill-icn /<draw>
+	[ LIT2 16 -Screen/auto ] DEO
+	#c1 ;&down-chr .Mouse/state DEI ?{ POP2 ;&up-chr }
 	.Mouse/x DEI2 ,&x STR2
 	.Mouse/y DEI2 ,&y STR2
-	.Screen/addr DEO2
+	/<refocus>
 	( >> )
 
-@cursor/<draw> ( color -- )
-	[ LIT2 &x $2 ] .Screen/x DEO2
-	[ LIT2 &y $2 ] .Screen/y DEO2
-	.Screen/sprite DEO
+@cursor/<draw> ( color addr* -- )
+	.Screen/addr DEO2
+	[ LIT2 &x $2 ] #0004 SUB2 .Screen/x DEO2
+	[ LIT2 &y $2 ] #0004 SUB2 .Screen/y DEO2
+	.Screen/sprite DEOk DEO
 	JMP2r
 
 (
@@ -848,14 +848,9 @@
 	JMP2r
 
 @window/toggle-shade ( -- )
-	#0011 .Screen/height DEI2 EQU2 ?/expand
-	( >> )
-
-@window/shade ( -- )
-	#0011 .Screen/height DEO2
-	#00 !header/<draw>
-
-@window/expand ( -- )
+	#0011 .Screen/height DEI2 EQU2 ?{
+		#0011 .Screen/height DEO2
+		#00 !header/<draw> }
 	[ LIT2 &height $2 ] .Screen/height DEO2
 	#00 header/<draw> !grid/<draw>
 
@@ -1614,8 +1609,6 @@
 @diag-icn [ 1122 4488 1122 4488 1122 4488 1122 4488 ]
 @dotted-icn [ 8800 2200 8800 2200 8800 2200 8800 2200 ]
 @arrow-icn [ 0000 0000 80c0 e0f0 e0c0 8000 0000 0000 ]
-
-@mouse-icn [ 80c0 e0f0 f8fc feff f8d8 8c0c 0606 0000 ]
 @line-icn [ aa00 0000 0000 0000 0000 0000 0000 0000 ]
 @check-icn [ aa55 aa55 aa55 aa55 aa55 aa55 aa55 aa55 ]
 
@@ -1629,6 +1622,17 @@
 	0000 00ef 202f 202f 202f 202f 20ef 0000
 	0000 00ff 84a4 9580 f180 95a4 84ff 0000
 	0000 00ef 20af 202f e02f 20af 20ef 0000 ]
+
+@cursor/up-chr [
+	0000 0000 0814 1417 0000 0000 0008 0808
+	0000 0000 0000 00c0 0000 0000 0000 0000
+	1010 2010 1008 0700 0f0f 1f0f 0f07 0000
+	2010 1010 2020 c000 c0e0 e0e0 c0c0 0000 ]
+@cursor/down-chr [
+	0000 0000 0000 0817 0000 0000 0000 0008
+	0000 0000 0000 00c0 0000 0000 0000 0000
+	1010 2010 1008 0700 0f0f 1f0f 0f07 0000
+	2010 1010 2020 c000 c0e0 e0e0 c0c0 0000 ]
 
 @frame-icns [
 	ff80 8080 8080 8080 8080 8080 8080 8080

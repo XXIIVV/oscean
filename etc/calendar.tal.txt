@@ -50,14 +50,19 @@
 @|vectors )
 
 @on-mouse ( -> )
-	#41 ;mouse-icn cursor/<update>
-	.Mouse/state DEI ?{ BRK }
+	cursor/<update>
+	[ LIT2 &last $1 -Mouse/state ] DEI
+	( | handlers )
+	DUP2 #0001 NEQ2 ?{ /down }
+	,&last STR
+	POP BRK
+
+@on-mouse/down ( -- )
 	.Mouse/x DEI2 #0008 SUB2 DUP2 #0230 GTH2 ?{
 		.Mouse/y DEI2 #0030 SUB2 DUP2 #00f0 GTH2 ?{
-			OVR2 #0050 DIV2 OVR2 ;CELLHEIGHT DIV2 NIP ROT POP select/<pos>
-			[ LIT2 00 -Mouse/state ] DEO }
+			OVR2 #0050 DIV2 OVR2 ;CELLHEIGHT DIV2 NIP ROT POP select/<pos> }
 		POP2 }
-	POP2 BRK
+	POP2 JMP2r
 
 @on-button ( -> )
 	.Controller/button DEI2
@@ -204,33 +209,31 @@
 	;on-mouse .Mouse/vector DEO2
 	JMP2r
 
-@cursor/<update> ( color addr* -- )
-	[ LIT2 15 -Screen/auto ] DEO
-	;fill-icn .Screen/addr DEO2
-	#40 /<draw>
-	/<refocus>
+@cursor/<update> ( -- )
+	[ LIT2 12 -Screen/auto ] DEO
+	#40 ;fill-icn /<draw>
+	[ LIT2 16 -Screen/auto ] DEO
+	#c1 ;&down-chr .Mouse/state DEI ?{ POP2 ;&up-chr }
 	.Mouse/x DEI2 ,&x STR2
 	.Mouse/y DEI2 ,&y STR2
-	.Screen/addr DEO2
+	/<refocus>
 	( >> )
 
-@cursor/<draw> ( color -- )
-	[ LIT2 &x $2 ] .Screen/x DEO2
-	[ LIT2 &y $2 ] .Screen/y DEO2
-	.Screen/sprite DEO
+@cursor/<draw> ( color addr* -- )
+	.Screen/addr DEO2
+	[ LIT2 &x $2 ] #0004 SUB2 .Screen/x DEO2
+	[ LIT2 &y $2 ] #0004 SUB2 .Screen/y DEO2
+	.Screen/sprite DEOk DEO
 	JMP2r
 
 (
 @|header )
 
-%Mouse/release ( -- ) {
-	[ LIT2 00 -Mouse/state ] DEO }
-
 @header/on-mouse ( -> )
-	#41 ;mouse-icn cursor/<update>
+	cursor/<update>
 	[ LIT2 &last $1 -Mouse/state ] DEI
 	( | handlers )
-	DUP2 #0002 NEQ2 ?{ window/toggle-shade Mouse/release }
+	DUP2 #0002 NEQ2 ?{ window/toggle-shade }
 	DUP2 #0001 NEQ2 ?{ /outside-quit ?{ /<press-quit> } }
 	DUP2 #0100 NEQ2 ?{ /<release-quit> }
 	,&last STR
@@ -290,9 +293,8 @@
 @|corner )
 
 @corner/on-mouse ( -> )
-	#41 ;mouse-icn cursor/<update>
+	cursor/<update>
 	.Mouse/state DEI ?{ BRK }
-	[ LIT2 00 -Mouse/state ] DEO
 	( y ) .Mouse/y DEI2 .Screen/height DEI2 #001c SUB2 SUB2 NIP
 	( x ) .Mouse/lx DEI GTH ?{ #01 /<set-state>
 		select/<next-month>
@@ -392,14 +394,8 @@
 	POP [ LIT2 00 -year ] LDZ2 ROT !/<month>
 
 @select/<pos> ( x y -- )
-	( | on mouse2 )
-	[ LIT2 01 -Mouse/state ] DEI EQU ?{
-		#07 MUL ADD .day STZ !input/<start> }
-	( | default )
-	DUP2 [ LIT2 &last $2 ] NEQ2 ?{ POP2 JMP2r }
 	#00 corner/<set-state>
-	DUP2 #07 MUL ADD .day STZ
-	,&last STR2 !<draw-page>
+	#07 MUL ADD .day STZ !<draw-page>
 
 (
 @|events )
@@ -626,7 +622,7 @@
 @|theme )
 
 @theme/<reset> ( -- )
-	#f0f0 #f0f0 #f0f0
+	#f0a8 #f0ec #f0b9
 	( >> )
 
 @theme/<set> ( r* g* b* -- )
@@ -850,8 +846,16 @@
 	0000 00ff 84a4 9580 f180 95a4 84ff 0000
 	0000 00ef 20af 202f e02f 20af 20ef 0000 ]
 
-@mouse-icn [
-	80c0 e0f0 f8fc feff f8d8 8c0c 0606 0000 ]
+@cursor/up-chr [
+	0000 0000 0814 1417 0000 0000 0008 0808
+	0000 0000 0000 00c0 0000 0000 0000 0000
+	1010 2010 1008 0700 0f0f 1f0f 0f07 0000
+	2010 1010 2020 c000 c0e0 e0e0 c0c0 0000 ]
+@cursor/down-chr [
+	0000 0000 0000 0817 0000 0000 0000 0008
+	0000 0000 0000 00c0 0000 0000 0000 0000
+	1010 2010 1008 0700 0f0f 1f0f 0f07 0000
+	2010 1010 2020 c000 c0e0 e0e0 c0c0 0000 ]
 
 @corner/default-chr [
 0000 00ff 4020 1008 0000 0000 3f1f 0f07
