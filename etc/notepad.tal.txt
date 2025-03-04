@@ -35,7 +35,7 @@
 	( name ) "Note 20 "Pad 0a
 	( details ) "Original 20 "by 20 "Donn 20 "Denman 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "17 20 "Feb 20 "2025 $1
+	( date ) "3 20 "Mar 20 "2025 $1
 	( fields ) 01
 	( > icon ) 83 =appicon
 
@@ -459,24 +459,26 @@
 	POP POP2r JMP2r
 
 @<draw-header-title> ( -- )
-	#0030 .Screen/x DEO2
+	.Screen/width DEI2 #01 SFT2 .Screen/x DEO2
 	#0001 .Screen/y DEO2
-	[ LIT2 15 -Screen/auto ] DEO
 	#09 ;chicago/color STA
-	#20 chicago/<draw-char>
-	#20 chicago/<draw-char>
-	[ LIT2 00 -DateTime/dotw ] DEI #20 SFT ;dict/dotw-txt ADD2 chicago/<draw-str>
-	#20 chicago/<draw-char>
-	[ LIT2 00 -DateTime/day ] DEI #09 chicago/<draw-dec>
-	#20 chicago/<draw-char>
-	[ LIT2 00 -DateTime/month ] DEI #20 SFT ;dict/months-txt ADD2 chicago/<draw-str>
-	#20 chicago/<draw-char>
-	.DateTime/year DEI2 #09 !chicago/<draw-dec>
+	;dict/notepad-txt !chicago/<draw-center>
 
 (
 @|chicago )
 
-@chicago/<draw-str> ( str* -- )
+@chicago/get-str-width ( text* -- width* )
+	[ LITr 00 ]
+	&>ww ( -- )
+		LDAk #20 SUB #00 SWP ;&widths ADD2 LDA STH
+		( > ) ADDr INC2 LDAk ?&>ww
+	POP2 #00 STHr JMP2r
+
+@chicago/<draw-center> ( text* color -- )
+	.Screen/x DEI2 OVR2 /get-str-width #01 SFT2 SUB2 .Screen/x DEO2
+	( >> )
+
+@chicago/<draw-left> ( str* -- )
 	[ LIT2 15 -Screen/auto ] DEO
 	&>w ( -- )
 		LDAk ?{ POP2 JMP2r }
@@ -490,18 +492,6 @@
 	( draw ) [ LIT2 &color 01 -Screen/sprite ] DEOk DEO
 	.Screen/x DEO2
 	JMP2r
-
-@chicago/<draw-dec> ( short* color -- )
-	[ LIT2 15 -Screen/auto ] DEO
-	,&color STR
-	#000a SWP2 [ LITr ff ]
-	&>get ( -- )
-		SWP2k DIV2k MUL2 SUB2 STH
-		POP OVR2 DIV2 ORAk ?&>get
-	POP2 POP2
-	&>put ( -- )
-		STHr INCk ?{ POP JMP2r }
-		[ LIT "0 ] ADD /<draw-char> !&>put
 
 (
 @|cursor )
@@ -536,14 +526,11 @@
 (
 @|header )
 
-%Mouse/release ( -- ) {
-	[ LIT2 00 -Mouse/state ] DEO }
-
 @header/on-mouse ( -> )
 	#41 ;mouse-icn cursor/<update>
 	[ LIT2 &last $1 -Mouse/state ] DEI
 	( | handlers )
-	DUP2 #0002 NEQ2 ?{ window/toggle-shade Mouse/release }
+	DUP2 #0002 NEQ2 ?{ window/toggle-shade }
 	DUP2 #0001 NEQ2 ?{ /outside-quit ?{ /<press-quit> } }
 	DUP2 #0100 NEQ2 ?{ /<release-quit> }
 	,&last STR
@@ -554,28 +541,36 @@
 		.Mouse/y DEI2 #0002 SUB2 #000c GTH2 ?{ #00 JMP2r } }
 	#01 JMP2r
 
+@header/<press-quit> ( -- )
+	;&button-down-icn !/<draw-button>
+
 @header/<release-quit> ( -- )
 	/outside-quit ?{ #800f DEO }
-	#00 !/<draw>
-
-@header/<press-quit> ( -- )
-	#01
 	( >> )
 
-@header/<draw> ( toggle -- )
-	#0000 .Screen/x DEO2
-	#0010 .Screen/y DEO2
-	#81e4 ;&border-chr #01 <draw-times-addr>
+@header/<draw> ( -- )
 	#0000 .Screen/x DEO2
 	#0000 .Screen/y DEO2
+	#85e4 ;&bg-chr #25 <draw-times-addr>
+	( | 1px right )
+	.Screen/x DEI2k #0001 SUB2 ROT DEO2
+	#000e .Screen/y DEO2
+	[ LIT2 a2 -Screen/pixel ] DEO
+	( | 1px left )
+	#0001 .Screen/x DEO2
+	[ LIT2 b2 -Screen/pixel ] DEO
+	( | title )
+	<draw-header-title>
+	;&button-icn
+	( >> )
+
+@header/<draw-button> ( button* -- )
+	.Screen/addr DEO2
+	#0008 .Screen/x DEO2
+	#0000 .Screen/y DEO2
 	[ LIT2 15 -Screen/auto ] DEO
-	;&left-icn .Screen/addr DEO2
-	[ LIT2 09 -Screen/sprite ] DEO
-	#00 SWP #50 SFT2 ;&close-icn ADD2 .Screen/addr DEO2
 	[ LIT2 09 -Screen/sprite ] DEOk DEO
-	#09e8 ;&middle-icn #15 <draw-times-addr>
-	;&right-icn .Screen/addr DEO2
-	[ LIT2 09 -Screen/sprite ] DEO !<draw-header-title>
+	JMP2r
 
 (
 @|corner )
@@ -611,19 +606,17 @@
 	DUP2 ,&height STR2
 	.Screen/height DEO2
 	.Screen/width DEO2
-	#00 header/<draw> !<redraw-all>
+	header/<draw> !<redraw-all>
 
 @window/<set-height> ( height* -- )
 	DUP2 ,&height STR2
 	.Screen/height DEO2
-	#00 header/<draw> !<redraw-all>
+	header/<draw> !<redraw-all>
 
 @window/toggle-shade ( -- )
-	#0011 .Screen/height DEI2 EQU2 ?{
-		#0011 .Screen/height DEO2
-		#00 !header/<draw> }
+	#0011 .Screen/height DEI2 EQU2 ?{ #0011 .Screen/height DEO2 !header/<draw> }
 	[ LIT2 &height $2 ] .Screen/height DEO2
-	#00 header/<draw> !<redraw-all>
+	header/<draw> !<redraw-all>
 
 @window/<reqresize> ( size* -- )
 	( min ) #00d0 GTH2k [ JMP SWP2 ] POP2
@@ -635,7 +628,7 @@
 @|theme )
 
 @theme/<reset> ( -- )
-	#f0f0 #f0f0 #f0f0
+	#f0a8 #f0ec #f0b9
 	( >> )
 
 @theme/<set> ( r* g* b* -- )
@@ -691,34 +684,24 @@
 
 @notepad-path ".notepad $1
 
-@dict
+@dict &notepad-txt 20 20 "Note 20 "Pad $1
 	&snarf-txt ".snarf $1
-	&dotw-txt [
-	"Sun $1 "Mon $1 "Tue $1 "Wed $1
-	"Thu $1 "Fri $1 "Sat $1 ]
-	&months-txt [
-	"Jan $1 "Feb $1 "Mar $1 "Apr $1
-	"May $1 "Jun $1 "Jul $1 "Aug $1
-	"Sep $1 "Oct $1 "Nov $1 "Dec $1 ]
 
 
 
 ( Assets )
 
 @header
-	&left-icn [
-	0000 007e 007e 007e 007e 007e 007e 0000 ]
-	&middle-icn [
-	0000 00ff 00ff 00ff 00ff 00ff 00ff 0000 ]
-	&right-icn [
-	0000 00fe 00fe 00fe 00fe 00fe 00fe 0000 ]
-	&border-chr [
+	&bg-chr [
+	0000 00ff 00ff 00ff ffff ff00 ff00 ff00
+	00ff 00ff 00ff 0000 ff00 ff00 ff00 ffff
 	00ff 0000 0000 0000 ff00 0000 0000 0000 ]
-	&close-icn [
-	0000 00ff 8080 8080 8080 8080 80ff 0000
-	0000 00ef 202f 202f 202f 202f 20ef 0000
-	0000 00ff 84a4 9580 f180 95a4 84ff 0000
-	0000 00ef 20af 202f e02f 20af 20ef 0000 ]
+	&button-icn [
+	0000 007f 4040 4040 4040 4040 407f 0000
+	0000 00f7 1017 1017 1017 1017 10f7 0000 ]
+	&button-down-icn [
+	0000 007f 4252 4a40 7840 4a52 427f 0000
+	0000 00f7 1057 9017 f017 9057 10f7 0000 ]
 
 @corner/default-chr [
 0000 00ff 4020 1008 0000 0000 3f1f 0f07

@@ -98,14 +98,12 @@
 
 @src/change ( -- )
 	.&changed LDZ ?{
-		[ LIT2 01 -&changed ] STZ
-		#00 !header/<draw> }
+		[ LIT2 01 -&changed ] STZ !header/<draw> }
 	JMP2r
 
 @src/<unchange> ( -- )
 	.&changed LDZ ?{ JMP2r }
-	[ LIT2 00 -&changed ] STZ
-	#00 !header/<draw>
+	[ LIT2 00 -&changed ] STZ !header/<draw>
 
 (
 @|cmd )
@@ -314,7 +312,7 @@
 @grid/on-down ( touch* -> )
 	POP2 /get-touch
 	( | rules )
-	DUP INC ?{ POP select/<set-col>
+	INCk ?{ POP select/<set-col>
 		BRK }
 	OVR INC ?{ NIP select/<set-row>
 		BRK }
@@ -609,7 +607,7 @@
 @cells/<new> ( -- )
 	src/<reset>
 	/<clear>
-	#00 header/<draw> !grid/<draw>
+	header/<draw> !grid/<draw>
 
 @cells/<clear> ( -- )
 	;&buf [ LIT2 00 -LINES ] #80 SFT2 !<mclr>
@@ -661,12 +659,11 @@
 	;&bufcap ;&buf
 	&>sl ( -- )
 		;&b .File/read DEO2
-		.File/success-lb DEI ?{
-			POP2 POP2 #00 header/<draw> !grid/<draw> }
+		.File/success-lb DEI ?{ POP2 POP2 header/<draw> !grid/<draw> }
 		[ LIT &b $1 ] /<push>
 		INC2 GTH2k ?&>sl
 	;dict/err-size <perr>
-	POP2 POP2 #00 header/<draw> !grid/<draw>
+	POP2 POP2 header/<draw> !grid/<draw>
 
 @cells/<push> ( c -- )
 	DUP .src/spacer LDZ EQU ?/move-x
@@ -758,14 +755,11 @@
 (
 @|header )
 
-%Mouse/release ( -- ) {
-	[ LIT2 00 -Mouse/state ] DEO }
-
 @header/on-mouse ( -> )
 	cursor/<update>
 	[ LIT2 &last $1 -Mouse/state ] DEI
 	( | handlers )
-	DUP2 #0002 NEQ2 ?{ window/toggle-shade Mouse/release }
+	DUP2 #0002 NEQ2 ?{ window/toggle-shade }
 	DUP2 #0001 NEQ2 ?{ /outside-quit ?{ /<press-quit> } }
 	DUP2 #0100 NEQ2 ?{ /<release-quit> }
 	,&last STR
@@ -776,40 +770,45 @@
 		.Mouse/y DEI2 #0002 SUB2 #000c GTH2 ?{ #00 JMP2r } }
 	#01 JMP2r
 
+@header/<press-quit> ( -- )
+	;&button-down-icn !/<draw-button>
+
 @header/<release-quit> ( -- )
 	/outside-quit ?{ #800f DEO }
-	#00 !/<draw>
-
-@header/<press-quit> ( -- )
-	#01
 	( >> )
 
-@header/<draw> ( toggle -- )
-	#0000 .Screen/x DEO2
-	#0010 .Screen/y DEO2
-	#85b8 ;&border-chr #01 <draw-times-addr>
+@header/<draw> ( -- )
 	#0000 .Screen/x DEO2
 	#0000 .Screen/y DEO2
+	#85b8 ;&bg-chr #25 <draw-times-addr>
+	( | 1px right )
+	.Screen/x DEI2k #0001 SUB2 ROT DEO2
+	#000e .Screen/y DEO2
+	[ LIT2 a2 -Screen/pixel ] DEO
+	( | 1px left )
+	#0001 .Screen/x DEO2
+	[ LIT2 b2 -Screen/pixel ] DEO
+	( | title )
 	[ LIT2 15 -Screen/auto ] DEO
-	;&left-icn .Screen/addr DEO2
-	[ LIT2 09 -Screen/sprite ] DEO
-	#00 SWP #50 SFT2 ;&close-icn ADD2 .Screen/addr DEO2
-	[ LIT2 09 -Screen/sprite ] DEOk DEO
-	#09bc ;&middle-icn #15 <draw-times-addr>
-	;&right-icn .Screen/addr DEO2
-	[ LIT2 09 -Screen/sprite ] DEO
-	( >> )
-
-@header/<draw-title> ( -- )
 	#0001 .Screen/y DEO2
 	;WIDTH #01 SFT2 .Screen/x DEO2
 	#09 ;chicago/color STA
 	.Screen/x DEI2 ;src/buf chicago/get-str-width #0008 ADD2 #01 SFT2 SUB2 .Screen/x DEO2
 	#20 chicago/<draw-char>
 	#20 chicago/<draw-char>
-	;src/buf #09 chicago/<draw-left-color>
-	.src/changed LDZ ?{ JMP2r }
-	[ LIT "* ] !chicago/<draw-char>
+	;src/buf chicago/<draw-left>
+	[ LIT2 00 -src/changed ] LDZ EQU ?{
+		[ LIT "* ] chicago/<draw-char> }
+	;&button-icn
+	( >> )
+
+@header/<draw-button> ( button* -- )
+	.Screen/addr DEO2
+	#0008 .Screen/x DEO2
+	#0000 .Screen/y DEO2
+	[ LIT2 15 -Screen/auto ] DEO
+	[ LIT2 09 -Screen/sprite ] DEOk DEO
+	JMP2r
 
 (
 @|cursor )
@@ -848,11 +847,9 @@
 	JMP2r
 
 @window/toggle-shade ( -- )
-	#0011 .Screen/height DEI2 EQU2 ?{
-		#0011 .Screen/height DEO2
-		#00 !header/<draw> }
+	#0011 .Screen/height DEI2 EQU2 ?{ #0011 .Screen/height DEO2 !header/<draw> }
 	[ LIT2 &height $2 ] .Screen/height DEO2
-	#00 header/<draw> !grid/<draw>
+	header/<draw> !grid/<draw>
 
 (
 @|theme )
@@ -968,7 +965,7 @@
 	( name ) "Nebu 0a
 	( desc ) "Spreadsheet 20 "Editor 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "2 20 "Mar 20 "2025 $2
+	( date ) "3 20 "Mar 20 "2025 $2
 
 
 
@@ -1613,15 +1610,16 @@
 @check-icn [ aa55 aa55 aa55 aa55 aa55 aa55 aa55 aa55 ]
 
 @header
-	&left-icn [ 0000 007e 007e 007e 007e 007e 007e 0000 ]
-	&middle-icn [ 0000 00ff 00ff 00ff 00ff 00ff 00ff 0000 ]
-	&right-icn [ 0000 00fe 00fe 00fe 00fe 00fe 00fe 0000 ]
-	&border-chr [ 00ff 0000 0000 0000 ff00 0000 0000 0000 ]
-	&close-icn [
-	0000 00ff 8080 8080 8080 8080 80ff 0000
-	0000 00ef 202f 202f 202f 202f 20ef 0000
-	0000 00ff 84a4 9580 f180 95a4 84ff 0000
-	0000 00ef 20af 202f e02f 20af 20ef 0000 ]
+	&bg-chr [
+	0000 00ff 00ff 00ff ffff ff00 ff00 ff00
+	00ff 00ff 00ff 0000 ff00 ff00 ff00 ffff
+	00ff 0000 0000 0000 ff00 0000 0000 0000 ]
+	&button-icn [
+	0000 007f 4040 4040 4040 4040 407f 0000
+	0000 00f7 1017 1017 1017 1017 10f7 0000 ]
+	&button-down-icn [
+	0000 007f 4252 4a40 7840 4a52 427f 0000
+	0000 00f7 1057 9017 f017 9057 10f7 0000 ]
 
 @cursor/up-chr [
 	0000 0000 0814 1417 0000 0000 0008 0808

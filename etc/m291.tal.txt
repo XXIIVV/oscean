@@ -51,7 +51,7 @@
 	( name ) "m291 0a
 	( desc ) "Audio 20 "Player 0a
 	( auth ) "By 20 "Linvega 20 "& 20 "d6 0a
-	( date ) "1 20 "Mar 20 "2025 $2
+	( date ) "3 20 "Mar 20 "2025 $2
 
 (
 @|macros )
@@ -597,15 +597,18 @@
 		.selection/scroll LDZ .lines/folders LDZ SUB ADD }
 	&>l ( -- )
 		[ LITr 05 ]
-		( | selected )
-		DUP [ LIT &sel $1 ] NEQ ?{
-			POPr [ LITr 06 ] ;fill-icn <draw-background> }
-		( | marker )
+		( | playing )
 		DUP .selection/track LDZ NEQ ?{
+			#01 <draw-background>
 			[ LIT2 15 -Screen/auto ] DEO
 			#0000 .Screen/x DEO2
 			;poke-icn .Screen/addr DEO2
-			DUPr [ LITr -Screen/sprite ] DEOr }
+			[ LIT2 00 -Screen/sprite ] DEO
+			POPr [ LITr 04 ] }
+		( | selected )
+		DUP [ LIT &sel $1 ] NEQ ?{
+			#02 <draw-background>
+			POPr [ LITr 09 ] }
 		( | normal )
 		#0008 .Screen/x DEO2
 		#00 OVR
@@ -639,7 +642,8 @@
 		[ LITr 05 ]
 		( | selected )
 		DUP [ LIT &sel $1 ] NEQ ?{
-			POPr [ LITr 06 ] ;fill-icn <draw-background> }
+			#02 <draw-background>
+			POPr [ LITr 09 ] }
 		( | gizmo )
 		.Screen/y DEI2 [ LIT2 15 -Screen/auto ] DEO
 		;WIDTH #0010 SUB2 .Screen/x DEO2
@@ -721,20 +725,6 @@
 (
 @|controls )
 
-@controls/<toggle-repeat> ( -- )
-	#00 .&repeat LDZ EQU .&repeat STZ !/<draw-repeat>
-
-@controls/<toggle-shuffle> ( -- )
-	#00 .&shuffle LDZ EQU .&shuffle STZ !/<draw-shuffle>
-
-@controls/<draw-repeat> ( -- )
-	[ LIT2 16 -Screen/auto ] DEO
-	#0040 .Screen/x DEO2
-	#0058 .Screen/y DEO2
-	[ LIT2 00 -&repeat ] LDZ #50 SFT2 ;&repeat-icn ADD2 .Screen/addr DEO2
-	[ LIT2 01 -Screen/sprite ] DEOk DEO
-	JMP2r
-
 @controls/<draw-prev> ( -- )
 	[ LIT2 16 -Screen/auto ] DEO
 	#0058 .Screen/x DEO2
@@ -765,11 +755,27 @@
 	[ LIT2 01 -Screen/sprite ] DEOk DEO
 	JMP2r
 
+@controls/<toggle-shuffle> ( -- )
+	[ LIT2 00 -&shuffle ] LDZ EQU .&shuffle STZ
+	( >> )
+
 @controls/<draw-shuffle> ( -- )
 	[ LIT2 16 -Screen/auto ] DEO
 	#00b0 .Screen/x DEO2
 	#0058 .Screen/y DEO2
 	[ LIT2 00 -&shuffle ] LDZ #50 SFT2 ;&shuffle-icn ADD2 .Screen/addr DEO2
+	[ LIT2 01 -Screen/sprite ] DEOk DEO
+	JMP2r
+
+@controls/<toggle-repeat> ( -- )
+	[ LIT2 00 -&repeat ] LDZ EQU .&repeat STZ
+	( >> )
+
+@controls/<draw-repeat> ( -- )
+	[ LIT2 16 -Screen/auto ] DEO
+	#0040 .Screen/x DEO2
+	#0058 .Screen/y DEO2
+	[ LIT2 00 -&repeat ] LDZ #50 SFT2 ;&repeat-icn ADD2 .Screen/addr DEO2
 	[ LIT2 01 -Screen/sprite ] DEOk DEO
 	JMP2r
 
@@ -817,16 +823,20 @@
 	DEOk DEO
 	JMP2r
 
-@<draw-background> ( tile* -- )
+@<draw-background> ( color -- )
+	STH
 	#0000 .Screen/x DEO2
 	.Screen/y DEI2
-	( > ) SWP2 .Screen/addr DEO2
+	( | )
+	;fill-icn .Screen/addr DEO2
 	[ LIT2 f2 -Screen/auto ] DEO
-	[ LIT2 01 -Screen/sprite ] DEOk DEOk
-	( | .. )
+	[ LITr -Screen/sprite ] DEOkr
+	DEOkr
+	( | )
 	.Screen/x DEI2 #0080 ADD2 .Screen/x DEO2
 	.Screen/y DEI2 #0010 SUB2 .Screen/y DEO2
-	DEOk DEO
+	DEOkr
+	DEOr
 	.Screen/y DEO2
 	JMP2r
 
@@ -864,14 +874,11 @@
 (
 @|header )
 
-%Mouse/release ( -- ) {
-	[ LIT2 00 -Mouse/state ] DEO }
-
 @header/on-mouse ( -> )
 	cursor/<update>
 	[ LIT2 &last $1 -Mouse/state ] DEI
 	( | handlers )
-	DUP2 #0002 NEQ2 ?{ window/toggle-shade Mouse/release }
+	DUP2 #0002 NEQ2 ?{ window/toggle-shade }
 	DUP2 #0001 NEQ2 ?{ /outside-quit ?{ /<press-quit> } }
 	DUP2 #0100 NEQ2 ?{ /<release-quit> }
 	,&last STR
@@ -882,28 +889,36 @@
 		.Mouse/y DEI2 #0002 SUB2 #000c GTH2 ?{ #00 JMP2r } }
 	#01 JMP2r
 
+@header/<press-quit> ( -- )
+	;&button-down-icn !/<draw-button>
+
 @header/<release-quit> ( -- )
 	/outside-quit ?{ #800f DEO }
-	#00 !/<draw>
-
-@header/<press-quit> ( -- )
-	#01
 	( >> )
 
-@header/<draw> ( toggle -- )
-	#0000 .Screen/x DEO2
-	#0010 .Screen/y DEO2
-	#81e0 ;&border-chr #01 <draw-times-addr>
+@header/<draw> ( -- )
 	#0000 .Screen/x DEO2
 	#0000 .Screen/y DEO2
+	#85e0 ;&bg-chr #25 <draw-times-addr>
+	( | 1px right )
+	.Screen/x DEI2k #0001 SUB2 ROT DEO2
+	#000e .Screen/y DEO2
+	[ LIT2 a2 -Screen/pixel ] DEO
+	( | 1px left )
+	#0001 .Screen/x DEO2
+	[ LIT2 b2 -Screen/pixel ] DEO
+	( | title )
+	<draw-header-title>
+	;&button-icn
+	( >> )
+
+@header/<draw-button> ( button* -- )
+	.Screen/addr DEO2
+	#0008 .Screen/x DEO2
+	#0000 .Screen/y DEO2
 	[ LIT2 15 -Screen/auto ] DEO
-	;&left-icn .Screen/addr DEO2
-	[ LIT2 09 -Screen/sprite ] DEO
-	#00 SWP #50 SFT2 ;&close-icn ADD2 .Screen/addr DEO2
 	[ LIT2 09 -Screen/sprite ] DEOk DEO
-	#09e4 ;&middle-icn #15 <draw-times-addr>
-	;&right-icn .Screen/addr DEO2
-	[ LIT2 09 -Screen/sprite ] DEO !<draw-header-title>
+	JMP2r
 
 (
 @|cursor )
@@ -1134,14 +1149,12 @@
 @window/<set-height> ( height* -- )
 	DUP2 ,&height STR2
 	.Screen/height DEO2
-	#00 header/<draw> !<redraw-all>
+	header/<draw> !<redraw-all>
 
 @window/toggle-shade ( -- )
-	#0011 .Screen/height DEI2 EQU2 ?{
-		#0011 .Screen/height DEO2
-		#00 !header/<draw> }
+	#0011 .Screen/height DEI2 EQU2 ?{ #0011 .Screen/height DEO2 !header/<draw> }
 	[ LIT2 &height $2 ] .Screen/height DEO2
-	#00 header/<draw> !<redraw-all>
+	header/<draw> !<redraw-all>
 
 (
 @|theme )
@@ -1187,19 +1200,16 @@
 ( assets )
 
 @header
-	&left-icn [
-	0000 007e 007e 007e 007e 007e 007e 0000 ]
-	&middle-icn [
-	0000 00ff 00ff 00ff 00ff 00ff 00ff 0000 ]
-	&right-icn [
-	0000 00fe 00fe 00fe 00fe 00fe 00fe 0000 ]
-	&border-chr [
+	&bg-chr [
+	0000 00ff 00ff 00ff ffff ff00 ff00 ff00
+	00ff 00ff 00ff 0000 ff00 ff00 ff00 ffff
 	00ff 0000 0000 0000 ff00 0000 0000 0000 ]
-	&close-icn [
-	0000 00ff 8080 8080 8080 8080 80ff 0000
-	0000 00ef 202f 202f 202f 202f 20ef 0000
-	0000 00ff 84a4 9580 f180 95a4 84ff 0000
-	0000 00ef 20af 202f e02f 20af 20ef 0000 ]
+	&button-icn [
+	0000 007f 4040 4040 4040 4040 407f 0000
+	0000 00f7 1017 1017 1017 1017 10f7 0000 ]
+	&button-down-icn [
+	0000 007f 4252 4a40 7840 4a52 427f 0000
+	0000 00f7 1057 9017 f017 9057 10f7 0000 ]
 
 @cursor/up-chr [
 	0000 0000 0814 1417 0000 0000 0008 0808

@@ -44,7 +44,7 @@
 	( name ) "Calendar 0a
 	( details ) "Inspired 20 "by 20 "Donn 20 "Denman 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "1 20 "Mar 20 "2025 $2
+	( date ) "3 20 "Mar 20 "2025 $2
 
 (
 @|vectors )
@@ -59,7 +59,7 @@
 
 @on-mouse/down ( -- )
 	.Mouse/x DEI2 #0008 SUB2 DUP2 #0230 GTH2 ?{
-		.Mouse/y DEI2 #0030 SUB2 DUP2 #00f0 GTH2 ?{
+		.Mouse/y DEI2 #0030 SUB2 DUP2 #011f GTH2 ?{
 			OVR2 #0050 DIV2 OVR2 ;CELLHEIGHT DIV2 NIP ROT POP select/<pos> }
 		POP2 }
 	POP2 JMP2r
@@ -244,31 +244,39 @@
 		.Mouse/y DEI2 #0002 SUB2 #000c GTH2 ?{ #00 JMP2r } }
 	#01 JMP2r
 
-@header/<release-quit> ( -- )
-	/outside-quit ?{ <quit> }
-	#00 !/<draw>
-
 @header/<press-quit> ( -- )
-	#01
+	;&button-down-icn !/<draw-button>
+
+@header/<release-quit> ( -- )
+	/outside-quit ?{ #800f DEO }
 	( >> )
 
-@header/<draw> ( toggle -- )
-	#0000 .Screen/x DEO2
-	#0010 .Screen/y DEO2
-	#81b8 ;&border-chr #01 <draw-times-addr>
+@header/<draw> ( -- )
 	#0000 .Screen/x DEO2
 	#0000 .Screen/y DEO2
-	[ LIT2 15 -Screen/auto ] DEO
-	;&left-icn .Screen/addr DEO2
-	[ LIT2 09 -Screen/sprite ] DEO
-	#00 SWP #50 SFT2 ;&close-icn ADD2 .Screen/addr DEO2
-	[ LIT2 09 -Screen/sprite ] DEOk DEO
-	#09bc ;&middle-icn #15 <draw-times-addr>
-	;&right-icn .Screen/addr DEO2
-	[ LIT2 09 -Screen/sprite ] DEO
+	#85b8 ;&bg-chr #25 <draw-times-addr>
+	( | 1px right )
+	.Screen/x DEI2k #0001 SUB2 ROT DEO2
+	#000e .Screen/y DEO2
+	[ LIT2 a2 -Screen/pixel ] DEO
+	( | 1px left )
+	#0001 .Screen/x DEO2
+	[ LIT2 b2 -Screen/pixel ] DEO
+	( | title )
+	/<draw-title>
+	;&button-icn
 	( >> )
 
+@header/<draw-button> ( button* -- )
+	.Screen/addr DEO2
+	#0008 .Screen/x DEO2
+	#0000 .Screen/y DEO2
+	[ LIT2 15 -Screen/auto ] DEO
+	[ LIT2 09 -Screen/sprite ] DEOk DEO
+	JMP2r
+
 @header/<draw-title> ( -- )
+	[ LIT2 15 -Screen/auto ] DEO
 	#0001 .Screen/y DEO2
 	#09 ;chicago/color STA
 	.month LDZ .DateTime/month DEI EQU ?{
@@ -377,7 +385,7 @@
 	( 000x ) #000a DIV2k MUL2 SUB2 to-dec .&000x STZ
 	POP
 	( | load )
-	;&filepath events/import #00 header/<draw> !<draw-page>
+	;&filepath events/import header/<draw> !<draw-page>
 
 @select/<prev-month> ( -- )
 	[ LIT2 ff -day ] STZ
@@ -612,11 +620,9 @@
 	JMP2r
 
 @window/toggle-shade ( -- )
-	#0011 .Screen/height DEI2 EQU2 ?{
-		#0011 .Screen/height DEO2
-		#00 !header/<draw> }
+	#0011 .Screen/height DEI2 EQU2 ?{ #0011 .Screen/height DEO2 !header/<draw> }
 	[ LIT2 &height $2 ] .Screen/height DEO2
-	#00 header/<draw> !<redraw-all>
+	header/<draw> !<redraw-all>
 
 (
 @|theme )
@@ -819,7 +825,7 @@
 @fill-icn [
 	ffff ffff ffff ffff ffff ffff ffff ffff ]
 @diag-icn [ 1122 4488 1122 4488 1122 4488 1122 4488 ]
-@underline-icn 
+@underline-icn
 	[ 0000 0000 0000 0000 0000 0000 0000 00aa ]
 @hash-icn [ 8800 2200 8800 2200 ]
 @line-ver-icn [ 8080 8080 8080 8080 ]
@@ -832,19 +838,16 @@
 	0000 0000 0000 0000 0000 0000 0000 0000 ]
 
 @header
-	&left-icn [
-	0000 007e 007e 007e 007e 007e 007e 0000 ]
-	&middle-icn [
-	0000 00ff 00ff 00ff 00ff 00ff 00ff 0000 ]
-	&right-icn [
-	0000 00fe 00fe 00fe 00fe 00fe 00fe 0000 ]
-	&border-chr [ 
+	&bg-chr [
+	0000 00ff 00ff 00ff ffff ff00 ff00 ff00
+	00ff 00ff 00ff 0000 ff00 ff00 ff00 ffff
 	00ff 0000 0000 0000 ff00 0000 0000 0000 ]
-	&close-icn [
-	0000 00ff 8080 8080 8080 8080 80ff 0000
-	0000 00ef 202f 202f 202f 202f 20ef 0000
-	0000 00ff 84a4 9580 f180 95a4 84ff 0000
-	0000 00ef 20af 202f e02f 20af 20ef 0000 ]
+	&button-icn [
+	0000 007f 4040 4040 4040 4040 407f 0000
+	0000 00f7 1017 1017 1017 1017 10f7 0000 ]
+	&button-down-icn [
+	0000 007f 4252 4a40 7840 4a52 427f 0000
+	0000 00f7 1057 9017 f017 9057 10f7 0000 ]
 
 @cursor/up-chr [
 	0000 0000 0814 1417 0000 0000 0008 0808
