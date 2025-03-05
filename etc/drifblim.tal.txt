@@ -87,13 +87,12 @@
 	[ LIT2 80 -System/state ] DEO
 	JMP2r
 
-@runes/db [
+@runes/lut [
 	"| =lib/padabs "$ =lib/padrel "@ =lib/toplab "& =lib/sublab
 	"% =lib/macros "( =lib/coment ", =lib/litrel "_ =lib/rawrel
 	". =lib/litzep "- =lib/rawzep "; =lib/litabs "= =lib/rawabs
 	"? =lib/litjci "! =lib/litjmi "# =lib/lithex "" =lib/rawstr
-	"} =lib/lambda "~ =lib/inctal 5b =lib/ignore 5d =lib/ignore ] 
-	&db-end
+	"} =lib/lambda "~ =lib/inctal 5b =lib/ignore 5d =lib/ignore ] $1
 
 @dict/usage "usage: 20 "drifblim.rom 20 "in.tal 20 "out.rom 0a $1
 
@@ -103,7 +102,7 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "4 20 "Mar 20 "2025 $2
+	( date ) "5 20 "Mar 20 "2025 $2
 
 
 
@@ -501,7 +500,7 @@
 	POP2 JMP2r
 
 @rom/<write-opcode> ( str* opc -- )
-	#63 SWP SUB #03 DIV #1f AND STH
+	#1f AND STH
 	LDA2k [ LIT2 "LI ] EQU2 #70 SFT STH
 	ORAr #0003 ADD2
 	&>w ( -- )
@@ -513,7 +512,7 @@
 	POP2 STHr !/<write-byte>
 
 @rom/<write-lithex> ( str* -- )
-	INCk INC LDZ #00 NEQ #50 SFT #80 ORA /<write-byte>
+	INC2k INC LDZ NEQ #50 SFT #80 ORA /<write-byte>
 	( >> )
 
 @rom/<write-rawhex> ( str* -- )
@@ -585,6 +584,10 @@
 			LDAk LDAkr STHr NEQ ?{ INC2 INC2r !&>l } }
 	LDA #21 LTH LDAr STHr #21 LTH AND JMP2r
 
+@scmp3 ( a* b* -- f )
+	LDA2k ROT2 LDA2k ROT2 EQU2 STH
+	INC2 LDA2 SWP2 INC2 LDA2 EQU2 STHr AND JMP2r
+
 @<pstr> ( str* -- )
 	LDAk #19 DEO
 	INC2 & LDAk ?<pstr>
@@ -603,31 +606,29 @@
 (
 @|Assets )
 
-@opcodes/find ( str* -- str* <opc> )
-	LDA2k ,&xxo STR2
-	INC2k INC2 LDA ,&oox STR
-	;&db-end ;&db
+@runes/find ( char -- <addr>* )
+	STH
+	;&lut
 	&>l ( -- )
-		LDA2k [ LIT2 &xxo $2 ] NEQ2 ?{
-			INC2k INC2 LDA [ LIT &oox $1 ] NEQ ?{ SUB2 NIP JMP2r } }
-		#0003 ADD2 GTH2k ?&>l
-	POP2 POP2 #ff JMP2r
+		LDAk STHkr EQU ?{
+			#0003 ADD2 LDAk ?&>l
+		POP2 #ffff }
+	POPr JMP2r
 
-@opcodes/db [
+@opcodes/find ( str* -- str* <opc> )
+	[ LITr 00 ] ;&lut
+	&>l ( -- )
+		SWP2k scmp3 ?{
+			INCr #0003 ADD2 LDAk ?&>l
+		POPr [ LITr ff ] }
+	POP2 STHr JMP2r
+
+@opcodes/lut [
 	"LIT "INC "POP "NIP "SWP "ROT "DUP "OVR
 	"EQU "NEQ "GTH "LTH "JMP "JCN "JSR "STH
 	"LDZ "STZ "LDR "STR "LDA "STA "DEI "DEO
 	"ADD "SUB "MUL "DIV "AND "ORA "EOR "SFT
-	"BRK ] &db-end
-
-@runes/find ( char -- <addr>* )
-	STH
-	;&db-end ;&db
-	&>l ( -- )
-		LDAk STHkr EQU ?{
-			#0003 ADD2 GTH2k ?&>l
-		POP2 #ffff }
-	NIP2 POPr JMP2r
+	"BRK ] $1
 
 @dict
 	&assembled "Assembled 20 $1 &in 20 "in 20 $1 &bytes 20 "bytes( $1 &labels 20 "labels). 0a $1
