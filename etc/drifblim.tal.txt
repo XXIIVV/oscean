@@ -1,8 +1,8 @@
 ( usage: drifblim.rom input.tal output.rom )
 
-|00 @System &vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
-|10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
-|a0 @File &vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
+|10 @Console/vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
+|a0 @File/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |00 @RefType &ab $1 &as $1 &rb $1 &rs $1
 |00 @SymType $40 &used $40 &declared
 
@@ -88,16 +88,12 @@
 	JMP2r
 
 @runes/db [
-	"| =lib/padabs "$ =lib/padrel
-	"@ =lib/toplab "& =lib/sublab
-	"% =lib/macros "( =lib/coment
-	", =lib/litrel "_ =lib/rawrel
-	". =lib/litzep "- =lib/rawzep
-	"; =lib/litabs "= =lib/rawabs
-	"? =lib/litjci "! =lib/litjmi
-	"# =lib/lithex "" =lib/rawstr
-	"} =lib/lambda "~ =lib/inctal
-	5b =lib/ignore 5d =lib/ignore ] &db-end
+	"| =lib/padabs "$ =lib/padrel "@ =lib/toplab "& =lib/sublab
+	"% =lib/macros "( =lib/coment ", =lib/litrel "_ =lib/rawrel
+	". =lib/litzep "- =lib/rawzep "; =lib/litabs "= =lib/rawabs
+	"? =lib/litjci "! =lib/litjmi "# =lib/lithex "" =lib/rawstr
+	"} =lib/lambda "~ =lib/inctal 5b =lib/ignore 5d =lib/ignore ] 
+	&db-end
 
 @dict/usage "usage: 20 "drifblim.rom 20 "in.tal 20 "out.rom 0a $1
 
@@ -107,7 +103,7 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "1 20 "Mar 20 "2025 $2
+	( date ) "4 20 "Mar 20 "2025 $2
 
 
 
@@ -144,7 +140,7 @@
 @token/<push-byte> ( c -- )
 	DUP #20 GTH ?{
 		POP ;&buf LDZk ?{ POP2 JMP2r }
-		[ LIT2 &mode =asm-default ] JSR2 !&<new> }
+		[ LIT2 &mode =asm-default ] JSR2 !/<new> }
 	( | append )
 	[ LIT2 00 &ptr -&buf ]
 	( overflow ) DUP .&cap EQU ?{ INCk ,&ptr STR }
@@ -186,8 +182,8 @@
 		POP2
 		( hex ) is-hex ?rom/<write-rawhex>
 		( mac ) DUP2 macros/find INC2k ORA ?rom/<write-macro>
-		( opc ) POP2 opcodes/find INC ?rom/<write-opcode>
-		( imm ) !lib/litjsi }
+		( opc ) POP2 opcodes/find INCk ?rom/<write-opcode>
+		( imm ) POP !lib/litjsi }
 	INC2 LDA2 JMP2
 
 @<set-comment> ( -- )
@@ -504,8 +500,8 @@
 	INC2 LDAk ?&<write-str>
 	POP2 JMP2r
 
-@rom/<write-opcode> ( str* -- )
-	opcodes/find #63 SWP SUB #03 DIV #1f AND STH
+@rom/<write-opcode> ( str* opc -- )
+	#63 SWP SUB #03 DIV #1f AND STH
 	LDA2k [ LIT2 "LI ] EQU2 #70 SFT STH
 	ORAr #0003 ADD2
 	&>w ( -- )
@@ -514,21 +510,16 @@
 			LDAk [ LIT "r ] NEQ ?{ LITr 40 ORAr !&r }
 			LDAk [ LIT "2 ] NEQ ?{ LITr 20 ORAr !&r }
 			( ! ) ;dict/invalid ;dict/Opcode <set-error-token> &r INC2 !&>w }
-	POP2 STHr !&<write-byte>
+	POP2 STHr !/<write-byte>
 
 @rom/<write-lithex> ( str* -- )
-	zlen
-	( LIT ) DUP #04 EQU #50 SFT #80 ORA /<write-byte> !&<write-hex>
-
-@rom/<write-rawhex> ( str* -- )
-	zlen
+	INCk INC LDZ #00 NEQ #50 SFT #80 ORA /<write-byte>
 	( >> )
 
-@rom/<write-hex> ( str* len -- )
-	DUP #02 NEQ ?{ POP shex NIP !&<write-byte> }
-	#04 NEQ ?{ shex !&<write-short> }
-	POP2
-	( ! ) ;dict/invalid ;dict/Number !<set-error-token>
+@rom/<write-rawhex> ( str* -- )
+	INCk INC LDZk ?{ POP shex NIP !/<write-byte> }
+	INC INC LDZ ?{ shex !/<write-short> }
+	POP2 ;dict/invalid ;dict/Number !<set-error-token>
 
 @rom/<write-call> ( str* opc -- )
 	/<write-byte>
@@ -586,12 +577,6 @@
 @scap ( str* -- end* )
 	INC2 & LDAk ?scap
 	INC2 JMP2r
-
-@zlen ( ztr -- ztr len )
-	DUP [ LITr 00 ]
-	&>w ( -- )
-		INCr INC LDZk ?&>w
-	POP STHr JMP2r
 
 @wcmp ( a* b* -- f )
 	STH2
