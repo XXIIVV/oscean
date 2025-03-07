@@ -63,7 +63,9 @@
 	( | key )
 	#fb AND ?{
 		DUP #1b NEQ ?{ select/<reset> }
-		DUP #08 NEQ ?{ .select/b LDZ2 cmd/<erase> }
+		DUP #08 NEQ ?{
+			.select/a LDZ2 .select/b LDZ2 EQU2 ?{ ;cmd/do-delete cmd/<apply> }
+			.select/b LDZ2 cmd/<erase> }
 		DUP #7f NEQ ?{ ;cmd/do-delete cmd/<apply> }
 		DUP #0d NEQ ?{ select/<next> }
 		DUP #20 LTH OVR #7e GTH ORA ?{ DUP .select/b LDZ2 cmd/<insert> } }
@@ -485,7 +487,7 @@
 @cell/<draw-res> ( rect* -- )
 	[ LIT2 15 -Screen/auto ] DEO
 	DUP2 #0004 ADD2 LDA [ LIT "" ] EQU ?calc/run-cat
-	calc/run ;chicago/<draw-char> !x32-draw
+	calc/run-num ;chicago/<draw-char> !x32-draw
 
 @<draw-times-addr> ( color times addr* auto -- )
 	.Screen/auto DEO
@@ -523,6 +525,44 @@
 	INC2k INC2 LDA2 STHr LTH SWP STHr LTH ORA ?{ POP2 #ffff }
 	JMP2r
 
+@calc/get-num ( x y -- res** )
+	DUP2 /parse-rect OVR2 /validate exists ?{
+		( is a rect ) POP2 cells/get-addr LDAk ?{ POP2 ;&zero-str }
+		!x32-parse }
+	NIP2
+	( >> )
+
+@calc/run-num ( rect* -- res** )
+	( opc ) DUP2 #0004 ADD2 LDA
+	( | special handlers )
+	DUP [ LIT "# ] EQU ?/run-len
+	STH
+	( opc ini acc** ) [ LITr 00 LIT2r $2 LIT2r $2 ]
+	( .. ) rect-unpack
+	&>lv ( -- )
+		OVR2
+		&>lh ( -- )
+			DUP OVR2 POP
+			( x y ) STH2r STH2r ROT2
+			( hs* ls* x y ) /get-num
+			( hs* ls* x y ini ) STHr ?{
+				( no-op ) [ LITr 01 STH2 STH2 ] POP2 POP2 !&resume }
+			STHkr /run-op [ LITr 01 STH2 STH2 ]
+			&resume ( -- )
+			INC GTHk ?&>lh
+		POP2 INC GTHk ?&>lv
+	POP2 POP2 STH2r STH2r POP2r JMP2r
+
+@calc/run-len ( rect* op -- res** )
+	POP rect-unpack [ LITr 00 ]
+	&>lvl ( -- )
+		OVR2
+		&>lhl ( -- )
+			DUP OVR2 POP /get-num x32-is-zero ?{ INCr }
+			INC GTHk ?&>lhl
+		POP2 INC GTHk ?&>lvl
+	POP2 POP2 STHr !x32-from-u8
+
 @calc/get-cat ( x y -- )
 	DUP2 /parse-rect OVR2 /validate exists ?{
 		( ) POP2 cells/get-addr !chicago/<draw-left> }
@@ -539,44 +579,6 @@
 		POP2 INC GTHk ?&>lcv
 	POP2 POP2 JMP2r
 
-@calc/get-value ( x y -- res** )
-	DUP2 /parse-rect OVR2 /validate exists ?{
-		( is a rect ) POP2 cells/get-addr LDAk ?{ POP2 ;&zero-str }
-		!x32-parse }
-	NIP2
-	( >> )
-
-@calc/run ( rect* -- res** )
-	( opc ) DUP2 #0004 ADD2 LDA
-	( | special handlers )
-	DUP [ LIT "# ] EQU ?/run-len
-	STH
-	( opc ini acc** ) [ LITr 00 LIT2r $2 LIT2r $2 ]
-	( .. ) rect-unpack
-	&>lv ( -- )
-		OVR2
-		&>lh ( -- )
-			DUP OVR2 POP
-			( x y ) STH2r STH2r ROT2
-			( hs* ls* x y ) /get-value
-			( hs* ls* x y ini ) STHr ?{
-				( no-op ) [ LITr 01 STH2 STH2 ] POP2 POP2 !&resume }
-			STHkr /run-op [ LITr 01 STH2 STH2 ]
-			&resume ( -- )
-			INC GTHk ?&>lh
-		POP2 INC GTHk ?&>lv
-	POP2 POP2 STH2r STH2r POP2r JMP2r
-
-@calc/run-len ( rect* op -- res** )
-	POP rect-unpack [ LITr 00 ]
-	&>lvl ( -- )
-		OVR2
-		&>lhl ( -- )
-			DUP OVR2 POP /get-value x32-is-zero ?{ INCr }
-			INC GTHk ?&>lhl
-		POP2 INC GTHk ?&>lvl
-	POP2 POP2 STHr !x32-from-u8
-
 @calc/is-num ( val** -- val** f )
 	OVR2 #8000 NEQ2 ?{ ORAk ?{ #00 JMP2r } }
 	#01 JMP2r
@@ -591,6 +593,10 @@
 	DUP [ LIT "- ] NEQ ?{ POP !x32-sub }
 	DUP [ LIT "* ] NEQ ?{ POP !x32-mul }
 	DUP [ LIT "/ ] NEQ ?{ POP !x32-div }
+	DUP [ LIT "= ] NEQ ?{ POP !x32-equ }
+	DUP [ LIT "! ] NEQ ?{ POP !x32-neq }
+	DUP [ LIT "> ] NEQ ?{ POP !x32-gth }
+	DUP [ LIT "< ] NEQ ?{ POP !x32-lth }
 	POP !x32-add
 
 @calc/zero-str "0 $1
@@ -957,6 +963,21 @@
 	POP2 JMP2r
 
 (
+@|fix32-ext )
+
+@x32-equ ( x/** y/** -> bool** )
+	u32-eq !x32-from-u8
+
+@x32-neq ( x/** y/** -> bool** )
+	u32-ne !x32-from-u8
+
+@x32-gth ( x/** y/** -> bool** )
+	u32-gt !x32-from-u8
+
+@x32-lth ( x/** y/** -> bool** )
+	u32-lt !x32-from-u8
+
+(
 @|assets )
 
 @dict/err-size "File 20 "size 20 "exceeded. 0a $1
@@ -965,7 +986,7 @@
 	( name ) "Nebu 0a
 	( desc ) "Spreadsheet 20 "Editor 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "3 20 "Mar 20 "2025 $2
+	( date ) "7 20 "Mar 20 "2025 $2
 
 
 
@@ -1051,6 +1072,11 @@
 @x32-non-zero ( x/** -> bool^ ) !u32-non-zero
 @x32-is-positive ( x/** -> bool^ ) POP2 #8000 LTH2 JMP2r
 @x32-is-negative ( x/** -> bool^ ) POP2 #7fff GTH2 JMP2r
+
+@x32-eq4 ( x/** y/** -> bool** ) u32-eq !x32-from-u8
+@x32-ne4 ( x/** y/** -> bool** ) u32-ne !x32-from-u8
+@x32-gt4 ( x/** y/** -> bool** ) x32-gt !x32-from-u8
+@x32-lt4 ( x/** y/** -> bool** ) x32-lt !x32-from-u8
 
 @x32-is-nan ( x/** -> bool^ )
     #0000 EQU2 STH #8000 EQU2 STHr AND JMP2r
@@ -1190,21 +1216,21 @@
     STH2 POP2 POP2
     LIT "n STH2kr JSR2
     LIT "a STH2kr JSR2
-    LIT "n STH2r JMP2
+    LIT "n JMP2r
 
 @x32-draw-pos-inf ( x/** draw-char* -> )
     STH2 POP2 POP2
     LIT "+ STH2kr JSR2
     LIT "i STH2kr JSR2
     LIT "n STH2kr JSR2
-    LIT "f STH2r JMP2
+    LIT "f JMP2r
 
 @x32-draw-neg-inf ( x/** draw-char* -> )
     STH2 POP2 POP2
     LIT "- STH2kr JSR2
     LIT "i STH2kr JSR2
     LIT "n STH2kr JSR2
-    LIT "f STH2r JMP2
+    LIT "f JMP2r
 
 @x32-draw ( x/** draw-char* -> )
     STH2 DUP4 x32-not-nan ?{ STH2r !x32-draw-nan }
@@ -1237,8 +1263,8 @@
     &uloop                       ( x^ [... z^] )
         STHkr LIT ". NEQ ?&udraw ( x^ [... z^] ; are we at the period yet? )
     &trim                        ( x^ [c^ b^ a^ "."] ; how much to print? )
-        OVR2r STH2r              ( x^ c^ b^ [c^ b^ a^ "."] )
-        SWP LIT "0 NEQ ?&trim-0  ( x^ b^ [c^ b^ a^ "."] ; is c zero? )
+        OVR2r STHr STHr          ( x^ b^ c^ [c^ b^ a^ "."] )
+        LIT "0 NEQ ?&trim-0      ( x^ b^ [c^ b^ a^ "."] ; is c zero? )
         LIT "0 NEQ ?&trim-1      ( x^ [c^ b^ a^ "."] ; is b zero? )
         OVRr STHr                ( x^ a^ [c^ b^ a^ "."] )
         LIT "0 NEQ ?&trim-2      ( x^ [c^ b^ a^ "."] ; is a zero? )

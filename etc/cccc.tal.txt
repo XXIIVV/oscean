@@ -53,21 +53,25 @@
 	.Console/read DEI listen BRK
 
 @on-button ( -> )
-	.Controller/button DEI2 [ LIT2 01 "v ] NEQ2 ?{ snarf-paste }
-	( buttons ) .Controller/button DEI DUP #10 NEQ ?{
-		( up ) .sel/dx LDZ .sel/dy LDZ #01 SUB set-sel }
+	.Controller/button DEI2
+	( | button key handlers )
+	DUP2 [ LIT2 01 "v ] NEQ2 ?{ POP2 snarf/<paste>
+		BRK }
+	( | button handlers )
+	SWP DUP #10 NEQ ?{
+		( up ) POP2 .sel/dx LDZ .sel/dy LDZ #01 SUB set-sel BRK }
 	DUP #20 NEQ ?{
-		( down ) .sel/dx LDZ .sel/dy LDZ INC set-sel }
+		( down ) POP2 .sel/dx LDZ .sel/dy LDZ INC set-sel BRK }
 	DUP #40 NEQ ?{
-		( left ) .sel/dx LDZ #01 SUB .sel/dy LDZ set-sel }
+		( left ) POP2 .sel/dx LDZ #01 SUB .sel/dy LDZ set-sel BRK }
 	DUP #80 NEQ ?{
-		( right ) .sel/dx LDZ INC .sel/dy LDZ set-sel }
-	DUP #01 NEQ ?{
-		( A ) press-sel }
+		( right ) POP2 .sel/dx LDZ INC .sel/dy LDZ set-sel BRK }
 	DUP #02 NEQ ?{
-		( B ) erase }
+		( A ) POP2 press-sel BRK }
+	DUP #04 NEQ ?{
+		( B ) POP2 erase BRK }
 	POP
-	( keys ) .Controller/key DEI listen BRK
+	( keys ) listen BRK
 
 @on-frame ( -> )
 	( delay ) [ LIT &f 00 ] INCk ,&f STR
@@ -105,9 +109,7 @@
 	POP2 .Mouse/x DEI2 #0070 SUB2 #0070 LTH2 ?{ JMP2r }
 	#0001
 	( shift ) #000f .Mouse/x DEI2 #0070 SUB2 #0005 DIV2 DUP2 #0005 DIV2 SUB2 SUB2 #40 SFT NIP
-	( mask ) SFT2 .input LDZ2 EOR2 .input STZ2
-	<draw-display>
-	JMP2r
+	( mask ) SFT2 .input LDZ2 EOR2 .input STZ2 !<draw-display>
 
 @on-mouse/touch-fncpad ( x/3 y -> )
 	#01 SFT SWP #06 MUL ADD #00 SWP DUP ADD ;fncpad ADD2 LDA2 JMP2
@@ -164,8 +166,7 @@
 	#81 ;dpad-chr !<draw-sel>
 
 @press-sel ( -- )
-	#00 .sel/d LDZ2 #30 SFT ADD #20 SFT2 ;layout ADD2 INC2 INC2 LDA2
-	( .. ) JMP2
+	[ LIT2 00 -sel/d ] LDZ2 #30 SFT ADD #20 SFT2 ;layout ADD2 INC2 INC2 LDA2 JMP2
 
 @gcd ( num* den* -- d* )
 	ORAk ?{ POP2 JMP2r }
@@ -304,8 +305,7 @@
 	LDA2k .Screen/x DEO2
 	INC2 INC2 LDA2k .Screen/y DEO2
 	INC2 INC2 LDA2k
-	( icon ) SWP2 INC2 INC2 LDA2 STHr ROT ROT
-	( .. ) JMP2
+	( icon ) SWP2 INC2 INC2 LDA2 STHr ROT ROT JMP2
 
 @play-note ( pitch -- )
 	.mode/mute LDZ ?{
@@ -555,7 +555,7 @@
 	&mixed ( num* den* -- )
 	DIV2k print-value STH2k
 	( MOD2 ) [ DIV2k MUL2 SUB2 ] STH2r LIT "' #18 DEO !&proper
-	( .. )
+
 	&whole ( num* den* -- )
 	POP2 print-value #0a18 DEO
 	JMP2r
@@ -588,14 +588,14 @@
 (
 @|ecosystem )
 
-@snarf-paste ( -- )
+@snarf/<paste> ( -- )
 	;&snarf-txt .File/name DEO2
 	#0001 .File/length DEO2
 	&>s ( -- )
 		;&buf .File/read DEO2
-		.File/success DEI2 #0000 EQU2 ?&end
-		[ LIT &buf 20 ] listen !&>s
-	&end JMP2r
+		[ LIT2 00 -File/success-lb ] DEI EQU ?{
+			[ LIT &buf 20 ] listen !&>s }
+	JMP2r
 
 	&snarf-txt ".snarf $1
 
