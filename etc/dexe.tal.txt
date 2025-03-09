@@ -37,7 +37,32 @@
 	( name ) "Dexe 0a
 	( details ) "A 20 "Hex 20 "Editor 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "8 20 "Mar 20 "2025 $2
+	( date ) "9 20 "Mar 20 "2025 $1 01
+	( - ) 0a =manifest/dat
+
+@manifest/dat ( . )
+	={ =dict/dexe
+	( - ) 01 "n =project/<new> =dict/new
+	( - ) 01 "o =browser/<open> =dict/load
+	( - ) 01 "s =project/<save> =dict/save
+	( - ) 01 "q =project/<quit> =dict/quit }
+	={ =dict/edit
+	( - ) 01 "c =snarf/<copy> =dict/copy
+	( - ) 01 "v =snarf/<paste> =dict/paste
+	( - ) 00 1b =sel/<reset> =dict/deselect
+	( - ) 00 08 =sel/<erase> =dict/erase }
+	={ =dict/move
+	( - ) 10 00 =sel/<move-u> =dict/move-u
+	( - ) 20 00 =sel/<move-d> =dict/move-d
+	( - ) 40 00 =sel/<move-l> =dict/move-l
+	( - ) 80 00 =sel/<move-r> =dict/move-r
+	( - ) 14 00 =sel/<size-u> =dict/size-u
+	( - ) 24 00 =sel/<size-d> =dict/size-d
+	( - ) 44 00 =sel/<size-l> =dict/size-l
+	( - ) 84 00 =sel/<size-r> =dict/size-r
+	( - ) 11 00 =sel/<jump-u> =dict/jump-u
+	( - ) 21 00 =sel/<jump-d> =dict/jump-d }
+	( ) $1
 
 (
 @|src )
@@ -46,7 +71,7 @@
 	.Console/read DEI
 	( ) DUP #20 GTH ?{
 		POP #0000 .Console/vector DEO2
-		;src/buf project/<load>
+		project/<load>
 		BRK }
 	/<push>
 	BRK
@@ -57,11 +82,14 @@
 	JMP2r
 
 @src/<reset> ( -- )
-	[ LIT2 -&buf _&ptr ] STR
 	;&default-name
+	( >> )
+
+@src/<inject> ( str* -- )
+	[ LIT2 -&buf _&ptr ] STR
 	&>w ( -- )
 		LDAk /<push>
-		INC2 LDAk ?&>w
+		INC2 LDAk #1f GTH ?&>w
 	POP2 JMP2r
 
 	&default-name "untitled.bin $1
@@ -82,30 +110,10 @@
 	[ LIT2 00 -sel/scroll ] LDZ #80 SFT2 ADD2 ;project/mem ADD2 }
 
 @on-button ( -> )
-	.Controller/key DEI .Controller/button DEI
-	( | handlers )
-	DUP #10 NEQ ?{ sel/<move-u> }
-	DUP #20 NEQ ?{ sel/<move-d> }
-	DUP #40 NEQ ?{ sel/<move-l> }
-	DUP #80 NEQ ?{ sel/<move-r> }
-	DUP #11 NEQ ?{ sel/<jump-u> }
-	DUP #21 NEQ ?{ sel/<jump-d> }
-	DUP #14 NEQ ?{ sel/<size-u> }
-	DUP #24 NEQ ?{ sel/<size-d> }
-	DUP #44 NEQ ?{ sel/<size-l> }
-	DUP #84 NEQ ?{ sel/<size-r> }
-	( | ctrl )
-	DUP2 [ LIT2 "n 01 ] NEQ2 ?{ project/<new> }
-	DUP2 [ LIT2 "o 01 ] NEQ2 ?{ ;src/buf project/<load> }
-	DUP2 [ LIT2 "s 01 ] NEQ2 ?{ ;src/buf project/<save> }
-	DUP2 [ LIT2 "c 01 ] NEQ2 ?{ snarf/<copy> }
-	DUP2 [ LIT2 "v 01 ] NEQ2 ?{ snarf/<paste> }
-	DUP2 [ LIT2 "x 01 ] NEQ2 ?{ snarf/<cut> }
-	#fb AND ?{
-		DUP #1b NEQ ?{ sel/<reset> }
-		DUP #08 NEQ ?{ sel/<erase> }
-		DUP #20 LTH OVR #7e GTH ORA ?{ DUP sel/<insert> } }
-	POP BRK
+	.Controller/button DEI2 manifest/scan INC2k ORA ?{
+		( insert ) POP2 .Controller/key DEI sel/<insert>
+		BRK }
+	( * ) JSR2 BRK
 
 @on-mouse ( -> )
 	cursor/<update>
@@ -165,7 +173,7 @@
 @|selection )
 
 @sel/<erase> ( -- )
-	.sel/b LDZ2 INC2 .sel/a LDZ2
+	.&b LDZ2 INC2 .&a LDZ2
 	&>le ( -- )
 		DUP2 #00 ROT ROT STA
 		INC2 GTH2k ?&>le
@@ -174,11 +182,11 @@
 @sel/<insert> ( c -- )
 	chex INCk ?{ POP JMP2r }
 	STH
-	.sel/b LDZ2 INC2 .sel/a LDZ2
+	.&b LDZ2 INC2 .&a LDZ2
 	&>li ( -- )
 		DUP2 STHkr /<insert-nibble>
 		INC2 GTH2k ?&>li
-	POP2 POP2 POPr #00 .sel/nibble LDZ EQU .sel/nibble STZ
+	POP2 POP2 POPr #00 .&nibble LDZ EQU .&nibble STZ
 	src/change !page/<draw>
 
 @sel/<insert-nibble> ( addr* nib -- )
@@ -195,34 +203,34 @@
 	POP JMP2r
 
 @sel/<jump-u> ( -- )
-	.sel/b LDZ2 #0100 SUB2 !/<set-a>
+	.&b LDZ2 #0100 SUB2 !/<set-a>
 
 @sel/<jump-d> ( -- )
-	.sel/b LDZ2 #0100 ADD2 !/<set-a>
+	.&b LDZ2 #0100 ADD2 !/<set-a>
 
 @sel/<move-u> ( -- )
-	.sel/b LDZ2 #0010 SUB2 !/<set-a>
+	.&b LDZ2 #0010 SUB2 !/<set-a>
 
 @sel/<move-d> ( -- )
-	.sel/b LDZ2 #0010 ADD2 !/<set-a>
+	.&b LDZ2 #0010 ADD2 !/<set-a>
 
 @sel/<move-l> ( -- )
-	.sel/b LDZ2 #0001 SUB2 !/<set-a>
+	.&b LDZ2 #0001 SUB2 !/<set-a>
 
 @sel/<move-r> ( -- )
-	.sel/b LDZ2 INC2 !/<set-a>
+	.&b LDZ2 INC2 !/<set-a>
 
 @sel/<size-u> ( -- )
-	.sel/b LDZ2 #0010 SUB2 !/<set-b>
+	.&b LDZ2 #0010 SUB2 !/<set-b>
 
 @sel/<size-d> ( -- )
-	.sel/b LDZ2 #0010 ADD2 !/<set-b>
+	.&b LDZ2 #0010 ADD2 !/<set-b>
 
 @sel/<size-l> ( -- )
-	.sel/b LDZ2 #0001 SUB2 !/<set-b>
+	.&b LDZ2 #0001 SUB2 !/<set-b>
 
 @sel/<size-r> ( -- )
-	.sel/b LDZ2 INC2 !/<set-b>
+	.&b LDZ2 INC2 !/<set-b>
 
 @sel/clamp ( addr* -- addr* )
 	( clamp mem ) ;project/mem GTH2k [ JMP SWP2 ] POP2
@@ -233,35 +241,35 @@
 	JMP2r
 
 @sel/<reset> ( -- )
-	.sel/a LDZ2 .sel/b STZ2
+	.&a LDZ2 .&b STZ2
 	[ LIT2 00 -&nibble ] STZ !page/<draw>
 
 @sel/<set-a> ( addr* -- )
 	/clamp
-	( changed ) DUP2 .sel/a LDZ2 NEQ2 ?{ POP2 JMP2r }
+	( changed ) DUP2 .&a LDZ2 NEQ2 ?{ POP2 JMP2r }
 	( | set )
-	DUP2 .sel/a STZ2
-	/follow .sel/b STZ2
+	DUP2 .&a STZ2
+	/follow .&b STZ2
 	[ LIT2 00 -&nibble ] STZ !page/<draw>
 
 @sel/<set-b> ( addr* -- )
-	/clamp .sel/a LDZ2 GTH2k [ JMP SWP2 ] POP2
-	( changed ) DUP2 .sel/b LDZ2 NEQ2 ?{ POP2 JMP2r }
+	/clamp .&a LDZ2 GTH2k [ JMP SWP2 ] POP2
+	( changed ) DUP2 .&b LDZ2 NEQ2 ?{ POP2 JMP2r }
 	( | set )
-	/follow .sel/b STZ2
+	/follow .&b STZ2
 	[ LIT2 00 -&nibble ] STZ !page/<draw>
 
 @sel/<set> ( a* b* -- )
 	/clamp SWP2 /clamp SWP2
 	( | greater than a )
-	DUP2 .sel/b LDZ2 NEQ2 STH
-	OVR2 .sel/a LDZ2 NEQ2 STHr AND ?{ POP2 POP2 JMP2r }
-	.sel/b STZ2
-	.sel/a STZ2
+	DUP2 .&b LDZ2 NEQ2 STH
+	OVR2 .&a LDZ2 NEQ2 STHr AND ?{ POP2 POP2 JMP2r }
+	.&b STZ2
+	.&a STZ2
 	[ LIT2 00 -&nibble ] STZ !page/<draw>
 
 @sel/get-length ( -- length* )
-	.sel/b LDZ2 .sel/a LDZ2 SUB2 INC2 JMP2r
+	.&b LDZ2 .&a LDZ2 SUB2 INC2 JMP2r
 
 (
 @|page )
@@ -272,7 +280,7 @@
 	POP2 #00 JMP2r
 
 @page/get-color ( addr* -- color )
-	DUP2 .project/cap LDZ2 LTH2 ?{ POP2 #03 JMP2r }
+	DUP2 .project/cap LDZ2 LTH2 ?{ POP2 #02 JMP2r }
 	is-selected ?{ #01 JMP2r }
 	#09 JMP2r
 
@@ -343,15 +351,15 @@
 	#01b0 .Screen/x DEO2
 	#0012 .Screen/y DEO2
 	[ LIT2 15 -Screen/auto ] DEO
-	#00 ;monaco/color STA
+	#09 ;monaco/color STA
 	.sel/b LDZ2 DUP2 ;project/mem SUB2 monaco/<draw-short>
 	.sel/a LDZ2 EQU2 ?{
 		#0188 .Screen/x DEO2
 		.sel/a LDZ2 ;project/mem SUB2 monaco/<draw-short>
 		[ LIT "- ] monaco/<draw-char>
-		#0a ;monaco/color STA
+		#0d ;monaco/color STA
 		#0160 .Screen/x DEO2
-		.sel/b LDZ2 .sel/a LDZ2 SUB2 INC2 monaco/<draw-short> }
+		sel/get-length monaco/<draw-short> }
 	JMP2r
 
 @page/<draw-ascii> ( -- )
@@ -373,25 +381,10 @@
 @|drawing )
 
 @<redraw-all> ( -- )
+	#0000 .Screen/x DEO2
+	#0012 .Screen/y DEO2
+	[ LIT2 80 -Screen/pixel ] DEO
 	header/<draw> !page/<draw>
-
-@header/<draw-title> ( -- )
-	.Screen/width DEI2 #01 SFT2 .Screen/x DEO2
-	#0001 .Screen/y DEO2
-	#09 ;chicago/color STA
-	[ LIT2 15 -Screen/auto ] DEO
-	.Screen/x DEI2 ;src/buf chicago/get-str-width #01 SFT2 SUB2 .Screen/x DEO2
-	#20 chicago/<draw-char>
-	;src/buf chicago/<draw-left>
-	[ LIT2 00 -src/changed ] LDZ EQU ?{
-		[ LIT "* ] chicago/<draw-char> }
-	#20 chicago/<draw-char>
-	( | clip )
-	.Screen/y DEI2k #0001 SUB2 ROT DEO2
-	;header/bg-chr .Screen/addr DEO2k [ LIT2r 81 -Screen/sprite ] DEOkr
-	DEO2
-	DEOr
-	JMP2r
 
 (
 @|project )
@@ -403,13 +396,14 @@
 	src/<reset>
 	src/<unchange> !<redraw-all>
 
-@project/<save> ( src* -- )
-	.File/name DEO2
+@project/<save> ( -- )
+	;src/buf .File/name DEO2
 	.&length LDZ2 .File/length DEO2
 	;&mem .File/write DEO2 !src/<unchange>
 
-@project/<load> ( src* -- )
-	.File/name DEO2
+@project/<load> ( -- )
+	;&mem .&length LDZ2 <mclr>
+	;src/buf .File/name DEO2
 	#8000 .File/length DEO2
 	;&mem .File/read DEO2
 	.File/success DEI2 /<set-length>
@@ -420,6 +414,9 @@
 	DUP2 .&length STZ2
 	;&mem ADD2 .&cap STZ2
 	JMP2r
+
+@project/<quit> ( -- )
+	#800f JMP2r
 
 @snarf/<copy> ( -- )
 	;&path .File/name DEO2
@@ -433,9 +430,6 @@
 	.File/length DEO2
 	.sel/a LDZ2 .File/read DEO2
 	src/change !page/<draw>
-
-@snarf/<cut> ( -- )
-	JMP2r
 
 	&path ".snarf $1
 
@@ -480,23 +474,190 @@
 		#27 SUB DUP #10 LTH ?{ POP #ff } }
 	JMP2r
 
-@dict/line "line $1
+@dict
+	&dexe "Dexe $1
+	&new "New $1
+	&load "Load $1
+	&save "Save $1
+	&quit "Quit $1
+	&edit "Edit $1
+	&copy "Copy $1
+	&paste "Paste $1
+	&deselect "Deselect $1
+	&erase "Erase $1
+	&move "Move $1
+	&move-u "Move 20 "Up $1
+	&move-d "Move 20 "Down $1
+	&move-l "Move 20 "Left $1
+	&move-r "Move 20 "Right $1
+	&size-u "Size 20 "Up $1
+	&size-d "Size 20 "Down $1
+	&size-l "Size 20 "Left $1
+	&size-r "Size 20 "Right $1
+	&jump-u "Jump 20 "Up $1
+	&jump-d "Jump 20 "Down $1
+	&line "line $1
+	&data "data $1
+	&ascii "ascii $1
 
-@dict/data "data $1
-
-@dict/ascii "ascii $1
-
-@linver-icn [ 8000 8000 8000 8000 ]
-
-@bar-chr [
-	ffff ffff ffff ffff ffff ffff ffff ffff
-	ffff ffff ffff ffff ffff ffff ffff ffff
-	ff00 0000 0000 0000 0000 0000 0000 0000 ]
 
 
+( @|browser )
+
+@browser/on-mouse ( -> )
+	cursor/<update-trap>
+	( x ) .Mouse/x DEI2 #0010 SUB2
+	( y ) .Mouse/y DEI2 #001c SUB2
+	( test x ) OVR2 #7fff GTH2 ?/on-mouse-outside
+	( test y ) DUP2 #006f GTH2 ?/on-mouse-outside
+	#04 SFT2 STH
+	POP #07 SFT2 NIP #07 MUL STHr ADD
+	( | state )
+	[ LIT2 &last $1 -Mouse/state ] DEI DUP ,&last STR
+	( | handlers )
+	DUP2 #0001 NEQ2 ?{ POP2 /<select>
+		BRK }
+	POP2 /<hover>
+	BRK
+
+	&on-mouse-outside ( x* y* -> )
+	POP2 POP2 .Mouse/state DEI ?{ BRK }
+	/<close>
+	BRK
+
+@browser/on-button ( -> )
+	.Controller/button DEI2 #0d NEQ ?{ /<select-active> }
+	( | handlers )
+	DUP #10 NEQ ?{ #ff /<hover-mod> }
+	DUP #20 NEQ ?{ #01 /<hover-mod> }
+	DUP #40 NEQ ?{ #f9 /<hover-mod> }
+	DUP #80 NEQ ?{ #07 /<hover-mod> }
+	POP BRK
+
+@browser/<close> ( -- )
+	;on-mouse .Mouse/vector DEO2
+	;on-button .Controller/vector DEO2
+	[ LIT2 00 -Mouse/state ] DEO !<redraw-all>
+
+@browser/<open> ( -- )
+	;&on-mouse .Mouse/vector DEO2
+	;&on-button .Controller/vector DEO2
+	#00 /<hover>
+	/<refresh>
+	[ LIT2 00 -Mouse/state ] DEO !/<draw>
+
+@browser/<select-active> ( -- )
+	;&selected LDA
+
+@browser/<select> ( id -- )
+	STH
+	[ LITr 00 ] ;&buf
+	&>ws ( -- )
+		STH2kr EQU ?{
+			LDAk #0a NEQ ?{ INCr }
+			INC2 LDAk ?&>ws }
+	POP2r LDAk ?{ POP2 JMP2r }
+	#0005 ADD2 src/<inject>
+	/<close> !project/<load>
+
+@browser/<refresh> ( -- )
+	;&buf #0200 <mclr>
+	;&path .File/name DEO2
+	#0200 .File/length DEO2
+	;&buf .File/read DEO2
+	( | count entries )
+	[ LITr 00 ] ;&buf
+	&>wc ( -- )
+		LDAk #0a NEQ ?{ INCr }
+		INC2 LDAk ?&>wc
+	POP2 LITr _&lines STRr
+	JMP2r
+
+	&path ". $1
+
+@browser/<hover-mod> ( mod -- )
+	;&selected LDA ADD
+
+@browser/<hover> ( id -- )
+	DUP ;&selected LDA NEQ ?{ POP JMP2r }
+	DUP [ LIT &lines $1 ] LTH ?{ POP JMP2r }
+	;&selected STA
+	( >> )
+
+@browser/<draw> ( -- )
+	.Screen/width DEI2 #03 SFT2 SUB STH
+	#0000 .Screen/x DEO2
+	#0011 .Screen/y DEO2
+	#09 STHkr ;halftone-icn #f1 <draw-times>
+	#0000 .Screen/x DEO2
+	#0012 .Screen/y DEO2
+	#02 STHkr ;fill-icn #f1 <draw-times>
+	#0000 .Screen/x DEO2
+	#0092 .Screen/y DEO2
+	#85 STHr ;&wavey-chr #01 <draw-times>
+	#001a .Screen/y DEO2
+	;&buf [ LIT2r 0000 ]
+	&>w ( -- )
+		( x ) STH2kr #07 DIV #70 SFT2 #0008 ADD2 .Screen/x DEO2
+		( y ) STH2kr #07 DIVk MUL SUB #40 SFT2 #001a ADD2 .Screen/y DEO2
+		STHkr [ LIT &selected ff ] /<draw-line>
+		.Screen/y DEI2k #0010 ADD2 ROT DEO2
+		INCr LDAk ?&>w
+	POP2 POP2r JMP2r
+
+@browser/<draw-line> ( str* id sel -- cap* )
+	[ LIT2 15 -Screen/auto ] DEO
+	EQU ?{
+		.Screen/x DEI2k #0008 ADD2 ROT DEO2
+		#0005 ADD2 /get-color !chicago/<draw-line-color> }
+	;&cap-left .Screen/addr DEO2
+	[ LIT2r 09 -Screen/sprite ] DEOkr
+	#0005 ADD2 #04 chicago/<draw-line-color>
+	;&cap-right .Screen/addr DEO2
+	DEOkr DEOr
+	JMP2r
+
+@browser/get-color ( str* -- str* f )
+	DUP2
+	&>wcap ( -- )
+		INC2k LDA #20 LTH ?{ INC2 !&>wcap }
+	LDA LIT "/ EQU ?{ #09 JMP2r }
+	#0f JMP2r
 
 (
-@|utils )
+@|browser-assets )
+
+@browser/wavey-chr [ 0000 8344 3800 0000 ffff 7c38 0000 0000 ]
+	&cap-left [ 070f 0f0f 0f0f 0f0f 0f0f 0f0f 0f0f 0f07 ]
+	&cap-right [
+	80c0 e0f0 f8fc feff fffe fcf8 f0e0 c080
+	0000 0000 0000 0000 0000 0000 0000 0000 ]
+
+(
+@|extras )
+
+@header/<draw-title> ( -- )
+	.Screen/width DEI2 #01 SFT2 .Screen/x DEO2
+	#0001 .Screen/y DEO2
+	#09 ;chicago/color STA
+	[ LIT2 15 -Screen/auto ] DEO
+	.Screen/x DEI2 ;src/buf chicago/get-str-width #01 SFT2 SUB2 .Screen/x DEO2
+	#20 chicago/<draw-char>
+	;src/buf chicago/<draw-left>
+	[ LIT2 00 -src/changed ] LDZ EQU ?{
+		[ LIT "* ] chicago/<draw-char> }
+	#20 chicago/<draw-char>
+	( | clip )
+	.Screen/y DEI2k #0001 SUB2 ROT DEO2
+	;header/bg-chr .Screen/addr DEO2k [ LIT2r 81 -Screen/sprite ] DEOkr
+	DEO2
+	DEOr
+	JMP2r
+
+
+
+
+( @|utils )
 
 @<draw-times-addr> ( color times addr* auto -- )
 	.Screen/auto DEO
@@ -532,9 +693,11 @@
 @chicago/<draw-center-color> ( text* color -- )
 	.Screen/x DEI2 OVR2 /get-str-width #01 SFT2 SUB2 .Screen/x DEO2
 	( >> )
+
 @chicago/<draw-left-color> ( text* color -- )
 	,&color STR
 	( >> )
+
 @chicago/<draw-left> ( text* -- )
 	[ LIT2 15 -Screen/auto ] DEO
 	&>ws ( -- )
@@ -550,6 +713,13 @@
 	.Screen/x DEO2
 	JMP2r
 
+@chicago/<draw-line-color> ( str* color -- str* )
+	,&color STR
+	&>wdl ( -- )
+		LDAk #1f GTH ?{ INC2 JMP2r }
+		LDAk chicago/<draw-char>
+		INC2 !&>wdl
+
 (
 @|header )
 
@@ -557,6 +727,7 @@
 	cursor/<update>
 	[ LIT2 &last $1 -Mouse/state ] DEI
 	( | handlers )
+	DUP2 #0004 NEQ2 ?{ browser/<open> }
 	DUP2 #0002 NEQ2 ?{ window/toggle-shade }
 	DUP2 #0001 NEQ2 ?{ /outside-quit ?{ /<press-quit> } }
 	DUP2 #0100 NEQ2 ?{ /<release-quit> }
@@ -623,13 +794,16 @@
 	JMP2r
 
 @cursor/<update> ( -- )
+	/<refocus>
+	( >> )
+
+@cursor/<update-trap> ( -- )
 	[ LIT2 12 -Screen/auto ] DEO
 	#40 ;fill-icn /<draw>
 	[ LIT2 16 -Screen/auto ] DEO
 	#c1 ;&down-chr .Mouse/state DEI ?{ POP2 ;&up-chr }
 	.Mouse/x DEI2 ,&x STR2
 	.Mouse/y DEI2 ,&y STR2
-	/<refocus>
 	( >> )
 
 @cursor/<draw> ( color addr* -- )
@@ -640,10 +814,26 @@
 	JMP2r
 
 (
+@|manifest )
+
+@manifest/scan ( but key -- fn* )
+	ORAk ?{ POP2 #ffff JMP2r }
+	,&bk STR2
+	;&dat
+	&>cat ( -- )
+		LDA2k OVR2 #0004 ADD2
+		&>opt ( -- )
+			LDA2k [ LIT2 &bk $2 ] NEQ2 ?{
+				NIP2 NIP2 INC2 INC2 LDA2 JMP2r }
+			#0006 ADD2 GTH2k ?&>opt
+		POP2 POP2 LDA2 LDAk ?&>cat
+	POP2 #ffff JMP2r
+
+(
 @|theme )
 
 @theme/<reset> ( -- )
-	#f0a8 #f0ec #f0b9
+	#f0ad #f0ef #f0be
 	( >> )
 
 @theme/<set> ( r* g* b* -- )
@@ -681,11 +871,26 @@
 	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
 	JMP2r
 
+@<pstr> ( str* -- )
+
+	&>l ( -- )
+		LDAk #18 DEO
+		INC2 LDAk ?&>l
+	POP2 JMP2r
+
+
 
 (
 @|assets )
 
 @fill-icn [ ffff ffff ffff ffff ]
+@halftone-icn [ aa55 aa55 aa55 aa55 ]
+@linver-icn [ 8000 8000 8000 8000 ]
+@linhor-icn [ ff00 0000 0000 0000 ]
+@bar-chr [
+	ffff ffff ffff ffff ffff ffff ffff ffff
+	ffff ffff ffff ffff ffff ffff ffff ffff
+	ff00 0000 0000 0000 0000 0000 0000 0000 ]
 
 @header
 	&bg-chr [
@@ -1156,5 +1361,7 @@
 	0000 0000 0000 0000 0000 0000 0000 0000
 	0000 0000 0000 0000 0000 3333 0000 0000
 	0000 0000 0000 0000 0000 3030 0000 0000 ]
+
+@browser/buf $200
 
 @project/mem 

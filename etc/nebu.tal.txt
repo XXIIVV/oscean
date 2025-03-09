@@ -29,6 +29,7 @@
 	.Screen/height DEI2 ;header/height SUB2 #04 SFT2 #03 SUB .viewport/h-hb STZ2
 	.Screen/width DEI2 #06 SFT2 .viewport/w-hb STZ2
 	[ LIT2 ", -src/spacer ] STZ
+	[ LIT2 01 -src/changed ] STZ
 	( | unlock )
 	;on-button .Controller/vector DEO2
 	;grid/on-mouse .Mouse/vector DEO2
@@ -37,6 +38,12 @@
 		BRK }
 	;src/on-console .Console/vector DEO2
 	BRK
+
+@meta $1
+	( name ) "Nebu 0a
+	( desc ) "Spreadsheet 20 "Editor 0a
+	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
+	( date ) "9 20 "Mar 20 "2025 $2
 
 @on-button ( -> )
 	.Controller/key DEI .Controller/button DEI
@@ -51,7 +58,7 @@
 	DUP #84 NEQ ?{ select/<size-r> }
 	( | ctrl )
 	DUP2 [ LIT2 "n 01 ] NEQ2 ?{ cells/<new> }
-	DUP2 [ LIT2 "o 01 ] NEQ2 ?{ ;src/buf cells/<load> }
+	DUP2 [ LIT2 "o 01 ] NEQ2 ?{ project/<load> }
 	DUP2 [ LIT2 "s 01 ] NEQ2 ?{ ;src/buf cells/<save> }
 	DUP2 [ LIT2 "c 01 ] NEQ2 ?{ snarf/<copy> }
 	DUP2 [ LIT2 "v 01 ] NEQ2 ?{ snarf/<paste> }
@@ -78,7 +85,7 @@
 	.Console/read DEI
 	( ) DUP #20 GTH ?{
 		POP #0000 .Console/vector DEO2
-		;src/buf cells/<load>
+		project/<load>
 		BRK }
 	/<push>
 	BRK
@@ -89,11 +96,14 @@
 	JMP2r
 
 @src/<reset> ( -- )
-	[ LIT2 -&buf _&ptr ] STR
 	;&default-name
+	( >> )
+
+@src/<inject> ( str* -- )
+	[ LIT2 -&buf _&ptr ] STR
 	&>w ( -- )
 		LDAk /<push>
-		INC2 LDAk ?&>w
+		INC2 LDAk #1f GTH ?&>w
 	POP2 JMP2r
 
 	&default-name "untitled.csv $1
@@ -106,6 +116,9 @@
 @src/<unchange> ( -- )
 	.&changed LDZ ?{ JMP2r }
 	[ LIT2 00 -&changed ] STZ !header/<draw>
+
+@<redraw-all> ( -- )
+	header/<draw> !grid/<draw>
 
 (
 @|cmd )
@@ -292,6 +305,9 @@
 
 (
 @|grid )
+
+@on-mouse ( -> )
+
 
 @grid/on-mouse ( -> )
 	cursor/<update>
@@ -489,17 +505,6 @@
 	DUP2 #0004 ADD2 LDA [ LIT "" ] EQU ?calc/run-cat
 	calc/run-num ;chicago/<draw-char> !x32-draw
 
-@<draw-times-addr> ( color times addr* auto -- )
-	.Screen/auto DEO
-	,&addr STR2
-	SWP STH
-	[ LITr -Screen/sprite ]
-	&>l ( -- )
-		[ LIT2 &addr $2 ] .Screen/addr DEO2
-		DEOkr
-		INC DUP ?&>l
-	POP POP2r JMP2r
-
 (
 @|calc )
 
@@ -544,8 +549,8 @@
 		&>lh ( -- )
 			DUP OVR2 POP
 			( x y ) STH2r STH2r ROT2
-			( hs* ls* x y ) /get-num
-			( hs* ls* x y ini ) STHr ?{
+			( acc** x y ) /get-num
+			( acc** x y ini ) STHr ?{
 				( no-op ) [ LITr 01 STH2 STH2 ] POP2 POP2 !&resume }
 			STHkr /run-op [ LITr 01 STH2 STH2 ]
 			&resume ( -- )
@@ -613,7 +618,7 @@
 @cells/<new> ( -- )
 	src/<reset>
 	/<clear>
-	header/<draw> !grid/<draw>
+	src/<unchange> !grid/<draw>
 
 @cells/<clear> ( -- )
 	;&buf [ LIT2 00 -LINES ] #80 SFT2 !<mclr>
@@ -654,9 +659,7 @@
 
 @cells/<load> ( src* -- )
 	/<clear>
-	src/<unchange>
-	#0000 SWP2
-	( >> )
+	#0000 SWP2 cells/<load-at> !src/<unchange>
 
 @cells/<load-at> ( x y src* -- )
 	DUP2 /find-filetype .File/name DEO2
@@ -665,11 +668,11 @@
 	;&bufcap ;&buf
 	&>sl ( -- )
 		;&b .File/read DEO2
-		.File/success-lb DEI ?{ POP2 POP2 header/<draw> !grid/<draw> }
+		.File/success-lb DEI ?{ POP2 POP2 src/change !grid/<draw> }
 		[ LIT &b $1 ] /<push>
 		INC2 GTH2k ?&>sl
 	;dict/err-size <perr>
-	POP2 POP2 header/<draw> !grid/<draw>
+	POP2 POP2 src/change !grid/<draw>
 
 @cells/<push> ( c -- )
 	DUP .src/spacer LDZ EQU ?/move-x
@@ -707,181 +710,6 @@
 	POP2 JMP2r
 
 (
-@|chicago )
-
-@chicago/get-utf8-addr ( addr* -- addr* glyph* )
-	LDAk #20 LTH ?{
-		LDAk #7f GTH ?{
-			LDAk #20 SUB #00 SWP #50 SFT2 ;/glyphs ADD2 JMP2r } }
-	;check-icn JMP2r
-
-@chicago/get-utf8-width ( addr* -- addr* width* )
-	LDAk #7f GTH ?{
-		LDAk #0000 ROT ;/widths ADD2 LDA JMP2r }
-	#0008 JMP2r
-
-@chicago/get-str-width ( text* -- width* )
-	[ LIT2r 0000 ]
-	&>ww ( -- )
-		/get-utf8-width STH2
-		( > ) ADD2r next-glyph LDAk ?&>ww
-	POP2 STH2r JMP2r
-
-@chicago/<draw-right> ( text* -- )
-	.Screen/x DEI2 OVR2 chicago/get-str-width SUB2 .Screen/x DEO2 !/<draw-left>
-
-@chicago/<draw-left-color> ( text* color -- )
-	,&color STR
-	( >> )
-
-@chicago/<draw-left> ( text* -- )
-	[ LIT2 15 -Screen/auto ] DEO
-	&>wsc ( -- )
-		LDAk ?{ POP2 JMP2r }
-		/<draw-utf8>
-		next-glyph !&>wsc
-
-@chicago/<draw-utf8> ( addr* -- addr* )
-	[ LITr -Screen/x ] DEI2r
-	( glyph* ) /get-utf8-addr .Screen/addr DEO2
-	( width* ) /get-utf8-width STH2
-	( draw2 ) [ LIT2 &color 01 -Screen/sprite ]
-	( draw1 ) DUPr [ LITr 08 LTHr JMPr DEOk ] DEO
-	ADD2r [ LITr -Screen/x ] DEO2r
-	JMP2r
-
-@chicago/<draw-char> ( char -- )
-	#00 SWP
-	( ) DUP2 #20 SUB #50 SFT2 ;&glyphs ADD2 .Screen/addr DEO2
-	( ) ;&widths ADD2 LDA #00 SWP .Screen/x DEI2 ADD2
-	( ) ,&color LDR .Screen/sprite DEOk DEO
-	.Screen/x DEO2
-	JMP2r
-
-(
-@|header )
-
-@header/on-mouse ( -> )
-	cursor/<update>
-	[ LIT2 &last $1 -Mouse/state ] DEI
-	( | handlers )
-	DUP2 #0002 NEQ2 ?{ window/toggle-shade }
-	DUP2 #0001 NEQ2 ?{ /outside-quit ?{ /<press-quit> } }
-	DUP2 #0100 NEQ2 ?{ /<release-quit> }
-	,&last STR
-	POP BRK
-
-@header/outside-quit ( -- f )
-	.Mouse/x DEI2 #0008 SUB2 #000c GTH2 ?{
-		.Mouse/y DEI2 #0002 SUB2 #000c GTH2 ?{ #00 JMP2r } }
-	#01 JMP2r
-
-@header/<press-quit> ( -- )
-	;&button-down-icn !/<draw-button>
-
-@header/<release-quit> ( -- )
-	/outside-quit ?{ #800f DEO }
-	( >> )
-
-@header/<draw> ( -- )
-	#0000 .Screen/x DEO2
-	#0000 .Screen/y DEO2
-	#85b8 ;&bg-chr #25 <draw-times-addr>
-	( | 1px right )
-	.Screen/x DEI2k #0001 SUB2 ROT DEO2
-	#000e .Screen/y DEO2
-	[ LIT2 a2 -Screen/pixel ] DEO
-	( | 1px left )
-	#0001 .Screen/x DEO2
-	[ LIT2 b2 -Screen/pixel ] DEO
-	( | title )
-	[ LIT2 15 -Screen/auto ] DEO
-	#0001 .Screen/y DEO2
-	;WIDTH #01 SFT2 .Screen/x DEO2
-	#09 ;chicago/color STA
-	.Screen/x DEI2 ;src/buf chicago/get-str-width #0008 ADD2 #01 SFT2 SUB2 .Screen/x DEO2
-	#20 chicago/<draw-char>
-	#20 chicago/<draw-char>
-	;src/buf chicago/<draw-left>
-	[ LIT2 00 -src/changed ] LDZ EQU ?{
-		[ LIT "* ] chicago/<draw-char> }
-	;&button-icn
-	( >> )
-
-@header/<draw-button> ( button* -- )
-	.Screen/addr DEO2
-	#0008 .Screen/x DEO2
-	#0000 .Screen/y DEO2
-	[ LIT2 15 -Screen/auto ] DEO
-	[ LIT2 09 -Screen/sprite ] DEOk DEO
-	JMP2r
-
-(
-@|cursor )
-
-@cursor/<refocus> ( -- )
-	.Mouse/y DEI2 ;header/height GTH2 ?{
-		( ) ;header/on-mouse .Mouse/vector DEO2
-		JMP2r }
-	;grid/on-mouse .Mouse/vector DEO2
-	JMP2r
-
-@cursor/<update> ( -- )
-	[ LIT2 12 -Screen/auto ] DEO
-	#40 ;fill-icn /<draw>
-	[ LIT2 16 -Screen/auto ] DEO
-	#c1 ;&down-chr .Mouse/state DEI ?{ POP2 ;&up-chr }
-	.Mouse/x DEI2 ,&x STR2
-	.Mouse/y DEI2 ,&y STR2
-	/<refocus>
-	( >> )
-
-@cursor/<draw> ( color addr* -- )
-	.Screen/addr DEO2
-	[ LIT2 &x $2 ] #0004 SUB2 .Screen/x DEO2
-	[ LIT2 &y $2 ] #0004 SUB2 .Screen/y DEO2
-	.Screen/sprite DEOk DEO
-	JMP2r
-
-(
-@|window )
-
-@window/<set-size> ( width* height* -- )
-	DUP2 ,&height STR2
-	.Screen/height DEO2
-	.Screen/width DEO2
-	JMP2r
-
-@window/toggle-shade ( -- )
-	#0011 .Screen/height DEI2 EQU2 ?{ #0011 .Screen/height DEO2 !header/<draw> }
-	[ LIT2 &height $2 ] .Screen/height DEO2
-	header/<draw> !grid/<draw>
-
-(
-@|theme )
-
-@theme/<reset> ( -- )
-	#f0ad #f0ef #f0be
-	( >> )
-
-@theme/<set> ( r* g* b* -- )
-	.System/b DEO2
-	.System/g DEO2
-	.System/r DEO2
-	JMP2r
-
-@theme/<load> ( -- )
-	;&path .File/name DEO2
-	#0002 .File/length DEO2
-	;&r .File/read DEO2
-	;&g .File/read DEO2
-	;&b .File/read DEO2
-	.File/success-lb DEI ?{ !theme/<reset> }
-	[ LIT2 &r $2 ] [ LIT2 &g $2 ] [ LIT2 &b $2 ] !theme/<set>
-
-	&path ".theme $1
-
-(
 @|snarf )
 
 @snarf/<copy> ( -- )
@@ -895,6 +723,12 @@
 	;cmd/do-delete !cmd/<apply>
 
 @snarf/filepath ".snarf $1
+
+(
+@|project )
+
+@project/<load> ( -- )
+	;src/buf !cells/<load>
 
 (
 @|File )
@@ -982,11 +816,360 @@
 
 @dict/err-size "File 20 "size 20 "exceeded. 0a $1
 
-@meta $1
-	( name ) "Nebu 0a
-	( desc ) "Spreadsheet 20 "Editor 0a
-	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "7 20 "Mar 20 "2025 $2
+
+
+( @|browser )
+
+@browser/on-mouse ( -> )
+	cursor/<update-trap>
+	( x ) .Mouse/x DEI2 #0010 SUB2
+	( y ) .Mouse/y DEI2 #001c SUB2
+	( test x ) OVR2 #7fff GTH2 ?/on-mouse-outside
+	( test y ) DUP2 #006f GTH2 ?/on-mouse-outside
+	#04 SFT2 STH
+	POP #07 SFT2 NIP #07 MUL STHr ADD
+	( | state )
+	[ LIT2 &last $1 -Mouse/state ] DEI DUP ,&last STR
+	( | handlers )
+	DUP2 #0001 NEQ2 ?{ POP2 /<select>
+		BRK }
+	POP2 /<hover>
+	BRK
+
+	&on-mouse-outside ( x* y* -> )
+	POP2 POP2 .Mouse/state DEI ?{ BRK }
+	/<close>
+	BRK
+
+@browser/on-button ( -> )
+	.Controller/button DEI2 #0d NEQ ?{ /<select-active> }
+	( | handlers )
+	DUP #10 NEQ ?{ #ff /<hover-mod> }
+	DUP #20 NEQ ?{ #01 /<hover-mod> }
+	DUP #40 NEQ ?{ #f9 /<hover-mod> }
+	DUP #80 NEQ ?{ #07 /<hover-mod> }
+	POP BRK
+
+@browser/<close> ( -- )
+	;on-mouse .Mouse/vector DEO2
+	;on-button .Controller/vector DEO2
+	[ LIT2 00 -Mouse/state ] DEO !<redraw-all>
+
+@browser/<open> ( -- )
+	;&on-mouse .Mouse/vector DEO2
+	;&on-button .Controller/vector DEO2
+	#00 /<hover>
+	/<refresh>
+	[ LIT2 00 -Mouse/state ] DEO !/<draw>
+
+@browser/<select-active> ( -- )
+	;&selected LDA
+
+@browser/<select> ( id -- )
+	STH
+	[ LITr 00 ] ;&buf
+	&>ws ( -- )
+		STH2kr EQU ?{
+			LDAk #0a NEQ ?{ INCr }
+			INC2 LDAk ?&>ws }
+	POP2r LDAk ?{ POP2 JMP2r }
+	#0005 ADD2 src/<inject>
+	/<close> !project/<load>
+
+@browser/<refresh> ( -- )
+	;&buf #0200 <mclr>
+	;&path .File/name DEO2
+	#0200 .File/length DEO2
+	;&buf .File/read DEO2
+	( | count entries )
+	[ LITr 00 ] ;&buf
+	&>wc ( -- )
+		LDAk #0a NEQ ?{ INCr }
+		INC2 LDAk ?&>wc
+	POP2 LITr _&lines STRr
+	JMP2r
+
+	&path ". $1
+
+@browser/<hover-mod> ( mod -- )
+	;&selected LDA ADD
+
+@browser/<hover> ( id -- )
+	DUP ;&selected LDA NEQ ?{ POP JMP2r }
+	DUP [ LIT &lines $1 ] LTH ?{ POP JMP2r }
+	;&selected STA
+	( >> )
+
+@browser/<draw> ( -- )
+	.Screen/width DEI2 #03 SFT2 SUB STH
+	#0000 .Screen/x DEO2
+	#0011 .Screen/y DEO2
+	#09 STHkr ;halftone-icn #f1 <draw-times>
+	#0000 .Screen/x DEO2
+	#0012 .Screen/y DEO2
+	#02 STHkr ;fill-icn #f1 <draw-times>
+	#0000 .Screen/x DEO2
+	#0092 .Screen/y DEO2
+	#85 STHr ;&wavey-chr #01 <draw-times>
+	#001a .Screen/y DEO2
+	;&buf [ LIT2r 0000 ]
+	&>w ( -- )
+		( x ) STH2kr #07 DIV #70 SFT2 #0008 ADD2 .Screen/x DEO2
+		( y ) STH2kr #07 DIVk MUL SUB #40 SFT2 #001a ADD2 .Screen/y DEO2
+		STHkr [ LIT &selected ff ] /<draw-line>
+		.Screen/y DEI2k #0010 ADD2 ROT DEO2
+		INCr LDAk ?&>w
+	POP2 POP2r JMP2r
+
+@browser/<draw-line> ( str* id sel -- cap* )
+	[ LIT2 15 -Screen/auto ] DEO
+	EQU ?{
+		.Screen/x DEI2k #0008 ADD2 ROT DEO2
+		#0005 ADD2 /get-color !chicago/<draw-line-color> }
+	;&cap-left .Screen/addr DEO2
+	[ LIT2r 09 -Screen/sprite ] DEOkr
+	#0005 ADD2 #04 chicago/<draw-line-color>
+	;&cap-right .Screen/addr DEO2
+	DEOkr DEOr
+	JMP2r
+
+@browser/get-color ( str* -- str* f )
+	DUP2
+	&>wcap ( -- )
+		INC2k LDA #20 LTH ?{ INC2 !&>wcap }
+	LDA LIT "/ EQU ?{ #09 JMP2r }
+	#0f JMP2r
+
+(
+@|browser-assets )
+
+@browser/wavey-chr [ 0000 8344 3800 0000 ffff 7c38 0000 0000 ]
+	&cap-left [ 070f 0f0f 0f0f 0f0f 0f0f 0f0f 0f0f 0f07 ]
+	&cap-right [
+	80c0 e0f0 f8fc feff fffe fcf8 f0e0 c080
+	0000 0000 0000 0000 0000 0000 0000 0000 ]
+
+(
+@|extras )
+
+@header/<draw-title> ( -- )
+	.Screen/width DEI2 #01 SFT2 .Screen/x DEO2
+	#0001 .Screen/y DEO2
+	#09 ;chicago/color STA
+	[ LIT2 15 -Screen/auto ] DEO
+	.Screen/x DEI2 ;src/buf chicago/get-str-width #01 SFT2 SUB2 .Screen/x DEO2
+	#20 chicago/<draw-char>
+	;src/buf chicago/<draw-left>
+	[ LIT2 00 -src/changed ] LDZ EQU ?{
+		[ LIT "* ] chicago/<draw-char> }
+	#20 chicago/<draw-char>
+	( | clip )
+	.Screen/y DEI2k #0001 SUB2 ROT DEO2
+	;header/bg-chr .Screen/addr DEO2k [ LIT2r 81 -Screen/sprite ] DEOkr
+	DEO2
+	DEOr
+	JMP2r
+
+
+
+
+( @|utils )
+
+@header/on-mouse ( -> )
+	cursor/<update>
+	[ LIT2 &last $1 -Mouse/state ] DEI
+	( | handlers )
+	DUP2 #0004 NEQ2 ?{ browser/<open> }
+	DUP2 #0002 NEQ2 ?{ window/toggle-shade }
+	DUP2 #0001 NEQ2 ?{ /outside-quit ?{ /<press-quit> } }
+	DUP2 #0100 NEQ2 ?{ /<release-quit> }
+	,&last STR
+	POP BRK
+
+@header/outside-quit ( -- f )
+	.Mouse/x DEI2 #0008 SUB2 #000c GTH2 ?{
+		.Mouse/y DEI2 #0002 SUB2 #000c GTH2 ?{ #00 JMP2r } }
+	#01 JMP2r
+
+@header/<press-quit> ( -- )
+	;&button-down-icn !/<draw-button>
+
+@header/<release-quit> ( -- )
+	/outside-quit ?{ #800f DEO }
+	( >> )
+
+@header/<draw> ( -- )
+	#0000 .Screen/x DEO2
+	#0000 .Screen/y DEO2
+	[ LIT2 85 -Screen/width ] DEI2 #03 SFT2 SUB ;&bg-chr #25 <draw-times-addr>
+	( | 1px right )
+	.Screen/width DEI2 #0001 SUB2 .Screen/x DEO2
+	#000e .Screen/y DEO2
+	[ LIT2 a2 -Screen/pixel ] DEO
+	( | 1px left )
+	#0001 .Screen/x DEO2
+	[ LIT2 b2 -Screen/pixel ] DEO
+	( | title )
+	/<draw-title>
+	;&button-icn
+	( >> )
+
+@header/<draw-button> ( button* -- )
+	.Screen/addr DEO2
+	#0008 .Screen/x DEO2
+	#0000 .Screen/y DEO2
+	[ LIT2 15 -Screen/auto ] DEO
+	[ LIT2 09 -Screen/sprite ] DEOk DEO
+	JMP2r
+
+
+(
+@|chicago )
+
+@chicago/get-utf8-addr ( addr* -- addr* glyph* )
+	LDAk #20 LTH ?{
+		LDAk #7f GTH ?{
+			LDAk #20 SUB #00 SWP #50 SFT2 ;/glyphs ADD2 JMP2r } }
+	;check-icn JMP2r
+
+@chicago/get-utf8-width ( addr* -- addr* width* )
+	LDAk #7f GTH ?{
+		LDAk #0000 ROT ;/widths ADD2 LDA JMP2r }
+	#0008 JMP2r
+
+@chicago/get-str-width ( text* -- width* )
+	[ LIT2r 0000 ]
+	&>ww ( -- )
+		/get-utf8-width STH2
+		( > ) ADD2r next-glyph LDAk ?&>ww
+	POP2 STH2r JMP2r
+
+@chicago/<draw-right> ( text* -- )
+	.Screen/x DEI2 OVR2 chicago/get-str-width SUB2 .Screen/x DEO2 !/<draw-left>
+
+@chicago/<draw-left-color> ( text* color -- )
+	,&color STR
+	( >> )
+
+@chicago/<draw-left> ( text* -- )
+	[ LIT2 15 -Screen/auto ] DEO
+	&>wsc ( -- )
+		LDAk ?{ POP2 JMP2r }
+		/<draw-utf8>
+		next-glyph !&>wsc
+
+@chicago/<draw-utf8> ( addr* -- addr* )
+	[ LITr -Screen/x ] DEI2r
+	( glyph* ) /get-utf8-addr .Screen/addr DEO2
+	( width* ) /get-utf8-width STH2
+	( draw2 ) [ LIT2 &color 01 -Screen/sprite ]
+	( draw1 ) DUPr [ LITr 08 LTHr JMPr DEOk ] DEO
+	ADD2r [ LITr -Screen/x ] DEO2r
+	JMP2r
+
+@chicago/<draw-char> ( char -- )
+	#00 SWP
+	( ) DUP2 #20 SUB #50 SFT2 ;&glyphs ADD2 .Screen/addr DEO2
+	( ) ;&widths ADD2 LDA #00 SWP .Screen/x DEI2 ADD2
+	( ) ,&color LDR .Screen/sprite DEOk DEO
+	.Screen/x DEO2
+	JMP2r
+
+@chicago/<draw-line-color> ( str* color -- str* )
+	,&color STR
+	&>wdl ( -- )
+		LDAk #1f GTH ?{ INC2 JMP2r }
+		LDAk chicago/<draw-char>
+		INC2 !&>wdl
+
+(
+@|cursor )
+
+@cursor/<refocus> ( -- )
+	.Mouse/y DEI2 ;header/height GTH2 ?{
+		( ) ;header/on-mouse .Mouse/vector DEO2
+		JMP2r }
+	;grid/on-mouse .Mouse/vector DEO2
+	JMP2r
+
+@cursor/<update> ( -- )
+	/<refocus>
+	( >> )
+
+@cursor/<update-trap> ( -- )
+	[ LIT2 12 -Screen/auto ] DEO
+	#40 ;fill-icn /<draw>
+	[ LIT2 16 -Screen/auto ] DEO
+	#c1 ;&down-chr .Mouse/state DEI ?{ POP2 ;&up-chr }
+	.Mouse/x DEI2 ,&x STR2
+	.Mouse/y DEI2 ,&y STR2
+	( >> )
+
+@cursor/<draw> ( color addr* -- )
+	.Screen/addr DEO2
+	[ LIT2 &x $2 ] #0004 SUB2 .Screen/x DEO2
+	[ LIT2 &y $2 ] #0004 SUB2 .Screen/y DEO2
+	.Screen/sprite DEOk DEO
+	JMP2r
+
+(
+@|window )
+
+@window/<set-size> ( width* height* -- )
+	DUP2 ,&height STR2
+	.Screen/height DEO2
+	.Screen/width DEO2
+	JMP2r
+
+@window/toggle-shade ( -- )
+	#0011 .Screen/height DEI2 EQU2 ?{ #0011 .Screen/height DEO2 !header/<draw> }
+	[ LIT2 &height $2 ] .Screen/height DEO2
+	header/<draw> !grid/<draw>
+
+(
+@|theme )
+
+@theme/<reset> ( -- )
+	#f0ad #f0ef #f0be
+	( >> )
+
+@theme/<set> ( r* g* b* -- )
+	.System/b DEO2
+	.System/g DEO2
+	.System/r DEO2
+	JMP2r
+
+@theme/<load> ( -- )
+	;&path .File/name DEO2
+	#0002 .File/length DEO2
+	;&r .File/read DEO2
+	;&g .File/read DEO2
+	;&b .File/read DEO2
+	.File/success-lb DEI ?{ !theme/<reset> }
+	[ LIT2 &r $2 ] [ LIT2 &g $2 ] [ LIT2 &b $2 ] !theme/<set>
+
+	&path ".theme $1
+
+@<draw-times-addr> ( color times addr* auto -- )
+	.Screen/auto DEO
+	,&addr STR2
+	SWP STH
+	[ LITr -Screen/sprite ]
+	&>l ( -- )
+		[ LIT2 &addr $2 ] .Screen/addr DEO2
+		DEOkr
+		INC DUP ?&>l
+	POP POP2r JMP2r
+
+@<draw-times> ( color times addr* auto -- )
+	.Screen/auto DEO
+	.Screen/addr DEO2
+	SWP STH
+	[ LITr -Screen/sprite ]
+	&>l ( -- )
+		DEOkr
+		INC DUP ?&>l
+	POP POP2r JMP2r
 
 
 
@@ -1628,7 +1811,7 @@
 ( Assets )
 
 @fill-icn [ ffff ffff ffff ffff ffff ffff ffff ffff ]
-@hash-icn [ aa55 aa55 aa55 aa55 aa55 aa55 aa55 aa55 ]
+@halftone-icn [ aa55 aa55 aa55 aa55 aa55 aa55 aa55 aa55 ]
 @diag-icn [ 1122 4488 1122 4488 1122 4488 1122 4488 ]
 @dotted-icn [ 8800 2200 8800 2200 8800 2200 8800 2200 ]
 @arrow-icn [ 0000 0000 80c0 e0f0 e0c0 8000 0000 0000 ]
@@ -1863,6 +2046,8 @@
 	0000 4020 2020 2010 2020 2020 4000 0000
 	0000 0000 0000 0000 0000 0000 0000 0000
 	0000 0000 0032 4c00 0000 0000 0000 0000
+
+@browser/buf $200
 
 @cells/buf ( cell[0x20] ) $3000
 
