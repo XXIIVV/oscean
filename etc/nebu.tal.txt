@@ -45,6 +45,8 @@
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
 	( date ) "9 20 "Mar 20 "2025 $2
 
+@src/default-name "untitled.bin $1
+
 @on-button ( -> )
 	.Controller/key DEI .Controller/button DEI
 	( | handlers )
@@ -77,45 +79,6 @@
 		DUP #0d NEQ ?{ select/<next> }
 		DUP #20 LTH OVR #7e GTH ORA ?{ DUP .select/b LDZ2 cmd/<insert> } }
 	POP BRK
-
-(
-@|src )
-
-@src/on-console ( -> )
-	.Console/read DEI
-	( ) DUP #20 GTH ?{
-		POP #0000 .Console/vector DEO2
-		project/<load>
-		BRK }
-	/<push>
-	BRK
-
-@src/<push> ( c -- )
-	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
-	STZ2
-	JMP2r
-
-@src/<reset> ( -- )
-	;&default-name
-	( >> )
-
-@src/<inject> ( str* -- )
-	[ LIT2 -&buf _&ptr ] STR
-	&>w ( -- )
-		LDAk /<push>
-		INC2 LDAk #1f GTH ?&>w
-	POP2 JMP2r
-
-	&default-name "untitled.csv $1
-
-@src/change ( -- )
-	.&changed LDZ ?{
-		[ LIT2 01 -&changed ] STZ !header/<draw> }
-	JMP2r
-
-@src/<unchange> ( -- )
-	.&changed LDZ ?{ JMP2r }
-	[ LIT2 00 -&changed ] STZ !header/<draw>
 
 @<redraw-all> ( -- )
 	header/<draw> !grid/<draw>
@@ -814,6 +777,8 @@
 (
 @|assets )
 
+
+
 @dict/err-size "File 20 "size 20 "exceeded. 0a $1
 
 
@@ -970,6 +935,42 @@
 	DEOr
 	JMP2r
 
+(
+@|src )
+
+@src/on-console ( -> )
+	.Console/read DEI
+	( ) DUP #20 GTH ?{
+		POP #0000 .Console/vector DEO2
+		project/<load>
+		BRK }
+	/<push>
+	BRK
+
+@src/<push> ( c -- )
+	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
+	STZ2
+	JMP2r
+
+@src/<reset> ( -- )
+	;&default-name
+	( >> )
+
+@src/<inject> ( str* -- )
+	[ LIT2 -&buf _&ptr ] STR
+	&>w ( -- )
+		LDAk /<push>
+		INC2 LDAk #1f GTH ?&>w
+	POP2 JMP2r
+
+@src/change ( -- )
+	.&changed LDZ ?{
+		[ LIT2 01 -&changed ] STZ !header/<draw> }
+	JMP2r
+
+@src/<unchange> ( -- )
+	.&changed LDZ ?{ JMP2r }
+	[ LIT2 00 -&changed ] STZ !header/<draw>
 
 
 

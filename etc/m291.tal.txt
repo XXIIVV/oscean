@@ -808,7 +808,7 @@
 	&>l ( -- )
 		DUP2 #0004 ADD2 .Screen/x DEO2
 		;&fill-icn .Screen/addr DEO2
-		[ LIT2 0f -Screen/sprite ] DEOk DEO
+		[ LIT2 0a -Screen/sprite ] DEOk DEO
 		INC2 GTH2k ?&>l
 	POP2 POP2 JMP2r
 
@@ -870,6 +870,105 @@
 	#20 chicago/<draw-char>
 	#09 chicago/<draw-left-color>
 	#20 !chicago/<draw-char>
+
+(
+@|stdlib )
+
+@cflc ( c -- lowercase )
+	DUP #41 SUB #1a GTH ?{ #20 ADD }
+	JMP2r
+
+@scap ( str* -- end* )
+	INC2 & LDAk ?scap
+	JMP2r
+
+@scmp3 ( a* b* -- f )
+	STH2
+	LDAkr LDAk STHr NEQ ?{ INC2r INC2 }
+	LDA2r LDA2 STH2r EQU2 JMP2r
+
+@<scpy> ( src* dst* -: )
+	STH2
+	&>w ( src* `dst* -- )
+		LDAk #00 STH2kr STA2
+		INC2r INC2 LDAk ?&>w
+	POP2 POP2r JMP2r
+
+@lcap ( str* -- next-line* )
+	LDAk #0a EQU ?{ INC2 & LDAk ?lcap }
+	JMP2r
+
+@<lcpy> ( src* dst* -- )
+	STH2
+	&w ( -- )
+	LDAk #1f GTH ?{
+		POP2 #00 STH2r STA
+		JMP2r }
+	LDAk #00 STH2kr STA2
+	INC2r INC2 !&w
+
+@<pdec> ( short* -- )
+	#000a SWP2 [ LITr ff ]
+	&>get ( -- )
+		SWP2k MOD2 STH
+		POP OVR2 DIV2 ORAk ?&>get
+	POP2 POP2
+	&>put ( -- )
+		STHr INCk ?{ POP JMP2r }
+		[ LIT "0 ] ADD #18 DEO !&>put
+
+@<pstr> ( str* -- )
+	LDAk #18 DEO
+	INC2 & LDAk ?<pstr>
+	POP2 JMP2r
+
+@<perr> ( str* -- )
+	LDAk #19 DEO
+	INC2 & LDAk ?<perr>
+	POP2 JMP2r
+
+@<phex> ( short* -: )
+	SWP /b
+	&b ( byte -: )
+	DUP #04 SFT /c
+	&c ( byte -: )
+	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #19 DEO
+	JMP2r
+
+@<prng-init> ( -- )
+	( > ) [ LIT2 00 -DateTime/second ] DEI
+	( > ) [ LIT2 00 -DateTime/minute ] DEI #60 SFT2 EOR2
+	( > ) [ LIT2 00 -DateTime/hour ] DEI #c0 SFT2 EOR2 ,prng/x STR2
+	( > ) [ LIT2 00 -DateTime/hour ] DEI #04 SFT2
+	( > ) [ LIT2 00 -DateTime/day ] DEI #10 SFT2 EOR2
+	( > ) [ LIT2 00 -DateTime/month ] DEI #60 SFT2 EOR2
+	( > ) .DateTime/year DEI2 #a0 SFT2 EOR2 ,prng/y STR2
+	JMP2r
+
+@prng ( -- number* )
+	( > ) [ LIT2 &x $2 ]
+	( > ) DUP2 #50 SFT2 EOR2
+	( > ) DUP2 #03 SFT2 EOR2
+	( > ) [ LIT2 &y $2 ] DUP2 ,&x STR2
+	( > ) DUP2 #01 SFT2 EOR2 EOR2
+	( > ) ,&y STR2k POP JMP2r
+
+(
+@|assets )
+
+@dict
+	&home-path "./ $1
+	&mp3-ext "mp3 $1
+	&empty "(empty) $1
+	&mpg-cmd "mpg123 20 "-R $1
+	&load-cmd "load 20 $1
+	&jump-cmd "jump 20 $1
+	&pause-cmd "pause 0a $1
+	&no-artist "Unknown 20 "Artist $1
+	&no-album "Unknown 20 "Album $1
+	&ellipses "... 20 $1
+
+
 
 (
 @|header )
@@ -1056,88 +1155,6 @@
 	JMP2r
 
 (
-@|stdlib )
-
-@cflc ( c -- lowercase )
-	DUP #41 SUB #1a GTH ?{ #20 ADD }
-	JMP2r
-
-@scap ( str* -- end* )
-	INC2 & LDAk ?scap
-	JMP2r
-
-@scmp3 ( a* b* -- f )
-	STH2
-	LDAkr LDAk STHr NEQ ?{ INC2r INC2 }
-	LDA2r LDA2 STH2r EQU2 JMP2r
-
-@<scpy> ( src* dst* -: )
-	STH2
-	&>w ( src* `dst* -- )
-		LDAk #00 STH2kr STA2
-		INC2r INC2 LDAk ?&>w
-	POP2 POP2r JMP2r
-
-@lcap ( str* -- next-line* )
-	LDAk #0a EQU ?{ INC2 & LDAk ?lcap }
-	JMP2r
-
-@<lcpy> ( src* dst* -- )
-	STH2
-	&w ( -- )
-	LDAk #1f GTH ?{
-		POP2 #00 STH2r STA
-		JMP2r }
-	LDAk #00 STH2kr STA2
-	INC2r INC2 !&w
-
-@<pdec> ( short* -- )
-	#000a SWP2 [ LITr ff ]
-	&>get ( -- )
-		SWP2k MOD2 STH
-		POP OVR2 DIV2 ORAk ?&>get
-	POP2 POP2
-	&>put ( -- )
-		STHr INCk ?{ POP JMP2r }
-		[ LIT "0 ] ADD #18 DEO !&>put
-
-@<pstr> ( str* -- )
-	LDAk #18 DEO
-	INC2 & LDAk ?<pstr>
-	POP2 JMP2r
-
-@<perr> ( str* -- )
-	LDAk #19 DEO
-	INC2 & LDAk ?<perr>
-	POP2 JMP2r
-
-@<phex> ( short* -: )
-	SWP /b
-	&b ( byte -: )
-	DUP #04 SFT /c
-	&c ( byte -: )
-	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #19 DEO
-	JMP2r
-
-@<prng-init> ( -- )
-	( > ) [ LIT2 00 -DateTime/second ] DEI
-	( > ) [ LIT2 00 -DateTime/minute ] DEI #60 SFT2 EOR2
-	( > ) [ LIT2 00 -DateTime/hour ] DEI #c0 SFT2 EOR2 ,prng/x STR2
-	( > ) [ LIT2 00 -DateTime/hour ] DEI #04 SFT2
-	( > ) [ LIT2 00 -DateTime/day ] DEI #10 SFT2 EOR2
-	( > ) [ LIT2 00 -DateTime/month ] DEI #60 SFT2 EOR2
-	( > ) .DateTime/year DEI2 #a0 SFT2 EOR2 ,prng/y STR2
-	JMP2r
-
-@prng ( -- number* )
-	( > ) [ LIT2 &x $2 ]
-	( > ) DUP2 #50 SFT2 EOR2
-	( > ) DUP2 #03 SFT2 EOR2
-	( > ) [ LIT2 &y $2 ] DUP2 ,&x STR2
-	( > ) DUP2 #01 SFT2 EOR2 EOR2
-	( > ) ,&y STR2k POP JMP2r
-
-(
 @|window )
 
 @window/<set-size> ( width* height* -- )
@@ -1160,7 +1177,7 @@
 @|theme )
 
 @theme/<reset> ( -- )
-	#f0a8 #f0ec #f0b9
+	#f0ad #f0ef #f0be
 	( >> )
 
 @theme/<set> ( r* g* b* -- )
@@ -1179,22 +1196,6 @@
 	[ LIT2 &r $2 ] [ LIT2 &g $2 ] [ LIT2 &b $2 ] !theme/<set>
 
 	&path ".theme $1
-
-(
-@|assets )
-
-@dict
-	&home-path "./ $1
-	&mp3-ext "mp3 $1
-	&empty "(empty) $1
-	&mpg-cmd "mpg123 20 "-R $1
-	&load-cmd "load 20 $1
-	&jump-cmd "jump 20 $1
-	&pause-cmd "pause 0a $1
-	&no-artist "Unknown 20 "Artist $1
-	&no-album "Unknown 20 "Album $1
-	&ellipses "... 20 $1
-
 
 
 ( assets )

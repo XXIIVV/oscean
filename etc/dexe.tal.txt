@@ -64,44 +64,7 @@
 	( - ) 21 00 =sel/<jump-d> =dict/jump-d }
 	( ) $1
 
-(
-@|src )
-
-@src/on-console ( -> )
-	.Console/read DEI
-	( ) DUP #20 GTH ?{
-		POP #0000 .Console/vector DEO2
-		project/<load>
-		BRK }
-	/<push>
-	BRK
-
-@src/<push> ( c -- )
-	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
-	STZ2
-	JMP2r
-
-@src/<reset> ( -- )
-	;&default-name
-	( >> )
-
-@src/<inject> ( str* -- )
-	[ LIT2 -&buf _&ptr ] STR
-	&>w ( -- )
-		LDAk /<push>
-		INC2 LDAk #1f GTH ?&>w
-	POP2 JMP2r
-
-	&default-name "untitled.bin $1
-
-@src/change ( -- )
-	.&changed LDZ ?{
-		[ LIT2 01 -&changed ] STZ !header/<draw> }
-	JMP2r
-
-@src/<unchange> ( -- )
-	.&changed LDZ ?{ JMP2r }
-	[ LIT2 00 -&changed ] STZ !header/<draw>
+@src/default-name "untitled.bin $1
 
 (
 @|vectors )
@@ -654,6 +617,42 @@
 	DEOr
 	JMP2r
 
+(
+@|src )
+
+@src/on-console ( -> )
+	.Console/read DEI
+	( ) DUP #20 GTH ?{
+		POP #0000 .Console/vector DEO2
+		project/<load>
+		BRK }
+	/<push>
+	BRK
+
+@src/<push> ( c -- )
+	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
+	STZ2
+	JMP2r
+
+@src/<reset> ( -- )
+	;&default-name
+	( >> )
+
+@src/<inject> ( str* -- )
+	[ LIT2 -&buf _&ptr ] STR
+	&>w ( -- )
+		LDAk /<push>
+		INC2 LDAk #1f GTH ?&>w
+	POP2 JMP2r
+
+@src/change ( -- )
+	.&changed LDZ ?{
+		[ LIT2 01 -&changed ] STZ !header/<draw> }
+	JMP2r
+
+@src/<unchange> ( -- )
+	.&changed LDZ ?{ JMP2r }
+	[ LIT2 00 -&changed ] STZ !header/<draw>
 
 
 
