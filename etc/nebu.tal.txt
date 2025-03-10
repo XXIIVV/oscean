@@ -34,7 +34,7 @@
 	;on-button .Controller/vector DEO2
 	;grid/on-mouse .Mouse/vector DEO2
 	( | loader )
-	.Console/type DEI ?{ cells/<new>
+	.Console/type DEI ?{ project/<new>
 		BRK }
 	;src/on-console .Console/vector DEO2
 	BRK
@@ -43,42 +43,42 @@
 	( name ) "Nebu 0a
 	( desc ) "Spreadsheet 20 "Editor 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "9 20 "Mar 20 "2025 $2
+	( date ) "9 20 "Mar 20 "2025 $1 01
+	( - ) 0a =manifest/dat
+
+@manifest/dat ( . )
+	={ =dict/nebu
+	( - ) 01 "n =project/<new> =dict/new
+	( - ) 01 "o =browser/<open> =dict/load
+	( - ) 01 "s =project/<save> =dict/save
+	( - ) 01 "q =project/<quit> =dict/quit }
+	={ =dict/edit
+	( - ) 01 "c =snarf/<copy> =dict/copy
+	( - ) 01 "v =snarf/<paste> =dict/paste
+	( - ) 01 "x =snarf/<cut> =dict/cut
+	( - ) 01 0d =cmd/<inject-rect> =dict/inject
+	( - ) 00 0d =select/<next> =dict/next
+	( - ) 00 1b =select/<reset> =dict/deselect
+	( - ) 00 08 =cmd/<erase> =dict/erase
+	( - ) 00 7f =cmd/<delete> =dict/delete }
+	={ =dict/move
+	( - ) 10 00 =select/<move-u> =dict/move-u
+	( - ) 20 00 =select/<move-d> =dict/move-d
+	( - ) 40 00 =select/<move-l> =dict/move-l
+	( - ) 80 00 =select/<move-r> =dict/move-r
+	( - ) 14 00 =select/<size-u> =dict/size-u
+	( - ) 24 00 =select/<size-d> =dict/size-d
+	( - ) 44 00 =select/<size-l> =dict/size-l
+	( - ) 84 00 =select/<size-r> =dict/size-r }
+	( ) $1
 
 @src/default-name "untitled.bin $1
 
 @on-button ( -> )
-	.Controller/key DEI .Controller/button DEI
-	( | handlers )
-	DUP #10 NEQ ?{ select/<move-u> }
-	DUP #20 NEQ ?{ select/<move-d> }
-	DUP #40 NEQ ?{ select/<move-l> }
-	DUP #80 NEQ ?{ select/<move-r> }
-	DUP #14 NEQ ?{ select/<size-u> }
-	DUP #24 NEQ ?{ select/<size-d> }
-	DUP #44 NEQ ?{ select/<size-l> }
-	DUP #84 NEQ ?{ select/<size-r> }
-	( | ctrl )
-	DUP2 [ LIT2 "n 01 ] NEQ2 ?{ cells/<new> }
-	DUP2 [ LIT2 "o 01 ] NEQ2 ?{ project/<load> }
-	DUP2 [ LIT2 "s 01 ] NEQ2 ?{ ;src/buf cells/<save> }
-	DUP2 [ LIT2 "c 01 ] NEQ2 ?{ snarf/<copy> }
-	DUP2 [ LIT2 "v 01 ] NEQ2 ?{ snarf/<paste> }
-	DUP2 [ LIT2 "x 01 ] NEQ2 ?{ snarf/<cut> }
-	DUP2 [ LIT2 0d 01 ] NEQ2 ?{ .select/b LDZ2 cmd/<inject-rect> }
-	( | spacer key )
-	OVR .src/spacer LDZ NEQ ?{ POP2 select/<move-r>
+	.Controller/button DEI2 manifest/scan INC2k ORA ?{
+		( insert ) POP2 .Controller/key DEI cmd/<insert>
 		BRK }
-	( | key )
-	#fb AND ?{
-		DUP #1b NEQ ?{ select/<reset> }
-		DUP #08 NEQ ?{
-			.select/a LDZ2 .select/b LDZ2 EQU2 ?{ ;cmd/do-delete cmd/<apply> }
-			.select/b LDZ2 cmd/<erase> }
-		DUP #7f NEQ ?{ ;cmd/do-delete cmd/<apply> }
-		DUP #0d NEQ ?{ select/<next> }
-		DUP #20 LTH OVR #7e GTH ORA ?{ DUP .select/b LDZ2 cmd/<insert> } }
-	POP BRK
+	( * ) JSR2 BRK
 
 @<redraw-all> ( -- )
 	header/<draw> !grid/<draw>
@@ -98,8 +98,8 @@
 %exists ( index* -- f ) {
 	INC2k ORA }
 
-@cmd/<inject-rect> ( x y -- )
-	.select/a LDZ2 .select/b LDZ2 NEQ2 ?{ POP2 JMP2r }
+@cmd/<inject-rect> ( -- )
+	.select/b LDZ2 .select/a LDZ2 OVR2 NEQ2 ?{ POP2 JMP2r }
 	select/<size-u>
 	( -- )
 
@@ -110,15 +110,18 @@
 		INC2r INC2 LDAk ?&>wi
 	POP2 POP2r src/change !select/<set-a>
 
-@cmd/<insert> ( c x y -- )
-	cells/get-addr DUP2 scap
-	( clamp ) SWP2k SUB2 NIP #1f LTH ?{ POP2 POP2 POP JMP2r }
-	NIP2
-	( save ) STA
-	grid/<draw>
-	src/change [ LIT2 01 -&inserted ] STZ !/<draw>
+@cmd/<insert> ( c -- )
+	DUP #20 LTH OVR #7e GTH ORA ?{
+		.select/b LDZ2 cells/get-addr DUP2 scap
+		( clamp ) SWP2k SUB2 NIP #1f LTH ?{ POP2 POP2 POP JMP2r }
+		NIP2
+		( save ) STA
+		grid/<draw>
+		src/change [ LIT2 01 -&inserted ] STZ !/<draw> }
+	POP JMP2r
 
-@cmd/<erase> ( x y -- )
+@cmd/<erase> ( -- )
+	.select/b LDZ2 .select/a LDZ2 OVR2 EQU2 ?{ ;cmd/do-delete cmd/<apply> }
 	cells/get-addr DUP2 scap
 	( clamp ) NEQ2k ?{ POP2 POP2 JMP2r }
 	NIP2
@@ -128,6 +131,10 @@
 @cmd/do-delete ( x y -- )
 	cells/get-addr LDAk ?{ POP2 JMP2r }
 	src/change #0020 !<mclr>
+
+@cmd/<delete> ( -- )
+	;cmd/do-delete
+	( >> )
 
 @cmd/<apply> ( fn* -- )
 	,&fn STR2
@@ -578,11 +585,6 @@
 @cells/get-addr ( x y -- addr* )
 	PROM #30 SFT2 ADD2 #50 SFT2 ;&buf ADD2 JMP2r
 
-@cells/<new> ( -- )
-	src/<reset>
-	/<clear>
-	src/<unchange> !grid/<draw>
-
 @cells/<clear> ( -- )
 	;&buf [ LIT2 00 -LINES ] #80 SFT2 !<mclr>
 
@@ -685,13 +687,24 @@
 	/<copy>
 	;cmd/do-delete !cmd/<apply>
 
-@snarf/filepath ".snarf $1
+	&filepath ".snarf $1
 
 (
 @|project )
 
+@project/<new> ( -- )
+	src/<reset>
+	cells/<clear>
+	src/<unchange> !grid/<draw>
+
 @project/<load> ( -- )
 	;src/buf !cells/<load>
+
+@project/<save> ( -- )
+	;src/buf !cells/<save>
+
+@project/<quit> ( -- )
+	#800f JMP2r
 
 (
 @|File )
@@ -777,9 +790,31 @@
 (
 @|assets )
 
-
-
-@dict/err-size "File 20 "size 20 "exceeded. 0a $1
+@dict
+	&nebu "Nebu $1
+	&new "New $1
+	&load "Load $1
+	&save "Save $1
+	&quit "Quit $1
+	&edit "Edit $1
+	&copy "Copy $1
+	&paste "Paste $1
+	&cut "Cut $1
+	&inject "Inject $1
+	&next "Next $1
+	&deselect "Deselect $1
+	&erase "Erase $1
+	&delete "Delete $1
+	&move "Move $1
+	&move-u "Move 20 "Up $1
+	&move-d "Move 20 "Down $1
+	&move-l "Move 20 "Left $1
+	&move-r "Move 20 "Right $1
+	&size-u "Size 20 "Up $1
+	&size-d "Size 20 "Down $1
+	&size-l "Size 20 "Left $1
+	&size-r "Size 20 "Right $1
+	&err-size "File 20 "size 20 "exceeded. 0a $1
 
 
 
@@ -807,8 +842,11 @@
 	BRK
 
 @browser/on-button ( -> )
-	.Controller/button DEI2 #0d NEQ ?{ /<select-active> }
-	( | handlers )
+	.Controller/button DEI2
+	( | key handlers )
+	DUP #1b NEQ ?{ /<close> }
+	#0d NEQ ?{ /<select-active> }
+	( | but handlers )
 	DUP #10 NEQ ?{ #ff /<hover-mod> }
 	DUP #20 NEQ ?{ #01 /<hover-mod> }
 	DUP #40 NEQ ?{ #f9 /<hover-mod> }
@@ -1112,6 +1150,22 @@
 	[ LIT2 &y $2 ] #0004 SUB2 .Screen/y DEO2
 	.Screen/sprite DEOk DEO
 	JMP2r
+
+(
+@|manifest )
+
+@manifest/scan ( but key -- fn* )
+	ORAk ?{ POP2 #ffff JMP2r }
+	,&bk STR2
+	;&dat
+	&>cat ( -- )
+		LDA2k OVR2 #0004 ADD2
+		&>opt ( -- )
+			LDA2k [ LIT2 &bk $2 ] NEQ2 ?{
+				NIP2 NIP2 INC2 INC2 LDA2 JMP2r }
+			#0006 ADD2 GTH2k ?&>opt
+		POP2 POP2 LDA2 LDAk ?&>cat
+	POP2 #ffff JMP2r
 
 (
 @|window )
@@ -1814,7 +1868,6 @@
 @fill-icn [ ffff ffff ffff ffff ffff ffff ffff ffff ]
 @halftone-icn [ aa55 aa55 aa55 aa55 aa55 aa55 aa55 aa55 ]
 @diag-icn [ 1122 4488 1122 4488 1122 4488 1122 4488 ]
-@dotted-icn [ 8800 2200 8800 2200 8800 2200 8800 2200 ]
 @arrow-icn [ 0000 0000 80c0 e0f0 e0c0 8000 0000 0000 ]
 @line-icn [ aa00 0000 0000 0000 0000 0000 0000 0000 ]
 @check-icn [ aa55 aa55 aa55 aa55 aa55 aa55 aa55 aa55 ]
