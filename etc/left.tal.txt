@@ -12,7 +12,7 @@
 
 |000
 
-	@filepath/buf $2f &bufend $1
+	@filepath/buf $2f &bufend $1 &state $1
 	@search/buf $2f &bufend $1
 	@flen/buf $5
 	@nav/buf $60 &bufend $1 &scroll $1 &visible $1 &cat $1 &symbol $1
@@ -23,6 +23,7 @@
 	@scrollbar/height $2 &ratio $2
 	@highlight/comment $1 &label $1 &raw $1
 	@textarea/length $2
+	@menu/sub $1 &anchor $2 &cat $2
 
 |100
 
@@ -32,12 +33,13 @@
 	( | size 550x2de )
 	theme/<load>
 	window/<set-default-size>
+	menu/<init>
 	.filepath/buf LDZ ?&soft
 	( | cache position )
 	.Screen/height DEI2 #0028 SUB2
 	( ) DUP2 #0018 DIV2 ;textarea/max-lines STA2
 	( ) .scrollbar/height STZ2
-	#07 get-cat-x #0004 ADD2 ;filepath/anchor STA2
+	#01c8 ;filepath/anchor STA2
 	#0001 .scrollbar/ratio STZ2
 	[ LIT2 01 -nav/cat ] STZ
 	( | defaults )
@@ -59,50 +61,51 @@
 	( name ) "Left 0a
 	( details ) "A 20 "Text 20 "Editor 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "24 20 "Feb 20 "2025 $1 02
+	( date ) "11 20 "Mar 20 "2025 $1 02
 	( > ) 83 =appicon
-	( > ) 0a =manifest
+	( > ) 0a =manifest/dat
 
-@manifest 07 "Left $1
-	( > ) 01 "n =file-new "New $1
-	( > ) 01 "r =filepath/trap "Rename $1
-	( > ) 01 "o =file-reopen "Open $1
-	( > ) 01 "s =file-save "Save $1
-	( > ) 01 "p =file-send "Send $1
-	( > ) 01 "b =file-build "Build $1
-	( > ) 01 "q =exit "Exit $1
-	( >>>>> ) 06 "Edit $1
-	( > ) 01 "c =selection/snarf "Copy $1
-	( > ) 01 "v =snarf/paste "Paste $1
-	( > ) 05 "V =snarf/paste-binary "Paste 20 "Binary $1
-	( > ) 01 "x =selection/cut "Cut $1
-	( > ) 00 08 =erase "Erase $1
-	( > ) 00 7f =delete "Delete $1
-	( >>>>> ) 02 "Go $1
-	( . ) 01 "/ =filepath/pop-folder "Directory $1
-	( . ) 01 0d =filepath/push-selection "Selection $1
-	( >>>>> ) 06 "Format $1
-	( . ) 01 "t =format-strip "Strip $1
-	( . ) 01 "i =selection/trim "Trim $1
-	( . ) 01 "y =selection/clip "Clip $1
-	( . ) 01 "j =selection/join "Join $1
-	( . ) 00 09 =tab "Tab $1
-	( . ) 04 09 =untab "Untab $1
-	( >>>>> ) 04 "Select $1
-	( . ) 01 "a =selection/set-all "All $1
-	( . ) 01 09 =select-current-word "Word $1
-	( . ) 01 "g =select-current-symbol "Symbol $1
-	( . ) 00 1b =reset-each "Reset $1
-	( >>>>> ) 01 "Find $1
-	( . ) 01 "f =search/capture "Selection $1
-	( >>>>> ) 06 "View $1
-	( . ) 01 "h =highlight/toggle "Highlight $1
-	( . ) 01 20 =search/capture-word "Symbol $1
-	( . ) 01 "l =nav/toggle-categories "Categories $1
-	( . ) 01 "d =nav/toggle-sidebar "Navbar $1
-	( . ) 01 "m =window/toggle-expand "Expand $1
-	( . ) 00 00 =theme/<reset>
-	"Reset 20 "Theme $1 $1
+@manifest/dat ( . )
+	={ =dict/left
+	( - ) 01 "n =file-new =dict/new
+	( - ) 01 "r =filepath/trap =dict/rename
+	( - ) 01 "o =file-reopen =dict/open
+	( - ) 01 "s =file-save =dict/save
+	( - ) 01 "p =file-send =dict/send
+	( - ) 01 "b =file-build =dict/build
+	( - ) 01 "q =file/exit =dict/exit }
+	={ =dict/edit
+	( - ) 01 "c =selection/snarf =dict/copy
+	( - ) 01 "v =snarf/paste =dict/paste
+	( - ) 05 "V =snarf/paste-binary =dict/paste-binary
+	( - ) 01 "x =selection/cut =dict/cut
+	( - ) 00 08 =erase =dict/erase
+	( - ) 00 7f =delete =dict/delete }
+	={ =dict/go
+	( - ) 01 "/ =filepath/pop-folder =dict/directory
+	( - ) 01 0d =filepath/push-selection =dict/selection }
+	={ =dict/format
+	( - ) 01 "t =format-strip =dict/strip
+	( - ) 01 "i =selection/trim =dict/trim
+	( - ) 01 "y =selection/clip =dict/clip
+	( - ) 01 "j =selection/join =dict/join
+	( - ) 00 09 =tab =dict/tab
+	( - ) 04 09 =untab =dict/untab }
+	={ =dict/select
+	( - ) 01 "a =selection/set-all =dict/all
+	( - ) 01 09 =select-current-word =dict/word
+	( - ) 01 "g =select-current-symbol =dict/symbol
+	( - ) 00 1b =reset-each =dict/reset }
+	={ =dict/find
+	( - ) 01 "f =search/capture =dict/selection }
+	={ =dict/view
+	( - ) 01 "h =highlight/toggle =dict/highlight
+	( - ) 01 20 =search/capture-word =dict/symbol
+	( - ) 01 "l =nav/toggle-categories =dict/categories
+	( - ) 01 "d =nav/toggle-sidebar =dict/navbar
+	( - ) 01 "m =window/toggle-expand =dict/expand
+	( - ) 00 00 =theme/<reset> =dict/reset-theme }
+	$1
 
 (
 @|macros )
@@ -179,14 +182,12 @@
 	BRK
 
 @on-button ( -> )
-	.Controller/button DEI2 DUP2 find-modkey ORAk ?&run
-	POP2 SWP DUP #f0 AND ?on-button-arrow
-	#02 AND ?on-button-alt
-	<insert-char>
-	BRK
-
-	&run ( {cmd}* -> )
-	JSR2 POP2 BRK
+	.Controller/button DEI2 DUP2 manifest/scan INC2k ORA ?{
+		POP2 SWP DUP #f0 AND ?on-button-arrow
+		#02 AND ?on-button-alt
+		<insert-char>
+		BRK }
+	( * ) JSR2 POP2 BRK
 
 @on-button-arrow ( key button -> )
 	NIP
@@ -248,7 +249,7 @@
 	BRK
 
 @null/on-mouse ( -> )
-	#43 <update-cursor>
+	#43 cursor/<update>
 	BRK
 
 (
@@ -436,7 +437,7 @@
 @search/<draw-widget> ( -- )
 	caret/is-invisible ?{ ;&widget-fn #05 !widget/<draw> }
 	JMP2r
-	&widget-fn ;&buf #04 !ank/<draw-str>
+	&widget-fn ;&buf #04 !ank/<draw-left-color>
 
 (
 @|autocomplete )
@@ -534,7 +535,7 @@
 @|scroll )
 
 @scrollbar/on-mouse ( -> )
-	#42 <update-cursor>
+	#42 cursor/<update>
 	.Mouse/state DEI ?&on-down
 	BRK
 
@@ -544,7 +545,7 @@
 	BRK
 
 @scrollbar/on-mouse-drag ( -> )
-	#43 <update-cursor>/no-refocus
+	#43 cursor/<update-trap>
 	.Mouse/state DEI ?{ ;&on-mouse .Mouse/vector DEO2
 		BRK }
 	.Mouse/y DEI2 DUP2 [ LIT2 &drag $2 ] SUB2 .&ratio LDZ2 MUL2 /<mod-y>
@@ -589,7 +590,7 @@
 		;textarea/buf SUB2 .scroll/addr STZ2
 		.scroll/y STZ2
 		#00 nav/<set-y>
-		filepath/<draw-position> !reqdraw-both }
+		filepath/<draw-line> !reqdraw-both }
 	POP2 POP2 JMP2r
 
 (
@@ -604,7 +605,7 @@
 	BRK
 
 @textarea/on-mouse ( -> )
-	#41 <update-cursor>
+	#41 cursor/<update>
 	( | scroll )
 	.Mouse/scrolly DEI2 DUP ?&on-scroll
 	POP2
@@ -630,7 +631,7 @@
 	BRK
 
 @textarea/on-mouse-drag ( -> )
-	#43 <update-cursor>/no-refocus
+	#43 cursor/<update-trap>
 	.Mouse/state DEI ?{ ;&on-mouse .Mouse/vector DEO2
 		BRK }
 	touch-to-addr selection/<set-b>
@@ -673,7 +674,7 @@
 	/get-anchor .Screen/x DEO2
 	<draw-lb>
 	#0000 OVR2 SUB2 #0f ank/<draw-dec>
-	;dict/bytes-free #0f ank/<draw-str> &end POP2
+	;dict/bytes-free #0f ank/<draw-left-color> &end POP2
 	( | draw caret )
 	has-length ?{
 		caret/is-invisible ?{
@@ -717,7 +718,7 @@
 @|nav )
 
 @nav/on-mouse ( -> )
-	[ LIT2 00 -Mouse/state ] DEI NEQ #41 ADD <update-cursor>
+	[ LIT2 00 -Mouse/state ] DEI NEQ #41 ADD cursor/<update>
 	( | scroll )
 	.Mouse/scrolly DEI2 DUP ?&on-scroll
 	POP2
@@ -838,7 +839,7 @@
 @nav/<draw-empty> ( range* -- )
 	POP2 #0010 .Screen/x DEO2
 	#0028 .Screen/y DEO2
-	;dict/empty #03 !ank/<draw-str>
+	;dict/empty #03 !ank/<draw-left-color>
 
 @nav/<draw-label> ( ztr selected -- ztr )
 	OVR .&buf SUB #01 SFT SWP /id-to-color
@@ -898,11 +899,11 @@
 	[ LIT2 90 -Screen/pixel ] DEO !reqdraw-both
 
 (
-@|document )
+@|file )
 
 @filepath/on-frame ( -> )
 	[ LIT &timer $1 ] DUP #07 AND ?{
-		DUP #08 AND INC /<draw> }
+		DUP #08 AND INC /<draw-color> }
 	INC ,&timer STR
 	BRK
 
@@ -927,7 +928,7 @@
 @filepath/trap ( -- )
 	;&on-frame .Screen/vector DEO2
 	;&on-button .Controller/vector DEO2
-	#40 !<draw-cursor>
+	#40 !cursor/<draw>
 
 @filepath/untrap ( -- )
 	;on-frame-draw .Screen/vector DEO2
@@ -935,7 +936,7 @@
 	;textarea/on-console .Console/vector DEO2
 	( | if is empty, reset to untitled )
 	.&buf LDZ ?{ /<reset> }
-	#01 !/<draw>
+	#03 !/<draw-color>
 
 @filepath/erase ( -- )
 	/<clear>
@@ -965,13 +966,13 @@
 	( clamp ) DUP .&bufend NEQ ?{ POP2 POP JMP2r }
 	INCk ,&ptr STR
 	STZ2
-	#01 !/<draw>
+	#03 !/<draw-color>
 
 @filepath/pop ( -- )
 	[ LIT2 -&buf _&ptr ] LDR NEQk ?{ POP2 JMP2r }
 	#01 SUB DUP ,&ptr STR
 	#00 SWP STZ
-	POP #01 !/<draw>
+	POP #03 !/<draw-color>
 
 @filepath/pop-file ( -- )
 	( | remove trailing slash )
@@ -995,26 +996,36 @@
 	[ LIT2 a0 -Screen/pixel ] DEO
 	JMP2r
 
-@filepath/<draw> ( color -- )
-	[ LIT2 &anchor $2 ] .Screen/x DEO2
-	#0004 .Screen/y DEO2
-	[ LIT2 25 -Screen/auto ] DEO
-	;&buf ROT ank/<draw-str>
-	.Screen/x DEI2 ,&anchor-position STR2
+@filepath/<set-state> ( state -- )
+	.&state STZ
 	( >> )
 
-@filepath/<draw-position> ( -- )
-	[ LIT2 &anchor-position $2 ] .Screen/x DEO2
+@filepath/<draw-state> ( -- )
+	#0002 .Screen/x DEO2
 	#0004 .Screen/y DEO2
 	[ LIT2 25 -Screen/auto ] DEO
-	;&spacer #03 ank/<draw-str>
-	( ) .scroll/y LDZ2 INC2 #03 ank/<draw-dec>
-	( pad ) [ LIT2 21 -Screen/auto ] DEO
-	;fill-icn .Screen/addr DEO2
-	[ LIT2 00 -Screen/sprite ] DEOk DEOk DEO
+	;ank/diamond .Screen/addr DEO2
+	.&state LDZ .Screen/sprite DEOk DEO
 	JMP2r
 
-	&spacer ": $1
+@filepath/<draw> ( -- )
+	#03
+
+@filepath/<draw-color> ( color -- )
+	[ LIT2 &anchor f000 ] .Screen/x DEO2
+	#001c .Screen/y DEO2
+	( clear ) [ LIT2 a0 -Screen/pixel ] DEO
+	#0004 .Screen/y DEO2
+	;&buf ROT ank/<draw-left-color>
+	.Screen/x DEI2 #0008 ADD2 ,&anchor-line STR2
+	( >> )
+
+@filepath/<draw-line> ( -- )
+	[ LIT2 &anchor-line f000 ] .Screen/x DEO2
+	#001c .Screen/y DEO2
+	( clear ) [ LIT2 a0 -Screen/pixel ] DEO
+	#0004 .Screen/y DEO2
+	.scroll/y LDZ2 INC2 #02 !ank/<draw-dec>
 
 @filepath/is-tal ( -- bool )
 	;&ptr LDA
@@ -1027,11 +1038,11 @@
 	#0001 .textarea/length STZ2
 	filepath/<reset>
 	( | reset position )
-	#05 menu/<draw-state>
+	#05 filepath/<set-state>
 	;textarea/buf selection/<set-a>
 	#0000 scrollbar/<set-y>
 	( | draw )
-	#01 filepath/<draw> !reqdraw-both
+	#03 filepath/<draw-color> !reqdraw-both
 
 @file-open ( -- )
 	#0000 scrollbar/<set-y>
@@ -1049,14 +1060,14 @@
 	( | draw )
 	scrollbar/<update>
 	selection/<reset>
-	#01 filepath/<draw>
-	#05 menu/<draw-state> !reqdraw-both
+	#03 filepath/<draw-color>
+	#05 filepath/<set-state> !reqdraw-both
 
 @file-save ( -- )
 	;filepath/buf .File/name DEO2
 	.textarea/length LDZ2 #0001 SUB2 .File/length DEO2
 	;textarea/buf .File/write DEO2
-	#05 !menu/<draw-state>
+	#05 !filepath/<set-state>
 
 @file-send ( -- )
 	get-to-from SUB2k #0002 GTH2 ?{ POP2 POP2 get-eof ;textarea/buf }
@@ -1109,6 +1120,10 @@
 		DUP #0f AND #00 NEQ #16 MUL #0a ADD STH2kr INC2r STA !&s }
 	POP2 STH2r JMP2r
 
+@file/exit ( -- )
+	#800f DEO
+	JMP2r
+
 (
 @|ank )
 
@@ -1136,12 +1151,6 @@
 		ank/get-width STH2
 		ADD2r INC2 !&>w
 
-@ank/<draw-str-right> ( text* color -- text* )
-	STH
-	DUP2 /get-strw STH2
-	.Screen/x DEI2k STH2r SUB2 ROT DEO2
-	STHr !/<draw-str>
-
 @ank/<draw-range-color> ( to* from* color -- )
 	,&color-utf8 STR
 	[ LIT2 25 -Screen/auto ] DEO
@@ -1150,19 +1159,12 @@
 			/draw-utf8 utf8/next GTH2k ?&>l }
 	POP2 POP2 JMP2r
 
-@ank/<draw-str> ( str* color -- )
+@ank/<draw-left-color> ( str* color -- )
 	,&color-utf8 STR
 	[ LIT2 25 -Screen/auto ] DEO
 	&>wd ( -- )
 		LDAk ?{ POP2 JMP2r }
 		/draw-utf8 utf8/next !&>wd
-
-@ank/draw-str ( str* color -- cap* )
-	,&color-utf8 STR
-	[ LIT2 25 -Screen/auto ] DEO
-	&>wd2 ( -- )
-		LDAk ?{ INC2 JMP2r }
-		/draw-utf8 utf8/next !&>wd2
 
 @ank/draw-utf8 ( addr* -- addr* )
 	[ LITr -Screen/x ] DEI2r ank/get-width STH2
@@ -1188,6 +1190,7 @@
 
 @ank/<draw-dec> ( short* color -- )
 	,&color-ascii STR
+	[ LIT2 25 -Screen/auto ] DEO
 	#000a SWP2 [ LITr ff ]
 	&>get ( -- )
 		SWP2k DIV2k MUL2 SUB2 STH
@@ -1404,7 +1407,7 @@
 
 @<mod-length> ( change* -- )
 	.textarea/length LDZ2 ADD2 .textarea/length STZ2
-	reqdraw-both #0a !menu/<draw-state>
+	reqdraw-both #0a !filepath/<set-state>
 
 @join-spaces ( addr* -- addr* )
 	[ LIT2r 0000 ]
@@ -1425,12 +1428,8 @@
 	INC2 GTH2k ?&>l
 	POP2 POP2 selection/<reset> !reqdraw-both
 
-@redraw-all ( -- )
-	( | clear menu )
-	#0010 .Screen/x DEO2
-	#0030 .Screen/y DEO2
-	[ LIT2 a0 -Screen/pixel ] DEO
-	#01 filepath/<draw>
+@<redraw-all> ( -- )
+	menu/<draw>
 	nav/<redraw> !textarea/<redraw>
 
 @widget/<draw> ( {fn}* color -- )
@@ -1517,167 +1516,201 @@
 		INC2k get-to GTH2 ?{ #01 JMP2r } }
 	#00 JMP2r
 
+@dict/left "Left $1
+	&new "New $1
+	&rename "Rename $1
+	&open "Open $1
+	&save "Save $1
+	&send "Send $1
+	&build "Build $1
+	&exit "Exit $1
+	&edit "Edit $1
+	&copy "Copy $1
+	&paste "Paste $1
+	&paste-binary "Paste 20 "Binary $1
+	&cut "Cut $1
+	&erase "Erase $1
+	&delete "Delete $1
+	&go "Go $1
+	&directory "Directory $1
+	&selection "Selection $1
+	&format "Format $1
+	&strip "Strip $1
+	&trim "Trim $1
+	&clip "Clip $1
+	&join "Join $1
+	&tab "Tab $1
+	&untab "Untab $1
+	&select "Select $1
+	&all "All $1
+	&word "Word $1
+	&symbol "Symbol $1
+	&reset "Reset $1
+	&find "Find $1
+	&view "View $1
+	&highlight "Highlight $1
+	&categories "Categories $1
+	&navbar "Navbar $1
+	&expand "Expand $1
+	&reset-theme "Reset 20 "Theme $1 &bytes-free 20 "bytes 20 "free. $1
+	&empty "Empty $1
 
 
-( manifest )
 
-
+( @|menu )
 
 @menu/on-mouse ( -> )
-	[ LIT2 00 -Mouse/state ] DEI NEQ #42 ADD <update-cursor>/no-refocus
-	( | when touch cat )
-	[ LIT2 00 -Mouse/state ] DEI EQU ?{
-		.Mouse/y DEI2 #001a GTH2 ?{
-			.Mouse/x DEI2 get-x-cat <menu-select-cat>
-			[ LIT2 00 -Mouse/state ] DEO
-			BRK } }
-	;<draw-menu>/sel LDA #ff EQU ?&no-sub
-	( | when sel changed )
-	.Mouse/y DEI2 #0004 SUB2 #0018 DIV2 NIP #01 SUB
-	( | changed )
-	DUP ;<draw-sub>/sel LDA EQU ?&no-change
-	DUP ;<draw-sub>/sel STA
-	;<draw-menu>/sel LDA <draw-sub> &no-change POP
-	( | when touch sub )
-	[ LIT2 00 -Mouse/state ] DEI EQU ?&no-touch-sub
-	;<draw-sub>/sel LDA menu-select-sub [ LIT2 00 -Mouse/state ] DEO &no-touch-sub BRK
+	[ LIT2 00 -Mouse/state ] DEI NEQ #42 ADD cursor/<update>
+	[ LIT2 &last $1 -Mouse/state ] DEI DUP ,&last STR
+	DUP2 #0001 NEQ2 ?{ /<touch-cat> }
+	POP2 BRK
 
-	&no-sub ( don't leave if menu is active )
-	;<draw-menu>/sel LDA INC ?&no-leave
-	.Mouse/y DEI2 #0018 LTH2 ?&no-leave
-	menu-close Mouse/<update-focus> &no-leave BRK
+@menu/on-exit-cat ( -> )
+	.Mouse/state DEI ?{ ;&on-mouse .Mouse/vector DEO2 }
+	BRK
 
-(
-@|actions )
+@menu/on-exit-sub ( -> )
+	.Mouse/state DEI ?{ Mouse/<update-focus> }
+	BRK
 
-@menu-deselect ( cat cat -- )
-	POP2
+@menu/on-open-cat ( -> )
+	.Mouse/state DEI ?{ ;&on-trap .Mouse/vector DEO2 }
+	BRK
 
-@menu-close ( -- )
-	;<draw-menu>/sel LDA DUP #ff EQU ?{
-		DUP <clear-sub>
-		#ff ;<draw-menu>/sel STA
-		redraw-all menu/<draw> }
-	POP JMP2r
+@menu/on-trap ( -> )
+	#43 cursor/<update-trap>
+	.Mouse/y DEI2 DUP2 #001c LTH2 ?/on-trap-cat
+	( >> )
 
-@menu/<draw-state> ( state -- )
-	#0002 .Screen/x DEO2
-	#0004 .Screen/y DEO2
-	[ LIT2 25 -Screen/auto ] DEO
-	;ank/diamond .Screen/addr DEO2
-	.Screen/sprite DEOk DEO
-	JMP2r
+@menu/on-trap-sub ( y* -> )
+	#001c SUB2 #0018 DIV2 NIP .Mouse/state DEI ?{ /<hover-sub>
+		BRK }
+	/<touch-sub>
+	BRK
 
-@<menu-select-cat> ( cat -- )
-	DUP get-cat ORA ?{ POP JMP2r }
-	( clear ) ;<draw-menu>/sel LDA
-	( unchanged ) EQUk ?menu-deselect
-	( unselected ) DUP #ff EQU ?{ DUP <clear-sub> }
-	POP
-	( | draw )
-	redraw-all <draw-spacer>
-	#ff ;<draw-sub>/sel STA
-	DUP ;<draw-menu>/sel STA
-	<draw-sub> !<draw-menu>
+@menu/on-trap-cat ( y* -> )
+	POP2 .Mouse/state DEI ?{ BRK }
+	[ LIT2 00 -Mouse/state ] DEO
+	/<touch-cat>
+	BRK
 
-@menu-select-sub ( sub -- )
-	,&t STR
-	;<draw-menu>/sel LDA get-cat get-cat-length #00
-	&>l ( -- )
-		DUP [ LIT &t $1 ] NEQ ?{
-			menu-close POP2 INC2 INC2 LDA2 JMP2 }
-		next-sub ?&>l
-	POP2 POP2 !menu-close
+@menu/<touch-cat> ( -- )
+	[ LITr -Mouse/x ] DEI2r #000b STH2k .&anchor STZ2
+	;manifest/dat
+	&>wt ( -- )
+		INC2k INC2 LDA2 ank/get-strw #000b ADD2 STH2
+		ADD2r GTH2kr STHr ?{
+			POP2r POP2r
+			( exit ) DUP2 .&cat LDZ2 NEQ2 ?{ POP2 #ffff ;&on-exit-cat !/<open> }
+			( open ) ;&on-open-cat /<open> !/<draw-subs> }
+		STH2kr .&anchor STZ2
+		LDA2 LDAk ?&>wt
+	POP2r POP2r POP2 JMP2r
 
-@get-cat ( cat -- cat* )
-	[ LIT2 00 _&t ] STR2
-	;<draw-menu>/manifest LDA2
-	&>w ( -- )
-		[ LIT2 &t $1 &id $1 ] INCk ,&id STR
-		EQU ?&end
-		skip-cat LDAk ?&>w
-	POP2 #0000 &end JMP2r
+@menu/<hover-sub> ( id -- )
+	DUP .&sub LDZ NEQ ?{ POP JMP2r }
+	.&sub STZ !/<draw-subs>
 
-@get-cat-length ( cat* -- sub* length )
-	LDAk STH
-	INC2 scap/ INC2 STHr JMP2r
+@menu/<touch-sub> ( id -- )
+	( | clamp )
+	DUP .&cat LDZ2 LDA2k SWP2 SUB2 #0004 SUB2 #0006 DIV2 NIP LTH ?{
+		( outside ) POP #ffff ;&on-exit-sub !/<open> }
+	#00 SWP #0006 MUL2 #0004 ADD2 .&cat LDZ2 ADD2 #0002 ADD2 LDA2
+	( * ) JSR2 #ffff ;&on-exit-sub !/<open>
 
-@get-cat-x ( cat -- x* )
-	[ LIT2 00 _&t ] STR2
-	[ LIT2r 0000 ] ;<draw-menu>/manifest LDA2
-	&>w ( -- )
-		[ LIT2 &t $1 &id 00 ] INCk ,&id STR
-		EQU ?&end
-		INC2k ank/get-strw #0008 ADD2 STH2
-		ADD2r skip-cat LDAk ?&>w &end POP2 STH2r
-	( left padding + 4 ) #0010 ADD2 JMP2r
+@menu/<init> ( -- )
+	#ffff .&cat STZ2
+	[ LIT2 ff -&sub ] STZ
+	!/<draw>
 
-@get-x-cat ( x* -- <cat> )
-	( left padding + 4 ) #0004 ADD2 #0010 SUB2 ,&t STR2
-	[ LITr 00 ] [ LIT2r 0000 ] ;<draw-menu>/manifest LDA2
-	&>w ( -- )
-		INC2k ank/get-strw #0008 ADD2 STH2r ADD2 DUP2 [ LIT2 &t $2 ] LTH2 ?{ POP2 POP2 STHr JMP2r }
-		INCr STH2
-		skip-cat LDAk ?&>w
-	POP2 POP2r POPr #ff JMP2r
-
-@find-modkey ( mod key -- fn* )
-	ORAk ?{ JMP2r }
-	( not null ) ,&mk STR2
-	;<draw-menu>/manifest LDA2
-	&>cat ( -- )
-		get-cat-length #00
-		&>subcat ( -- )
-			OVR2 LDA2 [ LIT2 &mk $2 ] NEQ2 ?{
-				POP2 INC2 INC2 LDA2 JMP2r }
-			next-sub ?&>subcat
-		POP2 LDAk ?&>cat
-	POP2 #0000 JMP2r
-
-@skip-cat ( cat* -- next-cat* )
-	get-cat-length #00
-	&>subcat ( -- )
-		next-sub ?&>subcat
-	POP2 JMP2r
-
-@next-sub ( sub* to from -- sub* to from continue )
-	SWP2 #0004 ADD2 scap/ INC2 SWP2 INC GTHk JMP2r
-
-(
-@|drawing )
+@menu/<open> ( cat* vector* -- )
+	.Mouse/vector DEO2
+	.&cat STZ2
+	[ LIT2 ff -&sub ] STZ
+	!<redraw-all>
 
 @menu/<draw> ( -- )
-	<draw-spacer>
-
-@<draw-menu> ( mask -- )
-	#01 menu/<draw-state>
-	#0004 .Screen/y DEO2
-	#000c .Screen/x DEO2
-	[ LITr 00 ] [ LIT2 &manifest =manifest ]
-	&>w ( -- )
-		INC2k [ LIT &sel ff ] STHkr EQU <draw-label-top>
-		.Screen/x DEI2k #0008 ADD2 ROT DEO2
-		INCr skip-cat LDAk ?&>w
-	POP2 POPr JMP2r
-
-@<draw-sub> ( cat -- )
-	DUP get-cat-x ,&anchor STR2
-	get-cat ORAk ?{ POP2 JMP2r }
-	#001c .Screen/y DEO2
-	LDAk #00 SWP2 INC2 scap/ INC2 STH2
-	&>l ( -- )
-		[ LIT2 &anchor $2 ] .Screen/x DEO2
-		DUP [ LIT &sel ff ] EQU STH2r ROT <draw-label-sub>
-		STH2
-		<draw-lb>
-		INC GTHk ?&>l
-	POP2 POP2r JMP2r
-
-@<clear-sub> ( cat -- )
-	DUP get-cat-x .Screen/x DEO2
-	#0014 .Screen/y DEO2
-	get-cat LDA DUP ADD #00 SWP ;fill-icn #f2
+	( | clear )
+	#0000 .Screen/x DEO2
+	#0028 .Screen/y DEO2
+	[ LIT2 a0 -Screen/pixel ] DEO
+	filepath/<draw-state>
+	filepath/<draw>
+	( | border )
+	#0000 .Screen/x DEO2
+	#0018 .Screen/y DEO2
+	[ LIT2 05 -Screen/width ] DEI2 #03 SFT2 SUB ;dotted-icn #01 <draw-times>
 	( >> )
+
+@menu/<draw-cats> ( -- )
+	#000c .Screen/x DEO2
+	#0004 .Screen/y DEO2
+	.&cat LDZ2 ;manifest/dat
+	&>wdc ( -- )
+		EQU2k STH
+		INC2k INC2 LDA2 STHr /<draw-cat>
+		LDA2 LDAk ?&>wdc
+	POP2 POP2 JMP2r
+
+@menu/<draw-subs> ( -- )
+	.&anchor LDZ2 #0006 ADD2 .Screen/x DEO2
+	#001c .Screen/y DEO2
+	[ LITr 00 ] .&cat LDZ2 LDA2k SWP2 #0004 ADD2
+	&>loc ( -- )
+		DUP2 STHkr .&sub LDZ EQU /<draw-sub>
+		INCr #0006 ADD2 GTH2k ?&>loc
+	POP2 POP2 POPr JMP2r
+
+@menu/<draw-cat> ( str* sel -- )
+	#00 SWP DUP ADD ;&cat-colors ADD2 LDA2 STH
+	[ LIT2 25 -Screen/auto ] DEO
+	( | cap )
+	;&cat-icn .Screen/addr DEO2
+	[ LITr -Screen/sprite ] DEOkr
+	( | text )
+	ank/<draw-left-color>
+	( | cap )
+	;&cat-icn .Screen/addr DEO2
+	[ LIT2r 1000 ] ORA2r DEOr
+	.Screen/x DEI2k #000b ADD2 ROT DEO2
+	JMP2r
+
+	&cat-colors [ 0100 0401 ]
+
+@menu/<draw-sub> ( sub* sel -- )
+	#00 SWP DUP ADD ;&sub-colors ADD2 LDA2
+	( ) [ LITr -Screen/x ] DEI2kr ROTr
+	( | fill )
+	#e0 ;fill-icn #21 <draw-times>
+	DEO2kr
+	( | text )
+	.Screen/x DEI2k #0003 ADD2 ROT DEO2
+	STH
+	#0004 ADD2 LDA2 STHr ank/<draw-left-color>
+	.Screen/y DEI2k #0018 ADD2 ROT DEO2
+	DEO2r
+	JMP2r
+
+	&sub-colors [ 0401 0802 ]
+
+@menu/cat-icn [
+	0307 0707 0707 0707 0707 0707 0707 0707
+	0707 0707 0707 0707 ]
+
+
+
+@manifest/scan ( but key -- fn* )
+	ORAk ?{ POP2 #ffff JMP2r }
+	,&bk STR2
+	;&dat
+	&>cat ( -- )
+		LDA2k OVR2 #0004 ADD2
+		&>opt ( -- )
+			LDA2k [ LIT2 &bk $2 ] NEQ2 ?{
+				NIP2 NIP2 INC2 INC2 LDA2 JMP2r }
+			#0006 ADD2 GTH2k ?&>opt
+		POP2 POP2 LDA2 LDAk ?&>cat
+	POP2 #ffff JMP2r
 
 @<draw-times> ( color times addr* auto -- )
 	.Screen/auto DEO
@@ -1689,92 +1722,30 @@
 		INC DUP ?&>l
 	POP POP2r JMP2r
 
-@<draw-label-top> ( str* sel -- )
-	[ LIT2 25 -Screen/auto ] DEO
-	;menu-icn .Screen/addr DEO2
-	STHk .Screen/sprite DEO
-	#0401 STHkr [ JMP SWP ] POP ank/<draw-str>
-	;menu-icn/right .Screen/addr DEO2
-	[ LITr -Screen/sprite ] DEOr
-	.Screen/x DEI2 #0010 SUB2 .Screen/x DEO2
-	JMP2r
+(
+@|cursor )
 
-@<draw-label-sub> ( label* sel -- next-label* )
-	( | bg )
-	[ LITr -Screen/x ] DEI2r [ LITr -Screen/y ] DEI2r
-	( fill ) #20 SFT #04 ADD #e0 ;blank-icn #21 <draw-times>
-	[ LITr -Screen/y ] DEO2r
-	[ LITr -Screen/x ] DEO2r
-	( | right )
-	[ LITr -Screen/x ] DEI2r
-	( ) DUP2r [ LIT2r 00f8 ] ADD2r [ LITr -Screen/x ] DEO2r
-	LDA2k get-modkey-str #0f ank/<draw-str-right>
-	( | left )
-	[ LIT2r 0004 ] ADD2r [ LITr -Screen/x ] DEO2r
-	#0004 ADD2 #00 !ank/draw-str
-
-%sput ( chr str* -- ) {
-	scap/ ROT #00 SWP2 STA2 }
-
-@get-modkey-str ( mod key -- str* )
-	;&buf #0008 <mclr>
-	( ) ORAk ?{ POP2 ;&buf JMP2r }
-	( | mod )
-	SWP STH
-	#0800
-	&>l ( -- )
-		STHkr OVR SFT #01 AND #00 EQU ?{
-			#00 OVR ;&buttons ADD2 LDA ;&buf sput }
-		INC GTHk ?&>l
-	POP2
-	( | mix )
-	DUP #00 NEQ STHr #00 NEQ #0101 NEQ2 ?{ LIT "+ ;&buf sput }
-	( | key )
-	DUP #08 NEQ ?{ ;&bsp !&cat }
-	DUP #09 NEQ ?{ ;&tab !&cat }
-	DUP #0d NEQ ?{ ;&ent !&cat }
-	DUP #20 NEQ ?{ ;&spc !&cat }
-	DUP #1b NEQ ?{ ;&esc !&cat }
-	DUP #7f NEQ ?{ ;&del !&cat }
-	DUP ;&buf sput &end POP ;&buf JMP2r
-	&buf $8
-	&buttons "ABsSUDLR $1 &cat ;&buf scat !&end
-
-	&bsp "bsp $1
-	&tab "tab $1
-	&ent "ent $1
-	&spc "spc $1
-	&esc "esc $1
-	&del "del $1
-
-@<update-cursor> ( color -- )
+@cursor/<update> ( color -- )
 	Mouse/<update-focus>
-	&no-refocus ( color -- )
-	[ LIT2 15 -Screen/auto ] DEO
-	;fill-icn .Screen/addr DEO2
-	#40 <draw-cursor>
-	;cursor-icn .Screen/addr DEO2
-	.Mouse/x DEI2 ,<draw-cursor>/x STR2
-	.Mouse/y DEI2 ,<draw-cursor>/y STR2
 	( >> )
 
-@<draw-cursor> ( color -- )
+@cursor/<update-trap> ( color -- )
+	[ LIT2 15 -Screen/auto ] DEO
+	;fill-icn .Screen/addr DEO2
+	#40 /<draw>
+	;cursor-icn .Screen/addr DEO2
+	.Mouse/x DEI2 ,&x STR2
+	.Mouse/y DEI2 ,&y STR2
+	( >> )
+
+@cursor/<draw> ( color -- )
 	[ LIT2 &x $2 ] .Screen/x DEO2
 	[ LIT2 &y $2 ] .Screen/y DEO2
 	.Screen/sprite DEO
 	JMP2r
 
-@<draw-spacer> ( -- )
-	#0000 .Screen/x DEO2
-	#0018 .Screen/y DEO2
-	[ LIT2 01 -Screen/width ] DEI2 #03 SFT2 SUB ;dotted-icn #01 !<draw-times>
-
-@exit ( -- )
-	#800f DEO
-	JMP2r
-
 (
-@|elements )
+@|theme )
 
 @theme/<reset> ( -- )
 	#e048 #e0a7 #e097
@@ -1797,6 +1768,9 @@
 
 	&path ".theme $1
 
+(
+@|window )
+
 @window/<set-default-size> ( -- )
 	#0550 #02de
 	( >> )
@@ -1804,10 +1778,9 @@
 @window/<set-size> ( w* h* -- )
 	.Screen/height DEO2
 	.Screen/width DEO2
-	menu/<draw>
 	( | responsive )
 	.Screen/width DEI2 #0300 GTH2 .nav/visible STZ
-	.Screen/height DEI2 #0028 SUB2 .scrollbar/height STZ2 !reqdraw-both
+	.Screen/height DEI2 #0028 SUB2 .scrollbar/height STZ2 !<redraw-all>
 
 @window/toggle-expand ( -- )
 	.Screen/width DEI2 #0550 EQU2 ?{ !/<set-default-size> }
@@ -1884,18 +1857,6 @@
 		INC2 INC2r !&>l
 	&end LDA LDAr STHr EQU JMP2r
 
-@scap ( str* -- end* )
-	INC2 & LDAk ?scap
-	JMP2r
-
-@scat ( src* dst* -- )
-	scap/ STH2 !&
-
-	&>w ( -- )
-		LDAk #00 STH2kr STA2
-		INC2r INC2 & LDAk ?&>w
-	POP2 POP2r JMP2r
-
 @mcmp ( a* b* length* -- f )
 	SWP2 STH2
 	ADD2k NIP2 SWP2
@@ -1946,33 +1907,22 @@
 
 @untitled-txt "untitled.txt $1
 
-@blank-icn [ 0000 0000 0000 0000 ]
 
-@fill-icn [
-	ffff ffff ffff ffff ffff ffff ffff ffff
-	ffff ffff ffff ffff ]
-
-
-
-@dict
-	&bytes-free 20 "bytes 20 "free. $1
-	&empty "Empty $1
+(
+@|assets )
 
 @dotted-icn [
 	0000 0000 0000 00aa ]
 @cursor-icn [
 	80c0 e0f0 f8fc feff f8d8 8c0c 0606 0000 ]
-@menu-icn [
-	070f 0f0f 0f0f 0f0f 0f0f 0f0f 0f0f 0f0f
-	0f0f 0f0f 0f0f 0f0f ]
-&right [
-	e0f0 f0f0 f0f0 f0f0 f0f0 f0f0 f0f0 f0f0
-	f0f0 f0f0 f0f0 f8fc ]
 @bubble-icn
 	[ 0000 0000 0008 1c3e ]
 @halftone-icn [
 	aa55 aa55 aa55 aa55 aa55 aa55 aa55 aa55
 	aa55 aa55 aa55 aa55 ]
+@fill-icn [
+	ffff ffff ffff ffff ffff ffff ffff ffff
+	ffff ffff ffff ffff ]
 @caret/sprite-icn [
 	c0c0 c0c0 c0c0 c0c0 c0c0 c0c0 c0c0 c0c0
 	c0c0 c0c0 c0c0 c0c0 ]
@@ -1984,11 +1934,11 @@
 	fcf8 f8f0 f0e0 e0c0 ]
 
 @appicon ( 3x3 ) [
-0000 0000 0000 0000 0000 0000 0000 0000 0008 0808 4838 1808 0814 14d4 b444 2414
-0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0307 070f 0000 0003 0408 0810
-0808 08ff ffff ffff 1414 f700 0000 0000 0000 0080 e0f0 f0f8 0000 8060 1008 0804
-0f0f 0f07 0703 0000 1010 1008 0c07 0300 ffff ffff ffff ff00 0080 c17f 0000 ffff
-f8f8 f8f0 f0e0 8000 0484 8408 1870 e080 ]
+	0000 0000 0000 0000 0000 0000 0000 0000 0008 0808 4838 1808 0814 14d4 b444 2414
+	0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0307 070f 0000 0003 0408 0810
+	0808 08ff ffff ffff 1414 f700 0000 0000 0000 0080 e0f0 f0f8 0000 8060 1008 0804
+	0f0f 0f07 0703 0000 1010 1008 0c07 0300 ffff ffff ffff ff00 0080 c17f 0000 ffff
+	f8f8 f8f0 f0e0 8000 0484 8408 1870 e080 ]
 
 (
 @|ank )
@@ -2764,8 +2714,6 @@ e060 6060 6060 6060 6060 e070 0000 0000
 0018 3c18 0000 0000 7830 3018 1818 0c0c
 0607 0703 6266 3c00 0060 f060 0000 0000
 7020 2060 4040 c080 8080 0000 0000 0000
-
-
 
 (
 @|memory ) $1
