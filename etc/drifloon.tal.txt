@@ -14,7 +14,7 @@
 
 @on-reset ( -> )
 	;meta #06 DEO2
-	assembly/<start>
+	;dict/reset scope/<set>
 	;on-console .Console/vector DEO2
 	BRK
 
@@ -24,9 +24,13 @@
 	assembly/<resolve>
 	BRK
 
-@rom/<emit> ( -- )
-	#ffff assembly/<finish>
-	;&mem ADD2 ;&output
+@rom/<emit> ( length* -- )
+	;dict/assembled <pstr>
+	;dict/in <pstr>
+	[ LIT2 &length 0100 ] DUP2 #0100 SUB2 <pdec>
+	;dict/bytes <pstr>
+	( | write )
+	;rom/mem ADD2 ;rom/output
 	&>l ( -- )
 		LDAk #18 DEO
 		INC2 GTH2k ?&>l
@@ -40,18 +44,13 @@
 	"? =lib/litjci "! =lib/litjmi "# =lib/lithex "" =lib/rawstr
 	5b =lib/ignore 5d =lib/ignore "} =lib/lambda ] $1
 
-@dict/-in 20 &in "in 20 $1
-
 @meta $1
 	( name ) "Drifloon 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "12 20 "Mar 20 "2025 $2
+	( date ) "13 20 "Mar 20 "2025 $2
 
 ( @|Core )
-
-@assembly/<start> ( -- )
-	;dict/reset !scope/<set>
 
 @assembly/<resolve> ( -- )
 	;token/mode LDA2 ;asm-comment NEQ2 ?{
@@ -60,17 +59,9 @@
 		( open mac ) ;dict/open ;dict/trail ;dict/Macro !<set-error> }
 	.System/state DEI ?{
 		refs/<resolve-all>
-		.System/state DEI ?{ rom/<emit> } }
+		.System/state DEI ?{
+			[ LIT2 80 -System/state ] DEO !syms/<emit> } }
 	JMP2r
-
-@assembly/<finish> ( name* -- length* )
-	syms/<summary>
-	[ LIT2 80 -System/state ] DEO
-	;dict/assembled <pstr>
-	<pstr>
-	;dict/in <pstr>
-	[ LIT2 &length 0100 ] DUP2 #0100 SUB2 <pdec>
-	;dict/bytes !<pstr>
 
 @token/<new> ( -- )
 	[ LIT2 -&buf _&ptr ] STR
@@ -195,8 +186,8 @@
 	;&sym JMP2r
 
 @lambda/pop ( -- )
-	;&ptr LDA2k #0001 SUB2 LDAk /name syms/<new>
-	SWP2 STA2
+	,&ptr LDR2 #0001 SUB2 LDAk /name syms/<new>
+	,&ptr STR2
 	JMP2r
 	&sym cebb &id 0000 $1
 
@@ -272,6 +263,7 @@
 	NIP2 JMP2r
 
 @syms/<push> ( name* type addr* -- )
+	[ LIT2 &count $2 ] INC2 ,&count STR2
 	( hb ) SWP /<push-byte>
 	( lb ) /<push-byte>
 	( type ) /<push-byte>
@@ -298,7 +290,7 @@
 	/<push-string>
 	( ! ) ;dict/invalid ;dict/Symbol !token/<error>
 
-@syms/<summary> ( -- )
+@syms/<emit> ( -- )
 	;&ptr LDA2 ;&mem
 	&>ls ( -- )
 		( used ) INC2k INC2 LDA .SymType/used AND ?{
@@ -308,7 +300,7 @@
 				#0a19 DEO }
 			POP2 }
 		#0003 ADD2 scap/ GTH2k ?&>ls
-	POP2 POP2 JMP2r
+	POP2 POP2 !rom/<emit>
 
 (
 @|References )
@@ -495,7 +487,7 @@
 	/get-head
 	( ) OVR ?{
 		( ! ) ;dict/zero-page ;dict/Writing token/<error> }
-	;assembly/length STA2
+	;&length STA2
 	JMP2r
 
 (
@@ -588,7 +580,7 @@
 		[ LIT2 ": 19 ] DEO
 		#2019 DEO
 		<pstr>
-		;dict/-in <pstr>/
+		;dict/in <pstr>/
 		;scope/buf <pstr>/
 		#0a19 DEO
 		[ LIT2 01 -System/state ] DEO
@@ -602,7 +594,7 @@
 	"ADD "SUB "MUL "DIV "AND "ORA "EOR "SFT
 	"BRK ] $1
 
-@dict/assembled "Assembled 20 $1 &bytes 20 "bytes. 0a $1
+@dict/assembled "Assembled $1 &in 20 "in 20 $1 &bytes 20 "bytes. 0a $1
 	&unused "-- 20 "Unused: 20 $1
 	&References "References $1
 	&Reference "Reference $1
