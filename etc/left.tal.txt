@@ -16,6 +16,7 @@
 	@menu/sub $1 &anchor $2 &cat $2
 	@wrap/left $2 &right $2
 	@flen/buf $5
+	@scope/addr $2
 	@search/buf $2f &bufend $1
 	@scroll/y $2 &addr $2
 	@scrollbar/height $2 &ratio $2
@@ -63,7 +64,7 @@
 	( name ) "Left 0a
 	( details ) "A 20 "Text 20 "Editor 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "11 20 "Mar 20 "2025 $1 02
+	( date ) "13 20 "Mar 20 "2025 $1 02
 	( > ) 83 =appicon
 	( > ) 0a =manifest/dat
 
@@ -323,7 +324,7 @@
 
 @sel/changed ( -- )
 	autocomplete/<reset>
-	textarea/follow wrap/update !reqdraw-both
+	textarea/follow wrap/update scope/update !reqdraw-both
 
 @sel/erase ( -- )
 	get-from get-to-from SUB2 STH2k <msfl>
@@ -462,6 +463,63 @@
 			POP2 &end POP2 } }
 	POP2 POP2r JMP2r
 
+@wrap/balance ( c -- offset )
+	DUP LIT "( EQU ?&a
+	DUP LIT "[ EQU ?&a
+	DUP LIT "{ EQU ?&a
+	DUP LIT ") EQU ?&b
+	DUP LIT "] EQU ?&b
+	DUP LIT "} EQU ?&b
+	POP #00 JMP2r
+	&a POP #ff JMP2r
+	&b POP #01 JMP2r
+
+@wrap/update ( -- )
+	#0000 .&left STZ2k INC INC STZ2
+	.sel/b LDZ2
+	( | left )
+	[ LITr 01 ] .scroll/addr LDZ2 ;textarea/buf ADD2 #0001 SUB2 OVR2 #0001 SUB2 EQU2k ?{
+		&l ( -- )
+		LDAk /balance STH
+		ADDr STHkr ?{ .&left STZ2 !&end-l }
+		utf8/prev LTH2k ?&l }
+	POP2 &end-l POP2 POPr
+	( | right )
+	[ LITr 01 ] get-eof SWP2 EQU2k ?{
+		&r ( -- )
+		LDAk /balance STH
+		SUBr STHkr ?{ .&right STZ2 !&end-r }
+		utf8/next GTH2k ?&r }
+	POP2 &end-r POP2 POPr JMP2r
+
+@scope/update ( -- )
+	;textarea/buf .sel/b LDZ2
+	&>l ( -- )
+		EQU2k ?{
+			LDA2k [ LIT2 0a "@ ] EQU2 ?{ #0001 SUB2 !&>l } }
+	/<set>
+	POP2 POP2 JMP2r
+
+@scope/<set> ( addr* -- addr* )
+	DUP2 .&addr LDZ2 NEQ2 ?{ JMP2r }
+	DUP2 .&addr STZ2
+	( >> )
+
+@scope/<draw> ( -- )
+	[ LIT2 &anchor $2 ] ORAk ?{ POP2 JMP2r }
+	.Screen/x DEO2
+	#001c .Screen/y DEO2
+	( clear ) [ LIT2 a0 -Screen/pixel ] DEO
+	#0004 .Screen/y DEO2
+	;textarea/buf .&addr LDZ2 EQU2k ?{
+		[ LIT2 25 -Screen/auto ] DEO
+		#03 ;ank/color-utf8 STA
+		INC2
+		&>w ( -- )
+			LDAk [ LIT "/ ] EQU ?{
+				ank/draw-utf8 utf8/next LDAk #20 GTH ?&>w } }
+	POP2 POP2 .Screen/x DEI2 #0008 ADD2 ;scroll/anchor STA2 !scroll/<draw>
+
 (
 @|find )
 
@@ -582,8 +640,16 @@
 		;textarea/buf SUB2 .scroll/addr STZ2
 		.scroll/y STZ2
 		#00 nav/<set-y>
-		path/<draw-line> !reqdraw-both }
+		scroll/<draw> !reqdraw-both }
 	POP2 POP2 JMP2r
+
+@scroll/<draw> ( -- )
+	[ LIT2 &anchor $2 ] ORAk ?{ POP2 JMP2r }
+	.Screen/x DEO2
+	#001c .Screen/y DEO2
+	( clear ) [ LIT2 a0 -Screen/pixel ] DEO
+	#0004 .Screen/y DEO2
+	.&y LDZ2 INC2 #03 !ank/<draw-dec>
 
 (
 @|textarea )
@@ -706,35 +772,6 @@
 		[ LIT2 &x $2 ] .Screen/x DEO2
 		[ LIT2 &y $2 ] .Screen/y DEO2 }
 	JMP2r
-
-@wrap/balance ( c -- offset )
-	DUP LIT "( EQU ?&a
-	DUP LIT "[ EQU ?&a
-	DUP LIT "{ EQU ?&a
-	DUP LIT ") EQU ?&b
-	DUP LIT "] EQU ?&b
-	DUP LIT "} EQU ?&b
-	POP #00 JMP2r
-	&a POP #ff JMP2r
-	&b POP #01 JMP2r
-
-@wrap/update ( -- )
-	#0000 .&left STZ2k INC INC STZ2
-	.sel/b LDZ2
-	( | left )
-	[ LITr 01 ] .scroll/addr LDZ2 ;textarea/buf ADD2 #0001 SUB2 OVR2 #0001 SUB2 EQU2k ?{
-		&l ( -- )
-		LDAk /balance STH
-		ADDr STHkr ?{ .&left STZ2 !&end-l }
-		utf8/prev LTH2k ?&l }
-	POP2 &end-l POP2 POPr
-	( | right )
-	[ LITr 01 ] get-eof SWP2 EQU2k ?{
-		&r ( -- )
-		LDAk /balance STH
-		SUBr STHkr ?{ .&right STZ2 !&end-r }
-		utf8/next GTH2k ?&r }
-	POP2 &end-r POP2 POPr JMP2r
 
 (
 @|nav )
@@ -1037,20 +1074,13 @@
 	#03
 
 @path/<draw-color> ( color -- )
-	[ LIT2 &anchor f000 ] .Screen/x DEO2
+	[ LIT2 &anchor $2 ] ORAk ?{ POP POP2 JMP2r }
+	.Screen/x DEO2
 	#001c .Screen/y DEO2
 	( clear ) [ LIT2 a0 -Screen/pixel ] DEO
 	#0004 .Screen/y DEO2
 	;&buf ROT ank/<draw-left-color>
-	.Screen/x DEI2 #0008 ADD2 ,&anchor-line STR2
-	( >> )
-
-@path/<draw-line> ( -- )
-	[ LIT2 &anchor-line f000 ] .Screen/x DEO2
-	#001c .Screen/y DEO2
-	( clear ) [ LIT2 a0 -Screen/pixel ] DEO
-	#0004 .Screen/y DEO2
-	.scroll/y LDZ2 INC2 #02 !ank/<draw-dec>
+	.Screen/x DEI2 ;scope/anchor STA2 !scope/<draw>
 
 @path/is-tal ( -- bool )
 	;&ptr LDA

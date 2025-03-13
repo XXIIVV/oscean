@@ -40,7 +40,7 @@
 	[ LIT2 00 -playing ] STZ
 	;dict/home-path path/<set>
 	<refresh-dir>
-	<prng-init>
+	prng/<init>
 	( | unlock )
 	;on-mouse-body .Mouse/vector DEO2
 	;on-control .Controller/vector DEO2
@@ -51,7 +51,7 @@
 	( name ) "m291 0a
 	( desc ) "Audio 20 "Player 0a
 	( auth ) "By 20 "Linvega 20 "& 20 "d6 0a
-	( date ) "6 20 "Mar 20 "2025 $2
+	( date ) "13 20 "Mar 20 "2025 $2
 
 (
 @|macros )
@@ -202,7 +202,7 @@
 	[ LIT2 01 -controls/repeat ] LDZ NEQ ?{ .selection/track LDZ !<pick>/tracks }
 	( | shuffle )
 	[ LIT2 01 -controls/shuffle ] LDZ NEQ ?{
-		prng ADD .lines/tracks LDZ DIVk MUL SUB !<pick>/tracks }
+		prng/<new> ADD .lines/tracks LDZ DIVk MUL SUB !<pick>/tracks }
 	.selection/track LDZ INC .lines/tracks LDZ DIVk MUL SUB !<pick>/tracks
 
 @<seek> ( x* -- )
@@ -860,98 +860,18 @@
 			INC2 GTH2k ?&>l }
 	POP2 POP2 STH2r POP2r JMP2r
 
-@<draw-header-title> ( -- )
-	path/get-location #0080 OVR2 chicago/get-str-width #01 SFT2 SUB2
+@header/<draw-title> ( -- )
+	path/get-location #0084 OVR2 chicago/get-str-width #01 SFT2 SUB2
 	( ) #000a SUB2 .Screen/x DEO2
 	#0001 .Screen/y DEO2
 	[ LIT2 15 -Screen/auto ] DEO
 	#09 ;chicago/color STA
 	#20 chicago/<draw-char>
-	#20 chicago/<draw-char>
 	#09 chicago/<draw-left-color>
-	#20 !chicago/<draw-char>
-
-(
-@|stdlib )
-
-@cflc ( c -- lowercase )
-	DUP #41 SUB #1a GTH ?{ #20 ADD }
-	JMP2r
-
-@scap ( str* -- end* )
-	INC2 & LDAk ?scap
-	JMP2r
-
-@scmp3 ( a* b* -- f )
-	STH2
-	LDAkr LDAk STHr NEQ ?{ INC2r INC2 }
-	LDA2r LDA2 STH2r EQU2 JMP2r
-
-@<scpy> ( src* dst* -: )
-	STH2
-	&>w ( src* `dst* -- )
-		LDAk #00 STH2kr STA2
-		INC2r INC2 LDAk ?&>w
-	POP2 POP2r JMP2r
-
-@lcap ( str* -- next-line* )
-	LDAk #0a EQU ?{ INC2 & LDAk ?lcap }
-	JMP2r
-
-@<lcpy> ( src* dst* -- )
-	STH2
-	&w ( -- )
-	LDAk #1f GTH ?{
-		POP2 #00 STH2r STA
-		JMP2r }
-	LDAk #00 STH2kr STA2
-	INC2r INC2 !&w
-
-@<pdec> ( short* -- )
-	#000a SWP2 [ LITr ff ]
-	&>get ( -- )
-		SWP2k MOD2 STH
-		POP OVR2 DIV2 ORAk ?&>get
-	POP2 POP2
-	&>put ( -- )
-		STHr INCk ?{ POP JMP2r }
-		[ LIT "0 ] ADD #18 DEO !&>put
-
-@<pstr> ( str* -- )
-	LDAk #18 DEO
-	INC2 & LDAk ?<pstr>
-	POP2 JMP2r
-
-@<perr> ( str* -- )
-	LDAk #19 DEO
-	INC2 & LDAk ?<perr>
-	POP2 JMP2r
-
-@<phex> ( short* -: )
-	SWP /b
-	&b ( byte -: )
-	DUP #04 SFT /c
-	&c ( byte -: )
-	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #19 DEO
-	JMP2r
-
-@<prng-init> ( -- )
-	( > ) [ LIT2 00 -DateTime/second ] DEI
-	( > ) [ LIT2 00 -DateTime/minute ] DEI #60 SFT2 EOR2
-	( > ) [ LIT2 00 -DateTime/hour ] DEI #c0 SFT2 EOR2 ,prng/x STR2
-	( > ) [ LIT2 00 -DateTime/hour ] DEI #04 SFT2
-	( > ) [ LIT2 00 -DateTime/day ] DEI #10 SFT2 EOR2
-	( > ) [ LIT2 00 -DateTime/month ] DEI #60 SFT2 EOR2
-	( > ) .DateTime/year DEI2 #a0 SFT2 EOR2 ,prng/y STR2
-	JMP2r
-
-@prng ( -- number* )
-	( > ) [ LIT2 &x $2 ]
-	( > ) DUP2 #50 SFT2 EOR2
-	( > ) DUP2 #03 SFT2 EOR2
-	( > ) [ LIT2 &y $2 ] DUP2 ,&x STR2
-	( > ) DUP2 #01 SFT2 EOR2 EOR2
-	( > ) ,&y STR2k POP JMP2r
+	#20 chicago/<draw-char>
+	( | clip )
+	.Screen/y DEI2k #0001 SUB2 ROT DEO2
+	#81fe ;&bg-chr #15 !<draw-times-addr>
 
 (
 @|assets )
@@ -1007,7 +927,7 @@
 	#0001 .Screen/x DEO2
 	[ LIT2 b2 -Screen/pixel ] DEO
 	( | title )
-	<draw-header-title>
+	/<draw-title>
 	;&button-icn
 	( >> )
 
@@ -1196,6 +1116,90 @@
 	[ LIT2 &r $2 ] [ LIT2 &g $2 ] [ LIT2 &b $2 ] !theme/<set>
 
 	&path ".theme $1
+
+(
+@|prng )
+@prng/<init> ( -- )
+	( > ) [ LIT2 00 -DateTime/second ] DEI
+	( > ) [ LIT2 00 -DateTime/minute ] DEI #60 SFT2 EOR2
+	( > ) [ LIT2 00 -DateTime/hour ] DEI #c0 SFT2 EOR2 ,prng/x STR2
+	( > ) [ LIT2 00 -DateTime/hour ] DEI #04 SFT2
+	( > ) [ LIT2 00 -DateTime/day ] DEI #10 SFT2 EOR2
+	( > ) [ LIT2 00 -DateTime/month ] DEI #60 SFT2 EOR2
+	( > ) .DateTime/year DEI2 #a0 SFT2 EOR2 ,prng/y STR2
+	JMP2r
+
+@prng/<new> ( -- number* )
+	( > ) [ LIT2 &x $2 ]
+	( > ) DUP2 #50 SFT2 EOR2
+	( > ) DUP2 #03 SFT2 EOR2
+	( > ) [ LIT2 &y $2 ] DUP2 ,&x STR2
+	( > ) DUP2 #01 SFT2 EOR2 EOR2
+	( > ) ,&y STR2k POP JMP2r
+
+(
+@|stdlib )
+
+@cflc ( c -- lowercase )
+	DUP #41 SUB #1a GTH ?{ #20 ADD }
+	JMP2r
+
+@scap ( str* -- end* )
+	INC2 & LDAk ?scap
+	JMP2r
+
+@scmp3 ( a* b* -- f )
+	STH2
+	LDAkr LDAk STHr NEQ ?{ INC2r INC2 }
+	LDA2r LDA2 STH2r EQU2 JMP2r
+
+@<scpy> ( src* dst* -: )
+	STH2
+	&>w ( src* `dst* -- )
+		LDAk #00 STH2kr STA2
+		INC2r INC2 LDAk ?&>w
+	POP2 POP2r JMP2r
+
+@lcap ( str* -- next-line* )
+	LDAk #0a EQU ?{ INC2 & LDAk ?lcap }
+	JMP2r
+
+@<lcpy> ( src* dst* -- )
+	STH2
+	&w ( -- )
+	LDAk #1f GTH ?{
+		POP2 #00 STH2r STA
+		JMP2r }
+	LDAk #00 STH2kr STA2
+	INC2r INC2 !&w
+
+@<pdec> ( short* -- )
+	#000a SWP2 [ LITr ff ]
+	&>get ( -- )
+		SWP2k MOD2 STH
+		POP OVR2 DIV2 ORAk ?&>get
+	POP2 POP2
+	&>put ( -- )
+		STHr INCk ?{ POP JMP2r }
+		[ LIT "0 ] ADD #18 DEO !&>put
+
+@<pstr> ( str* -- )
+	LDAk #18 DEO
+	INC2 & LDAk ?<pstr>
+	POP2 JMP2r
+
+@<perr> ( str* -- )
+	LDAk #19 DEO
+	INC2 & LDAk ?<perr>
+	POP2 JMP2r
+
+@<phex> ( short* -: )
+	SWP /b
+	&b ( byte -: )
+	DUP #04 SFT /c
+	&c ( byte -: )
+	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #19 DEO
+	JMP2r
 
 
 ( assets )
