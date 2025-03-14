@@ -1,9 +1,8 @@
 #!/bin/sh -e
 
-cp ~/Git/drifblim/src/drifloon.tal etc/drifloon.tal
+uxnasm ../format-js.tal.txt format-js.rom
+uxnasm ../drifloon.tal.txt assembler
+uxncli format-js.rom assembler > src/asm.js
 
-uxnasm etc/format-js.tal format-js.rom
-uxnasm etc/drifloon.tal drifloon.rom
-uxncli format-js.rom drifloon.rom > src/asm.js
-
-rm *.rom
+rm -f format-js.rom assembler
+rm -f format-js.rom.sym assembler.sym

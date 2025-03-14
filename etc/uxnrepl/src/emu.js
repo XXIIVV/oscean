@@ -13,7 +13,8 @@ function Console(emu)
 		this.error_el.innerHTML += String.fromCharCode(char)
 	}
 
-	this.input = (char) => {
+	this.input = (char, type) => {
+		emu.uxn.dev[0x17] = type
 		emu.uxn.dev[0x12] = char
 		emu.uxn.eval(emu.uxn.dev[0x10] << 8 | emu.uxn.dev[0x11])
 	}

@@ -57,7 +57,7 @@ function Uxn (emu)
 
 	this.step = () => {
 		let a, b, c, opcode
-		if(!this.pc || this.dev[0x0f] || this.ram[this.pc] == 0)
+		if(!this.pc || this.ram[this.pc] == 0)
 			return 0
 		let instr = this.ram[this.pc++]
 		// registers
