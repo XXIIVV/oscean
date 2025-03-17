@@ -24,14 +24,14 @@
 @bind ( vector* -> )
 	.Console/vector DEO2
 	[ LIT2 03 -Console/type ] DEI AND ?{
-		;dict/usage <pstr>
+		;dict/usage err/<pstr>
 		[ LIT2 01 -System/state ] DEO }
 	BRK
 
 @src/on-console ( -> )
 	[ LIT2 02 -Console/type ] DEI LTH ?{
 		.Console/read DEI [ LIT2 -&cap &ptr -&buf ] INCk ,&ptr STR
-		NEQk ?{ ;dict/exceeded ;&buf ;dict/Path <set-error> }
+		NEQk ?{ ;dict/exceeded ;&buf ;dict/Path err/<set> }
 		NIP STZ
 		BRK }
 	( | src -> dst )
@@ -40,13 +40,16 @@
 @dst/on-console ( -> )
 	[ LIT2 02 -Console/type ] DEI LTH ?{
 		.Console/read DEI [ LIT2 -&cap &ptr -&buf ] INCk ,&ptr STR
-		NEQk ?{ ;dict/exceeded ;&buf ;dict/Path <set-error> }
+		NEQk ?{ ;dict/exceeded ;&buf ;dict/Path err/<set> }
 		NIP STZ
 		BRK }
 	( | assemble )
 	;src/buf <handle-file>
 	assembly/<resolve>
 	BRK
+
+@err/<pchr> ( c -- )
+	#19 DEO JMP2r
 
 @lib/inctal INC2
 	( >> )
@@ -60,18 +63,18 @@
 		.System/state DEI ?&end
 		;&c .File/read DEO2
 		.File/success-lb DEI ?{
-			ORAk ?{ ;dict/invalid ;src/buf ;dict/File <set-error> }
+			ORAk ?{ ;dict/invalid ;src/buf ;dict/File err/<set> }
 			&end ( i* -- )
 			POP2 JMP2r }
 		INC2 [ LIT &c $1 ] token/<push-byte> !&>s
 
 @rom/<emit> ( length* -- )
-	;dict/assembled <pstr>
-	#2019 DEO
-	;dst/buf <pstr>
-	;dict/in <pstr>
-	[ LIT2 &length 0100 ] DUP2 #0100 SUB2 <pdec>
-	;dict/bytes <pstr>
+	;dict/assembled err/<pstr>
+	#20 err/<pchr>
+	;dst/buf err/<pstr>
+	;dict/in err/<pstr>
+	[ LIT2 &length 0100 ] DUP2 #0100 SUB2 err/<pdec>
+	;dict/bytes err/<pstr>
 	( | write )
 	;dst/buf .File/name DEO2
 	#0100 SUB2 .File/length DEO2
@@ -93,7 +96,7 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "13 20 "Mar 20 "2025 $2
+	( date ) "17 20 "Mar 20 "2025 $2
 
 
 
@@ -101,9 +104,9 @@
 
 @assembly/<resolve> ( -- )
 	;token/mode LDA2 ;asm-comment NEQ2 ?{
-		( open cmt ) ;dict/open ;dict/trail ;dict/Comment !<set-error> }
+		( open cmt ) ;dict/open ;dict/trail ;dict/Comment !err/<set> }
 	;token/mode LDA2 ;asm-macro NEQ2 ?{
-		( open mac ) ;dict/open ;dict/trail ;dict/Macro !<set-error> }
+		( open mac ) ;dict/open ;dict/trail ;dict/Macro !err/<set> }
 	.System/state DEI ?{
 		refs/<resolve-all>
 		.System/state DEI ?{
@@ -126,11 +129,11 @@
 	JMP2r
 
 @token/<error> ( adj* -- )
-	;&buf SWP2 !<set-error>
+	;&buf SWP2 !err/<set>
 
 @scope/<push-byte> ( c -- )
 	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
-	( overflow ) DUP .&cap LTH ?{ ;dict/exceeded ;&buf ;dict/Symbol <set-error> }
+	( overflow ) DUP .&cap LTH ?{ ;dict/exceeded ;&buf ;dict/Symbol err/<set> }
 	STZ2
 	JMP2r
 
@@ -310,7 +313,6 @@
 	NIP2 JMP2r
 
 @syms/<push> ( name* type addr* -- )
-	[ LIT2 &count $2 ] INC2 ,&count STR2
 	( hb ) SWP /<push-byte>
 	( lb ) /<push-byte>
 	( type ) /<push-byte>
@@ -342,9 +344,9 @@
 	&>ls ( -- )
 		( used ) INC2k INC2 LDA .SymType/used AND ?{
 			( upper ) DUP2 #0003 ADD2 LDAk [ LIT "A ] SUB #1a LTH ?{
-				;dict/unused <pstr>
-				DUP2 <pstr>/
-				#0a19 DEO }
+				;dict/unused err/<pstr>
+				DUP2 err/<pstr>
+				#0a err/<pchr> }
 			POP2 }
 		#0003 ADD2 scap/ GTH2k ?&>ls
 	POP2 POP2 !rom/<emit>
@@ -454,7 +456,7 @@
 	( | check distance )
 	DUP2 #0080 ADD2 POP ?{ NIP JMP2r }
 	NIP
-	( ! ) ;dict/too-far ;token/buf INC2 ;dict/Reference !<set-error>
+	( ! ) ;dict/too-far ;token/buf INC2 ;dict/Reference !err/<set>
 
 @refs/get-rs ( label* -- distance* )
 	.RefType/rs /get-type rom/get-head
@@ -465,7 +467,7 @@
 
 @refs/<error> ( adj* -- )
 	[ LIT2 &err $2 ] DUP2 syms/find-addr #0003 ADD2 scope/<set>
-	INC2 INC2 LDA2 #0003 ADD2 ;dict/Reference !<set-error>
+	INC2 INC2 LDA2 #0003 ADD2 ;dict/Reference !err/<set>
 
 (
 @|Rom )
@@ -584,18 +586,35 @@
 	LDA2k ROT2 LDA2k ROT2 EQU2 STH
 	INC2 LDA2 SWP2 INC2 LDA2 EQU2 STHr AND JMP2r
 
-@<pstr> ( str* -- )
-	LDAk #19 DEO
-	INC2 & LDAk ?<pstr>
-	POP2 JMP2r
+(
+@|Error )
 
-@<pdec> ( short* -- )
+@err/<set> ( adj* keyword* topic* -- )
+	.System/state DEI ?{
+		/<pstr>
+		#20 /<pchr>
+		SWP2 /<pstr>
+		;dict/spacer /<pstr>
+		/<pstr>
+		;dict/in /<pstr>
+		;scope/buf /<pstr>
+		#0a /<pchr>
+		[ LIT2 01 -System/state ] DEO
+		JMP2r }
+	POP2 POP2 POP2 JMP2r
+
+@err/<pstr> ( str* -- )
+	&>l LDAk DUP ?{ POP POP2 JMP2r }
+		/<pchr>
+		INC2 !&>l
+
+@err/<pdec> ( short* -- )
 	[ LIT2r ff00 ]
 	&>read ( -- )
 		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?&>read
 	POP2
 	&>write ( -- )
-		NIP #30 ADD #19 DEO
+		NIP #30 ADD /<pchr>
 		OVRr ADDr STHkr ?&>write
 	POP2r JMP2r
 
@@ -619,21 +638,6 @@
 		POPr [ LITr ff ] }
 	POP2 STHr JMP2r
 
-@<set-error> ( adj* keyword* topic* -- )
-	.System/state DEI ?{
-		<pstr>
-		#2019 DEO
-		SWP2 <pstr>
-		[ LIT2 ": 19 ] DEO
-		#2019 DEO
-		<pstr>
-		;dict/in <pstr>/
-		;scope/buf <pstr>/
-		#0a19 DEO
-		[ LIT2 01 -System/state ] DEO
-		JMP2r }
-	POP2 POP2 POP2 JMP2r
-
 @opcodes/lut [
 	"LIT "INC "POP "NIP "SWP "ROT "DUP "OVR
 	"EQU "NEQ "GTH "LTH "JMP "JCN "JSR "STH
@@ -642,7 +646,8 @@
 	"BRK ] $1
 
 @dict/assembled "Assembled $1 &in 20 "in 20 $1 &bytes 20 "bytes. 0a $1
-	&unused "-- 20 "Unused: 20 $1
+	&unused "-- 20 "Unused
+	&spacer ": 20 $1
 	&References "References $1
 	&Reference "Reference $1
 	&Writing "Writing $1
@@ -671,11 +676,11 @@
 @refs/mem ( addr*, symbol*, RefType )
 	$1800 &mem-end
 
-@syms/mem ( addr*, SymType, body..00 )
-	$4800 &mem-end
-
 @macros/mem ( name..20, value..00 )
 	$1000 &mem-end
+
+@syms/mem ( addr*, SymType, body..00 )
+	$4800 &mem-end
 
 @rom/mem ( zeropage )
 	$100 &output
