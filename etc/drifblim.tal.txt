@@ -51,7 +51,7 @@
 @err/<pchr> ( c -- )
 	#19 DEO JMP2r
 
-@lib/inctal INC2
+@runes/inctal INC2
 	( >> )
 
 @<handle-file> ( f* -- )
@@ -82,11 +82,11 @@
 	JMP2r
 
 @runes/lut [
-	"| =lib/padabs "$ =lib/padrel "@ =lib/toplab "& =lib/sublab
-	"% =lib/macros "( =lib/coment ", =lib/litrel "_ =lib/rawrel
-	". =lib/litzep "- =lib/rawzep "; =lib/litabs "= =lib/rawabs
-	"? =lib/litjci "! =lib/litjmi "# =lib/lithex "" =lib/rawstr
-	"} =lib/lambda "~ =lib/inctal 5b =lib/ignore 5d =lib/ignore ] $1
+	"| =&padabs "$ =&padrel "@ =&toplab "& =&sublab
+	"% =&macros "( =&coment ", =&litrel "_ =&rawrel
+	". =&litzep "- =&rawzep "; =&litabs "= =&rawabs
+	"? =&litjci "! =&litjmi "# =&lithex "" =&rawstr
+	"} =&lambda "~ =&inctal 5b =&ignore 5d =&ignore ] $1
 
 @dict/usage "usage: 20 "drifblim.rom 20 "in.tal 20 "out.rom 0a $1
 @dict/Path "Path $1
@@ -131,6 +131,53 @@
 @token/<error> ( adj* -- )
 	;&buf SWP2 !err/<set>
 
+@token/<set-default> ( -- )
+	;asm-default ;token/mode STA2
+	JMP2r
+
+@token/<set-comment> ( -- )
+	;asm-comment ;token/mode STA2
+	[ LIT2 01 _asm-comment/depth ] STR
+	JMP2r
+
+@token/<set-macro> ( -- )
+	;asm-macro ;token/mode STA2
+	[ LIT2 00 _asm-macro/depth ] STR
+	JMP2r
+
+@asm-default ( t* -- )
+	LDZk runes/find INC2k ORA ?{
+		POP2
+		( hex ) is-hex ?rom/<write-rawhex>
+		( mac ) DUP2 macros/find-name INC2k ORA ?rom/<write-macro>
+		( opc ) POP2 opcodes/find INCk ?rom/<write-opcode>
+		( imm ) POP !runes/litjsi }
+	INC2 LDA2 JMP2
+
+@asm-comment ( t* -- )
+	[ LITr &depth $1 ] LDA2 DUP2
+	( | nested comments )
+	[ LIT2 ") 00 ] NEQ2 ?{ LITr 01 SUBr }
+	[ LIT2 "( 00 ] NEQ2 ?{ INCr }
+	STHkr [ LITr _&depth ] STRr
+	?{ !token/<set-default> }
+	JMP2r
+
+@asm-macro ( t* -- )
+	[ LITr &depth $1 ] LDAk
+	( | nested lambdas )
+	[ LIT "} ] NEQ ?{
+		[ LITr 01 ] SUBr STHkr ?{
+			#00 macros/<push-byte>
+			POP2 POPr !token/<set-default> } }
+	STHkr #00 EQU ?{ ;token/buf macros/<push-word> }
+	LDA [ LIT "{ ] NEQ ?{ INCr }
+	[ LITr _&depth ] STRr
+	JMP2r
+
+(
+@|Scope )
+
 @scope/<push-byte> ( c -- )
 	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
 	( overflow ) DUP .&cap LTH ?{ ;dict/exceeded ;&buf ;dict/Symbol err/<set> }
@@ -155,72 +202,52 @@
 	POP2 ;&buf JMP2r
 
 (
-@|Assembly )
+@|Runes )
 
-@<set-default> ( -- )
-	;asm-default ;token/mode STA2
-	JMP2r
+@runes/find ( char -- <addr>* )
+	STH
+	;&lut
+	&>l ( -- )
+		LDAk STHkr EQU ?{
+			#0003 ADD2 LDAk ?&>l
+		POP2 #ffff }
+	POPr JMP2r
 
-@asm-default ( t* -- )
-	LDZk runes/find INC2k ORA ?{
-		POP2
-		( hex ) is-hex ?rom/<write-rawhex>
-		( mac ) DUP2 macros/find-name INC2k ORA ?rom/<write-macro>
-		( opc ) POP2 opcodes/find INCk ?rom/<write-opcode>
-		( imm ) POP !lib/litjsi }
-	INC2 LDA2 JMP2
-
-@<set-comment> ( -- )
-	;asm-comment ;token/mode STA2
-	[ LIT2 01 _asm-comment/depth ] STR
-	JMP2r
-
-@asm-comment ( t* -- )
-	[ LITr &depth $1 ] LDA2 DUP2
-	( | nested comments )
-	[ LIT2 ") 00 ] NEQ2 ?{ LITr 01 SUBr }
-	[ LIT2 "( 00 ] NEQ2 ?{ INCr }
-	STHkr [ LITr _&depth ] STRr
-	?{ !<set-default> }
-	JMP2r
-
-@<set-macro> ( -- )
-	;asm-macro ;token/mode STA2
-	[ LIT2 00 _asm-macro/depth ] STR
-	JMP2r
-
-@asm-macro ( t* -- )
-	[ LITr &depth $1 ] LDAk
-	( | nested lambdas )
-	[ LIT "} ] NEQ ?{
-		[ LITr 01 ] SUBr STHkr ?{
-			#00 macros/<push-byte>
-			POP2 POPr !<set-default> } }
-	STHkr #00 EQU ?{ ;token/buf macros/<push-word> }
-	LDA [ LIT "{ ] NEQ ?{ INCr }
-	[ LITr _&depth ] STRr
-	JMP2r
-
-@lib/ignore POP2 JMP2r
-	&padabs req-name refs/get-any !rom/<set-head>
-	&padrel req-name refs/get-any !rom/<set-head-rel>
-	&toplab req-name DUP2 scope/<set> !syms/<new>
+@runes/ignore POP2 JMP2r
+	&padabs /req-name refs/get-any !rom/<set-head>
+	&padrel /req-name refs/get-any !rom/<set-head-rel>
+	&toplab /req-name DUP2 scope/<set> !syms/<new>
 	&sublab INC2 scope/make-name !syms/<new>
-	&litrel #80 rom/<write-byte> &rawrel req-name refs/get-rb !rom/<write-byte>
-	&litzep #80 rom/<write-byte> &rawzep req-name refs/get-ab !rom/<write-byte>
-	&litabs #a0 rom/<write-byte> &rawabs req-name refs/get-as !rom/<write-short>
-	&litjci req-name #20 !rom/<write-call>
-	&litjmi req-name #40 !rom/<write-call>
+	&litrel #80 rom/<write-byte> &rawrel /req-name refs/get-rb !rom/<write-byte>
+	&litzep #80 rom/<write-byte> &rawzep /req-name refs/get-ab !rom/<write-byte>
+	&litabs #a0 rom/<write-byte> &rawabs /req-name refs/get-as !rom/<write-short>
+	&litjci /req-name #20 !rom/<write-call>
+	&litjmi /req-name #40 !rom/<write-call>
 	&litjsi #60 !rom/<write-call>
-	&lithex req-name !rom/<write-lithex>
-	&rawstr req-name !rom/<write-str>
+	&lithex /req-name !rom/<write-lithex>
+	&rawstr /req-name !rom/<write-str>
 	&lambda POP2 !lambda/pop
-	&coment POP2 !<set-comment>
-	&macros req-name !macros/<new>
+	&coment POP2 !token/<set-comment>
+	&macros /req-name !macros/<new>
 
-@req-name ( str* -- str1* )
+@runes/req-name ( str* -- str1* )
 	INC2 LDAk #20 GTH ?{ ;dict/invalid ;dict/Token !token/<error> }
 	JMP2r
+
+@opcodes/find ( str* -- str* <opc> )
+	[ LITr 00 ] ;&lut
+	&>l ( -- )
+		SWP2k scmp3 ?{
+			INCr #0003 ADD2 LDAk ?&>l
+		POPr [ LITr ff ] }
+	POP2 STHr JMP2r
+
+@opcodes/lut [
+	"LIT "INC "POP "NIP "SWP "ROT "DUP "OVR
+	"EQU "NEQ "GTH "LTH "JMP "JCN "JSR "STH
+	"LDZ "STZ "LDR "STR "LDA "STA "DEI "DEO
+	"ADD "SUB "MUL "DIV "AND "ORA "EOR "SFT
+	"BRK ] $1
 
 (
 @|Lambda )
@@ -246,7 +273,7 @@
 
 @macros/<new> ( name* -- name* )
 	DUP2 /find-name INC2 ORA ?{
-		DUP2 syms/find-name INC2 ORA ?{ macros/<push-word> !<set-macro> } }
+		DUP2 syms/find-name INC2 ORA ?{ macros/<push-word> !token/<set-macro> } }
 	POP2 ;dict/duplicate ;dict/Macro !token/<error>
 
 @macros/find-name ( name* -- <addr>* )
@@ -617,33 +644,6 @@
 		NIP #30 ADD /<pchr>
 		OVRr ADDr STHkr ?&>write
 	POP2r JMP2r
-
-(
-@|Assets )
-
-@runes/find ( char -- <addr>* )
-	STH
-	;&lut
-	&>l ( -- )
-		LDAk STHkr EQU ?{
-			#0003 ADD2 LDAk ?&>l
-		POP2 #ffff }
-	POPr JMP2r
-
-@opcodes/find ( str* -- str* <opc> )
-	[ LITr 00 ] ;&lut
-	&>l ( -- )
-		SWP2k scmp3 ?{
-			INCr #0003 ADD2 LDAk ?&>l
-		POPr [ LITr ff ] }
-	POP2 STHr JMP2r
-
-@opcodes/lut [
-	"LIT "INC "POP "NIP "SWP "ROT "DUP "OVR
-	"EQU "NEQ "GTH "LTH "JMP "JCN "JSR "STH
-	"LDZ "STZ "LDR "STR "LDA "STA "DEI "DEO
-	"ADD "SUB "MUL "DIV "AND "ORA "EOR "SFT
-	"BRK ] $1
 
 @dict/assembled "Assembled $1 &in 20 "in 20 $1 &bytes 20 "bytes. 0a $1
 	&unused "-- 20 "Unused
