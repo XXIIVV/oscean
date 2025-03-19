@@ -1,0 +1,875 @@
+( build: uxnasm src/flick.tal flick.rom
+| start: uxnemu flick.rom )
+
+|00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $1 &rl $1 &g $1 &gl $1 &b $1 &bl $1 &debug $1 &state $1
+|10 @Console/vector $2 &read $5 &type $1 &write $1 &error $1
+|20 @Screen/vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
+|80 @Controller/vector $2 &button $1 &key $1
+|90 @Mouse/vector $2 &x $2 &y $2 &state $1 &pad $3 &sx $2 &sy $1 &sy-lb $1
+|a0 @File/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|c0 @DateTime &year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
+
+|000
+
+	@tool/type $1 &color $1 &size $1
+	@scene/id $1
+
+|100
+
+@on-reset ( -> )
+	;meta #06 DEO2
+	theme/<load>
+	prng/<init>
+	#0180 .Screen/width DEO2
+	#0108 .Screen/height DEO2
+	#01 tool/<set-type>
+	#01 tool/<set-color>
+	#00 tool/<set-size>
+	window/<trap>
+	project/<init>
+	BRK
+
+(
+@|--TODOs
+	| Player rom
+	| Fade transitions
+	| reqdraw
+	| reqsave )
+
+@meta 00
+	( name ) "Flick 0a
+	( details ) "A 20 "Point-n-click 20 "Engine 0a
+	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
+	( date ) "19 20 "Mar 20 "2025 $1 01
+	( - ) 0a =manifest/dat
+
+@manifest/dat ( . )
+	={ =dict/flick
+	( - ) 00 "1 =tool/<color1> $2
+	( - ) 00 "2 =tool/<color2> $2
+	( - ) 00 "3 =tool/<color3> $2
+	( - ) 00 "4 =tool/<color4> $2
+	( - ) 00 "q =tool/<type1> $2
+	( - ) 00 "w =tool/<type2> $2
+	( - ) 00 "[ =tool/<decr> $2
+	( - ) 00 "] =tool/<incr> $2 }
+	={ =dict/snarf
+	( - ) 01 "c =snarf/<copy> $2
+	( - ) 01 "v =snarf/<paste> $2
+	( - ) 05 "V =snarf/<paste-1bit> $2
+	( - ) 01 "x =snarf/<cut> $2 }
+	( ) $1
+
+(
+@|project )
+
+@window/<trap> ( -- )
+	;&on-mouse .Mouse/vector DEI2 NEQ2 ?{ JMP2r }
+	;&on-mouse .Mouse/vector DEO2
+	;&on-button .Controller/vector DEO2
+	;cursor/pick-chr ;cursor/addr STA2
+	JMP2r
+
+@window/on-mouse ( -> )
+	cursor/<update>
+	[ LIT2 &last $1 -Mouse/state ] DEI #00 NEQ DUP ,&last STR
+	( | handlers )
+	DUP2 #0001 EQU2 ?/on-mouse-touch
+	POP2 BRK
+
+@window/on-button ( -> )
+	.Controller/button DEI2 manifest/scan INC2k ORA ?{
+		( insert ) POP2 BRK }
+	( * ) JSR2 BRK
+
+@window/on-mouse-touch ( states* -> )
+	POP2
+	( | touch )
+	.Mouse/x DEI2 #0014 SUB2 #0010 GTH2 ?{
+		.Mouse/y DEI2 #0010 SUB2 #04 SFT2 /<touch-tool> }
+	.Mouse/y DEI2 #00df SUB2 #0016 GTH2 ?{
+		.Mouse/x DEI2 #0028 SUB2 #04 SFT2 /<touch-scene> }
+	BRK
+
+@window/<touch-scene> ( id* -- )
+	DUP2 #0010 EQU2 ?scene/<colorize>
+	.Mouse/y DEI2 #00e0 SUB2 #0008 LTH2 ?{ NIP !scene/<select> }
+	.Mouse/x DEI2 #0028 SUB2 #03 SFT2 #0001 AND2 !scene/<set-link>
+
+@window/<touch-tool> ( id* -- )
+	DUP ADD ;&toolbar-lut ADD2 LDA2 JMP2
+
+	&toolbar-lut [
+	=tool/<type1> =tool/<type2>
+	=tool/<type3> =tool/<type4>
+	=tool/<size1> =tool/<size2>
+	=tool/<size3> =tool/<size4>
+	=tool/<color1> =tool/<color2>
+	=tool/<color3> =tool/<color4> ]
+
+(
+@|Scene )
+
+@scene/<jump> ( color -- )
+	DUP #01 GTH ?{ POP JMP2r }
+	#00 SWP #02 SUB ;canvas/links ADD2 LDA
+	( >> )
+
+@scene/<select> ( id -- )
+	#0f AND DUP .&id LDZ NEQ ?{ POP JMP2r }
+	INCk ?{ POP JMP2r }
+	&<select-force> ( id -- )
+	/<commit>
+	.&id STZ
+	/<pull>
+	;canvas/r LDA .System/rl DEO
+	;canvas/g LDA .System/gl DEO
+	;canvas/b LDA .System/bl DEO
+	canvas/<draw> !/<draw>
+
+@scene/<set-link> ( id* link* -- )
+	;canvas/links ADD2 STH2
+	DUP LDAkr STHr NEQ ?{ POP2 #00ff }
+	STH2r STA
+	POP !/<draw>
+
+@scene/<colorize> ( scene-id* -- )
+	POP2 prng/<new>
+	DUP .System/rl DEO
+	;canvas/r STA
+	DUP .System/gl DEO
+	;canvas/g STA
+	prng/<new>
+	DUP .System/bl DEO
+	;canvas/b STA
+	POP JMP2r
+
+@scene/<draw> ( -- )
+	( | clear )
+	#0028 .Screen/x DEO2
+	#00f6 .Screen/y DEO2
+	[ LIT2 80 -Screen/pixel ] DEO
+	( | draw )
+	#0027 .Screen/x DEO2
+	#00de .Screen/y DEO2
+	#1000 [ LITr 00 ]
+	&>l ( -- )
+		DUP /<draw-preview>
+		STHkr .&id LDZ NEQ ?{ /<draw-arrow> }
+		INCr INC GTHk ?&>l
+	POP2 POPr
+	( | sliders )
+	/<draw-colorizer>
+	JMP2r
+
+@scene/<draw-colorizer> ( -- )
+	[ LIT2 25 -Screen/auto ] DEO
+	;&colorizer-chr .Screen/addr DEO2
+	[ LIT2 81 -Screen/sprite ] DEOk DEO
+	JMP2r
+
+@scene/colorizer-chr [
+	7ff3 e6cc 99b3 e6cc 007f 7f7f 7f7f 7f7f
+	99b3 e6cc 99cc e6b3 7f7f 7f7f 7f7f 7f7f
+	99cc e6b3 99cc e67f 7f7f 7f7f 7f7f 7f00
+	fc9e ce66 329a ce66 00fc fcfc fcfc fcfc
+	329a ce66 3266 ce9a fcfc fcfc fcfc fcfc
+	3266 ce9a 3266 cefc fcfc fcfc fcfc fc00 ]
+
+@scene/<draw-arrow> ( -- )
+	[ LITr -Screen/x ] DEI2r [ LITr -Screen/y ] DEI2r
+	( | )
+	.Screen/x DEI2k #000e SUB2 ROT DEO2
+	.Screen/y DEI2k #0018 ADD2 ROT DEO2
+	;&arrow-icn .Screen/addr DEO2
+	[ LIT2 00 -Screen/auto ] DEO
+	[ LIT2 05 -Screen/sprite ] DEO
+	( | recover )
+	[ LITr -Screen/y ] DEO2r
+	[ LITr -Screen/x ] DEO2r
+	JMP2r
+
+@scene/<draw-preview> ( id -- )
+	[ LITr -Screen/x ] DEI2r [ LITr -Screen/y ] DEI2r
+	( | )
+	[ LIT2 25 -Screen/auto ] DEO
+	;&frame-icn .Screen/addr DEO2
+	[ LIT2 05 -Screen/sprite ] DEOk DEO
+	( | link 1 )
+	DUP2r [ LITr -Screen/y ] DEO2r
+	OVR2r [ LITr -Screen/x ] DEO2r
+	[ LIT2 00 -Screen/auto ] DEO
+	;&bullet-icn .Screen/addr DEO2
+	DUP ;canvas/link1 LDA EQU #0a MUL .Screen/sprite DEO
+	( | link 2 )
+	DUP2r [ LITr -Screen/y ] DEO2r
+	OVR2r [ LITr -Screen/x ] DEO2r
+	[ LIT2 00 -Screen/auto ] DEO
+	.Screen/x DEI2k #0008 ADD2 ROT DEO2
+	;&bullet-icn .Screen/addr DEO2
+	;canvas/link2 LDA EQU #0f MUL .Screen/sprite DEO
+	( | recover )
+	[ LITr -Screen/y ] DEO2r
+	[ LIT2r 0010 ] ADD2r [ LITr -Screen/x ] DEO2r
+	JMP2r
+
+@scene/<commit> ( -- )
+	[ LIT2 00 -&id ] LDZ DUP2 #02 SFT INC ,&dst-page STR2
+	#03 AND #e0 SFT2 ,&dst-addr STR2
+	;&cmd-put .System/expansion DEO2
+	JMP2r
+
+	&cmd-put [
+	01 4000 0000 =canvas/mem &dst-page $2 &dst-addr $2 ]
+
+@scene/<pull> ( -- )
+	[ LIT2 00 -&id ] LDZ DUP2 #02 SFT INC ,&src-page STR2
+	#03 AND #e0 SFT2 ,&src-addr STR2
+	;&cmd-get .System/expansion DEO2
+	JMP2r
+
+	&cmd-get [
+	01 4000 &src-page $2 &src-addr $2 0000 =canvas/mem ]
+
+(
+@|Pane )
+
+@pane/<draw> ( -- )
+	( | clear )
+	#0014 .Screen/x DEO2
+	#000e .Screen/y DEO2
+	[ LIT2 90 -Screen/pixel ] DEO
+	( | type )
+	#0014 .Screen/x DEO2
+	#000e .Screen/y DEO2
+	;tool/type-icns-end ;tool/type-icns [ LITr 00 ]
+	&>wt ( -- )
+		DUP2 /<draw-button>
+		STHkr .tool/type LDZ NEQ ?{ /<draw-arrow> }
+		INCr #0008 ADD2 GTH2k ?&>wt
+	POP2 POP2 POPr
+	( | sizes )
+	;tool/size-icns-end ;tool/size-icns [ LITr 00 ]
+	&>ws ( -- )
+		DUP2 /<draw-button>
+		STHkr .tool/size LDZ NEQ ?{ /<draw-arrow> }
+		INCr #0008 ADD2 GTH2k ?&>ws
+	POP2 POP2 POPr
+	( | clor )
+	;tool/color-chr-end ;tool/color-chr [ LITr 00 ]
+	&>wc ( -- )
+		[ LIT2 16 -Screen/auto ] DEO
+		DUP2 .Screen/addr DEO2
+		[ LIT2 81 -Screen/sprite ] DEOk DEO
+		STHkr .tool/color LDZ NEQ ?{ /<draw-arrow> }
+		INCr #0040 ADD2 GTH2k ?&>wc
+	POP2 POP2 POPr JMP2r
+
+@pane/<draw-button> ( addr* -- )
+	[ LITr -Screen/x ] DEI2r [ LITr -Screen/y ] DEI2r
+	( ) ;&line-icn .Screen/addr DEO2
+	[ LIT2 16 -Screen/auto ] DEO
+	[ LIT2 01 -Screen/sprite ] DEOk DEO
+	( | icon )
+	STH2kr #0004 ADD2 .Screen/y DEO2
+	OVR2r STH2r #0004 ADD2 .Screen/x DEO2
+	.Screen/addr DEO2
+	[ LIT2 00 -Screen/auto ] DEO
+	[ LIT2 05 -Screen/sprite ] DEO
+	STH2r #0010 ADD2 .Screen/y DEO2
+	[ LITr -Screen/x ] DEO2r
+	JMP2r
+
+@pane/<draw-arrow> ( -- )
+	[ LITr -Screen/x ] DEI2r [ LITr -Screen/y ] DEI2r
+	( | )
+	.Screen/x DEI2k #000a SUB2 ROT DEO2
+	.Screen/y DEI2k #000c SUB2 ROT DEO2
+	;&arrow-icn .Screen/addr DEO2
+	[ LIT2 00 -Screen/auto ] DEO
+	[ LIT2 05 -Screen/sprite ] DEO
+	( | recover )
+	[ LITr -Screen/y ] DEO2r
+	[ LITr -Screen/x ] DEO2r
+	JMP2r
+
+(
+@|Core )
+
+@<redraw-all> ( -- )
+	canvas/<draw-frame>
+	canvas/<draw>
+	pane/<draw> !scene/<draw>
+
+(
+@|Tool )
+
+@tool/<type1> ( -- )
+	#00 !/<set-type>
+
+@tool/<type2> ( -- )
+	#01 !/<set-type>
+
+@tool/<type3> ( -- )
+	#02 !/<set-type>
+
+@tool/<type4> ( -- )
+	#03 !/<set-type>
+
+@tool/<set-type> ( type -- )
+	#03 AND DUP .&type LDZ NEQ ?{ POP JMP2r }
+	.&type STZ
+	/<set-cursor> !pane/<draw>
+
+@tool/<color1> ( -- )
+	#00 !/<set-color>
+
+@tool/<color2> ( -- )
+	#01 !/<set-color>
+
+@tool/<color3> ( -- )
+	#02 !/<set-color>
+
+@tool/<color4> ( -- )
+	#03
+	( >> )
+
+@tool/<set-color> ( color -- )
+	#03 AND DUP .&color LDZ NEQ ?{ POP JMP2r }
+	.&color STZ !pane/<draw>
+
+@tool/get-color ( -- color )
+	#02 .Mouse/state DEI GTH ?{ #00 JMP2r }
+	.&color LDZ JMP2r
+
+@tool/<incr> ( -- )
+	.&size LDZ INC !/<set-size>
+
+@tool/<decr> ( -- )
+	[ LIT2 ff -&size ] LDZ ADD !/<set-size>
+
+@tool/<size1> ( -- )
+	#00 !/<set-size>
+
+@tool/<size2> ( -- )
+	#01 !/<set-size>
+
+@tool/<size3> ( -- )
+	#02 !/<set-size>
+
+@tool/<size4> ( -- )
+	#03
+	( >> )
+
+@tool/<set-size> ( color -- )
+	#03 AND DUP .&size LDZ NEQ ?{ POP JMP2r }
+	.&size STZ !pane/<draw>
+
+@tool/<set-cursor> ( id -- addr* )
+	[ LIT2 00 -&type ] LDZ DUP ADD ;&cursors-lut ADD2 LDA2 ;cursor/addr STA2
+	JMP2r
+
+	&cursors-lut [
+	=cursor/pick-chr =cursor/pen-chr
+	=cursor/link-chr =cursor/wipe-chr ]
+
+(
+@|Canvas )
+
+@canvas/on-mouse ( -> )
+	cursor/<update>
+	[ LIT2 &last $1 -Mouse/state ] DEI #00 NEQ DUP ,&last STR
+	( | pick tool )
+	.tool/type LDZ ?{
+		#0001 NEQ2 ?{
+			/get-pos /get-pixel scene/<jump>
+			POP2 POP2 }
+		BRK }
+	[ LIT2 03 -tool/type ] LDZ NEQ ?{
+		#0001 NEQ2 ?{
+			/get-pos /get-pixel <wipe-pixel>
+			POP2 POP2 }
+		BRK }
+	( | handlers )
+	DUP2 #0001 NEQ2 ?{
+		/get-pos OVR2 ,&lastx STR2
+		DUP2 ,&lasty STR2
+		<draw-mask>
+		POP2 /<draw>
+		/<draw-preview>
+		BRK }
+	DUP2 #0101 NEQ2 ?{
+		[ LIT2 &lastx $2 ] [ LIT2 &lasty $2 ] /get-pos OVR2 ,&lastx STR2
+		DUP2 ,&lasty STR2
+		<draw-line>
+		POP2 /<draw>
+		/<draw-preview>
+		BRK }
+	DUP2 #0100 NEQ2 ?{ project/<write> }
+	POP2 BRK
+
+@canvas/get-addr ( x* y* -- addr* )
+	DUP #07 AND STH
+	( y ) #03 SFT2 #0028 MUL2 #40 SFT2 SWP2
+	( x ) #03 SFT2 #0028 DIV2k MUL2 SUB2 #40 SFT2
+	( pad ) ADD2 ;&mem ADD2 #00 STHr ADD2 JMP2r
+
+@get-tile-addr ( x* y* -- x* y* addr* )
+	( x ) OVR2 #03 SFT2
+	( y ) OVR2 #03 SFT2 #0144 #03 SFT2 MUL2 ADD2
+	( ) #40 SFT2 ;canvas/mem ADD2 JMP2r
+
+@canvas/get-pixel ( x* y* -- x* y* color )
+	( get tile addr ) get-tile-addr STH2
+	( get glyph vertical offset ) DUP2 #0007 AND2 STH2
+	ADD2r
+	( make bit mask ) OVR2 NIP #07 AND #80 SWP SFT
+	( ch1 ) DUP LDAkr STHr AND #00 NEQ SWP
+	( ch2 ) STH2r #0008 ADD2 LDA AND #00 NEQ DUP ADD ORA JMP2r
+
+@canvas/<set-pixel> ( x* y* color -- )
+	STH
+	DUP2 #00c8 LTH2 ?{ POPr POP2 POP2 JMP2r }
+	OVR2 #0140 LTH2 ?{ POPr POP2 POP2 JMP2r }
+	[ LIT2 02 -tool/type ] LDZ NEQ ?{
+		canvas/get-pixel #01 NEQ ?{ POPr POP2 POP2 JMP2r } }
+	OVR2 SWP2 /get-addr
+	( ch1 ) OVR2 OVR2 STHkr #00 /<toggle-pixel>
+	( ch2 ) #0008 ADD2 STHr #01
+	( >> )
+
+@canvas/<toggle-pixel> ( x* addr* color -- )
+	STH2
+	LDAk STH
+	SWP2 NIP STHr SWP STH2r SFT #01 AND ?{
+		( mask ) #0107 ROT #07 AND SUB #40 SFT SFT #ff EOR AND
+		( save ) ROT ROT STA
+		JMP2r }
+	#0107 ROT #07 AND SUB #40 SFT SFT ORA
+	( save ) ROT ROT STA
+	JMP2r
+
+@canvas/<trap> ( -- )
+	;&on-mouse .Mouse/vector DEI2 NEQ2 ?{ JMP2r }
+	;&on-mouse .Mouse/vector DEO2 !tool/<set-cursor>
+
+@canvas/get-pos ( -- x* y* )
+	( x ) .Mouse/x DEI2 ,&x LDR2 SUB2
+	( y ) .Mouse/y DEI2 ,&y LDR2 SUB2 JMP2r
+
+@canvas/catch ( x* y* -- x* y* )
+	DUP2 [ LIT2 &y 0010 ] SUB2 #00cb GTH2 ?{
+		OVR2 [ LIT2 &x 0028 ] SUB2 #0144 GTH2 ?{ #00 JMP2r } }
+	#01 JMP2r
+
+@canvas/<draw> ( -- )
+	[ LIT2 05 -Screen/auto ] DEO
+	;&mem .Screen/addr DEO2
+	,&x LDR2 .Screen/x DEO2
+	,&y LDR2 .Screen/y DEO2
+	#1900
+	&>v ( -- )
+		#2800
+		&>h ( -- )
+			[ LIT2 81 -Screen/sprite ] DEO
+			INC GTHk ?&>h
+		POP2
+		( | down )
+		,&x LDR2 .Screen/x DEO2
+		.Screen/y DEI2k #0008 ADD2 ROT DEO2
+		INC GTHk ?&>v
+	POP2 JMP2r
+
+@canvas/<draw-frame> ( -- )
+	,&x LDR2 #0008 SUB2 .Screen/x DEO2
+	,&y LDR2 .Screen/y DEO2
+	#05e7 ;&ver-icn #02 <draw-times>
+	.Screen/x DEI2k #0008 ADD2 ROT DEO2
+	#05d8 ;&hor-icn #01 <draw-times>
+	.Screen/y DEI2k #0008 SUB2 ROT DEO2
+	#35e7 ;&ver-icn #02 <draw-times>
+	.Screen/x DEI2k #0008 SUB2 ROT DEO2
+	#35d8 ;&hor-icn #01 !<draw-times>
+
+	&ver-icn [ 0101 0101 0101 0101 ]
+	&hor-icn [ ff00 0000 0000 0000 ]
+
+@canvas/<draw-preview> ( -- )
+	[ LIT2 00 -scene/id ] LDZ #40 SFT2 #0028 ADD2 .Screen/x DEO2
+	#00eb .Screen/y DEO2
+	.Screen/x DEI2 ,&anchor STR2
+	[ LIT2 01 -Screen/auto ] DEO
+	#0a00
+	&>vp ( -- )
+		STHk #0d00
+		&>hp ( -- )
+			( x ) #00 OVR #0018 MUL2
+			( y ) #00 STHkr #0016 MUL2 /get-pixel .Screen/pixel DEO
+			POP2 POP2 INC GTHk ?&>hp
+		POP2 POPr
+		( | down )
+		[ LIT2 &anchor $2 ] .Screen/x DEO2
+		.Screen/y DEI2k INC2 ROT DEO2
+		INC GTHk ?&>vp
+	POP2 JMP2r
+
+@canvas/<wipe> ( -- )
+	#ffff ;canvas/links STA2
+	#fa ;canvas/r STA
+	#7d ;canvas/g STA
+	#6b ;canvas/b STA
+	;&mem #3e80 <mclr>
+	canvas/<draw-preview>
+	.scene/id LDZ !scene/<select-force>
+
+(
+@|snarf )
+
+@snarf/<copy> ( -- )
+	;&filename .File/name DEO2
+	#4000 .File/length DEO2
+	;canvas/mem .File/write DEO2
+	JMP2r
+
+@snarf/<paste> ( -- )
+	;&filename .File/name DEO2
+	#4000 .File/length DEO2
+	;canvas/mem .File/read DEO2
+	canvas/<draw-preview>
+	.scene/id LDZ !scene/<select-force>
+
+@snarf/<paste-1bit> ( -- )
+	;&filename .File/name DEO2
+	#0008 .File/length DEO2
+	;canvas/memcap ;canvas/mem
+	&>lp ( -- )
+		DUP2 .File/read DEO2
+		#0010 ADD2 GTH2k ?&>lp
+	POP2 POP2 canvas/<draw-preview>
+	.scene/id LDZ !scene/<select-force>
+
+@snarf/<cut> ( -- )
+	/<copy> !canvas/<wipe>
+
+	&filename ".snarf $1
+
+(
+@|Primitives )
+
+%abs2 ( a* -- res* ) {
+	DUP2k #1f SFT2 MUL2 SUB2 }
+
+%lts2 ( a* b* -- f ) {
+	SUB2 POP #07 SFT }
+
+%gts2 ( a* b* -- f ) {
+	SWP2 lts2 }
+
+@<draw-line> ( x1* y1* x2* y2* -- )
+	,&y2 STR2
+	,&x2 STR2
+	STH2
+	STH2
+	( | x )
+	[ LIT2 ADD2r SUB2r ] ,&x2 LDR2 STH2kr SUB2k abs2 ,&dx STR2
+	gts2 [ JMP SWP POP ] ,&sx STR
+	SWP2r
+	( | y )
+	[ LIT2 ADD2r SUB2r ] ,&y2 LDR2 STH2kr SUB2k abs2 #0000 SWP2 SUB2 ,&dy STR2
+	gts2 [ JMP SWP POP ] ,&sy STR
+	,&dx LDR2 ,&dy LDR2 ADD2
+	&>while ( x+y*
+		| x* y* -- )
+		OVR2r STH2r STH2kr <draw-mask>
+		( y ) STH2kr [ LIT2 &y2 $2 ] NEQ2 ?{
+			( x ) OVR2r STH2r [ LIT2 &x2 $2 ] EQU2 ?&end }
+		( e -> e2 ) DUP2k ADD2 DUP2
+		( y ) [ LIT2 &dy $2 ] lts2 ?{
+			( e+dy ) SWP2 ,&dy LDR2 ADD2 SWP2
+			( x1+sx ) SWP2r [ LIT2r 0001 ] [ &sx $1 ] SWP2r }
+		( x ) [ LIT2 &dx $2 ] gts2 ?{
+			( e+dx ) ,&dx LDR2 ADD2
+			( y1+sy ) [ LIT2r 0001 ] [ &sy $1 ] }
+		!&>while
+	&end POP2 POP2r POP2r JMP2r
+
+@<draw-mask> ( x* y* -- )
+	.tool/size LDZ ?{ tool/get-color !canvas/<set-pixel> }
+	#0004 SUB2 ,&y STR2
+	#0003 SUB2 ,&x STR2
+	[ LIT2 00 -tool/size ] LDZ #30 SFT2 ;tool/size-icns ADD2 STH2
+	#0800
+	&>ver ( -- )
+		LDAkr #0800
+		&>hor ( -- )
+			#07 OVR SUB STHkr SWP SFT #01 AND #00 EQU ?{
+				( x ) #00 OVR [ LIT2 &x $2 ] ADD2
+				( y ) [ LIT2 &y $2 ]
+				( c ) tool/get-color canvas/<set-pixel> }
+			INC GTHk ?&>hor
+		POP2 POPr ,&y LDR2 INC2 ,&y STR2
+		INC2r INC GTHk ?&>ver
+	POP2 POP2r JMP2r
+
+@<wipe-pixel> ( color -- )
+	,&t STR
+	#00c8 #0000
+	&>v ( -- )
+		STH2k #0144 #0000
+		&>h ( -- )
+			DUP2 STH2kr canvas/get-pixel [ LIT &t $1 ] NEQ ?{ OVR2 OVR2 tool/get-color canvas/<set-pixel> }
+			POP2 POP2 INC2 GTH2k ?&>h
+		POP2r POP2 POP2 INC2 GTH2k ?&>v
+	POP2 POP2 project/<write>
+	canvas/<draw-preview> !canvas/<draw>
+
+@project/<init> ( -- )
+	#1000
+	&>li ( -- )
+		DUP .scene/id STZ
+		#ffff ;canvas/links STA2
+		#fa ;canvas/r STA
+		#7d ;canvas/g STA
+		#6b ;canvas/b STA
+		scene/<commit>
+		INC GTHk ?&>li
+	POP2
+	( >> )
+
+@project/<read> ( -- )
+	;&filename .File/name DEO2
+	#4000 .File/length DEO2
+	#1000
+	&>lr ( -- )
+		DUP .scene/id STZ
+		;canvas/mem .File/read DEO2
+		scene/<commit>
+		canvas/<draw-preview>
+		INC GTHk ?&>lr
+	POP2 [ LIT2 00 -scene/id ] STZ
+	scene/<pull> !<redraw-all>
+
+@project/<write> ( -- )
+	scene/<commit>
+	.scene/id LDZ ;&filename .File/name DEO2
+	#4000 .File/length DEO2
+	#1000
+	&>lw ( -- )
+		DUP .scene/id STZ
+		scene/<pull>
+		;canvas/mem .File/write DEO2
+		INC GTHk ?&>lw
+	POP2 .scene/id STZ !scene/<pull>
+
+	&filename "project.flick $1
+
+(
+@|theme )
+
+@theme/<reset> ( -- )
+	#f0af #f0d7 #f0b6
+	( >> )
+
+@theme/<set> ( r* g* b* -- )
+	.System/b DEO2
+	.System/g DEO2
+	.System/r DEO2
+	JMP2r
+
+@theme/<load> ( -- )
+	;&path .File/name DEO2
+	#0002 .File/length DEO2
+	;&r .File/read DEO2
+	;&g .File/read DEO2
+	;&b .File/read DEO2
+	.File/success-lb DEI ?{ !theme/<reset> }
+	[ LIT2 &r $2 ] [ LIT2 &g $2 ] [ LIT2 &b $2 ] !theme/<set>
+
+	&path ".theme $1
+
+(
+@|cursor )
+
+@cursor/<refocus> ( -- )
+	.Mouse/x DEI2 .Mouse/y DEI2
+	( | handlers )
+	canvas/catch ?{ POP2 POP2 !canvas/<trap> }
+	POP2 POP2 !window/<trap>
+
+@cursor/<update> ( -- )
+	/<refocus>
+	( >> )
+
+@cursor/<update-trap> ( -- )
+	[ LIT2 12 -Screen/auto ] DEO
+	#40 ;fill-icn /<draw>
+	[ LIT2 16 -Screen/auto ] DEO
+	#c1 [ LIT2 &addr =&pick-chr ] .Mouse/state DEI ?{ #0040 ADD2 }
+	.Mouse/x DEI2 ,&x STR2
+	.Mouse/y DEI2 ,&y STR2
+	( >> )
+
+@cursor/<draw> ( color addr* -- )
+	.Screen/addr DEO2
+	[ LIT2 &x $2 ] #0004 SUB2 .Screen/x DEO2
+	[ LIT2 &y $2 ] #0004 SUB2 .Screen/y DEO2
+	.Screen/sprite DEOk DEO
+	JMP2r
+
+(
+@|prng )
+
+@prng/<init> ( -- )
+	( > ) [ LIT2 00 -DateTime/second ] DEI
+	( > ) [ LIT2 00 -DateTime/minute ] DEI #60 SFT2 EOR2
+	( > ) [ LIT2 00 -DateTime/hour ] DEI #c0 SFT2 EOR2 ,prng/x STR2
+	( > ) [ LIT2 00 -DateTime/hour ] DEI #04 SFT2
+	( > ) [ LIT2 00 -DateTime/day ] DEI #10 SFT2 EOR2
+	( > ) [ LIT2 00 -DateTime/month ] DEI #60 SFT2 EOR2
+	( > ) .DateTime/year DEI2 #a0 SFT2 EOR2 ,prng/y STR2
+	JMP2r
+
+@prng/<new> ( -- number* )
+	( > ) [ LIT2 &x $2 ]
+	( > ) DUP2 #50 SFT2 EOR2
+	( > ) DUP2 #03 SFT2 EOR2
+	( > ) [ LIT2 &y $2 ] DUP2 ,&x STR2
+	( > ) DUP2 #01 SFT2 EOR2 EOR2
+	( > ) ,&y STR2k POP JMP2r
+
+(
+@|Stdlib )
+
+@manifest/scan ( but key -- fn* )
+	ORAk ?{ POP2 #ffff JMP2r }
+	,&bk STR2
+	;&dat
+	&>cat ( -- )
+		LDA2k OVR2 #0004 ADD2
+		&>opt ( -- )
+			LDA2k [ LIT2 &bk $2 ] NEQ2 ?{
+				NIP2 NIP2 INC2 INC2 LDA2 JMP2r }
+			#0006 ADD2 GTH2k ?&>opt
+		POP2 POP2 LDA2 LDAk ?&>cat
+	POP2 #ffff JMP2r
+
+@<draw-times> ( color times addr* auto -- )
+	.Screen/auto DEO
+	.Screen/addr DEO2
+	SWP STH
+	[ LITr -Screen/sprite ]
+	&>l ( -- )
+		DEOkr
+		INC DUP ?&>l
+	POP POP2r JMP2r
+
+@<mclr> ( src* len* -- )
+	,&length STR2
+	,&addr STR2
+	;&mmu .System/expansion DEO2
+	JMP2r
+	&mmu 00 &length $2 0000 &addr $2 00
+
+@<phex> ( short* -: )
+	SWP /b
+	&b ( byte -: )
+	DUP #04 SFT /c
+	&c ( byte -: )
+	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
+	JMP2r
+
+(
+@|Assets )
+
+@fill-icn [ ffff ffff ffff ffff ]
+
+@scene/frame-icn [
+	3844 8282 8244 3800 0000 0000 7f80 8080
+	8080 8080 8080 807f 3844 8282 8244 3800
+	0000 0000 fc02 0202 0202 0202 0202 02fc ]
+
+@scene/arrow-icn [ 0000 040e 1f0e 0e00 ]
+
+@scene/bullet-icn [ 0038 7c7c 7c38 0000 ]
+
+@pane/line-icn [
+	000f 3040 4080 8080 00e0 1804 0402 0202
+	8080 8080 4040 300f 0202 0202 0404 18e0 ]
+
+@pane/arrow-icn [ 0000 041e 1f1e 0400 ]
+
+@tool/size-icns [
+	0000 0000 1000 0000 0000 0010 3810 0000
+	0000 387c 7c7c 3800 007c fefe fefe fe7c ] &size-icns-end
+
+@tool/type-icns [
+	2020 20bc 7e7e 3e1c 00e0 d088 4422 120c
+	007c 8282 8c92 926c 0000 4428 1028 4400 ] &type-icns-end
+
+@tool/color-chr [
+	000f 3040 4080 8080 0000 0000 0000 0000
+	00e0 1804 0402 0202 0000 0000 0000 0000
+	8080 8080 4040 300f 0000 0000 0000 0000
+	0202 0202 0404 18e0 0000 0000 0000 0000
+	000f 3040 438f 8f9f 0000 0000 0000 0000
+	00e0 1804 84e2 e2f2 0000 0000 0000 0000
+	9f9f 8f8f 4340 300f 0000 0000 0000 0000
+	f2f2 e2e2 8404 18e0 0000 0000 0000 0000
+	000f 3040 4080 8080 0000 0000 030f 0f1f
+	00e0 1804 0402 0202 0000 0000 80e0 e0f0
+	8080 8080 4040 300f 1f1f 0f0f 0300 0000
+	0202 0202 0404 18e0 f0f0 e0e0 8000 0000
+	000f 3040 438f 8f9f 0000 0000 030f 0f1f
+	00e0 1804 84e2 e2f2 0000 0000 80e0 e0f0
+	9f9f 8f8f 4340 300f 1f1f 0f0f 0300 0000
+	f2f2 e2e2 8404 18e0 f0f0 e0e0 8000 0000 ] &color-chr-end
+
+@cursor/pick-chr [
+	0000 0000 0000 0817 0000 0000 0000 0008
+	0000 0000 0000 00c0 0000 0000 0000 0000
+	1010 2010 1008 0700 0f0f 1f0f 0f07 0000
+	2010 1010 2020 c000 c0e0 e0e0 c0c0 0000 ]
+	( up ) [
+	0000 0000 0814 1417 0000 0000 0008 0808
+	0000 0000 0000 00c0 0000 0000 0000 0000
+	1010 2010 1008 0700 0f0f 1f0f 0f07 0000
+	2010 1010 2020 c000 c0e0 e0e0 c0c0 0000 ]
+
+@cursor/pen-chr [
+	0008 1436 4136 1408 0000 0808 3608 0800
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000 ] [
+	0000 0000 0f0f 0e0c 0000 0000 0006 0503
+	0000 0000 0080 4020 0000 0000 0000 80c0
+	0402 0100 0000 0000 0301 0000 0000 0000
+	1008 0484 4830 0000 e0f0 f878 3000 0000 ]
+
+@cursor/link-chr [
+	0008 1c3e 773e 1c08 0000 0808 3608 0800
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000 ] [
+	0000 0000 0f09 080c 0000 0000 0006 0703
+	0000 0000 0080 4020 0000 0000 0000 80c0
+	0402 0100 0000 0000 0301 0000 0000 0000
+	1008 0c9c 7830 0000 e0f0 f878 3000 0000 ]
+
+@cursor/wipe-chr [
+	0063 773e 1c3e 7763 0000 2214 0814 2200
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000 ] [
+	0063 552a 142a 5563 0000 2214 0814 2200
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000 ]
+
+@dict/flick "Flick $1 &snarf $1
+	( metadata 0x180 )
+
+@canvas/mem $3e80
+	&memcap ( - )
+	&links &link1 $1 &link2 $1
+	( - ) &r $1 &g $1 &b $1
+
