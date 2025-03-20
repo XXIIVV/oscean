@@ -38,7 +38,7 @@
 	( name ) "Turye 0a
 	( details ) "A 20 "Font 20 "Editor 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "Mar 20 "17, 20 "2025 00
+	( date ) "Mar 20 "19, 20 "2025 00
 	( data ) 02
 	( icon ) 83 =appicon
 	( mani ) 0a =manifest/dat
@@ -53,7 +53,7 @@
 	( - ) 01 "c =snarf/<copy> =dict/copy
 	( - ) 01 "v =snarf/<paste> =dict/paste
 	( - ) 01 "x =snarf/<cut> =dict/cut
-	( - ) 00 08 =glyph/<erase> =dict/erase }
+	( - ) 00 7f =glyph/<erase> =dict/erase }
 	={ =dict/glyph
 	( - ) 11 00 =glyph/<drag-u> =dict/drag-up
 	( - ) 21 00 =glyph/<drag-d> =dict/drag-down
@@ -76,7 +76,8 @@
 
 @on-button ( -> )
 	.Controller/button DEI2 manifest/scan INC2k ORA ?{
-		( insert ) POP2 BRK }
+		POP2 .Controller/key DEI pangram/<push>
+		BRK }
 	( * ) JSR2 BRK
 
 (
@@ -368,11 +369,20 @@
 (
 @|Pangram )
 
-@data/<draw-pangram> ( -- )
-	.Screen/width DEI2 #01 SFT2 ;dict/pangram-c /get-str-width #01 SFT2 SUB2 .Screen/x DEO2
+@pangram/on-mouse ( -> )
+	cursor/<update>
+	BRK
+
+@pangram/<draw> ( -- )
+	( | clear )
+	#0000 .Screen/x DEO2
+	#01b8 .Screen/y DEO2
+	[ LIT2 80 -Screen/pixel ] DEO
+	( | draw )
+	.Screen/width DEI2 #01 SFT2 ;&mem data/get-str-width #01 SFT2 SUB2 .Screen/x DEO2
 	.Screen/height DEI2 #0014 SUB2 .Screen/y DEO2
 	[ LIT2 15 -Screen/auto ] DEO
-	;dict/pangram-c
+	;&mem
 	&>wd ( -- )
 		LDAk #00 SWP DUP2
 		( addr ) #50 SFT2 ;data/glyphs ADD2 .Screen/addr DEO2
@@ -381,6 +391,17 @@
 		.Screen/x DEO2
 		INC2 LDAk ?&>wd
 	POP2 JMP2r
+
+@pangram/<push> ( c -- )
+	DUP ?{ POP JMP2r }
+	DUP #08 EQU ?/<pop>
+	[ LIT2 &ptr =&memcap ] INC2k ,&ptr STR2
+	STA !/<draw>
+
+@pangram/<pop> ( c -- )
+	POP [ LIT2 00 _&ptr ] LDR2 DUP2 ;&mem NEQ2 ?{ POP2 POP JMP2r }
+	#0001 SUB2 STAk ,&ptr STR2
+	POP !/<draw>
 
 @data/get-str-width ( addr* -- width* )
 	[ LIT2r 0000 ]
@@ -401,7 +422,7 @@
 	#0012 .Screen/y DEO2
 	[ LIT2 80 -Screen/pixel ] DEO
 	collection/<draw>
-	editor/<draw> !data/<draw-pangram>
+	editor/<draw> !pangram/<draw>
 
 @header/<draw-title> ( -- )
 	.Screen/width DEI2 #01 SFT2 .Screen/x DEO2
@@ -503,9 +524,6 @@
 	&left "Left $1
 	&right "Right $1
 	&guide "Guide $1
-	&pangram-a "Gaza 20 "frequens 20 "Lybicum 20 "duxit 20 "Karthago 20 "triumphum. 0a
-	&pangram-b "Portez 20 "ce 20 "vieux 20 "whisky, 20 "au 20 "juge 20 "blond 20 "qui 20 "fume? 0a
-	&pangram-c "Sphinx 20 "of 20 "black 20 "quartz, 20 "judge 20 "my 20 "vow. $1
 
 
 
@@ -558,7 +576,8 @@
 	[ LIT2 09 -Screen/sprite ] DEOk DEO
 	JMP2r
 
-( @|browser )
+(
+@|browser )
 
 @browser/on-mouse ( -> )
 	cursor/<update-trap>
@@ -673,7 +692,8 @@
 	[ LIT2r 09 -Screen/sprite ] DEOkr
 	#0005 ADD2 #04 chicago/<draw-line-color>
 	;&cap-right .Screen/addr DEO2
-	DEOkr DEOr
+	DEOkr
+	DEOr
 	JMP2r
 
 @browser/get-color ( str* -- str* f )
@@ -758,10 +778,12 @@
 	.Mouse/y DEI2 ;header/height GTH2 ?{
 		( ) ;header/on-mouse .Mouse/vector DEO2
 		JMP2r }
-	.Mouse/y DEI2 #0098 GTH2 ?{
+	.Mouse/y DEI2 DUP2 #0098 GTH2 ?{
 		( ) ;editor/on-mouse .Mouse/vector DEO2
+		POP2 JMP2r }
+	#01b6 GTH2 ?{ ;collection/on-mouse .Mouse/vector DEO2
 		JMP2r }
-	;collection/on-mouse .Mouse/vector DEO2
+	;pangram/on-mouse .Mouse/vector DEO2
 	JMP2r
 
 @cursor/<update> ( -- )
@@ -863,7 +885,6 @@
 	INC2 LDAk
 	( utf8 ) #06 SFT #02 EQU ?next-glyph
 	JMP2r
-
 
 (
 @|stdlib )
@@ -1133,7 +1154,7 @@
 	0000 0000 0000 0000 0000 0000 0000 0000
 	0000 0000 0032 4c00 0000 0000 0000 0000 ]
 
-@browser/buf $200
+
 
 @data/widths [
 0100 0101 0101 0000 0008 0000 0001 0000
@@ -1665,5 +1686,10 @@
 0000 0000 0000 0000 0000 0000 0000 0000
 0000 0000 0000 0000 0000 0000 0000 0000
 0000 0000 0000 0000 0000 0000 0000 0000 ]
+
+@pangram/mem "Sphinx 20 "of 20 "black 20 "quartz, 20 "judge 20 "my 20 "vow. &memcap $1
+
+$100
+@browser/buf $200
 
 

@@ -26,12 +26,10 @@
 	BRK
 
 @src/on-console ( -> )
-	.Console/read DEI
-	( ) DUP #20 GTH ?{
-		POP <lint>
+	[ LIT2 03 -Console/type ] DEI GTH ?{ <lint>
 		#800f DEO
 		BRK }
-	[ LIT2 00 &ptr -src ] INCk ,&ptr STR
+	.Console/read DEI [ LIT2 00 &ptr -src ] INCk ,&ptr STR
 	STZ2
 	BRK
 
@@ -39,7 +37,7 @@
 	( name ) "Uxnlin 0a
 	( desc ) "Uxntal 20 "Linter 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "1 20 "Mar 20 "2025 $2
+	( date ) "19 20 "Mar 20 "2025 $2
 
 (
 @|core )
@@ -669,7 +667,6 @@
 	"NIP2 $1 "STH2 $1 =latestack
 	"POPr $1 "POPr $1 =pop2r
 	"OVR $1 "OVR $1 =dup2
-	"#0101 $1 "EQU2 $1 =and
 	"#ffff $1 "NEQ2 $1 =inc2ora
 	"#02 $1 "DIV $1 =sft01
 	"#0002 $1 "DIV2 $1 =sft201
@@ -775,6 +772,9 @@
 	"{%} $1 "JMP* $1 =tailcall
 	( redundant padding )
 	"|* $1 "|* $1 =redundance
+	( eager )
+	"{2} $1 "NIP2 $1 =eagerstack
+	"{1} $1 "NIP $1 =eagerstack
 	&end
 
 @rules3
@@ -852,6 +852,7 @@
 	"STH2r $1 "{1} $1 "STZ2* $1 =eagerstack
 	"STHr $1 "{2} $1 "STA* $1 =eagerstack
 	"STH2r $1 "{2} $1 "STA2* $1 =eagerstack
+	"STHr $1 "{1} $1 "SWP $1 =eagerstack
 	( transfer with keep )
 	"STHkr $1 "{1} $1 "DEO* $1 =eagerstack
 	"STH2kr $1 "{1} $1 "DEO2* $1 =eagerstack
@@ -861,6 +862,7 @@
 	"STH2kr $1 "{1} $1 "STZ2* $1 =eagerstack
 	"STHkr $1 "{2} $1 "STA* $1 =eagerstack
 	"STH2kr $1 "{2} $1 "STA2* $1 =eagerstack
+	"STHkr $1 "{1} $1 "SWP $1 =eagerstack
 	( static )
 	"{2} $1 "ADD2 $1 "INC2 $1 =static
 	"{1} $1 "ADD $1 "INC $1 =static
