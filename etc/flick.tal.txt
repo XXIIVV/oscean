@@ -49,7 +49,10 @@
 	( - ) 00 "q =tool/<type1> $2
 	( - ) 00 "w =tool/<type2> $2
 	( - ) 00 "[ =tool/<decr> $2
-	( - ) 00 "] =tool/<incr> $2
+	( - ) 00 "] =tool/<incr> $2 }
+	={ =dict/scene
+	( - ) 40 00 =scene/<prev> $2
+	( - ) 80 00 =scene/<next> $2
 	( - ) 00 1b =scene/<reset> $2 }
 	={ =dict/snarf
 	( - ) 01 "c =snarf/<copy> $2
@@ -95,8 +98,7 @@
 	.Mouse/y DEI2 #00df SUB2 DUP2 #0008 LTH2 ?{
 		DUP2 #0012 LTH2 ?{
 			POP2 #0001 SWP2 NIP #40 SFT SFT2
-			( ) [ LIT2 00 -tool/color ] LDZ #0002 SUB2 !scene/<set-mask>
-			JMP2r }
+			( ) [ LIT2 00 -tool/color ] LDZ #0002 SUB2 !scene/<set-mask> }
 		( | link )
 		POP2
 		( ) [ LIT2 00 -tool/color ] LDZ #0002 SUB2 !scene/<set-link> }
@@ -139,6 +141,12 @@
 	canvas/<draw>
 	( | sight )
 	#0001 ROT #40 SFT SFT2 .&seen LDZ2 ORA2 .&seen STZ2 !/<draw>
+
+@scene/<prev> ( -- )
+	[ LIT2 ff -&id ] LDZ ADD !/<select>
+
+@scene/<next> ( -- )
+	.&id LDZ INC !/<select>
 
 @scene/<draw> ( -- )
 	( | clear )
@@ -905,6 +913,7 @@
 	0000 0000 0000 0000 0000 0000 0000 0000 ]
 
 @dict/flick "Flick $1 &snarf $1
+	&scene "scene $1
 	( metadata 0x180 )
 
 @canvas/mem $3e80

@@ -48,8 +48,13 @@
 	JMP2r
 
 @scene/pass-mask ( color -- pass )
-	( mask* ) #00 SWP #02 SUB DUP ADD ;canvas/masks ADD2 LDA2
-	( seen* ) DUP2 .&seen LDZ2 AND2 SWP2 EQU2 JMP2r
+	( mask ) #00 SWP #02 SUB DUP ADD ;canvas/masks ADD2 LDA2
+	( seen ) .&seen LDZ2 OVR2 AND2 EQU2 JMP2r
+
+@scene/get-link ( color -- link )
+	STHk #01 GTH ?{ POPr #ff JMP2r }
+	STHkr /pass-mask ?{ POPr #ff JMP2r }
+	#00 STHr #02 SUB ;canvas/links ADD2 LDA JMP2r
 
 @scene/<pull> ( -- )
 	[ LIT2 00 -&id ] LDZ DUP2 #02 SFT INC ,&src-page STR2
@@ -63,16 +68,8 @@
 (
 @|Canvas )
 
-@<phex> ( short* -: )
-	SWP /b
-	&b ( byte -: )
-	DUP #04 SFT /c
-	&c ( byte -: )
-	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
-	JMP2r
-
 @canvas/on-mouse ( -> )
-	.Mouse/x DEI2 .Mouse/y DEI2 /get-link
+	.Mouse/x DEI2 .Mouse/y DEI2 /get-pixel scene/get-link
 	( state ) DUP cursor/<update-hover>
 	[ LIT2 &last $1 -Mouse/state ] DEI DUP ,&last STR
 	#0001 NEQ2 ?{ scene/<select>
@@ -103,18 +100,11 @@
 	( ) #40 SFT2 ;&mem ADD2
 	( ) OVR2 #0007 AND2 ADD2 JMP2r
 
-@canvas/get-pixel ( x* y* -- x* y* color )
+@canvas/get-pixel ( x* y* -- color )
 	( get tile addr ) /get-addr STH2
-	( make bit mask ) OVR2 NIP #07 AND #80 SWP SFT
+	( make bit mask ) POP2 NIP #07 AND #80 SWP SFT
 	( ch1 ) DUP LDAkr STHr AND #00 NEQ SWP
 	( ch2 ) STH2r #0008 ADD2 LDA AND #00 NEQ DUP ADD ORA JMP2r
-
-@canvas/get-link ( x* y* -- link )
-	/get-pixel DUP scene/pass-mask ?{
-		POP POP2 POP2 #ff JMP2r }
-	STHk #02 LTH ?{
-		POP2 POP2 #00 STHr #02 SUB ;canvas/links ADD2 LDA JMP2r }
-	POP2 POP2 POPr #ff JMP2r
 
 (
 @|Cursor )
@@ -123,7 +113,7 @@
 	[ LIT2 12 -Screen/auto ] DEO
 	#40 ;fill-icn /<draw>
 	[ LIT2 16 -Screen/auto ] DEO
-	#c100 ROT #ff NEQ
+	#c100 ROT [ #ff NEQ ]
 	( + hover ) #70 SFT2
 	( + state ) #0000 .Mouse/state DEI NEQ #60 SFT2 ADD2
 	( + asset ) ;cursor/sprite-chrs ADD2
