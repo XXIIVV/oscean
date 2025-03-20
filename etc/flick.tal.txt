@@ -31,10 +31,7 @@
 
 (
 @|--TODOs
-	| Player rom
-	| Fade transitions
-	| reqdraw
-	| reqsave )
+	| Fade transitions )
 
 @meta 00
 	( name ) "Flick 0a
@@ -61,7 +58,7 @@
 	( ) $1
 
 (
-@|project )
+@|Window )
 
 @window/<trap> ( -- )
 	;&on-mouse .Mouse/vector DEI2 NEQ2 ?{ JMP2r }
@@ -92,7 +89,7 @@
 	BRK
 
 @window/<touch-scene> ( id* -- )
-	DUP2 #0010 EQU2 ?scene/<colorize>
+	DUP2 #0010 EQU2 ?scene/<set-colorize>
 	.Mouse/y DEI2 #00e0 SUB2 #0008 LTH2 ?{ NIP !scene/<select> }
 	.Mouse/x DEI2 #0028 SUB2 #03 SFT2 #0001 AND2 !scene/<set-link>
 
@@ -126,23 +123,6 @@
 	;canvas/g LDA .System/gl DEO
 	;canvas/b LDA .System/bl DEO
 	canvas/<draw> !/<draw>
-
-@scene/<set-link> ( id* link* -- )
-	;canvas/links ADD2 STH2
-	DUP LDAkr STHr NEQ ?{ POP2 #00ff }
-	STH2r STA
-	POP !/<draw>
-
-@scene/<colorize> ( scene-id* -- )
-	POP2 prng/<new>
-	DUP .System/rl DEO
-	;canvas/r STA
-	DUP .System/gl DEO
-	;canvas/g STA
-	prng/<new>
-	DUP .System/bl DEO
-	;canvas/b STA
-	POP JMP2r
 
 @scene/<draw> ( -- )
 	( | clear )
@@ -230,6 +210,23 @@
 
 	&cmd-get [
 	01 4000 &src-page $2 &src-addr $2 0000 =canvas/mem ]
+
+@scene/<set-link> ( id* link* -- )
+	;canvas/links ADD2 STH2
+	DUP LDAkr STHr NEQ ?{ POP2 #00ff }
+	STH2r STA
+	POP /<draw> !project/<write>
+
+@scene/<set-colorize> ( scene-id* -- )
+	POP2 prng/<new>
+	DUP .System/rl DEO
+	;canvas/r STA
+	DUP .System/gl DEO
+	;canvas/g STA
+	prng/<new>
+	DUP .System/bl DEO
+	;canvas/b STA
+	POP !project/<write>
 
 (
 @|Pane )
@@ -408,21 +405,14 @@
 	DUP2 #0100 NEQ2 ?{ project/<write> }
 	POP2 BRK
 
-@canvas/get-addr ( x* y* -- addr* )
-	DUP #07 AND STH
-	( y ) #03 SFT2 #0028 MUL2 #40 SFT2 SWP2
-	( x ) #03 SFT2 #0028 DIV2k MUL2 SUB2 #40 SFT2
-	( pad ) ADD2 ;&mem ADD2 #00 STHr ADD2 JMP2r
-
-@get-tile-addr ( x* y* -- x* y* addr* )
+@canvas/get-addr ( x* y* -- x* y* addr* )
 	( x ) OVR2 #03 SFT2
-	( y ) OVR2 #03 SFT2 #0144 #03 SFT2 MUL2 ADD2
-	( ) #40 SFT2 ;canvas/mem ADD2 JMP2r
+	( y ) OVR2 #03 SFT2 #0028 MUL2 ADD2
+	( ) #40 SFT2 ;&mem ADD2
+	( ) OVR2 #0007 AND2 ADD2 JMP2r
 
 @canvas/get-pixel ( x* y* -- x* y* color )
-	( get tile addr ) get-tile-addr STH2
-	( get glyph vertical offset ) DUP2 #0007 AND2 STH2
-	ADD2r
+	( get tile addr ) /get-addr STH2
 	( make bit mask ) OVR2 NIP #07 AND #80 SWP SFT
 	( ch1 ) DUP LDAkr STHr AND #00 NEQ SWP
 	( ch2 ) STH2r #0008 ADD2 LDA AND #00 NEQ DUP ADD ORA JMP2r
@@ -432,8 +422,8 @@
 	DUP2 #00c8 LTH2 ?{ POPr POP2 POP2 JMP2r }
 	OVR2 #0140 LTH2 ?{ POPr POP2 POP2 JMP2r }
 	[ LIT2 02 -tool/type ] LDZ NEQ ?{
-		canvas/get-pixel #01 NEQ ?{ POPr POP2 POP2 JMP2r } }
-	OVR2 SWP2 /get-addr
+		/get-pixel #01 NEQ ?{ POPr POP2 POP2 JMP2r } }
+	/get-addr NIP2
 	( ch1 ) OVR2 OVR2 STHkr #00 /<toggle-pixel>
 	( ch2 ) #0008 ADD2 STHr #01
 	( >> )
@@ -514,12 +504,12 @@
 	POP2 JMP2r
 
 @canvas/<wipe> ( -- )
-	#ffff ;canvas/links STA2
-	#fa ;canvas/r STA
-	#7d ;canvas/g STA
-	#6b ;canvas/b STA
+	#ffff ;&links STA2
+	#fa ;&r STA
+	#7d ;&g STA
+	#6b ;&b STA
 	;&mem #3e80 <mclr>
-	canvas/<draw-preview>
+	/<draw-preview>
 	.scene/id LDZ !scene/<select-force>
 
 (
@@ -623,6 +613,9 @@
 	POP2 POP2 project/<write>
 	canvas/<draw-preview> !canvas/<draw>
 
+(
+@|Project )
+
 @project/<init> ( -- )
 	#1000
 	&>li ( -- )
@@ -646,8 +639,7 @@
 		scene/<commit>
 		canvas/<draw-preview>
 		INC GTHk ?&>lr
-	POP2 [ LIT2 00 -scene/id ] STZ
-	scene/<pull> !<redraw-all>
+	POP2 #00 scene/<select-force> !<redraw-all>
 
 @project/<write> ( -- )
 	scene/<commit>
@@ -770,14 +762,6 @@
 	JMP2r
 	&mmu 00 &length $2 0000 &addr $2 00
 
-@<phex> ( short* -: )
-	SWP /b
-	&b ( byte -: )
-	DUP #04 SFT /c
-	&c ( byte -: )
-	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
-	JMP2r
-
 (
 @|Assets )
 
@@ -836,7 +820,7 @@
 	2010 1010 2020 c000 c0e0 e0e0 c0c0 0000 ]
 
 @cursor/pen-chr [
-	0008 1436 4136 1408 0000 0808 3608 0800
+	0000 0808 3608 0800 0000 0008 1408 0000
 	0000 0000 0000 0000 0000 0000 0000 0000
 	0000 0000 0000 0000 0000 0000 0000 0000
 	0000 0000 0000 0000 0000 0000 0000 0000 ] [
@@ -846,7 +830,7 @@
 	1008 0484 4830 0000 e0f0 f878 3000 0000 ]
 
 @cursor/link-chr [
-	0008 1c3e 773e 1c08 0000 0808 3608 0800
+	0000 0800 2200 0800 0000 0008 1408 0000
 	0000 0000 0000 0000 0000 0000 0000 0000
 	0000 0000 0000 0000 0000 0000 0000 0000
 	0000 0000 0000 0000 0000 0000 0000 0000 ] [

@@ -61,10 +61,12 @@
 @|Canvas )
 
 @canvas/on-mouse ( -> )
-	cursor/<update>
-	.Mouse/state DEI ?{ BRK }
-	.Mouse/x DEI2 .Mouse/y DEI2 /get-pixel scene/<jump>
-	POP2 POP2 BRK
+	.Mouse/x DEI2 .Mouse/y DEI2 /get-pixel
+	( state ) DUP cursor/<update-hover>
+	[ LIT2 &last $1 -Mouse/state ] DEI DUP ,&last STR
+	#0001 NEQ2 ?{ scene/<jump>
+		POP2 POP2 BRK }
+	POP POP2 POP2 BRK
 
 @canvas/<draw> ( -- )
 	[ LIT2 05 -Screen/auto ] DEO
@@ -84,15 +86,14 @@
 		INC GTHk ?&>v
 	POP2 JMP2r
 
-@get-tile-addr ( x* y* -- x* y* addr* )
+@canvas/get-addr ( x* y* -- x* y* addr* )
 	( x ) OVR2 #03 SFT2
-	( y ) OVR2 #03 SFT2 #0144 #03 SFT2 MUL2 ADD2
-	( ) #40 SFT2 ;canvas/mem ADD2 JMP2r
+	( y ) OVR2 #03 SFT2 #0028 MUL2 ADD2
+	( ) #40 SFT2 ;&mem ADD2
+	( ) OVR2 #0007 AND2 ADD2 JMP2r
 
 @canvas/get-pixel ( x* y* -- x* y* color )
-	( get tile addr ) get-tile-addr STH2
-	( get glyph vertical offset ) DUP2 #0007 AND2 STH2
-	ADD2r
+	( get tile addr ) /get-addr STH2
 	( make bit mask ) OVR2 NIP #07 AND #80 SWP SFT
 	( ch1 ) DUP LDAkr STHr AND #00 NEQ SWP
 	( ch2 ) STH2r #0008 ADD2 LDA AND #00 NEQ DUP ADD ORA JMP2r
@@ -100,11 +101,15 @@
 (
 @|Cursor )
 
-@cursor/<update> ( -- )
+@cursor/<update-hover> ( color -- )
 	[ LIT2 12 -Screen/auto ] DEO
 	#40 ;fill-icn /<draw>
 	[ LIT2 16 -Screen/auto ] DEO
-	#c1 ;&down-chr .Mouse/state DEI ?{ POP2 ;&up-chr }
+	#c100 ROT #01 GTH
+	( + hover ) #70 SFT2
+	( + state ) #0000 .Mouse/state DEI NEQ #60 SFT2 ADD2
+	( + asset ) ;cursor/sprite-chrs ADD2
+	( | continue )
 	.Mouse/x DEI2 ,&x STR2
 	.Mouse/y DEI2 ,&y STR2
 	( >> )
@@ -116,13 +121,19 @@
 	.Screen/sprite DEOk DEO
 	JMP2r
 
-@cursor/up-chr [
+@cursor/sprite-chrs [
+	0000 0000 1814 1211 0000 0000 0008 0c0e
+	0000 0000 0000 0000 0000 0000 0000 0000
+	1010 1013 1418 0000 0f0f 0f0c 0800 0000
+	8040 20c0 0000 0000 0080 c000 0000 0000 ] [
+	0000 0000 181c 1e1f 0000 0000 0008 0c0e
+	0000 0000 0000 0000 0000 0000 0000 0000
+	1f1f 1f1f 1c18 0000 0f0f 0f0c 0800 0000
+	80c0 e0c0 0000 0000 0080 c000 0000 0000 ] [
 	0000 0000 0814 1417 0000 0000 0008 0808
 	0000 0000 0000 00c0 0000 0000 0000 0000
 	1010 2010 1008 0700 0f0f 1f0f 0f07 0000
-	2010 1010 2020 c000 c0e0 e0e0 c0c0 0000 ]
-
-@cursor/down-chr [
+	2010 1010 2020 c000 c0e0 e0e0 c0c0 0000 ] [
 	0000 0000 0000 0817 0000 0000 0000 0008
 	0000 0000 0000 00c0 0000 0000 0000 0000
 	1010 2010 1008 0700 0f0f 1f0f 0f07 0000
