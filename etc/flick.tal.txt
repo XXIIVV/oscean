@@ -20,8 +20,16 @@
 	;meta #06 DEO2
 	theme/<load>
 	prng/<init>
-	#0180 .Screen/width DEO2
+	#0170 .Screen/width DEO2
 	#0108 .Screen/height DEO2
+	( | center )
+	#0020 ;canvas/x STA2
+	#0010 ;canvas/y STA2
+	( | position )
+	;canvas/x LDA2 #0012 SUB2 ;pane/x STA2
+	;canvas/y LDA2 #0002 SUB2 ;pane/y STA2
+	;canvas/x LDA2 #0001 SUB2 ;scene/x STA2
+	;canvas/y LDA2 #00cb ADD2 ;scene/y STA2
 	#01 tool/<set-type>
 	#01 tool/<set-color>
 	#00 tool/<set-size>
@@ -30,15 +38,11 @@
 	project/<init>
 	BRK
 
-(
-@|--TODOs
-	| Fade transitions )
-
 @meta 00
 	( name ) "Flick 0a
 	( details ) "A 20 "Point-n-click 20 "Engine 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "20 20 "Mar 20 "2025 $1 01
+	( date ) "21 20 "Mar 20 "2025 $1 01
 	( - ) 0a =manifest/dat
 
 @manifest/dat ( . )
@@ -70,7 +74,7 @@
 	;&on-mouse .Mouse/vector DEI2 NEQ2 ?{ JMP2r }
 	;&on-mouse .Mouse/vector DEO2
 	;&on-button .Controller/vector DEO2
-	;cursor/pick-chr ;cursor/addr STA2
+	;cursor/arrow-chr ;cursor/addr STA2
 	JMP2r
 
 @window/on-mouse ( -> )
@@ -86,42 +90,116 @@
 	( * ) JSR2 BRK
 
 @window/on-mouse-touch ( states* -> )
-	POP2
-	( | touch )
-	.Mouse/x DEI2 #0014 SUB2 #0010 GTH2 ?{
-		.Mouse/y DEI2 #0010 SUB2 #04 SFT2 /<touch-tool>
-		BRK }
-	.Mouse/y DEI2 #00df SUB2 #001c GTH2 ?{
-		.Mouse/x DEI2 #0028 SUB2 #04 SFT2 /<touch-scene>
-		BRK }
-	BRK
-
-@window/<touch-scene> ( id* -- )
-	DUP2 #0013 EQU2 ?scene/<set-colorize>
-	DUP2 #0010 LTH2 ?{ POP2 JMP2r }
-	.Mouse/y DEI2 #00df SUB2 DUP2 #000b LTH2 ?{
-		DUP2 #0012 LTH2 ?{
-			POP2 #0001 SWP2 NIP #40 SFT SFT2
-			( ) [ LIT2 00 -tool/color ] LDZ #0002 SUB2 !scene/<set-mask> }
-		( | link )
-		POP2
-		( ) [ LIT2 00 -tool/color ] LDZ #0002 SUB2 !scene/<set-link> }
-	( | preview )
-	POP2 NIP !scene/<select>
-
-@window/<touch-tool> ( id* -- )
-	DUP ADD ;&toolbar-lut ADD2 LDA2 JMP2
-
-	&toolbar-lut [
-	=tool/<type1> =tool/<type2>
-	=tool/<type3> =tool/<type4>
-	=tool/<size1> =tool/<size2>
-	=tool/<size3> =tool/<size4>
-	=tool/<color1> =tool/<color2>
-	=tool/<color3> =tool/<color4> ]
+	POP2 BRK
 
 (
 @|Scene )
+
+@scene/on-mouse ( -> )
+	cursor/<update>
+	[ LIT2 &last $1 -Mouse/state ] DEI #00 NEQ DUP ,&last STR
+	#0001 NEQ2 ?{
+		( x* ) .Mouse/x DEI2 ;&x LDA2 SUB2 #0011 DIV2
+		( y* ) .Mouse/y DEI2 ,&y LDR2 SUB2
+		( | handlers )
+		DUP2 #000f GTH2 ?{
+			POP2 DUP2 #0012 NEQ2 ?{ POP2 /<set-colorize>
+				BRK }
+			( preview ) /<select>
+			POP BRK }
+		DUP2 #0017 GTH2 ?{
+			POP2
+			( link ) [ LIT2 00 -tool/color ] LDZ #0002 SUB2 /<set-link>
+			BRK }
+		DUP2 #001f GTH2 ?{
+			POP2
+			( shift ) #0001 SWP2 NIP #40 SFT SFT2
+			( mask ) [ LIT2 00 -tool/color ] LDZ #0002 SUB2 /<set-mask>
+			BRK }
+		POP2 }
+	BRK
+
+@scene/catch ( x* y* -- x* y* )
+	DUP2 [ LIT2 &y 00db ] SUB2 #00bf GTH2 ?{
+		OVR2 [ LIT2 &x 0027 ] SUB2 #0140 GTH2 ?{ #00 JMP2r } }
+	#01 JMP2r
+
+@scene/<trap> ( -- )
+	;&on-mouse .Mouse/vector DEI2 NEQ2 ?{ JMP2r }
+	;&on-mouse .Mouse/vector DEO2
+	;cursor/pick-chr ;cursor/addr STA2
+	JMP2r
+
+@scene/<draw> ( -- )
+	( | clear )
+	,&x LDR2 .Screen/x DEO2
+	,&y LDR2 #000e ADD2 .Screen/y DEO2
+	[ LIT2 80 -Screen/pixel ] DEO
+	/<draw-frame>
+	( | draw link1 )
+	#0c00 ;canvas/link2 LDA /<draw-link>
+	#0800 ;canvas/link1 LDA /<draw-link>
+	#04 [ LIT2 00 -&id ] LDZ /<draw-link>
+	( | draw mask )
+	[ LIT2 16 -Screen/auto ] DEO
+	#1000
+	&>ldr ( -- )
+		DUP ;canvas/mask1 LDA2 ROT SFT2 NIP #01 AND #00 EQU ?{ #08 OVR /<draw-mask> }
+		DUP ;canvas/mask2 LDA2 ROT SFT2 NIP #01 AND #00 EQU ?{ #0c OVR /<draw-mask> }
+		DUP .&seen LDZ2 ROT SFT2 NIP #01 AND #00 EQU ?{ #05 OVR /<draw-mask> }
+		INC GTHk ?&>ldr
+	POP2
+	( | colorizer )
+	;&x LDA2 #0130 ADD2 .Screen/x DEO2
+	;&y LDA2 .Screen/y DEO2
+	[ LIT2 15 -Screen/auto ] DEO
+	;&colorizer-chr .Screen/addr DEO2
+	[ LIT2 81 -Screen/sprite ] DEOk DEO
+	JMP2r
+
+@scene/<draw-frame> ( -- )
+	;&x LDA2 .Screen/x DEO2
+	;&y LDA2 .Screen/y DEO2
+	#05de ;&horlin-icn #01 <draw-times>
+	;&x LDA2 .Screen/x DEO2
+	;&y LDA2 #000d ADD2 .Screen/y DEO2
+	#05de ;&horlin-icn #01 <draw-times>
+	;&x LDA2 .Screen/x DEO2
+	;&y LDA2 #001f ADD2 .Screen/y DEO2
+	#05de ;&horlin-icn #01 <draw-times>
+	;&x LDA2 .Screen/x DEO2
+	;&y LDA2 #0016 ADD2 .Screen/y DEO2
+	#05de ;&hordot-icn #01 <draw-times>
+	#1100
+	&>ldv ( -- )
+		#00 OVR #0011 MUL2 ;&x LDA2 ADD2 #0007 SUB2 .Screen/x DEO2
+		;&y LDA2 .Screen/y DEO2
+		#05fc ;&verlin-icn #02 <draw-times>
+		INC GTHk ?&>ldv
+	POP2 JMP2r
+
+	&horlin-icn [ ff00 0000 0000 0000 ]
+	&hordot-icn [ aa00 0000 0000 0000 ]
+	&verlin-icn [ 0101 0101 0101 0101 ]
+
+@scene/<draw-link> ( color x* -- )
+	#0011 MUL2 ;&x LDA2 ADD2 INC2 .Screen/x DEO2
+	;&y LDA2 #000e ADD2 .Screen/y DEO2
+	[ LIT2 16 -Screen/auto ] DEO
+	;&link-icn .Screen/addr DEO2
+	.Screen/sprite DEO
+	JMP2r
+
+	&link-icn [ 0001 0307 0303 0000 0000 80c0 8080 0000 ]
+
+@scene/<draw-mask> ( color x -- )
+	#00 SWP #0011 MUL2 ;&x LDA2 ADD2 INC2 .Screen/x DEO2
+	;&y LDA2 #0017 ADD2 .Screen/y DEO2
+	;&mask-icn .Screen/addr DEO2
+	.Screen/sprite DEO
+	JMP2r
+
+	&mask-icn [ 0000 0103 0703 0100 0000 0080 c080 0000 ]
 
 @scene/<reset> ( -- )
 	#0000 .&seen STZ2
@@ -135,7 +213,8 @@
 
 @scene/<select> ( id -- )
 	INCk ?{ POP JMP2r }
-	#0f AND DUP .&id LDZ NEQ ?{ POP JMP2r }
+	DUP #10 LTH ?{ POP JMP2r }
+	DUP .&id LDZ NEQ ?{ POP JMP2r }
 	&<select-force> ( id -- )
 	/<commit>
 	DUP .&id STZ
@@ -149,74 +228,6 @@
 
 	&<select-prev> [ LIT2 ff -&id ] LDZ ADD !/<select>
 	&<select-next> .&id LDZ INC !/<select>
-
-@scene/<draw> ( -- )
-	( | clear )
-	#0028 .Screen/x DEO2
-	#00ec .Screen/y DEO2
-	[ LIT2 80 -Screen/pixel ] DEO
-	( | draw frames )
-	#0027 .Screen/x DEO2
-	#00dd .Screen/y DEO2
-	#1000
-	&>ldf ( -- )
-		[ LIT2 15 -Screen/auto ] DEO
-		;&frame-icn .Screen/addr DEO2
-		[ LIT2 05 -Screen/sprite ] DEOk DEO
-		INC GTHk ?&>ldf
-	POP2
-	( | draw link1 )
-	#0027 #00 ;canvas/link1 LDA #40 SFT2 ADD2 INC2 INC2 .Screen/x DEO2
-	#00ea .Screen/y DEO2
-	[ LIT2 00 -Screen/auto ] DEO
-	;&arrow-icn .Screen/addr DEO2
-	[ LIT2 0a -Screen/sprite ] DEO
-	( | draw link2 )
-	#0027 #00 ;canvas/link2 LDA #40 SFT2 ADD2 INC2 INC2 .Screen/x DEO2
-	#00ea .Screen/y DEO2
-	[ LIT2 00 -Screen/auto ] DEO
-	;&arrow-icn .Screen/addr DEO2
-	[ LIT2 0f -Screen/sprite ] DEO
-	( | draw current frame )
-	#0027 [ LIT2 00 -&id ] LDZ #40 SFT2 ADD2 INC2 INC2 .Screen/x DEO2
-	#00ea .Screen/y DEO2
-	[ LIT2 00 -Screen/auto ] DEO
-	;&arrow-icn .Screen/addr DEO2
-	[ LIT2 05 -Screen/sprite ] DEO
-	( | horizontal )
-	#0027 .Screen/x DEO2
-	#00f3 .Screen/y DEO2
-	#05e0 ;&hor-icn #01 <draw-times>
-	( | draw mask )
-	[ LIT2 00 -Screen/auto ] DEO
-	#1000
-	&>ldr ( -- )
-		#00 OVR #40 SFT2 #0029 ADD2 .Screen/x DEO2
-		#00f4 .Screen/y DEO2
-		( | mask1 )
-		DUP ;canvas/mask1 LDA2 ROT SFT2 NIP #01 AND #00 EQU ?{
-			;&mask-icn .Screen/addr DEO2
-			[ LIT2 0a -Screen/sprite ] DEO }
-		( | mask2 )
-		DUP ;canvas/mask2 LDA2 ROT SFT2 NIP #01 AND #00 EQU ?{
-			;&mask-icn .Screen/addr DEO2
-			[ LIT2 0f -Screen/sprite ] DEO }
-		( | seen )
-		DUP .&seen LDZ2 ROT SFT2 NIP #01 AND #00 EQU ?{
-			;&seen-icn .Screen/addr DEO2
-			[ LIT2 05 -Screen/sprite ] DEO }
-		INC GTHk ?&>ldr
-	POP2
-	( | colorizer )
-	#0158 .Screen/x DEO2
-	#00de .Screen/y DEO2
-	[ LIT2 15 -Screen/auto ] DEO
-	;&colorizer-chr .Screen/addr DEO2
-	[ LIT2 81 -Screen/sprite ] DEOk DEO
-	JMP2r
-
-	&hor-icn [ aa00 0000 0000 0000 ]
-	&mask-icn [ 0000 040e 1f0e 0400 ]
 
 @scene/<commit> ( -- )
 	[ LIT2 00 -&id ] LDZ DUP2 #02 SFT INC ,&dst-page STR2
@@ -252,8 +263,8 @@
 	STH2r STA
 	POP /<draw> !project/<write>
 
-@scene/<set-colorize> ( scene-id* -- )
-	POP2 prng/<new>
+@scene/<set-colorize> ( -- )
+	prng/<new>
 	DUP .System/rl DEO
 	;canvas/r STA
 	DUP .System/gl DEO
@@ -266,25 +277,39 @@
 (
 @|Pane )
 
+@pane/on-mouse ( -> )
+	cursor/<update>
+	[ LIT2 &last $1 -Mouse/state ] DEI #00 NEQ DUP ,&last STR
+	#0001 NEQ2 ?{
+		.Mouse/y DEI2 ,&y LDR2 SUB2 #04 SFT2 DUP ADD ;&lut ADD2 LDA2 JSR2 }
+	BRK
+
+@pane/catch ( x* y* -- x* y* )
+	DUP2 [ LIT2 &y 000e ] SUB2 #00bf GTH2 ?{
+		OVR2 [ LIT2 &x 0016 ] SUB2 #0010 GTH2 ?{ #00 JMP2r } }
+	#01 JMP2r
+
+@pane/<trap> ( -- )
+	;&on-mouse .Mouse/vector DEI2 NEQ2 ?{ JMP2r }
+	;&on-mouse .Mouse/vector DEO2
+	;cursor/pick-chr ;cursor/addr STA2
+	JMP2r
+
 @pane/<draw> ( -- )
 	( | clear )
-	#0014 .Screen/x DEO2
-	#000e .Screen/y DEO2
+	,&x LDR2 .Screen/x DEO2
+	,&y LDR2 .Screen/y DEO2
 	[ LIT2 90 -Screen/pixel ] DEO
 	( | type )
-	#0014 .Screen/x DEO2
-	#000e .Screen/y DEO2
 	;tool/type-icns-end ;tool/type-icns [ LITr 00 ]
 	&>wt ( -- )
-		DUP2 /<draw-button>
-		STHkr .tool/type LDZ NEQ ?{ /<draw-arrow> }
+		DUP2 STHkr .tool/type LDZ EQU /<draw-button>
 		INCr #0008 ADD2 GTH2k ?&>wt
 	POP2 POP2 POPr
 	( | sizes )
 	;tool/size-icns-end ;tool/size-icns [ LITr 00 ]
 	&>ws ( -- )
-		DUP2 /<draw-button>
-		STHkr .tool/size LDZ NEQ ?{ /<draw-arrow> }
+		DUP2 STHkr .tool/size LDZ EQU /<draw-button>
 		INCr #0008 ADD2 GTH2k ?&>ws
 	POP2 POP2 POPr
 	( | clor )
@@ -297,17 +322,18 @@
 		INCr #0040 ADD2 GTH2k ?&>wc
 	POP2 POP2 POPr JMP2r
 
-@pane/<draw-button> ( addr* -- )
+@pane/<draw-button> ( addr* selected -- )
 	[ LITr -Screen/x ] DEI2r [ LITr -Screen/y ] DEI2r
-	( ) ;&line-icn .Screen/addr DEO2
+	( ) #00 OVR #50 SFT2
+	( ) ;&line-icn ADD2 .Screen/addr DEO2
 	[ LIT2 16 -Screen/auto ] DEO
 	[ LIT2 01 -Screen/sprite ] DEOk DEO
 	( | icon )
 	STH2kr #0004 ADD2 .Screen/y DEO2
 	OVR2r STH2r #0004 ADD2 .Screen/x DEO2
-	.Screen/addr DEO2
+	ROT ROT .Screen/addr DEO2
 	[ LIT2 00 -Screen/auto ] DEO
-	[ LIT2 05 -Screen/sprite ] DEO
+	#00 EQU .Screen/sprite DEO
 	STH2r #0010 ADD2 .Screen/y DEO2
 	[ LITr -Screen/x ] DEO2r
 	JMP2r
@@ -325,13 +351,20 @@
 	[ LITr -Screen/x ] DEO2r
 	JMP2r
 
+@pane/lut [
+	=tool/<type1> =tool/<type2>
+	=tool/<type3> =tool/<type4>
+	=tool/<size1> =tool/<size2>
+	=tool/<size3> =tool/<size4>
+	=tool/<color1> =tool/<color2>
+	=tool/<color3> =tool/<color4> ]
+
 (
 @|Tool )
 
 @tool/<set-type> ( type -- )
 	#03 AND DUP .&type LDZ NEQ ?{ POP JMP2r }
-	.&type STZ
-	/<set-cursor> !pane/<draw>
+	.&type STZ !pane/<draw>
 	&<type1> #00 !/<set-type>
 	&<type2> #01 !/<set-type>
 	&<type3> #02 !/<set-type>
@@ -360,7 +393,7 @@
 	&<size3> #02 !/<set-size>
 	&<size4> #03 !/<set-size>
 
-@tool/<set-cursor> ( id -- addr* )
+@tool/<set-cursor> ( -- addr* )
 	[ LIT2 00 -&type ] LDZ DUP ADD ;&cursors-lut ADD2 LDA2 ;cursor/addr STA2
 	JMP2r
 
@@ -486,22 +519,36 @@
 	.Screen/y DEI2k #0008 SUB2 ROT DEO2
 	#35e7 ;&ver-icn #02 <draw-times>
 	.Screen/x DEI2k #0008 SUB2 ROT DEO2
-	#35d8 ;&hor-icn #01 !<draw-times>
+	#35d8 ;&hor-icn #01 <draw-times>
+	( | Corners )
+	;&x LDA2 #0001 SUB2 .Screen/x DEO2
+	;&y LDA2 #0001 SUB2 .Screen/y DEO2
+	[ LIT2 01 -Screen/pixel ] DEO
+	;&x LDA2 #0140 ADD2 .Screen/x DEO2
+	;&y LDA2 #0001 SUB2 .Screen/y DEO2
+	[ LIT2 01 -Screen/pixel ] DEO
+	;&x LDA2 #0001 SUB2 .Screen/x DEO2
+	;&y LDA2 #00c8 ADD2 .Screen/y DEO2
+	[ LIT2 01 -Screen/pixel ] DEO
+	;&x LDA2 #0140 ADD2 .Screen/x DEO2
+	;&y LDA2 #00c8 ADD2 .Screen/y DEO2
+	[ LIT2 01 -Screen/pixel ] DEO
+	JMP2r
 
 	&ver-icn [ 0101 0101 0101 0101 ]
 	&hor-icn [ ff00 0000 0000 0000 ]
 
 @canvas/<draw-preview> ( -- )
-	[ LIT2 00 -scene/id ] LDZ #40 SFT2 #0028 ADD2 .Screen/x DEO2
-	#00df .Screen/y DEO2
+	[ LIT2 00 -scene/id ] LDZ #0011 MUL2 ;scene/x LDA2 INC2 ADD2 .Screen/x DEO2
+	;scene/y LDA2 INC2 .Screen/y DEO2
 	.Screen/x DEI2 ,&anchor STR2
 	[ LIT2 01 -Screen/auto ] DEO
-	#0a00
+	#0c00
 	&>vp ( -- )
-		STHk #0d00
+		STHk #1000
 		&>hp ( -- )
-			( x ) #00 OVR #0018 MUL2
-			( y ) #00 STHkr #0016 MUL2 /get-pixel .Screen/pixel DEO
+			( x ) #00 OVR #0015 MUL2
+			( y ) #00 STHkr #0012 MUL2 /get-pixel .Screen/pixel DEO
 			INC GTHk ?&>hp
 		POP2 POPr
 		( | down )
@@ -684,13 +731,12 @@
 	.Mouse/x DEI2 .Mouse/y DEI2
 	( | handlers )
 	canvas/catch ?{ POP2 POP2 !canvas/<trap> }
+	pane/catch ?{ POP2 POP2 !pane/<trap> }
+	scene/catch ?{ POP2 POP2 !scene/<trap> }
 	POP2 POP2 !window/<trap>
 
 @cursor/<update> ( -- )
 	/<refocus>
-	( >> )
-
-@cursor/<update-trap> ( -- )
 	[ LIT2 12 -Screen/auto ] DEO
 	#40 ;fill-icn /<draw>
 	[ LIT2 16 -Screen/auto ] DEO
@@ -778,15 +824,12 @@
 	0000 0000 0000 0000 0300 0000 0000 0000
 	0000 c030 0800 0000 0000 c030 88c0 c0c0
 	0000 0000 0000 0000 8000 0000 0000 0000 ]
-	&frame-icn [
-	007f 8080 8080 8080 8080 8080 7f00 0000
-	00fc 0202 0202 0202 0202 0202 fc00 0000 ]
-	&arrow-icn [ 0000 040e 1f0e 0e00 ]
-	&seen-icn [ 0000 040a 110a 0400 ]
 
 @pane/line-icn [
 	000f 3040 4080 8080 00e0 1804 0402 0202
-	8080 8080 4040 300f 0202 0202 0404 18e0 ]
+	8080 8080 4040 300f 0202 0202 0404 18e0
+	000f 3f7f 7fff ffff 00e0 f8fc fcfe fefe
+	ffff ffff 7f7f 3f0f fefe fefe fcfc f8e0 ]
 	&arrow-icn [ 0000 041e 1f1e 0400 ]
 
 @tool/size-icns [
@@ -850,6 +893,15 @@
 	0000 0000 0000 0000 0000 0000 0000 0000
 	0000 0000 0000 0000 0000 0000 0000 0000
 	0000 0000 0000 0000 0000 0000 0000 0000 ]
+	&arrow-chr [
+	0000 0000 181c 1e1f 0000 0000 0008 0c0e
+	0000 0000 0000 0000 0000 0000 0000 0000
+	1f1f 1f1f 1c18 0000 0f0f 0f0c 0800 0000
+	80c0 e0c0 0000 0000 0080 c000 0000 0000
+	0000 0000 1814 1211 0000 0000 0008 0c0e
+	0000 0000 0000 0000 0000 0000 0000 0000
+	1010 1013 1418 0000 0f0f 0f0c 0800 0000
+	8040 20c0 0000 0000 0080 c000 0000 0000 ]
 
 @dict/flick "Flick $1 &snarf $1
 	&scene "scene $1
