@@ -34,7 +34,7 @@
 @|Scene )
 
 @scene/<select> ( id -- )
-	INCk ?{ POP JMP2r }
+	DUP #11 LTH ?{ POP JMP2r }
 	#0f AND DUP .&id LDZ NEQ ?{ POP JMP2r }
 	&<select-force> ( id -- )
 	DUP .&id STZ
@@ -53,7 +53,7 @@
 
 @scene/get-link ( color -- link )
 	STHk #01 GTH ?{ POPr #ff JMP2r }
-	STHkr /pass-mask ?{ POPr #ff JMP2r }
+	STHkr /pass-mask ?{ POPr #fe JMP2r }
 	#00 STHr #02 SUB ;canvas/links ADD2 LDA JMP2r
 
 @scene/<pull> ( -- )
@@ -81,18 +81,18 @@
 	;&mem .Screen/addr DEO2
 	#0000 .Screen/x DEO2
 	#0000 .Screen/y DEO2
-	#1900
+	#1900 [ LIT2r 81 -Screen/sprite ]
 	&>v ( -- )
 		#2800
 		&>h ( -- )
-			[ LIT2 81 -Screen/sprite ] DEO
+			DEOkr
 			INC GTHk ?&>h
 		POP2
 		( | down )
 		#0000 .Screen/x DEO2
 		.Screen/y DEI2k #0008 ADD2 ROT DEO2
 		INC GTHk ?&>v
-	POP2 JMP2r
+	POP2 POP2r JMP2r
 
 @canvas/get-addr ( x* y* -- x* y* addr* )
 	( x ) OVR2 #03 SFT2
@@ -109,14 +109,16 @@
 (
 @|Cursor )
 
+@cursor/get-addr ( color -- addr* )
+	INCk ?{ POP ;cursor/arrow-chr JMP2r }
+	DUP #fe NEQ ?{ POP ;cursor/mask-chr JMP2r }
+	POP ;cursor/hand-chr JMP2r
+
 @cursor/<update-hover> ( color -- )
 	[ LIT2 12 -Screen/auto ] DEO
 	#40 ;fill-icn /<draw>
 	[ LIT2 16 -Screen/auto ] DEO
-	#c100 ROT [ #ff NEQ ]
-	( + hover ) #70 SFT2
-	( + state ) #0000 .Mouse/state DEI NEQ #60 SFT2 ADD2
-	( + asset ) ;cursor/sprite-chrs ADD2
+	#c1 SWP /get-addr #0000 .Mouse/state DEI NEQ #60 SFT2 ADD2
 	( | continue )
 	.Mouse/x DEI2 ,&x STR2
 	.Mouse/y DEI2 ,&y STR2
@@ -129,19 +131,29 @@
 	.Screen/sprite DEOk DEO
 	JMP2r
 
-@cursor/sprite-chrs [
+@cursor/mask-chr [
+	0063 552a 142a 5563 0000 2214 0814 2200
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0063 773e 1c3e 7763 0000 2214 0814 2200
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000 ]
+	&arrow-chr [
 	0000 0000 1814 1211 0000 0000 0008 0c0e
 	0000 0000 0000 0000 0000 0000 0000 0000
 	1010 1013 1418 0000 0f0f 0f0c 0800 0000
-	8040 20c0 0000 0000 0080 c000 0000 0000 ] [
+	8040 20c0 0000 0000 0080 c000 0000 0000
 	0000 0000 181c 1e1f 0000 0000 0008 0c0e
 	0000 0000 0000 0000 0000 0000 0000 0000
 	1f1f 1f1f 1c18 0000 0f0f 0f0c 0800 0000
-	80c0 e0c0 0000 0000 0080 c000 0000 0000 ] [
+	80c0 e0c0 0000 0000 0080 c000 0000 0000 ]
+	&hand-chr [
 	0000 0000 0814 1417 0000 0000 0008 0808
 	0000 0000 0000 00c0 0000 0000 0000 0000
 	1010 2010 1008 0700 0f0f 1f0f 0f07 0000
-	2010 1010 2020 c000 c0e0 e0e0 c0c0 0000 ] [
+	2010 1010 2020 c000 c0e0 e0e0 c0c0 0000
 	0000 0000 0000 0817 0000 0000 0000 0008
 	0000 0000 0000 00c0 0000 0000 0000 0000
 	1010 2010 1008 0700 0f0f 1f0f 0f07 0000

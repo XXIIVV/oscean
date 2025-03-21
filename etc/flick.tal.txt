@@ -26,6 +26,7 @@
 	#01 tool/<set-color>
 	#00 tool/<set-size>
 	window/<trap>
+	canvas/<draw-frame>
 	project/<init>
 	BRK
 
@@ -37,7 +38,7 @@
 	( name ) "Flick 0a
 	( details ) "A 20 "Point-n-click 20 "Engine 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "19 20 "Mar 20 "2025 $1 01
+	( date ) "20 20 "Mar 20 "2025 $1 01
 	( - ) 0a =manifest/dat
 
 @manifest/dat ( . )
@@ -48,12 +49,13 @@
 	( - ) 00 "4 =tool/<color4> $2
 	( - ) 00 "q =tool/<type1> $2
 	( - ) 00 "w =tool/<type2> $2
-	( - ) 00 "[ =tool/<decr> $2
-	( - ) 00 "] =tool/<incr> $2 }
+	( - ) 00 "[ =tool/<decr-size> $2
+	( - ) 00 "] =tool/<incr-size> $2 }
 	={ =dict/scene
-	( - ) 40 00 =scene/<prev> $2
-	( - ) 80 00 =scene/<next> $2
-	( - ) 00 1b =scene/<reset> $2 }
+	( - ) 40 00 =scene/<select-prev> $2
+	( - ) 80 00 =scene/<select-next> $2
+	( - ) 00 1b =scene/<reset> $2
+	( - ) 00 08 =canvas/<wipe> $2 }
 	={ =dict/snarf
 	( - ) 01 "c =snarf/<copy> $2
 	( - ) 01 "v =snarf/<paste> $2
@@ -87,15 +89,17 @@
 	POP2
 	( | touch )
 	.Mouse/x DEI2 #0014 SUB2 #0010 GTH2 ?{
-		.Mouse/y DEI2 #0010 SUB2 #04 SFT2 /<touch-tool> }
+		.Mouse/y DEI2 #0010 SUB2 #04 SFT2 /<touch-tool>
+		BRK }
 	.Mouse/y DEI2 #00df SUB2 #001c GTH2 ?{
-		.Mouse/x DEI2 #0028 SUB2 #04 SFT2 /<touch-scene> }
+		.Mouse/x DEI2 #0028 SUB2 #04 SFT2 /<touch-scene>
+		BRK }
 	BRK
 
 @window/<touch-scene> ( id* -- )
 	DUP2 #0013 EQU2 ?scene/<set-colorize>
 	DUP2 #0010 LTH2 ?{ POP2 JMP2r }
-	.Mouse/y DEI2 #00df SUB2 DUP2 #0008 LTH2 ?{
+	.Mouse/y DEI2 #00df SUB2 DUP2 #000b LTH2 ?{
 		DUP2 #0012 LTH2 ?{
 			POP2 #0001 SWP2 NIP #40 SFT SFT2
 			( ) [ LIT2 00 -tool/color ] LDZ #0002 SUB2 !scene/<set-mask> }
@@ -120,7 +124,8 @@
 @|Scene )
 
 @scene/<reset> ( -- )
-	#0000 .&seen STZ2 !/<select-force>
+	#0000 .&seen STZ2
+	#00 !/<select-force>
 
 @scene/<jump> ( color -- )
 	DUP #01 GTH ?{ POP JMP2r }
@@ -142,11 +147,8 @@
 	( | sight )
 	#0001 ROT #40 SFT SFT2 .&seen LDZ2 ORA2 .&seen STZ2 !/<draw>
 
-@scene/<prev> ( -- )
-	[ LIT2 ff -&id ] LDZ ADD !/<select>
-
-@scene/<next> ( -- )
-	.&id LDZ INC !/<select>
+	&<select-prev> [ LIT2 ff -&id ] LDZ ADD !/<select>
+	&<select-next> .&id LDZ INC !/<select>
 
 @scene/<draw> ( -- )
 	( | clear )
@@ -204,38 +206,17 @@
 			;&seen-icn .Screen/addr DEO2
 			[ LIT2 05 -Screen/sprite ] DEO }
 		INC GTHk ?&>ldr
-	POP2 #015b .Screen/x DEO2
-	#00de .Screen/y DEO2 !/<draw-colorizer>
-
-	&hor-icn [ aa00 0000 0000 0000 ]
-	&mask-icn [ 0000 040e 1f0e 0400 ]
-
-@scene/<draw-colorizer> ( -- )
-	[ LIT2 25 -Screen/auto ] DEO
+	POP2
+	( | colorizer )
+	#0158 .Screen/x DEO2
+	#00de .Screen/y DEO2
+	[ LIT2 15 -Screen/auto ] DEO
 	;&colorizer-chr .Screen/addr DEO2
 	[ LIT2 81 -Screen/sprite ] DEOk DEO
 	JMP2r
 
-@scene/colorizer-chr [
-	7ff3 e6cc 99b3 e6cc 007f 7f7f 7f7f 7f7f
-	99b3 e6cc 99cc e6b3 7f7f 7f7f 7f7f 7f7f
-	99cc e6b3 99cc e67f 7f7f 7f7f 7f7f 7f00
-	fc9e ce66 329a ce66 00fc fcfc fcfc fcfc
-	329a ce66 3266 ce9a fcfc fcfc fcfc fcfc
-	3266 ce9a 3266 cefc fcfc fcfc fcfc fc00 ]
-
-@scene/<draw-arrow> ( -- )
-	[ LITr -Screen/x ] DEI2r [ LITr -Screen/y ] DEI2r
-	( | )
-	.Screen/x DEI2k #000e SUB2 ROT DEO2
-	.Screen/y DEI2k #0018 ADD2 ROT DEO2
-	;&arrow-icn .Screen/addr DEO2
-	[ LIT2 00 -Screen/auto ] DEO
-	[ LIT2 05 -Screen/sprite ] DEO
-	( | recover )
-	[ LITr -Screen/y ] DEO2r
-	[ LITr -Screen/x ] DEO2r
-	JMP2r
+	&hor-icn [ aa00 0000 0000 0000 ]
+	&mask-icn [ 0000 040e 1f0e 0400 ]
 
 @scene/<commit> ( -- )
 	[ LIT2 00 -&id ] LDZ DUP2 #02 SFT INC ,&dst-page STR2
@@ -345,76 +326,39 @@
 	JMP2r
 
 (
-@|Core )
-
-@<redraw-all> ( -- )
-	canvas/<draw-frame>
-	canvas/<draw>
-	pane/<draw> !scene/<draw>
-
-(
 @|Tool )
-
-@tool/<type1> ( -- )
-	#00 !/<set-type>
-
-@tool/<type2> ( -- )
-	#01 !/<set-type>
-
-@tool/<type3> ( -- )
-	#02 !/<set-type>
-
-@tool/<type4> ( -- )
-	#03 !/<set-type>
 
 @tool/<set-type> ( type -- )
 	#03 AND DUP .&type LDZ NEQ ?{ POP JMP2r }
 	.&type STZ
 	/<set-cursor> !pane/<draw>
+	&<type1> #00 !/<set-type>
+	&<type2> #01 !/<set-type>
+	&<type3> #02 !/<set-type>
+	&<type4> #03 !/<set-type>
 
-@tool/<color1> ( -- )
-	#00 !/<set-color>
-
-@tool/<color2> ( -- )
-	#01 !/<set-color>
-
-@tool/<color3> ( -- )
-	#02 !/<set-color>
-
-@tool/<color4> ( -- )
-	#03
-	( >> )
+@tool/get-color ( -- color )
+	[ LIT2 02 -Mouse/state ] DEI GTH ?{ #00 JMP2r }
+	.&color LDZ JMP2r
 
 @tool/<set-color> ( color -- )
 	#03 AND DUP .&color LDZ NEQ ?{ POP JMP2r }
 	.&color STZ !pane/<draw>
-
-@tool/get-color ( -- color )
-	#02 .Mouse/state DEI GTH ?{ #00 JMP2r }
-	.&color LDZ JMP2r
-
-@tool/<incr> ( -- )
-	.&size LDZ INC !/<set-size>
-
-@tool/<decr> ( -- )
-	[ LIT2 ff -&size ] LDZ ADD !/<set-size>
-
-@tool/<size1> ( -- )
-	#00 !/<set-size>
-
-@tool/<size2> ( -- )
-	#01 !/<set-size>
-
-@tool/<size3> ( -- )
-	#02 !/<set-size>
-
-@tool/<size4> ( -- )
-	#03
-	( >> )
+	&<color1> #00 !/<set-color>
+	&<color2> #01 !/<set-color>
+	&<color3> #02 !/<set-color>
+	&<color4> #03 !/<set-color>
 
 @tool/<set-size> ( color -- )
 	#03 AND DUP .&size LDZ NEQ ?{ POP JMP2r }
 	.&size STZ !pane/<draw>
+
+	&<decr-size> [ LIT2 ff -&size ] LDZ ADD !/<set-size>
+	&<incr-size> .&size LDZ INC !/<set-size>
+	&<size1> #00 !/<set-size>
+	&<size2> #01 !/<set-size>
+	&<size3> #02 !/<set-size>
+	&<size4> #03 !/<set-size>
 
 @tool/<set-cursor> ( id -- addr* )
 	[ LIT2 00 -&type ] LDZ DUP ADD ;&cursors-lut ADD2 LDA2 ;cursor/addr STA2
@@ -432,14 +376,10 @@
 	[ LIT2 &last $1 -Mouse/state ] DEI #00 NEQ DUP ,&last STR
 	( | pick tool )
 	.tool/type LDZ ?{
-		#0001 NEQ2 ?{
-			/get-pos /get-pixel scene/<jump>
-			POP2 POP2 }
+		#0001 NEQ2 ?{ /get-pos /get-pixel scene/<jump> }
 		BRK }
 	[ LIT2 03 -tool/type ] LDZ NEQ ?{
-		#0001 NEQ2 ?{
-			/get-pos /get-pixel <wipe-pixel>
-			POP2 POP2 }
+		#0001 NEQ2 ?{ /get-pos /get-pixel /<wipe-color> }
 		BRK }
 	( | handlers )
 	DUP2 #0001 NEQ2 ?{
@@ -465,9 +405,9 @@
 	( ) #40 SFT2 ;&mem ADD2
 	( ) OVR2 #0007 AND2 ADD2 JMP2r
 
-@canvas/get-pixel ( x* y* -- x* y* color )
+@canvas/get-pixel ( x* y* -- color )
 	( get tile addr ) /get-addr STH2
-	( make bit mask ) OVR2 NIP #07 AND #80 SWP SFT
+	( make bit mask ) POP2 NIP #07 AND #80 SWP SFT
 	( ch1 ) DUP LDAkr STHr AND #00 NEQ SWP
 	( ch2 ) STH2r #0008 ADD2 LDA AND #00 NEQ DUP ADD ORA JMP2r
 
@@ -476,7 +416,7 @@
 	DUP2 #00c8 LTH2 ?{ POPr POP2 POP2 JMP2r }
 	OVR2 #0140 LTH2 ?{ POPr POP2 POP2 JMP2r }
 	[ LIT2 02 -tool/type ] LDZ NEQ ?{
-		/get-pixel #01 NEQ ?{ POPr POP2 POP2 JMP2r } }
+		OVR2 OVR2 /get-pixel #01 NEQ ?{ POPr POP2 POP2 JMP2r } }
 	/get-addr NIP2
 	( ch1 ) OVR2 OVR2 STHkr #00 /<toggle-pixel>
 	( ch2 ) #0008 ADD2 STHr #01
@@ -485,13 +425,26 @@
 @canvas/<toggle-pixel> ( x* addr* color -- )
 	STH2
 	LDAk STH
-	SWP2 NIP STHr SWP STH2r SFT #01 AND ?{
+	SWP2 NIP STHr SWP SFTr STHr #01 AND ?{
 		( mask ) #0107 ROT #07 AND SUB #40 SFT SFT #ff EOR AND
 		( save ) ROT ROT STA
 		JMP2r }
 	#0107 ROT #07 AND SUB #40 SFT SFT ORA
 	( save ) ROT ROT STA
 	JMP2r
+
+@canvas/<wipe-color> ( color -- )
+	,&t STR
+	#00c8 #0000
+	&>verw ( -- )
+		STH2k #0144 #0000
+		&>horw ( -- )
+			DUP2 STH2kr /get-pixel [ LIT &t $1 ] NEQ ?{
+				( ) DUP2 STH2kr tool/get-color /<set-pixel> }
+			INC2 GTH2k ?&>horw
+		POP2r POP2 POP2 INC2 GTH2k ?&>verw
+	POP2 POP2 project/<write>
+	/<draw-preview> !/<draw>
 
 @canvas/<trap> ( -- )
 	;&on-mouse .Mouse/vector DEI2 NEQ2 ?{ JMP2r }
@@ -511,18 +464,18 @@
 	;&mem .Screen/addr DEO2
 	,&x LDR2 .Screen/x DEO2
 	,&y LDR2 .Screen/y DEO2
-	#1900
+	#1900 [ LIT2r 81 -Screen/sprite ]
 	&>v ( -- )
 		#2800
 		&>h ( -- )
-			[ LIT2 81 -Screen/sprite ] DEO
+			DEOkr
 			INC GTHk ?&>h
 		POP2
 		( | down )
 		,&x LDR2 .Screen/x DEO2
 		.Screen/y DEI2k #0008 ADD2 ROT DEO2
 		INC GTHk ?&>v
-	POP2 JMP2r
+	POP2 POP2r JMP2r
 
 @canvas/<draw-frame> ( -- )
 	,&x LDR2 #0008 SUB2 .Screen/x DEO2
@@ -549,7 +502,7 @@
 		&>hp ( -- )
 			( x ) #00 OVR #0018 MUL2
 			( y ) #00 STHkr #0016 MUL2 /get-pixel .Screen/pixel DEO
-			POP2 POP2 INC GTHk ?&>hp
+			INC GTHk ?&>hp
 		POP2 POPr
 		( | down )
 		[ LIT2 &anchor $2 ] .Screen/x DEO2
@@ -559,11 +512,12 @@
 
 @canvas/<wipe> ( -- )
 	#ffff ;&links STA2
-	#fa ;&r STA
-	#7d ;&g STA
-	#6b ;&b STA
+	#af ;&r STA
+	#d7 ;&g STA
+	#b6 ;&b STA
 	;&mem #3e80 <mclr>
 	/<draw-preview>
+	project/<write>
 	.scene/id LDZ !scene/<select-force>
 
 (
@@ -580,6 +534,7 @@
 	#4000 .File/length DEO2
 	;canvas/mem .File/read DEO2
 	canvas/<draw-preview>
+	project/<write>
 	.scene/id LDZ !scene/<select-force>
 
 @snarf/<paste-1bit> ( -- )
@@ -590,6 +545,7 @@
 		DUP2 .File/read DEO2
 		#0010 ADD2 GTH2k ?&>lp
 	POP2 POP2 canvas/<draw-preview>
+	project/<write>
 	.scene/id LDZ !scene/<select-force>
 
 @snarf/<cut> ( -- )
@@ -655,18 +611,6 @@
 		INC2r INC GTHk ?&>ver
 	POP2 POP2r JMP2r
 
-@<wipe-pixel> ( color -- )
-	,&t STR
-	#00c8 #0000
-	&>v ( -- )
-		STH2k #0144 #0000
-		&>h ( -- )
-			DUP2 STH2kr canvas/get-pixel [ LIT &t $1 ] NEQ ?{ OVR2 OVR2 tool/get-color canvas/<set-pixel> }
-			POP2 POP2 INC2 GTH2k ?&>h
-		POP2r POP2 POP2 INC2 GTH2k ?&>v
-	POP2 POP2 project/<write>
-	canvas/<draw-preview> !canvas/<draw>
-
 (
 @|Project )
 
@@ -675,9 +619,9 @@
 	&>li ( -- )
 		DUP .scene/id STZ
 		#ffff ;canvas/links STA2
-		#fa ;canvas/r STA
-		#7d ;canvas/g STA
-		#6b ;canvas/b STA
+		#af ;canvas/r STA
+		#d7 ;canvas/g STA
+		#b6 ;canvas/b STA
 		scene/<commit>
 		INC GTHk ?&>li
 	POP2
@@ -693,7 +637,7 @@
 		scene/<commit>
 		canvas/<draw-preview>
 		INC GTHk ?&>lr
-	POP2 #00 scene/<select-force> !<redraw-all>
+	POP2 #00 !scene/<select-force>
 
 @project/<write> ( -- )
 	scene/<commit>
@@ -710,7 +654,7 @@
 	&filename "project.flick $1
 
 (
-@|theme )
+@|Theme )
 
 @theme/<reset> ( -- )
 	#f0af #f0d7 #f0b6
@@ -734,7 +678,7 @@
 	&path ".theme $1
 
 (
-@|cursor )
+@|Cursor )
 
 @cursor/<refocus> ( -- )
 	.Mouse/x DEI2 .Mouse/y DEI2
@@ -763,7 +707,7 @@
 	JMP2r
 
 (
-@|prng )
+@|Random )
 
 @prng/<init> ( -- )
 	( > ) [ LIT2 00 -DateTime/second ] DEI
@@ -829,31 +773,29 @@
 
 @fill-icn [ ffff ffff ffff ffff ]
 
-@scene/frame-icn [
+@scene/colorizer-chr [
+	0000 0718 2000 0000 0000 0718 2305 0707
+	0000 0000 0000 0000 0300 0000 0000 0000
+	0000 c030 0800 0000 0000 c030 88c0 c0c0
+	0000 0000 0000 0000 8000 0000 0000 0000 ]
+	&frame-icn [
 	007f 8080 8080 8080 8080 8080 7f00 0000
 	00fc 0202 0202 0202 0202 0202 fc00 0000 ]
-
-@scene/arrow-icn [ 0000 040e 1f0e 0e00 ]
-
-@scene/bullet-icn [ 0038 7c7c 7c38 0000 ]
-
-@scene/seen-icn [ 0000 040a 110a 0400 ]
+	&arrow-icn [ 0000 040e 1f0e 0e00 ]
+	&seen-icn [ 0000 040a 110a 0400 ]
 
 @pane/line-icn [
 	000f 3040 4080 8080 00e0 1804 0402 0202
 	8080 8080 4040 300f 0202 0202 0404 18e0 ]
-
-@pane/arrow-icn [ 0000 041e 1f1e 0400 ]
+	&arrow-icn [ 0000 041e 1f1e 0400 ]
 
 @tool/size-icns [
 	0000 0000 1000 0000 0000 0010 3810 0000
 	0000 387c 7c7c 3800 007c fefe fefe fe7c ] &size-icns-end
-
-@tool/type-icns [
+	&type-icns [
 	2020 20bc 7e7e 3e1c 00e0 d088 4422 120c
 	007c 8282 8c92 926c 0000 4428 1028 4400 ] &type-icns-end
-
-@tool/color-chr [
+	&color-chr [
 	000f 3040 4080 8080 0000 0000 0000 0000
 	00e0 1804 0402 0202 0000 0000 0000 0000
 	8080 8080 4040 300f 0000 0000 0000 0000
@@ -881,8 +823,7 @@
 	0000 0000 0000 00c0 0000 0000 0000 0000
 	1010 2010 1008 0700 0f0f 1f0f 0f07 0000
 	2010 1010 2020 c000 c0e0 e0e0 c0c0 0000 ]
-
-@cursor/pen-chr [
+	&pen-chr [
 	0000 0808 3608 0800 0000 0008 1408 0000
 	0000 0000 0000 0000 0000 0000 0000 0000
 	0000 0000 0000 0000 0000 0000 0000 0000
@@ -891,8 +832,7 @@
 	0000 0000 0080 4020 0000 0000 0000 80c0
 	0402 0100 0000 0000 0301 0000 0000 0000
 	1008 0484 4830 0000 e0f0 f878 3000 0000 ]
-
-@cursor/link-chr [
+	&link-chr [
 	0000 0800 2200 0800 0000 0008 1408 0000
 	0000 0000 0000 0000 0000 0000 0000 0000
 	0000 0000 0000 0000 0000 0000 0000 0000
@@ -901,8 +841,7 @@
 	0000 0000 0080 4020 0000 0000 0000 80c0
 	0402 0100 0000 0000 0301 0000 0000 0000
 	1008 0c9c 7830 0000 e0f0 f878 3000 0000 ]
-
-@cursor/wipe-chr [
+	&wipe-chr [
 	0063 773e 1c3e 7763 0000 2214 0814 2200
 	0000 0000 0000 0000 0000 0000 0000 0000
 	0000 0000 0000 0000 0000 0000 0000 0000
@@ -914,7 +853,9 @@
 
 @dict/flick "Flick $1 &snarf $1
 	&scene "scene $1
-	( metadata 0x180 )
+
+(
+@|Assets )
 
 @canvas/mem $3e80
 	&memcap ( - )
