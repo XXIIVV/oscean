@@ -43,7 +43,7 @@
 	( name ) "Nebu 0a
 	( desc ) "Spreadsheet 20 "Editor 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "9 20 "Mar 20 "2025 $1 01
+	( date ) "22 20 "Mar 20 "2025 $1 01
 	( - ) 0a =manifest/dat
 
 @manifest/dat ( . )
@@ -72,7 +72,7 @@
 	( - ) 84 00 =select/<size-r> =dict/size-r }
 	( ) $1
 
-@src/default-name "untitled.bin $1
+@src/default-name "untitled.csv $1
 
 @on-button ( -> )
 	.Controller/button DEI2 manifest/scan INC2k ORA ?{
@@ -108,7 +108,7 @@
 	&>wi ( -- )
 		LDAk #00 STH2kr STA2
 		INC2r INC2 LDAk ?&>wi
-	POP2 POP2r src/change !select/<set-a>
+	POP2 POP2r src/change !select/<set-a-force>
 
 @cmd/<insert> ( c -- )
 	DUP #20 LTH OVR #7e GTH ORA ?{
@@ -213,6 +213,11 @@
 	.&a LDZ2 #0100 ADD2 .&a STZ2
 	&<size-r> ( -- )
 	.&b LDZ2 #0100 ADD2 !/<set-b>
+
+@select/<set-a-force> ( x y -- )
+	DUP2 .&a STZ2
+	.&b STZ2
+	/<update-rect> !grid/<draw>
 
 @select/<set-a> ( x y -- )
 	DUP2 .&a LDZ2 NEQ2 ?{ POP2 JMP2r }
@@ -433,15 +438,21 @@
 @cell/<draw> ( x y -- )
 	DUP2 /is-selected ?/<draw-type-selected>
 	DUP2 /is-incoming ?/<draw-type-incoming>
-	DUP2 calc/parse-rect
-	( val ) OVR2 calc/validate exists ?/<draw-type-calc>
-	POP2 STH2
-	.Screen/x DEI2
+	DUP2 calc/parse-rect DUP2 #ffff NEQ2 ?/<draw-rect>
+	POP2 .Screen/x DEI2
 	( | fill )
 	#00 /<draw-fill>
 	/<draw-frame>
+	#0004 ADD2 .Screen/x DEO2 !cell/<draw-val>
+
+@cell/<draw-rect> ( x y rect* -- )
+	( val ) OVR2 calc/validate exists ?/<draw-type-calc>
+	POP2 .Screen/x DEI2
+	( | fill )
+	#03 /<draw-fill>
+	/<draw-frame>
 	#0004 ADD2 .Screen/x DEO2
-	STH2r
+	POP2 ;dict/err-cell #05 !chicago/<draw-left-color>
 	( >> )
 
 @cell/<draw-val> ( x y -- )
@@ -491,8 +502,11 @@
 	( str* ) INC2 /parse-point exists ?{ NIP2 JMP2r }
 	( str* point* ) ,&b STR2
 	LDA ,&op STR
+	( | to > from )
+	,&ax LDR ,&bx LDR INC LTH ?{ #ffff JMP2r }
+	,&ay LDR ,&by LDR INC LTH ?{ #ffff JMP2r }
 	;&rect JMP2r
-	&rect &a $2 &b $2 &op $1
+	&rect &a &ax $1 &ay $1 &b &bx $1 &by $1 &op $1
 
 @calc/validate ( rect* x y -- rect* )
 	STH2
@@ -815,6 +829,7 @@
 	&size-l "Size 20 "Left $1
 	&size-r "Size 20 "Right $1
 	&err-size "File 20 "size 20 "exceeded. 0a $1
+	&err-cell "<ERROR> $1
 
 
 
