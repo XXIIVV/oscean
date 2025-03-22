@@ -19,12 +19,38 @@ can be copied with <kbd>ctrl+c</kbd> and pasted with <kbd>ctrl+v</kbd>. A <a
 href='icn_format.html'>1-bit</a> image with the size 28x19 created with <a
 href='noodle.html'>Noodle</a> can be pasted <kbd>ctrl+shift+v</kbd>.</p>
 
+<h3>Locks</h3>
+
+<p>This implementation adds the concept of locks, which can disable a link until
+a scene has been visited. It's useful for locking events behind certain
+actions, for example, waiting for a key to be collected before a door can
+open.</p>
+
+<p>The viewer application updates a value that is holding the visited scenes, and
+each link color holds the required scenes that need to be visited in order for
+that link color to be enabled.</p>
+
 <h3>Flick Format</h3>
 
-<p>The project file is a series of 16 scenes of 0x4000 bytes each. Each scene is
-made of the 2-bit canvas data stored as <a href='chr_format.html'>CHR tiles</a>,
-followed by 2 bytes holding the slide number for each link color, and 3 bytes for
-the RGB values of the slide's links colors.</p>
+<p>The project file is a series of 16 scenes of 16384 bytes each. Each scene is
+made of 2-bit canvas data stored as <a href='chr_format.html'>CHR tiles</a>,
+followed by 2 bytes holding the scene number for each link color, and 3 bytes for
+the RGB values of the scene's links colors.</p>
+
+<pre>
+Scene[0x4000]
+	Canvas[0x3e80, 0x28 * 0x19 * 0x10]
+		( 1000 chr tiles, 16 bytes each  )
+	Metadata[0x0180]
+		link1: 1 byte[0x00-0x0f]
+		link2: 1 byte[0x00-0x0f]
+		R: 1 byte, hb color2r[0x0-0xf], lb color3r[0x0-0xf]
+		G: 1 byte, hb color2g[0x0-0xf], lb color3g[0x0-0xf]
+		B: 1 byte, hb color2b[0x0-0xf], lb color3b[0x0-0xf]
+		lock1: 2 bytes[0x0000-0xffff]
+		lock2: 2 bytes[0x0000-0xffff]
+		... unused metadata
+</pre>
 
 <ul>
 	<li><a href='../etc/flick.tal.txt'>Source</a>, Uxntal</li>
