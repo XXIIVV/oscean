@@ -11,15 +11,14 @@
 
 |000
 
-	@tool/type $1 &color $1 &size $1
-	@scene/id $1 &seen $2
+	@tool/type $1 &color $1 &size $1 &onion $1
+	@scene/id $1 &seen $2 &stop $1
 
 |100
 
 @on-reset ( -> )
 	;meta #06 DEO2
 	theme/<load>
-	prng/<init>
 	#0170 .Screen/width DEO2
 	#0108 .Screen/height DEO2
 	( | center )
@@ -42,7 +41,7 @@
 	( name ) "Flick 0a
 	( details ) "A 20 "Point-n-click 20 "Engine 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "22 20 "Mar 20 "2025 $1 01
+	( date ) "23 20 "Mar 20 "2025 $1 01
 	( - ) 0a =manifest/dat
 
 @manifest/dat ( . )
@@ -95,22 +94,33 @@
 (
 @|Scene )
 
+@scene/on-frame ( -> )
+	[ LIT &timer $1 ] INCk ,&timer STR
+	?{ #0000 .Screen/vector DEO2
+		scene/<anim> }
+	BRK
+
 @scene/on-mouse ( -> )
 	cursor/<update>
 	[ LIT2 &last $1 -Mouse/state ] DEI #00 NEQ DUP ,&last STR
 	DUP2 #0101 NEQ2 ?{
 		.Mouse/x DEI2 ;&x LDA2 SUB2 DUP2 #0114 LTH2 ?{
 			( slider ) #0114 SUB2 #03 SFT2 NIP #0f
-			( value ) .Mouse/y DEI2 ,&y LDR2 SUB2 NIP #01 SFT SUB /<colorize>
+			( value ) .Mouse/y DEI2 ;&y LDA2 SUB2 NIP #01 SFT SUB /<colorize>
 			POP2 BRK }
 		POP2 }
 	#0001 NEQ2 ?{
+		.Mouse/x DEI2 ;&x LDA2 SUB2 DUP2 #0114 LTH2 ?{
+			( slider ) #0114 SUB2 #03 SFT2 NIP #0f
+			( value ) .Mouse/y DEI2 ;&y LDA2 SUB2 NIP #01 SFT SUB /<colorize>
+			BRK }
+		POP2
 		( x* ) .Mouse/x DEI2 ;&x LDA2 SUB2 #0011 DIV2
 		( y* ) .Mouse/y DEI2 ,&y LDR2 SUB2
 		( | handlers )
 		DUP2 #000f GTH2 ?{
 			POP2
-			( preview ) /<select>
+			( preview ) /<select-static>
 			POP BRK }
 		DUP2 #0017 GTH2 ?{
 			POP2
@@ -127,7 +137,7 @@
 	BRK
 
 @scene/catch ( x* y* -- x* y* )
-	DUP2 [ LIT2 &y 00db ] SUB2 #001f GTH2 ?{
+	DUP2 [ LIT2 &y 00db ] INC2 SUB2 #001b GTH2 ?{
 		OVR2 [ LIT2 &x 0027 ] SUB2 #0140 GTH2 ?{ #00 JMP2r } }
 	#01 JMP2r
 
@@ -152,10 +162,10 @@
 		INC GTHk ?&>ldr
 	POP2
 	( | draw selection )
-	#00 .&id LDZ #0011 MUL2 ;&x LDA2 ADD2 INC2 .Screen/x DEO2
+	[ LIT2 00 -&id ] LDZ #0011 MUL2 ;&x LDA2 ADD2 INC2 .Screen/x DEO2
 	;&y LDA2 #000e ADD2 .Screen/y DEO2
 	[ LIT2 16 -Screen/auto ] DEO
-	;&home-icn .Screen/addr DEO2
+	#0000 ;canvas/time LDA NEQ #40 SFT2 ;&still-icn ADD2 .Screen/addr DEO2
 	[ LIT2 01 -Screen/sprite ] DEO
 	( | sliders )
 	#0010 #0011 MUL2 ;&x LDA2 ADD2 INC2 INC2 .Screen/x DEO2
@@ -219,7 +229,8 @@
 	&horlin-icn [ ff00 0000 0000 0000 ]
 	&hordot-icn [ aa00 0000 0000 0000 ]
 	&verlin-icn [ 0101 0101 0101 0101 ]
-	&home-icn [ 0007 1821 0203 0100 00e0 1884 c0c0 8000 ]
+	&still-icn [ 0007 1821 0203 0100 00e0 1884 c0c0 8000 ]
+	&time-icn [ 0000 001b 1b00 0000 0020 3078 7830 2000 ]
 
 @scene/<draw-links> ( -- )
 	;canvas/links LDA2 EQUk ?{
@@ -280,22 +291,25 @@
 
 @scene/<reset> ( -- )
 	#0000 .&seen STZ2
+	/<stop>
 	#00 !/<select-force>
 
 @scene/<jump> ( color -- )
 	DUP #01 GTH ?{ POP JMP2r }
 	DUP /pass-mask ?{ POP JMP2r }
-	#00 SWP #02 SUB ;canvas/links ADD2 LDA
-	( >> )
-
-@scene/<select> ( id -- )
-	INCk ?{ POP JMP2r }
-	DUP #10 LTH ?{ POP JMP2r }
-	DUP .&id LDZ NEQ ?{ POP JMP2r }
+	#00 SWP #02 SUB ;canvas/links ADD2 LDA /<play>
+	( test ) DUP .&id LDZ NEQ ?{ POP JMP2r }
 	&<select-force> ( id -- )
-	/<commit>
+	INCk ?{ POP JMP2r }
+	#0f AND /<commit>
 	DUP .&id STZ
 	/<pull>
+	onion/<pull>
+	( | animate )
+	.&stop LDZ ?{
+		#00 ;canvas/time LDA EQU ?{
+			;&on-frame .Screen/vector DEO2
+			#f8 ;&timer STA } }
 	;canvas/r LDA .System/rl DEO
 	;canvas/g LDA .System/gl DEO
 	;canvas/b LDA .System/bl DEO
@@ -303,8 +317,13 @@
 	( | sight )
 	#0001 ROT #40 SFT SFT2 .&seen LDZ2 ORA2 .&seen STZ2 !/<draw>
 
-	&<select-prev> [ LIT2 ff -&id ] LDZ ADD !/<select>
-	&<select-next> .&id LDZ INC !/<select>
+	&<select-prev> [ LIT2 ff -&id ] LDZ ADD !/<select-static>
+	&<select-next> .&id LDZ INC !/<select-static>
+	&<anim> /<play>
+	.scene/id LDZ INC !scene/<select-force>
+
+@scene/<select-static> ( id -- )
+	/<stop> !/<select-force>
 
 @scene/<commit> ( -- )
 	[ LIT2 00 -&id ] LDZ DUP2 #02 SFT INC ,&dst-page STR2
@@ -323,6 +342,15 @@
 
 	&cmd-get [
 	01 4000 &src-page $2 &src-addr $2 0000 =canvas/mem ]
+
+@scene/<play> ( -- )
+	[ LIT2 00 -&stop ] STZ
+	JMP2r
+
+@scene/<stop> ( -- )
+	[ LIT2 01 -&stop ] STZ
+	#0000 .Screen/vector DEO2
+	JMP2r
 
 @scene/<colorize> ( id value -- )
 	STH
@@ -352,15 +380,18 @@
 
 @scene/<set-mask> ( id* link* -- )
 	DUP2 #0002 LTH2 ?{ POP2 POP2 JMP2r }
-	DUP2 ADD2 ;canvas/masks ADD2 LDA2k ROT2 EOR2 SWP2 STA2
-	/<draw> !project/<write>
+	DUP2 ADD2 ;canvas/masks ADD2 LDA2k ROT2 EOR2 SWP2 STA2 !/<draw>
 
 @scene/<set-link> ( id* link* -- )
-	DUP2 #0002 LTH2 ?{ POP2 NIP !/<select> }
+	OVR2 [ LIT2 00 -&id ] LDZ EQU2 ?/<set-time>
+	DUP2 #0002 LTH2 ?{ POP2 NIP !/<select-static> }
 	;canvas/links ADD2 STH2
 	DUP LDAkr STHr NEQ ?{ POP2 #00ff }
 	STH2r STA
-	POP /<draw> !project/<write>
+	POP !/<draw>
+
+@scene/<set-time> ( id* link* -- )
+	POP2 POP2 #00 ;canvas/time LDA EQU ;canvas/time STA !/<draw>
 
 (
 @|Pane )
@@ -373,7 +404,7 @@
 	BRK
 
 @pane/catch ( x* y* -- x* y* )
-	DUP2 [ LIT2 &y 000e ] SUB2 #00bf GTH2 ?{
+	DUP2 [ LIT2 &y 000e ] SUB2 #00cf GTH2 ?{
 		OVR2 [ LIT2 &x 0016 ] SUB2 #0010 GTH2 ?{ #00 JMP2r } }
 	#01 JMP2r
 
@@ -410,11 +441,15 @@
 		;&color-icn .Screen/addr DEO2
 		DUP #05 MUL .Screen/sprite DEOk DEO
 		INC GTHk ?&>wc
-	POP2 JMP2r
+	POP2
+	( | onionskin )
+	;&onion-icn .tool/onion LDZ /<draw-button>
+	JMP2r
 
 	&color-icn [
 	0000 0000 030f 0f1f 0000 0000 80e0 e0f0
 	1f1f 0f0f 0300 0000 f0f0 e0e0 8000 0000 ]
+	&onion-icn [ 00f8 88b6 b6c6 3e3e ]
 
 @pane/<draw-button> ( addr* selected -- )
 	[ LITr -Screen/x ] DEI2r [ LITr -Screen/y ] DEI2r
@@ -438,7 +473,8 @@
 	=tool/<size1> =tool/<size2>
 	=tool/<size3> =tool/<size4>
 	=tool/<color1> =tool/<color2>
-	=tool/<color3> =tool/<color4> ]
+	=tool/<color3> =tool/<color4>
+	=tool/<onion> ]
 
 (
 @|Tool )
@@ -473,6 +509,10 @@
 	&<size2> #01 !/<set-size>
 	&<size3> #02 !/<set-size>
 	&<size4> #03 !/<set-size>
+
+@tool/<onion> ( -- )
+	[ LIT2 00 -&onion ] LDZ EQU .&onion STZ
+	canvas/<draw> !pane/<draw>
 
 @tool/<set-cursor> ( -- addr* )
 	[ LIT2 00 -&type ] LDZ DUP ADD ;&cursors-lut ADD2 LDA2 ;cursor/addr STA2
@@ -574,6 +614,7 @@
 	#01 JMP2r
 
 @canvas/<draw> ( -- )
+	.tool/onion LDZ ?onion/<draw>
 	[ LIT2 05 -Screen/auto ] DEO
 	;&mem .Screen/addr DEO2
 	,&x LDR2 .Screen/x DEO2
@@ -647,7 +688,41 @@
 	;&mem #3e80 <mclr>
 	/<draw-preview>
 	project/<write>
-	.scene/id LDZ !scene/<select-force>
+	.scene/id LDZ !scene/<select-static>
+
+(
+@|onion )
+
+@onion/<pull> ( -- )
+	[ LIT2 00 -scene/id ] LDZ #01 SUB #0f AND DUP2 #02 SFT INC ,&src-page STR2
+	#03 AND #e0 SFT2 ,&src-addr STR2
+	;&cmd-get .System/expansion DEO2
+	JMP2r
+
+	&cmd-get [
+	01 3e80 &src-page $2 &src-addr $2 0000 =&mem ]
+
+@onion/<draw> ( -- )
+	[ LIT2 00 -Screen/auto ] DEO
+	LIT2r =canvas/mem LIT2r =onion/mem #00c8 #0000
+	&>verw ( -- )
+		DUP2 ;canvas/y LDA2 ADD2 .Screen/y DEO2
+		#0140 #0000
+		&>horw ( -- )
+			DUP2 ;canvas/x LDA2 ADD2 .Screen/x DEO2
+			STH2r DUP2 .Screen/addr DEO2
+			#0010 ADD2 [ LIT2 81 -Screen/sprite ] DEO
+			;halftone-icn .Screen/addr DEO2
+			[ LIT2 00 -Screen/sprite ] DEO
+			STH2r DUP2 .Screen/addr DEO2
+			#0010 ADD2 [ LIT2 85 -Screen/sprite ] DEO
+			STH2
+			STH2
+			#0008 ADD2 GTH2k ?&>horw
+		POP2 POP2 #0008 ADD2 GTH2k ?&>verw
+	POP2 POP2 POP2r POP2r JMP2r
+
+@halftone-icn [ aa55 aa55 aa55 aa55 ]
 
 (
 @|snarf )
@@ -664,7 +739,7 @@
 	;canvas/mem .File/read DEO2
 	canvas/<draw-preview>
 	project/<write>
-	.scene/id LDZ !scene/<select-force>
+	.scene/id LDZ !scene/<select-static>
 
 @snarf/<paste-1bit> ( -- )
 	;&filename .File/name DEO2
@@ -675,7 +750,7 @@
 		#0010 ADD2 GTH2k ?&>lp
 	POP2 POP2 canvas/<draw-preview>
 	project/<write>
-	.scene/id LDZ !scene/<select-force>
+	.scene/id LDZ !scene/<select-static>
 
 @snarf/<cut> ( -- )
 	/<copy> !canvas/<wipe>
@@ -766,7 +841,7 @@
 		scene/<commit>
 		canvas/<draw-preview>
 		INC GTHk ?&>lr
-	POP2 #00 !scene/<select-force>
+	POP2 #00 !scene/<select-static>
 
 @project/<write> ( -- )
 	scene/<commit>
@@ -833,27 +908,6 @@
 	[ LIT2 &y $2 ] #0004 SUB2 .Screen/y DEO2
 	.Screen/sprite DEOk DEO
 	JMP2r
-
-(
-@|Random )
-
-@prng/<init> ( -- )
-	( > ) [ LIT2 00 -DateTime/second ] DEI
-	( > ) [ LIT2 00 -DateTime/minute ] DEI #60 SFT2 EOR2
-	( > ) [ LIT2 00 -DateTime/hour ] DEI #c0 SFT2 EOR2 ,prng/x STR2
-	( > ) [ LIT2 00 -DateTime/hour ] DEI #04 SFT2
-	( > ) [ LIT2 00 -DateTime/day ] DEI #10 SFT2 EOR2
-	( > ) [ LIT2 00 -DateTime/month ] DEI #60 SFT2 EOR2
-	( > ) .DateTime/year DEI2 #a0 SFT2 EOR2 ,prng/y STR2
-	JMP2r
-
-@prng/<new> ( -- number* )
-	( > ) [ LIT2 &x $2 ]
-	( > ) DUP2 #50 SFT2 EOR2
-	( > ) DUP2 #03 SFT2 EOR2
-	( > ) [ LIT2 &y $2 ] DUP2 ,&x STR2
-	( > ) DUP2 #01 SFT2 EOR2 EOR2
-	( > ) ,&y STR2k POP JMP2r
 
 (
 @|Stdlib )
@@ -972,4 +1026,7 @@
 	( lnk ) &links &link1 $1 &link2 $1
 	( rgb ) &color &r $1 &g $1 &b $1
 	( req ) &masks &mask1 $2 &mask2 $2
+	( mov ) &time $1
+
+@onion/mem $3e80
 

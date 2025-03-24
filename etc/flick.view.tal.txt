@@ -11,7 +11,7 @@
 
 |000
 
-	@scene/id $1 &seen $2
+	@scene/id $1 &seen $2 &stop $1
 
 |100
 
@@ -21,6 +21,7 @@
 	#0140 .Screen/width DEO2
 	#00c8 .Screen/height DEO2
 	;canvas/on-mouse .Mouse/vector DEO2
+	[ LIT2 01 -scene/stop ] STZ
 	#00 scene/<select-force>
 	BRK
 
@@ -28,23 +29,40 @@
 	( name ) "Flickview 0a
 	( details ) "A 20 "Point-n-click 20 "Viewer 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "19 20 "Mar 20 "2025 $2
+	( date ) "23 20 "Mar 20 "2025 $2
 
 (
 @|Scene )
 
+@scene/on-frame ( -> )
+	[ LIT &timer $1 ] INCk ,&timer STR
+	?{ #0000 .Screen/vector DEO2
+		scene/<anim> }
+	BRK
+
 @scene/<select> ( id -- )
-	DUP #11 LTH ?{ POP JMP2r }
-	#0f AND DUP .&id LDZ NEQ ?{ POP JMP2r }
+	INCk ?{ POP JMP2r }
+	DUP .&id LDZ NEQ ?{ POP JMP2r }
 	&<select-force> ( id -- )
-	DUP .&id STZ
+	#0f AND DUP .&id STZ
 	/<pull>
+	( | animate )
+	.&stop LDZ ?{
+		#00 ;canvas/time LDA EQU ?{
+			;&on-frame .Screen/vector DEO2
+			#f8 ;&timer STA } }
 	;canvas/r LDA .System/rl DEO
 	;canvas/g LDA .System/gl DEO
 	;canvas/b LDA .System/bl DEO
 	canvas/<draw>
 	( | seen )
 	#0001 ROT #40 SFT SFT2 .&seen LDZ2 ORA2 .&seen STZ2
+	JMP2r
+	&<anim> /<play>
+	.scene/id LDZ INC !scene/<select-force>
+
+@scene/<play> ( -- )
+	[ LIT2 00 -&stop ] STZ
 	JMP2r
 
 @scene/pass-mask ( color -- pass )
@@ -72,7 +90,8 @@
 	.Mouse/x DEI2 .Mouse/y DEI2 /get-pixel scene/get-link
 	( state ) DUP cursor/<update-hover>
 	[ LIT2 &last $1 -Mouse/state ] DEI DUP ,&last STR
-	#0001 NEQ2 ?{ scene/<select>
+	#0001 NEQ2 ?{ scene/<play>
+		scene/<select>
 		BRK }
 	POP BRK
 
@@ -190,4 +209,5 @@
 	( lnk ) &links &link1 $1 &link2 $1
 	( rgb ) &color &r $1 &g $1 &b $1
 	( req ) &masks &mask1 $2 &mask2 $2
+	( mov ) &time $1
 
