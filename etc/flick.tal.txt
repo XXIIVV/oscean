@@ -41,7 +41,7 @@
 	( name ) "Flick 0a
 	( details ) "A 20 "Point-n-click 20 "Engine 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "23 20 "Mar 20 "2025 $1 01
+	( date ) "25 20 "Mar 20 "2025 $1 01
 	( - ) 0a =manifest/dat
 
 @manifest/dat ( . )
@@ -118,7 +118,7 @@
 		( x* ) .Mouse/x DEI2 ;&x LDA2 SUB2 #0011 DIV2
 		( y* ) .Mouse/y DEI2 ,&y LDR2 SUB2
 		( | handlers )
-		DUP2 #000f GTH2 ?{
+		DUP2 #000d GTH2 ?{
 			POP2
 			( preview ) /<select-static>
 			POP BRK }
@@ -154,6 +154,7 @@
 	[ LIT2 80 -Screen/pixel ] DEO
 	/<draw-frame>
 	/<draw-links>
+	/<draw-timelink>
 	( | draw mask )
 	[ LIT2 16 -Screen/auto ] DEO
 	#1000
@@ -244,6 +245,19 @@
 	[ LIT2 81 -Screen/sprite ] DEO
 	JMP2r
 
+@scene/<draw-timelink> ( -- )
+	;canvas/time LDA DUP ?{ POP JMP2r }
+	[ LIT2 00 -&id ] LDZ ROT ADD #0f AND #0011 MUL2 ;&x LDA2 ADD2 INC2 .Screen/x DEO2
+	;&y LDA2 #000e ADD2 .Screen/y DEO2
+	[ LIT2 16 -Screen/auto ] DEO
+	;&timelink-icn .Screen/addr DEO2
+	[ LIT2 05 -Screen/sprite ] DEOk DEO
+	JMP2r
+
+	&timelink-icn [
+	ff80 8080 8080 80ff ff01 0101 0101 01ff
+	ff00 0000 0000 0000 ff00 0000 0000 0000 ]
+
 @scene/<draw-link> ( color x* -- )
 	#0011 MUL2 ;&x LDA2 ADD2 INC2 .Screen/x DEO2
 	;&y LDA2 #000e ADD2 .Screen/y DEO2
@@ -320,7 +334,7 @@
 	&<select-prev> [ LIT2 ff -&id ] LDZ ADD !/<select-static>
 	&<select-next> .&id LDZ INC !/<select-static>
 	&<anim> /<play>
-	.scene/id LDZ INC !scene/<select-force>
+	.scene/id LDZ ;canvas/time LDA ADD #0f AND !scene/<select-force>
 
 @scene/<select-static> ( id -- )
 	/<stop> !/<select-force>
@@ -380,18 +394,25 @@
 
 @scene/<set-mask> ( id* link* -- )
 	DUP2 #0002 LTH2 ?{ POP2 POP2 JMP2r }
-	DUP2 ADD2 ;canvas/masks ADD2 LDA2k ROT2 EOR2 SWP2 STA2 !/<draw>
+	DUP2 ADD2 ;canvas/masks ADD2 LDA2k ROT2 EOR2 SWP2 STA2
+	project/<write> !/<draw>
 
 @scene/<set-link> ( id* link* -- )
 	OVR2 [ LIT2 00 -&id ] LDZ EQU2 ?/<set-time>
-	DUP2 #0002 LTH2 ?{ POP2 NIP !/<select-static> }
+	INC2k ORA ?{ !/<set-timelink> }
 	;canvas/links ADD2 STH2
 	DUP LDAkr STHr NEQ ?{ POP2 #00ff }
 	STH2r STA
-	POP !/<draw>
+	POP project/<write> !/<draw>
 
 @scene/<set-time> ( id* link* -- )
-	POP2 POP2 #00 ;canvas/time LDA EQU ;canvas/time STA !/<draw>
+	POP2 POP2 #00 ;canvas/time LDA EQU ;canvas/time STA
+	project/<write> !/<draw>
+
+@scene/<set-timelink> ( id* link* -- )
+	POP2 NIP ;canvas/time LDA ?{ !/<select-force> }
+	.&id LDZ SUB #0f AND ;canvas/time STA
+	project/<write> !/<draw>
 
 (
 @|Pane )
