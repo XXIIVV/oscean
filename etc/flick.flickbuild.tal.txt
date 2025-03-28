@@ -1,0 +1,207 @@
+( build: uxnasm src/view.tal view.rom
+| start: uxnemu view.rom )
+
+|00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $1 &rl $1 &g $1 &gl $1 &b $1 &bl $1 &debug $1 &state $1
+|10 @Console/vector $2 &read $5 &type $1 &write $1 &error $1
+|20 @Screen/vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
+|80 @Controller/vector $2 &button $1 &key $1
+|90 @Mouse/vector $2 &x $2 &y $2 &state $1 &pad $3 &sx $2 &sy $1 &sy-lb $1
+|a0 @File/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|b0 @File2/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|c0 @DateTime &year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
+
+|000
+
+	@scene/id $1 &seen $2
+
+|100
+
+@on-reset ( -> )
+	.Screen/width DEI2 ORA ?{ compiler/<run>
+		BRK }
+	#f0af .System/r DEO2
+	#f0d7 .System/g DEO2
+	#f0b6 .System/b DEO2
+	#0140 .Screen/width DEO2
+	#00c8 .Screen/height DEO2
+	;canvas/on-mouse .Mouse/vector DEO2
+	#00 scene/<select-force>
+	BRK
+
+(
+@|Scene )
+
+@scene/on-frame ( -> )
+	[ LIT &timer $1 ] INCk ,&timer STR
+	?{ #0000 .Screen/vector DEO2
+		scene/<anim> }
+	BRK
+
+@scene/<play> ( -- )
+	[ LIT2 00 _&stop ] STR
+	JMP2r
+
+@scene/<select> ( id -- )
+	DUP #10 LTH ?{ POP JMP2r }
+	DUP .&id LDZ NEQ ?{ POP JMP2r }
+	&<select-force> ( id -- )
+	#0f AND DUP .&id STZ
+	/<pull>
+	( | animate )
+	[ LIT &stop 01 ] ?{
+		#00 ;canvas/time LDA EQU ?{
+			;&on-frame .Screen/vector DEO2
+			#f8 ;&timer STA } }
+	;canvas/r LDA .System/rl DEO
+	;canvas/g LDA .System/gl DEO
+	;canvas/b LDA .System/bl DEO
+	canvas/<draw>
+	( | seen )
+	#0001 ROT #40 SFT SFT2 .&seen LDZ2 ORA2 .&seen STZ2
+	JMP2r
+	&<anim> /<play>
+	.scene/id LDZ ;canvas/time LDA ADD #0f AND !scene/<select-force>
+
+@scene/pass-mask ( color -- pass )
+	( mask ) #00 SWP #02 SUB DUP ADD ;canvas/masks ADD2 LDA2
+	( seen ) .&seen LDZ2 OVR2 AND2 EQU2 JMP2r
+
+@scene/get-link ( color -- link )
+	STHk #01 GTH ?{ POPr #ff JMP2r }
+	STHkr /pass-mask ?{ POPr #fe JMP2r }
+	#00 STHr #02 SUB ;canvas/links ADD2 LDA JMP2r
+
+@scene/<pull> ( -- )
+	[ LIT2 00 -&id ] LDZ DUP2 #02 SFT INC ,&src-page STR2
+	#03 AND #e0 SFT2 ,&src-addr STR2
+	;&cmd-get .System/expansion DEO2
+	JMP2r
+
+	&cmd-get [
+	01 4000 &src-page $2 &src-addr $2 0000 =canvas/mem ]
+
+(
+@|Canvas )
+
+@canvas/on-mouse ( -> )
+	.Mouse/x DEI2 .Mouse/y DEI2 /get-pixel scene/get-link
+	( state ) DUP cursor/<update-hover>
+	[ LIT2 &last $1 -Mouse/state ] DEI DUP ,&last STR
+	#0001 NEQ2 ?{ scene/<play>
+		scene/<select>
+		BRK }
+	POP BRK
+
+@canvas/<draw> ( -- )
+	[ LIT2 05 -Screen/auto ] DEO
+	;&mem .Screen/addr DEO2
+	#0000 .Screen/x DEO2
+	#0000 .Screen/y DEO2
+	#1900 [ LIT2r 81 -Screen/sprite ]
+	&>v ( -- )
+		#2800
+		&>h ( -- )
+			DEOkr
+			INC GTHk ?&>h
+		POP2
+		( | down )
+		#0000 .Screen/x DEO2
+		.Screen/y DEI2k #0008 ADD2 ROT DEO2
+		INC GTHk ?&>v
+	POP2 POP2r JMP2r
+
+@canvas/get-addr ( x* y* -- x* y* addr* )
+	( x ) OVR2 #03 SFT2
+	( y ) OVR2 #03 SFT2 #0028 MUL2 ADD2
+	( ) #40 SFT2 ;&mem ADD2
+	( ) OVR2 #0007 AND2 ADD2 JMP2r
+
+@canvas/get-pixel ( x* y* -- color )
+	( get tile addr ) /get-addr STH2
+	( make bit mask ) POP2 NIP #07 AND #80 SWP SFT
+	( ch1 ) DUP LDAkr STHr AND #00 NEQ SWP
+	( ch2 ) STH2r #0008 ADD2 LDA AND #00 NEQ DUP ADD ORA JMP2r
+
+(
+@|Compiler )
+
+@compiler/<run> ( -- )
+	;&outpath .File/name DEO2
+	#ff00 .File/length DEO2
+	#0100 .File/write DEO2
+	#4000 .File/length DEO2
+	( | project )
+	;&inpath .File2/name DEO2
+	#4000 .File2/length DEO2
+	#c000
+	&>s ( -- )
+		DUP2 .File2/read DEO2
+		.File2/success DEI2 ORA ?{ POP2 #800f DEO
+			JMP2r }
+		DUP2 .File/write DEO2 !&>s
+
+	&inpath "project.flick $1
+	&outpath "project.rom $1
+
+(
+@|Cursor )
+
+@cursor/get-addr ( color -- addr* )
+	INCk ?{ POP ;cursor/arrow-chr JMP2r }
+	DUP #fe NEQ ?{ POP ;cursor/mask-chr JMP2r }
+	POP ;cursor/hand-chr JMP2r
+
+@cursor/<update-hover> ( color -- )
+	[ LIT2 12 -Screen/auto ] DEO
+	#40 ;fill-icn /<draw>
+	[ LIT2 16 -Screen/auto ] DEO
+	#c1 SWP /get-addr #0000 .Mouse/state DEI NEQ #60 SFT2 ADD2
+	( | continue )
+	.Mouse/x DEI2 ,&x STR2
+	.Mouse/y DEI2 ,&y STR2
+	( >> )
+
+@cursor/<draw> ( color addr* -- )
+	.Screen/addr DEO2
+	[ LIT2 &x $2 ] #0004 SUB2 .Screen/x DEO2
+	[ LIT2 &y $2 ] #0004 SUB2 .Screen/y DEO2
+	.Screen/sprite DEOk DEO
+	JMP2r
+
+@cursor/mask-chr [
+	6394 8841 2241 8894 0063 773e 1c3e 7763
+	0080 8000 0000 8080 0000 0000 0000 0000
+	6300 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	63f7 ff7f 3e7f fff7 0063 773e 1c3e 7763
+	0080 8000 0000 8080 0000 0000 0000 0000
+	6300 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000 ]
+	&arrow-chr [
+	0000 0000 1814 1211 0000 0000 0008 0c0e
+	0000 0000 0000 0000 0000 0000 0000 0000
+	1010 1013 1418 0000 0f0f 0f0c 0800 0000
+	8040 20c0 0000 0000 0080 c000 0000 0000
+	0000 0000 181c 1e1f 0000 0000 0008 0c0e
+	0000 0000 0000 0000 0000 0000 0000 0000
+	1f1f 1f1f 1c18 0000 0f0f 0f0c 0800 0000
+	80c0 e0c0 0000 0000 0080 c000 0000 0000 ]
+	&hand-chr [
+	0000 0000 0814 1417 0000 0000 0008 0808
+	0000 0000 0000 00c0 0000 0000 0000 0000
+	1010 2010 1008 0700 0f0f 1f0f 0f07 0000
+	2010 1010 2020 c000 c0e0 e0e0 c0c0 0000
+	0000 0000 0000 0817 0000 0000 0000 0008
+	0000 0000 0000 00c0 0000 0000 0000 0000
+	1010 2010 1008 0700 0f0f 1f0f 0f07 0000
+	2010 1010 2020 c000 c0e0 e0e0 c0c0 0000 ]
+
+@fill-icn [ ffff ffff ffff ffff ffff ffff ffff ffff ]
+
+@canvas/mem $3e80
+	&memcap ( - )
+	( lnk ) &links &link1 $1 &link2 $1
+	( rgb ) &color &r $1 &g $1 &b $1
+	( req ) &masks &mask1 $2 &mask2 $2
+	( mov ) &time $1
+
