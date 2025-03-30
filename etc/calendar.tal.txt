@@ -44,7 +44,7 @@
 	( name ) "Calendar 0a
 	( details ) "Inspired 20 "by 20 "Donn 20 "Denman 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "17 20 "Mar 20 "2025 $2
+	( date ) "30 20 "Mar 20 "2025 $2
 
 (
 @|vectors )
@@ -165,13 +165,13 @@
 
 @input/<pop> ( c -- )
 	POP [ LIT2 00 _&ptr ] LDR
-	( clamp ) DUP .&buf #0b ADD GTH ?{ POP2 JMP2r }
+	( clamp ) DUP [ LIT2 0b -&buf ] ADD GTH ?{ POP2 JMP2r }
 	#01 SUB DUP ,&ptr STR
 	STZ !/<draw>
 
 @input/<done> ( -- )
 	( | cap )
-	,&ptr LDR .&buf #0c ADD LTH ?/<unlock>
+	,&ptr LDR [ LIT2 0c -&buf ] ADD LTH ?/<unlock>
 	( | save )
 	;select/filepath events/<export>
 	( | push )
@@ -302,25 +302,32 @@
 
 @corner/on-mouse ( -> )
 	cursor/<update>
-	.Mouse/state DEI ?{ BRK }
+	[ LIT2 &last $1 -Mouse/state ] DEI
+	( | handlers )
+	DUP2 #0000 NEQ2 ?{ /when-hover }
+	DUP2 #0001 NEQ2 ?{ /when-down }
+	,&last STR
+	POP BRK
+
+@corner/when-down ( -- )
 	( y ) .Mouse/y DEI2 .Screen/height DEI2 #001c SUB2 SUB2 NIP
-	( x ) .Mouse/lx DEI GTH ?{ #01 /<set-state>
-		select/<next-month>
-		BRK }
-	#02 /<set-state>
-	select/<prev-month>
-	BRK
+	( x ) .Mouse/lx DEI GTH ?{ #01 /<set-state> !select/<next-month> }
+	#02 /<set-state> !select/<prev-month>
+
+@corner/when-hover ( -- )
+	( y ) .Mouse/y DEI2 .Screen/height DEI2 #001c SUB2 SUB2 NIP
+	( x ) .Mouse/lx DEI LTH !/<set-state>
 
 @corner/<set-state> ( state -- )
-	DUP [ LIT &last $1 ] NEQ ?{ POP JMP2r }
-	,&last STR !/<draw>
+	DUP [ LIT &last-state $1 ] NEQ ?{ POP JMP2r }
+	,&last-state STR !/<draw>
 
 @corner/<draw> ( -- )
 	[ LIT2 26 -Screen/auto ] DEO
 	#0000 .Screen/x DEO2
 	.Screen/height DEI2 #0020 SUB2 .Screen/y DEO2
-	[ LIT2 00 _&last ] LDR #00c0 MUL2 ;corner/default-chr ADD2 .Screen/addr DEO2
-	[ LIT2 85 -Screen/sprite ] DEOk DEOk DEOk DEO
+	[ LIT2 00 _&last-state ] LDR #00c0 MUL2 ;corner/default-chr ADD2 .Screen/addr DEO2
+	[ LIT2 81 -Screen/sprite ] DEOk DEOk DEOk DEO
 	JMP2r
 
 (
