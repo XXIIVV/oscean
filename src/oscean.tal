@@ -80,7 +80,7 @@
 	;dict/head-tag <write-open>
 	( | head/meta )
 	;dict/meta-head-path <write-inc>
-	<write-og-title-image>
+	<write-opengraph>
 	( | head/title )
 	;dict/title-tag <write-open>
 	;dict/title-txt <write-str>
@@ -292,16 +292,19 @@
 (
 @|framework )
 
-@<write-og-title-image> ( name* -- name* )
+@<write-opengraph> ( name* -- name* )
 	DUP2 ;dict/og-title <write-meta-og>
+	STH2k ;dict/html-ext ;&buf STH2r <make-path-ext>
+	;&path ;dict/og-url <write-meta-og>
 	;term/diary LDAk ?{ POP2 ;&default-image ;dict/og-image !<write-meta-og> }
 	#0006 ADD2
 	( > x00 ) LDAk ,&bufa STR
 	( > 0xx ) INC2 LDA2 ,&bufb STR2
 	;&diary-path ;dict/og-image !<write-meta-og>
 
-	&default-image "https://wiki.xxiivv.com/media/services/rss.jpg $1
 	&diary-path "https://wiki.xxiivv.com/media/diary/ &bufa $1 &bufb $2 ".jpg $1
+	&path "https://wiki.xxiivv.com/site/ &buf $16
+	&default-image "https://wiki.xxiivv.com/media/services/rss.jpg $1
 
 @<write-inc> ( path* -- )
 	DUP2 .File/name DEO2
@@ -538,6 +541,7 @@
 	&figcaption-tag "figcaption $1
 	&og-title "og:title $1
 	&og-image "og:image $1
+	&og-url "og:url $1
 	&src-attr "src $1
 	&alt-attr "alt $1
 	&property-attr "property $1
