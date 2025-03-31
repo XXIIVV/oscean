@@ -78,7 +78,10 @@
 	;dict/html-tag <write-open>
 	( | head )
 	;dict/head-tag <write-open>
+	( | head/meta )
 	;dict/meta-head-path <write-inc>
+	<write-og-title-image>
+	( | head/title )
 	;dict/title-tag <write-open>
 	;dict/title-txt <write-str>
 	<space>
@@ -232,7 +235,7 @@
 	INC2 JMP2r
 
 @extract-term ( diary* -- term* )
-	#00 ;&buf STA
+	[ LIT2 00 _&buf ] STR
 	#000a ADD2
 	( clip bound ) DUP2 #09 next-char STH2
 	( clip start ) #00 STH2kr STA
@@ -289,6 +292,17 @@
 (
 @|framework )
 
+@<write-og-title-image> ( name* -- name* )
+	DUP2 ;dict/og-title <write-meta-og>
+	;term/diary LDAk ?{ POP2 ;&default-image ;dict/og-image !<write-meta-og> }
+	#0006 ADD2
+	( > x00 ) LDAk ;&bufa STA
+	( > 0xx ) INC2 LDA2 ;&bufb STA2
+	;&diary-path ;dict/og-image !<write-meta-og>
+
+	&default-image "https://wiki.xxiivv.com/media/services/rss.jpg $1
+	&diary-path "https://wiki.xxiivv.com/media/diary/ &bufa $1 &bufb $2 ".jpg $1
+
 @<write-inc> ( path* -- )
 	DUP2 .File/name DEO2
 	#8000 .File/length DEO2
@@ -333,6 +347,13 @@
 	[ LIT2 "=" ] <char2>
 	<write-str>
 	[ LIT "" ] !<char>
+
+@<write-meta-og> ( content* property* -- )
+	[ LIT "< ] <char>
+	;dict/meta-tag <write-str>
+	;dict/property-attr <write-attr>
+	;dict/content-attr <write-attr>
+	[ LIT2 "/> ] !<char2>
 
 @<write-open-class> ( tag* class* -- )
 	[ LIT "< ] <char>
@@ -500,6 +521,7 @@
 	&doctype "<!DOCTYPE 20 "html> $1
 	&html-tag "html $1
 	&head-tag "head $1
+	&meta-tag "meta $1
 	&title-tag "title $1
 	&body-tag "body $1
 	&nav-tag "nav $1
@@ -514,8 +536,12 @@
 	&code-tag "code $1
 	&figure-tag "figure $1
 	&figcaption-tag "figcaption $1
+	&og-title "og:title $1
+	&og-image "og:image $1
 	&src-attr "src $1
 	&alt-attr "alt $1
+	&property-attr "property $1
+	&content-attr "content $1
 	&no-picture "000 $1
 	&incoming-txt "incoming $1
 	&right-txt "right $1
