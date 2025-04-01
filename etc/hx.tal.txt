@@ -1,81 +1,10 @@
-( uxncli hx.rom file.bin )
-
-|10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
-|a0 @File &vector $2 &success $1 &succ-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
-
-|000
-
-	@src/buf $100
-
-|100
-
 @on-reset ( -> )
-	.Console/type DEI ?{
-		;dict/usage <perr>
-		#010f DEO
-		BRK }
-	;src/on-console .Console/vector DEO2
-	BRK
-
-@src/on-console ( -> )
-	.Console/read DEI
-	( ) DUP #20 GTH ?{ POP !on-ready }
-	[ LIT2 00 &ptr -src/buf ] INCk ,&ptr STR
-	STZ2
-	BRK
-
-@on-ready ( -> )
-	;src/buf DUP2 .File/name DEO2
-	#0001 .File/length DEO2
-	( lb ) [ LIT2r 0a19 ] DEOkr
-	#0000
-	&>stream ( -- )
-		;&b .File/read DEO2
-		[ LIT -File/succ-lb ] DEI ?{
-			( lb ) DEOkr
-			( lb ) DEOkr
-			<pdec>
-			;dict/bytes <perr>
-			<perr>
-			( lb ) DEOr
-			#800f DEO
-			BRK }
-		[ LIT &b $1 ] <pbyte>
-		INC2 print-spacer !&>stream
-
-@print-spacer ( id -- id )
-	DUP #0f AND ?{ #0a18 DEO
-		JMP2r }
-	DUP #01 AND ?{ #2018 DEO }
-	JMP2r
-
-(
-@|stdlib )
-
-@<pbyte> ( byte -- )
-	DUP #04 SFT /c
-	&c ( -- )
-	#0f AND DUP #09 GTH #27 MUL ADD LIT "0 ADD #18 DEO
-	JMP2r
-
-@<perr> ( err* -- )
-	LDAk #19 DEO
-	INC2 LDAk ?<perr>
-	POP2 JMP2r
-
-@<pdec> ( short* -- )
-	[ LIT2r ff00 ]
-	&>read ( -- )
-		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?&>read
-	POP2
-	&>write ( -- )
-		NIP #30 ADD #19 DEO
-		OVRr ADDr STHkr ?&>write
-	POP2r JMP2r
-
-(
-@|res )
-
-@dict
-	&usage "usage: 20 "hx.rom 20 "input.bin 0a $1 &bytes 20 "bytes 20 "in 20 $1
+	;on-console #10 DEO2 BRK
+@on-console ( -> )
+	#12 DEI DUP #04 SFT emit emit INC
+@spacer ( c -> )
+	DUP #0f AND ?{ #0a18 DEO BRK }
+	DUP #01 AND ?{ #2018 DEO } BRK
+@emit ( c -- )
+	#0f AND DUP #09 GTH #27 MUL ADD LIT "0 ADD #18 DEO JMP2r
 
