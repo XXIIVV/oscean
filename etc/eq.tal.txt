@@ -1,0 +1,66 @@
+( uxncli eq.rom a.bin b.bin )
+
+|00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
+|10 @Console/vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
+|a0 @FileA/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $1 &length-lb $1 &read $2 &write $2
+|b0 @FileB/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $1 &length-lb $1 &read $2 &write $2
+
+|000
+
+	@src/buf $80
+	@dst/buf $80
+
+|100
+
+@on-reset ( -> )
+	;src/on-console #10 DEO2 BRK
+
+@src/on-console ( -> )
+	[ LIT2 02 -Console/type ] DEI LTH ?{
+		.Console/read DEI [ LIT &ptr -&buf ] INCk ,&ptr STR
+		STZ BRK }
+	;&buf .FileA/name DEO2
+	[ LIT2 01 -FileA/length-lb ] DEO
+	;dst/on-console #10 DEO2 BRK
+
+@dst/on-console ( -> )
+	[ LIT2 02 -Console/type ] DEI LTH ?{
+		.Console/read DEI [ LIT &ptr -&buf ] INCk ,&ptr STR
+		STZ BRK }
+	;&buf .FileB/name DEO2
+	[ LIT2 01 -FileB/length-lb ] DEO
+	compare <phex>
+	#0a18 DEO BRK
+
+@compare ( length* -- length* )
+	;&a .FileA/read DEO2
+	;&b .FileB/read DEO2
+	.FileA/success-lb DEI .FileB/success-lb DEI
+	EQUk ?{ POP2 ;&size !fail }
+	ORA ?{ ;&pass !pass }
+	[ LIT2 &a $1 &b $1 ] EQU ?{ ;&data !fail }
+	INC2 !compare
+	&size "SIZE 20 $1
+	&data "DATA 20 $1
+	&pass "PASS 20 $1
+
+@fail ( length* -- length* )
+	#010f DEO ;&txt <pstr> !<pstr>
+	&txt "FAIL 20 $1
+
+@pass ( msg* -- )
+	#800f DEO
+	( >> )
+@<pstr> ( str* -: )
+	LDAk #18 DEO
+	INC2 LDAk ?<pstr>
+	POP2 JMP2r
+
+@<phex> ( short* -: )
+	SWP /b
+	&b ( byte -: )
+	DUP #04 SFT /c
+	&c ( byte -: )
+	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
+	JMP2r
+

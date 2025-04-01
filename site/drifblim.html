@@ -90,10 +90,13 @@ the newly assembled rom.</p>
 uxncli drifblim.rom <a href='../etc/drifblim.tal.txt'>drifblim.tal.txt</a> drifboot.rom
 </pre>
 
+<p>Note that in Uxntal, hexadecimal numbers are valid code and so any rom can be
+recovered from a hex dump with a working assembler.</p>
+
 <h4>Step 3: hx.rom</h4>
 
-<p>Finally, to close the loop and help with comparing the two copies of the
-assembler, we'll print its hex dump using a the following utility:</p>
+<p>To close the circle, the assembled rom needs to turned back into a hex dump,
+we'll print its hex dump using a the following utility:</p>
 
 <pre style='margin-bottom:1px'>
 @on-reset ( -> )
@@ -108,11 +111,21 @@ assembler, we'll print its hex dump using a the following utility:</p>
 <pre>
 uxncli drifblim.rom <a href='../etc/hx.tal.txt'>hx.tal.txt</a> hx.rom
 cat drifboot.rom | uxncli hx.rom > drifboot.rom.txt
-diff drifblim.rom.txt drifboot.rom.txt
 </pre>
 
-<p>Note that in Uxntal, hexadecimal numbers are valid code and so any rom can be
-recovered from a hex dump with a working assembler.</p>
+<h4>Step 4: eq.rom</h4>
+
+<p>Finally, we should have two identical hex dumps of the assembler, where one was
+assembled from the textual source. If for some reason you do not have access to
+the unix <kbd>diff</kbd> command, you can compare the two hexadecimal dumps
+with the <a href='../etc/eq.tal.txt'>eq program</a>, which takes two filepaths
+and compare their content.</p>
+
+<pre>
+uxncli drifblim.rom <a href='../etc/eq.tal.txt'>eq.tal.txt</a> eq.rom
+uxncli eq.rom drifblim.rom.txt drifboot.rom.txt
+</pre>
+
 
 <p>Alternatively, if your <a href='varvara.html'>Varvara</a> implementation does
 not support the <a href='varvara.html#file'>File device</a>, use the Drifloon

@@ -445,6 +445,49 @@ AC 675, x^3 y^2
 04 1728 × 1/3 = 64, res^6
 </pre>
 
+<h3 id='fib'>Example: Fibonacci</h3>
+
+<p>Let's have a look at a <i>real program</i> to generate the Fibonacci Sequence(1, 1, 2, 3, 5, 8, 13, 21, 34..). This program uses catalysts(fib, fib.shift, fib.move) to keep the program state which has 3 phases(shift, move and back to fib) and ensures the correct evaluation order:</p>
+
+<pre style='margin-bottom:1px'>
+:: fib n last > fib n B
+:: fib n res  > fib n A B
+:: fib n      > fibrec
+:: fibrec A > fibrec last
+:: fibrec B > fibrec res
+:: fibrec   > fib
+:: last     >
+
+AC 31590, res n^5 last fib
+..
+06 41600000000 × 1/5 = 106496, res^13 fib 
+</pre> 
+<pre>31590 : 429/195 3003/78 17/39 85/119 34/187 13/17 1/5</pre>
+
+<h3 id='fac'>Example: Factorial</h3>
+
+<p>Let's have a look at something a bit <i>more advanced</i>, the function to
+generate the 5th Factorial number from the sequence(1, 2, 6, 24, 120..). This
+program uses a multiplication portion, and a series of rules to
+move between each number in the sequence:</p>
+
+<pre style='margin-bottom:1px'>
+:: fac a i > fac n i
+::       i >
+:: fac n y > fac res a y
+:: fac   y > fac i
+:: fac     >
+::     res >     y
+::     n n > fac n
+
+AC 23750, fac n^4 y
+.. 
+05 125829120 × 2/3 = 83886080, y^24 n
+</pre>
+<pre>23750 : 2755/12673 1/29 2622/190 551/38 1/19 2/3 95/25 </pre>
+
+<p>This solution was contributed by TARDIInsanity.</p>
+
 <h3 id='precedence'>Operator Precedence</h3>
 
 <p>To find the result of <code>3*(4+5)-6</code>, in which a specific sequence of
@@ -496,58 +539,6 @@ a)
 :: move-ed e > move-ed d :: move-ed > 
 
 a^1 b^2 c^3 pop
-</pre>
-
-<h3 id='fib'>Example: Fibonacci</h3>
-
-<p>Let's have a look at a <i>real program</i> to generate the Fibonacci Sequence(1, 1, 2, 3, 5, 8, 13, 21, 34..). This program uses catalysts(fib, fib.shift, fib.move) to keep the program state which has 3 phases(shift, move and back to fib) and ensures the correct evaluation order:</p>
-
-<pre>
-<i>:: > Shift the scrolling window to show two numbers</i>
-
-:: fib n last > fib n B
-:: fib n res  > fib n A B
-:: fib n      > fibrec
-
-<i>:: > Move the temporary registers back by one number</i>
-
-:: fibrec A > fibrec last
-:: fibrec B > fibrec res
-:: fibrec   > fib
-
-<i>:: > Cleanup temporary registers at the end of the program</i>
-
-:: last > 
-:: fib  > 
-
-<i>:: > Find the fib number equal to the value in n register</i>
-
-AC 6240, n^5 last res fib
-..
-08 15869140625 × 1/13 = 1220703125, res^13 
-</pre>
-
-<h3 id='fac'>Example: Factorial</h3>
-
-<p>Let's have a look at something a bit <i>more advanced</i>, the function to
-generate the 5th Factorial number from the sequence(1, 2, 6, 24, 120..). This
-program uses a multiplication portion, and a series of rules to
-move between each number in the sequence:</p>
-
-<pre>
-:: mul n^5 >
-
-:: mul z i > mul x i
-:: mul   i > mul
-:: mul x y > mul y z res 
-:: mul   y > mul i n
-:: mul x   > mul
-:: mul     > fac
-:: fac res > fac x
-:: fac n   > fac y
-:: fac     > y mul
-
-x y mul
 </pre>
 
 <h3 id='tictactoe'>Example: Tic-Tac-Toe</h3>
