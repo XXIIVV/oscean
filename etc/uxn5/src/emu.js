@@ -55,6 +55,9 @@ function Emu (embed)
 					rom = decodeUlz(rom);
 				emulator.load(rom, true);
 			}
+			else if (boot_ulz) {
+				emulator.load(decodeUlz(b64decode(boot_ulz)), true);
+			}
 			// Or, get boot rom
 			else if(boot_rom)
 				emulator.load(boot_rom, true);
