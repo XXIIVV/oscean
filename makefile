@@ -29,7 +29,7 @@ grab:
 	@ mkdir -p etc/uxn5
 	@ cp -r ../uxn5/index.html ../uxn5/src/ ../uxn5/pyur.svg etc/uxn5/
 	@ mkdir -p etc/solrela
-	@ cp -r ../solrela/index.html ../solrela/src/ etc/solrela/
+	@ cp -r ../solrela/index.html ../solrela/src/ ../solrela/media/ etc/solrela/
 
 bin/maeve.rom: src/maeve.tal
 	@ mkdir -p bin && ${ASM} src/maeve.tal bin/maeve.rom
