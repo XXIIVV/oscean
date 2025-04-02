@@ -22,6 +22,7 @@ Gradually modified and edited by the Solresol Community<br />
 In memory of Daniel Parson(1989-2023)
 		</small>
 		<br/>
+		<br/>
 		<span class="ses do p1"></span><span class="ses re p2"></span><span class="ses mi p3"></span><span class="ses fa m1"></span><span class="ses sol m2"></span><span class="ses la m3"></span><span class="ses si"></span>
 	</p>
 </body>
@@ -31,10 +32,7 @@ In memory of Daniel Parson(1989-2023)
 	let file = "https://git.sr.ht/~rabbits/solrela"
 	let count = 0
 	let source
-	let data = {
-		sr: {},
-		en: {}
-	};
+	let data = { sr: {}, en: {} };
 	let notes = ['do', 're', 'mi', 'fa', 'sol', 'la', 'si']
 	dict.split('\n').forEach((value) => {
 		if(!value) return
@@ -70,12 +68,12 @@ In memory of Daniel Parson(1989-2023)
 	}
 	// Read anchor tag on start
 	if (window.location.hash.substring(1))
-		findword(window.location.hash.replace("+", " ").substring(1))
+		findword(window.location.hash.replaceAll("+", " ").substring(1))
 
 	function explode_srs(w) {
 		let count = 0
 		let segments = []
-		while(w.length > 0 && count++ < 10) {
+		while(w.length > 0 && count++ < 30) {
 			if(!w.indexOf("do")) segments.push(0), w = w.substr(2)
 			else if(!w.indexOf("re")) segments.push(1), w = w.substr(2)
 			else if(!w.indexOf("mi")) segments.push(2), w = w.substr(2)
@@ -98,7 +96,7 @@ In memory of Daniel Parson(1989-2023)
 	function explode_ses(w) {
 		let count = 0
 		let segments = []
-		while(w.length > 0 && count++ < 10) {
+		while(w.length > 0 && count++ < 30) {
 			if(!w.indexOf("d")) segments.push(0), w = w.substr(1)
 			else if(!w.indexOf("r")) segments.push(1), w = w.substr(1)
 			else if(!w.indexOf("m")) segments.push(2), w = w.substr(1)
@@ -124,8 +122,22 @@ In memory of Daniel Parson(1989-2023)
 		let segs = explode_srs(w)
 		let ss = ['𐑴', '𐑦', '𐑵', '𐑳', '𐑯', '𐑤', '𐑨']
 		let notes = ['do', 're', 'mi', 'fa', 'sol', 'la', 'si']
+		let last = -100
 		if(!segs) return ""
-		segs.forEach((v, id) => { res += `<span class='ses ${notes[v]}'>${ss[v]}</span>` })
+		segs.forEach((v, id) => { 
+			if(last == v - 1) {
+				res += `<span class='ses p${notes[v]}'>${ss[v]}</span>`
+				last = -100
+			}
+			else if(last == v + 1) {
+				res += `<span class='ses m${notes[v]}'>${ss[v]}</span>`
+				last = -100
+			}
+			else {
+				res += `<span class='ses ${notes[v]}'>${ss[v]}</span>` 
+				last = v
+			}
+		})
 		return res
 	}
 
@@ -133,7 +145,7 @@ In memory of Daniel Parson(1989-2023)
 		let res = ""
 		let segs = explode_ses(w)
 		if(!segs) return ""
-		segs.forEach((s) => { res += notes[s] })
+		segs.forEach((s) => { res += s < 0 ? ' ' : notes[s] })
 		return res
 	}
 
@@ -169,11 +181,13 @@ In memory of Daniel Parson(1989-2023)
 		return res
 	}
 
-	function summarize(w) {
+	function summarize(ses) {
 		let html = ""
 		let shavian = ""
-		w.split(' ').forEach((t) => { html += ses_pretty(t) + " " })
-		w.split(' ').forEach((t) => { shavian += sha(t) })
+		ses.split(' ').forEach((w) => { 
+			html += ses_pretty(w) + " " 
+			shavian += sha(w) + "<span class='ses space'></span>"
+		})
 		return `<i>${html}</i> <span class='sha'>${shavian}</span>`
 	}
 
@@ -192,7 +206,7 @@ In memory of Daniel Parson(1989-2023)
 		Object.keys(sources).forEach((s) => {
 			html += `<li class='${lang} ${cl}'>`
 			html += `<span class='source'>${s}</span>`
-			html += `<b>${target}${lang == 'sr' ? ', '+ ses_pretty(target) : ''}</b>`
+			html += `<b><a onclick="findword('${target}')">${target}</a>${lang == 'sr' ? ', '+ ses_pretty(target) : ''}</b>`
 			html += `:<br />`
 			// Results
 			let anchors = ""
@@ -206,7 +220,7 @@ In memory of Daniel Parson(1989-2023)
 					html += `<i class='inv'>inv: <a onclick="findword('${inv}')">${inv}</a></i>`
 				}
 			}
-			
+
 			html += `</li>`
 		});
 		return html
@@ -226,10 +240,12 @@ In memory of Daniel Parson(1989-2023)
 		// Unpack
 		if(!data.sr[target] && unses(target) && data.sr[unses(target)])
 			target = unses(target)
-
-		if(explode_srs(target))
+	
+		if(explode_srs(target))	
 			document.getElementById("summary").innerHTML = summarize(target)
-		
+		else if(unses(target))
+			document.getElementById("summary").innerHTML = summarize(unses(target))
+
 		// Search for English match
 		if (data.en[target]) {
 			res.innerHTML += echoword("en", target, "match")
@@ -249,7 +265,7 @@ In memory of Daniel Parson(1989-2023)
 			if (k.includes(target) && k != target && count < 40)
 				res.innerHTML += echoword("sr", k, " "), count++
 		});
-		window.location.hash = target.replace(" ", "+")
+		window.location.hash = target.replaceAll(" ", "+")
 	}
 </script>
 
@@ -280,8 +296,8 @@ In memory of Daniel Parson(1989-2023)
 	.c-sol { color: #00b2b0; }
 	.c-la { color: #0088bf; }
 	.c-si { color: #624579; }
-	.sha { display:block; height: 41px;overflow: hidden;padding-right: 6px;margin-bottom: -1px;float: right;margin-top: -12px;}
-	.ses { background-size: contain;width: 26px;height: 60px;display: inline-block;background-position: center center;margin-right: -7px;color: rgba(0,0,0,0); text-align:center; vertical-align:middle}
+	.sha { display:block; height: 41px;overflow: hidden;margin-right: -6px;margin-bottom: -1px;float: right;margin-top: -3px;}
+	.ses { background-size: contain;width: 26px;height: 60px;display: inline-block;margin-right: -7px;color: rgba(0,0,0,0); text-align:center; vertical-align:middle; position:relative; background-repeat:no-repeat}
 	.ses.do { background-image:url(media/ses_do.png); }
 	.ses.re { background-image:url(media/ses_re.png); }
 	.ses.mi { background-image:url(media/ses_mi.png); }
@@ -289,6 +305,24 @@ In memory of Daniel Parson(1989-2023)
 	.ses.sol { background-image:url(media/ses_sol.png); }
 	.ses.la { background-image:url(media/ses_la.png); }
 	.ses.si { background-image:url(media/ses_si.png); }
+
+	.ses.pdo { background-image:url(media/ses_pdo.png); margin-left:-19px; }
+	.ses.pre { background-image:url(media/ses_pre.png); margin-left:-19px;  }
+	.ses.pmi { background-image:url(media/ses_pmi.png); margin-left:-19px;  }
+	.ses.pfa { background-image:url(media/ses_pfa.png); margin-left:-19px;  }
+	.ses.psol { background-image:url(media/ses_psol.png); margin-left:-19px;  }
+	.ses.pla { background-image:url(media/ses_pla.png); margin-left:-19px;  }
+	.ses.psi { background-image:url(media/ses_psi.png); margin-left:-19px;  }
+
+	.ses.mdo { background-image:url(media/ses_mdo.png); margin-left:-19px; }
+	.ses.mre { background-image:url(media/ses_mre.png); margin-left:-19px;  }
+	.ses.mmi { background-image:url(media/ses_mmi.png); margin-left:-19px;  }
+	.ses.mfa { background-image:url(media/ses_mfa.png); margin-left:-19px;  }
+	.ses.msol { background-image:url(media/ses_msol.png); margin-left:-19px;  }
+	.ses.mla { background-image:url(media/ses_mla.png); margin-left:-19px;  }
+	.ses.msi { background-image:url(media/ses_msi.png); margin-left:-19px;  }
+
+	.ses.space { width:18px }
 </style>
 
 </html>

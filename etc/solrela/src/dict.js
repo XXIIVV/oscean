@@ -3422,7 +3422,7 @@ solredo	imply, implied
 solrere	week
 solremi	ingratitude, disregarding, ungrateful
 solrefa	shorten, abbreviate, concise, terse, succinct, brief
-solresol	category, language, word, philology
+solresol	language, philology
 solrela	dictionary, vocabulary, glossary*
 solresi	irregularity, anomaly, irregular
 solmido	sickness
@@ -3560,4 +3560,3 @@ sisila	??
 sisisi	note "Si" itself
 
 `
-
