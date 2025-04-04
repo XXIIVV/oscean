@@ -3216,7 +3216,7 @@ sisol	sorry
 sila	formal, without, outside
 
 dododo	note "Do" itself
-dodore	earth
+dodore	zero, globe, earth
 dodomi	season
 dodofa	winter
 dodosol	spring
