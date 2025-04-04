@@ -1,0 +1,67 @@
+( uxncli proquints.rom file.bin )
+
+|10 @Console/vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
+|a0 @File/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+
+|000
+
+	@src/buf
+
+|100
+
+@on-reset ( -> )
+	.Console/type DEI ?{
+		;dict/usage <perr>
+		#010f DEO
+		BRK }
+	;src/on-console .Console/vector DEO2
+	BRK
+
+@src/on-console ( -> )
+	[ LIT2 02 -Console/type ] DEI LTH ?{
+		.Console/read DEI [ LIT &ptr -&buf ] INCk ,&ptr STR
+		STZ
+		BRK }
+	( | read file )
+	;src/buf .File/name DEO2
+	#0002 .File/length DEO2
+	&>stream ( -- )
+		;&data .File/read DEO2
+		.File/success-lb DEI ?{
+			POP2 #0a18 DEO
+			#800f DEO
+			BRK }
+		[ LIT2 &data $2 ] proquint #20 emit-char !&>stream
+
+(
+@|core )
+
+@proquint ( short* -- )
+	( c1 ) DUP2 #0c emit-con
+	( v1 ) DUP2 #0a emit-vow
+	( c2 ) DUP2 #06 emit-con
+	( v2 ) DUP2 #04 emit-vow
+	( c3 ) #00 ( >> )
+
+@emit-con ( val* sft -- )
+	SFT2 #000f AND2 ;&lut ADD2 LDA !emit-char
+	&lut [ "bdfghjklmnprstvz ]
+
+@emit-vow ( val* sft -- )
+	SFT2 #0003 AND2 ;&lut ADD2 LDA !emit-char
+	&lut [ "aiou ]
+
+@emit-char ( c -- )
+	.Console/write DEO
+	JMP2r
+
+(
+@|stdlib )
+
+@<perr> ( str* -- )
+	LDAk DUP ?{ POP POP2 JMP2r }
+	#19 DEO
+	INC2 !<perr>
+
+@dict/usage "usage: 20 "proquints.rom 20 "input.bin 0a $1
+

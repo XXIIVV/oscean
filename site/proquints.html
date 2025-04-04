@@ -48,41 +48,43 @@ b d f g h j k l m n p r s t v z | a i o u
 128.30.52.45    mabiv-gibot | 12.110.110.204  budov-kuras
 </pre>
 
-<p>It's also possible to transmit <a href='icn_format.html'>low-resolution graphical assets</a> by using one's voice.</p>
+<p>It's also possible to transmit <a href='icn_format.html'>low-resolution
+graphical assets</a> by using one's voice.</p>
 
 <h3>Example</h3>
 
-<p>An <a href='ascii.html'>ASCII</a> string can also be encrypted in proquints, the sentence <i>Many hands make light work.</i> is represented as follows:</p>
+<p>An <a href='ascii.html'>ASCII</a> string can also be encrypted in proquints,
+the sentence <i>Many hands make light work.</i> is represented as follows:</p>
 
 <pre>
-hujad kunun fadim kajiv kidog fadit kajir kihab
-kudin kitim libab litiz lanir funir
+hujod kunun fadom kajov kidug fadot kajor kihob
+kudon kitom libob litoz lanor funor
 </pre>
 
 <h3>Implementation</h3>
 
-<p>A minimal encoder implementation of proquints in <a href='uxntal.html'>Uxntal</a>:</p>
+<p>A minimal encoder implementation of proquints in <a
+href='uxntal.html'>Uxntal</a>:</p>
 
 <pre>
-@proquint ( short* -- )
-
+@emit-proquint ( short* -- )
 	( c1 ) DUP2 #0c emit-con
 	( v1 ) DUP2 #0a emit-vow
 	( c2 ) DUP2 #06 emit-con
-	( v2 ) DUP2 #03 emit-vow
-	( c3 ) #00 emit-con
-	#20 &emit ( c -- ) #18 DEO
+	( v2 ) DUP2 #04 emit-vow
+	( c3 ) #00 ( >> )
 
-JMP2r
+@emit-con ( val* sft -- )
+	SFT2 #000f AND2 ;&lut ADD2 LDA !emit-char
+	&lut "bdfghjklmnprstvz
 
-@emit-con SFT2 #000f AND2 ;&con ADD2 LDA !proquint/emit
-	&con "bdfghjklmnprstvz
-@emit-vow SFT2 #0003 AND2 ;&vow ADD2 LDA !proquint/emit
-	&vow "aiou
+@emit-vow ( val* sft -- )
+	SFT2 #0003 AND2 ;&lut ADD2 LDA !emit-char
+	&lut "aiou
 </pre>
 
 <ul>
-	<li><a href='https://git.sr.ht/~rabbits/uxn-utils/tree/main/item/cli/proquints/proquints.tal'>Proquints Encoder</a>, Uxntal</li>
+	<li><a href='https://git.sr.ht/~rabbits/uxn-utils/tree/main/item/cli/proquints/src/proquints.tal'>Proquints Encoder</a>, Uxntal</li>
 	<li><a href='https://github.com/dsw/proquint' target='_blank'>Implementations in other languages</a></li>
 </ul>
 
