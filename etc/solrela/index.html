@@ -25,6 +25,7 @@ In memory of Daniel Parson(1989-2023)
 		<br/>
 		<span class="ses do p1"></span><span class="ses re p2"></span><span class="ses mi p3"></span><span class="ses fa m1"></span><span class="ses sol m2"></span><span class="ses la m3"></span><span class="ses si"></span>
 	</p>
+	<!-- Le symbol pour une vie exempte de perdant! -->
 </body>
 <script type="text/javascript">
 	'use strict'
@@ -230,6 +231,7 @@ In memory of Daniel Parson(1989-2023)
 	function findword(target) {
 		let count = 0
 		let res = document.getElementById("result")
+		let unsesed = unses(target)
 		document.getElementById("search").value = target
 		document.getElementById("summary").innerHTML = ""
 		res.innerHTML = ""
@@ -238,22 +240,25 @@ In memory of Daniel Parson(1989-2023)
 			return
 
 		// Unpack
-		if(!data.sr[target] && unses(target) && data.sr[unses(target)])
-			target = unses(target)
+		/* if(!data.sr[target] && !data.en[target]) {
+			unsesed = unses(target)
+			if(unsesed && data.sr[unsesed])
+				target = unsesed
+		} */
 	
 		if(explode_srs(target))	
 			document.getElementById("summary").innerHTML = summarize(target)
-		else if(unses(target))
-			document.getElementById("summary").innerHTML = summarize(unses(target))
+		else if(unsesed)
+			document.getElementById("summary").innerHTML = summarize(unsesed)
 
+		console.log(target)
 		// Search for English match
-		if (data.en[target]) {
-			res.innerHTML += echoword("en", target, "match")
-		}
+		if (data.en[target]) res.innerHTML += echoword("en", target, "match")
+		// Search for Solresol(Sesed) match
+		if (data.sr[unsesed]) res.innerHTML += echoword("sr", unsesed, "match")
 		// Search for Solresol match
-		if (data.sr[target]) {
-			res.innerHTML += echoword("sr", target, "match")
-		}
+		if (data.sr[target]) res.innerHTML += echoword("sr", target, "match")
+	
 		// Search English
 		Object.keys(data.en).forEach((k) => {
 			if (k.includes(target) && k != target && count < 40)
@@ -264,7 +269,10 @@ In memory of Daniel Parson(1989-2023)
 		Object.keys(data.sr).forEach((k) => {
 			if (k.includes(target) && k != target && count < 40)
 				res.innerHTML += echoword("sr", k, " "), count++
+			if (k == unsesed && count < 40)
+				res.innerHTML += echoword("sr", k, " "), count++
 		});
+		
 		window.location.hash = target.replaceAll(" ", "+")
 	}
 </script>
