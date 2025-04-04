@@ -3245,7 +3245,7 @@ dofala	left(side)
 dofasi	adore, worship*
 dosoldo	nature, abundance
 dosolre	belief, faith, hope
-dosolmi	??
+dosolmi	true, truth
 dosolfa	awake
 dosolsol	april
 dosolla	??
@@ -3341,7 +3341,7 @@ mifafa	fifteen
 mifasol	to hold, to take
 mifala	desire, wish, want, desirous*
 mifasi	error, incorrigible
-misoldo	??
+misoldo	false, lie
 misolre	enter
 misolmi	taste
 misolfa	benevolence, affability, goodwill, amiability, kind
