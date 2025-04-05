@@ -1886,7 +1886,7 @@ Solsolfa	Thursday
 Solsolla	Friday
 Solsolsi	Saturday
 Soldodo	Sunday
-Solrere	The past, former, past
+Solrere	The past, former, past, yesterday
 Solmimi	The present
 Solfafa	The future
 Sollala	Hour
@@ -3472,7 +3472,7 @@ larere	??
 laremi	spell, spelling*
 larefa	syllable, syllabic, monosyllable, monosyllabic*
 laresol	lesson, instruction*
-larela	visibility
+larela	sentence, phrase
 laresi	distraction, inattention, inadvertently, inattentive, carelessness, disapplied
 lamido	temporary, fleeting
 lamire	write, writing, writer*
