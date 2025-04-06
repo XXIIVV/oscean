@@ -1,8 +1,14 @@
 <!DOCTYPE html>
 <html>
-<meta charset="utf-8">
 <head>
 	<meta charset="utf-8"/>
+	<meta property='og:type' content='website'/>
+	<meta property='og:site_name' content='Solrela'/>
+	<meta property='og:description' content="By Devine Lu Linvega"/>
+	<meta property='og:logo' content="media/services/logo.jpg"/>
+	<meta property="og:title" content="Solresol Translator"/>
+	<meta property="og:url" content="https://rabbits.srht.site/solrela/index.html"/>
+	<link href="media/services/icon.png" type="image/png" rel="shortcut icon">
 	<title>Solresol Translator</title>
 	<script src="src/dict.js"></script>
 </head>
@@ -30,15 +36,17 @@ In memory of Daniel Parson(1989-2023)
 <script type="text/javascript">
 	'use strict'
 	// Parse dictionary
-	let file = "https://git.sr.ht/~rabbits/solrela"
 	let count = 0
-	let source
-	let data = { sr: {}, en: {} };
+	let source = 0
+	let data = {sr:{}, en:{}};
 	let notes = ['do', 're', 'mi', 'fa', 'sol', 'la', 'si']
+	let shavs = ['𐑴', '𐑦', '𐑵', '𐑳', '𐑯', '𐑤', '𐑨']
+	let cc = ['d', 'r', 'm', 'f', 's', 'l', 't']
+	let vv = ['o', 'e', 'i', 'a', 'ou', 'au', 'iu']
 	dict.split('\n').forEach((value) => {
 		if(!value) return
 		let parts = value.split('\t')
-		// Set origin
+		// Set source
 		if (parts[0] == ";;") {
 			source = parts[1]
 			return
@@ -59,30 +67,30 @@ In memory of Daniel Parson(1989-2023)
 			})
 		}
 	})
-	document.getElementById("dict").innerHTML = `Solrela knows <a href='${file}' target='_blank'>${count} words</a>.`
+	document.getElementById("dict").innerHTML = `Solrela knows <a href='https://git.sr.ht/~rabbits/solrela' target='_blank'>${count} words</a>`
 	// Connect interface
 	document.getElementById("search").addEventListener("keyup", (event) => {
-		if (event.key === "Enter") findword(event.target.value.toLowerCase())
+		if (event.key === "Enter") run_search(event.target.value.toLowerCase())
 	});
 	document.getElementById("button").onclick = (event) => {
-		findword(document.getElementById("search").value.toLowerCase())
+		run_search(document.getElementById("search").value.toLowerCase())
 	}
 	// Read anchor tag on start
 	if (window.location.hash.substring(1))
-		findword(window.location.hash.replaceAll("+", " ").substring(1))
+		run_search(window.location.hash.replaceAll("+", " ").substring(1))
 
 	function explode_srs(w) {
 		let count = 0
 		let segments = []
 		while(w.length > 0 && count++ < 30) {
-			if(!w.indexOf("do")) segments.push(0), w = w.substr(2)
-			else if(!w.indexOf("re")) segments.push(1), w = w.substr(2)
-			else if(!w.indexOf("mi")) segments.push(2), w = w.substr(2)
-			else if(!w.indexOf("fa")) segments.push(3), w = w.substr(2)
-			else if(!w.indexOf("sol")) segments.push(4), w = w.substr(3)
-			else if(!w.indexOf("la")) segments.push(5), w = w.substr(2)
-			else if(!w.indexOf("si")) segments.push(6), w = w.substr(2)
-			else if(!w.indexOf(" ")) segments.push(-1), w = w.substr(1)
+			     if(w[0] == "d" && w[1] == "o") segments.push(0), w = w.substr(2)
+			else if(w[0] == "r" && w[1] == "e") segments.push(1), w = w.substr(2)
+			else if(w[0] == "m" && w[1] == "i") segments.push(2), w = w.substr(2)
+			else if(w[0] == "f" && w[1] == "a") segments.push(3), w = w.substr(2)
+			else if(w[0] == "s" && w[1] == "o" && w[2] == "l") segments.push(4), w = w.substr(3)
+			else if(w[0] == "l" && w[1] == "a") segments.push(5), w = w.substr(2)
+			else if(w[0] == "s" && w[1] == "i") segments.push(6), w = w.substr(2)
+			else if(w[0] == " ") segments.push(-1), w = w.substr(1)
 			else return 0
 		}
 		return segments
@@ -98,21 +106,21 @@ In memory of Daniel Parson(1989-2023)
 		let count = 0
 		let segments = []
 		while(w.length > 0 && count++ < 30) {
-			if(!w.indexOf("d")) segments.push(0), w = w.substr(1)
-			else if(!w.indexOf("r")) segments.push(1), w = w.substr(1)
-			else if(!w.indexOf("m")) segments.push(2), w = w.substr(1)
-			else if(!w.indexOf("f")) segments.push(3), w = w.substr(1)
-			else if(!w.indexOf("s")) segments.push(4), w = w.substr(1)
-			else if(!w.indexOf("l")) segments.push(5), w = w.substr(1)
-			else if(!w.indexOf("t")) segments.push(6), w = w.substr(1)
-			else if(!w.indexOf("ou")) segments.push(4), w = w.substr(2)
-			else if(!w.indexOf("au")) segments.push(5), w = w.substr(2)
-			else if(!w.indexOf("iu")) segments.push(6), w = w.substr(2)
-			else if(!w.indexOf("o")) segments.push(0), w = w.substr(1)
-			else if(!w.indexOf("e")) segments.push(1), w = w.substr(1)
-			else if(!w.indexOf("i")) segments.push(2), w = w.substr(1)
-			else if(!w.indexOf("a")) segments.push(3), w = w.substr(1)
-			else if(!w.indexOf(" ")) segments.push(-1), w = w.substr(1)
+			     if(w[0] == "d") segments.push(0), w = w.substr(1)
+			else if(w[0] == "o") segments.push(0), w = w.substr(1)
+			else if(w[0] == "r") segments.push(1), w = w.substr(1)
+			else if(w[0] == "e") segments.push(1), w = w.substr(1)
+			else if(w[0] == "m") segments.push(2), w = w.substr(1)
+			else if(w[0] == "i") segments.push(2), w = w.substr(1)
+			else if(w[0] == "f") segments.push(3), w = w.substr(1)
+			else if(w[0] == "a") segments.push(3), w = w.substr(1)
+			else if(w[0] == "s") segments.push(4), w = w.substr(1)
+			else if(w[0] == "o" && w[1] == "u") segments.push(4), w = w.substr(2)
+			else if(w[0] == "l") segments.push(5), w = w.substr(1)
+			else if(w[0] == "a" && w[1] == "u") segments.push(5), w = w.substr(2)
+			else if(w[0] == "t") segments.push(6), w = w.substr(1)
+			else if(w[0] == "i" && w[1] == "u") segments.push(6), w = w.substr(2)
+			else if(w[0] == " ") segments.push(-1), w = w.substr(1)
 			else return 0
 		}
 		return segments
@@ -121,21 +129,19 @@ In memory of Daniel Parson(1989-2023)
 	function sha(w) {
 		let res = ""
 		let segs = explode_srs(w)
-		let ss = ['𐑴', '𐑦', '𐑵', '𐑳', '𐑯', '𐑤', '𐑨']
-		let notes = ['do', 're', 'mi', 'fa', 'sol', 'la', 'si']
 		let last = -100
 		if(!segs) return ""
-		segs.forEach((v, id) => { 
+		segs.forEach((v, id) => {
 			if(last == v - 1) {
-				res += `<span class='ses p${notes[v]}'>${ss[v]}</span>`
+				res += `<span class='ses p${notes[v]}'>${shavs[v]}</span>`
 				last = -100
 			}
 			else if(last == v + 1) {
-				res += `<span class='ses m${notes[v]}'>${ss[v]}</span>`
+				res += `<span class='ses m${notes[v]}'>${shavs[v]}</span>`
 				last = -100
 			}
 			else {
-				res += `<span class='ses ${notes[v]}'>${ss[v]}</span>` 
+				res += `<span class='ses ${notes[v]}'>${shavs[v]}</span>`
 				last = v
 			}
 		})
@@ -153,8 +159,6 @@ In memory of Daniel Parson(1989-2023)
 	function ses(w) {
 		let res = ""
 		let segs = explode_srs(w)
-		let cc = ['d', 'r', 'm', 'f', 's', 'l', 't']
-		let vv = ['o', 'e', 'i', 'a', 'ou', 'au', 'iu']
 		if(!segs) return ""
 		if(segs.length == 1)
 			return vv[segs[0]]
@@ -168,25 +172,20 @@ In memory of Daniel Parson(1989-2023)
 	function ses_pretty(w) {
 		let res = ""
 		let segs = explode_srs(w)
-		let cc = ['d', 'r', 'm', 'f', 's', 'l', 't']
-		let vv = ['o', 'e', 'i', 'a', 'ou', 'au', 'iu']
-		let colors = ['c-do','c-re','c-mi','c-fa','c-sol','c-la', 'c-si']
 		if(segs.length == 1)
-			return vv[segs[0]]
-		segs.forEach((v, id) => {
-			res += `<span class='${colors[v]}'>`
-			if(id & 1) res += vv[v]
-			else res += cc[v]
-			res += `</span>`
-		})
+			res += `<span class='c-${notes[segs[0]]}'>${vv[segs[0]]}</span>`
+		else
+			segs.forEach((v, id) => {
+				res += `<span class='c-${notes[v]}'>${id & 1 ? vv[v] : cc[v]}</span>`
+			})
 		return res
 	}
 
 	function summarize(ses) {
 		let html = ""
 		let shavian = ""
-		ses.split(' ').forEach((w) => { 
-			html += ses_pretty(w) + " " 
+		ses.split(' ').forEach((w) => {
+			html += ses_pretty(w) + " "
 			shavian += sha(w) + "<span class='ses space'></span>"
 		})
 		return `<i>${html}</i> <span class='sha'>${shavian}</span>`
@@ -207,73 +206,70 @@ In memory of Daniel Parson(1989-2023)
 		Object.keys(sources).forEach((s) => {
 			html += `<li class='${lang} ${cl}'>`
 			html += `<span class='source'>${s}</span>`
-			html += `<b><a onclick="findword('${target}')">${target}</a>${lang == 'sr' ? ', '+ ses_pretty(target) : ''}</b>`
-			html += `:<br />`
+			html += `<b><a onclick="run_search('${target}')">${target}</a>${lang == 'sr' ? ` <span class='sesres'>${ses_pretty(target)}</span>` : ''}</b>`
+			html += `: `
 			// Results
 			let anchors = ""
 			sources[s].forEach((w, id) => {
-				html += `<a onclick="findword('${w}')">${w}</a>${id < sources[s].length-1 ? ',' : ''} `
+				html += `<a onclick="run_search('${w}')">${w}</a>${id < sources[s].length-1 ? ',' : ''} `
 			})
 			// Inversion
 			if(lang == 'sr') {
 				let inv = invert_srs(target)
 				if(inv != target && data.sr[inv]) {
-					html += `<i class='inv'>inv: <a onclick="findword('${inv}')">${inv}</a></i>`
+					html += `<i class='inv'>inv: <a onclick="run_search('${inv}')">${inv}</a></i>`
 				}
 			}
-
 			html += `</li>`
 		});
 		return html
 	}
 
 	// Find value
-	function findword(target) {
-		let count = 0
-		let res = document.getElementById("result")
+	function search_term(target) {
+		let en_count = 0
+		let sr_count = 0
+		let res = ""
 		let unsesed = unses(target)
+		// summary
+		if(explode_srs(target))	
+			res += `<h2>${summarize(target)}</h2>`
+		else if(unsesed)
+			res += `<h2>${summarize(unsesed)}</h2>`
+		else
+			res += `<h2><i>${target}</i></h2>`
+		// Search for English match
+		if (data.en[target]) res += echoword("en", target, "match"), en_count++;
+		// Search for Solresol(Sesed) match
+		if (data.sr[unsesed]) res += echoword("sr", unsesed, "match"), sr_count++;
+		// Search for Solresol match
+		if (data.sr[target]) res += echoword("sr", target, "match"), sr_count++;
+		// Search English
+		if(target.length > 2) {
+			Object.keys(data.en).forEach((k) => {
+				if (k.includes(target) && k != target && en_count < 5)
+					res += echoword("en", k, " "), en_count++
+			}); }
+		// Search Solresol
+		if(target.length > 2) {
+			Object.keys(data.sr).forEach((k) => {
+				if (k.includes(target) && k != target && sr_count < 5)
+					res += echoword("sr", k, " "), sr_count++
+				if (k == unsesed && count < 5)
+					res += echoword("sr", k, " "), sr_count++
+			});
+		}
+		document.getElementById("result").innerHTML += res
+	}
+
+	function run_search(target) {
+		if (!target.length)
+			return
+		window.location.hash = target.replaceAll(" ", "+")
 		document.getElementById("search").value = target
 		document.getElementById("summary").innerHTML = ""
-		res.innerHTML = ""
-
-		if (target.length < 2)
-			return
-
-		// Unpack
-		/* if(!data.sr[target] && !data.en[target]) {
-			unsesed = unses(target)
-			if(unsesed && data.sr[unsesed])
-				target = unsesed
-		} */
-	
-		if(explode_srs(target))	
-			document.getElementById("summary").innerHTML = summarize(target)
-		else if(unsesed)
-			document.getElementById("summary").innerHTML = summarize(unsesed)
-
-		console.log(target)
-		// Search for English match
-		if (data.en[target]) res.innerHTML += echoword("en", target, "match")
-		// Search for Solresol(Sesed) match
-		if (data.sr[unsesed]) res.innerHTML += echoword("sr", unsesed, "match")
-		// Search for Solresol match
-		if (data.sr[target]) res.innerHTML += echoword("sr", target, "match")
-	
-		// Search English
-		Object.keys(data.en).forEach((k) => {
-			if (k.includes(target) && k != target && count < 40)
-				res.innerHTML += echoword("en", k, " "), count++
-
-		});
-		// Search Solresol
-		Object.keys(data.sr).forEach((k) => {
-			if (k.includes(target) && k != target && count < 40)
-				res.innerHTML += echoword("sr", k, " "), count++
-			if (k == unsesed && count < 40)
-				res.innerHTML += echoword("sr", k, " "), count++
-		});
-		
-		window.location.hash = target.replaceAll(" ", "+")
+		document.getElementById("result").innerHTML = ""
+		target.split(" ").forEach(search_term)
 	}
 </script>
 
@@ -284,6 +280,7 @@ In memory of Daniel Parson(1989-2023)
 	body ul { padding: 0px }
 	body ul li { list-style-type: none; padding:5px 10px; margin-bottom:1px; border-radius:2px; border-bottom:1px solid #d0c0df }
 	body hr { border: 0;clear: both;margin-bottom: 20px; }
+	body h2 i { font-family: serif; font-weight: normal }
 	body #form { border: 1px solid #d0c0df; display: inline-block; padding: 3px; border-radius: 3px;float: left; line-height: 30px;margin-right: 20px; }
 	body #search, body #button { text-transform: lowercase; padding:5px; border:0 }
 	body #search { text-transform: lowercase; padding: 5px; border: 0; background: none; }
@@ -304,6 +301,7 @@ In memory of Daniel Parson(1989-2023)
 	.c-sol { color: #00b2b0; }
 	.c-la { color: #0088bf; }
 	.c-si { color: #624579; }
+	.sesres { display: inline-block;background: white;border-radius: 3px;padding: 0px 3px; }
 	.sha { display:block; height: 41px;overflow: hidden;margin-right: -6px;margin-bottom: -1px;float: right;margin-top: -3px;}
 	.ses { background-size: contain;width: 26px;height: 60px;display: inline-block;margin-right: -7px;color: rgba(0,0,0,0); text-align:center; vertical-align:middle; position:relative; background-repeat:no-repeat}
 	.ses.do { background-image:url(media/ses_do.png); }

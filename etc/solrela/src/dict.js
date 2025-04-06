@@ -41,8 +41,8 @@ Misol	Well, well done, good
 Mila	Voila, behold, here is
 Misi	Good evening, good night
 Fado	What?, what is this?
-Fare	That, that one, those (people or things)
-Fami	This, this one, these (people or things)
+Fare	That, that one, those
+Fami	This, this one, these
 Fasol	Here, here is, this is
 Fala	Good, tasty, delectable, exquisite, delicious
 Fasi	Much, very, a lot, many (augmentative)
@@ -60,7 +60,7 @@ Lasol	Never
 Lasi	Of
 Sido	How
 Sire	Each, every
-Simi	Good morning/afternoon, hello
+Simi	Good morning, good afternoon, hello
 Sifa	Little, scarcely
 Sisol	Mister, sir
 Sila	Madame, Ms
@@ -115,7 +115,7 @@ Remisi	Inexplicable, indefinable, incomprehensible, inconceiveable, enigmatic
 Refado	Notability, significant, fame
 Refare	dignities, honors, honorary
 Refami	Displease, unpleasant, uncomfortable
-Refasol	Indelible (uneraseable)
+Refasol	Indelible, uneraseable
 Refala	Privilege, prerogative
 Refasi	Qualify, rights
 Resoldo	Doubt, skepticism, skeptical
@@ -153,7 +153,7 @@ Mifare	Please, like, pleasant, seductive
 Mifami	Sigh
 Mifasol	Raise, elevate, uplift, high
 Mifala	Desire, wish, want, desirous
-Mifasi	Incorrigible, unable to be corrected
+Mifasi	Incorrigible
 Misoldo	The Holy Spirit
 Misolre	The grace of God
 Misolmi	Sweetness, pleasantness, smooth, even-tempered
@@ -180,7 +180,7 @@ Fadola	Stamp, seal
 Fadosi	End, complete, finish, final, finally, termination, achieve
 Faredo	Contact, address, send a letter
 Faremi	Be, exist (auxiliary)
-Farefa	Go, proceed 
+Farefa	Go, proceed
 Faresol	Lengthen, extend, extension, elongation
 Farela	Mail, post, post office
 Faresi	Inexactitude, inaccuracy, inexact
@@ -193,7 +193,7 @@ Famisi	Carry, bring, portable
 Fasoldo	Cause, because of, due to
 Fasolre	Theism, deism, theist, belief in God
 Fasolmi	Malice, unkindness, ill will, disparaging, malignancy
-Fasolfa	Act, behave, conduct 
+Fasolfa	Act, behave, conduct
 Fasolla	Do, make, action, doable, commit
 Fasolsi	Prepare, make ready, preparation
 Falado	Have to (auxiliary)
@@ -205,7 +205,7 @@ Falasi	Trend, tendency, inclination to, disposition
 Fasido	Walk, step
 Fasire	Inquire, investigate
 Fasimi	Divorce, disown, repudiate, unmarry
-Fasifa	Want (to do something)
+Fasifa	Want, wanting to do
 Fasisol	Cry, weep, sob, tears
 Fasila	Decide, determine, resolve, decision, resolution
 Soldore	Copy, transcribe, transcription
@@ -228,7 +228,7 @@ Solmila	Remember, recollection, commemorate, memorial, souvenir
 Solmisi	Complicate, complication, make difficult
 Solfado	Neutral, neutrality
 Solfare	Delete, erase, cross out, strike out, efface
-Solfami	Lower, diminish, step down 
+Solfami	Lower, diminish, step down
 Solfasol	Intimidate, bully, to trouble
 Solfala	Let, allow
 Solfasi	Impatient, irritable, impatience, chafe
@@ -292,7 +292,7 @@ Sirefa	Accuracy, exactitude, punctuality, assiduity
 Siresol	Regular, symmetric, symmetry, correct
 Sirela	Attention, take care, contemplation, be careful
 Siresi	Apply, applied, studious, studiously
-Simido	Distinguish, differentiate, discern, difference, nuance, 
+Simido	Distinguish, differentiate, discern, difference, nuance,
 Simire	Explain, define, demonstrate, expound, definition, explanation
 Simifa	Meaning, significance
 Simisol	Simplify, make easy, simple, elementary
@@ -422,7 +422,7 @@ Dofasido	Prudence, caution, carefully, circumspection
 Dofasire	Predict, forecast, foresee, anticipate, foresight
 Dofasimi	Discretion, discrete, reserved
 Dofasifa	Consiousness, awareness, conscientous
-Dofasisol	Honesty, integrity, righteousness, integrity, rectitude, incorruptibility 
+Dofasisol	Honesty, integrity, righteousness, integrity, rectitude, incorruptibility
 Dofasila	Delicacy, tact, delicate, gently
 Dosoldore	Appeal, evoke
 Dosoldomi	Ask, request, demand
@@ -467,7 +467,7 @@ Doladosol	Cover (noun)
 Doladola	Table
 Doladosi	Tablecloth, napkin
 Dolaredo	Tableware, dishes, plate, dish, cup, vase
-Dolaremi	Fork; also slang: 'to be right'
+Dolaremi	Fork
 Dolarefa	Spoon, scoop, spoonful
 Dolaresol	Cup, glass, goblet, mug, beaker
 Dolarela	Bottle, jar, carafe, flask
@@ -540,7 +540,7 @@ Redorela	Shoes, boots, slippers
 Redoresi	Pants, knickers, breeches
 Redomido	Wash oneself, clean, lather, ablution, soap
 Redomire	Shave, razor
-Redomifa	Mirror, to be reflected, to look at oneself in a mirror
+Redomifa	Mirror, to be reflected, to look at oneself
 Redomisol	Comb oneself, comb
 Redomila	Decrease, subtract, deduct, mitigate, reduce, discounts, reduction
 Redomisi	Style hair, coif, hairdresser, wigmaker, wig
@@ -647,7 +647,7 @@ Resoldosol	Wallet, purse
 Resoldola	Contain, include, containing, capacity
 Resoldosi	Spend, expenditure, fees, disburse, liabilities, state of spending
 Resolredo	Master, boss
-Resolremi	Order, command, precept 
+Resolremi	Order, command, precept
 Resolrefa	Send, dispatch, sending, to ship, shipment
 Resolresol	Dismiss, leave, vacant, dismissal
 Resolrela	Develop, improve, development
@@ -663,7 +663,7 @@ Resolfare	Bathe, bath, bather
 Resolfami	Timidity, shy, apprehensive, fearful, tentative, timidly
 Resolfasol	Nudity, naked, bare, strip
 Resolfala	Mop, wipe, sponge
-Resolfasi	Rub, massage 
+Resolfasi	Rub, massage
 Resollado	To get tired, grow weary, fatigue, weariness, dejection, tired, overwhelmed, tiring
 Resollare	Undress
 Resollami	Lie down, stretch, lying down
@@ -681,7 +681,7 @@ Reladomi	Starch, stiffen, starched, stiffness
 Reladofa	Iron (v), ironing, ironer
 Reladosol	Wrinkle, crease, pleate, fold
 Reladola	Chains, shackles, irons
-Reladosi	Sharpen, whet, hone, 
+Reladosi	Sharpen, whet, hone,
 Relaredo	Crack, split, slot, crevasse, cracked
 Relaremi	Break, brittle, fragile, fragility
 Relarefa	Break, smash, brokenness, breaker, broken
@@ -705,14 +705,14 @@ Relasolre	Throw, launch
 Relasolmi	Find
 Relasolfa	Pick up, raise, lift, elevator
 Relasolla	Object (n)
-Relasolsi	Trifel, bagatelle, peccadillo, meticulous, minutiae 
+Relasolsi	Trifel, bagatelle, peccadillo, meticulous, minutiae
 Relasido	Fill, complete, filling, fullness, filled, full, packed, fully
 Relasire	Load, burden, cargo, loading
 Relasimi	Overflow, irruption, invasion
 Relasifa	West, western
 Relasisol	To block, to constrict, bottled, cork
 Relasila	Enclose, confine, contain, inclusion, confined, withdrawn, included, inclusive, enclosed
-Residore	Race (of people/things), lineage, strain (same sense as race), breed (n)
+Residore	Race , lineage, strain, breed
 Residomi	Genealogy, genealogist, genealogical
 Residofa	Ancestors, predecessors, sires
 Residosol	Family, consanguinity, kinship, relative
@@ -756,7 +756,7 @@ Midorela	Clear
 Midoresi	Disperse, scatter, disseminate, strew, sprinkle, dispersion
 Midomido	Equip, endow, provide
 Midomire	Deposit, drop off
-Midomifa	Bequeath, to leave something for someone, testament
+Midomifa	Bequeath, to leave something behind, testament
 Midomisol	Inherit, heritage, heir, heiress, recipient
 Midomila	Lack, miss, destitution, shortage, gap, famine, dearth, devoid, lacking, without
 Midomisi	Have, possess, possession, property, asset
@@ -772,7 +772,7 @@ Midosolmi	Worry, concern, anxiety, alarm, anxious
 Midosolfa	Complain, groan, whine, murmur, complaint, lamentation
 Midosolla	Destiny, fate, predestination, destined
 Midosolsi	Fatalism, fatalist, inevitably
-Midolado	Refuse, reject, repel, exclude, dismiss, rejection, refusal, exclusion, rejectable, unacceptable 
+Midolado	Refuse, reject, repel, exclude, dismiss, rejection, refusal, exclusion, rejectable, unacceptable
 Midolare	Intervene, intercede, mediate, intervention, intercession, mediation, mediator, intercessor
 Midolami	Influence, influential
 Midolafa	Reconcile, conciliation, conciliator, conciliatory, reconcilable, accommodative
@@ -834,7 +834,7 @@ Mifarela	Become arrogant, arrogance, pride, haughtiness, arrogant, proud, imperi
 Mifaresi	Pride oneself, boast, presumption, pride, proud, presumptuous
 Mifamido	Susceptibility, susceptible
 Mifamire	Mediocrity, mediocre, poor, common, regular
-Mifamifa	Laze, loiter, idle, laziness, dawdling, indolence, idleness, inactivity, lazy, loafer, nonchalant, inactive 
+Mifamifa	Laze, loiter, idle, laziness, dawdling, indolence, idleness, inactivity, lazy, loafer, nonchalant, inactive
 Mifamisol	Neglect, omit, negligence, omission, negligent, negligently
 Mifamila	Sensuality, intemperance, sensual, voluptuous, carnal
 Mifamisi	Gluttony, greedy, glutton, "pig", greedily
@@ -875,7 +875,7 @@ Misolmisol	Watch, look, glance
 Misolmila	Converse, gossip, chat, conversation, dialogue, conversationalist
 Misolmisi	Answer, reply, respond, refute, response, refutation
 Misolfado	To become ugly, ugliness, hideous, unattractive
-Misolfare	Attitude, poise, posture 
+Misolfare	Attitude, poise, posture
 Misolfami	Turn (v.), pace (v.)
 Misolfasol	Propriety, appropriateness, decency, proper, seemly, presentable
 Misolfala	In good taste, good manners, distinction, distinguished
@@ -908,7 +908,7 @@ Milamido	Talk nonsense, ramble, rave, unreason, rambling, extravagance, illogica
 Milamire	Secret, mystery, mysterious, secretly, in secret, mysteriously
 Milamifa	Confidential, confidence, confidant, confidentially
 Milamisol	Snoop around, curiosity, curious, curiously
-Milamila	Guess, to divine, diviner, guessable 
+Milamila	Guess, to divine, diviner, guessable
 Milamisi	Disclose, divulge, reveal, disclosure, unveiling, revelation, discloser, revealer
 Milafado	Insensitivity, apathy, insensitive, apathetic
 Milafare	Indifference, indifferent, carefree, unconcerned, indifferently
@@ -959,7 +959,7 @@ Misisolfa	Persuade, convince, persuation, persuasive, persuaded, convinced
 Misisolla	Believe, imagine, credulity, credulous
 Misisolsi	Certainty, surety, infallibility, authenticity, sure, infallible, indubitable, irrifutable, positive, certain, undoubtedly, surely, positively
 Misilado	Sleight of hand, prestidigitation, conjure, conjuror, magician
-Misilare	Phantasmagoria, ghost, spectrum, specter, phantom, 
+Misilare	Phantasmagoria, ghost, spectrum, specter, phantom,
 Misilami	Transform, transmute, transformation, transfigure, transmutation, transmutable
 Misilafa	Bewitch, cast a spell on someone, sorcery, witchcraft, sorcerer, magician, enchanting, magic
 Misilasol	Partner, accomplice
@@ -976,7 +976,7 @@ Fadomifa	To be engulfed, pit, chasm, abyss, precipice
 Fadomisol	Rock, rocky
 Fadomila	Dry, arid, drought, sterile, infertile, unsuccessful
 Fadomisi	Desert, deserted, uninhabited
-Fadofado	Isolate, put away, seclude, isolation, loneliness, isolated, lonely, solitary, alone 
+Fadofado	Isolate, put away, seclude, isolation, loneliness, isolated, lonely, solitary, alone
 Fadofare	Take refuge, withdraw, retire, refuge, asylum, reclusion, recluse
 Fadofami	Park, grove, the woods, forest, forestry
 Fadofasol	Tree, shrub, bush
@@ -1041,11 +1041,11 @@ Famidomi	Soldier, corporal, brigadier, sergeant, sergeant major, warrant officer
 Famidofa	Uniform
 Famidosol	Equipment, pouch, belt, shoulder strap, harness, knapsack, backpack
 Famidola	To arm, arms, weapons, weapon maker, armor
-Famidosi	To increase gradually (graduate), grade, degree, rank, gradual, gradually
+Famidosi	graduate, grade, degree, rank, gradual, gradually
 Famiredo	Staff, employees
 Famiremi	Officer, lieutenant, captain, major, battalion chief
 Famirefa	Colonel
-Famiresol	"Aide-de-camp", Camp assistant, "A military officer acting as a confidential assistant to a senior officer"
+Famiresol	Aide-de-camp, Camp assistant
 Famirela	General, generalship, brigadier general, division general, generalissimo
 Famiresi	Marshal
 Famifado	Vice, vicious, viciously
@@ -1053,7 +1053,7 @@ Famifare	Army, troops
 Famifami	Activity, vigilance, active, vigilant, alert, actively
 Famifasol	Brigade, division
 Famifala	Regiment, legion, battalion, squadron, company
-Famifasi	Zouaves, Spahis (both are members of infantry/cavalry in France) 
+Famifasi	Zouaves, Spahis
 Famisoldo	To kill, to "off", killed
 Famisolre	Infantry, rifleman, infantryman, grenadier, "outfielder"
 Famisolmi	Cavalry, cavalryman
@@ -1070,7 +1070,7 @@ Famisido	Firearms, musketry (musketeer)
 Famisire	Bomb, cannon, mortar
 Famisimi	Percussion, drums
 Famisifa	Shoot, rifle, shooting, discharge
-Famisisol	Translation issues, but I'm guessing: a synchronized firing of guns
+Famisisol	??
 Famisila	Pistol, handgun
 Fasoldore	Gunpowder
 Fasoldomi	Cartrige, (capsule)
@@ -1105,7 +1105,7 @@ Fasollasi	Boat, skiff
 Fasolsido	Mast, foremast
 Fasolsire	Sail (n.)
 Fasolsimi	Rudder
-Fasolsifa	To pilot (presumably a ship), mariner, pilot, boatman
+Fasolsifa	To pilot, mariner, pilot, boatman
 Fasolsisol	Marine crew, sailor
 Fasolsila	Admirality, admiral, vice-admiral, contre-admiral
 Faladore	To navigate, navigation, navigator, navigable
@@ -1173,7 +1173,7 @@ Fasisolre	To run through, route
 Fasisolmi	Direct, express, directly, in a straight line
 Fasisolfa	Road, trail, way
 Fasisolla	Stop, to park, station, respite, truce, stationary
-Fasisolsi	Bifurcate (divide into two branches/forks), branch, bifurcation
+Fasisolsi	Bifurcate, fork, branch, bifurcation
 Fasilado	South, southern, meridian
 Fasilare	East, eastern, Orient, the East, Oriental
 Fasilami	The four cardinal points, points of the compass
@@ -1204,7 +1204,7 @@ Soldosolmi	Role, character, person whom one represents
 Soldosolfa	Masterpiece, master stroke
 Soldosolla	Effect, sensation
 Soldosolsi	Succeed, success, good luck, successful
-Soldolado	Dilettantism, dilettante (a person with an amateur interest in the arts), amateur
+Soldolado	Dilettantism, dilettante, amateur
 Soldolare	Place (v.), situate, place, spot, position
 Soldolami	Audience of theater
 Soldolafa	Theater box
@@ -1214,7 +1214,7 @@ Soldosido	Orchestrate, instrumentation, orchestra
 Soldosire	Instrument, instrumentalist, instrumental
 Soldosimi	Violin, viola, violinist
 Soldosifa	Cello, bass, cellist, contra-bass
-Soldosisol	Bow (n.) (of a violin etc.)
+Soldosisol	Bow of a violin
 Soldosila	Strings
 Solredore	Harp, harpist
 Solredomi	Flute, flutist
@@ -1231,7 +1231,7 @@ Solremisi	Soprano, Mezzo-soprano, mezzo-contralto, contralto
 Solrefado	Vocalize, vocalization, vocalized
 Solrefare	Agility, quickness, dexterity, nimbleness, agile, nimble, quickly, nimbly, swiftly, lightly
 Solrefami	To make flexible, flexible, flexibility, versatility, maneuverability, supple
-Solrefasol	To get to know (as in refinement?), taste (aesthetic et. al.), sense of beauty, refinement, aesthetics, connoisseur, refined, tasteful, tastefully
+Solrefasol	To get to know, taste, sense of beauty, refinement, aesthetics, connoisseur, refined, tasteful, tastefully
 Solrefala	Talent
 Solrefasi	Perfect (v.), improve, develop, enhance, improvement, development, improved, perfected, perfectible, perfectibility
 Solresoldo	Idleness, leisure, unoccupied, idle, aimless, at leisure
@@ -1243,7 +1243,7 @@ Solresolsi	Symbolize, figure, symbol, allegory, symbolism, emblem, figurative, s
 Solrelado	Surprise, amaze, astonish, astound, marvel, amazing, surprising, unimaginable, striking, stunning, extraordinary, exceptional, surprisingly, extraordinarily, exceptionally
 Solrelare	Wonder, marvel, be struck by, stupefaction, surprised, amazed, stunned, struck, shocked
 Solrelami	Fascinate, mesmerize, enchant, delight, excite, inspire, fascination, prestige, fascinating
-Solrelafa	Feel, experience, to start (with surprise etc.), impression, feeling, emotion, stir, thrill, impressed, moved, affected, shuddering, trembling
+Solrelafa	Feel, experience, to start with surprise, impression, feeling, emotion, stir, thrill, impressed, moved, affected, shuddering, trembling
 Solrelasol	To get excited, get enthusiastic, enthusiasm, excitement, enthusiastic, excited
 Solrelasi	Irresistible, irresistibly
 Solresido	Captivate, enthrall, fascinate, subjugate, submit
@@ -1253,8 +1253,8 @@ Solresifa	Interrupt, suspend, pause, interruption, suspension, interrupter, susp
 Solresisol	Approve, endorse, sanction, ratify, approval, endorsement, vote, sanction, ratification, approving, approvingly
 Solresila	Unanimous, by all, universal, unianimously
 Solmidore	Compete, Rivalry, competition, rival, competitor
-Solmidomi	Emulate, try to outdo (through imitation), emulator
-Solmidofa	Become animated, come to life, get worked up be filled with enthusiasm, animation, verve, spirit, nerve, animated, inflamed, excited
+Solmidomi	Emulate, try to imitate, emulator
+Solmidofa	Become animated, come to life, get worked up, be filled with enthusiasm, animation, verve, spirit, nerve, animated, inflamed, excited
 Solmidosol	Excel, excellence, excellent, most excellent, for excellence, excellently
 Solmidola	Shine, dazzle, sparkle, burst, flash, glitter, brilliant, bright, dazzling, blinding, stunning, brilliantly, stunningly, brightly, superbly
 Solmidosi	Surpass, eclipse, overshadow, outweigh, prevail, take precedence over, dominate, exceed
@@ -1263,13 +1263,13 @@ Solmiremi	Tuning fork
 Solmirefa	Tone, tonality, tonic
 Solmiresol	Sharp (as in music, "C Sharp")
 Solmirela	Flat (as in music, "B Flat")
-Solmiresi	Natural (as in music), diatonic (using only the notes proper to the key without alteration)
+Solmiresi	Natural (as in music), diatonic
 Solmifado	Misconduct, immorality
 Solmifare	Half step (Leading tone?)
 Solmifami	Interval, gap
 Solmifasol	Interval of a tone, semitone, half step
 Solmifala	Major key, major mode
-Solmifasi	Dominant, sub-dominant 
+Solmifasi	Dominant, sub-dominant
 Solmisoldo	To compose, composition, composer, maestro
 Solmisolre	Music, musician, musical, musically
 Solmisolmi	Note, whole note, half note, quarter note
@@ -1289,20 +1289,20 @@ Solmisifa	Immobility, immobile
 Solmisisol	Theory, theorist, theoretician theoretical
 Solmisila	Problem, issue, challenge, touble, problematic
 Solfadore	Philotechnic?
-Solfadomi	Philharmonic, philharmonic society (Devoted to music)
+Solfadomi	Philharmonic, philharmonic society
 Solfadofa	Choirmaster
 Solfadosol	Choir, singer, choir member, chorus, in chorus
-Solfadola	Choral society, a member of a choral society
-Solfadosi	Cantata ("A medium-length narrative or descriptive piece of music with vocal solos and usually a chorus and orchestra")
+Solfadola	Choral society, a choral society member
+Solfadosi	Cantata
 Solfaredo	Concerto
-Solfaremi	Cavatina ("A short operatic aria in simple style without repeated sections")
+Solfaremi	Cavatina
 Solfarefa	Solo, duo, trio, quartet, quintet
-Solfaresol	Portamento ("A slide from one note to another, esp. in singing or playing a stringed instrument" "this as a technique or style")
+Solfaresol	Portamento
 Solfarela	Trill, cadence
 Solfaresi	Fermata, pause
 Solfamido	To grow old, decline, be on the decline, old age, decay, decrepitude, old man, old person, old age, decrepit
 Solfamire	Scale, musical scale
-Solfamifa	To sing using the "sol-fa" system, solfège, vocal music
+Solfamifa	solfège, vocal music
 Solfamisol	Quaver, eighth note, sixteenth note, thirty-second note, sixty-fourth note
 Solfamila	Syncopate, syncopation
 Solfamisi	Rhythm, measure, rhythmic, rhythmical
@@ -1323,7 +1323,7 @@ Solfasire	Drum, drumming, bass drum
 Solfasimi	Resonate, resound, vibrate, sound, resonance, echo, resounding
 Solfasifa	Whistle
 Solfasisol	Castanets, tambourine, cymbal
-Solfasila	Barrel organ ("A mechanical musical instrument from which predetermined music is produced by turning a handle, played, esp. in former times, by street musicians")
+Solfasila	Barrel organ
 Solladore	Museum, gallery
 Solladomi	Picture, painting, print, engraving, frame
 Solladofa	Sketch, outline, draft
@@ -1332,24 +1332,24 @@ Solladola	Paint, painting, painter, color, shade
 Solladosi	Miniature
 Sollaredo	Watercolor
 Sollaremi	Pastel
-Sollarefa	Gouache, guache (A type of paint; heavy and opaque)
-Sollaresol	Fresco (Watercolor done on wet plaster on a wall or ceiling, so the colors penetrate the plaster and become fixed)
+Sollarefa	Gouache, guache, thick paint
+Sollaresol	Fresco, watercolor on plaster, wallpainting
 Sollarela	Palette
 Sollaresi	Brush, paintbrush
-Sollamido	To create a model, to shape, modelling, model (preliminary sculpture)
+Sollamido	To create a model, to shape, modelling, model, preliminary sculpture
 Sollamire	To mold, to cast in a mold, moulder, molder
 Sollamifa	Sculpt, carve, sculpture, carving, sculptor, carver
 Sollamisol	Statue, bust, torso, statuary
 Sollamila	Pedestal, base
-Sollamisi	Relief (A type of sculpture that is partially three-dimensional, carved in a two-dimensional surface and partially extending out or sinking in)
-Sollafado	Daguerreotype, Daguerre (An old photographic process using iodine sensitivised silvered plates and mercury vapor)
+Sollamisi	Relief, carving
+Sollafado	Daguerreotype, Daguerre
 Sollafare	Photograph, photograph, photographic
 Sollafami	Reproduce, reflect, reproduction, reflection, reflectivity, reflexivity, reflector
 Sollafasol	Portrait, image, picture, likeness, portrait painter
 Sollafala	Resemble, like, similarity, resemblance, likeness, analogy, relation, homogeneity, similar, homogeneous
 Sollafasi	Conformity, identity, conforms, similar, same, identical, in accordance, the same as, such as, similarly, likewise
 Sollasoldo	Stenography, shorthand, stenographer, stenographic, calligraphy
-Sollasolre	Lithography, lithographer, lithographical (a method of printing)
+Sollasolre	Lithography, lithographer, lithographical
 Sollasolmi	Engrave, engraving, engraver
 Sollasolfa	To chisel, engrave, chisel
 Sollasolla	Compass
@@ -1357,7 +1357,7 @@ Sollasolsi	Adjust, specify, to tune (an instrument), accuracy, precision, conson
 Sollasido	Academy, academician, academic
 Sollasire	To know, knowledge, science, education, instruction, scholarship, savant, educated, enlightened, erudite, scholar, literate, learned, wisely, knowingly, learnedly, eruditely
 Sollasimi	Institute, institution, school
-Sollasifa	Baccalaureat - A French examination taken at 17 or 18; a person who has passed this exam
+Sollasifa	Baccalaureat
 Sollasisol	Encyclopedia, encyclopedist, encyclopedic
 Sollasila	Mathematics, mathematician, mathematical, mathematically
 Solsidore	Literature, belles lettres, writer, literary person, literary
@@ -1385,11 +1385,11 @@ Solsifasol	Invent, create, invention, creation, inventor, creator, inventive
 Solsifala	Discover, discovery
 Solsifasi	Innovate, innovation, newness, novelty, innovative, innovator, new, modern, recent, newly, recently, modernly, lately
 Solsisoldo	Fight against, fight, enter the fray, fight (n), moral combat, fighter, wrestler
-Solsisolre	Propagate, popularize, to make something come into general use, disseminate, spread, propaganda, popularization, propagator, popularizer
+Solsisolre	Propagate, popularize, disseminate, spread, propaganda, popularization, propagator, popularizer
 Solsisolmi	Popularity, popular, accredited, popularly
 Solsisolfa	Reputation, fame, repute, reputation, famous, renowned, reputed, famed
 Solsisolla	To distinguish oneself, demonstration, celebrity, illustrious, famous, famous people
-Solsisolsi	Glory, glorious, that which has gained glory, gloriously, with glory
+Solsisolsi	Glory, glorious, gloriously, with glory
 Solsilado	Telegraph, telegraphic, telegraphically
 Solsilare	Electricity, electric
 Solsilami	Telephony, telephone, telephonic, by telephone
@@ -1402,7 +1402,7 @@ Ladorefa	Material, substance, materiality, materials, materially
 Ladoresol	Produce, production, product, producer
 Ladorela	To sell, sale, seller
 Ladoresi	Wholesale, in bulk
-Ladomido	Establish, institute, erect, found, establishment, foundation, erection, institution, founder 
+Ladomido	Establish, institute, erect, found, establishment, foundation, erection, institution, founder
 Ladomire	Shop, store, boutique, shopkeeper
 Ladomifa	Workshop, studio, foreman, workshop leader
 Ladomisol	Tarnish, become dull, dull, dim, matte
@@ -1422,7 +1422,7 @@ Ladosolla	Canvas, cretonne, chintz, batiste, cambric
 Ladosolsi	Cotton, calico, percale, jaconet
 Ladolado	Muslin, organdy, tarlatan, gauze, (Pancake?? (Crêpe))
 Ladolare	Wool, flannel, merino, cashmere
-Ladolami	Sheet, draper (someone who makes cloth?)
+Ladolami	Sheet, draper, clothmaker
 Ladolafa	Silk, silk industry, silky
 Ladolasol	Satin, like satin
 Ladolasi	Velvet, velvety
@@ -1460,7 +1460,7 @@ Larelado	Accounting, bookkeeping, cashier, teller, counter, box, office
 Larelare	Count, counting, enumerate, list, account, enumeration, counter
 Larelami	Calculate, calculation, arithmetic, algebra, calculator, arithmetician, algebraic, arithmetically, algrebraically
 Larelafa	Quantify, number, numbering, figure, numerical, numeral
-Larelasol	Combine, coordinate, combination, coordination, combined, coordinated 
+Larelasol	Combine, coordinate, combination, coordination, combined, coordinated
 Larelasi	Nomenclature, list, collection, catalog, nomenclator
 Laresido	Assess, appraise, esteem, evaluation, estimate, price
 Laresire	Worth, cost, value, valuable, valuably
@@ -1488,7 +1488,7 @@ Lamifala	Dividend
 Lamifasi	Sort, class, rank, categorize, ranking, classification, classifier
 Lamisoldo	Become due, expire, deadline, expiration, term
 Lamisolre	Cease, discontinue, termination, cessation, discontinuation, discontinued
-Lamisolmi	Liquidate (convert assets into cash), liquidation, liquidator
+Lamisolmi	Liquidate, liquidation, liquidator, asset to cash
 Lamisolfa	The rest, remaining, residue
 Lamisolla	To shrink, tighten, narrow, shrinking
 Lamisolsi	Totality, total, entire, all, the amount, full, complete, totally, in total
@@ -1504,7 +1504,7 @@ Lamisimi	Disobey, disobedience, insubordination, rebellion, disobedient, rebelli
 Lamisifa	Result, occur, arise, result, consequence, consequently, as a result, accordingly, in consequence, therefore, because of this
 Lamisisol	Balance sheet, toll, assessment, report
 Lamisila	Budget, statistical, budget of things
-Lafadore	Bankrupt certificate ? Concordat ? Legal settlement ?
+Lafadore	Bankrupt, settlement
 Lafadomi	Add, addition, additional
 Lafadofa	Subtract, subtraction
 Lafadosol	Multiply, multiplier, multiplication, multiple, multipliable
@@ -1525,14 +1525,14 @@ Lafamisi	Endorse, endorsement, endorser
 Lafasoldo	Currency, money, cash, monetary
 Lafasolre	Gold, gold coin
 Lafasolmi	Bad manners, vulgarity, common, banal, trivial, improper, inappropriate, trivially
-Lafasolfa	Silver, silver coin, silver piece, piece of silver, argentiferous (containing silver)
+Lafasolfa	Silver, silver coin, silver piece, piece of silver, argentiferous, silvermade
 Lafasolla	Franc
 Lafasolsi	Centime
 Lafalado	Measure, gauge, measurement, measurable, measurer, gauger
 Lafalare	Proportion, calibrate, size, proportion, calibration, proportionate, proportional, proportionally
 Lafalami	Geometry, geometric, geometrical, geometrically
 Lafalafa	Liter
-Lafalasol	Unit of measurement - 100 square meters
+Lafalasol	Unit of measurement, 100 square meters
 Lafalasi	Survey, acre, surveyor
 Lafasido	Balance, counterbalance
 Lafasire	Weigh, weight, weighing
@@ -1566,7 +1566,7 @@ Lasolfala	Patent, certificate of competency, certificate of invention
 Lasolfasi	Patent, patented
 Lasollado	Business, businessman, business woman, business agent
 Lasollare	Except (v.), exception, exceptional, exceptionally, except, except for, besides
-Lasollami	Solvency, solvent (able to pay one's debts)
+Lasollami	Solvency, solvent, able to pay one's debts
 Lasollafa	Guarantee, insure, guarantee, insurance
 Lasollasol	Pack, packaging, packer
 Lasollasi	Export, exportation, exporter
@@ -1591,7 +1591,7 @@ Lasiresi	Crochet, crochet hook
 Lasimido	Cowardice, coward, without courage, cowardly
 Lasimire	Amass, accumulate, pile, stack, heap, accumulation, mass
 Lasimifa	Encumber, congest, congestion, hinder, hindrance
-Lasimisol	Haberdashery, vendor of sewing materials and clothing
+Lasimisol	Haberdashery, sewing materials vendor
 Lasimila	Ball of thread, (Pincushion?)
 Lasimisi	Skein
 Lasifado	Indelicacy, indelicate, incelicately
@@ -1601,8 +1601,8 @@ Lasifasol	Doll, dolls
 Lasifala	Puppets, marionettes, puppet
 Lasifasi	Lottery
 Lasisoldo	Roam, wander, go here and there, adventurer, vagabond
-Lasisolre	Charlatan, claim that one does something well (that one doesn't actually do well), boast, brag, boasting, bragging, charlatanry, boastful, braggart, imposter
-Lasisolmi	Bribe, venal (motivated by bribes), mercenary (primarily concerned with making money at the expense of ethics)
+Lasisolre	Charlatan, boast, brag, boasting, bragging, charlatanry, boastful, braggart, imposter
+Lasisolmi	Bribe, venal, mercenary
 Lasisolfa	Make a fake, false, forger
 Lasisolla	Have prejudice, be detrimental to, injure, damage, wrong, detriment, disadvantage, detrimental, damaging, disadvantageous
 Lasisolsi	Go bankrupt, bankruptcy, bankrupt
@@ -1694,7 +1694,7 @@ Simiredo	Adopt, adoption, adoptive, for adoption, adoptable
 Simiremi	Indemnify, indemnity, (compensate)
 Simirefa	Compensate, compensation, make up for
 Simiresol	Reward, recompense, remunerate, remuneration, payment, remunerative, rewarding
-Simirela	Pension, pensioned, (regular payment made to someone who no longer works or to a royal favorite or artist or scholar to enable them to continue work that is of public interest/value)
+Simirela	Pension, pensioned
 Simiresi	Retire, retirement, retired
 Simifado	Manage, administer, direct, administration, management, direction, leadership, administrator, director, manager, administrative, administratively
 Simifare	Stewardship, superintendence, steward, superintendent
@@ -1747,12 +1747,12 @@ Sifasolsi	Gather, assemble, bunch up, rally, crowd, multitude, crowds
 Sifalado	Pass, passing
 Sifalare	Meet, come across, meeting, consultation
 Sifalami	Recognize someone, aknowledge, show gratitude, recognizable
-Sifalafa	Rendezvous, a meeting at an agreed time and place (typically between two people)
+Sifalafa	Rendezvous, a meeting place, a meeting time
 Sifalasol	Difference, dissimilarity, disparity, different, dissimilar, diverse, heterogeneous, differently, diversely, in a different way, otherwise
-Sifalasi	Club, "circle", club members
+Sifalasi	Club, circle, club members
 Sifasido	Casino
 Sifasire	Play, play a game, game
-Sifasimi	Billiards, pool, ball, pool ball, skittles (a bowling game in Europe)
+Sifasimi	Billiards, pool, ball, pool ball, bowling
 Sifasifa	Cards, playing cards
 Sifasisol	Age, antiquity, antiques, old antique, gothic, ancient, anciently, formerly, once, long ago
 Sifasila	Chess, checkers, dominos, lotto, chip (poker?), card
@@ -1766,7 +1766,7 @@ Sisolredo	Lower, drop, decrease, low
 Sisolremi	Annuity, income, revenue, annuitant
 Sisolrefa	Coupons
 Sisolresol	Shares, shareholder
-Sisolrela	Bonds (e.g. of Railway and other companies)
+Sisolrela	Bonds
 Sisolresi	Increase, bull, high, top
 Sisolmido	Treasury, the finances
 Sisolmire	Finance, financial
@@ -1962,7 +1962,7 @@ Domimire	Procession
 Domimifa	Mass, Grand mass
 Domimisol	Vesper, vespers, compline (evening prayer)
 Domimila	The Salvation
-Domimisi	Angelus (A Catholic devotion commemorating the Incarnation of Jesus (including the Hail Mary), said at morning, noon, and sunset)
+Domimisi	Angelus
 Dofafado	Easter
 Dofafare	Ascension, the Feast of Ascension
 Dofafami	Pentecost
@@ -1973,13 +1973,13 @@ Dosolsoldo	Sacrament, sacramental
 Dosolsolre	Baptize, baptismal font, baptism, baptismal
 Dosolsolmi	Take Communion, approach the Holy Table, the Holy Sacrament, the Eucharist, Communion, sacrament, Last Supper, Eucharistique
 Dosolsolfa	Wafer, the bread of Communion
-Dosolsolla	Confirm, confirmation (the rite at which a person affirms belief and is admitted as a full member of the church)
-Dosolsolsi	Extreme Unction (anointing the sick, esp. when administered to the dying), the Holy Oils
-Dolalado	Litany, litanies (a "call and response" recital in church services or processions)
+Dosolsolla	Confirm beliefs, confirmation rite
+Dosolsolsi	Extreme Unction, the Holy Oils
+Dolalado	Litany, litanies
 Dolalare	To say Psalms, to chant Psalms, psalmody, psalmist, psalm, canticle
-Dolalami	Plainchant, plainsong (Unaccompanied church music sung in unison, taken from the liturgy)
+Dolalami	Plainchant, plainsong
 Dolalafa	Lectern, "easel"
-Dolalasol	Master, Choirboy 
+Dolalasol	Master, Choirboy
 Dolalasi	Cense, incense, censer
 Dosisido	Seminar, seminarian
 Dosisire	Novitiate, novice
@@ -1990,8 +1990,8 @@ Dosisila	Parishioner, Book of Hours, breviary, missal
 Doredodo	Jesuitism, Jesuit, Jesuitical
 Doremimi	Congregation, congregational
 Dorefafa	Canon, canonical
-Doresolsol	Carthusian, Carthusian Monk (A monk or nun of an "austere contemplative" order founded by St. Bruno in 1084)
-Dorelala	A religious person, monk, capuchin (a friar belonging to a branch of the Franciscan order), trappist
+Doresolsol	Carthusian, Carthusian Monk
+Dorelala	A religious person, monk, capuchin, trappist
 Doresisi	Beg, begging, mendicity, beggar, mendicant
 Domidodo	Mortify oneself, macerate oneself, torment oneself, martyr oneself, mortification, maceration, austerity, austere, austerely
 Domirere	Cilice, hairshirt, haircloth, discipline
@@ -2046,7 +2046,7 @@ Reresolre	Barrack, barracks
 Reresolmi	Be garrisoned, be stationed, garrison
 Reresolfa	Terrace, plateau, estrade, esplanade
 Reresolla	Tower, turret, minaret, donjon, kiosk
-Reresolsi	Crenellate (provide a wall of a building with battlements), notch, slot, window, battlements, slit, gap
+Reresolsi	Crenellate, notch, slot, window, battlements, slit, gap
 Rerelado	Dome, cupola
 Rerelare	Top, summit, peak, apex
 Rerelami	Attic, garret, mansard, attic room
@@ -2113,7 +2113,7 @@ Refamimi	Farrier, shoer, shoeing
 Refasolsol	Horseshoe
 Refalala	Anvil
 Refasisi	Clamp, vise
-Resoldodo	Tighten, press, clench, condense, squeezing, pressure, squeeze, condensation, compactness, density, tight, pressed, squeezed, solid, compact, dense 
+Resoldodo	Tighten, press, clench, condense, squeezing, pressure, squeeze, condensation, compactness, density, tight, pressed, squeezed, solid, compact, dense
 Resolrere	Pliers
 Resolmimi	Pinch, pinching
 Resolfafa	Hammer (v.), hammer (n.), mallet, hammerman
@@ -2136,7 +2136,7 @@ Mimidomi	However, yet, nevertheless
 Mimidofa	Given that, considering that, whereas
 Mimidosol	If, on the condition that, provided that, provided
 Mimidola	While, whilst, when, as, at the same time, during the time that
-Mimidosi	Up till, until, till, up to, down to, to the point of, even 
+Mimidosi	Up till, until, till, up to, down to, to the point of, even
 Mimiredo	Under, beneath, below, underneath
 Mimiremi	As, like, alike, such as
 Mimirefa	Join, junction, adherence, adhesion, joint, adherent, contiguous, joining, connecting, adjoining, close to, beside, near, against
@@ -2162,7 +2162,7 @@ Mimilafa	Some time after
 Mimilasol	Occasionally, from time to time, sometimes, every now and then, once in a while, at times
 Mimilasi	At each moment, from one moment to another
 Mimisido	Early, earlier
-Mimisire	Very soon, in an instant (translation guess)
+Mimisire	Very soon, instantly
 Mimisimi	Now
 Mimisifa	Soon, in a little, shortly, in the near future
 Mimisisol	Immediately, as soon as
@@ -2227,12 +2227,12 @@ Misolmimi	In all respects, in every respect, by every measure
 Misolfafa	On the occasion of, about, concerning
 Misollala	In consideration of, in comparison, given that, considering that
 Misolsisi	In the meantime
-Miladodo	To what extent? To what degree?
+Miladodo	To what extent?, To what degree?
 Milarere	Well?
-Milamimi	When to take place? When was (with a sign of the past)?
+Milamimi	When to take place?, When was that?
 Milafafa	When did this happen?
 Milasolsol	What do you say?
-Milasisi	What has happened? What happened? What's new?
+Milasisi	What has happened?, What happened?, What's new?
 Misidodo	First, firstly, primarily, first of all
 Misirere	Who is it? Who goes there?
 Misimimi	More (such as cessation of action)
@@ -2249,9 +2249,9 @@ Fafaredo	Prescribe, prescription
 Fafaremi	Measure out, dose, portion of, part of, lot
 Fafarefa	Pill
 Fafaresol	Pharmacie, drugstore, pharmacist, apothecary, druggist, pharmaceutical
-Fafarela	Allopathy (treatment of disease by conventional means, i.e. w/ drugs having opposite effects of symptoms), allopathic
+Fafarela	Allopathy, allopathic
 Fafaresi	Homeopathy, homeopath, homeopathic
-Fafamido	[verb form (botanise?)], Herbalism, herbalist, herbs
+Fafamido	Herbalism, herbalist, herbs
 Fafamire	Medicate, drug (v.), medicine, drug (n.), medicinal
 Fafamifa	Remedy (v.), correct, obviate, remedy (n.), remediable
 Fafamisol	React, reaction, reactionary, reactive
@@ -2260,7 +2260,7 @@ Fafamisi	Ointment
 Fafasoldo	Pomade
 Fafasolre	Lard
 Fafasolmi	To grease, to oil, grease, oil, oiliness, greasy, oily, unctuous
-Fafasolfa	Poultice, cataplasm, compress (noun; a cloth pad)
+Fafasolfa	Poultice, cataplasm, compress, a cloth pad
 Fafasolla	Flaxseed, linseed
 Fafasolsi	Thicken (of a liquid), clot, coagulate, congeal, curdle, thickening, coagulation, congealing, curdled, thick, coagulated, congealed
 Fafalado	Water down, add water to, dilute, diluting
@@ -2296,7 +2296,7 @@ Famimisi	Effectiveness, effective, wholesome, effectively
 Fasolsoldo	Fatten, become fat, overweight, fat, chubby, plump, pudgy, rotund
 Fasolsolre	Freshness, fresh, new, freshly, newly
 Fasolsolmi	Digest, digestion, digestive
-Fasolsolfa	Sneeze, sneezing, sternutatory (causing sneezing)
+Fasolsolfa	Sneeze, sneezing, sternutatory, causing sneezing
 Fasolsolla	Blow one's nose, handkerchief
 Fasolsolsi	Yawn, yawning
 Falalado	Make hoarse, hoarseness, loss of voice, aphonia, hoarse
@@ -2310,7 +2310,7 @@ Fasisire	Pleurisy, inflammation of the lungs, pleuritic
 Fasisimi	Laryngitis, bronchitis, larynx, bronchi
 Fasisifa	Tonsilitis, tonsils, angina, membranous angina
 Fasisisol	Gland, glandular
-Fasisila	Goiter, goitrous (a swelling in the back of the neck from enlargement of the thyroid gland)
+Fasisila	Goiter, goitrous
 Fadorere	Infuse, macerate, infusion, maceration
 Fadomimi	Gargle
 Fadofafa	Swallow, gulp
@@ -2383,7 +2383,7 @@ Solsolsimi	Apoplexy, stroke, apoplectic
 Solsolsifa	Hemorrhoids, hemorrhoidal
 Solsolsisol	Flow, "run", creep, stream, flowed, discharge, loss, flowing, streaming, liquid, liquidity
 Solsolsila	Leucorrhoea, leukorrhea
-Soldodore	Whitlow (An abscess in the soft tissue near a fingernail or toenail)
+Soldodore	Whitlow, fingernail abscess, toenail abscess
 Soldodomi	Lesser, lower, minor, less, least, less than that
 Soldodofa	Chilblain, frostbite
 Soldodosol	Chapping, chap, crack
@@ -2446,7 +2446,7 @@ Solfasisi	Victim
 Solladodo	Choke, strangle, strangulation, strangler, choker
 Sollarere	Oppress, stifle, oppression, suffocation, choking, stifling
 Sollamimi	Crisis
-Sollafafa	Death throes, dying 
+Sollafafa	Death throes, dying
 Sollasolsol	Bury, entombment, buryer
 Sollasisi	Shroud (burial garment)
 Solsidodo	Coffin, bier
@@ -2468,10 +2468,10 @@ Lalaresol	Count on, rely on, depend on
 Lalarela	Bookstore, bookshop, bookseller
 Lalaresi	Edit, edition, editor
 Lalamido	Print, press, printing, printer
-Lalamire	To draw (a card, lots, etc.), choose at random
-Lalamifa	Printing plate (made of metal, plastic, or paper; carry the image that is to be printed on paper)
+Lalamire	To draw a card, choose at random
+Lalamifa	Printing plate
 Lalamisol	To bind (a book), binding, bookbinding, bookbinder
-Lalamila	Format, size, in folio (made of sheets of paper folded once to form two leaves), quarto (folded into four leaves (eight pages)), octavo (folded into eight leaves (sixteen pages)), duodecimo (folded into 12 leaves (24 pages)) 
+Lalamila	Format, size, folio format
 Lalamisi	To package, cardboard, cardboard manufacturer, box, carton
 Lalafado	Watchmaking, clock, watch, watchmaker
 Lalafare	Gild, gilding, gilder
@@ -2501,7 +2501,7 @@ Lareredo	Metallurgy, metal, metallurgist, metallurgical
 Lareremi	Iron, ferruginous
 Larerefa	Incurability, incurable, untreatable, terminal, unhealable
 Lareresol	Steel, marcasite
-Larerela	Copper (v. (plate with copper)), copper
+Larerela	Copper
 Lareresi	Bronze, brass, brazen
 Lamimido	Tin, pewter, tinplate, tinsmith
 Lamimire	Zinc
@@ -2521,7 +2521,7 @@ Lasolsolmi	Shell, hull
 Lasolsolfa	Horn, antler, horny, horned
 Lasolsolla	Ivory
 Lasolsolsi	Cork
-Lasisido	Curry (Treat tanned leather to improve its properties), tan, currier, tanner
+Lasisido	Curry, tanned leather, tan, currier, tanner
 Lasisire	Animal hide, leather, coriaceous, leathery
 Lasisimi	Sheepskin, hide
 Lasisifa	Fur, pelt, mink, squirrel, astrakhan, marten
@@ -2544,14 +2544,14 @@ Lamirere	Braid, plait, twine, weave, enlace
 Lamifafa	To curl, to "ring", rings, curls, ringed, curled
 Lamisolsol	Garland
 Lamilala	Tie, knot, bow
-Lamisisi	To cross, crossing, crosses, crosswise 
+Lamisisi	To cross, crossing, crosses, crosswise
 Lafadodo	Dye, dyeing, dyer
 Lafarere	Moire fabric, moire pattern
 Lafamimi	Shimmer, glisten, glitter, gleam, sparkle, variegation, variegated, multi-colored
 Lafasolsol	To felt, felt, felted
 Lafalala	To make fluffy, plush
 Lafasisi	To sand, to pumice, rub down
-Lasoldodo	[verb], grocery, grocer
+Lasoldodo	grocery, grocer
 Lasolrere	Allspice, clove, cinnamon, ginger
 Lasolmimi	Honey, honeyed, sweet
 Lasolfafa	Rice
@@ -2641,7 +2641,7 @@ Sidofafa	Conservatory of Music
 Sidosolsol	School of Saint-Cyr, Polytechnic School
 Sidolala	Normal School
 Sidosisi	Central School
-Siredodo	Cadastre, cadaster (A register of property showing extent, value, and ownership of land for taxation)
+Siredodo	Cadastre, cadaster
 Siremimi	Physics, physicist
 Sirefafa	Collaboration, joint effort, cooperation, collaborator, associate, partner
 Siresolsol	Chemistry, chemist
@@ -2690,7 +2690,7 @@ Doredofasol	Marten
 Doredofala	Polecat
 Doredofasi	Ermine
 Doredosoldo	Weasel
-Doredosolre	Rat - water rat
+Doredosolre	Rat, water rat
 Doredosolmi	Mouse
 Doredosolfa	Fieldmouse
 Doredosolla	Bat
@@ -2753,7 +2753,7 @@ Dorefaredo	Butterfly
 Dorefaremi	Chafer, beetle
 Dorefarefa	Cicada, dragonfly
 Dorefaresol	Grasshopper
-Dorefarela	Aphid, cochineal 
+Dorefarela	Aphid, cochineal
 Dorefaresi	Spider
 Dorefamido	Silkworm
 Dorefamire	Caterpillar
@@ -2914,10 +2914,10 @@ Domidosolsi	Bearded Capuchin
 Domidolado	Escarole
 Domidolare	Chervil
 Domidolami	Parsley
-Domidolafa	Mache - Bourset
+Domidolafa	Mache, Bourset
 Domidolasol	Tarragon
 Domidolasi	Burnet
-Domidosido	Cabbage - Kale
+Domidosido	Cabbage, Kale
 Domidosire	Cauliflower
 Domidosimi	Salsify
 Domidosifa	Bay tree
@@ -3002,50 +3002,50 @@ Domisoldosol	Coudrier
 Domisoldola	Bouleau
 Domisoldosi	Hetre
 Domisolredo	Frêne
-Domisolremi	Orme - Ormeau
-Domisolrefa	Saule - Saule pleureur
+Domisolremi	Orme, Ormeau
+Domisolrefa	Saule, Saule pleureur
 Domisolresol	Tremble
 Domisolrela	Peuplier
 Domisolresi	Sycomore
 Domisolmido	Platane
 Domisolmire	Sapin
-Domisolmifa	Résine - résineux
+Domisolmifa	Résine, résineux
 Domisolmisol	Pin
 Domisolmila	Santale
 Domisolmisi	Acajou
-Domisolfado	Ébénier - Ébene
-Domisolfare	Cerisier - Cerise
-Domisolfami	Mérisier - Merise
-Domisolfasol	Murier - Murier blanc - Mure
-Domisolfala	Pommier - Pomme - Reinette - Canada
-Domisolfasi	Poirier - Poire
-Domisollado	Marronnier, châtaignier - Marron, châtaigne
-Domisollare	Marronnier d'Inde - Marron d'Inde
-Domisollami	Prunier - Prune violette - Reine-Claude - Mirabelle
-Domisollafa	Pêcher - Pêche - Brugnon
-Domisollasol	Abricotier - Abricot
-Domisollasi	Amandier - Amande
-Domisolsido	Noyer - Noix
-Domisolsire	Noisetier - Noisette
-Domisolsimi	Cormier - Corme
-Domisolsifa	Coignassier - Coing
-Domisolsisol	Oranger - Fleur d'oranger - Orange
-Domisolsila	Citronnier - Citron
-Domiladore	Grenadier - Grenade
-Domiladomi	Dattier, palmier - Latanier - Datte - Palme
+Domisolfado	Ébénier, Ébene
+Domisolfare	Cerisier, Cerise
+Domisolfami	Mérisier, Merise
+Domisolfasol	Murier, Murier blanc, Mure
+Domisolfala	Pommier, Pomme, Reinette, Canada
+Domisolfasi	Poirier, Poire
+Domisollado	Marronnier, châtaignier, Marron, châtaigne
+Domisollare	Marronnier d'Inde, Marron d'Inde
+Domisollami	Prunier, Prune violette, Reine-Claude, Mirabelle
+Domisollafa	Pêcher, Pêche, Brugnon
+Domisollasol	Abricotier, Abricot
+Domisollasi	Amandier, Amande
+Domisolsido	Noyer, Noix
+Domisolsire	Noisetier, Noisette
+Domisolsimi	Cormier, Corme
+Domisolsifa	Coignassier, Coing
+Domisolsisol	Oranger, Fleur d'oranger, Orange
+Domisolsila	Citronnier, Citron
+Domiladore	Grenadier, Grenade
+Domiladomi	Dattier, palmier, Latanier, Datte, Palme
 Domiladofa	Ananas
-Domiladosol	Cocotier - Coco
-Domiladola	Bananier - Banane
-Domiladosi	Jujubier - Jujube
-Domilaredo	Olivier - Olive
+Domiladosol	Cocotier, Coco
+Domiladola	Bananier, Banane
+Domiladosi	Jujubier, Jujube
+Domilaredo	Olivier, Olive
 Domilaremi	Noyau
-Domilarefa	Pistachier - Pistache
-Domilaresol	Térébinthe - Térébenthine
-Domilarela	Mucilage - Mucilagineux
+Domilarefa	Pistachier, Pistache
+Domilaresol	Térébinthe, Térébenthine
+Domilarela	Mucilage, Mucilagineux
 Domilaresi	Glu
-Domilamido	Groseillier - Groseille
-Domilamire	Framboisier - Framboise
-Domilamifa	Fraisier - Fraise
+Domilamido	Groseillier, Groseille
+Domilamire	Framboisier, Framboise
+Domilamifa	Fraisier, Fraise
 Domilamisol	
 Domilamila	
 Domilamisi	
@@ -3067,19 +3067,19 @@ Domilasimi
 Domilasifa	
 Domilasisol	
 Domilasila	
-Domisidore	Laurier - Laurier blanc - Laurier rose
-Domisidomi	Myrthe - Buis
+Domisidore	Laurier, Laurier blanc, Laurier rose
+Domisidomi	Myrthe, Buis
 Domisidofa	Bruyere
 Domisidosol	Genêt
 Domisidola	Lilas
 Domisidosi	Chévrefeuille
-Domisiredo	Rosier - Rose - Rose blanche - Rose rousse - Rose jaune ou thé
-Domisiremi	Églantier - Eglantine
-Domisirefa	Dalhia - Dalhia blanc - Dalhia rouge - Dalhia jaune - Dalhia panaché
+Domisiredo	Rosier, Rose, Rose blanche, Rose rousse, Rose jaune, thé
+Domisiremi	Églantier, Eglantine
+Domisirefa	Dalhia, Dalhia blanc, Dalhia rouge, Dalhia jaune, Dalhia panaché
 Domisiresol	Jasmin
 Domisirela	Narcisse
 Domisiresi	Lys
-Domisimido	Oeillet - Oeillet blanc - Oeillet rose - Oeillet panaché
+Domisimido	Oeillet, Oeillet blanc, Oeillet rose, Oeillet panaché
 Domisimire	Jonquille
 Domisimifa	Tulipe
 Domisimisol	Tubéreuse
@@ -3103,52 +3103,52 @@ Domisilami	Lierre
 Domisilafa	Clématite
 Domisilasol	Verveine
 Domisilasi	
-Dofadoredo	Minéralogie - Minéral - Minéralogiste - Minéralogique
-Dofadoremi	Mine - Carriere - Mineur
-Dofadorefa	Terre argileuse ou alumineuse
+Dofadoredo	Minéralogie, Minéral, Minéralogiste, Minéralogique
+Dofadoremi	Mine, Carriere, Mineur
+Dofadorefa	Terre argileuse, alumineuse
 Dofadoresol	Terre, argile, calcair
 Dofadorela	Terre marneuse
 Dofadoresi	Terre glaiscuse
-Dofadomido	Marbre ou calcaire compacte - Marbre grossier ou granit
-Dofadomire	Porphyre - Porphyroïde
-Dofadomifa	Calcaire Crayeux ou craie
+Dofadomido	Marbre, calcaire compacte, Marbre grossier, granit
+Dofadomire	Porphyre, Porphyroïde
+Dofadomifa	Calcaire Crayeux, craie
 Dofadomisol	Roches
-Dofadomila	Gypse ou pierre a plâtre
+Dofadomila	Gypse, pierre a plâtre
 Dofadomisi	Albatre Gypseux
-Dofadofado	Quartz - Quartzeux
-Dofadofare	Cristal de roche ou quartz - Cristal - Cristallin, hyalin - Cristalliere
+Dofadofado	Quartz, Quartzeux
+Dofadofare	Cristal de roche, quartz, Cristal, Cristallin, hyalin, Cristalliere
 Dofadofami	Aventurine
-Dofadofasol	Quartz jaspe ou quartz opaque
+Dofadofasol	Quartz jaspe, quartz opaque
 Dofadofala	Quartz agate
-Dofadofasi	Cornaline - Calcédoine
+Dofadofasi	Cornaline, Calcédoine
 Dofadosoldo	Fedspath
 Dofadosolre	Pétunse
 Dofadosolmi	Kaolin
 Dofadosolfa	Talc
 Dofadosolla	Mica Foliace
-Dofadosolsi	Mica lamelliforme ou verre de Moscovie
-Dofadolado	Amiante ou Abeste
-Dofadolare	Houillere - Houille ou charbon de terre
-Dofadolami	Goudronner - Goudron
-Dofadolafa	Anthracite ou charbon de pierre
+Dofadosolsi	Mica lamelliforme, verre de Moscovie
+Dofadolado	Amiante, Abeste
+Dofadolare	Houillere, Houille, charbon de terre
+Dofadolami	Goudronner, Goudron
+Dofadolafa	Anthracite, charbon de pierre
 Dofadolasol	Acide carbonique
-Dofadolasi	Lignite ou bois bitumeux
-Dofadosido	Souffre - Souffré
+Dofadolasi	Lignite, bois bitumeux
+Dofadosido	Souffre, Souffré
 Dofadosire	Acide sulfureux
-Dofadosimi	Acide sulphydrique ou hydrogene sulfuré
-Dofadosifa	Oxigene - Oxigéné
+Dofadosimi	Acide sulphydrique, hydrogene sulfuré
+Dofadosifa	Oxigene, Oxigéné
 Dofadosisol	Chlore
 Dofadosila	Acide Chlorydique
-Dofaredore	Hydrogene - Hydrogéné
+Dofaredore	Hydrogene, Hydrogéné
 Dofaredomi	Carbone
-Dofaredofa	Azote - Azoté
+Dofaredofa	Azote, Azoté
 Dofaredosol	Iode
-Dofaredola	Phophore - Phosphorique
+Dofaredola	Phophore, Phosphorique
 Dofaredosi	Arsenic
-Dofaremido	Sel de nitre ou salpêtre - Azotate de potasse
+Dofaremido	Sel de nitre, salpêtre, Azotate de potasse
 Dofaremire	Potasse
 Dofaremifa	Ammoniaque
-Dofaremisol	Alumine - Alumineux
+Dofaremisol	Alumine, Alumineux
 Dofaremila	Alun
 Dofaremisi	Selgemme
 Dofarefado	Magnésie
@@ -3157,7 +3157,7 @@ Dofarefami
 Dofarefasol	
 Dofarefala	
 Dofarefasi	
-Dofaresoldo	Géologie - Géologie - Géologique
+Dofaresoldo	Géologie, Géologie, Géologique
 Dofaresolre	
 Dofaresolmi	
 Dofaresolfa	
@@ -3242,7 +3242,7 @@ dofami	disagreement
 dofafa	march
 dofasol	marvel, wonder
 dofala	left(side)
-dofasi	adore, worship*
+dofasi	adore, worship
 dosoldo	nature, abundance
 dosolre	belief, faith, hope
 dosolmi	true, truth
@@ -3260,7 +3260,7 @@ dolasi	incomparable, invaluable, unparalleled, without equal
 dosido	mass
 dosire	support, base
 dosimi	shameful, dishonorable, ignominious
-dosifa	accomplish, fulfill*
+dosifa	accomplish, fulfill
 dosisol	duty, obligation
 dosila	to go, to travel
 dosisi	june
@@ -3268,7 +3268,7 @@ redodo	one, unit
 redore	philosophy
 redomi	loathe, repugnance, repulsive
 redofa	moral, morally, moralize
-redosol	be aquainted*
+redosol	be aquainted
 redola	student, pupil, disciple
 redosi	to do, to act, to change
 reredo	july
@@ -3283,21 +3283,21 @@ remire	value
 remimi	two, secondly
 remifa	to send, to give
 remisol	food, sustenance
-remila	give, gift, present*
+remila	give, gift, present
 remisi	inexplicable, indefinable, incomprehensible, inconceiveable, enigmatic
 refado	look away, evade, distraction
 refare	frequency
 refami	displease, unpleasant
 refafa	third, thirdly
 refasol	to keep, to preserve
-refala	ask, privilege, prerogative*
+refala	ask, privilege, prerogative
 refasi	answer, reply, respond
 resoldo	doubt, skepticism, skeptical
 resolre	current, power, amplitude
 resolmi	leave, come out of
 resolfa	to leave
 resolsol	fourth
-resolla	pay, materialism, materialistic, materialize*
+resolla	pay, materialism, materialistic, materialize
 resolsi	discourage, discouragement, tedious
 relado	misanthropy, misanthrope
 relare	hierarchy
@@ -3309,7 +3309,7 @@ relasi	solid, hard
 resido	mistreat, bully, maltreatment, brutality, rudeness
 resire	??
 resimi	temporal, fragile
-resifa	become*
+resifa	become
 resisol	to be sad, sadness, gloom, melancholy, sad
 resila	restless, boredom
 resisi	sixth
@@ -3317,7 +3317,7 @@ midodo	thirteen
 midore	sympathy, inclination
 midomi	attraction
 midofa	prefer, like the most
-midosol	admire*
+midosol	admire
 midola	reciprocity, mutuality, respective
 midosi	fond of, attached, be attached to, friend, friendly, take to
 miredo	to have, to host
@@ -3325,7 +3325,7 @@ mirere	fourteen
 miremi	appearance
 mirefa	tenderness
 miresol	acknowledge, gratitude, recognition, be grateful
-mirela	devote, focus, devote oneself, dedication*
+mirela	devote, focus, devote oneself, dedication
 miresi	link, bond, chain, fasten
 mimido	seven
 mimire	eight
@@ -3339,7 +3339,7 @@ mifare	please, like, pleasant, seductive
 mifami	smell
 mifafa	fifteen
 mifasol	to hold, to take
-mifala	desire, wish, want, desirous*
+mifala	desire, wish, want, desirous
 mifasi	error, incorrigible
 misoldo	false, lie
 misolre	enter
@@ -3347,11 +3347,11 @@ misolmi	taste
 misolfa	benevolence, affability, goodwill, amiability, kind
 misolsol	sixteen
 misolla	equal, equality, equally
-misolsi	candidate, volunteer, available*
+misolsi	candidate, volunteer, available
 milado	appraise, estimate, consider
 milare	confide, confidence
 milami	force
-milafa	idolize, dote on, idolatry*
+milafa	idolize, dote on, idolatry
 milasol	blame
 milala	seventeen
 milasi	love, cherish, lover, enamored
@@ -3366,15 +3366,15 @@ fadodo	eighty
 fadore	immoral, immorality, without principles
 fadomi	letter (mail), missive, epistle
 fadofa	date, era
-fadosol	to sign, signature*
-fadola	stamp, seal*
+fadosol	to sign, signature
+fadola	stamp, seal
 fadosi	end, complete, finish, final, finally, termination, achieve
 faredo	opinion, fiction
 farere	hundred
 faremi	harsh, aggressive
 farefa	velocity
 faresol	lengthen, extend, extension, elongation
-farela	mail, post, post office*
+farela	mail, post, post office
 faresi	inexactitude, inaccuracy, inexact
 famido	problem, puzzle, mission, quest
 famire	to receive
@@ -3396,34 +3396,34 @@ fasolmi	malice, unkindness, ill will, disparaging, malignancy
 fasolfa	behavior
 fasolsol	million
 fasolla	to combine, to unify
-fasolsi	prepare, make ready, preparation*
+fasolsi	prepare, make ready, preparation
 falado	east, counter-clockwise
 falare	able, can, may, possible, practicability
-falami	means, resources, by means of*
+falami	means, resources, by means of
 falafa	area, size, space, volume
 falasol	disfavor, disrepute, disgrace
 falala	billion
-falasi	trend, tendency, inclination to, disposition*
-fasido	walk, step*
-fasire	information, inquire, investigate*
+falasi	trend, tendency, inclination to, disposition
+fasido	walk, step
+fasire	information, inquire, investigate
 fasimi	??
 fasifa	family
 fasisol	cry, weep, sob, tears
 fasila	decide, determine, resolve, decision, resolution
 fasisi	trillion
 soldodo	July
-soldore	copy, transcribe, transcription*
-soldomi	imitate, forge, mimic, emulate, counterfeit*
-soldofa	example, model, type*
+soldore	copy, transcribe, transcription
+soldomi	imitate, forge, mimic, emulate, counterfeit
+soldofa	example, model, type
 soldosol	translation
-soldola	comment, commentary, commentator*
-soldosi	tradition, traditionally, traditional*
+soldola	comment, commentary, commentator
+soldosi	tradition, traditionally, traditional
 solredo	imply, implied
 solrere	week
 solremi	ingratitude, disregarding, ungrateful
 solrefa	shorten, abbreviate, concise, terse, succinct, brief
 solresol	language, philology
-solrela	dictionary, vocabulary, glossary*
+solrela	dictionary, vocabulary, glossary
 solresi	irregularity, anomaly, irregular
 solmido	sickness
 solmire	poison
@@ -3458,36 +3458,36 @@ solsire	to be happy, joy, playfulness, elation, merrily, cheerfully
 solsimi	to be unlucky, misfortune, disaster, unfortunate
 solsifa	laugh, hilarity, laughing, smile
 solsisol	mood, temper, climate
-solsila	skip, hop, jump, pounce, frolic*
+solsila	skip, hop, jump, pounce, frolic
 solsisi	minute
 ladodo	second
 ladore	teacher, professor, headmaster
 ladomi	greed, egoist
-ladofa	read, reading, reader, readable, legibly*
-ladosol	book, volume, tome*
+ladofa	read, reading, reader, readable, legibly
+ladosol	book, volume, tome
 ladola	capacity, charge, momentum
-ladosi	book, word, term*
+ladosi	book, word, term
 laredo	alphabet, alphabetical(ly)
 larere	??
-laremi	spell, spelling*
-larefa	syllable, syllabic, monosyllable, monosyllabic*
-laresol	lesson, instruction*
+laremi	spell, spelling
+larefa	syllable, syllabic, monosyllable, monosyllabic
+laresol	lesson, instruction
 larela	sentence, phrase
 laresi	distraction, inattention, inadvertently, inattentive, carelessness, disapplied
 lamido	temporary, fleeting
-lamire	write, writing, writer*
+lamire	write, writing, writer
 lamimi	??
 lamifa	dry, barren, thin
 lamisol	forget, overlook, neglect, forgetful, omit
 lamila	acceleration
 lamisi	difficulty, trouble
 lafado	right(side)
-lafare	page, leaf, flip/thumb through*
-lafami	notebook, portfolio*
+lafare	page, leaf, flip/thumb through
+lafami	notebook, portfolio
 lafafa	??
 lafasol	block, halt, stop, deny
 lafala	intensity
-lafasi	subject, topic, thesis, theme*
+lafasi	subject, topic, thesis, theme
 lasoldo	??
 lasolre	??
 lasolmi	inequality, unequal, uneven
@@ -3506,15 +3506,15 @@ lasido	to stay, to wait
 lasire	have fun, enjoy, be delighted, entertainment, amuse
 lasimi	penalty, displeasure, tribulation, pain, punishment
 lasifa	hesitate, go with uncertainty, irresolution, indecisive
-lasisol	punctuate, punctuation*
+lasisol	punctuate, punctuation
 lasila	material
 lasisi	galaxy
 sidodo	star
 sidore	to know, to think
 sidomi	enmity, hostility, enemy, opponent, antagonist, hostile
 sidofa	start, begin, commence
-sidosol	study*
-sidola	progress, progressive*
+sidosol	study
+sidola	progress, progressive
 sidosi	education
 siredo	cold, frost
 sirere	planet
@@ -3530,24 +3530,24 @@ simifa	meaning, significance, signal, advice
 simisol	simplify, make easy, simple, elementary
 simila	facilitate, make easy, aid, easy
 simisi	brightness, clarity
-sifado	dictate, dictation, read out*
+sifado	dictate, dictation, read out
 sifare	fault, defect, failure, defective, failed
 sifami	correct, reform, correction, reformation
 sifafa	sun, solar
 sifasol	wait, patience, patient
-sifala	repeat, recapitulate*
+sifala	repeat, recapitulate
 sifasi	age
 sisoldo	compete, contest
 sisolre	encourage, embolden, stimulate
-sisolmi	inspect, review, inspector, inspection*
-sisolfa	review, scrutinize, investigate*
+sisolmi	inspect, review, inspector, inspection
+sisolfa	review, scrutinize, investigate
 sisolsol	??
 sisolla	erase, clear, clean
 sisolsi	dimension
 silado	compare, comparison, similarity, similitude, comparable
 silare	liquid, soft
 silami	hate, detest, abhor, hatred, animosity, aversion
-silafa	unable, unfit, incapable, inept*
+silafa	unable, unfit, incapable, inept
 silasol	to go down, descent, to go south
 silala	sky, firmament
 silasi	direction
