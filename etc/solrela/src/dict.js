@@ -2719,30 +2719,6 @@ Doremirefa	Beaver
 Doremiresol	Crocodile
 Doremirela	Turtle
 Doremiresi	Seal
-Doremifado	
-Doremifare	
-Doremifami	
-Doremifasol	
-Doremifala	
-Doremifasi	
-Doremisoldo	
-Doremisolre	
-Doremisolmi	
-Doremisolfa	
-Doremisolla	
-Doremisolsi	
-Doremilado	
-Doremilare	
-Doremilami	
-Doremilafa	
-Doremilasol	
-Doremilasi	
-Doremisido	
-Doremisire	
-Doremisimi	
-Doremisifa	
-Doremisisol	
-Doremisila	
 Dorefadore	Cricket
 Dorefadomi	Earwig
 Dorefadofa	Ant, anthill
@@ -2762,23 +2738,6 @@ Dorefamisol	Snake, serpent, reptile, asp, viper
 Dorefamila	Crawl, creep, crawling
 Dorefamisi	Squirm, twist, wiggle, kinking, twisting, twisted, squirming, winding
 Dorefasoldo	Bite
-Dorefasolre	
-Dorefasolmi	
-Dorefasolfa	
-Dorefasolla	
-Dorefasolsi	
-Dorefalado	
-Dorefalare	
-Dorefalami	
-Dorefalafa	
-Dorefalasol	
-Dorefalasi	
-Dorefasido	
-Dorefasire	
-Dorefasimi	
-Dorefasifa	
-Dorefasisol	
-Dorefasila	
 Doresoldore	Lark
 Doresoldomi	Warbler
 Doresoldofa	Tarin
@@ -2840,17 +2799,6 @@ Dorelafasol	Feather, feathered, plumage
 Dorelafala	Hoopoe, egret
 Dorelafasi	Paw, leg of an animal
 Dorelasoldo	Male, female
-Dorelasolre	
-Dorelasolmi	
-Dorelasolfa	
-Dorelasolla	
-Dorelasolsi	
-Dorelasido	
-Dorelasire	
-Dorelasimi	
-Dorelasifa	
-Dorelasisol	
-Dorelasila	
 Doresidore	Anchovy
 Doresidomi	Smelt
 Doresidofa	Sardine
@@ -2886,7 +2834,6 @@ Doresilare	Crayfish, crawfish
 Doresilami	Snail
 Doresilafa	Frog
 Doresilasol	Toad
-Doresilasi	
 Domidoredo	Mushroom, agaric
 Domidoremi	Truffle, truffles
 Domidorefa	Potatoes
@@ -2921,80 +2868,6 @@ Domidosido	Cabbage, Kale
 Domidosire	Cauliflower
 Domidosimi	Salsify
 Domidosifa	Bay tree
-Domidosisol	
-Domidosila	
-Domiredore	
-Domiredomi	
-Domiredofa	
-Domiredosol	
-Domiredola	
-Domiredosi	
-Domiremido	
-Domiremire	
-Domiremifa	
-Domiremisol	
-Domiremila	
-Domiremisi	
-Domirefado	
-Domirefare	
-Domirefami	
-Domirefasol	
-Domirefala	
-Domirefasi	
-Domiresoldo	
-Domiresolre	
-Domiresolmi	
-Domiresolfa	
-Domiresolla	
-Domiresolsi	
-Domirelado	
-Domirelare	
-Domirelami	
-Domirelafa	
-Domirelasol	
-Domirelasi	
-Domiresido	
-Domiresire	
-Domiresimi	
-Domiresifa	
-Domiresisol	
-Domiresila	
-Domifadore	
-Domifadomi	
-Domifadofa	
-Domifadosol	
-Domifadola	
-Domifadosi	
-Domifaredo	
-Domifaremi	
-Domifarefa	
-Domifaresol	
-Domifarela	
-Domifaresi	
-Domifamido	
-Domifamire	
-Domifamifa	
-Domifamisol	
-Domifamila	
-Domifamisi	
-Domifasoldo	
-Domifasolre	
-Domifasolmi	
-Domifasolfa	
-Domifasolla	
-Domifasolsi	
-Domifalado	
-Domifalare	
-Domifalami	
-Domifalafa	
-Domifalasol	
-Domifalasi	
-Domifasido	
-Domifasire	
-Domifasimi	
-Domifasifa	
-Domifasisol	
-Domifasila	
 Domisoldore	Sureau
 Domisoldomi	Aulne
 Domisoldofa	Osier
@@ -3046,27 +2919,6 @@ Domilaresi	Glu
 Domilamido	Groseillier, Groseille
 Domilamire	Framboisier, Framboise
 Domilamifa	Fraisier, Fraise
-Domilamisol	
-Domilamila	
-Domilamisi	
-Domilafado	
-Domilafare	
-Domilafami	
-Domilafasol	
-Domilafala	
-Domilafasi	
-Domilasoldo	
-Domilasolre	
-Domilasolmi	
-Domilasolfa	
-Domilasolla	
-Domilasolsi	
-Domilasido	
-Domilasire	
-Domilasimi	
-Domilasifa	
-Domilasisol	
-Domilasila	
 Domisidore	Laurier, Laurier blanc, Laurier rose
 Domisidomi	Myrthe, Buis
 Domisidofa	Bruyere
@@ -3102,7 +2954,6 @@ Domisilare	Mousse
 Domisilami	Lierre
 Domisilafa	Clématite
 Domisilasol	Verveine
-Domisilasi	
 Dofadoredo	Minéralogie, Minéral, Minéralogiste, Minéralogique
 Dofadoremi	Mine, Carriere, Mineur
 Dofadorefa	Terre argileuse, alumineuse
@@ -3152,17 +3003,7 @@ Dofaremisol	Alumine, Alumineux
 Dofaremila	Alun
 Dofaremisi	Selgemme
 Dofarefado	Magnésie
-Dofarefare	
-Dofarefami	
-Dofarefasol	
-Dofarefala	
-Dofarefasi	
 Dofaresoldo	Géologie, Géologie, Géologique
-Dofaresolre	
-Dofaresolmi	
-Dofaresolfa	
-Dofaresolla	
-Dofaresolsi	
 
 ;;	Symmetric
 
@@ -3200,7 +3041,7 @@ solmi	ill(adv.)
 solfa	none
 solla	always
 solsi	thanks
- 	 	 	 	 	 	
+
 lado	your(plur.)
 lare	unknown
 lami	far, there
