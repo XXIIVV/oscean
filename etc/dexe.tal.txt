@@ -37,7 +37,7 @@
 	( name ) "Dexe 0a
 	( details ) "A 20 "Hex 20 "Editor 0a
 	( author ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "9 20 "Mar 20 "2025 $1 01
+	( date ) "6 20 "Apr 20 "2025 $1 01
 	( - ) 0a =manifest/dat
 
 @manifest/dat ( . )
@@ -50,7 +50,8 @@
 	( - ) 01 "c =snarf/<copy> =dict/copy
 	( - ) 01 "v =snarf/<paste> =dict/paste
 	( - ) 00 1b =sel/<reset> =dict/deselect
-	( - ) 00 08 =sel/<erase> =dict/erase }
+	( - ) 00 08 =sel/<erase> =dict/erase
+	( - ) 01 0d =project/<crop> $2 }
 	={ =dict/move
 	( - ) 10 00 =sel/<move-u> =dict/move-u
 	( - ) 20 00 =sel/<move-d> =dict/move-d
@@ -83,9 +84,10 @@
 	.Mouse/sy-lb DEI DUP ?&on-scroll
 	POP .Screen/x DEI2
 	( | handlers )
-	DUP2 #0034 LTH2 ?/lines
-	DUP2 #004c LTH2 ?/icn
+	DUP2 #004c LTH2 ?/lines
+	DUP2 #0054 LTH2 ?/nothing
 	DUP2 #01d4 LTH2 ?/data
+	DUP2 #01dc LTH2 ?/nothing
 	DUP2 #025c LTH2 ?/ascii
 	POP2 BRK
 
@@ -117,7 +119,7 @@
 		.Mouse/y DEI2 #0028 SUB2 #44 SFT2 get-page #000f ADD2 sel/<set-b> }
 	POP2 BRK
 
-@on-mouse/icn ( x* -> )
+@on-mouse/nothing ( x* -> )
 	POP2 BRK
 
 @on-mouse/data ( x* -> )
@@ -149,7 +151,7 @@
 	&>li ( -- )
 		DUP2 STHkr /<insert-nibble>
 		INC2 GTH2k ?&>li
-	POP2 POP2 POPr #00 .&nibble LDZ EQU .&nibble STZ
+	POP2 POP2 POPr [ LIT2 00 -&nibble ] LDZ EQU .&nibble STZ
 	src/change !page/<draw>
 
 @sel/<insert-nibble> ( addr* nib -- )
@@ -322,7 +324,7 @@
 		[ LIT "- ] monaco/<draw-char>
 		#0d ;monaco/color STA
 		#0160 .Screen/x DEO2
-		sel/get-length monaco/<draw-short> }
+		sel/get-length !monaco/<draw-short> }
 	JMP2r
 
 @page/<draw-ascii> ( -- )
@@ -372,6 +374,14 @@
 	.File/success DEI2 /<set-length>
 	;&mem sel/<set-a>
 	src/<unchange> !<redraw-all>
+
+@project/<crop> ( -- )
+	snarf/<copy>
+	;&mem .&length LDZ2 <mclr>
+	;&mem sel/<set-a>
+	snarf/<paste>
+	.File/success DEI2 /<set-length>
+	src/change !<redraw-all>
 
 @project/<set-length> ( length* -- )
 	DUP2 .&length STZ2
