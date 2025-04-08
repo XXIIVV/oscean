@@ -62,8 +62,31 @@ Sido	How
 Sire	Each, every
 Simi	Good morning, good afternoon, hello
 Sifa	Little, scarcely
-Sisol	Mister, sir
-Sila	Madame, Ms
+Sisol	Mister
+Sila	Madame
+
+;;	Gajewski
+
+Fare	with, joinly
+Fasol	why, for what reason
+Soldo	but
+Solre	in, within
+Lado	nothing, no one
+Lare	by
+Lami	here, there
+Sido	same thing
+Sila	young man, bachelor
+
+;;	Modern
+
+Dofa	they(sing.)
+Refa	their(sing.)
+Lare	through, by, via
+Sisol	respectful title
+Sila	affectionate title
+
+;;	Sudre
+
 Doredo	Time
 Doremi	Day
 Dorefa	Week
@@ -3047,14 +3070,14 @@ lare	unknown
 lami	far, there
 lafa	negative
 lasol	never
-lasi	affectionate, with, inside
+lasi	formal title
 
 sido	their(plur.)
 sire	uneven, unfair
 simi	early, morning, day
 sifa	few, scarcely
 sisol	sorry
-sila	formal, without, outside
+sila	affectionate title
 
 dododo	note "Do" itself
 dodore	zero, globe, earth
