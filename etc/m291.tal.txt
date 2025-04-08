@@ -51,7 +51,7 @@
 	( name ) "m291 0a
 	( desc ) "Audio 20 "Player 0a
 	( auth ) "By 20 "Linvega 20 "& 20 "d6 0a
-	( date ) "13 20 "Mar 20 "2025 $2
+	( date ) "7 20 "Apr 20 "2025 $2
 
 (
 @|macros )
@@ -150,8 +150,8 @@
 	.Controller/button DEI
 	( u ) DUP #10 NEQ ?{ #ff <move> }
 	( d ) DUP #20 NEQ ?{ #01 <move> }
-	( l ) DUP #40 NEQ ?{ <escape> }
-	( r ) DUP #80 NEQ ?{ .selection LDZ <pick> }
+	( l ) DUP #40 NEQ ?{ <seek-prev> }
+	( r ) DUP #80 NEQ ?{ <seek-next> }
 	POP BRK
 
 (
@@ -203,9 +203,25 @@
 		ADD .lines/tracks LDZ DIVk MUL SUB !<pick>/tracks }
 	.selection/track LDZ INC .lines/tracks LDZ DIVk MUL SUB !<pick>/tracks
 
+@<seek-prev> ( -- )
+	.secfrom LDZ2 #000a LTH2 ?<skip-prev>
+	;dict/jump-cmd <pstr>
+	.secprog LDZ2 pos-to-seconds #000a SUB2 <pdec>
+	[ LIT2 "s 18 ] DEO
+	#0a18 DEO
+	JMP2r
+
+@<seek-next> ( -- )
+	.secto LDZ2 #000a LTH2 ?<skip-next>
+	;dict/jump-cmd <pstr>
+	.secprog LDZ2 pos-to-seconds #000a ADD2 <pdec>
+	[ LIT2 "s 18 ] DEO
+	#0a18 DEO
+	JMP2r
+
 @<seek> ( x* -- )
-	pos-to-seconds DUP2 #00e7 LTH2 #00 SWP ADD2 ;dict/jump-cmd <pstr>
-	<pdec>
+	;dict/jump-cmd <pstr>
+	pos-to-seconds DUP2 #00e7 LTH2 #00 SWP ADD2 <pdec>
 	[ LIT2 "s 18 ] DEO
 	#0a18 DEO
 	JMP2r
@@ -605,8 +621,8 @@
 			POPr [ LITr 04 ] }
 		( | selected )
 		DUP [ LIT &sel $1 ] NEQ ?{
-			#02 <draw-background>
-			POPr [ LITr 09 ] }
+			#03 <draw-background>
+			POPr [ LITr 05 ] }
 		( | normal )
 		#0008 .Screen/x DEO2
 		#00 OVR
@@ -640,8 +656,8 @@
 		[ LITr 05 ]
 		( | selected )
 		DUP [ LIT &sel $1 ] NEQ ?{
-			#02 <draw-background>
-			POPr [ LITr 09 ] }
+			#03 <draw-background>
+			POPr [ LITr 05 ] }
 		( | gizmo )
 		.Screen/y DEI2 [ LIT2 15 -Screen/auto ] DEO
 		;WIDTH #0010 SUB2 .Screen/x DEO2
@@ -787,18 +803,18 @@
 	#0004 .Screen/x DEO2
 	#0084 .Screen/y DEO2
 	( | cap left )
-	;&left-icn .Screen/addr DEO2
-	[ LIT2 01 -Screen/sprite ] DEO
+	;&left-chr .Screen/addr DEO2
+	[ LIT2 81 -Screen/sprite ] DEO
 	( | cap middle )
 	#e3
 	&>t ( -- )
-		;&middle-icn .Screen/addr DEO2
-		[ LIT2 01 -Screen/sprite ] DEO
+		;&middle-chr .Screen/addr DEO2
+		[ LIT2 81 -Screen/sprite ] DEO
 		INC DUP ?&>t
 	POP
 	( | cap right )
-	;&right-icn .Screen/addr DEO2
-	[ LIT2 01 -Screen/sprite ] DEO
+	;&right-chr .Screen/addr DEO2
+	[ LIT2 81 -Screen/sprite ] DEO
 	( | fill )
 	#0008 .Screen/x DEO2
 	[ LIT2 15 -Screen/auto ] DEO
@@ -976,7 +992,7 @@
 			INC2k LDA #90 SUB #00 SWP #50 SFT2 ;/cyrillic-glyphs ADD2 JMP2r }
 		LDAk #d1 NEQ ?{
 			INC2k LDA #50 SUB #00 SWP #50 SFT2 ;/cyrillic-glyphs ADD2
-			( cap ) DUP2 ;/cyrillic-glyphs-end LTH2 ?{ POP2 ;check-icn JMP2r }
+			( cap ) DUP2 ;/cyrillic-glyphs-end LTH2 ?{ POP2 ;check-icn }
 			JMP2r }
 		LDA2k #e381 SUB2 #0003 GTH2 ?{
 			INC2k LDA2 #8180 SUB2 STH
@@ -1234,12 +1250,15 @@
 	1010 2010 1008 0700 0f0f 1f0f 0f07 0000
 	2010 1010 2020 c000 c0e0 e0e0 c0c0 0000 ]
 
-@progress/left-icn [
-	0000 030c 1010 2020 2020 1010 0c03 0000 ]
-@progress/middle-icn [
-	0000 ff00 0000 0000 0000 0000 00ff 0000 ]
-@progress/right-icn [
-	0000 c030 0808 0404 0404 0808 30c0 0000 ]
+@progress/left-chr [
+	0000 030f 1f1f 3f3f 0000 0003 0f0f 1f1f
+	3f3f 1f1f 0f03 0000 1f1f 0f0f 0300 0000 ]
+@progress/middle-chr [
+	0000 ffff ffff ffff 0000 00ff ffff ffff
+	ffff ffff ffff 0000 ffff ffff ff00 0000 ]
+@progress/right-chr [
+	0000 c0f0 f8f8 fcfc 0000 00c0 f0f0 f8f8
+	fcfc f8f8 f0c0 0000 f8f8 f0f0 c000 0000 ]
 @progress/fill-icn [
 	0000 0003 0f0f 1f1f 1f1f 0f0f 0300 0000
 	0000 00c0 f0f0 f8f8 f8f8 f0f0 c000 0000 ]
