@@ -51,7 +51,7 @@
 	( name ) "m291 0a
 	( desc ) "Audio 20 "Player 0a
 	( auth ) "By 20 "Linvega 20 "& 20 "d6 0a
-	( date ) "7 20 "Apr 20 "2025 $2
+	( date ) "8 20 "Apr 20 "2025 $2
 
 (
 @|macros )
@@ -584,15 +584,14 @@
 @|drawing )
 
 @<redraw-all> ( -- )
+	( | clear )
+	#0000 .Screen/x DEO2
+	#0012 .Screen/y DEO2
+	[ LIT2 80 -Screen/pixel ] DEO
 	<redraw-player>
 	( >> )
 
 @<redraw-dir> ( -- )
-	#0000 .Screen/x DEO2
-	#0018 [ LIT2 00 -playing ] LDZ EQU ?{ #0080 ADD2 }
-	.Screen/y DEO2
-	[ LIT2 80 -Screen/pixel ] DEO
-	( | content )
 	#001a [ LIT2 00 -playing ] LDZ EQU ?{ #0080 ADD2 }
 	.Screen/y DEO2
 	( | empty )
@@ -610,6 +609,7 @@
 	.selection/scroll LDZ .lines/folders LDZ LTH ?{
 		.selection/scroll LDZ .lines/folders LDZ SUB ADD }
 	&>l ( -- )
+		#00 <draw-background>
 		[ LITr 05 ]
 		( | playing )
 		DUP .selection/track LDZ NEQ ?{
@@ -653,7 +653,7 @@
 	.lines/folders LDZ #00 NEQk ?{ POP2 JMP2r }
 	.selection/scroll LDZ ADD GTHk ?{ POP2 JMP2r }
 	&>l ( -- )
-		[ LITr 05 ]
+		[ LITr 01 ] #00 <draw-background>
 		( | selected )
 		DUP [ LIT &sel $1 ] NEQ ?{
 			#03 <draw-background>
@@ -673,6 +673,7 @@
 	POP2 JMP2r
 
 @<redraw-player> ( -- )
+	.playing LDZ ?{ JMP2r }
 	#ffff ;chicago/last STA2
 	#ffff ;progress/last STA2
 	track/<draw-title>
