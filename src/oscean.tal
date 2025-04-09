@@ -146,7 +146,7 @@
 	( ) DUP [ LIT ", ] NEQ ?{ POP !<build-module-album> }
 	count-diaries #0002 LTH2 ?{ ;term/name ;err/hidden <print-warning> }
 	( ) DUP [ LIT "; ] NEQ ?{ POP !<build-module-portal> }
-	( ) DUP [ LIT ". ] NEQ ?{ POP <build-module-portal> !<build-module-archive> }
+	( ) DUP [ LIT ". ] NEQ ?{ POP !<build-module-both>  }
 	( ) [ LIT ": ] NEQ ?{ !<build-module-archive> }
 	JMP2r
 
@@ -188,6 +188,20 @@
 	( start after ) scap/ INC2
 	&>w ( -- )
 		( stop at sibling ) LDAk chex STHkr EQU ?&end
+		( when depth+1 ) LDAk chex STHkr INC NEQ ?{ INC2 INC2 <build-page-body> }
+		INC2 INC2 scap/ INC2 LDAk ?&>w
+	&end ( -- )
+	POP2 POPr JMP2r
+
+@<build-module-both> ( name* -- name* )
+	( stash depth ) DUP2k #0002 SUB2 LDA chex STH
+	( start after ) scap/ INC2
+	&>w ( -- )
+		( stop at sibling ) LDAk chex STHkr EQU ?&end
+		( when depth+1 ) LDAk chex STHkr INC NEQ ?{
+			INC2k INC2 <load-diary>
+			find-diary DUP2 #ffff EQU2 ?{ DUP2 <build-module-photo> }
+			POP2 }
 		( when depth+1 ) LDAk chex STHkr INC NEQ ?{ INC2 INC2 <build-page-body> }
 		INC2 INC2 scap/ INC2 LDAk ?&>w
 	&end ( -- )
