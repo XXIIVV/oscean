@@ -1,0 +1,80 @@
+<h3>WDR Instruction Set</h3>
+
+<p>The WDR paper computer, or Know-how Computer, is an educational model of a
+computer consisting only of a pen, a sheet of paper, and individual matches in
+the most simple case. The instruction set of five commands is small but Turing
+complete and therefore enough to represent all mathematical functions:
+incrementing ("inc") or decrementing ("dec") a register, unconditional jump
+("jmp"), conditional jump ("skp", skips next instruction if a register is
+zero), and stopping program execution ("end"). </p>
+
+<table border="1">
+	<tr><th>Opcode</th><th>Description</th></tr>
+	<tr><td><b>END</b></td><td>Aborts the execution of your program, so that you can examine the contents of your data registers.</td></tr>
+	<tr><td><b>SKP</b>(r)</td><td>Checks if the data register r is zero. If it is zero, the program counter is increased by 2, otherwise the program counter is increased only by 1.</td></tr>
+	<tr><td><b>JMP</b>(z)</td><td>Sets the program counter to line number z.</td></tr>
+	<tr><td><b>INC</b>(r)</td><td>Increments the contents of the data register r and increases the program counter by 1.</td></tr>
+	<tr><td><b>DEC</b>(r)</td><td>Decrements the contents of the data register r and increases the program counter by 1.</td></tr>
+</table>
+
+
+<p>To encode a WDR program into a 8-bits <a
+href='https://en.wikipedia.org/wiki/Punched_card' target='_blank'>punched
+card</a>, we could use 3 bits of space to encode the operation, which leaves 5
+bits for the value. This computer's programs uses only 5 operations out of a
+possible 8, leaving 3 unused.</p>
+
+<table border='1'>
+	<tr><th colspan='3'>Binary</th><th>Opcode</th></tr>
+	<tr><td>0</td><td>0</td><td>0</td><td>END</td></tr>
+	<tr><td>0</td><td>0</td><td style='background:#000;color:#fff'>1</td><td>SKP</td></tr>
+	<tr><td>0</td><td style='background:#000;color:#fff'>1</td><td>0</td><td>JMP</td></tr>
+	<tr><td>0</td><td style='background:#000;color:#fff'>1</td><td style='background:#000;color:#fff'>1</td><td>ADD</td></tr>
+	<tr><td style='background:#000;color:#fff'>1</td><td>0</td><td>0</td><td>SUB</td></tr>
+</table>
+
+<p>The following program subtracts from <code>R1</code> and adds to
+<code>R0</code> until the value of <code>R1</code> is zero. The result of the
+addition of <code>R0</code> and <code>R1</code> will be stored in
+<code>R0</code>.</p>
+
+<table border='1'>
+	<tr><th>Line</th><th colspan='3'>Opcode</th><th colspan='5'>Value</th><th>Opcode</th><th>Hex</th></tr>
+	<tr><td>00</td><td>0</td><td style='background:#000;color:#fff'>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td style='background:#000;color:#fff'>1</td><td style='background:#000;color:#fff'>1</td><td>JMP 03</td><td>$43</td></tr>
+	<tr><td>01</td><td>0</td><td style='background:#000;color:#fff'>1</td><td style='background:#000;color:#fff'>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>ADD R0</td><td>$60</td></tr>
+	<tr><td>02</td><td style='background:#000;color:#fff'>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td style='background:#000;color:#fff'>1</td><td>SUB R1</td><td>$82</td></tr>
+	<tr><td>03</td><td>0</td><td>0</td><td style='background:#000;color:#fff'>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td style='background:#000;color:#fff'>1</td><td>SKP R1</td><td>$22</td></tr>
+	<tr><td>04</td><td>0</td><td style='background:#000;color:#fff'>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td style='background:#000;color:#fff'>1</td><td>JMP 01</td><td>$41</td></tr>
+	<tr><td>05</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>END</td><td>$00</td></tr>
+</table>
+
+<p>The binary expression of the operation and value of the previous program can
+be encoded horizontally as the following punched card:</p>
+
+<pre style='border: 2px solid black;line-height: 10px;border-radius:5px; background:white;color:black; width:500px'>
+	v   v   v   v   v   v    
+			•                
+	•   •           •        
+		•       •            
+							 
+							 
+							 
+	•                        
+	•       •   •   •        
+</pre>
+
+
+<h3>Ref. 5-bits Table</h3>
+
+<p>The following table show the binary table for 32 addressable lines of a program.</p>
+
+<table border='1'>
+  <tr><td>00</td><td>00000</td><td>08</td><td>01000</td><td>10</td><td>100000</td><td>18</td><td>11000</td></tr>
+  <tr><td>01</td><td>00001</td><td>09</td><td>01001</td><td>11</td><td>100001</td><td>19</td><td>11001</td></tr>
+  <tr><td>02</td><td>00010</td><td>0A</td><td>01010</td><td>12</td><td>100010</td><td>1A</td><td>11010</td></tr>
+  <tr><td>03</td><td>00011</td><td>0B</td><td>01011</td><td>13</td><td>100011</td><td>1B</td><td>11011</td></tr>
+  <tr><td>04</td><td>00000</td><td>0C</td><td>01100</td><td>14</td><td>100000</td><td>1C</td><td>11100</td></tr>
+  <tr><td>05</td><td>00001</td><td>0D</td><td>01101</td><td>15</td><td>100001</td><td>1D</td><td>11101</td></tr>
+  <tr><td>06</td><td>00010</td><td>0E</td><td>01110</td><td>16</td><td>100010</td><td>1E</td><td>11110</td></tr>
+  <tr><td>07</td><td>00011</td><td>0F</td><td>01111</td><td>17</td><td>100011</td><td>1F</td><td>11111</td></tr>
+</table>
