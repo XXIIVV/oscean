@@ -419,6 +419,26 @@ statements at runtime and prints exclamation marks in an infinite loop:</p>
 <pre class='cmd'>uxnasm src.tal res.rom && uxncli res.rom</pre>
 </div>
 
+<p>This program compiles caret-prefixed <a
+href='https://en.wikipedia.org/wiki/Brainfuck' target='_blank'>Brainfuck</a>
+directly into uxntal using nothing but macros:</p>
+
+<div class="codeview">
+<pre class='src'>
+%>  ( m* -- m* ) { INC2 }
+%<  ( m* -- m* ) { #0001 SUB2 }
+%^+ ( m* -- m* ) { STH2k LDAk INC STH2r STA }
+%^- ( m* -- m* ) { STH2k LDAk #01 SUB STH2r STA }
+%^. ( m* -- m* ) { LDAk #18 DEO }
+%^[ ( m* -- m* ) { #00 JSR LDAk #00 EQU ?{ }
+%^] ( m* -- m* ) { LDAk #00 EQU ?{ JMP2kr }\ }\ }
+
+@on-reset ( -> ) ;memory ^+ ^+ ^+ ^[ ^. ^- ^] ^. BRK
+@memory
+</pre>
+<pre class='cmd'>uxnasm bf.tal res.rom && uxncli res.rom</pre>
+</div>
+
 <q style='font-size:28px'>LITr 00 JSRr</q>
 
 <img src='../media/refs/bruno.png' alt="A young girl looks at a boy swinging from a vine. Illustration by Harry Furniss in Caroll's Sylvie and Bruno"/>
