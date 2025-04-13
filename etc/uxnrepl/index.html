@@ -44,7 +44,10 @@
 	</div>
 	<script type="text/javascript">
 	'use strict'
-
+	
+	let step_count = 0
+	let started = 0
+	let emulator
 	let term_el = document.getElementById("term")
 	let editor_el = document.getElementById("editor")
 
@@ -52,8 +55,8 @@
 
 	function assemble(query, program) {
 		let emulator = new Emu()
-		let length = 0
-		emulator.console.write = (char) => { program[length++] = char }
+		let rom_length = 0
+		emulator.console.write = (char) => { program[rom_length++] = char }
 		emulator.console.error = (char) => { term_el.innerHTML += String.fromCharCode(char) }
 		emulator.uxn.load(assembler).eval(0x0100)
 		term_el.innerHTML = ""
@@ -61,6 +64,7 @@
 			emulator.console.input(query.charAt(i).charCodeAt(0), 1)
 		emulator.console.input(0x0a, 2)
 		emulator.console.input(0x00, 4)
+		return rom_length
 	}
 
 	function print_stack(stack) {
@@ -87,10 +91,6 @@
 		if((byte & 0x1f) == 0) return "LIT" + (byte & 0x20 ? "2" : "") + (byte & 0x40 ? "r" : "")
 		return opcodes[byte & 0x1f] + (byte & 0x20 ? "2" : "") + (byte & 0x80 ? "k" : "") + (byte & 0x40 ? "r" : "")
 	}
-
-	let step_count = 0
-	let started = 0
-	let emulator
 
 	function run() {
 		let program = new Uint8Array(0x10000)
@@ -119,11 +119,28 @@
 		}
 		let byte = emulator.uxn.ram[emulator.uxn.pc]
 		let opcode = make_opcode(byte)
-
 		step_count += emulator.uxn.step()
 		print_stack(emulator.uxn.wst)
 		document.getElementById("run").value = `Stop`
 		document.getElementById("step").value = `Step #${step_count} ${opcode}`
+	}
+
+	function save() {
+		let program = new Uint8Array(0x10000)
+		let length = assemble(editor_el.value.replace(/(\r\n|\n|\r|\t)/gm, " "), program)
+		if(length) {
+			let cropped = new Uint8Array(length)
+			for(let i = 0; i < length; i++)
+				cropped[i] = program[i]
+			let blob = new Blob([cropped]);
+			let blobUrl = URL.createObjectURL(blob);
+			let link = document.createElement("a");
+			link.href = blobUrl;
+			link.download = "saved.rom"
+			link.click()
+			URL.revokeObjectURL(blobUrl)
+			link.remove()
+		}
 	}
 
 	// Editor
@@ -143,6 +160,7 @@
 
 	document.getElementById("run").addEventListener("click", run)
 	document.getElementById("step").addEventListener("click", step)
+	document.getElementById("save").addEventListener("click", save)
 
 	document.getElementById('examples').addEventListener('change', (e) => {
 		editor_el.value = examples[e.currentTarget.value]
