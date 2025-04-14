@@ -1,0 +1,80 @@
+<h2>Uxntal Labels</h2>
+
+<h3 id='structs'>Structs</h3>
+<p><b>Enums</b> are labels with unique values that can be used as constants in a
+program, they begin by rolling back the program address with
+<kbd>|00</kbd>:</p>
+
+<pre>
+|00 @Suit &clubs $1 &diamonds $1 &hearts $1 &spades
+
+@is-diamond ( suit -- f )
+	.Suit/clubs EQU
+	JMP2r
+</pre>
+
+<p><b>Structs</b> define padded labels, for example the <code>;person/age</code>
+label holds a value of 2, using that offset allows to access specific members
+of a data structure by applying the sublabels to a pointer:</p>
+
+<pre>
+|00 @Person &name $2 &age $1 &height $2
+@members
+	=dict/melanye 2a 008c
+	=dict/alexane 2c 009a
+
+@get-height ( member* -- height* )
+	;Person/height ADD2 LDA2
+	JMP2r
+</pre>
+
+<p><b>Constants</b> are labels that hold a specific value through the entire execution of the program. They allow to create label that can be used in place of a number, making the code more readable.</p>
+
+<pre>
+|1400 @limit
+
+@within-limit ( value* -- f )
+	;limit LTH2
+	JMP2r
+</pre>
+
+<p><b>Pro Tip</b>: Labels can also be used with the padding runes to define a
+global length. For example, if one needs to specify a length of 0x30 for multiple
+members of a struct, a value can be specified as follow:</p>
+
+<pre>
+|30 @length
+|00 @struct &field $length
+</pre>
+
+
+<h3 id='scope'>Using and defining scope in Uxntal.</h3>
+
+<p>Uxntal objects are defined statically using a <kbd>@label</kbd> token, it allows for the enclosed methods to access local <kbd>&labels</kbd>. The example below creates an object with the method <kbd>get-x</kbd>, accessible from outside the scope as <kbd>Object/get-x</kbd>. By capitalizing the object name, we communicate to the assembler that the label will not be called and should not raise a warning.</p>
+
+<pre>
+@Object
+
+&x $1 &y $1
+
+&get-x <i>( -- x )</i>
+	,&x LDR
+	JMP2r
+</pre>
+
+<p>New methods and members can be appended to an existing scope by creating a label with the scope name followed by a slash and the name of the extension. The <kbd>&labels</kbd> declared within the extension have the same permissions for accessing local labels as during the object definition. To learn more, see <a href='symbols.html'>symbols</a>.</p>
+
+<pre>
+@Object/get-y <i>( -- y )</i>
+	,&y LDR
+	JMP2r
+</pre>
+
+<p>When calling local routines the scope's name can be omitted. To see a complete example in that pseudo object-oriented style, see <a href='https://git.sr.ht/~rabbits/uxn/tree/main/item/projects/examples/gui/timer.tal' target='_blank'>timer.tal</a>.</p>
+
+<pre>
+&get-both <i>( -- x y )</i>
+	Object/get-x 
+	/get-y
+	JMP2r
+</pre>
