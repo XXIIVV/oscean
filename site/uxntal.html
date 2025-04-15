@@ -9,7 +9,7 @@
 <meta property='og:logo' content="https://wiki.xxiivv.com/media/services/rss.jpg"/>
 <meta property="og:title" content="uxntal"/><meta property="og:url" content="https://wiki.xxiivv.com/site/uxntal.html"/><meta property="og:image" content="https://wiki.xxiivv.com/media/diary/804.jpg"/><title>XXIIVV &mdash; uxntal</title></head><body>
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
-<nav><ul><li><a href="subleq.html">subleq</a></li><li><a href="brainfuck.html">brainfuck</a></li><li><a href="chip8.html">chip8</a></li><li><a href="uxn.html" class="parent">uxn</a></li><li><a href="secd.html">secd</a></li></ul><ul><li><a href="uxntal.html" class="self">uxntal</a></li><li><a href="varvara.html">varvara</a></li><li><a href="porporo.html">porporo</a></li></ul><ul><li><a href="uxntal_syntax.html">uxntal syntax</a></li><li><a href="uxntal_stacks.html">uxntal stacks</a></li><li><a href="uxntal_opcodes.html">uxntal opcodes</a></li><li><a href="uxntal_modes.html">uxntal modes</a></li><li><a href="uxntal_immediate.html">uxntal immediate</a></li><li><a href="uxntal_memory.html">uxntal memory</a></li><li><a href="uxntal_devices.html">uxntal devices</a></li><li><a href="uxntal_software.html">uxntal software</a></li></ul></nav>
+<nav><ul><li><a href="subleq.html">subleq</a></li><li><a href="brainfuck.html">brainfuck</a></li><li><a href="chip8.html">chip8</a></li><li><a href="uxn.html" class="parent">uxn</a></li><li><a href="secd.html">secd</a></li></ul><ul><li><a href="uxntal.html" class="self">uxntal</a></li><li><a href="varvara.html">varvara</a></li><li><a href="porporo.html">porporo</a></li></ul><ul><li><a href="uxntal_syntax.html">uxntal syntax</a></li><li><a href="uxntal_stacks.html">uxntal stacks</a></li><li><a href="uxntal_opcodes.html">uxntal opcodes</a></li><li><a href="uxntal_memory.html">uxntal memory</a></li><li><a href="uxntal_devices.html">uxntal devices</a></li><li><a href="uxntal_software.html">uxntal software</a></li></ul></nav>
 <main><figure><img alt="Rostiger's Uxn Zine" src="../media/diary/804.jpg"><figcaption>Rostiger's Uxn Zine<span class="right">16X08</span></figcaption></figure>
 <h2>Tal is a programming language for Uxn.</h2>
 
@@ -105,7 +105,7 @@ href='uxntal_labels.html#scope'>Label Scope</a>.</p>
 
 <p>Next, the <a href='uxntal_opcodes.html#lda'><kbd>LDAk</kbd></a> opcode loads
 the byte in memory found at that address; the <a href='ascii.html'>ASCII</a>
-letter H, to the top of the stack. The <a href='uxntal_modes.html'>k-mode</a>
+letter H, to the top of the stack. The <a href='uxntal_opcodes.html#modes'>k-mode</a>
 indicates that the operation will not consume the address. That value is sent
 to the <a href='varvara.html#console'>device port #18</a>, defined by our
 Console label and its sublabels, with <a
@@ -115,7 +115,7 @@ href='uxntal_devices.html'>Uxntal Devices</a>.</p>
 
 <p>We then increment the absolute address found on top of the stack with <a
 href='uxntal_opcodes.html#inc'><kbd>INC2</kbd></a>, we use the <a
-href='uxntal_modes.html'>2-mode</a> because the address is made of two bytes.
+href='uxntal_opcodes.html#modes'>2-mode</a> because the address is made of two bytes.
 We load the byte at the incremented value and do a conditional immediate jump
 with <kbd>?&while</kbd> for as long as the item on the stack is not zero. We
 use <a href='uxntal_opcodes.html#pop'><kbd>POP2</kbd></a> to remove the address
@@ -164,8 +164,8 @@ here is the full list:</p>
 	</tr>
 	<tr><th colspan="4">Immediate Runes</th><th colspan="4">Pre-processor Runes</th></tr>
 	<tr>
-		<td><code>!</code></td><td><a href='uxntal_immediate.html#jmi'>jmi</a></td>
-		<td><code>?</code></td><td><a href='uxntal_immediate.html#jci'>jci</a></td>
+		<td><code>!</code></td><td><a href='uxntal_opcodes.html#jmi'>jmi</a></td>
+		<td><code>?</code></td><td><a href='uxntal_opcodes.html#jci'>jci</a></td>
 		<td><code>%</code></td><td><a href='uxntal_macros.html'>macro</a></td>
 		<td><code>~</code></td><td>include</td></tr>
 	</tr>
@@ -227,8 +227,7 @@ a short. </p>
 <b>OVR</b> a b c b  <b>STH</b> a b | c         <b>DEO</b> a [D+c8]=b   <b>SFT</b> a b&gt;&gt;c8l&lt;&lt;c8h
 </pre>
 
-<p>To learn more about each opcode, see the <a href='uxntal_reference.html'>Opcode Reference</a>.</p>
-<h2>Uxntal Modes</h2>
+<h3 id='modes'>Modes</h3>
 
 <p>Each opcode has 3 possible modes, which can combined:</p>
 
@@ -248,13 +247,13 @@ a short. </p>
 <p>By default, operators consume bytes from the working stack, notice how in the following example only the last two bytes <code>#45</code> and <code>#67</code> are added, even if there are two shorts on the stack.</p>
 <pre>#1234 #4567 ADD<span style='float:right'>12 34 ac</span></pre>
 
-<p>The <b>short mode</b> consumes two bytes from the stack. In the case of jump opcodes, the short-mode operation jumps to an absolute address in memory. For the memory accessing opcodes, the short mode operation indicates the size of the data to read and write.</p>
+<p id='2_mode'>The <b>short mode</b> consumes two bytes from the stack. In the case of jump opcodes, the short-mode operation jumps to an absolute address in memory. For the memory accessing opcodes, the short mode operation indicates the size of the data to read and write.</p>
 <pre>#1234 #4567 ADD2 <span style='float:right'>57 9b</span></pre>
 
-<p>The <b>keep mode</b> does not consume items from the stack, and pushes the result on top. The following example adds the two shorts together, but does not consume them. Under the hood, the keep mode keeps a temporary stack pointer that is decremented on <code>POP</code>.</p>
+<p id='k_mode'>The <b>keep mode</b> does not consume items from the stack, and pushes the result on top. The following example adds the two shorts together, but does not consume them. Under the hood, the keep mode keeps a temporary stack pointer that is decremented on <code>POP</code>.</p>
 <pre>#1234 #4567 ADD2k <span style='float:right'>12 34 45 67 57 9b</pre>
 
-<p>The <b>return mode</b> makes it possible for any opcode to operate on the return-stack directly. For that reason, there is no dedicated return opcode. For example, the <code class='op'>JSR</code> opcode pushes the program's address onto the return stack before jumping, to return to that address, the <code class='op'>JMP2r</code> opcode is used, where instead of using the address on the working-stack, it takes its address from the return-stack.</p>
+<p id='r_mode'>The <b>return mode</b> makes it possible for any opcode to operate on the return-stack directly. For that reason, there is no dedicated return opcode. For example, the <code class='op'>JSR</code> opcode pushes the program's address onto the return stack before jumping, to return to that address, the <code class='op'>JMP2r</code> opcode is used, where instead of using the address on the working-stack, it takes its address from the return-stack.</p>
 <pre>LITr 12 #34 STH ADDr STHr <span style='float:right'>46</span></pre>
 
 <p>To better understand how the opcode modes are used, here is a 22 bytes long implementation of the function to generate numbers in the <a href='https://en.wikipedia.org/wiki/Fibonacci_Sequence' target='_blank'>Fibonacci sequence</a>. Notice how only a single literal is created to perform the operation.</p>
@@ -274,7 +273,8 @@ a short. </p>
 		.highlight { background:#222 }
 	}
 </style>
-<h2>Immediate opcodes</h2>
+
+<h3 id='immediate'>Immediate opcodes</h3>
 
 <p>Immediate opcodes are operations which do not take items from the stack, but
 read values stored <i>immediately</i> after the opcode in the program's memory.
@@ -306,6 +306,9 @@ to a routine on the stack and using it later, by <i>unquoting</i> it, with the
 <kbd>JMP2</kbd> or <kbd>JSR2</kbd> opcodes. To learn more about pointer
 arithmetic, see <a href='uxntal_labels.html#lambdas'>lambdas</a>.</p>
 
+
+
+<p>To learn more about each opcode, see the <a href='uxntal_reference.html'>Opcode Reference</a>.</p>
 <h2>Uxntal Memory</h2>
 
 <p>There are 64kb of <b>addressable memory</b>. Roms are loaded at 0x0100, which
