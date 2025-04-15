@@ -43,128 +43,127 @@
 		</select>
 	</div>
 	<script type="text/javascript">
-	'use strict'
-	
-	let step_count = 0
-	let started = 0
-	let emulator
-	let term_el = document.getElementById("term")
-	let editor_el = document.getElementById("editor")
+'use strict'
 
-	document.body.className = "active"
+let started = 0
+let emulator
+let term_el = document.getElementById("term")
+let editor_el = document.getElementById("editor")
 
-	function assemble(query, program) {
-		let emulator = new Emu()
-		let rom_length = 0
-		emulator.console.write = (char) => { program[rom_length++] = char }
-		emulator.console.error = (char) => { term_el.innerHTML += String.fromCharCode(char) }
-		emulator.uxn.load(assembler).eval(0x0100)
-		term_el.innerHTML = ""
-		for (let i = 0; i < query.length; i++)
-			emulator.console.input(query.charAt(i).charCodeAt(0), 1)
-		emulator.console.input(0x0a, 2)
-		emulator.console.input(0x00, 4)
-		return rom_length
+document.body.className = "active"
+
+function assemble(query, program) {
+	let emulator = new Emu()
+	let rom_length = 0
+	emulator.console.write = (char) => { program[rom_length++] = char }
+	emulator.console.error = (char) => { term_el.innerHTML += String.fromCharCode(char) }
+	emulator.uxn.load(assembler).eval(0x0100)
+	term_el.innerHTML = ""
+	for (let i = 0; i < query.length; i++)
+		emulator.console.input(query.charAt(i).charCodeAt(0), 1)
+	emulator.console.input(0x0a, 2)
+	emulator.console.input(0x00, 4)
+	return rom_length
+}
+
+function print_stack(stack) {
+	let wst_el = document.getElementById("wst")
+	wst_el.innerHTML = "WST "
+	for(let i = stack.ptr - 8; i != stack.ptr; i++){
+		wst_el.innerHTML += ('0' + stack.ram[i & 0xff].toString(16)).slice(-2)
+		wst_el.innerHTML += ((i+1) & 0xff) ? ' ' : '|'
 	}
+	wst_el.innerHTML += "<"
+}
 
-	function print_stack(stack) {
-		let wst_el = document.getElementById("wst")
-		wst_el.innerHTML = "WST "
-		for(let i = stack.ptr - 8; i != stack.ptr; i++){
-			wst_el.innerHTML += ('0' + stack.ram[i & 0xff].toString(16)).slice(-2)
-			wst_el.innerHTML += ((i+1) & 0xff) ? ' ' : '|'
-		}
-		wst_el.innerHTML += "<"
-	}
+let opcodes = [
+"LIT", "INC", "POP", "NIP", "SWP", "ROT", "DUP", "OVR",
+"EQU", "NEQ", "GTH", "LTH", "JMP", "JCN", "JSR", "STH",
+"LDZ", "STZ", "LDR", "STR", "LDA", "STA", "DEI", "DEO",
+"ADD", "SUB", "MUL", "DIV", "AND", "ORA", "EOR", "SFT"]
 
-	let opcodes = [
-	"LIT", "INC", "POP", "NIP", "SWP", "ROT", "DUP", "OVR",
-	"EQU", "NEQ", "GTH", "LTH", "JMP", "JCN", "JSR", "STH",
-	"LDZ", "STZ", "LDR", "STR", "LDA", "STA", "DEI", "DEO",
-	"ADD", "SUB", "MUL", "DIV", "AND", "ORA", "EOR", "SFT"]
+function make_opcode(byte){
+	if(byte == 0x00) return "BRK"
+	if(byte == 0x20) return "JCI"
+	if(byte == 0x40) return "JMI"
+	if(byte == 0x60) return "JSI"
+	if((byte & 0x1f) == 0) return "LIT" + (byte & 0x20 ? "2" : "") + (byte & 0x40 ? "r" : "")
+	return opcodes[byte & 0x1f] + (byte & 0x20 ? "2" : "") + (byte & 0x80 ? "k" : "") + (byte & 0x40 ? "r" : "")
+}
 
-	function make_opcode(byte){
-		if(byte == 0x00) return "BRK"
-		if(byte == 0x20) return "JCI"
-		if(byte == 0x40) return "JMI"
-		if(byte == 0x60) return "JSI"
-		if((byte & 0x1f) == 0) return "LIT" + (byte & 0x20 ? "2" : "") + (byte & 0x40 ? "r" : "")
-		return opcodes[byte & 0x1f] + (byte & 0x20 ? "2" : "") + (byte & 0x80 ? "k" : "") + (byte & 0x40 ? "r" : "")
-	}
+function run() {
+	let program = new Uint8Array(0x10000)
+	assemble(editor_el.value.replace(/(\r\n|\n|\r|\t)/gm, " "), program)
+	emulator = new Emu()
+	emulator.console.write_el = term_el
+	emulator.console.error_el = term_el
+	emulator.uxn.load(program).eval(0x100)
+	started = 1
+	while(emulator.uxn.step());
+	started = 0
+	print_stack(emulator.uxn.wst)
+	document.getElementById("run").value = `Run`
+	document.getElementById("step").value = `Step`
+}
 
-	function run() {
+function step() {
+	if(!started){
 		let program = new Uint8Array(0x10000)
 		assemble(editor_el.value.replace(/(\r\n|\n|\r|\t)/gm, " "), program)
 		emulator = new Emu()
 		emulator.console.write_el = term_el
 		emulator.console.error_el = term_el
-		emulator.uxn.load(program).eval(0x100)
-		started = 1, step_count = 0
-		while(emulator.uxn.step());
-		started = 0
-		print_stack(emulator.uxn.wst)
-		document.getElementById("run").value = `Run`
-		document.getElementById("step").value = `Step`
+		emulator.uxn.load(program).init()
+		started = 1
 	}
+	let byte = emulator.uxn.ram[emulator.uxn.pc]
+	let opcode = make_opcode(byte)
+	emulator.uxn.step()
+	print_stack(emulator.uxn.wst)
+	document.getElementById("run").value = `Stop`
+	document.getElementById("step").value = `Step ${opcode}`
+}
 
-	function step() {
-		if(!started){
-			let program = new Uint8Array(0x10000)
-			assemble(editor_el.value.replace(/(\r\n|\n|\r|\t)/gm, " "), program)
-			emulator = new Emu()
-			emulator.console.write_el = term_el
-			emulator.console.error_el = term_el
-			emulator.uxn.load(program).init()
-			started = 1, step_count = 0
-		}
-		let byte = emulator.uxn.ram[emulator.uxn.pc]
-		let opcode = make_opcode(byte)
-		step_count += emulator.uxn.step()
-		print_stack(emulator.uxn.wst)
-		document.getElementById("run").value = `Stop`
-		document.getElementById("step").value = `Step #${step_count} ${opcode}`
+function save() {
+	let program = new Uint8Array(0x10000)
+	let length = assemble(editor_el.value.replace(/(\r\n|\n|\r|\t)/gm, " "), program)
+	if(length) {
+		let cropped = new Uint8Array(length)
+		for(let i = 0; i < length; i++)
+			cropped[i] = program[i]
+		let blob = new Blob([cropped]);
+		let blobUrl = URL.createObjectURL(blob);
+		let link = document.createElement("a");
+		link.href = blobUrl;
+		link.download = "saved.rom"
+		link.click()
+		URL.revokeObjectURL(blobUrl)
+		link.remove()
 	}
+}
 
-	function save() {
-		let program = new Uint8Array(0x10000)
-		let length = assemble(editor_el.value.replace(/(\r\n|\n|\r|\t)/gm, " "), program)
-		if(length) {
-			let cropped = new Uint8Array(length)
-			for(let i = 0; i < length; i++)
-				cropped[i] = program[i]
-			let blob = new Blob([cropped]);
-			let blobUrl = URL.createObjectURL(blob);
-			let link = document.createElement("a");
-			link.href = blobUrl;
-			link.download = "saved.rom"
-			link.click()
-			URL.revokeObjectURL(blobUrl)
-			link.remove()
-		}
-	}
+// Editor
 
-	// Editor
+const editor = document.getElementById("editor")
 
-	const editor = document.getElementById("editor")
-
-	editor.addEventListener("keydown", (e) => {
-		let { keyCode } = e
-		let { value, selectionStart, selectionEnd } = editor
-		if (keyCode === 9) { // TAB = 9
+editor.addEventListener("keydown", (e) => {
+	let { keyCode } = e
+	let { value, selectionStart, selectionEnd } = editor
+	if (keyCode === 9) { // TAB = 9
 		e.preventDefault()
 		editor.value = value.slice(0, selectionStart) + "\t" + value.slice(selectionEnd);
 		editor.setSelectionRange(selectionStart+1, selectionStart+1)
-		}
-		started = 0
-	});
+	}
+	started = 0
+});
 
-	document.getElementById("run").addEventListener("click", run)
-	document.getElementById("step").addEventListener("click", step)
-	document.getElementById("save").addEventListener("click", save)
+document.getElementById("run").addEventListener("click", run)
+document.getElementById("step").addEventListener("click", step)
+document.getElementById("save").addEventListener("click", save)
 
-	document.getElementById('examples').addEventListener('change', (e) => {
-		editor_el.value = examples[e.currentTarget.value]
-	}, true);
+document.getElementById('examples').addEventListener('change', (e) => {
+	editor_el.value = examples[e.currentTarget.value]
+}, true);
 
 	</script>
 	<style>

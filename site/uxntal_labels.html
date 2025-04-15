@@ -12,13 +12,8 @@
 <nav><ul><li><a href="uxntal_syntax.html" class="parent">uxntal syntax</a></li><li><a href="uxntal_stacks.html">uxntal stacks</a></li><li><a href="uxntal_opcodes.html">uxntal opcodes</a></li><li><a href="uxntal_memory.html">uxntal memory</a></li><li><a href="uxntal_devices.html">uxntal devices</a></li><li><a href="uxntal_software.html">uxntal software</a></li></ul><ul><li><a href="uxntal_notation.html">uxntal notation</a></li><li><a href="uxntal_numbers.html">uxntal numbers</a></li><li><a href="uxntal_macros.html">uxntal macros</a></li><li><a href="uxntal_labels.html" class="self">uxntal labels</a></li></ul><ul></ul></nav>
 <main><h2>Uxntal Labels</h2>
 
-<p>A label is a non-numeric, non-opcode, and non-runic symbol that correspond to a number between 0 and 65536. A label name is made of two parts, a scope and a sublabel. Sublabels can be added to a scope with the <kbd>&name</kbd> rune, or by writing the full name, like <kbd>@scope/name</kbd>.</p>
+<p>A label is a non-numeric, non-opcode, and non-runic symbol that correspond to a number between 0 and 65536. A label name is made of two parts, a scope and a sublabel. Sublabels can be added to a scope with the <kbd>&name</kbd> rune, or by writing the full name, like <kbd>@scope/name</kbd>. Note that a labels like <i>bed</i>, <i>add</i> and <i>cafe</i> are considered numeric.</p>
 
-<article>
-	<p>Note that a labels like @bed, @add and @cafe are considered numeric.</p>
-</article>
-
-<h3 id='structs'>Structs</h3>
 <p><b>Enums</b> are labels with unique values that can be used as constants in a
 program, they begin by rolling back the program address with
 <kbd>|00</kbd>:</p>
@@ -31,7 +26,7 @@ program, they begin by rolling back the program address with
 	JMP2r
 </pre>
 
-<p><b>Structs</b> define padded labels, for example the <code>;person/age</code>
+<p id='structs'><b>Structs</b> define padded labels, for example the <code>;person/age</code>
 label holds a value of 2, using that offset allows to access specific members
 of a data structure by applying the sublabels to a pointer:</p>
 
@@ -65,14 +60,12 @@ members of a struct, a value can be specified as follow:</p>
 |00 @struct &field $length
 </pre>
 
-<h3 id='scope'>Using and defining scope in Uxntal.</h3>
+<h3 id='scope'>Labels Scope</h3>
 
 <p>Uxntal objects are defined statically using a <kbd>@label</kbd> token, it allows for the enclosed methods to access local <kbd>&labels</kbd>. The example below creates an object with the method <kbd>get-x</kbd>, accessible from outside the scope as <kbd>Object/get-x</kbd>. By capitalizing the object name, we communicate to the assembler that the label will not be called and should not raise a warning.</p>
 
 <pre>
-@Object
-
-&x $1 &y $1
+@Object &x $1 &y $1
 
 &get-x <i>( -- x )</i>
 	,&x LDR
@@ -103,7 +96,7 @@ hood, the opening bracket assembles to the address of the closing bracket which
 allows the destination address to be used like any other label such as a JCI
 <kbd>?{</kbd>, a JMI, <kbd>!{</kbd> or a plain literal <kbd>;{</kbd>. </p>
 
-<h3>Counted Strings</h3>
+<h4>Counted Strings</h4>
 <p>Similarly to counted strings, lambdas can encode strings in memory by preceeding their content by the address of the end of the string, so the reading of that string data is not looking for a null byte, but running until reaching the bounds. The advantage is that the address of the next character to append is readily available.</p>
 
 <pre>
@@ -121,7 +114,7 @@ allows the destination address to be used like any other label such as a JCI
     POP2 POP2 JMP2r
 </pre>
 
-<h3>Data Structures</h3>
+<h4>Data Structures</h4>
 
 <p>We can inline a list of items, here's an implementation a function that
 returns the member in a list, or <i>nil</i>. Notice how the lambda jump requires the list address to be moved from the return stack.</p>
@@ -141,7 +134,7 @@ returns the member in a list, or <i>nil</i>. Notice how the lambda jump requires
 	JMP2r
 </pre>
 
-<h3>Unless Blocks</h3>
+<h4>Unless Blocks</h4>
 
 <p>It is important to notice that a in the case of a conditional jump, the
 lambda's content is <b>jumped over when the flag byte is true</b>.</p>
@@ -156,43 +149,6 @@ nested lambda is evaluated at a time:</p>
 <pre>
 #01 { { "foo $1 } STH2r !print-lambda } STH2r JCN2
 </pre>
-
-<h3>Higher-Order Functions</h3>
-
-<p>A higher-order function is a function that takes a function as an argument or
-returns one as a result. In the following example, the foreach routine is
-expecting a pointer to a series of bytes, and a pointer to a function to apply
-on each byte-long item in memory.</p>
-
-<pre>
-{ 01 02 03 04 05 } STH2r ;double foreach
-</pre>
-
-<p>The body of the <code>double</code> function reads the value of a cell in
-memory and writes a result equal to twice its value, and the body of the
-<code>foreach</code> function is merely applying a function to each cell in
-memory.</p>
-
-<pre>
-@double ( addr* -- addr* )
-	STH2k LDAk
-	DUP ADD
-	STH2r STA
-	JMP2r
-
-@foreach ( {bytes}* fn* -- bytes* )
-	,&t STR2
-	DUP2k #0002 SUB2 LDA2 ADD2 SWP2
-	&l ( -- )
-		[ LIT2 &t $2 ] JSR2 INC2 GTH2k ?&l
-	POP2 POP2
-	JMP2r
-</pre>
-
-
-
-
-
 <ul></ul><p class="incoming"><b>incoming</b> <a href="uxntal_syntax.html" class="parent">uxntal syntax</a> <a href="uxntal_syntax.html" class="parent">uxntal syntax</a> <a href="uxntal_syntax.html" class="parent">uxntal syntax</a> <a href="uxntal_syntax.html" class="parent">uxntal syntax</a> <a href="uxntal_syntax.html" class="parent">uxntal syntax</a> <a href="uxntal_syntax.html" class="parent">uxntal syntax</a> <a href="uxntal_macros.html">uxntal macros</a> <a href="uxntal_macros.html">uxntal macros</a> <a href="uxntal_opcodes.html">uxntal opcodes</a> <a href="drifblim.html">drifblim</a> </p></main>
 <footer>
 	<a href="ethics.html"><img src="../media/icon/3arrows.svg" alt="NoNazis!"/></a>
