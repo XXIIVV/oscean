@@ -26,7 +26,7 @@
 		&io $1
 		&comment $1
 
-|0000
+|000
 
 	@dpad $1 &last $1
 	@timer &beat $1 &speed $1 &playing $1 &frame $1 &frame-lb $1
@@ -39,31 +39,31 @@
 	@variables $24
 	@voices $40 &end ( len vel chn pitch )
 
-|0100 ( -> )
+|100 ( -> )
 
-	( meta )
+	( | meta )
 	;meta #06 DEO2
 
-	( theme )
+	( | theme )
 	#0f75 .System/r DEO2
 	#0f7c .System/g DEO2
 	#0f7a .System/b DEO2
 
-	( init random )
+	( | init random )
 	init-prng
 
-	( drawing mode )
+	( | drawing mode )
 	#15 .Screen/auto DEO
 
-	( thinkpad: #02a8 x #0180 )
+	( | thinkpad: #02a8 x #0180 )
 	#0328 .Screen/width DEO2
 	#0200 .Screen/height DEO2
 
-	( size playdate
+	( | size playdate
 	#0190 .Screen/width DEO2
 	#00f0 .Screen/height DEO2 )
 
-	( synths )
+	( | synths )
 	#dd .Audio0/volume DEO #0118 .Audio0/adsr DEO2 #0100 .Audio0/length DEO2
 	#ef .Audio1/volume DEO #0334 .Audio1/adsr DEO2 #0100 .Audio1/length DEO2
 	#fe .Audio2/volume DEO #1414 .Audio2/adsr DEO2 #0100 .Audio2/length DEO2
@@ -74,22 +74,22 @@
 	;saw-pcm .Audio2/addr DEO2
 	;sqr-pcm .Audio3/addr DEO2
 
-	( x )
+	( | x )
 	#0010 .grid/x1 STZ2
 	.Screen/width DEI2
 		DUP2 #03 SFT2 NIP #04 SUB .grid/width STZ
 		#01 SFT2 .grid/width LDZ #01 SFT #00 SWP #30 SFT2 ADD2 #0004 ADD2 .grid/x2 STZ2
-	( y )
+	( | y )
 	#0020 .grid/y1 STZ2
 	.Screen/height DEI2
 		DUP2 #04 SFT2 NIP #05 SUB .grid/height STZ
 		#01 SFT2 .grid/height LDZ #01 SFT #00 SWP #40 SFT2 ADD2 .grid/y2 STZ2
-	( len )
+	( | len )
 	[ LIT2 00 -grid/height ] LDZ
 	[ LIT2 00 -grid/width ] LDZ
 		MUL2 .grid/length STZ2
 
-	( cache positions )
+	( | cache positions )
 	.grid/x1 LDZ2
 		DUP2 #0078 ADD2 ;draw-filepath/x STA2
 		DUP2 ;draw-position/x STA2
@@ -108,22 +108,22 @@
 		DUP2 ;draw-filepath/y STA2
 		;draw-meter/y STA2
 
-	( theme support )
+	( | theme support )
 	load-theme
 	draw-menu
 
-	( blank file )
+	( | blank file )
 	file-new
 
-	( draw position )
+	( | draw position )
 	toggle-help
 	toggle-grid
 	draw-position
 
-	( start )
+	( | start )
 	.timer/playing LDZk #00 EQU SWP STZ
 
-	( vectors )
+	( | vectors )
 	untrap
 
 BRK
@@ -132,7 +132,7 @@ BRK
 	( name ) "Orca 0a
 	( details ) "A 20 "Livecoding 20 "Playground 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "Mar 20 "24, 20 "2023 00
+	( date ) "15 20 "Apr 20 "2025 00
 	02
 		( icon ) 83 =appicon
 		( mask ) 41 1705
@@ -1389,9 +1389,7 @@ STH2r !set-port-output-below
 	STH2k
 	( set type ) .types/op STH2kr write-type
 	( get above ) [ LIT2 00 -grid/width ] LDZ SUB2 get-port-left-raw
-	( ignore cable )
-	DUP chrb36 #13 NEQ ?&no-wire
-		POP POP2r JMP2r &no-wire
+	( ignore cable ) DUP [ LIT "J ] NEQ ?{ POP POP2r JMP2r }
 	( skip down )
 	STH2r
 	&while
@@ -1565,12 +1563,12 @@ STH2r !set-port-output-below
 	( set type ) .types/op STH2kr write-type
 	( step ) get-port-left1-value
 	( max ) STH2kr get-port-right1-value ( min1 ) DUP #00 EQU ADD STH2
-	( frame ADD max SUB 1 ) .timer/frame LDZ2 STHkr #00 SWP ADD2 #0001 SUB2
-	( MUL step ) OVRr STHr #00 SWP MUL2
-	( % max ) STHkr #00 SWP
+	( frame ADD max SUB 1 ) .timer/frame LDZ2 #00 STHkr ADD2 #0001 SUB2
+	( MUL step ) OVRr #00 STHr MUL2
+	( % max ) #00 STHkr
 	( mod2 ) [ DIV2k MUL2 SUB2 ]
-	( ADD step ) SWPr STHr #00 SWP ADD2
-	( bucket GTH= max ) STHr #00 SWP LTH2 #01 NEQ
+	( ADD step ) SWPr #00 STHr ADD2
+	( bucket GTH= max ) #00 STHr LTH2 #01 NEQ
 	( bang if equal ) #fc MUL LIT ". ADD
 
 STH2r !set-port-output-below
@@ -1583,11 +1581,11 @@ STH2r !set-port-output-below
 	( key ) get-port-left1-raw
 	( val ) STH2kr get-port-right1-raw
 	DUP LIT ". EQU ?&idle
-	OVR chrb36 ?&save
-	( load )
-		NIP chrb36 .variables ADD LDZ STH2r [ LIT2 00 -grid/width ] LDZ ADD2 !set-port-output
+	OVR LIT ". EQU ?&load
 	&save
 		SWP chrb36 .variables ADD STZ POP2r JMP2r
+	&load
+		NIP chrb36 .variables ADD LDZ STH2r [ LIT2 00 -grid/width ] LDZ ADD2 !set-port-output
 	&idle
 		POP2 POP2r
 
@@ -1625,9 +1623,7 @@ LIT "* STH2r !set-port-output
 	STH2k
 	( set type ) .types/op STH2kr write-type
 	( get above ) get-port-left1-raw
-	( ignore cable )
-	DUP chrb36 #22 NEQ ?&no-wire
-		POP POP2r JMP2r &no-wire
+	( ignore cable ) DUP [ LIT "Y ] NEQ ?{ POP POP2r JMP2r }
 	( skip down )
 	STH2r
 	&while
@@ -2122,6 +2118,14 @@ JMP2r
 (
 @|stdlib )
 
+@<phex> ( short* -: )
+	SWP /b
+	&b ( byte -: )
+		DUP #04 SFT /c
+	&c ( byte -: )
+		#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
+		JMP2r
+
 @scap ( str* -- end* ) LDAk #00 NEQ [ JMP JMP2r ] &w INC2 LDAk ?&w JMP2r
 @spop ( str* -- ) LDAk ?&n POP2 JMP2r &n scap #0001 SUB2 #00 ROT ROT STA JMP2r
 @sput ( chr str* -- ) scap INC2k #00 ROT ROT STA STA JMP2r
@@ -2129,7 +2133,6 @@ JMP2r
 @scat ( src* dst* -- ) scap
 @scpy ( src* dst* -- ) STH2 &w LDAk STH2kr STA INC2r INC2 LDAk ?&w POP2 #00 STH2r STA JMP2r
 @mclr ( src* len* -- ) OVR2 ADD2 SWP2 &l STH2k #00 STH2r STA INC2 GTH2k ?&l POP2 POP2 JMP2r
-@phex ( short* -- ) SWP ,&b JSR &b DUP #04 SFT ,&c JSR &c #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO JMP2r 
 
 @exit ( -- )
 
