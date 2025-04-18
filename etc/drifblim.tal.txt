@@ -38,18 +38,27 @@
 	;dst/on-console !bind
 
 @dst/on-console ( -> )
-	[ LIT2 02 -Console/type ] DEI LTH ?{
-		.Console/read DEI [ LIT2 -&cap &ptr -&buf ] INCk ,&ptr STR
-		NEQk ?{ ;dict/exceeded ;&buf ;dict/Path err/<set> }
-		NIP STZ
+	[ LIT2 02 -Console/type ] DEI LTH ?{ .Console/read DEI /<push>
 		BRK }
 	( | assemble )
 	;src/buf <handle-file>
 	assembly/<resolve>
 	BRK
 
+@dst/<push> ( c -- )
+	[ LIT2 -&cap &ptr -&buf ] INCk ,&ptr STR
+	NEQk ?{ ;dict/exceeded ;&buf ;dict/Path err/<set> }
+	NIP STZ
+	JMP2r
+
+@dst/<push-str> ( str* -- )
+	LDAk DUP ?{ POP POP2 JMP2r }
+	/<push>
+	INC2 !/<push-str>
+
 @err/<pchr> ( c -- )
-	#19 DEO JMP2r
+	#19 DEO
+	JMP2r
 
 @runes/inctal INC2
 	( >> )
@@ -75,28 +84,49 @@
 	;dict/in err/<pstr>
 	[ LIT2 &length 0100 ] DUP2 #0100 SUB2 err/<pdec>
 	;dict/bytes err/<pstr>
-	( | write )
+	( | write rom )
 	;dst/buf .File/name DEO2
 	#0100 SUB2 .File/length DEO2
 	;&output .File/write DEO2
+	( | write rom.sym )
+	;&sym-ext dst/<push-str>
+	[ LIT2 80 -System/state ] DEI NEQ ?{
+		;dst/buf .File/name DEO2
+		;syms/ptr LDA2 ;syms/mem
+		&>l ( -- )
+			#0002 .File/length DEO2
+			DUP2 .File/write DEO2
+			#0002 ADD2 DUP2 scap/ OVR2 SUB2 INC2 .File/length DEO2
+			DUP2 .File/write DEO2
+			scap/ INC2 GTH2k ?&>l
+		POP2 POP2 }
 	JMP2r
 
+	&sym-ext ".sym $1
+
 @runes/lut [
-	"| =&padabs "$ =&padrel "@ =&toplab "& =&sublab
-	"% =&macros "( =&coment ", =&litrel "_ =&rawrel
-	". =&litzep "- =&rawzep "; =&litabs "= =&rawabs
-	"? =&litjci "! =&litjmi "# =&lithex "" =&rawstr
-	"} =&lambda "~ =&inctal 5b =&ignore 5d =&ignore ] $1
+	"| =&padabs "$ =&padrel
+	"@ =&toplab "& =&sublab
+	"% =&macros "( =&coment
+	", =&litrel "_ =&rawrel
+	". =&litzep "- =&rawzep
+	"; =&litabs "= =&rawabs
+	"? =&litjci "! =&litjmi
+	"# =&lithex "" =&rawstr
+	"} =&lambda "~ =&inctal
+	5b =&ignore 5d =&ignore ] $1
 
 @dict/usage "usage: 20 "drifblim.rom 20 "in.tal 20 "out.rom 0a $1
+
 @dict/Path "Path $1
+
 @dict/File "File $1
 
 @meta $1
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "12 20 "Apr 20 "2025 $2
+	( date ) "18 20 "Apr 20 "2025 $2
 
 
 
@@ -136,6 +166,7 @@
 	JMP2r
 
 @token/<set-comment> ( -- )
+	LDA2 [ LIT2 "( 00 ] EQU2 ?{ ;dict/invalid ;&buf ;dict/Comment !err/<set> }
 	;asm-comment ;token/mode STA2
 	[ LIT2 01 _asm-comment/depth ] STR
 	JMP2r
@@ -227,7 +258,7 @@
 	&lithex /req-name !rom/<write-lithex>
 	&rawstr /req-name !rom/<write-str>
 	&lambda POP2 !lambda/pop
-	&coment POP2 !token/<set-comment>
+	&coment !token/<set-comment>
 	&macros /req-name !macros/<new>
 
 @runes/req-name ( str* -- str1* )
