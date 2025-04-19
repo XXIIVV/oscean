@@ -1,29 +1,29 @@
 ( uxncli uxndis.rom input.rom )
 
-|10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
-|a0 @File &vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|10 @Console/vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
+|a0 @File/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 
 |000
 
-	@Src &buf $40
+	@src/buf $3f &cap $1
 
 |100
 
 @on-reset ( -> )
 	;meta #06 DEO2
-	;await-src .Console/vector DEO2
+	;src/on-console .Console/vector DEO2
 	.Console/type DEI ?{ ;dict/usage <pstr>
 		#000f DEO }
 	BRK
 
-@await-src ( -> )
+@src/on-console ( -> )
 	[ LIT2 04 -Console/type ] DEI NEQ ?{
-		;Src/buf <load-rom>
-		[ LIT ". ] Src/<append>
-		[ LIT "s ] Src/<append>
-		[ LIT "y ] Src/<append>
-		[ LIT "m ] Src/<append>
-		;Src/buf <load-sym>
+		;&buf <load-rom>
+		[ LIT ". ] /<append>
+		[ LIT "s ] /<append>
+		[ LIT "y ] /<append>
+		[ LIT "m ] /<append>
+		;&buf <load-sym>
 		( | print result )
 		,<load-rom>/ptr LDR2 ;rom
 		&>l ( -- )
@@ -31,11 +31,11 @@
 			INC2 GTH2k ?&>l
 		POP2 POP2 #800f DEO
 		BRK }
-	.Console/read DEI Src/<append>
+	.Console/read DEI src/<append>
 	BRK
 
-@Src/<append> ( char -- )
-	[ LIT &ptr -Src/buf ] INCk ,&ptr STR
+@src/<append> ( char -- )
+	[ LIT &ptr -src/buf ] INCk ,&ptr STR
 	STZ
 	JMP2r
 
@@ -54,6 +54,17 @@
 	;sym .File/read DEO2
 	.File/success DEI2 #0000 EQU2 ;find-sym/null STA
 	JMP2r
+
+(
+@|print )
+
+%<c> {
+		[ LIT2 "( 18 ] DEO
+		#2018 DEO }
+
+%</c> {
+		#2018 DEO
+		[ LIT2 ") 18 ] DEO }
 
 @<print-line> ( addr* -- addr* )
 	( ) DUP2 ;rom SUB2
@@ -96,22 +107,18 @@
 @<print-opcode> ( addr* -- addr* )
 	LDAk ?{
 		<print-1-byte>
-		[ LIT2 "( 18 ] DEO
-		#2018 DEO
+		<c>
 		;opcodes/brk <pstr>
-		#2018 DEO
-		[ LIT2 ") 18 ] DEO
+		</c>
 		JMP2r }
 	LDAk #9f AND ?{ <print-3-byte> !<print-imm> }
 	LDAk DUP #80 NEQ SWP #c0 NEQ AND ?{ <print-2-byte> !<print-lit> }
 	LDAk DUP #a0 NEQ SWP #e0 NEQ AND ?{ <print-3-byte> !<print-lit2> }
 	<print-1-byte>
-	[ LIT2 "( 18 ] DEO
-	#2018 DEO
+	<c>
 	LDAk #1f AND #00 SWP #20 SFT2 ;opcodes ADD2 <pstr>
 	LDAk <print-mode>
-	#2018 DEO
-	[ LIT2 ") 18 ] DEO
+	</c>
 	JMP2r
 
 @<print-mode> ( byte -- )
@@ -132,46 +139,55 @@
 	NIP2 !<pstr>
 
 @<print-imm> ( addr* -- addr* )
-	[ LIT2 "( 18 ] DEO
-	#2018 DEO
+	<c>
 	LDAk #20 NEQ ?{
 		[ LIT2 "? 18 ] DEO }
 	LDAk #40 NEQ ?{
 		[ LIT2 "! 18 ] DEO }
 	DUP2 INC2k LDA2 <print-rel>
-	INC2 INC2 #2018 DEO
-	[ LIT2 ") 18 ] DEO
+	INC2 INC2 </c>
 	JMP2r
 
 @<print-lit> ( addr* -- addr* )
-	[ LIT2 "( 18 ] DEO
-	#2018 DEO
+	<c>
+	LDAk #40 AND ?{
+		( | wst )
+		[ LIT2 "# 18 ] DEO
+		INC2 LDAk <phex>/b
+		</c>
+		JMP2r }
+	( | rst )
 	;opcodes <pstr>
-	LDAk #80 EOR <print-mode>
+	[ LIT2 "r 18 ] DEO
 	#2018 DEO
 	INC2 LDAk <phex>/b
-	#2018 DEO
-	[ LIT2 ") 18 ] DEO
+	</c>
 	JMP2r
 
 @<print-lit2> ( addr* -- addr* )
-	[ LIT2 "( 18 ] DEO
-	#2018 DEO
-	( | opcode )
+	<c>
+	( | wst )
+	LDAk #40 AND ?{
+		( | wst, label )
+		INC2 LDA2k find-sym DUP2 #ffff EQU2 ?{
+			[ LIT2 "; 18 ] DEO
+			<pstr> !&end }
+		POP2
+		( | wst, hex )
+		[ LIT2 "# 18 ] DEO !&hex }
+	( | rst )
 	;opcodes <pstr>
 	LDAk #80 EOR <print-mode>
 	#2018 DEO
-	( | label )
-	INC2 LDA2k find-sym DUP2 #ffff EQU2 ?{
-		<pstr>
-		INC2 #2018 DEO
-		[ LIT2 ") 18 ] DEO
-		JMP2r }
+	( | rst, label )
+	INC2 LDA2k find-sym DUP2 #ffff EQU2 ?{ <pstr> !&end }
 	POP2
-	( | raw )
+	( >> )
+	&hex ( addr* -- addr* )
 	LDA2k <phex>
-	#2018 DEO
-	[ LIT2 ") 18 ] DEO
+	( >> )
+	&end ( addr* -- addr* )
+	</c>
 	INC2 JMP2r
 
 @<print-pad> ( count -- )
@@ -233,7 +249,7 @@
 	( name ) "Uxndis 0a
 	( desc ) "Uxntal 20 "Disassembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "27 20 "Dec 20 "2024 $2
+	( date ) "18 20 "Apr 20 "2025 $2
 
 @opcodes [
 	"LIT 00 "INC 00 "POP 00 "NIP 00

@@ -89,20 +89,18 @@
 	#0100 SUB2 .File/length DEO2
 	;&output .File/write DEO2
 	( | write rom.sym )
-	;&sym-ext dst/<push-str>
+	;dict/sym-ext dst/<push-str>
 	[ LIT2 80 -System/state ] DEI NEQ ?{
 		;dst/buf .File/name DEO2
 		;syms/ptr LDA2 ;syms/mem
 		&>l ( -- )
 			#0002 .File/length DEO2
 			DUP2 .File/write DEO2
-			#0002 ADD2 DUP2 scap/ OVR2 SUB2 INC2 .File/length DEO2
-			DUP2 .File/write DEO2
-			scap/ INC2 GTH2k ?&>l
+			#0003 ADD2 DUP2 scap/ SWP2k SUB2 .File/length DEO2
+			SWP2 .File/write DEO2
+			GTH2k ?&>l
 		POP2 POP2 }
 	JMP2r
-
-	&sym-ext ".sym $1
 
 @runes/lut [
 	"| =&padabs "$ =&padrel
@@ -117,10 +115,9 @@
 	5b =&ignore 5d =&ignore ] $1
 
 @dict/usage "usage: 20 "drifblim.rom 20 "in.tal 20 "out.rom 0a $1
-
-@dict/Path "Path $1
-
-@dict/File "File $1
+	&Path "Path $1
+	&File "File $1
+	&sym-ext ".sym $1
 
 @meta $1
 	( name ) "Drifblim 0a
