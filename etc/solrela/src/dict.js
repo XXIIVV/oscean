@@ -3040,7 +3040,7 @@ dosi	they(plur.)
 redo	my, mine
 remi	who?
 refa	when?
-resol	more
+resol	outside, without, out
 rela	known
 resi	even, fair
 
@@ -3059,7 +3059,7 @@ fala	positive
 fasi	much, very
 
 soldo	our
-solre	less
+solre	within, inside, in
 solmi	ill(adv.)
 solfa	none
 solla	always
