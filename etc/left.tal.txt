@@ -64,7 +64,7 @@
 	( name ) "Left 0a
 	( details ) "A 20 "Text 20 "Editor 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "13 20 "Mar 20 "2025 $1 02
+	( date ) "20 20 "Apr 20 "2025 $1 02
 	( > ) 83 =appicon
 	( > ) 0a =manifest/dat
 
@@ -523,11 +523,26 @@
 (
 @|find )
 
+@find-above ( addr* -- addr* )
+	DUP2 find-line-prev SWP2 !find-line-place
+
+@find-below ( addr* -- addr* )
+	DUP2 find-line-next SWP2
+	( >> )
+
+@find-line-place ( place* addr* -- )
+	DUP2 find-line-start SUB2 ADD2k NIP2 EQU2k ?{
+		SWP2
+		&>l ( -- )
+			LDAk #0a EQU ?{ utf8/next GTH2k ?&>l } }
+	NIP2 JMP2r
+
 @find-line-next ( addr* -- addr* )
+	LDAk #0a NEQ ?{ INC2 JMP2r }
 	find-line-end INC2 JMP2r
 
 @find-line-prev ( addr* -- addr* )
-	#0001 SUB2
+	find-line-start #0001 SUB2
 	( >> )
 
 @find-line-start ( addr* -- addr* )
@@ -1294,9 +1309,9 @@
 	[ LIT &mute $1 ] ?{
 		LDAk #20 GTH ?{ /<reset-always> }
 		DUP2 #0002 SUB2 LDAk #20 GTH ?{
-			INC2k LDA [ LIT ") ] EQU ?/comment-end }
+			INC2k LDA2 #20 GTH [ LIT2 ") 00 ] EQU2 ?/comment-end }
 		INC2 LDAk #20 GTH ?{
-			POP2 LDAk [ LIT "( ] EQU ?/comment-start
+			POP2 LDA2k #20 GTH [ LIT2 "( 00 ] EQU2 ?/comment-start
 			.&comment LDZ ?/<draw>
 			LDAk
 			( | handle labels )
@@ -1508,8 +1523,8 @@
 	DUP #02 AND ?&alt
 	#04 SFT
 	( | default )
-	DUP #01 NEQ ?{ POP !find-line-prev }
-	DUP #02 NEQ ?{ POP !find-line-next }
+	DUP #01 NEQ ?{ POP !find-above }
+	DUP #02 NEQ ?{ POP !find-below }
 	DUP #04 NEQ ?{ POP !utf8/prev }
 	DUP #08 NEQ ?{ POP !utf8/next }
 	&ctrl ( addr* button -- addr* )
