@@ -3042,7 +3042,7 @@ remi	who?
 refa	when?
 resol	outside, without, out
 rela	known
-resi	even, fair
+resi	none, nothing
 
 mido	your(sing.)
 mire	what?
@@ -3073,7 +3073,7 @@ lasol	never
 lasi	formal title
 
 sido	their(plur.)
-sire	uneven, unfair
+sire	each, every
 simi	early, morning, day
 sifa	few, scarcely
 sisol	sorry
