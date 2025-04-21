@@ -3038,30 +3038,30 @@ dola	you(plur.)
 dosi	they(plur.)
 
 redo	my, mine
-remi	who?
-refa	when?
-resol	outside, without, out
+remi	what
+refa	without, alone
+resol	outside, outer
 rela	known
 resi	none, nothing
 
 mido	your(sing.)
-mire	what?
-mifa	how?
+mire	that, which, who
+mifa	how
 misol	well(adv.)
 mila	near, here
 misi	late, evening, night
 
 fado	their(sing.)
-fare	where?
-fami	which?
-fasol	every
+fare	with, jointly
+fami	which
+fasol	why
 fala	positive
 fasi	much, very
 
 soldo	our
 solre	within, inside, in
 solmi	ill(adv.)
-solfa	none
+solfa	because
 solla	always
 solsi	thanks
 
