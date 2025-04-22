@@ -47,19 +47,18 @@ function Uxn (emu)
 
 	this.step = () => {
 		const ins = ram[pc++]
-		if(!pc || !ins) return;
 		m2 = ins & 0x20
-		mk = ins & 0x80
 		if(ins & 0x40)
 			src = this.rst, dst = this.wst
 		else
 			src = this.wst, dst = this.rst
+		mk = ins & 0x80
 		if(mk)
 			src.ptrk = src.ptr
 		switch(ins & 0x1f) {
 		case 0x00:
 		switch(ins) {
-		case 0x00:/*BRK*/ return ins;
+		case 0x00:/*BRK*/ return 0;
 		case 0x20:/*JCI*/ if(src.PO1()) JMI(); else pc += 2; break;
 		case 0x40:/*JMI*/ JMI(); break;
 		case 0x60:/*JSI*/ this.rst.PU2(pc + 2); JMI(); break;

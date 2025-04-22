@@ -45,7 +45,7 @@
 	<script type="text/javascript">
 'use strict'
 
-let started = 0
+let ended = 0
 let emulator
 
 let term_el = document.getElementById("term")
@@ -92,24 +92,37 @@ function setup() {
 	emulator = new Emu()
 	emulator.console.write_el = term_el
 	emulator.console.error_el = term_el
-	emulator.uxn.load(program)
+	emulator.uxn.load(program).init()
+	ended = 0
 }
 
 function run() {
+	if(ended) {
+		setup()
+		run_el.value = `Run`, step_el.value = `Step`
+		return;
+	}
 	setup(), emulator.uxn.eval(0x100)
-	started = 0
+	ended = 1
 	wst_el.innerHTML = emulator.uxn.wst.print()
-	run_el.value = `Run`, step_el.value = `Step`
+	run_el.value = `Restart`, step_el.value = `Done`
 }
 
 function step() {
-	if(!started) {
-		setup(), emulator.uxn.init()
-		started = 1
+	if(ended) return;
+	if(!emulator) {
+		setup();
+		run_el.value = `Stop`, step_el.value = "Step"
+		return;
 	}
-	let opcode = make_opcode(emulator.uxn.step())
+	let opc = emulator.uxn.step()
+	if(!opc) {
+		ended = 1;
+		run_el.value = `Restart`, step_el.value = `Done`
+		return;
+	}
 	wst_el.innerHTML = emulator.uxn.wst.print()
-	run_el.value = `Stop`, step_el.value = `Step ${opcode}`
+	run_el.value = `Stop`, step_el.value = make_opcode(opc)
 }
 
 function save() {
@@ -142,7 +155,8 @@ editor.addEventListener("keydown", (e) => {
 		editor.value = value.slice(0, selectionStart) + "\t" + value.slice(selectionEnd);
 		editor.setSelectionRange(selectionStart+1, selectionStart+1)
 	}
-	started = 0
+	if(ended)
+		ended = 1, run_el.value = "Run", step_el.value = `Step`
 });
 
 run_el.addEventListener("click", run)
