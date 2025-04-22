@@ -1,6 +1,6 @@
 'use strict'
 
-function Stack(u)
+function Stack(u, name)
 {
 	const ram = new Uint8Array(0x100)
 	this.ptr = 0
@@ -10,7 +10,7 @@ function Stack(u)
 	this.PU1 = (val) => { ram[this.ptr++ & 0xff] = val }
 	this.PU2 = (val) => { this.PU1(val >> 8), this.PU1(val) }
 	this.print = () => {
-		let res = "WST "
+		let res = `${name} `
 		for(let i = this.ptr - 8; i != this.ptr; i++) {
 			res += ('0' + ram[i & 0xff].toString(16)).slice(-2)
 			res += ((i + 1) & 0xff) ? ' ' : '|'
@@ -21,12 +21,12 @@ function Stack(u)
 function Uxn (emu)
 {
 	let a, b, c, pc, m2;
-	const wst = new Stack(this)
-	const rst = new Stack(this)
 	const x = new Uint8Array(2);
 	const y = new Uint8Array(2);
 	const z = new Uint8Array(2);
 	const ram = new Uint8Array(0x10000)
+	this.wst = new Stack(this, "WST")
+	this.rst = new Stack(this, "RST")
 	this.dev = new Uint8Array(0x100)
 
 	/* Microcode */
@@ -49,13 +49,12 @@ function Uxn (emu)
 	this.step = () => {
 		const ins = ram[pc++]
 		if(!pc || !ins) return;
-		// registers
 		m2 = ins & 0x20
 		this.rk = ins & 0x80
 		if(ins & 0x40)
-			this.src = rst, this.dst = wst
+			this.src = this.rst, this.dst = this.wst
 		else
-			this.src = wst, this.dst = rst
+			this.src = this.wst, this.dst = this.rst
 		if(this.rk)
 			this.src.ptrk = this.src.ptr
 		switch(ins & 0x1f) {
@@ -64,11 +63,11 @@ function Uxn (emu)
 		case 0x00: /* BRK */ return ins;
 		case 0x20: /* JCI */ if(this.PO1()) this.JMI(); else pc += 2; break;
 		case 0x40: /* JMI */ this.JMI(); break;
-		case 0x60: /* JSI */ rst.PU2(pc + 2); this.JMI(); break;
-		case 0xa0: /* LI2 */ wst.PU1(ram[pc++]);
-		case 0x80: /* LIT */ wst.PU1(ram[pc++]); break;
-		case 0xe0: /* LIr */ rst.PU1(ram[pc++]);
-		case 0xc0: /* L2r */ rst.PU1(ram[pc++]); break;
+		case 0x60: /* JSI */ this.rst.PU2(pc + 2); this.JMI(); break;
+		case 0xa0: /* LI2 */ this.wst.PU1(ram[pc++]);
+		case 0x80: /* LIT */ this.wst.PU1(ram[pc++]); break;
+		case 0xe0: /* LIr */ this.rst.PU1(ram[pc++]);
+		case 0xc0: /* L2r */ this.rst.PU1(ram[pc++]); break;
 		} break;
 		case 0x01: /* INC */ this.PUx(this.POx() + 1); break;
 		case 0x02: /* POP */ this.POx( ); break;
@@ -119,10 +118,6 @@ function Uxn (emu)
 		let steps = 0x80000
 		pc = at;
 		while(steps-- && this.step());
-	}
-
-	this.wst = () => {
-		return wst
 	}
 
 	function sig(val) {
