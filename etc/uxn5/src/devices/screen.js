@@ -40,6 +40,8 @@ function Screen(emu)
 		this.y1 = clamp(this.y1, 0, this.height);
 		this.x2 = clamp(this.x2, 0, this.width);
 		this.y2 = clamp(this.y2, 0, this.height);
+		console.log(this.x1, this.y1, this.x2, this.y2, `(${this.width}x${this.height})`)
+
 		return this.x2 > this.x1 && this.y2 > this.y1;
 	}
 
@@ -154,15 +156,20 @@ function Screen(emu)
 			/* fill mode */
 			if(ctrl & 0x80) {
 				let x1, y1, x2, y2, ax, bx, ay, by, hor, ver;
-				if(ctrl & 0x10) x1 = MAR(0), x2 = MAR(rX);
-				else x1 = MAR(rX), x2 = MAR(this.width);
-				if(ctrl & 0x20) y1 = MAR(0), y2 = MAR(rY);
-				else y1 = MAR(rY), y2 = MAR(this.height);
-				hor = x2 - x1, ver = y2 - y1;
+				if(ctrl & 0x10)
+					x1 = 0, x2 = rX;
+				else
+					x1 = rX, x2 = this.width;
+				if(ctrl & 0x20)
+					y1 = 0, y2 = rY;
+				else
+					y1 = rY, y2 = this.height;
+				this.change(x1, y1, x2, y2);
+				x1 = MAR(x1), y1 = MAR(y1);
+				hor = MAR(x2) - x1, ver = MAR(y2) - y1;
 				for(ay = y1 * len, by = ay + ver * len; ay < by; ay += len)
 					for(ax = ay + x1, bx = ax + hor; ax < bx; ax++)
 						layer[ax] = color & 0xff
-				this.change(x1, y1, x2, y2);
 			}
 			/* pixel mode */
 			else {

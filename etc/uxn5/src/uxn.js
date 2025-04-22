@@ -1,120 +1,112 @@
 'use strict'
 
-function Stack(u)
+function Stack(u, name)
 {
-	this.ram = new Uint8Array(0x100)
+	const ram = new Uint8Array(0x100)
 	this.ptr = 0
 	this.ptrk = 0
-	this.pop1 = () => { return this.ram[(u.rk ? --this.ptrk : --this.ptr) & 0xff] }
-	this.pop2 = () => { return this.pop1() | (this.pop1() << 8) }
-	this.push1 = (val) => { this.ram[this.ptr++ & 0xff] = val }
-	this.push2 = (val) => { this.push1(val >> 8), this.push1(val) }
+	this.PO1 = () => { return ram[--this.ptr & 0xff] }
+	this.PO2 = () => { return this.PO1() | (this.PO1() << 8) }
+	this.PU1 = (val) => { ram[this.ptr++ & 0xff] = val }
+	this.PU2 = (val) => { this.PU1(val >> 8), this.PU1(val) }
+	this.print = () => {
+		let res = `${name} `
+		for(let i = this.ptr - 8; i != this.ptr; i++) {
+			res += ('0' + ram[i & 0xff].toString(16)).slice(-2)
+			res += ((i + 1) & 0xff) ? ' ' : '|'
+		}
+		return res; }
 }
 
 function Uxn (emu)
 {
-	this.ram = new Uint8Array(0x100000)
+	let a, b, pc, src, dst, m2, mk;
+	const x = new Uint8Array(2);
+	const y = new Uint8Array(2);
+	const z = new Uint8Array(2);
+	const ram = new Uint8Array(0x10000)
+
 	this.dev = new Uint8Array(0x100)
-	this.wst = new Stack(this)
-	this.rst = new Stack(this)
-	this.move = (distance, pc) => { return (pc + distance) & 0xffff }
-	this.jump = (addr, pc) => { return this.r2 ? addr : this.move(rel(addr), pc) }
-	this.pop1 = () => { return this.src.pop1() }
-	this.pop2 = () => { return this.src.pop2() }
-	this.popx = () => { return this.r2 ? this.src.pop2() : this.src.pop1() }
-	this.push1 = (x) => { this.src.push1(x) }
-	this.push2 = (x) => { this.src.push2(x) }
-	this.pushx = (x) => { if(this.r2) this.push2(x); else this.push1(x) }
-	this.peek1 = (addr, m = 0xffff) => { return this.ram[addr] }
-	this.peek2 = (addr, m = 0xffff) => { return (this.ram[addr] << 8) | this.ram[(addr + 1) & m] }
-	this.peekx = (addr, m = 0xffff) => { return this.r2 ? this.peek2(addr, m) : this.peek1(addr, m) }
-	this.poke1 = (addr, x, m = 0xffff) => { this.ram[addr] = x }
-	this.poke2 = (addr, x, m = 0xffff) => { this.ram[addr] = x >> 8; this.ram[(addr + 1) & m] = x }
-	this.pokex = (addr, x, m = 0xffff) => { if(this.r2) this.poke2(addr, x, m); else this.poke1(addr, x, m) }
+	this.wst = new Stack(this, "WST")
+	this.rst = new Stack(this, "RST")
 
-	this.devr = (port) => {
-		if(this.r2)
-			return (emu.dei(port) << 8) | emu.dei((port + 1) & 0xff)
+	/* Microcode */
+
+	function JMP(i) { if(m2) pc = i & 0xffff; else pc = (pc + sig(i)) & 0xffff; }
+	function JMI() { a = ram[pc++] << 8 | ram[pc++]; pc = (pc + a) & 0xffff; }
+	function POx() { return m2 ? src.PO2() : src.PO1() }
+	function PUx(x) { if(m2) src.PU2(x); else src.PU1(x) }
+	function GET(o) { if(m2) o[1] = src.PO1(); o[0] = src.PO1() }
+	function PUT(i) { src.PU1(i[0]); if(m2) src.PU1(i[1]) }
+	function DEI(i,o) { o[0] = emu.dei(i); if(m2) o[1] = emu.dei((i + 1) & 0xff); PUT(o) }
+	function DEO(i,j) { emu.deo(i, j[0]); if(m2) emu.deo((i + 1) & 0xff, j[1]) }
+	function PEK(i,o,m) { o[0] = ram[i]; if(m2) o[1] = ram[(i + 1) & m]; PUT(o) }
+	function POK(i,j,m) { ram[i] = j[0]; if(m2) ram[(i + 1) & m] = j[1]; }
+
+	function k() { if(mk) src.ptr = src.ptrk }
+
+	this.step = () => {
+		const ins = ram[pc++]
+		m2 = ins & 0x20
+		if(ins & 0x40)
+			src = this.rst, dst = this.wst
 		else
-			return emu.dei(port)
-	}
-
-	this.devw = (port, val) => {
-		if(this.r2)
-			emu.deo(port, val >> 8), emu.deo((port + 1) & 0xff, val & 0xff)
-		else
-			emu.deo(port, val)
-	}
-
-	this.eval = (pc) => {
-		let a, b, c, instr, opcode
-		if(!pc || this.dev[0x0f])
-			return 0
-		while((instr = this.ram[pc++])) {
-			// registers
-			this.r2 = instr & 0x20
-			this.rr = instr & 0x40
-			this.rk = instr & 0x80
-			if(this.rr)
-				this.src = this.rst, this.dst = this.wst
-			else
-				this.src = this.wst, this.dst = this.rst
-			if(this.rk)
-				this.src.ptrk = this.src.ptr
-			opcode = instr & 0x1f;
-			switch(opcode - (!opcode * (instr >> 5))) {
-			/* Literals/Calls */
-			case -0x0: /* BRK */ return 1;
-			case -0x1: /* JCI */ if(!this.pop1()) { pc = this.move(2, pc); break }
-			case -0x2: /* JMI */ pc = this.move(this.peek2(pc) + 2, pc); break;
-			case -0x3: /* JSI */ this.rst.push2(pc + 2); pc = this.move(this.peek2(pc) + 2, pc); break;
-			case -0x4: /* LIT */
-			case -0x6: /* LITr */
-			case -0x5: /* LIT2 */
-			case -0x7: /* LIT2r */
-			// Stack
-			case 0x00: /* LIT */ this.pushx(this.peekx(pc)); pc = this.move(!!this.r2 + 1, pc); break;
-			case 0x01: /* INC */ this.pushx(this.popx() + 1); break;
-			case 0x02: /* POP */ this.popx(); break;
-			case 0x03: /* NIP */ a = this.popx(); this.popx(); this.pushx(a); break;
-			case 0x04: /* SWP */ a = this.popx(); b = this.popx(); this.pushx(a); this.pushx(b); break;
-			case 0x05: /* ROT */ a = this.popx(); b = this.popx(); c = this.popx(); this.pushx(b); this.pushx(a); this.pushx(c); break;
-			case 0x06: /* DUP */ a = this.popx(); this.pushx(a); this.pushx(a); break;
-			case 0x07: /* OVR */ a = this.popx(); b = this.popx(); this.pushx(b); this.pushx(a); this.pushx(b); break;
-			// Logic
-			case 0x08: /* EQU */ a = this.popx(); b = this.popx(); this.push1(b == a); break;
-			case 0x09: /* NEQ */ a = this.popx(); b = this.popx(); this.push1(b != a); break;
-			case 0x0a: /* GTH */ a = this.popx(); b = this.popx(); this.push1(b > a); break;
-			case 0x0b: /* LTH */ a = this.popx(); b = this.popx(); this.push1(b < a); break;
-			case 0x0c: /* JMP */ pc = this.jump(this.popx(), pc); break;
-			case 0x0d: /* JCN */ a = this.popx(); if(this.pop1()) pc = this.jump(a, pc); break;
-			case 0x0e: /* JSR */ this.dst.push2(pc); pc = this.jump(this.popx(), pc); break;
-			case 0x0f: /* STH */ if(this.r2){ this.dst.push2(this.pop2()) } else{ this.dst.push1(this.pop1()) } break;
-			// Memory
-			case 0x10: /* LDZ */ this.pushx(this.peekx(this.pop1(), 0xff)); break;
-			case 0x11: /* STZ */ this.pokex(this.pop1(), this.popx(), 0xff); break;
-			case 0x12: /* LDR */ this.pushx(this.peekx(pc + rel(this.pop1()))); break;
-			case 0x13: /* STR */ this.pokex(pc + rel(this.pop1()), this.popx()); break;
-			case 0x14: /* LDA */ this.pushx(this.peekx(this.pop2())); break;
-			case 0x15: /* STA */ this.pokex(this.pop2(), this.popx()); break;
-			case 0x16: /* DEI */ this.pushx(this.devr(this.pop1())); break;
-			case 0x17: /* DEO */ this.devw(this.pop1(), this.popx()); break;
-			// Arithmetic
-			case 0x18: /* ADD */ a = this.popx(); b = this.popx(); this.pushx(b + a); break;
-			case 0x19: /* SUB */ a = this.popx(); b = this.popx(); this.pushx(b - a); break;
-			case 0x1a: /* MUL */ a = this.popx(); b = this.popx(); this.pushx(b * a); break;
-			case 0x1b: /* DIV */ a = this.popx(); b = this.popx(); this.pushx(a ? b / a : 0); break;
-			case 0x1c: /* AND */ a = this.popx(); b = this.popx(); this.pushx(b & a); break;
-			case 0x1d: /* ORA */ a = this.popx(); b = this.popx(); this.pushx(b | a); break;
-			case 0x1e: /* EOR */ a = this.popx(); b = this.popx(); this.pushx(b ^ a); break;
-			case 0x1f: /* SFT */ a = this.pop1(); b = this.popx(); this.pushx(b >> (a & 0xf) << (a >> 4)); break;
-			}
+			src = this.wst, dst = this.rst
+		mk = ins & 0x80
+		if(mk)
+			src.ptrk = src.ptr
+		switch(ins & 0x1f) {
+		case 0x00:
+		switch(ins) {
+		case 0x00:/*BRK*/ return 0;
+		case 0x20:/*JCI*/ if(src.PO1()) JMI(); else pc += 2; break;
+		case 0x40:/*JMI*/ JMI(); break;
+		case 0x60:/*JSI*/ this.rst.PU2(pc + 2); JMI(); break;
+		case 0xa0:/*LI2*/ this.wst.PU1(ram[pc++]);
+		case 0x80:/*LIT*/ this.wst.PU1(ram[pc++]); break;
+		case 0xe0:/*LIr*/ this.rst.PU1(ram[pc++]);
+		case 0xc0:/*L2r*/ this.rst.PU1(ram[pc++]); break;
+		} break;
+		case 0x01:/*INC*/ a=POx(), k(); PUx(a + 1); break;
+		case 0x02:/*POP*/ POx(), k(); break;
+		case 0x03:/*NIP*/ GET(x), POx(), k(); PUT(x); break;
+		case 0x04:/*SWP*/ GET(x), GET(y), k(); PUT(x), PUT(y); break;
+		case 0x05:/*ROT*/ GET(x), GET(y), GET(z), k(); PUT(y), PUT(x), PUT(z); break;
+		case 0x06:/*DUP*/ GET(x), k(); PUT(x), PUT(x); break;
+		case 0x07:/*OVR*/ GET(x), GET(y), k(); PUT(y), PUT(x), PUT(y); break;
+		case 0x08:/*EQU*/ a=POx(), b=POx(), k(); src.PU1(b == a); break;
+		case 0x09:/*NEQ*/ a=POx(), b=POx(), k(); src.PU1(b != a); break;
+		case 0x0a:/*GTH*/ a=POx(), b=POx(), k(); src.PU1(b > a); break;
+		case 0x0b:/*LTH*/ a=POx(), b=POx(), k(); src.PU1(b < a); break;
+		case 0x0c:/*JMP*/ a=POx(), k(); JMP(a); break;
+		case 0x0d:/*JCN*/ a=POx(), b=src.PO1(), k(); if(b) JMP(a); break;
+		case 0x0e:/*JSR*/ a=POx(), k(); dst.PU2(pc), JMP(a); break;
+		case 0x0f:/*STH*/ GET(x), k(); dst.PU1(x[0]); if(m2) dst.PU1(x[1]); break;
+		case 0x10:/*LDZ*/ a=src.PO1(), k(); PEK(a, x, 0xff); break;
+		case 0x11:/*STZ*/ a=src.PO1(), GET(y), k(); POK(a, y, 0xff); break;
+		case 0x12:/*LDR*/ a=src.PO1(), k(); PEK(pc + sig(a), x, 0xffff); break;
+		case 0x13:/*STR*/ a=src.PO1(), GET(y), k(); POK(pc + sig(a), y, 0xffff); break;
+		case 0x14:/*LDA*/ a=src.PO2(), k(); PEK(a, x, 0xffff); break;
+		case 0x15:/*STA*/ a=src.PO2(), GET(y), k(); POK(a, y, 0xffff); break;
+		case 0x16:/*DEI*/ a=src.PO1(), k(); DEI(a, x); break;
+		case 0x17:/*DEO*/ a=src.PO1(), GET(y), k(); DEO(a, y); break;
+		case 0x18:/*ADD*/ a=POx(), b=POx(), k(); PUx(b + a); break;
+		case 0x19:/*SUB*/ a=POx(), b=POx(), k(); PUx(b - a); break;
+		case 0x1a:/*MUL*/ a=POx(), b=POx(), k(); PUx(b * a); break;
+		case 0x1b:/*DIV*/ a=POx(), b=POx(), k(); PUx(a ? b / a : 0); break;
+		case 0x1c:/*AND*/ a=POx(), b=POx(), k(); PUx(b & a); break;
+		case 0x1d:/*ORA*/ a=POx(), b=POx(), k(); PUx(b | a); break;
+		case 0x1e:/*EOR*/ a=POx(), b=POx(), k(); PUx(b ^ a); break;
+		case 0x1f:/*SFT*/ a=src.PO1(), b=POx(), k(); PUx(b >> (a & 0xf) << (a >> 4)); break;
 		}
+		return ins
 	}
+
+	this.ram = ram;
 
 	this.load = (program) => {
 		for (let i = 0; i <= program.length; i++)
-			this.ram[0x100 + i] = program[i]
+			ram[0x100 + i] = program[i]
 		return this
 	}
 
@@ -122,7 +114,13 @@ function Uxn (emu)
 		return Promise.resolve()
 	}
 
-	function rel(val) {
+	this.eval = (at) => {
+		let steps = 0x80000
+		pc = at;
+		while(steps-- && this.step());
+	}
+
+	function sig(val) {
 		return val > 0x80 ? val - 256 : val
 	}
 }
