@@ -20,7 +20,7 @@ function Stack(u, name)
 
 function Uxn (emu)
 {
-	let a, b, c, pc, m2;
+	let a, b, c, pc, src, dst, m2;
 	const x = new Uint8Array(2);
 	const y = new Uint8Array(2);
 	const z = new Uint8Array(2);
@@ -34,14 +34,14 @@ function Uxn (emu)
 
 	function JMI() { let a = ram[pc] << 8 | ram[pc + 1]; pc = (pc + a + 2) & 0xffff; }
 	function JMP(i) { if(m2) pc = i & 0xffff; else pc = (pc + sig(i)) & 0xffff; }
-	this.POx = () => { return m2 ? this.src.PO2() : this.src.PO1() }
-	this.PUx = (x) => { if(m2) this.src.PU2(x); else this.src.PU1(x) }
-	this.GET = (o) => { if(m2) o[1] = this.src.PO1(); o[0] = this.src.PO1() }
-	this.PUT = (i) => { this.src.PU1(i[0]); if(m2) this.src.PU1(i[1]) }
-	this.DEI = (i,o) => { o[0] = emu.dei(i); if(m2) o[1] = emu.dei((i + 1) & 0xff); this.PUT(o) }
-	this.DEO = (i,j) => { emu.deo(i, j[0]); if(m2) emu.deo((i + 1) & 0xff, j[1]) }
-	this.PEK = (i,o,m) => { o[0] = ram[i]; if(m2) o[1] = ram[(i + 1) & m]; this.PUT(o) }
-	this.POK = (i,j,m) => { ram[i] = j[0]; if(m2) ram[(i + 1) & m] = j[1]; }
+	function POx() { return m2 ? src.PO2() : src.PO1() }
+	function PUx(x) { if(m2) src.PU2(x); else src.PU1(x) }
+	function GET(o) { if(m2) o[1] = src.PO1(); o[0] = src.PO1() }
+	function PUT(i) { src.PU1(i[0]); if(m2) src.PU1(i[1]) }
+	function DEI(i,o) { o[0] = emu.dei(i); if(m2) o[1] = emu.dei((i + 1) & 0xff); PUT(o) }
+	function DEO(i,j) { emu.deo(i, j[0]); if(m2) emu.deo((i + 1) & 0xff, j[1]) }
+	function PEK(i,o,m) { o[0] = ram[i]; if(m2) o[1] = ram[(i + 1) & m]; PUT(o) }
+	function POK(i,j,m) { ram[i] = j[0]; if(m2) ram[(i + 1) & m] = j[1]; }
 
 	this.step = () => {
 		const ins = ram[pc++]
@@ -49,16 +49,16 @@ function Uxn (emu)
 		m2 = ins & 0x20
 		this.rk = ins & 0x80
 		if(ins & 0x40)
-			this.src = this.rst, this.dst = this.wst
+			src = this.rst, dst = this.wst
 		else
-			this.src = this.wst, this.dst = this.rst
+			src = this.wst, dst = this.rst
 		if(this.rk)
-			this.src.ptrk = this.src.ptr
+			src.ptrk = src.ptr
 		switch(ins & 0x1f) {
 		case 0x00:
 		switch(ins) {
 		case 0x00: /* BRK */ return ins;
-		case 0x20: /* JCI */ if(this.src.PO1()) JMI(); else pc += 2; break;
+		case 0x20: /* JCI */ if(src.PO1()) JMI(); else pc += 2; break;
 		case 0x40: /* JMI */ JMI(); break;
 		case 0x60: /* JSI */ this.rst.PU2(pc + 2); JMI(); break;
 		case 0xa0: /* LI2 */ this.wst.PU1(ram[pc++]);
@@ -66,37 +66,37 @@ function Uxn (emu)
 		case 0xe0: /* LIr */ this.rst.PU1(ram[pc++]);
 		case 0xc0: /* L2r */ this.rst.PU1(ram[pc++]); break;
 		} break;
-		case 0x01: /* INC */ this.PUx(this.POx() + 1); break;
-		case 0x02: /* POP */ this.POx(); break;
-		case 0x03: /* NIP */ this.GET(x), this.POx( ), this.PUT(x); break;
-		case 0x04: /* SWP */ this.GET(x), this.GET(y), this.PUT(x), this.PUT(y); break;
-		case 0x05: /* ROT */ this.GET(x), this.GET(y), this.GET(z), this.PUT(y), this.PUT(x), this.PUT(z); break;
-		case 0x06: /* DUP */ this.GET(x), this.PUT(x), this.PUT(x); break;
-		case 0x07: /* OVR */ this.GET(x), this.GET(y), this.PUT(y), this.PUT(x), this.PUT(y); break;
-		case 0x08: /* EQU */ a = this.POx(), b = this.POx(), this.src.PU1(b == a); break;
-		case 0x09: /* NEQ */ a = this.POx(), b = this.POx(), this.src.PU1(b != a); break;
-		case 0x0a: /* GTH */ a = this.POx(), b = this.POx(), this.src.PU1(b > a); break;
-		case 0x0b: /* LTH */ a = this.POx(), b = this.POx(), this.src.PU1(b < a); break;
-		case 0x0c: /* JMP */ a = this.POx(), JMP(a); break;
-		case 0x0d: /* JCN */ a = this.POx(), b = this.src.PO1(); if(b) JMP(a); break;
-		case 0x0e: /* JSR */ a = this.POx(), this.dst.PU2(pc), JMP(a); break;
-		case 0x0f: /* STH */ this.GET(x), this.dst.PU1(x[0]); if(m2) this.dst.PU1(x[1]); break;
-		case 0x10: /* LDZ */ a = this.src.PO1(), this.PEK(a, x, 0xff); break;
-		case 0x11: /* STZ */ a = this.src.PO1(), this.GET(y), this.POK(a, y, 0xff); break;
-		case 0x12: /* LDR */ a = this.src.PO1(), this.PEK(pc + sig(a), x, 0xffff); break;
-		case 0x13: /* STR */ a = this.src.PO1(), this.GET(y), this.POK(pc + sig(a), y, 0xffff); break;
-		case 0x14: /* LDA */ a = this.src.PO2(), this.PEK(a, x, 0xffff); break;
-		case 0x15: /* STA */ a = this.src.PO2(), this.GET(y), this.POK(a, y, 0xffff); break;
-		case 0x16: /* DEI */ a = this.src.PO1(), this.DEI(a, x); break;
-		case 0x17: /* DEO */ a = this.src.PO1(), this.GET(y), this.DEO(a, y); break;
-		case 0x18: /* ADD */ a = this.POx(), b = this.POx(), this.PUx(b + a); break;
-		case 0x19: /* SUB */ a = this.POx(), b = this.POx(), this.PUx(b - a); break;
-		case 0x1a: /* MUL */ a = this.POx(), b = this.POx(), this.PUx(b * a); break;
-		case 0x1b: /* DIV */ a = this.POx(), b = this.POx(), this.PUx(a ? b / a : 0); break;
-		case 0x1c: /* AND */ a = this.POx(), b = this.POx(), this.PUx(b & a); break;
-		case 0x1d: /* ORA */ a = this.POx(), b = this.POx(), this.PUx(b | a); break;
-		case 0x1e: /* EOR */ a = this.POx(), b = this.POx(), this.PUx(b ^ a); break;
-		case 0x1f: /* SFT */ a = this.src.PO1(), b = this.POx(), this.PUx(b >> (a & 0xf) << (a >> 4)); break;
+		case 0x01: /* INC */ PUx(POx() + 1); break;
+		case 0x02: /* POP */ POx(); break;
+		case 0x03: /* NIP */ GET(x), POx( ), PUT(x); break;
+		case 0x04: /* SWP */ GET(x), GET(y), PUT(x), PUT(y); break;
+		case 0x05: /* ROT */ GET(x), GET(y), GET(z), PUT(y), PUT(x), PUT(z); break;
+		case 0x06: /* DUP */ GET(x), PUT(x), PUT(x); break;
+		case 0x07: /* OVR */ GET(x), GET(y), PUT(y), PUT(x), PUT(y); break;
+		case 0x08: /* EQU */ a = POx(), b = POx(), src.PU1(b == a); break;
+		case 0x09: /* NEQ */ a = POx(), b = POx(), src.PU1(b != a); break;
+		case 0x0a: /* GTH */ a = POx(), b = POx(), src.PU1(b > a); break;
+		case 0x0b: /* LTH */ a = POx(), b = POx(), src.PU1(b < a); break;
+		case 0x0c: /* JMP */ a = POx(), JMP(a); break;
+		case 0x0d: /* JCN */ a = POx(), b = src.PO1(); if(b) JMP(a); break;
+		case 0x0e: /* JSR */ a = POx(), dst.PU2(pc), JMP(a); break;
+		case 0x0f: /* STH */ GET(x), dst.PU1(x[0]); if(m2) dst.PU1(x[1]); break;
+		case 0x10: /* LDZ */ a = src.PO1(), PEK(a, x, 0xff); break;
+		case 0x11: /* STZ */ a = src.PO1(), GET(y), POK(a, y, 0xff); break;
+		case 0x12: /* LDR */ a = src.PO1(), PEK(pc + sig(a), x, 0xffff); break;
+		case 0x13: /* STR */ a = src.PO1(), GET(y), POK(pc + sig(a), y, 0xffff); break;
+		case 0x14: /* LDA */ a = src.PO2(), PEK(a, x, 0xffff); break;
+		case 0x15: /* STA */ a = src.PO2(), GET(y), POK(a, y, 0xffff); break;
+		case 0x16: /* DEI */ a = src.PO1(), DEI(a, x); break;
+		case 0x17: /* DEO */ a = src.PO1(), GET(y), DEO(a, y); break;
+		case 0x18: /* ADD */ a = POx(), b = POx(), PUx(b + a); break;
+		case 0x19: /* SUB */ a = POx(), b = POx(), PUx(b - a); break;
+		case 0x1a: /* MUL */ a = POx(), b = POx(), PUx(b * a); break;
+		case 0x1b: /* DIV */ a = POx(), b = POx(), PUx(a ? b / a : 0); break;
+		case 0x1c: /* AND */ a = POx(), b = POx(), PUx(b & a); break;
+		case 0x1d: /* ORA */ a = POx(), b = POx(), PUx(b | a); break;
+		case 0x1e: /* EOR */ a = POx(), b = POx(), PUx(b ^ a); break;
+		case 0x1f: /* SFT */ a = src.PO1(), b = POx(), PUx(b >> (a & 0xf) << (a >> 4)); break;
 		}
 		return ins
 	}
