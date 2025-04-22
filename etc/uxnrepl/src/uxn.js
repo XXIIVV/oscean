@@ -32,8 +32,8 @@ function Uxn (emu)
 
 	/* Microcode */
 
-	this.JMI = () => { let a = ram[pc] << 8 | ram[pc + 1]; pc = (pc + a + 2) & 0xffff; }
-	this.JMP = (i) => { if(m2) pc = i & 0xffff; else pc = (pc + sig(i)) & 0xffff; }
+	function JMI() { let a = ram[pc] << 8 | ram[pc + 1]; pc = (pc + a + 2) & 0xffff; }
+	function JMP(i) { if(m2) pc = i & 0xffff; else pc = (pc + sig(i)) & 0xffff; }
 	this.POx = () => { return m2 ? this.src.PO2() : this.src.PO1() }
 	this.PUx = (x) => { if(m2) this.src.PU2(x); else this.src.PU1(x) }
 	this.GET = (o) => { if(m2) o[1] = this.src.PO1(); o[0] = this.src.PO1() }
@@ -58,9 +58,9 @@ function Uxn (emu)
 		case 0x00:
 		switch(ins) {
 		case 0x00: /* BRK */ return ins;
-		case 0x20: /* JCI */ if(this.src.PO1()) this.JMI(); else pc += 2; break;
-		case 0x40: /* JMI */ this.JMI(); break;
-		case 0x60: /* JSI */ this.rst.PU2(pc + 2); this.JMI(); break;
+		case 0x20: /* JCI */ if(this.src.PO1()) JMI(); else pc += 2; break;
+		case 0x40: /* JMI */ JMI(); break;
+		case 0x60: /* JSI */ this.rst.PU2(pc + 2); JMI(); break;
 		case 0xa0: /* LI2 */ this.wst.PU1(ram[pc++]);
 		case 0x80: /* LIT */ this.wst.PU1(ram[pc++]); break;
 		case 0xe0: /* LIr */ this.rst.PU1(ram[pc++]);
@@ -77,9 +77,9 @@ function Uxn (emu)
 		case 0x09: /* NEQ */ a = this.POx(), b = this.POx(), this.src.PU1(b != a); break;
 		case 0x0a: /* GTH */ a = this.POx(), b = this.POx(), this.src.PU1(b > a); break;
 		case 0x0b: /* LTH */ a = this.POx(), b = this.POx(), this.src.PU1(b < a); break;
-		case 0x0c: /* JMP */ a = this.POx(), this.JMP(a); break;
-		case 0x0d: /* JCN */ a = this.POx(), b = this.src.PO1(); if(b) this.JMP(a); break;
-		case 0x0e: /* JSR */ a = this.POx(), this.dst.PU2(pc), this.JMP(a); break;
+		case 0x0c: /* JMP */ a = this.POx(), JMP(a); break;
+		case 0x0d: /* JCN */ a = this.POx(), b = this.src.PO1(); if(b) JMP(a); break;
+		case 0x0e: /* JSR */ a = this.POx(), this.dst.PU2(pc), JMP(a); break;
 		case 0x0f: /* STH */ this.GET(x), this.dst.PU1(x[0]); if(m2) this.dst.PU1(x[1]); break;
 		case 0x10: /* LDZ */ a = this.src.PO1(), this.PEK(a, x, 0xff); break;
 		case 0x11: /* STZ */ a = this.src.PO1(), this.GET(y), this.POK(a, y, 0xff); break;
