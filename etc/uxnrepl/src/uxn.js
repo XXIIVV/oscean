@@ -20,7 +20,7 @@ function Stack(u, name)
 
 function Uxn (emu)
 {
-	let a, b, c, pc, src, dst, m2;
+	let a, b, pc, src, dst, m2;
 	const x = new Uint8Array(2);
 	const y = new Uint8Array(2);
 	const z = new Uint8Array(2);
@@ -32,8 +32,8 @@ function Uxn (emu)
 
 	/* Microcode */
 
-	function JMI() { let a = ram[pc] << 8 | ram[pc + 1]; pc = (pc + a + 2) & 0xffff; }
 	function JMP(i) { if(m2) pc = i & 0xffff; else pc = (pc + sig(i)) & 0xffff; }
+	function JMI() { a = ram[pc++] << 8 | ram[pc++]; pc = (pc + a) & 0xffff; }
 	function POx() { return m2 ? src.PO2() : src.PO1() }
 	function PUx(x) { if(m2) src.PU2(x); else src.PU1(x) }
 	function GET(o) { if(m2) o[1] = src.PO1(); o[0] = src.PO1() }
