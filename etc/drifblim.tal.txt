@@ -111,7 +111,8 @@
 	"; =&litabs "= =&rawabs
 	"? =&litjci "! =&litjmi
 	"# =&lithex "" =&rawstr
-	"} =&lambda "~ =&inctal ] $1
+	"} =&lambda "~ =&inctal
+	"[ =&ignore "] =&ignore ] $1
 
 @dict/usage "usage: 20 "drifblim.rom 20 "in.tal 20 "out.rom 0a $1
 	&Path "Path $1
@@ -122,7 +123,7 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "26 20 "Apr 20 "2025 $2
+	( date ) "27 20 "Apr 20 "2025 $2
 
 
 
@@ -198,7 +199,8 @@
 		[ LITr 01 ] SUBr STHkr ?{
 			#00 macros/<push-byte>
 			POP2 POPr !token/<set-default> } }
-	STHkr #00 EQU ?{ ;token/buf macros/<push-word> }
+	STHkr #00 EQU ?{ ;token/buf macros/<push-word>
+		#20 macros/<push-byte> }
 	LDA2 [ LIT2 "{ 00 ] NEQ2 ?{ INCr }
 	[ LITr _&depth ] STRr
 	JMP2r
@@ -305,28 +307,28 @@
 (
 @|Macros )
 
-@macros/<new> ( name* -- name* )
+@macros/<new> ( name* -- )
 	DUP2 /find-name INC2 ORA ?{
-		DUP2 syms/find-name INC2 ORA ?{ macros/<push-word> !token/<set-macro> } }
+		DUP2 syms/find-name INC2 ORA ?{ macros/<push-word>
+			#00 /<push-byte> !token/<set-macro> } }
 	POP2 ;dict/duplicate ;dict/Macro !err/<token>
 
 @macros/find-name ( name* -- <addr>* )
 	STH2
 	,&ptr LDR2 ;&mem
-	&>l ( -- )
-		DUP2 STH2kr wcmp ?{
-			scap/ GTH2k ?&>l
+	&>lf ( -- )
+		DUP2 STH2kr scmp ?{
+			scap/ scap/ GTH2k ?&>lf
 		POP2 #ffff }
 	NIP2 POP2r JMP2r
 
 @macros/<push-word> ( t* -- )
-	LDAk /<push-byte>
-	INC2 LDAk ?&<push-word>
-	POP2 #20
-	( >> )
+	&>lp LDAk /<push-byte>
+		INC2 LDAk ?&>lp
+	POP2 JMP2r
 
 @macros/<push-byte> ( byte -- )
-	[ LIT2 &ptr =&mem-post ] INC2k
+	[ LIT2 &ptr =&mem ] INC2k
 	( | check overflow )
 	DUP2 ;&memend LTH2 ?{
 		( ! ) ;dict/exceeded ;dict/Macros err/<token> }
@@ -340,7 +342,7 @@
 @syms/<new> ( name* -- )
 	DUP2 macros/find-name INC2 ORA ?&duplicate
 	DUP2 /find-name INC2k ORA ?{
-		( alloc ) POP2 .SymType/declared rom/get-head !/<push> }
+		( alloc ) POP2 .SymType/declared rom/get-head !/<push-sym> }
 	( | name* sym* -- )
 	INC2k INC2 LDA .SymType/declared AND ?{
 		( addr* ) rom/get-head OVR2 STA2
@@ -355,7 +357,7 @@
 	STH2
 	;&ptr LDA2 ;&mem
 	&>lfn ( -- )
-		DUP2 #0003 ADD2 STH2kr wcmp ?{
+		DUP2 #0003 ADD2 STH2kr scmp ?{
 			#0003 ADD2 scap/ GTH2k ?&>lfn
 		POP2 #ffff }
 	NIP2 POP2r JMP2r
@@ -371,10 +373,10 @@
 @syms/find-alloc ( name* -- <addr>* )
 	DUP2 /find-name INC2k ORA ?{
 		( null* -> ptr* ) POP2 ,&ptr LDR2
-		( alloc ) OVR2 .SymType/used #ffff /<push> }
+		( alloc ) OVR2 .SymType/used #ffff /<push-sym> }
 	NIP2 JMP2r
 
-@syms/<push> ( name* type addr* -- )
+@syms/<push-sym> ( name* type addr* -- )
 	( hb ) SWP /<push-byte>
 	( lb ) /<push-byte>
 	( type ) /<push-byte>
@@ -549,14 +551,12 @@
 	JMP2r
 
 @rom/<write-macro> ( t* macro* -- )
-	token/<new>
-	&>wcap ( name* -- body* )
-		INC2 LDAk #20 GTH ?&>wcap
-	INC2
-	&>body ( body* -- cap* )
-		LDAk token/<push-byte>
-		INC2 LDAk ?&>body
-	NIP2 LDA !token/<push-byte>
+	NIP2 token/<new>
+	scap/
+	&>lm ( body* -- )
+		LDAk STHk token/<push-byte>
+		INC2 STHr ?&>lm
+	POP2 JMP2r
 
 @rom/<write-str> ( str* -- )
 	LDAk /<write-byte>
@@ -615,7 +615,7 @@
 
 @shex ( str* -- value* )
 	[ LIT2r 0000 ]
-	&>w ( `i* -- )
+	&>w ( i* -- )
 		( acc ) [ LITr 40 ] SFT2r
 		( res ) chex [ LITr 00 ] STH
 		ADD2r INC2 LDAk ?&>w
@@ -640,16 +640,17 @@
 	INC2 & LDAk ?scap
 	INC2 JMP2r
 
-@wcmp ( a* b* -- f )
+@scmp ( a* b* -- f )
 	STH2
-	&>l ( a* `b* -- f )
-		LDAk #21 LTH ?{
+	&>l ( a* b* -- f )
+		LDAk #00 EQU ?{
 			LDAk LDAkr STHr NEQ ?{ INC2 INC2r !&>l } }
-	LDA #21 LTH LDAr STHr #21 LTH AND JMP2r
+	LDA LDAr STHr #0000 EQU2 JMP2r
 
 @scmp3 ( a* b* -- f )
-	LDA2k ROT2 LDA2k ROT2 EQU2 STH
-	INC2 LDA2 SWP2 INC2 LDA2 EQU2 STHr AND JMP2r
+	LDAk STH
+	SWP2 LDAk STH
+	EQUr INC2 LDA2 SWP2 INC2 LDA2 EQU2 STHr AND JMP2r
 
 (
 @|Error )
@@ -713,10 +714,8 @@
 (
 @|Buffers )
 
-@macros/mem ( name..20, value..00 )
-	( ) "[ 20 "$0 00
-	( ) "] 20 "$0 00
-	( ) &mem-post $1000 &memend
+@macros/mem ( name..00, value..00 )
+	$1000 &memend
 
 @lambda/mem $100
 
