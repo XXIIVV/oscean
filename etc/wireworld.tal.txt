@@ -7,8 +7,8 @@
 
 |000
 
-	@color $1
-	@timer &play $1
+	@color/value $1
+	@timer/play $1
 
 |100
 
@@ -27,9 +27,9 @@
 	;on-button .Controller/vector DEO2
 	( | init )
 	bar/<draw>
-	<setup-world>
-	#01 <set-color>
+	world/<init>
 	timer/<toggle>
+	#01 color/<set>
 	BRK
 
 @meta $1
@@ -54,9 +54,9 @@
 	.Mouse/y DEI2 #0019 LTH2 ?&when-down-menu
 	.Mouse/y DEI2 #03 SFT2 NIP #02 NEQ ?{
 		.Mouse/x DEI2 #03 SFT2 NIP
-		( ) DUP #02 NEQ ?{ #01 <set-color> }
-		( ) DUP #03 NEQ ?{ #02 <set-color> }
-		( ) DUP #04 NEQ ?{ #03 <set-color> }
+		( ) DUP #02 NEQ ?{ #01 color/<set> }
+		( ) DUP #03 NEQ ?{ #02 color/<set> }
+		( ) DUP #04 NEQ ?{ #03 color/<set> }
 		( ) DUP #06 NEQ ?{
 			timer/<toggle>
 			[ LIT2 00 -Mouse/state ] DEO }
@@ -66,9 +66,9 @@
 
 	&when-down-menu ( -> )
 	.Mouse/x DEI2 #03 SFT2 NIP
-	( ) DUP #01 NEQ ?{ #01 <set-color> }
-	( ) DUP #02 NEQ ?{ #02 <set-color> }
-	( ) DUP #03 NEQ ?{ #03 <set-color> }
+	( ) DUP #01 NEQ ?{ #01 color/<set> }
+	( ) DUP #02 NEQ ?{ #02 color/<set> }
+	( ) DUP #03 NEQ ?{ #03 color/<set> }
 	( ) DUP #05 NEQ ?{
 		timer/<toggle>
 		[ LIT2 00 -Mouse/state ] DEO }
@@ -78,37 +78,30 @@
 	.Controller/button DEI2
 	( | keys )
 	( ) DUP #20 NEQ ?{ timer/<toggle> }
-	( ) DUP #08 NEQ ?{ <reset> }
+	( ) DUP #08 NEQ ?{ world/<reset> }
 	POP
 	( | buttons )
-	( ) [ #01 ] NEQk NIP ?{ #01 <set-color> }
-	( ) [ #02 ] NEQk NIP ?{ #02 <set-color> }
-	( ) [ #04 ] NEQk NIP ?{ #03 <set-color> }
-	( ) [ #08 ] NEQk NIP ?{ <reset> }
+	( ) [ #01 ] NEQk NIP ?{ #01 color/<set> }
+	( ) [ #02 ] NEQk NIP ?{ #02 color/<set> }
+	( ) [ #04 ] NEQk NIP ?{ #03 color/<set> }
+	( ) [ #08 ] NEQk NIP ?{ world/<reset> }
 	POP BRK
 
 (
 @|core )
 
-@timer/<toggle> ( -- )
-	.&play LDZk #00 EQU SWP STZ !<draw-ui>
+@get-addr ( x y -- addr* )
+	#00 SWP ROT #00 SWP SWP2 & #60 SFT2 ADD2 [ LIT2 &current =world/mem ] ADD2 JMP2r
 
-@<set-color> ( color -- )
-	DUP .color LDZ NEQ ?{ POP JMP2r }
-	.color STZ !cursor/<update>
+@<set-cell> ( cell x y -- addr* )
+	get-addr STA
+	JMP2r
 
 @<paint-cell> ( -- )
-	( color ) .color LDZ .Mouse/state DEI #01 GTH #00 EQU MUL STHk
+	( color ) .color/value LDZ .Mouse/state DEI #01 GTH #00 EQU MUL STHk
 	( color x* y* ) .Mouse/x DEI2 #03 SFT2 .Mouse/y DEI2 #03 SFT2
-	( color x* y* color ) OVR2 OVR2 get-cell STHr NEQ ?{ POP2 POP2 POP JMP2r }
-	( color x* y* ) <set-cell> !<redraw>
-
-@<reset> ( -- )
-	;world #2000 OVR2 ADD2 SWP2
-	&>loop ( -- )
-		STH2k #00 STH2r STA
-		INC2 GTH2k ?&>loop
-	POP2 POP2 run !<redraw>
+	( color x* y* color ) OVR2 OVR2 get-addr/ LDA STHr NEQ ?{ POP2 POP2 POP JMP2r }
+	( color x* y* ) NIP ROT POP <set-cell> !world/<draw>
 
 @run ( -- )
 	;cell-icn .Screen/addr DEO2
@@ -134,17 +127,7 @@
 	#0000 STH2r SUB2 ;run/future STA2
 	JMP2r
 
-@get-addr ( x y -- addr* )
-	#00 SWP #60 SFT2 ROT #00 SWP ADD2 [ LIT2 &current =world ] ADD2 JMP2r
-
-@get-cell ( x* y* -- cell )
-	#60 SFT2 ADD2 ;get-addr/current LDA2 ADD2 LDA JMP2r
-
-@<set-cell> ( cell x* y* -- addr* )
-	#60 SFT2 ADD2 ;get-addr/current LDA2 ADD2 STA
-	JMP2r
-
-@transform ( xy cell -- cell )
+@transform ( xy* cell -- cell )
 	DUP ?{ NIP NIP JMP2r }
 	DUP #03 NEQ ?{ POP POP2 #02 JMP2r }
 	DUP #02 NEQ ?{ POP POP2 #01 JMP2r }
@@ -164,7 +147,34 @@
 (
 @|drawing )
 
-@<redraw> ( -- )
+@bar/<draw> ( -- )
+	( | colors )
+	[ LIT2 01 -Screen/auto ] DEO
+	#0008 DUP2 .Screen/x DEO2
+	.Screen/y DEO2
+	;cell-icn .Screen/addr DEO2
+	[ LIT2 01 -Screen/sprite ] DEO
+	[ LIT2 02 -Screen/sprite ] DEO
+	[ LIT2 03 -Screen/sprite ] DEO
+	#0000 .Screen/x DEO2
+	#0017 .Screen/y DEO2
+	[ LIT2 01 -Screen/auto ] DEO
+	#00
+	&>l ( -- )
+		[ LIT2 01 -Screen/pixel ] DEO
+		[ LIT2 00 -Screen/pixel ] DEO
+		INC DUP ?&>l
+	POP JMP2r
+
+@world/<reset> ( -- )
+	;&memend ;&mem
+	&>loop ( -- )
+		#0000 OVR2 STA2
+		INC2 INC2 GTH2k ?&>loop
+	POP2 POP2 run
+	( >> )
+
+@world/<draw> ( -- )
 	( | clear )
 	#0000 .Screen/x DEO2
 	#0018 .Screen/y DEO2
@@ -180,82 +190,70 @@
 		POPr INC2 GTH2k ?&>l
 	POP2 POP2 JMP2r
 
-@<draw-ui> ( -- )
-	( | colors )
-	[ LIT2 01 -Screen/auto ] DEO
-	#0008 DUP2 .Screen/x DEO2
-	.Screen/y DEO2
-	;cell-icn .Screen/addr DEO2
-	[ LIT2 01 -Screen/sprite ] DEO
-	[ LIT2 02 -Screen/sprite ] DEO
-	[ LIT2 03 -Screen/sprite ] DEO
-	( | toggle )
-	#0028 .Screen/x DEO2
-	;toggle-icn [ LIT2 00 -timer/play ] LDZ #30 SFT2 ADD2 .Screen/addr DEO2
-	[ LIT2 01 -Screen/sprite ] DEO
-	JMP2r
-
-@bar/<draw> ( -- )
-	#0000 .Screen/x DEO2
-	#0010 .Screen/y DEO2
-	;&sprite-icn .Screen/addr DEO2
-	[ LIT2 01 -Screen/auto ] DEO
-	#c0 [ LIT2r 01 -Screen/sprite ]
-	&>l ( -- )
-		DEOkr
-		INC DUP ?&>l
-	POP POP2r JMP2r
-
-	&sprite-icn [ 0000 0000 0000 00aa ]
-
-@<setup-world> ( -- )
-	#01 #0010 #0010 <set-cell>
-	#01 #0011 #000f <set-cell>
-	#02 #0012 #000f <set-cell>
-	#03 #0013 #000f <set-cell>
-	#01 #0014 #0010 <set-cell>
-	#01 #0011 #0011 <set-cell>
-	#01 #0012 #0011 <set-cell>
-	#01 #0013 #0011 <set-cell>
-	#01 #0014 #0010 <set-cell>
-	#01 #0015 #0010 <set-cell>
-	#01 #0016 #0010 <set-cell>
+@world/<init> ( -- )
+	#01 #1010 <set-cell>
+	#01 #110f <set-cell>
+	#02 #120f <set-cell>
+	#03 #130f <set-cell>
+	#01 #1410 <set-cell>
+	#01 #1111 <set-cell>
+	#01 #1211 <set-cell>
+	#01 #1311 <set-cell>
+	#01 #1410 <set-cell>
+	#01 #1510 <set-cell>
+	#01 #1610 <set-cell>
 	( | up )
-	#01 #0017 #000f <set-cell>
-	#01 #0018 #000e <set-cell>
-	#01 #0019 #000d <set-cell>
-	#01 #0019 #000c <set-cell>
-	#01 #0018 #000b <set-cell>
-	#01 #0019 #000b <set-cell>
-	#01 #001a #000b <set-cell>
-	#01 #0018 #000a <set-cell>
-	#01 #001a #000a <set-cell>
-	#01 #0019 #0009 <set-cell>
-	#01 #0019 #0008 <set-cell>
-	#01 #0019 #0007 <set-cell>
+	#01 #170f <set-cell>
+	#01 #180e <set-cell>
+	#01 #190d <set-cell>
+	#01 #190c <set-cell>
+	#01 #180b <set-cell>
+	#01 #190b <set-cell>
+	#01 #1a0b <set-cell>
+	#01 #180a <set-cell>
+	#01 #1a0a <set-cell>
+	#01 #1909 <set-cell>
+	#01 #1908 <set-cell>
+	#01 #1907 <set-cell>
 	( | down )
-	#01 #0017 #0011 <set-cell>
-	#01 #0018 #0012 <set-cell>
-	#01 #0019 #0013 <set-cell>
-	#01 #0019 #0014 <set-cell>
-	#01 #0018 #0015 <set-cell>
-	#01 #001a #0015 <set-cell>
-	#01 #0018 #0016 <set-cell>
-	#01 #0019 #0016 <set-cell>
-	#01 #001a #0016 <set-cell>
-	#01 #0019 #0017 <set-cell>
-	#01 #0019 #0018 <set-cell>
-	#01 #0019 #0019 <set-cell>
+	#01 #1711 <set-cell>
+	#01 #1812 <set-cell>
+	#01 #1913 <set-cell>
+	#01 #1914 <set-cell>
+	#01 #1815 <set-cell>
+	#01 #1a15 <set-cell>
+	#01 #1816 <set-cell>
+	#01 #1916 <set-cell>
+	#01 #1a16 <set-cell>
+	#01 #1917 <set-cell>
+	#01 #1918 <set-cell>
+	#01 #1919 <set-cell>
 	JMP2r
 
 (
 @|Objects )
 
+@timer/<toggle> ( -- )
+	.&play LDZk #00
+	( | draw )
+	SWPk #30 SFT2 ;toggle-icn ADD2 .Screen/addr DEO2
+	#0028 .Screen/x DEO2
+	#0008 .Screen/y DEO2
+	[ LIT2 01 -Screen/sprite ] DEO
+	( | set )
+	EQU SWP STZ
+	JMP2r
+
+@color/<set> ( color -- )
+	DUP .&value LDZ NEQ ?{ POP JMP2r }
+	.&value STZ
+	( >> )
+
 @cursor/<update> ( -- )
 	#40 /<draw>
 	.Mouse/x DEI2 ,&x STR2
 	.Mouse/y DEI2 ,&y STR2
-	[ LIT2 40 -color ] LDZ ADD
+	[ LIT2 40 -color/value ] LDZ ADD
 	( >> )
 
 @cursor/<draw> ( color -- )
@@ -274,7 +272,8 @@
 
 @toggle-icn [ 6666 6666 6666 6600 4666 767e 7666 4600 ]
 
-@world ( | I live in the atom with the happy protons and neutrons.
+@world/mem $2000
+	&memend ( I live in the atom with the happy protons and neutrons.
 	| I'm also so negative all the freakin time.
 	| What do I do?
 	| How do I find peace? )
