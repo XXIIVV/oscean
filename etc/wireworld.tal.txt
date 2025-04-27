@@ -26,7 +26,7 @@
 	;on-mouse .Mouse/vector DEO2
 	;on-button .Controller/vector DEO2
 	( | init )
-	bar/<draw>
+	ui/<draw>
 	world/<init>
 	timer/<toggle>
 	#01 color/<set>
@@ -47,24 +47,16 @@
 
 @on-mouse ( -> )
 	cursor/<update>
-	.Mouse/state DEI ?&when-down
+	.Mouse/state DEI ?{ BRK }
+	.Mouse/y DEI2 #0019 LTH2 ?&on-menu
+	( color ) .color/value LDZ .Mouse/state DEI #01 GTH #00 EQU MUL STHk
+	( color x* y* ) .Mouse/x DEI2 #03 SFT2 .Mouse/y DEI2 #03 SFT2
+	( color x* y* color ) OVR2 OVR2 get-addr/ LDA STHr NEQ ?{ POP2 POP2 POP BRK }
+	( color x* y* ) NIP ROT POP <set-cell>
+	world/<draw>
 	BRK
 
-	&when-down ( -> )
-	.Mouse/y DEI2 #0019 LTH2 ?&when-down-menu
-	.Mouse/y DEI2 #03 SFT2 NIP #02 NEQ ?{
-		.Mouse/x DEI2 #03 SFT2 NIP
-		( ) DUP #02 NEQ ?{ #01 color/<set> }
-		( ) DUP #03 NEQ ?{ #02 color/<set> }
-		( ) DUP #04 NEQ ?{ #03 color/<set> }
-		( ) DUP #06 NEQ ?{
-			timer/<toggle>
-			[ LIT2 00 -Mouse/state ] DEO }
-		POP }
-	<paint-cell>
-	BRK
-
-	&when-down-menu ( -> )
+	&on-menu ( -> )
 	.Mouse/x DEI2 #03 SFT2 NIP
 	( ) DUP #01 NEQ ?{ #01 color/<set> }
 	( ) DUP #02 NEQ ?{ #02 color/<set> }
@@ -91,17 +83,11 @@
 @|core )
 
 @get-addr ( x y -- addr* )
-	#00 SWP ROT #00 SWP SWP2 & #60 SFT2 ADD2 [ LIT2 &current =world/mem ] ADD2 JMP2r
+	SWP #0000 ROT SWP2 SWP & #60 SFT2 ADD2 [ LIT2 &current =world/mem ] ADD2 JMP2r
 
 @<set-cell> ( cell x y -- addr* )
 	get-addr STA
 	JMP2r
-
-@<paint-cell> ( -- )
-	( color ) .color/value LDZ .Mouse/state DEI #01 GTH #00 EQU MUL STHk
-	( color x* y* ) .Mouse/x DEI2 #03 SFT2 .Mouse/y DEI2 #03 SFT2
-	( color x* y* color ) OVR2 OVR2 get-addr/ LDA STHr NEQ ?{ POP2 POP2 POP JMP2r }
-	( color x* y* ) NIP ROT POP <set-cell> !world/<draw>
 
 @run ( -- )
 	;cell-icn .Screen/addr DEO2
@@ -147,8 +133,7 @@
 (
 @|drawing )
 
-@bar/<draw> ( -- )
-	( | colors )
+@ui/<draw> ( -- )
 	[ LIT2 01 -Screen/auto ] DEO
 	#0008 DUP2 .Screen/x DEO2
 	.Screen/y DEO2
@@ -158,7 +143,6 @@
 	[ LIT2 03 -Screen/sprite ] DEO
 	#0000 .Screen/x DEO2
 	#0017 .Screen/y DEO2
-	[ LIT2 01 -Screen/auto ] DEO
 	#00
 	&>l ( -- )
 		[ LIT2 01 -Screen/pixel ] DEO
