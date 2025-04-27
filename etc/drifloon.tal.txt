@@ -51,7 +51,7 @@
 	( name ) "Drifloon 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "25 20 "Apr 20 "2025 $2
+	( date ) "26 20 "Apr 20 "2025 $2
 
 ( @|Core )
 
@@ -76,11 +76,11 @@
 		POP ;&buf LDZk ?{ POP2 JMP2r }
 		[ LIT2 &mode =asm-default ] JSR2 !/<new> }
 	( | append )
-	[ LIT2 00 &ptr -&buf ]
-	( overflow ) DUP .&cap LTH ?{
-		POP2 POP2
-		( ! ) ;dict/exceeded ;dict/Token !err/<token> }
-	INCk ,&ptr STR
+	[ LIT2 00 &ptr -&buf ] INCk
+	( |check overflow )
+	DUP .&cap LTH ?{
+		( ! ) ;dict/exceeded ;dict/Token err/<token> }
+	,&ptr STR
 	STZ2
 	JMP2r
 
@@ -134,9 +134,11 @@
 @|Scope )
 
 @scope/<push-byte> ( c -- )
-	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
-	( overflow ) DUP .&cap LTH ?{
+	[ LIT2 00 &ptr -&buf ] INCk
+	( | check overflow )
+	DUP .&cap LTH ?{
 		( ! ) ;dict/exceeded ;dict/Symbol err/<token> }
+	,&ptr STR
 	STZ2
 	JMP2r
 
@@ -190,6 +192,9 @@
 	INC2 LDAk #20 GTH ?{ ;dict/invalid ;dict/Token !err/<token> }
 	JMP2r
 
+(
+@|Opcodes )
+
 @opcodes/find ( str* -- str* <opc> )
 	[ LITr 00 ] ;&lut
 	&>l ( -- )
@@ -203,7 +208,7 @@
 	"EQU "NEQ "GTH "LTH "JMP "JCN "JSR "STH
 	"LDZ "STZ "LDR "STR "LDA "STA "DEI "DEO
 	"ADD "SUB "MUL "DIV "AND "ORA "EOR "SFT
-	"BRK ] $1
+	"BRK ]
 
 (
 @|Lambda )
@@ -248,11 +253,12 @@
 	( >> )
 
 @macros/<push-byte> ( byte -- )
-	[ LIT2 &ptr =&mem-post ] INC2k ,&ptr STR2
-	STA
+	[ LIT2 &ptr =&mem-post ] INC2k
 	( | check overflow )
-	,&ptr LDR2 ;&mem-end LTH2 ?{
-		( ! ) ;dict/exceeded ;dict/Macros !err/<token> }
+	DUP2 ;&memend LTH2 ?{
+		( ! ) ;dict/exceeded ;dict/Macros err/<token> }
+	,&ptr STR2
+	STA
 	JMP2r
 
 (
@@ -311,11 +317,12 @@
 	( >> )
 
 @syms/<push-byte> ( byte -- )
-	[ LIT2 &ptr =&mem ] INC2k ,&ptr STR2
-	STA
+	[ LIT2 &ptr =&mem ] INC2k
 	( | check overflow )
-	,&ptr LDR2 ;&mem-end LTH2 ?{
-		( ! ) ;dict/exceeded ;dict/Symbols !err/<token> }
+	DUP2 ;&memend LTH2 ?{
+		( ! ) ;dict/exceeded ;dict/Symbols err/<token> }
+	,&ptr STR2
+	STA
 	JMP2r
 
 @syms/invalid ( name* -- )
@@ -366,9 +373,11 @@
 	( >> )
 
 @refs/<push-byte> ( byte -- )
-	[ LIT2 &ptr =&mem ] INC2k ,&ptr STR2
-	DUP2 ;&mem-end LTH2 ?{
-		( ! ) ;dict/exceeded ;dict/References !err/<token> }
+	[ LIT2 &ptr =&mem ] INC2k
+	( | check overflow )
+	DUP2 ;&memend LTH2 ?{
+		( ! ) ;dict/exceeded ;dict/References err/<token> }
+	,&ptr STR2
 	STA
 	JMP2r
 
@@ -446,7 +455,7 @@
 	( >> )
 
 @refs/get-distance ( addr* -- distance* )
-	( ) INC2 INC2 SUB2 JMP2r
+	INC2 INC2 SUB2 JMP2r
 
 @refs/<error> ( adj* -- )
 	[ LIT2 &err $2 ] DUP2 syms/find-addr #0003 ADD2 scope/<set>
@@ -516,8 +525,7 @@
 	DUP /get-head INC2k /<set-head>
 	;&mem ADD2 STA
 	( not zero ) ?{ JMP2r }
-	/get-head
-	( ) OVR ?{
+	/get-head OVR ?{
 		( ! ) ;dict/zero-page ;dict/Writing err/<token> }
 	;&length STA2
 	JMP2r
@@ -574,7 +582,8 @@
 @|Error )
 
 @err/<token> ( adj* topic* -- )
-	;token/buf SWP2 ( >> )
+	;token/buf SWP2
+	( >> )
 
 @err/<generic> ( adj* keyword* topic* -- )
 	.System/state DEI ?{
@@ -634,15 +643,15 @@
 @macros/mem ( name..20, value..00 )
 	( ) "[ 20 "$0 00
 	( ) "] 20 "$0 00
-	( ) &mem-post $1000 &mem-end
+	( ) &mem-post $1000 &memend
 
 @lambda/mem $100
 
 @refs/mem ( addr*, symbol*, RefType )
-	$1800 &mem-end
+	$1800 &memend
 
 @syms/mem ( addr*, SymType, body..00 )
-	$4800 &mem-end
+	$4800 &memend
 
 @rom/mem ( zeropage )
 	$100 &output
