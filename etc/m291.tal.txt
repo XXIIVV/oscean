@@ -1,13 +1,13 @@
 ( build: uxnasm src/m291.tal m291.rom
 | start: uxn11 m291.rom )
 
-|10 @Console &vector $2 &read $5 &type $1 &write $1 &error $3 &addr $2 &mode $1 &exec $1
-|00 @System &vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
-|20 @Screen &vector $2 &width $2 &height $2 &auto $2 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
-|80 @Controller &vector $2 &button $1 &key $1
-|90 @Mouse &vector $2 &x $2 &y $2 &state $6 &scrolly &scrolly-hb $1 &scrolly-lb $1
-|a0 @File &vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
-|c0 @DateTime &year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
+|10 @Console/vector $2 &read $5 &type $1 &write $1 &error $3 &addr $2 &mode $1 &exec $1
+|00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
+|20 @Screen/vector $2 &width $2 &height $2 &auto $2 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
+|80 @Controller/vector $2 &button $1 &key $1
+|90 @Mouse/vector $2 &x $2 &y $2 &state $6 &scrolly &scrolly-hb $1 &scrolly-lb $1
+|a0 @File/vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|c0 @DateTime/year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
 |0100 @WIDTH
 
 |000
@@ -51,7 +51,7 @@
 	( name ) "m291 0a
 	( desc ) "Audio 20 "Player 0a
 	( auth ) "By 20 "Linvega 20 "& 20 "d6 0a
-	( date ) "8 20 "Apr 20 "2025 $2
+	( date ) "27 20 "Apr 20 "2025 $2
 
 (
 @|macros )
@@ -627,7 +627,9 @@
 		#0008 .Screen/x DEO2
 		#00 OVR
 		( CELLSIZE ) #70 SFT2 ;mem/tracks ADD2 STHr <draw-track>
-		.Screen/y DEI2k #0010 ADD2 ROT DEO2
+		.Screen/y DEI2 #0010 ADD2
+		( cap ) DUP2 .Screen/height DEI2 #0008 SUB2 LTH2 ?{ POP2 POP2 JMP2r }
+		.Screen/y DEO2
 		INC GTHk ?&>l
 	POP2 JMP2r
 
@@ -653,22 +655,26 @@
 	.lines/folders LDZ #00 NEQk ?{ POP2 JMP2r }
 	.selection/scroll LDZ ADD GTHk ?{ POP2 JMP2r }
 	&>l ( -- )
+		( | background )
 		[ LITr 01 ] #00 <draw-background>
 		( | selected )
 		DUP [ LIT &sel $1 ] NEQ ?{
 			#03 <draw-background>
 			POPr [ LITr 05 ] }
 		( | gizmo )
-		.Screen/y DEI2 [ LIT2 15 -Screen/auto ] DEO
+		[ LIT2 15 -Screen/auto ] DEO
 		;WIDTH #0010 SUB2 .Screen/x DEO2
-		[ LIT2 00 "> ] #20 SUB #50 SFT2 ;chicago/glyphs ADD2 .Screen/addr DEO2
+		.Screen/y DEI2
+		( ) #03c0 ;chicago/glyphs ADD2 .Screen/addr DEO2
 		DUPr [ LITr -Screen/sprite ] DEOr
 		.Screen/y DEO2
 		( | normal )
 		#0008 .Screen/x DEO2
 		#00 OVR
 		( CELLSIZE ) #70 SFT2 ;mem/folders ADD2 STHr <draw-folder>
-		.Screen/y DEI2k #0010 ADD2 ROT DEO2
+		.Screen/y DEI2 #0010 ADD2
+		( cap ) DUP2 .Screen/height DEI2 #0008 SUB2 LTH2 ?{ POP2 POP2 JMP2r }
+		.Screen/y DEO2
 		INC GTHk ?&>l
 	POP2 JMP2r
 
