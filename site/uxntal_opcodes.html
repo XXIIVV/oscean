@@ -130,7 +130,7 @@ href='uxntal_reference.html'>Opcode Reference</a>.</p>
 	<tr><th></th><th>00</th><th>01</th><th>02</th><th>03</th><th>04</th><th>05</th><th>06</th><th>07</th><th>08</th><th>09</th><th>0a</th><th>0b</th><th>0c</th><th>0d</th><th>0e</th><th>0f</th></tr>
 	<tr>
 		<th>00</th>
-		<td><a href='#brk'>BRK</a></td>
+		<td class='call'><a href='#brk'>BRK</a></td>
 		<td><a href='#inc'>INC</a></td>
 		<td><a href='#pop'>POP</a></td>
 		<td><a href='#nip'>NIP</a></td>
@@ -196,18 +196,33 @@ Ends the evalutation of the current <a href='uxntal_devices.html'>vector</a>. Th
 <code class='op'>JCI <code class="sig">cond8 -- </code></code>
 Pops a byte from the working stack and if it is not zero, moves the PC to a relative address at a distance equal to the next short in memory, otherwise moves PC+2. This opcode has no modes.
 </p>
+<pre>
+#0a DUP ?label INC @label ( 0a )
+#0a #01 ?{ INC }          ( 0a )
+#0a #00 ?{ INC }          ( 0b )
+</pre>
 
 <h3 id='jmi'>Jump Instant</h3>
 <p>
 <code class='op'>JMI <code class="sig"> -- </code></code>
 Moves the PC to a relative address at a distance equal to the next short in memory. This opcode has no modes.
 </p>
+<pre>
+#0a !label INC @label     ( 0a )
+#0a !{ INC }              ( 0a )
+</pre>
 
 <h3 id='jsi'>Jump Stash Return Instant</h3>
 <p>
 <code class='op'>JSI <code class="sig"> -- </code></code>
 Pushes PC+2 to the return-stack and moves the PC to a relative address at a distance equal to the next short in memory. This opcode has no modes.
 </p>
+<pre>
+#07 #04 modulo BRK        ( 03 )
+
+@modulo ( a mod -- res )
+	DIVk MUL SUB JMP2r
+</pre>
 
 <h3 id='lit'>Literal</h3>
 <img src='../media/generic/ugl/lit.png' class='ugl'/>
