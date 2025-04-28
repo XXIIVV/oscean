@@ -100,9 +100,9 @@ slash, like <kbd>/method</kbd>:</p>
 	/get-x /get-y JMP2r
 </pre>
 
-<h3 id='lambdas'>Anonymous Labels</h3>
+<h3 id='anonymous'>Anonymous Labels</h3>
 
-<p>In the context of Uxntal, lambdas is a label designated by a curly bracket
+<p>An anonymous label is designated by a curly bracket
 that points to its associated closing bracket, and can be nested. Under the
 hood, the opening bracket assembles to the address of the closing bracket which
 allows the destination address to be used like any other label such as a JCI
@@ -113,56 +113,26 @@ allows the destination address to be used like any other label such as a JCI
 preceeding their content by the address of the end of the string, so the
 reading of that string data is not looking for a null byte, but running until
 reaching the bounds. The advantage is that the address of the next character to
-append is readily available.</p>
+append is readily available. Here are some example data-structures:</p>
 
 <pre>
-@on-reset ( -> )
-    ;cstr print-counted
-    BRK
+@counted-string
+	_{ "foo 20 "bar }
 
-@cstr ={ "foo 20 "bar }
-
-@print-counted ( cstr* -- )
-    LDA2k SWP2 INC2 INC2
-    &l ( -- )
-        LDAk #18 DEO
-        INC2 GTH2k ?&l
-    POP2 POP2 JMP2r
+@linked-list
+	={ ={ "A } ={ "B ={ "C } } }
 </pre>
 
-<h4>Data Structures</h4>
-
-<p>We can inline a list of items, here's an implementation a function that
-returns the member in a list, or <i>nil</i>. Notice how the lambda jump
-requires the list address to be moved from the return stack.</p>
-
-<pre>
-{ =cat =dog =bat } STH2r ;rat member?
-</pre>
-
-<pre>
-@member? ( {items}* target* -- res* )
-	,&t STR2
-	DUP2k #0002 SUB2 LDA2 ADD2 SWP2
-	&l ( -- )
-		LDA2k [ LIT2 &t $2 ] EQU2 ?&found
-		INC2 INC2 GTH2k ?&l
-	POP2 ;nil &found NIP2
-	JMP2r
-</pre>
-
-<h4>Unless Blocks</h4>
+<h4 id='unless'>Unless Blocks</h4>
 
 <p>It is important to notice that a in the case of a conditional jump, the
 lambda's content is <b>jumped over when the flag byte is true</b>.</p>
 
 <pre>
-.button LDZ ?{ skipped-on-button }
+[ LIT2 &last $1 -Mouse/state ] DEI DUP ,&last STR
+DUP2 #0001 NEQ2 ?{ ( on down ) }
+DUP2 #0101 NEQ2 ?{ ( on drag ) }
+DUP2 #0100 NEQ2 ?{ ( on release ) }
+POP2
 </pre>
 
-<p>Lambdas can also be nested into one another, only the outermost layer of a
-nested lambda is evaluated at a time:</p>
-
-<pre>
-#01 { { "foo $1 } STH2r !print-lambda } STH2r JCN2
-</pre>
