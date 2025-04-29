@@ -42,10 +42,11 @@ item was the last to be added, and will be the first to be removed.</p>
 
 <h3>Example Program</h3>
 
-<p>The first line of our example begins with the padding token <kbd>|10</kbd>,
-followed by a <a href='uxntal_labels.html#structs'>struct</a> that aligns
-the various ports of the <a href='varvara.html#console'>Console</a> device so
-that they can be referenced by name in our program.</p>
+<p>Let's write a program that prints "Hello World!". The first line beginning
+with <kbd>|10</kbd> defines <a href='uxntal_labels.html#structs'>labels</a>
+that aligns with the various ports of the <a
+href='varvara.html#console'>Console</a> device so that they can be referenced
+by name in our program.</p>
 
 <iframe src="../etc/uxnrepl/index.html" frameborder="0" class='frame'></iframe>
 
@@ -56,11 +57,10 @@ that they can be referenced by name in our program.</p>
 </style>
 
 <p>The second segment <kbd>|100</kbd> moves the program location to the address
-0x0100, which is where the first page of memory ends, and <a
-href='uxntal_memory.html'>where all Uxn programs begin</a>. Next, inside
-parentheses, is a <b>comment</b> with the arrow symbol indicating that the
-following operation is a <a href='uxntal_devices.html'>vector</a>. To learn
-more, see <a href='uxntal_notation.html'>notation</a>.</p>
+0x0100, which is <a href='uxntal_memory.html'>where all Uxn programs begin</a>.
+Next, inside parentheses, is a <a href='uxntal_notation.html'>comment</a> with
+the arrow symbol indicating that the following operation is a <a
+href='uxntal_devices.html'>vector</a>. </p>
 
 <pre>
 @on-reset
@@ -71,7 +71,7 @@ more, see <a href='uxntal_notation.html'>notation</a>.</p>
 
 <p>The <kbd>;my-string</kbd> token pushes an <b>absolute address</b>, made of two
 bytes, pointing to the text in memory. Values pushed to the stack in this
-fashion are called a <i>literals</i>, as opposed to values stored in memory
+fashion are called <i>literals</i>, as opposed to values stored in memory
 which are called <i>immediates</i>. Next, we jump to the <kbd>@print-text</kbd>
 subroutine, leaving our current address on top of the <a
 href='uxntal_stacks.html'>return stack</a>.</p>
@@ -93,14 +93,16 @@ href='uxntal_labels.html#scope'>scope</a>.</p>
 0111:   6c         JMP2r
 </pre>
 
-<p>Next, the <a href='uxntal_opcodes.html#lda'><kbd>LDAk</kbd></a> opcode loads
+<p>Next, the <kbd><a href='uxntal_opcodes.html#lda'>LDAk</a></kbd> opcode loads
 the letter <a href='ascii.html'>letter H</a> found at that address, to the
 top of the stack. The <a href='uxntal_opcodes.html#modes'>k-mode</a> indicates
-that the operator will not consume the address. That value is sent to the <a
-href='varvara.html#console'>device port #18</a>, defined by our
-<kbd>@Console</kbd> label and its sublabels, with <a
-href='uxntal_opcodes.html#deo'><kbd>DEO</kbd></a> which prints that character
-to the terminal.</p>
+that the operator will not consume the address.</p>
+
+<p><kbd>.Console/write</kbd> pushes a literal byte equal to #18, which was
+defined by the struct above. <kbd><a
+href='uxntal_opcodes.html#deo'>DEO</a></kbd> pops both bytes and sends the
+letter to the <a href='varvara.html#console'>device port #18</a>, which prints
+that character to the terminal.</p>
 
 <p>We increment the absolute address found on top of the stack with <a
 href='uxntal_opcodes.html#inc'><kbd>INC2</kbd></a>, we use the <a
@@ -159,7 +161,7 @@ here is the full list:</p>
 		<td><code>~</code></td><td>include</td></tr>
 	</tr>
 </table>
-<h2>Uxntal stacks</h2>
+<h2>Uxntal Stacks</h2>
 
 <p>All programming in Uxntal is done by manipulating the <i>working stack</i>,
 and <i>return stack</i>, each stack contains 256 bytes. Here are some stack
@@ -184,19 +186,19 @@ manipulated individually:</p>
 #1234 DUP <span style='float:right'>12 34 34</span>
 </pre>
 
-<p>The two stacks are <i>circular</i>, and so have no depths, to pop an empty
-stack does not trigger an error, but merely means to set the stack pointer to
-255. There are no invalid programs, any sequence of bytes is a potential Uxn
-program. Use the <a href='uxntal_reference.html#sth'><kbd>STH</kbd></a> opcode 
-to move data between the two stacks.</p>
+<p>The two stacks are <i>circular</i>, to pop an empty stack does not trigger an
+error, but merely means to set the stack pointer to 255. There are no invalid
+programs, any sequence of bytes is a potential Uxn program. Values are moved
+between stacks with the <a href='uxntal_reference.html#sth'><kbd>STH</kbd></a>
+opcode.</p>
 
 <h2>Uxntal Opcodes</h2>
 
-<p>Uxn has 64kb of memory, 16 devices, 2 stacks of 256 bytes, 5-bits opcodes and
-3 modes. The list below show the standard opcodes and their effect on a given
-stack <kbd>a b c</kbd>. <b>PC</b>: Program Counter, <b>|</b>: Return Stack,
-<b>[M]</b>: Memory, <b>[D+*]</b>: Device Memory, <b>a8</b>: a byte, <b>a16</b>:
-a short. </p>
+<p>Uxn supports 4 <a href='#immediate'>immediate opcodes</a>, and 32 standard
+opcodes. The list below show the opcodes and their effect on a given stack
+<kbd>a b c</kbd>, where <i>c</i> is the top of the stack. <b>PC</b>: Program
+Counter, <b>|</b>: Return Stack, <b>[M]</b>: Memory, <b>[D+*]</b>: Device
+Memory, <b>a8</b>: a byte, <b>a16</b>: a short.</p>
 
 <pre>
 <b>LIT</b> a b c [PC]
@@ -243,15 +245,6 @@ a short. </p>
 <p id='r_mode'>The <b>return mode</b> makes it possible for any opcode to operate on the return-stack directly. For that reason, there is no dedicated return opcode. For example, the <code class='op'>JSR</code> opcode pushes the program's address onto the return stack before jumping, to return to that address, the <code class='op'>JMP2r</code> opcode is used, where instead of using the address on the working-stack, it takes its address from the return-stack.</p>
 <pre>LITr 12 #34 STH ADDr STHr <span style='float:right'>46</span></pre>
 
-<p>To better understand how the opcode modes are used, here is a 22 bytes long implementation of the function to generate numbers in the <a href='https://en.wikipedia.org/wiki/Fibonacci_Sequence' target='_blank'>Fibonacci sequence</a>. Notice how only a single literal is created to perform the operation.</p>
-
-<pre>
-@fib <i>( num* -: numfib* )</i>
-	#0001 GTH2k ?{ POP2 JMP2r }
-	SUB2k fib STH2 INC2
-	SUB2 fib STH2r ADD2
-	JMP2r</pre>
-
 <img src="../media/generic/uxn.crew.png" width="400"/>
 
 <style>
@@ -263,7 +256,7 @@ a short. </p>
 
 <h3 id='immediate'>Immediate opcodes</h3>
 
-<p>Immediate opcodes are operations which do not take items from the stack, but
+<p>Immediate opcodes are operators that do not take items from the stack, but
 read values stored <i>immediately</i> after the opcode in the program's memory.
 Uxntal has 4 immediate opcodes: </p>
 
@@ -285,13 +278,6 @@ around in the program's memory.</p>
 	ORAk ?{ POP2 #0001 JMP2r }
 	DUP2 #0001 SUB2 fact MUL2
 	JMP2r</pre>
-
-<p><b>Quoting</b> is the act of <a
-href='https://limited.systems/articles/uxntal-quoting/'
-target='_blank'>deferring an operation</a>, for example, by keeping the address
-to a routine on the stack and using it later, by <i>unquoting</i> it, with the
-<kbd>JMP2</kbd> or <kbd>JSR2</kbd> opcodes. To learn more about pointer
-arithmetic, see <a href='uxntal_labels.html#lambdas'>lambdas</a>.</p>
 
 <p>To learn more about each opcode, see the <a
 href='uxntal_reference.html'>Opcode Reference</a>.</p>
@@ -436,7 +422,7 @@ multiple members of a struct, a value can be specified as follow:</p>
 |00 @struct &field $length
 </pre>
 
-<h3 id='scope'>Labels Scope</h3>
+<h3 id='scope'>Scope</h3>
 
 <p>Uxntal objects are defined statically using a <kbd>@label</kbd> token, it
 allows for the enclosed methods to access local <kbd>&labels</kbd>. The example
@@ -462,8 +448,8 @@ local labels as the rest of the object.</p>
 	,&y LDR JMP2r
 </pre>
 
-<p id='method'>When calling local methods the scope's name can be omitted, starting at the
-slash, like <kbd>/method</kbd>:</p>
+<p id='method'>When calling local methods the scope's name can be omitted,
+starting at the slash, like <kbd>/method</kbd>:</p>
 
 <pre>
 &get-both <i>( -- x y )</i>
@@ -472,18 +458,12 @@ slash, like <kbd>/method</kbd>:</p>
 
 <h3 id='anonymous'>Anonymous Labels</h3>
 
-<p>An anonymous label is designated by a curly bracket
-that points to its associated closing bracket, and can be nested. Under the
-hood, the opening bracket assembles to the address of the closing bracket which
-allows the destination address to be used like any other label such as a JCI
-<kbd>?{</kbd>, a JMI, <kbd>!{</kbd> or a plain literal <kbd>;{</kbd>. </p>
-
-<h4>Counted Strings</h4>
-<p>Similarly to counted strings, lambdas can encode strings in memory by
-preceeding their content by the address of the end of the string, so the
-reading of that string data is not looking for a null byte, but running until
-reaching the bounds. The advantage is that the address of the next character to
-append is readily available. Here are some example data-structures:</p>
+<p>Anonymous labels are designated with a curly bracket that points to its
+associated closing bracket, and can be nested. Under the hood, the opening
+bracket assembles to the address of the closing bracket which allows the
+destination address to be used like any other label such as a JCI
+<kbd>?{</kbd>, a JMI, <kbd>!{</kbd> or a plain literal <kbd>;{</kbd>. Here are
+some example data-structures:</p>
 
 <pre>
 @counted-string
@@ -529,10 +509,6 @@ body of the macro during assembly:</p>
 	#18 #03 DIVk MUL SUB JMP2r
 </pre>
 
-<p><b>Note:</b> A macro does not have a <a
-href='uxntal_labels.html#scope'>scope</a>, so it may not contain sublabels if
-the macro is to be used multiple time within a single parent label, <a
-href='uxntal_labels.html#lambdas'>lambdas</a> are immune to this limitation.</p>
 <h2>Uxntal Memory</h2>
 
 <p>There are 64kb of <b>addressable memory</b>. Roms are loaded at 0x0100, which

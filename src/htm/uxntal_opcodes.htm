@@ -1,10 +1,10 @@
 <h2>Uxntal Opcodes</h2>
 
-<p>Uxn has 64kb of memory, 16 devices, 2 stacks of 256 bytes, 5-bits opcodes and
-3 modes. The list below show the standard opcodes and their effect on a given
-stack <kbd>a b c</kbd>. <b>PC</b>: Program Counter, <b>|</b>: Return Stack,
-<b>[M]</b>: Memory, <b>[D+*]</b>: Device Memory, <b>a8</b>: a byte, <b>a16</b>:
-a short. </p>
+<p>Uxn supports 4 <a href='#immediate'>immediate opcodes</a>, and 32 standard
+opcodes. The list below show the opcodes and their effect on a given stack
+<kbd>a b c</kbd>, where <i>c</i> is the top of the stack. <b>PC</b>: Program
+Counter, <b>|</b>: Return Stack, <b>[M]</b>: Memory, <b>[D+*]</b>: Device
+Memory, <b>a8</b>: a byte, <b>a16</b>: a short.</p>
 
 <pre>
 <b>LIT</b> a b c [PC]
@@ -51,15 +51,6 @@ a short. </p>
 <p id='r_mode'>The <b>return mode</b> makes it possible for any opcode to operate on the return-stack directly. For that reason, there is no dedicated return opcode. For example, the <code class='op'>JSR</code> opcode pushes the program's address onto the return stack before jumping, to return to that address, the <code class='op'>JMP2r</code> opcode is used, where instead of using the address on the working-stack, it takes its address from the return-stack.</p>
 <pre>LITr 12 #34 STH ADDr STHr <span style='float:right'>46</span></pre>
 
-<p>To better understand how the opcode modes are used, here is a 22 bytes long implementation of the function to generate numbers in the <a href='https://en.wikipedia.org/wiki/Fibonacci_Sequence' target='_blank'>Fibonacci sequence</a>. Notice how only a single literal is created to perform the operation.</p>
-
-<pre>
-@fib <i>( num* -: numfib* )</i>
-	#0001 GTH2k ?{ POP2 JMP2r }
-	SUB2k fib STH2 INC2
-	SUB2 fib STH2r ADD2
-	JMP2r</pre>
-
 <img src="../media/generic/uxn.crew.png" width="400"/>
 
 <style>
@@ -71,7 +62,7 @@ a short. </p>
 
 <h3 id='immediate'>Immediate opcodes</h3>
 
-<p>Immediate opcodes are operations which do not take items from the stack, but
+<p>Immediate opcodes are operators that do not take items from the stack, but
 read values stored <i>immediately</i> after the opcode in the program's memory.
 Uxntal has 4 immediate opcodes: </p>
 
@@ -93,13 +84,6 @@ around in the program's memory.</p>
 	ORAk ?{ POP2 #0001 JMP2r }
 	DUP2 #0001 SUB2 fact MUL2
 	JMP2r</pre>
-
-<p><b>Quoting</b> is the act of <a
-href='https://limited.systems/articles/uxntal-quoting/'
-target='_blank'>deferring an operation</a>, for example, by keeping the address
-to a routine on the stack and using it later, by <i>unquoting</i> it, with the
-<kbd>JMP2</kbd> or <kbd>JSR2</kbd> opcodes. To learn more about pointer
-arithmetic, see <a href='uxntal_labels.html#lambdas'>lambdas</a>.</p>
 
 <p>To learn more about each opcode, see the <a
 href='uxntal_reference.html'>Opcode Reference</a>.</p>
