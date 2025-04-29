@@ -30,57 +30,24 @@ heart of the <a href='varvara.html'>Varvara</a> ecosystem.</p>
 <p>This <a href='about.html'>wiki</a> along with most of the audio-visual
 projects documented on it are running on Uxn.</p>
 
-<h3>Memory</h3>
+<h3 id='setup'>Setup</h3>
 
-<p>Uxn utilizes <a href='uxntal_stacks.html'>two circular stacks</a> of bytes,
-the return stack allows it to tunnel through 128 subroutines and find its way
-back, and 64kb of addressable <a href='uxntal_memory.html'>working memory</a>.
-It can interface with up to <a href='uxntal_devices.html'>16 peripherals</a>,
-such as <a href='varvara.html#screen'>screens</a> and <a
-href='varvara.html#controller'>controllers</a>. Uxn's has no registers, no
-undefined behaviors, and cannot error.</p>
-
-<table border='1'>
-	<tr><th><i>Shared</i></th><th>Memory</th><td>RAM</td><td>Data</td><td>64kb pages</td></tr>
-	<tr><th rowspan='5'><i>Private</i></th><th rowspan='4'>Stacks</th><td rowspan='2'>Working Stack</td><td>Data</td><td>256 bytes</td></tr>
-	<tr><td>Pointer</td><td>1 byte</td></tr>
-	<tr><td rowspan='2'>Return Stack</td><td>Data</td><td>256 bytes</td></tr>
-	<tr><td>Pointer</td><td>1 byte</td></tr>
-	<tr><th>IO</th><td>Devices</td><td>Data</td><td>256 bytes</td></tr>
-</table>
-
-<h3>Emulator</h3>
-
-<p>Here is an implementation of a basic Uxn emulator in C89 which includes the
-<a href='varvara.html#console'>Console device</a> and passes the opcode
-tests:</p>
-
-<div class='codeview'>
-	<iframe src='../etc/uxnmin.c.txt'></iframe>
-	<pre>cc uxnmin.c -o uxnmin <a href='../etc/uxnmin.c.txt' target='_blank'>view raw</a></pre>
-</div>
-
-<h3>Assembler</h3>
-
-<p>Since the assembler is written in the same language that it assembles, there
-are a few ways to get a working copy of the assembler rom:</p>
-
-<ol>
-	<li>Download a <a href='https://rabbits.srht.site/drifblim/drifblim.rom' target="_blank">pre-assembled rom</a>.</li>
-	<li>Assemble your own with the <a href='../etc/uxnrepl/index.html'>live REPL</a>.</li>
-	<li>Bootstrap from a <a href='drifblim.html#bootstrap'>hexdump</a>.</li>
-</ol>
-
-<div class='codeview'>
-	<iframe src='../etc/drifloon.tal.txt'></iframe>
-	<pre>uxnasm drifloon.tal drifloon.rom <a href='../etc/drifloon.tal.txt' target='_blank'>view raw</a></pre>
-</div>
-
-<p>The compiler is used with uxnmin to convert .tal source files into .rom
-binary files:</p>
+<p>Here is a quick way to get started compiling Uxn programs with a little
+self-hosted assembler and an emulator which includes the <a
+href='varvara.html#console'>Console device</a>:</p>
 
 <pre>
-cat input.tal | uxnmin drifloon.rom > output.rom
+<i># Build emulator</i>
+<b>cc</b> <a href='../etc/uxnmin.c.txt'>uxnmin.c</a> -o uxnmin
+
+<i># Build assembler</i>
+<b>xxd </b>-r -p <a href='../etc/drifblim.rom.txt'>drifblim.rom</a> uxnasm.rom
+
+<i># Assemble source</i>
+<b>echo</b> "#4f18 DEO #6b18 DEO" | <b>uxnmin</b> uxnasm.rom > result.rom
+
+<i># Run program</i>
+<b>uxnmin</b> result.rom
 </pre>
 
 <p>Stack-machines programming make for an habitable bedrock abstraction for this
@@ -99,10 +66,14 @@ target='_blank'>Rekka Bellum</a>.</p>
 
 <ul>
 	<li><a href='https://100r.co/site/uxn.html' target='_blank'>Official Site</a></li>
-	<li><a href='https://rabbits.srht.site/uxn5/' target='_blank'>Run in Browser</a></li>
+	<li><b>Online</b>:
+		<a href='https://rabbits.srht.site/uxn5/' target='_blank'>Varvara</a>
+		<a href='../etc/uxnrepl/index.html' target='_blank'>Repl</a>
+	</li>
 	<li><b>Communities</b>: 
 		<a href='https://lists.sr.ht/~rabbits/uxn' target='_blank'>Mailing List</a> &bull;
-		<a href='https://llllllll.co/t/uxn-virtual-computer/46103' target='_blank'>Forum</a>
+		<a href='https://llllllll.co/t/uxn-virtual-computer/46103' target='_blank'>Forum</a> &bull;
+		<a href='https://uxnomicon.miraheze.org/wiki/Uxnomicon' target='_blank'>Uxnomicon</a>
 	</li>
 	<li><b>Chat</b>: 
 		<a href='https://discord.gg/QKapkAxsg9' target='_blank'>Catlang Discord</a> &bull; 
