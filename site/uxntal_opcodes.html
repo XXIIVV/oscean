@@ -51,16 +51,31 @@ Memory, <b>a8</b>: a byte, <b>a16</b>: a short.</p>
 	<td>0</td><td>0</td><td>0</td><td>0</td><td class='highlight'>1</td></tr>
 </table>
 
-<p>By default, operators consume bytes from the working stack, notice how in the following example only the last two bytes <code>#45</code> and <code>#67</code> are added, even if there are two shorts on the stack.</p>
+<p>By default, operators consume bytes from the working stack, notice how in the
+following example only the last two bytes <code>#45</code> and <code>#67</code>
+are added, even if there are two shorts on the stack.</p>
 <pre>#1234 #4567 ADD<span style='float:right'>12 34 ac</span></pre>
 
-<p id='2_mode'>The <b>short mode</b> consumes two bytes from the stack. In the case of jump opcodes, the short-mode operation jumps to an absolute address in memory. For the memory accessing opcodes, the short mode operation indicates the size of the data to read and write.</p>
+<p id='2_mode'>The <b>short mode</b> consumes two bytes from the stack. In the
+case of jump opcodes, the short-mode operation jumps to an absolute address in
+memory. For the memory accessing opcodes, the short mode operation indicates
+the size of the data to read and write.</p>
 <pre>#1234 #4567 ADD2 <span style='float:right'>57 9b</span></pre>
 
-<p id='k_mode'>The <b>keep mode</b> does not consume items from the stack, and pushes the result on top. The following example adds the two shorts together, but does not consume them. Under the hood, the keep mode keeps a temporary stack pointer that is decremented on <code>POP</code>.</p>
+<p id='k_mode'>The <b>keep mode</b> does not consume items from the stack, and
+pushes the result on top. Every opcode begins by popping values from the stack
+before operating on them. This mode keeps a copy of the stack pointer to
+recover after the popping stage.</p>
+
 <pre>#1234 #4567 ADD2k <span style='float:right'>12 34 45 67 57 9b</pre>
 
-<p id='r_mode'>The <b>return mode</b> makes it possible for any opcode to operate on the return-stack directly. For that reason, there is no dedicated return opcode. For example, the <code class='op'>JSR</code> opcode pushes the program's address onto the return stack before jumping, to return to that address, the <code class='op'>JMP2r</code> opcode is used, where instead of using the address on the working-stack, it takes its address from the return-stack.</p>
+<p id='r_mode'>The <b>return mode</b> makes it possible for any opcode to
+operate on the return-stack directly. For that reason, there is no dedicated
+return opcode. For example, the <code class='op'>JSR</code> opcode pushes the
+program's address onto the return stack before jumping, to return to that
+address, the <code class='op'>JMP2r</code> opcode is used, where instead of
+using the address on the working-stack, it takes its address from the
+return-stack.</p>
 <pre>LITr 12 #34 STH ADDr STHr <span style='float:right'>46</span></pre>
 
 <img src="../media/generic/uxn.crew.png" width="400"/>
