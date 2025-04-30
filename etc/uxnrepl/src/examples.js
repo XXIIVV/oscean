@@ -1,10 +1,8 @@
 let examples = {
 
-"hello_tal": `|10 @Console &vector $2 &read $1 &pad $5 &write $1 &error $1
+"hello_tal": `|18 @Console/write
 
-|100
-
-@on-reset ( -> )
+|100 @on-reset ( -> )
 	;my-string print-text
 	BRK
 
