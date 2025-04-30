@@ -69,7 +69,7 @@ BRK  ( Halt )`,
 LIT 01    ( 80 is the numerical value of the LIT opcode )
    #01    ( This is a shorthand to write literal bytes )
 
-.label    ( The . prefix is a zero-page reference to a label  )
+.label    ( The . prefix is a an absolute byte reference to a label  )
 ,label    ( The , prefix is a relative byte reference to a label )
 
 ( Literals can also be made of two bytes, called a short. )
@@ -78,6 +78,65 @@ LIT 01    ( 80 is the numerical value of the LIT opcode )
 ;label    ( The ; prefix is an absolute short reference to a label )
 
 BRK @label`,
+
+/* 
+@|3.Enums&Structs */
+
+"3_tal": `( Programs can utilize up to ff00 of memory,
+  the program location is where the program data is located in memory. 
+  This can be controlled in two different ways: )
+
+|1234 ( Moves the program location to 1234 )
+$10   ( Moves the program location by 10, to 1244 )
+
+( Scope in a program is created with a @label, 
+  members to this scope is created with &sublabels.  )
+
+|0  @enum &a $1 &b $1 &c   ( An enum with fields: a=0, b=1, c=2 )
+|10 @struct &a $8 &b $2 &c ( A struct with fields: a=10, b=18, c=1a )
+
+( By default, the program location begins at 100, 
+  but if the location has moved, it must be set back.
+  Every Uxn program begins at 100. )
+
+|100 .struct/b BRK`,
+
+/* 
+@|4.Variables */
+
+"4_tal": `|000              ( set program location to zero-page )
+
+@zep8 $1          ( allocate a byte of space )
+@zep16 $2         ( allocate a short of space )
+
+|100              ( set program location to Reset )
+
+( A zero-page address is a byte location found on the zero-page,
+  or the lower byte of the label's absolute address. )
+
+#12 .zep8 STZ     ( set 12 to the zero-page variable "zep8" )
+#3456 .zep16 STZ2 ( set 3456 to the zero-page variable "zep16" )
+.zep8 LDZ         ( get the byte stored in zero-page variable "zep8" )
+.zep16 LDZ2       ( get the short stored in zero-page variable "zep16" )
+
+( A relative address is a byte offset that corresponds 
+  to an address at most at -128 and +127 from the current program location. )
+
+#12 ,rel8 STR     ( set 12 to the near-by variable "rel8" )
+#3456 ,rel16 STR2 ( set 3456 to the near-by variable "rel16" )
+,rel8 LDZ         ( get the byte stored in near-by variable "rel8" )
+,rel16 LDZ2       ( get the short stored in near-by variable "rel16" )
+
+( An absolute address is a short location found anywhere in memory. )
+
+#12 ;abs8 STA     ( set 12 to the distant variable "abs8" )
+#3456 ;abs16 STA2 ( set 3456 to the distant variable "abs16" )
+;abs8 LDA         ( get the byte stored in distant variable "abs8" )
+;abs16 LDA2       ( get the short stored in distant variable "abs16" )
+
+BRK @rel8 $1 @rel16 $2 |8000 @abs8 $1 @abs16 $2 `,
+
+"5_tal": ``,
 
 "loop_tal": `( Print the alphabet in lines of 8 characters )
 
