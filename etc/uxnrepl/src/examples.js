@@ -1,3 +1,5 @@
+/* Inspired from https://doc.rust-lang.org/rust-by-example/ */
+
 let examples = {
 
 "hello_tal": `|18 @Console/write
@@ -15,6 +17,68 @@ let examples = {
 
 @my-string
 	"Hello 20 "World! 00`,
+
+/* 
+@|0.Hello-World */
+
+"0_tal": `( This is a comment, and is ignored by the assembler. 
+  Click the Run button to evaluate the program.
+  Select the next example with the dropdown. 
+
+  The following line moves the program address to 0x0100,
+  which is where all programs begin. )
+
+;text                 ( Push text pointer ) 
+&while
+    LDAk DUP ?{       ( Load byte at address, jump if not null ) 
+        POP2 BRK }    ( When null, pop pointer, halt ) 
+    #18 DEO           ( Send byte to Console/write port )
+    INC2 !&while      ( Incr text pointer and loop )
+
+@text "Hello 20 "World! 00`,
+
+/* 
+@|1.Stack */
+
+"1_tal": `( The Uxn virtual machine has two stacks of 256 bytes.
+  A byte is a value between the hexadecimal numbers 00 and ff. )
+
+#0a          ( Push a byte to the stack )
+#0b          ( Push a second byte to the stack )
+SWP          ( Swap their position, so 0a is on top )
+NIP POP      ( Nip the 0b byte, pop the 0a byte )
+
+( There are four arithmetic operators.
+  Postfix arithmetic has no precedence rules,
+  operations are applied in the order. )
+
+#02 #10 ADD  ( 02 + 10 = 12 )
+#04 #08 SUB  ( 04 - 05 = fc )
+#08 #04 MUL  ( 08 * 04 = 20 )
+#10 #02 DIV  ( 10 / 02 = 08 )
+
+BRK  ( Halt )`,
+
+/* 
+@|2.Literals */
+
+"2_tal": `( A literal is a number to be pushed to the stack,
+  Uxntal supports various ways of creating literal numbers. )
+
+80  01    ( A number will be interpreted as an opcode )
+LIT 01    ( 80 is the numerical value of the LIT opcode )
+   #01    ( This is a shorthand to write literal bytes )
+
+.label    ( The . prefix is a zero-page reference to a label  )
+,label    ( The , prefix is a relative byte reference to a label )
+
+( Literals can also be made of two bytes, called a short. )
+
+#1234     ( The # prefix can also be a short )
+;label    ( The ; prefix is an absolute short reference to a label )
+
+BRK @label`,
+
 "loop_tal": `( Print the alphabet in lines of 8 characters )
 
 |10 @Console &vector $2 &read $1 &pad $5 &write $1 &error $1
