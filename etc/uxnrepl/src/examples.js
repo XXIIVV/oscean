@@ -23,19 +23,20 @@ let examples = {
 
 "0_tal": `( This is a comment, and is ignored by the assembler. 
   Click the Run button to evaluate the program.
-  Select the next example with the dropdown. 
-
-  The following line moves the program address to 0x0100,
-  which is where all programs begin. )
+  Select the next example with the dropdown. )
 
 ;text                 ( Push text pointer ) 
-&while
-    LDAk DUP ?{       ( Load byte at address, jump if not null ) 
-        POP2 BRK }    ( When null, pop pointer, halt ) 
-    #18 DEO           ( Send byte to Console/write port )
-    INC2 !&while      ( Incr text pointer and loop )
 
-@text "Hello 20 "World! 00`,
+@while                ( Create while label )
+
+    LDAk DUP ?{       ( Load byte at address, jump if not null ) 
+        POP2 BRK }    ( When null, pop text pointer, halt ) 
+    #18 DEO           ( Send byte to Console/write port )
+    INC2 !while       ( Incr text pointer, jump to label )
+
+@text                 ( Create text label )
+
+	"Hello 20 "World! 00`,
 
 /* 
 @|1.Stack */
@@ -43,9 +44,9 @@ let examples = {
 "1_tal": `( The Uxn virtual machine has two stacks of 256 bytes.
   A byte is a value between the hexadecimal numbers 00 and ff. )
 
-#0a          ( Push a byte to the stack )
-#0b          ( Push a second byte to the stack )
-SWP          ( Swap their position, so 0a is on top )
+#0a          ( Push 0a byte to the stack )
+#0b          ( Push 0b byte to the stack )
+SWP          ( Swap them, so 0a is on top )
 NIP POP      ( Nip the 0b byte, pop the 0a byte )
 
 ( There are four arithmetic operators.
@@ -55,46 +56,44 @@ NIP POP      ( Nip the 0b byte, pop the 0a byte )
 #02 #10 ADD  ( 02 + 10 = 12 )
 #04 #08 SUB  ( 04 - 08 = fc )
 #08 #04 MUL  ( 08 * 04 = 20 )
-#10 #02 DIV  ( 10 / 02 = 08 )
-
-BRK  ( Halt )`,
+#10 #02 DIV  ( 10 / 02 = 08 )`,
 
 /* 
 @|2.Literals */
 
 "2_tal": `( A literal is a number to be pushed to the stack,
-  Uxntal supports various ways of creating literal numbers. )
+  Uxntal supports various ways of creating literal bytes. )
 
-80  01    ( A number will be interpreted as an opcode )
-LIT 01    ( 80 is the numerical value of the LIT opcode )
-   #01    ( This is a shorthand to write literal bytes )
+    80 01  ( A number will be interpreted as an opcode )
+   LIT 01  ( 80 is the numerical value of the LIT opcode )
+      #01  ( This is a shorthand for a literal byte )
 
-.label    ( The . prefix is a an absolute byte reference to a label  )
-,label    ( The , prefix is a relative byte reference to a label )
+( A literal short is a literal number made of two bytes. )
 
-( Literals can also be made of two bytes, called a short. )
+  a0 1234  ( A number will be interpreted as an opcode )
+LIT2 1234  ( a0 is the numerical value of the LIT2 opcode )
+    #1234  ( This is the shorthand for a literal short )
 
-#1234     ( The # prefix can also be a short )
-;label    ( The ; prefix is an absolute short reference to a label )
+( ASCII characters can also be made into literal bytes. )
 
-BRK @label`,
+LIT "H #18 DEO ( Push the letter H, send to Console/write )
+LIT "i #18 DEO ( Push the letter i, send to Console/write )`,
 
 /* 
 @|3.Enums&Structs */
 
 "3_tal": `( Programs can utilize up to ff00 of memory,
-  the program location is where the program data is located in memory. 
-  This can be controlled in two different ways: )
+  the program location is where the program data is written in memory. )
 
-|1234 ( Moves the program location to 1234 )
-$10   ( Moves the program location by 10, to 1244 )
+|1234 ( Move program location to 1234 )
+$10   ( Move program location by 10, to 1244 )
 
 ( Scope in a program is created with a @label, 
   members to this scope is created with &sublabels.  )
 
-|0  @enum &a $1 &b $1 &c   ( An enum with fields a=0, b=1, c=2 )
-|10 @struct &a $8 &b $2 &c ( A struct with fields a=10, b=18, c=1a )
-|200 @const                ( A const with a value of 200 )
+|0  @enum &a $1 &b $1 &c   ( Enum with fields a=0, b=1, c=2 )
+|10 @struct &a $8 &b $2 &c ( Struct with fields a=10, b=18, c=1a )
+|200 @const                ( Const with a value of 200 )
 
 ( By default, the program location begins at 100, 
   but if the location has moved, it must be set back.
@@ -105,37 +104,24 @@ $10   ( Moves the program location by 10, to 1244 )
 /* 
 @|4.Variables */
 
-"4_tal": `|000              ( Set program location to zero-page )
+"4_tal": `|000              ( Move program location to Zero-page )
+	@zep8 $1        ( Allocate a byte of space )
+	@zep16 $2       ( Allocate a short of space )
 
-@zep8 $1          ( Allocate a byte of space )
-@zep16 $2         ( Allocate a short of space )
-
-|100              ( Set program location to Reset )
-
-( A zero-page address is a byte location found on the zero-page,
-  or the lower byte of the label's absolute address. )
-
-#12 .zep8 STZ     ( Set 12 to the zero-page variable "zep8" )
-#3456 .zep16 STZ2 ( Set 3456 to the zero-page variable "zep16" )
-.zep8 LDZ         ( Get the byte stored in zero-page variable "zep8" )
-.zep16 LDZ2       ( Get the short stored in zero-page variable "zep16" )
-
-( A relative address is a byte offset that corresponds 
-  to an address at most at -128 and +127 from the current program location. )
-
-#12 ,rel8 STR     ( Set 12 to the near-by variable "rel8" )
-#3456 ,rel16 STR2 ( Set 3456 to the near-by variable "rel16" )
-,rel8 LDZ         ( Get the byte stored in near-by variable "rel8" )
-,rel16 LDZ2       ( Get the short stored in near-by variable "rel16" )
-
-( An absolute address is a short location found anywhere in memory. )
-
+|100              ( Move program location to Reset )
+#12 .zep8 STZ     ( Set zero-page variable "zep8" to 12 )
+#3456 .zep16 STZ2 ( Set zero-page variable "zep16" to 3456 )
+.zep8 LDZ         ( Get byte in zero-page variable "zep8" )
+.zep16 LDZ2       ( Get short in zero-page variable "zep16" )
 #12 ;abs8 STA     ( Set 12 to the distant variable "abs8" )
 #3456 ;abs16 STA2 ( Set 3456 to the distant variable "abs16" )
 ;abs8 LDA         ( Get the byte stored in distant variable "abs8" )
 ;abs16 LDA2       ( Get the short stored in distant variable "abs16" )
+BRK 
 
-BRK @rel8 $1 @rel16 $2 |8000 @abs8 $1 @abs16 $2 `,
+|8000             ( Move program location to 8000 )
+	@abs8 $1
+	@abs16 $2 `,
 
 /* 
 @|5.Functions */
