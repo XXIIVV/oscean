@@ -28,11 +28,11 @@ item was the last to be added, and will be the first to be removed.</p>
 
 <h3>Hello World!</h3>
 
-<p>The first line, beginning with <kbd>|18</kbd>, moves the program location and
-defines a <a href='uxntal_labels.html#structs'>label</a> equal to a value that
-aligns with the <code>/write</code> ports of the <a
-href='varvara.html#console'>Console</a> so that it can be referenced by name in
-our program.</p>
+<p>The <kbd>;text</kbd> token pushes a pointer made of two bytes holding the <a
+href='uxntal_labels.html#addressing'>absolute address</a> in memory of the
+<kbd>@text</kbd> label to the stack. Next, we define a <a
+href='uxntal_labels.html'>label</a> named <kbd>@while</kbd>, to mark the start
+of a loop that will be printing each character stored at the text pointer.</p>
 
 <iframe src="../etc/uxnrepl/index.html" frameborder="0" class='frame'></iframe>
 
@@ -42,81 +42,64 @@ our program.</p>
 .frame { overflow: hidden; height: 450px; margin-bottom: 15px; border-radius:5px }
 </style>
 
-<p>The second segment <kbd>|100</kbd> moves the program location to the address
-0x0100, which is <a href='uxntal_memory.html'>where all Uxn programs begin</a>.
-Next, inside parentheses, is a <a href='uxntal_notation.html'>comment</a> with
-the arrow symbol indicating that the following operation is a <a
-href='uxntal_devices.html'>vector</a>. </p>
+<p>The <kbd><a href='uxntal_opcodes.html#lda'>LDAk</a></kbd> opcode loads a byte
+from the address on top of the stack, in this case, the <a
+href='ascii.html'>ascii</a> letter <i>H</i>(48). The <a
+href='uxntal_opcodes.html#modes'>k-mode</a> indicates that the operator will
+not consume the address.</p><p>The <kbd><a
+href='uxntal_opcodes.html#dup'>DUP</a></kbd> opcode copies the letter to the
+top of the stack. The <kbd>?{</kbd> pops that byte from the stack, and if the
+byte is <b>non-zero</b>, we jump to the corresponding <kbd>}</kbd>, which is an
+<a href='uxntal_labels.html#anonymous'>anonymous label</a> .</p>
 
 <pre>
-@on-reset
-0100:   a0 01 12   ;my-string
-0103:   60 00 01   print-text
-0106:   00         BRK
+|0100   a0 01 11   ( ;text )
+
+@while
+|0103   94         ( LDAk )
+|0104   06         ( DUP )
+|0105   20 00 02   ( ?λ00 )
+|0108   22         ( POP2 )
+|0109   00         ( BRK )
 </pre>
 
-<p>The <kbd>;my-string</kbd> token pushes an <b>absolute address</b>, made of two
-bytes, pointing to the text in memory. Next, we invoke the
-<kbd>print-text</kbd> subroutine, leaving our current address on top of the <a
-href='uxntal_stacks.html'>return stack</a>. Notice how a calling a word in uxntal
-is done by simply writing the label name.</p>
-
-<p>Both <kbd>&while</kbd> and <kbd>@while</kbd> are ways to define <b>labels</b>,
-but using the ampersand rune will prefix our new label with the name of the
-last parent label, creating <kbd>@print-text/while</kbd>. To learn more, see <a
-href='uxntal_labels.html#scope'>scope</a>.</p>
+<p>The <kbd>#18</kbd> token pushes a number to the stack, which maps to the <a
+href='varvara.html#console'>device port #18</a>, followed by the <kbd><a
+href='uxntal_opcodes.html#deo'>DEO</a></kbd> opcodes which pops both bytes and
+sends the letter to the device port, printing that letter to the terminal,
+leaving the address on top of the stack.</p>
 
 <pre>
-@print-text/while
-0107:   94         LDAk
-0108:   80 18      #18
-010a:   17         DEO
-010b:   21         INC2
-010c:   94         LDAk
-010d:   20 ff f7   ?&while
-0110:   22         POP2
-0111:   6c         JMP2r
+@λ00
+|010a   80 18      ( #18 )
+|010c   17         ( DEO )
+|010d   21         ( INC2 )
+|010e   40 ff f2   ( !while )
 </pre>
 
-<p>Next, the <kbd><a href='uxntal_opcodes.html#lda'>LDAk</a></kbd> opcode loads
-the letter <a href='ascii.html'>letter H</a> found at that address, to the
-top of the stack. The <a href='uxntal_opcodes.html#modes'>k-mode</a> indicates
-that the operator will not consume the address.</p>
-
-<p><kbd>.Console/write</kbd> pushes a literal byte equal to #18, which was
-defined by the struct above. <kbd><a
-href='uxntal_opcodes.html#deo'>DEO</a></kbd> pops both bytes and sends the
-letter to the <a href='varvara.html#console'>device port #18</a>, which prints
-that character to the terminal.</p>
+<p>The <a href='uxntal_opcodes.html#inc'><kbd>INC2</kbd></a> opcode increments
+the address, moving the pointer to the next letter. The <a
+href='uxntal_opcodes.html#modes'>2-mode</a> is used because the address is made
+of two bytes. Finally, we jump back to the start of the loop with
+<kbd>!while</kbd>, and repeat the loop until the letter is zero, and use <a
+href='uxntal_opcodes.html#pop'><kbd>POP2</kbd></a> to remove the address on the
+stack and keep the stack clean at the end of the program.</p>
 
 <pre>
-@my-string
-0112:  48 65 6c    H e l 
-0115:  6c 6f 20    l o  
-0117:  57 6f 72    W o r
-011b:  6c 64 21    l d !
-</pre>
-
-<p>We increment the absolute address found on top of the stack with <a
-href='uxntal_opcodes.html#inc'><kbd>INC2</kbd></a>, we use the <a
-href='uxntal_opcodes.html#modes'>2-mode</a> because the address is made of two
-bytes. We load the byte at the incremented value and do a conditional immediate
-jump with <kbd>?&while</kbd> for as long as the item on the stack is not zero.
-We use <a href='uxntal_opcodes.html#pop'><kbd>POP2</kbd></a> to remove the
-address on the stack and keep the stack clean at the end of the subroutine.</p>
-
-<p>Lastly, we encounter <a href='uxntal_opcodes.html#jmp'><kbd>JMP2r</kbd></a>
-which jumps to the absolute address that we left on the return stack when we
-entered the <kbd>@print-text</kbd> subroutine.</p>
+@text
+|0111   48 65 6c   H e l
+|0114   6c 6f 20   l o  
+|0116   57 6f 72   W o r
+|011a   6c 64 21   l d !</pre>
 
 <img src="../media/generic/uxn.team.png" style="margin:0 auto 30px" width="300">
 
 <p>To summarize, <a href='uxntal_notation.html'>comments</a> are within
 parentheses, <a href='uxntal_numbers.html'>numbers</a> are lowercase hexdecimal
-shorts or bytes, <a href='uxntal_opcodes.html'>opcodes</a> are uppercased reserved words, and <a
-href='uxntal_labels.html#anonymous'>anonymous labels</a> are within curlies.
-Runes are special characters at the start of a word that define its meaning,
-here is the full list:</p>
+shorts or bytes, <a href='uxntal_opcodes.html'>opcodes</a> are uppercased
+reserved words, and <a href='uxntal_labels.html#anonymous'>anonymous labels</a>
+are within curlies. Runes are special characters at the start of a word that
+define its meaning, here is the full list:</p>
 
 <table border="1" id='runes'>
 	<tr><th colspan="4">Padding Runes</th><th colspan="4">Number Rune</th></tr>

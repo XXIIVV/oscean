@@ -10,22 +10,21 @@
 </head>
 <body>
 	<textarea id="editor" spellcheck="false">
-|18 @Console/write
+( This is a comment, and is ignored by the assembler. 
+  Click the Run button to evaluate the program.
+  Select the next example with the dropdown. )
 
-|100
+;text                 ( Push text pointer ) 
 
-@on-reset ( -> )
-	;my-string print-text
-	BRK
+@while                ( Create while label )
 
-@print-text ( str* -- )
-	&while
-		LDAk .Console/write DEO
-		INC2 LDAk ?&while
-	POP2
-	JMP2r
+    LDAk DUP ?{       ( Load byte at address, jump if not null ) 
+        POP2 BRK }    ( When null, pop text pointer, halt ) 
+    #18 DEO           ( Send byte to Console/write port )
+    INC2 !while       ( Incr text pointer, jump to label )
 
-@my-string
+@text                 ( Create text label )
+
 	"Hello 20 "World! 00
 </textarea>
 	<div id='term'>Press <b>Run</b> to evaluate this program</div>
@@ -34,13 +33,12 @@
 		<span id='wst'>Ready.</span>
 		<input type="button" id="save" value="Build">
 		<select name="cars" id="examples">
-			<option value="hello_tal">Introduction</option>
 			<option value="0_tal">0. Hello World</option>
 			<option value="1_tal">1. Stack</option>
 			<option value="2_tal">2. Numbers</option>
-			<option value="3_tal">3. Enums & Structs</option>
+			<option value="3_tal">3. Functions</option>
 			<option value="4_tal">4. Variables</option>
-			<option value="5_tal">5. Functions</option>
+			<option value="5_tal">5. Enums & Structs</option>
 			<option value="6_tal">6. If/else</option>
 			<option value="7_tal">7. Loop</option>
 			<option value="8_tal">8. While</option>
