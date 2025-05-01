@@ -53,7 +53,7 @@ NIP POP      ( Nip the 0b byte, pop the 0a byte )
   operations are applied in the order. )
 
 #02 #10 ADD  ( 02 + 10 = 12 )
-#04 #08 SUB  ( 04 - 05 = fc )
+#04 #08 SUB  ( 04 - 08 = fc )
 #08 #04 MUL  ( 08 * 04 = 20 )
 #10 #02 DIV  ( 10 / 02 = 08 )
 
@@ -92,8 +92,9 @@ $10   ( Moves the program location by 10, to 1244 )
 ( Scope in a program is created with a @label, 
   members to this scope is created with &sublabels.  )
 
-|0  @enum &a $1 &b $1 &c   ( An enum with fields: a=0, b=1, c=2 )
-|10 @struct &a $8 &b $2 &c ( A struct with fields: a=10, b=18, c=1a )
+|0  @enum &a $1 &b $1 &c   ( An enum with fields a=0, b=1, c=2 )
+|10 @struct &a $8 &b $2 &c ( A struct with fields a=10, b=18, c=1a )
+|200 @const                ( A const with a value of 200 )
 
 ( By default, the program location begins at 100, 
   but if the location has moved, it must be set back.
@@ -104,172 +105,116 @@ $10   ( Moves the program location by 10, to 1244 )
 /* 
 @|4.Variables */
 
-"4_tal": `|000              ( set program location to zero-page )
+"4_tal": `|000              ( Set program location to zero-page )
 
-@zep8 $1          ( allocate a byte of space )
-@zep16 $2         ( allocate a short of space )
+@zep8 $1          ( Allocate a byte of space )
+@zep16 $2         ( Allocate a short of space )
 
-|100              ( set program location to Reset )
+|100              ( Set program location to Reset )
 
 ( A zero-page address is a byte location found on the zero-page,
   or the lower byte of the label's absolute address. )
 
-#12 .zep8 STZ     ( set 12 to the zero-page variable "zep8" )
-#3456 .zep16 STZ2 ( set 3456 to the zero-page variable "zep16" )
-.zep8 LDZ         ( get the byte stored in zero-page variable "zep8" )
-.zep16 LDZ2       ( get the short stored in zero-page variable "zep16" )
+#12 .zep8 STZ     ( Set 12 to the zero-page variable "zep8" )
+#3456 .zep16 STZ2 ( Set 3456 to the zero-page variable "zep16" )
+.zep8 LDZ         ( Get the byte stored in zero-page variable "zep8" )
+.zep16 LDZ2       ( Get the short stored in zero-page variable "zep16" )
 
 ( A relative address is a byte offset that corresponds 
   to an address at most at -128 and +127 from the current program location. )
 
-#12 ,rel8 STR     ( set 12 to the near-by variable "rel8" )
-#3456 ,rel16 STR2 ( set 3456 to the near-by variable "rel16" )
-,rel8 LDZ         ( get the byte stored in near-by variable "rel8" )
-,rel16 LDZ2       ( get the short stored in near-by variable "rel16" )
+#12 ,rel8 STR     ( Set 12 to the near-by variable "rel8" )
+#3456 ,rel16 STR2 ( Set 3456 to the near-by variable "rel16" )
+,rel8 LDZ         ( Get the byte stored in near-by variable "rel8" )
+,rel16 LDZ2       ( Get the short stored in near-by variable "rel16" )
 
 ( An absolute address is a short location found anywhere in memory. )
 
-#12 ;abs8 STA     ( set 12 to the distant variable "abs8" )
-#3456 ;abs16 STA2 ( set 3456 to the distant variable "abs16" )
-;abs8 LDA         ( get the byte stored in distant variable "abs8" )
-;abs16 LDA2       ( get the short stored in distant variable "abs16" )
+#12 ;abs8 STA     ( Set 12 to the distant variable "abs8" )
+#3456 ;abs16 STA2 ( Set 3456 to the distant variable "abs16" )
+;abs8 LDA         ( Get the byte stored in distant variable "abs8" )
+;abs16 LDA2       ( Get the short stored in distant variable "abs16" )
 
 BRK @rel8 $1 @rel16 $2 |8000 @abs8 $1 @abs16 $2 `,
 
-"5_tal": ``,
+/* 
+@|5.Functions */
 
-"loop_tal": `( Print the alphabet in lines of 8 characters )
+"5_tal": `( In Uxntal programs everything is a function 
+  doing some kind of transformation on stacks. )
 
-|10 @Console &vector $2 &read $1 &pad $5 &write $1 &error $1
-|0a @cr
+#12 double  ( Apply the "double" function  )
+;promote    ( Push a pointer to the "promote function" )
+JSR2        ( Call the pointer and apply )
 
-|100
+BRK         ( Halt )
 
-@on-reset ( -> )
-	#1a00
-	&loop ( -- )
-		DUP #07 AND ?{ .cr .Console/write DEO }
-		DUP [ LIT "a ] ADD .Console/write DEO
-		INC GTHk ?&loop
-	POP2 BRK`,
+@promote ( byte -- short* )
+	#00 SWP JMP2r 
 
-"ifelse_tal": `( Print foo if true, else bar )
+@double ( value -- res )
+	DUP ADD JMP2r`,
 
-|10 @Console &vector $2 &read $1 &pad $5 &write $1 &error $1
-|100
+/* 
+@|6.If/Else */
 
-@on-reset ( -> )
-	#0a #0a EQU 
-	?{ ;false print BRK }
-	;true print BRK
+"6_tal": `( Immediate conditional jumps in Uxntal is done 
+  by checking if the top of the stack is not zero. )
 
-@print ( value str* -- )
-	LDAk .Console/write DEO
-	INC2 LDAk ?print
-	POP2 JMP2r
+#05 
+#08 NEQ ?{              ( Jump to closing curly if top of stack is not zero )
+	;equ-str print BRK    ( if )
+} 
+;neq-str print BRK      ( else )
 
-@true "foo 00 @false "bar 00`,
+@print ( str* -- )
+	LDAk DUP ?{ POP2 POP2 JMP2r }
+	#18 DEO INC2 !print
 
-"cond_tal": `( Print the character types of a string )
+@equ-str "Is 20 "8. 00
+@neq-str "Is 20 "not 20 "8. 00
+`,
 
-|10 @Console &vector $2 &read $1 &pad $5 &write $1 &error $1
-|0a @cr |20 @space
+/* 
+@|7.Loop */
 
-|100
+"7_tal": `( Loops are done by pushing boundaries 
+and comparing the bounds against the iterator )
 
-@on-reset ( -> )
-	;Dict/my-string
-	&while ( -- )
-		LDAk print-type
-		INC2 LDAk ?&while
-	POP2 BRK
+#08 #00              ( Push limit and iterator )
+&loop
+  DUP emit-num       ( Emit number )
+  INC GTHk ?&loop    ( Continue while limit is larger than iterator)
+POP2                 ( )
 
-@print-type ( char -- )
-	DUP [ LIT "a ] SUB #19 GTH ?{ POP ;Dict/lc !&line }
-	DUP [ LIT "A ] SUB #19 GTH ?{ POP ;Dict/uc !&line }
-	DUP [ LIT "0 ] SUB #09 GTH ?{ POP ;Dict/num !&line }
-	.space NEQ ?{ ;Dict/ws !&line }
-	;Dict/other
-	( >> )
+BRK
 
-&line ( str* -- )
-	LDAk .Console/write DEO
-	INC2 LDAk ?&line
-	POP2 JMP2r
+@emit-num ( int -- )
+  LIT "0 ADD #18 DEO ( convert number to ascii value )
+  JMP2r`,
 
-@Dict
-	&my-string "Big 20 "Shiny 20 "Tunes 20 "1996. 00
-	&lc "Lowercase -cr 00 &uc "Uppercase -cr 00
-	&num "Number -cr 00 &ws "Space -cr 00
-	&other "Other -cr 00`,
+/* 
+@|8.While */
 
-"lambda_tal": `( Double values in an array )
+"8_tal": `#64 #01
+&while
+	DUP print-dec
+	DUP #03 DIVk MUL SUB ?{ ;fizz print-str }
+	DUP #05 DIVk MUL SUB ?{ ;buzz print-str }
+	#0a18 DEO
+	INC NEQk ?&while
+POP2 BRK
 
-|10 @Console &vector $2 &read $1 &pad $5 &write $1 &error $1
-|100
-
-@on-reset ( -> )
-	;array
-	( double values ) 
-	{ STH2k LDAk DUP ADD STH2r STA JMP2r } STH2r each
-	;print-num each
-	POP2 BRK
-
-@print-num ( addr* -- addr* )
-	LDAk [ LIT "0 ] ADD .Console/write DEO
-	JMP2r
-
-@each ( array* fn* -- array* )
-	,&fn STR2
-	DUP2 LDA2k SWP2 INC2 INC2
-	&w ( -- )
-		[ LIT2 &fn $2 ] JSR2
-		INC2 GTH2k ?&w
-	POP2 POP2 JMP2r
-
-@array ={ 01 02 03 04 }`,
-
-"fizzbuzz_tal": `( For multiples of 3 print Fizz, of 5 Buzz, for both FizzBuzz, otherwise a number )
-
-|10 @Console &vector $2 &read $1 &pad $5 &write $1 &error $1
-|0a @cr
-
-|100
-
-@on-reset ( -> )
-	#6400
-	&loop ( -- )
-		DUP #0f DIVk MUL SUB ?{
-			;Dict/fizz print-str ;Dict/buzz print-line !&resume }
-		DUP #03 DIVk MUL SUB ?{
-			;Dict/fizz print-line !&resume }
-		DUP #05 DIVk MUL SUB ?{
-			;Dict/buzz print-line !&resume }
-		DUP print-dec print-cr
-		&resume INC GTHk ?&loop
-	POP2 BRK
+@print-str ( str* -- )
+	LDAk DUP ?{ POP POP2 JMP2r }
+	#18 DEO INC2 !print-str
 
 @print-dec ( num -- )
-	( x0 ) DUP #0a DIV print-num
-	( 0x ) #0a DIVk MUL SUB
-	( >> )
+	DUP #0a DIV emit-dec
+	#0a DIVk MUL SUB ( .. )
 
-@print-num ( num -- )
-	#30 ADD .Console/write DEO
-	JMP2r
+@emit-dec ( num -- )
+	LIT "0 ADD #18 DEO JMP2r
 
-@print-line ( addr* -- )
-	print-str
-
-@print-cr ( -- )
-	[ LIT2 -cr -Console/write ] DEO
-	JMP2r
-
-@print-str ( addr* -- )
-	LDAk .Console/write DEO
-	INC2 LDAk ?print-str
-	POP2 JMP2r
-
-@Dict ( strings )
-	&fizz "Fizz $1 &buzz "Buzz $1
-`}
+@fizz 20 "fizz 00
+@buzz 20 "buzz 00`}
