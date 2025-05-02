@@ -27,7 +27,7 @@
 	( name ) "Uxnfor 0a
 	( desc ) "Uxntal 20 "Formatter 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "9 20 "Mar 20 "2025 $2
+	( date ) "2 20 "May 20 "2025 $2
 
 @on-console ( -> )
 	[ LIT2 0a -Console/read ] DEI EQU ?{ BRK }
@@ -169,18 +169,24 @@
 	<emit-space> !eval-scope/continue
 
 @handle-sublab ( addr* -- addr* )
+	LDA2k [ LIT2 "&> ] EQU2 ?&nesting
 	DUP2 wcap/ INC2 LDA
 	( a method ) DUP [ LIT "( ] NEQ ?{ <emit-break-tab> }
 	( a string ) DUP [ LIT "" ] NEQ ?{ <emit-break-tab> }
-	( a block ) DUP [ LIT "[ ] NEQ ?{ <emit-break-tab> }
-	POP
-	( | continue )
-	LDA2k [ LIT2 "&> ] NEQ2 ?{ <inc-depth> }
+	( a block ) [ LIT "[ ] NEQ ?{ <emit-break-tab> }
 	<emit-word>/
 	<emit-space>
 	INC2 LDAk [ LIT "( ] NEQ ?{ <emit-comment>
 		<emit-break-tab> }
 	!eval-scope/w
+
+	&nesting ( addr* -- addr* )
+	<emit-break-tab>
+	<inc-depth>
+	<emit-word>/
+	<emit-space>
+	INC2 LDAk [ LIT "( ] NEQ ?{ <emit-comment> }
+	<emit-break-tab> !eval-scope/w
 
 @handle-block ( addr* -- addr* )
 	<emit-block>

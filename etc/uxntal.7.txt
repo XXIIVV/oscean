@@ -1,0 +1,338 @@
+.\" Manpage reference for uxntal.
+.\" by Eiríkr Åsheim
+.\" Contact d_m@plastic-idolatry.com to correct errors or typos.
+.TH uxntal 7 "05 Aug 2024" "1.0" "Uxntal Reference Guide"
+.SH NAME
+uxntal \- assembly language for Varvara virtual machine
+.SH DESCRIPTION
+Uxntal is an 8-bit instruction set for programming the Varvara virtual machine.
+It uses the lower 5-bits to specify an opcode, and the upper 3-bits to specify
+optional modes.
+
+ROMs consist of a 16-bit address space of bytes. Any byte can be interpreted as either data or an instruction. A 2-byte program counter (\fIpc\fP) determines the address of the next instruction to decode and run.
+
+Instructions manipulate data using two stacks: a working stack (\fBwst\fP) and a return stack (\fBrst\fP). Each stack consists of 256 bytes, and in the case of overflow or underflow the stack pointer will wrap (the stacks are circular).
+
+There are also 256 bytes of device memory, which are used to interact with the virtual machine and its devices.
+
+Instructions deal with unsigned 8-bit values (\fIbytes\fP) and unsigned 16-bit values (\fIshorts\fP). There are no other built-in data types. Occasionally values are treated as signed, such as when loading, storing, or jumping with a relative address.
+
+Short values are stored on the stack in big-endian byte order: the least significant byte will be on the top of the stack. This makes \fB#abcd\fB is equivalent to \fB#ab #cd\fB.
+
+.SH INSTRUCTION LAYOUT
+
+ 0x01 ----
+ 0x02     \\
+ 0x04      +- \fIopcode\fP
+ 0x08     /
+ 0x10 ----
+ 0x20 ---- 2: \fIshort mode\fP
+ 0x40 ---- r: \fIreturn mode\fP
+ 0x80 ---- k: \fIkeep mode\fP
+
+.SH OPCODE LAYOUT
+
+There are 32 base values for opcodes:
+
+    0x00 \fBBRK*\fP   0x08 \fBEQU\fP    0x10 \fBLDZ\fP    0x18 \fBADD\fP
+    0x01 \fBINC\fP    0x09 \fBNEQ\fP    0x11 \fBSTZ\fP    0x19 \fBSUB\fP
+    0x02 \fBPOP\fP    0x0a \fBGTH\fP    0x12 \fBLDR\fP    0x1a \fBMUL\fP
+    0x03 \fBNIP\fP    0x0b \fBLTH\fP    0x13 \fBSTR\fP    0x1b \fBDIV\fP
+    0x04 \fBSWP\fP    0x0c \fBJMP\fP    0x14 \fBLDA\fP    0x1c \fBAND\fP
+    0x05 \fBROT\fP    0x0d \fBJCN\fP    0x15 \fBSTA\fP    0x1d \fBORA\fP
+    0x06 \fBDUP\fP    0x0e \fBJSR\fP    0x16 \fBDEI\fP    0x1e \fBEOR\fP
+    0x07 \fBOVR\fP    0x0f \fBSTH\fP    0x17 \fBDEO\fP    0x1f \fBSFT\fP
+
+The "complete" opcode's value can be derived by combining the base value with its flags.
+
+For example, \fBADD2k\fP is \fB(ADD | 2 | k)\fP = \fB(0x18 | 0x20 | 0x80)\fP = \fB0xb8\fP.
+
+Unlike other opcodes, \fB0x00\fP (\fBBRK*\fP) is contextual: its meaning depends on the \fImode\fP bits provided:
+
+    0x00 \fBBRK\fP    0x80 \fBLIT\fP
+    0x20 \fBJCI\fP    0xa0 \fBLIT2\fP
+    0x40 \fBJMI\fP    0xc0 \fBLITr\fP
+    0x60 \fBJSI\fP    0xe0 \fBLIT2r\fP
+
+.SH STACK EFFECTS
+
+.BR
+
+.SS NOTATION
+
+Given a stack effect \fB( a^ b^ c^ -- c^ a^ b^ )\fP here is what each symbol means:
+
+    \fB(\fP and \fB)\fP are comment delimiters
+    \fBa^\fP, \fBb^\fP, and \fBc^\fP are values on the stack
+    \fB^\fP indicates that each value is a \fIbyte\fP (\fB*\fP would indicate \fIshort\fP)
+    \fB--\fP separates the "before" and "after" of the stack effect
+
+The effect here is to move the top byte of the stack below the next two bytes, which could be achieved with \fBROT ROT\fP.
+
+By default stack effects describe the effect on \fBwst\fP. When \fBrst\fP is involved we use \fB[]\fP to differentiate the stacks. For example \fB( a* [b*] -- a+1* [b+1*] )\fP will increment the top short of both \fBwst\fP and \fBrst\fP.
+
+.SS EFFECTS AND MODES
+
+Regular instructions have a single stack effect which is modified in a predictable way by any additional modes.
+
+For example the generic effect for \fBADD\fP is ( x y -- x+y ). The eight combinations of modes have the following effects:
+
+.nf
+
+    \fBADD\fP    ( x^ y^   -- x+y^ )         sum bytes from \fBwst\fP
+    \fBADDr\fP   ( [x^ y^] -- [x+y^] )       sum bytes from \fBrst\fP
+    \fBADD2\fP   ( x* y*   -- x+y* )         sum shorts from \fBwst\fP
+    \fBADD2r\fP  ( [x* y*] -- [x+y*] )       sum shorts from \fBrst\fP
+    \fBADDk\fP   ( x^ y^   -- x^ y^ x+y^ )   sum and keep bytes from \fBwst\fP
+    \fBADDkr\fP  ( [x^ y^] -- [x^ y^ x+y^] ) sum and keep bytes from \fBrst\fP
+    \fBADD2k\fP  ( x* y*   -- x* y* x+y* )   sum and keep shorts from \fBwst\fP
+    \fBADD2kr\fP ( [x* y*] -- [x* y* x+y*] ) sum and keep shorts from \fBrst\fP
+
+.fi
+
+Thus for regular instructions writing a "generic" effect (leaving sigils off values whose size depends on \fIshort mode\fP) is sufficient to describe its behavior across all eight variations. Note that some instructions always read values of a fixed size. For example the boolean condition read by \fBJCN\fP is always one byte, no matter what modes are used.
+
+In \fIreturn mode\fP the stacks are reversed. Effects on \fBwst\fP will instead affect \fBrst\fP, and effects on \fBrst\fP will instead affect \fBwst\fP. For example, \fBSTH\fP reads a byte from \fBwst\fP and writes it to \fBrst\fP, but \fBSTHr\fP reads a byte from \fBrst\fP and writes it to \fBwst\fP.
+
+In \fIkeep mode\fP all the values on the left-hand side of the stack effect will also appear on the right-hand side before the outputs. For example, \fBSWP\fP is \fB(x y -- y x)\fP but \fBSWPk\fP is \fB(x y -- x y y x)\fP.
+
+.SS TERMINOLOGY
+
+We consider the top of the stack to be the first value of the stack, and count back from there. For example, given the stack effect \fB( a b c -- )\fP we would say that \fBc\fP is the top of the stack, \fBb\fP is the second value (second from the top), and \fBa\fP is the third value (third from the top).
+
+.SH REGULAR INSTRUCTIONS
+
+.BR
+
+.SS INC ( x -- x+1 )
+
+Increment the top value of the stack by 1.
+
+Overflow will be truncated, so \fB#ff INC\fP will evaluate to \fB0x00\fP.
+
+.SS POP ( x -- )
+
+Remove the top value of the stack.
+
+\fBPOPk\fP is guaranteed to have no effect (it will not change the stack).
+
+.SS NIP ( x y -- y )
+
+Remove the second value of the stack.
+
+\fBNIPk\fP is guaranteed to have no effect (it will not change the stack).
+
+.SS SWP ( x y -- y x )
+
+Swap the top two values of the stack.
+
+.SS ROT ( x y z -- y z x )
+
+Rotate the top three values of the stack. The lowest becomes the top and the others are each shifted down one place.
+
+.SS DUP ( x -- x x )
+
+Place a copy of the top value of the stack on top of the stack.
+
+.SS OVR ( x y -- x y x )
+
+Place a copy of the second value of the stack on top of the stack.
+
+.SS EQU ( x y -- x==y^ )
+
+Test whether the top two values of the stack are equal.
+
+Result is guaranteed to be boolean (\fB0x00\fP or \fB0x01\fP).
+
+.SS NEQ ( x y -- x!=y^ )
+
+Test whether the top two values of the stack are not equal.
+
+Result is guaranteed to be boolean (\fB0x00\fP or \fB0x01\fP).
+
+.SS GTH ( x y -- x>y^ )
+
+Test whether the second value of the stack is greater than the top.
+
+Result is guaranteed to be boolean (\fB0x00\fP or \fB0x01\fP).
+
+.SS LTH ( x y -- x<y^ )
+
+Test whether the second value of the stack is less than the top.
+
+Result is guaranteed to be boolean (\fB0x00\fP or \fB0x01\fP).
+
+.SS JMP ( x -- ; pc <- x )
+
+Jump to a location.
+
+The program counter (\fIpc\fP) is unconditionally updated. When \fIx\fP is a byte, it is treated as relative (\fBpc += x\fP) and when \fIx\fP is a short it is treated as absolute (\fBpc = x\fP).
+
+It is common to \fBJMP\fP with boolean bytes (0-1) to handle simple conditionals. For example:
+
+    @max ( x^ y^ -- max^ ) GTHk JMP SWP POP JMP2r
+
+.SS JCN ( x bool^ -- ; pc <- x if bool )
+
+Jump to a location when a condition is true.
+
+The program counter (\fIpc\fP) is updated when \fIbool\fP is non-zero. When \fIx\fP is a byte, it is treated as relative (\fBpc += x\fP) and when \fIx\fP is a short it is treated as absolute (\fBpc = x\fP).
+
+.SS JSR ( x -- [pc+1*] )
+
+Jump to a location, saving a reference to return to.
+
+Stores the next address to execute before unconditionally updating the program counter (\fIpc\fP). This instruction is usually used to invoke subroutines, which use the \fBJMP2r\fP to return. When \fIx\fP is a byte, it is treated as relative (\fBpc += x\fP) and when \fIx\fP is a short it is treated as absolute (\fBpc = x\fP).
+
+The saved address will always be a short regardless of \fIshort mode\fP.
+
+.SS STH ( x -- [x] )
+
+Move the top value of the stack to the return stack.
+
+.SS LDZ ( zp^ -- x )
+
+Load data from a zero-page address (\fB0x00 - 0xff\fP).
+
+.SS STZ ( x zp^ -- )
+
+Store data at a zero-page address (\fB0x00 - 0xff\fP).
+
+.SS LDR ( rel^ -- x )
+
+Load data from a relative address (\fBpc + x\fP).
+
+Note that unlike \fBLDZk\fP and \fBLDAk\fP the \fBLDRk\fP instruction is not very useful, since a relative address is usually only meaningful when run from a particular address (i.e. for a particular \fIpc\fP value).
+
+.SS STR ( x rel^ -- )
+
+Store data at a relative address (\fBpc + x\fP).
+
+Note that unlike \fBSTZk\fP and \fBSTAk\fP the \fBSTRk\fP instruction is not very useful, since a relative address is usually only meaningful when run from a particular address (i.e. for a particular \fIpc\fP value).
+
+.SS LDA ( abs* -- x )
+
+Load data from an absolute address (\fB0x0000 - 0xffff\fP).
+
+.SS STA ( x abs* -- )
+
+Store data at an absolute address (\fB0x0000 - 0xffff\fP).
+
+.SS DEI ( dev^ -- x )
+
+Read data from a device port (\fB0x00 - 0xff\fP).
+
+Reading from some ports may have an effect on the underlying VM; in other cases it will simply read values from device memory. See Varvara device documentation for more details.
+
+.SS DEO ( x dev^ -- )
+
+Write data to a device port (\fB0x00 - 0xff\fP).
+
+Writing to some ports may have an effect on the underlying VM; in other cases it will simply write values to device memory. See Varvara device documentation for more details.
+
+.SS ADD ( x y -- x+y )
+
+Add the top two values of the stack.
+
+Overflow will be truncated, so \fB#ff #03 ADD\fP will evaluate to \fB0x02\fP.
+
+.SS SUB ( x y -- x-y )
+
+Subtract the top of the stack from the second value of the stack.
+
+Underflow will be truncated, so \fB#01 #03 SUB\fP will evaluate to \fB0xfe\fP.
+
+.SS MUL ( x y -- xy )
+
+Multiply the top two values of the stack.
+
+Overflow will be truncated, so \fB#11 #11 MUL\fP will evaluate to \fB0x21\fP.
+
+.SS DIV ( x y -- x/y )
+
+Divide the second value of the stack by the top of the stack.
+
+\fBDIV\fP implements \fIEuclidean division\fP, which is also known as \fIinteger division\fP. It returns whole numbers, so \fB#08 #09 DIV\fP evaluates to \fB0x00\fP.
+
+Division by zero will return zero (instead of signaling an error).
+
+Unlike \fBADD\fP, \fBSUB\fP, and \fBMUL\fP, \fBDIV\fP does not behave correctly for numbers which should be treated as signed. For example, the signed byte representation of \fB-2\fP is \fB0xfe\fP, but \fB#06 #fe DIV\fP evaluates to \fB0x00\fP (\fB6 / 254 = 0\fP). For signed values the correct result should instead be \fB0xfd\fP (\fB6 / -2 = -3\fP).
+
+There is no \fIremainder\fP instruction, but the phrase \fBDIVk MUL SUB\fP can be used to compute the remainder.
+
+.SS AND ( x y -- x&y )
+
+Compute the bitwise union of the top two values of the stack.
+
+.SS ORA ( x y -- x|y )
+
+Compute the bitwise intersection of the top two values of the stack.
+
+.SS EOR ( x y -- x^y )
+
+Compute the bitwise exclusive-or (\fIxor\fP) of the top two values of the stack.
+
+.SS SFT ( x rl^ -- (x>>l)<<r )
+
+Compute a bit shift of the second value of the stack; the directions and distances are determined by the top value of the stack.
+
+Given a byte \fIrl\fP consisting of a low nibble (\fIl\fP) and a high nibble (\fIr\fP), this instruction shifts \fIx\fP left by \fIl\fP and then right by \fIr\fP.
+
+Right shifts are unsigned (they introduce zero bits). There are no signed shifts.
+
+For 16-bit (and 8-bit) values, one nibble (\fB0x0 - 0xf\fP) is sufficient to express all useful left or right shifts.
+
+  Right: \fB#ff #03 SFT\fP evaluates to \fB0x1f\fP
+  Left:  \fB#ff #20 SFT\fP evaluates to \fB0xfc\fP
+  Both:  \fB#ff #23 SFT\fP evaluates to \fB0x7c\fP
+
+.SH SPECIAL INSTRUCTIONS
+
+These instructions do not accept all mode flags (some do not accept any).
+
+.SS BRK
+
+The break instruction is used to end a vector call and return control to the virtual machine.
+
+.SS JCI, JMI, and JSI
+
+The "immediate jump" instructions are produced by the assembler. They interpret the next 2 bytes of the ROM as a relative address (\fIaddr\fP) and have the following effects:
+
+ \fBJMI\fP ( -- )       jump to \fIaddr\fP unconditionally
+ \fBJCI\fP ( bool^ -- ) jump to \fIaddr\fP if \fIbool\fP is non-zero
+ \fBJSI\fP ( -- [pc*] ) jump to \fIaddr\fP saving the current address (\fIpc\fP) on \fIrst\fP
+
+(The instruction pointer will be moved forward 2 bytes, past the relative address.)
+
+These instructions are created by the assembler from special syntax:
+
+    \fB!dest\fP produces \fBJMI wx yz\fP
+    \fB?dest\fP produces \fBJCI wx yz\fP
+    \fBdest\fP  produces \fBJSI wx yz\fP (assuming \fBdest\fP is not a macro or reserved)
+
+.SS LIT, LIT2, LITr, and LIT2r
+
+Push a literal value on the stack.
+
+The "literal" instructions are used to push new data onto the stacks. They interpret the next 1-2 bytes of the ROM (\fIwx\fP, \fIwxyz\fP) as data and push it onto the corresponding stack:
+
+    \fBLIT\fP   ( -- wx^ )     push literal byte \fIwx\fP onto the \fBwst\fP
+    \fBLITr\fP  ( -- [wx^] )   push literal byte \fIwx\fP onto the \fBrst\fP
+    \fBLIT2\fP  ( -- wxyz* )   push literal short \fIwxyz\fP (2 bytes) onto the \fBwst\fP
+    \fBLIT2r\fP ( -- [wxyz*] ) push literal short \fIwxyz\fP (2 bytes) onto the \fBrst\fP
+
+(The instruction pointer will be moved forward 1-2 bytes, past the literal data.)
+
+Literal values can be updated dynamically using store instructions:
+
+    #abcd ;x STA2
+    ( later on... )
+    LIT2 [ @x $2 ]
+
+.SH SEE ALSO
+
+ https://wiki.xxiivv.com/site/uxntal_opcodes.html   \fIUxntal Opcodes\fP
+ https://wiki.xxiivv.com/site/uxntal_syntax.html    \fIUxntal Syntax\fP
+ https://wiki.xxiivv.com/site/uxntal_modes.html     \fIUxntal Modes\fP
+ https://wiki.xxiivv.com/site/uxntal_immediate.html \fIImmediate opcodes\fP
+ https://wiki.xxiivv.com/site/varvara.html          \fIVarvara\fP
