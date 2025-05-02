@@ -65,12 +65,12 @@ LIT2 "i 18 DEO ( Push the letter i, send to Console/write )`,
 @|3.Functions */
 
 "3_tal": `( Function labels are followed by a comment that explains
-the expected transformation, in the format: before -- after )
+  the expected transformation, in the format: before -- after )
 
 #12 double  ( Apply the "double" function on the number 12 )
 ;promote    ( Push a pointer to the "promote" function )
 JSR2        ( Call the pointer to apply the "promote" function )
-BRK         ( Halt )
+BRK         ( Halt program with a BRK )
 
 @promote ( byte -- short* )
   #00 SWP   ( Body of the function )
@@ -83,29 +83,69 @@ BRK         ( Halt )
 /* 
 @|4.Variables */
 
-"4_tal": `|000              ( Move program location to Zero-page )
+"4_tal": `( The program location can be moved to create labels of different values,
+  but must always be returned to 100, which is where all Uxn programs begin. )
+
+|000              ( Move program location to Zero-page )
+
 	@zep8 $1        ( Allocate a byte of space )
 	@zep16 $2       ( Allocate a short of space )
 
 |100              ( Move program location to Reset )
-#12 .zep8 STZ     ( Set zero-page variable "zep8" to 12 )
-#3456 .zep16 STZ2 ( Set zero-page variable "zep16" to 3456 )
-.zep8 LDZ         ( Get byte in zero-page variable "zep8" )
-.zep16 LDZ2       ( Get short in zero-page variable "zep16" )
-#12 ;abs8 STA     ( Set 12 to the distant variable "abs8" )
-#3456 ;abs16 STA2 ( Set 3456 to the distant variable "abs16" )
-;abs8 LDA         ( Get the byte stored in distant variable "abs8" )
-;abs16 LDA2       ( Get the short stored in distant variable "abs16" )
-BRK 
 
-|8000             ( Move program location to 8000 )
-	@abs8 $1
-	@abs16 $2 `,
+#12 .zep8 STZ     ( Set "zep8" to 12 )
+.zep8 LDZ         ( Get byte in zero-page variable "zep8" )
+
+#3456 .zep16 STZ2 ( Set zero-page variable "zep16" to 3456 )
+.zep16 LDZ2       ( Get short in zero-page variable "zep16" )
+`,
 
 /* 
-@|5.Enums&Structs */
+@|5.If/Else */
 
-"5_tal": `( Programs can utilize up to ff00 of memory,
+"5_tal": `( Immediate conditional jumps in Uxntal is done 
+  by checking if the top of the stack is not zero. )
+
+#80          ( Push a value on stack )
+#01 ?{ INC } ( 80 )
+#00 ?{ INC } ( 81 )
+
+( Each logic opcode EQU, NEQ, GTH, LTH will push
+  a non-zero byte when true. )
+
+#08 #04 EQU ?{ INC } ( 81 )
+#08 #04 NEQ ?{ INC } ( 82 )
+#08 #04 GTH ?{ INC } ( 83 )
+#08 #04 LTH ?{ INC } ( 83 )
+
+( The conditional jump operator ? can also jump to named labels )
+
+?label INC @label
+`,
+
+/* 
+@|6.Loop */
+
+"6_tal": `( Basic loops are done by pushing a limit and an iterator 
+  and comparing the bounds against the iterator each cycle )
+
+#08                  ( Push limit )
+#00                  ( Push iterator )
+@loop
+  DUP print-num      ( Run function to print number )
+  INC GTHk ?loop     ( Loop while limit is larger than iterator)
+POP2                 ( Pop limit and iterator )
+BRK                  ( Halt. )
+
+@print-num ( int -- )
+  LIT "0 ADD         ( Add number to ascii character 0 )
+	#18 DEO            ( Send to Console/write )
+  JMP2r`,
+
+/* 
+@|7.Enums&Structs */
+
+"7_tal": `( Programs can utilize up to ff00 of memory,
   the program location is where the program data is written in memory. )
 
 |1234 ( Move program location to 1234 )
@@ -123,44 +163,6 @@ $10   ( Move program location by 10, to 1244 )
   Every Uxn program begins at 100. )
 
 |100 .struct/b BRK`,
-
-/* 
-@|6.If/Else */
-
-"6_tal": `( Immediate conditional jumps in Uxntal is done 
-  by checking if the top of the stack is not zero. )
-
-#05 
-#08 NEQ ?{              ( Jump to closing curly if top of stack is not zero )
-	;equ-str print BRK    ( if )
-} 
-;neq-str print BRK      ( else )
-
-@print ( str* -- )
-	LDAk DUP ?{ POP2 POP2 JMP2r }
-	#18 DEO INC2 !print
-
-@equ-str "Is 20 "8. 00
-@neq-str "Is 20 "not 20 "8. 00
-`,
-
-/* 
-@|7.Loop */
-
-"7_tal": `( Loops are done by pushing boundaries 
-and comparing the bounds against the iterator )
-
-#08 #00              ( Push limit and iterator )
-&loop
-  DUP emit-num       ( Emit number )
-  INC GTHk ?&loop    ( Continue while limit is larger than iterator)
-POP2                 ( )
-
-BRK
-
-@emit-num ( int -- )
-  LIT "0 ADD #18 DEO ( convert number to ascii value )
-  JMP2r`,
 
 /* 
 @|8.While */
