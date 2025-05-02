@@ -12,27 +12,11 @@
 <nav><ul><li><a href="uxntal.html" class="parent">uxntal</a></li><li><a href="varvara.html">varvara</a></li><li><a href="porporo.html">porporo</a></li></ul><ul><li><a href="uxntal_syntax.html">uxntal syntax</a></li><li><a href="uxntal_stacks.html">uxntal stacks</a></li><li><a href="uxntal_opcodes.html">uxntal opcodes</a></li><li><a href="uxntal_notation.html">uxntal notation</a></li><li><a href="uxntal_numbers.html">uxntal numbers</a></li><li><a href="uxntal_labels.html">uxntal labels</a></li><li><a href="uxntal_macros.html">uxntal macros</a></li><li><a href="uxntal_memory.html" class="self">uxntal memory</a></li><li><a href="uxntal_devices.html">uxntal devices</a></li><li><a href="uxntal_software.html">uxntal software</a></li></ul><ul><li><a href="uxntal_doors.html">uxntal doors</a></li></ul></nav>
 <main><h2>Uxntal Memory</h2>
 
-<p>There are 64kb of <b>addressable memory</b>. Roms are loaded at 0x0100, which
-is the address of the <a href='uxntal_devices.html'>reset vector</a>. During
-boot, the stacks, device and addressable memories are zeroed. During a
-soft-reboot, the content of the zero-page is preserved.</p>
-
-<ul>
-	<li>An <b id='absolute'>Absolute Padding</b>, like <kbd>|100</kbd> moves
-the program generation to an address specified by a number or label.</li>
-	<li>A <b id='relative'>Relative Padding</b>, like <kbd>$18</kbd> moves
-the program generation by a distance specified by a number or label.</li>
-</ul>
-
-<pre>
-|18 @width
-|100 @on-reset ( -> )
-	;buffer/end BRK <span style='float:right'>02 18</span>
-|200 @buffer $width &end
-</pre>
-
-<p>The <b>device page</b> and stacks are located outside of addressable
-memory.</p>
+<p>There are 64kb of <b>addressable memory</b>. Roms are always loaded at 0x0100,
+which is the address of the <a href='uxntal_devices.html'>Reset Vector</a> and
+where evaluation begins. During boot, the stacks, device and addressable
+memories are zeroed. During a soft-reboot, the content of the zero-page is
+preserved.</p>
 
 <table border='1'>
 	<tr><th><i>Shared</i></th><th>Memory</th><td>RAM</td><td>Data</td><td>64kb pages</td></tr>
@@ -42,6 +26,25 @@ memory.</p>
 	<tr><td>Pointer</td><td>1 byte</td></tr>
 	<tr><th>IO</th><td>Devices</td><td>Data</td><td>256 bytes</td></tr>
 </table>
+
+<p>The device page and stacks are located <b>outside</b> of addressable
+memory.</p>
+
+<ul>
+	<li>An <b id='absolute'>Absolute Padding</b>, like <kbd>|100</kbd> moves
+the program generation to an address specified by a number or label.</li>
+	<li>A <b id='relative'>Relative Padding</b>, like <kbd>$18</kbd> moves
+the program generation by a distance specified by a number or label.</li>
+</ul>
+
+<pre>
+|18 <b>@width</b>
+
+|100 <b>@on-reset</b> <i>( -> )</i>
+	;buffer/end BRK <span style='float:right'>02 18</span>
+
+|200 <b>@buffer</b> $width &end
+</pre>
 
 <p>Memory is <b>big-endian</b>, when writing or reading a short from memory, the
 position is that of the high-byte. The low-byte of a short written at 0xffff

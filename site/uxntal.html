@@ -334,11 +334,11 @@ relative shorts, enabling routines making use of these opcodes to be moved
 around in the program's memory.</p>
 
 <pre>
-|100 @on-reset ( -> )
+<b>@on-reset</b> <i>( -> )</i>
 	#0007 fact
 	BRK
 
-@fact <i>( n* -- res* )</i>
+<b>@fact</b> <i>( n* -- res* )</i>
 	ORAk ?{ POP2 #0001 JMP2r }
 	DUP2 #0001 SUB2 fact MUL2
 	JMP2r</pre>
@@ -353,7 +353,7 @@ is the state of the stack before, and to the right, the state of the stack
 after:</p>
 
 <pre>
-@routine ( a b -- a b c )
+<b>@routine</b> <i>( a b -- a b c )</i>
 	ADDk JMP2r
 </pre>
 
@@ -362,7 +362,7 @@ after:</p>
 with the top item to the right:</p>
 
 <pre>
-@routine ( a b* -- b* a )
+<b>@routine</b> <i>( a b* -- b* a )</i>
 	ROT JMP2r
 </pre>
 
@@ -370,31 +370,24 @@ with the top item to the right:</p>
 notation.</p>
 
 <pre>
-@on-event ( -> )
+<b>@on-event</b> <i>( -> )</i>
 	BRK
-</pre>
-
-<p>If a specific item on the stack is a pointer, or a -1 value for failure, the item is within angular brackets.</p>
-
-<pre>
-@routine ( name* -- &lt;res&gt;* )
-	lut/find-name ORAk ?{ POP2 #ffff } JMP2r
 </pre>
 
 <h3 id='brackets'>Brackets</h3>
 
 <p>The square brackets do nothing, they are there merely for readability and <a
 href='uxnfor.html'>formatting</a>, they are useful for making explicit certain
-things.</p>
+things like grouping behaviors, joining literals or indicating lookup tables.</p>
 
 <pre>
-@routine ( -- )
+<b>@routine</b> <i>( -- )</i>
 	[ LIT2 20 -Console/write ] DEO JMP2r
 
-%min ( a b -- r ) {
+<b>%min</b> <i>( a b -- r )</i> {
 	GTHk [ JMP SWP ] POP }
 
-@sprite [ 00 66 ff ff ff 7e 3c 18 ]
+<b>@sprite</b> [ 00 66 ff ff ff 7e 3c 18 ]
 </pre>
 
 <h2>Uxntal Numbers</h2>
@@ -426,55 +419,38 @@ sublabel. Sublabels can be added to a scope with the <kbd>&name</kbd> rune, or
 by writing the full name, like <kbd>@scope/name</kbd>. Note that a labels like
 <i>bed</i>, <i>add</i> and <i>cafe</i> are considered numeric.</p>
 
-<p><b>Routines</b> are labels that will be jumped to, a <kbd>@routine</kbd> has
-its own scope, making it possible for multiple routines to have their own
-instance of the label <kbd>&loop</kbd>.</p>
+<p><b>Functions</b> are simply labels that will be jumped to, and returned
+from.</p>
 
 <pre>
-@routine ( a b -- c )
+<b>@func</b> <i>( a b -- c )</i>
 	&loop
 		INC GTHk ?&loop
 	ADD JMP2r
 </pre>
 
 <p><b>Constants</b> are labels that hold a specific value through the entire
-execution of the program. They allow to create label that can be used in place
-of a number, making the code more readable.</p>
+execution of the program. They allow to assign a name to a number, making the
+code more readable.</p>
 
 <pre>
-|1400 @limit
-
-@within-limit ( value* -- f )
-	;limit LTH2
-	JMP2r
+|1400 <b>@limit</b>
 </pre>
 
-<p><b>Enums</b> are labels with unique values that can be used as constants in a
-program, they begin by rolling back the program address with
-<kbd>|00</kbd>:</p>
+<p><b>Enums</b> are labels with padded members of equal sizes that can be used as
+constants in a program, they typically begin by rolling back the program
+address with <kbd>|00</kbd>:</p>
 
 <pre>
-|00 @Suit &clubs $1 &diamonds $1 &hearts $1 &spades
-
-@is-diamond ( suit -- f )
-	.Suit/clubs EQU
-	JMP2r
+|00 <b>@Suit</b> &clubs $1 &diamonds $1 &hearts $1 &spades
 </pre>
 
-<p id='structs'><b>Structs</b> define padded labels, for example the
-<code>;person/age</code> label holds a value of 2, using that offset allows to
-access specific members of a data structure by applying the sublabels to a
-pointer:</p>
+<p id='structs'><b>Structs</b> are labels with padded members of different sizes,
+that maps on a data-structure, they typically begin by rolling back the program
+address with <kbd>|00</kbd>:</p>
 
 <pre>
-|00 @Person &name $2 &age $1 &height $2
-@members
-	=dict/melanye 2a 008c
-	=dict/alexane 2c 009a
-
-@get-height ( member* -- height* )
-	;Person/height ADD2 LDA2
-	JMP2r
+|00 <b>@Person</b> &name $2 &age $1 &height $2
 </pre>
 
 <p>Labels can also be used with the padding runes to define a
@@ -482,42 +458,45 @@ global length. For example, if one needs to specify a length of 0x30 for
 multiple members of a struct, a value can be specified as follow:</p>
 
 <pre>
-|30 @length
-|00 @struct &field $length
+|30 <b>@length</b>
+|00 <b>@Struct</b> &field $length
 </pre>
 
 <h3 id='scope'>Scope</h3>
 
-<p>Uxntal objects are defined statically using a <kbd>@label</kbd> token, it
-allows for the enclosed methods to access local <kbd>&labels</kbd>. The example
-below creates an object with the method <kbd>get-x</kbd>, accessible from
-outside the scope as <kbd>Object/get-x</kbd>. By capitalizing the object name,
-we communicate to the assembler that the label will not be called and should
-not raise a warning.</p>
+<p>Uxntal objects are defined statically and allow for the enclosed methods to
+access encapsulated local <kbd>&members</kbd>. The example below contains an
+object with the method <kbd>set-color</kbd>, accessible from outside the scope
+as <kbd>pen/set-color</kbd>.</p>
 
 <pre>
-@Object &x $1 &y $1
+<b>@pen</b>
+	&position &x $2 &y $2
+	&color $1
 
-&get-x <i>( -- x )</i>
-	,&x LDR JMP2r
+&set-color <i>( color -- )</i>
+	,/color STR
+	JMP2r
 </pre>
 
-<p>New methods and members can be appended to an existing scope by creating a
-label with the scope name followed by a slash and the name of the extension.
+<p>New methods and members can extend an existing scope from anywhere by creating
+a label with the scope name followed by a slash and the name of the extension.
 The <kbd>&labels</kbd> declared within the extension have the same access to
 local labels as the rest of the object.</p>
 
 <pre>
-@Object/get-y <i>( -- y )</i>
-	,&y LDR JMP2r
+<b>@pen/get-position</b> <i>( -- x* y* )</i>
+	,/x LDR2 ,/y LDR2
+	JMP2r
 </pre>
 
 <p id='method'>When calling local methods the scope's name can be omitted,
 starting at the slash, like <kbd>/method</kbd>:</p>
 
 <pre>
-&get-both <i>( -- x y )</i>
-	/get-x /get-y JMP2r
+<b>@pen/paint</b> <i>( -- )</i>
+	/get-position canvas/draw-line-to
+	JMP2r
 </pre>
 
 <h3 id='addressing'>Addressing</h3>
@@ -560,10 +539,10 @@ destination address to be used like any other label such as a JCI
 some example data-structures:</p>
 
 <pre>
-@counted-string
+<b>@counted-string</b>
 	_{ "foo 20 "bar }
 
-@linked-list
+<b>@linked-list</b>
 	={ ={ "A } ={ "B ={ "C } } }
 </pre>
 
@@ -592,10 +571,10 @@ program counter will move to a routine and back, therefore it needs to be
 defined before its usage, as follow: </p>
 
 <pre>
-%modulo ( num denum -- res ) {
+<b>%modulo</b> <i>( num denum -- res )</i> {
 	DIVk MUL SUB }
 
-@routine ( -- c* )
+<b>@routine</b> <i>( -- c* )</i>
 	#18 #03 modulo JMP2r
 </pre>
 
@@ -603,33 +582,17 @@ defined before its usage, as follow: </p>
 body of the macro during assembly:</p>
 
 <pre>
-@routine ( -- c* )
+<b>@routine</b> <i>( -- c* )</i>
 	#18 #03 DIVk MUL SUB JMP2r
 </pre>
 
 <h2>Uxntal Memory</h2>
 
-<p>There are 64kb of <b>addressable memory</b>. Roms are loaded at 0x0100, which
-is the address of the <a href='uxntal_devices.html'>reset vector</a>. During
-boot, the stacks, device and addressable memories are zeroed. During a
-soft-reboot, the content of the zero-page is preserved.</p>
-
-<ul>
-	<li>An <b id='absolute'>Absolute Padding</b>, like <kbd>|100</kbd> moves
-the program generation to an address specified by a number or label.</li>
-	<li>A <b id='relative'>Relative Padding</b>, like <kbd>$18</kbd> moves
-the program generation by a distance specified by a number or label.</li>
-</ul>
-
-<pre>
-|18 @width
-|100 @on-reset ( -> )
-	;buffer/end BRK <span style='float:right'>02 18</span>
-|200 @buffer $width &end
-</pre>
-
-<p>The <b>device page</b> and stacks are located outside of addressable
-memory.</p>
+<p>There are 64kb of <b>addressable memory</b>. Roms are always loaded at 0x0100,
+which is the address of the <a href='uxntal_devices.html'>Reset Vector</a> and
+where evaluation begins. During boot, the stacks, device and addressable
+memories are zeroed. During a soft-reboot, the content of the zero-page is
+preserved.</p>
 
 <table border='1'>
 	<tr><th><i>Shared</i></th><th>Memory</th><td>RAM</td><td>Data</td><td>64kb pages</td></tr>
@@ -639,6 +602,25 @@ memory.</p>
 	<tr><td>Pointer</td><td>1 byte</td></tr>
 	<tr><th>IO</th><td>Devices</td><td>Data</td><td>256 bytes</td></tr>
 </table>
+
+<p>The device page and stacks are located <b>outside</b> of addressable
+memory.</p>
+
+<ul>
+	<li>An <b id='absolute'>Absolute Padding</b>, like <kbd>|100</kbd> moves
+the program generation to an address specified by a number or label.</li>
+	<li>A <b id='relative'>Relative Padding</b>, like <kbd>$18</kbd> moves
+the program generation by a distance specified by a number or label.</li>
+</ul>
+
+<pre>
+|18 <b>@width</b>
+
+|100 <b>@on-reset</b> <i>( -> )</i>
+	;buffer/end BRK <span style='float:right'>02 18</span>
+
+|200 <b>@buffer</b> $width &end
+</pre>
 
 <p>Memory is <b>big-endian</b>, when writing or reading a short from memory, the
 position is that of the high-byte. The low-byte of a short written at 0xffff
@@ -681,12 +663,12 @@ but it is discouraged to use the stacks to pass <a
 href='uxntal_doors.html'>data between vectors</a>.</p>
 
 <pre>
-@on-reset <i>( -> )</i>
+<b>@on-reset</b> <i>( -> )</i>
 	<i>( set vector )</i>
 	;on-mouse .Mouse/vector DEO2
 	BRK
 
-@on-mouse <i>( -> )</i>
+<b>@on-mouse</b> <i>( -> )</i>
 	<i>( read state )</i>
 	.Mouse/state DEI ?&on-touch
 	BRK
