@@ -1,10 +1,11 @@
 <h2>Uxntal Syntax</h2>
 
-<p>In stack programming there are no variables and <a href='concatenative.html'>no
-precedence rules</a>, the calculations are merely performed in the sequence in
-which they are presented. The order with which elements come off the stack is
-known as <b>last in, first out</b>. In the stack <i>a b c</i>, the <i>c</i>
-item was the last to be added, and will be the first to be removed.</p>
+<p>In stack programming there are no variables and <b>no precedence rules</b>,
+the calculations are merely performed in the sequence <a
+href='concatenative.html'>in which they are presented</a>. The order with which
+elements come off the stack is known as <i>Last In, First Out</i>. In the stack
+<i>a b c</i>, the <i>c</i> item was the last to be added, and will be the first
+to be removed.</p>
 
 <pre>
 #01 DUP ADD #03 MUL <i style='float:right'>program</i>
@@ -14,20 +15,23 @@ item was the last to be added, and will be the first to be removed.</p>
      01      02
 </pre>
 
-<p>In Uxntal, there is no decimal mode, numbers are expressed in base 16, or <a
-href='hexadecimal.html'>hexadecimal</a>. Most keywords are prefixed with a
-character indicating their meaning, for example, the keyword #2e is prefixed by
-# which indicates to the assembler that this keyword is a number. Without
+<p>In Uxntal, there is <b>no decimal mode</b>, numbers are expressed in base 16,
+or <a href='hexadecimal.html'>hexadecimal</a>. Most keywords are prefixed with
+a character indicating their meaning, for example, the keyword #2e is prefixed
+by # which indicates to the assembler that this keyword is a number. Without
 further ado..</p>
 
-<h3>Let's dive right into it!</h3>
+<h3>Let's dive into it!</h3>
 
-<p>In the example program below, the <kbd>;text</kbd> token pushes a pointer
-made of two bytes holding the <a href='uxntal_labels.html#addressing'>absolute
-address</a> in memory of the <kbd>@text</kbd> label to the stack. Next, we
-define a <a href='uxntal_labels.html'>label</a> named <kbd>@while</kbd>, to
-mark the start of a loop that will be printing each character stored at the
-text pointer.</p>
+<p>A word starting with <kbd>@</kbd> defines a label, and one starting with
+<kbd>;</kbd> pushes the address of a label to the stack.</p>
+
+<p>In the example below, <kbd>;text</kbd> pushes two bytes pointing to the <a
+href='uxntal_labels.html#addressing'>absolute address</a> of the
+<kbd>@text</kbd> label to the stack. Next, we define a new <a
+href='uxntal_labels.html'>label</a> named <kbd>@while</kbd>, to mark the start
+of a loop that will print each character stored at the text
+label.</p>
 
 <iframe src="../etc/uxnrepl/index.html" frameborder="0" class='frame'></iframe>
 
@@ -41,11 +45,13 @@ text pointer.</p>
 from the address on top of the stack, in this case, the <a
 href='ascii.html'>ascii</a> letter <i>H</i>(48). The <a
 href='uxntal_opcodes.html#modes'>k-mode</a> indicates that the operator will
-not consume the address.</p><p>The <kbd><a
-href='uxntal_opcodes.html#dup'>DUP</a></kbd> opcode copies the letter to the
-top of the stack. The <kbd>?{</kbd> pops that byte from the stack, and if the
-byte is <b>non-zero</b>, we jump to the corresponding <kbd>}</kbd>, which is an
-<a href='uxntal_labels.html#anonymous'>anonymous label</a> .</p>
+not consume the address.</p>
+
+<p>The <kbd><a href='uxntal_opcodes.html#dup'>DUP</a></kbd> opcode makes a
+copy of the letter. The <kbd>?{</kbd> pops that letter from the
+stack, and if it is <b>not zero</b>, we jump to the corresponding
+<kbd>}</kbd>, which is an <a href='uxntal_labels.html#anonymous'>anonymous
+label</a>.</p>
 
 <pre>
 |0100   a0 01 11   ( ;text )
@@ -58,11 +64,11 @@ byte is <b>non-zero</b>, we jump to the corresponding <kbd>}</kbd>, which is an
 |0109   00         ( BRK )
 </pre>
 
-<p>The <kbd>#18</kbd> token pushes a number to the stack, which maps to the <a
-href='varvara.html#console'>device port #18</a>, followed by the <kbd><a
-href='uxntal_opcodes.html#deo'>DEO</a></kbd> opcodes which pops both bytes and
-sends the letter to the device port, printing that letter to the terminal,
-leaving the address on top of the stack.</p>
+<p>The <kbd>#18</kbd> word pushes a number to the stack, which maps to the <a
+href='varvara.html#console'>Console/write port(#18)</a>, followed by the
+<kbd><a href='uxntal_opcodes.html#deo'>DEO</a></kbd> opcode that pops both
+bytes and sends the letter to the device port, printing it on the Console,
+leaving only the address on top of the stack.</p>
 
 <pre>
 @λ00
@@ -73,9 +79,11 @@ leaving the address on top of the stack.</p>
 </pre>
 
 <p>The <a href='uxntal_opcodes.html#inc'><kbd>INC2</kbd></a> opcode increments
-the address, moving the pointer to the next letter. The <a
+the address, moving the text pointer to the next letter. The <a
 href='uxntal_opcodes.html#modes'>2-mode</a> is used because the address is made
-of two bytes. Finally, we jump back to the start of the loop with
+of two bytes.</p>
+
+<p>Finally, we jump back to the start of the loop with
 <kbd>!while</kbd>, and repeat the loop until the letter is zero, when that
 happens, we <a href='uxntal_opcodes.html#pop'><kbd>POP</kbd></a> to remove the
 letter, and <a href='uxntal_opcodes.html#pop'><kbd>POP2</kbd></a> to remove the
