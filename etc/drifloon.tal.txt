@@ -19,8 +19,8 @@
 	BRK
 
 @on-console ( -> )
-	[ LIT2 04 -Console/type ] DEI EQU ?{
-		.Console/read DEI token/<push-byte> BRK }
+	[ LIT2 04 -Console/type ] DEI EQU ?{ .Console/read DEI token/<push-byte>
+		BRK }
 	assembly/<resolve>
 	BRK
 
@@ -31,21 +31,26 @@
 	;dict/bytes err/<pstr>
 	( | write )
 	;rom/mem ADD2 ;rom/output
-	&>l ( -- )
+	&>l
 		LDAk #18 DEO
 		INC2 GTH2k ?&>l
-	POP2 POP2
-	JMP2r
+	POP2 POP2 JMP2r
 
 @err/<pchr> ( c -- )
-	#19 DEO JMP2r
+	#19 DEO
+	JMP2r
 
 @runes/lut [
-	"| =&padabs "$ =&padrel "@ =&toplab "& =&sublab
-	"% =&macros "( =&coment ", =&litrel "_ =&rawrel
-	". =&litzep "- =&rawzep "; =&litabs "= =&rawabs
-	"? =&litjci "! =&litjmi "# =&lithex "" =&rawstr
-	"} =&lambda "[ =&ignore "] =&ignore "~ =&ignore ] $1
+	"| =&padabs "$ =&padrel
+	"@ =&toplab "& =&sublab
+	"% =&macros "( =&coment
+	", =&litrel "_ =&rawrel
+	". =&litzep "- =&rawzep
+	"; =&litabs "= =&rawabs
+	"? =&litjci "! =&litjmi
+	"# =&lithex "" =&rawstr
+	"} =&lambda "[ =&ignore
+	"] =&ignore "~ =&ignore ] $1
 
 @meta $1
 	( name ) "Drifloon 0a
@@ -53,7 +58,7 @@
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
 	( date ) "27 20 "Apr 20 "2025 $2
 
-( @|Core )
+( Core )
 
 @assembly/<resolve> ( -- )
 	;token/mode LDA2 ;asm-comment NEQ2 ?{
@@ -145,7 +150,7 @@
 
 @scope/<set> ( name* -- )
 	[ LIT2 -&buf _&ptr ] STR
-	&>w ( -- )
+	&>w
 		LDAk [ LIT "/ ] EQU ?{
 			LDAk /<push-byte>
 			INC2 LDAk ?&>w }
@@ -155,7 +160,7 @@
 @scope/make-name ( name* -- scope/label* )
 	[ LIT2 &anchor $1 _&ptr ] STR
 	[ LIT "/ ] /<push-byte>
-	&>wl ( -- )
+	&>wl
 		LDAk /<push-byte>
 		INC2 LDAk ?&>wl
 	POP2 ;&buf JMP2r
@@ -166,7 +171,7 @@
 @runes/find ( char -- <addr>* )
 	STH
 	;&lut
-	&>l ( -- )
+	&>l
 		LDAk STHkr EQU ?{
 			#0003 ADD2 LDAk ?&>l
 		POP2 #ffff }
@@ -198,7 +203,7 @@
 
 @opcodes/find ( str* -- str* <opc> )
 	[ LITr 00 ] ;&lut
-	&>l ( -- )
+	&>l
 		SWP2k scmp3 ?{
 			INCr #0003 ADD2 LDAk ?&>l
 		POPr [ LITr ff ] }
@@ -242,14 +247,15 @@
 @macros/find-name ( name* -- <addr>* )
 	STH2
 	,&ptr LDR2 ;&mem
-	&>lf ( -- )
+	&>lf
 		DUP2 STH2kr scmp ?{
 			scap/ scap/ GTH2k ?&>lf
 		POP2 #ffff }
 	NIP2 POP2r JMP2r
 
 @macros/<push-word> ( t* -- )
-	&>lp LDAk /<push-byte>
+	&>lp
+		LDAk /<push-byte>
 		INC2 LDAk ?&>lp
 	POP2 JMP2r
 
@@ -282,7 +288,7 @@
 @syms/find-name ( name* -- <sym>* )
 	STH2
 	;&ptr LDA2 ;&mem
-	&>lfn ( -- )
+	&>lfn
 		DUP2 #0003 ADD2 STH2kr scmp ?{
 			#0003 ADD2 scap/ GTH2k ?&>lfn
 		POP2 #ffff }
@@ -291,7 +297,7 @@
 @syms/find-addr ( addr* -- sym* )
 	LDA2 STH2
 	;&ptr LDA2 ;&mem
-	&>lfa ( -- )
+	&>lfa
 		DUP2 #0003 ADD2 scap/ LDA2 STH2kr SWP2 LTH2 ?{
 			#0003 ADD2 scap/ GTH2k ?&>lfa }
 	NIP2 POP2r JMP2r
@@ -332,8 +338,8 @@
 
 @syms/<emit> ( -- )
 	;&ptr LDA2 ;&mem
-	&>ls ( -- )
-		( used ) INC2k INC2 LDA .SymType/used AND ?{
+	&>ls
+		INC2k INC2 LDA .SymType/used AND ?{
 			( upper ) DUP2 #0003 ADD2 LDAk [ LIT "A ] SUB #1a LTH ?{
 				;dict/unused err/<pstr>
 				DUP2 err/<pstr>
@@ -384,7 +390,7 @@
 
 @refs/<resolve-all> ( -- )
 	,&ptr LDR2 ;&mem
-	&>l ( -- )
+	&>l
 		/<resolve>
 		#0005 ADD2 GTH2k ?&>l
 	POP2 POP2 JMP2r
@@ -479,7 +485,7 @@
 @rom/<write-macro> ( t* macro* -- )
 	NIP2 token/<new>
 	scap/
-	&>lm ( body* -- )
+	&>lm
 		LDAk STHk token/<push-byte>
 		INC2 STHr ?&>lm
 	POP2 JMP2r
@@ -493,7 +499,7 @@
 	#1f AND STH
 	LDA2k [ LIT2 "LI ] EQU2 #70 SFT STH
 	ORAr #0003 ADD2
-	&>w ( -- )
+	&>w
 		LDAk #21 LTH ?{
 			LDAk [ LIT "k ] NEQ ?{ LITr 80 ORAr !&r }
 			LDAk [ LIT "r ] NEQ ?{ LITr 40 ORAr !&r }
@@ -534,16 +540,15 @@
 
 @is-hex ( str* -- str* f )
 	DUP2
-	&>w ( -- )
+	&>w
 		chex INC ?{ POP2 #00 JMP2r }
 		INC2 LDAk ?&>w
 	POP2 #01 JMP2r
 
 @shex ( str* -- value* )
 	[ LIT2r 0000 ]
-	&>w ( i* -- )
-		( acc ) [ LITr 40 ] SFT2r
-		( res ) chex [ LITr 00 ] STH
+	&>w
+		[ LITr 40 ] SFT2r chex [ LITr 00 ] STH
 		ADD2r INC2 LDAk ?&>w
 	POP2 STH2r JMP2r
 
@@ -568,15 +573,15 @@
 
 @scmp ( a* b* -- f )
 	STH2
-	&>l ( a* b* -- f )
-		LDAk #00 EQU ?{
-			LDAk LDAkr STHr NEQ ?{ INC2 INC2r !&>l } }
-	LDA LDAr STHr #0000 EQU2 JMP2r
+	&>l
+		LDAk ?{ &d LDA LDAr STHr EQU JMP2r }
+		LDAk LDAkr STHr NEQ ?&d
+		INC2 INC2r !&>l
 
 @scmp3 ( a* b* -- f )
-	LDAk STH
-	SWP2 LDAk STH
-	EQUr INC2 LDA2 SWP2 INC2 LDA2 EQU2 STHr AND JMP2r
+	STH2
+	LDAkr LDAk STHr NEQ ?{ INC2r INC2 }
+	LDA2r LDA2 STH2r EQU2 JMP2r
 
 (
 @|Error )
@@ -600,16 +605,17 @@
 	POP2 POP2 POP2 JMP2r
 
 @err/<pstr> ( str* -- )
-	&>l LDAk DUP ?{ POP POP2 JMP2r }
+	&>l
+		LDAk DUP ?{ POP POP2 JMP2r }
 		/<pchr>
 		INC2 !&>l
 
 @err/<pdec> ( short* -- )
 	[ LIT2r ff00 ]
-	&>read ( -- )
+	&>read
 		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?&>read
 	POP2
-	&>write ( -- )
+	&>write
 		NIP #30 ADD /<pchr>
 		OVRr ADDr STHkr ?&>write
 	POP2r JMP2r
