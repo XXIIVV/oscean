@@ -181,4 +181,28 @@ POP2 BRK
     LDAk DUP ?{ POP POP2 JMP2r } #18 DEO INC2 !print-str
 
 @fizz 20 "fizz 00
-@buzz 20 "buzz 00`}
+@buzz 20 "buzz 00`,
+
+/*
+@|9.Debugging */
+
+"9_tal": `( The stack states can be printed at any point during
+  evaluation using the System/debug port. The depth of each stack
+  can be polled for error handling. )
+
+|00 @System $4 &wst $1 &rst $1 $8 &debug $1 &state $1
+|18 @Console/write
+
+|100
+
+@on-reset ( -> )
+    #1234
+    #01 .System/debug DEO
+   .System/wst DEI #02 NEQ ?{       ( Check that working-stack depth is 2 )
+        LIT2 "1 -Console/write DEO  ( Print success )
+        BRK
+    }
+     LIT2 "0 -Console/write DEO     ( Print failure )
+    BRK`
+
+}

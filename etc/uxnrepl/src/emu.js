@@ -5,13 +5,22 @@ function System(emu)
 	this.vector = 0
 	this.meta = 0
 
+	this.dei = (port) => {
+		if(port == 0x04)
+			return emu.uxn.wst.ptr
+		else if(port == 0x05)
+			return emu.uxn.rst.ptr
+		else
+			return emu.uxn.dev[port]
+	}
+
 	this.deo = (port, val) => {
 		if(port == 0x00 || port == 0x01)
 			this.vector = (emu.uxn.dev[0x00] << 8) | emu.uxn.dev[0x01]
 		else if(port == 0x06 || port == 0x07)
 			this.meta = (emu.uxn.dev[0x06] << 8) | emu.uxn.dev[0x07]
 		else if(port == 0x0e)
-			console.log(this)
+			alert(`${emu.uxn.wst.print()}\n${emu.uxn.rst.print()}`)
 		else if(port == 0x0f)
 			console.log("Evaluation ended.")
 		else
@@ -58,6 +67,8 @@ function Emu ()
 	this.console = new Console(this)
 
 	this.dei = (port) => {
+		if(port >> 4 == 0)
+			return this.system.dei(port);
 		return this.uxn.dev[port]
 	}
 
