@@ -97,8 +97,7 @@ BRK         ( Halt program with a BRK )
 .zep8 LDZ          ( Get byte in zero-page variable "zep8" )
 
 #3456 .zep16 STZ2  ( Set zero-page variable "zep16" to 3456 )
-.zep16 LDZ2        ( Get short in zero-page variable "zep16" )
-`,
+.zep16 LDZ2        ( Get short in zero-page variable "zep16" )`,
 
 /*
 @|5.If/Else */
@@ -117,8 +116,7 @@ BRK         ( Halt program with a BRK )
 #08 #04 EQU ?label INC @label  ( 81 )
 #08 #04 NEQ ?&a INC &a         ( 82 )
 #08 #04 GTH ?{ INC }           ( 83 )
-#08 #04 LTH ,&b JCN INC &b     ( 83 )
-`,
+#08 #04 LTH ,&b JCN INC &b     ( 83 )`,
 
 /*
 @|6.Loop */
@@ -159,10 +157,10 @@ $10   ( Move program location by 10, to 1244 )
   but if the location has moved, it must be set back.
   Every Uxn program begins at 100. )
 
-|100 .struct/b BRK`,
+|100 .struct/b`,
 
 /*
-@|8.Macro */
+@|8.Macros */
 
 "8_tal": `( A macro is an inline function, but it must be created before. )
 
@@ -184,9 +182,30 @@ POP2 BRK
 @buzz 20 "buzz 00`,
 
 /*
-@|9.Debugging */
+@|9.Objects */
 
-"9_tal": `( The stack states can be printed at any point during
+"9_tal": `( Uxntal objects are statically allocated data-structures
+  with methods accessible via sublabels. )
+
+@on-reset ( -> )
+    #08 #04 point/set-pos       ( Call set-pos method of point object )
+    point/get-y                 ( Call get-y method )
+    BRK
+
+@point                          ( Define object )
+    &set-pos ( x y -- )         ( Create method )
+        ,&y STR ,&x STR JMP2r   ( Save values to local members )
+    &get-pos ( -- x y )
+        /get-x !/get-y          ( Call local methods with the / rune )
+    &get-x ( -- x )
+        [ LIT &x $1 ] JMP2r     ( Allocate local memory for variables )
+    &get-y ( -- x )
+        [ LIT &y $1 ] JMP2r`,
+
+/*
+@|10.Debugging */
+
+"10_tal": `( The stack states can be printed at any point during
   evaluation using the System/debug port. The depth of each stack
   can be polled for error handling. )
 
@@ -202,7 +221,5 @@ POP2 BRK
         LIT2 "1 -Console/write DEO  ( Print success )
         BRK
     }
-     LIT2 "0 -Console/write DEO     ( Print failure )
-    BRK`
-
+     LIT2 "0 -Console/write DEO     ( Print failure )`
 }
