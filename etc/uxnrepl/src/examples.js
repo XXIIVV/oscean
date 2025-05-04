@@ -133,7 +133,7 @@ BRK         ( Halt program with a BRK )
 #00                  ( Push iterator )
 @loop
   DUP print-num      ( Run function to print number )
-  INC GTHk ?loop     ( Loop while limit is larger than iterator)
+  INC GTHk ?loop     ( Loop while limit is larger than iterator )
 POP2                 ( Pop limit and iterator )
 BRK                  ( Halt. )
 
