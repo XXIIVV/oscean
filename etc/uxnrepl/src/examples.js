@@ -162,27 +162,23 @@ $10   ( Move program location by 10, to 1244 )
 |100 .struct/b BRK`,
 
 /*
-@|8.While */
+@|8.Macro */
 
-"8_tal": `#64 #01
+"8_tal": `( A macro is an inline function, but it must be created before. )
+
+%MOD ( num div -- res ) { DIVk MUL SUB }
+%EMIT ( num ) { LIT "0 ADD #18 DEO }
+
+#64 #01
 &while
-    DUP print-dec
-    DUP #03 DIVk MUL SUB ?{ ;fizz print-str }
-    DUP #05 DIVk MUL SUB ?{ ;buzz print-str }
-    #0a18 DEO
-    INC NEQk ?&while
+    DUP DUP #0a DIV EMIT #0a MOD EMIT
+    DUP #03 MOD ?{ ;fizz print-str }
+    DUP #05 MOD ?{ ;buzz print-str }
+    #0a18 DEO INC NEQk ?&while
 POP2 BRK
 
 @print-str ( str* -- )
-    LDAk DUP ?{ POP POP2 JMP2r }
-    #18 DEO INC2 !print-str
-
-@print-dec ( num -- )
-    DUP #0a DIV emit-dec
-    #0a DIVk MUL SUB ( .. )
-
-@emit-dec ( num -- )
-    LIT "0 ADD #18 DEO JMP2r
+    LDAk DUP ?{ POP POP2 JMP2r } #18 DEO INC2 !print-str
 
 @fizz 20 "fizz 00
 @buzz 20 "buzz 00`}
