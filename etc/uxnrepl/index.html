@@ -47,7 +47,6 @@
 	<script type="text/javascript">
 'use strict'
 
-let ended = 0
 let emulator
 
 let term_el = document.getElementById("term")
@@ -88,41 +87,56 @@ function make_opcode(byte) {
 	return opcodes[byte & 0x1f] + (byte & 0x20 ? "2" : "") + (byte & 0x80 ? "k" : "") + (byte & 0x40 ? "r" : "")
 }
 
+let ended = 0
+
+function status(v, run, step) {
+	ended = v
+	run_el.value = run
+	if(step)
+		step_el.value = step, step_el.style.display = "inline-block"
+	else
+		step_el.style.display = "none"
+}
+
 function setup() {
 	let program = new Uint8Array(0x10000)
-	assemble(editor_el.value.replace(/(\r\n|\n|\r|\t)/gm, " "), program)
+	let res = assemble(editor_el.value.replace(/(\r\n|\n|\r|\t)/gm, " "), program)
 	emulator = new Emu()
 	emulator.console.write_el = term_el
 	emulator.console.error_el = term_el
 	emulator.uxn.load(program).init()
-	ended = 0
+	return res
 }
 
 function run() {
-	if(ended) {
-		setup()
-		run_el.value = `Run`, step_el.value = `Step`
-		return;
+	let res = setup()
+	if(!res) {
+		wst_el.innerHTML = "Compilation failed."
+		status(1, "Run", 0)
+		return
 	}
-	setup(), emulator.uxn.eval(0x100)
-	ended = 1
+	emulator.uxn.eval(0x100)
 	wst_el.innerHTML = emulator.uxn.wst.print()
-	run_el.value = `Restart`, step_el.value = `Done`
+	status(1, "Restart", "Step")
 }
 
 function step() {
-	if(ended)
-		return;
-	if(!emulator)
-		setup();
+	if(!emulator || ended) {
+		let res = setup()
+		if(!res) {
+			wst_el.innerHTML = "Compilation failed."
+			status(1, "Run", 0)
+			return
+		}
+		ended = 0;
+	}
 	let opc = emulator.uxn.step()
 	if(!opc) {
-		ended = 1;
-		run_el.value = `Restart`, step_el.value = `Done`
+		status(1, "Restart", "Done")
 		return;
 	}
 	wst_el.innerHTML = emulator.uxn.wst.print()
-	run_el.value = `Stop`, step_el.value = make_opcode(opc)
+	status(0, "Finish", make_opcode(opc))
 }
 
 function save() {
@@ -155,8 +169,8 @@ editor.addEventListener("keydown", (e) => {
 		editor.value = value.slice(0, selectionStart) + "\t" + value.slice(selectionEnd);
 		editor.setSelectionRange(selectionStart+1, selectionStart+1)
 	}
-	if(ended)
-		ended = 1, run_el.value = "Run", step_el.value = `Step`
+	if(!ended)
+		status(1, "Restart", "Step")
 });
 
 run_el.addEventListener("click", run)

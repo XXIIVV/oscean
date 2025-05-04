@@ -230,8 +230,6 @@ system_deo(Uint8 port)
 #define CONSOLE_EOA 0x3
 #define CONSOLE_END 0x4
 
-static int console_vector;
-
 #undef _POSIX_C_SOURCE
 #define _POSIX_C_SOURCE 200112L
 
@@ -248,6 +246,8 @@ static int console_vector;
 #include <sys/ioctl.h>
 #include <util.h>
 #endif
+
+static int console_vector;
 
 /* subprocess support */
 static char *fork_args[4] = {"/bin/sh", "-c", "", NULL};
@@ -410,17 +410,6 @@ console_input(int c, int type)
 	uxn.dev[0x12] = c, uxn.dev[0x17] = type;
 	uxn_eval(console_vector);
 	return type != 4;
-}
-
-static void
-console_arguments(int i, int argc, char **argv)
-{
-	for(; i < argc; i++) {
-		char *p = argv[i];
-		while(*p)
-			console_input(*p++, CONSOLE_ARG);
-		console_input('\n', i == argc - 1 ? CONSOLE_END : CONSOLE_EOA);
-	}
 }
 
 static Uint8
@@ -761,14 +750,19 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "Uxn11 - Varvara Emulator(cli), 20 Mar 2025.\n");
+		return !fprintf(stdout, "Uxn11 - Varvara Emulator(cli), 3 May 2025.\n");
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
 	else if(!system_boot((Uint8 *)calloc(0x10000 * RAM_PAGES, sizeof(Uint8)), argv[i++], argc > 2))
 		return !fprintf(stdout, "Could not load %s.\n", argv[i - 1]);
 	if(console_vector) {
-		console_arguments(i, argc, argv);
-		while(!uxn.dev[0x0f] && console_input(fgetc(stdin), 0x1));
+		for(; i < argc; i++) {
+			char *p = argv[i];
+			while(*p)
+				console_input(*p++, CONSOLE_ARG);
+			console_input('\n', i == argc - 1 ? CONSOLE_END : CONSOLE_EOA);
+		}
+		while(!uxn.dev[0x0f] && console_input(fgetc(stdin), 1));
 	}
 	return uxn.dev[0x0f] & 0x7f;
 }

@@ -255,8 +255,6 @@ system_deo(Uint8 port)
 #define CONSOLE_EOA 0x3
 #define CONSOLE_END 0x4
 
-static int console_vector;
-
 #undef _POSIX_C_SOURCE
 #define _POSIX_C_SOURCE 200112L
 
@@ -273,6 +271,8 @@ static int console_vector;
 #include <sys/ioctl.h>
 #include <util.h>
 #endif
+
+static unsigned int console_vector;
 
 /* subprocess support */
 static char *fork_args[4] = {"/bin/sh", "-c", "", NULL};
@@ -443,17 +443,6 @@ console_input(int c, int type)
 	return type != 4;
 }
 
-static void
-console_arguments(int i, int argc, char **argv)
-{
-	for(; i < argc; i++) {
-		char *p = argv[i];
-		while(*p)
-			console_input(*p++, CONSOLE_ARG);
-		console_input('\n', i == argc - 1 ? CONSOLE_END : CONSOLE_EOA);
-	}
-}
-
 static Uint8
 console_dei(Uint8 addr)
 {
@@ -483,14 +472,16 @@ console_deo(Uint8 addr)
 #define MAR2(x) (x + 0x10)
 
 typedef struct UxnScreen {
-	int width, height, vector, zoom, x1, y1, x2, y2;
+	int width, height, zoom, x1, y1, x2, y2;
 	Uint32 palette[16], *pixels;
 	Uint8 *fg, *bg;
 } UxnScreen;
 
+static unsigned int screen_vector;
+static UxnScreen uxn_screen;
+
 void emu_resize(void);
 
-static UxnScreen uxn_screen;
 static Uint8 blending[4][16] = {
 	{0, 0, 0, 0, 1, 0, 1, 1, 2, 2, 0, 2, 3, 3, 3, 0},
 	{0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3},
@@ -596,7 +587,7 @@ static void
 screen_deo(Uint8 addr)
 {
 	switch(addr) {
-	case 0x21: uxn_screen.vector = PEEK2(&uxn.dev[0x20]); return;
+	case 0x21: screen_vector = PEEK2(&uxn.dev[0x20]); return;
 	case 0x23: screen_apply(PEEK2(&uxn.dev[0x22]), uxn_screen.height); return;
 	case 0x25: screen_apply(uxn_screen.width, PEEK2(&uxn.dev[0x24])); return;
 	case 0x26: rMX = uxn.dev[0x26] & 0x1, rMY = uxn.dev[0x26] & 0x2, rMA = uxn.dev[0x26] & 0x4, rML = uxn.dev[0x26] >> 4, rDX = rMX << 3, rDY = rMY << 2; return;
@@ -703,7 +694,7 @@ screen_deo(Uint8 addr)
 /*
 @|Controller -------------------------------------------------------- */
 
-static int controller_vector;
+static unsigned int controller_vector;
 
 static void
 controller_down(Uint8 mask)
@@ -744,7 +735,7 @@ controller_deo(Uint8 addr)
 /*
 @|Mouse ------------------------------------------------------------- */
 
-static int mouse_vector;
+static unsigned int mouse_vector;
 
 static void
 mouse_down(Uint8 mask)
@@ -1288,8 +1279,8 @@ emu_run(void)
 			emu_event();
 		if(poll(&fds[1], 1, 0)) {
 			read(fds[1].fd, expirations, 8);
-			if(uxn_screen.vector)
-				uxn_eval(uxn_screen.vector);
+			if(screen_vector)
+				uxn_eval(screen_vector);
 			if(uxn_screen.x2 && uxn_screen.y2 && screen_changed())
 				emu_repaint();
 		}
@@ -1311,14 +1302,19 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "Uxn11 - Varvara Emulator, 23 Apr 2025.\n");
+		return !fprintf(stdout, "Uxn11 - Varvara Emulator, 3 May 2025.\n");
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
 	else if(!display_init())
 		return !fprintf(stdout, "Could not open display.\n");
 	else if(!system_boot((Uint8 *)calloc(0x10000 * RAM_PAGES, sizeof(Uint8)), argv[i++], argc > 2))
 		return !fprintf(stdout, "Could not load %s.\n", argv[i - 1]);
-	console_arguments(i, argc, argv);
+	for(; i < argc; i++) {
+		char *p = argv[i];
+		while(*p)
+			console_input(*p++, CONSOLE_ARG);
+		console_input('\n', i == argc - 1 ? CONSOLE_END : CONSOLE_EOA);
+	}
 	emu_run();
 	console_close();
 	XDestroyImage(ximage), XDestroyWindow(display, window), XCloseDisplay(display);

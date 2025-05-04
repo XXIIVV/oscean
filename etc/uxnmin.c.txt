@@ -24,8 +24,8 @@ emu_deo(unsigned char addr, unsigned char value)
 {
 	uxn.dev[addr] = value;
 	switch(addr) {
-	case 0x18: fputc(uxn.dev[addr], stdout); return;
-	case 0x19: fputc(uxn.dev[addr], stderr); return;
+	case 0x18: fputc(value, stdout); return;
+	case 0x19: fputc(value, stderr); return;
 	}
 }
 
@@ -66,7 +66,6 @@ int
 uxn_eval(unsigned short pc)
 {
 	unsigned int a, b, c, x[2], y[2], z[2], step = 0x800000;
-	if(!pc || uxn.dev[0x0f]) return 0;
 	while(step--) {
 		switch(uxn.ram[pc++]) {
 		/* BRK */ case 0x00: return 1;
@@ -131,16 +130,16 @@ main(int argc, char **argv)
 	else if(!(f = fopen(argv[1], "rb")))
 		fprintf(stderr, "uxnmin: %s not found.\n", argv[1]);
 	else {
-		uxn.dev[0x17] = argc > 2;
 		fread(&uxn.ram[0x0100], 0xff00, 1, f), fclose(f);
+		uxn.dev[0x17] = argc > 2;
 		if(uxn_eval(0x0100) && uxn.dev[0x10]) {
 			int i = 2;
 			for(; i < argc; i++) {
 				char *p = argv[i];
-				while(*p) console_input(*p++, 0x2);
-				console_input('\n', i == argc - 1 ? 0x4 : 0x3);
+				while(*p) console_input(*p++, 2);
+				console_input('\n', 3 + (i == argc - 1));
 			}
-			while(!uxn.dev[0x0f] && console_input(fgetc(stdin), 0x1));
+			while(!uxn.dev[0x0f] && console_input(fgetc(stdin), 1));
 		}
 	}
 	return uxn.dev[0x0f] & 0x7f;
