@@ -123,7 +123,7 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "27 20 "Apr 20 "2025 $2
+	( date ) "3 20 "May 20 "2025 $2
 
 
 
@@ -577,13 +577,13 @@
 	POP2 STHr !/<write-byte>
 
 @rom/<write-lithex> ( str* -- )
-	INC2k INC LDZ NEQ #50 SFT #80 ORA /<write-byte>
-	is-hex ?{ ;dict/invalid ;dict/Number err/<token> }
+	slen #02 NEQ #50 SFT #80 ORA /<write-byte>
 	( >> )
 
 @rom/<write-rawhex> ( str* -- )
-	INCk INC LDZk ?{ POP shex NIP !/<write-byte> }
-	INC INC LDZ ?{ shex !/<write-short> }
+	is-hex #00 EQU ?{
+		slen DUP #02 NEQ ?{ POP shex NIP !/<write-byte> }
+		#04 NEQ ?{ shex !/<write-short> } }
 	POP2 ;dict/invalid ;dict/Number !err/<token>
 
 @rom/<write-call> ( str* opc -- )
@@ -639,6 +639,9 @@
 @scap ( str* -- end* )
 	INC2 & LDAk ?scap
 	INC2 JMP2r
+
+@slen ( str* -- str* length )
+	DUP2k scap/ SWP2 INC2 SUB2 NIP JMP2r
 
 @scmp ( a* b* -- f )
 	STH2
