@@ -235,33 +235,87 @@ byte to the <a href='varvara.html#system'>System/debug</a> port.</p>
 
 <h2>Uxntal Opcodes</h2>
 
-<p>Uxn supports 4 <a href='#immediate'>immediate opcodes</a>, and 32 standard
-opcodes. The list below show the opcodes and their effect on a given stack
-<code>a b c</code>, where <code>c</code> is the top of the stack.</p>
+<p>Uxn has 32 standard opcodes and 4 <a href='#immediate'>immediate opcodes</a>.
+The | character, in the table below, indicates an effect on the return stack.</p>
 
-<ul>
-	<li><b>PC</b>: Program Counter.</li>
-	<li><b>[M]</b>: Value at address <code>M</code> in Memory.</li>
-	<li><b>&lt;D&gt;</b>: Value at address <code>D</code> in Device.</li>
-	<li><b>a8</b>: a byte, <b>a16</b>: a short.</li>
-	<li><b>|</b>: Return Stack.</li>
-</ul>
+<table border='1' id='opcodes'>
+	<tr>
+		<th colspan='4'>Standard Opcodes</th>
+	</tr>
+	<tr>
+		<th>stack I</th>
+		<th>logic</th>
+		<th>ram I</th>
+		<th>arithmetic</th>
+	</tr>
+	<tr>
+		<td><a href='uxntal_reference.html#brk'>BRK</a> -- </td>
+		<td><a href='uxntal_reference.html#equ'>EQU</a> a b -- a==b</td>
+		<td><a href='uxntal_reference.html#ldz'>LDZ</a> abs8 -- [abs8]</td>
+		<td><a href='uxntal_reference.html#add'>ADD</a> a b -- a+b</td>
+	</tr>
+	<tr>
+		<td><a href='uxntal_reference.html#inc'>INC</a> a -- a+1</td>
+		<td><a href='uxntal_reference.html#neq'>NEQ</a> a b -- a!=b</td>
+		<td><a href='uxntal_reference.html#stz'>STZ</a> val abs8 -- </td>
+		<td><a href='uxntal_reference.html#sub'>SUB</a> a b -- a-b</td>
+	</tr>
+	<tr>
+		<td><a href='uxntal_reference.html#pop'>POP</a> a -- </td>
+		<td><a href='uxntal_reference.html#gth'>GTH</a> a b -- a>b</td>
+		<td><a href='uxntal_reference.html#ldr'>LDR</a> rel8 -- [rel8]</td>
+		<td><a href='uxntal_reference.html#mul'>MUL</a> a b -- a*b</td>
+	</tr>
+	<tr>
+		<td><a href='uxntal_reference.html#nip'>NIP</a> a b -- b</td>
+		<td><a href='uxntal_reference.html#lth'>LTH</a> a b -- a&lt;b</td>
+		<td><a href='uxntal_reference.html#str'>STR</a> val rel8 -- </td>
+		<td><a href='uxntal_reference.html#div'>DIV</a> a b -- a/b</td>
+	</tr>
+	<tr>
+		<th>stack II</th>
+		<th>stash</th>
+		<th>ram II</th>
+		<th>bitwise</th>
+	</tr>
+	<tr>
+		<td><a href='uxntal_reference.html#swp'>SWP</a> a b -- b a</td>
+		<td><a href='uxntal_reference.html#jmp'>JMP</a> adr -- </td>
+		<td><a href='uxntal_reference.html#lda'>LDA</a> abs16 -- [abs16]</td>
+		<td><a href='uxntal_reference.html#and'>AND</a> a b -- a&b</td>
+	</tr>
+	<tr>
+		<td><a href='uxntal_reference.html#rot'>ROT</a> a b c -- b c a</td>
+		<td><a href='uxntal_reference.html#jcn'>JCN</a> cond8 adr -- </td>
+		<td><a href='uxntal_reference.html#sta'>STA</a> val abs16 -- </td>
+		<td><a href='uxntal_reference.html#ora'>ORA</a> a b -- a|b</td>
+	</tr>
+	<tr>
+		<td><a href='uxntal_reference.html#dup'>DUP</a> a -- a a</td>
+		<td><a href='uxntal_reference.html#jsr'>JSR</a> adr -- | ret16 </td>
+		<td><a href='uxntal_reference.html#dei'>DEI</a> dev -- &lt;dev&gt;</td>
+		<td><a href='uxntal_reference.html#eor'>EOR</a> a b -- a^b</td>
+	</tr>
+	<tr>
+		<td><a href='uxntal_reference.html#ovr'>OVR</a> a b -- a b a</td>
+		<td><a href='uxntal_reference.html#sth'>STH</a> a -- | a </td>
+		<td><a href='uxntal_reference.html#deo'>DEO</a> val dev -- </td>
+		<td><a href='uxntal_reference.html#sft'>SFT</a> a sft8 -- res</td>
+	</tr>
+	<tr>
+		<th colspan='4'>Immediate Opcodes</th>
+	</tr>
+	<tr>
+		<td><a href='uxntal_reference.html#lit'>LIT</a> -- [PC]</td>
+		<td><a href='uxntal_reference.html#jci'>JCI</a> cond8 -- </td>
+		<td><a href='uxntal_reference.html#jmi'>JMI</a> -- </td>
+		<td><a href='uxntal_reference.html#jsi'>JSI</a> -- | ret16</td>
+	</tr>
+</table>
 
-<pre>
-<b>LIT</b> a b c [PC]
-<b>JCI</b> a b c8?PC+=[PC]
-<b>JMI</b> a b c PC+=[PC]
-<b>JSI</b> a b c | PC PC+=[PC]
-
-<b>BRK</b> .        <b>EQU</b> a b==c          <b>LDZ</b> a b [c8]     <b>ADD</b> a b+c
-<b>INC</b> a b c+1  <b>NEQ</b> a b!=c          <b>STZ</b> a [c8]=b     <b>SUB</b> a b-c
-<b>POP</b> a b      <b>GTH</b> a b&gt;c           <b>LDR</b> a b [PC+c8]  <b>MUL</b> a b*c
-<b>NIP</b> a c      <b>LTH</b> a b&lt;c           <b>STR</b> a [PC+c8]=b  <b>DIV</b> a b/c
-<b>SWP</b> a c b    <b>JMP</b> a b PC+=c       <b>LDA</b> a b [c16]    <b>AND</b> a b&c
-<b>ROT</b> b c a    <b>JCN</b> a b8?PC+=c      <b>STA</b> a [c16]=b    <b>ORA</b> a b|c
-<b>DUP</b> a b c c  <b>JSR</b> a b | PC PC+=c  <b>DEI</b> a b &lt;c8&gt;     <b>EOR</b> a b^c
-<b>OVR</b> a b c b  <b>STH</b> a b | c         <b>DEO</b> a &lt;c8&gt;=b     <b>SFT</b> a b&gt;&gt;c8l&lt;&lt;c8h
-</pre>
+<style>
+	table#opcodes td a { font-family:mono, monospace }
+</style>
 
 <h3 id='modes'>Modes</h3>
 
