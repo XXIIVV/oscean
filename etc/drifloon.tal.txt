@@ -34,21 +34,12 @@
 		INC2 GTH2k ?&>l
 	POP2 POP2 JMP2r
 
+@runes/concat ( t* -- )
+	POP2 JMP2r
+
 @err/<pchr> ( c -- )
 	#19 DEO
 	JMP2r
-
-@runes/lut [
-	"| =&padabs "$ =&padrel
-	"@ =&toplab "& =&sublab
-	"% =&macros "( =&coment
-	", =&litrel "_ =&rawrel
-	". =&litzep "- =&rawzep
-	"; =&litabs "= =&rawabs
-	"? =&litjci "! =&litjmi
-	"# =&lithex "" =&rawstr
-	"} =&lambda "[ =&ignore
-	"] =&ignore "~ =&ignore ] $1
 
 @meta $1
 	( name ) "Drifloon 0a
@@ -177,7 +168,7 @@
 		POP2 #ffff }
 	POPr JMP2r
 
-@runes/ignore POP2 JMP2r
+@runes/ignore ( t* -- ) POP2 JMP2r
 	&padabs /req-name refs/get-any !rom/<set-head>
 	&padrel /req-name refs/get-any !rom/<set-head-rel>
 	&toplab /req-name DUP2 scope/<set> !syms/<new>
@@ -197,6 +188,18 @@
 @runes/req-name ( str* -- str1* )
 	INC2 LDAk #20 GTH ?{ ;dict/invalid ;dict/Token !err/<token> }
 	JMP2r
+
+@runes/lut [
+	"| =&padabs "$ =&padrel
+	"@ =&toplab "& =&sublab
+	"% =&macros "( =&coment
+	", =&litrel "_ =&rawrel
+	". =&litzep "- =&rawzep
+	"; =&litabs "= =&rawabs
+	"? =&litjci "! =&litjmi
+	"# =&lithex "" =&rawstr
+	"} =&lambda "~ =&concat
+	"[ =&ignore "] =&ignore ] $1
 
 (
 @|Opcodes )

@@ -17,8 +17,8 @@
 	@overlay $1
 	@selection $2
 	@scroll $2
-	@Acc/buf $40 &bufend
-	@Bag/count $1
+	@acc/buf $40 &bufend
+	@bag/count $1
 	@timers &step $1 &unstep $1 &organize $1 &clear $1
 	@size &w $2 &h $2
 
@@ -30,10 +30,10 @@
 	( | theme )
 	#f0cf .System/r DEO2
 	#f0ca .System/g DEO2
-	#f0c5 .System/b DEO2
+	#f0b5 .System/b DEO2
 	Theme/<read>
 	( | size )
-	#0228 #0198 <set-size>
+	#026c #0198 <set-size>
 	( | autofill )
 	#01 ;rules STA
 	#01 ;rules #0004 ADD2 STA
@@ -41,8 +41,8 @@
 	#01 ;rules #0082 ADD2 STA
 	#02 ;rules #00c0 ADD2 STA
 	( | read files )
-	Symbols/<read>
-	Project/<read>
+	symbols/<read>
+	project/<read>
 	<start-edit-mode>
 	BRK
 
@@ -50,7 +50,7 @@
 	( name ) "Tote 0a
 	( details ) "A 20 "Multiset 20 "Playground 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "28 20 "Nov 20 "2024 $1 00
+	( date ) "7 20 "May 20 "2025 $1 00
 
 (
 @|helpers )
@@ -59,7 +59,7 @@
 	#70 SFT2 ;rules ADD2 }
 
 %id-to-sym ( id* -- addr* ) {
-	DUP ADD ;Symbols/table ADD2 LDA2 }
+	DUP ADD ;symbols/table ADD2 LDA2 }
 
 %id-to-anchor ( id* -- anchor* ) {
 	DUP ADD ;anchors ADD2 LDA2 }
@@ -71,7 +71,7 @@
 	get-sym-id #00 SWP ;masks ADD2 LDA }
 
 %selected-symbol ( -- symbol* ) {
-	.selection LDZ2 ;Symbols/buf SUB2 }
+	.selection LDZ2 ;symbols/buf SUB2 }
 
 %selected-mask ( -- mask* ) {
 	selected-symbol #05 SFT2 ;masks ADD2 }
@@ -95,8 +95,8 @@
 	;on-mouse-edit .Mouse/vector DEO2
 	;on-frame-edit .Screen/vector DEO2
 	;on-button-edit .Controller/vector DEO2
-	Bag/<to-acc>
-	Bag/<update>
+	bag/<to-acc>
+	bag/<update>
 	<update-rules>
 	<validate>
 	( >> )
@@ -133,10 +133,18 @@
 	BRK
 
 @on-button-edit ( -> )
-	.Controller/key DEI
+	.Controller/button DEI2
 	( bs ) DUP #08 NEQ ?{
 		[ LIT2 00 -overlay ] LDZ id-to-rule <clear-rule> }
-	POP BRK
+	( del ) DUP #7f NEQ ?{ bag/<clear>
+		<redraw-edit> }
+	( R ) OVR #80 NEQ ?{ <step>
+		bag/<organize>
+		<redraw-edit> }
+	( L ) OVR #40 NEQ ?{ <unstep>
+		bag/<organize>
+		<redraw-edit> }
+	POP2 BRK
 
 @on-mouse-edit ( -> )
 	<draw-cursor-touch>
@@ -167,7 +175,7 @@
 	.Mouse/y DEI2 .touch-origin/y STZ2
 	[ LIT2 00 -bagged-mask ] STZ
 	;on-frame-edit/drag .Screen/vector DEO2
-	.Mouse/x DEI2 #0048 LTH2 ?<start-drag-spawn>
+	.Mouse/x DEI2 #0050 LTH2 ?<start-drag-spawn>
 	.Mouse/x DEI2 #00e8 LTH2 ?<start-drag-rule>
 	( >> )
 
@@ -176,15 +184,20 @@
 		.Mouse/y DEI2 .size/h LDZ2 #0030 SUB2 SUB2 #0020 LTH2 ?&menu }
 	[ LIT2 01 -bagged-mask ] STZ
 	&continue ( -- )
-	Bag/pick .drag STZ2 !<redraw-edit>
+	bag/pick .drag STZ2 !<redraw-edit>
 
 	&menu ( -- )
 	.Mouse/x DEI2 .size/w LDZ2 #0058 SUB2 SUB2 #0028 DIV2 NIP ?{ !<unstep> }
-	<step> !Bag/<organize>
+	<step> !bag/<organize>
 
 @<start-drag-spawn> ( -- )
-	( x ) .Mouse/x DEI2 #0008 SUB2 #45 SFT2
-	( y ) .Mouse/y DEI2 #0010 SUB2 #0018 DIV2 ADD2 NIP Bag/<push-mouse> !<start-drag-bag>/continue
+	( x ) .Mouse/x DEI2 DUP2 #0040 GTH2 ?&frill
+	#0008 SUB2 #45 SFT2
+	( y ) .Mouse/y DEI2 #0010 SUB2 #0018 DIV2 ADD2 NIP bag/<push-mouse> !<start-drag-bag>/continue
+
+	&frill ( x* -- )
+	POP2 [ LIT2 00 -Mouse/state ] DEO
+	#0000 id-to-sym .selection STZ2 !<start-paint-mode>/no-drag
 
 @<start-drag-rule> ( -- )
 	( rule* ) .Mouse/y DEI2 .scroll LDZ2 ADD2 #0010 SUB2 #0018 DIV2 id-to-rule
@@ -196,12 +209,12 @@
 	( | lhs )
 	DUP2 ,&lhs STR2
 	DUP2 #0040 ADD2 SWP2
-	&>l ( -- )
+	&>l
 		LDAk #00 EQUk ?{
-			&>ll ( -- )
+			&>ll
 				NEQkr STHr ?{
 					( dec ) OVR2 LDAk #01 SUB ROT ROT STA
-					( spawn ) OVR2 [ LIT2 &lhs $2 ] SUB2 NIP Bag/<push-mouse>
+					( spawn ) OVR2 [ LIT2 &lhs $2 ] SUB2 NIP bag/<push-mouse>
 					<update-rules> }
 				INCr INC GTHk ?&>ll }
 		POP2 INC2 GTH2k ?&>l
@@ -213,18 +226,18 @@
 	( | rhs )
 	DUP2 ,&rhs STR2
 	DUP2 #0040 ADD2 SWP2
-	&>r ( -- )
+	&>r
 		LDAk #00 EQUk ?{
-			&>rr ( -- )
+			&>rr
 				NEQkr STHr ?{
 					( dec ) OVR2 LDAk #01 SUB ROT ROT STA
-					( spawn ) OVR2 [ LIT2 &rhs $2 ] SUB2 NIP Bag/<push-mouse>
+					( spawn ) OVR2 [ LIT2 &rhs $2 ] SUB2 NIP bag/<push-mouse>
 					<update-rules> }
 				INCr INC GTHk ?&>rr }
 		POP2 INC2 GTH2k ?&>r
 	POP2 POP2 POP2r
 	( | start picking )
-	Bag/pick .drag STZ2 !<redraw-edit>
+	bag/pick .drag STZ2 !<redraw-edit>
 
 	&sidebar ( rule* x* -- )
 	POP2 !<swap-rules>
@@ -263,8 +276,8 @@
 @<detect-craft> ( -- )
 	.drag LDZ2 INC2k INC2 LDA2 ,&y STR2
 	LDA2 ,&x STR2
-	;Bag/bufend ;Bag/buf
-	&>l ( -- )
+	;bag/bufend ;bag/buf
+	&>l
 		( exists ) LDA2k #0000 EQU2 ?{
 			( not self ) DUP2 .drag LDZ2 EQU2 ?{
 				( x ) LDA2k #0010 SUB2 [ LIT2 &x $2 ] SUB2 #ffe0 LTH2 ?{
@@ -289,37 +302,37 @@
 	&destroy ( -- )
 	is-click ?<start-paint-mode>
 	#0000 .drag LDZ2 STA2
-	Project/<write>
+	project/<write>
 	&end ( -- )
 	#ffff .drag STZ2
-	Bag/<to-acc>
-	Bag/<update> !<reqdraw-edit>
+	bag/<to-acc>
+	bag/<update> !<reqdraw-edit>
 
 @<drop-bag> ( -- )
 	is-click ?<touch-craft>
 	.craft LDZ2 INC2 ORA ?<drag-craft>
 	( | drag normal )
-	.drag LDZ2 get-sym-id #00 SWP id-to-anchor ORA #00 EQU ?{ Bag/<organize> }
-	Project/<write>
+	.drag LDZ2 get-sym-id #00 SWP id-to-anchor ORA #00 EQU ?{ bag/<organize> }
+	project/<write>
 	#ffff .drag STZ2
-	Bag/<to-acc>
-	Bag/<update> !<reqdraw-edit>
+	bag/<to-acc>
+	bag/<update> !<reqdraw-edit>
 
 @<drag-craft> ( -- )
-	.craft LDZ2 LDA2k ;Bag/anchor-x STA2
-	INC2 INC2 LDA2 ;Bag/anchor-y STA2
+	.craft LDZ2 LDA2k ;bag/anchor-x STA2
+	INC2 INC2 LDA2 ;bag/anchor-y STA2
 	#02 <validate-craft>
 	<run-craft>
-	Bag/<to-acc>
-	Bag/<update> !<reqdraw-edit>
+	bag/<to-acc>
+	bag/<update> !<reqdraw-edit>
 
 @<touch-craft> ( -- )
 	.drag LDZ2 .craft STZ2
-	.craft LDZ2 LDA2k ;Bag/anchor-x STA2
-	INC2 INC2 LDA2 ;Bag/anchor-y STA2
+	.craft LDZ2 LDA2k ;bag/anchor-x STA2
+	INC2 INC2 LDA2 ;bag/anchor-y STA2
 	#01 <validate-craft>
 	<run-craft>
-	Bag/<organize> !<reqdraw-edit>
+	bag/<organize> !<reqdraw-edit>
 
 @<set-overlay> ( rule -- )
 	DUP .overlay LDZ EQU ?{ .overlay STZ !<reqdraw-edit> }
@@ -334,7 +347,8 @@
 	( | drop )
 	#0000 .drag LDZ2 STA2
 	#ffff .drag STZ2
-	Bag/<update>
+	&no-drag ( -- )
+	bag/<update>
 	( | draw )
 	;on-mouse-paint .Mouse/vector DEO2
 	;on-frame-paint .Screen/vector DEO2
@@ -370,11 +384,18 @@
 	.Mouse/x DEI2 #00d0 LTH2 ?&shapes
 	<draw-cursor-touch>
 	( only touch ) .Mouse/state DEI ?{ BRK }
+	( | detect frill )
+	.Mouse/x DEI2 #00e0 LTH2 ?&frill
 	( | button )
 	.Mouse/y DEI2 .size/h LDZ2 SUB2 #ffd0 LTH2 ?{
 		.Mouse/x DEI2 .size/w LDZ2 SUB2 #ff80 GTH2 ?&menu }
 	( x ) .Mouse/x DEI2 #0038 SUB2 #04 SFT2 NIP #0c SUB
-	( y ) .Mouse/y DEI2 #0010 SUB2 #04 SFT2 NIP Symbol/<anchor>
+	( y ) .Mouse/y DEI2 #0010 SUB2 #04 SFT2 NIP symbol/<anchor>
+	BRK
+
+	&frill ( -- )
+	[ LIT2 00 -Mouse/state ] DEO
+	<start-edit-mode>
 	BRK
 
 	&menu ( -- )
@@ -385,9 +406,9 @@
 	&menu-clear ( x* -- )
 	[ LIT2 04 -timers/clear ] STZ
 	<draw-clear-button>
-	POP2 Bag/<clear>
-	Bag/<update>
-	Project/<write>
+	POP2 bag/<clear>
+	bag/<update>
+	project/<write>
 	<reqdraw-paint>
 	BRK
 
@@ -398,7 +419,7 @@
 	&menu-organize ( x* -- )
 	[ LIT2 04 -timers/organize ] STZ
 	<draw-organize-button>
-	POP2 Bag/<organize>
+	POP2 bag/<organize>
 	BRK
 
 	&shapes ( -> )
@@ -421,10 +442,10 @@
 	( | detect mode )
 	ROT2
 	( | save on release )
-	DUP2 #0100 NEQ2 ?{ Symbols/<write> }
+	DUP2 #0100 NEQ2 ?{ symbols/<write> }
 	DUP2 #0001 EQU2 ?&detect
 	AND ?{ POP2 POP2 BRK }
-	( x y ) #03 SFT ROT #03 SFT NIP2 SWP Symbol/<set-pixel>
+	( x y ) #03 SFT ROT #03 SFT NIP2 SWP symbol/<set-pixel>
 	BRK
 
 	&options ( states* x* y* -> )
@@ -432,21 +453,21 @@
 	.Mouse/state DEI ?{ POP2 POP2 POP2 BRK }
 	( y ) #0090 SUB2 #04 SFT2 NIP
 	( x ) ROT ROT #04 SFT2 NIP SWP
-	( erase ) ORAk ?{ Symbol/<erase> }
-	( snarf ) DUP2 #0100 NEQ2 ?{ Snarf/<write> }
-	( paste ) DUP2 #0200 NEQ2 ?{ Snarf/<read> }
-	( dir ) DUP2 #0500 NEQ2 ?{ Symbol/<change-dir> }
-	( hide ) DUP2 #0600 NEQ2 ?{ Symbol/<toggle-hide> }
-	( lock ) DUP2 #0700 NEQ2 ?{ Symbol/<toggle-lock> }
+	( erase ) ORAk ?{ symbol/<erase> }
+	( snarf ) DUP2 #0100 NEQ2 ?{ snarf/<write> }
+	( paste ) DUP2 #0200 NEQ2 ?{ snarf/<read> }
+	( dir ) DUP2 #0500 NEQ2 ?{ symbol/<change-dir> }
+	( hide ) DUP2 #0600 NEQ2 ?{ symbol/<toggle-hide> }
+	( lock ) DUP2 #0700 NEQ2 ?{ symbol/<toggle-lock> }
 	POP2 POP2 [ LIT2 00 -Mouse/state ] DEO
 	BRK
 
 	&detect ( x* y* state* -> )
 	POP2
-	( x y ) #03 SFT ROT #03 SFT NIP2 SWP #40 SFT ORA Symbol/get-pixel ?{
-		( paint ) #00 ;Symbol/paint-mode STA
+	( x y ) #03 SFT ROT #03 SFT NIP2 SWP #40 SFT ORA symbol/get-pixel ?{
+		( paint ) #00 ;symbol/paint-mode STA
 		BRK }
-	( erase ) #01 ;Symbol/paint-mode STA
+	( erase ) #01 ;symbol/paint-mode STA
 	BRK
 
 (
@@ -454,14 +475,14 @@
 
 @count-hs ( hs* -- length )
 	[ LITr 00 ] DUP2 #0040 ADD2 SWP2
-	&>l ( -- )
+	&>l
 		LDAk STH
 		ADDr INC2 GTH2k ?&>l
 	POP2 POP2 STHr JMP2r
 
 @<clear-rule> ( rule* -- )
 	DUP2 #0080 ADD2 SWP2
-	&>l ( -- )
+	&>l
 		#0000 OVR2 STA2
 		INC2 INC2 GTH2k ?&>l
 	POP2 POP2 !<reqdraw-edit>
@@ -472,8 +493,8 @@
 
 @<validate-fwd> ( -- )
 	;rules/end ;rules
-	&>l ( -- )
-		DUP2 ;Acc/buf compare-rules ?{
+	&>l
+		DUP2 ;acc/buf compare-rules ?{
 			#0080 ADD2 GTH2k ?&>l
 		[ LIT2 ff -valid/fwd ] STZ
 		POP2 POP2 JMP2r }
@@ -482,8 +503,8 @@
 
 @<validate-bwd> ( -- )
 	;rules ;rules/end
-	&>l ( -- )
-		#0080 SUB2 DUP2 #0040 ADD2 ;Acc/buf compare-rules ?{
+	&>l
+		#0080 SUB2 DUP2 #0040 ADD2 ;acc/buf compare-rules ?{
 			NEQ2k ?&>l
 		POP2 POP2 [ LIT2 ff -valid/bwd ] STZ
 		JMP2r }
@@ -495,11 +516,11 @@
 	.drag LDZ2 get-sym-id ,&a STR
 	.craft LDZ2 get-sym-id ,&b STR
 	[ LITr 00 ] ;rules/end ;rules
-	&>l ( -- )
+	&>l
 		#00 STHkr ;rules/meta ADD2 LDA [ LIT &meta $1 ] NEQ ?{
 			DUP2 [ LIT2 00 &a $1 ] ADD2 LDA #00 EQU ?{
 				DUP2 [ LIT2 00 &b $1 ] ADD2 LDA #00 EQU ?{
-					DUP2 ;Acc/buf compare-rules #00 EQU ?{
+					DUP2 ;acc/buf compare-rules #00 EQU ?{
 						[ LITr -valid/craft ] STZr
 						POP2 POP2 JMP2r } } } }
 		INCr #0080 ADD2 GTH2k ?&>l
@@ -514,7 +535,7 @@
 	DUP2 ;rules SUB2 #07 SFT2 ;rules/meta ADD2 LDA2k SWP SWP2 STA2
 	( | registers )
 	DUP2 #0080 ADD2 SWP2
-	&>l ( -- )
+	&>l
 		DUP2 ,&a-addr STR2
 		LDAk ,&b STR
 		DUP2 #0080 ADD2 LDAk ,&a STR
@@ -528,14 +549,14 @@
 @<update-rules> ( -- )
 	[ LIT2r =reachable ]
 	( ) ;rules/end ;rules
-	&>l ( -- )
+	&>l
 		DUP2 validate-rule STH2kr STA
 		INC2r #0080 ADD2 GTH2k ?&>l
 	POP2 POP2 POP2r JMP2r
 
 @validate-rule ( rule* -- flag )
 	;rules OVR2 DUP2 ,&src STR2
-	&>l ( -- )
+	&>l
 		#0080 SUB2 GTH2k ?&reachable
 		DUP2 [ LIT2 &src $2 ] compare-rules ?&unreachable
 		!&>l
@@ -550,7 +571,7 @@
 @compare-rules ( b* a* -- match )
 	[ LIT2r 0000 ] SWP2 STH2
 	DUP2 #0040 ADD2 SWP2
-	&>mask-loop ( -- )
+	&>mask-loop
 		LDAkr STHr #00 EQU ?{ SWP2r INC2r SWP2r }
 		( valid ) LDAk LDAkr STHr SWP GTH ?{ INC2r INC2 GTH2k ?&>mask-loop }
 	POP2r EQU2 STHr #00 NEQ AND POPr JMP2r
@@ -560,7 +581,7 @@
 
 @<run-craft> ( -- )
 	[ LIT2 ff -valid/craft ] LDZ EQU ?{
-		Bag/<to-acc>
+		bag/<to-acc>
 		.valid/craft LDZ .valid/fwd STZ
 		<step>
 		[ LIT2 ff -valid/craft ] STZ }
@@ -574,16 +595,16 @@
 	<draw-unstep-button>
 	[ LIT2 00 -valid/bwd ] LDZ id-to-rule
 	( | unapply )
-	[ LITr -Acc/buf ]
+	[ LITr -acc/buf ]
 	( ) DUP2 #0020 ADD2 SWP2
-	&>l ( -- )
+	&>l
 		( inc ) LDAk LDZkr STH
 		ADDr
 		( dec ) DUP2 #0040 ADD2 LDA STH
 		SUBr
 		( save ) OVRr STZr
 		INCr INC2 GTH2k ?&>l
-	POP2 POP2 POPr Acc/<to-bag> !Bag/<update>
+	POP2 POP2 POPr acc/<to-bag> !bag/<update>
 
 @<step> ( -- )
 	[ LIT2 ff -valid/fwd ] LDZ NEQ ?{ JMP2r }
@@ -591,13 +612,13 @@
 	<draw-step-button>
 	[ LIT2 00 -valid/fwd ] LDZ id-to-rule
 	( | apply )
-	[ LITr -Acc/buf ]
+	[ LITr -acc/buf ]
 	( ) DUP2 #0020 ADD2 SWP2
-	&>l ( -- )
+	&>l
 		DUP2 #0040 ADD2 LDA STH
-		LDAk STHr SWP SUB STHkr .Acc/buf SUB <mod-things>
+		LDAk STHr SWP SUB STHkr .acc/buf SUB <mod-things>
 		INCr INC2 GTH2k ?&>l
-	POP2 POP2 POPr !Bag/<update>
+	POP2 POP2 POPr !bag/<update>
 
 @<mod-things> ( count id -- )
 	OVR ?{ POP2 JMP2r }
@@ -617,59 +638,60 @@
 
 @<dec-things> ( count id -- )
 	SWP
-	&>l ( -- )
-		OVR Bag/<take-auto>
+	&>l
+		OVR bag/<take-auto>
 		INC DUP ?&>l
 	POP2 JMP2r
 
 @<inc-things> ( count id -- )
 	#00 ROT SUB
-	&>l ( -- )
-		OVR Bag/<push-auto>
+	&>l
+		OVR #00 SWP <set-anchor>
+		OVR bag/<push-auto>
 		INC DUP ?&>l
 	POP2 JMP2r
 
 @<eval-passive> ( -- )
 	[ LITr 00 ] ;rules/end ;rules
-	&>l ( -- )
+	&>l
 		#00 STHkr ;rules/meta ADD2 LDA #03 NEQ ?{
-			DUP2 ;Acc/buf compare-rules #00 EQU ?{
-				Bag/<to-acc>
+			DUP2 ;acc/buf compare-rules #00 EQU ?{
+				bag/<to-acc>
 				POP2 POP2 [ LITr -valid/fwd ] STZr
 				<step> !<reqdraw-edit> } }
 		INCr #0080 ADD2 GTH2k ?&>l
 	POP2 POP2 POPr JMP2r
 
 (
-@|Accumulator )
+@|accumulator )
 
-@Acc/<clear> ( -- )
+@acc/<clear> ( -- )
 	[ LIT2 -&bufend -&buf ]
-	&>clear-loop ( -- )
+	&>clear-loop
 		#00 OVR STZ
 		INC GTHk ?&>clear-loop
 	POP2 JMP2r
 
-@Acc/<to-bag> ( -- )
-	Bag/<clear>
-	[ LITr 00 ] [ LIT2 -Acc/bufend -Acc/buf ]
-	&>bag-loop ( -- )
-		#00 OVR .Acc/buf SUB Bag/<set-dir>
+@acc/<to-bag> ( -- )
+	bag/<clear>
+	[ LITr 00 ] [ LIT2 -acc/bufend -acc/buf ]
+	&>bag-loop
+		#00 OVR .acc/buf SUB bag/<set-dir>
 		( ) LDZk #00 EQUk ?{
 			#00 STHkr <set-anchor>
-			&>bag-loop2 ( -- )
-				STHkr Bag/<push-auto>
+			&>bag-loop2
+				STHkr bag/<push-auto>
 				INC GTHk ?&>bag-loop2 }
 		POP2 INCr INC GTHk ?&>bag-loop
 	POP2 POPr JMP2r
 
 @<set-anchor> ( id* -- )
 	id-to-anchor ORAk ?{ POP2 JMP2r }
-	( y ) #00 SWP #40 SFT2 #0010 ADD2 ;Bag/anchor-y STA2
-	( x ) #00 SWP #40 SFT2 #00f8 ADD2 ;Bag/anchor-x STA2
+	( y ) #00 SWP #40 SFT2 #0010 ADD2 ;bag/anchor-y STA2
+	( x ) #00 SWP #40 SFT2 #00f8 ADD2 ;bag/anchor-x STA2
 	JMP2r
 
-@Bag/<set-dir> ( id* -- )
+@bag/<set-dir> ( id* -- )
 	;masks ADD2 LDA #06 SFT
 	( north ) DUP #03 NEQ ?{
 		#0000 ;&dir-x STA2
@@ -689,37 +711,37 @@
 	JMP2r
 
 (
-@|Bag )
+@|bag )
 
-@Bag/pick ( -- thing* )
+@bag/pick ( -- thing* )
 	;&buf ;&bufend
-	&>pick-loop ( -- )
-		#0005 SUB2 LDA2k #0000 EQU2 ?{ DUP2 Bag/<try-pick>
+	&>pick-loop
+		#0005 SUB2 LDA2k #0000 EQU2 ?{ DUP2 bag/<try-pick>
 			?&found }
 		NEQ2k ?&>pick-loop
 	POP2 #ffff &found NIP2 JMP2r
 
-@Bag/find-free ( -- bag/thing* )
+@bag/find-free ( -- bag/thing* )
 	;&bufend ;&buf
-	&>find-loop ( -- )
+	&>find-loop
 		LDA2k ORA ?{ NIP2 JMP2r }
 		#0005 ADD2 GTH2k ?&>find-loop
 	POP2 POP2 ;&buf JMP2r
 
-@Bag/<try-pick> ( pos* -- flag )
+@bag/<try-pick> ( pos* -- flag )
 	( x ) LDA2k .Mouse/x DEI2 SWP2 SUB2 #0010 LTH2 ?{ POP2 #00 JMP2r }
 	( y ) INC2 INC2 LDA2 .Mouse/y DEI2 SWP2 SUB2 #0010 LTH2 ?{ #00 JMP2r }
 	#01 JMP2r
 
-@Bag/<push-mouse> ( id -- )
+@bag/<push-mouse> ( id -- )
 	DUP #20 LTH ?{ POP JMP2r }
 	/find-free STH2
 	.Mouse/x DEI2 #0008 SUB2 STH2kr INC2r INC2r STA2
 	.Mouse/y DEI2 #0008 SUB2 STH2kr INC2r INC2r STA2
 	STH2r STA
-	Bag/<to-acc> !&<update>
+	bag/<to-acc> !&<update>
 
-@Bag/<push-auto> ( id -- )
+@bag/<push-auto> ( id -- )
 	/find-free STH2
 	[ LIT2 &anchor-x 00f8 ]
 	( ) DUP2 [ LIT2 &dir-x 0010 ] ADD2 ,&anchor-x STR2
@@ -730,18 +752,18 @@
 	STH2r STA
 	JMP2r
 
-@Bag/<take-auto> ( id -- )
+@bag/<take-auto> ( id -- )
 	STH
-	;Bag/bufend ;Bag/buf
-	&>take-loop ( -- )
+	;bag/bufend ;bag/buf
+	&>take-loop
 		LDA2k #0000 EQU2 ?{
 			DUP2 #0004 ADD2 LDA STHkr EQU ?&take-found }
 		#0005 ADD2 GTH2k ?&>take-loop &take-found #0000 SWP2 STA2
 	POP2 POPr JMP2r
 
-@Bag/<clear> ( -- )
+@bag/<clear> ( -- )
 	;&bufend ;&buf
-	&>clear-loop ( -- )
+	&>clear-loop
 		#0000 OVR2 STA2
 		#0005 ADD2 GTH2k ?&>clear-loop
 	POP2 POP2
@@ -749,26 +771,26 @@
 	( resety ) #0010 ;&anchor-y STA2
 	JMP2r
 
-@Bag/<to-acc> ( -- )
-	Acc/<clear>
+@bag/<to-acc> ( -- )
+	acc/<clear>
 	;&bufend ;&buf
-	&>l ( -- )
+	&>l
 		LDA2k #0000 EQU2 ?{
 			DUP2 get-sym-id
-			( inc register ) .Acc/buf ADD LDZk INC SWP STZ }
+			( inc register ) .acc/buf ADD LDZk INC SWP STZ }
 		#0005 ADD2 GTH2k ?&>l
 	POP2 POP2 !<validate>
 
-@Bag/<organize> ( -- )
-	Bag/<to-acc>
-	Acc/<to-bag>
-	Bag/<update>
-	Project/<write> !<reqdraw-paint>
+@bag/<organize> ( -- )
+	bag/<to-acc>
+	acc/<to-bag>
+	bag/<update>
+	project/<write> !<reqdraw-paint>
 
-@Bag/<update> ( -- )
+@bag/<update> ( -- )
 	( i ) [ LITr 00 ]
 	( ) ;&bufend ;&buf
-	&>count-loop ( -- )
+	&>count-loop
 		LDA2k #0000 EQU2 ?{ INCr }
 		#0005 ADD2 GTH2k ?&>count-loop
 	POP2 POP2
@@ -776,15 +798,15 @@
 	JMP2r
 
 (
-@|Project )
+@|project )
 
-@Project/<read> ( -- )
+@project/<read> ( -- )
 	;&filename .File/name DEO2
 	;&buf ;&bufend OVR2 SUB2 .File/length DEO2
 	.File/read DEO2
 	JMP2r
 
-@Project/<write> ( -- )
+@project/<write> ( -- )
 	;&filename .File/name DEO2
 	;&buf ;&bufend OVR2 SUB2 .File/length DEO2
 	.File/write DEO2
@@ -793,15 +815,15 @@
 	&filename "project.tote $1
 
 (
-@|Symbols )
+@|symbols )
 
-@Symbols/<read> ( -- )
+@symbols/<read> ( -- )
 	;&filename .File/name DEO2
 	;&buf ;&bufend OVR2 SUB2 .File/length DEO2
 	.File/read DEO2
 	JMP2r
 
-@Symbols/<write> ( -- )
+@symbols/<write> ( -- )
 	;&filename .File/name DEO2
 	;&buf ;&bufend OVR2 SUB2 .File/length DEO2
 	.File/write DEO2
@@ -810,18 +832,19 @@
 	&filename "symbols.icn $1
 
 (
-@|Snarf )
+@|snarf )
 
-@Snarf/<write> ( -- )
+@snarf/<write> ( -- )
 	;&txt .File/name DEO2
 	#0020 .File/length DEO2
 	.selection LDZ2 .File/write DEO2
 	JMP2r
 
-@Snarf/<read> ( -- )
+@snarf/<read> ( -- )
 	;&txt .File/name DEO2
 	#0020 .File/length DEO2
-	.selection LDZ2 .File/read DEO2 !<reqdraw-paint>
+	.selection LDZ2 .File/read DEO2
+	symbols/<write> !<reqdraw-paint>
 
 	&txt ".snarf $1
 
@@ -840,9 +863,9 @@
 	&path ".theme $1
 
 (
-@|Symbol )
+@|symbol )
 
-@Symbol/get-pixel ( pos -- flag )
+@symbol/get-pixel ( pos -- flag )
 	STHk
 	( quad-x ) #0f AND #03 SFT
 	( quad-y ) STHkr #17 SFT ADD
@@ -851,13 +874,13 @@
 	( get pixel ) LDA #07 STHkr #07 AND SUB SFT
 	( value ) #01 AND POPr JMP2r
 
-@Symbol/get-pixel-addr ( x y -- addr* )
+@symbol/get-pixel-addr ( x y -- addr* )
 	( quad-x ) SWP #0f AND #03 SFT
 	( quad-y ) OVR #13 SFT ADD
 	( addr* ) #30 SFT #00 SWP .selection LDZ2 ADD2
 	( get cell ) ROT #00 SWP #07 AND ADD2 JMP2r
 
-@Symbol/<set-pixel> ( x y -- )
+@symbol/<set-pixel> ( x y -- )
 	DUP2 /get-pixel-addr [ LIT &paint-mode $1 ] ?{
 		( | paint pixel )
 		SWP2 POP #07 AND #07 SWP SUB #40 SFT #01 SWP SFT STH
@@ -866,14 +889,14 @@
 	SWP2 POP #07 AND #07 SWP SUB #40 SFT #01 SWP SFT #ff EOR STH
 	LDAk STHr AND ROT ROT STA !<reqdraw-paint>
 
-@Symbol/<erase> ( -- )
+@symbol/<erase> ( -- )
 	.selection LDZ2 DUP2 #0020 ADD2 SWP2
-	&>l ( -- )
+	&>l
 		#0000 OVR2 STA2
 		INC2 INC2 GTH2k ?&>l
 	POP2 POP2 !<reqdraw-paint>
 
-@Symbol/<anchor> ( x y -- )
+@symbol/<anchor> ( x y -- )
 	( | clamp )
 	DUP #15 LTH ?{ #ff00 AND2 }
 	OVR #12 LTH ?{ #00ff AND2 }
@@ -881,18 +904,18 @@
 	( changed? ) LDA2k STH2r EQU2 ?{ STA2 !<reqdraw-paint> }
 	POP2 POP2 JMP2r
 
-@Symbol/<change-dir> ( -- )
+@symbol/<change-dir> ( -- )
 	selected-mask LDAk
 	( value ) DUP #06 SFT INC #60 SFT
 	( mask ) SWP #3f AND ORA ROT ROT STA !<reqdraw-paint>
 
-@Symbol/<toggle-hide> ( -- )
+@symbol/<toggle-hide> ( -- )
 	selected-mask LDAk #04 EOR ROT ROT STA !<reqdraw-paint>
 
-@Symbol/<toggle-eval> ( -- )
+@symbol/<toggle-eval> ( -- )
 	selected-mask LDAk #02 EOR ROT ROT STA !<reqdraw-paint>
 
-@Symbol/<toggle-lock> ( -- )
+@symbol/<toggle-lock> ( -- )
 	selected-mask LDAk #01 EOR ROT ROT STA !<reqdraw-paint>
 
 (
@@ -908,10 +931,10 @@
 	( | paint surface )
 	[ LIT2 00 -Screen/auto ] DEO
 	#00
-	&>w ( -- )
+	&>w
 		( x ) #00 OVR #0f AND #30 SFT2 #0010 ADD2 .Screen/x DEO2
 		( y ) #00 OVR #34 SFT #0010 ADD2 .Screen/y DEO2
-		( pixel ) #00 OVR Symbol/get-pixel #30 SFT2 ;pixel-icn ADD2 .Screen/addr DEO2
+		( pixel ) #00 OVR symbol/get-pixel #30 SFT2 ;pixel-icn ADD2 .Screen/addr DEO2
 		[ LIT2 05 -Screen/sprite ] DEO
 		INC DUP ?&>w
 	POP
@@ -935,7 +958,7 @@
 	( | anchors )
 	[ LIT2 16 -Screen/auto ] DEO
 	#2000
-	&>l ( -- )
+	&>l
 		#00 OVR id-to-anchor STH2k #0000 EQU2 ?{
 			( y ) #00 STHkr #40 SFT2 #0010 ADD2 .Screen/y DEO2
 			( x ) #00 SWPr STHkr #40 SFT2 #00f8 ADD2 .Screen/x DEO2
@@ -990,7 +1013,7 @@
 	[ LIT2 16 -Screen/auto ] DEO
 	DUP2 #0038 SUB2 ,&anchor-x STR2
 	#2000
-	&>l ( -- )
+	&>l
 		#00 OVR
 		( color ) DUP2 ;masks ADD2 LDA #02 SFT #01 AND #05 MUL #05 SWP SUB ;<draw-icon>/color STA
 		( x ) DUP2 #04 SFT #0018 MUL2 [ LIT2 &anchor-x $2 ] ADD2 .Screen/x DEO2
@@ -1011,18 +1034,24 @@
 	#0000 .Screen/y DEO2
 	[ LIT2 02 -Screen/auto ] DEO
 	;frill-chr .Screen/addr DEO2
-	#3381 !<draw-times>
+	#3381 <draw-times>
+	( | toggle )
+	.Screen/height DEI2 #34 SFT2 .Screen/y DEO2
+	[ LIT2 45 -Screen/auto ] DEO
+	;frill-toggle-chr .Screen/addr DEO2
+	[ LIT2 81 -Screen/sprite ] DEO !<draw-rules>/spacer
 
 @<draw-bag> ( -- )
 	<draw-bag-overlay>
-	;Bag/bufend ;Bag/buf
-	&>l ( -- )
+	;bag/bufend ;bag/buf
+	&>l
 		DUP2 <draw-thing>
 		#0005 ADD2 GTH2k ?&>l
 	POP2 POP2
 	( | draw anchor )
 	.drag LDZ2 INC2k ORA ?{ POP2 JMP2r }
 	get-sym-id #00 SWP id-to-anchor ORAk ?{ POP2 JMP2r }
+	[ LIT2 16 -Screen/auto ] DEO
 	( y ) #00 SWP #40 SFT2 #000d ADD2 .Screen/y DEO2
 	( x ) #00 SWP #40 SFT2 #00f8 ADD2 .Screen/x DEO2
 	( addr ) ;drop-chr .Screen/addr DEO2
@@ -1031,8 +1060,8 @@
 
 @<draw-bag-overlay> ( -- )
 	.overlay LDZ ?{ JMP2r }
-	[ LITr 00 ] [ LIT2 00 -overlay ] LDZ #70 SFT2 ;rules ADD2 DUP2 #0040 ADD2 SWP2
-	&>l ( -- )
+	[ LITr 00 ] [ LIT2 00 -overlay ] LDZ id-to-rule DUP2 #0040 ADD2 SWP2
+	&>l
 		LDAk #00 EQU ?{ #0a00 STHkr <draw-thing-anchored> }
 		DUP2 #0040 ADD2 LDA #00 EQU ?{ #0f00 STHkr <draw-thing-anchored> }
 		INCr INC2 GTH2k ?&>l
@@ -1098,7 +1127,7 @@
 	#0010 .scroll LDZ2 SUB2 .Screen/y DEO2
 	[ LIT2 16 -Screen/auto ] DEO
 	[ LITr 00 ] ;rules/end ;rules
-	&>l ( -- )
+	&>l
 		( | skip outside of view )
 		.Screen/y DEI2 #0010 ADD2 .size/w LDZ2 GTH2 ?{
 			#00 STHkr ;reachable ADD2 LDA #05 MUL ;<draw-icon>/color STA
@@ -1123,7 +1152,7 @@
 	POP2 POP2 POPr
 	( | restore color )
 	#05 ;<draw-icon>/color STA
-	( | spacer )
+	&spacer ( -- )
 	#00e0 .Screen/x DEO2
 	#0000 .Screen/y DEO2
 	[ LIT2 02 -Screen/auto ] DEO
@@ -1134,7 +1163,7 @@
 @<draw-times> ( times color -- )
 	STH
 	[ LITr -Screen/sprite ] #00 SWP SUB
-	&>w ( -- )
+	&>w
 		DEOkr
 		INC DUP ?&>w
 	POP POP2r JMP2r
@@ -1142,7 +1171,7 @@
 @<draw-hs> ( addr* -- )
 	[ LITr 00 ]
 	( ) DUP2 #0040 ADD2 SWP2
-	&>l ( -- )
+	&>l
 		LDAk STHkr <draw-register>
 		INCr INC2 GTH2k ?&>l
 	POP2 POP2 POPr JMP2r
@@ -1152,7 +1181,7 @@
 	#00 SWP id-to-sym ,&addr STR2
 	[ LITr -Screen/y ] DEI2kr ROTr
 	( ) #00 SWP SUB
-	&>w ( -- )
+	&>w
 		[ LIT2 &addr $2 ] <draw-icon>
 		.Screen/x DEI2k #0012 ADD2 ROT DEO2
 		( anchor ) DEO2kr
@@ -1172,22 +1201,22 @@
 @<draw-clear-button> ( -- )
 	.size/w LDZ2 #0080 SUB2 .Screen/x DEO2
 	.size/h LDZ2 #0030 SUB2 .Screen/y DEO2
-	;clear-icn .timers/clear LDZ .Bag/count LDZ !<draw-button>
+	;clear-icn .timers/clear LDZ .bag/count LDZ !<draw-button>
 
 @<draw-organize-button> ( -- )
 	.size/w LDZ2 #0058 SUB2 .Screen/x DEO2
 	.size/h LDZ2 #0030 SUB2 .Screen/y DEO2
-	;organize-icn .timers/organize LDZ .Bag/count LDZ !<draw-button>
+	;organize-icn .timers/organize LDZ .bag/count LDZ !<draw-button>
 
 @<draw-step-button> ( -- )
 	.size/w LDZ2 #0030 SUB2 .Screen/x DEO2
 	.size/h LDZ2 #0030 SUB2 .Screen/y DEO2
-	;Symbols/transmute .timers/step LDZ .valid/fwd LDZ INC !<draw-button>
+	;symbols/transmute .timers/step LDZ .valid/fwd LDZ INC !<draw-button>
 
 @<draw-unstep-button> ( -- )
 	.size/w LDZ2 #0058 SUB2 .Screen/x DEO2
 	.size/h LDZ2 #0030 SUB2 .Screen/y DEO2
-	;Symbols/reverse .timers/unstep LDZ .valid/bwd LDZ INC !<draw-button>
+	;symbols/reverse .timers/unstep LDZ .valid/bwd LDZ INC !<draw-button>
 
 @<draw-icon-at> ( addr* x* y* -- )
 	.Screen/y DEO2
@@ -1238,44 +1267,30 @@
 
 
 
-@Symbols/table
-	=&tri
-	=&lozenge
-	=&square
-	=&hexagon
-	=&circle
-	=&left
-	=&quad4
-	=&quad3
-	=&num1
-	=&num2
-	=&num3
-	=&num4
-	=&rabbit-left
-	=&dog-left
-	=&blank1
-	=&reverse
+( tote/assets )
 
-	=&tri-empty
-	=&lozenge-empty
-	=&square-empty
-	=&hexagon-empty
-	=&circle-empty
-	=&right
-	=&quad1
-	=&quad2
-	=&num1-neg
-	=&num2-neg
-	=&num3-neg
-	=&num4-neg
-	=&rabbit-right
-	=&dog-right
-	=&blank2
-	=&transmute
+@symbols/table [
+	=&tri =&lozenge =&square =&hexagon
+	=&circle =&left =&quad4 =&quad3
+	=&num1 =&num2 =&num3 =&num4
+	=&rabbit-left =&dog-left =&blank1 =&reverse
+	=&tri-empty =&lozenge-empty =&square-empty =&hexagon-empty
+	=&circle-empty =&right =&quad1 =&quad2
+	=&num1-neg =&num2-neg =&num3-neg =&num4-neg
+	=&rabbit-right =&dog-right =&blank2 =&transmute ]
 
 @dotted-icn [ 0100 0100 0100 0100 ]
+
 @pixel-icn [ 0000 0010 0000 0000 7cfe fefe fefe 7c00 ]
+
 @frill-chr [ 2020 2040 8080 8040 c0c0 c080 0000 0080 ]
+
+@frill-toggle-chr [
+	3c02 0101 0101 0101 c0fc fefe fefe fefe
+	0101 0101 0151 5151 fefe fefe feae aeae
+	5151 5101 0101 0101 aeae aefe fefe fefe
+	0101 0101 0101 0101 fefe fefe fefe fefe
+	023c 4080 8080 4020 fcc0 8000 0000 80c0 ]
 
 @drag-chr [
 	0007 0f0f 0703 0100 0000 0707 0301 0000
@@ -1398,7 +1413,7 @@
 	0000 0000 0000 00ff ffff ffff ffff ff00
 	0000 0000 0000 00ff ffff ffff ffff ff00
 	0101 0101 0202 0cf0 fefe fefe fcfc f000 ]
-&down [ 
+	&down [
 	0000 0f30 4040 8080 0000 000f 3f3f 7f7f
 	0000 ff00 0000 0000 0000 00ff ffff ffff
 	0000 ff00 0000 0000 0000 00ff ffff ffff
@@ -1414,14 +1429,16 @@
 	8080 8080 4040 300f 7f7f 7f7f 3f3f 0f00
 	0000 0000 0000 00ff ffff ffff ffff ff00
 	0000 0000 0000 00ff ffff ffff ffff ff00
-	0101 0101 0202 0cf0 fefe fefe fcfc f000 ] 
-
+	0101 0101 0202 0cf0 fefe fefe fcfc f000 ]
 
 @fill-icn [
 	ffff ffff ffff ffff ffff ffff ffff ffff
 	ffff ffff ffff ffff ffff ffff ffff ffff ]
 
-@Symbols/buf
+(
+@|buffers )
+
+@symbols/buf
 	&tri [
 	0103 0307 070f 0f1f 80c0 c0e0 e0f0 f0f8
 	1f3f 3f7f 7fff ff7f f8fc fcfe feff fffe ]
@@ -1463,12 +1480,10 @@
 	403c 0206 0404 0c11 0804 0219 2141 4182 ]
 	&dog-left [
 	011f 20c8 807c 0404 c0c0 c090 9c5e 4d25
-	0404 0405 090a 366c 120a 0412 2222 12f2 ]
-	&blank1 $20
+	0404 0405 090a 366c 120a 0412 2222 12f2 ] &blank1 $20
 	&reverse [
 	0000 0000 1030 61ff 0000 0000 6f92 24fc
 	ff61 3010 0000 0000 fc24 926f 0000 0000 ]
-
 	&tri-empty [
 	0102 0204 0408 0810 8040 4020 2010 1008
 	1020 2040 4080 807f 0804 0402 0201 01fe ]
@@ -1490,9 +1505,9 @@
 	&quad1 [
 	030c 1020 4040 8080 c0f0 f8fc fefe ffff
 	8080 4040 2010 0c03 0101 0202 0408 30c0
-	&quad2 [
-	030c 1020 4040 8080 c030 0804 0202 0101
-	8080 4040 2010 0c03 ffff fefe fcf8 f0c0 ]
+	&quad2 [ 030c 1020 4040 8080 c030 0804
+	0202 0101 8080 4040 2010 0c03 ffff fefe
+	fcf8 f0c0 ]
 	&num1-neg [
 	0000 0000 0107 060c 0000 0000 80e0 6030
 	0c06 0701 0000 0000 3060 e080 0000 0000 ]
@@ -1510,26 +1525,29 @@
 	1020 4098 8482 8241 023c 4060 2020 3088 ]
 	&dog-right [
 	0303 0309 397a b2a4 80f8 0413 013e 2020
-	4850 2048 4444 484f 2020 20a0 9050 6c36 ]
-	&blank2 $20
+	4850 2048 4444 484f 2020 20a0 9050 6c36 ] &blank2 $20
 	&transmute [
 	3048 8787 4830 001f 0000 f8fc 0c0c 0cfc
-	3f30 3030 3f1f 0000 f800 0c12 e1e1 120c ]
-	&bufend
+	3f30 3030 3f1f 0000 f800 0c12 e1e1 120c ] &bufend
 
-@reachable $30 ( 1 byte per rule )
+@reachable $30
+	( 1 byte per rule )
 
-@Project/buf
-@anchors $40 ( x y )
-@rules
-	$80 $80 $80 $80 $80 $80 $80 $80
-	$80 $80 $80 $80 $80 $80 $80 $80
-	$80 $80 $80 $80 $80 $80 $80 $80
-	$80 $80 $80 $80 $80 $80 $80 $80
-	$80 $80 $80 $80 $80 $80 $80 $80
-	$80 $80 $80 $80 $80 $80 $80 $80 &end
-@Bag &buf $3e8 &bufend $18 ( x* y* id )
-@masks $20 ( bitmask: dir-x dir-y - - - hide eval lock )
-@rules/meta $30 ( bitmask: - - - - - - - - )
-@Project/bufend
+@project/buf
+
+@anchors $40
+	( x y )
+
+@rules $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 $80 &end
+
+@bag &buf $3e8 &bufend $18
+	( x* y* id )
+
+@masks $20
+	( bitmask: dir-x dir-y - - - hide eval lock )
+
+@rules/meta $30
+	( bitmask: - - - - - - - - )
+
+@project/bufend
 
