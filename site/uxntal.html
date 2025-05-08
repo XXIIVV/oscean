@@ -103,17 +103,21 @@ not consume the address.</p>
 copy of the letter. The <kbd>?{</kbd> pops that letter from the
 stack, and if it is <b>not zero</b>, we jump to the corresponding
 <kbd>}</kbd>, which is an <a href='uxntal_labels.html#anonymous'>anonymous
-label</a>.</p>
+label(λ00)</a>.</p>
 
 <pre>
-|0100   a0 01 11   ( ;text )
+( Disassembly of the example above:
+ addr   bytecode   Uxntal
+ ----   --------   --------- )
+|0100   a0 01 12   ( ;text )
 
 @while
 |0103   94         ( LDAk )
 |0104   06         ( DUP )
-|0105   20 00 02   ( ?λ00 )
-|0108   22         ( POP2 )
-|0109   00         ( BRK )
+|0105   20 00 03   ( ?λ00 )
+|0108   02         ( POP )
+|0109   22         ( POP2 )
+|010a   00         ( BRK )
 </pre>
 
 <p>The <kbd>#18</kbd> word pushes a number to the stack, which maps to the <a
@@ -122,20 +126,20 @@ href='varvara.html#console'>Console/write port(#18)</a>, followed by the
 bytes and sends the letter to the device port, printing it on the Console,
 leaving only the address on top of the stack.</p>
 
-<pre>
-@λ00
-|010a   80 18      ( #18 )
-|010c   17         ( DEO )
-|010d   21         ( INC2 )
-|010e   40 ff f2   ( !while )
-</pre>
-
 <p>The <a href='uxntal_opcodes.html#inc'><kbd>INC2</kbd></a> opcode increments
 the address, moving the text pointer to the next letter. The <a
 href='uxntal_opcodes.html#modes'>2-mode</a> is used because the address is made
 of two bytes.</p>
 
-<p>Finally, we jump back to the start of the loop with
+<pre>
+@λ00
+|010b   80 18      ( #18 )
+|010d   17         ( DEO )
+|010e   21         ( INC2 )
+|010f   40 ff f1   ( !while )
+</pre>
+
+<p>Finally, we jump back to the <kbd>@while</kbd> label with
 <kbd>!while</kbd>, and repeat the loop until the letter is zero, when that
 happens, we <a href='uxntal_opcodes.html#pop'><kbd>POP</kbd></a> to remove the
 letter, and <a href='uxntal_opcodes.html#pop'><kbd>POP2</kbd></a> to remove the
@@ -143,10 +147,10 @@ address on the stack to keep the stack clean at the end of the evaluation.</p>
 
 <pre>
 @text
-|0111   48 65 6c   ( H e l )
-|0114   6c 6f 20   ( l o   )
-|0116   57 6f 72   ( W o r )
-|011a   6c 64 21   ( l d ! )</pre>
+|0112   48 65 6c   ( H e l )
+|0115   6c 6f 20   ( l o   )
+|0117   57 6f 72   ( W o r )
+|011b   6c 64 21   ( l d ! )</pre>
 
 <p>To summarize, <a href='uxntal_notation.html'>comments</a> are within
 parentheses, <a href='uxntal_numbers.html'>numbers</a> are lowercase hexadecimal
