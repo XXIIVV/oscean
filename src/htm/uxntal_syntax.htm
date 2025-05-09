@@ -36,18 +36,18 @@ the phrase, at which point, the stack is emptied and the evaluation halts.</p>
 </style>
 
 <p>A word starting with <kbd>@</kbd> defines a label, and one starting with
-<kbd>;</kbd> pushes the address of a label to the stack. <kbd>;text</kbd>
-pushes two bytes pointing to the <a
-href='uxntal_labels.html#addressing'>absolute address</a> of the
-<kbd>@text</kbd> label to the stack. In the interpreter above, press "step" to
-walk through each step of the evaluation.</p>
+<kbd>;</kbd> pushes the <a href='uxntal_labels.html#addressing'>absolute
+address</a> of a label to the stack. With that in mind, <kbd>;text</kbd> pushes
+the two bytes equal to the address of the <kbd>@text</kbd> label to the stack.
+In the interpreter above, press "step" to walk through each step of the
+evaluation.</p>
 
-<p>Next, we define a new <a
-href='uxntal_labels.html'>label</a> named <kbd>@while</kbd>, to mark the start
-of a loop that will print each character stored at the text label.</p>
+<p>Next, we define a <a href='uxntal_labels.html'>new label</a> named
+<kbd>@while</kbd>, to mark the start of the loop that will print each character
+stored at the text label.</p>
 
 <p>The <kbd><a href='uxntal_opcodes.html#lda'>LDAk</a></kbd> opcode loads a byte
-from the address on top of the stack, in this case, the <a
+at the address currently at the top of the stack, in this case, the <a
 href='ascii.html'>ascii</a> letter <i>H</i>(48). The <a
 href='uxntal_opcodes.html#modes'>k-mode</a> indicates that the operator will
 not consume the address.</p>
@@ -76,8 +76,9 @@ label(λ00)</a>.</p>
 <p>The <kbd>#18</kbd> word pushes a number to the stack, which maps to the <a
 href='varvara.html#console'>Console/write port(#18)</a>, followed by the
 <kbd><a href='uxntal_opcodes.html#deo'>DEO</a></kbd> opcode that pops both
-bytes and sends the letter to the device port, printing it on the Console,
-leaving only the address on top of the stack.</p>
+bytes(the letter and the port) and sends the letter to that device port,
+telling the Console to print it, leaving only the address on top of the
+stack.</p>
 
 <p>The <a href='uxntal_opcodes.html#inc'><kbd>INC2</kbd></a> opcode increments
 the address, moving the text pointer to the next letter. The <a
@@ -92,11 +93,12 @@ of two bytes.</p>
 |010f   40 ff f1   ( !while )
 </pre>
 
-<p>Finally, we jump back to the <kbd>@while</kbd> label with
-<kbd>!while</kbd>, and repeat the loop until the letter is zero, when that
-happens, we <a href='uxntal_opcodes.html#pop'><kbd>POP</kbd></a> to remove the
-letter, and <a href='uxntal_opcodes.html#pop'><kbd>POP2</kbd></a> to remove the
-address on the stack to keep the stack clean at the end of the evaluation.</p>
+<p>Finally, with <kbd>!while</kbd> we jump back to the <kbd>@while</kbd> label,
+and repeat the loop until there are no more letters to load. When that happens,
+we <a href='uxntal_opcodes.html#pop'><kbd>POP</kbd></a> to remove the
+duplicated letter, and <a href='uxntal_opcodes.html#pop'><kbd>POP2</kbd></a> to
+remove the address on the stack to keep the stack clean at the end of the
+evaluation.</p>
 
 <pre>
 @text
@@ -106,11 +108,12 @@ address on the stack to keep the stack clean at the end of the evaluation.</p>
 |011b   6c 64 21   ( l d ! )</pre>
 
 <p>To summarize, <a href='uxntal_notation.html'>comments</a> are within
-parentheses, <a href='uxntal_numbers.html'>numbers</a> are lowercase hexadecimal
-shorts or bytes, <a href='uxntal_opcodes.html'>opcodes</a> are uppercased
-reserved words, and <a href='uxntal_labels.html#anonymous'>anonymous labels</a>
-are within curlies. Runes are special characters at the start of a word that
-define its meaning, here is the full list:</p>
+parentheses, <a href='uxntal_numbers.html'>numbers</a> are lowercase
+hexadecimal shorts or bytes, <a href='uxntal_opcodes.html'>opcodes</a> are
+uppercased reserved words and lowercased modes, <a
+href='uxntal_labels.html#anonymous'>anonymous labels</a> are curlies and <a
+href='uxntal_labels.html#addressing'>addressing</a> is done by punctuation
+prefixes. Here is the full list:</p>
 
 <table border="1" id='runes'>
 	<tr><th colspan="4">Padding Runes</th><th colspan="4">Number Rune</th></tr>
