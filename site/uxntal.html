@@ -89,7 +89,10 @@ the phrase, at which point, the stack is emptied and the evaluation halts.</p>
 <kbd>;</kbd> pushes the address of a label to the stack. <kbd>;text</kbd>
 pushes two bytes pointing to the <a
 href='uxntal_labels.html#addressing'>absolute address</a> of the
-<kbd>@text</kbd> label to the stack. Next, we define a new <a
+<kbd>@text</kbd> label to the stack. In the interpreter above, press "step" to
+walk through each step of the evaluation.</p>
+
+<p>Next, we define a new <a
 href='uxntal_labels.html'>label</a> named <kbd>@while</kbd>, to mark the start
 of a loop that will print each character stored at the text label.</p>
 
@@ -191,8 +194,7 @@ define its meaning, here is the full list:</p>
 	<tr>
 		<td><code>!</code></td><td><a href='uxntal_opcodes.html#jmi'>jmi</a></td>
 		<td><code>?</code></td><td><a href='uxntal_opcodes.html#jci'>jci</a></td>
-		<td><code>%</code></td><td><a href='uxntal_macros.html'>macro</a></td>
-		<td><code>~</code></td><td>chain</td></tr>
+		<td><code>% { }</code></td><td><a href='uxntal_macros.html'>macro</a></td>
 	</tr>
 </table>
 <h2>Uxntal Stacks</h2>
@@ -284,8 +286,11 @@ things like grouping behaviors, joining literals or indicating lookup tables.</p
 
 <h2>Uxntal Opcodes</h2>
 
-<p>Uxn has 32 standard opcodes and 4 <a href='#immediate'>immediate opcodes</a>.
-The | character, in the table below, indicates an effect on the return stack.</p>
+<p>Uxn has <a href='uxntal_reference.html'>32 standard opcodes</a> and 4 <a
+href='#immediate'>immediate opcodes</a>. In the table below, The | character
+indicates an effect on the return stack, an int8 value indicates a byte length,
+an int16 indicates a short length, an unspecified length is determinated
+by the <a href='#short'>short mode</a> and a [value] is read from memory.</p>
 
 <table border='1' id='opcodes'>
 	<tr>
@@ -371,9 +376,9 @@ The | character, in the table below, indicates an effect on the return stack.</p
 <p>Each opcode has 3 possible modes, which can combined:</p>
 
 <ul>
-	<li>The <b>short mode</b> <kbd>2</kbd> operates on shorts, instead of bytes.</li>
-	<li>The <b>keep mode</b> <kbd>k</kbd> operates without consuming items.</li>
-	<li>The <b>return mode</b> <kbd>r</kbd> operates on the return stack.</li>
+	<li id='short'>The <b>short mode</b> <kbd>2</kbd> operates on shorts, instead of bytes.</li>
+	<li id='keep'>The <b>keep mode</b> <kbd>k</kbd> operates without consuming items.</li>
+	<li id='return'>The <b>return mode</b> <kbd>r</kbd> operates on the return stack.</li>
 </ul>
 
 <table border='1' style='float:right'>
@@ -426,7 +431,8 @@ read values stored <i>immediately</i> after the opcode in the program's memory.
 Uxntal has 4 immediate opcodes: </p>
 
 <ul>
-	<li>The <b>literal</b> <kbd><a href='uxntal_reference.html#lit'>LIT</a></kbd>.</li>
+	<li>The <b>literal</b> <kbd><a href='uxntal_reference.html#lit'>LIT</a></kbd> opcode, 
+			also written as <kbd><a href='uxntal_numbers.html#lithex'>#</a></kbd>.</li>
 	<li id='jmi'>The <b>jump</b> <kbd><a href='uxntal_reference.html#jmi'>!routine</a></kbd>.</li>
 	<li id='jci'>The <b>conditional jump</b> <kbd><a href='uxntal_reference.html#jci'>?routine</a></kbd>.</li>
 	<li>The <b>subroutine</b> <kbd><a href='uxntal_reference.html#jsi'>routine</a></kbd>.</li>
@@ -457,11 +463,11 @@ numbers</a> of either 2 or 4 characters in length. There are two types of
 numbers:</p>
 
 <ul>
-	<li>A <b>Literal Hex</b>, like <kbd>#ab</kbd>, denotes a number that will be
+	<li id='lithex'>A <b>Literal Hex</b>, like <kbd>#ab</kbd>, denotes a number that will be
 pushed on the stack when evaluated, it is made of a <a
 href='uxntal_reference.html#lit'>LIT</a> opcode that matches its length,
 followed by a Raw Hex number.</li>
-	<li>A <b>Raw Hex</b>, like <kbd>aa</kbd>, is the standard textual
+	<li id='rawhex'>A <b>Raw Hex</b>, like <kbd>aa</kbd>, is the standard textual
 encoding of data in a program, generally speaking these are more often loaded
 than evaluated. It can be anything, an opcode, an ascii byte, an address, part
 of a sprite.</li>
