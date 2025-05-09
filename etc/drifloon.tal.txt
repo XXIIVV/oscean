@@ -45,7 +45,7 @@
 	( name ) "Drifloon 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "7 20 "May 20 "2025 $2
+	( date ) "9 20 "May 20 "2025 $2
 
 
 
@@ -75,7 +75,7 @@
 	[ LIT2 00 &ptr -&buf ] INCk
 	( |check overflow )
 	DUP .&cap LTH ?{
-		( ! ) ;dict/exceeded ;dict/Token err/<token> }
+		( ! ) ;dict/exceeded ;dict/Name err/<token> }
 	,&ptr STR
 	STZ2
 	JMP2r
@@ -168,7 +168,8 @@
 		POP2 #ffff }
 	POPr JMP2r
 
-@runes/ignore ( t* -- ) POP2 JMP2r
+@runes/ignore ( t* -- )
+	POP2 JMP2r
 	&padabs /req-name refs/get-any !rom/<set-head>
 	&padrel /req-name refs/get-any !rom/<set-head-rel>
 	&toplab /req-name DUP2 scope/<set> !syms/<new>
@@ -186,7 +187,7 @@
 	&macros /req-name !macros/<new>
 
 @runes/req-name ( str* -- str1* )
-	INC2 LDAk #20 GTH ?{ ;dict/invalid ;dict/Token !err/<token> }
+	INC2 LDAk #20 GTH ?{ ;dict/invalid ;dict/Name !err/<token> }
 	JMP2r
 
 @runes/lut [
@@ -239,13 +240,23 @@
 	&sym cebb &id 0000 $1
 
 (
+@|Name )
+
+@name/<validate> ( name* -- name* )
+	( not hex ) is-hex ?{
+		( not runic ) LDAk runes/find INC2 ORA ?{
+			( not opcode ) opcodes/find INC ?{ JMP2r } } }
+	;dict/invalid ;dict/Name !err/<token>
+
+(
 @|Macros )
 
 @macros/<new> ( name* -- )
-	DUP2 /find-name INC2 ORA ?{
-		DUP2 syms/find-name INC2 ORA ?{ macros/<push-word>
-			#00 /<push-byte> !token/<set-macro> } }
-	POP2 ;dict/duplicate ;dict/Macro !err/<token>
+	name/<validate>
+	DUP2 /find-name INC2 ORA ?&err-duplicate
+	DUP2 syms/find-name INC2 ORA ?&err-duplicate
+	macros/<push-word>
+	#00 /<push-byte> !token/<set-macro>
 
 @macros/find-name ( name* -- <addr>* )
 	STH2
@@ -271,11 +282,14 @@
 	STA
 	JMP2r
 
+@macros/err-duplicate ( name* -- )
+	POP2
+	( ! ) ;dict/duplicate ;dict/Macro !err/<token>
+
 (
 @|Syms )
 
 @syms/<new> ( name* -- )
-	DUP2 macros/find-name INC2 ORA ?&duplicate
 	DUP2 /find-name INC2k ORA ?{
 		( alloc ) POP2 .SymType/declared rom/get-head !/<push-sym> }
 	( | name* sym* -- )
@@ -284,7 +298,9 @@
 		( type ) INC2 INC2 LDAk .SymType/declared ORA ROT ROT STA
 		( name* ) POP2 JMP2r }
 	POP2
-	&duplicate ( name* -- )
+	( >> )
+
+@syms/err-duplicate ( name* -- )
 	POP2
 	( ! ) ;dict/duplicate ;dict/Symbol !err/<token>
 
@@ -315,9 +331,8 @@
 	( hb ) SWP /<push-byte>
 	( lb ) /<push-byte>
 	( type ) /<push-byte>
-	is-hex ?&invalid
-	( is runic ) LDAk runes/find INC2 ORA ?&invalid
-	( is opcode ) opcodes/find INC ?&invalid
+	name/<validate>
+	DUP2 macros/find-name INC2 ORA ?&err-duplicate
 	( >> )
 
 @syms/<push-string> ( word* -- )
@@ -334,10 +349,6 @@
 	,&ptr STR2
 	STA
 	JMP2r
-
-@syms/invalid ( name* -- )
-	/<push-string>
-	( ! ) ;dict/invalid ;dict/Symbol !err/<token>
 
 @syms/<emit> ( -- )
 	;&ptr LDA2 ;&mem EQU2k ?{
@@ -632,6 +643,7 @@
 	&References "References $1
 	&Symbols "Symbols $1
 	&Macros "Macros $1
+	&Name "Name $1
 	&Reference "Reference $1
 	&Symbol "Symbol $1
 	&Macro "Macro $1
@@ -639,7 +651,6 @@
 	&Comment "Comment $1
 	&Opcode "Opcode $1
 	&Number "Number $1
-	&Token "Token $1
 	&exceeded "exceeded $1
 	&invalid "invalid $1
 	&zero-page "in 20 "zero-page $1
@@ -666,9 +677,9 @@
 @rom/mem ( zeropage )
 	$100
 	&output
-
 (
 @|Enums )
+
 
 |00 @RefType &ab $1 &as $1 &rb $1 &rs $1
 |00 @SymType $40 &used $40 &declared
