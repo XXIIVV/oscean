@@ -1,12 +1,12 @@
 ( The Bequest Globe )
 
-|00 @System &vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
-|a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
-|b0 @File2 &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
+|a0 @File/vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|b0 @File2/vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 
 |000
 
-	@term &name $16 &parent $16 &diary $6 &pict $4
+	@term/name $16 &parent $16 &diary $6 &pict $4
 
 |100
 
@@ -17,7 +17,7 @@
 	;lexicon
 	( ) DUP2 .File/read DEO2
 	( ) DUP2 #0a00 <cswp>
-	&>w ( -- )
+	&>w
 		INC2 INC2 <init-page>
 		<build-page>
 		scap/ INC2 LDAk ?&>w
@@ -35,7 +35,9 @@
 	( cleanup ) #0000 #0100 <mclr>
 	DUP2 <load-diary>
 	DUP2 <load-incoming>
-	( verify orphans ) ( .File/success DEI2 ORA ?{ DUP2 ;err/orphan <print-warning> } ) ( | fill name )
+	( | verify orphans )
+	.File/success DEI2 ORA ?{ DUP2 ;err/orphan <print-warning> }
+	( | fill name )
 	DUP2 ;term/name <scpy>
 	DUP2 find-parent ;term/parent <scpy>
 	( | fill diary )
@@ -115,7 +117,7 @@
 	;dict/ul-tag <write-open>
 	( stash depth ) DUP2k #0002 SUB2 LDA chex STH
 	( start after ) scap/ INC2
-	&>w ( -- )
+	&>w
 		( stop at sibling ) LDAk chex STHkr EQU ?&end
 		( when depth+1 ) LDAk chex STHkr INC NEQ ?{
 			;dict/li-tag <write-open>
@@ -146,14 +148,14 @@
 	( ) DUP [ LIT ", ] NEQ ?{ POP !<build-module-album> }
 	count-diaries #0002 LTH2 ?{ ;term/name ;err/hidden <print-warning> }
 	( ) DUP [ LIT "; ] NEQ ?{ POP !<build-module-portal> }
-	( ) DUP [ LIT ". ] NEQ ?{ POP !<build-module-both>  }
+	( ) DUP [ LIT ". ] NEQ ?{ POP !<build-module-both> }
 	( ) [ LIT ": ] NEQ ?{ !<build-module-archive> }
 	JMP2r
 
 @<build-page-events> ( name* -- name* )
 	;dict/ul-tag <write-open>
 	;diary
-	&>w ( -- )
+	&>w
 		DUP2 #0005 ADD2 LDA [ LIT "+ ] NEQ ?{
 			;dict/li-tag <write-open>
 			DUP2 <build-module-event>
@@ -161,9 +163,20 @@
 		scap/ INC2 LDAk ?&>w
 	POP2 ;dict/ul-tag !<write-close>
 
+@<build-page-incoming> ( -- )
+	;incoming LDAk ?{ POP2 JMP2r }
+	;dict/incoming-txt ;dict/p-tag <write-open-class>
+	;dict/incoming-txt ;dict/b-tag <write-auto>
+	<space>
+	&>w
+		DUP2 <write-link>
+		<space>
+		scap/ INC2 LDAk ?&>w
+	POP2 ;dict/p-tag !<write-close>
+
 @<build-module-album> ( name* -- name* )
 	;diary
-	&>w ( -- )
+	&>w
 		DUP2 ;dict/no-picture log-has-picture ?{
 			DUP2 ;term/pict log-has-picture ?{ DUP2 <build-module-photo> } }
 		scap/ INC2 LDAk ?&>w
@@ -172,7 +185,7 @@
 @<build-module-portal> ( -- )
 	( stash depth ) DUP2k #0002 SUB2 LDA chex STH
 	( start after ) scap/ INC2
-	&>w ( -- )
+	&>w
 		( stop at sibling ) LDAk chex STHkr EQU ?&end
 		( when depth+1 ) LDAk chex STHkr INC NEQ ?{
 			INC2k INC2 <load-diary>
@@ -186,7 +199,7 @@
 @<build-module-archive> ( name* -- name* )
 	( stash depth ) DUP2k #0002 SUB2 LDA chex STH
 	( start after ) scap/ INC2
-	&>w ( -- )
+	&>w
 		( stop at sibling ) LDAk chex STHkr EQU ?&end
 		( when depth+1 ) LDAk chex STHkr INC NEQ ?{ INC2 INC2 <build-page-body> }
 		INC2 INC2 scap/ INC2 LDAk ?&>w
@@ -196,7 +209,7 @@
 @<build-module-both> ( name* -- name* )
 	( stash depth ) DUP2k #0002 SUB2 LDA chex STH
 	( start after ) scap/ INC2
-	&>w ( -- )
+	&>w
 		( stop at sibling ) LDAk chex STHkr EQU ?&end
 		( when depth+1 ) LDAk chex STHkr INC NEQ ?{
 			INC2k INC2 <load-diary>
@@ -259,17 +272,6 @@
 	;&buf JMP2r
 	&buf $16
 
-@<build-page-incoming> ( -- )
-	;incoming LDAk ?{ POP2 JMP2r }
-	;dict/incoming-txt ;dict/p-tag <write-open-class>
-	;dict/incoming-txt ;dict/b-tag <write-auto>
-	<space>
-	&>w ( -- )
-		DUP2 <write-link>
-		<space>
-		scap/ INC2 LDAk ?&>w
-	POP2 ;dict/p-tag !<write-close>
-
 @<make-path-ext> ( ext* buf* str* -- )
 	OVR2 <scpy>
 	DUP2 [ LIT2 20 "_ ] <cswp> !scat
@@ -279,14 +281,14 @@
 
 @find-diary ( name* -- diary* )
 	;diary
-	&>w ( -- )
+	&>w
 		( skip events ) DUP2 ;dict/no-picture log-has-picture ?{ JMP2r }
 		scap/ INC2 LDAk ?&>w
 	POP2 #ffff JMP2r
 
 @count-diaries ( -- count* )
 	[ LIT2r 0000 ] ;diary
-	&>w ( -- )
+	&>w
 		DUP2 ;dict/no-picture log-has-picture ?{ INC2r }
 		scap/ INC2 LDAk ?&>w
 	POP2 STH2r JMP2r
@@ -295,7 +297,7 @@
 	DUP2 #0002 SUB2 LDA chex ?{ JMP2r }
 	#00 prev-char INC2 LDAk chex #01 SUB ,&depth STR
 	;lexicon SWP2
-	&>l ( -- )
+	&>l
 		#0001 SUB2 #00 prev-char INC2k LDA chex [ LIT &depth $1 ] NEQ ?{
 			NIP2 INC2 INC2 INC2 JMP2r }
 		LTH2k ?&>l
@@ -325,7 +327,7 @@
 	DUP2 .File/name DEO2
 	#8000 .File/length DEO2
 	[ LITr 00 ] ;workarea
-	&>s ( -- )
+	&>s
 		DUP2 .File/read DEO2
 		.File/success DEI2
 		( ) DUP2 .File2/length DEO2
@@ -414,7 +416,7 @@
 
 @<write-len> ( src* length* -- )
 	OVR2 ADD2 SWP2
-	&>l ( -- )
+	&>l
 		LDAk <char>
 		INC2 GTH2k ?&>l
 	POP2 POP2 JMP2r
@@ -427,13 +429,13 @@
 
 @prev-char ( addr* char -- addr* )
 	,&t STR
-	&>w ( -- )
+	&>w
 		LDAk [ LIT &t $1 ] EQU ?{ #0001 SUB2 LDAk ?&>w }
 	JMP2r
 
 @next-char ( addr* char -- addr* )
 	,&t STR
-	&>w ( -- )
+	&>w
 		LDAk [ LIT &t $1 ] EQU ?{ INC2 LDAk ?&>w }
 	JMP2r
 
@@ -448,7 +450,7 @@
 @<cswp> ( str* a b -- )
 	,&b STR
 	,&a STR
-	&>w ( -- )
+	&>w
 		LDAk [ LIT &a $1 ] NEQ ?{
 			STH2k [ LIT &b $1 ] STH2r STA }
 		INC2 LDAk ?&>w
@@ -463,7 +465,7 @@
 
 @<scpy> ( src* dst* -- )
 	STH2
-	&>w ( -- )
+	&>w
 		LDAk #00 STH2kr STA2
 		INC2r INC2 LDAk ?&>w
 	POP2 POP2r JMP2r
@@ -475,14 +477,14 @@
 
 @scmp ( a* b* -- f )
 	STH2
-	&>l ( -- )
+	&>l
 		LDAk ?{ &d LDA LDAr STHr EQU JMP2r }
 		LDAk LDAkr STHr NEQ ?&d
 		INC2 INC2r !&>l
 
 @sseg ( a* b* -- f )
 	STH2
-	&>l ( -- )
+	&>l
 		LDAk LDAkr STHr NEQ ?{
 			INC2k LDA #00 EQU ?{ INC2 INC2r !&>l } }
 	LDA LDAr STHr EQU JMP2r
