@@ -45,7 +45,7 @@
 	( name ) "Drifloon 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "9 20 "May 20 "2025 $2
+	( date ) "12 20 "May 20 "2025 $2
 
 
 
@@ -207,34 +207,37 @@
 
 @opcodes/is-opcode ( str* -- str* opc )
 	DUP2 /parse STH
-	DUP2 ;&brk scmp3 STHr ORA JMP2r
+	DUP2 ;&brk scmp STHr ORA JMP2r
 
 @opcodes/parse ( str* -- byte )
-	[ LITr 00 ] ;&lut
-	&>l
-		SWP2k scmp3 ?{
-			INCr #0003 ADD2 LDAk ?&>l
-		POPr POP2 POP2 #00 JMP2r }
-	POP2
-	( wrap ) [ LITr 1f ] ANDr
-	( litk ) LDA2k [ LIT2 "LI ] EQU2 #70 SFT [ STH ORAr ]
-	( move ) #0003 ADD2
-	&>w
-		LDAk #21 LTH ?{
-			( | parse modes )
-			LDAk [ LIT "2 ] NEQ ?{ LITr 20 ORAr !&r }
-			LDAk [ LIT "r ] NEQ ?{ LITr 40 ORAr !&r }
-			LDAk [ LIT "k ] NEQ ?{ LITr 80 ORAr !&r }
-			POP2 POPr #00 JMP2r
-			&r INC2 !&>w }
+	[ LITr 00 ]
+	( | brk )
+	DUP2 ;&brk scmp ?{
+		;&lut
+		&>l
+			SWP2k scmp3 ?{
+				INCr #0003 ADD2 LDAk ?&>l
+			POP2 !&fail }
+		POP2
+		( litk ) LDA2k [ LIT2 "LI ] EQU2 #70 SFT [ STH ORAr ]
+		( move ) #0003 ADD2
+		&>w
+			LDAk #21 LTH ?{
+				( | parse modes )
+				LDAk [ LIT "2 ] NEQ ?{ LITr 20 ORAr !&r }
+				LDAk [ LIT "r ] NEQ ?{ LITr 40 ORAr !&r }
+				LDAk [ LIT "k ] NEQ ?{ LITr 80 ORAr !&r }
+				&fail ( str* -- byte )
+				POP2 POPr #00 JMP2r
+				&r INC2 !&>w } }
 	POP2 STHr JMP2r
 
 @opcodes/lut [
 	"LIT "INC "POP "NIP "SWP "ROT "DUP "OVR
 	"EQU "NEQ "GTH "LTH "JMP "JCN "JSR "STH
 	"LDZ "STZ "LDR "STR "LDA "STA "DEI "DEO
-	"ADD "SUB "MUL "DIV "AND "ORA "EOR "SFT
-	&brk "BRK ]
+	"ADD "SUB "MUL "DIV "AND "ORA "EOR "SFT ] $1
+	&brk "BRK $1
 
 (
 @|Lambda )
@@ -657,7 +660,6 @@
 	&Macro "Macro $1
 	&Writing "Writing $1
 	&Comment "Comment $1
-	&Opcode "Opcode $1
 	&Number "Number $1
 	&exceeded "exceeded $1
 	&invalid "invalid $1
