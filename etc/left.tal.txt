@@ -64,7 +64,7 @@
 	( name ) "Left 0a
 	( details ) "A 20 "Text 20 "Editor 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "20 20 "Apr 20 "2025 $1 02
+	( date ) "14 20 "May 20 "2025 $1 02
 	( > ) 83 =appicon
 	( > ) 0a =manifest/dat
 
@@ -731,7 +731,8 @@
 	[ LIT2 25 -Screen/auto ] DEO
 	highlight/<reset>
 	caret/<reset>
-	get-scroll-addr
+	( | draw )
+	get-eof get-scroll-addr
 	&>l
 		caret/scan highlight/<draw-runic>
 		( | linebreak )
@@ -740,15 +741,16 @@
 			.Screen/y DEI2 .Screen/height DEI2 #0010 SUB2 GTH2 ?&end
 			/get-anchor .Screen/x DEO2 }
 		( | offscreen )
-		LDAk LIT "/ GTH ?{
+		LDAk [ LIT "/ ] GTH ?{
 			.Screen/x DEI2 .Screen/width DEI2 LTH2 ?{ find-line-end #0001 SUB2 } }
-		utf8/next LDAk ?&>l
+		utf8/next GTH2k ?&>l
 	caret/scan
 	( | draw size left )
+	#20 ank/<draw-ascii>
 	#0000 OVR2 SUB2 #0f ank/<draw-dec>
 	;dict/bytes-free #0f ank/<draw-left-color>
-	&end ( str* -- )
-	POP2
+	&end ( eof* str* -- )
+	POP2 POP2
 	( | draw caret )
 	has-length ?{
 		caret/is-invisible ?{
@@ -1207,12 +1209,19 @@
 
 	&get-ascii ( addr* -- addr* glyph* )
 	[ LIT &rune $1 ] ?{
-		LDAk #00 SWP #0030 MUL2 ;&glyphs ADD2 JMP2r }
+		LDAk
+		( ) DUP #1f LTH ?&get-blank
+		#00 SWP #0030 MUL2 ;&glyphs ADD2 JMP2r }
 	[ LIT2 00 _&rune ] LDR #0030 MUL2 ;&runes ADD2 [ LIT2 00 _&rune ] STR
 	JMP2r
 
 	&get-latin ( addr* -- addr* glyph* )
 	LDA2k #c380 SUB2 #0030 MUL2 ;&latin-high ADD2 JMP2r
+
+	&get-blank ( addr* byte -- addr* glyph* )
+	DUP #09 NEQ ?{ POP ;&tab JMP2r }
+	DUP #0a NEQ ?{ POP ;&lb JMP2r }
+	POP ;&blank JMP2r
 
 @ank/get-strw ( str* -- width* )
 	[ LIT2r 0000 ]
@@ -1233,8 +1242,7 @@
 	,&color-utf8 STR
 	[ LIT2 25 -Screen/auto ] DEO
 	&>wd
-		LDAk
-		?{ POP2 JMP2r }
+		LDAk ?{ POP2 JMP2r }
 		/draw-utf8 utf8/next !&>wd
 
 @ank/draw-utf8 ( addr* -- addr* )
@@ -1555,18 +1563,19 @@
 	highlight/<reset>
 	( goto y ) ( b ) .Mouse/y DEI2 #0028 SUB2 #0018 DIV2 STH
 	POP
-	( a ) [ LITr 00 ] get-scroll-addr
+	( a ) [ LITr 00 ] get-eof get-scroll-addr
 	&>ver
 		EQUkr STHr ?{
-			LDAk #0a NEQ [ JMP INCr ] utf8/next LDAk ?&>ver }
+			LDAk #0a NEQ [ JMP INCr ] utf8/next GTH2k ?&>ver }
 	POP2r
 	( goto x ) ( b ) .Mouse/x DEI2 textarea/get-anchor SUB2 STH2
 	( a ) LIT2r 0000
 	&>hor
 		LDAk #0a EQU ?{
 			ank/get-width STH2
-			ADD2r LTH2kr STHr ?{ utf8/next LDAk ?&>hor } }
-	POP2r POP2r #0000 .highlight/comment STZ2
+			ADD2r LTH2kr STHr ?{ utf8/next GTH2k ?&>hor } }
+	POP2r POP2r NIP2
+	( clean highlight ) #0000 .highlight/comment STZ2
 	JMP2r
 
 @is-selected ( addr* -- f )
@@ -1898,7 +1907,7 @@
 @shex ( str* -: value* )
 	[ LIT2r 0000 ]
 	&>w
-		[ LITr 40 ] SFT2r
+		( acc ) [ LITr 40 ] SFT2r
 		( res ) LDAk chex [ LITr 00 ] STH
 		ADD2r INC2 LDAk ?&>w
 	POP2 STH2r JMP2r
@@ -2036,11 +2045,11 @@ b0b0 e080 8080 80e0 b0b0 b0e0 0000 0000
 0000 3f70 6060 6060 6266 6f6f 6662 6060
 6060 703f 0000 0000 0000 f038 1818 1818
 1818 d8d8 1818 1818 1818 38f0 0000 0000
-( tab )
+&tab
 0000 0000 0000 0000 0000 2000 0000 0000
 0000 0000 0000 0000 0000 0000 0000 0000
 0000 0000 0000 0000 0000 0000 0000 0000
-( linebreak )
+&lb
 0000 0000 0000 0000 0000 0000 0000 0000
 0000 0000 0000 0000 0000 0000 0000 0000
 0000 0000 0000 0000 0000 0000 0000 0000
