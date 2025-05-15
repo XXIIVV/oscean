@@ -79,7 +79,7 @@ uxn_eval(unsigned short pc)
 		/* L2r */ case 0xe0: INC(rst) = uxn.ram[pc++]; /* fall-through */
 		/* LIr */ case 0xc0: INC(rst) = uxn.ram[pc++]; break;
 		/* INC */ OPC(0x01,POx(a),PUx(a + 1))
-		/* POP */ OPC(0x02,REM ,{})
+		/* POP */ OPC(0x02,REM,{})
 		/* NIP */ OPC(0x03,GOT(x) REM ,PUT(x))
 		/* SWP */ OPC(0x04,GOT(x) GOT(y),PUT(x) PUT(y))
 		/* ROT */ OPC(0x05,GOT(x) GOT(y) GOT(z),PUT(y) PUT(x) PUT(z))
@@ -119,8 +119,7 @@ console_input(char c, int type)
 {
 	if(c == EOF) c = 0, type = 4;
 	uxn.dev[0x12] = c, uxn.dev[0x17] = type;
-	if(console_vector)
-		uxn_eval(console_vector);
+	uxn_eval(console_vector);
 	return type != 4;
 }
 
@@ -135,7 +134,7 @@ main(int argc, char **argv)
 	else {
 		fread(&uxn.ram[0x0100], 0xff00, 1, f), fclose(f);
 		uxn.dev[0x17] = argc > 2;
-		if(uxn_eval(0x0100) && uxn.dev[0x10]) {
+		if(uxn_eval(0x0100) && console_vector) {
 			int i = 2;
 			for(; i < argc; i++) {
 				char *p = argv[i];
