@@ -36,7 +36,6 @@ recommended to support 16 banks when possible, each bank contains 65536
 bytes.</li>
 </ul>
 
-
 <h3 id='setup'>Setup</h3>
 
 <p>Here is a portable assembler and an emulator which includes
@@ -667,7 +666,7 @@ address port will be incremented for each sprite drawn by increments of 8 for
 <p>The <b>File/vector*</b> is normally unused, but is reserved for systems where a portable data format(disk, etc..) can be inserted. There is no specs for disk handling at this time.</p>
 
 <p>When <b>File/name*</b> resolves to a file, writing an address to
-<b>File/read*</b> will write the file's data at that address.
+<b>File/read*</b> will write the file's data at that address up to the length in <b>File/length*</b>.
 <b>File/success*</b> will be less than <b>File/length*</b> if the file is
 shorter, and will be zero if the filename is invalid. If the file is longer,
 subsequent writes to <b>File/read*</b> will read the next chunk of data into
@@ -688,27 +687,27 @@ one chunk at a time.</p>
 <p>When <b>File/name*</b> resolves to a directory, writing the address to
 <b>File/read*</b> will read the directory as if it were a text file listing
 each of the directory's contents. The listing has each file or directory on its
-own line, prefixed with the file size in four hexadecimal characters, a space,
-its name and a linebreak.</p>
-
-<p>If the file is too big to fit in four ascii characters then <code>????</code>
-will be used instead; for directories, <code>----</code> takes the place of the
-file size. </p>
+own line, prefixed with a four characters for the file information, followed by a space,
+the file's name and a linebreak.</p>
 
 <pre>
 001a file.txt
 ???? large file.mp4
 ---- directory/
-!!!! missing file
 </pre>
 
-<p>The information of a file or directory can be obtained via the
+<p>The individual information of a file or directory can be obtained via the
 <b>File/stat*</b> port, the <b>File/length*</b> specifies the length of the
-buffer to write to, the data written will be in the same format as the ascii
-bytes above. A short length will return the lower nibbles of a file size, a
-higher length will allow the reading of larger file sizes. The length of the
-stat written will always fill the requested length, so a directory result will
-be dashes for the requested length.</p>
+stat buffer to write to, the data written will be in the same format as the ascii
+bytes above. A file size will always include the lowest nibbles. The length of the
+stat written will always fill the requested length.</p>
+
+<ul>
+	<li><code>0-f</code> A file</li>
+	<li><code>-</code> A directory</li>
+	<li><code>?</code> A large file</li>
+	<li><code>!</code> A missing file</li>
+</ul>
 
 <pre>
 @is-folder <i>( name* -- bool )</i>

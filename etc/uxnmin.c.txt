@@ -21,7 +21,7 @@ emu_deo(unsigned char addr, unsigned char value)
 {
 	dev[addr] = value;
 	switch(addr) {
-	case 0x11: console_vector = dev[0x10] << 8 | dev[0x11]; return;
+	case 0x11: console_vector = dev[0x10] << 8 | value; return;
 	case 0x18: fputc(value, stdout); return;
 	case 0x19: fputc(value, stderr); return;
 	}
@@ -115,7 +115,7 @@ console_input(char c, int type)
 {
 	if(c == EOF) c = 0, type = 4;
 	dev[0x12] = c, dev[0x17] = type;
-	uxn_eval(console_vector);
+	if(console_vector) uxn_eval(console_vector);
 	return type != 4;
 }
 
