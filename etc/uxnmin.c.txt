@@ -4,28 +4,24 @@ typedef struct {
 	unsigned char dat[0x100], ptr;
 } Stack;
 
-typedef struct {
-	unsigned char ram[0x10000], dev[0x100];
-	Stack wst, rst;
-} Uxn;
-
-static Uxn uxn;
 static unsigned int console_vector;
+static unsigned char ram[0x10000], dev[0x100];
+static Stack wst, rst;
 
 /* I/O */
 
 unsigned char
 emu_dei(unsigned char addr)
 {
-	return uxn.dev[addr];
+	return dev[addr];
 }
 
 void
 emu_deo(unsigned char addr, unsigned char value)
 {
-	uxn.dev[addr] = value;
+	dev[addr] = value;
 	switch(addr) {
-	case 0x11: console_vector = uxn.dev[0x10] << 8 | uxn.dev[0x11]; return;
+	case 0x11: console_vector = dev[0x10] << 8 | dev[0x11]; return;
 	case 0x18: fputc(value, stdout); return;
 	case 0x19: fputc(value, stderr); return;
 	}
@@ -38,46 +34,46 @@ emu_deo(unsigned char addr, unsigned char value)
 	case 0x20|opc: {const int _2=1,_r=0;init body;} break;\
 	case 0x40|opc: {const int _2=0,_r=1;init body;} break;\
 	case 0x60|opc: {const int _2=1,_r=1;init body;} break;\
-	case 0x80|opc: {const int _2=0,_r=0;int k=uxn.wst.ptr;init uxn.wst.ptr=k;body;} break;\
-	case 0xa0|opc: {const int _2=1,_r=0;int k=uxn.wst.ptr;init uxn.wst.ptr=k;body;} break;\
-	case 0xc0|opc: {const int _2=0,_r=1;int k=uxn.rst.ptr;init uxn.rst.ptr=k;body;} break;\
-	case 0xe0|opc: {const int _2=1,_r=1;int k=uxn.rst.ptr;init uxn.rst.ptr=k;body;} break;\
+	case 0x80|opc: {const int _2=0,_r=0;int k=wst.ptr;init wst.ptr=k;body;} break;\
+	case 0xa0|opc: {const int _2=1,_r=0;int k=wst.ptr;init wst.ptr=k;body;} break;\
+	case 0xc0|opc: {const int _2=0,_r=1;int k=rst.ptr;init rst.ptr=k;body;} break;\
+	case 0xe0|opc: {const int _2=1,_r=1;int k=rst.ptr;init rst.ptr=k;body;} break;\
 }
 
 /* Microcode */
 
-#define REM if(_r) uxn.rst.ptr -= 1 + _2; else uxn.wst.ptr -= 1 + _2;
-#define JMI c = uxn.ram[pc] << 8 | uxn.ram[pc+1], pc += 2;
+#define REM if(_r) rst.ptr -= 1 + _2; else wst.ptr -= 1 + _2;
+#define JMI c = ram[pc] << 8 | ram[pc+1], pc += 2;
 #define JMP(x) { if(_2) pc = x; else pc += (signed char)x; }
-#define DEC(s) uxn.s.dat[--uxn.s.ptr]
+#define DEC(s) s.dat[--s.ptr]
 #define PO1(o) { if(_r) o = DEC(rst); else o = DEC(wst); }
 #define PO2(o) { PO1(o) if(_r) o |= DEC(rst) << 8; else o |= DEC(wst) << 8; }
 #define POx(o) { if(_2) PO2(o) else PO1(o) }
 #define GOT(o) { if(_2) PO1(o[1]) PO1(o[0]) }
-#define INC(s) uxn.s.dat[uxn.s.ptr++]
+#define INC(s) s.dat[s.ptr++]
 #define RP1(i) { if(_r) INC(wst) = i; else INC(rst) = i; }
 #define PU1(i) { if(_r) INC(rst) = i; else INC(wst) = i; }
 #define PUx(i) { if(_2) { c = (i); PU1(c >> 8) PU1(c) } else PU1(i) }
 #define PUT(i) { PU1(i[0]) if(_2) PU1(i[1]) }
 #define DEI(i,o) o[0] = emu_dei(i); if(_2) o[1] = emu_dei(i + 1); PUT(o)
 #define DEO(i,j) emu_deo(i, j[0]); if(_2) emu_deo(i + 1, j[1]);
-#define PEK(i,o,m) o[0] = uxn.ram[i]; if(_2) o[1] = uxn.ram[(i + 1) & m]; PUT(o)
-#define POK(i,j,m) uxn.ram[i] = j[0]; if(_2) uxn.ram[(i + 1) & m] = j[1];
+#define PEK(i,o,m) o[0] = ram[i]; if(_2) o[1] = ram[(i + 1) & m]; PUT(o)
+#define POK(i,j,m) ram[i] = j[0]; if(_2) ram[(i + 1) & m] = j[1];
 
 int
 uxn_eval(unsigned short pc)
 {
 	unsigned int a, b, c, x[2], y[2], z[2], step = 0x800000;
 	while(step--) {
-		switch(uxn.ram[pc++]) {
+		switch(ram[pc++]) {
 		/* BRK */ case 0x00: return 1;
 		/* JCI */ case 0x20: if(DEC(wst)) { JMI pc += c; break; } pc += 2; break;
 		/* JMI */ case 0x40: JMI pc += c; break;
 		/* JSI */ case 0x60: JMI INC(rst) = pc >> 8, INC(rst) = pc, pc += c; break;
-		/* LI2 */ case 0xa0: INC(wst) = uxn.ram[pc++]; /* fall-through */
-		/* LIT */ case 0x80: INC(wst) = uxn.ram[pc++]; break;
-		/* L2r */ case 0xe0: INC(rst) = uxn.ram[pc++]; /* fall-through */
-		/* LIr */ case 0xc0: INC(rst) = uxn.ram[pc++]; break;
+		/* LI2 */ case 0xa0: INC(wst) = ram[pc++]; /* fall-through */
+		/* LIT */ case 0x80: INC(wst) = ram[pc++]; break;
+		/* L2r */ case 0xe0: INC(rst) = ram[pc++]; /* fall-through */
+		/* LIr */ case 0xc0: INC(rst) = ram[pc++]; break;
 		/* INC */ OPC(0x01,POx(a),PUx(a + 1))
 		/* POP */ OPC(0x02,REM,{})
 		/* NIP */ OPC(0x03,GOT(x) REM ,PUT(x))
@@ -118,7 +114,7 @@ int
 console_input(char c, int type)
 {
 	if(c == EOF) c = 0, type = 4;
-	uxn.dev[0x12] = c, uxn.dev[0x17] = type;
+	dev[0x12] = c, dev[0x17] = type;
 	uxn_eval(console_vector);
 	return type != 4;
 }
@@ -132,8 +128,8 @@ main(int argc, char **argv)
 	else if(!(f = fopen(argv[1], "rb")))
 		fprintf(stderr, "uxnmin: %s not found.\n", argv[1]);
 	else {
-		fread(&uxn.ram[0x0100], 0xff00, 1, f), fclose(f);
-		uxn.dev[0x17] = argc > 2;
+		fread(&ram[0x0100], 0xff00, 1, f), fclose(f);
+		dev[0x17] = argc > 2;
 		if(uxn_eval(0x0100) && console_vector) {
 			int i = 2;
 			for(; i < argc; i++) {
@@ -141,8 +137,8 @@ main(int argc, char **argv)
 				while(*p) console_input(*p++, 2);
 				console_input('\n', 3 + (i == argc - 1));
 			}
-			while(!uxn.dev[0x0f] && console_input(fgetc(stdin), 1));
+			while(!dev[0x0f] && console_input(fgetc(stdin), 1));
 		}
 	}
-	return uxn.dev[0x0f] & 0x7f;
+	return dev[0x0f] & 0x7f;
 }
