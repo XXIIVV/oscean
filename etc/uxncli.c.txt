@@ -18,7 +18,6 @@ cc -DNDEBUG -O2 -g0 -s src/uxncli.c -lutil -o bin/uxncli
 
 typedef unsigned char Uint8;
 typedef unsigned short Uint16;
-typedef unsigned int Uint32;
 
 typedef struct {
 	Uint8 dat[0x100], ptr;
@@ -27,12 +26,14 @@ typedef struct {
 static Uint8 *ram, dev[0x100];
 static Stack wst, rst;
 
-Uint8 emu_dei(Uint8 addr);
-void emu_deo(Uint8 addr, Uint8 value);
+unsigned char emu_dei(Uint8 port);
+void emu_deo(Uint8 port, Uint8 value);
 
 /* clang-format off */
 
-#define RAM_PAGES 0x10
+#define BANKS 0x10
+#define BANKS_CAP BANKS * 0x10000
+
 #define PEEK2(d) (*(d) << 8 | (d)[1])
 #define POKE2(d, v) { *(d) = (v) >> 8; (d)[1] = (v); }
 
@@ -70,7 +71,7 @@ void emu_deo(Uint8 addr, Uint8 value);
 int
 uxn_eval(Uint16 pc)
 {
-	Uint32 a, b, c, x[2], y[2], z[2], step = 0x80000000;
+	unsigned int a, b, c, x[2], y[2], z[2], step = 0x80000000;
 	if(dev[0x0f]) return 0;
 	while(step--) {
 		switch(ram[pc++]) {
@@ -136,23 +137,23 @@ system_print(char *name, Stack *s)
 	fprintf(stderr, "<%02x\n", s->ptr);
 }
 
-static int
+static unsigned int
 system_load(char *rom_path)
 {
 	FILE *f = fopen(rom_path, "rb");
 	if(f) {
-		int i = 0, l = fread(ram + 0x100, 0x10000 - 0x100, 1, f);
-		while(l && ++i < RAM_PAGES)
-			l = fread(ram + 0x100 + 0x10000 * i - 0x100, 0x10000, 1, f);
+		unsigned int i = 0, l = fread(ram + 0x100, 0x10000 - 0x100, 1, f);
+		while(l && ++i < BANKS)
+			l = fread(ram + i * 0x10000, 0x10000, 1, f);
 		fclose(f);
 	}
 	return !!f;
 }
 
-static int
-system_boot(char *rom_path, int has_args)
+static unsigned int
+system_boot(char *rom_path, unsigned int has_args)
 {
-	ram = (Uint8 *)calloc(0x10000 * RAM_PAGES, sizeof(Uint8));
+	ram = (Uint8 *)calloc(BANKS * 0x10000, sizeof(Uint8));
 	system_boot_path = rom_path;
 	dev[0x17] = has_args;
 	return system_load(rom_path);
@@ -162,22 +163,22 @@ static void
 system_expansion(Uint16 addr)
 {
 	Uint8 *aptr = ram + addr;
-	Uint16 value, length = PEEK2(aptr + 1);
+	Uint16 length = PEEK2(aptr + 1);
 	if(ram[addr] == 0x0) {
-		Uint32 a = PEEK2(aptr + 3) * 0x10000 + PEEK2(aptr + 5);
-		Uint32 b = a + length;
-		value = ram[addr + 7];
-		for(; a < b; ram[a++] = value);
+		unsigned int a = PEEK2(aptr + 3) * 0x10000 + PEEK2(aptr + 5);
+		unsigned int b = a + length;
+		unsigned int value = ram[addr + 7];
+		for(b = b < BANKS_CAP ? b : BANKS_CAP; a < b; ram[a++] = value);
 	} else if(ram[addr] == 0x1) {
-		Uint32 a = PEEK2(aptr + 3) * 0x10000 + PEEK2(aptr + 5);
-		Uint32 b = a + length;
-		Uint32 c = PEEK2(aptr + 7) * 0x10000 + PEEK2(aptr + 9);
-		for(; a < b; ram[c++] = ram[a++]);
+		unsigned int a = PEEK2(aptr + 3) * 0x10000 + PEEK2(aptr + 5);
+		unsigned int b = a + length;
+		unsigned int c = PEEK2(aptr + 7) * 0x10000 + PEEK2(aptr + 9);
+		for(b = b < BANKS_CAP ? b : BANKS_CAP; a < b; ram[c++] = ram[a++]);
 	} else if(ram[addr] == 0x2) {
-		Uint32 a = PEEK2(aptr + 3) * 0x10000 + PEEK2(aptr + 5);
-		Uint32 b = a + length;
-		Uint32 c = PEEK2(aptr + 7) * 0x10000 + PEEK2(aptr + 9);
-		Uint32 d = c + length;
+		unsigned int a = PEEK2(aptr + 3) * 0x10000 + PEEK2(aptr + 5);
+		unsigned int b = a + length;
+		unsigned int c = PEEK2(aptr + 7) * 0x10000 + PEEK2(aptr + 9);
+		unsigned int d = c + length;
 		for(; b >= a; ram[--d] = ram[--b]);
 	} else
 		fprintf(stderr, "Unknown command: %s\n", &ram[addr]);
@@ -208,7 +209,7 @@ system_expansion(Uint16 addr)
 #include <util.h>
 #endif
 
-static int console_vector;
+static unsigned int console_vector;
 
 /* subprocess support */
 static char *fork_args[4] = {"/bin/sh", "-c", "", NULL};
@@ -363,8 +364,8 @@ start_fork(void)
 	start_fork_pipe();
 }
 
-static int
-console_input(int c, int type)
+static unsigned int
+console_input(int c, unsigned int type)
 {
 	if(c == EOF) c = 0, type = 4;
 	dev[0x12] = c, dev[0x17] = type;
@@ -408,25 +409,25 @@ make_pathfile(char *pathbuf, const char *filepath, const char *basename)
 	*pathbuf = 0;
 }
 
-static int
-put_fill(Uint8 *dest, int len, char c)
+static unsigned int
+put_fill(Uint8 *dest, unsigned int len, char c)
 {
-	int i;
+	unsigned int i;
 	for(i = 0; i < len; i++)
 		*dest = c, dest++;
 	return len;
 }
 
-static int
-put_size(Uint8 *dest, int len, int size)
+static unsigned int
+put_size(Uint8 *dest, unsigned int len, unsigned int size)
 {
-	int i;
+	unsigned int i;
 	for(i = 0, dest += len; i < len; i++, size >>= 4)
 		*(--dest) = "0123456789abcdef"[(Uint8)(size & 0xf)];
 	return len;
 }
 
-static int
+static unsigned int
 put_text(Uint8 *dest, const char *text)
 {
 	Uint8 *anchor = dest;
@@ -436,8 +437,8 @@ put_text(Uint8 *dest, const char *text)
 	return dest - anchor;
 }
 
-static int
-put_stat(Uint8 *dest, int len, int size, int err, int dir, int capsize)
+static unsigned int
+put_stat(Uint8 *dest, unsigned int len, unsigned int size, unsigned int err, unsigned int dir, unsigned int capsize)
 {
 	if(err) return put_fill(dest, len, '!');
 	if(dir) return put_fill(dest, len, '-');
@@ -445,10 +446,10 @@ put_stat(Uint8 *dest, int len, int size, int err, int dir, int capsize)
 	return put_size(dest, len, size);
 }
 
-static int
+static unsigned int
 put_statfile(Uint8 *dest, const char *filepath, const char *basename)
 {
-	int err, dir;
+	unsigned int err, dir;
 	struct stat st;
 	Uint8 *anchor = dest;
 	char pathbuf[0x2000];
@@ -462,13 +463,13 @@ put_statfile(Uint8 *dest, const char *filepath, const char *basename)
 	return dest - anchor;
 }
 
-static int
-put_fdir(Uint8 *dest, int len, const char *filepath, DIR *dir)
+static unsigned int
+put_fdir(Uint8 *dest, unsigned int len, const char *filepath, DIR *dir)
 {
-	int i;
+	unsigned int i;
 	struct dirent *de = readdir(dir);
 	for(_dirbuf = dirbuf; de != NULL; de = readdir(dir)) {
-		char *name = de->d_name;
+		const char *name = de->d_name;
 		if(name[0] == '.' && (name[1] == '.' || name[1] == '\0'))
 			continue;
 		else
@@ -480,26 +481,26 @@ put_fdir(Uint8 *dest, int len, const char *filepath, DIR *dir)
 	return i;
 }
 
-static int
+static unsigned int
 is_dir_path(char *p)
 {
 	char c;
-	int saw_slash = 0;
+	unsigned int saw_slash = 0;
 	while((c = *p++)) saw_slash = c == '/';
 	return saw_slash;
 }
 
-static int
+static unsigned int
 is_dir_real(char *p)
 {
 	struct stat st;
 	return stat(p, &st) == 0 && S_ISDIR(st.st_mode);
 }
 
-static int
+static unsigned int
 file_write_dir(char *p)
 {
-	int ok = 1;
+	unsigned int ok = 1;
 	char c, *s = p;
 	for(; ok && (c = *p); p++) {
 		if(c == '/') {
@@ -512,23 +513,23 @@ file_write_dir(char *p)
 }
 
 static void
-file_reset(int id)
+file_reset(unsigned int id)
 {
 	if(ufs[id].f != NULL) fclose(ufs[id].f), ufs[id].f = NULL;
 	if(ufs[id].dir != NULL) closedir(ufs[id].dir), ufs[id].dir = NULL;
 	ufs[id].state = IDLE;
 }
 
-static int
-file_init(int id, Uint16 addr)
+static unsigned int
+file_init(unsigned int id, Uint16 addr)
 {
 	file_reset(id);
 	ufs[id].filepath = (char *)&ram[addr];
 	return 0;
 }
 
-static int
-file_not_ready(int id)
+static unsigned int
+file_not_ready(unsigned int id)
 {
 	if(ufs[id].filepath == 0) {
 		fprintf(stderr, "File %d is uninitialized\n", id);
@@ -537,8 +538,8 @@ file_not_ready(int id)
 		return 0;
 }
 
-static int
-file_read(int id, Uint16 addr, int len)
+static unsigned int
+file_read(unsigned int id, Uint16 addr, unsigned int len)
 {
 	void *dest = &ram[addr];
 	if(file_not_ready(id))
@@ -557,10 +558,10 @@ file_read(int id, Uint16 addr, int len)
 	return 0;
 }
 
-static int
-file_write(int id, Uint16 addr, int len, Uint8 flags)
+static unsigned int
+file_write(unsigned int id, Uint16 addr, unsigned int len, Uint8 flags)
 {
-	int ret = 0;
+	unsigned int ret = 0;
 	if(file_not_ready(id))
 		return 0;
 	file_write_dir(ufs[id].filepath);
@@ -579,10 +580,10 @@ file_write(int id, Uint16 addr, int len, Uint8 flags)
 	return ret;
 }
 
-static int
-file_stat(int id, Uint16 addr, int len)
+static unsigned int
+file_stat(unsigned int id, Uint16 addr, unsigned int len)
 {
-	int err, dir;
+	unsigned int err, dir;
 	struct stat st;
 	if(file_not_ready(id))
 		return 0;
@@ -591,8 +592,8 @@ file_stat(int id, Uint16 addr, int len)
 	return put_stat(&ram[addr], len, st.st_size, err, dir, 0);
 }
 
-static int
-file_delete(int id)
+static unsigned int
+file_delete(unsigned int id)
 {
 	if(file_not_ready(id))
 		return -1;
@@ -600,50 +601,27 @@ file_delete(int id)
 }
 
 static void
-file_success(int port, int value)
+file_success(unsigned int port, unsigned int value)
 {
 	POKE2(&dev[port], value);
 }
 
 /* file registers */
 
-static int rL1, rL2;
+static unsigned int rL1, rL2;
 
 /*
 @|Datetime ---------------------------------------------------------- */
 
 #include <time.h>
 
-static Uint8
-datetime_dei(Uint8 addr)
-{
-	time_t seconds = time(NULL);
-	struct tm zt = {0};
-	struct tm *t = localtime(&seconds);
-	if(t == NULL) t = &zt;
-	switch(addr) {
-	case 0xc0: return (t->tm_year + 1900) >> 8;
-	case 0xc1: return (t->tm_year + 1900);
-	case 0xc2: return t->tm_mon;
-	case 0xc3: return t->tm_mday;
-	case 0xc4: return t->tm_hour;
-	case 0xc5: return t->tm_min;
-	case 0xc6: return t->tm_sec;
-	case 0xc7: return t->tm_wday;
-	case 0xc8: return t->tm_yday >> 8;
-	case 0xc9: return t->tm_yday;
-	case 0xca: return t->tm_isdst;
-	default: return dev[addr];
-	}
-}
-
 /*
 @|Core -------------------------------------------------------------- */
 
-Uint8
-emu_dei(Uint8 addr)
+unsigned char
+emu_dei(Uint8 port)
 {
-	switch(addr) {
+	switch(port) {
 	/* System */
 	case 0x04: return wst.ptr;
 	case 0x05: return rst.ptr;
@@ -651,16 +629,34 @@ emu_dei(Uint8 addr)
 	case CMD_LIVE:
 	case CMD_EXIT: check_child(); break;
 	}
-	if((addr & 0xf0) == 0xc0)
-		return datetime_dei(addr);
-	return dev[addr];
+	/* Datetime */
+	if((port & 0xf0) == 0xc0) {
+		time_t seconds = time(NULL);
+		struct tm zt = {0};
+		struct tm *t = localtime(&seconds);
+		if(t == NULL) t = &zt;
+		switch(port) {
+		case 0xc0: return (t->tm_year + 1900) >> 8;
+		case 0xc1: return (t->tm_year + 1900);
+		case 0xc2: return t->tm_mon;
+		case 0xc3: return t->tm_mday;
+		case 0xc4: return t->tm_hour;
+		case 0xc5: return t->tm_min;
+		case 0xc6: return t->tm_sec;
+		case 0xc7: return t->tm_wday;
+		case 0xc8: return t->tm_yday >> 8;
+		case 0xc9: return t->tm_yday;
+		case 0xca: return t->tm_isdst;
+		}
+	}
+	return dev[port];
 }
 
 void
-emu_deo(Uint8 addr, Uint8 value)
+emu_deo(Uint8 port, Uint8 value)
 {
-	dev[addr] = value;
-	switch(addr) {
+	dev[port] = value;
+	switch(port) {
 	/* System */
 	case 0x03: system_expansion(PEEK2(dev + 2)); break;
 	case 0x04: wst.ptr = dev[4]; break;
@@ -693,7 +689,7 @@ main(int argc, char **argv)
 {
 	int i = 1;
 	if(argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-		return !fprintf(stdout, "Uxn11 - Varvara Emulator(cli), 16 May 2025.\n");
+		return !fprintf(stdout, "Uxn11 - Varvara Emulator(cli), 17 May 2025.\n");
 	else if(argc == 1)
 		return !fprintf(stdout, "usage: %s [-v] file.rom [args..]\n", argv[0]);
 	else if(!system_boot(argv[i++], argc > 2))
