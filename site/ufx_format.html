@@ -13,7 +13,9 @@
 <main><figure><img alt="Proportional Fonts in Uxn" src="../media/diary/020.jpg"><figcaption>Proportional Fonts in Uxn<span class="right">15N02</span></figcaption></figure>
 <h2>UFX is a proportional font format.</h2>
 
-<p>The <code>UFX</code> file begins with 256 bytes corresponding to the width(in pixels) of each of the 256 glyphs in the spritesheet, followed by the pixel data in the <a href='icn_format.html'>.icn format</a> for each character.</p>
+<p>The <code>UFX</code> file begins with 256 bytes corresponding to the width(in
+pixels) of each of the 256 glyphs in the spritesheet, followed by the pixel
+data in the <a href='icn_format.html'>.icn format</a> for each character.</p>
 
 <table border='1'>
 	<tr><th>Extension</th><th>Size(px)</th><th>Filesize</th></tr>
@@ -22,29 +24,40 @@
 	<tr><td><code>.uf3</code></td><td>24x24(9 tiles)</td><td>0x4900</td></tr>
 </table>
 
-<p>The pixel data for each glyph is stored in a series of 8x8 tiles, the drawing order goes vertically as to be able to skip extra draw calls for narrow characters if needed:</p>
+<p>The pixel data for each glyph is stored in a series of 8x8 tiles, the drawing
+order goes vertically as to be able to skip extra draw calls for narrow
+characters if needed:</p>
 
 <table border='1'>
 	<tr><td>0</td><td class='highlight'>2</td></tr>
 	<tr><td>1</td><td class='highlight'>3</td></tr>
 </table>
 
-<p>A naive uf2 character drawing routine in <a href='uxntal.html'>Uxntal</a> is about 50 bytes, with the screen's <a href='varvara.html'>auto byte</a> set to <code>#15</code>:</p>
+<p>A naive uf2 character drawing routine in <a href='uxntal.html'>Uxntal</a> is
+about 50 bytes, with the screen's <a href='varvara.html'>auto byte</a> set to
+<code>#15</code>:</p>
 
 <pre>
-@draw-uf2 ( text* -- )
+<b>@uf2/&lt;draw&gt;</b> <i>( text* -- )</i>
 	[ LIT2 15 -Screen/auto ] DEO
-	&>while ( -- )
-		LDAk #00 SWP DUP2
-		( addr ) #20 SUB #50 SFT2 ;font/glyphs ADD2 .Screen/addr DEO2
-		( move ) ;font ADD2 LDA #00 SWP .Screen/x DEI2 ADD2
-		( draw ) [ LIT2 01 -Screen/sprite ] DEOk DEO
-		.Screen/x DEO2
-		INC2 LDAk ?&>while
-	POP2 JMP2r
+	[ LIT2r 05 -Screen/sprite ]
+	<b>&>while</b>
+		LDAk DUP ?{ POP POP2 POP2r JMP2r }
+		#0000 ROT
+		<i>( addr )</i> DUP2 #50 SFT2 ;&glyphs ADD2 .Screen/addr DEO2
+		<i>( move )</i> ;&widths ADD2 LDA .Screen/x DEI2 ADD2
+		<i>( draw )</i> [ DEOkr DEOkr ] .Screen/x DEO2
+		INC2 !&>while
 </pre>
 
-<p>The empty pixel data of the first 32 invisible characters are typically removed. You will find this filetype in the <a href='uxn.html'>Uxn</a> ecosystem, namely in <a href='left.html'>Left</a>. Uf2 fonts can be viewed and edited with <a href='turye.html'>Turye</a>. </p>
+<p>Note that the pixel data of the first 32 invisible characters are typically
+removed with <code>#20 SUB</code>. You will find this filetype in the <a
+href='uxn.html'>Uxn</a> ecosystem, namely in <a href='left.html'>Left</a>. Uf2
+fonts can be viewed and edited with <a href='turye.html'>Turye</a>.</p>
+
+<ul>
+	<li><a href='https://git.sr.ht/~rabbits/uxn/tree/main/item/projects/examples/gui/label.tal'>Complete example</a>, Uxntal</li>
+</ul>
 
 <style>
 	.highlight { background:#eee }
@@ -52,6 +65,10 @@
 		.highlight { background:#222 }
 	}
 </style>
+
+
+
+
 <ul></ul><p class="incoming"><b>incoming</b> <a href="adelie.html">adelie</a> <a href="potato.html">potato</a> <a href="turye.html">turye</a> </p></main>
 <footer>
 	<a href="ethics.html"><img src="../media/icon/3arrows.svg" alt="NoNazis!"/></a>
