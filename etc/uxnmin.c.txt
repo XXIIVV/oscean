@@ -110,13 +110,12 @@ uxn_eval(unsigned short pc)
 	return 0;
 }
 
-int
-console_input(char c, int type)
+static void
+console_input(int c, const int type)
 {
-	if(c == EOF) c = 0, type = 4;
 	dev[0x12] = c, dev[0x17] = type;
-	if(console_vector) uxn_eval(console_vector);
-	return type != 4;
+	if(console_vector)
+		uxn_eval(console_vector);
 }
 
 int
@@ -131,13 +130,16 @@ main(int argc, char **argv)
 		fread(&ram[0x0100], 0xff00, 1, f), fclose(f);
 		dev[0x17] = argc > 2;
 		if(uxn_eval(0x0100) && console_vector) {
-			int i = 2;
+			int c, i = 2;
 			for(; i < argc; i++) {
 				char *p = argv[i];
-				while(*p) console_input(*p++, 2);
+				while(*p)
+					console_input(*p++, 2);
 				console_input('\n', 3 + (i == argc - 1));
 			}
-			while(!dev[0x0f] && console_input(fgetc(stdin), 1));
+			while (!dev[0x0f] && (c = fgetc(stdin)) && c != EOF)
+				console_input(c, 1);
+			console_input(0, 4);
 		}
 	}
 	return dev[0x0f] & 0x7f;

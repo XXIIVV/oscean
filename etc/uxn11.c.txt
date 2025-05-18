@@ -35,8 +35,8 @@ static Window window;
 static Uint8 *ram, dev[0x100];
 static Stack wst, rst;
 
-unsigned char emu_dei(Uint8 addr);
-void emu_deo(Uint8 addr, Uint8 value);
+Uint8 emu_dei(const Uint8 port);
+void emu_deo(const Uint8 port, const Uint8 value);
 
 /* clang-format off */
 
@@ -909,10 +909,10 @@ static unsigned int rL1, rL2;
 
 #define CONINBUFSIZE 256
 
-unsigned char
-emu_dei(Uint8 addr)
+Uint8
+emu_dei(const Uint8 port)
 {
-	switch(addr) {
+	switch(port) {
 	/* System */
 	case 0x04: return wst.ptr;
 	case 0x05: return rst.ptr;
@@ -931,12 +931,12 @@ emu_dei(Uint8 addr)
 	case 0x2c: return rA >> 8;
 	case 0x2d: return rA;
 	}
-	if((addr & 0xf0) == 0xc0) {
+	if((port & 0xf0) == 0xc0) {
 		time_t seconds = time(NULL);
 		struct tm zt = {0};
 		struct tm *t = localtime(&seconds);
 		if(t == NULL) t = &zt;
-		switch(addr) {
+		switch(port) {
 		case 0xc0: return (t->tm_year + 1900) >> 8;
 		case 0xc1: return (t->tm_year + 1900);
 		case 0xc2: return t->tm_mon;
@@ -950,14 +950,14 @@ emu_dei(Uint8 addr)
 		case 0xca: return t->tm_isdst;
 		}
 	}
-	return dev[addr];
+	return dev[port];
 }
 
 void
-emu_deo(Uint8 addr, Uint8 value)
+emu_deo(const Uint8 port, const Uint8 value)
 {
-	dev[addr] = value;
-	switch(addr) {
+	dev[port] = value;
+	switch(port) {
 	/* System */
 	case 0x03: system_expansion(PEEK2(dev + 2)); return;
 	case 0x04: wst.ptr = dev[4]; return;
@@ -1142,7 +1142,7 @@ display_floating(Display *dpy, Window win)
 	Atom wmType = XInternAtom(dpy, "_NET_WM_WINDOW_TYPE", False);
 	Atom wmDialog = XInternAtom(dpy, "_NET_WM_WINDOW_TYPE_DIALOG", False);
 	XSetWMProtocols(display, window, &wmDelete, 1);
-	XChangeProperty(dpy, win, wmType, 4, 32, PropModeReplace, (unsigned char *)&wmDialog, 1);
+	XChangeProperty(dpy, win, wmType, 4, 32, PropModeReplace, (Uint8 *)&wmDialog, 1);
 }
 
 static unsigned int
