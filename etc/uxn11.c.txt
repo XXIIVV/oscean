@@ -50,22 +50,22 @@ void emu_deo(const Uint8 port, const Uint8 value);
 #define clamp(v,a,b) { if(v < a) v = a; else if(v >= b) v = b; }
 #define twos(v) (v & 0x8000 ? (int)v - 0x10000 : (int)v)
 
-#define OPC(opc, init, body) {\
-	case 0x00|opc: {const int _2=0,_r=0;init body;} break;\
-	case 0x20|opc: {const int _2=1,_r=0;init body;} break;\
-	case 0x40|opc: {const int _2=0,_r=1;init body;} break;\
-	case 0x60|opc: {const int _2=1,_r=1;init body;} break;\
-	case 0x80|opc: {const int _2=0,_r=0,k=wst.ptr;init wst.ptr=k;body;} break;\
-	case 0xa0|opc: {const int _2=1,_r=0,k=wst.ptr;init wst.ptr=k;body;} break;\
-	case 0xc0|opc: {const int _2=0,_r=1,k=rst.ptr;init rst.ptr=k;body;} break;\
-	case 0xe0|opc: {const int _2=1,_r=1,k=rst.ptr;init rst.ptr=k;body;} break;\
+#define OPC(opc, A, B) {\
+	case 0x00|opc: {const int _2=0,_r=0;A B;} break;\
+	case 0x20|opc: {const int _2=1,_r=0;A B;} break;\
+	case 0x40|opc: {const int _2=0,_r=1;A B;} break;\
+	case 0x60|opc: {const int _2=1,_r=1;A B;} break;\
+	case 0x80|opc: {const int _2=0,_r=0;int k=wst.ptr;A wst.ptr=k;B;} break;\
+	case 0xa0|opc: {const int _2=1,_r=0;int k=wst.ptr;A wst.ptr=k;B;} break;\
+	case 0xc0|opc: {const int _2=0,_r=1;int k=rst.ptr;A rst.ptr=k;B;} break;\
+	case 0xe0|opc: {const int _2=1,_r=1;int k=rst.ptr;A rst.ptr=k;B;} break;\
 }
 
 /* Microcode */
 
 #define REM if(_r) rst.ptr -= 1 + _2; else wst.ptr -= 1 + _2;
-#define JMI c = ram[pc] << 8 | ram[pc+1], pc += 2;
-#define JMP(x) { if(_2) pc = x; else pc += (signed char)x; }
+#define IMM(o) o = ram[pc] << 8 | ram[pc + 1], pc += 2;
+#define MOV(x) { if(_2) pc = x; else pc += (signed char)x; }
 #define DEC(s) s.dat[--s.ptr]
 #define PO1(o) { if(_r) o = DEC(rst); else o = DEC(wst); }
 #define PO2(o) { PO1(o) if(_r) o |= DEC(rst) << 8; else o |= DEC(wst) << 8; }
@@ -81,23 +81,23 @@ void emu_deo(const Uint8 port, const Uint8 value);
 #define PEK(i,o,m) o[0] = ram[i]; if(_2) o[1] = ram[(i + 1) & m]; PUT(o)
 #define POK(i,j,m) ram[i] = j[0]; if(_2) ram[(i + 1) & m] = j[1];
 
-int
-uxn_eval(Uint16 pc)
+static unsigned int
+uxn_eval(unsigned short pc)
 {
-	unsigned int a, b, c, x[2], y[2], z[2], step;
-	for(step = 0x80000000; step; step--) {
+	unsigned int a, b, c, x[2], y[2], z[2], step = 0x8000000;
+	while(step--) {
 		switch(ram[pc++]) {
 		/* BRK */ case 0x00: return 1;
-		/* JCI */ case 0x20: if(DEC(wst)) { JMI pc += c; break; } pc += 2; break;
-		/* JMI */ case 0x40: JMI pc += c; break;
-		/* JSI */ case 0x60: JMI INC(rst) = pc >> 8, INC(rst) = pc, pc += c; break;
+		/* JCI */ case 0x20: IMM(c) if(DEC(wst)) pc += c; break;
+		/* JMI */ case 0x40: IMM(c) pc += c; break;
+		/* JSI */ case 0x60: IMM(c) INC(rst) = pc >> 8, INC(rst) = pc, pc += c; break;
 		/* LI2 */ case 0xa0: INC(wst) = ram[pc++]; /* fall-through */
 		/* LIT */ case 0x80: INC(wst) = ram[pc++]; break;
 		/* L2r */ case 0xe0: INC(rst) = ram[pc++]; /* fall-through */
 		/* LIr */ case 0xc0: INC(rst) = ram[pc++]; break;
 		/* INC */ OPC(0x01,POx(a),PUx(a + 1))
-		/* POP */ OPC(0x02,REM ,{})
-		/* NIP */ OPC(0x03,GOT(x) REM ,PUT(x))
+		/* POP */ OPC(0x02,REM,{})
+		/* NIP */ OPC(0x03,GOT(x) REM,PUT(x))
 		/* SWP */ OPC(0x04,GOT(x) GOT(y),PUT(x) PUT(y))
 		/* ROT */ OPC(0x05,GOT(x) GOT(y) GOT(z),PUT(y) PUT(x) PUT(z))
 		/* DUP */ OPC(0x06,GOT(x),PUT(x) PUT(x))
@@ -106,9 +106,9 @@ uxn_eval(Uint16 pc)
 		/* NEQ */ OPC(0x09,POx(a) POx(b),PU1(b != a))
 		/* GTH */ OPC(0x0a,POx(a) POx(b),PU1(b > a))
 		/* LTH */ OPC(0x0b,POx(a) POx(b),PU1(b < a))
-		/* JMP */ OPC(0x0c,POx(a),JMP(a))
-		/* JCN */ OPC(0x0d,POx(a) PO1(b),if(b) JMP(a))
-		/* JSR */ OPC(0x0e,POx(a),RP1(pc >> 8) RP1(pc) JMP(a))
+		/* JMP */ OPC(0x0c,POx(a),MOV(a))
+		/* JCN */ OPC(0x0d,POx(a) PO1(b),if(b) MOV(a))
+		/* JSR */ OPC(0x0e,POx(a),RP1(pc >> 8) RP1(pc) MOV(a))
 		/* STH */ OPC(0x0f,GOT(x),RP1(x[0]) if(_2) RP1(x[1]))
 		/* LDZ */ OPC(0x10,PO1(a),PEK(a, x, 0xff))
 		/* STZ */ OPC(0x11,PO1(a) GOT(y),POK(a, y, 0xff))
@@ -128,7 +128,7 @@ uxn_eval(Uint16 pc)
 		/* SFT */ OPC(0x1f,PO1(a) POx(b),PUx(b >> (a & 0xf) << (a >> 4)))
 		}
 	}
-	return 0;
+	return !fprintf(stdout, "Exhausted cycles limit.\n");
 }
 
 /* clang-format on */
