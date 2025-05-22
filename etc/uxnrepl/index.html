@@ -54,6 +54,13 @@
 			<option value="10_tal">10. Debugging</option>
 		</select>
 	</div>
+	<dialog id="dialog">
+		<h3>Debug</h3>
+		<div id="dialog-content"></div>
+		<form id="dialog-buttons" method="dialog">
+			<input type="button" value="OK" id="dialog-ok" autofocus></input>
+		</form>
+	</dialog>
 	<script type="text/javascript">
 'use strict'
 
@@ -65,6 +72,35 @@ let wst_el = document.getElementById("wst")
 let run_el = document.getElementById("run")
 let step_el = document.getElementById("step")
 let save_el = document.getElementById("save")
+
+// Replaces alert() with a styled <dialog> when the browser supports it
+let dialog_el = document.getElementById('dialog')
+let dialog_content_el
+let dialog_buttons_el
+
+if(typeof HTMLDialogElement === 'function') {
+	dialog_content_el = document.getElementById('dialog-content')
+	dialog_buttons_el = document.getElementById('dialog-buttons')
+	// Delegated event handler for all dialog buttons (confirm, prompt, etc)
+	dialog_buttons_el.addEventListener("click", (e) => {
+		let target = e.target
+		if(target === undefined || target.tagName !== 'INPUT' || target.type !== 'button')
+			return
+		e.stopPropagation()
+		dialog_el.close()
+	})
+	alert = function alert(message) {
+		dialog_content_el.innerHTML = `<pre>${message}</pre>`
+		dialog_el.showModal()
+	}
+}
+else { // Delete unsupported elements and null their variables
+	dialog_el.remove()
+	dialog_el = null
+	dialog_content_el = null
+	dialog_buttons_el = null
+}
+
 
 document.body.className = "active"
 
@@ -80,15 +116,6 @@ function assemble(query, program) {
 	emu_asm.console.input(0x0a, 2)
 	emu_asm.console.input(0x00, 4)
 	return rom_length
-}
-
-function alert(message) {
-       const dialog = document.querySelector("#dialog-root");
-       const dialog_title = dialog.querySelector('#dialog-title');
-       dialog_title.innerHTML = 'Alert';
-       const content_node = dialog.querySelector("#dialog-content");
-       content_node.innerHTML = `<pre>${message}</pre>`;
-       dialog.showModal();
 }
 
 let opcodes = [
@@ -216,19 +243,17 @@ document.getElementById('examples').addEventListener('change', (e) => {
 		div#menu select { float:right }
 		body.active textarea { height:calc(100% - 140px); }
 		body.active div#term, body.active div#menu { display:block }
-		#run, #step, #save { cursor:pointer; background:#000; color:white; border:0px; border-radius:100px; line-height:24px; padding:0px 10px; font-size:12px }
+		#run, #step, #save , #dialog-ok { cursor:pointer; background:#000; color:white; border:0px; border-radius:100px; line-height:24px; padding:0px 10px; font-size:12px }
 		#step, #save { background: #fff; color:black}
 		#save { float:right; margin-left:10px }
 		#run:hover, #step:hover, #save:hover { background: #58ac96; color:#000 }
-		#dialog-content > pre { background: #000; color: white;}
-		#dialog-root > form { width: 100%; text-align: right; }
+		#run:hover, #step:hover, #save:hover, #dialog-ok:hover { background: #58ac96; color:#000 }
+		dialog { background:#a4f4e0; display: none; padding: 10px; padding-bottom: 0; }
+		dialog[open] { display: block; }
+		dialog > * { margin: 0; margin-bottom: 10px; }
+		::backdrop { background: #a4f4e0; opacity: 0.6; }
+		#dialog-content > pre { background: #000; color: white; padding: 10px; }
+		#dialog > form { width: 100%; text-align: right; }
 	</style>
-       <dialog id="dialog-root">
-               <h3 id="dialog-title"></h3>
-               <div id="dialog-content"></div>
-               <form method="dialog">
-                       <button autofocus>OK</button>
-               </form>
-       </dialog>
 </body>
 </html>
