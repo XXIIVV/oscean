@@ -22,7 +22,7 @@
 	assembly/<resolve>
 	BRK
 
-@rom/<emit> ( length* -- )
+@rom/<emit> ( -- )
 	;dict/assembled err/<pstr>
 	;dict/in err/<pstr>
 	[ LIT2 &length 0100 ] DUP2 #0100 SUB2 err/<pdec>
@@ -84,7 +84,7 @@
 	;asm-default ;token/mode STA2
 	JMP2r
 
-@token/<set-comment> ( -- )
+@token/<set-comment> ( token* -- )
 	LDA2 [ LIT2 "( 00 ] EQU2 ?{
 		( ! ) ;dict/invalid ;dict/Comment !err/<token> }
 	;asm-comment ;token/mode STA2
@@ -96,7 +96,7 @@
 	[ LIT2 00 _asm-macro/depth ] STR
 	JMP2r
 
-@asm-default ( t* -- )
+@asm-default ( t* :: )
 	LDZk runes/find INC2k ORA ?{
 		POP2
 		( hex ) is-hex ?rom/<write-rawhex>
@@ -409,7 +409,7 @@
 	LDAkr STHr .SymType/used ORA STH2r STA
 	LDA2 JMP2r
 
-@refs/<push-short> ( -- )
+@refs/<push-short> ( value* -- )
 	SWP /<push-byte>
 	( >> )
 
@@ -431,13 +431,14 @@
 
 @refs/<resolve> ( addr* -- addr* )
 	DUP2 ;&err STA2
-	DUP2k #0004 ADD2 LDA
 	( | handlers )
+	DUP2k #0004 ADD2 LDA
 	DUP .RefType/ab EQU ?/<set-ab>
 	DUP .RefType/as EQU ?/<set-as>
 	DUP .RefType/rb EQU ?/<set-rb>
 	DUP .RefType/rs EQU ?/<set-rs>
-	POP JMP2r
+	( | TODO: Handle unknown type )
+	POP POP2 JMP2r
 
 @refs/<set-ab> ( ref* type -- )
 	POP /resolve-abs STA
@@ -495,7 +496,7 @@
 	.RefType/rs /get-type rom/get-head
 	( >> )
 
-@refs/get-distance ( addr* -- distance* )
+@refs/get-distance ( a* b* -- distance* )
 	INC2 INC2 SUB2 JMP2r
 
 @refs/<error> ( adj* -- )

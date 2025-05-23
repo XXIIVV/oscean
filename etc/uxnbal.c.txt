@@ -1,0 +1,589 @@
+#include <stdio.h>
+
+typedef struct {
+	int wst, rst, wst_min, rst_min, depth;
+} Balance;
+
+typedef struct {
+	char name[0x100], *body;
+	int wst_neg, wst_pos, rst_neg, rst_pos;
+	int vector, macro, defined, lambda;
+} Label;
+
+char scope[0x100], scope_label[0x100];
+Label labels[0x200], *_labels = labels;
+
+/* clang-format off */
+
+#define is_opcode(x) (find_opcode(x) || scmp(x, "BRK", 4))
+#define is_label(s) (s[0] == '@' || s[0] == '&')
+#define is_comment(s) (s[0] == '(')
+#define is_brk(s) (s[0] == 'B' && s[1] == 'R' && s[2] == 'K')
+#define is_lit(s) (s[0] == 'L' && s[1] == 'I' && s[2] == 'T')
+#define is_jmp(s) ((s[0] == '!') || (s[0] == 'J' && s[1] == 'M' && s[2] == 'P') || is_brk(s))
+
+unsigned char opc_wst[] = {
+	0x00, 0x11, 0x10, 0x21, 0x22, 0x33, 0x12, 0x23, 0x21, 0x21, 0x21, 0x21, 0x10, 0x20, 0x10, 0x10,
+	0x11, 0x20, 0x11, 0x20, 0x21, 0x30, 0x11, 0x20, 0x21, 0x21, 0x21, 0x21, 0x21, 0x21, 0x21, 0x21,
+	0x00, 0x22, 0x20, 0x42, 0x44, 0x66, 0x24, 0x46, 0x41, 0x41, 0x41, 0x41, 0x20, 0x30, 0x20, 0x20,
+	0x12, 0x30, 0x12, 0x30, 0x22, 0x40, 0x12, 0x30, 0x42, 0x42, 0x42, 0x42, 0x42, 0x42, 0x42, 0x32,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x01, 0x12, 0x11, 0x23, 0x24, 0x36, 0x13, 0x25, 0x23, 0x23, 0x23, 0x23, 0x11, 0x22, 0x11, 0x11,
+	0x12, 0x22, 0x12, 0x22, 0x23, 0x33, 0x12, 0x22, 0x23, 0x23, 0x23, 0x23, 0x23, 0x23, 0x23, 0x23,
+	0x02, 0x24, 0x22, 0x46, 0x48, 0x6c, 0x26, 0x4a, 0x45, 0x45, 0x45, 0x45, 0x22, 0x33, 0x22, 0x22,
+	0x13, 0x33, 0x13, 0x33, 0x24, 0x44, 0x13, 0x33, 0x46, 0x46, 0x46, 0x46, 0x46, 0x46, 0x46, 0x35,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+unsigned char opc_rst[] = {
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x02,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x11, 0x10, 0x21, 0x22, 0x33, 0x12, 0x23, 0x21, 0x21, 0x21, 0x21, 0x10, 0x20, 0x12, 0x10,
+	0x11, 0x20, 0x11, 0x20, 0x21, 0x30, 0x11, 0x20, 0x21, 0x21, 0x21, 0x21, 0x21, 0x21, 0x21, 0x21,
+	0x00, 0x22, 0x20, 0x42, 0x44, 0x66, 0x24, 0x46, 0x41, 0x41, 0x41, 0x41, 0x20, 0x30, 0x22, 0x20,
+	0x12, 0x30, 0x12, 0x30, 0x22, 0x40, 0x12, 0x30, 0x42, 0x42, 0x42, 0x42, 0x42, 0x42, 0x42, 0x32,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x01,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x02,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x01, 0x12, 0x11, 0x23, 0x24, 0x36, 0x13, 0x25, 0x23, 0x23, 0x23, 0x23, 0x11, 0x22, 0x13, 0x11,
+	0x12, 0x22, 0x12, 0x22, 0x23, 0x33, 0x12, 0x22, 0x23, 0x23, 0x23, 0x23, 0x23, 0x23, 0x23, 0x23,
+	0x02, 0x24, 0x22, 0x46, 0x48, 0x6c, 0x26, 0x4a, 0x45, 0x45, 0x45, 0x45, 0x22, 0x33, 0x24, 0x22,
+	0x13, 0x33, 0x13, 0x33, 0x24, 0x44, 0x13, 0x33, 0x46, 0x46, 0x46, 0x46, 0x46, 0x46, 0x46, 0x35};
+
+static char ops[][4] = {
+	"LIT", "INC", "POP", "NIP", "SWP", "ROT", "DUP", "OVR",
+	"EQU", "NEQ", "GTH", "LTH", "JMP", "JCN", "JSR", "STH",
+	"LDZ", "STZ", "LDR", "STR", "LDA", "STA", "DEI", "DEO",
+	"ADD", "SUB", "MUL", "DIV", "AND", "ORA", "EOR", "SFT"};
+
+/* clang-format on */
+
+static char *
+scpy(char *src, char *dst)
+{
+	while(*src && *src > 0x20)
+		*dst++ = *src++;
+	*dst = 0;
+	return dst;
+}
+
+static int
+chex(char c)
+{
+	if(c >= 'a' && c <= 'f') return c - 'a';
+	if(c >= '0' && c <= '9') return c - '0';
+	return -1;
+}
+
+static char
+hexc(int n)
+{
+	return "0123456789abcdef"[n & 0xf];
+}
+
+static int
+is_hex(char *s)
+{
+	char c;
+	while((c = *s++) && c > 0x20)
+		if(chex(c) < 0) return 0;
+	return 1;
+}
+
+static void
+set_scope(char *s)
+{
+	char *_scope = scope;
+	while(*s && *s != '/' && *s > 0x20)
+		*_scope++ = *s++;
+	*_scope = 0;
+}
+
+static char *
+make_name(char *s, char *buffer)
+{
+	char *cap;
+	if(s[0] == '@')
+		return s + 1;
+	if(s[0] == '%')
+		return s + 1;
+	cap = scpy(s + 1, scpy("/", scpy(scope, buffer)));
+	*cap = 0;
+	return buffer;
+}
+
+static int
+scmp(char *a, char *b, int len)
+{
+	int i = 0;
+	while(a[i] == b[i])
+		if(!a[i] || ++i >= len) return 1;
+	return 0;
+}
+
+static char *
+print_token(char *s)
+{
+	char c;
+	while((c = *s++) && c > 0x20) fputc(c, stdout);
+	return s;
+}
+
+static char *
+walk_token(char *s)
+{
+	char c;
+	while((c = *s++) && c > 0x20);
+	return s;
+}
+
+static int
+token_length(char *src)
+{
+	return walk_token(src) - src - 1;
+}
+
+static char *
+walk_comment(char *s)
+{
+	char c;
+	while((c = *s++) && c != ')');
+	return s + 1;
+}
+
+static int
+unknown_token(char *t)
+{
+	printf("Unknown token: "), print_token(t), printf("\n");
+	return 0;
+}
+
+static Label *
+find_lambda(char *t)
+{
+	Label *l = labels;
+	int depth = 0;
+	while(*t) {
+		if(t[0] == '{' || t[1] == '{') depth++;
+		if(t[0] == '}') {
+			depth--;
+			if(depth == 0) {
+				t = walk_token(t);
+				break;
+			}
+		}
+		t = walk_token(t);
+	}
+	/* find actual label */
+	while(l != _labels) {
+		if(l->body == t)
+			return l;
+		l++;
+	}
+	return NULL;
+}
+
+static Label *
+find_label(char *t)
+{
+	Label *l = labels;
+	if(t[0] == '{') return find_lambda(t);
+	if(t[0] == '/' || t[0] == '&') {
+		char fullname[0x100];
+		t = make_name(t, fullname);
+	}
+	while(l != _labels) {
+		char *a = l->name, *b = t;
+		while(*a && *b && *a == *b)
+			a++, b++;
+		if(*a <= 0x20 && *b <= 0x20) return l;
+		l++;
+	}
+	return NULL;
+}
+
+static unsigned char
+find_opcode(char *s)
+{
+	int i;
+	for(i = 0; i < 0x20; i++) {
+		int m = 3;
+		if(!scmp(ops[i], s, 3)) continue;
+		if(!i) i |= (1 << 7);
+		while(s[m] && s[m] > 0x20) {
+			if(s[m] == '2')
+				i |= (1 << 5);
+			else if(s[m] == 'r')
+				i |= (1 << 6);
+			else if(s[m] == 'k')
+				i |= (1 << 7);
+			else
+				return 0;
+			m++;
+		}
+		return i;
+	}
+	return 0;
+}
+
+static int
+has_arity(char *s)
+{
+	char *ss = s;
+	while(*ss && *ss != ')') {
+		if(ss[0] == '-' && (ss[1] == '-' || ss[1] == '>'))
+			return 1;
+		ss = walk_token(ss);
+	}
+	return 0;
+}
+
+static void
+print_label(Label *l)
+{
+	if(l->vector)
+		printf("@%s ( %d -> %d )\n", l->name, l->wst_neg, l->wst_pos);
+	else if(l->wst_neg && l->wst_pos)
+		printf("@%s ( %d -- %d )\n", l->name, l->wst_neg, l->wst_pos);
+	else if(l->wst_neg)
+		printf("@%s ( %d -- )\n", l->name, l->wst_neg);
+	else if(l->wst_pos)
+		printf("@%s ( -- %d )\n", l->name, l->wst_pos);
+	else
+		printf("@%s ( -- )\n", l->name);
+}
+
+static Label *
+push_label(char *name, char *arity)
+{
+	char *ss = arity;
+	int rhs = 0;
+	/* copy label name */
+	scpy(name, _labels->name);
+	/* get arity */
+	while(*ss && *ss != ')') {
+		char *cap = walk_token(ss);
+		int length = *(cap - 2) == '*' ? 2 : 1;
+		if(ss[0] == '`') {
+			/* do nothing */
+		} else if(ss[0] == '-') {
+			rhs = 1;
+			if(ss[1] == '>')
+				_labels->vector = 1;
+			else if(ss[1] == '-')
+				_labels->rst_neg += 2;
+		} else if(rhs)
+			_labels->wst_pos += length;
+		else
+			_labels->wst_neg += length;
+		ss = walk_token(ss);
+	}
+	return _labels++;
+}
+
+static void
+balance_wst(char *t, Balance *bal, int neg, int pos, int display)
+{
+	int i;
+	bal->wst -= neg;
+	if(bal->wst < bal->wst_min) bal->wst_min = bal->wst;
+	bal->wst += pos;
+	if(display) {
+		for(i = 0; i < bal->depth + 1; i++)
+			printf("\t");
+		printf("%02d . %02d ", pos - neg, bal->wst), print_token(t), printf(" \n");
+	}
+}
+
+static void
+copy_balance(Balance *a, Balance *b)
+{
+	b->wst = a->wst, b->rst = a->rst;
+	b->wst_min = a->wst_min, b->rst_min = a->rst_min;
+}
+
+static int validate_label(Label *l, Balance *bal, int display);
+
+static int
+branch_out(char *t, Label *l, Balance *b, Label *goal, int display)
+{
+	int res;
+	Balance balfork = {0};
+	copy_balance(b, &balfork);
+	if(l->defined) {
+		balance_wst(t + 1, &balfork, l->wst_neg, l->wst_pos, display);
+		return balfork.wst == goal->wst_pos - goal->wst_neg;
+	}
+	balfork.depth = b->depth + 1;
+	res = validate_label(l, &balfork, display);
+	return res;
+}
+
+static char *
+walk_byte(char *s)
+{
+	if(s[0] == '&') s = walk_token(s);
+	if(is_hex(s)) {
+		if(token_length(s) == 2)
+			return walk_token(s);
+		else
+			printf("error: %s\n", s);
+	}
+	if(s[0] == '$' && s[1] == '1')
+		return walk_token(s);
+	if(s[0] == '-' || s[0] == '_')
+		return walk_token(s);
+	if(s[0] == '"' && token_length(s + 1) == 1)
+		return walk_token(s);
+	printf("error: %s\n", s);
+	return walk_token(s);
+}
+
+static char *
+walk_short(char *s)
+{
+	if(s[0] == '&') s = walk_token(s);
+	if(s[0] == '=' || (is_hex(s) && token_length(s) == 4))
+		return walk_token(s);
+	if(s[0] == '$' && s[1] == '2')
+		return walk_token(s);
+	if(s[0] == '"' && token_length(s + 1) == 2)
+		return walk_token(s);
+	return walk_byte(walk_byte(s));
+}
+
+static int
+validate_label(Label *l, Balance *bal, int display)
+{
+	char *t = l->body;
+	if(!l->lambda)
+		set_scope(l->name);
+	if(!l->vector) {
+		bal->rst -= 2;
+		bal->rst_min = 2;
+	}
+	while(*t) {
+		/* Special Tokens */
+		if(is_comment(t)) {
+			t = walk_comment(t);
+			continue;
+		} else if(*t == '&') {
+			t = walk_token(t);
+			continue;
+		} else if(*t == '@') {
+			t = walk_token(t);
+			continue;
+		} else if(*t == '}') {
+			t = walk_token(t);
+			continue;
+		}
+		/* Vectors Halt */
+		if(l->vector && is_brk(t))
+			return l->wst_neg == -bal->wst_min && l->wst_pos == bal->wst + -bal->wst_min;
+		/* Subroutine Halt */
+		if(!l->vector && is_jmp(t)) {
+			if(*t == '!') {
+				Label *call = find_label(t + 1);
+				if(call)
+					balance_wst(t, bal, call->wst_neg, call->wst_pos, display);
+				else
+					return unknown_token(t);
+			}
+			/* Exit(success) */
+			return l->wst_pos - l->wst_neg == bal->wst;
+		}
+		/* Branch */
+		if(*t == '?') {
+			Label *call = find_label(t + 1);
+			if(!call) return unknown_token(t);
+			/* pop byte */
+			balance_wst("?", bal, 1, 0, display);
+			if(t[2] != '>')
+				branch_out(t, call, bal, l, display);
+			t = walk_token(t);
+			continue;
+		} else if(t[0] == '.')
+			balance_wst(t, bal, 0, 1, display);
+		else if(t[0] == ',')
+			balance_wst(t, bal, 0, 1, display);
+		else if(t[0] == ';')
+			balance_wst(t, bal, 0, 2, display);
+		else if(t[0] == '#' && token_length(t + 1) == 2)
+			balance_wst(t, bal, 0, 1, display);
+		else if(t[0] == '#' && token_length(t + 1) == 4)
+			balance_wst(t, bal, 0, 2, display);
+		else if(is_lit(t)) {
+			int is_2 = t[3] == '2' || t[4] == '2';
+			int is_r = t[3] == 'r' || t[4] == 'r';
+			if(!is_r)
+				balance_wst(t, bal, 0, 1 + is_2, display);
+			t = walk_token(t);
+			if(is_2)
+				t = walk_short(t);
+			else
+				t = walk_byte(t);
+			continue;
+		}
+		/* Opcodes */
+		else if(is_opcode(t)) {
+			unsigned char opc = find_opcode(t);
+			balance_wst(t, bal, opc_wst[opc] >> 4, opc_wst[opc] & 0xf, display);
+			bal->rst -= opc_rst[opc] >> 4;
+			if(bal->rst < bal->rst_min) bal->rst_min = bal->rst;
+			bal->rst += opc_rst[opc] & 0xf;
+		}
+		/* Unknown */
+		else {
+			Label *call = find_label(t);
+			if(call)
+				balance_wst(t, bal, call->wst_neg, call->wst_pos, display);
+			else
+				return unknown_token(t);
+		}
+		t = walk_token(t);
+	}
+	printf("Incomplete evaluation.\n");
+	return 0;
+}
+
+static void
+validate(void)
+{
+	Label *l = labels;
+	while(l != _labels) {
+		if(!l->macro && l->defined) {
+			Balance bal = {0};
+			if(!validate_label(l, &bal, 0)) {
+				print_label(l);
+				validate_label(l, &bal, 1);
+				printf("\t%02d ! %02d Imbalance(%d)\n\n", l->wst_pos - l->wst_neg, bal.wst, bal.wst - (l->wst_pos - l->wst_neg));
+			}
+		}
+		l++;
+	}
+}
+
+static char *
+parse_label(char *s)
+{
+	char fullname[0x100];
+	char *ss = walk_token(s);
+	/* handle sublabels */
+	if(s[0] == '@')
+		set_scope(s + 1);
+	/* check if is defined */
+	if(*ss == '(' && has_arity(ss)) {
+		Label *l = push_label(make_name(s, fullname), walk_token(ss));
+		ss = walk_comment(ss);
+		l->body = ss;
+		l->macro = s[0] == '%';
+		l->defined = 1;
+		return ss;
+	} else {
+		Label *l = _labels++;
+		scpy(make_name(s, fullname), l->name);
+		l->macro = s[0] == '%';
+		l->body = ss;
+		l->defined = 0;
+	}
+	return walk_token(s);
+}
+
+static char *
+parse_macro(char *s)
+{
+	char c;
+	s = parse_label(s);
+	while((c = *s++) && c != '}');
+	return s;
+}
+
+static unsigned int lambda_length = 0;
+
+static char *
+parse_lambda(char *s)
+{
+	Label *l = _labels++;
+	l->name[0] = '_';
+	l->name[1] = '_';
+	l->name[2] = hexc(lambda_length >> 4);
+	l->name[3] = hexc(lambda_length & 0xf);
+	l->body = walk_token(s);
+	l->defined = 0;
+	l->lambda = 1;
+	lambda_length++;
+	return walk_token(s);
+}
+
+static void
+parse(char *s)
+{
+	char *_s = s;
+	while(*_s) {
+		if(_s[0] == '~' && _s[1] == '~')
+			break;
+		if(*_s == '%')
+			_s = parse_macro(_s);
+		else if(_s[0] == '}')
+			_s = parse_lambda(_s);
+		else if(is_label(_s))
+			_s = parse_label(_s);
+		else if(is_comment(_s))
+			_s = walk_comment(_s);
+		else
+			_s = walk_token(_s);
+	}
+}
+
+static void load(char *path);
+
+static void
+read_include(FILE *f)
+{
+	char buf, path[0x100], *_path = path;
+	while(fread(&buf, 1, 1, f) && buf > 0x20)
+		*_path++ = buf;
+	*_path = 0;
+	load(path);
+}
+
+static char body[0x10000], *_body = body;
+
+static void
+load(char *path)
+{
+	FILE *f;
+	char buf, last = 0;
+	if(!(f = fopen(path, "rb"))) {
+		fprintf(stderr, "uxnmin: %s not found.\n", path);
+		return;
+	}
+	while(fread(&buf, 1, 1, f)) {
+		if(buf && buf < 0x20) buf = 0x20;
+		if(last == 0x20 && (buf == 0x20 || buf == '[' || buf == ']'))
+			continue;
+		if(last == 0x20 && buf == '~')
+			read_include(f);
+		*_body++ = last = buf;
+	}
+	if(f) fclose(f);
+}
+
+int
+main(int argc, char **argv)
+{
+	if(argc < 2)
+		return !!fprintf(stdout, "usage: %s file.tal\n", argv[0]);
+	load(argv[1]);
+	parse(body);
+	validate();
+	return 0;
+}
