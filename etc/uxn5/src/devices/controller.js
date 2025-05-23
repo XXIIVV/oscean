@@ -4,6 +4,11 @@ function Controller(emu)
 {
 	this.state = 0
 
+	this.init = () => {
+		window.addEventListener("keydown", emu.controller.on_keybutton)
+		window.addEventListener("keyup", emu.controller.on_keybutton)
+	}
+
 	this.on_keybutton = (event) => {
 		let mask = 0;
 		switch (event.keyCode) {
@@ -48,6 +53,7 @@ function Controller(emu)
 			emu.uxn.eval(peek16(emu.uxn.dev, 0x80))
 		if(event.type == "keydown")
 			emu.uxn.dev[0x83] = 0;
-		event.preventDefault();
+		if(document.activeElement != emu.console.input_el)
+			event.preventDefault();
 	}
 }

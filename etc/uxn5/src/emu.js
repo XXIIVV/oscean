@@ -32,6 +32,7 @@ function Emu (embed)
 			/* start devices */
 			this.console.init()
 			this.screen.init()
+			this.controller.init()
 			/* Reveal */
 			document.body.className = emulator.embed ? "embed" : "default"
 			document.title = "Varvara Emulator"
@@ -90,9 +91,7 @@ function Emu (embed)
 		this.screen.set_zoom(default_zoom ? default_zoom : 1)
 		this.uxn.load(rom).eval(0x0100);
 		share.setROM(rom);
-		if (fromURL) {
-			save.setROM(rom);
-		}
+		save.setROM(rom);
 	}
 
 	this.dei = (port) => {

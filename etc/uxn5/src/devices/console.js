@@ -24,6 +24,7 @@ function Console(emu)
 
 	this.write = (char) => {
 		this.write_el.innerHTML += String.fromCharCode(char)
+		this.write_el.scrollTop = this.write_el.scrollHeight;
 	}
 
 	this.error = (char) => {
