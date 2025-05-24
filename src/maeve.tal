@@ -104,14 +104,13 @@
 		;&buf <print-str>
 		;dict/in <print-str>
 		OVR2 <print-line>
-		#010f DEO
-		BRK }
+		#010f DEO }
 	DUP2 ;&term <scpy-line>
 	;&term [ LIT2 20 "_ ] <cswp>
 	( res ) ;&map-path .File2/name DEO2
 	OVR2 <str>
 	#0a <char>
-	&end ( -- )
+	&end ( src* link* -- )
 	POP2 POP2 JMP2r
 	&buf $30
 	&map-path [ "tmp/map- &term $30 ]
@@ -120,10 +119,9 @@
 	,&t STR2
 	;lexicon
 	&>w
-		INC2 INC2 DUP2 [ LIT2 &t $2 ] scmp ?&end
-		scap/ INC2 LDAk ?&>w
-	POP2 #ffff
-	&end ( -- term* )
+		INC2 INC2 DUP2 [ LIT2 &t $2 ] scmp ?{
+			scap/ INC2 LDAk ?&>w
+		POP2 #ffff }
 	JMP2r
 
 (
@@ -273,7 +271,8 @@
 	&c "</a> $1
 
 @<path> ( str* -- )
-	LDAk [ LIT "_ ] OVR #20 NEQ [ JMP SWP POP ] <char>
+	LDAk [ LIT "_ ] OVR #20 NEQ ?{ SWP }
+	POP <char>
 	INC2 LDAk ?<path>
 	POP2 JMP2r
 
