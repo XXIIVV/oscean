@@ -9,7 +9,7 @@
 <meta property='og:logo' content="https://wiki.xxiivv.com/media/services/rss.jpg"/>
 <meta property="og:title" content="uxntal notation"/><meta property="og:url" content="https://wiki.xxiivv.com/site/uxntal_notation.html"/><meta property="og:image" content="https://wiki.xxiivv.com/media/services/rss.jpg"/><title>XXIIVV &mdash; uxntal notation</title></head><body>
 <header><a href="home.html"><img alt="XXIIVV" src="../media/icon/logo.svg"></a></header>
-<nav><ul><li><a href="uxntal.html" class="parent">uxntal</a></li><li><a href="varvara.html">varvara</a></li><li><a href="porporo.html">porporo</a></li></ul><ul><li><a href="uxntal_syntax.html">uxntal syntax</a></li><li><a href="uxntal_stacks.html">uxntal stacks</a></li><li><a href="uxntal_notation.html" class="self">uxntal notation</a></li><li><a href="uxntal_opcodes.html">uxntal opcodes</a></li><li><a href="uxntal_numbers.html">uxntal numbers</a></li><li><a href="uxntal_labels.html">uxntal labels</a></li><li><a href="uxntal_macros.html">uxntal macros</a></li><li><a href="uxntal_memory.html">uxntal memory</a></li><li><a href="uxntal_devices.html">uxntal devices</a></li><li><a href="uxntal_software.html">uxntal software</a></li></ul><ul><li><a href="uxntal_types.html">uxntal types</a></li></ul></nav>
+<nav><ul><li><a href="uxntal.html" class="parent">uxntal</a></li><li><a href="varvara.html">varvara</a></li><li><a href="porporo.html">porporo</a></li></ul><ul><li><a href="uxntal_syntax.html">uxntal syntax</a></li><li><a href="uxntal_stacks.html">uxntal stacks</a></li><li><a href="uxntal_notation.html" class="self">uxntal notation</a></li><li><a href="uxntal_opcodes.html">uxntal opcodes</a></li><li><a href="uxntal_numbers.html">uxntal numbers</a></li><li><a href="uxntal_labels.html">uxntal labels</a></li><li><a href="uxntal_macros.html">uxntal macros</a></li><li><a href="uxntal_memory.html">uxntal memory</a></li><li><a href="uxntal_devices.html">uxntal devices</a></li><li><a href="uxntal_software.html">uxntal software</a></li></ul><ul></ul></nav>
 <main><h2>Uxntal Notation</h2>
 
 <p>The Uxntal notation follows that of the <a href='forth.html'>Forth</a>
@@ -19,7 +19,7 @@ after:</p>
 
 <pre>
 <b>@routine</b> <i>( a b -- a b c )</i>
-	ADDk
+	ADDk JMP2r
 </pre>
 
 <p>By default, single items are a byte long, and shorts are indicated with a
@@ -28,15 +28,15 @@ with the top item to the right:</p>
 
 <pre>
 <b>@routine</b> <i>( a b* -- b* a )</i>
-	ROT
+	ROT JMP2r
 </pre>
 
 <p>The pipe indicator is sometimes used to indicate that stack effects are 
-happening on the return stack:</p>
+happening on the <a href='uxntal_stacks.html'>return stack</a>:</p>
 
 <pre>
 <b>@routine</b> <i>( a -- | a )</i>
-	STH
+	STH JMP2r
 </pre>
 
 <p>If a routine is a <a href='uxntal_devices.html'>vector</a>, it uses the arrow
@@ -44,6 +44,49 @@ notation.</p>
 
 <pre>
 <b>@on-event</b> <i>( -> )</i>
+	BRK
+</pre>
+
+<h3 id='validation'>Validation</h3>
+
+<p>Program validation is done by checking the stack effect notation of routines,
+against the sum of stack changes predicted to occur based on the content of
+their bodies. For more details, see <a href='https://git.sr.ht/~rabbits/uxnbal'
+target='_blank'>Uxnbal</a>.</p>
+
+<p>Words that do not pass the stack-checker are generating a warning, and so
+essentially this defines a very basic and permissive type system that
+nevertheless catches some invalid programs and enables compiler optimizations.
+</p>
+
+<pre>
+<b>@add</b> ( <b style='color:red'>a*</b> b* -- c* ) <i>Warning: Imbalance in @add of +2</i>
+	DUP2 ADD2
+JMP2r
+</pre>
+
+<p>The simplest case is when a piece of code does not have any branches or
+recursion, and merely pushes literals and calls words. The stack effect
+routines is always known statically from the declaration.</p>
+
+<pre>
+<b>@routine</b> ( a b -- c ) 
+	EQUk <b style='color:red'>?&sub-routine</b> <i>Warning: Imbalance in @routine of +1</i>
+	POP2 #0a JMP2r
+	&sub-routine ( a b -- c*</b> )
+		POP2 #000b JMP2r
+</pre>
+
+<p>Lastly, a <b>runtime specific</b> solution to validate the stack state at any
+one point during the execution of a program, is to read the <a
+href='varvara.html#system'>System/wst</a> port and compare it against a given
+stack pointer byte value.</p>
+
+<pre>
+<b>@on-reset</b> <i>( -> )</i>
+	#abcd DUP2 
+	.System/wst DEI #05 EQU ?{
+		#01 .System/debug DEO }
 	BRK
 </pre>
 
@@ -74,115 +117,7 @@ things like grouping behaviors, joining literals or indicating lookup tables.</p
 <b>@sprite</b> [ 00 66 ff ff ff 7e 3c 18 ]
 </pre>
 
-<h2>Using program validation in Uxntal.</h2>
-
-<p><a href='type_systems.html'>Type inference</a> in <a
-href='uxntal.html'>Uxntal</a> is done by checking the <a
-href='uxntal_notation.html'>stack effect notation</a> of words, against the sum
-of stack changes predicted to occur based on the items in their bodies.</p>
-
-<ul>
-	<li><kbd>( a -- b )</kbd> Untyped</li>
-	<li><kbd>( a -: b )</kbd> Typed routine</li>
-	<li><kbd>( a -> b )</kbd> Typed vector</li>
-</ul>
-
-<p>Words that do not pass the stack-checker are generating a warning, and so
-essentially this defines a very basic and permissive type system that
-nevertheless catches some invalid programs and enables compiler optimizations.
-</p>
-
-<pre>
-@routine ( a b -: c ) <i>Ok.</i>
-	MUL
-JMP2r
-</pre>
-
-<p>The simplest case is when a piece of code does not have any branches or
-recursion, and merely pushes literals and calls words. Pushing a literal has
-stack effect <code>( -- x )</code>. The stack effect of most words is always
-known statically from the declaration.</p>
-
-<pre>
-@add ( <b style='color:red'>a*</b> b* -- c* ) <i>Warning: Imbalance in @add of +2</i>
-	DUP2 ADD2
-JMP2r
-</pre>
-
-<h3>Branch Validation</h3>
-
-<p>A word calling a subroutine that would force an exit of the parent routine
-with an imbalanced stack also triggers an error.</p>
-
-<pre>
-@routine ( a b -: c ) <i>Warning: Imbalance in @routine of +1</i>
-	EQUk <b style='color:red'>?&sub-routine</b>
-	POP2 #0a JMP2r
-	&sub-routine ( a b -: c*</b> )
-		POP2 #000b JMP2r
-</pre>
-
-<h3>Return-Stack Passing</h3>
-
-<p>The following example shows some extra syntax where stack elements passed
-through the return stack are separated with a pipe:</p>
-
-<pre>
-@wcpy ( src* des* -: cap* ) <i>Ok.</i>
-	STH2
-	&w ( src* `des* -: cap* )
-		LDAk STH2kr STA
-		INC2r INC2 LDAk #20 GTH ?&w
-	POP2
-	( cap ) #00 STH2kr STA
-	INC2r STH2r JMP2r
-</pre>
-
-<p>Each jump label must be defined for a routine's body to validate with the
-arity checker, but labels can also be used anywhere in a routine to test
-against a specific arity in time, like you would a breakpoint.</p>
-
-<h3>Fall-through Type</h3>
-
-<p>The fall-through comment allows to validate a <i>tail-less routine</i>(or,
-that does not return or break), by including the stack effect of the following
-routine in memory.</p>
-
-<pre>
-@falling ( a b c -: c ) <i>Ok.</i>
-	POP
-	( >> )
-@next-routine ( a b -: res )
-	ADD
-JMP2r
-</pre>
-
-<p>More research has to be done in this space, but it would be interesting to
-check a routine's side-effects by making sure that no ST/LD/DE opcodes can be
-reached.</p>
-
-<h3>Runtime Validation</h3>
-
-<p>Lastly, a <b>runtime specific</b> solution to validate the stack state at any
-one point during the execution of a program, is to read the <a
-href='varvara.html#system'>System/wst</a> port and compare it against a given
-stack pointer byte value. Note: that the value in the wst and rst ports include
-the stack pointer byte.</p>
-
-<pre>
-@on-reset ( -> )
-	#abcd DUP2 
-	.System/wst DEI #05 EQU ?{
-		#01 .System/debug DEO
-		}
-	BRK
-</pre>
-
-<ul>
-	<li><a href='https://git.sr.ht/~rabbits/uxnbal' target='_blank'>Uxnbal</a>, Source</li>
-</ul>
-
-<ul></ul><p class="incoming"><b>incoming</b> <a href="drifblim.html">drifblim</a> <a href="uxntal_syntax.html">uxntal syntax</a> <a href="uxntal_types.html">uxntal types</a> <a href="uxntal_reference.html">uxntal reference</a> <a href="uxnfor.html">uxnfor</a> </p></main>
+<ul></ul><p class="incoming"><b>incoming</b> <a href="drifblim.html">drifblim</a> <a href="uxntal_syntax.html">uxntal syntax</a> <a href="uxntal_reference.html">uxntal reference</a> <a href="uxnfor.html">uxnfor</a> <a href="2023.html">2023</a> </p></main>
 <footer>
 	<a href="ethics.html"><img src="../media/icon/3arrows.svg" alt="NoNazis!"/></a>
 	<a href="https://webring.xxiivv.com/" target="_blank"><img src="../media/icon/webring.svg" alt="Webring"/></a>

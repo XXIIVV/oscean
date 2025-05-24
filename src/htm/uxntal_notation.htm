@@ -7,7 +7,7 @@ after:</p>
 
 <pre>
 <b>@routine</b> <i>( a b -- a b c )</i>
-	ADDk
+	ADDk JMP2r
 </pre>
 
 <p>By default, single items are a byte long, and shorts are indicated with a
@@ -16,15 +16,15 @@ with the top item to the right:</p>
 
 <pre>
 <b>@routine</b> <i>( a b* -- b* a )</i>
-	ROT
+	ROT JMP2r
 </pre>
 
 <p>The pipe indicator is sometimes used to indicate that stack effects are 
-happening on the return stack:</p>
+happening on the <a href='uxntal_stacks.html'>return stack</a>:</p>
 
 <pre>
 <b>@routine</b> <i>( a -- | a )</i>
-	STH
+	STH JMP2r
 </pre>
 
 <p>If a routine is a <a href='uxntal_devices.html'>vector</a>, it uses the arrow
@@ -32,6 +32,49 @@ notation.</p>
 
 <pre>
 <b>@on-event</b> <i>( -> )</i>
+	BRK
+</pre>
+
+<h3 id='validation'>Validation</h3>
+
+<p>Program validation is done by checking the stack effect notation of routines,
+against the sum of stack changes predicted to occur based on the content of
+their bodies. For more details, see <a href='https://git.sr.ht/~rabbits/uxnbal'
+target='_blank'>Uxnbal</a>.</p>
+
+<p>Words that do not pass the stack-checker are generating a warning, and so
+essentially this defines a very basic and permissive type system that
+nevertheless catches some invalid programs and enables compiler optimizations.
+</p>
+
+<pre>
+<b>@add</b> ( <b style='color:red'>a*</b> b* -- c* ) <i>Warning: Imbalance in @add of +2</i>
+	DUP2 ADD2
+JMP2r
+</pre>
+
+<p>The simplest case is when a piece of code does not have any branches or
+recursion, and merely pushes literals and calls words. The stack effect
+routines is always known statically from the declaration.</p>
+
+<pre>
+<b>@routine</b> ( a b -- c ) 
+	EQUk <b style='color:red'>?&sub-routine</b> <i>Warning: Imbalance in @routine of +1</i>
+	POP2 #0a JMP2r
+	&sub-routine ( a b -- c*</b> )
+		POP2 #000b JMP2r
+</pre>
+
+<p>Lastly, a <b>runtime specific</b> solution to validate the stack state at any
+one point during the execution of a program, is to read the <a
+href='varvara.html#system'>System/wst</a> port and compare it against a given
+stack pointer byte value.</p>
+
+<pre>
+<b>@on-reset</b> <i>( -> )</i>
+	#abcd DUP2 
+	.System/wst DEI #05 EQU ?{
+		#01 .System/debug DEO }
 	BRK
 </pre>
 
