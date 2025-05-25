@@ -1,5 +1,6 @@
 DIR=~/roms
 EMU=uxncli
+BAL=uxnbal
 ASM=${EMU} ${DIR}/drifblim.rom
 LIN=${EMU} ${DIR}/uxnlin.rom
 
@@ -8,6 +9,10 @@ all: bin/maeve.rom bin/oscean.rom bin/arvelie.rom bin/directory.rom
 clean:
 	@ rm -f bin/* && rm -f tmp/* && rm -f site/*
 
+bal:
+	@ ${BAL} src/oscean.tal
+	@ ${BAL} src/maeve.tal
+	
 lint:
 	@ ${LIN} src/oscean.tal
 	@ ${LIN} src/maeve.tal
@@ -40,4 +45,4 @@ bin/arvelie.rom: src/arvelie.tal
 bin/directory.rom: src/directory.tal
 	@ ${ASM} src/directory.tal bin/directory.rom
 
-.PHONY: all clean grab lint run
+.PHONY: all clean grab bal lint run
