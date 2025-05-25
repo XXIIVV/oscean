@@ -19,7 +19,7 @@ with the top item to the right:</p>
 	ROT JMP2r
 </pre>
 
-<p>The dot notation is sometimes used to indicate that stack effects to the right of the dot are 
+<p>The dot notation is used to indicate that stack effects to the right of the dot are 
 happening on the <a href='uxntal_stacks.html'>return stack</a>:</p>
 
 <pre>
@@ -37,32 +37,49 @@ notation.</p>
 
 <h3 id='validation'>Validation</h3>
 
-<p>Program validation is done by checking the stack effect notation of routines,
-against the sum of stack changes predicted to occur based on the content of
-their bodies. For more details, see <a href='https://git.sr.ht/~rabbits/uxnbal'
-target='_blank'>Uxnbal</a>.</p>
-
-<p>Words that do not pass the stack-checker are generating a warning, and so
+<p>Program validation is done at <b>compile-time</b> by comparing a routine's stack effect,
+against the resulting balance of all stack changes occurring in the routine's code. Words that do not pass the stack-checker are generating a warning, and so
 essentially this defines a very basic and permissive type system that
-nevertheless catches some invalid programs and enables compiler optimizations.
-</p>
-
-<pre>
-<b>@add</b> ( <b style='color:red'>a*</b> b* -- c* ) <i>Warning: Imbalance in @add of +2</i>
-	DUP2 ADD2
-JMP2r
-</pre>
+nevertheless catches some invalid programs and enables compiler optimizations. For more details, see <a href='https://git.sr.ht/~rabbits/uxnbal'
+target='_blank'>Uxnbal</a>.</p>
 
 <p>The simplest case is when a piece of code does not have any branches or
 recursion, and merely pushes literals and calls words. The stack effect
 routines is always known statically from the declaration.</p>
 
 <pre>
-<b>@routine</b> ( a b -- c ) 
-	EQUk <b style='color:red'>?&sub-routine</b> <i>Warning: Imbalance in @routine of +1</i>
-	POP2 #0a JMP2r
-	&sub-routine ( a b -- c*</b> )
-		POP2 #000b JMP2r
+<b>@add-eight</b> <i>( a -- a+8 )</i>
+	#0008 ADD JMP2r
+</pre>
+<pre style='margin-top:-29px'>Working-stack imbalance of +1, in add-eight.</pre>
+
+<p>In the case of <b>branching</b>, each branch is evaluated and if an imbalance occurs inside one of the branches, the branch name is indicated:</p>
+<pre>
+<b>@branching</b> <i>( a* -- c )</i>
+	LDAk #01 EQU ?&one
+	LDAk #02 EQU ?&two
+	POP2 #ff JMP2r
+	<b>&one</b> <i>( a* -- c )</i> POP2 #12 JMP2r
+	<b>&two</b> <i>( a* -- c d )</i> ADD JMP2r
+</pre>
+<pre style='margin-top:-29px'>Working-stack imbalance of -1, in branching/two.</pre>
+
+<p>In the case of a <b>recursion</b>, the validator will use the stack effect instead of repeatedly walking through the body of the routine.</p>
+
+<pre>
+<b>@print-string</b> <i>( str* -- )</i>
+	LDAk DUP ?{ POP POP2 JMP2r }
+	emit-letter 
+	INC2 !print-string
+</pre>
+
+<p>For <b>loops</b> that exits without affecting the stack depth, a <kbd>></kbd> prefixed label is used as a shorthand to reduce the need for extraneous stack effect definitions in cases where it can be inferred:</p>
+<pre>
+<b>@many-times</b> <i>( a -- )</i>
+	DUP
+	<b>&>l</b>
+		INC DUP ?&>l
+	POP2 JMP2r
 </pre>
 
 <p>Lastly, a <b>runtime specific</b> solution to validate the stack state at any
