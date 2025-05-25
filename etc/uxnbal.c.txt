@@ -70,6 +70,51 @@ static char ops[][4] = {
 
 /* clang-format on */
 
+static void
+print_token(char *t)
+{
+	char c, *s = t;
+	while((c = *s++) && c > 0x20) fputc(c, stdout);
+	printf("\n");
+}
+
+static int
+print_error_token(char *t)
+{
+	printf("Unknown token: "), print_token(t);
+	return 0;
+}
+
+static void
+print_balance(const int depth, const int change, char *t, int ret)
+{
+	int i;
+	for(i = 0; i < depth + 1; i++)
+		printf("\t");
+	if(change < 0)
+		printf("%d", change);
+	else if(change > 0)
+		printf("+%d", change);
+	else
+		printf("  ");
+	printf(" %c %02d ", ret ? '|' : '.', change), print_token(t);
+}
+
+static void
+print_label(const Label *l)
+{
+	if(l->vector)
+		printf("@%s ( %d -> %d )\n", l->name, l->wst_neg, l->wst_pos);
+	else if(l->wst_neg && l->wst_pos)
+		printf("@%s ( %d -- %d )\n", l->name, l->wst_neg, l->wst_pos);
+	else if(l->wst_neg)
+		printf("@%s ( %d -- )\n", l->name, l->wst_neg);
+	else if(l->wst_pos)
+		printf("@%s ( -- %d )\n", l->name, l->wst_pos);
+	else
+		printf("@%s ( -- )\n", l->name);
+}
+
 static int
 is_hex(char *s)
 {
@@ -89,7 +134,7 @@ scmp(char *a, char *b, int len)
 }
 
 static char *
-token_copy(char *src, char *dst)
+copy_token(char *src, char *dst)
 {
 	while(*src > 0x20)
 		*dst++ = *src++;
@@ -110,19 +155,10 @@ static char *
 make_name(char *s, char *buffer)
 {
 	char *cap;
-	if(s[0] == '@' || s[0] == '%')
-		return s + 1;
-	cap = token_copy(s + 1, token_copy("/", token_copy(scope, buffer)));
+	if(s[0] == '@' || s[0] == '%') return s + 1;
+	cap = copy_token(s + 1, copy_token("/", copy_token(scope, buffer)));
 	*cap = 0;
 	return buffer;
-}
-
-static char *
-print_token(char *s)
-{
-	char c;
-	while((c = *s++) && c > 0x20) fputc(c, stdout);
-	return s;
 }
 
 static char *
@@ -141,20 +177,47 @@ walk_comment(char *s)
 	return s + 1;
 }
 
-static int
-unknown_token(char *t)
+static char *
+walk_byte(char *s)
 {
-	printf("Unknown token: "), print_token(t), printf("\n");
-	return 0;
+	if(s[0] == '&') s = walk_token(s);
+	if(is_hex(s)) {
+		if(token_length(s) == 2)
+			return walk_token(s);
+		else
+			printf("error: %s\n", s);
+	}
+	if(s[0] == '$' && s[1] == '1')
+		return walk_token(s);
+	if(s[0] == '-' || s[0] == '_')
+		return walk_token(s);
+	if(s[0] == '"' && token_length(s + 1) == 1)
+		return walk_token(s);
+	printf("error: %s\n", s);
+	return walk_token(s);
+}
+
+static char *
+walk_short(char *s)
+{
+	if(s[0] == '&') s = walk_token(s);
+	if(s[0] == '=' || (is_hex(s) && token_length(s) == 4))
+		return walk_token(s);
+	if(s[0] == '$' && s[1] == '2')
+		return walk_token(s);
+	if(s[0] == '"' && token_length(s + 1) == 2)
+		return walk_token(s);
+	return walk_byte(walk_byte(s));
 }
 
 static Label *
 find_lambda(char *t)
 {
-	Label *l = labels;
 	int depth = 0;
+	Label *l = labels;
+	/* scan lambdas */
 	while(*t) {
-		if(t[0] == '{' || t[1] == '{') depth++;
+		if(t[0] == '{' || (t[0] != '"' && t[1] == '{')) depth++;
 		if(t[0] == '}') {
 			depth--;
 			if(depth == 0) {
@@ -221,26 +284,10 @@ has_arity(char *s)
 {
 	char *ss = s;
 	while(*ss && *ss != ')') {
-		if(ss[0] == '-' && (ss[1] == '-' || ss[1] == '>'))
-			return 1;
+		if(ss[0] == '-' && (ss[1] == '-' || ss[1] == '>')) return 1;
 		ss = walk_token(ss);
 	}
 	return 0;
-}
-
-static void
-print_label(Label *l)
-{
-	if(l->vector)
-		printf("@%s ( %d -> %d )\n", l->name, l->wst_neg, l->wst_pos);
-	else if(l->wst_neg && l->wst_pos)
-		printf("@%s ( %d -- %d )\n", l->name, l->wst_neg, l->wst_pos);
-	else if(l->wst_neg)
-		printf("@%s ( %d -- )\n", l->name, l->wst_neg);
-	else if(l->wst_pos)
-		printf("@%s ( -- %d )\n", l->name, l->wst_pos);
-	else
-		printf("@%s ( -- )\n", l->name);
 }
 
 static char *
@@ -265,30 +312,32 @@ parse_arity(Label *l, char *s)
 }
 
 static void
+balance_rst(char *t, Balance *bal, int neg, int pos, int display)
+{
+	bal->rst -= neg;
+	if(bal->rst < bal->rst_min)
+		bal->rst_min = bal->rst;
+	bal->rst += pos;
+	if(display)
+		print_balance(bal->depth, pos - neg, t, 1);
+}
+
+static void
 balance_wst(char *t, Balance *bal, int neg, int pos, int display)
 {
-	int i;
 	bal->wst -= neg;
-	if(bal->wst < bal->wst_min) bal->wst_min = bal->wst;
+	if(bal->wst < bal->wst_min)
+		bal->wst_min = bal->wst;
 	bal->wst += pos;
-	if(display) {
-		for(i = 0; i < bal->depth + 1; i++)
-			printf("\t");
-		if(pos - neg < 0)
-			printf("%d", pos - neg);
-		else if(pos - neg > 0)
-			printf("+%d", pos - neg);
-		else
-			printf(" 0");
-		printf(" . %02d ", pos - neg), print_token(t), printf(" \n");
-	}
+	if(display)
+		print_balance(bal->depth, pos - neg, t, 0);
 }
 
 static void
 copy_balance(Balance *a, Balance *b)
 {
-	b->wst = a->wst, b->rst = a->rst;
-	b->wst_min = a->wst_min, b->rst_min = a->rst_min;
+	b->wst = a->wst, b->wst_min = a->wst_min;
+	b->rst = a->rst, b->rst_min = a->rst_min;
 }
 
 static int validate_label(Label *l, Balance *bal, int display);
@@ -296,7 +345,6 @@ static int validate_label(Label *l, Balance *bal, int display);
 static int
 branch_out(char *t, Label *l, Balance *b, Label *goal, int display)
 {
-	int res;
 	Balance balfork = {0};
 	copy_balance(b, &balfork);
 	if(l->defined) {
@@ -304,41 +352,7 @@ branch_out(char *t, Label *l, Balance *b, Label *goal, int display)
 		return balfork.wst == goal->wst_pos - goal->wst_neg;
 	}
 	balfork.depth = b->depth + 1;
-	res = validate_label(l, &balfork, display);
-	return res;
-}
-
-static char *
-walk_byte(char *s)
-{
-	if(s[0] == '&') s = walk_token(s);
-	if(is_hex(s)) {
-		if(token_length(s) == 2)
-			return walk_token(s);
-		else
-			printf("error: %s\n", s);
-	}
-	if(s[0] == '$' && s[1] == '1')
-		return walk_token(s);
-	if(s[0] == '-' || s[0] == '_')
-		return walk_token(s);
-	if(s[0] == '"' && token_length(s + 1) == 1)
-		return walk_token(s);
-	printf("error: %s\n", s);
-	return walk_token(s);
-}
-
-static char *
-walk_short(char *s)
-{
-	if(s[0] == '&') s = walk_token(s);
-	if(s[0] == '=' || (is_hex(s) && token_length(s) == 4))
-		return walk_token(s);
-	if(s[0] == '$' && s[1] == '2')
-		return walk_token(s);
-	if(s[0] == '"' && token_length(s + 1) == 2)
-		return walk_token(s);
-	return walk_byte(walk_byte(s));
+	return validate_label(l, &balfork, display);
 }
 
 static int
@@ -347,51 +361,19 @@ validate_label(Label *l, Balance *bal, int display)
 	char *t = l->body;
 	if(!l->lambda)
 		set_scope(l->name);
-	if(!l->vector) {
-		bal->rst -= 2;
-		bal->rst_min = 2;
-	}
+	if(!l->vector)
+		balance_rst(l->name, bal, 2, 0, display);
 	while(*t) {
 		/* Special Tokens */
-		if(is_comment(t)) {
+		if(is_comment(t))
 			t = walk_comment(t);
-			continue;
-		} else if(*t == '&') {
-			t = walk_token(t);
-			continue;
+		/* Labels */
+		else if(*t == '&') {
 		} else if(*t == '@') {
-			t = walk_token(t);
-			continue;
 		} else if(*t == '}') {
-			t = walk_token(t);
-			continue;
 		}
-		/* Vectors Halt */
-		if(l->vector && is_brk(t))
-			return l->wst_neg == -bal->wst_min && l->wst_pos == bal->wst + -bal->wst_min;
-		/* Subroutine Halt */
-		if(!l->vector && is_jmp(t)) {
-			if(*t == '!') {
-				Label *call = find_label(t + 1);
-				if(call)
-					balance_wst(t, bal, call->wst_neg, call->wst_pos, display);
-				else
-					return unknown_token(t);
-			}
-			/* Exit(success) */
-			return l->wst_pos - l->wst_neg == bal->wst;
-		}
-		/* Branch */
-		if(*t == '?') {
-			Label *call = find_label(t + 1);
-			if(!call) return unknown_token(t);
-			/* pop byte */
-			balance_wst("?", bal, 1, 0, display);
-			if(t[2] != '>')
-				branch_out(t, call, bal, l, display);
-			t = walk_token(t);
-			continue;
-		} else if(t[0] == '.')
+		/* Refs */
+		else if(t[0] == '.')
 			balance_wst(t, bal, 0, 1, display);
 		else if(t[0] == ',')
 			balance_wst(t, bal, 0, 1, display);
@@ -401,6 +383,32 @@ validate_label(Label *l, Balance *bal, int display)
 			balance_wst(t, bal, 0, 1, display);
 		else if(t[0] == '#' && token_length(t + 1) == 4)
 			balance_wst(t, bal, 0, 2, display);
+		/* Vectors Halt */
+		else if(l->vector && is_brk(t))
+			return l->wst_neg == -bal->wst_min && l->wst_pos == bal->wst + -bal->wst_min;
+		/* Subroutine Halt */
+		else if(!l->vector && is_jmp(t)) {
+			if(*t == '!') {
+				Label *call = find_label(t + 1);
+				if(call)
+					balance_wst(t, bal, call->wst_neg, call->wst_pos, display);
+				else
+					return print_error_token(t);
+			}
+			/* Exit(success) */
+			return l->wst_pos - l->wst_neg == bal->wst;
+		}
+		/* Branch */
+		else if(*t == '?') {
+			Label *call = find_label(t + 1);
+			if(call) {
+				balance_wst("?", bal, 1, 0, display);
+				if(t[2] != '>')
+					branch_out(t, call, bal, l, display);
+			} else
+				return print_error_token(t);
+		}
+		/* LIT */
 		else if(is_lit(t)) {
 			int is_2 = t[3] == '2' || t[4] == '2';
 			int is_r = t[3] == 'r' || t[4] == 'r';
@@ -427,7 +435,7 @@ validate_label(Label *l, Balance *bal, int display)
 			if(call)
 				balance_wst(t, bal, call->wst_neg, call->wst_pos, display);
 			else
-				return unknown_token(t);
+				return print_error_token(t);
 		}
 		t = walk_token(t);
 	}
@@ -438,6 +446,7 @@ validate_label(Label *l, Balance *bal, int display)
 static void
 validate(void)
 {
+	int err = 0;
 	Label *l = labels;
 	while(l != _labels) {
 		if(!l->macro && l->defined) {
@@ -446,10 +455,12 @@ validate(void)
 				print_label(l);
 				validate_label(l, &bal, 1);
 				printf("\t%02d ! %02d Imbalance(%d)\n\n", l->wst_pos - l->wst_neg, bal.wst, bal.wst - (l->wst_pos - l->wst_neg));
+				err++;
 			}
 		}
 		l++;
 	}
+	printf("Validated %ld routines, found %d errors.\n", l - labels, err);
 }
 
 static char *
@@ -463,7 +474,7 @@ parse_label(char *s)
 	/* check if is defined */
 	if(*ss == '(' && has_arity(ss)) {
 		Label *l = _labels++;
-		token_copy(make_name(s, fullname), l->name);
+		copy_token(make_name(s, fullname), l->name);
 		ss = walk_comment(parse_arity(l, walk_token(ss)));
 		l->body = ss;
 		l->macro = s[0] == '%';
@@ -471,7 +482,7 @@ parse_label(char *s)
 		return ss;
 	} else {
 		Label *l = _labels++;
-		token_copy(make_name(s, fullname), l->name);
+		copy_token(make_name(s, fullname), l->name);
 		l->macro = s[0] == '%';
 		l->body = ss;
 		l->defined = 0;
@@ -523,7 +534,7 @@ parse(char *s)
 	}
 }
 
-static void load(char *path);
+static void load(const char *path);
 
 static void
 read_include(FILE *f)
@@ -538,7 +549,7 @@ read_include(FILE *f)
 static char body[0x10000], *_body = body;
 
 static void
-load(char *path)
+load(const char *path)
 {
 	FILE *f;
 	char buf, last = 0;
@@ -552,7 +563,8 @@ load(char *path)
 			continue;
 		if(last == 0x20 && buf == '~')
 			read_include(f);
-		*_body++ = last = buf;
+		else
+			*_body++ = last = buf;
 	}
 	if(f) fclose(f);
 }

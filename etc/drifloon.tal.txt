@@ -45,7 +45,7 @@
 	( name ) "Drifloon 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "12 20 "May 20 "2025 $2
+	( date ) "24 20 "May 20 "2025 $2
 
 
 
@@ -83,6 +83,9 @@
 @token/<set-default> ( -- )
 	;asm-default ;token/mode STA2
 	JMP2r
+
+@runes/coment ( token* -- )
+	( >> )
 
 @token/<set-comment> ( token* -- )
 	LDA2 [ LIT2 "( 00 ] EQU2 ?{
@@ -183,7 +186,6 @@
 	&lithex /req-name !rom/<write-lithex>
 	&rawstr /req-name !rom/<write-str>
 	&lambda POP2 !lambda/pop
-	&coment !token/<set-comment>
 	&macros /req-name !macros/<new>
 
 @runes/req-name ( str* -- str1* )
@@ -205,38 +207,36 @@
 (
 @|Opcodes )
 
-@opcodes/is-opcode ( str* -- str* opc )
-	DUP2 /parse STH
+@opcodes/is-opcode ( str* -- str* bool )
+	DUP2 /parse #00 NEQ STH
 	DUP2 ;&brk scmp STHr ORA JMP2r
 
 @opcodes/parse ( str* -- byte )
-	[ LITr 00 ]
-	( | brk )
-	DUP2 ;&brk scmp ?{
-		;&lut
-		&>l
-			SWP2k scmp3 ?{
-				INCr #0003 ADD2 LDAk ?&>l
-			POP2 !&fail }
-		POP2
-		( litk ) LDA2k [ LIT2 "LI ] EQU2 #70 SFT [ STH ORAr ]
-		( move ) #0003 ADD2
-		&>w
-			LDAk #21 LTH ?{
-				( | parse modes )
-				LDAk [ LIT "2 ] NEQ ?{ LITr 20 ORAr !&r }
-				LDAk [ LIT "r ] NEQ ?{ LITr 40 ORAr !&r }
-				LDAk [ LIT "k ] NEQ ?{ LITr 80 ORAr !&r }
-				&fail ( str* -- byte )
-				POP2 POPr #00 JMP2r
-				&r INC2 !&>w } }
+	[ LITr 00 ] ;&lut
+	&>l
+		SWP2k scmp3 ?{
+			INCr #0003 ADD2 LDAk ?&>l
+		POP2 !&fail }
+	POP2
+	( mask ) [ LITr 1f ] ANDr
+	( litk ) LDA2k [ LIT2 "LI ] EQU2 #70 SFT [ STH ORAr ]
+	( move ) #0003 ADD2
+	&>w
+		LDAk #21 LTH ?{
+			( | parse modes )
+			LDAk [ LIT "2 ] NEQ ?{ LITr 20 ORAr !&r }
+			LDAk [ LIT "r ] NEQ ?{ LITr 40 ORAr !&r }
+			LDAk [ LIT "k ] NEQ ?{ LITr 80 ORAr !&r }
+			&fail ( str* -- byte )
+			POP2 POPr #00 JMP2r
+			&r INC2 !&>w }
 	POP2 STHr JMP2r
 
 @opcodes/lut [
 	"LIT "INC "POP "NIP "SWP "ROT "DUP "OVR
 	"EQU "NEQ "GTH "LTH "JMP "JCN "JSR "STH
 	"LDZ "STZ "LDR "STR "LDA "STA "DEI "DEO
-	"ADD "SUB "MUL "DIV "AND "ORA "EOR "SFT ] $1
+	"ADD "SUB "MUL "DIV "AND "ORA "EOR "SFT ]
 	&brk "BRK $1
 
 (
@@ -261,10 +261,13 @@
 (
 @|Name )
 
+%else-return ( bool -- ) {
+	[ JMP JMP2r ] }
+
 @name/<validate> ( name* -- name* )
 	( not hex ) is-hex ?{
 		( not runic ) LDAk runes/find INC2 ORA ?{
-			( not opcode ) opcodes/is-opcode ?{ JMP2r } } }
+			( not opcode ) opcodes/is-opcode else-return } }
 	;dict/invalid ;dict/Name !err/<token>
 
 (
@@ -432,8 +435,7 @@
 @refs/<resolve> ( addr* -- addr* )
 	DUP2 ;&err STA2
 	( | handlers )
-	DUP2k #0004 ADD2 LDA
-	DUP .RefType/ab EQU ?/<set-ab>
+	DUP2k #0004 ADD2 LDA DUP .RefType/ab EQU ?/<set-ab>
 	DUP .RefType/as EQU ?/<set-as>
 	DUP .RefType/rb EQU ?/<set-rb>
 	DUP .RefType/rs EQU ?/<set-rs>
@@ -589,8 +591,8 @@
 
 @chex ( addr* -- addr* <val> )
 	LDAk
-	( dec ) [ LIT "0 ] SUB DUP #09 GTH [ JMP JMP2r ]
-	( hex ) #27 SUB DUP #0a SUB #05 GTH [ JMP JMP2r ]
+	( dec ) [ LIT "0 ] SUB DUP #09 GTH else-return
+	( hex ) #27 SUB DUP #0a SUB #05 GTH else-return
 	( nil ) POP #ff JMP2r
 
 @scap ( str* -- end* )
@@ -600,14 +602,14 @@
 @slen ( str* -- str* length )
 	DUP2k scap/ SWP2 INC2 SUB2 NIP JMP2r
 
-@scmp ( a* b* -- f )
+@scmp ( a* b* -- bool )
 	STH2
 	&>l
 		LDAk ?{ &d LDA LDAr STHr EQU JMP2r }
 		LDAk LDAkr STHr NEQ ?&d
 		INC2 INC2r !&>l
 
-@scmp3 ( a* b* -- f )
+@scmp3 ( a* b* -- bool )
 	STH2
 	LDAkr LDAk STHr NEQ ?{ INC2r INC2 }
 	LDA2r LDA2 STH2r EQU2 JMP2r

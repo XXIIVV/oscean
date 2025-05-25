@@ -20,7 +20,7 @@ function System(emu)
 		else if(port == 0x06 || port == 0x07)
 			this.meta = (emu.uxn.dev[0x06] << 8) | emu.uxn.dev[0x07]
 		else if(port == 0x0e)
-			alert(`${emu.uxn.wst.print()}\n${emu.uxn.rst.print()}`)
+			emu.console.write_string(`${emu.uxn.wst.print()}\n${emu.uxn.rst.print()}`)
 		else if(port == 0x0f)
 			console.log("Evaluation ended.")
 		else
@@ -36,6 +36,10 @@ function Console(emu)
 
 	this.write = (char) => {
 		this.write_el.innerHTML += String.fromCharCode(char)
+	}
+
+	this.write_string = (s) => {
+		this.write_el.innerHTML += s
 	}
 
 	this.error = (char) => {
