@@ -3,23 +3,25 @@
 <img src='../media/refs/soulages.png' style='float:right;width:200px' title='Pierre Soulages | Lithographie n°30 (1972)'/>
 
 <p>Modal programs are represented as a series of substitution rules, applied to a given tree which gets
-continually modified until no rules match any given part of the tree. The principale elements of modal are:</p>
+continually modified until no rules match any given part of the tree. The two principal elements of modal are:</p>
 
 <ul>
 	<li><a href='#rules'>Rules</a>: &lt;&gt; left right</li>
 	<li><a href='#registers'>Registers</a>: ?x, ?y, ?z</li>
-	<li><a href='#trees'>Trees</a>: word, (a tuple), a (nested (list))</li>
 </ul>
 
 <p>The documentation below displays the examples as a series of rules, followed
 by the rewriting steps in the following format:</p>
 
 <pre>
-&lt;&gt; A rule
+<> (hello) (good bye)  <i>This is a rule</i>
+</pre>
+<pre style='margin-top:-29px'>
+(hello) world          <i>This is the program input</i>
+(good bye) world       <i>This is the resulting output</i>
+</pre>
 
-.. The input program
-04 The result of applying rule #4
--1 The result of applying a lambda</pre>
+<h3>Playground</h3>
 
 <p>Modal's evaluation model is based on scanning from left-to-right across a string that represents a serialized tree. We only match from the start of the string, and if we can't find a rule that matches, we move one token or subtree forward. All rules match against the start of the string, and if one matches, the matched pattern is erased, and the right-hand side of the rule is written to the end of the string.</p>
 
@@ -37,22 +39,14 @@ href='#tree'>tree</a>. The program evaluation starts at the first character of
 the string and walks through to the end trying to match a transformation rule
 from that location:</p>
 
-<pre>&lt;&gt; hello (good bye)  <i>This is a rule</i>
-
-.. hello world       <i>This is program data</i>
-00 good bye world    <i>This is the result</i></pre>
-
-<p>Rules can be also be undefined using the <kbd>&gt;&lt;</kbd> operation that will try matching a previously declared rule's <i>left</i> statement:</p>
-
 <pre>
-<> cat owl
-<> owl bat
-<> owl rat
->< owl
-
-.. cat 
-00 owl 
-02 rat
+<> (a bat) (a black cat)
+<> (a person) (a bat)
+</pre>
+<pre style='margin-top:-29px'>
+(I am (a person))
+(I am (a bat))
+(I am (a black cat))
 </pre>
 
 <p>Modal is homoiconic, meaning that any string is a potential program and new rules can be
@@ -60,245 +54,137 @@ composed directly during the evaluation. For instance, here is a rule that defin
 a new rules definition <a href='notation.html'>infix syntax</a>:</p>
 
 <pre>
-<> (?x -> ?y) (<> ?x ?y)
-fruit_a -> apple
-fruit_b -> banana
-(apple banana) -> fruit-salad
-
-.. fruit_a fruit_b
-01 apple fruit_b
-02 apple banana
-03 fruit-salad</pre>
+<> (init) (
+   <> (red) (green) 
+   <> (green) (blue)
+   (red) marble)</pre>
+<pre style='margin-top:-29px'>
+(init)
+((red) marble)
+((green) marble)
+((blue) marble)
+</pre>
 
 <h3 id='registers'>Registers</h3>
 
-<p>Registers are single-character identifiers bound to an address in a pattern
-used in rewriting:</p>
-
-<pre>&lt;&gt; (copy ?a) (?a ?a)
-
-.. copy cat
-00 cat cat</pre>
-
-<p>When a register is used in a pattern, and when we try to match a given tree
+<p>Registers are <kbd>?</kbd> prefixed identifiers bound to an address in a pattern
+used in rewriting. When a register is used in a pattern, and when we try to match a given tree
 with a pattern, each register is bound to a corresponding address to the
 left-side of the rule, and referenced to the right-side of the rule:</p>
 
-<pre>&lt;&gt; (swap ?x ?y) (?y ?x)
-
-.. (swap fox rat)
-00 (rat fox)</pre>
+<pre>
+<> (copy ?a) (?a ?a)
+<> (swap ?x ?y) (?y ?x)</pre>
+<pre style='margin-top:-29px'>
+(copy cat) (swap bat rat)
+(cat cat) (swap bat rat)
+(cat cat) (rat bat)
+</pre>
 
 <p>When a register appears more than once in a rule, each instance is bound to
 the first address, but differently named registers can still match on the same pattern:</p>
 
 <pre>
-&lt;&gt; ((?x ?x ?x)) match3
-&lt;&gt; ((?x ?y)) match2
-
-.. (fox fox fox) (bat bat) (bat cat)
-00 match3 (bat bat) (bat cat)
-01 match3 match2 (bat cat)
-01 match3 match2 match2
+<> (compare ?x ?x) (same)
+<> (compare ?x ?y) (different)
 </pre>
-
-<h3 id='trees'>Trees</h3>
-
-<p>Trees can be found in rules and program data, they include words, registers
-and nested trees. Rules can match specific trees and rewrite their content in a
-new sequence.</p>
-
-<pre>
-&lt;&gt; (rotate ?x (?y) ?z) (?y (?z) ?x)
-
-.. rotate foo (bar) baz
-00 bar (baz) foo
-</pre>
-
-<p>An efficient way to represent an array is to store information in
-nested lists, it allows for rules to target specific segments of the list,
-similarly to Lisp's car and cdr primitives. To print each element of such a
-structure, we can use the following recursive rules:</p>
-
-<pre>
-&lt;&gt; (putrec (?: ?x)) (putrec ?: ?x)
-&lt;&gt; ((putrec (?:))) (?:)
-
-.. (putrec (a (b (c (d (e))))))
-00 (putrec (b (c (d (e)))))
-00 (putrec (c (d (e))))
-00 (putrec (d (e)))
-00 (putrec (e))
-01 
-
-<b>> abcde</b>
+<pre style='margin-top:-29px'>
+(compare cat bat) (compare rat rat)
+(different) (compare rat rat)
+(different) (same)
 </pre>
 
 <h3>Logic</h3>
 
-<p>Let us build a logic system, starting by comparing two registers:</p>
+<p>Equality in logic can be implemented by defining the truth table the comparison as shown above, for binary logic we can expand on the idea:</p>
 
 <pre>
-&lt;&gt; (eq ?x ?x) (#t)
-&lt;&gt; (eq ?x ?y) (#f)
-
-.. (eq fox bat)
-01 (#f)
+<> (and #t #t) #t <> (or #t #t) #t 
+<> (and #t #f) #f <> (or #t #f) #t
+<> (and #f #t) #f <> (or #f #t) #t 
+<> (and #f #f) #f <> (or #f #f) #f
+<> (not #t) #f    <> (not #f) #t
 </pre>
-
-<p>We can implement the truth tables by defining each case:</p>
-
-<pre>
-&lt;&gt; (and #t #t) #t &lt;&gt; (or #t #t) #t 
-&lt;&gt; (and #t #f) #f &lt;&gt; (or #t #f) #t
-&lt;&gt; (and #f #t) #f &lt;&gt; (or #f #t) #t 
-&lt;&gt; (and #f #f) #f &lt;&gt; (or #f #f) #f
-&lt;&gt; (not #t) #f    &lt;&gt; (not #f) #t
-
-.. (or #f #t)
-08 (#t)
+<pre style='margin-top:-29px'>
+(not (and #t #f))
+(not #f)
+#t
 </pre>
 
 <p>Building on the comparison rule above, we can write conditionals with a ternary statement: </p>
 <pre>
-&lt;&gt; (ife #t ?t ?f) (?t)
-&lt;&gt; (ife #f ?t ?f) (?f)
-&lt;&gt; (print ?:) (?:)
+<> (ife #t ?t ?f) ?t
+<> (ife #f ?t ?f) ?f
+<> (print ?:) ()
 
-.. ife #f (print True!) (print False!)
-13 (print False!)
-14 ()
+(ife #t (print True) (print False))
+</pre>
+<pre style='margin-top:-29px'>
+(ife #t (print True) (print False))
+(print True)
+<b>True</b>
+</pre>
+
+<h3>IO</h3>
+
+<p>Events are handled by special registers with IO capabilities, for example, the <kbd>?:</kbd> that emits a symbol to the console. Here is a little program that prints letters in a list.</p>
+
+<pre>
+<> (putrec (?: ?x)) (putrec ?x)
+<> (putrec (?:)) (done.)
+</pre>
+<pre style='margin-top:-29px'>
+(putrec (a (b (c (d (e))))))
+(putrec (b (c (d (e)))))
+(putrec (c (d (e))))
+(putrec (d (e)))
+(putrec (e))
+(done.)
+<b>abcde</b>
 </pre>
 
 <h3 id='types'>Types</h3>
 
-<p>Understanding how to use <i>typeguard</i> to reach a specific evaluation order is
+<p>Understanding how to use <i>types</i> to orchestrate a specific evaluation order is
 important to become proficient with Modal. Creating a type system is merely a
-matter of creating stricter rules expecting a specific grammar. Notice in the example below, how join-strings expects to match two String
-typed words. Without typed inputs, the rule is not matched.</p>
+matter of creating stricter rules expecting a specific grammar. Notice in the example below, print rule expects a specific type of data before firing despite being above:</p>
 
 <pre>
-&lt;&gt; (join-strings (String ?x) (String ?y)) (?x?y)
-
-.. join-strings (String foo) (String bar)
-00 foobar
+<> (print (Name ?:)) (done.)
+<> (get-name) (Name Eva)
+</pre>
+<pre style='margin-top:-29px'>
+(print (get-name))
+(print (Name Eva))
+(done.)
+<b>Eva</b>
 </pre>
 
-<h3 id='lambda'>Lambdas</h3>
+<h3 id='lists'>Lists</h3>
 
-<p>A <b>lambda</b> is created by using the <kbd>?(body)</kbd>
-special register. Rules created that way exist only for the length of one
-rewrite and must match what is found immediately after: </p>
+<p>In Modal, lists are best stored as nested trees, this makes them easier to manipulate, here's how to reverse a list:</p>
 
 <pre>
-.. ?((?x ?y) (?y ?x)) foo bar
--1 bar foo
+<> (reverse List (?x ?y) ?z) (reverse List ?y (?x ?z))
+</pre>
+<pre style='margin-top:-29px'>
+(reverse List (m (o (d (a (l ()))))) ())
+(reverse List (o (d (a (l ())))) (m ()))
+(reverse List (d (a (l ()))) (o (m ())))
+(reverse List (a (l ())) (d (o (m ()))))
+(reverse List (l ()) (a (d (o (m ())))))
+(reverse List () (l (a (d (o (m ()))))))
 </pre>
 
-<h3>Outgoing Events</h3>
-
-<p>Sending a message is done with the <kbd>?:</kbd> special register, it sends a word or a tree to be handled by a device:</p>
-
-<pre>
-&lt;&gt; (print ?:) (?:)
-
-.. print (hello world\n)
-
-<b>hello world</b>
-</pre>
-
-<h3>Incoming Events</h3>
-
-<p>Similarly, listening to incoming messages is done with the <kbd>?~</kbd> special register:</p>
-
-<pre>
-&lt;&gt; (?: print) (?:)
-&lt;&gt; (READ ?~) ((You said: ?~ \n) print)
-
-.. (READ stdin)
-
-<b>You said: </b>
-</pre>
+<p>That's it! I hope you enjoy exploring what this strange programming language can do.</p>
 
 <img src='../media/refs/soulages2.png' style='margin:30px auto; display:block' title='Pierre Soulages | Lithographie n°19 (1968)'/>
 
 <q><b>modal</b>(adj.): of, or relating to structure as opposed to substance.</q>
 
-<h3>Special Registers Reference</h3>
-
-<table border='1' class='registers'>
-	<tr><th colspan='3'>IO</th></tr>
-	<tr><td>Read</td><td>?~</td><td>Read from devices</td></tr>
-	<tr><td>Send</td><td>?:</td><td>Send to devices</td></tr>
-	<tr><th colspan='3'>Substrings</th></tr>
-	<tr><td>Explode token</td><td>?(?* ?*) abc</td><td>a (b (c ()))</td></tr>
-	<tr><td>Explode tuple</td><td>?(?* ?*) (abc def ghi)</td><td>abc (def (ghi ()))</td></tr>
-	<tr><td>Unpack</td><td>?(?. ?.) (abc def)</td><td>abc def</td></tr>
-	<tr><td>Join</td><td>?(?^ ?^) (abc def ghi)</td><td>abcdefghi</td></tr>
-</table>
-
-<p>The <kbd>?*</kbd> special
-register explodes a token or tuple into a nested list, and the <kbd>?^</kbd> register to join it back into a single word. Notice how the following program makes use the <a href='#types'>List
-type</a> to ensure a specific evaluation order:</p>
-
-<pre>
-&lt;&gt; (reverse List () ?^) (?^)
-&lt;&gt; (reverse (?*)) (reverse List (?*) ())
-&lt;&gt; (reverse List (?x ?y) ?z) (reverse List ?y (?x ?z))
-
-.. (reverse (modal))
-01 (reverse List (m (o (d (a (l ()))))) ())
-02 (reverse List (o (d (a (l ())))) (m ()))
-02 (reverse List (d (a (l ()))) (o (m ())))
-02 (reverse List (a (l ())) (d (o (m ()))))
-02 (reverse List (l ()) (a (d (o (m ())))))
-02 (reverse List () (l (a (d (o (m ()))))))
-00 (ladom)
-</pre>
-
-<h3>sierpiński.modal</h3>
-
-<p>To review everything documented above, here is a small program that prints the Sierpiński triangle fractal:</p>
-
-<pre>
-?(?-) (Rules)
-
-&lt;&gt; (* (. > (. ?x))) (* (. (. > ?x))) 
-&lt;&gt; (. (. > (* ?x))) (* (. (* > ?x))) 
-
-?(?-) (Physics)
-
-&lt;&gt; (Tri > (?x ?y)) (Tri (?x > ?y))
-&lt;&gt; (Tri (?x > (?y ?z))) (Tri (?x (?y > ?z)))
-&lt;&gt; (?x (?y > (?z ?n))) (. (?y (?z > ?n)))
-&lt;&gt; ((?x > ())) (< ())
-&lt;&gt; (Tri < (* ?^)) (?(?: ?:) (*?^ \n))
-&lt;&gt; ((?x < ?y)) (< (?x ?y))
-
-?(?-) (Print)
-
-&lt;&gt; (Tri.join ?x ?:) (Tri > ?x ?:)
-&lt;&gt; (Tri.dup ?x ?^) (Tri.join ?x ?^)
-&lt;&gt; (Tri < ?x) (Tri.dup (. ?x) (?x \n))
-
-?(?* (Tri < (?*))) ...............*...............</pre>
-
-<h3>Implementation</h3>
-
-<p>The language runtime can be implemented in about <a href='ansi_c.html'>300 lines</a>.</p>
-
-<div class='codeview'>
-	<iframe src='../etc/modal.c.txt'></iframe>
-	<pre>cc modal.c -o modal <a href='../etc/modal.c.txt' target='_blank'>view raw</a></pre>
-</div>
-
 <ul>
-	<li><a href='https://git.sr.ht/~rabbits/modal' target='_blank'>view sources</a>, ANSI C.</li>
-	<li><a href='https://discord.gg/tXsjckBreW' target='_blank'>discord channel</a>, in the concatenative server.</li>
+	<li><a href='https://git.sr.ht/~rabbits/modal' target='_blank'>view sources</a>, Uxntal.</li>
+	<li><a href='https://discord.gg/tXsjckBreW' target='_blank'>discord channel</a>, in the Concatenative Server.</li>
 	<li><a href='https://www.sheeeeeeeep.art/types-of-modal.html'>Levels of Dynamic behavior in Modal</a></li>
 	<li>This language is an original creation of <a href='https://wryl.tech/' target='_blank'>wryl</a> from 2018, who has courteously spent countless hours to help me progress with the language, much of the code above is derived from their research and merely made available here as to give this fantastic system a home on the internet.</li>
 </ul>
-
-<style>
-	.registers tr * { font-family:mono;font-size:smaller }
-</style>
