@@ -59,12 +59,21 @@
 
 @<write-rhs> ( tail* rhs* -- )
 	DUP2 walk SWP2
-	&l ( -- )
-	LDA2k LDA [ LIT "? ] NEQ ?{
-		LDA2k wildcards/find INC2k ORA ?{ POP2 !&continue }
-		NEXT LDA2 body/<push-frag>
-		NEXT GTH2k ?&l } &continue LDA2k body/<push-cell>
-	NEXT GTH2k ?&l
+	&>l
+		<write-cell>
+		NEXT GTH2k ?&>l
+	POP2 POP2 JMP2r
+
+@<write-cell> ( addr* -- addr* )
+	LDA2k LDA [ LIT "? ] EQU ?&<write-wildcard>
+	LDA2k !body/<push-cell>
+
+	&<write-wildcard> ( addr* -- addr* )
+	LDA2k wildcards/find INC2k ORA ?{ POP2 JMP2r }
+	NEXT LDA2 DUP2 walk SWP2
+	&>l
+		LDA2k body/<push-cell>
+		NEXT GTH2k ?&>l
 	POP2 POP2 JMP2r
 
 (
@@ -141,13 +150,6 @@
 
 (
 @|body )
-
-@body/<push-frag> ( frag* -- )
-	DUP2 walk SWP2
-	&>l
-		LDA2k /<push-cell>
-		NEXT GTH2k ?&>l
-	POP2 POP2 JMP2r
 
 @body/<push-cell> ( cell* -- )
 	[ LIT2 &ptr =&a ] INC2k INC2 ,&ptr STR2

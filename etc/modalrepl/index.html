@@ -18,21 +18,23 @@
 </head>
 <body>
 	<textarea id="editor" spellcheck="false">
-(;(Welcome to the Modal playground,
-   Click the Rewrite button to evaluate the program.
-   Select the next example with the dropdown. ))
+Welcome to the Modal playground,
+Click the Rewrite button to evaluate the program.
+Select other examples with the dropdown.
 
-(;(Rules are made of a left and a right side.
-   They are tested in from first to last.
-   When a match occurs, the lhs is replaced by the rhs.
-   These are ?wildcards, they will always match.))
+<> (equal ?a ?a) (Bool True) 
+<> (equal ?a ?b) (Bool False)
 
-<> (?a ?a equal) (True) 
-<> (?a ?b equal) (False) 
+Rules are made of a left and a right side.
+They are tested in from first to last, from left to right.
+When a match occurs, the lhs is replaced by the rhs.
+Words prefixed with ? will always match.
 
-(baz baz equal) (foo bar equal) 
+Printing to the bottom of the screen is done with ?:
 
-<> (; ?x) ()
+<> (print-bool (Bool ?:)) ()
+
+(print-bool (equal baz baz))
 </textarea>
 	<div id='term'>Press <b>Rewrite</b> to evaluate.</div>
 	<div id='menu'>
@@ -59,28 +61,25 @@ let term_el = document.getElementById("term")
 let editor_el = document.getElementById("editor")
 let wst_el = document.getElementById("wst")
 let run_el = document.getElementById("run")
+let result_txt = ""
 
 document.body.className = "active"
 
-function compile(query, program) {
+function run() {
+	let query = editor_el.value.replace(/(\r\n|\n|\r|\t)/gm, " ")
+	let program = new Uint8Array(0x10000)
 	let emu_asm = new Emu()
 	let rom_length = 0
+	result_txt = ``
 	wst_el.innerHTML = `> `
-	emu_asm.console.write = (char) => {wst_el.innerHTML += String.fromCharCode(char) }
-	emu_asm.console.error = (char) => {
-		term_el.innerHTML += String.fromCharCode(char)
-		term_el.scrollTop = term_el.scrollHeight;
-	}
+	emu_asm.console.write = (char) => { wst_el.innerHTML += String.fromCharCode(char) }
+	emu_asm.console.error = (char) => { result_txt += String.fromCharCode(char) }
 	emu_asm.uxn.load(modal).eval(0x0100)
-	term_el.innerHTML = ""
 	for (let i = 0; i < query.length; i++)
 		emu_asm.console.input(query.charAt(i).charCodeAt(0), 1)
 	emu_asm.console.input(0x00, 4)
-	return rom_length
-}
-
-function run() {
-	compile(editor_el.value.replace(/(\r\n|\n|\r|\t)/gm, " "), new Uint8Array(0x10000))
+	term_el.innerHTML = result_txt
+	term_el.scrollTop = term_el.scrollHeight;
 }
 
 // Editor
