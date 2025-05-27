@@ -30,7 +30,6 @@
 	<step>
 	body/<print>
 	wildcards/<output>
-	#0a19 DEO
 	?<eval>
 	JMP2r
 
@@ -62,9 +61,9 @@
 	DUP2 walk SWP2
 	&l ( -- )
 	LDA2k LDA [ LIT "? ] NEQ ?{
-		LDA2k wildcards/find NEXT LDA2 body/<push-frag>
-		NEXT GTH2k ?&l }
-	LDA2k body/<push-cell>
+		LDA2k wildcards/find INC2k ORA ?{ POP2 !&continue }
+		NEXT LDA2 body/<push-frag>
+		NEXT GTH2k ?&l } &continue LDA2k body/<push-cell>
 	NEXT GTH2k ?&l
 	POP2 POP2 JMP2r
 
@@ -169,7 +168,9 @@
 	[ LIT2 "( _&last ] STR
 	[ LIT2 &origin $2 ]
 	&>lp
-		LDA2k ORAk ?{ POP2 POP2 JMP2r }
+		LDA2k ORAk ?{
+			POP2 POP2 #0a19 DEO
+			JMP2r }
 		LDAk [ LIT ") ] EQU [ LIT2 &last $1 "( ] EQU ORA ?{ #2019 DEO }
 		LDAk ,&last STR
 		<print-string>
