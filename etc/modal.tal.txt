@@ -28,41 +28,41 @@
 
 @<eval> ( -- )
 	<step>
-	body/get-bank <print-cells>
+	body/<print>
 	wildcards/<output>
 	#0a19 DEO
 	?<eval>
 	JMP2r
 
-@<step> ( -- rewritten )
+@<step> ( -- rew )
 	[ LITr 00 ] body/<swap>
 	&>l
 		LDA2k ;CellType/a NEQ2 ?{
-			DUP2 rules/match [ INC2k ORA ?&write-match POP2 ] }
-		LDA2k ;dict/buf EQU2 ?&write-rule
+			DUP2 rules/find [ INC2k ORA ?/<write-match> POP2 ] }
+		LDA2k ;dict/buf EQU2 ?/<write-rule>
 		LDA2k body/<push-cell>
 		NEXT GTH2k ?&>l
 	( >> )
-	&<write-tail> ( to* from* . rewritten -- rewritten )
+	&<write-tail> ( to* from* . rew -- rew )
 	NEQ2k ?{
 		POP2 #0000 SWP2 STA2
 		STHr JMP2r }
 	LDA2k body/<push-cell>
 	NEXT !/<write-tail>
 
-	&write-match ( to* from* . rewritten -- rewritten )
+	&<write-match> ( to* from* . rew -- rew )
 	INCr
 	( rewrite ) walk <write-rhs>
 	( advance ) walk !/<write-tail>
 
-	&write-rule ( to* from* . rewritten -- rewritten )
+	&<write-rule> ( to* from* . rew -- rew )
 	INCr NEXT rules/<push> !/<write-tail>
 
 @<write-rhs> ( tail* rhs* -- )
 	DUP2 walk SWP2
 	&l ( -- )
 	LDA2k LDA [ LIT "? ] NEQ ?{
-		LDA2k wildcards/find INC2 INC2 LDA2 body/<push-frag>
+		LDA2k wildcards/find NEXT LDA2 body/<push-frag>
 		NEXT GTH2k ?&l }
 	LDA2k body/<push-cell>
 	NEXT GTH2k ?&l
@@ -98,30 +98,36 @@
 (
 @|rules )
 
-@rules/match-rule ( rule* cells* -- bool )
+@rules/compare ( rule* cells* -- a* bool cells* )
 	STH2
-	wildcards/<reset>
-	DUP2 walk SWP2
-	&>lmr
-		( | has wildcard )
-		LDA2k LDA [ LIT "? ] NEQ ?{
-			LDA2k wildcards/find INC2k ORA ?{
-				( pop null wildcard ) POP2
-				( set wildcard ) STH2kr OVR2 LDA2 wildcards/<push>
-				( next token, walk cell ) NEXT STH2r walk STH2 !&c2 }
-			( | cmp wildcard )
-			INC2 INC2 LDA2 LDA2 STH2kr LDA2 EQU2 ?&continue }
-		LDA2k STH2kr LDA2 EQU2 ?&continue
-		POP2 POP2 POP2r #00 JMP2r
-	
-		&continue [ NEXT STH2r NEXT STH2 ] &c2 GTH2k ?&>lmr
-	POP2 POP2 POP2r #01 JMP2r
+	LDA2k LDA [ LIT "? ] EQU ?&wildcard
+	LDA2k STH2kr LDA2 EQU2 STH
+	NEXT STHr STH2r NEXT JMP2r
 
-@rules/match ( cells* -- rule* )
+	&wildcard ( rule* cells* -- a* bool cells* )
+	( | find wildcard )
+	LDA2k wildcards/find INC2k ORA ?{
+		POP2 STH2kr OVR2 LDA2 wildcards/<push>
+		NEXT #01 STH2r !walk }
+	( | compare wildcard )
+	STH2kr wildcards/compare STH
+	NEXT STHr STH2r !walk
+
+@rules/match ( rule* cells* -- bool )
+	wildcards/<reset>
+	STH2
+	DUP2 walk SWP2
+	&>lmn
+		STH2r /compare STH2
+		?{ EQU2 POP2r JMP2r }
+		GTH2k ?&>lmn
+	EQU2 POP2r JMP2r
+
+@rules/find ( cells* -- rule* )
 	STH2
 	,&ptr LDR2 ;&buf
 	&>lm
-		DUP2 STH2kr /match-rule ?{
+		DUP2 STH2kr /match ?{
 			walk walk GTH2k ?&>lm
 		POP2 #ffff }
 	NIP2 POP2r JMP2r
@@ -129,14 +135,10 @@
 @rules/<push> ( addr* -- addr* )
 	DUP2 walk walk SWP2
 	&>l
-		LDA2k /<push-cell>
+		LDA2k [ LIT2 &ptr =&buf ] INC2k INC2 ,&ptr STR2
+		STA2
 		NEXT GTH2k ?&>l
 	POP2 JMP2r
-
-@rules/<push-cell> ( cell* -- )
-	[ LIT2 &ptr =&buf ] INC2k INC2 ,&ptr STR2
-	STA2
-	JMP2r
 
 (
 @|body )
@@ -156,16 +158,34 @@
 @body/<swap> ( -- to* from* )
 	[ LIT2 01 &bank $1 ] INCk ,&bank STR
 	AND ?{
-		;body/ptr LDA2 ;body/a ;body/b ;body/ptr STA2
+		;&ptr LDA2 ;&a DUP2 ,&origin STR2
+		;&b ;&ptr STA2
 		JMP2r }
-	;body/ptr LDA2 ;body/b ;body/a ;body/ptr STA2
+	;&ptr LDA2 ;&b DUP2 ,&origin STR2
+	;&a ;&ptr STA2
 	JMP2r
 
-@body/get-bank ( -- from* )
-	;&a ;&b [ LIT2 01 _&bank ] LDR [ AND JMP SWP2 POP2 ] JMP2r
+@body/<print> ( -- )
+	[ LIT2 "( _&last ] STR
+	[ LIT2 &origin $2 ]
+	&>lp
+		LDA2k ORAk ?{ POP2 POP2 JMP2r }
+		LDAk [ LIT ") ] EQU [ LIT2 &last $1 "( ] EQU ORA ?{ #2019 DEO }
+		LDAk ,&last STR
+		<print-string>
+		NEXT !&>lp
 
 (
 @|wildcards )
+
+@wildcards/compare ( wildcard* cells* -- f )
+	SWP2 INC2 INC2 LDA2 STH2
+	DUP2 walk SWP2
+	&>lc
+		LDA2k STH2kr LDA2 EQU2 ?{ EQU2 POP2r JMP2r }
+		( | compare )
+		NEXT INC2r INC2r GTH2k ?&>lc
+	EQU2 POP2r JMP2r
 
 @wildcards/find ( name* -- wildcard* )
 	STH2
@@ -177,9 +197,10 @@
 	NIP2 POP2r JMP2r
 
 @wildcards/<push> ( addr* name* -- )
+	( | save )
 	[ LIT2 &ptr =&buf ] STA2k
-	( ) NIP2 INC2 INC2 STA2k
-	( ) INC2 INC2 ,&ptr STR2
+	( ) NIP2 NEXT STA2k
+	( ) NEXT ,&ptr STR2
 	POP2 JMP2r
 
 @wildcards/<reset> ( -- )
@@ -188,8 +209,8 @@
 	JMP2r
 
 @wildcards/<output> ( -- )
-	;&key wildcards/find INC2k ORA ?{ POP2 JMP2r }
-	INC2 INC2 LDA2 LDA2
+	;&key /find INC2k ORA ?{ POP2 JMP2r }
+	NEXT LDA2 LDA2
 	&>w
 		LDAk DUP ?{ POP POP2 JMP2r }
 		#18 DEO
@@ -226,15 +247,6 @@
 (
 @|utils )
 
-@<print-cells> ( addr* -- )
-	[ LIT2 "( _&last ] STR
-	&>l
-		LDA2k ORAk ?{ POP2 POP2 JMP2r }
-		LDAk [ LIT ") ] EQU [ LIT2 &last $1 "( ] EQU ORA ?{ #2019 DEO }
-		LDAk ,&last STR
-		<print-string>
-		NEXT !&>l
-
 @<print-string> ( str* -- )
 	LDAk DUP ?{ POP POP2 JMP2r }
 	#19 DEO
@@ -247,6 +259,9 @@
 		LDAk LDAkr STHr NEQ ?&d
 		INC2 INC2r !&>l
 
+(
+@|assets )
+
 @prefabs/c "<> $1
 	&a "( $1
 	&b ") $1
@@ -258,10 +273,6 @@
 @dict/buf $1000
 
 @body/a $4000 &b $4000
-
-(
-@|enums )
-
 |prefabs/a @CellType/a
 |prefabs/b @CellType/b
 
