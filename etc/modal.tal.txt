@@ -37,14 +37,10 @@
 @<step> ( -- rewritten )
 	[ LITr 00 ] body/<swap>
 	&>l
-		( | when rule )
-		LDA2k ;dict/buf NEQ2 ?{ INCr NEXT rules/<push> !/<write-tail> }
-		( | when match )
-		DUP2 rules/match DUP2 #ffff EQU2 ?{
-			INCr
-			( rewrite ) walk <write-rhs>
-			( advance ) walk !/<write-tail> }
-		POP2 LDA2k body/<push-cell>
+		LDA2k ;CellType/a NEQ2 ?{
+			DUP2 rules/match [ INC2k ORA ?&write-match POP2 ] }
+		LDA2k ;dict/buf EQU2 ?&write-rule
+		LDA2k body/<push-cell>
 		NEXT GTH2k ?&>l
 	( >> )
 	&<write-tail> ( to* from* . rewritten -- rewritten )
@@ -53,6 +49,14 @@
 		STHr JMP2r }
 	LDA2k body/<push-cell>
 	NEXT !/<write-tail>
+
+	&write-match ( to* from* . rewritten -- rewritten )
+	INCr
+	( rewrite ) walk <write-rhs>
+	( advance ) walk !/<write-tail>
+
+	&write-rule ( to* from* . rewritten -- rewritten )
+	INCr NEXT rules/<push> !/<write-tail>
 
 @<write-rhs> ( tail* rhs* -- )
 	DUP2 walk SWP2
@@ -223,15 +227,18 @@
 @|utils )
 
 @<print-cells> ( addr* -- )
-	LDA2k ORAk ?{ POP2 POP2 JMP2r }
-	<pstr>
-	#2019 DEO
-	NEXT !<print-cells>
+	[ LIT2 "( _&last ] STR
+	&>l
+		LDA2k ORAk ?{ POP2 POP2 JMP2r }
+		LDAk [ LIT ") ] EQU [ LIT2 &last $1 "( ] EQU ORA ?{ #2019 DEO }
+		LDAk ,&last STR
+		<print-string>
+		NEXT !&>l
 
-@<pstr> ( str* -- )
+@<print-string> ( str* -- )
 	LDAk DUP ?{ POP POP2 JMP2r }
 	#19 DEO
-	INC2 !<pstr>
+	INC2 !<print-string>
 
 @scmp ( a* b* -- bool )
 	STH2
