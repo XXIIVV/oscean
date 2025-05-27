@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<meta property='og:type' content='website'/>
+	<meta property='og:site_name' content='Varvara5'/>
+	<meta property='og:description' content="By Hundred Rabbits"/>
+	<meta property='og:logo' content="media/services/logo.jpg"/>
+	<meta property="og:title" content="Modal Interpreter"/>
+	<meta property="og:url" content="https://rabbits.srht.site/uxn5/index.html"/>
+	<meta name="viewport" content="width=device-width" />
+	<link href="media/services/icon.png" type="image/png" rel="shortcut icon">
+	<title>Modal Playground</title>
+	<script src="src/modal.js"></script>
+	<script src="src/emu.js"></script>
+	<script src="src/uxn.js"></script>
+	<script src="src/examples.js"></script>
+</head>
+<body>
+	<textarea id="editor" spellcheck="false">
+<> (print-rec (?: ?tail))
+	 (print-rec ?tail)
+
+<> (print-rec ?empty) ()
+
+(print-rec
+	(ABC
+		(DEF
+			(GHI ()))))
+</textarea>
+	<div id='term'>Press <b>Rewrite</b> to evaluate.</div>
+	<div id='menu'>
+		<input type="button" id="run" value="Rewrite">
+		<span id='wst'>Ready.</span>
+		<select name="cars" id="examples">
+			<option value="0_tal">0. Hello World</option>
+			<option value="1_tal">1. Stack</option>
+			<option value="2_tal">2. Numbers</option>
+			<option value="3_tal">3. Functions</option>
+			<option value="4_tal">4. Variables</option>
+			<option value="5_tal">5. If/else</option>
+			<option value="6_tal">6. Loop</option>
+			<option value="7_tal">7. Enums & Structs</option>
+			<option value="8_tal">8. Macros</option>
+			<option value="9_tal">9. Objects</option>
+			<option value="10_tal">10. Debugging</option>
+		</select>
+	</div>
+	<script type="text/javascript">
+'use strict'
+
+let term_el = document.getElementById("term")
+let editor_el = document.getElementById("editor")
+let wst_el = document.getElementById("wst")
+let run_el = document.getElementById("run")
+
+document.body.className = "active"
+
+function compile(query, program) {
+	let emu_asm = new Emu()
+	let rom_length = 0
+	emu_asm.console.write = (char) => { program[rom_length++] = char }
+	emu_asm.console.error = (char) => { term_el.innerHTML += String.fromCharCode(char) }
+	emu_asm.uxn.load(modal).eval(0x0100)
+	term_el.innerHTML = ""
+	for (let i = 0; i < query.length; i++)
+		emu_asm.console.input(query.charAt(i).charCodeAt(0), 1)
+	emu_asm.console.input(0x00, 4)
+	return rom_length
+}
+
+function run() {
+	compile(editor_el.value.replace(/(\r\n|\n|\r|\t)/gm, " "), new Uint8Array(0x10000))
+}
+
+// Editor
+
+const editor = document.getElementById("editor")
+
+editor.addEventListener("keydown", (e) => {
+	let { keyCode } = e
+	let { value, selectionStart, selectionEnd } = editor
+	if (keyCode === 9) { // TAB = 9
+		e.preventDefault()
+		editor.value = value.slice(0, selectionStart) + "\t" + value.slice(selectionEnd);
+		editor.setSelectionRange(selectionStart+1, selectionStart+1)
+	}
+	else if (event.ctrlKey && event.key === 'Enter') 
+		run();
+});
+
+run_el.addEventListener("click", run)
+
+document.getElementById('examples').addEventListener('change', (e) => {
+	editor_el.value = examples[e.currentTarget.value]
+	term_el.innerHTML = `Press <b>Rewrite</b> to evaluate.`
+}, true);
+
+	</script>
+	<style>
+		body { font-family:monospace; overflow:hidden; height:100vh; padding:0; margin:0 }
+		body ::selection { background-color:#000;color:#fff;text-decoration:none }
+		textarea { resize:none; width:calc(100vw - 20px); height:100vh; border:0; padding:10px; margin:0px; background:#efefef; tab-size: 2; }
+		textarea:focus { outline: none !important; }
+		div#term { background:#ddd; padding:10px; color:black; height:55px; overflow-y:scroll; white-space:pre; display:none }
+		div#menu { height:25px; background:#ccc; padding:10px; margin-bottom:20px;font-weight:bold; display:none }
+		div#menu select { float:right }
+		body.active textarea { height:calc(100% - 140px); }
+		body.active div#term, body.active div#menu { display:block }
+		#run { cursor:pointer; background:#000; color:white; border:0px; border-radius:100px; line-height:24px; padding:0px 10px; font-size:12px }
+		#step { background: #fff; color:black}
+		#run:hover, #step:hover { background: #aaa; color:#000 }
+		dialog { background:#a4f4e0; display: none; padding: 10px; padding-bottom: 0; }
+		dialog[open] { display: block; }
+		dialog > * { margin: 0; margin-bottom: 10px; }
+		::backdrop { background: #a4f4e0; opacity: 0.6; }
+		#dialog-content > pre { background: #000; color: white; padding: 10px; }
+		#dialog > form { width: 100%; text-align: right; }
+	</style>
+</body>
+</html>

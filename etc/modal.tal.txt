@@ -1,0 +1,261 @@
+( Of, or relating to structure, as opposed to substance. )
+
+|10 @Console/vector $2 &read $5 &type $1 &write $1 &error $1
+
+|000
+
+	@token/buf
+
+|100
+
+@on-reset ( -> )
+	;token/on-console .Console/vector DEO2
+	;prefabs/c dict/<push-str>
+	BRK
+
+%NEXT ( addr* -- next* ) {
+	INC2 INC2 }
+
+@walk ( addr* -- next* )
+	[ LITr 00 ]
+	&>w
+		LDA2k ORA ?{ POPr JMP2r }
+		LDA2k ;CellType/a NEQ2 ?{ INCr }
+		LDA2k ;CellType/b NEQ2 ?{
+			[ LITr 01 ] SUBr STHkr ?{ POPr NEXT JMP2r } }
+		NEXT STHkr ?&>w
+	POPr JMP2r
+
+@<eval> ( -- )
+	<step>
+	body/get-bank <print-cells>
+	wildcards/<output>
+	#0a19 DEO
+	?<eval>
+	JMP2r
+
+@<step> ( -- rewritten )
+	[ LITr 00 ] body/<swap>
+	&>l
+		( | when rule )
+		LDA2k ;dict/buf NEQ2 ?{ INCr NEXT rules/<push> !/<write-tail> }
+		( | when match )
+		DUP2 rules/match DUP2 #ffff EQU2 ?{
+			INCr
+			( rewrite ) walk <write-rhs>
+			( advance ) walk !/<write-tail> }
+		POP2 LDA2k body/<push-cell>
+		NEXT GTH2k ?&>l
+	( >> )
+	&<write-tail> ( to* from* . rewritten -- rewritten )
+	NEQ2k ?{
+		POP2 #0000 SWP2 STA2
+		STHr JMP2r }
+	LDA2k body/<push-cell>
+	NEXT !/<write-tail>
+
+@<write-rhs> ( tail* rhs* -- )
+	DUP2 walk SWP2
+	&l ( -- )
+	LDA2k LDA [ LIT "? ] NEQ ?{
+		LDA2k wildcards/find INC2 INC2 LDA2 body/<push-frag>
+		NEXT GTH2k ?&l }
+	LDA2k body/<push-cell>
+	NEXT GTH2k ?&l
+	POP2 POP2 JMP2r
+
+(
+@|token )
+
+@token/on-console ( -> )
+	.Console/read DEI DUP ?{ POP <eval>
+		BRK }
+	/<push>
+	BRK
+
+@token/<push> ( c -- )
+	( | handlers )
+	DUP [ LIT "( ] NEQ ?{ /<store>
+		;CellType/a !body/<push-cell> }
+	DUP [ LIT ") ] NEQ ?{ /<store>
+		;CellType/b !body/<push-cell> }
+	DUP #21 LTH ?/<store>
+	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
+	STZ2
+	JMP2r
+
+@token/<store> ( c -- )
+	POP [ LIT2 -&buf _&ptr ] LDR NEQ ?{ JMP2r }
+	;&buf dict/find-alloc body/<push-cell>
+	[ LIT2 00 -&buf ] DUP ,&ptr STR
+	STZ
+	JMP2r
+
+(
+@|rules )
+
+@rules/match-rule ( rule* cells* -- bool )
+	STH2
+	wildcards/<reset>
+	DUP2 walk SWP2
+	&>lmr
+		( | has wildcard )
+		LDA2k LDA LIT "? NEQ ?{
+			LDA2k wildcards/find INC2k ORA ?{
+				( | set wildcard )
+				( pop null wildcard ) POP2
+				( push ) STH2kr OVR2 LDA2 wildcards/<push>
+				( next token, walk cell ) NEXT STH2r walk STH2 !&c2 }
+			( | cmp wildcard )
+			INC2 INC2 LDA2 STH2kr LDA2 EQU2 ?&continue }
+		LDA2k STH2kr LDA2 EQU2 ?&continue
+		POP2 POP2 POP2r #00 JMP2r
+	
+		&continue [ NEXT STH2r NEXT STH2 ] &c2 GTH2k ?&>lmr
+	POP2 POP2 POP2r #01 JMP2r
+
+@rules/match ( cells* -- rule* )
+	STH2
+	,&ptr LDR2 ;&buf
+	&>lm
+		DUP2 STH2kr /match-rule ?{
+			walk walk GTH2k ?&>lm
+		POP2 #ffff }
+	NIP2 POP2r JMP2r
+
+@rules/<push> ( addr* -- addr* )
+	DUP2 walk walk SWP2
+	&>l
+		LDA2k /<push-cell>
+		NEXT GTH2k ?&>l
+	POP2 JMP2r
+
+@rules/<push-cell> ( cell* -- )
+	[ LIT2 &ptr =&buf ] INC2k INC2 ,&ptr STR2
+	STA2
+	JMP2r
+
+(
+@|body )
+
+@body/<push-frag> ( frag* -- )
+	DUP2 walk SWP2
+	&>l
+		LDA2k /<push-cell>
+		NEXT GTH2k ?&>l
+	POP2 POP2 JMP2r
+
+@body/<push-cell> ( cell* -- )
+	[ LIT2 &ptr =&a ] INC2k INC2 ,&ptr STR2
+	STA2
+	JMP2r
+
+@body/<swap> ( -- to* from* )
+	[ LIT2 01 &bank $1 ] INCk ,&bank STR
+	AND ?{
+		;body/ptr LDA2 ;body/a ;body/b ;body/ptr STA2
+		JMP2r }
+	;body/ptr LDA2 ;body/b ;body/a ;body/ptr STA2
+	JMP2r
+
+@body/get-bank ( -- from* )
+	;&a ;&b [ LIT2 01 _&bank ] LDR [ AND JMP SWP2 POP2 ] JMP2r
+
+(
+@|wildcards )
+
+@wildcards/find ( name* -- wildcard* )
+	STH2
+	,&ptr LDR2 ;&buf
+	&>l
+		LDA2k STH2kr scmp ?{
+			#0004 ADD2 GTH2k ?&>l
+		POP2 #ffff }
+	NIP2 POP2r JMP2r
+
+@wildcards/<push> ( addr* name* -- )
+	[ LIT2 &ptr =&buf ] STA2k
+	( ) NIP2 INC2 INC2 STA2k
+	( ) INC2 INC2 ,&ptr STR2
+	POP2 JMP2r
+
+@wildcards/<reset> ( -- )
+	;&buf ,&ptr STR2
+	#0000 ;&buf STA2
+	JMP2r
+
+@wildcards/<output> ( -- )
+	;&key wildcards/find INC2k ORA ?{ POP2 JMP2r }
+	INC2 INC2 LDA2 LDA2
+	&>w
+		LDAk DUP ?{ POP POP2 JMP2r }
+		#18 DEO
+		INC2 !&>w
+
+	&key "?: $1
+
+(
+@|dict )
+
+@dict/find ( str* -- dict* )
+	STH2
+	,&ptr LDR2 ;&buf
+	&>l
+		DUP2 STH2kr scmp ?{
+			INC2 GTH2k ?&>l
+		POP2 #ffff }
+	NIP2 POP2r JMP2r
+
+@dict/find-alloc ( str* -- cell* )
+	DUP2 /find INC2k ORA ?{ POP2 !/alloc }
+	NIP2 JMP2r
+
+@dict/alloc ( str* -- cell* )
+	,&ptr LDR2 SWP2
+	( >> )
+
+@dict/<push-str> ( str* -- )
+	LDAk DUP [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	STA
+	?{ POP2 JMP2r }
+	INC2 !/<push-str>
+
+(
+@|utils )
+
+@<print-cells> ( addr* -- )
+	LDA2k ORAk ?{ POP2 POP2 JMP2r }
+	<pstr>
+	#2019 DEO
+	NEXT !<print-cells>
+
+@<pstr> ( str* -- )
+	LDAk DUP ?{ POP POP2 JMP2r }
+	#19 DEO
+	INC2 !<pstr>
+
+@scmp ( a* b* -- bool )
+	STH2
+	&>l
+		LDAk #20 GTH ?{ &d LDA LDAr STHr EQU JMP2r }
+		LDAk LDAkr STHr NEQ ?&d
+		INC2 INC2r !&>l
+
+@prefabs/c "<> $1
+	&a "( $1
+	&b ") $1
+
+@wildcards/buf $100
+
+@rules/buf $1000
+
+@dict/buf $1000
+
+@body/a $4000 &b $4000
+
+(
+@|enums )
+
+|prefabs/a @CellType/a
+|prefabs/b @CellType/b
+
