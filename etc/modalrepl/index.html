@@ -52,24 +52,19 @@ let term_el = document.getElementById("term")
 let editor_el = document.getElementById("editor")
 let wst_el = document.getElementById("wst")
 let run_el = document.getElementById("run")
-let result_txt = ""
 
 document.body.className = "active"
 
 function run() {
 	let query = editor_el.value.replace(/(\r\n|\n|\r|\t)/gm, " ")
 	let program = new Uint8Array(0x10000)
-	let emu_asm = new Emu()
-	let rom_length = 0
-	result_txt = ``
-	wst_el.innerHTML = `> `
-	emu_asm.console.write = (char) => { wst_el.innerHTML += String.fromCharCode(char) }
-	emu_asm.console.error = (char) => { result_txt += String.fromCharCode(char) }
-	emu_asm.uxn.load(modal).eval(0x0100)
+	let emu = new Emu()
+	emu.uxn.load(modal).eval(0x0100)
 	for (let i = 0; i < query.length; i++)
-		emu_asm.console.input(query.charAt(i).charCodeAt(0), 1)
-	emu_asm.console.input(0x00, 4)
-	term_el.innerHTML = result_txt
+		emu.console.input(query.charAt(i).charCodeAt(0), 1)
+	emu.console.input(0x00, 4)
+	wst_el.innerHTML = `> ${emu.console.stdout_body}`
+	term_el.innerHTML = emu.console.stderr_body
 	term_el.scrollTop = term_el.scrollHeight;
 }
 
