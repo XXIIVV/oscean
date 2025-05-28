@@ -77,8 +77,7 @@
 @|token )
 
 @token/on-console ( -> )
-	.Console/read DEI DUP ?{
-		POP <eval>
+	.Console/read DEI DUP ?{ POP <eval>
 		POP2 BRK }
 	/<push>
 	BRK
@@ -140,7 +139,10 @@
 	NIP2 POP2r JMP2r
 
 @rules/<push> ( addr* -- addr* )
-	DUP2 walk walk SWP2
+	DUP2 walk
+	( | test rhs is not a rule )
+	LDA2k ;dict/buf NEQ2 ?{ NIP2 JMP2r }
+	walk SWP2
 	&>l
 		LDA2k [ LIT2 &ptr =&buf ] INC2k INC2 ,&ptr STR2
 		STA2

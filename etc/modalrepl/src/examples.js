@@ -4,28 +4,32 @@ let examples = {
 /*
 @|0.Hello-World */
 
-"0_mod": `Welcome to the Modal playground,
-Click the Rewrite button to evaluate the program.
-Select other examples with the dropdown.
+"0_mod": `<> (Welcome to the Modal playground,
+    Click the Rewrite button to evaluate the program.
+    Select other examples with the dropdown.)
 
 <> (equal ?a ?a) (Bool True) 
 <> (equal ?a ?b) (Bool False)
 
-Rules are made of a left and a right side.
-They are tested in from first to last, from left to right.
-When a match occurs, the lhs is replaced by the rhs.
-Words prefixed with ? will always match.
+<> (Rules are made of a left and a right side.
+    They are tested in from first to last, from left to right.
+    When a match occurs, the lhs is replaced by the rhs.
+    Wildcards prefixed with ? will always match.
 
-Printing to the bottom of the screen is done with ?:
+    Rules without a right-hand side are comments.
+    Printing is done with the ?: wildcard.)
 
-<> (print-bool (Bool ?:)) ()
+<> (print-bool (Bool ?:)) (done.)
 
 (print-bool (equal baz baz))`,
 
 /*
 @|1 */
 
-"1_mod": `<> (reverse List (?x ?y) ?z) (reverse List ?y (?x ?z))
+"1_mod": `<> (A rule without a right-hand side is ignore,
+    it's also a good way to leave comments.)
+
+<> (reverse List (?x ?y) ?z) (reverse List ?y (?x ?z))
 <> (reverse List ?empty ?list) (print List ?list)
 <> (print List (?: ?x)) (print List ?x)
 <> (print List ()) (done.)
