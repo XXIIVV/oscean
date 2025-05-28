@@ -122,7 +122,28 @@ the first address, but differently named registers can still match on the same p
 <pre style='margin-top:-29px'>
 (ife #t (print True) (print False))
 (print True)
-<b>True</b>
+</pre>
+<pre style='margin-top:-29px'>
+<b>True</b><span style='float:right'>?:</span>
+</pre>
+
+<h3 id='types'>Types</h3>
+
+<p>Understanding how to use <i>types</i> to orchestrate a specific evaluation order is
+important to become proficient with Modal. Creating a type system is merely a
+matter of creating stricter rules expecting a specific grammar. Notice in the example below, print rule expects a specific type of data before firing despite being above:</p>
+
+<pre>
+<> (print (Name ?:)) (done.)
+<> (get-name) (Name Eva)
+</pre>
+<pre style='margin-top:-29px'>
+(print (get-name))
+(print (Name Eva))
+(done.)
+</pre>
+<pre style='margin-top:-29px'>
+<b>Eva</b><span style='float:right'>?:</span>
 </pre>
 
 <h3>IO</h3>
@@ -140,24 +161,23 @@ the first address, but differently named registers can still match on the same p
 (putrec (d (e)))
 (putrec (e))
 (done.)
-<b>abcde</b>
-</pre>
-
-<h3 id='types'>Types</h3>
-
-<p>Understanding how to use <i>types</i> to orchestrate a specific evaluation order is
-important to become proficient with Modal. Creating a type system is merely a
-matter of creating stricter rules expecting a specific grammar. Notice in the example below, print rule expects a specific type of data before firing despite being above:</p>
-
-<pre>
-<> (print (Name ?:)) (done.)
-<> (get-name) (Name Eva)
 </pre>
 <pre style='margin-top:-29px'>
-(print (get-name))
-(print (Name Eva))
-(done.)
-<b>Eva</b>
+<b>abcde</b><span style='float:right'>?:</span>
+</pre>
+
+<p>When giving a quoted symbol, like (0), to the <kbd>?:</kbd> register, the value printed will be the depth of nesting.</p>
+
+<pre>
+<> (add (?a) ?b) (add ?a (?b))
+<> (add 0 ?b) (sum ?b)
+<> (print (sum ?:)) ()
+</pre>
+<pre style='margin-top:-29px'>
+3 + 2. (print (add (((0))) ((0))))
+</pre>
+<pre style='margin-top:-29px'>
+<b>5</b><span style='float:right'>?:</span>
 </pre>
 
 <h3 id='lists'>Lists</h3>
@@ -184,10 +204,12 @@ matter of creating stricter rules expecting a specific grammar. Notice in the ex
 (print List (m ()))
 (print List ())
 (done.)
-<b>ladom</b>
+</pre>
+<pre style='margin-top:-29px'>
+<b>ladom</b><span style='float:right'>?:</span>
 </pre>
 
-<p>That's it! I hope you enjoy exploring what this strange programming language can do.</p>
+<p>That's it! I hope you enjoy exploring this strange programming language.</p>
 
 <img src='../media/refs/soulages2.png' style='margin:30px auto; display:block' title='Pierre Soulages | Lithographie n°19 (1968)'/>
 

@@ -35,6 +35,10 @@ Printing to the bottom of the screen is done with ?:
 /*
 @|2 */
 
-"2_mod": `More examples coming soon.`,
+"2_add": `<> (add (?a) ?b) (add ?a (?b))
+<> (add 0 ?b) (sum ?b)
+<> (print (sum ?:)) ()
+
+(print (add (((0))) ((0))))`,
 
 }
