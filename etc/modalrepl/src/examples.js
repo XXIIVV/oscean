@@ -26,8 +26,7 @@ let examples = {
 /*
 @|1 */
 
-"1_mod": `<> (A rule without a right-hand side is ignore,
-    it's also a good way to leave comments.)
+"1_mod": `<> (Reverse a List)
 
 <> (reverse List (?x ?y) ?z) (reverse List ?y (?x ?z))
 <> (reverse List ?empty ?list) (print List ?list)
@@ -39,10 +38,46 @@ let examples = {
 /*
 @|2 */
 
-"2_add": `<> (add (?a) ?b) (add ?a (?b))
+"2_add": `<> (Add 2 + 3 and print the result)
+
+<> (add (?a) ?b) (add ?a (?b))
 <> (add 0 ?b) (sum ?b)
 <> (print (sum ?:)) ()
 
 (print (add (((0))) ((0))))`,
+
+/*
+@|Tic-tac-toe */
+"tic-tac-toe": `<> (Tic-tac-toe
+    All the winning boards: )
+
+<> (?x ?x ?x
+    ?d ?e ?f
+    ?g ?h ?i) (Win ?x)
+<> (?a ?b ?c
+    ?x ?x ?x
+    ?g ?h ?i) (Win ?x)
+<> (?a ?b ?c
+    ?d ?e ?f
+    ?x ?x ?x) (Win ?x)
+<> (?x ?b ?c
+    ?x ?e ?f
+    ?x ?h ?i) (Win ?x)
+<> (?a ?x ?c
+    ?d ?x ?f
+    ?g ?x ?i) (Win ?x)
+<> (?a ?b ?x
+    ?d ?e ?x
+    ?g ?h ?x) (Win ?x)
+<> (?x ?b ?c
+    ?d ?x ?f
+    ?g ?h ?x) (Win ?x)
+<> (?a ?b ?x
+    ?d ?x ?f
+    ?x ?h ?i) (Win ?x)
+
+(a b c
+ d e f
+ g h i)`
 
 }
