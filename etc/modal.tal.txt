@@ -1,13 +1,5 @@
 ( Of, or relating to structure, as opposed to substance. )
 
-|10 @Console/vector $2 &read $5 &type $1 &write $1 &error $1
-
-|000
-
-	@token/buf
-
-|100
-
 @on-reset ( -> )
 	;token/on-console .Console/vector DEO2
 	;prefabs/c dict/<push-str>
@@ -26,12 +18,23 @@
 		NEXT STHkr ?&>w
 	POPr JMP2r
 
-@<eval> ( -- )
-	<step>
-	body/<print>
-	wildcards/<output>
-	?<eval>
-	JMP2r
+@<eval> ( -- count* )
+	#0000
+	&>w
+		<step>
+		body/<print>
+		?{ #800f DEO
+			JMP2r }
+		wildcards/<output>
+		INC2 ORAk ?&>w
+	#010f DEO
+	;&err
+	( >> )
+
+@<print-string> ( str* -- )
+	LDAk DUP ?{ POP POP2 JMP2r }
+	.Console/error DEO
+	INC2 !<print-string>
 
 @<step> ( -- rew )
 	[ LITr 00 ] body/<swap>
@@ -81,7 +84,7 @@
 
 @token/on-console ( -> )
 	.Console/read DEI DUP ?{ POP <eval>
-		BRK }
+		POP2 BRK }
 	/<push>
 	BRK
 
@@ -171,10 +174,12 @@
 	[ LIT2 "( _&last ] STR
 	[ LIT2 &origin $2 ]
 	&>lp
+		LDA2k ;dict/buf NEQ2 ?{ POP2 JMP2r }
 		LDA2k ORAk ?{
-			POP2 POP2 #0a19 DEO
+			POP2 POP2 [ LIT2 0a -Console/error ] DEO
 			JMP2r }
-		LDAk [ LIT ") ] EQU [ LIT2 &last $1 "( ] EQU ORA ?{ #2019 DEO }
+		LDAk [ LIT ") ] EQU [ LIT2 &last $1 "( ] EQU ORA ?{
+			[ LIT2 20 -Console/error ] DEO }
 		LDAk ,&last STR
 		<print-string>
 		NEXT !&>lp
@@ -217,8 +222,17 @@
 	NEXT LDA2 LDA2
 	&>w
 		LDAk DUP ?{ POP POP2 JMP2r }
-		#18 DEO
+		DUP [ LIT "\ ] NEQ ?{ /escape }
+		.Console/write DEO
 		INC2 !&>w
+
+	&escape ( addr* byte -- addr* byte )
+	POP INC2 LDAk
+	( | handlers )
+	DUP [ LIT "n ] NEQ ?{ POP #0a JMP2r }
+	DUP [ LIT "s ] NEQ ?{ POP #20 JMP2r }
+	DUP [ LIT "t ] NEQ ?{ POP #09 JMP2r }
+	JMP2r
 
 	&key "?: $1
 
@@ -248,14 +262,6 @@
 	?{ POP2 JMP2r }
 	INC2 !/<push-str>
 
-(
-@|utils )
-
-@<print-string> ( str* -- )
-	LDAk DUP ?{ POP POP2 JMP2r }
-	#19 DEO
-	INC2 !<print-string>
-
 @scmp ( a* b* -- bool )
 	STH2
 	&>l
@@ -265,6 +271,8 @@
 
 (
 @|assets )
+
+@<eval>/err "Cycles 20 "exhausted. 0a00
 
 @prefabs/c "<> $1
 	&a "( $1
@@ -276,7 +284,9 @@
 
 @dict/buf $1000
 
-@body/a $4000 &b $4000
+@body/a $6000 &b $6000
 |prefabs/a @CellType/a
 |prefabs/b @CellType/b
+|10 @Console/vector $2 &read $5 &type $1 &write $1 &error $1
+|00 @token/buf
 
