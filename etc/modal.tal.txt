@@ -25,16 +25,10 @@
 		body/<print>
 		?{ #800f DEO
 			JMP2r }
-		wildcards/<output>
+		wildcards/<emit>
 		INC2 ORAk ?&>w
 	#010f DEO
-	;&err
-	( >> )
-
-@<print-string> ( str* -- )
-	LDAk DUP ?{ POP POP2 JMP2r }
-	.Console/error DEO
-	INC2 !<print-string>
+	;&err !<print-string>
 
 @<step> ( -- rew )
 	[ LITr 00 ] body/<swap>
@@ -83,8 +77,10 @@
 @|token )
 
 @token/on-console ( -> )
-	.Console/read DEI DUP ?{ POP <eval>
-		POP2 BRK }
+	.Console/read DEI DUP ?{
+		POP <eval>
+		POP2 #010e DEO
+		BRK }
 	/<push>
 	BRK
 
@@ -200,7 +196,7 @@
 	STH2
 	,&ptr LDR2 ;&buf
 	&>l
-		LDA2k STH2kr scmp ?{
+		LDA2k STH2kr string/compare ?{
 			#0004 ADD2 GTH2k ?&>l
 		POP2 #ffff }
 	NIP2 POP2r JMP2r
@@ -217,21 +213,29 @@
 	#0000 ;&buf STA2
 	JMP2r
 
-@wildcards/<output> ( -- )
+@wildcards/<emit> ( -- )
 	;&key /find INC2k ORA ?{ POP2 JMP2r }
-	NEXT LDA2 LDA2
+	NEXT LDA2k LDA2 ;CellType/a EQU2 ?/<emit-list>
+	LDA2 LDA2
 	&>w
 		LDAk DUP ?{ POP POP2 JMP2r }
-		DUP [ LIT "\ ] NEQ ?{ /escape }
+		DUP [ LIT "\ ] NEQ ?{ /<emit-escape> }
 		.Console/write DEO
 		INC2 !&>w
 
-	&escape ( addr* byte -- addr* byte )
+	&<emit-list> ( cell* -- )
+	LDA2 [ LIT2r 0000 ] DUP2 walk SWP2
+	&>le
+		LDA2k ;CellType/a NEQ2 ?{ INC2r }
+		NEXT GTH2k ?&>le
+	POP2 POP2 STH2r !<print-decimal>
+
+	&<emit-escape> ( addr* byte -- addr* byte )
 	POP INC2 LDAk
 	( | handlers )
-	DUP [ LIT "n ] NEQ ?{ POP #0a JMP2r }
-	DUP [ LIT "s ] NEQ ?{ POP #20 JMP2r }
-	DUP [ LIT "t ] NEQ ?{ POP #09 JMP2r }
+	DUP [ LIT "n ] NEQ ?{ POP #0a }
+	DUP [ LIT "s ] NEQ ?{ POP #20 }
+	DUP [ LIT "t ] NEQ ?{ POP #09 }
 	JMP2r
 
 	&key "?: $1
@@ -243,7 +247,7 @@
 	STH2
 	,&ptr LDR2 ;&buf
 	&>l
-		DUP2 STH2kr scmp ?{
+		DUP2 STH2kr string/compare ?{
 			INC2 GTH2k ?&>l
 		POP2 #ffff }
 	NIP2 POP2r JMP2r
@@ -262,7 +266,25 @@
 	?{ POP2 JMP2r }
 	INC2 !/<push-str>
 
-@scmp ( a* b* -- bool )
+(
+@|utilities )
+
+@<print-string> ( str* -- )
+	LDAk DUP ?{ POP POP2 JMP2r }
+	.Console/error DEO
+	INC2 !<print-string>
+
+@<print-decimal> ( short* -- )
+	#000a SWP2 [ LITr ff ]
+	&>get
+		SWP2k DIV2k MUL2 SUB2 STH
+		POP OVR2 DIV2 ORAk ?&>get
+	POP2 POP2
+	&>put
+		STHr INCk ?{ POP JMP2r }
+		[ LIT "0 ] ADD .Console/write DEO !&>put
+
+@string/compare ( a* b* -- bool )
 	STH2
 	&>l
 		LDAk #20 GTH ?{ &d LDA LDAr STHr EQU JMP2r }
