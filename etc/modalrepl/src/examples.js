@@ -48,6 +48,7 @@ let examples = {
 
 /*
 @|Tic-tac-toe */
+
 "tic-tac-toe": `<> (Tic-tac-toe
     All the winning boards: )
 
@@ -78,6 +79,20 @@ let examples = {
 
 (a b c
  d e f
- g h i)`
+ g h i)`,
 
+/*
+@|Multiply */
+
+"multiply": `<> (Multiply 2 * 5)
+
+<> (?a * (?b)) ((?a * ?b) + ?a)
+<> ((?a) + ?b) (?a + (?b))
+<> (0 + ?b) ?b
+<> (?a * 0) (0)
+
+(
+	((0)) * 
+	(((((0)))))
+)` 
 }
